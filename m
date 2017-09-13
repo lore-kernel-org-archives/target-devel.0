@@ -1,41 +1,34 @@
 From: Allen Pais <allen.lkml@gmail.com>
-Date: Fri, 22 Sep 2017 10:20:54 +0000
-Subject: [PATCH 5/5] iscsi-target: use setup_timer() helper.
-Message-Id: <1506074934-15062-6-git-send-email-allen.lkml@gmail.com>
+Date: Wed, 13 Sep 2017 07:44:18 +0000
+Subject: [PATCH 09/10] driver:video: return -ENOMEM on allocation failure.
+Message-Id: <1505287939-14106-9-git-send-email-allen.lkml@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1506074934-15062-1-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1506074934-15062-1-git-send-email-allen.lkml@gmail.com>
+References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org
-Cc: nab@linux-iscsi.org, target-devel@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
-
-   Use setup_timer function instead of initializing timer with the
-   function and data fields.
+To: linux-kernel@vger.kernel.org
+Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
 
 Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- drivers/target/iscsi/iscsi_target_util.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/matrox/matroxfb_base.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 1e36f83..97697a9 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -949,11 +949,10 @@ void iscsit_start_nopin_response_timer(struct iscsi_conn *conn)
- 		return;
- 	}
+diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
+index f6a0b9a..5cd238d 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_base.c
++++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+@@ -2058,7 +2058,7 @@ static int matroxfb_probe(struct pci_dev* pdev, const struct pci_device_id* dumm
  
--	init_timer(&conn->nopin_response_timer);
-+	setup_timer(&conn->nopin_response_timer,
-+		    iscsit_handle_nopin_response_timeout, (unsigned long)conn);
- 	conn->nopin_response_timer.expires  		(get_jiffies_64() + na->nopin_response_timeout * HZ);
--	conn->nopin_response_timer.data = (unsigned long)conn;
--	conn->nopin_response_timer.function = iscsit_handle_nopin_response_timeout;
- 	conn->nopin_response_timer_flags &= ~ISCSI_TF_STOP;
- 	conn->nopin_response_timer_flags |= ISCSI_TF_RUNNING;
- 	add_timer(&conn->nopin_response_timer);
+ 	minfo = kzalloc(sizeof(*minfo), GFP_KERNEL);
+ 	if (!minfo)
+-		return -1;
++		return -ENOMEM;
+ 
+ 	minfo->pcidev = pdev;
+ 	minfo->dead = 0;
 -- 
 2.7.4
 
