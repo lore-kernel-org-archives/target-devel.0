@@ -1,192 +1,36 @@
-From: Subhash Jadavani <subhashj@codeaurora.org>
-Date: Tue, 26 Sep 2017 21:59:27 +0000
-Subject: Re: UFS maximum access unit is 8KB
-Message-Id: <0f98119979bcd613efa4baa9e14e6751@codeaurora.org>
+From: Allen Pais <allen.lkml@gmail.com>
+Date: Wed, 13 Sep 2017 07:44:16 +0000
+Subject: [PATCH 07/10] driver:megaraid: return -ENOMEM on allocation failure.
+Message-Id: <1505287939-14106-7-git-send-email-allen.lkml@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <8c02dc5ce8244920b9fb34fae3b87ffc@SIWEX5A.sing.micron.com>
-In-Reply-To: <8c02dc5ce8244920b9fb34fae3b87ffc@SIWEX5A.sing.micron.com>
+References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Bean Huo (beanhuo)" <beanhuo@micron.com>
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-scsi-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
 
-On 2017-08-09 00:28, Bean Huo (beanhuo) wrote:
-> Hi,
-> I am now using one hikey960, and Linux kernel version is 4.4.77.
-> And found that for UFS driver version, the maximum transformation is 
-> 8KB.
-> Means that if I using 128KB chuck size to program in the user space,
-> but, from ftrace/blktrace,
-> It shows that it always programs by 8KB in kernel. please see below
-> log, who knows where is wrong with it?
-> 
-> 24992.855327 |   7)               |  vfs_read() {
-> 24992.855340 |   7) + 89.584 us   |    submit_bio();
-> 24992.855432 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676352 + 16 [fio] */
-> 24992.855434 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676368 + 16 [fio] */
-> 24992.855435 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676384 + 16 [fio] */
-> 24992.855437 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676400 + 16 [fio] */
-> 24992.855438 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676416 + 16 [fio] */
-> 24992.855439 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676432 + 16 [fio] */
-> 24992.855440 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676448 + 16 [fio] */
-> 24992.855441 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676464 + 16 [fio] */
-> 24992.855443 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676480 + 16 [fio] */
-> 24992.855443 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676496 + 16 [fio] */
-> 24992.855444 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676512 + 16 [fio] */
-> 24992.855445 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676528 + 16 [fio] */
-> 24992.855446 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676544 + 16 [fio] */
-> 24992.855447 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676560 + 16 [fio] */
-> 24992.855448 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676576 + 16 [fio] */
-> 24992.855449 |   7)               |  /* block_rq_insert: 8,48 R 0 ()
-> 40676592 + 16 [fio] */
-> 24992.855451 |   7)               |    __blk_run_queue() {
-> 24992.855451 |   7)               |      scsi_request_fn() {
-> 24992.855453 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676352 + 16 [fio] */
-> 24992.855456 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855457 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84544 txlen=2
-> protect=0 raw( 00 00 4d 95 80 00 00 02 00) */
-> 24992.855459 |   7) + 15.104 us   |          scsi_dma_map();
-> 24992.855476 |   7) + 19.271 us   |        }
-> 24992.855478 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676368 + 16 [fio] */
-> 24992.855481 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855481 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84546 txlen=2
-> protect=0 raw( 00 00 4d 95 82 00 00 02 00) */
-> 24992.855483 |   7)   2.083 us    |          scsi_dma_map();
-> 24992.855486 |   7)   5.730 us    |        }
-> 24992.855488 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676384 + 16 [fio] */
-> 24992.855489 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855490 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84548 txlen=2
-> protect=0 raw( 00 00 4d 95 84 00 00 02 00) */
-> 24992.855491 |   7)   2.083 us    |          scsi_dma_map();
-> 24992.855495 |   7)   5.209 us    |        }
-> 24992.855497 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676400 + 16 [fio] */
-> 24992.855498 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855499 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84550 txlen=2
-> protect=0 raw( 00 00 4d 95 86 00 00 02 00) */
-> 24992.855500 |   7)   2.083 us    |          scsi_dma_map();
-> 24992.855503 |   7)   5.208 us    |        }
-> 24992.855505 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676416 + 16 [fio] */
-> 24992.855507 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855508 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84552 txlen=2
-> protect=0 raw( 00 00 4d 95 88 00 00 02 00) */
-> 24992.855509 |   7)   2.084 us    |          scsi_dma_map();
-> 24992.855513 |   7)   5.208 us    |        }
-> 24992.855514 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676432 + 16 [fio] */
-> 24992.855516 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855516 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84554 txlen=2
-> protect=0 raw( 00 00 4d 95 8a 00 00 02 00) */
-> 24992.855518 |   7)   2.083 us    |          scsi_dma_map();
-> 24992.855521 |   7)   5.208 us    |        }
-> 24992.855524 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676448 + 16 [fio] */
-> 24992.855526 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855526 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84556 txlen=2
-> protect=0 raw( 00 00 4d 95 8c 00 00 02 00) */
-> 24992.855528 |   7)   1.563 us    |          scsi_dma_map();
-> 24992.855532 |   7)   5.208 us    |        }
-> 24992.855533 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676464 + 16 [fio] */
-> 24992.855535 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855536 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84558 txlen=2
-> protect=0 raw( 00 00 4d 95 8e 00 00 02 00) */
-> 24992.855537 |   7)   2.083 us    |          scsi_dma_map();
-> 24992.855541 |   7)   4.687 us    |        }
-> 24992.855543 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676480 + 16 [fio] */
-> 24992.855545 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855545 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84560 txlen=2
-> protect=0 raw( 00 00 4d 95 90 00 00 02 00) */
-> 24992.855546 |   7)   2.084 us    |          scsi_dma_map();
-> 24992.855550 |   7)   4.687 us    |        }
-> 24992.855551 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676496 + 16 [fio] */
-> 24992.855553 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855553 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84562 txlen=2
-> protect=0 raw( 00 00 4d 95 92 00 00 02 00) */
-> 24992.855555 |   7)   2.083 us    |          scsi_dma_map();
-> 24992.855559 |   7)   5.208 us    |        }
-> 24992.855560 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676512 + 16 [fio] */
-> 24992.855562 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855562 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84564 txlen=2
-> protect=0 raw( 00 00 4d 95 94 00 00 02 00) */
-> 24992.855563 |   7)   2.083 us    |          scsi_dma_map();
-> 24992.855568 |   7)   4.688 us    |        }
-> 24992.855569 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676528 + 16 [fio] */
-> 24992.855571 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855571 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84566 txlen=2
-> protect=0 raw( 00 00 4d 95 96 00 00 02 00) */
-> 24992.855572 |   7)   2.083 us    |          scsi_dma_map();
-> 24992.855576 |   7)   5.208 us    |        }
-> 24992.855577 |   7)               |        /* block_rq_issue: 8,48 R 0
-> () 40676544 + 16 [fio] */
-> 24992.855578 |   0)               |  ufshcd_intr() {
-> 24992.855580 |   7)               |        scsi_dispatch_cmd() {
-> 24992.855580 |   7)               |          /*
-> scsi_dispatch_cmd_start: host_no=0 channel=0 id=0 lun=3 data_sgl=2
-> prot_sgl=0 prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84568 txlen=2
-> protect=0 raw( 00 00 4d 95 98 00 00 02 00) */
-> 24992.855585 |   0)   4.166 us    |    scsi_dma_unmap();
-> 24992.855595 |   0)               |  /* scsi_dispatch_cmd_done:
-> host_no=0 channel=0 id=0 lun=3 data_sgl=2 prot_sgl=0
-> prot_op=SCSI_PROT_NORMAL cmnd=(READ_10 lbaP84544 txlen=2 protect=0
-> raw( 00 00 4d 95 80 00 00 02 00) result=(driver=DRIVER_OK
-> host=DID_OK message=COMMAND_COMPLETE status=SAM_STAT_GOOD) */
-> 24992.855602 |   0) + 21.875 us   |  }
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+---
+ drivers/scsi/megaraid/megaraid_mbox.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-"sd: Fix rw_max for devices that report an optimal xfer size" 
-(https://patchwork.kernel.org/patch/9128591/) patch is using the optimal 
-transfer size for maximum read/write transfer size and this somehow is 
-limiting the transfer size to much smaller size on UFS devices. 
-Reverting this patch should help with UFS devices.
-
+diff --git a/drivers/scsi/megaraid/megaraid_mbox.c b/drivers/scsi/megaraid/megaraid_mbox.c
+index ec3c438..b09a0a6 100644
+--- a/drivers/scsi/megaraid/megaraid_mbox.c
++++ b/drivers/scsi/megaraid/megaraid_mbox.c
+@@ -724,8 +724,8 @@ megaraid_init_mbox(adapter_t *adapter)
+ 	 * controllers
+ 	 */
+ 	raid_dev = kzalloc(sizeof(mraid_device_t), GFP_KERNEL);
+-	if (raid_dev = NULL) return -1;
+-
++	if (!raid_dev)
++		return -ENOMEM;
+ 
+ 	/*
+ 	 * Attach the adapter soft state to raid device soft state
 -- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.7.4
+
