@@ -1,34 +1,44 @@
-From: Allen Pais <allen.lkml@gmail.com>
-Date: Wed, 13 Sep 2017 07:44:19 +0000
-Subject: [PATCH 10/10] fs:btrfs: return -ENOMEM on allocation failure.
-Message-Id: <1505287939-14106-10-git-send-email-allen.lkml@gmail.com>
+From: David Sterba <dsterba@suse.cz>
+Date: Wed, 13 Sep 2017 15:13:08 +0000
+Subject: Re: [PATCH 10/10] fs:btrfs: return -ENOMEM on allocation failure.
+Message-Id: <20170913151308.GL29043@twin.jikos.cz>
 List-Id: <target-devel.vger.kernel.org>
 References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+ <1505287939-14106-10-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1505287939-14106-10-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+To: Allen Pais <allen.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org
 
-Signed-off-by: Allen Pais <allen.lkml@gmail.com>
----
- fs/btrfs/check-integrity.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Wed, Sep 13, 2017 at 01:02:19PM +0530, Allen Pais wrote:
+> Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+> ---
+>  fs/btrfs/check-integrity.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/fs/btrfs/check-integrity.c b/fs/btrfs/check-integrity.c
+> index 7d5a9b5..efa4c23 100644
+> --- a/fs/btrfs/check-integrity.c
+> +++ b/fs/btrfs/check-integrity.c
+> @@ -2913,7 +2913,7 @@ int btrfsic_mount(struct btrfs_fs_info *fs_info,
+>  	state = kvzalloc(sizeof(*state), GFP_KERNEL);
+>  	if (!state) {
+>  		pr_info("btrfs check-integrity: allocation failed!\n");
+> -		return -1;
+> +		return -ENOMEM;
 
-diff --git a/fs/btrfs/check-integrity.c b/fs/btrfs/check-integrity.c
-index 7d5a9b5..efa4c23 100644
---- a/fs/btrfs/check-integrity.c
-+++ b/fs/btrfs/check-integrity.c
-@@ -2913,7 +2913,7 @@ int btrfsic_mount(struct btrfs_fs_info *fs_info,
- 	state = kvzalloc(sizeof(*state), GFP_KERNEL);
- 	if (!state) {
- 		pr_info("btrfs check-integrity: allocation failed!\n");
--		return -1;
-+		return -ENOMEM;
- 	}
- 
- 	if (!btrfsic_is_initialized) {
--- 
-2.7.4
+Makes sense, also please fix the -1 a few lines below that also result
+from failed memory allocation, indirectly from btrfsic_dev_state_alloc().
 
+>  	}
+>  
+>  	if (!btrfsic_is_initialized) {
+> -- 
+> 2.7.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-btrfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
