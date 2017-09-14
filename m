@@ -1,324 +1,222 @@
-From: =?UTF-8?Q?Marc_Sch=c3=b6chlin?= <ms@256bit.org>
-Date: Wed, 27 Sep 2017 13:07:28 +0000
-Subject: Re: Problems to utilize iscsi volume
-Message-Id: <2e2f2cec-0d1c-abf4-a218-85b0a11a7782@256bit.org>
+From: lixiubo@cmss.chinamobile.com
+Date: Thu, 14 Sep 2017 01:30:05 +0000
+Subject: [PATCHv4] tcmu: fix crash when removing the tcmu device
+Message-Id: <1505352605-17572-1-git-send-email-lixiubo@cmss.chinamobile.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <9265b002-be5d-f049-df3d-4e7b09c7c393@256bit.org>
-In-Reply-To: <9265b002-be5d-f049-df3d-4e7b09c7c393@256bit.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hi,
+From: Xiubo Li <lixiubo@cmss.chinamobile.com>
 
-special thanks to Thunderbird :-)
+Before the nl REMOVE msg has been sent to the userspace, the ring's
+and other resources have been released, but the userspace maybe still
+using them. And then we can see the crash messages like:
 
-Why is it not permitted to send HTML mails to the mailinglist? 1998 is back and requests to get its internet back? :-)
+ring broken, not handling completions
+BUG: unable to handle kernel paging request at ffffffffffffffd0
+IP: tcmu_handle_completions+0x134/0x2f0 [target_core_user]
+PGD 11bdc0c067
+P4D 11bdc0c067
+PUD 11bdc0e067
+PMD 0
 
-My message without wrapped plaintext-lines (hopefully):
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Oops: 0000 [#1] SMP
+cmd_id not found, ring is broken
+RIP: 0010:tcmu_handle_completions+0x134/0x2f0 [target_core_user]
+RSP: 0018:ffffb8a2d8983d88 EFLAGS: 00010296
+RAX: 0000000000000000 RBX: ffffb8a2aaa4e000 RCX: 00000000ffffffff
+RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000220
+R10: 0000000076c71401 R11: ffff8d2e76c713f0 R12: ffffb8a2aad56bc0
+R13: 000000000000001c R14: ffff8d2e32c90000 R15: ffff8d2e76c713f0
+FS:  00007f411ffff700(0000) GS:ffff8d1e7fdc0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: ffffffffffffffd0 CR3: 0000001027070000 CR4:
+00000000001406e0
+Call Trace:
+? tcmu_irqcontrol+0x2a/0x40 [target_core_user]
+? uio_write+0x7b/0xc0 [uio]
+? __vfs_write+0x37/0x150
+? __getnstimeofday64+0x3b/0xd0
+? vfs_write+0xb2/0x1b0
+? syscall_trace_enter+0x1d0/0x2b0
+? SyS_write+0x55/0xc0
+? do_syscall_64+0x67/0x150
+? entry_SYSCALL64_slow_path+0x25/0x25
+Code: 41 5d 41 5e 41 5f 5d c3 83 f8 01 0f 85 cf 01 00
+00 48 8b 7d d0 e8 dd 5c 1d f3 41 0f b7 74 24 04 48 8b
+7d c8 31 d2 e8 5c c7 1b f3 <48> 8b 7d d0 49 89 c7 c6 07
+00 0f 1f 40 00 4d 85 ff 0f 84 82 01  RIP:
+tcmu_handle_completions+0x134/0x2f0 [target_core_user]
+RSP: ffffb8a2d8983d88
+CR2: ffffffffffffffd0
 
-Hi,
+And the crash also could happen in tcmu_page_fault and other places.
 
-i am using XEN server/XEN center 7.2 as and i would like to access a iscsi storage resource from this system.
-My target runs on kernel 4.4.0-83-generic on Ubuntu 16.04.
+Signed-off-by: Zhang Zhuoyu <zhangzhuoyu@cmss.chinamobile.com>
+Signed-off-by: Xiubo Li <lixiubo@cmss.chinamobile.com>
+---
+ drivers/target/target_core_user.c | 92 ++++++++++++++++++++-------------------
+ 1 file changed, 47 insertions(+), 45 deletions(-)
 
-My targetcli output looks like this:
-
-# targetcli
-targetcli shell version 2.1.fb43
-Copyright 2011-2013 by Datera, Inc and others.
-For help on commands, type 'help'.
-
-/> cd /
-/> ls
-o- / ......................................................................................................................... [...]
-  o- backstores .............................................................................................................. [...]
-  | o- block .................................................................................................. [Storage Objects: 3]
-  | | o- ba-safe-po_k11111-v9988-foobar-monitoringvh1-1  [/dev/ba/ba-safe-po/k11111-v9988-foobar-monitoringvh1-1 (1.0TiB) write-thru activated]
-  | | o- ba-safe-po_k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0  [/dev/ba/ba-safe-po/k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0 (1.0GiB) write-thru activated]
-  | | o- ba-safe-po_k11111-v8448-foobarmsctest-0 ........ [/dev/ba/ba-safe-po/k11111-v8448-foobarmsctest-0 (1.0GiB) write-thru activated]
-  | o- fileio ................................................................................................. [Storage Objects: 0]
-  | o- pscsi .................................................................................................. [Storage Objects: 0]
-  | o- ramdisk ................................................................................................ [Storage Objects: 0]
-  o- iscsi ............................................................................................................ [Targets: 1]
-  | o- iqn.2017-09.barf.net:910f1868 ................................................................................ [TPGs: 1]
-  |   o- tpg1 ............................................................................................... [no-gen-acls, no-auth]
-  |     o- acls .......................................................................................................... [ACLs: 3]
-  |     | o- iqn.1993-08.org.debian:01:12d0b0ef74a8 ............................................................... [Mapped LUNs: 1]
-  |     | | o- mapped_lun255 ....................... [lun1 block/ba-safe-po_k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0 (rw)]
-  |     | o- iqn.2012-04.com.example:910f1868 ..................................................................... [Mapped LUNs: 1]
-  |     | | o- mapped_lun1 ........................................... [lun0 block/ba-safe-po_k11111-v9988-foobar-monitoringvh1-1 (rw)]
-  |     | o- iqn.2017-09.barf.net:910f1868 .................................................................. [Mapped LUNs: 1]
-  |     |   o- mapped_lun254 ................................................ [lun2 block/ba-safe-po_k11111-v8448-foobarmsctest-0 (rw)]
-  |     o- luns .......................................................................................................... [LUNs: 3]
-  |     | o- lun0 ....... [block/ba-safe-po_k11111-v9988-foobar-monitoringvh1-1 (/dev/ba/ba-safe-po/k11111-v9988-foobar-monitoringvh1-1)]
-  |     | o- lun1  [block/ba-safe-po_k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0 (/dev/ba/ba-safe-po/k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0)]
-  |     | o- lun2 ..................... [block/ba-safe-po_k11111-v8448-foobarmsctest-0 (/dev/ba/ba-safe-po/k11111-v8448-foobarmsctest-0)]
-  |     o- portals .................................................................................................... [Portals: 1]
-  |       o- 0.0.0.0:3260 ..................................................................................................... [OK]
-  o- loopback ......................................................................................................... [Targets: 0]
-  o- vhost ............................................................................................................ [Targets: 0]
-
-My connection procedure on xenserver is failing like this:
-
- 1. I add a new storage ressource
- 2. I enter the ip address of the target
- 3. I execute "Scan Target Host", this is confirmed by a green hook
- 4. I select the discovered IQN "iqn.2017-09.barf.net:910f1868"
-    (i see two IQNs: 1. "*: 10.1.1.1:3260" and my "iqn.2017-09.barf.net:910f1868")
- 5. I check the option "Use CHAP" and enter "CHAP Username" and "CHAP Password" but in was not able to finalize the creation from this step
-
-Alternatively to perform the following procedure:
-
-As you can see, this works pretty good on a plain Ubuntu 16.04 system.
-
-# iscsiadm -m discovery -t sendtargets -p 10.1.1.1:3260
-10.1.1.1:3260,1 iqn.2017-09.barf.net:910f1868
-# iscsiadm -m discovery -t st -p '10.1.1.1:3260' --op=new --name node.session.auth.authmethod --value=CHAP --name node.session.auth.username --value='H11111111' --name node.session.auth.password --value='48X1111111111FAKE'
-10.1.1.1:3260,1 iqn.2017-09.barf.net:910f1868
-# iscsiadm --mode node  --targetname 'iqn.2017-09.barf.net:910f1868'  -p '10.1.1.1:3260' --login
-Logging in to [iface: default, target: iqn.2017-09.barf.net:910f1868, portal: 10.1.1.1,3260] (multiple)
-Login to [iface: default, target: iqn.2017-09.barf.net:910f1868, portal: 10.1.1.1,3260] successful.
-
-
-The same procedure fails on my xen 7.2 host:
-
-#  iscsiadm -m discovery -t sendtargets -p 10.1.1.1:3260
-10.1.1.1:3260,1 iqn.2017-09.barf.net:910f1868
-# iscsiadm -m discovery -t st -p '10.1.1.1:3260' --op=new --name node.session.auth.authmethod --value=CHAP --name node.session.auth.username --value='H11111111' --name node.session.auth.password --value='48X1111111111FAKE'
-10.1.1.1:3260,1 iqn.2017-09.barf.net:910f1868
-# iscsiadm --mode node  --targetname 'iqn.2017-09.barf.net:910f1868'  -p '10.1.1.1:3260' --login
-Logging in to [iface: default, target: iqn.2017-09.barf.net:910f1868, portal: 10.1.1.1,3260] (multiple)
-iscsiadm: Could not login to [iface: default, target: iqn.2017-09.barf.net:910f1868, portal: 10.1.1.1,3260].
-iscsiadm: initiator reported error (24 - iSCSI login failed due to authorization failure)
-iscsiadm: Could not log into all portals
-
-On targetside i can see the following messages in th dmesg/journal:
-
-Sep 25 14:57:26 foobar-barfoo1-qt-iscsi-a2 kernel: rx_data returned 0, expecting 48.
-Sep 25 14:57:26 foobar-barfoo1-qt-iscsi-a2 kernel: iSCSI Login negotiation failed.
-Sep 25 14:57:26 foobar-barfoo1-qt-iscsi-a2 kernel: CHAP user or password not set for Initiator ACL
-Sep 25 14:57:26 foobar-barfoo1-qt-iscsi-a2 kernel: Security negotiation failed.
-Sep 25 14:57:26 foobar-barfoo1-qt-iscsi-a2 kernel: iSCSI Login negotiation failed.
-
-Do you have any hints whats going wrong here or how to find out more details?
-
-I also performed a tcp dump for the failing procedure, here you can see a the relevant details of the login procedure:
-(i suppose procedure step 1-3 above maps to step 1-2 beyond)
-
-*** Step 1: Login Command*
-
-iSCSI (Login Command)
-    Opcode: Login Command (0x03)
-    1... .... = T: Transit to next login stage
-    .0.. .... = C: Text is complete
-    .... 00.. = CSG: Security negotiation (0x0)
-    .... ..01 = NSG: Operational negotiation (0x1)
-    VersionMax: 0x00
-    VersionMin: 0x00
-    TotalAHSLength: 0x00
-    DataSegmentLength: 119 (0x00000077)
-    ISID: 00023d000000
-        00.. .... = ISID_t: IEEE OUI (0x0)
-        ..00 0000 = ISID_a: 0x00
-        ISID_b: 0x023d
-        ISID_c: 0x00
-        ISID_d: 0x0000
-    TSIH: 0x0000
-    InitiatorTaskTag: 0x00000000
-    CID: 0x0000
-    CmdSN: 0x00000001
-    ExpStatSN: 0x00000000
-    Key/Value Pairs
-        KeyValue: InitiatorName=iqn.2012-04.com.example:f353602c
-        KeyValue: InitiatorAlias=monitoringvh2
-        KeyValue: SessionType=Discovery
-        KeyValue: AuthMethod=CHAP,None
-    Padding: 00
-
-*** Step 2: Login Response (Success)
-
-*iSCSI (Login Response)
-    Opcode: Login Response (0x23)
-    0... .... = T: Stay in current login stage
-    .0.. .... = C: Text is complete
-    .... 00.. = CSG: Security negotiation (0x0)
-    VersionMax: 0x00
-    VersionActive: 0x00
-    TotalAHSLength: 0x00
-    DataSegmentLength: 62 (0x0000003e)
-    ISID: 00023d000000
-        00.. .... = ISID_t: IEEE OUI (0x0)
-        ..00 0000 = ISID_a: 0x00
-        ISID_b: 0x023d
-        ISID_c: 0x00
-        ISID_d: 0x0000
-    TSIH: 0x0000
-    InitiatorTaskTag: 0x00000000
-    StatSN: 0x28aa1401
-    ExpCmdSN: 0x00000001
-    MaxCmdSN: 0x00000001
-    Status: Success (0x0000)
-    Key/Value Pairs
-        KeyValue: AuthMethod=CHAP
-        KeyValue: TargetAlias=LIO Target
-        KeyValue: TargetPortalGroupTag=1
-    Padding: 0000*
-
-** Step 3: Login Command
-
-*iSCSI (Login Command)
-    Opcode: Login Command (0x03)
-    0... .... = T: Stay in current login stage
-    .0.. .... = C: Text is complete
-    .... 00.. = CSG: Security negotiation (0x0)
-    VersionMax: 0x00
-    VersionMin: 0x00
-    TotalAHSLength: 0x00
-    DataSegmentLength: 9 (0x00000009)
-    ISID: 00023d000000
-        00.. .... = ISID_t: IEEE OUI (0x0)
-        ..00 0000 = ISID_a: 0x00
-        ISID_b: 0x023d
-        ISID_c: 0x00
-        ISID_d: 0x0000
-    TSIH: 0x0000
-    InitiatorTaskTag: 0x00000000
-    CID: 0x0000
-    CmdSN: 0x00000001
-    ExpStatSN: 0x28aa1402
-    Key/Value Pairs
-        KeyValue: CHAP_A=5
-    Padding: 000000
-
-*Step 4: Login Response (Authentification failed)*
-
-iSCSI (Login Response)
-    Opcode: Login Response (0x23)
-    0... .... = T: Stay in current login stage
-    .0.. .... = C: Text is complete
-    .... 00.. = CSG: Security negotiation (0x0)
-    VersionMax: 0x00
-    VersionActive: 0x00
-    TotalAHSLength: 0x00
-    DataSegmentLength: 0 (0x00000000)
-    ISID: 000000000000
-        00.. .... = ISID_t: IEEE OUI (0x0)
-        ..00 0000 = ISID_a: 0x00
-        ISID_b: 0x0000
-        ISID_c: 0x00
-        ISID_d: 0x0000
-    TSIH: 0x0000
-    InitiatorTaskTag: 0x00000000
-    StatSN: 0x00000000
-    ExpCmdSN: 0x00000000
-    MaxCmdSN: 0x00000000
-    Status: Authentication failed (0x0201)
-
-Regards
-Marc
-
-
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 942d0942..8b9ec0f 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1112,6 +1112,8 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+ 	init_waitqueue_head(&udev->nl_cmd_wq);
+ 	spin_lock_init(&udev->nl_cmd_lock);
+ 
++	INIT_RADIX_TREE(&udev->data_blocks, GFP_KERNEL);
++
+ 	return &udev->se_dev;
+ }
+ 
+@@ -1280,10 +1282,54 @@ static void tcmu_dev_call_rcu(struct rcu_head *p)
+ 	kfree(udev);
+ }
+ 
++static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
++{
++	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
++		kmem_cache_free(tcmu_cmd_cache, cmd);
++		return 0;
++	}
++	return -EINVAL;
++}
++
++static void tcmu_blocks_release(struct tcmu_dev *udev)
++{
++	int i;
++	struct page *page;
++
++	/* Try to release all block pages */
++	mutex_lock(&udev->cmdr_lock);
++	for (i = 0; i <= udev->dbi_max; i++) {
++		page = radix_tree_delete(&udev->data_blocks, i);
++		if (page) {
++			__free_page(page);
++			atomic_dec(&global_db_count);
++		}
++	}
++	mutex_unlock(&udev->cmdr_lock);
++}
++
+ static void tcmu_dev_kref_release(struct kref *kref)
+ {
+ 	struct tcmu_dev *udev = container_of(kref, struct tcmu_dev, kref);
+ 	struct se_device *dev = &udev->se_dev;
++	struct tcmu_cmd *cmd;
++	bool all_expired = true;
++	int i;
++
++	vfree(udev->mb_addr);
++	udev->mb_addr = NULL;
++
++	/* Upper layer should drain all requests before calling this */
++	spin_lock_irq(&udev->commands_lock);
++	idr_for_each_entry(&udev->commands, cmd, i) {
++		if (tcmu_check_and_free_pending_cmd(cmd) != 0)
++			all_expired = false;
++	}
++	idr_destroy(&udev->commands);
++	spin_unlock_irq(&udev->commands_lock);
++	WARN_ON(!all_expired);
++
++	tcmu_blocks_release(udev);
+ 
+ 	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
+ }
+@@ -1476,8 +1522,6 @@ static int tcmu_configure_device(struct se_device *dev)
+ 	WARN_ON(udev->data_size % PAGE_SIZE);
+ 	WARN_ON(udev->data_size % DATA_BLOCK_SIZE);
+ 
+-	INIT_RADIX_TREE(&udev->data_blocks, GFP_KERNEL);
+-
+ 	info->version = __stringify(TCMU_MAILBOX_VERSION);
+ 
+ 	info->mem[0].name = "tcm-user command & data buffer";
+@@ -1527,6 +1571,7 @@ static int tcmu_configure_device(struct se_device *dev)
+ 	uio_unregister_device(&udev->uio_info);
+ err_register:
+ 	vfree(udev->mb_addr);
++	udev->mb_addr = NULL;
+ err_vzalloc:
+ 	kfree(info->name);
+ 	info->name = NULL;
+@@ -1534,37 +1579,11 @@ static int tcmu_configure_device(struct se_device *dev)
+ 	return ret;
+ }
+ 
+-static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
+-{
+-	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
+-		kmem_cache_free(tcmu_cmd_cache, cmd);
+-		return 0;
+-	}
+-	return -EINVAL;
+-}
+-
+ static bool tcmu_dev_configured(struct tcmu_dev *udev)
+ {
+ 	return udev->uio_info.uio_dev ? true : false;
+ }
+ 
+-static void tcmu_blocks_release(struct tcmu_dev *udev)
+-{
+-	int i;
+-	struct page *page;
+-
+-	/* Try to release all block pages */
+-	mutex_lock(&udev->cmdr_lock);
+-	for (i = 0; i <= udev->dbi_max; i++) {
+-		page = radix_tree_delete(&udev->data_blocks, i);
+-		if (page) {
+-			__free_page(page);
+-			atomic_dec(&global_db_count);
+-		}
+-	}
+-	mutex_unlock(&udev->cmdr_lock);
+-}
+-
+ static void tcmu_free_device(struct se_device *dev)
+ {
+ 	struct tcmu_dev *udev = TCMU_DEV(dev);
+@@ -1576,9 +1595,6 @@ static void tcmu_free_device(struct se_device *dev)
+ static void tcmu_destroy_device(struct se_device *dev)
+ {
+ 	struct tcmu_dev *udev = TCMU_DEV(dev);
+-	struct tcmu_cmd *cmd;
+-	bool all_expired = true;
+-	int i;
+ 
+ 	del_timer_sync(&udev->timeout);
+ 
+@@ -1586,20 +1602,6 @@ static void tcmu_destroy_device(struct se_device *dev)
+ 	list_del(&udev->node);
+ 	mutex_unlock(&root_udev_mutex);
+ 
+-	vfree(udev->mb_addr);
+-
+-	/* Upper layer should drain all requests before calling this */
+-	spin_lock_irq(&udev->commands_lock);
+-	idr_for_each_entry(&udev->commands, cmd, i) {
+-		if (tcmu_check_and_free_pending_cmd(cmd) != 0)
+-			all_expired = false;
+-	}
+-	idr_destroy(&udev->commands);
+-	spin_unlock_irq(&udev->commands_lock);
+-	WARN_ON(!all_expired);
+-
+-	tcmu_blocks_release(udev);
+-
+ 	tcmu_netlink_event(udev, TCMU_CMD_REMOVED_DEVICE, 0, NULL);
+ 
+ 	uio_unregister_device(&udev->uio_info);
+-- 
+1.8.3.1
 
 
-Am 27.09.2017 um 14:27 schrieb Marc Schöchlin:
-> Hi,
->
-> i am using XEN server/XEN center 7.2 as and i would like to access a
-> iscsi storage resource from this system.
-> My target runs on kernel 4.4.0-83-generic on Ubuntu 16.04.
->
-> My targetcli output looks like this:
->
-> # targetcli
-> targetcli shell version 2.1.fb43
-> Copyright 2011-2013 by Datera, Inc and others.
-> For help on commands, type 'help'.
->
-> /> cd /
-> /> ls
-> o- /
-> .........................................................................................................................
-> [...]
->   o- backstores
-> ..............................................................................................................
-> [...]
->   | o- block
-> ..................................................................................................
-> [Storage Objects: 3]
->   | | o- ba-safe-po_k11111-v9988-foobar-monitoringvh1-1 
-> [/dev/ba/ba-safe-po/k11111-v9988-foobar-monitoringvh1-1 (1.0TiB)
-> write-thru activated]
->   | | o-
-> ba-safe-po_k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0 
-> [/dev/ba/ba-safe-po/k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0
-> (1.0GiB) write-thru activated]
->   | | o- ba-safe-po_k11111-v8448-foobarmsctest-0 ........
-> [/dev/ba/ba-safe-po/k11111-v8448-foobarmsctest-0 (1.0GiB) write-thru
-> activated]
->   | o- fileio
-> .................................................................................................
-> [Storage Objects: 0]
->   | o- pscsi
-> ..................................................................................................
-> [Storage Objects: 0]
->   | o- ramdisk
-> ................................................................................................
-> [Storage Objects: 0]
->   o- iscsi
-> ............................................................................................................
-> [Targets: 1]
->   | o- iqn.2017-09.barf.net:910f1868
-> ................................................................................
-> [TPGs: 1]
->   |   o- tpg1
-> ...............................................................................................
-> [no-gen-acls, no-auth]
->   |     o- acls
-> ..........................................................................................................
-> [ACLs: 3]
->   |     | o- iqn.1993-08.org.debian:01:12d0b0ef74a8
-> ............................................................... [Mapped
-> LUNs: 1]
->   |     | | o- mapped_lun255 ....................... [lun1
-> block/ba-safe-po_k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0
-> (rw)]
->   |     | o- iqn.2012-04.com.example:910f1868
-> .....................................................................
-> [Mapped LUNs: 1]
->   |     | | o- mapped_lun1 ...........................................
-> [lun0 block/ba-safe-po_k11111-v9988-foobar-monitoringvh1-1 (rw)]
->   |     | o- iqn.2017-09.barf.net:910f1868
-> ..................................................................
-> [Mapped LUNs: 1]
->   |     |   o- mapped_lun254
-> ................................................ [lun2
-> block/ba-safe-po_k11111-v8448-foobarmsctest-0 (rw)]
->   |     o- luns
-> ..........................................................................................................
-> [LUNs: 3]
->   |     | o- lun0 .......
-> [block/ba-safe-po_k11111-v9988-foobar-monitoringvh1-1
-> (/dev/ba/ba-safe-po/k11111-v9988-foobar-monitoringvh1-1)]
->   |     | o- lun1 
-> [block/ba-safe-po_k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0
-> (/dev/ba/ba-safe-po/k11111-v9988-foobar-ba4tt2a-foobar-barfoo1-qt-iscsi-a-0)]
->   |     | o- lun2 .....................
-> [block/ba-safe-po_k11111-v8448-foobarmsctest-0
-> (/dev/ba/ba-safe-po/k11111-v8448-foobarmsctest-0)]
->   |     o- portals
-> ....................................................................................................
-> [Portals: 1]
->   |       o- 0.0.0.0:3260
-> .....................................................................................................
-> [OK]
->   o- loopback
-> .........................................................................................................
-> [Targets: 0]
->   o- vhost
-> ............................................................................................................
-> [Targets: 0]
->
 
