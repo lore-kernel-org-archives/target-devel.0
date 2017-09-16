@@ -1,7 +1,7 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 13 Sep 2017 19:31:39 +0000
+Date: Sat, 16 Sep 2017 01:01:18 +0000
 Subject: Re: [PATCH] target: Add netlink command reply supported option for each device
-Message-Id: <59B9879B.5060109@redhat.com>
+Message-Id: <59BC77DE.2030301@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20170913050122.13731-1-nakayamakenjiro@gmail.com>
 In-Reply-To: <20170913050122.13731-1-nakayamakenjiro@gmail.com>
@@ -10,19 +10,23 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 09/13/2017 02:27 PM, Nakayama Kenjiro wrote:
-> Currently there are no way to disable the netlink sync once enabled
-> it and even no way to check if it is enable/disabled on the host. You
-> don't think that it is necessary? At least, I would like to confirm
+On 09/13/2017 12:01 AM, Kenjiro Nakayama wrote:
+> Currently netlink command reply support option
+> (TCMU_ATTR_SUPP_KERN_CMD_REPLY) can be enabled only on module
+> scope. Because of that, once an application enables the netlink
+> command reply support, all applications using target_core_user.ko
+> would be expected to support the netlink reply. To make matters worse,
+> users will not be able to add a device via configfs manually.
+> 
+> To fix these issues, this patch adds an option to make netlink command
+> reply disabled on each device through configfs. Original
+> TCMU_ATTR_SUPP_KERN_CMD_REPLY is still enabled on module scope to keep
+> backward-compatibility and used by default, however once users set
+> nl_reply_supported=<NAGATIVE_VALUE> via configfs for a particular
+> device, the device disables the netlink command reply support.
+> 
 
-I think your mailer is messing things up and you missed where I said I
-agree :) See:
+Patch is ok with me.
 
->>> have to restart the host and never run it again". It sounds like a
->>> little bit silly note...
->>
->> Yes. Agree.
->>
+Reviewed-by: Mike Christie <mchristi@redhat.com>
 
-I just want to make sure I understood your use case and what you really
-need in case there is a better way to do this.
