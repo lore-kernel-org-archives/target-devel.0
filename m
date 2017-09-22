@@ -1,34 +1,41 @@
 From: Allen Pais <allen.lkml@gmail.com>
-Date: Wed, 13 Sep 2017 07:44:17 +0000
-Subject: [PATCH 08/10] driver:cxgbit: return -NOMEM on allocation failure.
-Message-Id: <1505287939-14106-8-git-send-email-allen.lkml@gmail.com>
+Date: Fri, 22 Sep 2017 10:20:54 +0000
+Subject: [PATCH 5/5] iscsi-target: use setup_timer() helper.
+Message-Id: <1506074934-15062-6-git-send-email-allen.lkml@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+References: <1506074934-15062-1-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1506074934-15062-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+To: linux-scsi@vger.kernel.org
+Cc: nab@linux-iscsi.org, target-devel@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+
+   Use setup_timer function instead of initializing timer with the
+   function and data fields.
 
 Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- drivers/target/iscsi/cxgbit/cxgbit_target.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/iscsi/iscsi_target_util.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_target.c b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-index 514986b..47127d6 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_target.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-@@ -399,7 +399,7 @@ cxgbit_map_skb(struct iscsi_cmd *cmd, struct sk_buff *skb, u32 data_offset,
- 	if (padding) {
- 		page = alloc_page(GFP_KERNEL | __GFP_ZERO);
- 		if (!page)
--			return -1;
-+			return -ENOMEM;
- 		skb_fill_page_desc(skb, i, page, 0, padding);
- 		skb->data_len += padding;
- 		skb->len += padding;
+diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+index 1e36f83..97697a9 100644
+--- a/drivers/target/iscsi/iscsi_target_util.c
++++ b/drivers/target/iscsi/iscsi_target_util.c
+@@ -949,11 +949,10 @@ void iscsit_start_nopin_response_timer(struct iscsi_conn *conn)
+ 		return;
+ 	}
+ 
+-	init_timer(&conn->nopin_response_timer);
++	setup_timer(&conn->nopin_response_timer,
++		    iscsit_handle_nopin_response_timeout, (unsigned long)conn);
+ 	conn->nopin_response_timer.expires  		(get_jiffies_64() + na->nopin_response_timeout * HZ);
+-	conn->nopin_response_timer.data = (unsigned long)conn;
+-	conn->nopin_response_timer.function = iscsit_handle_nopin_response_timeout;
+ 	conn->nopin_response_timer_flags &= ~ISCSI_TF_STOP;
+ 	conn->nopin_response_timer_flags |= ISCSI_TF_RUNNING;
+ 	add_timer(&conn->nopin_response_timer);
 -- 
 2.7.4
 
