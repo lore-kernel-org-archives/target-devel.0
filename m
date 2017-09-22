@@ -1,56 +1,41 @@
 From: Allen Pais <allen.lkml@gmail.com>
-Date: Wed, 13 Sep 2017 07:44:13 +0000
-Subject: [PATCH 04/10] drivers:mpt: return -ENOMEM on allocation failure.
-Message-Id: <1505287939-14106-4-git-send-email-allen.lkml@gmail.com>
+Date: Fri, 22 Sep 2017 10:20:52 +0000
+Subject: [PATCH 3/5] iscsi-target: use setup_timer() helper.
+Message-Id: <1506074934-15062-4-git-send-email-allen.lkml@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+References: <1506074934-15062-1-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1506074934-15062-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+To: linux-scsi@vger.kernel.org
+Cc: nab@linux-iscsi.org, target-devel@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+
+   Use setup_timer function instead of initializing timer with the
+   function and data fields.
 
 Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- drivers/message/fusion/mptbase.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/target/iscsi/iscsi_target_erl0.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index 84eab28..7920b2b 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -4328,15 +4328,15 @@ initChainBuffers(MPT_ADAPTER *ioc)
- 	if (ioc->ReqToChain = NULL) {
- 		sz = ioc->req_depth * sizeof(int);
- 		mem = kmalloc(sz, GFP_ATOMIC);
--		if (mem = NULL)
--			return -1;
-+		if (!mem)
-+			return -ENOMEM;
+diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/iscsi/iscsi_target_erl0.c
+index 7fe2aa7..3131d7b 100644
+--- a/drivers/target/iscsi/iscsi_target_erl0.c
++++ b/drivers/target/iscsi/iscsi_target_erl0.c
+@@ -809,11 +809,10 @@ void iscsit_start_time2retain_handler(struct iscsi_session *sess)
+ 	pr_debug("Starting Time2Retain timer for %u seconds on"
+ 		" SID: %u\n", sess->sess_ops->DefaultTime2Retain, sess->sid);
  
- 		ioc->ReqToChain = (int *) mem;
- 		dinitprintk(ioc, printk(MYIOC_s_DEBUG_FMT "ReqToChain alloc  @ %p, sz=%d bytes\n",
- 			 	ioc->name, mem, sz));
- 		mem = kmalloc(sz, GFP_ATOMIC);
--		if (mem = NULL)
--			return -1;
-+		if (!mem)
-+			return -ENOMEM;
- 
- 		ioc->RequestNB = (int *) mem;
- 		dinitprintk(ioc, printk(MYIOC_s_DEBUG_FMT "RequestNB alloc  @ %p, sz=%d bytes\n",
-@@ -4402,8 +4402,8 @@ initChainBuffers(MPT_ADAPTER *ioc)
- 	sz = num_chain * sizeof(int);
- 	if (ioc->ChainToChain = NULL) {
- 		mem = kmalloc(sz, GFP_ATOMIC);
--		if (mem = NULL)
--			return -1;
-+		if (!mem)
-+			return -ENOMEM;
- 
- 		ioc->ChainToChain = (int *) mem;
- 		dinitprintk(ioc, printk(MYIOC_s_DEBUG_FMT "ChainToChain alloc @ %p, sz=%d bytes\n",
+-	init_timer(&sess->time2retain_timer);
++	setup_timer(&sess->time2retain_timer,
++		    iscsit_handle_time2retain_timeout, (unsigned long)sess);
+ 	sess->time2retain_timer.expires  		(get_jiffies_64() + sess->sess_ops->DefaultTime2Retain * HZ);
+-	sess->time2retain_timer.data = (unsigned long)sess;
+-	sess->time2retain_timer.function = iscsit_handle_time2retain_timeout;
+ 	sess->time2retain_timer_flags &= ~ISCSI_TF_STOP;
+ 	sess->time2retain_timer_flags |= ISCSI_TF_RUNNING;
+ 	add_timer(&sess->time2retain_timer);
 -- 
 2.7.4
 
