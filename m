@@ -1,34 +1,41 @@
 From: Allen Pais <allen.lkml@gmail.com>
-Date: Wed, 13 Sep 2017 07:44:18 +0000
-Subject: [PATCH 09/10] driver:video: return -ENOMEM on allocation failure.
-Message-Id: <1505287939-14106-9-git-send-email-allen.lkml@gmail.com>
+Date: Fri, 22 Sep 2017 10:20:53 +0000
+Subject: [PATCH 4/5] iscsi-target: use setup_timer() helper.
+Message-Id: <1506074934-15062-5-git-send-email-allen.lkml@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+References: <1506074934-15062-1-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1506074934-15062-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+To: linux-scsi@vger.kernel.org
+Cc: nab@linux-iscsi.org, target-devel@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+
+   Use setup_timer function instead of initializing timer with the
+   function and data fields.
 
 Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- drivers/video/fbdev/matrox/matroxfb_base.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/iscsi/iscsi_target_erl1.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index f6a0b9a..5cd238d 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -2058,7 +2058,7 @@ static int matroxfb_probe(struct pci_dev* pdev, const struct pci_device_id* dumm
+diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
+index fe9b7f1..858d9c6 100644
+--- a/drivers/target/iscsi/iscsi_target_erl1.c
++++ b/drivers/target/iscsi/iscsi_target_erl1.c
+@@ -1264,10 +1264,9 @@ void iscsit_start_dataout_timer(
+ 	pr_debug("Starting DataOUT timer for ITT: 0x%08x on"
+ 		" CID: %hu.\n", cmd->init_task_tag, conn->cid);
  
- 	minfo = kzalloc(sizeof(*minfo), GFP_KERNEL);
- 	if (!minfo)
--		return -1;
-+		return -ENOMEM;
- 
- 	minfo->pcidev = pdev;
- 	minfo->dead = 0;
+-	init_timer(&cmd->dataout_timer);
++	setup_timer(&cmd->dataout_timer, iscsit_handle_dataout_timeout,
++		    (unsigned long)cmd);
+ 	cmd->dataout_timer.expires = (get_jiffies_64() + na->dataout_timeout * HZ);
+-	cmd->dataout_timer.data = (unsigned long)cmd;
+-	cmd->dataout_timer.function = iscsit_handle_dataout_timeout;
+ 	cmd->dataout_timer_flags &= ~ISCSI_TF_STOP;
+ 	cmd->dataout_timer_flags |= ISCSI_TF_RUNNING;
+ 	add_timer(&cmd->dataout_timer);
 -- 
 2.7.4
 
