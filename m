@@ -1,41 +1,27 @@
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Date: Mon, 02 Oct 2017 17:59:38 +0000
-Subject: [PATCH] ibmvscsis: Fix write_pending failure path
-Message-Id: <20171002175938.11764-1-bryantly@linux.vnet.ibm.com>
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Tue, 03 Oct 2017 02:51:51 +0000
+Subject: Re: [PATCH] ibmvscsis: Fix write_pending failure path
+Message-Id: <yq1k20d0wqg.fsf@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20171002175938.11764-1-bryantly@linux.vnet.ibm.com>
+In-Reply-To: <20171002175938.11764-1-bryantly@linux.vnet.ibm.com> (Bryant
+        G. Ly's message of "Mon, 2 Oct 2017 12:59:38 -0500")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: nab@linux-iscsi.org
-Cc: seroyer@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, "Bryant G. Ly" <bgly@us.ibm.com>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Cc: nab@linux-iscsi.org, seroyer@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, "Bryant G. Ly" <bgly@us.ibm.com>
 
-From: "Bryant G. Ly" <bgly@us.ibm.com>
 
-For write_pending if the queue is down or client failed
-then return -EIO so that LIO can properly process the
-completed command. Prior we returned 0 since LIO could
-not handle it properly. Now with:
-target: Fix unknown fabric callback queue-full errors
-that patch addresses LIO's ability to handle things right.
+Bryant,
 
-Signed-off-by: Bryant G. Ly <bgly@us.ibm.com>
----
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> For write_pending if the queue is down or client failed then return
+> -EIO so that LIO can properly process the completed command. Prior we
+> returned 0 since LIO could not handle it properly. Now with: target:
+> Fix unknown fabric callback queue-full errors that patch addresses
+> LIO's ability to handle things right.
 
-diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-index 1f75d0380516f..fe5b9d7bc06df 100644
---- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-+++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-@@ -3767,7 +3767,7 @@ static int ibmvscsis_write_pending(struct se_cmd *se_cmd)
- 	 */
- 	if ((vscsi->flags & (CLIENT_FAILED | RESPONSE_Q_DOWN))) {
- 		pr_err("write_pending failed since: %d\n", vscsi->flags);
--		return 0;
-+		return -EIO;
- 	}
- 
- 	rc = srp_transfer_data(cmd, &vio_iu(iue)->srp.cmd, ibmvscsis_rdma,
+Applied to 4.14/scsi-fixes. thanks!
+
 -- 
-2.13.5 (Apple Git-94)
-
+Martin K. Petersen	Oracle Linux Engineering
