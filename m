@@ -1,261 +1,132 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Date: Mon, 16 Oct 2017 15:18:42 +0000
-Subject: [PATCH v2 03/15] target: make config_item_type const
-Message-Id: <1508167134-6243-4-git-send-email-bhumirks@gmail.com>
+From: Varun Prakash <varun@chelsio.com>
+Date: Wed, 04 Oct 2017 16:45:35 +0000
+Subject: [PATCH] cxgbit: Abort the TCP connection in case of data out timeout
+Message-Id: <1507134815-4650-1-git-send-email-varun@chelsio.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: julia.lawall-L2FTfq7BK8M@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, alexander.shishkin-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, dledford-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, sean.hefty-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hal.rosenstock-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hch-jcswGhMUV9g@public.gmane.org, sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org, kishon-l0cyMroinI0@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org, balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org, jlbec-aKy9MeLSZ9dg9hUCZPvPmw@public.gmane.org, ccaulfie-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, teigland-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, mfasheh-rOS7oXVqrJRBDgjK7y7TUQ@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel@redh
-Cc: Bhumika Goyal <bhumirks-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: target-devel@vger.kernel.org
 
-Make these structures const as they are either passed to the functions
-having the argument as const or stored as a reference in the "ci_type"
-const field of a config_item structure.
+If DDP is programmed for a WRITE cmd and data out
+timer gets expired then abort the TCP connection
+before freeing the cmd to avoid any possibility of
+DDP after freeing the cmd.
 
-Done using Coccinelle.
-
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+Signed-off-by: Varun Prakash <varun@chelsio.com>
 ---
-* Changes in v2- Combine all the followup patches and the constification
-patches into a series.
+ drivers/target/iscsi/cxgbit/cxgbit.h     |  2 ++
+ drivers/target/iscsi/cxgbit/cxgbit_cm.c  | 45 ++++++++++++++++++++++++++++++++
+ drivers/target/iscsi/cxgbit/cxgbit_ddp.c |  8 ++++++
+ 3 files changed, 55 insertions(+)
 
- drivers/target/iscsi/iscsi_target_stat.c | 12 ++++++------
- drivers/target/target_core_configfs.c    | 14 +++++++-------
- drivers/target/target_core_stat.c        | 16 ++++++++--------
- include/target/iscsi/iscsi_target_stat.h | 12 ++++++------
- 4 files changed, 27 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target_stat.c b/drivers/target/iscsi/iscsi_target_stat.c
-index 411cb26..df0a398 100644
---- a/drivers/target/iscsi/iscsi_target_stat.c
-+++ b/drivers/target/iscsi/iscsi_target_stat.c
-@@ -187,7 +187,7 @@ static ssize_t iscsi_stat_instance_version_show(struct config_item *item,
- 	NULL,
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit.h b/drivers/target/iscsi/cxgbit/cxgbit.h
+index 9038869..417b9e6 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit.h
++++ b/drivers/target/iscsi/cxgbit/cxgbit.h
+@@ -165,6 +165,7 @@ enum cxgbit_csk_flags {
+ 	CSK_LOGIN_PDU_DONE,
+ 	CSK_LOGIN_DONE,
+ 	CSK_DDP_ENABLE,
++	CSK_ABORT_RPL_WAIT,
  };
  
--struct config_item_type iscsi_stat_instance_cit = {
-+const struct config_item_type iscsi_stat_instance_cit = {
- 	.ct_attrs		= iscsi_stat_instance_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -249,7 +249,7 @@ static ssize_t iscsi_stat_sess_err_format_errors_show(struct config_item *item,
- 	NULL,
- };
+ struct cxgbit_sock_common {
+@@ -321,6 +322,7 @@ int cxgbit_setup_np(struct iscsi_np *, struct sockaddr_storage *);
+ int cxgbit_setup_conn_digest(struct cxgbit_sock *);
+ int cxgbit_accept_np(struct iscsi_np *, struct iscsi_conn *);
+ void cxgbit_free_np(struct iscsi_np *);
++void cxgbit_abort_conn(struct cxgbit_sock *csk);
+ void cxgbit_free_conn(struct iscsi_conn *);
+ extern cxgbit_cplhandler_func cxgbit_cplhandlers[NUM_CPL_CMDS];
+ int cxgbit_get_login_rx(struct iscsi_conn *, struct iscsi_login *);
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+index d4fa41b..92eb57e 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+@@ -665,6 +665,46 @@ static int cxgbit_send_abort_req(struct cxgbit_sock *csk)
+ 	return cxgbit_l2t_send(csk->com.cdev, skb, csk->l2t);
+ }
  
--struct config_item_type iscsi_stat_sess_err_cit = {
-+const struct config_item_type iscsi_stat_sess_err_cit = {
- 	.ct_attrs		= iscsi_stat_sess_err_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -390,7 +390,7 @@ static ssize_t iscsi_stat_tgt_attr_fail_intr_addr_show(struct config_item *item,
- 	NULL,
- };
++static void
++__cxgbit_abort_conn(struct cxgbit_sock *csk, struct sk_buff *skb)
++{
++	__kfree_skb(skb);
++
++	if (csk->com.state != CSK_STATE_ESTABLISHED)
++		goto no_abort;
++
++	set_bit(CSK_ABORT_RPL_WAIT, &csk->com.flags);
++	csk->com.state = CSK_STATE_ABORTING;
++
++	cxgbit_send_abort_req(csk);
++
++	return;
++
++no_abort:
++	cxgbit_wake_up(&csk->com.wr_wait, __func__, CPL_ERR_NONE);
++	cxgbit_put_csk(csk);
++}
++
++void cxgbit_abort_conn(struct cxgbit_sock *csk)
++{
++	struct sk_buff *skb = alloc_skb(0, GFP_KERNEL | __GFP_NOFAIL);
++
++	cxgbit_get_csk(csk);
++	cxgbit_init_wr_wait(&csk->com.wr_wait);
++
++	spin_lock_bh(&csk->lock);
++	if (csk->lock_owner) {
++		cxgbit_skcb_rx_backlog_fn(skb) = __cxgbit_abort_conn;
++		__skb_queue_tail(&csk->backlogq, skb);
++	} else {
++		__cxgbit_abort_conn(csk, skb);
++	}
++	spin_unlock_bh(&csk->lock);
++
++	cxgbit_wait_for_reply(csk->com.cdev, &csk->com.wr_wait,
++			      csk->tid, 600, __func__);
++}
++
+ void cxgbit_free_conn(struct iscsi_conn *conn)
+ {
+ 	struct cxgbit_sock *csk = conn->context;
+@@ -1709,12 +1749,17 @@ static void cxgbit_abort_req_rss(struct cxgbit_sock *csk, struct sk_buff *skb)
  
--struct config_item_type iscsi_stat_tgt_attr_cit = {
-+const struct config_item_type iscsi_stat_tgt_attr_cit = {
- 	.ct_attrs		= iscsi_stat_tgt_attr_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -522,7 +522,7 @@ static ssize_t iscsi_stat_login_negotiate_fails_show(struct config_item *item,
- 	NULL,
- };
+ static void cxgbit_abort_rpl_rss(struct cxgbit_sock *csk, struct sk_buff *skb)
+ {
++	struct cpl_abort_rpl_rss *rpl = cplhdr(skb);
++
+ 	pr_debug("%s: csk %p; tid %u; state %d\n",
+ 		 __func__, csk, csk->tid, csk->com.state);
  
--struct config_item_type iscsi_stat_login_cit = {
-+const struct config_item_type iscsi_stat_login_cit = {
- 	.ct_attrs		= iscsi_stat_login_stats_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -579,7 +579,7 @@ static ssize_t iscsi_stat_logout_abnormal_logouts_show(struct config_item *item,
- 	NULL,
- };
+ 	switch (csk->com.state) {
+ 	case CSK_STATE_ABORTING:
+ 		csk->com.state = CSK_STATE_DEAD;
++		if (test_bit(CSK_ABORT_RPL_WAIT, &csk->com.flags))
++			cxgbit_wake_up(&csk->com.wr_wait, __func__,
++				       rpl->status);
+ 		cxgbit_put_csk(csk);
+ 		break;
+ 	default:
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
+index 5fdb57c..768cce0 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
+@@ -275,6 +275,14 @@ void cxgbit_release_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
+ 			struct cxgbit_device *cdev = csk->com.cdev;
+ 			struct cxgbi_ppm *ppm = cdev2ppm(cdev);
  
--struct config_item_type iscsi_stat_logout_cit = {
-+const struct config_item_type iscsi_stat_logout_cit = {
- 	.ct_attrs		= iscsi_stat_logout_stats_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -801,7 +801,7 @@ static ssize_t iscsi_stat_sess_conn_timeout_errors_show(
- 	NULL,
- };
++			/* Abort the TCP conn if DDP is not complete to
++			 * avoid any possibility of DDP after freeing
++			 * the cmd.
++			 */
++			if (unlikely(cmd->write_data_done !+				     cmd->se_cmd.data_length))
++				cxgbit_abort_conn(csk);
++
+ 			cxgbi_ppm_ppod_release(ppm, ttinfo->idx);
  
--struct config_item_type iscsi_stat_sess_cit = {
-+const struct config_item_type iscsi_stat_sess_cit = {
- 	.ct_attrs		= iscsi_stat_sess_stats_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 7e87d95..bd87cc2 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -307,7 +307,7 @@ static void target_core_deregister_fabric(
- /*
-  * Provides Fabrics Groups and Item Attributes for /sys/kernel/config/target/
-  */
--static struct config_item_type target_core_fabrics_item = {
-+static const struct config_item_type target_core_fabrics_item = {
- 	.ct_group_ops	= &target_core_fabric_group_ops,
- 	.ct_attrs	= target_core_fabric_item_attrs,
- 	.ct_owner	= THIS_MODULE,
-@@ -2376,7 +2376,7 @@ static void target_core_alua_lu_gp_release(struct config_item *item)
- 	.release		= target_core_alua_lu_gp_release,
- };
- 
--static struct config_item_type target_core_alua_lu_gp_cit = {
-+static const struct config_item_type target_core_alua_lu_gp_cit = {
- 	.ct_item_ops		= &target_core_alua_lu_gp_ops,
- 	.ct_attrs		= target_core_alua_lu_gp_attrs,
- 	.ct_owner		= THIS_MODULE,
-@@ -2434,7 +2434,7 @@ static void target_core_alua_drop_lu_gp(
- 	.drop_item		= &target_core_alua_drop_lu_gp,
- };
- 
--static struct config_item_type target_core_alua_lu_gps_cit = {
-+static const struct config_item_type target_core_alua_lu_gps_cit = {
- 	.ct_item_ops		= NULL,
- 	.ct_group_ops		= &target_core_alua_lu_gps_group_ops,
- 	.ct_owner		= THIS_MODULE,
-@@ -2813,7 +2813,7 @@ static void target_core_alua_tg_pt_gp_release(struct config_item *item)
- 	.release		= target_core_alua_tg_pt_gp_release,
- };
- 
--static struct config_item_type target_core_alua_tg_pt_gp_cit = {
-+static const struct config_item_type target_core_alua_tg_pt_gp_cit = {
- 	.ct_item_ops		= &target_core_alua_tg_pt_gp_ops,
- 	.ct_attrs		= target_core_alua_tg_pt_gp_attrs,
- 	.ct_owner		= THIS_MODULE,
-@@ -2884,7 +2884,7 @@ static void target_core_alua_drop_tg_pt_gp(
-  * core/alua/lu_gps and core/alua/tg_pt_gps that are attached to
-  * target_core_alua_cit in target_core_init_configfs() below.
-  */
--static struct config_item_type target_core_alua_cit = {
-+static const struct config_item_type target_core_alua_cit = {
- 	.ct_item_ops		= NULL,
- 	.ct_attrs		= NULL,
- 	.ct_owner		= THIS_MODULE,
-@@ -3105,7 +3105,7 @@ static void target_core_hba_release(struct config_item *item)
- 	.release		= target_core_hba_release,
- };
- 
--static struct config_item_type target_core_hba_cit = {
-+static const struct config_item_type target_core_hba_cit = {
- 	.ct_item_ops		= &target_core_hba_item_ops,
- 	.ct_group_ops		= &target_core_hba_group_ops,
- 	.ct_attrs		= target_core_hba_attrs,
-@@ -3188,7 +3188,7 @@ static void target_core_call_delhbafromtarget(
- 	.drop_item	= target_core_call_delhbafromtarget,
- };
- 
--static struct config_item_type target_core_cit = {
-+static const struct config_item_type target_core_cit = {
- 	.ct_item_ops	= NULL,
- 	.ct_group_ops	= &target_core_group_ops,
- 	.ct_attrs	= NULL,
-diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
-index 8038255..f0db91e 100644
---- a/drivers/target/target_core_stat.c
-+++ b/drivers/target/target_core_stat.c
-@@ -96,7 +96,7 @@ static ssize_t target_stat_ports_show(struct config_item *item, char *page)
- 	NULL,
- };
- 
--static struct config_item_type target_stat_scsi_dev_cit = {
-+static const struct config_item_type target_stat_scsi_dev_cit = {
- 	.ct_attrs		= target_stat_scsi_dev_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -193,7 +193,7 @@ static ssize_t target_stat_tgt_aborts_no_task_show(struct config_item *item,
- 	NULL,
- };
- 
--static struct config_item_type target_stat_scsi_tgt_dev_cit = {
-+static const struct config_item_type target_stat_scsi_tgt_dev_cit = {
- 	.ct_attrs		= target_stat_scsi_tgt_dev_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -414,7 +414,7 @@ static ssize_t target_stat_lu_creation_time_show(struct config_item *item,
- 	NULL,
- };
- 
--static struct config_item_type target_stat_scsi_lu_cit = {
-+static const struct config_item_type target_stat_scsi_lu_cit = {
- 	.ct_attrs		= target_stat_scsi_lu_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -540,7 +540,7 @@ static ssize_t target_stat_port_busy_count_show(struct config_item *item,
- 	NULL,
- };
- 
--static struct config_item_type target_stat_scsi_port_cit = {
-+static const struct config_item_type target_stat_scsi_port_cit = {
- 	.ct_attrs		= target_stat_scsi_port_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -724,7 +724,7 @@ static ssize_t target_stat_tgt_port_hs_in_cmds_show(struct config_item *item,
- 	NULL,
- };
- 
--static struct config_item_type target_stat_scsi_tgt_port_cit = {
-+static const struct config_item_type target_stat_scsi_tgt_port_cit = {
- 	.ct_attrs		= target_stat_scsi_tgt_port_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -844,7 +844,7 @@ static ssize_t target_stat_transport_proto_id_show(struct config_item *item,
- 	NULL,
- };
- 
--static struct config_item_type target_stat_scsi_transport_cit = {
-+static const struct config_item_type target_stat_scsi_transport_cit = {
- 	.ct_attrs		= target_stat_scsi_transport_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -1206,7 +1206,7 @@ static ssize_t target_stat_auth_row_status_show(struct config_item *item,
- 	NULL,
- };
- 
--static struct config_item_type target_stat_scsi_auth_intr_cit = {
-+static const struct config_item_type target_stat_scsi_auth_intr_cit = {
- 	.ct_attrs		= target_stat_scsi_auth_intr_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-@@ -1378,7 +1378,7 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
- 	NULL,
- };
- 
--static struct config_item_type target_stat_scsi_att_intr_port_cit = {
-+static const struct config_item_type target_stat_scsi_att_intr_port_cit = {
- 	.ct_attrs		= target_stat_scsi_ath_intr_port_attrs,
- 	.ct_owner		= THIS_MODULE,
- };
-diff --git a/include/target/iscsi/iscsi_target_stat.h b/include/target/iscsi/iscsi_target_stat.h
-index c27dd47..36e9c9a 100644
---- a/include/target/iscsi/iscsi_target_stat.h
-+++ b/include/target/iscsi/iscsi_target_stat.h
-@@ -8,16 +8,16 @@
- /*
-  * For struct iscsi_tiqn->tiqn_wwn default groups
-  */
--extern struct config_item_type iscsi_stat_instance_cit;
--extern struct config_item_type iscsi_stat_sess_err_cit;
--extern struct config_item_type iscsi_stat_tgt_attr_cit;
--extern struct config_item_type iscsi_stat_login_cit;
--extern struct config_item_type iscsi_stat_logout_cit;
-+extern const struct config_item_type iscsi_stat_instance_cit;
-+extern const struct config_item_type iscsi_stat_sess_err_cit;
-+extern const struct config_item_type iscsi_stat_tgt_attr_cit;
-+extern const struct config_item_type iscsi_stat_login_cit;
-+extern const struct config_item_type iscsi_stat_logout_cit;
- 
- /*
-  * For struct iscsi_session->se_sess default groups
-  */
--extern struct config_item_type iscsi_stat_sess_cit;
-+extern const struct config_item_type iscsi_stat_sess_cit;
- 
- /* iSCSI session error types */
- #define ISCSI_SESS_ERR_UNKNOWN		0
+ 			dma_unmap_sg(&ppm->pdev->dev, ttinfo->sgl,
 -- 
-1.9.1
+2.0.2
 
