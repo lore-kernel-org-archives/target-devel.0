@@ -1,359 +1,155 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 30 Oct 2017 03:44:38 +0000
-Subject: [PATCH 18/19] tcmu: allow max block and global max blocks to be settable
-Message-Id: <1509335079-5276-19-git-send-email-mchristi@redhat.com>
+From: Shiraz Saleem <shiraz.saleem@intel.com>
+Date: Fri, 06 Oct 2017 22:40:25 +0000
+Subject: Re: SQ overflow seen running isert traffic with high block sizes
+Message-Id: <20171006224025.GA23364@ssaleem-MOBL4.amr.corp.intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
+References: <BN3PR07MB25784033E7FCD062FA0A7855F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
+ <210f538f-8c98-f480-64fc-f2124ed6d01b@grimberg.me>
+ <BN3PR07MB25786338EADC77A369A6D493F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
+ <1499970579.7987.8.camel@haakon3.daterainc.com>
+ <BN3PR07MB2578E6561CC669922A322245F8A00@BN3PR07MB2578.namprd07.prod.outlook.com>
+In-Reply-To: <BN3PR07MB2578E6561CC669922A322245F8A00-EldUQEzkDQfpW3VS/XPqkOFPX92sqiQdvxpqHgZTriW3zl9H0oFU5g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, jejb@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
-Cc: Mike Christie <mchristi@redhat.com>
+To: "Amrani, Ram" <Ram.Amrani-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>
+Cc: "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>, Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Elior, Ariel" <Ariel.Elior-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Potnuri Bharat Teja <bharat-ut6Up61K2wZBDgjK7y7TUQ@public.gmane.org>
 
-Users might have a physical system to a target so they could
-have a lot more than 2 gigs of memory they want to devote to
-tcmu. OTOH, we could be running in a vm and so a 2 gig
-global and 1 gig per dev limit might be too high. This patch
-allows the user to specify the limits.
+On Mon, Jul 17, 2017 at 03:26:04AM -0600, Amrani, Ram wrote:
+> Hi Nicholas,
+> 
+> > Just to confirm, the following four patches where required to get
+> > Potnuri up and running on iser-target + iw_cxgb4 with a similarly small
+> > number of hw SGEs:
+> > 
+> > 7a56dc8 iser-target: avoid posting a recv buffer twice
+> > 555a65f iser-target: Fix queue-full response handling
+> > a446701 iscsi-target: Propigate queue_data_in + queue_status errors
+> > fa7e25c target: Fix unknown fabric callback queue-full errors
+> > 
+> > So Did you test with Q-Logic/Cavium with RoCE using these four patches,
+> > or just with commit a4467018..?
+> > 
+> > Note these have not been CC'ed to stable yet, as I was reluctant since
+> > they didn't have much mileage on them at the time..
+> > 
+> > Now however, they should be OK to consider for stable, especially if
+> > they get you unblocked as well.
+> 
+> The issue is still seen with these four patches.
+> 
+> Thanks,
+> Ram
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
----
- drivers/target/target_core_user.c | 143 +++++++++++++++++++++++++++++++++-----
- 1 file changed, 124 insertions(+), 19 deletions(-)
+Hi,
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 92eb918..f49f765 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -77,9 +77,13 @@
-  * the total size is 256K * PAGE_SIZE.
-  */
- #define DATA_BLOCK_SIZE PAGE_SIZE
--#define DATA_BLOCK_BITS (256 * 1024)
-+#define DATA_BLOCK_SHIFT PAGE_SHIFT
-+#define DATA_BLOCK_BITS_DEF (256 * 1024)
- #define DATA_SIZE (DATA_BLOCK_BITS * DATA_BLOCK_SIZE)
- 
-+#define TCMU_MBS_TO_BLOCKS(_mbs) (_mbs << (20 - DATA_BLOCK_SHIFT))
-+#define TCMU_BLOCKS_TO_MBS(_blocks) (_blocks >> (20 - DATA_BLOCK_SHIFT))
-+
- /* The total size of the ring is 8M + 256K * PAGE_SIZE */
- #define TCMU_RING_SIZE (CMDR_SIZE + DATA_SIZE)
- 
-@@ -87,7 +91,7 @@
-  * Default number of global data blocks(512K * PAGE_SIZE)
-  * when the unmap thread will be started.
-  */
--#define TCMU_GLOBAL_MAX_BLOCKS (512 * 1024)
-+#define TCMU_GLOBAL_MAX_BLOCKS_DEF (512 * 1024)
- 
- static u8 tcmu_kern_cmd_reply_supported;
- 
-@@ -131,13 +135,15 @@ struct tcmu_dev {
- 	/* Must add data_off and mb_addr to get the address */
- 	size_t data_off;
- 	size_t data_size;
-+	uint32_t max_blocks;
-+	size_t ring_size;
- 
- 	struct mutex cmdr_lock;
- 	struct list_head cmdr_queue;
- 
- 	uint32_t dbi_max;
- 	uint32_t dbi_thresh;
--	DECLARE_BITMAP(data_bitmap, DATA_BLOCK_BITS);
-+	unsigned long *data_bitmap;
- 	struct radix_tree_root data_blocks;
- 
- 	struct idr commands;
-@@ -198,10 +204,51 @@ struct tcmu_cmd {
- static DEFINE_SPINLOCK(timed_out_udevs_lock);
- static LIST_HEAD(timed_out_udevs);
- 
-+static struct kmem_cache *tcmu_cmd_cache;
-+
- static atomic_t global_db_count = ATOMIC_INIT(0);
- static struct delayed_work tcmu_unmap_work;
-+static int tcmu_global_max_blocks = TCMU_GLOBAL_MAX_BLOCKS_DEF;
- 
--static struct kmem_cache *tcmu_cmd_cache;
-+static int tcmu_set_global_max_data_area(const char *str,
-+					 const struct kernel_param *kp)
-+{
-+	int ret, max_area_mb;
-+
-+	ret = kstrtoint(str, 10, &max_area_mb);
-+	if (ret)
-+		return -EINVAL;
-+
-+	if (max_area_mb <= 0) {
-+		pr_err("global_max_data_area must be larger than 0.\n");
-+		return -EINVAL;
-+	}
-+
-+	tcmu_global_max_blocks = TCMU_MBS_TO_BLOCKS(max_area_mb);
-+	if (atomic_read(&global_db_count) > tcmu_global_max_blocks)
-+		schedule_delayed_work(&tcmu_unmap_work, 0);
-+	else
-+		cancel_delayed_work_sync(&tcmu_unmap_work);
-+
-+	return 0;
-+}
-+
-+static int tcmu_get_global_max_data_area(char *buffer,
-+					 const struct kernel_param *kp)
-+{
-+	return sprintf(buffer, "%d", TCMU_BLOCKS_TO_MBS(tcmu_global_max_blocks));
-+}
-+
-+static const struct kernel_param_ops tcmu_global_max_data_area_op = {
-+	.set = tcmu_set_global_max_data_area,
-+	.get = tcmu_get_global_max_data_area,
-+};
-+
-+module_param_cb(global_max_data_area_mb, &tcmu_global_max_data_area_op, NULL,
-+		S_IWUSR | S_IRUGO);
-+MODULE_PARM_DESC(global_max_data_area_mb,
-+		 "Max MBs allowed to be allocated to all the tcmu device's "
-+		 "data areas.");
- 
- /* multicast group */
- enum tcmu_multicast_groups {
-@@ -363,7 +410,7 @@ static inline bool tcmu_get_empty_block(struct tcmu_dev *udev,
- 	page = radix_tree_lookup(&udev->data_blocks, dbi);
- 	if (!page) {
- 		if (atomic_add_return(1, &global_db_count) >
--					TCMU_GLOBAL_MAX_BLOCKS)
-+				      tcmu_global_max_blocks)
- 			schedule_delayed_work(&tcmu_unmap_work, 0);
- 
- 		/* try to get new page from the mm */
-@@ -705,8 +752,8 @@ static bool is_ring_space_avail(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
- 	/* try to check and get the data blocks as needed */
- 	space = spc_bitmap_free(udev->data_bitmap, udev->dbi_thresh);
- 	if ((space * DATA_BLOCK_SIZE) < data_needed) {
--		unsigned long blocks_left = DATA_BLOCK_BITS - udev->dbi_thresh +
--						space;
-+		unsigned long blocks_left +				(udev->max_blocks - udev->dbi_thresh) + space;
- 
- 		if (blocks_left < blocks_needed) {
- 			pr_debug("no data space: only %lu available, but ask for %zu\n",
-@@ -716,8 +763,8 @@ static bool is_ring_space_avail(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
- 		}
- 
- 		udev->dbi_thresh += blocks_needed;
--		if (udev->dbi_thresh > DATA_BLOCK_BITS)
--			udev->dbi_thresh = DATA_BLOCK_BITS;
-+		if (udev->dbi_thresh > udev->max_blocks)
-+			udev->dbi_thresh = udev->max_blocks;
- 	}
- 
- 	return tcmu_get_empty_blocks(udev, cmd);
-@@ -1072,7 +1119,7 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- 			 * reclaim blocks if needed.
- 			 */
- 			if (atomic_read(&global_db_count) >
--			    TCMU_GLOBAL_MAX_BLOCKS)
-+			    tcmu_global_max_blocks)
- 				schedule_delayed_work(&tcmu_unmap_work, 0);
- 		}
- 	}
-@@ -1179,6 +1226,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 	udev->cmd_time_out = TCMU_TIME_OUT;
- 	udev->qfull_time_out = -1;
- 
-+	udev->max_blocks = DATA_BLOCK_BITS_DEF;
- 	mutex_init(&udev->cmdr_lock);
- 
- 	INIT_LIST_HEAD(&udev->timedout_entry);
-@@ -1323,7 +1371,7 @@ static struct page *tcmu_try_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
- 
- 		/*
- 		 * Since this case is rare in page fault routine, here we
--		 * will allow the global_db_count >= TCMU_GLOBAL_MAX_BLOCKS
-+		 * will allow the global_db_count >= tcmu_global_max_blocks
- 		 * to reduce possible page fault call trace.
- 		 */
- 		atomic_inc(&global_db_count);
-@@ -1384,7 +1432,7 @@ static int tcmu_mmap(struct uio_info *info, struct vm_area_struct *vma)
- 	vma->vm_private_data = udev;
- 
- 	/* Ensure the mmap is exactly the right size */
--	if (vma_pages(vma) != (TCMU_RING_SIZE >> PAGE_SHIFT))
-+	if (vma_pages(vma) != (udev->ring_size >> PAGE_SHIFT))
- 		return -EINVAL;
- 
- 	return 0;
-@@ -1466,6 +1514,7 @@ static void tcmu_dev_kref_release(struct kref *kref)
- 	WARN_ON(!all_expired);
- 
- 	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
-+	kfree(udev->data_bitmap);
- 	mutex_unlock(&udev->cmdr_lock);
- 
- 	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
-@@ -1642,6 +1691,11 @@ static int tcmu_configure_device(struct se_device *dev)
- 
- 	info = &udev->uio_info;
- 
-+	udev->data_bitmap = kzalloc(BITS_TO_LONGS(udev->max_blocks) *
-+				    sizeof(unsigned long), GFP_KERNEL);
-+	if (!udev->data_bitmap)
-+		goto err_bitmap_alloc;
-+
- 	udev->mb_addr = vzalloc(CMDR_SIZE);
- 	if (!udev->mb_addr) {
- 		ret = -ENOMEM;
-@@ -1651,7 +1705,7 @@ static int tcmu_configure_device(struct se_device *dev)
- 	/* mailbox fits in first part of CMDR space */
- 	udev->cmdr_size = CMDR_SIZE - CMDR_OFF;
- 	udev->data_off = CMDR_SIZE;
--	udev->data_size = DATA_SIZE;
-+	udev->data_size = udev->max_blocks * DATA_BLOCK_SIZE;
- 	udev->dbi_thresh = 0; /* Default in Idle state */
- 
- 	/* Initialise the mailbox of the ring buffer */
-@@ -1669,7 +1723,7 @@ static int tcmu_configure_device(struct se_device *dev)
- 
- 	info->mem[0].name = "tcm-user command & data buffer";
- 	info->mem[0].addr = (phys_addr_t)(uintptr_t)udev->mb_addr;
--	info->mem[0].size = TCMU_RING_SIZE;
-+	info->mem[0].size = udev->ring_size = udev->data_size + CMDR_SIZE;
- 	info->mem[0].memtype = UIO_MEM_NONE;
- 
- 	info->irqcontrol = tcmu_irqcontrol;
-@@ -1722,6 +1776,9 @@ static int tcmu_configure_device(struct se_device *dev)
- 	vfree(udev->mb_addr);
- 	udev->mb_addr = NULL;
- err_vzalloc:
-+	kfree(udev->data_bitmap);
-+	udev->data_bitmap = NULL;
-+err_bitmap_alloc:
- 	kfree(info->name);
- 	info->name = NULL;
- 
-@@ -1762,7 +1819,7 @@ static void tcmu_destroy_device(struct se_device *dev)
- 
- enum {
- 	Opt_dev_config, Opt_dev_size, Opt_hw_block_size, Opt_hw_max_sectors,
--	Opt_nl_reply_supported, Opt_err,
-+	Opt_nl_reply_supported, Opt_max_data_area_mb, Opt_err,
- };
- 
- static match_table_t tokens = {
-@@ -1771,6 +1828,7 @@ enum {
- 	{Opt_hw_block_size, "hw_block_size=%u"},
- 	{Opt_hw_max_sectors, "hw_max_sectors=%u"},
- 	{Opt_nl_reply_supported, "nl_reply_supported=%d"},
-+	{Opt_max_data_area_mb, "max_data_area_mb=%u"},
- 	{Opt_err, NULL}
- };
- 
-@@ -1804,7 +1862,7 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
- 	struct tcmu_dev *udev = TCMU_DEV(dev);
- 	char *orig, *ptr, *opts, *arg_p;
- 	substring_t args[MAX_OPT_ARGS];
--	int ret = 0, token;
-+	int ret = 0, token, tmpval;
- 
- 	opts = kstrdup(page, GFP_KERNEL);
- 	if (!opts)
-@@ -1856,6 +1914,39 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
- 			if (ret < 0)
- 				pr_err("kstrtoint() failed for nl_reply_supported=\n");
- 			break;
-+		case Opt_max_data_area_mb:
-+			if (dev->export_count) {
-+				pr_err("Unable to set max_data_area_mb while exports exist\n");
-+				ret = -EINVAL;
-+				break;
-+			}
-+
-+			arg_p = match_strdup(&args[0]);
-+			if (!arg_p) {
-+				ret = -ENOMEM;
-+				break;
-+			}
-+			ret = kstrtoint(arg_p, 0, &tmpval);
-+			kfree(arg_p);
-+			if (ret < 0) {
-+				pr_err("kstrtoint() failed for max_data_area_mb=\n");
-+				break;
-+			}
-+
-+			if (tmpval <= 0) {
-+				pr_err("Invalid max_data_area %d\n", tmpval);
-+				ret = -EINVAL;
-+				break;
-+			}
-+
-+			udev->max_blocks = TCMU_MBS_TO_BLOCKS(tmpval);
-+			if (udev->max_blocks > tcmu_global_max_blocks) {
-+				pr_err("%d is too large. Adjusting max_data_area_mb to global limit of %u\n",
-+				       tmpval,
-+				       TCMU_BLOCKS_TO_MBS(tcmu_global_max_blocks));
-+				udev->max_blocks = tcmu_global_max_blocks;
-+			}
-+			break;
- 		default:
- 			break;
- 		}
-@@ -1875,7 +1966,9 @@ static ssize_t tcmu_show_configfs_dev_params(struct se_device *dev, char *b)
- 
- 	bl = sprintf(b + bl, "Config: %s ",
- 		     udev->dev_config[0] ? udev->dev_config : "NULL");
--	bl += sprintf(b + bl, "Size: %zu\n", udev->dev_size);
-+	bl += sprintf(b + bl, "Size: %zu ", udev->dev_size);
-+	bl += sprintf(b + bl, "MaxDataAreaMB: %u\n",
-+		      TCMU_BLOCKS_TO_MBS(udev->max_blocks));
- 
- 	return bl;
- }
-@@ -1960,6 +2053,17 @@ static ssize_t tcmu_qfull_time_out_store(struct config_item *item,
- }
- CONFIGFS_ATTR(tcmu_, qfull_time_out);
- 
-+static ssize_t tcmu_max_data_area_mb_show(struct config_item *item, char *page)
-+{
-+	struct se_dev_attrib *da = container_of(to_config_group(item),
-+						struct se_dev_attrib, da_group);
-+	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
-+
-+	return snprintf(page, PAGE_SIZE, "%u\n",
-+			TCMU_BLOCKS_TO_MBS(udev->max_blocks));
-+}
-+CONFIGFS_ATTR_RO(tcmu_, max_data_area_mb);
-+
- static ssize_t tcmu_dev_config_show(struct config_item *item, char *page)
- {
- 	struct se_dev_attrib *da = container_of(to_config_group(item),
-@@ -2106,6 +2210,7 @@ static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
- static struct configfs_attribute *tcmu_attrib_attrs[] = {
- 	&tcmu_attr_cmd_time_out,
- 	&tcmu_attr_qfull_time_out,
-+	&tcmu_attr_max_data_area_mb,
- 	&tcmu_attr_dev_config,
- 	&tcmu_attr_dev_size,
- 	&tcmu_attr_emulate_write_cache,
-@@ -2139,7 +2244,7 @@ static void find_free_blocks(void)
- 	loff_t off;
- 	u32 start, end, block, total_freed = 0;
- 
--	if (atomic_read(&global_db_count) <= TCMU_GLOBAL_MAX_BLOCKS)
-+	if (atomic_read(&global_db_count) <= tcmu_global_max_blocks)
- 		return;
- 
- 	mutex_lock(&root_udev_mutex);
-@@ -2187,7 +2292,7 @@ static void find_free_blocks(void)
- 	}
- 	mutex_unlock(&root_udev_mutex);
- 
--	if (atomic_read(&global_db_count) > TCMU_GLOBAL_MAX_BLOCKS)
-+	if (atomic_read(&global_db_count) > tcmu_global_max_blocks)
- 		schedule_delayed_work(&tcmu_unmap_work, msecs_to_jiffies(5000));
- }
- 
--- 
-1.8.3.1
+On X722 Iwarp NICs (i40iw) too, we are seeing a similar issue of SQ overflow being hit on
+isert for larger block sizes. 4.14-rc2 kernel.
 
+Eventually there is a timeout/conn-error on iser initiator and the connection is torn down.
+
+The aforementioned patches dont seem to be alleviating the SQ overflow issue?
+
+Initiator
+------------
+
+[17007.465524] scsi host11: iSCSI Initiator over iSER
+[17007.466295] iscsi: invalid can_queue of 55. can_queue must be a power of 2.
+[17007.466924] iscsi: Rounding can_queue to 32.
+[17007.471535] scsi 11:0:0:0: Direct-Access     LIO-ORG  ramdisk1_40G     4.0  PQ: 0 ANSI: 5
+[17007.471652] scsi 11:0:0:0: alua: supports implicit and explicit TPGS
+[17007.471656] scsi 11:0:0:0: alua: device naa.6001405ab790db5e8e94b0998ab4bf0b port group 0 rel port 1
+[17007.471782] sd 11:0:0:0: Attached scsi generic sg2 type 0
+[17007.472373] sd 11:0:0:0: [sdb] 83886080 512-byte logical blocks: (42.9 GB/40.0 GiB)
+[17007.472405] sd 11:0:0:0: [sdb] Write Protect is off
+[17007.472406] sd 11:0:0:0: [sdb] Mode Sense: 43 00 00 08
+[17007.472462] sd 11:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+[17007.473412] sd 11:0:0:0: [sdb] Attached SCSI disk
+[17007.478184] sd 11:0:0:0: alua: transition timeout set to 60 seconds
+[17007.478186] sd 11:0:0:0: alua: port group 00 state A non-preferred supports TOlUSNA
+[17031.269821]  sdb:
+[17033.359789] EXT4-fs (sdb1): mounted filesystem with ordered data mode. Opts: (null)
+[17049.056155]  connection2:0: ping timeout of 5 secs expired, recv timeout 5, last rx 4311705998, last ping 4311711232, now 4311716352
+[17049.057499]  connection2:0: detected conn error (1022)
+[17049.057558] modifyQP to CLOSING qp 3 next_iw_state 3
+[..]
+
+
+Target
+----------
+[....]
+[17066.397179] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397180] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ec020 failed to post RDMA res
+[17066.397183] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397183] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea1f8 failed to post RDMA res
+[17066.397184] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397184] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8e9bf0 failed to post RDMA res
+[17066.397187] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397188] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ecc30 failed to post RDMA res
+[17066.397192] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397192] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8f20a0 failed to post RDMA res
+[17066.397195] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397196] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea800 failed to post RDMA res
+[17066.397196] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397197] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ede48 failed to post RDMA res
+[17066.397200] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397200] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ec020 failed to post RDMA res
+[17066.397204] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397204] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea1f8 failed to post RDMA res
+[17066.397206] i40iw i40iw_process_aeq ae_id = 0x503 bool qp=1 qp_id = 3
+[17066.397207] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397207] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8e9bf0 failed to post RDMA res
+[17066.397211] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397211] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ecc30 failed to post RDMA res
+[17066.397215] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397215] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8f20a0 failed to post RDMA res
+[17066.397218] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397219] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea800 failed to post RDMA res
+[17066.397219] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397220] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ede48 failed to post RDMA res
+[17066.397232] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397233] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ec020 failed to post RDMA res
+[17066.397237] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397237] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea1f8 failed to post RDMA res
+[17066.397238] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397238] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8e9bf0 failed to post RDMA res
+[17066.397242] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397242] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ecc30 failed to post RDMA res
+[17066.397245] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
+[17066.397247] i40iw i40iw_process_aeq ae_id = 0x501 bool qp=1 qp_id = 3
+[17066.397247] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8f20a0 failed to post RDMA res
+[17066.397251] QP 3 flush_issued
+[17066.397252] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
+[17066.397252] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea800 failed to post RDMA res
+[17066.397253] Got unknown fabric queue status: -22
+[17066.397254] QP 3 flush_issued
+[17066.397254] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
+[17066.397254] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ede48 failed to post RDMA res
+[17066.397255] Got unknown fabric queue status: -22
+[17066.397258] QP 3 flush_issued
+[17066.397258] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
+[17066.397259] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ec020 failed to post RDMA res
+[17066.397259] Got unknown fabric queue status: -22
+[17066.397267] QP 3 flush_issued
+[17066.397267] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
+[17066.397268] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea1f8 failed to post RDMA res
+[17066.397268] Got unknown fabric queue status: -22
+[17066.397287] QP 3 flush_issued
+[17066.397287] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
+[17066.397288] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8e9bf0 failed to post RDMA res
+[17066.397288] Got unknown fabric queue status: -22
+[17066.397291] QP 3 flush_issued
+[17066.397292] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
+[17066.397292] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ecc30 failed to post RDMA res
+[17066.397292] Got unknown fabric queue status: -22
+[17066.397295] QP 3 flush_issued
+[17066.397296] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
+[17066.397296] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8f20a0 failed to post RDMA res
+[17066.397297] Got unknown fabric queue status: -22
+[17066.397307] QP 3 flush_issued
+[17066.397307] i40iw_post_send: qp 3 wr_opcode 8 ret_err -22
+[17066.397308] isert: isert_post_response: ib_post_send failed with -22
+[17066.397309] i40iw i40iw_qp_disconnect Call close API
+[....]
+
+Shiraz 
