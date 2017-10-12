@@ -1,69 +1,111 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Tue, 31 Oct 2017 18:03:19 +0000
-Subject: [PATCH 11/11] usb/gadget: Make it again possible to enable the legacy drivers without enabling USB_E
-Message-Id: <20171031180319.19258-12-bart.vanassche@wdc.com>
+From: Bhumika Goyal <bhumirks@gmail.com>
+Date: Thu, 12 Oct 2017 13:48:21 +0000
+Subject: [PATCH] target/iscsi: make config_item_type const
+Message-Id: <1507816101-16427-1-git-send-email-bhumirks@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: julia.lawall@lip6.fr, nab@linux-iscsi.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-Considerable time ago the legacy gadget menu was added inside the
-USB_ETH choice. I think this was a mistake and that the legacy
-gadget menu should have been added after "endchoice" instead of
-before. Hence this patch.
+This is a followup patch for:
+https://patchwork.kernel.org/patch/9999649/
 
-Fixes: commit 8443f2d2b778 ("usb: gadget: Gadget directory cleanup - group legacy gadgets")
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
-Cc: Felipe Balbi <balbi@ti.com>
-Cc: linux-usb@vger.kernel.org
+Make config_item_type structures const as they are only passed to the
+functions having the argument as const. Make the declaration const too.
+
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 ---
- drivers/usb/gadget/Kconfig        |  4 ++--
- drivers/usb/gadget/legacy/Kconfig | 10 ++++++++++
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ drivers/target/iscsi/iscsi_target_stat.c | 12 ++++++------
+ include/target/iscsi/iscsi_target_stat.h | 12 ++++++------
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-index 31cce7805eb2..0a19a76645ad 100644
---- a/drivers/usb/gadget/Kconfig
-+++ b/drivers/usb/gadget/Kconfig
-@@ -508,8 +508,8 @@ choice
- 	  controller, and the relevant drivers for each function declared
- 	  by the device.
+diff --git a/drivers/target/iscsi/iscsi_target_stat.c b/drivers/target/iscsi/iscsi_target_stat.c
+index 411cb26..df0a398 100644
+--- a/drivers/target/iscsi/iscsi_target_stat.c
++++ b/drivers/target/iscsi/iscsi_target_stat.c
+@@ -187,7 +187,7 @@ static ssize_t iscsi_stat_instance_version_show(struct config_item *item,
+ 	NULL,
+ };
  
--source "drivers/usb/gadget/legacy/Kconfig"
--
- endchoice
+-struct config_item_type iscsi_stat_instance_cit = {
++const struct config_item_type iscsi_stat_instance_cit = {
+ 	.ct_attrs		= iscsi_stat_instance_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -249,7 +249,7 @@ static ssize_t iscsi_stat_sess_err_format_errors_show(struct config_item *item,
+ 	NULL,
+ };
  
-+source "drivers/usb/gadget/legacy/Kconfig"
-+
- endif # USB_GADGET
-diff --git a/drivers/usb/gadget/legacy/Kconfig b/drivers/usb/gadget/legacy/Kconfig
-index a12fb459dbd9..9570bbeced4f 100644
---- a/drivers/usb/gadget/legacy/Kconfig
-+++ b/drivers/usb/gadget/legacy/Kconfig
-@@ -13,6 +13,14 @@
- # both kinds of controller can also support "USB On-the-Go" (CONFIG_USB_OTG).
- #
+-struct config_item_type iscsi_stat_sess_err_cit = {
++const struct config_item_type iscsi_stat_sess_err_cit = {
+ 	.ct_attrs		= iscsi_stat_sess_err_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -390,7 +390,7 @@ static ssize_t iscsi_stat_tgt_attr_fail_intr_addr_show(struct config_item *item,
+ 	NULL,
+ };
  
-+menuconfig USB_GADGET_LEGACY
-+	bool "Legacy USB Gadget Support"
-+	help
-+	   Legacy USB gadgets are USB gadgets that do not use the USB gadget
-+	   configfs interface.
-+
-+if USB_GADGET_LEGACY
-+
- config USB_ZERO
- 	tristate "Gadget Zero (DEVELOPMENT)"
- 	select USB_LIBCOMPOSITE
-@@ -490,3 +498,5 @@ config USB_G_WEBCAM
+-struct config_item_type iscsi_stat_tgt_attr_cit = {
++const struct config_item_type iscsi_stat_tgt_attr_cit = {
+ 	.ct_attrs		= iscsi_stat_tgt_attr_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -522,7 +522,7 @@ static ssize_t iscsi_stat_login_negotiate_fails_show(struct config_item *item,
+ 	NULL,
+ };
  
- 	  Say "y" to link the driver statically, or "m" to build a
- 	  dynamically linked module called "g_webcam".
-+
-+endif
+-struct config_item_type iscsi_stat_login_cit = {
++const struct config_item_type iscsi_stat_login_cit = {
+ 	.ct_attrs		= iscsi_stat_login_stats_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -579,7 +579,7 @@ static ssize_t iscsi_stat_logout_abnormal_logouts_show(struct config_item *item,
+ 	NULL,
+ };
+ 
+-struct config_item_type iscsi_stat_logout_cit = {
++const struct config_item_type iscsi_stat_logout_cit = {
+ 	.ct_attrs		= iscsi_stat_logout_stats_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -801,7 +801,7 @@ static ssize_t iscsi_stat_sess_conn_timeout_errors_show(
+ 	NULL,
+ };
+ 
+-struct config_item_type iscsi_stat_sess_cit = {
++const struct config_item_type iscsi_stat_sess_cit = {
+ 	.ct_attrs		= iscsi_stat_sess_stats_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+diff --git a/include/target/iscsi/iscsi_target_stat.h b/include/target/iscsi/iscsi_target_stat.h
+index c27dd47..36e9c9a 100644
+--- a/include/target/iscsi/iscsi_target_stat.h
++++ b/include/target/iscsi/iscsi_target_stat.h
+@@ -8,16 +8,16 @@
+ /*
+  * For struct iscsi_tiqn->tiqn_wwn default groups
+  */
+-extern struct config_item_type iscsi_stat_instance_cit;
+-extern struct config_item_type iscsi_stat_sess_err_cit;
+-extern struct config_item_type iscsi_stat_tgt_attr_cit;
+-extern struct config_item_type iscsi_stat_login_cit;
+-extern struct config_item_type iscsi_stat_logout_cit;
++extern const struct config_item_type iscsi_stat_instance_cit;
++extern const struct config_item_type iscsi_stat_sess_err_cit;
++extern const struct config_item_type iscsi_stat_tgt_attr_cit;
++extern const struct config_item_type iscsi_stat_login_cit;
++extern const struct config_item_type iscsi_stat_logout_cit;
+ 
+ /*
+  * For struct iscsi_session->se_sess default groups
+  */
+-extern struct config_item_type iscsi_stat_sess_cit;
++extern const struct config_item_type iscsi_stat_sess_cit;
+ 
+ /* iSCSI session error types */
+ #define ISCSI_SESS_ERR_UNKNOWN		0
 -- 
-2.14.2
+1.9.1
 
