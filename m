@@ -1,45 +1,172 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Thu, 26 Oct 2017 14:50:55 +0000
-Subject: Re: [PATCH] iscsi-target: Convert timers to use timer_setup()
-Message-Id: <CAGXu5jLSV4ddCr+-9SfNXG2jj5QbJjJwnLEAarz40qH8FDm6pw@mail.gmail.com>
+From: Bhumika Goyal <bhumirks@gmail.com>
+Date: Thu, 12 Oct 2017 09:11:20 +0000
+Subject: [PATCH] target: make config_item_type const
+Message-Id: <1507799480-25286-1-git-send-email-bhumirks@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171025100145.GA144703@beast> <CAHmME9pJRRhWg3=eorVkkSXhpsPgeCfRJFJp2i1-kdXr_E0PCA@mail.gmail.com>
- <CAGXu5jKNDM8NjgtgBp-XapHEiaY_ryk3pBXdaryux6spX++zmQ@mail.gmail.com>
- <1508943795.4165.18.camel@wdc.com> <CAGXu5j+xk+tHh5z9Hvtg6kGSuZQcK=QYHpcZf_akMnKjP69CKA@mail.gmail.com>
- <1509026649.13829.0.camel@wdc.com>
-In-Reply-To: <1509026649.13829.0.camel@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <Bart.VanAssche@wdc.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jiangyilism@gmail.com" <jiangyilism@gmail.com>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "Jason@zx2c4.com" <Jason@zx2c4.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "varun@chelsio.com" <varun@chelsio.com>
+To: julia.lawall@lip6.fr, nab@linux-iscsi.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-On Thu, Oct 26, 2017 at 4:04 PM, Bart Van Assche <Bart.VanAssche@wdc.com> wrote:
-> On Thu, 2017-10-26 at 10:24 +0200, Kees Cook wrote:
->> On Wed, Oct 25, 2017 at 5:03 PM, Bart Van Assche <Bart.VanAssche@wdc.com> wrote:
->> > On Wed, 2017-10-25 at 16:10 +0200, Kees Cook wrote:
->> > > However, maintainers: sorry to send this one -- it can't be merged
->> > > yet, this uses timer_setup_on_stack() which is only in -next right
->> > > now. If it looks okay, though, I can carry this in the timer tree.
->> >
->> > Hello Kees,
->> >
->> > Can you have a look at the following patch and queue it before your
->> > patch if you think this would be useful (this patch has been tested):
->> > "target/iscsi: Simplify timer manipulation code"
->> > (https://www.spinics.net/lists/target-devel/msg15385.html).
->>
->> This looks good, yeah. Can you resend it with me CCed? It doesn't look
->> like it was CCed to lkml, so it's not easy to for me to add it to me
->> tree.
->
-> OK, I will resend that patch as a reply to this e-mail. BTW, I just finished
-> retesting that patch on top of v4.14-rc6.
+This is a followup patch for: https://lkml.org/lkml/2017/10/11/375 and
+https://patchwork.kernel.org/patch/9999649/
 
-Thanks for the testing!
+Make these structures const as they are either passed to the functions
+having the argument as const or stored as a reference in the "ci_type"
+const field of a config_item structure.
 
--Kees
+Done using Coccinelle.
 
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+---
+ drivers/target/target_core_configfs.c | 14 +++++++-------
+ drivers/target/target_core_stat.c     | 16 ++++++++--------
+ 2 files changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 7e87d95..bd87cc2 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -307,7 +307,7 @@ static void target_core_deregister_fabric(
+ /*
+  * Provides Fabrics Groups and Item Attributes for /sys/kernel/config/target/
+  */
+-static struct config_item_type target_core_fabrics_item = {
++static const struct config_item_type target_core_fabrics_item = {
+ 	.ct_group_ops	= &target_core_fabric_group_ops,
+ 	.ct_attrs	= target_core_fabric_item_attrs,
+ 	.ct_owner	= THIS_MODULE,
+@@ -2376,7 +2376,7 @@ static void target_core_alua_lu_gp_release(struct config_item *item)
+ 	.release		= target_core_alua_lu_gp_release,
+ };
+ 
+-static struct config_item_type target_core_alua_lu_gp_cit = {
++static const struct config_item_type target_core_alua_lu_gp_cit = {
+ 	.ct_item_ops		= &target_core_alua_lu_gp_ops,
+ 	.ct_attrs		= target_core_alua_lu_gp_attrs,
+ 	.ct_owner		= THIS_MODULE,
+@@ -2434,7 +2434,7 @@ static void target_core_alua_drop_lu_gp(
+ 	.drop_item		= &target_core_alua_drop_lu_gp,
+ };
+ 
+-static struct config_item_type target_core_alua_lu_gps_cit = {
++static const struct config_item_type target_core_alua_lu_gps_cit = {
+ 	.ct_item_ops		= NULL,
+ 	.ct_group_ops		= &target_core_alua_lu_gps_group_ops,
+ 	.ct_owner		= THIS_MODULE,
+@@ -2813,7 +2813,7 @@ static void target_core_alua_tg_pt_gp_release(struct config_item *item)
+ 	.release		= target_core_alua_tg_pt_gp_release,
+ };
+ 
+-static struct config_item_type target_core_alua_tg_pt_gp_cit = {
++static const struct config_item_type target_core_alua_tg_pt_gp_cit = {
+ 	.ct_item_ops		= &target_core_alua_tg_pt_gp_ops,
+ 	.ct_attrs		= target_core_alua_tg_pt_gp_attrs,
+ 	.ct_owner		= THIS_MODULE,
+@@ -2884,7 +2884,7 @@ static void target_core_alua_drop_tg_pt_gp(
+  * core/alua/lu_gps and core/alua/tg_pt_gps that are attached to
+  * target_core_alua_cit in target_core_init_configfs() below.
+  */
+-static struct config_item_type target_core_alua_cit = {
++static const struct config_item_type target_core_alua_cit = {
+ 	.ct_item_ops		= NULL,
+ 	.ct_attrs		= NULL,
+ 	.ct_owner		= THIS_MODULE,
+@@ -3105,7 +3105,7 @@ static void target_core_hba_release(struct config_item *item)
+ 	.release		= target_core_hba_release,
+ };
+ 
+-static struct config_item_type target_core_hba_cit = {
++static const struct config_item_type target_core_hba_cit = {
+ 	.ct_item_ops		= &target_core_hba_item_ops,
+ 	.ct_group_ops		= &target_core_hba_group_ops,
+ 	.ct_attrs		= target_core_hba_attrs,
+@@ -3188,7 +3188,7 @@ static void target_core_call_delhbafromtarget(
+ 	.drop_item	= target_core_call_delhbafromtarget,
+ };
+ 
+-static struct config_item_type target_core_cit = {
++static const struct config_item_type target_core_cit = {
+ 	.ct_item_ops	= NULL,
+ 	.ct_group_ops	= &target_core_group_ops,
+ 	.ct_attrs	= NULL,
+diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
+index 8038255..f0db91e 100644
+--- a/drivers/target/target_core_stat.c
++++ b/drivers/target/target_core_stat.c
+@@ -96,7 +96,7 @@ static ssize_t target_stat_ports_show(struct config_item *item, char *page)
+ 	NULL,
+ };
+ 
+-static struct config_item_type target_stat_scsi_dev_cit = {
++static const struct config_item_type target_stat_scsi_dev_cit = {
+ 	.ct_attrs		= target_stat_scsi_dev_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -193,7 +193,7 @@ static ssize_t target_stat_tgt_aborts_no_task_show(struct config_item *item,
+ 	NULL,
+ };
+ 
+-static struct config_item_type target_stat_scsi_tgt_dev_cit = {
++static const struct config_item_type target_stat_scsi_tgt_dev_cit = {
+ 	.ct_attrs		= target_stat_scsi_tgt_dev_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -414,7 +414,7 @@ static ssize_t target_stat_lu_creation_time_show(struct config_item *item,
+ 	NULL,
+ };
+ 
+-static struct config_item_type target_stat_scsi_lu_cit = {
++static const struct config_item_type target_stat_scsi_lu_cit = {
+ 	.ct_attrs		= target_stat_scsi_lu_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -540,7 +540,7 @@ static ssize_t target_stat_port_busy_count_show(struct config_item *item,
+ 	NULL,
+ };
+ 
+-static struct config_item_type target_stat_scsi_port_cit = {
++static const struct config_item_type target_stat_scsi_port_cit = {
+ 	.ct_attrs		= target_stat_scsi_port_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -724,7 +724,7 @@ static ssize_t target_stat_tgt_port_hs_in_cmds_show(struct config_item *item,
+ 	NULL,
+ };
+ 
+-static struct config_item_type target_stat_scsi_tgt_port_cit = {
++static const struct config_item_type target_stat_scsi_tgt_port_cit = {
+ 	.ct_attrs		= target_stat_scsi_tgt_port_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -844,7 +844,7 @@ static ssize_t target_stat_transport_proto_id_show(struct config_item *item,
+ 	NULL,
+ };
+ 
+-static struct config_item_type target_stat_scsi_transport_cit = {
++static const struct config_item_type target_stat_scsi_transport_cit = {
+ 	.ct_attrs		= target_stat_scsi_transport_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -1206,7 +1206,7 @@ static ssize_t target_stat_auth_row_status_show(struct config_item *item,
+ 	NULL,
+ };
+ 
+-static struct config_item_type target_stat_scsi_auth_intr_cit = {
++static const struct config_item_type target_stat_scsi_auth_intr_cit = {
+ 	.ct_attrs		= target_stat_scsi_auth_intr_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
+@@ -1378,7 +1378,7 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
+ 	NULL,
+ };
+ 
+-static struct config_item_type target_stat_scsi_att_intr_port_cit = {
++static const struct config_item_type target_stat_scsi_att_intr_port_cit = {
+ 	.ct_attrs		= target_stat_scsi_ath_intr_port_attrs,
+ 	.ct_owner		= THIS_MODULE,
+ };
 -- 
-Kees Cook
-Pixel Security
+1.9.1
+
