@@ -1,298 +1,98 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 08:05:46 +0000
-Subject: Re: [PATCH 16/17] tcmu: make ring buffer timer configurable
-Message-Id: <59E70B5A.30705@redhat.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------060703050909010403030403"
+From: David Disseldorp <ddiss@suse.de>
+Date: Sat, 14 Oct 2017 21:03:52 +0000
+Subject: [PATCH 2/2] target: add ALUA state file path truncation detection
+Message-Id: <20171014210352.8713-2-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <1508310852-15366-17-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1508310852-15366-17-git-send-email-mchristi@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060703050909010403030403
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+A sufficiently long Unit Serial string, dbroot path, and/or ALUA target
+portal group name may result in truncation of the ALUA state file path
+prior to usage. Add checks for snprintf() truncation.
 
-On 10/18/2017 02:14 AM, Mike Christie wrote:
-> This adds a timer, qfull_time_out, that controls how long a
-> device will wait for ring buffer space to open before
-> failing the commands in the queue. It is useful to separate
-> this timer from the cmd_time_out and default 30 sec one,
-> because for HA setups cmd_time_out may be disbled and 30
-> seconds is too long to wait when some OSs like ESX will
-> timeout commands after as little as 8 - 15 seconds.
-> 
-
-Sent a bad patch. This version of the patch had a bug when
-cmd_time_out=0 and qfull_time_out > 0. I have attached a version 2 which
-fixes this.
-
-
-
-
-
---------------060703050909010403030403
-Content-Type: text/x-patch;
- name="0001-tcmu-make-ring-buffer-timer-configurable-v2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename*0="0001-tcmu-make-ring-buffer-timer-configurable-v2.patch"
-
-From 8830f5f390181125e1e614f19e0c48524da31bb9 Mon Sep 17 00:00:00 2001
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 03:02:22 -0500
-Subject: [PATCH] tcmu: make ring buffer timer configurable v2
-
-This adds a timer, qfull_time_out, that controls how long a
-device will wait for ring buffer space to open before
-failing the commands in the queue. It is useful to separate
-this timer from the cmd_time_out and default 30 sec one,
-because for HA setups cmd_time_out may be disbled and 30
-seconds is too long to wait when some OSs like ESX will
-timeout commands after as little as 8 - 15 seconds.
-
-v2:
-Fix bug where if cmd_time_out=0 and qfull_time_out > 0
-then inflight commands might timeout after qfull_time_out secs.
+Fixes: fdddf932269a ("target: use new "dbroot" target attribute")
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
- drivers/target/target_core_user.c | 104 +++++++++++++++++++++++++++++---------
- 1 file changed, 81 insertions(+), 23 deletions(-)
+ drivers/target/target_core_alua.c | 37 ++++++++++++++++++++++++++-----------
+ 1 file changed, 26 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 09d0b5b..f9f0677 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -142,8 +142,12 @@ struct tcmu_dev {
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index 928127642574..2351fe60c0e7 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -921,14 +921,23 @@ static int core_alua_update_tpg_primary_metadata(
+ 	char path[ALUA_METADATA_PATH_LEN];
+ 	int len, rc;
  
- 	struct idr commands;
- 
--	struct timer_list timeout;
-+	struct timer_list cmd_timer;
- 	unsigned int cmd_time_out;
++	memset(path, 0, ALUA_METADATA_PATH_LEN);
 +
-+	struct timer_list qfull_timer;
-+	unsigned int qfull_time_out;
-+
- 	struct list_head timedout_entry;
- 
- 	spinlock_t nl_cmd_lock;
-@@ -766,18 +770,14 @@ static inline size_t tcmu_cmd_get_cmd_size(struct tcmu_cmd *tcmu_cmd,
- 	return command_size;
- }
- 
--static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
-+static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
-+				struct timer_list *timer)
- {
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
--	unsigned long tmo = udev->cmd_time_out;
- 	int cmd_id;
- 
--	/*
--	 * If it was on the cmdr queue waiting we do not reset the timer
--	 * for requeues and when it is finally sent to userspace.
--	 */
- 	if (tcmu_cmd->cmd_id)
--		return 0;
-+		goto setup_timer;
- 
- 	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 1, USHRT_MAX, GFP_NOWAIT);
- 	if (cmd_id < 0) {
-@@ -786,14 +786,15 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
- 	}
- 	tcmu_cmd->cmd_id = cmd_id;
- 
--	if (!tmo)
--		tmo = TCMU_TIME_OUT;
--
- 	pr_debug("allocated cmd %u for dev %s tmo %lu\n", tcmu_cmd->cmd_id,
- 		 udev->name, tmo / MSEC_PER_SEC);
- 
-+setup_timer:
-+	if (!tmo)
-+		return 0;
-+
- 	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
--	mod_timer(&udev->timeout, tcmu_cmd->deadline);
-+	mod_timer(timer, tcmu_cmd->deadline);
- 	return 0;
- }
- 
-@@ -802,7 +803,8 @@ static int add_to_cmdr_queue(struct tcmu_cmd *tcmu_cmd)
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
- 	int ret;
- 
--	ret = tcmu_setup_cmd_timer(tcmu_cmd);
-+	ret = tcmu_setup_cmd_timer(tcmu_cmd, udev->qfull_time_out,
-+				   &udev->qfull_timer);
- 	if (ret)
- 		return ret;
- 
-@@ -938,7 +940,8 @@ static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
- 	}
- 	entry->req.iov_bidi_cnt = iov_cnt;
- 
--	ret = tcmu_setup_cmd_timer(tcmu_cmd);
-+	ret = tcmu_setup_cmd_timer(tcmu_cmd, udev->cmd_time_out,
-+				   &udev->cmd_timer);
- 	if (ret) {
- 		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
- 		*scsi_err = TCM_OUT_OF_RESOURCES;
-@@ -971,6 +974,11 @@ static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
- 	return 0;
- 
- queue:
-+	if (!udev->qfull_time_out) {
-+		*scsi_err = TCM_OUT_OF_RESOURCES;
-+		return -1;
++	len = snprintf(path, ALUA_METADATA_PATH_LEN,
++			"%s/alua/tpgs_%s/%s", db_root, &wwn->unit_serial[0],
++			config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
++	if (len >= ALUA_METADATA_PATH_LEN) {
++		pr_err("WWN value for struct se_device does not fit"
++			" into path buffer\n");
++		return -EMSGSIZE;
 +	}
 +
- 	if (add_to_cmdr_queue(tcmu_cmd)) {
- 		*scsi_err = TCM_OUT_OF_RESOURCES;
- 		return -1;
-@@ -1085,7 +1093,7 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+ 	md_buf = kzalloc(ALUA_MD_BUF_LEN, GFP_KERNEL);
+ 	if (!md_buf) {
+ 		pr_err("Unable to allocate buf for ALUA metadata\n");
+ 		return -ENOMEM;
  	}
  
- 	if (mb->cmd_tail == mb->cmd_head && list_empty(&udev->cmdr_queue))
--		del_timer(&udev->timeout); /* no more pending or waiting cmds */
-+		del_timer(&udev->cmd_timer); /* no more pending or waiting cmds */
- 
- 	return handled;
- }
-@@ -1105,13 +1113,15 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
- 		return 0;
- 
- 	is_running = list_empty(&cmd->cmdr_queue_entry);
--	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
--		 id, udev->name, is_running ? "inflight" : "queued");
+-	memset(path, 0, ALUA_METADATA_PATH_LEN);
 -
--	se_cmd = cmd->se_cmd;
--	cmd->se_cmd = NULL;
+ 	len = snprintf(md_buf, ALUA_MD_BUF_LEN,
+ 			"tg_pt_gp_id=%hu\n"
+ 			"alua_access_state=0x%02x\n"
+@@ -937,10 +946,6 @@ static int core_alua_update_tpg_primary_metadata(
+ 			tg_pt_gp->tg_pt_gp_alua_access_state,
+ 			tg_pt_gp->tg_pt_gp_alua_access_status);
  
- 	if (is_running) {
-+		/*
-+		 * If cmd_time_out is disabled but qfull is set deadline
-+		 * will only reflect the qfull timeout. Ignore it.
-+		 */
-+		if (!udev->cmd_time_out)
-+			return 0;
-+
- 		set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
- 		/*
- 		 * target_complete_cmd will translate this to LUN COMM FAILURE
-@@ -1131,6 +1141,12 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
- 		tcmu_free_cmd(cmd);
- 		scsi_status = SAM_STAT_TASK_SET_FULL;
- 	}
-+
-+	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
-+		 id, udev->name, is_running ? "inflight" : "queued");
-+
-+	se_cmd = cmd->se_cmd;
-+	cmd->se_cmd = NULL;
- 	target_complete_cmd(se_cmd, scsi_status);
- 	return 0;
- }
-@@ -1139,7 +1155,7 @@ static void tcmu_device_timedout(unsigned long data)
- {
- 	struct tcmu_dev *udev = (struct tcmu_dev *)data;
+-	snprintf(path, ALUA_METADATA_PATH_LEN,
+-		"%s/alua/tpgs_%s/%s", db_root, &wwn->unit_serial[0],
+-		config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
+-
+ 	rc = core_alua_write_tpg_metadata(path, md_buf, len);
+ 	kfree(md_buf);
+ 	return rc;
+@@ -1231,18 +1236,28 @@ static int core_alua_update_tpg_secondary_metadata(struct se_lun *lun)
+ 		snprintf(wwn+len, ALUA_SECONDARY_METADATA_WWN_LEN-len, "+%hu",
+ 				se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg));
  
--	pr_debug("%s cmd timeout has expired\n", udev->name);
-+	pr_debug("%s cmd/qfull timeout has expired\n", udev->name);
- 
- 	spin_lock(&timed_out_udevs_lock);
- 	if (list_empty(&udev->timedout_entry))
-@@ -1186,6 +1202,8 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 
- 	udev->hba = hba;
- 	udev->cmd_time_out = TCMU_TIME_OUT;
-+	/* for backwards compat use the cmd_time_out */
-+	udev->qfull_time_out = TCMU_TIME_OUT;
- 
- 	mutex_init(&udev->cmdr_lock);
- 
-@@ -1194,7 +1212,10 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 	INIT_LIST_HEAD(&udev->waiter);
- 	idr_init(&udev->commands);
- 
--	setup_timer(&udev->timeout, tcmu_device_timedout,
-+	setup_timer(&udev->qfull_timer, tcmu_device_timedout,
-+		(unsigned long)udev);
-+
-+	setup_timer(&udev->cmd_timer, tcmu_device_timedout,
- 		(unsigned long)udev);
- 
- 	init_waitqueue_head(&udev->nl_cmd_wq);
-@@ -1250,6 +1271,8 @@ static bool run_cmdr_queue(struct tcmu_dev *udev)
- 			goto done;
- 		}
- 	}
-+	if (list_empty(&udev->cmdr_queue))
-+		del_timer(&udev->qfull_timer);
- done:
- 	return drained;
- }
-@@ -1777,7 +1800,8 @@ static void tcmu_destroy_device(struct se_device *dev)
- {
- 	struct tcmu_dev *udev = TCMU_DEV(dev);
- 
--	del_timer_sync(&udev->timeout);
-+	del_timer_sync(&udev->cmd_timer);
-+	del_timer_sync(&udev->qfull_timer);
- 
- 	mutex_lock(&root_udev_mutex);
- 	list_del(&udev->node);
-@@ -1962,6 +1986,39 @@ static ssize_t tcmu_cmd_time_out_store(struct config_item *item, const char *pag
- }
- CONFIGFS_ATTR(tcmu_, cmd_time_out);
- 
-+static ssize_t tcmu_qfull_time_out_show(struct config_item *item, char *page)
-+{
-+	struct se_dev_attrib *da = container_of(to_config_group(item),
-+						struct se_dev_attrib, da_group);
-+	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
-+
-+	return snprintf(page, PAGE_SIZE, "%lu\n",
-+			udev->qfull_time_out / MSEC_PER_SEC);
-+}
-+
-+static ssize_t tcmu_qfull_time_out_store(struct config_item *item,
-+					 const char *page, size_t count)
-+{
-+	struct se_dev_attrib *da = container_of(to_config_group(item),
-+					struct se_dev_attrib, da_group);
-+	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
-+	s32 val;
-+	int ret;
-+
-+	ret = kstrtos32(page, 0, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (val >= 0) {
-+		udev->qfull_time_out = val * MSEC_PER_SEC;
-+	} else {
-+		printk(KERN_ERR "Invalid qfull timeout value %d\n", val);
-+		return -EINVAL;
++	len = snprintf(path, ALUA_METADATA_PATH_LEN, "%s/alua/%s/%s/lun_%llu",
++			db_root, se_tpg->se_tpg_tfo->get_fabric_name(), wwn,
++			lun->unpacked_lun);
++	if (len >= ALUA_METADATA_PATH_LEN) {
++		pr_err("WWN value for struct se_device does not fit"
++			" into path buffer\n");
++		rc = -EMSGSIZE;
++		goto out_free;
 +	}
-+	return count;
-+}
-+CONFIGFS_ATTR(tcmu_, qfull_time_out);
 +
- static ssize_t tcmu_dev_config_show(struct config_item *item, char *page)
- {
- 	struct se_dev_attrib *da = container_of(to_config_group(item),
-@@ -2107,6 +2164,7 @@ static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
+ 	len = snprintf(md_buf, ALUA_MD_BUF_LEN, "alua_tg_pt_offline=%d\n"
+ 			"alua_tg_pt_status=0x%02x\n",
+ 			atomic_read(&lun->lun_tg_pt_secondary_offline),
+ 			lun->lun_tg_pt_secondary_stat);
+-
+-	snprintf(path, ALUA_METADATA_PATH_LEN, "%s/alua/%s/%s/lun_%llu",
+-			db_root, se_tpg->se_tpg_tfo->get_fabric_name(), wwn,
+-			lun->unpacked_lun);
++	if (len >= ALUA_MD_BUF_LEN) {
++		rc = -EMSGSIZE;
++		goto out_free;
++	}
  
- static struct configfs_attribute *tcmu_attrib_attrs[] = {
- 	&tcmu_attr_cmd_time_out,
-+	&tcmu_attr_qfull_time_out,
- 	&tcmu_attr_dev_config,
- 	&tcmu_attr_dev_size,
- 	&tcmu_attr_emulate_write_cache,
+ 	rc = core_alua_write_tpg_metadata(path, md_buf, len);
++out_free:
+ 	kfree(md_buf);
+-
+ out_unlock:
+ 	mutex_unlock(&lun->lun_tg_pt_md_mutex);
+ 	return rc;
 -- 
-1.8.3.1
+2.13.6
 
-
---------------060703050909010403030403--
