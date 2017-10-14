@@ -1,71 +1,49 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 25 Oct 2017 16:47:21 +0000
-Subject: [PATCH 11/20] tcmu: drop is_in_waiter_list
-Message-Id: <1508950050-10120-12-git-send-email-mchristi@redhat.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Sat, 14 Oct 2017 21:03:51 +0000
+Subject: [PATCH 1/2] target: fix PR state file path truncation detection
+Message-Id: <20171014210352.8713-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-No need for the wrapper.
+If an LIO backstore is configured with a sufficiently long Unit Serial
+string, alongside a similarly long dbroot path, then a truncated
+Persistent Reservation APTPL state file path will be used. This
+truncation can unintentionally lead to two LUs with differing serial
+numbers sharing PR state file.
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+Fixes: fdddf932269a ("target: use new "dbroot" target attribute")
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
- drivers/target/target_core_user.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/target/target_core_pr.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 5fe0f31..5c4029c 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -343,11 +343,6 @@ static struct genl_family tcmu_genl_family __ro_after_init = {
- #define tcmu_cmd_set_dbi(cmd, index) ((cmd)->dbi[(cmd)->dbi_cur++] = (index))
- #define tcmu_cmd_get_dbi(cmd) ((cmd)->dbi[(cmd)->dbi_cur++])
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index dd2cd8048582..61e6eed9cb86 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -1976,15 +1976,16 @@ static int __core_scsi3_write_aptpl_to_file(
+ 	int ret;
+ 	loff_t pos = 0;
  
--static inline bool is_in_waiter_list(struct tcmu_dev *udev)
--{
--	return !!udev->waiting_blocks;
--}
--
- static void tcmu_cmd_free_data(struct tcmu_cmd *tcmu_cmd, uint32_t len)
- {
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
-@@ -844,7 +839,6 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
+-	memset(path, 0, 512);
++	memset(path, 0, sizeof(path));
  
- 	while (!is_ring_space_avail(udev, tcmu_cmd, command_size, data_length)) {
- 		int ret;
--		bool is_waiting_blocks = is_in_waiter_list(udev);
- 		DEFINE_WAIT(__wait);
+-	if (strlen(&wwn->unit_serial[0]) >= 512) {
++	ret = snprintf(path, sizeof(path), "%s/pr/aptpl_%s",
++			db_root, &wwn->unit_serial[0]);
++	if (ret >= sizeof(path)) {
+ 		pr_err("WWN value for struct se_device does not fit"
+ 			" into path buffer\n");
+ 		return -EMSGSIZE;
+ 	}
  
- 		prepare_to_wait(&udev->wait_cmdr, &__wait, TASK_INTERRUPTIBLE);
-@@ -854,7 +848,7 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
- 		 * Try to insert the current udev to waiter list and
- 		 * then wake up the unmap thread
- 		 */
--		if (is_waiting_blocks) {
-+		if (udev->waiting_blocks) {
- 			spin_lock(&root_udev_waiter_lock);
- 			if (list_empty(&udev->waiter))
- 				list_add_tail(&udev->waiter, &root_udev_waiter);
-@@ -1184,7 +1178,7 @@ static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
- 	 * make sure that the other waiters in list be fed ahead
- 	 * of it.
- 	 */
--	if (is_in_waiter_list(tcmu_dev)) {
-+	if (tcmu_dev->waiting_blocks) {
- 		wake_up(&unmap_wait);
- 	} else {
- 		tcmu_handle_completions(tcmu_dev);
-@@ -2050,7 +2044,7 @@ static uint32_t find_free_blocks(void)
- 		tcmu_handle_completions(udev);
- 
- 		/* Skip the udevs waiting the global pool or in idle */
--		if (is_in_waiter_list(udev) || !udev->dbi_thresh) {
-+		if (udev->waiting_blocks || !udev->dbi_thresh) {
- 			mutex_unlock(&udev->cmdr_lock);
- 			continue;
- 		}
+-	snprintf(path, 512, "%s/pr/aptpl_%s", db_root, &wwn->unit_serial[0]);
+ 	file = filp_open(path, flags, 0600);
+ 	if (IS_ERR(file)) {
+ 		pr_err("filp_open(%s) for APTPL metadata"
 -- 
-2.7.2
+2.13.6
 
