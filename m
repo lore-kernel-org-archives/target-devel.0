@@ -1,127 +1,59 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Tue, 31 Oct 2017 18:03:16 +0000
-Subject: [PATCH 08/11] target/iscsi: Modify iscsit_do_crypto_hash_buf() prototype
-Message-Id: <20171031180319.19258-9-bart.vanassche@wdc.com>
+From: <m2k6n9sd9t.fsf@seki.fr>
+Date: Sat, 14 Oct 2017 00:10:12 +0000
+Subject: 
+Message-Id: <150793981282.32758.13274610757347069849@copel.net>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Change the type of the last two arguments from u8 * into const void *
-and void * respectively such that the u8 * casts can be left out
-from the callers. This patch does not change any functionality.
-
-Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Mike Christie <mchristi@redhat.com>
----
- drivers/target/iscsi/iscsi_target.c | 41 +++++++++++++++----------------------
- 1 file changed, 17 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 37bc8a37401d..91fbada7cdc2 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -500,7 +500,7 @@ void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
- EXPORT_SYMBOL(iscsit_aborted_task);
- 
- static void iscsit_do_crypto_hash_buf(struct ahash_request *, const void *,
--				      u32, u32, u8 *, u8 *);
-+				      u32, u32, const void *, void *);
- static void iscsit_tx_thread_wait_for_tcp(struct iscsi_conn *);
- 
- static int
-@@ -521,7 +521,7 @@ iscsit_xmit_nondatain_pdu(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 
- 		iscsit_do_crypto_hash_buf(conn->conn_tx_hash, hdr,
- 					  ISCSI_HDR_LEN, 0, NULL,
--					  (u8 *)header_digest);
-+					  header_digest);
- 
- 		iov[0].iov_len += ISCSI_CRC_LEN;
- 		tx_size += ISCSI_CRC_LEN;
-@@ -548,9 +548,8 @@ iscsit_xmit_nondatain_pdu(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 		if (conn->conn_ops->DataDigest) {
- 			iscsit_do_crypto_hash_buf(conn->conn_tx_hash,
- 						  data_buf, data_buf_len,
--						  padding,
--						  (u8 *)&cmd->pad_bytes,
--						  (u8 *)&cmd->data_crc);
-+						  padding, &cmd->pad_bytes,
-+						  &cmd->data_crc);
- 
- 			iov[niov].iov_base = &cmd->data_crc;
- 			iov[niov++].iov_len = ISCSI_CRC_LEN;
-@@ -595,7 +594,7 @@ iscsit_xmit_datain_pdu(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 
- 		iscsit_do_crypto_hash_buf(conn->conn_tx_hash, cmd->pdu,
- 					  ISCSI_HDR_LEN, 0, NULL,
--					  (u8 *)header_digest);
-+					  header_digest);
- 
- 		iov[0].iov_len += ISCSI_CRC_LEN;
- 		tx_size += ISCSI_CRC_LEN;
-@@ -1408,13 +1407,9 @@ static u32 iscsit_do_crypto_hash_sg(
- 	return data_crc;
- }
- 
--static void iscsit_do_crypto_hash_buf(
--	struct ahash_request *hash,
--	const void *buf,
--	u32 payload_length,
--	u32 padding,
--	u8 *pad_bytes,
--	u8 *data_crc)
-+static void iscsit_do_crypto_hash_buf(struct ahash_request *hash,
-+	const void *buf, u32 payload_length, u32 padding,
-+	const void *pad_bytes, void *data_crc)
- {
- 	struct scatterlist sg[2];
- 
-@@ -1876,10 +1871,9 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 		}
- 
- 		if (conn->conn_ops->DataDigest) {
--			iscsit_do_crypto_hash_buf(conn->conn_rx_hash,
--					ping_data, payload_length,
--					padding, cmd->pad_bytes,
--					(u8 *)&data_crc);
-+			iscsit_do_crypto_hash_buf(conn->conn_rx_hash, ping_data,
-+						  payload_length, padding,
-+						  cmd->pad_bytes, &data_crc);
- 
- 			if (checksum != data_crc) {
- 				pr_err("Ping data CRC32C DataDigest"
-@@ -2285,10 +2279,9 @@ iscsit_handle_text_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 			goto reject;
- 
- 		if (conn->conn_ops->DataDigest) {
--			iscsit_do_crypto_hash_buf(conn->conn_rx_hash,
--					text_in, payload_length,
--					padding, (u8 *)&pad_bytes,
--					(u8 *)&data_crc);
-+			iscsit_do_crypto_hash_buf(conn->conn_rx_hash, text_in,
-+						  payload_length, padding,
-+						  &pad_bytes, &data_crc);
- 
- 			if (checksum != data_crc) {
- 				pr_err("Text data CRC32C DataDigest"
-@@ -3976,9 +3969,9 @@ static void iscsit_get_rx_pdu(struct iscsi_conn *conn)
- 				return;
- 			}
- 
--			iscsit_do_crypto_hash_buf(conn->conn_rx_hash,
--					buffer, ISCSI_HDR_LEN,
--					0, NULL, (u8 *)&checksum);
-+			iscsit_do_crypto_hash_buf(conn->conn_rx_hash, buffer,
-+						  ISCSI_HDR_LEN, 0, NULL,
-+						  &checksum);
- 
- 			if (digest != checksum) {
- 				pr_err("HeaderDigest CRC32C failed,"
--- 
-2.14.2
-
+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
+AAA
