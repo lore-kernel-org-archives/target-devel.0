@@ -1,52 +1,89 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Tue, 31 Oct 2017 18:03:08 +0000
-Subject: [PATCH 00/11] SCSI target patches for kernel v4.15
-Message-Id: <20171031180319.19258-1-bart.vanassche@wdc.com>
+From: Bhumika Goyal <bhumirks@gmail.com>
+Date: Mon, 16 Oct 2017 15:18:39 +0000
+Subject: [PATCH v2 00/15] make structure field, function arguments and structures const
+Message-Id: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redh
+Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-Hello Martin,
+Make the ci_type field and some function arguments as const. After this
+change, make config_item_type structures as const.
 
-This patch series consists of patches I came up with while reviewing and
-testing the SCSI target code. Please consider these patches for kernel v4.15.
+* Changes in v2- Combine all the followup patches and the constification
+patches into a series.
 
-Thanks,
+Bhumika Goyal (15):
+  configfs: make ci_type field, some pointers and function arguments
+    const
+  usb: gadget: make config_item_type structures const
+  target: make config_item_type const
+  iio: make function argument and some structures const
+  ocfs2/cluster: make config_item_type const
+  PCI: endpoint: make config_item_type const
+  usb: gadget: configfs: make config_item_type const
+  nvmet: make config_item_type const
+  ACPI: configfs: make config_item_type const
+  nullb: make config_item_type const
+  stm class: make config_item_type const
+  RDMA/cma: make config_item_type const
+  netconsole: make config_item_type const
+  dlm: make config_item_type const
+  configfs: make config_item_type const
 
-Bart.
-
-Bart Van Assche (11):
-  target: Move a declaration of a global variable into a header file
-  target: Suppress gcc 7 fallthrough warnings
-  target: Inline transport_put_cmd()
-  target: Avoid that EXTENDED COPY commands triggers lock inversion
-  target/iscsi: Define OFFLOAD_BUF_SIZE once
-  target/iscsi: Use min() in iscsit_dump_data_payload() instead of
-    open-coding it
-  target/iscsi: Fix endianness in an error message
-  target/iscsi: Modify iscsit_do_crypto_hash_buf() prototype
-  target/iscsi: Fix a race condition in iscsit_add_reject_from_cmd()
-  target/iscsi: Detect conn_cmd_list corruption early
-  usb/gadget: Make it again possible to enable the legacy drivers
-    without enabling USB_ETH
-
- drivers/target/iscsi/cxgbit/cxgbit_main.c        |  1 +
- drivers/target/iscsi/iscsi_target.c              | 50 +++++++++++-------------
- drivers/target/iscsi/iscsi_target_erl1.c         |  7 ++--
- drivers/target/iscsi/iscsi_target_seq_pdu_list.c |  2 -
- drivers/target/iscsi/iscsi_target_util.c         |  4 ++
- drivers/target/target_core_configfs.c            | 18 ++++++++-
- drivers/target/target_core_fabric_configfs.c     |  2 -
- drivers/target/target_core_internal.h            |  1 +
- drivers/target/target_core_pr.c                  |  2 +
- drivers/target/target_core_transport.c           | 27 +++----------
- drivers/usb/gadget/Kconfig                       |  4 +-
- drivers/usb/gadget/legacy/Kconfig                | 10 +++++
- include/target/target_core_base.h                |  1 +
- 13 files changed, 68 insertions(+), 61 deletions(-)
+ drivers/acpi/acpi_configfs.c                 |  6 ++--
+ drivers/block/null_blk.c                     |  4 +--
+ drivers/hwtracing/stm/policy.c               | 10 +++---
+ drivers/iio/dummy/iio_simple_dummy.c         |  2 +-
+ drivers/iio/industrialio-configfs.c          |  2 +-
+ drivers/iio/industrialio-sw-device.c         |  6 ++--
+ drivers/iio/industrialio-sw-trigger.c        |  6 ++--
+ drivers/iio/trigger/iio-trig-hrtimer.c       |  2 +-
+ drivers/iio/trigger/iio-trig-loop.c          |  2 +-
+ drivers/infiniband/core/cma_configfs.c       |  8 ++---
+ drivers/net/netconsole.c                     |  4 +--
+ drivers/nvme/target/configfs.c               | 30 ++++++++---------
+ drivers/pci/endpoint/pci-ep-cfs.c            | 12 +++----
+ drivers/target/iscsi/iscsi_target_stat.c     | 12 +++----
+ drivers/target/target_core_configfs.c        | 14 ++++----
+ drivers/target/target_core_stat.c            | 16 ++++-----
+ drivers/usb/gadget/configfs.c                | 10 +++---
+ drivers/usb/gadget/function/f_acm.c          |  2 +-
+ drivers/usb/gadget/function/f_ecm.c          |  2 +-
+ drivers/usb/gadget/function/f_eem.c          |  2 +-
+ drivers/usb/gadget/function/f_fs.c           |  2 +-
+ drivers/usb/gadget/function/f_hid.c          |  2 +-
+ drivers/usb/gadget/function/f_loopback.c     |  2 +-
+ drivers/usb/gadget/function/f_mass_storage.c |  4 +--
+ drivers/usb/gadget/function/f_midi.c         |  2 +-
+ drivers/usb/gadget/function/f_ncm.c          |  2 +-
+ drivers/usb/gadget/function/f_obex.c         |  2 +-
+ drivers/usb/gadget/function/f_phonet.c       |  2 +-
+ drivers/usb/gadget/function/f_printer.c      |  2 +-
+ drivers/usb/gadget/function/f_rndis.c        |  2 +-
+ drivers/usb/gadget/function/f_serial.c       |  2 +-
+ drivers/usb/gadget/function/f_sourcesink.c   |  2 +-
+ drivers/usb/gadget/function/f_subset.c       |  2 +-
+ drivers/usb/gadget/function/f_tcm.c          |  2 +-
+ drivers/usb/gadget/function/f_uac1.c         |  2 +-
+ drivers/usb/gadget/function/f_uac1_legacy.c  |  2 +-
+ drivers/usb/gadget/function/f_uac2.c         |  2 +-
+ drivers/usb/gadget/function/uvc_configfs.c   | 50 ++++++++++++++--------------
+ fs/configfs/dir.c                            | 10 +++---
+ fs/configfs/item.c                           |  6 ++--
+ fs/configfs/symlink.c                        |  4 +--
+ fs/dlm/config.c                              | 16 ++++-----
+ fs/ocfs2/cluster/heartbeat.c                 |  4 +--
+ fs/ocfs2/cluster/nodemanager.c               |  8 ++---
+ include/linux/configfs.h                     |  8 ++---
+ include/linux/iio/sw_device.h                |  2 +-
+ include/linux/iio/sw_trigger.h               |  2 +-
+ include/target/iscsi/iscsi_target_stat.h     | 12 +++----
+ samples/configfs/configfs_sample.c           |  8 ++---
+ 49 files changed, 159 insertions(+), 159 deletions(-)
 
 -- 
-2.14.2
+1.9.1
 
