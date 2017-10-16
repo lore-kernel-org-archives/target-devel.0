@@ -1,80 +1,68 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Wed, 18 Oct 2017 06:32:41 +0000
-Subject: Re: [PATCH v2 2/2] target: fix ALUA state file path truncation
-Message-Id: <20171018063241.GB19667@infradead.org>
+From: Bhumika Goyal <bhumirks@gmail.com>
+Date: Mon, 16 Oct 2017 15:18:51 +0000
+Subject: [PATCH v2 12/15] RDMA/cma: make config_item_type const
+Message-Id: <1508167134-6243-13-git-send-email-bhumirks@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171017235913.16786-3-ddiss@suse.de>
-In-Reply-To: <20171017235913.16786-3-ddiss@suse.de>
+References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
+In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-On Wed, Oct 18, 2017 at 01:59:13AM +0200, David Disseldorp wrote:
-> A sufficiently long Unit Serial string, dbroot path, and/or ALUA target
-> portal group name may result in truncation of the ALUA state file path
-> prior to usage. Fix this by using kasprintf() instead.
-> 
-> Fixes: fdddf932269a ("target: use new "dbroot" target attribute")
-> Signed-off-by: David Disseldorp <ddiss@suse.de>
-> ---
->  drivers/target/target_core_alua.c | 49 ++++++++++++++++++++++-----------------
->  drivers/target/target_core_alua.h |  9 -------
->  2 files changed, 28 insertions(+), 30 deletions(-)
-> 
-> diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-> index 928127642574..fddb2066710a 100644
-> --- a/drivers/target/target_core_alua.c
-> +++ b/drivers/target/target_core_alua.c
-> @@ -918,7 +918,7 @@ static int core_alua_update_tpg_primary_metadata(
->  {
->  	unsigned char *md_buf;
->  	struct t10_wwn *wwn = &tg_pt_gp->tg_pt_gp_dev->t10_wwn;
-> -	char path[ALUA_METADATA_PATH_LEN];
-> +	char *path;
->  	int len, rc;
->  
->  	md_buf = kzalloc(ALUA_MD_BUF_LEN, GFP_KERNEL);
-> @@ -927,8 +927,6 @@ static int core_alua_update_tpg_primary_metadata(
->  		return -ENOMEM;
->  	}
->  
-> -	memset(path, 0, ALUA_METADATA_PATH_LEN);
-> -
->  	len = snprintf(md_buf, ALUA_MD_BUF_LEN,
->  			"tg_pt_gp_id=%hu\n"
->  			"alua_access_state=0x%02x\n"
-> @@ -937,11 +935,16 @@ static int core_alua_update_tpg_primary_metadata(
->  			tg_pt_gp->tg_pt_gp_alua_access_state,
->  			tg_pt_gp->tg_pt_gp_alua_access_status);
->  
-> -	snprintf(path, ALUA_METADATA_PATH_LEN,
-> -		"%s/alua/tpgs_%s/%s", db_root, &wwn->unit_serial[0],
-> -		config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
-> +	path = kasprintf(GFP_KERNEL, "%s/alua/tpgs_%s/%s", db_root,
-> +			&wwn->unit_serial[0],
-> +			config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
-> +	if (!path) {
-> +		kfree(md_buf);
-> +		return -ENOMEM;
-> +	}
->  
->  	rc = core_alua_write_tpg_metadata(path, md_buf, len);
-> +	kfree(path);
->  	kfree(md_buf);
->  	return rc;
+Make these structures const as they are either passed to the functions
+having the argument as const or stored as a reference in the "ci_type"
+const field of a config_item structure.
 
-Maybe write this as:
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+---
+* Changes in v2- Combine all the followup patches and the constification
+patches into a series.
 
-	rc =  -ENOMEM
-	path = kasprintf(...);
-	if (path) {
-	  	rc = core_alua_write_tpg_metadata(path, md_buf, len);
-		kfree(path);
-	}
- 	kfree(md_buf);
- 	return rc;
+ drivers/infiniband/core/cma_configfs.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Otherwise looks good:
+diff --git a/drivers/infiniband/core/cma_configfs.c b/drivers/infiniband/core/cma_configfs.c
+index 54076a3..31dfee0 100644
+--- a/drivers/infiniband/core/cma_configfs.c
++++ b/drivers/infiniband/core/cma_configfs.c
+@@ -186,7 +186,7 @@ static ssize_t default_roce_tos_store(struct config_item *item,
+ 	NULL,
+ };
+ 
+-static struct config_item_type cma_port_group_type = {
++static const struct config_item_type cma_port_group_type = {
+ 	.ct_attrs	= cma_configfs_attributes,
+ 	.ct_owner	= THIS_MODULE
+ };
+@@ -263,7 +263,7 @@ static void release_cma_ports_group(struct config_item  *item)
+ 	.release = release_cma_ports_group
+ };
+ 
+-static struct config_item_type cma_ports_group_type = {
++static const struct config_item_type cma_ports_group_type = {
+ 	.ct_item_ops	= &cma_ports_item_ops,
+ 	.ct_owner	= THIS_MODULE
+ };
+@@ -272,7 +272,7 @@ static void release_cma_ports_group(struct config_item  *item)
+ 	.release = release_cma_dev
+ };
+ 
+-static struct config_item_type cma_device_group_type = {
++static const struct config_item_type cma_device_group_type = {
+ 	.ct_item_ops	= &cma_device_item_ops,
+ 	.ct_owner	= THIS_MODULE
+ };
+@@ -323,7 +323,7 @@ static struct config_group *make_cma_dev(struct config_group *group,
+ 	.make_group	= make_cma_dev,
+ };
+ 
+-static struct config_item_type cma_subsys_type = {
++static const struct config_item_type cma_subsys_type = {
+ 	.ct_group_ops	= &cma_subsys_group_ops,
+ 	.ct_owner	= THIS_MODULE,
+ };
+-- 
+1.9.1
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
