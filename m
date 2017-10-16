@@ -1,65 +1,70 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 07:13:56 +0000
-Subject: [PATCH 01/17] target: return SAM_STAT_TASK_SET_FULL for TCM_OUT_OF_RESOURCES
-Message-Id: <1508310852-15366-2-git-send-email-mchristi@redhat.com>
+From: Bhumika Goyal <bhumirks@gmail.com>
+Date: Mon, 16 Oct 2017 15:18:54 +0000
+Subject: [PATCH v2 15/15] configfs: make config_item_type const
+Message-Id: <1508167134-6243-16-git-send-email-bhumirks@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
+In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redh
+Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-TCM_OUT_OF_RESOURCES is getting translated to
-TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE which seems like a heavy
-error when we just cannot allocate a resource that may be
-allocatable later. This has us translate TCM_OUT_OF_RESOURCES
-to SAM_STAT_TASK_SET_FULL instead.
+Make config_item_type structures const as they are either passed to a
+function having the argument as const or stored in the const "ci_type"
+field of a config_item structure.
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+Done using Coccinelle.
+
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 ---
- drivers/target/target_core_transport.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+* Changes in v2- Combine all the followup patches and the constification
+patches into a series.
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 836d552..a3b264b 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1772,8 +1772,8 @@ void transport_generic_request_failure(struct se_cmd *cmd,
- 	case TCM_UNSUPPORTED_SEGMENT_DESC_TYPE_CODE:
- 		break;
- 	case TCM_OUT_OF_RESOURCES:
--		sense_reason = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
--		break;
-+		cmd->scsi_status = SAM_STAT_TASK_SET_FULL;
-+		goto queue_status;
- 	case TCM_RESERVATION_CONFLICT:
- 		/*
- 		 * No SENSE Data payload for this case, set SCSI Status
-@@ -1795,11 +1795,8 @@ void transport_generic_request_failure(struct se_cmd *cmd,
- 					       cmd->orig_fe_lun, 0x2C,
- 					ASCQ_2CH_PREVIOUS_RESERVATION_CONFLICT_STATUS);
- 		}
--		trace_target_cmd_complete(cmd);
--		ret = cmd->se_tfo->queue_status(cmd);
--		if (ret)
--			goto queue_full;
--		goto check_stop;
-+
-+		goto queue_status;
- 	default:
- 		pr_err("Unknown transport error for CDB 0x%02x: %d\n",
- 			cmd->t_task_cdb[0], sense_reason);
-@@ -1816,6 +1813,11 @@ void transport_generic_request_failure(struct se_cmd *cmd,
- 	transport_cmd_check_stop_to_fabric(cmd);
- 	return;
+ samples/configfs/configfs_sample.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/samples/configfs/configfs_sample.c b/samples/configfs/configfs_sample.c
+index 1ea3311..004a4e2 100644
+--- a/samples/configfs/configfs_sample.c
++++ b/samples/configfs/configfs_sample.c
+@@ -115,7 +115,7 @@ static ssize_t childless_description_show(struct config_item *item, char *page)
+ 	NULL,
+ };
  
-+queue_status:
-+	trace_target_cmd_complete(cmd);
-+	ret = cmd->se_tfo->queue_status(cmd);
-+	if (!ret)
-+		goto check_stop;
- queue_full:
- 	transport_handle_queue_full(cmd, cmd->se_dev, ret, false);
- }
+-static struct config_item_type childless_type = {
++static const struct config_item_type childless_type = {
+ 	.ct_attrs	= childless_attrs,
+ 	.ct_owner	= THIS_MODULE,
+ };
+@@ -193,7 +193,7 @@ static void simple_child_release(struct config_item *item)
+ 	.release		= simple_child_release,
+ };
+ 
+-static struct config_item_type simple_child_type = {
++static const struct config_item_type simple_child_type = {
+ 	.ct_item_ops	= &simple_child_item_ops,
+ 	.ct_attrs	= simple_child_attrs,
+ 	.ct_owner	= THIS_MODULE,
+@@ -261,7 +261,7 @@ static void simple_children_release(struct config_item *item)
+ 	.make_item	= simple_children_make_item,
+ };
+ 
+-static struct config_item_type simple_children_type = {
++static const struct config_item_type simple_children_type = {
+ 	.ct_item_ops	= &simple_children_item_ops,
+ 	.ct_group_ops	= &simple_children_group_ops,
+ 	.ct_attrs	= simple_children_attrs,
+@@ -331,7 +331,7 @@ static ssize_t group_children_description_show(struct config_item *item,
+ 	.make_group	= group_children_make_group,
+ };
+ 
+-static struct config_item_type group_children_type = {
++static const struct config_item_type group_children_type = {
+ 	.ct_group_ops	= &group_children_group_ops,
+ 	.ct_attrs	= group_children_attrs,
+ 	.ct_owner	= THIS_MODULE,
 -- 
-2.7.2
+1.9.1
 
