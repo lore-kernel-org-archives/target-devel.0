@@ -1,147 +1,93 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Wed, 18 Oct 2017 23:39:20 +0000
-Subject: [PATCH v3 2/2] target: fix ALUA state file path truncation
-Message-Id: <20171018233920.20750-2-ddiss@suse.de>
+From: Bhumika Goyal <bhumirks@gmail.com>
+Date: Mon, 16 Oct 2017 15:18:44 +0000
+Subject: [PATCH v2 05/15] ocfs2/cluster: make config_item_type const
+Message-Id: <1508167134-6243-6-git-send-email-bhumirks@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
+In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-A sufficiently long Unit Serial string, dbroot path, and/or ALUA target
-portal group name may result in truncation of the ALUA state file path
-prior to usage. Fix this by using kasprintf() instead.
+Make these structures const as they are either passed to the functions
+having the argument as const or stored as a reference in the "ci_type"
+const field of a config_item structure.
 
-Fixes: fdddf932269a ("target: use new "dbroot" target attribute")
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Done using Coccinelle.
+
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 ---
-Changes since v2:
-- rework core_alua_update_tpg_primary_metadata() error path, as
-  suggested by Christoph.
+* Changes in v2- Combine all the followup patches and the constification
+patches into a series.
 
- drivers/target/target_core_alua.c | 51 +++++++++++++++++++++------------------
- drivers/target/target_core_alua.h |  9 -------
- 2 files changed, 28 insertions(+), 32 deletions(-)
+ fs/ocfs2/cluster/heartbeat.c   | 4 ++--
+ fs/ocfs2/cluster/nodemanager.c | 8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-index 928127642574..e46ca968009c 100644
---- a/drivers/target/target_core_alua.c
-+++ b/drivers/target/target_core_alua.c
-@@ -918,7 +918,7 @@ static int core_alua_update_tpg_primary_metadata(
- {
- 	unsigned char *md_buf;
- 	struct t10_wwn *wwn = &tg_pt_gp->tg_pt_gp_dev->t10_wwn;
--	char path[ALUA_METADATA_PATH_LEN];
-+	char *path;
- 	int len, rc;
+diff --git a/fs/ocfs2/cluster/heartbeat.c b/fs/ocfs2/cluster/heartbeat.c
+index d020604..ea8c551 100644
+--- a/fs/ocfs2/cluster/heartbeat.c
++++ b/fs/ocfs2/cluster/heartbeat.c
+@@ -2025,7 +2025,7 @@ static ssize_t o2hb_region_pid_show(struct config_item *item, char *page)
+ 	.release		= o2hb_region_release,
+ };
  
- 	md_buf = kzalloc(ALUA_MD_BUF_LEN, GFP_KERNEL);
-@@ -927,8 +927,6 @@ static int core_alua_update_tpg_primary_metadata(
- 		return -ENOMEM;
- 	}
+-static struct config_item_type o2hb_region_type = {
++static const struct config_item_type o2hb_region_type = {
+ 	.ct_item_ops	= &o2hb_region_item_ops,
+ 	.ct_attrs	= o2hb_region_attrs,
+ 	.ct_owner	= THIS_MODULE,
+@@ -2310,7 +2310,7 @@ static ssize_t o2hb_heartbeat_group_mode_store(struct config_item *item,
+ 	.drop_item	= o2hb_heartbeat_group_drop_item,
+ };
  
--	memset(path, 0, ALUA_METADATA_PATH_LEN);
--
- 	len = snprintf(md_buf, ALUA_MD_BUF_LEN,
- 			"tg_pt_gp_id=%hu\n"
- 			"alua_access_state=0x%02x\n"
-@@ -937,11 +935,14 @@ static int core_alua_update_tpg_primary_metadata(
- 			tg_pt_gp->tg_pt_gp_alua_access_state,
- 			tg_pt_gp->tg_pt_gp_alua_access_status);
+-static struct config_item_type o2hb_heartbeat_group_type = {
++static const struct config_item_type o2hb_heartbeat_group_type = {
+ 	.ct_group_ops	= &o2hb_heartbeat_group_group_ops,
+ 	.ct_attrs	= o2hb_heartbeat_group_attrs,
+ 	.ct_owner	= THIS_MODULE,
+diff --git a/fs/ocfs2/cluster/nodemanager.c b/fs/ocfs2/cluster/nodemanager.c
+index b17d180..a51200e 100644
+--- a/fs/ocfs2/cluster/nodemanager.c
++++ b/fs/ocfs2/cluster/nodemanager.c
+@@ -378,7 +378,7 @@ static ssize_t o2nm_node_local_store(struct config_item *item, const char *page,
+ 	.release		= o2nm_node_release,
+ };
  
--	snprintf(path, ALUA_METADATA_PATH_LEN,
--		"%s/alua/tpgs_%s/%s", db_root, &wwn->unit_serial[0],
--		config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
--
--	rc = core_alua_write_tpg_metadata(path, md_buf, len);
-+	rc = -ENOMEM;
-+	path = kasprintf(GFP_KERNEL, "%s/alua/tpgs_%s/%s", db_root,
-+			&wwn->unit_serial[0],
-+			config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
-+	if (path) {
-+		rc = core_alua_write_tpg_metadata(path, md_buf, len);
-+		kfree(path);
-+	}
- 	kfree(md_buf);
- 	return rc;
- }
-@@ -1209,7 +1210,7 @@ static int core_alua_update_tpg_secondary_metadata(struct se_lun *lun)
- {
- 	struct se_portal_group *se_tpg = lun->lun_tpg;
- 	unsigned char *md_buf;
--	char path[ALUA_METADATA_PATH_LEN], wwn[ALUA_SECONDARY_METADATA_WWN_LEN];
-+	char *path;
- 	int len, rc;
+-static struct config_item_type o2nm_node_type = {
++static const struct config_item_type o2nm_node_type = {
+ 	.ct_item_ops	= &o2nm_node_item_ops,
+ 	.ct_attrs	= o2nm_node_attrs,
+ 	.ct_owner	= THIS_MODULE,
+@@ -619,7 +619,7 @@ static void o2nm_node_group_drop_item(struct config_group *group,
+ 	.drop_item	= o2nm_node_group_drop_item,
+ };
  
- 	mutex_lock(&lun->lun_tg_pt_md_mutex);
-@@ -1221,28 +1222,32 @@ static int core_alua_update_tpg_secondary_metadata(struct se_lun *lun)
- 		goto out_unlock;
- 	}
+-static struct config_item_type o2nm_node_group_type = {
++static const struct config_item_type o2nm_node_group_type = {
+ 	.ct_group_ops	= &o2nm_node_group_group_ops,
+ 	.ct_owner	= THIS_MODULE,
+ };
+@@ -637,7 +637,7 @@ static void o2nm_cluster_release(struct config_item *item)
+ 	.release	= o2nm_cluster_release,
+ };
  
--	memset(path, 0, ALUA_METADATA_PATH_LEN);
--	memset(wwn, 0, ALUA_SECONDARY_METADATA_WWN_LEN);
--
--	len = snprintf(wwn, ALUA_SECONDARY_METADATA_WWN_LEN, "%s",
--			se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg));
--
--	if (se_tpg->se_tpg_tfo->tpg_get_tag != NULL)
--		snprintf(wwn+len, ALUA_SECONDARY_METADATA_WWN_LEN-len, "+%hu",
--				se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg));
--
- 	len = snprintf(md_buf, ALUA_MD_BUF_LEN, "alua_tg_pt_offline=%d\n"
- 			"alua_tg_pt_status=0x%02x\n",
- 			atomic_read(&lun->lun_tg_pt_secondary_offline),
- 			lun->lun_tg_pt_secondary_stat);
+-static struct config_item_type o2nm_cluster_type = {
++static const struct config_item_type o2nm_cluster_type = {
+ 	.ct_item_ops	= &o2nm_cluster_item_ops,
+ 	.ct_attrs	= o2nm_cluster_attrs,
+ 	.ct_owner	= THIS_MODULE,
+@@ -722,7 +722,7 @@ static void o2nm_cluster_group_drop_item(struct config_group *group, struct conf
+ 	.drop_item	= o2nm_cluster_group_drop_item,
+ };
  
--	snprintf(path, ALUA_METADATA_PATH_LEN, "%s/alua/%s/%s/lun_%llu",
--			db_root, se_tpg->se_tpg_tfo->get_fabric_name(), wwn,
--			lun->unpacked_lun);
-+	if (se_tpg->se_tpg_tfo->tpg_get_tag != NULL) {
-+		path = kasprintf(GFP_KERNEL, "%s/alua/%s/%s+%hu/lun_%llu",
-+				db_root, se_tpg->se_tpg_tfo->get_fabric_name(),
-+				se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
-+				se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg),
-+				lun->unpacked_lun);
-+	} else {
-+		path = kasprintf(GFP_KERNEL, "%s/alua/%s/%s/lun_%llu",
-+				db_root, se_tpg->se_tpg_tfo->get_fabric_name(),
-+				se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
-+				lun->unpacked_lun);
-+	}
-+	if (!path) {
-+		rc = -ENOMEM;
-+		goto out_free;
-+	}
- 
- 	rc = core_alua_write_tpg_metadata(path, md_buf, len);
-+	kfree(path);
-+out_free:
- 	kfree(md_buf);
--
- out_unlock:
- 	mutex_unlock(&lun->lun_tg_pt_md_mutex);
- 	return rc;
-diff --git a/drivers/target/target_core_alua.h b/drivers/target/target_core_alua.h
-index c69c11baf07f..90643300cd32 100644
---- a/drivers/target/target_core_alua.h
-+++ b/drivers/target/target_core_alua.h
-@@ -71,15 +71,6 @@
-  */
- #define ALUA_DEFAULT_IMPLICIT_TRANS_SECS			0
- #define ALUA_MAX_IMPLICIT_TRANS_SECS			255
--/*
-- * Used by core_alua_update_tpg_primary_metadata() and
-- * core_alua_update_tpg_secondary_metadata()
-- */
--#define ALUA_METADATA_PATH_LEN				512
--/*
-- * Used by core_alua_update_tpg_secondary_metadata()
-- */
--#define ALUA_SECONDARY_METADATA_WWN_LEN			256
- 
- /* Used by core_alua_update_tpg_(primary,secondary)_metadata */
- #define ALUA_MD_BUF_LEN					1024
+-static struct config_item_type o2nm_cluster_group_type = {
++static const struct config_item_type o2nm_cluster_group_type = {
+ 	.ct_group_ops	= &o2nm_cluster_group_group_ops,
+ 	.ct_owner	= THIS_MODULE,
+ };
 -- 
-2.13.6
+1.9.1
 
