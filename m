@@ -1,56 +1,52 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Tue, 31 Oct 2017 18:03:14 +0000
-Subject: [PATCH 06/11] target/iscsi: Use min() in iscsit_dump_data_payload() instead of open-coding it
-Message-Id: <20171031180319.19258-7-bart.vanassche@wdc.com>
+From: Bhumika Goyal <bhumirks@gmail.com>
+Date: Mon, 16 Oct 2017 15:18:52 +0000
+Subject: [PATCH v2 13/15] netconsole: make config_item_type const
+Message-Id: <1508167134-6243-14-git-send-email-bhumirks@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
+In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redh
+Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-This patch does not change any functionality.
+Make these structures const as they are either passed to the functions
+having the argument as const or stored as a reference in the "ci_type"
+const field of a config_item structure.
 
-Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Mike Christie <mchristi@redhat.com>
+Done using Coccienlle.
+
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 ---
- drivers/target/iscsi/iscsi_target_erl1.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+* Changes in v2- Combine all the followup patches and the constification
+patches into a series.
 
-diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
-index fe9b7f1e44ac..659efafb43ec 100644
---- a/drivers/target/iscsi/iscsi_target_erl1.c
-+++ b/drivers/target/iscsi/iscsi_target_erl1.c
-@@ -34,7 +34,7 @@
- #include "iscsi_target_erl2.h"
- #include "iscsi_target.h"
+ drivers/net/netconsole.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+index 0e27920..be9aa36 100644
+--- a/drivers/net/netconsole.c
++++ b/drivers/net/netconsole.c
+@@ -616,7 +616,7 @@ static void netconsole_target_release(struct config_item *item)
+ 	.release		= netconsole_target_release,
+ };
  
--#define OFFLOAD_BUF_SIZE	32768
-+#define OFFLOAD_BUF_SIZE	32768U
+-static struct config_item_type netconsole_target_type = {
++static const struct config_item_type netconsole_target_type = {
+ 	.ct_attrs		= netconsole_target_attrs,
+ 	.ct_item_ops		= &netconsole_target_item_ops,
+ 	.ct_owner		= THIS_MODULE,
+@@ -682,7 +682,7 @@ static void drop_netconsole_target(struct config_group *group,
+ 	.drop_item	= drop_netconsole_target,
+ };
  
- /*
-  *	Used to dump excess datain payload for certain error recovery
-@@ -56,7 +56,7 @@ int iscsit_dump_data_payload(
- 	if (conn->sess->sess_ops->RDMAExtensions)
- 		return 0;
- 
--	length = (buf_len > OFFLOAD_BUF_SIZE) ? OFFLOAD_BUF_SIZE : buf_len;
-+	length = min(buf_len, OFFLOAD_BUF_SIZE);
- 
- 	buf = kzalloc(length, GFP_ATOMIC);
- 	if (!buf) {
-@@ -67,8 +67,7 @@ int iscsit_dump_data_payload(
- 	memset(&iov, 0, sizeof(struct kvec));
- 
- 	while (offset < buf_len) {
--		size = ((offset + length) > buf_len) ?
--			(buf_len - offset) : length;
-+		size = min(buf_len - offset, length);
- 
- 		iov.iov_len = size;
- 		iov.iov_base = buf;
+-static struct config_item_type netconsole_subsys_type = {
++static const struct config_item_type netconsole_subsys_type = {
+ 	.ct_group_ops	= &netconsole_subsys_group_ops,
+ 	.ct_owner	= THIS_MODULE,
+ };
 -- 
-2.14.2
+1.9.1
 
