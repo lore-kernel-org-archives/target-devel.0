@@ -1,77 +1,51 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Date: Mon, 16 Oct 2017 15:18:46 +0000
-Subject: [PATCH v2 07/15] usb: gadget: configfs: make config_item_type const
-Message-Id: <1508167134-6243-8-git-send-email-bhumirks@gmail.com>
+From: Felipe Balbi <balbi@kernel.org>
+Date: Tue, 17 Oct 2017 08:31:17 +0000
+Subject: Re: [PATCH v2 07/15] usb: gadget: configfs: make config_item_type const
+Message-Id: <87o9p6jhuy.fsf@linux.intel.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-=-="
 List-Id: <target-devel.vger.kernel.org>
-References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
+References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com> <1508167134-6243-8-git-send-email-bhumirks@gmail.com>
+In-Reply-To: <1508167134-6243-8-git-send-email-bhumirks-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: julia.lawall-L2FTfq7BK8M@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, alexander.shishkin-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, dledford-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, sean.hefty-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hal.rosenstock-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, hch-jcswGhMUV9g@public.gmane.org, sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org, kishon-l0cyMroinI0@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org, jlbec-aKy9MeLSZ9dg9hUCZPvPmw@public.gmane.org, ccaulfie-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, teigland-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, mfasheh-rOS7oXVqrJRBDgjK7y7TUQ@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Bhumika Goyal <bhumirks-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-Make config_item_type structures const as they are either passed to a
-function having the argument as const or stored in the const "ci_type"
-field of a config_item structure.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Done using Coccinelle.
+Bhumika Goyal <bhumirks@gmail.com> writes:
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
-* Changes in v2- Combine all the followup patches and the constification
-patches into a series.
+> Make config_item_type structures const as they are either passed to a
+> function having the argument as const or stored in the const "ci_type"
+> field of a config_item structure.
+>
+> Done using Coccinelle.
+>
+> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 
- drivers/usb/gadget/configfs.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
 
-diff --git a/drivers/usb/gadget/configfs.c b/drivers/usb/gadget/configfs.c
-index aeb9f3c..9d18b99 100644
---- a/drivers/usb/gadget/configfs.c
-+++ b/drivers/usb/gadget/configfs.c
-@@ -505,13 +505,13 @@ static ssize_t gadget_config_desc_bmAttributes_store(struct config_item *item,
- 	NULL,
- };
- 
--static struct config_item_type gadget_config_type = {
-+static const struct config_item_type gadget_config_type = {
- 	.ct_item_ops	= &gadget_config_item_ops,
- 	.ct_attrs	= gadget_config_attrs,
- 	.ct_owner	= THIS_MODULE,
- };
- 
--static struct config_item_type gadget_root_type = {
-+static const struct config_item_type gadget_root_type = {
- 	.ct_item_ops	= &gadget_root_item_ops,
- 	.ct_attrs	= gadget_root_attrs,
- 	.ct_owner	= THIS_MODULE,
-@@ -593,7 +593,7 @@ static void function_drop(
- 	.drop_item      = &function_drop,
- };
- 
--static struct config_item_type functions_type = {
-+static const struct config_item_type functions_type = {
- 	.ct_group_ops   = &functions_ops,
- 	.ct_owner       = THIS_MODULE,
- };
-@@ -694,7 +694,7 @@ static void config_desc_drop(
- 	.drop_item      = &config_desc_drop,
- };
- 
--static struct config_item_type config_desc_type = {
-+static const struct config_item_type config_desc_type = {
- 	.ct_group_ops   = &config_desc_ops,
- 	.ct_owner       = THIS_MODULE,
- };
-@@ -1476,7 +1476,7 @@ static void gadgets_drop(struct config_group *group, struct config_item *item)
- 	.drop_item      = &gadgets_drop,
- };
- 
--static struct config_item_type gadgets_type = {
-+static const struct config_item_type gadgets_type = {
- 	.ct_group_ops   = &gadgets_ops,
- 	.ct_owner       = THIS_MODULE,
- };
--- 
-1.9.1
+=2D-=20
+balbi
 
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEElLzh7wn96CXwjh2IzL64meEamQYFAlnlv9UACgkQzL64meEa
+mQZQhg//Us3sJZUbfVmsAmf2IlBuez8wGH2V7mJtJCLYzgENwMbLQvD7E1nHjCTt
+JkiH+zAtEB0xnD7/ZvUqxQTaZdiRQfw059PEzq7fntUcNiO6KhqiSuIpLKO/YyQq
+dMrn13XN17iEC+ubTVquSnoi1h2s4UsUL5jlvFlYGIpuq3SW3rSqJkJDe6McTpgJ
+nlNCRxF09UctuKVczbjurXyaJ7UmzXDxSyLJHBADq+jpByqpOBfcYEho3oEfsroc
+7dd80z4cywzRJQ/Udho/AZ72qj18yWZvekBpHS9bUzLOUx8yDN7V20XTdmyeVtcg
+0vxqraf7VNWQy82o32ptA2EfvfQ2j4GV5Kz3eYzapMF85qmarjAqlUwhtyKE2oiX
+C6Udsm7h44322k7dmLQB8ZS8K/iVfYcgeOnr5koGw5ze7h2ajaAW8kADreVfeM52
+NR+nBkC20gYUROtDe99YyJ3FnOwKrh5l4L6fT8qXBiaXN0QPotY98QROMAX3i3zl
+62kOmbAnCjuxei/y5cApsuo874PSEz6lCOMa0hkvothqbS+kpq9dQQuI5EfSsAKu
+jR46aG1rpMGlZNPWVzF+DaNaGat5CmbO4Y8LkbN4sU7qSunNkSbd4YgBB0pj9Dg6
+52MwP7kUgqLasgz5fVvn9YXCIcqcEXWXsUADJh8+DrQkjXnOs+g=
+=nx9P
+-----END PGP SIGNATURE-----
+--=-=-=--
