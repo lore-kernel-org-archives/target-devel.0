@@ -1,94 +1,21 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 25 Oct 2017 16:47:18 +0000
-Subject: [PATCH 08/20] tcmu: remove commands_lock
-Message-Id: <1508950050-10120-9-git-send-email-mchristi@redhat.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Tue, 17 Oct 2017 23:59:11 +0000
+Subject: [PATCH v2 0/2] target: fix file path truncation
+Message-Id: <20171017235913.16786-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-No need for the commands_lock. The cmdr_lock is already held during
-idr addition and deletion, so just grab it during traversal.
+On Mon, 16 Oct 2017 23:57:18 -0700, Christoph Hellwig wrote:
 
-Note: This also fixes 2 issues.
+> How about simply switching to kasprintf?
 
-There was no reason to use spin_lock_irq. We only were locking
-against the submitting, completion and timer context. The first two
-are done in process context (even though tcmu_irqcontrol is named
-irq it is run from the write() calls context) and the timer was in
-softirq, so we just needed to do _bh locking.
+Sounds reasonable to me. v2 patchset doing this follows...
 
-We should have been using either one tcmu_handle_completions
-to prevent the case where tcmu_handle_completions could be
-interrupted a timer softirq while the commands_lock is held.
+FWIW, the script that I'm using to setup a target for path truncation
+is at:
+https://github.com/ddiss/rapido/blob/ce1ed251abd404f96dac9a0c3500030cb5b9c91a/lio_local_autorun.sh
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
----
- drivers/target/target_core_user.c | 13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 53a0446..9add6a3 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -141,7 +141,6 @@ struct tcmu_dev {
- 	struct radix_tree_root data_blocks;
- 
- 	struct idr commands;
--	spinlock_t commands_lock;
- 
- 	struct timer_list timeout;
- 	unsigned int cmd_time_out;
-@@ -1076,10 +1075,7 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- 		}
- 		WARN_ON(tcmu_hdr_get_op(entry->hdr.len_op) != TCMU_OP_CMD);
- 
--		spin_lock(&udev->commands_lock);
- 		cmd = idr_remove(&udev->commands, entry->hdr.cmd_id);
--		spin_unlock(&udev->commands_lock);
--
- 		if (!cmd) {
- 			pr_err("cmd_id not found, ring is broken\n");
- 			set_bit(TCMU_DEV_BIT_BROKEN, &udev->flags);
-@@ -1175,7 +1171,6 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 
- 	INIT_LIST_HEAD(&udev->timedout_entry);
- 	idr_init(&udev->commands);
--	spin_lock_init(&udev->commands_lock);
- 
- 	setup_timer(&udev->timeout, tcmu_device_timedout,
- 		(unsigned long)udev);
-@@ -1404,16 +1399,14 @@ static void tcmu_dev_kref_release(struct kref *kref)
- 	spin_unlock_bh(&timed_out_udevs_lock);
- 
- 	/* Upper layer should drain all requests before calling this */
--	spin_lock_irq(&udev->commands_lock);
-+	mutex_lock(&udev->cmdr_lock);
- 	idr_for_each_entry(&udev->commands, cmd, i) {
- 		if (tcmu_check_and_free_pending_cmd(cmd) != 0)
- 			all_expired = false;
- 	}
- 	idr_destroy(&udev->commands);
--	spin_unlock_irq(&udev->commands_lock);
- 	WARN_ON(!all_expired);
- 
--	mutex_lock(&udev->cmdr_lock);
- 	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
- 	mutex_unlock(&udev->cmdr_lock);
- 
-@@ -2066,9 +2059,9 @@ static void check_timedout_devices(void)
- 		list_del_init(&udev->timedout_entry);
- 		spin_unlock_bh(&timed_out_udevs_lock);
- 
--		spin_lock(&udev->commands_lock);
-+		mutex_lock(&udev->cmdr_lock);
- 		idr_for_each(&udev->commands, tcmu_check_expired_cmd, NULL);
--		spin_unlock(&udev->commands_lock);
-+		mutex_unlock(&udev->cmdr_lock);
- 
- 		spin_lock_bh(&timed_out_udevs_lock);
- 	}
--- 
-2.7.2
-
+Cheers, David
