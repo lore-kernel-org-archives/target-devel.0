@@ -1,72 +1,27 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Date: Mon, 16 Oct 2017 15:18:50 +0000
-Subject: [PATCH v2 11/15] stm class: make config_item_type const
-Message-Id: <1508167134-6243-12-git-send-email-bhumirks@gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Tue, 17 Oct 2017 10:25:01 +0000
+Subject: Re: [PATCH v2 11/15] stm class: make config_item_type const
+Message-Id: <20171017102501.GC25786@kroah.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
+ <1508167134-6243-12-git-send-email-bhumirks@gmail.com>
+In-Reply-To: <1508167134-6243-12-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redh
-Cc: Bhumika Goyal <bhumirks@gmail.com>
+To: Bhumika Goyal <bhumirks@gmail.com>
+Cc: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.orac
 
-Make config_item_type structures const as they are either passed to a
-function having the argument as const or used inside a if statement or
-stored in the const "ci_type" field of a config_item structure.
+On Mon, Oct 16, 2017 at 05:18:50PM +0200, Bhumika Goyal wrote:
+> Make config_item_type structures const as they are either passed to a
+> function having the argument as const or used inside a if statement or
+> stored in the const "ci_type" field of a config_item structure.
+> 
+> Done using Coccinelle.
+> 
+> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+> ---
+> * Changes in v2- Combine all the followup patches and the constification
+> patches into a series.
 
-Done using Coccinelle.
-
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
-* Changes in v2- Combine all the followup patches and the constification
-patches into a series.
-
- drivers/hwtracing/stm/policy.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/hwtracing/stm/policy.c b/drivers/hwtracing/stm/policy.c
-index 6c0ae29..33e9a1b 100644
---- a/drivers/hwtracing/stm/policy.c
-+++ b/drivers/hwtracing/stm/policy.c
-@@ -187,8 +187,8 @@ static void stp_policy_node_release(struct config_item *item)
- 	NULL,
- };
- 
--static struct config_item_type stp_policy_type;
--static struct config_item_type stp_policy_node_type;
-+static const struct config_item_type stp_policy_type;
-+static const struct config_item_type stp_policy_node_type;
- 
- static struct config_group *
- stp_policy_node_make(struct config_group *group, const char *name)
-@@ -236,7 +236,7 @@ static void stp_policy_node_release(struct config_item *item)
- 	.drop_item	= stp_policy_node_drop,
- };
- 
--static struct config_item_type stp_policy_node_type = {
-+static const struct config_item_type stp_policy_node_type = {
- 	.ct_item_ops	= &stp_policy_node_item_ops,
- 	.ct_group_ops	= &stp_policy_node_group_ops,
- 	.ct_attrs	= stp_policy_node_attrs,
-@@ -311,7 +311,7 @@ static void stp_policy_release(struct config_item *item)
- 	.make_group	= stp_policy_node_make,
- };
- 
--static struct config_item_type stp_policy_type = {
-+static const struct config_item_type stp_policy_type = {
- 	.ct_item_ops	= &stp_policy_item_ops,
- 	.ct_group_ops	= &stp_policy_group_ops,
- 	.ct_attrs	= stp_policy_attrs,
-@@ -380,7 +380,7 @@ static void stp_policy_release(struct config_item *item)
- 	.make_group	= stp_policies_make,
- };
- 
--static struct config_item_type stp_policies_type = {
-+static const struct config_item_type stp_policies_type = {
- 	.ct_group_ops	= &stp_policies_group_ops,
- 	.ct_owner	= THIS_MODULE,
- };
--- 
-1.9.1
-
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
