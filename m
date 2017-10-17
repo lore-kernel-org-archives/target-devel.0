@@ -1,185 +1,142 @@
-From: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
-Date: Mon, 16 Oct 2017 18:48:03 +0000
-Subject: Re: [PATCH v2 04/15] iio: make function argument and some structures const
-Message-Id: <7091CB3C-16A9-429D-B684-8141955611A7@jic23.retrosnub.co.uk>
+From: David Disseldorp <ddiss@suse.de>
+Date: Tue, 17 Oct 2017 23:59:13 +0000
+Subject: [PATCH v2 2/2] target: fix ALUA state file path truncation
+Message-Id: <20171017235913.16786-3-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com> <1508167134-6243-5-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1508167134-6243-5-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bhumika Goyal <bhumirks@gmail.com>, julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb
+To: target-devel@vger.kernel.org
 
+A sufficiently long Unit Serial string, dbroot path, and/or ALUA target
+portal group name may result in truncation of the ALUA state file path
+prior to usage. Fix this by using kasprintf() instead.
 
+Fixes: fdddf932269a ("target: use new "dbroot" target attribute")
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_alua.c | 49 ++++++++++++++++++++++-----------------
+ drivers/target/target_core_alua.h |  9 -------
+ 2 files changed, 28 insertions(+), 30 deletions(-)
 
-On 16 October 2017 16:18:43 BST, Bhumika Goyal <bhumirks@gmail.com> wrote:
->Make the argument of the functions iio_sw{d/t}_group_init_type_name
->const
->as they are only passed to the function config_group_init_type_name
->having
->the argument as const.
->
->Make the config_item_type structures const as they are either passed to
->the functions having the argument as const or they are
->stored in the const "ci_type" field of a config_item structure.
->
->Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
-Acked-by: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
->---
->* Changes in v2- Combine all the followup patches and the
->constification
->patches into a series.
->
-> drivers/iio/dummy/iio_simple_dummy.c   | 2 +-
-> drivers/iio/industrialio-configfs.c    | 2 +-
-> drivers/iio/industrialio-sw-device.c   | 6 +++---
-> drivers/iio/industrialio-sw-trigger.c  | 6 +++---
-> drivers/iio/trigger/iio-trig-hrtimer.c | 2 +-
-> drivers/iio/trigger/iio-trig-loop.c    | 2 +-
-> include/linux/iio/sw_device.h          | 2 +-
-> include/linux/iio/sw_trigger.h         | 2 +-
-> 8 files changed, 12 insertions(+), 12 deletions(-)
->
->diff --git a/drivers/iio/dummy/iio_simple_dummy.c
->b/drivers/iio/dummy/iio_simple_dummy.c
->index a45d01e..6205247 100644
->--- a/drivers/iio/dummy/iio_simple_dummy.c
->+++ b/drivers/iio/dummy/iio_simple_dummy.c
->@@ -26,7 +26,7 @@
-> #include <linux/iio/sw_device.h>
-> #include "iio_simple_dummy.h"
-> 
->-static struct config_item_type iio_dummy_type = {
->+static const struct config_item_type iio_dummy_type = {
-> 	.ct_owner = THIS_MODULE,
-> };
-> 
->diff --git a/drivers/iio/industrialio-configfs.c
->b/drivers/iio/industrialio-configfs.c
->index 45ce2bc..5a0aae1 100644
->--- a/drivers/iio/industrialio-configfs.c
->+++ b/drivers/iio/industrialio-configfs.c
->@@ -17,7 +17,7 @@
-> #include <linux/iio/iio.h>
-> #include <linux/iio/configfs.h>
-> 
->-static struct config_item_type iio_root_group_type = {
->+static const struct config_item_type iio_root_group_type = {
-> 	.ct_owner       = THIS_MODULE,
-> };
-> 
->diff --git a/drivers/iio/industrialio-sw-device.c
->b/drivers/iio/industrialio-sw-device.c
->index 81b49cf..90df97c 100644
->--- a/drivers/iio/industrialio-sw-device.c
->+++ b/drivers/iio/industrialio-sw-device.c
->@@ -19,9 +19,9 @@
-> #include <linux/configfs.h>
-> 
-> static struct config_group *iio_devices_group;
->-static struct config_item_type iio_device_type_group_type;
->+static const struct config_item_type iio_device_type_group_type;
-> 
->-static struct config_item_type iio_devices_group_type = {
->+static const struct config_item_type iio_devices_group_type = {
-> 	.ct_owner = THIS_MODULE,
-> };
-> 
->@@ -156,7 +156,7 @@ static void device_drop_group(struct config_group
->*group,
-> 	.drop_item	= &device_drop_group,
-> };
-> 
->-static struct config_item_type iio_device_type_group_type = {
->+static const struct config_item_type iio_device_type_group_type = {
-> 	.ct_group_ops = &device_ops,
-> 	.ct_owner       = THIS_MODULE,
-> };
->diff --git a/drivers/iio/industrialio-sw-trigger.c
->b/drivers/iio/industrialio-sw-trigger.c
->index 8d24fb1..bc6b7fb 100644
->--- a/drivers/iio/industrialio-sw-trigger.c
->+++ b/drivers/iio/industrialio-sw-trigger.c
->@@ -19,9 +19,9 @@
-> #include <linux/configfs.h>
-> 
-> static struct config_group *iio_triggers_group;
->-static struct config_item_type iio_trigger_type_group_type;
->+static const struct config_item_type iio_trigger_type_group_type;
-> 
->-static struct config_item_type iio_triggers_group_type = {
->+static const struct config_item_type iio_triggers_group_type = {
-> 	.ct_owner = THIS_MODULE,
-> };
-> 
->@@ -156,7 +156,7 @@ static void trigger_drop_group(struct config_group
->*group,
-> 	.drop_item	= &trigger_drop_group,
-> };
-> 
->-static struct config_item_type iio_trigger_type_group_type = {
->+static const struct config_item_type iio_trigger_type_group_type = {
-> 	.ct_group_ops = &trigger_ops,
-> 	.ct_owner       = THIS_MODULE,
-> };
->diff --git a/drivers/iio/trigger/iio-trig-hrtimer.c
->b/drivers/iio/trigger/iio-trig-hrtimer.c
->index 3ee9216..7accd01 100644
->--- a/drivers/iio/trigger/iio-trig-hrtimer.c
->+++ b/drivers/iio/trigger/iio-trig-hrtimer.c
->@@ -30,7 +30,7 @@ struct iio_hrtimer_info {
-> 	ktime_t period;
-> };
-> 
->-static struct config_item_type iio_hrtimer_type = {
->+static const struct config_item_type iio_hrtimer_type = {
-> 	.ct_owner = THIS_MODULE,
-> };
-> 
->diff --git a/drivers/iio/trigger/iio-trig-loop.c
->b/drivers/iio/trigger/iio-trig-loop.c
->index b4b02db..94a90e0 100644
->--- a/drivers/iio/trigger/iio-trig-loop.c
->+++ b/drivers/iio/trigger/iio-trig-loop.c
->@@ -36,7 +36,7 @@ struct iio_loop_info {
-> 	struct task_struct *task;
-> };
-> 
->-static struct config_item_type iio_loop_type = {
->+static const struct config_item_type iio_loop_type = {
-> 	.ct_owner = THIS_MODULE,
-> };
-> 
->diff --git a/include/linux/iio/sw_device.h
->b/include/linux/iio/sw_device.h
->index fa79319..8642b91 100644
->--- a/include/linux/iio/sw_device.h
->+++ b/include/linux/iio/sw_device.h
->@@ -60,7 +60,7 @@ struct iio_sw_device *to_iio_sw_device(struct
->config_item *item)
-> static inline
-> void iio_swd_group_init_type_name(struct iio_sw_device *d,
-> 				  const char *name,
->-				  struct config_item_type *type)
->+				  const struct config_item_type *type)
-> {
-> #if IS_ENABLED(CONFIG_CONFIGFS_FS)
-> 	config_group_init_type_name(&d->group, name, type);
->diff --git a/include/linux/iio/sw_trigger.h
->b/include/linux/iio/sw_trigger.h
->index c97eab6..0c43738 100644
->--- a/include/linux/iio/sw_trigger.h
->+++ b/include/linux/iio/sw_trigger.h
->@@ -60,7 +60,7 @@ struct iio_sw_trigger *to_iio_sw_trigger(struct
->config_item *item)
-> static inline
-> void iio_swt_group_init_type_name(struct iio_sw_trigger *t,
-> 				  const char *name,
->-				  struct config_item_type *type)
->+				  const struct config_item_type *type)
-> {
-> #if IS_ENABLED(CONFIG_CONFIGFS_FS)
-> 	config_group_init_type_name(&t->group, name, type);
-
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index 928127642574..fddb2066710a 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -918,7 +918,7 @@ static int core_alua_update_tpg_primary_metadata(
+ {
+ 	unsigned char *md_buf;
+ 	struct t10_wwn *wwn = &tg_pt_gp->tg_pt_gp_dev->t10_wwn;
+-	char path[ALUA_METADATA_PATH_LEN];
++	char *path;
+ 	int len, rc;
+ 
+ 	md_buf = kzalloc(ALUA_MD_BUF_LEN, GFP_KERNEL);
+@@ -927,8 +927,6 @@ static int core_alua_update_tpg_primary_metadata(
+ 		return -ENOMEM;
+ 	}
+ 
+-	memset(path, 0, ALUA_METADATA_PATH_LEN);
+-
+ 	len = snprintf(md_buf, ALUA_MD_BUF_LEN,
+ 			"tg_pt_gp_id=%hu\n"
+ 			"alua_access_state=0x%02x\n"
+@@ -937,11 +935,16 @@ static int core_alua_update_tpg_primary_metadata(
+ 			tg_pt_gp->tg_pt_gp_alua_access_state,
+ 			tg_pt_gp->tg_pt_gp_alua_access_status);
+ 
+-	snprintf(path, ALUA_METADATA_PATH_LEN,
+-		"%s/alua/tpgs_%s/%s", db_root, &wwn->unit_serial[0],
+-		config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
++	path = kasprintf(GFP_KERNEL, "%s/alua/tpgs_%s/%s", db_root,
++			&wwn->unit_serial[0],
++			config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
++	if (!path) {
++		kfree(md_buf);
++		return -ENOMEM;
++	}
+ 
+ 	rc = core_alua_write_tpg_metadata(path, md_buf, len);
++	kfree(path);
+ 	kfree(md_buf);
+ 	return rc;
+ }
+@@ -1209,7 +1212,7 @@ static int core_alua_update_tpg_secondary_metadata(struct se_lun *lun)
+ {
+ 	struct se_portal_group *se_tpg = lun->lun_tpg;
+ 	unsigned char *md_buf;
+-	char path[ALUA_METADATA_PATH_LEN], wwn[ALUA_SECONDARY_METADATA_WWN_LEN];
++	char *path;
+ 	int len, rc;
+ 
+ 	mutex_lock(&lun->lun_tg_pt_md_mutex);
+@@ -1221,28 +1224,32 @@ static int core_alua_update_tpg_secondary_metadata(struct se_lun *lun)
+ 		goto out_unlock;
+ 	}
+ 
+-	memset(path, 0, ALUA_METADATA_PATH_LEN);
+-	memset(wwn, 0, ALUA_SECONDARY_METADATA_WWN_LEN);
+-
+-	len = snprintf(wwn, ALUA_SECONDARY_METADATA_WWN_LEN, "%s",
+-			se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg));
+-
+-	if (se_tpg->se_tpg_tfo->tpg_get_tag != NULL)
+-		snprintf(wwn+len, ALUA_SECONDARY_METADATA_WWN_LEN-len, "+%hu",
+-				se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg));
+-
+ 	len = snprintf(md_buf, ALUA_MD_BUF_LEN, "alua_tg_pt_offline=%d\n"
+ 			"alua_tg_pt_status=0x%02x\n",
+ 			atomic_read(&lun->lun_tg_pt_secondary_offline),
+ 			lun->lun_tg_pt_secondary_stat);
+ 
+-	snprintf(path, ALUA_METADATA_PATH_LEN, "%s/alua/%s/%s/lun_%llu",
+-			db_root, se_tpg->se_tpg_tfo->get_fabric_name(), wwn,
+-			lun->unpacked_lun);
++	if (se_tpg->se_tpg_tfo->tpg_get_tag != NULL) {
++		path = kasprintf(GFP_KERNEL, "%s/alua/%s/%s+%hu/lun_%llu",
++				db_root, se_tpg->se_tpg_tfo->get_fabric_name(),
++				se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
++				se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg),
++				lun->unpacked_lun);
++	} else {
++		path = kasprintf(GFP_KERNEL, "%s/alua/%s/%s/lun_%llu",
++				db_root, se_tpg->se_tpg_tfo->get_fabric_name(),
++				se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
++				lun->unpacked_lun);
++	}
++	if (!path) {
++		rc = -ENOMEM;
++		goto out_free;
++	}
+ 
+ 	rc = core_alua_write_tpg_metadata(path, md_buf, len);
++	kfree(path);
++out_free:
+ 	kfree(md_buf);
+-
+ out_unlock:
+ 	mutex_unlock(&lun->lun_tg_pt_md_mutex);
+ 	return rc;
+diff --git a/drivers/target/target_core_alua.h b/drivers/target/target_core_alua.h
+index c69c11baf07f..90643300cd32 100644
+--- a/drivers/target/target_core_alua.h
++++ b/drivers/target/target_core_alua.h
+@@ -71,15 +71,6 @@
+  */
+ #define ALUA_DEFAULT_IMPLICIT_TRANS_SECS			0
+ #define ALUA_MAX_IMPLICIT_TRANS_SECS			255
+-/*
+- * Used by core_alua_update_tpg_primary_metadata() and
+- * core_alua_update_tpg_secondary_metadata()
+- */
+-#define ALUA_METADATA_PATH_LEN				512
+-/*
+- * Used by core_alua_update_tpg_secondary_metadata()
+- */
+-#define ALUA_SECONDARY_METADATA_WWN_LEN			256
+ 
+ /* Used by core_alua_update_tpg_(primary,secondary)_metadata */
+ #define ALUA_MD_BUF_LEN					1024
 -- 
-Sent from my Android device with K-9 Mail. Please excuse my brevity.
+2.13.6
+
