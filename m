@@ -1,59 +1,50 @@
-From: <m2k6n9sd9t.fsf@seki.fr>
-Date: Sat, 14 Oct 2017 00:10:12 +0000
-Subject: 
-Message-Id: <150793981282.32758.13274610757347069849@copel.net>
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 18 Oct 2017 07:14:07 +0000
+Subject: [PATCH 12/17] tcmu: fix free block calculation
+Message-Id: <1508310852-15366-13-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-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
-AAA
+The blocks_left calculation does not account for free blocks
+between 0 and thresh, so we could be queueing/waiting when
+there are enough blocks free.
+
+This has us add in the blocks between 0 and thresh as well as
+at the end from thresh to DATA_BLOCK_BITS.
+
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 4aba4f1..6f9646e 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -675,7 +675,7 @@ static void gather_data_area(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
+ 
+ static inline size_t spc_bitmap_free(unsigned long *bitmap, uint32_t thresh)
+ {
+-	return DATA_BLOCK_SIZE * (thresh - bitmap_weight(bitmap, thresh));
++	return thresh - bitmap_weight(bitmap, thresh);
+ }
+ 
+ /*
+@@ -715,8 +715,9 @@ static bool is_ring_space_avail(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
+ 
+ 	/* try to check and get the data blocks as needed */
+ 	space = spc_bitmap_free(udev->data_bitmap, udev->dbi_thresh);
+-	if (space < data_needed) {
+-		unsigned long blocks_left = DATA_BLOCK_BITS - udev->dbi_thresh;
++	if ((space * DATA_BLOCK_SIZE) < data_needed) {
++		unsigned long blocks_left = DATA_BLOCK_BITS - udev->dbi_thresh +
++						space;
+ 		unsigned long grow;
+ 
+ 		if (blocks_left < blocks_needed) {
+-- 
+2.7.2
+
