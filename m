@@ -1,132 +1,99 @@
-From: Varun Prakash <varun@chelsio.com>
-Date: Wed, 04 Oct 2017 16:45:35 +0000
-Subject: [PATCH] cxgbit: Abort the TCP connection in case of data out timeout
-Message-Id: <1507134815-4650-1-git-send-email-varun@chelsio.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 18 Oct 2017 07:14:09 +0000
+Subject: [PATCH 14/17] tcmu: run the unmap thread/wq if waiters.
+Message-Id: <1508310852-15366-15-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-If DDP is programmed for a WRITE cmd and data out
-timer gets expired then abort the TCP connection
-before freeing the cmd to avoid any possibility of
-DDP after freeing the cmd.
+If tcmu_dev 1 took exactly TCMU_GLOBAL_MAX_BLOCKS and then
+tcmu_dev 2 tried to allocate blocks dev 2 would be put
+on the waiter list. Later when dev 1's commands complete
+tcmu_irqcontrol would see that dev 1 is not on the waiter list
+and so it only runs the dev 1's queue. dev 2 could then be
+starved.
 
-Signed-off-by: Varun Prakash <varun@chelsio.com>
+This patch adds a check if we hit the global limit and have
+waiters in tcmu_irqcontrol. In this case we will then put
+the completing dev on the waiter list of needed and then
+wake up the unmapping thread/wq.
+
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/iscsi/cxgbit/cxgbit.h     |  2 ++
- drivers/target/iscsi/cxgbit/cxgbit_cm.c  | 45 ++++++++++++++++++++++++++++++++
- drivers/target/iscsi/cxgbit/cxgbit_ddp.c |  8 ++++++
- 3 files changed, 55 insertions(+)
+ drivers/target/target_core_user.c | 47 ++++++++++++++++++++++++++-------------
+ 1 file changed, 32 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit.h b/drivers/target/iscsi/cxgbit/cxgbit.h
-index 9038869..417b9e6 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit.h
-+++ b/drivers/target/iscsi/cxgbit/cxgbit.h
-@@ -165,6 +165,7 @@ enum cxgbit_csk_flags {
- 	CSK_LOGIN_PDU_DONE,
- 	CSK_LOGIN_DONE,
- 	CSK_DDP_ENABLE,
-+	CSK_ABORT_RPL_WAIT,
- };
- 
- struct cxgbit_sock_common {
-@@ -321,6 +322,7 @@ int cxgbit_setup_np(struct iscsi_np *, struct sockaddr_storage *);
- int cxgbit_setup_conn_digest(struct cxgbit_sock *);
- int cxgbit_accept_np(struct iscsi_np *, struct iscsi_conn *);
- void cxgbit_free_np(struct iscsi_np *);
-+void cxgbit_abort_conn(struct cxgbit_sock *csk);
- void cxgbit_free_conn(struct iscsi_conn *);
- extern cxgbit_cplhandler_func cxgbit_cplhandlers[NUM_CPL_CMDS];
- int cxgbit_get_login_rx(struct iscsi_conn *, struct iscsi_login *);
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-index d4fa41b..92eb57e 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-@@ -665,6 +665,46 @@ static int cxgbit_send_abort_req(struct cxgbit_sock *csk)
- 	return cxgbit_l2t_send(csk->com.cdev, skb, csk->l2t);
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index fc82df6..c2a15f4 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1271,23 +1271,41 @@ static bool run_cmdr_queue(struct tcmu_dev *udev)
+ 	return drained;
  }
  
-+static void
-+__cxgbit_abort_conn(struct cxgbit_sock *csk, struct sk_buff *skb)
++static bool tcmu_waiting_on_dev_blocks(struct tcmu_dev *udev)
 +{
-+	__kfree_skb(skb);
-+
-+	if (csk->com.state != CSK_STATE_ESTABLISHED)
-+		goto no_abort;
-+
-+	set_bit(CSK_ABORT_RPL_WAIT, &csk->com.flags);
-+	csk->com.state = CSK_STATE_ABORTING;
-+
-+	cxgbit_send_abort_req(csk);
-+
-+	return;
-+
-+no_abort:
-+	cxgbit_wake_up(&csk->com.wr_wait, __func__, CPL_ERR_NONE);
-+	cxgbit_put_csk(csk);
++	return list_empty(&udev->waiter) && !list_empty(&udev->cmdr_queue);
 +}
 +
-+void cxgbit_abort_conn(struct cxgbit_sock *csk)
-+{
-+	struct sk_buff *skb = alloc_skb(0, GFP_KERNEL | __GFP_NOFAIL);
-+
-+	cxgbit_get_csk(csk);
-+	cxgbit_init_wr_wait(&csk->com.wr_wait);
-+
-+	spin_lock_bh(&csk->lock);
-+	if (csk->lock_owner) {
-+		cxgbit_skcb_rx_backlog_fn(skb) = __cxgbit_abort_conn;
-+		__skb_queue_tail(&csk->backlogq, skb);
-+	} else {
-+		__cxgbit_abort_conn(csk, skb);
-+	}
-+	spin_unlock_bh(&csk->lock);
-+
-+	cxgbit_wait_for_reply(csk->com.cdev, &csk->com.wr_wait,
-+			      csk->tid, 600, __func__);
-+}
-+
- void cxgbit_free_conn(struct iscsi_conn *conn)
+ static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
  {
- 	struct cxgbit_sock *csk = conn->context;
-@@ -1709,12 +1749,17 @@ static void cxgbit_abort_req_rss(struct cxgbit_sock *csk, struct sk_buff *skb)
+-	struct tcmu_dev *tcmu_dev = container_of(info, struct tcmu_dev, uio_info);
++	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
++	bool run_local = true;
  
- static void cxgbit_abort_rpl_rss(struct cxgbit_sock *csk, struct sk_buff *skb)
- {
-+	struct cpl_abort_rpl_rss *rpl = cplhdr(skb);
+-	mutex_lock(&tcmu_dev->cmdr_lock);
+-	/*
+-	 * If the current udev is also in waiter list, this will
+-	 * make sure that the other waiters in list be fed ahead
+-	 * of it.
+-	 */
+-	if (!list_empty(&tcmu_dev->waiter)) {
+-		schedule_work(&tcmu_unmap_work);
+-	} else {
+-		tcmu_handle_completions(tcmu_dev);
+-		run_cmdr_queue(tcmu_dev);
++	mutex_lock(&udev->cmdr_lock);
 +
- 	pr_debug("%s: csk %p; tid %u; state %d\n",
- 		 __func__, csk, csk->tid, csk->com.state);
- 
- 	switch (csk->com.state) {
- 	case CSK_STATE_ABORTING:
- 		csk->com.state = CSK_STATE_DEAD;
-+		if (test_bit(CSK_ABORT_RPL_WAIT, &csk->com.flags))
-+			cxgbit_wake_up(&csk->com.wr_wait, __func__,
-+				       rpl->status);
- 		cxgbit_put_csk(csk);
- 		break;
- 	default:
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-index 5fdb57c..768cce0 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-@@ -275,6 +275,14 @@ void cxgbit_release_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
- 			struct cxgbit_device *cdev = csk->com.cdev;
- 			struct cxgbi_ppm *ppm = cdev2ppm(cdev);
- 
-+			/* Abort the TCP conn if DDP is not complete to
-+			 * avoid any possibility of DDP after freeing
-+			 * the cmd.
++	if (atomic_read(&global_db_count) = TCMU_GLOBAL_MAX_BLOCKS) {
++		spin_lock(&root_udev_waiter_lock);
++		if (!list_empty(&root_udev_waiter)) {
++			/*
++			 * If we only hit the per block limit then make sure
++			 * we are added to the global list so we get run
++			 * after the other waiters.
 +			 */
-+			if (unlikely(cmd->write_data_done !+				     cmd->se_cmd.data_length))
-+				cxgbit_abort_conn(csk);
++			if (tcmu_waiting_on_dev_blocks(udev))
++				list_add_tail(&udev->waiter, &root_udev_waiter);
 +
- 			cxgbi_ppm_ppod_release(ppm, ttinfo->idx);
++			run_local = false;
++			schedule_work(&tcmu_unmap_work);
++		}
++		spin_unlock(&root_udev_waiter_lock);
+ 	}
+-	mutex_unlock(&tcmu_dev->cmdr_lock);
++
++	if (run_local) {
++		tcmu_handle_completions(udev);
++		run_cmdr_queue(udev);
++	}
++
++	mutex_unlock(&udev->cmdr_lock);
  
- 			dma_unmap_sg(&ppm->pdev->dev, ttinfo->sgl,
+ 	return 0;
+ }
+@@ -2186,8 +2204,7 @@ static uint32_t find_free_blocks(void)
+ 		/* Release the block pages */
+ 		tcmu_blocks_release(&udev->data_blocks, start, end);
+ 
+-		if (list_empty(&udev->waiter) &&
+-		    !list_empty(&udev->cmdr_queue)) {
++		if (tcmu_waiting_on_dev_blocks(udev)) {
+ 			/*
+ 			 * if we had to take pages from a dev that hit its
+ 			 * DATA_BLOCK_BITS limit put it on the waiter
 -- 
-2.0.2
+2.7.2
 
