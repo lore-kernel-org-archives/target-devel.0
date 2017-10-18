@@ -1,93 +1,50 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Tue, 31 Oct 2017 18:03:11 +0000
-Subject: [PATCH 03/11] target: Inline transport_put_cmd()
-Message-Id: <20171031180319.19258-4-bart.vanassche@wdc.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 18 Oct 2017 07:14:04 +0000
+Subject: [PATCH 09/17] tcmu: release blocks for partially setup cmds
+Message-Id: <1508310852-15366-10-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Since all transput_put_cmd() does is to call target_put_sess_cmd(),
-inline transport_put_cmd() into its callers. Leave out the BUG_ON()
-statement because if cmd->se_tfo = NULL then cmd->cmd_kref is 0
-and kref_put() will complain anyway. Notes:
-- transport_init_se_cmd() initializes both .se_tfo and .cmd_kref.
-- The only target driver that does not call transport_init_se_cmd()
-  for all commands is the iSCSI target driver. See also
-  iscsi_target_rx_opcode().
+If we cannot setup a cmd because we run out of ring space
+or global pages release the blocks before sleeping. This
+prevents a deadlock where dev0 has waiting_blocks set and
+needs N blocks, but dev1 to devX have each allocated N / X blocks
+and also hit the global block limit so they went to sleep.
 
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Mike Christie <mchristi@redhat.com>
+find_free_blocks is not able to take the sleeping dev's
+blocks becaause their waiting_blocks is set and even
+if it was not the block returned by find_last_bit could equal
+dbi_max. The latter will probably never happen because
+DATA_BLOCK_BITS is so high but in the next patches
+DATA_BLOCK_BITS and TCMU_GLOBAL_MAX_BLOCKS will be settable so
+it might be lower and could happen.
+
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_transport.c | 23 +++--------------------
- 1 file changed, 3 insertions(+), 20 deletions(-)
+ drivers/target/target_core_user.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index e6a2817c8239..8c0dbb048aa7 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -67,7 +67,6 @@ static void transport_complete_task_attr(struct se_cmd *cmd);
- static int translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason);
- static void transport_handle_queue_full(struct se_cmd *cmd,
- 		struct se_device *dev, int err, bool write_pending);
--static int transport_put_cmd(struct se_cmd *cmd);
- static void target_complete_ok_work(struct work_struct *work);
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 8a22d60..b5cdbeb 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -841,6 +841,13 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
+ 		int ret;
+ 		DEFINE_WAIT(__wait);
  
- int init_se_kmem_caches(void)
-@@ -668,7 +667,7 @@ int transport_cmd_finish_abort(struct se_cmd *cmd, int remove)
- 	if (transport_cmd_check_stop_to_fabric(cmd))
- 		return 1;
- 	if (remove && ack_kref)
--		ret = transport_put_cmd(cmd);
-+		ret = target_put_sess_cmd(cmd);
++		/*
++		 * Don't leave commands partially setup because the unmap
++		 * thread might need the blocks to make forward progress.
++		 */
++		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cur);
++		tcmu_cmd_reset_dbi_cur(tcmu_cmd);
++
+ 		prepare_to_wait(&udev->wait_cmdr, &__wait, TASK_INTERRUPTIBLE);
  
- 	return ret;
- }
-@@ -2352,22 +2351,6 @@ static inline void transport_free_pages(struct se_cmd *cmd)
- 	cmd->t_bidi_data_nents = 0;
- }
- 
--/**
-- * transport_put_cmd - release a reference to a command
-- * @cmd:       command to release
-- *
-- * This routine releases our reference to the command and frees it if possible.
-- */
--static int transport_put_cmd(struct se_cmd *cmd)
--{
--	BUG_ON(!cmd->se_tfo);
--	/*
--	 * If this cmd has been setup with target_get_sess_cmd(), drop
--	 * the kref and call ->release_cmd() in kref callback.
--	 */
--	return target_put_sess_cmd(cmd);
--}
--
- void *transport_kmap_data_sg(struct se_cmd *cmd)
- {
- 	struct scatterlist *sg = cmd->t_data_sg;
-@@ -2603,7 +2586,7 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
- 			target_wait_free_cmd(cmd, &aborted, &tas);
- 
- 		if (!aborted || tas)
--			ret = transport_put_cmd(cmd);
-+			ret = target_put_sess_cmd(cmd);
- 	} else {
- 		if (wait_for_tasks)
- 			target_wait_free_cmd(cmd, &aborted, &tas);
-@@ -2619,7 +2602,7 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
- 			transport_lun_remove_cmd(cmd);
- 
- 		if (!aborted || tas)
--			ret = transport_put_cmd(cmd);
-+			ret = target_put_sess_cmd(cmd);
- 	}
- 	/*
- 	 * If the task has been internally aborted due to TMR ABORT_TASK
+ 		pr_debug("sleeping for ring space\n");
 -- 
-2.14.2
+2.7.2
 
