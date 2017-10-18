@@ -1,156 +1,141 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 25 Oct 2017 16:47:17 +0000
-Subject: [PATCH 07/20] tcmu: move expired command completion to unmap thread
-Message-Id: <1508950050-10120-8-git-send-email-mchristi@redhat.com>
+Date: Wed, 18 Oct 2017 07:13:57 +0000
+Subject: [PATCH 02/17] tcmu: fix double se_cmd completion
+Message-Id: <1508310852-15366-3-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This moves the expired command completion handling to
-the unmap thread, so the next patch can use a mutex
-in tcmu_check_expired_cmd.
+If cmd_time_out != 0, then tcmu_queue_cmd_ring could end up
+sleeping waiting for ring space, timing out and then returning
+failure to lio, and tcmu_check_expired_cmd could also detect
+the timeout and call target_complete_cmd on the cmd.
 
-Notes:
-tcmu_device_timedout's use of spin_lock_irq was not needed.
-The commands_lock is used between thread context (tcmu_queue_cmd_ring
-and tcmu_irqcontrol) and timer/bh context. In the timer/bh context
-bhs are disabled, so you need to use the _bh lock calls from the
-thread context callers.
+This patch just delays setting up the deadline value and adding
+the cmd to the udev->commands idr until we have allocated ring
+space and are about to send the cmd to userspace.
 
 Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_user.c | 62 ++++++++++++++++++++++++++++++++-------
- 1 file changed, 51 insertions(+), 11 deletions(-)
+ drivers/target/target_core_user.c | 54 ++++++++++++++++++++++-----------------
+ 1 file changed, 31 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 4d45bb2..53a0446 100644
+index 43e4b24..529d30f 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -145,6 +145,7 @@ struct tcmu_dev {
+@@ -459,7 +459,6 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
+ 	struct se_device *se_dev = se_cmd->se_dev;
+ 	struct tcmu_dev *udev = TCMU_DEV(se_dev);
+ 	struct tcmu_cmd *tcmu_cmd;
+-	int cmd_id;
  
- 	struct timer_list timeout;
- 	unsigned int cmd_time_out;
-+	struct list_head timedout_entry;
+ 	tcmu_cmd = kmem_cache_zalloc(tcmu_cmd_cache, GFP_KERNEL);
+ 	if (!tcmu_cmd)
+@@ -467,9 +466,6 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
  
- 	spinlock_t nl_cmd_lock;
- 	struct tcmu_nl_cmd curr_nl_cmd;
-@@ -180,6 +181,10 @@ struct tcmu_cmd {
+ 	tcmu_cmd->se_cmd = se_cmd;
+ 	tcmu_cmd->tcmu_dev = udev;
+-	if (udev->cmd_time_out)
+-		tcmu_cmd->deadline = jiffies +
+-					msecs_to_jiffies(udev->cmd_time_out);
  
- static struct task_struct *unmap_thread;
- static wait_queue_head_t unmap_wait;
-+
-+static DEFINE_SPINLOCK(timed_out_udevs_lock);
-+static LIST_HEAD(timed_out_udevs);
-+
- /*
-  * To avoid dead lock, the mutex locks order should always be:
-  *
-@@ -1116,19 +1121,15 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
- static void tcmu_device_timedout(unsigned long data)
- {
- 	struct tcmu_dev *udev = (struct tcmu_dev *)data;
--	unsigned long flags;
+ 	tcmu_cmd_reset_dbi_cur(tcmu_cmd);
+ 	tcmu_cmd->dbi_cnt = tcmu_cmd_get_block_cnt(tcmu_cmd);
+@@ -480,19 +476,6 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
+ 		return NULL;
+ 	}
  
--	spin_lock_irqsave(&udev->commands_lock, flags);
--	idr_for_each(&udev->commands, tcmu_check_expired_cmd, NULL);
--	spin_unlock_irqrestore(&udev->commands_lock, flags);
-+	pr_debug("%s cmd timeout has expired\n", udev->name);
- 
--	/* Try to wake up the ummap thread */
--	wake_up(&unmap_wait);
-+	spin_lock(&timed_out_udevs_lock);
-+	if (list_empty(&udev->timedout_entry))
-+		list_add_tail(&udev->timedout_entry, &timed_out_udevs);
-+	spin_unlock(&timed_out_udevs_lock);
- 
--	/*
--	 * We don't need to wakeup threads on wait_cmdr since they have their
--	 * own timeout.
--	 */
-+	wake_up(&unmap_wait);
+-	idr_preload(GFP_KERNEL);
+-	spin_lock_irq(&udev->commands_lock);
+-	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 0,
+-		USHRT_MAX, GFP_NOWAIT);
+-	spin_unlock_irq(&udev->commands_lock);
+-	idr_preload_end();
+-
+-	if (cmd_id < 0) {
+-		tcmu_free_cmd(tcmu_cmd);
+-		return NULL;
+-	}
+-	tcmu_cmd->cmd_id = cmd_id;
+-
+ 	return tcmu_cmd;
  }
  
- static int tcmu_attach_hba(struct se_hba *hba, u32 host_id)
-@@ -1172,6 +1173,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 	init_waitqueue_head(&udev->wait_cmdr);
- 	mutex_init(&udev->cmdr_lock);
+@@ -795,6 +778,30 @@ static inline size_t tcmu_cmd_get_cmd_size(struct tcmu_cmd *tcmu_cmd,
+ 	return command_size;
+ }
  
-+	INIT_LIST_HEAD(&udev->timedout_entry);
- 	idr_init(&udev->commands);
- 	spin_lock_init(&udev->commands_lock);
- 
-@@ -1396,6 +1398,11 @@ static void tcmu_dev_kref_release(struct kref *kref)
- 	vfree(udev->mb_addr);
- 	udev->mb_addr = NULL;
- 
-+	spin_lock_bh(&timed_out_udevs_lock);
-+	if (!list_empty(&udev->timedout_entry))
-+		list_del(&udev->timedout_entry);
-+	spin_unlock_bh(&timed_out_udevs_lock);
-+
- 	/* Upper layer should drain all requests before calling this */
- 	spin_lock_irq(&udev->commands_lock);
- 	idr_for_each_entry(&udev->commands, cmd, i) {
-@@ -2047,23 +2054,56 @@ static struct target_backend_ops tcmu_ops = {
- 	.tb_dev_attrib_attrs	= NULL,
- };
- 
-+static void check_timedout_devices(void)
++static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
 +{
-+	struct tcmu_dev *udev, *tmp_dev;
-+	LIST_HEAD(devs);
++	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
++	unsigned long tmo = udev->cmd_time_out;
++	int cmd_id;
 +
-+	spin_lock_bh(&timed_out_udevs_lock);
-+	list_splice_init(&timed_out_udevs, &devs);
++	if (tcmu_cmd->cmd_id)
++		return 0;
 +
-+	list_for_each_entry_safe(udev, tmp_dev, &devs, timedout_entry) {
-+		list_del_init(&udev->timedout_entry);
-+		spin_unlock_bh(&timed_out_udevs_lock);
-+
-+		spin_lock(&udev->commands_lock);
-+		idr_for_each(&udev->commands, tcmu_check_expired_cmd, NULL);
-+		spin_unlock(&udev->commands_lock);
-+
-+		spin_lock_bh(&timed_out_udevs_lock);
++	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 1, USHRT_MAX, GFP_NOWAIT);
++	if (cmd_id < 0) {
++		pr_err("tcmu: Could not allocate cmd id.\n");
++		return cmd_id;
 +	}
-+	spin_unlock_bh(&timed_out_udevs_lock);
++	tcmu_cmd->cmd_id = cmd_id;
++
++	if (!tmo)
++		return 0;
++
++	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
++	mod_timer(&udev->timeout, tcmu_cmd->deadline);
++	return 0;
 +}
 +
- static int unmap_thread_fn(void *data)
+ static sense_reason_t
+ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
  {
- 	struct tcmu_dev *udev, *tmp;
- 	loff_t off;
- 	uint32_t start, end, block;
- 	static uint32_t free_blocks;
-+	bool has_timed_out_devs;
+@@ -902,7 +909,6 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
+ 	entry = (void *) mb + CMDR_OFF + cmd_head;
+ 	memset(entry, 0, command_size);
+ 	tcmu_hdr_set_op(&entry->hdr.len_op, TCMU_OP_CMD);
+-	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
  
- 	while (!kthread_should_stop()) {
- 		DEFINE_WAIT(__wait);
+ 	/* Handle allocating space from the data area */
+ 	tcmu_cmd_reset_dbi_cur(tcmu_cmd);
+@@ -940,6 +946,13 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
+ 	}
+ 	entry->req.iov_bidi_cnt = iov_cnt;
  
- 		prepare_to_wait(&unmap_wait, &__wait, TASK_INTERRUPTIBLE);
--		schedule();
++	ret = tcmu_setup_cmd_timer(tcmu_cmd);
++	if (ret) {
++		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
++		return TCM_OUT_OF_RESOURCES;
++	}
++	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
 +
-+		spin_lock_bh(&timed_out_udevs_lock);
-+		has_timed_out_devs = true;
-+		if (list_empty(&timed_out_udevs))
-+			has_timed_out_devs = false;
-+		spin_unlock_bh(&timed_out_udevs_lock);
-+
-+		if (!has_timed_out_devs)
-+			schedule();
-+
- 		finish_wait(&unmap_wait, &__wait);
+ 	/*
+ 	 * Recalaulate the command's base size and size according
+ 	 * to the actual needs
+@@ -973,8 +986,6 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
+ static sense_reason_t
+ tcmu_queue_cmd(struct se_cmd *se_cmd)
+ {
+-	struct se_device *se_dev = se_cmd->se_dev;
+-	struct tcmu_dev *udev = TCMU_DEV(se_dev);
+ 	struct tcmu_cmd *tcmu_cmd;
+ 	sense_reason_t ret;
  
- 		if (kthread_should_stop())
- 			break;
+@@ -985,9 +996,6 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
+ 	ret = tcmu_queue_cmd_ring(tcmu_cmd);
+ 	if (ret != TCM_NO_SENSE) {
+ 		pr_err("TCMU: Could not queue command\n");
+-		spin_lock_irq(&udev->commands_lock);
+-		idr_remove(&udev->commands, tcmu_cmd->cmd_id);
+-		spin_unlock_irq(&udev->commands_lock);
  
-+		check_timedout_devices();
-+
- 		mutex_lock(&root_udev_mutex);
- 		list_for_each_entry(udev, &root_udev, node) {
- 			mutex_lock(&udev->cmdr_lock);
+ 		tcmu_free_cmd(tcmu_cmd);
+ 	}
 -- 
 2.7.2
 
