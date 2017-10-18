@@ -1,12 +1,48 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 07:14:11 +0000
-Subject: [PATCH 16/17] tcmu: make ring buffer timer configurable
-Message-Id: <1508310852-15366-17-git-send-email-mchristi@redhat.com>
+Date: Wed, 18 Oct 2017 08:05:46 +0000
+Subject: Re: [PATCH 16/17] tcmu: make ring buffer timer configurable
+Message-Id: <59E70B5A.30705@redhat.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------060703050909010403030403"
 List-Id: <target-devel.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1508310852-15366-17-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1508310852-15366-17-git-send-email-mchristi@redhat.com>
 To: target-devel@vger.kernel.org
+
+This is a multi-part message in MIME format.
+--------------060703050909010403030403
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+
+On 10/18/2017 02:14 AM, Mike Christie wrote:
+> This adds a timer, qfull_time_out, that controls how long a
+> device will wait for ring buffer space to open before
+> failing the commands in the queue. It is useful to separate
+> this timer from the cmd_time_out and default 30 sec one,
+> because for HA setups cmd_time_out may be disbled and 30
+> seconds is too long to wait when some OSs like ESX will
+> timeout commands after as little as 8 - 15 seconds.
+> 
+
+Sent a bad patch. This version of the patch had a bug when
+cmd_time_out=0 and qfull_time_out > 0. I have attached a version 2 which
+fixes this.
+
+
+
+
+
+--------------060703050909010403030403
+Content-Type: text/x-patch;
+ name="0001-tcmu-make-ring-buffer-timer-configurable-v2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0001-tcmu-make-ring-buffer-timer-configurable-v2.patch"
+
+From 8830f5f390181125e1e614f19e0c48524da31bb9 Mon Sep 17 00:00:00 2001
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 18 Oct 2017 03:02:22 -0500
+Subject: [PATCH] tcmu: make ring buffer timer configurable v2
 
 This adds a timer, qfull_time_out, that controls how long a
 device will wait for ring buffer space to open before
@@ -16,13 +52,15 @@ because for HA setups cmd_time_out may be disbled and 30
 seconds is too long to wait when some OSs like ESX will
 timeout commands after as little as 8 - 15 seconds.
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+v2:
+Fix bug where if cmd_time_out=0 and qfull_time_out > 0
+then inflight commands might timeout after qfull_time_out secs.
 ---
- drivers/target/target_core_user.c | 86 +++++++++++++++++++++++++++++++--------
- 1 file changed, 68 insertions(+), 18 deletions(-)
+ drivers/target/target_core_user.c | 104 +++++++++++++++++++++++++++++---------
+ 1 file changed, 81 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 09d0b5b..1301b53 100644
+index 09d0b5b..f9f0677 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
 @@ -142,8 +142,12 @@ struct tcmu_dev {
@@ -116,13 +154,47 @@ index 09d0b5b..1301b53 100644
 @@ -1085,7 +1093,7 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
  	}
  
- 	if (mb->cmd_tail = mb->cmd_head && list_empty(&udev->cmdr_queue))
+ 	if (mb->cmd_tail == mb->cmd_head && list_empty(&udev->cmdr_queue))
 -		del_timer(&udev->timeout); /* no more pending or waiting cmds */
 +		del_timer(&udev->cmd_timer); /* no more pending or waiting cmds */
  
  	return handled;
  }
-@@ -1139,7 +1147,7 @@ static void tcmu_device_timedout(unsigned long data)
+@@ -1105,13 +1113,15 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
+ 		return 0;
+ 
+ 	is_running = list_empty(&cmd->cmdr_queue_entry);
+-	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
+-		 id, udev->name, is_running ? "inflight" : "queued");
+-
+-	se_cmd = cmd->se_cmd;
+-	cmd->se_cmd = NULL;
+ 
+ 	if (is_running) {
++		/*
++		 * If cmd_time_out is disabled but qfull is set deadline
++		 * will only reflect the qfull timeout. Ignore it.
++		 */
++		if (!udev->cmd_time_out)
++			return 0;
++
+ 		set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
+ 		/*
+ 		 * target_complete_cmd will translate this to LUN COMM FAILURE
+@@ -1131,6 +1141,12 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
+ 		tcmu_free_cmd(cmd);
+ 		scsi_status = SAM_STAT_TASK_SET_FULL;
+ 	}
++
++	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
++		 id, udev->name, is_running ? "inflight" : "queued");
++
++	se_cmd = cmd->se_cmd;
++	cmd->se_cmd = NULL;
+ 	target_complete_cmd(se_cmd, scsi_status);
+ 	return 0;
+ }
+@@ -1139,7 +1155,7 @@ static void tcmu_device_timedout(unsigned long data)
  {
  	struct tcmu_dev *udev = (struct tcmu_dev *)data;
  
@@ -131,7 +203,7 @@ index 09d0b5b..1301b53 100644
  
  	spin_lock(&timed_out_udevs_lock);
  	if (list_empty(&udev->timedout_entry))
-@@ -1186,6 +1194,8 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+@@ -1186,6 +1202,8 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
  
  	udev->hba = hba;
  	udev->cmd_time_out = TCMU_TIME_OUT;
@@ -140,7 +212,7 @@ index 09d0b5b..1301b53 100644
  
  	mutex_init(&udev->cmdr_lock);
  
-@@ -1194,7 +1204,10 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+@@ -1194,7 +1212,10 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
  	INIT_LIST_HEAD(&udev->waiter);
  	idr_init(&udev->commands);
  
@@ -152,7 +224,7 @@ index 09d0b5b..1301b53 100644
  		(unsigned long)udev);
  
  	init_waitqueue_head(&udev->nl_cmd_wq);
-@@ -1250,6 +1263,8 @@ static bool run_cmdr_queue(struct tcmu_dev *udev)
+@@ -1250,6 +1271,8 @@ static bool run_cmdr_queue(struct tcmu_dev *udev)
  			goto done;
  		}
  	}
@@ -161,7 +233,7 @@ index 09d0b5b..1301b53 100644
  done:
  	return drained;
  }
-@@ -1777,7 +1792,8 @@ static void tcmu_destroy_device(struct se_device *dev)
+@@ -1777,7 +1800,8 @@ static void tcmu_destroy_device(struct se_device *dev)
  {
  	struct tcmu_dev *udev = TCMU_DEV(dev);
  
@@ -171,7 +243,7 @@ index 09d0b5b..1301b53 100644
  
  	mutex_lock(&root_udev_mutex);
  	list_del(&udev->node);
-@@ -1962,6 +1978,39 @@ static ssize_t tcmu_cmd_time_out_store(struct config_item *item, const char *pag
+@@ -1962,6 +1986,39 @@ static ssize_t tcmu_cmd_time_out_store(struct config_item *item, const char *pag
  }
  CONFIGFS_ATTR(tcmu_, cmd_time_out);
  
@@ -211,7 +283,7 @@ index 09d0b5b..1301b53 100644
  static ssize_t tcmu_dev_config_show(struct config_item *item, char *page)
  {
  	struct se_dev_attrib *da = container_of(to_config_group(item),
-@@ -2107,6 +2156,7 @@ CONFIGFS_ATTR(tcmu_, emulate_write_cache);
+@@ -2107,6 +2164,7 @@ static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
  
  static struct configfs_attribute *tcmu_attrib_attrs[] = {
  	&tcmu_attr_cmd_time_out,
@@ -220,5 +292,7 @@ index 09d0b5b..1301b53 100644
  	&tcmu_attr_dev_size,
  	&tcmu_attr_emulate_write_cache,
 -- 
-2.7.2
+1.8.3.1
 
+
+--------------060703050909010403030403--
