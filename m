@@ -1,46 +1,161 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Tue, 31 Oct 2017 18:03:17 +0000
-Subject: [PATCH 09/11] target/iscsi: Fix a race condition in iscsit_add_reject_from_cmd()
-Message-Id: <20171031180319.19258-10-bart.vanassche@wdc.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 18 Oct 2017 18:27:39 +0000
+Subject: [PATCH 2/3] tcmu: Add netlink command reply supported option for each device
+Message-Id: <1508351260-6646-3-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Avoid that cmd->se_cmd.se_tfo is read after a command has already been
-freed.
+From: Kenjiro Nakayama <nakayamakenjiro@gmail.com>
 
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Mike Christie <mchristi@redhat.com>
+Currently netlink command reply support option
+(TCMU_ATTR_SUPP_KERN_CMD_REPLY) can be enabled only on module
+scope. Because of that, once an application enables the netlink
+command reply support, all applications using target_core_user.ko
+would be expected to support the netlink reply. To make matters worse,
+users will not be able to add a device via configfs manually.
+
+To fix these issues, this patch adds an option to make netlink command
+reply disabled on each device through configfs. Original
+TCMU_ATTR_SUPP_KERN_CMD_REPLY is still enabled on module scope to keep
+backward-compatibility and used by default, however once users set
+nl_reply_supported=<NAGATIVE_VALUE> via configfs for a particular
+device, the device disables the netlink command reply support.
+
+Signed-off-by: Kenjiro Nakayama <nakayamakenjiro@gmail.com>
+[use kstrtoint]
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/iscsi/iscsi_target.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/target/target_core_user.c | 58 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 91fbada7cdc2..541f66a875fc 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -833,6 +833,7 @@ static int iscsit_add_reject_from_cmd(
- 	unsigned char *buf)
- {
- 	struct iscsi_conn *conn;
-+	const bool do_put = cmd->se_cmd.se_tfo != NULL;
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index b743ff3..2ee551a 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -152,6 +152,8 @@ struct tcmu_dev {
+ 	wait_queue_head_t nl_cmd_wq;
  
- 	if (!cmd->conn) {
- 		pr_err("cmd->conn is NULL for ITT: 0x%08x\n",
-@@ -863,7 +864,7 @@ static int iscsit_add_reject_from_cmd(
- 	 * Perform the kref_put now if se_cmd has already been setup by
- 	 * scsit_setup_scsi_cmd()
- 	 */
--	if (cmd->se_cmd.se_tfo != NULL) {
-+	if (do_put) {
- 		pr_debug("iscsi reject: calling target_put_sess_cmd >>>>>>\n");
- 		target_put_sess_cmd(&cmd->se_cmd);
- 	}
+ 	char dev_config[TCMU_CONFIG_LEN];
++
++	int nl_reply_supported;
+ };
+ 
+ #define TCMU_DEV(_se_dev) container_of(_se_dev, struct tcmu_dev, se_dev)
+@@ -1421,6 +1423,10 @@ static void tcmu_init_genl_cmd_reply(struct tcmu_dev *udev, int cmd)
+ 
+ 	if (!tcmu_kern_cmd_reply_supported)
+ 		return;
++
++	if (udev->nl_reply_supported <= 0)
++		return;
++
+ relock:
+ 	spin_lock(&udev->nl_cmd_lock);
+ 
+@@ -1447,6 +1453,9 @@ static int tcmu_wait_genl_cmd_reply(struct tcmu_dev *udev)
+ 	if (!tcmu_kern_cmd_reply_supported)
+ 		return 0;
+ 
++	if (udev->nl_reply_supported <= 0)
++		return 0;
++
+ 	pr_debug("sleeping for nl reply\n");
+ 	wait_for_completion(&nl_cmd->complete);
+ 
+@@ -1619,6 +1628,12 @@ static int tcmu_configure_device(struct se_device *dev)
+ 		dev->dev_attrib.emulate_write_cache = 0;
+ 	dev->dev_attrib.hw_queue_depth = 128;
+ 
++	/* If user didn't explicitly disable netlink reply support, use
++	 * module scope setting.
++	 */
++	if (udev->nl_reply_supported >= 0)
++		udev->nl_reply_supported = tcmu_kern_cmd_reply_supported;
++
+ 	/*
+ 	 * Get a ref incase userspace does a close on the uio device before
+ 	 * LIO has initiated tcmu_free_device.
+@@ -1688,7 +1703,7 @@ static void tcmu_destroy_device(struct se_device *dev)
+ 
+ enum {
+ 	Opt_dev_config, Opt_dev_size, Opt_hw_block_size, Opt_hw_max_sectors,
+-	Opt_err,
++	Opt_nl_reply_supported, Opt_err,
+ };
+ 
+ static match_table_t tokens = {
+@@ -1696,6 +1711,7 @@ static match_table_t tokens = {
+ 	{Opt_dev_size, "dev_size=%u"},
+ 	{Opt_hw_block_size, "hw_block_size=%u"},
+ 	{Opt_hw_max_sectors, "hw_max_sectors=%u"},
++	{Opt_nl_reply_supported, "nl_reply_supported=%d"},
+ 	{Opt_err, NULL}
+ };
+ 
+@@ -1770,6 +1786,17 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
+ 			ret = tcmu_set_dev_attrib(&args[0],
+ 					&(dev->dev_attrib.hw_max_sectors));
+ 			break;
++		case Opt_nl_reply_supported:
++			arg_p = match_strdup(&args[0]);
++			if (!arg_p) {
++				ret = -ENOMEM;
++				break;
++			}
++			ret = kstrtoint(arg_p, 0, &udev->nl_reply_supported);
++			kfree(arg_p);
++			if (ret < 0)
++				pr_err("kstrtoint() failed for nl_reply_supported=\n");
++			break;
+ 		default:
+ 			break;
+ 		}
+@@ -1920,6 +1947,34 @@ static ssize_t tcmu_dev_size_store(struct config_item *item, const char *page,
+ }
+ CONFIGFS_ATTR(tcmu_, dev_size);
+ 
++static ssize_t tcmu_nl_reply_supported_show(struct config_item *item,
++		char *page)
++{
++	struct se_dev_attrib *da = container_of(to_config_group(item),
++						struct se_dev_attrib, da_group);
++	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
++
++	return snprintf(page, PAGE_SIZE, "%d\n", udev->nl_reply_supported);
++}
++
++static ssize_t tcmu_nl_reply_supported_store(struct config_item *item,
++		const char *page, size_t count)
++{
++	struct se_dev_attrib *da = container_of(to_config_group(item),
++						struct se_dev_attrib, da_group);
++	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
++	s8 val;
++	int ret;
++
++	ret = kstrtos8(page, 0, &val);
++	if (ret < 0)
++		return ret;
++
++	udev->nl_reply_supported = val;
++	return count;
++}
++CONFIGFS_ATTR(tcmu_, nl_reply_supported);
++
+ static ssize_t tcmu_emulate_write_cache_show(struct config_item *item,
+ 					     char *page)
+ {
+@@ -1962,6 +2017,7 @@ static struct configfs_attribute *tcmu_attrib_attrs[] = {
+ 	&tcmu_attr_dev_config,
+ 	&tcmu_attr_dev_size,
+ 	&tcmu_attr_emulate_write_cache,
++	&tcmu_attr_nl_reply_supported,
+ 	NULL,
+ };
+ 
 -- 
-2.14.2
+2.7.2
 
