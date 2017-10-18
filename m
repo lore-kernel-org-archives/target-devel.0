@@ -1,263 +1,94 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 25 Oct 2017 16:47:29 +0000
-Subject: [PATCH 19/20] tcmu: make ring buffer timer configurable v2
-Message-Id: <1508950050-10120-20-git-send-email-mchristi@redhat.com>
+Date: Wed, 18 Oct 2017 07:14:00 +0000
+Subject: [PATCH 05/17] tcmu: remove commands_lock
+Message-Id: <1508310852-15366-6-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This adds a timer, qfull_time_out, that controls how long a
-device will wait for ring buffer space to open before
-failing the commands in the queue. It is useful to separate
-this timer from the cmd_time_out and default 30 sec one,
-because for HA setups cmd_time_out may be disbled and 30
-seconds is too long to wait when some OSs like ESX will
-timeout commands after as little as 8 - 15 seconds.
+No need for the commands_lock. The cmdr_lock is already held during
+idr addition and deletion, so just grab it during traversal.
+
+Note: This also fixes 2 issues.
+
+There was no reason to use spin_lock_irq. We only were locking
+against the submitting, completion and timer context. The first two
+are done in process context (even though tcmu_irqcontrol is named
+irq it is run from the write() calls context) and the timer was in
+softirq, so we just needed to do _bh locking.
+
+We should have been using either one tcmu_handle_completions
+to prevent the case where tcmu_handle_completions could be
+interrupted a timer softirq while the commands_lock is held.
 
 Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
-
-v2:
-Fix bug where if cmd_time_out=0 and qfull_time_out > 0
-then inflight commands might timeout after qfull_time_out secs.
-
- drivers/target/target_core_user.c | 104 +++++++++++++++++++++++++++++---------
- 1 file changed, 81 insertions(+), 23 deletions(-)
+ drivers/target/target_core_user.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 2220cd0..52ffe4f 100644
+index 40a9cf6..a222d15 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -142,8 +142,12 @@ struct tcmu_dev {
+@@ -141,7 +141,6 @@ struct tcmu_dev {
+ 	struct radix_tree_root data_blocks;
  
  	struct idr commands;
+-	spinlock_t commands_lock;
  
--	struct timer_list timeout;
-+	struct timer_list cmd_timer;
+ 	struct timer_list timeout;
  	unsigned int cmd_time_out;
-+
-+	struct timer_list qfull_timer;
-+	unsigned int qfull_time_out;
-+
- 	struct list_head timedout_entry;
- 
- 	spinlock_t nl_cmd_lock;
-@@ -766,18 +770,14 @@ static inline size_t tcmu_cmd_get_cmd_size(struct tcmu_cmd *tcmu_cmd,
- 	return command_size;
- }
- 
--static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
-+static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
-+				struct timer_list *timer)
- {
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
--	unsigned long tmo = udev->cmd_time_out;
- 	int cmd_id;
- 
--	/*
--	 * If it was on the cmdr queue waiting we do not reset the timer
--	 * for requeues and when it is finally sent to userspace.
--	 */
- 	if (tcmu_cmd->cmd_id)
--		return 0;
-+		goto setup_timer;
- 
- 	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 1, USHRT_MAX, GFP_NOWAIT);
- 	if (cmd_id < 0) {
-@@ -786,14 +786,15 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
- 	}
- 	tcmu_cmd->cmd_id = cmd_id;
- 
--	if (!tmo)
--		tmo = TCMU_TIME_OUT;
--
- 	pr_debug("allocated cmd %u for dev %s tmo %lu\n", tcmu_cmd->cmd_id,
- 		 udev->name, tmo / MSEC_PER_SEC);
- 
-+setup_timer:
-+	if (!tmo)
-+		return 0;
-+
- 	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
--	mod_timer(&udev->timeout, tcmu_cmd->deadline);
-+	mod_timer(timer, tcmu_cmd->deadline);
- 	return 0;
- }
- 
-@@ -802,7 +803,8 @@ static int add_to_cmdr_queue(struct tcmu_cmd *tcmu_cmd)
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
- 	int ret;
- 
--	ret = tcmu_setup_cmd_timer(tcmu_cmd);
-+	ret = tcmu_setup_cmd_timer(tcmu_cmd, udev->qfull_time_out,
-+				   &udev->qfull_timer);
- 	if (ret)
- 		return ret;
- 
-@@ -938,7 +940,8 @@ static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
- 	}
- 	entry->req.iov_bidi_cnt = iov_cnt;
- 
--	ret = tcmu_setup_cmd_timer(tcmu_cmd);
-+	ret = tcmu_setup_cmd_timer(tcmu_cmd, udev->cmd_time_out,
-+				   &udev->cmd_timer);
- 	if (ret) {
- 		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
- 		*scsi_err = TCM_OUT_OF_RESOURCES;
-@@ -971,6 +974,11 @@ static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
- 	return 0;
- 
- queue:
-+	if (!udev->qfull_time_out) {
-+		*scsi_err = TCM_OUT_OF_RESOURCES;
-+		return -1;
-+	}
-+
- 	if (add_to_cmdr_queue(tcmu_cmd)) {
- 		*scsi_err = TCM_OUT_OF_RESOURCES;
- 		return -1;
-@@ -1085,7 +1093,7 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- 	}
- 
- 	if (mb->cmd_tail = mb->cmd_head && list_empty(&udev->cmdr_queue))
--		del_timer(&udev->timeout); /* no more pending or waiting cmds */
-+		del_timer(&udev->cmd_timer); /* no more pending or waiting cmds */
- 
- 	return handled;
- }
-@@ -1105,13 +1113,15 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
- 		return 0;
- 
- 	is_running = list_empty(&cmd->cmdr_queue_entry);
--	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
--		 id, udev->name, is_running ? "inflight" : "queued");
--
--	se_cmd = cmd->se_cmd;
--	cmd->se_cmd = NULL;
- 
- 	if (is_running) {
-+		/*
-+		 * If cmd_time_out is disabled but qfull is set deadline
-+		 * will only reflect the qfull timeout. Ignore it.
-+		 */
-+		if (!udev->cmd_time_out)
-+			return 0;
-+
- 		set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
- 		/*
- 		 * target_complete_cmd will translate this to LUN COMM FAILURE
-@@ -1131,6 +1141,12 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
- 		tcmu_free_cmd(cmd);
- 		scsi_status = SAM_STAT_TASK_SET_FULL;
- 	}
-+
-+	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
-+		 id, udev->name, is_running ? "inflight" : "queued");
-+
-+	se_cmd = cmd->se_cmd;
-+	cmd->se_cmd = NULL;
- 	target_complete_cmd(se_cmd, scsi_status);
- 	return 0;
- }
-@@ -1139,7 +1155,7 @@ static void tcmu_device_timedout(unsigned long data)
- {
- 	struct tcmu_dev *udev = (struct tcmu_dev *)data;
- 
--	pr_debug("%s cmd timeout has expired\n", udev->name);
-+	pr_debug("%s cmd/qfull timeout has expired\n", udev->name);
- 
- 	spin_lock(&timed_out_udevs_lock);
- 	if (list_empty(&udev->timedout_entry))
-@@ -1186,6 +1202,8 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 
- 	udev->hba = hba;
- 	udev->cmd_time_out = TCMU_TIME_OUT;
-+	/* for backwards compat use the cmd_time_out */
-+	udev->qfull_time_out = TCMU_TIME_OUT;
- 
- 	mutex_init(&udev->cmdr_lock);
- 
-@@ -1194,7 +1212,10 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 	INIT_LIST_HEAD(&udev->waiter);
- 	idr_init(&udev->commands);
- 
--	setup_timer(&udev->timeout, tcmu_device_timedout,
-+	setup_timer(&udev->qfull_timer, tcmu_device_timedout,
-+		(unsigned long)udev);
-+
-+	setup_timer(&udev->cmd_timer, tcmu_device_timedout,
- 		(unsigned long)udev);
- 
- 	init_waitqueue_head(&udev->nl_cmd_wq);
-@@ -1250,6 +1271,8 @@ static bool run_cmdr_queue(struct tcmu_dev *udev)
- 			goto done;
+@@ -1076,10 +1075,7 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
  		}
+ 		WARN_ON(tcmu_hdr_get_op(entry->hdr.len_op) != TCMU_OP_CMD);
+ 
+-		spin_lock(&udev->commands_lock);
+ 		cmd = idr_remove(&udev->commands, entry->hdr.cmd_id);
+-		spin_unlock(&udev->commands_lock);
+-
+ 		if (!cmd) {
+ 			pr_err("cmd_id not found, ring is broken\n");
+ 			set_bit(TCMU_DEV_BIT_BROKEN, &udev->flags);
+@@ -1175,7 +1171,6 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+ 
+ 	INIT_LIST_HEAD(&udev->timedout_entry);
+ 	idr_init(&udev->commands);
+-	spin_lock_init(&udev->commands_lock);
+ 
+ 	setup_timer(&udev->timeout, tcmu_device_timedout,
+ 		(unsigned long)udev);
+@@ -1404,16 +1399,14 @@ static void tcmu_dev_kref_release(struct kref *kref)
+ 	spin_unlock_bh(&timed_out_udevs_lock);
+ 
+ 	/* Upper layer should drain all requests before calling this */
+-	spin_lock_irq(&udev->commands_lock);
++	mutex_lock(&udev->cmdr_lock);
+ 	idr_for_each_entry(&udev->commands, cmd, i) {
+ 		if (tcmu_check_and_free_pending_cmd(cmd) != 0)
+ 			all_expired = false;
  	}
-+	if (list_empty(&udev->cmdr_queue))
-+		del_timer(&udev->qfull_timer);
- done:
- 	return drained;
- }
-@@ -1777,7 +1800,8 @@ static void tcmu_destroy_device(struct se_device *dev)
- {
- 	struct tcmu_dev *udev = TCMU_DEV(dev);
+ 	idr_destroy(&udev->commands);
+-	spin_unlock_irq(&udev->commands_lock);
+ 	WARN_ON(!all_expired);
  
--	del_timer_sync(&udev->timeout);
-+	del_timer_sync(&udev->cmd_timer);
-+	del_timer_sync(&udev->qfull_timer);
+-	mutex_lock(&udev->cmdr_lock);
+ 	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
+ 	mutex_unlock(&udev->cmdr_lock);
  
- 	mutex_lock(&root_udev_mutex);
- 	list_del(&udev->node);
-@@ -1962,6 +1986,39 @@ static ssize_t tcmu_cmd_time_out_store(struct config_item *item, const char *pag
- }
- CONFIGFS_ATTR(tcmu_, cmd_time_out);
+@@ -2066,9 +2059,9 @@ static void check_timedout_devices(void)
+ 		list_del_init(&udev->timedout_entry);
+ 		spin_unlock_bh(&timed_out_udevs_lock);
  
-+static ssize_t tcmu_qfull_time_out_show(struct config_item *item, char *page)
-+{
-+	struct se_dev_attrib *da = container_of(to_config_group(item),
-+						struct se_dev_attrib, da_group);
-+	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
-+
-+	return snprintf(page, PAGE_SIZE, "%lu\n",
-+			udev->qfull_time_out / MSEC_PER_SEC);
-+}
-+
-+static ssize_t tcmu_qfull_time_out_store(struct config_item *item,
-+					 const char *page, size_t count)
-+{
-+	struct se_dev_attrib *da = container_of(to_config_group(item),
-+					struct se_dev_attrib, da_group);
-+	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
-+	s32 val;
-+	int ret;
-+
-+	ret = kstrtos32(page, 0, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (val >= 0) {
-+		udev->qfull_time_out = val * MSEC_PER_SEC;
-+	} else {
-+		printk(KERN_ERR "Invalid qfull timeout value %d\n", val);
-+		return -EINVAL;
-+	}
-+	return count;
-+}
-+CONFIGFS_ATTR(tcmu_, qfull_time_out);
-+
- static ssize_t tcmu_dev_config_show(struct config_item *item, char *page)
- {
- 	struct se_dev_attrib *da = container_of(to_config_group(item),
-@@ -2107,6 +2164,7 @@ CONFIGFS_ATTR(tcmu_, emulate_write_cache);
+-		spin_lock(&udev->commands_lock);
++		mutex_lock(&udev->cmdr_lock);
+ 		idr_for_each(&udev->commands, tcmu_check_expired_cmd, NULL);
+-		spin_unlock(&udev->commands_lock);
++		mutex_unlock(&udev->cmdr_lock);
  
- static struct configfs_attribute *tcmu_attrib_attrs[] = {
- 	&tcmu_attr_cmd_time_out,
-+	&tcmu_attr_qfull_time_out,
- 	&tcmu_attr_dev_config,
- 	&tcmu_attr_dev_size,
- 	&tcmu_attr_emulate_write_cache,
+ 		spin_lock_bh(&timed_out_udevs_lock);
+ 	}
 -- 
 2.7.2
 
