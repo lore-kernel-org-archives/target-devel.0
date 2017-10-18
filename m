@@ -1,85 +1,71 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 07:14:05 +0000
-Subject: [PATCH 10/17] tcmu: take blocks from devs waiting on blocks
-Message-Id: <1508310852-15366-11-git-send-email-mchristi@redhat.com>
+Date: Wed, 18 Oct 2017 07:14:03 +0000
+Subject: [PATCH 08/17] tcmu: drop is_in_waiter_list
+Message-Id: <1508310852-15366-9-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-We could end up where all the devs with waiting_blocks
-set hold all the blocks. find_free_blocks will always
-fail. This just adds a force round where if the first
-round fails, we then take pages from all devs.
+No need for the wrapper.
 
 Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_user.c | 29 ++++++++++++++++++++++++++++-
- 1 file changed, 28 insertions(+), 1 deletion(-)
+ drivers/target/target_core_user.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index b5cdbeb..0bc8217 100644
+index 0c71572..8a22d60 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -2040,10 +2040,12 @@ static struct target_backend_ops tcmu_ops = {
- static uint32_t find_free_blocks(void)
+@@ -343,11 +343,6 @@ static struct genl_family tcmu_genl_family __ro_after_init = {
+ #define tcmu_cmd_set_dbi(cmd, index) ((cmd)->dbi[(cmd)->dbi_cur++] = (index))
+ #define tcmu_cmd_get_dbi(cmd) ((cmd)->dbi[(cmd)->dbi_cur++])
+ 
+-static inline bool is_in_waiter_list(struct tcmu_dev *udev)
+-{
+-	return !!udev->waiting_blocks;
+-}
+-
+ static void tcmu_cmd_free_data(struct tcmu_cmd *tcmu_cmd, uint32_t len)
  {
- 	struct tcmu_dev *udev;
-+	bool force = false;
- 	loff_t off;
- 	uint32_t start, end, block, free_blocks = 0;
+ 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
+@@ -844,7 +839,6 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
  
- 	mutex_lock(&root_udev_mutex);
-+retry:
- 	list_for_each_entry(udev, &root_udev, node) {
- 		mutex_lock(&udev->cmdr_lock);
+ 	while (!is_ring_space_avail(udev, tcmu_cmd, command_size, data_length)) {
+ 		int ret;
+-		bool is_waiting_blocks = is_in_waiter_list(udev);
+ 		DEFINE_WAIT(__wait);
  
-@@ -2051,7 +2053,7 @@ static uint32_t find_free_blocks(void)
+ 		prepare_to_wait(&udev->wait_cmdr, &__wait, TASK_INTERRUPTIBLE);
+@@ -854,7 +848,7 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
+ 		 * Try to insert the current udev to waiter list and
+ 		 * then wake up the unmap thread
+ 		 */
+-		if (is_waiting_blocks) {
++		if (udev->waiting_blocks) {
+ 			spin_lock(&root_udev_waiter_lock);
+ 			if (list_empty(&udev->waiter))
+ 				list_add_tail(&udev->waiter, &root_udev_waiter);
+@@ -1184,7 +1178,7 @@ static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
+ 	 * make sure that the other waiters in list be fed ahead
+ 	 * of it.
+ 	 */
+-	if (is_in_waiter_list(tcmu_dev)) {
++	if (tcmu_dev->waiting_blocks) {
+ 		wake_up(&unmap_wait);
+ 	} else {
+ 		tcmu_handle_completions(tcmu_dev);
+@@ -2050,7 +2044,7 @@ static uint32_t find_free_blocks(void)
  		tcmu_handle_completions(udev);
  
  		/* Skip the udevs waiting the global pool or in idle */
--		if (udev->waiting_blocks || !udev->dbi_thresh) {
-+		if (!force && (udev->waiting_blocks || !udev->dbi_thresh)) {
+-		if (is_in_waiter_list(udev) || !udev->dbi_thresh) {
++		if (udev->waiting_blocks || !udev->dbi_thresh) {
  			mutex_unlock(&udev->cmdr_lock);
  			continue;
  		}
-@@ -2080,10 +2082,35 @@ static uint32_t find_free_blocks(void)
- 
- 		/* Release the block pages */
- 		tcmu_blocks_release(&udev->data_blocks, start, end);
-+
-+		if (list_empty(&udev->waiter)) {
-+			/*
-+			 * if we had to take pages from a dev that hit its
-+			 * DATA_BLOCK_BITS limit put it on the waiter
-+			 * list so it gets rescheduled when pages are free.
-+			 */
-+			spin_lock(&root_udev_waiter_lock);
-+			list_add_tail(&udev->waiter, &root_udev_waiter);
-+			spin_unlock(&root_udev_waiter_lock);
-+		}
-+
- 		mutex_unlock(&udev->cmdr_lock);
- 
-+		pr_debug("Freed %u blocks from %s. Forced %d\n", end - start,
-+			 udev->name, force);
-+
- 		free_blocks += end - start;
- 	}
-+
-+	if (!force && !free_blocks) {
-+		/*
-+		 * if all pages were held by devs with waiting_blocks > 0
-+		 * then we have to force the release to prevent deadlock.
-+		 */
-+		force = true;
-+		goto retry;
-+	}
-+
- 	mutex_unlock(&root_udev_mutex);
- 	return free_blocks;
- }
 -- 
 2.7.2
 
