@@ -1,93 +1,69 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Date: Mon, 16 Oct 2017 15:18:44 +0000
-Subject: [PATCH v2 05/15] ocfs2/cluster: make config_item_type const
-Message-Id: <1508167134-6243-6-git-send-email-bhumirks@gmail.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Wed, 18 Oct 2017 23:39:19 +0000
+Subject: [PATCH v3 1/2] target: fix PR state file path truncation
+Message-Id: <20171018233920.20750-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
+To: target-devel@vger.kernel.org
 
-Make these structures const as they are either passed to the functions
-having the argument as const or stored as a reference in the "ci_type"
-const field of a config_item structure.
+If an LIO backstore is configured with a sufficiently long Unit Serial
+string, alongside a similarly long dbroot path, then a truncated
+Persistent Reservation APTPL state file path will be used. This
+truncation can unintentionally lead to two LUs with differing serial
+numbers sharing PR state file.
 
-Done using Coccinelle.
-
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+Fixes: fdddf932269a ("target: use new "dbroot" target attribute")
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 ---
-* Changes in v2- Combine all the followup patches and the constification
-patches into a series.
+ drivers/target/target_core_pr.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
- fs/ocfs2/cluster/heartbeat.c   | 4 ++--
- fs/ocfs2/cluster/nodemanager.c | 8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/fs/ocfs2/cluster/heartbeat.c b/fs/ocfs2/cluster/heartbeat.c
-index d020604..ea8c551 100644
---- a/fs/ocfs2/cluster/heartbeat.c
-+++ b/fs/ocfs2/cluster/heartbeat.c
-@@ -2025,7 +2025,7 @@ static ssize_t o2hb_region_pid_show(struct config_item *item, char *page)
- 	.release		= o2hb_region_release,
- };
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index dd2cd8048582..e3c6053cf23e 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -1971,24 +1971,21 @@ static int __core_scsi3_write_aptpl_to_file(
+ 	struct t10_wwn *wwn = &dev->t10_wwn;
+ 	struct file *file;
+ 	int flags = O_RDWR | O_CREAT | O_TRUNC;
+-	char path[512];
++	char *path;
+ 	u32 pr_aptpl_buf_len;
+ 	int ret;
+ 	loff_t pos = 0;
  
--static struct config_item_type o2hb_region_type = {
-+static const struct config_item_type o2hb_region_type = {
- 	.ct_item_ops	= &o2hb_region_item_ops,
- 	.ct_attrs	= o2hb_region_attrs,
- 	.ct_owner	= THIS_MODULE,
-@@ -2310,7 +2310,7 @@ static ssize_t o2hb_heartbeat_group_mode_store(struct config_item *item,
- 	.drop_item	= o2hb_heartbeat_group_drop_item,
- };
+-	memset(path, 0, 512);
+-
+-	if (strlen(&wwn->unit_serial[0]) >= 512) {
+-		pr_err("WWN value for struct se_device does not fit"
+-			" into path buffer\n");
+-		return -EMSGSIZE;
+-	}
++	path = kasprintf(GFP_KERNEL, "%s/pr/aptpl_%s", db_root,
++			&wwn->unit_serial[0]);
++	if (!path)
++		return -ENOMEM;
  
--static struct config_item_type o2hb_heartbeat_group_type = {
-+static const struct config_item_type o2hb_heartbeat_group_type = {
- 	.ct_group_ops	= &o2hb_heartbeat_group_group_ops,
- 	.ct_attrs	= o2hb_heartbeat_group_attrs,
- 	.ct_owner	= THIS_MODULE,
-diff --git a/fs/ocfs2/cluster/nodemanager.c b/fs/ocfs2/cluster/nodemanager.c
-index b17d180..a51200e 100644
---- a/fs/ocfs2/cluster/nodemanager.c
-+++ b/fs/ocfs2/cluster/nodemanager.c
-@@ -378,7 +378,7 @@ static ssize_t o2nm_node_local_store(struct config_item *item, const char *page,
- 	.release		= o2nm_node_release,
- };
+-	snprintf(path, 512, "%s/pr/aptpl_%s", db_root, &wwn->unit_serial[0]);
+ 	file = filp_open(path, flags, 0600);
+ 	if (IS_ERR(file)) {
+ 		pr_err("filp_open(%s) for APTPL metadata"
+ 			" failed\n", path);
++		kfree(path);
+ 		return PTR_ERR(file);
+ 	}
  
--static struct config_item_type o2nm_node_type = {
-+static const struct config_item_type o2nm_node_type = {
- 	.ct_item_ops	= &o2nm_node_item_ops,
- 	.ct_attrs	= o2nm_node_attrs,
- 	.ct_owner	= THIS_MODULE,
-@@ -619,7 +619,7 @@ static void o2nm_node_group_drop_item(struct config_group *group,
- 	.drop_item	= o2nm_node_group_drop_item,
- };
+@@ -1999,6 +1996,7 @@ static int __core_scsi3_write_aptpl_to_file(
+ 	if (ret < 0)
+ 		pr_debug("Error writing APTPL metadata file: %s\n", path);
+ 	fput(file);
++	kfree(path);
  
--static struct config_item_type o2nm_node_group_type = {
-+static const struct config_item_type o2nm_node_group_type = {
- 	.ct_group_ops	= &o2nm_node_group_group_ops,
- 	.ct_owner	= THIS_MODULE,
- };
-@@ -637,7 +637,7 @@ static void o2nm_cluster_release(struct config_item *item)
- 	.release	= o2nm_cluster_release,
- };
- 
--static struct config_item_type o2nm_cluster_type = {
-+static const struct config_item_type o2nm_cluster_type = {
- 	.ct_item_ops	= &o2nm_cluster_item_ops,
- 	.ct_attrs	= o2nm_cluster_attrs,
- 	.ct_owner	= THIS_MODULE,
-@@ -722,7 +722,7 @@ static void o2nm_cluster_group_drop_item(struct config_group *group, struct conf
- 	.drop_item	= o2nm_cluster_group_drop_item,
- };
- 
--static struct config_item_type o2nm_cluster_group_type = {
-+static const struct config_item_type o2nm_cluster_group_type = {
- 	.ct_group_ops	= &o2nm_cluster_group_group_ops,
- 	.ct_owner	= THIS_MODULE,
- };
+ 	return (ret < 0) ? -EIO : 0;
+ }
 -- 
-1.9.1
+2.13.6
 
