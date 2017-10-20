@@ -1,34 +1,48 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 19 Oct 2017 15:05:29 +0000
+From: Julia Lawall <julia.lawall@lip6.fr>
+Date: Fri, 20 Oct 2017 08:02:46 +0000
 Subject: Re: [PATCH v2 02/15] usb: gadget: make config_item_type structures const
-Message-Id: <6348630.r2z9ev4yl2@avalon>
+Message-Id: <alpine.DEB.2.20.1710200857030.2090@hadrien>
 List-Id: <target-devel.vger.kernel.org>
-References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com> <1985905.z83BJQzMUS@avalon> <20171019140657.GA22233@lst.de>
-In-Reply-To: <20171019140657.GA22233@lst.de>
+References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com> <1985905.z83BJQzMUS@avalon> <20171019140657.GA22233@lst.de> <6348630.r2z9ev4yl2@avalon>
+In-Reply-To: <6348630.r2z9ev4yl2@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: Bhumika Goyal <bhumirks@gmail.com>, julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redhat.com, ocf
+To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+Cc: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Bhumika Goyal <bhumirks-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, julia.lawall-L2FTfq7BK8M@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, alexander.shishkin-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, dledford-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, sean.hefty-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hal.rosenstock-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org, kishon-l0cyMroinI0@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org, balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, jlbec-aKy9MeLSZ9dg9hUCZPvPmw@public.gmane.org, ccaulfie-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, teigland-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, mfasheh-rOS7oXVqrJRBDgjK7y7TUQ@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Hi Christoph,
 
-On Thursday, 19 October 2017 17:06:57 EEST Christoph Hellwig wrote:
-> > Now we have 9 const instances of the config_item_type structure that are
-> > identical, with only the .ct_owner field set. Should they be all merged
-> > into a single structure ?
-> 
-> I think that's a good idea.
-> 
-> But I'm about to slurp up this whole series into my tree, how about making
-> that an incremental patch?
 
-I'm fine with that.
+On Thu, 19 Oct 2017, Laurent Pinchart wrote:
 
-Bhumika, would you like to submit an incremental patch, or should I do it ?
+> Hi Christoph,
+>
+> On Thursday, 19 October 2017 17:06:57 EEST Christoph Hellwig wrote:
+> > > Now we have 9 const instances of the config_item_type structure that are
+> > > identical, with only the .ct_owner field set. Should they be all merged
+> > > into a single structure ?
+> >
+> > I think that's a good idea.
+> >
+> > But I'm about to slurp up this whole series into my tree, how about making
+> > that an incremental patch?
+>
+> I'm fine with that.
+>
+> Bhumika, would you like to submit an incremental patch, or should I do it ?
 
--- 
-Regards,
+For various types, there seem to be a few hundred of these, eg:
 
-Laurent Pinchart
+static const struct hda_pcm_stream alc269_44k_pcm_analog_playback = {
+        .rates = SNDRV_PCM_RATE_44100, /* fixed rate */
+};
 
+static const struct hda_pcm_stream alc269_44k_pcm_analog_capture = {
+        .rates = SNDRV_PCM_RATE_44100, /* fixed rate */
+};
+
+Would it be desirable to remove them?  I guess one would have to check
+that there are not any pointer equality checks on these values.  Would it
+be useful to put a #define to keep the orignal names?
+
+julia
