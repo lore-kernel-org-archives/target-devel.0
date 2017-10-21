@@ -1,12 +1,46 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 07:14:12 +0000
-Subject: [PATCH 17/17] tcmu: allow max block and global max blocks to be settable
-Message-Id: <1508310852-15366-18-git-send-email-mchristi@redhat.com>
+Date: Sat, 21 Oct 2017 00:14:23 +0000
+Subject: Re: [PATCH 17/17] tcmu: allow max block and global max blocks to be settable
+Message-Id: <59EA915F.3040000@redhat.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------050803020807070008090000"
 List-Id: <target-devel.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1508310852-15366-18-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1508310852-15366-18-git-send-email-mchristi@redhat.com>
 To: target-devel@vger.kernel.org
+
+This is a multi-part message in MIME format.
+--------------050803020807070008090000
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+
+On 10/18/2017 02:14 AM, Mike Christie wrote:
+> Users might have a physical system to a target so they could
+> have a lot more than 2 gigs of memory they want to devote to
+> tcmu. OTOH, we could be running in a vm and so a 2 gig
+> global and 1 gig per dev limit might be too high. This patch
+> allows the user to specify the limits.
+
+There was a bug in the configfs/module_param error handling. I am
+attaching a updated patch.
+
+Xiubo, if you already started testing, this patch only affects the
+configfs/module_param code path and it only happens if you pass in less
+than or equal to 0, so you probably do not need to restart any tests
+that have been done to the IO paths.
+
+--------------050803020807070008090000
+Content-Type: text/x-patch;
+ name="0001-tcmu-allow-max-block-and-global-max-blocks-to-be-set.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0001-tcmu-allow-max-block-and-global-max-blocks-to-be-set.pa";
+ filename*1="tch"
+
+From 3cd6d610c8cf0bcecb18998469edd68eff8c3262 Mon Sep 17 00:00:00 2001
+From: Mike Christie <mchristi@redhat.com>
+Date: Fri, 20 Oct 2017 19:11:32 -0500
+Subject: [PATCH] tcmu: allow max block and global max blocks to be settable v2
 
 Users might have a physical system to a target so they could
 have a lot more than 2 gigs of memory they want to devote to
@@ -14,13 +48,15 @@ tcmu. OTOH, we could be running in a vm and so a 2 gig
 global and 1 gig per dev limit might be too high. This patch
 allows the user to specify the limits.
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
+v2:
+Fix error handling during invalid configfs setting.
+
  drivers/target/target_core_user.c | 153 +++++++++++++++++++++++++++++++-------
  1 file changed, 128 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 1301b53..24bba6b 100644
+index 52ffe4f..ddcf3c1 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
 @@ -74,18 +74,17 @@
@@ -66,7 +102,7 @@ index 1301b53..24bba6b 100644
  	struct radix_tree_root data_blocks;
  
  	struct idr commands;
-@@ -204,6 +205,51 @@ static DEFINE_SPINLOCK(root_udev_waiter_lock);
+@@ -204,6 +205,51 @@ struct tcmu_cmd {
  static LIST_HEAD(root_udev_waiter);
  
  static atomic_t global_db_count = ATOMIC_INIT(0);
@@ -89,7 +125,7 @@ index 1301b53..24bba6b 100644
 +	if (ret)
 +		return -EINVAL;
 +
-+	if (!max_area_mb) {
++	if (max_area_mb <= 0) {
 +		pr_err("global_max_data_area must be larger than 0.\n");
 +		return -EINVAL;
 +	}
@@ -154,7 +190,7 @@ index 1301b53..24bba6b 100644
  		}
  	}
  
-@@ -1196,7 +1242,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+@@ -1204,7 +1250,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
  	udev->cmd_time_out = TCMU_TIME_OUT;
  	/* for backwards compat use the cmd_time_out */
  	udev->qfull_time_out = TCMU_TIME_OUT;
@@ -163,16 +199,16 @@ index 1301b53..24bba6b 100644
  	mutex_init(&udev->cmdr_lock);
  
  	INIT_LIST_HEAD(&udev->timedout_entry);
-@@ -1281,7 +1327,7 @@ static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
+@@ -1289,7 +1335,7 @@ static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
  
  	mutex_lock(&udev->cmdr_lock);
  
--	if (atomic_read(&global_db_count) = TCMU_GLOBAL_MAX_BLOCKS) {
-+	if (atomic_read(&global_db_count) = tcmu_global_max_blocks) {
+-	if (atomic_read(&global_db_count) == TCMU_GLOBAL_MAX_BLOCKS) {
++	if (atomic_read(&global_db_count) == tcmu_global_max_blocks) {
  		spin_lock(&root_udev_waiter_lock);
  		if (!list_empty(&root_udev_waiter)) {
  			/*
-@@ -1369,7 +1415,7 @@ static struct page *tcmu_try_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
+@@ -1377,7 +1423,7 @@ static struct page *tcmu_try_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
  
  		/*
  		 * Since this case is rare in page fault routine, here we
@@ -181,7 +217,7 @@ index 1301b53..24bba6b 100644
  		 * to reduce possible page fault call trace.
  		 */
  		atomic_inc(&global_db_count);
-@@ -1430,7 +1476,7 @@ static int tcmu_mmap(struct uio_info *info, struct vm_area_struct *vma)
+@@ -1438,7 +1484,7 @@ static int tcmu_mmap(struct uio_info *info, struct vm_area_struct *vma)
  	vma->vm_private_data = udev;
  
  	/* Ensure the mmap is exactly the right size */
@@ -190,7 +226,7 @@ index 1301b53..24bba6b 100644
  		return -EINVAL;
  
  	return 0;
-@@ -1512,6 +1558,7 @@ static void tcmu_dev_kref_release(struct kref *kref)
+@@ -1520,6 +1566,7 @@ static void tcmu_dev_kref_release(struct kref *kref)
  	WARN_ON(!all_expired);
  
  	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
@@ -198,7 +234,7 @@ index 1301b53..24bba6b 100644
  	mutex_unlock(&udev->cmdr_lock);
  
  	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
-@@ -1688,6 +1735,11 @@ static int tcmu_configure_device(struct se_device *dev)
+@@ -1696,6 +1743,11 @@ static int tcmu_configure_device(struct se_device *dev)
  
  	info = &udev->uio_info;
  
@@ -210,7 +246,7 @@ index 1301b53..24bba6b 100644
  	udev->mb_addr = vzalloc(CMDR_SIZE);
  	if (!udev->mb_addr) {
  		ret = -ENOMEM;
-@@ -1697,7 +1749,7 @@ static int tcmu_configure_device(struct se_device *dev)
+@@ -1705,7 +1757,7 @@ static int tcmu_configure_device(struct se_device *dev)
  	/* mailbox fits in first part of CMDR space */
  	udev->cmdr_size = CMDR_SIZE - CMDR_OFF;
  	udev->data_off = CMDR_SIZE;
@@ -219,7 +255,7 @@ index 1301b53..24bba6b 100644
  	udev->dbi_thresh = 0; /* Default in Idle state */
  	udev->waiting_blocks = 0;
  
-@@ -1716,7 +1768,7 @@ static int tcmu_configure_device(struct se_device *dev)
+@@ -1724,7 +1776,7 @@ static int tcmu_configure_device(struct se_device *dev)
  
  	info->mem[0].name = "tcm-user command & data buffer";
  	info->mem[0].addr = (phys_addr_t)(uintptr_t)udev->mb_addr;
@@ -228,7 +264,7 @@ index 1301b53..24bba6b 100644
  	info->mem[0].memtype = UIO_MEM_NONE;
  
  	info->irqcontrol = tcmu_irqcontrol;
-@@ -1769,6 +1821,9 @@ static int tcmu_configure_device(struct se_device *dev)
+@@ -1777,6 +1829,9 @@ static int tcmu_configure_device(struct se_device *dev)
  	vfree(udev->mb_addr);
  	udev->mb_addr = NULL;
  err_vzalloc:
@@ -238,7 +274,7 @@ index 1301b53..24bba6b 100644
  	kfree(info->name);
  	info->name = NULL;
  
-@@ -1814,7 +1869,7 @@ static void tcmu_destroy_device(struct se_device *dev)
+@@ -1822,7 +1877,7 @@ static void tcmu_destroy_device(struct se_device *dev)
  
  enum {
  	Opt_dev_config, Opt_dev_size, Opt_hw_block_size, Opt_hw_max_sectors,
@@ -247,7 +283,7 @@ index 1301b53..24bba6b 100644
  };
  
  static match_table_t tokens = {
-@@ -1823,6 +1878,7 @@ static match_table_t tokens = {
+@@ -1831,6 +1886,7 @@ enum {
  	{Opt_hw_block_size, "hw_block_size=%u"},
  	{Opt_hw_max_sectors, "hw_max_sectors=%u"},
  	{Opt_nl_reply_supported, "nl_reply_supported=%d"},
@@ -255,7 +291,7 @@ index 1301b53..24bba6b 100644
  	{Opt_err, NULL}
  };
  
-@@ -1856,7 +1912,7 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
+@@ -1864,7 +1920,7 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
  	struct tcmu_dev *udev = TCMU_DEV(dev);
  	char *orig, *ptr, *opts, *arg_p;
  	substring_t args[MAX_OPT_ARGS];
@@ -264,9 +300,9 @@ index 1301b53..24bba6b 100644
  
  	opts = kstrdup(page, GFP_KERNEL);
  	if (!opts)
-@@ -1908,6 +1964,39 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
+@@ -1916,6 +1972,39 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
  			if (ret < 0)
- 				pr_err("kstrtoul() failed for nl_reply_supported=\n");
+ 				pr_err("kstrtoint() failed for nl_reply_supported=\n");
  			break;
 +		case Opt_max_data_area_mb:
 +			if (dev->export_count) {
@@ -283,14 +319,14 @@ index 1301b53..24bba6b 100644
 +			ret = kstrtoint(arg_p, 0, &tmpval);
 +			kfree(arg_p);
 +			if (ret < 0) {
-+				pr_err("kstrtou32() failed for max_data_area_mb=\n");
++				pr_err("kstrtoint() failed for max_data_area_mb=\n");
 +				break;
 +			}
 +
 +			if (tmpval <= 0) {
 +				pr_err("Invalid max_data_area %d\n", tmpval);
-+				udev->max_blocks = DEF_DATA_BLOCK_BITS;
 +				ret = -EINVAL;
++				break;
 +			}
 +
 +			udev->max_blocks = TCMU_MBS_TO_BLOCKS(tmpval);
@@ -304,7 +340,7 @@ index 1301b53..24bba6b 100644
  		default:
  			break;
  		}
-@@ -1927,7 +2016,9 @@ static ssize_t tcmu_show_configfs_dev_params(struct se_device *dev, char *b)
+@@ -1935,7 +2024,9 @@ static ssize_t tcmu_show_configfs_dev_params(struct se_device *dev, char *b)
  
  	bl = sprintf(b + bl, "Config: %s ",
  		     udev->dev_config[0] ? udev->dev_config : "NULL");
@@ -315,7 +351,7 @@ index 1301b53..24bba6b 100644
  
  	return bl;
  }
-@@ -2011,6 +2102,17 @@ static ssize_t tcmu_qfull_time_out_store(struct config_item *item,
+@@ -2019,6 +2110,17 @@ static ssize_t tcmu_qfull_time_out_store(struct config_item *item,
  }
  CONFIGFS_ATTR(tcmu_, qfull_time_out);
  
@@ -333,7 +369,7 @@ index 1301b53..24bba6b 100644
  static ssize_t tcmu_dev_config_show(struct config_item *item, char *page)
  {
  	struct se_dev_attrib *da = container_of(to_config_group(item),
-@@ -2157,6 +2259,7 @@ CONFIGFS_ATTR(tcmu_, emulate_write_cache);
+@@ -2165,6 +2267,7 @@ static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
  static struct configfs_attribute *tcmu_attrib_attrs[] = {
  	&tcmu_attr_cmd_time_out,
  	&tcmu_attr_qfull_time_out,
@@ -341,7 +377,7 @@ index 1301b53..24bba6b 100644
  	&tcmu_attr_dev_config,
  	&tcmu_attr_dev_size,
  	&tcmu_attr_emulate_write_cache,
-@@ -2240,7 +2343,7 @@ static uint32_t find_free_blocks(void)
+@@ -2248,7 +2351,7 @@ static uint32_t find_free_blocks(void)
  		if (tcmu_waiting_on_dev_blocks(udev)) {
  			/*
  			 * if we had to take pages from a dev that hit its
@@ -350,7 +386,7 @@ index 1301b53..24bba6b 100644
  			 * list so it gets rescheduled when pages are free.
  			 */
  			spin_lock(&root_udev_waiter_lock);
-@@ -2281,7 +2384,7 @@ static bool run_cmdr_queues(void)
+@@ -2289,7 +2392,7 @@ static bool run_cmdr_queues(void)
  	list_for_each_entry_safe(udev, tmp_udev, &devs, waiter) {
  		list_del_init(&udev->waiter);
  
@@ -360,5 +396,7 @@ index 1301b53..24bba6b 100644
  		pr_debug("checking cmdr queue for %s: blocks waiting %u free db count %u\n",
  			 udev->name, udev->waiting_blocks, free_blocks);
 -- 
-2.7.2
+1.8.3.1
 
+
+--------------050803020807070008090000--
