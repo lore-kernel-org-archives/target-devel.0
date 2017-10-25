@@ -1,7 +1,7 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 07:14:04 +0000
-Subject: [PATCH 09/17] tcmu: release blocks for partially setup cmds
-Message-Id: <1508310852-15366-10-git-send-email-mchristi@redhat.com>
+Date: Wed, 25 Oct 2017 16:47:22 +0000
+Subject: [PATCH 12/20] tcmu: release blocks for partially setup cmds
+Message-Id: <1508950050-10120-13-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -28,7 +28,7 @@ Signed-off-by: Mike Christie <mchristi@redhat.com>
  1 file changed, 7 insertions(+)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 8a22d60..b5cdbeb 100644
+index 5c4029c..dff7b14 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
 @@ -841,6 +841,13 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
