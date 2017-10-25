@@ -1,52 +1,161 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Date: Mon, 16 Oct 2017 15:18:52 +0000
-Subject: [PATCH v2 13/15] netconsole: make config_item_type const
-Message-Id: <1508167134-6243-14-git-send-email-bhumirks@gmail.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 25 Oct 2017 16:47:12 +0000
+Subject: [PATCH 02/20] tcmu: Add netlink command reply supported option for each device
+Message-Id: <1508950050-10120-3-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redh
-Cc: Bhumika Goyal <bhumirks@gmail.com>
+To: target-devel@vger.kernel.org
 
-Make these structures const as they are either passed to the functions
-having the argument as const or stored as a reference in the "ci_type"
-const field of a config_item structure.
+From: Kenjiro Nakayama <nakayamakenjiro@gmail.com>
 
-Done using Coccienlle.
+Currently netlink command reply support option
+(TCMU_ATTR_SUPP_KERN_CMD_REPLY) can be enabled only on module
+scope. Because of that, once an application enables the netlink
+command reply support, all applications using target_core_user.ko
+would be expected to support the netlink reply. To make matters worse,
+users will not be able to add a device via configfs manually.
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+To fix these issues, this patch adds an option to make netlink command
+reply disabled on each device through configfs. Original
+TCMU_ATTR_SUPP_KERN_CMD_REPLY is still enabled on module scope to keep
+backward-compatibility and used by default, however once users set
+nl_reply_supported=<NAGATIVE_VALUE> via configfs for a particular
+device, the device disables the netlink command reply support.
+
+Signed-off-by: Kenjiro Nakayama <nakayamakenjiro@gmail.com>
+[use kstrtoint]
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
-* Changes in v2- Combine all the followup patches and the constification
-patches into a series.
+ drivers/target/target_core_user.c | 58 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 1 deletion(-)
 
- drivers/net/netconsole.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
-index 0e27920..be9aa36 100644
---- a/drivers/net/netconsole.c
-+++ b/drivers/net/netconsole.c
-@@ -616,7 +616,7 @@ static void netconsole_target_release(struct config_item *item)
- 	.release		= netconsole_target_release,
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index b743ff3..92ec09d 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -152,6 +152,8 @@ struct tcmu_dev {
+ 	wait_queue_head_t nl_cmd_wq;
+ 
+ 	char dev_config[TCMU_CONFIG_LEN];
++
++	int nl_reply_supported;
  };
  
--static struct config_item_type netconsole_target_type = {
-+static const struct config_item_type netconsole_target_type = {
- 	.ct_attrs		= netconsole_target_attrs,
- 	.ct_item_ops		= &netconsole_target_item_ops,
- 	.ct_owner		= THIS_MODULE,
-@@ -682,7 +682,7 @@ static void drop_netconsole_target(struct config_group *group,
- 	.drop_item	= drop_netconsole_target,
+ #define TCMU_DEV(_se_dev) container_of(_se_dev, struct tcmu_dev, se_dev)
+@@ -1421,6 +1423,10 @@ static void tcmu_init_genl_cmd_reply(struct tcmu_dev *udev, int cmd)
+ 
+ 	if (!tcmu_kern_cmd_reply_supported)
+ 		return;
++
++	if (udev->nl_reply_supported <= 0)
++		return;
++
+ relock:
+ 	spin_lock(&udev->nl_cmd_lock);
+ 
+@@ -1447,6 +1453,9 @@ static int tcmu_wait_genl_cmd_reply(struct tcmu_dev *udev)
+ 	if (!tcmu_kern_cmd_reply_supported)
+ 		return 0;
+ 
++	if (udev->nl_reply_supported <= 0)
++		return 0;
++
+ 	pr_debug("sleeping for nl reply\n");
+ 	wait_for_completion(&nl_cmd->complete);
+ 
+@@ -1619,6 +1628,12 @@ static int tcmu_configure_device(struct se_device *dev)
+ 		dev->dev_attrib.emulate_write_cache = 0;
+ 	dev->dev_attrib.hw_queue_depth = 128;
+ 
++	/* If user didn't explicitly disable netlink reply support, use
++	 * module scope setting.
++	 */
++	if (udev->nl_reply_supported >= 0)
++		udev->nl_reply_supported = tcmu_kern_cmd_reply_supported;
++
+ 	/*
+ 	 * Get a ref incase userspace does a close on the uio device before
+ 	 * LIO has initiated tcmu_free_device.
+@@ -1688,7 +1703,7 @@ static void tcmu_destroy_device(struct se_device *dev)
+ 
+ enum {
+ 	Opt_dev_config, Opt_dev_size, Opt_hw_block_size, Opt_hw_max_sectors,
+-	Opt_err,
++	Opt_nl_reply_supported, Opt_err,
  };
  
--static struct config_item_type netconsole_subsys_type = {
-+static const struct config_item_type netconsole_subsys_type = {
- 	.ct_group_ops	= &netconsole_subsys_group_ops,
- 	.ct_owner	= THIS_MODULE,
+ static match_table_t tokens = {
+@@ -1696,6 +1711,7 @@ static match_table_t tokens = {
+ 	{Opt_dev_size, "dev_size=%u"},
+ 	{Opt_hw_block_size, "hw_block_size=%u"},
+ 	{Opt_hw_max_sectors, "hw_max_sectors=%u"},
++	{Opt_nl_reply_supported, "nl_reply_supported=%d"},
+ 	{Opt_err, NULL}
  };
+ 
+@@ -1770,6 +1786,17 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
+ 			ret = tcmu_set_dev_attrib(&args[0],
+ 					&(dev->dev_attrib.hw_max_sectors));
+ 			break;
++		case Opt_nl_reply_supported:
++			arg_p = match_strdup(&args[0]);
++			if (!arg_p) {
++				ret = -ENOMEM;
++				break;
++			}
++			ret = kstrtoint(arg_p, 0, &udev->nl_reply_supported);
++			kfree(arg_p);
++			if (ret < 0)
++				pr_err("kstrtoint() failed for nl_reply_supported=\n");
++			break;
+ 		default:
+ 			break;
+ 		}
+@@ -1920,6 +1947,34 @@ static ssize_t tcmu_dev_size_store(struct config_item *item, const char *page,
+ }
+ CONFIGFS_ATTR(tcmu_, dev_size);
+ 
++static ssize_t tcmu_nl_reply_supported_show(struct config_item *item,
++		char *page)
++{
++	struct se_dev_attrib *da = container_of(to_config_group(item),
++						struct se_dev_attrib, da_group);
++	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
++
++	return snprintf(page, PAGE_SIZE, "%d\n", udev->nl_reply_supported);
++}
++
++static ssize_t tcmu_nl_reply_supported_store(struct config_item *item,
++		const char *page, size_t count)
++{
++	struct se_dev_attrib *da = container_of(to_config_group(item),
++						struct se_dev_attrib, da_group);
++	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
++	s8 val;
++	int ret;
++
++	ret = kstrtos8(page, 0, &val);
++	if (ret < 0)
++		return ret;
++
++	udev->nl_reply_supported = val;
++	return count;
++}
++CONFIGFS_ATTR(tcmu_, nl_reply_supported);
++
+ static ssize_t tcmu_emulate_write_cache_show(struct config_item *item,
+ 					     char *page)
+ {
+@@ -1962,6 +2017,7 @@ static struct configfs_attribute *tcmu_attrib_attrs[] = {
+ 	&tcmu_attr_dev_config,
+ 	&tcmu_attr_dev_size,
+ 	&tcmu_attr_emulate_write_cache,
++	&tcmu_attr_nl_reply_supported,
+ 	NULL,
+ };
+ 
 -- 
-1.9.1
+2.7.2
 
