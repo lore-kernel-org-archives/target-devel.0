@@ -1,87 +1,99 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Date: Mon, 16 Oct 2017 15:18:53 +0000
-Subject: [PATCH v2 14/15] dlm: make config_item_type const
-Message-Id: <1508167134-6243-15-git-send-email-bhumirks@gmail.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 25 Oct 2017 16:47:27 +0000
+Subject: [PATCH 17/20] tcmu: run the unmap thread/wq if waiters.
+Message-Id: <1508950050-10120-18-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, linux-fsdevel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
+To: target-devel@vger.kernel.org
 
-Make config_item_type structures const as they are either passed to a
-function having the argument as const or stored in the const "ci_type"
-field of a config_item structure.
+If tcmu_dev 1 took exactly TCMU_GLOBAL_MAX_BLOCKS and then
+tcmu_dev 2 tried to allocate blocks dev 2 would be put
+on the waiter list. Later when dev 1's commands complete
+tcmu_irqcontrol would see that dev 1 is not on the waiter list
+and so it only runs the dev 1's queue. dev 2 could then be
+starved.
 
-Done using Coccinelle.
+This patch adds a check if we hit the global limit and have
+waiters in tcmu_irqcontrol. In this case we will then put
+the completing dev on the waiter list of needed and then
+wake up the unmapping thread/wq.
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
-* Changes in v2- Combine all the followup patches and the constification
-patches into a series.
+ drivers/target/target_core_user.c | 47 ++++++++++++++++++++++++++-------------
+ 1 file changed, 32 insertions(+), 15 deletions(-)
 
- fs/dlm/config.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/fs/dlm/config.c b/fs/dlm/config.c
-index 7211e82..1270551 100644
---- a/fs/dlm/config.c
-+++ b/fs/dlm/config.c
-@@ -282,44 +282,44 @@ struct dlm_node {
- 	.release = release_node,
- };
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 4fe5249..1433838 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1271,23 +1271,41 @@ static bool run_cmdr_queue(struct tcmu_dev *udev)
+ 	return drained;
+ }
  
--static struct config_item_type clusters_type = {
-+static const struct config_item_type clusters_type = {
- 	.ct_group_ops = &clusters_ops,
- 	.ct_owner = THIS_MODULE,
- };
++static bool tcmu_waiting_on_dev_blocks(struct tcmu_dev *udev)
++{
++	return list_empty(&udev->waiter) && !list_empty(&udev->cmdr_queue);
++}
++
+ static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
+ {
+-	struct tcmu_dev *tcmu_dev = container_of(info, struct tcmu_dev, uio_info);
++	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
++	bool run_local = true;
  
--static struct config_item_type cluster_type = {
-+static const struct config_item_type cluster_type = {
- 	.ct_item_ops = &cluster_ops,
- 	.ct_attrs = cluster_attrs,
- 	.ct_owner = THIS_MODULE,
- };
+-	mutex_lock(&tcmu_dev->cmdr_lock);
+-	/*
+-	 * If the current udev is also in waiter list, this will
+-	 * make sure that the other waiters in list be fed ahead
+-	 * of it.
+-	 */
+-	if (!list_empty(&tcmu_dev->waiter)) {
+-		schedule_work(&tcmu_unmap_work);
+-	} else {
+-		tcmu_handle_completions(tcmu_dev);
+-		run_cmdr_queue(tcmu_dev);
++	mutex_lock(&udev->cmdr_lock);
++
++	if (atomic_read(&global_db_count) = TCMU_GLOBAL_MAX_BLOCKS) {
++		spin_lock(&root_udev_waiter_lock);
++		if (!list_empty(&root_udev_waiter)) {
++			/*
++			 * If we only hit the per block limit then make sure
++			 * we are added to the global list so we get run
++			 * after the other waiters.
++			 */
++			if (tcmu_waiting_on_dev_blocks(udev))
++				list_add_tail(&udev->waiter, &root_udev_waiter);
++
++			run_local = false;
++			schedule_work(&tcmu_unmap_work);
++		}
++		spin_unlock(&root_udev_waiter_lock);
+ 	}
+-	mutex_unlock(&tcmu_dev->cmdr_lock);
++
++	if (run_local) {
++		tcmu_handle_completions(udev);
++		run_cmdr_queue(udev);
++	}
++
++	mutex_unlock(&udev->cmdr_lock);
  
--static struct config_item_type spaces_type = {
-+static const struct config_item_type spaces_type = {
- 	.ct_group_ops = &spaces_ops,
- 	.ct_owner = THIS_MODULE,
- };
+ 	return 0;
+ }
+@@ -2186,8 +2204,7 @@ static uint32_t find_free_blocks(void)
+ 		/* Release the block pages */
+ 		tcmu_blocks_release(&udev->data_blocks, start, end);
  
--static struct config_item_type space_type = {
-+static const struct config_item_type space_type = {
- 	.ct_item_ops = &space_ops,
- 	.ct_owner = THIS_MODULE,
- };
- 
--static struct config_item_type comms_type = {
-+static const struct config_item_type comms_type = {
- 	.ct_group_ops = &comms_ops,
- 	.ct_owner = THIS_MODULE,
- };
- 
--static struct config_item_type comm_type = {
-+static const struct config_item_type comm_type = {
- 	.ct_item_ops = &comm_ops,
- 	.ct_attrs = comm_attrs,
- 	.ct_owner = THIS_MODULE,
- };
- 
--static struct config_item_type nodes_type = {
-+static const struct config_item_type nodes_type = {
- 	.ct_group_ops = &nodes_ops,
- 	.ct_owner = THIS_MODULE,
- };
- 
--static struct config_item_type node_type = {
-+static const struct config_item_type node_type = {
- 	.ct_item_ops = &node_ops,
- 	.ct_attrs = node_attrs,
- 	.ct_owner = THIS_MODULE,
+-		if (list_empty(&udev->waiter) &&
+-		    !list_empty(&udev->cmdr_queue)) {
++		if (tcmu_waiting_on_dev_blocks(udev)) {
+ 			/*
+ 			 * if we had to take pages from a dev that hit its
+ 			 * DATA_BLOCK_BITS limit put it on the waiter
 -- 
-1.9.1
+2.7.2
 
