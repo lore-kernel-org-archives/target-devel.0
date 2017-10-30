@@ -1,55 +1,88 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Tue, 31 Oct 2017 18:03:18 +0000
-Subject: [PATCH 10/11] target/iscsi: Detect conn_cmd_list corruption early
-Message-Id: <20171031180319.19258-11-bart.vanassche@wdc.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 30 Oct 2017 03:44:25 +0000
+Subject: [PATCH 05/19] tcmu: merge common block release code
+Message-Id: <1509335079-5276-6-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
-
-Certain behavior of the initiator can cause the target driver to
-send both a reject and a SCSI response. If that happens two
-target_put_sess_cmd() calls will occur without the command having
-been removed from conn_cmd_list. In other words, conn_cmd_list
-will get corrupted once the freed memory is reused. Although the
-Linux kernel can detect list corruption if list debugging is
-enabled, in this case the context in which list corruption is
-detected is not related to the context that caused list corruption.
-Hence add WARN_ON() statements that report the context that is
-causing list corruption.
-
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.com>
+To: martin.petersen@oracle.com, jejb@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
 Cc: Mike Christie <mchristi@redhat.com>
----
- drivers/target/iscsi/iscsi_target_util.c | 4 ++++
- 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 1e36f83b5961..70c6b9bfc04e 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -694,6 +694,8 @@ void iscsit_release_cmd(struct iscsi_cmd *cmd)
- 	struct iscsi_session *sess;
- 	struct se_cmd *se_cmd = &cmd->se_cmd;
+Have unmap_thread_fn use tcmu_blocks_release.
+
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 24 ++++++++----------------
+ 1 file changed, 8 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 4f666a5..a6205e4 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1301,21 +1301,19 @@ static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
+ 	return -EINVAL;
+ }
  
-+	WARN_ON(!list_empty(&cmd->i_conn_node));
-+
- 	if (cmd->conn)
- 		sess = cmd->conn->sess;
- 	else
-@@ -716,6 +718,8 @@ void __iscsit_free_cmd(struct iscsi_cmd *cmd, bool check_queues)
+-static void tcmu_blocks_release(struct tcmu_dev *udev)
++static void tcmu_blocks_release(struct radix_tree_root *blocks,
++				int start, int end)
  {
- 	struct iscsi_conn *conn = cmd->conn;
+ 	int i;
+ 	struct page *page;
  
-+	WARN_ON(!list_empty(&cmd->i_conn_node));
-+
- 	if (cmd->data_direction = DMA_TO_DEVICE) {
- 		iscsit_stop_dataout_timer(cmd);
- 		iscsit_free_r2ts_from_list(cmd);
+-	/* Try to release all block pages */
+-	mutex_lock(&udev->cmdr_lock);
+-	for (i = 0; i <= udev->dbi_max; i++) {
+-		page = radix_tree_delete(&udev->data_blocks, i);
++	for (i = start; i < end; i++) {
++		page = radix_tree_delete(blocks, i);
+ 		if (page) {
+ 			__free_page(page);
+ 			atomic_dec(&global_db_count);
+ 		}
+ 	}
+-	mutex_unlock(&udev->cmdr_lock);
+ }
+ 
+ static void tcmu_dev_kref_release(struct kref *kref)
+@@ -1339,7 +1337,9 @@ static void tcmu_dev_kref_release(struct kref *kref)
+ 	spin_unlock_irq(&udev->commands_lock);
+ 	WARN_ON(!all_expired);
+ 
+-	tcmu_blocks_release(udev);
++	mutex_lock(&udev->cmdr_lock);
++	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
++	mutex_unlock(&udev->cmdr_lock);
+ 
+ 	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
+ }
+@@ -1976,8 +1976,6 @@ static int unmap_thread_fn(void *data)
+ 	struct tcmu_dev *udev;
+ 	loff_t off;
+ 	uint32_t start, end, block;
+-	struct page *page;
+-	int i;
+ 
+ 	while (!kthread_should_stop()) {
+ 		DEFINE_WAIT(__wait);
+@@ -2025,13 +2023,7 @@ static int unmap_thread_fn(void *data)
+ 			unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
+ 
+ 			/* Release the block pages */
+-			for (i = start; i < end; i++) {
+-				page = radix_tree_delete(&udev->data_blocks, i);
+-				if (page) {
+-					__free_page(page);
+-					atomic_dec(&global_db_count);
+-				}
+-			}
++			tcmu_blocks_release(&udev->data_blocks, start, end);
+ 			mutex_unlock(&udev->cmdr_lock);
+ 		}
+ 
 -- 
-2.14.2
+1.8.3.1
 
