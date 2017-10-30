@@ -1,26 +1,169 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 07:13:55 +0000
-Subject: [PATCH 00/17] tcmu: ring buffer fixes
-Message-Id: <1508310852-15366-1-git-send-email-mchristi@redhat.com>
+Date: Mon, 30 Oct 2017 03:44:26 +0000
+Subject: [PATCH 06/19] tcmu: split unmap_thread_fn
+Message-Id: <1509335079-5276-7-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, jejb@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-Nick, the following patches were made over the tcmu patches
-that have been submitted to the list and I have fixed up and/or
-reviewed. I have made a branch here:
+Separate unmap_thread_fn to make it easier to read.
 
-https://github.com/mikechristie/target-pending/commits/for-nick-next
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 120 ++++++++++++++++++++++----------------
+ 1 file changed, 70 insertions(+), 50 deletions(-)
 
-built over your for-next branch.
-
-The first patch in the set just fixes up the SAM_STAT_TASK_SET_FULL
-handling in transport_generic_request_failure so it does not
-get changed to a LUN COMM failure. The rest of the patches fix
-several bugs in the tcmu ring buffer code include hangs due to
-incorrect locking, threading and IO accounting. It also adds
-2 features that allow you to configure the ring buffer size
-and how long we wait for memory.
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index a6205e4..15b54fd 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1971,71 +1971,91 @@ static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
+ 	.tb_dev_attrib_attrs	= NULL,
+ };
+ 
+-static int unmap_thread_fn(void *data)
++
++static void find_free_blocks(void)
+ {
+ 	struct tcmu_dev *udev;
+ 	loff_t off;
+ 	uint32_t start, end, block;
+ 
+-	while (!kthread_should_stop()) {
+-		DEFINE_WAIT(__wait);
+-
+-		prepare_to_wait(&unmap_wait, &__wait, TASK_INTERRUPTIBLE);
+-		schedule();
+-		finish_wait(&unmap_wait, &__wait);
++	mutex_lock(&root_udev_mutex);
++	list_for_each_entry(udev, &root_udev, node) {
++		mutex_lock(&udev->cmdr_lock);
+ 
+-		if (kthread_should_stop())
+-			break;
++		/* Try to complete the finished commands first */
++		tcmu_handle_completions(udev);
+ 
+-		mutex_lock(&root_udev_mutex);
+-		list_for_each_entry(udev, &root_udev, node) {
+-			mutex_lock(&udev->cmdr_lock);
++		/* Skip the udevs waiting the global pool or in idle */
++		if (udev->waiting_global || !udev->dbi_thresh) {
++			mutex_unlock(&udev->cmdr_lock);
++			continue;
++		}
+ 
+-			/* Try to complete the finished commands first */
+-			tcmu_handle_completions(udev);
++		end = udev->dbi_max + 1;
++		block = find_last_bit(udev->data_bitmap, end);
++		if (block = udev->dbi_max) {
++			/*
++			 * The last bit is dbi_max, so there is
++			 * no need to shrink any blocks.
++			 */
++			mutex_unlock(&udev->cmdr_lock);
++			continue;
++		} else if (block = end) {
++			/* The current udev will goto idle state */
++			udev->dbi_thresh = start = 0;
++			udev->dbi_max = 0;
++		} else {
++			udev->dbi_thresh = start = block + 1;
++			udev->dbi_max = block;
++		}
+ 
+-			/* Skip the udevs waiting the global pool or in idle */
+-			if (udev->waiting_global || !udev->dbi_thresh) {
+-				mutex_unlock(&udev->cmdr_lock);
+-				continue;
+-			}
++		/* Here will truncate the data area from off */
++		off = udev->data_off + start * DATA_BLOCK_SIZE;
++		unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
+ 
+-			end = udev->dbi_max + 1;
+-			block = find_last_bit(udev->data_bitmap, end);
+-			if (block = udev->dbi_max) {
+-				/*
+-				 * The last bit is dbi_max, so there is
+-				 * no need to shrink any blocks.
+-				 */
+-				mutex_unlock(&udev->cmdr_lock);
+-				continue;
+-			} else if (block = end) {
+-				/* The current udev will goto idle state */
+-				udev->dbi_thresh = start = 0;
+-				udev->dbi_max = 0;
+-			} else {
+-				udev->dbi_thresh = start = block + 1;
+-				udev->dbi_max = block;
+-			}
++		/* Release the block pages */
++		tcmu_blocks_release(&udev->data_blocks, start, end);
++		mutex_unlock(&udev->cmdr_lock);
++	}
++	mutex_unlock(&root_udev_mutex);
++}
+ 
+-			/* Here will truncate the data area from off */
+-			off = udev->data_off + start * DATA_BLOCK_SIZE;
+-			unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
++static void run_cmdr_queues(void)
++{
++	struct tcmu_dev *udev;
+ 
+-			/* Release the block pages */
+-			tcmu_blocks_release(&udev->data_blocks, start, end);
++	/*
++	 * Try to wake up the udevs who are waiting
++	 * for the global data block pool.
++	 */
++	mutex_lock(&root_udev_mutex);
++	list_for_each_entry(udev, &root_udev, node) {
++		mutex_lock(&udev->cmdr_lock);
++		if (!udev->waiting_global) {
+ 			mutex_unlock(&udev->cmdr_lock);
++			break;
+ 		}
++		mutex_unlock(&udev->cmdr_lock);
+ 
+-		/*
+-		 * Try to wake up the udevs who are waiting
+-		 * for the global data pool.
+-		 */
+-		list_for_each_entry(udev, &root_udev, node) {
+-			if (udev->waiting_global)
+-				wake_up(&udev->wait_cmdr);
+-		}
+-		mutex_unlock(&root_udev_mutex);
++		wake_up(&udev->wait_cmdr);
++	}
++	mutex_unlock(&root_udev_mutex);
++}
++
++static int unmap_thread_fn(void *data)
++{
++	while (!kthread_should_stop()) {
++		DEFINE_WAIT(__wait);
++
++		prepare_to_wait(&unmap_wait, &__wait, TASK_INTERRUPTIBLE);
++		schedule();
++		finish_wait(&unmap_wait, &__wait);
++
++		if (kthread_should_stop())
++			break;
++
++		find_free_blocks();
++		run_cmdr_queues();
+ 	}
+ 
+ 	return 0;
+-- 
+1.8.3.1
 
