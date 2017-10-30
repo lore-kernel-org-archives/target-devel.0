@@ -1,141 +1,127 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 25 Oct 2017 16:47:15 +0000
-Subject: [PATCH 05/20] tcmu: fix double se_cmd completion
-Message-Id: <1508950050-10120-6-git-send-email-mchristi@redhat.com>
+Date: Mon, 30 Oct 2017 03:44:34 +0000
+Subject: [PATCH 14/19] tcmu: prep queue_cmd_ring to be used by unmap wq
+Message-Id: <1509335079-5276-15-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, jejb@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-If cmd_time_out != 0, then tcmu_queue_cmd_ring could end up
-sleeping waiting for ring space, timing out and then returning
-failure to lio, and tcmu_check_expired_cmd could also detect
-the timeout and call target_complete_cmd on the cmd.
-
-This patch just delays setting up the deadline value and adding
-the cmd to the udev->commands idr until we have allocated ring
-space and are about to send the cmd to userspace.
+In the next patch we will call queue_cmd_ring from the submitting
+context and also the unmap wq when blocks free. This changes
+the queue_cmd_ring return code so in the next patch we can
+return a sense_reason_t and also tell the caller if the cmd
+was internally queued.
 
 Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_user.c | 54 ++++++++++++++++++++++-----------------
- 1 file changed, 31 insertions(+), 23 deletions(-)
+ drivers/target/target_core_user.c | 41 +++++++++++++++++++++++++--------------
+ 1 file changed, 26 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 2a3ad19..38652be 100644
+index 91e0601..68668a8 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -459,7 +459,6 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
- 	struct se_device *se_dev = se_cmd->se_dev;
- 	struct tcmu_dev *udev = TCMU_DEV(se_dev);
- 	struct tcmu_cmd *tcmu_cmd;
--	int cmd_id;
- 
- 	tcmu_cmd = kmem_cache_zalloc(tcmu_cmd_cache, GFP_KERNEL);
- 	if (!tcmu_cmd)
-@@ -467,9 +466,6 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
- 
- 	tcmu_cmd->se_cmd = se_cmd;
- 	tcmu_cmd->tcmu_dev = udev;
--	if (udev->cmd_time_out)
--		tcmu_cmd->deadline = jiffies +
--					msecs_to_jiffies(udev->cmd_time_out);
- 
- 	tcmu_cmd_reset_dbi_cur(tcmu_cmd);
- 	tcmu_cmd->dbi_cnt = tcmu_cmd_get_block_cnt(tcmu_cmd);
-@@ -480,19 +476,6 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
- 		return NULL;
- 	}
- 
--	idr_preload(GFP_KERNEL);
--	spin_lock_irq(&udev->commands_lock);
--	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 0,
--		USHRT_MAX, GFP_NOWAIT);
--	spin_unlock_irq(&udev->commands_lock);
--	idr_preload_end();
--
--	if (cmd_id < 0) {
--		tcmu_free_cmd(tcmu_cmd);
--		return NULL;
--	}
--	tcmu_cmd->cmd_id = cmd_id;
--
- 	return tcmu_cmd;
+@@ -775,8 +775,16 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
+ 	return 0;
  }
  
-@@ -795,6 +778,30 @@ static inline size_t tcmu_cmd_get_cmd_size(struct tcmu_cmd *tcmu_cmd,
- 	return command_size;
- }
- 
-+static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
-+{
-+	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
-+	unsigned long tmo = udev->cmd_time_out;
-+	int cmd_id;
-+
-+	if (tcmu_cmd->cmd_id)
-+		return 0;
-+
-+	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 1, USHRT_MAX, GFP_NOWAIT);
-+	if (cmd_id < 0) {
-+		pr_err("tcmu: Could not allocate cmd id.\n");
-+		return cmd_id;
-+	}
-+	tcmu_cmd->cmd_id = cmd_id;
-+
-+	if (!tmo)
-+		return 0;
-+
-+	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
-+	mod_timer(&udev->timeout, tcmu_cmd->deadline);
-+	return 0;
-+}
-+
- static sense_reason_t
- tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
+-static sense_reason_t
+-tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
++/**
++ * queue_cmd_ring - queue cmd to ring or internally
++ * @tcmu_cmd: cmd to queue
++ * @scsi_err: TCM error code if failure (-1) returned.
++ *
++ * Returns:
++ * -1 we cannot queue internally or to the ring.
++ *  0 success
++ */
++static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
  {
-@@ -902,7 +909,6 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
- 	entry = (void *) mb + CMDR_OFF + cmd_head;
- 	memset(entry, 0, command_size);
- 	tcmu_hdr_set_op(&entry->hdr.len_op, TCMU_OP_CMD);
--	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
+ 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
+ 	struct se_cmd *se_cmd = tcmu_cmd->se_cmd;
+@@ -790,8 +798,12 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
+ 	bool copy_to_data_area;
+ 	size_t data_length = tcmu_cmd_get_data_length(tcmu_cmd);
  
- 	/* Handle allocating space from the data area */
- 	tcmu_cmd_reset_dbi_cur(tcmu_cmd);
-@@ -940,6 +946,13 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
- 	}
- 	entry->req.iov_bidi_cnt = iov_cnt;
- 
-+	ret = tcmu_setup_cmd_timer(tcmu_cmd);
-+	if (ret) {
-+		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
-+		return TCM_OUT_OF_RESOURCES;
-+	}
-+	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
+-	if (test_bit(TCMU_DEV_BIT_BROKEN, &udev->flags))
+-		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++	*scsi_err = TCM_NO_SENSE;
 +
++	if (test_bit(TCMU_DEV_BIT_BROKEN, &udev->flags)) {
++		*scsi_err = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++		return -1;
++	}
+ 
  	/*
- 	 * Recalaulate the command's base size and size according
- 	 * to the actual needs
-@@ -973,8 +986,6 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
+ 	 * Must be a certain minimum size for response sense info, but
+@@ -818,7 +830,8 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
+ 			"cmd ring/data area\n", command_size, data_length,
+ 			udev->cmdr_size, udev->data_size);
+ 		mutex_unlock(&udev->cmdr_lock);
+-		return TCM_INVALID_CDB_FIELD;
++		*scsi_err = TCM_INVALID_CDB_FIELD;
++		return -1;
+ 	}
+ 
+ 	while (!is_ring_space_avail(udev, tcmu_cmd, command_size, data_length)) {
+@@ -844,7 +857,8 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
+ 		finish_wait(&udev->wait_cmdr, &__wait);
+ 		if (!ret) {
+ 			pr_warn("tcmu: command timed out\n");
+-			return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++			*scsi_err = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++			return -1;
+ 		}
+ 
+ 		mutex_lock(&udev->cmdr_lock);
+@@ -900,7 +914,8 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
+ 	ret = tcmu_setup_cmd_timer(tcmu_cmd);
+ 	if (ret) {
+ 		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
+-		return TCM_OUT_OF_RESOURCES;
++		*scsi_err = TCM_OUT_OF_RESOURCES;
++		return -1;
+ 	}
+ 	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
+ 
+@@ -931,27 +946,23 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
+ 		mod_timer(&udev->timeout, round_jiffies_up(jiffies +
+ 			  msecs_to_jiffies(udev->cmd_time_out)));
+ 
+-	return TCM_NO_SENSE;
++	return 0;
+ }
+ 
  static sense_reason_t
  tcmu_queue_cmd(struct se_cmd *se_cmd)
  {
--	struct se_device *se_dev = se_cmd->se_dev;
--	struct tcmu_dev *udev = TCMU_DEV(se_dev);
  	struct tcmu_cmd *tcmu_cmd;
- 	sense_reason_t ret;
+-	sense_reason_t ret;
++	sense_reason_t scsi_ret;
  
-@@ -985,9 +996,6 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
- 	ret = tcmu_queue_cmd_ring(tcmu_cmd);
- 	if (ret != TCM_NO_SENSE) {
- 		pr_err("TCMU: Could not queue command\n");
--		spin_lock_irq(&udev->commands_lock);
--		idr_remove(&udev->commands, tcmu_cmd->cmd_id);
--		spin_unlock_irq(&udev->commands_lock);
+ 	tcmu_cmd = tcmu_alloc_cmd(se_cmd);
+ 	if (!tcmu_cmd)
+ 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
  
+-	ret = tcmu_queue_cmd_ring(tcmu_cmd);
+-	if (ret != TCM_NO_SENSE) {
+-		pr_err("TCMU: Could not queue command\n");
+-
++	if (queue_cmd_ring(tcmu_cmd, &scsi_ret) < 0)
  		tcmu_free_cmd(tcmu_cmd);
- 	}
+-	}
+ 
+-	return ret;
++	return scsi_ret;
+ }
+ 
+ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *entry)
 -- 
-2.7.2
+1.8.3.1
 
