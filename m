@@ -1,7 +1,7 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 30 Oct 2017 03:44:25 +0000
-Subject: [PATCH 05/19] tcmu: merge common block release code
-Message-Id: <1509335079-5276-6-git-send-email-mchristi@redhat.com>
+Date: Mon, 30 Oct 2017 03:44:30 +0000
+Subject: [PATCH 10/19] tcmu: release blocks for partially setup cmds
+Message-Id: <1509335079-5276-11-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
 In-Reply-To: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
@@ -11,78 +11,43 @@ Content-Transfer-Encoding: 7bit
 To: martin.petersen@oracle.com, jejb@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
 Cc: Mike Christie <mchristi@redhat.com>
 
-Have unmap_thread_fn use tcmu_blocks_release.
+If we cannot setup a cmd because we run out of ring space
+or global pages release the blocks before sleeping. This
+prevents a deadlock where dev0 has waiting_blocks set and
+needs N blocks, but dev1 to devX have each allocated N / X blocks
+and also hit the global block limit so they went to sleep.
+
+find_free_blocks is not able to take the sleeping dev's
+blocks becaause their waiting_blocks is set and even
+if it was not the block returned by find_last_bit could equal
+dbi_max. The latter will probably never happen because
+DATA_BLOCK_BITS is so high but in the next patches
+DATA_BLOCK_BITS and TCMU_GLOBAL_MAX_BLOCKS will be settable so
+it might be lower and could happen.
 
 Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_user.c | 24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ drivers/target/target_core_user.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 4f666a5..a6205e4 100644
+index 5226b82..612ac65 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -1301,21 +1301,19 @@ static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
- 	return -EINVAL;
- }
- 
--static void tcmu_blocks_release(struct tcmu_dev *udev)
-+static void tcmu_blocks_release(struct radix_tree_root *blocks,
-+				int start, int end)
- {
- 	int i;
- 	struct page *page;
- 
--	/* Try to release all block pages */
--	mutex_lock(&udev->cmdr_lock);
--	for (i = 0; i <= udev->dbi_max; i++) {
--		page = radix_tree_delete(&udev->data_blocks, i);
-+	for (i = start; i < end; i++) {
-+		page = radix_tree_delete(blocks, i);
- 		if (page) {
- 			__free_page(page);
- 			atomic_dec(&global_db_count);
- 		}
- 	}
--	mutex_unlock(&udev->cmdr_lock);
- }
- 
- static void tcmu_dev_kref_release(struct kref *kref)
-@@ -1339,7 +1337,9 @@ static void tcmu_dev_kref_release(struct kref *kref)
- 	spin_unlock_irq(&udev->commands_lock);
- 	WARN_ON(!all_expired);
- 
--	tcmu_blocks_release(udev);
-+	mutex_lock(&udev->cmdr_lock);
-+	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
-+	mutex_unlock(&udev->cmdr_lock);
- 
- 	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
- }
-@@ -1976,8 +1976,6 @@ static int unmap_thread_fn(void *data)
- 	struct tcmu_dev *udev;
- 	loff_t off;
- 	uint32_t start, end, block;
--	struct page *page;
--	int i;
- 
- 	while (!kthread_should_stop()) {
+@@ -806,6 +806,13 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
+ 		int ret;
  		DEFINE_WAIT(__wait);
-@@ -2025,13 +2023,7 @@ static int unmap_thread_fn(void *data)
- 			unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
  
- 			/* Release the block pages */
--			for (i = start; i < end; i++) {
--				page = radix_tree_delete(&udev->data_blocks, i);
--				if (page) {
--					__free_page(page);
--					atomic_dec(&global_db_count);
--				}
--			}
-+			tcmu_blocks_release(&udev->data_blocks, start, end);
- 			mutex_unlock(&udev->cmdr_lock);
- 		}
++		/*
++		 * Don't leave commands partially setup because the unmap
++		 * thread might need the blocks to make forward progress.
++		 */
++		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cur);
++		tcmu_cmd_reset_dbi_cur(tcmu_cmd);
++
+ 		prepare_to_wait(&udev->wait_cmdr, &__wait, TASK_INTERRUPTIBLE);
  
+ 		pr_debug("sleeping for ring space\n");
 -- 
 1.8.3.1
 
