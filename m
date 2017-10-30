@@ -1,304 +1,282 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Thu, 26 Oct 2017 14:43:28 +0000
-Subject: [PATCH] target/iscsi: Simplify timer manipulation code
-Message-Id: <20171026144328.31680-1-bart.vanassche@wdc.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 30 Oct 2017 03:44:37 +0000
+Subject: [PATCH 17/19] tcmu: make ring buffer timer configurable
+Message-Id: <1509335079-5276-18-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
-
-Move timer initialization from before add_timer() to the context
-where the containing object is initialized. Use setup_timer() and
-mod_timer() instead of open coding these. Use 'jiffies' instead
-of get_jiffies_64() when calculating expiry times because expiry
-times have type unsigned long, just like 'jiffies'.
-
-Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-Cc: Christoph Hellwig <hch@lst.de>
+To: martin.petersen@oracle.com, jejb@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
 Cc: Mike Christie <mchristi@redhat.com>
----
- drivers/target/iscsi/iscsi_target.c       |  3 +++
- drivers/target/iscsi/iscsi_target_erl0.c  | 10 +++-------
- drivers/target/iscsi/iscsi_target_erl0.h  |  1 +
- drivers/target/iscsi/iscsi_target_erl1.c  |  8 ++------
- drivers/target/iscsi/iscsi_target_erl1.h  |  1 +
- drivers/target/iscsi/iscsi_target_login.c | 16 ++++++++++------
- drivers/target/iscsi/iscsi_target_login.h |  1 +
- drivers/target/iscsi/iscsi_target_nego.c  |  8 +++-----
- drivers/target/iscsi/iscsi_target_util.c  | 26 ++++++++------------------
- drivers/target/iscsi/iscsi_target_util.h  |  2 ++
- 10 files changed, 34 insertions(+), 42 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 5001261f5d69..7d619160b3d3 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -372,6 +372,9 @@ struct iscsi_np *iscsit_add_np(
- 	init_completion(&np->np_restart_comp);
- 	INIT_LIST_HEAD(&np->np_list);
+This adds a timer, qfull_time_out, that controls how long a
+device will wait for ring buffer space to open before
+failing the commands in the queue. It is useful to separate
+this timer from the cmd_time_out and default 30 sec one,
+because for HA setups cmd_time_out may be disbled and 30
+seconds is too long to wait when some OSs like ESX will
+timeout commands after as little as 8 - 15 seconds.
+
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 131 +++++++++++++++++++++++++++++---------
+ 1 file changed, 101 insertions(+), 30 deletions(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 80dd17a..92eb918 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -142,8 +142,12 @@ struct tcmu_dev {
  
-+	setup_timer(&np->np_login_timer, iscsi_handle_login_thread_timeout,
-+		    (unsigned long)np);
+ 	struct idr commands;
+ 
+-	struct timer_list timeout;
++	struct timer_list cmd_timer;
+ 	unsigned int cmd_time_out;
 +
- 	ret = iscsi_target_setup_login_socket(np, sockaddr);
- 	if (ret != 0) {
- 		kfree(np);
-diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/iscsi/iscsi_target_erl0.c
-index 7fe2aa73cff6..f164098594e9 100644
---- a/drivers/target/iscsi/iscsi_target_erl0.c
-+++ b/drivers/target/iscsi/iscsi_target_erl0.c
-@@ -749,7 +749,7 @@ int iscsit_check_post_dataout(
++	struct timer_list qfull_timer;
++	int qfull_time_out;
++
+ 	struct list_head timedout_entry;
+ 
+ 	spinlock_t nl_cmd_lock;
+@@ -740,18 +744,14 @@ static inline size_t tcmu_cmd_get_cmd_size(struct tcmu_cmd *tcmu_cmd,
+ 	return command_size;
+ }
+ 
+-static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
++static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
++				struct timer_list *timer)
+ {
+ 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
+-	unsigned long tmo = udev->cmd_time_out;
+ 	int cmd_id;
+ 
+-	/*
+-	 * If it was on the cmdr queue waiting we do not reset the timer
+-	 * for requeues and when it is finally sent to userspace.
+-	 */
+ 	if (tcmu_cmd->cmd_id)
+-		return 0;
++		goto setup_timer;
+ 
+ 	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 1, USHRT_MAX, GFP_NOWAIT);
+ 	if (cmd_id < 0) {
+@@ -760,23 +760,38 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
  	}
- }
+ 	tcmu_cmd->cmd_id = cmd_id;
  
--static void iscsit_handle_time2retain_timeout(unsigned long data)
-+void iscsit_handle_time2retain_timeout(unsigned long data)
- {
- 	struct iscsi_session *sess = (struct iscsi_session *) data;
- 	struct iscsi_portal_group *tpg = sess->tpg;
-@@ -809,14 +809,10 @@ void iscsit_start_time2retain_handler(struct iscsi_session *sess)
- 	pr_debug("Starting Time2Retain timer for %u seconds on"
- 		" SID: %u\n", sess->sess_ops->DefaultTime2Retain, sess->sid);
+-	if (!tmo)
+-		tmo = TCMU_TIME_OUT;
+-
+ 	pr_debug("allocated cmd %u for dev %s tmo %lu\n", tcmu_cmd->cmd_id,
+ 		 udev->name, tmo / MSEC_PER_SEC);
  
--	init_timer(&sess->time2retain_timer);
--	sess->time2retain_timer.expires -		(get_jiffies_64() + sess->sess_ops->DefaultTime2Retain * HZ);
--	sess->time2retain_timer.data = (unsigned long)sess;
--	sess->time2retain_timer.function = iscsit_handle_time2retain_timeout;
- 	sess->time2retain_timer_flags &= ~ISCSI_TF_STOP;
- 	sess->time2retain_timer_flags |= ISCSI_TF_RUNNING;
--	add_timer(&sess->time2retain_timer);
-+	mod_timer(&sess->time2retain_timer,
-+		  jiffies + sess->sess_ops->DefaultTime2Retain * HZ);
- }
- 
- /*
-diff --git a/drivers/target/iscsi/iscsi_target_erl0.h b/drivers/target/iscsi/iscsi_target_erl0.h
-index 3822d9cd1230..97e4ae728926 100644
---- a/drivers/target/iscsi/iscsi_target_erl0.h
-+++ b/drivers/target/iscsi/iscsi_target_erl0.h
-@@ -11,6 +11,7 @@ extern void iscsit_set_dataout_sequence_values(struct iscsi_cmd *);
- extern int iscsit_check_pre_dataout(struct iscsi_cmd *, unsigned char *);
- extern int iscsit_check_post_dataout(struct iscsi_cmd *, unsigned char *, u8);
- extern void iscsit_start_time2retain_handler(struct iscsi_session *);
-+extern void iscsit_handle_time2retain_timeout(unsigned long data);
- extern int iscsit_stop_time2retain_timer(struct iscsi_session *);
- extern void iscsit_connection_reinstatement_rcfr(struct iscsi_conn *);
- extern void iscsit_cause_connection_reinstatement(struct iscsi_conn *, int);
-diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
-index fe9b7f1e44ac..19b28255b687 100644
---- a/drivers/target/iscsi/iscsi_target_erl1.c
-+++ b/drivers/target/iscsi/iscsi_target_erl1.c
-@@ -1148,7 +1148,7 @@ static int iscsit_set_dataout_timeout_values(
- /*
-  *	NOTE: Called from interrupt (timer) context.
-  */
--static void iscsit_handle_dataout_timeout(unsigned long data)
-+void iscsit_handle_dataout_timeout(unsigned long data)
- {
- 	u32 pdu_length = 0, pdu_offset = 0;
- 	u32 r2t_length = 0, r2t_offset = 0;
-@@ -1264,13 +1264,9 @@ void iscsit_start_dataout_timer(
- 	pr_debug("Starting DataOUT timer for ITT: 0x%08x on"
- 		" CID: %hu.\n", cmd->init_task_tag, conn->cid);
- 
--	init_timer(&cmd->dataout_timer);
--	cmd->dataout_timer.expires = (get_jiffies_64() + na->dataout_timeout * HZ);
--	cmd->dataout_timer.data = (unsigned long)cmd;
--	cmd->dataout_timer.function = iscsit_handle_dataout_timeout;
- 	cmd->dataout_timer_flags &= ~ISCSI_TF_STOP;
- 	cmd->dataout_timer_flags |= ISCSI_TF_RUNNING;
--	add_timer(&cmd->dataout_timer);
-+	mod_timer(&cmd->dataout_timer, jiffies + na->dataout_timeout * HZ);
- }
- 
- void iscsit_stop_dataout_timer(struct iscsi_cmd *cmd)
-diff --git a/drivers/target/iscsi/iscsi_target_erl1.h b/drivers/target/iscsi/iscsi_target_erl1.h
-index 54d36bd25bea..0ff6e310ca36 100644
---- a/drivers/target/iscsi/iscsi_target_erl1.h
-+++ b/drivers/target/iscsi/iscsi_target_erl1.h
-@@ -29,6 +29,7 @@ extern int iscsit_execute_ooo_cmdsns(struct iscsi_session *);
- extern int iscsit_execute_cmd(struct iscsi_cmd *, int);
- extern int iscsit_handle_ooo_cmdsn(struct iscsi_session *, struct iscsi_cmd *, u32);
- extern void iscsit_remove_ooo_cmdsn(struct iscsi_session *, struct iscsi_ooo_cmdsn *);
-+extern void iscsit_handle_dataout_timeout(unsigned long data);
- extern void iscsit_mod_dataout_timer(struct iscsi_cmd *);
- extern void iscsit_start_dataout_timer(struct iscsi_cmd *, struct iscsi_conn *);
- extern void iscsit_stop_dataout_timer(struct iscsi_cmd *);
-diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index dc13afbd4c88..8be9221b6b9d 100644
---- a/drivers/target/iscsi/iscsi_target_login.c
-+++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -333,6 +333,9 @@ static int iscsi_login_zero_tsih_s1(
- 	spin_lock_init(&sess->session_usage_lock);
- 	spin_lock_init(&sess->ttt_lock);
- 
-+	setup_timer(&sess->time2retain_timer, iscsit_handle_time2retain_timeout,
-+		    (unsigned long)sess);
++setup_timer:
++	if (!tmo)
++		return 0;
 +
- 	idr_preload(GFP_KERNEL);
- 	spin_lock_bh(&sess_idr_lock);
- 	ret = idr_alloc(&sess_idr, NULL, 0, 0, GFP_NOWAIT);
-@@ -839,7 +842,7 @@ void iscsi_post_login_handler(
- 	iscsit_dec_conn_usage_count(conn);
- }
- 
--static void iscsi_handle_login_thread_timeout(unsigned long data)
-+void iscsi_handle_login_thread_timeout(unsigned long data)
- {
- 	struct iscsi_np *np = (struct iscsi_np *) data;
- 
-@@ -866,13 +869,9 @@ static void iscsi_start_login_thread_timer(struct iscsi_np *np)
- 	 * point we do not have access to ISCSI_TPG_ATTRIB(tpg)->login_timeout
- 	 */
- 	spin_lock_bh(&np->np_thread_lock);
--	init_timer(&np->np_login_timer);
--	np->np_login_timer.expires = (get_jiffies_64() + TA_LOGIN_TIMEOUT * HZ);
--	np->np_login_timer.data = (unsigned long)np;
--	np->np_login_timer.function = iscsi_handle_login_thread_timeout;
- 	np->np_login_timer_flags &= ~ISCSI_TF_STOP;
- 	np->np_login_timer_flags |= ISCSI_TF_RUNNING;
--	add_timer(&np->np_login_timer);
-+	mod_timer(&np->np_login_timer, jiffies + TA_LOGIN_TIMEOUT * HZ);
- 
- 	pr_debug("Added timeout timer to iSCSI login request for"
- 			" %u seconds.\n", TA_LOGIN_TIMEOUT);
-@@ -1266,6 +1265,11 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
- 	pr_debug("Moving to TARG_CONN_STATE_FREE.\n");
- 	conn->conn_state = TARG_CONN_STATE_FREE;
- 
-+	setup_timer(&conn->nopin_response_timer,
-+		    iscsit_handle_nopin_response_timeout, (unsigned long)conn);
-+	setup_timer(&conn->nopin_timer, iscsit_handle_nopin_timeout,
-+		    (unsigned long)conn);
-+
- 	if (iscsit_conn_set_transport(conn, np->np_transport) < 0) {
- 		kfree(conn);
- 		return 1;
-diff --git a/drivers/target/iscsi/iscsi_target_login.h b/drivers/target/iscsi/iscsi_target_login.h
-index 0e1fd6cedd54..f77850bf3e58 100644
---- a/drivers/target/iscsi/iscsi_target_login.h
-+++ b/drivers/target/iscsi/iscsi_target_login.h
-@@ -24,5 +24,6 @@ extern void iscsi_post_login_handler(struct iscsi_np *, struct iscsi_conn *, u8)
- extern void iscsi_target_login_sess_out(struct iscsi_conn *, struct iscsi_np *,
- 				bool, bool);
- extern int iscsi_target_login_thread(void *);
-+extern void iscsi_handle_login_thread_timeout(unsigned long data);
- 
- #endif   /*** ISCSI_TARGET_LOGIN_H ***/
-diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-index 7a6751fecd32..c851bd9f3175 100644
---- a/drivers/target/iscsi/iscsi_target_nego.c
-+++ b/drivers/target/iscsi/iscsi_target_nego.c
-@@ -618,11 +618,9 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
- 	conn->login_kworker = current;
- 	allow_signal(SIGINT);
- 
--	init_timer(&login_timer);
--	login_timer.expires = (get_jiffies_64() + TA_LOGIN_TIMEOUT * HZ);
--	login_timer.data = (unsigned long)conn;
--	login_timer.function = iscsi_target_login_timeout;
--	add_timer(&login_timer);
-+	setup_timer_on_stack(&login_timer, iscsi_target_login_timeout,
-+			     (unsigned long)conn);
-+	mod_timer(&login_timer, jiffies + TA_LOGIN_TIMEOUT * HZ);
- 	pr_debug("Starting login_timer for %s/%d\n", current->comm, current->pid);
- 
- 	rc = conn->conn_transport->iscsit_get_login_rx(conn, login);
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 1e36f83b5961..505dad5dab7f 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -176,6 +176,8 @@ struct iscsi_cmd *iscsit_allocate_cmd(struct iscsi_conn *conn, int state)
- 	spin_lock_init(&cmd->istate_lock);
- 	spin_lock_init(&cmd->error_lock);
- 	spin_lock_init(&cmd->r2t_lock);
-+	setup_timer(&cmd->dataout_timer, iscsit_handle_dataout_timeout,
-+		    (unsigned long)cmd);
- 
- 	return cmd;
- }
-@@ -880,7 +882,7 @@ static int iscsit_add_nopin(struct iscsi_conn *conn, int want_response)
+ 	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
+-	mod_timer(&udev->timeout, tcmu_cmd->deadline);
++	mod_timer(timer, tcmu_cmd->deadline);
  	return 0;
  }
  
--static void iscsit_handle_nopin_response_timeout(unsigned long data)
-+void iscsit_handle_nopin_response_timeout(unsigned long data)
+ static int add_to_cmdr_queue(struct tcmu_cmd *tcmu_cmd)
  {
- 	struct iscsi_conn *conn = (struct iscsi_conn *) data;
+ 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
++	unsigned int tmo;
+ 	int ret;
  
-@@ -949,14 +951,10 @@ void iscsit_start_nopin_response_timer(struct iscsi_conn *conn)
- 		return;
+-	ret = tcmu_setup_cmd_timer(tcmu_cmd);
++	/*
++	 * For backwards compat if qfull_time_out is not set use
++	 * cmd_time_out and if that's not set use the default time out.
++	 */
++	if (!udev->qfull_time_out)
++		return -ETIMEDOUT;
++	else if (udev->qfull_time_out > 0)
++		tmo = udev->qfull_time_out;
++	else if (udev->cmd_time_out)
++		tmo = udev->cmd_time_out;
++	else
++		tmo = TCMU_TIME_OUT;
++
++	ret = tcmu_setup_cmd_timer(tcmu_cmd, tmo, &udev->qfull_timer);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -900,7 +915,8 @@ static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
+ 	}
+ 	entry->req.iov_bidi_cnt = iov_cnt;
+ 
+-	ret = tcmu_setup_cmd_timer(tcmu_cmd);
++	ret = tcmu_setup_cmd_timer(tcmu_cmd, udev->cmd_time_out,
++				   &udev->cmd_timer);
+ 	if (ret) {
+ 		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
+ 		*scsi_err = TCM_OUT_OF_RESOURCES;
+@@ -1046,14 +1062,19 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+ 		handled++;
  	}
  
--	init_timer(&conn->nopin_response_timer);
--	conn->nopin_response_timer.expires -		(get_jiffies_64() + na->nopin_response_timeout * HZ);
--	conn->nopin_response_timer.data = (unsigned long)conn;
--	conn->nopin_response_timer.function = iscsit_handle_nopin_response_timeout;
- 	conn->nopin_response_timer_flags &= ~ISCSI_TF_STOP;
- 	conn->nopin_response_timer_flags |= ISCSI_TF_RUNNING;
--	add_timer(&conn->nopin_response_timer);
-+	mod_timer(&conn->nopin_response_timer,
-+		  jiffies + na->nopin_response_timeout * HZ);
+-	if (mb->cmd_tail = mb->cmd_head && list_empty(&udev->cmdr_queue)) {
+-		del_timer(&udev->timeout);
+-		/*
+-		 * not more pending or waiting commands so try to reclaim
+-		 * blocks if needed.
+-		 */
+-		if (atomic_read(&global_db_count) > TCMU_GLOBAL_MAX_BLOCKS)
+-			schedule_delayed_work(&tcmu_unmap_work, 0);
++	if (mb->cmd_tail = mb->cmd_head) {
++		/* no more pending commands */
++		del_timer(&udev->cmd_timer);
++
++		if (list_empty(&udev->cmdr_queue)) {
++			/*
++			 * no more pending or waiting commands so try to
++			 * reclaim blocks if needed.
++			 */
++			if (atomic_read(&global_db_count) >
++			    TCMU_GLOBAL_MAX_BLOCKS)
++				schedule_delayed_work(&tcmu_unmap_work, 0);
++		}
+ 	}
  
- 	pr_debug("Started NOPIN Response Timer on CID: %d to %u"
- 		" seconds\n", conn->cid, na->nopin_response_timeout);
-@@ -980,7 +978,7 @@ void iscsit_stop_nopin_response_timer(struct iscsi_conn *conn)
- 	spin_unlock_bh(&conn->nopin_timer_lock);
+ 	return handled;
+@@ -1074,13 +1095,15 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
+ 		return 0;
+ 
+ 	is_running = list_empty(&cmd->cmdr_queue_entry);
+-	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
+-		 id, udev->name, is_running ? "inflight" : "queued");
+-
+-	se_cmd = cmd->se_cmd;
+-	cmd->se_cmd = NULL;
+ 
+ 	if (is_running) {
++		/*
++		 * If cmd_time_out is disabled but qfull is set deadline
++		 * will only reflect the qfull timeout. Ignore it.
++		 */
++		if (!udev->cmd_time_out)
++			return 0;
++
+ 		set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
+ 		/*
+ 		 * target_complete_cmd will translate this to LUN COMM FAILURE
+@@ -1093,6 +1116,12 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
+ 		tcmu_free_cmd(cmd);
+ 		scsi_status = SAM_STAT_TASK_SET_FULL;
+ 	}
++
++	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
++		 id, udev->name, is_running ? "inflight" : "queued");
++
++	se_cmd = cmd->se_cmd;
++	cmd->se_cmd = NULL;
+ 	target_complete_cmd(se_cmd, scsi_status);
+ 	return 0;
  }
- 
--static void iscsit_handle_nopin_timeout(unsigned long data)
-+void iscsit_handle_nopin_timeout(unsigned long data)
+@@ -1101,7 +1130,7 @@ static void tcmu_device_timedout(unsigned long data)
  {
- 	struct iscsi_conn *conn = (struct iscsi_conn *) data;
+ 	struct tcmu_dev *udev = (struct tcmu_dev *)data;
  
-@@ -1015,13 +1013,9 @@ void __iscsit_start_nopin_timer(struct iscsi_conn *conn)
- 	if (conn->nopin_timer_flags & ISCSI_TF_RUNNING)
- 		return;
+-	pr_debug("%s cmd timeout has expired\n", udev->name);
++	pr_debug("%s cmd/qfull timeout has expired\n", udev->name);
  
--	init_timer(&conn->nopin_timer);
--	conn->nopin_timer.expires = (get_jiffies_64() + na->nopin_timeout * HZ);
--	conn->nopin_timer.data = (unsigned long)conn;
--	conn->nopin_timer.function = iscsit_handle_nopin_timeout;
- 	conn->nopin_timer_flags &= ~ISCSI_TF_STOP;
- 	conn->nopin_timer_flags |= ISCSI_TF_RUNNING;
--	add_timer(&conn->nopin_timer);
-+	mod_timer(&conn->nopin_timer, jiffies + na->nopin_timeout * HZ);
+ 	spin_lock(&timed_out_udevs_lock);
+ 	if (list_empty(&udev->timedout_entry))
+@@ -1148,6 +1177,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
  
- 	pr_debug("Started NOPIN Timer on CID: %d at %u second"
- 		" interval\n", conn->cid, na->nopin_timeout);
-@@ -1043,13 +1037,9 @@ void iscsit_start_nopin_timer(struct iscsi_conn *conn)
- 		return;
+ 	udev->hba = hba;
+ 	udev->cmd_time_out = TCMU_TIME_OUT;
++	udev->qfull_time_out = -1;
+ 
+ 	mutex_init(&udev->cmdr_lock);
+ 
+@@ -1155,7 +1185,10 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+ 	INIT_LIST_HEAD(&udev->cmdr_queue);
+ 	idr_init(&udev->commands);
+ 
+-	setup_timer(&udev->timeout, tcmu_device_timedout,
++	setup_timer(&udev->qfull_timer, tcmu_device_timedout,
++		(unsigned long)udev);
++
++	setup_timer(&udev->cmd_timer, tcmu_device_timedout,
+ 		(unsigned long)udev);
+ 
+ 	init_waitqueue_head(&udev->nl_cmd_wq);
+@@ -1211,6 +1244,8 @@ static bool run_cmdr_queue(struct tcmu_dev *udev)
+ 			goto done;
+ 		}
  	}
++	if (list_empty(&udev->cmdr_queue))
++		del_timer(&udev->qfull_timer);
+ done:
+ 	return drained;
+ }
+@@ -1710,7 +1745,8 @@ static void tcmu_destroy_device(struct se_device *dev)
+ {
+ 	struct tcmu_dev *udev = TCMU_DEV(dev);
  
--	init_timer(&conn->nopin_timer);
--	conn->nopin_timer.expires = (get_jiffies_64() + na->nopin_timeout * HZ);
--	conn->nopin_timer.data = (unsigned long)conn;
--	conn->nopin_timer.function = iscsit_handle_nopin_timeout;
- 	conn->nopin_timer_flags &= ~ISCSI_TF_STOP;
- 	conn->nopin_timer_flags |= ISCSI_TF_RUNNING;
--	add_timer(&conn->nopin_timer);
-+	mod_timer(&conn->nopin_timer, jiffies + na->nopin_timeout * HZ);
+-	del_timer_sync(&udev->timeout);
++	del_timer_sync(&udev->cmd_timer);
++	del_timer_sync(&udev->qfull_timer);
  
- 	pr_debug("Started NOPIN Timer on CID: %d at %u second"
- 			" interval\n", conn->cid, na->nopin_timeout);
-diff --git a/drivers/target/iscsi/iscsi_target_util.h b/drivers/target/iscsi/iscsi_target_util.h
-index 425160565d0c..78b3b9d20963 100644
---- a/drivers/target/iscsi/iscsi_target_util.h
-+++ b/drivers/target/iscsi/iscsi_target_util.h
-@@ -47,9 +47,11 @@ extern struct iscsi_conn *iscsit_get_conn_from_cid_rcfr(struct iscsi_session *,
- extern void iscsit_check_conn_usage_count(struct iscsi_conn *);
- extern void iscsit_dec_conn_usage_count(struct iscsi_conn *);
- extern void iscsit_inc_conn_usage_count(struct iscsi_conn *);
-+extern void iscsit_handle_nopin_response_timeout(unsigned long data);
- extern void iscsit_mod_nopin_response_timer(struct iscsi_conn *);
- extern void iscsit_start_nopin_response_timer(struct iscsi_conn *);
- extern void iscsit_stop_nopin_response_timer(struct iscsi_conn *);
-+extern void iscsit_handle_nopin_timeout(unsigned long data);
- extern void __iscsit_start_nopin_timer(struct iscsi_conn *);
- extern void iscsit_start_nopin_timer(struct iscsi_conn *);
- extern void iscsit_stop_nopin_timer(struct iscsi_conn *);
+ 	mutex_lock(&root_udev_mutex);
+ 	list_del(&udev->node);
+@@ -1890,6 +1926,40 @@ static ssize_t tcmu_cmd_time_out_store(struct config_item *item, const char *pag
+ }
+ CONFIGFS_ATTR(tcmu_, cmd_time_out);
+ 
++static ssize_t tcmu_qfull_time_out_show(struct config_item *item, char *page)
++{
++	struct se_dev_attrib *da = container_of(to_config_group(item),
++						struct se_dev_attrib, da_group);
++	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
++
++	return snprintf(page, PAGE_SIZE, "%ld\n", udev->qfull_time_out <= 0 ?
++			udev->qfull_time_out :
++			udev->qfull_time_out / MSEC_PER_SEC);
++}
++
++static ssize_t tcmu_qfull_time_out_store(struct config_item *item,
++					 const char *page, size_t count)
++{
++	struct se_dev_attrib *da = container_of(to_config_group(item),
++					struct se_dev_attrib, da_group);
++	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
++	s32 val;
++	int ret;
++
++	ret = kstrtos32(page, 0, &val);
++	if (ret < 0)
++		return ret;
++
++	if (val >= 0) {
++		udev->qfull_time_out = val * MSEC_PER_SEC;
++	} else {
++		printk(KERN_ERR "Invalid qfull timeout value %d\n", val);
++		return -EINVAL;
++	}
++	return count;
++}
++CONFIGFS_ATTR(tcmu_, qfull_time_out);
++
+ static ssize_t tcmu_dev_config_show(struct config_item *item, char *page)
+ {
+ 	struct se_dev_attrib *da = container_of(to_config_group(item),
+@@ -2035,6 +2105,7 @@ static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
+ 
+ static struct configfs_attribute *tcmu_attrib_attrs[] = {
+ 	&tcmu_attr_cmd_time_out,
++	&tcmu_attr_qfull_time_out,
+ 	&tcmu_attr_dev_config,
+ 	&tcmu_attr_dev_size,
+ 	&tcmu_attr_emulate_write_cache,
 -- 
-2.14.2
+1.8.3.1
 
