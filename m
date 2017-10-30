@@ -1,99 +1,99 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 25 Oct 2017 16:47:27 +0000
-Subject: [PATCH 17/20] tcmu: run the unmap thread/wq if waiters.
-Message-Id: <1508950050-10120-18-git-send-email-mchristi@redhat.com>
+Date: Mon, 30 Oct 2017 03:44:33 +0000
+Subject: [PATCH 13/19] tcmu: clean up the scatter helper
+Message-Id: <1509335079-5276-14-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, jejb@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
+Cc: Xiubo Li <lixiubo@cmss.chinamobile.com>, Mike Christie <mchristi@redhat.com>
 
-If tcmu_dev 1 took exactly TCMU_GLOBAL_MAX_BLOCKS and then
-tcmu_dev 2 tried to allocate blocks dev 2 would be put
-on the waiter list. Later when dev 1's commands complete
-tcmu_irqcontrol would see that dev 1 is not on the waiter list
-and so it only runs the dev 1's queue. dev 2 could then be
-starved.
+From: Xiubo Li <lixiubo@cmss.chinamobile.com>
 
-This patch adds a check if we hit the global limit and have
-waiters in tcmu_irqcontrol. In this case we will then put
-the completing dev on the waiter list of needed and then
-wake up the unmapping thread/wq.
+Add some comments to make the scatter code to be more readable,
+and drop unused arg to new_iov.
 
+Signed-off-by: Xiubo Li <lixiubo@cmss.chinamobile.com>
+Reviewed-by: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
 Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_user.c | 47 ++++++++++++++++++++++++++-------------
- 1 file changed, 32 insertions(+), 15 deletions(-)
+ drivers/target/target_core_user.c | 30 +++++++++++++++++++++++++-----
+ 1 file changed, 25 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 4fe5249..1433838 100644
+index b7eeb25..91e0601 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -1271,23 +1271,41 @@ static bool run_cmdr_queue(struct tcmu_dev *udev)
- 	return drained;
+@@ -491,8 +491,7 @@ static inline size_t head_to_end(size_t head, size_t size)
+ 	return size - head;
  }
  
-+static bool tcmu_waiting_on_dev_blocks(struct tcmu_dev *udev)
-+{
-+	return list_empty(&udev->waiter) && !list_empty(&udev->cmdr_queue);
-+}
-+
- static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
+-static inline void new_iov(struct iovec **iov, int *iov_cnt,
+-			   struct tcmu_dev *udev)
++static inline void new_iov(struct iovec **iov, int *iov_cnt)
  {
--	struct tcmu_dev *tcmu_dev = container_of(info, struct tcmu_dev, uio_info);
-+	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
-+	bool run_local = true;
+ 	struct iovec *iovec;
  
--	mutex_lock(&tcmu_dev->cmdr_lock);
--	/*
--	 * If the current udev is also in waiter list, this will
--	 * make sure that the other waiters in list be fed ahead
--	 * of it.
--	 */
--	if (!list_empty(&tcmu_dev->waiter)) {
--		schedule_work(&tcmu_unmap_work);
--	} else {
--		tcmu_handle_completions(tcmu_dev);
--		run_cmdr_queue(tcmu_dev);
-+	mutex_lock(&udev->cmdr_lock);
-+
-+	if (atomic_read(&global_db_count) = TCMU_GLOBAL_MAX_BLOCKS) {
-+		spin_lock(&root_udev_waiter_lock);
-+		if (!list_empty(&root_udev_waiter)) {
+@@ -545,19 +544,38 @@ static void scatter_data_area(struct tcmu_dev *udev,
+ 				to = kmap_atomic(page);
+ 			}
+ 
+-			copy_bytes = min_t(size_t, sg_remaining,
+-					block_remaining);
 +			/*
-+			 * If we only hit the per block limit then make sure
-+			 * we are added to the global list so we get run
-+			 * after the other waiters.
++			 * Covert to virtual offset of the ring data area.
 +			 */
-+			if (tcmu_waiting_on_dev_blocks(udev))
-+				list_add_tail(&udev->waiter, &root_udev_waiter);
+ 			to_offset = get_block_offset_user(udev, dbi,
+ 					block_remaining);
+ 
++			/*
++			 * The following code will gather and map the blocks
++			 * to the same iovec when the blocks are all next to
++			 * each other.
++			 */
++			copy_bytes = min_t(size_t, sg_remaining,
++					block_remaining);
+ 			if (*iov_cnt != 0 &&
+ 			    to_offset = iov_tail(*iov)) {
++				/*
++				 * Will append to the current iovec, because
++				 * the current block page is next to the
++				 * previous one.
++				 */
+ 				(*iov)->iov_len += copy_bytes;
+ 			} else {
+-				new_iov(iov, iov_cnt, udev);
++				/*
++				 * Will allocate a new iovec because we are
++				 * first time here or the current block page
++				 * is not next to the previous one.
++				 */
++				new_iov(iov, iov_cnt);
+ 				(*iov)->iov_base = (void __user *)to_offset;
+ 				(*iov)->iov_len = copy_bytes;
+ 			}
 +
-+			run_local = false;
-+			schedule_work(&tcmu_unmap_work);
-+		}
-+		spin_unlock(&root_udev_waiter_lock);
+ 			if (copy_data) {
+ 				offset = DATA_BLOCK_SIZE - block_remaining;
+ 				memcpy(to + offset,
+@@ -565,11 +583,13 @@ static void scatter_data_area(struct tcmu_dev *udev,
+ 				       copy_bytes);
+ 				tcmu_flush_dcache_range(to, copy_bytes);
+ 			}
++
+ 			sg_remaining -= copy_bytes;
+ 			block_remaining -= copy_bytes;
+ 		}
+ 		kunmap_atomic(from - sg->offset);
  	}
--	mutex_unlock(&tcmu_dev->cmdr_lock);
 +
-+	if (run_local) {
-+		tcmu_handle_completions(udev);
-+		run_cmdr_queue(udev);
-+	}
-+
-+	mutex_unlock(&udev->cmdr_lock);
- 
- 	return 0;
+ 	if (to)
+ 		kunmap_atomic(to);
  }
-@@ -2186,8 +2204,7 @@ static uint32_t find_free_blocks(void)
- 		/* Release the block pages */
- 		tcmu_blocks_release(&udev->data_blocks, start, end);
- 
--		if (list_empty(&udev->waiter) &&
--		    !list_empty(&udev->cmdr_queue)) {
-+		if (tcmu_waiting_on_dev_blocks(udev)) {
- 			/*
- 			 * if we had to take pages from a dev that hit its
- 			 * DATA_BLOCK_BITS limit put it on the waiter
 -- 
-2.7.2
+1.8.3.1
 
