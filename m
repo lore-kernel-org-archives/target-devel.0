@@ -1,41 +1,52 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Tue, 17 Oct 2017 10:24:27 +0000
-Subject: Re: [PATCH v2 01/15] configfs: make ci_type field, some pointers and function arguments const
-Message-Id: <20171017102427.GB25786@kroah.com>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Tue, 31 Oct 2017 18:03:08 +0000
+Subject: [PATCH 00/11] SCSI target patches for kernel v4.15
+Message-Id: <20171031180319.19258-1-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
- <1508167134-6243-2-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1508167134-6243-2-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bhumika Goyal <bhumirks@gmail.com>
-Cc: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, sagi@grimberg.me, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.orac
+To: target-devel@vger.kernel.org
 
-On Mon, Oct 16, 2017 at 05:18:40PM +0200, Bhumika Goyal wrote:
-> The ci_type field of the config_item structure do not modify the fields
-> of the config_item_type structure it points to. And the other pointers
-> initialized with ci_type do not modify the fields as well.
-> So, make the ci_type field and the pointers initialized with ci_type
-> as const.
-> 
-> Make the struct config_item_type *type function argument of functions
-> config_{item/group}_init_type_name const as the argument in both the
-> functions is only stored in the ci_type field of a config_item structure
-> which is now made const.
-> Make the argument of configfs_register_default_group const as it is
-> only passed to the argument of the function config_group_init_type_name
-> which is now const.
-> 
-> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
-> ---
-> * Changes in v2- Combine all the followup patches and the constification
-> patches into a series.
-> 
->  fs/configfs/dir.c        | 10 +++++-----
->  fs/configfs/item.c       |  6 +++---
->  fs/configfs/symlink.c    |  4 ++--
->  include/linux/configfs.h |  8 ++++----
->  4 files changed, 14 insertions(+), 14 deletions(-)
+Hello Martin,
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+This patch series consists of patches I came up with while reviewing and
+testing the SCSI target code. Please consider these patches for kernel v4.15.
+
+Thanks,
+
+Bart.
+
+Bart Van Assche (11):
+  target: Move a declaration of a global variable into a header file
+  target: Suppress gcc 7 fallthrough warnings
+  target: Inline transport_put_cmd()
+  target: Avoid that EXTENDED COPY commands triggers lock inversion
+  target/iscsi: Define OFFLOAD_BUF_SIZE once
+  target/iscsi: Use min() in iscsit_dump_data_payload() instead of
+    open-coding it
+  target/iscsi: Fix endianness in an error message
+  target/iscsi: Modify iscsit_do_crypto_hash_buf() prototype
+  target/iscsi: Fix a race condition in iscsit_add_reject_from_cmd()
+  target/iscsi: Detect conn_cmd_list corruption early
+  usb/gadget: Make it again possible to enable the legacy drivers
+    without enabling USB_ETH
+
+ drivers/target/iscsi/cxgbit/cxgbit_main.c        |  1 +
+ drivers/target/iscsi/iscsi_target.c              | 50 +++++++++++-------------
+ drivers/target/iscsi/iscsi_target_erl1.c         |  7 ++--
+ drivers/target/iscsi/iscsi_target_seq_pdu_list.c |  2 -
+ drivers/target/iscsi/iscsi_target_util.c         |  4 ++
+ drivers/target/target_core_configfs.c            | 18 ++++++++-
+ drivers/target/target_core_fabric_configfs.c     |  2 -
+ drivers/target/target_core_internal.h            |  1 +
+ drivers/target/target_core_pr.c                  |  2 +
+ drivers/target/target_core_transport.c           | 27 +++----------
+ drivers/usb/gadget/Kconfig                       |  4 +-
+ drivers/usb/gadget/legacy/Kconfig                | 10 +++++
+ include/target/target_core_base.h                |  1 +
+ 13 files changed, 68 insertions(+), 61 deletions(-)
+
+-- 
+2.14.2
+
