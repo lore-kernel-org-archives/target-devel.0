@@ -1,14 +1,69 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Tue, 17 Oct 2017 10:18:27 +0000
-Subject: Re: [PATCH v2 08/15] nvmet: make config_item_type const
-Message-Id: <3f8d2ef6-1f7b-7183-1789-47fa3197f3f8@grimberg.me>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Tue, 31 Oct 2017 18:03:19 +0000
+Subject: [PATCH 11/11] usb/gadget: Make it again possible to enable the legacy drivers without enabling USB_E
+Message-Id: <20171031180319.19258-12-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1508167134-6243-1-git-send-email-bhumirks@gmail.com>
- <1508167134-6243-9-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1508167134-6243-9-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bhumika Goyal <bhumirks@gmail.com>, julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, alexander.shishkin@linux.intel.com, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, dledford@redhat.com, sean.hefty@intel.com, hal.rosenstock@gmail.com, hch@lst.de, kishon@ti.com, bhelgaas@google.com, nab@linux-iscsi.org, balbi@kernel.org, gregkh@linuxfoundation.org, laurent.pinchart@ideasonboard.com, jlbec@evilplan.org, ccaulfie@redhat.com, teigland@redhat.com, mfasheh@versity.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-usb@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-Acked-by: Sagi Grimberg <sagi@grimberg.me>
+Considerable time ago the legacy gadget menu was added inside the
+USB_ETH choice. I think this was a mistake and that the legacy
+gadget menu should have been added after "endchoice" instead of
+before. Hence this patch.
+
+Fixes: commit 8443f2d2b778 ("usb: gadget: Gadget directory cleanup - group legacy gadgets")
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
+Cc: Felipe Balbi <balbi@ti.com>
+Cc: linux-usb@vger.kernel.org
+---
+ drivers/usb/gadget/Kconfig        |  4 ++--
+ drivers/usb/gadget/legacy/Kconfig | 10 ++++++++++
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index 31cce7805eb2..0a19a76645ad 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -508,8 +508,8 @@ choice
+ 	  controller, and the relevant drivers for each function declared
+ 	  by the device.
+ 
+-source "drivers/usb/gadget/legacy/Kconfig"
+-
+ endchoice
+ 
++source "drivers/usb/gadget/legacy/Kconfig"
++
+ endif # USB_GADGET
+diff --git a/drivers/usb/gadget/legacy/Kconfig b/drivers/usb/gadget/legacy/Kconfig
+index a12fb459dbd9..9570bbeced4f 100644
+--- a/drivers/usb/gadget/legacy/Kconfig
++++ b/drivers/usb/gadget/legacy/Kconfig
+@@ -13,6 +13,14 @@
+ # both kinds of controller can also support "USB On-the-Go" (CONFIG_USB_OTG).
+ #
+ 
++menuconfig USB_GADGET_LEGACY
++	bool "Legacy USB Gadget Support"
++	help
++	   Legacy USB gadgets are USB gadgets that do not use the USB gadget
++	   configfs interface.
++
++if USB_GADGET_LEGACY
++
+ config USB_ZERO
+ 	tristate "Gadget Zero (DEVELOPMENT)"
+ 	select USB_LIBCOMPOSITE
+@@ -490,3 +498,5 @@ config USB_G_WEBCAM
+ 
+ 	  Say "y" to link the driver statically, or "m" to build a
+ 	  dynamically linked module called "g_webcam".
++
++endif
+-- 
+2.14.2
+
