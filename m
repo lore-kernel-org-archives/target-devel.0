@@ -1,85 +1,93 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 07:13:58 +0000
-Subject: [PATCH 03/17] tcmu: merge common block release code
-Message-Id: <1508310852-15366-4-git-send-email-mchristi@redhat.com>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Tue, 31 Oct 2017 18:03:11 +0000
+Subject: [PATCH 03/11] target: Inline transport_put_cmd()
+Message-Id: <20171031180319.19258-4-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Have unmap_thread_fn use tcmu_blocks_release.
+Since all transput_put_cmd() does is to call target_put_sess_cmd(),
+inline transport_put_cmd() into its callers. Leave out the BUG_ON()
+statement because if cmd->se_tfo = NULL then cmd->cmd_kref is 0
+and kref_put() will complain anyway. Notes:
+- transport_init_se_cmd() initializes both .se_tfo and .cmd_kref.
+- The only target driver that does not call transport_init_se_cmd()
+  for all commands is the iSCSI target driver. See also
+  iscsi_target_rx_opcode().
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_user.c | 24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ drivers/target/target_core_transport.c | 23 +++--------------------
+ 1 file changed, 3 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 529d30f..c40a043 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1370,21 +1370,19 @@ static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
- 	return -EINVAL;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index e6a2817c8239..8c0dbb048aa7 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -67,7 +67,6 @@ static void transport_complete_task_attr(struct se_cmd *cmd);
+ static int translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason);
+ static void transport_handle_queue_full(struct se_cmd *cmd,
+ 		struct se_device *dev, int err, bool write_pending);
+-static int transport_put_cmd(struct se_cmd *cmd);
+ static void target_complete_ok_work(struct work_struct *work);
+ 
+ int init_se_kmem_caches(void)
+@@ -668,7 +667,7 @@ int transport_cmd_finish_abort(struct se_cmd *cmd, int remove)
+ 	if (transport_cmd_check_stop_to_fabric(cmd))
+ 		return 1;
+ 	if (remove && ack_kref)
+-		ret = transport_put_cmd(cmd);
++		ret = target_put_sess_cmd(cmd);
+ 
+ 	return ret;
+ }
+@@ -2352,22 +2351,6 @@ static inline void transport_free_pages(struct se_cmd *cmd)
+ 	cmd->t_bidi_data_nents = 0;
  }
  
--static void tcmu_blocks_release(struct tcmu_dev *udev)
-+static void tcmu_blocks_release(struct radix_tree_root *blocks,
-+				int start, int end)
+-/**
+- * transport_put_cmd - release a reference to a command
+- * @cmd:       command to release
+- *
+- * This routine releases our reference to the command and frees it if possible.
+- */
+-static int transport_put_cmd(struct se_cmd *cmd)
+-{
+-	BUG_ON(!cmd->se_tfo);
+-	/*
+-	 * If this cmd has been setup with target_get_sess_cmd(), drop
+-	 * the kref and call ->release_cmd() in kref callback.
+-	 */
+-	return target_put_sess_cmd(cmd);
+-}
+-
+ void *transport_kmap_data_sg(struct se_cmd *cmd)
  {
- 	int i;
- 	struct page *page;
+ 	struct scatterlist *sg = cmd->t_data_sg;
+@@ -2603,7 +2586,7 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ 			target_wait_free_cmd(cmd, &aborted, &tas);
  
--	/* Try to release all block pages */
--	mutex_lock(&udev->cmdr_lock);
--	for (i = 0; i <= udev->dbi_max; i++) {
--		page = radix_tree_delete(&udev->data_blocks, i);
-+	for (i = start; i < end; i++) {
-+		page = radix_tree_delete(blocks, i);
- 		if (page) {
- 			__free_page(page);
- 			atomic_dec(&global_db_count);
- 		}
+ 		if (!aborted || tas)
+-			ret = transport_put_cmd(cmd);
++			ret = target_put_sess_cmd(cmd);
+ 	} else {
+ 		if (wait_for_tasks)
+ 			target_wait_free_cmd(cmd, &aborted, &tas);
+@@ -2619,7 +2602,7 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ 			transport_lun_remove_cmd(cmd);
+ 
+ 		if (!aborted || tas)
+-			ret = transport_put_cmd(cmd);
++			ret = target_put_sess_cmd(cmd);
  	}
--	mutex_unlock(&udev->cmdr_lock);
- }
- 
- static void tcmu_dev_kref_release(struct kref *kref)
-@@ -1408,7 +1406,9 @@ static void tcmu_dev_kref_release(struct kref *kref)
- 	spin_unlock_irq(&udev->commands_lock);
- 	WARN_ON(!all_expired);
- 
--	tcmu_blocks_release(udev);
-+	mutex_lock(&udev->cmdr_lock);
-+	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
-+	mutex_unlock(&udev->cmdr_lock);
- 
- 	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
- }
-@@ -2053,8 +2053,6 @@ static int unmap_thread_fn(void *data)
- 	loff_t off;
- 	uint32_t start, end, block;
- 	static uint32_t free_blocks;
--	struct page *page;
--	int i;
- 
- 	while (!kthread_should_stop()) {
- 		DEFINE_WAIT(__wait);
-@@ -2102,13 +2100,7 @@ static int unmap_thread_fn(void *data)
- 			unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
- 
- 			/* Release the block pages */
--			for (i = start; i < end; i++) {
--				page = radix_tree_delete(&udev->data_blocks, i);
--				if (page) {
--					__free_page(page);
--					atomic_dec(&global_db_count);
--				}
--			}
-+			tcmu_blocks_release(&udev->data_blocks, start, end);
- 			mutex_unlock(&udev->cmdr_lock);
- 
- 			free_blocks += end - start;
+ 	/*
+ 	 * If the task has been internally aborted due to TMR ABORT_TASK
 -- 
-2.7.2
+2.14.2
 
