@@ -1,99 +1,53 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 30 Oct 2017 03:44:33 +0000
-Subject: [PATCH 13/19] tcmu: clean up the scatter helper
-Message-Id: <1509335079-5276-14-git-send-email-mchristi@redhat.com>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Tue, 31 Oct 2017 18:03:09 +0000
+Subject: [PATCH 01/11] target: Move a declaration of a global variable into a header file
+Message-Id: <20171031180319.19258-2-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1509335079-5276-1-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, jejb@linux.vnet.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
-Cc: Xiubo Li <lixiubo@cmss.chinamobile.com>, Mike Christie <mchristi@redhat.com>
+To: target-devel@vger.kernel.org
 
-From: Xiubo Li <lixiubo@cmss.chinamobile.com>
+This patch avoids that sparse reports the following warning:
 
-Add some comments to make the scatter code to be more readable,
-and drop unused arg to new_iov.
+drivers/target/target_core_configfs.c:2267:33: warning: symbol 'target_core_dev_item_ops' was not declared. Should it be static?
 
-Signed-off-by: Xiubo Li <lixiubo@cmss.chinamobile.com>
-Reviewed-by: Mike Christie <mchristi@redhat.com>
-Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+Fixes: c17cd24959cd ("target/configfs: Kill se_device->dev_link_magic")
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_user.c | 30 +++++++++++++++++++++++++-----
- 1 file changed, 25 insertions(+), 5 deletions(-)
+ drivers/target/target_core_fabric_configfs.c | 2 --
+ drivers/target/target_core_internal.h        | 1 +
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index b7eeb25..91e0601 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -491,8 +491,7 @@ static inline size_t head_to_end(size_t head, size_t size)
- 	return size - head;
- }
+diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
+index e9e917cc6441..e1416b007aa4 100644
+--- a/drivers/target/target_core_fabric_configfs.c
++++ b/drivers/target/target_core_fabric_configfs.c
+@@ -623,8 +623,6 @@ static struct configfs_attribute *target_fabric_port_attrs[] = {
+ 	NULL,
+ };
  
--static inline void new_iov(struct iovec **iov, int *iov_cnt,
--			   struct tcmu_dev *udev)
-+static inline void new_iov(struct iovec **iov, int *iov_cnt)
- {
- 	struct iovec *iovec;
+-extern struct configfs_item_operations target_core_dev_item_ops;
+-
+ static int target_fabric_port_link(
+ 	struct config_item *lun_ci,
+ 	struct config_item *se_dev_ci)
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index f30e8ac13386..2c5004ffb581 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -88,6 +88,7 @@ int	target_for_each_device(int (*fn)(struct se_device *dev, void *data),
+ 			       void *data);
  
-@@ -545,19 +544,38 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 				to = kmap_atomic(page);
- 			}
+ /* target_core_configfs.c */
++extern struct configfs_item_operations target_core_dev_item_ops;
+ void	target_setup_backend_cits(struct target_backend *);
  
--			copy_bytes = min_t(size_t, sg_remaining,
--					block_remaining);
-+			/*
-+			 * Covert to virtual offset of the ring data area.
-+			 */
- 			to_offset = get_block_offset_user(udev, dbi,
- 					block_remaining);
- 
-+			/*
-+			 * The following code will gather and map the blocks
-+			 * to the same iovec when the blocks are all next to
-+			 * each other.
-+			 */
-+			copy_bytes = min_t(size_t, sg_remaining,
-+					block_remaining);
- 			if (*iov_cnt != 0 &&
- 			    to_offset = iov_tail(*iov)) {
-+				/*
-+				 * Will append to the current iovec, because
-+				 * the current block page is next to the
-+				 * previous one.
-+				 */
- 				(*iov)->iov_len += copy_bytes;
- 			} else {
--				new_iov(iov, iov_cnt, udev);
-+				/*
-+				 * Will allocate a new iovec because we are
-+				 * first time here or the current block page
-+				 * is not next to the previous one.
-+				 */
-+				new_iov(iov, iov_cnt);
- 				(*iov)->iov_base = (void __user *)to_offset;
- 				(*iov)->iov_len = copy_bytes;
- 			}
-+
- 			if (copy_data) {
- 				offset = DATA_BLOCK_SIZE - block_remaining;
- 				memcpy(to + offset,
-@@ -565,11 +583,13 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 				       copy_bytes);
- 				tcmu_flush_dcache_range(to, copy_bytes);
- 			}
-+
- 			sg_remaining -= copy_bytes;
- 			block_remaining -= copy_bytes;
- 		}
- 		kunmap_atomic(from - sg->offset);
- 	}
-+
- 	if (to)
- 		kunmap_atomic(to);
- }
+ /* target_core_fabric_configfs.c */
 -- 
-1.8.3.1
+2.14.2
 
