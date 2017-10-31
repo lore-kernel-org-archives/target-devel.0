@@ -1,194 +1,151 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 18 Oct 2017 07:14:01 +0000
-Subject: [PATCH 06/17] tcmu: split unmap_thread_fn
-Message-Id: <1508310852-15366-7-git-send-email-mchristi@redhat.com>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Tue, 31 Oct 2017 18:03:12 +0000
+Subject: [PATCH 04/11] target: Avoid that EXTENDED COPY commands triggers lock inversion
+Message-Id: <20171031180319.19258-5-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Separate unmap_thread_fn to make it easier to read.
+This patch prevents that lockdep reports the following complaint:
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+===========================
+WARNING: possible circular locking dependency detected
+4.12.0-rc1-dbg+ #1 Not tainted
+------------------------------------------------------
+rmdir/12053 is trying to acquire lock:
+ (device_mutex#2){+.+.+.}, at: [<ffffffffa010afce>] target_free_device+0xae/0xf0 [target_core_mod]
+
+but task is already holding lock:
+ (&sb->s_type->i_mutex_key#14){++++++}, at: [<ffffffff811c5c30>] vfs_rmdir+0x50/0x140
+
+which lock already depends on the new lock.
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&sb->s_type->i_mutex_key#14){++++++}:
+       lock_acquire+0x59/0x80
+       down_write+0x36/0x70
+       configfs_depend_item+0x3a/0xb0 [configfs]
+       target_depend_item+0x13/0x20 [target_core_mod]
+       target_xcopy_locate_se_dev_e4_iter+0x87/0x100 [target_core_mod]
+       target_devices_idr_iter+0x16/0x20 [target_core_mod]
+       idr_for_each+0x39/0xc0
+       target_for_each_device+0x36/0x50 [target_core_mod]
+       target_xcopy_locate_se_dev_e4+0x28/0x80 [target_core_mod]
+       target_xcopy_do_work+0x2e9/0xdd0 [target_core_mod]
+       process_one_work+0x1ca/0x3f0
+       worker_thread+0x49/0x3b0
+       kthread+0x109/0x140
+       ret_from_fork+0x31/0x40
+
+-> #0 (device_mutex#2){+.+.+.}:
+       __lock_acquire+0x101f/0x11d0
+       lock_acquire+0x59/0x80
+       __mutex_lock+0x7e/0x950
+       mutex_lock_nested+0x16/0x20
+       target_free_device+0xae/0xf0 [target_core_mod]
+       target_core_dev_release+0x10/0x20 [target_core_mod]
+       config_item_put+0x6e/0xb0 [configfs]
+       configfs_rmdir+0x1a6/0x300 [configfs]
+       vfs_rmdir+0xb7/0x140
+       do_rmdir+0x1f4/0x200
+       SyS_rmdir+0x11/0x20
+       entry_SYSCALL_64_fastpath+0x23/0xc2
+
+other info that might help us debug this:
+
+ Possible unsafe locking scenario:
+
+       CPU0                    CPU1
+       ----                    ----
+  lock(&sb->s_type->i_mutex_key#14);
+                               lock(device_mutex#2);
+                               lock(&sb->s_type->i_mutex_key#14);
+  lock(device_mutex#2);
+
+ *** DEADLOCK ***
+
+3 locks held by rmdir/12053:
+ #0:  (sb_writers#10){.+.+.+}, at: [<ffffffff811e223f>] mnt_want_write+0x1f/0x50
+ #1:  (&sb->s_type->i_mutex_key#14/1){+.+.+.}, at: [<ffffffff811cb97e>] do_rmdir+0x15e/0x200
+ #2:  (&sb->s_type->i_mutex_key#14){++++++}, at: [<ffffffff811c5c30>] vfs_rmdir+0x50/0x140
+
+stack backtrace:
+CPU: 3 PID: 12053 Comm: rmdir Not tainted 4.12.0-rc1-dbg+ #1
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.0.0-prebuilt.qemu-project.org 04/01/2014
+Call Trace:
+ dump_stack+0x86/0xcf
+ print_circular_bug+0x1c7/0x220
+ __lock_acquire+0x101f/0x11d0
+ lock_acquire+0x59/0x80
+ __mutex_lock+0x7e/0x950
+ mutex_lock_nested+0x16/0x20
+ target_free_device+0xae/0xf0 [target_core_mod]
+ target_core_dev_release+0x10/0x20 [target_core_mod]
+ config_item_put+0x6e/0xb0 [configfs]
+ configfs_rmdir+0x1a6/0x300 [configfs]
+ vfs_rmdir+0xb7/0x140
+ do_rmdir+0x1f4/0x200
+ SyS_rmdir+0x11/0x20
+ entry_SYSCALL_64_fastpath+0x23/0xc2
+
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_user.c | 149 +++++++++++++++++++++-----------------
- 1 file changed, 81 insertions(+), 68 deletions(-)
+ drivers/target/target_core_configfs.c | 18 +++++++++++++++++-
+ include/target/target_core_base.h     |  1 +
+ 2 files changed, 18 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index a222d15..5ce0034 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -2047,6 +2047,84 @@ static struct target_backend_ops tcmu_ops = {
- 	.tb_dev_attrib_attrs	= NULL,
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 7e87d952bb7a..7d0971789f12 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -2251,13 +2251,29 @@ static struct configfs_attribute *target_core_dev_attrs[] = {
+ 	NULL,
  };
  
-+static uint32_t find_free_blocks(void)
++static void target_core_dev_release_work(struct work_struct *release_work)
 +{
-+	struct tcmu_dev *udev;
-+	loff_t off;
-+	uint32_t start, end, block, free_blocks = 0;
++	struct se_device *dev +		container_of(release_work, struct se_device, release_work);
 +
-+	mutex_lock(&root_udev_mutex);
-+	list_for_each_entry(udev, &root_udev, node) {
-+		mutex_lock(&udev->cmdr_lock);
-+
-+		/* Try to complete the finished commands first */
-+		tcmu_handle_completions(udev);
-+
-+		/* Skip the udevs waiting the global pool or in idle */
-+		if (is_in_waiter_list(udev) || !udev->dbi_thresh) {
-+			mutex_unlock(&udev->cmdr_lock);
-+			continue;
-+		}
-+
-+		end = udev->dbi_max + 1;
-+		block = find_last_bit(udev->data_bitmap, end);
-+		if (block = udev->dbi_max) {
-+			/*
-+			 * The last bit is dbi_max, so there is
-+			 * no need to shrink any blocks.
-+			 */
-+			mutex_unlock(&udev->cmdr_lock);
-+			continue;
-+		} else if (block = end) {
-+			/* The current udev will goto idle state */
-+			udev->dbi_thresh = start = 0;
-+			udev->dbi_max = 0;
-+		} else {
-+			udev->dbi_thresh = start = block + 1;
-+			udev->dbi_max = block;
-+		}
-+
-+		/* Here will truncate the data area from off */
-+		off = udev->data_off + start * DATA_BLOCK_SIZE;
-+		unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
-+
-+		/* Release the block pages */
-+		tcmu_blocks_release(&udev->data_blocks, start, end);
-+		mutex_unlock(&udev->cmdr_lock);
-+
-+		free_blocks += end - start;
-+	}
-+	mutex_unlock(&root_udev_mutex);
-+	return free_blocks;
++	target_free_device(dev);
 +}
 +
-+static void run_cmdr_queues(uint32_t *free_blocks)
-+{
-+	struct tcmu_dev *udev, *tmp;
-+
+ static void target_core_dev_release(struct config_item *item)
+ {
+ 	struct config_group *dev_cg = to_config_group(item);
+ 	struct se_device *dev  		container_of(dev_cg, struct se_device, dev_group);
+ 
+-	target_free_device(dev);
 +	/*
-+	 * Try to wake up the udevs who are waiting
-+	 * for the global data pool blocks.
++	 * Call target_free_device() asynchronously to avoid lock inversion
++	 * against the configfs_depend_item() call from
++	 * target_xcopy_locate_se_dev_e4_iter(). That call namely occurs with
++	 * device_mutex held. This function is called from inside vfs_rmdir
++	 * and hence is called with i_rwsem held.
 +	 */
-+	mutex_lock(&root_udev_waiter_mutex);
-+	list_for_each_entry_safe(udev, tmp, &root_udev_waiter, waiter) {
-+		mutex_lock(&udev->cmdr_lock);
-+		if (udev->waiting_blocks < *free_blocks) {
-+			mutex_unlock(&udev->cmdr_lock);
-+			break;
-+		}
-+
-+		*free_blocks -= udev->waiting_blocks;
-+		udev->waiting_blocks = 0;
-+		mutex_unlock(&udev->cmdr_lock);
-+
-+		list_del(&udev->waiter);
-+
-+		wake_up(&udev->wait_cmdr);
-+	}
-+	mutex_unlock(&root_udev_waiter_mutex);
-+}
-+
- static void check_timedout_devices(void)
- {
- 	struct tcmu_dev *udev, *tmp_dev;
-@@ -2070,10 +2148,7 @@ static void check_timedout_devices(void)
++	INIT_WORK(&dev->release_work, target_core_dev_release_work);
++	schedule_work(&dev->release_work);
+ }
  
- static int unmap_thread_fn(void *data)
- {
--	struct tcmu_dev *udev, *tmp;
--	loff_t off;
--	uint32_t start, end, block;
--	static uint32_t free_blocks;
-+	uint32_t free_blocks = 0;
- 	bool has_timed_out_devs;
- 
- 	while (!kthread_should_stop()) {
-@@ -2097,70 +2172,8 @@ static int unmap_thread_fn(void *data)
- 
- 		check_timedout_devices();
- 
--		mutex_lock(&root_udev_mutex);
--		list_for_each_entry(udev, &root_udev, node) {
--			mutex_lock(&udev->cmdr_lock);
--
--			/* Try to complete the finished commands first */
--			tcmu_handle_completions(udev);
--
--			/* Skip the udevs waiting the global pool or in idle */
--			if (is_in_waiter_list(udev) || !udev->dbi_thresh) {
--				mutex_unlock(&udev->cmdr_lock);
--				continue;
--			}
--
--			end = udev->dbi_max + 1;
--			block = find_last_bit(udev->data_bitmap, end);
--			if (block = udev->dbi_max) {
--				/*
--				 * The last bit is dbi_max, so there is
--				 * no need to shrink any blocks.
--				 */
--				mutex_unlock(&udev->cmdr_lock);
--				continue;
--			} else if (block = end) {
--				/* The current udev will goto idle state */
--				udev->dbi_thresh = start = 0;
--				udev->dbi_max = 0;
--			} else {
--				udev->dbi_thresh = start = block + 1;
--				udev->dbi_max = block;
--			}
--
--			/* Here will truncate the data area from off */
--			off = udev->data_off + start * DATA_BLOCK_SIZE;
--			unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
--
--			/* Release the block pages */
--			tcmu_blocks_release(&udev->data_blocks, start, end);
--			mutex_unlock(&udev->cmdr_lock);
--
--			free_blocks += end - start;
--		}
--		mutex_unlock(&root_udev_mutex);
--
--		/*
--		 * Try to wake up the udevs who are waiting
--		 * for the global data pool blocks.
--		 */
--		mutex_lock(&root_udev_waiter_mutex);
--		list_for_each_entry_safe(udev, tmp, &root_udev_waiter, waiter) {
--			mutex_lock(&udev->cmdr_lock);
--			if (udev->waiting_blocks < free_blocks) {
--				mutex_unlock(&udev->cmdr_lock);
--				break;
--			}
--
--			free_blocks -= udev->waiting_blocks;
--			udev->waiting_blocks = 0;
--			mutex_unlock(&udev->cmdr_lock);
--
--			list_del(&udev->waiter);
--
--			wake_up(&udev->wait_cmdr);
--		}
--		mutex_unlock(&root_udev_waiter_mutex);
-+		free_blocks += find_free_blocks();
-+		run_cmdr_queues(&free_blocks);
- 	}
- 
- 	return 0;
+ /*
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 516764febeb7..19da905dd2ca 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -793,6 +793,7 @@ struct se_device {
+ 	struct list_head	dev_tmr_list;
+ 	struct workqueue_struct *tmr_wq;
+ 	struct work_struct	qf_work_queue;
++	struct work_struct	release_work;
+ 	struct list_head	delayed_cmd_list;
+ 	struct list_head	state_list;
+ 	struct list_head	qf_cmd_list;
 -- 
-2.7.2
+2.14.2
 
