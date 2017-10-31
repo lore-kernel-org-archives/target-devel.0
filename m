@@ -1,22 +1,38 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Fri, 27 Oct 2017 12:57:16 +0000
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 31 Oct 2017 00:04:48 +0000
 Subject: Re: [PATCH v2] target/iscsi: Convert timers to use timer_setup()
-Message-Id: <1509109031.3135.1.camel@wdc.com>
+Message-Id: <CAGXu5j+z9t28n33e6r9hxRNX1hpkzF4Z5sy308sWYh84whkRfQ@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171027091930.GA14728@beast>
-In-Reply-To: <20171027091930.GA14728@beast>
+References: <20171027091930.GA14728@beast> <1509109031.3135.1.camel@wdc.com>
+In-Reply-To: <1509109031.3135.1.camel@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "keescook@chromium.org" <keescook@chromium.org>
+To: Bart Van Assche <Bart.VanAssche@wdc.com>
 Cc: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "varun@chelsio.com" <varun@chelsio.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "jiangyilism@gmail.com" <jiangyilism@gmail.com>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
 
-T24gRnJpLCAyMDE3LTEwLTI3IGF0IDAyOjE5IC0wNzAwLCBLZWVzIENvb2sgd3JvdGU6DQo+IElu
-IHByZXBhcmF0aW9uIGZvciB1bmNvbmRpdGlvbmFsbHkgcGFzc2luZyB0aGUgc3RydWN0IHRpbWVy
-X2xpc3QgcG9pbnRlciB0bw0KPiBhbGwgdGltZXIgY2FsbGJhY2tzLCBzd2l0Y2ggdG8gdXNpbmcg
-dGhlIG5ldyB0aW1lcl9zZXR1cCgpIGFuZCBmcm9tX3RpbWVyKCkNCj4gdG8gcGFzcyB0aGUgdGlt
-ZXIgcG9pbnRlciBleHBsaWNpdGx5LiBJbmNsdWRlcyBhIGZpeCBmb3IgY29ycmVjdGluZyBhbg0K
-PiBvbi1zdGFjayB0aW1lciB1c2FnZS4NCg0KSGVsbG8gS2VlcywNCg0KVGhlc2UgY2hhbmdlcyBs
-b29rIGdvb2QgdG8gbWUgYnV0IEkgd291bGQgbGlrZSB0byB0ZXN0IHRoaXMgcGF0Y2guIElzIHRo
-ZXJlDQphIHRyZWUgYXZhaWxhYmxlIHNvbWV3aGVyZSB0aGF0IGluY2x1ZGVzIHRoaXMgcGF0Y2g/
-DQoNClRoYW5rcywNCg0KQmFydC4
+On Fri, Oct 27, 2017 at 5:57 AM, Bart Van Assche <Bart.VanAssche@wdc.com> wrote:
+> On Fri, 2017-10-27 at 02:19 -0700, Kees Cook wrote:
+>> In preparation for unconditionally passing the struct timer_list pointer to
+>> all timer callbacks, switch to using the new timer_setup() and from_timer()
+>> to pass the timer pointer explicitly. Includes a fix for correcting an
+>> on-stack timer usage.
+>
+> Hello Kees,
+>
+> These changes look good to me but I would like to test this patch. Is there
+> a tree available somewhere that includes this patch?
+
+I didn't, but in case it's easier to test, I have put it up here,
+which is just tip/timers/core with the two target timer patches on
+top:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/kees/linux.git/log/?h=kspp/timer/tip/target
+
+Thanks!
+
+-Kees
+
+-- 
+Kees Cook
+Pixel Security
