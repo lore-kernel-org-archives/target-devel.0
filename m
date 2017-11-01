@@ -1,24 +1,52 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Wed, 08 Nov 2017 09:43:29 +0000
-Subject: Re: [PATCH 2/2] tcmu: Add a missing unlock on an error path
-Message-Id: <1510134209.29624.73.camel@haakon3.daterainc.com>
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Wed, 01 Nov 2017 00:07:52 +0000
+Subject: Re: [PATCH 2/6] target/iscsi: Call .iscsit_release_cmd() once
+Message-Id: <1509494870.12927.11.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171108084415.dn443crpreqwqoiw@mwanda>
-In-Reply-To: <20171108084415.dn443crpreqwqoiw@mwanda>
+References: <20170330171244.8346-1-bart.vanassche@sandisk.com>
+         <20170330171244.8346-3-bart.vanassche@sandisk.com>
+         <1491173945.8846.48.camel@haakon3.risingtidesystems.com>
+         <20170404050649.GA1662@chelsio.com>
+In-Reply-To: <20170404050649.GA1662@chelsio.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Mike Christie <mchristi@redhat.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: "varun@chelsio.com" <varun@chelsio.com>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
+Cc: Bart Van Assche <Bart.VanAssche@wdc.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 
-On Wed, 2017-11-08 at 11:44 +0300, Dan Carpenter wrote:
-> We added a new error path here but we forgot to drop the lock first
-> before returning.
-> 
-> Fixes: 0d44374c1aae ("tcmu: fix double se_cmd completion")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-
-Applied to target-pending/for-next.
-
-Thanks DanC !
-
+T24gVHVlLCAyMDE3LTA0LTA0IGF0IDEwOjM2ICswNTMwLCBWYXJ1biBQcmFrYXNoIHdyb3RlOg0K
+PiBPbiBTdW4sIEFwciAwMiwgMjAxNyBhdCAwMzo1OTowNVBNIC0wNzAwLCBOaWNob2xhcyBBLiBC
+ZWxsaW5nZXIgd3JvdGU6DQo+ID4gT24gVGh1LCAyMDE3LTAzLTMwIGF0IDEwOjEyIC0wNzAwLCBC
+YXJ0IFZhbiBBc3NjaGUgd3JvdGU6DQo+ID4gPiBXaGlsZSByZWxlYXNpbmcgYSBjb21tYW5kIF9f
+aXNjc2l0X2ZyZWVfY21kKCkgY2FuIGJlIGNhbGxlZCBtdWx0aXBsZQ0KPiA+ID4gdGltZXMgYnV0
+IC5pc2NzaXRfcmVsZWFzZV9jbWQoKSBtdXN0IGJlIGNhbGxlZCBvbmx5IG9uY2UuIEhlbmNlIG1v
+dmUNCj4gPiA+IHRoZSAuaXNjc2l0X3JlbGVhc2VfY21kKCkgY2FsbCBpbnRvIGlzY3NpdF9yZWxl
+YXNlX2NtZCgpLiBUaGUgbGF0dGVyDQo+ID4gPiBmdW5jdGlvbiBpcyBvbmx5IGNhbGxlZCBvbmNl
+IHBlciBjb21tYW5kLiBUaGUgb25seSBkcml2ZXIgdGhhdCBkZWZpbmVzDQo+ID4gPiB0aGUgLmlz
+Y3NpdF9yZWxlYXNlX2NtZCgpIGNhbGxiYWNrIGlzIHRoZSBjeGdiaXQgZHJpdmVyIHNvIHRoaXMg
+Y2hhbmdlDQo+ID4gPiBvbmx5IGFmZmVjdHMgdGhlIGN4Z2JpdCBkcml2ZXIuDQo+ID4gPiANCj4g
+PiA+IEZpeGVzOiA3ZWM4MTFhOGU5YzMgKCJpc2NzaS10YXJnZXQ6IGFkZCB2b2lkICgqaXNjc2l0
+X3JlbGVhc2VfY21kKSgpIikNCj4gPiA+IFNpZ25lZC1vZmYtYnk6IEJhcnQgVmFuIEFzc2NoZSA8
+YmFydC52YW5hc3NjaGVAc2FuZGlzay5jb20+DQo+ID4gPiBDYzogVmFydW4gUHJha2FzaCA8dmFy
+dW5AY2hlbHNpby5jb20+DQo+ID4gPiBDYzogTmljaG9sYXMgQmVsbGluZ2VyIDxuYWJAbGludXgt
+aXNjc2kub3JnPg0KPiA+ID4gQ2M6IDxzdGFibGVAdmdlci5rZXJuZWwub3JnPg0KPiA+ID4gLS0t
+DQo+ID4gPiAgZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X3V0aWwuYyB8IDE1ICsr
+KysrKysrKy0tLS0tLQ0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDYg
+ZGVsZXRpb25zKC0pDQo+ID4gPiANCj4gPiANCj4gPiBBcHBsaWVkIHRvIHRhcmdldC1wZW5kaW5n
+L2Zvci1uZXh0LCBidXQgZHJvcHBpbmcgdGhlIHN0YWJsZSBDQycgYmVjYXVzZQ0KPiA+IHRoZSBz
+aW5nbGUgY2FsbGVyIGluIGN4Z2JpdF9yZWxlYXNlX2NtZCgpIGlzIGFscmVhZHkgY2hlY2tpbmcg
+dG8gZW5zdXJlDQo+ID4gcmVzb3VyY2VzIGFyZSBvbmx5IHJlbGVhc2VkIG9uIHRoZSBmaXJzdCBp
+bnZvY2F0aW9uLg0KPiA+IA0KPiA+IFNvIGl0J3Mgbm90IGEgYnVnLWZpeC4NCj4gDQo+IEluIGNh
+c2Ugb2YgRERQIGN4Z2JpdCBkcml2ZXIgYXNzaWducyBjbWQtPnNlX2NtZC50X2RhdGFfc2cgdG8g
+dHRpbmZvLT5zZ2wNCj4gYW5kIGNhbGxzIGRtYV9tYXBfc2coKSwgY3hnYml0X3JlbGVhc2VfY21k
+KCkgY2FsbHMgZG1hX3VubWFwX3NnKCksIGl0IG5lZWRzDQo+IGEgdmFsaWQgc2codHRpbmZvLT5z
+Z2wpLCBiZWZvcmUgY2FsbGluZyBpc2NzaXRfcmVsZWFzZV9jbWQoKQ0KPiBjbWQtPnNlX2NtZC50
+X2RhdGFfc2cgZ2V0cyBmcmVlZCBzbyB0dGluZm8tPnNnbCB3aWxsIG5vdCBiZSB2YWxpZCBpZiB3
+ZSBtb3ZlDQo+IC0+aXNjc2l0X3JlbGVhc2VfY21kKCkgdG8gaXNjc2l0X3JlbGVhc2VfY21kKCku
+DQoNCihyZXBseWluZyB0byBhbiBlLW1haWwgb2Ygc2l4IG1vbnRocyBhZ28pDQoNCkhlbGxvIFZh
+cnVuLA0KDQpIYXZlIHlvdSBub3RpY2VkIHRoYXQgY29tbWl0IGZlYmU1NjJjMjBkZiAodGFyZ2V0
+OiBGaXggTFVOX1JFU0VUIGFjdGl2ZSBJL08NCmhhbmRsaW5nIGZvciBBQ0tfS1JFRjsgSmFudWFy
+eSAyMDE2KSBtb3ZlZCB0aGUgdHJhbnNwb3J0X2ZyZWVfcGFnZXMoKSBjYWxsDQpmcm9tIHRyYW5z
+cG9ydF9wdXRfY21kKCkgdG8gdGFyZ2V0X3JlbGVhc2VfY21kX2tyZWYoKT8gSSB0aGluayB0aGF0
+IG1lYW5zDQp0aGF0IGl0IGlzIG5vdyBzYWZlIHRvIGNhbGwgLmlzY3NpdF9yZWxlYXNlX2NtZCgp
+IGFmdGVyDQp0cmFuc3BvcnRfZ2VuZXJpY19mcmVlX2NtZCgpLg0KDQpUaGFua3MsDQoNCkJhcnQu
