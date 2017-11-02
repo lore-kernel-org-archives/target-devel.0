@@ -1,7 +1,7 @@
 From: Hannes Reinecke <hare@suse.com>
-Date: Thu, 02 Nov 2017 14:29:18 +0000
-Subject: Re: [PATCH 10/11] target/iscsi: Detect conn_cmd_list corruption early
-Message-Id: <7188ccc1-dfdd-7258-2b3c-ed0336db7584@suse.com>
+Date: Thu, 02 Nov 2017 14:00:19 +0000
+Subject: Re: [PATCH 06/11] target/iscsi: Use min() in iscsit_dump_data_payload() instead of open-coding it
+Message-Id: <6365cd76-dbb2-a9a9-95d1-6095120770ca@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -9,53 +9,50 @@ Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
 On 10/31/2017 07:03 PM, Bart Van Assche wrote:
-> Certain behavior of the initiator can cause the target driver to
-> send both a reject and a SCSI response. If that happens two
-> target_put_sess_cmd() calls will occur without the command having
-> been removed from conn_cmd_list. In other words, conn_cmd_list
-> will get corrupted once the freed memory is reused. Although the
-> Linux kernel can detect list corruption if list debugging is
-> enabled, in this case the context in which list corruption is
-> detected is not related to the context that caused list corruption.
-> Hence add WARN_ON() statements that report the context that is
-> causing list corruption.
+> This patch does not change any functionality.
 > 
-> Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+> Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
 > Cc: Nicholas Bellinger <nab@linux-iscsi.org>
 > Cc: Christoph Hellwig <hch@lst.de>
 > Cc: Hannes Reinecke <hare@suse.com>
 > Cc: Mike Christie <mchristi@redhat.com>
 > ---
->  drivers/target/iscsi/iscsi_target_util.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>  drivers/target/iscsi/iscsi_target_erl1.c | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-> index 1e36f83b5961..70c6b9bfc04e 100644
-> --- a/drivers/target/iscsi/iscsi_target_util.c
-> +++ b/drivers/target/iscsi/iscsi_target_util.c
-> @@ -694,6 +694,8 @@ void iscsit_release_cmd(struct iscsi_cmd *cmd)
->  	struct iscsi_session *sess;
->  	struct se_cmd *se_cmd = &cmd->se_cmd;
+> diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
+> index fe9b7f1e44ac..659efafb43ec 100644
+> --- a/drivers/target/iscsi/iscsi_target_erl1.c
+> +++ b/drivers/target/iscsi/iscsi_target_erl1.c
+> @@ -34,7 +34,7 @@
+>  #include "iscsi_target_erl2.h"
+>  #include "iscsi_target.h"
 >  
-> +	WARN_ON(!list_empty(&cmd->i_conn_node));
-> +
->  	if (cmd->conn)
->  		sess = cmd->conn->sess;
->  	else
-> @@ -716,6 +718,8 @@ void __iscsit_free_cmd(struct iscsi_cmd *cmd, bool check_queues)
->  {
->  	struct iscsi_conn *conn = cmd->conn;
+> -#define OFFLOAD_BUF_SIZE	32768
+> +#define OFFLOAD_BUF_SIZE	32768U
 >  
-> +	WARN_ON(!list_empty(&cmd->i_conn_node));
-> +
->  	if (cmd->data_direction = DMA_TO_DEVICE) {
->  		iscsit_stop_dataout_timer(cmd);
->  		iscsit_free_r2ts_from_list(cmd);
+>  /*
+>   *	Used to dump excess datain payload for certain error recovery
+> @@ -56,7 +56,7 @@ int iscsit_dump_data_payload(
+>  	if (conn->sess->sess_ops->RDMAExtensions)
+>  		return 0;
+>  
+> -	length = (buf_len > OFFLOAD_BUF_SIZE) ? OFFLOAD_BUF_SIZE : buf_len;
+> +	length = min(buf_len, OFFLOAD_BUF_SIZE);
+>  
+>  	buf = kzalloc(length, GFP_ATOMIC);
+>  	if (!buf) {
+> @@ -67,8 +67,7 @@ int iscsit_dump_data_payload(
+>  	memset(&iov, 0, sizeof(struct kvec));
+>  
+>  	while (offset < buf_len) {
+> -		size = ((offset + length) > buf_len) ?
+> -			(buf_len - offset) : length;
+> +		size = min(buf_len - offset, length);
+>  
+>  		iov.iov_len = size;
+>  		iov.iov_base = buf;
 > 
-Well, I would rather fix the target code itself...
-
-But anyway:
-
 Reviewed-by: Hannes Reinecke <hare@suse.com>
 
 Cheers,
