@@ -1,102 +1,52 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Thu, 16 Nov 2017 06:29:50 +0000
-Subject: [PATCH-3.10.y 2/3] iscsi-target: fix iscsit_del_np deadlock on unload
-Message-Id: <1510813791-16082-3-git-send-email-nab@linux-iscsi.org>
+From: Hannes Reinecke <hare@suse.com>
+Date: Thu, 02 Nov 2017 14:00:44 +0000
+Subject: Re: [PATCH 07/11] target/iscsi: Fix endianness in an error message
+Message-Id: <ef430254-fa83-a967-caa0-272405e6f89a@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510813791-16082-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510813791-16082-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Mikulas Patocka <mpatocka@redhat.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org
 
-From: Mikulas Patocka <mpatocka@redhat.com>
+On 10/31/2017 07:03 PM, Bart Van Assche wrote:
+> Since hdr->offset is a big endian number, convert it to CPU endian
+> before printing it.
+> 
+> Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+> Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+> Cc: Christoph Hellwig <hch@lst.de>
+> Cc: Hannes Reinecke <hare@suse.com>
+> Cc: Mike Christie <mchristi@redhat.com>
+> ---
+>  drivers/target/iscsi/iscsi_target.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+> index 5001261f5d69..37bc8a37401d 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -1460,9 +1460,9 @@ __iscsit_check_dataout_hdr(struct iscsi_conn *conn, void *buf,
+>  	iscsit_mod_dataout_timer(cmd);
+>  
+>  	if ((be32_to_cpu(hdr->offset) + payload_length) > cmd->se_cmd.data_length) {
+> -		pr_err("DataOut Offset: %u, Length %u greater than"
+> -			" iSCSI Command EDTL %u, protocol error.\n",
+> -			hdr->offset, payload_length, cmd->se_cmd.data_length);
+> +		pr_err("DataOut Offset: %u, Length %u greater than iSCSI Command EDTL %u, protocol error.\n",
+> +		       be32_to_cpu(hdr->offset), payload_length,
+> +		       cmd->se_cmd.data_length);
+>  		return iscsit_reject_cmd(cmd, ISCSI_REASON_BOOKMARK_INVALID, buf);
+>  	}
+>  
+> 
+Reviewed-by: Hannes Reinecke <hare@suse.com>
 
-commit 81a9c5e72bdf7109a65102ca61d8cbd722cf4021 upstream.
+Cheers,
 
-On uniprocessor preemptible kernel, target core deadlocks on unload. The
-following events happen:
-* iscsit_del_np is called
-* it calls send_sig(SIGINT, np->np_thread, 1);
-* the scheduler switches to the np_thread
-* the np_thread is woken up, it sees that kthread_should_stop() returns
-  false, so it doesn't terminate
-* the np_thread clears signals with flush_signals(current); and goes back
-  to sleep in iscsit_accept_np
-* the scheduler switches back to iscsit_del_np
-* iscsit_del_np calls kthread_stop(np->np_thread);
-* the np_thread is waiting in iscsit_accept_np and it doesn't respond to
-  kthread_stop
-
-The deadlock could be resolved if the administrator sends SIGINT signal to
-the np_thread with killall -INT iscsi_np
-
-The reproducible deadlock was introduced in commit
-db6077fd0b7dd41dc6ff18329cec979379071f87, but the thread-stopping code was
-racy even before.
-
-This patch fixes the problem. Using kthread_should_stop to stop the
-np_thread is unreliable, so we test np_thread_state instead. If
-np_thread_state equals ISCSI_NP_THREAD_SHUTDOWN, the thread exits.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: stable@vger.kernel.org
-Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
----
- drivers/target/iscsi/iscsi_target_login.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index 2c4db62..dd18956 100644
---- a/drivers/target/iscsi/iscsi_target_login.c
-+++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -1168,7 +1168,7 @@ iscsit_conn_set_transport(struct iscsi_conn *conn, struct iscsit_transport *t)
- static int __iscsi_target_login_thread(struct iscsi_np *np)
- {
- 	u8 *buffer, zero_tsih = 0;
--	int ret = 0, rc, stop;
-+	int ret = 0, rc;
- 	struct iscsi_conn *conn = NULL;
- 	struct iscsi_login *login;
- 	struct iscsi_portal_group *tpg = NULL;
-@@ -1180,6 +1180,9 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
- 	if (np->np_thread_state = ISCSI_NP_THREAD_RESET) {
- 		np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
- 		complete(&np->np_restart_comp);
-+	} else if (np->np_thread_state = ISCSI_NP_THREAD_SHUTDOWN) {
-+		spin_unlock_bh(&np->np_thread_lock);
-+		goto exit;
- 	} else {
- 		np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
- 	}
-@@ -1414,15 +1417,8 @@ old_sess_out:
- 	}
- 
- out:
--	stop = kthread_should_stop();
--	if (!stop && signal_pending(current)) {
--		spin_lock_bh(&np->np_thread_lock);
--		stop = (np->np_thread_state = ISCSI_NP_THREAD_SHUTDOWN);
--		spin_unlock_bh(&np->np_thread_lock);
--	}
--	/* Wait for another socket.. */
--	if (!stop)
--		return 1;
-+	return 1;
-+
- exit:
- 	iscsi_stop_login_thread_timer(np);
- 	spin_lock_bh(&np->np_thread_lock);
-@@ -1440,7 +1436,7 @@ int iscsi_target_login_thread(void *arg)
- 
- 	allow_signal(SIGINT);
- 
--	while (!kthread_should_stop()) {
-+	while (1) {
- 		ret = __iscsi_target_login_thread(np);
- 		/*
- 		 * We break and exit here unless another sock_accept() call
+Hannes
 -- 
-1.8.5.3
-
+Dr. Hannes Reinecke		               zSeries & Storage
+hare@suse.com			               +49 911 74053 688
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: F. Imendörffer, J. Smithard, D. Upmanyu, G. Norton
+HRB 21284 (AG Nürnberg)
