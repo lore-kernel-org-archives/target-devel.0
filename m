@@ -1,30 +1,82 @@
-From: "Amrani, Ram" <Ram.Amrani@cavium.com>
-Date: Sun, 26 Nov 2017 12:23:58 +0000
-Subject: RE: possible isert bug in tear down sequence
-Message-Id: <BN3PR07MB25782DD1336B7EF780BC8C19F8240@BN3PR07MB2578.namprd07.prod.outlook.com>
+From: Hannes Reinecke <hare@suse.com>
+Date: Thu, 02 Nov 2017 14:29:53 +0000
+Subject: Re: [PATCH 11/11] usb/gadget: Make it again possible to enable the legacy drivers without enabling U
+Message-Id: <f4bff587-0338-f82d-2d6b-dcb0851726f0@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <BN3PR07MB2578825BFC784DF5DDB6E125F8570@BN3PR07MB2578.namprd07.prod.outlook.com>
- <e196fa80-d7ad-cfa7-651b-f343c0198a84@grimberg.me>
- <BN3PR07MB2578A4A4D5B2A7C0DBA91843F8240@BN3PR07MB2578.namprd07.prod.outlook.com>
- <77fdee90-b51c-1f38-16ea-0183a223f06c@grimberg.me>
-In-Reply-To: <77fdee90-b51c-1f38-16ea-0183a223f06c-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>
+References: <20171031180319.19258-12-bart.vanassche@wdc.com>
+In-Reply-To: <20171031180319.19258-12-bart.vanassche@wdc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: "Kalderon, Michal" <Michal.Kalderon-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, "Elior, Ariel" <Ariel.Elior-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org
 
-PiBEb2VzIHRoaXMgZml4IHlvdXIgaXNzdWU6DQo+IC0tDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJz
-L2luZmluaWJhbmQvdWxwL2lzZXJ0L2liX2lzZXJ0LmMNCj4gYi9kcml2ZXJzL2luZmluaWJhbmQv
-dWxwL2lzZXJ0L2liX2lzZXJ0LmMNCj4gaW5kZXggY2VhYmRiODVkZjhiLi45ZDQ3ODViYTI0Y2Ig
-MTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvaW5maW5pYmFuZC91bHAvaXNlcnQvaWJfaXNlcnQuYw0K
-PiArKysgYi9kcml2ZXJzL2luZmluaWJhbmQvdWxwL2lzZXJ0L2liX2lzZXJ0LmMNCj4gQEAgLTc0
-MSw2ICs3NDEsNyBAQCBpc2VydF9jb25uZWN0X2Vycm9yKHN0cnVjdCByZG1hX2NtX2lkICpjbWFf
-aWQpDQo+ICAgew0KPiAgICAgICAgICBzdHJ1Y3QgaXNlcnRfY29ubiAqaXNlcnRfY29ubiA9IGNt
-YV9pZC0+cXAtPnFwX2NvbnRleHQ7DQo+IA0KPiArICAgICAgIGliX2RyYWluX3FwKGlzZXJ0X2Nv
-bm4tPnFwKTsNCj4gICAgICAgICAgbGlzdF9kZWxfaW5pdCgmaXNlcnRfY29ubi0+bm9kZSk7DQo+
-ICAgICAgICAgIGlzZXJ0X2Nvbm4tPmNtX2lkID0gTlVMTDsNCj4gICAgICAgICAgaXNlcnRfcHV0
-X2Nvbm4oaXNlcnRfY29ubik7DQo+IC0tDQoNClllcywgdGhhdCBpcyBleGFjdGx5IHdoYXQgSSBt
-ZWFuIGFuZCB3YW50ZWQgdG8gY2hlY2sgd2l0aCB5b3UuDQpBcyBJJ20gcmVtb3RlIGRlYnVnZ2lu
-Zy4gSXQgd2lsbCB0YWtlIG1lIGZldyBkYXlzIHRvIE9LIGl0Lg0KDQpUaGFua3MsDQpSYW0NCg0K
-DQoNCg=
+On 10/31/2017 07:03 PM, Bart Van Assche wrote:
+> Considerable time ago the legacy gadget menu was added inside the
+> USB_ETH choice. I think this was a mistake and that the legacy
+> gadget menu should have been added after "endchoice" instead of
+> before. Hence this patch.
+> 
+> Fixes: commit 8443f2d2b778 ("usb: gadget: Gadget directory cleanup - group legacy gadgets")
+> Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+> Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+> Cc: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
+> Cc: Felipe Balbi <balbi@ti.com>
+> Cc: linux-usb@vger.kernel.org
+> ---
+>  drivers/usb/gadget/Kconfig        |  4 ++--
+>  drivers/usb/gadget/legacy/Kconfig | 10 ++++++++++
+>  2 files changed, 12 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+> index 31cce7805eb2..0a19a76645ad 100644
+> --- a/drivers/usb/gadget/Kconfig
+> +++ b/drivers/usb/gadget/Kconfig
+> @@ -508,8 +508,8 @@ choice
+>  	  controller, and the relevant drivers for each function declared
+>  	  by the device.
+>  
+> -source "drivers/usb/gadget/legacy/Kconfig"
+> -
+>  endchoice
+>  
+> +source "drivers/usb/gadget/legacy/Kconfig"
+> +
+>  endif # USB_GADGET
+> diff --git a/drivers/usb/gadget/legacy/Kconfig b/drivers/usb/gadget/legacy/Kconfig
+> index a12fb459dbd9..9570bbeced4f 100644
+> --- a/drivers/usb/gadget/legacy/Kconfig
+> +++ b/drivers/usb/gadget/legacy/Kconfig
+> @@ -13,6 +13,14 @@
+>  # both kinds of controller can also support "USB On-the-Go" (CONFIG_USB_OTG).
+>  #
+>  
+> +menuconfig USB_GADGET_LEGACY
+> +	bool "Legacy USB Gadget Support"
+> +	help
+> +	   Legacy USB gadgets are USB gadgets that do not use the USB gadget
+> +	   configfs interface.
+> +
+> +if USB_GADGET_LEGACY
+> +
+>  config USB_ZERO
+>  	tristate "Gadget Zero (DEVELOPMENT)"
+>  	select USB_LIBCOMPOSITE
+> @@ -490,3 +498,5 @@ config USB_G_WEBCAM
+>  
+>  	  Say "y" to link the driver statically, or "m" to build a
+>  	  dynamically linked module called "g_webcam".
+> +
+> +endif
+> 
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+
+Cheers,
+
+Hannes
+
+-- 
+Dr. Hannes Reinecke		               zSeries & Storage
+hare@suse.com			               +49 911 74053 688
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: F. Imendörffer, J. Smithard, D. Upmanyu, G. Norton
+HRB 21284 (AG Nürnberg)
