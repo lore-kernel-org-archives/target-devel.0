@@ -1,40 +1,99 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Thu, 16 Nov 2017 06:17:38 +0000
-Subject: [PATCH-3.18.y 0/2] target: stable backports
-Message-Id: <1510813060-15334-1-git-send-email-nab@linux-iscsi.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 03 Nov 2017 21:33:08 +0000
+Subject: [PATCH] iSCSI-target: Use common error handling code in iscsi_decode_text_input()
+Message-Id: <d36d5072-3e35-da39-bc0f-af15deb630a8@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-From: Nicholas Bellinger <nab@linux-iscsi.org>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 3 Nov 2017 22:20:38 +0100
 
-Here are two target patches for v3.18.y stable, the first of which
-did not originally include a stable CC, and the latter did not apply
-due to a minor context change.
+Add a jump target so that a bit of exception handling can be better reused
+at the end of this function.
 
-The series has been cut against v3.18.81.  Please apply at your earliest
-convenience.
+This issue was detected by using the Coccinelle software.
 
-Thank you,
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/target/iscsi/iscsi_target_parameters.c | 39 ++++++++++++--------------
+ 1 file changed, 18 insertions(+), 21 deletions(-)
 
---nab
-
-Bart Van Assche (1):
-  target/iscsi: Fix iSCSI task reassignment handling
-
-Nicholas Bellinger (1):
-  iscsi-target: Fix iscsi_np reset hung task during parallel delete
-
- drivers/target/iscsi/iscsi_target.c       | 20 ++++++++------------
- drivers/target/iscsi/iscsi_target_core.h  |  1 +
- drivers/target/iscsi/iscsi_target_login.c |  7 +++++--
- include/target/iscsi/iscsi_target_core.h  |  1 +
- include/target/target_core_base.h         |  1 +
- 5 files changed, 16 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/target/iscsi/iscsi_target_parameters.c b/drivers/target/iscsi/iscsi_target_parameters.c
+index caab1045742d..29a37b242d30 100644
+--- a/drivers/target/iscsi/iscsi_target_parameters.c
++++ b/drivers/target/iscsi/iscsi_target_parameters.c
+@@ -1380,10 +1380,8 @@ int iscsi_decode_text_input(
+ 		char *key, *value;
+ 		struct iscsi_param *param;
+ 
+-		if (iscsi_extract_key_value(start, &key, &value) < 0) {
+-			kfree(tmpbuf);
+-			return -1;
+-		}
++		if (iscsi_extract_key_value(start, &key, &value) < 0)
++			goto free_buffer;
+ 
+ 		pr_debug("Got key: %s=%s\n", key, value);
+ 
+@@ -1396,38 +1394,37 @@ int iscsi_decode_text_input(
+ 
+ 		param = iscsi_check_key(key, phase, sender, param_list);
+ 		if (!param) {
+-			if (iscsi_add_notunderstood_response(key,
+-					value, param_list) < 0) {
+-				kfree(tmpbuf);
+-				return -1;
+-			}
++			if (iscsi_add_notunderstood_response(key, value,
++							     param_list) < 0)
++				goto free_buffer;
++
+ 			start += strlen(key) + strlen(value) + 2;
+ 			continue;
+ 		}
+-		if (iscsi_check_value(param, value) < 0) {
+-			kfree(tmpbuf);
+-			return -1;
+-		}
++		if (iscsi_check_value(param, value) < 0)
++			goto free_buffer;
+ 
+ 		start += strlen(key) + strlen(value) + 2;
+ 
+ 		if (IS_PSTATE_PROPOSER(param)) {
+-			if (iscsi_check_proposer_state(param, value) < 0) {
+-				kfree(tmpbuf);
+-				return -1;
+-			}
++			if (iscsi_check_proposer_state(param, value) < 0)
++				goto free_buffer;
++
+ 			SET_PSTATE_RESPONSE_GOT(param);
+ 		} else {
+-			if (iscsi_check_acceptor_state(param, value, conn) < 0) {
+-				kfree(tmpbuf);
+-				return -1;
+-			}
++			if (iscsi_check_acceptor_state(param, value, conn) < 0)
++				goto free_buffer;
++
+ 			SET_PSTATE_ACCEPTOR(param);
+ 		}
+ 	}
+ 
+ 	kfree(tmpbuf);
+ 	return 0;
++
++free_buffer:
++	kfree(tmpbuf);
++	return -1;
+ }
+ 
+ int iscsi_encode_text_output(
 -- 
-1.8.5.3
+2.15.0
 
