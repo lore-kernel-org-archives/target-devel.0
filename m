@@ -1,50 +1,61 @@
-From: Hannes Reinecke <hare@suse.com>
-Date: Thu, 02 Nov 2017 13:59:52 +0000
-Subject: Re: [PATCH 05/11] target/iscsi: Define OFFLOAD_BUF_SIZE once
-Message-Id: <3bc567aa-9eca-9650-7c91-51015939fe4d@suse.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 04 Nov 2017 13:17:45 +0000
+Subject: [PATCH 3/4] target: Improve a size determination in three functions
+Message-Id: <a708f62c-6a03-9a10-e9e1-0a72e8953652@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
+References: <27e27d42-473d-e8db-fe9e-803fed646881@users.sourceforge.net>
+In-Reply-To: <27e27d42-473d-e8db-fe9e-803fed646881@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-On 10/31/2017 07:03 PM, Bart Van Assche wrote:
-> The constant OFFLOAD_BUF_SIZE is defined twice - once in
-> iscsi_target_seq_pdu_list.c and once in iscsi_target_erl1.c. Since
-> that constant is not used in the former source file, remove its
-> definition from that source file.
-> 
-> Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
-> Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-> Cc: Christoph Hellwig <hch@lst.de>
-> Cc: Hannes Reinecke <hare@suse.com>
-> Cc: Mike Christie <mchristi@redhat.com>
-> ---
->  drivers/target/iscsi/iscsi_target_seq_pdu_list.c | 2 --
->  1 file changed, 2 deletions(-)
-> 
-> diff --git a/drivers/target/iscsi/iscsi_target_seq_pdu_list.c b/drivers/target/iscsi/iscsi_target_seq_pdu_list.c
-> index e446a09c886b..f65e5e584212 100644
-> --- a/drivers/target/iscsi/iscsi_target_seq_pdu_list.c
-> +++ b/drivers/target/iscsi/iscsi_target_seq_pdu_list.c
-> @@ -25,8 +25,6 @@
->  #include "iscsi_target_tpg.h"
->  #include "iscsi_target_seq_pdu_list.h"
->  
-> -#define OFFLOAD_BUF_SIZE	32768
-> -
->  #ifdef DEBUG
->  static void iscsit_dump_seq_list(struct iscsi_cmd *cmd)
->  {
-> 
-Reviewed-by: Hannes Reinecke <hare@suse.com>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 4 Nov 2017 13:35:08 +0100
 
-Cheers,
+Replace the specification of data structures by pointer dereferences
+as the parameter for the operator "sizeof" to make the corresponding size
+determination a bit safer according to the Linux coding style convention.
 
-Hannes
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/target/target_core_xcopy.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index 46cac36014df..1519e399392b 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -680,7 +680,7 @@ static int target_xcopy_read_source(
+ 	unsigned char cdb[16];
+ 	bool remote_port = (xop->op_origin = XCOL_DEST_RECV_OP);
+ 
+-	xpt_cmd = kzalloc(sizeof(struct xcopy_pt_cmd), GFP_KERNEL);
++	xpt_cmd = kzalloc(sizeof(*xpt_cmd), GFP_KERNEL);
+ 	if (!xpt_cmd) {
+ 		pr_err("Unable to allocate xcopy_pt_cmd\n");
+ 		return -ENOMEM;
+@@ -742,7 +742,7 @@ static int target_xcopy_write_destination(
+ 	unsigned char cdb[16];
+ 	bool remote_port = (xop->op_origin = XCOL_SOURCE_RECV_OP);
+ 
+-	xpt_cmd = kzalloc(sizeof(struct xcopy_pt_cmd), GFP_KERNEL);
++	xpt_cmd = kzalloc(sizeof(*xpt_cmd), GFP_KERNEL);
+ 	if (!xpt_cmd) {
+ 		pr_err("Unable to allocate xcopy_pt_cmd\n");
+ 		return -ENOMEM;
+@@ -1010,7 +1010,7 @@ sense_reason_t target_do_xcopy(struct se_cmd *se_cmd)
+ 		return TCM_PARAMETER_LIST_LENGTH_ERROR;
+ 	}
+ 
+-	xop = kzalloc(sizeof(struct xcopy_op), GFP_KERNEL);
++	xop = kzalloc(sizeof(*xop), GFP_KERNEL);
+ 	if (!xop)
+ 		goto err;
+ 	xop->xop_se_cmd = se_cmd;
 -- 
-Dr. Hannes Reinecke		               zSeries & Storage
-hare@suse.com			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+2.15.0
+
