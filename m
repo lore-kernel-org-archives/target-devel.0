@@ -1,94 +1,44 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Thu, 16 Nov 2017 05:54:33 +0000
-Subject: [PATCH-4.9.y 1/2] target/iscsi: Fix iSCSI task reassignment handling
-Message-Id: <1510812307-14530-2-git-send-email-nab@linux-iscsi.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 04 Nov 2017 13:16:36 +0000
+Subject: [PATCH 2/4] target: Combine two condition checks into one statement in target_xcopy_do_work()
+Message-Id: <09a6b5ba-70b7-ba4d-ad4f-6450c9da6208@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510812307-14530-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510812307-14530-1-git-send-email-nab@linux-iscsi.org>
+References: <27e27d42-473d-e8db-fe9e-803fed646881@users.sourceforge.net>
+In-Reply-To: <27e27d42-473d-e8db-fe9e-803fed646881@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Bart Van Assche <bart.vanassche@sandisk.com>, Moshe David <mdavid@infinidat.com>
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-From: Bart Van Assche <bart.vanassche@sandisk.com>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 4 Nov 2017 13:26:46 +0100
 
-commit 59b6986dbfcdab96a971f9663221849de79a7556 upstream.
+The same label was used by goto statements after two condition checks.
+Thus use a single statement instead.
 
-Allocate a task management request structure for all task management
-requests, including task reassignment. This change avoids that the
-se_tmr->response assignment dereferences an uninitialized se_tmr
-pointer.
-
-Reported-by: Moshe David <mdavid@infinidat.com>
-Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Cc: Moshe David <mdavid@infinidat.com>
-Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/target/iscsi/iscsi_target.c | 19 +++++++------------
- include/target/target_core_base.h   |  1 +
- 2 files changed, 8 insertions(+), 12 deletions(-)
+ drivers/target/target_core_xcopy.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index e49fcd5..f3c9d18 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1940,7 +1940,7 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	struct iscsi_tm *hdr;
- 	int out_of_order_cmdsn = 0, ret;
- 	bool sess_ref = false;
--	u8 function;
-+	u8 function, tcm_function = TMR_UNKNOWN;
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index b06877c57765..46cac36014df 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -802,10 +802,8 @@ static void target_xcopy_do_work(struct work_struct *work)
+ 	int rc = 0;
+ 	unsigned short nolb, cur_nolb, max_nolb, copied_nolb = 0;
  
- 	hdr			= (struct iscsi_tm *) buf;
- 	hdr->flags &= ~ISCSI_FLAG_CMD_FINAL;
-@@ -1986,10 +1986,6 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	 * LIO-Target $FABRIC_MOD
- 	 */
- 	if (function != ISCSI_TM_FUNC_TASK_REASSIGN) {
+-	if (target_parse_xcopy_cmd(xop) != TCM_NO_SENSE)
+-		goto err_free_xop;
 -
--		u8 tcm_function;
--		int ret;
--
- 		transport_init_se_cmd(&cmd->se_cmd, &iscsi_ops,
- 				      conn->sess->se_sess, 0, DMA_NONE,
- 				      TCM_SIMPLE_TAG, cmd->sense_buffer + 2);
-@@ -2025,15 +2021,14 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 			return iscsit_add_reject_cmd(cmd,
- 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
- 		}
--
--		ret = core_tmr_alloc_req(&cmd->se_cmd, cmd->tmr_req,
--					 tcm_function, GFP_KERNEL);
--		if (ret < 0)
--			return iscsit_add_reject_cmd(cmd,
-+	}
-+	ret = core_tmr_alloc_req(&cmd->se_cmd, cmd->tmr_req, tcm_function,
-+				 GFP_KERNEL);
-+	if (ret < 0)
-+		return iscsit_add_reject_cmd(cmd,
- 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+-	if (WARN_ON_ONCE(!xop->src_dev) || WARN_ON_ONCE(!xop->dst_dev))
++	if (target_parse_xcopy_cmd(xop) != TCM_NO_SENSE ||
++	    WARN_ON_ONCE(!xop->src_dev) || WARN_ON_ONCE(!xop->dst_dev))
+ 		goto err_free_xop;
  
--		cmd->tmr_req->se_tmr_req = cmd->se_cmd.se_tmr_req;
--	}
-+	cmd->tmr_req->se_tmr_req = cmd->se_cmd.se_tmr_req;
- 
- 	cmd->iscsi_opcode	= ISCSI_OP_SCSI_TMFUNC;
- 	cmd->i_state		= ISTATE_SEND_TASKMGTRSP;
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 0383c60..a87e894 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -197,6 +197,7 @@ enum tcm_tmreq_table {
- 	TMR_LUN_RESET		= 5,
- 	TMR_TARGET_WARM_RESET	= 6,
- 	TMR_TARGET_COLD_RESET	= 7,
-+	TMR_UNKNOWN		= 0xff,
- };
- 
- /* fabric independent task management response values */
+ 	src_dev = xop->src_dev;
 -- 
-1.8.5.3
+2.15.0
 
