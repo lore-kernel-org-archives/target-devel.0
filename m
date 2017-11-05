@@ -1,23 +1,57 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Wed, 29 Nov 2017 22:46:25 +0000
-Subject: Re: [PATCH] iser-target: Fix possible use-after-free in connection establishment error
-Message-Id: <eda02d71-cf33-2333-223a-0d6eeabb8185@grimberg.me>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Sun, 05 Nov 2017 01:14:22 +0000
+Subject: target-pending/for-next patches
+Message-Id: <1509844462.29624.14.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171126133104.22710-1-sagi@grimberg.me>
- <3676820c-544e-8ced-859a-ade8e6a0ef53@grimberg.me>
- <BN3PR07MB25782C93E50A7A0C55A110B4F83B0@BN3PR07MB2578.namprd07.prod.outlook.com>
-In-Reply-To: <BN3PR07MB25782C93E50A7A0C55A110B4F83B0@BN3PR07MB2578.namprd07.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Amrani, Ram" <Ram.Amrani@cavium.com>, Doug Ledford <dledford@redhat.com>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, target-devel <target-devel@vger.kernel.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: target-devel <target-devel@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>
+Cc: Mike Christie <mchristi@redhat.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
 
+Hi all,
 
-> If it's not already committed, can you add a "Fixes:" so stable maintainers will catch it?
+Just a friendly email after catching up on patches this week, the
+majority of those outstanding on the list have been merged into
+target-pending/for-next.  Please see below.
 
-I'm not sure at all that there is a clear cut commit that this fixes,
-both the target code and the rdma interface code changed a lot so I
-can't find any clear indication which broke this.
+For those who submitted patches, please have a look and let me know if
+anything is else missing.  Note there are two exceptions that have been
+left out for now that I'll be following up with separately.
 
-I can send a separate patch to stable from when we introduced
-ib_drain_qp though.
+Thus far it's all been either straight-forward bug-fixes, minor
+cleanups, or small miscellaneous enhancements.  AFAICT, nothing looks
+particularly concerning.
+
+Thank you,
+
+--nab
+
+17c45b9 iSCSI-target: Use common error handling code in iscsi_decode_text_input()
+6eaf69e target/iscsi: Detect conn_cmd_list corruption early
+cfe2b62 target/iscsi: Fix a race condition in iscsit_add_reject_from_cmd()
+e1dfb21 target/iscsi: Modify iscsit_do_crypto_hash_buf() prototype
+de3493a target/iscsi: Fix endianness in an error message
+919765e target/iscsi: Use min() in iscsit_dump_data_payload() instead of open-coding it
+8d973ab target/iscsi: Define OFFLOAD_BUF_SIZE once
+c017069 target: Inline transport_put_cmd()
+d7e595d target: Suppress gcc 7 fallthrough warnings
+c48e559 target: Move a declaration of a global variable into a header file
+0d44374 tcmu: fix double se_cmd completion
+a271eac target: return SAM_STAT_TASK_SET_FULL for TCM_OUT_OF_RESOURCES
+55435ba target: fix ALUA state file path truncation
+bdc79f0 target: fix PR state file path truncation
+1ae0172 cxgbit: Abort the TCP connection in case of data out timeout
+b849b45 target: Add netlink command reply supported option for each device
+b5ab697 target/tcmu: Use macro to call container_of in tcmu_cmd_time_out_show
+c22adc0 tcmu: fix crash when removing the tcmu device
+a0884d4 iscsi-target: fix memory leak in iscsit_release_discovery_tpg()
+12d5a43 iscsi-target: fix memory leak in lio_target_tiqn_addtpg()
+24528f0 target:fix condition return in core_pr_dump_initiator_port()
+a2db857 target: fix match_token option in target_core_configfs.c
+79dd6f2 target: add sense code INSUFFICIENT REGISTRATION RESOURCES
+e437fa3 target: fix double unmap data sg in core_scsi3_emulate_pro_register_and_move()
+c58a252 target: fix buffer offset in core_scsi3_pri_read_full_status
+88fb2fa target: fix null pointer regression in core_tmr_drain_tmr_list
+594e25e target/file: Do not return error for UNMAP if length is zero
+
