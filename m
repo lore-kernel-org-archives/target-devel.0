@@ -1,98 +1,28 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Date: Tue, 21 Nov 2017 00:12:43 +0000
-Subject: [PATCH] target-core: don't use "const char*" for a buffer that is written to
-Message-Id: <20171121001244.8026-1-linux@rasmusvillemoes.dk>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 06 Nov 2017 21:11:06 +0000
+Subject: Re: iSCSI-target: Use common error handling code in iscsi_decode_text_input()
+Message-Id: <49e62625-8c1d-5bbe-2ddd-e25e117754db@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
+References: <d36d5072-3e35-da39-bc0f-af15deb630a8@users.sourceforge.net>
+ <20171106162549.5b2511db@alans-desktop>
+In-Reply-To: <20171106162549.5b2511db@alans-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Alan Cox <gnomes@lxorguk.ukuu.org.uk>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-From: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
+>> Add a jump target so that a bit of exception handling can be better reused
+>> at the end of this function.
+> 
+> Why not look at what the C compiler generates before making the code
+> less readable ?
 
-iscsi_parse_pr_out_transport_id launders the const away via a call to
-strstr(), and then modifies the buffer (writing a nul byte) through
-the return value. It's cleaner to be honest and simply declare the
-parameter as "char*", fixing up the call chain, and allowing us to
-drop the cast in the return statement.
+* Does the adjusted source code layout fit to information from the section
+  “7) Centralized exiting of functions” in the document “coding-style.rst”?
 
-Amusingly, the two current callers found it necessary to cast a
-non-const pointer to a const.
+* Would you find a reduction of 16 bytes for the object code useful for
+  the affected function implementation?
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
- drivers/target/target_core_fabric_lib.c | 6 +++---
- drivers/target/target_core_internal.h   | 2 +-
- drivers/target/target_core_pr.c         | 4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index 508da345b73f..71a80257a052 100644
---- a/drivers/target/target_core_fabric_lib.c
-+++ b/drivers/target/target_core_fabric_lib.c
-@@ -273,7 +273,7 @@ static int iscsi_get_pr_transport_id_len(
- 
- static char *iscsi_parse_pr_out_transport_id(
- 	struct se_portal_group *se_tpg,
--	const char *buf,
-+	char *buf,
- 	u32 *out_tid_len,
- 	char **port_nexus_ptr)
- {
-@@ -356,7 +356,7 @@ static char *iscsi_parse_pr_out_transport_id(
- 		}
- 	}
- 
--	return (char *)&buf[4];
-+	return &buf[4];
- }
- 
- int target_get_pr_transport_id_len(struct se_node_acl *nacl,
-@@ -405,7 +405,7 @@ int target_get_pr_transport_id(struct se_node_acl *nacl,
- }
- 
- const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
--		const char *buf, u32 *out_tid_len, char **port_nexus_ptr)
-+		char *buf, u32 *out_tid_len, char **port_nexus_ptr)
- {
- 	u32 offset;
- 
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index 18e3eb16e756..cada158cf1c2 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -101,7 +101,7 @@ int	target_get_pr_transport_id(struct se_node_acl *nacl,
- 		struct t10_pr_registration *pr_reg, int *format_code,
- 		unsigned char *buf);
- const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
--		const char *buf, u32 *out_tid_len, char **port_nexus_ptr);
-+		char *buf, u32 *out_tid_len, char **port_nexus_ptr);
- 
- /* target_core_hba.c */
- struct se_hba *core_alloc_hba(const char *, u32, u32);
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index dd2cd8048582..09941d1ae6c1 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -1597,7 +1597,7 @@ core_scsi3_decode_spec_i_port(
- 			dest_rtpi = tmp_lun->lun_rtpi;
- 
- 			i_str = target_parse_pr_out_transport_id(tmp_tpg,
--					(const char *)ptr, &tid_len, &iport_ptr);
-+					ptr, &tid_len, &iport_ptr);
- 			if (!i_str)
- 				continue;
- 
-@@ -3285,7 +3285,7 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
- 		goto out;
- 	}
- 	initiator_str = target_parse_pr_out_transport_id(dest_se_tpg,
--			(const char *)&buf[24], &tmp_tid_len, &iport_ptr);
-+			&buf[24], &tmp_tid_len, &iport_ptr);
- 	if (!initiator_str) {
- 		pr_err("SPC-3 PR REGISTER_AND_MOVE: Unable to locate"
- 			" initiator_str from Transport ID\n");
--- 
-2.11.0
-
+Regards,
+Markus
