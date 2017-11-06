@@ -1,52 +1,68 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Wed, 01 Nov 2017 00:07:52 +0000
+From: Varun Prakash <varun@chelsio.com>
+Date: Mon, 06 Nov 2017 15:38:21 +0000
 Subject: Re: [PATCH 2/6] target/iscsi: Call .iscsit_release_cmd() once
-Message-Id: <1509494870.12927.11.camel@wdc.com>
+Message-Id: <20171106152620.GA1646@chelsio.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20170330171244.8346-1-bart.vanassche@sandisk.com>
-         <20170330171244.8346-3-bart.vanassche@sandisk.com>
-         <1491173945.8846.48.camel@haakon3.risingtidesystems.com>
-         <20170404050649.GA1662@chelsio.com>
-In-Reply-To: <20170404050649.GA1662@chelsio.com>
+References: <1509494870.12927.11.camel@wdc.com>
+In-Reply-To: <1509494870.12927.11.camel@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "varun@chelsio.com" <varun@chelsio.com>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
-Cc: Bart Van Assche <Bart.VanAssche@wdc.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+To: target-devel@vger.kernel.org
 
-T24gVHVlLCAyMDE3LTA0LTA0IGF0IDEwOjM2ICswNTMwLCBWYXJ1biBQcmFrYXNoIHdyb3RlOg0K
-PiBPbiBTdW4sIEFwciAwMiwgMjAxNyBhdCAwMzo1OTowNVBNIC0wNzAwLCBOaWNob2xhcyBBLiBC
-ZWxsaW5nZXIgd3JvdGU6DQo+ID4gT24gVGh1LCAyMDE3LTAzLTMwIGF0IDEwOjEyIC0wNzAwLCBC
-YXJ0IFZhbiBBc3NjaGUgd3JvdGU6DQo+ID4gPiBXaGlsZSByZWxlYXNpbmcgYSBjb21tYW5kIF9f
-aXNjc2l0X2ZyZWVfY21kKCkgY2FuIGJlIGNhbGxlZCBtdWx0aXBsZQ0KPiA+ID4gdGltZXMgYnV0
-IC5pc2NzaXRfcmVsZWFzZV9jbWQoKSBtdXN0IGJlIGNhbGxlZCBvbmx5IG9uY2UuIEhlbmNlIG1v
-dmUNCj4gPiA+IHRoZSAuaXNjc2l0X3JlbGVhc2VfY21kKCkgY2FsbCBpbnRvIGlzY3NpdF9yZWxl
-YXNlX2NtZCgpLiBUaGUgbGF0dGVyDQo+ID4gPiBmdW5jdGlvbiBpcyBvbmx5IGNhbGxlZCBvbmNl
-IHBlciBjb21tYW5kLiBUaGUgb25seSBkcml2ZXIgdGhhdCBkZWZpbmVzDQo+ID4gPiB0aGUgLmlz
-Y3NpdF9yZWxlYXNlX2NtZCgpIGNhbGxiYWNrIGlzIHRoZSBjeGdiaXQgZHJpdmVyIHNvIHRoaXMg
-Y2hhbmdlDQo+ID4gPiBvbmx5IGFmZmVjdHMgdGhlIGN4Z2JpdCBkcml2ZXIuDQo+ID4gPiANCj4g
-PiA+IEZpeGVzOiA3ZWM4MTFhOGU5YzMgKCJpc2NzaS10YXJnZXQ6IGFkZCB2b2lkICgqaXNjc2l0
-X3JlbGVhc2VfY21kKSgpIikNCj4gPiA+IFNpZ25lZC1vZmYtYnk6IEJhcnQgVmFuIEFzc2NoZSA8
-YmFydC52YW5hc3NjaGVAc2FuZGlzay5jb20+DQo+ID4gPiBDYzogVmFydW4gUHJha2FzaCA8dmFy
-dW5AY2hlbHNpby5jb20+DQo+ID4gPiBDYzogTmljaG9sYXMgQmVsbGluZ2VyIDxuYWJAbGludXgt
-aXNjc2kub3JnPg0KPiA+ID4gQ2M6IDxzdGFibGVAdmdlci5rZXJuZWwub3JnPg0KPiA+ID4gLS0t
-DQo+ID4gPiAgZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X3V0aWwuYyB8IDE1ICsr
-KysrKysrKy0tLS0tLQ0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDYg
-ZGVsZXRpb25zKC0pDQo+ID4gPiANCj4gPiANCj4gPiBBcHBsaWVkIHRvIHRhcmdldC1wZW5kaW5n
-L2Zvci1uZXh0LCBidXQgZHJvcHBpbmcgdGhlIHN0YWJsZSBDQycgYmVjYXVzZQ0KPiA+IHRoZSBz
-aW5nbGUgY2FsbGVyIGluIGN4Z2JpdF9yZWxlYXNlX2NtZCgpIGlzIGFscmVhZHkgY2hlY2tpbmcg
-dG8gZW5zdXJlDQo+ID4gcmVzb3VyY2VzIGFyZSBvbmx5IHJlbGVhc2VkIG9uIHRoZSBmaXJzdCBp
-bnZvY2F0aW9uLg0KPiA+IA0KPiA+IFNvIGl0J3Mgbm90IGEgYnVnLWZpeC4NCj4gDQo+IEluIGNh
-c2Ugb2YgRERQIGN4Z2JpdCBkcml2ZXIgYXNzaWducyBjbWQtPnNlX2NtZC50X2RhdGFfc2cgdG8g
-dHRpbmZvLT5zZ2wNCj4gYW5kIGNhbGxzIGRtYV9tYXBfc2coKSwgY3hnYml0X3JlbGVhc2VfY21k
-KCkgY2FsbHMgZG1hX3VubWFwX3NnKCksIGl0IG5lZWRzDQo+IGEgdmFsaWQgc2codHRpbmZvLT5z
-Z2wpLCBiZWZvcmUgY2FsbGluZyBpc2NzaXRfcmVsZWFzZV9jbWQoKQ0KPiBjbWQtPnNlX2NtZC50
-X2RhdGFfc2cgZ2V0cyBmcmVlZCBzbyB0dGluZm8tPnNnbCB3aWxsIG5vdCBiZSB2YWxpZCBpZiB3
-ZSBtb3ZlDQo+IC0+aXNjc2l0X3JlbGVhc2VfY21kKCkgdG8gaXNjc2l0X3JlbGVhc2VfY21kKCku
-DQoNCihyZXBseWluZyB0byBhbiBlLW1haWwgb2Ygc2l4IG1vbnRocyBhZ28pDQoNCkhlbGxvIFZh
-cnVuLA0KDQpIYXZlIHlvdSBub3RpY2VkIHRoYXQgY29tbWl0IGZlYmU1NjJjMjBkZiAodGFyZ2V0
-OiBGaXggTFVOX1JFU0VUIGFjdGl2ZSBJL08NCmhhbmRsaW5nIGZvciBBQ0tfS1JFRjsgSmFudWFy
-eSAyMDE2KSBtb3ZlZCB0aGUgdHJhbnNwb3J0X2ZyZWVfcGFnZXMoKSBjYWxsDQpmcm9tIHRyYW5z
-cG9ydF9wdXRfY21kKCkgdG8gdGFyZ2V0X3JlbGVhc2VfY21kX2tyZWYoKT8gSSB0aGluayB0aGF0
-IG1lYW5zDQp0aGF0IGl0IGlzIG5vdyBzYWZlIHRvIGNhbGwgLmlzY3NpdF9yZWxlYXNlX2NtZCgp
-IGFmdGVyDQp0cmFuc3BvcnRfZ2VuZXJpY19mcmVlX2NtZCgpLg0KDQpUaGFua3MsDQoNCkJhcnQu
+On Wed, Nov 01, 2017 at 12:07:52AM +0000, Bart Van Assche wrote:
+> On Tue, 2017-04-04 at 10:36 +0530, Varun Prakash wrote:
+> > On Sun, Apr 02, 2017 at 03:59:05PM -0700, Nicholas A. Bellinger wrote:
+> > > On Thu, 2017-03-30 at 10:12 -0700, Bart Van Assche wrote:
+> > > > While releasing a command __iscsit_free_cmd() can be called multiple
+> > > > times but .iscsit_release_cmd() must be called only once. Hence move
+> > > > the .iscsit_release_cmd() call into iscsit_release_cmd(). The latter
+> > > > function is only called once per command. The only driver that defines
+> > > > the .iscsit_release_cmd() callback is the cxgbit driver so this change
+> > > > only affects the cxgbit driver.
+> > > > 
+> > > > Fixes: 7ec811a8e9c3 ("iscsi-target: add void (*iscsit_release_cmd)()")
+> > > > Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
+> > > > Cc: Varun Prakash <varun@chelsio.com>
+> > > > Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+> > > > Cc: <stable@vger.kernel.org>
+> > > > ---
+> > > >  drivers/target/iscsi/iscsi_target_util.c | 15 +++++++++------
+> > > >  1 file changed, 9 insertions(+), 6 deletions(-)
+> > > > 
+> > >
+ 
+> 
+> (replying to an e-mail of six months ago)
+> 
+> Hello Varun,
+> 
+> Have you noticed that commit febe562c20df (target: Fix LUN_RESET active I/O
+> handling for ACK_KREF; January 2016) moved the transport_free_pages() call
+> from transport_put_cmd() to target_release_cmd_kref()? I think that means
+> that it is now safe to call .iscsit_release_cmd() after
+> transport_generic_free_cmd().
+> 
+
+Hello Bart,
+
+The requirement here is to call .iscsit_release_cmd() before target free the
+pages so that cxgbit driver can call dma_unmap_sg() and free the pages in case
+of PASSTHROUGH_SG_TO_MEM_NOALLOC.
+
+Currently .iscsit_release_cmd() is called from two functions -
+
+iscsit_free_cmd() -> __iscsit_free_cmd() -> .iscsit_release_cmd()
+iscsit_aborted_task() -> __iscsit_free_cmd() -> .iscsit_release_cmd()
+
+If we move .iscsit_release_cmd() after transport_generic_free_cmd(), will it
+handle all the error cases(abort etc)?
+
+In case of abort currently it is called from iscsit_aborted_task(), if we
+move then in case of abort .iscsit_release_cmd() will not be called.
+
+If we can confirm that moving .iscsit_release_cmd() will not cause any
+memory leak then we can move it.
+
+Thanks
+Varun
