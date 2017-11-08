@@ -1,81 +1,38 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Wed, 08 Nov 2017 04:31:48 +0000
-Subject: [PATCH 2/6] target: Fix caw_sem leak in transport_generic_request_failure
-Message-Id: <1510115512-15617-3-git-send-email-nab@linux-iscsi.org>
+Date: Wed, 08 Nov 2017 10:13:50 +0000
+Subject: Re: [PATCH v3 5/8] target: Use sgl_alloc_order() and sgl_free()
+Message-Id: <1510136030.29624.75.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
+References: <20171103222339.26540-1-bart.vanassche@wdc.com>
+	 <20171103222339.26540-6-bart.vanassche@wdc.com>
+	 <b8cd6935-2f42-6b43-f252-0f7d00e6fb71@suse.de>
+In-Reply-To: <b8cd6935-2f42-6b43-f252-0f7d00e6fb71@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel <target-devel@vger.kernel.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>, Bart Van Assche <bart.vanassche@sandisk.com>
+To: Hannes Reinecke <hare@suse.de>
+Cc: Bart Van Assche <bart.vanassche@wdc.com>, Jens Axboe <axboe@kernel.dk>, linux-block@vger.kernel.org, Christoph Hellwig <hch@lst.de>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Herbert Xu <herbert@gondor.apana.org.au>, Hannes Reinecke <hare@suse.com>, Sagi Grimberg <sagi@grimberg.me>, target-devel <target-devel@vger.kernel.org>
 
-From: Nicholas Bellinger <nab@linux-iscsi.org>
+On Mon, 2017-11-06 at 08:10 +0100, Hannes Reinecke wrote:
+> On 11/03/2017 11:23 PM, Bart Van Assche wrote:
+> > Use the sgl_alloc_order() and sgl_free() functions instead of open
+> > coding these functions.
+> > 
+> > Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+> > Cc: Nicholas A. Bellinger <nab@linux-iscsi.org>
+> > Cc: Christoph Hellwig <hch@lst.de>
+> > Cc: Hannes Reinecke <hare@suse.com>
+> > Cc: Sagi Grimberg <sagi@grimberg.me>
+> > ---
+> >  drivers/target/Kconfig                 |  1 +
+> >  drivers/target/target_core_transport.c | 46 +++-------------------------------
+> >  2 files changed, 5 insertions(+), 42 deletions(-)
+> > 
+> Reviewed-by: Hannes Reinecke <hare@suse.com>
+> 
 
-With the recent addition of transport_check_aborted_status() within
-transport_generic_request_failure() to avoid sending a SCSI status
-exception after CMD_T_ABORTED w/ TAS=1 has occured, it introduced
-a COMPARE_AND_WRITE early failure regression.
+Nice improvement to turn this into common code.
 
-Namely when COMPARE_AND_WRITE fails and se_device->caw_sem has
-been taken by sbc_compare_and_write(), if the new check for
-transport_check_aborted_status() returns true and exits,
-cmd->transport_complete_callback() -> compare_and_write_post()
-is skipped never releasing se_device->caw_sem.
+Acked-by: Nicholas Bellinger <nab@linux-iscsi.org>
 
-This regression was originally introduced by:
-
-  commit e3b88ee95b4e4bf3e9729a4695d695b9c7c296c8
-  Author: Bart Van Assche <bart.vanassche@sandisk.com>
-  Date:   Tue Feb 14 16:25:45 2017 -0800
-
-      target: Fix handling of aborted failed commands
-
-To address this bug, move the transport_check_aborted_status()
-call after transport_complete_task_attr() and
-cmd->transport_complete_callback().
-
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Bart Van Assche <bart.vanassche@sandisk.com>
-Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
----
- drivers/target/target_core_transport.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index c33d1e9..d02218c 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1729,9 +1729,6 @@ void transport_generic_request_failure(struct se_cmd *cmd,
- {
- 	int ret = 0, post_ret = 0;
- 
--	if (transport_check_aborted_status(cmd, 1))
--		return;
--
- 	pr_debug("-----[ Storage Engine Exception; sense_reason %d\n",
- 		 sense_reason);
- 	target_show_cmd("-----[ ", cmd);
-@@ -1740,6 +1737,7 @@ void transport_generic_request_failure(struct se_cmd *cmd,
- 	 * For SAM Task Attribute emulation for failed struct se_cmd
- 	 */
- 	transport_complete_task_attr(cmd);
-+
- 	/*
- 	 * Handle special case for COMPARE_AND_WRITE failure, where the
- 	 * callback is expected to drop the per device ->caw_sem.
-@@ -1748,6 +1746,9 @@ void transport_generic_request_failure(struct se_cmd *cmd,
- 	     cmd->transport_complete_callback)
- 		cmd->transport_complete_callback(cmd, false, &post_ret);
- 
-+	if (transport_check_aborted_status(cmd, 1))
-+		return;
-+
- 	switch (sense_reason) {
- 	case TCM_NON_EXISTENT_LUN:
- 	case TCM_UNSUPPORTED_SCSI_OPCODE:
--- 
-1.9.1
 
