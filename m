@@ -1,46 +1,29 @@
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Date: Wed, 08 Nov 2017 22:49:12 +0000
-Subject: Re: [PATCH] tcmu: clean up the scatter helper
-Message-Id: <5ffcb5e2-e53a-3b6d-496b-9cd24e860e50@linux.vnet.ibm.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 08 Nov 2017 08:44:15 +0000
+Subject: [PATCH 2/2] tcmu: Add a missing unlock on an error path
+Message-Id: <20171108084415.dn443crpreqwqoiw@mwanda>
 List-Id: <target-devel.vger.kernel.org>
-References: <1499927630-19785-1-git-send-email-lixiubo@cmss.chinamobile.com>
- <1501453144.1499.24.camel@haakon3.daterainc.com>
- <1ff87e2e-ad52-f985-e1cb-1d6cc26392b4@linux.vnet.ibm.com>
- <5A0388C3.8020702@redhat.com>
-In-Reply-To: <5A0388C3.8020702@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <mchristi@redhat.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, lixiubo@cmss.chinamobile.com
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
+We added a new error path here but we forgot to drop the lock first
+before returning.
 
-> On 11/08/2017 04:39 PM, Bryant G. Ly wrote:
->> On 7/30/17 5:19 PM, Nicholas A. Bellinger wrote:
->>
->>> On Thu, 2017-07-13 at 14:33 +0800, lixiubo@cmss.chinamobile.com wrote:
->>>> From: Xiubo Li <lixiubo@cmss.chinamobile.com>
->>>>
->>>> Add some comments to make the scatter code to be more readable.
->>>>
->>>> Signed-off-by: Xiubo Li <lixiubo@cmss.chinamobile.com>
->>>> ---
->>>>  drivers/target/target_core_user.c | 30 +++++++++++++++++++++++++-----
->>>>  1 file changed, 25 insertions(+), 5 deletions(-)
->>>>
->>> Applied to target-pending/for-next.
->>>
->>> Thanks Xiubo + MNC.
->>>
->> This one seems to also be missing from the tree. 
->>
-> I ported this one to my patchset that is built without the
-> "tcmu: Add fifo type waiter list support to avoid starvation" patch:
->
-> https://www.spinics.net/lists/target-devel/msg16153.html
->
-Thanks Mike! I was trying to catch up and I missed all that. I see that the current for-next has everything. 
+Fixes: 0d44374c1aae ("tcmu: fix double se_cmd completion")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
--Bryant
-
-
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 07f2d95f7ae7..cc2468a299d3 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -888,6 +888,7 @@ tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
+ 	ret = tcmu_setup_cmd_timer(tcmu_cmd);
+ 	if (ret) {
+ 		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
++		mutex_unlock(&udev->cmdr_lock);
+ 		return TCM_OUT_OF_RESOURCES;
+ 	}
+ 	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
