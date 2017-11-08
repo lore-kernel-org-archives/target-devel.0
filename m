@@ -1,39 +1,40 @@
-From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
-Date: Wed, 08 Nov 2017 21:29:27 +0000
-Subject: Re: [PATCH 3/6] target: Fix quiese during transport_write_pending_qf endless loop
-Message-Id: <6892cffb-3734-7bd7-aa42-1d91b70ee57b@linux.vnet.ibm.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 08 Nov 2017 22:44:19 +0000
+Subject: Re: [PATCH] tcmu: clean up the scatter helper
+Message-Id: <5A0388C3.8020702@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
- <1510115512-15617-4-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510115512-15617-4-git-send-email-nab@linux-iscsi.org>
+References: <1499927630-19785-1-git-send-email-lixiubo@cmss.chinamobile.com>
+ <1501453144.1499.24.camel@haakon3.daterainc.com>
+ <1ff87e2e-ad52-f985-e1cb-1d6cc26392b4@linux.vnet.ibm.com>
+In-Reply-To: <1ff87e2e-ad52-f985-e1cb-1d6cc26392b4@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, target-devel <target-devel@vger.kernel.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>, Michael Cyr <mikecyr@linux.vnet.ibm.com>, Potnuri Bharat Teja <bharat@chelsio.com>, Sagi Grimberg <sagi@grimberg.me>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, lixiubo@cmss.chinamobile.com
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
+On 11/08/2017 04:39 PM, Bryant G. Ly wrote:
+> On 7/30/17 5:19 PM, Nicholas A. Bellinger wrote:
+> 
+>> On Thu, 2017-07-13 at 14:33 +0800, lixiubo@cmss.chinamobile.com wrote:
+>>> From: Xiubo Li <lixiubo@cmss.chinamobile.com>
+>>>
+>>> Add some comments to make the scatter code to be more readable.
+>>>
+>>> Signed-off-by: Xiubo Li <lixiubo@cmss.chinamobile.com>
+>>> ---
+>>>  drivers/target/target_core_user.c | 30 +++++++++++++++++++++++++-----
+>>>  1 file changed, 25 insertions(+), 5 deletions(-)
+>>>
+>> Applied to target-pending/for-next.
+>>
+>> Thanks Xiubo + MNC.
+>>
+> This one seems to also be missing from the tree. 
+> 
 
-> From: Nicholas Bellinger <nab@linux-iscsi.org>
->
-> This patch fixes a potential end-less loop during QUEUE_FULL,
-> where cmd->se_tfo->write_pending() callback fails repeatedly
-> but __transport_wait_for_tasks() has already been invoked to
-> quiese the outstanding se_cmd descriptor.
->
-> To address this bug, this patch adds a CMD_T_STOP|CMD_T_ABORTED
-> check within transport_write_pending_qf() and invokes the
-> existing se_cmd->t_transport_stop_comp to signal quiese
-> completion back to __transport_wait_for_tasks().
->
-> Cc: Mike Christie <mchristi@redhat.com>
-> Cc: Hannes Reinecke <hare@suse.com>
-> Cc: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> Cc: Michael Cyr <mikecyr@linux.vnet.ibm.com>
-> Cc: Potnuri Bharat Teja <bharat@chelsio.com>
-> Cc: Sagi Grimberg <sagi@grimberg.me>
-> Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
-> ---
->
-Reviewed-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+I ported this one to my patchset that is built without the
+"tcmu: Add fifo type waiter list support to avoid starvation" patch:
 
+https://www.spinics.net/lists/target-devel/msg16153.html
 
