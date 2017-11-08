@@ -1,124 +1,81 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 28 Nov 2017 18:40:37 +0000
-Subject: [PATCH 11/15] tcmu: prep queue_cmd_ring to be used by unmap wq
-Message-Id: <1511894441-8626-12-git-send-email-mchristi@redhat.com>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Wed, 08 Nov 2017 04:31:48 +0000
+Subject: [PATCH 2/6] target: Fix caw_sem leak in transport_generic_request_failure
+Message-Id: <1510115512-15617-3-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: target-devel <target-devel@vger.kernel.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>, Bart Van Assche <bart.vanassche@sandisk.com>
 
-In the next patches we will call queue_cmd_ring from the submitting
-context and also the completion path. This changes the queue_cmd_ring
-return code so in the next patches we can return a sense_reason_t
-and also signal if a command was requeued.
+From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+With the recent addition of transport_check_aborted_status() within
+transport_generic_request_failure() to avoid sending a SCSI status
+exception after CMD_T_ABORTED w/ TAS=1 has occured, it introduced
+a COMPARE_AND_WRITE early failure regression.
+
+Namely when COMPARE_AND_WRITE fails and se_device->caw_sem has
+been taken by sbc_compare_and_write(), if the new check for
+transport_check_aborted_status() returns true and exits,
+cmd->transport_complete_callback() -> compare_and_write_post()
+is skipped never releasing se_device->caw_sem.
+
+This regression was originally introduced by:
+
+  commit e3b88ee95b4e4bf3e9729a4695d695b9c7c296c8
+  Author: Bart Van Assche <bart.vanassche@sandisk.com>
+  Date:   Tue Feb 14 16:25:45 2017 -0800
+
+      target: Fix handling of aborted failed commands
+
+To address this bug, move the transport_check_aborted_status()
+call after transport_complete_task_attr() and
+cmd->transport_complete_callback().
+
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Bart Van Assche <bart.vanassche@sandisk.com>
+Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
 ---
- drivers/target/target_core_user.c | 42 +++++++++++++++++++++++++--------------
- 1 file changed, 27 insertions(+), 15 deletions(-)
+ drivers/target/target_core_transport.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 8d0dc47..68d1d72 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -776,8 +776,16 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
- 	return 0;
- }
- 
--static sense_reason_t
--tcmu_queue_cmd_ring(struct tcmu_cmd *tcmu_cmd)
-+/**
-+ * queue_cmd_ring - queue cmd to ring or internally
-+ * @tcmu_cmd: cmd to queue
-+ * @scsi_err: TCM error code if failure (-1) returned.
-+ *
-+ * Returns:
-+ * -1 we cannot queue internally or to the ring.
-+ *  0 success
-+ */
-+static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index c33d1e9..d02218c 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1729,9 +1729,6 @@ void transport_generic_request_failure(struct se_cmd *cmd,
  {
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
- 	struct se_cmd *se_cmd = tcmu_cmd->se_cmd;
-@@ -791,8 +799,12 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
- 	bool copy_to_data_area;
- 	size_t data_length = tcmu_cmd_get_data_length(tcmu_cmd);
+ 	int ret = 0, post_ret = 0;
  
--	if (test_bit(TCMU_DEV_BIT_BROKEN, &udev->flags))
--		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+	*scsi_err = TCM_NO_SENSE;
-+
-+	if (test_bit(TCMU_DEV_BIT_BROKEN, &udev->flags)) {
-+		*scsi_err = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+		return -1;
-+	}
- 
- 	/*
- 	 * Must be a certain minimum size for response sense info, but
-@@ -819,7 +831,8 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
- 			"cmd ring/data area\n", command_size, data_length,
- 			udev->cmdr_size, udev->data_size);
- 		mutex_unlock(&udev->cmdr_lock);
--		return TCM_INVALID_CDB_FIELD;
-+		*scsi_err = TCM_INVALID_CDB_FIELD;
-+		return -1;
- 	}
- 
- 	while (!is_ring_space_avail(udev, tcmu_cmd, command_size, data_length)) {
-@@ -845,7 +858,8 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
- 		finish_wait(&udev->wait_cmdr, &__wait);
- 		if (!ret) {
- 			pr_warn("tcmu: command timed out\n");
--			return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+			*scsi_err = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+			return -1;
- 		}
- 
- 		mutex_lock(&udev->cmdr_lock);
-@@ -902,7 +916,9 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
- 	if (ret) {
- 		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
- 		mutex_unlock(&udev->cmdr_lock);
--		return TCM_OUT_OF_RESOURCES;
-+
-+		*scsi_err = TCM_OUT_OF_RESOURCES;
-+		return -1;
- 	}
- 	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
- 
-@@ -933,27 +949,23 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd)
- 		mod_timer(&udev->timeout, round_jiffies_up(jiffies +
- 			  msecs_to_jiffies(udev->cmd_time_out)));
- 
--	return TCM_NO_SENSE;
-+	return 0;
- }
- 
- static sense_reason_t
- tcmu_queue_cmd(struct se_cmd *se_cmd)
- {
- 	struct tcmu_cmd *tcmu_cmd;
--	sense_reason_t ret;
-+	sense_reason_t scsi_ret;
- 
- 	tcmu_cmd = tcmu_alloc_cmd(se_cmd);
- 	if (!tcmu_cmd)
- 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
- 
--	ret = tcmu_queue_cmd_ring(tcmu_cmd);
--	if (ret != TCM_NO_SENSE) {
--		pr_err("TCMU: Could not queue command\n");
+-	if (transport_check_aborted_status(cmd, 1))
+-		return;
 -
-+	if (queue_cmd_ring(tcmu_cmd, &scsi_ret) < 0)
- 		tcmu_free_cmd(tcmu_cmd);
--	}
+ 	pr_debug("-----[ Storage Engine Exception; sense_reason %d\n",
+ 		 sense_reason);
+ 	target_show_cmd("-----[ ", cmd);
+@@ -1740,6 +1737,7 @@ void transport_generic_request_failure(struct se_cmd *cmd,
+ 	 * For SAM Task Attribute emulation for failed struct se_cmd
+ 	 */
+ 	transport_complete_task_attr(cmd);
++
+ 	/*
+ 	 * Handle special case for COMPARE_AND_WRITE failure, where the
+ 	 * callback is expected to drop the per device ->caw_sem.
+@@ -1748,6 +1746,9 @@ void transport_generic_request_failure(struct se_cmd *cmd,
+ 	     cmd->transport_complete_callback)
+ 		cmd->transport_complete_callback(cmd, false, &post_ret);
  
--	return ret;
-+	return scsi_ret;
- }
- 
- static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *entry)
++	if (transport_check_aborted_status(cmd, 1))
++		return;
++
+ 	switch (sense_reason) {
+ 	case TCM_NON_EXISTENT_LUN:
+ 	case TCM_UNSUPPORTED_SCSI_OPCODE:
 -- 
-1.8.3.1
+1.9.1
 
