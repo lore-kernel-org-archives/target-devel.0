@@ -1,64 +1,39 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Wed, 08 Nov 2017 04:31:49 +0000
-Subject: [PATCH 3/6] target: Fix quiese during transport_write_pending_qf endless loop
-Message-Id: <1510115512-15617-4-git-send-email-nab@linux-iscsi.org>
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Date: Wed, 08 Nov 2017 21:29:27 +0000
+Subject: Re: [PATCH 3/6] target: Fix quiese during transport_write_pending_qf endless loop
+Message-Id: <6892cffb-3734-7bd7-aa42-1d91b70ee57b@linux.vnet.ibm.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
+ <1510115512-15617-4-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1510115512-15617-4-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel <target-devel@vger.kernel.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, Michael Cyr <mikecyr@linux.vnet.ibm.com>, Potnuri Bharat Teja <bharat@chelsio.com>, Sagi Grimberg <sagi@grimberg.me>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, target-devel <target-devel@vger.kernel.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>, Michael Cyr <mikecyr@linux.vnet.ibm.com>, Potnuri Bharat Teja <bharat@chelsio.com>, Sagi Grimberg <sagi@grimberg.me>
 
-From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-This patch fixes a potential end-less loop during QUEUE_FULL,
-where cmd->se_tfo->write_pending() callback fails repeatedly
-but __transport_wait_for_tasks() has already been invoked to
-quiese the outstanding se_cmd descriptor.
+> From: Nicholas Bellinger <nab@linux-iscsi.org>
+>
+> This patch fixes a potential end-less loop during QUEUE_FULL,
+> where cmd->se_tfo->write_pending() callback fails repeatedly
+> but __transport_wait_for_tasks() has already been invoked to
+> quiese the outstanding se_cmd descriptor.
+>
+> To address this bug, this patch adds a CMD_T_STOP|CMD_T_ABORTED
+> check within transport_write_pending_qf() and invokes the
+> existing se_cmd->t_transport_stop_comp to signal quiese
+> completion back to __transport_wait_for_tasks().
+>
+> Cc: Mike Christie <mchristi@redhat.com>
+> Cc: Hannes Reinecke <hare@suse.com>
+> Cc: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> Cc: Michael Cyr <mikecyr@linux.vnet.ibm.com>
+> Cc: Potnuri Bharat Teja <bharat@chelsio.com>
+> Cc: Sagi Grimberg <sagi@grimberg.me>
+> Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
+> ---
+>
+Reviewed-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
 
-To address this bug, this patch adds a CMD_T_STOP|CMD_T_ABORTED
-check within transport_write_pending_qf() and invokes the
-existing se_cmd->t_transport_stop_comp to signal quiese
-completion back to __transport_wait_for_tasks().
-
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Cc: Michael Cyr <mikecyr@linux.vnet.ibm.com>
-Cc: Potnuri Bharat Teja <bharat@chelsio.com>
-Cc: Sagi Grimberg <sagi@grimberg.me>
-Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
----
- drivers/target/target_core_transport.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index d02218c..0e89db8 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -2560,7 +2560,20 @@ void transport_kunmap_data_sg(struct se_cmd *cmd)
- 
- static void transport_write_pending_qf(struct se_cmd *cmd)
- {
-+	unsigned long flags;
- 	int ret;
-+	bool stop;
-+
-+	spin_lock_irqsave(&cmd->t_state_lock, flags);
-+	stop = (cmd->transport_state & (CMD_T_STOP | CMD_T_ABORTED));
-+	spin_unlock_irqrestore(&cmd->t_state_lock, flags);
-+
-+	if (stop) {
-+		pr_debug("%s:%d CMD_T_STOP|CMD_T_ABORTED for ITT: 0x%08llx\n",
-+			__func__, __LINE__, cmd->tag);
-+		complete_all(&cmd->t_transport_stop_comp);
-+		return;
-+	}
- 
- 	ret = cmd->se_tfo->write_pending(cmd);
- 	if (ret) {
--- 
-1.9.1
 
