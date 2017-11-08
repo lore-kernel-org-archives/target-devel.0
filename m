@@ -1,94 +1,106 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 28 Nov 2017 18:40:36 +0000
-Subject: [PATCH 10/15] tcmu: clean up the scatter helper
-Message-Id: <1511894441-8626-11-git-send-email-mchristi@redhat.com>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Wed, 08 Nov 2017 04:31:50 +0000
+Subject: [PATCH 4/6] target: Avoid early CMD_T_PRE_EXECUTE failures during ABORT_TASK
+Message-Id: <1510115512-15617-5-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: target-devel <target-devel@vger.kernel.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Donald White <dew@datera.io>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>
 
-From: Xiubo Li <lixiubo@cmss.chinamobile.com>
+From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-Add some comments to make the scatter code to be more readable,
-and drop unused arg to new_iov.
+This patch fixes bug where early se_cmd exceptions that occur
+before backend execution can result in use-after-free if/when
+a subsequent ABORT_TASK occurs for the same tag.
 
-Signed-off-by: Xiubo Li <lixiubo@cmss.chinamobile.com>
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+Since an early se_cmd exception will have had se_cmd added to
+se_session->sess_cmd_list via target_get_sess_cmd(), it will
+not have CMD_T_COMPLETE set by the usual target_complete_cmd()
+backend completion path.
+
+This causes a subsequent ABORT_TASK + __target_check_io_state()
+to signal ABORT_TASK should proceed.  As core_tmr_abort_task()
+executes, it will bring the outstanding se_cmd->cmd_kref count
+down to zero releasing se_cmd, after se_cmd has already been
+queued with error status into fabric driver response path code.
+
+To address this bug, introduce a CMD_T_PRE_EXECUTE bit that is
+set at target_get_sess_cmd() time, and cleared immediately before
+backend driver dispatch in target_execute_cmd() once CMD_T_ACTIVE
+is set.
+
+Then, check CMD_T_PRE_EXECUTE within __target_check_io_state() to
+determine when an early exception has occured, and avoid aborting
+this se_cmd since it will have already been queued into fabric
+driver response path code.
+
+Reported-by: Donald White <dew@datera.io>
+Cc: Donald White <dew@datera.io>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Hannes Reinecke <hare@suse.com>
+Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
 ---
- drivers/target/target_core_user.c | 30 +++++++++++++++++++++++++-----
- 1 file changed, 25 insertions(+), 5 deletions(-)
+ drivers/target/target_core_tmr.c       | 9 +++++++++
+ drivers/target/target_core_transport.c | 2 ++
+ include/target/target_core_base.h      | 1 +
+ 3 files changed, 12 insertions(+)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 5d1daea..8d0dc47 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -492,8 +492,7 @@ static inline size_t head_to_end(size_t head, size_t size)
- 	return size - head;
- }
- 
--static inline void new_iov(struct iovec **iov, int *iov_cnt,
--			   struct tcmu_dev *udev)
-+static inline void new_iov(struct iovec **iov, int *iov_cnt)
- {
- 	struct iovec *iovec;
- 
-@@ -546,19 +545,38 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 				to = kmap_atomic(page);
- 			}
- 
--			copy_bytes = min_t(size_t, sg_remaining,
--					block_remaining);
-+			/*
-+			 * Covert to virtual offset of the ring data area.
-+			 */
- 			to_offset = get_block_offset_user(udev, dbi,
- 					block_remaining);
- 
-+			/*
-+			 * The following code will gather and map the blocks
-+			 * to the same iovec when the blocks are all next to
-+			 * each other.
-+			 */
-+			copy_bytes = min_t(size_t, sg_remaining,
-+					block_remaining);
- 			if (*iov_cnt != 0 &&
- 			    to_offset = iov_tail(*iov)) {
-+				/*
-+				 * Will append to the current iovec, because
-+				 * the current block page is next to the
-+				 * previous one.
-+				 */
- 				(*iov)->iov_len += copy_bytes;
- 			} else {
--				new_iov(iov, iov_cnt, udev);
-+				/*
-+				 * Will allocate a new iovec because we are
-+				 * first time here or the current block page
-+				 * is not next to the previous one.
-+				 */
-+				new_iov(iov, iov_cnt);
- 				(*iov)->iov_base = (void __user *)to_offset;
- 				(*iov)->iov_len = copy_bytes;
- 			}
-+
- 			if (copy_data) {
- 				offset = DATA_BLOCK_SIZE - block_remaining;
- 				memcpy(to + offset,
-@@ -566,11 +584,13 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 				       copy_bytes);
- 				tcmu_flush_dcache_range(to, copy_bytes);
- 			}
-+
- 			sg_remaining -= copy_bytes;
- 			block_remaining -= copy_bytes;
- 		}
- 		kunmap_atomic(from - sg->offset);
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index 61909b2..9c7bc1c 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -133,6 +133,15 @@ static bool __target_check_io_state(struct se_cmd *se_cmd,
+ 		spin_unlock(&se_cmd->t_state_lock);
+ 		return false;
  	}
-+
- 	if (to)
- 		kunmap_atomic(to);
- }
++	if (se_cmd->transport_state & CMD_T_PRE_EXECUTE) {
++		if (se_cmd->scsi_status) {
++			pr_debug("Attempted to abort io tag: %llu early failure"
++				 " status: 0x%02x\n", se_cmd->tag,
++				 se_cmd->scsi_status);
++			spin_unlock(&se_cmd->t_state_lock);
++			return false;
++		}
++	}
+ 	if (sess->sess_tearing_down || se_cmd->cmd_wait_set) {
+ 		pr_debug("Attempted to abort io tag: %llu already shutdown,"
+ 			" skipping\n", se_cmd->tag);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 0e89db8..58caacd 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1975,6 +1975,7 @@ void target_execute_cmd(struct se_cmd *cmd)
+ 	}
+ 
+ 	cmd->t_state = TRANSPORT_PROCESSING;
++	cmd->transport_state &= ~CMD_T_PRE_EXECUTE;
+ 	cmd->transport_state |= CMD_T_ACTIVE | CMD_T_SENT;
+ 	spin_unlock_irq(&cmd->t_state_lock);
+ 
+@@ -2667,6 +2668,7 @@ int target_get_sess_cmd(struct se_cmd *se_cmd, bool ack_kref)
+ 		ret = -ESHUTDOWN;
+ 		goto out;
+ 	}
++	se_cmd->transport_state |= CMD_T_PRE_EXECUTE;
+ 	list_add_tail(&se_cmd->se_cmd_list, &se_sess->sess_cmd_list);
+ out:
+ 	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index d3139a9..ccf501b 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -490,6 +490,7 @@ struct se_cmd {
+ #define CMD_T_STOP		(1 << 5)
+ #define CMD_T_TAS		(1 << 10)
+ #define CMD_T_FABRIC_STOP	(1 << 11)
++#define CMD_T_PRE_EXECUTE	(1 << 12)
+ 	spinlock_t		t_state_lock;
+ 	struct kref		cmd_kref;
+ 	struct completion	t_transport_stop_comp;
 -- 
-1.8.3.1
+1.9.1
 
