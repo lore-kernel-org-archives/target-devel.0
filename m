@@ -1,85 +1,47 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 25 Oct 2017 16:47:16 +0000
-Subject: [PATCH 06/20] tcmu: merge common block release code
-Message-Id: <1508950050-10120-7-git-send-email-mchristi@redhat.com>
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Date: Wed, 08 Nov 2017 22:35:42 +0000
+Subject: Re: [PATCHv2] tcmu: Add fifo type waiter list support to avoid starvation
+Message-Id: <65f2456a-057c-9e68-be34-b89fd560b5ca@linux.vnet.ibm.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1499843767-17420-1-git-send-email-lixiubo@cmss.chinamobile.com>
+ <1501452645.1499.21.camel@haakon3.daterainc.com>
+In-Reply-To: <1501452645.1499.21.camel@haakon3.daterainc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, lixiubo@cmss.chinamobile.com
+Cc: mchristi@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Have unmap_thread_fn use tcmu_blocks_release.
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
----
- drivers/target/target_core_user.c | 24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+On 7/30/17 5:10 PM, Nicholas A. Bellinger wrote:
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 38652be..4d45bb2 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1370,21 +1370,19 @@ static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
- 	return -EINVAL;
- }
- 
--static void tcmu_blocks_release(struct tcmu_dev *udev)
-+static void tcmu_blocks_release(struct radix_tree_root *blocks,
-+				int start, int end)
- {
- 	int i;
- 	struct page *page;
- 
--	/* Try to release all block pages */
--	mutex_lock(&udev->cmdr_lock);
--	for (i = 0; i <= udev->dbi_max; i++) {
--		page = radix_tree_delete(&udev->data_blocks, i);
-+	for (i = start; i < end; i++) {
-+		page = radix_tree_delete(blocks, i);
- 		if (page) {
- 			__free_page(page);
- 			atomic_dec(&global_db_count);
- 		}
- 	}
--	mutex_unlock(&udev->cmdr_lock);
- }
- 
- static void tcmu_dev_kref_release(struct kref *kref)
-@@ -1408,7 +1406,9 @@ static void tcmu_dev_kref_release(struct kref *kref)
- 	spin_unlock_irq(&udev->commands_lock);
- 	WARN_ON(!all_expired);
- 
--	tcmu_blocks_release(udev);
-+	mutex_lock(&udev->cmdr_lock);
-+	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
-+	mutex_unlock(&udev->cmdr_lock);
- 
- 	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
- }
-@@ -2053,8 +2053,6 @@ static int unmap_thread_fn(void *data)
- 	loff_t off;
- 	uint32_t start, end, block;
- 	static uint32_t free_blocks;
--	struct page *page;
--	int i;
- 
- 	while (!kthread_should_stop()) {
- 		DEFINE_WAIT(__wait);
-@@ -2102,13 +2100,7 @@ static int unmap_thread_fn(void *data)
- 			unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
- 
- 			/* Release the block pages */
--			for (i = start; i < end; i++) {
--				page = radix_tree_delete(&udev->data_blocks, i);
--				if (page) {
--					__free_page(page);
--					atomic_dec(&global_db_count);
--				}
--			}
-+			tcmu_blocks_release(&udev->data_blocks, start, end);
- 			mutex_unlock(&udev->cmdr_lock);
- 
- 			free_blocks += end - start;
--- 
-2.7.2
+> Hi Xiubo,
+>
+> Apologies for the delayed response.  Comments below.
+>
+> On Wed, 2017-07-12 at 15:16 +0800, lixiubo@cmss.chinamobile.com wrote:
+>> From: Xiubo Li <lixiubo@cmss.chinamobile.com>
+>>
+>> The fifo type waiter list will hold the udevs who are waiting for the
+>> blocks from the data global pool. The unmap thread will try to feed the
+>> first udevs in waiter list, if the global free blocks available are
+>> not enough, it will stop traversing the list and abort waking up the
+>> others.
+>>
+>> Signed-off-by: Xiubo Li <lixiubo@cmss.chinamobile.com>
+>> ---
+>>  drivers/target/target_core_user.c | 104 ++++++++++++++++++++++++++++++++------
+>>  1 file changed, 88 insertions(+), 16 deletions(-)
+>>
+> Applied to target-pending/for-next.
+>
+> Thanks Xiubo + MNC.
+>
+Hi Nick, 
+
+Do you know what ever happened to this patch? You mentioned that you had applied the patch but I don't see it anywhere in your tree.
+
+Thanks, 
+
+Bryant
 
