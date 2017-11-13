@@ -1,57 +1,47 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 08 Nov 2017 22:42:28 +0000
-Subject: Re: [PATCHv2] tcmu: Add fifo type waiter list support to avoid starvation
-Message-Id: <5A038854.3010406@redhat.com>
+From: "M,Shakour Rosarita" <hassantara789@gmail.com>
+Date: Mon, 13 Nov 2017 12:08:49 +0000
+Subject: Hello Dear...
+Message-Id: <CAMyxZDGNhOXmC-7Rt7EqUJUYuvRNUAsBsbpds9-aEKzPhLnhmQ@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1499843767-17420-1-git-send-email-lixiubo@cmss.chinamobile.com>
- <1501452645.1499.21.camel@haakon3.daterainc.com>
- <65f2456a-057c-9e68-be34-b89fd560b5ca@linux.vnet.ibm.com>
-In-Reply-To: <65f2456a-057c-9e68-be34-b89fd560b5ca@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, lixiubo@cmss.chinamobile.com
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1250"
+Content-Transfer-Encoding: base64
+To: target-devel@vger.kernel.org
 
-On 11/08/2017 04:35 PM, Bryant G. Ly wrote:
-> 
-> On 7/30/17 5:10 PM, Nicholas A. Bellinger wrote:
-> 
->> Hi Xiubo,
->>
->> Apologies for the delayed response.  Comments below.
->>
->> On Wed, 2017-07-12 at 15:16 +0800, lixiubo@cmss.chinamobile.com wrote:
->>> From: Xiubo Li <lixiubo@cmss.chinamobile.com>
->>>
->>> The fifo type waiter list will hold the udevs who are waiting for the
->>> blocks from the data global pool. The unmap thread will try to feed the
->>> first udevs in waiter list, if the global free blocks available are
->>> not enough, it will stop traversing the list and abort waking up the
->>> others.
->>>
->>> Signed-off-by: Xiubo Li <lixiubo@cmss.chinamobile.com>
->>> ---
->>>  drivers/target/target_core_user.c | 104 ++++++++++++++++++++++++++++++++------
->>>  1 file changed, 88 insertions(+), 16 deletions(-)
->>>
->> Applied to target-pending/for-next.
->>
->> Thanks Xiubo + MNC.
->>
-> Hi Nick, 
-> 
-> Do you know what ever happened to this patch? You mentioned that you had applied the patch but I don't see it anywhere in your tree.
-> 
-
-I asked that it be reverted from for-next instead of sending to Linus,
-because it added several regressions. Instead of adding this patch and
-adding fixes on top like in this patchset
-https://www.spinics.net/lists/target-devel/msg16121.html, I did this
-patchset:
-
-https://www.spinics.net/lists/target-devel/msg16162.html
-
-the other day which adds similar support. The first 4 patches and last
-one are merged in his for-next branch.
-
+SGVsbG8gRGVhci4uLgoKSSBrbm93IHRoYXQgdGhpcyBtZXNzYWdlIHdpbGwgY29tZSB0byB5b3Ug
+YXMgYSBzdXJwcmlzZS4gSSBob3BlZCB0aGF0CnlvdSB3aWxsIG5vdCBleHBvc2Ugb3IgYmV0cmF5
+IHRoaXMgdHJ1c3QgYW5kIGNvbmZpZGVudCB0aGF0IEkgYW0gYWJvdXQKdG8gcmVwb3NlIG9uIHlv
+dSwgbXkgbmFtZSBpcyBNLCBTaGFrb3VyIFJvc2FyaXRhLiBJIGFtIDE5IHllYXJzIG9sZApHaXJs
+LCBmZW1hbGUsIGZyb20gVGFydHUgU3lyaWEsIChuZXZlciBtYXJyaWVkKSA2MSBrZywgd2hpdGUg
+aW4KY29tcGxleGlvbiwgYW5kIEkgYW0gY3VycmVudGx5IGxpdmluZyBpbiB0aGUgcmVmdWdlZSBj
+YW1wIGhlcmUgaW4KQWJpZGphbiBJdm9yeSBDb2FzdCwgTXkgbGF0ZSBiZWxvdmVkIGZhdGhlciBN
+LFNoYWtvdXIgSGFzc2luIHdhcyBhCnJlbm93bmVkIGJ1c2luZXNzbWFuIGFuZCBvd25lciBvZiBO
+YXRvdXIgUGV0cm9sIFN0YXRpb24gaW4gU3lyaWEsIGhlCndhcyBraWxsZWQgaW4gYSBzdGFtcGVk
+ZSByaW90IGluIFRhcnR1LCBTeXJpYS4KV2hlbiBJIGdvdCB0aGUgbmV3cyBhYm91dCBteSBwYXJl
+bnRzLiBJIGZsZWQgdG8gYSBuZWFyYnkgY291bnRyeQpKb3JkYW4gYmVmb3JlIEkgam9pbmVkIGEg
+ZmVycnkgdG8gQWZyaWNhIGFuZCBjYW1lIHRvIEFiaWRqYW4gY2FwaXRhbApjaXR5IEl2b3J5IENv
+YXN0IFdlc3QgQWZyaWNhIGZpbmQgc2FmZXR5IGhlcmUuCkkgY2FtZSBpbiAyMDE1IHRvIEFiaWRq
+YW4gYW5kIEkgbm93IGxpdmUgaW4gcmVmdWdlZSBjYW1wcyBoZXJlIGFzCnJlZnVnZWVzIGFyZSBh
+bGxvd2VkIGZyZWVseSB0byBlbnRlciBoZXJlIHdpdGhvdXQsIE15IGxhdGUgZmF0aGVyCmRlcG9z
+aXRlZCAoVVMkNi4yMDAuMDAwLjAwbSkgTXkgbGF0ZSBmYXRoZXIga2VwdCB0aGUgbW9uZXkgYXQg
+dGhlIGJhbmsKb2YgQWZyaWNhLCBJIHdhbnQgeW91IHRvIGhlbHAgbWUgdHJhbnNmZXIgdGhlIG1v
+bmV5IHRvIHlvdXIgaGFuZCBzbwp0aGF0IHlvdSB3aWxsIGhlbHAgbWUgYnJpbmcgbWUgaW50byB5
+b3VyIGNvdW50cnkgZm9yIG15IGNvbnRpbnVlCmVkdWNhdGlvbi4KCkkgc2VudCBteSBwaWN0dXJl
+cyBoZXJlIGZvciB5b3UgdG8gc2VlLiBXaG8gSSBhbSBzZXJpb3VzbHkgbG9va2luZyBmb3IKYSBn
+b29kLXBlcnNvbiBpbiBteSBsaWZlLCBzbyBJIHdhbnQgdG8gaGVhciBmcm9tIHlvdSBzb29uIGFu
+ZCBsZWFybgptb3JlIGFib3V0IHlvdS4KCkkgYW0gYW4gb3Blbi1taW5kZWQgYW5kIGZyaWVuZGx5
+IGdpcmwgdG8gc2hhcmUgYSBnb29kIHRpbWUgd2l0aCB5b3UKYW5kIGhhdmUgZnVuIGFuZCBlbmpv
+eSBvbiB0aGUgZ28sIGJpcmQgd2F0Y2hpbmcsIHRoZSByZXN0IG9mIG91cgpsaXZlcy4gTXkgSG9i
+YmllcywgdG91cmlzbSBib29rcywgZGFuY2UsIG11c2ljLCBzb2NjZXIsIHRlbm5pcywKc3dpbW1p
+bmcgYW5kIGNpbmVtYS4KSSB3b3VsZCBqdXN0IHRoaW5rIGFib3V0IHlvdSwgaW5jbHVkaW5nIHlv
+dXIgZG9zZSBhbmQgZG9lc27igJl0IC5JCmJlbGlldmUgd2Ugd2lsbCBkbyB3ZWxsIHRvZ2V0aGVy
+LCBhbmQgbGl2ZSBsaWtlIG9uZSBmYW1pbHkuClRoYW5rIHlvdSBhbmQgR29kIGJsZXNzIHlvdSwg
+Zm9yIHlvdSBpbiB5b3VyIHByb21pc2UgdG8gaGVscCBtZSBoZXJlLApsb29raW5nIGZvcndhcmQg
+dG8geW91ciByZXBseSBieSB0aGUgZ3JhY2Ugb2YgR29kIGFuZCBoYXZlIGEgZ29vZCBkYXkuCkkg
+aG9wZSB5b3Ugc2VuZCBtZSB5b3VyIHBob3RvcyBhcyB3ZWxsPyBJIGF3YWl0IHlvdXIgbmV4dCBy
+ZXBseSBpbgpmYWl0aCBwbGVhc2UgcmVwbHkgdGhyb3VnaCBteSBwcml2YXRlIGVtYWlsIGF0Ciht
+c2hha291cnJvc2FyaXRhMjJAZ21haWwuY29tKToKVGhhbmtzLgpNcyBSb3Nhcml0YQotLQpUbyB1
+bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgdGFy
+Z2V0LWRldmVsIiBpbgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2Vy
+bmVsLm9yZwpNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21h
+am9yZG9tby1pbmZvLmh0bWw=
