@@ -1,8 +1,10 @@
-From: "M,Shakour Rosarita" <hassantara789@gmail.com>
-Date: Mon, 13 Nov 2017 12:08:49 +0000
+From: " M,Shakour Rosarita" <hassanamira04@gmail.com>
+Date: Wed, 15 Nov 2017 11:34:09 +0000
 Subject: Hello Dear...
-Message-Id: <CAMyxZDGNhOXmC-7Rt7EqUJUYuvRNUAsBsbpds9-aEKzPhLnhmQ@mail.gmail.com>
+Message-Id: <CADmkupiA2objgsQxK=03WmWJhZVp3+F-yDxXOLOm2rgTnpKhzw@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <CAMyxZDGNhOXmC-7Rt7EqUJUYuvRNUAsBsbpds9-aEKzPhLnhmQ@mail.gmail.com>
+In-Reply-To: <CAMyxZDGNhOXmC-7Rt7EqUJUYuvRNUAsBsbpds9-aEKzPhLnhmQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1250"
 Content-Transfer-Encoding: base64
