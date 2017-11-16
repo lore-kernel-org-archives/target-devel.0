@@ -1,7 +1,7 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Thu, 16 Nov 2017 06:29:51 +0000
-Subject: [PATCH-3.10.y 3/3] iscsi-target: Fix iscsi_np reset hung task during parallel delete
-Message-Id: <1510813791-16082-4-git-send-email-nab@linux-iscsi.org>
+Date: Thu, 16 Nov 2017 06:29:50 +0000
+Subject: [PATCH-3.10.y 2/3] iscsi-target: fix iscsit_del_np deadlock on unload
+Message-Id: <1510813791-16082-3-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <1510813791-16082-1-git-send-email-nab@linux-iscsi.org>
 In-Reply-To: <1510813791-16082-1-git-send-email-nab@linux-iscsi.org>
@@ -9,119 +9,94 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.de>
+Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Mikulas Patocka <mpatocka@redhat.com>
 
-From: Nicholas Bellinger <nab@linux-iscsi.org>
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-commit 978d13d60c34818a41fc35962602bdfa5c03f214 upstream.
+commit 81a9c5e72bdf7109a65102ca61d8cbd722cf4021 upstream.
 
-This patch fixes a bug associated with iscsit_reset_np_thread()
-that can occur during parallel configfs rmdir of a single iscsi_np
-used across multiple iscsi-target instances, that would result in
-hung task(s) similar to below where configfs rmdir process context
-was blocked indefinately waiting for iscsi_np->np_restart_comp
-to finish:
+On uniprocessor preemptible kernel, target core deadlocks on unload. The
+following events happen:
+* iscsit_del_np is called
+* it calls send_sig(SIGINT, np->np_thread, 1);
+* the scheduler switches to the np_thread
+* the np_thread is woken up, it sees that kthread_should_stop() returns
+  false, so it doesn't terminate
+* the np_thread clears signals with flush_signals(current); and goes back
+  to sleep in iscsit_accept_np
+* the scheduler switches back to iscsit_del_np
+* iscsit_del_np calls kthread_stop(np->np_thread);
+* the np_thread is waiting in iscsit_accept_np and it doesn't respond to
+  kthread_stop
 
-[ 6726.112076] INFO: task dcp_proxy_node_:15550 blocked for more than 120 seconds.
-[ 6726.119440]       Tainted: G        W  O     4.1.26-3321 #2
-[ 6726.125045] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[ 6726.132927] dcp_proxy_node_ D ffff8803f202bc88     0 15550      1 0x00000000
-[ 6726.140058]  ffff8803f202bc88 ffff88085c64d960 ffff88083b3b1ad0 ffff88087fffeb08
-[ 6726.147593]  ffff8803f202c000 7fffffffffffffff ffff88083f459c28 ffff88083b3b1ad0
-[ 6726.155132]  ffff88035373c100 ffff8803f202bca8 ffffffff8168ced2 ffff8803f202bcb8
-[ 6726.162667] Call Trace:
-[ 6726.165150]  [<ffffffff8168ced2>] schedule+0x32/0x80
-[ 6726.170156]  [<ffffffff8168f5b4>] schedule_timeout+0x214/0x290
-[ 6726.176030]  [<ffffffff810caef2>] ? __send_signal+0x52/0x4a0
-[ 6726.181728]  [<ffffffff8168d7d6>] wait_for_completion+0x96/0x100
-[ 6726.187774]  [<ffffffff810e7c80>] ? wake_up_state+0x10/0x10
-[ 6726.193395]  [<ffffffffa035d6e2>] iscsit_reset_np_thread+0x62/0xe0 [iscsi_target_mod]
-[ 6726.201278]  [<ffffffffa0355d86>] iscsit_tpg_disable_portal_group+0x96/0x190 [iscsi_target_mod]
-[ 6726.210033]  [<ffffffffa0363f7f>] lio_target_tpg_store_enable+0x4f/0xc0 [iscsi_target_mod]
-[ 6726.218351]  [<ffffffff81260c5a>] configfs_write_file+0xaa/0x110
-[ 6726.224392]  [<ffffffff811ea364>] vfs_write+0xa4/0x1b0
-[ 6726.229576]  [<ffffffff811eb111>] SyS_write+0x41/0xb0
-[ 6726.234659]  [<ffffffff8169042e>] system_call_fastpath+0x12/0x71
+The deadlock could be resolved if the administrator sends SIGINT signal to
+the np_thread with killall -INT iscsi_np
 
-It would happen because each iscsit_reset_np_thread() sets state
-to ISCSI_NP_THREAD_RESET, sends SIGINT, and then blocks waiting
-for completion on iscsi_np->np_restart_comp.
+The reproducible deadlock was introduced in commit
+db6077fd0b7dd41dc6ff18329cec979379071f87, but the thread-stopping code was
+racy even before.
 
-However, if iscsi_np was active processing a login request and
-more than a single iscsit_reset_np_thread() caller to the same
-iscsi_np was blocked on iscsi_np->np_restart_comp, iscsi_np
-kthread process context in __iscsi_target_login_thread() would
-flush pending signals and only perform a single completion of
-np->np_restart_comp before going back to sleep within transport
-specific iscsit_transport->iscsi_accept_np code.
+This patch fixes the problem. Using kthread_should_stop to stop the
+np_thread is unreliable, so we test np_thread_state instead. If
+np_thread_state equals ISCSI_NP_THREAD_SHUTDOWN, the thread exits.
 
-To address this bug, add a iscsi_np->np_reset_count and update
-__iscsi_target_login_thread() to keep completing np->np_restart_comp
-until ->np_reset_count has reached zero.
-
-Reported-by: Gary Guo <ghg@datera.io>
-Tested-by: Gary Guo <ghg@datera.io>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Hannes Reinecke <hare@suse.de>
-Cc: stable@vger.kernel.org # 3.10+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
 Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
 ---
- drivers/target/iscsi/iscsi_target.c       | 1 +
- drivers/target/iscsi/iscsi_target_core.h  | 1 +
- drivers/target/iscsi/iscsi_target_login.c | 7 +++++--
- 3 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/target/iscsi/iscsi_target_login.c | 18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index e80ae5d..6f95331 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -437,6 +437,7 @@ int iscsit_reset_np_thread(
- 		return 0;
- 	}
- 	np->np_thread_state = ISCSI_NP_THREAD_RESET;
-+	atomic_inc(&np->np_reset_count);
- 
- 	if (np->np_thread) {
- 		spin_unlock_bh(&np->np_thread_lock);
-diff --git a/drivers/target/iscsi/iscsi_target_core.h b/drivers/target/iscsi/iscsi_target_core.h
-index bf93e1c..bb71aad 100644
---- a/drivers/target/iscsi/iscsi_target_core.h
-+++ b/drivers/target/iscsi/iscsi_target_core.h
-@@ -767,6 +767,7 @@ struct iscsi_np {
- 	int			np_sock_type;
- 	enum np_thread_state_table np_thread_state;
- 	bool                    enabled;
-+	atomic_t		np_reset_count;
- 	enum iscsi_timer_flags_table np_login_timer_flags;
- 	u32			np_exports;
- 	enum np_flags_table	np_flags;
 diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index dd18956..dce02ce 100644
+index 2c4db62..dd18956 100644
 --- a/drivers/target/iscsi/iscsi_target_login.c
 +++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -1177,9 +1177,11 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
- 	flush_signals(current);
- 
- 	spin_lock_bh(&np->np_thread_lock);
--	if (np->np_thread_state = ISCSI_NP_THREAD_RESET) {
-+	if (atomic_dec_if_positive(&np->np_reset_count) >= 0) {
+@@ -1168,7 +1168,7 @@ iscsit_conn_set_transport(struct iscsi_conn *conn, struct iscsit_transport *t)
+ static int __iscsi_target_login_thread(struct iscsi_np *np)
+ {
+ 	u8 *buffer, zero_tsih = 0;
+-	int ret = 0, rc, stop;
++	int ret = 0, rc;
+ 	struct iscsi_conn *conn = NULL;
+ 	struct iscsi_login *login;
+ 	struct iscsi_portal_group *tpg = NULL;
+@@ -1180,6 +1180,9 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+ 	if (np->np_thread_state = ISCSI_NP_THREAD_RESET) {
  		np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
-+		spin_unlock_bh(&np->np_thread_lock);
  		complete(&np->np_restart_comp);
-+		return 1;
- 	} else if (np->np_thread_state = ISCSI_NP_THREAD_SHUTDOWN) {
- 		spin_unlock_bh(&np->np_thread_lock);
- 		goto exit;
-@@ -1212,7 +1214,8 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
- 		goto exit;
- 	} else if (rc < 0) {
- 		spin_lock_bh(&np->np_thread_lock);
--		if (np->np_thread_state = ISCSI_NP_THREAD_RESET) {
-+		if (atomic_dec_if_positive(&np->np_reset_count) >= 0) {
-+			np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
- 			spin_unlock_bh(&np->np_thread_lock);
- 			complete(&np->np_restart_comp);
- 			iscsit_put_transport(conn->conn_transport);
++	} else if (np->np_thread_state = ISCSI_NP_THREAD_SHUTDOWN) {
++		spin_unlock_bh(&np->np_thread_lock);
++		goto exit;
+ 	} else {
+ 		np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
+ 	}
+@@ -1414,15 +1417,8 @@ old_sess_out:
+ 	}
+ 
+ out:
+-	stop = kthread_should_stop();
+-	if (!stop && signal_pending(current)) {
+-		spin_lock_bh(&np->np_thread_lock);
+-		stop = (np->np_thread_state = ISCSI_NP_THREAD_SHUTDOWN);
+-		spin_unlock_bh(&np->np_thread_lock);
+-	}
+-	/* Wait for another socket.. */
+-	if (!stop)
+-		return 1;
++	return 1;
++
+ exit:
+ 	iscsi_stop_login_thread_timer(np);
+ 	spin_lock_bh(&np->np_thread_lock);
+@@ -1440,7 +1436,7 @@ int iscsi_target_login_thread(void *arg)
+ 
+ 	allow_signal(SIGINT);
+ 
+-	while (!kthread_should_stop()) {
++	while (1) {
+ 		ret = __iscsi_target_login_thread(np);
+ 		/*
+ 		 * We break and exit here unless another sock_accept() call
 -- 
 1.8.5.3
 
