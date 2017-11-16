@@ -1,223 +1,127 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Thu, 16 Nov 2017 06:14:13 +0000
-Subject: [PATCH-4.1.y 1/7] target: Obtain se_node_acl->acl_kref during get_initiator_node_acl
-Message-Id: <1510812859-15101-2-git-send-email-nab@linux-iscsi.org>
+Date: Thu, 16 Nov 2017 06:29:51 +0000
+Subject: [PATCH-3.10.y 3/3] iscsi-target: Fix iscsi_np reset hung task during parallel delete
+Message-Id: <1510813791-16082-4-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510812859-15101-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510812859-15101-1-git-send-email-nab@linux-iscsi.org>
+References: <1510813791-16082-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1510813791-16082-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Sasha Levin <alexander.levin@verizon.com>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Sagi Grimberg <sagig@mellanox.com>, Christoph Hellwig <hch@lst.de>, Hannes Reinecke <hare@suse.de>, Andy Grover <agrover@redhat.com>, Mike Christie <michaelc@cs.wisc.edu>
+Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.de>
 
 From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-commit 21aaa23b0ebbd19334fa461370c03cbb076b3295 upstream.
+commit 978d13d60c34818a41fc35962602bdfa5c03f214 upstream.
 
-This patch addresses a long standing race where obtaining
-se_node_acl->acl_kref in __transport_register_session()
-happens a bit too late, and leaves open the potential
-for core_tpg_del_initiator_node_acl() to hit a NULL
-pointer dereference.
+This patch fixes a bug associated with iscsit_reset_np_thread()
+that can occur during parallel configfs rmdir of a single iscsi_np
+used across multiple iscsi-target instances, that would result in
+hung task(s) similar to below where configfs rmdir process context
+was blocked indefinately waiting for iscsi_np->np_restart_comp
+to finish:
 
-Instead, take ->acl_kref in core_tpg_get_initiator_node_acl()
-while se_portal_group->acl_node_mutex is held, and move the
-final target_put_nacl() from transport_deregister_session()
-into transport_free_session() so that fabric driver login
-failure handling using the modern method to still work
-as expected.
+[ 6726.112076] INFO: task dcp_proxy_node_:15550 blocked for more than 120 seconds.
+[ 6726.119440]       Tainted: G        W  O     4.1.26-3321 #2
+[ 6726.125045] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[ 6726.132927] dcp_proxy_node_ D ffff8803f202bc88     0 15550      1 0x00000000
+[ 6726.140058]  ffff8803f202bc88 ffff88085c64d960 ffff88083b3b1ad0 ffff88087fffeb08
+[ 6726.147593]  ffff8803f202c000 7fffffffffffffff ffff88083f459c28 ffff88083b3b1ad0
+[ 6726.155132]  ffff88035373c100 ffff8803f202bca8 ffffffff8168ced2 ffff8803f202bcb8
+[ 6726.162667] Call Trace:
+[ 6726.165150]  [<ffffffff8168ced2>] schedule+0x32/0x80
+[ 6726.170156]  [<ffffffff8168f5b4>] schedule_timeout+0x214/0x290
+[ 6726.176030]  [<ffffffff810caef2>] ? __send_signal+0x52/0x4a0
+[ 6726.181728]  [<ffffffff8168d7d6>] wait_for_completion+0x96/0x100
+[ 6726.187774]  [<ffffffff810e7c80>] ? wake_up_state+0x10/0x10
+[ 6726.193395]  [<ffffffffa035d6e2>] iscsit_reset_np_thread+0x62/0xe0 [iscsi_target_mod]
+[ 6726.201278]  [<ffffffffa0355d86>] iscsit_tpg_disable_portal_group+0x96/0x190 [iscsi_target_mod]
+[ 6726.210033]  [<ffffffffa0363f7f>] lio_target_tpg_store_enable+0x4f/0xc0 [iscsi_target_mod]
+[ 6726.218351]  [<ffffffff81260c5a>] configfs_write_file+0xaa/0x110
+[ 6726.224392]  [<ffffffff811ea364>] vfs_write+0xa4/0x1b0
+[ 6726.229576]  [<ffffffff811eb111>] SyS_write+0x41/0xb0
+[ 6726.234659]  [<ffffffff8169042e>] system_call_fastpath+0x12/0x71
 
-Also, update core_tpg_get_initiator_node_acl() to take
-an extra reference for dynamically generated acls for
-demo-mode, before returning to fabric caller.  Also
-update iscsi-target sendtargets special case handling
-to use target_tpg_has_node_acl() when checking if
-demo_mode_discovery = true during discovery lookup.
+It would happen because each iscsit_reset_np_thread() sets state
+to ISCSI_NP_THREAD_RESET, sends SIGINT, and then blocks waiting
+for completion on iscsi_np->np_restart_comp.
 
-Note the existing wait_for_completion(&acl->acl_free_comp)
-in core_tpg_del_initiator_node_acl() does not change.
+However, if iscsi_np was active processing a login request and
+more than a single iscsit_reset_np_thread() caller to the same
+iscsi_np was blocked on iscsi_np->np_restart_comp, iscsi_np
+kthread process context in __iscsi_target_login_thread() would
+flush pending signals and only perform a single completion of
+np->np_restart_comp before going back to sleep within transport
+specific iscsit_transport->iscsi_accept_np code.
 
-Cc: Sagi Grimberg <sagig@mellanox.com>
-Cc: Christoph Hellwig <hch@lst.de>
+To address this bug, add a iscsi_np->np_reset_count and update
+__iscsi_target_login_thread() to keep completing np->np_restart_comp
+until ->np_reset_count has reached zero.
+
+Reported-by: Gary Guo <ghg@datera.io>
+Tested-by: Gary Guo <ghg@datera.io>
+Cc: Mike Christie <mchristi@redhat.com>
 Cc: Hannes Reinecke <hare@suse.de>
-Cc: Andy Grover <agrover@redhat.com>
-Cc: Mike Christie <michaelc@cs.wisc.edu>
+Cc: stable@vger.kernel.org # 3.10+
 Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
 ---
- drivers/target/iscsi/iscsi_target.c    |  2 +-
- drivers/target/target_core_tpg.c       | 44 ++++++++++++++++++++++++++++++++--
- drivers/target/target_core_transport.c | 18 +++++++++-----
- include/target/target_core_fabric.h    |  2 ++
- 4 files changed, 57 insertions(+), 9 deletions(-)
+ drivers/target/iscsi/iscsi_target.c       | 1 +
+ drivers/target/iscsi/iscsi_target_core.h  | 1 +
+ drivers/target/iscsi/iscsi_target_login.c | 7 +++++--
+ 3 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 7444640a..d6cb9e8 100644
+index e80ae5d..6f95331 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -3449,7 +3449,7 @@ iscsit_build_sendtargets_response(struct iscsi_cmd *cmd,
- 
- 			if ((tpg->tpg_attrib.generate_node_acls = 0) &&
- 			    (tpg->tpg_attrib.demo_mode_discovery = 0) &&
--			    (!core_tpg_get_initiator_node_acl(&tpg->tpg_se_tpg,
-+			    (!target_tpg_has_node_acl(&tpg->tpg_se_tpg,
- 				cmd->conn->sess->sess_ops->InitiatorName))) {
- 				continue;
- 			}
-diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index 47f0644..6c350f0 100644
---- a/drivers/target/target_core_tpg.c
-+++ b/drivers/target/target_core_tpg.c
-@@ -110,9 +110,21 @@ struct se_node_acl *core_tpg_get_initiator_node_acl(
- 	unsigned char *initiatorname)
- {
- 	struct se_node_acl *acl;
--
-+	/*
-+	 * Obtain se_node_acl->acl_kref using fabric driver provided
-+	 * initiatorname[] during node acl endpoint lookup driven by
-+	 * new se_session login.
-+	 *
-+	 * The reference is held until se_session shutdown -> release
-+	 * occurs via fabric driver invoked transport_deregister_session()
-+	 * or transport_free_session() code.
-+	 */
- 	spin_lock_irq(&tpg->acl_node_lock);
- 	acl = __core_tpg_get_initiator_node_acl(tpg, initiatorname);
-+	if (acl) {
-+		if (!kref_get_unless_zero(&acl->acl_kref))
-+			acl = NULL;
-+	}
- 	spin_unlock_irq(&tpg->acl_node_lock);
- 
- 	return acl;
-@@ -254,6 +266,25 @@ static int core_create_device_list_for_node(struct se_node_acl *nacl)
- 	return 0;
- }
- 
-+bool target_tpg_has_node_acl(struct se_portal_group *tpg,
-+			     const char *initiatorname)
-+{
-+	struct se_node_acl *acl;
-+	bool found = false;
-+
-+	spin_lock_irq(&tpg->acl_node_lock);
-+	list_for_each_entry(acl, &tpg->acl_node_list, acl_list) {
-+		if (!strcmp(acl->initiatorname, initiatorname)) {
-+			found = true;
-+			break;
-+		}
-+	}
-+	spin_unlock_irq(&tpg->acl_node_lock);
-+
-+	return found;
-+}
-+EXPORT_SYMBOL(target_tpg_has_node_acl);
-+
- /*	core_tpg_check_initiator_node_acl()
-  *
-  *
-@@ -274,10 +305,19 @@ struct se_node_acl *core_tpg_check_initiator_node_acl(
- 	acl =  tpg->se_tpg_tfo->tpg_alloc_fabric_acl(tpg);
- 	if (!acl)
- 		return NULL;
-+	/*
-+	 * When allocating a dynamically generated node_acl, go ahead
-+	 * and take the extra kref now before returning to the fabric
-+	 * driver caller.
-+	 *
-+	 * Note this reference will be released at session shutdown
-+	 * time within transport_free_session() code.
-+	 */
-+	kref_init(&acl->acl_kref);
-+	kref_get(&acl->acl_kref);
- 
- 	INIT_LIST_HEAD(&acl->acl_list);
- 	INIT_LIST_HEAD(&acl->acl_sess_list);
--	kref_init(&acl->acl_kref);
- 	init_completion(&acl->acl_free_comp);
- 	spin_lock_init(&acl->device_list_lock);
- 	spin_lock_init(&acl->nacl_sess_lock);
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index b7d27b8..3bf46bf 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -359,7 +359,6 @@ void __transport_register_session(
- 					&buf[0], PR_REG_ISID_LEN);
- 			se_sess->sess_bin_isid = get_unaligned_be64(&buf[0]);
- 		}
--		kref_get(&se_nacl->acl_kref);
- 
- 		spin_lock_irq(&se_nacl->nacl_sess_lock);
- 		/*
-@@ -456,6 +455,7 @@ void target_put_nacl(struct se_node_acl *nacl)
- {
- 	kref_put(&nacl->acl_kref, target_complete_nacl);
- }
-+EXPORT_SYMBOL(target_put_nacl);
- 
- void transport_deregister_session_configfs(struct se_session *se_sess)
- {
-@@ -488,6 +488,15 @@ EXPORT_SYMBOL(transport_deregister_session_configfs);
- 
- void transport_free_session(struct se_session *se_sess)
- {
-+	struct se_node_acl *se_nacl = se_sess->se_node_acl;
-+	/*
-+	 * Drop the se_node_acl->nacl_kref obtained from within
-+	 * core_tpg_get_initiator_node_acl().
-+	 */
-+	if (se_nacl) {
-+		se_sess->se_node_acl = NULL;
-+		target_put_nacl(se_nacl);
-+	}
- 	if (se_sess->sess_cmd_map) {
- 		percpu_ida_destroy(&se_sess->sess_tag_pool);
- 		if (is_vmalloc_addr(se_sess->sess_cmd_map))
-@@ -505,7 +514,6 @@ void transport_deregister_session(struct se_session *se_sess)
- 	const struct target_core_fabric_ops *se_tfo;
- 	struct se_node_acl *se_nacl;
- 	unsigned long flags;
--	bool comp_nacl = true;
- 
- 	if (!se_tpg) {
- 		transport_free_session(se_sess);
-@@ -533,9 +541,9 @@ void transport_deregister_session(struct se_session *se_sess)
- 			spin_unlock_irqrestore(&se_tpg->acl_node_lock, flags);
- 			core_tpg_wait_for_nacl_pr_ref(se_nacl);
- 			core_free_device_list_for_node(se_nacl, se_tpg);
-+			se_sess->se_node_acl = NULL;
- 			se_tfo->tpg_release_fabric_acl(se_tpg, se_nacl);
- 
--			comp_nacl = false;
- 			spin_lock_irqsave(&se_tpg->acl_node_lock, flags);
- 		}
+@@ -437,6 +437,7 @@ int iscsit_reset_np_thread(
+ 		return 0;
  	}
-@@ -546,10 +554,8 @@ void transport_deregister_session(struct se_session *se_sess)
- 	/*
- 	 * If last kref is dropping now for an explicit NodeACL, awake sleeping
- 	 * ->acl_free_comp caller to wakeup configfs se_node_acl->acl_group
--	 * removal context.
-+	 * removal context from within transport_free_session() code.
- 	 */
--	if (se_nacl && comp_nacl)
--		target_put_nacl(se_nacl);
+ 	np->np_thread_state = ISCSI_NP_THREAD_RESET;
++	atomic_inc(&np->np_reset_count);
  
- 	transport_free_session(se_sess);
- }
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index 24c8d9d..419a8c8 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -171,6 +171,8 @@ int	transport_lookup_tmr_lun(struct se_cmd *, u32);
+ 	if (np->np_thread) {
+ 		spin_unlock_bh(&np->np_thread_lock);
+diff --git a/drivers/target/iscsi/iscsi_target_core.h b/drivers/target/iscsi/iscsi_target_core.h
+index bf93e1c..bb71aad 100644
+--- a/drivers/target/iscsi/iscsi_target_core.h
++++ b/drivers/target/iscsi/iscsi_target_core.h
+@@ -767,6 +767,7 @@ struct iscsi_np {
+ 	int			np_sock_type;
+ 	enum np_thread_state_table np_thread_state;
+ 	bool                    enabled;
++	atomic_t		np_reset_count;
+ 	enum iscsi_timer_flags_table np_login_timer_flags;
+ 	u32			np_exports;
+ 	enum np_flags_table	np_flags;
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index dd18956..dce02ce 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -1177,9 +1177,11 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+ 	flush_signals(current);
  
- struct se_node_acl *core_tpg_get_initiator_node_acl(struct se_portal_group *tpg,
- 		unsigned char *);
-+bool	target_tpg_has_node_acl(struct se_portal_group *tpg,
-+		const char *);
- struct se_node_acl *core_tpg_check_initiator_node_acl(struct se_portal_group *,
- 		unsigned char *);
- void	core_tpg_clear_object_luns(struct se_portal_group *);
+ 	spin_lock_bh(&np->np_thread_lock);
+-	if (np->np_thread_state = ISCSI_NP_THREAD_RESET) {
++	if (atomic_dec_if_positive(&np->np_reset_count) >= 0) {
+ 		np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
++		spin_unlock_bh(&np->np_thread_lock);
+ 		complete(&np->np_restart_comp);
++		return 1;
+ 	} else if (np->np_thread_state = ISCSI_NP_THREAD_SHUTDOWN) {
+ 		spin_unlock_bh(&np->np_thread_lock);
+ 		goto exit;
+@@ -1212,7 +1214,8 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+ 		goto exit;
+ 	} else if (rc < 0) {
+ 		spin_lock_bh(&np->np_thread_lock);
+-		if (np->np_thread_state = ISCSI_NP_THREAD_RESET) {
++		if (atomic_dec_if_positive(&np->np_reset_count) >= 0) {
++			np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
+ 			spin_unlock_bh(&np->np_thread_lock);
+ 			complete(&np->np_restart_comp);
+ 			iscsit_put_transport(conn->conn_transport);
 -- 
 1.8.5.3
 
