@@ -1,35 +1,44 @@
-From: alexander.levin@verizon.com
-Date: Thu, 16 Nov 2017 23:42:26 +0000
-Subject: Re: [PATCH-4.1.y 0/7] target: stable backports
-Message-Id: <20171116234216.kpt23wh2c5epogsn@sasha-lappy>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Thu, 16 Nov 2017 06:29:48 +0000
+Subject: [PATCH-3.10.y 0/3] target: stable backports
+Message-Id: <1510813791-16082-1-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510812859-15101-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510812859-15101-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: target-devel <target-devel@vger.kernel.org>, stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>
+To: target-devel <target-devel@vger.kernel.org>
+Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>
 
-On Thu, Nov 16, 2017 at 06:14:12AM +0000, Nicholas A. Bellinger wrote:
->From: Nicholas Bellinger <nab@linux-iscsi.org>
->
->Hi Sasha,
->
->Here are a target patches outstanding for v4.1.y stable.  Note that
->some of these had not been merged from the last v4.1.y series posted
->here:
->
->https://urldefense.proofpoint.com/v2/url?u=http-3A__www.spinics.net_lists_target-2Ddevel_msg15916.html&d=DwIBaQ&c=udBTRvFvXC5Dhqg7UHpJlPps3mZ3LRxpb6__0PomBTQ&r=bUtaaC9mlBij4OjEG_D-KPul_335azYzfC4Rjgomobo&m=tSMNJ0w8r1p8aVvAiiz9LmmkG_UIJGGNgffBoKLsCRg&s=SnBVsv1So7-8yUMmdpvmivehFtA2TxOyQ7LTwM31XPk&e=
->
->Please ensure these get picked up for the next v4.1.y release.
->
->The series has been cut against v4.1.45.  Please apply at your earliest
->convenience.
+From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-Queued up, thanks Nicholas!
+Hi Greg-KH,
+
+Here are three target patches for v3.10.y stable, the first of which
+did not originally include a stable CC, and the latter two did not
+apply due to a minor context change.
+
+The series has been cut against v3.10.108.  Please apply at your earliest
+convenience.
+
+Thank you,
+
+--nab
+
+Bart Van Assche (1):
+  target/iscsi: Fix iSCSI task reassignment handling
+
+Mikulas Patocka (1):
+  iscsi-target: fix iscsit_del_np deadlock on unload
+
+Nicholas Bellinger (1):
+  iscsi-target: Fix iscsi_np reset hung task during parallel delete
+
+ drivers/target/iscsi/iscsi_target.c       | 20 ++++++++------------
+ drivers/target/iscsi/iscsi_target_core.h  |  1 +
+ drivers/target/iscsi/iscsi_target_login.c | 25 ++++++++++++-------------
+ include/target/target_core_base.h         |  1 +
+ 4 files changed, 22 insertions(+), 25 deletions(-)
 
 -- 
+1.8.5.3
 
-Thanks,
-Sasha
