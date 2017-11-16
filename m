@@ -1,38 +1,94 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Wed, 08 Nov 2017 10:13:50 +0000
-Subject: Re: [PATCH v3 5/8] target: Use sgl_alloc_order() and sgl_free()
-Message-Id: <1510136030.29624.75.camel@haakon3.daterainc.com>
+Date: Thu, 16 Nov 2017 05:57:19 +0000
+Subject: [PATCH-4.4.y 1/2] target/iscsi: Fix iSCSI task reassignment handling
+Message-Id: <1510812472-14734-2-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171103222339.26540-1-bart.vanassche@wdc.com>
-	 <20171103222339.26540-6-bart.vanassche@wdc.com>
-	 <b8cd6935-2f42-6b43-f252-0f7d00e6fb71@suse.de>
-In-Reply-To: <b8cd6935-2f42-6b43-f252-0f7d00e6fb71@suse.de>
+References: <1510812472-14734-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1510812472-14734-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hannes Reinecke <hare@suse.de>
-Cc: Bart Van Assche <bart.vanassche@wdc.com>, Jens Axboe <axboe@kernel.dk>, linux-block@vger.kernel.org, Christoph Hellwig <hch@lst.de>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Herbert Xu <herbert@gondor.apana.org.au>, Hannes Reinecke <hare@suse.com>, Sagi Grimberg <sagi@grimberg.me>, target-devel <target-devel@vger.kernel.org>
+To: target-devel <target-devel@vger.kernel.org>
+Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Bart Van Assche <bart.vanassche@sandisk.com>, Moshe David <mdavid@infinidat.com>
 
-On Mon, 2017-11-06 at 08:10 +0100, Hannes Reinecke wrote:
-> On 11/03/2017 11:23 PM, Bart Van Assche wrote:
-> > Use the sgl_alloc_order() and sgl_free() functions instead of open
-> > coding these functions.
-> > 
-> > Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-> > Cc: Nicholas A. Bellinger <nab@linux-iscsi.org>
-> > Cc: Christoph Hellwig <hch@lst.de>
-> > Cc: Hannes Reinecke <hare@suse.com>
-> > Cc: Sagi Grimberg <sagi@grimberg.me>
-> > ---
-> >  drivers/target/Kconfig                 |  1 +
-> >  drivers/target/target_core_transport.c | 46 +++-------------------------------
-> >  2 files changed, 5 insertions(+), 42 deletions(-)
-> > 
-> Reviewed-by: Hannes Reinecke <hare@suse.com>
-> 
+From: Bart Van Assche <bart.vanassche@sandisk.com>
 
-Nice improvement to turn this into common code.
+commit 59b6986dbfcdab96a971f9663221849de79a7556 upstream.
 
-Acked-by: Nicholas Bellinger <nab@linux-iscsi.org>
+Allocate a task management request structure for all task management
+requests, including task reassignment. This change avoids that the
+se_tmr->response assignment dereferences an uninitialized se_tmr
+pointer.
 
+Reported-by: Moshe David <mdavid@infinidat.com>
+Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Moshe David <mdavid@infinidat.com>
+Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
+---
+ drivers/target/iscsi/iscsi_target.c | 19 +++++++------------
+ include/target/target_core_base.h   |  1 +
+ 2 files changed, 8 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 1ff1c83..fd49341 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -1759,7 +1759,7 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 	struct iscsi_tm *hdr;
+ 	int out_of_order_cmdsn = 0, ret;
+ 	bool sess_ref = false;
+-	u8 function;
++	u8 function, tcm_function = TMR_UNKNOWN;
+ 
+ 	hdr			= (struct iscsi_tm *) buf;
+ 	hdr->flags &= ~ISCSI_FLAG_CMD_FINAL;
+@@ -1805,10 +1805,6 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 	 * LIO-Target $FABRIC_MOD
+ 	 */
+ 	if (function != ISCSI_TM_FUNC_TASK_REASSIGN) {
+-
+-		u8 tcm_function;
+-		int ret;
+-
+ 		transport_init_se_cmd(&cmd->se_cmd, &iscsi_ops,
+ 				      conn->sess->se_sess, 0, DMA_NONE,
+ 				      TCM_SIMPLE_TAG, cmd->sense_buffer + 2);
+@@ -1844,15 +1840,14 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 			return iscsit_add_reject_cmd(cmd,
+ 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+ 		}
+-
+-		ret = core_tmr_alloc_req(&cmd->se_cmd, cmd->tmr_req,
+-					 tcm_function, GFP_KERNEL);
+-		if (ret < 0)
+-			return iscsit_add_reject_cmd(cmd,
++	}
++	ret = core_tmr_alloc_req(&cmd->se_cmd, cmd->tmr_req, tcm_function,
++				 GFP_KERNEL);
++	if (ret < 0)
++		return iscsit_add_reject_cmd(cmd,
+ 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+ 
+-		cmd->tmr_req->se_tmr_req = cmd->se_cmd.se_tmr_req;
+-	}
++	cmd->tmr_req->se_tmr_req = cmd->se_cmd.se_tmr_req;
+ 
+ 	cmd->iscsi_opcode	= ISCSI_OP_SCSI_TMFUNC;
+ 	cmd->i_state		= ISTATE_SEND_TASKMGTRSP;
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 1adf873..8555321 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -199,6 +199,7 @@ enum tcm_tmreq_table {
+ 	TMR_LUN_RESET		= 5,
+ 	TMR_TARGET_WARM_RESET	= 6,
+ 	TMR_TARGET_COLD_RESET	= 7,
++	TMR_UNKNOWN		= 0xff,
+ };
+ 
+ /* fabric independent task management response values */
+-- 
+1.8.5.3
 
