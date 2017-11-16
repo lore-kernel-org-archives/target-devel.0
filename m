@@ -1,67 +1,94 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Wed, 08 Nov 2017 04:31:46 +0000
-Subject: [PATCH 0/6] target fixes for v4.15-rc1
-Message-Id: <1510115512-15617-1-git-send-email-nab@linux-iscsi.org>
+Date: Thu, 16 Nov 2017 06:17:39 +0000
+Subject: [PATCH-3.18.y 1/2] target/iscsi: Fix iSCSI task reassignment handling
+Message-Id: <1510813060-15334-2-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <1510813060-15334-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1510813060-15334-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel <target-devel@vger.kernel.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Bart Van Assche <bart.vanassche@sandisk.com>, Moshe David <mdavid@infinidat.com>
 
-From: Nicholas Bellinger <nab@linux-iscsi.org>
+From: Bart Van Assche <bart.vanassche@sandisk.com>
 
-Hi all,
+commit 59b6986dbfcdab96a971f9663221849de79a7556 upstream.
 
-Here are the outstanding target bugfixes in queue for v4.15-rc1
-code.
+Allocate a task management request structure for all task management
+requests, including task reassignment. This change avoids that the
+se_tmr->response assignment dereferences an uninitialized se_tmr
+pointer.
 
-Patch #1 addresses a long standing bug wrt to QUEUE_FULL and
-SCSI task attribute handling, that results in SCSI task related
-counters getting updated multiple times during QUEUE_FULL.
+Reported-by: Moshe David <mdavid@infinidat.com>
+Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Moshe David <mdavid@infinidat.com>
+Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
+---
+ drivers/target/iscsi/iscsi_target.c | 19 +++++++------------
+ include/target/target_core_base.h   |  1 +
+ 2 files changed, 8 insertions(+), 12 deletions(-)
 
-It primarly effects hosts using ORDERED tasks, which depend upon
-these counters to know when to delay incoming tasks.
-
-Patch #2 is for a recent v4.11+ regression, which during ABORT
-of COMPARE_AND_WRITE can result in se_device->cam_sem getting
-leaked due to se_cmd->transport_complete_callback() being
-skipped.
-
-Patch #3 addresses a possible end-less loop during QUEUE_FULL +
-TFO->write_pending() failure, allowing se_cmd quiese to properly
-complete the outstanding descriptor when requested.
-
-Patch #4 addresses a use-after-tree that was hit in the field,
-involving pre-backend execution se_cmd exceptions + subsequent
-ABORT_TASK for a matching tag.
-
-Patch #5 + #6 address a iscsi-target TMR related memory and
-se_cmd->cmd_kref reference leaks respectively.
-
-We've been testing #4, #5, and #6 internally on v4.1.y stable
-code, and have not run into additional regressions.
-
-The rest are straight-forward.
-
-Please review.
-
---nab
-
-Nicholas Bellinger (6):
-  target: Fix QUEUE_FULL + SCSI task attribute handling
-  target: Fix caw_sem leak in transport_generic_request_failure
-  target: Fix quiese during transport_write_pending_qf endless loop
-  target: Avoid early CMD_T_PRE_EXECUTE failures during ABORT_TASK
-  iscsi-target: Make TASK_REASSIGN use proper se_cmd->cmd_kref
-  iscsi-target: Fix non-immediate TMR reference leak
-
- drivers/target/iscsi/iscsi_target.c    | 30 ++++++++++++++----------------
- drivers/target/target_core_tmr.c       |  9 +++++++++
- drivers/target/target_core_transport.c | 26 +++++++++++++++++++++++---
- include/target/target_core_base.h      |  1 +
- 4 files changed, 47 insertions(+), 19 deletions(-)
-
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index ce844e9..801369f 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -1749,7 +1749,7 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 	struct iscsi_tm *hdr;
+ 	int out_of_order_cmdsn = 0, ret;
+ 	bool sess_ref = false;
+-	u8 function;
++	u8 function, tcm_function = TMR_UNKNOWN;
+ 
+ 	hdr			= (struct iscsi_tm *) buf;
+ 	hdr->flags &= ~ISCSI_FLAG_CMD_FINAL;
+@@ -1795,10 +1795,6 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 	 * LIO-Target $FABRIC_MOD
+ 	 */
+ 	if (function != ISCSI_TM_FUNC_TASK_REASSIGN) {
+-
+-		u8 tcm_function;
+-		int ret;
+-
+ 		transport_init_se_cmd(&cmd->se_cmd,
+ 				      &lio_target_fabric_configfs->tf_ops,
+ 				      conn->sess->se_sess, 0, DMA_NONE,
+@@ -1835,15 +1831,14 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 			return iscsit_add_reject_cmd(cmd,
+ 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+ 		}
+-
+-		ret = core_tmr_alloc_req(&cmd->se_cmd, cmd->tmr_req,
+-					 tcm_function, GFP_KERNEL);
+-		if (ret < 0)
+-			return iscsit_add_reject_cmd(cmd,
++	}
++	ret = core_tmr_alloc_req(&cmd->se_cmd, cmd->tmr_req, tcm_function,
++				 GFP_KERNEL);
++	if (ret < 0)
++		return iscsit_add_reject_cmd(cmd,
+ 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+ 
+-		cmd->tmr_req->se_tmr_req = cmd->se_cmd.se_tmr_req;
+-	}
++	cmd->tmr_req->se_tmr_req = cmd->se_cmd.se_tmr_req;
+ 
+ 	cmd->iscsi_opcode	= ISCSI_OP_SCSI_TMFUNC;
+ 	cmd->i_state		= ISTATE_SEND_TASKMGTRSP;
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index d1e7cb9..ab4bff0 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -231,6 +231,7 @@ enum tcm_tmreq_table {
+ 	TMR_LUN_RESET		= 5,
+ 	TMR_TARGET_WARM_RESET	= 6,
+ 	TMR_TARGET_COLD_RESET	= 7,
++	TMR_UNKNOWN		= 0xff,
+ };
+ 
+ /* fabric independent task management response values */
 -- 
-1.9.1
+1.8.5.3
 
