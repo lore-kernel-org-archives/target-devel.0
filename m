@@ -1,99 +1,138 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date: Thu, 09 Nov 2017 06:04:53 +0000
-Subject: Re: target-pending/for-next patches
-Message-Id: <1510207493.3121.39.camel@HansenPartnership.com>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Thu, 16 Nov 2017 06:17:40 +0000
+Subject: [PATCH-3.18.y 2/2] iscsi-target: Fix iscsi_np reset hung task during parallel delete
+Message-Id: <1510813060-15334-3-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1509844462.29624.14.camel@haakon3.daterainc.com>
-         <1509897928.3899.9.camel@HansenPartnership.com>
-         <1510133821.29624.71.camel@haakon3.daterainc.com>
-In-Reply-To: <1510133821.29624.71.camel@haakon3.daterainc.com>
+References: <1510813060-15334-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1510813060-15334-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: target-devel <target-devel@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>, Mike Christie <mchristi@redhat.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: target-devel <target-devel@vger.kernel.org>
+Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.de>
 
-On Wed, 2017-11-08 at 01:37 -0800, Nicholas A. Bellinger wrote:
-> On Sun, 2017-11-05 at 08:05 -0800, James Bottomley wrote:
-> > 
-> > On Sat, 2017-11-04 at 18:14 -0700, Nicholas A. Bellinger wrote:
-> > > 
-> > > Hi all,
-> > > 
-> > > Just a friendly email after catching up on patches this week, the
-> > > majority of those outstanding on the list have been merged into
-> > > target-pending/for-next.  Please see below.
-> > > 
-> > > For those who submitted patches, please have a look and let me
-> > > know if anything is else missing.  Note there are two exceptions
-> > > that have been left out for now that I'll be following up with
-> > > separately.
-> > > 
-> > > Thus far it's all been either straight-forward bug-fixes, minor
-> > > cleanups, or small miscellaneous enhancements.  AFAICT, nothing
-> > > looks particularly concerning.
-> > 
-> > The concern would be you dumping a tree on the eve of a merge
-> > window, which you're presumably going to send to Linus in a week or
-> > so, when the last time you appeared was a fixes pull in 12 August,
-> > because it suggests this lot is just some randomly chosen selection
-> > to try to keep the tree alive.
-> 
-> No.  The tree contains outstanding bug-fixes and very minor
-> improvements.
-> 
-> Do you have an objection to a particular patch..?
+From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-Just the CommitDate on all of them as I said.  The main problem is that
-it's 4 November and there's no other commit activity for an earlier
-date in this merge window cycle.
+This patch fixes a bug associated with iscsit_reset_np_thread()
+that can occur during parallel configfs rmdir of a single iscsi_np
+used across multiple iscsi-target instances, that would result in
+hung task(s) similar to below where configfs rmdir process context
+was blocked indefinately waiting for iscsi_np->np_restart_comp
+to finish:
 
-> >  I really wouldn't do it like this: I know Linus doesn't care too
-> > much for SCSI stuff and if you're lucky he may be too busy yelling
-> > at Jens to notice, but if not, you'll find yourself on the
-> > receiving end of his ire and that will damage the reputation of
-> > your tree a lot.
-> 
-> I'd rather target-pending/for-next be judged on patches, and not
-> preconceived fear of including bug-fixes that address end-user issues
-> close to a merge window.
+[ 6726.112076] INFO: task dcp_proxy_node_:15550 blocked for more than 120 seconds.
+[ 6726.119440]       Tainted: G        W  O     4.1.26-3321 #2
+[ 6726.125045] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[ 6726.132927] dcp_proxy_node_ D ffff8803f202bc88     0 15550      1 0x00000000
+[ 6726.140058]  ffff8803f202bc88 ffff88085c64d960 ffff88083b3b1ad0 ffff88087fffeb08
+[ 6726.147593]  ffff8803f202c000 7fffffffffffffff ffff88083f459c28 ffff88083b3b1ad0
+[ 6726.155132]  ffff88035373c100 ffff8803f202bca8 ffffffff8168ced2 ffff8803f202bcb8
+[ 6726.162667] Call Trace:
+[ 6726.165150]  [<ffffffff8168ced2>] schedule+0x32/0x80
+[ 6726.170156]  [<ffffffff8168f5b4>] schedule_timeout+0x214/0x290
+[ 6726.176030]  [<ffffffff810caef2>] ? __send_signal+0x52/0x4a0
+[ 6726.181728]  [<ffffffff8168d7d6>] wait_for_completion+0x96/0x100
+[ 6726.187774]  [<ffffffff810e7c80>] ? wake_up_state+0x10/0x10
+[ 6726.193395]  [<ffffffffa035d6e2>] iscsit_reset_np_thread+0x62/0xe0 [iscsi_target_mod]
+[ 6726.201278]  [<ffffffffa0355d86>] iscsit_tpg_disable_portal_group+0x96/0x190 [iscsi_target_mod]
+[ 6726.210033]  [<ffffffffa0363f7f>] lio_target_tpg_store_enable+0x4f/0xc0 [iscsi_target_mod]
+[ 6726.218351]  [<ffffffff81260c5a>] configfs_write_file+0xaa/0x110
+[ 6726.224392]  [<ffffffff811ea364>] vfs_write+0xa4/0x1b0
+[ 6726.229576]  [<ffffffff811eb111>] SyS_write+0x41/0xb0
+[ 6726.234659]  [<ffffffff8169042e>] system_call_fastpath+0x12/0x71
 
-A tree is judged on the trustworthiness of its maintainer. Linus uses
-process, feedback, regression handling and other markers to make that
-assessment.  Having a three month gap in the CommitDate indicates a
-haphazard approach to the process of maintaining the tree.
+It would happen because each iscsit_reset_np_thread() sets state
+to ISCSI_NP_THREAD_RESET, sends SIGINT, and then blocks waiting
+for completion on iscsi_np->np_restart_comp.
 
-> > If the work of running the target tree has got too much, get a
-> > patch wrangler who can help with the process stuff you're
-> > completely lacking, like reviews and testing and long incubation in
-> > linux-next for exposure to 0day.
-> 
-> The past release has been exceedingly slow in drivers/target/, with
-> the rate of incoming patches is down to ~2 per week.  Those queued
-> are specific to drivers/target/ and don't run afoul of linux-next and
-> 0-day builds.
+However, if iscsi_np was active processing a login request and
+more than a single iscsit_reset_np_thread() caller to the same
+iscsi_np was blocked on iscsi_np->np_restart_comp, iscsi_np
+kthread process context in __iscsi_target_login_thread() would
+flush pending signals and only perform a single completion of
+np->np_restart_comp before going back to sleep within transport
+specific iscsit_transport->iscsi_accept_np code.
 
-Neither has actually caught up fully to your tree yet, if you check so
-the results should start coming in soon.
+To address this bug, add a iscsi_np->np_reset_count and update
+__iscsi_target_login_thread() to keep completing np->np_restart_comp
+until ->np_reset_count has reached zero.
 
-> Personally, I'm still focused on bug-fixing and ensuring patches make
-> it back to v4.x.y linux-stable.git.  However, there are still few
-> people working on bugs specific to host <-> fabric <-> target-core <-
-> > backend configurations, beyond individual components fixes.
-> 
-> > 
-> > I'm sure we can find several volunteers.
-> 
-> Sure, a patch wrangler would be helpful.
-> 
-> Where things tend to run into trouble is when someone starts merging
-> subsystem changes, but aren't directly responsible for distro
-> releases or production users running linux-stable.git code.
-> 
-> That said, I'd prefer someone with 'skin in the game' and end-users
-> they support.
+Reported-by: Gary Guo <ghg@datera.io>
+Tested-by: Gary Guo <ghg@datera.io>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Hannes Reinecke <hare@suse.de>
+Cc: stable@vger.kernel.org # 3.10+
+Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
+---
+ drivers/target/iscsi/iscsi_target.c       | 1 +
+ drivers/target/iscsi/iscsi_target_core.h  | 1 +
+ drivers/target/iscsi/iscsi_target_login.c | 7 +++++--
+ include/target/iscsi/iscsi_target_core.h  | 1 +
+ 4 files changed, 8 insertions(+), 2 deletions(-)
 
-OK, so did you have anyone in mind?
-
-James
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 801369f..2fc6b49 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -428,6 +428,7 @@ int iscsit_reset_np_thread(
+ 		return 0;
+ 	}
+ 	np->np_thread_state = ISCSI_NP_THREAD_RESET;
++	atomic_inc(&np->np_reset_count);
+ 
+ 	if (np->np_thread) {
+ 		spin_unlock_bh(&np->np_thread_lock);
+diff --git a/drivers/target/iscsi/iscsi_target_core.h b/drivers/target/iscsi/iscsi_target_core.h
+index 1863de2..bf3da8e 100644
+--- a/drivers/target/iscsi/iscsi_target_core.h
++++ b/drivers/target/iscsi/iscsi_target_core.h
+@@ -783,6 +783,7 @@ struct iscsi_np {
+ 	int			np_sock_type;
+ 	enum np_thread_state_table np_thread_state;
+ 	bool                    enabled;
++	atomic_t		np_reset_count;
+ 	enum iscsi_timer_flags_table np_login_timer_flags;
+ 	u32			np_exports;
+ 	enum np_flags_table	np_flags;
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index 4608d8d..540af1b 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -1275,9 +1275,11 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+ 	flush_signals(current);
+ 
+ 	spin_lock_bh(&np->np_thread_lock);
+-	if (np->np_thread_state = ISCSI_NP_THREAD_RESET) {
++	if (atomic_dec_if_positive(&np->np_reset_count) >= 0) {
+ 		np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
++		spin_unlock_bh(&np->np_thread_lock);
+ 		complete(&np->np_restart_comp);
++		return 1;
+ 	} else if (np->np_thread_state = ISCSI_NP_THREAD_SHUTDOWN) {
+ 		spin_unlock_bh(&np->np_thread_lock);
+ 		goto exit;
+@@ -1310,7 +1312,8 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+ 		goto exit;
+ 	} else if (rc < 0) {
+ 		spin_lock_bh(&np->np_thread_lock);
+-		if (np->np_thread_state = ISCSI_NP_THREAD_RESET) {
++		if (atomic_dec_if_positive(&np->np_reset_count) >= 0) {
++			np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
+ 			spin_unlock_bh(&np->np_thread_lock);
+ 			complete(&np->np_restart_comp);
+ 			iscsit_put_transport(conn->conn_transport);
+diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+index 7bd03f8..e365ed9 100644
+--- a/include/target/iscsi/iscsi_target_core.h
++++ b/include/target/iscsi/iscsi_target_core.h
+@@ -784,6 +784,7 @@ struct iscsi_np {
+ 	int			np_sock_type;
+ 	enum np_thread_state_table np_thread_state;
+ 	bool                    enabled;
++	atomic_t		np_reset_count;
+ 	enum iscsi_timer_flags_table np_login_timer_flags;
+ 	u32			np_exports;
+ 	enum np_flags_table	np_flags;
+-- 
+1.8.5.3
 
