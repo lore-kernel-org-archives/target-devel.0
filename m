@@ -1,130 +1,223 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Thu, 16 Nov 2017 05:57:19 +0000
-Subject: [PATCH-4.4.y 2/2] target: Fix node_acl demo-mode + uncached dynamic shutdown regression
-Message-Id: <1510812472-14734-3-git-send-email-nab@linux-iscsi.org>
+Date: Thu, 16 Nov 2017 06:14:13 +0000
+Subject: [PATCH-4.1.y 1/7] target: Obtain se_node_acl->acl_kref during get_initiator_node_acl
+Message-Id: <1510812859-15101-2-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510812472-14734-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510812472-14734-1-git-send-email-nab@linux-iscsi.org>
+References: <1510812859-15101-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1510812859-15101-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Justin Maggard <jmaggard01@gmail.com>
+Cc: stable <stable@vger.kernel.org>, Sasha Levin <alexander.levin@verizon.com>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Sagi Grimberg <sagig@mellanox.com>, Christoph Hellwig <hch@lst.de>, Hannes Reinecke <hare@suse.de>, Andy Grover <agrover@redhat.com>, Mike Christie <michaelc@cs.wisc.edu>
 
 From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-commit 6f48655facfd7f7ccfe6d252ac0fe319ab02e4dd upstream.
+commit 21aaa23b0ebbd19334fa461370c03cbb076b3295 upstream.
 
-This patch fixes a generate_node_acls = 1 + cache_dynamic_acls = 0
-regression, that was introduced by
+This patch addresses a long standing race where obtaining
+se_node_acl->acl_kref in __transport_register_session()
+happens a bit too late, and leaves open the potential
+for core_tpg_del_initiator_node_acl() to hit a NULL
+pointer dereference.
 
-  commit 01d4d673558985d9a118e1e05026633c3e2ade9b
-  Author: Nicholas Bellinger <nab@linux-iscsi.org>
-  Date:   Wed Dec 7 12:55:54 2016 -0800
+Instead, take ->acl_kref in core_tpg_get_initiator_node_acl()
+while se_portal_group->acl_node_mutex is held, and move the
+final target_put_nacl() from transport_deregister_session()
+into transport_free_session() so that fabric driver login
+failure handling using the modern method to still work
+as expected.
 
-which originally had the proper list_del_init() usage, but was
-dropped during list review as it was thought unnecessary by HCH.
+Also, update core_tpg_get_initiator_node_acl() to take
+an extra reference for dynamically generated acls for
+demo-mode, before returning to fabric caller.  Also
+update iscsi-target sendtargets special case handling
+to use target_tpg_has_node_acl() when checking if
+demo_mode_discovery = true during discovery lookup.
 
-However, list_del_init() usage is required during the special
-generate_node_acls = 1 + cache_dynamic_acls = 0 case when
-transport_free_session() does a list_del(&se_nacl->acl_list),
-followed by target_complete_nacl() doing the same thing.
+Note the existing wait_for_completion(&acl->acl_free_comp)
+in core_tpg_del_initiator_node_acl() does not change.
 
-This was manifesting as a general protection fault as reported
-by Justin:
-
-kernel: general protection fault: 0000 [#1] SMP
-kernel: Modules linked in:
-kernel: CPU: 0 PID: 11047 Comm: iscsi_ttx Not tainted 4.13.0-rc2.x86_64.1+ #20
-kernel: Hardware name: Intel Corporation S5500BC/S5500BC, BIOS S5500.86B.01.00.0064.050520141428 05/05/2014
-kernel: task: ffff88026939e800 task.stack: ffffc90007884000
-kernel: RIP: 0010:target_put_nacl+0x49/0xb0
-kernel: RSP: 0018:ffffc90007887d70 EFLAGS: 00010246
-kernel: RAX: dead000000000200 RBX: ffff8802556ca000 RCX: 0000000000000000
-kernel: RDX: dead000000000100 RSI: 0000000000000246 RDI: ffff8802556ce028
-kernel: RBP: ffffc90007887d88 R08: 0000000000000001 R09: 0000000000000000
-kernel: R10: ffffc90007887df8 R11: ffffea0009986900 R12: ffff8802556ce020
-kernel: R13: ffff8802556ce028 R14: ffff8802556ce028 R15: ffffffff88d85540
-kernel: FS:  0000000000000000(0000) GS:ffff88027fc00000(0000) knlGS:0000000000000000
-kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-kernel: CR2: 00007fffe36f5f94 CR3: 0000000009209000 CR4: 00000000003406f0
-kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-kernel: DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-kernel: Call Trace:
-kernel:  transport_free_session+0x67/0x140
-kernel:  transport_deregister_session+0x7a/0xc0
-kernel:  iscsit_close_session+0x92/0x210
-kernel:  iscsit_close_connection+0x5f9/0x840
-kernel:  iscsit_take_action_for_connection_exit+0xfe/0x110
-kernel:  iscsi_target_tx_thread+0x140/0x1e0
-kernel:  ? wait_woken+0x90/0x90
-kernel:  kthread+0x124/0x160
-kernel:  ? iscsit_thread_get_cpumask+0x90/0x90
-kernel:  ? kthread_create_on_node+0x40/0x40
-kernel:  ret_from_fork+0x22/0x30
-kernel: Code: 00 48 89 fb 4c 8b a7 48 01 00 00 74 68 4d 8d 6c 24 08 4c
-89 ef e8 e8 28 43 00 48 8b 93 20 04 00 00 48 8b 83 28 04 00 00 4c 89
-ef <48> 89 42 08 48 89 10 48 b8 00 01 00 00 00 00 ad de 48 89 83 20
-kernel: RIP: target_put_nacl+0x49/0xb0 RSP: ffffc90007887d70
-kernel: ---[ end trace f12821adbfd46fed ]---
-
-To address this, go ahead and use proper list_del_list() for all
-cases of se_nacl->acl_list deletion.
-
-Reported-by: Justin Maggard <jmaggard01@gmail.com>
-Tested-by: Justin Maggard <jmaggard01@gmail.com>
-Cc: Justin Maggard <jmaggard01@gmail.com>
+Cc: Sagi Grimberg <sagig@mellanox.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.de>
+Cc: Andy Grover <agrover@redhat.com>
+Cc: Mike Christie <michaelc@cs.wisc.edu>
 Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/target/target_core_tpg.c       | 4 ++--
- drivers/target/target_core_transport.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/target/iscsi/iscsi_target.c    |  2 +-
+ drivers/target/target_core_tpg.c       | 44 ++++++++++++++++++++++++++++++++--
+ drivers/target/target_core_transport.c | 18 +++++++++-----
+ include/target/target_core_fabric.h    |  2 ++
+ 4 files changed, 57 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 7444640a..d6cb9e8 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -3449,7 +3449,7 @@ iscsit_build_sendtargets_response(struct iscsi_cmd *cmd,
+ 
+ 			if ((tpg->tpg_attrib.generate_node_acls = 0) &&
+ 			    (tpg->tpg_attrib.demo_mode_discovery = 0) &&
+-			    (!core_tpg_get_initiator_node_acl(&tpg->tpg_se_tpg,
++			    (!target_tpg_has_node_acl(&tpg->tpg_se_tpg,
+ 				cmd->conn->sess->sess_ops->InitiatorName))) {
+ 				continue;
+ 			}
 diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index f69f490..ee16a45 100644
+index 47f0644..6c350f0 100644
 --- a/drivers/target/target_core_tpg.c
 +++ b/drivers/target/target_core_tpg.c
-@@ -350,7 +350,7 @@ void core_tpg_del_initiator_node_acl(struct se_node_acl *acl)
- 	if (acl->dynamic_node_acl) {
- 		acl->dynamic_node_acl = 0;
- 	}
--	list_del(&acl->acl_list);
-+	list_del_init(&acl->acl_list);
- 	tpg->num_node_acls--;
- 	mutex_unlock(&tpg->acl_node_mutex);
+@@ -110,9 +110,21 @@ struct se_node_acl *core_tpg_get_initiator_node_acl(
+ 	unsigned char *initiatorname)
+ {
+ 	struct se_node_acl *acl;
+-
++	/*
++	 * Obtain se_node_acl->acl_kref using fabric driver provided
++	 * initiatorname[] during node acl endpoint lookup driven by
++	 * new se_session login.
++	 *
++	 * The reference is held until se_session shutdown -> release
++	 * occurs via fabric driver invoked transport_deregister_session()
++	 * or transport_free_session() code.
++	 */
+ 	spin_lock_irq(&tpg->acl_node_lock);
+ 	acl = __core_tpg_get_initiator_node_acl(tpg, initiatorname);
++	if (acl) {
++		if (!kref_get_unless_zero(&acl->acl_kref))
++			acl = NULL;
++	}
+ 	spin_unlock_irq(&tpg->acl_node_lock);
  
-@@ -572,7 +572,7 @@ int core_tpg_deregister(struct se_portal_group *se_tpg)
- 	 * in transport_deregister_session().
- 	 */
- 	list_for_each_entry_safe(nacl, nacl_tmp, &node_list, acl_list) {
--		list_del(&nacl->acl_list);
-+		list_del_init(&nacl->acl_list);
- 		se_tpg->num_node_acls--;
+ 	return acl;
+@@ -254,6 +266,25 @@ static int core_create_device_list_for_node(struct se_node_acl *nacl)
+ 	return 0;
+ }
  
- 		core_tpg_wait_for_nacl_pr_ref(nacl);
++bool target_tpg_has_node_acl(struct se_portal_group *tpg,
++			     const char *initiatorname)
++{
++	struct se_node_acl *acl;
++	bool found = false;
++
++	spin_lock_irq(&tpg->acl_node_lock);
++	list_for_each_entry(acl, &tpg->acl_node_list, acl_list) {
++		if (!strcmp(acl->initiatorname, initiatorname)) {
++			found = true;
++			break;
++		}
++	}
++	spin_unlock_irq(&tpg->acl_node_lock);
++
++	return found;
++}
++EXPORT_SYMBOL(target_tpg_has_node_acl);
++
+ /*	core_tpg_check_initiator_node_acl()
+  *
+  *
+@@ -274,10 +305,19 @@ struct se_node_acl *core_tpg_check_initiator_node_acl(
+ 	acl =  tpg->se_tpg_tfo->tpg_alloc_fabric_acl(tpg);
+ 	if (!acl)
+ 		return NULL;
++	/*
++	 * When allocating a dynamically generated node_acl, go ahead
++	 * and take the extra kref now before returning to the fabric
++	 * driver caller.
++	 *
++	 * Note this reference will be released at session shutdown
++	 * time within transport_free_session() code.
++	 */
++	kref_init(&acl->acl_kref);
++	kref_get(&acl->acl_kref);
+ 
+ 	INIT_LIST_HEAD(&acl->acl_list);
+ 	INIT_LIST_HEAD(&acl->acl_sess_list);
+-	kref_init(&acl->acl_kref);
+ 	init_completion(&acl->acl_free_comp);
+ 	spin_lock_init(&acl->device_list_lock);
+ 	spin_lock_init(&acl->nacl_sess_lock);
 diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index f71bede..a42054e 100644
+index b7d27b8..3bf46bf 100644
 --- a/drivers/target/target_core_transport.c
 +++ b/drivers/target/target_core_transport.c
-@@ -431,7 +431,7 @@ static void target_complete_nacl(struct kref *kref)
- 	}
- 
- 	mutex_lock(&se_tpg->acl_node_mutex);
--	list_del(&nacl->acl_list);
-+	list_del_init(&nacl->acl_list);
- 	mutex_unlock(&se_tpg->acl_node_mutex);
- 
- 	core_tpg_wait_for_nacl_pr_ref(nacl);
-@@ -503,7 +503,7 @@ void transport_free_session(struct se_session *se_sess)
- 			spin_unlock_irqrestore(&se_nacl->nacl_sess_lock, flags);
- 
- 			if (se_nacl->dynamic_stop)
--				list_del(&se_nacl->acl_list);
-+				list_del_init(&se_nacl->acl_list);
+@@ -359,7 +359,6 @@ void __transport_register_session(
+ 					&buf[0], PR_REG_ISID_LEN);
+ 			se_sess->sess_bin_isid = get_unaligned_be64(&buf[0]);
  		}
- 		mutex_unlock(&se_tpg->acl_node_mutex);
+-		kref_get(&se_nacl->acl_kref);
  
+ 		spin_lock_irq(&se_nacl->nacl_sess_lock);
+ 		/*
+@@ -456,6 +455,7 @@ void target_put_nacl(struct se_node_acl *nacl)
+ {
+ 	kref_put(&nacl->acl_kref, target_complete_nacl);
+ }
++EXPORT_SYMBOL(target_put_nacl);
+ 
+ void transport_deregister_session_configfs(struct se_session *se_sess)
+ {
+@@ -488,6 +488,15 @@ EXPORT_SYMBOL(transport_deregister_session_configfs);
+ 
+ void transport_free_session(struct se_session *se_sess)
+ {
++	struct se_node_acl *se_nacl = se_sess->se_node_acl;
++	/*
++	 * Drop the se_node_acl->nacl_kref obtained from within
++	 * core_tpg_get_initiator_node_acl().
++	 */
++	if (se_nacl) {
++		se_sess->se_node_acl = NULL;
++		target_put_nacl(se_nacl);
++	}
+ 	if (se_sess->sess_cmd_map) {
+ 		percpu_ida_destroy(&se_sess->sess_tag_pool);
+ 		if (is_vmalloc_addr(se_sess->sess_cmd_map))
+@@ -505,7 +514,6 @@ void transport_deregister_session(struct se_session *se_sess)
+ 	const struct target_core_fabric_ops *se_tfo;
+ 	struct se_node_acl *se_nacl;
+ 	unsigned long flags;
+-	bool comp_nacl = true;
+ 
+ 	if (!se_tpg) {
+ 		transport_free_session(se_sess);
+@@ -533,9 +541,9 @@ void transport_deregister_session(struct se_session *se_sess)
+ 			spin_unlock_irqrestore(&se_tpg->acl_node_lock, flags);
+ 			core_tpg_wait_for_nacl_pr_ref(se_nacl);
+ 			core_free_device_list_for_node(se_nacl, se_tpg);
++			se_sess->se_node_acl = NULL;
+ 			se_tfo->tpg_release_fabric_acl(se_tpg, se_nacl);
+ 
+-			comp_nacl = false;
+ 			spin_lock_irqsave(&se_tpg->acl_node_lock, flags);
+ 		}
+ 	}
+@@ -546,10 +554,8 @@ void transport_deregister_session(struct se_session *se_sess)
+ 	/*
+ 	 * If last kref is dropping now for an explicit NodeACL, awake sleeping
+ 	 * ->acl_free_comp caller to wakeup configfs se_node_acl->acl_group
+-	 * removal context.
++	 * removal context from within transport_free_session() code.
+ 	 */
+-	if (se_nacl && comp_nacl)
+-		target_put_nacl(se_nacl);
+ 
+ 	transport_free_session(se_sess);
+ }
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 24c8d9d..419a8c8 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -171,6 +171,8 @@ int	transport_lookup_tmr_lun(struct se_cmd *, u32);
+ 
+ struct se_node_acl *core_tpg_get_initiator_node_acl(struct se_portal_group *tpg,
+ 		unsigned char *);
++bool	target_tpg_has_node_acl(struct se_portal_group *tpg,
++		const char *);
+ struct se_node_acl *core_tpg_check_initiator_node_acl(struct se_portal_group *,
+ 		unsigned char *);
+ void	core_tpg_clear_object_luns(struct se_portal_group *);
 -- 
 1.8.5.3
 
