@@ -1,49 +1,59 @@
-From: " M,Shakour Rosarita" <hassanamira04@gmail.com>
-Date: Wed, 15 Nov 2017 11:34:09 +0000
-Subject: Hello Dear...
-Message-Id: <CADmkupiA2objgsQxK=03WmWJhZVp3+F-yDxXOLOm2rgTnpKhzw@mail.gmail.com>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Thu, 16 Nov 2017 06:14:12 +0000
+Subject: [PATCH-4.1.y 0/7] target: stable backports
+Message-Id: <1510812859-15101-1-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <CAMyxZDGNhOXmC-7Rt7EqUJUYuvRNUAsBsbpds9-aEKzPhLnhmQ@mail.gmail.com>
-In-Reply-To: <CAMyxZDGNhOXmC-7Rt7EqUJUYuvRNUAsBsbpds9-aEKzPhLnhmQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1250"
-Content-Transfer-Encoding: base64
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: target-devel <target-devel@vger.kernel.org>
+Cc: stable <stable@vger.kernel.org>, Sasha Levin <alexander.levin@verizon.com>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>
 
-SGVsbG8gRGVhci4uLgoKSSBrbm93IHRoYXQgdGhpcyBtZXNzYWdlIHdpbGwgY29tZSB0byB5b3Ug
-YXMgYSBzdXJwcmlzZS4gSSBob3BlZCB0aGF0CnlvdSB3aWxsIG5vdCBleHBvc2Ugb3IgYmV0cmF5
-IHRoaXMgdHJ1c3QgYW5kIGNvbmZpZGVudCB0aGF0IEkgYW0gYWJvdXQKdG8gcmVwb3NlIG9uIHlv
-dSwgbXkgbmFtZSBpcyBNLCBTaGFrb3VyIFJvc2FyaXRhLiBJIGFtIDE5IHllYXJzIG9sZApHaXJs
-LCBmZW1hbGUsIGZyb20gVGFydHUgU3lyaWEsIChuZXZlciBtYXJyaWVkKSA2MSBrZywgd2hpdGUg
-aW4KY29tcGxleGlvbiwgYW5kIEkgYW0gY3VycmVudGx5IGxpdmluZyBpbiB0aGUgcmVmdWdlZSBj
-YW1wIGhlcmUgaW4KQWJpZGphbiBJdm9yeSBDb2FzdCwgTXkgbGF0ZSBiZWxvdmVkIGZhdGhlciBN
-LFNoYWtvdXIgSGFzc2luIHdhcyBhCnJlbm93bmVkIGJ1c2luZXNzbWFuIGFuZCBvd25lciBvZiBO
-YXRvdXIgUGV0cm9sIFN0YXRpb24gaW4gU3lyaWEsIGhlCndhcyBraWxsZWQgaW4gYSBzdGFtcGVk
-ZSByaW90IGluIFRhcnR1LCBTeXJpYS4KV2hlbiBJIGdvdCB0aGUgbmV3cyBhYm91dCBteSBwYXJl
-bnRzLiBJIGZsZWQgdG8gYSBuZWFyYnkgY291bnRyeQpKb3JkYW4gYmVmb3JlIEkgam9pbmVkIGEg
-ZmVycnkgdG8gQWZyaWNhIGFuZCBjYW1lIHRvIEFiaWRqYW4gY2FwaXRhbApjaXR5IEl2b3J5IENv
-YXN0IFdlc3QgQWZyaWNhIGZpbmQgc2FmZXR5IGhlcmUuCkkgY2FtZSBpbiAyMDE1IHRvIEFiaWRq
-YW4gYW5kIEkgbm93IGxpdmUgaW4gcmVmdWdlZSBjYW1wcyBoZXJlIGFzCnJlZnVnZWVzIGFyZSBh
-bGxvd2VkIGZyZWVseSB0byBlbnRlciBoZXJlIHdpdGhvdXQsIE15IGxhdGUgZmF0aGVyCmRlcG9z
-aXRlZCAoVVMkNi4yMDAuMDAwLjAwbSkgTXkgbGF0ZSBmYXRoZXIga2VwdCB0aGUgbW9uZXkgYXQg
-dGhlIGJhbmsKb2YgQWZyaWNhLCBJIHdhbnQgeW91IHRvIGhlbHAgbWUgdHJhbnNmZXIgdGhlIG1v
-bmV5IHRvIHlvdXIgaGFuZCBzbwp0aGF0IHlvdSB3aWxsIGhlbHAgbWUgYnJpbmcgbWUgaW50byB5
-b3VyIGNvdW50cnkgZm9yIG15IGNvbnRpbnVlCmVkdWNhdGlvbi4KCkkgc2VudCBteSBwaWN0dXJl
-cyBoZXJlIGZvciB5b3UgdG8gc2VlLiBXaG8gSSBhbSBzZXJpb3VzbHkgbG9va2luZyBmb3IKYSBn
-b29kLXBlcnNvbiBpbiBteSBsaWZlLCBzbyBJIHdhbnQgdG8gaGVhciBmcm9tIHlvdSBzb29uIGFu
-ZCBsZWFybgptb3JlIGFib3V0IHlvdS4KCkkgYW0gYW4gb3Blbi1taW5kZWQgYW5kIGZyaWVuZGx5
-IGdpcmwgdG8gc2hhcmUgYSBnb29kIHRpbWUgd2l0aCB5b3UKYW5kIGhhdmUgZnVuIGFuZCBlbmpv
-eSBvbiB0aGUgZ28sIGJpcmQgd2F0Y2hpbmcsIHRoZSByZXN0IG9mIG91cgpsaXZlcy4gTXkgSG9i
-YmllcywgdG91cmlzbSBib29rcywgZGFuY2UsIG11c2ljLCBzb2NjZXIsIHRlbm5pcywKc3dpbW1p
-bmcgYW5kIGNpbmVtYS4KSSB3b3VsZCBqdXN0IHRoaW5rIGFib3V0IHlvdSwgaW5jbHVkaW5nIHlv
-dXIgZG9zZSBhbmQgZG9lc27igJl0IC5JCmJlbGlldmUgd2Ugd2lsbCBkbyB3ZWxsIHRvZ2V0aGVy
-LCBhbmQgbGl2ZSBsaWtlIG9uZSBmYW1pbHkuClRoYW5rIHlvdSBhbmQgR29kIGJsZXNzIHlvdSwg
-Zm9yIHlvdSBpbiB5b3VyIHByb21pc2UgdG8gaGVscCBtZSBoZXJlLApsb29raW5nIGZvcndhcmQg
-dG8geW91ciByZXBseSBieSB0aGUgZ3JhY2Ugb2YgR29kIGFuZCBoYXZlIGEgZ29vZCBkYXkuCkkg
-aG9wZSB5b3Ugc2VuZCBtZSB5b3VyIHBob3RvcyBhcyB3ZWxsPyBJIGF3YWl0IHlvdXIgbmV4dCBy
-ZXBseSBpbgpmYWl0aCBwbGVhc2UgcmVwbHkgdGhyb3VnaCBteSBwcml2YXRlIGVtYWlsIGF0Ciht
-c2hha291cnJvc2FyaXRhMjJAZ21haWwuY29tKToKVGhhbmtzLgpNcyBSb3Nhcml0YQotLQpUbyB1
-bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgdGFy
-Z2V0LWRldmVsIiBpbgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2Vy
-bmVsLm9yZwpNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21h
-am9yZG9tby1pbmZvLmh0bWw=
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+
+Hi Sasha,
+
+Here are a target patches outstanding for v4.1.y stable.  Note that
+some of these had not been merged from the last v4.1.y series posted
+here:
+
+http://www.spinics.net/lists/target-devel/msg15916.html
+
+Please ensure these get picked up for the next v4.1.y release.
+
+The series has been cut against v4.1.45.  Please apply at your earliest
+convenience.
+
+Thank you,
+
+--nab
+
+Bart Van Assche (1):
+  target/iscsi: Fix iSCSI task reassignment handling
+
+Jiang Yi (1):
+  iscsi-target: Always wait for kthread_should_stop() before kthread
+    exit
+
+Nicholas Bellinger (5):
+  target: Obtain se_node_acl->acl_kref during get_initiator_node_acl
+  target: Fix multi-session dynamic se_node_acl double free OOPs
+  target: Avoid mappedlun symlink creation during lun shutdown
+  Revert "target: Fix VERIFY and WRITE VERIFY command parsing"
+  target: Fix node_acl demo-mode + uncached dynamic shutdown regression
+
+ drivers/target/iscsi/iscsi_target.c          | 49 ++++++++++------
+ drivers/target/iscsi/iscsi_target_erl0.c     |  6 +-
+ drivers/target/iscsi/iscsi_target_erl0.h     |  2 +-
+ drivers/target/iscsi/iscsi_target_login.c    |  4 ++
+ drivers/target/target_core_fabric_configfs.c |  5 ++
+ drivers/target/target_core_sbc.c             | 71 +++-------------------
+ drivers/target/target_core_tpg.c             | 51 ++++++++++++++--
+ drivers/target/target_core_transport.c       | 88 ++++++++++++++++++----------
+ include/target/target_core_base.h            |  3 +
+ include/target/target_core_fabric.h          |  2 +
+ 10 files changed, 163 insertions(+), 118 deletions(-)
+
+-- 
+1.8.5.3
+
