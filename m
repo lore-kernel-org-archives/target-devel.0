@@ -1,32 +1,42 @@
-From: Willy Tarreau <w@1wt.eu>
-Date: Thu, 16 Nov 2017 10:00:37 +0000
-Subject: Re: [PATCH-3.10.y 0/3] target: stable backports
-Message-Id: <20171116100037.GC14616@1wt.eu>
+From: tang.wenji@zte.com.cn
+Date: Sat, 18 Nov 2017 09:14:23 +0000
+Subject: [PATCH] fix page addr in tcmu_flush_dcache_range
+Message-Id: <1510996463-26020-1-git-send-email-tang.wenji@zte.com.cn>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510813791-16082-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510813791-16082-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: target-devel <target-devel@vger.kernel.org>, stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>
+To: target-devel@vger.kernel.org
 
-Hi Nicholas,
+From: tangwenji <tang.wenji@zte.com.cn>
 
-On Thu, Nov 16, 2017 at 06:29:48AM +0000, Nicholas A. Bellinger wrote:
-> From: Nicholas Bellinger <nab@linux-iscsi.org>
-> 
-> Hi Greg-KH,
-> 
-> Here are three target patches for v3.10.y stable, the first of which
-> did not originally include a stable CC, and the latter two did not
-> apply due to a minor context change.
-> 
-> The series has been cut against v3.10.108.  Please apply at your earliest
-> convenience.
+The page addr should be update.
 
-That's kind of you but v3.10 reached end of life a week ago, it's not
-maintained anymore.
+Signed-off-by: tangwenji <tang.wenji@zte.com.cn>
+---
+ drivers/target/target_core_user.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Regards,
-Willy
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 942d0942..82dc246 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -470,12 +470,13 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
+ static inline void tcmu_flush_dcache_range(void *vaddr, size_t size)
+ {
+ 	unsigned long offset = offset_in_page(vaddr);
++	void *start = vaddr - offset;
+ 
+ 	size = round_up(size+offset, PAGE_SIZE);
+-	vaddr -= offset;
+ 
+ 	while (size) {
+-		flush_dcache_page(virt_to_page(vaddr));
++		flush_dcache_page(virt_to_page(start));
++		start += PAGE_SIZE;
+ 		size -= PAGE_SIZE;
+ 	}
+ }
+-- 
+2.8.1.windows.1
+
