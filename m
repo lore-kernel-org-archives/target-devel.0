@@ -1,58 +1,98 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 04 Nov 2017 13:18:59 +0000
-Subject: [PATCH 4/4] target: Delete an error message for a failed memory allocation in two functions
-Message-Id: <e6282832-737d-f3a5-bb1a-70fc53c58451@users.sourceforge.net>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Tue, 21 Nov 2017 00:12:43 +0000
+Subject: [PATCH] target-core: don't use "const char*" for a buffer that is written to
+Message-Id: <20171121001244.8026-1-linux@rasmusvillemoes.dk>
 List-Id: <target-devel.vger.kernel.org>
-References: <27e27d42-473d-e8db-fe9e-803fed646881@users.sourceforge.net>
-In-Reply-To: <27e27d42-473d-e8db-fe9e-803fed646881@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 4 Nov 2017 13:43:22 +0100
+From: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
 
-Omit an extra message for a memory allocation failure in these functions.
+iscsi_parse_pr_out_transport_id launders the const away via a call to
+strstr(), and then modifies the buffer (writing a nul byte) through
+the return value. It's cleaner to be honest and simply declare the
+parameter as "char*", fixing up the call chain, and allowing us to
+drop the cast in the return statement.
 
-This issue was detected by using the Coccinelle software.
+Amusingly, the two current callers found it necessary to cast a
+non-const pointer to a const.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/target/target_core_xcopy.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/target/target_core_fabric_lib.c | 6 +++---
+ drivers/target/target_core_internal.h   | 2 +-
+ drivers/target/target_core_pr.c         | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index 1519e399392b..c2b3d3158208 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -681,10 +681,9 @@ static int target_xcopy_read_source(
- 	bool remote_port = (xop->op_origin = XCOL_DEST_RECV_OP);
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index 508da345b73f..71a80257a052 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -273,7 +273,7 @@ static int iscsi_get_pr_transport_id_len(
  
- 	xpt_cmd = kzalloc(sizeof(*xpt_cmd), GFP_KERNEL);
--	if (!xpt_cmd) {
--		pr_err("Unable to allocate xcopy_pt_cmd\n");
-+	if (!xpt_cmd)
- 		return -ENOMEM;
--	}
-+
- 	init_completion(&xpt_cmd->xpt_passthrough_sem);
- 	se_cmd = &xpt_cmd->se_cmd;
+ static char *iscsi_parse_pr_out_transport_id(
+ 	struct se_portal_group *se_tpg,
+-	const char *buf,
++	char *buf,
+ 	u32 *out_tid_len,
+ 	char **port_nexus_ptr)
+ {
+@@ -356,7 +356,7 @@ static char *iscsi_parse_pr_out_transport_id(
+ 		}
+ 	}
  
-@@ -743,10 +742,9 @@ static int target_xcopy_write_destination(
- 	bool remote_port = (xop->op_origin = XCOL_SOURCE_RECV_OP);
+-	return (char *)&buf[4];
++	return &buf[4];
+ }
  
- 	xpt_cmd = kzalloc(sizeof(*xpt_cmd), GFP_KERNEL);
--	if (!xpt_cmd) {
--		pr_err("Unable to allocate xcopy_pt_cmd\n");
-+	if (!xpt_cmd)
- 		return -ENOMEM;
--	}
-+
- 	init_completion(&xpt_cmd->xpt_passthrough_sem);
- 	se_cmd = &xpt_cmd->se_cmd;
+ int target_get_pr_transport_id_len(struct se_node_acl *nacl,
+@@ -405,7 +405,7 @@ int target_get_pr_transport_id(struct se_node_acl *nacl,
+ }
  
+ const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
+-		const char *buf, u32 *out_tid_len, char **port_nexus_ptr)
++		char *buf, u32 *out_tid_len, char **port_nexus_ptr)
+ {
+ 	u32 offset;
+ 
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index 18e3eb16e756..cada158cf1c2 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -101,7 +101,7 @@ int	target_get_pr_transport_id(struct se_node_acl *nacl,
+ 		struct t10_pr_registration *pr_reg, int *format_code,
+ 		unsigned char *buf);
+ const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
+-		const char *buf, u32 *out_tid_len, char **port_nexus_ptr);
++		char *buf, u32 *out_tid_len, char **port_nexus_ptr);
+ 
+ /* target_core_hba.c */
+ struct se_hba *core_alloc_hba(const char *, u32, u32);
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index dd2cd8048582..09941d1ae6c1 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -1597,7 +1597,7 @@ core_scsi3_decode_spec_i_port(
+ 			dest_rtpi = tmp_lun->lun_rtpi;
+ 
+ 			i_str = target_parse_pr_out_transport_id(tmp_tpg,
+-					(const char *)ptr, &tid_len, &iport_ptr);
++					ptr, &tid_len, &iport_ptr);
+ 			if (!i_str)
+ 				continue;
+ 
+@@ -3285,7 +3285,7 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
+ 		goto out;
+ 	}
+ 	initiator_str = target_parse_pr_out_transport_id(dest_se_tpg,
+-			(const char *)&buf[24], &tmp_tid_len, &iport_ptr);
++			&buf[24], &tmp_tid_len, &iport_ptr);
+ 	if (!initiator_str) {
+ 		pr_err("SPC-3 PR REGISTER_AND_MOVE: Unable to locate"
+ 			" initiator_str from Transport ID\n");
 -- 
-2.15.0
+2.11.0
 
