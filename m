@@ -1,82 +1,25 @@
-From: Hannes Reinecke <hare@suse.com>
-Date: Thu, 02 Nov 2017 14:29:53 +0000
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Thu, 23 Nov 2017 00:14:17 +0000
 Subject: Re: [PATCH 11/11] usb/gadget: Make it again possible to enable the legacy drivers without enabling U
-Message-Id: <f4bff587-0338-f82d-2d6b-dcb0851726f0@suse.com>
+Message-Id: <1511396056.3061.6.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20171031180319.19258-12-bart.vanassche@wdc.com>
 In-Reply-To: <20171031180319.19258-12-bart.vanassche@wdc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 10/31/2017 07:03 PM, Bart Van Assche wrote:
-> Considerable time ago the legacy gadget menu was added inside the
-> USB_ETH choice. I think this was a mistake and that the legacy
-> gadget menu should have been added after "endchoice" instead of
-> before. Hence this patch.
-> 
-> Fixes: commit 8443f2d2b778 ("usb: gadget: Gadget directory cleanup - group legacy gadgets")
-> Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-> Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-> Cc: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
-> Cc: Felipe Balbi <balbi@ti.com>
-> Cc: linux-usb@vger.kernel.org
-> ---
->  drivers/usb/gadget/Kconfig        |  4 ++--
->  drivers/usb/gadget/legacy/Kconfig | 10 ++++++++++
->  2 files changed, 12 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-> index 31cce7805eb2..0a19a76645ad 100644
-> --- a/drivers/usb/gadget/Kconfig
-> +++ b/drivers/usb/gadget/Kconfig
-> @@ -508,8 +508,8 @@ choice
->  	  controller, and the relevant drivers for each function declared
->  	  by the device.
->  
-> -source "drivers/usb/gadget/legacy/Kconfig"
-> -
->  endchoice
->  
-> +source "drivers/usb/gadget/legacy/Kconfig"
-> +
->  endif # USB_GADGET
-> diff --git a/drivers/usb/gadget/legacy/Kconfig b/drivers/usb/gadget/legacy/Kconfig
-> index a12fb459dbd9..9570bbeced4f 100644
-> --- a/drivers/usb/gadget/legacy/Kconfig
-> +++ b/drivers/usb/gadget/legacy/Kconfig
-> @@ -13,6 +13,14 @@
->  # both kinds of controller can also support "USB On-the-Go" (CONFIG_USB_OTG).
->  #
->  
-> +menuconfig USB_GADGET_LEGACY
-> +	bool "Legacy USB Gadget Support"
-> +	help
-> +	   Legacy USB gadgets are USB gadgets that do not use the USB gadget
-> +	   configfs interface.
-> +
-> +if USB_GADGET_LEGACY
-> +
->  config USB_ZERO
->  	tristate "Gadget Zero (DEVELOPMENT)"
->  	select USB_LIBCOMPOSITE
-> @@ -490,3 +498,5 @@ config USB_G_WEBCAM
->  
->  	  Say "y" to link the driver statically, or "m" to build a
->  	  dynamically linked module called "g_webcam".
-> +
-> +endif
-> 
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-
-Cheers,
-
-Hannes
-
--- 
-Dr. Hannes Reinecke		               zSeries & Storage
-hare@suse.com			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+T24gVHVlLCAyMDE3LTEwLTMxIGF0IDExOjAzIC0wNzAwLCBCYXJ0IFZhbiBBc3NjaGUgd3JvdGU6
+DQo+IENvbnNpZGVyYWJsZSB0aW1lIGFnbyB0aGUgbGVnYWN5IGdhZGdldCBtZW51IHdhcyBhZGRl
+ZCBpbnNpZGUgdGhlDQo+IFVTQl9FVEggY2hvaWNlLiBJIHRoaW5rIHRoaXMgd2FzIGEgbWlzdGFr
+ZSBhbmQgdGhhdCB0aGUgbGVnYWN5DQo+IGdhZGdldCBtZW51IHNob3VsZCBoYXZlIGJlZW4gYWRk
+ZWQgYWZ0ZXIgImVuZGNob2ljZSIgaW5zdGVhZCBvZg0KPiBiZWZvcmUuIEhlbmNlIHRoaXMgcGF0
+Y2guDQo+IA0KPiBGaXhlczogY29tbWl0IDg0NDNmMmQyYjc3OCAoInVzYjogZ2FkZ2V0OiBHYWRn
+ZXQgZGlyZWN0b3J5IGNsZWFudXAgLSBncm91cCBsZWdhY3kgZ2FkZ2V0cyIpDQo+IFNpZ25lZC1v
+ZmYtYnk6IEJhcnQgVmFuIEFzc2NoZSA8YmFydC52YW5hc3NjaGVAd2RjLmNvbT4NCj4gQ2M6IE5p
+Y2hvbGFzIEJlbGxpbmdlciA8bmFiQGxpbnV4LWlzY3NpLm9yZz4NCj4gQ2M6IEFuZHJ6ZWogUGll
+dHJhc2lld2ljeiA8YW5kcnplai5wQHNhbXN1bmcuY29tPg0KPiBDYzogRmVsaXBlIEJhbGJpIDxi
+YWxiaUB0aS5jb20+DQo+IENjOiBsaW51eC11c2JAdmdlci5rZXJuZWwub3JnDQoNCkhlbGxvIEFu
+ZHJ6ZWogYW5kIEZlbGlwZSwNCg0KQ2FuIG9uZSBvciBib3RoIG9mIHlvdSBoYXZlIGEgbG9vayBh
+dCB0aGlzIHBhdGNoPw0KDQpUaGFua3MsDQoNCkJhcnQu
