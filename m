@@ -1,94 +1,56 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Thu, 16 Nov 2017 06:17:39 +0000
-Subject: [PATCH-3.18.y 1/2] target/iscsi: Fix iSCSI task reassignment handling
-Message-Id: <1510813060-15334-2-git-send-email-nab@linux-iscsi.org>
+From: "=?utf-8?B?Wmhlbmd5dWFuIExpdQ==?=" <liuzhengyuan@kylinos.cn>
+Date: Fri, 24 Nov 2017 10:39:28 +0000
+Subject: iscsi_trx encounters memory allocation failure
+Message-Id: <tencent_3A6A0E2630CE659751D526C7@qq.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510813060-15334-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510813060-15334-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Bart Van Assche <bart.vanassche@sandisk.com>, Moshe David <mdavid@infinidat.com>
+To: target-devel@vger.kernel.org
 
-From: Bart Van Assche <bart.vanassche@sandisk.com>
+SGksDQoNCkkgaGF2ZSBnb3QgYSBwcm9ibGVtIHdoaWxlIGRvaW5nIHNlcXVlbnRpYWwgd3Jp
+dGluZyBvbiB0aGUgaXNjc2kgdGFyZ2V0LCBzZWVpbmcgYmVsbG93IGRtZXNnICBmcm9tIHRh
+cmdldCBtYWNoaW5lIGZvciBkZXRhaWxzLiANCg0KWzI2MDE0LjIxNzkwNF0gaXNjc2lfdHJ4
+OiBwYWdlIGFsbG9jYXRpb24gZmFpbHVyZTogb3JkZXI6NCwgbW9kZToweDI0MGMwYzANClsy
+NjAxNC4yMjQ0ODZdIENQVTogMSBQSUQ6IDE0NTMgQ29tbTogaXNjc2lfdHJ4IE5vdCB0YWlu
+dGVkIDQuNC41OC0yMDE3MDkwOC5reWxpbi41LjJrcC5zZXJ2ZXIuWVVOKysgIzgNClsyNjAx
+NC4yMzM1NzFdIEhhcmR3YXJlIG5hbWU6IEZUMjAwMHBsdXMgKERUKQ0KWzI2MDE0LjIzNzY0
+NV0gQ2FsbCB0cmFjZToNClsyNjAxNC4yNDAwODNdIFs8ZmZmZjgwMDAwMDA4OWRkOD5dIGR1
+bXBfYmFja3RyYWNlKzB4MC8weDE4OA0KWzI2MDE0LjI0NTQ1M10gWzxmZmZmODAwMDAwMDg5
+Zjg0Pl0gc2hvd19zdGFjaysweDI0LzB4MzANClsyNjAxNC4yNTA0ODBdIFs8ZmZmZjgwMDAw
+MDQyNTYwND5dIGR1bXBfc3RhY2srMHg5OC8weGJjDQpbMjYwMTQuMjU1NTA3XSBbPGZmZmY4
+MDAwMDAxY2IzNjg+XSB3YXJuX2FsbG9jX2ZhaWxlZCsweGUwLzB4MTI4DQpbMjYwMTQuMjYx
+MjIzXSBbPGZmZmY4MDAwMDAxY2VlYzA+XSBfX2FsbG9jX3BhZ2VzX25vZGVtYXNrKzB4YWU4
+LzB4Y2E4DQpbMjYwMTQuMjY3NDU4XSBbPGZmZmY4MDAwMDAyMWE0MzQ+XSBhbGxvY19wYWdl
+c19jdXJyZW50KzB4YTQvMHgxNDgNClsyNjAxNC4yNzMzNDddIFs8ZmZmZjgwMDAwMDFjY2Uz
+Yz5dIGFsbG9jX2ttZW1fcGFnZXMrMHgyYy8weGE4DQpbMjYwMTQuMjc4ODkxXSBbPGZmZmY4
+MDAwMDAxZWMxMjg+XSBrbWFsbG9jX29yZGVyKzB4MjgvMHg3MA0KWzI2MDE0LjI4NDE3NF0g
+WzxmZmZmODAwMDAwMWVjMWFjPl0ga21hbGxvY19vcmRlcl90cmFjZSsweDNjLzB4ZjANClsy
+NjAxNC4yODk5NzddIFs8ZmZmZjgwMDAwMDIyMzZlND5dIF9fa21hbGxvYysweDI1NC8weDI3
+OA0KWzI2MDE0LjI5NTEzN10gWzxmZmZmN2ZmZmZjNjEzM2E4Pl0gaXNjc2lfdGFyZ2V0X3J4
+X3RocmVhZCsweDQ3OC8weGQxMCBbaXNjc2lfdGFyZ2V0X21vZF0NClsyNjAxNC4zMDMwMTVd
+IFs8ZmZmZjgwMDAwMDBkZmJmYz5dIGt0aHJlYWQrMHhlNC8weGY4DQpbMjYwMTQuMzA3Nzgx
+XSBbPGZmZmY4MDAwMDAwODU0MTA+XSByZXRfZnJvbV9mb3JrKzB4MTAvMHg0MA0KWzI2MDE0
+LjMxMzA5Ml0gTWVtLUluZm86DQpbMjYwMTQuMzE1Mzg1XSBhY3RpdmVfYW5vbjo0MzAzIGlu
+YWN0aXZlX2Fub246NjA3MSBpc29sYXRlZF9hbm9uOjANCiAgICAgICAgICAgICAgICBhY3Rp
+dmVfZmlsZTo1MDM4NTY3IGluYWN0aXZlX2ZpbGU6ODAyNzEyMSBpc29sYXRlZF9maWxlOjAN
+CiAgICAgICAgICAgICAgICB1bmV2aWN0YWJsZToxNzMzIGRpcnR5OjkyMDEgd3JpdGViYWNr
+OjAgdW5zdGFibGU6MA0KICAgICAgICAgICAgICAgIHNsYWJfcmVjbGFpbWFibGU6NjIyNDUw
+IHNsYWJfdW5yZWNsYWltYWJsZToxNzc2OQ0KICAgICAgICAgICAgICAgIG1hcHBlZDo3NDc0
+IHNobWVtOjQyOTEgcGFnZXRhYmxlczozMjMgYm91bmNlOjANCiAgICAgICAgICAgICAgICBm
+cmVlOjc4MDI5IGZyZWVfcGNwOjIxIGZyZWVfY21hOjANCg0KVGhlIHRhcmdldCBiYWNrc3Rv
+cmUgaXMgYmFzZWQgb24gYSBmaWxlIG9iamVjdC4gQWZ0ZXIgYWJvdXQgMjRIIHRlc3Rpbmcg
+SSBjYW4gY2F0Y2ggYWJvdmUgcHJvYmxlbSBhbmQgdGhlIHByb2JsZW0gY2FuIGJlIHJlcHJv
+ZHVjZWQgYWZ0ZXIgcmVib290IGFuZCAgYW5vdGhlciAyNEggdGVzdGluZy4gSWYgSSB1c2Ug
+IGJsb2NrIG9iamVjdCBhcyB0aGUgYmFja3N0b3JlLCB0aGVuIHRoZSBwcm9ibGVtIGdldHMg
+ZGlzYXBwZWFyZWQuICBJIGxvb2tlZCB0byBzb3VyY2UgY29kZSBhbmQgZm91bmQgYSBzdHJv
+bmctcmVsYXRlZCBjb21taXQgdG8gdGhpcyBwcm9ibGVtIHRoYXQgaXMgOTVjYWRhY2UoInRh
+cmdldC9maWxlOiBVcGRhdGUgaHdfbWF4X3NlY3RvcnMgYmFzZWQgb24gY3VycmVudCBibG9j
+a19zaXplIikuICBUaGlzIHBhdGNoIGluY3JlYXNlZCBGRF9NQVhfU0VDVE9SUyBmcm9tIDFN
+QiB0byA4TUIgLCBhcyBhIHJlc3VsdCBpc2NzaV90YXJnZXRfcnhfdGhyZWFkIGFsd2F5cyB1
+c2Ugb3JkZXI9NChzZWVpbmcgZG1lc2cgcHJpbnRvdXQpIHRvIGFsbG9jYXRlIG1lbW9yeSB3
+aGljaCBjb3VsZCBlYXNpbHkgZHJhaW4gaGlnaCBvcmRlciBtZW1vcnkgYWZ0ZXIgbG9uZyB0
+aW1lIHdyaXRpbmcgdGVzdC4gICBTbyBjYW4gd2UgY29uc2lkZXIgdG8gdGFrZSBhIG1pZGRs
+ZSB2YWx1ZSBmb3IgdGhpcyBtYWNybz8gDQoNClRoYW5rcy4
 
-commit 59b6986dbfcdab96a971f9663221849de79a7556 upstream.
-
-Allocate a task management request structure for all task management
-requests, including task reassignment. This change avoids that the
-se_tmr->response assignment dereferences an uninitialized se_tmr
-pointer.
-
-Reported-by: Moshe David <mdavid@infinidat.com>
-Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Cc: Moshe David <mdavid@infinidat.com>
-Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
----
- drivers/target/iscsi/iscsi_target.c | 19 +++++++------------
- include/target/target_core_base.h   |  1 +
- 2 files changed, 8 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index ce844e9..801369f 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1749,7 +1749,7 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	struct iscsi_tm *hdr;
- 	int out_of_order_cmdsn = 0, ret;
- 	bool sess_ref = false;
--	u8 function;
-+	u8 function, tcm_function = TMR_UNKNOWN;
- 
- 	hdr			= (struct iscsi_tm *) buf;
- 	hdr->flags &= ~ISCSI_FLAG_CMD_FINAL;
-@@ -1795,10 +1795,6 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	 * LIO-Target $FABRIC_MOD
- 	 */
- 	if (function != ISCSI_TM_FUNC_TASK_REASSIGN) {
--
--		u8 tcm_function;
--		int ret;
--
- 		transport_init_se_cmd(&cmd->se_cmd,
- 				      &lio_target_fabric_configfs->tf_ops,
- 				      conn->sess->se_sess, 0, DMA_NONE,
-@@ -1835,15 +1831,14 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 			return iscsit_add_reject_cmd(cmd,
- 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
- 		}
--
--		ret = core_tmr_alloc_req(&cmd->se_cmd, cmd->tmr_req,
--					 tcm_function, GFP_KERNEL);
--		if (ret < 0)
--			return iscsit_add_reject_cmd(cmd,
-+	}
-+	ret = core_tmr_alloc_req(&cmd->se_cmd, cmd->tmr_req, tcm_function,
-+				 GFP_KERNEL);
-+	if (ret < 0)
-+		return iscsit_add_reject_cmd(cmd,
- 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
- 
--		cmd->tmr_req->se_tmr_req = cmd->se_cmd.se_tmr_req;
--	}
-+	cmd->tmr_req->se_tmr_req = cmd->se_cmd.se_tmr_req;
- 
- 	cmd->iscsi_opcode	= ISCSI_OP_SCSI_TMFUNC;
- 	cmd->i_state		= ISTATE_SEND_TASKMGTRSP;
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index d1e7cb9..ab4bff0 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -231,6 +231,7 @@ enum tcm_tmreq_table {
- 	TMR_LUN_RESET		= 5,
- 	TMR_TARGET_WARM_RESET	= 6,
- 	TMR_TARGET_COLD_RESET	= 7,
-+	TMR_UNKNOWN		= 0xff,
- };
- 
- /* fabric independent task management response values */
--- 
-1.8.5.3
 
