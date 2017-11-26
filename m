@@ -1,45 +1,40 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 20 Nov 2017 20:16:22 +0000
-Subject: Re: [PATCH] fix page addr in tcmu_flush_dcache_range
-Message-Id: <5A133816.20000@redhat.com>
+From: Sagi Grimberg <sagi@grimberg.me>
+Date: Sun, 26 Nov 2017 13:59:09 +0000
+Subject: Re: [PATCH] iser-target: Fix possible use-after-free in connection establishment error
+Message-Id: <3676820c-544e-8ced-859a-ade8e6a0ef53@grimberg.me>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510996463-26020-1-git-send-email-tang.wenji@zte.com.cn>
-In-Reply-To: <1510996463-26020-1-git-send-email-tang.wenji@zte.com.cn>
+References: <20171126133104.22710-1-sagi@grimberg.me>
+In-Reply-To: <20171126133104.22710-1-sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Doug Ledford <dledford-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>
 
-On 11/18/2017 03:14 AM, tang.wenji@zte.com.cn wrote:
-> From: tangwenji <tang.wenji@zte.com.cn>
+Oops,
+
+This should go via the target tree, CCing target-devel and nab
+
+On 11/26/2017 03:31 PM, Sagi Grimberg wrote:
+> In case we fail to establish the connection we must drain our pre-posted
+> login recieve work request before continuing safely with connection
+> teardown.
 > 
-> The page addr should be update.
-> 
-> Signed-off-by: tangwenji <tang.wenji@zte.com.cn>
+> Reported-by: Amrani, Ram <Ram.Amrani@cavium.com>
+> Signed-off-by: Sagi Grimberg <sagi@grimberg.me>
 > ---
->  drivers/target/target_core_user.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+>   drivers/infiniband/ulp/isert/ib_isert.c | 1 +
+>   1 file changed, 1 insertion(+)
 > 
-> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> index 942d0942..82dc246 100644
-> --- a/drivers/target/target_core_user.c
-> +++ b/drivers/target/target_core_user.c
-> @@ -470,12 +470,13 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
->  static inline void tcmu_flush_dcache_range(void *vaddr, size_t size)
->  {
->  	unsigned long offset = offset_in_page(vaddr);
-> +	void *start = vaddr - offset;
->  
->  	size = round_up(size+offset, PAGE_SIZE);
-> -	vaddr -= offset;
->  
->  	while (size) {
-> -		flush_dcache_page(virt_to_page(vaddr));
-> +		flush_dcache_page(virt_to_page(start));
-> +		start += PAGE_SIZE;
->  		size -= PAGE_SIZE;
->  	}
->  }
+> diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+> index ceabdb85df8b..9d4785ba24cb 100644
+> --- a/drivers/infiniband/ulp/isert/ib_isert.c
+> +++ b/drivers/infiniband/ulp/isert/ib_isert.c
+> @@ -741,6 +741,7 @@ isert_connect_error(struct rdma_cm_id *cma_id)
+>   {
+>   	struct isert_conn *isert_conn = cma_id->qp->qp_context;
+>   
+> +	ib_drain_qp(isert_conn->qp);
+>   	list_del_init(&isert_conn->node);
+>   	isert_conn->cm_id = NULL;
+>   	isert_put_conn(isert_conn);
 > 
-
-Reviewed-by: Mike Christie <mchristi@redhat.com>
