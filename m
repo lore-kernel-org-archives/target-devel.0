@@ -1,62 +1,57 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Thu, 09 Nov 2017 13:30:50 +0000
-Subject: Re: possible isert bug in tear down sequence
-Message-Id: <e196fa80-d7ad-cfa7-651b-f343c0198a84@grimberg.me>
+From: "Amrani, Ram" <Ram.Amrani@cavium.com>
+Date: Sun, 26 Nov 2017 11:54:33 +0000
+Subject: RE: possible isert bug in tear down sequence
+Message-Id: <BN3PR07MB2578A4A4D5B2A7C0DBA91843F8240@BN3PR07MB2578.namprd07.prod.outlook.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <BN3PR07MB2578825BFC784DF5DDB6E125F8570@BN3PR07MB2578.namprd07.prod.outlook.com>
-In-Reply-To: <BN3PR07MB2578825BFC784DF5DDB6E125F8570@BN3PR07MB2578.namprd07.prod.outlook.com>
+ <e196fa80-d7ad-cfa7-651b-f343c0198a84@grimberg.me>
+In-Reply-To: <e196fa80-d7ad-cfa7-651b-f343c0198a84@grimberg.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Amrani, Ram" <Ram.Amrani@cavium.com>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, target-devel <target-devel@vger.kernel.org>
+To: Sagi Grimberg <sagi@grimberg.me>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, target-devel <target-devel@vger.kernel.org>
+Cc: "Kalderon, Michal" <Michal.Kalderon@cavium.com>, "Elior, Ariel" <Ariel.Elior@cavium.com>
 
-Hi Ram,
-
-CC'ing target-devel where isert is normally maintained.
-
-> I am experiencing an issue with isert's receive handler:
-> 	static void isert_recv_done(struct ib_cq *cq, struct ib_wc *wc)
-> 	{
-> 		struct isert_conn *isert_conn = wc->qp->qp_context;
-> 		...
-> 	}
-> The first line dereferences the QP. But I'm hitting a case where the QP was already
-> deleted so this is bad.
-
-Indeed, and should not happen.
-
-> The scenario is triggered via 'ifconfig <Ethernet device> down',
-> whilst the initiator and target are connected.
-
-That would trigger a DEVICE_REMOVAL event. which should trigger free of
-the iser connection (and its relevant rdma resources, including the qp).
-
-> The handler is invoked via a work queue. Hence it is asynchronous.
-
-Correct.
-
-> It is valid to continue polling the CQ after the QP has been deleted,
-
-It is valid in theory, but isert should never get there. isert always
-drains the queue-pair before freeing it. ib_drain_qp() is designed to
-guarantee that after calling it, no other completion will ever be
-associated with the qp.
-
-There are two possibilities here:
-1. We have a bug in isert which posts a wr after calling ib_drain_qp()
-which is very likely, but given that this is a recv completion I sorta
-doubt it because it means that the QP is not even in error state (or is
-it and its an FLUSH error completion?)
-
-2. The device you tested with did not really drain the qp properly and a
-stray completion found its way afterwards. What device did you test
-with?
-
-> but it isn't valid
-> to dereference the QP due to this asynchronous nature. This is funny because the
-> QP was destroyed by isert itself. The problem is, that even if isert raises a flag
-> saying "I issued a destroy sequence so ignore this CQE" it will still need another
-> way to get to iser_conn that isn't via the qp.
-
-As I said, isert should make sure to not get there ever and uses
-ib_drain_qp for it.
+SGkgU2FnaSwgdGFyZ2V0LWRldmVsLA0KDQo+IFRoZXJlIGFyZSB0d28gcG9zc2liaWxpdGllcyBo
+ZXJlOg0KPiAxLiBXZSBoYXZlIGEgYnVnIGluIGlzZXJ0IHdoaWNoIHBvc3RzIGEgd3IgYWZ0ZXIg
+Y2FsbGluZyBpYl9kcmFpbl9xcCgpDQo+IHdoaWNoIGlzIHZlcnkgbGlrZWx5LCBidXQgZ2l2ZW4g
+dGhhdCB0aGlzIGlzIGEgcmVjdiBjb21wbGV0aW9uIEkgc29ydGENCj4gZG91YnQgaXQgYmVjYXVz
+ZSBpdCBtZWFucyB0aGF0IHRoZSBRUCBpcyBub3QgZXZlbiBpbiBlcnJvciBzdGF0ZSAob3IgaXMN
+Cj4gaXQgYW5kIGl0cyBhbiBGTFVTSCBlcnJvciBjb21wbGV0aW9uPykNCj4gDQo+IDIuIFRoZSBk
+ZXZpY2UgeW91IHRlc3RlZCB3aXRoIGRpZCBub3QgcmVhbGx5IGRyYWluIHRoZSBxcCBwcm9wZXJs
+eSBhbmQgYQ0KPiBzdHJheSBjb21wbGV0aW9uIGZvdW5kIGl0cyB3YXkgYWZ0ZXJ3YXJkcy4gV2hh
+dCBkZXZpY2UgZGlkIHlvdSB0ZXN0DQo+IHdpdGg/DQoNCkkgdXNlZCBhIFEtTG9naWMgRXZlcmVz
+dCA0IGRldmljZS4NCg0KPg0KDQpMZXQgbWUgYWRkIGEgdGhpcmQgcG9zc2liaWxpdHksIHRoYXQg
+aXMgd2hhdCB3ZSBhcmUgaGl0dGluZzoNCkkgc2VlIHRoYXQgaXNlcnQgdXNlcyBpc2VydF9jbWFf
+aGFuZGxlcigpIGFuZCBpbiB0aGUgZm9sbG93aW5nIGNhc2VzDQpkcmFpbiB3b24ndCBiZSBpbnZv
+a2VkOg0KICAgICAgICBjYXNlIFJETUFfQ01fRVZFTlRfUkVKRUNURUQ6ICAgICAgIC8qIEZBTExU
+SFJVICovDQogICAgICAgICAgICAgICAgaXNlcnRfaW5mbygiQ29ubmVjdGlvbiByZWplY3RlZDog
+JXNcbiIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICByZG1hX3JlamVjdF9tc2coY21hX2lk
+LCBldmVudC0+c3RhdHVzKSk7DQogICAgICAgIGNhc2UgUkRNQV9DTV9FVkVOVF9VTlJFQUNIQUJM
+RTogICAgLyogRkFMTFRIUlUgKi8NCiAgICAgICAgY2FzZSBSRE1BX0NNX0VWRU5UX0NPTk5FQ1Rf
+RVJST1I6DQogICAgICAgICAgICAgICAgcmV0ID0gaXNlcnRfY29ubmVjdF9lcnJvcihjbWFfaWQp
+Ow0KICAgICAgICAgICAgICAgIGJyZWFrOw0KDQpTcGVjaWZpY2FsbHksIEkgaGl0IHRoZSByZWpl
+Y3RlZCBjYXNlLiBTZWUgZG1lc2cgYmVsb3cgd2l0aCBhZGRlZCBwcmludHMgKHJyci4uLikuDQpX
+ZSBBcmUgdXNpbmcgDQoNClsgMjQ1NS4yNDE5NzhdIHJyciBjcmVhdGVkIFFQIGZmZmY4ODBlOTg0
+ZDZjMDANClsgMjQ1NS4yNDE5ODJdIGlzZXJ0OiBpc2VydF9sb2dpbl9wb3N0X3JlY3Y6IFNldHVw
+IHNnZTogYWRkcjogZWIxOWU0MDAwIGxlbmd0aDogODI2OCAweDAwMDAwMDAwDQpbIDI0NTUuMjQx
+OTg3XSBycnIgcG9zdF9yZWN2IHFwPWZmZmY4ODBlOTg0ZDZjMDAsIHdyX2lkPWZmZmY4ODBlYjE5
+ZTYwNjQNClsgMjQ1NS4yNDIxMDhdIGlzZXJ0OiBpc2VydF9jbWFfaGFuZGxlcjogcmVqZWN0ZWQg
+KDgpOiBzdGF0dXMgMTAgaWQgZmZmZjg4MGViMWY5YjAwMCBucCBmZmZmODgxMDQ1NGQyYzQwDQpb
+IDI0NTUuMjQyMTE0XSBpc2VydDogaXNlcnRfY21hX2hhbmRsZXI6IENvbm5lY3Rpb24gcmVqZWN0
+ZWQ6IHN0YWxlIGNvbm4NClsgMjQ1NS4yNDIxMjFdIGlzZXJ0OiBpc2VydF9yZWxlYXNlX2tyZWY6
+IGNvbm4gZmZmZjg4MGViMTllMjAwMCBmaW5hbCBrcmVmIGt3b3JrZXIvNzoyLzYwNTgNClsgMjQ1
+NS4yNDIxMjddIGlzZXJ0OiBpc2VydF9jb25uZWN0X3JlbGVhc2U6IGNvbm4gZmZmZjg4MGViMTll
+MjAwMA0KWyAyNDU1LjI0MjE1Nl0gcnJyIHBvbGxfcmVjdiBxcD1mZmZmODgwZTk4NGQ2YzAwIFJE
+TUFfQ1FFX1JFU1BfU1RTX1dPUktfUkVRVUVTVF9GTFVTSEVEX0VSUiwgd3JfaWQ9ZmZmZjg4MGVi
+MTllNjA2NA0KWyAyNDU1LjI0MjE1N10gcnJyIGRlc3Ryb3llZCBRUCBmZmZmODgwZTk4NGQ2YzAw
+DQpbIDI0NTUuMjQyMTY0XSBNb2R1bGVzIGxpbmtlZCBpbjogbmV0Y29uc29sZSB0YXJnZXRfY29y
+ZV91c2VyIHRhcmdldF9jb3JlX3BzY3NpIHRhcmdldF9jb3JlX2ZpbGUgdGFyZ2V0X2NvcmVfaWJs
+b2NrDQpbIDI0NTUuMjQyMTgzXSBCVUc6IHVuYWJsZSB0byBoYW5kbGUga2VybmVsDQpbIDI0NTUu
+MjQyMjAyXSAgWzxmZmZmZmZmZmEwODIzODEzPl0gaXNlcnRfbG9naW5fcmVjdl9kb25lKzB4MjMv
+MHgxNjAgW2liX2lzZXJ0XQ0KDQpBIFFQIGdldHMgY3JlYXRlZCwgcG9zdF9yZWN2IGlzIGludm9r
+ZWQsIHBvbGxfY3EgYXMgd2VsbCAoZmx1c2hlZCkgdGhlIFFQIGlzIGRlc3Ryb3llZCBhbmQgdGhl
+biB0aGUgd29ya3F1ZXVlIHRyaWVzIHRvIGRlcmVmZXJlbmNlIHRoZSBRUC4uLg0KDQpJJ20gY2hl
+Y2tpbmcgd2h5IHRoZSBjb25uZWN0aW9uIGdvdCBzdGFsZSwgYnV0IGFueXdheSBJIHRoaW5rIGli
+X2RyYWluX3FwKCkgc2hvdWxkIGJlIGludm9rZWQuDQoNCldoYXQgZG8geW91IHRoaW5rPw0KDQpU
+aGFua3MsDQpSYW0NCg0K
