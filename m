@@ -1,35 +1,85 @@
-From: Hannes Reinecke <hare@suse.com>
-Date: Thu, 02 Nov 2017 14:27:38 +0000
-Subject: Re: [PATCH 08/11] target/iscsi: Modify iscsit_do_crypto_hash_buf() prototype
-Message-Id: <4af8b169-f280-86bc-cc53-fc1ad5024fc3@suse.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 28 Nov 2017 18:40:28 +0000
+Subject: [PATCH 02/15] tcmu: merge common block release code
+Message-Id: <1511894441-8626-3-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 10/31/2017 07:03 PM, Bart Van Assche wrote:
-> Change the type of the last two arguments from u8 * into const void *
-> and void * respectively such that the u8 * casts can be left out
-> from the callers. This patch does not change any functionality.
-> 
-> Signed-off-by: Bart Van Assche <bart.vanassche@sandisk.com>
-> Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-> Cc: Hannes Reinecke <hare@suse.com>
-> Cc: Christoph Hellwig <hch@lst.de>
-> Cc: Mike Christie <mchristi@redhat.com>
-> ---
->  drivers/target/iscsi/iscsi_target.c | 41 +++++++++++++++----------------------
->  1 file changed, 17 insertions(+), 24 deletions(-)
-> 
-Reviewed-by: Hannes Reinecke <hare@suse.com>
+Have unmap_thread_fn use tcmu_blocks_release.
 
-Cheers,
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 24 ++++++++----------------
+ 1 file changed, 8 insertions(+), 16 deletions(-)
 
-Hannes
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 6bcaa8b..d9fd91e 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1302,21 +1302,19 @@ static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
+ 	return -EINVAL;
+ }
+ 
+-static void tcmu_blocks_release(struct tcmu_dev *udev)
++static void tcmu_blocks_release(struct radix_tree_root *blocks,
++				int start, int end)
+ {
+ 	int i;
+ 	struct page *page;
+ 
+-	/* Try to release all block pages */
+-	mutex_lock(&udev->cmdr_lock);
+-	for (i = 0; i <= udev->dbi_max; i++) {
+-		page = radix_tree_delete(&udev->data_blocks, i);
++	for (i = start; i < end; i++) {
++		page = radix_tree_delete(blocks, i);
+ 		if (page) {
+ 			__free_page(page);
+ 			atomic_dec(&global_db_count);
+ 		}
+ 	}
+-	mutex_unlock(&udev->cmdr_lock);
+ }
+ 
+ static void tcmu_dev_kref_release(struct kref *kref)
+@@ -1340,7 +1338,9 @@ static void tcmu_dev_kref_release(struct kref *kref)
+ 	spin_unlock_irq(&udev->commands_lock);
+ 	WARN_ON(!all_expired);
+ 
+-	tcmu_blocks_release(udev);
++	mutex_lock(&udev->cmdr_lock);
++	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
++	mutex_unlock(&udev->cmdr_lock);
+ 
+ 	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
+ }
+@@ -1978,8 +1978,6 @@ static int unmap_thread_fn(void *data)
+ 	struct tcmu_dev *udev;
+ 	loff_t off;
+ 	uint32_t start, end, block;
+-	struct page *page;
+-	int i;
+ 
+ 	while (!kthread_should_stop()) {
+ 		DEFINE_WAIT(__wait);
+@@ -2027,13 +2025,7 @@ static int unmap_thread_fn(void *data)
+ 			unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
+ 
+ 			/* Release the block pages */
+-			for (i = start; i < end; i++) {
+-				page = radix_tree_delete(&udev->data_blocks, i);
+-				if (page) {
+-					__free_page(page);
+-					atomic_dec(&global_db_count);
+-				}
+-			}
++			tcmu_blocks_release(&udev->data_blocks, start, end);
+ 			mutex_unlock(&udev->cmdr_lock);
+ 		}
+ 
 -- 
-Dr. Hannes Reinecke		               zSeries & Storage
-hare@suse.com			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+1.8.3.1
+
