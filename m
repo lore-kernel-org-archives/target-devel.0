@@ -1,40 +1,32 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Sun, 26 Nov 2017 13:59:09 +0000
-Subject: Re: [PATCH] iser-target: Fix possible use-after-free in connection establishment error
-Message-Id: <3676820c-544e-8ced-859a-ade8e6a0ef53@grimberg.me>
+From: "Amrani, Ram" <Ram.Amrani@cavium.com>
+Date: Tue, 28 Nov 2017 11:51:02 +0000
+Subject: RE: [PATCH] iser-target: Fix possible use-after-free in connection establishment error
+Message-Id: <BN3PR07MB25787833DA301FFDFC165A91F83A0@BN3PR07MB2578.namprd07.prod.outlook.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20171126133104.22710-1-sagi@grimberg.me>
-In-Reply-To: <20171126133104.22710-1-sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>
+ <3676820c-544e-8ced-859a-ade8e6a0ef53@grimberg.me>
+In-Reply-To: <3676820c-544e-8ced-859a-ade8e6a0ef53@grimberg.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Doug Ledford <dledford-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>
+To: Sagi Grimberg <sagi@grimberg.me>, Doug Ledford <dledford@redhat.com>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, target-devel <target-devel@vger.kernel.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 
-Oops,
-
-This should go via the target tree, CCing target-devel and nab
-
-On 11/26/2017 03:31 PM, Sagi Grimberg wrote:
-> In case we fail to establish the connection we must drain our pre-posted
-> login recieve work request before continuing safely with connection
-> teardown.
-> 
-> Reported-by: Amrani, Ram <Ram.Amrani@cavium.com>
-> Signed-off-by: Sagi Grimberg <sagi@grimberg.me>
-> ---
->   drivers/infiniband/ulp/isert/ib_isert.c | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-> index ceabdb85df8b..9d4785ba24cb 100644
-> --- a/drivers/infiniband/ulp/isert/ib_isert.c
-> +++ b/drivers/infiniband/ulp/isert/ib_isert.c
-> @@ -741,6 +741,7 @@ isert_connect_error(struct rdma_cm_id *cma_id)
->   {
->   	struct isert_conn *isert_conn = cma_id->qp->qp_context;
->   
-> +	ib_drain_qp(isert_conn->qp);
->   	list_del_init(&isert_conn->node);
->   	isert_conn->cm_id = NULL;
->   	isert_put_conn(isert_conn);
-> 
+PiBPbiAxMS8yNi8yMDE3IDAzOjMxIFBNLCBTYWdpIEdyaW1iZXJnIHdyb3RlOg0KPiA+IEluIGNh
+c2Ugd2UgZmFpbCB0byBlc3RhYmxpc2ggdGhlIGNvbm5lY3Rpb24gd2UgbXVzdCBkcmFpbiBvdXIg
+cHJlLXBvc3RlZA0KPiA+IGxvZ2luIHJlY2lldmUgd29yayByZXF1ZXN0IGJlZm9yZSBjb250aW51
+aW5nIHNhZmVseSB3aXRoIGNvbm5lY3Rpb24NCj4gPiB0ZWFyZG93bi4NCj4gPg0KPiA+IFJlcG9y
+dGVkLWJ5OiBBbXJhbmksIFJhbSA8UmFtLkFtcmFuaUBjYXZpdW0uY29tPg0KPiA+IFNpZ25lZC1v
+ZmYtYnk6IFNhZ2kgR3JpbWJlcmcgPHNhZ2lAZ3JpbWJlcmcubWU+DQo+ID4gLS0tDQo+ID4gICBk
+cml2ZXJzL2luZmluaWJhbmQvdWxwL2lzZXJ0L2liX2lzZXJ0LmMgfCAxICsNCj4gPiAgIDEgZmls
+ZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+aW5maW5pYmFuZC91bHAvaXNlcnQvaWJfaXNlcnQuYyBiL2RyaXZlcnMvaW5maW5pYmFuZC91bHAv
+aXNlcnQvaWJfaXNlcnQuYw0KPiA+IGluZGV4IGNlYWJkYjg1ZGY4Yi4uOWQ0Nzg1YmEyNGNiIDEw
+MDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvaW5maW5pYmFuZC91bHAvaXNlcnQvaWJfaXNlcnQuYw0K
+PiA+ICsrKyBiL2RyaXZlcnMvaW5maW5pYmFuZC91bHAvaXNlcnQvaWJfaXNlcnQuYw0KPiA+IEBA
+IC03NDEsNiArNzQxLDcgQEAgaXNlcnRfY29ubmVjdF9lcnJvcihzdHJ1Y3QgcmRtYV9jbV9pZCAq
+Y21hX2lkKQ0KPiA+ICAgew0KPiA+ICAgCXN0cnVjdCBpc2VydF9jb25uICppc2VydF9jb25uID0g
+Y21hX2lkLT5xcC0+cXBfY29udGV4dDsNCj4gPg0KPiA+ICsJaWJfZHJhaW5fcXAoaXNlcnRfY29u
+bi0+cXApOw0KPiA+ICAgCWxpc3RfZGVsX2luaXQoJmlzZXJ0X2Nvbm4tPm5vZGUpOw0KPiA+ICAg
+CWlzZXJ0X2Nvbm4tPmNtX2lkID0gTlVMTDsNCj4gPiAgIAlpc2VydF9wdXRfY29ubihpc2VydF9j
+b25uKTsNCg0KV2l0aCB0aGlzIHBhdGNoIG91ciB0ZXN0IGJlaGF2ZXMgYXMgZXhwZWN0ZWQuDQoN
+ClRoYW5rcywNClJhbQ0KDQo
