@@ -1,63 +1,32 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Tue, 05 Dec 2017 20:54:42 +0000
-Subject: [RFC PATCH] target: detect read-only from underlying iblock device
-Message-Id: <20171205205442.25414-1-ddiss@suse.de>
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Wed, 06 Dec 2017 04:33:16 +0000
+Subject: Re: [RFC PATCH] target: detect read-only from underlying iblock device
+Message-Id: <1512534795.2828.5.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20171205205442.25414-1-ddiss@suse.de>
+In-Reply-To: <20171205205442.25414-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-A read-only block device must currently be flagged as such when
-configuring the iblock backstore, via a readonly=1 configfs parameter.
-If a read-only block device is used without explicitly providing the
-parameter, then backstore enablement fails with EACCES, e.g.
-  losetup --read-only /dev/loop0 /lofile
-  mkdir -p /sys/kernel/config/target/core/iblock_0/loopy
-  echo "udev_path=/dev/loop0" \
-	> /sys/kernel/config/target/core/iblock_0/loopy/control
-  echo "1" > /sys/kernel/config/target/core/iblock_0/loopy/enable
-  sh: echo: write error: Permission denied
-
-This change allows an iblock backstore to be demoted to read-only if the
-underlying device is detected as such, via a -EACCES return value from
-blkdev_get_by_path(udev_path=$readonly_device, mode & FMODE_WRITE, ...).
-
-Signed-off-by: David Disseldorp <ddiss@suse.de>
----
- drivers/target/target_core_iblock.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index 07c814c42648..cafba262a440 100644
---- a/drivers/target/target_core_iblock.c
-+++ b/drivers/target/target_core_iblock.c
-@@ -103,6 +103,7 @@ static int iblock_configure_device(struct se_device *dev)
- 	pr_debug( "IBLOCK: Claiming struct block_device: %s\n",
- 			ib_dev->ibd_udev_path);
- 
-+ro_fallback:
- 	mode = FMODE_READ|FMODE_EXCL;
- 	if (!ib_dev->ibd_readonly)
- 		mode |= FMODE_WRITE;
-@@ -112,6 +113,17 @@ static int iblock_configure_device(struct se_device *dev)
- 	bd = blkdev_get_by_path(ib_dev->ibd_udev_path, mode, ib_dev);
- 	if (IS_ERR(bd)) {
- 		ret = PTR_ERR(bd);
-+		if (!ib_dev->ibd_readonly && (ret = -EACCES)) {
-+			/*
-+			 * EACCES is returned if FMODE_WRITE is set while
-+			 * getting a read-only block device. Try once again
-+			 * without FMODE_WRITE to allow for configuration of a
-+			 * read-only block device without an explicit readonly=1
-+			 * configfs parameter in iblock_set_configfs_dev_params().
-+			 */
-+			ib_dev->ibd_readonly = 1;
-+			goto ro_fallback;
-+		}
- 		goto out_free_bioset;
- 	}
- 	ib_dev->ibd_bd = bd;
--- 
-2.13.6
-
+T24gVHVlLCAyMDE3LTEyLTA1IGF0IDIxOjU0ICswMTAwLCBEYXZpZCBEaXNzZWxkb3JwIHdyb3Rl
+Og0KPiBBIHJlYWQtb25seSBibG9jayBkZXZpY2UgbXVzdCBjdXJyZW50bHkgYmUgZmxhZ2dlZCBh
+cyBzdWNoIHdoZW4NCj4gY29uZmlndXJpbmcgdGhlIGlibG9jayBiYWNrc3RvcmUsIHZpYSBhIHJl
+YWRvbmx5PTEgY29uZmlnZnMgcGFyYW1ldGVyLg0KPiBJZiBhIHJlYWQtb25seSBibG9jayBkZXZp
+Y2UgaXMgdXNlZCB3aXRob3V0IGV4cGxpY2l0bHkgcHJvdmlkaW5nIHRoZQ0KPiBwYXJhbWV0ZXIs
+IHRoZW4gYmFja3N0b3JlIGVuYWJsZW1lbnQgZmFpbHMgd2l0aCBFQUNDRVMsIGUuZy4NCj4gICBs
+b3NldHVwIC0tcmVhZC1vbmx5IC9kZXYvbG9vcDAgL2xvZmlsZQ0KPiAgIG1rZGlyIC1wIC9zeXMv
+a2VybmVsL2NvbmZpZy90YXJnZXQvY29yZS9pYmxvY2tfMC9sb29weQ0KPiAgIGVjaG8gInVkZXZf
+cGF0aD0vZGV2L2xvb3AwIiBcDQo+IAk+IC9zeXMva2VybmVsL2NvbmZpZy90YXJnZXQvY29yZS9p
+YmxvY2tfMC9sb29weS9jb250cm9sDQo+ICAgZWNobyAiMSIgPiAvc3lzL2tlcm5lbC9jb25maWcv
+dGFyZ2V0L2NvcmUvaWJsb2NrXzAvbG9vcHkvZW5hYmxlDQo+ICAgc2g6IGVjaG86IHdyaXRlIGVy
+cm9yOiBQZXJtaXNzaW9uIGRlbmllZA0KPiANCj4gVGhpcyBjaGFuZ2UgYWxsb3dzIGFuIGlibG9j
+ayBiYWNrc3RvcmUgdG8gYmUgZGVtb3RlZCB0byByZWFkLW9ubHkgaWYgdGhlDQo+IHVuZGVybHlp
+bmcgZGV2aWNlIGlzIGRldGVjdGVkIGFzIHN1Y2gsIHZpYSBhIC1FQUNDRVMgcmV0dXJuIHZhbHVl
+IGZyb20NCj4gYmxrZGV2X2dldF9ieV9wYXRoKHVkZXZfcGF0aD0kcmVhZG9ubHlfZGV2aWNlLCBt
+b2RlICYgRk1PREVfV1JJVEUsIC4uLikuDQoNCkhlbGxvIERhdmlkLA0KDQpBbHRob3VnaCB0aGUg
+cGF0Y2ggaXRzZWxmIGxvb2tzIGZpbmUgdG8gbWU6IGRvIHdlIHJlYWxseSBuZWVkIHRoaXMga2lu
+ZCBvZg0KZnVuY3Rpb25hbGl0eSBpbiB0aGUga2VybmVsPyBJcyBpdCBwb3NzaWJsZSB0byBpbXBs
+ZW1lbnQgdGhlIHNhbWUgZnVuY3Rpb25hbGl0eQ0KaW4gdXNlciBzcGFjZT8NCg0KVGhhbmtzLA0K
+DQpCYXJ0Lg=
