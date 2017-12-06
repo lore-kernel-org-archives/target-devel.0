@@ -1,32 +1,36 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Wed, 06 Dec 2017 04:33:16 +0000
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Wed, 06 Dec 2017 07:40:02 +0000
 Subject: Re: [RFC PATCH] target: detect read-only from underlying iblock device
-Message-Id: <1512534795.2828.5.camel@wdc.com>
+Message-Id: <mqdmv2we23x.fsf@linux-x5ow.site>
 List-Id: <target-devel.vger.kernel.org>
 References: <20171205205442.25414-1-ddiss@suse.de>
 In-Reply-To: <20171205205442.25414-1-ddiss@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-T24gVHVlLCAyMDE3LTEyLTA1IGF0IDIxOjU0ICswMTAwLCBEYXZpZCBEaXNzZWxkb3JwIHdyb3Rl
-Og0KPiBBIHJlYWQtb25seSBibG9jayBkZXZpY2UgbXVzdCBjdXJyZW50bHkgYmUgZmxhZ2dlZCBh
-cyBzdWNoIHdoZW4NCj4gY29uZmlndXJpbmcgdGhlIGlibG9jayBiYWNrc3RvcmUsIHZpYSBhIHJl
-YWRvbmx5PTEgY29uZmlnZnMgcGFyYW1ldGVyLg0KPiBJZiBhIHJlYWQtb25seSBibG9jayBkZXZp
-Y2UgaXMgdXNlZCB3aXRob3V0IGV4cGxpY2l0bHkgcHJvdmlkaW5nIHRoZQ0KPiBwYXJhbWV0ZXIs
-IHRoZW4gYmFja3N0b3JlIGVuYWJsZW1lbnQgZmFpbHMgd2l0aCBFQUNDRVMsIGUuZy4NCj4gICBs
-b3NldHVwIC0tcmVhZC1vbmx5IC9kZXYvbG9vcDAgL2xvZmlsZQ0KPiAgIG1rZGlyIC1wIC9zeXMv
-a2VybmVsL2NvbmZpZy90YXJnZXQvY29yZS9pYmxvY2tfMC9sb29weQ0KPiAgIGVjaG8gInVkZXZf
-cGF0aD0vZGV2L2xvb3AwIiBcDQo+IAk+IC9zeXMva2VybmVsL2NvbmZpZy90YXJnZXQvY29yZS9p
-YmxvY2tfMC9sb29weS9jb250cm9sDQo+ICAgZWNobyAiMSIgPiAvc3lzL2tlcm5lbC9jb25maWcv
-dGFyZ2V0L2NvcmUvaWJsb2NrXzAvbG9vcHkvZW5hYmxlDQo+ICAgc2g6IGVjaG86IHdyaXRlIGVy
-cm9yOiBQZXJtaXNzaW9uIGRlbmllZA0KPiANCj4gVGhpcyBjaGFuZ2UgYWxsb3dzIGFuIGlibG9j
-ayBiYWNrc3RvcmUgdG8gYmUgZGVtb3RlZCB0byByZWFkLW9ubHkgaWYgdGhlDQo+IHVuZGVybHlp
-bmcgZGV2aWNlIGlzIGRldGVjdGVkIGFzIHN1Y2gsIHZpYSBhIC1FQUNDRVMgcmV0dXJuIHZhbHVl
-IGZyb20NCj4gYmxrZGV2X2dldF9ieV9wYXRoKHVkZXZfcGF0aD0kcmVhZG9ubHlfZGV2aWNlLCBt
-b2RlICYgRk1PREVfV1JJVEUsIC4uLikuDQoNCkhlbGxvIERhdmlkLA0KDQpBbHRob3VnaCB0aGUg
-cGF0Y2ggaXRzZWxmIGxvb2tzIGZpbmUgdG8gbWU6IGRvIHdlIHJlYWxseSBuZWVkIHRoaXMga2lu
-ZCBvZg0KZnVuY3Rpb25hbGl0eSBpbiB0aGUga2VybmVsPyBJcyBpdCBwb3NzaWJsZSB0byBpbXBs
-ZW1lbnQgdGhlIHNhbWUgZnVuY3Rpb25hbGl0eQ0KaW4gdXNlciBzcGFjZT8NCg0KVGhhbmtzLA0K
-DQpCYXJ0Lg=
+Hi Bart and David,
+
+Bart Van Assche <Bart.VanAssche@wdc.com> writes:
+> Although the patch itself looks fine to me: do we really need this kind of
+> functionality in the kernel? Is it possible to implement the same functionality
+> in user space?
+
+We're having exactly the same discussion in NVMe currently, please see
+the following thread:
+http://lists.infradead.org/pipermail/linux-nvme/2017-December/014341.html
+
+I tend to agree with David (and Sagi for the NVMe case) in that we
+should handle this in the kernel.
+
+Byte,
+        Johannes
+
+-- 
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Jane Smithard, Graham Norton
+HRB 21284 (AG Nürnberg)
+Key fingerprint = EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
