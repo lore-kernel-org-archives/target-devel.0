@@ -1,119 +1,31 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Wed, 13 Dec 2017 23:50:28 +0000
-Subject: [PATCH 10/11] target: Simplify the code for waiting for command completion
-Message-Id: <20171213235029.581-11-bart.vanassche@wdc.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 11 Dec 2017 10:40:17 +0000
+Subject: [PATCH 0/6] target/loopback/tcm: Adjustments for some function implementations
+Message-Id: <42f13f0c-ae1d-ec1e-fd9d-62dd15aeba8c@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Bart Van Assche <bart.vanassche@sandisk.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-Instead of embedding the completion that is used for waiting for
-command completion in struct se_cmd, let the context that waits for
-command completion allocate it. This makes it possible to have a
-single code path for non-aborted and aborted commands in
-target_release_cmd_kref() and avoids that transport_generic_free_cmd()
-has to call cmd->se_tfo->release_cmd() directly. This patch does not
-change any functionality. Note: transport_generic_free_cmd() only
-waits until the se_cmd reference count has reached zero after it has
-set both CMD_T_FABRIC_STOP and CMD_T_ABORTED.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 11 Dec 2017 11:33:44 +0100
 
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Mike Christie <mchristi@redhat.com>
----
- drivers/target/target_core_transport.c | 24 ++++++++----------------
- include/target/target_core_base.h      |  2 +-
- 2 files changed, 9 insertions(+), 17 deletions(-)
+Some update suggestions were taken into account
+from static source code analysis.
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 7bf2248e9664..eecc98b763a6 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1276,7 +1276,7 @@ void transport_init_se_cmd(
- 	INIT_LIST_HEAD(&cmd->se_cmd_list);
- 	INIT_LIST_HEAD(&cmd->state_list);
- 	init_completion(&cmd->t_transport_stop_comp);
--	init_completion(&cmd->cmd_wait_comp);
-+	cmd->compl = NULL;
- 	spin_lock_init(&cmd->t_state_lock);
- 	INIT_WORK(&cmd->work, NULL);
- 	kref_init(&cmd->cmd_kref);
-@@ -2631,6 +2631,7 @@ static void target_wait_free_cmd(struct se_cmd *cmd, bool *aborted, bool *tas)
-  */
- int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
- {
-+	DECLARE_COMPLETION_ONSTACK(compl);
- 	int ret = 0;
- 	bool aborted = false, tas = false;
- 
-@@ -2649,12 +2650,13 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
- 		if (cmd->se_lun)
- 			transport_lun_remove_cmd(cmd);
- 	}
-+	if (aborted)
-+		cmd->compl = &compl;
- 	if (!aborted || tas)
- 		ret = target_put_sess_cmd(cmd);
- 	if (aborted) {
- 		pr_debug("Detected CMD_T_ABORTED for ITT: %llu\n", cmd->tag);
--		wait_for_completion(&cmd->cmd_wait_comp);
--		cmd->se_tfo->release_cmd(cmd);
-+		wait_for_completion(&compl);
- 		ret = 1;
- 	}
- 	return ret;
-@@ -2714,8 +2716,8 @@ static void target_release_cmd_kref(struct kref *kref)
- {
- 	struct se_cmd *se_cmd = container_of(kref, struct se_cmd, cmd_kref);
- 	struct se_session *se_sess = se_cmd->se_sess;
-+	struct completion *compl = se_cmd->compl;
- 	unsigned long flags;
--	bool fabric_stop;
- 
- 	if (se_sess) {
- 		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
-@@ -2724,23 +2726,13 @@ static void target_release_cmd_kref(struct kref *kref)
- 			if (list_empty(&se_sess->sess_cmd_list))
- 				wake_up(&se_sess->cmd_list_wq);
- 		}
--
--		spin_lock(&se_cmd->t_state_lock);
--		fabric_stop = (se_cmd->transport_state & CMD_T_FABRIC_STOP) &&
--			      (se_cmd->transport_state & CMD_T_ABORTED);
--		spin_unlock(&se_cmd->t_state_lock);
--
--		if (fabric_stop) {
--			spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
--			target_free_cmd_mem(se_cmd);
--			complete(&se_cmd->cmd_wait_comp);
--			return;
--		}
- 		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
- 	}
- 
- 	target_free_cmd_mem(se_cmd);
- 	se_cmd->se_tfo->release_cmd(se_cmd);
-+	if (compl)
-+		complete(compl);
- }
- 
- /**
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index b2c4a2fa905f..3a345a609584 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -472,7 +472,7 @@ struct se_cmd {
- 	struct se_session	*se_sess;
- 	struct se_tmr_req	*se_tmr_req;
- 	struct list_head	se_cmd_list;
--	struct completion	cmd_wait_comp;
-+	struct completion	*compl;
- 	const struct target_core_fabric_ops *se_tfo;
- 	sense_reason_t		(*execute_cmd)(struct se_cmd *);
- 	sense_reason_t (*transport_complete_callback)(struct se_cmd *, bool, int *);
+Markus Elfring (6):
+  Delete an error message for a failed memory allocation in four functions
+  Improve a size determination in two functions
+  Combine substrings for 26 messages
+  Delete two unnecessary variable initialisations in tcm_loop_issue_tmr()
+  Delete an unnecessary return statement in tcm_loop_submission_work()
+  Use seq_puts() in tcm_loop_show_info()
+
+ drivers/target/loopback/tcm_loop.c | 145 ++++++++++++++++---------------------
+ 1 file changed, 61 insertions(+), 84 deletions(-)
+
 -- 
 2.15.1
 
