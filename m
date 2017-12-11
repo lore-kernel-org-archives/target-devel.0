@@ -1,72 +1,45 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Wed, 13 Dec 2017 23:50:29 +0000
-Subject: [PATCH 11/11] target/iscsi: Reduce number of __iscsit_free_cmd() callers
-Message-Id: <20171213235029.581-12-bart.vanassche@wdc.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 11 Dec 2017 10:45:22 +0000
+Subject: [PATCH 4/6] target: tcm_loop: Delete two unnecessary variable initialisations in tcm_loop_issue_tmr(
+Message-Id: <ccfd3979-8405-7c78-7b67-20f5f54b1f24@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
+References: <42f13f0c-ae1d-ec1e-fd9d-62dd15aeba8c@users.sourceforge.net>
+In-Reply-To: <42f13f0c-ae1d-ec1e-fd9d-62dd15aeba8c@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Bart Van Assche <bart.vanassche@sandisk.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-Instead of calling __iscsit_free_cmd() from inside iscsit_aborted_task()
-if a command has been aborted and from inside iscsit_free_cmd() if a
-command has not been aborted, call __iscsit_free_cmd() from inside
-lio_release_cmd(). The latter function is namely called for all commands
-once the reference count has dropped to zero.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 11 Dec 2017 10:56:42 +0100
 
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Varun Prakash <varun@chelsio.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Mike Christie <mchristi@redhat.com>
+The variables "se_cmd" and "tl_cmd" will eventually be set to appropriate
+pointers a bit later.
+Thus omit the explicit initialisation at the beginning.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/target/iscsi/iscsi_target.c          | 2 --
- drivers/target/iscsi/iscsi_target_configfs.c | 1 +
- drivers/target/iscsi/iscsi_target_util.c     | 4 +---
- 3 files changed, 2 insertions(+), 5 deletions(-)
+ drivers/target/loopback/tcm_loop.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 9eb10d34682c..5b79e1d992bc 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -496,8 +496,6 @@ void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
- 	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
- 		list_del_init(&cmd->i_conn_node);
- 	spin_unlock_bh(&conn->cmd_lock);
--
--	__iscsit_free_cmd(cmd, true);
- }
- EXPORT_SYMBOL(iscsit_aborted_task);
+diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+index d91109c1c4ae..08dbf5b4ff15 100644
+--- a/drivers/target/loopback/tcm_loop.c
++++ b/drivers/target/loopback/tcm_loop.c
+@@ -203,10 +203,10 @@ static int tcm_loop_queuecommand(struct Scsi_Host *sh, struct scsi_cmnd *sc)
+ static int tcm_loop_issue_tmr(struct tcm_loop_tpg *tl_tpg,
+ 			      u64 lun, int task, enum tcm_tmreq_table tmr)
+ {
+-	struct se_cmd *se_cmd = NULL;
++	struct se_cmd *se_cmd;
+ 	struct se_session *se_sess;
+ 	struct tcm_loop_nexus *tl_nexus;
+-	struct tcm_loop_cmd *tl_cmd = NULL;
++	struct tcm_loop_cmd *tl_cmd;
+ 	int ret = TMR_FUNCTION_FAILED, rc;
  
-diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
-index 0ebc4818e132..0bc346b2c27c 100644
---- a/drivers/target/iscsi/iscsi_target_configfs.c
-+++ b/drivers/target/iscsi/iscsi_target_configfs.c
-@@ -1546,6 +1546,7 @@ static void lio_release_cmd(struct se_cmd *se_cmd)
- 	struct iscsi_cmd *cmd = container_of(se_cmd, struct iscsi_cmd, se_cmd);
- 
- 	pr_debug("Entering lio_release_cmd for se_cmd: %p\n", se_cmd);
-+	__iscsit_free_cmd(cmd, true);
- 	iscsit_release_cmd(cmd);
- }
- 
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 4435bf374d2d..7693bfcddf03 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -745,10 +745,8 @@ void iscsit_free_cmd(struct iscsi_cmd *cmd, bool shutdown)
- 	__iscsit_free_cmd(cmd, shutdown);
- 	if (se_cmd) {
- 		rc = transport_generic_free_cmd(se_cmd, shutdown);
--		if (!rc && shutdown && se_cmd->se_sess) {
--			__iscsit_free_cmd(cmd, shutdown);
-+		if (!rc && shutdown && se_cmd->se_sess)
- 			target_put_sess_cmd(se_cmd);
--		}
- 	} else {
- 		iscsit_release_cmd(cmd);
- 	}
+ 	/*
 -- 
 2.15.1
 
