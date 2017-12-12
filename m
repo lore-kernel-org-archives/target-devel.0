@@ -1,63 +1,42 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Wed, 13 Dec 2017 23:50:18 +0000
-Subject: [PATCH 00/11] SCSI target patches for kernel v4.16
-Message-Id: <20171213235029.581-1-bart.vanassche@wdc.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Tue, 12 Dec 2017 21:40:05 +0000
+Subject: [PATCH 0/8] target-iSCSI: Adjustments for several function implementations
+Message-Id: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171031180319.19258-1-bart.vanassche@wdc.com>
-In-Reply-To: <20171031180319.19258-1-bart.vanassche@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, David Disseldorp <ddiss@suse.de>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-Hello Martin,
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Tue, 12 Dec 2017 22:22:11 +0100
 
-As you maybe know some time ago I started working on simplifying task
-management function handling in the SCSI target core (see e.g. "[PATCH 00/34]
-SCSI target patches for kernel v4.11"; January 2017;
-https://www.spinics.net/lists/target-devel/msg14054.html). There were some
-patches in that series that rightfully raised Nic's eyebrows. Reviewing these
-patches myself made me realize that before TMF handling can be made
-synchronous that some unusual constructs in the SCSI target core have to be
-reworked first. Hence this patch series. The following tests have been run
-against this patch series for both the iSCSI and SRPT target drivers:
-- Run the libiscsi conformance tests.
-- Run fio ${dev} in one shell and while sg_reset -d ${dev}; do :; done from
-  another shell. This is a good way to stress test TMF handling.
-- For the SRP target driver: run the srp-test software.
+Some update suggestions were taken into account
+from static source code analysis.
 
-Please consider this patch series for kernel v4.16.
+Markus Elfring (8):
+  Less function calls in chap_server_compute_md5() after error detection
+  Move resetting of seven variables in chap_server_compute_md5()
+  Delete 36 error messages for a failed memory allocation
+  Delete an unnecessary variable initialisation in iscsit_allocate_ooo_cmdsn()
+  Delete an unnecessary variable initialisation in iscsi_copy_param_list()
+  Delete an unnecessary variable initialisation in iscsi_create_default_params()
+  Delete an unnecessary variable initialisation in iscsi_set_default_param()
+  Improve 16 size determinations
 
-Thanks,
-
-Bart.
-
-Bart Van Assche (11):
-  target: Fix an argument name in a function documentation header
-  target: Use config_item_name() instead of open-coding it
-  target: Avoid that EXTENDED COPY commands trigger lock inversion
-  target: Make the session shutdown code also wait for commands that are
-    being aborted
-  target: Add more documentation
-  target: Simplify core_tmr_handle_tas_abort()
-  target: Fold core_tmr_handle_tas_abort() into
-    transport_cmd_finish_abort()
-  target: Simplify transport_generic_free_cmd() (1/2)
-  target: Simplify transport_generic_free_cmd() (2/2)
-  target: Simplify the code for waiting for command completion
-  target/iscsi: Reduce number of __iscsit_free_cmd() callers
-
- drivers/target/iscsi/iscsi_target.c          |   2 -
- drivers/target/iscsi/iscsi_target_configfs.c |   1 +
- drivers/target/iscsi/iscsi_target_util.c     |   4 +-
- drivers/target/target_core_configfs.c        |   4 +-
- drivers/target/target_core_device.c          |  31 +++--
- drivers/target/target_core_internal.h        |   2 +-
- drivers/target/target_core_sbc.c             |   7 +-
- drivers/target/target_core_tmr.c             |  30 +----
- drivers/target/target_core_transport.c       | 166 ++++++++++++---------------
- include/target/target_core_base.h            |   5 +-
- 10 files changed, 113 insertions(+), 139 deletions(-)
+ drivers/target/iscsi/iscsi_target.c               |   2 -
+ drivers/target/iscsi/iscsi_target_auth.c          | 110 +++++++++++-----------
+ drivers/target/iscsi/iscsi_target_datain_values.c |   6 +-
+ drivers/target/iscsi/iscsi_target_erl1.c          |  14 +--
+ drivers/target/iscsi/iscsi_target_erl2.c          |   8 +-
+ drivers/target/iscsi/iscsi_target_login.c         |  29 ++----
+ drivers/target/iscsi/iscsi_target_nego.c          |   4 +-
+ drivers/target/iscsi/iscsi_target_parameters.c    |  58 +++++-------
+ drivers/target/iscsi/iscsi_target_seq_pdu_list.c  |  34 +++----
+ drivers/target/iscsi/iscsi_target_tpg.c           |  13 +--
+ drivers/target/iscsi/iscsi_target_util.c          |  11 +--
+ 11 files changed, 118 insertions(+), 171 deletions(-)
 
 -- 
 2.15.1
