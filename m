@@ -1,31 +1,40 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 11 Dec 2017 10:40:17 +0000
-Subject: [PATCH 0/6] target/loopback/tcm: Adjustments for some function implementations
-Message-Id: <42f13f0c-ae1d-ec1e-fd9d-62dd15aeba8c@users.sourceforge.net>
+Date: Tue, 12 Dec 2017 21:46:42 +0000
+Subject: [PATCH 4/8] target/iscsi: Delete an unnecessary variable initialisation in iscsit_allocate_ooo_cmdsn
+Message-Id: <3db75482-2817-46b1-95e5-ace7342e2a90@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
+References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
+In-Reply-To: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Bart Van Assche <bart.vanassche@sandisk.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, David Disseldorp <ddiss@suse.de>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 11 Dec 2017 11:33:44 +0100
+Date: Tue, 12 Dec 2017 21:13:49 +0100
 
-Some update suggestions were taken into account
-from static source code analysis.
+The local variable "ooo_cmdsn" will be reassigned by a following statement.
+Thus omit the explicit initialisation at the beginning.
 
-Markus Elfring (6):
-  Delete an error message for a failed memory allocation in four functions
-  Improve a size determination in two functions
-  Combine substrings for 26 messages
-  Delete two unnecessary variable initialisations in tcm_loop_issue_tmr()
-  Delete an unnecessary return statement in tcm_loop_submission_work()
-  Use seq_puts() in tcm_loop_show_info()
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/target/iscsi/iscsi_target_erl1.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/target/loopback/tcm_loop.c | 145 ++++++++++++++++---------------------
- 1 file changed, 61 insertions(+), 84 deletions(-)
-
+diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
+index ff3e08b6d4e1..c4c550128161 100644
+--- a/drivers/target/iscsi/iscsi_target_erl1.c
++++ b/drivers/target/iscsi/iscsi_target_erl1.c
+@@ -782,7 +782,7 @@ int iscsit_recover_dataout_sequence(
+ 
+ static struct iscsi_ooo_cmdsn *iscsit_allocate_ooo_cmdsn(void)
+ {
+-	struct iscsi_ooo_cmdsn *ooo_cmdsn = NULL;
++	struct iscsi_ooo_cmdsn *ooo_cmdsn;
+ 
+ 	ooo_cmdsn = kmem_cache_zalloc(lio_ooo_cache, GFP_ATOMIC);
+ 	if (!ooo_cmdsn)
 -- 
 2.15.1
 
