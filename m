@@ -1,55 +1,40 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 12:21:38 +0000
-Subject: [PATCH 1/2] target: cxgbit: Delete an error message for a failed memory allocation in two functions
-Message-Id: <c2568ddf-715e-101b-7dbf-3459179d9e16@users.sourceforge.net>
+Date: Tue, 12 Dec 2017 21:49:06 +0000
+Subject: [PATCH 6/8] target/iscsi: Delete an unnecessary variable initialisation in iscsi_create_default_para
+Message-Id: <734e9a91-f127-c454-47ca-ba33f153758f@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
-References: <77d06f1c-a650-644f-7364-55bb52aeb6ac@users.sourceforge.net>
-In-Reply-To: <77d06f1c-a650-644f-7364-55bb52aeb6ac@users.sourceforge.net>
+References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
+In-Reply-To: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Bart Van Assche <bart.vanassche@sandisk.com>, "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@kernel.org>, Johannes Berg <johannes.berg@intel.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Varun Prakash <varun@chelsio.com>
+To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, David Disseldorp <ddiss@suse.de>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 11:34:51 +0100
+Date: Tue, 12 Dec 2017 21:18:39 +0100
 
-Omit an extra message for a memory allocation failure in these functions.
-
-This issue was detected by using the Coccinelle software.
+The variable "param" will eventually be set to an appropriate pointer
+a bit later. Thus omit the explicit initialisation at the beginning.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/target/iscsi/cxgbit/cxgbit_target.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/target/iscsi/iscsi_target_parameters.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_target.c b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-index 514986b57c2d..9163152b6d0b 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_target.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-@@ -1126,8 +1126,6 @@ static int cxgbit_handle_nop_out(struct cxgbit_sock *csk, struct iscsi_cmd *cmd)
- 	if (payload_length && hdr->ttt = cpu_to_be32(0xFFFFFFFF)) {
- 		ping_data = kzalloc(payload_length + 1, GFP_KERNEL);
- 		if (!ping_data) {
--			pr_err("Unable to allocate memory for"
--				" NOPOUT ping data.\n");
- 			ret = -1;
- 			goto out;
- 		}
-@@ -1188,11 +1186,9 @@ cxgbit_handle_text_cmd(struct cxgbit_sock *csk, struct iscsi_cmd *cmd)
+diff --git a/drivers/target/iscsi/iscsi_target_parameters.c b/drivers/target/iscsi/iscsi_target_parameters.c
+index 25a3a9550488..151269b8816d 100644
+--- a/drivers/target/iscsi/iscsi_target_parameters.c
++++ b/drivers/target/iscsi/iscsi_target_parameters.c
+@@ -196,7 +196,7 @@ static struct iscsi_param *iscsi_set_default_param(struct iscsi_param_list *para
+ /* #warning Add extension keys */
+ int iscsi_create_default_params(struct iscsi_param_list **param_list_ptr)
+ {
+-	struct iscsi_param *param = NULL;
++	struct iscsi_param *param;
+ 	struct iscsi_param_list *pl;
  
- 	if (payload_length) {
- 		text_in = kzalloc(payload_length, GFP_KERNEL);
--		if (!text_in) {
--			pr_err("Unable to allocate text_in of payload_length: %u\n",
--			       payload_length);
-+		if (!text_in)
- 			return -ENOMEM;
--		}
-+
- 		skb_copy_bits(csk->skb, pdu_cb->doffset,
- 			      text_in, payload_length);
- 
+ 	pl = kzalloc(sizeof(struct iscsi_param_list), GFP_KERNEL);
 -- 
 2.15.1
 
