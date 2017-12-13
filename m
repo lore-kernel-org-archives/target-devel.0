@@ -1,119 +1,85 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Tue, 26 Dec 2017 23:50:50 +0000
-Subject: [PATCH] documentation: add a target/iscsi driver document
-Message-Id: <2affd531-43d1-c798-8467-dece4b88a1df@infradead.org>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Wed, 13 Dec 2017 23:50:23 +0000
+Subject: [PATCH 05/11] target: Add more documentation
+Message-Id: <20171213235029.581-6-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi <linux-scsi@vger.kernel.org>, target-devel <target-devel@vger.kernel.org>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
-Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: target-devel@vger.kernel.org
 
-From: Randy Dunlap <rdunlap@infradead.org>
+Document those aspects of transport_cmd_check_stop_to_fabric() and
+transport_generic_free_cmd() of which it is nontrivial to derive
+these from their implementation.
 
-Add a driver-api document for target/iSCSI interfaces.
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <mchristi@redhat.com>
 ---
-This patch depends on 4 previous patches to driver source files:
+ drivers/target/target_core_transport.c | 34 ++++++++++++++++++++++++++++------
+ 1 file changed, 28 insertions(+), 6 deletions(-)
 
-[PATCH] target: fix kernel-doc warnings in drivers/target/target_core_transport.c
-  https://marc.info/?l=linux-scsi&m1398041926906&w=2
-
-[PATCH] scsi: fix iscsi-related kernel-doc warnings
-  https://marc.info/?l=linux-scsi&m1398051426923&w=2
-
-[PATCH] target: add kernel-doc overview in target_core_user.[hc]
-  [PATCH] target: add kernel-doc overview in target_core_user.[hc]
-
-[PATCH] target: cleanup target_core_transport.c for kernel-doc
-  https://marc.info/?l=linux-scsi&m1409284812033&w=2
-
- Documentation/driver-api/index.rst  |    1 
- Documentation/driver-api/scsi.rst   |    2 
- Documentation/driver-api/target.rst |   64 ++++++++++++++++++++++++++
- 3 files changed, 66 insertions(+), 1 deletion(-)
-
---- linux-next-20171221.orig/Documentation/driver-api/index.rst
-+++ linux-next-20171221/Documentation/driver-api/index.rst
-@@ -34,6 +34,7 @@ available subsections can be seen below.
-    edac
-    scsi
-    libata
-+   target
-    mtdnand
-    miscellaneous
-    w1
---- linux-next-20171221.orig/Documentation/driver-api/scsi.rst
-+++ linux-next-20171221/Documentation/driver-api/scsi.rst
-@@ -340,5 +340,5 @@ todo
- ~~~~
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 0d03802ac8de..e05bb393916f 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -601,6 +601,13 @@ static void target_remove_from_state_list(struct se_cmd *cmd)
+ 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+ }
  
- Parallel (fast/wide/ultra) SCSI, USB, SATA, SAS, Fibre Channel,
--FireWire, ATAPI devices, Infiniband, I2O, iSCSI, Parallel ports,
-+FireWire, ATAPI devices, Infiniband, I2O, Parallel ports,
- netlink...
---- /dev/null
-+++ linux-next-20171221/Documentation/driver-api/target.rst
-@@ -0,0 +1,64 @@
-+================+target and iSCSI Interfaces Guide
-+================+
-+Introduction and Overview
-+============+
-+TBD
-+
-+Target core device interfaces
-+==============+
-+.. kernel-doc:: drivers/target/target_core_device.c
-+    :export:
-+
-+Target core transport interfaces
-+================
-+
-+.. kernel-doc:: drivers/target/target_core_transport.c
-+    :export:
-+
-+Target-supported userspace I/O
-+===============
-+
-+.. kernel-doc:: drivers/target/target_core_user.c
-+    :doc: Userspace I/O
-+
-+.. kernel-doc:: include/uapi/linux/target_core_user.h
-+    :doc: Ring Design
-+
-+iSCSI helper functions
-+===========
-+
-+.. kernel-doc:: drivers/scsi/libiscsi.c
-+   :export:
-+
-+
-+iSCSI boot information
-+===========
-+
-+.. kernel-doc:: drivers/scsi/iscsi_boot_sysfs.c
-+   :export
-+
-+
-+iSCSI transport class
-+==========+
-+The file drivers/scsi/scsi_transport_iscsi.c defines transport
-+attributes for the iSCSI class, which sends SCSI packets over TCP/IP
-+connections.
-+
-+.. kernel-doc:: drivers/scsi/scsi_transport_iscsi.c
-+   :export:
-+
-+
-+iSCSI TCP interfaces
-+==========
-+
-+.. kernel-doc:: drivers/scsi/iscsi_tcp.c
-+   :internal:
-+
-+.. kernel-doc:: drivers/scsi/libiscsi_tcp.c
-+   :export:
-+
-
++/*
++ * This function is called by the target core after the target core has
++ * finished processing a SCSI command or SCSI TMF. Both the regular command
++ * processing code and the code for aborting commands can call this
++ * function. CMD_T_STOP is set if and only if another thread is waiting
++ * inside transport_wait_for_tasks() for t_transport_stop_comp.
++ */
+ static int transport_cmd_check_stop_to_fabric(struct se_cmd *cmd)
+ {
+ 	unsigned long flags;
+@@ -2597,6 +2604,27 @@ static void target_wait_free_cmd(struct se_cmd *cmd, bool *aborted, bool *tas)
+ 	spin_unlock_irqrestore(&cmd->t_state_lock, flags);
+ }
+ 
++/*
++ * This function is called by frontend drivers after processing of a command
++ * has finished.
++ *
++ * The protocol for ensuring that either the regular flow or the TMF
++ * code drops one reference is as follows:
++ * - Calling .queue_data_in(), .queue_status() or queue_tm_rsp() will cause
++ *   the frontend driver to drop one reference, synchronously or asynchronously.
++ * - During regular command processing the target core sets CMD_T_COMPLETE
++ *   before invoking one of the .queue_*() functions.
++ * - The code that aborts commands skips commands and TMFs for which
++ *   CMD_T_COMPLETE has been set.
++ * - CMD_T_ABORTED is set atomically after the CMD_T_COMPLETE check for
++ *   commands that will be aborted.
++ * - If the CMD_T_ABORTED flag is set but CMD_T_TAS has not been set
++ *   transport_generic_free_cmd() skips its call to target_put_sess_cmd().
++ * - For aborted commands for which CMD_T_TAS has been set .queue_status() will
++ *   be called and will drop a reference.
++ * - For aborted commands for which CMD_T_TAS has not been set .aborted_task()
++ *   will be called. transport_cmd_finish_abort() will drop the final reference.
++ */
+ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ {
+ 	int ret = 0;
+@@ -2625,12 +2653,6 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ 		if (!aborted || tas)
+ 			ret = target_put_sess_cmd(cmd);
+ 	}
+-	/*
+-	 * If the task has been internally aborted due to TMR ABORT_TASK
+-	 * or LUN_RESET, target_core_tmr.c is responsible for performing
+-	 * the remaining calls to target_put_sess_cmd(), and not the
+-	 * callers of this function.
+-	 */
+ 	if (aborted) {
+ 		pr_debug("Detected CMD_T_ABORTED for ITT: %llu\n", cmd->tag);
+ 		wait_for_completion(&cmd->cmd_wait_comp);
+-- 
+2.15.1
 
