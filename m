@@ -1,99 +1,202 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Sun, 24 Dec 2017 05:20:31 +0000
-Subject: [PATCH] target: cleanup target_core_transport.c for kernel-doc
-Message-Id: <e896b763-692b-90bd-e212-8c6d5a8fdd2c@infradead.org>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Wed, 13 Dec 2017 23:50:21 +0000
+Subject: [PATCH 03/11] target: Avoid that EXTENDED COPY commands trigger lock inversion
+Message-Id: <20171213235029.581-4-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>, Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, "James E.J. Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K. Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
+To: target-devel@vger.kernel.org
 
-From: Randy Dunlap <rdunlap@infradead.org>
+The approach for adding a device to the devices_idr data structure
+and for removing it is as follows:
+* &dev->dev_group.cg_item is initialized before a device is added
+  to devices_idr.
+* If the reference count of a device drops to zero then
+  target_free_device() removes the device from devices_idr.
+* All devices_idr manipulations are protected by device_mutex.
 
-For exported functions that already have near-kernel-doc notation,
-fix them to begin with "/**" and make a few corrections so that they
-don't have any kernel-doc warnings.
+This means that increasing the reference count of a device is
+sufficient to prevent removal from devices_idr and also that it is
+safe access dev_group.cg_item for any device that is referenced by
+devices_idr. Use this to modify target_find_device() and
+target_for_each_device() such that these functions no longer
+introduce a dependency between device_mutex and the configfs root
+inode mutex.
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc:	"Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc:	linux-scsi@vger.kernel.org
-Cc:	target-devel@vger.kernel.org
-Cc:	Sagi Grimberg <sagi@grimberg.me>
-Cc:	linux-rdma@vger.kernel.org
-Cc:	"James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
-Cc:	"Martin K. Petersen" <martin.petersen@oracle.com>
+Note: it is safe to pass a NULL pointer to config_item_put() and
+also to config_item_get_unless_zero().
+
+This patch prevents that lockdep reports the following complaint:
+
+===========================
+WARNING: possible circular locking dependency detected
+4.12.0-rc1-dbg+ #1 Not tainted
+------------------------------------------------------
+rmdir/12053 is trying to acquire lock:
+ (device_mutex#2){+.+.+.}, at: [<ffffffffa010afce>] target_free_device+0xae/0xf0 [target_core_mod]
+
+but task is already holding lock:
+ (&sb->s_type->i_mutex_key#14){++++++}, at: [<ffffffff811c5c30>] vfs_rmdir+0x50/0x140
+
+which lock already depends on the new lock.
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&sb->s_type->i_mutex_key#14){++++++}:
+       lock_acquire+0x59/0x80
+       down_write+0x36/0x70
+       configfs_depend_item+0x3a/0xb0 [configfs]
+       target_depend_item+0x13/0x20 [target_core_mod]
+       target_xcopy_locate_se_dev_e4_iter+0x87/0x100 [target_core_mod]
+       target_devices_idr_iter+0x16/0x20 [target_core_mod]
+       idr_for_each+0x39/0xc0
+       target_for_each_device+0x36/0x50 [target_core_mod]
+       target_xcopy_locate_se_dev_e4+0x28/0x80 [target_core_mod]
+       target_xcopy_do_work+0x2e9/0xdd0 [target_core_mod]
+       process_one_work+0x1ca/0x3f0
+       worker_thread+0x49/0x3b0
+       kthread+0x109/0x140
+       ret_from_fork+0x31/0x40
+
+-> #0 (device_mutex#2){+.+.+.}:
+       __lock_acquire+0x101f/0x11d0
+       lock_acquire+0x59/0x80
+       __mutex_lock+0x7e/0x950
+       mutex_lock_nested+0x16/0x20
+       target_free_device+0xae/0xf0 [target_core_mod]
+       target_core_dev_release+0x10/0x20 [target_core_mod]
+       config_item_put+0x6e/0xb0 [configfs]
+       configfs_rmdir+0x1a6/0x300 [configfs]
+       vfs_rmdir+0xb7/0x140
+       do_rmdir+0x1f4/0x200
+       SyS_rmdir+0x11/0x20
+       entry_SYSCALL_64_fastpath+0x23/0xc2
+
+other info that might help us debug this:
+
+ Possible unsafe locking scenario:
+
+       CPU0                    CPU1
+       ----                    ----
+  lock(&sb->s_type->i_mutex_key#14);
+                               lock(device_mutex#2);
+                               lock(&sb->s_type->i_mutex_key#14);
+  lock(device_mutex#2);
+
+ *** DEADLOCK ***
+
+3 locks held by rmdir/12053:
+ #0:  (sb_writers#10){.+.+.+}, at: [<ffffffff811e223f>] mnt_want_write+0x1f/0x50
+ #1:  (&sb->s_type->i_mutex_key#14/1){+.+.+.}, at: [<ffffffff811cb97e>] do_rmdir+0x15e/0x200
+ #2:  (&sb->s_type->i_mutex_key#14){++++++}, at: [<ffffffff811c5c30>] vfs_rmdir+0x50/0x140
+
+stack backtrace:
+CPU: 3 PID: 12053 Comm: rmdir Not tainted 4.12.0-rc1-dbg+ #1
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.0.0-prebuilt.qemu-project.org 04/01/2014
+Call Trace:
+ dump_stack+0x86/0xcf
+ print_circular_bug+0x1c7/0x220
+ __lock_acquire+0x101f/0x11d0
+ lock_acquire+0x59/0x80
+ __mutex_lock+0x7e/0x950
+ mutex_lock_nested+0x16/0x20
+ target_free_device+0xae/0xf0 [target_core_mod]
+ target_core_dev_release+0x10/0x20 [target_core_mod]
+ config_item_put+0x6e/0xb0 [configfs]
+ configfs_rmdir+0x1a6/0x300 [configfs]
+ vfs_rmdir+0xb7/0x140
+ do_rmdir+0x1f4/0x200
+ SyS_rmdir+0x11/0x20
+ entry_SYSCALL_64_fastpath+0x23/0xc2
+
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_transport.c |   17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+ drivers/target/target_core_device.c | 31 ++++++++++++++++++++++++-------
+ 1 file changed, 24 insertions(+), 7 deletions(-)
 
---- linux-next-20171221.orig/drivers/target/target_core_transport.c
-+++ linux-next-20171221/drivers/target/target_core_transport.c
-@@ -1431,7 +1431,7 @@ transport_generic_map_mem_to_cmd(struct
- 	return 0;
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index e8dd6da164b2..c7535907e2d1 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -893,25 +893,36 @@ EXPORT_SYMBOL(target_to_linux_sector);
+ struct se_device *target_find_device(int id, bool do_depend)
+ {
+ 	struct se_device *dev;
++	struct config_item *item = NULL;
+ 
+ 	mutex_lock(&device_mutex);
+ 	dev = idr_find(&devices_idr, id);
+-	if (dev && do_depend && target_depend_item(&dev->dev_group.cg_item))
+-		dev = NULL;
++	if (dev)
++		item = config_item_get_unless_zero(&dev->dev_group.cg_item);
+ 	mutex_unlock(&device_mutex);
++
++	if (dev && (!item || (do_depend && target_depend_item(item) < 0)))
++		dev = NULL;
++	config_item_put(item);
+ 	return dev;
+ }
+ EXPORT_SYMBOL(target_find_device);
+ 
+ struct devices_idr_iter {
++	struct config_item *prev_item;
+ 	int (*fn)(struct se_device *dev, void *data);
+ 	void *data;
+ };
+ 
+ static int target_devices_idr_iter(int id, void *p, void *data)
++	__must_hold(&device_mutex)
+ {
+ 	struct devices_idr_iter *iter = data;
+ 	struct se_device *dev = p;
++	int ret;
++
++	config_item_put(iter->prev_item);
++	iter->prev_item = NULL;
+ 
+ 	/*
+ 	 * We add the device early to the idr, so it can be used
+@@ -922,7 +933,15 @@ static int target_devices_idr_iter(int id, void *p, void *data)
+ 	if (!(dev->dev_flags & DF_CONFIGURED))
+ 		return 0;
+ 
+-	return iter->fn(dev, iter->data);
++	iter->prev_item = config_item_get_unless_zero(&dev->dev_group.cg_item);
++	if (!iter->prev_item)
++		return 0;
++	mutex_unlock(&device_mutex);
++
++	ret = iter->fn(dev, iter->data);
++
++	mutex_lock(&device_mutex);
++	return ret;
  }
  
--/*
-+/**
-  * target_submit_cmd_map_sgls - lookup unpacked lun and submit uninitialized
-  * 			 se_cmd + use pre-allocated SGL memory.
-  *
-@@ -1441,7 +1441,7 @@ transport_generic_map_mem_to_cmd(struct
-  * @sense: pointer to SCSI sense buffer
-  * @unpacked_lun: unpacked LUN to reference for struct se_lun
-  * @data_length: fabric expected data transfer length
-- * @task_addr: SAM task attribute
-+ * @task_attr: SAM task attribute
-  * @data_dir: DMA data direction
-  * @flags: flags for command submission from target_sc_flags_tables
-  * @sgl: struct scatterlist memory for unidirectional mapping
-@@ -1578,7 +1578,7 @@ int target_submit_cmd_map_sgls(struct se
- }
- EXPORT_SYMBOL(target_submit_cmd_map_sgls);
+ /**
+@@ -936,15 +955,13 @@ static int target_devices_idr_iter(int id, void *p, void *data)
+ int target_for_each_device(int (*fn)(struct se_device *dev, void *data),
+ 			   void *data)
+ {
+-	struct devices_idr_iter iter;
++	struct devices_idr_iter iter = { .fn = fn, .data = data };
+ 	int ret;
  
--/*
-+/**
-  * target_submit_cmd - lookup unpacked lun and submit uninitialized se_cmd
-  *
-  * @se_cmd: command descriptor to submit
-@@ -1587,7 +1587,7 @@ EXPORT_SYMBOL(target_submit_cmd_map_sgls
-  * @sense: pointer to SCSI sense buffer
-  * @unpacked_lun: unpacked LUN to reference for struct se_lun
-  * @data_length: fabric expected data transfer length
-- * @task_addr: SAM task attribute
-+ * @task_attr: SAM task attribute
-  * @data_dir: DMA data direction
-  * @flags: flags for command submission from target_sc_flags_tables
-  *
-@@ -2641,7 +2641,8 @@ int transport_generic_free_cmd(struct se
+-	iter.fn = fn;
+-	iter.data = data;
+-
+ 	mutex_lock(&device_mutex);
+ 	ret = idr_for_each(&devices_idr, target_devices_idr_iter, &iter);
+ 	mutex_unlock(&device_mutex);
++	config_item_put(iter.prev_item);
+ 	return ret;
  }
- EXPORT_SYMBOL(transport_generic_free_cmd);
  
--/* target_get_sess_cmd - Add command to active ->sess_cmd_list
-+/**
-+ * target_get_sess_cmd - Add command to active ->sess_cmd_list
-  * @se_cmd:	command descriptor to add
-  * @ack_kref:	Signal that fabric will perform an ack target_put_sess_cmd()
-  */
-@@ -2835,7 +2836,8 @@ void target_show_cmd(const char *pfx, st
- }
- EXPORT_SYMBOL(target_show_cmd);
- 
--/* target_sess_cmd_list_set_waiting - Flag all commands in
-+/**
-+ * target_sess_cmd_list_set_waiting - Flag all commands in
-  *         sess_cmd_list to complete cmd_wait_comp.  Set
-  *         sess_tearing_down so no more commands are queued.
-  * @se_sess:	session to flag
-@@ -2870,7 +2872,8 @@ void target_sess_cmd_list_set_waiting(st
- }
- EXPORT_SYMBOL(target_sess_cmd_list_set_waiting);
- 
--/* target_wait_for_sess_cmds - Wait for outstanding descriptors
-+/**
-+ * target_wait_for_sess_cmds - Wait for outstanding descriptors
-  * @se_sess:    session to wait for active I/O
-  */
- void target_wait_for_sess_cmds(struct se_session *se_sess)
-
+-- 
+2.15.1
 
