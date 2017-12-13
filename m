@@ -1,40 +1,47 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 21:49:06 +0000
-Subject: [PATCH 6/8] target/iscsi: Delete an unnecessary variable initialisation in iscsi_create_default_para
-Message-Id: <734e9a91-f127-c454-47ca-ba33f153758f@users.sourceforge.net>
+From: Andrei Vagin <avagin@openvz.org>
+Date: Wed, 13 Dec 2017 21:55:13 +0000
+Subject: [PATCH] target: don't call an unmap callback if a range length is zero
+Message-Id: <20171213215513.26416-1-avagin@openvz.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
-In-Reply-To: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, David Disseldorp <ddiss@suse.de>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: target-devel@vger.kernel.org, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Andrei Vagin <avagin@openvz.org>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 21:18:39 +0100
+If a length of a range is zero, it means there is nothing to unmap
+and we can skip this range.
 
-The variable "param" will eventually be set to an appropriate pointer
-a bit later. Thus omit the explicit initialisation at the beginning.
+Here is one more reason, why we have to skip such ranges.  An unmap
+callback calls file_operations->fallocate(), but the man page for the
+fallocate syscall says that fallocate(fd, mode, offset, let) returns
+EINVAL, if len is zero. It means that file_operations->fallocate() isn't
+obligated to handle zero ranges too.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Andrei Vagin <avagin@openvz.org>
 ---
- drivers/target/iscsi/iscsi_target_parameters.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_sbc.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_parameters.c b/drivers/target/iscsi/iscsi_target_parameters.c
-index 25a3a9550488..151269b8816d 100644
---- a/drivers/target/iscsi/iscsi_target_parameters.c
-+++ b/drivers/target/iscsi/iscsi_target_parameters.c
-@@ -196,7 +196,7 @@ static struct iscsi_param *iscsi_set_default_param(struct iscsi_param_list *para
- /* #warning Add extension keys */
- int iscsi_create_default_params(struct iscsi_param_list **param_list_ptr)
- {
--	struct iscsi_param *param = NULL;
-+	struct iscsi_param *param;
- 	struct iscsi_param_list *pl;
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 750a04ed0e93..b054682e974f 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -1216,9 +1216,11 @@ sbc_execute_unmap(struct se_cmd *cmd)
+ 			goto err;
+ 		}
  
- 	pl = kzalloc(sizeof(struct iscsi_param_list), GFP_KERNEL);
+-		ret = ops->execute_unmap(cmd, lba, range);
+-		if (ret)
+-			goto err;
++		if (range) {
++			ret = ops->execute_unmap(cmd, lba, range);
++			if (ret)
++				goto err;
++		}
+ 
+ 		ptr += 16;
+ 		size -= 16;
 -- 
-2.15.1
+2.13.6
 
