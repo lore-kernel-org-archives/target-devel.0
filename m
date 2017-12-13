@@ -1,42 +1,52 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Wed, 13 Dec 2017 17:22:30 +0000
-Subject: [PATCH] target: avoid NULL dereference in CHAP auth error path
-Message-Id: <20171213172230.12767-1-ddiss@suse.de>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Wed, 13 Dec 2017 23:50:26 +0000
+Subject: [PATCH 08/11] target: Simplify transport_generic_free_cmd() (1/2)
+Message-Id: <20171213235029.581-9-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-If chap_server_compute_md5() fails early, e.g. via CHAP_N mismatch, then
-crypto_free_shash() is called with a NULL pointer which gets
-dereferenced in crypto_shash_tfm().
+Move identical code outside an if/else statement. This patch does
+not change any functionality.
 
-Fixes: 69110e3cedbb ("iscsi-target: Use shash and ahash")
-Suggested-by: Markus Elfring <elfring@users.sourceforge.net>
-Signed-off-by: David Disseldorp <ddiss@suse.de>
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <mchristi@redhat.com>
 ---
-This is a minimal fix, similar to Markus's
-"target/iscsi: Less function calls in chap_server_compute_md5() after error detection"
-patch, but without all of the coding-style changes mixed in.
+ drivers/target/target_core_transport.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
- drivers/target/iscsi/iscsi_target_auth.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index f9bc8ec6fb6b..9518ffd8b8ba 100644
---- a/drivers/target/iscsi/iscsi_target_auth.c
-+++ b/drivers/target/iscsi/iscsi_target_auth.c
-@@ -421,7 +421,8 @@ static int chap_server_compute_md5(
- 	auth_ret = 0;
- out:
- 	kzfree(desc);
--	crypto_free_shash(tfm);
-+	if (tfm)
-+		crypto_free_shash(tfm);
- 	kfree(challenge);
- 	kfree(challenge_binhex);
- 	return auth_ret;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index b5947f22b292..6beab4b89414 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -2637,9 +2637,6 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ 	if (!(cmd->se_cmd_flags & SCF_SE_LUN_CMD)) {
+ 		if (wait_for_tasks && (cmd->se_cmd_flags & SCF_SCSI_TMR_CDB))
+ 			target_wait_free_cmd(cmd, &aborted, &tas);
+-
+-		if (!aborted || tas)
+-			ret = target_put_sess_cmd(cmd);
+ 	} else {
+ 		if (wait_for_tasks)
+ 			target_wait_free_cmd(cmd, &aborted, &tas);
+@@ -2653,10 +2650,9 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ 
+ 		if (cmd->se_lun)
+ 			transport_lun_remove_cmd(cmd);
+-
+-		if (!aborted || tas)
+-			ret = target_put_sess_cmd(cmd);
+ 	}
++	if (!aborted || tas)
++		ret = target_put_sess_cmd(cmd);
+ 	if (aborted) {
+ 		pr_debug("Detected CMD_T_ABORTED for ITT: %llu\n", cmd->tag);
+ 		wait_for_completion(&cmd->cmd_wait_comp);
 -- 
-2.13.6
+2.15.1
 
