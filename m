@@ -1,45 +1,56 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Tue, 19 Dec 2017 13:45:17 +0000
-Subject: [RFC PATCH] target: enable discard if supported by underlying block device
-Message-Id: <20171219134517.17296-1-ddiss@suse.de>
+From: Jason Gunthorpe <jgg@ziepe.ca>
+Date: Wed, 13 Dec 2017 17:51:04 +0000
+Subject: Re: [RFC] iser-target: avoid reinitializing rdma contexts for isert commands
+Message-Id: <20171213175104.GA14143@ziepe.ca>
 List-Id: <target-devel.vger.kernel.org>
+References: <1511893687-29298-1-git-send-email-bharat@chelsio.com>
+In-Reply-To: <1511893687-29298-1-git-send-email-bharat@chelsio.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Bharat Potnuri <bharat@chelsio.com>
+Cc: nab@linux-iscsi.org, sagi@grimberg.me, target-devel@vger.kernel.org, linux-rdma@vger.kernel.org
 
-The initial commit of LIO (v4.0.0-rc6) came with support for SCSI UNMAP
-disabled. This was justified in the LIO wiki with:
-  Many SATA SSDs have issues handling UNMAP properly, so it is disabled
-  per default in LIO.
-Since this time, some critical discard bugs have been fixed, e.g.
-f3f5da624e0a ("block: Do a full clone when splitting discard bios").
+On Tue, Nov 28, 2017 at 11:58:07PM +0530, Bharat Potnuri wrote:
+> isert commands that failed during isert_rdma_rw_ctx_post() are queued to
+> Queue-Full(QF) queue and are scheduled to be reposted during queue-full
+> queue processing. During this reposting, the rdma contexts are initialised
+> again in isert_rdma_rw_ctx_post(), which is leaking significant memory.
+> 
+> unreferenced object 0xffff8830201d9640 (size 64):
+>   comm "kworker/0:2", pid 195, jiffies 4295374851 (age 4528.436s)
+>   hex dump (first 32 bytes):
+>     00 60 8b cb 2e 00 00 00 00 10 00 00 00 00 00 00  .`..............
+>     00 90 e3 cb 2e 00 00 00 00 10 00 00 00 00 00 00  ................
+>   backtrace:
+>     [<ffffffff8170711e>] kmemleak_alloc+0x4e/0xb0
+>     [<ffffffff811f8ba5>] __kmalloc+0x125/0x2b0
+>     [<ffffffffa046b24f>] rdma_rw_ctx_init+0x15f/0x6f0 [ib_core]
+>     [<ffffffffa07ab644>] isert_rdma_rw_ctx_post+0xc4/0x3c0 [ib_isert]
+>     [<ffffffffa07ad972>] isert_put_datain+0x112/0x1c0 [ib_isert]
+>     [<ffffffffa07dddce>] lio_queue_data_in+0x2e/0x30 [iscsi_target_mod]
+>     [<ffffffffa076c322>] target_qf_do_work+0x2b2/0x4b0 [target_core_mod]
+>     [<ffffffff81080c3b>] process_one_work+0x1db/0x5d0
+>     [<ffffffff8108107d>] worker_thread+0x4d/0x3e0
+>     [<ffffffff81088667>] kthread+0x117/0x150
+>     [<ffffffff81713fa7>] ret_from_fork+0x27/0x40
+>     [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> Here is patch to use the older rdma contexts while reposting
+> the isert commands intead of reinitialising them.
+> 
+> Signed-off-by: Potnuri Bharat Teja <bharat@chelsio.com>
+> Reviewed-by: Sagi Grimberg <sagi@grimberg.me>
+>  drivers/infiniband/ulp/isert/ib_isert.c | 7 +++++++
+>  drivers/infiniband/ulp/isert/ib_isert.h | 1 +
+>  2 files changed, 8 insertions(+)
+>
 
-Block layer backed logical units are capable of deferring to the block
-layer when determining UNMAP attributes, but this logic currently leaves
-the emulate_tpu (UNMAP) and emulate_tpws (WRITE_SAME with UNMAP=1) flags
-disabled.
-With this change, emulate_tpu and emulate_tpws are set for block layer
-backed logical units based on underlying block device discard support.
+So this RFC got Reviewed-by Sagi, is it to be applied now or something
+else??
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
----
- drivers/target/target_core_device.c | 2 ++
- 1 file changed, 2 insertions(+)
+If yes, what tree does it want to go through? I see Nicholas and Doug
+have both been historically taking isert patches.
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index e8dd6da164b2..65dab7c2460a 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -856,6 +856,8 @@ bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
- 	attrib->unmap_granularity_alignment = q->limits.discard_alignment /
- 								block_size;
- 	attrib->unmap_zeroes_data = (q->limits.max_write_zeroes_sectors);
-+	attrib->emulate_tpu = 1;
-+	attrib->emulate_tpws = 1;
- 	return true;
- }
- EXPORT_SYMBOL(target_configure_unmap_from_queue);
--- 
-2.13.6
-
+Thanks,
+Jason
