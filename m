@@ -1,40 +1,49 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 21:46:42 +0000
-Subject: [PATCH 4/8] target/iscsi: Delete an unnecessary variable initialisation in iscsit_allocate_ooo_cmdsn
-Message-Id: <3db75482-2817-46b1-95e5-ace7342e2a90@users.sourceforge.net>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Wed, 13 Dec 2017 23:50:27 +0000
+Subject: [PATCH 09/11] target: Simplify transport_generic_free_cmd() (2/2)
+Message-Id: <20171213235029.581-10-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
-In-Reply-To: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, David Disseldorp <ddiss@suse.de>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 21:13:49 +0100
+Since target_wait_free_cmd() skips TMFs with no associated LUN,
+it is safe to call that function for such commands. Use this to
+simplify transport_generic_free_cmd(). The only functional change
+in this patch is that CMD_T_FABRIC_STOP gets set for TMFs with no
+associated LUN by transport_generic_free_cmd().
 
-The local variable "ooo_cmdsn" will be reassigned by a following statement.
-Thus omit the explicit initialisation at the beginning.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/iscsi/iscsi_target_erl1.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_transport.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
-index ff3e08b6d4e1..c4c550128161 100644
---- a/drivers/target/iscsi/iscsi_target_erl1.c
-+++ b/drivers/target/iscsi/iscsi_target_erl1.c
-@@ -782,7 +782,7 @@ int iscsit_recover_dataout_sequence(
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 6beab4b89414..7bf2248e9664 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -2634,12 +2634,10 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ 	int ret = 0;
+ 	bool aborted = false, tas = false;
  
- static struct iscsi_ooo_cmdsn *iscsit_allocate_ooo_cmdsn(void)
- {
--	struct iscsi_ooo_cmdsn *ooo_cmdsn = NULL;
-+	struct iscsi_ooo_cmdsn *ooo_cmdsn;
- 
- 	ooo_cmdsn = kmem_cache_zalloc(lio_ooo_cache, GFP_ATOMIC);
- 	if (!ooo_cmdsn)
+-	if (!(cmd->se_cmd_flags & SCF_SE_LUN_CMD)) {
+-		if (wait_for_tasks && (cmd->se_cmd_flags & SCF_SCSI_TMR_CDB))
+-			target_wait_free_cmd(cmd, &aborted, &tas);
+-	} else {
+-		if (wait_for_tasks)
+-			target_wait_free_cmd(cmd, &aborted, &tas);
++	if (wait_for_tasks)
++		target_wait_free_cmd(cmd, &aborted, &tas);
++
++	if (cmd->se_cmd_flags & SCF_SE_LUN_CMD) {
+ 		/*
+ 		 * Handle WRITE failure case where transport_generic_new_cmd()
+ 		 * has already added se_cmd to state_list, but fabric has
 -- 
 2.15.1
 
