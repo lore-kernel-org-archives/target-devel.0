@@ -1,50 +1,64 @@
-From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Mon, 18 Dec 2017 23:14:39 +0000
-Subject: Re: [RFC] iser-target: avoid reinitializing rdma contexts for isert commands
-Message-Id: <20171218231439.GA31621@ziepe.ca>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Wed, 13 Dec 2017 23:50:18 +0000
+Subject: [PATCH 00/11] SCSI target patches for kernel v4.16
+Message-Id: <20171213235029.581-1-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1511893687-29298-1-git-send-email-bharat@chelsio.com>
-In-Reply-To: <1511893687-29298-1-git-send-email-bharat@chelsio.com>
+References: <20171031180319.19258-1-bart.vanassche@wdc.com>
+In-Reply-To: <20171031180319.19258-1-bart.vanassche@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bharat Potnuri <bharat@chelsio.com>
-Cc: nab@linux-iscsi.org, sagi@grimberg.me, target-devel@vger.kernel.org, linux-rdma@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-On Tue, Nov 28, 2017 at 11:58:07PM +0530, Bharat Potnuri wrote:
-> isert commands that failed during isert_rdma_rw_ctx_post() are queued to
-> Queue-Full(QF) queue and are scheduled to be reposted during queue-full
-> queue processing. During this reposting, the rdma contexts are initialised
-> again in isert_rdma_rw_ctx_post(), which is leaking significant memory.
-> 
-> unreferenced object 0xffff8830201d9640 (size 64):
->   comm "kworker/0:2", pid 195, jiffies 4295374851 (age 4528.436s)
->   hex dump (first 32 bytes):
->     00 60 8b cb 2e 00 00 00 00 10 00 00 00 00 00 00  .`..............
->     00 90 e3 cb 2e 00 00 00 00 10 00 00 00 00 00 00  ................
->   backtrace:
->     [<ffffffff8170711e>] kmemleak_alloc+0x4e/0xb0
->     [<ffffffff811f8ba5>] __kmalloc+0x125/0x2b0
->     [<ffffffffa046b24f>] rdma_rw_ctx_init+0x15f/0x6f0 [ib_core]
->     [<ffffffffa07ab644>] isert_rdma_rw_ctx_post+0xc4/0x3c0 [ib_isert]
->     [<ffffffffa07ad972>] isert_put_datain+0x112/0x1c0 [ib_isert]
->     [<ffffffffa07dddce>] lio_queue_data_in+0x2e/0x30 [iscsi_target_mod]
->     [<ffffffffa076c322>] target_qf_do_work+0x2b2/0x4b0 [target_core_mod]
->     [<ffffffff81080c3b>] process_one_work+0x1db/0x5d0
->     [<ffffffff8108107d>] worker_thread+0x4d/0x3e0
->     [<ffffffff81088667>] kthread+0x117/0x150
->     [<ffffffff81713fa7>] ret_from_fork+0x27/0x40
->     [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> Here is patch to use the older rdma contexts while reposting
-> the isert commands intead of reinitialising them.
-> 
-> Signed-off-by: Potnuri Bharat Teja <bharat@chelsio.com>
-> Reviewed-by: Sagi Grimberg <sagi@grimberg.me>
->  drivers/infiniband/ulp/isert/ib_isert.c | 7 +++++++
->  drivers/infiniband/ulp/isert/ib_isert.h | 1 +
->  2 files changed, 8 insertions(+)
+Hello Martin,
 
-Thanks, applied to RDMA for-next
+As you maybe know some time ago I started working on simplifying task
+management function handling in the SCSI target core (see e.g. "[PATCH 00/34]
+SCSI target patches for kernel v4.11"; January 2017;
+https://www.spinics.net/lists/target-devel/msg14054.html). There were some
+patches in that series that rightfully raised Nic's eyebrows. Reviewing these
+patches myself made me realize that before TMF handling can be made
+synchronous that some unusual constructs in the SCSI target core have to be
+reworked first. Hence this patch series. The following tests have been run
+against this patch series for both the iSCSI and SRPT target drivers:
+- Run the libiscsi conformance tests.
+- Run fio ${dev} in one shell and while sg_reset -d ${dev}; do :; done from
+  another shell. This is a good way to stress test TMF handling.
+- For the SRP target driver: run the srp-test software.
 
-Jason
+Please consider this patch series for kernel v4.16.
+
+Thanks,
+
+Bart.
+
+Bart Van Assche (11):
+  target: Fix an argument name in a function documentation header
+  target: Use config_item_name() instead of open-coding it
+  target: Avoid that EXTENDED COPY commands trigger lock inversion
+  target: Make the session shutdown code also wait for commands that are
+    being aborted
+  target: Add more documentation
+  target: Simplify core_tmr_handle_tas_abort()
+  target: Fold core_tmr_handle_tas_abort() into
+    transport_cmd_finish_abort()
+  target: Simplify transport_generic_free_cmd() (1/2)
+  target: Simplify transport_generic_free_cmd() (2/2)
+  target: Simplify the code for waiting for command completion
+  target/iscsi: Reduce number of __iscsit_free_cmd() callers
+
+ drivers/target/iscsi/iscsi_target.c          |   2 -
+ drivers/target/iscsi/iscsi_target_configfs.c |   1 +
+ drivers/target/iscsi/iscsi_target_util.c     |   4 +-
+ drivers/target/target_core_configfs.c        |   4 +-
+ drivers/target/target_core_device.c          |  31 +++--
+ drivers/target/target_core_internal.h        |   2 +-
+ drivers/target/target_core_sbc.c             |   7 +-
+ drivers/target/target_core_tmr.c             |  30 +----
+ drivers/target/target_core_transport.c       | 166 ++++++++++++---------------
+ include/target/target_core_base.h            |   5 +-
+ 10 files changed, 113 insertions(+), 139 deletions(-)
+
+-- 
+2.15.1
+
