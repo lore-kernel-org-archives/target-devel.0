@@ -1,78 +1,60 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Sat, 23 Dec 2017 05:40:38 +0000
-Subject: [PATCH] target: add kernel-doc overview in target_core_user.[hc]
-Message-Id: <7e8662e8-f554-cc8c-0287-6a22f561692b@infradead.org>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Wed, 13 Dec 2017 23:50:20 +0000
+Subject: [PATCH 02/11] target: Use config_item_name() instead of open-coding it
+Message-Id: <20171213235029.581-3-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>, Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, "James E.J. Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K. Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, shli-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Andy Grover <agrover-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+To: target-devel@vger.kernel.org
 
-From: Randy Dunlap <rdunlap@infradead.org>
+Some target code uses config_item_name() while other code accesses
+.ci_name directly. Make the target code consistent by switching to
+config_item_name().
 
-Make documentation on target-supported userspace-I/O design be
-usable by kernel-doc by using "DOC:".
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc:	"Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc:	linux-scsi@vger.kernel.org
-Cc:	target-devel@vger.kernel.org
-Cc:	Sagi Grimberg <sagi@grimberg.me>
-Cc:	linux-rdma@vger.kernel.org
-Cc:	"James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
-Cc:	"Martin K. Petersen" <martin.petersen@oracle.com>
-Cc:	Shaohua Li <shli@kernel.org>
-Cc:	Andy Grover <agrover@redhat.com>
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_user.c     |    6 +++++-
- include/uapi/linux/target_core_user.h |   11 ++++++-----
- 2 files changed, 11 insertions(+), 6 deletions(-)
+ drivers/target/target_core_configfs.c | 4 ++--
+ drivers/target/target_core_sbc.c      | 7 ++++---
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
---- linux-next-20171221.orig/drivers/target/target_core_user.c
-+++ linux-next-20171221/drivers/target/target_core_user.c
-@@ -42,7 +42,11 @@
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 72b1cd1bf9d9..c6c16a41c035 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -261,8 +261,8 @@ static struct config_group *target_core_register_fabric(
+ 			&tf->tf_discovery_cit);
+ 	configfs_add_default_group(&tf->tf_disc_group, &tf->tf_group);
  
- #include <linux/target_core_user.h>
+-	pr_debug("Target_Core_ConfigFS: REGISTER -> Allocated Fabric:"
+-			" %s\n", tf->tf_group.cg_item.ci_name);
++	pr_debug("Target_Core_ConfigFS: REGISTER -> Allocated Fabric: %s\n",
++		 config_item_name(&tf->tf_group.cg_item));
+ 	return &tf->tf_group;
+ }
  
--/*
-+/**
-+ * DOC: Userspace I/O
-+ * Userspace I/O
-+ * -------------
-+ *
-  * Define a shared-memory interface for LIO to pass SCSI commands and
-  * data to userspace for processing. This is to allow backends that
-  * are too complex for in-kernel support to be possible.
---- linux-next-20171221.orig/include/uapi/linux/target_core_user.h
-+++ linux-next-20171221/include/uapi/linux/target_core_user.h
-@@ -9,21 +9,22 @@
- 
- #define TCMU_VERSION "2.0"
- 
--/*
-+/**
-+ * DOC: Ring Design
-  * Ring Design
-  * -----------
-  *
-  * The mmaped area is divided into three parts:
-- * 1) The mailbox (struct tcmu_mailbox, below)
-- * 2) The command ring
-- * 3) Everything beyond the command ring (data)
-+ * 1) The mailbox (struct tcmu_mailbox, below);
-+ * 2) The command ring;
-+ * 3) Everything beyond the command ring (data).
-  *
-  * The mailbox tells userspace the offset of the command ring from the
-  * start of the shared memory region, and how big the command ring is.
-  *
-  * The kernel passes SCSI commands to userspace by putting a struct
-  * tcmu_cmd_entry in the ring, updating mailbox->cmd_head, and poking
-- * userspace via uio's interrupt mechanism.
-+ * userspace via UIO's interrupt mechanism.
-  *
-  * tcmu_cmd_entry contains a header. If the header type is PAD,
-  * userspace should skip hdr->length bytes (mod cmdr_size) to find the
-
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 750a04ed0e93..5876c0ab95c8 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -978,9 +978,10 @@ sbc_parse_cdb(struct se_cmd *cmd, struct sbc_ops *ops)
+ 	}
+ 	case COMPARE_AND_WRITE:
+ 		if (!dev->dev_attrib.emulate_caw) {
+-			pr_err_ratelimited("se_device %s/%s (vpd_unit_serial %s) reject"
+-				" COMPARE_AND_WRITE\n", dev->se_hba->backend->ops->name,
+-				dev->dev_group.cg_item.ci_name, dev->t10_wwn.unit_serial);
++			pr_err_ratelimited("se_device %s/%s (vpd_unit_serial %s) reject COMPARE_AND_WRITE\n",
++					   dev->se_hba->backend->ops->name,
++					   config_item_name(&dev->dev_group.cg_item),
++					   dev->t10_wwn.unit_serial);
+ 			return TCM_UNSUPPORTED_SCSI_OPCODE;
+ 		}
+ 		sectors = cdb[13];
+-- 
+2.15.1
 
