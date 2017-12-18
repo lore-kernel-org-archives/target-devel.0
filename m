@@ -1,40 +1,31 @@
 From: "Steve Wise" <swise@opengridcomputing.com>
-Date: Mon, 18 Dec 2017 17:12:11 +0000
+Date: Mon, 18 Dec 2017 21:43:44 +0000
 Subject: RE: stuck iscsi/iser target with linux-4.15.0-rc1
-Message-Id: <030e01d37823$57f99800$07ecc800$@opengridcomputing.com>
+Message-Id: <03bd01d37849$47497ae0$d5dc70a0$@opengridcomputing.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <000801d36ac6$9e9f5f70$dbde1e50$@opengridcomputing.com> <0ba7e891-f020-26fb-9945-9e824332593c@grimberg.me> <018901d36d17$6a703410$3f509c30$@opengridcomputing.com> <1dee9f68-a81b-b7b8-9e70-e0ef5c63c520@grimberg.me> <01bd01d3745a$f4bc82f0$de3588d0$@opengridcomputing.com> <01c701d37462$87371f30$95a55d90$@opengridcomputing.com> <01c901d37462$be431240$3ac936c0$@opengridcomputing.com> <cbe1b731-8e37-884a-1406-6a7ca1f6a0be@mellanox.com>
-In-Reply-To: <cbe1b731-8e37-884a-1406-6a7ca1f6a0be-VPRAkNaXOzVWk0Htik3J/w@public.gmane.org>
+References: <000801d36ac6$9e9f5f70$dbde1e50$@opengridcomputing.com> <0ba7e891-f020-26fb-9945-9e824332593c@grimberg.me> <018901d36d17$6a703410$3f509c30$@opengridcomputing.com> <1dee9f68-a81b-b7b8-9e70-e0ef5c63c520@grimberg.me>
+In-Reply-To: <1dee9f68-a81b-b7b8-9e70-e0ef5c63c520@grimberg.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Max Gurtovoy' <maxg-VPRAkNaXOzVWk0Htik3J/w@public.gmane.org>, 'Sagi Grimberg' <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, 'target-devel' <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: 'Sagi Grimberg' <sagi@grimberg.me>, 'target-devel' <target-devel@vger.kernel.org>
+Cc: linux-rdma@vger.kernel.org
 
-> 
-> hi Steve,
-> 
-> On 12/14/2017 12:35 AM, Steve Wise wrote:
-> >>
-> >> I tried with 4.14.0 and got the same results.  I then backed up to 4.9.44 and I
-> can
-> >> discovery/login again.  I'll see if I can bisect this out, unless somebody knows
-> >> about current problems with iser?
-> >
-> > Actually, 4.9.44 has the same issue.  It works with iscsi/tcp, not iser. I must be
-> doing something wrong in my setup.
-> 
-> can you run "targetcli ls" on your target side ?
-> also "iscsiadm -V" on the initiator side ?
-> can you try running with ib link layer ?
-> 
-> I'll try to find similar setup to repro in our labs.
 
-Hi Max, I'm setting this up on other systems at the moment.  If I can reproduce any of this, I'll reply with more details.
+> > [239800.115739] target_wait_for_sess_cmds: Waiting for se_cmd:
+> ffff88034082c998 t_state: 6, fabric state: 12
+> 
+> Hmm, this means that the command was delegated to isert to send
+> data+response... Which means we lose a reference put somewhere here.
+> 
+> I'm assuming that this happens before your changes to ib_drain_qp
+> correct? If this does not happen without your changes it might indicate
+> that drain_qp is missing an error (or successful?) completion which
+> would prevent a final reference drop (isert_completion_put).
 
-Thanks!
+The issue doesn't happen on 4.15-rc4 with mlx4, but it does with cxgb4.  There have been some bad problems with cxgb4's drain logic, so I need to just root cause this, because backing up to see if it used to work is problematic and will hit other issues with drain.  The qp does get drained, and I confirmed it has no pending send or recv wrs.  The associated cq's last 2 completions are from the ib_drain_qp() logic, so I need to somehow determine what completion got lost/dropped/whatever. 
 
-Steve.
+Do you have any thoughts on debugging this?  Turning on isert debug is bad because the IO load is very high.  I sort of need something that I can do after it gets stuck.  So I can change the wait_for_completion() to a wait_for_completion_timeout() and if it times out, go figure out what it is stuck on.  
 
 
 
