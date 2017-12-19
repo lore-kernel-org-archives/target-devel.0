@@ -1,34 +1,45 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Thu, 07 Dec 2017 14:47:50 +0000
-Subject: Re: [RFC PATCH] target: detect read-only from underlying iblock device
-Message-Id: <20171207154750.5405ab5d@suse.de>
+Date: Tue, 19 Dec 2017 13:45:17 +0000
+Subject: [RFC PATCH] target: enable discard if supported by underlying block device
+Message-Id: <20171219134517.17296-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171205205442.25414-1-ddiss@suse.de>
-In-Reply-To: <20171205205442.25414-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Wed, 6 Dec 2017 13:29:21 +0100, David Disseldorp wrote:
+The initial commit of LIO (v4.0.0-rc6) came with support for SCSI UNMAP
+disabled. This was justified in the LIO wiki with:
+  Many SATA SSDs have issues handling UNMAP properly, so it is disabled
+  per default in LIO.
+Since this time, some critical discard bugs have been fixed, e.g.
+f3f5da624e0a ("block: Do a full clone when splitting discard bios").
 
-> On Wed, 6 Dec 2017 04:33:16 +0000, Bart Van Assche wrote:
-> 
-> > Although the patch itself looks fine to me: do we really need this kind of
-> > functionality in the kernel? Is it possible to implement the same functionality
-> > in user space?  
-> 
-> Thanks for the feedback, Bart and Johannes. This functionality could
-> be handled in user-space, but having the error reported when the
-> backstore is enabled, rather than when the backstore->control node is
-> setup makes it less than intuitive for targetcli, etc.
-> Having targetcli call ioctl(BLKROGET) prior to issuing the
-> backstore->control I/O would probably be a cleaner user-space option.
+Block layer backed logical units are capable of deferring to the block
+layer when determining UNMAP attributes, but this logic currently leaves
+the emulate_tpu (UNMAP) and emulate_tpws (WRITE_SAME with UNMAP=1) flags
+disabled.
+With this change, emulate_tpu and emulate_tpws are set for block layer
+backed logical units based on underlying block device discard support.
 
-FWIW, I've proposed targetcli changes to handle this via:
-https://github.com/open-iscsi/targetcli-fb/pull/97
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_device.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-This kernel change could be revisited in future if we decide to have LIO
-support obtaining iblock read-only status from underlying block devices.
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index e8dd6da164b2..65dab7c2460a 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -856,6 +856,8 @@ bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
+ 	attrib->unmap_granularity_alignment = q->limits.discard_alignment /
+ 								block_size;
+ 	attrib->unmap_zeroes_data = (q->limits.max_write_zeroes_sectors);
++	attrib->emulate_tpu = 1;
++	attrib->emulate_tpws = 1;
+ 	return true;
+ }
+ EXPORT_SYMBOL(target_configure_unmap_from_queue);
+-- 
+2.13.6
 
-Cheers, David
