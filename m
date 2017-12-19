@@ -1,26 +1,95 @@
-From: "Sra. Angel Rania" <sra.angelrania83@gmail.com>
-Date: Wed, 27 Dec 2017 10:17:06 +0000
-Subject: Re: You will definetely be interested...
-Message-Id: <CAKx+QTtL6hVN3Sv0baZHHBnMxgEeMprK=PALd6GuhxU+MNPauw@mail.gmail.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 19 Dec 2017 10:03:54 +0000
+Subject: [PATCH 1/5] tcmu: prevent corruption when invalid data page requested
+Message-Id: <1513677838-6675-2-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hi Dear,
+We will always have a page mapped for cmd data if it is
+valid command. If the mapping does not exist then something
+bad happened in userspace and it should not proceed. This
+has us return VM_FAULT_SIGBUS when this happens instead of
+returning a freshly allocated paged. The latter can cause
+corruption because userspace might write the pages data
+overwriting valid data or return it to the initiator.
 
-Reading your profile has given me courage in search of a reasponsable
-and trust worthy Fellow. The past has treated me so awfully but now I
-am ready to move on despite of my health condition. I will like to
-have a sincere and important discussion with you that will be in your
-favor likewise to you and your environment especially to your close
-family. Endeavor to reply me and I have attached my picture in case
-you long to know who emailed you. I will be waiting to hear from you
-as soon as possble.
-Thanks for paying attention to my mail and will appreciate so much if
-I receive a reply from you for understable details.
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 43 ++++++---------------------------------
+ 1 file changed, 6 insertions(+), 37 deletions(-)
 
-Thanks,
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index bac08bc..a746fed 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1342,7 +1342,6 @@ static int tcmu_find_mem_index(struct vm_area_struct *vma)
+ static struct page *tcmu_try_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
+ {
+ 	struct page *page;
+-	int ret;
+ 
+ 	mutex_lock(&udev->cmdr_lock);
+ 	page = tcmu_get_block_page(udev, dbi);
+@@ -1352,42 +1351,12 @@ static struct page *tcmu_try_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
+ 	}
+ 
+ 	/*
+-	 * Normally it shouldn't be here:
+-	 * Only when the userspace has touched the blocks which
+-	 * are out of the tcmu_cmd's data iov[], and will return
+-	 * one zeroed page.
++	 * Userspace messed up and passed in a address not in the
++	 * data iov passed to it.
+ 	 */
+-	pr_warn("Block(%u) out of cmd's iov[] has been touched!\n", dbi);
+-	pr_warn("Mostly it will be a bug of userspace, please have a check!\n");
+-
+-	if (dbi >= udev->dbi_thresh) {
+-		/* Extern the udev->dbi_thresh to dbi + 1 */
+-		udev->dbi_thresh = dbi + 1;
+-		udev->dbi_max = dbi;
+-	}
+-
+-	page = radix_tree_lookup(&udev->data_blocks, dbi);
+-	if (!page) {
+-		page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+-		if (!page) {
+-			mutex_unlock(&udev->cmdr_lock);
+-			return NULL;
+-		}
+-
+-		ret = radix_tree_insert(&udev->data_blocks, dbi, page);
+-		if (ret) {
+-			mutex_unlock(&udev->cmdr_lock);
+-			__free_page(page);
+-			return NULL;
+-		}
+-
+-		/*
+-		 * Since this case is rare in page fault routine, here we
+-		 * will allow the global_db_count >= tcmu_global_max_blocks
+-		 * to reduce possible page fault call trace.
+-		 */
+-		atomic_inc(&global_db_count);
+-	}
++	pr_err("Invalid addr to data block mapping  (dbi %u) on device %s\n",
++	       dbi, udev->name);
++	page = NULL;
+ 	mutex_unlock(&udev->cmdr_lock);
+ 
+ 	return page;
+@@ -1422,7 +1391,7 @@ static int tcmu_vma_fault(struct vm_fault *vmf)
+ 		dbi = (offset - udev->data_off) / DATA_BLOCK_SIZE;
+ 		page = tcmu_try_get_block_page(udev, dbi);
+ 		if (!page)
+-			return VM_FAULT_NOPAGE;
++			return VM_FAULT_SIGBUS;
+ 	}
+ 
+ 	get_page(page);
+-- 
+1.8.3.1
 
-Mrs. Rania Hassan
