@@ -1,40 +1,78 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 21:50:09 +0000
-Subject: [PATCH 7/8] target/iscsi: Delete an unnecessary variable initialisation in iscsi_set_default_param()
-Message-Id: <b5de8128-f836-a973-1eb2-2cb54c8418b1@users.sourceforge.net>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 23 Dec 2017 05:40:38 +0000
+Subject: [PATCH] target: add kernel-doc overview in target_core_user.[hc]
+Message-Id: <7e8662e8-f554-cc8c-0287-6a22f561692b@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
-In-Reply-To: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, David Disseldorp <ddiss@suse.de>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: linux-scsi <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>, Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, "James E.J. Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K. Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, shli-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Andy Grover <agrover-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 21:21:31 +0100
+From: Randy Dunlap <rdunlap@infradead.org>
 
-The local variable "param" will be reassigned by a following statement.
-Thus omit the explicit initialisation at the beginning.
+Make documentation on target-supported userspace-I/O design be
+usable by kernel-doc by using "DOC:".
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc:	"Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc:	linux-scsi@vger.kernel.org
+Cc:	target-devel@vger.kernel.org
+Cc:	Sagi Grimberg <sagi@grimberg.me>
+Cc:	linux-rdma@vger.kernel.org
+Cc:	"James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
+Cc:	"Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:	Shaohua Li <shli@kernel.org>
+Cc:	Andy Grover <agrover@redhat.com>
 ---
- drivers/target/iscsi/iscsi_target_parameters.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_user.c     |    6 +++++-
+ include/uapi/linux/target_core_user.h |   11 ++++++-----
+ 2 files changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_parameters.c b/drivers/target/iscsi/iscsi_target_parameters.c
-index 151269b8816d..a49b0b2a4f6c 100644
---- a/drivers/target/iscsi/iscsi_target_parameters.c
-+++ b/drivers/target/iscsi/iscsi_target_parameters.c
-@@ -127,7 +127,7 @@ static struct iscsi_param *iscsi_set_default_param(struct iscsi_param_list *para
- 		char *name, char *value, u8 phase, u8 scope, u8 sender,
- 		u16 type_range, u8 use)
- {
--	struct iscsi_param *param = NULL;
-+	struct iscsi_param *param;
+--- linux-next-20171221.orig/drivers/target/target_core_user.c
++++ linux-next-20171221/drivers/target/target_core_user.c
+@@ -42,7 +42,11 @@
  
- 	param = kzalloc(sizeof(struct iscsi_param), GFP_KERNEL);
- 	if (!param)
--- 
-2.15.1
+ #include <linux/target_core_user.h>
+ 
+-/*
++/**
++ * DOC: Userspace I/O
++ * Userspace I/O
++ * -------------
++ *
+  * Define a shared-memory interface for LIO to pass SCSI commands and
+  * data to userspace for processing. This is to allow backends that
+  * are too complex for in-kernel support to be possible.
+--- linux-next-20171221.orig/include/uapi/linux/target_core_user.h
++++ linux-next-20171221/include/uapi/linux/target_core_user.h
+@@ -9,21 +9,22 @@
+ 
+ #define TCMU_VERSION "2.0"
+ 
+-/*
++/**
++ * DOC: Ring Design
+  * Ring Design
+  * -----------
+  *
+  * The mmaped area is divided into three parts:
+- * 1) The mailbox (struct tcmu_mailbox, below)
+- * 2) The command ring
+- * 3) Everything beyond the command ring (data)
++ * 1) The mailbox (struct tcmu_mailbox, below);
++ * 2) The command ring;
++ * 3) Everything beyond the command ring (data).
+  *
+  * The mailbox tells userspace the offset of the command ring from the
+  * start of the shared memory region, and how big the command ring is.
+  *
+  * The kernel passes SCSI commands to userspace by putting a struct
+  * tcmu_cmd_entry in the ring, updating mailbox->cmd_head, and poking
+- * userspace via uio's interrupt mechanism.
++ * userspace via UIO's interrupt mechanism.
+  *
+  * tcmu_cmd_entry contains a header. If the header type is PAD,
+  * userspace should skip hdr->length bytes (mod cmdr_size) to find the
+
 
