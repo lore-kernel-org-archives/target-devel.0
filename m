@@ -1,47 +1,99 @@
-From: Andrei Vagin <avagin@openvz.org>
-Date: Wed, 13 Dec 2017 21:55:13 +0000
-Subject: [PATCH] target: don't call an unmap callback if a range length is zero
-Message-Id: <20171213215513.26416-1-avagin@openvz.org>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sun, 24 Dec 2017 05:20:31 +0000
+Subject: [PATCH] target: cleanup target_core_transport.c for kernel-doc
+Message-Id: <e896b763-692b-90bd-e212-8c6d5a8fdd2c@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Andrei Vagin <avagin@openvz.org>
+To: linux-scsi <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>, Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, "James E.J. Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K. Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
 
-If a length of a range is zero, it means there is nothing to unmap
-and we can skip this range.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Here is one more reason, why we have to skip such ranges.  An unmap
-callback calls file_operations->fallocate(), but the man page for the
-fallocate syscall says that fallocate(fd, mode, offset, let) returns
-EINVAL, if len is zero. It means that file_operations->fallocate() isn't
-obligated to handle zero ranges too.
+For exported functions that already have near-kernel-doc notation,
+fix them to begin with "/**" and make a few corrections so that they
+don't have any kernel-doc warnings.
 
-Signed-off-by: Andrei Vagin <avagin@openvz.org>
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc:	"Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc:	linux-scsi@vger.kernel.org
+Cc:	target-devel@vger.kernel.org
+Cc:	Sagi Grimberg <sagi@grimberg.me>
+Cc:	linux-rdma@vger.kernel.org
+Cc:	"James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
+Cc:	"Martin K. Petersen" <martin.petersen@oracle.com>
 ---
- drivers/target/target_core_sbc.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/target/target_core_transport.c |   17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index 750a04ed0e93..b054682e974f 100644
---- a/drivers/target/target_core_sbc.c
-+++ b/drivers/target/target_core_sbc.c
-@@ -1216,9 +1216,11 @@ sbc_execute_unmap(struct se_cmd *cmd)
- 			goto err;
- 		}
+--- linux-next-20171221.orig/drivers/target/target_core_transport.c
++++ linux-next-20171221/drivers/target/target_core_transport.c
+@@ -1431,7 +1431,7 @@ transport_generic_map_mem_to_cmd(struct
+ 	return 0;
+ }
  
--		ret = ops->execute_unmap(cmd, lba, range);
--		if (ret)
--			goto err;
-+		if (range) {
-+			ret = ops->execute_unmap(cmd, lba, range);
-+			if (ret)
-+				goto err;
-+		}
+-/*
++/**
+  * target_submit_cmd_map_sgls - lookup unpacked lun and submit uninitialized
+  * 			 se_cmd + use pre-allocated SGL memory.
+  *
+@@ -1441,7 +1441,7 @@ transport_generic_map_mem_to_cmd(struct
+  * @sense: pointer to SCSI sense buffer
+  * @unpacked_lun: unpacked LUN to reference for struct se_lun
+  * @data_length: fabric expected data transfer length
+- * @task_addr: SAM task attribute
++ * @task_attr: SAM task attribute
+  * @data_dir: DMA data direction
+  * @flags: flags for command submission from target_sc_flags_tables
+  * @sgl: struct scatterlist memory for unidirectional mapping
+@@ -1578,7 +1578,7 @@ int target_submit_cmd_map_sgls(struct se
+ }
+ EXPORT_SYMBOL(target_submit_cmd_map_sgls);
  
- 		ptr += 16;
- 		size -= 16;
--- 
-2.13.6
+-/*
++/**
+  * target_submit_cmd - lookup unpacked lun and submit uninitialized se_cmd
+  *
+  * @se_cmd: command descriptor to submit
+@@ -1587,7 +1587,7 @@ EXPORT_SYMBOL(target_submit_cmd_map_sgls
+  * @sense: pointer to SCSI sense buffer
+  * @unpacked_lun: unpacked LUN to reference for struct se_lun
+  * @data_length: fabric expected data transfer length
+- * @task_addr: SAM task attribute
++ * @task_attr: SAM task attribute
+  * @data_dir: DMA data direction
+  * @flags: flags for command submission from target_sc_flags_tables
+  *
+@@ -2641,7 +2641,8 @@ int transport_generic_free_cmd(struct se
+ }
+ EXPORT_SYMBOL(transport_generic_free_cmd);
+ 
+-/* target_get_sess_cmd - Add command to active ->sess_cmd_list
++/**
++ * target_get_sess_cmd - Add command to active ->sess_cmd_list
+  * @se_cmd:	command descriptor to add
+  * @ack_kref:	Signal that fabric will perform an ack target_put_sess_cmd()
+  */
+@@ -2835,7 +2836,8 @@ void target_show_cmd(const char *pfx, st
+ }
+ EXPORT_SYMBOL(target_show_cmd);
+ 
+-/* target_sess_cmd_list_set_waiting - Flag all commands in
++/**
++ * target_sess_cmd_list_set_waiting - Flag all commands in
+  *         sess_cmd_list to complete cmd_wait_comp.  Set
+  *         sess_tearing_down so no more commands are queued.
+  * @se_sess:	session to flag
+@@ -2870,7 +2872,8 @@ void target_sess_cmd_list_set_waiting(st
+ }
+ EXPORT_SYMBOL(target_sess_cmd_list_set_waiting);
+ 
+-/* target_wait_for_sess_cmds - Wait for outstanding descriptors
++/**
++ * target_wait_for_sess_cmds - Wait for outstanding descriptors
+  * @se_sess:    session to wait for active I/O
+  */
+ void target_wait_for_sess_cmds(struct se_session *se_sess)
+
 
