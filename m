@@ -1,77 +1,119 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 11 Dec 2017 10:42:12 +0000
-Subject: [PATCH 1/6] target: tcm_loop: Delete an error message for a failed memory allocation in four functio
-Message-Id: <a4645e99-0518-8b1b-2b1a-748087a7ac23@users.sourceforge.net>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Tue, 26 Dec 2017 23:50:50 +0000
+Subject: [PATCH] documentation: add a target/iscsi driver document
+Message-Id: <2affd531-43d1-c798-8467-dece4b88a1df@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <42f13f0c-ae1d-ec1e-fd9d-62dd15aeba8c@users.sourceforge.net>
-In-Reply-To: <42f13f0c-ae1d-ec1e-fd9d-62dd15aeba8c@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Bart Van Assche <bart.vanassche@sandisk.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: linux-scsi <linux-scsi@vger.kernel.org>, target-devel <target-devel@vger.kernel.org>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>
+Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 10 Dec 2017 21:18:15 +0100
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Omit an extra message for a memory allocation failure in these functions.
+Add a driver-api document for target/iSCSI interfaces.
 
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 ---
- drivers/target/loopback/tcm_loop.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+This patch depends on 4 previous patches to driver source files:
 
-diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-index b6a913e38b30..6bd58a064924 100644
---- a/drivers/target/loopback/tcm_loop.c
-+++ b/drivers/target/loopback/tcm_loop.c
-@@ -184,7 +184,6 @@ static int tcm_loop_queuecommand(struct Scsi_Host *sh, struct scsi_cmnd *sc)
+[PATCH] target: fix kernel-doc warnings in drivers/target/target_core_transport.c
+  https://marc.info/?l=linux-scsi&m1398041926906&w=2
+
+[PATCH] scsi: fix iscsi-related kernel-doc warnings
+  https://marc.info/?l=linux-scsi&m1398051426923&w=2
+
+[PATCH] target: add kernel-doc overview in target_core_user.[hc]
+  [PATCH] target: add kernel-doc overview in target_core_user.[hc]
+
+[PATCH] target: cleanup target_core_transport.c for kernel-doc
+  https://marc.info/?l=linux-scsi&m1409284812033&w=2
+
+ Documentation/driver-api/index.rst  |    1 
+ Documentation/driver-api/scsi.rst   |    2 
+ Documentation/driver-api/target.rst |   64 ++++++++++++++++++++++++++
+ 3 files changed, 66 insertions(+), 1 deletion(-)
+
+--- linux-next-20171221.orig/Documentation/driver-api/index.rst
++++ linux-next-20171221/Documentation/driver-api/index.rst
+@@ -34,6 +34,7 @@ available subsections can be seen below.
+    edac
+    scsi
+    libata
++   target
+    mtdnand
+    miscellaneous
+    w1
+--- linux-next-20171221.orig/Documentation/driver-api/scsi.rst
++++ linux-next-20171221/Documentation/driver-api/scsi.rst
+@@ -340,5 +340,5 @@ todo
+ ~~~~
  
- 	tl_cmd = kmem_cache_zalloc(tcm_loop_cmd_cache, GFP_ATOMIC);
- 	if (!tl_cmd) {
--		pr_err("Unable to allocate struct tcm_loop_cmd\n");
- 		set_host_byte(sc, DID_ERROR);
- 		sc->scsi_done(sc);
- 		return 0;
-@@ -221,10 +220,8 @@ static int tcm_loop_issue_tmr(struct tcm_loop_tpg *tl_tpg,
- 	}
- 
- 	tl_cmd = kmem_cache_zalloc(tcm_loop_cmd_cache, GFP_KERNEL);
--	if (!tl_cmd) {
--		pr_err("Unable to allocate memory for tl_cmd\n");
-+	if (!tl_cmd)
- 		return ret;
--	}
- 
- 	init_completion(&tl_cmd->tmr_done);
- 
-@@ -773,10 +770,8 @@ static int tcm_loop_make_nexus(
- 	}
- 
- 	tl_nexus = kzalloc(sizeof(struct tcm_loop_nexus), GFP_KERNEL);
--	if (!tl_nexus) {
--		pr_err("Unable to allocate struct tcm_loop_nexus\n");
-+	if (!tl_nexus)
- 		return -ENOMEM;
--	}
- 
- 	tl_nexus->se_sess = target_alloc_session(&tl_tpg->tl_se_tpg, 0, 0,
- 					TARGET_PROT_DIN_PASS | TARGET_PROT_DOUT_PASS,
-@@ -1082,10 +1077,9 @@ static struct se_wwn *tcm_loop_make_scsi_hba(
- 	int ret, off = 0;
- 
- 	tl_hba = kzalloc(sizeof(struct tcm_loop_hba), GFP_KERNEL);
--	if (!tl_hba) {
--		pr_err("Unable to allocate struct tcm_loop_hba\n");
-+	if (!tl_hba)
- 		return ERR_PTR(-ENOMEM);
--	}
+ Parallel (fast/wide/ultra) SCSI, USB, SATA, SAS, Fibre Channel,
+-FireWire, ATAPI devices, Infiniband, I2O, iSCSI, Parallel ports,
++FireWire, ATAPI devices, Infiniband, I2O, Parallel ports,
+ netlink...
+--- /dev/null
++++ linux-next-20171221/Documentation/driver-api/target.rst
+@@ -0,0 +1,64 @@
++================+target and iSCSI Interfaces Guide
++================+
++Introduction and Overview
++============+
++TBD
 +
- 	/*
- 	 * Determine the emulated Protocol Identifier and Target Port Name
- 	 * based on the incoming configfs directory name.
--- 
-2.15.1
++Target core device interfaces
++==============+
++.. kernel-doc:: drivers/target/target_core_device.c
++    :export:
++
++Target core transport interfaces
++================
++
++.. kernel-doc:: drivers/target/target_core_transport.c
++    :export:
++
++Target-supported userspace I/O
++===============
++
++.. kernel-doc:: drivers/target/target_core_user.c
++    :doc: Userspace I/O
++
++.. kernel-doc:: include/uapi/linux/target_core_user.h
++    :doc: Ring Design
++
++iSCSI helper functions
++===========
++
++.. kernel-doc:: drivers/scsi/libiscsi.c
++   :export:
++
++
++iSCSI boot information
++===========
++
++.. kernel-doc:: drivers/scsi/iscsi_boot_sysfs.c
++   :export
++
++
++iSCSI transport class
++==========+
++The file drivers/scsi/scsi_transport_iscsi.c defines transport
++attributes for the iSCSI class, which sends SCSI packets over TCP/IP
++connections.
++
++.. kernel-doc:: drivers/scsi/scsi_transport_iscsi.c
++   :export:
++
++
++iSCSI TCP interfaces
++==========
++
++.. kernel-doc:: drivers/scsi/iscsi_tcp.c
++   :internal:
++
++.. kernel-doc:: drivers/scsi/libiscsi_tcp.c
++   :export:
++
+
 
