@@ -1,109 +1,120 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 21:43:59 +0000
-Subject: [PATCH 2/8] target/iscsi: Move resetting of seven variables in chap_server_compute_md5()
-Message-Id: <8566665c-8d90-ed92-2781-c4b2dde2a95d@users.sourceforge.net>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Wed, 27 Dec 2017 20:48:05 +0000
+Subject: [PATCH v2] target: add a target/iscsi driver-api Documentation chapter
+Message-Id: <0a5cd0a8-2f3e-f001-8b69-2f5e34cc7cb2@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
-In-Reply-To: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, David Disseldorp <ddiss@suse.de>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: linux-scsi <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>, "James E.J. Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K. Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 12 Dec 2017 19:43:47 +0100
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Move the resetting of these array variables so that this operation will
-be performed only if memory allocations succeeded before in this function.
+Add a driver-api document for target/iSCSI interfaces.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 ---
- drivers/target/iscsi/iscsi_target_auth.c | 22 ++++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index 94b011fe74e8..d837fcbdbaf2 100644
---- a/drivers/target/iscsi/iscsi_target_auth.c
-+++ b/drivers/target/iscsi/iscsi_target_auth.c
-@@ -197,14 +197,6 @@ static int chap_server_compute_md5(
- 	struct shash_desc *desc;
- 	int auth_ret = -1, ret, challenge_len;
- 
--	memset(identifier, 0, 10);
--	memset(chap_n, 0, MAX_CHAP_N_SIZE);
--	memset(chap_r, 0, MAX_RESPONSE_LENGTH);
--	memset(digest, 0, MD5_SIGNATURE_SIZE);
--	memset(response, 0, MD5_SIGNATURE_SIZE * 2 + 2);
--	memset(client_digest, 0, MD5_SIGNATURE_SIZE);
--	memset(server_digest, 0, MD5_SIGNATURE_SIZE);
--
- 	challenge = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
- 	if (!challenge) {
- 		pr_err("Unable to allocate challenge buffer\n");
-@@ -216,6 +208,9 @@ static int chap_server_compute_md5(
- 		pr_err("Unable to allocate challenge_binhex buffer\n");
- 		goto free_challenge;
- 	}
-+
-+	memset(chap_n, 0, MAX_CHAP_N_SIZE);
-+
- 	/*
- 	 * Extract CHAP_N.
- 	 */
-@@ -236,6 +231,8 @@ static int chap_server_compute_md5(
- 		goto free_challenge_binhex;
- 	}
- 	pr_debug("[server] Got CHAP_N=%s\n", chap_n);
-+	memset(chap_r, 0, MAX_RESPONSE_LENGTH);
-+
- 	/*
- 	 * Extract CHAP_R.
- 	 */
-@@ -250,6 +247,7 @@ static int chap_server_compute_md5(
- 	}
- 
- 	pr_debug("[server] Got CHAP_R=%s\n", chap_r);
-+	memset(client_digest, 0, MD5_SIGNATURE_SIZE);
- 	chap_string_to_hex(client_digest, chap_r, strlen(chap_r));
- 
- 	tfm = crypto_alloc_shash("md5", 0, 0);
-@@ -286,6 +284,7 @@ static int chap_server_compute_md5(
- 		goto free_desc;
- 	}
- 
-+	memset(server_digest, 0, MD5_SIGNATURE_SIZE);
- 	ret = crypto_shash_finup(desc, chap->challenge,
- 				 CHAP_CHALLENGE_LENGTH, server_digest);
- 	if (ret < 0) {
-@@ -293,6 +292,7 @@ static int chap_server_compute_md5(
- 		goto free_desc;
- 	}
- 
-+	memset(response, 0, MD5_SIGNATURE_SIZE * 2 + 2);
- 	chap_binaryhex_to_asciihex(response, server_digest, MD5_SIGNATURE_SIZE);
- 	pr_debug("[server] MD5 Server Digest: %s\n", response);
- 
-@@ -310,6 +310,9 @@ static int chap_server_compute_md5(
- 		auth_ret = 0;
- 		goto free_desc;
- 	}
-+
-+	memset(identifier, 0, ARRAY_SIZE(identifier));
-+
- 	/*
- 	 * Get CHAP_I.
- 	 */
-@@ -393,6 +396,9 @@ static int chap_server_compute_md5(
- 				" password_mutual\n");
- 		goto free_desc;
- 	}
-+
-+	memset(digest, 0, MD5_SIGNATURE_SIZE);
-+
- 	/*
- 	 * Convert received challenge to binary hex.
- 	 */
--- 
-2.15.1
+This patch depends on 4 previous patches to driver source files:
 
+[PATCH] target: fix kernel-doc warnings in drivers/target/target_core_transport.c
+  https://marc.info/?l=linux-scsi&m1398041926906&w=2
+
+[PATCH] scsi: fix iscsi-related kernel-doc warnings
+  https://marc.info/?l=linux-scsi&m1398051426923&w=2
+
+[PATCH] target: add kernel-doc overview in target_core_user.[hc]
+  [PATCH] target: add kernel-doc overview in target_core_user.[hc]
+
+[PATCH] target: cleanup target_core_transport.c for kernel-doc
+  https://marc.info/?l=linux-scsi&m1409284812033&w=2
+
+v2: fix missing ':' on one line (:export:)
+
+ Documentation/driver-api/index.rst  |    1 
+ Documentation/driver-api/scsi.rst   |    2 
+ Documentation/driver-api/target.rst |   64 ++++++++++++++++++++++++++
+ 3 files changed, 66 insertions(+), 1 deletion(-)
+
+--- linux-next-20171221.orig/Documentation/driver-api/index.rst
++++ linux-next-20171221/Documentation/driver-api/index.rst
+@@ -34,6 +34,7 @@ available subsections can be seen below.
+    edac
+    scsi
+    libata
++   target
+    mtdnand
+    miscellaneous
+    w1
+--- linux-next-20171221.orig/Documentation/driver-api/scsi.rst
++++ linux-next-20171221/Documentation/driver-api/scsi.rst
+@@ -340,5 +340,5 @@ todo
+ ~~~~
+ 
+ Parallel (fast/wide/ultra) SCSI, USB, SATA, SAS, Fibre Channel,
+-FireWire, ATAPI devices, Infiniband, I2O, iSCSI, Parallel ports,
++FireWire, ATAPI devices, Infiniband, I2O, Parallel ports,
+ netlink...
+--- /dev/null
++++ linux-next-20171221/Documentation/driver-api/target.rst
+@@ -0,0 +1,64 @@
++================+target and iSCSI Interfaces Guide
++================+
++Introduction and Overview
++============+
++TBD
++
++Target core device interfaces
++==============+
++.. kernel-doc:: drivers/target/target_core_device.c
++    :export:
++
++Target core transport interfaces
++================
++
++.. kernel-doc:: drivers/target/target_core_transport.c
++    :export:
++
++Target-supported userspace I/O
++===============
++
++.. kernel-doc:: drivers/target/target_core_user.c
++    :doc: Userspace I/O
++
++.. kernel-doc:: include/uapi/linux/target_core_user.h
++    :doc: Ring Design
++
++iSCSI helper functions
++===========
++
++.. kernel-doc:: drivers/scsi/libiscsi.c
++   :export:
++
++
++iSCSI boot information
++===========
++
++.. kernel-doc:: drivers/scsi/iscsi_boot_sysfs.c
++   :export:
++
++
++iSCSI transport class
++==========+
++The file drivers/scsi/scsi_transport_iscsi.c defines transport
++attributes for the iSCSI class, which sends SCSI packets over TCP/IP
++connections.
++
++.. kernel-doc:: drivers/scsi/scsi_transport_iscsi.c
++   :export:
++
++
++iSCSI TCP interfaces
++==========
++
++.. kernel-doc:: drivers/scsi/iscsi_tcp.c
++   :internal:
++
++.. kernel-doc:: drivers/scsi/libiscsi_tcp.c
++   :export:
++
