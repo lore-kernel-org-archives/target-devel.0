@@ -1,7 +1,7 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Wed, 03 Jan 2018 12:25:24 +0000
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 03 Jan 2018 18:33:32 +0000
 Subject: Re: [RFC PATCH] target: enable discard if supported by underlying block device
-Message-Id: <20180103132524.46098356@suse.de>
+Message-Id: <5A4D21FC.2060101@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20171219134517.17296-1-ddiss@suse.de>
 In-Reply-To: <20171219134517.17296-1-ddiss@suse.de>
@@ -10,13 +10,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Ping, any thoughts on this one? I think it makes sense to enable unmap
-in this case.
-
-Cheers, David
-
-On Tue, 19 Dec 2017 14:45:17 +0100, David Disseldorp wrote:
-
+On 12/19/2017 07:45 AM, David Disseldorp wrote:
 > The initial commit of LIO (v4.0.0-rc6) came with support for SCSI UNMAP
 > disabled. This was justified in the LIO wiki with:
 >   Many SATA SSDs have issues handling UNMAP properly, so it is disabled
@@ -28,25 +22,18 @@ On Tue, 19 Dec 2017 14:45:17 +0100, David Disseldorp wrote:
 > layer when determining UNMAP attributes, but this logic currently leaves
 > the emulate_tpu (UNMAP) and emulate_tpws (WRITE_SAME with UNMAP=1) flags
 > disabled.
-> With this change, emulate_tpu and emulate_tpws are set for block layer
-> backed logical units based on underlying block device discard support.
-> 
-> Signed-off-by: David Disseldorp <ddiss@suse.de>
-> ---
->  drivers/target/target_core_device.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-> index e8dd6da164b2..65dab7c2460a 100644
-> --- a/drivers/target/target_core_device.c
-> +++ b/drivers/target/target_core_device.c
-> @@ -856,6 +856,8 @@ bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
->  	attrib->unmap_granularity_alignment = q->limits.discard_alignment /
->  								block_size;
->  	attrib->unmap_zeroes_data = (q->limits.max_write_zeroes_sectors);
-> +	attrib->emulate_tpu = 1;
-> +	attrib->emulate_tpws = 1;
->  	return true;
->  }
->  EXPORT_SYMBOL(target_configure_unmap_from_queue);
 
+Is there any cases where the user set tpu/tpws to off on purpose to
+work around a backing device or initiator side issue? If so, I think the
+only concern would be for non-rtslib based apps. If they did the attrib
+setting stage after device creation but before the config stage, then
+this patch would overwrite those settings.
+
+For rtslib based apps, if the user had set tpu/tpws values to off on
+purpose, it looks like the user requested values will still be used
+since the attrib setting stage is done after the configure.
+
+If we do not support non rtslib based apps then the patch is nice for
+users and looks ok.
+
+Reviewed-by: Mike Christie <mchristi@redhat.com>
