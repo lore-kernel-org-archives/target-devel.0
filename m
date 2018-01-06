@@ -1,94 +1,51 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Fri, 12 Jan 2018 23:46:27 +0000
-Subject: [PATCH-4.9.y 1/2] iscsi-target: Make TASK_REASSIGN use proper se_cmd->cmd_kref
-Message-Id: <1515800788-31016-2-git-send-email-nab@linux-iscsi.org>
+From: 55823386@mylife.unisa.ac.za
+Date: Sat, 06 Jan 2018 05:45:46 +0000
+Subject: Hallo mein lieber Freund,
+Message-Id: <HE1PR01MB07803CF7540524E0FC722AAABB1D0@HE1PR01MB0780.eurprd01.prod.exchangelabs.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1515800788-31016-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1515800788-31016-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Donald White <dew@datera.io>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: target-devel@vger.kernel.org
 
-From: Nicholas Bellinger <nab@linux-iscsi.org>
+Hallo mein lieber Freund,
 
-commit ae072726f6109bb1c94841d6fb3a82dde298ea85 upstream.
+Ich schreibe dir diese Post mit schweren Tr=E4nen In meinen Augen und gro=
+=DFem Kummer in meinem Herzen, Mein Name ist Vera Hollin Kvan, und ich kont=
+aktiere dich aus meinem Land Indien Ich m=F6chte dir das sagen, weil ich ke=
+ine habe Eine andere M=F6glichkeit, als Ihnen zu sagen, wie ich ber=FChrt w=
+ar, um Sie zu =F6ffnen, heiratete ich mit Herrn Hollin Kvan, der f=FCr neun=
+ Jahre mit der tunesischen Botschaft in Madrid Spanien arbeitete, bevor er =
+im Jahr 2005 starb. Wir waren elf Jahre ohne verheiratet Kind.
 
-Since commit 59b6986dbf fixed a potential NULL pointer dereference
-by allocating a se_tmr_req for ISCSI_TM_FUNC_TASK_REASSIGN, the
-se_tmr_req is currently leaked by iscsit_free_cmd() because no
-iscsi_cmd->se_cmd.se_tfo was associated.
+Er starb nach einer kurzen Krankheit, die nur f=FCnf Tage dauerte. Seit sei=
+nem Tod entschied ich mich, nicht wieder zu heiraten. Als mein verstorbener=
+ Mann noch am Leben war, hinterlegte er die Summe von $ 4.850.000,00USD (Vi=
+er Millionen achthundertundf=FCnfzigtausend Dollar) in einer Bank hier in I=
+ndien Neu-Delhi, der Hauptstadt Indiens, gegenw=E4rtig dieses Geld ist imme=
+r noch in der Bank.
 
-To address this, treat ISCSI_TM_FUNC_TASK_REASSIGN like any other
-TMR and call transport_init_se_cmd() + target_get_sess_cmd() to
-setup iscsi_cmd->se_cmd.se_tfo with se_cmd->cmd_kref of 2.
+Er stellte dieses Geld f=FCr den Export von Gold aus dem Minenfactory in Ma=
+drid Spanien zur Verf=FCgung. In letzter Zeit sagte mir mein Doktor, dass i=
+ch wegen der Krebserkrankung f=FCr die Dauer von sieben Monaten nicht =FCbe=
+rleben w=FCrde. Derjenige, der mich am meisten st=F6rt, ist meine Schlaganf=
+all-Krankheit. Nachdem ich meinen Zustand gekannt habe, habe ich beschlosse=
+n, dir dieses Geld auszuh=E4ndigen, um auf die weniger privilegierten Mensc=
+hen aufzupassen, du wirst dieses Geld auf die Art und Weise benutzen, wie i=
+ch es hier unterrichten werde.
 
-This will ensure normal release operation once se_cmd->cmd_kref
-reaches zero and target_release_cmd_kref() is invoked, se_tmr_req
-will be released via existing target_free_cmd_mem() and
-core_tmr_release_req() code.
+Ich m=F6chte, dass Sie 30 Prozent des gesamten Geldes f=FCr Ihren pers=F6nl=
+ichen Gebrauch aufwenden, w=E4hrend 70% des Geldes an wohlt=E4tige Zwecke g=
+ehen, Menschen auf der Stra=DFe und dem Waisenhaus helfen. Ich bin als Wais=
+e aufgewachsen und habe keinen K=F6rper als mein Familienmitglied, nur um z=
+u beenden, dass das Haus Gottes auch erhalten wird. Mache dies, damit Gott =
+meine S=FCnden vergibt und meine Seele akzeptiert, weil diese Krankheiten m=
+ich so sehr leiden. Sobald ich Ihre Antwort erhalten habe, werde ich Ihnen =
+den Kontakt der Bank hier in Delhi Indien geben und ich werde auch den Bank=
+manager beauftragen, Ihnen einen Vollmachtenbrief auszustellen, der Ihnen d=
+en gegenw=E4rtigen Beg=FCnstigten des Geldes in der Bank beweisen wird, wen=
+n Sie versichern mir, dass Sie entsprechend handeln werden, wie ich hier an=
+gegeben habe.
 
-Reported-by: Donald White <dew@datera.io>
-Cc: Donald White <dew@datera.io>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Hannes Reinecke <hare@suse.com>
-Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
----
- drivers/target/iscsi/iscsi_target.c | 20 +++++++-------------
- 1 file changed, 7 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 72e926d..04d2b6e 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1940,7 +1940,6 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	struct iscsi_tmr_req *tmr_req;
- 	struct iscsi_tm *hdr;
- 	int out_of_order_cmdsn = 0, ret;
--	bool sess_ref = false;
- 	u8 function, tcm_function = TMR_UNKNOWN;
- 
- 	hdr			= (struct iscsi_tm *) buf;
-@@ -1982,18 +1981,17 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 					     buf);
- 	}
- 
-+	transport_init_se_cmd(&cmd->se_cmd, &iscsi_ops,
-+			      conn->sess->se_sess, 0, DMA_NONE,
-+			      TCM_SIMPLE_TAG, cmd->sense_buffer + 2);
-+
-+	target_get_sess_cmd(&cmd->se_cmd, true);
-+
- 	/*
- 	 * TASK_REASSIGN for ERL=2 / connection stays inside of
- 	 * LIO-Target $FABRIC_MOD
- 	 */
- 	if (function != ISCSI_TM_FUNC_TASK_REASSIGN) {
--		transport_init_se_cmd(&cmd->se_cmd, &iscsi_ops,
--				      conn->sess->se_sess, 0, DMA_NONE,
--				      TCM_SIMPLE_TAG, cmd->sense_buffer + 2);
--
--		target_get_sess_cmd(&cmd->se_cmd, true);
--		sess_ref = true;
--
- 		switch (function) {
- 		case ISCSI_TM_FUNC_ABORT_TASK:
- 			tcm_function = TMR_ABORT_TASK;
-@@ -2132,12 +2130,8 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	 * For connection recovery, this is also the default action for
- 	 * TMR TASK_REASSIGN.
- 	 */
--	if (sess_ref) {
--		pr_debug("Handle TMR, using sess_ref=true check\n");
--		target_put_sess_cmd(&cmd->se_cmd);
--	}
--
- 	iscsit_add_cmd_to_response_queue(cmd, conn, cmd->i_state);
-+	target_put_sess_cmd(&cmd->se_cmd);
- 	return 0;
- }
- EXPORT_SYMBOL(iscsit_handle_task_mgt_cmd);
--- 
-1.8.5.3
-
+Ich hoffe auf Ihre Antwort.
+Von Vera Hollin kVan
