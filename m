@@ -1,47 +1,26 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Mon, 15 Jan 2018 04:39:58 +0000
-Subject: Re: [RFC] iser-target: avoid reinitializing rdma contexts for isert commands
-Message-Id: <1515991198.24576.143.camel@haakon3.daterainc.com>
+From: Jason Gunthorpe <jgg@ziepe.ca>
+Date: Tue, 09 Jan 2018 17:17:18 +0000
+Subject: Re: [PATCH] iser-target: Fix possible use-after-free in connection establishment error
+Message-Id: <20180109171718.GC4518@ziepe.ca>
 List-Id: <target-devel.vger.kernel.org>
-References: <1511893687-29298-1-git-send-email-bharat@chelsio.com>
-         <20171218231439.GA31621@ziepe.ca>
-         <1515824443.24576.108.camel@haakon3.daterainc.com>
-         <20180113180428.GA32353@ziepe.ca>
-         <143bd378-193e-0bbd-1ee3-25299af61aa8@grimberg.me>
-         <20180114182344.GB9088@ziepe.ca>
-In-Reply-To: <20180114182344.GB9088-uk2M96/98Pc@public.gmane.org>
+References: <20171126133104.22710-1-sagi@grimberg.me>
+ <3676820c-544e-8ced-859a-ade8e6a0ef53@grimberg.me>
+ <BN3PR07MB25782C93E50A7A0C55A110B4F83B0@BN3PR07MB2578.namprd07.prod.outlook.com>
+ <eda02d71-cf33-2333-223a-0d6eeabb8185@grimberg.me>
+ <e11259b7-5add-bf87-73d4-49483c90bf73@mellanox.com>
+In-Reply-To: <e11259b7-5add-bf87-73d4-49483c90bf73@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Gunthorpe <jgg-uk2M96/98Pc@public.gmane.org>
-Cc: Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, Bharat Potnuri <bharat-ut6Up61K2wZBDgjK7y7TUQ@public.gmane.org>, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Bryant G. Ly" <bryantly-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
+To: Max Gurtovoy <maxg@mellanox.com>
+Cc: Sagi Grimberg <sagi@grimberg.me>, "Amrani, Ram" <Ram.Amrani@cavium.com>, Doug Ledford <dledford@redhat.com>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, target-devel <target-devel@vger.kernel.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 
-On Sun, 2018-01-14 at 11:23 -0700, Jason Gunthorpe wrote:
-> On Sun, Jan 14, 2018 at 11:26:04AM +0200, Sagi Grimberg wrote:
-> > 
-> > >>Per Potnuri, it should be stable CC' to 4.11.y, and depends on:
-> > >>
-> > >>7a56dc8 iser-target: avoid posting a recv buffer twice
-> > >>555a65f iser-target: Fix queue-full response handling
-> > >>fa7e25c target: Fix unknown fabric callback queue-full errors
-> > >
-> > >Hi Nicholas,
-> > >
-> > >It is too late for us to revise this commit message in the RDMA tree,
-> > >someone will have to notify stable manually instead.
-> > 
-> > I think it would be easier if nab would take this through the target
-> > tree... Nic?
-> 
-> Too late for that too, it is in the rdma tree already.
-> 
+On Tue, Jan 09, 2018 at 07:04:16PM +0200, Max Gurtovoy wrote:
+> hi Guys,
+> did we forget taking this fix to mainline/stable or we found another
+> solution ?
 
-No worries.  Will send this out with the next round of stable backports,
-post -rc1.
+I thought it was going to NAB's tree.. My mistake, I put it back into
+patchworks and it will get into for-next
 
-Btw, since this patch + earlier 4.11.y dependencies appear to be a hard
-requirement for reliable iser-target operation for RNICs that generate
-queue-full retries on large block workloads, I think the dependencies
-have been upstream long enough to consider a 4.1.y+ backport as well.
-(Adding Bryant CC')
-
+Jason
