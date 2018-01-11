@@ -1,34 +1,37 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Sun, 14 Jan 2018 09:24:21 +0000
-Subject: Re: [PATCH] iser-target: Fix possible use-after-free in connection establishment error
-Message-Id: <3653058c-324b-ef18-eb3b-c9a8c24b70ed@grimberg.me>
+From: Wei Yongjun <weiyongjun1@huawei.com>
+Date: Thu, 11 Jan 2018 11:12:25 +0000
+Subject: [PATCH -next] tcmu: fix error return code in tcmu_configure_device()
+Message-Id: <1515669145-125352-1-git-send-email-weiyongjun1@huawei.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171126133104.22710-1-sagi@grimberg.me>
- <3676820c-544e-8ced-859a-ade8e6a0ef53@grimberg.me>
- <BN3PR07MB25782C93E50A7A0C55A110B4F83B0@BN3PR07MB2578.namprd07.prod.outlook.com>
- <eda02d71-cf33-2333-223a-0d6eeabb8185@grimberg.me>
- <e11259b7-5add-bf87-73d4-49483c90bf73@mellanox.com>
- <20180109171718.GC4518@ziepe.ca> <1515621286.3403.172.camel@redhat.com>
- <1515822365.24576.100.camel@haakon3.daterainc.com>
- <20180113180841.GB32353@ziepe.ca>
-In-Reply-To: <20180113180841.GB32353-uk2M96/98Pc@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Gunthorpe <jgg-uk2M96/98Pc@public.gmane.org>, "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>
-Cc: Doug Ledford <dledford-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Max Gurtovoy <maxg-VPRAkNaXOzVWk0Htik3J/w@public.gmane.org>, "Amrani, Ram" <Ram.Amrani-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>
+Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-Thanks Jason for picking it up, and sorry for the
-late reply on this.
+Fix to return error code -ENOMEM from the kzalloc() error handling
+case instead of 0, as done elsewhere in this function.
 
-> That can be done:
-> 
-> Fixes: a060b5629ab0 ("IB/core: generic RDMA READ/WRITE API")
+Fixes: fabe6a59cc5a ("tcmu: allow max block and global max blocks to be settable")
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+---
+ drivers/target/target_core_user.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-This patch is not the offending patch, if at all its this one:
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index bac08bc..2edd242 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1705,8 +1705,10 @@ static int tcmu_configure_device(struct se_device *dev)
+ 
+ 	udev->data_bitmap = kzalloc(BITS_TO_LONGS(udev->max_blocks) *
+ 				    sizeof(unsigned long), GFP_KERNEL);
+-	if (!udev->data_bitmap)
++	if (!udev->data_bitmap) {
++		ret = -ENOMEM;
+ 		goto err_bitmap_alloc;
++	}
+ 
+ 	udev->mb_addr = vzalloc(CMDR_SIZE);
+ 	if (!udev->mb_addr) {
 
-Fixes: 572a143489a1 ("iser-target: Use ib_drain_qp")
-
-But, the missing qp drain existed way before this commit.
-I think any fixes tag would be confusing as there isn't a clear
-culprit for this one...
