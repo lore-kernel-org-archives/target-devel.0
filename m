@@ -1,60 +1,44 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Thu, 04 Jan 2018 05:58:58 +0000
-Subject: Re: [PATCH] scsi: fix iscsi-related kernel-doc warnings
-Message-Id: <617cf496-3fe0-6834-1a6c-57d5adc2f027@infradead.org>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Fri, 12 Jan 2018 22:13:05 +0000
+Subject: Re: [PATCH 0/5]: Fix target_core_user userspace restarts (v2)
+Message-Id: <1515795185.21541.2.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <44a0f532-b1e9-e0cf-4a61-d592a4306f61@infradead.org>
- <yq1373mxny3.fsf@oracle.com>
-In-Reply-To: <yq1373mxny3.fsf-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
+References: <1513677838-6675-1-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1513677838-6675-1-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
-Cc: linux-scsi <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>, Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "James E.J. Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
+To: target-devel@vger.kernel.org
 
-On 01/03/2018 08:11 PM, Martin K. Petersen wrote:
+Hey MNC,
+
+Apologies for the delayed follow up.
+
+On Tue, 2017-12-19 at 04:03 -0600, Mike Christie wrote:
+> The following patches were made over Linus's tree
+> and my tcmu update here
 > 
-> Randy,
+> https://www.spinics.net/lists/target-devel/msg16283.html
 > 
->> Fix kernel-doc warnings in drivers/scsi/ that are related to iscsi
->> support interfaces.
->>
->> Fixes these kernel-doc warnings: (tested by adding these files to a new
->> target.rst documentation file: WIP)
+> The first patch prevents possible corruption with buggy tcmu userspace
+> apps. The other 4 patches allow tcmu apps to restart themselves while
+> IO is being executed. This is needed for management operations like
+> updating the app and handling crashes.
+
+Thanks.  The prerequisites where applied earlier this week, including
+patch #1-#3 from this series.
+
 > 
-> Applied to 4.16/scsi-queue, thanks!
+> The last four patches are an update to this RFC:
+> https://www.spinics.net/lists/target-devel/msg16312.html
+> Since that posting I moved the files being added to a new
+> dir "action" which is used for special files that execute
+> a kernel function that does more than just set a param/attrib
+> that is exported from the same file.
 > 
->> Cc:	"Nicholas A. Bellinger" <nab@linux-iscsi.org>
->> Cc:	linux-scsi@vger.kernel.org
->> Cc:	target-devel@vger.kernel.org
->> Cc:	Sagi Grimberg <sagi@grimberg.me>
->> Cc:	linux-rdma@vger.kernel.org
->> Cc:	"James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
->> Cc:	"Martin K. Petersen" <martin.petersen@oracle.com>
-> 
->      ^^^ checkpatch complains about these spaces.
 
-Hah, those are tabs, not spaces.
+Was wondering about that..
 
-scripts/checkpatch.pl (comment) says something about this being a style thing:
-# Check signature styles
+Why shouldn't these be added as backend device specific configfs
+attributes, similar to what tcmu does for tcmu_attrib_attrs[]..?
 
-WARNING: Use a single space after Cc:
-#29: 
-Cc:	"Martin K. Petersen" <martin.petersen@oracle.com>
-
-
-
-Email standards (RFCs) sure don't require a single space.
-
-and I would like to be able to copy N lines from MAINTAINERS file and then
-replace either the M: and/or L: (actually just the 'M' or 'L') with
-"To" or "Cc" and be done with it, instead of having to replace TAB on each
-line with a space also.
-
-Does anyone know where this "signature style" check came from?
-I don't see it in any style guide.
-
-thanks,
--- 
-~Randy
