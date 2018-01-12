@@ -1,38 +1,42 @@
-From: Max Gurtovoy <maxg@mellanox.com>
-Date: Tue, 09 Jan 2018 17:04:16 +0000
-Subject: Re: [PATCH] iser-target: Fix possible use-after-free in connection establishment error
-Message-Id: <e11259b7-5add-bf87-73d4-49483c90bf73@mellanox.com>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Fri, 12 Jan 2018 23:08:00 +0000
+Subject: Re: [PATCH] target-core: don't use "const char*" for a buffer that is written to
+Message-Id: <1515798480.21541.8.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171126133104.22710-1-sagi@grimberg.me>
- <3676820c-544e-8ced-859a-ade8e6a0ef53@grimberg.me>
- <BN3PR07MB25782C93E50A7A0C55A110B4F83B0@BN3PR07MB2578.namprd07.prod.outlook.com>
- <eda02d71-cf33-2333-223a-0d6eeabb8185@grimberg.me>
-In-Reply-To: <eda02d71-cf33-2333-223a-0d6eeabb8185@grimberg.me>
+References: <20171121001244.8026-1-linux@rasmusvillemoes.dk>
+In-Reply-To: <20171121001244.8026-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sagi Grimberg <sagi@grimberg.me>, "Amrani, Ram" <Ram.Amrani@cavium.com>, Doug Ledford <dledford@redhat.com>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, target-devel <target-devel@vger.kernel.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Jason Gunthorpe <jgg@mellanox.com>
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Rasmus Villemoes <rasmus.villemoes@prevas.dk>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-hi Guys,
-did we forget taking this fix to mainline/stable or we found another 
-solution ?
+Hi Rasmus,
 
-On 11/30/2017 12:46 AM, Sagi Grimberg wrote:
+Apologies for the delayed follow-up on this.
+
+On Tue, 2017-11-21 at 01:12 +0100, Rasmus Villemoes wrote:
+> From: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
 > 
->> If it's not already committed, can you add a "Fixes:" so stable 
->> maintainers will catch it?
+> iscsi_parse_pr_out_transport_id launders the const away via a call to
+> strstr(), and then modifies the buffer (writing a nul byte) through
+> the return value. It's cleaner to be honest and simply declare the
+> parameter as "char*", fixing up the call chain, and allowing us to
+> drop the cast in the return statement.
 > 
-> I'm not sure at all that there is a clear cut commit that this fixes,
-> both the target code and the rdma interface code changed a lot so I
-> can't find any clear indication which broke this.
+> Amusingly, the two current callers found it necessary to cast a
+> non-const pointer to a const.
 > 
-> I can send a separate patch to stable from when we introduced
-> ib_drain_qp though.
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe target-devel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  
-> https://emea01.safelinks.protection.outlook.com/?url=http%3A%2F%2Fvger.kernel.org%2Fmajordomo-info.html&data%7C01%7Cmaxg%40mellanox.com%7C18cac1be99bb4d99661c08d5377b08c6%7Ca652971c7d2e4d9ba6a4d149256f461b%7C0%7C0%7C636475923920075321&sdata=WDJ6wr2o8jFyyGdHcLo06EhE18GTz9wUbF%2BezWzkGbc%3D&reserved=0 
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> ---
+>  drivers/target/target_core_fabric_lib.c | 6 +++---
+>  drivers/target/target_core_internal.h   | 2 +-
+>  drivers/target/target_core_pr.c         | 4 ++--
+>  3 files changed, 6 insertions(+), 6 deletions(-)
 > 
 
--Max.
+Looks fine.  Applied.
+
+Thank you.
+
+
