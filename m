@@ -1,37 +1,33 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Fri, 12 Jan 2018 22:38:22 +0000
-Subject: Re: [PATCH] target: don't call an unmap callback if a range length is zero
-Message-Id: <1515796702.21541.7.camel@haakon3.daterainc.com>
+Date: Fri, 12 Jan 2018 22:30:50 +0000
+Subject: Re: [PATCH] target: avoid NULL dereference in CHAP auth error path
+Message-Id: <1515796250.21541.5.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171213215513.26416-1-avagin@openvz.org>
-In-Reply-To: <20171213215513.26416-1-avagin@openvz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrei Vagin <avagin@openvz.org>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-Hi Andrei,
+Hi David,
 
 Apologies for the delayed follow up.
 
-On Wed, 2017-12-13 at 13:55 -0800, Andrei Vagin wrote:
-> If a length of a range is zero, it means there is nothing to unmap
-> and we can skip this range.
+On Wed, 2017-12-13 at 18:22 +0100, David Disseldorp wrote:
+> If chap_server_compute_md5() fails early, e.g. via CHAP_N mismatch, then
+> crypto_free_shash() is called with a NULL pointer which gets
+> dereferenced in crypto_shash_tfm().
 > 
-> Here is one more reason, why we have to skip such ranges.  An unmap
-> callback calls file_operations->fallocate(), but the man page for the
-> fallocate syscall says that fallocate(fd, mode, offset, let) returns
-> EINVAL, if len is zero. It means that file_operations->fallocate() isn't
-> obligated to handle zero ranges too.
-> 
-> Signed-off-by: Andrei Vagin <avagin@openvz.org>
+> Fixes: 69110e3cedbb ("iscsi-target: Use shash and ahash")
+> Suggested-by: Markus Elfring <elfring@users.sourceforge.net>
+> Signed-off-by: David Disseldorp <ddiss@suse.de>
 > ---
->  drivers/target/target_core_sbc.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
+> This is a minimal fix, similar to Markus's
+> "target/iscsi: Less function calls in chap_server_compute_md5() after error detection"
+> patch, but without all of the coding-style changes mixed in.
+> 
+>  drivers/target/iscsi/iscsi_target_auth.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
 
-Applied.
-
-Thank you.
+Applied, with a stable CC' for 4.6.y.
 
