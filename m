@@ -1,42 +1,38 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Fri, 12 Jan 2018 23:08:00 +0000
-Subject: Re: [PATCH] target-core: don't use "const char*" for a buffer that is written to
-Message-Id: <1515798480.21541.8.camel@haakon3.daterainc.com>
+Date: Fri, 12 Jan 2018 23:56:34 +0000
+Subject: [PATCH-4.1.y 0/2] target: stable backports
+Message-Id: <1515801396-31747-1-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171121001244.8026-1-linux@rasmusvillemoes.dk>
-In-Reply-To: <20171121001244.8026-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Rasmus Villemoes <rasmus.villemoes@prevas.dk>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel <target-devel@vger.kernel.org>
+Cc: stable <stable@vger.kernel.org>, Sasha Levin <alexander.levin@verizon.com>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>
 
-Hi Rasmus,
+From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-Apologies for the delayed follow-up on this.
+Hi Sasha,
 
-On Tue, 2017-11-21 at 01:12 +0100, Rasmus Villemoes wrote:
-> From: Rasmus Villemoes <rasmus.villemoes@prevas.dk>
-> 
-> iscsi_parse_pr_out_transport_id launders the const away via a call to
-> strstr(), and then modifies the buffer (writing a nul byte) through
-> the return value. It's cleaner to be honest and simply declare the
-> parameter as "char*", fixing up the call chain, and allowing us to
-> drop the cast in the return statement.
-> 
-> Amusingly, the two current callers found it necessary to cast a
-> non-const pointer to a const.
-> 
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> ---
->  drivers/target/target_core_fabric_lib.c | 6 +++---
->  drivers/target/target_core_internal.h   | 2 +-
->  drivers/target/target_core_pr.c         | 4 ++--
->  3 files changed, 6 insertions(+), 6 deletions(-)
-> 
+Here are two target patches for v4.1.y stable, which did not apply
+due to minor context changes.
 
-Looks fine.  Applied.
+The series has been cut against v4.1.48.  Please apply at your earliest
+convenience.
 
-Thank you.
+Thank you,
 
+--nab
+
+Nicholas Bellinger (2):
+  iscsi-target: Make TASK_REASSIGN use proper se_cmd->cmd_kref
+  target: Avoid early CMD_T_PRE_EXECUTE failures during ABORT_TASK
+
+ drivers/target/iscsi/iscsi_target.c    | 20 +++++++-------------
+ drivers/target/target_core_tmr.c       |  9 +++++++++
+ drivers/target/target_core_transport.c |  2 ++
+ include/target/target_core_base.h      |  1 +
+ 4 files changed, 19 insertions(+), 13 deletions(-)
+
+-- 
+1.8.5.3
 
