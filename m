@@ -1,41 +1,40 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Fri, 19 Jan 2018 04:28:39 +0000
-Subject: Re: iscsi target regression due to "tcp: remove prequeue support" patch
-Message-Id: <5A6173F7.2050905@redhat.com>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Fri, 12 Jan 2018 23:51:30 +0000
+Subject: [PATCH-4.4.y 0/2] target: stable backports
+Message-Id: <1515801092-31332-1-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <5A32128D.4050207@redhat.com>
- <20180115104145.GB27085@breakpoint.cc>
- <1516264698.24576.240.camel@haakon3.daterainc.com>
- <20180118151043.GA21673@breakpoint.cc>
-In-Reply-To: <20180118151043.GA21673@breakpoint.cc>
+References: <1510812472-14734-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1510812472-14734-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Westphal <fw@strlen.de>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: target-devel <target-devel@vger.kernel.org>, Linux-netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>
+To: target-devel <target-devel@vger.kernel.org>
+Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>
 
-On 01/18/2018 09:10 AM, Florian Westphal wrote:
->> It would indicate users providing their own ->sk_data_ready() callback
->> must be responsible for waking up a kthread context blocked on
->> sock_recvmsg(..., MSG_WAITALL), when a second ->sk_data_ready() is
->> received before the first sock_recvmsg(..., MSG_WAITALL) completes.
-> 
-> I agree, it looks like we need something like this?
-> (not even build tested):
-> 
-> diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-> index b686e2ce9c0e..3723f8f419aa 100644
-> --- a/drivers/target/iscsi/iscsi_target_nego.c
-> +++ b/drivers/target/iscsi/iscsi_target_nego.c
-> @@ -432,6 +432,9 @@ static void iscsi_target_sk_data_ready(struct sock *sk)
->         if (test_and_set_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags)) {
->                 write_unlock_bh(&sk->sk_callback_lock);
->                 pr_debug("Got LOGIN_FLAGS_READ_ACTIVE=1, conn: %p >>>>\n", conn);
-> +               if (WARN_ON(iscsi_target_sk_data_ready = conn->orig_data_ready))
-> +                       return;
-> +               conn->orig_data_ready(sk);
->                 return;
+From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-This allows iscsi login to work for me.
+Hi Greg-KH,
 
-I ran it against the target-pending for-next branch.
+Here are two target patches for v4.4.y stable, which did not apply
+due to minor context changes.
+
+The series has been cut against v4.4.111.  Please apply at your earliest
+convenience.
+
+Thank you,
+
+--nab
+
+Nicholas Bellinger (2):
+  iscsi-target: Make TASK_REASSIGN use proper se_cmd->cmd_kref
+  target: Avoid early CMD_T_PRE_EXECUTE failures during ABORT_TASK
+
+ drivers/target/iscsi/iscsi_target.c    | 20 +++++++-------------
+ drivers/target/target_core_tmr.c       |  9 +++++++++
+ drivers/target/target_core_transport.c |  2 ++
+ include/target/target_core_base.h      |  1 +
+ 4 files changed, 19 insertions(+), 13 deletions(-)
+
+-- 
+1.8.5.3
+
