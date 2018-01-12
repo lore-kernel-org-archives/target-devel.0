@@ -1,44 +1,33 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Fri, 12 Jan 2018 23:56:36 +0000
-Subject: [PATCH-4.1.y 2/2] target: Avoid early CMD_T_PRE_EXECUTE failures during ABORT_TASK
-Message-Id: <1515801396-31747-3-git-send-email-nab@linux-iscsi.org>
+Date: Fri, 12 Jan 2018 23:46:27 +0000
+Subject: [PATCH-4.9.y 1/2] iscsi-target: Make TASK_REASSIGN use proper se_cmd->cmd_kref
+Message-Id: <1515800788-31016-2-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1515801396-31747-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1515801396-31747-1-git-send-email-nab@linux-iscsi.org>
+References: <1515800788-31016-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1515800788-31016-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Sasha Levin <alexander.levin@verizon.com>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Donald White <dew@datera.io>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>
+Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Donald White <dew@datera.io>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>
 
 From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-commit 1c21a48055a67ceb693e9c2587824a8de60a217c upstream.
+commit ae072726f6109bb1c94841d6fb3a82dde298ea85 upstream.
 
-This patch fixes bug where early se_cmd exceptions that occur
-before backend execution can result in use-after-free if/when
-a subsequent ABORT_TASK occurs for the same tag.
+Since commit 59b6986dbf fixed a potential NULL pointer dereference
+by allocating a se_tmr_req for ISCSI_TM_FUNC_TASK_REASSIGN, the
+se_tmr_req is currently leaked by iscsit_free_cmd() because no
+iscsi_cmd->se_cmd.se_tfo was associated.
 
-Since an early se_cmd exception will have had se_cmd added to
-se_session->sess_cmd_list via target_get_sess_cmd(), it will
-not have CMD_T_COMPLETE set by the usual target_complete_cmd()
-backend completion path.
+To address this, treat ISCSI_TM_FUNC_TASK_REASSIGN like any other
+TMR and call transport_init_se_cmd() + target_get_sess_cmd() to
+setup iscsi_cmd->se_cmd.se_tfo with se_cmd->cmd_kref of 2.
 
-This causes a subsequent ABORT_TASK + __target_check_io_state()
-to signal ABORT_TASK should proceed.  As core_tmr_abort_task()
-executes, it will bring the outstanding se_cmd->cmd_kref count
-down to zero releasing se_cmd, after se_cmd has already been
-queued with error status into fabric driver response path code.
-
-To address this bug, introduce a CMD_T_PRE_EXECUTE bit that is
-set at target_get_sess_cmd() time, and cleared immediately before
-backend driver dispatch in target_execute_cmd() once CMD_T_ACTIVE
-is set.
-
-Then, check CMD_T_PRE_EXECUTE within __target_check_io_state() to
-determine when an early exception has occured, and avoid aborting
-this se_cmd since it will have already been queued into fabric
-driver response path code.
+This will ensure normal release operation once se_cmd->cmd_kref
+reaches zero and target_release_cmd_kref() is invoked, se_tmr_req
+will be released via existing target_free_cmd_mem() and
+core_tmr_release_req() code.
 
 Reported-by: Donald White <dew@datera.io>
 Cc: Donald White <dew@datera.io>
@@ -46,63 +35,60 @@ Cc: Mike Christie <mchristi@redhat.com>
 Cc: Hannes Reinecke <hare@suse.com>
 Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
 ---
- drivers/target/target_core_tmr.c       | 9 +++++++++
- drivers/target/target_core_transport.c | 2 ++
- include/target/target_core_base.h      | 1 +
- 3 files changed, 12 insertions(+)
+ drivers/target/iscsi/iscsi_target.c | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
-index 44510bd..03a73d5 100644
---- a/drivers/target/target_core_tmr.c
-+++ b/drivers/target/target_core_tmr.c
-@@ -137,6 +137,15 @@ static bool __target_check_io_state(struct se_cmd *se_cmd,
- 		spin_unlock(&se_cmd->t_state_lock);
- 		return false;
- 	}
-+	if (se_cmd->transport_state & CMD_T_PRE_EXECUTE) {
-+		if (se_cmd->scsi_status) {
-+			pr_debug("Attempted to abort io tag: %u early failure"
-+				 " status: 0x%02x\n", se_cmd->se_tfo->get_task_tag(se_cmd),
-+				 se_cmd->scsi_status);
-+			spin_unlock(&se_cmd->t_state_lock);
-+			return false;
-+		}
-+	}
- 	if (sess->sess_tearing_down || se_cmd->cmd_wait_set) {
- 		pr_debug("Attempted to abort io tag: %u already shutdown,"
- 			" skipping\n", se_cmd->se_tfo->get_task_tag(se_cmd));
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 958b0dc..32593d8 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1899,6 +1899,7 @@ void target_execute_cmd(struct se_cmd *cmd)
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 72e926d..04d2b6e 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -1940,7 +1940,6 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 	struct iscsi_tmr_req *tmr_req;
+ 	struct iscsi_tm *hdr;
+ 	int out_of_order_cmdsn = 0, ret;
+-	bool sess_ref = false;
+ 	u8 function, tcm_function = TMR_UNKNOWN;
+ 
+ 	hdr			= (struct iscsi_tm *) buf;
+@@ -1982,18 +1981,17 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 					     buf);
  	}
  
- 	cmd->t_state = TRANSPORT_PROCESSING;
-+	cmd->transport_state &= ~CMD_T_PRE_EXECUTE;
- 	cmd->transport_state |= CMD_T_ACTIVE|CMD_T_BUSY|CMD_T_SENT;
- 	spin_unlock_irq(&cmd->t_state_lock);
- 
-@@ -2543,6 +2544,7 @@ int target_get_sess_cmd(struct se_cmd *se_cmd, bool ack_kref)
- 		ret = -ESHUTDOWN;
- 		goto out;
- 	}
-+	se_cmd->transport_state |= CMD_T_PRE_EXECUTE;
- 	list_add_tail(&se_cmd->se_cmd_list, &se_sess->sess_cmd_list);
- out:
- 	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index ad3c146..c654d9e 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -541,6 +541,7 @@ struct se_cmd {
- #define CMD_T_BUSY		(1 << 9)
- #define CMD_T_TAS		(1 << 10)
- #define CMD_T_FABRIC_STOP	(1 << 11)
-+#define CMD_T_PRE_EXECUTE	(1 << 12)
- 	spinlock_t		t_state_lock;
- 	struct completion	t_transport_stop_comp;
- 
++	transport_init_se_cmd(&cmd->se_cmd, &iscsi_ops,
++			      conn->sess->se_sess, 0, DMA_NONE,
++			      TCM_SIMPLE_TAG, cmd->sense_buffer + 2);
++
++	target_get_sess_cmd(&cmd->se_cmd, true);
++
+ 	/*
+ 	 * TASK_REASSIGN for ERL=2 / connection stays inside of
+ 	 * LIO-Target $FABRIC_MOD
+ 	 */
+ 	if (function != ISCSI_TM_FUNC_TASK_REASSIGN) {
+-		transport_init_se_cmd(&cmd->se_cmd, &iscsi_ops,
+-				      conn->sess->se_sess, 0, DMA_NONE,
+-				      TCM_SIMPLE_TAG, cmd->sense_buffer + 2);
+-
+-		target_get_sess_cmd(&cmd->se_cmd, true);
+-		sess_ref = true;
+-
+ 		switch (function) {
+ 		case ISCSI_TM_FUNC_ABORT_TASK:
+ 			tcm_function = TMR_ABORT_TASK;
+@@ -2132,12 +2130,8 @@ static int iscsit_handle_nop_out(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 	 * For connection recovery, this is also the default action for
+ 	 * TMR TASK_REASSIGN.
+ 	 */
+-	if (sess_ref) {
+-		pr_debug("Handle TMR, using sess_ref=true check\n");
+-		target_put_sess_cmd(&cmd->se_cmd);
+-	}
+-
+ 	iscsit_add_cmd_to_response_queue(cmd, conn, cmd->i_state);
++	target_put_sess_cmd(&cmd->se_cmd);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(iscsit_handle_task_mgt_cmd);
 -- 
 1.8.5.3
 
