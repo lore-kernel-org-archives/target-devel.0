@@ -1,40 +1,27 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Fri, 12 Jan 2018 23:46:26 +0000
-Subject: [PATCH-4.9.y 0/2] target: stable backports
-Message-Id: <1515800788-31016-1-git-send-email-nab@linux-iscsi.org>
+From: Greg-KH <gregkh@linuxfoundation.org>
+Date: Sat, 13 Jan 2018 17:33:53 +0000
+Subject: Re: [PATCH-4.9.y 0/2] target: stable backports
+Message-Id: <20180113173353.GC25277@kroah.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1510812307-14530-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1510812307-14530-1-git-send-email-nab@linux-iscsi.org>
+References: <1515800788-31016-1-git-send-email-nab@linux-iscsi.org>
+In-Reply-To: <1515800788-31016-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel <target-devel@vger.kernel.org>
-Cc: stable <stable@vger.kernel.org>, Greg-KH <gregkh@linuxfoundation.org>, Nicholas Bellinger <nab@linux-iscsi.org>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: target-devel <target-devel@vger.kernel.org>, stable <stable@vger.kernel.org>
 
-From: Nicholas Bellinger <nab@linux-iscsi.org>
+On Fri, Jan 12, 2018 at 11:46:26PM +0000, Nicholas A. Bellinger wrote:
+> From: Nicholas Bellinger <nab@linux-iscsi.org>
+> 
+> Hi Greg-KH,
+> 
+> Here are two target patches for v4.9.y stable, which did not apply
+> due to minor context changes.
+> 
+> The series has been cut against v4.9.76.  Please apply at your earliest
+> convenience.
 
-Hi Greg-KH,
+Both applied, thanks for the backports.
 
-Here are two target patches for v4.9.y stable, which did not apply
-due to minor context changes.
-
-The series has been cut against v4.9.76.  Please apply at your earliest
-convenience.
-
-Thank you,
-
---nab
-
-Nicholas Bellinger (2):
-  iscsi-target: Make TASK_REASSIGN use proper se_cmd->cmd_kref
-  target: Avoid early CMD_T_PRE_EXECUTE failures during ABORT_TASK
-
- drivers/target/iscsi/iscsi_target.c    | 20 +++++++-------------
- drivers/target/target_core_tmr.c       |  9 +++++++++
- drivers/target/target_core_transport.c |  2 ++
- include/target/target_core_base.h      |  1 +
- 4 files changed, 19 insertions(+), 13 deletions(-)
-
--- 
-1.8.5.3
-
+greg k-h
