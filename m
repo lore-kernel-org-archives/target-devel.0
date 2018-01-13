@@ -1,29 +1,63 @@
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Thu, 18 Jan 2018 09:22:45 +0000
-Subject: Re: [PATCH 1/1] tcmu: fix cmd user after free
-Message-Id: <1516267365.24576.245.camel@haakon3.daterainc.com>
+Date: Sat, 13 Jan 2018 06:20:43 +0000
+Subject: Re: [RFC] iser-target: avoid reinitializing rdma contexts for isert commands
+Message-Id: <1515824443.24576.108.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1516048679-8704-1-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1516048679-8704-1-git-send-email-mchristi@redhat.com>
+References: <1511893687-29298-1-git-send-email-bharat@chelsio.com>
+         <20171218231439.GA31621@ziepe.ca>
+In-Reply-To: <20171218231439.GA31621-uk2M96/98Pc@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Jason Gunthorpe <jgg-uk2M96/98Pc@public.gmane.org>
+Cc: Bharat Potnuri <bharat-ut6Up61K2wZBDgjK7y7TUQ@public.gmane.org>, sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-On Mon, 2018-01-15 at 14:37 -0600, Mike Christie wrote:
-> If we are failing the command due to a qfull timeout we are
-> also freeing the tcmu command, so we cannot access it later
-> to get the se_cmd.
-> 
-> Note: The clearing of cmd->se_cmd is not needed. We do not check
-> it later for something like determining if the command was failed
-> due to a timeout. As a result I am dropping it.
-> 
-> Signed-off-by: Mike Christie <mchristi@redhat.com>
-> ---
->  drivers/target/target_core_user.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
+Hi Jason & Co,
 
-Applied.
+Thanks for picking this up.
+
+On Mon, 2017-12-18 at 16:14 -0700, Jason Gunthorpe wrote:
+> On Tue, Nov 28, 2017 at 11:58:07PM +0530, Bharat Potnuri wrote:
+> > isert commands that failed during isert_rdma_rw_ctx_post() are queued to
+> > Queue-Full(QF) queue and are scheduled to be reposted during queue-full
+> > queue processing. During this reposting, the rdma contexts are initialised
+> > again in isert_rdma_rw_ctx_post(), which is leaking significant memory.
+> > 
+> > unreferenced object 0xffff8830201d9640 (size 64):
+> >   comm "kworker/0:2", pid 195, jiffies 4295374851 (age 4528.436s)
+> >   hex dump (first 32 bytes):
+> >     00 60 8b cb 2e 00 00 00 00 10 00 00 00 00 00 00  .`..............
+> >     00 90 e3 cb 2e 00 00 00 00 10 00 00 00 00 00 00  ................
+> >   backtrace:
+> >     [<ffffffff8170711e>] kmemleak_alloc+0x4e/0xb0
+> >     [<ffffffff811f8ba5>] __kmalloc+0x125/0x2b0
+> >     [<ffffffffa046b24f>] rdma_rw_ctx_init+0x15f/0x6f0 [ib_core]
+> >     [<ffffffffa07ab644>] isert_rdma_rw_ctx_post+0xc4/0x3c0 [ib_isert]
+> >     [<ffffffffa07ad972>] isert_put_datain+0x112/0x1c0 [ib_isert]
+> >     [<ffffffffa07dddce>] lio_queue_data_in+0x2e/0x30 [iscsi_target_mod]
+> >     [<ffffffffa076c322>] target_qf_do_work+0x2b2/0x4b0 [target_core_mod]
+> >     [<ffffffff81080c3b>] process_one_work+0x1db/0x5d0
+> >     [<ffffffff8108107d>] worker_thread+0x4d/0x3e0
+> >     [<ffffffff81088667>] kthread+0x117/0x150
+> >     [<ffffffff81713fa7>] ret_from_fork+0x27/0x40
+> >     [<ffffffffffffffff>] 0xffffffffffffffff
+> > 
+> > Here is patch to use the older rdma contexts while reposting
+> > the isert commands intead of reinitialising them.
+> > 
+> > Signed-off-by: Potnuri Bharat Teja <bharat@chelsio.com>
+> > Reviewed-by: Sagi Grimberg <sagi@grimberg.me>
+> >  drivers/infiniband/ulp/isert/ib_isert.c | 7 +++++++
+> >  drivers/infiniband/ulp/isert/ib_isert.h | 1 +
+> >  2 files changed, 8 insertions(+)
+> 
+> Thanks, applied to RDMA for-next
+> 
+> Jason
+
+Per Potnuri, it should be stable CC' to 4.11.y, and depends on:
+
+7a56dc8 iser-target: avoid posting a recv buffer twice
+555a65f iser-target: Fix queue-full response handling
+fa7e25c target: Fix unknown fabric callback queue-full errors
 
