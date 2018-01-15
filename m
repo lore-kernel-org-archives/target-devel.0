@@ -1,59 +1,46 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Wed, 24 Jan 2018 07:01:11 +0000
-Subject: Re: [PATCH target-pending] iscsi-target: make sure to wake up sleeping login worker
-Message-Id: <1516777271.24576.312.camel@haakon3.daterainc.com>
+From: tang.wenji@zte.com.cn
+Date: Mon, 15 Jan 2018 12:09:37 +0000
+Subject: [PATCH] target:fix destory device in target_configure_device
+Message-Id: <1516018177-7714-1-git-send-email-tang.wenji@zte.com.cn>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180119133629.14812-1-fw@strlen.de>
-         <1516376785.3606.37.camel@gmail.com> <20180119172629.GD21673@breakpoint.cc>
-In-Reply-To: <20180119172629.GD21673@breakpoint.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Westphal <fw@strlen.de>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, target-devel@vger.kernel.org, mchristi@redhat.com, netdev@vger.kernel.org, linux-scsi@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-Hey Florian & Co,
+From: tangwenji <tang.wenji@zte.com.cn>
 
-On Fri, 2018-01-19 at 18:26 +0100, Florian Westphal wrote:
-> Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> > On Fri, 2018-01-19 at 14:36 +0100, Florian Westphal wrote:
-> > > diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-> > > index b686e2ce9c0e..3723f8f419aa 100644
-> > > --- a/drivers/target/iscsi/iscsi_target_nego.c
-> > > +++ b/drivers/target/iscsi/iscsi_target_nego.c
-> > > @@ -432,6 +432,9 @@ static void iscsi_target_sk_data_ready(struct sock *sk)
-> > >  	if (test_and_set_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags)) {
-> > >  		write_unlock_bh(&sk->sk_callback_lock);
-> > >  		pr_debug("Got LOGIN_FLAGS_READ_ACTIVE=1, conn: %p >>>>\n", conn);
-> > > +		if (WARN_ON(iscsi_target_sk_data_ready = conn->orig_data_ready))
-> > > +			return;
-> > 
-> > Is this WARN_ON() belonging to this fix ?
-> > At least make it WARN_ON_ONCE() or pr_err_once()
-> 
-> Nicholas, I don't know this code at all so it would be good if you could
-> give advice here (omit all together, WARN_ON_ONCE, ...).
-> 
+After dev->transport->configure_device succeeds,target_configure_device
+exits abnormally, dev_flags has not set DF_CONFIGURED yet, does not call
+destory_device function in free_device
 
-This is regular behavior during multi PDU login sequences, and should
-not include a WARN_ON.
+Signed-off-by: tangwenji <tang.wenji@zte.com.cn>
+---
+ drivers/target/target_core_device.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-So with MNC's Tested-by in place, applying to target-pending/for-next
-minus the WARN_ON, with a extra 4.14.y stable tag.
-
-Thanks again for taking a look at this.
-
-To your earlier point wrt net.ipv4.tcp_low_latency=1 on 4.13 code not
-triggering pre-queue logic.  From groking the original patch to drop
-prequeue I agree this should really be the case, but am still at a loss
-how MNC is triggering on 4.14+ unless something else has changed to
-uncover this iscsi-target bug.
-
-Still curious to verify the root cause, but I haven't been able to
-reproduce this in VMs on small scale, and haven't had cycles to
-reproduce on HW yet.
-
-That said, since the bug appears to be masked on <= 4.13.y +
-tcp_low_latency=1, unless someone can reproduce this on earlier code
-with tcp_low_latency=0, I'll leave off the older stable tag for now.
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index e8dd6da..18716fa 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -997,7 +997,7 @@ int target_configure_device(struct se_device *dev)
+ 
+ 	ret = core_setup_alua(dev);
+ 	if (ret)
+-		goto out_free_index;
++		goto out_destory_device;
+ 
+ 	/*
+ 	 * Startup the struct se_device processing thread
+@@ -1041,6 +1041,8 @@ int target_configure_device(struct se_device *dev)
+ 
+ out_free_alua:
+ 	core_alua_free_lu_gp_mem(dev);
++out_destory_device:
++	dev->transport->destroy_device(dev);
+ out_free_index:
+ 	mutex_lock(&device_mutex);
+ 	idr_remove(&devices_idr, dev->dev_index);
+-- 
+2.8.1.windows.1
 
