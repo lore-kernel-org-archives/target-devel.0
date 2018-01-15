@@ -1,51 +1,47 @@
-From: 55823386@mylife.unisa.ac.za
-Date: Sat, 06 Jan 2018 05:45:46 +0000
-Subject: Hallo mein lieber Freund,
-Message-Id: <HE1PR01MB07803CF7540524E0FC722AAABB1D0@HE1PR01MB0780.eurprd01.prod.exchangelabs.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 15 Jan 2018 09:36:33 +0000
+Subject: [bug report] tcmu: make ring buffer timer configurable
+Message-Id: <20180115093633.pazk6vuvj7j6q2gr@mwanda>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hallo mein lieber Freund,
+Hello Mike Christie,
 
-Ich schreibe dir diese Post mit schweren Tr=E4nen In meinen Augen und gro=
-=DFem Kummer in meinem Herzen, Mein Name ist Vera Hollin Kvan, und ich kont=
-aktiere dich aus meinem Land Indien Ich m=F6chte dir das sagen, weil ich ke=
-ine habe Eine andere M=F6glichkeit, als Ihnen zu sagen, wie ich ber=FChrt w=
-ar, um Sie zu =F6ffnen, heiratete ich mit Herrn Hollin Kvan, der f=FCr neun=
- Jahre mit der tunesischen Botschaft in Madrid Spanien arbeitete, bevor er =
-im Jahr 2005 starb. Wir waren elf Jahre ohne verheiratet Kind.
+The patch 9103575ae34e: "tcmu: make ring buffer timer configurable"
+from Nov 28, 2017, leads to the following static checker warning:
 
-Er starb nach einer kurzen Krankheit, die nur f=FCnf Tage dauerte. Seit sei=
-nem Tod entschied ich mich, nicht wieder zu heiraten. Als mein verstorbener=
- Mann noch am Leben war, hinterlegte er die Summe von $ 4.850.000,00USD (Vi=
-er Millionen achthundertundf=FCnfzigtausend Dollar) in einer Bank hier in I=
-ndien Neu-Delhi, der Hauptstadt Indiens, gegenw=E4rtig dieses Geld ist imme=
-r noch in der Bank.
+	drivers/target/target_core_user.c:1173 tcmu_check_expired_cmd()
+	error: dereferencing freed memory 'cmd'
 
-Er stellte dieses Geld f=FCr den Export von Gold aus dem Minenfactory in Ma=
-drid Spanien zur Verf=FCgung. In letzter Zeit sagte mir mein Doktor, dass i=
-ch wegen der Krebserkrankung f=FCr die Dauer von sieben Monaten nicht =FCbe=
-rleben w=FCrde. Derjenige, der mich am meisten st=F6rt, ist meine Schlaganf=
-all-Krankheit. Nachdem ich meinen Zustand gekannt habe, habe ich beschlosse=
-n, dir dieses Geld auszuh=E4ndigen, um auf die weniger privilegierten Mensc=
-hen aufzupassen, du wirst dieses Geld auf die Art und Weise benutzen, wie i=
-ch es hier unterrichten werde.
+drivers/target/target_core_user.c
+  1162                  scsi_status = SAM_STAT_CHECK_CONDITION;
+  1163          } else {
+  1164                  list_del_init(&cmd->cmdr_queue_entry);
+  1165  
+  1166                  idr_remove(&udev->commands, id);
+  1167                  tcmu_free_cmd(cmd);
+                        ^^^^^^^^^^^^^^^^^^
+Freed
 
-Ich m=F6chte, dass Sie 30 Prozent des gesamten Geldes f=FCr Ihren pers=F6nl=
-ichen Gebrauch aufwenden, w=E4hrend 70% des Geldes an wohlt=E4tige Zwecke g=
-ehen, Menschen auf der Stra=DFe und dem Waisenhaus helfen. Ich bin als Wais=
-e aufgewachsen und habe keinen K=F6rper als mein Familienmitglied, nur um z=
-u beenden, dass das Haus Gottes auch erhalten wird. Mache dies, damit Gott =
-meine S=FCnden vergibt und meine Seele akzeptiert, weil diese Krankheiten m=
-ich so sehr leiden. Sobald ich Ihre Antwort erhalten habe, werde ich Ihnen =
-den Kontakt der Bank hier in Delhi Indien geben und ich werde auch den Bank=
-manager beauftragen, Ihnen einen Vollmachtenbrief auszustellen, der Ihnen d=
-en gegenw=E4rtigen Beg=FCnstigten des Geldes in der Bank beweisen wird, wen=
-n Sie versichern mir, dass Sie entsprechend handeln werden, wie ich hier an=
-gegeben habe.
+  1168                  scsi_status = SAM_STAT_TASK_SET_FULL;
+  1169          }
+  1170  
+  1171          pr_debug("Timing out cmd %u on dev %s that is %s.\n",
+  1172                   id, udev->name, is_running ? "inflight" : "queued");
+  1173  
+  1174          se_cmd = cmd->se_cmd;
+                         ^^^^^^^^^^^
+Use after free
 
-Ich hoffe auf Ihre Antwort.
-Von Vera Hollin kVan
+  1175          cmd->se_cmd = NULL;
+                ^^^^^^^^^^^^^^^^^^
+
+  1176          target_complete_cmd(se_cmd, scsi_status);
+  1177          return 0;
+  1178  }
+
+regards,
+dan carpenter
