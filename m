@@ -1,56 +1,47 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Sat, 13 Jan 2018 05:13:07 +0000
-Subject: Re: [RFC PATCH] target: enable discard if supported by underlying block device
-Message-Id: <1515820387.24576.88.camel@haakon3.daterainc.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 15 Jan 2018 20:37:59 +0000
+Subject: [PATCH 1/1] tcmu: fix cmd user after free
+Message-Id: <1516048679-8704-1-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20171219134517.17296-1-ddiss@suse.de>
-In-Reply-To: <20171219134517.17296-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hi David & MNC,
+If we are failing the command due to a qfull timeout we are
+also freeing the tcmu command, so we cannot access it later
+to get the se_cmd.
 
-On Wed, 2018-01-03 at 23:27 +0100, David Disseldorp wrote:
-> Thanks for the feedback, Mike.
-> 
-> On Wed, 3 Jan 2018 12:33:32 -0600, Mike Christie wrote:
-> 
-> > > Block layer backed logical units are capable of deferring to the block
-> > > layer when determining UNMAP attributes, but this logic currently leaves
-> > > the emulate_tpu (UNMAP) and emulate_tpws (WRITE_SAME with UNMAP=1) flags
-> > > disabled.  
-> > 
-> > Is there any cases where the user set tpu/tpws to off on purpose to
-> > work around a backing device or initiator side issue? If so, I think the
-> > only concern would be for non-rtslib based apps. If they did the attrib
-> > setting stage after device creation but before the config stage, then
-> > this patch would overwrite those settings.
-> 
-> I'm not aware of any such cases, but yes, good point. If this is a
-> concern, then another option would be to change the DA_EMULATE_TPU/TPWS
-> defaults unconditionally (for all backstores), but I that'd lead to
-> other consequences (e.g. on FSes that don't support PUNCH_HOLE).
-> 
+Note: The clearing of cmd->se_cmd is not needed. We do not check
+it later for something like determining if the command was failed
+due to a timeout. As a result I am dropping it.
 
-I'm reluctant to enable tpu/tpws by default, even when underlying
-device claims to support it.  Primarily because of two issues:
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-First for IBLOCK, blkdev_issue_discard() does synchronous bio
-completion.  As-is, this causes iscsi-target RX kthreads to block for
-extended periods of time resulting in NOPs triggering connection
-reinstatement, et al.
-
-In practice though, out-of-tree bio based backend drivers which actually
-enable UNMAP + WRITE_SAME w/ UNMAP=1 always end up adding some
-submit_bio() + async completion mechanism for production usage.
-
-Second, even in my experience with async REQ_OP_DISCARD completion using
-fast struct block_devices, it's still not very hard for a host (like
-ESX/VMFS for example) to run into SCSI timeouts with heavy small block
-I/O + UNMAP workloads.
-
-So enabling this by default for all cases still makes me nervous,
-without any async REQ_OP_DISCARD completion in place for upstream.
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 60c8a87..49b76ee 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1146,6 +1146,7 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
+ 		return 0;
+ 
+ 	is_running = list_empty(&cmd->cmdr_queue_entry);
++	se_cmd = cmd->se_cmd;
+ 
+ 	if (is_running) {
+ 		/*
+@@ -1171,8 +1172,6 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
+ 	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
+ 		 id, udev->name, is_running ? "inflight" : "queued");
+ 
+-	se_cmd = cmd->se_cmd;
+-	cmd->se_cmd = NULL;
+ 	target_complete_cmd(se_cmd, scsi_status);
+ 	return 0;
+ }
+-- 
+1.8.3.1
 
