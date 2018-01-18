@@ -1,53 +1,41 @@
-From: Michael Christie <mchristi@redhat.com>
-Date: Tue, 16 Jan 2018 16:25:16 +0000
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Thu, 18 Jan 2018 09:23:12 +0000
 Subject: Re: [PATCH] tcmu: Fix trailing semicolon
-Message-Id: <f188423f-8d53-ffe8-7d85-48424e15411b@redhat.com>
+Message-Id: <1516267392.24576.246.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180116153432.17927-1-luisbg@kernel.org>
-In-Reply-To: <20180116153432.17927-1-luisbg@kernel.org>
+         <f188423f-8d53-ffe8-7d85-48424e15411b@redhat.com>
+In-Reply-To: <f188423f-8d53-ffe8-7d85-48424e15411b@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Luis de Bethencourt <luisbg@kernel.org>, linux-kernel@vger.kernel.org
-Cc: Joe Perches <joe@perches.com>, "Nicholas A . Bellinger" <nab@linux-iscsi.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: mchristi@redhat.com
+Cc: Luis de Bethencourt <luisbg@kernel.org>, linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-On 01/16/2018 09:34 AM, Luis de Bethencourt wrote:
-> The trailing semicolon is an empty statement that does no operation.
-> It is completely stripped out by the compiler. Removing it since it doesn't do
-> anything.
-> 
-> Signed-off-by: Luis de Bethencourt <luisbg@kernel.org>
-> ---
-> 
-> Hi,
-> 
-> After fixing the same thing in drivers/staging/rtl8723bs/, Joe Perches
-> suggested I fix it treewide [0].
-> 
-> Best regards 
-> Luis
-> 
-> 
-> [0] http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/2018-January/115410.html
-> [1] http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/2018-January/115390.html
-> 
->  drivers/target/target_core_user.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> index 60c8a87b7a88..f6164d294fb3 100644
-> --- a/drivers/target/target_core_user.c
-> +++ b/drivers/target/target_core_user.c
-> @@ -1564,7 +1564,7 @@ static int tcmu_wait_genl_cmd_reply(struct tcmu_dev *udev)
->  
->  	wake_up_all(&udev->nl_cmd_wq);
->  
-> -	return ret;;
-> +	return ret;
->  }
->  
->  static int tcmu_netlink_event(struct tcmu_dev *udev, enum tcmu_genl_cmd cmd,
-> 
+On Tue, 2018-01-16 at 10:25 -0600, Michael Christie wrote:
+> On 01/16/2018 09:34 AM, Luis de Bethencourt wrote:
+> > The trailing semicolon is an empty statement that does no operation.
+> > It is completely stripped out by the compiler. Removing it since it doesn't do
+> > anything.
+> > 
+> > Signed-off-by: Luis de Bethencourt <luisbg@kernel.org>
+> > ---
+> > 
+> > Hi,
+> > 
+> > After fixing the same thing in drivers/staging/rtl8723bs/, Joe Perches
+> > suggested I fix it treewide [0].
+> > 
+> > Best regards 
+> > Luis
+> > 
+> > 
+> > [0] http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/2018-January/115410.html
+> > [1] http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/2018-January/115390.html
+> > 
+> >  drivers/target/target_core_user.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
 
+Applied.  Thanks Luis + MNC.
 
-Acked-by: Mike Christie <mchristi@redhat.com>
