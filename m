@@ -1,221 +1,106 @@
-From: Shiraz Saleem <shiraz.saleem@intel.com>
-Date: Mon, 15 Jan 2018 15:22:36 +0000
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Thu, 18 Jan 2018 09:58:42 +0000
 Subject: Re: SQ overflow seen running isert traffic with high block sizes
-Message-Id: <20180115152236.GA15484@ssaleem-MOBL4.amr.corp.intel.com>
+Message-Id: <1516269522.24576.274.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <BN3PR07MB25784033E7FCD062FA0A7855F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
- <210f538f-8c98-f480-64fc-f2124ed6d01b@grimberg.me>
- <BN3PR07MB25786338EADC77A369A6D493F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
- <1499970579.7987.8.camel@haakon3.daterainc.com>
- <BN3PR07MB2578E6561CC669922A322245F8A00@BN3PR07MB2578.namprd07.prod.outlook.com>
- <20171006224025.GA23364@ssaleem-MOBL4.amr.corp.intel.com>
- <1515992195.24576.156.camel@haakon3.daterainc.com>
- <CY1PR0701MB2012E53C69D1CE3E16BA320B88EB0@CY1PR0701MB2012.namprd07.prod.outlook.com>
-In-Reply-To: <CY1PR0701MB2012E53C69D1CE3E16BA320B88EB0-UpKza+2NMNLHMJvQ0dyT705OhdzP3rhOnBOFsp37pqbUKgpGm//BTAC/G2K4zDHf@public.gmane.org>
+         <210f538f-8c98-f480-64fc-f2124ed6d01b@grimberg.me>
+         <BN3PR07MB25786338EADC77A369A6D493F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
+         <1499970579.7987.8.camel@haakon3.daterainc.com>
+         <BN3PR07MB2578E6561CC669922A322245F8A00@BN3PR07MB2578.namprd07.prod.outlook.com>
+         <20171006224025.GA23364@ssaleem-MOBL4.amr.corp.intel.com>
+         <1515992195.24576.156.camel@haakon3.daterainc.com>
+         <CY1PR0701MB2012E53C69D1CE3E16BA320B88EB0@CY1PR0701MB2012.namprd07.prod.outlook.com>
+         <20180115152236.GA15484@ssaleem-MOBL4.amr.corp.intel.com>
+In-Reply-To: <20180115152236.GA15484@ssaleem-MOBL4.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Kalderon, Michal" <Michal.Kalderon-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>
-Cc: "Amrani, Ram" <Ram.Amrani-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Elior, Ariel" <Ariel.Elior-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Potnuri Bharat Teja <bharat-ut6Up61K2wZBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="windows-1257"
+Content-Transfer-Encoding: base64
+To: Shiraz Saleem <shiraz.saleem@intel.com>
+Cc: "Kalderon, Michal" <Michal.Kalderon@cavium.com>, "Amrani, Ram" <Ram.Amrani@cavium.com>, Sagi Grimberg <sagi@grimberg.me>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Elior, Ariel" <Ariel.Elior@cavium.com>, target-devel <target-devel@vger.kernel.org>, Potnuri Bharat Teja <bharat@chelsio.com>
 
-On Mon, Jan 15, 2018 at 03:12:36AM -0700, Kalderon, Michal wrote:
-> > From: linux-rdma-owner@vger.kernel.org [mailto:linux-rdma-
-> > owner@vger.kernel.org] On Behalf Of Nicholas A. Bellinger
-> > Sent: Monday, January 15, 2018 6:57 AM
-> > To: Shiraz Saleem <shiraz.saleem@intel.com>
-> > Cc: Amrani, Ram <Ram.Amrani@cavium.com>; Sagi Grimberg
-> > <sagi@grimberg.me>; linux-rdma@vger.kernel.org; Elior, Ariel
-> > <Ariel.Elior@cavium.com>; target-devel <target-devel@vger.kernel.org>;
-> > Potnuri Bharat Teja <bharat@chelsio.com>
-> > Subject: Re: SQ overflow seen running isert traffic with high block sizes
-> > 
-> > Hi Shiraz, Ram, Ariel, & Potnuri,
-> > 
-> > Following up on this old thread, as it relates to Potnuri's recent fix for a iser-
-> > target queue-full memory leak:
-> > 
-> > https://www.spinics.net/lists/target-devel/msg16282.html
-> > 
-> > Just curious how frequent this happens in practice with sustained large block
-> > workloads, as it appears to effect at least three different iwarp RNICS (i40iw,
-> > qedr and iw_cxgb4)..?
-> > 
-> > Is there anything else from an iser-target consumer level that should be
-> > changed for iwarp to avoid repeated ib_post_send() failures..?
-> > 
-> Would like to mention, that although we are an iWARP RNIC as well, we've hit this
-> Issue when running RoCE. It's not iWARP related. 
-> This is easily reproduced within seconds with IO size of 5121K
-> Using 5 Targets with 2 Ram Disk each and 5 targets with FileIO Disks each.
-> 
-> IO Command used:
-> maim -b512k -T32 -t2 -Q8 -M0 -o -u -n -m17 -ftargets.dat -d1
-> 
-> thanks,
-> Michal
-
-Its seen with block size >= 2M on a single target 1 RAM disk config. And similar to Michals report;
-rather quickly, in a matter of seconds.
-
-fio --rw=read --bs 48k --numjobs=1 --iodepth8 --runtime0 --size g --loops=1 --ioengine=libaio 
---direct=1 --invalidate=1 --fsync_on_close=1 --norandommap --exitall --filename=/dev/sdb --name=sdb 
-
-Shiraz
-
-> 
-> > On Fri, 2017-10-06 at 17:40 -0500, Shiraz Saleem wrote:
-> > > On Mon, Jul 17, 2017 at 03:26:04AM -0600, Amrani, Ram wrote:
-> > > > Hi Nicholas,
-> > > >
-> > > > > Just to confirm, the following four patches where required to get
-> > > > > Potnuri up and running on iser-target + iw_cxgb4 with a similarly
-> > > > > small number of hw SGEs:
-> > > > >
-> > > > > 7a56dc8 iser-target: avoid posting a recv buffer twice 555a65f
-> > > > > iser-target: Fix queue-full response handling
-> > > > > a446701 iscsi-target: Propigate queue_data_in + queue_status
-> > > > > errors fa7e25c target: Fix unknown fabric callback queue-full
-> > > > > errors
-> > > > >
-> > > > > So Did you test with Q-Logic/Cavium with RoCE using these four
-> > > > > patches, or just with commit a4467018..?
-> > > > >
-> > > > > Note these have not been CC'ed to stable yet, as I was reluctant
-> > > > > since they didn't have much mileage on them at the time..
-> > > > >
-> > > > > Now however, they should be OK to consider for stable, especially
-> > > > > if they get you unblocked as well.
-> > > >
-> > > > The issue is still seen with these four patches.
-> > > >
-> > > > Thanks,
-> > > > Ram
-> > >
-> > > Hi,
-> > >
-> > > On X722 Iwarp NICs (i40iw) too, we are seeing a similar issue of SQ
-> > > overflow being hit on isert for larger block sizes. 4.14-rc2 kernel.
-> > >
-> > > Eventually there is a timeout/conn-error on iser initiator and the
-> > connection is torn down.
-> > >
-> > > The aforementioned patches dont seem to be alleviating the SQ overflow
-> > issue?
-> > >
-> > > Initiator
-> > > ------------
-> > >
-> > > [17007.465524] scsi host11: iSCSI Initiator over iSER [17007.466295]
-> > > iscsi: invalid can_queue of 55. can_queue must be a power of 2.
-> > > [17007.466924] iscsi: Rounding can_queue to 32.
-> > > [17007.471535] scsi 11:0:0:0: Direct-Access     LIO-ORG  ramdisk1_40G     4.0
-> > PQ: 0 ANSI: 5
-> > > [17007.471652] scsi 11:0:0:0: alua: supports implicit and explicit
-> > > TPGS [17007.471656] scsi 11:0:0:0: alua: device
-> > > naa.6001405ab790db5e8e94b0998ab4bf0b port group 0 rel port 1
-> > > [17007.471782] sd 11:0:0:0: Attached scsi generic sg2 type 0
-> > > [17007.472373] sd 11:0:0:0: [sdb] 83886080 512-byte logical blocks:
-> > > (42.9 GB/40.0 GiB) [17007.472405] sd 11:0:0:0: [sdb] Write Protect is
-> > > off [17007.472406] sd 11:0:0:0: [sdb] Mode Sense: 43 00 00 08
-> > > [17007.472462] sd 11:0:0:0: [sdb] Write cache: disabled, read cache:
-> > > enabled, doesn't support DPO or FUA [17007.473412] sd 11:0:0:0: [sdb]
-> > > Attached SCSI disk [17007.478184] sd 11:0:0:0: alua: transition
-> > > timeout set to 60 seconds [17007.478186] sd 11:0:0:0: alua: port group 00
-> > state A non-preferred supports TOlUSNA [17031.269821]  sdb:
-> > > [17033.359789] EXT4-fs (sdb1): mounted filesystem with ordered data
-> > > mode. Opts: (null) [17049.056155]  connection2:0: ping timeout of 5
-> > > secs expired, recv timeout 5, last rx 4311705998, last ping
-> > > 4311711232, now 4311716352 [17049.057499]  connection2:0: detected
-> > > conn error (1022) [17049.057558] modifyQP to CLOSING qp 3
-> > > next_iw_state 3 [..]
-> > >
-> > >
-> > > Target
-> > > ----------
-> > > [....]
-> > > [17066.397179] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
-> > > [17066.397180] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ec020
-> > > failed to post RDMA res [17066.397183] i40iw_post_send: qp 3 wr_opcode
-> > > 0 ret_err -12 [17066.397183] isert: isert_rdma_rw_ctx_post: Cmd:
-> > > ffff8817fb8ea1f8 failed to post RDMA res [17066.397184]
-> > > i40iw_post_send: qp 3 wr_opcode 0 ret_err -12 [17066.397184] isert:
-> > > isert_rdma_rw_ctx_post: Cmd: ffff8817fb8e9bf0 failed to post RDMA res
-> > > [17066.397187] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
-> > > [17066.397188] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ecc30
-> > > failed to post RDMA res [17066.397192] i40iw_post_send: qp 3 wr_opcode
-> > > 0 ret_err -12 [17066.397192] isert: isert_rdma_rw_ctx_post: Cmd:
-> > > ffff8817fb8f20a0 failed to post RDMA res [17066.397195]
-> > > i40iw_post_send: qp 3 wr_opcode 0 ret_err -12 [17066.397196] isert:
-> > > isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea800 failed to post RDMA res
-> > > [17066.397196] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
-> > > [17066.397197] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ede48
-> > > failed to post RDMA res [17066.397200] i40iw_post_send: qp 3 wr_opcode
-> > > 0 ret_err -12 [17066.397200] isert: isert_rdma_rw_ctx_post: Cmd:
-> > > ffff8817fb8ec020 failed to post RDMA res [17066.397204]
-> > > i40iw_post_send: qp 3 wr_opcode 0 ret_err -12 [17066.397204] isert:
-> > > isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea1f8 failed to post RDMA res
-> > > [17066.397206] i40iw i40iw_process_aeq ae_id = 0x503 bool qp=1 qp_id > > > 3 [17066.397207] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
-> > > [17066.397207] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8e9bf0
-> > > failed to post RDMA res [17066.397211] i40iw_post_send: qp 3 wr_opcode
-> > > 0 ret_err -12 [17066.397211] isert: isert_rdma_rw_ctx_post: Cmd:
-> > > ffff8817fb8ecc30 failed to post RDMA res [17066.397215]
-> > > i40iw_post_send: qp 3 wr_opcode 0 ret_err -12 [17066.397215] isert:
-> > > isert_rdma_rw_ctx_post: Cmd: ffff8817fb8f20a0 failed to post RDMA res
-> > > [17066.397218] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
-> > > [17066.397219] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea800
-> > > failed to post RDMA res [17066.397219] i40iw_post_send: qp 3 wr_opcode
-> > > 0 ret_err -12 [17066.397220] isert: isert_rdma_rw_ctx_post: Cmd:
-> > > ffff8817fb8ede48 failed to post RDMA res [17066.397232]
-> > > i40iw_post_send: qp 3 wr_opcode 0 ret_err -12 [17066.397233] isert:
-> > > isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ec020 failed to post RDMA res
-> > > [17066.397237] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
-> > > [17066.397237] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea1f8
-> > > failed to post RDMA res [17066.397238] i40iw_post_send: qp 3 wr_opcode
-> > > 0 ret_err -12 [17066.397238] isert: isert_rdma_rw_ctx_post: Cmd:
-> > > ffff8817fb8e9bf0 failed to post RDMA res [17066.397242]
-> > > i40iw_post_send: qp 3 wr_opcode 0 ret_err -12 [17066.397242] isert:
-> > > isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ecc30 failed to post RDMA res
-> > > [17066.397245] i40iw_post_send: qp 3 wr_opcode 0 ret_err -12
-> > > [17066.397247] i40iw i40iw_process_aeq ae_id = 0x501 bool qp=1 qp_id > > > 3 [17066.397247] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8f20a0
-> > > failed to post RDMA res [17066.397251] QP 3 flush_issued
-> > > [17066.397252] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
-> > > [17066.397252] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea800
-> > > failed to post RDMA res [17066.397253] Got unknown fabric queue
-> > > status: -22 [17066.397254] QP 3 flush_issued [17066.397254]
-> > > i40iw_post_send: qp 3 wr_opcode 0 ret_err -22 [17066.397254] isert:
-> > > isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ede48 failed to post RDMA res
-> > > [17066.397255] Got unknown fabric queue status: -22 [17066.397258] QP
-> > > 3 flush_issued [17066.397258] i40iw_post_send: qp 3 wr_opcode 0
-> > > ret_err -22 [17066.397259] isert: isert_rdma_rw_ctx_post: Cmd:
-> > > ffff8817fb8ec020 failed to post RDMA res [17066.397259] Got unknown
-> > > fabric queue status: -22 [17066.397267] QP 3 flush_issued
-> > > [17066.397267] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
-> > > [17066.397268] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8ea1f8
-> > > failed to post RDMA res [17066.397268] Got unknown fabric queue
-> > > status: -22 [17066.397287] QP 3 flush_issued [17066.397287]
-> > > i40iw_post_send: qp 3 wr_opcode 0 ret_err -22 [17066.397288] isert:
-> > > isert_rdma_rw_ctx_post: Cmd: ffff8817fb8e9bf0 failed to post RDMA res
-> > > [17066.397288] Got unknown fabric queue status: -22 [17066.397291] QP
-> > > 3 flush_issued [17066.397292] i40iw_post_send: qp 3 wr_opcode 0
-> > > ret_err -22 [17066.397292] isert: isert_rdma_rw_ctx_post: Cmd:
-> > > ffff8817fb8ecc30 failed to post RDMA res [17066.397292] Got unknown
-> > > fabric queue status: -22 [17066.397295] QP 3 flush_issued
-> > > [17066.397296] i40iw_post_send: qp 3 wr_opcode 0 ret_err -22
-> > > [17066.397296] isert: isert_rdma_rw_ctx_post: Cmd: ffff8817fb8f20a0
-> > > failed to post RDMA res [17066.397297] Got unknown fabric queue
-> > > status: -22 [17066.397307] QP 3 flush_issued [17066.397307]
-> > > i40iw_post_send: qp 3 wr_opcode 8 ret_err -22 [17066.397308] isert:
-> > > isert_post_response: ib_post_send failed with -22 [17066.397309] i40iw
-> > > i40iw_qp_disconnect Call close API [....]
-> > >
-> > > Shiraz
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe
-> > > target-devel" in the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-rdma" in the
-> > body of a message to majordomo@vger.kernel.org More majordomo info at
-> > http://vger.kernel.org/majordomo-info.html
+SGkgU2hpcmF6LCBNaWNoYWwgJiBDbywKClRoYW5rcyBmb3IgdGhlIGZlZWRiYWNrLiAgQ29tbWVu
+dHMgYmVsb3cuCgpPbiBNb24sIDIwMTgtMDEtMTUgYXQgMDk6MjIgLTA2MDAsIFNoaXJheiBTYWxl
+ZW0gd3JvdGU6Cj4gT24gTW9uLCBKYW4gMTUsIDIwMTggYXQgMDM6MTI6MzZBTSAtMDcwMCwgS2Fs
+ZGVyb24sIE1pY2hhbCB3cm90ZToKPiA+ID4gRnJvbTogbGludXgtcmRtYS1vd25lckB2Z2VyLmtl
+cm5lbC5vcmcgW21haWx0bzpsaW51eC1yZG1hLQo+ID4gPiBvd25lckB2Z2VyLmtlcm5lbC5vcmdd
+IE9uIEJlaGFsZiBPZiBOaWNob2xhcyBBLiBCZWxsaW5nZXIKPiA+ID4gU2VudDogTW9uZGF5LCBK
+YW51YXJ5IDE1LCAyMDE4IDY6NTcgQU0KPiA+ID4gVG86IFNoaXJheiBTYWxlZW0gPHNoaXJhei5z
+YWxlZW1AaW50ZWwuY29tPgo+ID4gPiBDYzogQW1yYW5pLCBSYW0gPFJhbS5BbXJhbmlAY2F2aXVt
+LmNvbT47IFNhZ2kgR3JpbWJlcmcKPiA+ID4gPHNhZ2lAZ3JpbWJlcmcubWU+OyBsaW51eC1yZG1h
+QHZnZXIua2VybmVsLm9yZzsgRWxpb3IsIEFyaWVsCj4gPiA+IDxBcmllbC5FbGlvckBjYXZpdW0u
+Y29tPjsgdGFyZ2V0LWRldmVsIDx0YXJnZXQtZGV2ZWxAdmdlci5rZXJuZWwub3JnPjsKPiA+ID4g
+UG90bnVyaSBCaGFyYXQgVGVqYSA8YmhhcmF0QGNoZWxzaW8uY29tPgo+ID4gPiBTdWJqZWN0OiBS
+ZTogU1Egb3ZlcmZsb3cgc2VlbiBydW5uaW5nIGlzZXJ0IHRyYWZmaWMgd2l0aCBoaWdoIGJsb2Nr
+IHNpemVzCj4gPiA+IAo+ID4gPiBIaSBTaGlyYXosIFJhbSwgQXJpZWwsICYgUG90bnVyaSwKPiA+
+ID4gCj4gPiA+IEZvbGxvd2luZyB1cCBvbiB0aGlzIG9sZCB0aHJlYWQsIGFzIGl0IHJlbGF0ZXMg
+dG8gUG90bnVyaSdzIHJlY2VudCBmaXggZm9yIGEgaXNlci0KPiA+ID4gdGFyZ2V0IHF1ZXVlLWZ1
+bGwgbWVtb3J5IGxlYWs6Cj4gPiA+IAo+ID4gPiBodHRwczovL3d3dy5zcGluaWNzLm5ldC9saXN0
+cy90YXJnZXQtZGV2ZWwvbXNnMTYyODIuaHRtbAo+ID4gPiAKPiA+ID4gSnVzdCBjdXJpb3VzIGhv
+dyBmcmVxdWVudCB0aGlzIGhhcHBlbnMgaW4gcHJhY3RpY2Ugd2l0aCBzdXN0YWluZWQgbGFyZ2Ug
+YmxvY2sKPiA+ID4gd29ya2xvYWRzLCBhcyBpdCBhcHBlYXJzIHRvIGVmZmVjdCBhdCBsZWFzdCB0
+aHJlZSBkaWZmZXJlbnQgaXdhcnAgUk5JQ1MgKGk0MGl3LAo+ID4gPiBxZWRyIGFuZCBpd19jeGdi
+NCkuLj8KPiA+ID4gCj4gPiA+IElzIHRoZXJlIGFueXRoaW5nIGVsc2UgZnJvbSBhbiBpc2VyLXRh
+cmdldCBjb25zdW1lciBsZXZlbCB0aGF0IHNob3VsZCBiZQo+ID4gPiBjaGFuZ2VkIGZvciBpd2Fy
+cCB0byBhdm9pZCByZXBlYXRlZCBpYl9wb3N0X3NlbmQoKSBmYWlsdXJlcy4uPwo+ID4gPiAKPiA+
+IFdvdWxkIGxpa2UgdG8gbWVudGlvbiwgdGhhdCBhbHRob3VnaCB3ZSBhcmUgYW4gaVdBUlAgUk5J
+QyBhcyB3ZWxsLCB3ZSd2ZSBoaXQgdGhpcwo+ID4gSXNzdWUgd2hlbiBydW5uaW5nIFJvQ0UuIEl0
+J3Mgbm90IGlXQVJQIHJlbGF0ZWQuIAo+ID4gVGhpcyBpcyBlYXNpbHkgcmVwcm9kdWNlZCB3aXRo
+aW4gc2Vjb25kcyB3aXRoIElPIHNpemUgb2YgNTEyMUsKPiA+IFVzaW5nIDUgVGFyZ2V0cyB3aXRo
+IDIgUmFtIERpc2sgZWFjaCBhbmQgNSB0YXJnZXRzIHdpdGggRmlsZUlPIERpc2tzIGVhY2guCj4g
+PiAKPiA+IElPIENvbW1hbmQgdXNlZDoKPiA+IG1haW0gLWI1MTJrIC1UMzIgLXQyIC1ROCAtTTAg
+LW8gLXUgLW4gLW0xNyAtZnRhcmdldHMuZGF0IC1kMQo+ID4gCj4gPiB0aGFua3MsCj4gPiBNaWNo
+YWwKPiAKPiBJdHMgc2VlbiB3aXRoIGJsb2NrIHNpemUgPj0gMk0gb24gYSBzaW5nbGUgdGFyZ2V0
+IDEgUkFNIGRpc2sgY29uZmlnLiBBbmQgc2ltaWxhciB0byBNaWNoYWxzIHJlcG9ydDsKPiByYXRo
+ZXIgcXVpY2tseSwgaW4gYSBtYXR0ZXIgb2Ygc2Vjb25kcy4KPiAKPiBmaW8gLS1ydz1yZWFkIC0t
+YnMgNDhrIC0tbnVtam9icz0xIC0taW9kZXB0aBI4IC0tcnVudGltZTAgLS1zaXplIGcgLS1sb29w
+cz0xIC0taW9lbmdpbmU9bGliYWlvIAo+IC0tZGlyZWN0PTEgLS1pbnZhbGlkYXRlPTEgLS1mc3lu
+Y19vbl9jbG9zZT0xIC0tbm9yYW5kb21tYXAgLS1leGl0YWxsIC0tZmlsZW5hbWU9L2Rldi9zZGIg
+LS1uYW1lPXNkYiAKPiAKCkEgY291cGxlIG9mIHRob3VnaHRzLgoKRmlyc3QsIHdvdWxkIGl0IGJl
+IGhlbHBmdWwgdG8gbGltaXQgbWF4aW11bSBwYXlsb2FkIHNpemUgcGVyIEkvTyBmb3IKY29uc3Vt
+ZXJzIGJhc2VkIG9uIG51bWJlciBvZiBpc2VyLXRhcmdldCBzcSBodyBzZ2VzLi4/CgpUaGF0IGlz
+LCBpZiByZG1hX3J3X2N0eF9wb3N0KCkgLT4gaWJfcG9zdF9zZW5kKCkgZmFpbHVyZXMgYXJlIHJl
+bGF0ZWQgdG8KbWF4aW11bSBwYXlsb2FkIHNpemUgcGVyIEkvTyBiZWluZyB0b28gbGFyZ2UgdGhl
+cmUgaXMgYW4gZXhpc3RpbmcKdGFyZ2V0X2NvcmVfZmFicmljX29wcyBtZWNoYW5pc20gZm9yIGxp
+bWl0aW5nIHVzaW5nIFNDU0kgcmVzaWR1YWxzLApvcmlnaW5hbGx5IHV0aWxpemVkIGJ5IHFsYTJ4
+eHggaGVyZToKCnRhcmdldC9xbGEyeHh4OiBIb25vciBtYXhfZGF0YV9zZ19uZW50cyBJL08gdHJh
+bnNmZXIgbGltaXQKaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9n
+aXQvdG9ydmFsZHMvbGludXguZ2l0L2NvbW1pdC8/aWSPOWI1NjU0ODJjNTM3ODIxNTg4NDQ0ZTA5
+ZmY3MzJjN2Q2NWVkNmUKCk5vdGUgdGhpcyBwYXRjaCBhbHNvIHdpbGwgcmV0dXJuIGEgc21hbGxl
+ciBCbG9jayBMaW1pdHMgVlBEICgweDg2KQpNQVhJTVVNIFRSQU5TRkVSIExFTkdUSCBiYXNlZCBv
+biBtYXhfZGF0YV9zZ19uZW50cyAqIFBBR0VfU0laRSwgd2hpY2gKbWVhbnMgZm9yIG1vZGVybiBT
+Q1NJIGluaXRpYXRvcnMgaG9ub3JpbmcgTUFYSU1VTSBUUkFOU0ZFUiBMRU5HVEggd2lsbAphdXRv
+bWF0aWNhbGx5IGxpbWl0IG1heGltdW0gb3V0Z29pbmcgcGF5bG9hZCB0cmFuc2ZlciBsZW5ndGgs
+IGFuZCBhdm9pZApTQ1NJIHJlc2lkdWFsIGxvZ2ljLgoKQXMtaXMsIGlzZXItdGFyZ2V0IGRvZXNu
+J3QgYSBwcm9wYWdhdGUgbWF4X2RhdGFfc2dfZW50cyBsaW1pdCBpbnRvCmlzY3NpLXRhcmdldCwg
+YnV0IHlvdSBjYW4gdHJ5IHRlc3Rpbmcgd2l0aCBhIHNtYWxsZXIgdmFsdWUgdG8gc2VlIGlmCml0
+J3MgdXNlZnVsLiAgRWc6CgpkaWZmIC0tZ2l0IGEvZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lf
+dGFyZ2V0X2NvbmZpZ2ZzLmMgYi9kcml2ZXJzL3RhcmdldC9pc2NzaS9pc2NzaV90YXJnZXRfY29u
+ZmlnZgppbmRleCAwZWJjNDgxLi5kOGE0Y2M1IDEwMDY0NAotLS0gYS9kcml2ZXJzL3RhcmdldC9p
+c2NzaS9pc2NzaV90YXJnZXRfY29uZmlnZnMuYworKysgYi9kcml2ZXJzL3RhcmdldC9pc2NzaS9p
+c2NzaV90YXJnZXRfY29uZmlnZnMuYwpAQCAtMTU1Myw2ICsxNTUzLDcgQEAgc3RhdGljIHZvaWQg
+bGlvX3JlbGVhc2VfY21kKHN0cnVjdCBzZV9jbWQgKnNlX2NtZCkKICAgICAgICAubW9kdWxlICAg
+ICAgICAgICAgICAgICAgICAgICAgID0gVEhJU19NT0RVTEUsCiAgICAgICAgLm5hbWUgICAgICAg
+ICAgICAgICAgICAgICAgICAgICA9ICJpc2NzaSIsCiAgICAgICAgLm5vZGVfYWNsX3NpemUgICAg
+ICAgICAgICAgICAgICA9IHNpemVvZihzdHJ1Y3QgaXNjc2lfbm9kZV9hY2wpLAorICAgICAgIC5t
+YXhfZGF0YV9zZ19uZW50cyAgICAgICAgICAgICAgPSAzMiwgLyogMzIgKiBQQUdFX1NJWkUgPSBN
+QVhJTVVNIFRSQU5TRkVSIExFTkdUSCAqLwogICAgICAgIC5nZXRfZmFicmljX25hbWUgICAgICAg
+ICAgICAgICAgPSBpc2NzaV9nZXRfZmFicmljX25hbWUsCiAgICAgICAgLnRwZ19nZXRfd3duICAg
+ICAgICAgICAgICAgICAgICA9IGxpb190cGdfZ2V0X2VuZHBvaW50X3d3biwKICAgICAgICAudHBn
+X2dldF90YWcgICAgICAgICAgICAgICAgICAgID0gbGlvX3RwZ19nZXRfdGFnLAoKU2Vjb25kLCBp
+ZiB0aGUgZmFpbHVyZXMgYXJlIG5vdCBTQ1NJIHRyYW5zZmVyIGxlbmd0aCBzcGVjaWZpYywgYW5v
+dGhlcgpvcHRpb24gd291bGQgYmUgdG8gbGltaXQgdGhlIHRvdGFsIGNvbW1hbmQgc2VxdWVuY2Ug
+bnVtYmVyIGRlcHRoIChDbWRTTikKcGVyIHNlc3Npb24uCgpUaGlzIGlzIGNvbnRyb2xsZWQgYXQg
+cnVudGltZSBieSBkZWZhdWx0X2NtZHNuX2RlcHRoIFRQRyBhdHRyaWJ1dGU6Cgovc3lzL2tlcm5l
+bC9jb25maWcvdGFyZ2V0L2lzY3NpLyRUQVJHRVRfSVFOLyRUUEcvYXR0cmliL2RlZmF1bHRfY21k
+c25fZGVwdGgKCmFuZCBvbiBwZXIgaW5pdGlhdG9yIGNvbnRleHQgd2l0aCBjbWRzbl9kZXB0aCBO
+b2RlQUNMIGF0dHJpYnV0ZToKCi9zeXMva2VybmVsL2NvbmZpZy90YXJnZXQvaXNjc2kvJFRBUkdF
+VF9JUU4vJFRQRy9hY2xzLyRBQ0xfSVFOL2NtZHNuX2RlcHRoCgpOb3RlIHRoZXNlIGRlZmF1bHQg
+dG8gNjQsIGFuZCBjYW4gYmUgY2hhbmdlZCBhdCBidWlsZCB0aW1lIHZpYQppbmNsdWRlL3Rhcmdl
+dC9pc2NzaS9pc2NzaV90YXJnZXRfY29yZS5oOlRBX0RFRkFVTFRfQ01EU05fREVQVEguCgpUaGF0
+IHNhaWQsIFNhZ2ksIGFueSBmdXJ0aGVyIGNvbW1lbnRzIGFzIHdoYXQgZWxzZSBpc2VyLXRhcmdl
+dCBzaG91bGQgYmUKZG9pbmcgdG8gYXZvaWQgcmVwZWF0ZWQgcXVldWUtZnVsbHMgd2l0aCBsaW1p
+dGVkIGh3IHNnZXMuLj8KCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRo
+ZSBsaW5lICJ1bnN1YnNjcmliZSB0YXJnZXQtZGV2ZWwiIGluCnRoZSBib2R5IG9mIGEgbWVzc2Fn
+ZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0
+dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA==
