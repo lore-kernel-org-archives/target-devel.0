@@ -1,49 +1,31 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Sat, 13 Jan 2018 05:19:05 +0000
-Subject: Re: [PATCH -next] tcmu: fix error return code in tcmu_configure_device()
-Message-Id: <1515820745.24576.89.camel@haakon3.daterainc.com>
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Thu, 18 Jan 2018 16:11:05 +0000
+Subject: Re: [PATCH 00/11] SCSI target patches for kernel v4.16
+Message-Id: <1516291864.2676.0.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1515669145-125352-1-git-send-email-weiyongjun1@huawei.com>
-         <5A579A9C.3090004@redhat.com>
-In-Reply-To: <5A579A9C.3090004@redhat.com>
+References: <20171031180319.19258-1-bart.vanassche@wdc.com>
+In-Reply-To: <20171031180319.19258-1-bart.vanassche@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <mchristi@redhat.com>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-On Thu, 2018-01-11 at 11:10 -0600, Mike Christie wrote:
-> On 01/11/2018 05:12 AM, Wei Yongjun wrote:
-> > Fix to return error code -ENOMEM from the kzalloc() error handling
-> > case instead of 0, as done elsewhere in this function.
-> > 
-> > Fixes: fabe6a59cc5a ("tcmu: allow max block and global max blocks to be settable")
-> > Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
-> > ---
-> >  drivers/target/target_core_user.c | 4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> > index bac08bc..2edd242 100644
-> > --- a/drivers/target/target_core_user.c
-> > +++ b/drivers/target/target_core_user.c
-> > @@ -1705,8 +1705,10 @@ static int tcmu_configure_device(struct se_device *dev)
-> >  
-> >  	udev->data_bitmap = kzalloc(BITS_TO_LONGS(udev->max_blocks) *
-> >  				    sizeof(unsigned long), GFP_KERNEL);
-> > -	if (!udev->data_bitmap)
-> > +	if (!udev->data_bitmap) {
-> > +		ret = -ENOMEM;
-> >  		goto err_bitmap_alloc;
-> > +	}
-> >  
-> >  	udev->mb_addr = vzalloc(CMDR_SIZE);
-> >  	if (!udev->mb_addr) {
-> > 
-> 
-> Thanks.
-> 
-> Acked-by: Mike Christie <mchristi@redhat.com>
-
-Applied.  Thanks Wei + MNC.
-
+T24gV2VkLCAyMDE3LTEyLTEzIGF0IDE1OjUwIC0wODAwLCBCYXJ0IFZhbiBBc3NjaGUgd3JvdGU6
+DQo+IEFzIHlvdSBtYXliZSBrbm93IHNvbWUgdGltZSBhZ28gSSBzdGFydGVkIHdvcmtpbmcgb24g
+c2ltcGxpZnlpbmcgdGFzaw0KPiBtYW5hZ2VtZW50IGZ1bmN0aW9uIGhhbmRsaW5nIGluIHRoZSBT
+Q1NJIHRhcmdldCBjb3JlIChzZWUgZS5nLiAiW1BBVENIIDAwLzM0XQ0KPiBTQ1NJIHRhcmdldCBw
+YXRjaGVzIGZvciBrZXJuZWwgdjQuMTEiOyBKYW51YXJ5IDIwMTc7DQo+IGh0dHBzOi8vd3d3LnNw
+aW5pY3MubmV0L2xpc3RzL3RhcmdldC1kZXZlbC9tc2cxNDA1NC5odG1sKS4gVGhlcmUgd2VyZSBz
+b21lDQo+IHBhdGNoZXMgaW4gdGhhdCBzZXJpZXMgdGhhdCByaWdodGZ1bGx5IHJhaXNlZCBOaWMn
+cyBleWVicm93cy4gUmV2aWV3aW5nIHRoZXNlDQo+IHBhdGNoZXMgbXlzZWxmIG1hZGUgbWUgcmVh
+bGl6ZSB0aGF0IGJlZm9yZSBUTUYgaGFuZGxpbmcgY2FuIGJlIG1hZGUNCj4gc3luY2hyb25vdXMg
+dGhhdCBzb21lIHVudXN1YWwgY29uc3RydWN0cyBpbiB0aGUgU0NTSSB0YXJnZXQgY29yZSBoYXZl
+IHRvIGJlDQo+IHJld29ya2VkIGZpcnN0LiBIZW5jZSB0aGlzIHBhdGNoIHNlcmllcy4gVGhlIGZv
+bGxvd2luZyB0ZXN0cyBoYXZlIGJlZW4gcnVuDQo+IGFnYWluc3QgdGhpcyBwYXRjaCBzZXJpZXMg
+Zm9yIGJvdGggdGhlIGlTQ1NJIGFuZCBTUlBUIHRhcmdldCBkcml2ZXJzOg0KPiAtIFJ1biB0aGUg
+bGliaXNjc2kgY29uZm9ybWFuY2UgdGVzdHMuDQo+IC0gUnVuIGZpbyAke2Rldn0gaW4gb25lIHNo
+ZWxsIGFuZCB3aGlsZSBzZ19yZXNldCAtZCAke2Rldn07IGRvIDo7IGRvbmUgZnJvbQ0KPiAgIGFu
+b3RoZXIgc2hlbGwuIFRoaXMgaXMgYSBnb29kIHdheSB0byBzdHJlc3MgdGVzdCBUTUYgaGFuZGxp
+bmcuDQo+IC0gRm9yIHRoZSBTUlAgdGFyZ2V0IGRyaXZlcjogcnVuIHRoZSBzcnAtdGVzdCBzb2Z0
+d2FyZS4NCg0KSGVsbG8gTmljLA0KDQpIYXZlIHlvdSBhbHJlYWR5IGhhZCB0aGUgdGltZSB0byBs
+b29rIGF0IHRoaXMgcGF0Y2ggc2VyaWVzPw0KDQpUaGFua3MsDQoNCkJhcnQu
