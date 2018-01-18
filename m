@@ -1,115 +1,117 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 15 Jan 2018 20:33:22 +0000
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Thu, 18 Jan 2018 08:38:18 +0000
 Subject: Re: iscsi target regression due to "tcp: remove prequeue support" patch
-Message-Id: <5A5D1012.9000303@redhat.com>
+Message-Id: <1516264698.24576.240.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <5A32128D.4050207@redhat.com>
- <1515479541.5327.70.camel@haakon3.daterainc.com>
- <1515998504.24576.187.camel@haakon3.daterainc.com>
-In-Reply-To: <1515998504.24576.187.camel@haakon3.daterainc.com>
+         <20180115104145.GB27085@breakpoint.cc>
+In-Reply-To: <20180115104145.GB27085@breakpoint.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: target-devel <target-devel@vger.kernel.org>, fw@strlen.de, Linux-netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>
+To: Florian Westphal <fw@strlen.de>
+Cc: Mike Christie <mchristi@redhat.com>, target-devel <target-devel@vger.kernel.org>, Linux-netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>
 
-On 01/15/2018 12:41 AM, Nicholas A. Bellinger wrote:
-> Hey MNC & Co,
-> 
-> Ping on the earlier iscsi-target authentication login failures atop
-> 4.14 + commit e7942d063 removing tcp prequeue support.
-> 
-> For reference, what is your pre 4.14 environment using for
-> sysctl_tcp_low_latency..?
+Hi Florian,
 
-tcp_low_latency=1.
+(Adding netdev + DaveM CC')
 
-I have tested the current kernel with 1 and 0, and it does not make a
-difference.
+Thanks for the response.  Comments below.
 
+On Mon, 2018-01-15 at 11:41 +0100, Florian Westphal wrote:
+> Mike Christie <mchristi@redhat.com> wrote:
+>  
+> > Dec 13 17:55:01 rhel73n1 kernel: Got Login Command, Flags 0x81, ITT:
+> > 0x00000000, CmdSN: 0x00000000, ExpStatSN: 0xf86dc69b, CID: 0, Length: 65
+> > 
+> > we have got a login command and we seem to then go into
+> > iscsit_do_rx_data -> sock_recvmsg
+> > 
+> > We seem to get stuck in there though, because we stay blocked until:
+> > 
+> > Dec 13 17:55:01 rhel73n1 kernel: Entering iscsi_target_sk_data_ready:
+> > conn: ffff88b35cbb3000
+> > Dec 13 17:55:01 rhel73n1 kernel: Got LOGIN_FLAGS_READ_ACTIVE=1, conn:
+> > ffff88b35cbb3000 >>>>
+> > 
+> > where initiator side timeout fires 15 seconds later and it disconnects
+> > the tcp connection, and we eventually break out of the recvmsg call:
+> > 
+> > Dec 13 17:55:16 rhel73n1 kernel: Entering iscsi_target_sk_state_change
+> > Dec 13 17:55:16 rhel73n1 kernel: __iscsi_target_sk_check_close:
+> > TCP_CLOSE_WAIT|TCP_CLOSE,returning FALSE
+> > 
+> > ....
+> > 
+> > Dec 13 17:55:16 rhel73n1 kernel: rx_loop: 68, total_rx: 68, data: 68
+> > Dec 13 17:55:16 rhel73n1 kernel: iscsi_target_do_login_rx after
+> > rx_login_io, ffff88b35cbb3000, kworker/2:2:1829
+> > 
+> > Is the iscsi target doing something incorrect in its use of
+> > sk_data_ready and sock_recvmsg or is the tcp patch at fault?
 > 
-> netdev folks, how would you like to proceed for -rc1..?
+> I have not received any bug reports except this one.
 > 
-> On Mon, 2018-01-08 at 22:32 -0800, Nicholas A. Bellinger wrote:
->> Hi MNC & Florian,
->>
->> (Adding net-dev + DaveM CC')
->>
->> Catching up on pre-holiday threads, thanks for the heads up.
->>
->> Comments below.
->>
->> On Wed, 2017-12-13 at 23:56 -0600, Mike Christie wrote:
->>> Hey Nick and Florian,
->>>
->>> Starting in 4.14 iscsi logins will fail around 50% of the time.
->>>
->>> I git bisected the issue down to this commit:
->>>
->>> commit e7942d0633c47c791ece6afa038be9cf977226de
->>> Author: Florian Westphal <fw@strlen.de>
->>> Date:   Sun Jul 30 03:57:18 2017 +0200
->>>
->>>     tcp: remove prequeue support
->>>
->>> Nick, attached is the iscsi target log info when the login fails.
->>>
->>> You can see at:
->>>
->>> Dec 13 17:55:01 rhel73n1 kernel: Got Login Command, Flags 0x81, ITT:
->>> 0x00000000, CmdSN: 0x00000000, ExpStatSN: 0xf86dc69b, CID: 0, Length: 65
->>>
->>> we have got a login command and we seem to then go into
->>> iscsit_do_rx_data -> sock_recvmsg
->>>
->>> We seem to get stuck in there though, because we stay blocked until:
->>>
->>> Dec 13 17:55:01 rhel73n1 kernel: Entering iscsi_target_sk_data_ready:
->>> conn: ffff88b35cbb3000
->>> Dec 13 17:55:01 rhel73n1 kernel: Got LOGIN_FLAGS_READ_ACTIVE=1, conn:
->>> ffff88b35cbb3000 >>>>
->>>
->>> where initiator side timeout fires 15 seconds later and it disconnects
->>> the tcp connection, and we eventually break out of the recvmsg call:
->>>
->>> Dec 13 17:55:16 rhel73n1 kernel: Entering iscsi_target_sk_state_change
->>> Dec 13 17:55:16 rhel73n1 kernel: __iscsi_target_sk_check_close:
->>> TCP_CLOSE_WAIT|TCP_CLOSE,returning FALSE
->>>
->>> ....
->>>
->>> Dec 13 17:55:16 rhel73n1 kernel: rx_loop: 68, total_rx: 68, data: 68
->>> Dec 13 17:55:16 rhel73n1 kernel: iscsi_target_do_login_rx after
->>> rx_login_io, ffff88b35cbb3000, kworker/2:2:1829
->>>
->>
->> Ok, the 3rd third login request payload (65 + 3 padded to 68 bytes)
->> containing CHAP_N + CHAP_R keys remains blocked on sock_recvmsg(), until
->> TPG login_timeout subsequently fires after 15 seconds of inactivity to
->> terminate this login attempt.
->>
->>> Is the iscsi target doing something incorrect in its use of
->>> sk_data_ready and sock_recvmsg or is the tcp patch at fault?
->>
->> From the logs, sk_data_ready() -> iscsi_target_sk_data_ready() callbacks
->> appear firing as expected.
->>
->> iscsi-target login does iscsit_rx_do_data() -> rx_data() ->
->> sock_recvmsg(..., MSG_WAITALL) from a system_wq kworker process context
->> after iscsi_target_sk_data_ready() callback queues up
->> iscsi_conn->login_work for execution, and sock_recvmsg() uses a single
->> struct kvec iovec for struct msg_hdr.
->>
->> AFAICT, iscsi-target uses blocking kernel socket reads from process
->> context, similar to kernel_recvmsg(..., MSG_WAITALL) with DRBD.
->>
->> Florian + DaveM, any idea why the removal of prequeue support is having
->> an effect here..?
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe target-devel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I also have a hard time following iscsi code flow.
 > 
+> > Dec 13 17:55:01 rhel73n1 kernel: Starting login_timer for kworker/2:2/1829
+> > Dec 13 17:55:01 rhel73n1 kernel: rx_loop: 48, total_rx: 48, data: 48
+> > Dec 13 17:55:01 rhel73n1 kernel: Got Login Command, Flags 0x81, ITT: 0x00000000, CmdSN: 0x00000000, ExpStatSN: 0xf86dc69b, CID: 0, Length: 65
+> > Dec 13 17:55:01 rhel73n1 kernel: Entering iscsi_target_sk_data_ready: conn: ffff88b35cbb3000
 > 
+> Looks like things are fine up to this point.
+> 
+> > Dec 13 17:55:01 rhel73n1 kernel: Got LOGIN_FLAGS_READ_ACTIVE=1, conn: ffff88b35cbb3000 >>>>
+> 
+> This makes things return early from sk_data_ready callback.
+
+Correct.
+
+This is existing behavior for individual iscsi_conn login delayed_work
+contexts (conn->login_work) which have not yet returned from a previous
+sock_recvmsg(..., MSG_WAITALL) blocking call.
+
+This causes the next iscsi_target_sk_data_ready() callback to hit
+LOGIN_FLAGS_READ_ACTIVE=1, and return immediately without kicking
+conn->login_work to process iscsi_target_do_login_rx() ->
+sock_recvmsg(..., MSG_WAITALL).
+
+> > Dec 13 17:55:16 rhel73n1 kernel: Entering iscsi_target_sk_state_change
+> > Dec 13 17:55:16 rhel73n1 kernel: __iscsi_target_sk_check_close: TCP_CLOSE_WAIT|TCP_CLOSE,returning FALSE
+> > Dec 13 17:55:16 rhel73n1 kernel: __iscsi_target_sk_close_change: state: 1
+> > Dec 13 17:55:16 rhel73n1 kernel: Got LOGIN_FLAGS_READ_ACTIVE=1 sk_state_change conn: ffff88b35cbb3000
+> > Dec 13 17:55:16 rhel73n1 kernel: rx_loop: 68, total_rx: 68, data: 68
+> 
+> So it looks like all data is there, and probably has been there all the
+> past 15 seconds, but nothing noticed.
+> 
+> Why is LOGIN_FLAGS_READ_ACTIVE set?  Who sets this?  Who is supposed to clear that?
+> Why does it exist in first place?
+
+The bit is set in iscsi_target_sk_data_ready() when conn->login_work is
+not already blocked by sock_recvmsg(..., MSG_WAITALL).  Once it's set,
+conn->login_work is kicked to run iscsi_target_do_login_rx() ->
+sock_recvmsg(..., MSG_WAITALL) which blocks waiting for the next 48 byte
+login request PDU + payload.
+
+Once the active conn->login_work context in iscsi_target_do_login_rx()
+returns from sock_recvmsg(..., MSG_WAITALL) with full login request PDU
++ payload bytes, the bit is cleared.
+
+AFAICT, there was a wake_up removed by commit e7942d063 that results in
+multi iscsi login PDU authentication exchanges blocking on a incoming
+login request payload.
+
+So I don't know if this is a pre-existing bug hidden in iscsi-target by
+tcp prequeue login, or not...?
+
+It would indicate users providing their own ->sk_data_ready() callback
+must be responsible for waking up a kthread context blocked on
+sock_recvmsg(..., MSG_WAITALL), when a second ->sk_data_ready() is
+received before the first sock_recvmsg(..., MSG_WAITALL) completes.
+
+I don't know if this is a pre-existing bug in iscsi-target hidden by tcp
+prequeue logic, or not...?
+
+Any ideas..?
 
