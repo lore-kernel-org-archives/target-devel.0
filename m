@@ -1,119 +1,52 @@
-From: Potnuri Bharat Teja <bharat@chelsio.com>
-Date: Thu, 18 Jan 2018 17:53:47 +0000
+From: "Kalderon, Michal" <Michal.Kalderon@cavium.com>
+Date: Fri, 19 Jan 2018 19:33:22 +0000
 Subject: Re: SQ overflow seen running isert traffic with high block sizes
-Message-Id: <20180118175316.GA11338@chelsio.com>
+Message-Id: <CY1PR0701MB2012C8513D9048FC1CC7011088EF0@CY1PR0701MB2012.namprd07.prod.outlook.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <BN3PR07MB25784033E7FCD062FA0A7855F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
- <210f538f-8c98-f480-64fc-f2124ed6d01b@grimberg.me>
- <BN3PR07MB25786338EADC77A369A6D493F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
- <1499970579.7987.8.camel@haakon3.daterainc.com>
- <BN3PR07MB2578E6561CC669922A322245F8A00@BN3PR07MB2578.namprd07.prod.outlook.com>
- <20171006224025.GA23364@ssaleem-MOBL4.amr.corp.intel.com>
- <1515992195.24576.156.camel@haakon3.daterainc.com>
- <CY1PR0701MB2012E53C69D1CE3E16BA320B88EB0@CY1PR0701MB2012.namprd07.prod.outlook.com>
- <20180115152236.GA15484@ssaleem-MOBL4.amr.corp.intel.com>
- <1516269522.24576.274.camel@haakon3.daterainc.com>
+         <210f538f-8c98-f480-64fc-f2124ed6d01b@grimberg.me>
+         <BN3PR07MB25786338EADC77A369A6D493F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
+         <1499970579.7987.8.camel@haakon3.daterainc.com>
+         <BN3PR07MB2578E6561CC669922A322245F8A00@BN3PR07MB2578.namprd07.prod.outlook.com>
+         <20171006224025.GA23364@ssaleem-MOBL4.amr.corp.intel.com>
+         <1515992195.24576.156.camel@haakon3.daterainc.com>
+         <CY1PR0701MB2012E53C69D1CE3E16BA320B88EB0@CY1PR0701MB2012.namprd07.prod.outlook.com>
+         <20180115152236.GA15484@ssaleem-MOBL4.amr.corp.intel.com>,<1516269522.24576.274.camel@haakon3.daterainc.com>
 In-Reply-To: <1516269522.24576.274.camel@haakon3.daterainc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1257"
-Content-Transfer-Encoding: base64
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Shiraz Saleem <shiraz.saleem@intel.com>, "Kalderon, Michal" <Michal.Kalderon@cavium.com>, "Amrani, Ram" <Ram.Amrani@cavium.com>, Sagi Grimberg <sagi@grimberg.me>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Elior, Ariel" <Ariel.Elior@cavium.com>, target-devel <target-devel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Shiraz Saleem <shiraz.saleem@intel.com>
+Cc: "Amrani, Ram" <Ram.Amrani@cavium.com>, Sagi Grimberg <sagi@grimberg.me>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Elior, Ariel" <Ariel.Elior@cavium.com>, target-devel <target-devel@vger.kernel.org>, Potnuri Bharat Teja <bharat@chelsio.com>, "Radzi, Amit" <Amit.Radzi@cavium.com>, "Galon, Yoav" <Yoav.Galon@cavium.com>
 
-SGkgTmljaG9sYXMsIAp0aGFua3MgZm9yIHRoZSBzdWdnZXN0aW9ucy4gQ29tbWVudHMgYmVsb3cu
-CgpPbiBUaHVyc2RheSwgSmFudWFyeSAwMS8xOC8xOCwgMjAxOCBhdCAxNToyODo0MiArMDUzMCwg
-TmljaG9sYXMgQS4gQmVsbGluZ2VyIHdyb3RlOgo+IEhpIFNoaXJheiwgTWljaGFsICYgQ28sCj4g
-Cj4gVGhhbmtzIGZvciB0aGUgZmVlZGJhY2suICBDb21tZW50cyBiZWxvdy4KPiAKPiBPbiBNb24s
-IDIwMTgtMDEtMTUgYXQgMDk6MjIgLTA2MDAsIFNoaXJheiBTYWxlZW0gd3JvdGU6Cj4gPiBPbiBN
-b24sIEphbiAxNSwgMjAxOCBhdCAwMzoxMjozNkFNIC0wNzAwLCBLYWxkZXJvbiwgTWljaGFsIHdy
-b3RlOgo+ID4gPiA+IEZyb206IGxpbnV4LXJkbWEtb3duZXJAdmdlci5rZXJuZWwub3JnIFttYWls
-dG86bGludXgtcmRtYS0KPiA+ID4gPiBvd25lckB2Z2VyLmtlcm5lbC5vcmddIE9uIEJlaGFsZiBP
-ZiBOaWNob2xhcyBBLiBCZWxsaW5nZXIKPiA+ID4gPiBTZW50OiBNb25kYXksIEphbnVhcnkgMTUs
-IDIwMTggNjo1NyBBTQo+ID4gPiA+IFRvOiBTaGlyYXogU2FsZWVtIDxzaGlyYXouc2FsZWVtQGlu
-dGVsLmNvbT4KPiA+ID4gPiBDYzogQW1yYW5pLCBSYW0gPFJhbS5BbXJhbmlAY2F2aXVtLmNvbT47
-IFNhZ2kgR3JpbWJlcmcKPiA+ID4gPiA8c2FnaUBncmltYmVyZy5tZT47IGxpbnV4LXJkbWFAdmdl
-ci5rZXJuZWwub3JnOyBFbGlvciwgQXJpZWwKPiA+ID4gPiA8QXJpZWwuRWxpb3JAY2F2aXVtLmNv
-bT47IHRhcmdldC1kZXZlbCA8dGFyZ2V0LWRldmVsQHZnZXIua2VybmVsLm9yZz47Cj4gPiA+ID4g
-UG90bnVyaSBCaGFyYXQgVGVqYSA8YmhhcmF0QGNoZWxzaW8uY29tPgo+ID4gPiA+IFN1YmplY3Q6
-IFJlOiBTUSBvdmVyZmxvdyBzZWVuIHJ1bm5pbmcgaXNlcnQgdHJhZmZpYyB3aXRoIGhpZ2ggYmxv
-Y2sgc2l6ZXMKPiA+ID4gPiAKPiA+ID4gPiBIaSBTaGlyYXosIFJhbSwgQXJpZWwsICYgUG90bnVy
-aSwKPiA+ID4gPiAKPiA+ID4gPiBGb2xsb3dpbmcgdXAgb24gdGhpcyBvbGQgdGhyZWFkLCBhcyBp
-dCByZWxhdGVzIHRvIFBvdG51cmkncyByZWNlbnQgZml4IGZvciBhIGlzZXItCj4gPiA+ID4gdGFy
-Z2V0IHF1ZXVlLWZ1bGwgbWVtb3J5IGxlYWs6Cj4gPiA+ID4gCj4gPiA+ID4gaHR0cHM6Ly93d3cu
-c3Bpbmljcy5uZXQvbGlzdHMvdGFyZ2V0LWRldmVsL21zZzE2MjgyLmh0bWwKPiA+ID4gPiAKPiA+
-ID4gPiBKdXN0IGN1cmlvdXMgaG93IGZyZXF1ZW50IHRoaXMgaGFwcGVucyBpbiBwcmFjdGljZSB3
-aXRoIHN1c3RhaW5lZCBsYXJnZSBibG9jawo+ID4gPiA+IHdvcmtsb2FkcywgYXMgaXQgYXBwZWFy
-cyB0byBlZmZlY3QgYXQgbGVhc3QgdGhyZWUgZGlmZmVyZW50IGl3YXJwIFJOSUNTIChpNDBpdywK
-PiA+ID4gPiBxZWRyIGFuZCBpd19jeGdiNCkuLj8KPiA+ID4gPiAKPiA+ID4gPiBJcyB0aGVyZSBh
-bnl0aGluZyBlbHNlIGZyb20gYW4gaXNlci10YXJnZXQgY29uc3VtZXIgbGV2ZWwgdGhhdCBzaG91
-bGQgYmUKPiA+ID4gPiBjaGFuZ2VkIGZvciBpd2FycCB0byBhdm9pZCByZXBlYXRlZCBpYl9wb3N0
-X3NlbmQoKSBmYWlsdXJlcy4uPwo+ID4gPiA+IAo+ID4gPiBXb3VsZCBsaWtlIHRvIG1lbnRpb24s
-IHRoYXQgYWx0aG91Z2ggd2UgYXJlIGFuIGlXQVJQIFJOSUMgYXMgd2VsbCwgd2UndmUgaGl0IHRo
-aXMKPiA+ID4gSXNzdWUgd2hlbiBydW5uaW5nIFJvQ0UuIEl0J3Mgbm90IGlXQVJQIHJlbGF0ZWQu
-IAo+ID4gPiBUaGlzIGlzIGVhc2lseSByZXByb2R1Y2VkIHdpdGhpbiBzZWNvbmRzIHdpdGggSU8g
-c2l6ZSBvZiA1MTIxSwo+ID4gPiBVc2luZyA1IFRhcmdldHMgd2l0aCAyIFJhbSBEaXNrIGVhY2gg
-YW5kIDUgdGFyZ2V0cyB3aXRoIEZpbGVJTyBEaXNrcyBlYWNoLgo+ID4gPiAKPiA+ID4gSU8gQ29t
-bWFuZCB1c2VkOgo+ID4gPiBtYWltIC1iNTEyayAtVDMyIC10MiAtUTggLU0wIC1vIC11IC1uIC1t
-MTcgLWZ0YXJnZXRzLmRhdCAtZDEKPiA+ID4gCj4gPiA+IHRoYW5rcywKPiA+ID4gTWljaGFsCj4g
-PiAKPiA+IEl0cyBzZWVuIHdpdGggYmxvY2sgc2l6ZSA+PSAyTSBvbiBhIHNpbmdsZSB0YXJnZXQg
-MSBSQU0gZGlzayBjb25maWcuIEFuZCBzaW1pbGFyIHRvIE1pY2hhbHMgcmVwb3J0Owo+ID4gcmF0
-aGVyIHF1aWNrbHksIGluIGEgbWF0dGVyIG9mIHNlY29uZHMuCj4gPiAKPiA+IGZpbyAtLXJ3PXJl
-YWQgLS1icyA0OGsgLS1udW1qb2JzPTEgLS1pb2RlcHRoEjggLS1ydW50aW1lMCAtLXNpemUgZyAt
-LWxvb3BzPTEgLS1pb2VuZ2luZT1saWJhaW8gCj4gPiAtLWRpcmVjdD0xIC0taW52YWxpZGF0ZT0x
-IC0tZnN5bmNfb25fY2xvc2U9MSAtLW5vcmFuZG9tbWFwIC0tZXhpdGFsbCAtLWZpbGVuYW1lPS9k
-ZXYvc2RiIC0tbmFtZT1zZGIgCj4gPiAKPiAKPiBBIGNvdXBsZSBvZiB0aG91Z2h0cy4KPiAKPiBG
-aXJzdCwgd291bGQgaXQgYmUgaGVscGZ1bCB0byBsaW1pdCBtYXhpbXVtIHBheWxvYWQgc2l6ZSBw
-ZXIgSS9PIGZvcgo+IGNvbnN1bWVycyBiYXNlZCBvbiBudW1iZXIgb2YgaXNlci10YXJnZXQgc3Eg
-aHcgc2dlcy4uPwp5ZXMsIEkgdGhpbmsgSFcgbnVtIHNnZSBuZWVkcyB0byBiZSBwcm9wYWdhdGVk
-IHRvIGlzY3NpIHRhcmdldC4KPiAKPiBUaGF0IGlzLCBpZiByZG1hX3J3X2N0eF9wb3N0KCkgLT4g
-aWJfcG9zdF9zZW5kKCkgZmFpbHVyZXMgYXJlIHJlbGF0ZWQgdG8KPiBtYXhpbXVtIHBheWxvYWQg
-c2l6ZSBwZXIgSS9PIGJlaW5nIHRvbyBsYXJnZSB0aGVyZSBpcyBhbiBleGlzdGluZwoKWWVzIHRo
-ZXkgYXJlIElPIHNpemUgc3BlY2lmaWMsIEkgb2JzZXJ2ZWQgU1Egb3ZlcmZsb3cgd2l0aCBmaW8g
-Zm9yIElPIHNpemVzIGFib3ZlCjI1NmsgYW5kIGZvciBSRUFEIHRlc3RzIG9ubHkgd2l0aCBjaGVs
-c2lvKGl3X2N4Z2I0KSBhZGFwdGVycy4KPiB0YXJnZXRfY29yZV9mYWJyaWNfb3BzIG1lY2hhbmlz
-bSBmb3IgbGltaXRpbmcgdXNpbmcgU0NTSSByZXNpZHVhbHMsCj4gb3JpZ2luYWxseSB1dGlsaXpl
-ZCBieSBxbGEyeHh4IGhlcmU6Cj4gCj4gdGFyZ2V0L3FsYTJ4eHg6IEhvbm9yIG1heF9kYXRhX3Nn
-X25lbnRzIEkvTyB0cmFuc2ZlciBsaW1pdAo+IGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3Nj
-bS9saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LmdpdC9jb21taXQvP2lkjzliNTY1NDgy
-YzUzNzgyMTU4ODQ0NGUwOWZmNzMyYzdkNjVlZDZlCj4gCj4gTm90ZSB0aGlzIHBhdGNoIGFsc28g
-d2lsbCByZXR1cm4gYSBzbWFsbGVyIEJsb2NrIExpbWl0cyBWUEQgKDB4ODYpCj4gTUFYSU1VTSBU
-UkFOU0ZFUiBMRU5HVEggYmFzZWQgb24gbWF4X2RhdGFfc2dfbmVudHMgKiBQQUdFX1NJWkUsIHdo
-aWNoCj4gbWVhbnMgZm9yIG1vZGVybiBTQ1NJIGluaXRpYXRvcnMgaG9ub3JpbmcgTUFYSU1VTSBU
-UkFOU0ZFUiBMRU5HVEggd2lsbAo+IGF1dG9tYXRpY2FsbHkgbGltaXQgbWF4aW11bSBvdXRnb2lu
-ZyBwYXlsb2FkIHRyYW5zZmVyIGxlbmd0aCwgYW5kIGF2b2lkCj4gU0NTSSByZXNpZHVhbCBsb2dp
-Yy4KPiAKPiBBcy1pcywgaXNlci10YXJnZXQgZG9lc24ndCBhIHByb3BhZ2F0ZSBtYXhfZGF0YV9z
-Z19lbnRzIGxpbWl0IGludG8KPiBpc2NzaS10YXJnZXQsIGJ1dCB5b3UgY2FuIHRyeSB0ZXN0aW5n
-IHdpdGggYSBzbWFsbGVyIHZhbHVlIHRvIHNlZSBpZgo+IGl0J3MgdXNlZnVsLiAgRWc6Cj4gCj4g
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3RhcmdldF9jb25maWdmcy5j
-IGIvZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2NvbmZpZ2YKPiBpbmRleCAwZWJj
-NDgxLi5kOGE0Y2M1IDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3Rh
-cmdldF9jb25maWdmcy5jCj4gKysrIGIvZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0
-X2NvbmZpZ2ZzLmMKPiBAQCAtMTU1Myw2ICsxNTUzLDcgQEAgc3RhdGljIHZvaWQgbGlvX3JlbGVh
-c2VfY21kKHN0cnVjdCBzZV9jbWQgKnNlX2NtZCkKPiAgICAgICAgIC5tb2R1bGUgICAgICAgICAg
-ICAgICAgICAgICAgICAgPSBUSElTX01PRFVMRSwKPiAgICAgICAgIC5uYW1lICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgPSAiaXNjc2kiLAo+ICAgICAgICAgLm5vZGVfYWNsX3NpemUgICAgICAg
-ICAgICAgICAgICA9IHNpemVvZihzdHJ1Y3QgaXNjc2lfbm9kZV9hY2wpLAo+ICsgICAgICAgLm1h
-eF9kYXRhX3NnX25lbnRzICAgICAgICAgICAgICA9IDMyLCAvKiAzMiAqIFBBR0VfU0laRSA9IE1B
-WElNVU0gVFJBTlNGRVIgTEVOR1RIICovCj4gICAgICAgICAuZ2V0X2ZhYnJpY19uYW1lICAgICAg
-ICAgICAgICAgID0gaXNjc2lfZ2V0X2ZhYnJpY19uYW1lLAo+ICAgICAgICAgLnRwZ19nZXRfd3du
-ICAgICAgICAgICAgICAgICAgICA9IGxpb190cGdfZ2V0X2VuZHBvaW50X3d3biwKPiAgICAgICAg
-IC50cGdfZ2V0X3RhZyAgICAgICAgICAgICAgICAgICAgPSBsaW9fdHBnX2dldF90YWcsCj4gCldp
-dGggYWJvdmUgY2hhbmdlLCBTUSBvdmVyZmxvdyBpc24ndCBvYnNlcnZlZC4gSSBzdGFydGVkIG9m
-IHdpdGggbWF4X2RhdGFfc2dfbmVudHMgPSAxNi4KPiBTZWNvbmQsIGlmIHRoZSBmYWlsdXJlcyBh
-cmUgbm90IFNDU0kgdHJhbnNmZXIgbGVuZ3RoIHNwZWNpZmljLCBhbm90aGVyCj4gb3B0aW9uIHdv
-dWxkIGJlIHRvIGxpbWl0IHRoZSB0b3RhbCBjb21tYW5kIHNlcXVlbmNlIG51bWJlciBkZXB0aCAo
-Q21kU04pCj4gcGVyIHNlc3Npb24uCj4gCj4gVGhpcyBpcyBjb250cm9sbGVkIGF0IHJ1bnRpbWUg
-YnkgZGVmYXVsdF9jbWRzbl9kZXB0aCBUUEcgYXR0cmlidXRlOgo+IAo+IC9zeXMva2VybmVsL2Nv
-bmZpZy90YXJnZXQvaXNjc2kvJFRBUkdFVF9JUU4vJFRQRy9hdHRyaWIvZGVmYXVsdF9jbWRzbl9k
-ZXB0aAo+IAo+IGFuZCBvbiBwZXIgaW5pdGlhdG9yIGNvbnRleHQgd2l0aCBjbWRzbl9kZXB0aCBO
-b2RlQUNMIGF0dHJpYnV0ZToKPiAKPiAvc3lzL2tlcm5lbC9jb25maWcvdGFyZ2V0L2lzY3NpLyRU
-QVJHRVRfSVFOLyRUUEcvYWNscy8kQUNMX0lRTi9jbWRzbl9kZXB0aAo+IAo+IE5vdGUgdGhlc2Ug
-ZGVmYXVsdCB0byA2NCwgYW5kIGNhbiBiZSBjaGFuZ2VkIGF0IGJ1aWxkIHRpbWUgdmlhCj4gaW5j
-bHVkZS90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2NvcmUuaDpUQV9ERUZBVUxUX0NNRFNOX0RF
-UFRILgo+IAo+IFRoYXQgc2FpZCwgU2FnaSwgYW55IGZ1cnRoZXIgY29tbWVudHMgYXMgd2hhdCBl
-bHNlIGlzZXItdGFyZ2V0IHNob3VsZCBiZQo+IGRvaW5nIHRvIGF2b2lkIHJlcGVhdGVkIHF1ZXVl
-LWZ1bGxzIHdpdGggbGltaXRlZCBodyBzZ2VzLi4/Cj4gCi0tClRvIHVuc3Vic2NyaWJlIGZyb20g
-dGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSB0YXJnZXQtZGV2ZWwiIGluCnRo
-ZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFq
-b3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRt
-bA==
+________________________________________
+From: Nicholas A. Bellinger <nab@linux-iscsi.org>
+Sent: Thursday, January 18, 2018 11:58 AM
+
+> Hi Shiraz, Michal & Co,
+Hi Nicholas, 
+
+> Thanks for the feedback.  Comments below.
+
+> A couple of thoughts.
+
+> First, would it be helpful to limit maximum payload size per I/O for
+> consumers based on number of iser-target sq hw sges..?
+
+I don't think you need to limit the maximum payload, but instead 
+initialize the max_wr to be based on the number of supported SGEs
+Instead of what is there today:
+#define ISERT_QP_MAX_REQ_DTOS   (ISCSI_DEF_XMIT_CMDS_MAX +    \
+                                ISERT_MAX_TX_MISC_PDUS  + \
+                                ISERT_MAX_RX_MISC_PDUS)
+Add the maximum number of WQEs per command, 
+The calculation of number of WQEs per command needs to be something like
+"MAX_TRANSFER_SIZE/(numSges*PAGE_SIZE)".
+
+For some devices like ours, breaking the IO into multiple WRs according to supported
+number of SGEs doesn't necessarily means performance penalty.
+
+thanks,
+Michal
+
+
