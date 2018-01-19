@@ -1,68 +1,57 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 30 Jan 2018 02:38:34 +0000
-Subject: Re: [bug report] cxgbit: add files for cxgbit.ko
-Message-Id: <20180130023834.y446fozsz4yextuz@mwanda>
+From: Florian Westphal <fw@strlen.de>
+Date: Fri, 19 Jan 2018 13:36:29 +0000
+Subject: [PATCH target-pending] iscsi-target: make sure to wake up sleeping login worker
+Message-Id: <20180119133629.14812-1-fw@strlen.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180123140550.GA31371@mwanda>
-In-Reply-To: <20180123140550.GA31371@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
+Cc: mchristi@redhat.com, nab@linux-iscsi.org, netdev@vger.kernel.org, linux-scsi@vger.kernel.org, Florian Westphal <fw@strlen.de>
 
-On Mon, Jan 29, 2018 at 08:19:24PM +0530, Varun Prakash wrote:
-> On Tue, Jan 23, 2018 at 05:05:50PM +0300, Dan Carpenter wrote:
-> > Hello Varun Prakash,
-> > 
-> > The patch 9730ffcb8957: "cxgbit: add files for cxgbit.ko" from Apr
-> > 20, 2016, leads to the following static checker warning:
-> > 
-> > 	drivers/target/iscsi/cxgbit/cxgbit_target.c:1443 cxgbit_lro_skb_merge()
-> > 	error: buffer overflow 'ssi->frags' 17 <= 255
-> > 
-> > drivers/target/iscsi/cxgbit/cxgbit_target.c
-> >   1425  static void
-> >   1426  cxgbit_lro_skb_merge(struct cxgbit_sock *csk, struct sk_buff *skb, u8 pdu_idx)
-> >   1427  {
-> >   1428          struct sk_buff *hskb = csk->lro_hskb;
-> >   1429          struct cxgbit_lro_pdu_cb *hpdu_cb = cxgbit_skb_lro_pdu_cb(hskb, 0);
-> >   1430          struct cxgbit_lro_pdu_cb *pdu_cb = cxgbit_skb_lro_pdu_cb(skb, pdu_idx);
-> >                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > Smatch marks pdu_cb as tainted because it comes from skb->data
-> > 
-> >   1431          struct skb_shared_info *hssi = skb_shinfo(hskb);
-> >   1432          struct skb_shared_info *ssi = skb_shinfo(skb);
-> >   1433          unsigned int len = 0;
-> >   1434  
-> >   1435          if (pdu_cb->flags & PDUCBF_RX_HDR) {
-> >   1436                  u8 hfrag_idx = hssi->nr_frags;
-> >   1437  
-> >   1438                  hpdu_cb->flags |= pdu_cb->flags;
-> >   1439                  hpdu_cb->seq = pdu_cb->seq;
-> >   1440                  hpdu_cb->hdr = pdu_cb->hdr;
-> >   1441                  hpdu_cb->hlen = pdu_cb->hlen;
-> >   1442  
-> >   1443                  memcpy(&hssi->frags[hfrag_idx], &ssi->frags[pdu_cb->hfrag_idx],
-> >                                                                     ^^^^^^^^^^^^^^^^^
-> > how do we know this is within bounds?
-> 
-> pdu_cb->hfrag_idx is assigned value in the following function
-> 
-> cxgbit_lro_add_packet_gl()
-> 	pdu_cb->hfrag_idx = skb_shinfo(skb)->nr_frags;
-> 
-> There is one more check for nr_frags in 
-> cxgbit_lro_receive()
-> 
-> 	if ((gl && (((skb_shinfo(skb)->nr_frags + gl->nfrags) >
-> 	    MAX_SKB_FRAGS) || (lro_cb->pdu_totallen >= LRO_FLUSH_LEN_MAX))) ||
-> 	    (lro_cb->pdu_idx >= MAX_SKB_FRAGS)) {
-> 		cxgbit_lro_flush(lro_mgr, skb);
-> 		goto start_lro;
-> 	}
+Mike Christie reports:
+  Starting in 4.14 iscsi logins will fail around 50% of the time.
 
-Ah.  Thanks.  That's tricky for static analysis to follow....
+Problem appears to be that iscsi_target_sk_data_ready() callback may
+return without doing anything in case it finds the login work queue
+is still blocked in sock_recvmsg().
 
-regards,
-dan carpenter
+Nicholas Bellinger says:
+  It would indicate users providing their own ->sk_data_ready() callback
+  must be responsible for waking up a kthread context blocked on
+  sock_recvmsg(..., MSG_WAITALL), when a second ->sk_data_ready() is
+  received before the first sock_recvmsg(..., MSG_WAITALL) completes.
+
+So, do this and invoke the original data_ready() callback -- in
+case of tcp sockets this takes care of waking the thread.
+
+Disclaimer: I do not understand why this problem did not show up before
+tcp prequeue removal.
+
+Reported-by: Mike Christie <mchristi@redhat.com>
+Bisected-by: Mike Christie <mchristi@redhat.com>
+Tested-by: Mike Christie <mchristi@redhat.com>
+Diagnosed-by: Nicholas Bellinger <nab@linux-iscsi.org>
+Fixes: e7942d0633c4 ("tcp: remove prequeue support")
+Signed-off-by: Florian Westphal <fw@strlen.de>
+---
+ drivers/target/iscsi/iscsi_target_nego.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index b686e2ce9c0e..3723f8f419aa 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -432,6 +432,9 @@ static void iscsi_target_sk_data_ready(struct sock *sk)
+ 	if (test_and_set_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags)) {
+ 		write_unlock_bh(&sk->sk_callback_lock);
+ 		pr_debug("Got LOGIN_FLAGS_READ_ACTIVE=1, conn: %p >>>>\n", conn);
++		if (WARN_ON(iscsi_target_sk_data_ready = conn->orig_data_ready))
++			return;
++		conn->orig_data_ready(sk);
+ 		return;
+ 	}
+ 
+-- 
+2.13.6
 
