@@ -1,123 +1,146 @@
-From: Potnuri Bharat Teja <bharat@chelsio.com>
-Date: Wed, 24 Jan 2018 12:33:41 +0000
-Subject: Re: SQ overflow seen running isert traffic with high block sizes
-Message-Id: <20180124122140.GA23744@chelsio.com>
+From: "Steve Wise" <swise@opengridcomputing.com>
+Date: Wed, 24 Jan 2018 16:03:46 +0000
+Subject: RE: SQ overflow seen running isert traffic with high block sizes
+Message-Id: <032501d3952c$ea294830$be7bd890$@opengridcomputing.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <BN3PR07MB25786338EADC77A369A6D493F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
- <1499970579.7987.8.camel@haakon3.daterainc.com>
- <BN3PR07MB2578E6561CC669922A322245F8A00@BN3PR07MB2578.namprd07.prod.outlook.com>
- <20171006224025.GA23364@ssaleem-MOBL4.amr.corp.intel.com>
- <1515992195.24576.156.camel@haakon3.daterainc.com>
- <CY1PR0701MB2012E53C69D1CE3E16BA320B88EB0@CY1PR0701MB2012.namprd07.prod.outlook.com>
- <20180115152236.GA15484@ssaleem-MOBL4.amr.corp.intel.com>
- <1516269522.24576.274.camel@haakon3.daterainc.com>
- <20180118175316.GA11338@chelsio.com>
- <1516778717.24576.319.camel@haakon3.daterainc.com>
-In-Reply-To: <1516778717.24576.319.camel@haakon3.daterainc.com>
+References: <BN3PR07MB25784033E7FCD062FA0A7855F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>         <210f538f-8c98-f480-64fc-f2124ed6d01b@grimberg.me>         <BN3PR07MB25786338EADC77A369A6D493F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>         <1499970579.7987.8.camel@haakon3.daterainc.com>         <BN3PR07MB2578E6561CC669922A322245F8A00@BN3PR07MB2578.namprd07.prod.outlook.com>         <20171006224025.GA23364@ssaleem-MOBL4.amr.corp.intel.com>         <1515992195.24576.156.camel@haakon3.daterainc.com>         <CY1PR0701MB2012E53C69D1CE3E16BA320B88EB0@CY1PR0701MB2012.namprd07.prod.outlook.com>         <20180115152236.GA15484@ssaleem-MOBL4.amr.corp.intel.com>         <1516269522.24576.274.camel@haakon3.daterainc.com>         <20180118175316.GA11338@chelsio.com> <1516778717.24576.319.came
+ l@haakon3.daterainc.com>
+In-Reply-To: <1516778717.24576.319.camel-XoQW25Eq2zs8TOCF0fvnoXxStJ4P+DSV@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1257"
-Content-Transfer-Encoding: base64
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Shiraz Saleem <shiraz.saleem@intel.com>, "Kalderon, Michal" <Michal.Kalderon@cavium.com>, "Amrani, Ram" <Ram.Amrani@cavium.com>, Sagi Grimberg <sagi@grimberg.me>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Elior, Ariel" <Ariel.Elior@cavium.com>, target-devel <target-devel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "'Nicholas A. Bellinger'" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>, 'Potnuri Bharat Teja' <bharat-ut6Up61K2wZBDgjK7y7TUQ@public.gmane.org>
+Cc: 'Shiraz Saleem' <shiraz.saleem-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "'Kalderon, Michal'" <Michal.Kalderon-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, "'Amrani, Ram'" <Ram.Amrani-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, 'Sagi Grimberg' <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "'Elior, Ariel'" <Ariel.Elior-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, 'target-devel' <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-T24gV2VkbmVzZGF5LCBKYW51YXJ5IDAxLzI0LzE4LCAyMDE4IGF0IDEyOjU1OjE3ICswNTMwLCBO
-aWNob2xhcyBBLiBCZWxsaW5nZXIgd3JvdGU6Cj4gSGkgUG90bnVyaSAmIENvLAo+IAo+IE9uIFRo
-dSwgMjAxOC0wMS0xOCBhdCAyMzoyMyArMDUzMCwgUG90bnVyaSBCaGFyYXQgVGVqYSB3cm90ZToK
-PiA+IEhpIE5pY2hvbGFzLCAKPiA+IHRoYW5rcyBmb3IgdGhlIHN1Z2dlc3Rpb25zLiBDb21tZW50
-cyBiZWxvdy4KPiA+IAo+ID4gT24gVGh1cnNkYXksIEphbnVhcnkgMDEvMTgvMTgsIDIwMTggYXQg
-MTU6Mjg6NDIgKzA1MzAsIE5pY2hvbGFzIEEuIEJlbGxpbmdlciB3cm90ZToKPiA+ID4gSGkgU2hp
-cmF6LCBNaWNoYWwgJiBDbywKPiA+ID4gCj4gPiA+IFRoYW5rcyBmb3IgdGhlIGZlZWRiYWNrLiAg
-Q29tbWVudHMgYmVsb3cuCj4gPiA+IAo+ID4gPiBPbiBNb24sIDIwMTgtMDEtMTUgYXQgMDk6MjIg
-LTA2MDAsIFNoaXJheiBTYWxlZW0gd3JvdGU6Cj4gPiA+ID4gT24gTW9uLCBKYW4gMTUsIDIwMTgg
-YXQgMDM6MTI6MzZBTSAtMDcwMCwgS2FsZGVyb24sIE1pY2hhbCB3cm90ZToKPiA+ID4gPiA+ID4g
-RnJvbTogbGludXgtcmRtYS1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1yZG1h
-LQo+ID4gPiA+ID4gPiBvd25lckB2Z2VyLmtlcm5lbC5vcmddIE9uIEJlaGFsZiBPZiBOaWNob2xh
-cyBBLiBCZWxsaW5nZXIKPiA+ID4gPiA+ID4gU2VudDogTW9uZGF5LCBKYW51YXJ5IDE1LCAyMDE4
-IDY6NTcgQU0KPiA+ID4gPiA+ID4gVG86IFNoaXJheiBTYWxlZW0gPHNoaXJhei5zYWxlZW1AaW50
-ZWwuY29tPgo+ID4gPiA+ID4gPiBDYzogQW1yYW5pLCBSYW0gPFJhbS5BbXJhbmlAY2F2aXVtLmNv
-bT47IFNhZ2kgR3JpbWJlcmcKPiA+ID4gPiA+ID4gPHNhZ2lAZ3JpbWJlcmcubWU+OyBsaW51eC1y
-ZG1hQHZnZXIua2VybmVsLm9yZzsgRWxpb3IsIEFyaWVsCj4gPiA+ID4gPiA+IDxBcmllbC5FbGlv
-ckBjYXZpdW0uY29tPjsgdGFyZ2V0LWRldmVsIDx0YXJnZXQtZGV2ZWxAdmdlci5rZXJuZWwub3Jn
-PjsKPiA+ID4gPiA+ID4gUG90bnVyaSBCaGFyYXQgVGVqYSA8YmhhcmF0QGNoZWxzaW8uY29tPgo+
-ID4gPiA+ID4gPiBTdWJqZWN0OiBSZTogU1Egb3ZlcmZsb3cgc2VlbiBydW5uaW5nIGlzZXJ0IHRy
-YWZmaWMgd2l0aCBoaWdoIGJsb2NrIHNpemVzCj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiBIaSBT
-aGlyYXosIFJhbSwgQXJpZWwsICYgUG90bnVyaSwKPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IEZv
-bGxvd2luZyB1cCBvbiB0aGlzIG9sZCB0aHJlYWQsIGFzIGl0IHJlbGF0ZXMgdG8gUG90bnVyaSdz
-IHJlY2VudCBmaXggZm9yIGEgaXNlci0KPiA+ID4gPiA+ID4gdGFyZ2V0IHF1ZXVlLWZ1bGwgbWVt
-b3J5IGxlYWs6Cj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiBodHRwczovL3d3dy5zcGluaWNzLm5l
-dC9saXN0cy90YXJnZXQtZGV2ZWwvbXNnMTYyODIuaHRtbAo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
-ID4gSnVzdCBjdXJpb3VzIGhvdyBmcmVxdWVudCB0aGlzIGhhcHBlbnMgaW4gcHJhY3RpY2Ugd2l0
-aCBzdXN0YWluZWQgbGFyZ2UgYmxvY2sKPiA+ID4gPiA+ID4gd29ya2xvYWRzLCBhcyBpdCBhcHBl
-YXJzIHRvIGVmZmVjdCBhdCBsZWFzdCB0aHJlZSBkaWZmZXJlbnQgaXdhcnAgUk5JQ1MgKGk0MGl3
-LAo+ID4gPiA+ID4gPiBxZWRyIGFuZCBpd19jeGdiNCkuLj8KPiA+ID4gPiA+ID4gCj4gPiA+ID4g
-PiA+IElzIHRoZXJlIGFueXRoaW5nIGVsc2UgZnJvbSBhbiBpc2VyLXRhcmdldCBjb25zdW1lciBs
-ZXZlbCB0aGF0IHNob3VsZCBiZQo+ID4gPiA+ID4gPiBjaGFuZ2VkIGZvciBpd2FycCB0byBhdm9p
-ZCByZXBlYXRlZCBpYl9wb3N0X3NlbmQoKSBmYWlsdXJlcy4uPwo+ID4gPiA+ID4gPiAKPiA+ID4g
-PiA+IFdvdWxkIGxpa2UgdG8gbWVudGlvbiwgdGhhdCBhbHRob3VnaCB3ZSBhcmUgYW4gaVdBUlAg
-Uk5JQyBhcyB3ZWxsLCB3ZSd2ZSBoaXQgdGhpcwo+ID4gPiA+ID4gSXNzdWUgd2hlbiBydW5uaW5n
-IFJvQ0UuIEl0J3Mgbm90IGlXQVJQIHJlbGF0ZWQuIAo+ID4gPiA+ID4gVGhpcyBpcyBlYXNpbHkg
-cmVwcm9kdWNlZCB3aXRoaW4gc2Vjb25kcyB3aXRoIElPIHNpemUgb2YgNTEyMUsKPiA+ID4gPiA+
-IFVzaW5nIDUgVGFyZ2V0cyB3aXRoIDIgUmFtIERpc2sgZWFjaCBhbmQgNSB0YXJnZXRzIHdpdGgg
-RmlsZUlPIERpc2tzIGVhY2guCj4gPiA+ID4gPiAKPiA+ID4gPiA+IElPIENvbW1hbmQgdXNlZDoK
-PiA+ID4gPiA+IG1haW0gLWI1MTJrIC1UMzIgLXQyIC1ROCAtTTAgLW8gLXUgLW4gLW0xNyAtZnRh
-cmdldHMuZGF0IC1kMQo+ID4gPiA+ID4gCj4gPiA+ID4gPiB0aGFua3MsCj4gPiA+ID4gPiBNaWNo
-YWwKPiA+ID4gPiAKPiA+ID4gPiBJdHMgc2VlbiB3aXRoIGJsb2NrIHNpemUgPj0gMk0gb24gYSBz
-aW5nbGUgdGFyZ2V0IDEgUkFNIGRpc2sgY29uZmlnLiBBbmQgc2ltaWxhciB0byBNaWNoYWxzIHJl
-cG9ydDsKPiA+ID4gPiByYXRoZXIgcXVpY2tseSwgaW4gYSBtYXR0ZXIgb2Ygc2Vjb25kcy4KPiA+
-ID4gPiAKPiA+ID4gPiBmaW8gLS1ydz1yZWFkIC0tYnMgNDhrIC0tbnVtam9icz0xIC0taW9kZXB0
-aBI4IC0tcnVudGltZTAgLS1zaXplIGcgLS1sb29wcz0xIC0taW9lbmdpbmU9bGliYWlvIAo+ID4g
-PiA+IC0tZGlyZWN0PTEgLS1pbnZhbGlkYXRlPTEgLS1mc3luY19vbl9jbG9zZT0xIC0tbm9yYW5k
-b21tYXAgLS1leGl0YWxsIC0tZmlsZW5hbWU9L2Rldi9zZGIgLS1uYW1lPXNkYiAKPiA+ID4gPiAK
-PiA+ID4gCj4gPiA+IEEgY291cGxlIG9mIHRob3VnaHRzLgo+ID4gPiAKPiA+ID4gRmlyc3QsIHdv
-dWxkIGl0IGJlIGhlbHBmdWwgdG8gbGltaXQgbWF4aW11bSBwYXlsb2FkIHNpemUgcGVyIEkvTyBm
-b3IKPiA+ID4gY29uc3VtZXJzIGJhc2VkIG9uIG51bWJlciBvZiBpc2VyLXRhcmdldCBzcSBodyBz
-Z2VzLi4/Cj4gPiB5ZXMsIEkgdGhpbmsgSFcgbnVtIHNnZSBuZWVkcyB0byBiZSBwcm9wYWdhdGVk
-IHRvIGlzY3NpIHRhcmdldC4KPiA+ID4gCj4gPiA+IFRoYXQgaXMsIGlmIHJkbWFfcndfY3R4X3Bv
-c3QoKSAtPiBpYl9wb3N0X3NlbmQoKSBmYWlsdXJlcyBhcmUgcmVsYXRlZCB0bwo+ID4gPiBtYXhp
-bXVtIHBheWxvYWQgc2l6ZSBwZXIgSS9PIGJlaW5nIHRvbyBsYXJnZSB0aGVyZSBpcyBhbiBleGlz
-dGluZwo+ID4gCj4gPiBZZXMgdGhleSBhcmUgSU8gc2l6ZSBzcGVjaWZpYywgSSBvYnNlcnZlZCBT
-USBvdmVyZmxvdyB3aXRoIGZpbyBmb3IgSU8gc2l6ZXMgYWJvdmUKPiA+IDI1NmsgYW5kIGZvciBS
-RUFEIHRlc3RzIG9ubHkgd2l0aCBjaGVsc2lvKGl3X2N4Z2I0KSBhZGFwdGVycy4KPiAKPiBUaGFu
-a3MgZm9yIGNvbmZpcm1pbmcuCj4gCj4gPiA+IHRhcmdldF9jb3JlX2ZhYnJpY19vcHMgbWVjaGFu
-aXNtIGZvciBsaW1pdGluZyB1c2luZyBTQ1NJIHJlc2lkdWFscywKPiA+ID4gb3JpZ2luYWxseSB1
-dGlsaXplZCBieSBxbGEyeHh4IGhlcmU6Cj4gPiA+IAo+ID4gPiB0YXJnZXQvcWxhMnh4eDogSG9u
-b3IgbWF4X2RhdGFfc2dfbmVudHMgSS9PIHRyYW5zZmVyIGxpbWl0Cj4gPiA+IGh0dHBzOi8vZ2l0
-Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LmdpdC9j
-b21taXQvP2lkjzliNTY1NDgyYzUzNzgyMTU4ODQ0NGUwOWZmNzMyYzdkNjVlZDZlCj4gPiA+IAo+
-ID4gPiBOb3RlIHRoaXMgcGF0Y2ggYWxzbyB3aWxsIHJldHVybiBhIHNtYWxsZXIgQmxvY2sgTGlt
-aXRzIFZQRCAoMHg4NikKPiA+ID4gTUFYSU1VTSBUUkFOU0ZFUiBMRU5HVEggYmFzZWQgb24gbWF4
-X2RhdGFfc2dfbmVudHMgKiBQQUdFX1NJWkUsIHdoaWNoCj4gPiA+IG1lYW5zIGZvciBtb2Rlcm4g
-U0NTSSBpbml0aWF0b3JzIGhvbm9yaW5nIE1BWElNVU0gVFJBTlNGRVIgTEVOR1RIIHdpbGwKPiA+
-ID4gYXV0b21hdGljYWxseSBsaW1pdCBtYXhpbXVtIG91dGdvaW5nIHBheWxvYWQgdHJhbnNmZXIg
-bGVuZ3RoLCBhbmQgYXZvaWQKPiA+ID4gU0NTSSByZXNpZHVhbCBsb2dpYy4KPiA+ID4gCj4gPiA+
-IEFzLWlzLCBpc2VyLXRhcmdldCBkb2Vzbid0IGEgcHJvcGFnYXRlIG1heF9kYXRhX3NnX2VudHMg
-bGltaXQgaW50bwo+ID4gPiBpc2NzaS10YXJnZXQsIGJ1dCB5b3UgY2FuIHRyeSB0ZXN0aW5nIHdp
-dGggYSBzbWFsbGVyIHZhbHVlIHRvIHNlZSBpZgo+ID4gPiBpdCdzIHVzZWZ1bC4gIEVnOgo+ID4g
-PiAKPiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3RhcmdldF9j
-b25maWdmcy5jIGIvZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2NvbmZpZ2YKPiA+
-ID4gaW5kZXggMGViYzQ4MS4uZDhhNGNjNSAxMDA2NDQKPiA+ID4gLS0tIGEvZHJpdmVycy90YXJn
-ZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2NvbmZpZ2ZzLmMKPiA+ID4gKysrIGIvZHJpdmVycy90YXJn
-ZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2NvbmZpZ2ZzLmMKPiA+ID4gQEAgLTE1NTMsNiArMTU1Myw3
-IEBAIHN0YXRpYyB2b2lkIGxpb19yZWxlYXNlX2NtZChzdHJ1Y3Qgc2VfY21kICpzZV9jbWQpCj4g
-PiA+ICAgICAgICAgLm1vZHVsZSAgICAgICAgICAgICAgICAgICAgICAgICA9IFRISVNfTU9EVUxF
-LAo+ID4gPiAgICAgICAgIC5uYW1lICAgICAgICAgICAgICAgICAgICAgICAgICAgPSAiaXNjc2ki
-LAo+ID4gPiAgICAgICAgIC5ub2RlX2FjbF9zaXplICAgICAgICAgICAgICAgICAgPSBzaXplb2Yo
-c3RydWN0IGlzY3NpX25vZGVfYWNsKSwKPiA+ID4gKyAgICAgICAubWF4X2RhdGFfc2dfbmVudHMg
-ICAgICAgICAgICAgID0gMzIsIC8qIDMyICogUEFHRV9TSVpFID0gTUFYSU1VTSBUUkFOU0ZFUiBM
-RU5HVEggKi8KPiA+ID4gICAgICAgICAuZ2V0X2ZhYnJpY19uYW1lICAgICAgICAgICAgICAgID0g
-aXNjc2lfZ2V0X2ZhYnJpY19uYW1lLAo+ID4gPiAgICAgICAgIC50cGdfZ2V0X3d3biAgICAgICAg
-ICAgICAgICAgICAgPSBsaW9fdHBnX2dldF9lbmRwb2ludF93d24sCj4gPiA+ICAgICAgICAgLnRw
-Z19nZXRfdGFnICAgICAgICAgICAgICAgICAgICA9IGxpb190cGdfZ2V0X3RhZywKPiA+ID4gCj4g
-PiBXaXRoIGFib3ZlIGNoYW5nZSwgU1Egb3ZlcmZsb3cgaXNuJ3Qgb2JzZXJ2ZWQuIEkgc3RhcnRl
-ZCBvZiB3aXRoIG1heF9kYXRhX3NnX25lbnRzID0gMTYuCj4gCj4gT0ssIHNvIG1heF9kYXRhX3Nn
-X25lbnRzMiAoTUFYSU1VTSBUUkFOU0ZFUiBTSVpFEjhLIHdpdGggNGsgcGFnZXMpCj4gYXZvaWRz
-IFNRIG92ZXJmbG93IHdpdGggaXdfY3hnYjQuCj4gCj4gV2hhdCBpcyBpd19jeGdiNCByZXBvcnRp
-bmcgdG8gaXNlcnRfY3JlYXRlX2NxKCk6YXR0ci5jYXAubWF4X3NlbmRfc2dlLi4/Cm1heF9zZW5k
-X3NnZSBpcyA0IGZvciBpd19jeGdiNAogCj4gLS0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMg
-bGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgdGFyZ2V0LWRldmVsIiBpbgo+IHRoZSBi
-b2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCj4gTW9yZSBtYWpv
-cmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
-Ci0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNj
-cmliZSB0YXJnZXQtZGV2ZWwiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9A
-dmdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5l
-bC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA==
+Hey all,
+
+> 
+> Hi Potnuri & Co,
+> 
+> On Thu, 2018-01-18 at 23:23 +0530, Potnuri Bharat Teja wrote:
+> > Hi Nicholas,
+> > thanks for the suggestions. Comments below.
+> >
+> > On Thursday, January 01/18/18, 2018 at 15:28:42 +0530, Nicholas A. Bellinger
+> wrote:
+> > > Hi Shiraz, Michal & Co,
+> > >
+> > > Thanks for the feedback.  Comments below.
+> > >
+> > > On Mon, 2018-01-15 at 09:22 -0600, Shiraz Saleem wrote:
+> > > > On Mon, Jan 15, 2018 at 03:12:36AM -0700, Kalderon, Michal wrote:
+> > > > > > From: linux-rdma-owner@vger.kernel.org [mailto:linux-rdma-
+> > > > > > owner@vger.kernel.org] On Behalf Of Nicholas A. Bellinger
+> > > > > > Sent: Monday, January 15, 2018 6:57 AM
+> > > > > > To: Shiraz Saleem <shiraz.saleem@intel.com>
+> > > > > > Cc: Amrani, Ram <Ram.Amrani@cavium.com>; Sagi Grimberg
+> > > > > > <sagi@grimberg.me>; linux-rdma@vger.kernel.org; Elior, Ariel
+> > > > > > <Ariel.Elior@cavium.com>; target-devel <target-
+> devel@vger.kernel.org>;
+> > > > > > Potnuri Bharat Teja <bharat@chelsio.com>
+> > > > > > Subject: Re: SQ overflow seen running isert traffic with high block sizes
+> > > > > >
+> > > > > > Hi Shiraz, Ram, Ariel, & Potnuri,
+> > > > > >
+> > > > > > Following up on this old thread, as it relates to Potnuri's recent fix for a
+> iser-
+> > > > > > target queue-full memory leak:
+> > > > > >
+> > > > > > https://www.spinics.net/lists/target-devel/msg16282.html
+> > > > > >
+> > > > > > Just curious how frequent this happens in practice with sustained large
+> block
+> > > > > > workloads, as it appears to effect at least three different iwarp RNICS
+> (i40iw,
+> > > > > > qedr and iw_cxgb4)..?
+> > > > > >
+> > > > > > Is there anything else from an iser-target consumer level that should be
+> > > > > > changed for iwarp to avoid repeated ib_post_send() failures..?
+> > > > > >
+> > > > > Would like to mention, that although we are an iWARP RNIC as well,
+> we've hit this
+> > > > > Issue when running RoCE. It's not iWARP related.
+> > > > > This is easily reproduced within seconds with IO size of 5121K
+> > > > > Using 5 Targets with 2 Ram Disk each and 5 targets with FileIO Disks
+> each.
+> > > > >
+> > > > > IO Command used:
+> > > > > maim -b512k -T32 -t2 -Q8 -M0 -o -u -n -m17 -ftargets.dat -d1
+> > > > >
+> > > > > thanks,
+> > > > > Michal
+> > > >
+> > > > Its seen with block size >= 2M on a single target 1 RAM disk config. And
+> similar to Michals report;
+> > > > rather quickly, in a matter of seconds.
+> > > >
+> > > > fio --rw=read --bs 48k --numjobs=1 --iodepth8 --runtime0 --
+> size g --loops=1 --ioengine=libaio
+> > > > --direct=1 --invalidate=1 --fsync_on_close=1 --norandommap --exitall --
+> filename=/dev/sdb --name=sdb
+> > > >
+> > >
+> > > A couple of thoughts.
+> > >
+> > > First, would it be helpful to limit maximum payload size per I/O for
+> > > consumers based on number of iser-target sq hw sges..?
+> > yes, I think HW num sge needs to be propagated to iscsi target.
+> > >
+> > > That is, if rdma_rw_ctx_post() -> ib_post_send() failures are related to
+> > > maximum payload size per I/O being too large there is an existing
+> >
+> > Yes they are IO size specific, I observed SQ overflow with fio for IO sizes above
+> > 256k and for READ tests only with chelsio(iw_cxgb4) adapters.
+> 
+> Thanks for confirming.
+> 
+> > > target_core_fabric_ops mechanism for limiting using SCSI residuals,
+> > > originally utilized by qla2xxx here:
+> > >
+> > > target/qla2xxx: Honor max_data_sg_nents I/O transfer limit
+> > >
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=8
+> f9b565482c537821588444e09ff732c7d65ed6e
+> > >
+> > > Note this patch also will return a smaller Block Limits VPD (0x86)
+> > > MAXIMUM TRANSFER LENGTH based on max_data_sg_nents * PAGE_SIZE,
+> which
+> > > means for modern SCSI initiators honoring MAXIMUM TRANSFER LENGTH
+> will
+> > > automatically limit maximum outgoing payload transfer length, and avoid
+> > > SCSI residual logic.
+> > >
+> > > As-is, iser-target doesn't a propagate max_data_sg_ents limit into
+> > > iscsi-target, but you can try testing with a smaller value to see if
+> > > it's useful.  Eg:
+> > >
+> > > diff --git a/drivers/target/iscsi/iscsi_target_configfs.c
+> b/drivers/target/iscsi/iscsi_target_configf
+> > > index 0ebc481..d8a4cc5 100644
+> > > --- a/drivers/target/iscsi/iscsi_target_configfs.c
+> > > +++ b/drivers/target/iscsi/iscsi_target_configfs.c
+> > > @@ -1553,6 +1553,7 @@ static void lio_release_cmd(struct se_cmd
+> *se_cmd)
+> > >         .module                         = THIS_MODULE,
+> > >         .name                           = "iscsi",
+> > >         .node_acl_size                  = sizeof(struct iscsi_node_acl),
+> > > +       .max_data_sg_nents              = 32, /* 32 * PAGE_SIZE = MAXIMUM
+> TRANSFER LENGTH */
+> > >         .get_fabric_name                = iscsi_get_fabric_name,
+> > >         .tpg_get_wwn                    = lio_tpg_get_endpoint_wwn,
+> > >         .tpg_get_tag                    = lio_tpg_get_tag,
+> > >
+> > With above change, SQ overflow isn't observed. I started of with
+> max_data_sg_nents = 16.
+> 
+> OK, so max_data_sg_nents2 (MAXIMUM TRANSFER SIZE8K with 4k pages)
+> avoids SQ overflow with iw_cxgb4.
+> 
+> What is iw_cxgb4 reporting to isert_create_cq():attr.cap.max_send_sge..?
+
+The ib_device attributes only advertise max_sge, which applies to both send and recv queues.  Because the iw_cxgb4 RQ max sge is 4, iw_cxgb4 currently advertises 4 for max_sge, even though the SQ can handle more.  So attr.cap.max_send_sge ends up being 4.
+
+I have a todo on my list to extend the rdma/core to have max_send_sge and max_recv_sge attributes.  If it helps, I can bump up the priority of this.  Perhaps Bharat could do the work.
+
+Steve.
+
