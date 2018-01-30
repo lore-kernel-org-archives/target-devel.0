@@ -1,94 +1,75 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Mon, 29 Jan 2018 19:36:04 +0000
+From: Shiraz Saleem <shiraz.saleem@intel.com>
+Date: Tue, 30 Jan 2018 16:30:41 +0000
 Subject: Re: SQ overflow seen running isert traffic with high block sizes
-Message-Id: <62470be0-c6e0-cee6-867f-5231da99fdc6@grimberg.me>
+Message-Id: <20180130163041.GA2208@ssaleem-MOBL4.amr.corp.intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <BN3PR07MB25784033E7FCD062FA0A7855F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
- <210f538f-8c98-f480-64fc-f2124ed6d01b@grimberg.me>
- <BN3PR07MB25786338EADC77A369A6D493F8DD0@BN3PR07MB2578.namprd07.prod.outlook.com>
- <1499970579.7987.8.camel@haakon3.daterainc.com>
+References: <1499970579.7987.8.camel@haakon3.daterainc.com>
  <BN3PR07MB2578E6561CC669922A322245F8A00@BN3PR07MB2578.namprd07.prod.outlook.com>
  <20171006224025.GA23364@ssaleem-MOBL4.amr.corp.intel.com>
  <1515992195.24576.156.camel@haakon3.daterainc.com>
  <CY1PR0701MB2012E53C69D1CE3E16BA320B88EB0@CY1PR0701MB2012.namprd07.prod.outlook.com>
  <20180115152236.GA15484@ssaleem-MOBL4.amr.corp.intel.com>
  <1516269522.24576.274.camel@haakon3.daterainc.com>
- <9DD61F30A802C4429A01CA4200E302A789EB485A@fmsmsx116.amr.corp.intel.com>
- <1516780918.24576.341.camel@haakon3.daterainc.com>
-In-Reply-To: <1516780918.24576.341.camel@haakon3.daterainc.com>
+ <CY1PR0701MB2012C8513D9048FC1CC7011088EF0@CY1PR0701MB2012.namprd07.prod.outlook.com>
+ <1516780534.24576.335.camel@haakon3.daterainc.com>
+ <55569d98-7f8c-7414-ab03-e52e2bfc518b@grimberg.me>
+In-Reply-To: <55569d98-7f8c-7414-ab03-e52e2bfc518b-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, "Saleem, Shiraz" <shiraz.saleem@intel.com>
-Cc: "Kalderon, Michal" <Michal.Kalderon@cavium.com>, "Amrani, Ram" <Ram.Amrani@cavium.com>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "Elior, Ariel" <Ariel.Elior@cavium.com>, target-devel <target-devel@vger.kernel.org>, Potnuri Bharat Teja <bharat@chelsio.com>
+To: Sagi Grimberg <sagi-NQWnxTmZq1alnMjI0IkVqw@public.gmane.org>
+Cc: "Nicholas A. Bellinger" <nab-IzHhD5pYlfBP7FQvKIMDCQ@public.gmane.org>, "Kalderon, Michal" <Michal.Kalderon-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, "Amrani, Ram" <Ram.Amrani-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, "linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Elior, Ariel" <Ariel.Elior-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, target-devel <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Potnuri Bharat Teja <bharat-ut6Up61K2wZBDgjK7y7TUQ@public.gmane.org>, "Radzi, Amit" <Amit.Radzi-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, "Galon, Yoav" <Yoav.Galon-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>
 
-Hi,
-
->>> First, would it be helpful to limit maximum payload size per I/O for consumers
->>> based on number of iser-target sq hw sges..?
->>>
->> Assuming data is not able to be fast registered as if virtually contiguous;
->> artificially limiting the data size might not be the best solution.
->>
->> But max SGEs does need to be exposed higher. Somewhere in the stack,
->> there might need to be multiple WRs submitted or data copied.
->>
+On Mon, Jan 29, 2018 at 09:17:02PM +0200, Sagi Grimberg wrote:
 > 
-> Sagi..?
-
-I tend to agree that if the adapter support just a hand-full of sges its
-counter-productive to expose infinite data transfer size. On the other
-hand, I think we should be able to chunk more with memory registrations
-(although rdma rw code never even allocates them for non-iwarp devices).
-
-We have an API for check this in the RDMA core (thanks to chuck)
-introduced in:
-commit 0062818298662d0d05061949d12880146b5ebd65
-Author: Chuck Lever <chuck.lever@oracle.com>
-Date:   Mon Aug 28 15:06:14 2017 -0400
-
-     rdma core: Add rdma_rw_mr_payload()
-
-     The amount of payload per MR depends on device capabilities and
-     the memory registration mode in use. The new rdma_rw API hides both,
-     making it difficult for ULPs to determine how large their transport
-     send queues need to be.
-
-     Expose the MR payload information via a new API.
-
-     Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
-     Acked-by: Doug Ledford <dledford@redhat.com>
-     Signed-off-by: J. Bruce Fields <bfields@redhat.com>
-
-
-So the easy way out would be to use that and plug it to
-max_sg_data_nents. Regardless, queue-full logic today yields a TX attack
-on the transport.
-
->>> diff --git a/drivers/target/iscsi/iscsi_target_configfs.c
->>> b/drivers/target/iscsi/iscsi_target_configf
->>> index 0ebc481..d8a4cc5 100644
->>> --- a/drivers/target/iscsi/iscsi_target_configfs.c
->>> +++ b/drivers/target/iscsi/iscsi_target_configfs.c
->>> @@ -1553,6 +1553,7 @@ static void lio_release_cmd(struct se_cmd *se_cmd)
->>>          .module                         = THIS_MODULE,
->>>          .name                           = "iscsi",
->>>          .node_acl_size                  = sizeof(struct iscsi_node_acl),
->>> +       .max_data_sg_nents              = 32, /* 32 * PAGE_SIZE = MAXIMUM
->>> TRANSFER LENGTH */
->>>          .get_fabric_name                = iscsi_get_fabric_name,
->>>          .tpg_get_wwn                    = lio_tpg_get_endpoint_wwn,
->>>          .tpg_get_tag                    = lio_tpg_get_tag,
->>>
->>
->> BTW, this is helping the SQ overflow issue.
+> > > > First, would it be helpful to limit maximum payload size per I/O for
+> > > > consumers based on number of iser-target sq hw sges..?
+> > > 
+> > > I don't think you need to limit the maximum payload, but instead
+> > > initialize the max_wr to be based on the number of supported SGEs
+> > > Instead of what is there today:
+> > > #define ISERT_QP_MAX_REQ_DTOS   (ISCSI_DEF_XMIT_CMDS_MAX +    \
+> > >                                  ISERT_MAX_TX_MISC_PDUS  + \
+> > >                                  ISERT_MAX_RX_MISC_PDUS)
+> > > Add the maximum number of WQEs per command,
+> > > The calculation of number of WQEs per command needs to be something like
+> > > "MAX_TRANSFER_SIZE/(numSges*PAGE_SIZE)".
+> > > 
+> > 
+> > Makes sense, MAX_TRANSFER_SIZE would be defined globally by iser-target,
+> > right..?
+> > 
+> > Btw, I'm not sure how this effects usage of ISER_MAX_TX_CQ_LEN +
+> > ISER_MAX_CQ_LEN, which currently depend on ISERT_QP_MAX_REQ_DTOS..
+> > 
+> > Sagi, what are your thoughts wrt changing attr.cap.max_send_wr at
+> > runtime vs. exposing a smaller max_data_sg_nents2 for ib_devices with
+> > limited attr.cap.max_send_sge..?
 > 
-> Thanks for confirming as a possible work-around.
+> Sorry for the late reply,
 > 
-> For reference, what is i40iw's max_send_sg reporting..?
+> Can we go back and understand why do we need to limit isert transfer
+> size? I would suggest that we handle queue-full scenarios instead
+> of limiting the transfered payload size.
 > 
-> Is max_data_sg_nents2 + 4k pages = 128K the largest MAX TRANSFER
-> LENGTH to avoid consistent SQ overflow as-is with i40iw..?
+> From the trace Shiraz sent, it looks that:
+> a) we are too chatty when failing to post a wr on a queue-pair
+> (something that can happen by design), and
+> b) isert escalates to terminating the connection which means we
+> screwed up handling it.
+> 
+> Shiraz, can you explain these messages:
+> [17066.397206] i40iw i40iw_process_aeq ae_id = 0x503 bool qp=1 qp_id = 3
+> [17066.397247] i40iw i40iw_process_aeq ae_id = 0x501 bool qp=1 qp_id = 3
 
-I vaguely recall that this is the maximum mr length for i40e (and cxgb4
-if I'm not mistaken).
+These are some device specific Asynchronous Event logging I turned on.
+It indicates the QP received a FIN while in RTS and eventually was moved
+to CLOSED state.
+
+ 
+> Who is initiating the connection teardown? the initiator or the target?
+> (looks like the initiator gave up on iscsi ping timeout expiration)
+> 
+
+Initiator
+
