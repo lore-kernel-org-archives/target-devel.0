@@ -1,27 +1,34 @@
-From: Greg-KH <gregkh@linuxfoundation.org>
-Date: Sat, 13 Jan 2018 17:33:42 +0000
-Subject: Re: [PATCH-4.4.y 0/2] target: stable backports
-Message-Id: <20180113173342.GB25277@kroah.com>
+From: Andy Grover <agrover@redhat.com>
+Date: Wed, 31 Jan 2018 21:50:34 +0000
+Subject: New release: rtslib.fb66
+Message-Id: <962cf137-2074-fb70-2c4e-2749f0b8ef36@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1515801092-31332-1-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1515801092-31332-1-git-send-email-nab@linux-iscsi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: target-devel <target-devel@vger.kernel.org>, stable <stable@vger.kernel.org>
+To: target-devel@vger.kernel.org
 
-On Fri, Jan 12, 2018 at 11:51:30PM +0000, Nicholas A. Bellinger wrote:
-> From: Nicholas Bellinger <nab@linux-iscsi.org>
-> 
-> Hi Greg-KH,
-> 
-> Here are two target patches for v4.4.y stable, which did not apply
-> due to minor context changes.
-> 
-> The series has been cut against v4.4.111.  Please apply at your earliest
-> convenience.
+Hi all,
 
-Both patches applied, thanks.
+Received a bug fix right after tagging the last release, sigh.
 
-greg k-h
+Thanks Daniel B!
+
+Github:
+https://github.com/open-iscsi/targetcli-fb
+https://github.com/open-iscsi/rtslib-fb
+https://github.com/open-iscsi/configshell-fb
+
+tarballs: via GitHub Releases
+
+
+rtslib-fb 2.1.fb66:
+
+Andy Grover <agrover@redhat.com> (1):
+       version 2.1.fb66
+
+Daniel B <daniel.betz@daniel-betz.com> (1):
+       Fix unqualified reference to pyudev.Device
+
+
+-- Andy
