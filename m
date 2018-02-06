@@ -1,7 +1,7 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 06 Feb 2018 14:42:53 +0000
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Tue, 06 Feb 2018 15:27:39 +0000
 Subject: Re: [PATCH 1/3] net/utils: Introduce inet_addr_is_any
-Message-Id: <20180206.094253.2191113540764519816.davem@davemloft.net>
+Message-Id: <1517930858.3934.15.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180206094432.12761-1-sagi@grimberg.me>
  <20180206094432.12761-2-sagi@grimberg.me>
@@ -11,19 +11,21 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Tue,  6 Feb 2018 11:44:30 +0200
-
-> +		if (!memcmp(in6->sin6_addr.s6_addr,
-> +			in6_any.sin6_addr.s6_addr, 16))
-
-Please indent this properly.
-
-When a function call spans multiple lines, the second and subsequent
-lines of that call must be indented precisely to the column that follows
-the openning parenthesis of that call.
-
-You must use the appropriate number of TAB then SPACE characters
-necessary to achieve this.
-
-Thank you.
+T24gVHVlLCAyMDE4LTAyLTA2IGF0IDExOjQ0ICswMjAwLCBTYWdpIEdyaW1iZXJnIHdyb3RlOg0K
+PiArYm9vbCBpbmV0X2FkZHJfaXNfYW55KHN0cnVjdCBzb2NrYWRkciAqYWRkcikNCj4gK3sNCj4g
+Kwlib29sIHJldCA9IGZhbHNlOw0KPiArDQo+ICsJaWYgKGFkZHItPnNhX2ZhbWlseSA9PSBBRl9J
+TkVUNikgew0KPiArCQlzdHJ1Y3Qgc29ja2FkZHJfaW42ICppbjYgPSAoc3RydWN0IHNvY2thZGRy
+X2luNiAqKWFkZHI7DQo+ICsJCWNvbnN0IHN0cnVjdCBzb2NrYWRkcl9pbjYgaW42X2FueSA9DQo+
+ICsJCQl7IC5zaW42X2FkZHIgPSBJTjZBRERSX0FOWV9JTklUIH07DQo+ICsNCj4gKwkJaWYgKCFt
+ZW1jbXAoaW42LT5zaW42X2FkZHIuczZfYWRkciwNCj4gKwkJCWluNl9hbnkuc2luNl9hZGRyLnM2
+X2FkZHIsIDE2KSkNCj4gKwkJCXJldCA9IHRydWU7DQo+ICsJfSBlbHNlIGlmIChhZGRyLT5zYV9m
+YW1pbHkgPT0gQUZfSU5FVCkgew0KPiArCQlzdHJ1Y3Qgc29ja2FkZHJfaW4gKmluID0gKHN0cnVj
+dCBzb2NrYWRkcl9pbiAqKWFkZHI7DQo+ICsNCj4gKwkJaWYgKGluLT5zaW5fYWRkci5zX2FkZHIg
+PT0gaHRvbmwoSU5BRERSX0FOWSkpDQo+ICsJCQlyZXQgPSB0cnVlOw0KPiArCX0NCj4gKw0KPiAr
+CXJldHVybiByZXQ7DQo+ICt9DQo+ICtFWFBPUlRfU1lNQk9MKGluZXRfYWRkcl9pc19hbnkpOw0K
+DQpIYXZlIHlvdSBjb25zaWRlcmVkIHRvIGVsaW1pbmF0ZSB0aGUgbG9jYWwgdmFyaWFibGUgJ3Jl
+dCcgYW5kIHRvIHVzZSBtdWx0aXBsZQ0KcmV0dXJuIHN0YXRlbWVudHM/IEFkZGl0aW9uYWxseSwg
+c2hvdWxkIHRoaXMgZnVuY3Rpb24gdHJpZ2dlciBhIHdhcm5pbmcgaWYgYQ0Kc29ja2V0IGFkZHJl
+c3MgaXMgcGFzc2VkIHdpdGggYW4gYWRkcmVzcyBmYW1pbHkgdGhhdCBpcyBub3Qgc3VwcG9ydGVk
+IGJ5IHRoaXMNCmZ1bmN0aW9uPyBTaG91bGQgdGhlIGluNl9hbnkgbG9jYWwgdmFyaWFibGUgYmUg
+ZGVjbGFyZWQgc3RhdGljPw0KDQpUaGFua3MsDQoNCkJhcnQuDQoNCg0K
