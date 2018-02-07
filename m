@@ -1,39 +1,44 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Fri, 23 Feb 2018 00:38:37 +0000
-Subject: target documentation patches?
-Message-Id: <e2bc69ce-2270-7996-ca50-928fa3c71ffa@infradead.org>
+From: Sagi Grimberg <sagi@grimberg.me>
+Date: Wed, 07 Feb 2018 13:05:15 +0000
+Subject: [PATCH v2 0/3] Commonise address any check
+Message-Id: <20180207130518.22803-1-sagi@grimberg.me>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hi Nicholas,
+Both iscsit and nvmet need to check the listening endpoint
+portal is not INADDR_ANY (or IN6ADDR_ANY_INIT) when replying
+to a discovery information query (iscsi sendtaragets or nvmet
+discovery log pages). If indeed the nvmet port or iscsit portal
+are listening on any address, they need to return the source
+address of the socket that carried the query itslef.
 
-I posted several patches for target documentation cleanups and adding
-a chapter to the driver-api chapter back in December.
+iscsit already does this while nvmet did not.
+instead of copying the inaddr_any check, place it in net-utils
+and call it from both (patches 1+3).
 
-Do I need to repost those?  Do you want someone else to merge them, even
-though several of them are in drivers/target/ ?
+In addition, fix the behavior in nvmet (patch 2).
 
+Changes from v1:
+- small alignment fix in inet_addr_is_any
+- warn if got unexpected address family
+- make in6_any static
 
-[PATCH] target: fix kernel-doc warnings in drivers/target/target_core_transport.c
-https://www.spinics.net/lists/target-devel/msg16378.html
+Sagi Grimberg (3):
+  net/utils: Introduce inet_addr_is_any
+  nvmet: don't return "any" ip address in discovery log page
+  iscsi-target: use common inet_addr_is_any
 
-[PATCH] target: cleanup target_core_transport.c for kernel-doc
-https://www.spinics.net/lists/target-devel/msg16381.html
+ drivers/nvme/target/discovery.c     | 30 +++++++++++++++++++++++++++---
+ drivers/nvme/target/nvmet.h         |  2 ++
+ drivers/nvme/target/rdma.c          | 18 ++++++++++++++++++
+ drivers/target/iscsi/iscsi_target.c | 28 ++--------------------------
+ include/linux/inet.h                |  1 +
+ net/core/utils.c                    | 23 +++++++++++++++++++++++
+ 6 files changed, 73 insertions(+), 29 deletions(-)
 
-[PATCH] target: add kernel-doc overview in target_core_user.[hc]
-https://www.spinics.net/lists/target-devel/msg16380.html
-
-[PATCH v2] target: add a target/iscsi driver-api Documentation chapter
-https://www.spinics.net/lists/target-devel/msg16383.html
-
-This patch has already been merged:
-[PATCH] scsi: fix iscsi-related kernel-doc warnings
-  https://marc.info/?l=linux-scsi&m1398051426923&w=2
-
-
-thanks,
 -- 
-~Randy
+2.14.1
+
