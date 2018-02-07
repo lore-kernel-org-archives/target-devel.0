@@ -1,58 +1,149 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Wed, 21 Feb 2018 16:45:35 +0000
-Subject: Re: [PATCH 0/8] target-iSCSI: Adjustments for several function implementations
-Message-Id: <c9a822a4-248e-c479-9118-4b8ffb1033b1@users.sourceforge.net>
+From: Sagi Grimberg <sagi@grimberg.me>
+Date: Wed, 07 Feb 2018 13:05:17 +0000
+Subject: [PATCH v2 2/3] nvmet: don't return "any" ip address in discovery log page
+Message-Id: <20180207130518.22803-3-sagi@grimberg.me>
 List-Id: <target-devel.vger.kernel.org>
-References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
-In-Reply-To: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
+References: <20180207130518.22803-1-sagi@grimberg.me>
+In-Reply-To: <20180207130518.22803-1-sagi@grimberg.me>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, David Disseldorp <ddiss@suse.de>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: target-devel@vger.kernel.org
 
-> Date: Tue, 12 Dec 2017 22:22:11 +0100
-> 
-> Some update suggestions were taken into account
-> from static source code analysis.
-> 
-> Markus Elfring (8):
->   Less function calls in chap_server_compute_md5() after error detection
->   Move resetting of seven variables in chap_server_compute_md5()
->   Delete 36 error messages for a failed memory allocation
->   Delete an unnecessary variable initialisation in iscsit_allocate_ooo_cmdsn()
->   Delete an unnecessary variable initialisation in iscsi_copy_param_list()
->   Delete an unnecessary variable initialisation in iscsi_create_default_params()
->   Delete an unnecessary variable initialisation in iscsi_set_default_param()
->   Improve 16 size determinations
-> 
->  drivers/target/iscsi/iscsi_target.c               |   2 -
->  drivers/target/iscsi/iscsi_target_auth.c          | 110 +++++++++++-----------
->  drivers/target/iscsi/iscsi_target_datain_values.c |   6 +-
->  drivers/target/iscsi/iscsi_target_erl1.c          |  14 +--
->  drivers/target/iscsi/iscsi_target_erl2.c          |   8 +-
->  drivers/target/iscsi/iscsi_target_login.c         |  29 ++----
->  drivers/target/iscsi/iscsi_target_nego.c          |   4 +-
->  drivers/target/iscsi/iscsi_target_parameters.c    |  58 +++++-------
->  drivers/target/iscsi/iscsi_target_seq_pdu_list.c  |  34 +++----
->  drivers/target/iscsi/iscsi_target_tpg.c           |  13 +--
->  drivers/target/iscsi/iscsi_target_util.c          |  11 +--
->  11 files changed, 118 insertions(+), 171 deletions(-)
+Its perfectly valid to assign a nvmet port to listen on "any"
+IP address (traddr 0.0.0.0 for ipv4 address family) for IP based
+transport ports. However, we must not return this address in
+discovery log entries. Instead we need to return the address
+where the request was accepted on (req->port address).
 
-One of these update suggestions resulted in the commit “target: avoid NULL
-dereference in CHAP auth error path” which is considered for integration
-into Linux stable versions now.
-https://patchwork.kernel.org/patch/10110459/
-https://lkml.kernel.org/r/<20171213172230.12767-1-ddiss@suse.de>
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/target/iscsi/iscsi_target_auth.c?id�512d79d0466a604793addb6b769d12ee326822
+Since this is nvme transport specific, introduce an optional
+.disc_traddr interface that is designed to check that a
+port in question is bound to "any" IP address and if so, set
+the traddr from the port where the request came from.
 
+Reviewed-by: Johannes Thumshirn <jthumshirn@suse.de>
+Signed-off-by: Sagi Grimberg <sagi@grimberg.me>
+---
+ drivers/nvme/target/discovery.c | 30 +++++++++++++++++++++++++++---
+ drivers/nvme/target/nvmet.h     |  2 ++
+ drivers/nvme/target/rdma.c      | 18 ++++++++++++++++++
+ 3 files changed, 47 insertions(+), 3 deletions(-)
 
-Now I am curious if more remaining change possibilities can be picked up
-from this patch series.
+diff --git a/drivers/nvme/target/discovery.c b/drivers/nvme/target/discovery.c
+index 8f3b57b4c97b..a72425d8bce0 100644
+--- a/drivers/nvme/target/discovery.c
++++ b/drivers/nvme/target/discovery.c
+@@ -43,7 +43,8 @@ void nvmet_referral_disable(struct nvmet_port *port)
+ }
+ 
+ static void nvmet_format_discovery_entry(struct nvmf_disc_rsp_page_hdr *hdr,
+-		struct nvmet_port *port, char *subsys_nqn, u8 type, u32 numrec)
++		struct nvmet_port *port, char *subsys_nqn, char *traddr,
++		u8 type, u32 numrec)
+ {
+ 	struct nvmf_disc_rsp_page_entry *e = &hdr->entries[numrec];
+ 
+@@ -56,11 +57,30 @@ static void nvmet_format_discovery_entry(struct nvmf_disc_rsp_page_hdr *hdr,
+ 	e->asqsz = cpu_to_le16(NVME_AQ_DEPTH);
+ 	e->subtype = type;
+ 	memcpy(e->trsvcid, port->disc_addr.trsvcid, NVMF_TRSVCID_SIZE);
+-	memcpy(e->traddr, port->disc_addr.traddr, NVMF_TRADDR_SIZE);
++	memcpy(e->traddr, traddr, NVMF_TRADDR_SIZE);
+ 	memcpy(e->tsas.common, port->disc_addr.tsas.common, NVMF_TSAS_SIZE);
+ 	memcpy(e->subnqn, subsys_nqn, NVMF_NQN_SIZE);
+ }
+ 
++/*
++ * nvmet_set_disc_traddr - set a correct discovery log entry traddr
++ *
++ * IP based transports (e.g RDMA) can listen on "any" ipv4/ipv6 addresses
++ * (INADDR_ANY or IN6ADDR_ANY_INIT). The discovery log page traddr reply
++ * must not contain that "any" IP address. If the transport implements
++ * .disc_traddr, use it. this callback will set the discovery traddr
++ * from the req->port address in case the port in question listens
++ * "any" IP address.
++ */
++static void nvmet_set_disc_traddr(struct nvmet_req *req, struct nvmet_port *port,
++		char *traddr)
++{
++	if (req->ops->disc_traddr)
++		req->ops->disc_traddr(req, port, traddr);
++	else
++		memcpy(traddr, port->disc_addr.traddr, NVMF_TRADDR_SIZE);
++}
++
+ static void nvmet_execute_get_disc_log_page(struct nvmet_req *req)
+ {
+ 	const int entry_size = sizeof(struct nvmf_disc_rsp_page_entry);
+@@ -90,8 +110,11 @@ static void nvmet_execute_get_disc_log_page(struct nvmet_req *req)
+ 		if (!nvmet_host_allowed(req, p->subsys, ctrl->hostnqn))
+ 			continue;
+ 		if (residual_len >= entry_size) {
++			char traddr[NVMF_TRADDR_SIZE];
++
++			nvmet_set_disc_traddr(req, req->port, traddr);
+ 			nvmet_format_discovery_entry(hdr, req->port,
+-					p->subsys->subsysnqn,
++					p->subsys->subsysnqn, traddr,
+ 					NVME_NQN_NVME, numrec);
+ 			residual_len -= entry_size;
+ 		}
+@@ -102,6 +125,7 @@ static void nvmet_execute_get_disc_log_page(struct nvmet_req *req)
+ 		if (residual_len >= entry_size) {
+ 			nvmet_format_discovery_entry(hdr, r,
+ 					NVME_DISC_SUBSYS_NAME,
++					r->disc_addr.traddr,
+ 					NVME_NQN_DISC, numrec);
+ 			residual_len -= entry_size;
+ 		}
+diff --git a/drivers/nvme/target/nvmet.h b/drivers/nvme/target/nvmet.h
+index 178fd9a1d128..a6e191ff34ba 100644
+--- a/drivers/nvme/target/nvmet.h
++++ b/drivers/nvme/target/nvmet.h
+@@ -215,6 +215,8 @@ struct nvmet_fabrics_ops {
+ 	void (*remove_port)(struct nvmet_port *port);
+ 	void (*delete_ctrl)(struct nvmet_ctrl *ctrl);
+ 	int (*install_queue)(struct nvmet_sq *nvme_sq);
++	void (*disc_traddr)(struct nvmet_req *req,
++			struct nvmet_port *port, char *traddr);
+ };
+ 
+ #define NVMET_MAX_INLINE_BIOVEC	8
+diff --git a/drivers/nvme/target/rdma.c b/drivers/nvme/target/rdma.c
+index 978e169c11bf..d7831372e1f9 100644
+--- a/drivers/nvme/target/rdma.c
++++ b/drivers/nvme/target/rdma.c
+@@ -1445,6 +1445,23 @@ static void nvmet_rdma_remove_port(struct nvmet_port *port)
+ 		rdma_destroy_id(cm_id);
+ }
+ 
++static void nvmet_rdma_disc_port_addr(struct nvmet_req *req,
++		struct nvmet_port *port, char *traddr)
++{
++	struct rdma_cm_id *cm_id = port->priv;
++
++	if (inet_addr_is_any((struct sockaddr *)&cm_id->route.addr.src_addr)) {
++		struct nvmet_rdma_rsp *rsp +			container_of(req, struct nvmet_rdma_rsp, req);
++		struct rdma_cm_id *req_cm_id = rsp->queue->cm_id;
++		struct sockaddr *addr = (void *)&req_cm_id->route.addr.src_addr;
++
++		sprintf(traddr, "%pISc", addr);
++	} else {
++		memcpy(traddr, port->disc_addr.traddr, NVMF_TRADDR_SIZE);
++	}
++}
++
+ static struct nvmet_fabrics_ops nvmet_rdma_ops = {
+ 	.owner			= THIS_MODULE,
+ 	.type			= NVMF_TRTYPE_RDMA,
+@@ -1455,6 +1472,7 @@ static struct nvmet_fabrics_ops nvmet_rdma_ops = {
+ 	.remove_port		= nvmet_rdma_remove_port,
+ 	.queue_response		= nvmet_rdma_queue_response,
+ 	.delete_ctrl		= nvmet_rdma_delete_ctrl,
++	.disc_traddr		= nvmet_rdma_disc_port_addr,
+ };
+ 
+ static void nvmet_rdma_remove_one(struct ib_device *ib_device, void *client_data)
+-- 
+2.14.1
 
-* Would you like to improve any more implementation details?
-
-* Do you need additional explanations for further benefits?
-
-Regards,
-Markus
