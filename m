@@ -1,22 +1,25 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Date: Tue, 06 Feb 2018 10:36:43 +0000
-Subject: Re: [PATCH 2/3] nvmet: don't return "any" ip address in discovery log page
-Message-Id: <20180206103643.qmdeqckmamjxjtbc@linux-x5ow.site>
+From: "Mrs. JULIETTE ROMUALDEZ" <julietteromualdez@oppomail.com>
+Date: Mon, 12 Feb 2018 12:23:46 +0000
+Subject: DONATION FOR less-privileged
+Message-Id: <899426c61d547ca3d3ee9d02fc8c6e04.squirrel@webmail.oppomail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180206094432.12761-1-sagi@grimberg.me>
- <20180206094432.12761-3-sagi@grimberg.me>
-In-Reply-To: <20180206094432.12761-3-sagi@grimberg.me>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-3"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Looks good,
-Reviewed-by: Johannes Thumshirn <jthumshirn@suse.de>
---=20
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 N=FCrnberg
-GF: Felix Imend=F6rffer, Jane Smithard, Graham Norton
-HRB 21284 (AG N=FCrnberg)
-Key fingerprint =3D EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850
+
+
+
+My name is Mrs. Juliette Romualdez from Philippine. I am a sick woman who
+has decided to donate what I have to charity through you. You may be
+wondering why I chose you. But someone has to be chosen. I am 62 years old
+and was diagnosed for cancer about 2 years ago, I inherited a total sum of
+$6.150.000.00 million dollars from my late husband, This money is
+deposited in a reliable bank here in MANILA PHPLILPINE; Presently .This
+deposit was coded under a secret arrangement as a family treasure.I have
+informed my Attorney, about my decision in WILLING this fund to you
+.please get back to me immediately via my private email address (
+julietteromualdez@yahoo.com )Your beloved sister in Christ, Mrs. Juliette
+Romualdez
+
