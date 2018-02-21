@@ -1,117 +1,58 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Fri, 09 Feb 2018 18:43:39 +0000
-Subject: [GIT PULL] target updates for v4.16-rc1
-Message-Id: <1518201819.24576.356.camel@haakon3.daterainc.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 21 Feb 2018 16:45:35 +0000
+Subject: Re: [PATCH 0/8] target-iSCSI: Adjustments for several function implementations
+Message-Id: <c9a822a4-248e-c479-9118-4b8ffb1033b1@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
+References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
+In-Reply-To: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: target-devel <target-devel@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, David Disseldorp <ddiss@suse.de>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-Hi Linus,
+> Date: Tue, 12 Dec 2017 22:22:11 +0100
+> 
+> Some update suggestions were taken into account
+> from static source code analysis.
+> 
+> Markus Elfring (8):
+>   Less function calls in chap_server_compute_md5() after error detection
+>   Move resetting of seven variables in chap_server_compute_md5()
+>   Delete 36 error messages for a failed memory allocation
+>   Delete an unnecessary variable initialisation in iscsit_allocate_ooo_cmdsn()
+>   Delete an unnecessary variable initialisation in iscsi_copy_param_list()
+>   Delete an unnecessary variable initialisation in iscsi_create_default_params()
+>   Delete an unnecessary variable initialisation in iscsi_set_default_param()
+>   Improve 16 size determinations
+> 
+>  drivers/target/iscsi/iscsi_target.c               |   2 -
+>  drivers/target/iscsi/iscsi_target_auth.c          | 110 +++++++++++-----------
+>  drivers/target/iscsi/iscsi_target_datain_values.c |   6 +-
+>  drivers/target/iscsi/iscsi_target_erl1.c          |  14 +--
+>  drivers/target/iscsi/iscsi_target_erl2.c          |   8 +-
+>  drivers/target/iscsi/iscsi_target_login.c         |  29 ++----
+>  drivers/target/iscsi/iscsi_target_nego.c          |   4 +-
+>  drivers/target/iscsi/iscsi_target_parameters.c    |  58 +++++-------
+>  drivers/target/iscsi/iscsi_target_seq_pdu_list.c  |  34 +++----
+>  drivers/target/iscsi/iscsi_target_tpg.c           |  13 +--
+>  drivers/target/iscsi/iscsi_target_util.c          |  11 +--
+>  11 files changed, 118 insertions(+), 171 deletions(-)
 
-Here are the target-pending updates for v4.16-rc1.  Please go ahead and
-pull from:
+One of these update suggestions resulted in the commit “target: avoid NULL
+dereference in CHAP auth error path” which is considered for integration
+into Linux stable versions now.
+https://patchwork.kernel.org/patch/10110459/
+https://lkml.kernel.org/r/<20171213172230.12767-1-ddiss@suse.de>
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/target/iscsi/iscsi_target_auth.c?id�512d79d0466a604793addb6b769d12ee326822
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/nab/target-pending.git for-next
 
-The highlights include:
+Now I am curious if more remaining change possibilities can be picked up
+from this patch series.
 
-- Numerous target-core-user improvements related to queue full and timeout handling. (MNC)
-- Prevent target-core-user corruption when invalid data page is requested. (MNC)
-- Add target-core device action configfs attributes to allow user-space to
-  trigger events separate from existing attributes exposed to end-users. (MNC)
-- Fix iscsi-target NULL pointer dereference 4.6+ regression in CHAP error path.
-  (David Disseldorp)
-- Avoid target-core backend UNMAP callbacks if range is zero. (Andrei Vagin)
-- Fix a iscsi-target 4.14+ regression related multiple PDU logins, that
-  was exposed due to removal of TCP prequeue support. (Florian Westphal + MNC)
+* Would you like to improve any more implementation details?
 
-Also, there is a iser-target bug still being worked on for post -rc1
-code to address a long standing issue resulting in persistent
-ib_post_send() failures, for RNICs with small max_send_sge.  
+* Do you need additional explanations for further benefits?
 
-Thank you,
-
---nab
-
-Andrei Vagin (1):
-  target: don't call an unmap callback if a range length is zero
-
-David Disseldorp (1):
-  target/iscsi: avoid NULL dereference in CHAP auth error path
-
-Florian Westphal (1):
-  iscsi-target: make sure to wake up sleeping login worker
-
-Luis de Bethencourt (1):
-  tcmu: Fix trailing semicolon
-
-Markus Elfring (7):
-  sbp-target: Delete an error message for a failed memory allocation in
-    three functions
-  target: tcm_loop: Delete an error message for a failed memory
-    allocation in four functions
-  target: tcm_loop: Improve a size determination in two functions
-  target: tcm_loop: Combine substrings for 26 messages
-  target: tcm_loop: Delete two unnecessary variable initialisations in
-    tcm_loop_issue_tmr()
-  target: tcm_loop: Delete an unnecessary return statement in
-    tcm_loop_submission_work()
-  target: tcm_loop: Use seq_puts() in tcm_loop_show_info()
-
-Mike Christie (19):
-  tcmu: merge common block release code
-  tcmu: split unmap_thread_fn
-  tcmu: fix unmap thread race
-  tcmu: move expired command completion to unmap thread
-  tcmu: remove commands_lock
-  tcmu: release blocks for partially setup cmds
-  tcmu: simplify scatter_data_area error handling
-  tcmu: fix free block calculation
-  tcmu: prep queue_cmd_ring to be used by unmap wq
-  tcmu: simplify dbi thresh handling
-  tcmu: don't block submitting context for block waits
-  tcmu: make ring buffer timer configurable
-  tcmu: allow max block and global max blocks to be settable
-  tcmu: prevent corruption when invalid data page requested
-  target: add SAM_STAT_BUSY sense reason
-  target_core_user: add cmd id to broken ring message
-  target core: add device action configfs files
-  tcmu: allow userspace to reset ring
-  tcmu: fix cmd user after free
-
-Rasmus Villemoes (1):
-  target-core: don't use "const char*" for a buffer that is written to
-
-Varun Prakash (1):
-  cxgbit: call neigh_event_send() to update MAC address
-
-Wei Yongjun (1):
-  tcmu: fix error return code in tcmu_configure_device()
-
-Xiubo Li (1):
-  tcmu: clean up the scatter helper
-
-tangwenji (2):
-  tcmu: fix page addr in tcmu_flush_dcache_range
-  target: fix destroy device in target_configure_device
-
- drivers/target/iscsi/cxgbit/cxgbit_cm.c  |   3 +
- drivers/target/iscsi/iscsi_target_auth.c |   3 +-
- drivers/target/iscsi/iscsi_target_nego.c |   3 +
- drivers/target/loopback/tcm_loop.c       | 145 ++---
- drivers/target/sbp/sbp_target.c          |  13 +-
- drivers/target/target_core_configfs.c    |   6 +
- drivers/target/target_core_device.c      |   4 +-
- drivers/target/target_core_fabric_lib.c  |   6 +-
- drivers/target/target_core_internal.h    |   3 +-
- drivers/target/target_core_pr.c          |   4 +-
- drivers/target/target_core_sbc.c         |   8 +-
- drivers/target/target_core_transport.c   |   3 +
- drivers/target/target_core_user.c        | 983 ++++++++++++++++++++++---------
- include/target/target_core_backend.h     |   1 +
- include/target/target_core_base.h        |   2 +
- 15 files changed, 798 insertions(+), 389 deletions(-)
-
+Regards,
+Markus
