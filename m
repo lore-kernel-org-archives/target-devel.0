@@ -1,42 +1,39 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Fri, 23 Feb 2018 11:50:50 +0000
-Subject: Re: [0/8] target-iSCSI: Adjustments for several function implementations
-Message-Id: <866a1802-0cd8-48fd-e04f-7dc676ab58a6@users.sourceforge.net>
+From: David Disseldorp <ddiss@suse.de>
+Date: Thu, 22 Feb 2018 13:36:24 +0000
+Subject: Re: [PATCH 0/8] target-iSCSI: Adjustments for several function implementations
+Message-Id: <20180222143624.7c7241a1@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
- <c9a822a4-248e-c479-9118-4b8ffb1033b1@users.sourceforge.net>
- <20180222143624.7c7241a1@suse.de> <20180222135600.5vv7vzw7sa5metcb@mwanda>
- <145b88b1-bd1e-a417-8dce-ff19e35a00fc@users.sourceforge.net>
- <20180223101715.xv5dscdaeszqxoyk@mwanda>
-In-Reply-To: <20180223101715.xv5dscdaeszqxoyk@mwanda>
+In-Reply-To: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>, target-devel@vger.kernel.org
-Cc: David Disseldorp <ddiss@suse.de>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org
 
->> Can a passed null pointer really work in this function?
->>
->> https://elixir.bootlin.com/linux/v4.16-rc2/source/include/crypto/hash.h#L684
->> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/crypto/hash.h?id9da844d87796ac31b04e81ee95e155e9043132#n751
->>
->> static inline struct crypto_tfm *crypto_shash_tfm(struct crypto_shash *tfm)
->> {
->> 	return &tfm->base;
->> }
+[cc list trimmed]
+
+On Wed, 21 Feb 2018 17:45:35 +0100, SF Markus Elfring wrote:
+
+...
+> One of these update suggestions resulted in the commit “target: avoid NULL
+> dereference in CHAP auth error path” which is considered for integration
+> into Linux stable versions now.
+> https://patchwork.kernel.org/patch/10110459/
+> https://lkml.kernel.org/r/<20171213172230.12767-1-ddiss@suse.de>
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/target/iscsi/iscsi_target_auth.c?id�512d79d0466a604793addb6b769d12ee326822
+
+You're 1/8 patch had an actual bug fix hidden amongst the style churn.
+I don't see any such fixes in the other patches.
+
+> Now I am curious if more remaining change possibilities can be picked up
+> from this patch series.
 > 
-> Yes.  It's not a dereference,
+> * Would you like to improve any more implementation details?
+> 
+> * Do you need additional explanations for further benefits?
 
-Do any processors treat the zero address still special there?
+My opinion from https://www.spinics.net/lists/target-devel/msg16342.html
+hasn't changed. FWIW, I'd prefer to see LIO adopt a policy similar to:
+https://btrfs.wiki.kernel.org/index.php/Developer%27s_FAQ#How_not_to_start
 
-
-> it's just doing pointer math to get the address.
-
-Can eventually happen anything unexpected?
-
-
-Can it be nicer to avoid such a software behaviour concern generally
-just by adjusting a few jump labels (as I proposed it)?
-
-Regards,
-Markus
+Cheers, David
