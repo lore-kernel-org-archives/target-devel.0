@@ -1,82 +1,39 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Tue, 06 Feb 2018 09:44:32 +0000
-Subject: [PATCH 3/3] iscsi-target: use common inet_addr_is_any
-Message-Id: <20180206094432.12761-4-sagi@grimberg.me>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Fri, 23 Feb 2018 00:38:37 +0000
+Subject: target documentation patches?
+Message-Id: <e2bc69ce-2270-7996-ca50-928fa3c71ffa@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180206094432.12761-1-sagi@grimberg.me>
-In-Reply-To: <20180206094432.12761-1-sagi@grimberg.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Instead of open-coding it.
+Hi Nicholas,
 
-Signed-off-by: Sagi Grimberg <sagi@grimberg.me>
-Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: target-devel@vger.kernel.org
----
- drivers/target/iscsi/iscsi_target.c | 28 ++--------------------------
- 1 file changed, 2 insertions(+), 26 deletions(-)
+I posted several patches for target documentation cleanups and adding
+a chapter to the driver-api chapter back in December.
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 9eb10d34682c..8e223799347a 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -26,6 +26,7 @@
- #include <linux/delay.h>
- #include <linux/sched/signal.h>
- #include <asm/unaligned.h>
-+#include <linux/inet.h>
- #include <net/ipv6.h>
- #include <scsi/scsi_proto.h>
- #include <scsi/iscsi_proto.h>
-@@ -3291,30 +3292,6 @@ iscsit_send_task_mgt_rsp(struct iscsi_cmd *cmd, struct iscsi_conn *conn)
- 	return conn->conn_transport->iscsit_xmit_pdu(conn, cmd, NULL, NULL, 0);
- }
- 
--static bool iscsit_check_inaddr_any(struct iscsi_np *np)
--{
--	bool ret = false;
--
--	if (np->np_sockaddr.ss_family = AF_INET6) {
--		const struct sockaddr_in6 sin6 = {
--			.sin6_addr = IN6ADDR_ANY_INIT };
--		struct sockaddr_in6 *sock_in6 -			 (struct sockaddr_in6 *)&np->np_sockaddr;
--
--		if (!memcmp(sock_in6->sin6_addr.s6_addr,
--				sin6.sin6_addr.s6_addr, 16))
--			ret = true;
--	} else {
--		struct sockaddr_in * sock_in -			(struct sockaddr_in *)&np->np_sockaddr;
--
--		if (sock_in->sin_addr.s_addr = htonl(INADDR_ANY))
--			ret = true;
--	}
--
--	return ret;
--}
--
- #define SENDTARGETS_BUF_LIMIT 32768U
- 
- static int
-@@ -3393,7 +3370,6 @@ iscsit_build_sendtargets_response(struct iscsi_cmd *cmd,
- 			list_for_each_entry(tpg_np, &tpg->tpg_gnp_list,
- 						tpg_np_list) {
- 				struct iscsi_np *np = tpg_np->tpg_np;
--				bool inaddr_any = iscsit_check_inaddr_any(np);
- 				struct sockaddr_storage *sockaddr;
- 
- 				if (np->np_network_transport != network_transport)
-@@ -3422,7 +3398,7 @@ iscsit_build_sendtargets_response(struct iscsi_cmd *cmd,
- 					}
- 				}
- 
--				if (inaddr_any)
-+				if (inet_addr_is_any((struct sockaddr *)&np->np_sockaddr))
- 					sockaddr = &conn->local_sockaddr;
- 				else
- 					sockaddr = &np->np_sockaddr;
+Do I need to repost those?  Do you want someone else to merge them, even
+though several of them are in drivers/target/ ?
+
+
+[PATCH] target: fix kernel-doc warnings in drivers/target/target_core_transport.c
+https://www.spinics.net/lists/target-devel/msg16378.html
+
+[PATCH] target: cleanup target_core_transport.c for kernel-doc
+https://www.spinics.net/lists/target-devel/msg16381.html
+
+[PATCH] target: add kernel-doc overview in target_core_user.[hc]
+https://www.spinics.net/lists/target-devel/msg16380.html
+
+[PATCH v2] target: add a target/iscsi driver-api Documentation chapter
+https://www.spinics.net/lists/target-devel/msg16383.html
+
+This patch has already been merged:
+[PATCH] scsi: fix iscsi-related kernel-doc warnings
+  https://marc.info/?l=linux-scsi&m1398051426923&w=2
+
+
+thanks,
 -- 
-2.14.1
-
+~Randy
