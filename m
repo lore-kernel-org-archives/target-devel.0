@@ -1,54 +1,38 @@
-From: Michael Di Domenico <mdidomenico4@gmail.com>
-Date: Wed, 07 Feb 2018 14:54:05 +0000
-Subject: Re: new kernel connection timeouts
-Message-Id: <CABOsP2POzr3+L8YJ9Uv4LvOXVQ8i5r4bAy9HsMCby1dufkW-kw@mail.gmail.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 23 Feb 2018 08:19:28 +0000
+Subject: Re: [0/8] target-iSCSI: Adjustments for several function implementations
+Message-Id: <da62858f-37f5-1396-c561-ab68ba20c811@users.sourceforge.net>
 List-Id: <target-devel.vger.kernel.org>
-References: <CABOsP2Nx+==bXwZVbkd5qHo5AhF1C-z2ObmNoxMugFeXabvX0w@mail.gmail.com>
-In-Reply-To: <CABOsP2Nx+==bXwZVbkd5qHo5AhF1C-z2ObmNoxMugFeXabvX0w@mail.gmail.com>
+References: <6163538d-a406-2f60-11a2-88b4694e9975@users.sourceforge.net>
+ <c9a822a4-248e-c479-9118-4b8ffb1033b1@users.sourceforge.net>
+ <20180222143624.7c7241a1@suse.de>
+In-Reply-To: <20180222143624.7c7241a1@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: David Disseldorp <ddiss@suse.de>, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, Arun Easi <arun.easi@cavium.com>, Bart Van Assche <bart.vanassche@sandisk.com>, Dan Carpenter <dan.carpenter@oracle.com>, Hannes Reinecke <hare@suse.com>, Ingo Molnar <mingo@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Jiang Yi <jiangyilism@gmail.com>, Kees Cook <keescook@chromium.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Russell King <rmk+kernel@armlinux.org.uk>, Tang Wenji <tang.wenji@zte.com.cn>, Theodore Ts'o <tytso@mit.edu>, Varun Prakash <varun@chelsio.com>
 
-On Tue, Feb 6, 2018 at 1:49 PM, Michael Christie <mchristi@redhat.com> wrote:
-> On 02/06/2018 07:25 AM, Michael Di Domenico wrote:
->> On Mon, Feb 5, 2018 at 12:17 PM, Mike Christie <mchristi@redhat.com> wrote:
->>> On 02/02/2018 01:52 PM, Michael Di Domenico wrote:
->>>> I recently updated my iscsi target box from redhat kernel
->>>> 3.10.0-693.11.1.el7 to 3.10.0.693.17.1.el7.  now when i try to bring
->>>
->>> Did you update to this kernel on both the target side and initiator side?
->>
->> yes, both the client and server were updated to the same version
->>
->>
->>>> up a few dozen iscsi clients at a time several will timeout.  i can't
->>>> say where in the iscsi connection it's failing, but if i'm on the
->>>> console of the iscsi client, i can rerun the connection script and the
->>>> disks will appear.
->>>>
->>>> it almost seems like the connections are queued up on the target and
->>>> some don't get one because the queue is full.
->>>
->>> Do you have the kernel logs from the target side or initiator side? Or,
->>> can you take a wireshark trace during this time?
->>
->> i *might* be able to take a trace using tcpdump, but i will not be
->> able to send you binary version of the output (protected network).  is
->> there something specific i can look for in the trace?  or can you
->> narrow a wireshark/tcpdump filter that would allow me to produce a
->> short ascii file with the data you need?
->
-> Could you just get me the target side kernel logs for when you run the
-> login test?
+> You're 1/8 patch had an actual bug fix hidden amongst the style churn.
 
-nothing seemed to spit out in the logs this morning on the target
-side.  i did just restart the cluster this morning, oddly enough i did
-not see the iscsi connection timeouts like i did the other day.
-everything went as normal.  so maybe this is a non-issue or something
-transient on the network i could not detect
+It showed the general possibility to adjust the source code structure
+for the function “chap_server_compute_md5” also because of the usage
+of the single jump label “out” before.
 
-> On the initiator side what command are you running? Is it just iscsiadm
-> .... --login? Could you give me the error output?
 
-yes just a login.  no chap/etc settings are enabled
+> I don't see any such fixes in the other patches.
+
+This view is appropriate.
+
+Further update steps show different transformation possibilities.
+
+
+> My opinion from https://www.spinics.net/lists/target-devel/msg16342.html
+> hasn't changed. FWIW, I'd prefer to see LIO adopt a policy similar to:
+> https://btrfs.wiki.kernel.org/index.php/Developer%27s_FAQ#How_not_to_start
+
+It seems that you express a few aspects for general change resistance.
+Will the circumstances evolve for similar software improvements?
+
+Regards,
+Markus
