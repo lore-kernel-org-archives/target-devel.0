@@ -1,149 +1,110 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Wed, 07 Feb 2018 13:05:17 +0000
-Subject: [PATCH v2 2/3] nvmet: don't return "any" ip address in discovery log page
-Message-Id: <20180207130518.22803-3-sagi@grimberg.me>
+From: Andrei Vagin <avagin@gmail.com>
+Date: Wed, 28 Feb 2018 03:06:50 +0000
+Subject: target can submit bio-s with lengths unaligned on sector size
+Message-Id: <20180228030649.GA3893@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180207130518.22803-1-sagi@grimberg.me>
-In-Reply-To: <20180207130518.22803-1-sagi@grimberg.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Its perfectly valid to assign a nvmet port to listen on "any"
-IP address (traddr 0.0.0.0 for ipv4 address family) for IP based
-transport ports. However, we must not return this address in
-discovery log entries. Instead we need to return the address
-where the request was accepted on (req->port address).
+Hello,
 
-Since this is nvme transport specific, introduce an optional
-.disc_traddr interface that is designed to check that a
-port in question is bound to "any" IP address and if so, set
-the traddr from the port where the request came from.
+I found that iscsi target with a block device as backing store can
+submit bio with a length which isn't aligned on the sector size (512)
+(steps to reproduce bellow). The behavior of the kernel isn't defined in
+this case. If we read the code, we can find that such requests
+probably will be handled incorrectly. Here are a few example which shows
+that a generic code isn't ready to handle such bio-s:
 
-Reviewed-by: Johannes Thumshirn <jthumshirn@suse.de>
-Signed-off-by: Sagi Grimberg <sagi@grimberg.me>
----
- drivers/nvme/target/discovery.c | 30 +++++++++++++++++++++++++++---
- drivers/nvme/target/nvmet.h     |  2 ++
- drivers/nvme/target/rdma.c      | 18 ++++++++++++++++++
- 3 files changed, 47 insertions(+), 3 deletions(-)
+include/linux/bio.h:
+...
+#define bio_sectors(bio)        ((bio)->bi_iter.bi_size >> 9)
+#define bio_end_sector(bio)     ((bio)->bi_iter.bi_sector +
+bio_sectors((bio)))
 
-diff --git a/drivers/nvme/target/discovery.c b/drivers/nvme/target/discovery.c
-index 8f3b57b4c97b..a72425d8bce0 100644
---- a/drivers/nvme/target/discovery.c
-+++ b/drivers/nvme/target/discovery.c
-@@ -43,7 +43,8 @@ void nvmet_referral_disable(struct nvmet_port *port)
- }
- 
- static void nvmet_format_discovery_entry(struct nvmf_disc_rsp_page_hdr *hdr,
--		struct nvmet_port *port, char *subsys_nqn, u8 type, u32 numrec)
-+		struct nvmet_port *port, char *subsys_nqn, char *traddr,
-+		u8 type, u32 numrec)
- {
- 	struct nvmf_disc_rsp_page_entry *e = &hdr->entries[numrec];
- 
-@@ -56,11 +57,30 @@ static void nvmet_format_discovery_entry(struct nvmf_disc_rsp_page_hdr *hdr,
- 	e->asqsz = cpu_to_le16(NVME_AQ_DEPTH);
- 	e->subtype = type;
- 	memcpy(e->trsvcid, port->disc_addr.trsvcid, NVMF_TRSVCID_SIZE);
--	memcpy(e->traddr, port->disc_addr.traddr, NVMF_TRADDR_SIZE);
-+	memcpy(e->traddr, traddr, NVMF_TRADDR_SIZE);
- 	memcpy(e->tsas.common, port->disc_addr.tsas.common, NVMF_TSAS_SIZE);
- 	memcpy(e->subnqn, subsys_nqn, NVMF_NQN_SIZE);
- }
- 
-+/*
-+ * nvmet_set_disc_traddr - set a correct discovery log entry traddr
-+ *
-+ * IP based transports (e.g RDMA) can listen on "any" ipv4/ipv6 addresses
-+ * (INADDR_ANY or IN6ADDR_ANY_INIT). The discovery log page traddr reply
-+ * must not contain that "any" IP address. If the transport implements
-+ * .disc_traddr, use it. this callback will set the discovery traddr
-+ * from the req->port address in case the port in question listens
-+ * "any" IP address.
-+ */
-+static void nvmet_set_disc_traddr(struct nvmet_req *req, struct nvmet_port *port,
-+		char *traddr)
-+{
-+	if (req->ops->disc_traddr)
-+		req->ops->disc_traddr(req, port, traddr);
-+	else
-+		memcpy(traddr, port->disc_addr.traddr, NVMF_TRADDR_SIZE);
-+}
-+
- static void nvmet_execute_get_disc_log_page(struct nvmet_req *req)
- {
- 	const int entry_size = sizeof(struct nvmf_disc_rsp_page_entry);
-@@ -90,8 +110,11 @@ static void nvmet_execute_get_disc_log_page(struct nvmet_req *req)
- 		if (!nvmet_host_allowed(req, p->subsys, ctrl->hostnqn))
- 			continue;
- 		if (residual_len >= entry_size) {
-+			char traddr[NVMF_TRADDR_SIZE];
-+
-+			nvmet_set_disc_traddr(req, req->port, traddr);
- 			nvmet_format_discovery_entry(hdr, req->port,
--					p->subsys->subsysnqn,
-+					p->subsys->subsysnqn, traddr,
- 					NVME_NQN_NVME, numrec);
- 			residual_len -= entry_size;
- 		}
-@@ -102,6 +125,7 @@ static void nvmet_execute_get_disc_log_page(struct nvmet_req *req)
- 		if (residual_len >= entry_size) {
- 			nvmet_format_discovery_entry(hdr, r,
- 					NVME_DISC_SUBSYS_NAME,
-+					r->disc_addr.traddr,
- 					NVME_NQN_DISC, numrec);
- 			residual_len -= entry_size;
- 		}
-diff --git a/drivers/nvme/target/nvmet.h b/drivers/nvme/target/nvmet.h
-index 178fd9a1d128..a6e191ff34ba 100644
---- a/drivers/nvme/target/nvmet.h
-+++ b/drivers/nvme/target/nvmet.h
-@@ -215,6 +215,8 @@ struct nvmet_fabrics_ops {
- 	void (*remove_port)(struct nvmet_port *port);
- 	void (*delete_ctrl)(struct nvmet_ctrl *ctrl);
- 	int (*install_queue)(struct nvmet_sq *nvme_sq);
-+	void (*disc_traddr)(struct nvmet_req *req,
-+			struct nvmet_port *port, char *traddr);
- };
- 
- #define NVMET_MAX_INLINE_BIOVEC	8
-diff --git a/drivers/nvme/target/rdma.c b/drivers/nvme/target/rdma.c
-index 978e169c11bf..d7831372e1f9 100644
---- a/drivers/nvme/target/rdma.c
-+++ b/drivers/nvme/target/rdma.c
-@@ -1445,6 +1445,23 @@ static void nvmet_rdma_remove_port(struct nvmet_port *port)
- 		rdma_destroy_id(cm_id);
- }
- 
-+static void nvmet_rdma_disc_port_addr(struct nvmet_req *req,
-+		struct nvmet_port *port, char *traddr)
-+{
-+	struct rdma_cm_id *cm_id = port->priv;
-+
-+	if (inet_addr_is_any((struct sockaddr *)&cm_id->route.addr.src_addr)) {
-+		struct nvmet_rdma_rsp *rsp +			container_of(req, struct nvmet_rdma_rsp, req);
-+		struct rdma_cm_id *req_cm_id = rsp->queue->cm_id;
-+		struct sockaddr *addr = (void *)&req_cm_id->route.addr.src_addr;
-+
-+		sprintf(traddr, "%pISc", addr);
-+	} else {
-+		memcpy(traddr, port->disc_addr.traddr, NVMF_TRADDR_SIZE);
-+	}
-+}
-+
- static struct nvmet_fabrics_ops nvmet_rdma_ops = {
- 	.owner			= THIS_MODULE,
- 	.type			= NVMF_TRTYPE_RDMA,
-@@ -1455,6 +1472,7 @@ static struct nvmet_fabrics_ops nvmet_rdma_ops = {
- 	.remove_port		= nvmet_rdma_remove_port,
- 	.queue_response		= nvmet_rdma_queue_response,
- 	.delete_ctrl		= nvmet_rdma_delete_ctrl,
-+	.disc_traddr		= nvmet_rdma_disc_port_addr,
- };
- 
- static void nvmet_rdma_remove_one(struct ib_device *ib_device, void *client_data)
--- 
-2.14.1
+block/blk-merge.c:
+...
+                sectors += bv.bv_len >> 9; 
 
+
+drivers/md/dm-thin.c:
+...
+        sector_t e = b + (bio->bi_iter.bi_size >> SECTOR_SHIFT);
+
+
+drivers/md/dm.c
+...
+        unsigned bi_size = bio->bi_iter.bi_size >> SECTOR_SHIFT;
+
+fs/buffer.c:
+...
+        if (likely((bio->bi_iter.bi_size >> 9) <= maxsector))
+
+
+Last time this behaviour was change in this commit:
+commit 4c054ba63ad47ef244cfcfa1cea38134620a5bae
+Author: Nicholas Bellinger <nab@linux-iscsi.org>
+Date:   Thu Aug 16 15:33:10 2012 -0700
+
+    target: Fix ->data_length re-assignment bug with SCSI overflow
+
+Now I try to figure out how to fix this properly. If you have any ideas
+or advices, you are welcome.
+
+Steps to reproduce:
+
+[root@fc24 ~]# losetup -f ~/image
+
+[root@fc24 ~]# targetcli
+targetcli shell version 2.1.fb46
+Copyright 2011-2013 by Datera, Inc and others.
+/> cd backstores/block
+/backstores/block> create  loop0 /dev/loop0
+Created block storage object loop0 using /dev/loop0.
+/backstores/block> cd /iscsi
+/iscsi>
+/iscsi> create
+Created target iqn.2003-01.org.linux-iscsi.fc24.x8664:sn.5e89a50a68f0.
+Created TPG 1.
+Global pref auto_add_default_portal=true
+Created default portal listening on all IPs (0.0.0.0), port 3260.
+/iscsi> cd iqn.2003-01.org.linux-iscsi.fc24.x8664:sn.5e89a50a68f0/tpg1/
+/iscsi/iqn.20...a50a68f0/tpg1> set attribute authentication=0
+Parameter authentication is now '0'.
+/iscsi/iqn.20...a50a68f0/tpg1> set attribute generate_node_acls=1
+Parameter generate_node_acls is now '1'.
+/iscsi/iqn.20...a50a68f0/tpg1> cd luns
+/iscsi/iqn.20...8f0/tpg1/luns> create  /backstores/block/loop0
+Created LUN 0.
+/iscsi/iqn.20...8f0/tpg1/luns> exit
+Global pref auto_save_on_exit=true
+Last 10 configs saved in /etc/target/backup.
+Configuration saved to /etc/target/saveconfig.json
+
+[root@fc24 ~]# IQN=iqn.2003-01.org.linux-iscsi.fc24.x8664:sn.5e89a50a68f0
+[root@fc24 ~]# iscsiadm -m discovery -t st -p 127.0.0.1
+127.0.0.1:3260,1 iqn.2003-01.org.linux-iscsi.fc24.x8664:sn.5e89a50a68f0
+
+[root@fc24 ~]# iscsiadm -m node -T $IQN -l --portal 127.0.0.1
+Logging in to [iface: default, target:
+iqn.2003-01.org.linux-iscsi.fc24.x8664:sn.5e89a50a68f0, portal:
+127.0.0.1,3260] (multiple)
+Login to [iface: default, target:
+iqn.2003-01.org.linux-iscsi.fc24.x8664:sn.5e89a50a68f0, portal:
+127.0.0.1,3260] successful.
+
+[root@fc24 ~]# sg_raw -r511 /dev/sda 28 0 0 0 0 0 0 0 9 0 -R
+SCSI Status: Good
+
+Received -3586 bytes of data:
+
+[root@fc24 ~]# dmesg -c
+[  142.815103] TARGET_CORE[iSCSI]: Expected Transfer Length: 511 does
+not match SCSI CDB Length: 4608 for SAM Opcode: 0x28
+
+And I see that a bio with bv_offset=0 and bv_lenQ1 was submitted to
+the loop device in this case.
+
+Thanks,
+Andrei
