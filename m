@@ -1,84 +1,45 @@
 From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Thu, 01 Mar 2018 22:26:23 +0000
-Subject: [PATCH 05/14] target: Document when CMD_T_STOP and CMD_T_COMPLETE are set
-Message-Id: <20180301222632.31507-6-bart.vanassche@wdc.com>
+Date: Thu, 01 Mar 2018 22:26:31 +0000
+Subject: [PATCH 13/14] target/tcm_loop: Avoid that static checkers warn about dead code
+Message-Id: <20180301222632.31507-14-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Document those aspects of transport_cmd_check_stop_to_fabric() and
-transport_generic_free_cmd() of which it is nontrivial to derive
-these from their implementation.
+The code under the "release:" label can only be reached after se_cmd
+has been set to a non-NULL value. Hence remove the if (se_cmd) test.
+Keep the else-part since calling transport_generic_free_cmd() is not
+necessary for a command that has not been submitted to the core.
 
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Fixes: 4d3895d5ea43 ("target/tcm_loop: Merge struct tcm_loop_cmd and struct tcm_loop_tmr")
 Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Dan Carpenter <dan.carpenter@oracle.com>
 Cc: Hannes Reinecke <hare@suse.com>
 Cc: Christoph Hellwig <hch@lst.de>
 Cc: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_transport.c | 34 ++++++++++++++++++++++++++++------
- 1 file changed, 28 insertions(+), 6 deletions(-)
+ drivers/target/loopback/tcm_loop.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index ad975e038b10..942f19295d8f 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -601,6 +601,13 @@ static void target_remove_from_state_list(struct se_cmd *cmd)
- 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+index 6106c5f4cc41..cb22d1ead93d 100644
+--- a/drivers/target/loopback/tcm_loop.c
++++ b/drivers/target/loopback/tcm_loop.c
+@@ -239,10 +239,7 @@ static int tcm_loop_issue_tmr(struct tcm_loop_tpg *tl_tpg,
+ 	return ret;
+ 
+ release:
+-	if (se_cmd)
+-		transport_generic_free_cmd(se_cmd, 0);
+-	else
+-		kmem_cache_free(tcm_loop_cmd_cache, tl_cmd);
++	kmem_cache_free(tcm_loop_cmd_cache, tl_cmd);
+ 	goto out;
  }
  
-+/*
-+ * This function is called by the target core after the target core has
-+ * finished processing a SCSI command or SCSI TMF. Both the regular command
-+ * processing code and the code for aborting commands can call this
-+ * function. CMD_T_STOP is set if and only if another thread is waiting
-+ * inside transport_wait_for_tasks() for t_transport_stop_comp.
-+ */
- static int transport_cmd_check_stop_to_fabric(struct se_cmd *cmd)
- {
- 	unsigned long flags;
-@@ -2562,6 +2569,27 @@ static void target_wait_free_cmd(struct se_cmd *cmd, bool *aborted, bool *tas)
- 	spin_unlock_irqrestore(&cmd->t_state_lock, flags);
- }
- 
-+/*
-+ * This function is called by frontend drivers after processing of a command
-+ * has finished.
-+ *
-+ * The protocol for ensuring that either the regular flow or the TMF
-+ * code drops one reference is as follows:
-+ * - Calling .queue_data_in(), .queue_status() or queue_tm_rsp() will cause
-+ *   the frontend driver to drop one reference, synchronously or asynchronously.
-+ * - During regular command processing the target core sets CMD_T_COMPLETE
-+ *   before invoking one of the .queue_*() functions.
-+ * - The code that aborts commands skips commands and TMFs for which
-+ *   CMD_T_COMPLETE has been set.
-+ * - CMD_T_ABORTED is set atomically after the CMD_T_COMPLETE check for
-+ *   commands that will be aborted.
-+ * - If the CMD_T_ABORTED flag is set but CMD_T_TAS has not been set
-+ *   transport_generic_free_cmd() skips its call to target_put_sess_cmd().
-+ * - For aborted commands for which CMD_T_TAS has been set .queue_status() will
-+ *   be called and will drop a reference.
-+ * - For aborted commands for which CMD_T_TAS has not been set .aborted_task()
-+ *   will be called. transport_cmd_finish_abort() will drop the final reference.
-+ */
- int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
- {
- 	int ret = 0;
-@@ -2590,12 +2618,6 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
- 		if (!aborted || tas)
- 			ret = target_put_sess_cmd(cmd);
- 	}
--	/*
--	 * If the task has been internally aborted due to TMR ABORT_TASK
--	 * or LUN_RESET, target_core_tmr.c is responsible for performing
--	 * the remaining calls to target_put_sess_cmd(), and not the
--	 * callers of this function.
--	 */
- 	if (aborted) {
- 		pr_debug("Detected CMD_T_ABORTED for ITT: %llu\n", cmd->tag);
- 		wait_for_completion(&cmd->cmd_wait_comp);
 -- 
 2.16.2
 
