@@ -1,45 +1,56 @@
 From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Thu, 01 Mar 2018 22:26:31 +0000
-Subject: [PATCH 13/14] target/tcm_loop: Avoid that static checkers warn about dead code
-Message-Id: <20180301222632.31507-14-bart.vanassche@wdc.com>
+Date: Thu, 01 Mar 2018 22:26:24 +0000
+Subject: [PATCH 06/14] target: Simplify core_tmr_handle_tas_abort()
+Message-Id: <20180301222632.31507-7-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-The code under the "release:" label can only be reached after se_cmd
-has been set to a non-NULL value. Hence remove the if (se_cmd) test.
-Keep the else-part since calling transport_generic_free_cmd() is not
-necessary for a command that has not been submitted to the core.
+The code that can set CMD_T_TAS is executed by the same thread as
+the thread that executes core_tmr_handle_tas_abort(). That means
+that no locking is needed to check CMD_T_TAS from inside
+core_tmr_handle_tas_abort(). This patch does not change any
+functionality.
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Fixes: 4d3895d5ea43 ("target/tcm_loop: Merge struct tcm_loop_cmd and struct tcm_loop_tmr")
 Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Dan Carpenter <dan.carpenter@oracle.com>
 Cc: Hannes Reinecke <hare@suse.com>
 Cc: Christoph Hellwig <hch@lst.de>
 Cc: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/loopback/tcm_loop.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/target/target_core_tmr.c | 15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-index 6106c5f4cc41..cb22d1ead93d 100644
---- a/drivers/target/loopback/tcm_loop.c
-+++ b/drivers/target/loopback/tcm_loop.c
-@@ -239,10 +239,7 @@ static int tcm_loop_issue_tmr(struct tcm_loop_tpg *tl_tpg,
- 	return ret;
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index da8125dd3a4c..08af053e7990 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -77,21 +77,12 @@ void core_tmr_release_req(struct se_tmr_req *tmr)
  
- release:
--	if (se_cmd)
--		transport_generic_free_cmd(se_cmd, 0);
--	else
--		kmem_cache_free(tcm_loop_cmd_cache, tl_cmd);
-+	kmem_cache_free(tcm_loop_cmd_cache, tl_cmd);
- 	goto out;
+ static int core_tmr_handle_tas_abort(struct se_cmd *cmd, int tas)
+ {
+-	unsigned long flags;
+-	bool remove = true, send_tas;
+-	/*
+-	 * TASK ABORTED status (TAS) bit support
+-	 */
+-	spin_lock_irqsave(&cmd->t_state_lock, flags);
+-	send_tas = (cmd->transport_state & CMD_T_TAS);
+-	spin_unlock_irqrestore(&cmd->t_state_lock, flags);
++	bool send_tas = cmd->transport_state & CMD_T_TAS;
+ 
+-	if (send_tas) {
+-		remove = false;
++	if (send_tas)
+ 		transport_send_task_abort(cmd);
+-	}
+ 
+-	return transport_cmd_finish_abort(cmd, remove);
++	return transport_cmd_finish_abort(cmd, !send_tas);
  }
  
+ static int target_check_cdb_and_preempt(struct list_head *list,
 -- 
 2.16.2
 
