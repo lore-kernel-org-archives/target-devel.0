@@ -1,71 +1,143 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Thu, 01 Mar 2018 22:26:18 +0000
-Subject: [PATCH 00/14] SCSI target patches for kernel v4.17
-Message-Id: <20180301222632.31507-1-bart.vanassche@wdc.com>
+From: Tvrtko Ursulin <tursulin@ursulin.net>
+Date: Wed, 07 Mar 2018 12:47:12 +0000
+Subject: [PATCH 6/6] lib/scatterlist: Drop order argument from sgl_free_n_order
+Message-Id: <20180307124712.14963-7-tvrtko.ursulin@linux.intel.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20180307124712.14963-1-tvrtko.ursulin@linux.intel.com>
+In-Reply-To: <20180307124712.14963-1-tvrtko.ursulin@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Tvrtko Ursulin <tvrtko.ursulin@intel.com>, Bart Van Assche <bart.vanassche@wdc.com>, Hannes Reinecke <hare@suse.com>, Johannes Thumshirn <jthumshirn@suse.de>, Jens Axboe <axboe@kernel.dk>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Hello Nic,
+From: Tvrtko Ursulin <tvrtko.ursulin@intel.com>
 
-This patch series simplifies task management function handling in the SCSI
-target core considerably. The following tests have been run against this patch
-series for both the iSCSI and SRPT target drivers:
-- Run the libiscsi conformance tests.
-- Run fio ${dev} in one shell and while sg_reset -d ${dev}; do :; done from
-  another shell. This is a good way to stress test TMF handling.
-- For the SRP target driver: run the srp-test software.
+We can derive the order from sg->length and so do not need to pass it in
+explicitly. Rename the function to sgl_free_n.
 
-Please consider this patch series for kernel v4.17.
+Signed-off-by: Tvrtko Ursulin <tvrtko.ursulin@intel.com>
+Cc: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Johannes Thumshirn <jthumshirn@suse.de>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: linux-scsi@vger.kernel.org
+Cc: target-devel@vger.kernel.org
 
-Thanks,
+---
+ drivers/target/target_core_transport.c |  2 +-
+ include/linux/scatterlist.h            |  5 ++---
+ lib/scatterlist.c                      | 16 ++++++----------
+ 3 files changed, 9 insertions(+), 14 deletions(-)
 
-Bart.
-
-Bart Van Assche (14):
-  target: Fix an argument name in a function documentation header
-  target: Use config_item_name() instead of open-coding it
-  target: Avoid that EXTENDED COPY commands trigger lock inversion
-  target: Make the session shutdown code also wait for commands that are
-    being aborted
-  target: Document when CMD_T_STOP and CMD_T_COMPLETE are set
-  target: Simplify core_tmr_handle_tas_abort()
-  target: Fold core_tmr_handle_tas_abort() into
-    transport_cmd_finish_abort()
-  target: Simplify transport_generic_free_cmd() (1/2)
-  target: Simplify transport_generic_free_cmd() (2/2)
-  target: Simplify the code for waiting for command completion
-  target/iscsi: Reduce number of __iscsit_free_cmd() callers
-  target: Remove second argument from fabric_make_tpg()
-  target/tcm_loop: Avoid that static checkers warn about dead code
-  target: Fix handling of removed LUNs
-
- drivers/infiniband/ulp/srpt/ib_srpt.c        |   2 -
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c     |   1 -
- drivers/scsi/qla2xxx/tcm_qla2xxx.c           |  12 +-
- drivers/target/iscsi/iscsi_target.c          |   2 -
- drivers/target/iscsi/iscsi_target_configfs.c |   7 +-
- drivers/target/iscsi/iscsi_target_util.c     |   4 +-
- drivers/target/loopback/tcm_loop.c           |  11 +-
- drivers/target/sbp/sbp_target.c              |   6 +-
- drivers/target/target_core_configfs.c        |   4 +-
- drivers/target/target_core_device.c          |  31 +++--
- drivers/target/target_core_fabric_configfs.c |   2 +-
- drivers/target/target_core_internal.h        |   2 +-
- drivers/target/target_core_sbc.c             |   7 +-
- drivers/target/target_core_tmr.c             |  30 +----
- drivers/target/target_core_transport.c       | 166 ++++++++++++---------------
- drivers/target/target_core_ua.c              |  10 +-
- drivers/target/tcm_fc/tfc_conf.c             |   5 +-
- drivers/usb/gadget/function/f_tcm.c          |   8 +-
- drivers/vhost/scsi.c                         |   4 +-
- drivers/xen/xen-scsiback.c                   |   4 +-
- include/target/target_core_base.h            |   5 +-
- include/target/target_core_fabric.h          |   2 +-
- 22 files changed, 136 insertions(+), 189 deletions(-)
-
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 4558f2e1fe1b..91e8f4047492 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -2303,7 +2303,7 @@ static void target_complete_ok_work(struct work_struct *work)
+ 
+ void target_free_sgl(struct scatterlist *sgl, int nents)
+ {
+-	sgl_free_n_order(sgl, nents, 0);
++	sgl_free_n(sgl, nents);
+ }
+ EXPORT_SYMBOL(target_free_sgl);
+ 
+diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
+index 3ffc5f3bf181..3779d1fdd5c4 100644
+--- a/include/linux/scatterlist.h
++++ b/include/linux/scatterlist.h
+@@ -280,8 +280,7 @@ int sg_alloc_table_from_pages(struct sg_table *sgt, struct page **pages,
+ struct scatterlist *sgl_alloc_order(unsigned long length, unsigned int order,
+ 				    bool chainable, gfp_t gfp,
+ 				    unsigned int *nent_p);
+-void sgl_free_n_order(struct scatterlist *sgl, unsigned int nents,
+-		      unsigned int order);
++void sgl_free_n(struct scatterlist *sgl, unsigned int nents);
+ 
+ /**
+  * sgl_alloc - allocate a scatterlist and its pages
+@@ -303,7 +302,7 @@ sgl_alloc(unsigned long length, gfp_t gfp, unsigned int *nent_p)
+  */
+ static inline void sgl_free(struct scatterlist *sgl)
+ {
+-	sgl_free_n_order(sgl, UINT_MAX, 0);
++	sgl_free_n(sgl, UINT_MAX);
+ }
+ 
+ #endif /* CONFIG_SGL_ALLOC */
+diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+index c637849482d3..76111e91a038 100644
+--- a/lib/scatterlist.c
++++ b/lib/scatterlist.c
+@@ -493,7 +493,7 @@ struct scatterlist *sgl_alloc_order(unsigned long length, unsigned int order,
+ {
+ 	unsigned int chunk_len = PAGE_SIZE << order;
+ 	struct scatterlist *sgl, *sg;
+-	unsigned int nent, i;
++	unsigned int nent;
+ 
+ 	nent = round_up(length, chunk_len) >> (PAGE_SHIFT + order);
+ 
+@@ -517,12 +517,11 @@ struct scatterlist *sgl_alloc_order(unsigned long length, unsigned int order,
+ 
+ 	sg_init_table(sgl, nent);
+ 	sg = sgl;
+-	i = 0;
+ 	while (length) {
+ 		struct page *page = alloc_pages(gfp, order);
+ 
+ 		if (!page) {
+-			sgl_free_n_order(sgl, i, order);
++			sgl_free(sgl);
+ 			return NULL;
+ 		}
+ 
+@@ -530,7 +529,6 @@ struct scatterlist *sgl_alloc_order(unsigned long length, unsigned int order,
+ 		sg_set_page(sg, page, chunk_len, 0);
+ 		length -= chunk_len;
+ 		sg = sg_next(sg);
+-		i++;
+ 	}
+ 	WARN_ONCE(length, "length = %ld\n", length);
+ 	return sgl;
+@@ -538,10 +536,9 @@ struct scatterlist *sgl_alloc_order(unsigned long length, unsigned int order,
+ EXPORT_SYMBOL(sgl_alloc_order);
+ 
+ /**
+- * sgl_free_n_order - free a scatterlist and its pages
++ * sgl_free_n - free a scatterlist and its pages
+  * @sgl: Scatterlist with one or more elements
+  * @nents: Maximum number of elements to free
+- * @order: Second argument for __free_pages()
+  *
+  * Notes:
+  * - If several scatterlists have been chained and each chain element is
+@@ -550,8 +547,7 @@ EXPORT_SYMBOL(sgl_alloc_order);
+  * - All pages in a chained scatterlist can be freed at once by setting @nents
+  *   to a high number.
+  */
+-void sgl_free_n_order(struct scatterlist *sgl, unsigned int nents,
+-		      unsigned int order)
++void sgl_free_n(struct scatterlist *sgl, unsigned int nents)
+ {
+ 	struct scatterlist *sg;
+ 	struct page *page;
+@@ -562,11 +558,11 @@ void sgl_free_n_order(struct scatterlist *sgl, unsigned int nents,
+ 			break;
+ 		page = sg_page(sg);
+ 		if (page)
+-			__free_pages(page, order);
++			__free_pages(page, get_order(sg->length));
+ 	}
+ 	kfree(sgl);
+ }
+-EXPORT_SYMBOL(sgl_free_n_order);
++EXPORT_SYMBOL(sgl_free_n);
+ 
+ #endif /* CONFIG_SGL_ALLOC */
+ 
 -- 
-2.16.2
+2.14.1
 
