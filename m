@@ -1,48 +1,23 @@
-From: Tvrtko Ursulin <tursulin@ursulin.net>
-Date: Thu, 08 Mar 2018 07:59:33 +0000
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Thu, 08 Mar 2018 15:56:32 +0000
 Subject: Re: [PATCH 6/6] lib/scatterlist: Drop order argument from sgl_free_n_order
-Message-Id: <faa56419-bdce-c539-5eee-5e180c62b0a5@ursulin.net>
+Message-Id: <1520524591.2809.0.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180307124712.14963-1-tvrtko.ursulin@linux.intel.com>
- <20180307124712.14963-7-tvrtko.ursulin@linux.intel.com>
- <1520447415.5558.12.camel@HansenPartnership.com>
-In-Reply-To: <1520447415.5558.12.camel@HansenPartnership.com>
+         <20180307124712.14963-7-tvrtko.ursulin@linux.intel.com>
+         <1520447415.5558.12.camel@HansenPartnership.com>
+         <faa56419-bdce-c539-5eee-5e180c62b0a5@ursulin.net>
+In-Reply-To: <faa56419-bdce-c539-5eee-5e180c62b0a5@ursulin.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: James Bottomley <James.Bottomley@HansenPartnership.com>, linux-kernel@vger.kernel.org
-Cc: Tvrtko Ursulin <tvrtko.ursulin@intel.com>, Bart Van Assche <bart.vanassche@wdc.com>, Hannes Reinecke <hare@suse.com>, Johannes Thumshirn <jthumshirn@suse.de>, Jens Axboe <axboe@kernel.dk>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "James.Bottomley@HansenPartnership.com" <James.Bottomley@HansenPartnership.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tursulin@ursulin.net" <tursulin@ursulin.net>
+Cc: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "tvrtko.ursulin@intel.com" <tvrtko.ursulin@intel.com>, "hare@suse.com" <hare@suse.com>, "jthumshirn@suse.de" <jthumshirn@suse.de>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "axboe@kernel.dk" <axboe@kernel.dk>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
 
-Hi,
-
-On 07/03/18 18:30, James Bottomley wrote:
-> On Wed, 2018-03-07 at 12:47 +0000, Tvrtko Ursulin wrote:
->> From: Tvrtko Ursulin <tvrtko.ursulin@intel.com>
-> 
-> Firstly, I don't see any justifiable benefit to churning this API, so
-> why bother? but secondly this:
-
-Primarily because I wanted to extend sgl_alloc_order slightly in order 
-to be able to use it from i915. And then in the process noticed a couple 
-of bugs in the implementation, type inconsistencies and unused exported 
-symbols. That gave me a feeling API could actually use a bit of work.
-
->> We can derive the order from sg->length and so do not need to pass it
->> in explicitly.
-> 
-> Is wrong.  I can have a length 2 scatterlist that crosses a page
-> boundary, but I can also have one within a single page, so the order
-> cannot be deduced from the length.
-
-sgl_alloc_order never does this.
-
-However there is a different bug in my patch relating to the last entry 
-which can have shorter length from the rest. So get_order on the last 
-entry is incorrect - I have to store the deduced order and carry it over.
-
-In which case it may even make sense to refactor sgl_alloc_order a bit 
-more to avoid wastage on the last entry with high order allocations.
-
-Regards,
-
-Tvrtko
+T24gVGh1LCAyMDE4LTAzLTA4IGF0IDA3OjU5ICswMDAwLCBUdnJ0a28gVXJzdWxpbiB3cm90ZToN
+Cj4gSG93ZXZlciB0aGVyZSBpcyBhIGRpZmZlcmVudCBidWcgaW4gbXkgcGF0Y2ggcmVsYXRpbmcg
+dG8gdGhlIGxhc3QgZW50cnkgDQo+IHdoaWNoIGNhbiBoYXZlIHNob3J0ZXIgbGVuZ3RoIGZyb20g
+dGhlIHJlc3QuIFNvIGdldF9vcmRlciBvbiB0aGUgbGFzdCANCj4gZW50cnkgaXMgaW5jb3JyZWN0
+IC0gSSBoYXZlIHRvIHN0b3JlIHRoZSBkZWR1Y2VkIG9yZGVyIGFuZCBjYXJyeSBpdCBvdmVyLg0K
+DQpXaWxsIHRoYXQgd29yayBpZiB0aGVyZSBpcyBvbmx5IG9uZSBlbnRyeSBpbiB0aGUgbGlzdCBh
+bmQgaWYgaXQgaXMgYSBzaG9ydA0KZW50cnk/DQoNCkJhcnQuDQoNCg0KDQo
