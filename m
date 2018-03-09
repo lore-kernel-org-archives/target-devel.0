@@ -1,37 +1,34 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Thu, 01 Mar 2018 22:26:19 +0000
-Subject: [PATCH 01/14] target: Fix an argument name in a function documentation header
-Message-Id: <20180301222632.31507-2-bart.vanassche@wdc.com>
+From: Chris Friesen <chris.friesen@windriver.com>
+Date: Fri, 09 Mar 2018 21:08:01 +0000
+Subject: Bug?  CPU affinity of iSCSI target doesn't abide by kernel boot args
+Message-Id: <5AA2F7B1.5050900@windriver.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Make sure that the kernel-doc header matches the function declaration.
 
-Fixes: commit ea98d7f9c7cc ("target: Add target_submit_tmr helper function")
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Mike Christie <mchristi@redhat.com>
----
- drivers/target/target_core_transport.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I think I've found some suboptimal behaviour in the iSCSI target code, but I'd 
+like another opinion.
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 4558f2e1fe1b..f649cf0bed75 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1654,7 +1654,7 @@ static bool target_lookup_lun_from_tag(struct se_session *se_sess, u64 tag,
-  * @se_sess: associated se_sess for endpoint
-  * @sense: pointer to SCSI sense buffer
-  * @unpacked_lun: unpacked LUN to reference for struct se_lun
-- * @fabric_context: fabric context for TMR req
-+ * @fabric_tmr_ptr: fabric context for TMR req
-  * @tm_type: Type of TM request
-  * @gfp: gfp type for caller
-  * @tag: referenced task tag for TMR_ABORT_TASK
--- 
-2.16.2
+Just as a caveat, this behaviour was first seen on a CentOS 7 kernel, but 
+looking at the code I think it'll behave the same in master.
 
+Basically, the issue is that the iSCSI target code creates a pair of kernel 
+threads (one for tx, one for rx) for each connection.  Each pair gets affined to 
+the same logical CPU.
+
+The problem is that this affinity does not reflect kernel boot args such as 
+"isolcpus", "rcu_nocbs", or "irqaffinity".  Instead, it seems to start at cpu0 
+and increment by one for each pair of kernel threads.
+
+This seems less than ideal.  If the sysadmin has tried to ensure certain CPUs 
+are available for high-performance/low-latency work, it seems odd for the kernel 
+to arbitrarily stick a pair of I/O threads on them.
+
+Am I missing something?  Is there a way to set limits on where these threads are 
+placed?
+
+Thanks,
+Chris
