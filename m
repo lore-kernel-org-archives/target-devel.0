@@ -1,7 +1,7 @@
-From: Andrei Vagin <avagin@virtuozzo.com>
-Date: Tue, 20 Mar 2018 07:54:58 +0000
+From: Christoph Hellwig <hch@infradead.org>
+Date: Tue, 20 Mar 2018 08:47:01 +0000
 Subject: Re: [PATCH] [RFC] target/file: add support of direct and async I/O
-Message-Id: <20180320075456.GA11151@outlook.office365.com>
+Message-Id: <20180320084701.GA4241@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180309004259.16052-1-avagin@openvz.org>
 In-Reply-To: <20180309004259.16052-1-avagin@openvz.org>
@@ -10,91 +10,107 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Fri, Mar 16, 2018 at 12:50:27AM -0700, Christoph Hellwig wrote:
-> > DIF (PI) emulation doesn't work when a target uses async I/O, because
-> > DIF metadata is saved in a separate file, and it is another non-trivial
-> > task how to synchronize writing in two files, so that a following read
-> > operation always returns a consisten metadata for a specified block.
+On Tue, Mar 20, 2018 at 12:54:58AM -0700, Andrei Vagin wrote:
+> commit 92d773324b7edbd36bf0c28c1e0157763aeccc92
+> Author: Shaohua Li <shli@fb.com>
+> Date:   Fri Sep 1 11:15:17 2017 -0700
 > 
-> There literally is no way to do that, even without aio.  The file
-> DIF implementation should probably regarded as an early bringup /
-> prototype tool, not something really usable.
+>     block/loop: fix use after free
+>     
+>     lo_rw_aio->call_read_iter->
+>     1       aops->direct_IO
+>     2       iov_iter_revert
+>     lo_rw_aio_complete could happen between 1 and 2, the bio and bvec
+> could
+>     be freed before 2, which accesses bvec.
+>     
+>     Signed-off-by: Shaohua Li <shli@fb.com>
+>     Signed-off-by: Jens Axboe <axboe@kernel.dk>
 > 
-> > +static void cmd_rw_aio_do_completion(struct target_core_file_cmd *cmd)
-> > +{
-> > +	if (!atomic_dec_and_test(&cmd->ref))
-> > +		return;
-> 
-> There is no need for reference counting.  If the read_iter/write iter
-> method returns -EIOCBQUEUED the completion callback needs to complete
-> the I/O and free the structure, else the method caller.
+> This commit looks reasonable, doesn't it? In out case, bvec-s are
+> freed from the callback too.
 
-I was near to send a final version, but I decided to investigate how a
-reference counter was appeared in drivers/block/loop.c:
+It looks completely bogus, but it papers over a valid issue. The
+iovec/bvec passed to ->read_iter/->write_iter is caller allocated
+and freed, so we should always free it after the calls.  The actual
+I/O completion is separate from that.  Below is the real fix for the
+loop driver:
 
-commit 92d773324b7edbd36bf0c28c1e0157763aeccc92
-Author: Shaohua Li <shli@fb.com>
-Date:   Fri Sep 1 11:15:17 2017 -0700
+---
+From 101f857c5b67492cfd75212d104699813f1bd345 Mon Sep 17 00:00:00 2001
+From: Christoph Hellwig <hch@lst.de>
+Date: Tue, 20 Mar 2018 09:35:55 +0100
+Subject: loop: remove loop_cmd refcounting
 
-    block/loop: fix use after free
-    
-    lo_rw_aio->call_read_iter->
-    1       aops->direct_IO
-    2       iov_iter_revert
-    lo_rw_aio_complete could happen between 1 and 2, the bio and bvec
-could
-    be freed before 2, which accesses bvec.
-    
-    Signed-off-by: Shaohua Li <shli@fb.com>
-    Signed-off-by: Jens Axboe <axboe@kernel.dk>
+Instead of introducing an unneeded refcount free the bvec after calling
+into ->read_iter and ->write_iter, which follows the the normal read/write
+path conventions.
 
-This commit looks reasonable, doesn't it? In out case, bvec-s are
-freed from the callback too.
+Fixes: 92d77332 ("block/loop: fix use after free")
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/block/loop.c | 14 ++------------
+ drivers/block/loop.h |  1 -
+ 2 files changed, 2 insertions(+), 13 deletions(-)
 
-> 
-> > +	if (!(fd_dev->fbd_flags & FDBD_HAS_BUFFERED_IO_WCE))
-> > +		aio_cmd->iocb.ki_flags |= IOCB_DIRECT;
-> 
-> aio without IOCB_DIRECT doesn't make any sense. But the WCE flag
-> really has nothing to do with buffers vs direct I/O anyway.
-> 
-> > +	if (is_write)
-> > +		ret = call_write_iter(file, &aio_cmd->iocb, &iter);
-> > +	else
-> > +		ret = call_read_iter(file, &aio_cmd->iocb, &iter);
-> 
-> Please call the methods directly instead of through the wrappers.
-> 
-> > +
-> >  static int fd_do_rw(struct se_cmd *cmd, struct file *fd,
-> >  		    u32 block_size, struct scatterlist *sgl,
-> >  		    u32 sgl_nents, u32 data_length, int is_write)
-> > @@ -536,6 +626,7 @@ fd_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
-> >  	struct file *pfile = fd_dev->fd_prot_file;
-> >  	sense_reason_t rc;
-> >  	int ret = 0;
-> > +	int aio = fd_dev->fbd_flags & FDBD_HAS_ASYNC_IO;
-> >  	/*
-> >  	 * We are currently limited by the number of iovecs (2048) per
-> >  	 * single vfs_[writev,readv] call.
-> > @@ -550,7 +641,11 @@ fd_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
-> >  	 * Call vectorized fileio functions to map struct scatterlist
-> >  	 * physical memory addresses to struct iovec virtual memory.
-> >  	 */
-> > -	if (data_direction = DMA_FROM_DEVICE) {
-> > +	if (aio) {
-> 
-> fd_execute_rw shares basically no code with the aio case.  I'd rather
-> have a very high level wrapper here:
-> 
-> static sense_reason_t
-> fd_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
-> 		enum dma_data_direction data_direction)
-> {
-> 	if (FD_DEV(cmd->se_dev)->fbd_flags & FDBD_HAS_ASYNC_IO)
-> 		return fd_execute_rw_aio(cmd, sgl, sgl_nents, dma_direction);
-> 	return fd_execute_rw_buffered(cmd, sgl, sgl_nents, dma_direction);
-> }
-> 
-> and keep the code separate.
-> 
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index ee62d2d517bf..2578a39640b8 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -463,15 +463,6 @@ static void lo_complete_rq(struct request *rq)
+ 	blk_mq_end_request(rq, cmd->ret < 0 ? BLK_STS_IOERR : BLK_STS_OK);
+ }
+ 
+-static void lo_rw_aio_do_completion(struct loop_cmd *cmd)
+-{
+-	if (!atomic_dec_and_test(&cmd->ref))
+-		return;
+-	kfree(cmd->bvec);
+-	cmd->bvec = NULL;
+-	blk_mq_complete_request(cmd->rq);
+-}
+-
+ static void lo_rw_aio_complete(struct kiocb *iocb, long ret, long ret2)
+ {
+ 	struct loop_cmd *cmd = container_of(iocb, struct loop_cmd, iocb);
+@@ -479,7 +470,7 @@ static void lo_rw_aio_complete(struct kiocb *iocb, long ret, long ret2)
+ 	if (cmd->css)
+ 		css_put(cmd->css);
+ 	cmd->ret = ret;
+-	lo_rw_aio_do_completion(cmd);
++	blk_mq_complete_request(cmd->rq);
+ }
+ 
+ static int lo_rw_aio(struct loop_device *lo, struct loop_cmd *cmd,
+@@ -527,7 +518,6 @@ static int lo_rw_aio(struct loop_device *lo, struct loop_cmd *cmd,
+ 		bvec = __bvec_iter_bvec(bio->bi_io_vec, bio->bi_iter);
+ 		segments = bio_segments(bio);
+ 	}
+-	atomic_set(&cmd->ref, 2);
+ 
+ 	iov_iter_bvec(&iter, ITER_BVEC | rw, bvec,
+ 		      segments, blk_rq_bytes(rq));
+@@ -545,7 +535,7 @@ static int lo_rw_aio(struct loop_device *lo, struct loop_cmd *cmd,
+ 	else
+ 		ret = call_read_iter(file, &cmd->iocb, &iter);
+ 
+-	lo_rw_aio_do_completion(cmd);
++	kfree(cmd->bvec);
+ 	kthread_associate_blkcg(NULL);
+ 
+ 	if (ret != -EIOCBQUEUED)
+diff --git a/drivers/block/loop.h b/drivers/block/loop.h
+index 0f45416e4fcf..ba65848c7c33 100644
+--- a/drivers/block/loop.h
++++ b/drivers/block/loop.h
+@@ -68,7 +68,6 @@ struct loop_cmd {
+ 	struct kthread_work work;
+ 	struct request *rq;
+ 	bool use_aio; /* use AIO interface to handle I/O */
+-	atomic_t ref; /* only for aio */
+ 	long ret;
+ 	struct kiocb iocb;
+ 	struct bio_vec *bvec;
+-- 
+2.14.2
+
