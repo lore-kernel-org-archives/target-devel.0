@@ -1,17 +1,18 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Thu, 22 Mar 2018 09:13:19 +0000
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+Date: Thu, 22 Mar 2018 09:37:45 +0000
 Subject: Re: [PATCH] target: Use WARNON_NON_RT(!irqs_disabled())
-Message-Id: <alpine.DEB.2.21.1803221012160.1579@nanos.tec.linutronix.de>
+Message-Id: <20180322093745.GC4229@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180321153854.GB24312@kernel.org> <CA+55aFwKN_JijmCt=0S4jF8KzGPmoKNbuYF59va7U4ziJLLryA@mail.gmail.com>
+References: <20180321153854.GB24312@kernel.org>
+ <CA+55aFwKN_JijmCt=0S4jF8KzGPmoKNbuYF59va7U4ziJLLryA@mail.gmail.com>
 In-Reply-To: <CA+55aFwKN_JijmCt=0S4jF8KzGPmoKNbuYF59va7U4ziJLLryA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, LKML <linux-kernel@vger.kernel.org>, linux-rt-users <linux-rt-users@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Daniel Bristot de Oliveira <daniel@bristot.me>, =?ISO-8859-15?Q?Luis_Claudio_R=2E_Gon=E7alves?= <lclaudio@redhat.com>, Clark Williams <williams@redhat.com>, target-devel <target-devel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, linux-rt-users <linux-rt-users@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Daniel Bristot de Oliveira <daniel@bristot.me>, Luis Claudio =?iso-8859-1?Q?R=2E_Gon=E7alves?= <lclaudio@redhat.com>, Clark Williams <williams@redhat.com>, target-devel <target-devel@vger.kernel.org>
 
-On Wed, 21 Mar 2018, Linus Torvalds wrote:
+Em Wed, Mar 21, 2018 at 11:43:58AM -0700, Linus Torvalds escreveu:
 > [ Adding PeterZ to participants due to query about lockdep_assert() ]
 > 
 > On Wed, Mar 21, 2018 at 8:38 AM, Arnaldo Carvalho de Melo
@@ -24,26 +25,9 @@ On Wed, 21 Mar 2018, Linus Torvalds wrote:
 > Ugh.
 > 
 > Can't we just replace both of those with a lockdep annotation?
-> 
-> Does "lockdep_assert_held()" already verify the irq contextr, or do we
-> need lockdep_assert_irqs_disabled() too?
-> 
-> Honestly, the old-fashioned way of doing verification of state by hand
-> is understandable, but it's legacy and kind of pointless when we have
-> much better tools these days.
-> 
-> I'm perfectly willing to leave old assertions in place, but if they
-> need fixing anyway, I'd damn well want to fix them *right* instead of
-> starting to just add more piles of hacks on top of the old model.
-> 
-> Because when the details of the locking rules depend on RT vs non-RT,
-> I want the checks to make sense.  And presumably lockdep is the thing
-> that really knows what the status of a lock is, no?
 
-We are working on replacing the _NONRT _RT variants with proper lockdep
-mechnisms which are aware of the RT vs. non-RT magic under the hood. Just
-not there yet.
+Huh, even better, when that feature gets finished (tglx said it was
+being developed, not there yet tho) it'll allow further reduction of the
+PREEMPT_RT_FULL patchkit.
 
-Thanks,
-
-	tglx
+- Arnaldo
