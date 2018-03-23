@@ -1,42 +1,81 @@
-From: Tvrtko Ursulin <tursulin@ursulin.net>
-Date: Thu, 08 Mar 2018 17:06:36 +0000
-Subject: Re: [PATCH 6/6] lib/scatterlist: Drop order argument from sgl_free_n_order
-Message-Id: <b07f8f6b-4264-d1d1-1e14-b22932130ac4@ursulin.net>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Date: Fri, 23 Mar 2018 17:36:34 +0000
+Subject: [PATCH 1/2 v2] target: drop spin_lock_assert() + irqs_disabled() combo checks
+Message-Id: <20180323173633.kh5fwrfj6b5elki5@linutronix.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180307124712.14963-1-tvrtko.ursulin@linux.intel.com>
- <20180307124712.14963-7-tvrtko.ursulin@linux.intel.com>
- <1520447415.5558.12.camel@HansenPartnership.com>
- <faa56419-bdce-c539-5eee-5e180c62b0a5@ursulin.net>
- <1520524591.2809.0.camel@wdc.com>
-In-Reply-To: <1520524591.2809.0.camel@wdc.com>
+References: <20180321153854.GB24312@kernel.org>
+ <CA+55aFwKN_JijmCt=0S4jF8KzGPmoKNbuYF59va7U4ziJLLryA@mail.gmail.com>
+ <20180322093745.GC4229@kernel.org>
+ <20180323155513.dwbgvblenlji33as@linutronix.de>
+ <1521822325.2535.5.camel@wdc.com>
+ <CA+55aFxVkuntSektVmwXktzvfEezdDTAM_zj4DJdp3qJxWf8aA@mail.gmail.com>
+ <20180323171736.bcyi2oiolge4l6hl@linutronix.de>
+In-Reply-To: <20180323171736.bcyi2oiolge4l6hl@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <Bart.VanAssche@wdc.com>, "James.Bottomley@HansenPartnership.com" <James.Bottomley@HansenPartnership.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "tvrtko.ursulin@intel.com" <tvrtko.ursulin@intel.com>, "hare@suse.com" <hare@suse.com>, "jthumshirn@suse.de" <jthumshirn@suse.de>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "axboe@kernel.dk" <axboe@kernel.dk>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Linus Torvalds <torvalds@linux-foundation.org>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
+Cc: Bart Van Assche <Bart.VanAssche@wdc.com>, "acme@kernel.org" <acme@kernel.org>, "daniel@bristot.me" <daniel@bristot.me>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "williams@redhat.com" <williams@redhat.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "lclaudio@redhat.com" <lclaudio@redhat.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-rt-users@vger.kernel.org" <linux-rt-users@vger.kernel.org>
 
+There are a few functions which check for if the lock is held
+(spin_lock_assert()) and the interrupts are disabled (irqs_disabled()).
+From looking at the code, each function is static, the caller is near by
+and does spin_lock_irq|safe(). As Linus puts it:
 
-On 08/03/18 15:56, Bart Van Assche wrote:
-> On Thu, 2018-03-08 at 07:59 +0000, Tvrtko Ursulin wrote:
->> However there is a different bug in my patch relating to the last entry
->> which can have shorter length from the rest. So get_order on the last
->> entry is incorrect - I have to store the deduced order and carry it over.
-> 
-> Will that work if there is only one entry in the list and if it is a short
-> entry?
+|It's not like this is some function that is exported to random users,
+|and we should check that the calling convention is right.
+|
+|This looks like "it may have been useful during coding to document
+|things, but it's not useful long-term".
 
-Yeah, needs more work. I especially don't like that case (as in any 
-other with a final short chunk) wasting memory. So it would need more 
-refactoring to make it possible.
+Remove those checks.
 
-It did work in my internal tree where sgl_alloc_order was extended to 
-become sgl_alloc_order_min_max, and as such uses a smaller order for 
-smaller chunks.
+Reported-by: Arnaldo Carvalho de Melo <acme@kernel.org>
+Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+v1…2: Add credits.
 
-This patch can be dropped for now but the earlier ones are still valid I 
-think. On those one I think we have some opens on how to proceed so if 
-you could reply there, where applicable, that would be great.
+ drivers/target/target_core_tmr.c       | 2 --
+ drivers/target/target_core_transport.c | 6 ------
+ 2 files changed, 8 deletions(-)
 
-Regards,
-
-Tvrtko
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index 9c7bc1ca341a..3d35dad1de2c 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -114,8 +114,6 @@ static bool __target_check_io_state(struct se_cmd *se_cmd,
+ {
+ 	struct se_session *sess = se_cmd->se_sess;
+ 
+-	assert_spin_locked(&sess->sess_cmd_lock);
+-	WARN_ON_ONCE(!irqs_disabled());
+ 	/*
+ 	 * If command already reached CMD_T_COMPLETE state within
+ 	 * target_complete_cmd() or CMD_T_FABRIC_STOP due to shutdown,
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 74b646f165d4..2c3ddb3a4124 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -2954,9 +2954,6 @@ __transport_wait_for_tasks(struct se_cmd *cmd, bool fabric_stop,
+ 	__acquires(&cmd->t_state_lock)
+ {
+ 
+-	assert_spin_locked(&cmd->t_state_lock);
+-	WARN_ON_ONCE(!irqs_disabled());
+-
+ 	if (fabric_stop)
+ 		cmd->transport_state |= CMD_T_FABRIC_STOP;
+ 
+@@ -3241,9 +3238,6 @@ static int __transport_check_aborted_status(struct se_cmd *cmd, int send_status)
+ {
+ 	int ret;
+ 
+-	assert_spin_locked(&cmd->t_state_lock);
+-	WARN_ON_ONCE(!irqs_disabled());
+-
+ 	if (!(cmd->transport_state & CMD_T_ABORTED))
+ 		return 0;
+ 	/*
+-- 
+2.16.2
