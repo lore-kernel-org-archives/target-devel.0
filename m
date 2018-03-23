@@ -1,55 +1,34 @@
-From: "bigeasy@linutronix.de" <bigeasy@linutronix.de>
-Date: Fri, 23 Mar 2018 17:19:59 +0000
-Subject: [PATCH 2/2] target: remove spin_lock_assert() in __target_(attach|detach)_tg_pt_gp()
-Message-Id: <20180323171959.7ac6klrqg4fdk3ey@linutronix.de>
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Fri, 23 Mar 2018 17:44:46 +0000
+Subject: Re: [PATCH 2/2] target: remove spin_lock_assert() in __target_(attach|detach)_tg_pt_gp()
+Message-Id: <1521827085.2535.12.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180321153854.GB24312@kernel.org>
- <CA+55aFwKN_JijmCt=0S4jF8KzGPmoKNbuYF59va7U4ziJLLryA@mail.gmail.com>
- <20180322093745.GC4229@kernel.org>
- <20180323155513.dwbgvblenlji33as@linutronix.de>
- <1521822325.2535.5.camel@wdc.com>
- <CA+55aFxVkuntSektVmwXktzvfEezdDTAM_zj4DJdp3qJxWf8aA@mail.gmail.com>
- <20180323171736.bcyi2oiolge4l6hl@linutronix.de>
-In-Reply-To: <20180323171736.bcyi2oiolge4l6hl@linutronix.de>
+         <CA+55aFwKN_JijmCt=0S4jF8KzGPmoKNbuYF59va7U4ziJLLryA@mail.gmail.com>
+         <20180322093745.GC4229@kernel.org>
+         <20180323155513.dwbgvblenlji33as@linutronix.de>
+         <1521822325.2535.5.camel@wdc.com>
+         <CA+55aFxVkuntSektVmwXktzvfEezdDTAM_zj4DJdp3qJxWf8aA@mail.gmail.com>
+         <20180323171736.bcyi2oiolge4l6hl@linutronix.de>
+         <20180323171959.7ac6klrqg4fdk3ey@linutronix.de>
+In-Reply-To: <20180323171959.7ac6klrqg4fdk3ey@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
-Cc: Bart Van Assche <Bart.VanAssche@wdc.com>, "acme@kernel.org" <acme@kernel.org>, "daniel@bristot.me" <daniel@bristot.me>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "williams@redhat.com" <williams@redhat.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "lclaudio@redhat.com" <lclaudio@redhat.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-rt-users@vger.kernel.org" <linux-rt-users@vger.kernel.org>
+To: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, "bigeasy@linutronix.de" <bigeasy@linutronix.de>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
+Cc: "daniel@bristot.me" <daniel@bristot.me>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "acme@kernel.org" <acme@kernel.org>, "williams@redhat.com" <williams@redhat.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "lclaudio@redhat.com" <lclaudio@redhat.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-rt-users@vger.kernel.org" <linux-rt-users@vger.kernel.org>
 
-__target_attach_tg_pt_gp() and __target_detach_tg_pt_gp() check if the caller
-holds lun_tg_pt_gp_lock(). Both functions are static, the callers are
-acquiring the lock before the invocation of the function so the check
-looks superfluous.
-Remove it.
-
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- drivers/target/target_core_alua.c | 4 ----
- 1 file changed, 4 deletions(-)
-
-diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-index e46ca968009c..e5bda674bdbd 100644
---- a/drivers/target/target_core_alua.c
-+++ b/drivers/target/target_core_alua.c
-@@ -1843,8 +1843,6 @@ static void __target_attach_tg_pt_gp(struct se_lun *lun,
- {
- 	struct se_dev_entry *se_deve;
- 
--	assert_spin_locked(&lun->lun_tg_pt_gp_lock);
--
- 	spin_lock(&tg_pt_gp->tg_pt_gp_lock);
- 	lun->lun_tg_pt_gp = tg_pt_gp;
- 	list_add_tail(&lun->lun_tg_pt_gp_link, &tg_pt_gp->tg_pt_gp_lun_list);
-@@ -1868,8 +1866,6 @@ void target_attach_tg_pt_gp(struct se_lun *lun,
- static void __target_detach_tg_pt_gp(struct se_lun *lun,
- 		struct t10_alua_tg_pt_gp *tg_pt_gp)
- {
--	assert_spin_locked(&lun->lun_tg_pt_gp_lock);
--
- 	spin_lock(&tg_pt_gp->tg_pt_gp_lock);
- 	list_del_init(&lun->lun_tg_pt_gp_link);
- 	tg_pt_gp->tg_pt_gp_members--;
--- 
-2.16.2
-
+T24gRnJpLCAyMDE4LTAzLTIzIGF0IDE4OjE5ICswMTAwLCBiaWdlYXN5QGxpbnV0cm9uaXguZGUg
+d3JvdGU6DQo+IF9fdGFyZ2V0X2F0dGFjaF90Z19wdF9ncCgpIGFuZCBfX3RhcmdldF9kZXRhY2hf
+dGdfcHRfZ3AoKSBjaGVjayBpZiB0aGUgY2FsbGVyDQo+IGhvbGRzIGx1bl90Z19wdF9ncF9sb2Nr
+KCkuIEJvdGggZnVuY3Rpb25zIGFyZSBzdGF0aWMsIHRoZSBjYWxsZXJzIGFyZQ0KPiBhY3F1aXJp
+bmcgdGhlIGxvY2sgYmVmb3JlIHRoZSBpbnZvY2F0aW9uIG9mIHRoZSBmdW5jdGlvbiBzbyB0aGUg
+Y2hlY2sNCj4gbG9va3Mgc3VwZXJmbHVvdXMuDQo+IFJlbW92ZSBpdC4NCg0KRG9lcyB0aGlzIGNo
+ZWNrIGNhdXNlIHRyb3VibGUgdG8gYW55b25lIG9yIHRvIGEgc3BlY2lmaWMga2VybmVsIGNvbmZp
+Z3VyYXRpb24/DQpJbiBvdGhlciB3b3JkcywgZG8gd2UgcmVhbGx5IG5lZWQgdG8gcmVtb3ZlIHRo
+ZXNlIGNoZWNrcz8gSSB0aGluayB0aGF0IHRoZXNlDQpjaGVja3MgYXJlIHVzZWZ1bCBhcyBkb2N1
+bWVudGF0aW9uIHRvIHBlb3BsZSB3aG8gcmVhZCB0aGUgU0NTSSB0YXJnZXQgY29kZS4NClRoZSB0
+YXJnZXQgY29kZSBpcyBhbHJlYWR5IGhhcmQgdG8gZm9sbG93IHNvIEkgdGhpbmsgYW55IGRvY3Vt
+ZW50YXRpb24sDQplc3BlY2lhbGx5IGRvY3VtZW50YXRpb24gaW4gdGhlIGZvcm0gb2YgY29kZSB0
+aGF0IGlzIGNoZWNrZWQgYXQgcnVudGltZSwgaXMNCndlbGNvbWUuDQoNClRoYW5rcywNCg0KQmFy
+dC4NCg0KDQoNCg=
