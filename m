@@ -1,118 +1,55 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Thu, 01 Mar 2018 22:26:28 +0000
-Subject: [PATCH 10/14] target: Simplify the code for waiting for command completion
-Message-Id: <20180301222632.31507-11-bart.vanassche@wdc.com>
+From: "bigeasy@linutronix.de" <bigeasy@linutronix.de>
+Date: Fri, 23 Mar 2018 17:19:59 +0000
+Subject: [PATCH 2/2] target: remove spin_lock_assert() in __target_(attach|detach)_tg_pt_gp()
+Message-Id: <20180323171959.7ac6klrqg4fdk3ey@linutronix.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <20180321153854.GB24312@kernel.org>
+ <CA+55aFwKN_JijmCt=0S4jF8KzGPmoKNbuYF59va7U4ziJLLryA@mail.gmail.com>
+ <20180322093745.GC4229@kernel.org>
+ <20180323155513.dwbgvblenlji33as@linutronix.de>
+ <1521822325.2535.5.camel@wdc.com>
+ <CA+55aFxVkuntSektVmwXktzvfEezdDTAM_zj4DJdp3qJxWf8aA@mail.gmail.com>
+ <20180323171736.bcyi2oiolge4l6hl@linutronix.de>
+In-Reply-To: <20180323171736.bcyi2oiolge4l6hl@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
+Cc: Bart Van Assche <Bart.VanAssche@wdc.com>, "acme@kernel.org" <acme@kernel.org>, "daniel@bristot.me" <daniel@bristot.me>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "williams@redhat.com" <williams@redhat.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "lclaudio@redhat.com" <lclaudio@redhat.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-rt-users@vger.kernel.org" <linux-rt-users@vger.kernel.org>
 
-Instead of embedding the completion that is used for waiting for
-command completion in struct se_cmd, let the context that waits for
-command completion allocate it. This makes it possible to have a
-single code path for non-aborted and aborted commands in
-target_release_cmd_kref() and avoids that transport_generic_free_cmd()
-has to call cmd->se_tfo->release_cmd() directly. This patch does not
-change any functionality. Note: transport_generic_free_cmd() only
-waits until the se_cmd reference count has reached zero after it has
-set both CMD_T_FABRIC_STOP and CMD_T_ABORTED.
+__target_attach_tg_pt_gp() and __target_detach_tg_pt_gp() check if the caller
+holds lun_tg_pt_gp_lock(). Both functions are static, the callers are
+acquiring the lock before the invocation of the function so the check
+looks superfluous.
+Remove it.
 
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- drivers/target/target_core_transport.c | 24 ++++++++----------------
- include/target/target_core_base.h      |  2 +-
- 2 files changed, 9 insertions(+), 17 deletions(-)
+ drivers/target/target_core_alua.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index c8f19a143f5c..d7b0b2f4261e 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1276,7 +1276,7 @@ void transport_init_se_cmd(
- 	INIT_LIST_HEAD(&cmd->se_cmd_list);
- 	INIT_LIST_HEAD(&cmd->state_list);
- 	init_completion(&cmd->t_transport_stop_comp);
--	init_completion(&cmd->cmd_wait_comp);
-+	cmd->compl = NULL;
- 	spin_lock_init(&cmd->t_state_lock);
- 	INIT_WORK(&cmd->work, NULL);
- 	kref_init(&cmd->cmd_kref);
-@@ -2596,6 +2596,7 @@ static void target_wait_free_cmd(struct se_cmd *cmd, bool *aborted, bool *tas)
-  */
- int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index e46ca968009c..e5bda674bdbd 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -1843,8 +1843,6 @@ static void __target_attach_tg_pt_gp(struct se_lun *lun,
  {
-+	DECLARE_COMPLETION_ONSTACK(compl);
- 	int ret = 0;
- 	bool aborted = false, tas = false;
+ 	struct se_dev_entry *se_deve;
  
-@@ -2614,12 +2615,13 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
- 		if (cmd->se_lun)
- 			transport_lun_remove_cmd(cmd);
- 	}
-+	if (aborted)
-+		cmd->compl = &compl;
- 	if (!aborted || tas)
- 		ret = target_put_sess_cmd(cmd);
- 	if (aborted) {
- 		pr_debug("Detected CMD_T_ABORTED for ITT: %llu\n", cmd->tag);
--		wait_for_completion(&cmd->cmd_wait_comp);
--		cmd->se_tfo->release_cmd(cmd);
-+		wait_for_completion(&compl);
- 		ret = 1;
- 	}
- 	return ret;
-@@ -2679,8 +2681,8 @@ static void target_release_cmd_kref(struct kref *kref)
+-	assert_spin_locked(&lun->lun_tg_pt_gp_lock);
+-
+ 	spin_lock(&tg_pt_gp->tg_pt_gp_lock);
+ 	lun->lun_tg_pt_gp = tg_pt_gp;
+ 	list_add_tail(&lun->lun_tg_pt_gp_link, &tg_pt_gp->tg_pt_gp_lun_list);
+@@ -1868,8 +1866,6 @@ void target_attach_tg_pt_gp(struct se_lun *lun,
+ static void __target_detach_tg_pt_gp(struct se_lun *lun,
+ 		struct t10_alua_tg_pt_gp *tg_pt_gp)
  {
- 	struct se_cmd *se_cmd = container_of(kref, struct se_cmd, cmd_kref);
- 	struct se_session *se_sess = se_cmd->se_sess;
-+	struct completion *compl = se_cmd->compl;
- 	unsigned long flags;
--	bool fabric_stop;
- 
- 	if (se_sess) {
- 		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
-@@ -2689,23 +2691,13 @@ static void target_release_cmd_kref(struct kref *kref)
- 			if (list_empty(&se_sess->sess_cmd_list))
- 				wake_up(&se_sess->cmd_list_wq);
- 		}
+-	assert_spin_locked(&lun->lun_tg_pt_gp_lock);
 -
--		spin_lock(&se_cmd->t_state_lock);
--		fabric_stop = (se_cmd->transport_state & CMD_T_FABRIC_STOP) &&
--			      (se_cmd->transport_state & CMD_T_ABORTED);
--		spin_unlock(&se_cmd->t_state_lock);
--
--		if (fabric_stop) {
--			spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
--			target_free_cmd_mem(se_cmd);
--			complete(&se_cmd->cmd_wait_comp);
--			return;
--		}
- 		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
- 	}
- 
- 	target_free_cmd_mem(se_cmd);
- 	se_cmd->se_tfo->release_cmd(se_cmd);
-+	if (compl)
-+		complete(compl);
- }
- 
- /**
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index b9fb73f2dcbb..7248965609b5 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -473,7 +473,7 @@ struct se_cmd {
- 	struct se_session	*se_sess;
- 	struct se_tmr_req	*se_tmr_req;
- 	struct list_head	se_cmd_list;
--	struct completion	cmd_wait_comp;
-+	struct completion	*compl;
- 	const struct target_core_fabric_ops *se_tfo;
- 	sense_reason_t		(*execute_cmd)(struct se_cmd *);
- 	sense_reason_t (*transport_complete_callback)(struct se_cmd *, bool, int *);
+ 	spin_lock(&tg_pt_gp->tg_pt_gp_lock);
+ 	list_del_init(&lun->lun_tg_pt_gp_link);
+ 	tg_pt_gp->tg_pt_gp_members--;
 -- 
 2.16.2
 
