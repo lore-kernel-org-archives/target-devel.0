@@ -1,44 +1,24 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 23 Mar 2018 16:37:40 +0000
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+Date: Mon, 26 Mar 2018 14:21:36 +0000
 Subject: Re: [PATCH] target: Use WARNON_NON_RT(!irqs_disabled())
-Message-Id: <CA+55aFxVkuntSektVmwXktzvfEezdDTAM_zj4DJdp3qJxWf8aA@mail.gmail.com>
+Message-Id: <20180326142136.GD18897@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180321153854.GB24312@kernel.org> <CA+55aFwKN_JijmCt=0S4jF8KzGPmoKNbuYF59va7U4ziJLLryA@mail.gmail.com>
- <20180322093745.GC4229@kernel.org> <20180323155513.dwbgvblenlji33as@linutronix.de>
- <1521822325.2535.5.camel@wdc.com>
-In-Reply-To: <1521822325.2535.5.camel@wdc.com>
+References: <20180321153854.GB24312@kernel.org>
+ <CA+55aFwKN_JijmCt=0S4jF8KzGPmoKNbuYF59va7U4ziJLLryA@mail.gmail.com>
+ <20180322093745.GC4229@kernel.org>
+ <20180323155513.dwbgvblenlji33as@linutronix.de>
+In-Reply-To: <20180323155513.dwbgvblenlji33as@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <Bart.VanAssche@wdc.com>
-Cc: "bigeasy@linutronix.de" <bigeasy@linutronix.de>, "acme@kernel.org" <acme@kernel.org>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>, "daniel@bristot.me" <daniel@bristot.me>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "williams@redhat.com" <williams@redhat.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "lclaudio@redhat.com" <lclaudio@redhat.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-rt-users@vger.kernel.org" <linux-rt-users@vger.kernel.org>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, linux-rt-users <linux-rt-users@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Daniel Bristot de Oliveira <daniel@bristot.me>, Luis Claudio =?iso-8859-1?Q?R=2E_Gon=E7alves?= <lclaudio@redhat.com>, Clark Williams <williams@redhat.com>, target-devel <target-devel@vger.kernel.org>
 
-On Fri, Mar 23, 2018 at 9:25 AM, Bart Van Assche <Bart.VanAssche@wdc.com> wrote:
->
-> Have you considered to delete the WARN_ON_ONCE(!irqs_disabled()) statement?
-> I think that check duplicates functionality that already exists in lockdep
-> since lockdep is already able to detect spinlock use inconsistencies.
+Em Fri, Mar 23, 2018 at 04:55:13PM +0100, Sebastian Andrzej Siewior escreveu:
+> Arnaldo, please do "[PATCH RT]" while sending patches. Then the bots
+> don't complain if it applies but does not compile on !RT kernel (or so
+> I've been told).
 
-Please just delete both lines.
+Ok, I'll try to remember that for future patches.
 
-There is exactly two callers of that static function, and both of them do
-
-        spin_lock_irq(&cmd->t_state_lock);
-
-right above the call.
-
-It's not like this is some function that is exported to random users,
-and we should check that the calling convention is right.
-
-So honestly, even lockdep annotations look like you don't need them.
-
-This looks like "it may have been useful during coding to document
-things, but it's not useful long-term".
-
-Sure, the annotation is not wrong, but even if you go "verification is
-good", you should ask yourself whether there are maybe better places
-that would catch more relevant problems, than putting verification
-into some static function with two trivially correct callers wrt this
-verification?
-
-              Linus
+- Arnaldo
