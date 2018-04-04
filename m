@@ -1,56 +1,44 @@
-From: Zhu Lingshan <lszhu@suse.de>
-Date: Thu, 19 Apr 2018 09:47:02 +0000
-Subject: Re: [PATCH 5/6] tcmu: refactor nl dev_size attr with new helpers
-Message-Id: <c287b437-5da2-755d-7063-6edbf3973c93@suse.de>
+From: Lee Duncan <lduncan@suse.com>
+Date: Wed, 04 Apr 2018 19:47:03 +0000
+Subject: [PATCH] target: change default dbroot to /etc/target
+Message-Id: <20180404194703.31888-1-lduncan@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180416110428.5273-5-lszhu@suse.com>
-In-Reply-To: <20180416110428.5273-5-lszhu@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Thanks Mike, V2 is sent out :)
+The dbroot (target PR database root directory) is
+configurable but default to /var/target, a historic
+value. But the reason for adding configurability
+was to move the target directory out of /var. This
+is because the File Hierarchy Standard v3.0 mandates
+that this "target" directory not be in /var. See
+https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.pdf
 
+This change moves the default from /var/target to
+/etc/target, but this value is still configurable,
+so those wishing to continue to use /var/target
+can still do so.
 
-On 2018/4/19 8:15, Mike Christie wrote:
-> On 04/16/2018 06:04 AM, Zhu Lingshan wrote:
->> use new netlink events helpers tcmu_netlink_init() and
->> tcmu_netlink_send() to refactor netlink event attribute
->> TCMU_ATTR_DEV_SIZE(belongs to TCMU_CMD_RECONFIG_DEVICE)
->> which is also dev_size in configFS.
->>
->> Signed-off-by: Zhu Lingshan <lszhu@suse.com>
->> ---
->>   drivers/target/target_core_user.c | 24 ++++++++++++++++++++++--
->>   1 file changed, 22 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
->> index f98b986e6d50..d913fb15f1b4 100644
->> --- a/drivers/target/target_core_user.c
->> +++ b/drivers/target/target_core_user.c
->> @@ -2300,6 +2300,27 @@ static ssize_t tcmu_dev_size_show(struct config_item *item, char *page)
->>   	return snprintf(page, PAGE_SIZE, "%zu\n", udev->dev_size);
->>   }
->>   
->> +static int tcmu_send_dev_size_event(struct tcmu_dev *udev, u64 size)
->> +{
->> +	struct sk_buff *skb = NULL;
->> +	void *msg_header = NULL;
->> +	int ret = 0;
->> +
->> +	ret = tcmu_netlink_event_init(udev, TCMU_CMD_RECONFIG_DEVICE,
->> +				      &skb, &msg_header);
->> +	if (ret < 0)
->> +		return ret;
->> +	ret = nla_put_u64_64bit(skb, TCMU_ATTR_DEV_SIZE,
->> +				size, TCMU_ATTR_PAD);
->> +	if (ret < 0) {
->> +		nlmsg_free(skb);
->> +		return ret;
->> +	}
->> +	ret = tcmu_netlink_event_send(udev, TCMU_CMD_RECONFIG_DEVICE,
->> +		&skb, &msg_header);
-> You need to tab/space this over to match the other style.
->
+Signed-off-by: Lee Duncan <lduncan@suse.com>
+---
+ drivers/target/target_core_internal.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index 1d5afc3ae017..34eccef975b7 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -165,7 +165,7 @@ extern struct se_portal_group xcopy_pt_tpg;
+ 
+ /* target_core_configfs.c */
+ #define DB_ROOT_LEN		4096
+-#define	DB_ROOT_DEFAULT		"/var/target"
++#define	DB_ROOT_DEFAULT		"/etc/target"
+ 
+ extern char db_root[];
+ 
+-- 
+2.13.6
 
