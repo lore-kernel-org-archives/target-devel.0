@@ -1,46 +1,54 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 12 Apr 2018 16:50:14 +0000
-Subject: Re: [PATCH] tcmu: fix error resetting qfull_time_out to default
-Message-Id: <5ACF8E46.5010403@redhat.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri, 06 Apr 2018 05:07:52 +0000
+Subject: Re: [PATCH 01/10] staging: fnic2 add initialization
+Message-Id: <20180406050752.GC27591@kroah.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180409114436.21895-1-prasanna.kalever@redhat.com>
-In-Reply-To: <20180409114436.21895-1-prasanna.kalever@redhat.com>
+References: <20180405211519.GA12584@osmithde-lnx.cisco.com>
+ <20180405211644.GB12584@osmithde-lnx.cisco.com>
+In-Reply-To: <20180405211644.GB12584@osmithde-lnx.cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Oliver Smith-Denny <osmithde@cisco.com>
+Cc: Sesidhar Baddela <sebaddel@cisco.com>, Gian Carlo Boffa <gcboffa@cisco.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 04/09/2018 06:44 AM, Prasanna Kumar Kalever wrote:
-> Problem:
-> -------
-> $ cat /sys/kernel/config/target/core/user_0/block/attrib/qfull_time_out
-> -1
+On Thu, Apr 05, 2018 at 02:16:45PM -0700, Oliver Smith-Denny wrote:
+> These files contain module load and unload, global driver context,
+> PCI registration, PCI probe and remove, and definitions of
+> the fnic2 global context.
 > 
-> $ echo "-1" > /sys/kernel/config/target/core/user_0/block/attrib/qfull_time_out
-> -bash: echo: write error: Invalid argument
-> 
-> Fix:
+> Signed-off-by: Oliver Smith-Denny <osmithde@cisco.com>
+> Signed-off-by: Sesidhar Baddela <sebaddel@cisco.com>
+> Signed-off-by: Anil Chintalapati <achintal@cisco.com>
+> Signed-off-by: Arulprabhu Ponnusamy <arulponn@cisco.com>
+> Signed-off-by: Gian Carlo Boffa <gcboffa@cisco.com>
+> Co-Developed-by: Arulprabhu Ponnusamy <arulponn@cisco.com>
+> Co-Developed-by: Gian Carlo Boffa <gcboffa@cisco.com>
+> Co-Developed-by: Oliver Smith-Denny <osmithde@cisco.com>
 > ---
-> This patch will help reset qfull_time_out to its default i.e. qfull_time_out=-1
-> 
-> Signed-off-by: Prasanna Kumar Kalever <prasanna.kalever@redhat.com>
-> ---
->  drivers/target/target_core_user.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> index 4ad89ea71a70..4f26bdc3d1dc 100644
-> --- a/drivers/target/target_core_user.c
-> +++ b/drivers/target/target_core_user.c
-> @@ -2121,6 +2121,8 @@ static ssize_t tcmu_qfull_time_out_store(struct config_item *item,
->  
->  	if (val >= 0) {
->  		udev->qfull_time_out = val * MSEC_PER_SEC;
-> +	} else if (val = -1) {
-> +		udev->qfull_time_out = val;
->  	} else {
->  		printk(KERN_ERR "Invalid qfull timeout value %d\n", val);
->  		return -EINVAL;
-> 
+>  drivers/staging/fnic2/src/fnic2.h      | 256 ++++++++++++
+>  drivers/staging/fnic2/src/fnic2_main.c | 711 +++++++++++++++++++++++++++++++++
+>  2 files changed, 967 insertions(+)
+>  create mode 100644 drivers/staging/fnic2/src/fnic2.h
+>  create mode 100644 drivers/staging/fnic2/src/fnic2_main.c
 
-Acked-by: Mike Christie <mchristi@redhat.com>
+Why is this a drivers/staging/ driver at all?  What is keeping you from
+getting this merged into the "proper" place in the kernel?
+
+If you have a staging driver, you have to have a TODO file in the
+directory listing what is keeping this in the staging section.
+
+Also, one tiny thing to fix up:
+
+> --- /dev/null
+> +++ b/drivers/staging/fnic2/src/fnic2.h
+> @@ -0,0 +1,256 @@
+> +/*
+> + * SPDX-License-Identifier: GPL-2.0
+
+Please read the documentation on how to properly use SPDX tags on kernel
+files.  This needs to be the first line of the file.
+
+thanks,
+
+greg k-h
