@@ -1,141 +1,112 @@
-From: Zhu Lingshan <lszhu@suse.com>
-Date: Mon, 16 Apr 2018 11:04:28 +0000
-Subject: [PATCH 6/6] tcmu: refactor nl wr_cache attr with new helpers
-Message-Id: <20180416110428.5273-6-lszhu@suse.com>
+From: Randy Dunlap <rd.dunlab@gmail.com>
+Date: Sat, 14 Apr 2018 17:51:06 +0000
+Subject: [PATCH v3 4/4] target: add driver-api document
+Message-Id: <20180414175106.13760-5-rd.dunlab@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20180414175106.13760-1-rd.dunlab@gmail.com>
+In-Reply-To: <20180414175106.13760-1-rd.dunlab@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: Randy Dunlap <rdunlap@infradead.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-doc@vger.kernel.org, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Jonathan Corbet <corbet@lwn.net>
 
-use new netlink events helpers tcmu_netlink_init() and
-tcmu_netlink_send() to refactor netlink event attribute
-TCMU_ATTR_WRITECACHE(belongs to TCMU_CMD_RECONFIG_DEVICE)
-which is also emulate_write_cache in configFS.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Removed tcmu_netlink_event() since we have new netlink
-events helpers now.
+Add a driver-api document for target/iSCSI interfaces.
 
-Signed-off-by: Zhu Lingshan <lszhu@suse.com>
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: linux-scsi@vger.kernel.org
+Cc: target-devel@vger.kernel.org
+Cc: linux-doc@vger.kernel.org
+Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
 ---
- drivers/target/target_core_user.c | 90 +++++++++------------------------------
- 1 file changed, 21 insertions(+), 69 deletions(-)
+ Documentation/driver-api/index.rst  |    1 
+ Documentation/driver-api/scsi.rst   |    2 
+ Documentation/driver-api/target.rst |   64 ++++++++++++++++++++++++++
+ 3 files changed, 66 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index d913fb15f1b4..f0d667b67e0c 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1586,73 +1586,6 @@ static int tcmu_wait_genl_cmd_reply(struct tcmu_dev *udev)
- 	return ret;
- }
+--- linux-next-20180413.orig/Documentation/driver-api/index.rst
++++ linux-next-20180413/Documentation/driver-api/index.rst
+@@ -34,6 +34,7 @@ available subsections can be seen below.
+    edac
+    scsi
+    libata
++   target
+    mtdnand
+    miscellaneous
+    w1
+--- linux-next-20180413.orig/Documentation/driver-api/scsi.rst
++++ linux-next-20180413/Documentation/driver-api/scsi.rst
+@@ -334,5 +334,5 @@ todo
+ ~~~~
  
--static int tcmu_netlink_event(struct tcmu_dev *udev, enum tcmu_genl_cmd cmd,
--			      int reconfig_attr, const void *reconfig_data)
--{
--	struct sk_buff *skb;
--	void *msg_header;
--	int ret = -ENOMEM;
--
--	skb = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
--	if (!skb)
--		return ret;
--
--	msg_header = genlmsg_put(skb, 0, 0, &tcmu_genl_family, 0, cmd);
--	if (!msg_header)
--		goto free_skb;
--
--	ret = nla_put_string(skb, TCMU_ATTR_DEVICE, udev->uio_info.name);
--	if (ret < 0)
--		goto free_skb;
--
--	ret = nla_put_u32(skb, TCMU_ATTR_MINOR, udev->uio_info.uio_dev->minor);
--	if (ret < 0)
--		goto free_skb;
--
--	ret = nla_put_u32(skb, TCMU_ATTR_DEVICE_ID, udev->se_dev.dev_index);
--	if (ret < 0)
--		goto free_skb;
--
--	if (cmd = TCMU_CMD_RECONFIG_DEVICE) {
--		switch (reconfig_attr) {
--		case TCMU_ATTR_DEV_CFG:
--			ret = nla_put_string(skb, reconfig_attr, reconfig_data);
--			break;
--		case TCMU_ATTR_DEV_SIZE:
--			ret = nla_put_u64_64bit(skb, reconfig_attr,
--						*((u64 *)reconfig_data),
--						TCMU_ATTR_PAD);
--			break;
--		case TCMU_ATTR_WRITECACHE:
--			ret = nla_put_u8(skb, reconfig_attr,
--					  *((u8 *)reconfig_data));
--			break;
--		default:
--			BUG();
--		}
--
--		if (ret < 0)
--			goto free_skb;
--	}
--
--	genlmsg_end(skb, msg_header);
--
--	tcmu_init_genl_cmd_reply(udev, cmd);
--
--	ret = genlmsg_multicast_allns(&tcmu_genl_family, skb, 0,
--				TCMU_MCGRP_CONFIG, GFP_KERNEL);
--	/* We don't care if no one is listening */
--	if (ret = -ESRCH)
--		ret = 0;
--	if (!ret)
--		ret = tcmu_wait_genl_cmd_reply(udev);
--
--	return ret;
--free_skb:
--	nlmsg_free(skb);
--	return ret;
--}
--
- static int tcmu_netlink_event_init(struct tcmu_dev *udev,
- 				   enum tcmu_genl_cmd cmd,
- 				   struct sk_buff **buf, void **hdr)
-@@ -2384,6 +2317,26 @@ static ssize_t tcmu_emulate_write_cache_show(struct config_item *item,
- 	return snprintf(page, PAGE_SIZE, "%i\n", da->emulate_write_cache);
- }
- 
-+static int tcmu_send_emulate_write_cache(struct tcmu_dev *udev, u8 val)
-+{
-+	struct sk_buff *skb = NULL;
-+	void *msg_header = NULL;
-+	int ret = 0;
+ Parallel (fast/wide/ultra) SCSI, USB, SATA, SAS, Fibre Channel,
+-FireWire, ATAPI devices, Infiniband, I2O, iSCSI, Parallel ports,
++FireWire, ATAPI devices, Infiniband, I2O, Parallel ports,
+ netlink...
+--- /dev/null
++++ linux-next-20180413/Documentation/driver-api/target.rst
+@@ -0,0 +1,64 @@
++================+target and iSCSI Interfaces Guide
++================+
++Introduction and Overview
++============+
++TBD
 +
-+	ret = tcmu_netlink_event_init(udev, TCMU_CMD_RECONFIG_DEVICE,
-+				      &skb, &msg_header);
-+	if (ret < 0)
-+		return ret;
-+	ret = nla_put_u8(skb, TCMU_ATTR_WRITECACHE, val);
-+	if (ret < 0) {
-+		nlmsg_free(skb);
-+		return ret;
-+	}
-+	ret = tcmu_netlink_event_send(udev, TCMU_CMD_RECONFIG_DEVICE,
-+				      &skb, &msg_header);
-+	return ret;
-+}
++Target core device interfaces
++==============+
++.. kernel-doc:: drivers/target/target_core_device.c
++    :export:
 +
- static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
- 					      const char *page, size_t count)
- {
-@@ -2399,8 +2352,7 @@ static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
- 
- 	/* Check if device has been configured before */
- 	if (tcmu_dev_configured(udev)) {
--		ret = tcmu_netlink_event(udev, TCMU_CMD_RECONFIG_DEVICE,
--					 TCMU_ATTR_WRITECACHE, &val);
-+		ret = tcmu_send_emulate_write_cache(udev, val);
- 		if (ret) {
- 			pr_err("Unable to reconfigure device\n");
- 			return ret;
--- 
-2.14.3
-
++Target core transport interfaces
++================
++
++.. kernel-doc:: drivers/target/target_core_transport.c
++    :export:
++
++Target-supported userspace I/O
++===============
++
++.. kernel-doc:: drivers/target/target_core_user.c
++    :doc: Userspace I/O
++
++.. kernel-doc:: include/uapi/linux/target_core_user.h
++    :doc: Ring Design
++
++iSCSI helper functions
++===========
++
++.. kernel-doc:: drivers/scsi/libiscsi.c
++   :export:
++
++
++iSCSI boot information
++===========
++
++.. kernel-doc:: drivers/scsi/iscsi_boot_sysfs.c
++   :export:
++
++
++iSCSI transport class
++==========+
++The file drivers/scsi/scsi_transport_iscsi.c defines transport
++attributes for the iSCSI class, which sends SCSI packets over TCP/IP
++connections.
++
++.. kernel-doc:: drivers/scsi/scsi_transport_iscsi.c
++   :export:
++
++
++iSCSI TCP interfaces
++==========
++
++.. kernel-doc:: drivers/scsi/iscsi_tcp.c
++   :internal:
++
++.. kernel-doc:: drivers/scsi/libiscsi_tcp.c
++   :export:
++
