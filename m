@@ -1,39 +1,57 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri, 06 Apr 2018 05:08:59 +0000
-Subject: Re: [PATCH 03/10] staging: fnic2 add fip handling
-Message-Id: <20180406050859.GE27591@kroah.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Mon, 16 Apr 2018 11:04:25 +0000
+Subject: [PATCH 3/6] tcmu: refactor rm_device cmd with new nl helpers
+Message-Id: <20180416110428.5273-3-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180405211519.GA12584@osmithde-lnx.cisco.com>
- <20180405211837.GD12584@osmithde-lnx.cisco.com>
-In-Reply-To: <20180405211837.GD12584@osmithde-lnx.cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Oliver Smith-Denny <osmithde@cisco.com>
-Cc: Sesidhar Baddela <sebaddel@cisco.com>, Gian Carlo Boffa <gcboffa@cisco.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-On Thu, Apr 05, 2018 at 02:18:37PM -0700, Oliver Smith-Denny wrote:
-> --- /dev/null
-> +++ b/drivers/staging/fnic2/src/fip.c
-> @@ -0,0 +1,804 @@
-> +/*
-> + * SPDX-License-Identifier: GPL-2.0
-> + * Copyright 2018 Cisco Systems, Inc.  All rights reserved.
-> + *
-> + * This program is free software; you may redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; version 2 of the License.
-> + *
-> + * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-> + * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-> + * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-> + * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-> + * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-> + * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-> + * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> + * SOFTWARE.
-> + */
-> +
-> +/*! \file */
+use new netlink events helpers tcmu_netlink_init() and
+tcmu_netlink_send() to refactor netlink event
+TCMU_CMD_REMOVED_DEVICE
 
-What is that line for?
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
+---
+ drivers/target/target_core_user.c | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 47b73debd9fd..a1db57fe5a0a 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1726,6 +1726,21 @@ static int tcmu_send_dev_add_event(struct tcmu_dev *udev)
+ 	return ret;
+ }
+ 
++static int tcmu_send_dev_remove_event(struct tcmu_dev *udev)
++{
++	struct sk_buff *skb = NULL;
++	void *msg_header = NULL;
++	int ret = 0;
++
++	ret = tcmu_netlink_event_init(udev, TCMU_CMD_REMOVED_DEVICE,
++				      &skb, &msg_header);
++	if (ret < 0)
++		return ret;
++	ret = tcmu_netlink_event_send(udev, TCMU_CMD_REMOVED_DEVICE,
++				      &skb, &msg_header);
++	return ret;
++}
++
+ static int tcmu_update_uio_info(struct tcmu_dev *udev)
+ {
+ 	struct tcmu_hba *hba = udev->hba->hba_ptr;
+@@ -1885,7 +1900,7 @@ static void tcmu_destroy_device(struct se_device *dev)
+ 	list_del(&udev->node);
+ 	mutex_unlock(&root_udev_mutex);
+ 
+-	tcmu_netlink_event(udev, TCMU_CMD_REMOVED_DEVICE, 0, NULL);
++	tcmu_send_dev_remove_event(udev);
+ 
+ 	uio_unregister_device(&udev->uio_info);
+ 
+-- 
+2.14.3
+
