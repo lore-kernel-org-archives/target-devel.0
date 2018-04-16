@@ -1,52 +1,104 @@
-From: "Zhang Zhuoyu" <zhangzhuoyu@cmss.chinamobile.com>
-Date: Sun, 08 Apr 2018 03:57:18 +0000
-Subject: RE: [PATCH 1/1] target:separate tx/rx cmd_puds
-Message-Id: <000001d3ceed$b0d9c870$128d5950$@cmss.chinamobile.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Mon, 16 Apr 2018 11:04:23 +0000
+Subject: [PATCH 1/6] tcmu: add new netlink events helpers
+Message-Id: <20180416110428.5273-1-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1521625963-657195-1-git-send-email-zhangzhuoyu@cmss.chinamobile.com>       <20180405131212.3f26339d@suse.de> <20180406140934.2dfafd45@suse.de>
-In-Reply-To: <20180406140934.2dfafd45@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-9"
-Content-Transfer-Encoding: quoted-printable
-To: 'David Disseldorp' <ddiss@suse.de>
-Cc: nab@linux-iscsi.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: target-devel@vger.kernel.org
 
+Add new netlink events helpers tcmu_netlink_event_init() and
+tcmu_netlink_event_send(). These new functions intend to replace
+exsiting netlink events helper function tcmu_netlink_event().
 
+The exsiting function tcmu_netlink_event() works well for events
+like TCMU_ADDED_DEVICE and TCMU_REMOVED_DEVICE which only has one
+netlink attribute. But if there is a command requires more than
+one attributes to send out, we have to use a struct to adapt the
+paremeter reconfig_data, it is hard to use one struct or a union
+in one struct to adapt every command with different attributes,
+it may get long and ugly.
 
-> -----Original Message-----
-> From: David Disseldorp [mailto:ddiss@suse.de]
-> Sent: Friday, April 6, 2018 8:10 PM
-> To: Zhang Zhuoyu <zhangzhuoyu@cmss.chinamobile.com>
-> Cc: nab@linux-iscsi.org; linux-scsi@vger.kernel.org; target-
-> devel@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH 1/1] target:separate tx/rx cmd_puds
->=20
-> On Thu, 5 Apr 2018 13:12:12 +0200, David Disseldorp wrote:
->=20
-> > > -CONFIGFS_ATTR_RO(target_stat_tgt_port_, in_cmds);
-> > > +CONFIGFS_ATTR_RO(target_stat_tgt_port_, tx_cmds);
-> > > +CONFIGFS_ATTR_RO(target_stat_tgt_port_, rx_cmds);
-> >
-> > I don't think the in_cmds metric should be deleted here. It could be
-> > calculated on the fly via tx_cmds + rx_cmds + nodata_cmds.
->=20
-> @Zhang Zhuoyu: How about something like the following?
-> https://git.samba.org/?p=DDiss/linux.git;a=3Dcommitdiff;hs723ccf433424721
-> 830797d70cfb88d4596e0fc
->=20
+With the new two functions, we can call tcmu_netlink_event_init()
+to initialize a netlink event, then add all attributes we need by
+using nla_put_xxx(), at last use tcmu_netlink_event_send() to
+send it out. So that we don't need to use a long struct or union
+if we want to send mulitple attributes for different commands.
 
-Mmm... This patch is much better.=20
-Looks good to me.
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
+---
+ drivers/target/target_core_user.c | 57 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-Zhuoyu
-
-> ...this keeps the in_cmds metric, and renames tx/rx_cmds read/write_cmds
-> respectively. read/write_cmds is still a bit ambiguous, as it refers to
-the
-> command data direction rather than SCSI READ/WRITE CDBs, but IMO it's
-> clearer, and more consistent with the read/write_mbytes metrics.
->=20
-> Cheers, David
-
-
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 4ad89ea71a70..98013d359d75 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1653,6 +1653,63 @@ static int tcmu_netlink_event(struct tcmu_dev *udev, enum tcmu_genl_cmd cmd,
+ 	return ret;
+ }
+ 
++static int tcmu_netlink_event_init(struct tcmu_dev *udev,
++				   enum tcmu_genl_cmd cmd,
++				   struct sk_buff **buf, void **hdr)
++{
++	struct sk_buff *skb;
++	void *msg_header;
++	int ret = -ENOMEM;
++
++	skb = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
++	if (!skb)
++		return ret;
++
++	msg_header = genlmsg_put(skb, 0, 0, &tcmu_genl_family, 0, cmd);
++	if (!msg_header)
++		goto free_skb;
++
++	ret = nla_put_string(skb, TCMU_ATTR_DEVICE, udev->uio_info.name);
++	if (ret < 0)
++		goto free_skb;
++
++	ret = nla_put_u32(skb, TCMU_ATTR_MINOR, udev->uio_info.uio_dev->minor);
++	if (ret < 0)
++		goto free_skb;
++
++	ret = nla_put_u32(skb, TCMU_ATTR_DEVICE_ID, udev->se_dev.dev_index);
++	if (ret < 0)
++		goto free_skb;
++	*buf = skb;
++	*hdr = msg_header;
++	return ret;
++free_skb:
++	nlmsg_free(skb);
++	return ret;
++}
++
++static int tcmu_netlink_event_send(struct tcmu_dev *udev,
++				   enum tcmu_genl_cmd cmd,
++				   struct sk_buff **buf, void **hdr)
++{
++	int ret = 0;
++	struct sk_buff *skb = *buf;
++	void *msg_header = *hdr;
++
++	genlmsg_end(skb, msg_header);
++
++	tcmu_init_genl_cmd_reply(udev, cmd);
++
++	ret = genlmsg_multicast_allns(&tcmu_genl_family, skb, 0,
++				      TCMU_MCGRP_CONFIG, GFP_KERNEL);
++       /* We don't care if no one is listening */
++	if (ret = -ESRCH)
++		ret = 0;
++	if (!ret)
++		ret = tcmu_wait_genl_cmd_reply(udev);
++	return ret;
++}
++
+ static int tcmu_update_uio_info(struct tcmu_dev *udev)
+ {
+ 	struct tcmu_hba *hba = udev->hba->hba_ptr;
+-- 
+2.14.3
 
