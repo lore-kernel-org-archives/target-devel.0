@@ -1,52 +1,20 @@
-From: Ming Lei <ming.lei@redhat.com>
-Date: Mon, 16 Apr 2018 09:48:41 +0000
-Subject: [PATCH] target: fix crash with iscsi target and dvd
-Message-Id: <20180416094841.30212-1-ming.lei@redhat.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Tue, 17 Apr 2018 15:15:02 +0000
+Subject: Re: [PATCH] target: fix crash with iscsi target and dvd
+Message-Id: <20180417151502.GB24654@lst.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <20180416094841.30212-1-ming.lei@redhat.com>
+In-Reply-To: <20180416094841.30212-1-ming.lei@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jens Axboe <axboe@kernel.dk>
-Cc: linux-block@vger.kernel.org, Ming Lei <ming.lei@redhat.com>, Wakko Warner <wakko@animx.eu.org>, Bart Van Assche <Bart.VanAssche@wdc.com>, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Christoph Hellwig <hch@lst.de>
+To: Ming Lei <ming.lei@redhat.com>
+Cc: Jens Axboe <axboe@kernel.dk>, linux-block@vger.kernel.org, Wakko Warner <wakko@animx.eu.org>, Bart Van Assche <Bart.VanAssche@wdc.com>, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Christoph Hellwig <hch@lst.de>
 
-When the current page can't be added to bio, one new bio should be
-created for adding this page again, instead of ignoring this page.
+Looks good,
 
-This patch fixes kernel crash with iscsi target and dvd, as reported
-by Wakko.
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 
-Cc: Wakko Warner <wakko@animx.eu.org>
-Cc: Bart Van Assche <Bart.VanAssche@wdc.com>
-Cc: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
-Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Fixes: 84c8590646d5b35804 ("target: avoid accessing .bi_vcnt directly")
-Signed-off-by: Ming Lei <ming.lei@redhat.com>
----
- drivers/target/target_core_pscsi.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index 0d99b242e82e..6cb933ecc084 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -890,6 +890,7 @@ pscsi_map_sg(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
- 			bytes = min(bytes, data_len);
- 
- 			if (!bio) {
-+new_bio:
- 				nr_vecs = min_t(int, BIO_MAX_PAGES, nr_pages);
- 				nr_pages -= nr_vecs;
- 				/*
-@@ -931,6 +932,7 @@ pscsi_map_sg(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
- 				 * be allocated with pscsi_get_bio() above.
- 				 */
- 				bio = NULL;
-+				goto new_bio;
- 			}
- 
- 			data_len -= bytes;
--- 
-2.9.5
-
+Btw, seems like someone needs to volunteer for putting together a pull
+request with target fixes for Linus - I haven't heard from Nic for
+a while, and we've got quite a few fixes out on the list.
