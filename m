@@ -1,95 +1,66 @@
-From: xiubli@redhat.com
-Date: Thu, 19 Apr 2018 07:46:03 +0000
-Subject: [PATCHv4 2/3] target: adjust and export target_for_each_device visible to modules
-Message-Id: <1524123964-21347-3-git-send-email-xiubli@redhat.com>
+From: Chengguang Xu <cgxu519@gmx.com>
+Date: Tue, 17 Apr 2018 03:28:44 +0000
+Subject: [PATCH] target: fix potential memory leak in option parsing
+Message-Id: <1523935724-6991-1-git-send-email-cgxu519@gmx.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-From: Xiubo Li <xiubli@redhat.com>
+When specifying same string type option several times,
+current option parsing will cause memory leak. Hence,
+call kfree for previous one in this case.
 
-Make the target_for_each_device could list all the devices not only
-configured as needed.
-
-Signed-off-by: Xiubo Li <xiubli@redhat.com>
+Signed-off-by: Chengguang Xu <cgxu519@gmx.com>
 ---
- drivers/target/target_core_device.c   | 10 +---------
- drivers/target/target_core_internal.h |  2 --
- drivers/target/target_core_xcopy.c    |  3 +++
- include/target/target_core_backend.h  |  3 +++
- 4 files changed, 7 insertions(+), 11 deletions(-)
+ drivers/target/target_core_configfs.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index e27db4d..58508a2 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -913,15 +913,6 @@ static int target_devices_idr_iter(int id, void *p, void *data)
- 	struct devices_idr_iter *iter = data;
- 	struct se_device *dev = p;
- 
--	/*
--	 * We add the device early to the idr, so it can be used
--	 * by backend modules during configuration. We do not want
--	 * to allow other callers to access partially setup devices,
--	 * so we skip them here.
--	 */
--	if (!(dev->dev_flags & DF_CONFIGURED))
--		return 0;
--
- 	return iter->fn(dev, iter->data);
- }
- 
-@@ -947,6 +938,7 @@ int target_for_each_device(int (*fn)(struct se_device *dev, void *data),
- 	mutex_unlock(&device_mutex);
- 	return ret;
- }
-+EXPORT_SYMBOL(target_for_each_device);
- 
- int target_configure_device(struct se_device *dev)
- {
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index 73e8157..2f22aee 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -89,8 +89,6 @@ void	core_dev_free_initiator_node_lun_acl(struct se_portal_group *,
- struct se_device *target_alloc_device(struct se_hba *hba, const char *name);
- int	target_configure_device(struct se_device *dev);
- void	target_free_device(struct se_device *);
--int	target_for_each_device(int (*fn)(struct se_device *dev, void *data),
--			       void *data);
- 
- /* target_core_configfs.c */
- extern struct configfs_item_operations target_core_dev_item_ops;
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index 9ee89e0..cb9cc1e 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -67,6 +67,9 @@ static int target_xcopy_locate_se_dev_e4_iter(struct se_device *se_dev,
- 	unsigned char tmp_dev_wwn[XCOPY_NAA_IEEE_REGEX_LEN];
- 	int rc;
- 
-+	if (!(se_dev->dev_flags & DF_CONFIGURED))
-+		return 0;
-+
- 	if (!se_dev->dev_attrib.emulate_3pc)
- 		return 0;
- 
-diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
-index 5df7059..7451d65 100644
---- a/include/target/target_core_backend.h
-+++ b/include/target/target_core_backend.h
-@@ -109,6 +109,9 @@ sense_reason_t passthrough_parse_cdb(struct se_cmd *cmd,
- 
- struct	se_device *target_find_device(int id, bool do_depend);
- 
-+int	target_for_each_device(int (*fn)(struct se_device *dev, void *data),
-+			       void *data);
-+
- bool target_sense_desc_format(struct se_device *dev);
- sector_t target_to_linux_sector(struct se_device *dev, sector_t lb);
- bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 3f4bf12..ee1a3a8 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1659,6 +1659,7 @@ static ssize_t target_pr_res_aptpl_metadata_store(struct config_item *item,
+ 		token = match_token(ptr, tokens, args);
+ 		switch (token) {
+ 		case Opt_initiator_fabric:
++			kfree(i_fabric);
+ 			i_fabric = match_strdup(args);
+ 			if (!i_fabric) {
+ 				ret = -ENOMEM;
+@@ -1666,6 +1667,7 @@ static ssize_t target_pr_res_aptpl_metadata_store(struct config_item *item,
+ 			}
+ 			break;
+ 		case Opt_initiator_node:
++			kfree(i_port);
+ 			i_port = match_strdup(args);
+ 			if (!i_port) {
+ 				ret = -ENOMEM;
+@@ -1680,6 +1682,7 @@ static ssize_t target_pr_res_aptpl_metadata_store(struct config_item *item,
+ 			}
+ 			break;
+ 		case Opt_initiator_sid:
++			kfree(isid);
+ 			isid = match_strdup(args);
+ 			if (!isid) {
+ 				ret = -ENOMEM;
+@@ -1737,6 +1740,7 @@ static ssize_t target_pr_res_aptpl_metadata_store(struct config_item *item,
+ 		 * PR APTPL Metadata for Target Port
+ 		 */
+ 		case Opt_target_fabric:
++			kfree(t_fabric);
+ 			t_fabric = match_strdup(args);
+ 			if (!t_fabric) {
+ 				ret = -ENOMEM;
+@@ -1744,6 +1748,7 @@ static ssize_t target_pr_res_aptpl_metadata_store(struct config_item *item,
+ 			}
+ 			break;
+ 		case Opt_target_node:
++			kfree(t_port);
+ 			t_port = match_strdup(args);
+ 			if (!t_port) {
+ 				ret = -ENOMEM;
 -- 
 1.8.3.1
 
