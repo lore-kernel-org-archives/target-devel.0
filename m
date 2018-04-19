@@ -1,7 +1,7 @@
 From: Zhu Lingshan <lszhu@suse.com>
-Date: Mon, 16 Apr 2018 11:04:25 +0000
-Subject: [PATCH 3/6] tcmu: refactor rm_device cmd with new nl helpers
-Message-Id: <20180416110428.5273-3-lszhu@suse.com>
+Date: Thu, 19 Apr 2018 09:38:20 +0000
+Subject: [PATCH v2 3/6] tcmu: refactor rm_device cmd with new nl helpers
+Message-Id: <20180419093823.3441-3-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,15 +14,18 @@ TCMU_CMD_REMOVED_DEVICE
 
 Signed-off-by: Zhu Lingshan <lszhu@suse.com>
 ---
- drivers/target/target_core_user.c | 17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+Changes in V2:
+  - return tcmu_netlink_event_send() directly, instead of a ret value.
+
+ drivers/target/target_core_user.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 47b73debd9fd..a1db57fe5a0a 100644
+index 52d0e868a192..24e1f0b3662e 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -1726,6 +1726,21 @@ static int tcmu_send_dev_add_event(struct tcmu_dev *udev)
- 	return ret;
+@@ -1727,6 +1727,20 @@ static int tcmu_send_dev_add_event(struct tcmu_dev *udev)
+ 
  }
  
 +static int tcmu_send_dev_remove_event(struct tcmu_dev *udev)
@@ -35,15 +38,14 @@ index 47b73debd9fd..a1db57fe5a0a 100644
 +				      &skb, &msg_header);
 +	if (ret < 0)
 +		return ret;
-+	ret = tcmu_netlink_event_send(udev, TCMU_CMD_REMOVED_DEVICE,
-+				      &skb, &msg_header);
-+	return ret;
++	return tcmu_netlink_event_send(udev, TCMU_CMD_REMOVED_DEVICE,
++				       &skb, &msg_header);
 +}
 +
  static int tcmu_update_uio_info(struct tcmu_dev *udev)
  {
  	struct tcmu_hba *hba = udev->hba->hba_ptr;
-@@ -1885,7 +1900,7 @@ static void tcmu_destroy_device(struct se_device *dev)
+@@ -1886,7 +1900,7 @@ static void tcmu_destroy_device(struct se_device *dev)
  	list_del(&udev->node);
  	mutex_unlock(&root_udev_mutex);
  
