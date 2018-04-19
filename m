@@ -1,46 +1,60 @@
-From: Mark Syms <mark@marksyms.me.uk>
-Date: Tue, 10 Apr 2018 15:37:58 +0000
-Subject: Tearing my hair out
-Message-Id: <CA+Ty-0sqZs1Q8YQCeru11k6Ga=snSAcEed9wV+dpGFX2LwWVvw@mail.gmail.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Thu, 19 Apr 2018 09:38:19 +0000
+Subject: [PATCH v2 2/6] tcmu: refactor add_device cmd with new nl helpers
+Message-Id: <20180419093823.3441-2-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-I'm sure I'm doing something stupid but for the life of me I can see it.
+use new netlink events helpers tcmu_netlink_init() and
+tcmu_netlink_send() to refactor netlink event
+TCMU_CMD_ADDED_DEVICE
 
-We using LIO within our automated test environment and want to extend
-that to allow it to use CHAP iSCSI authentication to test that the
-system under test will also attach with CHAP. LIO is running in a
-Debian 8 VM and exporting a fileio backstore.
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
+---
+Changes in V2:
+  - return tcmu_netlink_event_send() directly, instead of a ret value.
 
-To configure the authentication the following commands are run by the
-automation framework
+ drivers/target/target_core_user.c | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-iscsi/ set discovery_auth userid=<userid> password=<password>
-iscsi/<iqn>/<tpg> set auth userid=<userid> password=<password>
-iscsi/<iqn>/<tpg> set attribute generate_node_acls=1 authentication=1
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index d8f6a53f6bca..52d0e868a192 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1712,6 +1712,21 @@ static int tcmu_netlink_event_send(struct tcmu_dev *udev,
+ 	return ret;
+ }
+ 
++static int tcmu_send_dev_add_event(struct tcmu_dev *udev)
++{
++	struct sk_buff *skb = NULL;
++	void *msg_header = NULL;
++	int ret = 0;
++
++	ret = tcmu_netlink_event_init(udev, TCMU_CMD_ADDED_DEVICE, &skb,
++				      &msg_header);
++	if (ret < 0)
++		return ret;
++	return tcmu_netlink_event_send(udev, TCMU_CMD_ADDED_DEVICE, &skb,
++				       &msg_header);
++
++}
++
+ static int tcmu_update_uio_info(struct tcmu_dev *udev)
+ {
+ 	struct tcmu_hba *hba = udev->hba->hba_ptr;
+@@ -1821,7 +1836,7 @@ static int tcmu_configure_device(struct se_device *dev)
+ 	 */
+ 	kref_get(&udev->kref);
+ 
+-	ret = tcmu_netlink_event(udev, TCMU_CMD_ADDED_DEVICE, 0, NULL);
++	ret = tcmu_send_dev_add_event(udev);
+ 	if (ret)
+ 		goto err_netlink;
+ 
+-- 
+2.14.3
 
-The system under test successfully connects the the target but the
-block device seen by the Linux kernel reports
-
-[sdb] Write Protect is on
-
-which makes me think I've missed a configuration option somewhere but
-this seems to follow whats in
-http://linux-iscsi.org/wiki/ISCSI#CHAP_initiator_authentication with
-the only difference being that the auth is on the tpg not in a host
-specific ACL node.
-
-I've redone all this by hand will similar outcomes so I really am just
-missing something.
-
-Can someone point out my stupid mistake or how to work out what is the
-cause as the logs don't seem to be very enlightening.
-
-Thanks,
-
-Mark.
-
-(I'm not subscribed to the list so please cc me on any responses).
