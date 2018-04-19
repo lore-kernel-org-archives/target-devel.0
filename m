@@ -1,86 +1,68 @@
-From: Randy Dunlap <rd.dunlab@gmail.com>
-Date: Sat, 14 Apr 2018 17:51:05 +0000
-Subject: [PATCH v3 3/4] target: target_core_user.[ch]: convert comments into DOC:
-Message-Id: <20180414175106.13760-4-rd.dunlab@gmail.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Thu, 19 Apr 2018 09:38:21 +0000
+Subject: [PATCH v2 4/6] tcmu: refactor nl dev_cfg attr with new nl helpers
+Message-Id: <20180419093823.3441-4-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180414175106.13760-1-rd.dunlab@gmail.com>
-In-Reply-To: <20180414175106.13760-1-rd.dunlab@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Randy Dunlap <rdunlap@infradead.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-doc@vger.kernel.org, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Jonathan Corbet <corbet@lwn.net>
+To: target-devel@vger.kernel.org
 
-From: Randy Dunlap <rdunlap@infradead.org>
+use new netlink events helpers tcmu_netlink_init() and
+tcmu_netlink_send() to refactor netlink event attribute
+TCMU_ATTR_DEV_CFG(belongs to TCMU_CMD_RECONFIG_DEVICE)
+which is also dev_config in configFS.
 
-Make documentation on target-supported userspace-I/O design be
-usable by kernel-doc by using "DOC:". This is used in the driver-api
-Documentation chapter.
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: linux-scsi@vger.kernel.org
-Cc: target-devel@vger.kernel.org
-Cc: linux-doc@vger.kernel.org
-Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
 ---
- drivers/target/target_core_user.c     |    8 ++++++--
- include/uapi/linux/target_core_user.h |   11 ++++++-----
- 2 files changed, 12 insertions(+), 7 deletions(-)
+Changes in V2:
+  - return tcmu_netlink_event_send() directly, instead of a ret value.
 
---- linux-next-20180413.orig/drivers/target/target_core_user.c
-+++ linux-next-20180413/drivers/target/target_core_user.c
-@@ -42,7 +42,11 @@
+ drivers/target/target_core_user.c | 24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 24e1f0b3662e..21ce7dd8420d 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -2237,6 +2237,27 @@ static ssize_t tcmu_dev_config_show(struct config_item *item, char *page)
+ 	return snprintf(page, PAGE_SIZE, "%s\n", udev->dev_config);
+ }
  
- #include <linux/target_core_user.h>
++static int tcmu_send_dev_config_event(struct tcmu_dev *udev,
++				      const char *reconfig_data)
++{
++	struct sk_buff *skb = NULL;
++	void *msg_header = NULL;
++	int ret = 0;
++
++	ret = tcmu_netlink_event_init(udev, TCMU_CMD_RECONFIG_DEVICE,
++				      &skb, &msg_header);
++	if (ret < 0)
++		return ret;
++	ret = nla_put_string(skb, TCMU_ATTR_DEV_CFG, reconfig_data);
++	if (ret < 0) {
++		nlmsg_free(skb);
++		return ret;
++	}
++	return tcmu_netlink_event_send(udev, TCMU_CMD_RECONFIG_DEVICE,
++				       &skb, &msg_header);
++}
++
++
+ static ssize_t tcmu_dev_config_store(struct config_item *item, const char *page,
+ 				     size_t count)
+ {
+@@ -2251,8 +2272,7 @@ static ssize_t tcmu_dev_config_store(struct config_item *item, const char *page,
  
--/*
-+/**
-+ * DOC: Userspace I/O
-+ * Userspace I/O
-+ * -------------
-+ *
-  * Define a shared-memory interface for LIO to pass SCSI commands and
-  * data to userspace for processing. This is to allow backends that
-  * are too complex for in-kernel support to be possible.
-@@ -53,7 +57,7 @@
-  * See the .h file for how the ring is laid out. Note that while the
-  * command ring is defined, the particulars of the data area are
-  * not. Offset values in the command entry point to other locations
-- * internal to the mmap()ed area. There is separate space outside the
-+ * internal to the mmap-ed area. There is separate space outside the
-  * command ring for data buffers. This leaves maximum flexibility for
-  * moving buffer allocations, or even page flipping or other
-  * allocation techniques, without altering the command ring layout.
---- linux-next-20180413.orig/include/uapi/linux/target_core_user.h
-+++ linux-next-20180413/include/uapi/linux/target_core_user.h
-@@ -9,21 +9,22 @@
- 
- #define TCMU_VERSION "2.0"
- 
--/*
-+/**
-+ * DOC: Ring Design
-  * Ring Design
-  * -----------
-  *
-  * The mmaped area is divided into three parts:
-- * 1) The mailbox (struct tcmu_mailbox, below)
-- * 2) The command ring
-- * 3) Everything beyond the command ring (data)
-+ * 1) The mailbox (struct tcmu_mailbox, below);
-+ * 2) The command ring;
-+ * 3) Everything beyond the command ring (data).
-  *
-  * The mailbox tells userspace the offset of the command ring from the
-  * start of the shared memory region, and how big the command ring is.
-  *
-  * The kernel passes SCSI commands to userspace by putting a struct
-  * tcmu_cmd_entry in the ring, updating mailbox->cmd_head, and poking
-- * userspace via uio's interrupt mechanism.
-+ * userspace via UIO's interrupt mechanism.
-  *
-  * tcmu_cmd_entry contains a header. If the header type is PAD,
-  * userspace should skip hdr->length bytes (mod cmdr_size) to find the
+ 	/* Check if device has been configured before */
+ 	if (tcmu_dev_configured(udev)) {
+-		ret = tcmu_netlink_event(udev, TCMU_CMD_RECONFIG_DEVICE,
+-					 TCMU_ATTR_DEV_CFG, page);
++		ret = tcmu_send_dev_config_event(udev, page);
+ 		if (ret) {
+ 			pr_err("Unable to reconfigure device\n");
+ 			return ret;
+-- 
+2.14.3
+
