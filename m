@@ -1,99 +1,67 @@
-From: Randy Dunlap <rd.dunlab@gmail.com>
-Date: Sat, 14 Apr 2018 17:51:04 +0000
-Subject: [PATCH v3 2/4] target: target_core_transport.c: enable+fix kernel-doc
-Message-Id: <20180414175106.13760-3-rd.dunlab@gmail.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Thu, 19 Apr 2018 09:38:22 +0000
+Subject: [PATCH v2 5/6] tcmu: refactor nl dev_size attr with new helpers
+Message-Id: <20180419093823.3441-5-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180414175106.13760-1-rd.dunlab@gmail.com>
-In-Reply-To: <20180414175106.13760-1-rd.dunlab@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Randy Dunlap <rdunlap@infradead.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-doc@vger.kernel.org, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Jonathan Corbet <corbet@lwn.net>
+To: target-devel@vger.kernel.org
 
-From: Randy Dunlap <rdunlap@infradead.org>
+use new netlink events helpers tcmu_netlink_init() and
+tcmu_netlink_send() to refactor netlink event attribute
+TCMU_ATTR_DEV_SIZE(belongs to TCMU_CMD_RECONFIG_DEVICE)
+which is also dev_size in configFS.
 
-For exported functions that already have near-kernel-doc notation,
-fix them to begin with "/**" and make a few corrections so that they
-don't have any kernel-doc warnings.
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: linux-scsi@vger.kernel.org
-Cc: target-devel@vger.kernel.org
-Cc: linux-doc@vger.kernel.org
-Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
 ---
- drivers/target/target_core_transport.c |   17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+Changes in V2:
+  - return tcmu_netlink_event_send() directly, instead of a ret value.
 
---- linux-next-20180413.orig/drivers/target/target_core_transport.c
-+++ linux-next-20180413/drivers/target/target_core_transport.c
-@@ -1431,7 +1431,7 @@ transport_generic_map_mem_to_cmd(struct
- 	return 0;
+ drivers/target/target_core_user.c | 23 +++++++++++++++++++++--
+ 1 file changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 21ce7dd8420d..c5bc2e1a9c49 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -2299,6 +2299,26 @@ static ssize_t tcmu_dev_size_show(struct config_item *item, char *page)
+ 	return snprintf(page, PAGE_SIZE, "%zu\n", udev->dev_size);
  }
  
--/*
-+/**
-  * target_submit_cmd_map_sgls - lookup unpacked lun and submit uninitialized
-  * 			 se_cmd + use pre-allocated SGL memory.
-  *
-@@ -1441,7 +1441,7 @@ transport_generic_map_mem_to_cmd(struct
-  * @sense: pointer to SCSI sense buffer
-  * @unpacked_lun: unpacked LUN to reference for struct se_lun
-  * @data_length: fabric expected data transfer length
-- * @task_addr: SAM task attribute
-+ * @task_attr: SAM task attribute
-  * @data_dir: DMA data direction
-  * @flags: flags for command submission from target_sc_flags_tables
-  * @sgl: struct scatterlist memory for unidirectional mapping
-@@ -1578,7 +1578,7 @@ int target_submit_cmd_map_sgls(struct se
- }
- EXPORT_SYMBOL(target_submit_cmd_map_sgls);
++static int tcmu_send_dev_size_event(struct tcmu_dev *udev, u64 size)
++{
++	struct sk_buff *skb = NULL;
++	void *msg_header = NULL;
++	int ret = 0;
++
++	ret = tcmu_netlink_event_init(udev, TCMU_CMD_RECONFIG_DEVICE,
++				      &skb, &msg_header);
++	if (ret < 0)
++		return ret;
++	ret = nla_put_u64_64bit(skb, TCMU_ATTR_DEV_SIZE,
++				size, TCMU_ATTR_PAD);
++	if (ret < 0) {
++		nlmsg_free(skb);
++		return ret;
++	}
++	return tcmu_netlink_event_send(udev, TCMU_CMD_RECONFIG_DEVICE,
++				       &skb, &msg_header);
++}
++
+ static ssize_t tcmu_dev_size_store(struct config_item *item, const char *page,
+ 				   size_t count)
+ {
+@@ -2314,8 +2334,7 @@ static ssize_t tcmu_dev_size_store(struct config_item *item, const char *page,
  
--/*
-+/**
-  * target_submit_cmd - lookup unpacked lun and submit uninitialized se_cmd
-  *
-  * @se_cmd: command descriptor to submit
-@@ -1587,7 +1587,7 @@ EXPORT_SYMBOL(target_submit_cmd_map_sgls
-  * @sense: pointer to SCSI sense buffer
-  * @unpacked_lun: unpacked LUN to reference for struct se_lun
-  * @data_length: fabric expected data transfer length
-- * @task_addr: SAM task attribute
-+ * @task_attr: SAM task attribute
-  * @data_dir: DMA data direction
-  * @flags: flags for command submission from target_sc_flags_tables
-  *
-@@ -2606,7 +2606,8 @@ int transport_generic_free_cmd(struct se
- }
- EXPORT_SYMBOL(transport_generic_free_cmd);
- 
--/* target_get_sess_cmd - Add command to active ->sess_cmd_list
-+/**
-+ * target_get_sess_cmd - Add command to active ->sess_cmd_list
-  * @se_cmd:	command descriptor to add
-  * @ack_kref:	Signal that fabric will perform an ack target_put_sess_cmd()
-  */
-@@ -2800,7 +2801,8 @@ void target_show_cmd(const char *pfx, st
- }
- EXPORT_SYMBOL(target_show_cmd);
- 
--/* target_sess_cmd_list_set_waiting - Flag all commands in
-+/**
-+ * target_sess_cmd_list_set_waiting - Flag all commands in
-  *         sess_cmd_list to complete cmd_wait_comp.  Set
-  *         sess_tearing_down so no more commands are queued.
-  * @se_sess:	session to flag
-@@ -2835,7 +2837,8 @@ void target_sess_cmd_list_set_waiting(st
- }
- EXPORT_SYMBOL(target_sess_cmd_list_set_waiting);
- 
--/* target_wait_for_sess_cmds - Wait for outstanding descriptors
-+/**
-+ * target_wait_for_sess_cmds - Wait for outstanding descriptors
-  * @se_sess:    session to wait for active I/O
-  */
- void target_wait_for_sess_cmds(struct se_session *se_sess)
+ 	/* Check if device has been configured before */
+ 	if (tcmu_dev_configured(udev)) {
+-		ret = tcmu_netlink_event(udev, TCMU_CMD_RECONFIG_DEVICE,
+-					 TCMU_ATTR_DEV_SIZE, &val);
++		ret = tcmu_send_dev_size_event(udev, val);
+ 		if (ret) {
+ 			pr_err("Unable to reconfigure device\n");
+ 			return ret;
+-- 
+2.14.3
+
