@@ -1,54 +1,24 @@
-From: James Williams <zenithinfodesk@gmail.com>
-Date: Thu, 08 Mar 2018 07:04:33 +0000
-Subject: ,Your urgent confirmation
-Message-Id: <CALCw2BrU9S=LRmkWrvpxXbv4_Yh11WJHHWPJ_QckEU=YkXyX-Q@mail.gmail.com>
+From: Raghuram Devarakonda <draghuram@gmail.com>
+Date: Sun, 22 Apr 2018 18:43:53 +0000
+Subject: Requirements for tcmu-runner on CentOS 7.4
+Message-Id: <CALtL6BefZxCFDU284iho5ZQvnHiJ2vY44cfYB9jhtvfC4i9=Yg@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Attn: Beneficiary,
+Hi,
 
-We have contacted the Federal Ministry of Finance on your Behalf and
-they have brought a solution to your problem by coordinating your
-payment in total (10,000,000.00) Ten Million Dollars in an atm card
-which you can use to withdraw money from any ATM MACHINE CENTER
-anywhere in the world with a maximum of 10000 Dollars daily. You now
-have the lawful right to claim your fund in an atm card. Since the
-Federal Bureau of Investigation is involved in this transaction, you
-have to be rest assured for this is 100% risk free it is our duty to
-protect the American Citizens, European Citizens, Asian Citizen. All I
-want you to do is to contact the atm card CENTER Via email or call the
-office telephone number one of the Consultant will assist you for
-their requirements to proceed and procure your Approval Slip on your
-behalf.
+I am developing a tcmu-runner plugin that would run on CentOS 7.4. The
+kernel version on my test CentOS box shows up as
+"3.10.0-693.17.1.el7.x86_64" which might be too old from what I have
+been reading. Are there any recommendations on the minimum version for
+kernel as well as tcmu-runner? Also, I see targetcli's version as
+"2.1.fb46" and I do see my plugin show up in the backstores. Is this
+version sufficient or do I need to use a different one?
 
-CONTACT INFORMATION
-NAME: James  Williams
-EMAIL: paymasterofficedesk@gmail.com
+Any help is greatly appreciated.
 
-
-Do contact us with your details:
-
-Full name//
-Address// Age//
- Telephone Numbers//
-Occupation//
- Your Country//
-Bank Details//
-
-So your files would be updated after which the Delivery of your
-atm card will be affected to your designated home Address without any
-further delay and the bank will transfer your funds in total
-(10,000,000.00) Ten Million Dollars to your Bank account. We
-will reply you with the secret code (1600 atm card). We advice you get
-back to the payment office after you have contacted the ATM SWIFT CARD
-CENTER and we do await your response so we can move on with our
-Investigation and make sure your ATM SWIFT CARD gets to you.
-
-
-Best Regards
-James Williams
-Paymaster General
-Federal Republic Of Nigeri
+Thanks,
+Raghu
