@@ -1,51 +1,47 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Thu, 31 May 2018 22:20:54 +0000
-Subject: [PATCH] target: fix truncated PR-in ReadKeys response
-Message-Id: <20180531222054.32655-1-ddiss@suse.de>
+From: Raghuram Devarakonda <draghuram@gmail.com>
+Date: Tue, 01 May 2018 15:48:43 +0000
+Subject: tcmu-runner rpm
+Message-Id: <CALtL6Bd12N8BOU2+DZh-b8g0GF=hVoMANyVpvMTk-uE+ZGDpMQ@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-SPC5r17 states that the contents of the ADDITIONAL LENGTH field are not
-altered based on the allocation length, so always calculate and pack the
-full key list length even if the list itself is truncated.
+Hi,
 
-This behaviour can be tested using the libiscsi PrinReadKeys.Truncate
-test.
+I am looking for tcmu-runner rpm to install on CentOS 7.4 but am not
+able to find one. Here is some info about my repos:
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
----
- drivers/target/target_core_pr.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+$ yum repo list
+!base/7/x86_64                                  CentOS-7 - Base
+                                                               9,591
+!elrepo                                         ELRepo.org Community
+Enterprise Linux Repository - el7                                  219
+!epel/x86_64                                    Extra Packages for
+Enterprise Linux 7 - x86_64
+12,507
+!extras/7/x86_64                                CentOS-7 - Extras
+                                                                 448
+!ius/x86_64                                     IUS Community Packages
+for Enterprise Linux 7 - x86_64                                  469
+!updates/7/x86_64                               CentOS-7 - Updates
+                                                               2,416
+!zfs/x86_64                                     ZFS on Linux for EL7 -
+dkms                                                             118
 
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 01ac306131c1..2e865fdaa362 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -3727,11 +3727,16 @@ core_scsi3_pri_read_keys(struct se_cmd *cmd)
- 		 * Check for overflow of 8byte PRI READ_KEYS payload and
- 		 * next reservation key list descriptor.
- 		 */
--		if ((add_len + 8) > (cmd->data_length - 8))
--			break;
--
--		put_unaligned_be64(pr_reg->pr_res_key, &buf[off]);
--		off += 8;
-+		if ((off + 8) <= cmd->data_length) {
-+			put_unaligned_be64(pr_reg->pr_res_key, &buf[off]);
-+			off += 8;
-+		}
-+		/*
-+		 * SPC5r17: 6.16.2 READ KEYS service action
-+		 * The ADDITIONAL LENGTH field indicates the number of bytes in
-+		 * the Reservation key list. The contents of the ADDITIONAL
-+		 * LENGTH field are not altered based on the allocation length
-+		 */
- 		add_len += 8;
- 	}
- 	spin_unlock(&dev->t10_pr.registration_lock);
--- 
-2.13.6
+$ yum search all tcmu
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirrors.advancedhosters.com
+ * elrepo: iad.mirror.rackspace.com
+ * epel: ewr.edge.kernel.org
+ * extras: mirror.cogentco.com
+ * ius: iad.mirror.rackspace.com
+ * updates: mirrors.lga7.us.voxel.net
+Warning: No matches found for: tcmu
 
+Do I need to add any other repo to get tcmu-runner?
+
+Thanks,
+Raghu
