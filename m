@@ -1,33 +1,59 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 16 May 2018 12:47:21 +0000
-Subject: [RFC PATCH] iscsit_wait_for_tag() can be static
-Message-Id: <20180516124721.GA27100@ivb43.lkp.intel.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Wed, 02 May 2018 03:13:41 +0000
+Subject: [RESEND V2 3/6] tcmu: refactor rm_device cmd with new nl helpers
+Message-Id: <20180502031344.3120-3-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180515160043.27044-2-willy@infradead.org>
-In-Reply-To: <20180515160043.27044-2-willy@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew Wilcox <willy@infradead.org>
-Cc: Juergen Gross <jgross@suse.com>, Jens Axboe <axboe@kernel.dk>, kvm@vger.kernel.org, linux-scsi@vger.kernel.org, Matthew Wilcox <mawilcox@microsoft.com>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org, target-devel@vger.kernel.org, kbuild-all@01.org, qla2xxx-upstream@qlogic.com, linux1394-devel@lists.sourceforge.net, Kent Overstreet <kent.overstreet@gmail.com>
+To: target-devel@vger.kernel.org
 
+use new netlink events helpers tcmu_netlink_init() and
+tcmu_netlink_send() to refactor netlink event
+TCMU_CMD_REMOVED_DEVICE
 
-Fixes: 5aff7a710f13 ("Convert target drivers to use sbitmap")
-Signed-off-by: Fengguang Wu <fengguang.wu@intel.com>
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
 ---
- iscsi_target_util.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes in V2:
+  - return tcmu_netlink_event_send() directly, instead of a ret value.
 
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 28bcffa..e147aef 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -147,7 +147,7 @@ void iscsit_free_r2ts_from_list(struct iscsi_cmd *cmd)
- 	spin_unlock_bh(&cmd->r2t_lock);
+ drivers/target/target_core_user.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 52d0e868a192..24e1f0b3662e 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1727,6 +1727,20 @@ static int tcmu_send_dev_add_event(struct tcmu_dev *udev)
+ 
  }
  
--int iscsit_wait_for_tag(struct se_session *se_sess, int state, int *cpup)
-+static int iscsit_wait_for_tag(struct se_session *se_sess, int state, int *cpup)
++static int tcmu_send_dev_remove_event(struct tcmu_dev *udev)
++{
++	struct sk_buff *skb = NULL;
++	void *msg_header = NULL;
++	int ret = 0;
++
++	ret = tcmu_netlink_event_init(udev, TCMU_CMD_REMOVED_DEVICE,
++				      &skb, &msg_header);
++	if (ret < 0)
++		return ret;
++	return tcmu_netlink_event_send(udev, TCMU_CMD_REMOVED_DEVICE,
++				       &skb, &msg_header);
++}
++
+ static int tcmu_update_uio_info(struct tcmu_dev *udev)
  {
- 	int tag = -1;
- 	DEFINE_WAIT(wait);
+ 	struct tcmu_hba *hba = udev->hba->hba_ptr;
+@@ -1886,7 +1900,7 @@ static void tcmu_destroy_device(struct se_device *dev)
+ 	list_del(&udev->node);
+ 	mutex_unlock(&root_udev_mutex);
+ 
+-	tcmu_netlink_event(udev, TCMU_CMD_REMOVED_DEVICE, 0, NULL);
++	tcmu_send_dev_remove_event(udev);
+ 
+ 	uio_unregister_device(&udev->uio_info);
+ 
+-- 
+2.14.3
+
