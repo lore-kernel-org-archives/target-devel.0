@@ -1,7 +1,7 @@
 From: Xiubo Li <xiubli@redhat.com>
-Date: Thu, 03 May 2018 00:54:42 +0000
+Date: Thu, 03 May 2018 01:03:40 +0000
 Subject: Re: [PATCHv4 1/3] target/configfs: add module wide action support
-Message-Id: <f65768c7-2df8-3ec4-8f58-a28beb105f9c@redhat.com>
+Message-Id: <165a29a2-df3e-3493-941c-9adc97dc958c@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1524123964-21347-2-git-send-email-xiubli@redhat.com>
 In-Reply-To: <1524123964-21347-2-git-send-email-xiubli@redhat.com>
@@ -23,16 +23,27 @@ On 2018/5/3 2:27, Mike Christie wrote:
 > how you are going to deal with compat. Maybe add a module level attrs
 > attr and add a max data area there that calls the same mod param code.
 > There would still be a kernel where it is not supported though.
-Hey Mike,
+But from currently after the tcmu-runner is crashed the=20
+target_core_user.ko will still be kept inserted, something like:
 
-I just thought currently approach will be more flexible.
-Yeah,=A0 for the compat issue it should be a little painful to deal with.=20
-It's up to you and I am okay for both approaches.
+[root@gblock2 ~]# lsmod |grep target
+target_core_pscsi=A0=A0=A0=A0=A0 18799=A0 0
+target_core_file=A0=A0=A0=A0=A0=A0 18217=A0 0
+target_core_iblock=A0=A0=A0=A0 18282=A0 0
+iscsi_target_mod=A0=A0=A0=A0=A0 291661=A0 8
+target_core_user=A0=A0=A0=A0=A0=A0 24557=A0 2
+target_core_mod=A0=A0=A0=A0=A0=A0 340729=A0 18=20
+target_core_iblock,target_core_pscsi,iscsi_target_mod,target_core_file,targ=
+et_core_user
+uio=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 19259=A0 1 tar=
+get_core_user
+crc_t10dif=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 12912=A0 2 target_core_mod,s=
+d_mod
+
+If make it a mod param, like this issue how could it be work when the=20
+tcmu-runner is crashed and try to start again?
 
 BRs
-Thanks,
-
-
 
 
 > Add some comments below if we go this route.
