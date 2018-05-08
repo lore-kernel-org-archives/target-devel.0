@@ -1,7 +1,7 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Tue, 08 May 2018 05:47:31 +0000
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 08 May 2018 16:26:45 +0000
 Subject: Re: [PATCH v2] target/file: add support of direct and async I/O
-Message-Id: <yq1efimwvf0.fsf@oracle.com>
+Message-Id: <5AF1CFC5.6030605@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180322065502.25569-1-avagin@openvz.org>
 In-Reply-To: <20180322065502.25569-1-avagin@openvz.org>
@@ -10,16 +10,23 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+On 05/08/2018 12:47 AM, Martin K. Petersen wrote:
+> 
+> Bryant,
+> 
+>> Can you review this patch and pull it into scsi since Nicholas has
+>> been out for awhile?
+>>
+>> I have tested this patch and really like the performance enhancements
+>> as a result of it.
+> 
+> No problem queuing it up if I get an ACK from Christoph or Mike.
+> 
 
-Bryant,
+I think Christoph Ackd it here
 
-> Can you review this patch and pull it into scsi since Nicholas has
-> been out for awhile?
->
-> I have tested this patch and really like the performance enhancements
-> as a result of it.
+https://www.spinics.net/lists/target-devel/msg16575.html
 
-No problem queuing it up if I get an ACK from Christoph or Mike.
+It also seems ok to me.
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Reviewed-by: Mike Christie <mchristi@redhat.com>
