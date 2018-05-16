@@ -1,60 +1,39 @@
-From: Felipe Balbi <felipe.balbi@linux.intel.com>
-Date: Wed, 16 May 2018 05:54:31 +0000
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 16 May 2018 12:47:21 +0000
 Subject: Re: [PATCH 1/2] Convert target drivers to use sbitmap
-Message-Id: <8736ys9mco.fsf@linux.intel.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-=-="
+Message-Id: <201805162035.EWoS94Oq%fengguang.wu@intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180515160043.27044-1-willy@infradead.org> <20180515160043.27044-2-willy@infradead.org>
+References: <20180515160043.27044-2-willy@infradead.org>
 In-Reply-To: <20180515160043.27044-2-willy@infradead.org>
-To: Matthew Wilcox <willy@infradead.org>, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-usb@vger.kernel.org, kvm@vger.kernel.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, Juergen Gross <jgross@suse.com>, qla2xxx-upstream@qlogic.com, Kent Overstreet <kent.overstreet@gmail.com>, Jens Axboe <axboe@kernel.dk>
-Cc: Matthew Wilcox <mawilcox@microsoft.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: target-devel@vger.kernel.org
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hi Matthew,
+
+I love your patch! Perhaps something to improve:
+
+[auto build test WARNING on linus/master]
+[also build test WARNING on v4.17-rc5 next-20180516]
+[cannot apply to target/master]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+
+url:    https://github.com/0day-ci/linux/commits/Matthew-Wilcox/Use-sbitmap-instead-of-percpu_ida/20180516-143658
+reproduce:
+        # apt-get install sparse
+        make ARCH=x86_64 allmodconfig
+        make C=1 CF=-D__CHECK_ENDIAN__
 
 
-Hi,
+sparse warnings: (new ones prefixed by >>)
 
-Matthew Wilcox <willy@infradead.org> writes:
-> From: Matthew Wilcox <mawilcox@microsoft.com>
->
-> The sbitmap and the percpu_ida perform essentially the same task,
-> allocating tags for commands.  Since the sbitmap is more used than
-> the percpu_ida, convert the percpu_ida users to the sbitmap API.
->
-> Signed-off-by: Matthew Wilcox <mawilcox@microsoft.com>
-> ---
+>> drivers/target/iscsi/iscsi_target_util.c:150:5: sparse: symbol 'iscsit_wait_for_tag' was not declared. Should it be static?
+   drivers/target/iscsi/iscsi_target_util.c:1174:31: sparse: expression using sizeof(void)
+   drivers/target/iscsi/iscsi_target_util.c:1174:31: sparse: expression using sizeof(void)
 
-[...]
+Please review and possibly fold the followup patch.
 
->  drivers/usb/gadget/function/f_tcm.c      |  8 +++---
-
-for drivers/usb/gadget/function/f_tcm.c
-
-Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
-
-=2D-=20
-balbi
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEElLzh7wn96CXwjh2IzL64meEamQYFAlr7x5kACgkQzL64meEa
-mQZTNw/7BeARv5AHTU76jM8Zj2RGQnhmwK+vPHpdEEIiwl+eENFkYn8HCpxz6Fy/
-8+ZLFWGD2OSNpenF/oHeMyuLjbD1nbeYk95GU3zXJbeTQp7Cl5m5j05mcAqziWD6
-I+EExa95spRapO1A03KDnDsOgCe9nVM+j2BT/nXvUiSmyT3Z80XcuextwlpFCh0t
-Lzw+k9HT8LfdgFKIY4d8fXBakn/Ezuvcm1thYlLJNACjePusCvo8Fv4R3jVTsmFJ
-OdsgkEIPhHUJnyg13fAWatJU77mzxhH1wu+3gAUv5UuhAu7QEvLTlOMYRc/Jp5JG
-U+y/wxeoY1VgmFlZDHPcm/W8wGGlM5Lv2KqPuwBjxErHxJ0Mzf4/MFatLj3g+QOK
-pzmlRNpl+36e5+kifuQhZk+YiqgOwQIs96HmZlwCZy0E1IfZYY8d1mFky0aocqbG
-Mi096aKi4JIhXJ/cbi4bWlq26P/LQdYQYa83WfZQN0pHKVdaI1baUbtU3EFqt1PV
-/asEEy8d0bt4HD3kutz3Kv2wqKbKP4i3aR8voXhI9Er09EXjxtL6mM2y3z4jhYDa
-SocWSQ88Y+vNhWWtZXOTKK1/lonuPjIdR8Xb4BOaWnJgb/XXNaj7nioloxjxA8It
-sDGjUAaySMhhC2Ga2WcrkXOJRmbVL5lyBi9nJWm7viDHOJIfZLI=
-=DXbr
------END PGP SIGNATURE-----
---=-=-=--
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
