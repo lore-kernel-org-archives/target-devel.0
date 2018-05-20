@@ -1,49 +1,58 @@
-From: Matthew Wilcox <willy@infradead.org>
-Date: Tue, 15 May 2018 16:00:41 +0000
-Subject: [PATCH 0/2] Use sbitmap instead of percpu_ida
-Message-Id: <20180515160043.27044-1-willy@infradead.org>
+From: "UK Afro Promo" <rp@theworld.com>
+Date: Sun, 20 May 2018 16:35:57 +0000
+Subject: Prize Claim Promo.
+Message-Id: <7145857950a178caf1fbe19523c05750.squirrel@sqm.theworld.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-usb@vger.kernel.org, kvm@vger.kernel.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, Juergen Gross <jgross@suse.com>, qla2xxx-upstream@qlogic.com, Kent Overstreet <kent.overstreet@gmail.com>, Jens Axboe <axboe@kernel.dk>
-Cc: Matthew Wilcox <mawilcox@microsoft.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: target-devel@vger.kernel.org
 
-From: Matthew Wilcox <mawilcox@microsoft.com>
+UK/AFRO LOTTERY / EMAIL DRAW OF 2018
+No:47 Se1-7NA-London United Kingdom balking.
 
-This is a pretty rough-and-ready conversion of the target drivers
-from using percpu_ida to sbitmap.  It compiles; I don't have a target
-setup, so it's completely untested.  I haven't tried to do anything
-particularly clever here, so it's possible that, for example, the wait
-queue in iscsi_target_util could be more clever, like the block layer
-uses multiple wait queues to avoid pingpongs.  Or maybe we could figure
-out a way to not store the CPU that the ID was allocated on, or perhaps
-the options I specified to sbitmap_queue_init() are suboptimal.
+#WINNING NUMBERS#: 1,5,24,34,41 Bonus 10.
 
-Patch 2 isn't interesting; it just deletes the implementation.  Patch 1
-will be where all the action is.
+Attn: Winner,
 
-Matthew Wilcox (2):
-  Convert target drivers to use sbitmap
-  Remove percpu_ida
+We happily announce to you the draw of UK/AFRO National Lottery online
+Sweepstakes International program held for year 2018. You have won
+GBP=A31,000000.00 (One Million British Pounds Sterling Only) from UK/AFRO
+lottery draw 2018.
 
- drivers/scsi/qla2xxx/qla_target.c        |  16 +-
- drivers/target/iscsi/iscsi_target_util.c |  34 +-
- drivers/target/sbp/sbp_target.c          |   8 +-
- drivers/target/target_core_transport.c   |   5 +-
- drivers/target/tcm_fc/tfc_cmd.c          |  11 +-
- drivers/usb/gadget/function/f_tcm.c      |   8 +-
- drivers/vhost/scsi.c                     |   9 +-
- drivers/xen/xen-scsiback.c               |   8 +-
- include/linux/percpu_ida.h               |  83 -----
- include/target/iscsi/iscsi_target_core.h |   1 +
- include/target/target_core_base.h        |   5 +-
- lib/Makefile                             |   2 +-
- lib/percpu_ida.c                         | 391 -----------------------
- 13 files changed, 74 insertions(+), 507 deletions(-)
- delete mode 100644 include/linux/percpu_ida.h
- delete mode 100644 lib/percpu_ida.c
+Your Email ID was one of the selected emails all over the World Wide
+Websites in the online lottery draw in which your email emerged as a
+winning email with the lucky winning numbers above. Please, note that your
+lucky winning numbers falls within our Afro booklet representative office
+in Africa as indicated in our database here. In view of this, your
+GBP=A31,000,000.00 (One Million British Pounds Sterling Only) would be
+released to you by our nominated paying bank, First National Bank of South
+Africa(FNB).
 
--- 
-2.17.0
+In order to process your winning for transfer, you are advice to contact
+our African fiduciary agent with the details below for your payment.
+
+Name: Mr. Garret Adams Baloyi.
+Email:garretoffice@citromail.hu
+Tel: +27 747 659 857.
+
+You are advised to send the following information to your Claim Agent to
+facilitate the release of your fund to you.
+
+1.Full Names:
+2.Country of origin:
+3.Address:
+4.Telephone Number:
+5.Fax Number:
+6.Date of birth:
+7.Occupation:
+8.Sex:
+9.Marital Status:
+
+Congratulations once again.
+
+Yours sincerely,
+
+Regan Matt.
+
 
