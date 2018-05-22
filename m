@@ -1,12 +1,16 @@
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Tue, 22 May 2018 19:32:54 +0000
-Subject: Re: [PATCH V3] TCMUser: add read length support
-Message-Id: <5b047066.t8v3fAM4bKz+MM/y%bstroesser@ts.fujitsu.com>
+Date: Tue, 22 May 2018 19:45:42 +0000
+Subject: [PATCH V3] TCMUser: add read length support
+Message-Id: <5b047366.NUXUhJxQhuMKtmVe%bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <5b047066.t8v3fAM4bKz+MM/y%bstroesser@ts.fujitsu.com>
+In-Reply-To: <5b047066.t8v3fAM4bKz+MM/y%bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
+
+Patch V3. This time without 'Re: ' in Subject.
 
 Generally target core and TCMUser seem to work fine for tape devices and
 media changers.
