@@ -1,77 +1,51 @@
-From: Xiubo Li <xiubli@redhat.com>
-Date: Thu, 03 May 2018 00:34:37 +0000
-Subject: Re: tcmu-runner rpm
-Message-Id: <4f77a64b-afe4-a792-cbf9-0cded5d875d1@redhat.com>
+From: "bigeasy@linutronix.de" <bigeasy@linutronix.de>
+Date: Mon, 28 May 2018 14:35:18 +0000
+Subject: Re: [PATCH 1/2] target: drop spin_lock_assert() + irqs_disabled() combo checks
+Message-Id: <20180528143518.f46hyhi5r5jd3oxe@linutronix.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <CALtL6Bd12N8BOU2+DZh-b8g0GF=hVoMANyVpvMTk-uE+ZGDpMQ@mail.gmail.com>
-In-Reply-To: <CALtL6Bd12N8BOU2+DZh-b8g0GF=hVoMANyVpvMTk-uE+ZGDpMQ@mail.gmail.com>
+References: <20180322093745.GC4229@kernel.org>
+ <20180323155513.dwbgvblenlji33as@linutronix.de>
+ <1521822325.2535.5.camel@wdc.com>
+ <CA+55aFxVkuntSektVmwXktzvfEezdDTAM_zj4DJdp3qJxWf8aA@mail.gmail.com>
+ <20180323171736.bcyi2oiolge4l6hl@linutronix.de>
+ <20180326111359.180f1604@gandalf.local.home>
+ <20180328101553.uduqsdbxwnxrhl7a@linutronix.de>
+ <c9f5df1e54bb2bd8f3f0aef86a55deb11888a6a4.camel@wdc.com>
+ <20180328151433.elhw6kgxdxq6fn6b@linutronix.de>
+ <86c1243e-8733-c94d-d8ff-5c299b8266a6@wdc.com>
+In-Reply-To: <86c1243e-8733-c94d-d8ff-5c299b8266a6@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: "rostedt@goodmis.org" <rostedt@goodmis.org>, "daniel@bristot.me" <daniel@bristot.me>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "acme@kernel.org" <acme@kernel.org>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>, "williams@redhat.com" <williams@redhat.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "lclaudio@redhat.com" <lclaudio@redhat.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-rt-users@vger.kernel.org" <linux-rt-users@vger.kernel.org>
 
-On 2018/5/2 22:00, Raghuram Devarakonda wrote:
-> I couldn't open github issue right away as I wasn't sure whether this
-> was a genuine problem or something to do with my environment.
->
-> And the README of tcmu-runner clearly mentions this list for
-> discussion so I posted it here. Is it ok if I continue to post here
-> about tcmu-runner?
->
-> Thanks any way for the link. That does explain the behavior to some extent.
-For discussion only about tcmu-runner project, raising one issue or PR 
-via github is a better choice.
+On 2018-03-28 08:31:38 [-0700], Bart Van Assche wrote:
+> On 03/28/18 08:14, bigeasy@linutronix.de wrote:
+> > On 2018-03-28 15:05:41 [+0000], Bart Van Assche wrote:
+> > > The names of the two functions touched by patch 1/2 start with a double
+> > > underscore. That by itself is already a hint that these should be called with
+> > > a lock held (I know that this is not a universal convention in the Linux
+> > > kernel). I'm fine either way - either with patch 1/2 as posted or patch 1/2
+> > > with the above comment added.
+> > 
+> > Okay. In that case let me update 1/2.
+> > But 2/2 with the comment as Steven suggested is still a no no for you?
+> 
+> Although I'm not enthusiast about patch 2/2, if others agree with that patch
+> I'm fine with that patch being sent upstream.
 
-If you have any problem or question about the tcmu-runner project, you 
-could raise an issue via github. Or something related to the LIO/TCMU 
-kernel module here is a better choice.
-
-I think it's up to u.
-
-Thanks,
-BRs
-
+I've been waiting for something to happen but nobody replied.
+Bart, you were fine with 1/2 as posted but not too happy about 2/2.
+Assuming we keep 1/2 as is and I remove just the
+"WARN_ON_ONCE(!irqs_disabled());" from 2/2 (keeping the
+assert_spin_locked()), would that improve your mood? Lockdep would still
+perform full validation, yell if __transport_check_aborted_status() was
+invoked without locking and also yell abut missing IRQ-save at locking
+time of ->t_state_lock).
 
 > Thanks,
-> Raghu
->
->
-> On Tue, May 1, 2018 at 5:59 PM, Bryant G. Ly <bryantly@linux.ibm.com> wrote:
->>
->> On 5/1/18 3:34 PM, Raghuram Devarakonda wrote:
->>
->>> It turns out that the presence of "/etc/tcmu/tcmu.conf" on the system
->>> trips up the build process.Once I renamed "/etc/tcmu", I could build
->>> RPM successfully. The contents (listed below) of the file
->>> "./extra/rpmbuild/BUILD/tcmu-runner-1.3.0.54.g6684a21/tcmu.conf_install.cmake"
->>> gave me a clue as to what is going on:
->>>
->>> ----
->>> if (NOT EXISTS "/etc/tcmu/tcmu.conf")
->>>          file(INSTALL
->>> "/root/tcmu-runner-orig/extra/rpmbuild/BUILD/tcmu-runner-1.3.0.54.g6684a21/tcmu.conf"
->>> DESTINATION "/etc/tcmu")
->>> endif()
->>> ----
->>>
->>> I think it should really be checking for this file under the buildroot
->>> rather than in "/" but I may be wrong.
->>>
->>> Thanks,
->>> Raghu
->>>
->>>
->> You should be asking these questions under tcmu-runner github issues....
->>
->> But your problem:
->>
->> https://github.com/open-iscsi/tcmu-runner/issues/320#event-1307345921
->>
->> -Bryant
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe target-devel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> Bart.
 
-
+Sebastian
