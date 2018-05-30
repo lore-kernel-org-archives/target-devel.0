@@ -1,7 +1,7 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 23 May 2018 03:43:37 +0000
+From: Lee Duncan <lduncan@suse.com>
+Date: Wed, 30 May 2018 01:07:40 +0000
 Subject: Re: [PATCH V3] TCMUser: add read length support
-Message-Id: <5B04E369.2040109@redhat.com>
+Message-Id: <f76aa46b-affb-aea9-b6f0-4d2a22697b4d@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <5b047066.t8v3fAM4bKz+MM/y%bstroesser@ts.fujitsu.com>
 In-Reply-To: <5b047066.t8v3fAM4bKz+MM/y%bstroesser@ts.fujitsu.com>
@@ -10,7 +10,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 05/22/2018 02:45 PM, Bodo Stroesser wrote:
+On 05/22/2018 12:45 PM, Bodo Stroesser wrote:
 > Patch V3. This time without 'Re: ' in Subject.
 > 
 > Generally target core and TCMUser seem to work fine for tape devices and
@@ -202,8 +202,5 @@ On 05/22/2018 02:45 PM, Bodo Stroesser wrote:
 >  	mb->cmdr_size = udev->cmdr_size;
 >  
 
-
-Looks ok to me.
-
-Acked-by: Mike Christie <mchristi@redhat.com>
+Reviewed-by: Lee Duncan <lduncan@suse.com>
 
