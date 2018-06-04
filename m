@@ -1,106 +1,91 @@
-From: Zhu Lingshan <lszhu@suse.com>
-Date: Fri, 15 Jun 2018 18:23:33 +0000
-Subject: [PATCH 24/33] TCMU PR: handle PR read keys for TCMU devs
-Message-Id: <20180615182342.6239-24-lszhu@suse.com>
+From: Roman Pen <roman.penyaev@profitbricks.com>
+Date: Mon, 04 Jun 2018 12:30:02 +0000
+Subject: [PATCH v2 7/8] IB/isert: use refcount_t instead of just a raw integer
+Message-Id: <20180604123003.24748-8-roman.penyaev@profitbricks.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This patch added a function tcmu_execute_pr_read_keys() which
-can help handle Persistent Reservation Read Keys.
+refcount_t has a nice overflow runtime protection on x86 and clear API,
+so prefer it instead of a raw integer.
 
-Signed-off-by: Zhu Lingshan <lszhu@suse.com>
+Signed-off-by: Roman Pen <roman.penyaev@profitbricks.de>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Steve Wise <swise@opengridcomputing.com>
+Cc: Bart Van Assche <bart.vanassche@sandisk.com>
+Cc: Sagi Grimberg <sagi@grimberg.me>
+Cc: Doug Ledford <dledford@redhat.com>
+Cc: target-devel@vger.kernel.org
 ---
- drivers/target/target_core_user.c | 74 +++++++++++++++++++++++++++++++
- 1 file changed, 74 insertions(+)
+ drivers/infiniband/ulp/isert/ib_isert.c | 14 +++++++-------
+ drivers/infiniband/ulp/isert/ib_isert.h |  3 ++-
+ 2 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 2fcdfc97ca75..a89c866a755d 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -2846,6 +2846,80 @@ static int tcmu_pr_info_mock_empty(struct tcmu_pr_info **_pr_info)
- 	return 0;
- }
- 
-+static sense_reason_t
-+tcmu_execute_pr_read_keys(struct se_cmd *cmd, unsigned char *buf, u32 buf_len)
-+{
-+	struct se_device *dev = cmd->se_dev;
-+	struct tcmu_pr_info *pr_info = NULL;
-+	struct tcmu_pr_reg *reg;
-+	u32 add_len = 0, off = 8;
-+	int rc;
-+	struct tcmu_dev *udev = TCMU_DEV(dev);
-+
-+	udev->pr_info.pr_info_buf = kzalloc(TCMU_PR_INFO_XATTR_MAX_SIZE,
-+					    GFP_KERNEL);
-+	if (!udev->pr_info.pr_info_buf)
-+		return TCM_OUT_OF_RESOURCES;
-+
-+	if (buf_len < 8) {
-+		WARN_ON(1);
-+		kfree(udev->pr_info.pr_info_buf);
-+		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+	}
-+
-+	pr_debug("getting pr_info for buf: %p, %u\n", buf, buf_len);
-+
-+	rc = tcmu_pr_info_get(udev, &pr_info, NULL, NULL);
-+	if (rc = -ENODATA) {
-+		pr_debug("PR info not present for read, mocking empty\n");
-+		rc = tcmu_pr_info_mock_empty(&pr_info);
-+	}
-+	if (rc < 0) {
-+		kfree(udev->pr_info.pr_info_buf);
-+		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+	}
-+	pr_debug("packing read_keys response buf: %p, %u\n", buf, buf_len);
-+
-+	buf[0] = ((pr_info->gen >> 24) & 0xff);
-+	buf[1] = ((pr_info->gen >> 16) & 0xff);
-+	buf[2] = ((pr_info->gen >> 8) & 0xff);
-+	buf[3] = (pr_info->gen & 0xff);
-+
-+	pr_debug("packed gen %u in read_keys response\n", pr_info->gen);
-+
-+	list_for_each_entry(reg, &pr_info->regs, regs_node) {
-+		/*
-+		 * Check for overflow of 8byte PRI READ_KEYS payload and
-+		 * next reservation key list descriptor.
-+		 */
-+		if ((add_len + 8) > (buf_len - 8))
-+			break;
-+
-+		buf[off++] = ((reg->key >> 56) & 0xff);
-+		buf[off++] = ((reg->key >> 48) & 0xff);
-+		buf[off++] = ((reg->key >> 40) & 0xff);
-+		buf[off++] = ((reg->key >> 32) & 0xff);
-+		buf[off++] = ((reg->key >> 24) & 0xff);
-+		buf[off++] = ((reg->key >> 16) & 0xff);
-+		buf[off++] = ((reg->key >> 8) & 0xff);
-+		buf[off++] = (reg->key & 0xff);
-+		pr_debug("packed key 0x%llx in read_keys response\n", reg->key);
-+
-+		add_len += 8;
-+	}
-+
-+	buf[4] = ((add_len >> 24) & 0xff);
-+	buf[5] = ((add_len >> 16) & 0xff);
-+	buf[6] = ((add_len >> 8) & 0xff);
-+	buf[7] = (add_len & 0xff);
-+
-+	pr_debug("packed len %u in read_keys response\n", add_len);
-+	tcmu_pr_info_free(pr_info);
-+	kfree(udev->pr_info.pr_info_buf);
-+
-+	return TCM_NO_SENSE;
-+}
-+
- static int tcmu_configure_device(struct se_device *dev)
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index b7da1a6ea32c..08dc9d27e5b1 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -342,9 +342,9 @@ static void
+ isert_device_put(struct isert_device *device)
  {
- 	struct tcmu_dev *udev = TCMU_DEV(dev);
+ 	mutex_lock(&device_list_mutex);
+-	device->refcount--;
+-	isert_info("device %p refcount %d\n", device, device->refcount);
+-	if (!device->refcount) {
++	isert_info("device %p refcount %d\n", device,
++		   refcount_read(&device->refcount));
++	if (refcount_dec_and_test(&device->refcount)) {
+ 		isert_free_device_ib_res(device);
+ 		list_del(&device->dev_node);
+ 		kfree(device);
+@@ -361,9 +361,9 @@ isert_device_get(struct rdma_cm_id *cma_id)
+ 	mutex_lock(&device_list_mutex);
+ 	list_for_each_entry(device, &device_list, dev_node) {
+ 		if (device->ib_device->node_guid = cma_id->device->node_guid) {
+-			device->refcount++;
++			refcount_inc(&device->refcount);
+ 			isert_info("Found iser device %p refcount %d\n",
+-				   device, device->refcount);
++				   device, refcount_read(&device->refcount));
+ 			mutex_unlock(&device_list_mutex);
+ 			return device;
+ 		}
+@@ -386,10 +386,10 @@ isert_device_get(struct rdma_cm_id *cma_id)
+ 		return ERR_PTR(ret);
+ 	}
+ 
+-	device->refcount++;
++	refcount_inc(&device->refcount);
+ 	list_add_tail(&device->dev_node, &device_list);
+ 	isert_info("Created a new iser device %p refcount %d\n",
+-		   device, device->refcount);
++		   device, refcount_read(&device->refcount));
+ 	mutex_unlock(&device_list_mutex);
+ 
+ 	return device;
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.h b/drivers/infiniband/ulp/isert/ib_isert.h
+index 9f0b0a6d87cf..ff08bf29dce4 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.h
++++ b/drivers/infiniband/ulp/isert/ib_isert.h
+@@ -2,6 +2,7 @@
+ #include <linux/socket.h>
+ #include <linux/in.h>
+ #include <linux/in6.h>
++#include <linux/refcount.h>
+ #include <rdma/ib_verbs.h>
+ #include <rdma/rdma_cm.h>
+ #include <rdma/rw.h>
+@@ -183,7 +184,7 @@ struct isert_comp {
+ 
+ struct isert_device {
+ 	bool			pi_capable;
+-	int			refcount;
++	refcount_t		refcount;
+ 	struct mutex		comp_mutex;
+ 	struct ib_device	*ib_device;
+ 	struct ib_pd		*pd;
 -- 
-2.17.1
+2.13.1
 
