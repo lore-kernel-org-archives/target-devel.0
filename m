@@ -1,7 +1,7 @@
-From: Maged Mokhtar <mmokhtar@petasan.org>
-Date: Mon, 04 Jun 2018 19:42:36 +0000
+From: David Disseldorp <ddiss@suse.de>
+Date: Mon, 04 Jun 2018 20:20:30 +0000
 Subject: Re: [PATCH] target: fix truncated PR-in ReadKeys response
-Message-Id: <9e5af525014877469c9ee114d86f22e2@petasan.org>
+Message-Id: <20180604222030.6d01543d@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180531222054.32655-1-ddiss@suse.de>
 In-Reply-To: <20180531222054.32655-1-ddiss@suse.de>
@@ -10,25 +10,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 2018-06-04 13:36, David Disseldorp wrote:
+On Mon, 04 Jun 2018 21:42:36 +0200, Maged Mokhtar wrote:
 
-> On Mon, 4 Jun 2018 14:16:45 +0300, Maged Mokhtar wrote:
-> 
->> This also fixes an issue in Windows server 2016 failover cluster with
->> many client connections, the initial allocation length sent in cdb is
->> 72 bytes which  limits it to 8 keys, with additional length not 
->> affected
->> by truncation, it will retry with correct size.
-> 
-> Interesting coincidence :) I only ran into this while looking at the
-> spec for the enable_pr change. Can you confirm that this fixes Win 2016
-> PR behaviour with an iblock / ifile backstore? If so I'll respin the
-> patch with an extra note in the commit message.
-> 
-> Cheers, David
-> --
+> Yes it fixes the "Storage Spaces Persistent Reservation" test in the 
+> Windows 2016 Server Failover Cluster validation suites when having many 
+> connections that result in more than 8 registrations. I tested your 
+> patch on 4.17 with iblock.
 
-Yes it fixes the "Storage Spaces Persistent Reservation" test in the 
-Windows 2016 Server Failover Cluster validation suites when having many 
-connections that result in more than 8 registrations. I tested your 
-patch on 4.17 with iblock.
+Thanks a lot for confirming this, Maged. Patch with new commit message
+to follow...
+
+Cheers, David
