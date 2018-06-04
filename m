@@ -1,37 +1,50 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 13 Jun 2018 16:10:29 +0000
-Subject: Re: [RESEND PATCH] target: fix potential memory leak in option parsing
-Message-Id: <5B2141F5.5080102@redhat.com>
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Mon, 04 Jun 2018 07:02:15 +0000
+Subject: Re: [PATCH 1/2] target: drop spin_lock_assert() + irqs_disabled() combo checks
+Message-Id: <92633c987a900acf5e7defb481d347a9e5b1253d.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1528867646-138322-1-git-send-email-cgxu519@gmx.com>
-In-Reply-To: <1528867646-138322-1-git-send-email-cgxu519@gmx.com>
+References: <20180322093745.GC4229@kernel.org>
+         <20180323155513.dwbgvblenlji33as@linutronix.de>
+         <1521822325.2535.5.camel@wdc.com>
+         <CA+55aFxVkuntSektVmwXktzvfEezdDTAM_zj4DJdp3qJxWf8aA@mail.gmail.com>
+         <20180323171736.bcyi2oiolge4l6hl@linutronix.de>
+         <20180326111359.180f1604@gandalf.local.home>
+         <20180328101553.uduqsdbxwnxrhl7a@linutronix.de>
+         <c9f5df1e54bb2bd8f3f0aef86a55deb11888a6a4.camel@wdc.com>
+         <20180328151433.elhw6kgxdxq6fn6b@linutronix.de>
+         <86c1243e-8733-c94d-d8ff-5c299b8266a6@wdc.com>
+         <20180528143518.f46hyhi5r5jd3oxe@linutronix.de>
+In-Reply-To: <20180528143518.f46hyhi5r5jd3oxe@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Chengguang Xu <cgxu519@gmx.com>, nab@linux-iscsi.org
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "bigeasy@linutronix.de" <bigeasy@linutronix.de>
+Cc: "daniel@bristot.me" <daniel@bristot.me>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "acme@kernel.org" <acme@kernel.org>, "williams@redhat.com" <williams@redhat.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "lclaudio@redhat.com" <lclaudio@redhat.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-rt-users@vger.kernel.org" <linux-rt-users@vger.kernel.org>
 
-On 06/13/2018 12:27 AM, Chengguang Xu wrote:
-> When specifying same string type option several times,
-> current option parsing will cause memory leak. Hence,
-> call kfree for previous one in this case.
-> 
-> Signed-off-by: Chengguang Xu <cgxu519@gmx.com>
-> ---
->  drivers/target/target_core_configfs.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-> index 5ccef7d..5512432 100644
-> --- a/drivers/target/target_core_configfs.c
-> +++ b/drivers/target/target_core_configfs.c
-> @@ -1661,6 +1661,7 @@ static ssize_t target_pr_res_aptpl_metadata_store(struct config_item *item,
->  		token = match_token(ptr, tokens, args);
->  		switch (token) {
->  		case Opt_initiator_fabric:
-> +			kfree(i_fabric);
-
-You can probably just change this one and t_fabric so we do not even do
-a match_strdup since they are not used. Just let them hit the default in
-the switch so if apps are still passing them in then we maintain the
-same behavior from their perspective.
+T24gTW9uLCAyMDE4LTA1LTI4IGF0IDE2OjM1ICswMjAwLCBiaWdlYXN5QGxpbnV0cm9uaXguZGUg
+d3JvdGU6DQo+IE9uIDIwMTgtMDMtMjggMDg6MzE6MzggWy0wNzAwXSwgQmFydCBWYW4gQXNzY2hl
+IHdyb3RlOg0KPiA+IE9uIDAzLzI4LzE4IDA4OjE0LCBiaWdlYXN5QGxpbnV0cm9uaXguZGUgd3Jv
+dGU6DQo+ID4gPiBPbiAyMDE4LTAzLTI4IDE1OjA1OjQxIFsrMDAwMF0sIEJhcnQgVmFuIEFzc2No
+ZSB3cm90ZToNCj4gPiA+ID4gVGhlIG5hbWVzIG9mIHRoZSB0d28gZnVuY3Rpb25zIHRvdWNoZWQg
+YnkgcGF0Y2ggMS8yIHN0YXJ0IHdpdGggYSBkb3VibGUNCj4gPiA+ID4gdW5kZXJzY29yZS4gVGhh
+dCBieSBpdHNlbGYgaXMgYWxyZWFkeSBhIGhpbnQgdGhhdCB0aGVzZSBzaG91bGQgYmUgY2FsbGVk
+IHdpdGgNCj4gPiA+ID4gYSBsb2NrIGhlbGQgKEkga25vdyB0aGF0IHRoaXMgaXMgbm90IGEgdW5p
+dmVyc2FsIGNvbnZlbnRpb24gaW4gdGhlIExpbnV4DQo+ID4gPiA+IGtlcm5lbCkuIEknbSBmaW5l
+IGVpdGhlciB3YXkgLSBlaXRoZXIgd2l0aCBwYXRjaCAxLzIgYXMgcG9zdGVkIG9yIHBhdGNoIDEv
+Mg0KPiA+ID4gPiB3aXRoIHRoZSBhYm92ZSBjb21tZW50IGFkZGVkLg0KPiA+ID4gDQo+ID4gPiBP
+a2F5LiBJbiB0aGF0IGNhc2UgbGV0IG1lIHVwZGF0ZSAxLzIuDQo+ID4gPiBCdXQgMi8yIHdpdGgg
+dGhlIGNvbW1lbnQgYXMgU3RldmVuIHN1Z2dlc3RlZCBpcyBzdGlsbCBhIG5vIG5vIGZvciB5b3U/
+DQo+ID4gDQo+ID4gQWx0aG91Z2ggSSdtIG5vdCBlbnRodXNpYXN0IGFib3V0IHBhdGNoIDIvMiwg
+aWYgb3RoZXJzIGFncmVlIHdpdGggdGhhdCBwYXRjaA0KPiA+IEknbSBmaW5lIHdpdGggdGhhdCBw
+YXRjaCBiZWluZyBzZW50IHVwc3RyZWFtLg0KPiANCj4gSSd2ZSBiZWVuIHdhaXRpbmcgZm9yIHNv
+bWV0aGluZyB0byBoYXBwZW4gYnV0IG5vYm9keSByZXBsaWVkLg0KPiBCYXJ0LCB5b3Ugd2VyZSBm
+aW5lIHdpdGggMS8yIGFzIHBvc3RlZCBidXQgbm90IHRvbyBoYXBweSBhYm91dCAyLzIuDQo+IEFz
+c3VtaW5nIHdlIGtlZXAgMS8yIGFzIGlzIGFuZCBJIHJlbW92ZSBqdXN0IHRoZQ0KPiAiV0FSTl9P
+Tl9PTkNFKCFpcnFzX2Rpc2FibGVkKCkpOyIgZnJvbSAyLzIgKGtlZXBpbmcgdGhlDQo+IGFzc2Vy
+dF9zcGluX2xvY2tlZCgpKSwgd291bGQgdGhhdCBpbXByb3ZlIHlvdXIgbW9vZD8gTG9ja2RlcCB3
+b3VsZCBzdGlsbA0KPiBwZXJmb3JtIGZ1bGwgdmFsaWRhdGlvbiwgeWVsbCBpZiBfX3RyYW5zcG9y
+dF9jaGVja19hYm9ydGVkX3N0YXR1cygpIHdhcw0KPiBpbnZva2VkIHdpdGhvdXQgbG9ja2luZyBh
+bmQgYWxzbyB5ZWxsIGFidXQgbWlzc2luZyBJUlEtc2F2ZSBhdCBsb2NraW5nDQo+IHRpbWUgb2Yg
+LT50X3N0YXRlX2xvY2spLg0KDQpXb3VsZCBhZGRpbmcgV0FSTl9PTl9PTkNFKCFpcnFzX2Rpc2Fi
+bGVkKCkpIHdvcmsgZmluZSB3aXRoIGFuIFJUIGtlcm5lbD8NCg0KVGhhbmtzLA0KDQpCYXJ0Lg0K
+DQoNCg0KDQo
