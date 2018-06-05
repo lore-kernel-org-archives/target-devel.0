@@ -1,71 +1,66 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Fri, 22 Jun 2018 21:53:00 +0000
-Subject: [PATCH 13/20] target/iscsi: Reduce number of __iscsit_free_cmd() callers
-Message-Id: <20180622215307.8758-14-bart.vanassche@wdc.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Tue, 05 Jun 2018 10:00:25 +0000
+Subject: [PATCH v2] target: fix truncated PR-in ReadKeys response
+Message-Id: <20180605100025.12112-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
+Cc: David Disseldorp <ddiss@suse.de>, stable@vger.kernel.org
 
-Instead of calling __iscsit_free_cmd() from inside iscsit_aborted_task()
-if a command has been aborted and from inside iscsit_free_cmd() if a
-command has not been aborted, call __iscsit_free_cmd() from inside
-lio_release_cmd(). The latter function is namely called for all commands
-once the reference count has dropped to zero.
+SPC5r17 states that the contents of the ADDITIONAL LENGTH field are not
+altered based on the allocation length, so always calculate and pack the
+full key list length even if the list itself is truncated.
 
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+According to Maged:
+  Yes it fixes the "Storage Spaces Persistent Reservation" test in the
+  Windows 2016 Server Failover Cluster validation suites when having
+  many connections that result in more than 8 registrations. I tested
+  your patch on 4.17 with iblock.
+
+This behaviour can be tested using the libiscsi PrinReadKeys.Truncate
+test.
+
+Cc: stable@vger.kernel.org
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 Reviewed-by: Mike Christie <mchristi@redhat.com>
-Cc: Varun Prakash <varun@chelsio.com>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Christoph Hellwig <hch@lst.de>
+Tested-by: Maged Mokhtar <mmokhtar@petasan.org>
 ---
- drivers/target/iscsi/iscsi_target.c          | 2 --
- drivers/target/iscsi/iscsi_target_configfs.c | 1 +
- drivers/target/iscsi/iscsi_target_util.c     | 4 +---
- 3 files changed, 2 insertions(+), 5 deletions(-)
+ drivers/target/target_core_pr.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 8e223799347a..d547dcd625d9 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -497,8 +497,6 @@ void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
- 	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
- 		list_del_init(&cmd->i_conn_node);
- 	spin_unlock_bh(&conn->cmd_lock);
+Changes since v1:
+* CC stable
+* mention Maged's Windows PR test fix comment in commit message
+* add Reviewed-by and Tested-by tags
+
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index 01ac306131c1..2e865fdaa362 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -3727,11 +3727,16 @@ core_scsi3_pri_read_keys(struct se_cmd *cmd)
+ 		 * Check for overflow of 8byte PRI READ_KEYS payload and
+ 		 * next reservation key list descriptor.
+ 		 */
+-		if ((add_len + 8) > (cmd->data_length - 8))
+-			break;
 -
--	__iscsit_free_cmd(cmd, true);
- }
- EXPORT_SYMBOL(iscsit_aborted_task);
- 
-diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
-index 0ebc4818e132..0bc346b2c27c 100644
---- a/drivers/target/iscsi/iscsi_target_configfs.c
-+++ b/drivers/target/iscsi/iscsi_target_configfs.c
-@@ -1546,6 +1546,7 @@ static void lio_release_cmd(struct se_cmd *se_cmd)
- 	struct iscsi_cmd *cmd = container_of(se_cmd, struct iscsi_cmd, se_cmd);
- 
- 	pr_debug("Entering lio_release_cmd for se_cmd: %p\n", se_cmd);
-+	__iscsit_free_cmd(cmd, true);
- 	iscsit_release_cmd(cmd);
- }
- 
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 8cfcf9033507..5a645b5f1eb4 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -772,10 +772,8 @@ void iscsit_free_cmd(struct iscsi_cmd *cmd, bool shutdown)
- 	__iscsit_free_cmd(cmd, shutdown);
- 	if (se_cmd) {
- 		rc = transport_generic_free_cmd(se_cmd, shutdown);
--		if (!rc && shutdown && se_cmd->se_sess) {
--			__iscsit_free_cmd(cmd, shutdown);
-+		if (!rc && shutdown && se_cmd->se_sess)
- 			target_put_sess_cmd(se_cmd);
--		}
- 	} else {
- 		iscsit_release_cmd(cmd);
+-		put_unaligned_be64(pr_reg->pr_res_key, &buf[off]);
+-		off += 8;
++		if ((off + 8) <= cmd->data_length) {
++			put_unaligned_be64(pr_reg->pr_res_key, &buf[off]);
++			off += 8;
++		}
++		/*
++		 * SPC5r17: 6.16.2 READ KEYS service action
++		 * The ADDITIONAL LENGTH field indicates the number of bytes in
++		 * the Reservation key list. The contents of the ADDITIONAL
++		 * LENGTH field are not altered based on the allocation length
++		 */
+ 		add_len += 8;
  	}
+ 	spin_unlock(&dev->t10_pr.registration_lock);
 -- 
-2.17.1
+2.13.6
 
