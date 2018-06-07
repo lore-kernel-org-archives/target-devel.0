@@ -1,46 +1,60 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Fri, 22 Jun 2018 15:38:53 +0000
-Subject: Re: [PATCH 14/14] target: Fix handling of removed LUNs
-Message-Id: <7b9303c6-f2bf-bfd3-da60-bb2c37f23dfe@wdc.com>
+From: xiubli@redhat.com
+Date: Thu, 07 Jun 2018 06:31:36 +0000
+Subject: [PATCH] tcmu: remove useless code and clean up the code style.
+Message-Id: <1528353096-115725-1-git-send-email-xiubli@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180301222632.31507-15-bart.vanassche@wdc.com>
-In-Reply-To: <20180301222632.31507-15-bart.vanassche@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 06/21/18 20:45, Mike Christie wrote:
-> On 06/21/2018 03:58 PM, Bart Van Assche wrote:
->> On Thu, 2018-06-21 at 15:32 -0500, Mike Christie wrote:
->>> I am not seeing that. I saw SCF_EMULATED_TASK_SENSE was moved but not
->>> SCF_SENT_CHECK_CONDITION. The latter is set a little earlier in
->>> transport_send_check_condition_and_sense.
->>
->> Are you sure we need to change the code that sets SCF_SENT_CHECK_CONDITION?
->> It seems to me like the name of that flag is misleading. I think that flag
->> is used to keep track of whether or not a response has been sent to the
->> initiator. So keeping the current code for the manipulation of that flag
->> should be fine.
-> 
-> I think with your patch the behavior will be the same as before, so it
-> is safe.
-> 
-> I was more asking if in another future patch we need to set that bit for
-> the case where TCM_LUN_BUSY/TCM_OUT_OF_RESOURCES is passed to
-> transport_generic_request_failure so the behavior for that code path is
-> the same as when you now set cmd->scsi_status = TCM_LUN_BUSY in your patch.
+From: Xiubo Li <xiubli@redhat.com>
 
-Hello Mike,
+Since the TCMU_RING_SIZE macro is not using here will discard it
+and at the same time clean up the code style.
 
-As you know today the code that processes the abort task management 
-function is executed concurrently with the regular command processing 
-code. I think if we would process task aborts from inside the regular 
-command processing path that not only that code would become simpler but 
-also that we wouldn't need the SCF_SENT_CHECK_CONDITION flag anymore for 
-most target drivers. I'm not sure though about the iSCSI target driver. 
-It's possible that we still would need that flag for the iSCSI target 
-driver. How about me resurrecting the patch that moves abort processing
-into the same context as the regular SCSI command execution?
+Signed-off-by: Xiubo Li <xiubli@redhat.com>
+---
+ drivers/target/target_core_user.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-Bart.
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 4f26bdc..2c63936 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -79,14 +79,10 @@
+ #define DATA_BLOCK_SIZE PAGE_SIZE
+ #define DATA_BLOCK_SHIFT PAGE_SHIFT
+ #define DATA_BLOCK_BITS_DEF (256 * 1024)
+-#define DATA_SIZE (DATA_BLOCK_BITS * DATA_BLOCK_SIZE)
+ 
+ #define TCMU_MBS_TO_BLOCKS(_mbs) (_mbs << (20 - DATA_BLOCK_SHIFT))
+ #define TCMU_BLOCKS_TO_MBS(_blocks) (_blocks >> (20 - DATA_BLOCK_SHIFT))
+ 
+-/* The total size of the ring is 8M + 256K * PAGE_SIZE */
+-#define TCMU_RING_SIZE (CMDR_SIZE + DATA_SIZE)
+-
+ /*
+  * Default number of global data blocks(512K * PAGE_SIZE)
+  * when the unmap thread will be started.
+@@ -279,7 +275,7 @@ static int tcmu_genl_cmd_done(struct genl_info *info, int completed_cmd)
+ 	if (!info->attrs[TCMU_ATTR_CMD_STATUS] ||
+ 	    !info->attrs[TCMU_ATTR_DEVICE_ID]) {
+ 		printk(KERN_ERR "TCMU_ATTR_CMD_STATUS or TCMU_ATTR_DEVICE_ID not set, doing nothing\n");
+-                return -EINVAL;
++		return -EINVAL;
+         }
+ 
+ 	dev_id = nla_get_u32(info->attrs[TCMU_ATTR_DEVICE_ID]);
+@@ -309,7 +305,7 @@ static int tcmu_genl_cmd_done(struct genl_info *info, int completed_cmd)
+ 
+ 	spin_unlock(&udev->nl_cmd_lock);
+ 	if (!is_removed)
+-		 target_undepend_item(&dev->dev_group.cg_item);
++		target_undepend_item(&dev->dev_group.cg_item);
+ 	if (!ret)
+ 		complete(&nl_cmd->complete);
+ 	return ret;
+-- 
+1.8.3.1
+
