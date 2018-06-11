@@ -1,7 +1,7 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 11 Jun 2018 18:32:12 +0000
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Mon, 11 Jun 2018 18:45:01 +0000
 Subject: Re: [PATCH 04/14] target: Make the session shutdown code also wait for commands that are being abort
-Message-Id: <5B1EC02C.80003@redhat.com>
+Message-Id: <d55a705bc205c25d359f51d24aac02a27b53bc44.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180301222632.31507-5-bart.vanassche@wdc.com>
 In-Reply-To: <20180301222632.31507-5-bart.vanassche@wdc.com>
@@ -10,44 +10,34 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 03/01/2018 04:26 PM, Bart Van Assche wrote:
-> Target drivers must call target_sess_cmd_list_set_waiting() and
-> target_wait_for_sess_cmds() before freeing a session. Since freeing
-> a session is only safe after all commands that are associated with
-> a session have finished, make target_wait_for_sess_cmds() also wait
-> for commands that are being aborted. Instead of setting a flag in
-> each pending command from target_sess_cmd_list_set_waiting() and
-> waiting in target_wait_for_sess_cmds() on a per-command completion,
-> only set a per-session flag in the former function and wait on
-> a per-session completion in the latter function. This change is
-> safe because once a SCSI initiator system has submitted a command
-> a target system is always allowed to execute it to completion. See
-> also commit 0f4a943168f3 ("target: Fix remote-port TMR ABORT +
-> se_cmd fabric stop").
-> 
-> This patch is based on the following two patches:
-> * Bart Van Assche, target: Simplify session shutdown code, February 19, 2015
->   (https://github.com/bvanassche/linux/commit/8df5463d7d7619f2f1b70cfe5172eaef0aa52815).
-> * Christoph Hellwig, target: Rework session shutdown code, December 7, 2015
->   (http://thread.gmane.org/gmane.linux.scsi.target.devel/10695).
-> 
-
-Hey Bart,
-
-I think the patch looks ok bug/behavior wise. I was just wondering why
-there is the difference between iscsi and the rest of the target drivers.
-
-It looks like with this patch iscsi is the only driver that can do a
-transport_generic_free_cmd call with wait_for_tasks=true when something
-like a iscsi connection is stopped, so it is the only one that now uses
-the CMD_T_FABRIC_STOP bit and all the related code.
-
-It looks like all other drivers do something like you mention above and
-do a target_sess_cmd_list_set_waiting+target_wait_for_sess_cmds sequence.
-
-Is the only reason for this due to the struct se_session mapping to a
-struct iscsi_session and we might need to wait on commands in a specific
-connection in a session or was there some other race/TMF type of issue?
-
-
-
+T24gTW9uLCAyMDE4LTA2LTExIGF0IDEzOjMyIC0wNTAwLCBNaWtlIENocmlzdGllIHdyb3RlOg0K
+PiBJIHRoaW5rIHRoZSBwYXRjaCBsb29rcyBvayBidWcvYmVoYXZpb3Igd2lzZS4gSSB3YXMganVz
+dCB3b25kZXJpbmcgd2h5DQo+IHRoZXJlIGlzIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4gaXNjc2kg
+YW5kIHRoZSByZXN0IG9mIHRoZSB0YXJnZXQgZHJpdmVycy4NCj4gDQo+IEl0IGxvb2tzIGxpa2Ug
+d2l0aCB0aGlzIHBhdGNoIGlzY3NpIGlzIHRoZSBvbmx5IGRyaXZlciB0aGF0IGNhbiBkbyBhDQo+
+IHRyYW5zcG9ydF9nZW5lcmljX2ZyZWVfY21kIGNhbGwgd2l0aCB3YWl0X2Zvcl90YXNrcz10cnVl
+IHdoZW4gc29tZXRoaW5nDQo+IGxpa2UgYSBpc2NzaSBjb25uZWN0aW9uIGlzIHN0b3BwZWQsIHNv
+IGl0IGlzIHRoZSBvbmx5IG9uZSB0aGF0IG5vdyB1c2VzDQo+IHRoZSBDTURfVF9GQUJSSUNfU1RP
+UCBiaXQgYW5kIGFsbCB0aGUgcmVsYXRlZCBjb2RlLg0KPiANCj4gSXQgbG9va3MgbGlrZSBhbGwg
+b3RoZXIgZHJpdmVycyBkbyBzb21ldGhpbmcgbGlrZSB5b3UgbWVudGlvbiBhYm92ZSBhbmQNCj4g
+ZG8gYSB0YXJnZXRfc2Vzc19jbWRfbGlzdF9zZXRfd2FpdGluZyt0YXJnZXRfd2FpdF9mb3Jfc2Vz
+c19jbWRzIHNlcXVlbmNlLg0KPiANCj4gSXMgdGhlIG9ubHkgcmVhc29uIGZvciB0aGlzIGR1ZSB0
+byB0aGUgc3RydWN0IHNlX3Nlc3Npb24gbWFwcGluZyB0byBhDQo+IHN0cnVjdCBpc2NzaV9zZXNz
+aW9uIGFuZCB3ZSBtaWdodCBuZWVkIHRvIHdhaXQgb24gY29tbWFuZHMgaW4gYSBzcGVjaWZpYw0K
+PiBjb25uZWN0aW9uIGluIGEgc2Vzc2lvbiBvciB3YXMgdGhlcmUgc29tZSBvdGhlciByYWNlL1RN
+RiB0eXBlIG9mIGlzc3VlPw0KDQpIZWxsbyBNaWtlLA0KDQpUaGlzIGlzIGJlY2F1c2UgdGhlIExJ
+TyBpU0NTSSB0YXJnZXQgZHJpdmVyIHVzZXMgYSB3ZWlyZCBjb21iaW5hdGlvbiBvZg0KcmVmZXJl
+bmNlIGNvdW50aW5nIGFuZCBzeW5jaHJvbm91cyBjb21tYW5kIG1hbmFnZW1lbnQuIEZvciBhbGwg
+TElPIHRhcmdldA0KZHJpdmVycyBleGNlcHQgdGhlIGlTQ1NJIHRhcmdldCBkcml2ZXIgaXQgaXMg
+ZmluZSB0byBkZWNyZWFzZSB0aGUgY29tbWFuZA0KcmVmZXJlbmNlIGNvdW50IGFuZCBub3QgdG8g
+d29ycnkgYWJvdXQgd2hlbiBleGFjdGx5IHRoZSBjb21tYW5kIHdpbGwgYmUNCmZyZWVkLiBUaGUg
+aVNDU0kgdGFyZ2V0IGRyaXZlciBob3dldmVyIGlzIHNwZWNpYWw6IHRoZXJlIGlzIGNvZGUgaW4g
+dGhlDQppU0NTSSB0YXJnZXQgZHJpdmVyIHRoYXQgYXNzdW1lcyB0aGF0IGFsbCB0YXNrcyBoYXZl
+IGZpbmlzaGVkIGFmdGVyDQppc2NzaXRfZnJlZV9jbWQoKSBoYXMgcmV0dXJuZWQuIEFuIGV4YW1w
+bGUgaXMgdGhlIGNvZGUgaW4NCmlzY3NpdF9jbG9zZV9jb25uZWN0aW9uKCk6IGFmdGVyIGlzY3Np
+dF9yZWxlYXNlX2NvbW1hbmRzX2Zyb21fY29ubigpIGhhcw0KcmV0dXJuZWQsIGlzY3NpdF9mcmVl
+X3F1ZXVlX3JlcXNfZm9yX2Nvbm4oKSBpcyBjYWxsZWQuIEl0IG1heSBiZSBwb3NzaWJsZQ0KdG8g
+cmV3b3JrIHRoZSBpU0NTSSB0YXJnZXQgZHJpdmVyIHN1Y2ggdGhhdCBpdCBiZWNvbWVzIG1vcmUg
+c2ltaWxhciB0byB0aGUNCm90aGVyIHRhcmdldCBkcml2ZXJzLiBIb3dldmVyLCBtYWtpbmcgdGhh
+dCBjaGFuZ2Ugd291bGQgcmVxdWlyZSBtb3JlIHRpbWUNCnRoYW4gSSBoYWQgYXZhaWxhYmxlLg0K
+DQpCYXJ0Lg0KDQoNCg0K
