@@ -1,53 +1,53 @@
-From: Matthew Wilcox <willy@infradead.org>
-Date: Tue, 12 Jun 2018 18:08:43 +0000
-Subject: Re: [PATCH 1/2] Convert target drivers to use sbitmap
-Message-Id: <20180612180843.GF19433@bombadil.infradead.org>
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 11 Jun 2018 18:32:12 +0000
+Subject: Re: [PATCH 04/14] target: Make the session shutdown code also wait for commands that are being abort
+Message-Id: <5B1EC02C.80003@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180515160043.27044-1-willy@infradead.org>
-	<20180515160043.27044-2-willy@infradead.org>
-	<da5220a5ed4bed210c31a7517389e787a3b1a01f.camel@wdc.com>
-	<20180612161526.GE19433@bombadil.infradead.org>
-	<0c93c72a3a339f3479f82de04223315671e07863.camel@wdc.com>
-In-Reply-To: <0c93c72a3a339f3479f82de04223315671e07863.camel@wdc.com>
+References: <20180301222632.31507-5-bart.vanassche@wdc.com>
+In-Reply-To: <20180301222632.31507-5-bart.vanassche@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <Bart.VanAssche@wdc.com>
-Cc: "jgross@suse.com" <jgross@suse.com>, "axboe@kernel.dk" <axboe@kernel.dk>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "virtualization@lists.linux-foundation.org" <virtualization@lists.linux-foundation.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "qla2xxx-upstream@qlogic.com" <qla2xxx-upstream@qlogic.com>, "linux1394-devel@lists.sourceforge.net" <linux1394-devel@lists.sourceforge.net>, "kent.overstreet@gmail.com" <kent.overstreet@gmail.com>
+To: target-devel@vger.kernel.org
 
-On Tue, Jun 12, 2018 at 04:32:03PM +0000, Bart Van Assche wrote:
-> On Tue, 2018-06-12 at 09:15 -0700, Matthew Wilcox wrote:
-> > On Tue, Jun 12, 2018 at 03:22:42PM +0000, Bart Van Assche wrote:
-> > > Please introduce functions in the target core for allocating and freeing a tag
-> > > instead of spreading the knowledge of how to allocate and free tags over all
-> > > target drivers.
-> > 
-> > I can't without doing an unreasonably large amount of work on drivers that
-> > I have no way to test.  Some of the drivers have the se_cmd already; some
-> > of them don't.  I'd be happy to introduce a common function for freeing
-> > a tag.
+On 03/01/2018 04:26 PM, Bart Van Assche wrote:
+> Target drivers must call target_sess_cmd_list_set_waiting() and
+> target_wait_for_sess_cmds() before freeing a session. Since freeing
+> a session is only safe after all commands that are associated with
+> a session have finished, make target_wait_for_sess_cmds() also wait
+> for commands that are being aborted. Instead of setting a flag in
+> each pending command from target_sess_cmd_list_set_waiting() and
+> waiting in target_wait_for_sess_cmds() on a per-command completion,
+> only set a per-session flag in the former function and wait on
+> a per-session completion in the latter function. This change is
+> safe because once a SCSI initiator system has submitted a command
+> a target system is always allowed to execute it to completion. See
+> also commit 0f4a943168f3 ("target: Fix remote-port TMR ABORT +
+> se_cmd fabric stop").
 > 
-> Which target drivers are you referring to? If you are referring to the sbp driver:
-> I think that driver is dead and can be removed from the kernel tree. I even don't
-> know whether that driver ever has had any users other than the developer of that
-> driver.
+> This patch is based on the following two patches:
+> * Bart Van Assche, target: Simplify session shutdown code, February 19, 2015
+>   (https://github.com/bvanassche/linux/commit/8df5463d7d7619f2f1b70cfe5172eaef0aa52815).
+> * Christoph Hellwig, target: Rework session shutdown code, December 7, 2015
+>   (http://thread.gmane.org/gmane.linux.scsi.target.devel/10695).
+> 
 
-For example tcm_fc:
+Hey Bart,
 
-        tag = sbitmap_queue_get(&se_sess->sess_tag_pool, &cpu);
-        if (tag < 0)
-                goto busy;
+I think the patch looks ok bug/behavior wise. I was just wondering why
+there is the difference between iscsi and the rest of the target drivers.
 
-        cmd = &((struct ft_cmd *)se_sess->sess_cmd_map)[tag];
+It looks like with this patch iscsi is the only driver that can do a
+transport_generic_free_cmd call with wait_for_tasks=true when something
+like a iscsi connection is stopped, so it is the only one that now uses
+the CMD_T_FABRIC_STOP bit and all the related code.
 
-or qla2xxx:
+It looks like all other drivers do something like you mention above and
+do a target_sess_cmd_list_set_waiting+target_wait_for_sess_cmds sequence.
 
-        tag = sbitmap_queue_get(&se_sess->sess_tag_pool, &cpu);
-        if (tag < 0)
-                return NULL;
+Is the only reason for this due to the struct se_session mapping to a
+struct iscsi_session and we might need to wait on commands in a specific
+connection in a session or was there some other race/TMF type of issue?
 
-        cmd = &((struct qla_tgt_cmd *)se_sess->sess_cmd_map)[tag];
 
-The core doesn't know at what offset from the pointer to store the tag
-& cpu.  Only the individual drivers know their cmd layout.
 
