@@ -1,7 +1,7 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 11 Jun 2018 21:19:41 +0000
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Mon, 11 Jun 2018 21:31:07 +0000
 Subject: Re: [PATCH 00/14] SCSI target patches for kernel v4.17
-Message-Id: <5B1EE76D.7090909@redhat.com>
+Message-Id: <a9b26a35392b7f0f07d36992a14e98007d025b49.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180301222632.31507-1-bart.vanassche@wdc.com>
 In-Reply-To: <20180301222632.31507-1-bart.vanassche@wdc.com>
@@ -10,21 +10,19 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 03/01/2018 04:26 PM, Bart Van Assche wrote:
-> Hello Nic,
-> 
-> This patch series simplifies task management function handling in the SCSI
-> target core considerably. The following tests have been run against this patch
-> series for both the iSCSI and SRPT target drivers:
-> - Run the libiscsi conformance tests.
-> - Run fio ${dev} in one shell and while sg_reset -d ${dev}; do :; done from
->   another shell. This is a good way to stress test TMF handling.
-> - For the SRP target driver: run the srp-test software.
-> 
-> Please consider this patch series for kernel v4.17.
-> 
-
-The patches look ok to me.
-
-Reviewed-by: Mike Christie <mchristi@redhat.com>
-
+T24gTW9uLCAyMDE4LTA2LTExIGF0IDE2OjE5IC0wNTAwLCBNaWtlIENocmlzdGllIHdyb3RlOg0K
+PiBPbiAwMy8wMS8yMDE4IDA0OjI2IFBNLCBCYXJ0IFZhbiBBc3NjaGUgd3JvdGU6DQo+ID4gSGVs
+bG8gTmljLA0KPiA+IA0KPiA+IFRoaXMgcGF0Y2ggc2VyaWVzIHNpbXBsaWZpZXMgdGFzayBtYW5h
+Z2VtZW50IGZ1bmN0aW9uIGhhbmRsaW5nIGluIHRoZSBTQ1NJDQo+ID4gdGFyZ2V0IGNvcmUgY29u
+c2lkZXJhYmx5LiBUaGUgZm9sbG93aW5nIHRlc3RzIGhhdmUgYmVlbiBydW4gYWdhaW5zdCB0aGlz
+IHBhdGNoDQo+ID4gc2VyaWVzIGZvciBib3RoIHRoZSBpU0NTSSBhbmQgU1JQVCB0YXJnZXQgZHJp
+dmVyczoNCj4gPiAtIFJ1biB0aGUgbGliaXNjc2kgY29uZm9ybWFuY2UgdGVzdHMuDQo+ID4gLSBS
+dW4gZmlvICR7ZGV2fSBpbiBvbmUgc2hlbGwgYW5kIHdoaWxlIHNnX3Jlc2V0IC1kICR7ZGV2fTsg
+ZG8gOjsgZG9uZSBmcm9tDQo+ID4gICBhbm90aGVyIHNoZWxsLiBUaGlzIGlzIGEgZ29vZCB3YXkg
+dG8gc3RyZXNzIHRlc3QgVE1GIGhhbmRsaW5nLg0KPiA+IC0gRm9yIHRoZSBTUlAgdGFyZ2V0IGRy
+aXZlcjogcnVuIHRoZSBzcnAtdGVzdCBzb2Z0d2FyZS4NCj4gPiANCj4gPiBQbGVhc2UgY29uc2lk
+ZXIgdGhpcyBwYXRjaCBzZXJpZXMgZm9yIGtlcm5lbCB2NC4xNy4NCj4gPiANCj4gDQo+IFRoZSBw
+YXRjaGVzIGxvb2sgb2sgdG8gbWUuDQo+IA0KPiBSZXZpZXdlZC1ieTogTWlrZSBDaHJpc3RpZSA8
+bWNocmlzdGlAcmVkaGF0LmNvbT4NCg0KVGhhbmtzIE1pa2UgZm9yIHRoZSByZXZpZXcuIEkgd2ls
+bCByZXBvc3QgdGhpcyBzZXJpZXMgb25jZSB0aGUgbWVyZ2Ugd2luZG93DQpoYXMgY2xvc2VkLg0K
+DQpCYXJ0Lg0KDQoNCg0KDQo
