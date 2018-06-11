@@ -1,92 +1,85 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 22 Jun 2018 14:54:07 +0000
-Subject: Re: [PATCH v2] target: add emulate_pr backstore attr to toggle PR support
-Message-Id: <20180622165407.0c4fe62c@suse.de>
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 11 Jun 2018 19:02:42 +0000
+Subject: Re: [PATCH 10/14] target: Simplify the code for waiting for command completion
+Message-Id: <5B1EC752.5060304@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180621170508.13099-1-ddiss@suse.de>
-In-Reply-To: <20180621170508.13099-1-ddiss@suse.de>
+References: <20180301222632.31507-11-bart.vanassche@wdc.com>
+In-Reply-To: <20180301222632.31507-11-bart.vanassche@wdc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 To: target-devel@vger.kernel.org
 
-On Thu, 21 Jun 2018 15:25:35 -0500, Mike Christie wrote:
+On 03/01/2018 04:26 PM, Bart Van Assche wrote:
+> Instead of embedding the completion that is used for waiting for
+> command completion in struct se_cmd, let the context that waits for
+> command completion allocate it. This makes it possible to have a
+> single code path for non-aborted and aborted commands in
+> target_release_cmd_kref() and avoids that transport_generic_free_cmd()
+> has to call cmd->se_tfo->release_cmd() directly. This patch does not
+> change any functionality. Note: transport_generic_free_cmd() only
+> waits until the se_cmd reference count has reached zero after it has
+> set both CMD_T_FABRIC_STOP and CMD_T_ABORTED.
+>=20
+> Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+> Cc: Hannes Reinecke <hare@suse.com>
+> Cc: Christoph Hellwig <hch@lst.de>
+> Cc: Mike Christie <mchristi@redhat.com>
+> ---
+>  drivers/target/target_core_transport.c | 24 ++++++++----------------
+>  include/target/target_core_base.h      |  2 +-
+>  2 files changed, 9 insertions(+), 17 deletions(-)
+>=20
+> diff --git a/drivers/target/target_core_transport.c b/drivers/target/targ=
+et_core_transport.c
+> index c8f19a143f5c..d7b0b2f4261e 100644
+> --- a/drivers/target/target_core_transport.c
+> +++ b/drivers/target/target_core_transport.c
+> @@ -1276,7 +1276,7 @@ void transport_init_se_cmd(
+>  	INIT_LIST_HEAD(&cmd->se_cmd_list);
+>  	INIT_LIST_HEAD(&cmd->state_list);
+>  	init_completion(&cmd->t_transport_stop_comp);
+> -	init_completion(&cmd->cmd_wait_comp);
+> +	cmd->compl =3D NULL;
+>  	spin_lock_init(&cmd->t_state_lock);
+>  	INIT_WORK(&cmd->work, NULL);
+>  	kref_init(&cmd->cmd_kref);
+> @@ -2596,6 +2596,7 @@ static void target_wait_free_cmd(struct se_cmd *cmd=
+, bool *aborted, bool *tas)
+>   */
+>  int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+>  {
+> +	DECLARE_COMPLETION_ONSTACK(compl);
+>  	int ret =3D 0;
+>  	bool aborted =3D false, tas =3D false;
+> =20
+> @@ -2614,12 +2615,13 @@ int transport_generic_free_cmd(struct se_cmd *cmd=
+, int wait_for_tasks)
+>  		if (cmd->se_lun)
+>  			transport_lun_remove_cmd(cmd);
+>  	}
+> +	if (aborted)
 
-> On 06/21/2018 12:05 PM, David Disseldorp wrote:
-> > @@ -1592,7 +1606,8 @@ static ssize_t target_pr_res_aptpl_metadata_show(struct config_item *item,
-> >  {
-> >  	struct se_device *dev = pr_to_dev(item);
-> >  
-> > -	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR)
-> > +	if (!dev->dev_attrib.emulate_pr ||
-> > +	    (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH))
-> >  		return 0;  
-> 
-> 
-> Why did you add the check here but not in
-> target_pr_res_aptpl_metadata_store?
+I see that in the current code we always do a wait if the CMD_T_ABORTED
+bit was set, so your patch matches that. However, is the original code
+correct? In target_release_cmd_kref below we only do a wake up if both
+CMD_T_FABRIC_STOP and CMD_T_ABORTED is set. If wait_for_tasks=FAlse and
+CMD_T_ABORTED was set, we would end up waiting forever. Is that right or
+can it never happen?
 
-Fixed.
 
-> >  
-> >  	return sprintf(page, "Ready to process PR APTPL metadata..\n");
-> > diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-> > index e27db4d45a9d..e443ce5bf311 100644
-> > --- a/drivers/target/target_core_device.c
-> > +++ b/drivers/target/target_core_device.c
-> > @@ -806,6 +806,7 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
-> >  	dev->dev_attrib.emulate_tpws = DA_EMULATE_TPWS;
-> >  	dev->dev_attrib.emulate_caw = DA_EMULATE_CAW;
-> >  	dev->dev_attrib.emulate_3pc = DA_EMULATE_3PC;
-> > +	dev->dev_attrib.emulate_pr = DA_EMULATE_PR;
-> >  	dev->dev_attrib.pi_prot_type = TARGET_DIF_TYPE0_PROT;
-> >  	dev->dev_attrib.enforce_pr_isids = DA_ENFORCE_PR_ISIDS;
-> >  	dev->dev_attrib.force_pr_aptpl = DA_FORCE_PR_APTPL;
-> > @@ -1172,6 +1173,18 @@ passthrough_parse_cdb(struct se_cmd *cmd,
-> >  	}
-> >  
-> >  	/*
-> > +	 * With emulate_pr disabled, all reservation requests should fail,
-> > +	 * regardless of whether or not TRANSPORT_FLAG_PASSTHROUGH_PGR is set.
-> > +	 */
-> > +	if (!dev->dev_attrib.emulate_pr &&
-> > +	    ((cdb[0] = PERSISTENT_RESERVE_IN) ||
-> > +	     (cdb[0] = PERSISTENT_RESERVE_OUT) ||
-> > +	     (cdb[0] = RELEASE || cdb[0] = RELEASE_10) ||
-> > +	     (cdb[0] = RESERVE || cdb[0] = RESERVE_10))) {
-> > +		return TCM_UNSUPPORTED_SCSI_OPCODE;
-> > +	}
-> > +
-> > +	/*
-> >  	 * For PERSISTENT RESERVE IN/OUT, RELEASE, and RESERVE we need to
-> >  	 * emulate the response, since tcmu does not have the information
-> >  	 * required to process these commands.
-> > diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-> > index 01ac306131c1..874ca3f0ee1b 100644
-> > --- a/drivers/target/target_core_pr.c
-> > +++ b/drivers/target/target_core_pr.c
-> > @@ -208,6 +208,11 @@ target_scsi2_reservation_release(struct se_cmd *cmd)
-> >  	struct se_portal_group *tpg;
-> >  	int rc;
-> >  
-> > +	if (!dev->dev_attrib.emulate_pr) {
-> > +		pr_err("failing SCSI2 RELEASE with emulate_pr disabled\n");
-> > +		return TCM_UNSUPPORTED_SCSI_OPCODE;
-> > +	}
-> > +  
-> 
-> Did you want the log message and failure points for all paths to match?
-> In the passthrough cdb case you fail in target_setup_cmd_from_cdb and
-> there is a ratelimited message specifically for this unsupported
-> commands. In the non passthrough cases you get messages like above and
-> the failure is later in target_execute_cmd.
-> 
-> You could put the emulate_pr checks in spc_parse_cdb and the error
-> messages and error code paths will be the same.
+........
 
-Agreed, the common failure path feels cleaner. I'm a little undecided as
-to whether an emulate_pr=0 specific message is needed in addition to the
-"Unsupported SCSI Opcode $pr_op" warning. I'll leave it out for the next
-revision.
-
-Cheers, David
+>  		}
+> -
+> -		spin_lock(&se_cmd->t_state_lock);
+> -		fabric_stop =3D (se_cmd->transport_state & CMD_T_FABRIC_STOP) &&
+> -			      (se_cmd->transport_state & CMD_T_ABORTED);
+> -		spin_unlock(&se_cmd->t_state_lock);
+> -
+> -		if (fabric_stop) {
+> -			spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
+> -			target_free_cmd_mem(se_cmd);
+> -			complete(&se_cmd->cmd_wait_comp);
+> -			return;
+> -		}
