@@ -1,28 +1,48 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Mon, 11 Jun 2018 21:31:07 +0000
-Subject: Re: [PATCH 00/14] SCSI target patches for kernel v4.17
-Message-Id: <a9b26a35392b7f0f07d36992a14e98007d025b49.camel@wdc.com>
+From: Matthew Wilcox <willy@infradead.org>
+Date: Tue, 12 Jun 2018 19:05:42 +0000
+Subject: [PATCH 0/3] Use sbitmap instead of percpu_ida
+Message-Id: <20180612190545.10781-1-willy@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180301222632.31507-1-bart.vanassche@wdc.com>
-In-Reply-To: <20180301222632.31507-1-bart.vanassche@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-usb@vger.kernel.org, kvm@vger.kernel.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, Juergen Gross <jgross@suse.com>, qla2xxx-upstream@qlogic.com, Kent Overstreet <kent.overstreet@gmail.com>, Jens Axboe <axboe@kernel.dk>
+Cc: Matthew Wilcox <willy@infradead.org>
 
-T24gTW9uLCAyMDE4LTA2LTExIGF0IDE2OjE5IC0wNTAwLCBNaWtlIENocmlzdGllIHdyb3RlOg0K
-PiBPbiAwMy8wMS8yMDE4IDA0OjI2IFBNLCBCYXJ0IFZhbiBBc3NjaGUgd3JvdGU6DQo+ID4gSGVs
-bG8gTmljLA0KPiA+IA0KPiA+IFRoaXMgcGF0Y2ggc2VyaWVzIHNpbXBsaWZpZXMgdGFzayBtYW5h
-Z2VtZW50IGZ1bmN0aW9uIGhhbmRsaW5nIGluIHRoZSBTQ1NJDQo+ID4gdGFyZ2V0IGNvcmUgY29u
-c2lkZXJhYmx5LiBUaGUgZm9sbG93aW5nIHRlc3RzIGhhdmUgYmVlbiBydW4gYWdhaW5zdCB0aGlz
-IHBhdGNoDQo+ID4gc2VyaWVzIGZvciBib3RoIHRoZSBpU0NTSSBhbmQgU1JQVCB0YXJnZXQgZHJp
-dmVyczoNCj4gPiAtIFJ1biB0aGUgbGliaXNjc2kgY29uZm9ybWFuY2UgdGVzdHMuDQo+ID4gLSBS
-dW4gZmlvICR7ZGV2fSBpbiBvbmUgc2hlbGwgYW5kIHdoaWxlIHNnX3Jlc2V0IC1kICR7ZGV2fTsg
-ZG8gOjsgZG9uZSBmcm9tDQo+ID4gICBhbm90aGVyIHNoZWxsLiBUaGlzIGlzIGEgZ29vZCB3YXkg
-dG8gc3RyZXNzIHRlc3QgVE1GIGhhbmRsaW5nLg0KPiA+IC0gRm9yIHRoZSBTUlAgdGFyZ2V0IGRy
-aXZlcjogcnVuIHRoZSBzcnAtdGVzdCBzb2Z0d2FyZS4NCj4gPiANCj4gPiBQbGVhc2UgY29uc2lk
-ZXIgdGhpcyBwYXRjaCBzZXJpZXMgZm9yIGtlcm5lbCB2NC4xNy4NCj4gPiANCj4gDQo+IFRoZSBw
-YXRjaGVzIGxvb2sgb2sgdG8gbWUuDQo+IA0KPiBSZXZpZXdlZC1ieTogTWlrZSBDaHJpc3RpZSA8
-bWNocmlzdGlAcmVkaGF0LmNvbT4NCg0KVGhhbmtzIE1pa2UgZm9yIHRoZSByZXZpZXcuIEkgd2ls
-bCByZXBvc3QgdGhpcyBzZXJpZXMgb25jZSB0aGUgbWVyZ2Ugd2luZG93DQpoYXMgY2xvc2VkLg0K
-DQpCYXJ0Lg0KDQoNCg0KDQo
+Removing the percpu_ida code nets over 400 lines of removal.  It's not
+as spectacular as deleting an entire architecture, but it's still a
+worthy reduction in lines of code.
+
+Untested due to lack of hardware and not understanding how to set up a
+target platform.
+
+Changes from v1:
+ - Fixed bugs pointed out by Jens in iscsit_wait_for_tag()
+ - Abstracted out tag freeing as requested by Bart
+ - Made iscsit_wait_for_tag static as pointed out by 0day
+
+Matthew Wilcox (3):
+  target: Abstract tag freeing
+  Convert target drivers to use sbitmap
+  Remove percpu_ida
+
+ drivers/scsi/qla2xxx/qla_target.c        |  14 +-
+ drivers/target/iscsi/iscsi_target_util.c |  35 ++-
+ drivers/target/sbp/sbp_target.c          |   7 +-
+ drivers/target/target_core_transport.c   |   5 +-
+ drivers/target/tcm_fc/tfc_cmd.c          |  10 +-
+ drivers/usb/gadget/function/f_tcm.c      |   7 +-
+ drivers/vhost/scsi.c                     |   8 +-
+ drivers/xen/xen-scsiback.c               |   9 +-
+ include/linux/percpu_ida.h               |  83 -----
+ include/target/iscsi/iscsi_target_core.h |   1 +
+ include/target/target_core_base.h        |  10 +-
+ lib/Makefile                             |   2 +-
+ lib/percpu_ida.c                         | 370 -----------------------
+ 13 files changed, 73 insertions(+), 488 deletions(-)
+ delete mode 100644 include/linux/percpu_ida.h
+ delete mode 100644 lib/percpu_ida.c
+
+-- 
+2.17.1
+
