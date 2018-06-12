@@ -1,56 +1,53 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Tue, 12 Jun 2018 16:32:03 +0000
+From: Matthew Wilcox <willy@infradead.org>
+Date: Tue, 12 Jun 2018 18:08:43 +0000
 Subject: Re: [PATCH 1/2] Convert target drivers to use sbitmap
-Message-Id: <0c93c72a3a339f3479f82de04223315671e07863.camel@wdc.com>
+Message-Id: <20180612180843.GF19433@bombadil.infradead.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180515160043.27044-1-willy@infradead.org>
 	<20180515160043.27044-2-willy@infradead.org>
 	<da5220a5ed4bed210c31a7517389e787a3b1a01f.camel@wdc.com>
 	<20180612161526.GE19433@bombadil.infradead.org>
-In-Reply-To: <20180612161526.GE19433@bombadil.infradead.org>
+	<0c93c72a3a339f3479f82de04223315671e07863.camel@wdc.com>
+In-Reply-To: <0c93c72a3a339f3479f82de04223315671e07863.camel@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "willy@infradead.org" <willy@infradead.org>
-Cc: "jgross@suse.com" <jgross@suse.com>, "axboe@kernel.dk" <axboe@kernel.dk>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "mawilcox@microsoft.com" <mawilcox@microsoft.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "virtualization@lists.linux-foundation.org" <virtualization@lists.linux-foundation.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "qla2xxx-upstream@qlogic.com" <qla2xxx-upstream@qlogic.com>, "linux1394-devel@lists.sourceforge.net" <linux1394-devel@lists.sourceforge.net>, "kent.overstreet@gmail.com" <kent.overstreet@gmail.com>
+To: Bart Van Assche <Bart.VanAssche@wdc.com>
+Cc: "jgross@suse.com" <jgross@suse.com>, "axboe@kernel.dk" <axboe@kernel.dk>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "virtualization@lists.linux-foundation.org" <virtualization@lists.linux-foundation.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "qla2xxx-upstream@qlogic.com" <qla2xxx-upstream@qlogic.com>, "linux1394-devel@lists.sourceforge.net" <linux1394-devel@lists.sourceforge.net>, "kent.overstreet@gmail.com" <kent.overstreet@gmail.com>
 
-T24gVHVlLCAyMDE4LTA2LTEyIGF0IDA5OjE1IC0wNzAwLCBNYXR0aGV3IFdpbGNveCB3cm90ZToN
-Cj4gT24gVHVlLCBKdW4gMTIsIDIwMTggYXQgMDM6MjI6NDJQTSArMDAwMCwgQmFydCBWYW4gQXNz
-Y2hlIHdyb3RlOg0KPiA+IE9uIFR1ZSwgMjAxOC0wNS0xNSBhdCAwOTowMCAtMDcwMCwgTWF0dGhl
-dyBXaWxjb3ggd3JvdGU6DQo+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgv
-cWxhX3RhcmdldC5jIGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX3RhcmdldC5jDQo+ID4gPiBp
-bmRleCAwMjVkYzJkM2YzZGUuLmNkZjY3MWMyYWY2MSAxMDA2NDQNCj4gPiA+IC0tLSBhL2RyaXZl
-cnMvc2NzaS9xbGEyeHh4L3FsYV90YXJnZXQuYw0KPiA+ID4gKysrIGIvZHJpdmVycy9zY3NpL3Fs
-YTJ4eHgvcWxhX3RhcmdldC5jDQo+ID4gPiBAQCAtMzcxOSw3ICszNzE5LDggQEAgdm9pZCBxbHRf
-ZnJlZV9jbWQoc3RydWN0IHFsYV90Z3RfY21kICpjbWQpDQo+ID4gPiAgCQlyZXR1cm47DQo+ID4g
-PiAgCX0NCj4gPiA+ICAJY21kLT5qaWZmaWVzX2F0X2ZyZWUgPSBnZXRfamlmZmllc182NCgpOw0K
-PiA+ID4gLQlwZXJjcHVfaWRhX2ZyZWUoJnNlc3MtPnNlX3Nlc3MtPnNlc3NfdGFnX3Bvb2wsIGNt
-ZC0+c2VfY21kLm1hcF90YWcpOw0KPiA+ID4gKwlzYml0bWFwX3F1ZXVlX2NsZWFyKCZzZXNzLT5z
-ZV9zZXNzLT5zZXNzX3RhZ19wb29sLCBjbWQtPnNlX2NtZC5tYXBfdGFnLA0KPiA+ID4gKwkJCWNt
-ZC0+c2VfY21kLm1hcF9jcHUpOw0KPiA+ID4gIH0NCj4gPiA+ICBFWFBPUlRfU1lNQk9MKHFsdF9m
-cmVlX2NtZCk7DQo+ID4gDQo+ID4gUGxlYXNlIGludHJvZHVjZSBmdW5jdGlvbnMgaW4gdGhlIHRh
-cmdldCBjb3JlIGZvciBhbGxvY2F0aW5nIGFuZCBmcmVlaW5nIGEgdGFnDQo+ID4gaW5zdGVhZCBv
-ZiBzcHJlYWRpbmcgdGhlIGtub3dsZWRnZSBvZiBob3cgdG8gYWxsb2NhdGUgYW5kIGZyZWUgdGFn
-cyBvdmVyIGFsbA0KPiA+IHRhcmdldCBkcml2ZXJzLg0KPiANCj4gSSBjYW4ndCB3aXRob3V0IGRv
-aW5nIGFuIHVucmVhc29uYWJseSBsYXJnZSBhbW91bnQgb2Ygd29yayBvbiBkcml2ZXJzIHRoYXQN
-Cj4gSSBoYXZlIG5vIHdheSB0byB0ZXN0LiAgU29tZSBvZiB0aGUgZHJpdmVycyBoYXZlIHRoZSBz
-ZV9jbWQgYWxyZWFkeTsgc29tZQ0KPiBvZiB0aGVtIGRvbid0LiAgSSdkIGJlIGhhcHB5IHRvIGlu
-dHJvZHVjZSBhIGNvbW1vbiBmdW5jdGlvbiBmb3IgZnJlZWluZw0KPiBhIHRhZy4NCg0KV2hpY2gg
-dGFyZ2V0IGRyaXZlcnMgYXJlIHlvdSByZWZlcnJpbmcgdG8/IElmIHlvdSBhcmUgcmVmZXJyaW5n
-IHRvIHRoZSBzYnAgZHJpdmVyOg0KSSB0aGluayB0aGF0IGRyaXZlciBpcyBkZWFkIGFuZCBjYW4g
-YmUgcmVtb3ZlZCBmcm9tIHRoZSBrZXJuZWwgdHJlZS4gSSBldmVuIGRvbid0DQprbm93IHdoZXRo
-ZXIgdGhhdCBkcml2ZXIgZXZlciBoYXMgaGFkIGFueSB1c2VycyBvdGhlciB0aGFuIHRoZSBkZXZl
-bG9wZXIgb2YgdGhhdA0KZHJpdmVyLg0KDQo+ID4gVGhpcyBsb29rcyB3ZWlyZCB0byBtZS4gU2hv
-dWxkbid0IHRhcmdldCBjb2RlIGlnbm9yZSBzaWduYWxzIGluc3RlYWQgb2YgY2F1c2luZw0KPiA+
-IHRhZyBhbGxvY2F0aW9uIHRvIGZhaWwgaWYgYSBzaWduYWwgaXMgcmVjZWl2ZWQ/DQo+IA0KPiBJ
-dCdzIHdoYXQgdGhlIGN1cnJlbnQgY29kZSBkaWQ6DQo+IA0KPiAtICAgICAgICAgICAgICAgaWYg
-KHNpZ25hbF9wZW5kaW5nX3N0YXRlKHN0YXRlLCBjdXJyZW50KSkgew0KPiAtICAgICAgICAgICAg
-ICAgICAgICAgICB0YWcgPSAtRVJFU1RBUlRTWVM7DQo+IC0gICAgICAgICAgICAgICAgICAgICAg
-IGJyZWFrOw0KPiAtICAgICAgICAgICAgICAgfQ0KPiANCj4gYW5kIHRoZSBjdXJyZW50IGNhbGxl
-cnMgbGl0ZXJhbGx5IGluZGljYXRlIHRoYXQgdGhleSB3YW50IHNpZ25hbHM6DQo+IA0KPiBkcml2
-ZXJzL2luZmluaWJhbmQvdWxwL2lzZXJ0L2liX2lzZXJ0LmM6ICAgICAgICBjbWQgPSBpc2NzaXRf
-YWxsb2NhdGVfY21kKGNvbm4sIFRBU0tfSU5URVJSVVBUSUJMRSk7DQo+IGRyaXZlcnMvdGFyZ2V0
-L2lzY3NpL2lzY3NpX3RhcmdldC5jOiAgICBjbWQgPSBpc2NzaXRfYWxsb2NhdGVfY21kKGNvbm4s
-IFRBU0tfSU5URVJSVVBUSUJMRSk7DQoNClJpZ2h0LCB0aGUgaVNDU0kgdGFyZ2V0IGRyaXZlciB1
-c2VzIHNpZ25hbHMgdG8gd2FrZSB1cCB0aHJlYWRzIChzZWUgYWxzbyB0aGUNCnNlbmRfc2lnKCkg
-Y2FsbHMgaW4gdGhlIGlTQ1NJIHRhcmdldCBjb2RlKS4NCg0KQmFydC4
+On Tue, Jun 12, 2018 at 04:32:03PM +0000, Bart Van Assche wrote:
+> On Tue, 2018-06-12 at 09:15 -0700, Matthew Wilcox wrote:
+> > On Tue, Jun 12, 2018 at 03:22:42PM +0000, Bart Van Assche wrote:
+> > > Please introduce functions in the target core for allocating and freeing a tag
+> > > instead of spreading the knowledge of how to allocate and free tags over all
+> > > target drivers.
+> > 
+> > I can't without doing an unreasonably large amount of work on drivers that
+> > I have no way to test.  Some of the drivers have the se_cmd already; some
+> > of them don't.  I'd be happy to introduce a common function for freeing
+> > a tag.
+> 
+> Which target drivers are you referring to? If you are referring to the sbp driver:
+> I think that driver is dead and can be removed from the kernel tree. I even don't
+> know whether that driver ever has had any users other than the developer of that
+> driver.
+
+For example tcm_fc:
+
+        tag = sbitmap_queue_get(&se_sess->sess_tag_pool, &cpu);
+        if (tag < 0)
+                goto busy;
+
+        cmd = &((struct ft_cmd *)se_sess->sess_cmd_map)[tag];
+
+or qla2xxx:
+
+        tag = sbitmap_queue_get(&se_sess->sess_tag_pool, &cpu);
+        if (tag < 0)
+                return NULL;
+
+        cmd = &((struct qla_tgt_cmd *)se_sess->sess_cmd_map)[tag];
+
+The core doesn't know at what offset from the pointer to store the tag
+& cpu.  Only the individual drivers know their cmd layout.
+
