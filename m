@@ -1,46 +1,36 @@
-From: Zhouyang Jia <jiazhouyang09@gmail.com>
-Date: Tue, 12 Jun 2018 04:52:28 +0000
-Subject: [PATCH] target: add error handling for match_int
-Message-Id: <1528779148-42485-1-git-send-email-jiazhouyang09@gmail.com>
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Tue, 12 Jun 2018 13:25:07 +0000
+Subject: Re: [PATCH] target: add error handling for match_int
+Message-Id: <4f248c27409b49193193ca187cdd1a30f85ce547.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1528779148-42485-1-git-send-email-jiazhouyang09@gmail.com>
+In-Reply-To: <1528779148-42485-1-git-send-email-jiazhouyang09@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Zhouyang Jia <jiazhouyang09@gmail.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "jiazhouyang09@gmail.com" <jiazhouyang09@gmail.com>
+Cc: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
 
-When match_int fails, the lack of error-handling code may
-cause unexpected results.
-
-This patch adds error-handling code after calling match_int.
-
-Signed-off-by: Zhouyang Jia <jiazhouyang09@gmail.com>
----
- drivers/target/target_core_rd.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
-index a6e8106..7bc89ff 100644
---- a/drivers/target/target_core_rd.c
-+++ b/drivers/target/target_core_rd.c
-@@ -573,14 +573,16 @@ static ssize_t rd_set_configfs_dev_params(struct se_device *dev,
- 		token = match_token(ptr, tokens, args);
- 		switch (token) {
- 		case Opt_rd_pages:
--			match_int(args, &arg);
-+			if (match_int(args, &arg))
-+				return -EINVAL;
- 			rd_dev->rd_page_count = arg;
- 			pr_debug("RAMDISK: Referencing Page"
- 				" Count: %u\n", rd_dev->rd_page_count);
- 			rd_dev->rd_flags |= RDF_HAS_PAGE_COUNT;
- 			break;
- 		case Opt_rd_nullio:
--			match_int(args, &arg);
-+			if (match_int(args, &arg))
-+				return -EINVAL;
- 			if (arg != 1)
- 				break;
- 
--- 
-2.7.4
-
+T24gVHVlLCAyMDE4LTA2LTEyIGF0IDEyOjUyICswODAwLCBaaG91eWFuZyBKaWEgd3JvdGU6DQo+
+IFdoZW4gbWF0Y2hfaW50IGZhaWxzLCB0aGUgbGFjayBvZiBlcnJvci1oYW5kbGluZyBjb2RlIG1h
+eQ0KPiBjYXVzZSB1bmV4cGVjdGVkIHJlc3VsdHMuDQo+IA0KPiBUaGlzIHBhdGNoIGFkZHMgZXJy
+b3ItaGFuZGxpbmcgY29kZSBhZnRlciBjYWxsaW5nIG1hdGNoX2ludC4NCj4gDQo+IFNpZ25lZC1v
+ZmYtYnk6IFpob3V5YW5nIEppYSA8amlhemhvdXlhbmcwOUBnbWFpbC5jb20+DQo+IC0tLQ0KPiAg
+ZHJpdmVycy90YXJnZXQvdGFyZ2V0X2NvcmVfcmQuYyB8IDYgKysrKy0tDQo+ICAxIGZpbGUgY2hh
+bmdlZCwgNCBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBh
+L2RyaXZlcnMvdGFyZ2V0L3RhcmdldF9jb3JlX3JkLmMgYi9kcml2ZXJzL3RhcmdldC90YXJnZXRf
+Y29yZV9yZC5jDQo+IGluZGV4IGE2ZTgxMDYuLjdiYzg5ZmYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZl
+cnMvdGFyZ2V0L3RhcmdldF9jb3JlX3JkLmMNCj4gKysrIGIvZHJpdmVycy90YXJnZXQvdGFyZ2V0
+X2NvcmVfcmQuYw0KPiBAQCAtNTczLDE0ICs1NzMsMTYgQEAgc3RhdGljIHNzaXplX3QgcmRfc2V0
+X2NvbmZpZ2ZzX2Rldl9wYXJhbXMoc3RydWN0IHNlX2RldmljZSAqZGV2LA0KPiAgCQl0b2tlbiA9
+IG1hdGNoX3Rva2VuKHB0ciwgdG9rZW5zLCBhcmdzKTsNCj4gIAkJc3dpdGNoICh0b2tlbikgew0K
+PiAgCQljYXNlIE9wdF9yZF9wYWdlczoNCj4gLQkJCW1hdGNoX2ludChhcmdzLCAmYXJnKTsNCj4g
+KwkJCWlmIChtYXRjaF9pbnQoYXJncywgJmFyZykpDQo+ICsJCQkJcmV0dXJuIC1FSU5WQUw7DQo+
+ICAJCQlyZF9kZXYtPnJkX3BhZ2VfY291bnQgPSBhcmc7DQo+ICAJCQlwcl9kZWJ1ZygiUkFNRElT
+SzogUmVmZXJlbmNpbmcgUGFnZSINCj4gIAkJCQkiIENvdW50OiAldVxuIiwgcmRfZGV2LT5yZF9w
+YWdlX2NvdW50KTsNCj4gIAkJCXJkX2Rldi0+cmRfZmxhZ3MgfD0gUkRGX0hBU19QQUdFX0NPVU5U
+Ow0KPiAgCQkJYnJlYWs7DQo+ICAJCWNhc2UgT3B0X3JkX251bGxpbzoNCj4gLQkJCW1hdGNoX2lu
+dChhcmdzLCAmYXJnKTsNCj4gKwkJCWlmIChtYXRjaF9pbnQoYXJncywgJmFyZykpDQo+ICsJCQkJ
+cmV0dXJuIC1FSU5WQUw7DQo+ICAJCQlpZiAoYXJnICE9IDEpDQo+ICAJCQkJYnJlYWs7DQo+IA0K
+DQpQbGVhc2UgcmV0dXJuIHRoZSBlcnJvciBjb2RlIHJldHVybmVkIGJ5IG1hdGNoX2ludCgpIGlu
+c3RlYWQgb2YgLUVJTlZBTC4NCg0KVGhhbmtzLA0KDQpCYXJ0Lg0KDQoNCg0K
