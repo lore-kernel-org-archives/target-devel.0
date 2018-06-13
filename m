@@ -1,23 +1,42 @@
-From: Xiubo Li <xiubli@redhat.com>
-Date: Fri, 08 Jun 2018 02:16:52 +0000
-Subject: Re: [PATCH] tcmu: remove useless code and clean up the code style.
-Message-Id: <92d9f5ba-60ff-cff6-1090-5a74b5fb290f@redhat.com>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Date: Wed, 13 Jun 2018 07:58:30 +0000
+Subject: [PATCH] lib/percpu_ida.c: don't do alloc from per-CPU list if there is none
+Message-Id: <20180613075830.c3zeva52fuj6fxxv@linutronix.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <1528353096-115725-1-git-send-email-xiubli@redhat.com>
-In-Reply-To: <1528353096-115725-1-git-send-email-xiubli@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 2018/6/8 9:35, Martin K. Petersen wrote:
-> Xiubo,
->
->> Since the TCMU_RING_SIZE macro is not using here will discard it and
->> at the same time clean up the code style.
-> Applied to 4.19/scsi-queue. Thanks!
->
-Thanks very much.
+In commit 804209d8a009 ("lib/percpu_ida.c: use _irqsave() instead of
+local_irq_save() + spin_lock") I inlined alloc_local_tag() and mixed up
+the >= check from percpu_ida_alloc() with the one in alloc_local_tag().
 
-BRs
+Don't alloc from per-CPU freelist if ->nr_free is zero.
+
+Fixes: 804209d8a009 ("lib/percpu_ida.c: use _irqsave() instead of local_irq_save() + spin_lock")
+Reported-by: David Disseldorp <ddiss@suse.de>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+
+David, could please check if this works for you?
+
+ lib/percpu_ida.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/percpu_ida.c b/lib/percpu_ida.c
+index 9bbd9c5d375a..beb14839b41a 100644
+--- a/lib/percpu_ida.c
++++ b/lib/percpu_ida.c
+@@ -141,7 +141,7 @@ int percpu_ida_alloc(struct percpu_ida *pool, int state)
+ 	spin_lock_irqsave(&tags->lock, flags);
+ 
+ 	/* Fastpath */
+-	if (likely(tags->nr_free >= 0)) {
++	if (likely(tags->nr_free)) {
+ 		tag = tags->freelist[--tags->nr_free];
+ 		spin_unlock_irqrestore(&tags->lock, flags);
+ 		return tag;
+-- 
+2.17.1
 
