@@ -1,83 +1,159 @@
-From: Roman Pen <roman.penyaev@profitbricks.com>
-Date: Mon, 04 Jun 2018 12:30:01 +0000
-Subject: [PATCH v2 6/8] IB/isert: embed mutex inside isert_device structure
-Message-Id: <20180604123003.24748-7-roman.penyaev@profitbricks.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Fri, 15 Jun 2018 18:23:39 +0000
+Subject: [PATCH 30/33] TCMU PR: implementation of PR release for TCMU
+Message-Id: <20180615182342.6239-30-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-do not abuse device_list_mutex.  In the next patch device_list_mutex
-will be removed.
+This patch added a function tcmu_execute_pr_release()
+to handle SCSI3 Persistent Reservation Release
+for TCMU devices.
 
-Signed-off-by: Roman Pen <roman.penyaev@profitbricks.de>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Steve Wise <swise@opengridcomputing.com>
-Cc: Bart Van Assche <bart.vanassche@sandisk.com>
-Reviewed-by: Sagi Grimberg <sagi@grimberg.me>
-Cc: Doug Ledford <dledford@redhat.com>
-Cc: target-devel@vger.kernel.org
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
 ---
- drivers/infiniband/ulp/isert/ib_isert.c | 11 +++++++----
- drivers/infiniband/ulp/isert/ib_isert.h |  1 +
- 2 files changed, 8 insertions(+), 4 deletions(-)
+ drivers/target/target_core_user.c | 119 ++++++++++++++++++++++++++++++
+ 1 file changed, 119 insertions(+)
 
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index fff40b097947..b7da1a6ea32c 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -96,14 +96,14 @@ isert_comp_get(struct isert_conn *isert_conn)
- 	struct isert_comp *comp;
- 	int i, min = 0;
- 
--	mutex_lock(&device_list_mutex);
-+	mutex_lock(&device->comp_mutex);
- 	for (i = 0; i < device->comps_used; i++)
- 		if (device->comps[i].active_qps <
- 		    device->comps[min].active_qps)
- 			min = i;
- 	comp = &device->comps[min];
- 	comp->active_qps++;
--	mutex_unlock(&device_list_mutex);
-+	mutex_unlock(&device->comp_mutex);
- 
- 	isert_info("conn %p, using comp %p min_index: %d\n",
- 		   isert_conn, comp, min);
-@@ -114,9 +114,11 @@ isert_comp_get(struct isert_conn *isert_conn)
- static void
- isert_comp_put(struct isert_comp *comp)
- {
--	mutex_lock(&device_list_mutex);
-+	struct isert_device *device = comp->device;
-+
-+	mutex_lock(&device->comp_mutex);
- 	comp->active_qps--;
--	mutex_unlock(&device_list_mutex);
-+	mutex_unlock(&device->comp_mutex);
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index e7daa76317bc..532401a9f433 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -3133,6 +3133,124 @@ tcmu_execute_pr_reserve(struct se_cmd *cmd, int type, u64 key)
  }
  
- static struct ib_qp *
-@@ -374,6 +376,7 @@ isert_device_get(struct rdma_cm_id *cma_id)
- 	}
  
- 	INIT_LIST_HEAD(&device->dev_node);
-+	mutex_init(&device->comp_mutex);
++static sense_reason_t
++tcmu_execute_pr_release(struct se_cmd *cmd, int type, u64 key)
++{
++	struct se_device *dev = cmd->se_dev;
++	struct tcmu_dev *udev = TCMU_DEV(dev);
++	char nexus_buf[TCMU_PR_IT_NEXUS_MAXLEN];
++	struct tcmu_pr_info *pr_info;
++	struct tcmu_pr_reg *reg;
++	struct tcmu_pr_reg *existing_reg;
++	char *pr_xattr;
++	int pr_xattr_len;
++	int rc;
++	sense_reason_t ret;
++	int retries = 0;
++
++	if (!cmd->se_sess || !cmd->se_lun) {
++		pr_err("SPC-3 PR: se_sess || struct se_lun is NULL!\n");
++		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++	}
++
++	rc = tcmu_gen_it_nexus(cmd->se_sess, nexus_buf,
++				  ARRAY_SIZE(nexus_buf));
++	if (rc < 0)
++		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++	mutex_lock(&udev->pr_info.pr_info_lock);
++	udev->pr_info.pr_info_buf = kzalloc(TCMU_PR_INFO_XATTR_MAX_SIZE,
++					    GFP_KERNEL);
++
++retry:
++	pr_info = NULL;
++	pr_xattr = NULL;
++	pr_xattr_len = 0;
++	rc = tcmu_pr_info_get(udev, &pr_info, &pr_xattr,
++				 &pr_xattr_len);
++	if (rc < 0) {
++		/* existing registration required for release */
++		pr_err("failed to obtain PR info\n");
++		ret = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++		goto err_info_free;
++	}
++
++	if (!pr_info->rsv) {
++		/* no persistent reservation, return GOOD status */
++		goto done;
++	}
++
++	/* check for an existing registration */
++	existing_reg = NULL;
++	list_for_each_entry(reg, &pr_info->regs, regs_node) {
++		if (!strncmp(reg->it_nexus, nexus_buf, ARRAY_SIZE(nexus_buf))) {
++			pr_debug("found existing PR reg for %s\n", nexus_buf);
++			existing_reg = reg;
++			break;
++		}
++	}
++
++	if (!existing_reg) {
++		pr_err("SPC-3 PR: Unable to locate registration for RELEASE\n");
++		ret = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++		goto err_info_free;
++	}
++
++	if (!tcmu_is_rsv_holder(pr_info->rsv, existing_reg, NULL)) {
++		/* registered but not a persistent reservation holder */
++		goto done;
++	}
++
++	if (key != existing_reg->key) {
++		pr_err("SPC-3 PR RELEASE: Received res_key: 0x%016llx ", key);
++		pr_err("does not match existing SA REGISTER res_key: ");
++		pr_err("0x%016llx\n", existing_reg->key);
++		ret = TCM_RESERVATION_CONFLICT;
++		goto err_info_free;
++	}
++
++	if (pr_info->rsv->type != type) {
++		pr_err("SPC-3 PR: Attempted RELEASE from %s with different ",
++		       existing_reg->it_nexus);
++		pr_err("TYPE, returning RESERVATION_CONFLICT\n");
++		ret = TCM_RESERVATION_CONFLICT;
++		goto err_info_free;
++	}
++
++	/* release the persistent reservation */
++	tcmu_pr_info_rsv_clear(pr_info);
++
++	rc = tcmu_pr_info_replace(udev, pr_xattr, pr_xattr_len,
++				     pr_info);
++	if (rc = -ECANCELED) {
++		pr_warn("atomic PR info update failed due to parallel ");
++		pr_warn("change, expected(%d) %s. Retrying...\n",
++			pr_xattr_len, pr_xattr);
++		retries++;
++		if (retries <= TCMU_PR_REG_MAX_RETRIES) {
++			tcmu_pr_info_free(pr_info);
++			kfree(pr_xattr);
++			goto retry;
++		}
++	}
++
++	if (rc < 0) {
++		pr_err("atomic PR info update failed: %d\n", rc);
++		ret = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
++		goto err_info_free;
++	}
++
++done:
++	ret = TCM_NO_SENSE;
++err_info_free:
++	tcmu_pr_info_free(pr_info);
++	kfree(pr_xattr);
++	kfree(udev->pr_info.pr_info_buf);
++	mutex_unlock(&udev->pr_info.pr_info_lock);
++
++	return ret;
++}
++
++
+ static int tcmu_configure_device(struct se_device *dev)
+ {
+ 	struct tcmu_dev *udev = TCMU_DEV(dev);
+@@ -3888,6 +4006,7 @@ static struct target_pr_ops tcmu_pr_ops = {
+ 	.pr_read_keys		= tcmu_execute_pr_read_keys,
+ 	.pr_register		= tcmu_execute_pr_register,
+ 	.pr_reserve		= tcmu_execute_pr_reserve,
++	.pr_release		= tcmu_execute_pr_release,
+ };
  
- 	device->ib_device = cma_id->device;
- 	ret = isert_create_device_ib_res(device);
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.h b/drivers/infiniband/ulp/isert/ib_isert.h
-index 3b296bac4f60..9f0b0a6d87cf 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.h
-+++ b/drivers/infiniband/ulp/isert/ib_isert.h
-@@ -184,6 +184,7 @@ struct isert_comp {
- struct isert_device {
- 	bool			pi_capable;
- 	int			refcount;
-+	struct mutex		comp_mutex;
- 	struct ib_device	*ib_device;
- 	struct ib_pd		*pd;
- 	struct isert_comp	*comps;
+ static struct target_backend_ops tcmu_ops = {
 -- 
-2.13.1
+2.17.1
 
