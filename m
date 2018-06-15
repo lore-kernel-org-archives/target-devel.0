@@ -1,98 +1,61 @@
 From: Zhu Lingshan <lszhu@suse.com>
-Date: Fri, 15 Jun 2018 18:23:15 +0000
-Subject: [PATCH 06/33] TCMU PR: add decode/encode func for PR seq and ver
-Message-Id: <20180615182342.6239-6-lszhu@suse.com>
+Date: Fri, 15 Jun 2018 18:23:27 +0000
+Subject: [PATCH 18/33] TCMU PR: add a function to register a new IT Nexus
+Message-Id: <20180615182342.6239-18-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This patch added three functions, tcmu_pr_info_vers_seq_encode()
-to encode PR sequence and version into a string,
-tcmu_pr_info_vers_decode() and tcmu_pr_info_seq_decode() used
-to decode them.
+This patch added a function tcmu_execute_pr_register_new() which
+can help to register an unregistered I_T Nexus.
 
 Signed-off-by: Zhu Lingshan <lszhu@suse.com>
 ---
- drivers/target/target_core_user.c | 62 +++++++++++++++++++++++++++++++
- 1 file changed, 62 insertions(+)
+ drivers/target/target_core_user.c | 34 +++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 26d8aee40719..ccb1607edd0a 100644
+index 291b3ff4555d..5d0da54072cd 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -93,6 +93,8 @@
-  */
- #define TCMU_GLOBAL_MAX_BLOCKS_DEF (512 * 1024)
- 
-+#define TCMU_PR_INFO_XATTR_VERS		1
-+
- static u8 tcmu_kern_cmd_reply_supported;
- 
- static struct device *tcmu_root_device;
-@@ -1813,6 +1815,66 @@ tcmu_gen_it_nexus(struct se_session *se_sess,
+@@ -2505,6 +2505,40 @@ static int tcmu_pr_info_append_reg(struct tcmu_pr_info *pr_info,
  	return 0;
  }
  
-+static int
-+tcmu_pr_info_seq_decode(char *str, u32 *seq)
++/* handle PR registration for a currently unregistered I_T nexus */
++static sense_reason_t
++tcmu_execute_pr_register_new(struct tcmu_pr_info *pr_info, u64 old_key,
++			     u64 new_key, char *it_nexus,
++			     bool ignore_existing)
 +{
++	sense_reason_t ret;
 +	int rc;
 +
-+	if (!seq) {
-+		WARN_ON(1);
-+		return -EINVAL;
++	pr_debug("PR registration for unregistered nexus: %s\n", it_nexus);
++	if (!ignore_existing && (old_key != 0)) {
++		ret = TCM_RESERVATION_CONFLICT;
++		goto out;
 +	}
-+	rc = sscanf(str, "0x%08x", seq);
-+	if (rc != 1) {
-+		pr_err("failed to decode PR info seqnum in: %s\n", str);
-+		return -EINVAL;
++	if (new_key = 0) {
++		ret = TCM_NO_SENSE;
++		goto out;
 +	}
-+
-+	pr_debug("processed pr_info seqnum: %u\n", *seq);
-+
-+	return 0;
-+}
-+
-+static int
-+tcmu_pr_info_vers_seq_encode(char *buf, size_t buf_remain, u32 vers, u32 seq)
-+{
-+	int rc;
-+
-+	rc = snprintf(buf, buf_remain, "0x%08x\n0x%08x\n",
-+		      vers, seq);
-+	if ((rc < 0) || (rc >= buf_remain)) {
-+		pr_err("failed to encode PR vers and seq\n");
-+		return -EINVAL;
++	/*
++	 * Register the I_T nexus on which the command was received with
++	 * the value specified in the SERVICE ACTION RESERVATION KEY
++	 * field.
++	 */
++	rc = tcmu_pr_info_append_reg(pr_info, it_nexus, new_key);
++	if (rc < 0) {
++		ret = TCM_OUT_OF_RESOURCES;
++		goto out;
 +	}
 +
-+	return rc;
-+}
-+
-+static int
-+tcmu_pr_info_vers_decode(char *str, u32 *vers)
-+{
-+	int rc;
-+
-+	if (!vers) {
-+		WARN_ON(1);
-+		return -EINVAL;
-+	}
-+	rc = sscanf(str, "0x%08x", vers);
-+	if (rc != 1) {
-+		pr_err("failed to decode PR info version in: %s\n", str);
-+		return -EINVAL;
-+	}
-+
-+	if (*vers != TCMU_PR_INFO_XATTR_VERS) {
-+		pr_err("unsupported PR info version: %u\n", *vers);
-+		return -EINVAL;
-+	}
-+
-+	pr_debug("processed pr_info version: %u\n", *vers);
-+
-+	return 0;
++	ret = TCM_NO_SENSE;
++out:
++	return ret;
 +}
 +
  static int tcmu_configure_device(struct se_device *dev)
