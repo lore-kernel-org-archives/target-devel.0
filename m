@@ -1,88 +1,83 @@
 From: Zhu Lingshan <lszhu@suse.com>
-Date: Fri, 15 Jun 2018 18:23:34 +0000
-Subject: [PATCH 25/33] TCMU PR: netlink support for passthrough PR info
-Message-Id: <20180615182342.6239-25-lszhu@suse.com>
+Date: Fri, 15 Jun 2018 18:23:23 +0000
+Subject: [PATCH 14/33] TCMU PR: add a function can get PR info from a dev
+Message-Id: <20180615182342.6239-14-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This patch added netlink support for passthrough Persistent
-Reservation information.
+This patch added a function tcmu_pr_info_get() which can help
+get Persistent Reservation information from a TCMU device.
 
 Signed-off-by: Zhu Lingshan <lszhu@suse.com>
 ---
- drivers/target/target_core_user.c | 35 +++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ drivers/target/target_core_user.c | 51 +++++++++++++++++++++++++++++++
+ 1 file changed, 51 insertions(+)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index a89c866a755d..09a341e935a9 100644
+index 12f4a5a5c1e1..0f8eeed61c60 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -348,6 +348,7 @@ static struct nla_policy tcmu_attr_policy[TCMU_ATTR_MAX+1] = {
- 	[TCMU_ATTR_CMD_STATUS]	= { .type = NLA_S32 },
- 	[TCMU_ATTR_DEVICE_ID]	= { .type = NLA_U32 },
- 	[TCMU_ATTR_SUPP_KERN_CMD_REPLY] = { .type = NLA_U8 },
-+	[TCMU_ATTR_PR_INFO] = { .type = NLA_STRING },
- };
- 
- static int tcmu_genl_cmd_done(struct genl_info *info, int completed_cmd)
-@@ -389,6 +390,16 @@ static int tcmu_genl_cmd_done(struct genl_info *info, int completed_cmd)
- 		nl_cmd->status = rc;
- 	}
- 
-+	if (completed_cmd = TCMU_CMD_GET_PR_INFO) {
-+		if (!info->attrs[TCMU_ATTR_PR_INFO]) {
-+			ret = -EINVAL;
-+		} else {
-+			nla_strlcpy(udev->pr_info.pr_info_buf,
-+				    info->attrs[TCMU_ATTR_PR_INFO],
-+				    TCMU_PR_INFO_XATTR_MAX_SIZE);
-+		}
-+	}
-+
- 	spin_unlock(&udev->nl_cmd_lock);
- 	if (!is_removed)
- 		 target_undepend_item(&dev->dev_group.cg_item);
-@@ -413,6 +424,18 @@ static int tcmu_genl_reconfig_dev_done(struct sk_buff *skb,
- 	return tcmu_genl_cmd_done(info, TCMU_CMD_RECONFIG_DEVICE);
+@@ -2253,6 +2253,57 @@ static int tcmu_pr_info_decode(char *pr_xattr, int pr_xattr_len,
+ 	return rc;
  }
  
-+static int tcmu_genl_get_pr_info_done(struct sk_buff *skb,
-+				      struct genl_info *info)
++static int tcmu_pr_info_get(struct tcmu_dev *udev,
++			    struct tcmu_pr_info **_pr_info,
++			    char **_pr_xattr, int *_pr_xattr_len)
 +{
-+	return tcmu_genl_cmd_done(info, TCMU_CMD_GET_PR_INFO);
++	int rc;
++	char *pr_xattr = udev->pr_info.pr_info_buf;
++	char *dup_xattr = NULL;
++	int pr_xattr_len = 0;
++	struct tcmu_pr_info *pr_info = NULL;
++
++	if (!_pr_info) {
++		WARN_ON(1);
++		return -EINVAL;
++	}
++
++	rc = tcmu_get_dev_pr_info(udev, &pr_xattr_len);
++
++	if (rc) {
++		if (rc != -ENODATA)
++			pr_err("failed to obtain PR xattr: %d\n", rc);
++		return rc;
++	}
++
++	if (_pr_xattr) {
++		/* dup before decode, which trashes @pr_xattr */
++		dup_xattr = kstrdup(pr_xattr, GFP_KERNEL);
++		if (!dup_xattr)
++			return -ENOMEM;
++	}
++
++	rc = tcmu_pr_info_decode(pr_xattr, pr_xattr_len, &pr_info);
++	if (rc) {
++		pr_err("failed to decode PR xattr: %d\n", rc);
++		goto err_dup_xattr_free;
++	}
++
++	if (_pr_xattr) {
++		WARN_ON(!_pr_xattr_len);
++		*_pr_xattr = dup_xattr;
++		*_pr_xattr_len = pr_xattr_len;
++	}
++
++	*_pr_info = pr_info;
++	pr_debug("successfully obtained PR info\n");
++	return 0;
++
++err_dup_xattr_free:
++	kfree(dup_xattr);
++	return rc;
 +}
 +
-+static int tcmu_genl_set_pr_info_done(struct sk_buff *skb,
-+				      struct genl_info *info)
-+{
-+	return tcmu_genl_cmd_done(info, TCMU_CMD_SET_PR_INFO);
-+}
-+
- static int tcmu_genl_set_features(struct sk_buff *skb, struct genl_info *info)
+ static int tcmu_configure_device(struct se_device *dev)
  {
- 	if (info->attrs[TCMU_ATTR_SUPP_KERN_CMD_REPLY]) {
-@@ -450,6 +473,18 @@ static const struct genl_ops tcmu_genl_ops[] = {
- 		.policy	= tcmu_attr_policy,
- 		.doit	= tcmu_genl_reconfig_dev_done,
- 	},
-+	{
-+		.cmd	= TCMU_CMD_GET_PR_INFO_DONE,
-+		.flags	= GENL_ADMIN_PERM,
-+		.policy	= tcmu_attr_policy,
-+		.doit	= tcmu_genl_get_pr_info_done,
-+	},
-+	{
-+		.cmd	= TCMU_CMD_SET_PR_INFO_DONE,
-+		.flags	= GENL_ADMIN_PERM,
-+		.policy	= tcmu_attr_policy,
-+		.doit	= tcmu_genl_set_pr_info_done,
-+	},
- };
- 
- /* Our generic netlink family */
+ 	struct tcmu_dev *udev = TCMU_DEV(dev);
 -- 
 2.17.1
 
