@@ -1,115 +1,76 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Fri, 22 Jun 2018 21:52:51 +0000
-Subject: [PATCH 04/20] target: Rename transport_init_session() into transport_alloc_session()
-Message-Id: <20180622215307.8758-5-bart.vanassche@wdc.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Fri, 15 Jun 2018 18:23:14 +0000
+Subject: [PATCH 05/33] TCMU PR: add a function to get IT_Nexus
+Message-Id: <20180615182342.6239-5-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Christoph Hellwig <hch@lst.de>
----
- drivers/target/iscsi/iscsi_target_login.c |  2 +-
- drivers/target/target_core_transport.c    | 26 +++++++++++++++++++----
- include/target/target_core_fabric.h       |  2 +-
- 3 files changed, 24 insertions(+), 6 deletions(-)
+This patch added a function tcmu_gen_it_nexus() which can help
+generate a string contain IT_Nexus information from a session.
 
-diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index 99501785cdc1..923b1a9fc3dc 100644
---- a/drivers/target/iscsi/iscsi_target_login.c
-+++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -369,7 +369,7 @@ static int iscsi_login_zero_tsih_s1(
- 		return -ENOMEM;
- 	}
- 
--	sess->se_sess = transport_init_session(TARGET_PROT_NORMAL);
-+	sess->se_sess = transport_alloc_session(TARGET_PROT_NORMAL);
- 	if (IS_ERR(sess->se_sess)) {
- 		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
- 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 5e8329c5ddd0..880e07f40099 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -224,7 +224,11 @@ void transport_subsystem_check_init(void)
- 	sub_api_initialized = 1;
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
+---
+ drivers/target/target_core_user.c | 44 +++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index d368c656ef79..26d8aee40719 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1769,6 +1769,50 @@ static int tcmu_set_dev_pr_info(struct tcmu_dev *udev, void *val)
+ 	return tcmu_send_set_pr_info_event(udev, val);
  }
  
--struct se_session *transport_init_session(enum target_prot_op sup_prot_ops)
-+/**
-+ * transport_alloc_session - allocate a session object and initialize it
-+ * @sup_prot_ops: bitmask that defines which T10-PI modes are supported.
-+ */
-+struct se_session *transport_alloc_session(enum target_prot_op sup_prot_ops)
++static int
++tcmu_gen_it_nexus(struct se_session *se_sess,
++		     char *nexus_buf,
++		     size_t buflen)
++{
++	struct se_portal_group *se_tpg;
++	const struct target_core_fabric_ops *tfo;
++	u32 tpg_tag = 0;
++	char *tpg_wwn = "";
++	int rc;
++
++	if (!se_sess || !se_sess->se_node_acl || !se_sess->se_tpg
++	    || !se_sess->se_tpg->se_tpg_tfo) {
++		pr_warn("invalid session for IT nexus generation\n");
++		return -EINVAL;
++	}
++
++	se_tpg = se_sess->se_tpg;
++	tfo = se_tpg->se_tpg_tfo;
++
++	/*
++	 * nexus generation may be coming from an xcopy, in which case tfo
++	 * refers to xcopy_pt_tfo (tpg_get_wwn and tpg_get_tag are NULL).
++	 */
++	if (tfo->tpg_get_tag)
++		tpg_tag = tfo->tpg_get_tag(se_tpg);
++	if (tfo->tpg_get_wwn)
++		tpg_wwn = tfo->tpg_get_wwn(se_tpg);
++
++	rc = snprintf(nexus_buf, buflen, "%s,i,0x%llx,%s,t,0x%x",
++		      se_sess->se_node_acl->initiatorname,
++		      se_sess->sess_bin_isid,
++		      tpg_wwn,
++		      tpg_tag);
++	if ((rc < 0) || (rc >= buflen)) {
++		pr_debug("error formatting reserve cookie\n");
++		return -EINVAL;
++	}
++
++	pr_debug("generated nexus: %s\n", nexus_buf);
++
++	return 0;
++}
++
+ static int tcmu_configure_device(struct se_device *dev)
  {
- 	struct se_session *se_sess;
- 
-@@ -243,8 +247,15 @@ struct se_session *transport_init_session(enum target_prot_op sup_prot_ops)
- 
- 	return se_sess;
- }
--EXPORT_SYMBOL(transport_init_session);
-+EXPORT_SYMBOL(transport_alloc_session);
- 
-+/**
-+ * transport_alloc_session_tags - allocate target driver private data
-+ * @se_sess:  Session pointer.
-+ * @tag_num:  Maximum number of in-flight commands between initiator and target.
-+ * @tag_size: Size in bytes of the private data a target driver associates with
-+ *	      each command.
-+ */
- int transport_alloc_session_tags(struct se_session *se_sess,
- 			         unsigned int tag_num, unsigned int tag_size)
- {
-@@ -274,6 +285,13 @@ int transport_alloc_session_tags(struct se_session *se_sess,
- }
- EXPORT_SYMBOL(transport_alloc_session_tags);
- 
-+/**
-+ * transport_init_session_tags - allocate a session and target driver private data
-+ * @tag_num:  Maximum number of in-flight commands between initiator and target.
-+ * @tag_size: Size in bytes of the private data a target driver associates with
-+ *	      each command.
-+ * @sup_prot_ops: bitmask that defines which T10-PI modes are supported.
-+ */
- struct se_session *transport_init_session_tags(unsigned int tag_num,
- 					       unsigned int tag_size,
- 					       enum target_prot_op sup_prot_ops)
-@@ -292,7 +310,7 @@ struct se_session *transport_init_session_tags(unsigned int tag_num,
- 		return ERR_PTR(-EINVAL);
- 	}
- 
--	se_sess = transport_init_session(sup_prot_ops);
-+	se_sess = transport_alloc_session(sup_prot_ops);
- 	if (IS_ERR(se_sess))
- 		return se_sess;
- 
-@@ -402,7 +420,7 @@ target_alloc_session(struct se_portal_group *tpg,
- 	if (tag_num != 0)
- 		sess = transport_init_session_tags(tag_num, tag_size, prot_op);
- 	else
--		sess = transport_init_session(prot_op);
-+		sess = transport_alloc_session(prot_op);
- 
- 	if (IS_ERR(sess))
- 		return sess;
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index b297aa0d9651..010df9d5b977 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -115,7 +115,7 @@ struct se_session *target_alloc_session(struct se_portal_group *,
- 		int (*callback)(struct se_portal_group *,
- 				struct se_session *, void *));
- 
--struct se_session *transport_init_session(enum target_prot_op);
-+struct se_session *transport_alloc_session(enum target_prot_op);
- int transport_alloc_session_tags(struct se_session *, unsigned int,
- 		unsigned int);
- struct se_session *transport_init_session_tags(unsigned int, unsigned int,
+ 	struct tcmu_dev *udev = TCMU_DEV(dev);
 -- 
 2.17.1
 
