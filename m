@@ -1,36 +1,103 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Fri, 22 Jun 2018 21:53:01 +0000
-Subject: [PATCH 14/20] target/iscsi: Make iscsit_ta_authentication() respect the output buffer size
-Message-Id: <20180622215307.8758-15-bart.vanassche@wdc.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Fri, 15 Jun 2018 18:23:15 +0000
+Subject: [PATCH 06/33] TCMU PR: add decode/encode func for PR seq and ver
+Message-Id: <20180615182342.6239-6-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Fixes: e48354ce078c ("iscsi-target: Add iSCSI fabric support for target v4.1")
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.com>
----
- drivers/target/iscsi/iscsi_target_tpg.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+This patch added three functions, tcmu_pr_info_vers_seq_encode()
+to encode PR sequence and version into a string,
+tcmu_pr_info_vers_decode() and tcmu_pr_info_seq_decode() used
+to decode them.
 
-diff --git a/drivers/target/iscsi/iscsi_target_tpg.c b/drivers/target/iscsi/iscsi_target_tpg.c
-index 4b34f71547c6..101d62105c93 100644
---- a/drivers/target/iscsi/iscsi_target_tpg.c
-+++ b/drivers/target/iscsi/iscsi_target_tpg.c
-@@ -636,8 +636,7 @@ int iscsit_ta_authentication(struct iscsi_portal_group *tpg, u32 authentication)
- 		none = strstr(buf1, NONE);
- 		if (none)
- 			goto out;
--		strncat(buf1, ",", strlen(","));
--		strncat(buf1, NONE, strlen(NONE));
-+		strlcat(buf1, "," NONE, sizeof(buf1));
- 		if (iscsi_update_param_value(param, buf1) < 0)
- 			return -EINVAL;
- 	}
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
+---
+ drivers/target/target_core_user.c | 62 +++++++++++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 26d8aee40719..ccb1607edd0a 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -93,6 +93,8 @@
+  */
+ #define TCMU_GLOBAL_MAX_BLOCKS_DEF (512 * 1024)
+ 
++#define TCMU_PR_INFO_XATTR_VERS		1
++
+ static u8 tcmu_kern_cmd_reply_supported;
+ 
+ static struct device *tcmu_root_device;
+@@ -1813,6 +1815,66 @@ tcmu_gen_it_nexus(struct se_session *se_sess,
+ 	return 0;
+ }
+ 
++static int
++tcmu_pr_info_seq_decode(char *str, u32 *seq)
++{
++	int rc;
++
++	if (!seq) {
++		WARN_ON(1);
++		return -EINVAL;
++	}
++	rc = sscanf(str, "0x%08x", seq);
++	if (rc != 1) {
++		pr_err("failed to decode PR info seqnum in: %s\n", str);
++		return -EINVAL;
++	}
++
++	pr_debug("processed pr_info seqnum: %u\n", *seq);
++
++	return 0;
++}
++
++static int
++tcmu_pr_info_vers_seq_encode(char *buf, size_t buf_remain, u32 vers, u32 seq)
++{
++	int rc;
++
++	rc = snprintf(buf, buf_remain, "0x%08x\n0x%08x\n",
++		      vers, seq);
++	if ((rc < 0) || (rc >= buf_remain)) {
++		pr_err("failed to encode PR vers and seq\n");
++		return -EINVAL;
++	}
++
++	return rc;
++}
++
++static int
++tcmu_pr_info_vers_decode(char *str, u32 *vers)
++{
++	int rc;
++
++	if (!vers) {
++		WARN_ON(1);
++		return -EINVAL;
++	}
++	rc = sscanf(str, "0x%08x", vers);
++	if (rc != 1) {
++		pr_err("failed to decode PR info version in: %s\n", str);
++		return -EINVAL;
++	}
++
++	if (*vers != TCMU_PR_INFO_XATTR_VERS) {
++		pr_err("unsupported PR info version: %u\n", *vers);
++		return -EINVAL;
++	}
++
++	pr_debug("processed pr_info version: %u\n", *vers);
++
++	return 0;
++}
++
+ static int tcmu_configure_device(struct se_device *dev)
+ {
+ 	struct tcmu_dev *udev = TCMU_DEV(dev);
 -- 
 2.17.1
 
