@@ -1,70 +1,96 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 28 Jun 2018 19:34:38 +0000
-Subject: Re: [PATCH v3] target: add emulate_pr backstore attr to toggle PR support
-Message-Id: <5B35384E.7030001@redhat.com>
+From: Zhu Lingshan <lszhu@suse.com>
+Date: Fri, 15 Jun 2018 18:23:10 +0000
+Subject: [PATCH 01/33] TCMU PR: first commit to implement TCMU PR
+Message-Id: <20180615182342.6239-1-lszhu@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180625185658.31141-1-ddiss@suse.de>
-In-Reply-To: <20180625185658.31141-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 06/28/2018 09:48 AM, David Disseldorp wrote:
-> On Wed, 27 Jun 2018 13:22:27 -0500, Mike Christie wrote:
-> 
->>> So I'd like to propose the following:
->>> 1) Have an attribute to switch between normal mode (pr_support active)
->>>    and new mode (pr_support inactive).
->>> Whether this is done via the existing pr_support attribute or via
->>>    a new attribute is a question of flavor.
->>> 2) If pr_support is inactive, spc_parse_cdb() would reject PR CDBs
->>>    while passthrough_parse_cdb() would pass through those CDBs to
->>>    userspace.
->>> 3) In the "pr_support inactive" mode for devices using
->>> passthrough_parse_cdb() the transport_flag
->>> TRANSPORT_FLAG_PASSTHROUGH_PGR would be set. For devices using
->>>    spc_parse_cdb() a new flag like TRANSPORT_FLAG_REJECT_PGR should be
->>>    used. (See details below regarding dev specific transport_flags.)  
->>
->> I am not sure I got this. How do apps like targetcli that manage tcmu
->> with rtslib tell the tcmu userspace daemon if it should reject PGRs? I
->> think you need 2 device attributes or 1 with a 3rd state:
->>
->> 1. emulate_pr - Controls whether PGRs are executed or failed. Does not
->> matter if in kernel or userspace.
->> 2. pgr_support - Controls if PGRs are executed in the LIO PGR layer in
->> kernel or passed to the backend driver (up to userspace for tcmu or to
->> the physical device for pscsi).
->>
->> So with tcmu and {emulate_pr=0 pgr_support=0} would be pass to userspace
->> and fail PGRs.
-> 
-> So how should we proceed here? Separate emulate_pr and pgr_support
-> interfaces would imply that this change could go in as-is, while a
-> multi-state interface would probably require more thought.
-> 
+These commits and the following intend to implement Persistent
+Reservation operations for TCMU devices.
 
-I think separate is going to be easier. There is a bug in the
-pgr/alua_support files that is going to add a complication we probably
-want to limit to that file. The problem is that:
+This series of commits would implement such PR operations:
+PR_Out_Register, PR_Out_Reserve, PR_Out_Clear, PR_Out_Preempt,
+PR_Out_Release and PR_In_ReadKeys.
 
-pgr/alua_support=0 means always pass pgr/alua commands to the backend
-and do not allow configfs support for operations related to those commands.
+Next wave of patches will contain the other PR operations.
 
-For *_support=1 it is mess.
+This patch added a struct tcmu_pr_info to store PR information
+for the handling functions, added command codes and attrs for
+netlink interfaces.
 
-pgr_support = 1 means allow configfs pgr operations and execute pgr
-commands in the LIO pgr layer.
+Design note:
+In order to get consistent Persistent Reservation results from
+multiple targets hosting the same TCMU device(like Ceph RBD),
+this solution stores a string on the device itself(like RBD metadata).
 
-alua_support = 1 means allow configfs operations like pgr_support=1
-However, for tcmu it means pass alua commands to userspace but for
-backends like iblock/file it means execute alua commands in the LIO alua
-layer.
+Everytime when kernel receive a PR request against a TCMU device,
+it will query this string(a netlink attr carried by a netlink cmd).
+Then decide whether the PR request should be performed, after
+processing, it will update this string.
 
-We can fix the TRANSPORT_FLAG_PASSTHROUGH_* bits in the kernel so the
-names match the behavior they support in the kernel. The problem with
-the configfs files is that they are exported to apps already.
+For example:
+When receive a PR Reserve request, kernel will send a netlink
+message to tcmu-runner, try to get the string, tcmu-runner will
+response, send the PR info string to kernel. Then kernel will
+decode the string, find information like key, reservation holder,
+then process this request. After processing, it will update the
+string, send the updated string to tcmu-runner, so that tcmu-runner
+will write it back to the device(like RBD metadata).
 
-If we do multiple files then emulate_pr is very clear what is meant
-across all backends and works like other device attributes.
+So we make the device itself as a "single" response point, (with
+locks protection) we will get a consistent result even more than one
+initiators sending multiple PR requests via multiple targets.
+
+Signed-off-by: Zhu Lingshan <lszhu@suse.com>
+---
+ include/uapi/linux/target_core_user.h | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/include/uapi/linux/target_core_user.h b/include/uapi/linux/target_core_user.h
+index 0be80f72646b..2d5c3e55d3f8 100644
+--- a/include/uapi/linux/target_core_user.h
++++ b/include/uapi/linux/target_core_user.h
+@@ -132,9 +132,13 @@ enum tcmu_genl_cmd {
+ 	TCMU_CMD_ADDED_DEVICE,
+ 	TCMU_CMD_REMOVED_DEVICE,
+ 	TCMU_CMD_RECONFIG_DEVICE,
++	TCMU_CMD_GET_PR_INFO,
++	TCMU_CMD_SET_PR_INFO,
+ 	TCMU_CMD_ADDED_DEVICE_DONE,
+ 	TCMU_CMD_REMOVED_DEVICE_DONE,
+ 	TCMU_CMD_RECONFIG_DEVICE_DONE,
++	TCMU_CMD_GET_PR_INFO_DONE,
++	TCMU_CMD_SET_PR_INFO_DONE,
+ 	TCMU_CMD_SET_FEATURES,
+ 	__TCMU_CMD_MAX,
+ };
+@@ -151,8 +155,23 @@ enum tcmu_genl_attr {
+ 	TCMU_ATTR_CMD_STATUS,
+ 	TCMU_ATTR_DEVICE_ID,
+ 	TCMU_ATTR_SUPP_KERN_CMD_REPLY,
++	TCMU_ATTR_PR_INFO,
+ 	__TCMU_ATTR_MAX,
+ };
+ #define TCMU_ATTR_MAX (__TCMU_ATTR_MAX - 1)
+ 
++/* This struct help to store the Persistent Reservation which we
++ * are handling, it is encoded from or decoded to the string buffer in
++ * "struct tcmu_dev_pr_info"
++ */
++struct tcmu_pr_info {
++	u32 vers;		/* on disk format version number */
++	u32 seq;		/* sequence number bumped every xattr write */
++	struct tcmu_scsi2_rsv *scsi2_rsv; /* SCSI2 reservation if any */
++	u32 gen;		/* PR generation number */
++	struct tcmu_pr_rsv *rsv;	/* SCSI3 reservation if any */
++	u32 num_regs;		/* number of registrations */
++	struct list_head regs;	/* list of registrations */
++};
++
+ #endif
+-- 
+2.17.1
+
