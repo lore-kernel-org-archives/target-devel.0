@@ -1,80 +1,82 @@
-From: Zhu Lingshan <lszhu@suse.de>
-Date: Sat, 16 Jun 2018 07:08:19 +0000
+From: "Maged Mokhtar" <mmokhtar@petasan.org>
+Date: Sat, 16 Jun 2018 11:04:56 +0000
 Subject: Re: [PATCH 01/33] TCMU PR: first commit to implement TCMU PR
-Message-Id: <17711def-ad8d-dc54-1a2b-83a89dadb3d6@suse.de>
+Message-Id: <98377f59e90bc902e03fcc2a4ecf9e21.squirrel@host449.hostmonster.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180615182342.6239-1-lszhu@suse.com>
 In-Reply-To: <20180615182342.6239-1-lszhu@suse.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hello Christoph,
 
-Thanks for your comment, actually we already have pure kernel code that 
-can handle PRG for a single target hosting a TCMU device. It is commit 
-4ec5bf0ea83930b96addf6b78225bf0355459d7f. But in it's commit message, it 
-mentioned that it does not handle multiple targets  use cases.
+Hi Zhu,
 
-IMHO, users may setup multiple target servers hosting the same TCMU 
-devices to avoid performance single point bottleneck, For example:
-If they have two target servers(let's call them target A and target B) 
-hosting the same Ceph RBD device, all PR requests against this RBD 
-device must have consistent response. Like if Initiator A registered a 
-key via Target A, another Initiator B must can see it via Target B. If 
-Initiator A reserved the device via Target A, when Initiator B try to 
-reserve the same RBD device, it must get a RESERVATION_CONFLICT.
+These are my comments for the patch set:
 
-User A                             User B
-     \                                         /
-      \                                       /
-   Initiator A                Initiator B
-        \                                 /
-         \                               /
-     Target A                 Target B
-           \                           /
-            \                         /
-             \                       /
-           The same TCMU device
-           As a LUN
+1) patches 18-24, 28, 30,32 (+ the yet to be implemented pr functions) :
+instead of bypassing target_core_pr.c and re-writing all the existing pr
+logic again, can we use existing code but just have get/set functions to
+read/write the pr data from/to the backend. Example of
+target_scsi3_emulate_pr_out:
+
+sense_reason_t target_scsi3_emulate_pr_out(struct se_cmd *cmd) {
+	get pr data callback  /* new code */
+	switch (sa) {
+	case PRO_REGISTER:
+		ret = core_scsi3_emulate_pro_register(..)
+		break;
+	case PRO_RESERVE:
+		ret = core_scsi3_emulate_pro_reserve(..);
+	..........
+	}
+	set pr data callback  /* new code */
+}
+
+This is over-simplified as there could be extra locking but should be
+relatively minor. target_core_pr.c can have default implementation to
+get/set from static variable. Backends can over-ride this to support
+clustered distribution but they would not need to re-implement pr logic.
+
+2) patch 4: existing set pr function
+static int tcmu_set_dev_pr_info(struct tcmu_dev *udev, void *val)
+better use char* than void* since it is a null terminated string rather
+than a buffer with length
+
+3) patch 4: existing set pr function
+static int tcmu_set_dev_pr_info(struct tcmu_dev *udev, void *val)
+better is
+static int tcmu_set_dev_pr_info(struct tcmu_dev *udev, char *val_old, char
+*val_new)
+so in addition to the new pr we also include the old pr, this will allow
+backends that support atomic operations like ceph to implement this via an
+atomic compare and set. This is the method used in existing SUSE
+target_core_rbd and is more robust in a clustered environment.
+
+4) patch 20 tcmu_execute_pr_register_existing: the update key should also
+update any reservation by the old key (if any) in addition to the
+registration. Point 1) would avoid this.
+
+5) patch 24 tcmu_execute_pr_read_keys: the add_len should reflect the
+total needed length rather than the truncated length. This was fixed
+recently in target_core_pr.c by David. Again Point 1) would avoid this.
+
+6) patch 15:
+#define TCMU_PR_INFO_XATTR_MAX_SIZE 8192
+	buf_remain = TCMU_PR_INFO_XATTR_ENCODED_MAXLEN(pr_info->num_regs);
+	if (buf_remain > TCMU_PR_INFO_XATTR_MAX_SIZE) {
+		pr_err("PR info too large for encoding: %zd\n", buf_remain);
+		return -EINVAL;
+	}
+should probably increase TCMU_PR_INFO_XATTR_MAX_SIZE, 8k limits
+registrations to 16 nexus
 
 
-I have tried pure kernel code before, this requires a communication 
-mechanism between target server kernels, only can send message is not 
-enough, they must can automatic synchronize information, because when a 
-PR request coming in, we can not query every target server, then judge 
-whose PR information is newer, there are more problem like network 
-delay, more puzzled. Then a DLM solution come to my mind, Bart also 
-kindly offered his SCST solution(Thanks for Bart!). The reason why I did 
-not use DLM is: (1)if we use DLM, we need corosync and pacemaker, a 
-whole HA stack, it's a little overkill, users may setup multiple targets 
-just for avoiding single point performance bottleneck. (2) Users may 
-setup target server on a OSD server, if we use DLM, this means two 
-clusters controlling the same nodes(Ceph itself is a cluster). This may 
-lead conflicts, like if our HA cluster want to fence a node, but 
-actually it's working well for Ceph.
+7) Minor observation, some patches could be combined, for example patches
+5-17 deal with string decode/encode could be made in fewer patches.
 
-So this solution come to my mind, we use the TCMU device(like RBD) 
-itself as a mutual and single point that can help response to PR 
-requests. Yes, the code is a bit complex, but the logic is easy, just 
-exchange information with tcmu-runner via netlink, then tcmu-runner 
-handles read / write the metadata.
+Maged
 
-Thanks a lot for your help!
 
-Thanks,
-BR
-Zhu Lingshan
-
-On 2018/6/16 13:22, Christoph Hellwig wrote:
-> On Sat, Jun 16, 2018 at 02:23:10AM +0800, Zhu Lingshan wrote:
->> These commits and the following intend to implement Persistent
->> Reservation operations for TCMU devices.
-> Err, hell no.
->
-> If you are that tightly integrated with the target code that you can
-> implement persistent reservation you need to use kernel code.
-> Everything else just creates a way too complex interface.
->
 
