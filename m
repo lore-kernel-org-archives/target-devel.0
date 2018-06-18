@@ -1,29 +1,28 @@
 From: Christoph Hellwig <hch@infradead.org>
-Date: Mon, 18 Jun 2018 11:10:36 +0000
+Date: Mon, 18 Jun 2018 11:12:17 +0000
 Subject: Re: [PATCH 01/33] TCMU PR: first commit to implement TCMU PR
-Message-Id: <20180618111036.GB6507@infradead.org>
+Message-Id: <20180618111217.GC6507@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180615182342.6239-1-lszhu@suse.com>
 In-Reply-To: <20180615182342.6239-1-lszhu@suse.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ibm852"
+Content-Transfer-Encoding: base64
 To: target-devel@vger.kernel.org
 
-On Sat, Jun 16, 2018 at 02:25:47PM -0500, Mike Christie wrote:
-> > Just wanted to make sure I understood this comment. In Lingshan's
-> > patches I think he was going to end up calling out to
-> > userspace/tcmu-runner and there he was going to make ceph calls which
-> > basically translate PGR operations to ceph requests. Are you saying we
-> > should just add some kernel module that makes the ceph calls? This would
-> > then avoid the mess of having the split PGR processing design in this
-> > patchset?
-> 
-> Oh yeah, I meant to also ask if I understood you correctly above, then
-> did you also just want us to add the target_core_rbd module that did
-> READ/WRITE/VAAI commands too?
-
-In general I'd prefer to have generic APIs for it so that we could
-also front an NVMe target with the same ceph backend.  But we can
-at least get that work started this way, and I'll look into helping
-with a proper API.
+T24gU3VuLCBKdW4gMTcsIDIwMTggYXQgMTI6NDA6NTZQTSArMDgwMCwgWmh1IExpbmdzaGFuIHdy
+b3RlOgo+IEhlbGxvIE1pa2UgYW5kIENocmlzdG9waO+8jAo+IFRoYW5rcyBNaWtlJ3MgY29tbWVu
+dCBpbnNwaXJlZCBtZSwgaWYgSSB1bmRlcnN0YW5kIHRoaXMgY29ycmVjdGx5LCBpdCBpcwo+IHN1
+Z2dlc3RlZCB0byBpbXBsZW1lbnQgdGhpcyB3aG9sZSBzb2x1dGlvbiBpbiBrZXJuZWwsIGF2b2lk
+Cj4gwqBzcGxpdHRpbmcgUFJHIGhhbmRsaW5nIGluIGJvdGgga2VybmVsIGFuZCB1c2Vyc3BhY2Us
+IG1ha2UgaXQgbm90IHRoYXQKPiBjb21wbGV4LiBJIGNhbiB0cnkgdG8gaW1wbGVtZW50IHRoaXMg
+Ynkgc2VuZGluZyBPU0QgcmVxdWVzdHMKPiBmcm9tIGtlcm5lbCBzaWRlLCB0aGVuIHdlIGRvbid0
+IG5lZWQgdGNtdS1ydW5uZXIgc3VwcG9ydGluZyBpcywgbm8gbmVlZCB0bwo+IHVzZSBuZXRsaW5r
+IHRvIGV4Y2hhbmdlIGluZm9ybWF0aW9uIHdpdGggdXNlcnNwYWNlLCBwdXJlIGtlcm5lbCBjb2Rl
+LCBzZWVtcwo+IG11Y2ggbW9yZSBzaW1wbGUuIERvIHlvdSB0aGluayB0aGlzIG1heSBiZSBiZXR0
+ZXI/CgpZZXMuICBBbmQgU3VTRSBhY3R1YWxseSBzaGlwcyBzdWNoIGEgYmFja2VuZCAob3JpZ2lu
+YWxseSB3cml0ZW4gYnkKTWlrZSksIGFsdGhvdWdoIGl0IHdvdWxkIHN0aWxsIG5lZWQgc29tZSB3
+b3JrIHRvIGdldCBpbnRvIHNoYXBlLgotLQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDog
+c2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgdGFyZ2V0LWRldmVsIiBpbgp0aGUgYm9keSBvZiBh
+IG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwpNb3JlIG1ham9yZG9tbyBpbmZv
+IGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWw=
