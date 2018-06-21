@@ -1,155 +1,126 @@
-From: Roman Penyaev <roman.penyaev@profitbricks.com>
-Date: Mon, 11 Jun 2018 17:43:33 +0000
-Subject: Re: [PATCH v2 8/8] IB/isert: use ib_client API to wrap ib_device
-Message-Id: <CAJrWOzCAO9mdEmMs_=_xE4O4EB6iAxoP-Gk7mYhTwk0Rm67fXA@mail.gmail.com>
+From: Matthew Wilcox <willy@infradead.org>
+Date: Thu, 21 Jun 2018 21:28:27 +0000
+Subject: [PATCH 18/26] target/iscsi: Allocate session IDs from an IDA
+Message-Id: <20180621212835.5636-19-willy@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180604123003.24748-9-roman.penyaev@profitbricks.com>
-In-Reply-To: <20180604123003.24748-9-roman.penyaev@profitbricks.com>
+References: <20180621212835.5636-1-willy@infradead.org>
+In-Reply-To: <20180621212835.5636-1-willy@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Matthew Wilcox <willy@infradead.org>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Bart Van Assche <bart.vanassche@wdc.com>, Hannes Reinecke <hare@suse.com>, Kees Cook <keescook@chromium.org>, Varun Prakash <varun@chelsio.com>, Sagi Grimberg <sagi@grimberg.me>, Philippe Ombredanne <pombredanne@nexb.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kate Stewart <kstewart@linuxfoundation.org>, Thomas Gleixner <tglx@linutronix.de>, "David S. Miller" <davem@davemloft.net>, Denys Vlasenko <dvlasenk@redhat.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-On Mon, Jun 11, 2018 at 6:51 PM, Jason Gunthorpe <jgg@ziepe.ca> wrote:
-> On Mon, Jun 11, 2018 at 10:55:39AM +0200, Roman Penyaev wrote:
->
->> can be optimized by the *compiler* (again, only compiler optimization
->> matters):
->>
->>    tmp = *ptr;         <<< NOT NICE
->>    rcu_read_lock();
->>    if (tmp)
->>        do_something();
->>    rcu_read_unlock();
->
-> No, this already isn't possible.
->
->>     preempt_count_inc();      <<< just increase percpu variable
->>     barrier();                <<< compiler barrier, which prevents
->>                                   other volatile accesses leak up
->
-> barrier() prevents everything from moving out.
->
->>     if (*(volatile int *)ptr) <<< explicit volatile access
->>         do_something();
->
-> Alpha inserts a special CPU barrier in here.
->
->> barrier();                <<< compiler barrier, prevents from
->>                              leaking down
->> preempt_count_dec();
->
-> The point of rcu_dereference is to pair with rcu_assign_pointer so the
-> code can make a control flow decision without re-ordering, eg:
->
->  if (rcu_dereference(ptr) != 0)
->      assert(*something != NULL);
->
-> Guarentees that if the store side does
->
->  rcu_assign_pointer(ptr, 0);
->  *something = NULL;
->
-> Then the assert cannot fire.
->
-> It has nothing to do with accesses leaking outside the rcu critical,
-> section.
->
->> Returning to my case:
->>
->>     rcu_read_lock();
->> device = ib_get_client_data(...);
->> ...
->> rcu_read_unlock();
->>
->> Previously I mentioned that ib_get_client_data() function has a
->> spin lock, but this actually also does not matter, what matters
->> is that this is a real function *call*.
->
-> No, it does matter. Code should never rely on a function call to
-> create an implicit compiler barrier. eg We have LTO now which washes
-> that side-effect away.
->
-> The spinlock was the right answer, because there is no RCU protected
-> data here, and none of the special properties of RCU are required.
+Since the session is never looked up by ID, we can use the more
+space-efficient IDA instead of the IDR.  I think I found a bug where
+we never reuse session ID 0, but there may be a good reason for it,
+so I've merely documented it in this patch.  Not reusing session ID 0
+doesn't even leak memory.
 
-Indeed, I missed the alpha case completely.  I was confused with
-the volatile cast on x86_64, but it is needed only to prevent compiler
-from deducing the resulting pointer, not reordering.  Thanks for
-pointing that out.
+Signed-off-by: Matthew Wilcox <willy@infradead.org>
+---
+ drivers/target/iscsi/iscsi_target.c       | 10 ++--------
+ drivers/target/iscsi/iscsi_target.h       |  4 +---
+ drivers/target/iscsi/iscsi_target_login.c | 20 ++++++--------------
+ 3 files changed, 9 insertions(+), 25 deletions(-)
 
->
->> >> And it seems that such approach will require some new ib_client
->> >> callbacks to create and free ulp device, which I personally do
->> >> not like.
->> >
->> > Why? Seems like a fine idea to me, and simplifies all the ULPs
->> >
->> > Add two new call backs:
->> >  create_kref
->> >  relase_kref
->> >
->> > And the core code will call create the very first time the kref data
->> > is accessed, and do so safely under some kind of locking.
->>
->> The thing is that inside ib_(get|set)_client_data() spin lock is used,
->> because those two can be called from any context, thus ib_client.alloc()
->> callback can't be called under spin lock, because alloc() can sleep.
->
->> If we assume that each ULP knows that for the first time
->> ib_alloc_or_get_client_data() (or any analogue) is called on the path,
->> where sleep is allowed - then yes, that should work out.  But seems
->> that should be covered by fat comment.
->
-> Seems reasonable..
->
->> +struct ib_client_data;
->> +
->>  struct ib_client {
->>         char  *name;
->>         void (*add)   (struct ib_device *);
->>         void (*remove)(struct ib_device *, void *client_data);
->>
->> +       struct ib_client_data *(*alloc_client_data)(struct ib_device *);
->> +       void (*free_client_data)(struct ib_client_data *);
->> +
->
->> +struct ib_client_data {
->> +       struct kref kref;
->> +       struct ib_device *device;
->> +       struct ib_client *client;
->> +       struct list_head device_entry;
->> +       struct list_head client_entry;
->> + };
->
-> Well, the point of the alloc callback was to not alloc data until the
-> client became activated,
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 8e223799347a..94bad43c41ff 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -57,9 +57,8 @@ static DEFINE_SPINLOCK(tiqn_lock);
+ static DEFINE_MUTEX(np_lock);
+ 
+ static struct idr tiqn_idr;
+-struct idr sess_idr;
++DEFINE_IDA(sess_ida);
+ struct mutex auth_id_lock;
+-spinlock_t sess_idr_lock;
+ 
+ struct iscsit_global *iscsit_global;
+ 
+@@ -700,9 +699,7 @@ static int __init iscsi_target_init_module(void)
+ 
+ 	spin_lock_init(&iscsit_global->ts_bitmap_lock);
+ 	mutex_init(&auth_id_lock);
+-	spin_lock_init(&sess_idr_lock);
+ 	idr_init(&tiqn_idr);
+-	idr_init(&sess_idr);
+ 
+ 	ret = target_register_template(&iscsi_ops);
+ 	if (ret)
+@@ -4375,10 +4372,7 @@ int iscsit_close_session(struct iscsi_session *sess)
+ 	pr_debug("Decremented number of active iSCSI Sessions on"
+ 		" iSCSI TPG: %hu to %u\n", tpg->tpgt, tpg->nsessions);
+ 
+-	spin_lock(&sess_idr_lock);
+-	idr_remove(&sess_idr, sess->session_index);
+-	spin_unlock(&sess_idr_lock);
+-
++	ida_free(&sess_ida, sess->session_index);
+ 	kfree(sess->sess_ops);
+ 	sess->sess_ops = NULL;
+ 	spin_unlock_bh(&se_tpg->session_lock);
+diff --git a/drivers/target/iscsi/iscsi_target.h b/drivers/target/iscsi/iscsi_target.h
+index 42de1843aa40..48bac0acf8c7 100644
+--- a/drivers/target/iscsi/iscsi_target.h
++++ b/drivers/target/iscsi/iscsi_target.h
+@@ -55,9 +55,7 @@ extern struct kmem_cache *lio_ooo_cache;
+ extern struct kmem_cache *lio_qr_cache;
+ extern struct kmem_cache *lio_r2t_cache;
+ 
+-extern struct idr sess_idr;
++extern struct ida sess_ida;
+ extern struct mutex auth_id_lock;
+-extern spinlock_t sess_idr_lock;
+-
+ 
+ #endif   /*** ISCSI_TARGET_H ***/
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index 99501785cdc1..561d2ad38989 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -336,22 +336,16 @@ static int iscsi_login_zero_tsih_s1(
+ 	timer_setup(&sess->time2retain_timer,
+ 		    iscsit_handle_time2retain_timeout, 0);
+ 
+-	idr_preload(GFP_KERNEL);
+-	spin_lock_bh(&sess_idr_lock);
+-	ret = idr_alloc(&sess_idr, NULL, 0, 0, GFP_NOWAIT);
+-	if (ret >= 0)
+-		sess->session_index = ret;
+-	spin_unlock_bh(&sess_idr_lock);
+-	idr_preload_end();
+-
++	ret = ida_alloc(&sess_ida, GFP_KERNEL);
+ 	if (ret < 0) {
+-		pr_err("idr_alloc() for sess_idr failed\n");
++		pr_err("Session ID allocation failed %d\n", ret);
+ 		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
+ 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
+ 		kfree(sess);
+ 		return -ENOMEM;
+ 	}
+ 
++	sess->session_index = ret;
+ 	sess->creation_time = get_jiffies_64();
+ 	/*
+ 	 * The FFP CmdSN window values will be allocated from the TPG's
+@@ -1163,11 +1157,9 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+ 		goto old_sess_out;
+ 	if (conn->sess->se_sess)
+ 		transport_free_session(conn->sess->se_sess);
+-	if (conn->sess->session_index != 0) {
+-		spin_lock_bh(&sess_idr_lock);
+-		idr_remove(&sess_idr, conn->sess->session_index);
+-		spin_unlock_bh(&sess_idr_lock);
+-	}
++	/* Um, 0 is a valid ID.  I suppose we never free it? */
++	if (conn->sess->session_index != 0)
++		ida_free(&sess_ida, conn->sess->session_index);
+ 	kfree(conn->sess->sess_ops);
+ 	kfree(conn->sess);
+ 	conn->sess = NULL;
+-- 
+2.17.1
 
-That is true, but from the very beginning that can be used only for
-a new code: nvme and iser cases.  Others ULP devs can be switched to
-a new API without significant changes, but still allocate data on
-add_one() (i.e. preallocate) and then step by step that can be also
-changed.  I am not sure that in one go I can refactor all the ULP
-devs.
-
-> exposing this struct doesn't really seem to
-> help that since you'd still need a void * in here with the data pointer.
-
-Why?  "struct ib_client_data" can be embedded inside ulp_dev specific
-structure and then ulp_dev->ib_data can be linked in all the lists
-inside device.c, so exposing ib_client_data structure we can avoid
-setting void *.
-
->
->> > Why such a mess to avoid a simple and well defined callback?
->>
->> Indeed we can, if change API and refactor internals of device.c a bit.
->> I can send an RFC in couple of days with making ib_client_data public
->> and the stuff which I described above.  What do you think?
->
-> Sure, you can mess around with the core code to make a nicer cleanup.
-
-Ok, I will try to prepare an RFC.
-
---
-Roman
