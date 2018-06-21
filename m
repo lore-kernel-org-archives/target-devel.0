@@ -1,7 +1,7 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 21 Jun 2018 20:38:18 +0000
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Thu, 21 Jun 2018 20:53:59 +0000
 Subject: Re: [PATCH 14/14] target: Fix handling of removed LUNs
-Message-Id: <5B2C0CBA.1000004@redhat.com>
+Message-Id: <bd6b24caab4a0a750fc827d05c7b4e3f701cefab.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180301222632.31507-15-bart.vanassche@wdc.com>
 In-Reply-To: <20180301222632.31507-15-bart.vanassche@wdc.com>
@@ -10,26 +10,20 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 06/21/2018 03:25 PM, Bart Van Assche wrote:
->>>  		 * clearing it.
->>> > >  		 */
->>> > >  		if (dev->dev_attrib.emulate_ua_intlck_ctrl != 0) {
->>> > > +			*key = UNIT_ATTENTION;
->> > 
->> > 
->> > Is the key already set to UNIT_ATTENTION here?
-> Good catch - that assignment is superfluous. But I would like to keep it
-> because I think it makes the core_scsi3_ua_for_check_condition() easy to
-> read. However, that assignment makes the following entry in sense_info_table[]
-> superfluous:
-
-If you keep it above then I think it would be good to add it below in
-the emulate_ua_intlck_ctrl=0 case:
-
-                if (head) {
-                        *asc = ua->ua_asc;
-                        *ascq = ua->ua_ascq;
-                        head = 0;
-                }
-
-so it is consistent.
+T24gVGh1LCAyMDE4LTA2LTIxIGF0IDE1OjM4IC0wNTAwLCBNaWtlIENocmlzdGllIHdyb3RlOg0K
+PiBPbiAwNi8yMS8yMDE4IDAzOjI1IFBNLCBCYXJ0IFZhbiBBc3NjaGUgd3JvdGU6DQo+ID4gPiA+
+ICAJCSAqIGNsZWFyaW5nIGl0Lg0KPiA+ID4gPiA+ID4gIAkJICovDQo+ID4gPiA+ID4gPiAgCQlp
+ZiAoZGV2LT5kZXZfYXR0cmliLmVtdWxhdGVfdWFfaW50bGNrX2N0cmwgIT0gMCkgew0KPiA+ID4g
+PiA+ID4gKwkJCSprZXkgPSBVTklUX0FUVEVOVElPTjsNCj4gPiA+ID4gDQo+ID4gPiA+IA0KPiA+
+ID4gPiBJcyB0aGUga2V5IGFscmVhZHkgc2V0IHRvIFVOSVRfQVRURU5USU9OIGhlcmU/DQo+ID4g
+DQo+ID4gR29vZCBjYXRjaCAtIHRoYXQgYXNzaWdubWVudCBpcyBzdXBlcmZsdW91cy4gQnV0IEkg
+d291bGQgbGlrZSB0byBrZWVwIGl0DQo+ID4gYmVjYXVzZSBJIHRoaW5rIGl0IG1ha2VzIHRoZSBj
+b3JlX3Njc2kzX3VhX2Zvcl9jaGVja19jb25kaXRpb24oKSBlYXN5IHRvDQo+ID4gcmVhZC4gSG93
+ZXZlciwgdGhhdCBhc3NpZ25tZW50IG1ha2VzIHRoZSBmb2xsb3dpbmcgZW50cnkgaW4gc2Vuc2Vf
+aW5mb190YWJsZVtdDQo+ID4gc3VwZXJmbHVvdXM6DQo+IA0KPiBJZiB5b3Uga2VlcCBpdCBhYm92
+ZSB0aGVuIEkgdGhpbmsgaXQgd291bGQgYmUgZ29vZCB0byBhZGQgaXQgYmVsb3cgaW4NCj4gdGhl
+IGVtdWxhdGVfdWFfaW50bGNrX2N0cmw9MCBjYXNlOg0KPiANCj4gICAgICAgICAgICAgICAgIGlm
+IChoZWFkKSB7DQo+ICAgICAgICAgICAgICAgICAgICAgICAgICphc2MgPSB1YS0+dWFfYXNjOw0K
+PiAgICAgICAgICAgICAgICAgICAgICAgICAqYXNjcSA9IHVhLT51YV9hc2NxOw0KPiAgICAgICAg
+ICAgICAgICAgICAgICAgICBoZWFkID0gMDsNCj4gICAgICAgICAgICAgICAgIH0NCj4gDQo+IHNv
+IGl0IGlzIGNvbnNpc3RlbnQuDQoNCk9LLCB3aWxsIGRvLg0KDQpCYXJ0Lg0KDQoNCg0K
