@@ -1,7 +1,7 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 21 Jun 2018 19:10:56 +0000
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Thu, 21 Jun 2018 20:25:58 +0000
 Subject: Re: [PATCH 14/14] target: Fix handling of removed LUNs
-Message-Id: <5B2BF840.8000904@redhat.com>
+Message-Id: <0895ee637cbd39e887e3c1de9f069a0ec7de6dc3.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180301222632.31507-15-bart.vanassche@wdc.com>
 In-Reply-To: <20180301222632.31507-15-bart.vanassche@wdc.com>
@@ -10,106 +10,38 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 06/21/2018 12:53 PM, Bart Van Assche wrote:
-> On Wed, 2018-06-20 at 20:32 -0500, Mike Christie wrote:
->> > I was in the middle of fixing up the sense key value issue in the patch
->> > like we discussed before (use illegal request instead of unit
->> > attention), but it looks like there was another bug. If we have 2
->> > commands going to the same device and they run target_scsi3_ua_check and
->> > see ua_count=1 TCM_CHECK_CONDITION_UNIT_ATTENTION is returned for both.
->> > They then call core_scsi3_ua_for_check_condition and one of them
->> > deallocates a UA dropping ua_count=0. The second command then runs the
->> > !atomic_read(&deve->ua_count) check and sees the other command has
->> > decremented it. Or the second one might have passed the ua_count check
->> > in core_scsi3_ua_for_check_condition and it runs the loop but nothing is
->> > found since the first command has already removed it. We then return
->> > bogus asc/ascq values.
->> > 
->> > In the attached patch I just return busy status for this race case. It
->> > seemed easier than trying to add more locking and error handling.
->> > 
->> > Some notes/questions on some of the code the patch touched though.
->> > 
->> > If translate_sense_reason failed due to a short buffer it returned
->> > -EINVAL. transport_send_check_condition_and_sense would then end up
->> > calling transport_handle_queue_full/transport_complete_qf and that would
->> > just end up failing the command with
->> > TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE. Do you know if that long journey
->> > intended or just an accident?
->> > 
->> > In this patch I fixed that so it just translated the error to
->> > TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE immediately. If the patch is ok
->> > and we meant to return that error code for the short buffer then I can
->> > break that out into another patch.
-> Hello Mike,
-> 
-> That's an interesting observation. However, I think that the race described
-> above can be fixed with fewer code changes. Can you have a look at the three
-> attached (untested) patches?
-> 
-> Regarding translate_sense_reason() failing due to a short buffer: I don't
-> think that the current behavior in case of a short sense buffer is correct.
-> It's probably better to return a sense buffer that is incomplete and with
-> correct KEY / ASC / ASCQ values instead of modifying these values. How
-> about changing the code at the end of translate_sense_reason() as follows?
-> 
-> 	if (si->add_sector_info)
-> 		WARN_ON_ONCE(scsi_set_sense_information(buffer,
-> 						  cmd->scsi_sense_length,
-> 						  cmd->bad_sector) < 0);
-> 
-> 	return 0;
-
-Agree.
-
-> 
-> @@ -3156,9 +3167,13 @@ static int translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
->  		si = &sense_info_table[(__force int)
->  				       TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE];
->  
-> +	key = si->key;
->  	if (reason = TCM_CHECK_CONDITION_UNIT_ATTENTION) {
-> -		core_scsi3_ua_for_check_condition(cmd, &asc, &ascq);
-> -		WARN_ON_ONCE(asc = 0);
-> +		if (!core_scsi3_ua_for_check_condition(cmd, &key, &asc,
-> +						       &ascq)) {
-> +			cmd->scsi_status = SAM_STAT_BUSY;
-
-Here is another question I had about this code path.
-
-If you hit this case do you need to undo the setting of the
-SCF_SENT_CHECK_CONDITION bit done in
-transport_send_check_condition_and_sense or does the check for that bit
-need to be fixed up.
-
-With the code addition above we have this path setting
-SCF_SENT_CHECK_CONDITION so
-iscsit_check_task_reassign_expdatasn/iscsit_task_reassign_complete_scsi_cmnd/
-transport_send_task_abort would see the CC bit set and return.
-
-If transport_generic_request_failure is passed TCM_LUN_BUSY which gets
-translate to SAM_STAT_BUSY then
-iscsit_check_task_reassign_expdatasn/iscsit_task_reassign_complete_scsi_cmnd/transport_send_task_abort
-would not see the CC bit is set and those functions would not return
-right away.
-
-It seems like
-iscsit_check_task_reassign_expdatasn/iscsit_task_reassign_complete_scsi_cmnd/
-transport_send_task_abort want the same behavior for both check
-conditions and commands that completed with non good status, so it
-should be checking for the CC bit set and also if non good status has
-been returned.
-
-
->  	 * The highest priority Unit Attentions are placed at the head of the
-> @@ -244,6 +246,7 @@ void core_scsi3_ua_for_check_condition(
->  		 * clearing it.
->  		 */
->  		if (dev->dev_attrib.emulate_ua_intlck_ctrl != 0) {
-> +			*key = UNIT_ATTENTION;
-
-
-Is the key already set to UNIT_ATTENTION here?
-
-
-Seems nice!
+T24gVGh1LCAyMDE4LTA2LTIxIGF0IDE0OjEwIC0wNTAwLCBNaWtlIENocmlzdGllIHdyb3RlOg0K
+PiA+IA0KPiA+IEBAIC0zMTU2LDkgKzMxNjcsMTMgQEAgc3RhdGljIGludCB0cmFuc2xhdGVfc2Vu
+c2VfcmVhc29uKHN0cnVjdCBzZV9jbWQgKmNtZCwgc2Vuc2VfcmVhc29uX3QgcmVhc29uKQ0KPiA+
+ICAJCXNpID0gJnNlbnNlX2luZm9fdGFibGVbKF9fZm9yY2UgaW50KQ0KPiA+ICAJCQkJICAgICAg
+IFRDTV9MT0dJQ0FMX1VOSVRfQ09NTVVOSUNBVElPTl9GQUlMVVJFXTsNCj4gPiAgDQo+ID4gKwlr
+ZXkgPSBzaS0+a2V5Ow0KPiA+ICAJaWYgKHJlYXNvbiA9PSBUQ01fQ0hFQ0tfQ09ORElUSU9OX1VO
+SVRfQVRURU5USU9OKSB7DQo+ID4gLQkJY29yZV9zY3NpM191YV9mb3JfY2hlY2tfY29uZGl0aW9u
+KGNtZCwgJmFzYywgJmFzY3EpOw0KPiA+IC0JCVdBUk5fT05fT05DRShhc2MgPT0gMCk7DQo+ID4g
+KwkJaWYgKCFjb3JlX3Njc2kzX3VhX2Zvcl9jaGVja19jb25kaXRpb24oY21kLCAma2V5LCAmYXNj
+LA0KPiA+ICsJCQkJCQkgICAgICAgJmFzY3EpKSB7DQo+ID4gKwkJCWNtZC0+c2NzaV9zdGF0dXMg
+PSBTQU1fU1RBVF9CVVNZOw0KPiANCj4gSGVyZSBpcyBhbm90aGVyIHF1ZXN0aW9uIEkgaGFkIGFi
+b3V0IHRoaXMgY29kZSBwYXRoLg0KPiANCj4gSWYgeW91IGhpdCB0aGlzIGNhc2UgZG8geW91IG5l
+ZWQgdG8gdW5kbyB0aGUgc2V0dGluZyBvZiB0aGUNCj4gU0NGX1NFTlRfQ0hFQ0tfQ09ORElUSU9O
+IGJpdCBkb25lIGluDQo+IHRyYW5zcG9ydF9zZW5kX2NoZWNrX2NvbmRpdGlvbl9hbmRfc2Vuc2Ug
+b3IgZG9lcyB0aGUgY2hlY2sgZm9yIHRoYXQgYml0DQo+IG5lZWQgdG8gYmUgZml4ZWQgdXAuDQo+
+IA0KPiBXaXRoIHRoZSBjb2RlIGFkZGl0aW9uIGFib3ZlIHdlIGhhdmUgdGhpcyBwYXRoIHNldHRp
+bmcNCj4gU0NGX1NFTlRfQ0hFQ0tfQ09ORElUSU9OIHNvDQo+IGlzY3NpdF9jaGVja190YXNrX3Jl
+YXNzaWduX2V4cGRhdGFzbi9pc2NzaXRfdGFza19yZWFzc2lnbl9jb21wbGV0ZV9zY3NpX2NtbmQv
+DQo+IHRyYW5zcG9ydF9zZW5kX3Rhc2tfYWJvcnQgd291bGQgc2VlIHRoZSBDQyBiaXQgc2V0IGFu
+ZCByZXR1cm4uDQoNCkhlbGxvIE1pa2UsDQoNCkhhdmUgeW91IG5vdGljZWQgdGhhdCBwYXRjaCAx
+LzMgdGhhdCB3YXMgYXR0YWNoZWQgdG8gbXkgcHJldmlvdXMgZS1tYWlsDQptb3ZlcyB0aGUgY29k
+ZSB0aGF0IHNldHMgdGhlIFNDRl9TRU5UX0NIRUNLX0NPTkRJVElPTiBmbGFnIGluc2lkZQ0KdHJh
+bnNsYXRlX3NlbnNlX3JlYXNvbigpIGFuZCBwYXN0IHRoZSBwb2ludCB3aGVyZSBTQU1fU1RBVF9C
+VVNZIGlzIHJldHVybmVkPw0KDQo+ID4gIAkgKiBUaGUgaGlnaGVzdCBwcmlvcml0eSBVbml0IEF0
+dGVudGlvbnMgYXJlIHBsYWNlZCBhdCB0aGUgaGVhZCBvZiB0aGUNCj4gPiBAQCAtMjQ0LDYgKzI0
+Niw3IEBAIHZvaWQgY29yZV9zY3NpM191YV9mb3JfY2hlY2tfY29uZGl0aW9uKA0KPiA+ICAJCSAq
+IGNsZWFyaW5nIGl0Lg0KPiA+ICAJCSAqLw0KPiA+ICAJCWlmIChkZXYtPmRldl9hdHRyaWIuZW11
+bGF0ZV91YV9pbnRsY2tfY3RybCAhPSAwKSB7DQo+ID4gKwkJCSprZXkgPSBVTklUX0FUVEVOVElP
+TjsNCj4gDQo+IA0KPiBJcyB0aGUga2V5IGFscmVhZHkgc2V0IHRvIFVOSVRfQVRURU5USU9OIGhl
+cmU/DQoNCkdvb2QgY2F0Y2ggLSB0aGF0IGFzc2lnbm1lbnQgaXMgc3VwZXJmbHVvdXMuIEJ1dCBJ
+IHdvdWxkIGxpa2UgdG8ga2VlcCBpdA0KYmVjYXVzZSBJIHRoaW5rIGl0IG1ha2VzIHRoZSBjb3Jl
+X3Njc2kzX3VhX2Zvcl9jaGVja19jb25kaXRpb24oKSBlYXN5IHRvDQpyZWFkLiBIb3dldmVyLCB0
+aGF0IGFzc2lnbm1lbnQgbWFrZXMgdGhlIGZvbGxvd2luZyBlbnRyeSBpbiBzZW5zZV9pbmZvX3Rh
+YmxlW10NCnN1cGVyZmx1b3VzOg0KDQoJW1RDTV9DSEVDS19DT05ESVRJT05fVU5JVF9BVFRFTlRJ
+T05dID0gew0KCQkua2V5ID0gVU5JVF9BVFRFTlRJT04sDQoJfSwNCg0KQmFydC4
