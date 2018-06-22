@@ -1,200 +1,175 @@
 From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Fri, 22 Jun 2018 21:52:49 +0000
-Subject: [PATCH 02/20] target: Avoid that EXTENDED COPY commands trigger lock inversion
-Message-Id: <20180622215307.8758-3-bart.vanassche@wdc.com>
+Date: Fri, 22 Jun 2018 21:53:06 +0000
+Subject: [PATCH 19/20] target: Fix handling of removed LUNs
+Message-Id: <20180622215307.8758-20-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-The approach for adding a device to the devices_idr data structure
-and for removing it is as follows:
-* &dev->dev_group.cg_item is initialized before a device is added
-  to devices_idr.
-* If the reference count of a device drops to zero then
-  target_free_device() removes the device from devices_idr.
-* All devices_idr manipulations are protected by device_mutex.
+Send a valid ASC / ASCQ combination back to the initiator if a SCSI
+command is received after a LUN has been removed. This patch fixes
+the following call trace:
 
-This means that increasing the reference count of a device is
-sufficient to prevent removal from devices_idr and also that it is
-safe access dev_group.cg_item for any device that is referenced by
-devices_idr. Use this to modify target_find_device() and
-target_for_each_device() such that these functions no longer
-introduce a dependency between device_mutex and the configfs root
-inode mutex.
-
-Note: it is safe to pass a NULL pointer to config_item_put() and
-also to config_item_get_unless_zero().
-
-This patch prevents that lockdep reports the following complaint:
-
-===========================
-WARNING: possible circular locking dependency detected
-4.12.0-rc1-dbg+ #1 Not tainted
-------------------------------------------------------
-rmdir/12053 is trying to acquire lock:
- (device_mutex#2){+.+.+.}, at: [<ffffffffa010afce>] target_free_device+0xae/0xf0 [target_core_mod]
-
-but task is already holding lock:
- (&sb->s_type->i_mutex_key#14){++++++}, at: [<ffffffff811c5c30>] vfs_rmdir+0x50/0x140
-
-which lock already depends on the new lock.
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (&sb->s_type->i_mutex_key#14){++++++}:
-       lock_acquire+0x59/0x80
-       down_write+0x36/0x70
-       configfs_depend_item+0x3a/0xb0 [configfs]
-       target_depend_item+0x13/0x20 [target_core_mod]
-       target_xcopy_locate_se_dev_e4_iter+0x87/0x100 [target_core_mod]
-       target_devices_idr_iter+0x16/0x20 [target_core_mod]
-       idr_for_each+0x39/0xc0
-       target_for_each_device+0x36/0x50 [target_core_mod]
-       target_xcopy_locate_se_dev_e4+0x28/0x80 [target_core_mod]
-       target_xcopy_do_work+0x2e9/0xdd0 [target_core_mod]
-       process_one_work+0x1ca/0x3f0
-       worker_thread+0x49/0x3b0
-       kthread+0x109/0x140
-       ret_from_fork+0x31/0x40
-
--> #0 (device_mutex#2){+.+.+.}:
-       __lock_acquire+0x101f/0x11d0
-       lock_acquire+0x59/0x80
-       __mutex_lock+0x7e/0x950
-       mutex_lock_nested+0x16/0x20
-       target_free_device+0xae/0xf0 [target_core_mod]
-       target_core_dev_release+0x10/0x20 [target_core_mod]
-       config_item_put+0x6e/0xb0 [configfs]
-       configfs_rmdir+0x1a6/0x300 [configfs]
-       vfs_rmdir+0xb7/0x140
-       do_rmdir+0x1f4/0x200
-       SyS_rmdir+0x11/0x20
-       entry_SYSCALL_64_fastpath+0x23/0xc2
-
-other info that might help us debug this:
-
- Possible unsafe locking scenario:
-
-       CPU0                    CPU1
-       ----                    ----
-  lock(&sb->s_type->i_mutex_key#14);
-                               lock(device_mutex#2);
-                               lock(&sb->s_type->i_mutex_key#14);
-  lock(device_mutex#2);
-
- *** DEADLOCK ***
-
-3 locks held by rmdir/12053:
- #0:  (sb_writers#10){.+.+.+}, at: [<ffffffff811e223f>] mnt_want_write+0x1f/0x50
- #1:  (&sb->s_type->i_mutex_key#14/1){+.+.+.}, at: [<ffffffff811cb97e>] do_rmdir+0x15e/0x200
- #2:  (&sb->s_type->i_mutex_key#14){++++++}, at: [<ffffffff811c5c30>] vfs_rmdir+0x50/0x140
-
-stack backtrace:
-CPU: 3 PID: 12053 Comm: rmdir Not tainted 4.12.0-rc1-dbg+ #1
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.0.0-prebuilt.qemu-project.org 04/01/2014
+WARNING: CPU: 0 PID: 4 at drivers/target/target_core_transport.c:3131 translate_sense_reason+0x164/0x190 [target_core_mod]
+Workqueue: ib-comp-wq ib_cq_poll_work [ib_core]
+RIP: 0010:translate_sense_reason+0x164/0x190 [target_core_mod]
 Call Trace:
- dump_stack+0x86/0xcf
- print_circular_bug+0x1c7/0x220
- __lock_acquire+0x101f/0x11d0
- lock_acquire+0x59/0x80
- __mutex_lock+0x7e/0x950
- mutex_lock_nested+0x16/0x20
- target_free_device+0xae/0xf0 [target_core_mod]
- target_core_dev_release+0x10/0x20 [target_core_mod]
- config_item_put+0x6e/0xb0 [configfs]
- configfs_rmdir+0x1a6/0x300 [configfs]
- vfs_rmdir+0xb7/0x140
- do_rmdir+0x1f4/0x200
- SyS_rmdir+0x11/0x20
- entry_SYSCALL_64_fastpath+0x23/0xc2
+transport_send_check_condition_and_sense+0x95/0x1c0 [target_core_mod]
+transport_generic_request_failure+0x102/0x270 [target_core_mod]
+transport_generic_new_cmd+0x138/0x340 [target_core_mod]
+transport_handle_cdb_direct+0x2f/0x80 [target_core_mod]
+target_submit_cmd_map_sgls+0x212/0x2a0 [target_core_mod]
+srpt_handle_new_iu+0x244/0x680 [ib_srpt]
+__ib_process_cq+0x6d/0xc0 [ib_core]
+ib_cq_poll_work+0x18/0x50 [ib_core]
+process_one_work+0x20b/0x6a0
+worker_thread+0x35/0x380
+kthread+0x117/0x130
+ret_from_fork+0x24/0x30
 
 Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Reviewed-by: Mike Christie <mchristi@redhat.com>
-Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <mchristi@redhat.com>
 Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.com>
 ---
- drivers/target/target_core_device.c | 31 ++++++++++++++++++++++-------
- 1 file changed, 24 insertions(+), 7 deletions(-)
+ drivers/target/target_core_transport.c | 23 +++++++++++++++----
+ drivers/target/target_core_ua.c        | 31 +++++++++++++++-----------
+ drivers/target/target_core_ua.h        |  3 ++-
+ 3 files changed, 39 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index e27db4d45a9d..e8d2a7f22382 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -893,25 +893,36 @@ EXPORT_SYMBOL(target_to_linux_sector);
- struct se_device *target_find_device(int id, bool do_depend)
- {
- 	struct se_device *dev;
-+	struct config_item *item = NULL;
- 
- 	mutex_lock(&device_mutex);
- 	dev = idr_find(&devices_idr, id);
--	if (dev && do_depend && target_depend_item(&dev->dev_group.cg_item))
--		dev = NULL;
-+	if (dev)
-+		item = config_item_get_unless_zero(&dev->dev_group.cg_item);
- 	mutex_unlock(&device_mutex);
-+
-+	if (dev && (!item || (do_depend && target_depend_item(item) < 0)))
-+		dev = NULL;
-+	config_item_put(item);
- 	return dev;
- }
- EXPORT_SYMBOL(target_find_device);
- 
- struct devices_idr_iter {
-+	struct config_item *prev_item;
- 	int (*fn)(struct se_device *dev, void *data);
- 	void *data;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index a71cfae46805..7261561e87cc 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3170,12 +3170,23 @@ static const struct sense_info sense_info_table[] = {
+ 	},
  };
  
- static int target_devices_idr_iter(int id, void *p, void *data)
-+	__must_hold(&device_mutex)
++/**
++ * translate_sense_reason - translate a sense reason into T10 key, asc and ascq
++ * @cmd: SCSI command in which the resulting sense buffer or SCSI status will
++ *   be stored.
++ * @reason: LIO sense reason code. If this argument has the value
++ *   TCM_CHECK_CONDITION_UNIT_ATTENTION, try to dequeue a unit attention. If
++ *   dequeuing a unit attention fails due to multiple commands being processed
++ *   concurrently, set the command status to BUSY.
++ *
++ * Return: 0 upon success or -EINVAL if the sense buffer is too small.
++ */
+ static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
  {
- 	struct devices_idr_iter *iter = data;
- 	struct se_device *dev = p;
-+	int ret;
-+
-+	config_item_put(iter->prev_item);
-+	iter->prev_item = NULL;
+ 	const struct sense_info *si;
+ 	u8 *buffer = cmd->sense_buffer;
+ 	int r = (__force int)reason;
+-	u8 asc, ascq;
++	u8 key, asc, ascq;
+ 	bool desc_format = target_sense_desc_format(cmd->se_dev);
  
+ 	if (r < ARRAY_SIZE(sense_info_table) && sense_info_table[r].key)
+@@ -3184,9 +3195,13 @@ static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
+ 		si = &sense_info_table[(__force int)
+ 				       TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE];
+ 
++	key = si->key;
+ 	if (reason = TCM_CHECK_CONDITION_UNIT_ATTENTION) {
+-		core_scsi3_ua_for_check_condition(cmd, &asc, &ascq);
+-		WARN_ON_ONCE(asc = 0);
++		if (!core_scsi3_ua_for_check_condition(cmd, &key, &asc,
++						       &ascq)) {
++			cmd->scsi_status = SAM_STAT_BUSY;
++			return;
++		}
+ 	} else if (si->asc = 0) {
+ 		WARN_ON_ONCE(cmd->scsi_asc = 0);
+ 		asc = cmd->scsi_asc;
+@@ -3199,7 +3214,7 @@ static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
+ 	cmd->se_cmd_flags |= SCF_EMULATED_TASK_SENSE;
+ 	cmd->scsi_status = SAM_STAT_CHECK_CONDITION;
+ 	cmd->scsi_sense_length  = TRANSPORT_SENSE_BUFFER;
+-	scsi_build_sense_buffer(desc_format, buffer, si->key, asc, ascq);
++	scsi_build_sense_buffer(desc_format, buffer, key, asc, ascq);
+ 	if (si->add_sector_info)
+ 		WARN_ON_ONCE(scsi_set_sense_information(buffer,
+ 							cmd->scsi_sense_length,
+diff --git a/drivers/target/target_core_ua.c b/drivers/target/target_core_ua.c
+index be25eb807a5f..9399b38339f9 100644
+--- a/drivers/target/target_core_ua.c
++++ b/drivers/target/target_core_ua.c
+@@ -202,10 +202,13 @@ void core_scsi3_ua_release_all(
+ 	spin_unlock(&deve->ua_lock);
+ }
+ 
+-void core_scsi3_ua_for_check_condition(
+-	struct se_cmd *cmd,
+-	u8 *asc,
+-	u8 *ascq)
++/*
++ * Dequeue a unit attention from the unit attention list. This function
++ * returns true if the dequeuing succeeded and if *@key, *@asc and *@ascq have
++ * been set.
++ */
++bool core_scsi3_ua_for_check_condition(struct se_cmd *cmd, u8 *key, u8 *asc,
++				       u8 *ascq)
+ {
+ 	struct se_device *dev = cmd->se_dev;
+ 	struct se_dev_entry *deve;
+@@ -214,23 +217,23 @@ void core_scsi3_ua_for_check_condition(
+ 	struct se_ua *ua = NULL, *ua_p;
+ 	int head = 1;
+ 
+-	if (!sess)
+-		return;
++	if (WARN_ON_ONCE(!sess))
++		return false;
+ 
+ 	nacl = sess->se_node_acl;
+-	if (!nacl)
+-		return;
++	if (WARN_ON_ONCE(!nacl))
++		return false;
+ 
+ 	rcu_read_lock();
+ 	deve = target_nacl_find_deve(nacl, cmd->orig_fe_lun);
+ 	if (!deve) {
+ 		rcu_read_unlock();
+-		return;
+-	}
+-	if (!atomic_read(&deve->ua_count)) {
+-		rcu_read_unlock();
+-		return;
++		*key = ILLEGAL_REQUEST;
++		*asc = 0x25; /* LOGICAL UNIT NOT SUPPORTED */
++		*ascq = 0;
++		return true;
+ 	}
++	*key = UNIT_ATTENTION;
  	/*
- 	 * We add the device early to the idr, so it can be used
-@@ -922,7 +933,15 @@ static int target_devices_idr_iter(int id, void *p, void *data)
- 	if (!(dev->dev_flags & DF_CONFIGURED))
- 		return 0;
- 
--	return iter->fn(dev, iter->data);
-+	iter->prev_item = config_item_get_unless_zero(&dev->dev_group.cg_item);
-+	if (!iter->prev_item)
-+		return 0;
-+	mutex_unlock(&device_mutex);
+ 	 * The highest priority Unit Attentions are placed at the head of the
+ 	 * struct se_dev_entry->ua_list, and will be returned in CHECK_CONDITION +
+@@ -273,6 +276,8 @@ void core_scsi3_ua_for_check_condition(
+ 		(dev->dev_attrib.emulate_ua_intlck_ctrl != 0) ? "Reporting" :
+ 		"Releasing", dev->dev_attrib.emulate_ua_intlck_ctrl,
+ 		cmd->orig_fe_lun, cmd->t_task_cdb[0], *asc, *ascq);
 +
-+	ret = iter->fn(dev, iter->data);
-+
-+	mutex_lock(&device_mutex);
-+	return ret;
++	return head = 0;
  }
  
- /**
-@@ -936,15 +955,13 @@ static int target_devices_idr_iter(int id, void *p, void *data)
- int target_for_each_device(int (*fn)(struct se_device *dev, void *data),
- 			   void *data)
- {
--	struct devices_idr_iter iter;
-+	struct devices_idr_iter iter = { .fn = fn, .data = data };
- 	int ret;
- 
--	iter.fn = fn;
--	iter.data = data;
--
- 	mutex_lock(&device_mutex);
- 	ret = idr_for_each(&devices_idr, target_devices_idr_iter, &iter);
- 	mutex_unlock(&device_mutex);
-+	config_item_put(iter.prev_item);
- 	return ret;
- }
+ int core_scsi3_ua_clear_for_request_sense(
+diff --git a/drivers/target/target_core_ua.h b/drivers/target/target_core_ua.h
+index b0f4205a96cd..76487c9be090 100644
+--- a/drivers/target/target_core_ua.h
++++ b/drivers/target/target_core_ua.h
+@@ -37,7 +37,8 @@ extern sense_reason_t target_scsi3_ua_check(struct se_cmd *);
+ extern int core_scsi3_ua_allocate(struct se_dev_entry *, u8, u8);
+ extern void target_ua_allocate_lun(struct se_node_acl *, u32, u8, u8);
+ extern void core_scsi3_ua_release_all(struct se_dev_entry *);
+-extern void core_scsi3_ua_for_check_condition(struct se_cmd *, u8 *, u8 *);
++extern bool core_scsi3_ua_for_check_condition(struct se_cmd *, u8 *, u8 *,
++					      u8 *);
+ extern int core_scsi3_ua_clear_for_request_sense(struct se_cmd *,
+ 						u8 *, u8 *);
  
 -- 
 2.17.1
