@@ -1,7 +1,7 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Thu, 21 Jun 2018 20:58:59 +0000
+From: Mike Christie <mchristi@redhat.com>
+Date: Fri, 22 Jun 2018 03:45:18 +0000
 Subject: Re: [PATCH 14/14] target: Fix handling of removed LUNs
-Message-Id: <855c91ca78d9e724f1b9eb4d842b2271cb249d50.camel@wdc.com>
+Message-Id: <5B2C70CE.7020202@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180301222632.31507-15-bart.vanassche@wdc.com>
 In-Reply-To: <20180301222632.31507-15-bart.vanassche@wdc.com>
@@ -10,14 +10,26 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-T24gVGh1LCAyMDE4LTA2LTIxIGF0IDE1OjMyIC0wNTAwLCBNaWtlIENocmlzdGllIHdyb3RlOg0K
-PiBJIGFtIG5vdCBzZWVpbmcgdGhhdC4gSSBzYXcgU0NGX0VNVUxBVEVEX1RBU0tfU0VOU0Ugd2Fz
-IG1vdmVkIGJ1dCBub3QNCj4gU0NGX1NFTlRfQ0hFQ0tfQ09ORElUSU9OLiBUaGUgbGF0dGVyIGlz
-IHNldCBhIGxpdHRsZSBlYXJsaWVyIGluDQo+IHRyYW5zcG9ydF9zZW5kX2NoZWNrX2NvbmRpdGlv
-bl9hbmRfc2Vuc2UuDQoNCkFyZSB5b3Ugc3VyZSB3ZSBuZWVkIHRvIGNoYW5nZSB0aGUgY29kZSB0
-aGF0IHNldHMgU0NGX1NFTlRfQ0hFQ0tfQ09ORElUSU9OPw0KSXQgc2VlbXMgdG8gbWUgbGlrZSB0
-aGUgbmFtZSBvZiB0aGF0IGZsYWcgaXMgbWlzbGVhZGluZy4gSSB0aGluayB0aGF0IGZsYWcNCmlz
-IHVzZWQgdG8ga2VlcCB0cmFjayBvZiB3aGV0aGVyIG9yIG5vdCBhIHJlc3BvbnNlIGhhcyBiZWVu
-IHNlbnQgdG8gdGhlDQppbml0aWF0b3IuIFNvIGtlZXBpbmcgdGhlIGN1cnJlbnQgY29kZSBmb3Ig
-dGhlIG1hbmlwdWxhdGlvbiBvZiB0aGF0IGZsYWcNCnNob3VsZCBiZSBmaW5lLg0KDQpCYXJ0Lg0K
-DQoNCg=
+On 06/21/2018 03:58 PM, Bart Van Assche wrote:
+> On Thu, 2018-06-21 at 15:32 -0500, Mike Christie wrote:
+>> I am not seeing that. I saw SCF_EMULATED_TASK_SENSE was moved but not
+>> SCF_SENT_CHECK_CONDITION. The latter is set a little earlier in
+>> transport_send_check_condition_and_sense.
+> 
+> Are you sure we need to change the code that sets SCF_SENT_CHECK_CONDITION?
+> It seems to me like the name of that flag is misleading. I think that flag
+> is used to keep track of whether or not a response has been sent to the
+> initiator. So keeping the current code for the manipulation of that flag
+> should be fine.
+> 
+
+I think with your patch the behavior will be the same as before, so it
+is safe.
+
+I was more asking if in another future patch we need to set that bit for
+the case where TCM_LUN_BUSY/TCM_OUT_OF_RESOURCES is passed to
+transport_generic_request_failure so the behavior for that code path is
+the same as when you now set cmd->scsi_status = TCM_LUN_BUSY in your patch.
+
+
+
