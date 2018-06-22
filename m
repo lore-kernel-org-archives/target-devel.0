@@ -1,46 +1,201 @@
-From: Zhu Lingshan <lszhu@suse.com>
-Date: Fri, 15 Jun 2018 18:23:21 +0000
-Subject: [PATCH 12/33] TCMU PR: add a function to free tcmu_pr_info
-Message-Id: <20180615182342.6239-12-lszhu@suse.com>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Fri, 22 Jun 2018 21:52:49 +0000
+Subject: [PATCH 02/20] target: Avoid that EXTENDED COPY commands trigger lock inversion
+Message-Id: <20180622215307.8758-3-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This patch added a function tcmu_pr_info_free() which can
-help free struct tcmu_pr_info.
+The approach for adding a device to the devices_idr data structure
+and for removing it is as follows:
+* &dev->dev_group.cg_item is initialized before a device is added
+  to devices_idr.
+* If the reference count of a device drops to zero then
+  target_free_device() removes the device from devices_idr.
+* All devices_idr manipulations are protected by device_mutex.
 
-Signed-off-by: Zhu Lingshan <lszhu@suse.com>
+This means that increasing the reference count of a device is
+sufficient to prevent removal from devices_idr and also that it is
+safe access dev_group.cg_item for any device that is referenced by
+devices_idr. Use this to modify target_find_device() and
+target_for_each_device() such that these functions no longer
+introduce a dependency between device_mutex and the configfs root
+inode mutex.
+
+Note: it is safe to pass a NULL pointer to config_item_put() and
+also to config_item_get_unless_zero().
+
+This patch prevents that lockdep reports the following complaint:
+
+===========================
+WARNING: possible circular locking dependency detected
+4.12.0-rc1-dbg+ #1 Not tainted
+------------------------------------------------------
+rmdir/12053 is trying to acquire lock:
+ (device_mutex#2){+.+.+.}, at: [<ffffffffa010afce>] target_free_device+0xae/0xf0 [target_core_mod]
+
+but task is already holding lock:
+ (&sb->s_type->i_mutex_key#14){++++++}, at: [<ffffffff811c5c30>] vfs_rmdir+0x50/0x140
+
+which lock already depends on the new lock.
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&sb->s_type->i_mutex_key#14){++++++}:
+       lock_acquire+0x59/0x80
+       down_write+0x36/0x70
+       configfs_depend_item+0x3a/0xb0 [configfs]
+       target_depend_item+0x13/0x20 [target_core_mod]
+       target_xcopy_locate_se_dev_e4_iter+0x87/0x100 [target_core_mod]
+       target_devices_idr_iter+0x16/0x20 [target_core_mod]
+       idr_for_each+0x39/0xc0
+       target_for_each_device+0x36/0x50 [target_core_mod]
+       target_xcopy_locate_se_dev_e4+0x28/0x80 [target_core_mod]
+       target_xcopy_do_work+0x2e9/0xdd0 [target_core_mod]
+       process_one_work+0x1ca/0x3f0
+       worker_thread+0x49/0x3b0
+       kthread+0x109/0x140
+       ret_from_fork+0x31/0x40
+
+-> #0 (device_mutex#2){+.+.+.}:
+       __lock_acquire+0x101f/0x11d0
+       lock_acquire+0x59/0x80
+       __mutex_lock+0x7e/0x950
+       mutex_lock_nested+0x16/0x20
+       target_free_device+0xae/0xf0 [target_core_mod]
+       target_core_dev_release+0x10/0x20 [target_core_mod]
+       config_item_put+0x6e/0xb0 [configfs]
+       configfs_rmdir+0x1a6/0x300 [configfs]
+       vfs_rmdir+0xb7/0x140
+       do_rmdir+0x1f4/0x200
+       SyS_rmdir+0x11/0x20
+       entry_SYSCALL_64_fastpath+0x23/0xc2
+
+other info that might help us debug this:
+
+ Possible unsafe locking scenario:
+
+       CPU0                    CPU1
+       ----                    ----
+  lock(&sb->s_type->i_mutex_key#14);
+                               lock(device_mutex#2);
+                               lock(&sb->s_type->i_mutex_key#14);
+  lock(device_mutex#2);
+
+ *** DEADLOCK ***
+
+3 locks held by rmdir/12053:
+ #0:  (sb_writers#10){.+.+.+}, at: [<ffffffff811e223f>] mnt_want_write+0x1f/0x50
+ #1:  (&sb->s_type->i_mutex_key#14/1){+.+.+.}, at: [<ffffffff811cb97e>] do_rmdir+0x15e/0x200
+ #2:  (&sb->s_type->i_mutex_key#14){++++++}, at: [<ffffffff811c5c30>] vfs_rmdir+0x50/0x140
+
+stack backtrace:
+CPU: 3 PID: 12053 Comm: rmdir Not tainted 4.12.0-rc1-dbg+ #1
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.0.0-prebuilt.qemu-project.org 04/01/2014
+Call Trace:
+ dump_stack+0x86/0xcf
+ print_circular_bug+0x1c7/0x220
+ __lock_acquire+0x101f/0x11d0
+ lock_acquire+0x59/0x80
+ __mutex_lock+0x7e/0x950
+ mutex_lock_nested+0x16/0x20
+ target_free_device+0xae/0xf0 [target_core_mod]
+ target_core_dev_release+0x10/0x20 [target_core_mod]
+ config_item_put+0x6e/0xb0 [configfs]
+ configfs_rmdir+0x1a6/0x300 [configfs]
+ vfs_rmdir+0xb7/0x140
+ do_rmdir+0x1f4/0x200
+ SyS_rmdir+0x11/0x20
+ entry_SYSCALL_64_fastpath+0x23/0xc2
+
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Reviewed-by: Mike Christie <mchristi@redhat.com>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Christoph Hellwig <hch@lst.de>
 ---
- drivers/target/target_core_user.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/target/target_core_device.c | 31 ++++++++++++++++++++++-------
+ 1 file changed, 24 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 55f1ba98a688..09a4f97243b8 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -2131,6 +2131,20 @@ static int tcmu_pr_info_reg_encode(char *buf, size_t buf_remain,
- 	return rc;
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index e27db4d45a9d..e8d2a7f22382 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -893,25 +893,36 @@ EXPORT_SYMBOL(target_to_linux_sector);
+ struct se_device *target_find_device(int id, bool do_depend)
+ {
+ 	struct se_device *dev;
++	struct config_item *item = NULL;
+ 
+ 	mutex_lock(&device_mutex);
+ 	dev = idr_find(&devices_idr, id);
+-	if (dev && do_depend && target_depend_item(&dev->dev_group.cg_item))
+-		dev = NULL;
++	if (dev)
++		item = config_item_get_unless_zero(&dev->dev_group.cg_item);
+ 	mutex_unlock(&device_mutex);
++
++	if (dev && (!item || (do_depend && target_depend_item(item) < 0)))
++		dev = NULL;
++	config_item_put(item);
+ 	return dev;
+ }
+ EXPORT_SYMBOL(target_find_device);
+ 
+ struct devices_idr_iter {
++	struct config_item *prev_item;
+ 	int (*fn)(struct se_device *dev, void *data);
+ 	void *data;
+ };
+ 
+ static int target_devices_idr_iter(int id, void *p, void *data)
++	__must_hold(&device_mutex)
+ {
+ 	struct devices_idr_iter *iter = data;
+ 	struct se_device *dev = p;
++	int ret;
++
++	config_item_put(iter->prev_item);
++	iter->prev_item = NULL;
+ 
+ 	/*
+ 	 * We add the device early to the idr, so it can be used
+@@ -922,7 +933,15 @@ static int target_devices_idr_iter(int id, void *p, void *data)
+ 	if (!(dev->dev_flags & DF_CONFIGURED))
+ 		return 0;
+ 
+-	return iter->fn(dev, iter->data);
++	iter->prev_item = config_item_get_unless_zero(&dev->dev_group.cg_item);
++	if (!iter->prev_item)
++		return 0;
++	mutex_unlock(&device_mutex);
++
++	ret = iter->fn(dev, iter->data);
++
++	mutex_lock(&device_mutex);
++	return ret;
  }
  
-+static void
-+tcmu_pr_info_free(struct tcmu_pr_info *pr_info)
-+{
-+	struct tcmu_pr_reg *reg;
-+	struct tcmu_pr_reg *reg_n;
-+
-+	kfree(pr_info->scsi2_rsv);
-+	kfree(pr_info->rsv);
-+	list_for_each_entry_safe(reg, reg_n, &pr_info->regs, regs_node) {
-+		kfree(reg);
-+	}
-+	kfree(pr_info);
-+}
-+
- static int tcmu_configure_device(struct se_device *dev)
+ /**
+@@ -936,15 +955,13 @@ static int target_devices_idr_iter(int id, void *p, void *data)
+ int target_for_each_device(int (*fn)(struct se_device *dev, void *data),
+ 			   void *data)
  {
- 	struct tcmu_dev *udev = TCMU_DEV(dev);
+-	struct devices_idr_iter iter;
++	struct devices_idr_iter iter = { .fn = fn, .data = data };
+ 	int ret;
+ 
+-	iter.fn = fn;
+-	iter.data = data;
+-
+ 	mutex_lock(&device_mutex);
+ 	ret = idr_for_each(&devices_idr, target_devices_idr_iter, &iter);
+ 	mutex_unlock(&device_mutex);
++	config_item_put(iter.prev_item);
+ 	return ret;
+ }
+ 
 -- 
 2.17.1
 
