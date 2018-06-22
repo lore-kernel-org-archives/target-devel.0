@@ -1,32 +1,82 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Fri, 22 Jun 2018 04:06:24 +0000
-Subject: Re: [PATCH 3/3] tcmu: add module wide block/reset_netlink support
-Message-Id: <5B2C75C0.5000100@redhat.com>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Fri, 22 Jun 2018 21:52:47 +0000
+Subject: [PATCH 00/20] SCSI target patches for kernel v4.19
+Message-Id: <20180622215307.8758-1-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1529639560-9429-4-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1529639560-9429-4-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 06/21/2018 10:52 PM, Mike Christie wrote:
-> +static int tcmu_set_block_netlink(const char *str,
-> +				  const struct kernel_param *kp)
-> +{
-> +	int ret;
-> +	u8 val;
-> +
-> +	ret = kstrtou8(str, 0, &val);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	if (val > 1 || val < 0) {
+Hello,
 
-Darn. I meant to send a different version of the patch where it did
+This is a series with bug fixes and code simplifications mainly for the SCSI
+target core. The following tests have been run against this patch series for
+both the iSCSI and SRPT target drivers:
+- Run the libiscsi conformance tests.
+- For the SRP target driver, run the srp-test software.
 
-if (val != 1) {
+Please consider this patch series for kernel v4.19.
 
-since its a unsigned value.
+Thanks,
 
-I will resend this patch after you guys review it.
+Bart.
+
+Bart Van Assche (20):
+  target: Use config_item_name() instead of open-coding it
+  target: Avoid that EXTENDED COPY commands trigger lock inversion
+  target: Move a list_del_init() statement
+  target: Rename transport_init_session() into transport_alloc_session()
+  target: Introduce transport_init_session()
+  target: Make the session shutdown code also wait for commands that are
+    being aborted
+  target: Document when CMD_T_STOP and CMD_T_COMPLETE are set
+  target: Simplify core_tmr_handle_tas_abort()
+  target: Fold core_tmr_handle_tas_abort() into
+    transport_cmd_finish_abort()
+  target: Simplify transport_generic_free_cmd() (1/2)
+  target: Simplify transport_generic_free_cmd() (2/2)
+  target: Simplify the code for waiting for command completion
+  target/iscsi: Reduce number of __iscsit_free_cmd() callers
+  target/iscsi: Make iscsit_ta_authentication() respect the output
+    buffer size
+  target: Remove second argument from fabric_make_tpg()
+  target/tcm_loop: Avoid that static checkers warn about dead code
+  target: Do not duplicate the code that marks that a command has sense
+    data
+  target: Send unit attention condition even if the sense buffer is too
+    small
+  target: Fix handling of removed LUNs
+  target: Remove se_dev_entry.ua_count
+
+ drivers/infiniband/ulp/srpt/ib_srpt.c        |   2 -
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c     |   1 -
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c           |  12 +-
+ drivers/target/iscsi/iscsi_target.c          |   2 -
+ drivers/target/iscsi/iscsi_target_configfs.c |   7 +-
+ drivers/target/iscsi/iscsi_target_login.c    |   2 +-
+ drivers/target/iscsi/iscsi_target_tpg.c      |   3 +-
+ drivers/target/iscsi/iscsi_target_util.c     |   4 +-
+ drivers/target/loopback/tcm_loop.c           |  11 +-
+ drivers/target/sbp/sbp_target.c              |   6 +-
+ drivers/target/target_core_configfs.c        |   4 +-
+ drivers/target/target_core_device.c          |  32 ++-
+ drivers/target/target_core_fabric_configfs.c |   2 +-
+ drivers/target/target_core_internal.h        |   2 +-
+ drivers/target/target_core_sbc.c             |   7 +-
+ drivers/target/target_core_tmr.c             |  30 +--
+ drivers/target/target_core_transport.c       | 257 ++++++++++---------
+ drivers/target/target_core_ua.c              |  43 ++--
+ drivers/target/target_core_ua.h              |   3 +-
+ drivers/target/target_core_xcopy.c           |   5 +-
+ drivers/target/tcm_fc/tfc_conf.c             |   5 +-
+ drivers/usb/gadget/function/f_tcm.c          |   8 +-
+ drivers/vhost/scsi.c                         |   4 +-
+ drivers/xen/xen-scsiback.c                   |   4 +-
+ include/target/target_core_base.h            |   6 +-
+ include/target/target_core_fabric.h          |   5 +-
+ 26 files changed, 220 insertions(+), 247 deletions(-)
+
+-- 
+2.17.1
+
