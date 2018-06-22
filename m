@@ -1,155 +1,242 @@
-From: Matthew Wilcox <willy@infradead.org>
-Date: Tue, 12 Jun 2018 19:05:43 +0000
-Subject: [PATCH 1/3] target: Abstract tag freeing
-Message-Id: <20180612190545.10781-2-willy@infradead.org>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Fri, 22 Jun 2018 21:53:02 +0000
+Subject: [PATCH 15/20] target: Remove second argument from fabric_make_tpg()
+Message-Id: <20180622215307.8758-16-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180612190545.10781-1-willy@infradead.org>
-In-Reply-To: <20180612190545.10781-1-willy@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-usb@vger.kernel.org, kvm@vger.kernel.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, Juergen Gross <jgross@suse.com>, qla2xxx-upstream@qlogic.com, Kent Overstreet <kent.overstreet@gmail.com>, Jens Axboe <axboe@kernel.dk>
-Cc: Matthew Wilcox <willy@infradead.org>
+To: target-devel@vger.kernel.org
 
-Introduce target_free_tag() and convert all drivers to use it.
+Since most target drivers do not use the second fabric_make_tpg()
+argument ("group") and since it is trivial to derive the group pointer
+from the wwn pointer, do not pass the group pointer to fabric_make_tpg().
 
-Signed-off-by: Matthew Wilcox <willy@infradead.org>
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Reviewed-by: Mike Christie <mchristi@redhat.com>
+Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Christoph Hellwig <hch@lst.de>
 ---
- drivers/scsi/qla2xxx/qla_target.c        | 4 ++--
- drivers/target/iscsi/iscsi_target_util.c | 2 +-
- drivers/target/sbp/sbp_target.c          | 2 +-
- drivers/target/tcm_fc/tfc_cmd.c          | 4 ++--
- drivers/usb/gadget/function/f_tcm.c      | 2 +-
- drivers/vhost/scsi.c                     | 2 +-
- drivers/xen/xen-scsiback.c               | 4 +---
- include/target/target_core_base.h        | 5 +++++
- 8 files changed, 14 insertions(+), 11 deletions(-)
+ drivers/infiniband/ulp/srpt/ib_srpt.c        |  2 --
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c     |  1 -
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c           | 12 ++++--------
+ drivers/target/iscsi/iscsi_target_configfs.c |  6 ++----
+ drivers/target/loopback/tcm_loop.c           |  6 ++----
+ drivers/target/sbp/sbp_target.c              |  6 ++----
+ drivers/target/target_core_fabric_configfs.c |  2 +-
+ drivers/target/tcm_fc/tfc_conf.c             |  5 +----
+ drivers/usb/gadget/function/f_tcm.c          |  8 +++-----
+ drivers/vhost/scsi.c                         |  4 +---
+ drivers/xen/xen-scsiback.c                   |  4 +---
+ include/target/target_core_fabric.h          |  2 +-
+ 12 files changed, 18 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
-index b85c833099ff..05290966e630 100644
---- a/drivers/scsi/qla2xxx/qla_target.c
-+++ b/drivers/scsi/qla2xxx/qla_target.c
-@@ -3783,7 +3783,7 @@ void qlt_free_cmd(struct qla_tgt_cmd *cmd)
- 		return;
- 	}
- 	cmd->jiffies_at_free = get_jiffies_64();
--	percpu_ida_free(&sess->se_sess->sess_tag_pool, cmd->se_cmd.map_tag);
-+	target_free_tag(sess->se_sess, &cmd->se_cmd);
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 3081c629a7f7..07b3e1c583bd 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -3597,11 +3597,9 @@ static struct configfs_attribute *srpt_tpg_attrs[] = {
+ /**
+  * srpt_make_tpg - configfs callback invoked for mkdir /sys/kernel/config/target/$driver/$port/$tpg
+  * @wwn: Corresponds to $driver/$port.
+- * @group: Not used.
+  * @name: $tpg.
+  */
+ static struct se_portal_group *srpt_make_tpg(struct se_wwn *wwn,
+-					     struct config_group *group,
+ 					     const char *name)
+ {
+ 	struct srpt_port *sport = wwn->priv;
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index c3a76af9f5fa..fdda04e5cf94 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -3928,7 +3928,6 @@ static void ibmvscsis_drop_tport(struct se_wwn *wwn)
  }
- EXPORT_SYMBOL(qlt_free_cmd);
  
-@@ -4146,7 +4146,7 @@ static void __qlt_do_work(struct qla_tgt_cmd *cmd)
- 	qlt_send_term_exchange(qpair, NULL, &cmd->atio, 1, 0);
+ static struct se_portal_group *ibmvscsis_make_tpg(struct se_wwn *wwn,
+-						  struct config_group *group,
+ 						  const char *name)
+ {
+ 	struct ibmvscsis_tport *tport diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index 7732e9336d43..cfb5d6067f9f 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -1049,10 +1049,8 @@ static struct configfs_attribute *tcm_qla2xxx_tpg_attrs[] = {
+ 	NULL,
+ };
  
- 	qlt_decr_num_pend_cmds(vha);
--	percpu_ida_free(&sess->se_sess->sess_tag_pool, cmd->se_cmd.map_tag);
-+	target_free_tag(sess->se_sess, &cmd->se_cmd);
- 	spin_unlock_irqrestore(qpair->qp_lock_ptr, flags);
+-static struct se_portal_group *tcm_qla2xxx_make_tpg(
+-	struct se_wwn *wwn,
+-	struct config_group *group,
+-	const char *name)
++static struct se_portal_group *tcm_qla2xxx_make_tpg(struct se_wwn *wwn,
++						    const char *name)
+ {
+ 	struct tcm_qla2xxx_lport *lport = container_of(wwn,
+ 			struct tcm_qla2xxx_lport, lport_wwn);
+@@ -1171,10 +1169,8 @@ static struct configfs_attribute *tcm_qla2xxx_npiv_tpg_attrs[] = {
+         NULL,
+ };
  
- 	spin_lock_irqsave(&ha->tgt.sess_lock, flags);
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 4435bf374d2d..7e98697cfb8e 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -711,7 +711,7 @@ void iscsit_release_cmd(struct iscsi_cmd *cmd)
- 	kfree(cmd->iov_data);
- 	kfree(cmd->text_in_ptr);
+-static struct se_portal_group *tcm_qla2xxx_npiv_make_tpg(
+-	struct se_wwn *wwn,
+-	struct config_group *group,
+-	const char *name)
++static struct se_portal_group *tcm_qla2xxx_npiv_make_tpg(struct se_wwn *wwn,
++							 const char *name)
+ {
+ 	struct tcm_qla2xxx_lport *lport = container_of(wwn,
+ 			struct tcm_qla2xxx_lport, lport_wwn);
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 0bc346b2c27c..1fcd9bc7189d 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -1090,10 +1090,8 @@ static struct configfs_attribute *lio_target_tpg_attrs[] = {
  
--	percpu_ida_free(&sess->se_sess->sess_tag_pool, se_cmd->map_tag);
-+	target_free_tag(sess->se_sess, se_cmd);
- }
- EXPORT_SYMBOL(iscsit_release_cmd);
+ /* Start items for lio_target_tiqn_cit */
  
+-static struct se_portal_group *lio_target_tiqn_addtpg(
+-	struct se_wwn *wwn,
+-	struct config_group *group,
+-	const char *name)
++static struct se_portal_group *lio_target_tiqn_addtpg(struct se_wwn *wwn,
++						      const char *name)
+ {
+ 	struct iscsi_portal_group *tpg;
+ 	struct iscsi_tiqn *tiqn;
+diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+index 60d5b918c4ac..4c8a97711291 100644
+--- a/drivers/target/loopback/tcm_loop.c
++++ b/drivers/target/loopback/tcm_loop.c
+@@ -983,10 +983,8 @@ static struct configfs_attribute *tcm_loop_tpg_attrs[] = {
+ 
+ /* Start items for tcm_loop_naa_cit */
+ 
+-static struct se_portal_group *tcm_loop_make_naa_tpg(
+-	struct se_wwn *wwn,
+-	struct config_group *group,
+-	const char *name)
++static struct se_portal_group *tcm_loop_make_naa_tpg(struct se_wwn *wwn,
++						     const char *name)
+ {
+ 	struct tcm_loop_hba *tl_hba = container_of(wwn,
+ 			struct tcm_loop_hba, tl_hba_wwn);
 diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
-index fb1003921d85..679ae29d25ab 100644
+index 42b21f2ac8b0..b61b79ac98ff 100644
 --- a/drivers/target/sbp/sbp_target.c
 +++ b/drivers/target/sbp/sbp_target.c
-@@ -1460,7 +1460,7 @@ static void sbp_free_request(struct sbp_target_request *req)
- 	kfree(req->pg_tbl);
- 	kfree(req->cmd_buf);
- 
--	percpu_ida_free(&se_sess->sess_tag_pool, se_cmd->map_tag);
-+	target_free_tag(se_sess, se_cmd);
+@@ -2006,10 +2006,8 @@ static void sbp_pre_unlink_lun(
+ 		pr_err("unlink LUN: failed to update unit directory\n");
  }
  
- static void sbp_mgt_agent_process(struct work_struct *work)
-diff --git a/drivers/target/tcm_fc/tfc_cmd.c b/drivers/target/tcm_fc/tfc_cmd.c
-index ec372860106f..13e4efbe1ce7 100644
---- a/drivers/target/tcm_fc/tfc_cmd.c
-+++ b/drivers/target/tcm_fc/tfc_cmd.c
-@@ -92,7 +92,7 @@ static void ft_free_cmd(struct ft_cmd *cmd)
- 	if (fr_seq(fp))
- 		fc_seq_release(fr_seq(fp));
- 	fc_frame_free(fp);
--	percpu_ida_free(&sess->se_sess->sess_tag_pool, cmd->se_cmd.map_tag);
-+	target_free_tag(sess->se_sess, &cmd->se_cmd);
- 	ft_sess_put(sess);	/* undo get from lookup at recv */
- }
- 
-@@ -461,7 +461,7 @@ static void ft_recv_cmd(struct ft_sess *sess, struct fc_frame *fp)
- 	cmd->sess = sess;
- 	cmd->seq = fc_seq_assign(lport, fp);
- 	if (!cmd->seq) {
--		percpu_ida_free(&se_sess->sess_tag_pool, tag);
-+		target_free_tag(se_sess, &cmd->se_cmd);
- 		goto busy;
+-static struct se_portal_group *sbp_make_tpg(
+-		struct se_wwn *wwn,
+-		struct config_group *group,
+-		const char *name)
++static struct se_portal_group *sbp_make_tpg(struct se_wwn *wwn,
++					    const char *name)
+ {
+ 	struct sbp_tport *tport  		container_of(wwn, struct sbp_tport, tport_wwn);
+diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
+index e1416b007aa4..1fa436e865f9 100644
+--- a/drivers/target/target_core_fabric_configfs.c
++++ b/drivers/target/target_core_fabric_configfs.c
+@@ -841,7 +841,7 @@ static struct config_group *target_fabric_make_tpg(
+ 		return ERR_PTR(-ENOSYS);
  	}
- 	cmd->req_frame = fp;		/* hold frame during cmd */
+ 
+-	se_tpg = tf->tf_ops->fabric_make_tpg(wwn, group, name);
++	se_tpg = tf->tf_ops->fabric_make_tpg(wwn, name);
+ 	if (!se_tpg || IS_ERR(se_tpg))
+ 		return ERR_PTR(-EINVAL);
+ 
+diff --git a/drivers/target/tcm_fc/tfc_conf.c b/drivers/target/tcm_fc/tfc_conf.c
+index 42ee91123dca..e55c4d537592 100644
+--- a/drivers/target/tcm_fc/tfc_conf.c
++++ b/drivers/target/tcm_fc/tfc_conf.c
+@@ -223,10 +223,7 @@ static int ft_init_nodeacl(struct se_node_acl *nacl, const char *name)
+ /*
+  * local_port port_group (tpg) ops.
+  */
+-static struct se_portal_group *ft_add_tpg(
+-	struct se_wwn *wwn,
+-	struct config_group *group,
+-	const char *name)
++static struct se_portal_group *ft_add_tpg(struct se_wwn *wwn, const char *name)
+ {
+ 	struct ft_lport_wwn *ft_wwn;
+ 	struct ft_tpg *tpg;
 diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
-index d78dbb73bde8..9f670d9224b9 100644
+index 5003e857dce7..4f183176b0b4 100644
 --- a/drivers/usb/gadget/function/f_tcm.c
 +++ b/drivers/usb/gadget/function/f_tcm.c
-@@ -1288,7 +1288,7 @@ static void usbg_release_cmd(struct se_cmd *se_cmd)
- 	struct se_session *se_sess = se_cmd->se_sess;
- 
- 	kfree(cmd->data_buf);
--	percpu_ida_free(&se_sess->sess_tag_pool, se_cmd->map_tag);
-+	target_free_tag(se_sess, se_cmd);
+@@ -1344,10 +1344,8 @@ static int usbg_init_nodeacl(struct se_node_acl *se_nacl, const char *name)
+ 	return 0;
  }
  
- static u32 usbg_sess_get_index(struct se_session *se_sess)
+-static struct se_portal_group *usbg_make_tpg(
+-	struct se_wwn *wwn,
+-	struct config_group *group,
+-	const char *name)
++static struct se_portal_group *usbg_make_tpg(struct se_wwn *wwn,
++					     const char *name)
+ {
+ 	struct usbg_tport *tport = container_of(wwn, struct usbg_tport,
+ 			tport_wwn);
+@@ -1380,7 +1378,7 @@ static struct se_portal_group *usbg_make_tpg(
+ 			goto unlock_dep;
+ 	} else {
+ 		ret = configfs_depend_item_unlocked(
+-			group->cg_subsys,
++			wwn->wwn_group.cg_subsys,
+ 			&opts->func_inst.group.cg_item);
+ 		if (ret)
+ 			goto unlock_dep;
 diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 7ad57094d736..70d35e696533 100644
+index ebaf831285ea..c84a6edd4c25 100644
 --- a/drivers/vhost/scsi.c
 +++ b/drivers/vhost/scsi.c
-@@ -324,7 +324,7 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
- 	}
+@@ -1912,9 +1912,7 @@ static struct configfs_attribute *vhost_scsi_tpg_attrs[] = {
+ };
  
- 	vhost_scsi_put_inflight(tv_cmd->inflight);
--	percpu_ida_free(&se_sess->sess_tag_pool, se_cmd->map_tag);
-+	target_free_tag(se_sess, se_cmd);
- }
- 
- static u32 vhost_scsi_sess_get_index(struct se_session *se_sess)
+ static struct se_portal_group *
+-vhost_scsi_make_tpg(struct se_wwn *wwn,
+-		   struct config_group *group,
+-		   const char *name)
++vhost_scsi_make_tpg(struct se_wwn *wwn, const char *name)
+ {
+ 	struct vhost_scsi_tport *tport = container_of(wwn,
+ 			struct vhost_scsi_tport, tport_wwn);
 diff --git a/drivers/xen/xen-scsiback.c b/drivers/xen/xen-scsiback.c
-index 7bc88fd43cfc..ec6635258ed8 100644
+index 764dd9aa0131..fd77ccfc7d6e 100644
 --- a/drivers/xen/xen-scsiback.c
 +++ b/drivers/xen/xen-scsiback.c
-@@ -1377,9 +1377,7 @@ static int scsiback_check_stop_free(struct se_cmd *se_cmd)
+@@ -1732,9 +1732,7 @@ static void scsiback_port_unlink(struct se_portal_group *se_tpg,
+ }
  
- static void scsiback_release_cmd(struct se_cmd *se_cmd)
+ static struct se_portal_group *
+-scsiback_make_tpg(struct se_wwn *wwn,
+-		   struct config_group *group,
+-		   const char *name)
++scsiback_make_tpg(struct se_wwn *wwn, const char *name)
  {
--	struct se_session *se_sess = se_cmd->se_sess;
--
--	percpu_ida_free(&se_sess->sess_tag_pool, se_cmd->map_tag);
-+	target_free_tag(se_cmd->se_sess, se_cmd);
- }
- 
- static u32 scsiback_sess_get_index(struct se_session *se_sess)
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 922a39f45abc..260c2f3e9460 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -934,4 +934,9 @@ static inline void atomic_dec_mb(atomic_t *v)
- 	smp_mb__after_atomic();
- }
- 
-+static inline void target_free_tag(struct se_session *sess, struct se_cmd *cmd)
-+{
-+	percpu_ida_free(&sess->sess_tag_pool, cmd->map_tag);
-+}
-+
- #endif /* TARGET_CORE_BASE_H */
+ 	struct scsiback_tport *tport = container_of(wwn,
+ 			struct scsiback_tport, tport_wwn);
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 84a681b6e5ca..f61aa716cfe1 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -79,7 +79,7 @@ struct target_core_fabric_ops {
+ 	void (*fabric_drop_wwn)(struct se_wwn *);
+ 	void (*add_wwn_groups)(struct se_wwn *);
+ 	struct se_portal_group *(*fabric_make_tpg)(struct se_wwn *,
+-				struct config_group *, const char *);
++						   const char *);
+ 	void (*fabric_drop_tpg)(struct se_portal_group *);
+ 	int (*fabric_post_link)(struct se_portal_group *,
+ 				struct se_lun *);
 -- 
 2.17.1
 
