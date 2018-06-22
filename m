@@ -1,63 +1,32 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 18 Jun 2018 08:10:38 +0000
-Subject: [PATCH 4.16 053/279] scsi: target: fix crash with iscsi target and dvd
-Message-Id: <20180618080611.038102648@linuxfoundation.org>
+From: Mike Christie <mchristi@redhat.com>
+Date: Fri, 22 Jun 2018 21:40:18 +0000
+Subject: [PATCH 1/6] tcmu: delete unused __wait
+Message-Id: <1529703623-9606-2-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180618080608.851973560@linuxfoundation.org>
-In-Reply-To: <20180618080608.851973560@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Wakko Warner <wakko@animx.eu.org>, Bart Van Assche <Bart.VanAssche@wdc.com>, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Christoph Hellwig <hch@lst.de>, Ming Lei <ming.lei@redhat.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Sasha Levin <alexander.levin@microsoft.com>
+To: target-devel@vger.kernel.org
 
-4.16-stable review patch.  If anyone has any objections, please let me know.
+When this code change this was never cleaned up.
 
-------------------
-
-From: Ming Lei <ming.lei@redhat.com>
-
-[ Upstream commit 8e1ceafe50ec4d1bcfae154dd70e7cb6946a6177 ]
-
-When the current page can't be added to bio, one new bio should be
-created for adding this page again, instead of ignoring this page.
-
-This patch fixes kernel crash with iscsi target and dvd, as reported by
-Wakko.
-
-Cc: Wakko Warner <wakko@animx.eu.org>
-Cc: Bart Van Assche <Bart.VanAssche@wdc.com>
-Cc: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
-Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Fixes: 84c8590646d5b35804 ("target: avoid accessing .bi_vcnt directly")
-Signed-off-by: Ming Lei <ming.lei@redhat.com>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_pscsi.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/target/target_core_user.c | 1 -
+ 1 file changed, 1 deletion(-)
 
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -890,6 +890,7 @@ pscsi_map_sg(struct se_cmd *cmd, struct
- 			bytes = min(bytes, data_len);
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index e4a76f9..898a561 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1564,7 +1564,6 @@ static int tcmu_wait_genl_cmd_reply(struct tcmu_dev *udev)
+ {
+ 	struct tcmu_nl_cmd *nl_cmd = &udev->curr_nl_cmd;
+ 	int ret;
+-	DEFINE_WAIT(__wait);
  
- 			if (!bio) {
-+new_bio:
- 				nr_vecs = min_t(int, BIO_MAX_PAGES, nr_pages);
- 				nr_pages -= nr_vecs;
- 				/*
-@@ -931,6 +932,7 @@ pscsi_map_sg(struct se_cmd *cmd, struct
- 				 * be allocated with pscsi_get_bio() above.
- 				 */
- 				bio = NULL;
-+				goto new_bio;
- 			}
- 
- 			data_len -= bytes;
-
+ 	if (!tcmu_kern_cmd_reply_supported)
+ 		return 0;
+-- 
+2.7.2
 
