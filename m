@@ -1,170 +1,84 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Fri, 22 Jun 2018 03:52:39 +0000
-Subject: [PATCH 2/3] tcmu: track nl commands
-Message-Id: <1529639560-9429-3-git-send-email-mchristi@redhat.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Sat, 23 Jun 2018 08:35:18 +0000
+Subject: Re: [PATCH 2/3] tcmu: track nl commands
+Message-Id: <20180623083518.w3upp7fb5awn7oml@mwanda>
 List-Id: <target-devel.vger.kernel.org>
+References: <1529639560-9429-3-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1529639560-9429-3-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: kbuild@01.org
+Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, martin.petersen@oracle.com, nab@linux-iscsi.org, Mike Christie <mchristi@redhat.com>, kbuild-all@01.org
 
-The next patch is going to fix the hung nl command issue
-so this adds a list of outstanding nl commands that we
-can later abort when the daemon is restarted.
+Hi Mike,
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+Thank you for the patch! Perhaps something to improve:
+
+url:    https://github.com/0day-ci/linux/commits/Mike-Christie/tcmu-fix-hung-netlink-requests-during-restarts/20180622-115832
+
+smatch warnings:
+drivers/target/target_core_user.c:301 tcmu_genl_cmd_done() warn: KERN_* level not at start of string
+
+# https://github.com/0day-ci/linux/commit/0921da9c695fe2502a0d25b7758f4c93249148d7
+git remote add linux-review https://github.com/0day-ci/linux
+git remote update linux-review
+git checkout 0921da9c695fe2502a0d25b7758f4c93249148d7
+vim +301 drivers/target/target_core_user.c
+
+b3af66e2 Mike Christie 2017-06-23  276  
+b3af66e2 Mike Christie 2017-06-23  277  static int tcmu_genl_cmd_done(struct genl_info *info, int completed_cmd)
+b3af66e2 Mike Christie 2017-06-23  278  {
+0921da9c Mike Christie 2018-06-21  279  	struct tcmu_dev *udev = NULL;
+b3af66e2 Mike Christie 2017-06-23  280  	struct tcmu_nl_cmd *nl_cmd;
+b3af66e2 Mike Christie 2017-06-23  281  	int dev_id, rc, ret = 0;
+b3af66e2 Mike Christie 2017-06-23  282  
+b3af66e2 Mike Christie 2017-06-23  283  	if (!info->attrs[TCMU_ATTR_CMD_STATUS] ||
+b3af66e2 Mike Christie 2017-06-23  284  	    !info->attrs[TCMU_ATTR_DEVICE_ID]) {
+b3af66e2 Mike Christie 2017-06-23  285  		printk(KERN_ERR "TCMU_ATTR_CMD_STATUS or TCMU_ATTR_DEVICE_ID not set, doing nothing\n");
+b3af66e2 Mike Christie 2017-06-23  286  		return -EINVAL;
+b3af66e2 Mike Christie 2017-06-23  287          }
+b3af66e2 Mike Christie 2017-06-23  288  
+b3af66e2 Mike Christie 2017-06-23  289  	dev_id = nla_get_u32(info->attrs[TCMU_ATTR_DEVICE_ID]);
+b3af66e2 Mike Christie 2017-06-23  290  	rc = nla_get_s32(info->attrs[TCMU_ATTR_CMD_STATUS]);
+b3af66e2 Mike Christie 2017-06-23  291  
+0921da9c Mike Christie 2018-06-21  292  	mutex_lock(&tcmu_nl_cmd_mutex);
+0921da9c Mike Christie 2018-06-21  293  	list_for_each_entry(nl_cmd, &tcmu_nl_cmd_list, nl_list) {
+0921da9c Mike Christie 2018-06-21  294  		if (nl_cmd->udev->se_dev.dev_index = dev_id) {
+0921da9c Mike Christie 2018-06-21  295  			udev = nl_cmd->udev;
+0921da9c Mike Christie 2018-06-21  296  			break;
+0921da9c Mike Christie 2018-06-21  297  		}
+b3af66e2 Mike Christie 2017-06-23  298  	}
+b3af66e2 Mike Christie 2017-06-23  299  
+0921da9c Mike Christie 2018-06-21  300  	if (!udev) {
+0921da9c Mike Christie 2018-06-21 @301  		pr_err(KERN_ERR "tcmu nl cmd %u/%d completion could not find device with dev id %u.\n",
+                                                               ^^^^^^^^
+Not required since this is already pr_err().
+
+0921da9c Mike Christie 2018-06-21  302  		       completed_cmd, rc, dev_id);
+0921da9c Mike Christie 2018-06-21  303  		ret = -ENODEV;
+0921da9c Mike Christie 2018-06-21  304  		goto unlock;
+0921da9c Mike Christie 2018-06-21  305  	}
+0921da9c Mike Christie 2018-06-21  306  	list_del(&nl_cmd->nl_list);
+b3af66e2 Mike Christie 2017-06-23  307  
+0921da9c Mike Christie 2018-06-21  308  	pr_debug("%s genl cmd done got id %d curr %d done %d rc %d\n",
+0921da9c Mike Christie 2018-06-21  309  		 udev->name, dev_id, nl_cmd->cmd, completed_cmd, rc);
+b3af66e2 Mike Christie 2017-06-23  310  
+b3af66e2 Mike Christie 2017-06-23  311  	if (nl_cmd->cmd != completed_cmd) {
+0921da9c Mike Christie 2018-06-21  312  		pr_err("Mismatched commands on %s (Expecting reply for %d. Current %d).\n",
+0921da9c Mike Christie 2018-06-21  313  		       udev->name, completed_cmd, nl_cmd->cmd);
+b3af66e2 Mike Christie 2017-06-23  314  		ret = -EINVAL;
+0921da9c Mike Christie 2018-06-21  315  		goto unlock;
+b3af66e2 Mike Christie 2017-06-23  316  	}
+b3af66e2 Mike Christie 2017-06-23  317  
+0921da9c Mike Christie 2018-06-21  318  	nl_cmd->status = rc;
+b3af66e2 Mike Christie 2017-06-23  319  	complete(&nl_cmd->complete);
+0921da9c Mike Christie 2018-06-21  320  unlock:
+0921da9c Mike Christie 2018-06-21  321  	mutex_unlock(&tcmu_nl_cmd_mutex);
+b3af66e2 Mike Christie 2017-06-23  322  	return ret;
+b3af66e2 Mike Christie 2017-06-23  323  }
+b3af66e2 Mike Christie 2017-06-23  324  
+
 ---
- drivers/target/target_core_user.c | 68 ++++++++++++++++++++++-----------------
- 1 file changed, 39 insertions(+), 29 deletions(-)
-
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 898a561..73a5768 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -103,9 +103,16 @@ struct tcmu_hba {
- 
- #define TCMU_CONFIG_LEN 256
- 
-+static DEFINE_MUTEX(tcmu_nl_cmd_mutex);
-+static LIST_HEAD(tcmu_nl_cmd_list);
-+
-+struct tcmu_dev;
-+
- struct tcmu_nl_cmd {
- 	/* wake up thread waiting for reply */
- 	struct completion complete;
-+	struct list_head nl_list;
-+	struct tcmu_dev *udev;
- 	int cmd;
- 	int status;
- };
-@@ -157,7 +164,6 @@ struct tcmu_dev {
- 
- 	struct list_head timedout_entry;
- 
--	spinlock_t nl_cmd_lock;
- 	struct tcmu_nl_cmd curr_nl_cmd;
- 	/* wake up threads waiting on curr_nl_cmd */
- 	wait_queue_head_t nl_cmd_wq;
-@@ -270,11 +276,9 @@ static struct nla_policy tcmu_attr_policy[TCMU_ATTR_MAX+1] = {
- 
- static int tcmu_genl_cmd_done(struct genl_info *info, int completed_cmd)
- {
--	struct se_device *dev;
--	struct tcmu_dev *udev;
-+	struct tcmu_dev *udev = NULL;
- 	struct tcmu_nl_cmd *nl_cmd;
- 	int dev_id, rc, ret = 0;
--	bool is_removed = (completed_cmd = TCMU_CMD_REMOVED_DEVICE);
- 
- 	if (!info->attrs[TCMU_ATTR_CMD_STATUS] ||
- 	    !info->attrs[TCMU_ATTR_DEVICE_ID]) {
-@@ -285,33 +289,36 @@ static int tcmu_genl_cmd_done(struct genl_info *info, int completed_cmd)
- 	dev_id = nla_get_u32(info->attrs[TCMU_ATTR_DEVICE_ID]);
- 	rc = nla_get_s32(info->attrs[TCMU_ATTR_CMD_STATUS]);
- 
--	dev = target_find_device(dev_id, !is_removed);
--	if (!dev) {
--		printk(KERN_ERR "tcmu nl cmd %u/%u completion could not find device with dev id %u.\n",
--		       completed_cmd, rc, dev_id);
--		return -ENODEV;
-+	mutex_lock(&tcmu_nl_cmd_mutex);
-+	list_for_each_entry(nl_cmd, &tcmu_nl_cmd_list, nl_list) {
-+		if (nl_cmd->udev->se_dev.dev_index = dev_id) {
-+			udev = nl_cmd->udev;
-+			break;
-+		}
- 	}
--	udev = TCMU_DEV(dev);
- 
--	spin_lock(&udev->nl_cmd_lock);
--	nl_cmd = &udev->curr_nl_cmd;
-+	if (!udev) {
-+		pr_err(KERN_ERR "tcmu nl cmd %u/%d completion could not find device with dev id %u.\n",
-+		       completed_cmd, rc, dev_id);
-+		ret = -ENODEV;
-+		goto unlock;
-+	}
-+	list_del(&nl_cmd->nl_list);
- 
--	pr_debug("genl cmd done got id %d curr %d done %d rc %d\n", dev_id,
--		 nl_cmd->cmd, completed_cmd, rc);
-+	pr_debug("%s genl cmd done got id %d curr %d done %d rc %d\n",
-+		 udev->name, dev_id, nl_cmd->cmd, completed_cmd, rc);
- 
- 	if (nl_cmd->cmd != completed_cmd) {
--		printk(KERN_ERR "Mismatched commands (Expecting reply for %d. Current %d).\n",
--		       completed_cmd, nl_cmd->cmd);
-+		pr_err("Mismatched commands on %s (Expecting reply for %d. Current %d).\n",
-+		       udev->name, completed_cmd, nl_cmd->cmd);
- 		ret = -EINVAL;
--	} else {
--		nl_cmd->status = rc;
-+		goto unlock;
- 	}
- 
--	spin_unlock(&udev->nl_cmd_lock);
--	if (!is_removed)
--		target_undepend_item(&dev->dev_group.cg_item);
--	if (!ret)
--		complete(&nl_cmd->complete);
-+	nl_cmd->status = rc;
-+	complete(&nl_cmd->complete);
-+unlock:
-+	mutex_unlock(&tcmu_nl_cmd_mutex);
- 	return ret;
- }
- 
-@@ -1258,7 +1265,6 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 	timer_setup(&udev->cmd_timer, tcmu_cmd_timedout, 0);
- 
- 	init_waitqueue_head(&udev->nl_cmd_wq);
--	spin_lock_init(&udev->nl_cmd_lock);
- 
- 	INIT_RADIX_TREE(&udev->data_blocks, GFP_KERNEL);
- 
-@@ -1544,10 +1550,10 @@ static void tcmu_init_genl_cmd_reply(struct tcmu_dev *udev, int cmd)
- 		return;
- 
- relock:
--	spin_lock(&udev->nl_cmd_lock);
-+	mutex_lock(&tcmu_nl_cmd_mutex);
- 
- 	if (nl_cmd->cmd != TCMU_CMD_UNSPEC) {
--		spin_unlock(&udev->nl_cmd_lock);
-+		mutex_unlock(&tcmu_nl_cmd_mutex);
- 		pr_debug("sleeping for open nl cmd\n");
- 		wait_event(udev->nl_cmd_wq, (nl_cmd->cmd = TCMU_CMD_UNSPEC));
- 		goto relock;
-@@ -1555,9 +1561,13 @@ static void tcmu_init_genl_cmd_reply(struct tcmu_dev *udev, int cmd)
- 
- 	memset(nl_cmd, 0, sizeof(*nl_cmd));
- 	nl_cmd->cmd = cmd;
-+	nl_cmd->udev = udev;
- 	init_completion(&nl_cmd->complete);
-+	INIT_LIST_HEAD(&nl_cmd->nl_list);
-+
-+	list_add_tail(&nl_cmd->nl_list, &tcmu_nl_cmd_list);
- 
--	spin_unlock(&udev->nl_cmd_lock);
-+	mutex_unlock(&tcmu_nl_cmd_mutex);
- }
- 
- static int tcmu_wait_genl_cmd_reply(struct tcmu_dev *udev)
-@@ -1574,11 +1584,11 @@ static int tcmu_wait_genl_cmd_reply(struct tcmu_dev *udev)
- 	pr_debug("sleeping for nl reply\n");
- 	wait_for_completion(&nl_cmd->complete);
- 
--	spin_lock(&udev->nl_cmd_lock);
-+	mutex_lock(&tcmu_nl_cmd_mutex);
- 	nl_cmd->cmd = TCMU_CMD_UNSPEC;
- 	ret = nl_cmd->status;
- 	nl_cmd->status = 0;
--	spin_unlock(&udev->nl_cmd_lock);
-+	mutex_unlock(&tcmu_nl_cmd_mutex);
- 
- 	wake_up_all(&udev->nl_cmd_wq);
- 
--- 
-2.7.2
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
