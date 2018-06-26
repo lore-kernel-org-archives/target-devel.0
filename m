@@ -1,45 +1,37 @@
-From: Nicolas D <nd@saitis.net>
-Date: Wed, 13 Jun 2018 11:31:15 +0000
-Subject: Re: MaxTransferLength
-Message-Id: <20180613113115.GA22509@hydro.skol.ch>
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 26 Jun 2018 16:47:20 +0000
+Subject: [PATCH 1/1] tcmu: Don't pass KERN_ERR to pr_err
+Message-Id: <1530031640-8100-1-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180424122512.GQ27687@hydro.skol.ch>
-In-Reply-To: <20180424122512.GQ27687@hydro.skol.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+Fix warning:
 
-Hello,
+smatch warnings:
+drivers/target/target_core_user.c:301 tcmu_genl_cmd_done() warn: KERN_*
+level not at start of string
 
-On Thu, May 24, 2018 at 08:46:46AM -0500, Bryant G. Ly wrote:
-> 
-> The use of user:fbo is to emulate an optical device... So you would
-> want to map an ISO9660 filesystem.
-> 
-> In this case you would do:
-> 
-> sudo targetcli /backstores/user:fbo create name=test_name
-> cfgstring=/home/test/path.iso size000
-> 
-> Then you would map this backstore device to a fabric lun. Afterwards,
-> on the client VM you would see this as dev/sr0 when you boot up.
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-So I won't be able to solve my problem at all. I just read again what I
-wrote in this thread and I think I was clear enough, tell me if I am
-wrong. In my use case:
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 9555981..847707a 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -383,7 +383,7 @@ static int tcmu_genl_cmd_done(struct genl_info *info, int completed_cmd)
+ 	}
+ 
+ 	if (!udev) {
+-		pr_err(KERN_ERR "tcmu nl cmd %u/%d completion could not find device with dev id %u.\n",
++		pr_err("tcmu nl cmd %u/%d completion could not find device with dev id %u.\n",
+ 		       completed_cmd, rc, dev_id);
+ 		ret = -ENODEV;
+ 		goto unlock;
+-- 
+2.7.2
 
-- Optical media (CD, DVD, BluRay) have to be served directly
-- All commands related to optical drive authentication should be
-  supported (and it works well with pscsi), it is needed to play
-  protected content.
-
-I still don't understand why this problenm can't be solved easily. AFAIK
-maxtransferlength is negociated on login and seems to be
-MIN(initiator,target)
-
-Also, tell me if you think there's a better place to ask for help about
-this case.
-
-Nicolas
