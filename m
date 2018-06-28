@@ -1,97 +1,103 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 26 Jun 2018 17:09:27 +0000
+Date: Thu, 28 Jun 2018 18:54:01 +0000
 Subject: Re: [PATCH 00/20] SCSI target patches for kernel v4.19
-Message-Id: <5B327347.8040904@redhat.com>
+Message-Id: <5B352EC9.8020002@redhat.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------040201030003040502070707"
+Content-Type: multipart/mixed; boundary="------------060407020105010001010100"
 List-Id: <target-devel.vger.kernel.org>
 References: <20180622215307.8758-1-bart.vanassche@wdc.com>
 In-Reply-To: <20180622215307.8758-1-bart.vanassche@wdc.com>
 To: target-devel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------040201030003040502070707
+--------------060407020105010001010100
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 
-On 06/22/2018 04:52 PM, Bart Van Assche wrote:
-> Hello,
+On 06/26/2018 12:09 PM, Mike Christie wrote:
+> On 06/22/2018 04:52 PM, Bart Van Assche wrote:
+>> Hello,
+>>
+>> This is a series with bug fixes and code simplifications mainly for the SCSI
+>> target core. The following tests have been run against this patch series for
+>> both the iSCSI and SRPT target drivers:
+>> - Run the libiscsi conformance tests.
+>> - For the SRP target driver, run the srp-test software.
+>>
+>> Please consider this patch series for kernel v4.19.
+>>
+>> Thanks,
+>>
+>> Bart.
+>>
+>> Bart Van Assche (20):
+>>   target: Use config_item_name() instead of open-coding it
+>>   target: Avoid that EXTENDED COPY commands trigger lock inversion
+>>   target: Move a list_del_init() statement
+>>   target: Rename transport_init_session() into transport_alloc_session()
+>>   target: Introduce transport_init_session()
+>>   target: Make the session shutdown code also wait for commands that are
+>>     being aborted
+>>   target: Document when CMD_T_STOP and CMD_T_COMPLETE are set
+>>   target: Simplify core_tmr_handle_tas_abort()
+>>   target: Fold core_tmr_handle_tas_abort() into
+>>     transport_cmd_finish_abort()
+>>   target: Simplify transport_generic_free_cmd() (1/2)
+>>   target: Simplify transport_generic_free_cmd() (2/2)
+>>   target: Simplify the code for waiting for command completion
+>>   target/iscsi: Reduce number of __iscsit_free_cmd() callers
+>>   target/iscsi: Make iscsit_ta_authentication() respect the output
+>>     buffer size
+>>   target: Remove second argument from fabric_make_tpg()
+>>   target/tcm_loop: Avoid that static checkers warn about dead code
+>>   target: Do not duplicate the code that marks that a command has sense
+>>     data
+>>   target: Send unit attention condition even if the sense buffer is too
+>>     small
+>>   target: Fix handling of removed LUNs
+>>   target: Remove se_dev_entry.ua_count
+>>
 > 
-> This is a series with bug fixes and code simplifications mainly for the SCSI
-> target core. The following tests have been run against this patch series for
-> both the iSCSI and SRPT target drivers:
-> - Run the libiscsi conformance tests.
-> - For the SRP target driver, run the srp-test software.
+> Looks ok to me.
 > 
-> Please consider this patch series for kernel v4.19.
+> Reviewed-by: Mike Christie <mchristi@redhat.com>
 > 
-> Thanks,
+> Martin, there was going to be one conflict between my patches and Bart's
+> set. I was not sure how you wanted to handle it because I was not sure
+> which would be merged first.
 > 
-> Bart.
+> The problem was that Bart's patch in this set:
 > 
-> Bart Van Assche (20):
->   target: Use config_item_name() instead of open-coding it
->   target: Avoid that EXTENDED COPY commands trigger lock inversion
->   target: Move a list_del_init() statement
->   target: Rename transport_init_session() into transport_alloc_session()
->   target: Introduce transport_init_session()
->   target: Make the session shutdown code also wait for commands that are
->     being aborted
->   target: Document when CMD_T_STOP and CMD_T_COMPLETE are set
->   target: Simplify core_tmr_handle_tas_abort()
->   target: Fold core_tmr_handle_tas_abort() into
->     transport_cmd_finish_abort()
->   target: Simplify transport_generic_free_cmd() (1/2)
->   target: Simplify transport_generic_free_cmd() (2/2)
->   target: Simplify the code for waiting for command completion
->   target/iscsi: Reduce number of __iscsit_free_cmd() callers
->   target/iscsi: Make iscsit_ta_authentication() respect the output
->     buffer size
->   target: Remove second argument from fabric_make_tpg()
->   target/tcm_loop: Avoid that static checkers warn about dead code
->   target: Do not duplicate the code that marks that a command has sense
->     data
->   target: Send unit attention condition even if the sense buffer is too
->     small
->   target: Fix handling of removed LUNs
->   target: Remove se_dev_entry.ua_count
+> [PATCH 02/20] target: Avoid that EXTENDED COPY commands trigger lock
+> inversion
+> 
+> modified target_find_device and I was removing the last user of it in my
+> set you just merged.
+> 
+> I attached a updated version of Bart's:
+> 
+> [PATCH 02/20] target: Avoid that EXTENDED COPY commands trigger lock
+> inversion
+> 
+> that just removes target_find_device instead of fixing it up, so Bart
+> does not have to resend/rework any of his patches.
 > 
 
-Looks ok to me.
+Sorry about this. I made that patch against the wrong version. Attached
+is a updated patch made against Martin's for-next that was freshly pulled.
 
-Reviewed-by: Mike Christie <mchristi@redhat.com>
 
-Martin, there was going to be one conflict between my patches and Bart's
-set. I was not sure how you wanted to handle it because I was not sure
-which would be merged first.
-
-The problem was that Bart's patch in this set:
-
-[PATCH 02/20] target: Avoid that EXTENDED COPY commands trigger lock
-inversion
-
-modified target_find_device and I was removing the last user of it in my
-set you just merged.
-
-I attached a updated version of Bart's:
-
-[PATCH 02/20] target: Avoid that EXTENDED COPY commands trigger lock
-inversion
-
-that just removes target_find_device instead of fixing it up, so Bart
-does not have to resend/rework any of his patches.
-
---------------040201030003040502070707
+--------------060407020105010001010100
 Content-Type: text/x-patch;
- name="0001-target-Avoid-that-EXTENDED-COPY-commands-trigger-lock.patch"
+ name="0001-target-Avoid-that-EXTENDED-COPY-commands-trigger-loc.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
- filename*0="0001-target-Avoid-that-EXTENDED-COPY-commands-trigger-lock.p";
- filename*1="atch"
+ filename*0="0001-target-Avoid-that-EXTENDED-COPY-commands-trigger-loc.pa";
+ filename*1="tch"
 
-From 13173cb9edcad9d5030de01eb097f8c9d88fb5d8 Mon Sep 17 00:00:00 2001
+From 3f79e35ccc92e9a74a5edd12e1f4d5cbc301f8e5 Mon Sep 17 00:00:00 2001
 From: Bart Van Assche <bart.vanassche@wdc.com>
-Date: Tue, 26 Jun 2018 12:01:19 -0500
+Date: Thu, 28 Jun 2018 13:48:57 -0500
 Subject: [PATCH] target: Avoid that EXTENDED COPY commands trigger lock
  inversion
 
@@ -204,46 +210,19 @@ Call Trace:
  entry_SYSCALL_64_fastpath+0x23/0xc2
 
 Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-[drop target_find_device because it is no longer used]
+[Rebased to handle conflict withe target_find_device removal]
 Signed-off-by: Mike Christie <mchristi@redhat.com>
-
 ---
- drivers/target/target_core_device.c  | 46 +++++++++++++-----------------------
- include/target/target_core_backend.h |  2 --
- 2 files changed, 17 insertions(+), 31 deletions(-)
+ drivers/target/target_core_device.c | 22 +++++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index e27db4d..68cc48b 100644
+index a9ad6ec..e5c90af 100644
 --- a/drivers/target/target_core_device.c
 +++ b/drivers/target/target_core_device.c
-@@ -879,39 +879,21 @@ sector_t target_to_linux_sector(struct se_device *dev, sector_t lb)
- }
+@@ -880,14 +880,20 @@ sector_t target_to_linux_sector(struct se_device *dev, sector_t lb)
  EXPORT_SYMBOL(target_to_linux_sector);
  
--/**
-- * target_find_device - find a se_device by its dev_index
-- * @id: dev_index
-- * @do_depend: true if caller needs target_depend_item to be done
-- *
-- * If do_depend is true, the caller must do a target_undepend_item
-- * when finished using the device.
-- *
-- * If do_depend is false, the caller must be called in a configfs
-- * callback or during removal.
-- */
--struct se_device *target_find_device(int id, bool do_depend)
--{
--	struct se_device *dev;
--
--	mutex_lock(&device_mutex);
--	dev = idr_find(&devices_idr, id);
--	if (dev && do_depend && target_depend_item(&dev->dev_group.cg_item))
--		dev = NULL;
--	mutex_unlock(&device_mutex);
--	return dev;
--}
--EXPORT_SYMBOL(target_find_device);
--
  struct devices_idr_iter {
 +	struct config_item *prev_item;
  	int (*fn)(struct se_device *dev, void *data);
@@ -251,7 +230,7 @@ index e27db4d..68cc48b 100644
  };
  
  static int target_devices_idr_iter(int id, void *p, void *data)
-+	__must_hold(&device_mutex)
++	 __must_hold(&device_mutex)
  {
  	struct devices_idr_iter *iter = data;
  	struct se_device *dev = p;
@@ -262,7 +241,7 @@ index e27db4d..68cc48b 100644
  
  	/*
  	 * We add the device early to the idr, so it can be used
-@@ -922,7 +904,15 @@ static int target_devices_idr_iter(int id, void *p, void *data)
+@@ -898,7 +904,15 @@ static int target_devices_idr_iter(int id, void *p, void *data)
  	if (!(dev->dev_flags & DF_CONFIGURED))
  		return 0;
  
@@ -279,7 +258,7 @@ index e27db4d..68cc48b 100644
  }
  
  /**
-@@ -936,15 +926,13 @@ static int target_devices_idr_iter(int id, void *p, void *data)
+@@ -912,15 +926,13 @@ static int target_devices_idr_iter(int id, void *p, void *data)
  int target_for_each_device(int (*fn)(struct se_device *dev, void *data),
  			   void *data)
  {
@@ -297,21 +276,8 @@ index e27db4d..68cc48b 100644
  	return ret;
  }
  
-diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
-index 34a15d5..c3ac472 100644
---- a/include/target/target_core_backend.h
-+++ b/include/target/target_core_backend.h
-@@ -106,8 +106,6 @@ bool	target_lun_is_rdonly(struct se_cmd *);
- sense_reason_t passthrough_parse_cdb(struct se_cmd *cmd,
- 	sense_reason_t (*exec_cmd)(struct se_cmd *cmd));
- 
--struct	se_device *target_find_device(int id, bool do_depend);
--
- bool target_sense_desc_format(struct se_device *dev);
- sector_t target_to_linux_sector(struct se_device *dev, sector_t lb);
- bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
 -- 
-2.7.2
+1.8.3.1
 
 
---------------040201030003040502070707--
+--------------060407020105010001010100--
