@@ -1,26 +1,31 @@
-From: "Ruby" <vincetanit@sippersbydesign.com>
-Date: Wed, 18 Jul 2018 13:42:10 +0000
-Subject: editing for your images
-Message-Id: <e1fd06561b1e6a2eb1b7a0d702055d33@reuseit.com>
+From: "Simon" <sejenmein@brilliantworx.com>
+Date: Fri, 13 Jul 2018 12:45:51 +0000
+Subject: imaging solutions for you
+Message-Id: <e290cf379e2ed1932b52a896c8b1fad5@smokemachines.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Do you have need for image editing?
+We are a team, we can process 300+ images per day for you.
 
-We have 20 image editors and on daily basis 2000 images can be processed.
+If you need any image editing, please let us know.
 
-If you want to check our quality of work please send us a photo with
-instruction and we will work on it.
+Photos cut out;
+Photos clipping path;
+Photos masking;
+Photo shadow creation;
+Photos retouching;
+Beauty Model retouching on skin, face, body;
+Glamour retouching;
+Products retouching.
 
-Photo cut out, masking, clipping path Color, brightness and contrast
-correction
-Beauty, Model retouching, skin retouching Image cropping and resizing
+We can give you editing test on your photos.
 
-We do unlimited revisions until you are satisfied with the work.
+Turnaround time fast
+7/24/365 available
 
 Thanks,
-Ruby
+Simon
 
