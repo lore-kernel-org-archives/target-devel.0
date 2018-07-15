@@ -1,92 +1,86 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 31 Jul 2018 19:51:53 +0000
-Subject: [PATCH v2 8/9] libata-scsi: Move sense buffers onto stack
-Message-Id: <20180731195155.46664-9-keescook@chromium.org>
+From: Mike Christie <mchristi@redhat.com>
+Date: Sun, 15 Jul 2018 23:16:27 +0000
+Subject: [PATCH 11/15] target: export initiator port values for all sessions
+Message-Id: <1531696591-8558-12-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180731195155.46664-1-keescook@chromium.org>
-In-Reply-To: <20180731195155.46664-1-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jens Axboe <axboe@kernel.dk>
-Cc: Kees Cook <keescook@chromium.org>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-To support future compile-time sizeof() checks that will be able to
-validate the length of sense buffers, this removes the only dynamically
-allocated sense buffers in the tree by putting the 96 byte sense buffers
-on the stack.
+Export the initiator port info in configfs
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/ata/libata-scsi.c | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+ drivers/target/target_core_fabric_configfs.c | 48 ++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
 
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index 89a9d4a2efc8..3a43d3a1ce2d 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -597,8 +597,9 @@ static int ata_get_identity(struct ata_port *ap, struct scsi_device *sdev,
- int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
- {
- 	int rc = 0;
-+	u8 sensebuf[SCSI_SENSE_BUFFERSIZE];
- 	u8 scsi_cmd[MAX_COMMAND_SIZE];
--	u8 args[4], *argbuf = NULL, *sensebuf = NULL;
-+	u8 args[4], *argbuf = NULL;
- 	int argsize = 0;
- 	enum dma_data_direction data_dir;
- 	struct scsi_sense_hdr sshdr;
-@@ -610,10 +611,7 @@ int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
- 	if (copy_from_user(args, arg, sizeof(args)))
- 		return -EFAULT;
- 
--	sensebuf = kzalloc(SCSI_SENSE_BUFFERSIZE, GFP_NOIO);
--	if (!sensebuf)
--		return -ENOMEM;
--
-+	memset(sensebuf, 0, sizeof(sensebuf));
- 	memset(scsi_cmd, 0, sizeof(scsi_cmd));
- 
- 	if (args[3]) {
-@@ -685,7 +683,6 @@ int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
- 	 && copy_to_user(arg + sizeof(args), argbuf, argsize))
- 		rc = -EFAULT;
- error:
--	kfree(sensebuf);
- 	kfree(argbuf);
- 	return rc;
- }
-@@ -704,8 +701,9 @@ int ata_cmd_ioctl(struct scsi_device *scsidev, void __user *arg)
- int ata_task_ioctl(struct scsi_device *scsidev, void __user *arg)
- {
- 	int rc = 0;
-+	u8 sensebuf[SCSI_SENSE_BUFFERSIZE];
- 	u8 scsi_cmd[MAX_COMMAND_SIZE];
--	u8 args[7], *sensebuf = NULL;
-+	u8 args[7];
- 	struct scsi_sense_hdr sshdr;
- 	int cmd_result;
- 
-@@ -715,10 +713,7 @@ int ata_task_ioctl(struct scsi_device *scsidev, void __user *arg)
- 	if (copy_from_user(args, arg, sizeof(args)))
- 		return -EFAULT;
- 
--	sensebuf = kzalloc(SCSI_SENSE_BUFFERSIZE, GFP_NOIO);
--	if (!sensebuf)
--		return -ENOMEM;
--
-+	memset(sensebuf, 0, sizeof(sensebuf));
- 	memset(scsi_cmd, 0, sizeof(scsi_cmd));
- 	scsi_cmd[0]  = ATA_16;
- 	scsi_cmd[1]  = (3 << 1); /* Non-data */
-@@ -769,7 +764,6 @@ int ata_task_ioctl(struct scsi_device *scsidev, void __user *arg)
- 	}
- 
-  error:
--	kfree(sensebuf);
- 	return rc;
+diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
+index 497fa01..2deda28 100644
+--- a/drivers/target/target_core_fabric_configfs.c
++++ b/drivers/target/target_core_fabric_configfs.c
+@@ -897,6 +897,53 @@ static void target_fabric_drop_tpg(
+ 	config_item_put(item);
  }
  
++static ssize_t target_fabric_session_initiator_port_show(
++	struct config_item *item, char *page)
++{
++	struct se_session *se_sess = container_of(to_config_group(item),
++						  struct se_session, group);
++	ssize_t len;
++	int isid_len = 0;
++	unsigned long flags;
++
++	spin_lock_irqsave(&se_sess->configfs_lock, flags);
++	if (!se_sess->se_tpg) {
++		len = -ENOTCONN;
++		goto unlock;
++	}
++
++	if (se_sess->se_tpg->se_tpg_tfo->sess_get_initiator_sid)
++		isid_len = 15;
++
++	if (strlen(se_sess->se_node_acl->initiatorname) + isid_len + 1 >
++	    PAGE_SIZE) {
++		len = -EINVAL;
++		goto unlock;
++	}
++
++	if (se_sess->se_tpg->se_tpg_tfo->sess_get_initiator_sid) {
++		len = snprintf(page, PAGE_SIZE, "%s 0x%6phN\n",
++			       se_sess->se_node_acl->initiatorname,
++			       &se_sess->sess_bin_isid);
++	} else {
++		len = snprintf(page, PAGE_SIZE, "%s\n",
++			       se_sess->se_node_acl->initiatorname);
++	}
++	len += 1; /* Include NULL terminator */
++
++unlock:
++	spin_unlock_irqrestore(&se_sess->configfs_lock, flags);
++
++	return len;
++}
++
++CONFIGFS_ATTR_RO(target_fabric_session_, initiator_port);
++
++static struct configfs_attribute *target_fabric_session_attrs[] = {
++	&target_fabric_session_attr_initiator_port,
++	NULL,
++};
++
+ static void target_fabric_session_release(struct config_item *item)
+ {
+ 	struct se_session *se_sess = container_of(to_config_group(item),
+@@ -918,6 +965,7 @@ int target_fabric_init_session(struct se_session *se_sess)
+ 
+ 	se_sess->cit.ct_owner = THIS_MODULE;
+ 	se_sess->cit.ct_item_ops = &target_session_item_ops;
++	se_sess->cit.ct_attrs = target_fabric_session_attrs;
+ 	config_group_init_type_name(&se_sess->group, name, &se_sess->cit);
+ 	kfree(name);
+ 	return 0;
 -- 
-2.17.1
+2.7.2
 
