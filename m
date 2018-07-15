@@ -1,73 +1,60 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 31 Jul 2018 19:51:45 +0000
-Subject: [PATCH v2 0/9] block: Consolidate scsi sense buffer usage
-Message-Id: <20180731195155.46664-1-keescook@chromium.org>
+From: Mike Christie <mchristi@redhat.com>
+Date: Sun, 15 Jul 2018 23:16:22 +0000
+Subject: [PATCH 06/15] target: make transport_init_session_tags static
+Message-Id: <1531696591-8558-7-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jens Axboe <axboe@kernel.dk>
-Cc: Kees Cook <keescook@chromium.org>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-This is a follow-up to commit f7068114d45e ("sr: pass down correctly
-sized SCSI sense buffer") which further cleans up and removes needless
-sense character array buffers and "struct request_sense" usage in favor
-of the common "struct scsi_sense_hdr".
+transport_init_session_tags is only called from target_core_transport.c
+so make it static.
 
-First, drop a bunch of unused sense buffers:
- [PATCH 1/9] ide-cd: Drop unused sense buffers
- [PATCH 2/9] scsi: cxlflash: Drop unused sense buffers
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_transport.c | 7 +++----
+ include/target/target_core_fabric.h    | 2 --
+ 2 files changed, 3 insertions(+), 6 deletions(-)
 
-Next, allow the sense buffer to be usable outside SCSI tree:
- [PATCH 3/9] scsi: build scsi_common.o for all scsi passthrough request users
- [PATCH 4/9] target: don't depend on SCSI
-
-Then move all request_sense usage to scsi_sense_hdr:
- [PATCH 5/9] block: Switch struct packet_command to use struct scsi_sense_hdr
-
-And do some further cleanups for scsi_sense_hdr now that we can:
- [PATCH 6/9] ide-cd: Remove redundant sense buffer
- [PATCH 7/9] cdrom: Use struct scsi_sense_hdr internally
-
-Finally add a build-time check to make sure we don't pass bad buffer sizes:
- [PATCH 8/9] libata-scsi: Move sense buffers onto stack
- [PATCH 9/9] scsi: Check sense buffer size at build time
-
-
--Kees
-
-Christoph Hellwig (2):
-  scsi: build scsi_common.o for all scsi passthrough request users
-  target: don't depend on SCSI
-
-Kees Cook (7):
-  ide-cd: Drop unused sense buffers
-  scsi: cxlflash: Drop unused sense buffers
-  block: Switch struct packet_command to use struct scsi_sense_hdr
-  ide-cd: Remove redundant sense buffer
-  cdrom: Use struct scsi_sense_hdr internally
-  libata-scsi: Move sense buffers onto stack
-  scsi: Check sense buffer size at build time
-
- drivers/Makefile                  |  2 +-
- drivers/ata/libata-scsi.c         | 18 +++------
- drivers/block/Kconfig             |  2 +-
- drivers/block/pktcdvd.c           | 36 +++++++++---------
- drivers/cdrom/cdrom.c             | 30 ++++++++-------
- drivers/ide/ide-cd.c              | 58 ++++++++++++++---------------
- drivers/ide/ide-cd.h              |  6 +--
- drivers/ide/ide-cd_ioctl.c        | 62 +++++++++++++------------------
- drivers/scsi/Makefile             |  2 +-
- drivers/scsi/cxlflash/superpipe.c |  8 +---
- drivers/scsi/cxlflash/vlun.c      |  7 +---
- drivers/scsi/scsi_lib.c           |  6 +--
- drivers/scsi/sr_ioctl.c           | 22 +++++------
- drivers/target/Kconfig            |  5 ++-
- include/linux/cdrom.h             |  3 +-
- include/scsi/scsi_cmnd.h          |  6 +--
- include/scsi/scsi_device.h        | 14 ++++++-
- 17 files changed, 136 insertions(+), 151 deletions(-)
-
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 97a1ee5..586f5a6b 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -322,9 +322,9 @@ EXPORT_SYMBOL(transport_alloc_session_tags);
+  *	      each command.
+  * @sup_prot_ops: bitmask that defines which T10-PI modes are supported.
+  */
+-struct se_session *transport_init_session_tags(unsigned int tag_num,
+-					       unsigned int tag_size,
+-					       enum target_prot_op sup_prot_ops)
++static struct se_session *
++transport_init_session_tags(unsigned int tag_num, unsigned int tag_size,
++			    enum target_prot_op sup_prot_ops)
+ {
+ 	struct se_session *se_sess;
+ 	int rc;
+@@ -352,7 +352,6 @@ struct se_session *transport_init_session_tags(unsigned int tag_num,
+ 
+ 	return se_sess;
+ }
+-EXPORT_SYMBOL(transport_init_session_tags);
+ 
+ /*
+  * Called with spin_lock_irqsave(&struct se_portal_group->session_lock called.
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 899da38..5964bc4 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -118,8 +118,6 @@ void transport_init_session(struct se_session *);
+ struct se_session *transport_alloc_session(enum target_prot_op);
+ int transport_alloc_session_tags(struct se_session *, unsigned int,
+ 		unsigned int);
+-struct se_session *transport_init_session_tags(unsigned int, unsigned int,
+-		enum target_prot_op);
+ void	__transport_register_session(struct se_portal_group *,
+ 		struct se_node_acl *, struct se_session *, void *);
+ void	transport_register_session(struct se_portal_group *,
 -- 
-2.17.1
+2.7.2
 
