@@ -1,12 +1,38 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Sun, 15 Jul 2018 23:16:25 +0000
-Subject: [PATCH 09/15] target: add session dir in configfs
-Message-Id: <1531696591-8558-10-git-send-email-mchristi@redhat.com>
+Date: Mon, 16 Jul 2018 18:47:02 +0000
+Subject: Re: [PATCH 09/15] target: add session dir in configfs
+Message-Id: <5B4CE826.8080201@redhat.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------070508000701020206050807"
 List-Id: <target-devel.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <1531696591-8558-10-git-send-email-mchristi@redhat.com>
+In-Reply-To: <1531696591-8558-10-git-send-email-mchristi@redhat.com>
 To: target-devel@vger.kernel.org
+
+This is a multi-part message in MIME format.
+--------------070508000701020206050807
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+
+On 07/15/2018 06:16 PM, Mike Christie wrote:
+> TODO:
+> 1. handle target_fabric_register_session failure in iscsi target.
+> 
+
+I fixed this in the updated attached patch. So Bodo and reviewers please
+use that instead.
+
+--------------070508000701020206050807
+Content-Type: text/x-patch;
+ name="0009-target-add-session-dir-in-configfs.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="0009-target-add-session-dir-in-configfs.patch"
+
+From 895edd5d20df208c3dfae8d826a3c3fc9999bd68 Mon Sep 17 00:00:00 2001
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 16 Jul 2018 13:37:12 -0500
+Subject: [PATCH 09/15] target: add session dir in configfs
 
 Drivers like iscsi will dump one of the session's info in
 a info file under the acl. The problem with this is that
@@ -25,49 +51,87 @@ dir under the tpg. We can then export info like initiator
 name and if needed isid. These patches will then also add
 some files to test sessions.
 
-TODO:
-1. handle target_fabric_register_session failure in iscsi target.
-
 Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/iscsi/iscsi_target.c          |  4 ++
- drivers/target/iscsi/iscsi_target_login.c    |  3 ++
+ drivers/target/iscsi/iscsi_target.c          |  3 ++
+ drivers/target/iscsi/iscsi_target_login.c    |  6 ++-
+ drivers/target/iscsi/iscsi_target_nego.c     | 24 ++++++++++--
  drivers/target/target_core_fabric_configfs.c | 47 +++++++++++++++++++++++
  drivers/target/target_core_internal.h        |  2 +
  drivers/target/target_core_transport.c       | 57 ++++++++++++++++++++--------
+ include/target/iscsi/iscsi_target_core.h     |  1 +
  include/target/target_core_base.h            |  3 ++
  include/target/target_core_fabric.h          |  5 ++-
- 7 files changed, 105 insertions(+), 16 deletions(-)
+ 9 files changed, 127 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 6d81a59..793ee98 100644
+index 6d81a59..f350c68 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4324,6 +4324,10 @@ int iscsit_close_session(struct iscsi_session *sess)
+@@ -4324,6 +4324,9 @@ int iscsit_close_session(struct iscsi_session *sess)
  	iscsit_stop_time2retain_timer(sess);
  	spin_unlock_bh(&se_tpg->session_lock);
  
-+
-+	if (tpg != iscsit_global->discovery_tpg)
++	if (sess->fabric_registered)
 +		target_fabric_unregister_session(sess->se_sess);
 +
  	/*
  	 * transport_deregister_session_configfs() will clear the
  	 * struct se_node_acl->nacl_sess pointer now as a iscsi_np process context
 diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index d6a4b93..48a9522 100644
+index d6a4b93..4f80965 100644
 --- a/drivers/target/iscsi/iscsi_target_login.c
 +++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -778,6 +778,9 @@ void iscsi_post_login_handler(
- 
- 	iscsit_determine_maxcmdsn(sess);
- 
-+	if (tpg != iscsit_global->discovery_tpg)
-+		target_fabric_register_session(se_tpg, se_sess);
+@@ -1145,8 +1145,12 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+ 				   ISCSI_LOGIN_STATUS_INIT_ERR);
+ 	if (!zero_tsih || !conn->sess)
+ 		goto old_sess_out;
+-	if (conn->sess->se_sess)
++	if (conn->sess->se_sess) {
++		if (conn->sess->fabric_registered)
++			target_fabric_unregister_session(conn->sess->se_sess);
 +
- 	spin_lock_bh(&se_tpg->session_lock);
- 	__transport_register_session(&sess->tpg->tpg_se_tpg,
- 			se_sess->se_node_acl, se_sess, sess);
+ 		transport_free_session(conn->sess->se_sess);
++	}
+ 	kfree(conn->sess->sess_ops);
+ 	kfree(conn->sess);
+ 	conn->sess = NULL;
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 8a5e8d1..fe08e40 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -1279,11 +1279,27 @@ int iscsi_target_locate_portal(
+ 	tag_size = sizeof(struct iscsi_cmd) + conn->conn_transport->priv_size;
+ 
+ 	ret = transport_alloc_session_tags(sess->se_sess, tag_num, tag_size);
+-	if (ret < 0) {
+-		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
+-				    ISCSI_LOGIN_STATUS_NO_RESOURCES);
+-		ret = -1;
++	if (ret < 0)
++		goto return_oom;
++
++	if (conn->tpg != iscsit_global->discovery_tpg) {
++		ret = target_fabric_register_session(&conn->tpg->tpg_se_tpg,
++						     sess->se_sess);
++		if (ret) {
++			pr_err("Could not register session to configfs. Err %d.\n",
++			       ret);
++			/* tags and nacl released when session is freed */
++			goto return_oom;
++		}
++		sess->fabric_registered = true;
+ 	}
++
++	goto out;
++
++return_oom:
++	iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
++			    ISCSI_LOGIN_STATUS_NO_RESOURCES);
++	ret = -1;
+ out:
+ 	kfree(tmpbuf);
+ 	return ret;
 diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
 index 1fa436e..497fa01 100644
 --- a/drivers/target/target_core_fabric_configfs.c
@@ -145,7 +209,7 @@ index 0c66355..73c90ae 100644
  	struct config_item_type tf_tpg_nacl_cit;
  	struct config_item_type tf_tpg_nacl_base_cit;
  	struct config_item_type tf_tpg_nacl_attrib_cit;
-@@ -154,6 +155,7 @@ void	target_qf_do_work(struct work_struct *work);
+@@ -154,6 +155,7 @@ void	transport_dump_dev_info(struct se_device *, struct se_lun *,
  bool	target_check_wce(struct se_device *dev);
  bool	target_check_fua(struct se_device *dev);
  void	__target_execute_cmd(struct se_cmd *, bool);
@@ -182,7 +246,7 @@ index 57279fe..0efb3dc 100644
  }
  EXPORT_SYMBOL(transport_alloc_session);
  
-@@ -443,6 +454,7 @@ target_setup_session(struct se_portal_group *tpg,
+@@ -443,6 +454,7 @@ struct se_session *
  				     struct se_session *, void *))
  {
  	struct se_session *sess;
@@ -190,7 +254,7 @@ index 57279fe..0efb3dc 100644
  
  	/*
  	 * If the fabric driver is using percpu-ida based pre allocation
-@@ -459,23 +471,32 @@ target_setup_session(struct se_portal_group *tpg,
+@@ -459,23 +471,32 @@ struct se_session *
  	sess->se_node_acl = core_tpg_check_initiator_node_acl(tpg,
  					(unsigned char *)initiatorname);
  	if (!sess->se_node_acl) {
@@ -261,7 +325,7 @@ index 57279fe..0efb3dc 100644
  }
  EXPORT_SYMBOL(transport_free_session);
  
-@@ -642,6 +668,7 @@ EXPORT_SYMBOL(transport_deregister_session);
+@@ -642,6 +668,7 @@ void transport_deregister_session(struct se_session *se_sess)
  
  void target_remove_session(struct se_session *se_sess)
  {
@@ -269,6 +333,18 @@ index 57279fe..0efb3dc 100644
  	transport_deregister_session_configfs(se_sess);
  	transport_deregister_session(se_sess);
  }
+diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+index 10031dc..e6ff787 100644
+--- a/include/target/iscsi/iscsi_target_core.h
++++ b/include/target/iscsi/iscsi_target_core.h
+@@ -688,6 +688,7 @@ struct iscsi_session {
+ 	struct completion	session_waiting_on_uc_comp;
+ 	struct timer_list	time2retain_timer;
+ 	struct iscsi_sess_ops	*sess_ops;
++	bool			fabric_registered;
+ 	struct se_session	*se_sess;
+ 	struct iscsi_portal_group *tpg;
+ } ____cacheline_aligned;
 diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
 index d5efde8..01caaa3 100644
 --- a/include/target/target_core_base.h
@@ -294,7 +370,7 @@ diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fa
 index aa69b13..36077d6 100644
 --- a/include/target/target_core_fabric.h
 +++ b/include/target/target_core_fabric.h
-@@ -128,7 +128,10 @@ void	transport_free_session(struct se_session *);
+@@ -128,7 +128,10 @@ void	transport_register_session(struct se_portal_group *,
  void	target_put_nacl(struct se_node_acl *);
  void	transport_deregister_session_configfs(struct se_session *);
  void	transport_deregister_session(struct se_session *);
@@ -307,5 +383,7 @@ index aa69b13..36077d6 100644
  void	transport_init_se_cmd(struct se_cmd *,
  		const struct target_core_fabric_ops *,
 -- 
-2.7.2
+1.8.3.1
 
+
+--------------070508000701020206050807--
