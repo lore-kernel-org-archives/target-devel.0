@@ -1,7 +1,7 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Wed, 18 Jul 2018 22:23:13 +0000
+From: Christoph Hellwig <hch@infradead.org>
+Date: Thu, 19 Jul 2018 20:42:16 +0000
 Subject: Re: [PATCH 07/15] target: rename target_alloc_session
-Message-Id: <ea9523dda3937c20fb55bd2dbe873f60efe286f1.camel@wdc.com>
+Message-Id: <20180719204216.GD14654@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <1531696591-8558-8-git-send-email-mchristi@redhat.com>
 In-Reply-To: <1531696591-8558-8-git-send-email-mchristi@redhat.com>
@@ -10,20 +10,24 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Sun, 2018-07-15 at 18:16 -0500, Mike Christie wrote:
-+AD4- Rename target+AF8-alloc+AF8-session to target+AF8-setup+AF8-session to avoid
-+AD4- confusion with the other transport session allocation
-+AD4- function that only allocates the session and because
-+AD4- the target+AF8-alloc+AF8-session does so more. It allocates the
-                                  +AF4-
-                                  much?
-+AD4- session, sets up the nacl and egisters the session.
-+AD4- 
-+AD4- The next patch will then add a remove function to match the
-+AD4- setup in this one, so it should make sense for all drivers,
-+AD4- except iscsi, to just call those 2 functions to setup and remove
-+AD4- a session.
+On Sun, Jul 15, 2018 at 06:16:23PM -0500, Mike Christie wrote:
+> Rename target_alloc_session to target_setup_session to avoid
+> confusion with the other transport session allocation
+> function that only allocates the session and because
+> the target_alloc_session does so more. It allocates the
+> session, sets up the nacl and egisters the session.
+> 
+> The next patch will then add a remove function to match the
+> setup in this one, so it should make sense for all drivers,
+> except iscsi, to just call those 2 functions to setup and remove
+> a session.
 
-Anyway:
+Ok.
 
-Reviewed-by: Bart Van Assche +ADw-bart.vanassche+AEA-wdc.com+AD4-
+> iscsi will continue to be the odd driver.
+
+Wish we could sort that out eventually..
+
+Otherwise looks fine:
+
+Reviewed-by: Christoph Hellwig <hch@lst.de>
