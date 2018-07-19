@@ -1,7 +1,7 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Wed, 18 Jul 2018 22:21:25 +0000
+From: Christoph Hellwig <hch@infradead.org>
+Date: Thu, 19 Jul 2018 20:41:39 +0000
 Subject: Re: [PATCH 06/15] target: make transport_init_session_tags static
-Message-Id: <025591eeef7a297a4d9379b3a50fd5b721f5b194.camel@wdc.com>
+Message-Id: <20180719204139.GC14654@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <1531696591-8558-7-git-send-email-mchristi@redhat.com>
 In-Reply-To: <1531696591-8558-7-git-send-email-mchristi@redhat.com>
@@ -10,8 +10,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Sun, 2018-07-15 at 18:16 -0500, Mike Christie wrote:
-+AD4- transport+AF8-init+AF8-session+AF8-tags is only called from target+AF8-core+AF8-transport.c
-+AD4- so make it static.
+On Sun, Jul 15, 2018 at 06:16:22PM -0500, Mike Christie wrote:
+> transport_init_session_tags is only called from target_core_transport.c
+> so make it static.
+> 
+> Signed-off-by: Mike Christie <mchristi@redhat.com>
 
-Reviewed-by: Bart Van Assche +ADw-bart.vanassche+AEA-wdc.com+AD4-
+Looks fine by itself:
+
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+
+Although folding it into the only caller would be even better.
