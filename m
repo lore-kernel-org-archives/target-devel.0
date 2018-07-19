@@ -1,7 +1,7 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Wed, 18 Jul 2018 22:46:03 +0000
+From: Mike Christie <mchristi@redhat.com>
+Date: Thu, 19 Jul 2018 00:22:00 +0000
 Subject: Re: [PATCH 12/15] target: add callout to test a session
-Message-Id: <213b42d2e36d3377297b338e463951605578ee5c.camel@wdc.com>
+Message-Id: <5B4FD9A8.7000807@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1531696591-8558-13-git-send-email-mchristi@redhat.com>
 In-Reply-To: <1531696591-8558-13-git-send-email-mchristi@redhat.com>
@@ -10,14 +10,25 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Sun, 2018-07-15 at 18:16 -0500, Mike Christie wrote:
-+AD4- +-       int (+ACo-test+AF8-session)(struct se+AF8-session +ACo-, u8 timeout)+ADs-
+On 07/18/2018 05:46 PM, Bart Van Assche wrote:
+> On Sun, 2018-07-15 at 18:16 -0500, Mike Christie wrote:
+>> +       int (*test_session)(struct se_session *, u8 timeout);
+> 
+> Does any of the patches in this series define a test_session callback
+> function?
 
-Does any of the patches in this series define a test+AF8-session callback
-function?
+Patch 14 does.
 
-What is the unit of the timeout parameter? 1/HZ, ms or s?
+> 
+> What is the unit of the timeout parameter? 1/HZ, ms or s?
+> 
 
-Thanks,
+It is seconds.
 
-Bart.
+I will add comments to document the callout requirements and arguments.
+
+> Thanks,
+> 
+> Bart.
+> 
+
