@@ -1,31 +1,17 @@
-From: "Simon Dike" <guimszeng@leesgenerallandscaping.com>
-Date: Mon, 16 Jul 2018 13:34:01 +0000
-Subject: editing of your photos
-Message-Id: <79abfbec520a7c01b09481f8a3d582e0@aquagrade.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 23 Jul 2018 19:07:42 +0000
+Subject: [PATCH 0/9] tcmu: configuration fixes and cleanups
+Message-Id: <1532372871-7128-1-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <9eb4e2b0c932b76e0b54caa39aaca44a@aquagrade.com>
-In-Reply-To: <9eb4e2b0c932b76e0b54caa39aaca44a@aquagrade.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-We can process 400+ images per day.
-If you need any image editing, please let us know.
+The following patches were made over Martin's for-next branch.
 
-Photos cut out;
-Photos clipping path;
-Photos masking;
-Photo shadow creation;
-Photos retouching;
-Beauty Model retouching on skin, face, body;
-Glamour retouching;
-Products retouching.
+The first patch fixes a locking bug in the command setup path. The rest
+of the patches fix several bugs and cleanup the setup and configuration
+code paths.
 
-We can give you testing for your photos.
-
-Turnaround time is fast
-
-Thanks,
-Simon
 
