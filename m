@@ -1,36 +1,34 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Sun, 15 Jul 2018 23:16:16 +0000
-Subject: [RFC PATCH 00/15] target: export session info
-Message-Id: <1531696591-8558-1-git-send-email-mchristi@redhat.com>
+Date: Mon, 23 Jul 2018 19:07:43 +0000
+Subject: [PATCH 1/9] target_core_user: fix double unlock
+Message-Id: <1532372871-7128-2-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Currently, session info is in 3 places:
+The caller of queue_cmd_ring grabs and releases the lock, so
+the tcmu_setup_cmd_timer failure handling inside queue_cmd_ring
+should not call mutex_unlock.
 
-1. iscsi has the info file under initiator acls.
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-2. In the tpg dir iscsi and qla have the dynamic sessions.
-
-3. Some lun stat files return some initiator info.
-
-The problem with these is for:
-
-1 and 3 - They only display 1 session's info per target port.
-In multipath and HA setups you will have multiple initiator ports
-connected to each target port, so for iscsi the isid will be different
-for each session.
-
-2 - We only get the initiator name. For iscsi we want the isid. Also
-if we have a lot of sessions we are limited by the PAGE_SIZE file limit.
-
-To handle all these issues these patches add session info under
-
-/sys/kernel/config/target/iscsi/$target_name/tpgt_$N/sessions
-
-This only a RFC right now. There is still a bug in the iscsi code
-where if configfs registration fails we have to cleanup the
-session.
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 847707a..fafe65f 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1066,7 +1066,6 @@ static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
+ 				   &udev->cmd_timer);
+ 	if (ret) {
+ 		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
+-		mutex_unlock(&udev->cmdr_lock);
+ 
+ 		*scsi_err = TCM_OUT_OF_RESOURCES;
+ 		return -1;
+-- 
+1.8.3.1
 
