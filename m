@@ -1,56 +1,32 @@
-From: "Vivek Shah" <viektian@elderluxe.com>
-Date: Tue, 31 Jul 2018 08:54:38 +0000
-Subject: Get your Mobile App Development started
-Message-Id: <130064c6e5af5566440710bd4a1d77ee@medygateinc.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 23 Jul 2018 19:07:44 +0000
+Subject: [PATCH 2/9] tcmu: initialize list head
+Message-Id: <1532372871-7128-3-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hello,
+Use INIT_LIST_HEAD to initialize node list head.
 
-Are you in search of a suitable app development agency to nurture and
-transform your creative app idea into reality?
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_user.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Well, your search ends here.
-
-We are based in India. We are in the mobile app development domain for last
-seven years and with
-a team of 120+ web and mobile app development professionals, we have served
-the global clientele.
-
-Talking about the mobile apps, we have built over 350 mobile apps ranging
-from a simple business
-app to complex enterprise app to date.
-
-Our expertise in iOS, Android, Ionic, and PhoneGap-based platforms and
-various libraries can help
-you reach a huge smartphone-using audience with the following services:
-
-• Mobile App Consulting
-• Mobile App UI/UX Designing
-• Mobile App Development
-• Mobile App Maintenance & Support
-• Website and eCommerce portal Development
-
-We render our enterprise-grade app development services across different
-industry sectors including
-retail, games and entertainment, lifestyle, social media, healthcare and
-hospitality, BFSI, eCommerce
-(m-commerce), food and beverages, and the like.
-
-We will gladly share the references of our work on your demand.
-
-Here is how you can start expanding your business online:
-1. Respond to this email
-2. We will provide an Action Plan and Quote
-3. Get your Mobile App Development started
-
-That's it for now! Thanks for your time.
-
-Awaiting your reply,
-
-Regards,
-Vivek Shah
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index fafe65f..b010ed7 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1342,6 +1342,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+ 	udev->max_blocks = DATA_BLOCK_BITS_DEF;
+ 	mutex_init(&udev->cmdr_lock);
+ 
++	INIT_LIST_HEAD(&udev->node);
+ 	INIT_LIST_HEAD(&udev->timedout_entry);
+ 	INIT_LIST_HEAD(&udev->cmdr_queue);
+ 	idr_init(&udev->commands);
+-- 
+1.8.3.1
 
