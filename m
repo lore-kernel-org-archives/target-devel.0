@@ -1,25 +1,41 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Thu, 19 Jul 2018 20:39:54 +0000
-Subject: Re: [PATCH 05/15] target: remove sess_get_index
-Message-Id: <20180719203954.GB14654@infradead.org>
+From: "Roland" <lalefinlers@kidinventor.com>
+Date: Tue, 24 Jul 2018 11:39:36 +0000
+Subject: editing for your photos
+Message-Id: <0c6afa387f8a07d84418899480ac33bd@chillinproducts.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1531696591-8558-6-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1531696591-8558-6-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-On Sun, Jul 15, 2018 at 06:16:21PM -0500, Mike Christie wrote:
-> sess_get_index is meaninless for most drivers. For iscsi, it
-> is the same as the se_session->sid now and for fcoe it was just
-> the port id which would not work if multiple initiators
-> connected to the same target port. So just use the se_session sid
-> for all drivers and remove sess_get_index callout.
+I would like to speak with the person that managing photos for your
+company?
 
-Use up all your space again (not going to complain for any further
-patches).
+We provide image editing like – photos cutting out and retouching.
 
-Modulo that and the type that Bart found:
+Enhancing your images is just a part of what we can do for your business.
+Whether you’re an ecommerce
+store or portrait photographer, real estate professional, or an e-Retailer,
+we are your personal team
+of photo editors that integrate seamlessly with your business.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Our mainly services are:
+
+ . Cut out, masking, clipping path, deep etching, transparent background
+ . Colour correction, black and white, light and shadows etc.
+ . Dust cleaning, spot cleaning
+ . Beauty retouching, skin retouching, face retouching, body retouching
+ . Fashion/Beauty Image Retouching
+ . Product image Retouching
+ . Real estate image Retouching
+ . Wedding & Event Album Design.
+ . Restoration and repair old images
+ . Vector Conversion
+ . Portrait image Retouching
+
+We can provide you editing test on your photos.
+Please reply if you are interested.
+
+Thanks,
+Roland
+
