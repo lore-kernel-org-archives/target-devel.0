@@ -1,34 +1,71 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Thu, 19 Jul 2018 20:38:21 +0000
-Subject: Re: [PATCH 03/15] target: fix __transport_register_session locking
-Message-Id: <20180719203821.GA14654@infradead.org>
+From: Bart Van Assche <bart.vanassche@wdc.com>
+Date: Thu, 26 Jul 2018 17:20:37 +0000
+Subject: [PATCH] Revert "scsi: target/iscsi: Reduce number of __iscsit_free_cmd() callers"
+Message-Id: <20180726172037.2658-1-bart.vanassche@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1531696591-8558-4-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1531696591-8558-4-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Sun, Jul 15, 2018 at 06:16:19PM -0500, Mike Christie wrote:
-> When __transport_register_session is called from
-> transport_register_session irqs will already have been disabled,
-> so we do not want the unlock irq call to enable them until
-> the higher level has done the final
-> spin_unlock_irqrestore/spin_unlock_irq.
+The cxgbit driver expects that __iscsit_free_cmd() is called before the
+target core frees the command page list. Since this patch breaks the
+cxgbit driver, revert it.
 
-if you use up your line length this could be:
+Reported-by: Varun Prakash <varun@chelsio.com>
+Fixes: ed88f055788a ("scsi: target/iscsi: Reduce number of __iscsit_free_cmd() callers")
+Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: Varun Prakash <varun@chelsio.com>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Christoph Hellwig <hch@lst.de>
+---
+ drivers/target/iscsi/iscsi_target.c          | 2 ++
+ drivers/target/iscsi/iscsi_target_configfs.c | 1 -
+ drivers/target/iscsi/iscsi_target_util.c     | 4 +++-
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
-so we do not want the unlock irq call to enable them until the higher
-level has done the final spin_unlock_irqrestore/spin_unlock_irq.
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index d547dcd625d9..8e223799347a 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -497,6 +497,8 @@ void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
+ 	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
+ 		list_del_init(&cmd->i_conn_node);
+ 	spin_unlock_bh(&conn->cmd_lock);
++
++	__iscsit_free_cmd(cmd, true);
+ }
+ EXPORT_SYMBOL(iscsit_aborted_task);
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 1fcd9bc7189d..95d0a22b2ad6 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -1544,7 +1544,6 @@ static void lio_release_cmd(struct se_cmd *se_cmd)
+ 	struct iscsi_cmd *cmd = container_of(se_cmd, struct iscsi_cmd, se_cmd);
+ 
+ 	pr_debug("Entering lio_release_cmd for se_cmd: %p\n", se_cmd);
+-	__iscsit_free_cmd(cmd, true);
+ 	iscsit_release_cmd(cmd);
+ }
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+index 5a645b5f1eb4..8cfcf9033507 100644
+--- a/drivers/target/iscsi/iscsi_target_util.c
++++ b/drivers/target/iscsi/iscsi_target_util.c
+@@ -772,8 +772,10 @@ void iscsit_free_cmd(struct iscsi_cmd *cmd, bool shutdown)
+ 	__iscsit_free_cmd(cmd, shutdown);
+ 	if (se_cmd) {
+ 		rc = transport_generic_free_cmd(se_cmd, shutdown);
+-		if (!rc && shutdown && se_cmd->se_sess)
++		if (!rc && shutdown && se_cmd->se_sess) {
++			__iscsit_free_cmd(cmd, shutdown);
+ 			target_put_sess_cmd(se_cmd);
++		}
+ 	} else {
+ 		iscsit_release_cmd(cmd);
+ 	}
+-- 
+2.18.0
 
-
-> 
-> This has __transport_register_session use the save/restore
-> call.
-
-Can be condensed as well.
-
-Otherwise looks good:
-
-Reviewed-by: Christoph Hellwig <hch@lst.de>
