@@ -1,7 +1,7 @@
-From: Varun Prakash <varun@chelsio.com>
-Date: Thu, 26 Jul 2018 11:24:04 +0000
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Thu, 26 Jul 2018 17:10:20 +0000
 Subject: Re: [PATCH 13/20] target/iscsi: Reduce number of __iscsit_free_cmd() callers
-Message-Id: <20180726111000.GA2015@chelsio.com>
+Message-Id: <2786ae3d77b99be8c6f384fbab12be357f858a15.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180622215307.8758-14-bart.vanassche@wdc.com>
 In-Reply-To: <20180622215307.8758-14-bart.vanassche@wdc.com>
@@ -10,37 +10,21 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Sat, Jun 23, 2018 at 03:23:00AM +0530, Bart Van Assche wrote:
-> Instead of calling __iscsit_free_cmd() from inside iscsit_aborted_task()
-> if a command has been aborted and from inside iscsit_free_cmd() if a
-> command has not been aborted, call __iscsit_free_cmd() from inside
-> lio_release_cmd(). The latter function is namely called for all commands
-> once the reference count has dropped to zero.
-> 
-> Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-> Reviewed-by: Mike Christie <mchristi@redhat.com>
-> Cc: Varun Prakash <varun@chelsio.com>
-> Cc: Hannes Reinecke <hare@suse.com>
-> Cc: Christoph Hellwig <hch@lst.de>
-> ---
->  drivers/target/iscsi/iscsi_target.c          | 2 --
->  drivers/target/iscsi/iscsi_target_configfs.c | 1 +
->  drivers/target/iscsi/iscsi_target_util.c     | 4 +---
->  3 files changed, 2 insertions(+), 5 deletions(-)
-> 
+On Thu, 2018-07-26 at 16:42 +-0530, Varun Prakash wrote:
++AD4- cxgbit driver is not working with this patch as transport+AF8-free+AF8-pages()
++AD4- is called before calling conn-+AD4-conn+AF8-transport-+AD4-iscsit+AF8-release+AF8-cmd(), cxgbit
++AD4- driver calls dma+AF8-unmap+AF8-sg() in -+AD4-iscsit+AF8-release+AF8-cmd(), transport+AF8-free+AF8-pages()
++AD4- frees the scatterlist pages so dma unmap will not work.
++AD4- 
++AD4- cxgbit driver needs a callback before target frees the pages
++AD4- so that it can dma unmap.
++AD4- 
++AD4- We can remove -+AD4-iscsit+AF8-release+AF8-cmd() from +AF8AXw-iscsit+AF8-free+AF8-cmd() and call it
++AD4- directly from iscsit+AF8-free+AF8-cmd(), iscsit+AF8-aborted+AF8-task().    
 
-Hi Bart,
+Hello Varun,
 
-cxgbit driver is not working with this patch as transport_free_pages()
-is called before calling conn->conn_transport->iscsit_release_cmd(), cxgbit
-driver calls dma_unmap_sg() in ->iscsit_release_cmd(), transport_free_pages()
-frees the scatterlist pages so dma unmap will not work.
+Thank you for your report. Since no other patches in this series depend on
+this patch, I will send a revert.
 
-cxgbit driver needs a callback before target frees the pages
-so that it can dma unmap.
-
-We can remove ->iscsit_release_cmd() from __iscsit_free_cmd() and call it
-directly from iscsit_free_cmd(), iscsit_aborted_task().    
-
-Thanks
-Varun 
+Bart.
