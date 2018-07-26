@@ -1,27 +1,52 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Fri, 13 Jul 2018 03:05:06 +0000
-Subject: Re: [PATCH] target: iscsi: cxgbit: fix max iso npdu calculation
-Message-Id: <yq11sc7j0nx.fsf@oracle.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Thu, 26 Jul 2018 16:48:22 +0000
+Subject: Re: [PATCH 18/26] target/iscsi: Allocate session IDs from an IDA
+Message-Id: <5B59FB56.9090901@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1531326823-11862-1-git-send-email-varun@chelsio.com>
-In-Reply-To: <1531326823-11862-1-git-send-email-varun@chelsio.com>
+References: <20180621212835.5636-1-willy@infradead.org>
+ <20180621212835.5636-19-willy@infradead.org>
+In-Reply-To: <20180621212835.5636-19-willy@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Matthew Wilcox <willy@infradead.org>, linux-kernel@vger.kernel.org
+Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Bart Van Assche <bart.vanassche@wdc.com>, Hannes Reinecke <hare@suse.com>, Kees Cook <keescook@chromium.org>, Varun Prakash <varun@chelsio.com>, Sagi Grimberg <sagi@grimberg.me>, Philippe Ombredanne <pombredanne@nexb.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kate Stewart <kstewart@linuxfoundation.org>, Thomas Gleixner <tglx@linutronix.de>, "David S. Miller" <davem@davemloft.net>, Denys Vlasenko <dvlasenk@redhat.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+
+On 06/21/2018 04:28 PM, Matthew Wilcox wrote:
+
+> @@ -1163,11 +1157,9 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+>  		goto old_sess_out;
+>  	if (conn->sess->se_sess)
+>  		transport_free_session(conn->sess->se_sess);
+> -	if (conn->sess->session_index != 0) {
+> -		spin_lock_bh(&sess_idr_lock);
+> -		idr_remove(&sess_idr, conn->sess->session_index);
+> -		spin_unlock_bh(&sess_idr_lock);
+
+This code looks buggy. We will probably NULL pointer oops before we hit it.
+
+It looks like the session_index check was supposed to detect when login
+fails in the middle of doing login, so that code probably wanted to do:
+
+idr_alloc(&sess_idr, NULL, 1, 0, GFP_NOWAIT);
+
+The problem is that iscsi_login_zero_tsih_s1 sets conn->sess early in
+iscsi_login_set_conn_values. If the function fails later like when we
+alloc the idr it does kfree(sess) and leaves the conn->sess pointer set.
+iscsi_login_zero_tsih_s1 then returns -Exyz and we then call
+iscsi_target_login_sess_out and access the freed memory above.
+
+So I am not sure what we want to do here for your patch since it is not
+adding any new bugs. Just merge your patch now and I can send a fix for
+the above bug over it?
 
 
-Varun,
+> -	}
+> +	/* Um, 0 is a valid ID.  I suppose we never free it? */
+> +	if (conn->sess->session_index != 0)
+> +		ida_free(&sess_ida, conn->sess->session_index);
+>  	kfree(conn->sess->sess_ops);
+>  	kfree(conn->sess);
+>  	conn->sess = NULL;
+> 
 
-> - rounddown CXGBIT_MAX_ISO_PAYLOAD by csk->emss before
-> calculating max_iso_npdu to get max TCP payload
-> in multiple of mss.
->
-> - call cxgbit_set_digest() before cxgbit_set_iso_npdu()
-> to set csk->submode, it is used in calculating
-> number of iso pdus.
-
-Applied to 4.18/scsi-fixes. Thank you!
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
