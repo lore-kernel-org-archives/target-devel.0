@@ -1,34 +1,52 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 19 Jul 2018 00:22:00 +0000
-Subject: Re: [PATCH 12/15] target: add callout to test a session
-Message-Id: <5B4FD9A8.7000807@redhat.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 31 Jul 2018 19:51:49 +0000
+Subject: [PATCH v2 4/9] target: don't depend on SCSI
+Message-Id: <20180731195155.46664-5-keescook@chromium.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1531696591-8558-13-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1531696591-8558-13-git-send-email-mchristi@redhat.com>
+References: <20180731195155.46664-1-keescook@chromium.org>
+In-Reply-To: <20180731195155.46664-1-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Kees Cook <keescook@chromium.org>, Christoph Hellwig <hch@lst.de>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/18/2018 05:46 PM, Bart Van Assche wrote:
-> On Sun, 2018-07-15 at 18:16 -0500, Mike Christie wrote:
->> +       int (*test_session)(struct se_session *, u8 timeout);
-> 
-> Does any of the patches in this series define a test_session callback
-> function?
+From: Christoph Hellwig <hch@lst.de>
 
-Patch 14 does.
+The core target code only needs code from scsi_common.c, which is now
+separately selectable.
 
-> 
-> What is the unit of the timeout parameter? 1/HZ, ms or s?
-> 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ drivers/target/Kconfig | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-It is seconds.
-
-I will add comments to document the callout requirements and arguments.
-
-> Thanks,
-> 
-> Bart.
-> 
+diff --git a/drivers/target/Kconfig b/drivers/target/Kconfig
+index 4c44d7bed01a..cb6f32ce7de8 100644
+--- a/drivers/target/Kconfig
++++ b/drivers/target/Kconfig
+@@ -1,10 +1,10 @@
+ 
+ menuconfig TARGET_CORE
+ 	tristate "Generic Target Core Mod (TCM) and ConfigFS Infrastructure"
+-	depends on SCSI && BLOCK
++	depends on BLOCK
+ 	select CONFIGFS_FS
+ 	select CRC_T10DIF
+-	select BLK_SCSI_REQUEST # only for scsi_command_size_tbl..
++	select BLK_SCSI_REQUEST
+ 	select SGL_ALLOC
+ 	default n
+ 	help
+@@ -29,6 +29,7 @@ config TCM_FILEIO
+ 
+ config TCM_PSCSI
+ 	tristate "TCM/pSCSI Subsystem Plugin for Linux/SCSI"
++	depends on SCSI
+ 	help
+ 	Say Y here to enable the TCM/pSCSI subsystem plugin for non-buffered
+ 	passthrough access to Linux/SCSI device
+-- 
+2.17.1
 
