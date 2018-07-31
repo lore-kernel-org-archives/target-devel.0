@@ -1,133 +1,131 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 23 Jul 2018 19:07:45 +0000
-Subject: [PATCH 3/9] target: add helper to check if dev is configured
-Message-Id: <1532372871-7128-4-git-send-email-mchristi@redhat.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 31 Jul 2018 19:51:54 +0000
+Subject: [PATCH v2 9/9] scsi: Check sense buffer size at build time
+Message-Id: <20180731195155.46664-10-keescook@chromium.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20180731195155.46664-1-keescook@chromium.org>
+In-Reply-To: <20180731195155.46664-1-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Kees Cook <keescook@chromium.org>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This just adds a helper function to check if a device is configured and
-it converts the target users to use it. The next patch will add a
-backend module user so those types of modules do not have to know the
-lio core details.
+To avoid introducing problems like those fixed in commit f7068114d45e
+("sr: pass down correctly sized SCSI sense buffer"), this creates a macro
+wrapper for scsi_execute() that verifies the size of the sense buffer
+similar to what was done for command string sizes in commit 3756f6401c30
+("exec: avoid gcc-8 warning for get_task_comm").
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+Another solution could be to add a length argument to scsi_execute(),
+but this function already takes a lot of arguments and Jens was not fond
+of that approach.
+
+Additionally, this moves the SCSI_SENSE_BUFFERSIZE definition into
+scsi_device.h, and removes a redundant include for scsi_device.h from
+scsi_cmnd.h.
+
+Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- drivers/target/target_core_configfs.c        | 8 ++++----
- drivers/target/target_core_device.c          | 6 +++---
- drivers/target/target_core_fabric_configfs.c | 3 ++-
- include/target/target_core_backend.h         | 4 ++++
- 4 files changed, 13 insertions(+), 8 deletions(-)
+ drivers/scsi/scsi_lib.c    |  6 +++---
+ include/scsi/scsi_cmnd.h   |  6 ++----
+ include/scsi/scsi_device.h | 14 +++++++++++++-
+ 3 files changed, 18 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 93d3ff3..f6b1549 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -810,7 +810,7 @@ static ssize_t pi_prot_type_store(struct config_item *item,
- 		       dev->transport->name);
- 		return -ENOSYS;
- 	}
--	if (!(dev->dev_flags & DF_CONFIGURED)) {
-+	if (!target_dev_configured(dev)) {
- 		pr_err("DIF protection requires device to be configured\n");
- 		return -ENODEV;
- 	}
-@@ -859,7 +859,7 @@ static ssize_t pi_prot_format_store(struct config_item *item,
- 		       dev->transport->name);
- 		return -ENOSYS;
- 	}
--	if (!(dev->dev_flags & DF_CONFIGURED)) {
-+	if (!target_dev_configured(dev)) {
- 		pr_err("DIF protection format requires device to be configured\n");
- 		return -ENODEV;
- 	}
-@@ -1948,7 +1948,7 @@ static ssize_t target_dev_enable_show(struct config_item *item, char *page)
- {
- 	struct se_device *dev = to_device(item);
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index e9b4f279d29c..718c2bec4516 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -238,7 +238,7 @@ void scsi_queue_insert(struct scsi_cmnd *cmd, int reason)
  
--	return snprintf(page, PAGE_SIZE, "%d\n", !!(dev->dev_flags & DF_CONFIGURED));
-+	return snprintf(page, PAGE_SIZE, "%d\n", target_dev_configured(dev));
+ 
+ /**
+- * scsi_execute - insert request and wait for the result
++ * __scsi_execute - insert request and wait for the result
+  * @sdev:	scsi device
+  * @cmd:	scsi command
+  * @data_direction: data direction
+@@ -255,7 +255,7 @@ void scsi_queue_insert(struct scsi_cmnd *cmd, int reason)
+  * Returns the scsi_cmnd result field if a command was executed, or a negative
+  * Linux error code if we didn't get that far.
+  */
+-int scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
++int __scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
+ 		 int data_direction, void *buffer, unsigned bufflen,
+ 		 unsigned char *sense, struct scsi_sense_hdr *sshdr,
+ 		 int timeout, int retries, u64 flags, req_flags_t rq_flags,
+@@ -309,7 +309,7 @@ int scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
+ 
+ 	return ret;
  }
+-EXPORT_SYMBOL(scsi_execute);
++EXPORT_SYMBOL(__scsi_execute);
  
- static ssize_t target_dev_enable_store(struct config_item *item,
-@@ -2473,7 +2473,7 @@ static ssize_t target_tg_pt_gp_alua_access_state_store(struct config_item *item,
- 			" tg_pt_gp ID: %hu\n", tg_pt_gp->tg_pt_gp_valid_id);
- 		return -EINVAL;
- 	}
--	if (!(dev->dev_flags & DF_CONFIGURED)) {
-+	if (!target_dev_configured(dev)) {
- 		pr_err("Unable to set alua_access_state while device is"
- 		       " not configured\n");
- 		return -ENODEV;
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 73675ee..47b5ef1 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -900,7 +900,7 @@ static int target_devices_idr_iter(int id, void *p, void *data)
- 	 * to allow other callers to access partially setup devices,
- 	 * so we skip them here.
- 	 */
--	if (!(dev->dev_flags & DF_CONFIGURED))
-+	if (!target_dev_configured(dev))
- 		return 0;
+ /*
+  * Function:    scsi_init_cmd_errh()
+diff --git a/include/scsi/scsi_cmnd.h b/include/scsi/scsi_cmnd.h
+index aaf1e971c6a3..7bf043a66e10 100644
+--- a/include/scsi/scsi_cmnd.h
++++ b/include/scsi/scsi_cmnd.h
+@@ -14,8 +14,6 @@
+ struct Scsi_Host;
+ struct scsi_driver;
  
- 	iter->prev_item = config_item_get_unless_zero(&dev->dev_group.cg_item);
-@@ -940,7 +940,7 @@ int target_configure_device(struct se_device *dev)
- 	struct se_hba *hba = dev->se_hba;
- 	int ret, id;
+-#include <scsi/scsi_device.h>
+-
+ /*
+  * MAX_COMMAND_SIZE is:
+  * The longest fixed-length SCSI CDB as per the SCSI standard.
+@@ -120,11 +118,11 @@ struct scsi_cmnd {
+ 	struct request *request;	/* The command we are
+ 				   	   working on */
  
--	if (dev->dev_flags & DF_CONFIGURED) {
-+	if (target_dev_configured(dev)) {
- 		pr_err("se_dev->se_dev_ptr already set for storage"
- 				" object\n");
- 		return -EEXIST;
-@@ -1045,7 +1045,7 @@ void target_free_device(struct se_device *dev)
+-#define SCSI_SENSE_BUFFERSIZE 	96
+ 	unsigned char *sense_buffer;
+ 				/* obtained by REQUEST SENSE when
+ 				 * CHECK CONDITION is received on original
+-				 * command (auto-sense) */
++				 * command (auto-sense). Length must be
++				 * SCSI_SENSE_BUFFERSIZE bytes. */
  
- 	WARN_ON(!list_empty(&dev->dev_sep_list));
+ 	/* Low-level done function - can be used by low-level driver to point
+ 	 *        to completion function.  Not used by mid/upper level code. */
+diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
+index 7ae177c8e399..96b626ad5fb1 100644
+--- a/include/scsi/scsi_device.h
++++ b/include/scsi/scsi_device.h
+@@ -17,6 +17,8 @@ struct scsi_sense_hdr;
  
--	if (dev->dev_flags & DF_CONFIGURED) {
-+	if (target_dev_configured(dev)) {
- 		destroy_workqueue(dev->tmr_wq);
+ typedef unsigned int __bitwise blist_flags_t;
  
- 		dev->transport->destroy_device(dev);
-diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
-index 1fa436e..aa2f4f6 100644
---- a/drivers/target/target_core_fabric_configfs.c
-+++ b/drivers/target/target_core_fabric_configfs.c
-@@ -34,6 +34,7 @@
- #include <linux/configfs.h>
- 
- #include <target/target_core_base.h>
-+#include <target/target_core_backend.h>
- #include <target/target_core_fabric.h>
- 
- #include "target_core_internal.h"
-@@ -642,7 +643,7 @@ static int target_fabric_port_link(
- 	}
- 	dev = container_of(to_config_group(se_dev_ci), struct se_device, dev_group);
- 
--	if (!(dev->dev_flags & DF_CONFIGURED)) {
-+	if (!target_dev_configured(dev)) {
- 		pr_err("se_device not configured yet, cannot port link\n");
- 		return -ENODEV;
- 	}
-diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
-index c3ac472..51b6f50 100644
---- a/include/target/target_core_backend.h
-+++ b/include/target/target_core_backend.h
-@@ -111,6 +111,10 @@ sense_reason_t passthrough_parse_cdb(struct se_cmd *cmd,
- bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
- 				       struct request_queue *q);
- 
-+static inline bool target_dev_configured(struct se_device *se_dev)
-+{
-+	return !!(se_dev->dev_flags & DF_CONFIGURED);
-+}
- 
- /* Only use get_unaligned_be24() if reading p - 1 is allowed. */
- static inline uint32_t get_unaligned_be24(const uint8_t *const p)
++#define SCSI_SENSE_BUFFERSIZE	96
++
+ struct scsi_mode_data {
+ 	__u32	length;
+ 	__u16	block_descriptor_length;
+@@ -426,11 +428,21 @@ extern const char *scsi_device_state_name(enum scsi_device_state);
+ extern int scsi_is_sdev_device(const struct device *);
+ extern int scsi_is_target_device(const struct device *);
+ extern void scsi_sanitize_inquiry_string(unsigned char *s, int len);
+-extern int scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
++extern int __scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
+ 			int data_direction, void *buffer, unsigned bufflen,
+ 			unsigned char *sense, struct scsi_sense_hdr *sshdr,
+ 			int timeout, int retries, u64 flags,
+ 			req_flags_t rq_flags, int *resid);
++/* Make sure any sense buffer is the correct size. */
++#define scsi_execute(sdev, cmd, data_direction, buffer, bufflen, sense,	\
++		     sshdr, timeout, retries, flags, rq_flags, resid)	\
++({									\
++	BUILD_BUG_ON((sense) != NULL &&					\
++		     sizeof(sense) != SCSI_SENSE_BUFFERSIZE);		\
++	__scsi_execute(sdev, cmd, data_direction, buffer, bufflen,	\
++		       sense, sshdr, timeout, retries, flags, rq_flags,	\
++		       resid);						\
++})
+ static inline int scsi_execute_req(struct scsi_device *sdev,
+ 	const unsigned char *cmd, int data_direction, void *buffer,
+ 	unsigned bufflen, struct scsi_sense_hdr *sshdr, int timeout,
 -- 
-1.8.3.1
+2.17.1
 
