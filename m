@@ -1,30 +1,75 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Thu, 26 Jul 2018 17:10:20 +0000
-Subject: Re: [PATCH 13/20] target/iscsi: Reduce number of __iscsit_free_cmd() callers
-Message-Id: <2786ae3d77b99be8c6f384fbab12be357f858a15.camel@wdc.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 31 Jul 2018 19:51:51 +0000
+Subject: [PATCH v2 6/9] ide-cd: Remove redundant sense buffer
+Message-Id: <20180731195155.46664-7-keescook@chromium.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180622215307.8758-14-bart.vanassche@wdc.com>
-In-Reply-To: <20180622215307.8758-14-bart.vanassche@wdc.com>
+References: <20180731195155.46664-1-keescook@chromium.org>
+In-Reply-To: <20180731195155.46664-1-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Kees Cook <keescook@chromium.org>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 2018-07-26 at 16:42 +-0530, Varun Prakash wrote:
-+AD4- cxgbit driver is not working with this patch as transport+AF8-free+AF8-pages()
-+AD4- is called before calling conn-+AD4-conn+AF8-transport-+AD4-iscsit+AF8-release+AF8-cmd(), cxgbit
-+AD4- driver calls dma+AF8-unmap+AF8-sg() in -+AD4-iscsit+AF8-release+AF8-cmd(), transport+AF8-free+AF8-pages()
-+AD4- frees the scatterlist pages so dma unmap will not work.
-+AD4- 
-+AD4- cxgbit driver needs a callback before target frees the pages
-+AD4- so that it can dma unmap.
-+AD4- 
-+AD4- We can remove -+AD4-iscsit+AF8-release+AF8-cmd() from +AF8AXw-iscsit+AF8-free+AF8-cmd() and call it
-+AD4- directly from iscsit+AF8-free+AF8-cmd(), iscsit+AF8-aborted+AF8-task().    
+This is already able to process the sense buffer, so remove the redundant
+parsing during the failure path. This also fixes any possible stale values
+since the prior code did not check the sense length.
 
-Hello Varun,
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ drivers/ide/ide-cd.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-Thank you for your report. Since no other patches in this series depend on
-this patch, I will send a revert.
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index cb90560acf6e..023a7d94eb08 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -423,6 +423,7 @@ int ide_cd_queue_pc(ide_drive_t *drive, const unsigned char *cmd,
+ 		    req_flags_t rq_flags)
+ {
+ 	struct cdrom_info *info = drive->driver_data;
++	struct scsi_sense_hdr local_sshdr;
+ 	int retries = 10;
+ 	bool failed;
+ 
+@@ -430,6 +431,9 @@ int ide_cd_queue_pc(ide_drive_t *drive, const unsigned char *cmd,
+ 				  "rq_flags: 0x%x",
+ 				  cmd[0], write, timeout, rq_flags);
+ 
++	if (!sshdr)
++		sshdr = &local_sshdr;
++
+ 	/* start of retry loop */
+ 	do {
+ 		struct request *rq;
+@@ -456,9 +460,8 @@ int ide_cd_queue_pc(ide_drive_t *drive, const unsigned char *cmd,
+ 
+ 		if (buffer)
+ 			*bufflen = scsi_req(rq)->resid_len;
+-		if (sshdr)
+-			scsi_normalize_sense(scsi_req(rq)->sense,
+-					     scsi_req(rq)->sense_len, sshdr);
++		scsi_normalize_sense(scsi_req(rq)->sense,
++				     scsi_req(rq)->sense_len, sshdr);
+ 
+ 		/*
+ 		 * FIXME: we should probably abort/retry or something in case of
+@@ -470,12 +473,10 @@ int ide_cd_queue_pc(ide_drive_t *drive, const unsigned char *cmd,
+ 			 * The request failed.  Retry if it was due to a unit
+ 			 * attention status (usually means media was changed).
+ 			 */
+-			struct request_sense *reqbuf = scsi_req(rq)->sense;
+-
+-			if (reqbuf->sense_key = UNIT_ATTENTION)
++			if (sshdr->sense_key = UNIT_ATTENTION)
+ 				cdrom_saw_media_change(drive);
+-			else if (reqbuf->sense_key = NOT_READY &&
+-				 reqbuf->asc = 4 && reqbuf->ascq != 4) {
++			else if (sshdr->sense_key = NOT_READY &&
++				 sshdr->asc = 4 && sshdr->ascq != 4) {
+ 				/*
+ 				 * The drive is in the process of loading
+ 				 * a disk.  Retry, but wait a little to give
+-- 
+2.17.1
 
-Bart.
