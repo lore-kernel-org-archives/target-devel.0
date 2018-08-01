@@ -1,31 +1,38 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Date: Wed, 01 Aug 2018 17:38:17 +0000
-Subject: Re: [PATCH 11/15] target: export initiator port values for all sessions
-Message-Id: <08148199d6c88e6709d2c7e57c9f7b0a9090e330.camel@wdc.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 01 Aug 2018 19:50:26 +0000
+Subject: Re: [PATCH v2 3/9] scsi: build scsi_common.o for all scsi passthrough request users
+Message-Id: <CAGXu5jK2kLiOGTbq2TCBp97c2KZsZKPDNLSWDWY4r+RQpAP4fQ@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1531696591-8558-12-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1531696591-8558-12-git-send-email-mchristi@redhat.com>
+References: <20180731195155.46664-1-keescook@chromium.org> <20180731195155.46664-4-keescook@chromium.org>
+ <a5b545eade66f95c9a9ecf37676306a8d395187c.camel@wdc.com> <20180731201225.GA1989@infradead.org>
+ <6c04fc087bae896bf00b94184def3d7697a22d6c.camel@wdc.com>
+In-Reply-To: <6c04fc087bae896bf00b94184def3d7697a22d6c.camel@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Bart Van Assche <Bart.VanAssche@wdc.com>
+Cc: "hch@infradead.org" <hch@infradead.org>, "david.kershner@unisys.com" <david.kershner@unisys.com>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "rdunlap@infradead.org" <rdunlap@infradead.org>, "u.kleine-koenig@pengutronix.de" <u.kleine-koenig@pengutronix.de>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "hch@lst.de" <hch@lst.de>, "martin.petersen@oracle.com" <martin.petersen@oracle.com>, "manoj@linux.vnet.ibm.com" <manoj@linux.vnet.ibm.com>, "axboe@kernel.dk" <axboe@kernel.dk>, "jgross@suse.com" <jgross@suse.com>, "cyrille.pitchen@free-electrons.com" <cyrille.pitchen@free-electrons.com>, "sdharia@codeaurora.org" <sdharia@codeaurora.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "pombredanne@nexb.com" <pombredanne@nexb.com>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "bp@alien8.de" <bp@alien8.de>, "mrochs@linux.vnet.ibm.com" <mrochs@linux.vnet.ibm.com>, "tj@kernel.org" <tj@kernel.org>, "davem@davemloft.net" <davem@davemloft.net>, "jejb@linux.vnet.ibm.com" <jejb@linux.vnet.ibm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "ukrishn@linux.vnet.ibm.com" <ukrishn@linux.vnet.ibm.com>
 
-On Wed, 2018-08-01 at 11:44 -0500, Mike Christie wrote:
-+AD4- I agree knowing the acl info is useful, so how about the following:
-+AD4- 
-+AD4- 1. Create a file named +ACI-acl+ACI- in the session's dir.
-+AD4- 2. For dynamic+AF8-node+AF8-acl+AD0-0 the acl file will return a empty string or
-+AD4- +ACI-generate+AF8-node+AF8-acls+AD0-1+ACI- or +ACI-demo mode enabled+ACI-.
-+AD4- 3. For dynamic+AF8-node+AF8-acl+AD0-1 the acl file will return
-+AD4- se+AF8-node+AF8-acl-+AD4-initiatorname which is the name of the acl in
-+AD4- ..../tpgt+AF8AJA-N/acls/.
+On Tue, Jul 31, 2018 at 1:18 PM, Bart Van Assche <Bart.VanAssche@wdc.com> wrote:
+> On Tue, 2018-07-31 at 13:12 -0700, hch@infradead.org wrote:
+>> It shouldn't.  All these are built into scsi_mod.o, which is only built
+>> when CONFIG_SCSI is set.  Under what circumstances do you see them built?
+>
+> Although I think you are right, I still prefer that the scsi_common.c file
+> would be moved to a new directory. That will prevent confusion later on for
+> people who want to add additional code. This patch makes it nontrivial to
+> figure out which code is built when SCSI target functionality is enabled but
+> SCSI initiator functionality is not selected. I think moving scsi_common.c
+> into a new directory would make it much easier to figure out which code is
+> built depending on the kernel configuration.
 
-Hello Mike,
+While I don't disagree with you, this series is the result of several
+back-and-forth discussions where that option was seemingly rejected.
+Christoph's approach seemed to satisfy Jens. If you can convince them,
+sure! I'll do whatever the consensus is. :)
 
-That sounds fine to me. My personal preference is that the +ACI-acl+ACI- file is
-empty if demo mode is enabled.
+-Kees
 
-Thanks,
-
-Bart.
-
+-- 
+Kees Cook
+Pixel Security
