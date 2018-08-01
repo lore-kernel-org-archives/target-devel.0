@@ -1,23 +1,25 @@
-From: "Tony" <houstno@lamppizza.com>
-Date: Thu, 09 Aug 2018 13:50:43 +0000
-Subject: provide image solutions
-Message-Id: <5d125a083f06ab4ffe97fa38bf9077f3@enervac.com>
+From: Christoph Hellwig <hch@infradead.org>
+Date: Wed, 01 Aug 2018 08:22:20 +0000
+Subject: Re: [PATCH v2 5/9] block: Switch struct packet_command to use struct scsi_sense_hdr
+Message-Id: <20180801082220.GA26378@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20180731195155.46664-1-keescook@chromium.org>
+ <20180731195155.46664-6-keescook@chromium.org>
+In-Reply-To: <20180731195155.46664-6-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>
+Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-We just found that you need image editing.
+On Tue, Jul 31, 2018 at 12:51:50PM -0700, Kees Cook wrote:
+> There is a lot of needless struct request_sense usage in the CDROM
+> code. These can all be struct scsi_sense_hdr instead, to avoid any
+> confusion over their respective structure sizes. This patch is a lot
+> of noise changing "sense" to "sshdr", but the final code is more
+> readable to distinguish between "sense" meaning "struct request_sense"
+> and "sshdr" meaning "struct scsi_sense_hdr".
 
-We are an image studio, we do all kinds of image editing such as for
-e-commerce photos, jewelry images
-and portrait mages.
+Looks good,
 
-Our service includes cutting out and clipping path etc , we also do
-retouching.
-
-You may send us a photo, testing will be provided to check our quality
-
-Thanks,
-Tony Glenn
+Reviewed-by: Christoph Hellwig <hch@lst.de>
