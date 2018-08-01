@@ -1,22 +1,24 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Fri, 24 Aug 2018 02:27:58 +0000
-Subject: Re: [PATCH] scsi: target: iscsi: cxgbit: use pr_debug() instead of pr_info()
-Message-Id: <yq1wosg8pn5.fsf@oracle.com>
+From: Christoph Hellwig <hch@infradead.org>
+Date: Wed, 01 Aug 2018 08:23:30 +0000
+Subject: Re: [PATCH v2 6/9] ide-cd: Remove redundant sense buffer
+Message-Id: <20180801082330.GB26378@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1534002029-9281-1-git-send-email-varun@chelsio.com>
-In-Reply-To: <1534002029-9281-1-git-send-email-varun@chelsio.com>
+References: <20180731195155.46664-1-keescook@chromium.org>
+ <20180731195155.46664-7-keescook@chromium.org>
+In-Reply-To: <20180731195155.46664-7-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>
+Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On Tue, Jul 31, 2018 at 12:51:51PM -0700, Kees Cook wrote:
+> This is already able to process the sense buffer, so remove the redundant
+> parsing during the failure path. This also fixes any possible stale values
+> since the prior code did not check the sense length.
+> 
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 
-Varun,
+Looks good,
 
-> DDP programming happens in data path and it can fail because of lack
-> of resources so use pr_debug() instead of pr_info() for this case.
-
-Applied to 4.19/scsi-fixes.
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Reviewed-by: Christoph Hellwig <hch@lst.de>
