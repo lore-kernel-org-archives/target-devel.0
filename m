@@ -1,66 +1,101 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 02 Aug 2018 17:12:24 +0000
-Subject: [PATCH 5/8] target: add session removal function
-Message-Id: <1533229947-6277-6-git-send-email-mchristi@redhat.com>
+From: Gloria Adelaida Elias Mejia <gaeliasm@mineco.gob.gt>
+Date: Thu, 02 Aug 2018 02:10:48 +0000
+Subject: Spende von $ 4,800,000.00!
+Message-Id: <0E9FB776D8E6DA429730C03A4C3AA640881F7E@EX2010SRV02.mineco.gob.gt>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="_000_0E9FB776D8E6DA429730C03A4C3AA640881F7EEX2010SRV02mineco_"
 List-Id: <target-devel.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This adds a function to remove a session which should be used by drivers
-that use target_setup_session. The next patches will convert the target
-drivers to use this new function.
+--_000_0E9FB776D8E6DA429730C03A4C3AA640881F7EEX2010SRV02mineco_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
-Reviewed-by: Bart Van Assche <bart.vanassche@wdc.com>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Cc: Chris Boot <bootc@bootc.net>
-Cc: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Cc: Michael Cyr <mikecyr@linux.vnet.ibm.com>
-Cc: <qla2xxx-upstream@qlogic.com>
-Cc: Johannes Thumshirn <jth@kernel.org>
-Cc: Felipe Balbi <balbi@kernel.org>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
-Cc: Michael S. Tsirkin <mst@redhat.com>
-Cc: Juergen Gross <jgross@suse.com>
+Hallo, Sie haben eine Spende von $ 4,800,000.00, ich habe die America Lotte=
+rie im Wert von $ 40 Millionen gewonnen und ich gebe einen Teil davon an f=
+=FCnf gl=FCckliche Menschen und Wohlt=E4tigkeitseinrichtungen zum Gedenken =
+an meine verstorbene Frau, die an Krebs starb.
 
----
- drivers/target/target_core_transport.c | 7 +++++++
- include/target/target_core_fabric.h    | 1 +
- 2 files changed, 8 insertions(+)
+Spendenreferenznummer: BBIB / AVL017 / 28392
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 57fadec..86c0156 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -616,6 +616,13 @@ void transport_deregister_session(struct se_session *se_sess)
- }
- EXPORT_SYMBOL(transport_deregister_session);
- 
-+void target_remove_session(struct se_session *se_sess)
-+{
-+	transport_deregister_session_configfs(se_sess);
-+	transport_deregister_session(se_sess);
-+}
-+EXPORT_SYMBOL(target_remove_session);
-+
- static void target_remove_from_state_list(struct se_cmd *cmd)
- {
- 	struct se_device *dev = cmd->se_dev;
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index fbcc9a4..f4147b3 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -114,6 +114,7 @@ struct se_session *target_setup_session(struct se_portal_group *,
- 		const char *, void *,
- 		int (*callback)(struct se_portal_group *,
- 				struct se_session *, void *));
-+void target_remove_session(struct se_session *);
- 
- void transport_init_session(struct se_session *);
- struct se_session *transport_alloc_session(enum target_prot_op);
--- 
-2.7.2
+Kontaktieren Sie mich f=FCr weitere Informationen: tomcrist895@gmail.com
 
+Prost
+Tom Crist
+
+--_000_0E9FB776D8E6DA429730C03A4C3AA640881F7EEX2010SRV02mineco_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
+1">
+<meta name=3D"Generator" content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-size:10.0pt;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style><!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
+<div class=3D"Section1">
+<p class=3D"MsoNormal">Hallo, Sie haben eine Spende von $ 4,800,000.00, ich=
+ habe die America Lotterie im Wert von $ 40 Millionen gewonnen und ich gebe=
+ einen Teil davon an f=FCnf gl=FCckliche Menschen und Wohlt=E4tigkeitseinri=
+chtungen zum Gedenken an meine verstorbene
+ Frau, die an Krebs starb.<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Spendenreferenznummer: BBIB / AVL017 / 28392<o:p></o=
+:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Kontaktieren Sie mich f=FCr weitere Informationen: t=
+omcrist895@gmail.com<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Prost<o:p></o:p></p>
+<p class=3D"MsoNormal">Tom Crist<o:p></o:p></p>
+</div>
+</body>
+</html>
+
+--_000_0E9FB776D8E6DA429730C03A4C3AA640881F7EEX2010SRV02mineco_--
