@@ -1,26 +1,29 @@
-From: jose_mera@hmha.gob.ec
-Date: Tue, 28 Aug 2018 05:35:34 +0000
-Subject: =?utf-8?b?V29obHTDpHRpZ2tlaXRzc3BlbmRlIGluIEjDtmhlIHZvbiDigqwgMi4wMDAu?= =?utf-8?q?000=2C00?=
-Message-Id: <20180828053544.D3ACE2080BB6@mail.hmha.gob.ec>
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Thu, 02 Aug 2018 20:21:28 +0000
+Subject: Re: [PATCH v2 0/9] block: Consolidate scsi sense buffer usage
+Message-Id: <yq18t5ozfhz.fsf@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180506005907.44050845FA0@mail.ithb.ac.id>
-In-Reply-To: <20180506005907.44050845FA0@mail.ithb.ac.id>
+References: <20180731195155.46664-1-keescook@chromium.org>
+In-Reply-To: <20180731195155.46664-1-keescook@chromium.org> (Kees Cook's
+	message of "Tue, 31 Jul 2018 12:51:45 -0700")
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Kees Cook <keescook@chromium.org>
+Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J.
+ Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Lieber Freund,
- 
-Ich bin Herr Tayeb Souami, New Jersey, Vereinigte Staaten von Amerika, der Mega-Gewinner von $ 315million In Mega Millions Jackpot, spende ich an 5 zufällige Personen, wenn Sie diese E-Mail erhalten, dann wurde Ihre E-Mail nach einem Spinball ausgewählt.Ich habe den größten Teil meines Vermögens auf eine Reihe von Wohltätigkeitsorganisationen und Organisationen verteilt.Ich habe mich freiwillig dazu entschieden, die Summe von € 2.000.000,00 an Sie als eine der ausgewählten 5 zu spenden, um meine Gewinne zu überprüfen, sehen Sie bitte meine You Tube Seite unten.
- 
-UHR MICH HIER: https://www.youtube.com/watch?v=Z6ui8ZDQ6Ks
- 
-Das ist dein Spendencode: [DFC530342018]
- 
-Antworten Sie mit dem SPENDE-CODE an diese E-Mail: financialfundingcompany09@gmail.com
- 
-Ich hoffe, Sie und Ihre Familie glücklich zu machen.
- 
-Grüße
-Herr Tayeb Souami
+
+Kees,
+
+> This is a follow-up to commit f7068114d45e ("sr: pass down correctly
+> sized SCSI sense buffer") which further cleans up and removes needless
+> sense character array buffers and "struct request_sense" usage in favor
+> of the common "struct scsi_sense_hdr".
+
+This looks good to me.
+
+Acked-by: Martin K. Petersen <martin.petersen@oracle.com>
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
