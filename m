@@ -1,56 +1,86 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 02 Aug 2018 17:12:20 +0000
-Subject: [PATCH 1/8] target: fix __transport_register_session locking
-Message-Id: <1533229947-6277-2-git-send-email-mchristi@redhat.com>
+Date: Thu, 02 Aug 2018 17:12:27 +0000
+Subject: [PATCH 8/8] target: loop, usb, vhost, xen: use target_remove_session
+Message-Id: <1533229947-6277-9-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-When __transport_register_session is called from
-transport_register_session irqs will already have been disabled, so we
-do not want the unlock irq call to enable them until the higher level
-has done the final spin_unlock_irqrestore/ spin_unlock_irq.
-
-This has __transport_register_session use the save/restore call.
+This converts drivers that were only calling transport_deregister_session
+to use target_remove_session. The calling of
+transport_deregister_session_configfs via target_remove_session for these
+types of drivers is ok, because they were not exporting info from fields
+like sess_acl_list, sess->se_tpg and sess->fabric_sess_ptr from configfs
+accessible functions, so they will see no difference.
 
 Signed-off-by: Mike Christie <mchristi@redhat.com>
 Reviewed-by: Bart Van Assche <bart.vanassche@wdc.com>
 Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Felipe Balbi <balbi@kernel.org>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Andrzej Pietrasiewicz <andrzej.p@samsung.com>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: Juergen Gross <jgross@suse.com>
 ---
- drivers/target/target_core_transport.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/target/loopback/tcm_loop.c  | 2 +-
+ drivers/usb/gadget/function/f_tcm.c | 2 +-
+ drivers/vhost/scsi.c                | 2 +-
+ drivers/xen/xen-scsiback.c          | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 7261561..b419d4f 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -347,6 +347,7 @@ void __transport_register_session(
- {
- 	const struct target_core_fabric_ops *tfo = se_tpg->se_tpg_tfo;
- 	unsigned char buf[PR_REG_ISID_LEN];
-+	unsigned long flags;
+diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+index 54b5b94..bc8918f 100644
+--- a/drivers/target/loopback/tcm_loop.c
++++ b/drivers/target/loopback/tcm_loop.c
+@@ -805,7 +805,7 @@ static int tcm_loop_drop_nexus(
+ 	/*
+ 	 * Release the SCSI I_T Nexus to the emulated Target Port
+ 	 */
+-	transport_deregister_session(tl_nexus->se_sess);
++	target_remove_session(se_sess);
+ 	tpg->tl_nexus = NULL;
+ 	kfree(tl_nexus);
+ 	return 0;
+diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
+index ba7c5f6..106988a 100644
+--- a/drivers/usb/gadget/function/f_tcm.c
++++ b/drivers/usb/gadget/function/f_tcm.c
+@@ -1638,7 +1638,7 @@ static int tcm_usbg_drop_nexus(struct usbg_tpg *tpg)
+ 	/*
+ 	 * Release the SCSI I_T Nexus to the emulated vHost Target Port
+ 	 */
+-	transport_deregister_session(tv_nexus->tvn_se_sess);
++	target_remove_session(se_sess);
+ 	tpg->tpg_nexus = NULL;
  
- 	se_sess->se_tpg = se_tpg;
- 	se_sess->fabric_sess_ptr = fabric_sess_ptr;
-@@ -383,7 +384,7 @@ void __transport_register_session(
- 			se_sess->sess_bin_isid = get_unaligned_be64(&buf[0]);
- 		}
+ 	kfree(tv_nexus);
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index e936884..76f8d64 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1797,7 +1797,7 @@ static int vhost_scsi_drop_nexus(struct vhost_scsi_tpg *tpg)
+ 	/*
+ 	 * Release the SCSI I_T Nexus to the emulated vhost Target Port
+ 	 */
+-	transport_deregister_session(tv_nexus->tvn_se_sess);
++	target_remove_session(se_sess);
+ 	tpg->tpg_nexus = NULL;
+ 	mutex_unlock(&tpg->tv_tpg_mutex);
  
--		spin_lock_irq(&se_nacl->nacl_sess_lock);
-+		spin_lock_irqsave(&se_nacl->nacl_sess_lock, flags);
- 		/*
- 		 * The se_nacl->nacl_sess pointer will be set to the
- 		 * last active I_T Nexus for each struct se_node_acl.
-@@ -392,7 +393,7 @@ void __transport_register_session(
- 
- 		list_add_tail(&se_sess->sess_acl_list,
- 			      &se_nacl->acl_sess_list);
--		spin_unlock_irq(&se_nacl->nacl_sess_lock);
-+		spin_unlock_irqrestore(&se_nacl->nacl_sess_lock, flags);
- 	}
- 	list_add_tail(&se_sess->sess_list, &se_tpg->tpg_sess_list);
+diff --git a/drivers/xen/xen-scsiback.c b/drivers/xen/xen-scsiback.c
+index 2ffc7ed..2aadabd 100644
+--- a/drivers/xen/xen-scsiback.c
++++ b/drivers/xen/xen-scsiback.c
+@@ -1576,7 +1576,7 @@ static int scsiback_drop_nexus(struct scsiback_tpg *tpg)
+ 	/*
+ 	 * Release the SCSI I_T Nexus to the emulated xen-pvscsi Target Port
+ 	 */
+-	transport_deregister_session(tv_nexus->tvn_se_sess);
++	target_remove_session(se_sess);
+ 	tpg->tpg_nexus = NULL;
+ 	mutex_unlock(&tpg->tv_tpg_mutex);
  
 -- 
 2.7.2
