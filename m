@@ -1,87 +1,57 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 02 Aug 2018 17:12:25 +0000
-Subject: [PATCH 6/8] target: srp, vscsi, sbp, qla: use target_remove_session
-Message-Id: <1533229947-6277-7-git-send-email-mchristi@redhat.com>
+Date: Thu, 02 Aug 2018 17:12:20 +0000
+Subject: [PATCH 1/8] target: fix __transport_register_session locking
+Message-Id: <1533229947-6277-2-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This converts the drivers that called transport_deregister_session_configfs
-and then immediately called transport_deregister_session to use
-target_remove_session.
+When __transport_register_session is called from
+transport_register_session irqs will already have been disabled, so we
+do not want the unlock irq call to enable them until the higher level
+has done the final spin_unlock_irqrestore/ spin_unlock_irq.
+
+This has __transport_register_session use the save/restore call.
 
 Signed-off-by: Mike Christie <mchristi@redhat.com>
 Reviewed-by: Bart Van Assche <bart.vanassche@wdc.com>
 Reviewed-by: Christoph Hellwig <hch@lst.de>
-Cc: Chris Boot <bootc@bootc.net>
-Cc: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-Cc: Michael Cyr <mikecyr@linux.vnet.ibm.com>
-Cc: <qla2xxx-upstream@qlogic.com>
 ---
- drivers/infiniband/ulp/srpt/ib_srpt.c    | 3 +--
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 +--
- drivers/scsi/qla2xxx/tcm_qla2xxx.c       | 3 +--
- drivers/target/sbp/sbp_target.c          | 3 +--
- 4 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/target/target_core_transport.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index 21435a7..1ae638b 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -2029,8 +2029,7 @@ static void srpt_release_channel_work(struct work_struct *w)
- 	target_sess_cmd_list_set_waiting(se_sess);
- 	target_wait_for_sess_cmds(se_sess);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 7261561..b419d4f 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -347,6 +347,7 @@ void __transport_register_session(
+ {
+ 	const struct target_core_fabric_ops *tfo = se_tpg->se_tpg_tfo;
+ 	unsigned char buf[PR_REG_ISID_LEN];
++	unsigned long flags;
  
--	transport_deregister_session_configfs(se_sess);
--	transport_deregister_session(se_sess);
-+	target_remove_session(se_sess);
- 	ch->sess = NULL;
+ 	se_sess->se_tpg = se_tpg;
+ 	se_sess->fabric_sess_ptr = fabric_sess_ptr;
+@@ -383,7 +384,7 @@ void __transport_register_session(
+ 			se_sess->sess_bin_isid = get_unaligned_be64(&buf[0]);
+ 		}
  
- 	if (ch->using_rdma_cm)
-diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-index 1bdf937..fac3773 100644
---- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-+++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-@@ -2267,8 +2267,7 @@ static int ibmvscsis_drop_nexus(struct ibmvscsis_tport *tport)
- 	 * Release the SCSI I_T Nexus to the emulated ibmvscsis Target Port
- 	 */
- 	target_wait_for_sess_cmds(se_sess);
--	transport_deregister_session_configfs(se_sess);
--	transport_deregister_session(se_sess);
-+	target_remove_session(se_sess);
- 	tport->ibmv_nexus = NULL;
- 	kfree(nexus);
+-		spin_lock_irq(&se_nacl->nacl_sess_lock);
++		spin_lock_irqsave(&se_nacl->nacl_sess_lock, flags);
+ 		/*
+ 		 * The se_nacl->nacl_sess pointer will be set to the
+ 		 * last active I_T Nexus for each struct se_node_acl.
+@@ -392,7 +393,7 @@ void __transport_register_session(
  
-diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
-index b9ce4e7..f71ec94 100644
---- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
-+++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
-@@ -1461,8 +1461,7 @@ static void tcm_qla2xxx_free_session(struct fc_port *sess)
+ 		list_add_tail(&se_sess->sess_acl_list,
+ 			      &se_nacl->acl_sess_list);
+-		spin_unlock_irq(&se_nacl->nacl_sess_lock);
++		spin_unlock_irqrestore(&se_nacl->nacl_sess_lock, flags);
  	}
- 	target_wait_for_sess_cmds(se_sess);
+ 	list_add_tail(&se_sess->sess_list, &se_tpg->tpg_sess_list);
  
--	transport_deregister_session_configfs(sess->se_sess);
--	transport_deregister_session(sess->se_sess);
-+	target_remove_session(se_sess);
- }
- 
- static int tcm_qla2xxx_session_cb(struct se_portal_group *se_tpg,
-diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
-index c4369b5..3d10189 100644
---- a/drivers/target/sbp/sbp_target.c
-+++ b/drivers/target/sbp/sbp_target.c
-@@ -235,8 +235,7 @@ static void sbp_session_release(struct sbp_session *sess, bool cancel_work)
- 	if (cancel_work)
- 		cancel_delayed_work_sync(&sess->maint_work);
- 
--	transport_deregister_session_configfs(sess->se_sess);
--	transport_deregister_session(sess->se_sess);
-+	target_remove_session(sess->se_sess);
- 
- 	if (sess->card)
- 		fw_card_put(sess->card);
 -- 
 2.7.2
 
