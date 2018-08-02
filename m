@@ -1,34 +1,52 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Wed, 01 Aug 2018 08:25:16 +0000
-Subject: Re: [PATCH v2 9/9] scsi: Check sense buffer size at build time
-Message-Id: <20180801082516.GE26378@infradead.org>
+From: Mike Christie <mchristi@redhat.com>
+Date: Thu, 02 Aug 2018 17:12:26 +0000
+Subject: [PATCH 7/8] tcm_fc: use target_remove_session
+Message-Id: <1533229947-6277-8-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180731195155.46664-1-keescook@chromium.org>
- <20180731195155.46664-10-keescook@chromium.org>
-In-Reply-To: <20180731195155.46664-10-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kees Cook <keescook@chromium.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-On Tue, Jul 31, 2018 at 12:51:54PM -0700, Kees Cook wrote:
-> To avoid introducing problems like those fixed in commit f7068114d45e
-> ("sr: pass down correctly sized SCSI sense buffer"), this creates a macro
-> wrapper for scsi_execute() that verifies the size of the sense buffer
-> similar to what was done for command string sizes in commit 3756f6401c30
-> ("exec: avoid gcc-8 warning for get_task_comm").
-> 
-> Another solution could be to add a length argument to scsi_execute(),
-> but this function already takes a lot of arguments and Jens was not fond
-> of that approach.
-> 
-> Additionally, this moves the SCSI_SENSE_BUFFERSIZE definition into
-> scsi_device.h, and removes a redundant include for scsi_device.h from
-> scsi_cmnd.h.
-> 
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+This converts tcm_fc to use target_remove_session
 
-Looks good,
+tcm_fc was calling transport_deregister_session_configfs then calling
+transport_deregister_session when commands have completed. It should be
+ok for it to call transport_deregister_session_configfs later via
+target_remove_session because transport_deregister_session_configfs
+only prevents access from configfs via tpg removal and its call to the
+close_session callback for that driver, and this is already protected by
+the ft_lport_lock and its port lookup handling.
 
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+Reviewed-by: Bart Van Assche <bart.vanassche@wdc.com>
 Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Johannes Thumshirn <jth@kernel.org>
+---
+ drivers/target/tcm_fc/tfc_sess.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/target/tcm_fc/tfc_sess.c b/drivers/target/tcm_fc/tfc_sess.c
+index efd7d5e..6d4adf5 100644
+--- a/drivers/target/tcm_fc/tfc_sess.c
++++ b/drivers/target/tcm_fc/tfc_sess.c
+@@ -287,7 +287,6 @@ static struct ft_sess *ft_sess_delete(struct ft_tport *tport, u32 port_id)
+ 
+ static void ft_close_sess(struct ft_sess *sess)
+ {
+-	transport_deregister_session_configfs(sess->se_sess);
+ 	target_sess_cmd_list_set_waiting(sess->se_sess);
+ 	target_wait_for_sess_cmds(sess->se_sess);
+ 	ft_sess_put(sess);
+@@ -448,7 +447,7 @@ static void ft_sess_free(struct kref *kref)
+ {
+ 	struct ft_sess *sess = container_of(kref, struct ft_sess, kref);
+ 
+-	transport_deregister_session(sess->se_sess);
++	target_remove_session(sess->se_sess);
+ 	kfree_rcu(sess, rcu);
+ }
+ 
+-- 
+2.7.2
+
