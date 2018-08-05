@@ -1,41 +1,24 @@
-From: "Jake" <bargaint@teameverol.com>
-Date: Wed, 01 Aug 2018 12:43:18 +0000
-Subject: retouching photos for you
-Message-Id: <eb7ef46670a736aac13b88e2a3fd530b@almanac.com>
+From: "Sam Dennis" <rongjami@nccoastalfishing.com>
+Date: Sun, 05 Aug 2018 13:43:05 +0000
+Subject: follow up
+Message-Id: <087a6858d47e790cc95ec5b52b3dbc52@menupix.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-We provide a variety of image editing solutions.
+Want to know if you have photos for editing?
+We can edit 300+ images each day.
 
-If you have a special retouching project in mind. You can always contact us
-and we will work with you to achieve best results.
+We can work on ecommerce photos, jewelry photos, and portrait photos.
 
-Looking for professional retouching services to perfect those headshots,
-portfolios or special albums?
-We give a variety of packages to help with your retouching project needs.
+We give cut out and clipping path for different kind of photos, and also we
+provide retouching for
+them.
 
-Whether you are an actor, performer, comedian, public figure, or not,
-portrait retouching takes those
-quality images to the next level.
+Send us a test photo and we will do testing for you.
 
-Our services include everything from High-End, Still Life, Fashion,
-Beauty/Modeling Portfolios, Glamour,
-Portrait, Weddings/Events Retouching, Restoration to Photo Manipulation and
-Special Effects.
-
-We also provide images cut out and masking, clipping path, deep etching,
-transparent background.
-
-Our clients are our number one priority, it is your chance to have a
-beautiful photo-finish.
-
-You can try us by sending an image for test to judge our quality work.
-
-We are waiting for your reply.
-
-Thanks and Regards,
-Jake Ryan
+Thanks,
+Sam Dennis
 
