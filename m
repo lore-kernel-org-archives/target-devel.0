@@ -1,187 +1,78 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 30 Aug 2018 17:57:22 +0000
-Subject: Re: [PATCH v3] target/iblock: split T10 PI SGL across command bios
-Message-Id: <5B883002.6080601@redhat.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Mon, 06 Aug 2018 23:38:52 +0000
+Subject: Re: [PATCH v2 4/9] target: don't depend on SCSI
+Message-Id: <111cb1b0-24ba-bcb2-53d5-9665d2b4c421@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180830172504.12348-1-gedwards@ddn.com>
-In-Reply-To: <20180830172504.12348-1-gedwards@ddn.com>
+References: <20180731195155.46664-1-keescook@chromium.org>
+ <20180731195155.46664-5-keescook@chromium.org>
+In-Reply-To: <20180731195155.46664-5-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>, Jens Axboe <axboe@kernel.dk>
+Cc: Christoph Hellwig <hch@lst.de>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, Bart Van Assche <bart.vanassche@wdc.com>
 
-On 08/30/2018 12:25 PM, Greg Edwards wrote:
-> When T10 PI is enabled on a backing device for the iblock backstore, the
-> PI SGL for the entire command is attached to the first bio only.  This
-> works fine if the command is covered by a single bio, but can result in
-> ref tag errors in the client for the other bios in a multi-bio command,
-> e.g.
+On 07/31/2018 12:51 PM, Kees Cook wrote:
+> From: Christoph Hellwig <hch@lst.de>
 > 
-> [   47.631236] sda: ref tag error at location 2048 (rcvd 0)
-> [   47.637658] sda: ref tag error at location 4096 (rcvd 0)
-> [   47.644228] sda: ref tag error at location 6144 (rcvd 0)
+> The core target code only needs code from scsi_common.c, which is now
+> separately selectable.
 > 
-> The command will be split into multiple bios if the number of data SG
-> elements exceeds BIO_MAX_PAGES (see iblock_get_bio()).
-> 
-> The bios may later be split again in the block layer on the host after
-> iblock_submit_bios(), depending on the queue limits of the backing
-> device.  The block and SCSI layers will pass through the whole PI SGL
-> down to the LLDD however that first bio is split up, but the LLDD may
-> only use the portion that corresponds to the data length (depends on the
-> LLDD, tested with scsi_debug).
-> 
-> Split the PI SGL across the bios in the command, so each bio's
-> bio_integrity_payload contains the protection information for the data
-> in the bio.  Use an sg_mapping_iter to keep track of where we are in PI
-> SGL, so we know where to start with the next bio.
-> 
-> Signed-off-by: Greg Edwards <gedwards@ddn.com>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
-> Changes from v2:
->   * add back min(cmd->t_prot_nents, BIO_MAX_PAGES) for bio_integrity_alloc()
->     from v1
+>  drivers/target/Kconfig | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 > 
-> Changes from v1:
->   * expand commit message
->   * use an sg_mapping_iter to track where we are in the PI SGL
-> 
-> 
->  drivers/target/target_core_iblock.c | 54 ++++++++++++++++++++---------
->  1 file changed, 37 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-> index ce1321a5cb7b..db78b1c808e8 100644
-> --- a/drivers/target/target_core_iblock.c
-> +++ b/drivers/target/target_core_iblock.c
-> @@ -635,14 +635,15 @@ static ssize_t iblock_show_configfs_dev_params(struct se_device *dev, char *b)
->  }
+> diff --git a/drivers/target/Kconfig b/drivers/target/Kconfig
+> index 4c44d7bed01a..cb6f32ce7de8 100644
+> --- a/drivers/target/Kconfig
+> +++ b/drivers/target/Kconfig
+> @@ -1,10 +1,10 @@
 >  
->  static int
-> -iblock_alloc_bip(struct se_cmd *cmd, struct bio *bio)
-> +iblock_alloc_bip(struct se_cmd *cmd, struct bio *bio,
-> +		 struct sg_mapping_iter *miter)
->  {
->  	struct se_device *dev = cmd->se_dev;
->  	struct blk_integrity *bi;
->  	struct bio_integrity_payload *bip;
->  	struct iblock_dev *ib_dev = IBLOCK_DEV(dev);
-> -	struct scatterlist *sg;
-> -	int i, rc;
-> +	int rc;
-> +	size_t resid, len;
+>  menuconfig TARGET_CORE
+>  	tristate "Generic Target Core Mod (TCM) and ConfigFS Infrastructure"
+> -	depends on SCSI && BLOCK
+> +	depends on BLOCK
+>  	select CONFIGFS_FS
+>  	select CRC_T10DIF
+> -	select BLK_SCSI_REQUEST # only for scsi_command_size_tbl..
+> +	select BLK_SCSI_REQUEST
+>  	select SGL_ALLOC
+>  	default n
+>  	help
+> @@ -29,6 +29,7 @@ config TCM_FILEIO
 >  
->  	bi = bdev_get_integrity(ib_dev->ibd_bd);
->  	if (!bi) {
-> @@ -650,31 +651,39 @@ iblock_alloc_bip(struct se_cmd *cmd, struct bio *bio)
->  		return -ENODEV;
->  	}
->  
-> -	bip = bio_integrity_alloc(bio, GFP_NOIO, cmd->t_prot_nents);
-> +	bip = bio_integrity_alloc(bio, GFP_NOIO,
-> +			min_t(unsigned int, cmd->t_prot_nents, BIO_MAX_PAGES));
->  	if (IS_ERR(bip)) {
->  		pr_err("Unable to allocate bio_integrity_payload\n");
->  		return PTR_ERR(bip);
->  	}
->  
-> -	bip->bip_iter.bi_size = (cmd->data_length / dev->dev_attrib.block_size) *
-> -			 dev->prot_length;
-> -	bip->bip_iter.bi_sector = bio->bi_iter.bi_sector;
-> +	bip->bip_iter.bi_size = bio_integrity_bytes(bi, bio_sectors(bio));
-> +	bip_set_seed(bip, bio->bi_iter.bi_sector);
->  
->  	pr_debug("IBLOCK BIP Size: %u Sector: %llu\n", bip->bip_iter.bi_size,
->  		 (unsigned long long)bip->bip_iter.bi_sector);
->  
-> -	for_each_sg(cmd->t_prot_sg, sg, cmd->t_prot_nents, i) {
-> +	resid = bip->bip_iter.bi_size;
-> +	while (resid > 0 && sg_miter_next(miter)) {
->  
-> -		rc = bio_integrity_add_page(bio, sg_page(sg), sg->length,
-> -					    sg->offset);
-> -		if (rc != sg->length) {
-> +		len = min_t(size_t, miter->length, resid);
-> +		rc = bio_integrity_add_page(bio, miter->page, len,
-> +					    offset_in_page(miter->addr));
-> +		if (rc != len) {
->  			pr_err("bio_integrity_add_page() failed; %d\n", rc);
-> +			sg_miter_stop(miter);
->  			return -ENOMEM;
->  		}
->  
-> -		pr_debug("Added bio integrity page: %p length: %d offset; %d\n",
-> -			 sg_page(sg), sg->length, sg->offset);
-> +		pr_debug("Added bio integrity page: %p length: %lu offset: %lu\n",
-> +			  miter->page, len, offset_in_page(miter->addr));
-> +
-> +		resid -= len;
-> +		if (len < miter->length)
-> +			miter->consumed -= miter->length - len;
->  	}
-> +	sg_miter_stop(miter);
->  
->  	return 0;
->  }
-> @@ -686,12 +695,13 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
->  	struct se_device *dev = cmd->se_dev;
->  	sector_t block_lba = target_to_linux_sector(dev, cmd->t_task_lba);
->  	struct iblock_req *ibr;
-> -	struct bio *bio, *bio_start;
-> +	struct bio *bio;
->  	struct bio_list list;
->  	struct scatterlist *sg;
->  	u32 sg_num = sgl_nents;
->  	unsigned bio_cnt;
-> -	int i, op, op_flags = 0;
-> +	int i, rc, op, op_flags = 0;
-> +	struct sg_mapping_iter prot_miter;
->  
->  	if (data_direction = DMA_TO_DEVICE) {
->  		struct iblock_dev *ib_dev = IBLOCK_DEV(dev);
-> @@ -726,13 +736,17 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
->  	if (!bio)
->  		goto fail_free_ibr;
->  
-> -	bio_start = bio;
->  	bio_list_init(&list);
->  	bio_list_add(&list, bio);
->  
->  	refcount_set(&ibr->pending, 2);
->  	bio_cnt = 1;
->  
-> +	if (cmd->prot_type && dev->dev_attrib.pi_prot_type)
-> +		sg_miter_start(&prot_miter, cmd->t_prot_sg, cmd->t_prot_nents,
-> +			       op = REQ_OP_READ ? SG_MITER_FROM_SG :
-> +						   SG_MITER_TO_SG);
-> +
->  	for_each_sg(sgl, sg, sgl_nents, i) {
->  		/*
->  		 * XXX: if the length the device accepts is shorter than the
-> @@ -741,6 +755,12 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
->  		 */
->  		while (bio_add_page(bio, sg_page(sg), sg->length, sg->offset)
->  				!= sg->length) {
-> +			if (cmd->prot_type && dev->dev_attrib.pi_prot_type) {
-> +				rc = iblock_alloc_bip(cmd, bio, &prot_miter);
-> +				if (rc)
-> +					goto fail_put_bios;
-> +			}
-> +
->  			if (bio_cnt >= IBLOCK_MAX_BIO_PER_TASK) {
->  				iblock_submit_bios(&list);
->  				bio_cnt = 0;
-> @@ -762,7 +782,7 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
->  	}
->  
->  	if (cmd->prot_type && dev->dev_attrib.pi_prot_type) {
-> -		int rc = iblock_alloc_bip(cmd, bio_start);
-> +		rc = iblock_alloc_bip(cmd, bio, &prot_miter);
->  		if (rc)
->  			goto fail_put_bios;
->  	}
+>  config TCM_PSCSI
+>  	tristate "TCM/pSCSI Subsystem Plugin for Linux/SCSI"
+> +	depends on SCSI
+>  	help
+>  	Say Y here to enable the TCM/pSCSI subsystem plugin for non-buffered
+>  	passthrough access to Linux/SCSI device
 > 
 
-Seems ok to me.
+Hi,
 
-Reviewed-by: Mike Christie <mchristi@redhat.com>
+This patch causes build errors in linux-next-20180806 when SCSI=m and
+LOOPBACK_TARGET=y.
+
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_port_link':
+tcm_loop.c:(.text+0x445): undefined reference to `scsi_add_device'
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_driver_remove':
+tcm_loop.c:(.text+0x55c): undefined reference to `scsi_remove_host'
+tcm_loop.c:(.text+0x564): undefined reference to `scsi_host_put'
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_submission_work':
+tcm_loop.c:(.text+0x7c4): undefined reference to `scmd_printk'
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_driver_probe':
+tcm_loop.c:(.text+0x7fb): undefined reference to `scsi_host_alloc'
+tcm_loop.c:(.text+0x85b): undefined reference to `scsi_add_host_with_dma'
+tcm_loop.c:(.text+0x896): undefined reference to `scsi_host_put'
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_port_unlink':
+tcm_loop.c:(.text+0x962): undefined reference to `scsi_device_lookup'
+tcm_loop.c:(.text+0x972): undefined reference to `scsi_remove_device'
+tcm_loop.c:(.text+0x97a): undefined reference to `scsi_device_put'
+drivers/target/loopback/tcm_loop.o:(.data+0x210): undefined reference to `scsi_change_queue_depth'
+
+
+-- 
+~Randy
