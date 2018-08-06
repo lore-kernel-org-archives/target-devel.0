@@ -1,53 +1,24 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Mon, 06 Aug 2018 17:13:58 +0000
-Subject: [PATCH] target: fix tcm_loop build errors when SCSI=m
-Message-Id: <5b7b9c12-d202-ab0c-9598-267468bf10ad@infradead.org>
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Date: Mon, 06 Aug 2018 23:07:34 +0000
+Subject: Re: [PATCH] target: fix tcm_loop build errors when SCSI=m
+Message-Id: <d3349291f6d04e4b8717ea478fcfd2eaf70b39f6.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <5b7b9c12-d202-ab0c-9598-267468bf10ad@infradead.org>
+In-Reply-To: <5b7b9c12-d202-ab0c-9598-267468bf10ad@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi <linux-scsi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, target-devel@vger.kernel.org
-Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Bart Van Assche <bart.vanassche@wdc.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
+To: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "rdunlap@infradead.org" <rdunlap@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+Cc: "jejb@linux.vnet.ibm.com" <jejb@linux.vnet.ibm.com>, "martin.petersen@oracle.com" <martin.petersen@oracle.com>, "nab@linux-iscsi.org" <nab@linux-iscsi.org>
 
-From: Randy Dunlap <rdunlap@infradead.org>
+On Mon, 2018-08-06 at 10:13 -0700, Randy Dunlap wrote:
++AD4- Fix build errors when CONFIG+AF8-SCSI+AD0-m and CONFIG+AF8-LOOPBACK+AF8-TARGET+AD0-y
++AD4- by making LOOPBACK+AF8-TARGET depend on SCSI.
 
-Fix build errors when CONFIG_SCSI=m and CONFIG_LOOPBACK_TARGET=y
-by making LOOPBACK_TARGET depend on SCSI.
+Is this a longstanding or a new issue? In the latter case, should a Fixes:
+tag be added?
 
-drivers/target/loopback/tcm_loop.o: In function `tcm_loop_port_link':
-tcm_loop.c:(.text+0x445): undefined reference to `scsi_add_device'
-drivers/target/loopback/tcm_loop.o: In function `tcm_loop_driver_remove':
-tcm_loop.c:(.text+0x55c): undefined reference to `scsi_remove_host'
-tcm_loop.c:(.text+0x564): undefined reference to `scsi_host_put'
-drivers/target/loopback/tcm_loop.o: In function `tcm_loop_submission_work':
-tcm_loop.c:(.text+0x7c4): undefined reference to `scmd_printk'
-drivers/target/loopback/tcm_loop.o: In function `tcm_loop_driver_probe':
-tcm_loop.c:(.text+0x7fb): undefined reference to `scsi_host_alloc'
-tcm_loop.c:(.text+0x85b): undefined reference to `scsi_add_host_with_dma'
-tcm_loop.c:(.text+0x896): undefined reference to `scsi_host_put'
-drivers/target/loopback/tcm_loop.o: In function `tcm_loop_port_unlink':
-tcm_loop.c:(.text+0x962): undefined reference to `scsi_device_lookup'
-tcm_loop.c:(.text+0x972): undefined reference to `scsi_remove_device'
-tcm_loop.c:(.text+0x97a): undefined reference to `scsi_device_put'
-drivers/target/loopback/tcm_loop.o:(.data+0x210): undefined reference to `scsi_change_queue_depth'
+Thanks,
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: linux-scsi@vger.kernel.org
-Cc: target-devel@vger.kernel.org
-Cc: Bart Van Assche <bart.vanassche@wdc.com>
----
- drivers/target/loopback/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-next-20180806.orig/drivers/target/loopback/Kconfig
-+++ linux-next-20180806/drivers/target/loopback/Kconfig
-@@ -1,5 +1,6 @@
- config LOOPBACK_TARGET
- 	tristate "TCM Virtual SAS target and Linux/SCSI LDD fabric loopback module"
-+	depends on SCSI
- 	help
- 	  Say Y here to enable the TCM Virtual SAS target and Linux/SCSI LLD
- 	  fabric loopback module.
-
+Bart.
 
