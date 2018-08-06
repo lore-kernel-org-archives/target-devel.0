@@ -1,40 +1,58 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Thu, 30 Aug 2018 11:19:10 +0000
-Subject: Re: [PATCHv2] iscsi-target: Don't use stack buffer for scatterlist
-Message-Id: <yq18t4o5cgh.fsf@oracle.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Mon, 06 Aug 2018 23:20:11 +0000
+Subject: [PATCH v2] target: fix tcm_loop build errors when SCSI=m
+Message-Id: <24dc30ca-b558-fb6c-d478-967dbfa887c4@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180823203626.15108-1-labbott@redhat.com>
-In-Reply-To: <20180823203626.15108-1-labbott@redhat.com> (Laura Abbott's
-        message of "Thu, 23 Aug 2018 13:36:26 -0700")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laura Abbott <labbott@redhat.com>
-Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Bart Van Assche <bart.vanassche@wdc.com>, Hannes Reinecke <hare@suse.com>, Mike Christie <mchristi@redhat.com>, Maurizio Lombardi <mlombard@redhat.com>, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
+
+From: Randy Dunlap <rdunlap@infradead.org>
+
+Fix build errors when CONFIG_SCSI=m and CONFIG_LOOPBACK_TARGET=y
+by making LOOPBACK_TARGET depend on SCSI.
+
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_port_link':
+tcm_loop.c:(.text+0x445): undefined reference to `scsi_add_device'
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_driver_remove':
+tcm_loop.c:(.text+0x55c): undefined reference to `scsi_remove_host'
+tcm_loop.c:(.text+0x564): undefined reference to `scsi_host_put'
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_submission_work':
+tcm_loop.c:(.text+0x7c4): undefined reference to `scmd_printk'
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_driver_probe':
+tcm_loop.c:(.text+0x7fb): undefined reference to `scsi_host_alloc'
+tcm_loop.c:(.text+0x85b): undefined reference to `scsi_add_host_with_dma'
+tcm_loop.c:(.text+0x896): undefined reference to `scsi_host_put'
+drivers/target/loopback/tcm_loop.o: In function `tcm_loop_port_unlink':
+tcm_loop.c:(.text+0x962): undefined reference to `scsi_device_lookup'
+tcm_loop.c:(.text+0x972): undefined reference to `scsi_remove_device'
+tcm_loop.c:(.text+0x97a): undefined reference to `scsi_device_put'
+drivers/target/loopback/tcm_loop.o:(.data+0x210): undefined reference to `scsi_change_queue_depth'
+
+Fixes: 3703b2c5d041 ("[SCSI] tcm_loop: Add multi-fabric Linux/SCSI LLD
+       fabric module")
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: linux-scsi@vger.kernel.org
+Cc: target-devel@vger.kernel.org
+Cc: Bart Van Assche <bart.vanassche@wdc.com>
+Cc: stable@vger.kernel.org # 2.6.39++
+---
+v2: add Fixes: and Cc:stable
+
+ drivers/target/loopback/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-next-20180806.orig/drivers/target/loopback/Kconfig
++++ linux-next-20180806/drivers/target/loopback/Kconfig
+@@ -1,5 +1,6 @@
+ config LOOPBACK_TARGET
+ 	tristate "TCM Virtual SAS target and Linux/SCSI LDD fabric loopback module"
++	depends on SCSI
+ 	help
+ 	  Say Y here to enable the TCM Virtual SAS target and Linux/SCSI LLD
+ 	  fabric loopback module.
 
 
-> Fedora got a bug report of a crash with iSCSI:
->
-> kernel BUG at include/linux/scatterlist.h:143!
-> ...
-> RIP: 0010:iscsit_do_crypto_hash_buf+0x154/0x180 [iscsi_target_mod]
-> ...
->  Call Trace:
->   ? iscsi_target_tx_thread+0x200/0x200 [iscsi_target_mod]
->   iscsit_get_rx_pdu+0x4cd/0xa90 [iscsi_target_mod]
->   ? native_sched_clock+0x3e/0xa0
->   ? iscsi_target_tx_thread+0x200/0x200 [iscsi_target_mod]
->   iscsi_target_rx_thread+0x81/0xf0 [iscsi_target_mod]
->   kthread+0x120/0x140
->   ? kthread_create_worker_on_cpu+0x70/0x70
->   ret_from_fork+0x3a/0x50
->
-> This is a BUG_ON for using a stack buffer with a scatterlist.  There
-> are two cases that trigger this bug. Switch to using a dynamically
-> allocated buffer for one case and do not assign a NULL buffer in
-> another case.
-
-Mike: Please review. Thanks!
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
