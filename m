@@ -1,133 +1,66 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Wed, 15 Aug 2018 20:30:18 +0000
-Subject: Re: iscsi target: Set conn->sess to NULL when iscsi_login_set_conn_values fails
-Message-Id: <5B748D5A.7000402@redhat.com>
+From: Vincent Pelletier <plr.vincent@gmail.com>
+Date: Sat, 11 Aug 2018 09:36:55 +0000
+Subject: BUG in slab_free after iSCSI login timeout
+Message-Id: <20180811093655.42922d8e@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <009ea1a88311492e651c38ae946f785961a7e1a7.1534328354.git.plr.vincent@gmail.com>
-In-Reply-To: <009ea1a88311492e651c38ae946f785961a7e1a7.1534328354.git.plr.vincent@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 08/15/2018 10:59 AM, Mike Christie wrote:
-> On 08/15/2018 05:19 AM, Vincent Pelletier wrote:
->> Fixes a use-after-free reported by KASAN when later
->> iscsi_target_login_sess_out gets called and it tries to access
->> conn->sess->se_sess:
->>
->> Disabling lock debugging due to kernel taint
->> iSCSI Login timeout on Network Portal [::]:3260
->> iSCSI Login negotiation failed.
->> =================================
->> BUG: KASAN: use-after-free in iscsi_target_login_sess_out.cold.12+0x58/0xff [iscsi_target_mod]
->> Read of size 8 at addr ffff880109d070c8 by task iscsi_np/980
->>
->> CPU: 1 PID: 980 Comm: iscsi_np Tainted: G           O      4.17.8kasan.sess.connops+ #4
->> Hardware name: To be filled by O.E.M. To be filled by O.E.M./Aptio CRB, BIOS 5.6.5 05/19/2014
->> Call Trace:
->>  dump_stack+0x71/0xac
->>  print_address_description+0x65/0x22e
->>  ? iscsi_target_login_sess_out.cold.12+0x58/0xff [iscsi_target_mod]
->>  kasan_report.cold.6+0x241/0x2fd
->>  iscsi_target_login_sess_out.cold.12+0x58/0xff [iscsi_target_mod]
->>  iscsi_target_login_thread+0x1086/0x1710 [iscsi_target_mod]
->>  ? __sched_text_start+0x8/0x8
->>  ? iscsi_target_login_sess_out+0x250/0x250 [iscsi_target_mod]
->>  ? __kthread_parkme+0xcc/0x100
->>  ? parse_args.cold.14+0xd3/0xd3
->>  ? iscsi_target_login_sess_out+0x250/0x250 [iscsi_target_mod]
->>  kthread+0x1a0/0x1c0
->>  ? kthread_bind+0x30/0x30
->>  ret_from_fork+0x35/0x40
->>
->> Allocated by task 980:
->>  kasan_kmalloc+0xbf/0xe0
->>  kmem_cache_alloc_trace+0x112/0x210
->>  iscsi_target_login_thread+0x816/0x1710 [iscsi_target_mod]
->>  kthread+0x1a0/0x1c0
->>  ret_from_fork+0x35/0x40
->>
->> Freed by task 980:
->>  __kasan_slab_free+0x125/0x170
->>  kfree+0x90/0x1d0
->>  iscsi_target_login_thread+0x1577/0x1710 [iscsi_target_mod]
->>  kthread+0x1a0/0x1c0
->>  ret_from_fork+0x35/0x40
->>
->> The buggy address belongs to the object at ffff880109d06f00
->>  which belongs to the cache kmalloc-512 of size 512
->> The buggy address is located 456 bytes inside of
->>  512-byte region [ffff880109d06f00, ffff880109d07100)
->> The buggy address belongs to the page:
->> page:ffffea0004274180 count:1 mapcount:0 mapping:0000000000000000 index:0x0 compound_mapcount: 0
->> flags: 0x17fffc000008100(slab|head)
->> raw: 017fffc000008100 0000000000000000 0000000000000000 00000001000c000c
->> raw: dead000000000100 dead000000000200 ffff88011b002e00 0000000000000000
->> page dumped because: kasan: bad access detected
->>
->> Memory state around the buggy address:
->>  ffff880109d06f80: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
->>  ffff880109d07000: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
->>> ffff880109d07080: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
->>                                               ^
->>  ffff880109d07100: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
->>  ffff880109d07180: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->> =================================
->>
->> Signed-off-by: Vincent Pelletier <plr.vincent@gmail.com>
->> ---
->>  drivers/target/iscsi/iscsi_target_login.c | 9 ++++-----
->>  1 file changed, 4 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
->> index df81b2f7cad9..c95f4261a089 100644
->> --- a/drivers/target/iscsi/iscsi_target_login.c
->> +++ b/drivers/target/iscsi/iscsi_target_login.c
->> @@ -296,10 +296,8 @@ static int iscsi_login_zero_tsih_s1(
->>  	}
->>  
->>  	ret = iscsi_login_set_conn_values(sess, conn, pdu->cid);
->> -	if (unlikely(ret)) {
->> -		kfree(sess);
->> -		return ret;
->> -	}
->> +	if (unlikely(ret))
->> +		goto free_sess;
->>  	sess->init_task_tag	= pdu->itt;
->>  	memcpy(&sess->isid, pdu->isid, 6);
->>  	sess->exp_cmd_sn	= be32_to_cpu(pdu->cmdsn);
->> @@ -333,6 +331,7 @@ static int iscsi_login_zero_tsih_s1(
->>  		pr_err("idr_alloc() for sess_idr failed\n");
->>  		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
->>  				ISCSI_LOGIN_STATUS_NO_RESOURCES);
->> +		ret = -ENOMEM;
+Hello,
 
-Sorry to cause more confusion. I misunderstood what you were saying in
-the other mails.
+I am getting the following BUG with a Windows 10 initiator and a
+Debian sid LIO iSCSI target:
 
-Here, I think it will be ok to not set ret.
+Aug 11 11:28:28 boke kernel: [  141.536023] iSCSI Login timeout on Network Portal [::]:3260
+Aug 11 11:28:28 boke kernel: [  141.536164] iSCSI Login negotiation failed.
+Aug 11 11:28:28 boke kernel: [  141.536247] ------------[ cut here ]------------
+Aug 11 11:28:28 boke kernel: [  141.536250] kernel BUG at /build/linux-0buYvw/linux-4.17.8/mm/slub.c:296!
+Aug 11 11:28:28 boke kernel: [  141.536362] invalid opcode: 0000 [#1] SMP PTI
+Aug 11 11:28:28 boke kernel: [  141.536432] Modules linked in: target_core_user uio target_core_pscsi target_core_file target_core_iblock iscsi_target_mod target_core_mod configfs hid_generic usbhid uas usb_storage snd_hda_codec_hdmi spi_pxa2xx_platform evdev intel_rapl intel_soc_dts_thermal intel_soc_dts_iosf intel_powerclamp coretemp kvm_intel i915 kvm drm_kms_helper drm irqbypass crct10dif_pclmul crc32_pclmul ghash_clmulni_intel snd_hda_intel intel_cstate snd_hda_codec efi_pstore pcspkr efivars snd_hda_core snd_hwdep snd_pcm sg snd_timer iTCO_wdt iTCO_vendor_support snd ir_rc6_decoder soundcore spi_pxa2xx_pci shpchp rc_rc6_mce fintek_cir rc_core video pwm_lpss_platform pwm_lpss button gpio_keys_polled(O) input_polldev leds_gpio nfsd auth_rpcgss nfs_acl lockd grace sunrpc gpio_f7188x(O) qnap_tsx51(O) ledtrig_timer f71882fg efivarfs
+Aug 11 11:28:28 boke kernel: [  141.537528]  ip_tables x_tables autofs4 ext4 crc16 mbcache jbd2 fscrypto ecb crypto_simd cryptd glue_helper aes_x86_64 dm_mod raid10 raid456 async_raid6_recov async_memcpy async_pq async_xor async_tx xor raid6_pq libcrc32c crc32c_generic raid0 multipath linear raid1 md_mod sd_mod crc32c_intel lpc_ich i2c_i801 igb i2c_algo_bit dca ahci libahci libata xhci_pci xhci_hcd i2c_designware_pci scsi_mod usbcore usb_common sdhci_pci cqhci sdhci mmc_core i2c_hid hid thermal fan
+Aug 11 11:28:28 boke kernel: [  141.538191] CPU: 0 PID: 992 Comm: iscsi_np Tainted: G           O      4.17.0-1-amd64 #1 Debian 4.17.8-1
+Aug 11 11:28:28 boke kernel: [  141.538333] Hardware name: To be filled by O.E.M. To be filled by O.E.M./Aptio CRB, BIOS 5.6.5 05/19/2014
+Aug 11 11:28:28 boke kernel: [  141.538481] RIP: 0010:__slab_free+0x18a/0x300
+Aug 11 11:28:28 boke kernel: [  141.538550] RSP: 0018:ffffb44380a57dd0 EFLAGS: 00010246
+Aug 11 11:28:28 boke kernel: [  141.538633] RAX: ffff9c6f36dfbc00 RBX: ffff9c6f36dfbc00 RCX: 000000018010000e
+Aug 11 11:28:28 boke kernel: [  141.538744] RDX: ffff9c6f36dfbc00 RSI: ffffe52004db7e80 RDI: ffff9c6f3b003080
+Aug 11 11:28:28 boke kernel: [  141.538851] RBP: ffffb44380a57e70 R08: 0000000000000001 R09: ffffffffc0ca83c6
+Aug 11 11:28:28 boke kernel: [  141.541763] R10: ffffe52004db7e80 R11: 00000000ffffffff R12: ffff9c6f3b003080
+Aug 11 11:28:28 boke kernel: [  141.544714] R13: ffffe52004db7e80 R14: ffff9c6f36dfbc00 R15: 0000000000000000
+Aug 11 11:28:28 boke kernel: [  141.547638] FS:  0000000000000000(0000) GS:ffff9c6f3fc00000(0000) knlGS:0000000000000000
+Aug 11 11:28:28 boke kernel: [  141.550593] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+Aug 11 11:28:28 boke kernel: [  141.553496] CR2: 00007f3331ff3300 CR3: 000000000aa0a000 CR4: 00000000001006f0
+Aug 11 11:28:28 boke kernel: [  141.556422] Call Trace:
+Aug 11 11:28:28 boke kernel: [  141.559290]  ? vprintk_emit+0x3e4/0x450
+Aug 11 11:28:28 boke kernel: [  141.562112]  ? __slab_free+0x15a/0x300
+Aug 11 11:28:28 boke kernel: [  141.564861]  ? printk+0x52/0x6e
+Aug 11 11:28:28 boke kernel: [  141.567531]  ? iscsi_target_login_sess_out+0x1e6/0x240 [iscsi_target_mod]
+Aug 11 11:28:28 boke kernel: [  141.570233]  iscsi_target_login_sess_out+0x1e6/0x240 [iscsi_target_mod]
+Aug 11 11:28:28 boke kernel: [  141.572897]  iscsi_target_login_thread+0x432/0xff0 [iscsi_target_mod]
+Aug 11 11:28:28 boke kernel: [  141.575488]  ? iscsi_target_login_sess_out+0x240/0x240 [iscsi_target_mod]
+Aug 11 11:28:28 boke kernel: [  141.578027]  kthread+0x113/0x130
+Aug 11 11:28:28 boke kernel: [  141.580483]  ? kthread_create_worker_on_cpu+0x70/0x70
+Aug 11 11:28:28 boke kernel: [  141.582904]  ret_from_fork+0x35/0x40
+Aug 11 11:28:28 boke kernel: [  141.585239] Code: fe ff ff 44 0f b6 bd 7f ff ff ff 80 7d ab 00 79 05 45 84 ff 74 7b 48 83 c4 78 5b 41 5c 41 5d 41 5e 41 5f 5d 49 8d 65 f0 41 5d c3 <0f> 0b 4c 89 d0 4c 89 55 88 45 89 fa 48 85 c0 44 0f b6 bd 7f ff
+Aug 11 11:28:28 boke kernel: [  141.592324] RIP: __slab_free+0x18a/0x300 RSP: ffffb44380a57dd0
+Aug 11 11:28:28 boke kernel: [  141.594641] ---[ end trace 6ee2f89117f24b05 ]---
 
->>  		goto free_sess;
->>  	}
+I had this issue several times, but the way to reproduce is not clear
+to me yet. It seems it fails especially when initiator is up before
+server, but it is not strictly required either.
 
-But, you need to set ret = -ENOMEM in the goto remove_idr and goto
-free_ops paths below the above chunk, because ret will be set to >= 0 at
-those points and the caller checks for ret < 0.
+What can I try to help debug this further ?
 
->>  
->> @@ -370,7 +369,7 @@ static int iscsi_login_zero_tsih_s1(
->>  free_sess:
->>  	kfree(sess);
->>  	conn->sess = NULL;
->> -	return -ENOMEM;
->> +	return ret;
->>  }
->>  
->>  static int iscsi_login_zero_tsih_s2(
->>
-> 
-> Reviewed-by: Mike Christie <mchristi@redhat.com>
-> 
+Side notes:
+Of the 3 out-of-tree modules, 2 are actually from-tree (but not build
+in default debian sid kernels): gpio_keys_polled gpio_f7188x, and one is
+actually out-of-tree (qnap_tsx51), although it should be trivially
+valid (static data structure describing a few gpios, with attached leds
+and buttons, as firmware does not describe these):
+  https://github.com/vpelletier/linux/blob/4fc287fee9846bbfbb356ea161578342f5672a12/drivers/platform/x86/qnap-tsx51.c
 
-Please drop that reviewed-by.
+Regards,
+-- 
+Vincent Pelletier
