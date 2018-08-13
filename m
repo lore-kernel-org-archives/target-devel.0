@@ -1,8 +1,10 @@
-From: "Jack Dike" <falinti@plumeriabath.com>
-Date: Mon, 13 Aug 2018 05:32:06 +0000
+From: "Jack Dike" <davidtens@bathbodysupply.com>
+Date: Mon, 13 Aug 2018 06:13:46 +0000
 Subject: the mobile apps
-Message-Id: <f370cd0a62041e89e989980679a529c2@altadevices.com>
+Message-Id: <d4e4719d060a9588eccbe2e6c6e8bd5d@altadevices.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <f370cd0a62041e89e989980679a529c2@altadevices.com>
+In-Reply-To: <f370cd0a62041e89e989980679a529c2@altadevices.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
