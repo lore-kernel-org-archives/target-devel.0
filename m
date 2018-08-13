@@ -1,7 +1,7 @@
-From: Vincent Pelletier <plr.vincent@gmail.com>
-Date: Sun, 12 Aug 2018 04:01:26 +0000
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 13 Aug 2018 19:48:03 +0000
 Subject: Re: BUG in slab_free after iSCSI login timeout
-Message-Id: <20180812040126.6f54f705@gmail.com>
+Message-Id: <5B71E073.5000105@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180811093655.42922d8e@gmail.com>
 In-Reply-To: <20180811093655.42922d8e@gmail.com>
@@ -10,22 +10,22 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Sun, 12 Aug 2018 03:51:40 +0000, Vincent Pelletier
-<plr.vincent@gmail.com> wrote:
->   This said, I was surprised by "free" output listing only a bit
->   above 3GB of ram total:
->   $ free -m
->                 total        used        free      shared  buff/cache   available
->   Mem:           3310         250        2867           5         192        2847
->   Swap:          5015           0        5015
->   Would it be an effect of KASAN ?
->   I also found the following line in dmesg:
->   [    0.000000] Memory: 3099784K/4088348K available (14348K kernel code, 4532K rwdata, 5400K rodata, 1840K init, 9112K bss, 988564K reserved, 0K cma-reserved)
->   Checking pre-KASAN boots it was:
->   [    0.000000] Memory: 3657884K/4088348K available (10252K kernel code, 1210K rwdata, 3216K rodata, 1548K init, 656K bss, 430464K reserved, 0K cma-reserved)
+On 08/11/2018 10:51 PM, Vincent Pelletier wrote:
+> On Sun, 12 Aug 2018 02:55:31 +0000, Vincent Pelletier
+> <plr.vincent@gmail.com> wrote:
+>> Aug 12 04:44:53 boke kernel: [   64.737069] BUG: KASAN: use-after-free in iscsi_target_login_sess_out.cold.11+0x58/0x123 [iscsi_target_mod]
+>> Aug 12 04:44:53 boke kernel: [   64.771148] BUG: KASAN: double-free or invalid-free in iscsi_target_login_sess_out.cold.11+0x103/0x123 [iscsi_target_mod]
+> 
+> If I'm reading the code correctly, the double-free would be
+> iscsi_login_init_conn and iscsi_target_login_sess_out both calling
+> kfree(conn->conn_ops), with the latter called by
+> __iscsi_target_login_thread precisely when the former fails (returns
+> NULL after freeing).
+> 
 
-Answering my own question after a bit of RTFM: KASAN uses 1 byte to
-track 8 bytes, so monitoring 4GB takes 512MB, so it indeed explains the
-vast majority of the difference in reserved memory.
--- 
-Vincent Pelletier
+I think I fixed that with this patch:
+
+https://www.spinics.net/lists/target-devel/msg17018.html
+
+It fixes a mix of problems double free of the ops, session and reference
+after free.
