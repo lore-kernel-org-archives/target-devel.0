@@ -1,41 +1,33 @@
-From: Vincent Pelletier <plr.vincent@gmail.com>
-Date: Thu, 16 Aug 2018 12:11:16 +0000
-Subject: Re: iscsi target: Let initiator decide whether it wants to authenticate target
-Message-Id: <20180816121116.130cc7ce@gmail.com>
+From: "Jack Dike" <falinti@plumeriabath.com>
+Date: Mon, 13 Aug 2018 05:32:06 +0000
+Subject: the mobile apps
+Message-Id: <f370cd0a62041e89e989980679a529c2@altadevices.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <97479a0ccf17d8ad7a8ba7a0f7e8190da6ddc72e.1534334933.git.plr.vincent@gmail.com>
-In-Reply-To: <97479a0ccf17d8ad7a8ba7a0f7e8190da6ddc72e.1534334933.git.plr.vincent@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Thu, 16 Aug 2018 00:00:35 -0500, Mike Christie <mchristi@redhat.com>
-wrote:
-> I just worry some users have set this and expect the extra layer of
-> checks.
+Do you need mobile apps development? We can do it for you.
 
-Now that you mention it, it is very possible indeed. The original code
-could help spot an initiator misconfiguration.
+We are an India base company. Here are the details about us:
+Years in business: 8
+Staffs: 125
+App developed: 350
 
-> I can see how it is more convenient though. I think this is
-> something I really am not sure about because I have not worked on the
-> code for a long time. It is better if Nick were around.
+We work on Android, iOS, Ionic, and PhoneGap platforms, we have clients
+across different kind of industries.
+Such like retail, media and entertainment, BFSI, hospitality, social media,
+eCommerce, food and beverages, etc.
 
-FWIW, I do not have a noteworthy use-case behind this - I merely have a
-home NAS with 2 LUNs exported. It is rather from a "I just noticed this
-going over the code and the RFC does not seem to require this" and a "I
-guess this confused/will confuse someone trying it out" point of view.
+We do below:
+Mobile Apps
+Mobile App UI/UX designing
+App Maintenance and Support
+Website or ecommerce portal development
 
-> I saw some targets/initiators allow you to configure this type of thing
-> as optional where in that mode it works like in your patch. What about that?
+Please reply back if you are interested in what we do.
+We will share our portfolios to you.
 
-That would indeed be nicer than my patch. And then it can remain
-enforced by default.
-
-> I guess you can wait for other reviewers or maybe some distro packagers
-> to chime in too.
-
-I certainly can wait, yes. No worries.
--- 
-Vincent Pelletier
+Regards,
+Jack
