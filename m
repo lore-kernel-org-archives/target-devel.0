@@ -1,21 +1,73 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Tue, 07 Aug 2018 05:44:49 +0000
-Subject: Re: [PATCH v2 4/9] target: don't depend on SCSI
-Message-Id: <20180807054449.GA31556@lst.de>
+From: Vincent Pelletier <plr.vincent@gmail.com>
+Date: Wed, 15 Aug 2018 12:08:53 +0000
+Subject: iscsi target: Let initiator decide whether it wants to authenticate target
+Message-Id: <97479a0ccf17d8ad7a8ba7a0f7e8190da6ddc72e.1534334933.git.plr.vincent@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180731195155.46664-1-keescook@chromium.org> <20180731195155.46664-5-keescook@chromium.org> <111cb1b0-24ba-bcb2-53d5-9665d2b4c421@infradead.org> <CAGXu5jKNeep01VOwC-dWsT4iDXrkBOhHJX0+4BEBotYOx1D0Tg@mail.gmail.com>
-In-Reply-To: <CAGXu5jKNeep01VOwC-dWsT4iDXrkBOhHJX0+4BEBotYOx1D0Tg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kees Cook <keescook@chromium.org>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, David Kershner <david.kershner@unisys.com>, linux-block <linux-block@vger.kernel.org>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel <target-devel@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bart Van Assche <bart.vanassche@wdc.com>
+To: target-devel@vger.kernel.org
 
-On Mon, Aug 06, 2018 at 04:59:04PM -0700, Kees Cook wrote:
-> I wonder if LOOPBACK_TARGET is just missing a "depends on SCSI" as was
-> added for TCM_PSCSI?
+Do not fail authentication after target is happy with initiator's
+credentials, when target is configured to authenticate itself to an
+initiator but current initiator did not provide required values.
+Also, downgrade "Could not find CHAP_I." to a debug level message, as it
+will happen normally in such case.
 
-That is eactly the case.  LOOPBACK_TARGET is a scsi driver that
-feeds commands into the target layer, so it needs a depends on SCSI.
+Signed-off-by: Vincent Pelletier <plr.vincent@gmail.com>
+---
+ drivers/target/iscsi/iscsi_target_auth.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-Sorry for missing that earlier.
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index 4e680d753941..8598eb00830a 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -290,18 +290,21 @@ static int chap_server_compute_md5(
+ 		pr_debug("[server] MD5 Digests match, CHAP connection"
+ 				" successful.\n\n");
+ 	/*
+-	 * One way authentication has succeeded, return now if mutual
+-	 * authentication is not enabled.
++	 * One way authentication has succeeded
++	 */
++	auth_ret = 0;
++	*nr_out_len = 0;
++	/*
++	 * Return now if mutual authentication is not enabled.
+ 	 */
+ 	if (!auth->authenticate_target) {
+-		auth_ret = 0;
+ 		goto out;
+ 	}
+ 	/*
+ 	 * Get CHAP_I.
+ 	 */
+ 	if (extract_param(nr_in_ptr, "CHAP_I", 10, identifier, &type) < 0) {
+-		pr_err("Could not find CHAP_I.\n");
++		pr_debug("Could not find CHAP_I.\n");
+ 		goto out;
+ 	}
+ 
+@@ -407,7 +410,7 @@ static int chap_server_compute_md5(
+ 			response);
+ 	*nr_out_len += 1;
+ 	pr_debug("[server] Sending CHAP_R=0x%s\n", response);
+-	auth_ret = 0;
++	chap->chap_state = CHAP_STAGE_SERVER_NR;
+ out:
+ 	kzfree(desc);
+ 	if (tfm)
+@@ -462,10 +465,6 @@ u32 chap_main_loop(
+ 			chap_close(conn);
+ 			return 2;
+ 		}
+-		if (auth->authenticate_target)
+-			chap->chap_state = CHAP_STAGE_SERVER_NR;
+-		else
+-			*out_len = 0;
+ 		chap_close(conn);
+ 		return 1;
+ 	}
+-- 
+2.18.0
