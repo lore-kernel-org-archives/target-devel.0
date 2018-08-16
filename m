@@ -1,125 +1,96 @@
-From: Vincent Pelletier <plr.vincent@gmail.com>
-Date: Wed, 15 Aug 2018 22:56:50 +0000
-Subject: [PATCHv2] iscsi target: Set conn->sess to NULL when iscsi_login_set_conn_values fails
-Message-Id: <832b92dcf4838101e944f1394de570642a16faac.1534372918.git.plr.vincent@gmail.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Thu, 16 Aug 2018 04:55:43 +0000
+Subject: Re: [PATCHv2] iscsi target: Set conn->sess to NULL when iscsi_login_set_conn_values fails
+Message-Id: <5B7503CF.8010602@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <832b92dcf4838101e944f1394de570642a16faac.1534372918.git.plr.vincent@gmail.com>
+In-Reply-To: <832b92dcf4838101e944f1394de570642a16faac.1534372918.git.plr.vincent@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1258"
+Content-Transfer-Encoding: base64
 To: target-devel@vger.kernel.org
 
-Fixes a use-after-free reported by KASAN when later
-iscsi_target_login_sess_out gets called and it tries to access
-conn->sess->se_sess:
-
-Disabling lock debugging due to kernel taint
-iSCSI Login timeout on Network Portal [::]:3260
-iSCSI Login negotiation failed.
-=================================
-BUG: KASAN: use-after-free in iscsi_target_login_sess_out.cold.12+0x58/0xff [iscsi_target_mod]
-Read of size 8 at addr ffff880109d070c8 by task iscsi_np/980
-
-CPU: 1 PID: 980 Comm: iscsi_np Tainted: G           O      4.17.8kasan.sess.connops+ #4
-Hardware name: To be filled by O.E.M. To be filled by O.E.M./Aptio CRB, BIOS 5.6.5 05/19/2014
-Call Trace:
- dump_stack+0x71/0xac
- print_address_description+0x65/0x22e
- ? iscsi_target_login_sess_out.cold.12+0x58/0xff [iscsi_target_mod]
- kasan_report.cold.6+0x241/0x2fd
- iscsi_target_login_sess_out.cold.12+0x58/0xff [iscsi_target_mod]
- iscsi_target_login_thread+0x1086/0x1710 [iscsi_target_mod]
- ? __sched_text_start+0x8/0x8
- ? iscsi_target_login_sess_out+0x250/0x250 [iscsi_target_mod]
- ? __kthread_parkme+0xcc/0x100
- ? parse_args.cold.14+0xd3/0xd3
- ? iscsi_target_login_sess_out+0x250/0x250 [iscsi_target_mod]
- kthread+0x1a0/0x1c0
- ? kthread_bind+0x30/0x30
- ret_from_fork+0x35/0x40
-
-Allocated by task 980:
- kasan_kmalloc+0xbf/0xe0
- kmem_cache_alloc_trace+0x112/0x210
- iscsi_target_login_thread+0x816/0x1710 [iscsi_target_mod]
- kthread+0x1a0/0x1c0
- ret_from_fork+0x35/0x40
-
-Freed by task 980:
- __kasan_slab_free+0x125/0x170
- kfree+0x90/0x1d0
- iscsi_target_login_thread+0x1577/0x1710 [iscsi_target_mod]
- kthread+0x1a0/0x1c0
- ret_from_fork+0x35/0x40
-
-The buggy address belongs to the object at ffff880109d06f00
- which belongs to the cache kmalloc-512 of size 512
-The buggy address is located 456 bytes inside of
- 512-byte region [ffff880109d06f00, ffff880109d07100)
-The buggy address belongs to the page:
-page:ffffea0004274180 count:1 mapcount:0 mapping:0000000000000000 index:0x0 compound_mapcount: 0
-flags: 0x17fffc000008100(slab|head)
-raw: 017fffc000008100 0000000000000000 0000000000000000 00000001000c000c
-raw: dead000000000100 dead000000000200 ffff88011b002e00 0000000000000000
-page dumped because: kasan: bad access detected
-
-Memory state around the buggy address:
- ffff880109d06f80: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
- ffff880109d07000: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
->ffff880109d07080: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-                                              ^
- ffff880109d07100: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
- ffff880109d07180: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-=================================
-
-Also, let idr_alloc return value through instead of replacing it with -ENOMEM,
-as it is already a negative value and caller checks sign, not exact value.
-
-Signed-off-by: Vincent Pelletier <plr.vincent@gmail.com>
----
- drivers/target/iscsi/iscsi_target_login.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index df81b2f7cad9..7337ff80394e 100644
---- a/drivers/target/iscsi/iscsi_target_login.c
-+++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -296,10 +296,8 @@ static int iscsi_login_zero_tsih_s1(
- 	}
- 
- 	ret = iscsi_login_set_conn_values(sess, conn, pdu->cid);
--	if (unlikely(ret)) {
--		kfree(sess);
--		return ret;
--	}
-+	if (unlikely(ret))
-+		goto free_sess;
- 	sess->init_task_tag	= pdu->itt;
- 	memcpy(&sess->isid, pdu->isid, 6);
- 	sess->exp_cmd_sn	= be32_to_cpu(pdu->cmdsn);
-@@ -349,6 +347,7 @@ static int iscsi_login_zero_tsih_s1(
- 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
- 		pr_err("Unable to allocate memory for"
- 				" struct iscsi_sess_ops.\n");
-+		ret = -ENOMEM;
- 		goto remove_idr;
- 	}
- 
-@@ -356,6 +355,7 @@ static int iscsi_login_zero_tsih_s1(
- 	if (IS_ERR(sess->se_sess)) {
- 		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
- 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
-+		ret = -ENOMEM;
- 		goto free_ops;
- 	}
- 
-@@ -370,7 +370,7 @@ static int iscsi_login_zero_tsih_s1(
- free_sess:
- 	kfree(sess);
- 	conn->sess = NULL;
--	return -ENOMEM;
-+	return ret;
- }
- 
- static int iscsi_login_zero_tsih_s2(
--- 
-2.18.0
+T24gMDgvMTUvMjAxOCAwNTo1NiBQTSwgVmluY2VudCBQZWxsZXRpZXIgd3JvdGU6Cj4gRml4ZXMg
+YSB1c2UtYWZ0ZXItZnJlZSByZXBvcnRlZCBieSBLQVNBTiB3aGVuIGxhdGVyCj4gaXNjc2lfdGFy
+Z2V0X2xvZ2luX3Nlc3Nfb3V0IGdldHMgY2FsbGVkIGFuZCBpdCB0cmllcyB0byBhY2Nlc3MKPiBj
+b25uLT5zZXNzLT5zZV9zZXNzOgo+IAo+IERpc2FibGluZyBsb2NrIGRlYnVnZ2luZyBkdWUgdG8g
+a2VybmVsIHRhaW50Cj4gaVNDU0kgTG9naW4gdGltZW91dCBvbiBOZXR3b3JrIFBvcnRhbCBbOjpd
+OjMyNjAKPiBpU0NTSSBMb2dpbiBuZWdvdGlhdGlvbiBmYWlsZWQuCj4gPT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09Cj4gQlVHOiBLQVNBTjogdXNlLWFmdGVyLWZyZWUgaW4gaXNjc2lf
+dGFyZ2V0X2xvZ2luX3Nlc3Nfb3V0LmNvbGQuMTIrMHg1OC8weGZmIFtpc2NzaV90YXJnZXRfbW9k
+XQo+IFJlYWQgb2Ygc2l6ZSA4IGF0IGFkZHIgZmZmZjg4MDEwOWQwNzBjOCBieSB0YXNrIGlzY3Np
+X25wLzk4MAo+IAo+IENQVTogMSBQSUQ6IDk4MCBDb21tOiBpc2NzaV9ucCBUYWludGVkOiBHICAg
+ICAgICAgICBPICAgICAgNC4xNy44a2FzYW4uc2Vzcy5jb25ub3BzKyAjNAo+IEhhcmR3YXJlIG5h
+bWU6IFRvIGJlIGZpbGxlZCBieSBPLkUuTS4gVG8gYmUgZmlsbGVkIGJ5IE8uRS5NLi9BcHRpbyBD
+UkIsIEJJT1MgNS42LjUgMDUvMTkvMjAxNAo+IENhbGwgVHJhY2U6Cj4gIGR1bXBfc3RhY2srMHg3
+MS8weGFjCj4gIHByaW50X2FkZHJlc3NfZGVzY3JpcHRpb24rMHg2NS8weDIyZQo+ICA/IGlzY3Np
+X3RhcmdldF9sb2dpbl9zZXNzX291dC5jb2xkLjEyKzB4NTgvMHhmZiBbaXNjc2lfdGFyZ2V0X21v
+ZF0KPiAga2FzYW5fcmVwb3J0LmNvbGQuNisweDI0MS8weDJmZAo+ICBpc2NzaV90YXJnZXRfbG9n
+aW5fc2Vzc19vdXQuY29sZC4xMisweDU4LzB4ZmYgW2lzY3NpX3RhcmdldF9tb2RdCj4gIGlzY3Np
+X3RhcmdldF9sb2dpbl90aHJlYWQrMHgxMDg2LzB4MTcxMCBbaXNjc2lfdGFyZ2V0X21vZF0KPiAg
+PyBfX3NjaGVkX3RleHRfc3RhcnQrMHg4LzB4OAo+ICA/IGlzY3NpX3RhcmdldF9sb2dpbl9zZXNz
+X291dCsweDI1MC8weDI1MCBbaXNjc2lfdGFyZ2V0X21vZF0KPiAgPyBfX2t0aHJlYWRfcGFya21l
+KzB4Y2MvMHgxMDAKPiAgPyBwYXJzZV9hcmdzLmNvbGQuMTQrMHhkMy8weGQzCj4gID8gaXNjc2lf
+dGFyZ2V0X2xvZ2luX3Nlc3Nfb3V0KzB4MjUwLzB4MjUwIFtpc2NzaV90YXJnZXRfbW9kXQo+ICBr
+dGhyZWFkKzB4MWEwLzB4MWMwCj4gID8ga3RocmVhZF9iaW5kKzB4MzAvMHgzMAo+ICByZXRfZnJv
+bV9mb3JrKzB4MzUvMHg0MAo+IAo+IEFsbG9jYXRlZCBieSB0YXNrIDk4MDoKPiAga2FzYW5fa21h
+bGxvYysweGJmLzB4ZTAKPiAga21lbV9jYWNoZV9hbGxvY190cmFjZSsweDExMi8weDIxMAo+ICBp
+c2NzaV90YXJnZXRfbG9naW5fdGhyZWFkKzB4ODE2LzB4MTcxMCBbaXNjc2lfdGFyZ2V0X21vZF0K
+PiAga3RocmVhZCsweDFhMC8weDFjMAo+ICByZXRfZnJvbV9mb3JrKzB4MzUvMHg0MAo+IAo+IEZy
+ZWVkIGJ5IHRhc2sgOTgwOgo+ICBfX2thc2FuX3NsYWJfZnJlZSsweDEyNS8weDE3MAo+ICBrZnJl
+ZSsweDkwLzB4MWQwCj4gIGlzY3NpX3RhcmdldF9sb2dpbl90aHJlYWQrMHgxNTc3LzB4MTcxMCBb
+aXNjc2lfdGFyZ2V0X21vZF0KPiAga3RocmVhZCsweDFhMC8weDFjMAo+ICByZXRfZnJvbV9mb3Jr
+KzB4MzUvMHg0MAo+IAo+IFRoZSBidWdneSBhZGRyZXNzIGJlbG9uZ3MgdG8gdGhlIG9iamVjdCBh
+dCBmZmZmODgwMTA5ZDA2ZjAwCj4gIHdoaWNoIGJlbG9uZ3MgdG8gdGhlIGNhY2hlIGttYWxsb2Mt
+NTEyIG9mIHNpemUgNTEyCj4gVGhlIGJ1Z2d5IGFkZHJlc3MgaXMgbG9jYXRlZCA0NTYgYnl0ZXMg
+aW5zaWRlIG9mCj4gIDUxMi1ieXRlIHJlZ2lvbiBbZmZmZjg4MDEwOWQwNmYwMCwgZmZmZjg4MDEw
+OWQwNzEwMCkKPiBUaGUgYnVnZ3kgYWRkcmVzcyBiZWxvbmdzIHRvIHRoZSBwYWdlOgo+IHBhZ2U6
+ZmZmZmVhMDAwNDI3NDE4MCBjb3VudDoxIG1hcGNvdW50OjAgbWFwcGluZzowMDAwMDAwMDAwMDAw
+MDAwIGluZGV4OjB4MCBjb21wb3VuZF9tYXBjb3VudDogMAo+IGZsYWdzOiAweDE3ZmZmYzAwMDAw
+ODEwMChzbGFifGhlYWQpCj4gcmF3OiAwMTdmZmZjMDAwMDA4MTAwIDAwMDAwMDAwMDAwMDAwMDAg
+MDAwMDAwMDAwMDAwMDAwMCAwMDAwMDAwMTAwMGMwMDBjCj4gcmF3OiBkZWFkMDAwMDAwMDAwMTAw
+IGRlYWQwMDAwMDAwMDAyMDAgZmZmZjg4MDExYjAwMmUwMCAwMDAwMDAwMDAwMDAwMDAwCj4gcGFn
+ZSBkdW1wZWQgYmVjYXVzZToga2FzYW46IGJhZCBhY2Nlc3MgZGV0ZWN0ZWQKPiAKPiBNZW1vcnkg
+c3RhdGUgYXJvdW5kIHRoZSBidWdneSBhZGRyZXNzOgo+ICBmZmZmODgwMTA5ZDA2ZjgwOiBmYiBm
+YiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYgo+ICBmZmZmODgwMTA5
+ZDA3MDAwOiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYgo+
+PiBmZmZmODgwMTA5ZDA3MDgwOiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBmYiBm
+YiBmYiBmYiBmYgo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICBeCj4gIGZmZmY4ODAxMDlkMDcxMDA6IGZjIGZjIGZjIGZjIGZjIGZjIGZjIGZjIGZjIGZjIGZj
+IGZjIGZjIGZjIGZjIGZjCj4gIGZmZmY4ODAxMDlkMDcxODA6IDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09Cj4gCj4gQWxzbywgbGV0IGlkcl9hbGxvYyByZXR1cm4gdmFsdWUgdGhyb3VnaCBpbnN0
+ZWFkIG9mIHJlcGxhY2luZyBpdCB3aXRoIC1FTk9NRU0sCj4gYXMgaXQgaXMgYWxyZWFkeSBhIG5l
+Z2F0aXZlIHZhbHVlIGFuZCBjYWxsZXIgY2hlY2tzIHNpZ24sIG5vdCBleGFjdCB2YWx1ZS4KPiAK
+PiBTaWduZWQtb2ZmLWJ5OiBWaW5jZW50IFBlbGxldGllciA8cGxyLnZpbmNlbnRAZ21haWwuY29t
+Pgo+IC0tLQo+ICBkcml2ZXJzL3RhcmdldC9pc2NzaS9pc2NzaV90YXJnZXRfbG9naW4uYyB8IDEw
+ICsrKysrLS0tLS0KPiAgMSBmaWxlIGNoYW5nZWQsIDUgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlv
+bnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0
+X2xvZ2luLmMgYi9kcml2ZXJzL3RhcmdldC9pc2NzaS9pc2NzaV90YXJnZXRfbG9naW4uYwo+IGlu
+ZGV4IGRmODFiMmY3Y2FkOS4uNzMzN2ZmODAzOTRlIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvdGFy
+Z2V0L2lzY3NpL2lzY3NpX3RhcmdldF9sb2dpbi5jCj4gKysrIGIvZHJpdmVycy90YXJnZXQvaXNj
+c2kvaXNjc2lfdGFyZ2V0X2xvZ2luLmMKPiBAQCAtMjk2LDEwICsyOTYsOCBAQCBzdGF0aWMgaW50
+IGlzY3NpX2xvZ2luX3plcm9fdHNpaF9zMSgKPiAgCX0KPiAgCj4gIAlyZXQgPSBpc2NzaV9sb2dp
+bl9zZXRfY29ubl92YWx1ZXMoc2VzcywgY29ubiwgcGR1LT5jaWQpOwo+IC0JaWYgKHVubGlrZWx5
+KHJldCkpIHsKPiAtCQlrZnJlZShzZXNzKTsKPiAtCQlyZXR1cm4gcmV0Owo+IC0JfQo+ICsJaWYg
+KHVubGlrZWx5KHJldCkpCj4gKwkJZ290byBmcmVlX3Nlc3M7Cj4gIAlzZXNzLT5pbml0X3Rhc2tf
+dGFnCT0gcGR1LT5pdHQ7Cj4gIAltZW1jcHkoJnNlc3MtPmlzaWQsIHBkdS0+aXNpZCwgNik7Cj4g
+IAlzZXNzLT5leHBfY21kX3NuCT0gYmUzMl90b19jcHUocGR1LT5jbWRzbik7Cj4gQEAgLTM0OSw2
+ICszNDcsNyBAQCBzdGF0aWMgaW50IGlzY3NpX2xvZ2luX3plcm9fdHNpaF9zMSgKPiAgCQkJCUlT
+Q1NJX0xPR0lOX1NUQVRVU19OT19SRVNPVVJDRVMpOwo+ICAJCXByX2VycigiVW5hYmxlIHRvIGFs
+bG9jYXRlIG1lbW9yeSBmb3IiCj4gIAkJCQkiIHN0cnVjdCBpc2NzaV9zZXNzX29wcy5cbiIpOwo+
+ICsJCXJldCA9IC1FTk9NRU07Cj4gIAkJZ290byByZW1vdmVfaWRyOwo+ICAJfQo+ICAKPiBAQCAt
+MzU2LDYgKzM1NSw3IEBAIHN0YXRpYyBpbnQgaXNjc2lfbG9naW5femVyb190c2loX3MxKAo+ICAJ
+aWYgKElTX0VSUihzZXNzLT5zZV9zZXNzKSkgewo+ICAJCWlzY3NpdF90eF9sb2dpbl9yc3AoY29u
+biwgSVNDU0lfU1RBVFVTX0NMU19UQVJHRVRfRVJSLAo+ICAJCQkJSVNDU0lfTE9HSU5fU1RBVFVT
+X05PX1JFU09VUkNFUyk7Cj4gKwkJcmV0ID0gLUVOT01FTTsKPiAgCQlnb3RvIGZyZWVfb3BzOwo+
+ICAJfQo+ICAKPiBAQCAtMzcwLDcgKzM3MCw3IEBAIHN0YXRpYyBpbnQgaXNjc2lfbG9naW5femVy
+b190c2loX3MxKAo+ICBmcmVlX3Nlc3M6Cj4gIAlrZnJlZShzZXNzKTsKPiAgCWNvbm4tPnNlc3Mg
+PSBOVUxMOwo+IC0JcmV0dXJuIC1FTk9NRU07Cj4gKwlyZXR1cm4gcmV0Owo+ICB9Cj4gIAo+ICBz
+dGF0aWMgaW50IGlzY3NpX2xvZ2luX3plcm9fdHNpaF9zMigKPiAKCkxvb2tzIGdvb2Qgbm93LiBU
+aGFua3MuCgpSZXZpZXdlZC1ieTogTWlrZSBDaHJpc3RpZSA8bWNocmlzdGlAcmVkaGF0LmNvbT4K
+Ck1hcnRpbiwgdGhpcyB3YXMgbWFkZSBvdmVyIHRoYXQgcGF0Y2ggdGhhdCB3YXMgZ29pbmcgdGhy
+b3VnaCBNYXRoZXcncwp0cmVlLiBJIGRvIG5vdCBrbm93IGV4YWN0bHkgd2hpY2ggb25lIHRob3Vn
+aC4gSXQgaXMgaW4gbmV4dCBoZXJlCgpodHRwczovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGlu
+dXgva2VybmVsL2dpdC9uZXh0L2xpbnV4LW5leHQuZ2l0L2NvbW1pdC9kcml2ZXJzL3RhcmdldC9p
+c2NzaT9pZK04NjM1M2NiZGRiYjZmMWM5NTA3MmVhZDc0NGQ1NDdhOWFjODIxMQo=
