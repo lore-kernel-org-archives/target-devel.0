@@ -1,37 +1,100 @@
-From: KELLY ALAN <kellyalan@servicescourrier.club>
-Date: Sat, 25 Aug 2018 14:27:56 +0000
-Subject: TRADING  ACCOUNT
-Message-Id: <6002efc36b1321ac368800154a077296@servicescourrier.club>
+From: Mike Christie <mchristi@redhat.com>
+Date: Fri, 24 Aug 2018 18:37:11 +0000
+Subject: [PATCH 1/3] iscsi target: fix session creation failure handling
+Message-Id: <1535135833-7454-2-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+The problem is that iscsi_login_zero_tsih_s1 sets conn->sess early in
+iscsi_login_set_conn_values. If the function fails later like when we
+alloc the idr it does kfree(sess) it leaves the conn->sess pointer set.
+iscsi_login_zero_tsih_s1 then returns -Exyz and we then call
+iscsi_target_login_sess_out and access the freed memory.
 
-Dear sir ,
+This patch has iscsi_login_zero_tsih_s1 either completely setup the
+session or completely tear it down, so later in
+iscsi_target_login_sess_out we can just check for it being set to the
+connection.
 
-I KELLY ALAN  purchasing and sales manager of CFM INTERNATIONAL .Our 
-Company specialised in Supplying computer hardware and Electronic .We 
-want to extend our supplier list because of concurrency in prices on the 
-international market. We are seeking a supplier with whom we can to have 
-  partnered long-term in order to have competitive prices . we are 
-interested to buy the products you sell and want to place an order with 
-you in big quantities.
-Can you give us payment facilities ( 14 , 30 or 60 days payment terms ) 
-?
-What is the procedure for our account opening  and credit line 
-application ?
+Fixes: 0957627a9960 ("iscsi-target: Fix sess allocation leak in...")
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+Cc: Matthew Wilcox <willy@infradead.org>
 
-Cordially
+---
+ drivers/target/iscsi/iscsi_target_login.c | 35 ++++++++++++++++++-------------
+ 1 file changed, 21 insertions(+), 14 deletions(-)
 
-  KELLY ALAN
-
-CFM INTERNATIONAL
-2 BOULEVARD DU GAL MARTIAL VALIN
-75015 PARIS
-REG N° 302 527 700
-VAT N° FR90 302527700
-TEL +33171025367
-FAX +33177759149
-https://www.cfmaeroengines.com
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index 923b1a9..2d8d353 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -348,8 +348,7 @@ static int iscsi_login_zero_tsih_s1(
+ 		pr_err("idr_alloc() for sess_idr failed\n");
+ 		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
+ 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
+-		kfree(sess);
+-		return -ENOMEM;
++		goto free_sess;
+ 	}
+ 
+ 	sess->creation_time = get_jiffies_64();
+@@ -365,20 +364,28 @@ static int iscsi_login_zero_tsih_s1(
+ 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
+ 		pr_err("Unable to allocate memory for"
+ 				" struct iscsi_sess_ops.\n");
+-		kfree(sess);
+-		return -ENOMEM;
++		goto remove_idr;
+ 	}
+ 
+ 	sess->se_sess = transport_alloc_session(TARGET_PROT_NORMAL);
+ 	if (IS_ERR(sess->se_sess)) {
+ 		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
+ 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
+-		kfree(sess->sess_ops);
+-		kfree(sess);
+-		return -ENOMEM;
++		goto free_ops;
+ 	}
+ 
+ 	return 0;
++
++free_ops:
++	kfree(sess->sess_ops);
++remove_idr:
++	spin_lock_bh(&sess_idr_lock);
++	idr_remove(&sess_idr, sess->session_index);
++	spin_unlock_bh(&sess_idr_lock);
++free_sess:
++	kfree(sess);
++	conn->sess = NULL;
++	return -ENOMEM;
+ }
+ 
+ static int iscsi_login_zero_tsih_s2(
+@@ -1161,13 +1168,13 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+ 				   ISCSI_LOGIN_STATUS_INIT_ERR);
+ 	if (!zero_tsih || !conn->sess)
+ 		goto old_sess_out;
+-	if (conn->sess->se_sess)
+-		transport_free_session(conn->sess->se_sess);
+-	if (conn->sess->session_index != 0) {
+-		spin_lock_bh(&sess_idr_lock);
+-		idr_remove(&sess_idr, conn->sess->session_index);
+-		spin_unlock_bh(&sess_idr_lock);
+-	}
++
++	transport_free_session(conn->sess->se_sess);
++
++	spin_lock_bh(&sess_idr_lock);
++	idr_remove(&sess_idr, conn->sess->session_index);
++	spin_unlock_bh(&sess_idr_lock);
++
+ 	kfree(conn->sess->sess_ops);
+ 	kfree(conn->sess);
+ 	conn->sess = NULL;
+-- 
+1.8.3.1
