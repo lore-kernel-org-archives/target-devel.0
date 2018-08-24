@@ -1,24 +1,24 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Wed, 01 Aug 2018 08:23:30 +0000
-Subject: Re: [PATCH v2 6/9] ide-cd: Remove redundant sense buffer
-Message-Id: <20180801082330.GB26378@infradead.org>
+From: Mike Christie <mchristi@redhat.com>
+Date: Fri, 24 Aug 2018 18:37:10 +0000
+Subject: [PATCH 0/3]: iscsi target login fixes
+Message-Id: <1535135833-7454-1-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180731195155.46664-1-keescook@chromium.org>
- <20180731195155.46664-7-keescook@chromium.org>
-In-Reply-To: <20180731195155.46664-7-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kees Cook <keescook@chromium.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-On Tue, Jul 31, 2018 at 12:51:51PM -0700, Kees Cook wrote:
-> This is already able to process the sense buffer, so remove the redundant
-> parsing during the failure path. This also fixes any possible stale values
-> since the prior code did not check the sense length.
-> 
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+The following patchset is a round up of login fixes that have been
+on the list and in Mathew's tree. They fix a couple of bugs in the
+iscsi login failure handling path.
 
-Looks good,
+The patches were made against Martin's 4.19/scsi-queue branch.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Matthew, the first patch is one that I had sent to you that had a fix
+for the idr issue you asked about on the list. There was a conflict so
+I had to update the patch. I was not sure if you wanted me to keep
+your signed off so to be safe I dropped it.
+
+Also, it sounded like your ida/idr patches were not going to make 4.19,
+so hopefully the idr iscsi login fix will be merged already when your
+patches get merged for 4.20, so you do not have to carry it anymore.
