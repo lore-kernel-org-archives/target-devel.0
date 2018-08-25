@@ -1,22 +1,37 @@
-From: "Ray" <knoalge@dawnusa.net>
-Date: Wed, 22 Aug 2018 08:51:04 +0000
-Subject: We design apps
-Message-Id: <6507160fbdcc9f5c4bbfbb365800663d@jackssmallengines.com>
+From: KELLY ALAN <kellyalan@servicescourrier.club>
+Date: Sat, 25 Aug 2018 14:27:56 +0000
+Subject: TRADING  ACCOUNT
+Message-Id: <6002efc36b1321ac368800154a077296@servicescourrier.club>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-Do you have needs for mobile apps design? We are the one who can help you.
 
-We are an India based software company.
-What we focus is mobile apps development.
-We have 125 staffs in office and have created over 350 apps so far.
+Dear sir ,
 
-We work on many different platforms, such as iOS, Android and others.
+I KELLY ALAN  purchasing and sales manager of CFM INTERNATIONAL .Our 
+Company specialised in Supplying computer hardware and Electronic .We 
+want to extend our supplier list because of concurrency in prices on the 
+international market. We are seeking a supplier with whom we can to have 
+  partnered long-term in order to have competitive prices . we are 
+interested to buy the products you sell and want to place an order with 
+you in big quantities.
+Can you give us payment facilities ( 14 , 30 or 60 days payment terms ) 
+?
+What is the procedure for our account opening  and credit line 
+application ?
 
-Please reply if interested, we will send you our portfolios.
+Cordially
 
-Thanks,
-Ray Charles
+  KELLY ALAN
+
+CFM INTERNATIONAL
+2 BOULEVARD DU GAL MARTIAL VALIN
+75015 PARIS
+REG N° 302 527 700
+VAT N° FR90 302527700
+TEL +33171025367
+FAX +33177759149
+https://www.cfmaeroengines.com
