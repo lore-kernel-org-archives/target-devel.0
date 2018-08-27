@@ -1,100 +1,287 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Fri, 24 Aug 2018 18:37:11 +0000
-Subject: [PATCH 1/3] iscsi target: fix session creation failure handling
-Message-Id: <1535135833-7454-2-git-send-email-mchristi@redhat.com>
+Date: Mon, 27 Aug 2018 19:45:16 +0000
+Subject: [PATCH 2/2] iscsi target: fix conn_ops double free
+Message-Id: <1535399116-15138-3-git-send-email-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-The problem is that iscsi_login_zero_tsih_s1 sets conn->sess early in
-iscsi_login_set_conn_values. If the function fails later like when we
-alloc the idr it does kfree(sess) it leaves the conn->sess pointer set.
-iscsi_login_zero_tsih_s1 then returns -Exyz and we then call
-iscsi_target_login_sess_out and access the freed memory.
+If iscsi_login_init_conn fails it can free conn_ops.
+__iscsi_target_login_thread will then call iscsi_target_login_sess_out
+which will also free it.
 
-This patch has iscsi_login_zero_tsih_s1 either completely setup the
-session or completely tear it down, so later in
-iscsi_target_login_sess_out we can just check for it being set to the
-connection.
+This fixes the problem by organizing conn allocation/setup into parts
+that are needed through the life of the conn and parts that are only
+needed for the login. The free functions then release what was allocated
+in the alloc functions.
 
-Fixes: 0957627a9960 ("iscsi-target: Fix sess allocation leak in...")
+With this patch we have:
+
+iscsit_alloc_conn/iscsit_free_conn - allocs/frees the conn we need
+for the entire life of the conn.
+
+iscsi_login_init_conn/iscsi_target_nego_release - allocs/frees the parts
+of the conn that are only needed during login.
+
 Signed-off-by: Mike Christie <mchristi@redhat.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-
 ---
- drivers/target/iscsi/iscsi_target_login.c | 35 ++++++++++++++++++-------------
- 1 file changed, 21 insertions(+), 14 deletions(-)
+ drivers/target/iscsi/iscsi_target.c       |   9 +-
+ drivers/target/iscsi/iscsi_target_login.c | 141 ++++++++++++++++--------------
+ drivers/target/iscsi/iscsi_target_login.h |   2 +-
+ 3 files changed, 77 insertions(+), 75 deletions(-)
 
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 94bad43..9cdfccb 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4208,22 +4208,15 @@ int iscsit_close_connection(
+ 		crypto_free_ahash(tfm);
+ 	}
+ 
+-	free_cpumask_var(conn->conn_cpumask);
+-
+-	kfree(conn->conn_ops);
+-	conn->conn_ops = NULL;
+-
+ 	if (conn->sock)
+ 		sock_release(conn->sock);
+ 
+ 	if (conn->conn_transport->iscsit_free_conn)
+ 		conn->conn_transport->iscsit_free_conn(conn);
+ 
+-	iscsit_put_transport(conn->conn_transport);
+-
+ 	pr_debug("Moving to TARG_CONN_STATE_FREE.\n");
+ 	conn->conn_state = TARG_CONN_STATE_FREE;
+-	kfree(conn);
++	iscsit_free_conn(conn);
+ 
+ 	spin_lock_bh(&sess->conn_lock);
+ 	atomic_dec(&sess->nconn);
 diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index 923b1a9..2d8d353 100644
+index f58b9c1..bb90c80 100644
 --- a/drivers/target/iscsi/iscsi_target_login.c
 +++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -348,8 +348,7 @@ static int iscsi_login_zero_tsih_s1(
- 		pr_err("idr_alloc() for sess_idr failed\n");
- 		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
- 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
--		kfree(sess);
--		return -ENOMEM;
-+		goto free_sess;
+@@ -67,45 +67,10 @@ static struct iscsi_login *iscsi_login_init_conn(struct iscsi_conn *conn)
+ 		goto out_req_buf;
  	}
  
- 	sess->creation_time = get_jiffies_64();
-@@ -365,20 +364,28 @@ static int iscsi_login_zero_tsih_s1(
- 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
- 		pr_err("Unable to allocate memory for"
- 				" struct iscsi_sess_ops.\n");
--		kfree(sess);
--		return -ENOMEM;
-+		goto remove_idr;
- 	}
+-	conn->conn_ops = kzalloc(sizeof(struct iscsi_conn_ops), GFP_KERNEL);
+-	if (!conn->conn_ops) {
+-		pr_err("Unable to allocate memory for"
+-			" struct iscsi_conn_ops.\n");
+-		goto out_rsp_buf;
+-	}
+-
+-	init_waitqueue_head(&conn->queues_wq);
+-	INIT_LIST_HEAD(&conn->conn_list);
+-	INIT_LIST_HEAD(&conn->conn_cmd_list);
+-	INIT_LIST_HEAD(&conn->immed_queue_list);
+-	INIT_LIST_HEAD(&conn->response_queue_list);
+-	init_completion(&conn->conn_post_wait_comp);
+-	init_completion(&conn->conn_wait_comp);
+-	init_completion(&conn->conn_wait_rcfr_comp);
+-	init_completion(&conn->conn_waiting_on_uc_comp);
+-	init_completion(&conn->conn_logout_comp);
+-	init_completion(&conn->rx_half_close_comp);
+-	init_completion(&conn->tx_half_close_comp);
+-	init_completion(&conn->rx_login_comp);
+-	spin_lock_init(&conn->cmd_lock);
+-	spin_lock_init(&conn->conn_usage_lock);
+-	spin_lock_init(&conn->immed_queue_lock);
+-	spin_lock_init(&conn->nopin_timer_lock);
+-	spin_lock_init(&conn->response_queue_lock);
+-	spin_lock_init(&conn->state_lock);
+-
+-	if (!zalloc_cpumask_var(&conn->conn_cpumask, GFP_KERNEL)) {
+-		pr_err("Unable to allocate conn->conn_cpumask\n");
+-		goto out_conn_ops;
+-	}
+ 	conn->conn_login = login;
  
- 	sess->se_sess = transport_alloc_session(TARGET_PROT_NORMAL);
- 	if (IS_ERR(sess->se_sess)) {
- 		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
- 				ISCSI_LOGIN_STATUS_NO_RESOURCES);
--		kfree(sess->sess_ops);
--		kfree(sess);
--		return -ENOMEM;
-+		goto free_ops;
- 	}
+ 	return login;
  
+-out_conn_ops:
+-	kfree(conn->conn_ops);
+-out_rsp_buf:
+-	kfree(login->rsp_buf);
+ out_req_buf:
+ 	kfree(login->req_buf);
+ out_login:
+@@ -1147,6 +1112,75 @@ iscsit_conn_set_transport(struct iscsi_conn *conn, struct iscsit_transport *t)
  	return 0;
-+
-+free_ops:
-+	kfree(sess->sess_ops);
-+remove_idr:
-+	spin_lock_bh(&sess_idr_lock);
-+	idr_remove(&sess_idr, sess->session_index);
-+	spin_unlock_bh(&sess_idr_lock);
-+free_sess:
-+	kfree(sess);
-+	conn->sess = NULL;
-+	return -ENOMEM;
  }
  
- static int iscsi_login_zero_tsih_s2(
-@@ -1161,13 +1168,13 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
- 				   ISCSI_LOGIN_STATUS_INIT_ERR);
- 	if (!zero_tsih || !conn->sess)
- 		goto old_sess_out;
--	if (conn->sess->se_sess)
--		transport_free_session(conn->sess->se_sess);
--	if (conn->sess->session_index != 0) {
--		spin_lock_bh(&sess_idr_lock);
--		idr_remove(&sess_idr, conn->sess->session_index);
--		spin_unlock_bh(&sess_idr_lock);
++static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
++{
++	struct iscsi_conn *conn;
++
++	conn = kzalloc(sizeof(struct iscsi_conn), GFP_KERNEL);
++	if (!conn) {
++		pr_err("Could not allocate memory for new connection\n");
++		return NULL;
++	}
++	pr_debug("Moving to TARG_CONN_STATE_FREE.\n");
++	conn->conn_state = TARG_CONN_STATE_FREE;
++
++	init_waitqueue_head(&conn->queues_wq);
++	INIT_LIST_HEAD(&conn->conn_list);
++	INIT_LIST_HEAD(&conn->conn_cmd_list);
++	INIT_LIST_HEAD(&conn->immed_queue_list);
++	INIT_LIST_HEAD(&conn->response_queue_list);
++	init_completion(&conn->conn_post_wait_comp);
++	init_completion(&conn->conn_wait_comp);
++	init_completion(&conn->conn_wait_rcfr_comp);
++	init_completion(&conn->conn_waiting_on_uc_comp);
++	init_completion(&conn->conn_logout_comp);
++	init_completion(&conn->rx_half_close_comp);
++	init_completion(&conn->tx_half_close_comp);
++	init_completion(&conn->rx_login_comp);
++	spin_lock_init(&conn->cmd_lock);
++	spin_lock_init(&conn->conn_usage_lock);
++	spin_lock_init(&conn->immed_queue_lock);
++	spin_lock_init(&conn->nopin_timer_lock);
++	spin_lock_init(&conn->response_queue_lock);
++	spin_lock_init(&conn->state_lock);
++
++	timer_setup(&conn->nopin_response_timer,
++		    iscsit_handle_nopin_response_timeout, 0);
++	timer_setup(&conn->nopin_timer, iscsit_handle_nopin_timeout, 0);
++
++	if (iscsit_conn_set_transport(conn, np->np_transport) < 0)
++		goto free_conn;
++
++	conn->conn_ops = kzalloc(sizeof(struct iscsi_conn_ops), GFP_KERNEL);
++	if (!conn->conn_ops) {
++		pr_err("Unable to allocate memory for struct iscsi_conn_ops.\n");
++		goto put_transport;
++	}
++
++	if (!zalloc_cpumask_var(&conn->conn_cpumask, GFP_KERNEL)) {
++		pr_err("Unable to allocate conn->conn_cpumask\n");
++		goto free_mask;
++	}
++
++	return conn;
++
++free_mask:
++	free_cpumask_var(conn->conn_cpumask);
++put_transport:
++	iscsit_put_transport(conn->conn_transport);
++free_conn:
++	kfree(conn);
++	return NULL;
++}
++
++void iscsit_free_conn(struct iscsi_conn *conn)
++{
++	free_cpumask_var(conn->conn_cpumask);
++	kfree(conn->conn_ops);
++	iscsit_put_transport(conn->conn_transport);
++	kfree(conn);
++}
++
+ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+ 		struct iscsi_np *np, bool zero_tsih, bool new_sess)
+ {
+@@ -1196,10 +1230,6 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+ 		crypto_free_ahash(tfm);
+ 	}
+ 
+-	free_cpumask_var(conn->conn_cpumask);
+-
+-	kfree(conn->conn_ops);
+-
+ 	if (conn->param_list) {
+ 		iscsi_release_param_list(conn->param_list);
+ 		conn->param_list = NULL;
+@@ -1217,8 +1247,7 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+ 	if (conn->conn_transport->iscsit_free_conn)
+ 		conn->conn_transport->iscsit_free_conn(conn);
+ 
+-	iscsit_put_transport(conn->conn_transport);
+-	kfree(conn);
++	iscsit_free_conn(conn);
+ }
+ 
+ static int __iscsi_target_login_thread(struct iscsi_np *np)
+@@ -1248,31 +1277,16 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+ 	}
+ 	spin_unlock_bh(&np->np_thread_lock);
+ 
+-	conn = kzalloc(sizeof(struct iscsi_conn), GFP_KERNEL);
++	conn = iscsit_alloc_conn(np);
+ 	if (!conn) {
+-		pr_err("Could not allocate memory for"
+-			" new connection\n");
+ 		/* Get another socket */
+ 		return 1;
+ 	}
+-	pr_debug("Moving to TARG_CONN_STATE_FREE.\n");
+-	conn->conn_state = TARG_CONN_STATE_FREE;
+-
+-	timer_setup(&conn->nopin_response_timer,
+-		    iscsit_handle_nopin_response_timeout, 0);
+-	timer_setup(&conn->nopin_timer, iscsit_handle_nopin_timeout, 0);
+-
+-	if (iscsit_conn_set_transport(conn, np->np_transport) < 0) {
+-		kfree(conn);
+-		return 1;
 -	}
-+
-+	transport_free_session(conn->sess->se_sess);
-+
-+	spin_lock_bh(&sess_idr_lock);
-+	idr_remove(&sess_idr, conn->sess->session_index);
-+	spin_unlock_bh(&sess_idr_lock);
-+
- 	kfree(conn->sess->sess_ops);
- 	kfree(conn->sess);
- 	conn->sess = NULL;
+ 
+ 	rc = np->np_transport->iscsit_accept_np(np, conn);
+ 	if (rc = -ENOSYS) {
+ 		complete(&np->np_restart_comp);
+-		iscsit_put_transport(conn->conn_transport);
+-		kfree(conn);
+-		conn = NULL;
++		iscsit_free_conn(conn);
+ 		goto exit;
+ 	} else if (rc < 0) {
+ 		spin_lock_bh(&np->np_thread_lock);
+@@ -1280,17 +1294,13 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+ 			np->np_thread_state = ISCSI_NP_THREAD_ACTIVE;
+ 			spin_unlock_bh(&np->np_thread_lock);
+ 			complete(&np->np_restart_comp);
+-			iscsit_put_transport(conn->conn_transport);
+-			kfree(conn);
+-			conn = NULL;
++			iscsit_free_conn(conn);
+ 			/* Get another socket */
+ 			return 1;
+ 		}
+ 		spin_unlock_bh(&np->np_thread_lock);
+-		iscsit_put_transport(conn->conn_transport);
+-		kfree(conn);
+-		conn = NULL;
+-		goto out;
++		iscsit_free_conn(conn);
++		return 1;
+ 	}
+ 	/*
+ 	 * Perform the remaining iSCSI connection initialization items..
+@@ -1440,7 +1450,6 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+ 		tpg_np = NULL;
+ 	}
+ 
+-out:
+ 	return 1;
+ 
+ exit:
+diff --git a/drivers/target/iscsi/iscsi_target_login.h b/drivers/target/iscsi/iscsi_target_login.h
+index 74ac3ab..3b8e363 100644
+--- a/drivers/target/iscsi/iscsi_target_login.h
++++ b/drivers/target/iscsi/iscsi_target_login.h
+@@ -19,7 +19,7 @@ extern int iscsi_target_setup_login_socket(struct iscsi_np *,
+ extern int iscsit_accept_np(struct iscsi_np *, struct iscsi_conn *);
+ extern int iscsit_get_login_rx(struct iscsi_conn *, struct iscsi_login *);
+ extern int iscsit_put_login_tx(struct iscsi_conn *, struct iscsi_login *, u32);
+-extern void iscsit_free_conn(struct iscsi_np *, struct iscsi_conn *);
++extern void iscsit_free_conn(struct iscsi_conn *);
+ extern int iscsit_start_kthreads(struct iscsi_conn *);
+ extern void iscsi_post_login_handler(struct iscsi_np *, struct iscsi_conn *, u8);
+ extern void iscsi_target_login_sess_out(struct iscsi_conn *, struct iscsi_np *,
 -- 
-1.8.3.1
+2.7.2
