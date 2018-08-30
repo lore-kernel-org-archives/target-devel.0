@@ -1,61 +1,181 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 07 Aug 2018 20:40:28 +0000
-Subject: Re: [PATCH RESEND v2] target: move the rx hdr buffer out of the stack
-Message-Id: <5B6A03BC.1070605@redhat.com>
+From: Greg Edwards <gedwards@ddn.com>
+Date: Thu, 30 Aug 2018 17:25:04 +0000
+Subject: [PATCH v3] target/iblock: split T10 PI SGL across command bios
+Message-Id: <20180830172504.12348-1-gedwards@ddn.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1533286080-13099-1-git-send-email-mlombard@redhat.com>
-In-Reply-To: <1533286080-13099-1-git-send-email-mlombard@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 08/03/2018 03:48 AM, Maurizio Lombardi wrote:
-> When HeaderDigest is enabled on aarch64 machines, target triggers
-> a lot of failed crc checksum errors:
-> 
-> example of output in dmesg:
-> [  154.495031] HeaderDigest CRC32C failed, received 0x60571c8d, computed 0x288c3ab9
-> [  154.583821] Got unknown iSCSI OpCode: 0xff
-> [  162.979857] HeaderDigest CRC32C failed, received 0x0712e57c, computed 0x288c3ab9
-> ...
-> 
-> The problem is that the iscsit_get_rx_pdu() function uses
-> a stack buffer as input for the scatterlist crypto library.
-> This should be avoided on kernels >= 4.9 because stack buffers
-> may not be directly mappable to struct page when the
-> CONFIG_VMAP_STACK option is enabled.
-> 
-> This patch modifies the code so the buffer will be allocated on the heap
-> and adds a pointer to it in the iscsi_conn structure.
-> 
-> v2: allocate conn_rx_buf in iscsi_target_login_thread()
->     and fix a memory leak
-> 
-> Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
-> ---
->  drivers/target/iscsi/iscsi_target.c       |  6 +++++-
->  drivers/target/iscsi/iscsi_target_login.c | 15 +++++++++++++++
->  include/target/iscsi/iscsi_target_core.h  |  2 ++
->  3 files changed, 22 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-> index 8e22379..149fa91 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -3913,10 +3913,12 @@ static bool iscsi_target_check_conn_state(struct iscsi_conn *conn)
->  static void iscsit_get_rx_pdu(struct iscsi_conn *conn)
->  {
->  	int ret;
-> -	u8 buffer[ISCSI_HDR_LEN], opcode;
-> +	u8 *buffer, opcode;
->  	u32 checksum = 0, digest = 0;
->  	struct kvec iov;
->  
-> +	buffer = conn->conn_rx_buf;
+When T10 PI is enabled on a backing device for the iblock backstore, the
+PI SGL for the entire command is attached to the first bio only.  This
+works fine if the command is covered by a single bio, but can result in
+ref tag errors in the client for the other bios in a multi-bio command,
+e.g.
 
-If the buffer is only used in the loop below why does it need to be
-allocated in __iscsi_target_login_thread?
+[   47.631236] sda: ref tag error at location 2048 (rcvd 0)
+[   47.637658] sda: ref tag error at location 4096 (rcvd 0)
+[   47.644228] sda: ref tag error at location 6144 (rcvd 0)
 
-It just seems like the error handling and freeing of that buffer would
-be more simple if done here.
+The command will be split into multiple bios if the number of data SG
+elements exceeds BIO_MAX_PAGES (see iblock_get_bio()).
+
+The bios may later be split again in the block layer on the host after
+iblock_submit_bios(), depending on the queue limits of the backing
+device.  The block and SCSI layers will pass through the whole PI SGL
+down to the LLDD however that first bio is split up, but the LLDD may
+only use the portion that corresponds to the data length (depends on the
+LLDD, tested with scsi_debug).
+
+Split the PI SGL across the bios in the command, so each bio's
+bio_integrity_payload contains the protection information for the data
+in the bio.  Use an sg_mapping_iter to keep track of where we are in PI
+SGL, so we know where to start with the next bio.
+
+Signed-off-by: Greg Edwards <gedwards@ddn.com>
+---
+Changes from v2:
+  * add back min(cmd->t_prot_nents, BIO_MAX_PAGES) for bio_integrity_alloc()
+    from v1
+
+Changes from v1:
+  * expand commit message
+  * use an sg_mapping_iter to track where we are in the PI SGL
+
+
+ drivers/target/target_core_iblock.c | 54 ++++++++++++++++++++---------
+ 1 file changed, 37 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
+index ce1321a5cb7b..db78b1c808e8 100644
+--- a/drivers/target/target_core_iblock.c
++++ b/drivers/target/target_core_iblock.c
+@@ -635,14 +635,15 @@ static ssize_t iblock_show_configfs_dev_params(struct se_device *dev, char *b)
+ }
+ 
+ static int
+-iblock_alloc_bip(struct se_cmd *cmd, struct bio *bio)
++iblock_alloc_bip(struct se_cmd *cmd, struct bio *bio,
++		 struct sg_mapping_iter *miter)
+ {
+ 	struct se_device *dev = cmd->se_dev;
+ 	struct blk_integrity *bi;
+ 	struct bio_integrity_payload *bip;
+ 	struct iblock_dev *ib_dev = IBLOCK_DEV(dev);
+-	struct scatterlist *sg;
+-	int i, rc;
++	int rc;
++	size_t resid, len;
+ 
+ 	bi = bdev_get_integrity(ib_dev->ibd_bd);
+ 	if (!bi) {
+@@ -650,31 +651,39 @@ iblock_alloc_bip(struct se_cmd *cmd, struct bio *bio)
+ 		return -ENODEV;
+ 	}
+ 
+-	bip = bio_integrity_alloc(bio, GFP_NOIO, cmd->t_prot_nents);
++	bip = bio_integrity_alloc(bio, GFP_NOIO,
++			min_t(unsigned int, cmd->t_prot_nents, BIO_MAX_PAGES));
+ 	if (IS_ERR(bip)) {
+ 		pr_err("Unable to allocate bio_integrity_payload\n");
+ 		return PTR_ERR(bip);
+ 	}
+ 
+-	bip->bip_iter.bi_size = (cmd->data_length / dev->dev_attrib.block_size) *
+-			 dev->prot_length;
+-	bip->bip_iter.bi_sector = bio->bi_iter.bi_sector;
++	bip->bip_iter.bi_size = bio_integrity_bytes(bi, bio_sectors(bio));
++	bip_set_seed(bip, bio->bi_iter.bi_sector);
+ 
+ 	pr_debug("IBLOCK BIP Size: %u Sector: %llu\n", bip->bip_iter.bi_size,
+ 		 (unsigned long long)bip->bip_iter.bi_sector);
+ 
+-	for_each_sg(cmd->t_prot_sg, sg, cmd->t_prot_nents, i) {
++	resid = bip->bip_iter.bi_size;
++	while (resid > 0 && sg_miter_next(miter)) {
+ 
+-		rc = bio_integrity_add_page(bio, sg_page(sg), sg->length,
+-					    sg->offset);
+-		if (rc != sg->length) {
++		len = min_t(size_t, miter->length, resid);
++		rc = bio_integrity_add_page(bio, miter->page, len,
++					    offset_in_page(miter->addr));
++		if (rc != len) {
+ 			pr_err("bio_integrity_add_page() failed; %d\n", rc);
++			sg_miter_stop(miter);
+ 			return -ENOMEM;
+ 		}
+ 
+-		pr_debug("Added bio integrity page: %p length: %d offset; %d\n",
+-			 sg_page(sg), sg->length, sg->offset);
++		pr_debug("Added bio integrity page: %p length: %lu offset: %lu\n",
++			  miter->page, len, offset_in_page(miter->addr));
++
++		resid -= len;
++		if (len < miter->length)
++			miter->consumed -= miter->length - len;
+ 	}
++	sg_miter_stop(miter);
+ 
+ 	return 0;
+ }
+@@ -686,12 +695,13 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 	struct se_device *dev = cmd->se_dev;
+ 	sector_t block_lba = target_to_linux_sector(dev, cmd->t_task_lba);
+ 	struct iblock_req *ibr;
+-	struct bio *bio, *bio_start;
++	struct bio *bio;
+ 	struct bio_list list;
+ 	struct scatterlist *sg;
+ 	u32 sg_num = sgl_nents;
+ 	unsigned bio_cnt;
+-	int i, op, op_flags = 0;
++	int i, rc, op, op_flags = 0;
++	struct sg_mapping_iter prot_miter;
+ 
+ 	if (data_direction = DMA_TO_DEVICE) {
+ 		struct iblock_dev *ib_dev = IBLOCK_DEV(dev);
+@@ -726,13 +736,17 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 	if (!bio)
+ 		goto fail_free_ibr;
+ 
+-	bio_start = bio;
+ 	bio_list_init(&list);
+ 	bio_list_add(&list, bio);
+ 
+ 	refcount_set(&ibr->pending, 2);
+ 	bio_cnt = 1;
+ 
++	if (cmd->prot_type && dev->dev_attrib.pi_prot_type)
++		sg_miter_start(&prot_miter, cmd->t_prot_sg, cmd->t_prot_nents,
++			       op = REQ_OP_READ ? SG_MITER_FROM_SG :
++						   SG_MITER_TO_SG);
++
+ 	for_each_sg(sgl, sg, sgl_nents, i) {
+ 		/*
+ 		 * XXX: if the length the device accepts is shorter than the
+@@ -741,6 +755,12 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 		 */
+ 		while (bio_add_page(bio, sg_page(sg), sg->length, sg->offset)
+ 				!= sg->length) {
++			if (cmd->prot_type && dev->dev_attrib.pi_prot_type) {
++				rc = iblock_alloc_bip(cmd, bio, &prot_miter);
++				if (rc)
++					goto fail_put_bios;
++			}
++
+ 			if (bio_cnt >= IBLOCK_MAX_BIO_PER_TASK) {
+ 				iblock_submit_bios(&list);
+ 				bio_cnt = 0;
+@@ -762,7 +782,7 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 	}
+ 
+ 	if (cmd->prot_type && dev->dev_attrib.pi_prot_type) {
+-		int rc = iblock_alloc_bip(cmd, bio_start);
++		rc = iblock_alloc_bip(cmd, bio, &prot_miter);
+ 		if (rc)
+ 			goto fail_put_bios;
+ 	}
+-- 
+2.17.1
