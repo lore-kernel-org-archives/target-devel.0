@@ -1,63 +1,48 @@
-From: Xiubo Li <xiubli@redhat.com>
-Date: Wed, 19 Sep 2018 03:04:07 +0000
-Subject: Re: [PATCH] scsi: tcmu: setup one timeout timer for each cmd
-Message-Id: <e9807d0f-70ea-2478-e761-36dc2815cf9a@redhat.com>
+From: Laura Abbott <labbott@redhat.com>
+Date: Tue, 11 Sep 2018 19:22:25 +0000
+Subject: [PATCHv3 1/2] scsi: ibmvscsis: Fix a stringop-overflow warning
+Message-Id: <20180911192226.3620-2-labbott@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180918103255.15209-1-xiubli@redhat.com>
-In-Reply-To: <20180918103255.15209-1-xiubli@redhat.com>
+References: <20180911192226.3620-1-labbott@redhat.com>
+In-Reply-To: <20180911192226.3620-1-labbott@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, Michael Cyr <mikecyr@linux.vnet.ibm.com>, Kees Cook <keescook@chromium.org>
+Cc: Laura Abbott <labbott@redhat.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2018/9/19 0:42, Mike Christie wrote:
-> On 09/18/2018 05:32 AM, xiubli@redhat.com wrote:
->> From: Xiubo Li <xiubli@redhat.com>
->>
->> Currently there has one cmd timeout timer for each udev, and whenever
->> there has any new coming cmd it will update the timer. And for some
->> corner case the timer is always working only for the ringbuffer's
->> newest cmd. That's to say the timer won't be fired even there has one
->> cmd stuck for a very long time.
->>
->> Signed-off-by: Xiubo Li <xiubli@redhat.com>
->> ---
->>   drivers/target/target_core_user.c | 69 +++++++++++++++----------------
->>   1 file changed, 34 insertions(+), 35 deletions(-)
->>
->> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
->> index 9cd404acdb82..ed3d6f055037 100644
->> --- a/drivers/target/target_core_user.c
->> +++ b/drivers/target/target_core_user.c
->> @@ -157,7 +157,6 @@ struct tcmu_dev {
->>   
->>   	struct idr commands;
->>   
->> -	struct timer_list cmd_timer;
->>   	unsigned int cmd_time_out;
->>   
->>   	struct timer_list qfull_timer;
->> @@ -190,6 +189,7 @@ struct tcmu_cmd {
->>   	uint32_t *dbi;
->>   
->>   	unsigned long deadline;
->> +	struct timer_list cmd_timer;
->>   
-> I think you can fix this for qfull at the same time
-Sure, will add this.
 
-> and we will not have
-> to do a mix of per cmd timer along with per device handling.
->
-> In tcmu_check_expired_cmd/check_timedout_devices add a next_deadline
-> variable and when we loop over all the cmds with the idr_for_each have
-> tcmu_check_expired_cmd return the cmd->deadline. check_timedout_devices
-> will then track the next timeout value to use and do a mod_timer to set it.
-Yeah, make sense and this looks good to me.
+There's currently a warning about string overflow with strncat:
 
-> In tcmu_setup_cmd_timer you would only mod_timer if the timer is not
-> already pending already, so we do not keep resetting it like we do today.
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c: In function 'ibmvscsis_probe':
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:3479:2: error: 'strncat' specified
+bound 64 equals destination size [-Werror=stringop-overflow=]
+  strncat(vscsi->eye, vdev->name, MAX_EYE);
+  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Thanks Mike, I will update it.
+Switch to a single snprintf instead of a strcpy + strcat to handle this
+cleanly.
 
-BRs
+Signed-off-by: Laura Abbott <labbott@redhat.com>
+---
+v3: Make sure there is an extra space in the partition name
+---
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index fac377320158..b3a029ad07cd 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -3474,8 +3474,7 @@ static int ibmvscsis_probe(struct vio_dev *vdev,
+ 		vscsi->dds.window[LOCAL].liobn,
+ 		vscsi->dds.window[REMOTE].liobn);
+ 
+-	strcpy(vscsi->eye, "VSCSI ");
+-	strncat(vscsi->eye, vdev->name, MAX_EYE);
++	snprintf(vscsi->eye, sizeof(vscsi->eye), "VSCSI %s", vdev->name);
+ 
+ 	vscsi->dds.unit_id = vdev->unit_address;
+ 	strncpy(vscsi->dds.partition_name, partition_name,
+-- 
+2.17.1
