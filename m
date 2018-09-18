@@ -1,48 +1,42 @@
-From: Laura Abbott <labbott@redhat.com>
-Date: Tue, 11 Sep 2018 19:22:25 +0000
-Subject: [PATCHv3 1/2] scsi: ibmvscsis: Fix a stringop-overflow warning
-Message-Id: <20180911192226.3620-2-labbott@redhat.com>
+From: "Ly, Bryant" <bly@catalogicsoftware.com>
+Date: Tue, 18 Sep 2018 00:37:11 +0000
+Subject: Re: [PATCHv3 1/2] scsi: ibmvscsis: Fix a stringop-overflow warning
+Message-Id: <B86907DE-444B-498D-A402-78190A5A402B@catalogicsoftware.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180911192226.3620-1-labbott@redhat.com>
-In-Reply-To: <20180911192226.3620-1-labbott@redhat.com>
+ <20180911192226.3620-2-labbott@redhat.com>
+In-Reply-To: <20180911192226.3620-2-labbott@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, Michael Cyr <mikecyr@linux.vnet.ibm.com>, Kees Cook <keescook@chromium.org>
-Cc: Laura Abbott <labbott@redhat.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Laura Abbott <labbott@redhat.com>
+Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, Michael Cyr <mikecyr@linux.vnet.ibm.com>, Kees Cook <keescook@chromium.org>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
 
-There's currently a warning about string overflow with strncat:
 
-drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c: In function 'ibmvscsis_probe':
-drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:3479:2: error: 'strncat' specified
-bound 64 equals destination size [-Werror=stringop-overflow=]
-  strncat(vscsi->eye, vdev->name, MAX_EYE);
-  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> On Sep 11, 2018, at 2:22 PM, Laura Abbott <labbott@redhat.com> wrote:
+> 
+> There's currently a warning about string overflow with strncat:
+> 
+> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c: In function 'ibmvscsis_probe':
+> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:3479:2: error: 'strncat' specified
+> bound 64 equals destination size [-Werror=stringop-overflow=]
+>  strncat(vscsi->eye, vdev->name, MAX_EYE);
+>  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> 
+> Switch to a single snprintf instead of a strcpy + strcat to handle this
+> cleanly.
+> 
+> Signed-off-by: Laura Abbott <labbott@redhat.com>
+> ---
+> v3: Make sure there is an extra space in the partition name
+> ---
+> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 +--
+> 1 file changed, 1 insertion(+), 2 deletions(-)
+> 
 
-Switch to a single snprintf instead of a strcpy + strcat to handle this
-cleanly.
+Reviewed-by: Bryant G. Ly bly@catalogicsoftware.com
 
-Signed-off-by: Laura Abbott <labbott@redhat.com>
----
-v3: Make sure there is an extra space in the partition name
----
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+I sent a PR to update my email from bryantly@linux.vnet.ibm.com a week ago.
 
-diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-index fac377320158..b3a029ad07cd 100644
---- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-+++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-@@ -3474,8 +3474,7 @@ static int ibmvscsis_probe(struct vio_dev *vdev,
- 		vscsi->dds.window[LOCAL].liobn,
- 		vscsi->dds.window[REMOTE].liobn);
- 
--	strcpy(vscsi->eye, "VSCSI ");
--	strncat(vscsi->eye, vdev->name, MAX_EYE);
-+	snprintf(vscsi->eye, sizeof(vscsi->eye), "VSCSI %s", vdev->name);
- 
- 	vscsi->dds.unit_id = vdev->unit_address;
- 	strncpy(vscsi->dds.partition_name, partition_name,
--- 
-2.17.1
+-Bryant
