@@ -1,24 +1,103 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Wed, 01 Aug 2018 08:24:07 +0000
-Subject: Re: [PATCH v2 7/9] cdrom: Use struct scsi_sense_hdr internally
-Message-Id: <20180801082407.GC26378@infradead.org>
+From: Varun Prakash <varun@chelsio.com>
+Date: Wed, 19 Sep 2018 14:26:57 +0000
+Subject: [PATCH v2] scsi: target: iscsi: cxgbit: fix csk leak
+Message-Id: <1537366497-4369-1-git-send-email-varun@chelsio.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180731195155.46664-1-keescook@chromium.org>
- <20180731195155.46664-8-keescook@chromium.org>
-In-Reply-To: <20180731195155.46664-8-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kees Cook <keescook@chromium.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@infradead.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Uma Krishnan <ukrishn@linux.vnet.ibm.com>, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Stephen Boyd <sboyd@codeaurora.org>, Cyrille Pitchen <cyrille.pitchen@free-electrons.com>, Juergen Gross <jgross@suse.com>, Viresh Kumar <viresh.kumar@linaro.org>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Sagar Dharia <sdharia@codeaurora.org>, Randy Dunlap <rdunlap@infradead.org>, Vinod Koul <vinod.koul@intel.com>, David Kershner <david.kershner@unisys.com>, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-On Tue, Jul 31, 2018 at 12:51:52PM -0700, Kees Cook wrote:
-> This removes more casts of struct request_sense and uses the standard
-> struct scsi_sense_hdr instead. This also fixes any possible stale values
-> since the prior code did not check the sense length.
-> 
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+csk leak can happen if a new TCP connection gets established
+after cxgbit_accept_np() returns, to fix this leak free
+remaining csk in cxgbit_free_np().
 
-Looks good,
+v2: fix incorrect input to list_del_init().
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Varun Prakash <varun@chelsio.com>
+---
+ drivers/target/iscsi/cxgbit/cxgbit_cm.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+index 8de1601..71888b9 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+@@ -598,9 +598,12 @@ static void cxgbit_free_cdev_np(struct cxgbit_np *cnp)
+ 	mutex_unlock(&cdev_list_lock);
+ }
+ 
++static void __cxgbit_free_conn(struct cxgbit_sock *csk);
++
+ void cxgbit_free_np(struct iscsi_np *np)
+ {
+ 	struct cxgbit_np *cnp = np->np_context;
++	struct cxgbit_sock *csk, *tmp;
+ 
+ 	cnp->com.state = CSK_STATE_DEAD;
+ 	if (cnp->com.cdev)
+@@ -608,6 +611,13 @@ void cxgbit_free_np(struct iscsi_np *np)
+ 	else
+ 		cxgbit_free_all_np(cnp);
+ 
++	spin_lock_bh(&cnp->np_accept_lock);
++	list_for_each_entry_safe(csk, tmp, &cnp->np_accept_list, accept_node) {
++		list_del_init(&csk->accept_node);
++		__cxgbit_free_conn(csk);
++	}
++	spin_unlock_bh(&cnp->np_accept_lock);
++
+ 	np->np_context = NULL;
+ 	cxgbit_put_cnp(cnp);
+ }
+@@ -705,9 +715,9 @@ void cxgbit_abort_conn(struct cxgbit_sock *csk)
+ 			      csk->tid, 600, __func__);
+ }
+ 
+-void cxgbit_free_conn(struct iscsi_conn *conn)
++static void __cxgbit_free_conn(struct cxgbit_sock *csk)
+ {
+-	struct cxgbit_sock *csk = conn->context;
++	struct iscsi_conn *conn = csk->conn;
+ 	bool release = false;
+ 
+ 	pr_debug("%s: state %d\n",
+@@ -716,7 +726,7 @@ void cxgbit_free_conn(struct iscsi_conn *conn)
+ 	spin_lock_bh(&csk->lock);
+ 	switch (csk->com.state) {
+ 	case CSK_STATE_ESTABLISHED:
+-		if (conn->conn_state = TARG_CONN_STATE_IN_LOGOUT) {
++		if (conn && (conn->conn_state = TARG_CONN_STATE_IN_LOGOUT)) {
+ 			csk->com.state = CSK_STATE_CLOSING;
+ 			cxgbit_send_halfclose(csk);
+ 		} else {
+@@ -741,6 +751,11 @@ void cxgbit_free_conn(struct iscsi_conn *conn)
+ 		cxgbit_put_csk(csk);
+ }
+ 
++void cxgbit_free_conn(struct iscsi_conn *conn)
++{
++	__cxgbit_free_conn(conn->context);
++}
++
+ static void cxgbit_set_emss(struct cxgbit_sock *csk, u16 opt)
+ {
+ 	csk->emss = csk->com.cdev->lldi.mtus[TCPOPT_MSS_G(opt)] -
+@@ -803,6 +818,7 @@ void _cxgbit_free_csk(struct kref *kref)
+ 	spin_unlock_bh(&cdev->cskq.lock);
+ 
+ 	cxgbit_free_skb(csk);
++	cxgbit_put_cnp(csk->cnp);
+ 	cxgbit_put_cdev(cdev);
+ 
+ 	kfree(csk);
+@@ -1351,6 +1367,7 @@ cxgbit_pass_accept_req(struct cxgbit_device *cdev, struct sk_buff *skb)
+ 		goto rel_skb;
+ 	}
+ 
++	cxgbit_get_cnp(cnp);
+ 	cxgbit_get_cdev(cdev);
+ 
+ 	spin_lock(&cdev->cskq.lock);
+-- 
+2.0.2
