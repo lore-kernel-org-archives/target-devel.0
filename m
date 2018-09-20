@@ -1,235 +1,155 @@
-From: Bijan Mottahedeh <bijan.mottahedeh@oracle.com>
-Date: Tue, 18 Sep 2018 00:09:47 +0000
-Subject: [PATCH 1/3] vhost/scsi: Respond to control queue operations
-Message-Id: <1537229389-16176-2-git-send-email-bijan.mottahedeh@oracle.com>
+From: xiubli@redhat.com
+Date: Thu, 20 Sep 2018 08:14:11 +0000
+Subject: [PATCH v2] scsi: tcmu: avoid cmd/qfull timers updated whenever a new cmd comes
+Message-Id: <20180920081411.1628-1-xiubli@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-The vhost-scsi driver currently does not handle any control queue
-operations. In particular, vhost_scsi_ctl_handle_kick, merely prints out
-a debug message but does nothing else. This can cause guest VMs to hang.
+From: Xiubo Li <xiubli@redhat.com>
 
-As part of SCSI recovery from an error, e.g., an I/O timeout, the SCSI
-midlayer attempts to abort the failed operation. The SCSI virtio driver
-translates the abort to a SCSI TMF request that gets put on the control
-queue (virtscsi_abort -> virtscsi_tmf). The SCSI virtio driver then
-waits indefinitely for this request to be completed, but it never will
-because vhost-scsi never responds to that request.
+Currently there has one cmd timeout timer and one qfull timer for
+each udev, and whenever there has any new coming cmd it will update
+the cmd timer or qfull timer. And for some corner case the timers
+are always working only for the ringbuffer's and full queue's newest
+cmd. That's to say the timer won't be fired even there has one cmd
+stuck for a very long time and the deadline is reached.
 
-To avoid a hang, always respond to control queue operations; explicitly
-reject TMF requests, and return a no-op response to event requests.
+This fix will keep the cmd/qfull timers to be pended for the oldest
+cmd in ringbuffer and full queue, and will update them with the next
+cmd's deadline only when the old cmd's deadline is reached or removed
+from the ringbuffer and full queue.
 
-Signed-off-by: Bijan Mottahedeh <bijan.mottahedeh@oracle.com>
+Signed-off-by: Xiubo Li <xiubli@redhat.com>
 ---
- drivers/vhost/scsi.c | 190 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 190 insertions(+)
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index c24bb69..faf0dcf 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -1048,9 +1048,199 @@ static void vhost_scsi_submission_work(struct work_struct *work)
- 	mutex_unlock(&vq->mutex);
+Changed in V2:
+- Add qfull timer
+- Addressed all the comments from Mike, thanks.
+
+ drivers/target/target_core_user.c | 52 ++++++++++++++++++++++++++-----
+ 1 file changed, 44 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 9cd404acdb82..99e73dfb0d2e 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -159,9 +159,11 @@ struct tcmu_dev {
+ 
+ 	struct timer_list cmd_timer;
+ 	unsigned int cmd_time_out;
++	unsigned long cmd_next_deadline;
+ 
+ 	struct timer_list qfull_timer;
+ 	int qfull_time_out;
++	unsigned long qfull_next_deadline;
+ 
+ 	struct list_head timedout_entry;
+ 
+@@ -915,7 +917,9 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
+ 		return 0;
+ 
+ 	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
+-	mod_timer(timer, tcmu_cmd->deadline);
++	if (!timer_pending(timer))
++		mod_timer(timer, tcmu_cmd->deadline);
++
+ 	return 0;
  }
  
-+static void
-+vhost_scsi_send_tmf_resp(struct vhost_scsi *vs,
-+			   struct vhost_virtqueue *vq,
-+			   int head, unsigned int out)
-+{
-+	struct virtio_scsi_ctrl_tmf_resp __user *resp;
-+	struct virtio_scsi_ctrl_tmf_resp rsp;
-+	int ret;
-+
-+	pr_debug("%s\n", __func__);
-+	memset(&rsp, 0, sizeof(rsp));
-+	rsp.response = VIRTIO_SCSI_S_FUNCTION_REJECTED;
-+	resp = vq->iov[out].iov_base;
-+	ret = __copy_to_user(resp, &rsp, sizeof(rsp));
-+	if (!ret)
-+		vhost_add_used_and_signal(&vs->dev, vq, head, 0);
-+	else
-+		pr_err("Faulted on virtio_scsi_ctrl_tmf_resp\n");
-+}
-+
-+static void
-+vhost_scsi_send_an_resp(struct vhost_scsi *vs,
-+			   struct vhost_virtqueue *vq,
-+			   int head, unsigned int out)
-+{
-+	struct virtio_scsi_ctrl_an_resp __user *resp;
-+	struct virtio_scsi_ctrl_an_resp rsp;
-+	int ret;
-+
-+	pr_debug("%s\n", __func__);
-+	memset(&rsp, 0, sizeof(rsp));	/* event_actual = 0 */
-+	rsp.response = VIRTIO_SCSI_S_OK;
-+	resp = vq->iov[out].iov_base;
-+	ret = __copy_to_user(resp, &rsp, sizeof(rsp));
-+	if (!ret)
-+		vhost_add_used_and_signal(&vs->dev, vq, head, 0);
-+	else
-+		pr_err("Faulted on virtio_scsi_ctrl_an_resp\n");
-+}
-+
-+static void
-+vhost_scsi_ctl_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
-+{
-+	union {
-+		__virtio32 type;
-+		struct virtio_scsi_ctrl_an_req an;
-+		struct virtio_scsi_ctrl_tmf_req tmf;
-+	} v_req;
-+	struct iov_iter out_iter;
-+	unsigned int out = 0, in = 0;
-+	int head;
-+	size_t req_size, rsp_size, typ_size;
-+	size_t out_size, in_size;
-+	u8 *lunp;
-+	void *req;
-+
-+	mutex_lock(&vq->mutex);
-+	/*
-+	 * We can handle the vq only after the endpoint is setup by calling the
-+	 * VHOST_SCSI_SET_ENDPOINT ioctl.
-+	 */
-+	if (!vq->private_data)
-+		goto out;
-+
-+	vhost_disable_notify(&vs->dev, vq);
-+
-+	for (;;) {
-+		head = vhost_get_vq_desc(vq, vq->iov,
-+					 ARRAY_SIZE(vq->iov), &out, &in,
-+					 NULL, NULL);
-+		pr_debug("vhost_get_vq_desc: head: %d, out: %u in: %u\n",
-+			 head, out, in);
-+		/* On error, stop handling until the next kick. */
-+		if (unlikely(head < 0))
-+			break;
-+		/* Nothing new?  Wait for eventfd to tell us they refilled. */
-+		if (head = vq->num) {
-+			if (unlikely(vhost_enable_notify(&vs->dev, vq))) {
-+				vhost_disable_notify(&vs->dev, vq);
-+				continue;
-+			}
-+			break;
-+		}
-+
-+		/*
-+		 * Get the size of request and response buffers.
-+		 */
-+		out_size = iov_length(vq->iov, out);
-+		in_size = iov_length(&vq->iov[out], in);
-+
-+		/*
-+		 * Copy over the virtio-scsi request header, which for a
-+		 * ANY_LAYOUT enabled guest may span multiple iovecs, or a
-+		 * single iovec may contain both the header + outgoing
-+		 * WRITE payloads.
-+		 *
-+		 * copy_from_iter() will advance out_iter, so that it will
-+		 * point at the start of the outgoing WRITE payload, if
-+		 * DMA_TO_DEVICE is set.
-+		 */
-+		iov_iter_init(&out_iter, WRITE, vq->iov, out, out_size);
-+
-+		req = &v_req.type;
-+		typ_size = sizeof(v_req.type);
-+
-+		if (unlikely(!copy_from_iter_full(req, typ_size, &out_iter))) {
-+			vq_err(vq, "Faulted on copy_from_iter tmf type\n");
-+			/*
-+			 * The size of the response buffer varies based on
-+			 * the request type and must be validated against it.
-+			 * Since the request type is not known, don't send
-+			 * a response.
-+			 */
-+			continue;
-+		}
-+
-+		switch (v_req.type) {
-+		case VIRTIO_SCSI_T_TMF:
-+			req = &v_req.tmf;
-+			lunp = &v_req.tmf.lun[0];
-+			req_size = sizeof(struct virtio_scsi_ctrl_tmf_req);
-+			rsp_size = sizeof(struct virtio_scsi_ctrl_tmf_resp);
-+			break;
-+		case VIRTIO_SCSI_T_AN_QUERY:
-+		case VIRTIO_SCSI_T_AN_SUBSCRIBE:
-+			req = &v_req.an;
-+			lunp = &v_req.an.lun[0];
-+			req_size = sizeof(struct virtio_scsi_ctrl_an_req);
-+			rsp_size = sizeof(struct virtio_scsi_ctrl_an_resp);
-+			break;
-+		default:
-+			vq_err(vq, "Unknown control request %d", v_req.type);
-+			continue;
-+		}
-+
-+		/*
-+		 * Check for a sane response buffer so we can report early
-+		 * errors back to the guest.
-+		 */
-+		if (unlikely(in_size < rsp_size)) {
-+			vq_err(vq,
-+			       "Resp buf too small, need min %zu bytes got %zu",
-+			       rsp_size, in_size);
-+			/*
-+			 * Notifications are disabled at this point;
-+			 * continue so they can be eventually enabled
-+			 * when processing terminates.
-+			 */
-+			continue;
-+		}
-+
-+		if (unlikely(out_size < req_size)) {
-+			vq_err(vq,
-+			       "Req buf too small, need min %zu bytes got %zu",
-+			       req_size, out_size);
-+			vhost_scsi_send_bad_target(vs, vq, head, out);
-+			continue;
-+		}
-+
-+		req += typ_size;
-+		req_size -= typ_size;
-+
-+		if (unlikely(!copy_from_iter_full(req, req_size, &out_iter))) {
-+			vq_err(vq, "Faulted on copy_from_iter\n");
-+			vhost_scsi_send_bad_target(vs, vq, head, out);
-+			continue;
-+		}
-+
-+		/* virtio-scsi spec requires byte 0 of the lun to be 1 */
-+		if (unlikely(*lunp != 1)) {
-+			vq_err(vq, "Illegal virtio-scsi lun: %u\n", *lunp);
-+			vhost_scsi_send_bad_target(vs, vq, head, out);
-+			continue;
-+		}
-+
-+		if (v_req.type = VIRTIO_SCSI_T_TMF) {
-+			pr_debug("%s tmf %d\n", __func__, v_req.tmf.subtype);
-+			vhost_scsi_send_tmf_resp(vs, vq, head, out);
-+		} else
-+			vhost_scsi_send_an_resp(vs, vq, head, out);
-+	}
-+out:
-+	mutex_unlock(&vq->mutex);
-+}
-+
- static void vhost_scsi_ctl_handle_kick(struct vhost_work *work)
+@@ -1197,6 +1201,7 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
  {
-+	struct vhost_virtqueue *vq = container_of(work, struct vhost_virtqueue,
-+						poll.work);
-+	struct vhost_scsi *vs = container_of(vq->dev, struct vhost_scsi, dev);
-+
- 	pr_debug("%s: The handling func for control queue.\n", __func__);
-+	vhost_scsi_ctl_handle_vq(vs, vq);
- }
+ 	struct tcmu_mailbox *mb;
++	struct tcmu_cmd *cmd;
+ 	int handled = 0;
  
- static void
+ 	if (test_bit(TCMU_DEV_BIT_BROKEN, &udev->flags)) {
+@@ -1210,7 +1215,6 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+ 	while (udev->cmdr_last_cleaned != READ_ONCE(mb->cmd_tail)) {
+ 
+ 		struct tcmu_cmd_entry *entry = (void *) mb + CMDR_OFF + udev->cmdr_last_cleaned;
+-		struct tcmu_cmd *cmd;
+ 
+ 		tcmu_flush_dcache_range(entry, sizeof(*entry));
+ 
+@@ -1252,6 +1256,22 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+ 			    tcmu_global_max_blocks)
+ 				schedule_delayed_work(&tcmu_unmap_work, 0);
+ 		}
++	} else if (udev->cmd_time_out) {
++		unsigned long deadline;
++		bool is_running;
++		int i;
++
++		deadline = round_jiffies_up(jiffies + msecs_to_jiffies(UINT_MAX));
++		udev->cmd_next_deadline = deadline;
++		idr_for_each_entry(&udev->commands, cmd, i) {
++			is_running = list_empty(&cmd->cmdr_queue_entry);
++			if (is_running && udev->cmd_next_deadline > cmd->deadline)
++				udev->cmd_next_deadline = cmd->deadline;
++		}
++		if (udev->cmd_next_deadline != deadline)
++			mod_timer(&udev->cmd_timer, udev->cmd_next_deadline);
++		else
++			del_timer(&udev->cmd_timer);
+ 	}
+ 
+ 	return handled;
+@@ -1261,18 +1281,23 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
+ {
+ 	struct tcmu_cmd *cmd = p;
+ 	struct tcmu_dev *udev = cmd->tcmu_dev;
++	bool is_running = list_empty(&cmd->cmdr_queue_entry);
++	struct se_cmd *se_cmd = cmd->se_cmd;
+ 	u8 scsi_status;
+-	struct se_cmd *se_cmd;
+-	bool is_running;
+ 
+ 	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags))
+ 		return 0;
+ 
+-	if (!time_after(jiffies, cmd->deadline))
++	if (!time_after(jiffies, cmd->deadline)) {
++		if (is_running) {
++			if (udev->cmd_next_deadline > cmd->deadline)
++				udev->cmd_next_deadline = cmd->deadline;
++		} else {
++			if (udev->qfull_next_deadline > cmd->deadline)
++				udev->qfull_next_deadline = cmd->deadline;
++		}
+ 		return 0;
+-
+-	is_running = list_empty(&cmd->cmdr_queue_entry);
+-	se_cmd = cmd->se_cmd;
++	}
+ 
+ 	if (is_running) {
+ 		/*
+@@ -2661,11 +2686,22 @@ static void check_timedout_devices(void)
+ 	list_splice_init(&timed_out_udevs, &devs);
+ 
+ 	list_for_each_entry_safe(udev, tmp_dev, &devs, timedout_entry) {
++		unsigned long max_deadline;
++
+ 		list_del_init(&udev->timedout_entry);
+ 		spin_unlock_bh(&timed_out_udevs_lock);
+ 
+ 		mutex_lock(&udev->cmdr_lock);
++		max_deadline = round_jiffies_up(jiffies + msecs_to_jiffies(UINT_MAX));
++		udev->cmd_next_deadline = max_deadline;
++		udev->qfull_next_deadline = max_deadline;
+ 		idr_for_each(&udev->commands, tcmu_check_expired_cmd, NULL);
++
++		if (udev->cmd_next_deadline != max_deadline)
++			mod_timer(&udev->cmd_timer, udev->cmd_next_deadline);
++		if (udev->qfull_next_deadline != max_deadline)
++			mod_timer(&udev->qfull_timer, udev->qfull_next_deadline);
++
+ 		mutex_unlock(&udev->cmdr_lock);
+ 
+ 		spin_lock_bh(&timed_out_udevs_lock);
 -- 
-1.8.3.1
+2.19.0.216.g2d3b1c576
