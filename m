@@ -1,103 +1,23 @@
-From: Varun Prakash <varun@chelsio.com>
-Date: Wed, 19 Sep 2018 14:26:57 +0000
-Subject: [PATCH v2] scsi: target: iscsi: cxgbit: fix csk leak
-Message-Id: <1537366497-4369-1-git-send-email-varun@chelsio.com>
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Wed, 26 Sep 2018 01:30:08 +0000
+Subject: Re: [PATCH v2] scsi: target: iscsi: cxgbit: fix csk leak
+Message-Id: <yq18t3pgi5b.fsf@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1537366497-4369-1-git-send-email-varun@chelsio.com>
+In-Reply-To: <1537366497-4369-1-git-send-email-varun@chelsio.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-csk leak can happen if a new TCP connection gets established
-after cxgbit_accept_np() returns, to fix this leak free
-remaining csk in cxgbit_free_np().
 
-v2: fix incorrect input to list_del_init().
+Varun,
 
-Signed-off-by: Varun Prakash <varun@chelsio.com>
----
- drivers/target/iscsi/cxgbit/cxgbit_cm.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+> csk leak can happen if a new TCP connection gets established after
+> cxgbit_accept_np() returns, to fix this leak free remaining csk in
+> cxgbit_free_np().
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-index 8de1601..71888b9 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-@@ -598,9 +598,12 @@ static void cxgbit_free_cdev_np(struct cxgbit_np *cnp)
- 	mutex_unlock(&cdev_list_lock);
- }
- 
-+static void __cxgbit_free_conn(struct cxgbit_sock *csk);
-+
- void cxgbit_free_np(struct iscsi_np *np)
- {
- 	struct cxgbit_np *cnp = np->np_context;
-+	struct cxgbit_sock *csk, *tmp;
- 
- 	cnp->com.state = CSK_STATE_DEAD;
- 	if (cnp->com.cdev)
-@@ -608,6 +611,13 @@ void cxgbit_free_np(struct iscsi_np *np)
- 	else
- 		cxgbit_free_all_np(cnp);
- 
-+	spin_lock_bh(&cnp->np_accept_lock);
-+	list_for_each_entry_safe(csk, tmp, &cnp->np_accept_list, accept_node) {
-+		list_del_init(&csk->accept_node);
-+		__cxgbit_free_conn(csk);
-+	}
-+	spin_unlock_bh(&cnp->np_accept_lock);
-+
- 	np->np_context = NULL;
- 	cxgbit_put_cnp(cnp);
- }
-@@ -705,9 +715,9 @@ void cxgbit_abort_conn(struct cxgbit_sock *csk)
- 			      csk->tid, 600, __func__);
- }
- 
--void cxgbit_free_conn(struct iscsi_conn *conn)
-+static void __cxgbit_free_conn(struct cxgbit_sock *csk)
- {
--	struct cxgbit_sock *csk = conn->context;
-+	struct iscsi_conn *conn = csk->conn;
- 	bool release = false;
- 
- 	pr_debug("%s: state %d\n",
-@@ -716,7 +726,7 @@ void cxgbit_free_conn(struct iscsi_conn *conn)
- 	spin_lock_bh(&csk->lock);
- 	switch (csk->com.state) {
- 	case CSK_STATE_ESTABLISHED:
--		if (conn->conn_state = TARG_CONN_STATE_IN_LOGOUT) {
-+		if (conn && (conn->conn_state = TARG_CONN_STATE_IN_LOGOUT)) {
- 			csk->com.state = CSK_STATE_CLOSING;
- 			cxgbit_send_halfclose(csk);
- 		} else {
-@@ -741,6 +751,11 @@ void cxgbit_free_conn(struct iscsi_conn *conn)
- 		cxgbit_put_csk(csk);
- }
- 
-+void cxgbit_free_conn(struct iscsi_conn *conn)
-+{
-+	__cxgbit_free_conn(conn->context);
-+}
-+
- static void cxgbit_set_emss(struct cxgbit_sock *csk, u16 opt)
- {
- 	csk->emss = csk->com.cdev->lldi.mtus[TCPOPT_MSS_G(opt)] -
-@@ -803,6 +818,7 @@ void _cxgbit_free_csk(struct kref *kref)
- 	spin_unlock_bh(&cdev->cskq.lock);
- 
- 	cxgbit_free_skb(csk);
-+	cxgbit_put_cnp(csk->cnp);
- 	cxgbit_put_cdev(cdev);
- 
- 	kfree(csk);
-@@ -1351,6 +1367,7 @@ cxgbit_pass_accept_req(struct cxgbit_device *cdev, struct sk_buff *skb)
- 		goto rel_skb;
- 	}
- 
-+	cxgbit_get_cnp(cnp);
- 	cxgbit_get_cdev(cdev);
- 
- 	spin_lock(&cdev->cskq.lock);
+Applied to 4.20/scsi-queue, thanks!
+
 -- 
-2.0.2
+Martin K. Petersen	Oracle Linux Engineering
