@@ -1,24 +1,24 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Sat, 13 Oct 2018 13:34:30 +0000
-Subject: Re: [PATCH v2 4/5] target: split out helper for cxn timeout error stashing
-Message-Id: <20181013153430.4fcdc7bf@suse.de>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Mon, 01 Oct 2018 05:03:01 +0000
+Subject: Re: [PATCH 00/17] Make ABORT and LUN RESET handling synchronous
+Message-Id: <b671f11c-bd7d-a196-fa60-f10934650755@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181012100120.2365-5-ddiss@suse.de>
-In-Reply-To: <20181012100120.2365-5-ddiss@suse.de>
+References: <20180917213554.987-1-bvanassche@acm.org>
+In-Reply-To: <20180917213554.987-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Fri, 12 Oct 2018 09:11:27 -0700, Bart Van Assche wrote:
+On 9/17/18 2:35 PM, Bart Van Assche wrote:
+> As you maybe know the LIO task management handling code is complicated
+> because it is asynchronous compared to the command execution flow. This
+> patch series makes task management function handling synchronous and
+> thereby significantly simplifies the LIO code. Please consider these
+> patches for kernel v4.20.
 
-> There have been too many problems with strcpy() and buffer overflows in the
-> past. If the source and destination strings both have the same size, please
-> add a BUILD_BUG_ON() statement that verifies that at compile time. If that
-> not's the case, how about using strlcpy() to make it easy for anyone who
-> reads the source code that no output buffer overflow will occur?
+Does anyone want to comment on this patch series?
 
-Both arrays are the same size (ISCSI_IQN_LEN). I'll change this over to
-use strlcpy(), as I agree that it helps readability.
+Thanks,
 
-Cheers, David
+Bart.
