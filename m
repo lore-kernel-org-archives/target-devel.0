@@ -1,23 +1,19 @@
-From: "Judy" <atedeissdnsuitke@aol.jp>
-Date: Mon, 15 Oct 2018 13:26:20 +0000
-Subject: Working test 6
-Message-Id: <22f411e9872f1d2547b8370172c546b6@bplampsupply.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Sat, 06 Oct 2018 12:07:07 +0000
+Subject: Re: [PATCH 08/17] target/core: Make compare_and_write_callback() accept NULL as third argument
+Message-Id: <20181006120707.GC7723@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <8e4fec6be23075657002cc57e15ab5ad@bplampsupply.com>
-In-Reply-To: <8e4fec6be23075657002cc57e15ab5ad@bplampsupply.com>
+References: <20180917213554.987-9-bvanassche@acm.org>
+In-Reply-To: <20180917213554.987-9-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Did you get my email from last week?
-Let me know if you have photos for cutting out or retouching?
+On Mon, Sep 17, 2018 at 02:35:45PM -0700, Bart Van Assche wrote:
+> This patch does not change any functionality. A later patch in this series,
+> namely "Make ABORT and LUN RESET handling synchronous", depends on this
+> patch.
 
-We are an image team who can do editing for your the web store photos,
-industry photos or portrait photos.
-
-Send photos, we will do testing for you to check quality.
-Waiting for your reply soon.
-
-Thanks,
-Judy
+I'd be tempted to just merge it into that patch to make that fact more
+obvious.
