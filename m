@@ -1,41 +1,68 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Fri, 12 Oct 2018 02:18:01 +0000
-Subject: Re: [PATCH 1/2] sched/wait: Add wait_event_lock_irq_timeout for TASK_UNINTERRUPTIBLE usage
-Message-Id: <91f50300-5e36-73a5-379d-9c82004947bb@acm.org>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Sun, 07 Oct 2018 03:44:06 +0000
+Subject: Re: [PATCH 10/17] target/core: Make it possible to wait from more than one context for command compl
+Message-Id: <1538883846.14891.10.camel@haakon3.daterainc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1539141790-13557-1-git-send-email-nab@linux-iscsi.org>
- <1539141790-13557-2-git-send-email-nab@linux-iscsi.org>
-In-Reply-To: <1539141790-13557-2-git-send-email-nab@linux-iscsi.org>
+References: <20180917213554.987-11-bvanassche@acm.org>
+In-Reply-To: <20180917213554.987-11-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, target-devel <target-devel@vger.kernel.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>, Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>
+To: target-devel@vger.kernel.org
 
-On 10/9/18 8:23 PM, Nicholas A. Bellinger wrote:
-> Short of reverting commit 00d909a107 for v4.19, target-core needs a
-> wait_event_t marco can be executed using TASK_UNINTERRUPTIBLE to
-> function correctly with existing fabric drivers that expect to run
-> with signals pending during session shutdown and active se_cmd I/O
-> quiesce.
+On Mon, 2018-09-17 at 14:35 -0700, Bart Van Assche wrote:
+> This patch does not change any functionality but makes the next patch
+> easier to read.
 > 
-> The most notable is iscsi-target/iser-target, while ibmvscsi_tgt invokes
-> session shutdown logic from userspace via configfs attribute that could
-> also potentially have signals pending.
-> 
-> So go ahead and introduce wait_event_lock_irq_timeout() to achieve this,
-> and update + rename __wait_event_lock_irq_timeout() to make it accept
-> 'state' as a parameter.
-> 
-> Fixes: 00d909a107 ("scsi: target: Make the session shutdown code also wait for commands that are being aborted")
-> Cc: Bart Van Assche <bvanassche@acm.org>
+> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+> Cc: Nicholas Bellinger <nab@linux-iscsi.org>
 > Cc: Mike Christie <mchristi@redhat.com>
-> Cc: Hannes Reinecke <hare@suse.com>
 > Cc: Christoph Hellwig <hch@lst.de>
-> Cc: Sagi Grimberg <sagi@grimberg.me>
-> Cc: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
-> Tested-by: Nicholas Bellinger <nab@linux-iscsi.org>
-> Signed-off-by: Nicholas Bellinger <nab@linux-iscsi.org>
+> Cc: Hannes Reinecke <hare@suse.de>
+> ---
+>  drivers/target/target_core_transport.c | 69 ++++++++++++++++++++++----
+>  include/target/target_core_base.h      |  2 +-
+>  2 files changed, 60 insertions(+), 11 deletions(-)
+> 
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+<SNIP>
+
+> @@ -2759,9 +2802,16 @@ static void target_release_cmd_kref(struct kref *kref)
+>  {
+>  	struct se_cmd *se_cmd = container_of(kref, struct se_cmd, cmd_kref);
+>  	struct se_session *se_sess = se_cmd->se_sess;
+> -	struct completion *compl = se_cmd->compl;
+> +	struct wait_queue_head release_wq;
+>  	unsigned long flags;
+>  
+> +	init_waitqueue_head(&release_wq);
+> +	/*
+> +	 * No locking is required since we are in the release function and
+> +	 * adding to release_wq is only allowed while holding a reference.
+> +	 */
+> +	list_splice_init(&se_cmd->release_wq.head, &release_wq.head);
+> +
+>  	if (se_sess) {
+>  		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
+>  		list_del_init(&se_cmd->se_cmd_list);
+> @@ -2770,8 +2820,7 @@ static void target_release_cmd_kref(struct kref *kref)
+>  
+>  	target_free_cmd_mem(se_cmd);
+>  	se_cmd->se_tfo->release_cmd(se_cmd);
+> -	if (compl)
+> -		complete(compl);
+> +	wake_up_all(&release_wq);
+>  
+>  	percpu_ref_put(&se_sess->cmd_count);
+>  }
+
+Your earlier commit 7b2cc7dc0 in mainline to use a local stack compl in
+transport_generic_free_cmd() was a reasonable change, because fast-path
+code in target_release_cmd_kref() was only doing a complete() when the
+se_cmd was actually being quiesced..
+
+However, the addition of wake_up_all() above for every se_cmd means a
+__wake_up_common_lock() happens no matter what every time in fast-path
+code.
+
+Please, don't do this.
