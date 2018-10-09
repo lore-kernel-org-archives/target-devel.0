@@ -1,33 +1,33 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 12 Oct 2018 10:01:20 +0000
-Subject: [PATCH v2 5/5] target: stash sess_err_stats on Data-Out timeout
-Message-Id: <20181012100120.2365-6-ddiss@suse.de>
+Date: Tue, 09 Oct 2018 11:37:06 +0000
+Subject: [PATCH 4/4] target: log NOP ping timeouts as errors
+Message-Id: <20181009113706.27696-5-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-sess_err_stats are currently filled on NOP ping timeout, but not
-Data-Out timeout. Stash details of Data-Out timeouts using a
-ISCSI_SESS_ERR_CXN_TIMEOUT value for last_sess_failure_type.
+Events resulting in connection outages like this should be logged as
+errors.
 
 Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
- drivers/target/iscsi/iscsi_target_erl1.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/target/iscsi/iscsi_target_util.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
-index 7f3a1a06696e..a211e8154f4c 100644
---- a/drivers/target/iscsi/iscsi_target_erl1.c
-+++ b/drivers/target/iscsi/iscsi_target_erl1.c
-@@ -1230,6 +1230,7 @@ void iscsit_handle_dataout_timeout(struct timer_list *t)
+diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+index 49be1e41290c..b20e87f0795f 100644
+--- a/drivers/target/iscsi/iscsi_target_util.c
++++ b/drivers/target/iscsi/iscsi_target_util.c
+@@ -925,7 +925,7 @@ void iscsit_handle_nopin_response_timeout(struct timer_list *t)
+ 		return;
+ 	}
  
- failure:
- 	spin_unlock_bh(&cmd->dataout_timeout_lock);
-+	iscsit_fill_cxn_timeout_err_stats(sess);
- 	iscsit_cause_connection_reinstatement(conn, 0);
- 	iscsit_dec_conn_usage_count(conn);
- }
+-	pr_debug("Did not receive response to NOPIN on CID: %hu on"
++	pr_err("Did not receive response to NOPIN on CID: %hu on"
+ 		" SID: %u, failing connection.\n", conn->cid,
+ 			conn->sess->sid);
+ 	conn->nopin_response_timer_flags &= ~ISCSI_TF_RUNNING;
 -- 
 2.13.7
