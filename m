@@ -1,26 +1,56 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Fri, 12 Oct 2018 17:14:44 +0000
-Subject: Re: [PATCH 08/17] target/core: Make compare_and_write_callback() accept NULL as third argument
-Message-Id: <1539364484.249485.10.camel@acm.org>
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Date: Wed, 10 Oct 2018 03:23:08 +0000
+Subject: [PATCH 0/2] target: Fix v4.19-rc active I/O shutdown deadlock
+Message-Id: <1539141790-13557-1-git-send-email-nab@linux-iscsi.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180917213554.987-9-bvanassche@acm.org>
-In-Reply-To: <20180917213554.987-9-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: target-devel <target-devel@vger.kernel.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.com>, Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Nicholas Bellinger <nab@linux-iscsi.org>
 
-On Sat, 2018-10-06 at 14:07 +-0200, Christoph Hellwig wrote:
-+AD4 On Mon, Sep 17, 2018 at 02:35:45PM -0700, Bart Van Assche wrote:
-+AD4 +AD4 This patch does not change any functionality. A later patch in this series,
-+AD4 +AD4 namely +ACI-Make ABORT and LUN RESET handling synchronous+ACI, depends on this
-+AD4 +AD4 patch.
-+AD4 
-+AD4 I'd be tempted to just merge it into that patch to make that fact more
-+AD4 obvious.
+From: Nicholas Bellinger <nab@linux-iscsi.org>
 
-OK, I will do that.
+Hi MNC, MKP & Co,
 
-Thanks,
+While testing v4.19-rc recently with simple backend I/O error injection
+(via delayed BIO completion), I was able to trigger an end-less loop
+deadlock with recent changes in commit 00d909a107:
 
-Bart.
+  Author: Bart Van Assche <bart.vanassche@wdc.com>
+  Date:   Fri Jun 22 14:52:53 2018 -0700
+
+      scsi: target: Make the session shutdown code also wait for commands that are being aborted
+
+It comes down to an incorrect assumption wrt signals during session
+shutdown plus active I/O quiesce, which triggers an endless loop
+immediately during session shutdown as se_session->sess_list_wq
+waits for outstanding backend I/O to complete.
+
+The easiest reproduction is with iser-target or simulation with plain
+old iscsi-target/TCP ports.  However, any fabric driver who triggers
+session shutdown from user-space processes with signals pending can
+easily trigger it and bring down the machine.
+
+The fix is simple, but requires a new wait_event_lock_irq_timeout()
+macro to allow TASK_UNINTERRUPTIBLE to be set in order to work as
+expected for all fabric driver session shutdown cases.
+
+So short of reverting commit 00d909a107 now for v4.19, this is going
+to be the best option.
+
+Please review for v4.19, or v4.20-rc1 with stable CC's for both.
+
+Thank you.
+
+Nicholas Bellinger (2):
+  sched/wait: Add wait_event_lock_irq_timeout for TASK_UNINTERRUPTIBLE
+    usage
+  target: Fix target_wait_for_sess_cmds breakage with active signals
+
+ drivers/target/target_core_transport.c |  4 ++--
+ include/linux/wait.h                   | 20 +++++++++++++++-----
+ 2 files changed, 17 insertions(+), 7 deletions(-)
+
+-- 
+1.9.1
