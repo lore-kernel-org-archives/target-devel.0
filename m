@@ -1,32 +1,46 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 12 Oct 2018 10:01:15 +0000
-Subject: [PATCH v2 0/5] target: improve Data-Out and NOP timeout error reporting
-Message-Id: <20181012100120.2365-1-ddiss@suse.de>
+Date: Fri, 12 Oct 2018 10:01:18 +0000
+Subject: [PATCH v2 3/5] target: log NOP ping timeouts as errors
+Message-Id: <20181012100120.2365-4-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-The following patchset converts existing Data-Out and NOP ping timeout
-messages from pr_debug() to pr_error(), to reflect the seriousness of
-unexpected connection termination events.
+Events resulting in connection outages like this should be logged as
+errors. Include the I_T Nexus in the message to aid path identification.
 
-These events can be triggered using a couple of libiscsi client hacks:
-https://github.com/ddiss/libiscsi/tree/hack-lio-trigger-dataout-timeout
-https://github.com/ddiss/libiscsi/tree/hack-lio-trigger-nop-timeout
-
-Cheers, David
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
-Changes since v1
-- split out and use a helper function for cxn timeout error stashing
-- add I_T Nexus to error messages
+ drivers/target/iscsi/iscsi_target_util.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
- drivers/target/iscsi/iscsi_target_erl0.c | 15 +--------------
- drivers/target/iscsi/iscsi_target_erl1.c | 17 ++++++++++++-----
- drivers/target/iscsi/iscsi_target_stat.c |  4 ++--
- drivers/target/iscsi/iscsi_target_util.c | 43 ++++++++++++++++++++++++-------------------
- drivers/target/iscsi/iscsi_target_util.h |  1 +
- include/target/iscsi/iscsi_target_core.h |  6 +++---
- include/target/iscsi/iscsi_target_stat.h |  4 ++--
- 7 files changed, 45 insertions(+), 45 deletions(-)
+diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+index 49be1e41290c..931c51f56435 100644
+--- a/drivers/target/iscsi/iscsi_target_util.c
++++ b/drivers/target/iscsi/iscsi_target_util.c
+@@ -915,6 +915,7 @@ static int iscsit_add_nopin(struct iscsi_conn *conn, int want_response)
+ void iscsit_handle_nopin_response_timeout(struct timer_list *t)
+ {
+ 	struct iscsi_conn *conn = from_timer(conn, t, nopin_response_timer);
++	struct iscsi_session *sess = conn->sess;
+ 
+ 	iscsit_inc_conn_usage_count(conn);
+ 
+@@ -925,9 +926,10 @@ void iscsit_handle_nopin_response_timeout(struct timer_list *t)
+ 		return;
+ 	}
+ 
+-	pr_debug("Did not receive response to NOPIN on CID: %hu on"
+-		" SID: %u, failing connection.\n", conn->cid,
+-			conn->sess->sid);
++	pr_err("Did not receive response to NOPIN on CID: %hu, failing"
++		" connection for I_T Nexus %s,i,0x%6phN,%s,t,0x%02x\n",
++		conn->cid, sess->sess_ops->InitiatorName, sess->isid,
++		sess->tpg->tpg_tiqn->tiqn, (u32)sess->tpg->tpgt);
+ 	conn->nopin_response_timer_flags &= ~ISCSI_TF_RUNNING;
+ 	spin_unlock_bh(&conn->nopin_timer_lock);
+ 
+-- 
+2.13.7
