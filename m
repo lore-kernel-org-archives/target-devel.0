@@ -1,59 +1,51 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Mon, 15 Oct 2018 15:51:37 +0000
-Subject: [PATCH 4/6] target/core: Use the SECTOR_SHIFT constant
-Message-Id: <20181015155139.143446-5-bvanassche@acm.org>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 12 Oct 2018 10:01:17 +0000
+Subject: [PATCH v2 2/5] target: log Data-Out timeouts as errors
+Message-Id: <20181012100120.2365-3-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Instead of duplicating the SECTOR_SHIFT definition from <linux/blkdev.h>,
-use it. This patch does not change any functionality.
+Data-Out timeouts resulting in connection outages should be logged as
+errors. Include the I_T Nexus in the message to aid path identification.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
- drivers/target/target_core_iblock.c | 4 ++--
- drivers/target/target_core_iblock.h | 1 -
- 2 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/target/iscsi/iscsi_target_erl1.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index ce1321a5cb7b..1bc9b14236d8 100644
---- a/drivers/target/target_core_iblock.c
-+++ b/drivers/target/target_core_iblock.c
-@@ -514,7 +514,7 @@ iblock_execute_write_same(struct se_cmd *cmd)
- 		}
+diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
+index 5efa42b939a1..7f3a1a06696e 100644
+--- a/drivers/target/iscsi/iscsi_target_erl1.c
++++ b/drivers/target/iscsi/iscsi_target_erl1.c
+@@ -1169,15 +1169,21 @@ void iscsit_handle_dataout_timeout(struct timer_list *t)
+ 	na = iscsit_tpg_get_node_attrib(sess);
  
- 		/* Always in 512 byte units for Linux/Block */
--		block_lba += sg->length >> IBLOCK_LBA_SHIFT;
-+		block_lba += sg->length >> SECTOR_SHIFT;
- 		sectors -= 1;
+ 	if (!sess->sess_ops->ErrorRecoveryLevel) {
+-		pr_debug("Unable to recover from DataOut timeout while"
+-			" in ERL=0.\n");
++		pr_err("Unable to recover from DataOut timeout while"
++			" in ERL=0, closing iSCSI connection for I_T Nexus"
++			" %s,i,0x%6phN,%s,t,0x%02x\n",
++			sess->sess_ops->InitiatorName, sess->isid,
++			sess->tpg->tpg_tiqn->tiqn, (u32)sess->tpg->tpgt);
+ 		goto failure;
  	}
  
-@@ -757,7 +757,7 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
- 		}
- 
- 		/* Always in 512 byte units for Linux/Block */
--		block_lba += sg->length >> IBLOCK_LBA_SHIFT;
-+		block_lba += sg->length >> SECTOR_SHIFT;
- 		sg_num--;
+ 	if (++cmd->dataout_timeout_retries = na->dataout_timeout_retries) {
+-		pr_debug("Command ITT: 0x%08x exceeded max retries"
+-			" for DataOUT timeout %u, closing iSCSI connection.\n",
+-			cmd->init_task_tag, na->dataout_timeout_retries);
++		pr_err("Command ITT: 0x%08x exceeded max retries"
++			" for DataOUT timeout %u, closing iSCSI connection for"
++			" I_T Nexus %s,i,0x%6phN,%s,t,0x%02x\n",
++			cmd->init_task_tag, na->dataout_timeout_retries,
++			sess->sess_ops->InitiatorName, sess->isid,
++			sess->tpg->tpg_tiqn->tiqn, (u32)sess->tpg->tpgt);
+ 		goto failure;
  	}
  
-diff --git a/drivers/target/target_core_iblock.h b/drivers/target/target_core_iblock.h
-index 9cc3843404d4..cefc641145b3 100644
---- a/drivers/target/target_core_iblock.h
-+++ b/drivers/target/target_core_iblock.h
-@@ -9,7 +9,6 @@
- #define IBLOCK_VERSION		"4.0"
- 
- #define IBLOCK_MAX_CDBS		16
--#define IBLOCK_LBA_SHIFT	9
- 
- struct iblock_req {
- 	refcount_t pending;
 -- 
-2.19.0.605.g01d371f741-goog
+2.13.7
