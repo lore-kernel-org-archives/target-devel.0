@@ -1,7 +1,7 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Tue, 09 Oct 2018 11:37:02 +0000
-Subject: [PATCH 0/4] target: improve Data-Out and NOP timeout error reporting
-Message-Id: <20181009113706.27696-1-ddiss@suse.de>
+Date: Fri, 12 Oct 2018 10:01:15 +0000
+Subject: [PATCH v2 0/5] target: improve Data-Out and NOP timeout error reporting
+Message-Id: <20181012100120.2365-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -17,12 +17,16 @@ https://github.com/ddiss/libiscsi/tree/hack-lio-trigger-dataout-timeout
 https://github.com/ddiss/libiscsi/tree/hack-lio-trigger-nop-timeout
 
 Cheers, David
+---
+Changes since v1
+- split out and use a helper function for cxn timeout error stashing
+- add I_T Nexus to error messages
 
---
-
- drivers/target/iscsi/iscsi_target_erl1.c | 21 ++++++++++++++++++---
+ drivers/target/iscsi/iscsi_target_erl0.c | 15 +--------------
+ drivers/target/iscsi/iscsi_target_erl1.c | 17 ++++++++++++-----
  drivers/target/iscsi/iscsi_target_stat.c |  4 ++--
- drivers/target/iscsi/iscsi_target_util.c |  2 +-
+ drivers/target/iscsi/iscsi_target_util.c | 43 ++++++++++++++++++++++++-------------------
+ drivers/target/iscsi/iscsi_target_util.h |  1 +
  include/target/iscsi/iscsi_target_core.h |  6 +++---
  include/target/iscsi/iscsi_target_stat.h |  4 ++--
- 5 files changed, 26 insertions(+), 11 deletions(-)
+ 7 files changed, 45 insertions(+), 45 deletions(-)
