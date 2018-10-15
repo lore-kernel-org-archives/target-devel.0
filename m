@@ -1,57 +1,66 @@
 From: Bart Van Assche <bvanassche@acm.org>
-Date: Mon, 15 Oct 2018 15:51:36 +0000
-Subject: [PATCH 3/6] target/core: Remove the SCF_COMPARE_AND_WRITE_POST flag
-Message-Id: <20181015155139.143446-4-bvanassche@acm.org>
+Date: Mon, 15 Oct 2018 15:51:38 +0000
+Subject: [PATCH 5/6] target/core: Use sg_alloc_table() instead of open-coding it
+Message-Id: <20181015155139.143446-6-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Commit 057085e522f8 ("target: Fix race for SCF_COMPARE_AND_WRITE_POST
-checking") removed the code that checks the SCF_COMPARE_AND_WRITE_POST flag.
-Hence also remove the flag itself.
+The purpose of sg_alloc_table() is to allocate and initialize an
+sg-list. Use that function instead of open-coding it. This patch will
+make it easier to share code for caching sg-list allocations between
+the SCSI and NVMe target cores.
 
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 Cc: Nicholas Bellinger <nab@linux-iscsi.org>
 Cc: Mike Christie <mchristi@redhat.com>
 Cc: Christoph Hellwig <hch@lst.de>
 Cc: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 ---
- drivers/target/target_core_sbc.c  | 6 ------
- include/target/target_core_base.h | 1 -
- 2 files changed, 7 deletions(-)
+ drivers/target/target_core_sbc.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index ebac2b49b9c6..f2c3b67dbb36 100644
+index f2c3b67dbb36..3d3568a037b1 100644
 --- a/drivers/target/target_core_sbc.c
 +++ b/drivers/target/target_core_sbc.c
-@@ -425,14 +425,8 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
+@@ -447,7 +447,8 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 						 int *post_ret)
+ {
  	struct se_device *dev = cmd->se_dev;
- 	sense_reason_t ret = TCM_NO_SENSE;
+-	struct scatterlist *write_sg = NULL, *sg;
++	struct sg_table write_tbl = { };
++	struct scatterlist *write_sg, *sg;
+ 	unsigned char *buf = NULL, *addr;
+ 	struct sg_mapping_iter m;
+ 	unsigned int offset = 0, len;
+@@ -488,14 +489,12 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 		goto out;
+ 	}
  
--	/*
--	 * Only set SCF_COMPARE_AND_WRITE_POST to force a response fall-through
--	 * within target_complete_ok_work() if the command was successfully
--	 * sent to the backend driver.
--	 */
- 	spin_lock_irq(&cmd->t_state_lock);
- 	if (cmd->transport_state & CMD_T_SENT) {
--		cmd->se_cmd_flags |= SCF_COMPARE_AND_WRITE_POST;
- 		*post_ret = 1;
- 
- 		if (cmd->scsi_status = SAM_STAT_CHECK_CONDITION)
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 7a4ee7852ca4..e3bdb0550a59 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -138,7 +138,6 @@ enum se_cmd_flags_table {
- 	SCF_ALUA_NON_OPTIMIZED		= 0x00008000,
- 	SCF_PASSTHROUGH_SG_TO_MEM_NOALLOC = 0x00020000,
- 	SCF_COMPARE_AND_WRITE		= 0x00080000,
--	SCF_COMPARE_AND_WRITE_POST	= 0x00100000,
- 	SCF_PASSTHROUGH_PROT_SG_TO_MEM_NOALLOC = 0x00200000,
- 	SCF_ACK_KREF			= 0x00400000,
- 	SCF_USE_CPUID			= 0x00800000,
+-	write_sg = kmalloc_array(cmd->t_data_nents, sizeof(*write_sg),
+-				 GFP_KERNEL);
+-	if (!write_sg) {
++	if (sg_alloc_table(&write_tbl, cmd->t_data_nents, GFP_KERNEL) < 0) {
+ 		pr_err("Unable to allocate compare_and_write sg\n");
+ 		ret = TCM_OUT_OF_RESOURCES;
+ 		goto out;
+ 	}
+-	sg_init_table(write_sg, cmd->t_data_nents);
++	write_sg = write_tbl.sgl;
+ 	/*
+ 	 * Setup verify and write data payloads from total NumberLBAs.
+ 	 */
+@@ -591,7 +590,7 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 	 * sbc_compare_and_write() before the original READ I/O submission.
+ 	 */
+ 	up(&dev->caw_sem);
+-	kfree(write_sg);
++	sg_free_table(&write_tbl);
+ 	kfree(buf);
+ 	return ret;
+ }
 -- 
 2.19.0.605.g01d371f741-goog
