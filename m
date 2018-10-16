@@ -1,7 +1,7 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Tue, 16 Oct 2018 04:42:57 +0000
+From: David Disseldorp <ddiss@suse.de>
+Date: Tue, 16 Oct 2018 09:21:30 +0000
 Subject: Re: [PATCH v3 4/5] target: split out helper for cxn timeout error stashing
-Message-Id: <yq1d0sav6we.fsf@oracle.com>
+Message-Id: <20181016112130.52083e29@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <20181014120932.2801e22a@suse.de>
 In-Reply-To: <20181014120932.2801e22a@suse.de>
@@ -10,20 +10,18 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+On Tue, 16 Oct 2018 00:42:57 -0400, Martin K. Petersen wrote:
 
-David,
+> > I guess I'll resend entire series in future to avoid false kbuild
+> > reports.  
+> 
+> Yes, please. Patchwork can't handle individual patches getting updated
+> either.
 
-> This patch is a v3 respin of an individual patch within the series:
-> [PATCH v2 0/5] target: improve Data-Out and NOP timeout error
-> reporting The sess declaration is provided in [PATCH v2 3/5].
->
-> I guess I'll resend entire series in future to avoid false kbuild
-> reports.
+Okay, will do.
 
-Yes, please. Patchwork can't handle individual patches getting updated
-either.
+> Applied to 4.20/scsi-queue.
 
-Applied to 4.20/scsi-queue.
+Thanks Martin.
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Cheers, David
