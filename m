@@ -1,7 +1,7 @@
 From: "Madhani, Himanshu" <Himanshu.Madhani@cavium.com>
-Date: Sat, 06 Oct 2018 05:07:52 +0000
+Date: Tue, 16 Oct 2018 20:29:01 +0000
 Subject: Re: [PATCH 14/17] target/qla2xxx: Simplify the code for handling aborted commands
-Message-Id: <DBEFA9D8-68ED-492F-AA69-1F5044B585A1@cavium.com>
+Message-Id: <5EF65474-F9D7-4AF0-A556-0D40B73854C0@cavium.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20180917213554.987-15-bvanassche@acm.org>
 In-Reply-To: <20180917213554.987-15-bvanassche@acm.org>
@@ -10,48 +10,97 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+Hi Bart, 
 
-> On Oct 3, 2018, at 4:20 PM, Bart Van Assche <bvanassche@acm.org> wrote:
+Apologies for long delay
+
+> On Sep 17, 2018, at 2:35 PM, Bart Van Assche <bvanassche@acm.org> wrote:
 > 
 > External Email
 > 
-> On Mon, 2018-09-17 at 14:35 -0700, Bart Van Assche wrote:
->> Since the target core waits anyway until a target driver has
->> finished processing a command, remove similar waiting code from
->> the tcm_qla2xxx driver. With this change applied command abortion
->> works as follows:
->> * tcm_qla2xxx receives an ABTS and calls target_submit_tmr().
->> * The target core calls core_tmr_abort_task(). That function
->>  sets the CMD_T_ABORTED flag and next calls transport_wait_for_tasks().
->> * If CMD_T_ACTIVE is still set, __transport_wait_for_tasks() sets
->>  CMD_T_STOP and waits for t_transport_stop_comp.
->> * When tcm_qla2xxx_handle_data_work() gets called, it either invokes
->>  transport_generic_request_failure() or target_execute_cmd().
->> * Both functions start with calling __transport_check_aborted_status()
->>  and return 1 if CMD_T_ABORTED was set. Otherwise the command that
->>  is being executed is completed and target_complete_cmd() completes
->>  t_transport_stop_comp.
->> * Once transport_wait_for_tasks() returns the target core considers
->>  the TMF as finished.
->> 
->> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
->> Cc: Himanshu Madhani <himanshu.madhani@cavium.com>
->> Cc: Quinn Tran <quinn.tran@cavium.com>
->> Cc: Nicholas Bellinger <nab@linux-iscsi.org>
->> Cc: Mike Christie <mchristi@redhat.com>
->> Cc: Christoph Hellwig <hch@lst.de>
->> Cc: Hannes Reinecke <hare@suse.de>
+> Since the target core waits anyway until a target driver has
+> finished processing a command, remove similar waiting code from
+> the tcm_qla2xxx driver. With this change applied command abortion
+> works as follows:
+> * tcm_qla2xxx receives an ABTS and calls target_submit_tmr().
+> * The target core calls core_tmr_abort_task(). That function
+>  sets the CMD_T_ABORTED flag and next calls transport_wait_for_tasks().
+> * If CMD_T_ACTIVE is still set, __transport_wait_for_tasks() sets
+>  CMD_T_STOP and waits for t_transport_stop_comp.
+> * When tcm_qla2xxx_handle_data_work() gets called, it either invokes
+>  transport_generic_request_failure() or target_execute_cmd().
+> * Both functions start with calling __transport_check_aborted_status()
+>  and return 1 if CMD_T_ABORTED was set. Otherwise the command that
+>  is being executed is completed and target_complete_cmd() completes
+>  t_transport_stop_comp.
+> * Once transport_wait_for_tasks() returns the target core considers
+>  the TMF as finished.
 > 
-> Hello Himanshu and Quinn,
+> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+> Cc: Himanshu Madhani <himanshu.madhani@cavium.com>
+> Cc: Quinn Tran <quinn.tran@cavium.com>
+> Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+> Cc: Mike Christie <mchristi@redhat.com>
+> Cc: Christoph Hellwig <hch@lst.de>
+> Cc: Hannes Reinecke <hare@suse.de>
+> ---
+> drivers/scsi/qla2xxx/tcm_qla2xxx.c | 26 +++++---------------------
+> 1 file changed, 5 insertions(+), 21 deletions(-)
 > 
-> Can one of you review this patch?
+> diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+> index e03d12a5f986..2cedfd4f15a3 100644
+> --- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+> +++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+> @@ -414,21 +414,14 @@ static int tcm_qla2xxx_write_pending(struct se_cmd *se_cmd)
+> static int tcm_qla2xxx_write_pending_status(struct se_cmd *se_cmd)
+> {
+>        unsigned long flags;
+> -       /*
+> -        * Check for WRITE_PENDING status to determine if we need to wait for
+> -        * CTIO aborts to be posted via hardware in tcm_qla2xxx_handle_data().
+> -        */
+> +       bool wp;
+> +
+>        spin_lock_irqsave(&se_cmd->t_state_lock, flags);
+> -       if (se_cmd->t_state == TRANSPORT_WRITE_PENDING ||
+> -           se_cmd->t_state == TRANSPORT_COMPLETE_QF_WP) {
+> -               spin_unlock_irqrestore(&se_cmd->t_state_lock, flags);
+> -               wait_for_completion_timeout(&se_cmd->t_transport_stop_comp,
+> -                                               50);
+> -               return 0;
+> -       }
+> +       wp = se_cmd->t_state == TRANSPORT_WRITE_PENDING ||
+> +               se_cmd->t_state == TRANSPORT_COMPLETE_QF_WP;
+>        spin_unlock_irqrestore(&se_cmd->t_state_lock, flags);
 > 
-> Thanks,
+> -       return 0;
+> +       return wp;
+> }
 > 
-> Bart.
+> static void tcm_qla2xxx_set_default_node_attrs(struct se_node_acl *nacl)
+> @@ -508,15 +501,6 @@ static void tcm_qla2xxx_handle_data_work(struct work_struct *work)
+> 
+>        cmd->qpair->tgt_counters.qla_core_ret_ctio++;
+>        if (!cmd->write_data_transferred) {
+> -               /*
+> -                * Check if se_cmd has already been aborted via LUN_RESET, and
+> -                * waiting upon completion in tcm_qla2xxx_write_pending_status()
+> -                */
+> -               if (cmd->se_cmd.transport_state & CMD_T_ABORTED) {
+> -                       complete(&cmd->se_cmd.t_transport_stop_comp);
+> -                       return;
+> -               }
+> -
+>                switch (cmd->dif_err_code) {
+>                case DIF_ERR_GRD:
+>                        cmd->se_cmd.pi_err =
+> --
+> 2.18.0
 > 
 
-Apologies for delay. Still reviewing the patch
+Patch Looks good. 
+
+Acked-by: Himanshu Madhani <himanshu.madhani@cavium.com>
 
 Thanks,
 - Himanshu
