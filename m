@@ -1,17 +1,23 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Fri, 05 Oct 2018 07:43:29 +0000
-Subject: Re: [PATCH 03/17] target/core: Remove an unused data member from struct xcopy_pt_cmd
-Message-Id: <20181005074329.GC24541@lst.de>
+From: "Nancy" <cetdeiqnsusitce@aol.jp>
+Date: Thu, 18 Oct 2018 09:58:25 +0000
+Subject: Photos 40
+Message-Id: <c89eca676441a5014566d196b65100b7@ustacup.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Mon, Sep 17, 2018 at 02:35:40PM -0700, Bart Van Assche wrote:
-> A value is assigned to the xcopy_op member of struct xcopy_pt_cmd
-> but that value is never used. Hence remove the xcopy_op member.
+We are an image team who can process 400+ images each day.
 
-Looks good,
+If you need any image editing service, please let us know.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Image cut out and clipping path, masking.
+Such as for ecommerce photos, jewelry photos retouching, beauty and skin
+images
+and wedding photos.
+
+We give test editing for your photos if you send us some.
+
+Thanks,
+Nancy
