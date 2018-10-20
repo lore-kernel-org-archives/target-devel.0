@@ -1,67 +1,34 @@
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Date: Sat, 06 Oct 2018 21:48:04 +0000
-Subject: Re: [PATCH 00/17] Make ABORT and LUN RESET handling synchronous
-Message-Id: <1538862484.6343.40.camel@haakon3.daterainc.com>
+From: Roland Dreier <roland@kernel.org>
+Date: Sat, 20 Oct 2018 16:45:04 +0000
+Subject: [PATCH 1/2] target: Set response length for REPORT TARGET PORT GROUPS
+Message-Id: <20181020164504.8644-1-roland@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20180917213554.987-1-bvanassche@acm.org>
-In-Reply-To: <20180917213554.987-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hi Bart & Co,
+From: Roland Dreier <roland@purestorage.com>
 
-Well, it's certainly been a while.  This is the type of patch series
-that will draw me out of self-imposed retirement, every single time..
+One more place where we can return the length we actually fill in.
 
-Of course, I'm referring to:
+Signed-off-by: Roland Dreier <roland@purestorage.com>
+---
+ drivers/target/target_core_alua.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-https://marc.info/?l=target-devel&m3722310800840&w=2
-
-So the time has come once again to go over this series with a fine
-toothed comb.
-
-As per usual, the main areas of focus for review are:
-
-1) Is there a concrete use-case..?
-
-Improvements that significantly alter how multiple fabric drivers and/or
-multiple backend drivers interact with target-core require a concrete
-use-case.  
-
-Many improvements are obvious because they effect customers and users in
-the field, but making significant changes that effect the entire LIO
-ecosystem do require a real-world use-case.  Making large functional
-changes under of guise of 'style' or 'making it easier to read' is not a
-good enough reason on it's own.
-
-2) Does it negativity effect scale, performance, or latency..?
-
-As-is, there are a number vendors (including my own startup) that ship
-platforms utilizing upstream LIO with hard requirements for ~1K unique
-backends (/sys/kernel/config/target/core/$HBA/$DEV/) plus ~1k unique
-target endpoints (/sys/kernel/config/target/$FABRIC/$WWN/) plus ~1k
-unique tenants on a single physical machine.
-
-Because of this long standing requirement for scale + performance going
-back to the earliest days of LIO + configfs, changes that introduce
-global locking, global variables, global work-queues, and/or unnecessary
-blocking + synchronization are a complete non-starter.
-
-3) Have comments from previous patches been addressed..?
-
-Looking at the history, I'm commented on this series in detail at least
-*seven* times over the last three years.
-
-Every time this series ending up not getting merged because my questions
-and concerns where either dismissed, or outright ignored.  So at some
-point, I got tired of putting in effort that was not reciprocated at the
-other end.
-
-That all said, you still get the benefit of doubt on this series.
-However, for those specific patches that have already been reviewed and
-commented on in detail numerous times, you will need to answer to those
-questions.  I'll add them as references inline as necessary.
-
-Thank you.
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index e46ca968009c..4f134b0c3e29 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -268,7 +268,7 @@ target_emulate_report_target_port_groups(struct se_cmd *cmd)
+ 	}
+ 	transport_kunmap_data_sg(cmd);
+ 
+-	target_complete_cmd(cmd, GOOD);
++	target_complete_cmd_with_length(cmd, GOOD, rd_len + 4);
+ 	return 0;
+ }
+ 
+-- 
+2.19.1
