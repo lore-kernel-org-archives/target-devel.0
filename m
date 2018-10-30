@@ -1,103 +1,25 @@
-From: Ben Klein <shacklein@gmail.com>
-Date: Mon, 29 Oct 2018 22:03:38 +0000
-Subject: Memory leak in pSCSI backend?
-Message-Id: <CAJboL95nkVbNDTCPTGJBzusaFA8ZLZT87oCU1otFO=TT=REbCQ@mail.gmail.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="000000000000ba68700579653ede"
+From: David Disseldorp <ddiss@suse.de>
+Date: Tue, 30 Oct 2018 17:58:46 +0000
+Subject: Re: Memory leak in pSCSI backend?
+Message-Id: <20181030185846.2b5ea2ef@suse.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <CAJboL95nkVbNDTCPTGJBzusaFA8ZLZT87oCU1otFO=TT=REbCQ@mail.gmail.com>
+In-Reply-To: <CAJboL95nkVbNDTCPTGJBzusaFA8ZLZT87oCU1otFO=TT=REbCQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
---000000000000ba68700579653ede
-Content-Type: text/plain; charset="UTF-8"
+Hi Ben,
 
-Hi,
+Thanks for the report.
 
-I've been trying to get a DVD-ROM drive working over iSCSI. I'm using
-targetcli on the target and iscsiadm/iscsi_discovery on the initiator.
+On Tue, 30 Oct 2018 09:03:38 +1100, Ben Klein wrote:
 
-Target is running 4.18.16 unpatched from kernel.org, with AMD64
-Devuan/Debian stable userland. 10 year old Core 2 Duo CPU.
+> Please let me know if there's any other information I can provide.
 
-Initiator is running 4.18.15 unpatched from kernel.org with AMD64
-Devuan/Debian unstable userland. Ryzen 7 CPU.
+Any chance you'd be able to rerun your reproducer with kmemleak logging
+enabled? Details can be found at:
+https://www.kernel.org/doc/Documentation/dev-tools/kmemleak.rst
 
-Using pSCSI backend on /dev/sr0 triggers a memory leak (or infinite
-loop?) that consumes all 5GB of system RAM on the target in a matter
-of seconds after attempting a read (I've been testing with "file -s")
-on the initiator side. It doesn't go into swap memory.
-
-I tested pSCSI and IBLOCK backends on a WD Green SSD, and found IBLOCK
-works fine (I was able to run mkfs.ext4 from the initiator without any
-memory leak on the target), but pSCSI still seems to trigger a memory
-leak, albeit a lot slower than with the DVD-ROM. I suspect udev might
-have something to do with this, as tries to read the volume label off
-optical discs on insertion.
-
-I have attached my targetcli output, and have configured my
-target-side kernel for coredumping and debugging. If someone can talk
-me through what to look for, I can poke around in the 5GB vmcore that
-gets produced by kdump.
-
-Please let me know if there's any other information I can provide.
-
-Thanks,
-Ben Klein
-
-PS. I have now successfully set up tgtd in passthrough/sg mode, but
-I'd still like to get to the bottom of why the in-kernel target is not
-functioning for me. I'm also hoping the in-kernel target may be able
-to handle encrypted DVD playback, as tgtd can't cope with them.
-
---000000000000ba68700579653ede
-Content-Type: text/plain; charset="US-ASCII"; name="targetcli.txt"
-Content-Disposition: attachment; filename="targetcli.txt"
-Content-Transfer-Encoding: base64
-Content-ID: <f_jnuuo7290>
-X-Attachment-Id: f_jnuuo7290
-
-by0gLyAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uIFsuLi5dCiAgby0gYmFja3N0b3JlcyAuLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLiBbLi4uXQogIHwgby0gYmxvY2sgLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4gW1N0b3JhZ2UgT2JqZWN0czogMF0K
-ICB8IG8tIGZpbGVpbyAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtT
-dG9yYWdlIE9iamVjdHM6IDBdCiAgfCBvLSBwc2NzaSAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLiBbU3RvcmFnZSBPYmplY3RzOiAxXQogIHwgfCBvLSBzcjAgLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4gWy9kZXYvc3IwIGFjdGl2YXRlZF0K
-ICB8IG8tIHJhbWRpc2sgLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtT
-dG9yYWdlIE9iamVjdHM6IDBdCiAgby0gaXNjc2kgLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtUYXJnZXRzOiAxXQogIHwgby0gaXFuLjIwMDMtMDEu
-b3JnLmxpbnV4LWlzY3NpLmZyYW5raWUueDg2NjQ6c24uN2ZmMDY1ZTMzMjI4IC4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLiBbVFBHczogMV0K
-ICB8ICAgby0gdHBnMSAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLiBbbm8t
-Z2VuLWFjbHMsIG5vLWF1dGhdCiAgfCAgICAgby0gYWNscyAuLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtBQ0xzOiAxXQogIHwgICAgIHwgby0gaXFuLjE5
-OTMtMDgub3JnLmRlYmlhbjprdWJyaWsgLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtNYXBwZWQgTFVOczogMV0K
-ICB8ICAgICB8ICAgby0gbWFwcGVkX2x1bjEgLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4gW2x1
-bjEgcHNjc2kvc3IwIChydyldCiAgfCAgICAgby0gbHVucyAuLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtMVU5zOiAxXQogIHwgICAgIHwgby0gbHVuMSAu
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtwc2NzaS9zcjAgKC9kZXYvc3IwKV0K
-ICB8ICAgICBvLSBwb3J0YWxzIC4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4gW1BvcnRhbHM6IDFdCiAgfCAgICAgICBvLSAxOTIuMTY4LjkuMTozMjYwIC4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4gW09LXQogIG8tIGxvb3BiYWNrIC4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLiBbVGFyZ2V0czogMF0K
-ICBvLSB2aG9zdCAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4gW1RhcmdldHM6IDBdCg==
---000000000000ba68700579653ede--
+Cheers, David
