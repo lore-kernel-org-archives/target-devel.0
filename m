@@ -1,86 +1,47 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 06 Nov 2018 17:17:14 +0000
-Subject: [PATCH 06/10] target/core: Make it possible to wait from more than one context for command completio
-Message-Id: <20181106171718.89594-7-bvanassche@acm.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 01 Nov 2018 09:51:39 +0000
+Subject: [bug report] iscsi-target: Fix panic when adding second TCP connection to iSCSI session
+Message-Id: <20181101095139.ntoxxswfc3tsal54@kili.mountain>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This patch does not change any functionality but makes the patch that
-makes TMF handling synchronous easier to read.
+Hello Feng Li,
 
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: David Disseldorp <ddiss@suse.de>
-Cc: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
----
- drivers/target/target_core_transport.c | 14 +++++++++-----
- include/target/target_core_base.h      |  3 ++-
- 2 files changed, 11 insertions(+), 6 deletions(-)
+This is a semi-automatic email about new static checker warnings.
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index cf76d3709683..7b77520a2b35 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1327,7 +1327,8 @@ void transport_init_se_cmd(
- 	INIT_LIST_HEAD(&cmd->se_cmd_list);
- 	INIT_LIST_HEAD(&cmd->state_list);
- 	init_completion(&cmd->t_transport_stop_comp);
--	cmd->compl = NULL;
-+	cmd->free_compl = NULL;
-+	cmd->abrt_compl = NULL;
- 	spin_lock_init(&cmd->t_state_lock);
- 	INIT_WORK(&cmd->work, NULL);
- 	kref_init(&cmd->cmd_kref);
-@@ -2688,7 +2689,7 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
- 			transport_lun_remove_cmd(cmd);
- 	}
- 	if (aborted)
--		cmd->compl = &compl;
-+		cmd->free_compl = &compl;
- 	if (!aborted || tas)
- 		ret = target_put_sess_cmd(cmd);
- 	if (aborted) {
-@@ -2755,7 +2756,8 @@ static void target_release_cmd_kref(struct kref *kref)
- {
- 	struct se_cmd *se_cmd = container_of(kref, struct se_cmd, cmd_kref);
- 	struct se_session *se_sess = se_cmd->se_sess;
--	struct completion *compl = se_cmd->compl;
-+	struct completion *free_compl = se_cmd->free_compl;
-+	struct completion *abrt_compl = se_cmd->abrt_compl;
- 	unsigned long flags;
- 
- 	if (se_sess) {
-@@ -2766,8 +2768,10 @@ static void target_release_cmd_kref(struct kref *kref)
- 
- 	target_free_cmd_mem(se_cmd);
- 	se_cmd->se_tfo->release_cmd(se_cmd);
--	if (compl)
--		complete(compl);
-+	if (free_compl)
-+		complete(free_compl);
-+	if (abrt_compl)
-+		complete(abrt_compl);
- 
- 	percpu_ref_put(&se_sess->cmd_count);
- }
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 67130841d421..bff51baee7e0 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -474,7 +474,8 @@ struct se_cmd {
- 	struct se_session	*se_sess;
- 	struct se_tmr_req	*se_tmr_req;
- 	struct list_head	se_cmd_list;
--	struct completion	*compl;
-+	struct completion	*free_compl;
-+	struct completion	*abrt_compl;
- 	const struct target_core_fabric_ops *se_tfo;
- 	sense_reason_t		(*execute_cmd)(struct se_cmd *);
- 	sense_reason_t (*transport_complete_callback)(struct se_cmd *, bool, int *);
--- 
-2.19.1.930.g4563a0d9d0-goog
+The patch 8abc718de6e9: "iscsi-target: Fix panic when adding second 
+TCP connection to iSCSI session" from Jul 12, 2016, leads to the 
+following Smatch complaint:
+
+    drivers/target/iscsi/iscsi_target_login.c:1405 __iscsi_target_login_thread()
+     error: we previously assumed 'conn->sess' could be null (see line 1394)
+
+drivers/target/iscsi/iscsi_target_login.c
+  1393	
+  1394		if (conn->sess)
+                    ^^^^^^^^^^
+We added a check here.
+
+  1395			conn->sess->se_sess->sup_prot_ops   1396				conn->conn_transport->iscsit_get_sup_prot_ops(conn);
+  1397	
+  1398		tpg = conn->tpg;
+  1399		if (!tpg) {
+  1400			pr_err("Unable to locate struct iscsi_conn->tpg\n");
+  1401			goto new_sess_out;
+  1402		}
+  1403	
+  1404		if (zero_tsih) {
+  1405			if (iscsi_login_zero_tsih_s2(conn) < 0)
+                                                     ^^^^
+But conn->sess is dereferenced here.  Perhaps the zero_tsih check implies
+that conn->sess is non-NULL but I don't know the code well enough to say
+for sure.
+
+  1406				goto new_sess_out;
+  1407		} else {
+
+regards,
+dan carpenter
