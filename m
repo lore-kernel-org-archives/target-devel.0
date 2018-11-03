@@ -1,17 +1,27 @@
-From: "Reem Al-Hashimi" <chika@cosme-review.com>
-Date: Mon, 26 Nov 2018 18:29:27 +0000
-Subject: Re: Did You Receive My Last Mail?
-Message-Id: <20181126182911.BDE383867C41A7@sv805.xserver.jp>
+From: "Dr Kannan" <sale@allta.com.ua>
+Date: Sat, 03 Nov 2018 16:26:09 +0000
+Subject: Update
+Message-Id: <20181103162559.251D31803A1@mail.allta.com.ua>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hello,
+Hello dear
 
-My name is ms. Reem Al-Hashimi. The UAE minister of state for international cooparation. I got your contact from an email database from your country. I have a financial transaction i would like to discuss with you. Please reply to reem2018@daum.net, for more details if you are interested.
+Greetings to you,I am Dr.Kannan, a personal account manager to Late Engr. Richard Hernandez, who died with his family in the missing Malaysian Air crash
 
-Regards,
+of 2014. His account with us is in intestate with no claim his fixed deposit of U$D 7 Million.
 
-Ms. Reem Al-Hashimi
+I have been mandated by the Bank Management as his personal account officer, to present his relative or next of kin.
+
+I have searched through notary register of his country here all to no avail, so I wish to present you to the Bank as his only relative and next of kin.
+
+kindly contact me for more details, terms and condition shall be clarified upon your response. There is no risk whatsoever to this transaction as I have all papers and documents to pose of you the inheritance to this. 
+
+I wait for your prompt response.
+
+My regards,
+
+Dr. Kannan.
