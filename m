@@ -1,66 +1,45 @@
 From: Bart Van Assche <bvanassche@acm.org>
-Date: Mon, 15 Oct 2018 15:51:38 +0000
-Subject: [PATCH 5/6] target/core: Use sg_alloc_table() instead of open-coding it
-Message-Id: <20181015155139.143446-6-bvanassche@acm.org>
+Date: Mon, 05 Nov 2018 18:40:11 +0000
+Subject: [PATCH] target/core: Avoid that a kernel oops can be triggered when an XCOPY command fails
+Message-Id: <20181105184011.94041-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-The purpose of sg_alloc_table() is to allocate and initialize an
-sg-list. Use that function instead of open-coding it. This patch will
-make it easier to share code for caching sg-list allocations between
-the SCSI and NVMe target cores.
-
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+Fixes: aa73237dcb2d ("scsi: target/core: Always call transport_complete_callback() upon failure")
 Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: David Disseldorp <ddiss@suse.de>
 Cc: Mike Christie <mchristi@redhat.com>
 Cc: Christoph Hellwig <hch@lst.de>
 Cc: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 ---
- drivers/target/target_core_sbc.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/target/target_core_transport.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index f2c3b67dbb36..3d3568a037b1 100644
---- a/drivers/target/target_core_sbc.c
-+++ b/drivers/target/target_core_sbc.c
-@@ -447,7 +447,8 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
- 						 int *post_ret)
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index e31e4fc31aa1..2cfd61d62e97 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1778,7 +1778,7 @@ EXPORT_SYMBOL(target_submit_tmr);
+ void transport_generic_request_failure(struct se_cmd *cmd,
+ 		sense_reason_t sense_reason)
  {
- 	struct se_device *dev = cmd->se_dev;
--	struct scatterlist *write_sg = NULL, *sg;
-+	struct sg_table write_tbl = { };
-+	struct scatterlist *write_sg, *sg;
- 	unsigned char *buf = NULL, *addr;
- 	struct sg_mapping_iter m;
- 	unsigned int offset = 0, len;
-@@ -488,14 +489,12 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
- 		goto out;
- 	}
+-	int ret = 0;
++	int ret = 0, post_ret;
  
--	write_sg = kmalloc_array(cmd->t_data_nents, sizeof(*write_sg),
--				 GFP_KERNEL);
--	if (!write_sg) {
-+	if (sg_alloc_table(&write_tbl, cmd->t_data_nents, GFP_KERNEL) < 0) {
- 		pr_err("Unable to allocate compare_and_write sg\n");
- 		ret = TCM_OUT_OF_RESOURCES;
- 		goto out;
- 	}
--	sg_init_table(write_sg, cmd->t_data_nents);
-+	write_sg = write_tbl.sgl;
- 	/*
- 	 * Setup verify and write data payloads from total NumberLBAs.
- 	 */
-@@ -591,7 +590,7 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
- 	 * sbc_compare_and_write() before the original READ I/O submission.
- 	 */
- 	up(&dev->caw_sem);
--	kfree(write_sg);
-+	sg_free_table(&write_tbl);
- 	kfree(buf);
- 	return ret;
- }
+ 	pr_debug("-----[ Storage Engine Exception; sense_reason %d\n",
+ 		 sense_reason);
+@@ -1790,7 +1790,7 @@ void transport_generic_request_failure(struct se_cmd *cmd,
+ 	transport_complete_task_attr(cmd);
+ 
+ 	if (cmd->transport_complete_callback)
+-		cmd->transport_complete_callback(cmd, false, NULL);
++		cmd->transport_complete_callback(cmd, false, &post_ret);
+ 
+ 	if (transport_check_aborted_status(cmd, 1))
+ 		return;
 -- 
-2.19.0.605.g01d371f741-goog
+2.19.1.930.g4563a0d9d0-goog
