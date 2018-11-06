@@ -1,49 +1,86 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 30 Nov 2018 23:34:18 +0000
-Subject: [PATCH v5 0/5] target: user configurable T10 Vendor ID
-Message-Id: <20181130233423.26556-1-ddiss@suse.de>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 06 Nov 2018 17:17:14 +0000
+Subject: [PATCH 06/10] target/core: Make it possible to wait from more than one context for command completio
+Message-Id: <20181106171718.89594-7-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This patch-set allows for the modification of the T10 Vendor
-Identification string returned in the SCSI INQUIRY response, via the
-target/core/$backstore/$name/wwn/vendor_id ConfigFS path.
+This patch does not change any functionality but makes the patch that
+makes TMF handling synchronous easier to read.
 
-Changes since v4:
-- merge null-termination changes into a single patch
-- add patch to initialise t10_wwn ID defaults earlier
-- use strlcpy() instead of strncpy() in some places
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: David Disseldorp <ddiss@suse.de>
+Cc: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/target_core_transport.c | 14 +++++++++-----
+ include/target/target_core_base.h      |  3 ++-
+ 2 files changed, 11 insertions(+), 6 deletions(-)
 
-Changes since v3:
-- perform explicit null termination of t10_wwn vendor, model and
-  revision fields.
-- replace field dump for-loops
-
-Changes since v2:
-- https://www.spinics.net/lists/target-devel/msg10720.html
-- Support eight byte vendor ID strings
-- Split out consistent INQUIRY data padding as a separate patch
-- Drop t10_wwn.model buffer print fix, already upstream
-
-Changes since v1:
-- https://www.spinics.net/lists/target-devel/msg10545.html
-- Rebase against nab's for-next branch, which includes Christoph's
-  configfs API changes.
-
-David Disseldorp (5):
-      target: use consistent left-aligned ASCII INQUIRY data
-      target: consistently null-terminate t10_wwn strings
-      target: add device vendor_id configfs attribute
-      target: remove hardcoded T10 Vendor ID in INQUIRY response
-      target: perform t10_wwn ID initialisation in target_alloc_device()
-
- drivers/target/target_core_configfs.c | 62 +++++++++++++++++++++++--
- drivers/target/target_core_device.c   | 65 +++++++++++----------------
- drivers/target/target_core_pscsi.c    | 18 +++++---
- drivers/target/target_core_spc.c      | 20 ++++++---
- drivers/target/target_core_stat.c     | 32 +++----------
- include/target/target_core_base.h     | 14 ++++--
- 6 files changed, 128 insertions(+), 83 deletions(-)
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index cf76d3709683..7b77520a2b35 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1327,7 +1327,8 @@ void transport_init_se_cmd(
+ 	INIT_LIST_HEAD(&cmd->se_cmd_list);
+ 	INIT_LIST_HEAD(&cmd->state_list);
+ 	init_completion(&cmd->t_transport_stop_comp);
+-	cmd->compl = NULL;
++	cmd->free_compl = NULL;
++	cmd->abrt_compl = NULL;
+ 	spin_lock_init(&cmd->t_state_lock);
+ 	INIT_WORK(&cmd->work, NULL);
+ 	kref_init(&cmd->cmd_kref);
+@@ -2688,7 +2689,7 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ 			transport_lun_remove_cmd(cmd);
+ 	}
+ 	if (aborted)
+-		cmd->compl = &compl;
++		cmd->free_compl = &compl;
+ 	if (!aborted || tas)
+ 		ret = target_put_sess_cmd(cmd);
+ 	if (aborted) {
+@@ -2755,7 +2756,8 @@ static void target_release_cmd_kref(struct kref *kref)
+ {
+ 	struct se_cmd *se_cmd = container_of(kref, struct se_cmd, cmd_kref);
+ 	struct se_session *se_sess = se_cmd->se_sess;
+-	struct completion *compl = se_cmd->compl;
++	struct completion *free_compl = se_cmd->free_compl;
++	struct completion *abrt_compl = se_cmd->abrt_compl;
+ 	unsigned long flags;
+ 
+ 	if (se_sess) {
+@@ -2766,8 +2768,10 @@ static void target_release_cmd_kref(struct kref *kref)
+ 
+ 	target_free_cmd_mem(se_cmd);
+ 	se_cmd->se_tfo->release_cmd(se_cmd);
+-	if (compl)
+-		complete(compl);
++	if (free_compl)
++		complete(free_compl);
++	if (abrt_compl)
++		complete(abrt_compl);
+ 
+ 	percpu_ref_put(&se_sess->cmd_count);
+ }
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 67130841d421..bff51baee7e0 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -474,7 +474,8 @@ struct se_cmd {
+ 	struct se_session	*se_sess;
+ 	struct se_tmr_req	*se_tmr_req;
+ 	struct list_head	se_cmd_list;
+-	struct completion	*compl;
++	struct completion	*free_compl;
++	struct completion	*abrt_compl;
+ 	const struct target_core_fabric_ops *se_tfo;
+ 	sense_reason_t		(*execute_cmd)(struct se_cmd *);
+ 	sense_reason_t (*transport_complete_callback)(struct se_cmd *, bool, int *);
+-- 
+2.19.1.930.g4563a0d9d0-goog
