@@ -1,149 +1,52 @@
-From: Stephan Budach <stephan.budach@jvm.de>
-Date: Fri, 23 Nov 2018 08:15:05 +0000
-Subject: IIlumos iSCSI initiator doesn't recognizes LUNs, if LUNO contains a SPC2_Reservation
-Message-Id: <2024851968.1583.1542960901768.JavaMail.stephan.budach@stephan.budach>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----C70C468E70260879F108A9B815C5CBDD"
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 06 Nov 2018 17:17:18 +0000
+Subject: [PATCH 10/10] target/core: Reduce the amount of code executed with a spinlock held
+Message-Id: <20181106171718.89594-11-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This is an S/MIME signed message
+Due to the "make ABORT and LUN RESET handling synchronous" patch,
+cmd->work is only modified from the regular command execution path
+and no longer asynchronously by the code that executes task management
+functions. Since the regular command execution code is sequential per
+command, no locking is required to manipulate cmd->work. Hence stop
+protecting cmd->work manipulations with locking.
 
-------C70C468E70260879F108A9B815C5CBDD
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-MIME-version: 1.0
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: David Disseldorp <ddiss@suse.de>
+Cc: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/target_core_transport.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-Hello, 
-
-I am running LIO target on CentOS 7.4/7.5 to export 24 NVMe drives to a ZFS cluster. I am experiencing an issue where the iSCSI initiators on those Illumos hosts (OpenIndiana Hipster 2018) don't recognize the LUNs in a target, if LUN0 has a SPC2_Reservation. This is the case, if one of the cluster nodes actually import the ZPOOL, which is on that target and then sets the reservation to claim the ZPOOL. 
-
-
-Hower, once that has happened, the other cluster node only sees a "generic" iSCSI target and no LUNs, although only the first LUN contains that reservation. Is it the case, that LIO target blocks access to all LUNs of a target if LUN0 holds a reservation? And if that was the case, if the active node died, how could a reservation be removed, since the surviving node doesn't have a means to access LUN0 and remove the reservation. 
-
-
-Regards, 
-Stephan Budach
-
-------C70C468E70260879F108A9B815C5CBDD
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-
-MIIVfAYJKoZIhvcNAQcCoIIVbTCCFWkCAQExDTALBglghkgBZQMEAgEwCwYJKoZI
-hvcNAQcBoIISxDCCBb0wggOloAMCAQICCE8b1C9Uuy9LMA0GCSqGSIb3DQEBBQUA
-MEcxCzAJBgNVBAYTAkNIMRUwEwYDVQQKEwxTd2lzc1NpZ24gQUcxITAfBgNVBAMT
-GFN3aXNzU2lnbiBTaWx2ZXIgQ0EgLSBHMjAeFw0wNjEwMjUwODMyNDZaFw0zNjEw
-MjUwODMyNDZaMEcxCzAJBgNVBAYTAkNIMRUwEwYDVQQKEwxTd2lzc1NpZ24gQUcx
-ITAfBgNVBAMTGFN3aXNzU2lnbiBTaWx2ZXIgQ0EgLSBHMjCCAiIwDQYJKoZIhvcN
-AQEBBQADggIPADCCAgoCggIBAMTxh3/TeDH3OMn4w5lDvMf3vDfnTnG6S4+lcx1c
-bpiuA1euODdDLxc9H8jOaBDBeK4ZAysQ+ix5g/bouWi5VfIERKc5+fwEix7xok0n
-+WF7urflohO262E+0GzR5vv6Xu0dtJ6gNVuhksvwSZL+hQoFPubZC+JPu9yVN/yR
-6TI1ItEfOk4nhZ2wFZQy2mENR01gQq6SR+iDWlBY6YqLuV2h3N2ZSh82Z7tI5IO2
-N+tIOq8PZ48XB+gEyu9qMYfUwLb5lHF7Z2S4tpFKQntlLjBqDPWQ7pXm8s2C7Nmh
-Suz2skvlRYXmbXiTBC6cgm02qcQxZB+Ggwsq9DUKeMlVz0GwR+kwn5m+YagGhLko
-el842RupOLCDf3PBwztIKoIPIZu4zKg1w4Qbg7M+vqSVaQE6iQB4BNnJ9JkZq1Z+
-W4uGORWRpBAsCTKAYLOTwCq2GAudfo1J8hBKf/nVRi8ZkqOZpyasu4w85g68Rwfc
-c1HxcGQvCPm0Rx0wbETqKTeFkmhmvIM4/ns5LtNQ8B/7XmC2qab6J0Hxmxhy8vWE
-dErJZ8RUrkhk34zRbrAd4QePCB6ZnHHpTNil90cSH3TRUZ6G88KiI0ALc9tLpudz
-BozBoOnBWaxG+uYv+M9xnEZtucQVjTh5A0VI78Rd1wjuhzkihrIND1hD93GpSC79
-6tYfAgMBAAGjgawwgakwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8w
-HQYDVR0OBBYEFBegzcHkQbY6WzvLRZ29HMKY+oZYMB8GA1UdIwQYMBaAFBegzcHk
-QbY6WzvLRZ29HMKY+oZYMEYGA1UdIAQ/MD0wOwYJYIV0AVkBAwEBMC4wLAYIKwYB
-BQUHAgEWIGh0dHA6Ly9yZXBvc2l0b3J5LnN3aXNzc2lnbi5jb20vMA0GCSqGSIb3
-DQEBBQUAA4ICAQBzxoHgJ9ItD+CVMOKaQX9QLF9fYmGphmppGAx0SdZdhOpBUhhv
-WK1QViBqxr0oaViR3JERNak6HbwapWCe2B9/RZFp2X67eHLBBg8qzo+FcGGsoM0L
-uDkpVoQyToa7PcQq2dcfcu7+UaEiQbFxAmMagrBiq15XEh/fy911oMBdeZCMG+BQ
-5t4x/ph7cF+lkNit+AK2b9Ng3UBLIsU9rTp6nxoaR5F5M7qC3DJpA5ZuH0vwcf7j
-Z3Kgsb9ci+T6mSLHhLkbjSOXP+0l4M9lu/VhBO/dHrJaQSJaoZ9dLOhbyW2pDAx4
-qmDGVo8BWgxovGkZecQffpcFv8XpJFFe1NVLU+3ZI1o2A2WjwQOtQTDzRhuFkK9l
-tdWx5BZbeHUdl3ptWakqj3vew4eJEJlJc3jIPb1RNXQq1fF+aRsquzu9JbiaWj1y
-YZBmh+4M1k3UEXQLav4LA/yjVVeJ/krLrlsXBcjyjSMxUzjSLWo/grmNCGr3XkF0
-bsMRfgesKWCRPzjKVxANvTAvx6XmQaDargWHmqCkZWxMCQyJurjTucCTijD6jeWa
-axUBTmeq2mJWPoQIZtLENn2nPhD8iODUgOUAvarzTgajemr5YnLjCU/rmw4BI/Gf
-u3zc3GwRlyWy8rRjFNIGKmeMg/XO6gfYmmoe7OQKuypM6wlgOc7KYtgubjCCBj0w
-ggUloAMCAQICFGOQY7iG7ijcE15je/pIgMVslRzdMA0GCSqGSIb3DQEBCwUAMFYx
-CzAJBgNVBAYTAkNIMRUwEwYDVQQKEwxTd2lzc1NpZ24gQUcxMDAuBgNVBAMTJ1N3
-aXNzU2lnbiBQZXJzb25hbCBTaWx2ZXIgQ0EgMjAxNCAtIEcyMjAeFw0xODA5MjYx
-MTI0MzZaFw0xOTA5MjYxMTI0MzZaMIGAMQswCQYDVQQGEwJERTEZMBcGA1UEChMQ
-SnVuZyB2b24gTWF0dCBBRzEkMCIGCSqGSIb3DQEJARYVc3RlcGhhbi5idWRhY2hA
-anZtLmRlMTAwLgYDVQQDEydTZWN1cmUgRS1NYWlsOiBTWC1NYWlsQ3J5cHQgQ2Vy
-dGlmaWNhdGUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCfLpSPg2cK
-cgVXHe8bV/fEZsxsMmB3RUzoy06o+/20zmdd11m12F3qjHtlZMl3r0izNZG4VKTZ
-Ewm2Ttib6ZAtTnY2f7o+lZeI8o+jIevhUIThLTCxPFQ+18WJtiOwhYnKfuODIyeB
-as5zw4/9o51V8Fo4+qHjFZIQduCHo/v32kOib4KCHshj/3Mlwqg/POpED/sfJo0R
-3cscmr9MUvtoICUdXnm2l4d4ssrMjFKvps/+VEeUjS6eNiJh7no3PVs7LHcR4nVr
-lhuhXuDzdPaFvYYXOqEmwTpZLdAbh/SvjjAjgobArjCalO7SLnBPI/kAmslcPmtZ
-QNT7cl6DP9e1AgMBAAGjggLWMIIC0jAgBgNVHREEGTAXgRVzdGVwaGFuLmJ1ZGFj
-aEBqdm0uZGUwDgYDVR0PAQH/BAQDAgSwMBMGA1UdJQQMMAoGCCsGAQUFBwMEMB0G
-A1UdDgQWBBR9+COy/g0yZCTlrGH9rcQ2bjMiHDAfBgNVHSMEGDAWgBTwx6MykbXr
-yrVYdxWnTr4aXWFDJTCB/wYDVR0fBIH3MIH0MEegRaBDhkFodHRwOi8vY3JsLnN3
-aXNzc2lnbi5uZXQvRjBDN0EzMzI5MUI1RUJDQUI1NTg3NzE1QTc0RUJFMUE1RDYx
-NDMyNTCBqKCBpaCBooaBn2xkYXA6Ly9kaXJlY3Rvcnkuc3dpc3NzaWduLm5ldC9D
-Tj1GMEM3QTMzMjkxQjVFQkNBQjU1ODc3MTVBNzRFQkUxQTVENjE0MzI1JTJDTz1T
-d2lzc1NpZ24lMkNDPUNIP2NlcnRpZmljYXRlUmV2b2NhdGlvbkxpc3Q/YmFzZT9v
-YmplY3RDbGFzcz1jUkxEaXN0cmlidXRpb25Qb2ludDBrBgNVHSAEZDBiMFYGCWCF
-dAFZAQMBCTBJMEcGCCsGAQUFBwIBFjtodHRwOi8vcmVwb3NpdG9yeS5zd2lzc3Np
-Z24uY29tL1N3aXNzU2lnbi1TaWx2ZXItQ1AtQ1BTLnBkZjAIBgYEAI96AQMwgdkG
-CCsGAQUFBwEBBIHMMIHJMGQGCCsGAQUFBzAChlhodHRwOi8vc3dpc3NzaWduLm5l
-dC9jZ2ktYmluL2F1dGhvcml0eS9kb3dubG9hZC9GMEM3QTMzMjkxQjVFQkNBQjU1
-ODc3MTVBNzRFQkUxQTVENjE0MzI1MGEGCCsGAQUFBzABhlVodHRwOi8vc2lsdmVy
-LXBlcnNvbmFsLWcyLm9jc3Auc3dpc3NzaWduLm5ldC9GMEM3QTMzMjkxQjVFQkNB
-QjU1ODc3MTVBNzRFQkUxQTVENjE0MzI1MA0GCSqGSIb3DQEBCwUAA4IBAQBjv0FB
-iSiGMrFmNlhAgpFN1IwCB1LcRuG/uQ7B9BIwmuIE52rKDPzip/ilmUvuuLtKBZPA
-2fFZQTeCKbSAsxz7n9EqhzjfIUEWbU1xz/9oHfGljZFkJEYD7gmT5ol+RZ4nafA8
-pWqgDAeAKbks0vVtJ+KsiVvn9ItcI8N31G1t74jZqHZYGvw/kDPsr30oNI9B9p3c
-fUoiFIjhrr8GK9jMHWVQ1fU/kn6/mDHo4ehrKOpUC4+zoYOnCfl4dINVimsiyvP8
-JULOBOq6rSg52tVxy8e4/Yh3M36H9ARLhFiIm0Dc8mmsH0CwY9ATqXQvSIfPejIt
-h/CPihlbGBSwZOf2MIIGvjCCBKagAwIBAgIPBUTWTq0e0zbVMkBdALk2MA0GCSqG
-SIb3DQEBCwUAMEcxCzAJBgNVBAYTAkNIMRUwEwYDVQQKEwxTd2lzc1NpZ24gQUcx
-ITAfBgNVBAMTGFN3aXNzU2lnbiBTaWx2ZXIgQ0EgLSBHMjAeFw0xNDA5MTkyMDM2
-NDlaFw0yOTA5MTUyMDM2NDlaMFYxCzAJBgNVBAYTAkNIMRUwEwYDVQQKEwxTd2lz
-c1NpZ24gQUcxMDAuBgNVBAMTJ1N3aXNzU2lnbiBQZXJzb25hbCBTaWx2ZXIgQ0Eg
-MjAxNCAtIEcyMjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMs5sTmF
-/vrJobzDg6kOSi2Ech7/aMWnxB3sD9eoixMes9EWi0DcD1NvAT3s6GS1l9uDvKio
-wIQ4WF4DFCvmyjDvALLrEzkZkkcqIQDlcs3CMWIOzFYq/3fEY4yYwm9417W2zOl9
-HzOmkQUq/tFS1vTsnP5NTGpS4YV2Yru5aOZSY/zBIZGSXRnY3IDRGeNJFlcCDhlE
-haspyS/6xm1rCqH29/9rYTUVJpSUAmklXWn3vV5rgtmQDAb5QwUiSes20CBaYxDj
-OCHVfxYrQYpGevJn6KTQuh5/JCd1mJRJLVbEVDORnWL51V/eW6kVmJyUU8GA6QkX
-FbQbgCkyodCvE6cCAwEAAaOCApYwggKSMA4GA1UdDwEB/wQEAwIBBjASBgNVHRMB
-Af8ECDAGAQH/AgEAMB0GA1UdDgQWBBTwx6MykbXryrVYdxWnTr4aXWFDJTAfBgNV
-HSMEGDAWgBQXoM3B5EG2Ols7y0WdvRzCmPqGWDCB/wYDVR0fBIH3MIH0MEegRaBD
-hkFodHRwOi8vY3JsLnN3aXNzc2lnbi5uZXQvMTdBMENEQzFFNDQxQjYzQTVCM0JD
-QjQ1OURCRDFDQzI5OEZBODY1ODCBqKCBpaCBooaBn2xkYXA6Ly9kaXJlY3Rvcnku
-c3dpc3NzaWduLm5ldC9DTj0xN0EwQ0RDMUU0NDFCNjNBNUIzQkNCNDU5REJEMUND
-Mjk4RkE4NjU4JTJDTz1Td2lzc1NpZ24lMkNDPUNIP2NlcnRpZmljYXRlUmV2b2Nh
-dGlvbkxpc3Q/YmFzZT9vYmplY3RDbGFzcz1jUkxEaXN0cmlidXRpb25Qb2ludDBh
-BgNVHSAEWjBYMFYGCWCFdAFZAQMBBjBJMEcGCCsGAQUFBwIBFjtodHRwOi8vcmVw
-b3NpdG9yeS5zd2lzc3NpZ24uY29tL1N3aXNzU2lnbi1TaWx2ZXItQ1AtQ1BTLnBk
-ZjCBxgYIKwYBBQUHAQEEgbkwgbYwZAYIKwYBBQUHMAKGWGh0dHA6Ly9zd2lzc3Np
-Z24ubmV0L2NnaS1iaW4vYXV0aG9yaXR5L2Rvd25sb2FkLzE3QTBDREMxRTQ0MUI2
-M0E1QjNCQ0I0NTlEQkQxQ0MyOThGQTg2NTgwTgYIKwYBBQUHMAGGQmh0dHA6Ly9v
-Y3NwLnN3aXNzc2lnbi5uZXQvMTdBMENEQzFFNDQxQjYzQTVCM0JDQjQ1OURCRDFD
-QzI5OEZBODY1ODANBgkqhkiG9w0BAQsFAAOCAgEAw3mnV7d7rVFo9USMQZUoAXx0
-1jtqvG3vp9dNOZkdaI3KCNnQcbEZNZNvgsYcSbhR7kz5bApv2KX7/vswXgDSlKvE
-ElG6qoqrat0Z1ytK9xaya1HPdFsponPel/7YTyAhfWkMsFDljViMgC7lFxzdY3qq
-7wX5w2me5IxxYlxC7jryzeAS74tc6c5TKDLslQsZVKIhjfp/UKdPvBl7smuMKT93
-Psojx2laQZ19ZjFvenF52qllOut/1xDVC19UGXzONyUkhFDQr0A0wl+S4nqR8y9C
-RxufPEL72V+lvHBFju+gOZD1oXhs18BnWRnhAN5c/HjoT927rJEucov86kdvQyi8
-u7mOlL76UN1QkxtMGLZ2/8NHClm0zW1V2Gq2X8kvwZQ2Pr6uQDUGIO3gAkwtNEUO
-Q6+i9NiQFeXQwJtEQK48j5NRvJloc2l7dViZt9QET9/xgnERHXv8Ex13ZVVj11Jy
-fN0xR4anldisJnE9I+YSO/R/mpaG/ivqoPMmDXXGFowxIOcRR6HnqWqwpbKBHtw9
-0KHjbtXwZqYcfdeSiE0ABwtx53Pnc+RUZWn8N43xHm9w7qdss1JFZ1nWBUixIemX
-KNnZ9LSmoGcjNrxgRw5cKH9dk4oxuo0xNhTHekKdbyDBbCr4Fg9q2QCUMrs9VbHF
-w6ENsXl3VB3gM4J+7uoxggJ+MIICegIBATBuMFYxCzAJBgNVBAYTAkNIMRUwEwYD
-VQQKEwxTd2lzc1NpZ24gQUcxMDAuBgNVBAMTJ1N3aXNzU2lnbiBQZXJzb25hbCBT
-aWx2ZXIgQ0EgMjAxNCAtIEcyMgIUY5BjuIbuKNwTXmN7+kiAxWyVHN0wCwYJYIZI
-AWUDBAIBoIHkMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkF
-MQ8XDTE4MTEyMzA4MTUwNlowLwYJKoZIhvcNAQkEMSIEIL8NnXzFHEsbOG4DGk1M
-G6ucckvpv7L0yGt5IfqYcgJIMHkGCSqGSIb3DQEJDzFsMGowCwYJYIZIAWUDBAEq
-MAsGCWCGSAFlAwQBFjALBglghkgBZQMEAQIwCgYIKoZIhvcNAwcwDgYIKoZIhvcN
-AwICAgCAMA0GCCqGSIb3DQMCAgFAMAcGBSsOAwIHMA0GCCqGSIb3DQMCAgEoMA0G
-CSqGSIb3DQEBAQUABIIBAI39H/Dy+r4RQroqlqnG25euSL5fy2aDI5BEsYIG/ZJp
-LaRA4VPARJC5egOA+tPYMpe4cL3TWbgJCVXDVQD3CgOUIuXoP6vzGAxrp6o4HEo3
-0oxfhj+Tns58ovVebvA/hFQDqRTOxrO5IpV7WgKpQdRLjtf0Nblyw4uICPw4CPFh
-ecaKTGhHblijHQZkbGXnJj3p6ZtLpfX84CR/jafbJflVg7WctefF+eT6PkEDPBi9
-wnFApvbu4Sx8PX5oBj8Krqw4x7EdBF43lzJCeYbHdF9pPbcFr8+r0UlGUPXXEOSb
-7iMHZ0MtDYz+H/m/BLSLMSoJuMdLktiAkYYQbox8oCk=
-
-------C70C468E70260879F108A9B815C5CBDD--
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index b2d8d158e273..445d21e69e0c 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -852,16 +852,12 @@ void target_complete_cmd(struct se_cmd *cmd, u8 scsi_status)
+ 		break;
+ 	}
+ 
+-	if (!success) {
+-		INIT_WORK(&cmd->work, target_complete_failure_work);
+-	} else {
+-		INIT_WORK(&cmd->work, target_complete_ok_work);
+-	}
+-
+ 	cmd->t_state = TRANSPORT_COMPLETE;
+ 	cmd->transport_state |= (CMD_T_COMPLETE | CMD_T_ACTIVE);
+ 	spin_unlock_irqrestore(&cmd->t_state_lock, flags);
+ 
++	INIT_WORK(&cmd->work, success ? target_complete_ok_work :
++		  target_complete_failure_work);
+ 	if (cmd->se_cmd_flags & SCF_USE_CPUID)
+ 		queue_work_on(cmd->cpuid, target_completion_wq, &cmd->work);
+ 	else
+-- 
+2.19.1.930.g4563a0d9d0-goog
