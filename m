@@ -1,31 +1,31 @@
-From: "Mrs.Amelia George" <vanderleicardoso@brsuper.com.br>
-Date: Thu, 22 Nov 2018 10:42:13 +0000
-Subject: Re: Mrs.Amelia George
-Message-Id: <efc9e1cc2d38a71069f7bcc8fbc301cb@brsuper.com.br>
+From: Varun Prakash <varun@chelsio.com>
+Date: Fri, 09 Nov 2018 15:41:46 +0000
+Subject: [PATCH] scsi: target: iscsi: cxgbit: add missing spin_lock_init()
+Message-Id: <1541777386-7455-1-git-send-email-varun@chelsio.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+Add missing spin_lock_init() for cdev->np_lock.
 
+Signed-off-by: Varun Prakash <varun@chelsio.com>
+---
+ drivers/target/iscsi/cxgbit/cxgbit_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_main.c b/drivers/target/iscsi/cxgbit/cxgbit_main.c
+index f3f8856..c011c82 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_main.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_main.c
+@@ -58,6 +58,7 @@ static void *cxgbit_uld_add(const struct cxgb4_lld_info *lldi)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	kref_init(&cdev->kref);
++	spin_lock_init(&cdev->np_lock);
+ 
+ 	cdev->lldi = *lldi;
+ 
 -- 
-Dear Sir,
-
-My name is Mrs.Amelia George I am 72 years old, I am a dying woman who
-have decided to donate what I have to you/churches/ motherless
-babies/less
-privileged/widows.
-
-I have been touched by God to donate from what I have inherited from my
-late husband to you for good work of God.
-
-Please kindly let me know if you can assist me receive my funds and
-distribute to charity of your choice the sum of $25million United state
-Dollars.  I am willing to give you 20% for your time and effort.
-
-Your sister in Christ,
-
-Mrs.Amelia George
-Email:dr.amelia.george1@yandex.ru
+2.0.2
