@@ -1,48 +1,45 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 30 Nov 2018 23:34:22 +0000
-Subject: [PATCH v5 4/5] target: remove hardcoded T10 Vendor ID in INQUIRY response
-Message-Id: <20181130233423.26556-5-ddiss@suse.de>
+From: Varun Prakash <varun@chelsio.com>
+Date: Fri, 09 Nov 2018 15:41:01 +0000
+Subject: [PATCH] scsi: target: iscsi: cxgbit: fix csk leak
+Message-Id: <1541777341-7405-1-git-send-email-varun@chelsio.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Use the value stored in t10_wwn.vendor, which defaults to "LIO-ORG", but
-can be reconfigured via the vendor_id ConfigFS attribute.
+In case of arp failure call cxgbit_put_csk() to free
+csk.
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
-Reviewed-by: Lee Duncan <lduncan@suse.com>
+Signed-off-by: Varun Prakash <varun@chelsio.com>
 ---
- drivers/target/target_core_spc.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/target/iscsi/cxgbit/cxgbit_cm.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index 8ffe712cb44d..4503f3336bc2 100644
---- a/drivers/target/target_core_spc.c
-+++ b/drivers/target/target_core_spc.c
-@@ -115,7 +115,8 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
- 	 */
- 	memset(&buf[8], 0x20,
- 	       INQUIRY_VENDOR_LEN + INQUIRY_MODEL_LEN + INQUIRY_REVISION_LEN);
--	memcpy(&buf[8], "LIO-ORG", sizeof("LIO-ORG") - 1);
-+	memcpy(&buf[8], dev->t10_wwn.vendor,
-+	       strnlen(dev->t10_wwn.vendor, INQUIRY_VENDOR_LEN));
- 	memcpy(&buf[16], dev->t10_wwn.model,
- 	       strnlen(dev->t10_wwn.model, INQUIRY_MODEL_LEN));
- 	memcpy(&buf[32], dev->t10_wwn.revision,
-@@ -258,8 +259,9 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
- 	buf[off+1] = 0x1; /* T10 Vendor ID */
- 	buf[off+2] = 0x0;
- 	/* left align Vendor ID and pad with spaces */
--	memset(&buf[off+4], 0x20, 8);
--	memcpy(&buf[off+4], "LIO-ORG", sizeof("LIO-ORG") - 1);
-+	memset(&buf[off+4], 0x20, INQUIRY_VENDOR_LEN);
-+	memcpy(&buf[off+4], dev->t10_wwn.vendor,
-+	       strnlen(dev->t10_wwn.vendor, INQUIRY_VENDOR_LEN));
- 	/* Extra Byte for NULL Terminator */
- 	id_len++;
- 	/* Identifier Length */
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+index 71888b9..b19c960 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+@@ -641,8 +641,11 @@ static void cxgbit_send_halfclose(struct cxgbit_sock *csk)
+ 
+ static void cxgbit_arp_failure_discard(void *handle, struct sk_buff *skb)
+ {
++	struct cxgbit_sock *csk = handle;
++
+ 	pr_debug("%s cxgbit_device %p\n", __func__, handle);
+ 	kfree_skb(skb);
++	cxgbit_put_csk(csk);
+ }
+ 
+ static void cxgbit_abort_arp_failure(void *handle, struct sk_buff *skb)
+@@ -1206,7 +1209,7 @@ cxgbit_pass_accept_rpl(struct cxgbit_sock *csk, struct cpl_pass_accept_req *req)
+ 	rpl5->opt0 = cpu_to_be64(opt0);
+ 	rpl5->opt2 = cpu_to_be32(opt2);
+ 	set_wr_txq(skb, CPL_PRIORITY_SETUP, csk->ctrlq_idx);
+-	t4_set_arp_err_handler(skb, NULL, cxgbit_arp_failure_discard);
++	t4_set_arp_err_handler(skb, csk, cxgbit_arp_failure_discard);
+ 	cxgbit_l2t_send(csk->com.cdev, skb, csk->l2t);
+ }
+ 
 -- 
-2.13.7
+2.0.2
