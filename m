@@ -1,127 +1,84 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Mon, 19 Nov 2018 21:06:35 +0000
-Subject: [PATCH v3 3/4] target: add device vendor_id configfs attribute
-Message-Id: <20181119210636.22979-4-ddiss@suse.de>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 20 Nov 2018 17:24:39 +0000
+Subject: Re: [PATCH v3 3/4] target: add device vendor_id configfs attribute
+Message-Id: <1542734679.185366.76.camel@acm.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20181119210636.22979-4-ddiss@suse.de>
+In-Reply-To: <20181119210636.22979-4-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-The vendor_id attribute will allow for the modification of the T10
-Vendor Identification string returned in inquiry responses. Its value
-can be viewed and modified via the ConfigFS path at:
-target/core/$backstore/$name/wwn/vendor_id
+On Mon, 2018-11-19 at 22:06 +-0100, David Disseldorp wrote:
++AD4  /+ACo
++AD4 +- +ACo STANDARD and VPD page 0x80 T10 Vendor Identification
++AD4 +- +ACo-/
++AD4 +-static ssize+AF8-t target+AF8-wwn+AF8-vendor+AF8-id+AF8-show(struct config+AF8-item +ACo-item,
++AD4 +-		char +ACo-page)
++AD4 +-+AHs
++AD4 +-	return sprintf(page, +ACI-T10 Vendor Identification: +ACU.+ACI
++AD4 +-		       +AF8AXw-stringify(INQUIRY+AF8-VENDOR+AF8-IDENTIFIER+AF8-LEN) +ACI-s+AFw-n+ACI,
++AD4 +-		       +ACY-to+AF8-t10+AF8-wwn(item)-+AD4-vendor+AFs-0+AF0)+ADs
++AD4 +-+AH0
 
-"LIO-ORG" remains the default value, which is set when the backstore
-device is enabled.
+This doesn't follow the convention used by other configfs attributes,
+namely that only the value should be reported and no prefix. Please leave
+out the +ACI-T10 Vendor Identification: +ACI prefix.
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
----
- drivers/target/target_core_configfs.c | 55 +++++++++++++++++++++++++++++++++++
- include/target/target_core_base.h     |  3 +-
- 2 files changed, 57 insertions(+), 1 deletion(-)
++AD4 +-static ssize+AF8-t target+AF8-wwn+AF8-vendor+AF8-id+AF8-store(struct config+AF8-item +ACo-item,
++AD4 +-		const char +ACo-page, size+AF8-t count)
++AD4 +-+AHs
++AD4 +-	struct t10+AF8-wwn +ACo-t10+AF8-wwn +AD0 to+AF8-t10+AF8-wwn(item)+ADs
++AD4 +-	struct se+AF8-device +ACo-dev +AD0 t10+AF8-wwn-+AD4-t10+AF8-dev+ADs
++AD4 +-	/+ACo +-1 to ensure buf is zero terminated for stripping +ACo-/
++AD4 +-	unsigned char buf+AFs-INQUIRY+AF8-VENDOR+AF8-IDENTIFIER+AF8-LEN +- 1+AF0AOw
++AD4 +-
++AD4 +-	if (strlen(page) +AD4 INQUIRY+AF8-VENDOR+AF8-IDENTIFIER+AF8-LEN) +AHs
++AD4 +-		pr+AF8-err(+ACI-Emulated T10 Vendor Identification exceeds+ACI
++AD4 +-			+ACI INQUIRY+AF8-VENDOR+AF8-IDENTIFIER+AF8-LEN: +ACU-d+AFw-n+ACI,
++AD4 +-			INQUIRY+AF8-VENDOR+AF8-IDENTIFIER+AF8-LEN)+ADs
++AD4 +-		return -EOVERFLOW+ADs
++AD4 +-	+AH0
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index f6b1549f4142..64e95376d998 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -1211,6 +1211,59 @@ static struct t10_wwn *to_t10_wwn(struct config_item *item)
- }
- 
- /*
-+ * STANDARD and VPD page 0x80 T10 Vendor Identification
-+ */
-+static ssize_t target_wwn_vendor_id_show(struct config_item *item,
-+		char *page)
-+{
-+	return sprintf(page, "T10 Vendor Identification: %."
-+		       __stringify(INQUIRY_VENDOR_IDENTIFIER_LEN) "s\n",
-+		       &to_t10_wwn(item)->vendor[0]);
-+}
-+
-+static ssize_t target_wwn_vendor_id_store(struct config_item *item,
-+		const char *page, size_t count)
-+{
-+	struct t10_wwn *t10_wwn = to_t10_wwn(item);
-+	struct se_device *dev = t10_wwn->t10_dev;
-+	/* +1 to ensure buf is zero terminated for stripping */
-+	unsigned char buf[INQUIRY_VENDOR_IDENTIFIER_LEN + 1];
-+
-+	if (strlen(page) > INQUIRY_VENDOR_IDENTIFIER_LEN) {
-+		pr_err("Emulated T10 Vendor Identification exceeds"
-+			" INQUIRY_VENDOR_IDENTIFIER_LEN: %d\n",
-+			INQUIRY_VENDOR_IDENTIFIER_LEN);
-+		return -EOVERFLOW;
-+	}
-+	strncpy(buf, page, sizeof(buf));
-+	/*
-+	 * Check to see if any active $FABRIC_MOD exports exist.  If they
-+	 * do exist, fail here as changing this information on the fly
-+	 * (underneath the initiator side OS dependent multipath code)
-+	 * could cause negative effects.
-+	 */
-+	if (dev->export_count) {
-+		pr_err("Unable to set T10 Vendor Identification while"
-+			" active %d $FABRIC_MOD exports exist\n",
-+			dev->export_count);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Assume ASCII encoding. Strip any newline added from userspace.
-+	 * The result may *not* be null terminated.
-+	 */
-+	strncpy(dev->t10_wwn.vendor, strstrip(buf),
-+		INQUIRY_VENDOR_IDENTIFIER_LEN);
-+
-+	pr_debug("Target_Core_ConfigFS: Set emulated T10 Vendor Identification:"
-+		 " %." __stringify(INQUIRY_VENDOR_IDENTIFIER_LEN) "s\n",
-+		 dev->t10_wwn.vendor);
-+
-+	return count;
-+}
-+
-+/*
-  * VPD page 0x80 Unit serial
-  */
- static ssize_t target_wwn_vpd_unit_serial_show(struct config_item *item,
-@@ -1356,6 +1409,7 @@ DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_target_port, 0x10);
- /* VPD page 0x83 Association: SCSI Target Device */
- DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_scsi_target_device, 0x20);
- 
-+CONFIGFS_ATTR(target_wwn_, vendor_id);
- CONFIGFS_ATTR(target_wwn_, vpd_unit_serial);
- CONFIGFS_ATTR_RO(target_wwn_, vpd_protocol_identifier);
- CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_logical_unit);
-@@ -1363,6 +1417,7 @@ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_target_port);
- CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_scsi_target_device);
- 
- static struct configfs_attribute *target_core_dev_wwn_attrs[] = {
-+	&target_wwn_attr_vendor_id,
- 	&target_wwn_attr_vpd_unit_serial,
- 	&target_wwn_attr_vpd_protocol_identifier,
- 	&target_wwn_attr_vpd_assoc_logical_unit,
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index e3bdb0550a59..45be5427326d 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -45,6 +45,7 @@
- #define INQUIRY_VPD_SERIAL_LEN			254
- /* Used by transport_get_inquiry_vpd_device_ident() */
- #define INQUIRY_VPD_DEVICE_IDENTIFIER_LEN	254
-+#define INQUIRY_VENDOR_IDENTIFIER_LEN		8
- 
- /* Attempts before moving from SHORT to LONG */
- #define PYX_TRANSPORT_WINDOW_CLOSED_THRESHOLD	3
-@@ -314,7 +315,7 @@ struct t10_vpd {
- };
- 
- struct t10_wwn {
--	char vendor[8];
-+	char vendor[INQUIRY_VENDOR_IDENTIFIER_LEN];
- 	char model[16];
- 	char revision[4];
- 	char unit_serial[INQUIRY_VPD_SERIAL_LEN];
--- 
-2.13.7
+Trailing newline(s) should be stripped before the length check is performed. I
+don't think that you want to force users to use +ACI-echo -n+ACI instead of +ACI-echo+ACI when
+setting this attribute.
+
++AD4 +-	strncpy(buf, page, sizeof(buf))+ADs
+
+Isn't strncpy() deprecated? How about using strlcpy() instead?
+
++AD4 +-	/+ACo
++AD4 +-	 +ACo Check to see if any active +ACQ-FABRIC+AF8-MOD exports exist.  If they
++AD4 +-	 +ACo do exist, fail here as changing this information on the fly
++AD4 +-	 +ACo (underneath the initiator side OS dependent multipath code)
++AD4 +-	 +ACo could cause negative effects.
++AD4 +-	 +ACo-/
++AD4 +-	if (dev-+AD4-export+AF8-count) +AHs
++AD4 +-		pr+AF8-err(+ACI-Unable to set T10 Vendor Identification while+ACI
++AD4 +-			+ACI active +ACU-d +ACQ-FABRIC+AF8-MOD exports exist+AFw-n+ACI,
++AD4 +-			dev-+AD4-export+AF8-count)+ADs
++AD4 +-		return -EINVAL+ADs
++AD4 +-	+AH0
+
+Are there any users who understand what +ACIAJA-FABRIC+AF8-MOD+ACI means? Please leave out that
+string or change it into the name of the fabric driver followed by the name of the
+target port associated with 'item'.
+
++AD4 +-
++AD4 +-	/+ACo
++AD4 +-	 +ACo Assume ASCII encoding. Strip any newline added from userspace.
++AD4 +-	 +ACo The result may +ACo-not+ACo be null terminated.
++AD4 +-	 +ACo-/
++AD4 +-	strncpy(dev-+AD4-t10+AF8-wwn.vendor, strstrip(buf),
++AD4 +-		INQUIRY+AF8-VENDOR+AF8-IDENTIFIER+AF8-LEN)+ADs
+
+Keeping strings around that are not '+AFw-0'-terminated is a booby trap. It is very
+easy for anyone who modifies or reviews code that uses such strings to overlook
+that the string is not '+AFw-0'-terminated. Please increase the size of the vendor+AFsAXQ
+array by one and make sure that that string is '+AFw-0'-terminated.
+
+Thanks,
+
+Bart.
