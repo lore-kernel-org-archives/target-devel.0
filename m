@@ -1,25 +1,48 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Mon, 26 Nov 2018 07:40:05 +0000
-Subject: Re: [PATCH 3/3] target: replace fabric_ops.name with fabric_alias
-Message-Id: <20181126074005.GC9033@infradead.org>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 23 Nov 2018 17:36:10 +0000
+Subject: [PATCH 0/3] target: drop unneeded pi_prot_format and get_fabric_name()
+Message-Id: <20181123173613.4547-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181123173613.4547-4-ddiss@suse.de>
-In-Reply-To: <20181123173613.4547-4-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Fri, Nov 23, 2018 at 06:36:13PM +0100, David Disseldorp wrote:
-> iscsi_target_mod is the only LIO fabric where fabric_ops.name differs
-> from the fabric_ops.fabric_name string.
-> fabric_ops.name is used when matching target/$fabric ConfigFS create
-> paths, so rename it .fabric_alias and fallback to target/$fabric vs
-> .fabric_name comparison if .fabric_alias isn't initialised.
-> iscsi_target_mod is the only fabric module to set .fabric_alias . All
-> other fabric modules rely on .fabric_name matching and can drop the
-> duplicate string.
+This patchset removes unneeded se_dev_attrib.pi_prot_format and
+fabric_ops.get_fabric_name() struct members. Removal of the latter
+allowed for further cleanup due to the fact that all fabric modules
+except iscsi_target_mod provide matching strings for fabric_ops.name
+and fabric_ops.get_fabric_name() - use a new fabric_ops.fabric_alias
+member to handle the iscsi_target_mod special case.
 
-Looks fine:
+Cheers, David
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+David Disseldorp (3):
+      target: drop unused pi_prot_format attribute storage
+      target: drop unnecessary get_fabric_name() accessor from fabric_ops
+      target: replace fabric_ops.name with fabric_alias
+
+ drivers/infiniband/ulp/srpt/ib_srpt.c        |  8 +-
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c     |  8 +-
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c           | 16 +---
+ drivers/target/iscsi/iscsi_target_configfs.c |  9 +-
+ drivers/target/loopback/tcm_loop.c           |  8 +-
+ drivers/target/sbp/sbp_target.c              |  8 +-
+ drivers/target/target_core_alua.c            |  6 +-
+ drivers/target/target_core_configfs.c        | 47 ++++++-----
+ drivers/target/target_core_device.c          | 26 +++---
+ drivers/target/target_core_fabric_configfs.c |  2 +-
+ drivers/target/target_core_pr.c              | 88 ++++++++++----------
+ drivers/target/target_core_stat.c            |  4 +-
+ drivers/target/target_core_tmr.c             |  4 +-
+ drivers/target/target_core_tpg.c             | 22 ++---
+ drivers/target/target_core_transport.c       | 10 +--
+ drivers/target/target_core_ua.c              |  4 +-
+ drivers/target/target_core_xcopy.c           |  7 +-
+ drivers/target/tcm_fc/tfc_conf.c             |  8 +-
+ drivers/usb/gadget/function/f_tcm.c          |  8 +-
+ drivers/vhost/scsi.c                         |  8 +-
+ drivers/xen/xen-scsiback.c                   |  8 +-
+ include/target/target_core_base.h            |  1 -
+ include/target/target_core_fabric.h          | 14 +++-
+ 23 files changed, 134 insertions(+), 190 deletions(-)
