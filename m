@@ -1,39 +1,57 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 16 Nov 2018 14:59:18 +0000
-Subject: Re: [RFC PATCH 0/3] target: remove some unused stats
-Message-Id: <20181116155918.0780cd7f@suse.de>
+Date: Fri, 23 Nov 2018 17:36:11 +0000
+Subject: [PATCH 1/3] target: drop unused pi_prot_format attribute storage
+Message-Id: <20181123173613.4547-2-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181017154820.9722-1-ddiss@suse.de>
-In-Reply-To: <20181017154820.9722-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hi Mike
+On write, the pi_prot_format configfs attribute invokes the device
+format_prot() callback if present. Read dumps the contents of
+se_dev_attrib.pi_prot_format , which is always zero.
+Make the configfs attribute write-only, and drop the always zero
+se_dev_attrib.pi_prot_format storage.
 
-On Tue, 30 Oct 2018 10:54:07 -0500, Mike Christie wrote:
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_configfs.c | 3 +--
+ include/target/target_core_base.h     | 1 -
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
-> >> This patchset removes a couple of unused error stat counters and a
-> >> redundant cumulative counter.
-> >> I've tagged this patchset RFC, as it may be considered a kernel<->user
-> >> (configfs) API change.  
-> > 
-> > Ping, any thoughts on this patchset?
-> >   
-> 
-> I think these stats were supposed to match the iSCSI MIB definitions. It
-> was not clear why we didn't just fix them so they report the correct values?
-
-I finally got a chance to look through rfc#4544. It does indeed look
-like these counters correspond to:
-IscsiInstanceSsnErrorStatsEntry ::= SEQUENCE {
-    iscsiInstSsnDigestErrors       Counter32,
-    iscsiInstSsnCxnTimeoutErrors   Counter32,
-    iscsiInstSsnFormatErrors       Counter32
-}
-
-There doesn't appear to be anything stopping us from plumbing them into
-the corresponding error paths, so I'll withdraw this patchset.
-
-Cheers, David
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 70b9f6755c36..62427acdf503 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -535,7 +535,6 @@ DEF_CONFIGFS_ATTRIB_SHOW(emulate_3pc);
+ DEF_CONFIGFS_ATTRIB_SHOW(emulate_pr);
+ DEF_CONFIGFS_ATTRIB_SHOW(pi_prot_type);
+ DEF_CONFIGFS_ATTRIB_SHOW(hw_pi_prot_type);
+-DEF_CONFIGFS_ATTRIB_SHOW(pi_prot_format);
+ DEF_CONFIGFS_ATTRIB_SHOW(pi_prot_verify);
+ DEF_CONFIGFS_ATTRIB_SHOW(enforce_pr_isids);
+ DEF_CONFIGFS_ATTRIB_SHOW(is_nonrot);
+@@ -1121,7 +1120,7 @@ CONFIGFS_ATTR(, emulate_3pc);
+ CONFIGFS_ATTR(, emulate_pr);
+ CONFIGFS_ATTR(, pi_prot_type);
+ CONFIGFS_ATTR_RO(, hw_pi_prot_type);
+-CONFIGFS_ATTR(, pi_prot_format);
++CONFIGFS_ATTR_WO(, pi_prot_format);
+ CONFIGFS_ATTR(, pi_prot_verify);
+ CONFIGFS_ATTR(, enforce_pr_isids);
+ CONFIGFS_ATTR(, is_nonrot);
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index c15054116b86..53b90cc18902 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -667,7 +667,6 @@ struct se_dev_attrib {
+ 	int		emulate_caw;
+ 	int		emulate_3pc;
+ 	int		emulate_pr;
+-	int		pi_prot_format;
+ 	enum target_prot_type pi_prot_type;
+ 	enum target_prot_type hw_pi_prot_type;
+ 	int		pi_prot_verify;
+-- 
+2.13.7
