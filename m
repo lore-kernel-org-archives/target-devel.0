@@ -1,27 +1,102 @@
-From: "Dr Kannan" <sale@allta.com.ua>
-Date: Sat, 03 Nov 2018 16:26:09 +0000
-Subject: Update
-Message-Id: <20181103162559.251D31803A1@mail.allta.com.ua>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 27 Nov 2018 23:51:59 +0000
+Subject: [PATCH v2 05/10] target/core: Use system workqueues for TMF
+Message-Id: <20181127235204.186731-6-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hello dear
+A quote from SAM-5: "The order in which task management requests
+are processed is not specified by the SCSI architecture model.
+The SCSI architecture model does not require in-order delivery of
+such task management requests or processing by the task manager
+in the order received. To guarantee the processing order of task
+management requests referencing sent to a specific logical unit,
+an application client should not have more than one such task
+management request pending to that logical unit." This means that
+it is safe to use the system workqueues instead of tmr_wq for
+processing TMFs. An intended side effect of this patch is that it
+enables concurrent processing of TMFs.
 
-Greetings to you,I am Dr.Kannan, a personal account manager to Late Engr. Richard Hernandez, who died with his family in the missing Malaysian Air crash
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: David Disseldorp <ddiss@suse.de>
+Cc: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/target_core_device.c    | 16 ----------------
+ drivers/target/target_core_transport.c |  2 +-
+ include/target/target_core_base.h      |  1 -
+ 3 files changed, 1 insertion(+), 18 deletions(-)
 
-of 2014. His account with us is in intestate with no claim his fixed deposit of U$D 7 Million.
-
-I have been mandated by the Bank Management as his personal account officer, to present his relative or next of kin.
-
-I have searched through notary register of his country here all to no avail, so I wish to present you to the Bank as his only relative and next of kin.
-
-kindly contact me for more details, terms and condition shall be clarified upon your response. There is no risk whatsoever to this transaction as I have all papers and documents to pose of you the inheritance to this. 
-
-I wait for your prompt response.
-
-My regards,
-
-Dr. Kannan.
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index c6b1122ee097..d452d2059946 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -985,18 +985,6 @@ int target_configure_device(struct se_device *dev)
+ 	if (ret)
+ 		goto out_destroy_device;
+ 
+-	/*
+-	 * Startup the struct se_device processing thread
+-	 */
+-	dev->tmr_wq = alloc_workqueue("tmr-%s", WQ_MEM_RECLAIM | WQ_UNBOUND, 1,
+-				      dev->transport->name);
+-	if (!dev->tmr_wq) {
+-		pr_err("Unable to create tmr workqueue for %s\n",
+-			dev->transport->name);
+-		ret = -ENOMEM;
+-		goto out_free_alua;
+-	}
+-
+ 	/*
+ 	 * Setup work_queue for QUEUE_FULL
+ 	 */
+@@ -1025,8 +1013,6 @@ int target_configure_device(struct se_device *dev)
+ 
+ 	return 0;
+ 
+-out_free_alua:
+-	core_alua_free_lu_gp_mem(dev);
+ out_destroy_device:
+ 	dev->transport->destroy_device(dev);
+ out_free_index:
+@@ -1045,8 +1031,6 @@ void target_free_device(struct se_device *dev)
+ 	WARN_ON(!list_empty(&dev->dev_sep_list));
+ 
+ 	if (target_dev_configured(dev)) {
+-		destroy_workqueue(dev->tmr_wq);
+-
+ 		dev->transport->destroy_device(dev);
+ 
+ 		mutex_lock(&device_mutex);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index f429eece950b..eab5fa2248af 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3412,7 +3412,7 @@ int transport_generic_handle_tmr(
+ 	}
+ 
+ 	INIT_WORK(&cmd->work, target_tmr_work);
+-	queue_work(cmd->se_dev->tmr_wq, &cmd->work);
++	schedule_work(&cmd->work);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(transport_generic_handle_tmr);
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 067da330ed9c..67130841d421 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -794,7 +794,6 @@ struct se_device {
+ 	struct t10_pr_registration *dev_pr_res_holder;
+ 	struct list_head	dev_sep_list;
+ 	struct list_head	dev_tmr_list;
+-	struct workqueue_struct *tmr_wq;
+ 	struct work_struct	qf_work_queue;
+ 	struct list_head	delayed_cmd_list;
+ 	struct list_head	state_list;
+-- 
+2.20.0.rc0.387.gc7a69e6b6c-goog
