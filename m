@@ -1,21 +1,55 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Tue, 06 Nov 2018 03:18:13 +0000
-Subject: Re: [PATCH v3] target/core: Avoid that a kernel oops is triggered when COMPARE AND WRITE fails
-Message-Id: <yq1lg667v2i.fsf@oracle.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 27 Nov 2018 23:51:54 +0000
+Subject: [PATCH v2 00/10] Make ABORT and LUN RESET handling synchronous
+Message-Id: <20181127235204.186731-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181106004459.5621-1-bvanassche@acm.org>
-In-Reply-To: <20181106004459.5621-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+Hello Martin,
 
-Bart,
+This is a respin of the patch series that makes ABORT and LUN RESET handling
+synchronous. Compared to last time when this patch series was posted, the
+actual patch that makes task management function handling synchronous has
+been split into three patches. That makes the changes easier to follow.
+Please consider this patch series for kernel v4.21.
 
-> Fixes: aa73237dcb2d ("scsi: target/core: Always call transport_complete_callback() upon failure")
+Thanks,
 
-Applied to 4.20/scsi-fixes. Thank you!
+Bart.
+
+Changes compared to v1: restored the __GFP_RETRY_MAYFAIL flag in patch 2/10
+  which had been left out accidentally.
+
+Bart Van Assche (10):
+  target/tcmu: Fix queue_cmd_ring() declaration
+  target/core: Use kvcalloc() instead of open-coding it
+  target/core: Simplify transport_clear_lun_ref()
+  target/core: Make sure that target_wait_for_sess_cmds() waits long
+    enough
+  target/core: Use system workqueues for TMF
+  target/core: Make it possible to wait from more than one context for
+    command completion
+  target/core: Simplify the code for aborting SCSI commands
+  target/core: Fix TAS handling for aborted commands
+  target/core: Make ABORT and LUN RESET handling synchronous
+  target/core: Reduce the amount of code executed with a spinlock held
+
+ drivers/target/iscsi/iscsi_target.c          |  11 +-
+ drivers/target/iscsi/iscsi_target_configfs.c |   2 +
+ drivers/target/iscsi/iscsi_target_erl1.c     |  28 +-
+ drivers/target/target_core_device.c          |  17 -
+ drivers/target/target_core_internal.h        |   2 -
+ drivers/target/target_core_tmr.c             |  52 ++-
+ drivers/target/target_core_tpg.c             |   1 -
+ drivers/target/target_core_transport.c       | 406 ++++++++-----------
+ drivers/target/target_core_user.c            |   2 +-
+ drivers/target/target_core_xcopy.c           |   6 +-
+ include/target/target_core_base.h            |   7 +-
+ include/target/target_core_fabric.h          |  11 +-
+ 12 files changed, 222 insertions(+), 323 deletions(-)
 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.20.0.rc0.387.gc7a69e6b6c-goog
