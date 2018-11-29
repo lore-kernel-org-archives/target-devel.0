@@ -1,333 +1,98 @@
-From: xiubli@redhat.com
-Date: Fri, 23 Nov 2018 01:15:30 +0000
-Subject: [PATCH v4] scsi: tcmu: avoid cmd/qfull timers updated whenever a new cmd comes
-Message-Id: <20181123011530.2477-1-xiubli@redhat.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Thu, 29 Nov 2018 01:01:55 +0000
+Subject: [PATCH v4 5/7] target: add device vendor_id configfs attribute
+Message-Id: <20181129010157.12687-6-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-From: Xiubo Li <xiubli@redhat.com>
+The vendor_id attribute will allow for the modification of the T10
+Vendor Identification string returned in inquiry responses. Its value
+can be viewed and modified via the ConfigFS path at:
+target/core/$backstore/$name/wwn/vendor_id
 
-Currently there has one cmd timeout timer and one qfull timer for
-each udev, and whenever there has any new coming cmd it will update
-the cmd timer or qfull timer. And for some corner case the timers
-are always working only for the ringbuffer's and full queue's newest
-cmd. That's to say the timer won't be fired even there has one cmd
-stuck for a very long time and the deadline is reached.
+"LIO-ORG" remains the default value, which is set when the backstore
+device is enabled.
 
-This fix will keep the cmd/qfull timers to be pended for the oldest
-cmd in ringbuffer and full queue, and will update them with the next
-cmd's deadline only when the old cmd's deadline is reached or removed
-from the ringbuffer and full queue.
-
-Signed-off-by: Xiubo Li <xiubli@redhat.com>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
+ drivers/target/target_core_configfs.c | 48 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
 
-Changed in V4:
-- Addressed all the new comments.
-
-Changed in V3:
-- Add inflight queue support, thanks Mike.
-
-Changed in V2:
-- Add qfull timer
-- Addressed all the comments from Mike, thanks.
-
- drivers/target/target_core_user.c | 88 +++++++++++++++++++++++++++------------
- 1 file changed, 61 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 9cd404a..ac76201 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -148,7 +148,7 @@ struct tcmu_dev {
- 	size_t ring_size;
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 9f49b1afd685..fc60c4db718d 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1213,6 +1213,52 @@ static struct t10_wwn *to_t10_wwn(struct config_item *item)
+ }
  
- 	struct mutex cmdr_lock;
--	struct list_head cmdr_queue;
-+	struct list_head qfull_queue;
- 
- 	uint32_t dbi_max;
- 	uint32_t dbi_thresh;
-@@ -159,6 +159,7 @@ struct tcmu_dev {
- 
- 	struct timer_list cmd_timer;
- 	unsigned int cmd_time_out;
-+	struct list_head inflight_queue;
- 
- 	struct timer_list qfull_timer;
- 	int qfull_time_out;
-@@ -179,7 +180,7 @@ struct tcmu_dev {
- struct tcmu_cmd {
- 	struct se_cmd *se_cmd;
- 	struct tcmu_dev *tcmu_dev;
--	struct list_head cmdr_queue_entry;
-+	struct list_head queue_entry;
- 
- 	uint16_t cmd_id;
- 
-@@ -192,6 +193,7 @@ struct tcmu_cmd {
- 	unsigned long deadline;
- 
- #define TCMU_CMD_BIT_EXPIRED 0
-+#define TCMU_CMD_BIT_INFLIGHT 1
- 	unsigned long flags;
- };
  /*
-@@ -586,7 +588,7 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
- 	if (!tcmu_cmd)
- 		return NULL;
- 
--	INIT_LIST_HEAD(&tcmu_cmd->cmdr_queue_entry);
-+	INIT_LIST_HEAD(&tcmu_cmd->queue_entry);
- 	tcmu_cmd->se_cmd = se_cmd;
- 	tcmu_cmd->tcmu_dev = udev;
- 
-@@ -915,11 +917,13 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
- 		return 0;
- 
- 	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
--	mod_timer(timer, tcmu_cmd->deadline);
-+	if (!timer_pending(timer))
-+		mod_timer(timer, tcmu_cmd->deadline);
-+
- 	return 0;
- }
- 
--static int add_to_cmdr_queue(struct tcmu_cmd *tcmu_cmd)
-+static int add_to_qfull_queue(struct tcmu_cmd *tcmu_cmd)
- {
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
- 	unsigned int tmo;
-@@ -942,7 +946,7 @@ static int add_to_cmdr_queue(struct tcmu_cmd *tcmu_cmd)
- 	if (ret)
- 		return ret;
- 
--	list_add_tail(&tcmu_cmd->cmdr_queue_entry, &udev->cmdr_queue);
-+	list_add_tail(&tcmu_cmd->queue_entry, &udev->qfull_queue);
- 	pr_debug("adding cmd %u on dev %s to ring space wait queue\n",
- 		 tcmu_cmd->cmd_id, udev->name);
- 	return 0;
-@@ -999,7 +1003,7 @@ static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
- 	base_command_size = tcmu_cmd_get_base_cmd_size(tcmu_cmd->dbi_cnt);
- 	command_size = tcmu_cmd_get_cmd_size(tcmu_cmd, base_command_size);
- 
--	if (!list_empty(&udev->cmdr_queue))
-+	if (!list_empty(&udev->qfull_queue))
- 		goto queue;
- 
- 	mb = udev->mb_addr;
-@@ -1096,13 +1100,16 @@ static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
- 	UPDATE_HEAD(mb->cmd_head, command_size, udev->cmdr_size);
- 	tcmu_flush_dcache_range(mb, sizeof(*mb));
- 
-+	list_add_tail(&tcmu_cmd->queue_entry, &udev->inflight_queue);
-+	set_bit(TCMU_CMD_BIT_INFLIGHT, &tcmu_cmd->flags);
-+
- 	/* TODO: only if FLUSH and FUA? */
- 	uio_event_notify(&udev->uio_info);
- 
- 	return 0;
- 
- queue:
--	if (add_to_cmdr_queue(tcmu_cmd)) {
-+	if (add_to_qfull_queue(tcmu_cmd)) {
- 		*scsi_err = TCM_OUT_OF_RESOURCES;
- 		return -1;
- 	}
-@@ -1145,6 +1152,8 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
- 	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags))
- 		goto out;
- 
-+	list_del_init(&cmd->queue_entry);
-+
- 	tcmu_cmd_reset_dbi_cur(cmd);
- 
- 	if (entry->hdr.uflags & TCMU_UFLAG_UNKNOWN_OP) {
-@@ -1194,9 +1203,29 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
- 	tcmu_free_cmd(cmd);
- }
- 
-+static void tcmu_set_next_deadline(struct list_head *queue,
-+				   struct timer_list *timer)
++ * STANDARD and VPD page 0x80 T10 Vendor Identification
++ */
++static ssize_t target_wwn_vendor_id_show(struct config_item *item,
++		char *page)
 +{
-+	struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
-+	unsigned long deadline = 0;
-+
-+	list_for_each_entry_safe(tcmu_cmd, tmp_cmd, queue, queue_entry) {
-+		if (!time_after(jiffies, tcmu_cmd->deadline)) {
-+			deadline = tcmu_cmd->deadline;
-+			break;
-+		}
-+	}
-+
-+	if (deadline)
-+		mod_timer(timer, deadline);
-+	else
-+		del_timer(timer);
++	return sprintf(page, "%s\n", &to_t10_wwn(item)->vendor[0]);
 +}
 +
- static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- {
- 	struct tcmu_mailbox *mb;
-+	struct tcmu_cmd *cmd;
- 	int handled = 0;
- 
- 	if (test_bit(TCMU_DEV_BIT_BROKEN, &udev->flags)) {
-@@ -1210,7 +1239,6 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- 	while (udev->cmdr_last_cleaned != READ_ONCE(mb->cmd_tail)) {
- 
- 		struct tcmu_cmd_entry *entry = (void *) mb + CMDR_OFF + udev->cmdr_last_cleaned;
--		struct tcmu_cmd *cmd;
- 
- 		tcmu_flush_dcache_range(entry, sizeof(*entry));
- 
-@@ -1243,7 +1271,7 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- 		/* no more pending commands */
- 		del_timer(&udev->cmd_timer);
- 
--		if (list_empty(&udev->cmdr_queue)) {
-+		if (list_empty(&udev->qfull_queue)) {
- 			/*
- 			 * no more pending or waiting commands so try to
- 			 * reclaim blocks if needed.
-@@ -1252,6 +1280,8 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- 			    tcmu_global_max_blocks)
- 				schedule_delayed_work(&tcmu_unmap_work, 0);
- 		}
-+	} else if (udev->cmd_time_out) {
-+		tcmu_set_next_deadline(&udev->inflight_queue, &udev->cmd_timer);
- 	}
- 
- 	return handled;
-@@ -1271,7 +1301,7 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
- 	if (!time_after(jiffies, cmd->deadline))
- 		return 0;
- 
--	is_running = list_empty(&cmd->cmdr_queue_entry);
-+	is_running = test_bit(TCMU_CMD_BIT_INFLIGHT, &cmd->flags);
- 	se_cmd = cmd->se_cmd;
- 
- 	if (is_running) {
-@@ -1288,12 +1318,11 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
- 		 */
- 		scsi_status = SAM_STAT_CHECK_CONDITION;
- 	} else {
--		list_del_init(&cmd->cmdr_queue_entry);
--
- 		idr_remove(&udev->commands, id);
- 		tcmu_free_cmd(cmd);
- 		scsi_status = SAM_STAT_TASK_SET_FULL;
- 	}
-+	list_del_init(&cmd->queue_entry);
- 
- 	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
- 		 id, udev->name, is_running ? "inflight" : "queued");
-@@ -1372,7 +1401,8 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 
- 	INIT_LIST_HEAD(&udev->node);
- 	INIT_LIST_HEAD(&udev->timedout_entry);
--	INIT_LIST_HEAD(&udev->cmdr_queue);
-+	INIT_LIST_HEAD(&udev->qfull_queue);
-+	INIT_LIST_HEAD(&udev->inflight_queue);
- 	idr_init(&udev->commands);
- 
- 	timer_setup(&udev->qfull_timer, tcmu_qfull_timedout, 0);
-@@ -1383,7 +1413,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 	return &udev->se_dev;
- }
- 
--static bool run_cmdr_queue(struct tcmu_dev *udev, bool fail)
-+static bool run_qfull_queue(struct tcmu_dev *udev, bool fail)
- {
- 	struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
- 	LIST_HEAD(cmds);
-@@ -1391,15 +1421,15 @@ static bool run_cmdr_queue(struct tcmu_dev *udev, bool fail)
- 	sense_reason_t scsi_ret;
- 	int ret;
- 
--	if (list_empty(&udev->cmdr_queue))
-+	if (list_empty(&udev->qfull_queue))
- 		return true;
- 
- 	pr_debug("running %s's cmdr queue forcefail %d\n", udev->name, fail);
- 
--	list_splice_init(&udev->cmdr_queue, &cmds);
-+	list_splice_init(&udev->qfull_queue, &cmds);
- 
--	list_for_each_entry_safe(tcmu_cmd, tmp_cmd, &cmds, cmdr_queue_entry) {
--		list_del_init(&tcmu_cmd->cmdr_queue_entry);
-+	list_for_each_entry_safe(tcmu_cmd, tmp_cmd, &cmds, queue_entry) {
-+		list_del_init(&tcmu_cmd->queue_entry);
- 
- 	        pr_debug("removing cmd %u on dev %s from queue\n",
- 		         tcmu_cmd->cmd_id, udev->name);
-@@ -1437,14 +1467,13 @@ static bool run_cmdr_queue(struct tcmu_dev *udev, bool fail)
- 			 * cmd was requeued, so just put all cmds back in
- 			 * the queue
- 			 */
--			list_splice_tail(&cmds, &udev->cmdr_queue);
-+			list_splice_tail(&cmds, &udev->qfull_queue);
- 			drained = false;
--			goto done;
-+			break;
- 		}
- 	}
--	if (list_empty(&udev->cmdr_queue))
--		del_timer(&udev->qfull_timer);
--done:
++static ssize_t target_wwn_vendor_id_store(struct config_item *item,
++		const char *page, size_t count)
++{
++	struct t10_wwn *t10_wwn = to_t10_wwn(item);
++	struct se_device *dev = t10_wwn->t10_dev;
++	unsigned char buf[INQUIRY_VENDOR_LEN + 1];
 +
-+	tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
- 	return drained;
- }
- 
-@@ -1454,7 +1483,7 @@ static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
- 
- 	mutex_lock(&udev->cmdr_lock);
- 	tcmu_handle_completions(udev);
--	run_cmdr_queue(udev, false);
-+	run_qfull_queue(udev, false);
- 	mutex_unlock(&udev->cmdr_lock);
- 
- 	return 0;
-@@ -1982,7 +2011,7 @@ static void tcmu_block_dev(struct tcmu_dev *udev)
- 	/* complete IO that has executed successfully */
- 	tcmu_handle_completions(udev);
- 	/* fail IO waiting to be queued */
--	run_cmdr_queue(udev, true);
-+	run_qfull_queue(udev, true);
- 
- unlock:
- 	mutex_unlock(&udev->cmdr_lock);
-@@ -1997,7 +2026,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
- 	mutex_lock(&udev->cmdr_lock);
- 
- 	idr_for_each_entry(&udev->commands, cmd, i) {
--		if (!list_empty(&cmd->cmdr_queue_entry))
-+		if (!test_bit(TCMU_CMD_BIT_INFLIGHT, &cmd->flags))
- 			continue;
- 
- 		pr_debug("removing cmd %u on dev %s from ring (is expired %d)\n",
-@@ -2006,6 +2035,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
- 
- 		idr_remove(&udev->commands, i);
- 		if (!test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
-+			list_del_init(&cmd->queue_entry);
- 			if (err_level = 1) {
- 				/*
- 				 * Userspace was not able to start the
-@@ -2666,6 +2696,10 @@ static void check_timedout_devices(void)
- 
- 		mutex_lock(&udev->cmdr_lock);
- 		idr_for_each(&udev->commands, tcmu_check_expired_cmd, NULL);
++	if (strlen(page) > INQUIRY_VENDOR_LEN) {
++		pr_err("Emulated T10 Vendor Identification exceeds"
++			" INQUIRY_VENDOR_LEN: " __stringify(INQUIRY_VENDOR_LEN)
++			"\n");
++		return -EOVERFLOW;
++	}
++	strlcpy(buf, page, sizeof(buf));
++	/*
++	 * Check to see if any active exports exist.  If they do exist, fail
++	 * here as changing this information on the fly (underneath the
++	 * initiator side OS dependent multipath code) could cause negative
++	 * effects.
++	 */
++	if (dev->export_count) {
++		pr_err("Unable to set T10 Vendor Identification while"
++			" active %d exports exist\n", dev->export_count);
++		return -EINVAL;
++	}
 +
-+		tcmu_set_next_deadline(&udev->inflight_queue, &udev->cmd_timer);
-+		tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
++	/* Assume ASCII encoding. Strip any newline added from userspace. */
++	BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) != INQUIRY_VENDOR_LEN + 1);
++	strlcpy(dev->t10_wwn.vendor, strstrip(buf),
++		sizeof(dev->t10_wwn.vendor));
 +
- 		mutex_unlock(&udev->cmdr_lock);
++	pr_debug("Target_Core_ConfigFS: Set emulated T10 Vendor Identification:"
++		 " %s\n", dev->t10_wwn.vendor);
++
++	return count;
++}
++
++/*
+  * VPD page 0x80 Unit serial
+  */
+ static ssize_t target_wwn_vpd_unit_serial_show(struct config_item *item,
+@@ -1358,6 +1404,7 @@ DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_target_port, 0x10);
+ /* VPD page 0x83 Association: SCSI Target Device */
+ DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_scsi_target_device, 0x20);
  
- 		spin_lock_bh(&timed_out_udevs_lock);
++CONFIGFS_ATTR(target_wwn_, vendor_id);
+ CONFIGFS_ATTR(target_wwn_, vpd_unit_serial);
+ CONFIGFS_ATTR_RO(target_wwn_, vpd_protocol_identifier);
+ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_logical_unit);
+@@ -1365,6 +1412,7 @@ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_target_port);
+ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_scsi_target_device);
+ 
+ static struct configfs_attribute *target_core_dev_wwn_attrs[] = {
++	&target_wwn_attr_vendor_id,
+ 	&target_wwn_attr_vpd_unit_serial,
+ 	&target_wwn_attr_vpd_protocol_identifier,
+ 	&target_wwn_attr_vpd_assoc_logical_unit,
 -- 
-1.8.3.1
+2.13.7
