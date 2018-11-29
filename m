@@ -1,7 +1,7 @@
-From: "Ly, Bryant" <bly@catalogicsoftware.com>
-Date: Thu, 29 Nov 2018 01:14:51 +0000
+From: Lee Duncan <lduncan@suse.com>
+Date: Thu, 29 Nov 2018 01:29:28 +0000
 Subject: Re: [PATCH v4 5/7] target: add device vendor_id configfs attribute
-Message-Id: <2AC2A699-A0FF-4174-AADD-FE1094678278@catalogicsoftware.com>
+Message-Id: <e73a0ddc-bd7c-c760-7694-097216e436ce@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20181129010157.12687-6-ddiss@suse.de>
 In-Reply-To: <20181129010157.12687-6-ddiss@suse.de>
@@ -10,10 +10,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-
-
-> On Nov 28, 2018, at 7:01 PM, David Disseldorp <ddiss@suse.de> wrote:
-> 
+On 11/28/18 5:01 PM, David Disseldorp wrote:
 > The vendor_id attribute will allow for the modification of the T10
 > Vendor Identification string returned in inquiry responses. Its value
 > can be viewed and modified via the ConfigFS path at:
@@ -24,18 +21,83 @@ To: target-devel@vger.kernel.org
 > 
 > Signed-off-by: David Disseldorp <ddiss@suse.de>
 > ---
-> drivers/target/target_core_configfs.c | 48 +++++++++++++++++++++++++++++++++++
-> 1 file changed, 48 insertions(+)
+>  drivers/target/target_core_configfs.c | 48 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 48 insertions(+)
 > 
 > diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
 > index 9f49b1afd685..fc60c4db718d 100644
 > --- a/drivers/target/target_core_configfs.c
 > +++ b/drivers/target/target_core_configfs.c
 > @@ -1213,6 +1213,52 @@ static struct t10_wwn *to_t10_wwn(struct config_item *item)
-> }
+>  }
+>  
+>  /*
+> + * STANDARD and VPD page 0x80 T10 Vendor Identification
+> + */
+> +static ssize_t target_wwn_vendor_id_show(struct config_item *item,
+> +		char *page)
+> +{
+> +	return sprintf(page, "%s\n", &to_t10_wwn(item)->vendor[0]);
+> +}
+> +
+> +static ssize_t target_wwn_vendor_id_store(struct config_item *item,
+> +		const char *page, size_t count)
+> +{
+> +	struct t10_wwn *t10_wwn = to_t10_wwn(item);
+> +	struct se_device *dev = t10_wwn->t10_dev;
+> +	unsigned char buf[INQUIRY_VENDOR_LEN + 1];
+> +
+> +	if (strlen(page) > INQUIRY_VENDOR_LEN) {
+> +		pr_err("Emulated T10 Vendor Identification exceeds"
+> +			" INQUIRY_VENDOR_LEN: " __stringify(INQUIRY_VENDOR_LEN)
+> +			"\n");
+> +		return -EOVERFLOW;
+> +	}
+> +	strlcpy(buf, page, sizeof(buf));
+> +	/*
+> +	 * Check to see if any active exports exist.  If they do exist, fail
+> +	 * here as changing this information on the fly (underneath the
+> +	 * initiator side OS dependent multipath code) could cause negative
+> +	 * effects.
+> +	 */
+> +	if (dev->export_count) {
+> +		pr_err("Unable to set T10 Vendor Identification while"
+> +			" active %d exports exist\n", dev->export_count);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* Assume ASCII encoding. Strip any newline added from userspace. */
+> +	BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) != INQUIRY_VENDOR_LEN + 1);
+> +	strlcpy(dev->t10_wwn.vendor, strstrip(buf),
+> +		sizeof(dev->t10_wwn.vendor));
+> +
+> +	pr_debug("Target_Core_ConfigFS: Set emulated T10 Vendor Identification:"
+> +		 " %s\n", dev->t10_wwn.vendor);
+> +
+> +	return count;
+> +}
+> +
+> +/*
+>   * VPD page 0x80 Unit serial
+>   */
+>  static ssize_t target_wwn_vpd_unit_serial_show(struct config_item *item,
+> @@ -1358,6 +1404,7 @@ DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_target_port, 0x10);
+>  /* VPD page 0x83 Association: SCSI Target Device */
+>  DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_scsi_target_device, 0x20);
+>  
+> +CONFIGFS_ATTR(target_wwn_, vendor_id);
+>  CONFIGFS_ATTR(target_wwn_, vpd_unit_serial);
+>  CONFIGFS_ATTR_RO(target_wwn_, vpd_protocol_identifier);
+>  CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_logical_unit);
+> @@ -1365,6 +1412,7 @@ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_target_port);
+>  CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_scsi_target_device);
+>  
+>  static struct configfs_attribute *target_core_dev_wwn_attrs[] = {
+> +	&target_wwn_attr_vendor_id,
+>  	&target_wwn_attr_vpd_unit_serial,
+>  	&target_wwn_attr_vpd_protocol_identifier,
+>  	&target_wwn_attr_vpd_assoc_logical_unit,
 > 
 
-Thanks for making it configurable. I know back when I was at IBM we made changes internally
-to support LIO-ORG.
 
-Reviewed-by: Bryant G. Ly bly@catalogicsoftware.com
+Reviewed-by: Lee Duncan <lduncan@suse.com>
