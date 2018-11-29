@@ -1,116 +1,60 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 06 Nov 2018 17:17:11 +0000
-Subject: [PATCH 03/10] target/core: Simplify transport_clear_lun_ref()
-Message-Id: <20181106171718.89594-4-bvanassche@acm.org>
+From: Alex Bobro <oleksandrb@mellanox.com>
+Date: Thu, 29 Nov 2018 15:00:05 +0000
+Subject: ISCSI Target crash during ISERT logout
+Message-Id: <AM6PR05MB6085DA0179A35E80F367A216A0D20@AM6PR05MB6085.eurprd05.prod.outlook.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Since transport_clear_lun_ref() already waits until the percpu-refcount
-.release() method is called, it is not necessary to wait first until
-percpu_ref_kill_and_confirm() has finished transitioning the refcount into
-atomic mode. Remove the code that waits for percpu_ref_kill_and_confirm()
-to complete and also the completion object that is used by that code.
-This patch does not change the behavior of the SCSI target code.
+Hi, 
 
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: David Disseldorp <ddiss@suse.de>
-Cc: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
----
- drivers/target/target_core_device.c    |  1 -
- drivers/target/target_core_tpg.c       |  1 -
- drivers/target/target_core_transport.c | 35 ++++----------------------
- include/target/target_core_base.h      |  1 -
- 4 files changed, 5 insertions(+), 33 deletions(-)
+During ISERT module testing we've faced weird behavior in ISCSI Target driver code. We are not sure if that is wrong logout implementation in ISERT or race condition in ISCSI Target between iscsit_logout_post_handler() and iscsit_tpg_del_portal_group() functions.
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 47b5ef153135..c6b1122ee097 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -822,7 +822,6 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
- 
- 	xcopy_lun = &dev->xcopy_lun;
- 	rcu_assign_pointer(xcopy_lun->lun_se_dev, dev);
--	init_completion(&xcopy_lun->lun_ref_comp);
- 	init_completion(&xcopy_lun->lun_shutdown_comp);
- 	INIT_LIST_HEAD(&xcopy_lun->lun_deve_list);
- 	INIT_LIST_HEAD(&xcopy_lun->lun_dev_link);
-diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index 02e8a5d86658..0cfb9d7b31a3 100644
---- a/drivers/target/target_core_tpg.c
-+++ b/drivers/target/target_core_tpg.c
-@@ -577,7 +577,6 @@ struct se_lun *core_tpg_alloc_lun(
- 	}
- 	lun->unpacked_lun = unpacked_lun;
- 	atomic_set(&lun->lun_acl_count, 0);
--	init_completion(&lun->lun_ref_comp);
- 	init_completion(&lun->lun_shutdown_comp);
- 	INIT_LIST_HEAD(&lun->lun_deve_list);
- 	INIT_LIST_HEAD(&lun->lun_dev_link);
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 086cac18ebca..a2cecbec9b8e 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -2910,38 +2910,13 @@ void target_wait_for_sess_cmds(struct se_session *se_sess)
- }
- EXPORT_SYMBOL(target_wait_for_sess_cmds);
- 
--static void target_lun_confirm(struct percpu_ref *ref)
--{
--	struct se_lun *lun = container_of(ref, struct se_lun, lun_ref);
--
--	complete(&lun->lun_ref_comp);
--}
--
-+/*
-+ * Prevent that new percpu_ref_tryget_live() calls succeed and wait until
-+ * all references to the LUN have been released. Called during LUN shutdown.
-+ */
- void transport_clear_lun_ref(struct se_lun *lun)
- {
--	/*
--	 * Mark the percpu-ref as DEAD, switch to atomic_t mode, drop
--	 * the initial reference and schedule confirm kill to be
--	 * executed after one full RCU grace period has completed.
--	 */
--	percpu_ref_kill_and_confirm(&lun->lun_ref, target_lun_confirm);
--	/*
--	 * The first completion waits for percpu_ref_switch_to_atomic_rcu()
--	 * to call target_lun_confirm after lun->lun_ref has been marked
--	 * as __PERCPU_REF_DEAD on all CPUs, and switches to atomic_t
--	 * mode so that percpu_ref_tryget_live() lookup of lun->lun_ref
--	 * fails for all new incoming I/O.
--	 */
--	wait_for_completion(&lun->lun_ref_comp);
--	/*
--	 * The second completion waits for percpu_ref_put_many() to
--	 * invoke ->release() after lun->lun_ref has switched to
--	 * atomic_t mode, and lun->lun_ref.count has reached zero.
--	 *
--	 * At this point all target-core lun->lun_ref references have
--	 * been dropped via transport_lun_remove_cmd(), and it's safe
--	 * to proceed with the remaining LUN shutdown.
--	 */
-+	percpu_ref_kill(&lun->lun_ref);
- 	wait_for_completion(&lun->lun_shutdown_comp);
- }
- 
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index e3bdb0550a59..58a03a094257 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -731,7 +731,6 @@ struct se_lun {
- 	struct scsi_port_stats	lun_stats;
- 	struct config_group	lun_group;
- 	struct se_port_stat_grps port_stat_grps;
--	struct completion	lun_ref_comp;
- 	struct completion	lun_shutdown_comp;
- 	struct percpu_ref	lun_ref;
- 	struct list_head	lun_dev_link;
--- 
-2.19.1.930.g4563a0d9d0-goog
+Assume situation when there is one Session between Target and Initiator. Initiator sends Logout request to Target and at same time Target deletes portal group (for example targetcli clearconfig confirm=True executed).
+Logout session request came first (cmd->iscsi_opcode == ISCSI_OP_LOGOUT, cmd->logout_reason == ISCSI_LOGOUT_REASON_CLOSE_SESSION)
+Target invokes iscsit_logout_closesession() (that updates session->session_logout flag to 1) and executes logout response command (cmd->i_state = ISTATE_SEND_LOGOUTRSP).
+After logout request received Target invokes iscsit_tpg_del_portal_group(). That functions invokes iscsit_release_sessions_for_tpg() which iterate through all active sessions and frees them. 
+In our case session is during logout process so it will be ignored. iscsit_release_sessions_for_tpg() does nothing and just returns 0. 
+iscsit_tpg_del_portal_group() invocation will continue and free target portal group by calling kfree(tpg).
+During iscsit_tpg_del_portal_group() call logout response command has been successfully delivered and Target invokes iscsit_logout_post_handler(). That function invocation leads to transport_free_session() call which tries to dereference pointer to struct se_portal_group that was previously freed by iscsit_tpg_del_portal_group(). 
+
+Described situation lead to crash: 
+
+Oops: 0000 [#1] SMP PTI                                                                  
+Workqueue: isert_comp_wq isert_do_control_comp [ib_isert]                                                                                                                                                                     
+task: ffff93a04ac89740 task.stack: ffff9f3907044000                                                                                                                                                                           
+RIP: 0010:transport_free_session+0x2a/0x140 [target_core_mod]                                                                                                                                                                 
+RSP: 0018:ffff9f3907047da8 EFLAGS: 00010286                                                                                                                                                                                   
+RAX: 0000000000000282 RBX: ffff93a1f0ae6400 RCX: dead000000000200                                                                                                                                                             
+RDX: ffff93a22b8f10a0 RSI: 0000000000000282 RDI: ffff93a1f0ae6400                                                                                                                                                             
+RBP: ffff9f3907047dd0 R08: 0000000000000000 R09: 0000000000000000                                                                                                                                                             
+R10: ffff9f3907047d98 R11: 0000000000000058 R12: ffff93a22f3a0000                                                                                                                                                             
+R13: 0000000000000000 R14: 0000000000000008 R15: ffff93a22f6f3980                                                                                                                                                             
+FS:  0000000000000000(0000) GS:ffff93a233a00000(0000) knlGS:0000000000000000                                                                                                                                                  
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033                                                                                                                                                                             
+CR2: 0000000000000090 CR3: 000000020800a004 CR4: 00000000000606f0                                                                                                                                                             
+Call Trace:                                                                                                                                                                                                                   
+transport_deregister_session+0x7e/0xc0 [target_core_mod]                                                                                                                                                                     
+iscsit_close_session+0x92/0x200 [iscsi_target_mod]                                                                                                                                                                           
+iscsit_logout_post_handler+0x180/0x220 [iscsi_target_mod]                                                                                                                                                                    
+isert_do_control_comp+0x88/0xd0 [ib_isert]                                                                                                                                                                                   
+process_one_work+0x1ec/0x410                                                                                                                                                                                                 
+? __wake_up+0x44/0x50                                                                                                                                                                                                        
+worker_thread+0x32/0x410                                                                                                                                                                                                     
+kthread+0x128/0x140                                                                                                                                                                                                          
+? process_one_work+0x410/0x410                                                                                                                                                                                               
+? kthread_create_on_node+0x70/0x70                                                                                                                                                                                           
+ret_from_fork+0x35/0x40                                                                                                                                                                                                      
+Code: 00 66 66 66 66 90 55 48 89 e5 41 57 41 56 41 55 41 54 53 4c 8b 67 18 48 89 fb 4d 85 e4 74 59 4d 8b ac 24 48 01 00 00 4d 8d 75 08 <4d> 8b bd 90 00 00 00 48 c7 47 18 00 00 00 00 4c 89 f7 e8 7f c9                       
+RIP: transport_free_session+0x2a/0x140 [target_core_mod] RSP: ffff9f3907047da8                                                                                                                                                
+CR2: 0000000000000090                                                                                                                                                                                                         
+---[ end trace a136fc59c1406d59 ]---                                                                                                                                                                                          
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000090                                                                                                                                                     
+IP: transport_free_session+0x2a/0x140 [target_core_mod]   
+
+Can you help us with that case? We want to know if we understand that behavior correctly and not missing something important.
+
+Regards,
+Oleksandr Bobro
