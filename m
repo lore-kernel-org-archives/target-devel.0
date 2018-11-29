@@ -1,75 +1,128 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 30 Nov 2018 23:34:19 +0000
-Subject: [PATCH v5 1/5] target: use consistent left-aligned ASCII INQUIRY data
-Message-Id: <20181130233423.26556-2-ddiss@suse.de>
+Date: Thu, 29 Nov 2018 01:01:57 +0000
+Subject: [PATCH v4 7/7] target: use printf width specifier for t10_wwn field dumps
+Message-Id: <20181129010157.12687-8-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-spc5r17.pdf specifies:
-  4.3.1 ASCII data field requirements
-  ASCII data fields shall contain only ASCII printable characters (i.e.,
-  code values 20h to 7Eh) and may be terminated with one or more ASCII
-  null (00h) characters.
-  ASCII data fields described as being left-aligned shall have any
-  unused bytes at the end of the field (i.e., highest offset) and the
-  unused bytes shall be filled with ASCII space characters (20h).
+From: Bart Van Assche <bvanassche@acm.org>
 
-LIO currently space-pads the T10 VENDOR IDENTIFICATION and PRODUCT
-IDENTIFICATION fields in the standard INQUIRY data. However, the
-PRODUCT REVISION LEVEL field in the standard INQUIRY data as well as the
-T10 VENDOR IDENTIFICATION field in the INQUIRY Device Identification VPD
-Page are zero-terminated/zero-padded.
-
-Fix this inconsistency by using space-padding for all of the above
-fields.
+The existing for loops step over null-terminators for right-padding.
+Padding can be achieved in a much simpler way using printf width
+specifiers.
 
 Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
-Reviewed-by: Lee Duncan <lduncan@suse.com>
 ---
- drivers/target/target_core_spc.c | 17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+ drivers/target/target_core_device.c | 35 ++++++++---------------------------
+ drivers/target/target_core_stat.c   | 32 +++++++-------------------------
+ 2 files changed, 15 insertions(+), 52 deletions(-)
 
-diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index f459118bc11b..c37dd36ec77d 100644
---- a/drivers/target/target_core_spc.c
-+++ b/drivers/target/target_core_spc.c
-@@ -108,12 +108,17 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index b3d0bd1ab09f..7f2d307e411b 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -720,36 +720,17 @@ void core_dev_free_initiator_node_lun_acl(
+ static void scsi_dump_inquiry(struct se_device *dev)
+ {
+ 	struct t10_wwn *wwn = &dev->t10_wwn;
+-	char buf[INQUIRY_MODEL_LEN + 1];
+-	int i, device_type;
++	int device_type = dev->transport->get_device_type(dev);
++
+ 	/*
+ 	 * Print Linux/SCSI style INQUIRY formatting to the kernel ring buffer
+ 	 */
+-	for (i = 0; i < INQUIRY_VENDOR_LEN; i++)
+-		if (wwn->vendor[i] >= 0x20)
+-			buf[i] = wwn->vendor[i];
+-		else
+-			buf[i] = ' ';
+-	buf[i] = '\0';
+-	pr_debug("  Vendor: %s\n", buf);
+-
+-	for (i = 0; i < INQUIRY_MODEL_LEN; i++)
+-		if (wwn->model[i] >= 0x20)
+-			buf[i] = wwn->model[i];
+-		else
+-			buf[i] = ' ';
+-	buf[i] = '\0';
+-	pr_debug("  Model: %s\n", buf);
+-
+-	for (i = 0; i < INQUIRY_REVISION_LEN; i++)
+-		if (wwn->revision[i] >= 0x20)
+-			buf[i] = wwn->revision[i];
+-		else
+-			buf[i] = ' ';
+-	buf[i] = '\0';
+-	pr_debug("  Revision: %s\n", buf);
+-
+-	device_type = dev->transport->get_device_type(dev);
++	pr_debug("  Vendor: %-" __stringify(INQUIRY_VENDOR_LEN) "s\n",
++		wwn->vendor);
++	pr_debug("  Model: %-" __stringify(INQUIRY_MODEL_LEN) "s\n",
++		wwn->model);
++	pr_debug("  Revision: %-" __stringify(INQUIRY_REVISION_LEN) "s\n",
++		wwn->revision);
+ 	pr_debug("  Type:   %s ", scsi_device_type(device_type));
+ }
  
- 	buf[7] = 0x2; /* CmdQue=1 */
+diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
+index e437ba494865..87fd2b11fe3b 100644
+--- a/drivers/target/target_core_stat.c
++++ b/drivers/target/target_core_stat.c
+@@ -246,43 +246,25 @@ static ssize_t target_stat_lu_lu_name_show(struct config_item *item, char *page)
+ static ssize_t target_stat_lu_vend_show(struct config_item *item, char *page)
+ {
+ 	struct se_device *dev = to_stat_lu_dev(item);
+-	int i;
+-	char str[INQUIRY_VENDOR_LEN+1];
  
--	memcpy(&buf[8], "LIO-ORG ", 8);
--	memset(&buf[16], 0x20, 16);
-+	/*
-+	 * ASCII data fields described as being left-aligned shall have any
-+	 * unused bytes at the end of the field (i.e., highest offset) and the
-+	 * unused bytes shall be filled with ASCII space characters (20h).
-+	 */
-+	memset(&buf[8], 0x20, 8 + 16 + 4);
-+	memcpy(&buf[8], "LIO-ORG", sizeof("LIO-ORG") - 1);
- 	memcpy(&buf[16], dev->t10_wwn.model,
--	       min_t(size_t, strlen(dev->t10_wwn.model), 16));
-+	       strnlen(dev->t10_wwn.model, 16));
- 	memcpy(&buf[32], dev->t10_wwn.revision,
--	       min_t(size_t, strlen(dev->t10_wwn.revision), 4));
-+	       strnlen(dev->t10_wwn.revision, 4));
- 	buf[4] = 31; /* Set additional length to 31 */
+-	/* scsiLuVendorId */
+-	for (i = 0; i < INQUIRY_VENDOR_LEN; i++)
+-		str[i] = ISPRINT(dev->t10_wwn.vendor[i]) ?
+-			dev->t10_wwn.vendor[i] : ' ';
+-	str[i] = '\0';
+-	return snprintf(page, PAGE_SIZE, "%s\n", str);
++	return snprintf(page, PAGE_SIZE, "%-" __stringify(INQUIRY_VENDOR_LEN)
++			"s\n", dev->t10_wwn.vendor);
+ }
  
- 	return 0;
-@@ -251,7 +256,9 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
- 	buf[off] = 0x2; /* ASCII */
- 	buf[off+1] = 0x1; /* T10 Vendor ID */
- 	buf[off+2] = 0x0;
--	memcpy(&buf[off+4], "LIO-ORG", 8);
-+	/* left align Vendor ID and pad with spaces */
-+	memset(&buf[off+4], 0x20, 8);
-+	memcpy(&buf[off+4], "LIO-ORG", sizeof("LIO-ORG") - 1);
- 	/* Extra Byte for NULL Terminator */
- 	id_len++;
- 	/* Identifier Length */
+ static ssize_t target_stat_lu_prod_show(struct config_item *item, char *page)
+ {
+ 	struct se_device *dev = to_stat_lu_dev(item);
+-	int i;
+-	char str[INQUIRY_MODEL_LEN+1];
+ 
+-	/* scsiLuProductId */
+-	for (i = 0; i < INQUIRY_MODEL_LEN; i++)
+-		str[i] = ISPRINT(dev->t10_wwn.model[i]) ?
+-			dev->t10_wwn.model[i] : ' ';
+-	str[i] = '\0';
+-	return snprintf(page, PAGE_SIZE, "%s\n", str);
++	return snprintf(page, PAGE_SIZE, "%-" __stringify(INQUIRY_MODEL_LEN)
++			"s\n", dev->t10_wwn.model);
+ }
+ 
+ static ssize_t target_stat_lu_rev_show(struct config_item *item, char *page)
+ {
+ 	struct se_device *dev = to_stat_lu_dev(item);
+-	int i;
+-	char str[INQUIRY_REVISION_LEN+1];
+-
+-	/* scsiLuRevisionId */
+-	for (i = 0; i < INQUIRY_REVISION_LEN; i++)
+-		str[i] = ISPRINT(dev->t10_wwn.revision[i]) ?
+-			dev->t10_wwn.revision[i] : ' ';
+-	str[i] = '\0';
+-	return snprintf(page, PAGE_SIZE, "%s\n", str);
++
++	return snprintf(page, PAGE_SIZE, "%-" __stringify(INQUIRY_REVISION_LEN)
++			"s\n", dev->t10_wwn.revision);
+ }
+ 
+ static ssize_t target_stat_lu_dev_type_show(struct config_item *item, char *page)
 -- 
 2.13.7
