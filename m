@@ -1,44 +1,74 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Thu, 29 Nov 2018 16:17:54 +0000
-Subject: Re: [PATCH v4 2/7] target: consistently null-terminate t10_wwn.vendor
-Message-Id: <1543508274.185366.116.camel@acm.org>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 30 Nov 2018 23:34:23 +0000
+Subject: [PATCH v5 5/5] target: perform t10_wwn ID initialisation in target_alloc_device()
+Message-Id: <20181130233423.26556-6-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181129010157.12687-3-ddiss@suse.de>
-In-Reply-To: <20181129010157.12687-3-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Thu, 2018-11-29 at 02:01 +-0100, David Disseldorp wrote:
-+AD4 -		strncpy(+ACY-dev-+AD4-t10+AF8-wwn.vendor+AFs-0+AF0, +ACI-LIO-ORG+ACI, 8)+ADs
-+AD4 +-		strncpy(+ACY-dev-+AD4-t10+AF8-wwn.vendor+AFs-0+AF0, +ACI-LIO-ORG+ACI, INQUIRY+AF8-VENDOR+AF8-LEN)+ADs
-+AD4 +-		dev-+AD4-t10+AF8-wwn.vendor+AFs-INQUIRY+AF8-VENDOR+AF8-LEN+AF0 +AD0 '+AFw-0'+ADs
+Initialise the t10_wwn vendor, model and revision defaults when a
+device is allocated instead of when it's enabled. This ensures that
+custom vendor or model strings set prior to enablement are not later
+overwritten with default values.
 
-This looks weird to me. Have you considered to use strlcpy() instead of
-strncpy() and explicit '+AFw-0'-termination?
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_device.c | 34 +++++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
 
-+AD4  		strncpy(+ACY-dev-+AD4-t10+AF8-wwn.model+AFs-0+AF0,
-+AD4  			dev-+AD4-transport-+AD4-inquiry+AF8-prod, 16)+ADs
-+AD4  		strncpy(+ACY-dev-+AD4-t10+AF8-wwn.revision+AFs-0+AF0,
-+AD4 diff --git a/drivers/target/target+AF8-core+AF8-pscsi.c b/drivers/target/target+AF8-core+AF8-pscsi.c
-+AD4 index 47d76c862014..ee65b5bb674c 100644
-+AD4 --- a/drivers/target/target+AF8-core+AF8-pscsi.c
-+AD4 +-+-+- b/drivers/target/target+AF8-core+AF8-pscsi.c
-+AD4 +AEAAQA -190,7 +-190,9 +AEAAQA pscsi+AF8-set+AF8-inquiry+AF8-info(struct scsi+AF8-device +ACo-sdev, struct t10+AF8-wwn +ACo-wwn)
-+AD4  	/+ACo
-+AD4  	 +ACo Use sdev-+AD4-inquiry from drivers/scsi/scsi+AF8-scan.c:scsi+AF8-alloc+AF8-sdev()
-+AD4  	 +ACo-/
-+AD4 -	memcpy(+ACY-wwn-+AD4-vendor+AFs-0+AF0, +ACY-buf+AFs-8+AF0, sizeof(wwn-+AD4-vendor))+ADs
-+AD4 +-	BUILD+AF8-BUG+AF8-ON(sizeof(wwn-+AD4-vendor) +ACEAPQ INQUIRY+AF8-VENDOR+AF8-LEN +- 1)+ADs
-+AD4 +-	memcpy(+ACY-wwn-+AD4-vendor+AFs-0+AF0, +ACY-buf+AFs-8+AF0, INQUIRY+AF8-VENDOR+AF8-LEN)+ADs
-+AD4 +-	wwn-+AD4-vendor+AFs-INQUIRY+AF8-VENDOR+AF8-LEN+AF0 +AD0 '+AFw-0'+ADs
-
-Have you considered to use snprintf(..., +ACIAJQ.+ACo-s+ACI, ...) instead of memcpy()
-followed by explicit '+AFw-0'-termination? I think that would result in code
-that is easier to read. strlcpy() can't be used here because it is not
-guaranteed that the input buffer is '+AFw-0'-terminated.
-
-Thanks,
-
-Bart.
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index 5512871f50e4..6318d59a1564 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -810,6 +810,23 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
+ 	mutex_init(&xcopy_lun->lun_tg_pt_md_mutex);
+ 	xcopy_lun->lun_tpg = &xcopy_pt_tpg;
+ 
++	/*
++	 * Preload the initial INQUIRY const values if we are doing
++	 * anything virtual (IBLOCK, FILEIO, RAMDISK), but not for TCM/pSCSI
++	 * passthrough because this is being provided by the backend LLD.
++	 */
++	BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) != INQUIRY_VENDOR_LEN + 1);
++	BUILD_BUG_ON(sizeof(dev->t10_wwn.model) != INQUIRY_MODEL_LEN + 1);
++	BUILD_BUG_ON(sizeof(dev->t10_wwn.revision) != INQUIRY_REVISION_LEN + 1);
++	if (!(dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)) {
++		strlcpy(dev->t10_wwn.vendor, "LIO-ORG",
++			sizeof(dev->t10_wwn.vendor));
++		strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
++			sizeof(dev->t10_wwn.model));
++		strlcpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
++			sizeof(dev->t10_wwn.revision));
++	}
++
+ 	return dev;
+ }
+ 
+@@ -984,23 +1001,6 @@ int target_configure_device(struct se_device *dev)
+ 	 */
+ 	INIT_WORK(&dev->qf_work_queue, target_qf_do_work);
+ 
+-	/*
+-	 * Preload the initial INQUIRY const values if we are doing
+-	 * anything virtual (IBLOCK, FILEIO, RAMDISK), but not for TCM/pSCSI
+-	 * passthrough because this is being provided by the backend LLD.
+-	 */
+-	BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) != INQUIRY_VENDOR_LEN + 1);
+-	BUILD_BUG_ON(sizeof(dev->t10_wwn.model) != INQUIRY_MODEL_LEN + 1);
+-	BUILD_BUG_ON(sizeof(dev->t10_wwn.revision) != INQUIRY_REVISION_LEN + 1);
+-	if (!(dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)) {
+-		strlcpy(dev->t10_wwn.vendor, "LIO-ORG",
+-			sizeof(dev->t10_wwn.vendor));
+-		strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
+-			sizeof(dev->t10_wwn.model));
+-		strlcpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
+-			sizeof(dev->t10_wwn.revision));
+-	}
+-
+ 	scsi_dump_inquiry(dev);
+ 
+ 	spin_lock(&hba->device_lock);
+-- 
+2.13.7
