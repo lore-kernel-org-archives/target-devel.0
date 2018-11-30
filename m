@@ -1,222 +1,49 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 06 Nov 2018 17:17:12 +0000
-Subject: [PATCH 04/10] target/core: Make sure that target_wait_for_sess_cmds() waits long enough
-Message-Id: <20181106171718.89594-5-bvanassche@acm.org>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 30 Nov 2018 23:34:18 +0000
+Subject: [PATCH v5 0/5] target: user configurable T10 Vendor ID
+Message-Id: <20181130233423.26556-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-A session must only be released after all code that accesses the session
-structure has finished. Make sure that this is the case by introducing a
-new command counter per session that is only decremented after the
-.release_cmd() callback has finished. This patch fixes the following crash:
+This patch-set allows for the modification of the T10 Vendor
+Identification string returned in the SCSI INQUIRY response, via the
+target/core/$backstore/$name/wwn/vendor_id ConfigFS path.
 
-BUG: KASAN: use-after-free in do_raw_spin_lock+0x1c/0x130
-Read of size 4 at addr ffff8801534b16e4 by task rmdir/14805
-CPU: 16 PID: 14805 Comm: rmdir Not tainted 4.18.0-rc2-dbg+ #5
-Call Trace:
-dump_stack+0xa4/0xf5
-print_address_description+0x6f/0x270
-kasan_report+0x241/0x360
-__asan_load4+0x78/0x80
-do_raw_spin_lock+0x1c/0x130
-_raw_spin_lock_irqsave+0x52/0x60
-srpt_set_ch_state+0x27/0x70 [ib_srpt]
-srpt_disconnect_ch+0x1b/0xc0 [ib_srpt]
-srpt_close_session+0xa8/0x260 [ib_srpt]
-target_shutdown_sessions+0x170/0x180 [target_core_mod]
-core_tpg_del_initiator_node_acl+0xf3/0x200 [target_core_mod]
-target_fabric_nacl_base_release+0x25/0x30 [target_core_mod]
-config_item_release+0x9c/0x110 [configfs]
-config_item_put+0x26/0x30 [configfs]
-configfs_rmdir+0x3b8/0x510 [configfs]
-vfs_rmdir+0xb3/0x1e0
-do_rmdir+0x262/0x2c0
-do_syscall_64+0x77/0x230
-entry_SYSCALL_64_after_hwframe+0x49/0xbe
+Changes since v4:
+- merge null-termination changes into a single patch
+- add patch to initialise t10_wwn ID defaults earlier
+- use strlcpy() instead of strncpy() in some places
 
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: David Disseldorp <ddiss@suse.de>
-Cc: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
----
- drivers/target/target_core_transport.c | 35 ++++++++++++++++++--------
- drivers/target/target_core_xcopy.c     |  6 ++++-
- include/target/target_core_base.h      |  1 +
- include/target/target_core_fabric.h    |  2 +-
- 4 files changed, 32 insertions(+), 12 deletions(-)
+Changes since v3:
+- perform explicit null termination of t10_wwn vendor, model and
+  revision fields.
+- replace field dump for-loops
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index a2cecbec9b8e..3c4335e56f08 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -224,19 +224,28 @@ void transport_subsystem_check_init(void)
- 	sub_api_initialized = 1;
- }
- 
-+static void target_release_sess_cmd_refcnt(struct percpu_ref *ref)
-+{
-+	struct se_session *sess = container_of(ref, typeof(*sess), cmd_count);
-+
-+	wake_up(&sess->cmd_list_wq);
-+}
-+
- /**
-  * transport_init_session - initialize a session object
-  * @se_sess: Session object pointer.
-  *
-  * The caller must have zero-initialized @se_sess before calling this function.
-  */
--void transport_init_session(struct se_session *se_sess)
-+int transport_init_session(struct se_session *se_sess)
- {
- 	INIT_LIST_HEAD(&se_sess->sess_list);
- 	INIT_LIST_HEAD(&se_sess->sess_acl_list);
- 	INIT_LIST_HEAD(&se_sess->sess_cmd_list);
- 	spin_lock_init(&se_sess->sess_cmd_lock);
- 	init_waitqueue_head(&se_sess->cmd_list_wq);
-+	return percpu_ref_init(&se_sess->cmd_count,
-+			       target_release_sess_cmd_refcnt, 0, GFP_KERNEL);
- }
- EXPORT_SYMBOL(transport_init_session);
- 
-@@ -247,6 +256,7 @@ EXPORT_SYMBOL(transport_init_session);
- struct se_session *transport_alloc_session(enum target_prot_op sup_prot_ops)
- {
- 	struct se_session *se_sess;
-+	int ret;
- 
- 	se_sess = kmem_cache_zalloc(se_sess_cache, GFP_KERNEL);
- 	if (!se_sess) {
-@@ -254,7 +264,11 @@ struct se_session *transport_alloc_session(enum target_prot_op sup_prot_ops)
- 				" se_sess_cache\n");
- 		return ERR_PTR(-ENOMEM);
- 	}
--	transport_init_session(se_sess);
-+	ret = transport_init_session(se_sess);
-+	if (ret < 0) {
-+		kfree(se_sess);
-+		return ERR_PTR(ret);
-+	}
- 	se_sess->sup_prot_ops = sup_prot_ops;
- 
- 	return se_sess;
-@@ -577,6 +591,7 @@ void transport_free_session(struct se_session *se_sess)
- 		sbitmap_queue_free(&se_sess->sess_tag_pool);
- 		kvfree(se_sess->sess_cmd_map);
- 	}
-+	percpu_ref_exit(&se_sess->cmd_count);
- 	kmem_cache_free(se_sess_cache, se_sess);
- }
- EXPORT_SYMBOL(transport_free_session);
-@@ -2715,6 +2730,7 @@ int target_get_sess_cmd(struct se_cmd *se_cmd, bool ack_kref)
- 	}
- 	se_cmd->transport_state |= CMD_T_PRE_EXECUTE;
- 	list_add_tail(&se_cmd->se_cmd_list, &se_sess->sess_cmd_list);
-+	percpu_ref_get(&se_sess->cmd_count);
- out:
- 	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
- 
-@@ -2745,8 +2761,6 @@ static void target_release_cmd_kref(struct kref *kref)
- 	if (se_sess) {
- 		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
- 		list_del_init(&se_cmd->se_cmd_list);
--		if (se_sess->sess_tearing_down && list_empty(&se_sess->sess_cmd_list))
--			wake_up(&se_sess->cmd_list_wq);
- 		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
- 	}
- 
-@@ -2754,6 +2768,8 @@ static void target_release_cmd_kref(struct kref *kref)
- 	se_cmd->se_tfo->release_cmd(se_cmd);
- 	if (compl)
- 		complete(compl);
-+
-+	percpu_ref_put(&se_sess->cmd_count);
- }
- 
- /**
-@@ -2882,6 +2898,8 @@ void target_sess_cmd_list_set_waiting(struct se_session *se_sess)
- 	spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
- 	se_sess->sess_tearing_down = 1;
- 	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
-+
-+	percpu_ref_kill(&se_sess->cmd_count);
- }
- EXPORT_SYMBOL(target_sess_cmd_list_set_waiting);
- 
-@@ -2896,17 +2914,14 @@ void target_wait_for_sess_cmds(struct se_session *se_sess)
- 
- 	WARN_ON_ONCE(!se_sess->sess_tearing_down);
- 
--	spin_lock_irq(&se_sess->sess_cmd_lock);
- 	do {
--		ret = wait_event_lock_irq_timeout(
--				se_sess->cmd_list_wq,
--				list_empty(&se_sess->sess_cmd_list),
--				se_sess->sess_cmd_lock, 180 * HZ);
-+		ret = wait_event_timeout(se_sess->cmd_list_wq,
-+				percpu_ref_is_zero(&se_sess->cmd_count),
-+				180 * HZ);
- 		list_for_each_entry(cmd, &se_sess->sess_cmd_list, se_cmd_list)
- 			target_show_cmd("session shutdown: still waiting for ",
- 					cmd);
- 	} while (ret <= 0);
--	spin_unlock_irq(&se_sess->sess_cmd_lock);
- }
- EXPORT_SYMBOL(target_wait_for_sess_cmds);
- 
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index 70adcfdca8d1..124495f953fa 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -479,6 +479,8 @@ static const struct target_core_fabric_ops xcopy_pt_tfo = {
- 
- int target_xcopy_setup_pt(void)
- {
-+	int ret;
-+
- 	xcopy_wq = alloc_workqueue("xcopy_wq", WQ_MEM_RECLAIM, 0);
- 	if (!xcopy_wq) {
- 		pr_err("Unable to allocate xcopy_wq\n");
-@@ -496,7 +498,9 @@ int target_xcopy_setup_pt(void)
- 	INIT_LIST_HEAD(&xcopy_pt_nacl.acl_list);
- 	INIT_LIST_HEAD(&xcopy_pt_nacl.acl_sess_list);
- 	memset(&xcopy_pt_sess, 0, sizeof(struct se_session));
--	transport_init_session(&xcopy_pt_sess);
-+	ret = transport_init_session(&xcopy_pt_sess);
-+	if (ret < 0)
-+		return ret;
- 
- 	xcopy_pt_nacl.se_tpg = &xcopy_pt_tpg;
- 	xcopy_pt_nacl.nacl_sess = &xcopy_pt_sess;
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 58a03a094257..067da330ed9c 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -601,6 +601,7 @@ struct se_session {
- 	struct se_node_acl	*se_node_acl;
- 	struct se_portal_group *se_tpg;
- 	void			*fabric_sess_ptr;
-+	struct percpu_ref	cmd_count;
- 	struct list_head	sess_list;
- 	struct list_head	sess_acl_list;
- 	struct list_head	sess_cmd_list;
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index f4147b398431..eb9d0923c55c 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -116,7 +116,7 @@ struct se_session *target_setup_session(struct se_portal_group *,
- 				struct se_session *, void *));
- void target_remove_session(struct se_session *);
- 
--void transport_init_session(struct se_session *);
-+int transport_init_session(struct se_session *se_sess);
- struct se_session *transport_alloc_session(enum target_prot_op);
- int transport_alloc_session_tags(struct se_session *, unsigned int,
- 		unsigned int);
--- 
-2.19.1.930.g4563a0d9d0-goog
+Changes since v2:
+- https://www.spinics.net/lists/target-devel/msg10720.html
+- Support eight byte vendor ID strings
+- Split out consistent INQUIRY data padding as a separate patch
+- Drop t10_wwn.model buffer print fix, already upstream
+
+Changes since v1:
+- https://www.spinics.net/lists/target-devel/msg10545.html
+- Rebase against nab's for-next branch, which includes Christoph's
+  configfs API changes.
+
+David Disseldorp (5):
+      target: use consistent left-aligned ASCII INQUIRY data
+      target: consistently null-terminate t10_wwn strings
+      target: add device vendor_id configfs attribute
+      target: remove hardcoded T10 Vendor ID in INQUIRY response
+      target: perform t10_wwn ID initialisation in target_alloc_device()
+
+ drivers/target/target_core_configfs.c | 62 +++++++++++++++++++++++--
+ drivers/target/target_core_device.c   | 65 +++++++++++----------------
+ drivers/target/target_core_pscsi.c    | 18 +++++---
+ drivers/target/target_core_spc.c      | 20 ++++++---
+ drivers/target/target_core_stat.c     | 32 +++----------
+ include/target/target_core_base.h     | 14 ++++--
+ 6 files changed, 128 insertions(+), 83 deletions(-)
