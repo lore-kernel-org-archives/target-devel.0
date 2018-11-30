@@ -1,222 +1,100 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 27 Nov 2018 23:51:58 +0000
-Subject: [PATCH v2 04/10] target/core: Make sure that target_wait_for_sess_cmds() waits long enough
-Message-Id: <20181127235204.186731-5-bvanassche@acm.org>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 30 Nov 2018 23:34:21 +0000
+Subject: [PATCH v5 3/5] target: add device vendor_id configfs attribute
+Message-Id: <20181130233423.26556-4-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-A session must only be released after all code that accesses the session
-structure has finished. Make sure that this is the case by introducing a
-new command counter per session that is only decremented after the
-.release_cmd() callback has finished. This patch fixes the following crash:
+The vendor_id attribute will allow for the modification of the T10
+Vendor Identification string returned in inquiry responses. Its value
+can be viewed and modified via the ConfigFS path at:
+target/core/$backstore/$name/wwn/vendor_id
 
-BUG: KASAN: use-after-free in do_raw_spin_lock+0x1c/0x130
-Read of size 4 at addr ffff8801534b16e4 by task rmdir/14805
-CPU: 16 PID: 14805 Comm: rmdir Not tainted 4.18.0-rc2-dbg+ #5
-Call Trace:
-dump_stack+0xa4/0xf5
-print_address_description+0x6f/0x270
-kasan_report+0x241/0x360
-__asan_load4+0x78/0x80
-do_raw_spin_lock+0x1c/0x130
-_raw_spin_lock_irqsave+0x52/0x60
-srpt_set_ch_state+0x27/0x70 [ib_srpt]
-srpt_disconnect_ch+0x1b/0xc0 [ib_srpt]
-srpt_close_session+0xa8/0x260 [ib_srpt]
-target_shutdown_sessions+0x170/0x180 [target_core_mod]
-core_tpg_del_initiator_node_acl+0xf3/0x200 [target_core_mod]
-target_fabric_nacl_base_release+0x25/0x30 [target_core_mod]
-config_item_release+0x9c/0x110 [configfs]
-config_item_put+0x26/0x30 [configfs]
-configfs_rmdir+0x3b8/0x510 [configfs]
-vfs_rmdir+0xb3/0x1e0
-do_rmdir+0x262/0x2c0
-do_syscall_64+0x77/0x230
-entry_SYSCALL_64_after_hwframe+0x49/0xbe
+"LIO-ORG" remains the default value, which is set when the backstore
+device is enabled.
 
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: David Disseldorp <ddiss@suse.de>
-Cc: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
+Reviewed-by: Lee Duncan <lduncan@suse.com>
 ---
- drivers/target/target_core_transport.c | 35 ++++++++++++++++++--------
- drivers/target/target_core_xcopy.c     |  6 ++++-
- include/target/target_core_base.h      |  1 +
- include/target/target_core_fabric.h    |  2 +-
- 4 files changed, 32 insertions(+), 12 deletions(-)
+ drivers/target/target_core_configfs.c | 48 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 3cd037558957..f429eece950b 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -224,19 +224,28 @@ void transport_subsystem_check_init(void)
- 	sub_api_initialized = 1;
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 34872f24e8bf..67303c3f9cb4 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1217,6 +1217,52 @@ static struct t10_wwn *to_t10_wwn(struct config_item *item)
  }
  
-+static void target_release_sess_cmd_refcnt(struct percpu_ref *ref)
+ /*
++ * STANDARD and VPD page 0x80 T10 Vendor Identification
++ */
++static ssize_t target_wwn_vendor_id_show(struct config_item *item,
++		char *page)
 +{
-+	struct se_session *sess = container_of(ref, typeof(*sess), cmd_count);
-+
-+	wake_up(&sess->cmd_list_wq);
++	return sprintf(page, "%s\n", &to_t10_wwn(item)->vendor[0]);
 +}
 +
- /**
-  * transport_init_session - initialize a session object
-  * @se_sess: Session object pointer.
-  *
-  * The caller must have zero-initialized @se_sess before calling this function.
-  */
--void transport_init_session(struct se_session *se_sess)
-+int transport_init_session(struct se_session *se_sess)
- {
- 	INIT_LIST_HEAD(&se_sess->sess_list);
- 	INIT_LIST_HEAD(&se_sess->sess_acl_list);
- 	INIT_LIST_HEAD(&se_sess->sess_cmd_list);
- 	spin_lock_init(&se_sess->sess_cmd_lock);
- 	init_waitqueue_head(&se_sess->cmd_list_wq);
-+	return percpu_ref_init(&se_sess->cmd_count,
-+			       target_release_sess_cmd_refcnt, 0, GFP_KERNEL);
- }
- EXPORT_SYMBOL(transport_init_session);
- 
-@@ -247,6 +256,7 @@ EXPORT_SYMBOL(transport_init_session);
- struct se_session *transport_alloc_session(enum target_prot_op sup_prot_ops)
- {
- 	struct se_session *se_sess;
-+	int ret;
- 
- 	se_sess = kmem_cache_zalloc(se_sess_cache, GFP_KERNEL);
- 	if (!se_sess) {
-@@ -254,7 +264,11 @@ struct se_session *transport_alloc_session(enum target_prot_op sup_prot_ops)
- 				" se_sess_cache\n");
- 		return ERR_PTR(-ENOMEM);
- 	}
--	transport_init_session(se_sess);
-+	ret = transport_init_session(se_sess);
-+	if (ret < 0) {
-+		kfree(se_sess);
-+		return ERR_PTR(ret);
++static ssize_t target_wwn_vendor_id_store(struct config_item *item,
++		const char *page, size_t count)
++{
++	struct t10_wwn *t10_wwn = to_t10_wwn(item);
++	struct se_device *dev = t10_wwn->t10_dev;
++	unsigned char buf[INQUIRY_VENDOR_LEN + 1];
++
++	if (strlen(page) > INQUIRY_VENDOR_LEN) {
++		pr_err("Emulated T10 Vendor Identification exceeds"
++			" INQUIRY_VENDOR_LEN: " __stringify(INQUIRY_VENDOR_LEN)
++			"\n");
++		return -EOVERFLOW;
 +	}
- 	se_sess->sup_prot_ops = sup_prot_ops;
- 
- 	return se_sess;
-@@ -578,6 +592,7 @@ void transport_free_session(struct se_session *se_sess)
- 		sbitmap_queue_free(&se_sess->sess_tag_pool);
- 		kvfree(se_sess->sess_cmd_map);
- 	}
-+	percpu_ref_exit(&se_sess->cmd_count);
- 	kmem_cache_free(se_sess_cache, se_sess);
- }
- EXPORT_SYMBOL(transport_free_session);
-@@ -2716,6 +2731,7 @@ int target_get_sess_cmd(struct se_cmd *se_cmd, bool ack_kref)
- 	}
- 	se_cmd->transport_state |= CMD_T_PRE_EXECUTE;
- 	list_add_tail(&se_cmd->se_cmd_list, &se_sess->sess_cmd_list);
-+	percpu_ref_get(&se_sess->cmd_count);
- out:
- 	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
- 
-@@ -2746,8 +2762,6 @@ static void target_release_cmd_kref(struct kref *kref)
- 	if (se_sess) {
- 		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
- 		list_del_init(&se_cmd->se_cmd_list);
--		if (se_sess->sess_tearing_down && list_empty(&se_sess->sess_cmd_list))
--			wake_up(&se_sess->cmd_list_wq);
- 		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
- 	}
- 
-@@ -2755,6 +2769,8 @@ static void target_release_cmd_kref(struct kref *kref)
- 	se_cmd->se_tfo->release_cmd(se_cmd);
- 	if (compl)
- 		complete(compl);
++	strlcpy(buf, page, sizeof(buf));
++	/*
++	 * Check to see if any active exports exist.  If they do exist, fail
++	 * here as changing this information on the fly (underneath the
++	 * initiator side OS dependent multipath code) could cause negative
++	 * effects.
++	 */
++	if (dev->export_count) {
++		pr_err("Unable to set T10 Vendor Identification while"
++			" active %d exports exist\n", dev->export_count);
++		return -EINVAL;
++	}
 +
-+	percpu_ref_put(&se_sess->cmd_count);
- }
- 
- /**
-@@ -2883,6 +2899,8 @@ void target_sess_cmd_list_set_waiting(struct se_session *se_sess)
- 	spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
- 	se_sess->sess_tearing_down = 1;
- 	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
++	/* Assume ASCII encoding. Strip any newline added from userspace. */
++	BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) != INQUIRY_VENDOR_LEN + 1);
++	strlcpy(dev->t10_wwn.vendor, strstrip(buf),
++		sizeof(dev->t10_wwn.vendor));
 +
-+	percpu_ref_kill(&se_sess->cmd_count);
- }
- EXPORT_SYMBOL(target_sess_cmd_list_set_waiting);
- 
-@@ -2897,17 +2915,14 @@ void target_wait_for_sess_cmds(struct se_session *se_sess)
- 
- 	WARN_ON_ONCE(!se_sess->sess_tearing_down);
- 
--	spin_lock_irq(&se_sess->sess_cmd_lock);
- 	do {
--		ret = wait_event_lock_irq_timeout(
--				se_sess->cmd_list_wq,
--				list_empty(&se_sess->sess_cmd_list),
--				se_sess->sess_cmd_lock, 180 * HZ);
-+		ret = wait_event_timeout(se_sess->cmd_list_wq,
-+				percpu_ref_is_zero(&se_sess->cmd_count),
-+				180 * HZ);
- 		list_for_each_entry(cmd, &se_sess->sess_cmd_list, se_cmd_list)
- 			target_show_cmd("session shutdown: still waiting for ",
- 					cmd);
- 	} while (ret <= 0);
--	spin_unlock_irq(&se_sess->sess_cmd_lock);
- }
- EXPORT_SYMBOL(target_wait_for_sess_cmds);
- 
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index 70adcfdca8d1..124495f953fa 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -479,6 +479,8 @@ static const struct target_core_fabric_ops xcopy_pt_tfo = {
- 
- int target_xcopy_setup_pt(void)
- {
-+	int ret;
++	pr_debug("Target_Core_ConfigFS: Set emulated T10 Vendor Identification:"
++		 " %s\n", dev->t10_wwn.vendor);
 +
- 	xcopy_wq = alloc_workqueue("xcopy_wq", WQ_MEM_RECLAIM, 0);
- 	if (!xcopy_wq) {
- 		pr_err("Unable to allocate xcopy_wq\n");
-@@ -496,7 +498,9 @@ int target_xcopy_setup_pt(void)
- 	INIT_LIST_HEAD(&xcopy_pt_nacl.acl_list);
- 	INIT_LIST_HEAD(&xcopy_pt_nacl.acl_sess_list);
- 	memset(&xcopy_pt_sess, 0, sizeof(struct se_session));
--	transport_init_session(&xcopy_pt_sess);
-+	ret = transport_init_session(&xcopy_pt_sess);
-+	if (ret < 0)
-+		return ret;
++	return count;
++}
++
++/*
+  * VPD page 0x80 Unit serial
+  */
+ static ssize_t target_wwn_vpd_unit_serial_show(struct config_item *item,
+@@ -1362,6 +1408,7 @@ DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_target_port, 0x10);
+ /* VPD page 0x83 Association: SCSI Target Device */
+ DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_scsi_target_device, 0x20);
  
- 	xcopy_pt_nacl.se_tpg = &xcopy_pt_tpg;
- 	xcopy_pt_nacl.nacl_sess = &xcopy_pt_sess;
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 58a03a094257..067da330ed9c 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -601,6 +601,7 @@ struct se_session {
- 	struct se_node_acl	*se_node_acl;
- 	struct se_portal_group *se_tpg;
- 	void			*fabric_sess_ptr;
-+	struct percpu_ref	cmd_count;
- 	struct list_head	sess_list;
- 	struct list_head	sess_acl_list;
- 	struct list_head	sess_cmd_list;
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index f4147b398431..eb9d0923c55c 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -116,7 +116,7 @@ struct se_session *target_setup_session(struct se_portal_group *,
- 				struct se_session *, void *));
- void target_remove_session(struct se_session *);
++CONFIGFS_ATTR(target_wwn_, vendor_id);
+ CONFIGFS_ATTR(target_wwn_, vpd_unit_serial);
+ CONFIGFS_ATTR_RO(target_wwn_, vpd_protocol_identifier);
+ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_logical_unit);
+@@ -1369,6 +1416,7 @@ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_target_port);
+ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_scsi_target_device);
  
--void transport_init_session(struct se_session *);
-+int transport_init_session(struct se_session *se_sess);
- struct se_session *transport_alloc_session(enum target_prot_op);
- int transport_alloc_session_tags(struct se_session *, unsigned int,
- 		unsigned int);
+ static struct configfs_attribute *target_core_dev_wwn_attrs[] = {
++	&target_wwn_attr_vendor_id,
+ 	&target_wwn_attr_vpd_unit_serial,
+ 	&target_wwn_attr_vpd_protocol_identifier,
+ 	&target_wwn_attr_vpd_assoc_logical_unit,
 -- 
-2.20.0.rc0.387.gc7a69e6b6c-goog
+2.13.7
