@@ -1,25 +1,28 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Sat, 08 Dec 2018 02:26:13 +0000
-Subject: Re: [PATCH v2 00/10] Make ABORT and LUN RESET handling synchronous
-Message-Id: <yq1ftv8oit6.fsf@oracle.com>
+From: Hannes Reinecke <hare@suse.com>
+Date: Sat, 01 Dec 2018 14:57:01 +0000
+Subject: Re: [PATCH v5 4/5] target: remove hardcoded T10 Vendor ID in INQUIRY response
+Message-Id: <440a09f4-9b2d-61f2-3dd1-91d06b98840a@suse.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181127235204.186731-1-bvanassche@acm.org>
-In-Reply-To: <20181127235204.186731-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+On 12/1/18 12:34 AM, David Disseldorp wrote:
+> Use the value stored in t10_wwn.vendor, which defaults to "LIO-ORG", but
+> can be reconfigured via the vendor_id ConfigFS attribute.
+> 
+> Signed-off-by: David Disseldorp <ddiss@suse.de>
+> Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
+> Reviewed-by: Lee Duncan <lduncan@suse.com>
+> ---
+>   drivers/target/target_core_spc.c | 8 +++++---
+>   1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+I would have merged it with the previous patch, but anyway:
 
-Bart,
+Reviewed-by: Hannes Reinecke <hare@suse.com>
 
-> This is a respin of the patch series that makes ABORT and LUN RESET
-> handling synchronous. Compared to last time when this patch series was
-> posted, the actual patch that makes task management function handling
-> synchronous has been split into three patches. That makes the changes
-> easier to follow.  Please consider this patch series for kernel v4.21.
+Cheers,
 
-Applied to 4.21/scsi-queue. Thanks!
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Hannes
