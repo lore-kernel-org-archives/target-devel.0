@@ -1,35 +1,49 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Mon, 10 Dec 2018 19:35:03 +0000
-Subject: Re: [RFC PATCH] target: sanitize ALUA and PR state file paths before use
-Message-Id: <20181210203503.0ff26a3c@suse.de>
+Date: Tue, 04 Dec 2018 10:12:37 +0000
+Subject: [PATCH v6 4/5] target: remove hardcoded T10 Vendor ID in INQUIRY response
+Message-Id: <20181204101238.20587-5-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181122133800.1251-1-ddiss@suse.de>
-In-Reply-To: <20181122133800.1251-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Mon, 10 Dec 2018 11:19:59 -0800, Bart Van Assche wrote:
+Use the value stored in t10_wwn.vendor, which defaults to "LIO-ORG", but
+can be reconfigured via the vendor_id ConfigFS attribute.
 
-> Embedding SCSI properties like the unit serial number in a file system path
-> seems wrong to me.
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
+Reviewed-by: Lee Duncan <lduncan@suse.com>
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+---
+ drivers/target/target_core_spc.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-I completely agree, but unfortunately that's where we currently stand.
-
-> I think the path in which these properties are stored
-> should be derived from configfs item names configured by the user. These
-> names are guaranteed to be ASCII strings. If you want to see an example of
-> alternative approach you are welcome to have a look at scst_pr_set_file_name()
-> and scst_pr_sync_device_file() in the SCST source code.
-
-Sounds reasonable, although that would leave us with the task of
-migrating consumers of the existing unit-serial-number derived paths
-to use the new state file locations.
-
-> Regarding testing ALUA code: I use sg_rtpg and sg_stpg to test SCSI target
-> ALUA code.
-
-Thanks, I'll have a play with them.
-
-Cheers, David
+diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
+index 8ffe712cb44d..4503f3336bc2 100644
+--- a/drivers/target/target_core_spc.c
++++ b/drivers/target/target_core_spc.c
+@@ -115,7 +115,8 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
+ 	 */
+ 	memset(&buf[8], 0x20,
+ 	       INQUIRY_VENDOR_LEN + INQUIRY_MODEL_LEN + INQUIRY_REVISION_LEN);
+-	memcpy(&buf[8], "LIO-ORG", sizeof("LIO-ORG") - 1);
++	memcpy(&buf[8], dev->t10_wwn.vendor,
++	       strnlen(dev->t10_wwn.vendor, INQUIRY_VENDOR_LEN));
+ 	memcpy(&buf[16], dev->t10_wwn.model,
+ 	       strnlen(dev->t10_wwn.model, INQUIRY_MODEL_LEN));
+ 	memcpy(&buf[32], dev->t10_wwn.revision,
+@@ -258,8 +259,9 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
+ 	buf[off+1] = 0x1; /* T10 Vendor ID */
+ 	buf[off+2] = 0x0;
+ 	/* left align Vendor ID and pad with spaces */
+-	memset(&buf[off+4], 0x20, 8);
+-	memcpy(&buf[off+4], "LIO-ORG", sizeof("LIO-ORG") - 1);
++	memset(&buf[off+4], 0x20, INQUIRY_VENDOR_LEN);
++	memcpy(&buf[off+4], dev->t10_wwn.vendor,
++	       strnlen(dev->t10_wwn.vendor, INQUIRY_VENDOR_LEN));
+ 	/* Extra Byte for NULL Terminator */
+ 	id_len++;
+ 	/* Identifier Length */
+-- 
+2.13.7
