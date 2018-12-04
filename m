@@ -1,26 +1,26 @@
-From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Sat, 22 Dec 2018 23:09:31 +0000
-Subject: Re: [PATCH -next] RDMA/srpt: Use kmem_cache_free() instead of kfree()
-Message-Id: <20181222230931.GC20963@ziepe.ca>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 04 Dec 2018 00:37:46 +0000
+Subject: Re: [PATCH v2 00/10] Make ABORT and LUN RESET handling synchronous
+Message-Id: <1543883866.185366.178.camel@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1545474630-123120-1-git-send-email-weiyongjun1@huawei.com>
-In-Reply-To: <1545474630-123120-1-git-send-email-weiyongjun1@huawei.com>
+References: <20181127235204.186731-1-bvanassche@acm.org>
+In-Reply-To: <20181127235204.186731-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Sat, Dec 22, 2018 at 10:30:30AM +0000, Wei Yongjun wrote:
-> memory allocated by kmem_cache_alloc() should be freed using
-> kmem_cache_free(), not kfree().
-> 
-> Fixes: 5dabcd0456d7 ("RDMA/srpt: Add support for immediate data")
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
-> ---
->  drivers/infiniband/ulp/srpt/ib_srpt.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On Tue, 2018-11-27 at 15:51 -0800, Bart Van Assche wrote:
++AD4 This is a respin of the patch series that makes ABORT and LUN RESET handling
++AD4 synchronous. Compared to last time when this patch series was posted, the
++AD4 actual patch that makes task management function handling synchronous has
++AD4 been split into three patches. That makes the changes easier to follow.
++AD4 Please consider this patch series for kernel v4.21.
 
-Applied to for-next
+Hi Martin,
+
+Do you need more feedback about this patch series in order to queue it?
 
 Thanks,
-Jason
+
+Bart.
