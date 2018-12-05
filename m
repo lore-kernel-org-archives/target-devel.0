@@ -1,55 +1,71 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 26 Dec 2018 22:41:23 +0000
-Subject: [PATCH AUTOSEL 4.9 16/35] scsi: target: iscsi: cxgbit: fix csk leak
-Message-Id: <20181226224142.150866-16-sashal@kernel.org>
+From: David Disseldorp <ddiss@suse.de>
+Date: Wed, 05 Dec 2018 12:18:38 +0000
+Subject: [PATCH v7 5/5] target: perform t10_wwn ID initialisation in target_alloc_device()
+Message-Id: <20181205121838.23982-6-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181226224142.150866-1-sashal@kernel.org>
-In-Reply-To: <20181226224142.150866-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Varun Prakash <varun@chelsio.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-From: Varun Prakash <varun@chelsio.com>
+Initialise the t10_wwn vendor, model and revision defaults when a
+device is allocated instead of when it's enabled. This ensures that
+custom vendor or model strings set prior to enablement are not later
+overwritten with default values.
 
-[ Upstream commit 801df68d617e3cb831f531c99fa6003620e6b343 ]
+The TRANSPORT_FLAG_PASSTHROUGH conditional can be dropped for the
+following reasons:
+- target_core_pscsi overwrites the defaults in the
+  pscsi_configure_device() callback.
+  + the contents is then only used for ConfigFS via
+    $pscsi_dev/statistics/scsi_lu/vend, etc.
+- target_core_user doesn't touch the defaults, nor are they used for
+  anything outside of ConfigFS.
 
-csk leak can happen if a new TCP connection gets established after
-cxgbit_accept_np() returns, to fix this leak free remaining csk in
-cxgbit_free_np().
-
-Signed-off-by: Varun Prakash <varun@chelsio.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/target/iscsi/cxgbit/cxgbit_cm.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/target/target_core_device.c | 21 +++++++--------------
+ 1 file changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-index 2fb1bf1a26c5..8652475e01d0 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-@@ -631,8 +631,11 @@ static void cxgbit_send_halfclose(struct cxgbit_sock *csk)
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index ebd787bb29a8..5ead7eae30b5 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -810,6 +810,13 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
+ 	mutex_init(&xcopy_lun->lun_tg_pt_md_mutex);
+ 	xcopy_lun->lun_tpg = &xcopy_pt_tpg;
  
- static void cxgbit_arp_failure_discard(void *handle, struct sk_buff *skb)
- {
-+	struct cxgbit_sock *csk = handle;
++	/* Preload the default INQUIRY const values */
++	strlcpy(dev->t10_wwn.vendor, "LIO-ORG", sizeof(dev->t10_wwn.vendor));
++	strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
++		sizeof(dev->t10_wwn.model));
++	strlcpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
++		sizeof(dev->t10_wwn.revision));
 +
- 	pr_debug("%s cxgbit_device %p\n", __func__, handle);
- 	kfree_skb(skb);
-+	cxgbit_put_csk(csk);
+ 	return dev;
  }
  
- static void cxgbit_abort_arp_failure(void *handle, struct sk_buff *skb)
-@@ -1136,7 +1139,7 @@ cxgbit_pass_accept_rpl(struct cxgbit_sock *csk, struct cpl_pass_accept_req *req)
- 	rpl5->opt0 = cpu_to_be64(opt0);
- 	rpl5->opt2 = cpu_to_be32(opt2);
- 	set_wr_txq(skb, CPL_PRIORITY_SETUP, csk->ctrlq_idx);
--	t4_set_arp_err_handler(skb, NULL, cxgbit_arp_failure_discard);
-+	t4_set_arp_err_handler(skb, csk, cxgbit_arp_failure_discard);
- 	cxgbit_l2t_send(csk->com.cdev, skb, csk->l2t);
- }
+@@ -984,20 +991,6 @@ int target_configure_device(struct se_device *dev)
+ 	 */
+ 	INIT_WORK(&dev->qf_work_queue, target_qf_do_work);
  
+-	/*
+-	 * Preload the initial INQUIRY const values if we are doing
+-	 * anything virtual (IBLOCK, FILEIO, RAMDISK), but not for TCM/pSCSI
+-	 * passthrough because this is being provided by the backend LLD.
+-	 */
+-	if (!(dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)) {
+-		strlcpy(dev->t10_wwn.vendor, "LIO-ORG",
+-			sizeof(dev->t10_wwn.vendor));
+-		strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
+-			sizeof(dev->t10_wwn.model));
+-		strlcpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
+-			sizeof(dev->t10_wwn.revision));
+-	}
+-
+ 	scsi_dump_inquiry(dev);
+ 
+ 	spin_lock(&hba->device_lock);
 -- 
-2.19.1
+2.13.7
