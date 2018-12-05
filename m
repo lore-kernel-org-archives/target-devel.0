@@ -1,60 +1,120 @@
-From: Alex Bobro <oleksandrb@mellanox.com>
-Date: Thu, 29 Nov 2018 15:00:05 +0000
-Subject: ISCSI Target crash during ISERT logout
-Message-Id: <AM6PR05MB6085DA0179A35E80F367A216A0D20@AM6PR05MB6085.eurprd05.prod.outlook.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Wed, 05 Dec 2018 12:18:36 +0000
+Subject: [PATCH v7 3/5] target: add device vendor_id configfs attribute
+Message-Id: <20181205121838.23982-4-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hi, 
+The vendor_id attribute will allow for the modification of the T10
+Vendor Identification string returned in inquiry responses. Its value
+can be viewed and modified via the ConfigFS path at:
+target/core/$backstore/$name/wwn/vendor_id
 
-During ISERT module testing we've faced weird behavior in ISCSI Target driver code. We are not sure if that is wrong logout implementation in ISERT or race condition in ISCSI Target between iscsit_logout_post_handler() and iscsit_tpg_del_portal_group() functions.
+"LIO-ORG" remains the default value, which is set when the backstore
+device is enabled.
 
-Assume situation when there is one Session between Target and Initiator. Initiator sends Logout request to Target and at same time Target deletes portal group (for example targetcli clearconfig confirm=True executed).
-Logout session request came first (cmd->iscsi_opcode == ISCSI_OP_LOGOUT, cmd->logout_reason == ISCSI_LOGOUT_REASON_CLOSE_SESSION)
-Target invokes iscsit_logout_closesession() (that updates session->session_logout flag to 1) and executes logout response command (cmd->i_state = ISTATE_SEND_LOGOUTRSP).
-After logout request received Target invokes iscsit_tpg_del_portal_group(). That functions invokes iscsit_release_sessions_for_tpg() which iterate through all active sessions and frees them. 
-In our case session is during logout process so it will be ignored. iscsit_release_sessions_for_tpg() does nothing and just returns 0. 
-iscsit_tpg_del_portal_group() invocation will continue and free target portal group by calling kfree(tpg).
-During iscsit_tpg_del_portal_group() call logout response command has been successfully delivered and Target invokes iscsit_logout_post_handler(). That function invocation leads to transport_free_session() call which tries to dereference pointer to struct se_portal_group that was previously freed by iscsit_tpg_del_portal_group(). 
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_configfs.c | 70 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 70 insertions(+)
 
-Described situation lead to crash: 
-
-Oops: 0000 [#1] SMP PTI                                                                  
-Workqueue: isert_comp_wq isert_do_control_comp [ib_isert]                                                                                                                                                                     
-task: ffff93a04ac89740 task.stack: ffff9f3907044000                                                                                                                                                                           
-RIP: 0010:transport_free_session+0x2a/0x140 [target_core_mod]                                                                                                                                                                 
-RSP: 0018:ffff9f3907047da8 EFLAGS: 00010286                                                                                                                                                                                   
-RAX: 0000000000000282 RBX: ffff93a1f0ae6400 RCX: dead000000000200                                                                                                                                                             
-RDX: ffff93a22b8f10a0 RSI: 0000000000000282 RDI: ffff93a1f0ae6400                                                                                                                                                             
-RBP: ffff9f3907047dd0 R08: 0000000000000000 R09: 0000000000000000                                                                                                                                                             
-R10: ffff9f3907047d98 R11: 0000000000000058 R12: ffff93a22f3a0000                                                                                                                                                             
-R13: 0000000000000000 R14: 0000000000000008 R15: ffff93a22f6f3980                                                                                                                                                             
-FS:  0000000000000000(0000) GS:ffff93a233a00000(0000) knlGS:0000000000000000                                                                                                                                                  
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033                                                                                                                                                                             
-CR2: 0000000000000090 CR3: 000000020800a004 CR4: 00000000000606f0                                                                                                                                                             
-Call Trace:                                                                                                                                                                                                                   
-transport_deregister_session+0x7e/0xc0 [target_core_mod]                                                                                                                                                                     
-iscsit_close_session+0x92/0x200 [iscsi_target_mod]                                                                                                                                                                           
-iscsit_logout_post_handler+0x180/0x220 [iscsi_target_mod]                                                                                                                                                                    
-isert_do_control_comp+0x88/0xd0 [ib_isert]                                                                                                                                                                                   
-process_one_work+0x1ec/0x410                                                                                                                                                                                                 
-? __wake_up+0x44/0x50                                                                                                                                                                                                        
-worker_thread+0x32/0x410                                                                                                                                                                                                     
-kthread+0x128/0x140                                                                                                                                                                                                          
-? process_one_work+0x410/0x410                                                                                                                                                                                               
-? kthread_create_on_node+0x70/0x70                                                                                                                                                                                           
-ret_from_fork+0x35/0x40                                                                                                                                                                                                      
-Code: 00 66 66 66 66 90 55 48 89 e5 41 57 41 56 41 55 41 54 53 4c 8b 67 18 48 89 fb 4d 85 e4 74 59 4d 8b ac 24 48 01 00 00 4d 8d 75 08 <4d> 8b bd 90 00 00 00 48 c7 47 18 00 00 00 00 4c 89 f7 e8 7f c9                       
-RIP: transport_free_session+0x2a/0x140 [target_core_mod] RSP: ffff9f3907047da8                                                                                                                                                
-CR2: 0000000000000090                                                                                                                                                                                                         
----[ end trace a136fc59c1406d59 ]---                                                                                                                                                                                          
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000090                                                                                                                                                     
-IP: transport_free_session+0x2a/0x140 [target_core_mod]   
-
-Can you help us with that case? We want to know if we understand that behavior correctly and not missing something important.
-
-Regards,
-Oleksandr Bobro
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 8277bcf81d6e..f099c2ae451f 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1217,6 +1217,74 @@ static struct t10_wwn *to_t10_wwn(struct config_item *item)
+ }
+ 
+ /*
++ * STANDARD and VPD page 0x80 T10 Vendor Identification
++ */
++static ssize_t target_wwn_vendor_id_show(struct config_item *item,
++		char *page)
++{
++	return sprintf(page, "%s\n", &to_t10_wwn(item)->vendor[0]);
++}
++
++static ssize_t target_wwn_vendor_id_store(struct config_item *item,
++		const char *page, size_t count)
++{
++	struct t10_wwn *t10_wwn = to_t10_wwn(item);
++	struct se_device *dev = t10_wwn->t10_dev;
++	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
++	unsigned char buf[INQUIRY_VENDOR_LEN + 2];
++	char *stripped = NULL;
++	size_t len;
++	int i;
++
++	len = strlcpy(buf, page, sizeof(buf));
++	if (len < sizeof(buf)) {
++		/* Strip any newline added from userspace. */
++		stripped = strstrip(buf);
++		len = strlen(stripped);
++	}
++	if (len > INQUIRY_VENDOR_LEN) {
++		pr_err("Emulated T10 Vendor Identification exceeds"
++			" INQUIRY_VENDOR_LEN: " __stringify(INQUIRY_VENDOR_LEN)
++			"\n");
++		return -EOVERFLOW;
++	}
++
++	/*
++	 * SPC 4.3.1:
++	 * ASCII data fields shall contain only ASCII printable characters (i.e.,
++	 * code values 20h to 7Eh) and may be terminated with one or more ASCII
++	 * null (00h) characters.
++	 */
++	for (i = 0; i < len; i++) {
++		if ((stripped[i] < 0x20) || (stripped[i] > 0x7E)) {
++			pr_err("Emulated T10 Vendor Identification contains"
++				" non-ASCII-printable characters\n");
++			return -EINVAL;
++		}
++	}
++
++	/*
++	 * Check to see if any active exports exist.  If they do exist, fail
++	 * here as changing this information on the fly (underneath the
++	 * initiator side OS dependent multipath code) could cause negative
++	 * effects.
++	 */
++	if (dev->export_count) {
++		pr_err("Unable to set T10 Vendor Identification while"
++			" active %d exports exist\n", dev->export_count);
++		return -EINVAL;
++	}
++
++	BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) != INQUIRY_VENDOR_LEN + 1);
++	strlcpy(dev->t10_wwn.vendor, stripped, sizeof(dev->t10_wwn.vendor));
++
++	pr_debug("Target_Core_ConfigFS: Set emulated T10 Vendor Identification:"
++		 " %s\n", dev->t10_wwn.vendor);
++
++	return count;
++}
++
++/*
+  * VPD page 0x80 Unit serial
+  */
+ static ssize_t target_wwn_vpd_unit_serial_show(struct config_item *item,
+@@ -1362,6 +1430,7 @@ DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_target_port, 0x10);
+ /* VPD page 0x83 Association: SCSI Target Device */
+ DEF_DEV_WWN_ASSOC_SHOW(vpd_assoc_scsi_target_device, 0x20);
+ 
++CONFIGFS_ATTR(target_wwn_, vendor_id);
+ CONFIGFS_ATTR(target_wwn_, vpd_unit_serial);
+ CONFIGFS_ATTR_RO(target_wwn_, vpd_protocol_identifier);
+ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_logical_unit);
+@@ -1369,6 +1438,7 @@ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_target_port);
+ CONFIGFS_ATTR_RO(target_wwn_, vpd_assoc_scsi_target_device);
+ 
+ static struct configfs_attribute *target_core_dev_wwn_attrs[] = {
++	&target_wwn_attr_vendor_id,
+ 	&target_wwn_attr_vpd_unit_serial,
+ 	&target_wwn_attr_vpd_protocol_identifier,
+ 	&target_wwn_attr_vpd_assoc_logical_unit,
+-- 
+2.13.7
