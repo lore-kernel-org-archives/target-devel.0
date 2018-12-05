@@ -1,38 +1,50 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Tue, 04 Dec 2018 10:12:33 +0000
-Subject: [PATCH v6 0/5] target: user configurable T10 Vendor ID
-Message-Id: <20181204101238.20587-1-ddiss@suse.de>
+Date: Wed, 05 Dec 2018 12:18:37 +0000
+Subject: [PATCH v7 4/5] target: remove hardcoded T10 Vendor ID in INQUIRY response
+Message-Id: <20181205121838.23982-5-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This patch-set allows for the modification of the T10 Vendor
-Identification string returned in the SCSI INQUIRY response, via the
-target/core/$backstore/$name/wwn/vendor_id ConfigFS path.
+Use the value stored in t10_wwn.vendor, which defaults to "LIO-ORG", but
+can be reconfigured via the vendor_id ConfigFS attribute.
 
-Changes since v5:
-- remove unnecessary TRANSPORT_FLAG_PASSTHROUGH conditional from t10_wwn
-  ID defaults initialisation.
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
+Reviewed-by: Lee Duncan <lduncan@suse.com>
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+---
+ drivers/target/target_core_spc.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Changes since v4:
-- merge null-termination changes into a single patch
-- add patch to initialise t10_wwn ID defaults earlier
-- use strlcpy() instead of strncpy() in some places
-
-Changes since v3:
-- perform explicit null termination of t10_wwn vendor, model and
-  revision fields.
-- replace field dump for-loops
-
-Changes since v2:
-- https://www.spinics.net/lists/target-devel/msg10720.html
-- Support eight byte vendor ID strings
-- Split out consistent INQUIRY data padding as a separate patch
-- Drop t10_wwn.model buffer print fix, already upstream
-
-Changes since v1:
-- https://www.spinics.net/lists/target-devel/msg10545.html
-- Rebase against nab's for-next branch, which includes Christoph's
-  configfs API changes.
+diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
+index 8ffe712cb44d..4503f3336bc2 100644
+--- a/drivers/target/target_core_spc.c
++++ b/drivers/target/target_core_spc.c
+@@ -115,7 +115,8 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
+ 	 */
+ 	memset(&buf[8], 0x20,
+ 	       INQUIRY_VENDOR_LEN + INQUIRY_MODEL_LEN + INQUIRY_REVISION_LEN);
+-	memcpy(&buf[8], "LIO-ORG", sizeof("LIO-ORG") - 1);
++	memcpy(&buf[8], dev->t10_wwn.vendor,
++	       strnlen(dev->t10_wwn.vendor, INQUIRY_VENDOR_LEN));
+ 	memcpy(&buf[16], dev->t10_wwn.model,
+ 	       strnlen(dev->t10_wwn.model, INQUIRY_MODEL_LEN));
+ 	memcpy(&buf[32], dev->t10_wwn.revision,
+@@ -258,8 +259,9 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
+ 	buf[off+1] = 0x1; /* T10 Vendor ID */
+ 	buf[off+2] = 0x0;
+ 	/* left align Vendor ID and pad with spaces */
+-	memset(&buf[off+4], 0x20, 8);
+-	memcpy(&buf[off+4], "LIO-ORG", sizeof("LIO-ORG") - 1);
++	memset(&buf[off+4], 0x20, INQUIRY_VENDOR_LEN);
++	memcpy(&buf[off+4], dev->t10_wwn.vendor,
++	       strnlen(dev->t10_wwn.vendor, INQUIRY_VENDOR_LEN));
+ 	/* Extra Byte for NULL Terminator */
+ 	id_len++;
+ 	/* Identifier Length */
+-- 
+2.13.7
