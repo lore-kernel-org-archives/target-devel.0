@@ -1,40 +1,17 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 26 Dec 2018 22:38:08 +0000
-Subject: [PATCH AUTOSEL 4.14 28/59] scsi: target: iscsi: cxgbit: add missing spin_lock_init()
-Message-Id: <20181226223839.150262-28-sashal@kernel.org>
+From: "Mr. Muller Dieter" <lmaita@umc.edu.ve>
+Date: Fri, 07 Dec 2018 14:16:38 +0000
+Subject: Urgently need money? We can help you!
+Message-Id: <20181207141724.417DA468D39C@mail.umc.edu.ve>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181226223839.150262-1-sashal@kernel.org>
-In-Reply-To: <20181226223839.150262-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Varun Prakash <varun@chelsio.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-From: Varun Prakash <varun@chelsio.com>
-
-[ Upstream commit 9e6371d3c6913ff1707fb2c0274c9925f7aaef80 ]
-
-Add missing spin_lock_init() for cdev->np_lock.
-
-Signed-off-by: Varun Prakash <varun@chelsio.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/iscsi/cxgbit/cxgbit_main.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_main.c b/drivers/target/iscsi/cxgbit/cxgbit_main.c
-index 4fd775ace541..6340e2e7ffbe 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_main.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_main.c
-@@ -58,6 +58,7 @@ static void *cxgbit_uld_add(const struct cxgb4_lld_info *lldi)
- 		return ERR_PTR(-ENOMEM);
- 
- 	kref_init(&cdev->kref);
-+	spin_lock_init(&cdev->np_lock);
- 
- 	cdev->lldi = *lldi;
- 
--- 
-2.19.1
+Urgently need money? We can help you!
+Are you by the current situation in trouble or threatens you in trouble?
+In this way, we give you the ability to take a new development.
+As a rich person I feel obliged to assist people who are struggling to give them a chance. Everyone deserved a second chance and since the Government fails, it will have to come from others.
+No amount is too crazy for us and the maturity we determine by mutual agreement.
+No surprises, no extra costs, but just the agreed amounts and nothing else.
+Don't wait any longer and comment on this post. Please specify the amount you want to borrow and we will contact you with all the possibilities. contact us today at stewarrt.lf01@gmail.com
