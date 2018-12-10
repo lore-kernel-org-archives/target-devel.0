@@ -1,44 +1,32 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Tue, 04 Dec 2018 07:57:24 +0000
-Subject: Re: [PATCH v5 1/5] target: use consistent left-aligned ASCII INQUIRY data
-Message-Id: <20181204075724.na6guxonw5j52lww@SPB-NB-133.local>
+From: David Disseldorp <ddiss@suse.de>
+Date: Mon, 10 Dec 2018 13:36:50 +0000
+Subject: Re: [RFC PATCH] target: sanitize ALUA and PR state file paths before use
+Message-Id: <20181210143650.64c254df@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181130233423.26556-2-ddiss@suse.de>
-In-Reply-To: <20181130233423.26556-2-ddiss@suse.de>
+References: <20181122133800.1251-1-ddiss@suse.de>
+In-Reply-To: <20181122133800.1251-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Sat, Dec 01, 2018 at 12:34:19AM +0100, David Disseldorp wrote:
-> spc5r17.pdf specifies:
->   4.3.1 ASCII data field requirements
->   ASCII data fields shall contain only ASCII printable characters (i.e.,
->   code values 20h to 7Eh) and may be terminated with one or more ASCII
->   null (00h) characters.
->   ASCII data fields described as being left-aligned shall have any
->   unused bytes at the end of the field (i.e., highest offset) and the
->   unused bytes shall be filled with ASCII space characters (20h).
+Ping - any feedback on this change?
+
+On Thu, 22 Nov 2018 14:38:00 +0100, David Disseldorp wrote:
+
+> Block ALUA and PR state storage if any of the dynamic subdirectory
+> components include a path separator.
 > 
-> LIO currently space-pads the T10 VENDOR IDENTIFICATION and PRODUCT
-> IDENTIFICATION fields in the standard INQUIRY data. However, the
-> PRODUCT REVISION LEVEL field in the standard INQUIRY data as well as the
-> T10 VENDOR IDENTIFICATION field in the INQUIRY Device Identification VPD
-> Page are zero-terminated/zero-padded.
-> 
-> Fix this inconsistency by using space-padding for all of the above
-> fields.
-> 
+> Fixes: c66ac9db8d4a ("[SCSI] target: Add LIO target core v4.0.0-rc6")
 > Signed-off-by: David Disseldorp <ddiss@suse.de>
-> Reviewed-by: Christoph Hellwig <hch@lst.de>
-> Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
-> Reviewed-by: Lee Duncan <lduncan@suse.com>
+> Signed-off-by: Lee Duncan <lduncan@suse.com>
 > ---
->  drivers/target/target_core_spc.c | 17 ++++++++++++-----
->  1 file changed, 12 insertions(+), 5 deletions(-)
-> 
+> Note:
+> Submitted as an RFC, as I've not properly tested the alua code path.
+> I'm also not sure whether it's reasonable to break existing setups
+> with a '/' in the configured unit_serial. Where "break" means fail
+> APTPL PR requests; ALUA state-save failures are ignored internally.
 
-Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+I'd also be happy with any pointers on properly testing ALUA.
 
-Best regards,
-Roman
+Cheers, David
