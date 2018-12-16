@@ -1,71 +1,65 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Wed, 05 Dec 2018 12:18:38 +0000
-Subject: [PATCH v7 5/5] target: perform t10_wwn ID initialisation in target_alloc_device()
-Message-Id: <20181205121838.23982-6-ddiss@suse.de>
+From: Sagi Grimberg <sagi@grimberg.me>
+Date: Sun, 16 Dec 2018 08:01:26 +0000
+Subject: Re: ISCSI Target crash during ISERT logout
+Message-Id: <28751c37-bd22-c493-17b0-27be61362d86@grimberg.me>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Initialise the t10_wwn vendor, model and revision defaults when a
-device is allocated instead of when it's enabled. This ensures that
-custom vendor or model strings set prior to enablement are not later
-overwritten with default values.
 
-The TRANSPORT_FLAG_PASSTHROUGH conditional can be dropped for the
-following reasons:
-- target_core_pscsi overwrites the defaults in the
-  pscsi_configure_device() callback.
-  + the contents is then only used for ConfigFS via
-    $pscsi_dev/statistics/scsi_lu/vend, etc.
-- target_core_user doesn't touch the defaults, nor are they used for
-  anything outside of ConfigFS.
+> Hi,
+> 
+> During ISERT module testing we've faced weird behavior in ISCSI Target driver code. We are not sure if that is wrong logout implementation in ISERT or race condition in ISCSI Target between iscsit_logout_post_handler() and iscsit_tpg_del_portal_group() functions.
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/target/target_core_device.c | 21 +++++++--------------
- 1 file changed, 7 insertions(+), 14 deletions(-)
+It seems unrelated to isert to me, clearly iscsit_tpg_del_portal_group
+will free the tpg even when there are sessions that might be still
+referencing it...
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index ebd787bb29a8..5ead7eae30b5 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -810,6 +810,13 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
- 	mutex_init(&xcopy_lun->lun_tg_pt_md_mutex);
- 	xcopy_lun->lun_tpg = &xcopy_pt_tpg;
- 
-+	/* Preload the default INQUIRY const values */
-+	strlcpy(dev->t10_wwn.vendor, "LIO-ORG", sizeof(dev->t10_wwn.vendor));
-+	strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
-+		sizeof(dev->t10_wwn.model));
-+	strlcpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
-+		sizeof(dev->t10_wwn.revision));
-+
- 	return dev;
- }
- 
-@@ -984,20 +991,6 @@ int target_configure_device(struct se_device *dev)
- 	 */
- 	INIT_WORK(&dev->qf_work_queue, target_qf_do_work);
- 
--	/*
--	 * Preload the initial INQUIRY const values if we are doing
--	 * anything virtual (IBLOCK, FILEIO, RAMDISK), but not for TCM/pSCSI
--	 * passthrough because this is being provided by the backend LLD.
--	 */
--	if (!(dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)) {
--		strlcpy(dev->t10_wwn.vendor, "LIO-ORG",
--			sizeof(dev->t10_wwn.vendor));
--		strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
--			sizeof(dev->t10_wwn.model));
--		strlcpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
--			sizeof(dev->t10_wwn.revision));
--	}
--
- 	scsi_dump_inquiry(dev);
- 
- 	spin_lock(&hba->device_lock);
--- 
-2.13.7
+> Assume situation when there is one Session between Target and Initiator. Initiator sends Logout request to Target and at same time Target deletes portal group (for example targetcli clearconfig confirm=True executed).
+> Logout session request came first (cmd->iscsi_opcode = ISCSI_OP_LOGOUT, cmd->logout_reason = ISCSI_LOGOUT_REASON_CLOSE_SESSION)
+> Target invokes iscsit_logout_closesession() (that updates session->session_logout flag to 1) and executes logout response command (cmd->i_state = ISTATE_SEND_LOGOUTRSP).
+> After logout request received Target invokes iscsit_tpg_del_portal_group(). That functions invokes iscsit_release_sessions_for_tpg() which iterate through all active sessions and frees them.
+> In our case session is during logout process so it will be ignored. iscsit_release_sessions_for_tpg() does nothing and just returns 0.
+> iscsit_tpg_del_portal_group() invocation will continue and free target portal group by calling kfree(tpg).
+> During iscsit_tpg_del_portal_group() call logout response command has been successfully delivered and Target invokes iscsit_logout_post_handler(). That function invocation leads to transport_free_session() call which tries to dereference pointer to struct se_portal_group that was previously freed by iscsit_tpg_del_portal_group().
+> 
+> Described situation lead to crash:
+> 
+> Oops: 0000 [#1] SMP PTI
+> Workqueue: isert_comp_wq isert_do_control_comp [ib_isert]
+> task: ffff93a04ac89740 task.stack: ffff9f3907044000
+> RIP: 0010:transport_free_session+0x2a/0x140 [target_core_mod]
+> RSP: 0018:ffff9f3907047da8 EFLAGS: 00010286
+> RAX: 0000000000000282 RBX: ffff93a1f0ae6400 RCX: dead000000000200
+> RDX: ffff93a22b8f10a0 RSI: 0000000000000282 RDI: ffff93a1f0ae6400
+> RBP: ffff9f3907047dd0 R08: 0000000000000000 R09: 0000000000000000
+> R10: ffff9f3907047d98 R11: 0000000000000058 R12: ffff93a22f3a0000
+> R13: 0000000000000000 R14: 0000000000000008 R15: ffff93a22f6f3980
+> FS:  0000000000000000(0000) GS:ffff93a233a00000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> CR2: 0000000000000090 CR3: 000000020800a004 CR4: 00000000000606f0
+> Call Trace:
+> transport_deregister_session+0x7e/0xc0 [target_core_mod]
+> iscsit_close_session+0x92/0x200 [iscsi_target_mod]
+> iscsit_logout_post_handler+0x180/0x220 [iscsi_target_mod]
+> isert_do_control_comp+0x88/0xd0 [ib_isert]
+> process_one_work+0x1ec/0x410
+> ? __wake_up+0x44/0x50
+> worker_thread+0x32/0x410
+> kthread+0x128/0x140
+> ? process_one_work+0x410/0x410
+> ? kthread_create_on_node+0x70/0x70
+> ret_from_fork+0x35/0x40
+> Code: 00 66 66 66 66 90 55 48 89 e5 41 57 41 56 41 55 41 54 53 4c 8b 67 18 48 89 fb 4d 85 e4 74 59 4d 8b ac 24 48 01 00 00 4d 8d 75 08 <4d> 8b bd 90 00 00 00 48 c7 47 18 00 00 00 00 4c 89 f7 e8 7f c9
+> RIP: transport_free_session+0x2a/0x140 [target_core_mod] RSP: ffff9f3907047da8
+> CR2: 0000000000000090
+> ---[ end trace a136fc59c1406d59 ]---
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000090
+> IP: transport_free_session+0x2a/0x140 [target_core_mod]
+> 
+> Can you help us with that case? We want to know if we understand that behavior correctly and not missing something important.
+
+You analysis looks correct to me, I think that tpg needs proper
+refcounting...
