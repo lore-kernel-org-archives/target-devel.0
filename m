@@ -1,36 +1,31 @@
-From: Kangjie Lu <kjlu@umn.edu>
-Date: Wed, 26 Dec 2018 06:48:18 +0000
-Subject: [PATCH] target: fix a missing check for match_int
-Message-Id: <20181226064818.75984-1-kjlu@umn.edu>
+From: Leo Zhang <nguzcf@gmail.com>
+Date: Sun, 23 Dec 2018 16:18:27 +0000
+Subject: [PATCH] target/iscsi: fix error msg typo when create lio_qr_cache failed
+Message-Id: <1545581907-920233-1-git-send-email-nguzcf@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kjlu@umn.edu
-Cc: pakki001@umn.edu, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <mchristi@redhat.com>, Bart Van Assche <bvanassche@acm.org>, Matthew Wilcox <willy@infradead.org>, Sagi Grimberg <sagi@grimberg.me>, Colin Ian King <colin.king@canonical.com>, Laura Abbott <labbott@redhat.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, Leo Zhang <nguzcf@gmail.com>
 
-When match_int fails, "arg" is left uninitialized and may contain random
-value, thus should not be used.
-The fix checks if match_int fails, and if so, break.
-
-Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+Signed-off-by: Leo Zhang <nguzcf@gmail.com>
 ---
- drivers/target/target_core_rd.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/target/iscsi/iscsi_target.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
-index a6e8106abd6f..3138123143e8 100644
---- a/drivers/target/target_core_rd.c
-+++ b/drivers/target/target_core_rd.c
-@@ -573,7 +573,8 @@ static ssize_t rd_set_configfs_dev_params(struct se_device *dev,
- 		token = match_token(ptr, tokens, args);
- 		switch (token) {
- 		case Opt_rd_pages:
--			match_int(args, &arg);
-+			if (match_int(args, &arg))
-+				break;
- 			rd_dev->rd_page_count = arg;
- 			pr_debug("RAMDISK: Referencing Page"
- 				" Count: %u\n", rd_dev->rd_page_count);
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index c1d5a17..780a914 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -714,7 +714,7 @@ static int __init iscsi_target_init_module(void)
+ 			sizeof(struct iscsi_queue_req),
+ 			__alignof__(struct iscsi_queue_req), 0, NULL);
+ 	if (!lio_qr_cache) {
+-		pr_err("nable to kmem_cache_create() for"
++		pr_err("Unable to kmem_cache_create() for"
+ 				" lio_qr_cache\n");
+ 		goto bitmap_out;
+ 	}
 -- 
-2.17.2 (Apple Git-113)
+1.8.3.1
