@@ -1,50 +1,55 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Wed, 05 Dec 2018 12:18:37 +0000
-Subject: [PATCH v7 4/5] target: remove hardcoded T10 Vendor ID in INQUIRY response
-Message-Id: <20181205121838.23982-5-ddiss@suse.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 26 Dec 2018 22:35:01 +0000
+Subject: [PATCH AUTOSEL 4.19 41/97] scsi: target: iscsi: cxgbit: fix csk leak
+Message-Id: <20181226223557.149329-41-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20181226223557.149329-1-sashal@kernel.org>
+In-Reply-To: <20181226223557.149329-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Varun Prakash <varun@chelsio.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Use the value stored in t10_wwn.vendor, which defaults to "LIO-ORG", but
-can be reconfigured via the vendor_id ConfigFS attribute.
+From: Varun Prakash <varun@chelsio.com>
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
-Reviewed-by: Lee Duncan <lduncan@suse.com>
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+[ Upstream commit 801df68d617e3cb831f531c99fa6003620e6b343 ]
+
+csk leak can happen if a new TCP connection gets established after
+cxgbit_accept_np() returns, to fix this leak free remaining csk in
+cxgbit_free_np().
+
+Signed-off-by: Varun Prakash <varun@chelsio.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_spc.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/target/iscsi/cxgbit/cxgbit_cm.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index 8ffe712cb44d..4503f3336bc2 100644
---- a/drivers/target/target_core_spc.c
-+++ b/drivers/target/target_core_spc.c
-@@ -115,7 +115,8 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
- 	 */
- 	memset(&buf[8], 0x20,
- 	       INQUIRY_VENDOR_LEN + INQUIRY_MODEL_LEN + INQUIRY_REVISION_LEN);
--	memcpy(&buf[8], "LIO-ORG", sizeof("LIO-ORG") - 1);
-+	memcpy(&buf[8], dev->t10_wwn.vendor,
-+	       strnlen(dev->t10_wwn.vendor, INQUIRY_VENDOR_LEN));
- 	memcpy(&buf[16], dev->t10_wwn.model,
- 	       strnlen(dev->t10_wwn.model, INQUIRY_MODEL_LEN));
- 	memcpy(&buf[32], dev->t10_wwn.revision,
-@@ -258,8 +259,9 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
- 	buf[off+1] = 0x1; /* T10 Vendor ID */
- 	buf[off+2] = 0x0;
- 	/* left align Vendor ID and pad with spaces */
--	memset(&buf[off+4], 0x20, 8);
--	memcpy(&buf[off+4], "LIO-ORG", sizeof("LIO-ORG") - 1);
-+	memset(&buf[off+4], 0x20, INQUIRY_VENDOR_LEN);
-+	memcpy(&buf[off+4], dev->t10_wwn.vendor,
-+	       strnlen(dev->t10_wwn.vendor, INQUIRY_VENDOR_LEN));
- 	/* Extra Byte for NULL Terminator */
- 	id_len++;
- 	/* Identifier Length */
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+index 8de16016b6de..b289b90ae6dc 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+@@ -631,8 +631,11 @@ static void cxgbit_send_halfclose(struct cxgbit_sock *csk)
+ 
+ static void cxgbit_arp_failure_discard(void *handle, struct sk_buff *skb)
+ {
++	struct cxgbit_sock *csk = handle;
++
+ 	pr_debug("%s cxgbit_device %p\n", __func__, handle);
+ 	kfree_skb(skb);
++	cxgbit_put_csk(csk);
+ }
+ 
+ static void cxgbit_abort_arp_failure(void *handle, struct sk_buff *skb)
+@@ -1190,7 +1193,7 @@ cxgbit_pass_accept_rpl(struct cxgbit_sock *csk, struct cpl_pass_accept_req *req)
+ 	rpl5->opt0 = cpu_to_be64(opt0);
+ 	rpl5->opt2 = cpu_to_be32(opt2);
+ 	set_wr_txq(skb, CPL_PRIORITY_SETUP, csk->ctrlq_idx);
+-	t4_set_arp_err_handler(skb, NULL, cxgbit_arp_failure_discard);
++	t4_set_arp_err_handler(skb, csk, cxgbit_arp_failure_discard);
+ 	cxgbit_l2t_send(csk->com.cdev, skb, csk->l2t);
+ }
+ 
 -- 
-2.13.7
+2.19.1
