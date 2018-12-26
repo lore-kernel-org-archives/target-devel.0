@@ -1,70 +1,55 @@
-From: Bijan Mottahedeh <bijan.mottahedeh@oracle.com>
-Date: Tue, 04 Dec 2018 00:48:23 +0000
-Subject: [PATCH v2 4/4] vhost/scsi: Use copy_to_iter() to send control queue response
-Message-Id: <1543884503-32281-5-git-send-email-bijan.mottahedeh@oracle.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 26 Dec 2018 22:41:23 +0000
+Subject: [PATCH AUTOSEL 4.9 16/35] scsi: target: iscsi: cxgbit: fix csk leak
+Message-Id: <20181226224142.150866-16-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20181226224142.150866-1-sashal@kernel.org>
+In-Reply-To: <20181226224142.150866-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Varun Prakash <varun@chelsio.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Uses copy_to_iter() instead of __copy_to_user() in order to ensure
-user address range validation through access_ok().
+From: Varun Prakash <varun@chelsio.com>
 
-Signed-off-by: Bijan Mottahedeh <bijan.mottahedeh@oracle.com>
+[ Upstream commit 801df68d617e3cb831f531c99fa6003620e6b343 ]
+
+csk leak can happen if a new TCP connection gets established after
+cxgbit_accept_np() returns, to fix this leak free remaining csk in
+cxgbit_free_np().
+
+Signed-off-by: Varun Prakash <varun@chelsio.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/vhost/scsi.c | 20 ++++++++++++--------
- 1 file changed, 12 insertions(+), 8 deletions(-)
+ drivers/target/iscsi/cxgbit/cxgbit_cm.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 3eae17e..28c9cb6 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -1130,16 +1130,18 @@ static void vhost_scsi_submission_work(struct work_struct *work)
- 			   struct vhost_virtqueue *vq,
- 			   struct vhost_scsi_ctx *vc)
- {
--	struct virtio_scsi_ctrl_tmf_resp __user *resp;
- 	struct virtio_scsi_ctrl_tmf_resp rsp;
-+	struct iov_iter iov_iter;
- 	int ret;
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+index 2fb1bf1a26c5..8652475e01d0 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+@@ -631,8 +631,11 @@ static void cxgbit_send_halfclose(struct cxgbit_sock *csk)
  
- 	pr_debug("%s\n", __func__);
- 	memset(&rsp, 0, sizeof(rsp));
- 	rsp.response = VIRTIO_SCSI_S_FUNCTION_REJECTED;
--	resp = vq->iov[vc->out].iov_base;
--	ret = __copy_to_user(resp, &rsp, sizeof(rsp));
--	if (!ret)
-+
-+	iov_iter_init(&iov_iter, READ, &vq->iov[vc->out], vc->in, sizeof(rsp));
-+
-+	ret = copy_to_iter(&rsp, sizeof(rsp), &iov_iter);
-+	if (likely(ret = sizeof(rsp)))
- 		vhost_add_used_and_signal(&vs->dev, vq, vc->head, 0);
- 	else
- 		pr_err("Faulted on virtio_scsi_ctrl_tmf_resp\n");
-@@ -1150,16 +1152,18 @@ static void vhost_scsi_submission_work(struct work_struct *work)
- 			struct vhost_virtqueue *vq,
- 			struct vhost_scsi_ctx *vc)
+ static void cxgbit_arp_failure_discard(void *handle, struct sk_buff *skb)
  {
--	struct virtio_scsi_ctrl_an_resp __user *resp;
- 	struct virtio_scsi_ctrl_an_resp rsp;
-+	struct iov_iter iov_iter;
- 	int ret;
++	struct cxgbit_sock *csk = handle;
++
+ 	pr_debug("%s cxgbit_device %p\n", __func__, handle);
+ 	kfree_skb(skb);
++	cxgbit_put_csk(csk);
+ }
  
- 	pr_debug("%s\n", __func__);
- 	memset(&rsp, 0, sizeof(rsp));	/* event_actual = 0 */
- 	rsp.response = VIRTIO_SCSI_S_OK;
--	resp = vq->iov[vc->out].iov_base;
--	ret = __copy_to_user(resp, &rsp, sizeof(rsp));
--	if (!ret)
-+
-+	iov_iter_init(&iov_iter, READ, &vq->iov[vc->out], vc->in, sizeof(rsp));
-+
-+	ret = copy_to_iter(&rsp, sizeof(rsp), &iov_iter);
-+	if (likely(ret = sizeof(rsp)))
- 		vhost_add_used_and_signal(&vs->dev, vq, vc->head, 0);
- 	else
- 		pr_err("Faulted on virtio_scsi_ctrl_an_resp\n");
+ static void cxgbit_abort_arp_failure(void *handle, struct sk_buff *skb)
+@@ -1136,7 +1139,7 @@ cxgbit_pass_accept_rpl(struct cxgbit_sock *csk, struct cpl_pass_accept_req *req)
+ 	rpl5->opt0 = cpu_to_be64(opt0);
+ 	rpl5->opt2 = cpu_to_be32(opt2);
+ 	set_wr_txq(skb, CPL_PRIORITY_SETUP, csk->ctrlq_idx);
+-	t4_set_arp_err_handler(skb, NULL, cxgbit_arp_failure_discard);
++	t4_set_arp_err_handler(skb, csk, cxgbit_arp_failure_discard);
+ 	cxgbit_l2t_send(csk->com.cdev, skb, csk->l2t);
+ }
+ 
 -- 
-1.8.3.1
+2.19.1
