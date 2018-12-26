@@ -1,31 +1,40 @@
-From: Leo Zhang <nguzcf@gmail.com>
-Date: Sun, 23 Dec 2018 16:18:27 +0000
-Subject: [PATCH] target/iscsi: fix error msg typo when create lio_qr_cache failed
-Message-Id: <1545581907-920233-1-git-send-email-nguzcf@gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 26 Dec 2018 22:41:24 +0000
+Subject: [PATCH AUTOSEL 4.9 17/35] scsi: target: iscsi: cxgbit: add missing spin_lock_init()
+Message-Id: <20181226224142.150866-17-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20181226224142.150866-1-sashal@kernel.org>
+In-Reply-To: <20181226224142.150866-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <mchristi@redhat.com>, Bart Van Assche <bvanassche@acm.org>, Matthew Wilcox <willy@infradead.org>, Sagi Grimberg <sagi@grimberg.me>, Colin Ian King <colin.king@canonical.com>, Laura Abbott <labbott@redhat.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, Leo Zhang <nguzcf@gmail.com>
+To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Varun Prakash <varun@chelsio.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Signed-off-by: Leo Zhang <nguzcf@gmail.com>
+From: Varun Prakash <varun@chelsio.com>
+
+[ Upstream commit 9e6371d3c6913ff1707fb2c0274c9925f7aaef80 ]
+
+Add missing spin_lock_init() for cdev->np_lock.
+
+Signed-off-by: Varun Prakash <varun@chelsio.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/iscsi/iscsi_target.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/iscsi/cxgbit/cxgbit_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index c1d5a17..780a914 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -714,7 +714,7 @@ static int __init iscsi_target_init_module(void)
- 			sizeof(struct iscsi_queue_req),
- 			__alignof__(struct iscsi_queue_req), 0, NULL);
- 	if (!lio_qr_cache) {
--		pr_err("nable to kmem_cache_create() for"
-+		pr_err("Unable to kmem_cache_create() for"
- 				" lio_qr_cache\n");
- 		goto bitmap_out;
- 	}
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_main.c b/drivers/target/iscsi/cxgbit/cxgbit_main.c
+index ad26b9372f10..d55261e1d522 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_main.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_main.c
+@@ -58,6 +58,7 @@ static void *cxgbit_uld_add(const struct cxgb4_lld_info *lldi)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	kref_init(&cdev->kref);
++	spin_lock_init(&cdev->np_lock);
+ 
+ 	cdev->lldi = *lldi;
+ 
 -- 
-1.8.3.1
+2.19.1
