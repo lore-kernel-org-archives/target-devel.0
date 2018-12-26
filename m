@@ -1,43 +1,55 @@
-From: Bijan Mottahedeh <bijan.mottahedeh@oracle.com>
-Date: Tue, 04 Dec 2018 00:48:19 +0000
-Subject: [PATCH v2 0/4] vhost/scsi: Respond to control queue operations
-Message-Id: <1543884503-32281-1-git-send-email-bijan.mottahedeh@oracle.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 26 Dec 2018 22:38:07 +0000
+Subject: [PATCH AUTOSEL 4.14 27/59] scsi: target: iscsi: cxgbit: fix csk leak
+Message-Id: <20181226223839.150262-27-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20181226223839.150262-1-sashal@kernel.org>
+In-Reply-To: <20181226223839.150262-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Varun Prakash <varun@chelsio.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-v1 -> v2:
+From: Varun Prakash <varun@chelsio.com>
 
-- Use copy_to_iter() to send control queue response
+[ Upstream commit 801df68d617e3cb831f531c99fa6003620e6b343 ]
 
-This patch series causes vhost-scsi control queue TMF requests to be
-explicitly rejected rather than implicitly ignored in order to prevent
-a guest virito-scsi driver to wait indefinitely for a response to a SCSI
-TMF request.
+csk leak can happen if a new TCP connection gets established after
+cxgbit_accept_np() returns, to fix this leak free remaining csk in
+cxgbit_free_np().
 
-In addition, control queue address notification operations
-(VIRTIO_SCSI_T_AN_*) get an effective no-op response.
+Signed-off-by: Varun Prakash <varun@chelsio.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/target/iscsi/cxgbit/cxgbit_cm.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Patch 1/4 implements a control queue handler modeled after the existing
-request queue handler.  There is no commonality between the two handlers.
-
-Patch 2/4 factors out the common processing code from the control queue
-handler into separate routines.
-
-Patch 3/4 modifies the request handler to use the common processing routines.  
-
-Patch 4/4 uses copy_to_iter() to send back control queue responses.
-
-Bijan Mottahedeh (4):
-  vhost/scsi: Respond to control queue operations
-  vhost/scsi: Extract common handling code from control queue handler
-  vhost/scsi: Use common handling code in request queue handler
-  vhost/scsi: Use copy_to_iter() to send control queue response
-
- drivers/vhost/scsi.c | 426 +++++++++++++++++++++++++++++++++++++++------------
- 1 file changed, 330 insertions(+), 96 deletions(-)
-
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+index d4fa41be80f9..0c00bb27c9c5 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+@@ -631,8 +631,11 @@ static void cxgbit_send_halfclose(struct cxgbit_sock *csk)
+ 
+ static void cxgbit_arp_failure_discard(void *handle, struct sk_buff *skb)
+ {
++	struct cxgbit_sock *csk = handle;
++
+ 	pr_debug("%s cxgbit_device %p\n", __func__, handle);
+ 	kfree_skb(skb);
++	cxgbit_put_csk(csk);
+ }
+ 
+ static void cxgbit_abort_arp_failure(void *handle, struct sk_buff *skb)
+@@ -1147,7 +1150,7 @@ cxgbit_pass_accept_rpl(struct cxgbit_sock *csk, struct cpl_pass_accept_req *req)
+ 	rpl5->opt0 = cpu_to_be64(opt0);
+ 	rpl5->opt2 = cpu_to_be32(opt2);
+ 	set_wr_txq(skb, CPL_PRIORITY_SETUP, csk->ctrlq_idx);
+-	t4_set_arp_err_handler(skb, NULL, cxgbit_arp_failure_discard);
++	t4_set_arp_err_handler(skb, csk, cxgbit_arp_failure_discard);
+ 	cxgbit_l2t_send(csk->com.cdev, skb, csk->l2t);
+ }
+ 
 -- 
-1.8.3.1
+2.19.1
