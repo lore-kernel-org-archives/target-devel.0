@@ -1,57 +1,19 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Fri, 25 Jan 2019 18:34:48 +0000
-Subject: [PATCH 06/16] RDMA/srpt: Fix handling of command / TMF submission failure
-Message-Id: <20190125183458.220477-7-bvanassche@acm.org>
+From: Florian Florensa <florian@florensa.me>
+Date: Thu, 03 Jan 2019 19:58:12 +0000
+Subject: IP whitelisting
+Message-Id: <CAC3zG1ngRZb=phgij1T6g1a85_Lnn-08gyr226H_c5ceEDfs4A@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-If submitting an SRP IU to the target core fails, send the SCSI
-response "BUSY" to the initiator instead of not sending any
-response.
+Hello everyone
 
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-Cc: Doug Ledford <dledford@redhat.com>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
----
- drivers/infiniband/ulp/srpt/ib_srpt.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+I am starting to get some interest on LIO and its integration with
+Ceph RBD, and i was wondering after looking through the api/cli if
+there is a way to filter clients by IP ?
 
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index 8cee8c6c6be9..4fc901d1c0c1 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -1505,7 +1505,7 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
- 			pr_err("0x%llx: parsing SRP descriptor table failed.\n",
- 			       srp_cmd->tag);
- 		}
--		goto release_ioctx;
-+		goto busy;
- 	}
- 
- 	rc = target_submit_cmd_map_sgls(cmd, ch->sess, srp_cmd->cdb,
-@@ -1516,13 +1516,12 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
- 	if (rc != 0) {
- 		pr_debug("target_submit_cmd() returned %d for tag %#llx\n", rc,
- 			 srp_cmd->tag);
--		goto release_ioctx;
-+		goto busy;
- 	}
- 	return;
- 
--release_ioctx:
--	send_ioctx->state = SRPT_STATE_DONE;
--	srpt_release_cmd(cmd);
-+busy:
-+	target_send_busy(cmd);
- }
- 
- static int srp_tmr_to_tcm(int fn)
--- 
-2.20.1.495.gaa96b0ce6b-goog
+Kind regards,
+
+Florian.
