@@ -1,78 +1,86 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Fri, 25 Jan 2019 18:34:58 +0000
-Subject: [PATCH 16/16] target/iscsi: Simplify iscsit_handle_text_cmd()
-Message-Id: <20190125183458.220477-17-bvanassche@acm.org>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue, 08 Jan 2019 19:25:26 +0000
+Subject: [PATCH AUTOSEL 4.20 058/117] scsi: target: use consistent left-aligned ASCII INQUIRY data
+Message-Id: <20190108192628.121270-58-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20190108192628.121270-1-sashal@kernel.org>
+In-Reply-To: <20190108192628.121270-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: David Disseldorp <ddiss@suse.de>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Treat text_in and padding as a single buffer instead of two
-buffers.
+From: David Disseldorp <ddiss@suse.de>
 
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+[ Upstream commit 0de263577de5d5e052be5f4f93334e63cc8a7f0b ]
+
+spc5r17.pdf specifies:
+
+  4.3.1 ASCII data field requirements
+  ASCII data fields shall contain only ASCII printable characters (i.e.,
+  code values 20h to 7Eh) and may be terminated with one or more ASCII null
+  (00h) characters.  ASCII data fields described as being left-aligned
+  shall have any unused bytes at the end of the field (i.e., highest
+  offset) and the unused bytes shall be filled with ASCII space characters
+  (20h).
+
+LIO currently space-pads the T10 VENDOR IDENTIFICATION and PRODUCT
+IDENTIFICATION fields in the standard INQUIRY data. However, the PRODUCT
+REVISION LEVEL field in the standard INQUIRY data as well as the T10 VENDOR
+IDENTIFICATION field in the INQUIRY Device Identification VPD Page are
+zero-terminated/zero-padded.
+
+Fix this inconsistency by using space-padding for all of the above fields.
+
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
+Reviewed-by: Lee Duncan <lduncan@suse.com>
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/iscsi/iscsi_target.c | 25 +++++++++++--------------
- 1 file changed, 11 insertions(+), 14 deletions(-)
+ drivers/target/target_core_spc.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 408d77eb717c..e14ac29209c8 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -2240,28 +2240,25 @@ iscsit_handle_text_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	rx_size = payload_length;
- 	if (payload_length) {
- 		u32 checksum = 0, data_crc = 0;
--		u32 padding = 0, pad_bytes = 0;
-+		u32 padding = 0;
- 		int niov = 0, rx_got;
--		struct kvec iov[3];
-+		struct kvec iov[2];
+diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
+index f459118bc11b..c37dd36ec77d 100644
+--- a/drivers/target/target_core_spc.c
++++ b/drivers/target/target_core_spc.c
+@@ -108,12 +108,17 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
  
--		text_in = kzalloc(payload_length, GFP_KERNEL);
-+		rx_size = ALIGN(payload_length, 4);
-+		text_in = kzalloc(rx_size, GFP_KERNEL);
- 		if (!text_in)
- 			goto reject;
+ 	buf[7] = 0x2; /* CmdQue=1 */
  
- 		cmd->text_in_ptr = text_in;
+-	memcpy(&buf[8], "LIO-ORG ", 8);
+-	memset(&buf[16], 0x20, 16);
++	/*
++	 * ASCII data fields described as being left-aligned shall have any
++	 * unused bytes at the end of the field (i.e., highest offset) and the
++	 * unused bytes shall be filled with ASCII space characters (20h).
++	 */
++	memset(&buf[8], 0x20, 8 + 16 + 4);
++	memcpy(&buf[8], "LIO-ORG", sizeof("LIO-ORG") - 1);
+ 	memcpy(&buf[16], dev->t10_wwn.model,
+-	       min_t(size_t, strlen(dev->t10_wwn.model), 16));
++	       strnlen(dev->t10_wwn.model, 16));
+ 	memcpy(&buf[32], dev->t10_wwn.revision,
+-	       min_t(size_t, strlen(dev->t10_wwn.revision), 4));
++	       strnlen(dev->t10_wwn.revision, 4));
+ 	buf[4] = 31; /* Set additional length to 31 */
  
--		memset(iov, 0, 3 * sizeof(struct kvec));
-+		memset(iov, 0, sizeof(iov));
- 		iov[niov].iov_base	= text_in;
--		iov[niov++].iov_len	= payload_length;
-+		iov[niov++].iov_len	= rx_size;
- 
--		padding = ((-payload_length) & 3);
--		if (padding != 0) {
--			iov[niov].iov_base = &pad_bytes;
--			iov[niov++].iov_len  = padding;
--			rx_size += padding;
-+		padding = rx_size - payload_length;
-+		if (padding)
- 			pr_debug("Receiving %u additional bytes"
- 					" for padding.\n", padding);
--		}
- 		if (conn->conn_ops->DataDigest) {
- 			iov[niov].iov_base	= &checksum;
- 			iov[niov++].iov_len	= ISCSI_CRC_LEN;
-@@ -2273,9 +2270,9 @@ iscsit_handle_text_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 			goto reject;
- 
- 		if (conn->conn_ops->DataDigest) {
--			iscsit_do_crypto_hash_buf(conn->conn_rx_hash, text_in,
--						  payload_length, padding,
--						  &pad_bytes, &data_crc);
-+			iscsit_do_crypto_hash_buf(conn->conn_rx_hash,
-+						  text_in, rx_size, 0, NULL,
-+						  &data_crc);
- 
- 			if (checksum != data_crc) {
- 				pr_err("Text data CRC32C DataDigest"
+ 	return 0;
+@@ -251,7 +256,9 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
+ 	buf[off] = 0x2; /* ASCII */
+ 	buf[off+1] = 0x1; /* T10 Vendor ID */
+ 	buf[off+2] = 0x0;
+-	memcpy(&buf[off+4], "LIO-ORG", 8);
++	/* left align Vendor ID and pad with spaces */
++	memset(&buf[off+4], 0x20, 8);
++	memcpy(&buf[off+4], "LIO-ORG", sizeof("LIO-ORG") - 1);
+ 	/* Extra Byte for NULL Terminator */
+ 	id_len++;
+ 	/* Identifier Length */
 -- 
-2.20.1.495.gaa96b0ce6b-goog
+2.19.1
