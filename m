@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 08 Jan 2019 19:35:20 +0000
-Subject: [PATCH AUTOSEL 3.18 08/19] scsi: target: use consistent left-aligned ASCII INQUIRY data
-Message-Id: <20190108193534.124555-8-sashal@kernel.org>
+Date: Tue, 08 Jan 2019 19:33:30 +0000
+Subject: [PATCH AUTOSEL 4.9 18/36] scsi: target: use consistent left-aligned ASCII INQUIRY data
+Message-Id: <20190108193348.123880-18-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190108193534.124555-1-sashal@kernel.org>
-In-Reply-To: <20190108193534.124555-1-sashal@kernel.org>
+References: <20190108193348.123880-1-sashal@kernel.org>
+In-Reply-To: <20190108193348.123880-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -46,10 +46,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 12 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index 614005b6b08b..3ab264d4fb1f 100644
+index 2a91ed3ef380..37d7d57cf2c6 100644
 --- a/drivers/target/target_core_spc.c
 +++ b/drivers/target/target_core_spc.c
-@@ -112,12 +112,17 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
+@@ -108,12 +108,17 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
  
  	buf[7] = 0x2; /* CmdQue=1 */
  
@@ -71,7 +71,7 @@ index 614005b6b08b..3ab264d4fb1f 100644
  	buf[4] = 31; /* Set additional length to 31 */
  
  	return 0;
-@@ -257,7 +262,9 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
+@@ -251,7 +256,9 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
  	buf[off] = 0x2; /* ASCII */
  	buf[off+1] = 0x1; /* T10 Vendor ID */
  	buf[off+2] = 0x0;
