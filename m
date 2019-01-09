@@ -1,28 +1,21 @@
-From: "Lena" <kasantedeisnqsuiter@mail.fr>
-Date: Thu, 17 Jan 2019 10:38:06 +0000
-Subject: Photos shooting and retouching
-Message-Id: <3816868d3c52591e718d01d8ab03c079@arboristarlingtontx.com>
+From: "Jane" <jeffopreinteserpafnlop@verizon.net>
+Date: Wed, 09 Jan 2019 10:27:51 +0000
+Subject: Enhancing the photos
+Message-Id: <2364891a8a985effd6c54cff157bc4a9@annthegran.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Do you need to shoot photos for your products including editing?
-We are the photo studio who can help you to edit your photos or take care
-of the photo shooting for you,
+Do you have photos for editing? We asked this because we see your photos on
+your website.
 
-You ship – We shoot
-White background
-Retouching included
-Optimized for Shopify
-Revisions accepted
+We mainly supply service for photos cut out , clipping path, and
+retouching.
 
-We also provide dedicate editing service for you.
-Such like cutting out, masking, clipping path for your photos, including
-retouching if needed.
-
-Contact us today if need anything.
+You may just send us a photo, we can provide you test editing to check
+quality.
 
 Thanks,
-Lena
+Jane
