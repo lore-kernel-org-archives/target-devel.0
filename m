@@ -1,34 +1,32 @@
-From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Fri, 25 Jan 2019 22:51:49 +0000
-Subject: Re: [PATCH 0/2] infiniband: trivial header search path fixups
-Message-Id: <20190125225149.GA5556@ziepe.ca>
+From: Mike Christie <mchristi@redhat.com>
+Date: Fri, 11 Jan 2019 19:58:57 +0000
+Subject: Re: [PATCH v4] scsi: tcmu: avoid cmd/qfull timers updated whenever a new cmd comes
+Message-Id: <5C38F581.6040506@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1548391171-6407-1-git-send-email-yamada.masahiro@socionext.com>
-In-Reply-To: <1548391171-6407-1-git-send-email-yamada.masahiro@socionext.com>
+References: <20181123011530.2477-1-xiubli@redhat.com>
+In-Reply-To: <20181123011530.2477-1-xiubli@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: linux-rdma@vger.kernel.org, Doug Ledford <dledford@redhat.com>, Somnath Kotur <somnath.kotur@broadcom.com>, Sagi Grimberg <sagi@grimberg.me>, Nelson Escobar <neescoba@cisco.com>, Sriharsha Basavapatna <sriharsha.basavapatna@broadcom.com>, Parvi Kaustubhi <pkaustub@cisco.com>, linux-kernel@vger.kernel.org, Lijun Ou <oulijun@huawei.com>, Steve Wise <swise@chelsio.com>, target-devel@vger.kernel.org, Christian Benvenuti <benve@cisco.com>, Faisal Latif <faisal.latif@intel.com>, Bart Van Assche <bvanassche@acm.org>, Shiraz Saleem <shiraz.saleem@intel.com>, Selvin Xavier <selvin.xavier@broadcom.com>, "Wei Hu(Xavier)" <xavier.huwei@huawei.com>, Devesh Sharma <devesh.sharma@broadcom.com>
+To: target-devel@vger.kernel.org
 
-On Fri, Jan 25, 2019 at 01:39:29PM +0900, Masahiro Yamada wrote:
-> My main motivation is to get rid of crappy header search path manipulation
-> from Kbuild core.
+On 11/22/2018 07:15 PM, xiubli@redhat.com wrote:
+> From: Xiubo Li <xiubli@redhat.com>
 > 
-> Before that, I want to do as many treewide cleanups as possible.
+> Currently there has one cmd timeout timer and one qfull timer for
+> each udev, and whenever there has any new coming cmd it will update
+> the cmd timer or qfull timer. And for some corner case the timers
+> are always working only for the ringbuffer's and full queue's newest
+> cmd. That's to say the timer won't be fired even there has one cmd
+> stuck for a very long time and the deadline is reached.
 > 
-> If you are interested in the big picture of this work,
-> the full patch set is available at:
+> This fix will keep the cmd/qfull timers to be pended for the oldest
+> cmd in ringbuffer and full queue, and will update them with the next
+> cmd's deadline only when the old cmd's deadline is reached or removed
+> from the ringbuffer and full queue.
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git build-test
-> 
-> 
-> 
-> Masahiro Yamada (2):
->   infiniband: remove unneeded header search paths
->   infiniband: prefix header search paths with $(srctree)/
+> Signed-off-by: Xiubo Li <xiubli@redhat.com>
 
-Still compiles for me too, applied to rdam for-next
+Work ok for me.
 
-Thanks,
-Jason
+Acked-by: Mike Christie <mchristi@redhat.com>
