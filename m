@@ -1,22 +1,14 @@
-From: "Mindy" <lousisamqi@verizon.net>
-Date: Tue, 29 Jan 2019 12:00:48 +0000
-Subject: Are your photos ready for retouching?
-Message-Id: <f5ec03bbf70c4f1c3ba6a87362935ac5@kiefer.com>
+From: friedrich mayrhofer <sanat@math.iiests.ac.in>
+Date: Wed, 16 Jan 2019 20:51:55 +0000
+Subject: =?utf-8?Q?wohlt=C3=A4tige_Spende_von_2.800.000_euro?=
+Message-Id: <1044229318.32633.1547671195537.JavaMail.zimbra@math.iiests.ac.in>
 List-Id: <target-devel.vger.kernel.org>
-References: <1de8c2002d81d6b6ce465360d06dfa29@kiefer.com>
-In-Reply-To: <1de8c2002d81d6b6ce465360d06dfa29@kiefer.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-Are your photos ready for retouching? We are waiting to start working for
-you soon.
 
-No matter making white background or adding path to your pictures, we can
-do it quickly for you.
 
-We can do test on your current photos, please send some to start.
 
-Thanks,
-Mindy
+Mein Name ist Friedrich Mayrhofer, meine Frau und ich haben im Dezember 2015 eine Jackpot-Lotterie in Höhe von 50 Millionen Dollar gewonnen. Wir spenden die Summe von 2.800.000 Millionen Euro an 5 glückliche Personen, von denen Sie einer der Begünstigten sind. und wir spenden 2.800.000,00 an Sie, .kontaktieren Sie mich über meine Stiftung bei friedrichmayrhofer.spende@gmail.com
