@@ -1,55 +1,68 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 26 Dec 2018 22:38:07 +0000
-Subject: [PATCH AUTOSEL 4.14 27/59] scsi: target: iscsi: cxgbit: fix csk leak
-Message-Id: <20181226223839.150262-27-sashal@kernel.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 22 Jan 2019 09:27:02 +0000
+Subject: [bug report] scsi: tcmu: avoid cmd/qfull timers updated whenever a new cmd comes
+Message-Id: <20190122092702.GA7268@kadam>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181226223839.150262-1-sashal@kernel.org>
-In-Reply-To: <20181226223839.150262-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Varun Prakash <varun@chelsio.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-From: Varun Prakash <varun@chelsio.com>
+Hello Xiubo Li,
 
-[ Upstream commit 801df68d617e3cb831f531c99fa6003620e6b343 ]
+The patch a94a2572b977: "scsi: tcmu: avoid cmd/qfull timers updated
+whenever a new cmd comes" from Nov 23, 2018, leads to the following
+static checker warning:
 
-csk leak can happen if a new TCP connection gets established after
-cxgbit_accept_np() returns, to fix this leak free remaining csk in
-cxgbit_free_np().
+	drivers/target/target_core_user.c:1325 tcmu_check_expired_cmd()
+	warn: 'cmd' was already freed.
 
-Signed-off-by: Varun Prakash <varun@chelsio.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/iscsi/cxgbit/cxgbit_cm.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+drivers/target/target_core_user.c
+    1290 static int tcmu_check_expired_cmd(int id, void *p, void *data)
+    1291 {
+    1292 	struct tcmu_cmd *cmd = p;
+    1293 	struct tcmu_dev *udev = cmd->tcmu_dev;
+    1294 	u8 scsi_status;
+    1295 	struct se_cmd *se_cmd;
+    1296 	bool is_running;
+    1297 
+    1298 	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags))
+    1299 		return 0;
+    1300 
+    1301 	if (!time_after(jiffies, cmd->deadline))
+    1302 		return 0;
+    1303 
+    1304 	is_running = test_bit(TCMU_CMD_BIT_INFLIGHT, &cmd->flags);
+    1305 	se_cmd = cmd->se_cmd;
+    1306 
+    1307 	if (is_running) {
+    1308 		/*
+    1309 		 * If cmd_time_out is disabled but qfull is set deadline
+    1310 		 * will only reflect the qfull timeout. Ignore it.
+    1311 		 */
+    1312 		if (!udev->cmd_time_out)
+    1313 			return 0;
+    1314 
+    1315 		set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
+    1316 		/*
+    1317 		 * target_complete_cmd will translate this to LUN COMM FAILURE
+    1318 		 */
+    1319 		scsi_status = SAM_STAT_CHECK_CONDITION;
+    1320 	} else {
+    1321 		idr_remove(&udev->commands, id);
+    1322 		tcmu_free_cmd(cmd);
+                        ^^^^^^^^^^^^^^^^^^
+    1323 		scsi_status = SAM_STAT_TASK_SET_FULL;
+    1324 	}
+--> 1325 	list_del_init(&cmd->queue_entry);
+                              ^^^^^^^^^^^^^^^^^
+    1326 
+    1327 	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
+    1328 		 id, udev->name, is_running ? "inflight" : "queued");
+    1329 
+    1330 	target_complete_cmd(se_cmd, scsi_status);
+    1331 	return 0;
+    1332 }
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-index d4fa41be80f9..0c00bb27c9c5 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-@@ -631,8 +631,11 @@ static void cxgbit_send_halfclose(struct cxgbit_sock *csk)
- 
- static void cxgbit_arp_failure_discard(void *handle, struct sk_buff *skb)
- {
-+	struct cxgbit_sock *csk = handle;
-+
- 	pr_debug("%s cxgbit_device %p\n", __func__, handle);
- 	kfree_skb(skb);
-+	cxgbit_put_csk(csk);
- }
- 
- static void cxgbit_abort_arp_failure(void *handle, struct sk_buff *skb)
-@@ -1147,7 +1150,7 @@ cxgbit_pass_accept_rpl(struct cxgbit_sock *csk, struct cpl_pass_accept_req *req)
- 	rpl5->opt0 = cpu_to_be64(opt0);
- 	rpl5->opt2 = cpu_to_be32(opt2);
- 	set_wr_txq(skb, CPL_PRIORITY_SETUP, csk->ctrlq_idx);
--	t4_set_arp_err_handler(skb, NULL, cxgbit_arp_failure_discard);
-+	t4_set_arp_err_handler(skb, csk, cxgbit_arp_failure_discard);
- 	cxgbit_l2t_send(csk->com.cdev, skb, csk->l2t);
- }
- 
--- 
-2.19.1
+regards,
+dan carpenter
