@@ -1,79 +1,149 @@
 From: Bart Van Assche <bvanassche@acm.org>
-Date: Fri, 25 Jan 2019 18:34:42 +0000
-Subject: [PATCH 00/16] SCSI target patches for kernel v5.1
-Message-Id: <20190125183458.220477-1-bvanassche@acm.org>
+Date: Fri, 25 Jan 2019 18:34:46 +0000
+Subject: [PATCH 04/16] target/core: Inline transport_lun_remove_cmd()
+Message-Id: <20190125183458.220477-5-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hi Martin,
+Remove the code that clears .se_lun from
+transport_cmd_check_stop_to_fabric() such that the
+transport_lun_remove_cmd() call can be moved into
+target_release_cmd_kref(). Because this guarantees that
+transport_lun_remove_cmd() will be called exactly once, it is
+safe to change the cmpxchg() call into a test of
+se_cmd.lun_ref_active. Inline transport_lun_remove_cmd() because
+it is not worth to keep it as a separate function.
 
-This series includes the following patches:
-- Simplify the SCSI core now that TMF processing is synchronous.
-- Cleanup and bug fixes for the SRP and iSCSI target drivers.
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/target_core_transport.c | 31 +++-----------------------
+ 1 file changed, 3 insertions(+), 28 deletions(-)
 
-Please consider these patches for kernel v5.1.
-
-Thanks,
-
-Bart.
-
-Bart Van Assche (16):
-  target/core: Remove the write_pending_status() callback function
-  target/core: Remove several state tests from the TMF code
-  target/core: Simplify the LUN RESET implementation
-  target/core: Inline transport_lun_remove_cmd()
-  target/core: Add target_send_busy()
-  RDMA/srpt: Fix handling of command / TMF submission failure
-  RDMA/srpt: Fix handling of TMF submission failure
-  RDMA/srpt: Rework I/O context allocation
-  RDMA/srpt: Fix a credit leak for aborted commands
-  target/iscsi: Remove an incorrect comment
-  target/iscsi: Convert comments about locking into runtime checks
-  target/iscsi: Fix spelling of "unsolicited"
-  target/iscsi: Rename a function and a function pointer
-  target/iscsi: Avoid that iscsit_release_commands_from_conn() triggers
-    a deadlock
-  target/iscsi: Simplify iscsit_dump_data_payload()
-  target/iscsi: Simplify iscsit_handle_text_cmd()
-
- Documentation/target/tcm_mod_builder.py      |  8 --
- drivers/infiniband/ulp/isert/ib_isert.c      |  2 +-
- drivers/infiniband/ulp/srpt/ib_srpt.c        | 80 +++++++++-----------
- drivers/infiniband/ulp/srpt/ib_srpt.h        |  4 -
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c     |  6 --
- drivers/scsi/qla2xxx/tcm_qla2xxx.c           | 31 --------
- drivers/target/iscsi/cxgbit/cxgbit.h         |  2 +-
- drivers/target/iscsi/cxgbit/cxgbit_ddp.c     |  2 +-
- drivers/target/iscsi/cxgbit/cxgbit_main.c    |  2 +-
- drivers/target/iscsi/cxgbit/cxgbit_target.c  |  2 +-
- drivers/target/iscsi/iscsi_target.c          | 47 +++++-------
- drivers/target/iscsi/iscsi_target.h          |  2 +-
- drivers/target/iscsi/iscsi_target_configfs.c | 13 ----
- drivers/target/iscsi/iscsi_target_erl0.c     |  5 +-
- drivers/target/iscsi/iscsi_target_erl1.c     | 59 +++++----------
- drivers/target/iscsi/iscsi_target_util.c     | 23 +++---
- drivers/target/loopback/tcm_loop.c           |  6 --
- drivers/target/sbp/sbp_target.c              |  6 --
- drivers/target/target_core_alua.c            |  5 +-
- drivers/target/target_core_configfs.c        |  4 -
- drivers/target/target_core_device.c          |  6 +-
- drivers/target/target_core_pr.c              | 15 ++--
- drivers/target/target_core_tmr.c             | 39 +---------
- drivers/target/target_core_transport.c       | 49 +++++-------
- drivers/target/target_core_xcopy.c           |  6 --
- drivers/target/tcm_fc/tcm_fc.h               |  1 -
- drivers/target/tcm_fc/tfc_cmd.c              |  7 --
- drivers/target/tcm_fc/tfc_conf.c             |  1 -
- drivers/usb/gadget/function/f_tcm.c          |  9 ---
- drivers/vhost/scsi.c                         |  6 --
- drivers/xen/xen-scsiback.c                   |  6 --
- include/target/iscsi/iscsi_transport.h       |  4 +-
- include/target/target_core_base.h            |  1 -
- include/target/target_core_fabric.h          |  2 +-
- 34 files changed, 125 insertions(+), 336 deletions(-)
-
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index b25d27e8ca20..6471ede00336 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -664,11 +664,6 @@ static int transport_cmd_check_stop_to_fabric(struct se_cmd *cmd)
+ 
+ 	target_remove_from_state_list(cmd);
+ 
+-	/*
+-	 * Clear struct se_cmd->se_lun before the handoff to FE.
+-	 */
+-	cmd->se_lun = NULL;
+-
+ 	spin_lock_irqsave(&cmd->t_state_lock, flags);
+ 	/*
+ 	 * Determine if frontend context caller is requesting the stopping of
+@@ -696,17 +691,6 @@ static int transport_cmd_check_stop_to_fabric(struct se_cmd *cmd)
+ 	return cmd->se_tfo->check_stop_free(cmd);
+ }
+ 
+-static void transport_lun_remove_cmd(struct se_cmd *cmd)
+-{
+-	struct se_lun *lun = cmd->se_lun;
+-
+-	if (!lun)
+-		return;
+-
+-	if (cmpxchg(&cmd->lun_ref_active, true, false))
+-		percpu_ref_put(&lun->lun_ref);
+-}
+-
+ static void target_complete_failure_work(struct work_struct *work)
+ {
+ 	struct se_cmd *cmd = container_of(work, struct se_cmd, work);
+@@ -797,8 +781,6 @@ static void target_handle_abort(struct se_cmd *cmd)
+ 
+ 	WARN_ON_ONCE(kref_read(&cmd->cmd_kref) = 0);
+ 
+-	transport_lun_remove_cmd(cmd);
+-
+ 	transport_cmd_check_stop_to_fabric(cmd);
+ }
+ 
+@@ -1711,7 +1693,6 @@ static void target_complete_tmr_failure(struct work_struct *work)
+ 	se_cmd->se_tmr_req->response = TMR_LUN_DOES_NOT_EXIST;
+ 	se_cmd->se_tfo->queue_tm_rsp(se_cmd);
+ 
+-	transport_lun_remove_cmd(se_cmd);
+ 	transport_cmd_check_stop_to_fabric(se_cmd);
+ }
+ 
+@@ -1902,7 +1883,6 @@ void transport_generic_request_failure(struct se_cmd *cmd,
+ 		goto queue_full;
+ 
+ check_stop:
+-	transport_lun_remove_cmd(cmd);
+ 	transport_cmd_check_stop_to_fabric(cmd);
+ 	return;
+ 
+@@ -2200,7 +2180,6 @@ static void transport_complete_qf(struct se_cmd *cmd)
+ 		transport_handle_queue_full(cmd, cmd->se_dev, ret, false);
+ 		return;
+ 	}
+-	transport_lun_remove_cmd(cmd);
+ 	transport_cmd_check_stop_to_fabric(cmd);
+ }
+ 
+@@ -2295,7 +2274,6 @@ static void target_complete_ok_work(struct work_struct *work)
+ 		if (ret)
+ 			goto queue_full;
+ 
+-		transport_lun_remove_cmd(cmd);
+ 		transport_cmd_check_stop_to_fabric(cmd);
+ 		return;
+ 	}
+@@ -2321,7 +2299,6 @@ static void target_complete_ok_work(struct work_struct *work)
+ 			if (ret)
+ 				goto queue_full;
+ 
+-			transport_lun_remove_cmd(cmd);
+ 			transport_cmd_check_stop_to_fabric(cmd);
+ 			return;
+ 		}
+@@ -2357,7 +2334,6 @@ static void target_complete_ok_work(struct work_struct *work)
+ 			if (ret)
+ 				goto queue_full;
+ 
+-			transport_lun_remove_cmd(cmd);
+ 			transport_cmd_check_stop_to_fabric(cmd);
+ 			return;
+ 		}
+@@ -2393,7 +2369,6 @@ static void target_complete_ok_work(struct work_struct *work)
+ 		break;
+ 	}
+ 
+-	transport_lun_remove_cmd(cmd);
+ 	transport_cmd_check_stop_to_fabric(cmd);
+ 	return;
+ 
+@@ -2720,9 +2695,6 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ 		 */
+ 		if (cmd->state_active)
+ 			target_remove_from_state_list(cmd);
+-
+-		if (cmd->se_lun)
+-			transport_lun_remove_cmd(cmd);
+ 	}
+ 	if (aborted)
+ 		cmd->free_compl = &compl;
+@@ -2794,6 +2766,9 @@ static void target_release_cmd_kref(struct kref *kref)
+ 	struct completion *abrt_compl = se_cmd->abrt_compl;
+ 	unsigned long flags;
+ 
++	if (se_cmd->lun_ref_active)
++		percpu_ref_put(&se_cmd->se_lun->lun_ref);
++
+ 	if (se_sess) {
+ 		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
+ 		list_del_init(&se_cmd->se_cmd_list);
 -- 
 2.20.1.495.gaa96b0ce6b-goog
