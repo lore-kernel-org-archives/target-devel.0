@@ -1,43 +1,131 @@
 From: Bart Van Assche <bvanassche@acm.org>
-Date: Fri, 25 Jan 2019 18:34:49 +0000
-Subject: [PATCH 07/16] RDMA/srpt: Fix handling of TMF submission failure
-Message-Id: <20190125183458.220477-8-bvanassche@acm.org>
+Date: Fri, 25 Jan 2019 18:34:56 +0000
+Subject: [PATCH 14/16] target/iscsi: Avoid that iscsit_release_commands_from_conn() triggers a deadlock
+Message-Id: <20190125183458.220477-15-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20190125183458.220477-1-bvanassche@acm.org>
+In-Reply-To: <20190125183458.220477-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: Christoph Hellwig <hch@lst.de>, target-devel@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>, Nicholas Bellinger <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>, Hannes Reinecke <hare@suse.de>, stable@vger.kernel.org
 
-If submitting a TMF to the target core fails, send the "FUNCTION
-REJECTED" response to the initiator.
+When using SCSI passthrough in combination with the iSCSI target driver
+then cmd->t_state_lock may be obtained from interrupt context. Hence,
+all code that obtains cmd->t_state_lock from thread context must disable
+interrupts first. This patch avoids that lockdep reports the following:
 
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-Cc: Doug Ledford <dledford@redhat.com>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>
+WARNING: inconsistent lock state
+4.18.0-dbg+ #1 Not tainted
+--------------------------------
+inconsistent {HARDIRQ-ON-W} -> {IN-HARDIRQ-W} usage.
+iscsi_ttx/1800 [HC1[1]:SC0[2]:HE0:SE0] takes:
+000000006e7b0ceb (&(&cmd->t_state_lock)->rlock){?...}, at: target_complete_cmd+0x47/0x2c0 [target_core_mod]
+{HARDIRQ-ON-W} state was registered at:
+ lock_acquire+0xd2/0x260
+ _raw_spin_lock+0x32/0x50
+ iscsit_close_connection+0x97e/0x1020 [iscsi_target_mod]
+ iscsit_take_action_for_connection_exit+0x108/0x200 [iscsi_target_mod]
+ iscsi_target_rx_thread+0x180/0x190 [iscsi_target_mod]
+ kthread+0x1cf/0x1f0
+ ret_from_fork+0x24/0x30
+irq event stamp: 1281
+hardirqs last  enabled at (1279): [<ffffffff970ade79>] __local_bh_enable_ip+0xa9/0x160
+hardirqs last disabled at (1281): [<ffffffff97a008a5>] interrupt_entry+0xb5/0xd0
+softirqs last  enabled at (1278): [<ffffffff977cd9a1>] lock_sock_nested+0x51/0xc0
+softirqs last disabled at (1280): [<ffffffffc07a6e04>] ip6_finish_output2+0x124/0xe40 [ipv6]
+
+other info that might help us debug this:
+Possible unsafe locking scenario:
+
+      CPU0
+      ----
+ lock(&(&cmd->t_state_lock)->rlock);
+ <Interrupt>
+   lock(&(&cmd->t_state_lock)->rlock);
+
+*** DEADLOCK ***
+
+3 locks held by iscsi_ttx/1800:
+*0: 00000000c3b711b7 (sk_lock-AF_INET6){+.+.}, at: tcp_sendmsg+0x1e/0x50
+*1: 00000000fa81046f (rcu_read_lock){....}, at: inet6_csk_xmit+0xc7/0x2e0 [ipv6]
+*2: 00000000c091d70d (rcu_read_lock_bh){....}, at: ip6_finish_output2+0x124/0xe40 [ipv6]
+
+stack backtrace:
+CPU: 0 PID: 1800 Comm: iscsi_ttx Not tainted 4.18.0-dbg+ #1
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.0.0-prebuilt.qemu-project.org 04/01/2014
+Call Trace:
+<IRQ>
+dump_stack+0xa4/0xf5
+print_usage_bug+0x25b/0x27b
+mark_lock+0x70f/0x7b0
+__lock_acquire+0xbc2/0x1b50
+lock_acquire+0xd2/0x260
+_raw_spin_lock_irqsave+0x4a/0x60
+target_complete_cmd+0x47/0x2c0 [target_core_mod]
+target_complete_cmd_with_length+0x70/0xa0 [target_core_mod]
+pscsi_req_done+0x335/0x530 [target_core_pscsi]
+__blk_mq_end_request+0xa5/0x140
+scsi_end_request+0x112/0x320 [scsi_mod]
+scsi_io_completion+0x183/0xa30 [scsi_mod]
+scsi_finish_command+0x1c0/0x280 [scsi_mod]
+scsi_softirq_done+0x19a/0x230 [scsi_mod]
+__blk_mq_complete_request_remote+0x2f/0x40
+flush_smp_call_function_queue+0x12a/0x220
+generic_smp_call_function_single_interrupt+0x13/0x30
+smp_call_function_single_interrupt+0x7a/0x350
+call_function_single_interrupt+0xf/0x20
+</IRQ>
+RIP: 0010:__asan_load4+0x1e/0x80
+debug_lockdep_rcu_enabled+0x26/0x40
+ip6_finish_output2+0x15a/0xe40 [ipv6]
+ip6_finish_output+0x308/0x440 [ipv6]
+ip6_output+0x11d/0x3b0 [ipv6]
+ip6_xmit+0x639/0xc50 [ipv6]
+inet6_csk_xmit+0x198/0x2e0 [ipv6]
+__tcp_transmit_skb+0xc1b/0x15b0
+tcp_write_xmit+0x42e/0x1f20
+__tcp_push_pending_frames+0x59/0x150
+tcp_push+0x189/0x270
+tcp_sendmsg_locked+0x7b9/0x1680
+tcp_sendmsg+0x2c/0x50
+inet_sendmsg+0x71/0x250
+sock_sendmsg+0x4c/0x60
+tx_data+0x12b/0x1f0 [iscsi_target_mod]
+iscsit_send_tx_data+0x77/0xe0 [iscsi_target_mod]
+iscsit_xmit_pdu+0x2c5/0x740 [iscsi_target_mod]
+iscsit_response_queue+0x941/0xd40 [iscsi_target_mod]
+iscsi_target_tx_thread+0x23b/0x350 [iscsi_target_mod]
+kthread+0x1cf/0x1f0
+ret_from_fork+0x24/0x30
+
+Fixes: 064cdd2d91c2 ("target: Fix race between iscsi-target connection shutdown + ABORT_TASK")
 Cc: Nicholas Bellinger <nab@linux-iscsi.org>
 Cc: Mike Christie <mchristi@redhat.com>
 Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.de>
+Cc: <stable@vger.kernel.org>
 Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 ---
- drivers/infiniband/ulp/srpt/ib_srpt.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/target/iscsi/iscsi_target.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index 4fc901d1c0c1..0dc2df925f76 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -1581,11 +1581,9 @@ static void srpt_handle_tsk_mgmt(struct srpt_rdma_ch *ch,
- 			       TARGET_SCF_ACK_KREF);
- 	if (rc != 0) {
- 		send_ioctx->cmd.se_tmr_req->response = TMR_FUNCTION_REJECTED;
--		goto fail;
-+		cmd->se_tfo->queue_tm_rsp(cmd);
- 	}
- 	return;
--fail:
--	transport_send_check_condition_and_sense(cmd, 0, 0); // XXX:
- }
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 7059ffdb0c20..408d77eb717c 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4038,9 +4038,9 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
+ 		struct se_cmd *se_cmd = &cmd->se_cmd;
  
- /**
+ 		if (se_cmd->se_tfo != NULL) {
+-			spin_lock(&se_cmd->t_state_lock);
++			spin_lock_irq(&se_cmd->t_state_lock);
+ 			se_cmd->transport_state |= CMD_T_FABRIC_STOP;
+-			spin_unlock(&se_cmd->t_state_lock);
++			spin_unlock_irq(&se_cmd->t_state_lock);
+ 		}
+ 	}
+ 	spin_unlock_bh(&conn->cmd_lock);
 -- 
 2.20.1.495.gaa96b0ce6b-goog
