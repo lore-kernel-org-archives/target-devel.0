@@ -1,33 +1,38 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Fri, 11 Jan 2019 20:02:00 +0000
-Subject: Re: IP whitelisting
-Message-Id: <5C38F638.7010807@redhat.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Fri, 25 Jan 2019 18:34:52 +0000
+Subject: [PATCH 10/16] target/iscsi: Remove an incorrect comment
+Message-Id: <20190125183458.220477-11-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <CAC3zG1ngRZb=phgij1T6g1a85_Lnn-08gyr226H_c5ceEDfs4A@mail.gmail.com>
-In-Reply-To: <CAC3zG1ngRZb=phgij1T6g1a85_Lnn-08gyr226H_c5ceEDfs4A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 01/11/2019 12:47 PM, Florian Florensa wrote:
-> Would a patch regarding this feature appreciated? I would like to work
-> on that if it is doable
-> 
+The single iscsit_start_nopin_response_timer() caller does not hold
+any locks. Hence remove the comment above this function.
 
-I think it would be ok.
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/iscsi/iscsi_target_util.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-> Le ven. 11 janv. 2019 à 19:16, Mike Christie <mchristi@redhat.com
-> <mailto:mchristi@redhat.com>> a écrit :
-> 
->     On 01/03/2019 01:58 PM, Florian Florensa wrote:
->     > Hello everyone
->     >
->     > I am starting to get some interest on LIO and its integration with
->     > Ceph RBD, and i was wondering after looking through the api/cli if
->     > there is a way to filter clients by IP ?
->     >
-> 
->     The kernel/LIO only supports initiator name based ACLs so upper layer
->     tools like targetcli/gwlci and rtslib only support that.
-> 
+diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+index 86987da86dd6..762448e2f8b7 100644
+--- a/drivers/target/iscsi/iscsi_target_util.c
++++ b/drivers/target/iscsi/iscsi_target_util.c
+@@ -956,9 +956,6 @@ void iscsit_mod_nopin_response_timer(struct iscsi_conn *conn)
+ 	spin_unlock_bh(&conn->nopin_timer_lock);
+ }
+ 
+-/*
+- *	Called with conn->nopin_timer_lock held.
+- */
+ void iscsit_start_nopin_response_timer(struct iscsi_conn *conn)
+ {
+ 	struct iscsi_session *sess = conn->sess;
+-- 
+2.20.1.495.gaa96b0ce6b-goog
