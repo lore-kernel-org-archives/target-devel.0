@@ -1,45 +1,94 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Fri, 11 Jan 2019 20:06:03 +0000
-Subject: Re: [PATCH] target: fix a missing check for match_int
-Message-Id: <5C38F72B.5000203@redhat.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Fri, 25 Jan 2019 18:34:57 +0000
+Subject: [PATCH 15/16] target/iscsi: Simplify iscsit_dump_data_payload()
+Message-Id: <20190125183458.220477-16-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181226064818.75984-1-kjlu@umn.edu>
-In-Reply-To: <20181226064818.75984-1-kjlu@umn.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kangjie Lu <kjlu@umn.edu>
-Cc: pakki001@umn.edu, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-On 12/26/2018 12:48 AM, Kangjie Lu wrote:
-> When match_int fails, "arg" is left uninitialized and may contain random
-> value, thus should not be used.
-> The fix checks if match_int fails, and if so, break.
-> 
-> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
-> ---
->  drivers/target/target_core_rd.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
-> index a6e8106abd6f..3138123143e8 100644
-> --- a/drivers/target/target_core_rd.c
-> +++ b/drivers/target/target_core_rd.c
-> @@ -573,7 +573,8 @@ static ssize_t rd_set_configfs_dev_params(struct se_device *dev,
->  		token = match_token(ptr, tokens, args);
->  		switch (token) {
->  		case Opt_rd_pages:
-> -			match_int(args, &arg);
-> +			if (match_int(args, &arg))
-> +				break;
+Use a single loop to dump immediate data, padding and digest
+instead of using separate rx_data() calls for each type of data.
 
-I think if this fails you would want to return an error.
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/iscsi/iscsi_target_erl1.c | 41 ++++++------------------
+ 1 file changed, 9 insertions(+), 32 deletions(-)
 
-Also, I think you want to add a similar check for the Opt_rd_nullio call
-below this chunk because arg may initialized to junk.
-
-
->  			rd_dev->rd_page_count = arg;
->  			pr_debug("RAMDISK: Referencing Page"
->  				" Count: %u\n", rd_dev->rd_page_count);
-> 
+diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
+index c27335c29640..e02e1aaf63c5 100644
+--- a/drivers/target/iscsi/iscsi_target_erl1.c
++++ b/drivers/target/iscsi/iscsi_target_erl1.c
+@@ -48,14 +48,20 @@ int iscsit_dump_data_payload(
+ 	u32 buf_len,
+ 	int dump_padding_digest)
+ {
+-	char *buf, pad_bytes[4];
++	char *buf;
+ 	int ret = DATAOUT_WITHIN_COMMAND_RECOVERY, rx_got;
+-	u32 length, padding, offset = 0, size;
++	u32 length, offset = 0, size;
+ 	struct kvec iov;
+ 
+ 	if (conn->sess->sess_ops->RDMAExtensions)
+ 		return 0;
+ 
++	if (dump_padding_digest) {
++		buf_len = ALIGN(buf_len, 4);
++		if (conn->conn_ops->DataDigest)
++			buf_len += ISCSI_CRC_LEN;
++	}
++
+ 	length = min(buf_len, OFFLOAD_BUF_SIZE);
+ 
+ 	buf = kzalloc(length, GFP_ATOMIC);
+@@ -75,41 +81,12 @@ int iscsit_dump_data_payload(
+ 		rx_got = rx_data(conn, &iov, 1, size);
+ 		if (rx_got != size) {
+ 			ret = DATAOUT_CANNOT_RECOVER;
+-			goto out;
++			break;
+ 		}
+ 
+ 		offset += size;
+ 	}
+ 
+-	if (!dump_padding_digest)
+-		goto out;
+-
+-	padding = ((-buf_len) & 3);
+-	if (padding != 0) {
+-		iov.iov_len = padding;
+-		iov.iov_base = pad_bytes;
+-
+-		rx_got = rx_data(conn, &iov, 1, padding);
+-		if (rx_got != padding) {
+-			ret = DATAOUT_CANNOT_RECOVER;
+-			goto out;
+-		}
+-	}
+-
+-	if (conn->conn_ops->DataDigest) {
+-		u32 data_crc;
+-
+-		iov.iov_len = ISCSI_CRC_LEN;
+-		iov.iov_base = &data_crc;
+-
+-		rx_got = rx_data(conn, &iov, 1, ISCSI_CRC_LEN);
+-		if (rx_got != ISCSI_CRC_LEN) {
+-			ret = DATAOUT_CANNOT_RECOVER;
+-			goto out;
+-		}
+-	}
+-
+-out:
+ 	kfree(buf);
+ 	return ret;
+ }
+-- 
+2.20.1.495.gaa96b0ce6b-goog
