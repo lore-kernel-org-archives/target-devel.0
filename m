@@ -1,51 +1,65 @@
 From: Bart Van Assche <bvanassche@acm.org>
-Date: Fri, 25 Jan 2019 18:34:51 +0000
-Subject: [PATCH 09/16] RDMA/srpt: Fix a credit leak for aborted commands
-Message-Id: <20190125183458.220477-10-bvanassche@acm.org>
+Date: Fri, 25 Jan 2019 18:34:47 +0000
+Subject: [PATCH 05/16] target/core: Add target_send_busy()
+Message-Id: <20190125183458.220477-6-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Make sure that the next time a response is sent to the initiator that the
-credit it had allocated for the aborted request gets freed.
+Introduce a function that sends the SCSI status "BUSY" back to the
+initiator. The next patch will add a call to this function in the
+srpt target driver.
 
-Cc: Doug Ledford <dledford@redhat.com>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Reviewed-by: Hannes Reinecke <hare@suse.com>
 Cc: Nicholas Bellinger <nab@linux-iscsi.org>
 Cc: Mike Christie <mchristi@redhat.com>
-Cc: Hannes Reinecke <hare@suse.com>
 Cc: Christoph Hellwig <hch@lst.de>
-Fixes: 131e6abc674e ("target: Add TFO->abort_task for aborted task resources release") # v3.15
 Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 ---
- drivers/infiniband/ulp/srpt/ib_srpt.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/target/target_core_transport.c | 16 ++++++++++++++++
+ include/target/target_core_fabric.h    |  1 +
+ 2 files changed, 17 insertions(+)
 
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index d426e01905f9..1a039f16d315 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -2870,8 +2870,19 @@ static void srpt_queue_tm_rsp(struct se_cmd *cmd)
- 	srpt_queue_response(cmd);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 6471ede00336..e3f7e21e6614 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3246,6 +3246,22 @@ transport_send_check_condition_and_sense(struct se_cmd *cmd,
  }
+ EXPORT_SYMBOL(transport_send_check_condition_and_sense);
  
-+/*
-+ * This function is called for aborted commands if no response is sent to the
-+ * initiator. Make sure that the credits freed by aborting a command are
-+ * returned to the initiator the next time a response is sent by incrementing
-+ * ch->req_lim_delta.
++/**
++ * target_send_busy - Send SCSI BUSY status back to the initiator
++ * @cmd: SCSI command for which to send a BUSY reply.
++ *
++ * Note: Only call this function if target_submit_cmd*() failed.
 + */
- static void srpt_aborted_task(struct se_cmd *cmd)
- {
-+	struct srpt_send_ioctx *ioctx = container_of(cmd,
-+				struct srpt_send_ioctx, cmd);
-+	struct srpt_rdma_ch *ch = ioctx->ch;
++int target_send_busy(struct se_cmd *cmd)
++{
++	WARN_ON_ONCE(cmd->se_cmd_flags & SCF_SCSI_TMR_CDB);
 +
-+	atomic_inc(&ch->req_lim_delta);
- }
- 
- static int srpt_queue_status(struct se_cmd *cmd)
++	cmd->scsi_status = SAM_STAT_BUSY;
++	trace_target_cmd_complete(cmd);
++	return cmd->se_tfo->queue_status(cmd);
++}
++EXPORT_SYMBOL(target_send_busy);
++
+ static void target_tmr_work(struct work_struct *work)
+ {
+ 	struct se_cmd *cmd = container_of(work, struct se_cmd, work);
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 691c6b5e6520..8ed90407f062 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -173,6 +173,7 @@ int	transport_generic_free_cmd(struct se_cmd *, int);
+ bool	transport_wait_for_tasks(struct se_cmd *);
+ int	transport_send_check_condition_and_sense(struct se_cmd *,
+ 		sense_reason_t, int);
++int	target_send_busy(struct se_cmd *cmd);
+ int	target_get_sess_cmd(struct se_cmd *, bool);
+ int	target_put_sess_cmd(struct se_cmd *);
+ void	target_sess_cmd_list_set_waiting(struct se_session *);
 -- 
 2.20.1.495.gaa96b0ce6b-goog
