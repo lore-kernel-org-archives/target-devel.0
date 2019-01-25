@@ -1,48 +1,57 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Sat, 19 Jan 2019 19:06:31 +0000
-Subject: Re: [PATCH v2] target: fix a missing check of match_int
-Message-Id: <5C437537.8010304@redhat.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Fri, 25 Jan 2019 18:34:48 +0000
+Subject: [PATCH 06/16] RDMA/srpt: Fix handling of command / TMF submission failure
+Message-Id: <20190125183458.220477-7-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <5C38F72B.5000203@redhat.com>
- <20190112053159.99406-1-kjlu@umn.edu>
-In-Reply-To: <20190112053159.99406-1-kjlu@umn.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kangjie Lu <kjlu@umn.edu>
-Cc: pakki001@umn.edu, "Nicholas A. Bellinger" <nab@linux-iscsi.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-On 01/11/2019 11:31 PM, Kangjie Lu wrote:
-> When match_int fails, "arg" is left uninitialized and may contain random
-> value, thus should not be used.
-> The fix checks if match_int fails, and if so, returns its error code.
-> 
-> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
-> ---
->  drivers/target/target_core_rd.c | 15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
-> index a6e8106abd6f..3b7657b2f2f1 100644
-> --- a/drivers/target/target_core_rd.c
-> +++ b/drivers/target/target_core_rd.c
-> @@ -559,6 +559,7 @@ static ssize_t rd_set_configfs_dev_params(struct se_device *dev,
->  	char *orig, *ptr, *opts;
->  	substring_t args[MAX_OPT_ARGS];
->  	int arg, token;
-> +	int ret;
->  
->  	opts = kstrdup(page, GFP_KERNEL);
->  	if (!opts)
-> @@ -573,14 +574,24 @@ static ssize_t rd_set_configfs_dev_params(struct se_device *dev,
->  		token = match_token(ptr, tokens, args);
->  		switch (token) {
->  		case Opt_rd_pages:
-> -			match_int(args, &arg);
-> +			ret = match_int(args, &arg);
-> +			if (ret) {
-> +				kfree(orig);
-> +				return ret;
+If submitting an SRP IU to the target core fails, send the SCSI
+response "BUSY" to the initiator instead of not sending any
+response.
 
-Just set ret to the return value and then break, so all the error and
-success paths are going through the same code path.
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+Cc: Doug Ledford <dledford@redhat.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 8cee8c6c6be9..4fc901d1c0c1 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -1505,7 +1505,7 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
+ 			pr_err("0x%llx: parsing SRP descriptor table failed.\n",
+ 			       srp_cmd->tag);
+ 		}
+-		goto release_ioctx;
++		goto busy;
+ 	}
+ 
+ 	rc = target_submit_cmd_map_sgls(cmd, ch->sess, srp_cmd->cdb,
+@@ -1516,13 +1516,12 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
+ 	if (rc != 0) {
+ 		pr_debug("target_submit_cmd() returned %d for tag %#llx\n", rc,
+ 			 srp_cmd->tag);
+-		goto release_ioctx;
++		goto busy;
+ 	}
+ 	return;
+ 
+-release_ioctx:
+-	send_ioctx->state = SRPT_STATE_DONE;
+-	srpt_release_cmd(cmd);
++busy:
++	target_send_busy(cmd);
+ }
+ 
+ static int srp_tmr_to_tcm(int fn)
+-- 
+2.20.1.495.gaa96b0ce6b-goog
