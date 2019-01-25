@@ -1,16 +1,39 @@
-From: friedrich mayrhofer <sanat@math.iiests.ac.in>
-Date: Wed, 16 Jan 2019 20:52:10 +0000
-Subject: =?utf-8?Q?wohlt=C3=A4tige_Spende_von_2.800.000_euro?=
-Message-Id: <1149791744.32723.1547671210035.JavaMail.zimbra@math.iiests.ac.in>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Fri, 25 Jan 2019 04:39:30 +0000
+Subject: [PATCH 1/2] infiniband: remove unneeded header search paths
+Message-Id: <1548391171-6407-2-git-send-email-yamada.masahiro@socionext.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1044229318.32633.1547671195537.JavaMail.zimbra@math.iiests.ac.in>
-In-Reply-To: <1044229318.32633.1547671195537.JavaMail.zimbra@math.iiests.ac.in>
+References: <1548391171-6407-1-git-send-email-yamada.masahiro@socionext.com>
+In-Reply-To: <1548391171-6407-1-git-send-email-yamada.masahiro@socionext.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jason Gunthorpe <jgg@mellanox.com>, linux-rdma@vger.kernel.org, Doug Ledford <dledford@redhat.com>
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, Jason Gunthorpe <jgg@ziepe.ca>, Sagi Grimberg <sagi@grimberg.me>, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>
 
+The included headers are located in include/target/. I was able to
+build these drivers without the extra header search paths.
 
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
 
+ drivers/infiniband/ulp/isert/Makefile | 1 -
+ drivers/infiniband/ulp/srpt/Makefile  | 1 -
+ 2 files changed, 2 deletions(-)
 
-Mein Name ist Friedrich Mayrhofer, meine Frau und ich haben im Dezember 2015 eine Jackpot-Lotterie in Höhe von 50 Millionen Dollar gewonnen. Wir spenden die Summe von 2.800.000 Millionen Euro an 5 glückliche Personen, von denen Sie einer der Begünstigten sind. und wir spenden 2.800.000,00 an Sie, .kontaktieren Sie mich über meine Stiftung bei friedrichmayrhofer.spende@gmail.com
+diff --git a/drivers/infiniband/ulp/isert/Makefile b/drivers/infiniband/ulp/isert/Makefile
+index c8bf242..a4a4766 100644
+--- a/drivers/infiniband/ulp/isert/Makefile
++++ b/drivers/infiniband/ulp/isert/Makefile
+@@ -1,2 +1 @@
+-ccflags-y		:= -Idrivers/target -Idrivers/target/iscsi
+ obj-$(CONFIG_INFINIBAND_ISERT)	+= ib_isert.o
+diff --git a/drivers/infiniband/ulp/srpt/Makefile b/drivers/infiniband/ulp/srpt/Makefile
+index e3ee4bd..43fbde4 100644
+--- a/drivers/infiniband/ulp/srpt/Makefile
++++ b/drivers/infiniband/ulp/srpt/Makefile
+@@ -1,2 +1 @@
+-ccflags-y			:= -Idrivers/target
+ obj-$(CONFIG_INFINIBAND_SRPT)	+= ib_srpt.o
+-- 
+2.7.4
