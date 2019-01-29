@@ -1,24 +1,20 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Sat, 12 Jan 2019 02:06:26 +0000
-Subject: Re: [PATCH v4] scsi: tcmu: avoid cmd/qfull timers updated whenever a new cmd comes
-Message-Id: <yq1pnt2y6hp.fsf@oracle.com>
+From: "Mindy" <lousiaydmqi@verizon.net>
+Date: Tue, 29 Jan 2019 10:35:15 +0000
+Subject: Are your photos ready for retouching?
+Message-Id: <1de8c2002d81d6b6ce465360d06dfa29@kiefer.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20181123011530.2477-1-xiubli@redhat.com>
-In-Reply-To: <20181123011530.2477-1-xiubli@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+Are your photos ready for retouching? We are waiting to start working for
+you soon.
 
-Xiubo,
+No matter making white background or adding path to your pictures, we can
+do it quickly for you.
 
-> This fix will keep the cmd/qfull timers to be pended for the oldest
-> cmd in ringbuffer and full queue, and will update them with the next
-> cmd's deadline only when the old cmd's deadline is reached or removed
-> from the ringbuffer and full queue.
+We can do test on your current photos, please send some to start.
 
-Applied to 5.0/scsi-fixes. Thank you!
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Thanks,
+Mindy
