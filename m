@@ -1,15 +1,44 @@
-From: "Grace" <lekkawnzze@verizon.net>
-Date: Sat, 02 Feb 2019 12:26:04 +0000
+From: "Grace" <lekkanfzze@verizon.net>
+Date: Sat, 02 Feb 2019 12:36:05 +0000
 Subject: Do the work
-Message-Id: <716c44c1ac1059e8ebc109510e644f87@karenwinters.com>
+Message-Id: <109a2593f1909e886a1309f3df872975@karenwinters.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <716c44c1ac1059e8ebc109510e644f87@karenwinters.com>
+In-Reply-To: <716c44c1ac1059e8ebc109510e644f87@karenwinters.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1250"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-V2FudCB0byByZXRvdWNoIHlvdXIgcGhvdG9zPyB3ZSBjYW4gaGVscCB5b3UuCgpEZWVwIGV0Y2hp
-bmcgb3IgbWFza2luZyBmb3IgeW91ciBwaG90b3MsIG9yIGV2ZW4gYWRkaW5nIGNsaXBwaW5nIHBh
-dGguClJldG91Y2hpbmcgYWxzbyBpZiBuZWVkZWQuCgpIb3BlZnVsbHkgdG8gc3RhcnQgc29tZXRo
-aW5nIGZvciB5b3Ugc29vbi4KClRoYW5rcywKR3JhY2UKCgoKCgoKCgoKCgoKCgoKCgoKCkhlZHRl
-bgoKCkzDtmhuZQo=
+Want to retouch your photos? we can help you.
+
+Deep etching or masking for your photos, or even adding clipping path.
+Retouching also if needed.
+
+Hopefully to start something for you soon.
+
+Thanks,
+Grace
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fuldad
+
+
+Seevedtal
