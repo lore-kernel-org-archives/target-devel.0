@@ -1,24 +1,43 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 05 Feb 2019 02:31:01 +0000
-Subject: Re: [PATCH] target: make the pi_prot_format ConfigFS path readable
-Message-Id: <67fb72d3-0184-d52b-d909-ceff30d50969@acm.org>
+From: Laura Abbott <labbott@redhat.com>
+Date: Sun, 03 Feb 2019 16:56:00 +0000
+Subject: Userspace regression with 6baca7601bde ("scsi: target: drop unused pi_prot_format attribute storage"
+Message-Id: <57120b72-2ab9-bfa5-f69c-31aee78d5936@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190204183210.8386-1-ddiss@suse.de>
-In-Reply-To: <20190204183210.8386-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: David Disseldorp <ddiss@suse.de>, Christoph Hellwig <hch@lst.de>, "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 2/4/19 10:32 AM, David Disseldorp wrote:
-> pi_prot_format conversion to write-only caused userspace breakage. Make
-> the ConfigFS path readable again and hardcode the "0\n" content,
-> matching previous output.
-> 
-> Fixes: 6baca7601bde ("scsi: target: drop unused pi_prot_format attribute storage")
-> Link: https://bugzilla.redhat.com/show_bug.cgi?id67505
-> Reported-by: Lee Duncan <lduncan@suse.com>
-> Reported-by: Laura Abbott <labbott@redhat.com>
-> Signed-off-by: David Disseldorp <ddiss@suse.de>
+Hi,
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Fedora got a bug report of a new permission denied error with 5.0-rc2:
+
+>   File "/usr/lib/python3.7/site-packages/rtslib_fb/utils.py", line 100, in fread
+>     with open(path, 'r') as file_fd:
+> PermissionError: [Errno 13] Permission denied: '/sys/kernel/config/target/core/fileio_28/xxx/attrib/pi_prot_format'
+
+This looks like an intentional behavior change with
+
+commit 6baca7601bdee2e57f20c45d63eb53b89b33e816
+Author: David Disseldorp <ddiss@suse.de>
+Date:   Fri Nov 23 18:36:11 2018 +0100
+
+     scsi: target: drop unused pi_prot_format attribute storage
+     
+     On write, the pi_prot_format configfs attribute invokes the device
+     format_prot() callback if present. Read dumps the contents of
+     se_dev_attrib.pi_prot_format which is always zero.  Make the configfs
+     attribute write-only, and drop the always zero se_dev_attrib.pi_prot_format
+     storage.
+     
+     Signed-off-by: David Disseldorp <ddiss@suse.de>
+     Reviewed-by: Christoph Hellwig <hch@lst.de>
+     Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+
+
+Unfortunately, existing code that's opening with read permissions is now broken.
+Can this be reverted? Full bug at https://bugzilla.redhat.com/show_bug.cgi?id67505
+
+Thanks,
+Laura
