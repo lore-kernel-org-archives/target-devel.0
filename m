@@ -1,86 +1,51 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 08 Jan 2019 19:31:53 +0000
-Subject: [PATCH AUTOSEL 4.14 25/53] scsi: target: use consistent left-aligned ASCII INQUIRY data
-Message-Id: <20190108193222.123316-25-sashal@kernel.org>
+From: David Disseldorp <ddiss@suse.de>
+Date: Mon, 04 Feb 2019 18:32:10 +0000
+Subject: [PATCH] target: make the pi_prot_format ConfigFS path readable
+Message-Id: <20190204183210.8386-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190108193222.123316-1-sashal@kernel.org>
-In-Reply-To: <20190108193222.123316-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: David Disseldorp <ddiss@suse.de>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-From: David Disseldorp <ddiss@suse.de>
+pi_prot_format conversion to write-only caused userspace breakage. Make
+the ConfigFS path readable again and hardcode the "0\n" content,
+matching previous output.
 
-[ Upstream commit 0de263577de5d5e052be5f4f93334e63cc8a7f0b ]
-
-spc5r17.pdf specifies:
-
-  4.3.1 ASCII data field requirements
-  ASCII data fields shall contain only ASCII printable characters (i.e.,
-  code values 20h to 7Eh) and may be terminated with one or more ASCII null
-  (00h) characters.  ASCII data fields described as being left-aligned
-  shall have any unused bytes at the end of the field (i.e., highest
-  offset) and the unused bytes shall be filled with ASCII space characters
-  (20h).
-
-LIO currently space-pads the T10 VENDOR IDENTIFICATION and PRODUCT
-IDENTIFICATION fields in the standard INQUIRY data. However, the PRODUCT
-REVISION LEVEL field in the standard INQUIRY data as well as the T10 VENDOR
-IDENTIFICATION field in the INQUIRY Device Identification VPD Page are
-zero-terminated/zero-padded.
-
-Fix this inconsistency by using space-padding for all of the above fields.
-
+Fixes: 6baca7601bde ("scsi: target: drop unused pi_prot_format attribute storage")
+Link: https://bugzilla.redhat.com/show_bug.cgi?id67505
+Reported-by: Lee Duncan <lduncan@suse.com>
+Reported-by: Laura Abbott <labbott@redhat.com>
 Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Bryant G. Ly <bly@catalogicsoftware.com>
-Reviewed-by: Lee Duncan <lduncan@suse.com>
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_spc.c | 17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+ drivers/target/target_core_configfs.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index cb0461a10808..93424db5f002 100644
---- a/drivers/target/target_core_spc.c
-+++ b/drivers/target/target_core_spc.c
-@@ -108,12 +108,17 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 72016d0dfca5..8e7fffbb8802 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -852,6 +852,12 @@ static ssize_t pi_prot_type_store(struct config_item *item,
+ 	return count;
+ }
  
- 	buf[7] = 0x2; /* CmdQue=1 */
- 
--	memcpy(&buf[8], "LIO-ORG ", 8);
--	memset(&buf[16], 0x20, 16);
-+	/*
-+	 * ASCII data fields described as being left-aligned shall have any
-+	 * unused bytes at the end of the field (i.e., highest offset) and the
-+	 * unused bytes shall be filled with ASCII space characters (20h).
-+	 */
-+	memset(&buf[8], 0x20, 8 + 16 + 4);
-+	memcpy(&buf[8], "LIO-ORG", sizeof("LIO-ORG") - 1);
- 	memcpy(&buf[16], dev->t10_wwn.model,
--	       min_t(size_t, strlen(dev->t10_wwn.model), 16));
-+	       strnlen(dev->t10_wwn.model, 16));
- 	memcpy(&buf[32], dev->t10_wwn.revision,
--	       min_t(size_t, strlen(dev->t10_wwn.revision), 4));
-+	       strnlen(dev->t10_wwn.revision, 4));
- 	buf[4] = 31; /* Set additional length to 31 */
- 
- 	return 0;
-@@ -251,7 +256,9 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
- 	buf[off] = 0x2; /* ASCII */
- 	buf[off+1] = 0x1; /* T10 Vendor ID */
- 	buf[off+2] = 0x0;
--	memcpy(&buf[off+4], "LIO-ORG", 8);
-+	/* left align Vendor ID and pad with spaces */
-+	memset(&buf[off+4], 0x20, 8);
-+	memcpy(&buf[off+4], "LIO-ORG", sizeof("LIO-ORG") - 1);
- 	/* Extra Byte for NULL Terminator */
- 	id_len++;
- 	/* Identifier Length */
++/* always zero, but attr needs to remain RW to avoid userspace breakage */
++static ssize_t pi_prot_format_show(struct config_item *item, char *page)
++{
++	return snprintf(page, PAGE_SIZE, "0\n");
++}
++
+ static ssize_t pi_prot_format_store(struct config_item *item,
+ 		const char *page, size_t count)
+ {
+@@ -1132,7 +1138,7 @@ CONFIGFS_ATTR(, emulate_3pc);
+ CONFIGFS_ATTR(, emulate_pr);
+ CONFIGFS_ATTR(, pi_prot_type);
+ CONFIGFS_ATTR_RO(, hw_pi_prot_type);
+-CONFIGFS_ATTR_WO(, pi_prot_format);
++CONFIGFS_ATTR(, pi_prot_format);
+ CONFIGFS_ATTR(, pi_prot_verify);
+ CONFIGFS_ATTR(, enforce_pr_isids);
+ CONFIGFS_ATTR(, is_nonrot);
 -- 
-2.19.1
+2.13.7
