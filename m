@@ -1,52 +1,40 @@
-From: Zhiwei Jiang <qq282012236@gmail.com>
-Date: Thu, 14 Feb 2019 14:06:51 +0000
-Subject: [PATCH] scsi: target: move spin_lock_bh to spin_lock in tasklet
-Message-Id: <20190214140651.65514-1-qq282012236@gmail.com>
+From: "Stacy" <tuenkasnzsat@verizon.net>
+Date: Mon, 04 Feb 2019 10:56:20 +0000
+Subject: Need this for your photos?
+Message-Id: <b092c73643741bdbaabc931726ccc52e@coroflot.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: qq282012236@gmail.com
-Cc: mikecyr@linux.ibm.com, jejb@linux.ibm.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, martin.petersen@oracle.com
+To: target-devel@vger.kernel.org
 
-as you are already in a tasklet, it is unnecessary to call
-spin_lock_bh, because softirq already disable BH.
+Need to retouch your photos?  Deep etching or masking for your photos?
 
-Signed-off-by: Zhiwei Jiang <qq282012236@gmail.com>
----
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+We are the studio who can do those service for your photos.
 
-diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-index cc9cae469c4b..29e7c51fcc4b 100644
---- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-+++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-@@ -3346,7 +3346,7 @@ static void ibmvscsis_handle_crq(unsigned long data)
- 	bool ack = true;
- 	volatile u8 valid;
- 
--	spin_lock_bh(&vscsi->intr_lock);
-+	spin_lock(&vscsi->intr_lock);
- 
- 	dev_dbg(&vscsi->dev, "got interrupt\n");
- 
-@@ -3360,7 +3360,7 @@ static void ibmvscsis_handle_crq(unsigned long data)
- 
- 		dev_dbg(&vscsi->dev, "handle_crq, don't process: flags 0x%x, state 0x%hx\n",
- 			vscsi->flags, vscsi->state);
--		spin_unlock_bh(&vscsi->intr_lock);
-+		spin_unlock(&vscsi->intr_lock);
- 		return;
- 	}
- 
-@@ -3437,7 +3437,7 @@ static void ibmvscsis_handle_crq(unsigned long data)
- 		(int)list_empty(&vscsi->schedule_q), vscsi->flags,
- 		vscsi->state);
- 
--	spin_unlock_bh(&vscsi->intr_lock);
-+	spin_unlock(&vscsi->intr_lock);
- }
- 
- static int ibmvscsis_probe(struct vio_dev *vdev,
--- 
-2.19.0
+Please send photos to start
+
+Thanks,
+Stacy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Pforzdeim
+
+
+Seevedtal
