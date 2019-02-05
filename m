@@ -1,51 +1,23 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Mon, 04 Feb 2019 18:32:10 +0000
-Subject: [PATCH] target: make the pi_prot_format ConfigFS path readable
-Message-Id: <20190204183210.8386-1-ddiss@suse.de>
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Tue, 05 Feb 2019 02:18:41 +0000
+Subject: Re: [PATCH] target: make the pi_prot_format ConfigFS path readable
+Message-Id: <yq1k1if3rlq.fsf@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20190204183210.8386-1-ddiss@suse.de>
+In-Reply-To: <20190204183210.8386-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-pi_prot_format conversion to write-only caused userspace breakage. Make
-the ConfigFS path readable again and hardcode the "0\n" content,
-matching previous output.
 
-Fixes: 6baca7601bde ("scsi: target: drop unused pi_prot_format attribute storage")
-Link: https://bugzilla.redhat.com/show_bug.cgi?id67505
-Reported-by: Lee Duncan <lduncan@suse.com>
-Reported-by: Laura Abbott <labbott@redhat.com>
-Signed-off-by: David Disseldorp <ddiss@suse.de>
----
- drivers/target/target_core_configfs.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+David,
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 72016d0dfca5..8e7fffbb8802 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -852,6 +852,12 @@ static ssize_t pi_prot_type_store(struct config_item *item,
- 	return count;
- }
- 
-+/* always zero, but attr needs to remain RW to avoid userspace breakage */
-+static ssize_t pi_prot_format_show(struct config_item *item, char *page)
-+{
-+	return snprintf(page, PAGE_SIZE, "0\n");
-+}
-+
- static ssize_t pi_prot_format_store(struct config_item *item,
- 		const char *page, size_t count)
- {
-@@ -1132,7 +1138,7 @@ CONFIGFS_ATTR(, emulate_3pc);
- CONFIGFS_ATTR(, emulate_pr);
- CONFIGFS_ATTR(, pi_prot_type);
- CONFIGFS_ATTR_RO(, hw_pi_prot_type);
--CONFIGFS_ATTR_WO(, pi_prot_format);
-+CONFIGFS_ATTR(, pi_prot_format);
- CONFIGFS_ATTR(, pi_prot_verify);
- CONFIGFS_ATTR(, enforce_pr_isids);
- CONFIGFS_ATTR(, is_nonrot);
+> pi_prot_format conversion to write-only caused userspace
+> breakage. Make the ConfigFS path readable again and hardcode the "0\n"
+> content, matching previous output.
+
+Applied to 5.0/scsi-fixes, thanks!
+
 -- 
-2.13.7
+Martin K. Petersen	Oracle Linux Engineering
