@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 13 Feb 2019 02:32:50 +0000
-Subject: [PATCH AUTOSEL 4.20 059/105] scsi: tcmu: avoid cmd/qfull timers updated whenever a new cmd comes
-Message-Id: <20190213023336.19019-59-sashal@kernel.org>
+Date: Wed, 13 Feb 2019 02:36:29 +0000
+Subject: [PATCH AUTOSEL 4.19 51/83] scsi: tcmu: avoid cmd/qfull timers updated whenever a new cmd comes
+Message-Id: <20190213023701.20286-51-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190213023336.19019-1-sashal@kernel.org>
-In-Reply-To: <20190213023336.19019-1-sashal@kernel.org>
+References: <20190213023701.20286-1-sashal@kernel.org>
+In-Reply-To: <20190213023701.20286-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -82,7 +82,7 @@ index 9cd404acdb82..ac7620120491 100644
  	tcmu_cmd->se_cmd = se_cmd;
  	tcmu_cmd->tcmu_dev = udev;
  
-@@ -915,11 +917,13 @@ setup_timer:
+@@ -915,11 +917,13 @@ static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
  		return 0;
  
  	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
@@ -143,7 +143,7 @@ index 9cd404acdb82..ac7620120491 100644
  	tcmu_cmd_reset_dbi_cur(cmd);
  
  	if (entry->hdr.uflags & TCMU_UFLAG_UNKNOWN_OP) {
-@@ -1194,9 +1203,29 @@ out:
+@@ -1194,9 +1203,29 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
  	tcmu_free_cmd(cmd);
  }
  
