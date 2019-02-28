@@ -1,46 +1,35 @@
-From: Cathy Avery <cavery@redhat.com>
-Date: Thu, 28 Feb 2019 19:28:24 +0000
-Subject: [PATCH] tcmu: wait for nl reply only if there are listeners or during an add
-Message-Id: <20190228192824.28458-1-cavery@redhat.com>
+From: Gionatan Danti <g.danti@assyoma.it>
+Date: Thu, 28 Feb 2019 15:19:15 +0000
+Subject: Limit logins or connections to the same target LUN
+Message-Id: <17b94268-631e-515b-ccb3-f1b6ffcdd797@assyoma.it>
 List-Id: <target-devel.vger.kernel.org>
-References: <1549076481-15420-1-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1549076481-15420-1-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-genlmsg_multicast_allns now returns the correct statuses when a
-message is sent to a listener. However in the case of adding a
-device we want to wait for the listener otherwise we may miss the
-the device during startup.
+Hi all,
+I would like to understand if, and how to, limit the maximum number of 
+simultaneous connections (or logins) to a specific LUN (similar in how 
+the "MaxSession" option worked in the old ietd).
 
-Signed-off-by: Cathy Avery <cavery@redhat.com>
----
- drivers/target/target_core_user.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+I am exporting a LUN with a general purpose filesystem (non cluster 
+aware) and I would be 100% sure that only a single machine at a time can 
+mount it.
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 5831e0eecea1..2d3f8f5403d8 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1794,11 +1794,12 @@ static int tcmu_netlink_event_send(struct tcmu_dev *udev,
- 
- 	ret = genlmsg_multicast_allns(&tcmu_genl_family, skb, 0,
- 				      TCMU_MCGRP_CONFIG, GFP_KERNEL);
--	/* We don't care if no one is listening */
--	if (ret = -ESRCH)
--		ret = 0;
--	if (!ret)
--		ret = tcmu_wait_genl_cmd_reply(udev);
-+
-+	/* Wait during an add as the listener may not be up yet */
-+	if (ret = 0 ||
-+	   (ret = -ESRCH && cmd = TCMU_CMD_ADDED_DEVICE))
-+		return tcmu_wait_genl_cmd_reply(udev);
-+
- 	return ret;
- }
- 
+At the moment, I protected the iSCSI LUN with both an IP-based access 
+list and a username/password combo, but hard limiting the maximum number 
+of connections opened against it to 1 (one) would be a nice thing...
+
+Also, I am aware of SCSI persistent reservations (sg_persist) but, while 
+working well, they are somewhat harder to setup.
+
+Thank you,
+regards.
+
 -- 
-2.19.1
+Danti Gionatan
+Supporto Tecnico
+Assyoma S.r.l. - www.assyoma.it
+email: g.danti@assyoma.it - info@assyoma.it
+GPG public key ID: FF5F32A8
