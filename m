@@ -1,7 +1,7 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 06 Mar 2019 17:52:07 +0000
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 06 Mar 2019 20:43:49 +0000
 Subject: Re: [PATCH v1] scsi: tcmu: Switch to bitmap_zalloc()
-Message-Id: <yq1o96nyjp4.fsf@oracle.com>
+Message-Id: <5C803105.7090100@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190304094434.57965-1-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <20190304094434.57965-1-andriy.shevchenko@linux.intel.com>
@@ -10,19 +10,15 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-
-Mike,
-
-Please review!
-
+On 03/04/2019 03:44 AM, Andy Shevchenko wrote:
 > Switch to bitmap_zalloc() to show clearly what we are allocating.
 > Besides that it returns pointer of bitmap type instead of opaque void *.
->
+> 
 > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 > ---
 >  drivers/target/target_core_user.c | 8 +++-----
 >  1 file changed, 3 insertions(+), 5 deletions(-)
->
+> 
 > diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
 > index 5831e0eecea1..c726c029affe 100644
 > --- a/drivers/target/target_core_user.c
@@ -56,6 +52,8 @@ Please review!
 >  	udev->data_bitmap = NULL;
 >  err_bitmap_alloc:
 >  	kfree(info->name);
+> 
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Looks nice to me. Thanks.
+
+Acked-by: Mike Christie <mchristi@redhat.com>
