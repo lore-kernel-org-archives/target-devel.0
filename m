@@ -1,41 +1,32 @@
-From: "Barr.Augusto Daniel." <chamberlawyer6@gmail.com>
-Date: Mon, 25 Mar 2019 10:13:45 +0000
-Subject: Attention Dear,
-Message-Id: <CAP+Od_nHvO-QKTjqTeuppU3bzbcAeeoAHzbora68bK6WbB=jMw@mail.gmail.com>
+From: hndksztwj@163.com
+Date: Sat, 09 Mar 2019 13:27:06 +0000
+Subject: [PATCH] target:tcmu free cmd->bdi in tcmu_check_and_free_pending_cmd
+Message-Id: <1552138026-5016-1-git-send-email-hndksztwj@163.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+From: tangwenji <tang.wenji@zte.com.cn>
+
+Signed-off-by: tangwenji <tang.wenji@zte.com.cn>
+---
+ drivers/target/target_core_user.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 5831e0e..bb5d85d 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1616,7 +1616,7 @@ static void tcmu_dev_call_rcu(struct rcu_head *p)
+ static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
+ {
+ 	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
+-		kmem_cache_free(tcmu_cmd_cache, cmd);
++		tcmu_free_cmd(cmd);
+ 		return 0;
+ 	}
+ 	return -EINVAL;
 -- 
-Attention Dear,
-
-I am personal representative to my late client, a national of your
-country, and the CEO of his own Construction Company here in Benin
-Republic West Africa. On the 27th of May 2015, my client, His wife and
-their only daughter were involved in a car accident Along express-high
-way, Unfortunately, they all lost their lives.
-
-Before his death the Ministry of public works and Transport Benin
-(MTPT) owed him the sum of Ten Million Eight Hundred Thousand United
-States Dollar Only) US$10.800.000 Only, for a contract he executed for
-the Ministry before his death.
-
-After these several unsuccessful attempts, I decided I want to present
-you as the next of kin for the inheritance fund transfer to your
-account for onward sharing between the both of us 50% to you and 50%
-for me. I guarantee that this will be executed under a legitimate
-arrangement that will protect you from any breach of the law. to
-enable me give you more details.Please kindly reply through my private
-email box for more information, overchambers@gmail.com
-
-Your Full Name and Address,
-Your Age : Occupation and Position,
-Your Private Email : Address
-Your Telephone and Mobile for Communication Purpose
-
-I await your reply via my private email:overchambers@gmail.com
-
-Best Regards.
-Augusto Daniel Esq.
+2.5.0.windows.1
