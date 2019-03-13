@@ -1,24 +1,35 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 06 Mar 2019 17:37:16 +0000
-Subject: Re: [PATCH] tcmu: wait for nl reply only if there are listeners or during an add
-Message-Id: <yq1pnr3zyyb.fsf@oracle.com>
+From: tangwenji <hndksztwj@163.com>
+Date: Wed, 13 Mar 2019 14:56:38 +0000
+Subject: [PATCH] target:iscsi:fix np_ip_proto and np_sock_type in iscsit_setup_np
+Message-Id: <1552488998-3604-1-git-send-email-hndksztwj@163.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1549076481-15420-1-git-send-email-mchristi@redhat.com>
-In-Reply-To: <1549076481-15420-1-git-send-email-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+From: tangwenji <tang.wenji@zte.com.cn>
 
-Cathy,
+In the switch, np_ip_proto and np_sock_type set different values according to np_network_transport, and then uniformly assign values, so the previous values are overwritten.
 
-> genlmsg_multicast_allns now returns the correct statuses when a
-> message is sent to a listener. However in the case of adding a
-> device we want to wait for the listener otherwise we may miss the
-> the device during startup.
+Signed-off-by: tangwenji <tang.wenji@zte.com.cn>
+---
+ drivers/target/iscsi/iscsi_target_login.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-Applied to 5.1/scsi-queue, thanks!
-
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index ae3209e..c526e66 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -883,9 +883,6 @@ int iscsit_setup_np(
+ 		return -EINVAL;
+ 	}
+ 
+-	np->np_ip_proto = IPPROTO_TCP;
+-	np->np_sock_type = SOCK_STREAM;
+-
+ 	ret = sock_create(sockaddr->ss_family, np->np_sock_type,
+ 			np->np_ip_proto, &sock);
+ 	if (ret < 0) {
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.5.0.windows.1
