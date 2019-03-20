@@ -1,22 +1,60 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Thu, 28 Mar 2019 00:33:55 +0000
-Subject: Re: [PATCH V2] target:alua: fix the tg_pt_gps_count
-Message-Id: <yq1d0mbx2fg.fsf@oracle.com>
+From: Colin King <colin.king@canonical.com>
+Date: Wed, 20 Mar 2019 16:37:09 +0000
+Subject: [PATCH][next] scsi: target: fix unsigned comparision with less than zero
+Message-Id: <20190320163709.28767-1-colin.king@canonical.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1553695146-4352-1-git-send-email-hndksztwj@163.com>
-In-Reply-To: <1553695146-4352-1-git-send-email-hndksztwj@163.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: "Martin K . Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
+From: Colin Ian King <colin.king@canonical.com>
 
-tangwenji,
+Currently an error return is being assigned to an unsigned
+size_t varianle and then checked if the result is less than
+zero which will always be false.  Fix this by making ret
+ssize_t rather than a size_t.
 
-> Reducing the count should be alua_tg_pt_gps_count instead of
-> alua_tg_pt_gps_counter when free alua group.
+Fixes: 0322913cab79 ("scsi: target: Add device product id and revision configfs attributes")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/target/target_core_configfs.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Applied to 5.2/scsi-queue, thanks.
-
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 8f3faef235b5..3fe79875b3ac 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1267,7 +1267,8 @@ static ssize_t target_wwn_vendor_id_store(struct config_item *item,
+ 	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
+ 	unsigned char buf[INQUIRY_VENDOR_LEN + 2];
+ 	char *stripped = NULL;
+-	size_t len, ret;
++	size_t len;
++	ssize_t ret;
+ 
+ 	len = strlcpy(buf, page, sizeof(buf));
+ 	if (len < sizeof(buf)) {
+@@ -1322,7 +1323,8 @@ static ssize_t target_wwn_product_id_store(struct config_item *item,
+ 	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
+ 	unsigned char buf[INQUIRY_MODEL_LEN + 2];
+ 	char *stripped = NULL;
+-	size_t len, ret;
++	size_t len;
++	ssize_t ret;
+ 
+ 	len = strlcpy(buf, page, sizeof(buf));
+ 	if (len < sizeof(buf)) {
+@@ -1377,7 +1379,8 @@ static ssize_t target_wwn_revision_store(struct config_item *item,
+ 	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
+ 	unsigned char buf[INQUIRY_REVISION_LEN + 2];
+ 	char *stripped = NULL;
+-	size_t len, ret;
++	size_t len;
++	ssize_t ret;
+ 
+ 	len = strlcpy(buf, page, sizeof(buf));
+ 	if (len < sizeof(buf)) {
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.20.1
