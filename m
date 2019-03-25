@@ -1,7 +1,7 @@
-From: Gionatan Danti <g.danti@assyoma.it>
-Date: Mon, 25 Mar 2019 18:33:38 +0000
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Mon, 25 Mar 2019 19:13:17 +0000
 Subject: Re: Limit logins or connections to the same target LUN
-Message-Id: <b83a29800bb1c3fd2969f173e9dc70ff@assyoma.it>
+Message-Id: <1553541197.118779.14.camel@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <17b94268-631e-515b-ccb3-f1b6ffcdd797@assyoma.it>
 In-Reply-To: <17b94268-631e-515b-ccb3-f1b6ffcdd797@assyoma.it>
@@ -10,40 +10,25 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Il 04-03-2019 18:25 Gionatan Danti ha scritto:
-> Il 28-02-2019 16:19 Gionatan Danti ha scritto:
->> Hi all,
->> I would like to understand if, and how to, limit the maximum number of
->> simultaneous connections (or logins) to a specific LUN (similar in how
->> the "MaxSession" option worked in the old ietd).
->> 
->> I am exporting a LUN with a general purpose filesystem (non cluster
->> aware) and I would be 100% sure that only a single machine at a time
->> can mount it.
->> 
->> At the moment, I protected the iSCSI LUN with both an IP-based access
->> list and a username/password combo, but hard limiting the maximum
->> number of connections opened against it to 1 (one) would be a nice
->> thing...
->> 
->> Also, I am aware of SCSI persistent reservations (sg_persist) but,
->> while working well, they are somewhat harder to setup.
->> 
->> Thank you,
->> regards.
-> 
-> Hi all,
-> any suggestions?
-> 
-> Thanks.
+On Thu, 2019-02-28 at 16:19 +-0100, Gionatan Danti wrote:
++AD4 I would like to understand if, and how to, limit the maximum number of 
++AD4 simultaneous connections (or logins) to a specific LUN (similar in how 
++AD4 the +ACI-MaxSession+ACI option worked in the old ietd).
++AD4 
++AD4 I am exporting a LUN with a general purpose filesystem (non cluster 
++AD4 aware) and I would be 100+ACU sure that only a single machine at a time can 
++AD4 mount it.
++AD4 
++AD4 At the moment, I protected the iSCSI LUN with both an IP-based access 
++AD4 list and a username/password combo, but hard limiting the maximum number 
++AD4 of connections opened against it to 1 (one) would be a nice thing...
++AD4 
++AD4 Also, I am aware of SCSI persistent reservations (sg+AF8-persist) but, while 
++AD4 working well, they are somewhat harder to setup.
 
-Sorry to ask again... does someone know the answer to my question? Am I 
-posting on the wrong list?
-Thanks.
+Hi Danti,
 
--- 
-Danti Gionatan
-Supporto Tecnico
-Assyoma S.r.l. - www.assyoma.it
-email: g.danti@assyoma.it - info@assyoma.it
-GPG public key ID: FF5F32A8
+As far as I know this is not yet supported by the SCSI target code. I think
+the kernel code will have to be modified to add this functionality.
+
+Bart.
