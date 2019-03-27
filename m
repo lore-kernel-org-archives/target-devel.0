@@ -1,19 +1,38 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Tue, 05 Feb 2019 02:39:15 +0000
-Subject: Re: [PATCH 00/16] SCSI target patches for kernel v5.1
-Message-Id: <yq1ftt33qng.fsf@oracle.com>
+From: tangwenji <hndksztwj@163.com>
+Date: Wed, 27 Mar 2019 13:59:06 +0000
+Subject: [PATCH V2] target:alua: fix the tg_pt_gps_count
+Message-Id: <1553695146-4352-1-git-send-email-hndksztwj@163.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+From: tangwenji <tang.wenji@zte.com.cn>
 
-> This series includes the following patches:
-> - Simplify the SCSI core now that TMF processing is synchronous.
-> - Cleanup and bug fixes for the SRP and iSCSI target drivers.
+Reducing the count should be alua_tg_pt_gps_count instead of alua_tg_pt_gps_counter when free alua group.
 
-Applied to 5.1/scsi-queue. Thanks, Bart!
+Signed-off-by: tangwenji <tang.wenji@zte.com.cn>
+---
+ drivers/target/target_core_alua.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index e09f0cf..893f1fe 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -1760,8 +1760,10 @@ void core_alua_free_tg_pt_gp(
+ 	 * can be made while we are releasing struct t10_alua_tg_pt_gp.
+ 	 */
+ 	spin_lock(&dev->t10_alua.tg_pt_gps_lock);
+-	list_del(&tg_pt_gp->tg_pt_gp_list);
+-	dev->t10_alua.alua_tg_pt_gps_counter--;
++	if (tg_pt_gp->tg_pt_gp_valid_id) {
++		list_del(&tg_pt_gp->tg_pt_gp_list);
++		dev->t10_alua.alua_tg_pt_gps_count--;
++	}
+ 	spin_unlock(&dev->t10_alua.tg_pt_gps_lock);
+ 
+ 	/*
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.5.0.windows.1
