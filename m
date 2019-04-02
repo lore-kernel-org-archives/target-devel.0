@@ -1,25 +1,53 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 19 Apr 2019 22:10:58 +0000
-Subject: Re: Avoiding merge conflicts while adding new docs - Was: Re: [PATCH 00/57] Convert files to ReST
-Message-Id: <20190419161058.3628a29b@lwn.net>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 02 Apr 2019 19:58:04 +0000
+Subject: [PATCH 00/11] SCSI target patches for kernel v5.2
+Message-Id: <20190402195815.254796-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <cover.1555382110.git.mchehab+samsung@kernel.org>
-        <20190418091526.00e074d1@coco.lan>
-In-Reply-To: <20190418091526.00e074d1@coco.lan>
+References: <20171031180319.19258-1-bart.vanassche@wdc.com>
+In-Reply-To: <20171031180319.19258-1-bart.vanassche@wdc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-watchdog@vger.kernel.org, xdp-newbies@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-acpi@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, bpf@vger.kernel.org, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-scsi@vger.kernel.org, linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org, dm-devel@redhat.com, target-devel@vger.kernel.org, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-fpga@vger.kernel.org, linux-rdma@vger.kernel.org, linux-kbuild@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-security-module@vger.kernel.org, linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: target-devel@vger.kernel.org
 
-On Thu, 18 Apr 2019 09:42:23 -0300
-Mauro Carvalho Chehab <mchehab+samsung@kernel.org> wrote:
+Hi Martin,
 
-> After thinking a little bit and doing some tests, I think a good solution
-> would be to add ":orphan:" markup to the new .rst files that were not
-> added yet into the main body (e. g. something like the enclosed example).
+This patch series fixes a few bugs and also simplifies the SCSI target code.
+Please consider these patches for kernel v5.2.
 
-Interesting...I didn't know about that.  Yes, I think it makes sense to
-put that in...
+Thanks,
 
-jon
+Bart.
+
+Bart Van Assche (11):
+  target/core: Fix a race condition in the LUN lookup code
+  target/core: Rework the SPC-2 reservation handling code
+  target/core: Release SPC-2 reservation upon initiator logout
+  target/core: Remove a set-but-not-used member variable from the XCOPY
+    implementation
+  target/core: Simplify LUN initialization in XCOPY implementation
+  target/core: Make the XCOPY setup code easier to read by inlining two
+    functions
+  target/iscsi: Detect conn_cmd_list corruption early
+  target/iscsi: Only send R2T if needed
+  target/iscsi: Handle too large immediate data buffers correctly
+  target/iscsi: Make iscsit_map_iovec() more robust
+  target/iscsi: Make sure PDU processing continues if parsing a command
+    fails
+
+ drivers/target/iscsi/iscsi_target.c      | 118 ++++++++++++++++-------
+ drivers/target/iscsi/iscsi_target_util.c |   5 +
+ drivers/target/target_core_configfs.c    |   5 +-
+ drivers/target/target_core_device.c      |   4 +-
+ drivers/target/target_core_pr.c          |  33 ++++---
+ drivers/target/target_core_pr.h          |   1 +
+ drivers/target/target_core_tmr.c         |   2 +-
+ drivers/target/target_core_transport.c   |  10 ++
+ drivers/target/target_core_xcopy.c       |  92 +++++-------------
+ include/target/iscsi/iscsi_target_core.h |   1 +
+ include/target/target_core_base.h        |   4 +-
+ include/target/target_core_fabric.h      |   1 +
+ 12 files changed, 150 insertions(+), 126 deletions(-)
+
+-- 
+2.21.0.196.g041f5ea1cf98
