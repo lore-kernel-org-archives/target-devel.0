@@ -1,78 +1,46 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 09 Apr 2019 05:47:50 +0000
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 09 Apr 2019 17:25:15 +0000
 Subject: Re: [PATCH 03/11] target/core: Release SPC-2 reservation upon initiator logout
-Message-Id: <5CAC3206.5020500@redhat.com>
+Message-Id: <1554830715.161891.11.camel@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190402195815.254796-4-bvanassche@acm.org>
 In-Reply-To: <20190402195815.254796-4-bvanassche@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1258"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-T24gMDQvMDgvMjAxOSAwNjoxNyBQTSwgQmFydCBWYW4gQXNzY2hlIHdyb3RlOgo+IE9uIE1vbiwg
-MjAxOS0wNC0wOCBhdCAxNzo0MSAtMDUwMCwgTWlrZSBDaHJpc3RpZSB3cm90ZToKPj4gT24gMDQv
-MDgvMjAxOSAwMzoxNyBQTSwgQmFydCBWYW4gQXNzY2hlIHdyb3RlOgo+Pj4gT24gTW9uLCAyMDE5
-LTA0LTA4IGF0IDE1OjA0IC0wNTAwLCBNaWtlIENocmlzdGllIHdyb3RlOgo+Pj4+IFdhcyB0aGUg
-b3JpZ2luYWwgY29kZSBkb25lIGZvciBpc2NzaT8gV2UgaGF2ZSB0aGlzIGluCj4+Pj4gaHR0cHM6
-Ly90b29scy5pZXRmLm9yZy9odG1sL3JmYzcxNDM6Cj4+Pj4KPj4+PiA0LjQuMy4yLiBSZXNlcnZh
-dGlvbnMKPj4+Pgo+Pj4+IC4uLi4KPj4+Pgo+Pj4+IEluIGNvbnRyYXN0LCBbU1BDMl0gZG9lcyBu
-b3Qgc3BlY2lmeSBkZXRhaWxlZCBwZXJzaXN0ZW5jZQo+Pj4+IHJlcXVpcmVtZW50cyBmb3IgcmVz
-ZXJ2ZS9yZWxlYXNlIHJlc2VydmF0aW9uIHN0YXRlIGFmdGVyIGFuIElfVCBuZXh1cwo+Pj4+IGZh
-aWx1cmUuIE5vbmV0aGVsZXNzLCB3aGVuIHJlc2VydmUvcmVsZWFzZSByZXNlcnZhdGlvbnMgYXJl
-Cj4+Pj4gc3VwcG9ydGVkIGJ5IGFuIGlTQ1NJIHRhcmdldCwgdGhlIHByZWZlcnJlZCBpbXBsZW1l
-bnRhdGlvbiBhcHByb2FjaAo+Pj4+IGlzIHRvIHByZXNlcnZlIHJlc2VydmUvcmVsZWFzZSByZXNl
-cnZhdGlvbiBzdGF0ZSBmb3IgaVNDU0kgc2Vzc2lvbgo+Pj4+IHJlaW5zdGF0ZW1lbnQgKHNlZSBT
-ZWN0aW9uIDYuMy41KSBvciBzZXNzaW9uIGNvbnRpbnVhdGlvbiAoc2VlCj4+Pj4gU2VjdGlvbiA2
-LjMuNikuCj4+Pj4KPj4+Pgo+Pj4+IFNvIGZvciBleGFtcGxlIGZvciBzZXNzaW9uIHJlaW5zdGF0
-ZW1lbnQgaWYgeW91IHB1bGwgYSBuZXR3b3JrIGNhYmxlCj4+Pj4gdGhlbiBwbHVnIGl0IGJhY2sg
-aW4gdGhlIGlzY3NpIHRhcmdldCBjYW4gZG8gYQo+Pj4+IGlzY3NpdF9jbG9zZV9zZXNzaW9uLT50
-cmFuc3BvcnRfZGVyZWdpc3Rlcl9zZXNzaW9uIC0+Cj4+Pj4gdHJhbnNwb3J0X2ZyZWVfc2Vzc2lv
-bi4gQWJvdmUgd2Ugd2lsbCBub3cgcmVsZWFzZSB0aGUgcmVzZXJ2YXRpb24uCj4+Pgo+Pj4gSGVs
-bG8gTWlrZSwKPj4+Cj4+PiBXYXMgdGhhdCBwYXJhZ3JhcGggZnJvbSB0aGUgaVNDU0kgUkZDIHBl
-cmhhcHMgd3JpdHRlbiBiZWZvcmUgaXQgd2FzIG1hZGUgY2xlYXIKPj4+IGluIFNQQy0yIHRoYXQg
-cmVzZXJ2ZS9yZWxlYXNlIHJlc2VydmF0aW9ucyBkbyBub3QgcGVyc2lzdD8gSSB0aGluayB0aGUg
-bmFtZSBvZgo+Pgo+PiBEbyB5b3Uga25vdyB3aGVuIHRoYXQgd2FzIGFkZGVkIHRvIFNQQyAyPwo+
-Pgo+PiBUaGUgaXNjc2kgdGV4dCBhYm92ZSBpcyBmcm9tIFJGQyA3MTQzIHdoaWNoIEkgdGhpbmsg
-d2FzIHJhdGlmaWVkIGluCj4+IDIwMTQuIEkgdGhpbmsgaXQgd2FzIGFkZGVkIGluIHRoYXQgdmVy
-c2lvbiB0byBjbGFyaWZ5IHRoZSBpc3N1ZS4gSSBhbQo+PiBub3Qgc3VyZSB0aG91Z2guCj4+Cj4+
-IFRoZSBvcmlnaW5hbCAzNzIwIHJhdGlmaWVkIGluIDIwMDQgZGlkIG5vdCBoYXZlIHRoYXQgY2h1
-bmsgYW5kIG9ubHkgaGFkCj4+IGxpbWl0ZWQgcmVmZXJlbmNlcy9pbmZvIG9uIHJlc2VydmF0aW9u
-cy4KPiAKPiBIZWxsbyBNaWtlLAo+IAo+IEZyb20gc3BjMnIwMSAoMTk5Ny0xMS0xMyk6ICJSZXNl
-cnZhdGlvbnMgbWFuYWdlZCB1c2luZyB0aGUgUmVzZXJ2ZS9SZWxlYXNlCj4gbWV0aG9kIGRvIG5v
-dCBwZXJzaXN0IGFjcm9zcyBzb21lIHJlY292ZXJ5IGFjdGlvbnMgKGUuZy4sIGhhcmQgcmVzZXRz
-KSwgc28KPiBtb3N0IHN5c3RlbXMgcmVxdWlyZSBzaWduaWZpY2FudCByZWluaXRpYWxpemF0aW9u
-IGFmdGVyIGEgZmFpbHVyZSB0aGF0Cj4gcmVzdWx0cyBpbiBhIGhhcmQgcmVzZXQuIFJlc2VydmUv
-UmVsZWFzZSBtYW5hZ2VkIHJlc2VydmF0aW9ucyBhcmUgcmV0YWluZWQKPiBieSB0aGUgZGV2aWNl
-IHNlcnZlciB1bnRpbCByZWxlYXNlZCBvciB1bnRpbCByZXNldCBieSBtZWNoYW5pc21zIHNwZWNp
-ZmllZAo+IGluIHRoaXMgc3RhbmRhcmQuIgo+IAo+IEFsdGhvdWdoIHRoZSB3b3JkcyBkaWZmZXIg
-ZnJvbSBsYXRlciB2ZXJzaW9ucyBvZiBTUEMyLCB0aGUgaW50ZW50aW9uIGhhcyBub3QKPiBjaGFu
-Z2VkLgo+IAo+IE90aGVyIHZlbmRvcnMgc2VlbSB0byBhZ3JlZSB3aXRoIHdoYXQgaGFzIGJlZW4g
-ZGVmaW5lZCBpbiBTUEMyLiBGcm9tCj4gaHR0cHM6Ly9rYi5uZXRhcHAuY29tL2FwcC9hbnN3ZXJz
-L2Fuc3dlcl92aWV3L2FfaWQvMTAwMTQ2My9+L3doYXQtYXJlLXNjc2ktcmVzZXJ2YXRpb25zLWFu
-ZC1zY3NpLXBlcnNpc3RlbnQtcmVzZXJ2YXRpb25zJTNGLToKPiAiVGh1cywgYSBTQ1NJIGJ1cyBy
-ZXNldCBwZXJmb3JtZWQgZHVlIHRvIGFuIGVycm9yIHJlY292ZXJ5IHdvdWxkIGNhdXNlIHRoZQo+
-IHJlc2VydmF0aW9uIHRvIGJlIHJlbGVhc2VkLiIKPiAKPiBEb2VzIHRoaXMgbWVhbiB0aGF0IHRo
-ZSBhdXRob3JzIG9mIHRoZSBpU0NTSSBSRkMgY2hvc2UgYmVoYXZpb3IgdGhhdAo+IGNvbnRyYWRp
-Y3RzIGVzdGFibGlzaGVkIGJlaGF2aW9yIGZvciB0aGUgU0NTSSByZXNlcnZlIGFuZCByZWxlYXNl
-IGNvbW1hbmRzPwo+IAoKSSBkb24ndCBrbm93LgoKRm9yIHRoZSBoYXJkIHJlc2V0L3Jlc2V0IGV2
-ZW50IGNhc2UsIGlmIHdlIGdvIGJ5IFNBTSAyIHdoaWNoIGlzY3NpIFJGQwo3MTQzIGFuZCAzNzIw
-IHNheSB0aGV5IGFyZSBiYXNlZCBvbiBhdCB0aGUgYmVnaW5uaW5nIG9mIHRoZWlyCmRlZmluaXRp
-b25zIHRoZW4gaXQgc291bmRzIGxpa2UgaXQgZGVwZW5kcyBvbiB0aGUgdHJhbnNwb3J0IHNwZWMg
-Zm9yCndoYXQgaXMgYSBoYXJkIHJlc2V0LiBXZSBoYXZlIHRoaXMgZnJvbSBTQU0gMjoKCjUuOS42
-IEhhcmQgcmVzZXQ6CgpBIGhhcmQgcmVzZXQgaXMgYSBTQ1NJIHRhcmdldCBwb3J0IGFjdGlvbiBp
-biByZXNwb25zZSB0byBhIHJlc2V0IGV2ZW50CndpdGhpbiB0aGUgc2VydmljZSBkZWxpdmVyeSBz
-dWJzeXN0ZW0uIEEgd2FrZXVwIGV2ZW50IChzZWUgMy4xLjEzMikgaXMgYQpyZXNldCBldmVudC4g
-VGhlIGRlZmluaXRpb24gb2YgYWRkaXRpb25hbCByZXNldCBldmVudHMgaXMgU0NTSSB0cmFuc3Bv
-cnQKcHJvdG9jb2wgc3BlY2lmaWMuIEVhY2ggU0NTSSB0cmFuc3BvcnQgcHJvdG9jb2wgc3RhbmRh
-cmQgdGhhdCBkZWZpbmVzCnJlc2V0IGV2ZW50cyBzaGFsbCBzcGVjaWZ5IHRoZSBTQ1NJIHRhcmdl
-dCBwb3J04oCZcyBhY3Rpb24KaW4gcmVzcG9uc2UgdG8gcmVzZXQgZXZlbnRzLgoKLS0tLS0tLS0K
-ClRoYXQgbWlnaHQgc291bmQgbGlrZSBhIHdha2UgZXZlbnQgaXMgYSBoYXJkIHJlc2V0IGRlZmlu
-ZWQgYnkgU0FNIDIsIGFuZAp0aGUgdHJhbnNwb3J0IGRlZmluZXMgb3RoZXJzLiBJbiB0aGUgaXNj
-c2kgUkZDIHRoZSBvbmx5IG1lbnRpb24gb2YgcmVzZXQKZXZlbnRzIGlzIHdoZW4gaGFuZGxpbmcg
-dGhlIGlTQ1NJIFRBUkdFVCBDT0xEIFJFU0VUIFRNRi4gSG93ZXZlciwgdGhlClJGQyBkb2VzIGRl
-ZmluZSB0aGUgc2Vzc2lvbiByZWluc3RhdGVtZW50IGNhc2UgYXMgYSBJX1QgbmV4dXMgbG9zcwpl
-dmVudCwgc28gaWYgdGhhdCBpcyBjb25zaWRlcmVkIGEgaGFyZCByZXNldCBieSB0aGUgU0FNIDIg
-ZGVmaW5pdGlvbgp0aGVuIEkgdGhpbmsgeW91ciBwYXRjaCBpcyBjb3JyZWN0LiBJIGhhdmUgbm8g
-aWRlYSBpZiBvdGhlciBzb2Z0d2FyZQp3cml0ZXJzIHJlYWQgdGhlIHNwZWNzL3JmY3MgbGlrZSBt
-YXliZSBOaWNrIGRpZCB0aG91Z2gu
+On Tue, 2019-04-09 at 00:47 -0500, Mike Christie wrote:
++AD4 I don't know.
++AD4 
++AD4 For the hard reset/reset event case, if we go by SAM 2 which iscsi RFC
++AD4 7143 and 3720 say they are based on at the beginning of their
++AD4 definitions then it sounds like it depends on the transport spec for
++AD4 what is a hard reset. We have this from SAM 2:
++AD4 
++AD4 5.9.6 Hard reset:
++AD4 
++AD4 A hard reset is a SCSI target port action in response to a reset event
++AD4 within the service delivery subsystem. A wakeup event (see 3.1.132) is a
++AD4 reset event. The definition of additional reset events is SCSI transport
++AD4 protocol specific. Each SCSI transport protocol standard that defines
++AD4 reset events shall specify the SCSI target port+IBk-s action
++AD4 in response to reset events.
++AD4 
++AD4 --------
++AD4 
++AD4 That might sound like a wake event is a hard reset defined by SAM 2, and
++AD4 the transport defines others. In the iscsi RFC the only mention of reset
++AD4 events is when handling the iSCSI TARGET COLD RESET TMF. However, the
++AD4 RFC does define the session reinstatement case as a I+AF8-T nexus loss
++AD4 event, so if that is considered a hard reset by the SAM 2 definition
++AD4 then I think your patch is correct. I have no idea if other software
++AD4 writers read the specs/rfcs like maybe Nick did though.
+
+Hi Mike,
+
+I'm fine with leaving out patch 3/11. But even if this patch is left out
+that still leaves the question open what the behavior of RESERVE/RELEASE
+should be ...
+
+Bart.
