@@ -1,73 +1,78 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Mon, 08 Apr 2019 23:17:07 +0000
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 09 Apr 2019 05:47:50 +0000
 Subject: Re: [PATCH 03/11] target/core: Release SPC-2 reservation upon initiator logout
-Message-Id: <1554765427.118779.292.camel@acm.org>
+Message-Id: <5CAC3206.5020500@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190402195815.254796-4-bvanassche@acm.org>
 In-Reply-To: <20190402195815.254796-4-bvanassche@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1258"
+Content-Transfer-Encoding: base64
 To: target-devel@vger.kernel.org
 
-On Mon, 2019-04-08 at 17:41 -0500, Mike Christie wrote:
-+AD4 On 04/08/2019 03:17 PM, Bart Van Assche wrote:
-+AD4 +AD4 On Mon, 2019-04-08 at 15:04 -0500, Mike Christie wrote:
-+AD4 +AD4 +AD4 Was the original code done for iscsi? We have this in
-+AD4 +AD4 +AD4 https://tools.ietf.org/html/rfc7143:
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 4.4.3.2. Reservations
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 ....
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 In contrast, +AFs-SPC2+AF0 does not specify detailed persistence
-+AD4 +AD4 +AD4 requirements for reserve/release reservation state after an I+AF8-T nexus
-+AD4 +AD4 +AD4 failure. Nonetheless, when reserve/release reservations are
-+AD4 +AD4 +AD4 supported by an iSCSI target, the preferred implementation approach
-+AD4 +AD4 +AD4 is to preserve reserve/release reservation state for iSCSI session
-+AD4 +AD4 +AD4 reinstatement (see Section 6.3.5) or session continuation (see
-+AD4 +AD4 +AD4 Section 6.3.6).
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 So for example for session reinstatement if you pull a network cable
-+AD4 +AD4 +AD4 then plug it back in the iscsi target can do a
-+AD4 +AD4 +AD4 iscsit+AF8-close+AF8-session-+AD4-transport+AF8-deregister+AF8-session -+AD4
-+AD4 +AD4 +AD4 transport+AF8-free+AF8-session. Above we will now release the reservation.
-+AD4 +AD4 
-+AD4 +AD4 Hello Mike,
-+AD4 +AD4 
-+AD4 +AD4 Was that paragraph from the iSCSI RFC perhaps written before it was made clear
-+AD4 +AD4 in SPC-2 that reserve/release reservations do not persist? I think the name of
-+AD4 
-+AD4 Do you know when that was added to SPC 2?
-+AD4 
-+AD4 The iscsi text above is from RFC 7143 which I think was ratified in
-+AD4 2014. I think it was added in that version to clarify the issue. I am
-+AD4 not sure though.
-+AD4 
-+AD4 The original 3720 ratified in 2004 did not have that chunk and only had
-+AD4 limited references/info on reservations.
-
-Hello Mike,
-
-From spc2r01 (1997-11-13): +ACI-Reservations managed using the Reserve/Release
-method do not persist across some recovery actions (e.g., hard resets), so
-most systems require significant reinitialization after a failure that
-results in a hard reset. Reserve/Release managed reservations are retained
-by the device server until released or until reset by mechanisms specified
-in this standard.+ACI
-
-Although the words differ from later versions of SPC2, the intention has not
-changed.
-
-Other vendors seem to agree with what has been defined in SPC2. From
-https://kb.netapp.com/app/answers/answer+AF8-view/a+AF8-id/1001463/+AH4-/what-are-scsi-reservations-and-scsi-persistent-reservations+ACU-3F-:
-+ACI-Thus, a SCSI bus reset performed due to an error recovery would cause the
-reservation to be released.+ACI
-
-Does this mean that the authors of the iSCSI RFC chose behavior that
-contradicts established behavior for the SCSI reserve and release commands?
-
-Thanks,
-
-Bart.
+T24gMDQvMDgvMjAxOSAwNjoxNyBQTSwgQmFydCBWYW4gQXNzY2hlIHdyb3RlOgo+IE9uIE1vbiwg
+MjAxOS0wNC0wOCBhdCAxNzo0MSAtMDUwMCwgTWlrZSBDaHJpc3RpZSB3cm90ZToKPj4gT24gMDQv
+MDgvMjAxOSAwMzoxNyBQTSwgQmFydCBWYW4gQXNzY2hlIHdyb3RlOgo+Pj4gT24gTW9uLCAyMDE5
+LTA0LTA4IGF0IDE1OjA0IC0wNTAwLCBNaWtlIENocmlzdGllIHdyb3RlOgo+Pj4+IFdhcyB0aGUg
+b3JpZ2luYWwgY29kZSBkb25lIGZvciBpc2NzaT8gV2UgaGF2ZSB0aGlzIGluCj4+Pj4gaHR0cHM6
+Ly90b29scy5pZXRmLm9yZy9odG1sL3JmYzcxNDM6Cj4+Pj4KPj4+PiA0LjQuMy4yLiBSZXNlcnZh
+dGlvbnMKPj4+Pgo+Pj4+IC4uLi4KPj4+Pgo+Pj4+IEluIGNvbnRyYXN0LCBbU1BDMl0gZG9lcyBu
+b3Qgc3BlY2lmeSBkZXRhaWxlZCBwZXJzaXN0ZW5jZQo+Pj4+IHJlcXVpcmVtZW50cyBmb3IgcmVz
+ZXJ2ZS9yZWxlYXNlIHJlc2VydmF0aW9uIHN0YXRlIGFmdGVyIGFuIElfVCBuZXh1cwo+Pj4+IGZh
+aWx1cmUuIE5vbmV0aGVsZXNzLCB3aGVuIHJlc2VydmUvcmVsZWFzZSByZXNlcnZhdGlvbnMgYXJl
+Cj4+Pj4gc3VwcG9ydGVkIGJ5IGFuIGlTQ1NJIHRhcmdldCwgdGhlIHByZWZlcnJlZCBpbXBsZW1l
+bnRhdGlvbiBhcHByb2FjaAo+Pj4+IGlzIHRvIHByZXNlcnZlIHJlc2VydmUvcmVsZWFzZSByZXNl
+cnZhdGlvbiBzdGF0ZSBmb3IgaVNDU0kgc2Vzc2lvbgo+Pj4+IHJlaW5zdGF0ZW1lbnQgKHNlZSBT
+ZWN0aW9uIDYuMy41KSBvciBzZXNzaW9uIGNvbnRpbnVhdGlvbiAoc2VlCj4+Pj4gU2VjdGlvbiA2
+LjMuNikuCj4+Pj4KPj4+Pgo+Pj4+IFNvIGZvciBleGFtcGxlIGZvciBzZXNzaW9uIHJlaW5zdGF0
+ZW1lbnQgaWYgeW91IHB1bGwgYSBuZXR3b3JrIGNhYmxlCj4+Pj4gdGhlbiBwbHVnIGl0IGJhY2sg
+aW4gdGhlIGlzY3NpIHRhcmdldCBjYW4gZG8gYQo+Pj4+IGlzY3NpdF9jbG9zZV9zZXNzaW9uLT50
+cmFuc3BvcnRfZGVyZWdpc3Rlcl9zZXNzaW9uIC0+Cj4+Pj4gdHJhbnNwb3J0X2ZyZWVfc2Vzc2lv
+bi4gQWJvdmUgd2Ugd2lsbCBub3cgcmVsZWFzZSB0aGUgcmVzZXJ2YXRpb24uCj4+Pgo+Pj4gSGVs
+bG8gTWlrZSwKPj4+Cj4+PiBXYXMgdGhhdCBwYXJhZ3JhcGggZnJvbSB0aGUgaVNDU0kgUkZDIHBl
+cmhhcHMgd3JpdHRlbiBiZWZvcmUgaXQgd2FzIG1hZGUgY2xlYXIKPj4+IGluIFNQQy0yIHRoYXQg
+cmVzZXJ2ZS9yZWxlYXNlIHJlc2VydmF0aW9ucyBkbyBub3QgcGVyc2lzdD8gSSB0aGluayB0aGUg
+bmFtZSBvZgo+Pgo+PiBEbyB5b3Uga25vdyB3aGVuIHRoYXQgd2FzIGFkZGVkIHRvIFNQQyAyPwo+
+Pgo+PiBUaGUgaXNjc2kgdGV4dCBhYm92ZSBpcyBmcm9tIFJGQyA3MTQzIHdoaWNoIEkgdGhpbmsg
+d2FzIHJhdGlmaWVkIGluCj4+IDIwMTQuIEkgdGhpbmsgaXQgd2FzIGFkZGVkIGluIHRoYXQgdmVy
+c2lvbiB0byBjbGFyaWZ5IHRoZSBpc3N1ZS4gSSBhbQo+PiBub3Qgc3VyZSB0aG91Z2guCj4+Cj4+
+IFRoZSBvcmlnaW5hbCAzNzIwIHJhdGlmaWVkIGluIDIwMDQgZGlkIG5vdCBoYXZlIHRoYXQgY2h1
+bmsgYW5kIG9ubHkgaGFkCj4+IGxpbWl0ZWQgcmVmZXJlbmNlcy9pbmZvIG9uIHJlc2VydmF0aW9u
+cy4KPiAKPiBIZWxsbyBNaWtlLAo+IAo+IEZyb20gc3BjMnIwMSAoMTk5Ny0xMS0xMyk6ICJSZXNl
+cnZhdGlvbnMgbWFuYWdlZCB1c2luZyB0aGUgUmVzZXJ2ZS9SZWxlYXNlCj4gbWV0aG9kIGRvIG5v
+dCBwZXJzaXN0IGFjcm9zcyBzb21lIHJlY292ZXJ5IGFjdGlvbnMgKGUuZy4sIGhhcmQgcmVzZXRz
+KSwgc28KPiBtb3N0IHN5c3RlbXMgcmVxdWlyZSBzaWduaWZpY2FudCByZWluaXRpYWxpemF0aW9u
+IGFmdGVyIGEgZmFpbHVyZSB0aGF0Cj4gcmVzdWx0cyBpbiBhIGhhcmQgcmVzZXQuIFJlc2VydmUv
+UmVsZWFzZSBtYW5hZ2VkIHJlc2VydmF0aW9ucyBhcmUgcmV0YWluZWQKPiBieSB0aGUgZGV2aWNl
+IHNlcnZlciB1bnRpbCByZWxlYXNlZCBvciB1bnRpbCByZXNldCBieSBtZWNoYW5pc21zIHNwZWNp
+ZmllZAo+IGluIHRoaXMgc3RhbmRhcmQuIgo+IAo+IEFsdGhvdWdoIHRoZSB3b3JkcyBkaWZmZXIg
+ZnJvbSBsYXRlciB2ZXJzaW9ucyBvZiBTUEMyLCB0aGUgaW50ZW50aW9uIGhhcyBub3QKPiBjaGFu
+Z2VkLgo+IAo+IE90aGVyIHZlbmRvcnMgc2VlbSB0byBhZ3JlZSB3aXRoIHdoYXQgaGFzIGJlZW4g
+ZGVmaW5lZCBpbiBTUEMyLiBGcm9tCj4gaHR0cHM6Ly9rYi5uZXRhcHAuY29tL2FwcC9hbnN3ZXJz
+L2Fuc3dlcl92aWV3L2FfaWQvMTAwMTQ2My9+L3doYXQtYXJlLXNjc2ktcmVzZXJ2YXRpb25zLWFu
+ZC1zY3NpLXBlcnNpc3RlbnQtcmVzZXJ2YXRpb25zJTNGLToKPiAiVGh1cywgYSBTQ1NJIGJ1cyBy
+ZXNldCBwZXJmb3JtZWQgZHVlIHRvIGFuIGVycm9yIHJlY292ZXJ5IHdvdWxkIGNhdXNlIHRoZQo+
+IHJlc2VydmF0aW9uIHRvIGJlIHJlbGVhc2VkLiIKPiAKPiBEb2VzIHRoaXMgbWVhbiB0aGF0IHRo
+ZSBhdXRob3JzIG9mIHRoZSBpU0NTSSBSRkMgY2hvc2UgYmVoYXZpb3IgdGhhdAo+IGNvbnRyYWRp
+Y3RzIGVzdGFibGlzaGVkIGJlaGF2aW9yIGZvciB0aGUgU0NTSSByZXNlcnZlIGFuZCByZWxlYXNl
+IGNvbW1hbmRzPwo+IAoKSSBkb24ndCBrbm93LgoKRm9yIHRoZSBoYXJkIHJlc2V0L3Jlc2V0IGV2
+ZW50IGNhc2UsIGlmIHdlIGdvIGJ5IFNBTSAyIHdoaWNoIGlzY3NpIFJGQwo3MTQzIGFuZCAzNzIw
+IHNheSB0aGV5IGFyZSBiYXNlZCBvbiBhdCB0aGUgYmVnaW5uaW5nIG9mIHRoZWlyCmRlZmluaXRp
+b25zIHRoZW4gaXQgc291bmRzIGxpa2UgaXQgZGVwZW5kcyBvbiB0aGUgdHJhbnNwb3J0IHNwZWMg
+Zm9yCndoYXQgaXMgYSBoYXJkIHJlc2V0LiBXZSBoYXZlIHRoaXMgZnJvbSBTQU0gMjoKCjUuOS42
+IEhhcmQgcmVzZXQ6CgpBIGhhcmQgcmVzZXQgaXMgYSBTQ1NJIHRhcmdldCBwb3J0IGFjdGlvbiBp
+biByZXNwb25zZSB0byBhIHJlc2V0IGV2ZW50CndpdGhpbiB0aGUgc2VydmljZSBkZWxpdmVyeSBz
+dWJzeXN0ZW0uIEEgd2FrZXVwIGV2ZW50IChzZWUgMy4xLjEzMikgaXMgYQpyZXNldCBldmVudC4g
+VGhlIGRlZmluaXRpb24gb2YgYWRkaXRpb25hbCByZXNldCBldmVudHMgaXMgU0NTSSB0cmFuc3Bv
+cnQKcHJvdG9jb2wgc3BlY2lmaWMuIEVhY2ggU0NTSSB0cmFuc3BvcnQgcHJvdG9jb2wgc3RhbmRh
+cmQgdGhhdCBkZWZpbmVzCnJlc2V0IGV2ZW50cyBzaGFsbCBzcGVjaWZ5IHRoZSBTQ1NJIHRhcmdl
+dCBwb3J04oCZcyBhY3Rpb24KaW4gcmVzcG9uc2UgdG8gcmVzZXQgZXZlbnRzLgoKLS0tLS0tLS0K
+ClRoYXQgbWlnaHQgc291bmQgbGlrZSBhIHdha2UgZXZlbnQgaXMgYSBoYXJkIHJlc2V0IGRlZmlu
+ZWQgYnkgU0FNIDIsIGFuZAp0aGUgdHJhbnNwb3J0IGRlZmluZXMgb3RoZXJzLiBJbiB0aGUgaXNj
+c2kgUkZDIHRoZSBvbmx5IG1lbnRpb24gb2YgcmVzZXQKZXZlbnRzIGlzIHdoZW4gaGFuZGxpbmcg
+dGhlIGlTQ1NJIFRBUkdFVCBDT0xEIFJFU0VUIFRNRi4gSG93ZXZlciwgdGhlClJGQyBkb2VzIGRl
+ZmluZSB0aGUgc2Vzc2lvbiByZWluc3RhdGVtZW50IGNhc2UgYXMgYSBJX1QgbmV4dXMgbG9zcwpl
+dmVudCwgc28gaWYgdGhhdCBpcyBjb25zaWRlcmVkIGEgaGFyZCByZXNldCBieSB0aGUgU0FNIDIg
+ZGVmaW5pdGlvbgp0aGVuIEkgdGhpbmsgeW91ciBwYXRjaCBpcyBjb3JyZWN0LiBJIGhhdmUgbm8g
+aWRlYSBpZiBvdGhlciBzb2Z0d2FyZQp3cml0ZXJzIHJlYWQgdGhlIHNwZWNzL3JmY3MgbGlrZSBt
+YXliZSBOaWNrIGRpZCB0aG91Z2gu
