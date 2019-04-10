@@ -1,23 +1,32 @@
-From: =?UTF-8?B?w5Z6a2FuIEfDtmtzdQ==?= <ozkangksu@gmail.com>
-Date: Wed, 10 Apr 2019 12:43:47 +0000
-Subject: How can I change Vendor name LIO-ORG
-Message-Id: <CAPUHmCreBhAa7Dzr+6pkYXyifXnRQfXt39KLHMVCer9jd+Lh3A@mail.gmail.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Wed, 10 Apr 2019 13:25:31 +0000
+Subject: Re: How can I change Vendor name LIO-ORG
+Message-Id: <20190410152531.3417db79@suse.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <CAPUHmCreBhAa7Dzr+6pkYXyifXnRQfXt39KLHMVCer9jd+Lh3A@mail.gmail.com>
+In-Reply-To: <CAPUHmCreBhAa7Dzr+6pkYXyifXnRQfXt39KLHMVCer9jd+Lh3A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-Hello.
+Hi,
 
-I couldn't find any way to change LIO-SCSI Vendor name which is shown
-as LIO-ORG when we attached to client.
-I do not want to re-compile kernel with the changing hard-coded Vendor name.
+On Wed, 10 Apr 2019 15:43:47 +0300, Özkan Göksu wrote:
 
-If there is any way to change it, please can you show me the way?
+> Hello.
+> 
+> I couldn't find any way to change LIO-SCSI Vendor name which is shown
+> as LIO-ORG when we attached to client.
+> I do not want to re-compile kernel with the changing hard-coded Vendor name.
+> 
+> If there is any way to change it, please can you show me the way?
 
-P.S: I'm so sorry to bother you with this out-of topic question. I'm
-aware its not the right place to ask this question  but I could not
-find any answer from anywhere. Please forgive me for this.
+This functionality was added recently via:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?idTa6f3f6a43cf5a5ad0421e4440a4c7095e7a223
 
-Best Regards.
+With this change (and 2d882847280e3ae1ddc95175d0fc2006e11bb63f), you
+can change the vendor ID via the configfs path at:
+target/core/$backstore/$name/wwn/vendor_id
+
+Cheers, David
