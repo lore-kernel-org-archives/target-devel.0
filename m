@@ -1,7 +1,7 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Wed, 10 Apr 2019 14:14:19 +0000
+From: Alan Adamson <alan.adamson@oracle.com>
+Date: Tue, 16 Apr 2019 20:54:16 +0000
 Subject: Re: How can I change Vendor name LIO-ORG
-Message-Id: <20190410161419.101ef3b0@suse.de>
+Message-Id: <22707fe2-473d-6992-d9e3-472a1a421052@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <CAPUHmCreBhAa7Dzr+6pkYXyifXnRQfXt39KLHMVCer9jd+Lh3A@mail.gmail.com>
 In-Reply-To: <CAPUHmCreBhAa7Dzr+6pkYXyifXnRQfXt39KLHMVCer9jd+Lh3A@mail.gmail.com>
@@ -10,17 +10,26 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-On Wed, 10 Apr 2019 17:07:10 +0300, Özkan Göksu wrote:
+Here you go:
 
-> Thank you for the answer.
-> 
-> Currently I'm using "14.14.71-1-lts #1 SMP Thu Sep 20 20:14:07 CEST
-> 2018" and I need to upgrade for this change.
+# echo "APA-ORG" > 
+/sys/kernel/config/target/core/fileio_0/shareddata/wwn/vendor_id
 
-That doesn't look like a kernel version.
 
-> I will upgrade my kernel and re-answer again.
+Alan
 
-Excluding distributions with backports, you'll need a kernel >= v5.0.
 
-Cheers, David
+On 4/10/19 5:43 AM, Özkan Göksu wrote:
+> Hello.
+>
+> I couldn't find any way to change LIO-SCSI Vendor name which is shown
+> as LIO-ORG when we attached to client.
+> I do not want to re-compile kernel with the changing hard-coded Vendor name.
+>
+> If there is any way to change it, please can you show me the way?
+>
+> P.S: I'm so sorry to bother you with this out-of topic question. I'm
+> aware its not the right place to ask this question  but I could not
+> find any answer from anywhere. Please forgive me for this.
+>
+> Best Regards.
