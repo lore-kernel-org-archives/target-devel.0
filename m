@@ -1,45 +1,82 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 02 Apr 2019 19:58:11 +0000
-Subject: [PATCH 07/11] target/iscsi: Detect conn_cmd_list corruption early
-Message-Id: <20190402195815.254796-8-bvanassche@acm.org>
+From: Mike Christie <mchristi@redhat.com>
+Date: Sun, 28 Apr 2019 04:17:20 +0000
+Subject: [PATCH 2/2] iscsi target: Fix CHAP negotiation setup
+Message-Id: <20190428041720.9119-3-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Certain behavior of an initiator can cause the target driver to
-send both a reject and a SCSI response. If that happens two
-target_put_sess_cmd() calls will occur without the command having
-been removed from conn_cmd_list. In other words, conn_cmd_list
-will get corrupted once the freed memory is reused. Although the
-Linux kernel can detect list corruption if list debugging is
-enabled, in this case the context in which list corruption is
-detected is not related to the context that caused list corruption.
-Hence add WARN_ON() statements that report the context that is
-causing list corruption.
+If the user has disabled authentication and not setup CHAP, we will
+still try to use CHAP if the initiator sends CHAP,None. The login
+will then fail because the user didn't setup CHAP. This patch just
+has us detect when CHAP/authentication has been turned off so we
+negotiate for None instead of CHAP.
 
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.de>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/iscsi/iscsi_target_util.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/target/iscsi/iscsi_target_nego.c | 41 +++++++++++++++++++++++++++++++-
+ 1 file changed, 40 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 3ac494f63a0b..3da062ccd2ab 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -769,6 +769,8 @@ void iscsit_free_cmd(struct iscsi_cmd *cmd, bool shutdown)
- 	struct se_cmd *se_cmd = cmd->se_cmd.se_tfo ? &cmd->se_cmd : NULL;
- 	int rc;
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 7d794be..055c1cc 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -828,6 +828,45 @@ static int iscsi_target_do_authentication(
+ 	return 0;
+ }
  
-+	WARN_ON(!list_empty(&cmd->i_conn_node));
++static struct iscsi_param *iscsi_target_init_auth_param(struct iscsi_conn *conn)
++{
++	struct iscsi_session *sess = conn->sess;
++	struct iscsi_node_auth *auth;
++	struct iscsi_portal_group *iscsi_tpg;
++	struct se_node_acl *se_nacl;
++	struct iscsi_param *param;
 +
- 	__iscsit_free_cmd(cmd, shutdown);
- 	if (se_cmd) {
- 		rc = transport_generic_free_cmd(se_cmd, shutdown);
++	param = iscsi_find_param_from_key(AUTHMETHOD, conn->param_list);
++	if (!param)
++		return NULL;
++
++	if (sess->sess_ops->SessionType) {
++		iscsi_tpg = iscsit_global->discovery_tpg;
++	} else {
++		se_nacl = conn->sess->se_sess->se_node_acl;
++
++		iscsi_tpg = container_of(se_nacl->se_tpg,
++					 struct iscsi_portal_group, tpg_se_tpg);
++	}
++
++	auth = iscsi_target_get_auth_from_conn(conn);
++	if (!auth)
++		return NULL;
++	/*
++	 * If we have CHAP,None but have not setup any CHAP values and have
++	 * disabled enforcement then use None. If the user has partially setup
++	 * CHAP then still use CHAP, so login fails and we do not allow access
++	 * due to user misconfiguration.
++	 */
++	if (strstr("CHAP,None", param->value) && !auth->naf_flags &&
++	    !iscsi_tpg->tpg_attrib.authentication) {
++		if (iscsi_update_param_value(param, NONE) < 0)
++			return NULL;
++	}
++
++	return param;
++}
++
+ static int iscsi_target_handle_csg_zero(
+ 	struct iscsi_conn *conn,
+ 	struct iscsi_login *login)
+@@ -842,7 +881,7 @@ static int iscsi_target_handle_csg_zero(
+ 	login_rsp = (struct iscsi_login_rsp *) login->rsp;
+ 	payload_length = ntoh24(login_req->dlength);
+ 
+-	param = iscsi_find_param_from_key(AUTHMETHOD, conn->param_list);
++	param = iscsi_target_init_auth_param(conn);
+ 	if (!param)
+ 		return -1;
+ 
 -- 
-2.21.0.196.g041f5ea1cf98
+1.8.3.1
