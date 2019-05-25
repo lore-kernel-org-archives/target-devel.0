@@ -1,26 +1,40 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Sat, 25 May 2019 23:10:44 +0000
-Subject: Re: tcmu-runner libtcmu.so versioning
-Message-Id: <5CE9CB74.8070109@redhat.com>
+From: Hariprasad Kelam <hariprasad.kelam@gmail.com>
+Date: Sat, 25 May 2019 17:56:16 +0000
+Subject: [PATCH] target/iscsi: fix possible condition with no effect (if == else)
+Message-Id: <20190525174416.GA21510@hari-Inspiron-1545>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190522150417.0650ed2f@suse.de>
-In-Reply-To: <20190522150417.0650ed2f@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Hariprasad Kelam <hariprasad.kelam@gmail.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/22/2019 08:04 AM, David Disseldorp wrote:
-> Hi,
-> 
-> Some ABI changes went into libtcmu between v1.3.0 and v1.4.0 without a
-> corresponding .so version bump (e.g. 566c2ad5c8a). This breaks
-> dependency checking in some package managers, allowing for a v1.4.0
-> tcmu-runner to be installed alongside a v1.3.0 libtcmu.so
-> 
-> Should we consider adding a 2nd (minor) .so version number to libtcmu,
-> so that it can be bumped for backwards compatible ABI changes like this
-> one?
-> 
+fix below warning reported by coccicheck
 
-That seems ok to me.
+drivers/target/iscsi/iscsi_target_nego.c:175:6-8: WARNING: possible
+condition with no effect (if = else)
+
+Signed-off-by: Hariprasad Kelam <hariprasad.kelam@gmail.com>
+---
+ drivers/target/iscsi/iscsi_target_nego.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 8a5e8d1..b6fb70a 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -168,12 +168,7 @@ static u32 iscsi_handle_authentication(
+ 	else if (strstr("CHAP", authtype))
+ 		return chap_main_loop(conn, auth, in_buf, out_buf,
+ 				&in_length, out_length);
+-	else if (strstr("SPKM1", authtype))
+-		return 2;
+-	else if (strstr("SPKM2", authtype))
+-		return 2;
+-	else if (strstr("KRB5", authtype))
+-		return 2;
++	/* ret 2 in  SPKM1,SPKM2,KRB5 cases */
+ 	else
+ 		return 2;
+ }
+-- 
+2.7.4
