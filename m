@@ -1,46 +1,57 @@
-From: "Heather" <heather@usblogo.space>
-Date: Mon, 20 May 2019 12:58:45 +0000
-Subject: Printing for your logo
-Message-Id: <7a10c26151533d4071a133a097baa01e@esquire.com>
+From: Hariprasad Kelam <hariprasad.kelam@gmail.com>
+Date: Tue, 28 May 2019 01:33:52 +0000
+Subject: [Patch v2] target/iscsi: fix possible condition with no effect (if == else)
+Message-Id: <20190528012151.GA4845@hari-Inspiron-1545>
 List-Id: <target-devel.vger.kernel.org>
-References: <b3d54072a7fe32b2265f5fc210df1dc7@esquire.com>
-In-Reply-To: <b3d54072a7fe32b2265f5fc210df1dc7@esquire.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: ddiss@suse.de, "Martin K. Petersen" <martin.petersen@oracle.com>, Hariprasad Kelam <hariprasad.kelam@gmail.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+fix below warning reported by coccicheck
 
-I didn’t know if you had received my email from last week?
+drivers/target/iscsi/iscsi_target_nego.c:175:6-8: WARNING: possible
+condition with no effect (if = else)
 
-We manufacture ALL custom LOGO and branded products – over 300,000 to
-choose from.
+Signed-off-by: Hariprasad Kelam <hariprasad.kelam@gmail.com>
+---
+Changes in v2: treat SRP as unsupported authtype.
+               Remove unnecessary else
+               return 2 in all unsupported cases
 
-The most asked about product that we make, is the custom printed USB flash
-drives!
-We can print your logo on them and load your digital images, videos and
-files!
+---
+---
+ drivers/target/iscsi/iscsi_target_nego.c | 15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
 
-Here is what we include:
--Any size memory you need: 64MB up to 128GB
--We will print your logo on both sides, just ask!
--Very Low Order Minimums
--Need them quickly?  Not a problem, we offer Rush Service
-
-Email over a copy of your logo and we will create a design mock up for you
-at no cost!
-
-Our higher memory sizes are a really good option right now!
-
-Pricing is low right now, so let us know what you need and we will get you
-a quick quote.
-
-We always offer great rates for schools and nonprofits as well.
-
-Let us know what you would like quoted?
-
-Regards,
-
-Heather Millons
-Custom USB Account Manager
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 8a5e8d1..92ce2fd 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -160,22 +160,11 @@ static u32 iscsi_handle_authentication(
+ 
+ 	if (strstr("None", authtype))
+ 		return 1;
+-#ifdef CANSRP
+-	else if (strstr("SRP", authtype))
+-		return srp_main_loop(conn, auth, in_buf, out_buf,
+-				&in_length, out_length);
+-#endif
+ 	else if (strstr("CHAP", authtype))
+ 		return chap_main_loop(conn, auth, in_buf, out_buf,
+ 				&in_length, out_length);
+-	else if (strstr("SPKM1", authtype))
+-		return 2;
+-	else if (strstr("SPKM2", authtype))
+-		return 2;
+-	else if (strstr("KRB5", authtype))
+-		return 2;
+-	else
+-		return 2;
++	/* SRP, SPKM1, SPKM2 and KRB5 are unsupported */
++	return 2;
+ }
+ 
+ static void iscsi_remove_failed_auth_entry(struct iscsi_conn *conn)
+-- 
+2.7.4
