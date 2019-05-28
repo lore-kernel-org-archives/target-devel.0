@@ -1,57 +1,28 @@
-From: Hariprasad Kelam <hariprasad.kelam@gmail.com>
-Date: Tue, 28 May 2019 01:33:52 +0000
-Subject: [Patch v2] target/iscsi: fix possible condition with no effect (if == else)
-Message-Id: <20190528012151.GA4845@hari-Inspiron-1545>
+From: David Disseldorp <ddiss@suse.de>
+Date: Tue, 28 May 2019 08:20:49 +0000
+Subject: Re: [Patch v2] target/iscsi: fix possible condition with no effect (if == else)
+Message-Id: <20190528102049.4927905e@suse.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <20190528012151.GA4845@hari-Inspiron-1545>
+In-Reply-To: <20190528012151.GA4845@hari-Inspiron-1545>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ddiss@suse.de, "Martin K. Petersen" <martin.petersen@oracle.com>, Hariprasad Kelam <hariprasad.kelam@gmail.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-fix below warning reported by coccicheck
+On Tue, 28 May 2019 06:51:52 +0530, Hariprasad Kelam wrote:
 
-drivers/target/iscsi/iscsi_target_nego.c:175:6-8: WARNING: possible
-condition with no effect (if = else)
+> fix below warning reported by coccicheck
+> 
+> drivers/target/iscsi/iscsi_target_nego.c:175:6-8: WARNING: possible
+> condition with no effect (if = else)
+> 
+> Signed-off-by: Hariprasad Kelam <hariprasad.kelam@gmail.com>
+> ---
+> Changes in v2: treat SRP as unsupported authtype.
+>                Remove unnecessary else
+>                return 2 in all unsupported cases
 
-Signed-off-by: Hariprasad Kelam <hariprasad.kelam@gmail.com>
----
-Changes in v2: treat SRP as unsupported authtype.
-               Remove unnecessary else
-               return 2 in all unsupported cases
+Reviewed-by: David Disseldorp <ddiss@suse.de>
 
----
----
- drivers/target/iscsi/iscsi_target_nego.c | 15 ++-------------
- 1 file changed, 2 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-index 8a5e8d1..92ce2fd 100644
---- a/drivers/target/iscsi/iscsi_target_nego.c
-+++ b/drivers/target/iscsi/iscsi_target_nego.c
-@@ -160,22 +160,11 @@ static u32 iscsi_handle_authentication(
- 
- 	if (strstr("None", authtype))
- 		return 1;
--#ifdef CANSRP
--	else if (strstr("SRP", authtype))
--		return srp_main_loop(conn, auth, in_buf, out_buf,
--				&in_length, out_length);
--#endif
- 	else if (strstr("CHAP", authtype))
- 		return chap_main_loop(conn, auth, in_buf, out_buf,
- 				&in_length, out_length);
--	else if (strstr("SPKM1", authtype))
--		return 2;
--	else if (strstr("SPKM2", authtype))
--		return 2;
--	else if (strstr("KRB5", authtype))
--		return 2;
--	else
--		return 2;
-+	/* SRP, SPKM1, SPKM2 and KRB5 are unsupported */
-+	return 2;
- }
- 
- static void iscsi_remove_failed_auth_entry(struct iscsi_conn *conn)
--- 
-2.7.4
+Cheers, David
