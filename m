@@ -1,26 +1,39 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Thu, 30 May 2019 01:41:52 +0000
-Subject: Re: [Patch v2] target/iscsi: fix possible condition with no effect (if == else)
-Message-Id: <yq1pno0zpjz.fsf@oracle.com>
+From: "Stacy" <heasuarusbder@verizon.net>
+Date: Thu, 30 May 2019 14:13:01 +0000
+Subject: Get your USB drives
+Message-Id: <02070233b72dd44bf427c4b1fbe231de@vecteezy.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190528012151.GA4845@hari-Inspiron-1545>
-In-Reply-To: <20190528012151.GA4845@hari-Inspiron-1545> (Hariprasad Kelam's
-        message of "Tue, 28 May 2019 06:51:52 +0530")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hariprasad Kelam <hariprasad.kelam@gmail.com>
-Cc: ddiss@suse.de, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
+Hi,
 
-Hariprasad,
+I wanted to follow up from last week. Did you receive the email I sent you?
 
-> fix below warning reported by coccicheck
->
-> drivers/target/iscsi/iscsi_target_nego.c:175:6-8: WARNING: possible
-> condition with no effect (if = else)
+Our company manufactures USB Flash Drives, printed with your logo.  They
+make the perfect marketing tool for your business or organization.
 
-Applied to 5.3/scsi-queue, thanks!
+We offer low minimum quantities, and all memory sizes. Over 150 Stock
+Models as well as 100 % custom shaped USB drives.  Memory sizes include up
+to 128GB !
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+We can pre-load your media files, images, presentations and files onto the
+drives for you.  These are ideal handouts for trade shows, branding,
+corporate gifts and employees.
+Our USB Pricing is at an ALL TIME LOW - now is the time to get your USB
+drives.
+
+Let us send you a quote!   We will EARN your business!
+* Please reply back and let me know what quantity and memory size
+you need for a Fast Quote! *
+
+Are you a school or nonprofit?  Please let us know for even further
+discounts.
+
+Thanks!
+
+Stacy King
+National Account Rep
+Promo / Branded Flash Drives
