@@ -1,29 +1,39 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 19 Jun 2019 01:10:40 +0000
-Subject: Re: [PATCH] scsi: tcmu: Simplify 'tcmu_update_uio_info()'
-Message-Id: <yq1blyuxtv3.fsf@oracle.com>
+From: "Stacy" <schssereutz@aol.jp>
+Date: Wed, 05 Jun 2019 12:00:36 +0000
+Subject: Get your USB drives
+Message-Id: <75c26048307c81d2c42056801dc6ba44@vecteezy.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190616070220.24189-1-christophe.jaillet@wanadoo.fr>
-In-Reply-To: <20190616070220.24189-1-christophe.jaillet@wanadoo.fr>
-        (Christophe JAILLET's message of "Sun, 16 Jun 2019 09:02:20 +0200")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: target-devel@vger.kernel.org
 
+Hi,
 
-Christophe,
+I wanted to follow up from last week. Did you receive the email I sent you?
 
-> Use 'kasprintf()' instead of:
->    - snprintf(NULL, 0...
->    - kmalloc(...
->    - snprintf(...
->
-> This is less verbose and saves 7 bytes (i.e. the space for '/(null)') if
-> 'udev->dev_config' is NULL.
+Our company manufactures USB Flash Drives, printed with your logo.  They
+make the perfect marketing tool for your business or organization.
 
-Applied to 5.3/scsi-queue. Thanks!
+We offer low minimum quantities, and all memory sizes. Over 150 Stock
+Models as well as 100 % custom shaped USB drives.  Memory sizes include up
+to 128GB !
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+We can pre-load your media files, images, presentations and files onto the
+drives for you.  These are ideal handouts for trade shows, branding,
+corporate gifts and employees.
+Our USB Pricing is at an ALL TIME LOW - now is the time to get your USB
+drives.
+
+Let us send you a quote!   We will EARN your business!
+* Please reply back and let me know what quantity and memory size
+you need for a Fast Quote! *
+
+Are you a school or nonprofit?  Please let us know for even further
+discounts.
+
+Thanks!
+
+Stacy King
+National Account Rep
+Promo / Branded Flash Drives
