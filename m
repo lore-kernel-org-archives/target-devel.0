@@ -1,39 +1,36 @@
-From: "Stacy" <schssereutz@aol.jp>
-Date: Wed, 05 Jun 2019 12:00:36 +0000
-Subject: Get your USB drives
-Message-Id: <75c26048307c81d2c42056801dc6ba44@vecteezy.com>
+From: Martins Henry <rws@aero.iitb.ac.in>
+Date: Fri, 07 Jun 2019 06:43:49 +0000
+Subject: Thanks and I wait for your answer
+Message-Id: <630023291.60470.1559889109394.JavaMail.zimbra@aero.iitb.ac.in>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-sctp@vger.kernel.org
 
-Hi,
+Hello,
 
-I wanted to follow up from last week. Did you receive the email I sent you?
+I am Martin Henry, An American Citizen; I am the personal secretary to
+Mr. Donald Railton, the controller of a Lottery Company. Please I am
+having big problem now, I have a 6yrs old daughter who has leukemia, a
+disease of the blood, and she needs a bone marrow transplant or she
+will die.
 
-Our company manufactures USB Flash Drives, printed with your logo.  They
-make the perfect marketing tool for your business or organization.
+Please I am only asking for your help and you will benefit from it
+also. As an insider with Lottery Firm, working as the personal
+secretary to the controller, I want you to send me your name to play,
+I have some numbers that are going to win, stored in his secret data
+system in the office. The Lottery is an online entry with credit card
+anywhere with a name and address. All I want you to do is to send your
+name to play it and I will send confirmation to you.
 
-We offer low minimum quantities, and all memory sizes. Over 150 Stock
-Models as well as 100 % custom shaped USB drives.  Memory sizes include up
-to 128GB !
+I will play with my card on your name and the Prize will be shared
+equally between us. Immediately the results are released they will
+contact you for payment as the oversea winner. The lotto can be played
+with 9.00 dollars, or 50 dollars but the prize will be Millions.
+Remember that I am playing on your name with my card; I just want to
+front you for this, because I need this money to save the life of my
+little daughter.
 
-We can pre-load your media files, images, presentations and files onto the
-drives for you.  These are ideal handouts for trade shows, branding,
-corporate gifts and employees.
-Our USB Pricing is at an ALL TIME LOW - now is the time to get your USB
-drives.
-
-Let us send you a quote!   We will EARN your business!
-* Please reply back and let me know what quantity and memory size
-you need for a Fast Quote! *
-
-Are you a school or nonprofit?  Please let us know for even further
-discounts.
-
-Thanks!
-
-Stacy King
-National Account Rep
-Promo / Branded Flash Drives
+Thanks and I wait for your answer
+Martin Henry.
