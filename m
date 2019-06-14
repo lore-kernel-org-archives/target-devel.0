@@ -1,22 +1,46 @@
-From: David Miller <davem@davemloft.net>
-Date: Wed, 05 Jun 2019 03:17:41 +0000
-Subject: Re: [PATCH v2 net-next] cxgb4/libcxgb/cxgb4i/cxgbit: enable eDRAM page pods for iSCSI
-Message-Id: <20190604.201741.2198584533127418560.davem@davemloft.net>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Fri, 14 Jun 2019 02:44:13 +0000
+Subject: [PATCH -next] cxgbit: remove set but not used variable 'ppmax'
+Message-Id: <20190614024413.110449-1-yuehaibing@huawei.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1559643109-3397-1-git-send-email-varun@chelsio.com>
-In-Reply-To: <1559643109-3397-1-git-send-email-varun@chelsio.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: varun@chelsio.com
-Cc: netdev@vger.kernel.org, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, dt@chelsio.com, indranil@chelsio.com, ganji.aravind@chelsio.com
+To: "Martin K . Petersen" <martin.petersen@oracle.com>, Varun Prakash <varun@chelsio.com>, "David S. Miller" <davem@davemloft.net>, Mike Christie <mchristi@redhat.com>, Bart Van Assche <bvanassche@acm.org>
+Cc: YueHaibing <yuehaibing@huawei.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Varun Prakash <varun@chelsio.com>
-Date: Tue,  4 Jun 2019 15:41:49 +0530
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-> +static int setup_ppod_edram(struct adapter *adap)
-> +{
-> +	int ret;
-> +	unsigned int param, val;
+drivers/target/iscsi/cxgbit/cxgbit_ddp.c: In function 'cxgbit_ddp_init':
+drivers/target/iscsi/cxgbit/cxgbit_ddp.c:303:15: warning:
+ variable 'ppmax' set but not used [-Wunused-but-set-variable]
 
-Reverse christmas tree please.
+It's not used since commit a248384e6420 ("cxgb4/libcxgb/cxgb4i/cxgbit:
+enable eDRAM page pods for iSCSI")
+
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/target/iscsi/cxgbit/cxgbit_ddp.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
+index 1443ef045a5f..fe1be5feaf21 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
+@@ -300,7 +300,6 @@ int cxgbit_ddp_init(struct cxgbit_device *cdev)
+ 	struct cxgb4_lld_info *lldi = &cdev->lldi;
+ 	struct net_device *ndev = cdev->lldi.ports[0];
+ 	struct cxgbi_tag_format tformat;
+-	unsigned int ppmax;
+ 	int ret, i;
+ 
+ 	if (!lldi->vr->iscsi.size) {
+@@ -308,8 +307,6 @@ int cxgbit_ddp_init(struct cxgbit_device *cdev)
+ 		return -EACCES;
+ 	}
+ 
+-	ppmax = lldi->vr->iscsi.size >> PPOD_SIZE_SHIFT;
+-
+ 	memset(&tformat, 0, sizeof(struct cxgbi_tag_format));
+ 	for (i = 0; i < 4; i++)
+ 		tformat.pgsz_order[i] = (lldi->iscsi_pgsz_order >> (i << 3))
