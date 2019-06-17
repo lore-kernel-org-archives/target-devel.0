@@ -1,48 +1,57 @@
-From: "Miss.Fatima Yusuf" <josephkeshi33@gmail.com>
-Date: Sun, 23 Jun 2019 18:28:41 +0000
-Subject: From:Miss: Fatima Yusuf.
-Message-Id: <CA+y30FF4VA9dXNV1tHDg_UWUbRfJEDF2ADsguc6XZxPoxTCMog@mail.gmail.com>
+From: Varun Prakash <varun@chelsio.com>
+Date: Mon, 17 Jun 2019 13:29:45 +0000
+Subject: [PATCH] scsi: target: cxgbit: add support for IEEE_8021QAZ_APP_SEL_STREAM selector
+Message-Id: <1560777465-5343-1-git-send-email-varun@chelsio.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-From:Miss: Fatima Yusuf.
+IEEE_8021QAZ_APP_SEL_STREAM is a valid selector
+for iSCSI connections, so add code to use
+IEEE_8021QAZ_APP_SEL_STREAM selector to get priority
+mask.
 
-For sure this mail would definitely come to you as a surprise, but do
-take your good time to go through it, My name is Ms. Fatima Yusuf,i am
-from Ivory Coast.
+Signed-off-by: Varun Prakash <varun@chelsio.com>
+---
+ drivers/target/iscsi/cxgbit/cxgbit_cm.c   | 8 +++++---
+ drivers/target/iscsi/cxgbit/cxgbit_main.c | 3 ++-
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-I lost my parents a year and couple of months ago. My father was a
-serving director of the Agro-exporting board until his death. He was
-assassinated by his business partners.Before his death, he made a
-deposit of US$9.7 Million Dollars here in Cote d'ivoire which was for
-the purchase of cocoa processing machine and development of another
-factory before his untimely death.
-
-Being that this part of the world experiences political and crises
-time without number, there is no guarantee of lives and properties. I
-cannot invest this money here any long, despite the fact it had been
-my late father's industrial plans.
-
-I want you to do me a favor to receive this funds into your country or
-any safer place as the beneficiary, I have plans to invest this money
-in continuation with the investment vision of my late father, but not
-in this place again rather in your country. I have the vision of going
-into real estate and industrial production or any profitable business
-venture.
-
-I will be ready to compensate you with 20% of the total Amount, now
-all my hope is banked on you and i really wants to invest this money
-in your country, where there is stability of Government, political and
-economic welfare.
-
-My greatest worry now is how to move out of this country because my
-uncle is threatening to kill me as he killed my father,Please do not
-let anybody hear about this, it is between me and you alone because of
-my security reason.
-
-I am waiting to hear from you.
-Yours Sincerely,
-Miss.Fatima Yusuf.
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+index dab09b6..9d0ed93 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+@@ -878,10 +878,12 @@ static u8 cxgbit_get_iscsi_dcb_priority(struct net_device *ndev, u16 local_port)
+ 		return 0;
+ 
+ 	if (caps & DCB_CAP_DCBX_VER_IEEE) {
+-		iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_ANY;
+-
++		iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_STREAM;
+ 		ret = dcb_ieee_getapp_mask(ndev, &iscsi_dcb_app);
+-
++		if (!ret) {
++			iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_ANY;
++			ret = dcb_ieee_getapp_mask(ndev, &iscsi_dcb_app);
++		}
+ 	} else if (caps & DCB_CAP_DCBX_VER_CEE) {
+ 		iscsi_dcb_app.selector = DCB_APP_IDTYPE_PORTNUM;
+ 
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_main.c b/drivers/target/iscsi/cxgbit/cxgbit_main.c
+index 4a7bb0b..4cd63c0 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_main.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_main.c
+@@ -592,7 +592,8 @@ static void cxgbit_dcb_workfn(struct work_struct *work)
+ 	iscsi_app = &dcb_work->dcb_app;
+ 
+ 	if (iscsi_app->dcbx & DCB_CAP_DCBX_VER_IEEE) {
+-		if (iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_ANY)
++		if ((iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_STREAM) &&
++		    (iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_ANY))
+ 			goto out;
+ 
+ 		priority = iscsi_app->app.priority;
+-- 
+2.0.2
