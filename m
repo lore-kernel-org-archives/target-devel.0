@@ -1,27 +1,41 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 19 Jun 2019 03:38:37 +0000
-Subject: Re: [PATCH v4 23/28] docs: target: convert docs to ReST and rename to *.rst
-Message-Id: <yq1imt2utvm.fsf@oracle.com>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Wed, 26 Jun 2019 15:48:36 +0000
+Subject: [PATCH] target/iscsi: set auth_protocol back to NULL if CHAP_A value is not supported.
+Message-Id: <20190626154836.11542-1-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <cover.1560361364.git.mchehab+samsung@kernel.org>
-        <9c58d2f3478126736e69b688a7dbf0da26ba2285.1560361364.git.mchehab+samsung@kernel.org>
-In-Reply-To: <9c58d2f3478126736e69b688a7dbf0da26ba2285.1560361364.git.mchehab+samsung@kernel.org>
-        (Mauro Carvalho Chehab's message of "Wed, 12 Jun 2019 14:52:59 -0300")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
+If the CHAP_A value is not supported, the chap_server_open() function
+should free the auth_protocol pointer and set it to NULL, or
+we will leave a dangling pointer around.
 
-Mauro,
+[   66.010905] Unsupported CHAP_A value
+[   66.011660] Security negotiation failed.
+[   66.012443] iSCSI Login negotiation failed.
+[   68.413924] general protection fault: 0000 [#1] SMP PTI
+[   68.414962] CPU: 0 PID: 1562 Comm: targetcli Kdump: loaded Not tainted 4.18.0-80.el8.x86_64 #1
+[   68.416589] Hardware name: Red Hat KVM, BIOS 0.5.1 01/01/2011
+[   68.417677] RIP: 0010:__kmalloc_track_caller+0xc2/0x210
 
-> Convert the TCM docs to ReST format and add them to the
-> bookset.
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/target/iscsi/iscsi_target_auth.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Looks good to me.
-
-Acked-by: Martin K. Petersen <martin.petersen@oracle.com>
-
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index b6e4862cc242..139abb19da43 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -119,6 +119,7 @@ static struct iscsi_chap *chap_server_open(
+ 	default:
+ 		pr_err("Unsupported CHAP_A value\n");
+ 		kfree(conn->auth_protocol);
++		conn->auth_protocol = NULL;
+ 		return NULL;
+ 	}
+ 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+Maurizio Lombardi
