@@ -1,69 +1,57 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 02 Jul 2019 15:30:31 +0000
-Subject: [PATCH 2/2] target/core: Use REQ_OP_WRITE_SAME to implement WRITE SAME
-Message-Id: <20190702153031.3832-3-bvanassche@acm.org>
+From: Varun Prakash <varun@chelsio.com>
+Date: Mon, 01 Jul 2019 16:44:51 +0000
+Subject: [PATCH] scsi: target: cxgbit: add support for IEEE_8021QAZ_APP_SEL_STREAM selector
+Message-Id: <1561998771-10265-1-git-send-email-varun@chelsio.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Use blkdev_submit_write_same() instead of open-coding it.
+IEEE_8021QAZ_APP_SEL_STREAM is a valid selector
+for iSCSI connections, so add code to use
+IEEE_8021QAZ_APP_SEL_STREAM selector to get priority
+mask.
 
-Note: as one can see in target_alloc_sgl(), the target core sets the
-offset in a scatter/gather list to zero for all allocated pages.
-
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.de>
-Cc: Roman Bolshakov <r.bolshakov@yadro.com>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: Varun Prakash <varun@chelsio.com>
 ---
- drivers/target/target_core_iblock.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ drivers/target/iscsi/cxgbit/cxgbit_cm.c   | 8 +++++---
+ drivers/target/iscsi/cxgbit/cxgbit_main.c | 3 ++-
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index b5ed9c377060..c8e64fe87f7f 100644
---- a/drivers/target/target_core_iblock.c
-+++ b/drivers/target/target_core_iblock.c
-@@ -465,6 +465,8 @@ iblock_execute_write_same(struct se_cmd *cmd)
- 	sector_t block_lba = target_to_linux_sector(dev, cmd->t_task_lba);
- 	sector_t sectors = target_to_linux_sector(dev,
- 					sbc_get_write_same_sectors(cmd));
-+	struct blk_plug plug;
-+	int ret;
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+index dab09b6..9d0ed93 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
+@@ -878,10 +878,12 @@ static u8 cxgbit_get_iscsi_dcb_priority(struct net_device *ndev, u16 local_port)
+ 		return 0;
  
- 	if (cmd->prot_op) {
- 		pr_err("WRITE_SAME: Protection information with IBLOCK"
-@@ -481,6 +483,7 @@ iblock_execute_write_same(struct se_cmd *cmd)
- 		return TCM_INVALID_CDB_FIELD;
- 	}
+ 	if (caps & DCB_CAP_DCBX_VER_IEEE) {
+-		iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_ANY;
+-
++		iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_STREAM;
+ 		ret = dcb_ieee_getapp_mask(ndev, &iscsi_dcb_app);
+-
++		if (!ret) {
++			iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_ANY;
++			ret = dcb_ieee_getapp_mask(ndev, &iscsi_dcb_app);
++		}
+ 	} else if (caps & DCB_CAP_DCBX_VER_CEE) {
+ 		iscsi_dcb_app.selector = DCB_APP_IDTYPE_PORTNUM;
  
-+	/* 1. Use REQ_OP_WRITE_ZEROES if supported and if appropriate. */
- 	if (bdev_write_zeroes_sectors(bdev)) {
- 		if (!iblock_execute_zero_out(bdev, cmd))
- 			return 0;
-@@ -491,6 +494,20 @@ iblock_execute_write_same(struct se_cmd *cmd)
- 		goto fail;
- 	cmd->priv = ibr;
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_main.c b/drivers/target/iscsi/cxgbit/cxgbit_main.c
+index 4a7bb0b..4cd63c0 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_main.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_main.c
+@@ -592,7 +592,8 @@ static void cxgbit_dcb_workfn(struct work_struct *work)
+ 	iscsi_app = &dcb_work->dcb_app;
  
-+	/* 2. Try REQ_OP_WRITE_SAME. */
-+	blk_start_plug(&plug);
-+	ret = blkdev_submit_write_same(bdev, block_lba, sectors, GFP_KERNEL,
-+				       sg_page(sg), iblock_bio_done, cmd);
-+	blk_finish_plug(&plug);
-+	if (ret = 0)
-+		return 0;
-+	if (ret != -EOPNOTSUPP)
-+		goto fail;
-+
-+	/*
-+	 * 3. If neither REQ_OP_WRITE_SAME nor REQ_OP_WRITE_ZEROES are
-+	 * supported, use REQ_OP_WRITE.
-+	 */
- 	bio = iblock_get_bio(cmd, block_lba, 1, REQ_OP_WRITE, 0);
- 	if (!bio)
- 		goto fail_free_ibr;
+ 	if (iscsi_app->dcbx & DCB_CAP_DCBX_VER_IEEE) {
+-		if (iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_ANY)
++		if ((iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_STREAM) &&
++		    (iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_ANY))
+ 			goto out;
+ 
+ 		priority = iscsi_app->app.priority;
 -- 
-2.22.0.410.gd8fdbe21b5-goog
+2.0.2
