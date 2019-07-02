@@ -1,57 +1,32 @@
-From: Varun Prakash <varun@chelsio.com>
-Date: Mon, 17 Jun 2019 13:29:45 +0000
-Subject: [PATCH] scsi: target: cxgbit: add support for IEEE_8021QAZ_APP_SEL_STREAM selector
-Message-Id: <1560777465-5343-1-git-send-email-varun@chelsio.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 02 Jul 2019 15:30:29 +0000
+Subject: [PATCH 0/2] Use REQ_OP_WRITE_SAME to implement WRITE SAME
+Message-Id: <20190702153031.3832-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-IEEE_8021QAZ_APP_SEL_STREAM is a valid selector
-for iSCSI connections, so add code to use
-IEEE_8021QAZ_APP_SEL_STREAM selector to get priority
-mask.
+Hi Martin,
 
-Signed-off-by: Varun Prakash <varun@chelsio.com>
----
- drivers/target/iscsi/cxgbit/cxgbit_cm.c   | 8 +++++---
- drivers/target/iscsi/cxgbit/cxgbit_main.c | 3 ++-
- 2 files changed, 7 insertions(+), 4 deletions(-)
+The SCSI target iblock backend uses regular writes to implement the SCSI WRITE
+SAME command. That is suboptimal for at least SCSI and NVMe SSDs. This patch
+series makes the iblock backend use REQ_OP_WRITE_SAME instead. Please consider
+these patches for inclusion in the upstream kernel.
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-index dab09b6..9d0ed93 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-@@ -878,10 +878,12 @@ static u8 cxgbit_get_iscsi_dcb_priority(struct net_device *ndev, u16 local_port)
- 		return 0;
- 
- 	if (caps & DCB_CAP_DCBX_VER_IEEE) {
--		iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_ANY;
--
-+		iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_STREAM;
- 		ret = dcb_ieee_getapp_mask(ndev, &iscsi_dcb_app);
--
-+		if (!ret) {
-+			iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_ANY;
-+			ret = dcb_ieee_getapp_mask(ndev, &iscsi_dcb_app);
-+		}
- 	} else if (caps & DCB_CAP_DCBX_VER_CEE) {
- 		iscsi_dcb_app.selector = DCB_APP_IDTYPE_PORTNUM;
- 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_main.c b/drivers/target/iscsi/cxgbit/cxgbit_main.c
-index 4a7bb0b..4cd63c0 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_main.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_main.c
-@@ -592,7 +592,8 @@ static void cxgbit_dcb_workfn(struct work_struct *work)
- 	iscsi_app = &dcb_work->dcb_app;
- 
- 	if (iscsi_app->dcbx & DCB_CAP_DCBX_VER_IEEE) {
--		if (iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_ANY)
-+		if ((iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_STREAM) &&
-+		    (iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_ANY))
- 			goto out;
- 
- 		priority = iscsi_app->app.priority;
+Thanks,
+
+Bart.
+
+Bart Van Assche (2):
+  block: Add blkdev_submit_write_same()
+  target/core: Use REQ_OP_WRITE_SAME to implement WRITE SAME
+
+ block/blk-lib.c                     | 37 ++++++++++++++++++++++++++++-
+ drivers/target/target_core_iblock.c | 17 +++++++++++++
+ include/linux/blkdev.h              |  3 +++
+ 3 files changed, 56 insertions(+), 1 deletion(-)
+
 -- 
-2.0.2
+2.22.0.410.gd8fdbe21b5-goog
