@@ -1,7 +1,7 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Tue, 02 Jul 2019 16:26:19 +0000
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 02 Jul 2019 17:15:56 +0000
 Subject: Re: [PATCH 0/2] Use REQ_OP_WRITE_SAME to implement WRITE SAME
-Message-Id: <20190702162619.GA19142@lst.de>
+Message-Id: <a2d20f62-2f2f-cf61-6ab2-38e7bf1caf72@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190702153031.3832-1-bvanassche@acm.org>
 In-Reply-To: <20190702153031.3832-1-bvanassche@acm.org>
@@ -10,8 +10,14 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-I actually rather wanted to get rid of REQ_OP_WRITE_SAME entirely.
-Do you have a use case for this?
+On 7/2/19 9:26 AM, Christoph Hellwig wrote:
+> I actually rather wanted to get rid of REQ_OP_WRITE_SAME entirely.
+> Do you have a use case for this?
 
-Note that it isn't going to help with nvme either, as there is no
-write same command in nvme.
+Hi Christoph,
+
+I don't have a use case for this myself. I posted these patches because 
+Roman Bolshakov reported a bug in the SCSI target WRITE SAME 
+implementation. I think that means that he uses this functionality.
+
+Bart.
