@@ -1,93 +1,86 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 02 Jul 2019 15:30:30 +0000
-Subject: [PATCH 1/2] block: Add blkdev_submit_write_same()
-Message-Id: <20190702153031.3832-2-bvanassche@acm.org>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 10 Jul 2019 15:02:56 +0000
+Subject: [PATCH AUTOSEL 4.19 6/9] scsi: iscsi: set auth_protocol back to NULL if CHAP_A value is not supporte
+Message-Id: <20190710150301.7129-6-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20190710150301.7129-1-sashal@kernel.org>
+In-Reply-To: <20190710150301.7129-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Maurizio Lombardi <mlombard@redhat.com>, Chris Leech <cleech@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Add an asynchronous version of blkdev_issue_write_same().
+From: Maurizio Lombardi <mlombard@redhat.com>
 
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+[ Upstream commit 5dd6c49339126c2c8df2179041373222362d6e49 ]
+
+If the CHAP_A value is not supported, the chap_server_open() function
+should free the auth_protocol pointer and set it to NULL, or we will leave
+a dangling pointer around.
+
+[   66.010905] Unsupported CHAP_A value
+[   66.011660] Security negotiation failed.
+[   66.012443] iSCSI Login negotiation failed.
+[   68.413924] general protection fault: 0000 [#1] SMP PTI
+[   68.414962] CPU: 0 PID: 1562 Comm: targetcli Kdump: loaded Not tainted 4.18.0-80.el8.x86_64 #1
+[   68.416589] Hardware name: Red Hat KVM, BIOS 0.5.1 01/01/2011
+[   68.417677] RIP: 0010:__kmalloc_track_caller+0xc2/0x210
+
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+Reviewed-by: Chris Leech <cleech@redhat.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- block/blk-lib.c        | 37 ++++++++++++++++++++++++++++++++++++-
- include/linux/blkdev.h |  3 +++
- 2 files changed, 39 insertions(+), 1 deletion(-)
+ drivers/target/iscsi/iscsi_target_auth.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/block/blk-lib.c b/block/blk-lib.c
-index 5f2c429d4378..f0cd9400d98a 100644
---- a/block/blk-lib.c
-+++ b/block/blk-lib.c
-@@ -187,7 +187,8 @@ static int __blkdev_issue_write_same(struct block_device *bdev, sector_t sector,
-  * @page:	page containing data
-  *
-  * Description:
-- *    Issue a write same request for the sectors in question.
-+ *    Issue a write same request for the sectors in question and wait until it
-+ *    has finished.
-  */
- int blkdev_issue_write_same(struct block_device *bdev, sector_t sector,
- 				sector_t nr_sects, gfp_t gfp_mask,
-@@ -209,6 +210,40 @@ int blkdev_issue_write_same(struct block_device *bdev, sector_t sector,
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index 4e680d753941..e2fa3a3bc81d 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -89,6 +89,12 @@ static int chap_check_algorithm(const char *a_str)
+ 	return CHAP_DIGEST_UNKNOWN;
  }
- EXPORT_SYMBOL(blkdev_issue_write_same);
  
-+/**
-+ * blkdev_submit_write_same - queue a write same operation
-+ * @bdev:	target blockdev
-+ * @sector:	start sector
-+ * @nr_sects:	number of sectors to write
-+ * @gfp_mask:	memory allocation flags (for bio_alloc)
-+ * @page:	page containing data
-+ * @bi_end_io:  will be called upon completion
-+ * @bi_private: will be stored in the bio->bi_private field of the bio passed
-+ *		to @bi_end_io.
-+ *
-+ * Description:
-+ *    Submit a write same request asynchronously for the sectors in question.
-+ *    @bi_end_io will be called upon request completion.
-+ */
-+int blkdev_submit_write_same(struct block_device *bdev, sector_t sector,
-+			     sector_t nr_sects, gfp_t gfp_mask,
-+			     struct page *page, bio_end_io_t bi_end_io,
-+			     void *bi_private)
++static void chap_close(struct iscsi_conn *conn)
 +{
-+	struct bio *bio = NULL;
-+	int ret;
-+
-+	ret = __blkdev_issue_write_same(bdev, sector, nr_sects, gfp_mask, page,
-+					&bio);
-+	if (ret)
-+		return ret;
-+	bio->bi_end_io = bi_end_io;
-+	bio->bi_private = bi_private;
-+	submit_bio(bio);
-+	return 0;
++	kfree(conn->auth_protocol);
++	conn->auth_protocol = NULL;
 +}
-+EXPORT_SYMBOL(blkdev_submit_write_same);
 +
- static int __blkdev_issue_write_zeroes(struct block_device *bdev,
- 		sector_t sector, sector_t nr_sects, gfp_t gfp_mask,
- 		struct bio **biop, unsigned flags)
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 1aafeb923e7b..3d627e0a72c0 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -1184,6 +1184,9 @@ static inline bool blk_needs_flush_plug(struct task_struct *tsk)
- extern int blkdev_issue_flush(struct block_device *, gfp_t, sector_t *);
- extern int blkdev_issue_write_same(struct block_device *bdev, sector_t sector,
- 		sector_t nr_sects, gfp_t gfp_mask, struct page *page);
-+extern int blkdev_submit_write_same(struct block_device *bdev, sector_t sector,
-+		sector_t nr_sects, gfp_t gfp_mask, struct page *page,
-+		bio_end_io_t bi_end_io, void *bi_private);
+ static struct iscsi_chap *chap_server_open(
+ 	struct iscsi_conn *conn,
+ 	struct iscsi_node_auth *auth,
+@@ -126,7 +132,7 @@ static struct iscsi_chap *chap_server_open(
+ 	case CHAP_DIGEST_UNKNOWN:
+ 	default:
+ 		pr_err("Unsupported CHAP_A value\n");
+-		kfree(conn->auth_protocol);
++		chap_close(conn);
+ 		return NULL;
+ 	}
  
- #define BLKDEV_DISCARD_SECURE	(1 << 0)	/* issue a secure erase */
+@@ -141,19 +147,13 @@ static struct iscsi_chap *chap_server_open(
+ 	 * Generate Challenge.
+ 	 */
+ 	if (chap_gen_challenge(conn, 1, aic_str, aic_len) < 0) {
+-		kfree(conn->auth_protocol);
++		chap_close(conn);
+ 		return NULL;
+ 	}
  
+ 	return chap;
+ }
+ 
+-static void chap_close(struct iscsi_conn *conn)
+-{
+-	kfree(conn->auth_protocol);
+-	conn->auth_protocol = NULL;
+-}
+-
+ static int chap_server_compute_md5(
+ 	struct iscsi_conn *conn,
+ 	struct iscsi_node_auth *auth,
 -- 
-2.22.0.410.gd8fdbe21b5-goog
+2.20.1
