@@ -1,431 +1,375 @@
-From: David Butterfield <dab21774@gmail.com>
-Date: Tue, 23 Jul 2019 21:01:37 +0000
-Subject: fuse_tcmur - access tcmu-runner devices through a fuse mount
-Message-Id: <59d67c65-8902-e390-b5a6-f38837969608@gmail.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------6C1C0C276F1260FD28F6BE2C"
+From: Alex Vladulescu <avladulescu@bfproject.ro>
+Date: Tue, 16 Jul 2019 01:39:45 +0000
+Subject: LIO fails to run on nvme drives
+Message-Id: <e562bc80-aae1-f311-14ce-19c49b55e1a5@bfproject.ro>
 List-Id: <target-devel.vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------6C1C0C276F1260FD28F6BE2C
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
 
-DESCRIPTION
-    fuse_tcmur provides access to tcmu-runner devices through a fuse(8) mount.
-    Each tcmu-runner device is represented by a node in the fuse filesystem
-    tree.  The devices can be accessed via the nodes, for example with dd(1),
-    and can be mounted as filesystems.  
+Hi,
 
-    The diagram shows the components of the fuse_tcmur program (to the right of
-    kernel).  fuse_tcmur sits in the middle, providing a main program and the
-    translation between fuse operations and tcmu-runner handler operations.
 
-    fuse_tree is a simple tree-structure implemented on libfuse.  Like /proc,
-    the existence of nodes in the tree is controlled only by the server, not
-    through filesystem operations.  But individual leaf nodes may be readable
-    and/or writable through the filesystem depending on permissions.
+Hopefully I am writing this email and sending it to the write people.
 
-                                       .--fuse_operations
-                                       |
-    /tcmur <==> kernel <==> libfuse <==> fuse_tree
-                                             ^ |
-                                      -errno | | fuse_node_ops
-                                              \V
-                                        fuse_tcmur
-                                            ^  |
-                                  cmd->done |  | calls to tcmur_*
-                                            |  V
-                                          libtcmur <==> tcmur-handler
+I believe I am facing a strange behavior of LIO 
+(1:3.0~pre4.1~ga55d018-2) on xenial while trying to use a nvme drive to 
+export it to a virtualization server over a 10Gbe Intel NIC, so no RDMA 
+in place.
 
-    tcmur-handler is one of the binaries in /usr/local/lib/tcmu-runner/.
+If the configuration is clean in /etc/target/scsi_target.lio the 
+targetcli daemon starts without any issues with <systemctl start target> 
+else, if I configure targetcli to use the nvme drive everything fails 
+just after a target daemon restart or a server reboot.
 
-    libtcmur is a usermode API to the loadable tcmu-runner handlers.  LIO, TCMU,
-    and tcmur-runner are uninvolved -- libtcmur only loads and uses the
-    handlers, and only the block-I/O entry points are called (not handle_cmd).
 
-    fuse_tree(3) and libtcmur(3) are independent -- each usable for its purpose
-    without reference to the other.  In the middle is fuse_tcmur, which links
-    them together, and consists of three parts:
+Mind that the configuration and target export works, everything is 
+running fine just until I perform the reboot or restart of the service, 
+which after it fails with the following error:
+/-- Unit target.service has begun starting up./
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Cleared configuration/
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Unloaded tcm_qla2xxx fabric 
+module/
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Unloaded tcm_usb_gadget 
+fabric module/
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Unloaded tcm_fc fabric module/
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Unloaded ib_srpt fabric module/
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Unloaded tcm_loop fabric 
+module/
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Unloaded iscsi_target_mod 
+fabric module/
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Unloaded vhost_scsi fabric 
+module/
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Unloaded target_core_file 
+target core module/
+///Jul 16 03:07:34 iscsi01 target[12486]:  * Unloaded target_core_iblock 
+target core module/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Unloaded target_core_pscsi 
+target core module/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Unloaded target_core_user 
+target core module/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Unloaded usb_f_tcm target 
+core module/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Unloaded target_core_mod 
+target core module/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Stopped The Linux SCSI Target/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * The Linux SCSI Target looks 
+properly installed/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * The configfs filesystem is 
+already mounted/
+///Jul 16 03:07:35 iscsi01 kernel: Rounding down aligned max_sectors 
+from 4294967295 to 4294967288/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded core module 
+target_core_mod/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded core module usb_f_tcm/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded core module 
+target_core_user/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded core module 
+target_core_pscsi/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded core module 
+target_core_iblock/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded core module 
+target_core_file/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded fabric module 
+tcm_qla2xxx/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded fabric module 
+tcm_usb_gadget/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded fabric module tcm_fc/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded fabric module ib_srpt/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded fabric module tcm_loop/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded fabric module 
+iscsi_target_mod/
+///Jul 16 03:07:35 iscsi01 target[12486]:  * Loaded fabric module 
+vhost_scsi/
+///Jul 16 03:07:36 iscsi01 kernel: ignoring deprecated emulate_dpo 
+attribute/
+///Jul 16 03:07:36 iscsi01 kernel: ignoring deprecated emulate_fua_read 
+attribute/
+//*/Jul 16 03:07:36 iscsi01 target[12486]:  * Failed to load 
+/etc/target/scsi_target.lio/*
+///Jul 16 03:07:36 iscsi01 target[12486]:  * Could not start The Linux 
+SCSI Target/
+///Jul 16 03:07:36 iscsi01 systemd[1]: target.service: Control process 
+exited, code=exited status=1/
+///Jul 16 03:07:36 iscsi01 systemd[1]: Failed to start LSB: The Linux 
+SCSI Target service./
+///-- Subject: Unit target.service has failed/
+///-- Defined-By: systemd/
+///-- Support: http://lists.freedesktop.org/mailman/listinfo/systemd-devel/
+///--/
+///-- Unit target.service has failed./
+///--/
+///-- The result is failed./
+///Jul 16 03:07:36 iscsi01 systemd[1]: target.service: Unit entered 
+failed state./
+///Jul 16 03:07:36 iscsi01 systemd[1]: target.service: Failed with 
+result 'exit-cod/e'.
 
-        The main() program initializes the other parts and calls fuse_main().
+Looking at the /etc/init.d/target init script I could see that 
+everything fails once it tries to load the configuration into the kernel 
+space, since every time it exist with RC=1 (function load_config)
 
-        The fuse_tcmur part translates I/O requests between fuse and libtcmur.
 
-        The fuse_tcmur_ctl part interprets commands written to a node in the
-        fuse filesystem -- commands can be written with cat(1) or echo(1) to
-        /tcmur/dev/tcmur.
+So, if I try to remove the null redirection and manually run the import 
+command it provides the following output:
 
-FILES
-    When a handler is loaded, an empty directory node appears for it in
-    /tcmur/sys/modules
+/[Storage:root:iscsi01]:~:# python << EOF
+  > import os, rtslib
+  > config = rtslib.Config()
+  > config.load(os.environ['__STARTUP_CONFIG'], allow_new_attrs=True)
+  > list(config.apply())
+  > EOF
+No handlers could be found for logger "Config"
+Traceback (most recent call last):
+    File "<stdin>", line 4, in <module>
+    File "/usr/lib/python2.7/dist-packages/rtslib/config.py", line 717, 
+in apply
+      apply_create_obj(obj)
+    File "/usr/lib/python2.7/dist-packages/rtslib/config_live.py", line 
+517, in apply_create_obj
+      apply_group_attrs(obj, lio_so)
+    File "/usr/lib/python2.7/dist-packages/rtslib/config_live.py", line 
+326, in apply_group_attrs
+      lio_obj.set_attribute(name, value)
+    File "/usr/lib/python2.7/dist-packages/rtslib/node.py", line 192, in 
+set_attribute
+      % (str(attribute), str(value), str(msg)))
+rtslib.utils.RTSLibError: Cannot set attribute unmap_zeroes_data to 
+'4294967295': Invalid argument/
 
-    When a device is added, a node appears in /tcmur/dev/<subtype><minornumber>
 
-    The /tcmur/dev nodes appear as regular files (rather than block devices),
-    but they can still be mounted as filesystems, e.g.
 
-            sudo mount /tcmur/dev/ram000 /mnt/k
 
-NOTES
-    The source is in the libtcmur branch (default) at
-    https://github.com/DavidButterfield/tcmu-runner.git
+If I am to login into targetcli I can spot the that disk is not in use 
+and everything else appears as unconfigured:
 
-    First make in the main tcmu-runner directory, to get version.h and the binary
-    handlers:
-            cmake .
-            make
-            sudo make install
 
-    Then cd into the libtcmur subdirectory where there is a hacked-up makefile
-    that creates the fuse_tcmur binary.  Today there are no dependencies
-    computed, so always
-            make clean; make
+//> ls
+o- / 
+......................................................................................................................... 
+[...]
+    o- backstores 
+.............................................................................................................. 
+[...]
+    | o- fileio 
+................................................................................................... 
+[0 Storage Object]
+    | o- iblock 
+................................................................................................... 
+[1 Storage Object]
+    | | o- nvme0 
+.......................................................................................... 
+[/dev/nvme0n1, not in use]
+    | o- pscsi 
+.................................................................................................... 
+[0 Storage Object]
+    | o- rd_mcp 
+................................................................................................... 
+[0 Storage Object]
+    o- ib_srpt 
+........................................................................................................... 
+[0 Targets]
+    o- iscsi 
+............................................................................................................. 
+[0 Targets]
+    o- loopback 
+.......................................................................................................... 
+[0 Targets]
+    o- qla2xxx 
+........................................................................................................... 
+[0 Targets]
+    o- tcm_fc 
+............................................................................................................ 
+[0 Targets]
+    o- usb_gadget 
+........................................................................................................ 
+[0 Targets]
+    o- vhost 
+............................................................................................................. 
+[0 Targets]
+/>/
 
-    The program will attempt to create the mount-point directory that fuse will
-    mount on.  This will succeed if the program is run as superuser; otherwise
-    you can create it manually first with
-            sudo mkdir /tcmur
 
-    The server presently runs only one thread.  Despite this, the time for a
-    script to download a few repositories and build a software package is only a
-    few percent longer through the fuse mount to a tcmu-runner ramdisk, as
-    compared with a regular kernel filesystem mount to my home directory
-    spinning disk.  (Not an optimal comparison, but it's what I have at hand.)
+My configuration looks like below:
 
-BUGS
-    No doubt.  This code was born in July 2019.  The makefile leaves much to be
-    desired.
+/[Storage:root:iscsi01]:~:# nvme list//
+//Node             SN Model                                    Namespace 
+Usage                      Format           FW Rev//
+//---------------- -------------------- 
+---------------------------------------- --------- 
+-------------------------- ---------------- --------//
+///dev/nvme0n1     CVMD727200NG2P0TGN 
+LT2000KEXVC                              1           2.00  TB /   2.00  
+TB    512   B +  0 B   4IFDHPK3//
+///dev/nvme1n1     CVMD727200C72P0TGN 
+LT2000KEXVC                              1           2.00  TB /   2.00  
+TB    512   B +  0 B   4IFDHPK3//
+//[Storage:root:iscsi01]:~:# lsblk//
+//NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT//
+//nvme0n1 259:1    0  1.8T  0 disk//
+//sdb       8:16   1 14.3G  0 disk//
+//├─sdb2    8:18   1   14G  0 part ///
+//├─sdb3    8:19   1  263M  0 part [SWAP]//
+//└─sdb1    8:17   1   94M  0 part//
+//nvme1n1 259:0    0  1.8T  0 disk//
+//sda       8:0    0  2.7T  0 disk//
+//└─sda1    8:1    0  2.7T  0 part /mnt/sata//
+//[Storage:root:iscsi01]:~:# cat /etc/target/scsi_target.lio-working//
+//storage iblock disk nvme0 {//
+//    path /dev/nvme0n1//
+//    wwn b07ee6d5-7159-49e6-91da-bcf8e549f3f2//
+//    attribute {//
+//        block_size 512//
+//        emulate_3pc yes//
+//        emulate_caw yes//
+//        emulate_dpo yes//
+//        emulate_fua_read yes//
+//        emulate_fua_write yes//
+//        emulate_model_alias no//
+//        emulate_rest_reord no//
+//        emulate_tas yes//
+//        emulate_tpu no//
+//        emulate_tpws no//
+//        emulate_ua_intlck_ctrl no//
+//        emulate_write_cache no//
+//        enforce_pr_isids yes//
+//        fabric_max_sectors 8192//
+//        force_pr_aptpl 0//
+//        is_nonrot yes//
+//        max_unmap_block_desc_count 1//
+//        max_unmap_lba_count 4294967295//
+//        max_write_same_len 4294967295//
+//        optimal_sectors 256//
+//        pi_prot_format 0//
+//        pi_prot_type 0//
+//        pi_prot_verify 0//
+//        queue_depth 1023//
+//        unmap_granularity 1//
+//        unmap_granularity_alignment 0//
+//        unmap_zeroes_data 4294967295//
+//    }//
+//}//
+//fabric iscsi {//
+//    discovery_auth {//
+//        enable no//
+//        mutual_password ""//
+//        mutual_userid ""//
+//        password ""//
+//        userid ""//
+//    }//
+//    target iqn.2019-07.iscsi01.int.domain.ro:01 tpgt 1 {//
+//        enable yes//
+//        attribute {//
+//            authentication no//
+//            cache_dynamic_acls yes//
+//            default_cmdsn_depth 64//
+//            default_erl 0//
+//            demo_mode_discovery no//
+//            demo_mode_write_protect no//
+//            fabric_prot_type 0//
+//            generate_node_acls yes//
+//            login_keys_workaround 1//
+//            login_timeout 15//
+//            netif_timeout 2//
+//            prod_mode_write_protect no//
+//            t10_pi 0//
+//            tpg_enabled_sendtargets 1//
+//        }//
+//        auth {//
+//            password ""//
+//            password_mutual ""//
+//            userid ""//
+//            userid_mutual ""//
+//        }//
+//        parameter {//
+//            AuthMethod "CHAP,None"//
+//            DataDigest "CRC32C,None"//
+//            DataPDUInOrder yes//
+//            DataSequenceInOrder yes//
+//            DefaultTime2Retain 20//
+//            DefaultTime2Wait 2//
+//            ErrorRecoveryLevel no//
+//            FirstBurstLength 65536//
+//            HeaderDigest "CRC32C,None"//
+//            IFMarkInt Reject//
+//            IFMarker no//
+//            ImmediateData yes//
+//            InitialR2T yes//
+//            MaxBurstLength 262144//
+//            MaxConnections 1//
+//            MaxOutstandingR2T 1//
+//            MaxRecvDataSegmentLength 8192//
+//            MaxXmitDataSegmentLength 262144//
+//            OFMarkInt Reject//
+//            OFMarker no//
+//            TargetAlias "LIO Target"//
+//        }//
+//        lun 0 backend iblock:nvme0//
+//        portal 172.21.11.33:3260//
+//    }//
+//}//
+//[Storage:root:iscsi01]:~:#/
 
-    So far I have only tested it using handler_ram.so, because that's the
-    handler that can be used without figuring out how to install and run
-    sophisticated back-end software.
 
-SEE ALSO
-    fuse_tree(3), libtcmur(3),  fuse(8),  tcmu-runner(8)
+Another aspect in the /etc/init.d/target script is the fact that I 
+changed the below variable modules arguments to include usb_f_tcm.
 
-AUTHOR
-    David A. Butterfield
+#CORE_MODS="target_core_mod target_core_pscsi target_core_iblock 
+target_core_file"
+CORE_MODS="target_core_mod usb_f_tcm target_core_user target_core_pscsi 
+target_core_iblock target_core_file"
 
-Manpage updated 23 Jul 2019
 
---------------6C1C0C276F1260FD28F6BE2C
-Content-Type: text/plain; charset=UTF-8;
- name="fuse_tcmur.1"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="fuse_tcmur.1"
+as I have another system which is similar to this one, but the block 
+device is based on a RAID50 SCSI raid array which works without any 
+issues. Without the usb_f_tcm inclusion it would not unlink completely 
+the module target_core_mod since dependency prevent it from uploading.
 
-ZnVzZV90Y211cigxKSAgICAgICAgICAgICAgICAgICAgVXNlciBDb21tYW5kcyAgICAgICAg
-ICAgICAgICAgICAgIGZ1c2VfdGNtdXIoMSkKCk5BTUUKICAgIGZ1c2VfdGNtdXIgLSBhY2Nl
-c3MgdGNtdS1ydW5uZXIgZGV2aWNlcyB0aHJvdWdoIGEgZnVzZSBtb3VudAoKU1lOT1BTSVMK
-ICAgIGZ1c2VfdGNtdXIKICAgIGVjaG8gImNvbW1hbmQiID4gL3RjbXVyL2Rldi90Y211cgoK
-ICAgIENvbW1hbmRzOgogICAgICAgIGxvYWQgc3VidHlwZSAgICAgICAgICAgICAgICAgICAg
-IyBsb2FkIHRjbXUtcnVubmVyIGhhbmRsZXIgZm9yIHN1YnR5cGUKICAgICAgICB1bmxvYWQg
-c3VidHlwZQoKICAgICAgICBhZGQgbWlub3JudW1iZXIgL3N1YnR5cGUvaGFuZGxlci1jZmct
-c3RyaW5nCiAgICAgICAgcmVtb3ZlIG1pbm9ybnVtYmVyCgogICAgICAgIGhlbHAKICAgICAg
-ICBzb3VyY2UgY29tbWFuZC1maWxlLW5hbWUgICAgICAgICMgcmVhZCBjb21tYW5kcyBmcm9t
-IGZpbGUKICAgICAgICBkdW1wICAgICAgICAgICAgICAgICAgICAgICAgICAgICMgZHVtcCB0
-aGUgZnVzZSB0cmVlIHN0cnVjdHVyZQoKREVTQ1JJUFRJT04KICAgIGZ1c2VfdGNtdXIgcHJv
-dmlkZXMgYWNjZXNzIHRvIHRjbXUtcnVubmVyIGRldmljZXMgdGhyb3VnaCBhIGZ1c2UoOCkg
-bW91bnQuCiAgICBFYWNoIHRjbXUtcnVubmVyIGRldmljZSBpcyByZXByZXNlbnRlZCBieSBh
-IG5vZGUgaW4gdGhlIGZ1c2UgZmlsZXN5c3RlbQogICAgdHJlZS4gIFRoZSBkZXZpY2VzIGNh
-biBiZSBhY2Nlc3NlZCB2aWEgdGhlIG5vZGVzLCBmb3IgZXhhbXBsZSB3aXRoIGRkKDEpLAog
-ICAgYW5kIGNhbiBiZSBtb3VudGVkIGFzIGZpbGVzeXN0ZW1zLiAgCgogICAgRWFjaCB0Y211
-IGRldmljZSBpcyBkZW5vdGVkIGJ5IGEgdW5pcXVlIG1pbm9yIG51bWJlciwgd2hpY2ggaXMg
-c3BlY2lmaWVkCiAgICB3aGVuIHRoZSBkZXZpY2UgaXMgYWRkZWQuICBBbGwgdGNtdS1ydW5u
-ZXIgaGFuZGxlcnMgc2hhcmUgb25lIG1pbm9yLXNwYWNlLgoKICAgIFRoZSBkaWFncmFtIHNo
-b3dzIHRoZSBjb21wb25lbnRzIG9mIHRoZSBmdXNlX3RjbXVyIHByb2dyYW0gKHRvIHRoZSBy
-aWdodCBvZgogICAga2VybmVsKS4gIGZ1c2VfdGNtdXIgc2l0cyBpbiB0aGUgbWlkZGxlLCBw
-cm92aWRpbmcgYSBtYWluIHByb2dyYW0gYW5kIHRoZQogICAgdHJhbnNsYXRpb24gYmV0d2Vl
-biBmdXNlIG9wZXJhdGlvbnMgYW5kIHRjbXUtcnVubmVyIGhhbmRsZXIgb3BlcmF0aW9ucy4K
-CiAgICBmdXNlX3RyZWUgaXMgYSBzaW1wbGUgdHJlZS1zdHJ1Y3R1cmUgaW1wbGVtZW50ZWQg
-b24gbGliZnVzZS4gIExpa2UgL3Byb2MsCiAgICB0aGUgZXhpc3RlbmNlIG9mIG5vZGVzIGlu
-IHRoZSB0cmVlIGlzIGNvbnRyb2xsZWQgb25seSBieSB0aGUgc2VydmVyLCBub3QKICAgIHRo
-cm91Z2ggZmlsZXN5c3RlbSBvcGVyYXRpb25zLiAgQnV0IGluZGl2aWR1YWwgbGVhZiBub2Rl
-cyBtYXkgYmUgcmVhZGFibGUKICAgIGFuZC9vciB3cml0YWJsZSB0aHJvdWdoIHRoZSBmaWxl
-c3lzdGVtIGRlcGVuZGluZyBvbiBwZXJtaXNzaW9ucy4KCiAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIC4tLWZ1c2Vfb3BlcmF0aW9ucwogICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICB8CiAgICAvdGNtdXIgPD09PiBrZXJuZWwgPD09PiBs
-aWJmdXNlIDw9PT4gZnVzZV90cmVlCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgIF4gfAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IC1lcnJubyB8IHwgZnVzZV9ub2RlX29wcwogICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgXFYKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIGZ1c2VfdGNtdXIKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBeICB8CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjbWQtPmRv
-bmUgfCAgfCBjYWxscyB0byB0Y211cl8qCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgfCAgVgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBsaWJ0Y211ciA8PT0+IHRjbXVyLWhhbmRsZXIKCiAgICB0Y211ci1oYW5kbGVy
-IGlzIG9uZSBvZiB0aGUgYmluYXJpZXMgaW4gL3Vzci9sb2NhbC9saWIvdGNtdS1ydW5uZXIv
-LgoKICAgIGxpYnRjbXVyIGlzIGEgdXNlcm1vZGUgQVBJIHRvIHRoZSBsb2FkYWJsZSB0Y211
-LXJ1bm5lciBoYW5kbGVycy4gIExJTywgVENNVSwKICAgIGFuZCB0Y211ci1ydW5uZXIgYXJl
-IHVuaW52b2x2ZWQgLS0gbGlidGNtdXIgb25seSBsb2FkcyBhbmQgdXNlcyB0aGUKICAgIGhh
-bmRsZXJzLCBhbmQgb25seSB0aGUgYmxvY2stSS9PIGVudHJ5IHBvaW50cyBhcmUgY2FsbGVk
-IChub3QgaGFuZGxlX2NtZCkuCgogICAgZnVzZV90cmVlKDMpIGFuZCBsaWJ0Y211cigzKSBh
-cmUgaW5kZXBlbmRlbnQgLS0gZWFjaCB1c2FibGUgZm9yIGl0cyBwdXJwb3NlCiAgICB3aXRo
-b3V0IHJlZmVyZW5jZSB0byB0aGUgb3RoZXIuICBJbiB0aGUgbWlkZGxlIGlzIGZ1c2VfdGNt
-dXIsIHdoaWNoIGxpbmtzCiAgICB0aGVtIHRvZ2V0aGVyLCBhbmQgY29uc2lzdHMgb2YgdGhy
-ZWUgcGFydHM6CgogICAgICAgIFRoZSBtYWluKCkgcHJvZ3JhbSBpbml0aWFsaXplcyB0aGUg
-b3RoZXIgcGFydHMgYW5kIGNhbGxzIGZ1c2VfbWFpbigpLgoKICAgICAgICBUaGUgZnVzZV90
-Y211ciBwYXJ0IHRyYW5zbGF0ZXMgSS9PIHJlcXVlc3RzIGJldHdlZW4gZnVzZSBhbmQgbGli
-dGNtdXIuCgogICAgICAgIFRoZSBmdXNlX3RjbXVyX2N0bCBwYXJ0IGludGVycHJldHMgY29t
-bWFuZHMgd3JpdHRlbiB0byBhIG5vZGUgaW4gdGhlCiAgICAgICAgZnVzZSBmaWxlc3lzdGVt
-IC0tIGNvbW1hbmRzIGNhbiBiZSB3cml0dGVuIHdpdGggY2F0KDEpIG9yIGVjaG8oMSkgdG8K
-ICAgICAgICAvdGNtdXIvZGV2L3RjbXVyLgoKRklMRVMKICAgIFdoZW4gYSBoYW5kbGVyIGlz
-IGxvYWRlZCwgYW4gZW1wdHkgZGlyZWN0b3J5IG5vZGUgYXBwZWFycyBmb3IgaXQgaW4KICAg
-IC90Y211ci9zeXMvbW9kdWxlcwoKICAgIFdoZW4gYSBkZXZpY2UgaXMgYWRkZWQsIGEgbm9k
-ZSBhcHBlYXJzIGluIC90Y211ci9kZXYvPHN1YnR5cGU+PG1pbm9ybnVtYmVyPgoKICAgIFRo
-ZSAvdGNtdXIvZGV2IG5vZGVzIGFwcGVhciBhcyByZWd1bGFyIGZpbGVzIChyYXRoZXIgdGhh
-biBibG9jayBkZXZpY2VzKSwKICAgIGJ1dCB0aGV5IGNhbiBzdGlsbCBiZSBtb3VudGVkIGFz
-IGZpbGVzeXN0ZW1zLCBlLmcuCgogICAgICAgICAgICBzdWRvIG1vdW50IC90Y211ci9kZXYv
-cmFtMDAwIC9tbnQvawoKTk9URVMKICAgIFRoZSBzb3VyY2UgaXMgaW4gdGhlIGxpYnRjbXVy
-IGJyYW5jaCAoZGVmYXVsdCkgYXQKICAgIGh0dHBzOi8vZ2l0aHViLmNvbS9EYXZpZEJ1dHRl
-cmZpZWxkL3RjbXUtcnVubmVyLmdpdAoKICAgIEZpcnN0IG1ha2UgaW4gdGhlIG1haW4gdGNt
-dS1ydW5uZXIgZGlyZWN0b3J5LCB0byBnZXQgdmVyc2lvbi5oIGFuZCB0aGUgYmluYXJ5CiAg
-ICBoYW5kbGVyczoKICAgICAgICAgICAgY21ha2UgLgogICAgICAgICAgICBtYWtlCiAgICAg
-ICAgICAgIHN1ZG8gbWFrZSBpbnN0YWxsCgogICAgVGhlbiBjZCBpbnRvIHRoZSBsaWJ0Y211
-ciBzdWJkaXJlY3Rvcnkgd2hlcmUgdGhlcmUgaXMgYSBoYWNrZWQtdXAgbWFrZWZpbGUKICAg
-IHRoYXQgY3JlYXRlcyB0aGUgZnVzZV90Y211ciBiaW5hcnkuICBUb2RheSB0aGVyZSBhcmUg
-bm8gZGVwZW5kZW5jaWVzCiAgICBjb21wdXRlZCwgc28gYWx3YXlzCiAgICAgICAgICAgIG1h
-a2UgY2xlYW47IG1ha2UKCiAgICBUaGUgcHJvZ3JhbSB3aWxsIGF0dGVtcHQgdG8gY3JlYXRl
-IHRoZSBtb3VudC1wb2ludCBkaXJlY3RvcnkgdGhhdCBmdXNlIHdpbGwKICAgIG1vdW50IG9u
-LiAgVGhpcyB3aWxsIHN1Y2NlZWQgaWYgdGhlIHByb2dyYW0gaXMgcnVuIGFzIHN1cGVydXNl
-cjsgb3RoZXJ3aXNlCiAgICB5b3UgY2FuIGNyZWF0ZSBpdCBtYW51YWxseSBmaXJzdCB3aXRo
-CiAgICAgICAgICAgIHN1ZG8gbWtkaXIgL3RjbXVyCgogICAgVGhlIHNlcnZlciBwcmVzZW50
-bHkgcnVucyBvbmx5IG9uZSB0aHJlYWQuICBEZXNwaXRlIHRoaXMsIHRoZSB0aW1lIGZvciBh
-CiAgICBzY3JpcHQgdG8gZG93bmxvYWQgYSBmZXcgcmVwb3NpdG9yaWVzIGFuZCBidWlsZCBh
-IHNvZnR3YXJlIHBhY2thZ2UgaXMgb25seSBhCiAgICBmZXcgcGVyY2VudCBsb25nZXIgdGhy
-b3VnaCB0aGUgZnVzZSBtb3VudCB0byBhIHRjbXUtcnVubmVyIHJhbWRpc2ssIGFzCiAgICBj
-b21wYXJlZCB3aXRoIGEgcmVndWxhciBrZXJuZWwgZmlsZXN5c3RlbSBtb3VudCB0byBteSBo
-b21lIGRpcmVjdG9yeQogICAgc3Bpbm5pbmcgZGlzay4gIChOb3QgYW4gb3B0aW1hbCBjb21w
-YXJpc29uLCBidXQgaXQncyB3aGF0IEkgaGF2ZSBhdCBoYW5kLikKCkJVR1MKICAgIE5vIGRv
-dWJ0LiAgVGhpcyBjb2RlIHdhcyBib3JuIGluIEp1bHkgMjAxOS4gIFRoZSBtYWtlZmlsZSBs
-ZWF2ZXMgbXVjaCB0byBiZQogICAgZGVzaXJlZC4KCiAgICBTbyBmYXIgSSBoYXZlIG9ubHkg
-dGVzdGVkIGl0IHVzaW5nIGhhbmRsZXJfcmFtLnNvLCBiZWNhdXNlIHRoYXQncyB0aGUKICAg
-IGhhbmRsZXIgdGhhdCBjYW4gYmUgdXNlZCB3aXRob3V0IGZpZ3VyaW5nIG91dCBob3cgdG8g
-aW5zdGFsbCBhbmQgcnVuCiAgICBzb3BoaXN0aWNhdGVkIGJhY2stZW5kIHNvZnR3YXJlLgoK
-U0VFIEFMU08KICAgIGZ1c2VfdHJlZSgzKSwgbGlidGNtdXIoMyksICBmdXNlKDgpLCAgdGNt
-dS1ydW5uZXIoOCkKCkFVVEhPUgogICAgRGF2aWQgQS4gQnV0dGVyZmllbGQKCk1hbnBhZ2Ug
-dXBkYXRlZCAyMyBKdWwgMjAxOQo=
---------------6C1C0C276F1260FD28F6BE2C
-Content-Type: text/plain; charset=UTF-8;
- name="fuse_tree.3"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="fuse_tree.3"
+After, everything is restarted and works just fine, even persistent 
+after a server reboot (on the other RAID50 server).
 
-ZnVzZV90cmVlKDMpICAgICAgICAgICAgICAgIExpbnV4IFByb2dyYW1tZXIncyBNYW51YWwg
-ICAgICAgICAgICAgICBmdXNlX3RyZWUoMykKCk5BTUUKICAgIGZ1c2VfdHJlZSAtLSBBUEkg
-dG8gZnVzZSBmaWxlc3lzdGVtIHRyZWUKClNZTk9QU0lTCiAgICAjaW5jbHVkZSAiZnVzZV90
-cmVlLmgiCgogICAgZXJyb3JfdCBmdXNlX3RyZWVfaW5pdChjb25zdCBjaGFyICogbW91bnRw
-b2ludCk7CiAgICBlcnJvcl90IGZ1c2VfdHJlZV9leGl0KHZvaWQpOwoKICAgIGVycm9yX3Qg
-ZnVzZV9sb29wX3J1bih2b2lkICogdW51c2VkKTsKCiAgICBmdXNlX25vZGVfdCBmdXNlX25v
-ZGVfYWRkKAoJCWNvbnN0IGNoYXIgKiBuYW1lLCBmdXNlX25vZGVfdCBwYXJlbnQsIG1vZGVf
-dCwKCQljb25zdCBzdHJ1Y3QgZnVzZV9ub2RlX29wcyAqLCB1aW50cHRyX3QgZGF0YSk7Cgog
-ICAgZXJyb3JfdCBmdXNlX25vZGVfcmVtb3ZlKGNvbnN0IGNoYXIgKiBuYW1lICwgZnVzZV9u
-b2RlX3QgcGFyZW50KTsKCiAgICBmdXNlX25vZGVfdCBmdXNlX3RyZWVfbWtkaXIoY29uc3Qg
-Y2hhciAqIG5hbWUsIGZ1c2Vfbm9kZV90IHBhcmVudCk7CiAgICBlcnJvcl90IGZ1c2VfdHJl
-ZV9ybWRpcihjb25zdCBjaGFyICogbmFtZSwgZnVzZV9ub2RlX3QgcGFyZW50KTsKCiAgICBm
-dXNlX25vZGVfdCBmdXNlX25vZGVfbG9va3VwKGNvbnN0IGNoYXIgKiBwYXRoKTsKCiAgICB1
-aW50cHRyX3QgZnVzZV9ub2RlX2RhdGFfZ2V0KGZ1c2Vfbm9kZV90KTsKCiAgICB2b2lkIGZ1
-c2Vfbm9kZV91cGRhdGVfbW9kZShmdXNlX25vZGVfdCwgbW9kZV90KTsKICAgIHZvaWQgZnVz
-ZV9ub2RlX3VwZGF0ZV9zaXplKGZ1c2Vfbm9kZV90LCBzaXplX3QpOwogICAgdm9pZCBmdXNl
-X25vZGVfdXBkYXRlX210aW1lKGZ1c2Vfbm9kZV90KTsKCiAgICBjaGFyICogZnVzZV90cmVl
-X2ZtdCh2b2lkKTsKCkRFU0NSSVBUSU9OCiAgICBmdXNlX3RyZWUgbWFpbnRhaW5zIGEgZmls
-ZXN5c3RlbSB0cmVlLCBpbXBsZW1lbnRpbmcgZnVzZV9vcGVyYXRpb25zLiAgTGlrZQogICAg
-L3Byb2MsIHRoZSB0cmVlIGl0c2VsZiBpcyBtYW5hZ2VkIGludGVybmFsbHkgYnkgdGhlIGFw
-cGxpY2F0aW9uIC0tIHRoZXJlIGlzCiAgICBubyBjcmVhdGlvbiBvZiBmaWxlcyBvciBkaXJl
-Y3RvcmllcyB0aHJvdWdoIHN5c3RlbSBjYWxscyBvbiB0aGUgbW91bnRlZCBmdXNlCiAgICBm
-aWxlc3lzdGVtLgoKICAgIEhvd2V2ZXIsIGFsc28gbGlrZSAvcHJvYywgaW5kaXZpZHVhbCBm
-aWxlcyByZXByZXNlbnRlZCBpbiB0aGUgdHJlZSBtYXkgYmUKICAgIHJlYWRhYmxlIGFuZC9v
-ciB3cml0YWJsZSB0aHJvdWdoIHRoZSBtb3VudGVkIGZpbGVzeXN0ZW0sIGRlcGVuZGluZyBv
-bgogICAgcGVybWlzc2lvbnMuCgogICAgV2hlbiBhZGRpbmcgYSBub2RlIHRvIHRoZSB0cmVl
-LCB0aGUgYXBwbGljYXRpb24gY2FuIHN1cHBseSBhIGZ1c2Vfbm9kZV9vcHMKICAgIHZlY3Rv
-ciBzcGVjaWZ5aW5nIGZ1bmN0aW9ucyB0byBiZSBjYWxsZWQgdG8gYmFjayBmaWxlc3lzdGVt
-IG9wZXJhdGlvbnMgb24gdGhlCiAgICBub2RlLiAgVGhlIHN0cnVjdCBmdXNlX25vZGVfb3Bz
-IGluY2x1ZGVzIHRoZXNlIG1lbWJlcnMsIGFsbCBvZiB3aGljaCBhcmUKICAgIG9wdGlvbmFs
-IHRvIGZpbGwgaW46CgogICAgICAgIGludCAgICAgKCpvcGVuKSAgIChmdXNlX25vZGVfdCwg
-dWludHB0cl90IGRhdGEpOwogICAgICAgIGludCAgICAgKCpyZWxlYXNlKShmdXNlX25vZGVf
-dCwgdWludHB0cl90IGRhdGEpOwogICAgICAgIGludCAgICAgKCpmc3luYykgICh1aW50cHRy
-X3QgZGF0YSwgaW50IGRhdGFzeW5jKTsKICAgICAgICBzc2l6ZV90ICgqcmVhZCkgICAodWlu
-dHB0cl90IGRhdGEsIHZvaWQgKiBidWYsIHNpemVfdCwgbG9mZl90KTsKICAgICAgICBzc2l6
-ZV90ICgqd3JpdGUpICAodWludHB0cl90IGRhdGEsIGNvbnN0IGNoYXIgKiBidWYsIHNpemVf
-dCwgbG9mZl90KTsKCiAgICBmdXNlX3RyZWVfaW5pdCgpIHNob3VsZCBiZSBjYWxsZWQgYmVm
-b3JlIGFueSBvZiB0aGUgb3RoZXIgY2FsbHMgZGVzY3JpYmVkCiAgICBoZXJlLCBwYXNzaW5n
-IHRoZSBwYXRoIHRvIHRoZSBtb3VudCBwb2ludCB0byBiZSB1c2VkIGZvciB0aGUgZnVzZSBt
-b3VudC4KCiAgICBmdXNlX3RyZWVfZXhpdCgpIHNob3VsZCBiZSBjYWxsZWQgbGFzdCBhZnRl
-ciBhbnkgb3RoZXIgY2FsbHMgZGVzY3JpYmVkIGhlcmUuCgogICAgZnVzZV9sb29wX3J1bigp
-IHNob3VsZCBiZSBjYWxsZWQgdG8gcnVuIGZ1c2VfbWFpbigpLgoKICAgIGZ1c2Vfbm9kZV9h
-ZGQoKSBhZGRzIGEgbm9kZSB3aXRoIHRoZSBnaXZlbiBuYW1lIHVuZGVyIHRoZSBnaXZlbiBw
-YXJlbnQgbm9kZS4KICAgIGZ1c2Vfbm9kZV9yZW1vdmUoKSByZW1vdmVzIGl0LiAgVGhlIGxh
-c3QgImRhdGEiIGFyZ3VtZW50IGlzIHByaXZhdGUgdG8gdGhlIGNhbGxlcgogICAgYW5kIGlz
-IHBhc3NlZCB0byB0aGUgZnVzZV9ub2RlX29wcyBjYWxsYmFjayBmdW5jdGlvbnMuCgogICAg
-ZnVzZV90cmVlX21rZGlyKCkgY3JlYXRlcyBhIG5ldyBjaGlsZCBkaXJlY3RvcnkgZnVzZV9u
-b2RlIHdpdGggdGhlIHNwZWNpZmllZAogICAgbmFtZSB1bmRlciB0aGUgc3BlY2lmaWVkIHBh
-cmVudCBmdXNlX25vZGUuICBmdXNlX3RyZWVfcm1kaXIoKSByZW1vdmVzIGl0LgoKICAgIGZ1
-c2Vfbm9kZV9sb29rdXAoKSByZXR1cm5zIGEgcG9pbnRlciB0byB0aGUgZnVzZV9ub2RlIHJl
-cHJlc2VudGluZyB0aGUgcGF0aAogICAgc3RyaW5nLiBQYXRoIHN0cmluZyBpcyB0aGUgZnVs
-bCBwYXRoIGZyb20gdGhlIGZ1c2UgbW91bnQsIHN0YXJ0aW5nIHdpdGggJy8nLgoKICAgIGZ1
-c2Vfbm9kZV9kYXRhX2dldCgpIHJldHVybnMgdGhlIHByaXZhdGUgZGF0YSBzcGVjaWZpZWQg
-dG8gZnVzZV9ub2RlX2FkZC4KCiAgICBmdXNlX25vZGVfdXBkYXRlX21vZGUoKSB1cGRhdGVz
-IHRoZSBmdXNlX25vZGUncyBtb2RlIHBlcm1pc3Npb25zLgoKICAgIGZ1c2Vfbm9kZV91cGRh
-dGVfc2l6ZSgpIHVwZGF0ZXMgdGhlIGZ1c2Vfbm9kZSdzIHNpemUgaW4gYnl0ZXMuCgogICAg
-ZnVzZV9ub2RlX3VwZGF0ZV9tdGltZSgpIHVwZGF0ZXMgdGhlIGZ1c2Vfbm9kZSdzIG1vZGlm
-aWNhdGlvbiB0aW1lIHRvIHRoZQogICAgcHJlc2VudC4KCiAgICBmdXNlX3RyZWVfZm10KCkg
-cmV0dXJucyBhIGh1bWFuLXJlYWRhYmxlIHN0cmluZyByZXByZXNlbnRpbmcgdGhlIGZ1c2Ug
-dHJlZS4KICAgIFRoZSBzdHJpbmcgc2hvdWxkIGJlIGZyZWVkIGJ5IHRoZSBjYWxsZXIgd2hl
-biBkb25lIHdpdGggaXQuCgpSRVRVUk4gVkFMVUUKICAgIFVwb24gc3VjY2Vzc2Z1bCBjb21w
-bGV0aW9uLCBmdW5jdGlvbnMgcmV0dXJuaW5nIHR5cGUgZXJyb3JfdCByZXR1cm4gemVyby4K
-ICAgIEZhaWx1cmVzIHJldHVybiAtZXJybm8uCgogICAgZnVzZV9ub2RlX2FkZCgpIGFuZCBm
-dXNlX3RyZWVfbWtkaXIoKSBlYWNoIHJldHVybiBhIHBvaW50ZXIgdG8gdGhlIG5ldwogICAg
-ZnVzZV9ub2RlLCBvciBOVUxMIG9uIGVycm9yLgoKICAgIGZ1c2Vfbm9kZV9sb29rdXAoKSBy
-ZXR1cm5zIGEgcG9pbnRlciB0byB0aGUgZnVzZV9ub2RlLCBvciBOVUxMIGlmIHRoZSBwYXRo
-CiAgICBpcyBub3QgZm91bmQuCgogICAgZnVzZV90cmVlX2ZtdCgpIHJldHVybnMgYSBmcmVl
-YWJsZSBodW1hbi1yZWFkYWJsZSBkZWJ1Z2dpbmcgc3RyaW5nCiAgICByZXByZXNlbnRpbmcg
-dGhlIGZ1c2UgdHJlZS4KCkVSUk9SUwogICAgZm5vZGVfcmVtb3ZlKCkKCS1FQlVTWQkJZnVz
-ZV9ub2RlIGlzIG9wZW4gYnkgc29tZSBwcm9jZXNzIHRocm91Z2ggdGhlIGZ1c2UgRlMKCS1F
-Tk9FTlQJCW5hbWVkIGZub2RlIG5vdCBmb3VuZCB1bmRlciBwYXJlbnQKCiAgICBmdXNlX3Ry
-ZWVfcm1kaXIoKQoJLUVOT0VOVAkJbmFtZWQgZm5vZGUgbm90IGZvdW5kIHVuZGVyIHBhcmVu
-dAoJLUVOT1RFTVBUWQlkaXJlY3Rvcnkgbm9kZSBpcyBub3QgZW1wdHkKCiAgICBmdXNlX3Ry
-ZWVfaW5pdCgpCgktRUlOVkFMCQltb3VudHBvaW50IGRvZXMgbm90IHN0YXJ0IHdpdGggJy8n
-LCBvciBpdCBlbmRzIGluICcvJwoKICAgIGZ1c2VfdHJlZV9leGl0KCkKCS1FQlVTWQkJcm9v
-dCBub2RlIHN0aWxsIGhhcyBjaGlsZChyZW4pCgogICAgZnVzZV9sb29wX3J1bigpCgllcnJv
-cnMgcmV0dXJuZWQgYnkgZnVzZV9tYWluKCkKCWVycm9ycyByZXR1cm5lZCBieSBhc3ByaW50
-ZigpCgpOT1RFUwoKQlVHUwogICAgZnVzZV9ub2RlX2xvb2t1cCgpIHNob3VsZCBob2xkIHRo
-ZSByZXR1cm5lZCBub2RlLCBhbmQgYSBuZXcgZnVuY3Rpb24gc2hvdWxkCiAgICBiZSBhZGRl
-ZCB0byBkcm9wIGl0LgoKICAgIFRoZXJlIHNob3VsZCBiZSBhIHRocmVhZGluZyBvcHRpb24g
-cGFzc2VkIHRvIGZ1c2VfbG9vcF9ydW4oKS4gIEF0IHByZXNlbnQKICAgIGl0IGFsd2F5cyBy
-dW5zIGZ1c2Ugc2luZ2xlLXRocmVhZGVkLgoKU0VFIEFMU08KICAgIGZ1c2UoOCkKCkFVVEhP
-UgogICAgRGF2aWQgQS4gQnV0dGVyZmllbGQKCk1hbnBhZ2UgdXBkYXRlZCAyMyBKdWwgMjAx
-OQo=
---------------6C1C0C276F1260FD28F6BE2C
-Content-Type: text/plain; charset=UTF-8;
- name="libtcmur.3"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="libtcmur.3"
+I have included this configuration here also, since that was the first 
+thought that something might be wrong while restart, but it turned 
+another issue which I can solve solely.
 
-bGlidGNtdXIoMykgICAgICAgICAgICAgICAgIExpbnV4IFByb2dyYW1tZXIncyBNYW51YWwg
-ICAgICAgICAgICAgICAgbGlidGNtdXIoMykKCk5BTUUKICAgIGxpYnRjbXVyIC0tIHVzZXJt
-b2RlIEFQSSB0byB0Y211LXJ1bm5lciBibG9jayBzdG9yYWdlIGhhbmRsZXJzCgpTWU5PUFNJ
-UwogICAgI2luY2x1ZGUgImxpYnRjbXVyLmgiCgogICAgZXJyb3JfdCBsaWJ0Y211cl9pbml0
-KGNvbnN0IGNoYXIgKiBoYW5kbGVyX3ByZWZpeCk7CiAgICBlcnJvcl90IGxpYnRjbXVyX2V4
-aXQodm9pZCk7CgogICAgZXJyb3JfdCB0Y211cl9oYW5kbGVyX2xvYWQoY29uc3QgY2hhciAq
-IHN1YnR5cGUpOwogICAgZXJyb3JfdCB0Y211cl9oYW5kbGVyX3VubG9hZChjb25zdCBjaGFy
-ICogc3VidHlwZSk7CgogICAgZXJyb3JfdCB0Y211cl9jaGVja19jb25maWcoY2hhciBjb25z
-dCAqIGNmZ3N0cmluZyk7CiAgICBlcnJvcl90IHRjbXVyX2RldmljZV9hZGQoaW50IG1pbm9y
-LCBjb25zdCBjaGFyICogY2Znc3RyaW5nKTsKICAgIGVycm9yX3QgdGNtdXJfZGV2aWNlX3Jl
-bW92ZShpbnQgbWlub3IpOwoKICAgIGVycm9yX3QgdGNtdXJfcmVhZChpbnQgbWlub3IsIHN0
-cnVjdCB0Y211bGliX2NtZCAqLAoJCQlzdHJ1Y3QgaW92ZWMgKiwgc2l6ZV90IG5pb3YsIHNp
-emVfdCwgbG9mZl90KTsKICAgIGVycm9yX3QgdGNtdXJfd3JpdGUoaW50IG1pbm9yLCBzdHJ1
-Y3QgdGNtdWxpYl9jbWQgKiwKCQkJc3RydWN0IGlvdmVjICosIHNpemVfdCBuaW92LCBzaXpl
-X3QsIGxvZmZfdCk7CiAgICBlcnJvcl90IHRjbXVyX2ZsdXNoKGludCBtaW5vciwgc3RydWN0
-IHRjbXVsaWJfY21kICopOwoKICAgIHNzaXplX3QgdGNtdXJfZ2V0X3NpemUoaW50IG1pbm9y
-KTsKICAgIHNzaXplX3QgdGNtdXJfZ2V0X2Jsb2NrX3NpemUoaW50IG1pbm9yKTsKICAgIHNz
-aXplX3QgdGNtdXJfZ2V0X21heF94ZmVyKGludCBtaW5vcik7CgogICAgY29uc3QgY2hhciAq
-IHRjbXVyX2dldF9kZXZfbmFtZShpbnQgbWlub3IpOwoKREVTQ1JJUFRJT04KICAgIGxpYnRj
-bXVyIHByb3ZpZGVzIGEgdXNlcm1vZGUgYXBwbGljYXRpb24gcHJvZ3JhbW1pbmcgaW50ZXJm
-YWNlIHRvIGFjY2VzcwogICAgYmxvY2sgc3RvcmFnZSBzZXJ2aWNlcyB0aHJvdWdoIHRjbXUt
-cnVubmVyIGJsb2NrIHN0b3JhZ2UgaGFuZGxlcnMuCgogICAgTm90ZSB0aGF0IExJTywgVENN
-VSBhbmQgdGNtdS1ydW5uZXIgYXJlIHVuaW52b2x2ZWQgLS0gbGlidGNtdXIgb25seSBjYWxs
-cwogICAgdGhlIHRjbXUtcnVubmVyIGxvYWRhYmxlIHN0b3JhZ2UgaGFuZGxlcnMsIGUuZy4g
-cWNvdywgZ2xmcywgcmFtLCBldGMuCgogICAgbGlidGNtdXIgbWFrZXMgdXNlIG9mIHRoZSBo
-YW5kbGVyIHJlYWQsIHdyaXRlLCBhbmQgZmx1c2ggYmxvY2sgSS9PCiAgICBmdW5jdGlvbnMg
-b25seSAtLSBubyBjYWxscyBhcmUgbWFkZSB0byBoYW5kbGVfY21kKCkuCgogICAgRnVuY3Rp
-b25zIHJldHVybmluZyB0eXBlIGVycm9yX3QgcmV0dXJuIHplcm8gZm9yIHN1Y2Nlc3MsIG90
-aGVyd2lzZSAtZXJybm8uCgogICAgQ2FsbCBsaWJ0Y211cl9pbml0KCkgb25jZSBiZWZvcmUg
-dXNpbmcgbGlidGNtdXIgc2VydmljZXMuICBJZiBoYW5kbGVyX3ByZWZpeAogICAgaXMgTlVM
-TCwgdGhlIGRlZmF1bHQgaXMgdXNlZDogIi91c3IvbG9jYWwvbGliL3RjbXUtcnVubmVyL2hh
-bmRsZXJfIi4gIFRoZQogICAgZXhwZWN0ZWQgaGFuZGxlciBwYXRocyBhcmUgdGhlIGNvbmNh
-dGVuYXRpb24gb2Y6CgoJCSAgICBoYW5kbGVyX3ByZWZpeCAgdGNtdV9zdWJ0eXBlICAiLnNv
-IgoKICAgIENhbGwgbGlidGNtdXJfZXhpdCgpIG9uY2UgbGFzdCwgYWZ0ZXIgYW55IG90aGVy
-IGZ1bmN0aW9ucyBkZXNjcmliZWQgaGVyZS4KCiAgICB0Y211cl9oYW5kbGVyX2xvYWQoKSB3
-aWxsIGRsb3BlbigpIGEgdGNtdS1ydW5uZXIgaGFuZGxlciBvZiB0aGUgZ2l2ZW4KICAgIHN1
-YnR5cGUgYW5kIGxvYWQgaXQgaW50byB0aGUgcHJvZ3JhbSBmb3IgdXNlLiAgdGNtdXJfaGFu
-ZGxlcl91bmxvYWQoKQogICAgdW5sb2FkcyBpdC4KCiAgICB0Y211cl9jaGVja19jb25maWco
-KSBjaGVja3MgYSBoYW5kbGVyIGRldmljZSBjb25maWd1cmF0aW9uIHN0cmluZyBmb3IKICAg
-IHZhbGlkaXR5LiAgVGhlIGhhbmRsZXIgZm9yIHRoZSBjb25maWd1cmF0aW9uIG11c3QgYWxy
-ZWFkeSBoYXZlIGJlZW4gbG9hZGVkCiAgICB1c2luZyB0Y211cl9oYW5kbGVyX2xvYWQoKS4g
-IGNmZ3N0cmluZyB0YWtlcyB0aGlzIGZvcm0sIHNwZWNpZnlpbmcgdGhlCiAgICBoYW5kbGVy
-J3MgVENNVSBzdWJ0eXBlOgoJCSAgICAvc3VidHlwZS9oYW5kbGVyLWNmZy1zdHJpbmcKCiAg
-ICBTZWUgdGNtdS1ydW5uZXIoOCkgZm9yIG1vcmUgYWJvdXQgc3VidHlwZSBhbmQgaGFuZGxl
-ci1jZmctc3RyaW5nLgoKICAgIHRjbXVyX2RldmljZV9hZGQoKSBhZGRzIGEgZGV2aWNlLCB3
-aXRoIHNwZWNpZmllZCBjZmdzdHJpbmcsIGFzIHRoZQogICAgc3BlY2lmaWVkIHRjbXVyIG1p
-bm9yIG51bWJlci4gIHRjbXVyX2RldmljZV9yZW1vdmUoKSByZW1vdmVzIHRoZSBzcGVjaWZp
-ZWQKICAgIG1pbm9yLiAgVGhlIGhhbmRsZXIgaXMgZGV0ZXJtaW5lZCBmcm9tIHRoZSBzdWJ0
-eXBlIGluIHRoZSBmaXJzdCBzZWdtZW50IG9mCiAgICBjZmdzdHJpbmcuICBBbGwgdGNtdXIg
-c3VidHlwZXMgc2hhcmUgYSBjb21tb24gc3BhY2Ugb2YgbWlub3IgbnVtYmVycy4KCiAgICB0
-Y211cl9yZWFkKCksIHRjbXVyX3dyaXRlKCkgYW5kIHRjbXVyX2ZsdXNoKCkgc3RhcnQgSS9P
-IG9wZXJhdGlvbnMgdG8gdGhlCiAgICBzcGVjaWZpZWQgbWlub3IuICBFcnJvcnMgaW4gdGhl
-IEkvTyBzdGFydCBwcm9jZXNzIGNhbiBiZSByZXBvcnRlZCBieSAtZXJybm8KICAgIHJldHVy
-biBmcm9tIHRoZXNlIGNhbGxzLiAgQSByZXR1cm4gdmFsdWUgb2YgemVybyBkZW5vdGVzIGEg
-c3VjY2Vzc2Z1bCBJL08KICAgIHN0YXJ0LCBpbiB3aGljaCBjYXNlIHRoZXJlIHdpbGwgYmUg
-YSBjb21wbGV0aW9uIGNhbGwgdG8gY21kLT5kb25lKCksIHdoaWNoCiAgICBtYXkgcmVwb3J0
-IGVpdGhlciBhbiAic3RzIiBlcnJvciwgb3Igc3VjY2VzcyAoZGVub3RlZCBieSBUQ01VX1NU
-U19PSykuCgogICAgTm90ZSB0aGF0IHRoZSBjb21wbGV0aW9uIGNhbGwgbWF5IG9jY3VyIGJl
-Zm9yZSB0aGUgcmVxdWVzdCBjYWxsIHJldHVybnMuCgogICAgdGNtdXJfcmVhZCgpIGFuZCB0
-Y211cl93cml0ZSgpIHRha2UgYW4gaW92ZWMgYXJyYXkgd2l0aCBuaW92IGVsZW1lbnRzLCBh
-bgogICAgSS9PIHNpemUgaW4gYnl0ZXMsIGFuZCBhIHNlZWsgb2Zmc2V0IGludG8gdGhlIGRl
-dmljZSB3aGVyZSB0aGUgSS9PIGJlZ2lucy4KCiAgICBzdHJ1Y3QgdGNtdWxpYl9jbWQgaW5j
-bHVkZXMgdGhpcyBmaWVsZCwgd2hpY2ggbXVzdCBiZSBzZXQgYmVmb3JlIHBhc3NpbmcKICAg
-IHRoZSBjb21tYW5kIHRvIHRjbXVyX3JlYWQoKSwgdGNtdXJfd3JpdGUoKSwgb3IgdGNtdXJf
-Zmx1c2goKToKCgljbWRfZG9uZV90IGRvbmU7CS8qIGNvbXBsZXRpb24gY2FsbGJhY2sgKi8K
-CiAgICBUaGUgY2FsbGJhY2sgZnVuY3Rpb24gaXMgb2YgdGhpcyB0eXBlOgoKCXR5cGVkZWYK
-CXZvaWQgKCpjbWRfZG9uZV90KShzdHJ1Y3QgdGNtdV9kZXZpY2UgKiwgc3RydWN0IHRjbXVs
-aWJfY21kICosIGludCk7CgogICAgVGhlIHRoaXJkIGFyZ3VtZW50IHRvIHRoZSBjYWxsYmFj
-ayBpcyBUQ01VIHN0YXR1cyAoc2VlIGxpYnRjbXVfY29tbW9uLmgpLgoKICAgIHRjbXVyX2dl
-dF9zaXplKCkgcmV0dXJucyB0aGUgc2l6ZSBpbiBieXRlcyBvZiB0aGUgc3BlY2lmaWVkIG1p
-bm9yLiAgSWYgdGhlCiAgICBtaW5vciBkb2VzIG5vdCBleGlzdCB0aGVuIHRoZSByZXR1cm4g
-aXMgYSAtZXJybm8uCgogICAgdGNtdXJfZ2V0X2Jsb2NrX3NpemUoKSByZXR1cm5zIHRoZSBi
-bG9jayBzaXplIGluIGJ5dGVzIG9mIHRoZSBzcGVjaWZpZWQKICAgIG1pbm9yLiAgSWYgdGhl
-IG1pbm9yIGRvZXMgbm90IGV4aXN0IHRoZW4gdGhlIHJldHVybiBpcyBhIC1lcnJuby4KCiAg
-ICB0Y211cl9nZXRfbWF4X3hmZXIoKSByZXR1cm5zIHRoZSBtYXhpbXVtIEkvTyBzaXplIGlu
-IGJ5dGVzIG9mIHRoZSBzcGVjaWZpZWQKICAgIG1pbm9yLiAgSWYgdGhlIG1pbm9yIGRvZXMg
-bm90IGV4aXN0IHRoZW4gdGhlIHJldHVybiBpcyBhIC1lcnJuby4KCiAgICB0Y211cl9nZXRf
-ZGV2X25hbWUoKSByZXR1cm5zIHRoZSBkZXZpY2UgbmFtZSBvZiB0aGUgc3BlY2lmaWVkIG1p
-bm9yLiAgSWYKICAgIHRoZSBtaW5vciBkb2VzIG5vdCBleGlzdCB0aGVuIHRoZSByZXR1cm4g
-aXMgTlVMTC4KClJFVFVSTiBWQUxVRQogICAgVXBvbiBzdWNjZXNzZnVsIGNvbXBsZXRpb24s
-IGZ1bmN0aW9ucyByZXR1cm5pbmcgdHlwZSBlcnJvcl90IHJldHVybiB6ZXJvLgogICAgQWxs
-IGZ1bmN0aW9ucyByZXR1cm4gLWVycm5vIG9uIGZhaWx1cmUsIGV4Y2VwdCB0Y211cl9nZXRf
-ZGV2X25hbWUoKSwgd2hpY2gKICAgIHJldHVybnMgTlVMTCBpbiB0aGF0IGNhc2UuCgpFUlJP
-UlMKICAgIHRjbXVyX3JlYWQoKQogICAgdGNtdXJfd3JpdGUoKQoJLUVOT0RFVgkgICAgbm8g
-ZGV2aWNlIGF0IHNwZWNpZmllZCBtaW5vciAoaW5jbHVkaW5nIG1pbm9yIG91dCBvZiByYW5n
-ZSkKCS1FTlhJTwkgICAgaGFuZGxlciBkb2VzIG5vdCBpbXBsZW1lbnQgdGhlIHJlcXVlc3Rl
-ZCBmdW5jdGlvbgoJLUVJTlZBTAkgICAgSS9PIHdvdWxkIGV4Y2VlZCBkZXZpY2UgYm91bmRz
-CgktRUlPCSAgICBJL08gY29tcGxldGVkIHdpdGggbm9uemVybyAic3RzIgoKICAgIHRjbXVy
-X2ZsdXNoKCkKCS1FTk9ERVYJICAgIG5vIGRldmljZSBhdCBzcGVjaWZpZWQgbWlub3IKCS1F
-SU8JICAgIEkvTyBjb21wbGV0ZWQgd2l0aCBub256ZXJvICJzdHMiCgogICAgdGNtdXJfZ2V0
-X3NpemUoKSwgdGNtdXJfZ2V0X2Jsb2NrX3NpemUoKSwgdGNtdXJfZ2V0X21heF94ZmVyKCkK
-CS1FTk9ERVYJICAgIG5vIGRldmljZSBhdCBzcGVjaWZpZWQgbWlub3IKCiAgICB0Y211cl9k
-ZXZpY2VfYWRkKCkKCS1FTk9ERVYJICAgIG1pbm9yIG51bWJlciBvdXQgb2YgcmFuZ2UKCS1F
-QlVTWQkgICAgbWlub3IgbnVtYmVyIGFscmVhZHkgaW4gdXNlIGJ5IHByaW9yIGFkZAoJZXJy
-b3JzIHJldHVybmVkIGJ5IHRjbXVyX2NoZWNrX2NvbmZpZygpCgllcnJvcnMgcmV0dXJuZWQg
-YnkgcmhhbmRsZXItPm9wZW4oKQoKICAgIHRjbXVyX2RldmljZV9yZW1vdmUoKQoJLUVOT0RF
-VgkgICAgbm8gZGV2aWNlIGF0IHNwZWNpZmllZCBtaW5vcgoKICAgIHRjbXVyX2NoZWNrX2Nv
-bmZpZygpCgktRU5YSU8JICAgIG5vIGxvYWRlZCBoYW5kbGVyIHN1YnR5cGUgbWF0Y2hlcyB0
-aGlzIGNvbmZpZyBzdHJpbmcKCS1FSU5WQUwJICAgIGNvbmZpZyBzdHJpbmcgZG9lcyBub3Qg
-c3RhcnQgd2l0aCAnLycKCS1FSU5WQUwJICAgIGNvbmZpZyBzdHJpbmcgaXMgdG9vIGxvbmcK
-CWVycm9ycyByZXR1cm5lZCBieSByaGFuZGxlci0+Y2hlY2tfY29uZmlnKCkKCiAgICB0Y211
-cl9oYW5kbGVyX2xvYWQoKQoJLUVFWElTVAkgICAgaGFuZGxlciBhbHJlYWR5IGxvYWRlZCBm
-b3IgdGhlIHNwZWNpZmllZCBzdWJ0eXBlCgktRU5PU1BDCSAgICBhbGwgaGFuZGxlciBzbG90
-cyBhcmUgaW4gdXNlCgktRU5PTUVNCSAgICBmYWlsZWQgdG8gYXNwcmludGYgdGhlIGhhbmRs
-ZXIgcGF0aAoJLUVOT0VOVAkgICAgZmFpbGVkIHRvIGRsb3BlbiB0aGUgaGFuZGxlciBwYXRo
-CgktRUJBREYJICAgIGZhaWxlZCB0byBkbHN5bSgiaGFuZGxlcl9pbml0IikKCS1FSU8JICAg
-IGhhbmRsZXJfaW5pdCByZXR1cm5lZCBub24temVybwoKICAgIHRjbXVyX2hhbmRsZXJfdW5s
-b2FkKCkKCS1FTk9FTlQJICAgIG5vIGhhbmRsZXIgaXMgbG9hZGVkIGZvciB0aGUgc3BlY2lm
-aWVkIHN1YnR5cGUKCS1FQlVTWQkgICAgaGFuZGxlciBoYXMgZXhpc3RpbmcgZGV2aWNlcyAo
-YWRkZWQgYnV0IG5vdCByZW1vdmVkKQoKICAgIGxpYnRjbXVyX2V4aXQoKQoJLUVCVVNZCSAg
-ICBhIGhhbmRsZXIgaXMgc3RpbGwgbG9hZGVkCgpOT1RFUwoKQlVHUwogICAgTm90IGFsbCBz
-eW1ib2xzIHBvc3NpYmx5IHJlZmVyZW5jZWQgYnkgaGFuZGxlcnMgYXJlIGltcGxlbWVudGVk
-LgogICAgU29tZSBzdWNoIHN5bWJvbHMgYXJlICJzdHViYmVkIG91dCIgYW5kIHByaW50IGEg
-d2FybmluZyBpZiBjYWxsZWQuCiAgICBPdGhlcnMgZG8gbm90IGV4aXN0LCB3aGljaCB3aWxs
-IGRpc2FsbG93IGxvYWRpbmcgb2YgcmVmZXJlbmNpbmcgaGFuZGxlcnMuCgogICAgVGhlcmUg
-aXMgbm8gY2hlY2sgZm9yIGFuIGF0dGVtcHQgdG8gYWRkIHRoZSBzYW1lIGRldmljZSB0d2lj
-ZS4KCiAgICBUaGVyZSBpcyBubyBnZW5lcmljIHdheSB0byBzcGVjaWZ5IHRoZSBkZXZpY2Ug
-c2l6ZSwgYmxvY2sgc2l6ZSwgb3IgbWF4aW11bQogICAgSS9PIHNpemUuCgogICAgbGlidGNt
-dXJfZXhpdCgpIHNob3VsZCBhdXRvLXVubG9hZCBhbnkgaGFuZGxlcnMgdGhhdCBoYXZlIG5v
-IGRldmljZXMKICAgIGN1cnJlbnRseSBhZGRlZC4KClNFRSBBTFNPCiAgICB0Y211LXJ1bm5l
-cig4KQoKQVVUSE9SCiAgICBEYXZpZCBBLiBCdXR0ZXJmaWVsZAoKTWFucGFnZSB1cGRhdGVk
-IDIzIEp1bCAyMDE5Cg==
---------------6C1C0C276F1260FD28F6BE2C--
+Hope this might also help:
+
+/[Storage:root:iscsi01]:~:# /etc/init.d/target restart//
+//[....] Restarting target (via systemctl): target.serviceJob for 
+target.service failed because the control process exited with error 
+code. See "systemctl status target.service" and "journalctl -xe" for 
+details.//
+// failed!//
+//[Storage:root:iscsi01]:~:# lsmod | grep tcm//
+//tcm_loop               24576  1//
+//tcm_fc                 28672  1//
+//tcm_usb_gadget         16384  0//
+//tcm_qla2xxx            36864  1//
+//usb_f_tcm              28672  2//
+//target_core_mod       360448  21 
+tcm_loop,target_core_file,tcm_fc,target_core_iblock,iscsi_target_mod,ib_srpt,vhost_scsi,tcm_qla2xxx,target_core_pscsi,usb_f_tcm,target_core_user//
+//libfc                 126976  1 tcm_fc//
+//qla2xxx               724992  1 tcm_qla2xxx//
+//scsi_transport_fc      57344  3 qla2xxx,tcm_qla2xxx,libfc//
+//libcomposite           61440  2 tcm_usb_gadget,usb_f_tcm//
+//udc_core               49152  2 libcomposite,usb_f_tcm//
+//[Storage:root:iscsi01]:~:#//
+/
+
+
+I have google it and couldn't fine any reference on anybody having 
+trouble use nvme drives in LIO for iscsi export, thus everything I could 
+find is related to NVME over RDMA, but this is not the current case.
+Am i performing something wrong or this is a bug with the NVME cards ? 
+Mind that on sata array run just fine.
+The kernel I am using on all storage servers is : Linux iscsi01 
+4.15.0-54-generic #58~16.04.1-Ubuntu SMP Mon Jun 24 13:21:41 UTC 2019 
+x86_64 x86_64 x86_64 GNU/Linux
+
+Looking forward for your reply and any feedback will be much appreciated.
+
+
+Kind regards,
+Alex Vladulescu
