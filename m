@@ -1,23 +1,50 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Tue, 02 Jul 2019 20:41:05 +0000
-Subject: Re: [PATCH V2] iscsi: set auth_protocol back to NULL if CHAP_A value is not supported.
-Message-Id: <yq1lfxgf9um.fsf@oracle.com>
+From: Jia-Ju Bai <baijiaju1990@gmail.com>
+Date: Mon, 29 Jul 2019 02:29:56 +0000
+Subject: [PATCH] target: iscsi: iscsi_target_tpg: Fix a possible null-pointer dereference in iscsit_tpg_add_n
+Message-Id: <20190729022956.18192-1-baijiaju1990@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190626172734.20751-1-mlombard@redhat.com>
-In-Reply-To: <20190626172734.20751-1-mlombard@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, kstewart@linuxfoundation.org, allison@lohutok.net, rfontana@redhat.com, tglx@linutronix.de, gregkh@linuxfoundation.org
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, Jia-Ju Bai <baijiaju1990@gmail.com>
 
+In iscsit_tpg_add_network_portal(), there is an if statement on line 496
+to check whether tpg->tpg_tiqn is NULL:
+    if (tpg->tpg_tiqn)
 
-Maurizio,
+When tpg->tpg_tiqn is NULL, it is used on line 508:
+    pr_debug(..., tpg->tpg_tiqn->tiqn, ...);
 
-> If the CHAP_A value is not supported, the chap_server_open() function
-> should free the auth_protocol pointer and set it to NULL, or we will
-> leave a dangling pointer around.
+Thus, a possible null-pointer dereference may occur.
 
-Applied to 5.2/scsi-fixes. Thanks!
+To fix this bug, tpg->tpg_tiqn is checked before being used.
 
+This bug is found by a static analysis tool STCheck written by us.
+
+Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+---
+ drivers/target/iscsi/iscsi_target_tpg.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target_tpg.c b/drivers/target/iscsi/iscsi_target_tpg.c
+index 8075f60fd02c..bf97be36ec1f 100644
+--- a/drivers/target/iscsi/iscsi_target_tpg.c
++++ b/drivers/target/iscsi/iscsi_target_tpg.c
+@@ -505,9 +505,11 @@ struct iscsi_tpg_np *iscsit_tpg_add_network_portal(
+ 		spin_unlock(&tpg_np_parent->tpg_np_parent_lock);
+ 	}
+ 
+-	pr_debug("CORE[%s] - Added Network Portal: %pISpc,%hu on %s\n",
+-		tpg->tpg_tiqn->tiqn, &np->np_sockaddr, tpg->tpgt,
+-		np->np_transport->name);
++	if (tpg->tpg_tiqn) {
++		pr_debug("CORE[%s] - Added Network Portal: %pISpc,%hu on %s\n",
++			tpg->tpg_tiqn->tiqn, &np->np_sockaddr, tpg->tpgt,
++			np->np_transport->name);
++	}
+ 
+ 	return tpg_np;
+ }
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.17.0
