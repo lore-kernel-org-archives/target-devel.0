@@ -1,36 +1,65 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date: Mon, 29 Jul 2019 15:02:42 +0000
-Subject: Re: [PATCH] target: iscsi: iscsi_target_tpg: Fix a possible null-pointer dereference in iscsit_tpg_a
-Message-Id: <1564412562.3501.9.camel@HansenPartnership.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Mon, 29 Jul 2019 11:29:02 +0000
+Subject: [PATCH] scsi: ibmvscsi_tgt: Mark expected switch fall-throughs
+Message-Id: <20190729112902.GA3768@embeddedor>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190729022956.18192-1-baijiaju1990@gmail.com>
-In-Reply-To: <20190729022956.18192-1-baijiaju1990@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jia-Ju Bai <baijiaju1990@gmail.com>, martin.petersen@oracle.com, kstewart@linuxfoundation.org, allison@lohutok.net, rfontana@redhat.com, tglx@linutronix.de, gregkh@linuxfoundation.org
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Michael Cyr <mikecyr@linux.ibm.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Kees Cook <keescook@chromium.org>
 
-On Mon, 2019-07-29 at 10:29 +0800, Jia-Ju Bai wrote:
-> In iscsit_tpg_add_network_portal(), there is an if statement on line
-> 496
-> to check whether tpg->tpg_tiqn is NULL:
->     if (tpg->tpg_tiqn)
-> 
-> When tpg->tpg_tiqn is NULL, it is used on line 508:
->     pr_debug(..., tpg->tpg_tiqn->tiqn, ...);
-> 
-> Thus, a possible null-pointer dereference may occur.
-> 
-> To fix this bug, tpg->tpg_tiqn is checked before being used.
-> 
-> This bug is found by a static analysis tool STCheck written by us.
+Mark switch cases where we are expecting to fall through.
 
-I don't really think this is helpful.  The first question is, is the
-implied might be NULL check correct?  The tpg_tiqn is always set by a
-non-dummy driver and I think network configuration is only done for the
-non dummy driver, so I suspect the NULL check is wrong.  Secondly even
-if the NULL check were correct, I think there's still a need for some
-debugging output, so the proposed patch also looks wrong.
+This patch fixes the following warnings (Building: powerpc allyesconfig):
 
-James
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c: In function 'ibmvscsis_adapter_info':
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:1582:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   if (connection_broken(vscsi))
+      ^
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:1584:2: note: here
+  default:
+  ^~~~~~~
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c: In function 'ibmvscsis_ping_response':
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:2494:16: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   vscsi->flags |= CLIENT_FAILED;
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:2495:2: note: here
+  case H_DROPPED:
+  ^~~~
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:2496:16: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   vscsi->flags |= RESPONSE_Q_DOWN;
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:2497:2: note: here
+  case H_REMOTE_PARM:
+  ^~~~
+
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index 7f9535392a93..a929fe76102b 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -1581,6 +1581,7 @@ static long ibmvscsis_adapter_info(struct scsi_info *vscsi,
+ 	case H_PERMISSION:
+ 		if (connection_broken(vscsi))
+ 			flag_bits = (RESPONSE_Q_DOWN | CLIENT_FAILED);
++		/* Fall through */
+ 	default:
+ 		dev_err(&vscsi->dev, "adapter_info: h_copy_rdma to client failed, rc %ld\n",
+ 			rc);
+@@ -2492,8 +2493,10 @@ static long ibmvscsis_ping_response(struct scsi_info *vscsi)
+ 		break;
+ 	case H_CLOSED:
+ 		vscsi->flags |= CLIENT_FAILED;
++		/* Fall through */
+ 	case H_DROPPED:
+ 		vscsi->flags |= RESPONSE_Q_DOWN;
++		/* Fall through */
+ 	case H_REMOTE_PARM:
+ 		dev_err(&vscsi->dev, "ping_response: h_send_crq failed, rc %ld\n",
+ 			rc);
+-- 
+2.22.0
