@@ -1,77 +1,38 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Mon, 29 Jul 2019 16:46:12 +0000
+From: "Ly, Bryant" <bly@catalogicsoftware.com>
+Date: Mon, 29 Jul 2019 18:18:16 +0000
 Subject: Re: [PATCH] scsi: ibmvscsi_tgt: Mark expected switch fall-throughs
-Message-Id: <201907290946.C8FFE767@keescook>
+Message-Id: <2F37FBA0-0AD3-49AB-8FF7-551421F46441@catalogicsoftware.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190729112902.GA3768@embeddedor>
 In-Reply-To: <20190729112902.GA3768@embeddedor>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: Michael Cyr <mikecyr@linux.ibm.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+To: target-devel@vger.kernel.org
 
-On Mon, Jul 29, 2019 at 06:29:02AM -0500, Gustavo A. R. Silva wrote:
-> Mark switch cases where we are expecting to fall through.
-> 
-> This patch fixes the following warnings (Building: powerpc allyesconfig):
-> 
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c: In function 'ibmvscsis_adapter_info':
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:1582:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
->    if (connection_broken(vscsi))
->       ^
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:1584:2: note: here
->   default:
->   ^~~~~~~
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c: In function 'ibmvscsis_ping_response':
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:2494:16: warning: this statement may fall through [-Wimplicit-fallthrough=]
->    vscsi->flags |= CLIENT_FAILED;
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:2495:2: note: here
->   case H_DROPPED:
->   ^~~~
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:2496:16: warning: this statement may fall through [-Wimplicit-fallthrough=]
->    vscsi->flags |= RESPONSE_Q_DOWN;
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:2497:2: note: here
->   case H_REMOTE_PARM:
->   ^~~~
-> 
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-
-Reviewed-by: Kees Cook <keescook@chromium.org>
-
--Kees
-
-> ---
->  drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-> index 7f9535392a93..a929fe76102b 100644
-> --- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-> +++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-> @@ -1581,6 +1581,7 @@ static long ibmvscsis_adapter_info(struct scsi_info *vscsi,
->  	case H_PERMISSION:
->  		if (connection_broken(vscsi))
->  			flag_bits = (RESPONSE_Q_DOWN | CLIENT_FAILED);
-> +		/* Fall through */
->  	default:
->  		dev_err(&vscsi->dev, "adapter_info: h_copy_rdma to client failed, rc %ld\n",
->  			rc);
-> @@ -2492,8 +2493,10 @@ static long ibmvscsis_ping_response(struct scsi_info *vscsi)
->  		break;
->  	case H_CLOSED:
->  		vscsi->flags |= CLIENT_FAILED;
-> +		/* Fall through */
->  	case H_DROPPED:
->  		vscsi->flags |= RESPONSE_Q_DOWN;
-> +		/* Fall through */
->  	case H_REMOTE_PARM:
->  		dev_err(&vscsi->dev, "ping_response: h_send_crq failed, rc %ld\n",
->  			rc);
-> -- 
-> 2.22.0
-> 
-
--- 
-Kees Cook
+DQoNCj4gT24gSnVsIDI5LCAyMDE5LCBhdCA2OjI5IEFNLCBHdXN0YXZvIEEuIFIuIFNpbHZhIDxn
+dXN0YXZvQGVtYmVkZGVkb3IuY29tPiB3cm90ZToNCj4gDQo+IE1hcmsgc3dpdGNoIGNhc2VzIHdo
+ZXJlIHdlIGFyZSBleHBlY3RpbmcgdG8gZmFsbCB0aHJvdWdoLg0KPiANCj4gVGhpcyBwYXRjaCBm
+aXhlcyB0aGUgZm9sbG93aW5nIHdhcm5pbmdzIChCdWlsZGluZzogcG93ZXJwYyBhbGx5ZXNjb25m
+aWcpOg0KPiANCj4gZHJpdmVycy9zY3NpL2libXZzY3NpX3RndC9pYm12c2NzaV90Z3QuYzogSW4g
+ZnVuY3Rpb24gJ2libXZzY3Npc19hZGFwdGVyX2luZm8nOg0KPiBkcml2ZXJzL3Njc2kvaWJtdnNj
+c2lfdGd0L2libXZzY3NpX3RndC5jOjE1ODI6Njogd2FybmluZzogdGhpcyBzdGF0ZW1lbnQgbWF5
+IGZhbGwgdGhyb3VnaCBbLVdpbXBsaWNpdC1mYWxsdGhyb3VnaD1dDQo+ICAgaWYgKGNvbm5lY3Rp
+b25fYnJva2VuKHZzY3NpKSkNCj4gICAgICBeDQo+IGRyaXZlcnMvc2NzaS9pYm12c2NzaV90Z3Qv
+aWJtdnNjc2lfdGd0LmM6MTU4NDoyOiBub3RlOiBoZXJlDQo+ICBkZWZhdWx0Og0KPiAgXn5+fn5+
+fg0KPiBkcml2ZXJzL3Njc2kvaWJtdnNjc2lfdGd0L2libXZzY3NpX3RndC5jOiBJbiBmdW5jdGlv
+biAnaWJtdnNjc2lzX3BpbmdfcmVzcG9uc2UnOg0KPiBkcml2ZXJzL3Njc2kvaWJtdnNjc2lfdGd0
+L2libXZzY3NpX3RndC5jOjI0OTQ6MTY6IHdhcm5pbmc6IHRoaXMgc3RhdGVtZW50IG1heSBmYWxs
+IHRocm91Z2ggWy1XaW1wbGljaXQtZmFsbHRocm91Z2g9XQ0KPiAgIHZzY3NpLT5mbGFncyB8PSBD
+TElFTlRfRkFJTEVEOw0KPiBkcml2ZXJzL3Njc2kvaWJtdnNjc2lfdGd0L2libXZzY3NpX3RndC5j
+OjI0OTU6Mjogbm90ZTogaGVyZQ0KPiAgY2FzZSBIX0RST1BQRUQ6DQo+ICBefn5+DQo+IGRyaXZl
+cnMvc2NzaS9pYm12c2NzaV90Z3QvaWJtdnNjc2lfdGd0LmM6MjQ5NjoxNjogd2FybmluZzogdGhp
+cyBzdGF0ZW1lbnQgbWF5IGZhbGwgdGhyb3VnaCBbLVdpbXBsaWNpdC1mYWxsdGhyb3VnaD1dDQo+
+ICAgdnNjc2ktPmZsYWdzIHw9IFJFU1BPTlNFX1FfRE9XTjsNCj4gZHJpdmVycy9zY3NpL2libXZz
+Y3NpX3RndC9pYm12c2NzaV90Z3QuYzoyNDk3OjI6IG5vdGU6IGhlcmUNCj4gIGNhc2UgSF9SRU1P
+VEVfUEFSTToNCj4gIF5+fn4NCj4gDQo+IFJlcG9ydGVkLWJ5OiBTdGVwaGVuIFJvdGh3ZWxsIDxz
+ZnJAY2FuYi5hdXVnLm9yZy5hdT4NCj4gU2lnbmVkLW9mZi1ieTogR3VzdGF2byBBLiBSLiBTaWx2
+YSA8Z3VzdGF2b0BlbWJlZGRlZG9yLmNvbT4NCj4g4oCUDQoNClJldmlld2VkLWJ5OiBCcnlhbnQg
+Ry4gTHkgPGJseUBjYXRhbG9naWNzb2Z0d2FyZS5jb20+DQoNCihQcmV2aW91cyBpYm12c2NzaXNf
+dGd0IG1haW50YWluZXIsIE1pa2UgZG9lc27igJl0IGNoZWNrIGhpcyBsaW51eCBlbWFpbCBvZnRl
+biBhbmQgbWlnaHQgbm90IHNlZSB0aGlzKQ0KDQotQnJ5YW50DQoNCg=
