@@ -1,38 +1,23 @@
-From: "Ly, Bryant" <bly@catalogicsoftware.com>
-Date: Mon, 29 Jul 2019 18:18:16 +0000
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Tue, 30 Jul 2019 20:00:35 +0000
 Subject: Re: [PATCH] scsi: ibmvscsi_tgt: Mark expected switch fall-throughs
-Message-Id: <2F37FBA0-0AD3-49AB-8FF7-551421F46441@catalogicsoftware.com>
+Message-Id: <yq1wofzl2cc.fsf@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190729112902.GA3768@embeddedor>
-In-Reply-To: <20190729112902.GA3768@embeddedor>
+In-Reply-To: <20190729112902.GA3768@embeddedor> (Gustavo A. R. Silva's message
+        of "Mon, 29 Jul 2019 06:29:02 -0500")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc: Michael Cyr <mikecyr@linux.ibm.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>, Kees Cook <keescook@chromium.org>
 
-DQoNCj4gT24gSnVsIDI5LCAyMDE5LCBhdCA2OjI5IEFNLCBHdXN0YXZvIEEuIFIuIFNpbHZhIDxn
-dXN0YXZvQGVtYmVkZGVkb3IuY29tPiB3cm90ZToNCj4gDQo+IE1hcmsgc3dpdGNoIGNhc2VzIHdo
-ZXJlIHdlIGFyZSBleHBlY3RpbmcgdG8gZmFsbCB0aHJvdWdoLg0KPiANCj4gVGhpcyBwYXRjaCBm
-aXhlcyB0aGUgZm9sbG93aW5nIHdhcm5pbmdzIChCdWlsZGluZzogcG93ZXJwYyBhbGx5ZXNjb25m
-aWcpOg0KPiANCj4gZHJpdmVycy9zY3NpL2libXZzY3NpX3RndC9pYm12c2NzaV90Z3QuYzogSW4g
-ZnVuY3Rpb24gJ2libXZzY3Npc19hZGFwdGVyX2luZm8nOg0KPiBkcml2ZXJzL3Njc2kvaWJtdnNj
-c2lfdGd0L2libXZzY3NpX3RndC5jOjE1ODI6Njogd2FybmluZzogdGhpcyBzdGF0ZW1lbnQgbWF5
-IGZhbGwgdGhyb3VnaCBbLVdpbXBsaWNpdC1mYWxsdGhyb3VnaD1dDQo+ICAgaWYgKGNvbm5lY3Rp
-b25fYnJva2VuKHZzY3NpKSkNCj4gICAgICBeDQo+IGRyaXZlcnMvc2NzaS9pYm12c2NzaV90Z3Qv
-aWJtdnNjc2lfdGd0LmM6MTU4NDoyOiBub3RlOiBoZXJlDQo+ICBkZWZhdWx0Og0KPiAgXn5+fn5+
-fg0KPiBkcml2ZXJzL3Njc2kvaWJtdnNjc2lfdGd0L2libXZzY3NpX3RndC5jOiBJbiBmdW5jdGlv
-biAnaWJtdnNjc2lzX3BpbmdfcmVzcG9uc2UnOg0KPiBkcml2ZXJzL3Njc2kvaWJtdnNjc2lfdGd0
-L2libXZzY3NpX3RndC5jOjI0OTQ6MTY6IHdhcm5pbmc6IHRoaXMgc3RhdGVtZW50IG1heSBmYWxs
-IHRocm91Z2ggWy1XaW1wbGljaXQtZmFsbHRocm91Z2g9XQ0KPiAgIHZzY3NpLT5mbGFncyB8PSBD
-TElFTlRfRkFJTEVEOw0KPiBkcml2ZXJzL3Njc2kvaWJtdnNjc2lfdGd0L2libXZzY3NpX3RndC5j
-OjI0OTU6Mjogbm90ZTogaGVyZQ0KPiAgY2FzZSBIX0RST1BQRUQ6DQo+ICBefn5+DQo+IGRyaXZl
-cnMvc2NzaS9pYm12c2NzaV90Z3QvaWJtdnNjc2lfdGd0LmM6MjQ5NjoxNjogd2FybmluZzogdGhp
-cyBzdGF0ZW1lbnQgbWF5IGZhbGwgdGhyb3VnaCBbLVdpbXBsaWNpdC1mYWxsdGhyb3VnaD1dDQo+
-ICAgdnNjc2ktPmZsYWdzIHw9IFJFU1BPTlNFX1FfRE9XTjsNCj4gZHJpdmVycy9zY3NpL2libXZz
-Y3NpX3RndC9pYm12c2NzaV90Z3QuYzoyNDk3OjI6IG5vdGU6IGhlcmUNCj4gIGNhc2UgSF9SRU1P
-VEVfUEFSTToNCj4gIF5+fn4NCj4gDQo+IFJlcG9ydGVkLWJ5OiBTdGVwaGVuIFJvdGh3ZWxsIDxz
-ZnJAY2FuYi5hdXVnLm9yZy5hdT4NCj4gU2lnbmVkLW9mZi1ieTogR3VzdGF2byBBLiBSLiBTaWx2
-YSA8Z3VzdGF2b0BlbWJlZGRlZG9yLmNvbT4NCj4g4oCUDQoNClJldmlld2VkLWJ5OiBCcnlhbnQg
-Ry4gTHkgPGJseUBjYXRhbG9naWNzb2Z0d2FyZS5jb20+DQoNCihQcmV2aW91cyBpYm12c2NzaXNf
-dGd0IG1haW50YWluZXIsIE1pa2UgZG9lc27igJl0IGNoZWNrIGhpcyBsaW51eCBlbWFpbCBvZnRl
-biBhbmQgbWlnaHQgbm90IHNlZSB0aGlzKQ0KDQotQnJ5YW50DQoNCg=
+
+Gustavo,
+
+> Mark switch cases where we are expecting to fall through.
+
+Applied to 5.4/scsi-queue, thanks!
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
