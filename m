@@ -1,57 +1,29 @@
-From: Varun Prakash <varun@chelsio.com>
-Date: Mon, 01 Jul 2019 16:44:51 +0000
-Subject: [PATCH] scsi: target: cxgbit: add support for IEEE_8021QAZ_APP_SEL_STREAM selector
-Message-Id: <1561998771-10265-1-git-send-email-varun@chelsio.com>
+From: Greg KH <greg@kroah.com>
+Date: Fri, 02 Aug 2019 07:30:57 +0000
+Subject: Re: Bug report: KFIFO kfifo_init() may introduce buffer overflow
+Message-Id: <20190802073057.GD26174@kroah.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20190722114700.GE3089@kadam>
+In-Reply-To: <20190722114700.GE3089@kadam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-IEEE_8021QAZ_APP_SEL_STREAM is a valid selector
-for iSCSI connections, so add code to use
-IEEE_8021QAZ_APP_SEL_STREAM selector to get priority
-mask.
+On Mon, Jul 22, 2019 at 09:26:23PM +0800, laokz wrote:
+> Hello Dan,
+> 
+> On Mon, Jul 22, 2019 at 14:50 +0300，Dan Carpenter wrote:
+> > > It looks like you're right.  Probably the fix is to:
+> > > 1) Change INITIAL_SRP_LIMIT to 8192
+> > 
+> > I meant 1024 not 8192.
+> 
+> Nice to see that. It really helped for me. Thank you very much.
 
-Signed-off-by: Varun Prakash <varun@chelsio.com>
----
- drivers/target/iscsi/cxgbit/cxgbit_cm.c   | 8 +++++---
- drivers/target/iscsi/cxgbit/cxgbit_main.c | 3 ++-
- 2 files changed, 7 insertions(+), 4 deletions(-)
+Did anything ever happen with this?  Was a patch submitted to resolve
+this issue?
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-index dab09b6..9d0ed93 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-@@ -878,10 +878,12 @@ static u8 cxgbit_get_iscsi_dcb_priority(struct net_device *ndev, u16 local_port)
- 		return 0;
- 
- 	if (caps & DCB_CAP_DCBX_VER_IEEE) {
--		iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_ANY;
--
-+		iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_STREAM;
- 		ret = dcb_ieee_getapp_mask(ndev, &iscsi_dcb_app);
--
-+		if (!ret) {
-+			iscsi_dcb_app.selector = IEEE_8021QAZ_APP_SEL_ANY;
-+			ret = dcb_ieee_getapp_mask(ndev, &iscsi_dcb_app);
-+		}
- 	} else if (caps & DCB_CAP_DCBX_VER_CEE) {
- 		iscsi_dcb_app.selector = DCB_APP_IDTYPE_PORTNUM;
- 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_main.c b/drivers/target/iscsi/cxgbit/cxgbit_main.c
-index 4a7bb0b..4cd63c0 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_main.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_main.c
-@@ -592,7 +592,8 @@ static void cxgbit_dcb_workfn(struct work_struct *work)
- 	iscsi_app = &dcb_work->dcb_app;
- 
- 	if (iscsi_app->dcbx & DCB_CAP_DCBX_VER_IEEE) {
--		if (iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_ANY)
-+		if ((iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_STREAM) &&
-+		    (iscsi_app->app.selector != IEEE_8021QAZ_APP_SEL_ANY))
- 			goto out;
- 
- 		priority = iscsi_app->app.priority;
--- 
-2.0.2
+thanks,
+
+greg k-h
