@@ -1,48 +1,72 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 30 Aug 2019 17:16:11 +0000
-Subject: [PATCH] target: compare full CHAP_A Algorithm strings
-Message-Id: <20190830171611.32540-1-ddiss@suse.de>
+From: David Butterfield <dab21774@gmail.com>
+Date: Fri, 02 Aug 2019 16:20:17 +0000
+Subject: tcmu: Reporting of errors detected by handler_read() before it returns
+Message-Id: <9f2e4a82-a16f-80bb-2c5d-847ec2d24c5f@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-RFC 2307 states:
+On 8/1/19 10:18 AM, Mike Christie wrote:
+> Update your tcmu-runner git repo :)
+> 
+> A little bit ago, the comments in tcmu-runner.h were updated to make it
+> clear what type of handler can do what, and also support for not having
+> to call cmd->done in handlers like file_example was added.
 
-  For CHAP [RFC1994], in the first step, the initiator MUST send:
+I've pulled the latest master and the comment has been revised, but part
+of my question still remains:
 
-      CHAP_A=<A1,A2...>
+If the handler successfully completes execution of the block I/O command
+in the callout function, what TCMU_STS code should it return from the
+callout function?
 
-   Where A1,A2... are proposed algorithms, in order of preference.
-...
-   For the Algorithm, as stated in [RFC1994], one value is required to
-   be implemented:
+It can't be TCMU_STS_OK, right?  Because that would leave tcmu-runner
+expecting a call to cmd->done() later.
 
-       5     (CHAP with MD5)
+And it can't be a TCMU_STS error, because the I/O was successful.
 
-LIO currently checks for this value by only comparing a single byte in
-the tokenized Algorithm string, which means that any value starting with
-a '5' (e.g. "55") is interpreted as "CHAP with MD5". Fix this by
-comparing the entire tokenized string.
+So what does the handler return to indicate both success and completion?
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
----
- drivers/target/iscsi/iscsi_target_auth.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+125         /*
+126          * Below callouts are only executed by generic_handle_cmd.
+127          *
+128          * Handlers that completely execute cmds from the callout's calling
+129          * context must return a TCMU_STS code from the callout.
+130          *
+131          * Async handlers that queue a command from the callout and complete
+132          * it from their own async context return:
+133          * - TCMU_STS_OK if the handler has queued the command.
+134          * - TCMU_STS_NO_RESOURCE if the handler was not able to allocate
+135          *   resources to queue the command.
+136          *
+137          * If TCMU_STS_OK is returned from the callout the handler must call
+138          * tcmur_cmd_complete with a TCMU_STS return code to complete the
+139          * command.
+140          */
+141         int (*read)(struct tcmu_device *dev, struct tcmur_cmd *cmd,
+142                     struct iovec *iovec, size_t iov_cnt, size_t len, off_t off);
+143         int (*write)(struct tcmu_device *dev, struct tcmur_cmd *cmd,
+144                      struct iovec *iovec, size_t iov_cnt, size_t len, off_t off);
+145         int (*flush)(struct tcmu_device *dev, struct tcmur_cmd *cmd);
 
-diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index 51ddca2033e0..8fe9b12a07a4 100644
---- a/drivers/target/iscsi/iscsi_target_auth.c
-+++ b/drivers/target/iscsi/iscsi_target_auth.c
-@@ -70,7 +70,7 @@ static int chap_check_algorithm(const char *a_str)
- 		if (!token)
- 			goto out;
- 
--		if (!strncmp(token, "5", 1)) {
-+		if (!strcmp(token, "5")) {
- 			pr_debug("Selected MD5 Algorithm\n");
- 			kfree(orig);
- 			return CHAP_DIGEST_MD5;
--- 
-2.16.4
+
+>> However, the code in file_example.c does not do either of those things, and directly
+>> violates the comment in tcmu-runner.h -- this excerpt is from file_read():
+>>
+>> 	while (remaining) {
+>> 		ret = preadv(state->fd, iov, iov_cnt, offset);
+>> 		if (ret < 0) {
+>> 			tcmu_err("read failed: %m\n");
+>> 			ret = TCMU_STS_RD_ERR;
+>> 			goto done;
+>> 		}
+>> 		...
+>> 	}
+>> 	ret = TCMU_STS_OK;
+>> done:
+>> 	return ret;
+>>
+>> The file_read() function operates synchronously, and never issues a call to cmd->done()
+>> for successful reads returning TCMU_STS_OK, contradicting the comment in tcmu-runner.h.
