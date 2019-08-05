@@ -1,84 +1,45 @@
-From: Michael Christie <mchristi@redhat.com>
-Date: Thu, 08 Aug 2019 18:02:16 +0000
-Subject: Re: tcmu: Reporting of errors detected by handler_read() before it returns
-Message-Id: <f3bfd765-34b8-cddd-be2d-19fdb6a29293@redhat.com>
+From: Naohiro Aota <naohiro.aota@wdc.com>
+Date: Mon, 05 Aug 2019 06:23:13 +0000
+Subject: [PATCH] scsi: target/tcm_loop: update upper limit of LUN
+Message-Id: <20190805062313.343221-1-naohiro.aota@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <9f2e4a82-a16f-80bb-2c5d-847ec2d24c5f@gmail.com>
-In-Reply-To: <9f2e4a82-a16f-80bb-2c5d-847ec2d24c5f@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 08/08/2019 12:50 AM, David Butterfield wrote:
-> Thanks for your help.  I'm afraid I'm still confused somehow about this.
-> 
->>> If the handler successfully completes execution of the block I/O command
->>> in the callout function, what TCMU_STS code should it return from the
->>> callout function
->>
->> What is says on line 128.
->>
->> You must return a TCMU_STS code. It can TMCU_STS_OK or a TCMU_STS error
->> value like TCMU_STS_WR_ERR.
-> 
-> So, then, line 137 is intended to apply only to line 131 and not line 128?
+targetcli-fb (or its library: rtslib-fb) allows us to create LUN up to
+65535. On the other hand, the kernel driver is limiting max_lun to 0.
 
-Correct.
+This limitation causes an actual problem when you delete a loopback device
+(using /sys/class/scsi_device/${lun}/device/delete) and rescan it (using
+/sys/class/scsi_host/host${h}/scan). You can delete the device, but cannot
+rescan it because its LUN is larger than the max_lun and so the scan
+request results in -EINVAL error in scsi_scan_host_selected().
 
-> I was reading it as applying to both.
-> 
->> For handlers like file_example that operate like described on line 128,
->> tcmu-runner core will do cmd->done for it.
-> 
-> If TCMU_STS_OK is returned from file_read(), how does runner know whether that is
-> 
->     (1) TCMU_STS_OK because the handler is async and it queued the command, and
-> 	there will be a future call to tcmur_cmd_complete() from the handl>
->     (2) TCMU_STS_OK because the handler executed the entire command successfully
-> 	and runner needs to issue the cmd->done for it now?
+This commit fix the upper limit to be as same as rtslib-fb allows.
 
-If you set nr_threads > 0 and implement the callouts below then
-TCMU_STS_OK means you completed the command in the callout successfully.
+Signed-off-by: Naohiro Aota <naohiro.aota@wdc.com>
+---
+ drivers/target/loopback/tcm_loop.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-If you set nr_threads = 0 and implement the callouts below then OK means
-it got queued successfully and the handler is going to complete it by
-calling tcmur_cmd_complete.
-
-We do not have any handlers where nr_threads = 0, the callouts below are
-implemented and the handler executes the command in the callout, so it's
-not supported right now.
-
-
-> 
-> Also, I wonder why the return from async handlers for successful queueing
-> of the command is TCMU_STS_OK rather than TCMU_STS_ASYNC_HANDLED.
-
-It's just one of those things that needs to be cleaned up.
-
-tcmu-runner uses it internally and when interacting with libtcmu, and
-runner handlers that only implement a handle_cmd can use it directly.
-
-> 
->>> 125         /*
->>> 126          * Below callouts are only executed by generic_handle_cmd.
->>> 127          *
->>> 128          * Handlers that completely execute cmds from the callout's calling
->>> 129          * context must return a TCMU_STS code from the callout.
->>> 130          *
->>> 131          * Async handlers that queue a command from the callout and complete
->>> 132          * it from their own async context return:
->>> 133          * - TCMU_STS_OK if the handler has queued the command.
->>> 134          * - TCMU_STS_NO_RESOURCE if the handler was not able to allocate
->>> 135          *   resources to queue the command.
->>> 136          *
->>> 137          * If TCMU_STS_OK is returned from the callout the handler must call
->>> 138          * tcmur_cmd_complete with a TCMU_STS return code to complete the
->>> 139          * command.
->>> 140          */
->>> 141         int (*read)(struct tcmu_device *dev, struct tcmur_cmd *cmd,
->>> 142                     struct iovec *iovec, size_t iov_cnt, size_t len, off_t off);
->>> 143         int (*write)(struct tcmu_device *dev, struct tcmur_cmd *cmd,
->>> 144                      struct iovec *iovec, size_t iov_cnt, size_t len, off_t off);
->>> 145         int (*flush)(struct tcmu_device *dev, struct tcmur_cmd *cmd);
-> 
+diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+index 3305b47fdf53..3db541ad727d 100644
+--- a/drivers/target/loopback/tcm_loop.c
++++ b/drivers/target/loopback/tcm_loop.c
+@@ -336,10 +336,10 @@ static int tcm_loop_driver_probe(struct device *dev)
+ 	 */
+ 	*((struct tcm_loop_hba **)sh->hostdata) = tl_hba;
+ 	/*
+-	 * Setup single ID, Channel and LUN for now..
++	 * Setup single ID, and Channel for now..
+ 	 */
+ 	sh->max_id = 2;
+-	sh->max_lun = 0;
++	sh->max_lun = 65536;
+ 	sh->max_channel = 0;
+ 	sh->max_cmd_len = SCSI_MAX_VARLEN_CDB_SIZE;
+ 
+-- 
+2.22.0
