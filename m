@@ -1,32 +1,79 @@
-From: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
-Date: Tue, 06 Aug 2019 10:24:56 +0000
-Subject: Re: [PATCH] block: Remove request_queue argument from blk_execute_rq_nowait
-Message-Id: <20190806102456.GA29914@continental>
+From: Li Zhong <lizhongfs@gmail.com>
+Date: Mon, 05 Aug 2019 00:43:36 +0000
+Subject: [RFC PATCH v2] target: tcmu: clean the nl_cmd of the udev when nl send fails
+Message-Id: <20190805004336.16181-1-lizhongfs@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190806011754.7722-1-marcos.souza.org@gmail.com>
- <20190806051911.GA13409@lst.de>
-In-Reply-To: <20190806051911.GA13409@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>, Keith Busch <kbusch@kernel.org>, Sagi Grimberg <sagi@grimberg.me>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Doug Gilbert <dgilbert@interlog.com>, Kai =?iso-8859-1?Q?M=E4kisara?= <Kai.Makisara@kolumbus.fi>, Hannes Reinecke <hare@suse.com>, Omar Sandoval <osandov@fb.com>, Ming Lei <ming.lei@redhat.com>, Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>, Damien Le Moal <damien.lemoal@wdc.com>, Bart Van Assche <bvanassche@acm.org>, "open list:BLOCK LAYER" <linux-block@vger.kernel.org>, "open list:NVM EXPRESS DRIVER" <linux-nvme@lists.infradead.org>, "open list:SCSI SUBSYSTEM" <linux-scsi@vger.kernel.org>, "open list:SCSI TARGET SUBSYSTEM" <target-devel@vger.kernel.org>
+To: target-devel@vger.kernel.org
 
-On Tue, Aug 06, 2019 at 07:19:11AM +0200, Christoph Hellwig wrote:
-> On Mon, Aug 05, 2019 at 10:17:51PM -0300, Marcos Paulo de Souza wrote:
-> > +void blk_execute_rq_nowait(struct gendisk *bd_disk, struct request *rq,
-> > +			int at_head, rq_end_io_fn *done)
-> 
-> We store a ->rq_disk in struct request, so we should also not need
-> that.  And at_head should either become a bool, or be replaced with
-> a flags argument, ints used boolean are usually not a good idea.
+If the userspace process crashes while we send the nl msg, it is possible
+that the cmd in curr_nl_cmd of tcmu_dev never gets reset to 0, and
+and returns busy for other commands after the userspace process is
+restartd.
 
-Makes sense.
+More details below:
 
-> 
-> > @@ -81,7 +80,7 @@ void blk_execute_rq(struct request_queue *q, struct gendisk *bd_disk,
-> 
-> And all the same argument changes that apply to blk_execute_rq_nowait
-> apply to blk_execute_rq as well.
+/backstores/user:file/file> set attribute dev_size 48
+Cannot set attribute dev_size: [Errno 3] No such process
+/backstores/user:file/file> set attribute dev_size 48
+Cannot set attribute dev_size: [Errno 16] Device or resource busy
 
-Thanks for the suggestions, I will send a v2 soon.
+with following kernel messages:
+[173605.747169] Unable to reconfigure device
+[173616.686674] tcmu daemon: command reply support 1.
+[173623.866978] netlink cmd 3 already executing on file
+[173623.866984] Unable to reconfigure device
+
+Also, it is not safe to leave the nl_cmd in the list, and not get
+deleted.
+
+This patch removes the nl_cmd from the list, and clear its data if
+it is not sent successfully.
+
+Signed-off-by: Li Zhong <lizhongfs@gmail.com>
+---
+ drivers/target/target_core_user.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 04eda111920e..68045cbca595 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1708,6 +1708,24 @@ static int tcmu_init_genl_cmd_reply(struct tcmu_dev *udev, int cmd)
+ 	return 0;
+ }
+ 
++static void tcmu_destroy_genl_cmd_reply(struct tcmu_dev *udev)
++{
++	struct tcmu_nl_cmd *nl_cmd = &udev->curr_nl_cmd;
++
++	if (!tcmu_kern_cmd_reply_supported)
++		return;
++
++	if (udev->nl_reply_supported <= 0)
++		return;
++
++	mutex_lock(&tcmu_nl_cmd_mutex);
++
++	list_del(&nl_cmd->nl_list);
++	memset(nl_cmd, 0, sizeof(*nl_cmd));
++
++	mutex_unlock(&tcmu_nl_cmd_mutex);
++}
++
+ static int tcmu_wait_genl_cmd_reply(struct tcmu_dev *udev)
+ {
+ 	struct tcmu_nl_cmd *nl_cmd = &udev->curr_nl_cmd;
+@@ -1788,6 +1806,8 @@ static int tcmu_netlink_event_send(struct tcmu_dev *udev,
+ 	if (ret = 0 ||
+ 	   (ret = -ESRCH && cmd = TCMU_CMD_ADDED_DEVICE))
+ 		return tcmu_wait_genl_cmd_reply(udev);
++	else
++		tcmu_destroy_genl_cmd_reply(udev);
+ 
+ 	return ret;
+ }
+-- 
+2.20.1
