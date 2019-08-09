@@ -1,135 +1,220 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Thu, 29 Aug 2019 15:59:28 +0000
-Subject: [PATCH 3/4] target-iscsi: tie the challenge length to the hash digest size
-Message-Id: <20190829155929.27701-4-mlombard@redhat.com>
+From: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
+Date: Fri, 09 Aug 2019 10:54:30 +0000
+Subject: [PATCHv2  1/4] block: Remove request_queue argument from blk_execute_rq_nowait
+Message-Id: <20190809105433.8946-2-marcos.souza.org@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190829155929.27701-1-mlombard@redhat.com>
-In-Reply-To: <20190829155929.27701-1-mlombard@redhat.com>
+References: <20190809105433.8946-1-marcos.souza.org@gmail.com>
+In-Reply-To: <20190809105433.8946-1-marcos.souza.org@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cleech@redhat.com
-Cc: mchristi@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Marcos Paulo de Souza <marcos.souza.org@gmail.com>, hch@lst.de, axboe@kernel.dk, linux-block@vger.kernel.org, Keith Busch <kbusch@kernel.org>, Sagi Grimberg <sagi@grimberg.me>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Doug Gilbert <dgilbert@interlog.com>, =?UTF-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>, Hannes Reinecke <hare@suse.com>, Omar Sandoval <osandov@fb.com>, Ming Lei <ming.lei@redhat.com>, Damien Le Moal <damien.lemoal@wdc.com>, Bart Van Assche <bvanassche@acm.org>, "open list:NVM EXPRESS DRIVER" <linux-nvme@lists.infradead.org>, "open list:SCSI SUBSYSTEM" <linux-scsi@vger.kernel.org>, "open list:SCSI TARGET SUBSYSTEM" <target-devel@vger.kernel.org>
 
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+Commit a1ce35fa4985 ("block: remove dead elevator code") removed code
+that was using the request_queue argument. This got simplified by
+calling blk_mq_sched_insert_request which already gets the request_queue
+from the request being inserted in the scheduler queue for execution.
+
+Signed-off-by: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
 ---
- drivers/target/iscsi/iscsi_target_auth.c | 37 +++++++++++++++++-------
- drivers/target/iscsi/iscsi_target_auth.h |  4 +--
- 2 files changed, 28 insertions(+), 13 deletions(-)
+ block/blk-exec.c                   | 8 +++-----
+ drivers/block/sx8.c                | 4 ++--
+ drivers/nvme/host/core.c           | 4 ++--
+ drivers/nvme/host/lightnvm.c       | 2 +-
+ drivers/nvme/host/pci.c            | 7 +++----
+ drivers/scsi/scsi_error.c          | 2 +-
+ drivers/scsi/sg.c                  | 3 +--
+ drivers/scsi/st.c                  | 2 +-
+ drivers/target/target_core_pscsi.c | 5 ++---
+ include/linux/blkdev.h             | 4 ++--
+ 10 files changed, 18 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index 77dac8086927..976c8c73d261 100644
---- a/drivers/target/iscsi/iscsi_target_auth.c
-+++ b/drivers/target/iscsi/iscsi_target_auth.c
-@@ -25,16 +25,21 @@ static int chap_gen_challenge(
- 	unsigned int *c_len)
+diff --git a/block/blk-exec.c b/block/blk-exec.c
+index 1db44ca0f4a6..80890b0b9c67 100644
+--- a/block/blk-exec.c
++++ b/block/blk-exec.c
+@@ -32,7 +32,6 @@ static void blk_end_sync_rq(struct request *rq, blk_status_t error)
+
+ /**
+  * blk_execute_rq_nowait - insert a request into queue for execution
+- * @q:		queue to insert the request in
+  * @bd_disk:	matching gendisk
+  * @rq:		request to insert
+  * @at_head:    insert request at head or tail of queue
+@@ -45,9 +44,8 @@ static void blk_end_sync_rq(struct request *rq, blk_status_t error)
+  * Note:
+  *    This function will invoke @done directly if the queue is dead.
+  */
+-void blk_execute_rq_nowait(struct request_queue *q, struct gendisk *bd_disk,
+-			   struct request *rq, int at_head,
+-			   rq_end_io_fn *done)
++void blk_execute_rq_nowait(struct gendisk *bd_disk, struct request *rq,
++			int at_head, rq_end_io_fn *done)
  {
- 	int ret;
--	unsigned char challenge_asciihex[CHAP_CHALLENGE_LENGTH * 2 + 1];
-+	unsigned char *challenge_asciihex;
- 	struct iscsi_chap *chap = conn->auth_protocol;
- 
--	memset(challenge_asciihex, 0, CHAP_CHALLENGE_LENGTH * 2 + 1);
-+	challenge_asciihex = kzalloc(chap->challenge_len * 2 + 1, GFP_KERNEL);
-+	if (!challenge_asciihex)
-+		return -ENOMEM;
- 
--	ret = get_random_bytes_wait(chap->challenge, CHAP_CHALLENGE_LENGTH);
-+	memset(chap->challenge, 0, MAX_CHAP_CHALLENGE_LEN);
-+
-+	ret = get_random_bytes_wait(chap->challenge, chap->challenge_len);
- 	if (unlikely(ret))
--		return ret;
-+		goto out;
-+
- 	bin2hex(challenge_asciihex, chap->challenge,
--				CHAP_CHALLENGE_LENGTH);
-+				chap->challenge_len);
- 	/*
- 	 * Set CHAP_C, and copy the generated challenge into c_str.
- 	 */
-@@ -43,7 +48,10 @@ static int chap_gen_challenge(
- 
- 	pr_debug("[%s] Sending CHAP_C=0x%s\n\n", (caller) ? "server" : "client",
- 			challenge_asciihex);
--	return 0;
-+
-+out:
-+	kfree(challenge_asciihex);
-+	return ret;
+ 	WARN_ON(irqs_disabled());
+ 	WARN_ON(!blk_rq_is_passthrough(rq));
+@@ -81,7 +79,7 @@ void blk_execute_rq(struct request_queue *q, struct gendisk *bd_disk,
+ 	unsigned long hang_check;
+
+ 	rq->end_io_data = &wait;
+-	blk_execute_rq_nowait(q, bd_disk, rq, at_head, blk_end_sync_rq);
++	blk_execute_rq_nowait(bd_disk, rq, at_head, blk_end_sync_rq);
+
+ 	/* Prevent hang_check timer from firing at us during very long I/O */
+ 	hang_check = sysctl_hung_task_timeout_secs;
+diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
+index 4478eb7efee0..2cdf2771f8e8 100644
+--- a/drivers/block/sx8.c
++++ b/drivers/block/sx8.c
+@@ -539,7 +539,7 @@ static int carm_array_info (struct carm_host *host, unsigned int array_idx)
+ 	spin_unlock_irq(&host->lock);
+
+ 	DPRINTK("blk_execute_rq_nowait, tag = %u\n", rq->tag);
+-	blk_execute_rq_nowait(host->oob_q, NULL, rq, true, NULL);
++	blk_execute_rq_nowait(NULL, rq, true, NULL);
+
+ 	return 0;
+
+@@ -578,7 +578,7 @@ static int carm_send_special (struct carm_host *host, carm_sspc_t func)
+ 	crq->msg_bucket = (u32) rc;
+
+ 	DPRINTK("blk_execute_rq_nowait, tag = %u\n", rq->tag);
+-	blk_execute_rq_nowait(host->oob_q, NULL, rq, true, NULL);
++	blk_execute_rq_nowait(NULL, rq, true, NULL);
+
+ 	return 0;
  }
- 
- static int chap_test_algorithm(const char *name)
-@@ -163,6 +171,9 @@ static struct iscsi_chap *chap_server_open(
- 		return NULL;
- 	}
- 
-+	/* Tie the challenge length to the digest size */
-+	chap->challenge_len = chap->digest_size;
-+
- 	pr_debug("[server] Got CHAP_A=%d\n", digest_type);
- 	*aic_len = sprintf(aic_str, "CHAP_A=%d", digest_type);
- 	*aic_len += 1;
-@@ -326,21 +337,23 @@ static int chap_server_compute_hash(
- 	}
- 
- 	ret = crypto_shash_finup(desc, chap->challenge,
--				 CHAP_CHALLENGE_LENGTH, server_digest);
-+				 chap->challenge_len, server_digest);
- 	if (ret < 0) {
- 		pr_err("crypto_shash_finup() failed for challenge\n");
- 		goto out;
- 	}
- 
- 	bin2hex(response, server_digest, chap->digest_size);
--	pr_debug("[server] %s Server Digest: %s\n", hash_name, response);
-+	pr_debug("[server] %s Server Digest: %s\n",
-+		chap->digest_name, response);
- 
- 	if (memcmp(server_digest, client_digest, chap->digest_size) != 0) {
--		pr_debug("[server] %s Digests do not match!\n\n", hash_name);
-+		pr_debug("[server] %s Digests do not match!\n\n",
-+			chap->digest_name);
- 		goto out;
- 	} else
- 		pr_debug("[server] %s Digests match, CHAP connection"
--				" successful.\n\n", hash_name);
-+				" successful.\n\n", chap->digest_name);
+diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
+index 8f3fbe5ca937..6682fdcece0f 100644
+--- a/drivers/nvme/host/core.c
++++ b/drivers/nvme/host/core.c
+@@ -756,7 +756,7 @@ static void nvme_execute_rq_polled(struct request_queue *q,
+
+ 	rq->cmd_flags |= REQ_HIPRI;
+ 	rq->end_io_data = &wait;
+-	blk_execute_rq_nowait(q, bd_disk, rq, at_head, nvme_end_sync_rq);
++	blk_execute_rq_nowait(bd_disk, rq, at_head, nvme_end_sync_rq);
+
+ 	while (!completion_done(&wait)) {
+ 		blk_poll(q, request_to_qc_t(rq->mq_hctx, rq), true);
+@@ -941,7 +941,7 @@ static int nvme_keep_alive(struct nvme_ctrl *ctrl)
+ 	rq->timeout = ctrl->kato * HZ;
+ 	rq->end_io_data = ctrl;
+
+-	blk_execute_rq_nowait(rq->q, NULL, rq, 0, nvme_keep_alive_end_io);
++	blk_execute_rq_nowait(NULL, rq, 0, nvme_keep_alive_end_io);
+
+ 	return 0;
+ }
+diff --git a/drivers/nvme/host/lightnvm.c b/drivers/nvme/host/lightnvm.c
+index ba009d4c9dfa..5d0e330e86d0 100644
+--- a/drivers/nvme/host/lightnvm.c
++++ b/drivers/nvme/host/lightnvm.c
+@@ -685,7 +685,7 @@ static int nvme_nvm_submit_io(struct nvm_dev *dev, struct nvm_rq *rqd)
+
+ 	rq->end_io_data = rqd;
+
+-	blk_execute_rq_nowait(q, NULL, rq, 0, nvme_nvm_end_io);
++	blk_execute_rq_nowait(NULL, rq, 0, nvme_nvm_end_io);
+
+ 	return 0;
+ }
+diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
+index db160cee42ad..d8f83696b4ba 100644
+--- a/drivers/nvme/host/pci.c
++++ b/drivers/nvme/host/pci.c
+@@ -1332,7 +1332,7 @@ static enum blk_eh_timer_return nvme_timeout(struct request *req, bool reserved)
+
+ 	abort_req->timeout = ADMIN_TIMEOUT;
+ 	abort_req->end_io_data = NULL;
+-	blk_execute_rq_nowait(abort_req->q, NULL, abort_req, 0, abort_endio);
++	blk_execute_rq_nowait(NULL, abort_req, 0, abort_endio);
+
  	/*
- 	 * One way authentication has succeeded, return now if mutual
- 	 * authentication is not enabled.
-@@ -406,7 +419,9 @@ static int chap_server_compute_hash(
- 	 * initiator must not match the original CHAP_C generated by
- 	 * the target.
- 	 */
--	if (!memcmp(challenge_binhex, chap->challenge, CHAP_CHALLENGE_LENGTH)) {
-+	if (challenge_len = chap->challenge_len &&
-+				!memcmp(challenge_binhex, chap->challenge,
-+				challenge_len)) {
- 		pr_err("initiator CHAP_C matches target CHAP_C, failing"
- 		       " login attempt\n");
- 		goto out;
-diff --git a/drivers/target/iscsi/iscsi_target_auth.h b/drivers/target/iscsi/iscsi_target_auth.h
-index 8b10f935675a..e22840fea903 100644
---- a/drivers/target/iscsi/iscsi_target_auth.h
-+++ b/drivers/target/iscsi/iscsi_target_auth.h
-@@ -9,7 +9,7 @@
- #define CHAP_DIGEST_SHA		6
- #define CHAP_DIGEST_SHA3_256	7
- 
--#define CHAP_CHALLENGE_LENGTH	16
-+#define MAX_CHAP_CHALLENGE_LEN	32
- #define CHAP_CHALLENGE_STR_LEN	4096
- #define MAX_RESPONSE_LENGTH	128	/* sufficient for SHA3 256 */
- #define	MAX_CHAP_N_SIZE		512
-@@ -32,7 +32,7 @@ extern u32 chap_main_loop(struct iscsi_conn *, struct iscsi_node_auth *, char *,
- 
- struct iscsi_chap {
- 	unsigned char	id;
--	unsigned char	challenge[CHAP_CHALLENGE_LENGTH];
-+	unsigned char	challenge[MAX_CHAP_CHALLENGE_LEN];
- 	unsigned int	challenge_len;
- 	unsigned char	*digest_name;
- 	unsigned int	digest_size;
--- 
-Maurizio Lombardi
+ 	 * The aborted req will be completed on receiving the abort req.
+@@ -2205,9 +2205,8 @@ static int nvme_delete_queue(struct nvme_queue *nvmeq, u8 opcode)
+ 	req->end_io_data = nvmeq;
+
+ 	init_completion(&nvmeq->delete_done);
+-	blk_execute_rq_nowait(q, NULL, req, false,
+-			opcode = nvme_admin_delete_cq ?
+-				nvme_del_cq_end : nvme_del_queue_end);
++	blk_execute_rq_nowait(NULL, req, false,
++			      opcode = nvme_admin_delete_cq ? nvme_del_cq_end : nvme_del_queue_end);
+ 	return 0;
+ }
+
+diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
+index 1c470e31ae81..49cda23c7fb8 100644
+--- a/drivers/scsi/scsi_error.c
++++ b/drivers/scsi/scsi_error.c
+@@ -1988,7 +1988,7 @@ static void scsi_eh_lock_door(struct scsi_device *sdev)
+ 	req->timeout = 10 * HZ;
+ 	rq->retries = 5;
+
+-	blk_execute_rq_nowait(req->q, NULL, req, 1, eh_lock_door_done);
++	blk_execute_rq_nowait(NULL, req, 1, eh_lock_door_done);
+ }
+
+ /**
+diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
+index cce757506383..81ece3ed0474 100644
+--- a/drivers/scsi/sg.c
++++ b/drivers/scsi/sg.c
+@@ -835,8 +835,7 @@ sg_common_write(Sg_fd * sfp, Sg_request * srp,
+
+ 	srp->rq->timeout = timeout;
+ 	kref_get(&sfp->f_ref); /* sg_rq_end_io() does kref_put(). */
+-	blk_execute_rq_nowait(sdp->device->request_queue, sdp->disk,
+-			      srp->rq, at_head, sg_rq_end_io);
++	blk_execute_rq_nowait(sdp->disk, srp->rq, at_head, sg_rq_end_io);
+ 	return 0;
+ }
+
+diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
+index e3266a64a477..3b828f260294 100644
+--- a/drivers/scsi/st.c
++++ b/drivers/scsi/st.c
+@@ -583,7 +583,7 @@ static int st_scsi_execute(struct st_request *SRpnt, const unsigned char *cmd,
+ 	rq->retries = retries;
+ 	req->end_io_data = SRpnt;
+
+-	blk_execute_rq_nowait(req->q, NULL, req, 1, st_scsi_execute_end);
++	blk_execute_rq_nowait(NULL, req, 1, st_scsi_execute_end);
+ 	return 0;
+ }
+
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+index c9d92b3e777d..021212569d1b 100644
+--- a/drivers/target/target_core_pscsi.c
++++ b/drivers/target/target_core_pscsi.c
+@@ -1000,9 +1000,8 @@ pscsi_execute_cmd(struct se_cmd *cmd)
+ 		req->timeout = PS_TIMEOUT_OTHER;
+ 	scsi_req(req)->retries = PS_RETRY;
+
+-	blk_execute_rq_nowait(pdv->pdv_sd->request_queue, NULL, req,
+-			(cmd->sam_task_attr = TCM_HEAD_TAG),
+-			pscsi_req_done);
++	blk_execute_rq_nowait(NULL, req, (cmd->sam_task_attr = TCM_HEAD_TAG),
++			      pscsi_req_done);
+
+ 	return 0;
+
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 1ef375dafb1c..8e8f088c75a5 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -867,8 +867,8 @@ extern int blk_rq_map_user_iov(struct request_queue *, struct request *,
+ 			       gfp_t);
+ extern void blk_execute_rq(struct request_queue *, struct gendisk *,
+ 			  struct request *, int);
+-extern void blk_execute_rq_nowait(struct request_queue *, struct gendisk *,
+-				  struct request *, int, rq_end_io_fn *);
++extern void blk_execute_rq_nowait(struct gendisk *, struct request *, int,
++				rq_end_io_fn *);
+
+ /* Helper to convert REQ_OP_XXX to its string format XXX */
+ extern const char *blk_op_str(unsigned int op);
+--
+2.22.0
