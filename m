@@ -1,45 +1,70 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Thu, 29 Aug 2019 15:59:25 +0000
-Subject: [RFC PATCH 0/4] iscsi: chap: introduce support for SHA1 and SHA3-256
-Message-Id: <20190829155929.27701-1-mlombard@redhat.com>
+From: Dmitry Fomichev <dmitry.fomichev@wdc.com>
+Date: Sat, 10 Aug 2019 21:19:03 +0000
+Subject: [PATCH] tcmu: avoid use-after-free after command timeout
+Message-Id: <20190810211903.6572-1-dmitry.fomichev@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cleech@redhat.com
-Cc: mchristi@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: linux-scsi@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, target-devel@vger.kernel.org, Mike Christie <mchristi@redhat.com>, Bart Van Assche <bvanassche@acm.org>
+Cc: Damien Le Moal <damien.lemoal@wdc.com>
 
-iSCSI with the Challenge-Handshake Authentication Protocol is not FIPS compliant.
-This is due to the fact that CHAP currently uses MD5 as the only supported
-digest algorithm and MD5 is not allowed by FIPS.
+In tcmu_handle_completion() function, the variable called read_len is
+always initialized with a value taken from se_cmd structure. If this
+function is called to complete an expired (timed out) out command, the
+session command pointed by se_cmd is likely to be already deallocated by
+the target core at that moment. As the result, this access triggers a
+use-after-free warning from KASAN.
 
-When FIPS mode is enabled on the target server, the CHAP authentication
-won't work because the target driver will be prevented from using the MD5 module.
+This patch fixes the code not to touch se_cmd when completing timed out
+TCMU commands. It also resets the pointer to se_cmd at the time when the
+TCMU_CMD_BIT_EXPIRED flag is set because it is going to become invalid
+after calling target_complete_cmd() later in the same function,
+tcmu_check_expired_cmd().
 
-Given that CHAP is agnostic regarding the algorithm it uses, this
-patchset introduce support for two new alternatives: SHA1 and SHA3-256.
+Signed-off-by: Dmitry Fomichev <dmitry.fomichev@wdc.com>
+---
+ drivers/target/target_core_user.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-SHA1 has already its own assigned value for its use in CHAP, as reported by IANA:
-https://www.iana.org/assignments/ppp-numbers/ppp-numbers.xml#ppp-numbers-9
-On the other hand the use of SHA1 on FIPS-enabled systems has been deprecated
-and therefore it's not a vialable long term option.
-
-We could consider introducing a more modern hash algorithm like SHA3-256, as
-this patchset does.
-
-A pull request for the open-iscsi initiator side implementation has been
-submitted here:
-https://github.com/open-iscsi/open-iscsi/pull/170
-
-Maurizio Lombardi (4):
-  target-iscsi: CHAP: add support to SHA1 and SHA3-256 hash functions
-  target-iscsi: remove unneeded function
-  target-iscsi: tie the challenge length to the hash digest size
-  target-iscsi: rename some variables to avoid confusion.
-
- drivers/target/iscsi/iscsi_target_auth.c | 218 ++++++++++++++---------
- drivers/target/iscsi/iscsi_target_auth.h |  13 +-
- 2 files changed, 147 insertions(+), 84 deletions(-)
-
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 04eda111920e..a0231491fa36 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1132,14 +1132,16 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 	struct se_cmd *se_cmd = cmd->se_cmd;
+ 	struct tcmu_dev *udev = cmd->tcmu_dev;
+ 	bool read_len_valid = false;
+-	uint32_t read_len = se_cmd->data_length;
++	uint32_t read_len;
+ 
+ 	/*
+ 	 * cmd has been completed already from timeout, just reclaim
+ 	 * data area space and free cmd
+ 	 */
+-	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags))
++	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
++		WARN_ON_ONCE(se_cmd);
+ 		goto out;
++	}
+ 
+ 	list_del_init(&cmd->queue_entry);
+ 
+@@ -1152,6 +1154,7 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 		goto done;
+ 	}
+ 
++	read_len = se_cmd->data_length;
+ 	if (se_cmd->data_direction = DMA_FROM_DEVICE &&
+ 	    (entry->hdr.uflags & TCMU_UFLAG_READ_LEN) && entry->rsp.read_len) {
+ 		read_len_valid = true;
+@@ -1307,6 +1310,7 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
+ 		 */
+ 		scsi_status = SAM_STAT_CHECK_CONDITION;
+ 		list_del_init(&cmd->queue_entry);
++		cmd->se_cmd = NULL;
+ 	} else {
+ 		list_del_init(&cmd->queue_entry);
+ 		idr_remove(&udev->commands, id);
 -- 
-Maurizio Lombardi
+2.21.0
