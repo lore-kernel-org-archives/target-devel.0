@@ -1,55 +1,53 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Sat, 10 Aug 2019 23:55:56 +0000
+From: Dmitry Fomichev <Dmitry.Fomichev@wdc.com>
+Date: Sun, 11 Aug 2019 17:49:12 +0000
 Subject: Re: [PATCH] tcmu: avoid use-after-free after command timeout
-Message-Id: <5D4F598C.9000207@redhat.com>
+Message-Id: <6e48f48fceea45e4649cc5cbeb7e59151748cc23.camel@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190810211903.6572-1-dmitry.fomichev@wdc.com>
-In-Reply-To: <20190810211903.6572-1-dmitry.fomichev@wdc.com>
+         <5D4F598C.9000207@redhat.com>
+In-Reply-To: <5D4F598C.9000207@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Fomichev <dmitry.fomichev@wdc.com>, linux-scsi@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, target-devel@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>
-Cc: Damien Le Moal <damien.lemoal@wdc.com>
+To: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "mchristi@redhat.com" <mchristi@redhat.com>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "bvanassche@acm.org" <bvanassche@acm.org>, "martin.petersen@oracle.com" <martin.petersen@oracle.com>
+Cc: Damien Le Moal <Damien.LeMoal@wdc.com>
 
-On 08/10/2019 04:19 PM, Dmitry Fomichev wrote:
-> In tcmu_handle_completion() function, the variable called read_len is
-> always initialized with a value taken from se_cmd structure. If this
-> function is called to complete an expired (timed out) out command, the
-> session command pointed by se_cmd is likely to be already deallocated by
-> the target core at that moment. As the result, this access triggers a
-> use-after-free warning from KASAN.
-> 
-> This patch fixes the code not to touch se_cmd when completing timed out
-> TCMU commands. It also resets the pointer to se_cmd at the time when the
-> TCMU_CMD_BIT_EXPIRED flag is set because it is going to become invalid
-> after calling target_complete_cmd() later in the same function,
-> tcmu_check_expired_cmd().
-> 
-> Signed-off-by: Dmitry Fomichev <dmitry.fomichev@wdc.com>
-> ---
->  drivers/target/target_core_user.c | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> index 04eda111920e..a0231491fa36 100644
-> --- a/drivers/target/target_core_user.c
-> +++ b/drivers/target/target_core_user.c
-> @@ -1132,14 +1132,16 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
->  	struct se_cmd *se_cmd = cmd->se_cmd;
->  	struct tcmu_dev *udev = cmd->tcmu_dev;
->  	bool read_len_valid = false;
-> -	uint32_t read_len = se_cmd->data_length;
-> +	uint32_t read_len;
->  
->  	/*
->  	 * cmd has been completed already from timeout, just reclaim
->  	 * data area space and free cmd
->  	 */
-> -	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags))
-> +	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
-> +		WARN_ON_ONCE(se_cmd);
-
-If you are adding a warn here, I think you want to also add a warn in
-tcmu_reset_ring where there is another code path we do the same sequence
-of operations where we check the bit then access the se_cmd after if not
-set.
+T24gU2F0LCAyMDE5LTA4LTEwIGF0IDE4OjU1IC0wNTAwLCBNaWtlIENocmlzdGllIHdyb3RlOg0K
+PiBPbiAwOC8xMC8yMDE5IDA0OjE5IFBNLCBEbWl0cnkgRm9taWNoZXYgd3JvdGU6DQo+ID4gSW4g
+dGNtdV9oYW5kbGVfY29tcGxldGlvbigpIGZ1bmN0aW9uLCB0aGUgdmFyaWFibGUgY2FsbGVkIHJl
+YWRfbGVuIGlzDQo+ID4gYWx3YXlzIGluaXRpYWxpemVkIHdpdGggYSB2YWx1ZSB0YWtlbiBmcm9t
+IHNlX2NtZCBzdHJ1Y3R1cmUuIElmIHRoaXMNCj4gPiBmdW5jdGlvbiBpcyBjYWxsZWQgdG8gY29t
+cGxldGUgYW4gZXhwaXJlZCAodGltZWQgb3V0KSBvdXQgY29tbWFuZCwgdGhlDQo+ID4gc2Vzc2lv
+biBjb21tYW5kIHBvaW50ZWQgYnkgc2VfY21kIGlzIGxpa2VseSB0byBiZSBhbHJlYWR5IGRlYWxs
+b2NhdGVkIGJ5DQo+ID4gdGhlIHRhcmdldCBjb3JlIGF0IHRoYXQgbW9tZW50LiBBcyB0aGUgcmVz
+dWx0LCB0aGlzIGFjY2VzcyB0cmlnZ2VycyBhDQo+ID4gdXNlLWFmdGVyLWZyZWUgd2FybmluZyBm
+cm9tIEtBU0FOLg0KPiA+IA0KPiA+IFRoaXMgcGF0Y2ggZml4ZXMgdGhlIGNvZGUgbm90IHRvIHRv
+dWNoIHNlX2NtZCB3aGVuIGNvbXBsZXRpbmcgdGltZWQgb3V0DQo+ID4gVENNVSBjb21tYW5kcy4g
+SXQgYWxzbyByZXNldHMgdGhlIHBvaW50ZXIgdG8gc2VfY21kIGF0IHRoZSB0aW1lIHdoZW4gdGhl
+DQo+ID4gVENNVV9DTURfQklUX0VYUElSRUQgZmxhZyBpcyBzZXQgYmVjYXVzZSBpdCBpcyBnb2lu
+ZyB0byBiZWNvbWUgaW52YWxpZA0KPiA+IGFmdGVyIGNhbGxpbmcgdGFyZ2V0X2NvbXBsZXRlX2Nt
+ZCgpIGxhdGVyIGluIHRoZSBzYW1lIGZ1bmN0aW9uLA0KPiA+IHRjbXVfY2hlY2tfZXhwaXJlZF9j
+bWQoKS4NCj4gPiANCj4gPiBTaWduZWQtb2ZmLWJ5OiBEbWl0cnkgRm9taWNoZXYgPGRtaXRyeS5m
+b21pY2hldkB3ZGMuY29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL3RhcmdldC90YXJnZXRfY29y
+ZV91c2VyLmMgfCA4ICsrKysrKy0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA2IGluc2VydGlvbnMo
+KyksIDIgZGVsZXRpb25zKC0pDQo+ID4gDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGFyZ2V0
+L3RhcmdldF9jb3JlX3VzZXIuYyBiL2RyaXZlcnMvdGFyZ2V0L3RhcmdldF9jb3JlX3VzZXIuYw0K
+PiA+IGluZGV4IDA0ZWRhMTExOTIwZS4uYTAyMzE0OTFmYTM2IDEwMDY0NA0KPiA+IC0tLSBhL2Ry
+aXZlcnMvdGFyZ2V0L3RhcmdldF9jb3JlX3VzZXIuYw0KPiA+ICsrKyBiL2RyaXZlcnMvdGFyZ2V0
+L3RhcmdldF9jb3JlX3VzZXIuYw0KPiA+IEBAIC0xMTMyLDE0ICsxMTMyLDE2IEBAIHN0YXRpYyB2
+b2lkIHRjbXVfaGFuZGxlX2NvbXBsZXRpb24oc3RydWN0IHRjbXVfY21kICpjbWQsIHN0cnVjdCB0
+Y211X2NtZF9lbnRyeSAqDQo+ID4gIAlzdHJ1Y3Qgc2VfY21kICpzZV9jbWQgPSBjbWQtPnNlX2Nt
+ZDsNCj4gPiAgCXN0cnVjdCB0Y211X2RldiAqdWRldiA9IGNtZC0+dGNtdV9kZXY7DQo+ID4gIAli
+b29sIHJlYWRfbGVuX3ZhbGlkID0gZmFsc2U7DQo+ID4gLQl1aW50MzJfdCByZWFkX2xlbiA9IHNl
+X2NtZC0+ZGF0YV9sZW5ndGg7DQo+ID4gKwl1aW50MzJfdCByZWFkX2xlbjsNCj4gPiAgDQo+ID4g
+IAkvKg0KPiA+ICAJICogY21kIGhhcyBiZWVuIGNvbXBsZXRlZCBhbHJlYWR5IGZyb20gdGltZW91
+dCwganVzdCByZWNsYWltDQo+ID4gIAkgKiBkYXRhIGFyZWEgc3BhY2UgYW5kIGZyZWUgY21kDQo+
+ID4gIAkgKi8NCj4gPiAtCWlmICh0ZXN0X2JpdChUQ01VX0NNRF9CSVRfRVhQSVJFRCwgJmNtZC0+
+ZmxhZ3MpKQ0KPiA+ICsJaWYgKHRlc3RfYml0KFRDTVVfQ01EX0JJVF9FWFBJUkVELCAmY21kLT5m
+bGFncykpIHsNCj4gPiArCQlXQVJOX09OX09OQ0Uoc2VfY21kKTsNCj4gDQo+IElmIHlvdSBhcmUg
+YWRkaW5nIGEgd2FybiBoZXJlLCBJIHRoaW5rIHlvdSB3YW50IHRvIGFsc28gYWRkIGEgd2FybiBp
+bg0KPiB0Y211X3Jlc2V0X3Jpbmcgd2hlcmUgdGhlcmUgaXMgYW5vdGhlciBjb2RlIHBhdGggd2Ug
+ZG8gdGhlIHNhbWUgc2VxdWVuY2UNCj4gb2Ygb3BlcmF0aW9ucyB3aGVyZSB3ZSBjaGVjayB0aGUg
+Yml0IHRoZW4gYWNjZXNzIHRoZSBzZV9jbWQgYWZ0ZXIgaWYgbm90DQo+IHNldC4NCj4gDQpNaWtl
+LA0KR29vZCBwb2ludCwgdGhhbmtzLiBJIGFtIGdvaW5nIHRvIHNlbmQgb3V0IHRoZSB1cGRhdGVk
+IHZlcnNpb24gb2YgdGhlIHBhdGNoLg0KDQpEbWl0cnkNCg=
