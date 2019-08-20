@@ -1,78 +1,37 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 20 Aug 2019 15:27:21 +0000
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 20 Aug 2019 15:43:59 +0000
 Subject: Re: [PATCH v2 1/2] scsi: target/tcm_loop: ignore already deleted scsi device
-Message-Id: <5D5C1159.4030507@redhat.com>
+Message-Id: <737dd6be-a8c9-492c-8057-1f16b3d90519@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190820090429.1961085-1-naohiro.aota@wdc.com>
- <1973f310-ad00-ff88-fe08-a31f81dc5c33@acm.org>
-In-Reply-To: <1973f310-ad00-ff88-fe08-a31f81dc5c33@acm.org>
+ <1973f310-ad00-ff88-fe08-a31f81dc5c33@acm.org> <5D5C1159.4030507@redhat.com>
+In-Reply-To: <5D5C1159.4030507@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>, Naohiro Aota <naohiro.aota@wdc.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: Mike Christie <mchristi@redhat.com>, Naohiro Aota <naohiro.aota@wdc.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc: Nicholas Bellinger <nab@linux-iscsi.org>, "Martin K . Petersen" <martin.petersen@oracle.com>
 
-On 08/20/2019 09:02 AM, Bart Van Assche wrote:
-> On 8/20/19 2:04 AM, Naohiro Aota wrote:
->> If there is no corresponding scsi_device for a LUN,
->> tcm_loop_port_unlink() complains that it "Unable to locate struct
->> scsi_device for " the device and keep %tl_tpg_port_count as is. However,
->> such situation is legal when we delete a SCSI device using
->> /sys/class/scsi_device/${lun}/device/delete. We can safely ignore the
->> missing SCSI device case here.
->>
->> Signed-off-by: Naohiro Aota <naohiro.aota@wdc.com>
->> ---
->>   drivers/target/loopback/tcm_loop.c | 18 +++++++++---------
->>   1 file changed, 9 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/target/loopback/tcm_loop.c
->> b/drivers/target/loopback/tcm_loop.c
->> index 3305b47fdf53..0942f3bd7eec 100644
->> --- a/drivers/target/loopback/tcm_loop.c
->> +++ b/drivers/target/loopback/tcm_loop.c
->> @@ -654,16 +654,16 @@ static void tcm_loop_port_unlink(
->>         sd = scsi_device_lookup(tl_hba->sh, 0, tl_tpg->tl_tpgt,
->>                   se_lun->unpacked_lun);
->> -    if (!sd) {
->> -        pr_err("Unable to locate struct scsi_device for %d:%d:%llu\n",
->> -               0, tl_tpg->tl_tpgt, se_lun->unpacked_lun);
->> -        return;
->> +    if (sd) {
->> +        /*
->> +         * Remove Linux/SCSI struct scsi_device by HCTL
->> +         */
->> +        scsi_remove_device(sd);
->> +        scsi_device_put(sd);
->> +    } else {
->> +        pr_debug("Unable to locate struct scsi_device for %d:%d:%llu\n",
->> +             0, tl_tpg->tl_tpgt, se_lun->unpacked_lun);
->>       }
->> -    /*
->> -     * Remove Linux/SCSI struct scsi_device by HCTL
->> -     */
->> -    scsi_remove_device(sd);
->> -    scsi_device_put(sd);
->>         atomic_dec_mb(&tl_tpg->tl_tpg_port_count);
+On 8/20/19 8:27 AM, Mike Christie wrote:
+> tcm loop does not take a reference to the scsi_device at creation/link
+> time then need to release at removal/unlink time. The above
+> scsi_device_put is for the successful scsi_device_lookup call. tcm loop
+> works like a scsi host driver that does its own scanning via
+> scsi_add_device (maybe similar to scsi drivers that are raid cards).
+> Like other host drivers it does not take a reference to the device when
+> it is added and relies on scsi-ml to handle all that for it before doing
+> operations like queuecommand.
 > 
-> The above patch looks wrong to me. I think this patch does not fix the
-> reference leak present in the current code. Have you considered to
-> modify tcm_loop_port_link() such that it saves the pointer returned by
-> scsi_add_device() and to use that pointer in tcm_loop_port_unlink()?
-> 
+> The leak is if you removed the scsi_device via the scsi ml sysfs
+> interface then there is no way to completely unlink the lio port because
+> if scsi_device_lookup fails we return from the function and do not do
+> not release our refcount on the tl_tpg_port_count.
 
-Are you guys talking about different issues?
+Hi Mike,
 
-tcm loop does not take a reference to the scsi_device at creation/link
-time then need to release at removal/unlink time. The above
-scsi_device_put is for the successful scsi_device_lookup call. tcm loop
-works like a scsi host driver that does its own scanning via
-scsi_add_device (maybe similar to scsi drivers that are raid cards).
-Like other host drivers it does not take a reference to the device when
-it is added and relies on scsi-ml to handle all that for it before doing
-operations like queuecommand.
+Does this mean that you think that this patch is the right way to 
+address the reported issue?
 
-The leak is if you removed the scsi_device via the scsi ml sysfs
-interface then there is no way to completely unlink the lio port because
-if scsi_device_lookup fails we return from the function and do not do
-not release our refcount on the tl_tpg_port_count.
+Thanks,
+
+Bart.
