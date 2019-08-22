@@ -1,48 +1,43 @@
-From: Naohiro Aota <naohiro.aota@wdc.com>
-Date: Tue, 20 Aug 2019 09:04:29 +0000
-Subject: [PATCH v2 2/2] scsi: target/tcm_loop: update upper limit of LUN
-Message-Id: <20190820090429.1961085-2-naohiro.aota@wdc.com>
+From: "Law firm(Eku and Associates)" <ezeobodo1@gmail.com>
+Date: Thu, 22 Aug 2019 12:33:16 +0000
+Subject: MY $25,000,000.00 INVESTMENT PROPOSAL WITH YOU AND IN YOUR COUNTRY.
+Message-Id: <CAN-_bTYkX9Q_V1vycr99xF0J=w6om=+jKr8KLhHqjcjhJ7XE6A@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190820090429.1961085-1-naohiro.aota@wdc.com>
-In-Reply-To: <20190820090429.1961085-1-naohiro.aota@wdc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Mike Christie <mchristi@redhat.com>, Nicholas Bellinger <nab@linux-iscsi.org>, "Martin K . Petersen" <martin.petersen@oracle.com>, Naohiro Aota <naohiro.aota@wdc.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org
 
-targetcli-fb (or its library: rtslib-fb) allows us to create LUN up to
-65535. On the other hand, the kernel driver is limiting max_lun to 0.
-
-This limitation causes actual problem when you delete a loopback device
-(using /sys/class/scsi_device/${lun}/device/delete) and rescan it (using
-/sys/class/scsi_host/host${h}/scan). You can delete the device, but
-cannot rescan it because its LUN is larger than max_lun and so the scan
-request results in -EINVAL error in scsi_scan_host_selected().
-
-This commit fix the upper limit to a max possible value: U64_MAX.
-
-Signed-off-by: Naohiro Aota <naohiro.aota@wdc.com>
----
- drivers/target/loopback/tcm_loop.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-index 0942f3bd7eec..50e93b487375 100644
---- a/drivers/target/loopback/tcm_loop.c
-+++ b/drivers/target/loopback/tcm_loop.c
-@@ -336,10 +336,10 @@ static int tcm_loop_driver_probe(struct device *dev)
- 	 */
- 	*((struct tcm_loop_hba **)sh->hostdata) = tl_hba;
- 	/*
--	 * Setup single ID, Channel and LUN for now..
-+	 * Setup single ID, and Channel for now..
- 	 */
- 	sh->max_id = 2;
--	sh->max_lun = 0;
-+	sh->max_lun = U64_MAX;
- 	sh->max_channel = 0;
- 	sh->max_cmd_len = SCSI_MAX_VARLEN_CDB_SIZE;
- 
 -- 
-2.23.0
+Dear,
+With due respect this is not spam or Scam mail, because I have
+contacted you before and there was no response from you,I apologise if
+the contents of this mail are contrary to your moral ethics, which I
+feel may be of great disturbance to your person, but please treat this
+with absolute confidentiality, believing that this email reaches you
+in good faith. My contacting you is not a mistake or a coincidence
+because God can use any person known or unknown to accomplish great
+things.
+I am a lawyer and I have an investment business proposal to offer you.
+It is not official but should be considered as legal and confidential
+business. I have a customer's deposit of $US25 million dollars ready
+to be moved for investment if you can partner with us. We are ready to
+offer you 10% of this total amount as your compensation for supporting
+the transaction to completion. If you are interested to help me please
+reply me with your full details as stated below:
+(1) Your full names:
+(2) Your address:
+(3) Your occupation:
+(4) Your mobile telephone number:
+(5) Your nationality:
+(6) Your present location:
+(7) Your age:
+So that I will provide you more details on what to do and what is
+required for successful completion.
+Note: DO NOT REPLY ME IF YOU ARE NOT INTERESTED AND WITHOUT THE ABOVE
+MENTIONED DETAILS
+
+Sincèrement vôtre,
+Avocat Etienne Eku Esq.(Lawfirm)
+Procureur principal. De Cabinet d’avocats de l’Afrique de l’ouest.
+Skype:westafricalawfirm
