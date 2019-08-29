@@ -1,35 +1,39 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Thu, 29 Aug 2019 17:21:33 +0000
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 29 Aug 2019 18:48:19 +0000
 Subject: Re: Bug report: KFIFO kfifo_init() may introduce buffer overflow
-Message-Id: <201908291021.DF893CEE5B@keescook>
+Message-Id: <CAHk-=wgQeKWHW0bQ1aV5=2ivbD-WWDHcBBJ_cX5R75iiNNq2uA@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190722114700.GE3089@kadam>
 In-Reply-To: <20190722114700.GE3089@kadam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Tue, Aug 06, 2019 at 06:27:13PM +0800, laokz wrote:
-> On Fri, Aug 2, 2019 at 09:30 +0200，Greg KH wrote:
-> > On Mon, Jul 22, 2019 at 09:26:23PM +0800, laokz wrote:
-> > > Hello Dan,
-> > > 
-> > > On Mon, Jul 22, 2019 at 14:50 +0300，Dan Carpenter wrote:
-> > > > > It looks like you're right.  Probably the fix is to:
-> > > > > 1) Change INITIAL_SRP_LIMIT to 8192
-> > > > 
-> > > > I meant 1024 not 8192.
-> > > 
-> > > Nice to see that. It really helped for me. Thank you very much.
-> > 
-> > Did anything ever happen with this?  Was a patch submitted to resolve
-> > this issue?
+On Tue, Aug 6, 2019 at 3:29 AM laokz <laokz@foxmail.com> wrote:
+>
 > Sorry for the late reply. I didn't submit any patch, for as newbie I wasn't
 > quite sure about the severity of this issue. The developers may do their
 > choice.
 
-It's worth fixing regardless. :) Did a patch get sent for this?
+It does seem pretty bad.
 
--- 
-Kees Cook
+Also, INIT_KFIFO() and DECLARE_KFIFO() should probably have a
+
+     BUILD_BUG_ON(!__is_kfifo_ptr && !is_power_of_2(ARRAY_SIZE(__tmp->buf)));
+
+or something. Probably worth indirection through a helper macro to set
+the ".mask" field.
+
+And yes, commit dfe2a77fd243 ("kfifo: fix kfifo_alloc() and
+kfifo_init()") seems wrong, It's fine for the __kfifo_alloc() case
+where we actually allocate the rounded-up size, but it's completely
+wrong for the __kfifo_init() case where somebody _else_ allocated the
+size.
+
+So the kfifo_init() case needs to just use a round_down, and possibly
+add a WARN_ON_ONCE() too.
+
+Anybody?
+
+             Linus
