@@ -1,120 +1,45 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 08 Aug 2019 18:38:31 +0000
-Subject: Re: [PATCH] scsi: target/tcm_loop: update upper limit of LUN
-Message-Id: <5D4C6C27.7040004@redhat.com>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Thu, 29 Aug 2019 15:59:25 +0000
+Subject: [RFC PATCH 0/4] iscsi: chap: introduce support for SHA1 and SHA3-256
+Message-Id: <20190829155929.27701-1-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190805062313.343221-1-naohiro.aota@wdc.com>
- <5D485A56.9070208@redhat.com>
- <20190806024505.gpabcyu57vhvnrto@naota.dhcp.fujisawa.hgst.com>
- <5D49BBFC.7020402@redhat.com>
- <20190808084221.agvnr5yflxzdvtgh@naota.dhcp.fujisawa.hgst.com>
-In-Reply-To: <20190808084221.agvnr5yflxzdvtgh@naota.dhcp.fujisawa.hgst.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Naohiro Aota <naohiro.aota@wdc.com>
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Nicholas Bellinger <nab@linux-iscsi.org>, "Martin K. Petersen" <martin.petersen@oracle.com>
+To: cleech@redhat.com
+Cc: mchristi@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-On 08/08/2019 03:42 AM, Naohiro Aota wrote:
-> On Tue, Aug 06, 2019 at 12:42:20PM -0500, Mike Christie wrote:
->> On 08/05/2019 09:45 PM, Naohiro Aota wrote:
->>> On Mon, Aug 05, 2019 at 11:33:26AM -0500, Mike Christie wrote:
->>>> On 08/05/2019 01:23 AM, Naohiro Aota wrote:
->>>>> targetcli-fb (or its library: rtslib-fb) allows us to create LUN up to
->>>>> 65535. On the other hand, the kernel driver is limiting max_lun to 0.
->>>>>
->>>>> This limitation causes an actual problem when you delete a loopback
->>>>> device
->>>>> (using /sys/class/scsi_device/${lun}/device/delete) and rescan it
->>>>> (using
->>>>> /sys/class/scsi_host/host${h}/scan). You can delete the device, but
->>>>> cannot
->>>>> rescan it because its LUN is larger than the max_lun and so the scan
->>>>> request results in -EINVAL error in scsi_scan_host_selected().
->>>>
->>>> How are you kicking off this rescan?
->>>>
->>>> Just to make sure I understood you, does the initial LU have LUN 0, you
->>>> delete that, then are you creating another LU with a LUN value that is
->>>> not 0?
->>>
->>> Not exactly. I'm working on a case multiple device is added at once to
->>> one loopback scsi host. You can create two or more device using
->>> "targetcli" command and they may have their LUN larger than 0. For
->>> example,
->>>
->>> $ sudo targetcli
->>> /backstores/fileio> cd /loopback
->>> /loopback> create
->>> Created target naa.5001405218077d66.
->>> /loopback> exit
->>> $ sudo truncate -s 1048576 /mnt/nvme/foo{1,2,3}
->>> $ sudo targetcli /backstores/fileio create name=foo1
->>> file_or_dev=/mnt/nvme/foo1
->>> Created fileio foo1 with size 1048576
->>> $ sudo targetcli /loopback/naa.5001405218077d66/luns create
->>> /backstores/fileio/foo1
->>> Created LUN 0.
->>> (Do the same above for foo2 and foo3)
->>>
->>> Then, you'll see each of them has LUN 0, 1, 2 assigned: (rtslib scans
->>> used LUN and assign free one)
->>>
->>> $ lsscsi
->>> ...
->>> [7:0:1:0]    disk    LIO-ORG  foo1             4.0   /dev/sdd
->>> [7:0:1:1]    disk    LIO-ORG  foo2             4.0   /dev/sde
->>> [7:0:1:2]    disk    LIO-ORG  foo3             4.0   /dev/sdf
->>>
->>> Now, you can delete one of these device:
->>>
->>> $ echo 1 > /sys/class/scsi_device/7\:0\:1\:2/device/delete
->>> $ lsscsi
->>> ...
->>> [7:0:1:0]    disk    LIO-ORG  foo1             4.0   /dev/sdd
->>> [7:0:1:1]    disk    LIO-ORG  foo2             4.0   /dev/sde
->>>
->>> But, you cannot recover it by the scanning:
->>>
->>
->> Why are you using the scsi sysfs interface instead of the target
->> configfs interface?
-> 
-> Xfstests btrfs/003 uses the SCSI sysfs interface to emulate missing
-> block device. We can use any SCSI devices to run the test case, so we
-> cannot use target configfs here.
-> 
-> Even the end result of missing "/dev/sd?" is the same, they are two
-> distinct interfaces. So, we need to fix the broken result of the SCSI
-> sysfs interface anyway?
+iSCSI with the Challenge-Handshake Authentication Protocol is not FIPS compliant.
+This is due to the fact that CHAP currently uses MD5 as the only supported
+digest algorithm and MD5 is not allowed by FIPS.
 
-I agree.
+When FIPS mode is enabled on the target server, the CHAP authentication
+won't work because the target driver will be prevented from using the MD5 module.
 
-> 
->> I know the comment for max_lun says it wants to support 1 LUN, but the
->> code like in tcm_loop_port_link seems to support multiple LUNs, so your
->> patch looks like it could be ok. I would just set max_luns to the kernel
->> (scsi-ml/lio) limit and not some userspace value.
-> 
-> Hm, taking look at the code (target_fabric_make_lun), there is no upper
-> limit check there. So, set max_lun = U64_MAX right?
-> I once considered that but when I create LUN larger than 65535,
-> "targetcli ls" died complaining "LUN must be 0 to 65535". So I used
-> 65536 here.
-> 
-> Or, should we use max_lun = U64_MAX and fix userland side? They need to
-> be the same, anyway, I believe...
+Given that CHAP is agnostic regarding the algorithm it uses, this
+patchset introduce support for two new alternatives: SHA1 and SHA3-256.
 
-I do not think the kernel should use the limit from one userspace
-application. What if you are using a different app or what happens when
-someone updates targetcli. You do not want to have to update the kernel
-each time. I think the driver should report what it is limited to.
+SHA1 has already its own assigned value for its use in CHAP, as reported by IANA:
+https://www.iana.org/assignments/ppp-numbers/ppp-numbers.xml#ppp-numbers-9
+On the other hand the use of SHA1 on FIPS-enabled systems has been deprecated
+and therefore it's not a vialable long term option.
 
-The targetcli limit might be due to how it allocates the LUN,
-probes/scans configfs, etc. I think in some places you could end up doing
+We could consider introducing a more modern hash algorithm like SHA3-256, as
+this patchset does.
 
-for i <  U64_MAX
-    do some inefficient configfs probe/scan
+A pull request for the open-iscsi initiator side implementation has been
+submitted here:
+https://github.com/open-iscsi/open-iscsi/pull/170
 
-so for targetcli a value less than U64_MAX makes sense so some commands
-do not take minutes. Other apps might work differently though.
+Maurizio Lombardi (4):
+  target-iscsi: CHAP: add support to SHA1 and SHA3-256 hash functions
+  target-iscsi: remove unneeded function
+  target-iscsi: tie the challenge length to the hash digest size
+  target-iscsi: rename some variables to avoid confusion.
+
+ drivers/target/iscsi/iscsi_target_auth.c | 218 ++++++++++++++---------
+ drivers/target/iscsi/iscsi_target_auth.h |  13 +-
+ 2 files changed, 147 insertions(+), 84 deletions(-)
+
+-- 
+Maurizio Lombardi
