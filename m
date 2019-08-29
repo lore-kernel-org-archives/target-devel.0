@@ -1,67 +1,28 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 29 Aug 2019 19:32:41 +0000
+From: Stefani Seibold <stefani@seibold.net>
+Date: Thu, 29 Aug 2019 19:40:46 +0000
 Subject: Re: Bug report: KFIFO kfifo_init() may introduce buffer overflow
-Message-Id: <CAHk-=wh3EKnDXnt681b0+11UbiA8roO8Ui==eKVaKU4pnPe7rw@mail.gmail.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="000000000000a9f8cb05914692e8"
+Message-Id: <b551fb9b06fc50198cc7febcb334c33b13216314.camel@seibold.net>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190722114700.GE3089@kadam>
 In-Reply-To: <20190722114700.GE3089@kadam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
---000000000000a9f8cb05914692e8
-Content-Type: text/plain; charset="UTF-8"
+Hi Linus,
 
-On Thu, Aug 29, 2019 at 11:48 AM Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> Anybody?
+i am back from vacation next week. I will have a look on it.
 
-This is ENTIRELY UNTESTED.
+Stefani
 
-Anybody willing to test and take ownership?
-
-              Linus
-
---000000000000a9f8cb05914692e8
-Content-Type: text/x-patch; charset="US-ASCII"; name="patch.diff"
-Content-Disposition: attachment; filename="patch.diff"
-Content-Transfer-Encoding: base64
-Content-ID: <f_jzx34vq80>
-X-Attachment-Id: f_jzx34vq80
-
-IGluY2x1ZGUvbGludXgva2ZpZm8uaCB8IDEyICsrKysrKysrLS0tLQogbGliL2tmaWZvLmMgICAg
-ICAgICAgIHwgIDQgKysrLQogMiBmaWxlcyBjaGFuZ2VkLCAxMSBpbnNlcnRpb25zKCspLCA1IGRl
-bGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgva2ZpZm8uaCBiL2luY2x1ZGUv
-bGludXgva2ZpZm8uaAppbmRleCBmYzRiMGIxMDIxMGYuLjA3OGY1MmMyMGFhZCAxMDA2NDQKLS0t
-IGEvaW5jbHVkZS9saW51eC9rZmlmby5oCisrKyBiL2luY2x1ZGUvbGludXgva2ZpZm8uaApAQCAt
-MTE3LDYgKzExNywxMiBAQCBzdHJ1Y3Qga2ZpZm9fcmVjX3B0cl8yIF9fU1RSVUNUX0tGSUZPX1BU
-Uih1bnNpZ25lZCBjaGFyLCAyLCB2b2lkKTsKICAqLwogI2RlZmluZSBERUNMQVJFX0tGSUZPKGZp
-Zm8sIHR5cGUsIHNpemUpCVNUUlVDVF9LRklGTyh0eXBlLCBzaXplKSBmaWZvCiAKKyNkZWZpbmUg
-VkVSSUZZX1BPV0VSX09GMih4KSBcCisJKCh4KStCVUlMRF9CVUdfT05fWkVSTygoeCkgJiAoKHgp
-LTEpKSkKKworI2RlZmluZSBfX0tGSUZPX01BU0tfU0laRShmaWZvKSBcCisJKF9faXNfa2ZpZm9f
-cHRyKCYoZmlmbykpID8gMCA6IFZFUklGWV9QT1dFUl9PRjIoQVJSQVlfU0laRSgoZmlmbykuYnVm
-KSkgLSAxKQorCiAvKioKICAqIElOSVRfS0ZJRk8gLSBJbml0aWFsaXplIGEgZmlmbyBkZWNsYXJl
-ZCBieSBERUNMQVJFX0tGSUZPCiAgKiBAZmlmbzogbmFtZSBvZiB0aGUgZGVjbGFyZWQgZmlmbyBk
-YXRhdHlwZQpAQCAtMTI3LDcgKzEzMyw3IEBAIHN0cnVjdCBrZmlmb19yZWNfcHRyXzIgX19TVFJV
-Q1RfS0ZJRk9fUFRSKHVuc2lnbmVkIGNoYXIsIDIsIHZvaWQpOwogCXN0cnVjdCBfX2tmaWZvICpf
-X2tmaWZvID0gJl9fdG1wLT5rZmlmbzsgXAogCV9fa2ZpZm8tPmluID0gMDsgXAogCV9fa2ZpZm8t
-Pm91dCA9IDA7IFwKLQlfX2tmaWZvLT5tYXNrID0gX19pc19rZmlmb19wdHIoX190bXApID8gMCA6
-IEFSUkFZX1NJWkUoX190bXAtPmJ1ZikgLSAxO1wKKwlfX2tmaWZvLT5tYXNrID0gX19LRklGT19N
-QVNLX1NJWkUoZmlmbyk7IFwKIAlfX2tmaWZvLT5lc2l6ZSA9IHNpemVvZigqX190bXAtPmJ1Zik7
-IFwKIAlfX2tmaWZvLT5kYXRhID0gX19pc19rZmlmb19wdHIoX190bXApID8gIE5VTEwgOiBfX3Rt
-cC0+YnVmOyBcCiB9KQpAQCAtMTQ3LDkgKzE1Myw3IEBAIHN0cnVjdCBrZmlmb19yZWNfcHRyXzIg
-X19TVFJVQ1RfS0ZJRk9fUFRSKHVuc2lnbmVkIGNoYXIsIDIsIHZvaWQpOwogCQkJeyBcCiAJCQku
-aW4JPSAwLCBcCiAJCQkub3V0CT0gMCwgXAotCQkJLm1hc2sJPSBfX2lzX2tmaWZvX3B0cigmKGZp
-Zm8pKSA/IFwKLQkJCQkgIDAgOiBcCi0JCQkJICBBUlJBWV9TSVpFKChmaWZvKS5idWYpIC0gMSwg
-XAorCQkJLm1hc2sJPSBfX0tGSUZPX01BU0tfU0laRShmaWZvKSwgXAogCQkJLmVzaXplCT0gc2l6
-ZW9mKCooZmlmbykuYnVmKSwgXAogCQkJLmRhdGEJPSBfX2lzX2tmaWZvX3B0cigmKGZpZm8pKSA/
-IFwKIAkJCQlOVUxMIDogXApkaWZmIC0tZ2l0IGEvbGliL2tmaWZvLmMgYi9saWIva2ZpZm8uYwpp
-bmRleCAxMTdhZDBlN2ZiZjQuLjdmMTQ1Y2I0MWU2ZCAxMDA2NDQKLS0tIGEvbGliL2tmaWZvLmMK
-KysrIGIvbGliL2tmaWZvLmMKQEAgLTY4LDcgKzY4LDkgQEAgaW50IF9fa2ZpZm9faW5pdChzdHJ1
-Y3QgX19rZmlmbyAqZmlmbywgdm9pZCAqYnVmZmVyLAogewogCXNpemUgLz0gZXNpemU7CiAKLQlz
-aXplID0gcm91bmR1cF9wb3dfb2ZfdHdvKHNpemUpOworCS8qIFdhcm4gYmVjYXVzZSB3ZSBoYWQg
-YSBidWcgaGVyZSBhbmQgd291bGQgcm91bmQgdXAgKi8KKwlpZiAoV0FSTl9PTl9PTkNFKCFpc19w
-b3dlcl9vZl8yKHNpemUpKSkKKwkJc2l6ZSA9IHJvdW5kZG93bl9wb3dfb2ZfdHdvKHNpemUpOwog
-CiAJZmlmby0+aW4gPSAwOwogCWZpZm8tPm91dCA9IDA7Cg==
---000000000000a9f8cb05914692e8--
+Am Donnerstag, den 29.08.2019, 12:32 -0700 schrieb Linus Torvalds:
+> On Thu, Aug 29, 2019 at 11:48 AM Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> > Anybody?
+> 
+> This is ENTIRELY UNTESTED.
+> 
+> Anybody willing to test and take ownership?
+> 
+>               Linus
