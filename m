@@ -1,220 +1,88 @@
-From: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
-Date: Fri, 09 Aug 2019 10:54:30 +0000
-Subject: [PATCHv2  1/4] block: Remove request_queue argument from blk_execute_rq_nowait
-Message-Id: <20190809105433.8946-2-marcos.souza.org@gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 29 Aug 2019 18:12:25 +0000
+Subject: [PATCH AUTOSEL 5.2 30/76] scsi: target: tcmu: avoid use-after-free after command timeout
+Message-Id: <20190829181311.7562-30-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190809105433.8946-1-marcos.souza.org@gmail.com>
-In-Reply-To: <20190809105433.8946-1-marcos.souza.org@gmail.com>
+References: <20190829181311.7562-1-sashal@kernel.org>
+In-Reply-To: <20190829181311.7562-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Marcos Paulo de Souza <marcos.souza.org@gmail.com>, hch@lst.de, axboe@kernel.dk, linux-block@vger.kernel.org, Keith Busch <kbusch@kernel.org>, Sagi Grimberg <sagi@grimberg.me>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Doug Gilbert <dgilbert@interlog.com>, =?UTF-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>, Hannes Reinecke <hare@suse.com>, Omar Sandoval <osandov@fb.com>, Ming Lei <ming.lei@redhat.com>, Damien Le Moal <damien.lemoal@wdc.com>, Bart Van Assche <bvanassche@acm.org>, "open list:NVM EXPRESS DRIVER" <linux-nvme@lists.infradead.org>, "open list:SCSI SUBSYSTEM" <linux-scsi@vger.kernel.org>, "open list:SCSI TARGET SUBSYSTEM" <target-devel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Dmitry Fomichev <dmitry.fomichev@wdc.com>, Mike Christie <mchristi@redhat.com>, Damien Le Moal <damien.lemoal@wdc.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Commit a1ce35fa4985 ("block: remove dead elevator code") removed code
-that was using the request_queue argument. This got simplified by
-calling blk_mq_sched_insert_request which already gets the request_queue
-from the request being inserted in the scheduler queue for execution.
+From: Dmitry Fomichev <dmitry.fomichev@wdc.com>
 
-Signed-off-by: Marcos Paulo de Souza <marcos.souza.org@gmail.com>
+[ Upstream commit a86a75865ff4d8c05f355d1750a5250aec89ab15 ]
+
+In tcmu_handle_completion() function, the variable called read_len is
+always initialized with a value taken from se_cmd structure. If this
+function is called to complete an expired (timed out) out command, the
+session command pointed by se_cmd is likely to be already deallocated by
+the target core at that moment. As the result, this access triggers a
+use-after-free warning from KASAN.
+
+This patch fixes the code not to touch se_cmd when completing timed out
+TCMU commands. It also resets the pointer to se_cmd at the time when the
+TCMU_CMD_BIT_EXPIRED flag is set because it is going to become invalid
+after calling target_complete_cmd() later in the same function,
+tcmu_check_expired_cmd().
+
+Signed-off-by: Dmitry Fomichev <dmitry.fomichev@wdc.com>
+Acked-by: Mike Christie <mchristi@redhat.com>
+Reviewed-by: Damien Le Moal <damien.lemoal@wdc.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- block/blk-exec.c                   | 8 +++-----
- drivers/block/sx8.c                | 4 ++--
- drivers/nvme/host/core.c           | 4 ++--
- drivers/nvme/host/lightnvm.c       | 2 +-
- drivers/nvme/host/pci.c            | 7 +++----
- drivers/scsi/scsi_error.c          | 2 +-
- drivers/scsi/sg.c                  | 3 +--
- drivers/scsi/st.c                  | 2 +-
- drivers/target/target_core_pscsi.c | 5 ++---
- include/linux/blkdev.h             | 4 ++--
- 10 files changed, 18 insertions(+), 23 deletions(-)
+ drivers/target/target_core_user.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/block/blk-exec.c b/block/blk-exec.c
-index 1db44ca0f4a6..80890b0b9c67 100644
---- a/block/blk-exec.c
-+++ b/block/blk-exec.c
-@@ -32,7 +32,6 @@ static void blk_end_sync_rq(struct request *rq, blk_status_t error)
-
- /**
-  * blk_execute_rq_nowait - insert a request into queue for execution
-- * @q:		queue to insert the request in
-  * @bd_disk:	matching gendisk
-  * @rq:		request to insert
-  * @at_head:    insert request at head or tail of queue
-@@ -45,9 +44,8 @@ static void blk_end_sync_rq(struct request *rq, blk_status_t error)
-  * Note:
-  *    This function will invoke @done directly if the queue is dead.
-  */
--void blk_execute_rq_nowait(struct request_queue *q, struct gendisk *bd_disk,
--			   struct request *rq, int at_head,
--			   rq_end_io_fn *done)
-+void blk_execute_rq_nowait(struct gendisk *bd_disk, struct request *rq,
-+			int at_head, rq_end_io_fn *done)
- {
- 	WARN_ON(irqs_disabled());
- 	WARN_ON(!blk_rq_is_passthrough(rq));
-@@ -81,7 +79,7 @@ void blk_execute_rq(struct request_queue *q, struct gendisk *bd_disk,
- 	unsigned long hang_check;
-
- 	rq->end_io_data = &wait;
--	blk_execute_rq_nowait(q, bd_disk, rq, at_head, blk_end_sync_rq);
-+	blk_execute_rq_nowait(bd_disk, rq, at_head, blk_end_sync_rq);
-
- 	/* Prevent hang_check timer from firing at us during very long I/O */
- 	hang_check = sysctl_hung_task_timeout_secs;
-diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
-index 4478eb7efee0..2cdf2771f8e8 100644
---- a/drivers/block/sx8.c
-+++ b/drivers/block/sx8.c
-@@ -539,7 +539,7 @@ static int carm_array_info (struct carm_host *host, unsigned int array_idx)
- 	spin_unlock_irq(&host->lock);
-
- 	DPRINTK("blk_execute_rq_nowait, tag = %u\n", rq->tag);
--	blk_execute_rq_nowait(host->oob_q, NULL, rq, true, NULL);
-+	blk_execute_rq_nowait(NULL, rq, true, NULL);
-
- 	return 0;
-
-@@ -578,7 +578,7 @@ static int carm_send_special (struct carm_host *host, carm_sspc_t func)
- 	crq->msg_bucket = (u32) rc;
-
- 	DPRINTK("blk_execute_rq_nowait, tag = %u\n", rq->tag);
--	blk_execute_rq_nowait(host->oob_q, NULL, rq, true, NULL);
-+	blk_execute_rq_nowait(NULL, rq, true, NULL);
-
- 	return 0;
- }
-diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
-index 8f3fbe5ca937..6682fdcece0f 100644
---- a/drivers/nvme/host/core.c
-+++ b/drivers/nvme/host/core.c
-@@ -756,7 +756,7 @@ static void nvme_execute_rq_polled(struct request_queue *q,
-
- 	rq->cmd_flags |= REQ_HIPRI;
- 	rq->end_io_data = &wait;
--	blk_execute_rq_nowait(q, bd_disk, rq, at_head, nvme_end_sync_rq);
-+	blk_execute_rq_nowait(bd_disk, rq, at_head, nvme_end_sync_rq);
-
- 	while (!completion_done(&wait)) {
- 		blk_poll(q, request_to_qc_t(rq->mq_hctx, rq), true);
-@@ -941,7 +941,7 @@ static int nvme_keep_alive(struct nvme_ctrl *ctrl)
- 	rq->timeout = ctrl->kato * HZ;
- 	rq->end_io_data = ctrl;
-
--	blk_execute_rq_nowait(rq->q, NULL, rq, 0, nvme_keep_alive_end_io);
-+	blk_execute_rq_nowait(NULL, rq, 0, nvme_keep_alive_end_io);
-
- 	return 0;
- }
-diff --git a/drivers/nvme/host/lightnvm.c b/drivers/nvme/host/lightnvm.c
-index ba009d4c9dfa..5d0e330e86d0 100644
---- a/drivers/nvme/host/lightnvm.c
-+++ b/drivers/nvme/host/lightnvm.c
-@@ -685,7 +685,7 @@ static int nvme_nvm_submit_io(struct nvm_dev *dev, struct nvm_rq *rqd)
-
- 	rq->end_io_data = rqd;
-
--	blk_execute_rq_nowait(q, NULL, rq, 0, nvme_nvm_end_io);
-+	blk_execute_rq_nowait(NULL, rq, 0, nvme_nvm_end_io);
-
- 	return 0;
- }
-diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
-index db160cee42ad..d8f83696b4ba 100644
---- a/drivers/nvme/host/pci.c
-+++ b/drivers/nvme/host/pci.c
-@@ -1332,7 +1332,7 @@ static enum blk_eh_timer_return nvme_timeout(struct request *req, bool reserved)
-
- 	abort_req->timeout = ADMIN_TIMEOUT;
- 	abort_req->end_io_data = NULL;
--	blk_execute_rq_nowait(abort_req->q, NULL, abort_req, 0, abort_endio);
-+	blk_execute_rq_nowait(NULL, abort_req, 0, abort_endio);
-
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index b43d6385a1a09..95b2371fb67b6 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1132,14 +1132,16 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 	struct se_cmd *se_cmd = cmd->se_cmd;
+ 	struct tcmu_dev *udev = cmd->tcmu_dev;
+ 	bool read_len_valid = false;
+-	uint32_t read_len = se_cmd->data_length;
++	uint32_t read_len;
+ 
  	/*
- 	 * The aborted req will be completed on receiving the abort req.
-@@ -2205,9 +2205,8 @@ static int nvme_delete_queue(struct nvme_queue *nvmeq, u8 opcode)
- 	req->end_io_data = nvmeq;
-
- 	init_completion(&nvmeq->delete_done);
--	blk_execute_rq_nowait(q, NULL, req, false,
--			opcode = nvme_admin_delete_cq ?
--				nvme_del_cq_end : nvme_del_queue_end);
-+	blk_execute_rq_nowait(NULL, req, false,
-+			      opcode = nvme_admin_delete_cq ? nvme_del_cq_end : nvme_del_queue_end);
- 	return 0;
- }
-
-diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
-index 1c470e31ae81..49cda23c7fb8 100644
---- a/drivers/scsi/scsi_error.c
-+++ b/drivers/scsi/scsi_error.c
-@@ -1988,7 +1988,7 @@ static void scsi_eh_lock_door(struct scsi_device *sdev)
- 	req->timeout = 10 * HZ;
- 	rq->retries = 5;
-
--	blk_execute_rq_nowait(req->q, NULL, req, 1, eh_lock_door_done);
-+	blk_execute_rq_nowait(NULL, req, 1, eh_lock_door_done);
- }
-
- /**
-diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
-index cce757506383..81ece3ed0474 100644
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -835,8 +835,7 @@ sg_common_write(Sg_fd * sfp, Sg_request * srp,
-
- 	srp->rq->timeout = timeout;
- 	kref_get(&sfp->f_ref); /* sg_rq_end_io() does kref_put(). */
--	blk_execute_rq_nowait(sdp->device->request_queue, sdp->disk,
--			      srp->rq, at_head, sg_rq_end_io);
-+	blk_execute_rq_nowait(sdp->disk, srp->rq, at_head, sg_rq_end_io);
- 	return 0;
- }
-
-diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
-index e3266a64a477..3b828f260294 100644
---- a/drivers/scsi/st.c
-+++ b/drivers/scsi/st.c
-@@ -583,7 +583,7 @@ static int st_scsi_execute(struct st_request *SRpnt, const unsigned char *cmd,
- 	rq->retries = retries;
- 	req->end_io_data = SRpnt;
-
--	blk_execute_rq_nowait(req->q, NULL, req, 1, st_scsi_execute_end);
-+	blk_execute_rq_nowait(NULL, req, 1, st_scsi_execute_end);
- 	return 0;
- }
-
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index c9d92b3e777d..021212569d1b 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -1000,9 +1000,8 @@ pscsi_execute_cmd(struct se_cmd *cmd)
- 		req->timeout = PS_TIMEOUT_OTHER;
- 	scsi_req(req)->retries = PS_RETRY;
-
--	blk_execute_rq_nowait(pdv->pdv_sd->request_queue, NULL, req,
--			(cmd->sam_task_attr = TCM_HEAD_TAG),
--			pscsi_req_done);
-+	blk_execute_rq_nowait(NULL, req, (cmd->sam_task_attr = TCM_HEAD_TAG),
-+			      pscsi_req_done);
-
- 	return 0;
-
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 1ef375dafb1c..8e8f088c75a5 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -867,8 +867,8 @@ extern int blk_rq_map_user_iov(struct request_queue *, struct request *,
- 			       gfp_t);
- extern void blk_execute_rq(struct request_queue *, struct gendisk *,
- 			  struct request *, int);
--extern void blk_execute_rq_nowait(struct request_queue *, struct gendisk *,
--				  struct request *, int, rq_end_io_fn *);
-+extern void blk_execute_rq_nowait(struct gendisk *, struct request *, int,
-+				rq_end_io_fn *);
-
- /* Helper to convert REQ_OP_XXX to its string format XXX */
- extern const char *blk_op_str(unsigned int op);
---
-2.22.0
+ 	 * cmd has been completed already from timeout, just reclaim
+ 	 * data area space and free cmd
+ 	 */
+-	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags))
++	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
++		WARN_ON_ONCE(se_cmd);
+ 		goto out;
++	}
+ 
+ 	list_del_init(&cmd->queue_entry);
+ 
+@@ -1152,6 +1154,7 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 		goto done;
+ 	}
+ 
++	read_len = se_cmd->data_length;
+ 	if (se_cmd->data_direction = DMA_FROM_DEVICE &&
+ 	    (entry->hdr.uflags & TCMU_UFLAG_READ_LEN) && entry->rsp.read_len) {
+ 		read_len_valid = true;
+@@ -1307,6 +1310,7 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
+ 		 */
+ 		scsi_status = SAM_STAT_CHECK_CONDITION;
+ 		list_del_init(&cmd->queue_entry);
++		cmd->se_cmd = NULL;
+ 	} else {
+ 		list_del_init(&cmd->queue_entry);
+ 		idr_remove(&udev->commands, id);
+@@ -2024,6 +2028,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+ 
+ 		idr_remove(&udev->commands, i);
+ 		if (!test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
++			WARN_ON(!cmd->se_cmd);
+ 			list_del_init(&cmd->queue_entry);
+ 			if (err_level = 1) {
+ 				/*
+-- 
+2.20.1
