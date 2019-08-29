@@ -1,88 +1,135 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 29 Aug 2019 18:12:25 +0000
-Subject: [PATCH AUTOSEL 5.2 30/76] scsi: target: tcmu: avoid use-after-free after command timeout
-Message-Id: <20190829181311.7562-30-sashal@kernel.org>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Thu, 29 Aug 2019 15:59:29 +0000
+Subject: [PATCH 4/4] target-iscsi: rename some variables to avoid confusion.
+Message-Id: <20190829155929.27701-5-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190829181311.7562-1-sashal@kernel.org>
-In-Reply-To: <20190829181311.7562-1-sashal@kernel.org>
+References: <20190829155929.27701-1-mlombard@redhat.com>
+In-Reply-To: <20190829155929.27701-1-mlombard@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Dmitry Fomichev <dmitry.fomichev@wdc.com>, Mike Christie <mchristi@redhat.com>, Damien Le Moal <damien.lemoal@wdc.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: cleech@redhat.com
+Cc: mchristi@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-From: Dmitry Fomichev <dmitry.fomichev@wdc.com>
+This patch renames some variables in chap_server_compute_hash()
+to make it harder to confuse the initiator's challenge with
+the target's challenge when the mutual chap authentication is used.
 
-[ Upstream commit a86a75865ff4d8c05f355d1750a5250aec89ab15 ]
-
-In tcmu_handle_completion() function, the variable called read_len is
-always initialized with a value taken from se_cmd structure. If this
-function is called to complete an expired (timed out) out command, the
-session command pointed by se_cmd is likely to be already deallocated by
-the target core at that moment. As the result, this access triggers a
-use-after-free warning from KASAN.
-
-This patch fixes the code not to touch se_cmd when completing timed out
-TCMU commands. It also resets the pointer to se_cmd at the time when the
-TCMU_CMD_BIT_EXPIRED flag is set because it is going to become invalid
-after calling target_complete_cmd() later in the same function,
-tcmu_check_expired_cmd().
-
-Signed-off-by: Dmitry Fomichev <dmitry.fomichev@wdc.com>
-Acked-by: Mike Christie <mchristi@redhat.com>
-Reviewed-by: Damien Le Moal <damien.lemoal@wdc.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
 ---
- drivers/target/target_core_user.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/target/iscsi/iscsi_target_auth.c | 40 ++++++++++++------------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index b43d6385a1a09..95b2371fb67b6 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1132,14 +1132,16 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
- 	struct se_cmd *se_cmd = cmd->se_cmd;
- 	struct tcmu_dev *udev = cmd->tcmu_dev;
- 	bool read_len_valid = false;
--	uint32_t read_len = se_cmd->data_length;
-+	uint32_t read_len;
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index 976c8c73d261..7ccef7b1c60b 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -207,8 +207,8 @@ static int chap_server_compute_hash(
+ 	unsigned long id;
+ 	unsigned char id_as_uchar;
+ 	unsigned char type;
+-	unsigned char identifier[10], *challenge = NULL;
+-	unsigned char *challenge_binhex = NULL;
++	unsigned char identifier[10], *initiatorchg = NULL;
++	unsigned char *initiatorchg_binhex = NULL;
+ 	unsigned char *digest = NULL;
+ 	unsigned char *response = NULL;
+ 	unsigned char *client_digest = NULL;
+@@ -218,7 +218,7 @@ static int chap_server_compute_hash(
+ 	struct iscsi_chap *chap = conn->auth_protocol;
+ 	struct crypto_shash *tfm = NULL;
+ 	struct shash_desc *desc = NULL;
+-	int auth_ret = -1, ret, challenge_len;
++	int auth_ret = -1, ret, initiatorchg_len;
  
- 	/*
- 	 * cmd has been completed already from timeout, just reclaim
- 	 * data area space and free cmd
- 	 */
--	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags))
-+	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
-+		WARN_ON_ONCE(se_cmd);
+ 	digest = kzalloc(chap->digest_size, GFP_KERNEL);
+ 	if (!digest) {
+@@ -248,15 +248,15 @@ static int chap_server_compute_hash(
+ 	memset(chap_n, 0, MAX_CHAP_N_SIZE);
+ 	memset(chap_r, 0, MAX_RESPONSE_LENGTH);
+ 
+-	challenge = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
+-	if (!challenge) {
++	initiatorchg = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
++	if (!initiatorchg) {
+ 		pr_err("Unable to allocate challenge buffer\n");
  		goto out;
-+	}
- 
- 	list_del_init(&cmd->queue_entry);
- 
-@@ -1152,6 +1154,7 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
- 		goto done;
  	}
  
-+	read_len = se_cmd->data_length;
- 	if (se_cmd->data_direction = DMA_FROM_DEVICE &&
- 	    (entry->hdr.uflags & TCMU_UFLAG_READ_LEN) && entry->rsp.read_len) {
- 		read_len_valid = true;
-@@ -1307,6 +1310,7 @@ static int tcmu_check_expired_cmd(int id, void *p, void *data)
- 		 */
- 		scsi_status = SAM_STAT_CHECK_CONDITION;
- 		list_del_init(&cmd->queue_entry);
-+		cmd->se_cmd = NULL;
- 	} else {
- 		list_del_init(&cmd->queue_entry);
- 		idr_remove(&udev->commands, id);
-@@ -2024,6 +2028,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
- 
- 		idr_remove(&udev->commands, i);
- 		if (!test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
-+			WARN_ON(!cmd->se_cmd);
- 			list_del_init(&cmd->queue_entry);
- 			if (err_level = 1) {
- 				/*
+-	challenge_binhex = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
+-	if (!challenge_binhex) {
+-		pr_err("Unable to allocate challenge_binhex buffer\n");
++	initiatorchg_binhex = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
++	if (!initiatorchg_binhex) {
++		pr_err("Unable to allocate initiatorchg_binhex buffer\n");
+ 		goto out;
+ 	}
+ 	/*
+@@ -391,7 +391,7 @@ static int chap_server_compute_hash(
+ 	 * Get CHAP_C.
+ 	 */
+ 	if (extract_param(nr_in_ptr, "CHAP_C", CHAP_CHALLENGE_STR_LEN,
+-			challenge, &type) < 0) {
++			initiatorchg, &type) < 0) {
+ 		pr_err("Could not find CHAP_C.\n");
+ 		goto out;
+ 	}
+@@ -400,28 +400,28 @@ static int chap_server_compute_hash(
+ 		pr_err("Could not find CHAP_C.\n");
+ 		goto out;
+ 	}
+-	challenge_len = DIV_ROUND_UP(strlen(challenge), 2);
+-	if (!challenge_len) {
++	initiatorchg_len = DIV_ROUND_UP(strlen(initiatorchg), 2);
++	if (!initiatorchg_len) {
+ 		pr_err("Unable to convert incoming challenge\n");
+ 		goto out;
+ 	}
+-	if (challenge_len > 1024) {
++	if (initiatorchg_len > 1024) {
+ 		pr_err("CHAP_C exceeds maximum binary size of 1024 bytes\n");
+ 		goto out;
+ 	}
+-	if (hex2bin(challenge_binhex, challenge, challenge_len) < 0) {
++	if (hex2bin(initiatorchg_binhex, initiatorchg, initiatorchg_len) < 0) {
+ 		pr_err("Malformed CHAP_C\n");
+ 		goto out;
+ 	}
+-	pr_debug("[server] Got CHAP_C=%s\n", challenge);
++	pr_debug("[server] Got CHAP_C=%s\n", initiatorchg);
+ 	/*
+ 	 * During mutual authentication, the CHAP_C generated by the
+ 	 * initiator must not match the original CHAP_C generated by
+ 	 * the target.
+ 	 */
+-	if (challenge_len = chap->challenge_len &&
+-				!memcmp(challenge_binhex, chap->challenge,
+-				challenge_len)) {
++	if (initiatorchg_len = chap->challenge_len &&
++				!memcmp(initiatorchg_binhex, chap->challenge,
++				initiatorchg_len)) {
+ 		pr_err("initiator CHAP_C matches target CHAP_C, failing"
+ 		       " login attempt\n");
+ 		goto out;
+@@ -453,7 +453,7 @@ static int chap_server_compute_hash(
+ 	/*
+ 	 * Convert received challenge to binary hex.
+ 	 */
+-	ret = crypto_shash_finup(desc, challenge_binhex, challenge_len,
++	ret = crypto_shash_finup(desc, initiatorchg_binhex, initiatorchg_len,
+ 				 digest);
+ 	if (ret < 0) {
+ 		pr_err("crypto_shash_finup() failed for ma challenge\n");
+@@ -479,8 +479,8 @@ static int chap_server_compute_hash(
+ 	kzfree(desc);
+ 	if (tfm)
+ 		crypto_free_shash(tfm);
+-	kfree(challenge);
+-	kfree(challenge_binhex);
++	kfree(initiatorchg);
++	kfree(initiatorchg_binhex);
+ 	kfree(digest);
+ 	kfree(response);
+ 	kfree(server_digest);
 -- 
-2.20.1
+Maurizio Lombardi
