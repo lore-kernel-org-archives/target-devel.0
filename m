@@ -1,39 +1,67 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 29 Aug 2019 18:48:19 +0000
+Date: Thu, 29 Aug 2019 19:32:41 +0000
 Subject: Re: Bug report: KFIFO kfifo_init() may introduce buffer overflow
-Message-Id: <CAHk-=wgQeKWHW0bQ1aV5=2ivbD-WWDHcBBJ_cX5R75iiNNq2uA@mail.gmail.com>
+Message-Id: <CAHk-=wh3EKnDXnt681b0+11UbiA8roO8Ui==eKVaKU4pnPe7rw@mail.gmail.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="000000000000a9f8cb05914692e8"
 List-Id: <target-devel.vger.kernel.org>
 References: <20190722114700.GE3089@kadam>
 In-Reply-To: <20190722114700.GE3089@kadam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Tue, Aug 6, 2019 at 3:29 AM laokz <laokz@foxmail.com> wrote:
+--000000000000a9f8cb05914692e8
+Content-Type: text/plain; charset="UTF-8"
+
+On Thu, Aug 29, 2019 at 11:48 AM Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> Sorry for the late reply. I didn't submit any patch, for as newbie I wasn't
-> quite sure about the severity of this issue. The developers may do their
-> choice.
+> Anybody?
 
-It does seem pretty bad.
+This is ENTIRELY UNTESTED.
 
-Also, INIT_KFIFO() and DECLARE_KFIFO() should probably have a
+Anybody willing to test and take ownership?
 
-     BUILD_BUG_ON(!__is_kfifo_ptr && !is_power_of_2(ARRAY_SIZE(__tmp->buf)));
+              Linus
 
-or something. Probably worth indirection through a helper macro to set
-the ".mask" field.
+--000000000000a9f8cb05914692e8
+Content-Type: text/x-patch; charset="US-ASCII"; name="patch.diff"
+Content-Disposition: attachment; filename="patch.diff"
+Content-Transfer-Encoding: base64
+Content-ID: <f_jzx34vq80>
+X-Attachment-Id: f_jzx34vq80
 
-And yes, commit dfe2a77fd243 ("kfifo: fix kfifo_alloc() and
-kfifo_init()") seems wrong, It's fine for the __kfifo_alloc() case
-where we actually allocate the rounded-up size, but it's completely
-wrong for the __kfifo_init() case where somebody _else_ allocated the
-size.
-
-So the kfifo_init() case needs to just use a round_down, and possibly
-add a WARN_ON_ONCE() too.
-
-Anybody?
-
-             Linus
+IGluY2x1ZGUvbGludXgva2ZpZm8uaCB8IDEyICsrKysrKysrLS0tLQogbGliL2tmaWZvLmMgICAg
+ICAgICAgIHwgIDQgKysrLQogMiBmaWxlcyBjaGFuZ2VkLCAxMSBpbnNlcnRpb25zKCspLCA1IGRl
+bGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgva2ZpZm8uaCBiL2luY2x1ZGUv
+bGludXgva2ZpZm8uaAppbmRleCBmYzRiMGIxMDIxMGYuLjA3OGY1MmMyMGFhZCAxMDA2NDQKLS0t
+IGEvaW5jbHVkZS9saW51eC9rZmlmby5oCisrKyBiL2luY2x1ZGUvbGludXgva2ZpZm8uaApAQCAt
+MTE3LDYgKzExNywxMiBAQCBzdHJ1Y3Qga2ZpZm9fcmVjX3B0cl8yIF9fU1RSVUNUX0tGSUZPX1BU
+Uih1bnNpZ25lZCBjaGFyLCAyLCB2b2lkKTsKICAqLwogI2RlZmluZSBERUNMQVJFX0tGSUZPKGZp
+Zm8sIHR5cGUsIHNpemUpCVNUUlVDVF9LRklGTyh0eXBlLCBzaXplKSBmaWZvCiAKKyNkZWZpbmUg
+VkVSSUZZX1BPV0VSX09GMih4KSBcCisJKCh4KStCVUlMRF9CVUdfT05fWkVSTygoeCkgJiAoKHgp
+LTEpKSkKKworI2RlZmluZSBfX0tGSUZPX01BU0tfU0laRShmaWZvKSBcCisJKF9faXNfa2ZpZm9f
+cHRyKCYoZmlmbykpID8gMCA6IFZFUklGWV9QT1dFUl9PRjIoQVJSQVlfU0laRSgoZmlmbykuYnVm
+KSkgLSAxKQorCiAvKioKICAqIElOSVRfS0ZJRk8gLSBJbml0aWFsaXplIGEgZmlmbyBkZWNsYXJl
+ZCBieSBERUNMQVJFX0tGSUZPCiAgKiBAZmlmbzogbmFtZSBvZiB0aGUgZGVjbGFyZWQgZmlmbyBk
+YXRhdHlwZQpAQCAtMTI3LDcgKzEzMyw3IEBAIHN0cnVjdCBrZmlmb19yZWNfcHRyXzIgX19TVFJV
+Q1RfS0ZJRk9fUFRSKHVuc2lnbmVkIGNoYXIsIDIsIHZvaWQpOwogCXN0cnVjdCBfX2tmaWZvICpf
+X2tmaWZvID0gJl9fdG1wLT5rZmlmbzsgXAogCV9fa2ZpZm8tPmluID0gMDsgXAogCV9fa2ZpZm8t
+Pm91dCA9IDA7IFwKLQlfX2tmaWZvLT5tYXNrID0gX19pc19rZmlmb19wdHIoX190bXApID8gMCA6
+IEFSUkFZX1NJWkUoX190bXAtPmJ1ZikgLSAxO1wKKwlfX2tmaWZvLT5tYXNrID0gX19LRklGT19N
+QVNLX1NJWkUoZmlmbyk7IFwKIAlfX2tmaWZvLT5lc2l6ZSA9IHNpemVvZigqX190bXAtPmJ1Zik7
+IFwKIAlfX2tmaWZvLT5kYXRhID0gX19pc19rZmlmb19wdHIoX190bXApID8gIE5VTEwgOiBfX3Rt
+cC0+YnVmOyBcCiB9KQpAQCAtMTQ3LDkgKzE1Myw3IEBAIHN0cnVjdCBrZmlmb19yZWNfcHRyXzIg
+X19TVFJVQ1RfS0ZJRk9fUFRSKHVuc2lnbmVkIGNoYXIsIDIsIHZvaWQpOwogCQkJeyBcCiAJCQku
+aW4JPSAwLCBcCiAJCQkub3V0CT0gMCwgXAotCQkJLm1hc2sJPSBfX2lzX2tmaWZvX3B0cigmKGZp
+Zm8pKSA/IFwKLQkJCQkgIDAgOiBcCi0JCQkJICBBUlJBWV9TSVpFKChmaWZvKS5idWYpIC0gMSwg
+XAorCQkJLm1hc2sJPSBfX0tGSUZPX01BU0tfU0laRShmaWZvKSwgXAogCQkJLmVzaXplCT0gc2l6
+ZW9mKCooZmlmbykuYnVmKSwgXAogCQkJLmRhdGEJPSBfX2lzX2tmaWZvX3B0cigmKGZpZm8pKSA/
+IFwKIAkJCQlOVUxMIDogXApkaWZmIC0tZ2l0IGEvbGliL2tmaWZvLmMgYi9saWIva2ZpZm8uYwpp
+bmRleCAxMTdhZDBlN2ZiZjQuLjdmMTQ1Y2I0MWU2ZCAxMDA2NDQKLS0tIGEvbGliL2tmaWZvLmMK
+KysrIGIvbGliL2tmaWZvLmMKQEAgLTY4LDcgKzY4LDkgQEAgaW50IF9fa2ZpZm9faW5pdChzdHJ1
+Y3QgX19rZmlmbyAqZmlmbywgdm9pZCAqYnVmZmVyLAogewogCXNpemUgLz0gZXNpemU7CiAKLQlz
+aXplID0gcm91bmR1cF9wb3dfb2ZfdHdvKHNpemUpOworCS8qIFdhcm4gYmVjYXVzZSB3ZSBoYWQg
+YSBidWcgaGVyZSBhbmQgd291bGQgcm91bmQgdXAgKi8KKwlpZiAoV0FSTl9PTl9PTkNFKCFpc19w
+b3dlcl9vZl8yKHNpemUpKSkKKwkJc2l6ZSA9IHJvdW5kZG93bl9wb3dfb2ZfdHdvKHNpemUpOwog
+CiAJZmlmby0+aW4gPSAwOwogCWZpZm8tPm91dCA9IDA7Cg==
+--000000000000a9f8cb05914692e8--
