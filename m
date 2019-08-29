@@ -1,33 +1,135 @@
-From: Michal Suchanek <msuchanek@suse.de>
-Date: Thu, 29 Aug 2019 12:31:59 +0000
-Subject: [PATCH 0/3] Fix fallthrough warnings.
-Message-Id: <cover.1567081143.git.msuchanek@suse.de>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Thu, 29 Aug 2019 15:59:28 +0000
+Subject: [PATCH 3/4] target-iscsi: tie the challenge length to the hash digest size
+Message-Id: <20190829155929.27701-4-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20190829155929.27701-1-mlombard@redhat.com>
+In-Reply-To: <20190829155929.27701-1-mlombard@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michal Suchanek <msuchanek@suse.de>, "Manoj N. Kumar" <manoj@linux.ibm.com>, "Matthew R. Ochs" <mrochs@linux.ibm.com>, Uma Krishnan <ukrishn@linux.ibm.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Tyrel Datwyler <tyreld@linux.ibm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Michael Cyr <mikecyr@linux.ibm.com>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org
+To: cleech@redhat.com
+Cc: mchristi@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Build with recent compiler results in numerous fallthrough warnings.
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/target/iscsi/iscsi_target_auth.c | 37 +++++++++++++++++-------
+ drivers/target/iscsi/iscsi_target_auth.h |  4 +--
+ 2 files changed, 28 insertions(+), 13 deletions(-)
 
-The code looks correct to me so just adding the comments to quiet gcc.
-
-Please review if the fallthrough was really intentional.
-
-Thanks
-
-Michal
-
-Michal Suchanek (3):
-  scsi: cxlflash: Fix fallthrough warnings.
-  scsi: ibmvfc: Fix fallthrough warnings.
-  scsi: ibmvscsi: tgt: Fix fallthrough warnings.
-
- drivers/scsi/cxlflash/main.c             | 8 ++++++++
- drivers/scsi/ibmvscsi/ibmvfc.c           | 3 +++
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 +++
- 3 files changed, 14 insertions(+)
-
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index 77dac8086927..976c8c73d261 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -25,16 +25,21 @@ static int chap_gen_challenge(
+ 	unsigned int *c_len)
+ {
+ 	int ret;
+-	unsigned char challenge_asciihex[CHAP_CHALLENGE_LENGTH * 2 + 1];
++	unsigned char *challenge_asciihex;
+ 	struct iscsi_chap *chap = conn->auth_protocol;
+ 
+-	memset(challenge_asciihex, 0, CHAP_CHALLENGE_LENGTH * 2 + 1);
++	challenge_asciihex = kzalloc(chap->challenge_len * 2 + 1, GFP_KERNEL);
++	if (!challenge_asciihex)
++		return -ENOMEM;
+ 
+-	ret = get_random_bytes_wait(chap->challenge, CHAP_CHALLENGE_LENGTH);
++	memset(chap->challenge, 0, MAX_CHAP_CHALLENGE_LEN);
++
++	ret = get_random_bytes_wait(chap->challenge, chap->challenge_len);
+ 	if (unlikely(ret))
+-		return ret;
++		goto out;
++
+ 	bin2hex(challenge_asciihex, chap->challenge,
+-				CHAP_CHALLENGE_LENGTH);
++				chap->challenge_len);
+ 	/*
+ 	 * Set CHAP_C, and copy the generated challenge into c_str.
+ 	 */
+@@ -43,7 +48,10 @@ static int chap_gen_challenge(
+ 
+ 	pr_debug("[%s] Sending CHAP_C=0x%s\n\n", (caller) ? "server" : "client",
+ 			challenge_asciihex);
+-	return 0;
++
++out:
++	kfree(challenge_asciihex);
++	return ret;
+ }
+ 
+ static int chap_test_algorithm(const char *name)
+@@ -163,6 +171,9 @@ static struct iscsi_chap *chap_server_open(
+ 		return NULL;
+ 	}
+ 
++	/* Tie the challenge length to the digest size */
++	chap->challenge_len = chap->digest_size;
++
+ 	pr_debug("[server] Got CHAP_A=%d\n", digest_type);
+ 	*aic_len = sprintf(aic_str, "CHAP_A=%d", digest_type);
+ 	*aic_len += 1;
+@@ -326,21 +337,23 @@ static int chap_server_compute_hash(
+ 	}
+ 
+ 	ret = crypto_shash_finup(desc, chap->challenge,
+-				 CHAP_CHALLENGE_LENGTH, server_digest);
++				 chap->challenge_len, server_digest);
+ 	if (ret < 0) {
+ 		pr_err("crypto_shash_finup() failed for challenge\n");
+ 		goto out;
+ 	}
+ 
+ 	bin2hex(response, server_digest, chap->digest_size);
+-	pr_debug("[server] %s Server Digest: %s\n", hash_name, response);
++	pr_debug("[server] %s Server Digest: %s\n",
++		chap->digest_name, response);
+ 
+ 	if (memcmp(server_digest, client_digest, chap->digest_size) != 0) {
+-		pr_debug("[server] %s Digests do not match!\n\n", hash_name);
++		pr_debug("[server] %s Digests do not match!\n\n",
++			chap->digest_name);
+ 		goto out;
+ 	} else
+ 		pr_debug("[server] %s Digests match, CHAP connection"
+-				" successful.\n\n", hash_name);
++				" successful.\n\n", chap->digest_name);
+ 	/*
+ 	 * One way authentication has succeeded, return now if mutual
+ 	 * authentication is not enabled.
+@@ -406,7 +419,9 @@ static int chap_server_compute_hash(
+ 	 * initiator must not match the original CHAP_C generated by
+ 	 * the target.
+ 	 */
+-	if (!memcmp(challenge_binhex, chap->challenge, CHAP_CHALLENGE_LENGTH)) {
++	if (challenge_len = chap->challenge_len &&
++				!memcmp(challenge_binhex, chap->challenge,
++				challenge_len)) {
+ 		pr_err("initiator CHAP_C matches target CHAP_C, failing"
+ 		       " login attempt\n");
+ 		goto out;
+diff --git a/drivers/target/iscsi/iscsi_target_auth.h b/drivers/target/iscsi/iscsi_target_auth.h
+index 8b10f935675a..e22840fea903 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.h
++++ b/drivers/target/iscsi/iscsi_target_auth.h
+@@ -9,7 +9,7 @@
+ #define CHAP_DIGEST_SHA		6
+ #define CHAP_DIGEST_SHA3_256	7
+ 
+-#define CHAP_CHALLENGE_LENGTH	16
++#define MAX_CHAP_CHALLENGE_LEN	32
+ #define CHAP_CHALLENGE_STR_LEN	4096
+ #define MAX_RESPONSE_LENGTH	128	/* sufficient for SHA3 256 */
+ #define	MAX_CHAP_N_SIZE		512
+@@ -32,7 +32,7 @@ extern u32 chap_main_loop(struct iscsi_conn *, struct iscsi_node_auth *, char *,
+ 
+ struct iscsi_chap {
+ 	unsigned char	id;
+-	unsigned char	challenge[CHAP_CHALLENGE_LENGTH];
++	unsigned char	challenge[MAX_CHAP_CHALLENGE_LEN];
+ 	unsigned int	challenge_len;
+ 	unsigned char	*digest_name;
+ 	unsigned int	digest_size;
 -- 
-2.12.3
+Maurizio Lombardi
