@@ -1,34 +1,48 @@
-From: Jiangyiwen <jiangyiwen@huawei.com>
-Date: Thu, 08 Aug 2019 01:59:18 +0000
-Subject: Re: [bug report] rdma: rtnl_lock deadlock?
-Message-Id: <5D4B81F6.7010002@huawei.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 30 Aug 2019 17:16:11 +0000
+Subject: [PATCH] target: compare full CHAP_A Algorithm strings
+Message-Id: <20190830171611.32540-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <5D4A3597.5020406@huawei.com> <20190807121037.GC1557@ziepe.ca>
-In-Reply-To: <20190807121037.GC1557@ziepe.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: bvanassche@acm.org, dledford@redhat.com, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, yebiaoxiang@huawei.com, Xiexiangyou <xiexiangyou@huawei.com>
+To: target-devel@vger.kernel.org
 
-Hi Jason,
+RFC 2307 states:
 
-On 2019/8/7 20:10, Jason Gunthorpe wrote:
-> On Wed, Aug 07, 2019 at 10:21:11AM +0800, Jiangyiwen wrote:
->> Hello,
->>
->> I find a scenario may cause deadlock of rtnl_lock as follows:
->>
->> 1. CPU1 add rtnl_lock and wait kworker finished.
->> CPU1 add rtnl_lock before call unregister_netdevice_queue() and
->> then wait sport->work(function srpt_refresh_port_work) finished
->> in srpt_remove_one().
-> This is an old kernel, this issue has been fixed
->
-> Jason
->
-Thank you for your reply, and can you tell me the commit id?
-I use the kernel version is Linux4.19.36.
+  For CHAP [RFC1994], in the first step, the initiator MUST send:
 
-Thanks,
-Yiwen.
+      CHAP_A=<A1,A2...>
+
+   Where A1,A2... are proposed algorithms, in order of preference.
+...
+   For the Algorithm, as stated in [RFC1994], one value is required to
+   be implemented:
+
+       5     (CHAP with MD5)
+
+LIO currently checks for this value by only comparing a single byte in
+the tokenized Algorithm string, which means that any value starting with
+a '5' (e.g. "55") is interpreted as "CHAP with MD5". Fix this by
+comparing the entire tokenized string.
+
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/iscsi/iscsi_target_auth.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index 51ddca2033e0..8fe9b12a07a4 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -70,7 +70,7 @@ static int chap_check_algorithm(const char *a_str)
+ 		if (!token)
+ 			goto out;
+ 
+-		if (!strncmp(token, "5", 1)) {
++		if (!strcmp(token, "5")) {
+ 			pr_debug("Selected MD5 Algorithm\n");
+ 			kfree(orig);
+ 			return CHAP_DIGEST_MD5;
+-- 
+2.16.4
