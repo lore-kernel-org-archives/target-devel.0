@@ -1,26 +1,36 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Thu, 12 Sep 2019 09:55:44 +0000
-Subject: [PATCH 0/3] target: minor iSCSI parameter parsing fixes
-Message-Id: <20190912095547.22427-1-ddiss@suse.de>
+From: Christoph Hellwig <hch@infradead.org>
+Date: Tue, 03 Sep 2019 07:00:13 +0000
+Subject: Re: [RFC PATCH 0/4] iscsi: chap: introduce support for SHA1 and SHA3-256
+Message-Id: <20190903070013.GA12256@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20190829155929.27701-1-mlombard@redhat.com>
+In-Reply-To: <20190829155929.27701-1-mlombard@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Maurizio Lombardi <mlombard@redhat.com>
+Cc: cleech@redhat.com, mchristi@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, "Black, David" <David.Black@dell.com>
 
-This patchset includes some minor fixes for parsing iSCSI CHAP_A and
-SendTargets fields. Patch 1/3 was already submitted and reviewed by
-Lee.
-I used the following libiscsi hacks to test for these bugs:
-https://github.com/ddiss/libiscsi/commits/bogus_chap_a
-https://github.com/ddiss/libiscsi/commits/bogus_sendtarget_key
-https://github.com/ddiss/libiscsi/commits/bogus_sendtarget_val
-I'll work on turning these into propper libiscsi regression tests
-(pending https://github.com/sahlberg/libiscsi/issues/297).
+On Thu, Aug 29, 2019 at 05:59:25PM +0200, Maurizio Lombardi wrote:
+> iSCSI with the Challenge-Handshake Authentication Protocol is not FIPS compliant.
+> This is due to the fact that CHAP currently uses MD5 as the only supported
+> digest algorithm and MD5 is not allowed by FIPS.
+> 
+> When FIPS mode is enabled on the target server, the CHAP authentication
+> won't work because the target driver will be prevented from using the MD5 module.
+> 
+> Given that CHAP is agnostic regarding the algorithm it uses, this
+> patchset introduce support for two new alternatives: SHA1 and SHA3-256.
+> 
+> SHA1 has already its own assigned value for its use in CHAP, as reported by IANA:
+> https://www.iana.org/assignments/ppp-numbers/ppp-numbers.xml#ppp-numbers-9
+> On the other hand the use of SHA1 on FIPS-enabled systems has been deprecated
+> and therefore it's not a vialable long term option.
+> 
+> We could consider introducing a more modern hash algorithm like SHA3-256, as
+> this patchset does.
 
-Cheers, David
+But we'll need IANA assignments and IETF consensus before adding new
+algorithms to ensure we have interoperable implementations.
 
- drivers/target/iscsi/iscsi_target.c            | 14 ++++++--------
- drivers/target/iscsi/iscsi_target_auth.c       |  2 +-
- drivers/target/iscsi/iscsi_target_parameters.h |  3 ---
- 3 files changed, 7 insertions(+), 12 deletions(-)
+Adding Dave Black who has helped with IANA interaction in NVMe recently.
