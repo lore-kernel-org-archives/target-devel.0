@@ -1,7 +1,7 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Mon, 02 Sep 2019 08:36:22 +0000
+From: Lee Duncan <LDuncan@suse.com>
+Date: Wed, 04 Sep 2019 22:49:02 +0000
 Subject: Re: [PATCH] target: compare full CHAP_A Algorithm strings
-Message-Id: <20190902103622.0e6e6d54@suse.de>
+Message-Id: <1cfbec10-1a07-d535-1100-fee4fdfa206b@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20190830171611.32540-1-ddiss@suse.de>
 In-Reply-To: <20190830171611.32540-1-ddiss@suse.de>
@@ -10,14 +10,28 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On Fri, 30 Aug 2019 19:16:11 +0200, David Disseldorp wrote:
-
-...
-> LIO currently checks for this value by only comparing a single byte in
-> the tokenized Algorithm string, which means that any value starting with
-> a '5' (e.g. "55") is interpreted as "CHAP with MD5".
-
-FWIW, this can be triggered via a simple libiscsi hack:
-https://github.com/ddiss/libiscsi/commit/a6a41fd002c18edaad5d7df320373ec0232b460d.patch
-
-Cheers, David
+T24gOC8zMC8xOSAxMDoxNiBBTSwgRGF2aWQgRGlzc2VsZG9ycCB3cm90ZToNCj4gUkZDIDIzMDcg
+c3RhdGVzOg0KPiANCj4gICBGb3IgQ0hBUCBbUkZDMTk5NF0sIGluIHRoZSBmaXJzdCBzdGVwLCB0
+aGUgaW5pdGlhdG9yIE1VU1Qgc2VuZDoNCj4gDQo+ICAgICAgIENIQVBfQT08QTEsQTIuLi4+DQo+
+IA0KPiAgICBXaGVyZSBBMSxBMi4uLiBhcmUgcHJvcG9zZWQgYWxnb3JpdGhtcywgaW4gb3JkZXIg
+b2YgcHJlZmVyZW5jZS4NCj4gLi4uDQo+ICAgIEZvciB0aGUgQWxnb3JpdGhtLCBhcyBzdGF0ZWQg
+aW4gW1JGQzE5OTRdLCBvbmUgdmFsdWUgaXMgcmVxdWlyZWQgdG8NCj4gICAgYmUgaW1wbGVtZW50
+ZWQ6DQo+IA0KPiAgICAgICAgNSAgICAgKENIQVAgd2l0aCBNRDUpDQo+IA0KPiBMSU8gY3VycmVu
+dGx5IGNoZWNrcyBmb3IgdGhpcyB2YWx1ZSBieSBvbmx5IGNvbXBhcmluZyBhIHNpbmdsZSBieXRl
+IGluDQo+IHRoZSB0b2tlbml6ZWQgQWxnb3JpdGhtIHN0cmluZywgd2hpY2ggbWVhbnMgdGhhdCBh
+bnkgdmFsdWUgc3RhcnRpbmcgd2l0aA0KPiBhICc1JyAoZS5nLiAiNTUiKSBpcyBpbnRlcnByZXRl
+ZCBhcyAiQ0hBUCB3aXRoIE1ENSIuIEZpeCB0aGlzIGJ5DQo+IGNvbXBhcmluZyB0aGUgZW50aXJl
+IHRva2VuaXplZCBzdHJpbmcuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBEYXZpZCBEaXNzZWxkb3Jw
+IDxkZGlzc0BzdXNlLmRlPg0KPiAtLS0NCj4gIGRyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3Rh
+cmdldF9hdXRoLmMgfCAyICstDQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEg
+ZGVsZXRpb24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RhcmdldC9pc2NzaS9pc2Nz
+aV90YXJnZXRfYXV0aC5jIGIvZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2F1dGgu
+Yw0KPiBpbmRleCA1MWRkY2EyMDMzZTAuLjhmZTliMTJhMDdhNCAxMDA2NDQNCj4gLS0tIGEvZHJp
+dmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2F1dGguYw0KPiArKysgYi9kcml2ZXJzL3Rh
+cmdldC9pc2NzaS9pc2NzaV90YXJnZXRfYXV0aC5jDQo+IEBAIC03MCw3ICs3MCw3IEBAIHN0YXRp
+YyBpbnQgY2hhcF9jaGVja19hbGdvcml0aG0oY29uc3QgY2hhciAqYV9zdHIpDQo+ICAJCWlmICgh
+dG9rZW4pDQo+ICAJCQlnb3RvIG91dDsNCj4gIA0KPiAtCQlpZiAoIXN0cm5jbXAodG9rZW4sICI1
+IiwgMSkpIHsNCj4gKwkJaWYgKCFzdHJjbXAodG9rZW4sICI1IikpIHsNCj4gIAkJCXByX2RlYnVn
+KCJTZWxlY3RlZCBNRDUgQWxnb3JpdGhtXG4iKTsNCj4gIAkJCWtmcmVlKG9yaWcpOw0KPiAgCQkJ
+cmV0dXJuIENIQVBfRElHRVNUX01ENTsNCj4gDQoNClJldmlld2VkLWJ5OiBMZWUgRHVuY2FuIDxs
+ZHVuY2FuQHN1c2UuY29tPg0K
