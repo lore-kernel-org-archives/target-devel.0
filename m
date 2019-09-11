@@ -1,21 +1,21 @@
-From: mlinares@funvisis.gob.ve
-Date: Tue, 17 Sep 2019 22:38:34 +0000
-Subject: RE!! Lening
-Message-Id: <20190918064904.7177C1743B1E@linuxmail.funvisis.gob.ve>
+From: Julian Smith <juliansmith2015@mail.ru>
+Date: Wed, 11 Sep 2019 14:16:02 +0000
+Subject: Inquiry 11/Sept/2019
+Message-Id: <20190911141621.A91A529ACD@mail.qeaudio.ga>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="maccentraleurope"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-CldlIGdldmVuIGxlbmluZ2VuIGFhbiB6YWtlbGlqa2UgbGVuaW5nZW4gYWFuIGludGVybmF0aW9u
-YWxlIGxlbmluZ2VuIHBlcnNvb25saWprZSBsZW5pbmdlbi4gV2lqIGdldmVuIGxlbmluZ2VuIG1l
-dCBlZW4gcmVudGVwZXJjZW50YWdlIHZhbiAyJS4gRGUgbGVuaW5nIHdvcmR0IGdlb3BlbmQgdm9v
-ciBpZWRlcmVlbiBkaWUgZGUgbmF0aW9uYWxpdGVpdCBrZW50LiBVIGJlcmVpa3Qgb25zIHZvb3Ig
-dXcgbGVuaW5nIG9tIHUgZmluYW5jaWVlbCB0ZSBsYXRlbiBiZWdpbm5lbiBlbiB1IHRlIGhlbHBl
-biB1dyBmaW5hbmNp62xlIHByb2JsZWVtIG9wIHRlIGxvc3Nlbi4gCgpJbmRpZW4gdSBlZW4gbGVu
-aW5nIG5vZGlnIGhlZWZ0LCB2dWx0IHUgb25kZXJzdGFhbmQgYWFudnJhYWdmb3JtdWxpZXIgaW4g
-dm9vciBkZSBsZW5pbmcuIAoKVm9sbGVkaWdlIG5hYW0uLi4uLi4uLi4uLi4uLi4uCkxhbmQuLi4u
-Li4uLi4uLi4uLi4uLi4uCkJlZHJhZy4uLi4uLi4uLi4uLi4uLi4uLi4uLgpUZWxlZm9vbm51bW1l
-ci4uLi4uLi4uCkR1dXIgdmFuIGRlIGxlbmluZy4uLi4uLi4uLgpTZXguLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLiAKQmVkYW5rdC4=
+Hi,friend,
+
+This is Julian Smith and i am purchasing manager from E-cloth Co.,LTD in the UK.
+We are glad to know about your company from the web and we are interested in your products.
+Could you kindly send us your Latest catalog and price list for our trial order.
+
+Thanks and Best Regards,
+
+Ms Julian Smith
+Purchasing Manager
+E-cloth Co.,LTD
