@@ -1,95 +1,26 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Mon, 30 Sep 2019 23:22:24 +0000
-Subject: [PATCH] target: Remove tpg_list and se_portal_group.se_tpg_node
-Message-Id: <20190930232224.58980-1-bvanassche@acm.org>
+From: David Disseldorp <ddiss@suse.de>
+Date: Thu, 12 Sep 2019 09:55:44 +0000
+Subject: [PATCH 0/3] target: minor iSCSI parameter parsing fixes
+Message-Id: <20190912095547.22427-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Maintaining tpg_list without ever iterating over it is not useful. Hence
-remove tpg_list. This patch does not change the behavior of the SCSI
-target code.
+This patchset includes some minor fixes for parsing iSCSI CHAP_A and
+SendTargets fields. Patch 1/3 was already submitted and reviewed by
+Lee.
+I used the following libiscsi hacks to test for these bugs:
+https://github.com/ddiss/libiscsi/commits/bogus_chap_a
+https://github.com/ddiss/libiscsi/commits/bogus_sendtarget_key
+https://github.com/ddiss/libiscsi/commits/bogus_sendtarget_val
+I'll work on turning these into propper libiscsi regression tests
+(pending https://github.com/sahlberg/libiscsi/issues/297).
 
-Cc: Mike Christie <mchristie@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.de>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
----
- drivers/target/target_core_tpg.c   | 12 ------------
- drivers/target/target_core_xcopy.c |  1 -
- include/target/target_core_base.h  |  1 -
- 3 files changed, 14 deletions(-)
+Cheers, David
 
-diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index e5a71addbb06..d24e0a3ba3ff 100644
---- a/drivers/target/target_core_tpg.c
-+++ b/drivers/target/target_core_tpg.c
-@@ -32,9 +32,6 @@
- 
- extern struct se_device *g_lun0_dev;
- 
--static DEFINE_SPINLOCK(tpg_lock);
--static LIST_HEAD(tpg_list);
--
- /*	__core_tpg_get_initiator_node_acl():
-  *
-  *	mutex_lock(&tpg->acl_node_mutex); must be held when calling
-@@ -475,7 +472,6 @@ int core_tpg_register(
- 	se_tpg->se_tpg_wwn = se_wwn;
- 	atomic_set(&se_tpg->tpg_pr_ref_count, 0);
- 	INIT_LIST_HEAD(&se_tpg->acl_node_list);
--	INIT_LIST_HEAD(&se_tpg->se_tpg_node);
- 	INIT_LIST_HEAD(&se_tpg->tpg_sess_list);
- 	spin_lock_init(&se_tpg->session_lock);
- 	mutex_init(&se_tpg->tpg_lun_mutex);
-@@ -494,10 +490,6 @@ int core_tpg_register(
- 		}
- 	}
- 
--	spin_lock_bh(&tpg_lock);
--	list_add_tail(&se_tpg->se_tpg_node, &tpg_list);
--	spin_unlock_bh(&tpg_lock);
--
- 	pr_debug("TARGET_CORE[%s]: Allocated portal_group for endpoint: %s, "
- 		 "Proto: %d, Portal Tag: %u\n", se_tpg->se_tpg_tfo->fabric_name,
- 		se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg) ?
-@@ -519,10 +511,6 @@ int core_tpg_deregister(struct se_portal_group *se_tpg)
- 		tfo->tpg_get_wwn(se_tpg) ? tfo->tpg_get_wwn(se_tpg) : NULL,
- 		se_tpg->proto_id, tfo->tpg_get_tag(se_tpg));
- 
--	spin_lock_bh(&tpg_lock);
--	list_del(&se_tpg->se_tpg_node);
--	spin_unlock_bh(&tpg_lock);
--
- 	while (atomic_read(&se_tpg->tpg_pr_ref_count) != 0)
- 		cpu_relax();
- 
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index b9b1e92c6f8d..425c1070de08 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -467,7 +467,6 @@ int target_xcopy_setup_pt(void)
- 	}
- 
- 	memset(&xcopy_pt_tpg, 0, sizeof(struct se_portal_group));
--	INIT_LIST_HEAD(&xcopy_pt_tpg.se_tpg_node);
- 	INIT_LIST_HEAD(&xcopy_pt_tpg.acl_node_list);
- 	INIT_LIST_HEAD(&xcopy_pt_tpg.tpg_sess_list);
- 
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 7c9716fe731e..1728e883b7b2 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -876,7 +876,6 @@ struct se_portal_group {
- 	/* Spinlock for adding/removing sessions */
- 	spinlock_t		session_lock;
- 	struct mutex		tpg_lun_mutex;
--	struct list_head	se_tpg_node;
- 	/* linked list for initiator ACL list */
- 	struct list_head	acl_node_list;
- 	struct hlist_head	tpg_lun_hlist;
--- 
-2.23.0.444.g18eeb5a265-goog
+ drivers/target/iscsi/iscsi_target.c            | 14 ++++++--------
+ drivers/target/iscsi/iscsi_target_auth.c       |  2 +-
+ drivers/target/iscsi/iscsi_target_parameters.h |  3 ---
+ 3 files changed, 7 insertions(+), 12 deletions(-)
