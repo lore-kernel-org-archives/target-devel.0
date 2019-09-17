@@ -1,57 +1,26 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Thu, 12 Sep 2019 09:55:46 +0000
-Subject: [PATCH 2/3] target: fix SendTargets=All string compares
-Message-Id: <20190912095547.22427-3-ddiss@suse.de>
+From: ''Tayeb souami'' <vicenta.sinche@11d03.mspz7.gob.ec>
+Date: Tue, 17 Sep 2019 04:11:29 +0000
+Subject: =?utf-8?q?Wohlt=C3=A4tigkeitsspende_von_2=2E000=2E000_Millionen_Euro?=
+Message-Id: <20190917041139.0B83C4052671B@mail.11d03.mspz7.gob.ec>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-strncmp is currently used for "SendTargets" key and "All" value matching
-without checking for trailing garbage. This means that Text request PDUs
-with garbage such as "SendTargetsPlease=All" and "SendTargets=Alle" are
-processed successfully as if they were "SendTargets=All" requests.
+Lieber Freund,
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
----
- drivers/target/iscsi/iscsi_target.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+Ich bin Herr Tayeb Souami, New Jersey, Vereinigte Staaten von Amerika, der Mega-Gewinner von $ 315million In Mega Millions Jackpot, spende ich an 5 zufällige Personen, wenn Sie diese E-Mail erhalten, dann wurde Ihre E-Mail nach einem Spinball ausgewählt.Ich habe den größten Teil meines Vermögens auf eine Reihe von Wohltätigkeitsorganisationen und Organisationen verteilt.Ich habe mich freiwillig dazu entschieden, die Summe von € 2.000.000,00 an Sie als eine der ausgewählten 5 zu spenden, um meine Gewinne zu überprüfen, sehen Sie bitte meine You Tube Seite unten.
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index d19e051f2bc2..09e55ea0bf5d 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -2189,24 +2189,22 @@ iscsit_process_text_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 		}
- 		goto empty_sendtargets;
- 	}
--	if (strncmp("SendTargets", text_in, 11) != 0) {
-+	if (strncmp("SendTargets=", text_in, 12) != 0) {
- 		pr_err("Received Text Data that is not"
- 			" SendTargets, cannot continue.\n");
- 		goto reject;
- 	}
-+	/* '=' confirmed in strncmp */
- 	text_ptr = strchr(text_in, '=');
--	if (!text_ptr) {
--		pr_err("No \"=\" separator found in Text Data,"
--			"  cannot continue.\n");
--		goto reject;
--	}
--	if (!strncmp("=All", text_ptr, 4)) {
-+	BUG_ON(!text_ptr);
-+	if (!strncmp("=All", text_ptr, 5)) {
- 		cmd->cmd_flags |= ICF_SENDTARGETS_ALL;
- 	} else if (!strncmp("=iqn.", text_ptr, 5) ||
- 		   !strncmp("=eui.", text_ptr, 5)) {
- 		cmd->cmd_flags |= ICF_SENDTARGETS_SINGLE;
- 	} else {
--		pr_err("Unable to locate valid SendTargets=%s value\n", text_ptr);
-+		pr_err("Unable to locate valid SendTargets%s value\n",
-+		       text_ptr);
- 		goto reject;
- 	}
- 
--- 
-2.16.4
+UHR MICH HIER: https://www.youtube.com/watch?v=Z6ui8ZDQ6Ks
+
+Das ist dein Spendencode: [TS530342018]
+
+Antworten Sie mit dem SPENDE-CODE an diese 
+
+E-Mail:Tayebsouam.spende@gmail.com
+
+Ich hoffe, Sie und Ihre Familie glücklich zu machen.
+
+Grüße
+Herr Tayeb Souami
