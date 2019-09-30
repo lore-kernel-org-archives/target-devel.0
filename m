@@ -1,37 +1,95 @@
-From: Lee Duncan <LDuncan@suse.com>
-Date: Wed, 04 Sep 2019 22:49:02 +0000
-Subject: Re: [PATCH] target: compare full CHAP_A Algorithm strings
-Message-Id: <1cfbec10-1a07-d535-1100-fee4fdfa206b@suse.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Mon, 30 Sep 2019 23:22:24 +0000
+Subject: [PATCH] target: Remove tpg_list and se_portal_group.se_tpg_node
+Message-Id: <20190930232224.58980-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190830171611.32540-1-ddiss@suse.de>
-In-Reply-To: <20190830171611.32540-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-T24gOC8zMC8xOSAxMDoxNiBBTSwgRGF2aWQgRGlzc2VsZG9ycCB3cm90ZToNCj4gUkZDIDIzMDcg
-c3RhdGVzOg0KPiANCj4gICBGb3IgQ0hBUCBbUkZDMTk5NF0sIGluIHRoZSBmaXJzdCBzdGVwLCB0
-aGUgaW5pdGlhdG9yIE1VU1Qgc2VuZDoNCj4gDQo+ICAgICAgIENIQVBfQT08QTEsQTIuLi4+DQo+
-IA0KPiAgICBXaGVyZSBBMSxBMi4uLiBhcmUgcHJvcG9zZWQgYWxnb3JpdGhtcywgaW4gb3JkZXIg
-b2YgcHJlZmVyZW5jZS4NCj4gLi4uDQo+ICAgIEZvciB0aGUgQWxnb3JpdGhtLCBhcyBzdGF0ZWQg
-aW4gW1JGQzE5OTRdLCBvbmUgdmFsdWUgaXMgcmVxdWlyZWQgdG8NCj4gICAgYmUgaW1wbGVtZW50
-ZWQ6DQo+IA0KPiAgICAgICAgNSAgICAgKENIQVAgd2l0aCBNRDUpDQo+IA0KPiBMSU8gY3VycmVu
-dGx5IGNoZWNrcyBmb3IgdGhpcyB2YWx1ZSBieSBvbmx5IGNvbXBhcmluZyBhIHNpbmdsZSBieXRl
-IGluDQo+IHRoZSB0b2tlbml6ZWQgQWxnb3JpdGhtIHN0cmluZywgd2hpY2ggbWVhbnMgdGhhdCBh
-bnkgdmFsdWUgc3RhcnRpbmcgd2l0aA0KPiBhICc1JyAoZS5nLiAiNTUiKSBpcyBpbnRlcnByZXRl
-ZCBhcyAiQ0hBUCB3aXRoIE1ENSIuIEZpeCB0aGlzIGJ5DQo+IGNvbXBhcmluZyB0aGUgZW50aXJl
-IHRva2VuaXplZCBzdHJpbmcuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBEYXZpZCBEaXNzZWxkb3Jw
-IDxkZGlzc0BzdXNlLmRlPg0KPiAtLS0NCj4gIGRyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3Rh
-cmdldF9hdXRoLmMgfCAyICstDQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEg
-ZGVsZXRpb24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RhcmdldC9pc2NzaS9pc2Nz
-aV90YXJnZXRfYXV0aC5jIGIvZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2F1dGgu
-Yw0KPiBpbmRleCA1MWRkY2EyMDMzZTAuLjhmZTliMTJhMDdhNCAxMDA2NDQNCj4gLS0tIGEvZHJp
-dmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2F1dGguYw0KPiArKysgYi9kcml2ZXJzL3Rh
-cmdldC9pc2NzaS9pc2NzaV90YXJnZXRfYXV0aC5jDQo+IEBAIC03MCw3ICs3MCw3IEBAIHN0YXRp
-YyBpbnQgY2hhcF9jaGVja19hbGdvcml0aG0oY29uc3QgY2hhciAqYV9zdHIpDQo+ICAJCWlmICgh
-dG9rZW4pDQo+ICAJCQlnb3RvIG91dDsNCj4gIA0KPiAtCQlpZiAoIXN0cm5jbXAodG9rZW4sICI1
-IiwgMSkpIHsNCj4gKwkJaWYgKCFzdHJjbXAodG9rZW4sICI1IikpIHsNCj4gIAkJCXByX2RlYnVn
-KCJTZWxlY3RlZCBNRDUgQWxnb3JpdGhtXG4iKTsNCj4gIAkJCWtmcmVlKG9yaWcpOw0KPiAgCQkJ
-cmV0dXJuIENIQVBfRElHRVNUX01ENTsNCj4gDQoNClJldmlld2VkLWJ5OiBMZWUgRHVuY2FuIDxs
-ZHVuY2FuQHN1c2UuY29tPg0K
+Maintaining tpg_list without ever iterating over it is not useful. Hence
+remove tpg_list. This patch does not change the behavior of the SCSI
+target code.
+
+Cc: Mike Christie <mchristie@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Hannes Reinecke <hare@suse.de>
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/target_core_tpg.c   | 12 ------------
+ drivers/target/target_core_xcopy.c |  1 -
+ include/target/target_core_base.h  |  1 -
+ 3 files changed, 14 deletions(-)
+
+diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
+index e5a71addbb06..d24e0a3ba3ff 100644
+--- a/drivers/target/target_core_tpg.c
++++ b/drivers/target/target_core_tpg.c
+@@ -32,9 +32,6 @@
+ 
+ extern struct se_device *g_lun0_dev;
+ 
+-static DEFINE_SPINLOCK(tpg_lock);
+-static LIST_HEAD(tpg_list);
+-
+ /*	__core_tpg_get_initiator_node_acl():
+  *
+  *	mutex_lock(&tpg->acl_node_mutex); must be held when calling
+@@ -475,7 +472,6 @@ int core_tpg_register(
+ 	se_tpg->se_tpg_wwn = se_wwn;
+ 	atomic_set(&se_tpg->tpg_pr_ref_count, 0);
+ 	INIT_LIST_HEAD(&se_tpg->acl_node_list);
+-	INIT_LIST_HEAD(&se_tpg->se_tpg_node);
+ 	INIT_LIST_HEAD(&se_tpg->tpg_sess_list);
+ 	spin_lock_init(&se_tpg->session_lock);
+ 	mutex_init(&se_tpg->tpg_lun_mutex);
+@@ -494,10 +490,6 @@ int core_tpg_register(
+ 		}
+ 	}
+ 
+-	spin_lock_bh(&tpg_lock);
+-	list_add_tail(&se_tpg->se_tpg_node, &tpg_list);
+-	spin_unlock_bh(&tpg_lock);
+-
+ 	pr_debug("TARGET_CORE[%s]: Allocated portal_group for endpoint: %s, "
+ 		 "Proto: %d, Portal Tag: %u\n", se_tpg->se_tpg_tfo->fabric_name,
+ 		se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg) ?
+@@ -519,10 +511,6 @@ int core_tpg_deregister(struct se_portal_group *se_tpg)
+ 		tfo->tpg_get_wwn(se_tpg) ? tfo->tpg_get_wwn(se_tpg) : NULL,
+ 		se_tpg->proto_id, tfo->tpg_get_tag(se_tpg));
+ 
+-	spin_lock_bh(&tpg_lock);
+-	list_del(&se_tpg->se_tpg_node);
+-	spin_unlock_bh(&tpg_lock);
+-
+ 	while (atomic_read(&se_tpg->tpg_pr_ref_count) != 0)
+ 		cpu_relax();
+ 
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index b9b1e92c6f8d..425c1070de08 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -467,7 +467,6 @@ int target_xcopy_setup_pt(void)
+ 	}
+ 
+ 	memset(&xcopy_pt_tpg, 0, sizeof(struct se_portal_group));
+-	INIT_LIST_HEAD(&xcopy_pt_tpg.se_tpg_node);
+ 	INIT_LIST_HEAD(&xcopy_pt_tpg.acl_node_list);
+ 	INIT_LIST_HEAD(&xcopy_pt_tpg.tpg_sess_list);
+ 
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 7c9716fe731e..1728e883b7b2 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -876,7 +876,6 @@ struct se_portal_group {
+ 	/* Spinlock for adding/removing sessions */
+ 	spinlock_t		session_lock;
+ 	struct mutex		tpg_lun_mutex;
+-	struct list_head	se_tpg_node;
+ 	/* linked list for initiator ACL list */
+ 	struct list_head	acl_node_list;
+ 	struct hlist_head	tpg_lun_hlist;
+-- 
+2.23.0.444.g18eeb5a265-goog
