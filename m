@@ -1,37 +1,48 @@
-From: "Mr Barrister Hans Erich" <dave@dbsoundfactory.com>
-Date: Mon, 07 Oct 2019 12:28:51 +0000
-Subject: RE:PERSONAL LETTER FROM MRS RASHIA AMIRA
-Message-Id: <6$1987-57d4m$-3vgyl5z@tvigk.3fkf330>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary=".F.ED2A68C5DB75."
+From: ACCESS BANK PLC <econgbank@gmail.com>
+Date: Tue, 01 Oct 2019 06:59:14 +0000
+Subject: Darlehen
+Message-Id: <CAHixukou8ekZ4cbLF_dagKcMYnPWHA_c6mVY3zYD_4Q==j32Xg@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
+Grüße dich.
 
---.F.ED2A68C5DB75.
-Content-Type: text/plain;
-Content-Transfer-Encoding: quoted-printable
+Willkommen bei Frau Christabel als Teil ihres Wohlfahrtspaketes
+Anbieten eines Floating Loans mit 2% Zinssatz ohne jegliche Sicherheiten
+Sicherheit. Dies soll Einzelpersonen und Unternehmen helfen, ihre
+Finanzen zu erreichen
+Ziele.
 
-Greetings
+* Persönlicher Kredit (ungesichert)
+* Business-Darlehen (ungesichert)
+* Schuldenkonsolidierungsdarlehen
+* Verbessere dein Zuhause
 
-My name is Barrister Hans Erich.
+Bitte geben Sie uns folgendes an:
+Vollständiger Name.......
+Heimatadresse....
+Telefon:..........
+Handy, Mobiltelefon..........
+Land...........
+Besetzung:........
+Sex:...............
+Alter:..............
+Monatliches Einkommen......
+Benötigte Menge ......
+Darlehensdauer: ...........
+Notwendigkeit für Darlehensantrag .....
+Hast du dich vorher beworben? .........
 
-I have a client who is interested to invest in your country, she is a well=
- known politician in her country and deserve a lucrative investment partne=
-rship with you outside her country without any delay   Please can you mana=
-ge such investment please Kindly reply for further details.
+Alle Antworten sollten an weitergeleitet werden
 
-Your full names --------
+  Frau Christabel
+Darlehensoffizier
+E-Mail: christabelfundinginc2@gmail.com
 
+Sobald wir den Antrag erhalten haben, werden wir Ihren Kredit bearbeiten
+Antrag auf Genehmigung
 
-Your urgent response will be appreciated
-
-Thank you and God bless you.
-
-Barrister Hans Erich
-
-Yours sincerely,
-Barrister Hans Erich
-CONTACT: hanserich9helmut@gmail.com
-
---.F.ED2A68C5DB75.--
+Danke und viele Grüße.
