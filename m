@@ -1,38 +1,64 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Fri, 25 Oct 2019 08:58:00 +0000
-Subject: Re: [PATCH V2 0/3] iscsi: chap: introduce support for SHA1, SHA256 and SHA3-256
-Message-Id: <4a399a7c-e776-7844-1c30-ca41f61ddc3f@redhat.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Wed, 02 Oct 2019 17:09:38 +0000
+Subject: Re: [PATCH 2/3] target: fix SendTargets=All string compares
+Message-Id: <5D94D9D2.7030709@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191017131037.9903-1-mlombard@redhat.com>
-In-Reply-To: <20191017131037.9903-1-mlombard@redhat.com>
+References: <20190912095547.22427-3-ddiss@suse.de>
+In-Reply-To: <20190912095547.22427-3-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Hello,
+On 09/12/2019 04:55 AM, David Disseldorp wrote:
+> strncmp is currently used for "SendTargets" key and "All" value matching
+> without checking for trailing garbage. This means that Text request PDUs
+> with garbage such as "SendTargetsPlease=All" and "SendTargets=Alle" are
+> processed successfully as if they were "SendTargets=All" requests.
+> 
+> Signed-off-by: David Disseldorp <ddiss@suse.de>
+> ---
+>  drivers/target/iscsi/iscsi_target.c | 14 ++++++--------
+>  1 file changed, 6 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+> index d19e051f2bc2..09e55ea0bf5d 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -2189,24 +2189,22 @@ iscsit_process_text_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+>  		}
+>  		goto empty_sendtargets;
+>  	}
+> -	if (strncmp("SendTargets", text_in, 11) != 0) {
+> +	if (strncmp("SendTargets=", text_in, 12) != 0) {
+>  		pr_err("Received Text Data that is not"
+>  			" SendTargets, cannot continue.\n");
+>  		goto reject;
+>  	}
+> +	/* '=' confirmed in strncmp */
+>  	text_ptr = strchr(text_in, '=');
+> -	if (!text_ptr) {
+> -		pr_err("No \"=\" separator found in Text Data,"
+> -			"  cannot continue.\n");
+> -		goto reject;
+> -	}
+> -	if (!strncmp("=All", text_ptr, 4)) {
+> +	BUG_ON(!text_ptr);
+> +	if (!strncmp("=All", text_ptr, 5)) {
 
-Dne 25.10.2019 v 02:20 Martin K. Petersen napsal(a):
-> 
-> Hi Maurizio,
-> 
->> iSCSI with the Challenge-Handshake Authentication Protocol is not FIPS
->> compliant.  This is due to the fact that CHAP currently uses MD5 as
->> the only supported digest algorithm and MD5 is not allowed by FIPS.
->>
->> When FIPS mode is enabled on the target server, the CHAP
->> authentication won't work because the target driver will be prevented
->> from using the MD5 module.
->>
->> Given that CHAP is agnostic regarding the algorithm it uses, this
->> patchset introduce support for three new alternatives: SHA1, SHA256
->> and SHA3-256.
-> 
-> Can you please submit these on top of 5.5/scsi-queue which has your
-> string parsing fixes in place?
-> 
+Why is the count 5 now?
 
-I will rebase on top of 5.5/scsi-queue and send a V3.
+Did the ones below need to be increased too then?
 
-Thanks,
-Maurizio
+>  		cmd->cmd_flags |= ICF_SENDTARGETS_ALL;
+>  	} else if (!strncmp("=iqn.", text_ptr, 5) ||
+>  		   !strncmp("=eui.", text_ptr, 5)) {
+>  		cmd->cmd_flags |= ICF_SENDTARGETS_SINGLE;
+>  	} else {
+> -		pr_err("Unable to locate valid SendTargets=%s value\n", text_ptr);
+> +		pr_err("Unable to locate valid SendTargets%s value\n",
+> +		       text_ptr);
+>  		goto reject;
+>  	}
+>  
+> 
