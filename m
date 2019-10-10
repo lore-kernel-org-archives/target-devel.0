@@ -1,7 +1,7 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Thu, 10 Oct 2019 20:58:12 +0000
+Date: Thu, 10 Oct 2019 21:18:38 +0000
 Subject: Re: Wrong resetting of Logical Unit Number field in CDB
-Message-Id: <5D9F9B64.80505@redhat.com>
+Message-Id: <5D9FA02E.3050909@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <ac680e032540400a8cd7b1bf03361df3@R01UKEXCASM125.r01.fujitsu.local>
 In-Reply-To: <ac680e032540400a8cd7b1bf03361df3@R01UKEXCASM125.r01.fujitsu.local>
@@ -10,103 +10,45 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 10/10/2019 10:41 AM, Bart Van Assche wrote:
-> On 10/10/19 5:07 AM, Bodo Stroesser wrote:
->> On 10/10/19 05:38, Mike Christie wrote:
->>> On 10/08/2019 03:20 PM, bodo.stroesser@ts.fujitsu.com wrote:
->>>> Hi,
->>>>
->>>> We use TCMUser to run userspace tape and changer emulations.
->>>>
->>>> Current tests with a new version of backup SW failed, due to that
->>>> application
->>>> using SECURITY PROTOCOL IN / OUT  SCSI commands.
->>>> The CDBs of these commands in byte 1 contain relevant information that
->>>> is overwritten in passthrough_parse_cdb() / target_core_device.c
->>>>
->>>> This is the related part of the code:
->>>>
->>>>          /*
->>>>           * Clear a lun set in the cdb if the initiator talking to
->>>> use spoke
->>>>           * and old standards version, as we can't assume the
->>>> underlying device
->>>>           * won't choke up on it.
->>>>           */
->>>>          switch (cdb[0]) {
->>>>          case READ_10: /* SBC - RDProtect */
->>>>          case READ_12: /* SBC - RDProtect */
->>>>          case READ_16: /* SBC - RDProtect */
->>>>          case SEND_DIAGNOSTIC: /* SPC - SELF-TEST Code */
->>>>          case VERIFY: /* SBC - VRProtect */
->>>>          case VERIFY_16: /* SBC - VRProtect */
->>>>          case WRITE_VERIFY: /* SBC - VRProtect */
->>>>          case WRITE_VERIFY_12: /* SBC - VRProtect */
->>>>          case MAINTENANCE_IN: /* SPC - Parameter Data Format for SA
->>>> RTPG */
->>>>                  break;
->>>>          default:
->>>>                  cdb[1] &= 0x1f; /* clear logical unit number */
->>>>                  break;
->>>>          }
->>>>
->>>> Obviously the list of command codes for which bits 5,6,7 of byte 1
->>>> are _not_ reset
->>>> is not complete. Now I'm wondering what would be the right fix:
->>>>
->>>> 1) Scan the SCSI specs and add all other missing command codes to
->>>> the list of
->>>>     Codes to skip
->>>>
->>>> 2) Create a list of commands that definitely have the LUN field in
->>>> byte 1 and
->>>>     reset the bits only in those. (Might be better than 1), because
->>>> I expect new
->>>>     commands to not have the LUN field.)
->>>>
->>>> 3) Remove the code entirely, because it is no longer needed / useful
->>>> (?)
->>>>
->>>
->>> My preference would be to remove it like Bart suggested. Maybe we should
->>> make it configurable via a device attribute or backend module flag.
->>>
->>> For the 2 users:
->>>
->>> pscsi - It seems this code was there from the beginning via
->>> transport_generic_prepare_cdb in the original commit. Nick must have
->>> found some initiator where the workaround was needed and I am not sure
->>> if we would break them or not now. Based on the original code's comment
->>> about iscsi my guess is there was some misc iscsi initiator probably in
->>> a boot firmware or some offload card that supported old commands.
->>>
->>> tcmu - We want the raw cdb. I think masking out the above bits was an
->>> accident. It looks like when Andy converted tcmu to use common code the
->>> behavior got brought in for tcmu.
->>>
->> I think, regarding TCMU you both are right, we should skip the code.
->> To avoid the need for an attribute, I'd prefer a new flag in the backend
->> ops. So pscsi can stay unchanged for the moment.
+On 10/10/2019 03:14 PM, Bart Van Assche wrote:
+> On 10/10/19 11:57 AM, Bodo Stroesser wrote:
+>> Hmm. You are right. Ideally only SCSI-2 compliant initiators should
+>> use the LUN field and they should run parallel SCSI only.
 >>
->> If you agree, I would prepare a patch.
+>> OTOH, like Mike already said, we can't know whether there is any SW, FW,
+>> BIOS, ... out there, that still sends such old style CDBs.
+>>
+>> For example: probably SW could send such CDBs by simply using SCSI
+>> generic device on top of a modern initiator. (I hope that's true, I
+>> didn't test ...)
+>> That means, old code can produce old SCSI CDBs even when running
+>> on top of modern HW.
+>>
+>> Do we want to take the risk of breaking such "old stuff"?
 > 
-> SCSI-2 was introduced in 1994 and SCSI-3 was introduced in 1996
-> according to https://en.wikipedia.org/wiki/Parallel_SCSI. Is embedding
-> the LUN in byte one of the CDB something that is only relevant for
-> SCSI-2 parallel adapters? Since the SCSI target code supports receiving
-> SCSI commands over iSCSI, FC and SRP but not through a parallel port,
-> can the SCSI target code ever receive a CDB with a LUN number in byte
-> one of the CDB?
+> Is blindly filtering out the LUN number correct? All initiator code that
+
+I have no idea about other details other than the code comments. I think
+in general that code is wrong:
+
+1. The original comment mentions iscsi and SAM2 but I think the SBC,
+SPC, etc versions iscsi supported no longer supported commands that had
+the LUN in those bits.
+
+2. If we got one of these old commands and we clear the LUN, then we
+have LUN=0 in that field, but the physical (not the lio level hba struct
+but the drivers/scsi one) HBA/driver for the physical device might have
+the physical device at LUN != 0, so I would think firmware might have
+had issues with that.
+
+3. It does not make sense to me why that list is so incomplete. I do not
+understand why only those commands are in that list and not others.
+
+
+> I found and that touches the highest three bits of that byte sets the
+> LUN number in that byte. From the SCSI error handler:
 > 
-
-The code's original said it was for a iscsi issue:
-
-
-/*      transport_generic_prepare_cdb():
- *
- *      Since the Initiator sees iSCSI devices as LUNs,  the SCSI CDB will
- *      contain the iSCSI LUN in bits 7-5 of byte 1 as per SAM-2.
- *      The point of this is since we are mapping iSCSI LUNs to
- *      SCSI Target IDs having a non-zero LUN in the CDB will throw the
- *      devices and HBAs for a loop.
- */
+> if (sdev->scsi_level <= SCSI_2 && sdev->scsi_level != SCSI_UNKNOWN)
+>     scmd->cmnd[1] = (scmd->cmnd[1] & 0x1f)|(sdev->lun << 5 & 0xe0);
+> 
+> Bart.
