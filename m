@@ -1,16 +1,16 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Fri, 11 Oct 2019 19:38:12 +0000
+From: Hannes Reinecke <hare@suse.de>
+Date: Mon, 14 Oct 2019 06:41:10 +0000
 Subject: Re: Wrong resetting of Logical Unit Number field in CDB
-Message-Id: <5DA0DA24.3080707@redhat.com>
+Message-Id: <52e9fbb8-0fd9-cb2c-08ad-e3419da60ac8@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <ac680e032540400a8cd7b1bf03361df3@R01UKEXCASM125.r01.fujitsu.local>
 In-Reply-To: <ac680e032540400a8cd7b1bf03361df3@R01UKEXCASM125.r01.fujitsu.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-3"
+Content-Transfer-Encoding: quoted-printable
 To: target-devel@vger.kernel.org
 
-On 10/11/2019 12:13 PM, Bart Van Assche wrote:
+On 10/11/19 7:13 PM, Bart Van Assche wrote:
 > On 10/11/19 3:12 AM, Bodo Stroesser wrote:
 >> If I understood correctly, we all would prefer to make TCMU completely
 >> transparent regarding the CDB.
@@ -25,7 +25,7 @@ On 10/11/2019 12:13 PM, Bart Van Assche wrote:
 >>
 >> So I agree to Hannes: we should simply move that code from
 >> passthrough_parse_cdb() to pscsi_parse_cdb(), at least as a first step.
-> 
+>=20
 > Hannes wrote "[ ... ] delegate it to pscsi if there is a need." Is there
 > really a need for such code in the SCSI passthrough driver? The upstream
 > SCSI target code is one of the four Linux SCSI target stacks that I know
@@ -38,16 +38,15 @@ On 10/11/2019 12:13 PM, Bart Van Assche wrote:
 > driver nor in its tape passthrough driver. In other words, I do not
 > expect that anyone's setup will be broken by removing
 > passthrough_parse_cdb() entirely.
+>=20
+I guess Bart is right.
+We should just drop it and see if someone's complaining.
 
-I originally thought it was for a really specific case Nick hit a long
-time ago because the code is so odd. However, the original code's
-comment sounds like Nick might have read the specs incorrectly or was
-working off a older iscsi rfc draft. I think this happened in some
-persistent reservation code that is wrong too.
+Cheers,
 
-I think if the code it was for a specific initiator then he would have
-added that in the code comments. For example for a while we had a really
-specific comment about the mac os initiator or qlogic on windows or
-something, and there is still a comment about solaris. If on the other
-hand it was a spec thing then it seems he writes the scsi spec name like
-he did in the original comment.
+Hannes
+--=20
+Dr. Hannes Reinecke		      Teamlead Storage & Networking
+hare@suse.de			                  +49 911 74053 688
+SUSE Software Solutions Germany GmbH, Maxfeldstr. 5, 90409 N=FCrnberg
+HRB 247165 (AG M=FCnchen), GF: Felix Imend=F6rffer
