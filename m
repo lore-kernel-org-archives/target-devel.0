@@ -1,68 +1,48 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 30 Oct 2019 15:55:48 +0000
-Subject: [PATCH AUTOSEL 4.14 17/24] scsi: target: core: Do not overwrite CDB byte 1
-Message-Id: <20191030155555.10494-17-sashal@kernel.org>
+From: "Mr Ekrem Bayraktar" <dave@dbsoundfactory.com>
+Date: Fri, 18 Oct 2019 08:03:38 +0000
+Subject: MOTHERLESS CHILDREN IN YOUR CITY !!
+Message-Id: <kw--59$pjs04q2071u3@z1ttv7h>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary=".4559F..._9_.CC__A02C"
 List-Id: <target-devel.vger.kernel.org>
-References: <20191030155555.10494-1-sashal@kernel.org>
-In-Reply-To: <20191030155555.10494-1-sashal@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Bart Van Assche <bvanassche@acm.org>, Hannes Reinecke <hare@suse.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-[ Upstream commit 27e84243cb63601a10e366afe3e2d05bb03c1cb5 ]
+--.4559F..._9_.CC__A02C
+Content-Type: text/plain;
+Content-Transfer-Encoding: quoted-printable
 
-passthrough_parse_cdb() - used by TCMU and PSCSI - attepts to reset the LUN
-field of SCSI-2 CDBs (bits 5,6,7 of byte 1).  The current code is wrong as
-for newer commands not having the LUN field it overwrites relevant command
-bits (e.g. for SECURITY PROTOCOL IN / OUT). We think this code was
-unnecessary from the beginning or at least it is no longer useful. So we
-remove it entirely.
+Dear Sir / Madam
 
-Link: https://lore.kernel.org/r/12498eab-76fd-eaad-1316-c2827badb76a@ts.fujitsu.com
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/target_core_device.c | 21 ---------------------
- 1 file changed, 21 deletions(-)
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 84742125f7730..92b52d2314b53 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -1151,27 +1151,6 @@ passthrough_parse_cdb(struct se_cmd *cmd,
- 	struct se_device *dev = cmd->se_dev;
- 	unsigned int size;
- 
--	/*
--	 * Clear a lun set in the cdb if the initiator talking to use spoke
--	 * and old standards version, as we can't assume the underlying device
--	 * won't choke up on it.
--	 */
--	switch (cdb[0]) {
--	case READ_10: /* SBC - RDProtect */
--	case READ_12: /* SBC - RDProtect */
--	case READ_16: /* SBC - RDProtect */
--	case SEND_DIAGNOSTIC: /* SPC - SELF-TEST Code */
--	case VERIFY: /* SBC - VRProtect */
--	case VERIFY_16: /* SBC - VRProtect */
--	case WRITE_VERIFY: /* SBC - VRProtect */
--	case WRITE_VERIFY_12: /* SBC - VRProtect */
--	case MAINTENANCE_IN: /* SPC - Parameter Data Format for SA RTPG */
--		break;
--	default:
--		cdb[1] &= 0x1f; /* clear logical unit number */
--		break;
--	}
--
- 	/*
- 	 * For REPORT LUNS we always need to emulate the response, for everything
- 	 * else, pass it up.
--- 
-2.20.1
+
+Since ever we left your country back to Canada , we have gotten Government=
+ approval and we have been busying planning for the less privilege Childre=
+n projects.
+
+We are planning to release first batch of the funds $2,990,000.00 within 1=
+4 days for building an estate for motherless children in your city.
+
+I want you to use my mother;s company name to register this charity projec=
+t in your country after receiving the project funds.
+
+It must be registered as { Bayraktar Group Homeless Children Ltd }.
+
+
+Can you handle and supervise this big project ?
+Can you manager all the workers as a senior supervisor ?
+We want to be sure you can handle it before we proceed with this project.
+
+
+Please call me if you want to hear from us + 1-917 580 4919.
+Please can you manage such project please Kindly reply for further details=
+.
+
+Your full names-----------
+
+
+
+Ekrem Bayraktar.
+Bayraktar Shipping Group
+
+--.4559F..._9_.CC__A02C--
