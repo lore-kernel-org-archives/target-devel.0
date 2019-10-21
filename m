@@ -1,23 +1,32 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Fri, 04 Oct 2019 02:00:49 +0000
-Subject: Re: [PATCH] target: Remove tpg_list and se_portal_group.se_tpg_node
-Message-Id: <yq14l0ps20e.fsf@oracle.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 21 Oct 2019 16:06:18 +0000
+Subject: Re: [PATCH 0/3] target: minor iSCSI parameter parsing fixes
+Message-Id: <5DADD77A.6010903@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20190930232224.58980-1-bvanassche@acm.org>
-In-Reply-To: <20190930232224.58980-1-bvanassche@acm.org>
+References: <20190912095547.22427-1-ddiss@suse.de>
+In-Reply-To: <20190912095547.22427-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+On 09/12/2019 04:55 AM, David Disseldorp wrote:
+> This patchset includes some minor fixes for parsing iSCSI CHAP_A and
+> SendTargets fields. Patch 1/3 was already submitted and reviewed by
+> Lee.
+> I used the following libiscsi hacks to test for these bugs:
+> https://github.com/ddiss/libiscsi/commits/bogus_chap_a
+> https://github.com/ddiss/libiscsi/commits/bogus_sendtarget_key
+> https://github.com/ddiss/libiscsi/commits/bogus_sendtarget_val
+> I'll work on turning these into propper libiscsi regression tests
+> (pending https://github.com/sahlberg/libiscsi/issues/297).
+> 
+> Cheers, David
+> 
+>  drivers/target/iscsi/iscsi_target.c            | 14 ++++++--------
+>  drivers/target/iscsi/iscsi_target_auth.c       |  2 +-
+>  drivers/target/iscsi/iscsi_target_parameters.h |  3 ---
+>  3 files changed, 7 insertions(+), 12 deletions(-)
+> 
 
-Bart,
-
-> Maintaining tpg_list without ever iterating over it is not
-> useful. Hence remove tpg_list. This patch does not change the behavior
-> of the SCSI target code.
-
-Applied to 5.5/scsi-queue. Thank you!
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Reviewed-by: Mike Christie <mchristi@redhat.com>
