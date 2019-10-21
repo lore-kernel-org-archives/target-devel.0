@@ -1,132 +1,70 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Thu, 17 Oct 2019 13:10:37 +0000
-Subject: [PATCH V2 3/3] target-iscsi: rename some variables to avoid confusion.
-Message-Id: <20191017131037.9903-4-mlombard@redhat.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Mon, 21 Oct 2019 14:20:42 +0000
+Subject: [PATCH -next] scsi: cxgb4i: remove set but not used variable 'ppmax'
+Message-Id: <20191021142042.30964-1-yuehaibing@huawei.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: kxie@chelsio.com, jejb@linux.ibm.com, martin.petersen@oracle.com, bvanassche@acm.org, davem@davemloft.net, tglx@linutronix.de, info@metux.net, kstewart@linuxfoundation.org, yuehaibing@huawei.com, varun@chelsio.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org
 
-This patch renames some variables in chap_server_compute_hash()
-to make it harder to confuse the initiator's challenge with
-the target's challenge when the mutual chap authentication is used.
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+drivers/scsi/cxgbi/cxgb4i/cxgb4i.c:2076:15:
+ warning: variable ppmax set but not used [-Wunused-but-set-variable]
+drivers/target/iscsi/cxgbit/cxgbit_ddp.c:300:15:
+ warning: variable ppmax set but not used [-Wunused-but-set-variable]
+
+It is not used since commit a248384e6420 ("cxgb4/libcxgb/
+cxgb4i/cxgbit: enable eDRAM page pods for iSCSI")
+
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/target/iscsi/iscsi_target_auth.c | 40 ++++++++++++------------
- 1 file changed, 20 insertions(+), 20 deletions(-)
+ drivers/scsi/cxgbi/cxgb4i/cxgb4i.c       | 2 --
+ drivers/target/iscsi/cxgbit/cxgbit_ddp.c | 3 ---
+ 2 files changed, 5 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index f3973ab19da2..0e54627d9aa8 100644
---- a/drivers/target/iscsi/iscsi_target_auth.c
-+++ b/drivers/target/iscsi/iscsi_target_auth.c
-@@ -215,8 +215,8 @@ static int chap_server_compute_hash(
- 	unsigned long id;
- 	unsigned char id_as_uchar;
- 	unsigned char type;
--	unsigned char identifier[10], *challenge = NULL;
--	unsigned char *challenge_binhex = NULL;
-+	unsigned char identifier[10], *initiatorchg = NULL;
-+	unsigned char *initiatorchg_binhex = NULL;
- 	unsigned char *digest = NULL;
- 	unsigned char *response = NULL;
- 	unsigned char *client_digest = NULL;
-@@ -226,7 +226,7 @@ static int chap_server_compute_hash(
- 	struct iscsi_chap *chap = conn->auth_protocol;
- 	struct crypto_shash *tfm = NULL;
- 	struct shash_desc *desc = NULL;
--	int auth_ret = -1, ret, challenge_len;
-+	int auth_ret = -1, ret, initiatorchg_len;
+diff --git a/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c b/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c
+index da50e87..bc1086a 100644
+--- a/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c
++++ b/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c
+@@ -2073,7 +2073,6 @@ static int cxgb4i_ddp_init(struct cxgbi_device *cdev)
+ 	struct cxgb4_lld_info *lldi = cxgbi_cdev_priv(cdev);
+ 	struct net_device *ndev = cdev->ports[0];
+ 	struct cxgbi_tag_format tformat;
+-	unsigned int ppmax;
+ 	int i, err;
  
- 	digest = kzalloc(chap->digest_size, GFP_KERNEL);
- 	if (!digest) {
-@@ -256,15 +256,15 @@ static int chap_server_compute_hash(
- 	memset(chap_n, 0, MAX_CHAP_N_SIZE);
- 	memset(chap_r, 0, MAX_RESPONSE_LENGTH);
- 
--	challenge = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
--	if (!challenge) {
-+	initiatorchg = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
-+	if (!initiatorchg) {
- 		pr_err("Unable to allocate challenge buffer\n");
- 		goto out;
+ 	if (!lldi->vr->iscsi.size) {
+@@ -2082,7 +2081,6 @@ static int cxgb4i_ddp_init(struct cxgbi_device *cdev)
  	}
  
--	challenge_binhex = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
--	if (!challenge_binhex) {
--		pr_err("Unable to allocate challenge_binhex buffer\n");
-+	initiatorchg_binhex = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
-+	if (!initiatorchg_binhex) {
-+		pr_err("Unable to allocate initiatorchg_binhex buffer\n");
- 		goto out;
+ 	cdev->flags |= CXGBI_FLAG_USE_PPOD_OFLDQ;
+-	ppmax = lldi->vr->iscsi.size >> PPOD_SIZE_SHIFT;
+ 
+ 	memset(&tformat, 0, sizeof(struct cxgbi_tag_format));
+ 	for (i = 0; i < 4; i++)
+diff --git a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
+index 54bb1eb..af35251 100644
+--- a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
++++ b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
+@@ -297,7 +297,6 @@ int cxgbit_ddp_init(struct cxgbit_device *cdev)
+ 	struct cxgb4_lld_info *lldi = &cdev->lldi;
+ 	struct net_device *ndev = cdev->lldi.ports[0];
+ 	struct cxgbi_tag_format tformat;
+-	unsigned int ppmax;
+ 	int ret, i;
+ 
+ 	if (!lldi->vr->iscsi.size) {
+@@ -305,8 +304,6 @@ int cxgbit_ddp_init(struct cxgbit_device *cdev)
+ 		return -EACCES;
  	}
- 	/*
-@@ -399,7 +399,7 @@ static int chap_server_compute_hash(
- 	 * Get CHAP_C.
- 	 */
- 	if (extract_param(nr_in_ptr, "CHAP_C", CHAP_CHALLENGE_STR_LEN,
--			challenge, &type) < 0) {
-+			initiatorchg, &type) < 0) {
- 		pr_err("Could not find CHAP_C.\n");
- 		goto out;
- 	}
-@@ -408,28 +408,28 @@ static int chap_server_compute_hash(
- 		pr_err("Could not find CHAP_C.\n");
- 		goto out;
- 	}
--	challenge_len = DIV_ROUND_UP(strlen(challenge), 2);
--	if (!challenge_len) {
-+	initiatorchg_len = DIV_ROUND_UP(strlen(initiatorchg), 2);
-+	if (!initiatorchg_len) {
- 		pr_err("Unable to convert incoming challenge\n");
- 		goto out;
- 	}
--	if (challenge_len > 1024) {
-+	if (initiatorchg_len > 1024) {
- 		pr_err("CHAP_C exceeds maximum binary size of 1024 bytes\n");
- 		goto out;
- 	}
--	if (hex2bin(challenge_binhex, challenge, challenge_len) < 0) {
-+	if (hex2bin(initiatorchg_binhex, initiatorchg, initiatorchg_len) < 0) {
- 		pr_err("Malformed CHAP_C\n");
- 		goto out;
- 	}
--	pr_debug("[server] Got CHAP_C=%s\n", challenge);
-+	pr_debug("[server] Got CHAP_C=%s\n", initiatorchg);
- 	/*
- 	 * During mutual authentication, the CHAP_C generated by the
- 	 * initiator must not match the original CHAP_C generated by
- 	 * the target.
- 	 */
--	if (challenge_len = chap->challenge_len &&
--				!memcmp(challenge_binhex, chap->challenge,
--				challenge_len)) {
-+	if (initiatorchg_len = chap->challenge_len &&
-+				!memcmp(initiatorchg_binhex, chap->challenge,
-+				initiatorchg_len)) {
- 		pr_err("initiator CHAP_C matches target CHAP_C, failing"
- 		       " login attempt\n");
- 		goto out;
-@@ -461,7 +461,7 @@ static int chap_server_compute_hash(
- 	/*
- 	 * Convert received challenge to binary hex.
- 	 */
--	ret = crypto_shash_finup(desc, challenge_binhex, challenge_len,
-+	ret = crypto_shash_finup(desc, initiatorchg_binhex, initiatorchg_len,
- 				 digest);
- 	if (ret < 0) {
- 		pr_err("crypto_shash_finup() failed for ma challenge\n");
-@@ -487,8 +487,8 @@ static int chap_server_compute_hash(
- 	kzfree(desc);
- 	if (tfm)
- 		crypto_free_shash(tfm);
--	kfree(challenge);
--	kfree(challenge_binhex);
-+	kfree(initiatorchg);
-+	kfree(initiatorchg_binhex);
- 	kfree(digest);
- 	kfree(response);
- 	kfree(server_digest);
+ 
+-	ppmax = lldi->vr->iscsi.size >> PPOD_SIZE_SHIFT;
+-
+ 	memset(&tformat, 0, sizeof(struct cxgbi_tag_format));
+ 	for (i = 0; i < 4; i++)
+ 		tformat.pgsz_order[i] = (lldi->iscsi_pgsz_order >> (i << 3))
 -- 
-Maurizio Lombardi
+2.7.4
