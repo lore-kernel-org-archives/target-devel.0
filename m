@@ -1,68 +1,136 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 30 Oct 2019 15:56:57 +0000
-Subject: [PATCH AUTOSEL 4.9 15/18] scsi: target: core: Do not overwrite CDB byte 1
-Message-Id: <20191030155700.10748-15-sashal@kernel.org>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Mon, 28 Oct 2019 12:38:21 +0000
+Subject: [PATCH V3 2/3] target-iscsi: tie the challenge length to the hash digest size
+Message-Id: <20191028123822.5864-3-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191030155700.10748-1-sashal@kernel.org>
-In-Reply-To: <20191030155700.10748-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Bart Van Assche <bvanassche@acm.org>, Hannes Reinecke <hare@suse.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+The open-iscsi initiator uses the digest size to determine the
+length of the challenge values it sends to the target.
+This patch modifies the target driver to behave in the same way.
 
-[ Upstream commit 27e84243cb63601a10e366afe3e2d05bb03c1cb5 ]
-
-passthrough_parse_cdb() - used by TCMU and PSCSI - attepts to reset the LUN
-field of SCSI-2 CDBs (bits 5,6,7 of byte 1).  The current code is wrong as
-for newer commands not having the LUN field it overwrites relevant command
-bits (e.g. for SECURITY PROTOCOL IN / OUT). We think this code was
-unnecessary from the beginning or at least it is no longer useful. So we
-remove it entirely.
-
-Link: https://lore.kernel.org/r/12498eab-76fd-eaad-1316-c2827badb76a@ts.fujitsu.com
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-Reviewed-by: Hannes Reinecke <hare@suse.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
 ---
- drivers/target/target_core_device.c | 21 ---------------------
- 1 file changed, 21 deletions(-)
+ drivers/target/iscsi/iscsi_target_auth.c | 37 +++++++++++++++++-------
+ drivers/target/iscsi/iscsi_target_auth.h |  4 +--
+ 2 files changed, 28 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index cc38a3509f78c..c3d576ed6f135 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -1046,27 +1046,6 @@ passthrough_parse_cdb(struct se_cmd *cmd,
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index b09f20842e40..f3973ab19da2 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -41,16 +41,21 @@ static int chap_gen_challenge(
+ 	unsigned int *c_len)
  {
- 	unsigned char *cdb = cmd->t_task_cdb;
+ 	int ret;
+-	unsigned char challenge_asciihex[CHAP_CHALLENGE_LENGTH * 2 + 1];
++	unsigned char *challenge_asciihex;
+ 	struct iscsi_chap *chap = conn->auth_protocol;
  
--	/*
--	 * Clear a lun set in the cdb if the initiator talking to use spoke
--	 * and old standards version, as we can't assume the underlying device
--	 * won't choke up on it.
--	 */
--	switch (cdb[0]) {
--	case READ_10: /* SBC - RDProtect */
--	case READ_12: /* SBC - RDProtect */
--	case READ_16: /* SBC - RDProtect */
--	case SEND_DIAGNOSTIC: /* SPC - SELF-TEST Code */
--	case VERIFY: /* SBC - VRProtect */
--	case VERIFY_16: /* SBC - VRProtect */
--	case WRITE_VERIFY: /* SBC - VRProtect */
--	case WRITE_VERIFY_12: /* SBC - VRProtect */
--	case MAINTENANCE_IN: /* SPC - Parameter Data Format for SA RTPG */
--		break;
--	default:
--		cdb[1] &= 0x1f; /* clear logical unit number */
--		break;
--	}
--
+-	memset(challenge_asciihex, 0, CHAP_CHALLENGE_LENGTH * 2 + 1);
++	challenge_asciihex = kzalloc(chap->challenge_len * 2 + 1, GFP_KERNEL);
++	if (!challenge_asciihex)
++		return -ENOMEM;
+ 
+-	ret = get_random_bytes_wait(chap->challenge, CHAP_CHALLENGE_LENGTH);
++	memset(chap->challenge, 0, MAX_CHAP_CHALLENGE_LEN);
++
++	ret = get_random_bytes_wait(chap->challenge, chap->challenge_len);
+ 	if (unlikely(ret))
+-		return ret;
++		goto out;
++
+ 	bin2hex(challenge_asciihex, chap->challenge,
+-				CHAP_CHALLENGE_LENGTH);
++				chap->challenge_len);
  	/*
- 	 * For REPORT LUNS we always need to emulate the response, for everything
- 	 * else, pass it up.
+ 	 * Set CHAP_C, and copy the generated challenge into c_str.
+ 	 */
+@@ -59,7 +64,10 @@ static int chap_gen_challenge(
+ 
+ 	pr_debug("[%s] Sending CHAP_C=0x%s\n\n", (caller) ? "server" : "client",
+ 			challenge_asciihex);
+-	return 0;
++
++out:
++	kfree(challenge_asciihex);
++	return ret;
+ }
+ 
+ static int chap_test_algorithm(const char *name)
+@@ -171,6 +179,9 @@ static struct iscsi_chap *chap_server_open(
+ 
+ 	chap->digest_name = chap_get_digest_name(digest_type);
+ 
++	/* Tie the challenge length to the digest size */
++	chap->challenge_len = chap->digest_size;
++
+ 	pr_debug("[server] Got CHAP_A=%d\n", digest_type);
+ 	*aic_len = sprintf(aic_str, "CHAP_A=%d", digest_type);
+ 	*aic_len += 1;
+@@ -334,21 +345,23 @@ static int chap_server_compute_hash(
+ 	}
+ 
+ 	ret = crypto_shash_finup(desc, chap->challenge,
+-				 CHAP_CHALLENGE_LENGTH, server_digest);
++				 chap->challenge_len, server_digest);
+ 	if (ret < 0) {
+ 		pr_err("crypto_shash_finup() failed for challenge\n");
+ 		goto out;
+ 	}
+ 
+ 	bin2hex(response, server_digest, chap->digest_size);
+-	pr_debug("[server] %s Server Digest: %s\n", hash_name, response);
++	pr_debug("[server] %s Server Digest: %s\n",
++		chap->digest_name, response);
+ 
+ 	if (memcmp(server_digest, client_digest, chap->digest_size) != 0) {
+-		pr_debug("[server] %s Digests do not match!\n\n", hash_name);
++		pr_debug("[server] %s Digests do not match!\n\n",
++			chap->digest_name);
+ 		goto out;
+ 	} else
+ 		pr_debug("[server] %s Digests match, CHAP connection"
+-				" successful.\n\n", hash_name);
++				" successful.\n\n", chap->digest_name);
+ 	/*
+ 	 * One way authentication has succeeded, return now if mutual
+ 	 * authentication is not enabled.
+@@ -414,7 +427,9 @@ static int chap_server_compute_hash(
+ 	 * initiator must not match the original CHAP_C generated by
+ 	 * the target.
+ 	 */
+-	if (!memcmp(challenge_binhex, chap->challenge, CHAP_CHALLENGE_LENGTH)) {
++	if (challenge_len == chap->challenge_len &&
++				!memcmp(challenge_binhex, chap->challenge,
++				challenge_len)) {
+ 		pr_err("initiator CHAP_C matches target CHAP_C, failing"
+ 		       " login attempt\n");
+ 		goto out;
+diff --git a/drivers/target/iscsi/iscsi_target_auth.h b/drivers/target/iscsi/iscsi_target_auth.h
+index 93db1ab5516c..fc75c1c20e23 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.h
++++ b/drivers/target/iscsi/iscsi_target_auth.h
+@@ -10,7 +10,7 @@
+ #define CHAP_DIGEST_SHA256	7
+ #define CHAP_DIGEST_SHA3_256	8
+ 
+-#define CHAP_CHALLENGE_LENGTH	16
++#define MAX_CHAP_CHALLENGE_LEN	32
+ #define CHAP_CHALLENGE_STR_LEN	4096
+ #define MAX_RESPONSE_LENGTH	128	/* sufficient for SHA3 256 */
+ #define	MAX_CHAP_N_SIZE		512
+@@ -34,7 +34,7 @@ extern u32 chap_main_loop(struct iscsi_conn *, struct iscsi_node_auth *, char *,
+ 
+ struct iscsi_chap {
+ 	unsigned char	id;
+-	unsigned char	challenge[CHAP_CHALLENGE_LENGTH];
++	unsigned char	challenge[MAX_CHAP_CHALLENGE_LEN];
+ 	unsigned int	challenge_len;
+ 	unsigned char	*digest_name;
+ 	unsigned int	digest_size;
 -- 
-2.20.1
+Maurizio Lombardi
