@@ -1,48 +1,135 @@
-From: "Mr Ekrem Bayraktar" <dave@dbsoundfactory.com>
-Date: Fri, 18 Oct 2019 08:03:38 +0000
-Subject: MOTHERLESS CHILDREN IN YOUR CITY !!
-Message-Id: <kw--59$pjs04q2071u3@z1ttv7h>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary=".4559F..._9_.CC__A02C"
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Mon, 28 Oct 2019 12:38:22 +0000
+Subject: [PATCH V3 3/3] target-iscsi: rename some variables to avoid confusion.
+Message-Id: <20191028123822.5864-4-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+This patch renames some variables in chap_server_compute_hash()
+to avoid confusing the initiator's challenge with
+the target's challenge when the mutual chap authentication is used.
 
---.4559F..._9_.CC__A02C
-Content-Type: text/plain;
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/target/iscsi/iscsi_target_auth.c | 43 ++++++++++++------------
+ 1 file changed, 22 insertions(+), 21 deletions(-)
 
-Dear Sir / Madam
-
-
-
-Since ever we left your country back to Canada , we have gotten Government=
- approval and we have been busying planning for the less privilege Childre=
-n projects.
-
-We are planning to release first batch of the funds $2,990,000.00 within 1=
-4 days for building an estate for motherless children in your city.
-
-I want you to use my mother;s company name to register this charity projec=
-t in your country after receiving the project funds.
-
-It must be registered as { Bayraktar Group Homeless Children Ltd }.
-
-
-Can you handle and supervise this big project ?
-Can you manager all the workers as a senior supervisor ?
-We want to be sure you can handle it before we proceed with this project.
-
-
-Please call me if you want to hear from us + 1-917 580 4919.
-Please can you manage such project please Kindly reply for further details=
-.
-
-Your full names-----------
-
-
-
-Ekrem Bayraktar.
-Bayraktar Shipping Group
-
---.4559F..._9_.CC__A02C--
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index f3973ab19da2..09c6bde0a978 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -215,8 +215,8 @@ static int chap_server_compute_hash(
+ 	unsigned long id;
+ 	unsigned char id_as_uchar;
+ 	unsigned char type;
+-	unsigned char identifier[10], *challenge = NULL;
+-	unsigned char *challenge_binhex = NULL;
++	unsigned char identifier[10], *client_challenge = NULL;
++	unsigned char *client_challenge_binhex = NULL;
+ 	unsigned char *digest = NULL;
+ 	unsigned char *response = NULL;
+ 	unsigned char *client_digest = NULL;
+@@ -226,7 +226,7 @@ static int chap_server_compute_hash(
+ 	struct iscsi_chap *chap = conn->auth_protocol;
+ 	struct crypto_shash *tfm = NULL;
+ 	struct shash_desc *desc = NULL;
+-	int auth_ret = -1, ret, challenge_len;
++	int auth_ret = -1, ret, client_challenge_len;
+ 
+ 	digest = kzalloc(chap->digest_size, GFP_KERNEL);
+ 	if (!digest) {
+@@ -256,15 +256,15 @@ static int chap_server_compute_hash(
+ 	memset(chap_n, 0, MAX_CHAP_N_SIZE);
+ 	memset(chap_r, 0, MAX_RESPONSE_LENGTH);
+ 
+-	challenge = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
+-	if (!challenge) {
++	client_challenge = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
++	if (!client_challenge) {
+ 		pr_err("Unable to allocate challenge buffer\n");
+ 		goto out;
+ 	}
+ 
+-	challenge_binhex = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
+-	if (!challenge_binhex) {
+-		pr_err("Unable to allocate challenge_binhex buffer\n");
++	client_challenge_binhex = kzalloc(CHAP_CHALLENGE_STR_LEN, GFP_KERNEL);
++	if (!client_challenge_binhex) {
++		pr_err("Unable to allocate client_challenge_binhex buffer\n");
+ 		goto out;
+ 	}
+ 	/*
+@@ -399,7 +399,7 @@ static int chap_server_compute_hash(
+ 	 * Get CHAP_C.
+ 	 */
+ 	if (extract_param(nr_in_ptr, "CHAP_C", CHAP_CHALLENGE_STR_LEN,
+-			challenge, &type) < 0) {
++			client_challenge, &type) < 0) {
+ 		pr_err("Could not find CHAP_C.\n");
+ 		goto out;
+ 	}
+@@ -408,28 +408,29 @@ static int chap_server_compute_hash(
+ 		pr_err("Could not find CHAP_C.\n");
+ 		goto out;
+ 	}
+-	challenge_len = DIV_ROUND_UP(strlen(challenge), 2);
+-	if (!challenge_len) {
++	client_challenge_len = DIV_ROUND_UP(strlen(client_challenge), 2);
++	if (!client_challenge_len) {
+ 		pr_err("Unable to convert incoming challenge\n");
+ 		goto out;
+ 	}
+-	if (challenge_len > 1024) {
++	if (client_challenge_len > 1024) {
+ 		pr_err("CHAP_C exceeds maximum binary size of 1024 bytes\n");
+ 		goto out;
+ 	}
+-	if (hex2bin(challenge_binhex, challenge, challenge_len) < 0) {
++	if (hex2bin(client_challenge_binhex, client_challenge,
++		    client_challenge_len) < 0) {
+ 		pr_err("Malformed CHAP_C\n");
+ 		goto out;
+ 	}
+-	pr_debug("[server] Got CHAP_C=%s\n", challenge);
++	pr_debug("[server] Got CHAP_C=%s\n", client_challenge);
+ 	/*
+ 	 * During mutual authentication, the CHAP_C generated by the
+ 	 * initiator must not match the original CHAP_C generated by
+ 	 * the target.
+ 	 */
+-	if (challenge_len == chap->challenge_len &&
+-				!memcmp(challenge_binhex, chap->challenge,
+-				challenge_len)) {
++	if (client_challenge_len == chap->challenge_len &&
++				!memcmp(client_challenge_binhex,
++				chap->challenge, client_challenge_len)) {
+ 		pr_err("initiator CHAP_C matches target CHAP_C, failing"
+ 		       " login attempt\n");
+ 		goto out;
+@@ -461,8 +462,8 @@ static int chap_server_compute_hash(
+ 	/*
+ 	 * Convert received challenge to binary hex.
+ 	 */
+-	ret = crypto_shash_finup(desc, challenge_binhex, challenge_len,
+-				 digest);
++	ret = crypto_shash_finup(desc, client_challenge_binhex,
++				 client_challenge_len, digest);
+ 	if (ret < 0) {
+ 		pr_err("crypto_shash_finup() failed for ma challenge\n");
+ 		goto out;
+@@ -487,8 +488,8 @@ static int chap_server_compute_hash(
+ 	kzfree(desc);
+ 	if (tfm)
+ 		crypto_free_shash(tfm);
+-	kfree(challenge);
+-	kfree(challenge_binhex);
++	kfree(client_challenge);
++	kfree(client_challenge_binhex);
+ 	kfree(digest);
+ 	kfree(response);
+ 	kfree(server_digest);
+-- 
+Maurizio Lombardi
