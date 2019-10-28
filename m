@@ -1,14 +1,14 @@
 From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Thu, 17 Oct 2019 13:10:35 +0000
-Subject: [PATCH V2 1/3] target-iscsi: CHAP: add support to SHA1, SHA256 and SHA3-256 hash functions
-Message-Id: <20191017131037.9903-2-mlombard@redhat.com>
+Date: Mon, 28 Oct 2019 12:38:20 +0000
+Subject: [PATCH V3 1/3] target-iscsi: CHAP: add support to SHA1, SHA256 and SHA3-256 hash functions
+Message-Id: <20191028123822.5864-2-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-This patches modifies the chap_server_compute_hash() function
+This patch modifies the chap_server_compute_hash() function
 to make it agnostic to the choice of hash algorithm that is used.
 It also adds support to three new hash algorithms: SHA1, SHA256
 and SHA3-256.
@@ -23,7 +23,7 @@ Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
  2 files changed, 120 insertions(+), 62 deletions(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index 51ddca2033e0..b09f20842e40 100644
+index 8fe9b12a07a4..b09f20842e40 100644
 --- a/drivers/target/iscsi/iscsi_target_auth.c
 +++ b/drivers/target/iscsi/iscsi_target_auth.c
 @@ -18,6 +18,22 @@
@@ -78,7 +78,7 @@ index 51ddca2033e0..b09f20842e40 100644
  		if (!token)
  			goto out;
  
--		if (!strncmp(token, "5", 1)) {
+-		if (!strcmp(token, "5")) {
 -			pr_debug("Selected MD5 Algorithm\n");
 -			kfree(orig);
 -			return CHAP_DIGEST_MD5;
@@ -313,7 +313,7 @@ index 51ddca2033e0..b09f20842e40 100644
  	struct iscsi_node_auth *auth,
 @@ -448,7 +499,7 @@ u32 chap_main_loop(
  		return 0;
- 	} else if (chap->chap_state = CHAP_STAGE_SERVER_AIC) {
+ 	} else if (chap->chap_state == CHAP_STAGE_SERVER_AIC) {
  		convert_null_to_semi(in_text, *in_len);
 -		if (chap_got_response(conn, auth, in_text, out_text,
 +		if (chap_server_compute_hash(conn, auth, in_text, out_text,
