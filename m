@@ -1,70 +1,68 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Mon, 21 Oct 2019 14:20:42 +0000
-Subject: [PATCH -next] scsi: cxgb4i: remove set but not used variable 'ppmax'
-Message-Id: <20191021142042.30964-1-yuehaibing@huawei.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 30 Oct 2019 15:57:48 +0000
+Subject: [PATCH AUTOSEL 4.4 10/13] scsi: target: core: Do not overwrite CDB byte 1
+Message-Id: <20191030155751.10960-10-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20191030155751.10960-1-sashal@kernel.org>
+In-Reply-To: <20191030155751.10960-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kxie@chelsio.com, jejb@linux.ibm.com, martin.petersen@oracle.com, bvanassche@acm.org, davem@davemloft.net, tglx@linutronix.de, info@metux.net, kstewart@linuxfoundation.org, yuehaibing@huawei.com, varun@chelsio.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Bart Van Assche <bvanassche@acm.org>, Hannes Reinecke <hare@suse.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-drivers/scsi/cxgbi/cxgb4i/cxgb4i.c:2076:15:
- warning: variable ppmax set but not used [-Wunused-but-set-variable]
-drivers/target/iscsi/cxgbit/cxgbit_ddp.c:300:15:
- warning: variable ppmax set but not used [-Wunused-but-set-variable]
+[ Upstream commit 27e84243cb63601a10e366afe3e2d05bb03c1cb5 ]
 
-It is not used since commit a248384e6420 ("cxgb4/libcxgb/
-cxgb4i/cxgbit: enable eDRAM page pods for iSCSI")
+passthrough_parse_cdb() - used by TCMU and PSCSI - attepts to reset the LUN
+field of SCSI-2 CDBs (bits 5,6,7 of byte 1).  The current code is wrong as
+for newer commands not having the LUN field it overwrites relevant command
+bits (e.g. for SECURITY PROTOCOL IN / OUT). We think this code was
+unnecessary from the beginning or at least it is no longer useful. So we
+remove it entirely.
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Link: https://lore.kernel.org/r/12498eab-76fd-eaad-1316-c2827badb76a@ts.fujitsu.com
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/scsi/cxgbi/cxgb4i/cxgb4i.c       | 2 --
- drivers/target/iscsi/cxgbit/cxgbit_ddp.c | 3 ---
- 2 files changed, 5 deletions(-)
+ drivers/target/target_core_device.c | 21 ---------------------
+ 1 file changed, 21 deletions(-)
 
-diff --git a/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c b/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c
-index da50e87..bc1086a 100644
---- a/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c
-+++ b/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c
-@@ -2073,7 +2073,6 @@ static int cxgb4i_ddp_init(struct cxgbi_device *cdev)
- 	struct cxgb4_lld_info *lldi = cxgbi_cdev_priv(cdev);
- 	struct net_device *ndev = cdev->ports[0];
- 	struct cxgbi_tag_format tformat;
--	unsigned int ppmax;
- 	int i, err;
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index bb6a6c35324ae..4198ed4ac6073 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -1056,27 +1056,6 @@ passthrough_parse_cdb(struct se_cmd *cmd,
+ {
+ 	unsigned char *cdb = cmd->t_task_cdb;
  
- 	if (!lldi->vr->iscsi.size) {
-@@ -2082,7 +2081,6 @@ static int cxgb4i_ddp_init(struct cxgbi_device *cdev)
- 	}
- 
- 	cdev->flags |= CXGBI_FLAG_USE_PPOD_OFLDQ;
--	ppmax = lldi->vr->iscsi.size >> PPOD_SIZE_SHIFT;
- 
- 	memset(&tformat, 0, sizeof(struct cxgbi_tag_format));
- 	for (i = 0; i < 4; i++)
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-index 54bb1eb..af35251 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-@@ -297,7 +297,6 @@ int cxgbit_ddp_init(struct cxgbit_device *cdev)
- 	struct cxgb4_lld_info *lldi = &cdev->lldi;
- 	struct net_device *ndev = cdev->lldi.ports[0];
- 	struct cxgbi_tag_format tformat;
--	unsigned int ppmax;
- 	int ret, i;
- 
- 	if (!lldi->vr->iscsi.size) {
-@@ -305,8 +304,6 @@ int cxgbit_ddp_init(struct cxgbit_device *cdev)
- 		return -EACCES;
- 	}
- 
--	ppmax = lldi->vr->iscsi.size >> PPOD_SIZE_SHIFT;
+-	/*
+-	 * Clear a lun set in the cdb if the initiator talking to use spoke
+-	 * and old standards version, as we can't assume the underlying device
+-	 * won't choke up on it.
+-	 */
+-	switch (cdb[0]) {
+-	case READ_10: /* SBC - RDProtect */
+-	case READ_12: /* SBC - RDProtect */
+-	case READ_16: /* SBC - RDProtect */
+-	case SEND_DIAGNOSTIC: /* SPC - SELF-TEST Code */
+-	case VERIFY: /* SBC - VRProtect */
+-	case VERIFY_16: /* SBC - VRProtect */
+-	case WRITE_VERIFY: /* SBC - VRProtect */
+-	case WRITE_VERIFY_12: /* SBC - VRProtect */
+-	case MAINTENANCE_IN: /* SPC - Parameter Data Format for SA RTPG */
+-		break;
+-	default:
+-		cdb[1] &= 0x1f; /* clear logical unit number */
+-		break;
+-	}
 -
- 	memset(&tformat, 0, sizeof(struct cxgbi_tag_format));
- 	for (i = 0; i < 4; i++)
- 		tformat.pgsz_order[i] = (lldi->iscsi_pgsz_order >> (i << 3))
+ 	/*
+ 	 * For REPORT LUNS we always need to emulate the response, for everything
+ 	 * else, pass it up.
 -- 
-2.7.4
+2.20.1
