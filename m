@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 30 Oct 2019 15:53:54 +0000
-Subject: [PATCH AUTOSEL 4.19 26/38] scsi: target: core: Do not overwrite CDB byte 1
-Message-Id: <20191030155406.10109-26-sashal@kernel.org>
+Date: Wed, 30 Oct 2019 15:56:57 +0000
+Subject: [PATCH AUTOSEL 4.9 15/18] scsi: target: core: Do not overwrite CDB byte 1
+Message-Id: <20191030155700.10748-15-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191030155406.10109-1-sashal@kernel.org>
-In-Reply-To: <20191030155406.10109-1-sashal@kernel.org>
+References: <20191030155700.10748-1-sashal@kernel.org>
+In-Reply-To: <20191030155700.10748-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -33,12 +33,12 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 21 deletions(-)
 
 diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 47b5ef153135c..e9ff2a7c0c0e6 100644
+index cc38a3509f78c..c3d576ed6f135 100644
 --- a/drivers/target/target_core_device.c
 +++ b/drivers/target/target_core_device.c
-@@ -1128,27 +1128,6 @@ passthrough_parse_cdb(struct se_cmd *cmd,
- 	struct se_device *dev = cmd->se_dev;
- 	unsigned int size;
+@@ -1046,27 +1046,6 @@ passthrough_parse_cdb(struct se_cmd *cmd,
+ {
+ 	unsigned char *cdb = cmd->t_task_cdb;
  
 -	/*
 -	 * Clear a lun set in the cdb if the initiator talking to use spoke
