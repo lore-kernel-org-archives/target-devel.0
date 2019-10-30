@@ -1,48 +1,68 @@
-From: ACCESS BANK PLC <econgbank@gmail.com>
-Date: Tue, 01 Oct 2019 06:59:14 +0000
-Subject: Darlehen
-Message-Id: <CAHixukou8ekZ4cbLF_dagKcMYnPWHA_c6mVY3zYD_4Q==j32Xg@mail.gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 30 Oct 2019 15:55:48 +0000
+Subject: [PATCH AUTOSEL 4.14 17/24] scsi: target: core: Do not overwrite CDB byte 1
+Message-Id: <20191030155555.10494-17-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20191030155555.10494-1-sashal@kernel.org>
+In-Reply-To: <20191030155555.10494-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Bart Van Assche <bvanassche@acm.org>, Hannes Reinecke <hare@suse.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Grüße dich.
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-Willkommen bei Frau Christabel als Teil ihres Wohlfahrtspaketes
-Anbieten eines Floating Loans mit 2% Zinssatz ohne jegliche Sicherheiten
-Sicherheit. Dies soll Einzelpersonen und Unternehmen helfen, ihre
-Finanzen zu erreichen
-Ziele.
+[ Upstream commit 27e84243cb63601a10e366afe3e2d05bb03c1cb5 ]
 
-* Persönlicher Kredit (ungesichert)
-* Business-Darlehen (ungesichert)
-* Schuldenkonsolidierungsdarlehen
-* Verbessere dein Zuhause
+passthrough_parse_cdb() - used by TCMU and PSCSI - attepts to reset the LUN
+field of SCSI-2 CDBs (bits 5,6,7 of byte 1).  The current code is wrong as
+for newer commands not having the LUN field it overwrites relevant command
+bits (e.g. for SECURITY PROTOCOL IN / OUT). We think this code was
+unnecessary from the beginning or at least it is no longer useful. So we
+remove it entirely.
 
-Bitte geben Sie uns folgendes an:
-Vollständiger Name.......
-Heimatadresse....
-Telefon:..........
-Handy, Mobiltelefon..........
-Land...........
-Besetzung:........
-Sex:...............
-Alter:..............
-Monatliches Einkommen......
-Benötigte Menge ......
-Darlehensdauer: ...........
-Notwendigkeit für Darlehensantrag .....
-Hast du dich vorher beworben? .........
+Link: https://lore.kernel.org/r/12498eab-76fd-eaad-1316-c2827badb76a@ts.fujitsu.com
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Reviewed-by: Hannes Reinecke <hare@suse.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/target/target_core_device.c | 21 ---------------------
+ 1 file changed, 21 deletions(-)
 
-Alle Antworten sollten an weitergeleitet werden
-
-  Frau Christabel
-Darlehensoffizier
-E-Mail: christabelfundinginc2@gmail.com
-
-Sobald wir den Antrag erhalten haben, werden wir Ihren Kredit bearbeiten
-Antrag auf Genehmigung
-
-Danke und viele Grüße.
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index 84742125f7730..92b52d2314b53 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -1151,27 +1151,6 @@ passthrough_parse_cdb(struct se_cmd *cmd,
+ 	struct se_device *dev = cmd->se_dev;
+ 	unsigned int size;
+ 
+-	/*
+-	 * Clear a lun set in the cdb if the initiator talking to use spoke
+-	 * and old standards version, as we can't assume the underlying device
+-	 * won't choke up on it.
+-	 */
+-	switch (cdb[0]) {
+-	case READ_10: /* SBC - RDProtect */
+-	case READ_12: /* SBC - RDProtect */
+-	case READ_16: /* SBC - RDProtect */
+-	case SEND_DIAGNOSTIC: /* SPC - SELF-TEST Code */
+-	case VERIFY: /* SBC - VRProtect */
+-	case VERIFY_16: /* SBC - VRProtect */
+-	case WRITE_VERIFY: /* SBC - VRProtect */
+-	case WRITE_VERIFY_12: /* SBC - VRProtect */
+-	case MAINTENANCE_IN: /* SPC - Parameter Data Format for SA RTPG */
+-		break;
+-	default:
+-		cdb[1] &= 0x1f; /* clear logical unit number */
+-		break;
+-	}
+-
+ 	/*
+ 	 * For REPORT LUNS we always need to emulate the response, for everything
+ 	 * else, pass it up.
+-- 
+2.20.1
