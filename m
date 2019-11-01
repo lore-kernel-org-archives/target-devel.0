@@ -1,29 +1,44 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Mon, 25 Nov 2019 17:00:51 +0000
-Subject: Re: [PATCH v3 07/13] scsi: qla2xxx: Don't call qlt_async_event twice
-Message-Id: <20191125170051.kxctfl7skse3gfk7@SPB-NB-133.local>
+From: Saurav Girepunje <saurav.girepunje@gmail.com>
+Date: Fri, 01 Nov 2019 12:47:03 +0000
+Subject: [PATCH] scsi: ibmvscsi_tgt: Remove unneeded variable rc
+Message-Id: <20191101120407.GA9369@saurav>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191125165702.1013-1-r.bolshakov@yadro.com>
- <20191125165702.1013-8-r.bolshakov@yadro.com>
-In-Reply-To: <20191125165702.1013-8-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
+To: mikecyr@linux.ibm.com, jejb@linux.ibm.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: saurav.girepunje@hotmail.com
 
-On Mon, Nov 25, 2019 at 07:56:56PM +0300, Roman Bolshakov wrote:
-> MBA_PORT_UPDATE generates duplicate log lines in target mode because
-> qlt_async_event is called twice. Drop the calls within the case as
-> the function will be called right after the switch statement.
-> 
-> Cc: Quinn Tran <qutran@marvell.com>
-> Acked-by: Himanshu Madhani <hmadhani@marvel.com>
-> Reviewed-by: Hannes Reinecke <hare@suse.de>
-> Tested-by: Hannes Reinecke <hare@suse.de>
-> Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
-> ---
+Variable rc is not modified in ibmvscsis_srp_i_logout function.
+So remove unneeded variable rc.
 
-The Acked-by tag should contain:
+Issue found using coccicheck tool.
 
-Acked-by: Himanshu Madhani <hmadhani@marvell.com>
+Signed-off-by: Saurav Girepunje <saurav.girepunje@gmail.com>
+---
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index 7f9535392a93..09a4dbd0a9e5 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -2353,7 +2353,6 @@ static long ibmvscsis_srp_i_logout(struct scsi_info *vscsi,
+ {
+ 	struct iu_entry *iue = cmd->iue;
+ 	struct srp_i_logout *log_out = &vio_iu(iue)->srp.i_logout;
+-	long rc = ADAPT_SUCCESS;
+ 
+ 	if ((vscsi->debit > 0) || !list_empty(&vscsi->schedule_q) ||
+ 	    !list_empty(&vscsi->waiting_rsp)) {
+@@ -2369,7 +2368,7 @@ static long ibmvscsis_srp_i_logout(struct scsi_info *vscsi,
+ 		ibmvscsis_post_disconnect(vscsi, WAIT_IDLE, 0);
+ 	}
+ 
+-	return rc;
++	return ADAPT_SUCCESS;
+ }
+ 
+ /* Called with intr lock held */
+-- 
+2.20.1
