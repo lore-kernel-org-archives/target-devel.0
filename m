@@ -1,47 +1,29 @@
-From: Himanshu Madhani <hmadhani@marvell.com>
-Date: Thu, 21 Nov 2019 16:39:39 +0000
-Subject: Re: [EXT] [PATCH v2 07/15] scsi: qla2xxx: Fix PLOGI payload and ELS IOCB dump length
-Message-Id: <15A0B661-7E18-4884-84CA-699284FB95D4@marvell.com>
+From: "Mary Coster, I.M.F director-Benin" <eco.bank1204@gmail.com>
+Date: Fri, 01 Nov 2019 16:32:08 +0000
+Subject: Contact Money Gram international service-Benin to receive your payment funds US$2.500,000 Million
+Message-Id: <CAOE+jAAMvXZ-cm7SLrn1SeQAzjG1KK_BAgzC3Cp9xUNt_nCyKA@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191120222723.27779-1-r.bolshakov@yadro.com>
- <20191120222723.27779-8-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-8-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>
+To: target-devel@vger.kernel.org
 
-DQoNCu+7v09uIDExLzIwLzE5LCA0OjI4IFBNLCAiUm9tYW4gQm9sc2hha292IiA8ci5ib2xzaGFr
-b3ZAeWFkcm8uY29tPiB3cm90ZToNCg0KICAgIEV4dGVybmFsIEVtYWlsDQogICAgDQogICAgLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLQ0KICAgIFRoZSBzaXplIG9mIHRoZSBidWZmZXIgaXMgaGFyZGNvZGVkIGFzIDB4
-NzAgb3IgMTEyIGJ5dGVzLCB3aGlsZSB0aGUNCiAgICBzaXplIG9mIEVMUyBJT0NCIGlzIDB4NDAg
-YW5kIHRoZSBzaXplIG9mIFBMT0dJIHBheWxvYWQgcmV0dXJuZWQgYnkNCiAgICBHZXQgUGFyYW1l
-dGVycyBjb21tYW5kIGlzIDB4NzQuDQogICAgDQogICAgQ2M6IFF1aW5uIFRyYW4gPHF1dHJhbkBt
-YXJ2ZWxsLmNvbT4NCiAgICBDYzogSGltYW5zaHUgTWFkaGFuaSA8aG1hZGhhbmlAbWFydmVsbC5j
-b20+DQogICAgU2lnbmVkLW9mZi1ieTogUm9tYW4gQm9sc2hha292IDxyLmJvbHNoYWtvdkB5YWRy
-by5jb20+DQogICAgLS0tDQogICAgIGRyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMgfCA2
-ICsrKystLQ0KICAgICAxIGZpbGUgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9u
-cygtKQ0KICAgIA0KICAgIGRpZmYgLS1naXQgYS9kcml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfaW9j
-Yi5jIGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2lvY2IuYw0KICAgIGluZGV4IGIyNWY4N2Zm
-OGNkZS4uYmQ4MTYwZmRkY2QzIDEwMDY0NA0KICAgIC0tLSBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4
-L3FsYV9pb2NiLmMNCiAgICArKysgYi9kcml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfaW9jYi5jDQog
-ICAgQEAgLTI2NzYsNyArMjY3Niw4IEBAIHFsYTI0eHhfZWxzX2xvZ29faW9jYihzcmJfdCAqc3As
-IHN0cnVjdCBlbHNfZW50cnlfMjR4eCAqZWxzX2lvY2IpDQogICAgIAkJcWxfZGJnKHFsX2RiZ19p
-byArIHFsX2RiZ19idWZmZXIsIHZoYSwgMHgzMDczLA0KICAgICAJCSAgICAiUExPR0kgRUxTIElP
-Q0I6XG4iKTsNCiAgICAgCQlxbF9kdW1wX2J1ZmZlcihxbF9sb2dfaW5mbywgdmhhLCAweDAxMDks
-DQogICAgLQkJICAgICh1aW50OF90ICopZWxzX2lvY2IsIDB4NzApOw0KICAgICsJCSAgICAodWlu
-dDhfdCAqKWVsc19pb2NiLA0KICAgICsJCSAgICBzaXplb2YoKmVsc19pb2NiKSk7DQogICAgIAl9
-IGVsc2Ugew0KICAgICAJCWVsc19pb2NiLT5jb250cm9sX2ZsYWdzID0gMSA8PCAxMzsNCiAgICAg
-CQllbHNfaW9jYi0+dHhfYnl0ZV9jb3VudCA9DQogICAgQEAgLTI5MzQsNyArMjkzNSw4IEBAIHFs
-YTI0eHhfZWxzX2RjbWQyX2lvY2Ioc2NzaV9xbGFfaG9zdF90ICp2aGEsIGludCBlbHNfb3Bjb2Rl
-LA0KICAgICANCiAgICAgCXFsX2RiZyhxbF9kYmdfZGlzYyArIHFsX2RiZ19idWZmZXIsIHZoYSwg
-MHgzMDczLCAiUExPR0kgYnVmZmVyOlxuIik7DQogICAgIAlxbF9kdW1wX2J1ZmZlcihxbF9kYmdf
-ZGlzYyArIHFsX2RiZ19idWZmZXIsIHZoYSwgMHgwMTA5LA0KICAgIC0JICAgICh1aW50OF90ICop
-ZWxzaW8tPnUuZWxzX3Bsb2dpLmVsc19wbG9naV9weWxkLCAweDcwKTsNCiAgICArCSAgICAodWlu
-dDhfdCAqKWVsc2lvLT51LmVsc19wbG9naS5lbHNfcGxvZ2lfcHlsZCwNCiAgICArCSAgICBzaXpl
-b2YoKmVsc2lvLT51LmVsc19wbG9naS5lbHNfcGxvZ2lfcHlsZCkpOw0KICAgICANCiAgICAgCXJ2
-YWwgPSBxbGEyeDAwX3N0YXJ0X3NwKHNwKTsNCiAgICAgCWlmIChydmFsICE9IFFMQV9TVUNDRVNT
-KSB7DQogICAgLS0gDQogICAgMi4yNC4wDQogICAgDQogICAgDQpMb29rcyBHb29kLg0KDQpBY2tl
-ZC1ieTogSGltYW5zaHUgTWFkaGFuaSA8aG1hZGhhbmlAbWFydmVsbC5jb20+DQoNCg=
+Attn Dear,Funds Beneficiary.
+Contact Money Gram international service-Benin to receive your payment
+funds US$2.500,000 Million approved this morning through the UN
+payment settlement organization.
+Contact Person, Mr. John Dave.
+Official Director.Money Gram-Benin
+Email: moneygram.1820@outlook.fr
+Telephone +229 62619517
+Once you get intouch with Mr. John Dave, Money Gram Director, send to
+him your address including your phone numbers. He will be sending the
+transfer to you  $5000.00 USD daily until you received your complete
+payment $2.5m
+from the office.
+Note,I have paid the whole service fees for you but only small money
+you been required to send to this office is $23.00 only via Money Gram
+transfer.
+God bless
+Mary Coster, I.M.F director-Benin
+m.coster@aol.com
