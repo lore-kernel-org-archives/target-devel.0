@@ -1,44 +1,35 @@
-From: Himanshu Madhani <hmadhani@marvell.com>
-Date: Thu, 21 Nov 2019 15:43:20 +0000
-Subject: Re: [PATCH v2 06/15] scsi: qla2xxx: Don't call qlt_async_event twice
-Message-Id: <54622BCF-5D5B-4D7F-870B-D5B04E4030FB@marvell.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Thu, 07 Nov 2019 21:55:25 +0000
+Subject: [PATCH] target: Fix a pr_debug() argument
+Message-Id: <20191107215525.64415-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191120222723.27779-1-r.bolshakov@yadro.com>
- <20191120222723.27779-7-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-7-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>
+To: target-devel@vger.kernel.org
 
-DQoNCu+7v09uIDExLzIwLzE5LCA0OjI3IFBNLCAidGFyZ2V0LWRldmVsLW93bmVyQHZnZXIua2Vy
-bmVsLm9yZyBvbiBiZWhhbGYgb2YgUm9tYW4gQm9sc2hha292IiA8dGFyZ2V0LWRldmVsLW93bmVy
-QHZnZXIua2VybmVsLm9yZyBvbiBiZWhhbGYgb2Ygci5ib2xzaGFrb3ZAeWFkcm8uY29tPiB3cm90
-ZToNCg0KICAgIE1CQV9QT1JUX1VQREFURSBnZW5lcmF0ZXMgZHVwbGljYXRlIGxvZyBsaW5lcyBp
-biB0YXJnZXQgbW9kZSBiZWNhdXNlDQogICAgcWx0X2FzeW5jX2V2ZW50IGlzIGNhbGxlZCB0d2lj
-ZS4gRHJvcCB0aGUgY2FsbHMgd2l0aGluIHRoZSBjYXNlIGFzDQogICAgdGhlIGZ1bmN0aW9uIHdp
-bGwgYmUgY2FsbGVkIHJpZ2h0IGFmdGVyIHRoZSBzd2l0Y2ggc3RhdGVtZW50Lg0KICAgIA0KICAg
-IENjOiBRdWlubiBUcmFuIDxxdXRyYW5AbWFydmVsbC5jb20+DQogICAgQ2M6IEhpbWFuc2h1IE1h
-ZGhhbmkgPGhtYWRoYW5pQG1hcnZlbGwuY29tPg0KICAgIFNpZ25lZC1vZmYtYnk6IFJvbWFuIEJv
-bHNoYWtvdiA8ci5ib2xzaGFrb3ZAeWFkcm8uY29tPg0KICAgIC0tLQ0KICAgICBkcml2ZXJzL3Nj
-c2kvcWxhMnh4eC9xbGFfaXNyLmMgfCA0IC0tLS0NCiAgICAgMSBmaWxlIGNoYW5nZWQsIDQgZGVs
-ZXRpb25zKC0pDQogICAgDQogICAgZGlmZiAtLWdpdCBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3Fs
-YV9pc3IuYyBiL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pc3IuYw0KICAgIGluZGV4IDFiOGYy
-OTc0NDljZi4uYzYyNzQxNzhiMGIwIDEwMDY0NA0KICAgIC0tLSBhL2RyaXZlcnMvc2NzaS9xbGEy
-eHh4L3FsYV9pc3IuYw0KICAgICsrKyBiL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pc3IuYw0K
-ICAgIEBAIC0xMDYxLDggKzEwNjEsNiBAQCBxbGEyeDAwX2FzeW5jX2V2ZW50KHNjc2lfcWxhX2hv
-c3RfdCAqdmhhLCBzdHJ1Y3QgcnNwX3F1ZSAqcnNwLCB1aW50MTZfdCAqbWIpDQogICAgIAkJCXFs
-X2RiZyhxbF9kYmdfYXN5bmMsIHZoYSwgMHg1MDExLA0KICAgICAJCQkgICAgIkFzeW5jaHJvbm91
-cyBQT1JUIFVQREFURSBpZ25vcmVkICUwNHgvJTA0eC8lMDR4LlxuIiwNCiAgICAgCQkJICAgIG1i
-WzFdLCBtYlsyXSwgbWJbM10pOw0KICAgIC0NCiAgICAtCQkJcWx0X2FzeW5jX2V2ZW50KG1iWzBd
-LCB2aGEsIG1iKTsNCiAgICAgCQkJYnJlYWs7DQogICAgIAkJfQ0KICAgICANCiAgICBAQCAtMTA3
-OSw4ICsxMDc3LDYgQEAgcWxhMngwMF9hc3luY19ldmVudChzY3NpX3FsYV9ob3N0X3QgKnZoYSwg
-c3RydWN0IHJzcF9xdWUgKnJzcCwgdWludDE2X3QgKm1iKQ0KICAgICAJCXNldF9iaXQoTE9PUF9S
-RVNZTkNfTkVFREVELCAmdmhhLT5kcGNfZmxhZ3MpOw0KICAgICAJCXNldF9iaXQoTE9DQUxfTE9P
-UF9VUERBVEUsICZ2aGEtPmRwY19mbGFncyk7DQogICAgIAkJc2V0X2JpdChWUF9DT05GSUdfT0ss
-ICZ2aGEtPnZwX2ZsYWdzKTsNCiAgICAtDQogICAgLQkJcWx0X2FzeW5jX2V2ZW50KG1iWzBdLCB2
-aGEsIG1iKTsNCiAgICAgCQlicmVhazsNCiAgICAgDQogICAgIAljYXNlIE1CQV9SU0NOX1VQREFU
-RToJCS8qIFN0YXRlIENoYW5nZSBSZWdpc3RyYXRpb24gKi8NCiAgICAtLSANCiAgICAyLjI0LjAN
-CiAgICANCiAgICANCg0KTG9va3MgR29vZC4gDQoNCkFja2VkLWJ5OiBIaW1hbnNodSBNYWRoYW5p
-IDxobWFkaGFuaUBtYXJ2ZWwuY29tPg0KDQo
+Print the string for which conversion failed instead of printing the
+function name twice.
+
+Cc: Christoph Hellwig <hch@lst.de>
+Fixes: 2650d71e244f ("target: move transport ID handling to the core")
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/target_core_fabric_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index 3c79411c4cd0..6b4b354c88aa 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -118,7 +118,7 @@ static int srp_get_pr_transport_id(
+ 	memset(buf + 8, 0, leading_zero_bytes);
+ 	rc = hex2bin(buf + 8 + leading_zero_bytes, p, count);
+ 	if (rc < 0) {
+-		pr_debug("hex2bin failed for %s: %d\n", __func__, rc);
++		pr_debug("hex2bin failed for %s: %d\n", p, rc);
+ 		return rc;
+ 	}
+ 
+-- 
+2.24.0.rc1.363.gb1bccd3e3d-goog
