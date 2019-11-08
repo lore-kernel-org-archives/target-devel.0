@@ -1,40 +1,53 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Wed, 13 Nov 2019 17:52:36 +0000
-Subject: [PATCH v3 0/3] Three SCSI target reliability improvements
-Message-Id: <20191113175239.147389-1-bvanassche@acm.org>
+From: Damien Le Moal <damien.lemoal@wdc.com>
+Date: Fri, 08 Nov 2019 08:27:35 +0000
+Subject: [PATCH] target: core: Prevent memory reclaim recursion
+Message-Id: <20191108082735.417876-1-damien.lemoal@wdc.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-scsi@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-Hi Martin,
+Prevent recursion into the IO path under low memory conditions by using
+GFP_NOIO in place of GFP_KERNEL when allocating a new command with
+tcmu_alloc_cmd() and user ring space with tcmu_get_empty_block().
 
-The three patches in this series fix complaints that were reported while
-running the libiscsi test tool against the SCSI target code. I'm not sure why
-I hadn't noticed these issues before - maybe new tests have been added to the
-test tool. Please consider these patches for Linux kernel version v5.5.
+Signed-off-by: Damien Le Moal <damien.lemoal@wdc.com>
+---
+ drivers/target/target_core_user.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Thanks,
-
-Bart.
-
-Changes compared to v2:
-- Changed target_{,un}depend_item() calls into configfs_{get,put}_item() calls.
-- Changed ISCSI_REASON_BOOKMARK_NO_RESOURCES into
-  ISCSI_REASON_WAITING_FOR_LOGOUT.
-
-Changes compared to v1:
-- The patch that declares target_release_reservation() static has been left out because a patch in this series introduces a call to that function outside the file in which that function has been defined.
-- The patch for releasing SPC-2 reservations has been reworked as requested by Roman.
-- Two new patches have been added.
-
-Bart Van Assche (3):
-  target/core: Release SPC-2 reservations when closing a session
-  target/core: Fix a use-after-free in the TMF handling code
-  target/iscsi: Wait for all commands to finish before freeing a session
-
- drivers/target/iscsi/iscsi_target.c    | 10 ++++++++--
- drivers/target/target_core_transport.c | 21 +++++++++++++++++++++
- include/scsi/iscsi_proto.h             |  1 +
- 3 files changed, 30 insertions(+), 2 deletions(-)
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 35be1be87d2a..0b9dfa6b17bc 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -499,7 +499,7 @@ static inline bool tcmu_get_empty_block(struct tcmu_dev *udev,
+ 			schedule_delayed_work(&tcmu_unmap_work, 0);
+ 
+ 		/* try to get new page from the mm */
+-		page = alloc_page(GFP_KERNEL);
++		page = alloc_page(GFP_NOIO);
+ 		if (!page)
+ 			goto err_alloc;
+ 
+@@ -573,7 +573,7 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
+ 	struct tcmu_dev *udev = TCMU_DEV(se_dev);
+ 	struct tcmu_cmd *tcmu_cmd;
+ 
+-	tcmu_cmd = kmem_cache_zalloc(tcmu_cmd_cache, GFP_KERNEL);
++	tcmu_cmd = kmem_cache_zalloc(tcmu_cmd_cache, GFP_NOIO);
+ 	if (!tcmu_cmd)
+ 		return NULL;
+ 
+@@ -584,7 +584,7 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
+ 	tcmu_cmd_reset_dbi_cur(tcmu_cmd);
+ 	tcmu_cmd->dbi_cnt = tcmu_cmd_get_block_cnt(tcmu_cmd);
+ 	tcmu_cmd->dbi = kcalloc(tcmu_cmd->dbi_cnt, sizeof(uint32_t),
+-				GFP_KERNEL);
++				GFP_NOIO);
+ 	if (!tcmu_cmd->dbi) {
+ 		kmem_cache_free(tcmu_cmd_cache, tcmu_cmd);
+ 		return NULL;
+-- 
+2.23.0
