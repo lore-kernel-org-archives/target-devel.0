@@ -1,46 +1,48 @@
-From: Himanshu Madhani <hmadhani@marvell.com>
-Date: Thu, 21 Nov 2019 16:37:43 +0000
-Subject: Re: [PATCH v2 14/15] scsi: qla2xxx: Add debug dump of LOGO payload and ELS IOCB
-Message-Id: <5FF3220F-1568-438C-85E3-F9C321449939@marvell.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Mon, 11 Nov 2019 18:29:43 +0000
+Subject: [PATCH 1/2] target/core: Declare target_release_reservation() 'static'
+Message-Id: <20191111182944.191123-2-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191120222723.27779-1-r.bolshakov@yadro.com>
- <20191120222723.27779-15-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-15-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>
+To: target-devel@vger.kernel.org
 
-DQoNCu+7v09uIDExLzIwLzE5LCA0OjI4IFBNLCAidGFyZ2V0LWRldmVsLW93bmVyQHZnZXIua2Vy
-bmVsLm9yZyBvbiBiZWhhbGYgb2YgUm9tYW4gQm9sc2hha292IiA8dGFyZ2V0LWRldmVsLW93bmVy
-QHZnZXIua2VybmVsLm9yZyBvbiBiZWhhbGYgb2Ygci5ib2xzaGFrb3ZAeWFkcm8uY29tPiB3cm90
-ZToNCg0KICAgIFRoZSBjaGFuZ2UgYWRkcyBhIHdheSB0byBkZWJ1ZyBMT0dPIEVMUywgbGlrZXdp
-c2UgUExPR0kuDQogICAgDQogICAgQ2M6IFF1aW5uIFRyYW4gPHF1dHJhbkBtYXJ2ZWxsLmNvbT4N
-CiAgICBDYzogSGltYW5zaHUgTWFkaGFuaSA8aG1hZGhhbmlAbWFydmVsbC5jb20+DQogICAgU2ln
-bmVkLW9mZi1ieTogUm9tYW4gQm9sc2hha292IDxyLmJvbHNoYWtvdkB5YWRyby5jb20+DQogICAg
-LS0tDQogICAgIGRyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMgfCA5ICsrKysrKysrKw0K
-ICAgICAxIGZpbGUgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspDQogICAgDQogICAgZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMgYi9kcml2ZXJzL3Njc2kvcWxhMnh4
-eC9xbGFfaW9jYi5jDQogICAgaW5kZXggMTJiMzdiNzExYWU4Li5jZDJlMGY4OWU5YjUgMTAwNjQ0
-DQogICAgLS0tIGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2lvY2IuYw0KICAgICsrKyBiL2Ry
-aXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMNCiAgICBAQCAtMjYyNyw2ICsyNjI3LDEwIEBA
-IHFsYTI0eHhfZWxzX2RjbWRfaW9jYihzY3NpX3FsYV9ob3N0X3QgKnZoYSwgaW50IGVsc19vcGNv
-ZGUsDQogICAgIA0KICAgICAJbWVtY3B5KGVsc2lvLT51LmVsc19sb2dvLmVsc19sb2dvX3B5bGQs
-ICZsb2dvX3B5bGQsDQogICAgIAkgICAgc2l6ZW9mKHN0cnVjdCBlbHNfbG9nb19wYXlsb2FkKSk7
-DQogICAgKwlxbF9kYmcocWxfZGJnX2Rpc2MgKyBxbF9kYmdfYnVmZmVyLCB2aGEsIDB4MzA3NSwg
-IkxPR08gYnVmZmVyOiIpOw0KICAgICsJcWxfZHVtcF9idWZmZXIocWxfZGJnX2Rpc2MgKyBxbF9k
-YmdfYnVmZmVyLCB2aGEsIDB4MDEwYSwNCiAgICArCQkgICAgICAgZWxzaW8tPnUuZWxzX2xvZ28u
-ZWxzX2xvZ29fcHlsZCwNCiAgICArCQkgICAgICAgc2l6ZW9mKCplbHNpby0+dS5lbHNfbG9nby5l
-bHNfbG9nb19weWxkKSk7DQogICAgIA0KICAgICAJcnZhbCA9IHFsYTJ4MDBfc3RhcnRfc3Aoc3Ap
-Ow0KICAgICAJaWYgKHJ2YWwgIT0gUUxBX1NVQ0NFU1MpIHsNCiAgICBAQCAtMjcwNCw2ICsyNzA4
-LDExIEBAIHFsYTI0eHhfZWxzX2xvZ29faW9jYihzcmJfdCAqc3AsIHN0cnVjdCBlbHNfZW50cnlf
-MjR4eCAqZWxzX2lvY2IpDQogICAgIAkJZWxzX2lvY2ItPnJ4X2J5dGVfY291bnQgPSAwOw0KICAg
-ICAJCWVsc19pb2NiLT5yeF9hZGRyZXNzID0gMDsNCiAgICAgCQllbHNfaW9jYi0+cnhfbGVuID0g
-MDsNCiAgICArCQlxbF9kYmcocWxfZGJnX2lvICsgcWxfZGJnX2J1ZmZlciwgdmhhLCAweDMwNzYs
-DQogICAgKwkJICAgICAgICJMT0dPIEVMUyBJT0NCOiIpOw0KICAgICsJCXFsX2R1bXBfYnVmZmVy
-KHFsX2xvZ19pbmZvLCB2aGEsIDB4MDEwYiwNCiAgICArCQkJICAgICAgIGVsc19pb2NiLA0KICAg
-ICsJCQkgICAgICAgc2l6ZW9mKCplbHNfaW9jYikpOw0KICAgICAJfQ0KICAgICANCiAgICAgCXNw
-LT52aGEtPnFsYV9zdGF0cy5jb250cm9sX3JlcXVlc3RzKys7DQogICAgLS0gDQogICAgMi4yNC4w
-DQogICAgDQpMb29rcyBHb29kLg0KDQpBY2tlZC1ieTogSGltYW5zaHUgTWFkaGFuaSA8aG1hZGhh
-bmlAbWFydmVsbC5jb20+DQoNCg=
+Since this function is only used inside the source file in which it has
+been defined, declare it 'static'. See also commit fae43461f8f2 ("scsi:
+target/core: Rework the SPC-2 reservation handling code").
+
+Cc: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/target_core_pr.c | 2 +-
+ drivers/target/target_core_pr.h | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index 5e931690e697..6a72b61e0076 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -187,7 +187,7 @@ static int target_check_scsi2_reservation_conflict(struct se_cmd *cmd)
+ 	return 0;
+ }
+ 
+-void target_release_reservation(struct se_device *dev)
++static void target_release_reservation(struct se_device *dev)
+ {
+ 	dev->reservation_holder = NULL;
+ 	dev->dev_reservation_flags &= ~DRF_SPC2_RESERVATIONS;
+diff --git a/drivers/target/target_core_pr.h b/drivers/target/target_core_pr.h
+index a31c93e4e19c..198fad5c89dc 100644
+--- a/drivers/target/target_core_pr.h
++++ b/drivers/target/target_core_pr.h
+@@ -58,7 +58,6 @@ extern struct kmem_cache *t10_pr_reg_cache;
+ 
+ extern void core_pr_dump_initiator_port(struct t10_pr_registration *,
+ 			char *, u32);
+-extern void target_release_reservation(struct se_device *dev);
+ extern sense_reason_t target_scsi2_reservation_release(struct se_cmd *);
+ extern sense_reason_t target_scsi2_reservation_reserve(struct se_cmd *);
+ extern int core_scsi3_alloc_aptpl_registration(
+-- 
+2.24.0.rc1.363.gb1bccd3e3d-goog
