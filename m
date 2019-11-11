@@ -1,18 +1,27 @@
 From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 26 Nov 2019 20:57:37 +0000
-Subject: Re: [PATCH v3 13/13] scsi: qla2xxx: Add debug dump of LOGO payload and ELS IOCB
-Message-Id: <ee7b7512-8f47-15e5-b6a5-29914b1c4c00@acm.org>
+Date: Mon, 11 Nov 2019 18:29:42 +0000
+Subject: [PATCH 0/2] Improve SPC-2 reservation support
+Message-Id: <20191111182944.191123-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191125165702.1013-1-r.bolshakov@yadro.com>
- <20191125165702.1013-14-r.bolshakov@yadro.com>
-In-Reply-To: <20191125165702.1013-14-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Himanshu Madhani <hmadhani@marvell.com>, Quinn Tran <qutran@marvell.com>, Hannes Reinecke <hare@suse.de>
+To: target-devel@vger.kernel.org
 
-On 11/25/19 8:57 AM, Roman Bolshakov wrote:
-> The change adds a way to debug LOGO ELS, likewise PLOGI.
+Hi Martin,
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+This patch series improves support for SPC-2 reservations in the SCSI target
+code. Please consider these patches for inclusion in the v5.5 kernel.
+
+Thanks,
+
+Bart.
+
+Bart Van Assche (2):
+  target/core: Declare target_release_reservation() 'static'
+  target/iscsi: Fix a use-after-free while closing a session
+
+ drivers/target/target_core_pr.c        |  2 +-
+ drivers/target/target_core_pr.h        |  1 -
+ drivers/target/target_core_transport.c | 11 +++++++++++
+ 3 files changed, 12 insertions(+), 2 deletions(-)
