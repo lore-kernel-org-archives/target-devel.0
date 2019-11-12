@@ -1,136 +1,124 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Mon, 28 Oct 2019 12:38:21 +0000
-Subject: [PATCH V3 2/3] target-iscsi: tie the challenge length to the hash digest size
-Message-Id: <20191028123822.5864-3-mlombard@redhat.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 12 Nov 2019 03:57:50 +0000
+Subject: [PATCH 1/3] target/core: Release SPC-2 reservations when closing a session
+Message-Id: <20191112035752.8338-2-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-The open-iscsi initiator uses the digest size to determine the
-length of the challenge values it sends to the target.
-This patch modifies the target driver to behave in the same way.
+Release reservations when closing a session as required by SPC-2.
 
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+Running the libiscsi tests triggers the KASAN complaint shown below.
+This patch fixes that use-after-free.
+
+BUG: KASAN: use-after-free in target_check_reservation+0x171/0x980 [target_core_mod]
+Read of size 8 at addr ffff88802ecd1878 by task iscsi_trx/17200
+
+CPU: 0 PID: 17200 Comm: iscsi_trx Not tainted 5.4.0-rc1-dbg+ #1
+Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
+Call Trace:
+ dump_stack+0x8a/0xd6
+ print_address_description.constprop.0+0x40/0x60
+ __kasan_report.cold+0x1b/0x34
+ kasan_report+0x16/0x20
+ __asan_load8+0x58/0x90
+ target_check_reservation+0x171/0x980 [target_core_mod]
+ __target_execute_cmd+0xb1/0xf0 [target_core_mod]
+ target_execute_cmd+0x22d/0x4d0 [target_core_mod]
+ transport_generic_new_cmd+0x31f/0x5b0 [target_core_mod]
+ transport_handle_cdb_direct+0x6f/0x90 [target_core_mod]
+ iscsit_execute_cmd+0x381/0x3f0 [iscsi_target_mod]
+ iscsit_sequence_cmd+0x13b/0x1f0 [iscsi_target_mod]
+ iscsit_process_scsi_cmd+0x4c/0x130 [iscsi_target_mod]
+ iscsit_get_rx_pdu+0x8e8/0x15f0 [iscsi_target_mod]
+ iscsi_target_rx_thread+0x105/0x1b0 [iscsi_target_mod]
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
+
+Allocated by task 1079:
+ save_stack+0x23/0x90
+ __kasan_kmalloc.constprop.0+0xcf/0xe0
+ kasan_slab_alloc+0x12/0x20
+ kmem_cache_alloc+0xfe/0x3a0
+ transport_alloc_session+0x29/0x80 [target_core_mod]
+ iscsi_target_login_thread+0xceb/0x1920 [iscsi_target_mod]
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
+
+Freed by task 17193:
+ save_stack+0x23/0x90
+ __kasan_slab_free+0x13a/0x190
+ kasan_slab_free+0x12/0x20
+ kmem_cache_free+0xc8/0x3e0
+ transport_free_session+0x179/0x2f0 [target_core_mod]
+ transport_deregister_session+0x121/0x170 [target_core_mod]
+ iscsit_close_session+0x12c/0x350 [iscsi_target_mod]
+ iscsit_logout_post_handler+0x136/0x380 [iscsi_target_mod]
+ iscsit_response_queue+0x8fa/0xc00 [iscsi_target_mod]
+ iscsi_target_tx_thread+0x28e/0x390 [iscsi_target_mod]
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
+
+The buggy address belongs to the object at ffff88802ecd1860
+ which belongs to the cache se_sess_cache of size 352
+The buggy address is located 24 bytes inside of
+ 352-byte region [ffff88802ecd1860, ffff88802ecd19c0)
+The buggy address belongs to the page:
+page:ffffea0000bb3400 refcount:1 mapcount:0 mapping:ffff8880bef2ed00 index:0x0 compound_mapcount: 0
+flags: 0x1000000000010200(slab|head)
+raw: 1000000000010200 dead000000000100 dead000000000122 ffff8880bef2ed00
+raw: 0000000000000000 0000000080270027 00000001ffffffff 0000000000000000
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+ ffff88802ecd1700: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+ ffff88802ecd1780: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+>ffff88802ecd1800: fb fb fb fb fc fc fc fc fc fc fc fc fb fb fb fb
+                                                                ^
+ ffff88802ecd1880: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+ ffff88802ecd1900: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Roman Bolshakov <r.bolshakov@yadro.com>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 ---
- drivers/target/iscsi/iscsi_target_auth.c | 37 +++++++++++++++++-------
- drivers/target/iscsi/iscsi_target_auth.h |  4 +--
- 2 files changed, 28 insertions(+), 13 deletions(-)
+ drivers/target/target_core_transport.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index b09f20842e40..f3973ab19da2 100644
---- a/drivers/target/iscsi/iscsi_target_auth.c
-+++ b/drivers/target/iscsi/iscsi_target_auth.c
-@@ -41,16 +41,21 @@ static int chap_gen_challenge(
- 	unsigned int *c_len)
- {
- 	int ret;
--	unsigned char challenge_asciihex[CHAP_CHALLENGE_LENGTH * 2 + 1];
-+	unsigned char *challenge_asciihex;
- 	struct iscsi_chap *chap = conn->auth_protocol;
- 
--	memset(challenge_asciihex, 0, CHAP_CHALLENGE_LENGTH * 2 + 1);
-+	challenge_asciihex = kzalloc(chap->challenge_len * 2 + 1, GFP_KERNEL);
-+	if (!challenge_asciihex)
-+		return -ENOMEM;
- 
--	ret = get_random_bytes_wait(chap->challenge, CHAP_CHALLENGE_LENGTH);
-+	memset(chap->challenge, 0, MAX_CHAP_CHALLENGE_LEN);
-+
-+	ret = get_random_bytes_wait(chap->challenge, chap->challenge_len);
- 	if (unlikely(ret))
--		return ret;
-+		goto out;
-+
- 	bin2hex(challenge_asciihex, chap->challenge,
--				CHAP_CHALLENGE_LENGTH);
-+				chap->challenge_len);
- 	/*
- 	 * Set CHAP_C, and copy the generated challenge into c_str.
- 	 */
-@@ -59,7 +64,10 @@ static int chap_gen_challenge(
- 
- 	pr_debug("[%s] Sending CHAP_C=0x%s\n\n", (caller) ? "server" : "client",
- 			challenge_asciihex);
--	return 0;
-+
-+out:
-+	kfree(challenge_asciihex);
-+	return ret;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index ba7a01bcad7c..09f833c1de8a 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -584,6 +584,15 @@ void transport_free_session(struct se_session *se_sess)
  }
+ EXPORT_SYMBOL(transport_free_session);
  
- static int chap_test_algorithm(const char *name)
-@@ -171,6 +179,9 @@ static struct iscsi_chap *chap_server_open(
- 
- 	chap->digest_name = chap_get_digest_name(digest_type);
- 
-+	/* Tie the challenge length to the digest size */
-+	chap->challenge_len = chap->digest_size;
++static int target_release_res(struct se_device *dev, void *data)
++{
++	struct se_session *sess = data;
 +
- 	pr_debug("[server] Got CHAP_A=%d\n", digest_type);
- 	*aic_len = sprintf(aic_str, "CHAP_A=%d", digest_type);
- 	*aic_len += 1;
-@@ -334,21 +345,23 @@ static int chap_server_compute_hash(
- 	}
++	if (dev->reservation_holder = sess)
++		target_release_reservation(dev);
++	return 0;
++}
++
+ void transport_deregister_session(struct se_session *se_sess)
+ {
+ 	struct se_portal_group *se_tpg = se_sess->se_tpg;
+@@ -600,6 +609,12 @@ void transport_deregister_session(struct se_session *se_sess)
+ 	se_sess->fabric_sess_ptr = NULL;
+ 	spin_unlock_irqrestore(&se_tpg->session_lock, flags);
  
- 	ret = crypto_shash_finup(desc, chap->challenge,
--				 CHAP_CHALLENGE_LENGTH, server_digest);
-+				 chap->challenge_len, server_digest);
- 	if (ret < 0) {
- 		pr_err("crypto_shash_finup() failed for challenge\n");
- 		goto out;
- 	}
- 
- 	bin2hex(response, server_digest, chap->digest_size);
--	pr_debug("[server] %s Server Digest: %s\n", hash_name, response);
-+	pr_debug("[server] %s Server Digest: %s\n",
-+		chap->digest_name, response);
- 
- 	if (memcmp(server_digest, client_digest, chap->digest_size) != 0) {
--		pr_debug("[server] %s Digests do not match!\n\n", hash_name);
-+		pr_debug("[server] %s Digests do not match!\n\n",
-+			chap->digest_name);
- 		goto out;
- 	} else
- 		pr_debug("[server] %s Digests match, CHAP connection"
--				" successful.\n\n", hash_name);
-+				" successful.\n\n", chap->digest_name);
++	/*
++	 * Since the session is being removed, release SPC-2
++	 * reservations held by the session that is disappearing.
++	 */
++	target_for_each_device(target_release_res, se_sess);
++
+ 	pr_debug("TARGET_CORE[%s]: Deregistered fabric_sess\n",
+ 		se_tpg->se_tpg_tfo->fabric_name);
  	/*
- 	 * One way authentication has succeeded, return now if mutual
- 	 * authentication is not enabled.
-@@ -414,7 +427,9 @@ static int chap_server_compute_hash(
- 	 * initiator must not match the original CHAP_C generated by
- 	 * the target.
- 	 */
--	if (!memcmp(challenge_binhex, chap->challenge, CHAP_CHALLENGE_LENGTH)) {
-+	if (challenge_len == chap->challenge_len &&
-+				!memcmp(challenge_binhex, chap->challenge,
-+				challenge_len)) {
- 		pr_err("initiator CHAP_C matches target CHAP_C, failing"
- 		       " login attempt\n");
- 		goto out;
-diff --git a/drivers/target/iscsi/iscsi_target_auth.h b/drivers/target/iscsi/iscsi_target_auth.h
-index 93db1ab5516c..fc75c1c20e23 100644
---- a/drivers/target/iscsi/iscsi_target_auth.h
-+++ b/drivers/target/iscsi/iscsi_target_auth.h
-@@ -10,7 +10,7 @@
- #define CHAP_DIGEST_SHA256	7
- #define CHAP_DIGEST_SHA3_256	8
- 
--#define CHAP_CHALLENGE_LENGTH	16
-+#define MAX_CHAP_CHALLENGE_LEN	32
- #define CHAP_CHALLENGE_STR_LEN	4096
- #define MAX_RESPONSE_LENGTH	128	/* sufficient for SHA3 256 */
- #define	MAX_CHAP_N_SIZE		512
-@@ -34,7 +34,7 @@ extern u32 chap_main_loop(struct iscsi_conn *, struct iscsi_node_auth *, char *,
- 
- struct iscsi_chap {
- 	unsigned char	id;
--	unsigned char	challenge[CHAP_CHALLENGE_LENGTH];
-+	unsigned char	challenge[MAX_CHAP_CHALLENGE_LEN];
- 	unsigned int	challenge_len;
- 	unsigned char	*digest_name;
- 	unsigned int	digest_size;
 -- 
-Maurizio Lombardi
+2.23.0
