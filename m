@@ -1,52 +1,124 @@
-From: Himanshu Madhani <hmadhani@marvell.com>
-Date: Thu, 21 Nov 2019 16:39:09 +0000
-Subject: Re: [EXT] [PATCH v2 08/15] scsi: qla2xxx: Configure local loop for N2N target
-Message-Id: <7CEC2BC8-2923-469A-9156-CFDBF42565DF@marvell.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 12 Nov 2019 03:57:52 +0000
+Subject: [PATCH 3/3] target/iscsi: Wait for all commands to finish before freeing a session
+Message-Id: <20191112035752.8338-4-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191120222723.27779-1-r.bolshakov@yadro.com>
- <20191120222723.27779-9-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-9-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>
+To: target-devel@vger.kernel.org
 
-DQoNCu+7v09uIDExLzIwLzE5LCA0OjI3IFBNLCAiUm9tYW4gQm9sc2hha292IiA8ci5ib2xzaGFr
-b3ZAeWFkcm8uY29tPiB3cm90ZToNCg0KICAgIEV4dGVybmFsIEVtYWlsDQogICAgDQogICAgLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLQ0KICAgIHFsYTJ4MDBfY29uZmlndXJlX2xvY2FsX2xvb3AgaW5pdGlhbGl6ZXMg
-UExPR0kgcGF5bG9hZCBmb3IgUExPR0kgRUxTDQogICAgdXNpbmcgR2V0IFBhcmFtZXRlcnMgbWFp
-bGJveCBjb21tYW5kLg0KICAgIA0KICAgIEluIHRoZSBjYXNlIHdoZW4gdGhlIGRyaXZlciBpcyBy
-dW5uaW5nIGluIHRhcmdldCBtb2RlLCB0aGUgdG9wb2xvZ3kgaXMNCiAgICBOMk4gYW5kIHRoZSB0
-YXJnZXQgcG9ydCBoYXMgaGlnaGVyIFdXUE4sIExPQ0FMX0xPT1BfVVBEQVRFIGJpdCBpcw0KICAg
-IGNsZWFyZWQgdG9vIGVhcmx5IGFuZCBQTE9HSSBwYXlsb2FkIGlzIG5vdCBpbml0aWFsaXplZCBi
-eSB0aGUgR2V0DQogICAgUGFyYW1ldGVycyBjb21tYW5kLiBUaGF0IGNhdXNlcyBhIGZhaWx1cmUg
-b2YgRUxTIElPQ0IgY2FycnlpbmcgdGhlDQogICAgUExPR0kgd2l0aCAweDE1IGFrYSBEYXRhIFVu
-ZGVycnVuIGVycm9yLg0KICAgIA0KICAgIExPQ0FMX0xPT1BfVVBEQVRFIGhhcyB0byBiZSBzZXQg
-dG8gaW5pdGlhbGl6ZSBQTE9HSSBwYXlsb2FkLg0KICAgIA0KICAgIEZpeGVzOiA0OGFjYWQwOTkw
-NzQgKCJzY3NpOiBxbGEyeHh4OiBGaXggTjJOIGxpbmsgcmUtY29ubmVjdCIpDQogICAgQ2M6IFF1
-aW5uIFRyYW4gPHF1dHJhbkBtYXJ2ZWxsLmNvbT4NCiAgICBDYzogSGltYW5zaHUgTWFkaGFuaSA8
-aG1hZGhhbmlAbWFydmVsbC5jb20+DQogICAgU2lnbmVkLW9mZi1ieTogUm9tYW4gQm9sc2hha292
-IDxyLmJvbHNoYWtvdkB5YWRyby5jb20+DQogICAgLS0tDQogICAgIGRyaXZlcnMvc2NzaS9xbGEy
-eHh4L3FsYV9pbml0LmMgfCAxMCArKy0tLS0tLS0tDQogICAgIDEgZmlsZSBjaGFuZ2VkLCAyIGlu
-c2VydGlvbnMoKyksIDggZGVsZXRpb25zKC0pDQogICAgDQogICAgZGlmZiAtLWdpdCBhL2RyaXZl
-cnMvc2NzaS9xbGEyeHh4L3FsYV9pbml0LmMgYi9kcml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfaW5p
-dC5jDQogICAgaW5kZXggMTIzOTE4MTViZTA2Li4wOTZmNDFmZTE3ZDIgMTAwNjQ0DQogICAgLS0t
-IGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2luaXQuYw0KICAgICsrKyBiL2RyaXZlcnMvc2Nz
-aS9xbGEyeHh4L3FsYV9pbml0LmMNCiAgICBAQCAtNDkzMiwxNCArNDkzMiw4IEBAIHFsYTJ4MDBf
-Y29uZmlndXJlX2xvb3Aoc2NzaV9xbGFfaG9zdF90ICp2aGEpDQogICAgIAkJc2V0X2JpdChSU0NO
-X1VQREFURSwgJmZsYWdzKTsNCiAgICAgCQljbGVhcl9iaXQoTE9DQUxfTE9PUF9VUERBVEUsICZm
-bGFncyk7DQogICAgIA0KICAgIC0JfSBlbHNlIGlmIChoYS0+Y3VycmVudF90b3BvbG9neSA9PSBJ
-U1BfQ0ZHX04pIHsNCiAgICAtCQljbGVhcl9iaXQoUlNDTl9VUERBVEUsICZmbGFncyk7DQogICAg
-LQkJaWYgKHFsYV90Z3RfbW9kZV9lbmFibGVkKHZoYSkpIHsNCiAgICAtCQkJLyogYWxsb3cgdGhl
-IG90aGVyIHNpZGUgdG8gc3RhcnQgdGhlIGxvZ2luICovDQogICAgLQkJCWNsZWFyX2JpdChMT0NB
-TF9MT09QX1VQREFURSwgJmZsYWdzKTsNCiAgICAtCQkJc2V0X2JpdChSRUxPR0lOX05FRURFRCwg
-JnZoYS0+ZHBjX2ZsYWdzKTsNCiAgICAtCQl9DQogICAgLQl9IGVsc2UgaWYgKGhhLT5jdXJyZW50
-X3RvcG9sb2d5ID09IElTUF9DRkdfTkwpIHsNCiAgICArCX0gZWxzZSBpZiAoaGEtPmN1cnJlbnRf
-dG9wb2xvZ3kgPT0gSVNQX0NGR19OTCB8fA0KICAgICsJCSAgIGhhLT5jdXJyZW50X3RvcG9sb2d5
-ID09IElTUF9DRkdfTikgew0KICAgICAJCWNsZWFyX2JpdChSU0NOX1VQREFURSwgJmZsYWdzKTsN
-CiAgICAgCQlzZXRfYml0KExPQ0FMX0xPT1BfVVBEQVRFLCAmZmxhZ3MpOw0KICAgICAJfSBlbHNl
-IGlmICghdmhhLT5mbGFncy5vbmxpbmUgfHwNCiAgICAtLSANCiAgICAyLjI0LjANCiAgICANCiAg
-ICANCkxvb2tzIEdvb2QuDQoNCkFja2VkLWJ5OiBIaW1hbnNodSBNYWRoYW5pIDxobWFkaGFuaUBt
-YXJ2ZWxsLmNvbT4NCg0K
+This patch fixes the following KASAN complaint:
+
+BUG: KASAN: use-after-free in __lock_acquire+0xb1a/0x2710
+Read of size 8 at addr ffff8881154eca70 by task kworker/0:2/247
+
+CPU: 0 PID: 247 Comm: kworker/0:2 Not tainted 5.4.0-rc1-dbg+ #6
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.12.0-1 04/01/2014
+Workqueue: target_completion target_complete_ok_work [target_core_mod]
+Call Trace:
+ dump_stack+0x8a/0xd6
+ print_address_description.constprop.0+0x40/0x60
+ __kasan_report.cold+0x1b/0x33
+ kasan_report+0x16/0x20
+ __asan_load8+0x58/0x90
+ __lock_acquire+0xb1a/0x2710
+ lock_acquire+0xd3/0x200
+ _raw_spin_lock_irqsave+0x43/0x60
+ target_release_cmd_kref+0x162/0x7f0 [target_core_mod]
+ target_put_sess_cmd+0x2e/0x40 [target_core_mod]
+ lio_check_stop_free+0x12/0x20 [iscsi_target_mod]
+ transport_cmd_check_stop_to_fabric+0xd8/0xe0 [target_core_mod]
+ target_complete_ok_work+0x1b0/0x790 [target_core_mod]
+ process_one_work+0x549/0xa40
+ worker_thread+0x7a/0x5d0
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
+
+Allocated by task 889:
+ save_stack+0x23/0x90
+ __kasan_kmalloc.constprop.0+0xcf/0xe0
+ kasan_slab_alloc+0x12/0x20
+ kmem_cache_alloc+0xf6/0x360
+ transport_alloc_session+0x29/0x80 [target_core_mod]
+ iscsi_target_login_thread+0xcd6/0x18f0 [iscsi_target_mod]
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
+
+Freed by task 1025:
+ save_stack+0x23/0x90
+ __kasan_slab_free+0x13a/0x190
+ kasan_slab_free+0x12/0x20
+ kmem_cache_free+0x146/0x400
+ transport_free_session+0x179/0x2f0 [target_core_mod]
+ transport_deregister_session+0x130/0x180 [target_core_mod]
+ iscsit_close_session+0x12c/0x350 [iscsi_target_mod]
+ iscsit_logout_post_handler+0x136/0x380 [iscsi_target_mod]
+ iscsit_response_queue+0x8de/0xbe0 [iscsi_target_mod]
+ iscsi_target_tx_thread+0x27f/0x370 [iscsi_target_mod]
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
+
+The buggy address belongs to the object at ffff8881154ec9c0
+ which belongs to the cache se_sess_cache of size 352
+The buggy address is located 176 bytes inside of
+ 352-byte region [ffff8881154ec9c0, ffff8881154ecb20)
+The buggy address belongs to the page:
+page:ffffea0004553b00 refcount:1 mapcount:0 mapping:ffff888101755400 index:0x0 compound_mapcount: 0
+flags: 0x2fff000000010200(slab|head)
+raw: 2fff000000010200 dead000000000100 dead000000000122 ffff888101755400
+raw: 0000000000000000 0000000080130013 00000001ffffffff 0000000000000000
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+ ffff8881154ec900: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+ ffff8881154ec980: fc fc fc fc fc fc fc fc fb fb fb fb fb fb fb fb
+>ffff8881154eca00: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+                                                             ^
+ ffff8881154eca80: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+ ffff8881154ecb00: fb fb fb fb fc fc fc fc fc fc fc fc fc fc fc fc
+
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Roman Bolshakov <r.bolshakov@yadro.com>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/iscsi/iscsi_target.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 09e55ea0bf5d..2486fc5a92c5 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -1165,7 +1165,9 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 		hdr->cmdsn, be32_to_cpu(hdr->data_length), payload_length,
+ 		conn->cid);
+ 
+-	target_get_sess_cmd(&cmd->se_cmd, true);
++	if (target_get_sess_cmd(&cmd->se_cmd, true) < 0)
++		return iscsit_add_reject_cmd(cmd,
++				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+ 
+ 	cmd->sense_reason = transport_lookup_cmd_lun(&cmd->se_cmd,
+ 						     scsilun_to_int(&hdr->lun));
+@@ -2002,7 +2004,9 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 			      conn->sess->se_sess, 0, DMA_NONE,
+ 			      TCM_SIMPLE_TAG, cmd->sense_buffer + 2);
+ 
+-	target_get_sess_cmd(&cmd->se_cmd, true);
++	if (target_get_sess_cmd(&cmd->se_cmd, true) < 0)
++		return iscsit_add_reject_cmd(cmd,
++				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+ 
+ 	/*
+ 	 * TASK_REASSIGN for ERL=2 / connection stays inside of
+@@ -4230,6 +4234,8 @@ int iscsit_close_connection(
+ 	 * must wait until they have completed.
+ 	 */
+ 	iscsit_check_conn_usage_count(conn);
++	target_sess_cmd_list_set_waiting(sess->se_sess);
++	target_wait_for_sess_cmds(sess->se_sess);
+ 
+ 	ahash_request_free(conn->conn_tx_hash);
+ 	if (conn->conn_rx_hash) {
+-- 
+2.23.0
