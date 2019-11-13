@@ -1,36 +1,84 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Thu, 28 Nov 2019 12:18:40 +0000
-Subject: Re: [PATCH v3 00/13] scsi: qla2xxx: Bug fixes
-Message-Id: <yq1r21s6vof.fsf@oracle.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Wed, 13 Nov 2019 17:52:38 +0000
+Subject: [PATCH v3 2/3] target/core: Fix a use-after-free in the TMF handling code
+Message-Id: <20191113175239.147389-3-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191125165702.1013-1-r.bolshakov@yadro.com>
-        <347fd571-89d7-2b7e-fd88-1711002c3fb9@acm.org>
-        <20191127172427.jpqfopou7y6kyrev@SPB-NB-133.local>
-        <d9366987-ab6a-9124-39e1-d70887c88757@acm.org>
-In-Reply-To: <d9366987-ab6a-9124-39e1-d70887c88757@acm.org> (Bart Van Assche's
-        message of "Wed, 27 Nov 2019 09:34:31 -0800")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: Roman Bolshakov <r.bolshakov@yadro.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux@yadro.com
+To: target-devel@vger.kernel.org
 
+The target_remove_from_state_list() call uses the cmd->dev pointer. Make
+sure that that pointer is valid as long as TMF processing is in progress.
+This patch fixes the following KASAN complaint:
 
-Bart,
+BUG: KASAN: use-after-free in target_remove_from_state_list+0x22/0x130 [target_core_mod]
+Read of size 8 at addr ffff8880b110cf80 by task kworker/0:1/12
 
-> What happens with patches posted during the merge window depends on
-> the maintainer (Martin Petersen). Sometimes patches posted during the
-> merge window are ignored. Sometimes such patches are queued after the
-> merge window has closed. Sometimes contributors are asked after the
-> merge window has closed to rebase their patch series, to retest it and
-> to repost it.
+CPU: 0 PID: 12 Comm: kworker/0:1 Not tainted 5.4.0-rc1-dbg+ #6
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.12.0-1 04/01/2014
+Workqueue: events target_tmr_work [target_core_mod]
+Call Trace:
+ dump_stack+0x8a/0xd6
+ print_address_description.constprop.0+0x40/0x60
+ __kasan_report.cold+0x1b/0x33
+ kasan_report+0x16/0x20
+ __asan_load8+0x58/0x90
+ target_remove_from_state_list+0x22/0x130 [target_core_mod]
+ transport_cmd_check_stop_to_fabric+0x17/0xe0 [target_core_mod]
+ target_tmr_work+0xe2/0x1a0 [target_core_mod]
+ process_one_work+0x549/0xa40
+ worker_thread+0x7a/0x5d0
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
 
-Bug fixes are OK at any time, as far as I'm concerned. Although this
-series is a bit big to deal with given that we're now in the merge
-window.
+The buggy address belongs to the page:
+page:ffffea0002c44300 refcount:0 mapcount:0 mapping:0000000000000000 index:0x0
+flags: 0x1fff000000000000()
+raw: 1fff000000000000 0000000000000000 ffffea0002c44308 0000000000000000
+raw: 0000000000000000 0000000000000000 00000000ffffffff 0000000000000000
+page dumped because: kasan: bad access detected
 
-As a rule of thumb, I won't look closely at anything resembling new
-feature series until -rc1 is out.
+Memory state around the buggy address:
+ ffff8880b110ce80: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+ ffff8880b110cf00: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+>ffff8880b110cf80: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+                   ^
+ ffff8880b110d000: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+ ffff8880b110d080: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Cc: Mike Christie <mchristi@redhat.com>
+Cc: Roman Bolshakov <r.bolshakov@yadro.com>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/target_core_transport.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 09f833c1de8a..944777f4356f 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3256,6 +3256,8 @@ static void target_tmr_work(struct work_struct *work)
+ 	struct se_tmr_req *tmr = cmd->se_tmr_req;
+ 	int ret;
+ 
++	config_item_get(&dev->dev_group.cg_item);
++
+ 	if (cmd->transport_state & CMD_T_ABORTED)
+ 		goto aborted;
+ 
+@@ -3297,10 +3299,14 @@ static void target_tmr_work(struct work_struct *work)
+ 	cmd->se_tfo->queue_tm_rsp(cmd);
+ 
+ 	transport_cmd_check_stop_to_fabric(cmd);
++
++out:
++	config_item_put(&dev->dev_group.cg_item);
+ 	return;
+ 
+ aborted:
+ 	target_handle_abort(cmd);
++	goto out;
+ }
+ 
+ int transport_generic_handle_tmr(
