@@ -1,85 +1,123 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Wed, 20 Nov 2019 22:27:10 +0000
-Subject: [PATCH v2 02/15] scsi: qla2xxx: Initialize free_work before flushing it
-Message-Id: <20191120222723.27779-3-r.bolshakov@yadro.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Wed, 13 Nov 2019 17:52:37 +0000
+Subject: [PATCH v3 1/3] target/core: Release SPC-2 reservations when closing a session
+Message-Id: <20191113175239.147389-2-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191120222723.27779-1-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, stable@vger.kernel.org, Himanshu Madhani <hmadhani@marvell.com>
+To: target-devel@vger.kernel.org
 
-Target creation triggers a new BUG_ON introduced in in 4d43d395fed12
-("workqueue: Try to catch flush_work() without INIT_WORK().").
-The BUG_ON reveals an attempt to flush free_work in qla24xx_do_nack_work
-before it's initialized in qlt_unreg_sess:
+The SCSI specs require to release SPC-2 reservations when a session is
+closed. Make sure that the target core does this.
 
-  WARNING: CPU: 7 PID: 211 at kernel/workqueue.c:3031 __flush_work.isra.38+0x40/0x2e0
-  CPU: 7 PID: 211 Comm: kworker/7:1 Kdump: loaded Tainted: G            E     5.3.0-rc7-vanilla+ #2
-  Workqueue: qla2xxx_wq qla2x00_iocb_work_fn [qla2xxx]
-  NIP:  c000000000159620 LR: c0080000009d91b0 CTR: c0000000001598c0
-  REGS: c000000005f3f730 TRAP: 0700   Tainted: G            E      (5.3.0-rc7-vanilla+)
-  MSR:  800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 24002222  XER: 00000000
-  CFAR: c0000000001598d0 IRQMASK: 0
-  GPR00: c0080000009d91b0 c000000005f3f9c0 c000000001670a00 c0000003f8655ca8
-  GPR04: c0000003f8655c00 000000000000ffff 0000000000000011 ffffffffffffffff
-  GPR08: c008000000949228 0000000000000000 0000000000000001 c0080000009e7780
-  GPR12: 0000000000002200 c00000003fff6200 c000000000161bc8 0000000000000004
-  GPR16: c0000003f9d68280 0000000002000000 0000000000000005 0000000000000003
-  GPR20: 0000000000000002 000000000000ffff 0000000000000000 fffffffffffffef7
-  GPR24: c000000004f73848 c000000004f73838 c000000004f73f28 c000000005f3fb60
-  GPR28: c000000004f73e48 c000000004f73c80 c000000004f73818 c0000003f9d68280
-  NIP [c000000000159620] __flush_work.isra.38+0x40/0x2e0
-  LR [c0080000009d91b0] qla24xx_do_nack_work+0x88/0x180 [qla2xxx]
-  Call Trace:
-  [c000000005f3f9c0] [c000000000159644] __flush_work.isra.38+0x64/0x2e0 (unreliable)
-  [c000000005f3fa50] [c0080000009d91a0] qla24xx_do_nack_work+0x78/0x180 [qla2xxx]
-  [c000000005f3fae0] [c0080000009496ec] qla2x00_do_work+0x604/0xb90 [qla2xxx]
-  [c000000005f3fc40] [c008000000949cd8] qla2x00_iocb_work_fn+0x60/0xe0 [qla2xxx]
-  [c000000005f3fc80] [c000000000157bb8] process_one_work+0x2c8/0x5b0
-  [c000000005f3fd10] [c000000000157f28] worker_thread+0x88/0x660
-  [c000000005f3fdb0] [c000000000161d64] kthread+0x1a4/0x1b0
-  [c000000005f3fe20] [c00000000000b960] ret_from_kernel_thread+0x5c/0x7c
-  Instruction dump:
-  3d22001d 892966b1 7d908026 91810008 f821ff71 69290001 0b090000 2e290000
-  40920200 e9230018 7d2a0074 794ad182 <0b0a0000> 2fa90000 419e01e8 7c0802a6
-  ---[ end trace 5ccf335d4f90fcb8 ]---
+Running the libiscsi tests triggers the KASAN complaint shown below.
+This patch fixes that use-after-free.
 
-Fixes: 1021f0bc2f3d6 ("scsi: qla2xxx: allow session delete to finish before create.")
-Cc: Quinn Tran <qutran@marvell.com>
-Cc: stable@vger.kernel.org
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
-Acked-by: Himanshu Madhani <hmadhani@marvell.com>
+BUG: KASAN: use-after-free in target_check_reservation+0x171/0x980 [target_core_mod]
+Read of size 8 at addr ffff88802ecd1878 by task iscsi_trx/17200
+
+CPU: 0 PID: 17200 Comm: iscsi_trx Not tainted 5.4.0-rc1-dbg+ #1
+Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
+Call Trace:
+ dump_stack+0x8a/0xd6
+ print_address_description.constprop.0+0x40/0x60
+ __kasan_report.cold+0x1b/0x34
+ kasan_report+0x16/0x20
+ __asan_load8+0x58/0x90
+ target_check_reservation+0x171/0x980 [target_core_mod]
+ __target_execute_cmd+0xb1/0xf0 [target_core_mod]
+ target_execute_cmd+0x22d/0x4d0 [target_core_mod]
+ transport_generic_new_cmd+0x31f/0x5b0 [target_core_mod]
+ transport_handle_cdb_direct+0x6f/0x90 [target_core_mod]
+ iscsit_execute_cmd+0x381/0x3f0 [iscsi_target_mod]
+ iscsit_sequence_cmd+0x13b/0x1f0 [iscsi_target_mod]
+ iscsit_process_scsi_cmd+0x4c/0x130 [iscsi_target_mod]
+ iscsit_get_rx_pdu+0x8e8/0x15f0 [iscsi_target_mod]
+ iscsi_target_rx_thread+0x105/0x1b0 [iscsi_target_mod]
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
+
+Allocated by task 1079:
+ save_stack+0x23/0x90
+ __kasan_kmalloc.constprop.0+0xcf/0xe0
+ kasan_slab_alloc+0x12/0x20
+ kmem_cache_alloc+0xfe/0x3a0
+ transport_alloc_session+0x29/0x80 [target_core_mod]
+ iscsi_target_login_thread+0xceb/0x1920 [iscsi_target_mod]
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
+
+Freed by task 17193:
+ save_stack+0x23/0x90
+ __kasan_slab_free+0x13a/0x190
+ kasan_slab_free+0x12/0x20
+ kmem_cache_free+0xc8/0x3e0
+ transport_free_session+0x179/0x2f0 [target_core_mod]
+ transport_deregister_session+0x121/0x170 [target_core_mod]
+ iscsit_close_session+0x12c/0x350 [iscsi_target_mod]
+ iscsit_logout_post_handler+0x136/0x380 [iscsi_target_mod]
+ iscsit_response_queue+0x8fa/0xc00 [iscsi_target_mod]
+ iscsi_target_tx_thread+0x28e/0x390 [iscsi_target_mod]
+ kthread+0x1bc/0x210
+ ret_from_fork+0x24/0x30
+
+The buggy address belongs to the object at ffff88802ecd1860
+ which belongs to the cache se_sess_cache of size 352
+The buggy address is located 24 bytes inside of
+ 352-byte region [ffff88802ecd1860, ffff88802ecd19c0)
+The buggy address belongs to the page:
+page:ffffea0000bb3400 refcount:1 mapcount:0 mapping:ffff8880bef2ed00 index:0x0 compound_mapcount: 0
+flags: 0x1000000000010200(slab|head)
+raw: 1000000000010200 dead000000000100 dead000000000122 ffff8880bef2ed00
+raw: 0000000000000000 0000000080270027 00000001ffffffff 0000000000000000
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+ ffff88802ecd1700: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+ ffff88802ecd1780: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+>ffff88802ecd1800: fb fb fb fb fc fc fc fc fc fc fc fc fb fb fb fb
+                                                                ^
+ ffff88802ecd1880: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+ ffff88802ecd1900: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
+
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Cc: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 ---
- drivers/scsi/qla2xxx/qla_init.c   | 1 +
- drivers/scsi/qla2xxx/qla_target.c | 1 -
- 2 files changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_transport.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c
-index 1dbee8800218..4f3da968163e 100644
---- a/drivers/scsi/qla2xxx/qla_init.c
-+++ b/drivers/scsi/qla2xxx/qla_init.c
-@@ -4852,6 +4852,7 @@ qla2x00_alloc_fcport(scsi_qla_host_t *vha, gfp_t flags)
- 	}
- 
- 	INIT_WORK(&fcport->del_work, qla24xx_delete_sess_fn);
-+	INIT_WORK(&fcport->free_work, qlt_free_session_done);
- 	INIT_WORK(&fcport->reg_work, qla_register_fcport_fn);
- 	INIT_LIST_HEAD(&fcport->gnl_entry);
- 	INIT_LIST_HEAD(&fcport->list);
-diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
-index 51b275a575a5..7f470a314b1a 100644
---- a/drivers/scsi/qla2xxx/qla_target.c
-+++ b/drivers/scsi/qla2xxx/qla_target.c
-@@ -1160,7 +1160,6 @@ void qlt_unreg_sess(struct fc_port *sess)
- 	sess->last_rscn_gen = sess->rscn_gen;
- 	sess->last_login_gen = sess->login_gen;
- 
--	INIT_WORK(&sess->free_work, qlt_free_session_done);
- 	queue_work(sess->vha->hw->wq, &sess->free_work);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index ba7a01bcad7c..09f833c1de8a 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -584,6 +584,15 @@ void transport_free_session(struct se_session *se_sess)
  }
- EXPORT_SYMBOL(qlt_unreg_sess);
--- 
-2.24.0
+ EXPORT_SYMBOL(transport_free_session);
+ 
++static int target_release_res(struct se_device *dev, void *data)
++{
++	struct se_session *sess = data;
++
++	if (dev->reservation_holder = sess)
++		target_release_reservation(dev);
++	return 0;
++}
++
+ void transport_deregister_session(struct se_session *se_sess)
+ {
+ 	struct se_portal_group *se_tpg = se_sess->se_tpg;
+@@ -600,6 +609,12 @@ void transport_deregister_session(struct se_session *se_sess)
+ 	se_sess->fabric_sess_ptr = NULL;
+ 	spin_unlock_irqrestore(&se_tpg->session_lock, flags);
+ 
++	/*
++	 * Since the session is being removed, release SPC-2
++	 * reservations held by the session that is disappearing.
++	 */
++	target_for_each_device(target_release_res, se_sess);
++
+ 	pr_debug("TARGET_CORE[%s]: Deregistered fabric_sess\n",
+ 		se_tpg->se_tpg_tfo->fabric_name);
+ 	/*
