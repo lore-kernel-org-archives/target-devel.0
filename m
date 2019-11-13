@@ -1,46 +1,40 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Mon, 25 Nov 2019 16:56:59 +0000
-Subject: [PATCH v3 10/13] scsi: qla2xxx: Send Notify ACK after N2N PLOGI
-Message-Id: <20191125165702.1013-11-r.bolshakov@yadro.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Wed, 13 Nov 2019 17:52:36 +0000
+Subject: [PATCH v3 0/3] Three SCSI target reliability improvements
+Message-Id: <20191113175239.147389-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191125165702.1013-1-r.bolshakov@yadro.com>
-In-Reply-To: <20191125165702.1013-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Krishna Kant <krishna.kant@purestorage.com>, Alexei Potashnik <alexei@purestorage.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
+To: target-devel@vger.kernel.org
 
-qlt_handle_login schedules session for deletion even if a login is in
-progress. That causes login bouncing, i.e. a few logins are made before
-it settles down.
+Hi Martin,
 
-Complete the first login by sending Notify Acknowledge IOCB via
-qlt_plogi_ack_unref if the session is pending login completion.
+The three patches in this series fix complaints that were reported while
+running the libiscsi test tool against the SCSI target code. I'm not sure why
+I hadn't noticed these issues before - maybe new tests have been added to the
+test tool. Please consider these patches for Linux kernel version v5.5.
 
-Fixes: 9cd883f07a54 ("scsi: qla2xxx: Fix session cleanup for N2N")
-Cc: Krishna Kant <krishna.kant@purestorage.com>
-Cc: Alexei Potashnik <alexei@purestorage.com>
-Acked-by: Quinn Tran <qutran@marvell.com>
-Acked-by: Himanshu Madhani <hmadhani@marvell.com>
-Reviewed-by: Hannes Reinecke <hare@suse.de>
-Tested-by: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/scsi/qla2xxx/qla_target.c | 1 +
- 1 file changed, 1 insertion(+)
+Thanks,
 
-diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
-index eeb069d52f3d..68c14143e50e 100644
---- a/drivers/scsi/qla2xxx/qla_target.c
-+++ b/drivers/scsi/qla2xxx/qla_target.c
-@@ -4803,6 +4803,7 @@ static int qlt_handle_login(struct scsi_qla_host *vha,
- 
- 	switch (sess->disc_state) {
- 	case DSC_DELETED:
-+	case DSC_LOGIN_PEND:
- 		qlt_plogi_ack_unref(vha, pla);
- 		break;
- 
--- 
-2.24.0
+Bart.
+
+Changes compared to v2:
+- Changed target_{,un}depend_item() calls into configfs_{get,put}_item() calls.
+- Changed ISCSI_REASON_BOOKMARK_NO_RESOURCES into
+  ISCSI_REASON_WAITING_FOR_LOGOUT.
+
+Changes compared to v1:
+- The patch that declares target_release_reservation() static has been left out because a patch in this series introduces a call to that function outside the file in which that function has been defined.
+- The patch for releasing SPC-2 reservations has been reworked as requested by Roman.
+- Two new patches have been added.
+
+Bart Van Assche (3):
+  target/core: Release SPC-2 reservations when closing a session
+  target/core: Fix a use-after-free in the TMF handling code
+  target/iscsi: Wait for all commands to finish before freeing a session
+
+ drivers/target/iscsi/iscsi_target.c    | 10 ++++++++--
+ drivers/target/target_core_transport.c | 21 +++++++++++++++++++++
+ include/scsi/iscsi_proto.h             |  1 +
+ 3 files changed, 30 insertions(+), 2 deletions(-)
