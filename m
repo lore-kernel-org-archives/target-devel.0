@@ -1,43 +1,40 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Mon, 11 Nov 2019 19:12:55 +0000
-Subject: Re: [PATCH 0/2] Improve SPC-2 reservation support
-Message-Id: <13791d8a-6600-a388-2330-9fb2e6689104@acm.org>
+From: "Ms.Mary Coster" <currency1000000@gmail.com>
+Date: Fri, 15 Nov 2019 16:12:38 +0000
+Subject: Goodnews, I have sent you $5000.00 this morning by Money Gram out of your payment funds total amount
+Message-Id: <CAPqfnSH+aaVjaAXyhepP++MnJ77kB9vSe8dpkZ0ZBCF_xHoZXA@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191111182944.191123-1-bvanassche@acm.org>
-In-Reply-To: <20191111182944.191123-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 11/11/19 10:58 AM, Roman Bolshakov wrote:
-> On Mon, Nov 11, 2019 at 10:29:42AM -0800, Bart Van Assche wrote:
->> Hi Martin,
->>
->> This patch series improves support for SPC-2 reservations in the SCSI target
->> code. Please consider these patches for inclusion in the v5.5 kernel.
->>
->> Thanks,
->>
->> Bart.
->>
->> Bart Van Assche (2):
->>    target/core: Declare target_release_reservation() 'static'
->>    target/iscsi: Fix a use-after-free while closing a session
->>
->>   drivers/target/target_core_pr.c        |  2 +-
->>   drivers/target/target_core_pr.h        |  1 -
->>   drivers/target/target_core_transport.c | 11 +++++++++++
->>   3 files changed, 12 insertions(+), 2 deletions(-)
-> 
-> I have missed the second patch, who was it send to?
+Attn, Dear
+Goodnews, I have sent you $5000.00 this morning by Money Gram out of
+your payment funds total amount US$4.8million Dollars.
+Contact Mr. John Dave Director, Money Gram International
+Remittance-Benin to give you the pick up information for your first
+payment transfer $5000.00 today.
+Contact Person; Mr. John Dave Director, Money Gram
+Email; moneygram.1820@outlook.fr
+Telephone; +229 62619517
 
-Hi Roman,
+Please re-confirm your address to him once again such as listed below.
+Your Full Name____________
+Address___________
+Country____________
+Sex____________
+Occupation_____________
+Copy of your ID_____________
 
-That second patch has also been sent to the target-devel mailing list. 
-On the following web page I can see that it has not yet been sent out by 
-the mailing list server: https://www.spinics.net/lists/target-devel/. If 
-that second patch does not appear on the target-devel mailing list by 
-tomorrow I will resend it.
+This is to avoid sending your funds to wrong person.
+He is waiting to hear from you urgent today.
+Let me know once you pick up your transfer $5000.00 today.
+Finally, Note I have paid for the service fees, but only money will
+send to him is $90.00 transfer fee before you can pick up the transfer
+today.
+Ask, Mr. John Dave Director, Money Gram to give you direction where to
+send the fee to Him Immediately today.
 
-Bart.
+Thanks for undrstanding.
+Mary Coster
+m.coster@aol.com
