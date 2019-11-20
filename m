@@ -1,41 +1,73 @@
-From: Himanshu Madhani <hmadhani@marvell.com>
-Date: Thu, 21 Nov 2019 16:40:33 +0000
-Subject: Re: [EXT] [PATCH v2 09/15] scsi: qla2xxx: Send Notify ACK after N2N PLOGI
-Message-Id: <BB852933-3398-4CB2-8F59-96680F6A5E87@marvell.com>
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Wed, 20 Nov 2019 22:27:08 +0000
+Subject: [PATCH v2 00/15] scsi: qla2xxx: Bug fixes
+Message-Id: <20191120222723.27779-1-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191120222723.27779-1-r.bolshakov@yadro.com>
- <20191120222723.27779-10-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-10-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>, Krishna Kant <krishna.kant@purestorage.com>, Alexei Potashnik <alexei@purestorage.com>
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>
 
-DQoNCu+7v09uIDExLzIwLzE5LCA0OjI3IFBNLCAiUm9tYW4gQm9sc2hha292IiA8ci5ib2xzaGFr
-b3ZAeWFkcm8uY29tPiB3cm90ZToNCg0KICAgIEV4dGVybmFsIEVtYWlsDQogICAgDQogICAgLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLQ0KICAgIHFsdF9oYW5kbGVfbG9naW4gc2NoZWR1bGVzIHNlc3Npb24gZm9yIGRl
-bGV0aW9uIGV2ZW4gaWYgYSBsb2dpbiBpcyBpbg0KICAgIHByb2dyZXNzLiBUaGF0IGNhdXNlcyBs
-b2dpbiBib3VuY2luZywgaS5lLiBhIGZldyBsb2dpbnMgYXJlIG1hZGUgYmVmb3JlDQogICAgaXQg
-c2V0dGxlcyBkb3duLg0KICAgIA0KICAgIENvbXBsZXRlIHRoZSBmaXJzdCBsb2dpbiBieSBzZW5k
-aW5nIE5vdGlmeSBBY2tub3dsZWRnZSBJT0NCIHZpYQ0KICAgIHFsdF9wbG9naV9hY2tfdW5yZWYg
-aWYgdGhlIHNlc3Npb24gaXMgcGVuZGluZyBsb2dpbiBjb21wbGV0aW9uLg0KICAgIA0KICAgIEZp
-eGVzOiA5Y2Q4ODNmMDdhNTQgKCJzY3NpOiBxbGEyeHh4OiBGaXggc2Vzc2lvbiBjbGVhbnVwIGZv
-ciBOMk4iKQ0KICAgIENjOiBRdWlubiBUcmFuIDxxdXRyYW5AbWFydmVsbC5jb20+DQogICAgQ2M6
-IEhpbWFuc2h1IE1hZGhhbmkgPGhtYWRoYW5pQG1hcnZlbGwuY29tPg0KICAgIENjOiBLcmlzaG5h
-IEthbnQgPGtyaXNobmEua2FudEBwdXJlc3RvcmFnZS5jb20+DQogICAgQ2M6IEFsZXhlaSBQb3Rh
-c2huaWsgPGFsZXhlaUBwdXJlc3RvcmFnZS5jb20+DQogICAgU2lnbmVkLW9mZi1ieTogUm9tYW4g
-Qm9sc2hha292IDxyLmJvbHNoYWtvdkB5YWRyby5jb20+DQogICAgLS0tDQogICAgIGRyaXZlcnMv
-c2NzaS9xbGEyeHh4L3FsYV90YXJnZXQuYyB8IDEgKw0KICAgICAxIGZpbGUgY2hhbmdlZCwgMSBp
-bnNlcnRpb24oKykNCiAgICANCiAgICBkaWZmIC0tZ2l0IGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgv
-cWxhX3RhcmdldC5jIGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX3RhcmdldC5jDQogICAgaW5k
-ZXggYWI2MmZjYmE4YWIzLi44NTNmYTE4N2Q4MjcgMTAwNjQ0DQogICAgLS0tIGEvZHJpdmVycy9z
-Y3NpL3FsYTJ4eHgvcWxhX3RhcmdldC5jDQogICAgKysrIGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgv
-cWxhX3RhcmdldC5jDQogICAgQEAgLTQ4MDIsNiArNDgwMiw3IEBAIHN0YXRpYyBpbnQgcWx0X2hh
-bmRsZV9sb2dpbihzdHJ1Y3Qgc2NzaV9xbGFfaG9zdCAqdmhhLA0KICAgICANCiAgICAgCXN3aXRj
-aCAoc2Vzcy0+ZGlzY19zdGF0ZSkgew0KICAgICAJY2FzZSBEU0NfREVMRVRFRDoNCiAgICArCWNh
-c2UgRFNDX0xPR0lOX1BFTkQ6DQogICAgIAkJcWx0X3Bsb2dpX2Fja191bnJlZih2aGEsIHBsYSk7
-DQogICAgIAkJYnJlYWs7DQogICAgIA0KICAgIC0tIA0KICAgIDIuMjQuMA0KICAgIA0KICAgIA0K
-TG9va3MgR29vZC4gDQoNCkFja2VkLWJ5OiBIaW1hbnNodSBNYWRoYW5pIDxobWFkaGFuaUBtYXJ2
-ZWxsLmNvbT4NCg0K
+
+Hi Martin,
+
+The patch series contains fixes for qla2xxx and solves two visible
+issues:
+  - Target port in N2N topology doesn't perform login if it has higher
+    WWPN than initiator
+  - ABORT TASK TMF leads to crash if it's received shortly after ACL of
+    an initiator is deleted and there's active I/O from the initiator
+
+It also contains reliability improvements and cleanups.
+
+Unfortunately, there's still an issue the latest patch. The discard
+works but ELS IOCB for LOGO is likely built incorrectly by
+qla24xx_els_dcmd_iocb(). The issue can also be exposed when "1" is
+written to fc_host/hostN/device/issue_logo file with logging turned on.
+
+Changes since v1 (https://patchwork.kernel.org/cover/11141979/):
+- Fixes target port in N2N mode were added (patches 5-11);
+- Target port makes explicit LOGO on session teardown in the patch made
+  by Quinn. Together with patch 1, it helps to immediately turn
+  fc_remote_port to the Blocked stated on client side and avoids visibly
+  stuck session;
+- The last three patches address violation of FCP specification with
+  regards to handling of ABTS-LS from ports that are not currently
+  logged in.
+
+Thank you,
+Roman
+
+Quinn Tran (1):
+  scsi: qla2xxx: Use explicit LOGO in target mode
+
+Roman Bolshakov (14):
+  scsi: qla2xxx: Ignore NULL pointer in tcm_qla2xxx_free_mcmd
+  scsi: qla2xxx: Initialize free_work before flushing it
+  scsi: qla2xxx: Drop superfluous INIT_WORK of del_work
+  scsi: qla2xxx: Change discovery state before PLOGI
+  scsi: qla2xxx: Allow PLOGI in target mode
+  scsi: qla2xxx: Don't call qlt_async_event twice
+  scsi: qla2xxx: Fix PLOGI payload and ELS IOCB dump length
+  scsi: qla2xxx: Configure local loop for N2N target
+  scsi: qla2xxx: Send Notify ACK after N2N PLOGI
+  scsi: qla2xxx: Don't defer relogin unconditonally
+  scsi: qla2xxx: Ignore PORT UPDATE after N2N PLOGI
+  scsi: qla2xxx: Add async mode for qla24xx_els_dcmd_iocb
+  scsi: qla2xxx: Add debug dump of LOGO payload and ELS IOCB
+  scsi: qla2xxx: Handle ABTS according to FCP spec for logged out ports
+
+ drivers/scsi/qla2xxx/qla_attr.c    |  2 +-
+ drivers/scsi/qla2xxx/qla_def.h     |  1 +
+ drivers/scsi/qla2xxx/qla_gbl.h     |  2 +-
+ drivers/scsi/qla2xxx/qla_init.c    | 21 ++++++---------
+ drivers/scsi/qla2xxx/qla_iocb.c    | 42 ++++++++++++++++++++++++------
+ drivers/scsi/qla2xxx/qla_isr.c     |  4 ---
+ drivers/scsi/qla2xxx/qla_mbx.c     |  3 ++-
+ drivers/scsi/qla2xxx/qla_target.c  | 34 ++++++++++++++++--------
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c |  3 +++
+ 9 files changed, 73 insertions(+), 39 deletions(-)
+
+-- 
+2.24.0
