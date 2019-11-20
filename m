@@ -1,48 +1,142 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 22 Nov 2019 05:24:59 +0000
-Subject: [PATCH AUTOSEL 4.19 001/219] scsi: target/tcmu: Fix queue_cmd_ring() declaration
-Message-Id: <20191122052837.357-1-sashal@kernel.org>
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Wed, 20 Nov 2019 22:27:23 +0000
+Subject: [PATCH v2 15/15] scsi: qla2xxx: Handle ABTS according to FCP spec for logged out ports
+Message-Id: <20191120222723.27779-16-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191122051903.31749-1-sashal@kernel.org>
-In-Reply-To: <20191122051903.31749-1-sashal@kernel.org>
+References: <20191120222723.27779-1-r.bolshakov@yadro.com>
+In-Reply-To: <20191120222723.27779-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bart Van Assche <bvanassche@acm.org>, David Disseldorp <ddiss@suse.de>, Nicholas Bellinger <nab@linux-iscsi.org>, Mike Christie <mchristi@redhat.com>, Christoph Hellwig <hch@lst.de>, Hannes Reinecke <hare@suse.de>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>
 
-From: Bart Van Assche <bvanassche@acm.org>
+Fibre Channel Protocol for SCSI, Fourth Version (FCP-4) 12.3.3, "Target
+FCP_Port response to Exchange termination" states:
 
-[ Upstream commit e7f411049f5164ee6db6c3434c07302846f09990 ]
+  When an ABTS-LS is received at the target FCP_Port, it shall abort the
+  designated Exchange and return one of the following responses:
 
-This patch does not change any functionality but avoids that sparse
-complains about the queue_cmd_ring() function and its callers.
+    a) the target FCP_Port shall discard the ABTS-LS and transmit a LOGO ELS if
+       the Nx_Port issuing the ABTS-LS is not currently logged in (i.e., no
+       N_Port Login exists);
 
-Fixes: 6fd0ce79724d ("tcmu: prep queue_cmd_ring to be used by unmap wq")
-Reviewed-by: David Disseldorp <ddiss@suse.de>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+However, current implementation tries to send a real BA_RJT in response to ABTS
+from logged-out ports. The oparation fails because N_Port handle was freed
+shortly after logout and ABTS Recieved IOCB contains 0xFFFF N_Port handle.
+Existing implementation doesn't send LOGO at all.
+
+The correct way to discard ABTS-LS frame when N_Port handle wasn't found is to
+set Terminate ABTS Exchange bit in control flags of ABTS Response IOCB.
+LOGO is sent after that.
+
+To avoid a deadlock in qla2x00_start_sp(), hardware_lock should be released.
+The unlocking should be safe because ABTS Recieved IOCB is not needed after
+s_id is saved on the stack and qlt_24xx_send_abts_resp() is invoked.
+
+Fixes: 2d70c103fd2a ("[SCSI] qla2xxx: Add LLD target-mode infrastructure for >= 24xx series")
+Cc: Quinn Tran <qutran@marvell.com>
+Cc: Himanshu Madhani <hmadhani@marvell.com>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/target/target_core_user.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/qla2xxx/qla_target.c | 28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 7159e8363b83b..7ee0a75ce4526 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -962,7 +962,7 @@ static int add_to_qfull_queue(struct tcmu_cmd *tcmu_cmd)
-  *  0 success
-  *  1 internally queued to wait for ring memory to free.
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index 0f2bc4cd562f..331e7adf4b15 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -1800,7 +1800,7 @@ static int qlt_build_abts_resp_iocb(struct qla_tgt_mgmt_cmd *mcmd)
   */
--static sense_reason_t queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, int *scsi_err)
-+static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
+ static void qlt_24xx_send_abts_resp(struct qla_qpair *qpair,
+ 	struct abts_recv_from_24xx *abts, uint32_t status,
+-	bool ids_reversed)
++	bool ids_reversed, bool term_exchange)
  {
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
- 	struct se_cmd *se_cmd = tcmu_cmd->se_cmd;
+ 	struct scsi_qla_host *vha = qpair->vha;
+ 	struct qla_hw_data *ha = vha->hw;
+@@ -1825,6 +1825,10 @@ static void qlt_24xx_send_abts_resp(struct qla_qpair *qpair,
+ 	resp->handle = QLA_TGT_SKIP_HANDLE;
+ 	resp->entry_count = 1;
+ 	resp->nport_handle = abts->nport_handle;
++	if (term_exchange)
++		resp->control_flags = cpu_to_le16(ABTS_CONTR_FLG_TERM_EXCHG);
++	else
++		resp->control_flags = 0;
+ 	resp->vp_index = vha->vp_idx;
+ 	resp->sof_type = abts->sof_type;
+ 	resp->exchange_address = abts->exchange_address;
+@@ -1940,7 +1944,7 @@ static void qlt_24xx_retry_term_exchange(struct scsi_qla_host *vha,
+ 		qlt_build_abts_resp_iocb(mcmd);
+ 	else
+ 		qlt_24xx_send_abts_resp(qpair,
+-		    (struct abts_recv_from_24xx *)entry, FCP_TMF_CMPL, true);
++		    (struct abts_recv_from_24xx *)entry, FCP_TMF_CMPL, true, false);
+ 
+ }
+ 
+@@ -2134,7 +2138,7 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
+ 		    "qla_target(%d): ABTS: Abort Sequence not "
+ 		    "supported\n", vha->vp_idx);
+ 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
+-		    false);
++		    false, false);
+ 		return;
+ 	}
+ 
+@@ -2143,7 +2147,7 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
+ 		    "qla_target(%d): ABTS: Unknown Exchange "
+ 		    "Address received\n", vha->vp_idx);
+ 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
+-		    false);
++		    false, false);
+ 		return;
+ 	}
+ 
+@@ -2163,8 +2167,16 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
+ 		    vha->vp_idx);
+ 		spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
+ 
++		/*
++		 * According to FCP-4 12.3.3,
++		 * ABTS-LS frame shall be discarded
++		 */
+ 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
+-			    false);
++			    false, true);
++		spin_unlock_irqrestore(&ha->hardware_lock, flags);
++		/* and LOGO ELS transmitted */
++		qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, be_to_port_id(s_id), false);
++		spin_lock_irqsave(&ha->hardware_lock, flags);
+ 		return;
+ 	}
+ 	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
+@@ -2172,7 +2184,7 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
+ 
+ 	if (sess->deleted) {
+ 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
+-		    false);
++		    false, false);
+ 		return;
+ 	}
+ 
+@@ -2182,7 +2194,7 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
+ 		    "qla_target(%d): __qlt_24xx_handle_abts() failed: %d\n",
+ 		    vha->vp_idx, rc);
+ 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
+-		    false);
++		    false, false);
+ 		return;
+ 	}
+ }
+@@ -6213,7 +6225,7 @@ static void qlt_abort_work(struct qla_tgt *tgt,
+ out_term:
+ 	spin_lock_irqsave(&ha->hardware_lock, flags);
+ 	qlt_24xx_send_abts_resp(ha->base_qpair, &prm->abts,
+-	    FCP_TMF_REJECTED, false);
++	    FCP_TMF_REJECTED, false, false);
+ 	spin_unlock_irqrestore(&ha->hardware_lock, flags);
+ }
+ 
 -- 
-2.20.1
+2.24.0
