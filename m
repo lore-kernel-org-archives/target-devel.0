@@ -1,15 +1,15 @@
 From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Mon, 25 Nov 2019 16:57:01 +0000
-Subject: [PATCH v3 12/13] scsi: qla2xxx: Ignore PORT UPDATE after N2N PLOGI
-Message-Id: <20191125165702.1013-13-r.bolshakov@yadro.com>
+Date: Wed, 20 Nov 2019 22:27:19 +0000
+Subject: [PATCH v2 11/15] scsi: qla2xxx: Ignore PORT UPDATE after N2N PLOGI
+Message-Id: <20191120222723.27779-12-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191125165702.1013-1-r.bolshakov@yadro.com>
-In-Reply-To: <20191125165702.1013-1-r.bolshakov@yadro.com>
+References: <20191120222723.27779-1-r.bolshakov@yadro.com>
+In-Reply-To: <20191120222723.27779-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
+Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>
 
 PORT UPDATE asynchronous event is generated on the host that issues PLOGI
 ELS (in the case of higher WWPN). In that case, the event shouldn't be
@@ -19,9 +19,7 @@ trigger link flap.
 Ignore the event if the host has higher WWPN, but handle otherwise.
 
 Cc: Quinn Tran <qutran@marvell.com>
-Acked-by: Himanshu Madhani <hmadhani@marvell.com>
-Reviewed-by: Hannes Reinecke <hare@suse.de>
-Tested-by: Hannes Reinecke <hare@suse.de>
+Cc: Himanshu Madhani <hmadhani@marvell.com>
 Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
  drivers/scsi/qla2xxx/qla_mbx.c | 3 ++-
