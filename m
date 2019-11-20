@@ -1,7 +1,7 @@
 From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Wed, 20 Nov 2019 22:27:19 +0000
-Subject: [PATCH v2 11/15] scsi: qla2xxx: Ignore PORT UPDATE after N2N PLOGI
-Message-Id: <20191120222723.27779-12-r.bolshakov@yadro.com>
+Date: Wed, 20 Nov 2019 22:27:13 +0000
+Subject: [PATCH v2 05/15] scsi: qla2xxx: Allow PLOGI in target mode
+Message-Id: <20191120222723.27779-6-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191120222723.27779-1-r.bolshakov@yadro.com>
 In-Reply-To: <20191120222723.27779-1-r.bolshakov@yadro.com>
@@ -11,47 +11,51 @@ Content-Transfer-Encoding: 7bit
 To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>
 
-PORT UPDATE asynchronous event is generated on the host that issues PLOGI
-ELS (in the case of higher WWPN). In that case, the event shouldn't be
-handled as it sets unwanted DPC flags (i.e. LOOP_RESYNC_NEEDED) that
-trigger link flap.
+According to FC-LS-3 (Fibre Channel Link Services) 6.3.2.4
+"N_Port Login - No Fabric present", if both parties in the point-to-point
+connection know N_Port_Names of each other, Nx_Port with the highest
+N_Port_name shall transmit PLOGI. The specification sets no restrictions
+on the port role that should send PLOGI.
 
-Ignore the event if the host has higher WWPN, but handle otherwise.
+However, FCP-4 (Fibre Channel Protocol for SCSI, Fourth Version) 6.2
+"Overview of Process Login and Process Logout", instructs that in
+point-to-point topology, initiator shall send explicit PRLI ELS.
+
+The change fixes stuck P2P login, when target WWPN is higher than
+initiator WWPN.
 
 Cc: Quinn Tran <qutran@marvell.com>
 Cc: Himanshu Madhani <hmadhani@marvell.com>
 Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/scsi/qla2xxx/qla_mbx.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/scsi/qla2xxx/qla_init.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/scsi/qla2xxx/qla_mbx.c b/drivers/scsi/qla2xxx/qla_mbx.c
-index 4eb88c3ee08e..bb6811b94683 100644
---- a/drivers/scsi/qla2xxx/qla_mbx.c
-+++ b/drivers/scsi/qla2xxx/qla_mbx.c
-@@ -3920,6 +3920,7 @@ qla24xx_report_id_acquisition(scsi_qla_host_t *vha,
- 					vha->d_id.b24 = 0;
- 					vha->d_id.b.al_pa = 1;
- 					ha->flags.n2n_bigger = 1;
-+					ha->flags.n2n_ae = 0;
+diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c
+index fcb309be50d9..12391815be06 100644
+--- a/drivers/scsi/qla2xxx/qla_init.c
++++ b/drivers/scsi/qla2xxx/qla_init.c
+@@ -1527,10 +1527,6 @@ int qla24xx_fcport_handle_login(struct scsi_qla_host *vha, fc_port_t *fcport)
+ 		}
+ 	}
  
- 					id.b.al_pa = 2;
- 					ql_dbg(ql_dbg_async, vha, 0x5075,
-@@ -3930,6 +3931,7 @@ qla24xx_report_id_acquisition(scsi_qla_host_t *vha,
- 					    "Format 1: Remote login - Waiting for WWPN %8phC.\n",
- 					    rptid_entry->u.f1.port_name);
- 					ha->flags.n2n_bigger = 0;
-+					ha->flags.n2n_ae = 1;
- 				}
- 				qla24xx_post_newsess_work(vha, &id,
- 				    rptid_entry->u.f1.port_name,
-@@ -3941,7 +3943,6 @@ qla24xx_report_id_acquisition(scsi_qla_host_t *vha,
- 			/* if our portname is higher then initiate N2N login */
- 
- 			set_bit(N2N_LOGIN_NEEDED, &vha->dpc_flags);
--			ha->flags.n2n_ae = 1;
- 			return;
- 			break;
- 		case TOPO_FL:
+-	/* for pure Target Mode. Login will not be initiated */
+-	if (vha->host->active_mode = MODE_TARGET)
+-		return 0;
+-
+ 	if (fcport->flags & FCF_ASYNC_SENT) {
+ 		set_bit(RELOGIN_NEEDED, &vha->dpc_flags);
+ 		return 0;
+@@ -1720,6 +1716,10 @@ void qla24xx_handle_relogin_event(scsi_qla_host_t *vha,
+ void qla_handle_els_plogi_done(scsi_qla_host_t *vha,
+ 				      struct event_arg *ea)
+ {
++	/* for pure Target Mode, PRLI will not be initiated */
++	if (vha->host->active_mode = MODE_TARGET)
++		return;
++
+ 	ql_dbg(ql_dbg_disc, vha, 0x2118,
+ 	    "%s %d %8phC post PRLI\n",
+ 	    __func__, __LINE__, ea->fcport->port_name);
 -- 
 2.24.0
