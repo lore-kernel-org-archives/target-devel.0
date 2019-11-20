@@ -1,21 +1,56 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 26 Nov 2019 20:55:44 +0000
-Subject: Re: [PATCH v3 03/13] scsi: qla2xxx: Initialize free_work before flushing it
-Message-Id: <0e30f3d6-148d-28cf-7f55-8acc9599e1be@acm.org>
+From: Quinn Tran <qutran@marvell.com>
+Date: Wed, 20 Nov 2019 23:53:43 +0000
+Subject: RE: [EXT] [PATCH v2 09/15] scsi: qla2xxx: Send Notify ACK after N2N PLOGI
+Message-Id: <BYAPR18MB27591E2D46D9CB81C30B4004D54F0@BYAPR18MB2759.namprd18.prod.outlook.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191125165702.1013-1-r.bolshakov@yadro.com>
- <20191125165702.1013-4-r.bolshakov@yadro.com>
-In-Reply-To: <20191125165702.1013-4-r.bolshakov@yadro.com>
+References: <20191120222723.27779-1-r.bolshakov@yadro.com>
+ <20191120222723.27779-10-r.bolshakov@yadro.com>
+In-Reply-To: <20191120222723.27779-10-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Quinn Tran <qutran@marvell.com>, stable@vger.kernel.org, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
+To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+Cc: "linux@yadro.com" <linux@yadro.com>, Himanshu Madhani <hmadhani@marvell.com>, Krishna Kant <krishna.kant@purestorage.com>, Alexei Potashnik <alexei@purestorage.com>
 
-On 11/25/19 8:56 AM, Roman Bolshakov wrote:
-> Target creation triggers a new BUG_ON introduced in in 4d43d395fed12
-> ("workqueue: Try to catch flush_work() without INIT_WORK().").
-> The BUG_ON reveals an attempt to flush free_work in qla24xx_do_nack_work
-> before it's initialized in qlt_unreg_sess: [ ... ]
+Acked-by: Quinn Tran <qutran@marvell.com>
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+
+
+-----Original Message-----
+From: Roman Bolshakov <r.bolshakov@yadro.com> 
+Sent: Wednesday, November 20, 2019 2:27 PM
+To: linux-scsi@vger.kernel.org; target-devel@vger.kernel.org
+Cc: linux@yadro.com; Roman Bolshakov <r.bolshakov@yadro.com>; Quinn Tran <qutran@marvell.com>; Himanshu Madhani <hmadhani@marvell.com>; Krishna Kant <krishna.kant@purestorage.com>; Alexei Potashnik <alexei@purestorage.com>
+Subject: [EXT] [PATCH v2 09/15] scsi: qla2xxx: Send Notify ACK after N2N PLOGI
+
+External Email
+
+----------------------------------------------------------------------
+qlt_handle_login schedules session for deletion even if a login is in progress. That causes login bouncing, i.e. a few logins are made before it settles down.
+
+Complete the first login by sending Notify Acknowledge IOCB via qlt_plogi_ack_unref if the session is pending login completion.
+
+Fixes: 9cd883f07a54 ("scsi: qla2xxx: Fix session cleanup for N2N")
+Cc: Quinn Tran <qutran@marvell.com>
+Cc: Himanshu Madhani <hmadhani@marvell.com>
+Cc: Krishna Kant <krishna.kant@purestorage.com>
+Cc: Alexei Potashnik <alexei@purestorage.com>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+---
+ drivers/scsi/qla2xxx/qla_target.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index ab62fcba8ab3..853fa187d827 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -4802,6 +4802,7 @@ static int qlt_handle_login(struct scsi_qla_host *vha,
+ 
+ 	switch (sess->disc_state) {
+ 	case DSC_DELETED:
++	case DSC_LOGIN_PEND:
+ 		qlt_plogi_ack_unref(vha, pla);
+ 		break;
+ 
+--
+2.24.0
