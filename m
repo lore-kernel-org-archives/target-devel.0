@@ -1,51 +1,46 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Wed, 20 Nov 2019 22:27:22 +0000
-Subject: [PATCH v2 14/15] scsi: qla2xxx: Add debug dump of LOGO payload and ELS IOCB
-Message-Id: <20191120222723.27779-15-r.bolshakov@yadro.com>
+From: Himanshu Madhani <hmadhani@marvell.com>
+Date: Thu, 21 Nov 2019 16:37:43 +0000
+Subject: Re: [PATCH v2 14/15] scsi: qla2xxx: Add debug dump of LOGO payload and ELS IOCB
+Message-Id: <5FF3220F-1568-438C-85E3-F9C321449939@marvell.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191120222723.27779-1-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-1-r.bolshakov@yadro.com>
+ <20191120222723.27779-15-r.bolshakov@yadro.com>
+In-Reply-To: <20191120222723.27779-15-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>
+To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>
 
-The change adds a way to debug LOGO ELS, likewise PLOGI.
-
-Cc: Quinn Tran <qutran@marvell.com>
-Cc: Himanshu Madhani <hmadhani@marvell.com>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/scsi/qla2xxx/qla_iocb.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c
-index 12b37b711ae8..cd2e0f89e9b5 100644
---- a/drivers/scsi/qla2xxx/qla_iocb.c
-+++ b/drivers/scsi/qla2xxx/qla_iocb.c
-@@ -2627,6 +2627,10 @@ qla24xx_els_dcmd_iocb(scsi_qla_host_t *vha, int els_opcode,
- 
- 	memcpy(elsio->u.els_logo.els_logo_pyld, &logo_pyld,
- 	    sizeof(struct els_logo_payload));
-+	ql_dbg(ql_dbg_disc + ql_dbg_buffer, vha, 0x3075, "LOGO buffer:");
-+	ql_dump_buffer(ql_dbg_disc + ql_dbg_buffer, vha, 0x010a,
-+		       elsio->u.els_logo.els_logo_pyld,
-+		       sizeof(*elsio->u.els_logo.els_logo_pyld));
- 
- 	rval = qla2x00_start_sp(sp);
- 	if (rval != QLA_SUCCESS) {
-@@ -2704,6 +2708,11 @@ qla24xx_els_logo_iocb(srb_t *sp, struct els_entry_24xx *els_iocb)
- 		els_iocb->rx_byte_count = 0;
- 		els_iocb->rx_address = 0;
- 		els_iocb->rx_len = 0;
-+		ql_dbg(ql_dbg_io + ql_dbg_buffer, vha, 0x3076,
-+		       "LOGO ELS IOCB:");
-+		ql_dump_buffer(ql_log_info, vha, 0x010b,
-+			       els_iocb,
-+			       sizeof(*els_iocb));
- 	}
- 
- 	sp->vha->qla_stats.control_requests++;
--- 
-2.24.0
+DQoNCu+7v09uIDExLzIwLzE5LCA0OjI4IFBNLCAidGFyZ2V0LWRldmVsLW93bmVyQHZnZXIua2Vy
+bmVsLm9yZyBvbiBiZWhhbGYgb2YgUm9tYW4gQm9sc2hha292IiA8dGFyZ2V0LWRldmVsLW93bmVy
+QHZnZXIua2VybmVsLm9yZyBvbiBiZWhhbGYgb2Ygci5ib2xzaGFrb3ZAeWFkcm8uY29tPiB3cm90
+ZToNCg0KICAgIFRoZSBjaGFuZ2UgYWRkcyBhIHdheSB0byBkZWJ1ZyBMT0dPIEVMUywgbGlrZXdp
+c2UgUExPR0kuDQogICAgDQogICAgQ2M6IFF1aW5uIFRyYW4gPHF1dHJhbkBtYXJ2ZWxsLmNvbT4N
+CiAgICBDYzogSGltYW5zaHUgTWFkaGFuaSA8aG1hZGhhbmlAbWFydmVsbC5jb20+DQogICAgU2ln
+bmVkLW9mZi1ieTogUm9tYW4gQm9sc2hha292IDxyLmJvbHNoYWtvdkB5YWRyby5jb20+DQogICAg
+LS0tDQogICAgIGRyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMgfCA5ICsrKysrKysrKw0K
+ICAgICAxIGZpbGUgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspDQogICAgDQogICAgZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMgYi9kcml2ZXJzL3Njc2kvcWxhMnh4
+eC9xbGFfaW9jYi5jDQogICAgaW5kZXggMTJiMzdiNzExYWU4Li5jZDJlMGY4OWU5YjUgMTAwNjQ0
+DQogICAgLS0tIGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2lvY2IuYw0KICAgICsrKyBiL2Ry
+aXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMNCiAgICBAQCAtMjYyNyw2ICsyNjI3LDEwIEBA
+IHFsYTI0eHhfZWxzX2RjbWRfaW9jYihzY3NpX3FsYV9ob3N0X3QgKnZoYSwgaW50IGVsc19vcGNv
+ZGUsDQogICAgIA0KICAgICAJbWVtY3B5KGVsc2lvLT51LmVsc19sb2dvLmVsc19sb2dvX3B5bGQs
+ICZsb2dvX3B5bGQsDQogICAgIAkgICAgc2l6ZW9mKHN0cnVjdCBlbHNfbG9nb19wYXlsb2FkKSk7
+DQogICAgKwlxbF9kYmcocWxfZGJnX2Rpc2MgKyBxbF9kYmdfYnVmZmVyLCB2aGEsIDB4MzA3NSwg
+IkxPR08gYnVmZmVyOiIpOw0KICAgICsJcWxfZHVtcF9idWZmZXIocWxfZGJnX2Rpc2MgKyBxbF9k
+YmdfYnVmZmVyLCB2aGEsIDB4MDEwYSwNCiAgICArCQkgICAgICAgZWxzaW8tPnUuZWxzX2xvZ28u
+ZWxzX2xvZ29fcHlsZCwNCiAgICArCQkgICAgICAgc2l6ZW9mKCplbHNpby0+dS5lbHNfbG9nby5l
+bHNfbG9nb19weWxkKSk7DQogICAgIA0KICAgICAJcnZhbCA9IHFsYTJ4MDBfc3RhcnRfc3Aoc3Ap
+Ow0KICAgICAJaWYgKHJ2YWwgIT0gUUxBX1NVQ0NFU1MpIHsNCiAgICBAQCAtMjcwNCw2ICsyNzA4
+LDExIEBAIHFsYTI0eHhfZWxzX2xvZ29faW9jYihzcmJfdCAqc3AsIHN0cnVjdCBlbHNfZW50cnlf
+MjR4eCAqZWxzX2lvY2IpDQogICAgIAkJZWxzX2lvY2ItPnJ4X2J5dGVfY291bnQgPSAwOw0KICAg
+ICAJCWVsc19pb2NiLT5yeF9hZGRyZXNzID0gMDsNCiAgICAgCQllbHNfaW9jYi0+cnhfbGVuID0g
+MDsNCiAgICArCQlxbF9kYmcocWxfZGJnX2lvICsgcWxfZGJnX2J1ZmZlciwgdmhhLCAweDMwNzYs
+DQogICAgKwkJICAgICAgICJMT0dPIEVMUyBJT0NCOiIpOw0KICAgICsJCXFsX2R1bXBfYnVmZmVy
+KHFsX2xvZ19pbmZvLCB2aGEsIDB4MDEwYiwNCiAgICArCQkJICAgICAgIGVsc19pb2NiLA0KICAg
+ICsJCQkgICAgICAgc2l6ZW9mKCplbHNfaW9jYikpOw0KICAgICAJfQ0KICAgICANCiAgICAgCXNw
+LT52aGEtPnFsYV9zdGF0cy5jb250cm9sX3JlcXVlc3RzKys7DQogICAgLS0gDQogICAgMi4yNC4w
+DQogICAgDQpMb29rcyBHb29kLg0KDQpBY2tlZC1ieTogSGltYW5zaHUgTWFkaGFuaSA8aG1hZGhh
+bmlAbWFydmVsbC5jb20+DQoNCg=
