@@ -1,34 +1,118 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Wed, 13 Nov 2019 17:57:53 +0000
-Subject: Re: [PATCH 2/3] target/core: Fix a use-after-free in the TMF handling code
-Message-Id: <20191113175753.ezp5z52odf7yrydz@SPB-NB-133.local>
+From: Quinn Tran <qutran@marvell.com>
+Date: Thu, 21 Nov 2019 22:50:58 +0000
+Subject: RE: [EXT] [PATCH v2 13/15] scsi: qla2xxx: Add async mode for qla24xx_els_dcmd_iocb
+Message-Id: <BYAPR18MB2759E4C4CDDA0D5447D7A5BDD54E0@BYAPR18MB2759.namprd18.prod.outlook.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191112035752.8338-3-bvanassche@acm.org>
-In-Reply-To: <20191112035752.8338-3-bvanassche@acm.org>
+References: <20191120222723.27779-1-r.bolshakov@yadro.com>
+ <20191120222723.27779-14-r.bolshakov@yadro.com>
+In-Reply-To: <20191120222723.27779-14-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+Cc: "linux@yadro.com" <linux@yadro.com>
 
-On Wed, Nov 13, 2019 at 09:05:15AM -0800, Bart Van Assche wrote:
-> On 11/13/19 4:02 AM, Roman Bolshakov wrote:
-> > As far as I understand the change prevents backstore directory removal
-> > from TCM configfs when a TMF is processed and targetcli would start
-> > to fail sporadically as it tries to delete configfs directories only once:
-> >    https://github.com/open-iscsi/rtslib-fb/blob/master/rtslib/node.py#L228
-> > 
-> > Should we hold se_device device without preventing removal of backstore?
-> 
-> How about using config_item_get()/config_item_put() instead of
-> target_depend_item()/target_undepend_item()?
-> 
-> Thanks,
-> 
-> Bart.
+Looks good.
 
-Yes,
-config_item_get()/config_item_put() or
-config_group_get()/config_group_put() seem to be better solutions.
+Acked-by: Quinn Tran <qutran@marvell.com>
 
-Thanks,
-Roman
+
+Regards,
+Quinn Tran
+
+-----Original Message-----
+From: Roman Bolshakov <r.bolshakov@yadro.com> 
+Sent: Wednesday, November 20, 2019 2:27 PM
+To: linux-scsi@vger.kernel.org; target-devel@vger.kernel.org
+Cc: linux@yadro.com; Roman Bolshakov <r.bolshakov@yadro.com>; Quinn Tran <qutran@marvell.com>
+Subject: [EXT] [PATCH v2 13/15] scsi: qla2xxx: Add async mode for qla24xx_els_dcmd_iocb
+
+External Email
+
+----------------------------------------------------------------------
+qla24xx_els_dcmd_iocb() performs LOGO and might be invoked in contexts where it is prohibited to sleep. The new wait parameter provides a way to use the function in such context, similarly to qla24xx_els_dcmd2_iocb().
+
+Cc: Quinn Tran <qutran@marvell.com>
+Cc: Himanshu Madhani <hmadhani@marvell.com
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+---
+ drivers/scsi/qla2xxx/qla_attr.c   |  2 +-
+ drivers/scsi/qla2xxx/qla_gbl.h    |  2 +-
+ drivers/scsi/qla2xxx/qla_iocb.c   | 11 +++++++++--
+ drivers/scsi/qla2xxx/qla_target.c |  2 +-
+ 4 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/scsi/qla2xxx/qla_attr.c b/drivers/scsi/qla2xxx/qla_attr.c index 481c05dbea06..35c703ec59ad 100644
+--- a/drivers/scsi/qla2xxx/qla_attr.c
++++ b/drivers/scsi/qla2xxx/qla_attr.c
+@@ -828,7 +828,7 @@ qla2x00_issue_logo(struct file *filp, struct kobject *kobj,
+ 
+ 	ql_log(ql_log_info, vha, 0x70e4, "%s: %d\n", __func__, type);
+ 
+-	qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, did);
++	qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, did, true);
+ 	return count;
+ }
+ 
+diff --git a/drivers/scsi/qla2xxx/qla_gbl.h b/drivers/scsi/qla2xxx/qla_gbl.h index 5b163ad85c34..df0f3421e3bb 100644
+--- a/drivers/scsi/qla2xxx/qla_gbl.h
++++ b/drivers/scsi/qla2xxx/qla_gbl.h
+@@ -43,7 +43,7 @@ extern void qla2x00_clear_loop_id(fc_port_t *fcport);  extern int qla2x00_fabric_login(scsi_qla_host_t *, fc_port_t *, uint16_t *);  extern int qla2x00_local_device_login(scsi_qla_host_t *, fc_port_t *);
+ 
+-extern int qla24xx_els_dcmd_iocb(scsi_qla_host_t *, int, port_id_t);
++extern int qla24xx_els_dcmd_iocb(scsi_qla_host_t *, int, port_id_t, 
++bool);
+ extern int qla24xx_els_dcmd2_iocb(scsi_qla_host_t *, int, fc_port_t *, bool);  extern void qla2x00_els_dcmd2_free(scsi_qla_host_t *vha,
+ 				   struct els_plogi *els_plogi);
+diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c index 53ccbd6b71ed..12b37b711ae8 100644
+--- a/drivers/scsi/qla2xxx/qla_iocb.c
++++ b/drivers/scsi/qla2xxx/qla_iocb.c
+@@ -2562,7 +2562,7 @@ static void qla2x00_els_dcmd_sp_done(srb_t *sp, int res)
+ 
+ int
+ qla24xx_els_dcmd_iocb(scsi_qla_host_t *vha, int els_opcode,
+-    port_id_t remote_did)
++    port_id_t remote_did, bool wait)
+ {
+ 	srb_t *sp;
+ 	fc_port_t *fcport = NULL;
+@@ -2601,6 +2601,8 @@ qla24xx_els_dcmd_iocb(scsi_qla_host_t *vha, int els_opcode,
+ 	elsio->timeout = qla2x00_els_dcmd_iocb_timeout;
+ 	qla2x00_init_timer(sp, ELS_DCMD_TIMEOUT);
+ 	init_completion(&sp->u.iocb_cmd.u.els_logo.comp);
++	if (wait)
++		sp->flags = SRB_WAKEUP_ON_COMP;
+ 	sp->done = qla2x00_els_dcmd_sp_done;
+ 	sp->free = qla2x00_els_dcmd_sp_free;
+ 
+@@ -2637,9 +2639,14 @@ qla24xx_els_dcmd_iocb(scsi_qla_host_t *vha, int els_opcode,
+ 	    sp->name, sp->handle, fcport->loop_id, fcport->d_id.b.domain,
+ 	    fcport->d_id.b.area, fcport->d_id.b.al_pa);
+ 
+-	wait_for_completion(&elsio->u.els_logo.comp);
++	if (wait) {
++		wait_for_completion(&elsio->u.els_logo.comp);
++	} else {
++		goto done;
++	}
+ 
+ 	sp->free(sp);
++done:
+ 	return rval;
+ }
+ 
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index 68c14143e50e..0f2bc4cd562f 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -932,7 +932,7 @@ qlt_send_first_logo(struct scsi_qla_host *vha, qlt_port_logo_t *logo)
+ 
+ 	mutex_unlock(&vha->vha_tgt.tgt_mutex);
+ 
+-	res = qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, logo->id);
++	res = qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, logo->id, true);
+ 
+ 	mutex_lock(&vha->vha_tgt.tgt_mutex);
+ 	list_del(&logo->list);
+--
+2.24.0
