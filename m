@@ -1,44 +1,47 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Mon, 25 Nov 2019 16:56:54 +0000
-Subject: [PATCH v3 05/13] scsi: qla2xxx: Change discovery state before PLOGI
-Message-Id: <20191125165702.1013-6-r.bolshakov@yadro.com>
+From: Himanshu Madhani <hmadhani@marvell.com>
+Date: Thu, 21 Nov 2019 16:39:39 +0000
+Subject: Re: [EXT] [PATCH v2 07/15] scsi: qla2xxx: Fix PLOGI payload and ELS IOCB dump length
+Message-Id: <15A0B661-7E18-4884-84CA-699284FB95D4@marvell.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191125165702.1013-1-r.bolshakov@yadro.com>
-In-Reply-To: <20191125165702.1013-1-r.bolshakov@yadro.com>
+References: <20191120222723.27779-1-r.bolshakov@yadro.com>
+ <20191120222723.27779-8-r.bolshakov@yadro.com>
+In-Reply-To: <20191120222723.27779-8-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, stable@vger.kernel.org, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
+To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>
 
-When a port sends PLOGI, discovery state should be changed to login
-pending, otherwise RELOGIN_NEEDED bit is set in
-qla24xx_handle_plogi_done_event(). RELOGIN_NEEDED triggers another
-PLOGI, and it never goes out of the loop until login timer expires.
-
-Fixes: 8777e4314d397 ("scsi: qla2xxx: Migrate NVME N2N handling into state machine")
-Fixes: 8b5292bcfcacf ("scsi: qla2xxx: Fix Relogin to prevent modifying scan_state flag")
-Cc: Quinn Tran <qutran@marvell.com>
-Cc: stable@vger.kernel.org
-Acked-by: Himanshu Madhani <hmadhani@marvell.com>
-Reviewed-by: Hannes Reinecke <hare@suse.de>
-Tested-by: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/scsi/qla2xxx/qla_init.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c
-index 4f3da968163e..fcb309be50d9 100644
---- a/drivers/scsi/qla2xxx/qla_init.c
-+++ b/drivers/scsi/qla2xxx/qla_init.c
-@@ -533,6 +533,7 @@ static int qla_post_els_plogi_work(struct scsi_qla_host *vha, fc_port_t *fcport)
- 
- 	e->u.fcport.fcport = fcport;
- 	fcport->flags |= FCF_ASYNC_ACTIVE;
-+	fcport->disc_state = DSC_LOGIN_PEND;
- 	return qla2x00_post_work(vha, e);
- }
- 
--- 
-2.24.0
+DQoNCu+7v09uIDExLzIwLzE5LCA0OjI4IFBNLCAiUm9tYW4gQm9sc2hha292IiA8ci5ib2xzaGFr
+b3ZAeWFkcm8uY29tPiB3cm90ZToNCg0KICAgIEV4dGVybmFsIEVtYWlsDQogICAgDQogICAgLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQ0KICAgIFRoZSBzaXplIG9mIHRoZSBidWZmZXIgaXMgaGFyZGNvZGVkIGFzIDB4
+NzAgb3IgMTEyIGJ5dGVzLCB3aGlsZSB0aGUNCiAgICBzaXplIG9mIEVMUyBJT0NCIGlzIDB4NDAg
+YW5kIHRoZSBzaXplIG9mIFBMT0dJIHBheWxvYWQgcmV0dXJuZWQgYnkNCiAgICBHZXQgUGFyYW1l
+dGVycyBjb21tYW5kIGlzIDB4NzQuDQogICAgDQogICAgQ2M6IFF1aW5uIFRyYW4gPHF1dHJhbkBt
+YXJ2ZWxsLmNvbT4NCiAgICBDYzogSGltYW5zaHUgTWFkaGFuaSA8aG1hZGhhbmlAbWFydmVsbC5j
+b20+DQogICAgU2lnbmVkLW9mZi1ieTogUm9tYW4gQm9sc2hha292IDxyLmJvbHNoYWtvdkB5YWRy
+by5jb20+DQogICAgLS0tDQogICAgIGRyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMgfCA2
+ICsrKystLQ0KICAgICAxIGZpbGUgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9u
+cygtKQ0KICAgIA0KICAgIGRpZmYgLS1naXQgYS9kcml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfaW9j
+Yi5jIGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2lvY2IuYw0KICAgIGluZGV4IGIyNWY4N2Zm
+OGNkZS4uYmQ4MTYwZmRkY2QzIDEwMDY0NA0KICAgIC0tLSBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4
+L3FsYV9pb2NiLmMNCiAgICArKysgYi9kcml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfaW9jYi5jDQog
+ICAgQEAgLTI2NzYsNyArMjY3Niw4IEBAIHFsYTI0eHhfZWxzX2xvZ29faW9jYihzcmJfdCAqc3As
+IHN0cnVjdCBlbHNfZW50cnlfMjR4eCAqZWxzX2lvY2IpDQogICAgIAkJcWxfZGJnKHFsX2RiZ19p
+byArIHFsX2RiZ19idWZmZXIsIHZoYSwgMHgzMDczLA0KICAgICAJCSAgICAiUExPR0kgRUxTIElP
+Q0I6XG4iKTsNCiAgICAgCQlxbF9kdW1wX2J1ZmZlcihxbF9sb2dfaW5mbywgdmhhLCAweDAxMDks
+DQogICAgLQkJICAgICh1aW50OF90ICopZWxzX2lvY2IsIDB4NzApOw0KICAgICsJCSAgICAodWlu
+dDhfdCAqKWVsc19pb2NiLA0KICAgICsJCSAgICBzaXplb2YoKmVsc19pb2NiKSk7DQogICAgIAl9
+IGVsc2Ugew0KICAgICAJCWVsc19pb2NiLT5jb250cm9sX2ZsYWdzID0gMSA8PCAxMzsNCiAgICAg
+CQllbHNfaW9jYi0+dHhfYnl0ZV9jb3VudCA9DQogICAgQEAgLTI5MzQsNyArMjkzNSw4IEBAIHFs
+YTI0eHhfZWxzX2RjbWQyX2lvY2Ioc2NzaV9xbGFfaG9zdF90ICp2aGEsIGludCBlbHNfb3Bjb2Rl
+LA0KICAgICANCiAgICAgCXFsX2RiZyhxbF9kYmdfZGlzYyArIHFsX2RiZ19idWZmZXIsIHZoYSwg
+MHgzMDczLCAiUExPR0kgYnVmZmVyOlxuIik7DQogICAgIAlxbF9kdW1wX2J1ZmZlcihxbF9kYmdf
+ZGlzYyArIHFsX2RiZ19idWZmZXIsIHZoYSwgMHgwMTA5LA0KICAgIC0JICAgICh1aW50OF90ICop
+ZWxzaW8tPnUuZWxzX3Bsb2dpLmVsc19wbG9naV9weWxkLCAweDcwKTsNCiAgICArCSAgICAodWlu
+dDhfdCAqKWVsc2lvLT51LmVsc19wbG9naS5lbHNfcGxvZ2lfcHlsZCwNCiAgICArCSAgICBzaXpl
+b2YoKmVsc2lvLT51LmVsc19wbG9naS5lbHNfcGxvZ2lfcHlsZCkpOw0KICAgICANCiAgICAgCXJ2
+YWwgPSBxbGEyeDAwX3N0YXJ0X3NwKHNwKTsNCiAgICAgCWlmIChydmFsICE9IFFMQV9TVUNDRVNT
+KSB7DQogICAgLS0gDQogICAgMi4yNC4wDQogICAgDQogICAgDQpMb29rcyBHb29kLg0KDQpBY2tl
+ZC1ieTogSGltYW5zaHUgTWFkaGFuaSA8aG1hZGhhbmlAbWFydmVsbC5jb20+DQoNCg=
