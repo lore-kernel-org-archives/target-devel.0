@@ -1,62 +1,55 @@
-From: Quinn Tran <qutran@marvell.com>
-Date: Wed, 20 Nov 2019 22:52:17 +0000
-Subject: RE: [EXT] [PATCH v2 05/15] scsi: qla2xxx: Allow PLOGI in target mode
-Message-Id: <BYAPR18MB2759F79A6F217771C44CDF0BD54F0@BYAPR18MB2759.namprd18.prod.outlook.com>
+From: Himanshu Madhani <hmadhani@marvell.com>
+Date: Thu, 21 Nov 2019 16:38:41 +0000
+Subject: Re: [EXT] [PATCH v2 05/15] scsi: qla2xxx: Allow PLOGI in target mode
+Message-Id: <02BC133C-1758-4FD7-AD39-5B97AD4C6158@marvell.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191120222723.27779-1-r.bolshakov@yadro.com>
  <20191120222723.27779-6-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-6-r.bolshakov@yadro.com>
+ <BYAPR18MB2759F79A6F217771C44CDF0BD54F0@BYAPR18MB2759.namprd18.prod.outlook.com>
+In-Reply-To: <BYAPR18MB2759F79A6F217771C44CDF0BD54F0@BYAPR18MB2759.namprd18.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: "linux@yadro.com" <linux@yadro.com>, Himanshu Madhani <hmadhani@marvell.com>
+To: Quinn Tran <qutran@marvell.com>, Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+Cc: "linux@yadro.com" <linux@yadro.com>
 
-According to FC-LS-3 (Fibre Channel Link Services) 6.3.2.4 "N_Port Login - No Fabric present", if both parties in the point-to-point connection know N_Port_Names of each other, Nx_Port with the highest N_Port_name shall transmit PLOGI. The specification sets no restrictions on the port role that should send PLOGI.
-
-However, FCP-4 (Fibre Channel Protocol for SCSI, Fourth Version) 6.2 "Overview of Process Login and Process Logout", instructs that in point-to-point topology, initiator shall send explicit PRLI ELS.
-
-The change fixes stuck P2P login, when target WWPN is higher than initiator WWPN.
-
-Cc: Quinn Tran <qutran@marvell.com>
-Cc: Himanshu Madhani <hmadhani@marvell.com>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/scsi/qla2xxx/qla_init.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c index fcb309be50d9..12391815be06 100644
---- a/drivers/scsi/qla2xxx/qla_init.c
-+++ b/drivers/scsi/qla2xxx/qla_init.c
-@@ -1527,10 +1527,6 @@ int qla24xx_fcport_handle_login(struct scsi_qla_host *vha, fc_port_t *fcport)
- 		}
- 	}
- 
--	/* for pure Target Mode. Login will not be initiated */
--	if (vha->host->active_mode == MODE_TARGET)
--		return 0;
--
-QT:  Nack.  Leave this hunk.  Instead do this
-
-if (vha->host->active_mode == MODE_TARGET) && !N2N_TOPO(vha->hw)
-
---
-
-
- 	if (fcport->flags & FCF_ASYNC_SENT) {
- 		set_bit(RELOGIN_NEEDED, &vha->dpc_flags);
- 		return 0;
-@@ -1720,6 +1716,10 @@ void qla24xx_handle_relogin_event(scsi_qla_host_t *vha,  void qla_handle_els_plogi_done(scsi_qla_host_t *vha,
- 				      struct event_arg *ea)
- {
-+	/* for pure Target Mode, PRLI will not be initiated */
-+	if (vha->host->active_mode == MODE_TARGET)
-+		return;
-+
-QT:  Ack.
-
- 	ql_dbg(ql_dbg_disc, vha, 0x2118,
- 	    "%s %d %8phC post PRLI\n",
- 	    __func__, __LINE__, ea->fcport->port_name);
---
-2.24.0
+DQoNCu+7v09uIDExLzIwLzE5LCA0OjUyIFBNLCAiUXVpbm4gVHJhbiIgPHF1dHJhbkBtYXJ2ZWxs
+LmNvbT4gd3JvdGU6DQoNCiAgICBBY2NvcmRpbmcgdG8gRkMtTFMtMyAoRmlicmUgQ2hhbm5lbCBM
+aW5rIFNlcnZpY2VzKSA2LjMuMi40ICJOX1BvcnQgTG9naW4gLSBObyBGYWJyaWMgcHJlc2VudCIs
+IGlmIGJvdGggcGFydGllcyBpbiB0aGUgcG9pbnQtdG8tcG9pbnQgY29ubmVjdGlvbiBrbm93IE5f
+UG9ydF9OYW1lcyBvZiBlYWNoIG90aGVyLCBOeF9Qb3J0IHdpdGggdGhlIGhpZ2hlc3QgTl9Qb3J0
+X25hbWUgc2hhbGwgdHJhbnNtaXQgUExPR0kuIFRoZSBzcGVjaWZpY2F0aW9uIHNldHMgbm8gcmVz
+dHJpY3Rpb25zIG9uIHRoZSBwb3J0IHJvbGUgdGhhdCBzaG91bGQgc2VuZCBQTE9HSS4NCiAgICAN
+CiAgICBIb3dldmVyLCBGQ1AtNCAoRmlicmUgQ2hhbm5lbCBQcm90b2NvbCBmb3IgU0NTSSwgRm91
+cnRoIFZlcnNpb24pIDYuMiAiT3ZlcnZpZXcgb2YgUHJvY2VzcyBMb2dpbiBhbmQgUHJvY2VzcyBM
+b2dvdXQiLCBpbnN0cnVjdHMgdGhhdCBpbiBwb2ludC10by1wb2ludCB0b3BvbG9neSwgaW5pdGlh
+dG9yIHNoYWxsIHNlbmQgZXhwbGljaXQgUFJMSSBFTFMuDQogICAgDQogICAgVGhlIGNoYW5nZSBm
+aXhlcyBzdHVjayBQMlAgbG9naW4sIHdoZW4gdGFyZ2V0IFdXUE4gaXMgaGlnaGVyIHRoYW4gaW5p
+dGlhdG9yIFdXUE4uDQogICAgDQogICAgQ2M6IFF1aW5uIFRyYW4gPHF1dHJhbkBtYXJ2ZWxsLmNv
+bT4NCiAgICBDYzogSGltYW5zaHUgTWFkaGFuaSA8aG1hZGhhbmlAbWFydmVsbC5jb20+DQogICAg
+U2lnbmVkLW9mZi1ieTogUm9tYW4gQm9sc2hha292IDxyLmJvbHNoYWtvdkB5YWRyby5jb20+DQog
+ICAgLS0tDQogICAgIGRyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pbml0LmMgfCA4ICsrKystLS0t
+DQogICAgIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pDQog
+ICAgDQogICAgZGlmZiAtLWdpdCBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pbml0LmMgYi9k
+cml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfaW5pdC5jIGluZGV4IGZjYjMwOWJlNTBkOS4uMTIzOTE4
+MTViZTA2IDEwMDY0NA0KICAgIC0tLSBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pbml0LmMN
+CiAgICArKysgYi9kcml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfaW5pdC5jDQogICAgQEAgLTE1Mjcs
+MTAgKzE1MjcsNiBAQCBpbnQgcWxhMjR4eF9mY3BvcnRfaGFuZGxlX2xvZ2luKHN0cnVjdCBzY3Np
+X3FsYV9ob3N0ICp2aGEsIGZjX3BvcnRfdCAqZmNwb3J0KQ0KICAgICAJCX0NCiAgICAgCX0NCiAg
+ICAgDQogICAgLQkvKiBmb3IgcHVyZSBUYXJnZXQgTW9kZS4gTG9naW4gd2lsbCBub3QgYmUgaW5p
+dGlhdGVkICovDQogICAgLQlpZiAodmhhLT5ob3N0LT5hY3RpdmVfbW9kZSA9PSBNT0RFX1RBUkdF
+VCkNCiAgICAtCQlyZXR1cm4gMDsNCiAgICAtDQogICAgUVQ6ICBOYWNrLiAgTGVhdmUgdGhpcyBo
+dW5rLiAgSW5zdGVhZCBkbyB0aGlzDQoNCiAgICANCiAgICBpZiAodmhhLT5ob3N0LT5hY3RpdmVf
+bW9kZSA9PSBNT0RFX1RBUkdFVCkgJiYgIU4yTl9UT1BPKHZoYS0+aHcpDQogICAgDQogICAgLS0N
+Cg0KQWdyZWUuIFBsZWFzZSByZXNlbmQgd2l0aCB1cGRhdGUuDQogICAgDQogICAgDQogICAgIAlp
+ZiAoZmNwb3J0LT5mbGFncyAmIEZDRl9BU1lOQ19TRU5UKSB7DQogICAgIAkJc2V0X2JpdChSRUxP
+R0lOX05FRURFRCwgJnZoYS0+ZHBjX2ZsYWdzKTsNCiAgICAgCQlyZXR1cm4gMDsNCiAgICBAQCAt
+MTcyMCw2ICsxNzE2LDEwIEBAIHZvaWQgcWxhMjR4eF9oYW5kbGVfcmVsb2dpbl9ldmVudChzY3Np
+X3FsYV9ob3N0X3QgKnZoYSwgIHZvaWQgcWxhX2hhbmRsZV9lbHNfcGxvZ2lfZG9uZShzY3NpX3Fs
+YV9ob3N0X3QgKnZoYSwNCiAgICAgCQkJCSAgICAgIHN0cnVjdCBldmVudF9hcmcgKmVhKQ0KICAg
+ICB7DQogICAgKwkvKiBmb3IgcHVyZSBUYXJnZXQgTW9kZSwgUFJMSSB3aWxsIG5vdCBiZSBpbml0
+aWF0ZWQgKi8NCiAgICArCWlmICh2aGEtPmhvc3QtPmFjdGl2ZV9tb2RlID09IE1PREVfVEFSR0VU
+KQ0KICAgICsJCXJldHVybjsNCiAgICArDQogICAgUVQ6ICBBY2suDQogICAgDQogICAgIAlxbF9k
+YmcocWxfZGJnX2Rpc2MsIHZoYSwgMHgyMTE4LA0KICAgICAJICAgICIlcyAlZCAlOHBoQyBwb3N0
+IFBSTElcbiIsDQogICAgIAkgICAgX19mdW5jX18sIF9fTElORV9fLCBlYS0+ZmNwb3J0LT5wb3J0
+X25hbWUpOw0KICAgIC0tDQogICAgMi4yNC4wDQogICAgDQogICAgDQoNCg=
