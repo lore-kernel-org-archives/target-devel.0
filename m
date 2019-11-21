@@ -1,48 +1,44 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Wed, 20 Nov 2019 22:27:14 +0000
-Subject: [PATCH v2 06/15] scsi: qla2xxx: Don't call qlt_async_event twice
-Message-Id: <20191120222723.27779-7-r.bolshakov@yadro.com>
+From: Himanshu Madhani <hmadhani@marvell.com>
+Date: Thu, 21 Nov 2019 15:43:20 +0000
+Subject: Re: [PATCH v2 06/15] scsi: qla2xxx: Don't call qlt_async_event twice
+Message-Id: <54622BCF-5D5B-4D7F-870B-D5B04E4030FB@marvell.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191120222723.27779-1-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-1-r.bolshakov@yadro.com>
+ <20191120222723.27779-7-r.bolshakov@yadro.com>
+In-Reply-To: <20191120222723.27779-7-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>
+To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>
 
-MBA_PORT_UPDATE generates duplicate log lines in target mode because
-qlt_async_event is called twice. Drop the calls within the case as
-the function will be called right after the switch statement.
-
-Cc: Quinn Tran <qutran@marvell.com>
-Cc: Himanshu Madhani <hmadhani@marvell.com>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/scsi/qla2xxx/qla_isr.c | 4 ----
- 1 file changed, 4 deletions(-)
-
-diff --git a/drivers/scsi/qla2xxx/qla_isr.c b/drivers/scsi/qla2xxx/qla_isr.c
-index 1b8f297449cf..c6274178b0b0 100644
---- a/drivers/scsi/qla2xxx/qla_isr.c
-+++ b/drivers/scsi/qla2xxx/qla_isr.c
-@@ -1061,8 +1061,6 @@ qla2x00_async_event(scsi_qla_host_t *vha, struct rsp_que *rsp, uint16_t *mb)
- 			ql_dbg(ql_dbg_async, vha, 0x5011,
- 			    "Asynchronous PORT UPDATE ignored %04x/%04x/%04x.\n",
- 			    mb[1], mb[2], mb[3]);
--
--			qlt_async_event(mb[0], vha, mb);
- 			break;
- 		}
- 
-@@ -1079,8 +1077,6 @@ qla2x00_async_event(scsi_qla_host_t *vha, struct rsp_que *rsp, uint16_t *mb)
- 		set_bit(LOOP_RESYNC_NEEDED, &vha->dpc_flags);
- 		set_bit(LOCAL_LOOP_UPDATE, &vha->dpc_flags);
- 		set_bit(VP_CONFIG_OK, &vha->vp_flags);
--
--		qlt_async_event(mb[0], vha, mb);
- 		break;
- 
- 	case MBA_RSCN_UPDATE:		/* State Change Registration */
--- 
-2.24.0
+DQoNCu+7v09uIDExLzIwLzE5LCA0OjI3IFBNLCAidGFyZ2V0LWRldmVsLW93bmVyQHZnZXIua2Vy
+bmVsLm9yZyBvbiBiZWhhbGYgb2YgUm9tYW4gQm9sc2hha292IiA8dGFyZ2V0LWRldmVsLW93bmVy
+QHZnZXIua2VybmVsLm9yZyBvbiBiZWhhbGYgb2Ygci5ib2xzaGFrb3ZAeWFkcm8uY29tPiB3cm90
+ZToNCg0KICAgIE1CQV9QT1JUX1VQREFURSBnZW5lcmF0ZXMgZHVwbGljYXRlIGxvZyBsaW5lcyBp
+biB0YXJnZXQgbW9kZSBiZWNhdXNlDQogICAgcWx0X2FzeW5jX2V2ZW50IGlzIGNhbGxlZCB0d2lj
+ZS4gRHJvcCB0aGUgY2FsbHMgd2l0aGluIHRoZSBjYXNlIGFzDQogICAgdGhlIGZ1bmN0aW9uIHdp
+bGwgYmUgY2FsbGVkIHJpZ2h0IGFmdGVyIHRoZSBzd2l0Y2ggc3RhdGVtZW50Lg0KICAgIA0KICAg
+IENjOiBRdWlubiBUcmFuIDxxdXRyYW5AbWFydmVsbC5jb20+DQogICAgQ2M6IEhpbWFuc2h1IE1h
+ZGhhbmkgPGhtYWRoYW5pQG1hcnZlbGwuY29tPg0KICAgIFNpZ25lZC1vZmYtYnk6IFJvbWFuIEJv
+bHNoYWtvdiA8ci5ib2xzaGFrb3ZAeWFkcm8uY29tPg0KICAgIC0tLQ0KICAgICBkcml2ZXJzL3Nj
+c2kvcWxhMnh4eC9xbGFfaXNyLmMgfCA0IC0tLS0NCiAgICAgMSBmaWxlIGNoYW5nZWQsIDQgZGVs
+ZXRpb25zKC0pDQogICAgDQogICAgZGlmZiAtLWdpdCBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3Fs
+YV9pc3IuYyBiL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pc3IuYw0KICAgIGluZGV4IDFiOGYy
+OTc0NDljZi4uYzYyNzQxNzhiMGIwIDEwMDY0NA0KICAgIC0tLSBhL2RyaXZlcnMvc2NzaS9xbGEy
+eHh4L3FsYV9pc3IuYw0KICAgICsrKyBiL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pc3IuYw0K
+ICAgIEBAIC0xMDYxLDggKzEwNjEsNiBAQCBxbGEyeDAwX2FzeW5jX2V2ZW50KHNjc2lfcWxhX2hv
+c3RfdCAqdmhhLCBzdHJ1Y3QgcnNwX3F1ZSAqcnNwLCB1aW50MTZfdCAqbWIpDQogICAgIAkJCXFs
+X2RiZyhxbF9kYmdfYXN5bmMsIHZoYSwgMHg1MDExLA0KICAgICAJCQkgICAgIkFzeW5jaHJvbm91
+cyBQT1JUIFVQREFURSBpZ25vcmVkICUwNHgvJTA0eC8lMDR4LlxuIiwNCiAgICAgCQkJICAgIG1i
+WzFdLCBtYlsyXSwgbWJbM10pOw0KICAgIC0NCiAgICAtCQkJcWx0X2FzeW5jX2V2ZW50KG1iWzBd
+LCB2aGEsIG1iKTsNCiAgICAgCQkJYnJlYWs7DQogICAgIAkJfQ0KICAgICANCiAgICBAQCAtMTA3
+OSw4ICsxMDc3LDYgQEAgcWxhMngwMF9hc3luY19ldmVudChzY3NpX3FsYV9ob3N0X3QgKnZoYSwg
+c3RydWN0IHJzcF9xdWUgKnJzcCwgdWludDE2X3QgKm1iKQ0KICAgICAJCXNldF9iaXQoTE9PUF9S
+RVNZTkNfTkVFREVELCAmdmhhLT5kcGNfZmxhZ3MpOw0KICAgICAJCXNldF9iaXQoTE9DQUxfTE9P
+UF9VUERBVEUsICZ2aGEtPmRwY19mbGFncyk7DQogICAgIAkJc2V0X2JpdChWUF9DT05GSUdfT0ss
+ICZ2aGEtPnZwX2ZsYWdzKTsNCiAgICAtDQogICAgLQkJcWx0X2FzeW5jX2V2ZW50KG1iWzBdLCB2
+aGEsIG1iKTsNCiAgICAgCQlicmVhazsNCiAgICAgDQogICAgIAljYXNlIE1CQV9SU0NOX1VQREFU
+RToJCS8qIFN0YXRlIENoYW5nZSBSZWdpc3RyYXRpb24gKi8NCiAgICAtLSANCiAgICAyLjI0LjAN
+CiAgICANCiAgICANCg0KTG9va3MgR29vZC4gDQoNCkFja2VkLWJ5OiBIaW1hbnNodSBNYWRoYW5p
+IDxobWFkaGFuaUBtYXJ2ZWwuY29tPg0KDQo
