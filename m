@@ -1,7 +1,7 @@
-From: Quinn Tran <qutran@marvell.com>
-Date: Wed, 20 Nov 2019 23:53:43 +0000
-Subject: RE: [EXT] [PATCH v2 09/15] scsi: qla2xxx: Send Notify ACK after N2N PLOGI
-Message-Id: <BYAPR18MB27591E2D46D9CB81C30B4004D54F0@BYAPR18MB2759.namprd18.prod.outlook.com>
+From: Himanshu Madhani <hmadhani@marvell.com>
+Date: Thu, 21 Nov 2019 16:40:33 +0000
+Subject: Re: [EXT] [PATCH v2 09/15] scsi: qla2xxx: Send Notify ACK after N2N PLOGI
+Message-Id: <BB852933-3398-4CB2-8F59-96680F6A5E87@marvell.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191120222723.27779-1-r.bolshakov@yadro.com>
  <20191120222723.27779-10-r.bolshakov@yadro.com>
@@ -10,47 +10,32 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: "linux@yadro.com" <linux@yadro.com>, Himanshu Madhani <hmadhani@marvell.com>, Krishna Kant <krishna.kant@purestorage.com>, Alexei Potashnik <alexei@purestorage.com>
+Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>, Krishna Kant <krishna.kant@purestorage.com>, Alexei Potashnik <alexei@purestorage.com>
 
-Acked-by: Quinn Tran <qutran@marvell.com>
-
-
-
------Original Message-----
-From: Roman Bolshakov <r.bolshakov@yadro.com> 
-Sent: Wednesday, November 20, 2019 2:27 PM
-To: linux-scsi@vger.kernel.org; target-devel@vger.kernel.org
-Cc: linux@yadro.com; Roman Bolshakov <r.bolshakov@yadro.com>; Quinn Tran <qutran@marvell.com>; Himanshu Madhani <hmadhani@marvell.com>; Krishna Kant <krishna.kant@purestorage.com>; Alexei Potashnik <alexei@purestorage.com>
-Subject: [EXT] [PATCH v2 09/15] scsi: qla2xxx: Send Notify ACK after N2N PLOGI
-
-External Email
-
-----------------------------------------------------------------------
-qlt_handle_login schedules session for deletion even if a login is in progress. That causes login bouncing, i.e. a few logins are made before it settles down.
-
-Complete the first login by sending Notify Acknowledge IOCB via qlt_plogi_ack_unref if the session is pending login completion.
-
-Fixes: 9cd883f07a54 ("scsi: qla2xxx: Fix session cleanup for N2N")
-Cc: Quinn Tran <qutran@marvell.com>
-Cc: Himanshu Madhani <hmadhani@marvell.com>
-Cc: Krishna Kant <krishna.kant@purestorage.com>
-Cc: Alexei Potashnik <alexei@purestorage.com>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/scsi/qla2xxx/qla_target.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
-index ab62fcba8ab3..853fa187d827 100644
---- a/drivers/scsi/qla2xxx/qla_target.c
-+++ b/drivers/scsi/qla2xxx/qla_target.c
-@@ -4802,6 +4802,7 @@ static int qlt_handle_login(struct scsi_qla_host *vha,
- 
- 	switch (sess->disc_state) {
- 	case DSC_DELETED:
-+	case DSC_LOGIN_PEND:
- 		qlt_plogi_ack_unref(vha, pla);
- 		break;
- 
---
-2.24.0
+DQoNCu+7v09uIDExLzIwLzE5LCA0OjI3IFBNLCAiUm9tYW4gQm9sc2hha292IiA8ci5ib2xzaGFr
+b3ZAeWFkcm8uY29tPiB3cm90ZToNCg0KICAgIEV4dGVybmFsIEVtYWlsDQogICAgDQogICAgLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQ0KICAgIHFsdF9oYW5kbGVfbG9naW4gc2NoZWR1bGVzIHNlc3Npb24gZm9yIGRl
+bGV0aW9uIGV2ZW4gaWYgYSBsb2dpbiBpcyBpbg0KICAgIHByb2dyZXNzLiBUaGF0IGNhdXNlcyBs
+b2dpbiBib3VuY2luZywgaS5lLiBhIGZldyBsb2dpbnMgYXJlIG1hZGUgYmVmb3JlDQogICAgaXQg
+c2V0dGxlcyBkb3duLg0KICAgIA0KICAgIENvbXBsZXRlIHRoZSBmaXJzdCBsb2dpbiBieSBzZW5k
+aW5nIE5vdGlmeSBBY2tub3dsZWRnZSBJT0NCIHZpYQ0KICAgIHFsdF9wbG9naV9hY2tfdW5yZWYg
+aWYgdGhlIHNlc3Npb24gaXMgcGVuZGluZyBsb2dpbiBjb21wbGV0aW9uLg0KICAgIA0KICAgIEZp
+eGVzOiA5Y2Q4ODNmMDdhNTQgKCJzY3NpOiBxbGEyeHh4OiBGaXggc2Vzc2lvbiBjbGVhbnVwIGZv
+ciBOMk4iKQ0KICAgIENjOiBRdWlubiBUcmFuIDxxdXRyYW5AbWFydmVsbC5jb20+DQogICAgQ2M6
+IEhpbWFuc2h1IE1hZGhhbmkgPGhtYWRoYW5pQG1hcnZlbGwuY29tPg0KICAgIENjOiBLcmlzaG5h
+IEthbnQgPGtyaXNobmEua2FudEBwdXJlc3RvcmFnZS5jb20+DQogICAgQ2M6IEFsZXhlaSBQb3Rh
+c2huaWsgPGFsZXhlaUBwdXJlc3RvcmFnZS5jb20+DQogICAgU2lnbmVkLW9mZi1ieTogUm9tYW4g
+Qm9sc2hha292IDxyLmJvbHNoYWtvdkB5YWRyby5jb20+DQogICAgLS0tDQogICAgIGRyaXZlcnMv
+c2NzaS9xbGEyeHh4L3FsYV90YXJnZXQuYyB8IDEgKw0KICAgICAxIGZpbGUgY2hhbmdlZCwgMSBp
+bnNlcnRpb24oKykNCiAgICANCiAgICBkaWZmIC0tZ2l0IGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgv
+cWxhX3RhcmdldC5jIGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX3RhcmdldC5jDQogICAgaW5k
+ZXggYWI2MmZjYmE4YWIzLi44NTNmYTE4N2Q4MjcgMTAwNjQ0DQogICAgLS0tIGEvZHJpdmVycy9z
+Y3NpL3FsYTJ4eHgvcWxhX3RhcmdldC5jDQogICAgKysrIGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgv
+cWxhX3RhcmdldC5jDQogICAgQEAgLTQ4MDIsNiArNDgwMiw3IEBAIHN0YXRpYyBpbnQgcWx0X2hh
+bmRsZV9sb2dpbihzdHJ1Y3Qgc2NzaV9xbGFfaG9zdCAqdmhhLA0KICAgICANCiAgICAgCXN3aXRj
+aCAoc2Vzcy0+ZGlzY19zdGF0ZSkgew0KICAgICAJY2FzZSBEU0NfREVMRVRFRDoNCiAgICArCWNh
+c2UgRFNDX0xPR0lOX1BFTkQ6DQogICAgIAkJcWx0X3Bsb2dpX2Fja191bnJlZih2aGEsIHBsYSk7
+DQogICAgIAkJYnJlYWs7DQogICAgIA0KICAgIC0tIA0KICAgIDIuMjQuMA0KICAgIA0KICAgIA0K
+TG9va3MgR29vZC4gDQoNCkFja2VkLWJ5OiBIaW1hbnNodSBNYWRoYW5pIDxobWFkaGFuaUBtYXJ2
+ZWxsLmNvbT4NCg0K
