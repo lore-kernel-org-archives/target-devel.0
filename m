@@ -1,7 +1,7 @@
-From: Quinn Tran <qutran@marvell.com>
-Date: Wed, 20 Nov 2019 23:06:14 +0000
-Subject: RE: [EXT] [PATCH v2 08/15] scsi: qla2xxx: Configure local loop for N2N target
-Message-Id: <BYAPR18MB2759EA9C77A9CD0807F43AC0D54F0@BYAPR18MB2759.namprd18.prod.outlook.com>
+From: Himanshu Madhani <hmadhani@marvell.com>
+Date: Thu, 21 Nov 2019 16:39:09 +0000
+Subject: Re: [EXT] [PATCH v2 08/15] scsi: qla2xxx: Configure local loop for N2N target
+Message-Id: <7CEC2BC8-2923-469A-9156-CFDBF42565DF@marvell.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191120222723.27779-1-r.bolshakov@yadro.com>
  <20191120222723.27779-9-r.bolshakov@yadro.com>
@@ -10,43 +10,43 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: "linux@yadro.com" <linux@yadro.com>, Himanshu Madhani <hmadhani@marvell.com>
+Cc: "linux@yadro.com" <linux@yadro.com>, Quinn Tran <qutran@marvell.com>
 
-qla2x00_configure_local_loop initializes PLOGI payload for PLOGI ELS using Get Parameters mailbox command.
-
-In the case when the driver is running in target mode, the topology is N2N and the target port has higher WWPN, LOCAL_LOOP_UPDATE bit is cleared too early and PLOGI payload is not initialized by the Get Parameters command. That causes a failure of ELS IOCB carrying the PLOGI with 0x15 aka Data Underrun error.
-
-LOCAL_LOOP_UPDATE has to be set to initialize PLOGI payload.
-
-Fixes: 48acad099074 ("scsi: qla2xxx: Fix N2N link re-connect")
-Cc: Quinn Tran <qutran@marvell.com>
-Cc: Himanshu Madhani <hmadhani@marvell.com>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/scsi/qla2xxx/qla_init.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c index 12391815be06..096f41fe17d2 100644
---- a/drivers/scsi/qla2xxx/qla_init.c
-+++ b/drivers/scsi/qla2xxx/qla_init.c
-@@ -4932,14 +4932,8 @@ qla2x00_configure_loop(scsi_qla_host_t *vha)
- 		set_bit(RSCN_UPDATE, &flags);
- 		clear_bit(LOCAL_LOOP_UPDATE, &flags);
- 
--	} else if (ha->current_topology == ISP_CFG_N) {
--		clear_bit(RSCN_UPDATE, &flags);
--		if (qla_tgt_mode_enabled(vha)) {
--			/* allow the other side to start the login */
--			clear_bit(LOCAL_LOOP_UPDATE, &flags);
--			set_bit(RELOGIN_NEEDED, &vha->dpc_flags);
--		}
--	} else if (ha->current_topology == ISP_CFG_NL) {
-+	} else if (ha->current_topology == ISP_CFG_NL ||
-+		   ha->current_topology == ISP_CFG_N) {
- 		clear_bit(RSCN_UPDATE, &flags);
- 		set_bit(LOCAL_LOOP_UPDATE, &flags);
- 	} else if (!vha->flags.online ||
---
-2.24.0
-
-QT: ACK.
+DQoNCu+7v09uIDExLzIwLzE5LCA0OjI3IFBNLCAiUm9tYW4gQm9sc2hha292IiA8ci5ib2xzaGFr
+b3ZAeWFkcm8uY29tPiB3cm90ZToNCg0KICAgIEV4dGVybmFsIEVtYWlsDQogICAgDQogICAgLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQ0KICAgIHFsYTJ4MDBfY29uZmlndXJlX2xvY2FsX2xvb3AgaW5pdGlhbGl6ZXMg
+UExPR0kgcGF5bG9hZCBmb3IgUExPR0kgRUxTDQogICAgdXNpbmcgR2V0IFBhcmFtZXRlcnMgbWFp
+bGJveCBjb21tYW5kLg0KICAgIA0KICAgIEluIHRoZSBjYXNlIHdoZW4gdGhlIGRyaXZlciBpcyBy
+dW5uaW5nIGluIHRhcmdldCBtb2RlLCB0aGUgdG9wb2xvZ3kgaXMNCiAgICBOMk4gYW5kIHRoZSB0
+YXJnZXQgcG9ydCBoYXMgaGlnaGVyIFdXUE4sIExPQ0FMX0xPT1BfVVBEQVRFIGJpdCBpcw0KICAg
+IGNsZWFyZWQgdG9vIGVhcmx5IGFuZCBQTE9HSSBwYXlsb2FkIGlzIG5vdCBpbml0aWFsaXplZCBi
+eSB0aGUgR2V0DQogICAgUGFyYW1ldGVycyBjb21tYW5kLiBUaGF0IGNhdXNlcyBhIGZhaWx1cmUg
+b2YgRUxTIElPQ0IgY2FycnlpbmcgdGhlDQogICAgUExPR0kgd2l0aCAweDE1IGFrYSBEYXRhIFVu
+ZGVycnVuIGVycm9yLg0KICAgIA0KICAgIExPQ0FMX0xPT1BfVVBEQVRFIGhhcyB0byBiZSBzZXQg
+dG8gaW5pdGlhbGl6ZSBQTE9HSSBwYXlsb2FkLg0KICAgIA0KICAgIEZpeGVzOiA0OGFjYWQwOTkw
+NzQgKCJzY3NpOiBxbGEyeHh4OiBGaXggTjJOIGxpbmsgcmUtY29ubmVjdCIpDQogICAgQ2M6IFF1
+aW5uIFRyYW4gPHF1dHJhbkBtYXJ2ZWxsLmNvbT4NCiAgICBDYzogSGltYW5zaHUgTWFkaGFuaSA8
+aG1hZGhhbmlAbWFydmVsbC5jb20+DQogICAgU2lnbmVkLW9mZi1ieTogUm9tYW4gQm9sc2hha292
+IDxyLmJvbHNoYWtvdkB5YWRyby5jb20+DQogICAgLS0tDQogICAgIGRyaXZlcnMvc2NzaS9xbGEy
+eHh4L3FsYV9pbml0LmMgfCAxMCArKy0tLS0tLS0tDQogICAgIDEgZmlsZSBjaGFuZ2VkLCAyIGlu
+c2VydGlvbnMoKyksIDggZGVsZXRpb25zKC0pDQogICAgDQogICAgZGlmZiAtLWdpdCBhL2RyaXZl
+cnMvc2NzaS9xbGEyeHh4L3FsYV9pbml0LmMgYi9kcml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfaW5p
+dC5jDQogICAgaW5kZXggMTIzOTE4MTViZTA2Li4wOTZmNDFmZTE3ZDIgMTAwNjQ0DQogICAgLS0t
+IGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2luaXQuYw0KICAgICsrKyBiL2RyaXZlcnMvc2Nz
+aS9xbGEyeHh4L3FsYV9pbml0LmMNCiAgICBAQCAtNDkzMiwxNCArNDkzMiw4IEBAIHFsYTJ4MDBf
+Y29uZmlndXJlX2xvb3Aoc2NzaV9xbGFfaG9zdF90ICp2aGEpDQogICAgIAkJc2V0X2JpdChSU0NO
+X1VQREFURSwgJmZsYWdzKTsNCiAgICAgCQljbGVhcl9iaXQoTE9DQUxfTE9PUF9VUERBVEUsICZm
+bGFncyk7DQogICAgIA0KICAgIC0JfSBlbHNlIGlmIChoYS0+Y3VycmVudF90b3BvbG9neSA9PSBJ
+U1BfQ0ZHX04pIHsNCiAgICAtCQljbGVhcl9iaXQoUlNDTl9VUERBVEUsICZmbGFncyk7DQogICAg
+LQkJaWYgKHFsYV90Z3RfbW9kZV9lbmFibGVkKHZoYSkpIHsNCiAgICAtCQkJLyogYWxsb3cgdGhl
+IG90aGVyIHNpZGUgdG8gc3RhcnQgdGhlIGxvZ2luICovDQogICAgLQkJCWNsZWFyX2JpdChMT0NB
+TF9MT09QX1VQREFURSwgJmZsYWdzKTsNCiAgICAtCQkJc2V0X2JpdChSRUxPR0lOX05FRURFRCwg
+JnZoYS0+ZHBjX2ZsYWdzKTsNCiAgICAtCQl9DQogICAgLQl9IGVsc2UgaWYgKGhhLT5jdXJyZW50
+X3RvcG9sb2d5ID09IElTUF9DRkdfTkwpIHsNCiAgICArCX0gZWxzZSBpZiAoaGEtPmN1cnJlbnRf
+dG9wb2xvZ3kgPT0gSVNQX0NGR19OTCB8fA0KICAgICsJCSAgIGhhLT5jdXJyZW50X3RvcG9sb2d5
+ID09IElTUF9DRkdfTikgew0KICAgICAJCWNsZWFyX2JpdChSU0NOX1VQREFURSwgJmZsYWdzKTsN
+CiAgICAgCQlzZXRfYml0KExPQ0FMX0xPT1BfVVBEQVRFLCAmZmxhZ3MpOw0KICAgICAJfSBlbHNl
+IGlmICghdmhhLT5mbGFncy5vbmxpbmUgfHwNCiAgICAtLSANCiAgICAyLjI0LjANCiAgICANCiAg
+ICANCkxvb2tzIEdvb2QuDQoNCkFja2VkLWJ5OiBIaW1hbnNodSBNYWRoYW5pIDxobWFkaGFuaUBt
+YXJ2ZWxsLmNvbT4NCg0K
