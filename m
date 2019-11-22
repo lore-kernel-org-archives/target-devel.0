@@ -1,118 +1,105 @@
-From: Quinn Tran <qutran@marvell.com>
-Date: Thu, 21 Nov 2019 22:50:58 +0000
-Subject: RE: [EXT] [PATCH v2 13/15] scsi: qla2xxx: Add async mode for qla24xx_els_dcmd_iocb
-Message-Id: <BYAPR18MB2759E4C4CDDA0D5447D7A5BDD54E0@BYAPR18MB2759.namprd18.prod.outlook.com>
+From: Mark Harvey <mark.harvey@nutanix.com>
+Date: Fri, 22 Nov 2019 05:04:52 +0000
+Subject: Re: [EXT] [PATCH v2 13/15] scsi: qla2xxx: Add async mode for qla24xx_els_dcmd_iocb
+Message-Id: <81096D5B-FEC9-4A40-BE7B-ADB8CA1C5CA2@nutanix.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191120222723.27779-1-r.bolshakov@yadro.com>
  <20191120222723.27779-14-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-14-r.bolshakov@yadro.com>
+ <BYAPR18MB2759E4C4CDDA0D5447D7A5BDD54E0@BYAPR18MB2759.namprd18.prod.outlook.com>
+In-Reply-To: <BYAPR18MB2759E4C4CDDA0D5447D7A5BDD54E0@BYAPR18MB2759.namprd18.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+To: Quinn Tran <qutran@marvell.com>, Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
 Cc: "linux@yadro.com" <linux@yadro.com>
 
-Looks good.
-
-Acked-by: Quinn Tran <qutran@marvell.com>
-
-
-Regards,
-Quinn Tran
-
------Original Message-----
-From: Roman Bolshakov <r.bolshakov@yadro.com> 
-Sent: Wednesday, November 20, 2019 2:27 PM
-To: linux-scsi@vger.kernel.org; target-devel@vger.kernel.org
-Cc: linux@yadro.com; Roman Bolshakov <r.bolshakov@yadro.com>; Quinn Tran <qutran@marvell.com>
-Subject: [EXT] [PATCH v2 13/15] scsi: qla2xxx: Add async mode for qla24xx_els_dcmd_iocb
-
-External Email
-
-----------------------------------------------------------------------
-qla24xx_els_dcmd_iocb() performs LOGO and might be invoked in contexts where it is prohibited to sleep. The new wait parameter provides a way to use the function in such context, similarly to qla24xx_els_dcmd2_iocb().
-
-Cc: Quinn Tran <qutran@marvell.com>
-Cc: Himanshu Madhani <hmadhani@marvell.com
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/scsi/qla2xxx/qla_attr.c   |  2 +-
- drivers/scsi/qla2xxx/qla_gbl.h    |  2 +-
- drivers/scsi/qla2xxx/qla_iocb.c   | 11 +++++++++--
- drivers/scsi/qla2xxx/qla_target.c |  2 +-
- 4 files changed, 12 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/scsi/qla2xxx/qla_attr.c b/drivers/scsi/qla2xxx/qla_attr.c index 481c05dbea06..35c703ec59ad 100644
---- a/drivers/scsi/qla2xxx/qla_attr.c
-+++ b/drivers/scsi/qla2xxx/qla_attr.c
-@@ -828,7 +828,7 @@ qla2x00_issue_logo(struct file *filp, struct kobject *kobj,
- 
- 	ql_log(ql_log_info, vha, 0x70e4, "%s: %d\n", __func__, type);
- 
--	qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, did);
-+	qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, did, true);
- 	return count;
- }
- 
-diff --git a/drivers/scsi/qla2xxx/qla_gbl.h b/drivers/scsi/qla2xxx/qla_gbl.h index 5b163ad85c34..df0f3421e3bb 100644
---- a/drivers/scsi/qla2xxx/qla_gbl.h
-+++ b/drivers/scsi/qla2xxx/qla_gbl.h
-@@ -43,7 +43,7 @@ extern void qla2x00_clear_loop_id(fc_port_t *fcport);  extern int qla2x00_fabric_login(scsi_qla_host_t *, fc_port_t *, uint16_t *);  extern int qla2x00_local_device_login(scsi_qla_host_t *, fc_port_t *);
- 
--extern int qla24xx_els_dcmd_iocb(scsi_qla_host_t *, int, port_id_t);
-+extern int qla24xx_els_dcmd_iocb(scsi_qla_host_t *, int, port_id_t, 
-+bool);
- extern int qla24xx_els_dcmd2_iocb(scsi_qla_host_t *, int, fc_port_t *, bool);  extern void qla2x00_els_dcmd2_free(scsi_qla_host_t *vha,
- 				   struct els_plogi *els_plogi);
-diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c index 53ccbd6b71ed..12b37b711ae8 100644
---- a/drivers/scsi/qla2xxx/qla_iocb.c
-+++ b/drivers/scsi/qla2xxx/qla_iocb.c
-@@ -2562,7 +2562,7 @@ static void qla2x00_els_dcmd_sp_done(srb_t *sp, int res)
- 
- int
- qla24xx_els_dcmd_iocb(scsi_qla_host_t *vha, int els_opcode,
--    port_id_t remote_did)
-+    port_id_t remote_did, bool wait)
- {
- 	srb_t *sp;
- 	fc_port_t *fcport = NULL;
-@@ -2601,6 +2601,8 @@ qla24xx_els_dcmd_iocb(scsi_qla_host_t *vha, int els_opcode,
- 	elsio->timeout = qla2x00_els_dcmd_iocb_timeout;
- 	qla2x00_init_timer(sp, ELS_DCMD_TIMEOUT);
- 	init_completion(&sp->u.iocb_cmd.u.els_logo.comp);
-+	if (wait)
-+		sp->flags = SRB_WAKEUP_ON_COMP;
- 	sp->done = qla2x00_els_dcmd_sp_done;
- 	sp->free = qla2x00_els_dcmd_sp_free;
- 
-@@ -2637,9 +2639,14 @@ qla24xx_els_dcmd_iocb(scsi_qla_host_t *vha, int els_opcode,
- 	    sp->name, sp->handle, fcport->loop_id, fcport->d_id.b.domain,
- 	    fcport->d_id.b.area, fcport->d_id.b.al_pa);
- 
--	wait_for_completion(&elsio->u.els_logo.comp);
-+	if (wait) {
-+		wait_for_completion(&elsio->u.els_logo.comp);
-+	} else {
-+		goto done;
-+	}
- 
- 	sp->free(sp);
-+done:
- 	return rval;
- }
- 
-diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
-index 68c14143e50e..0f2bc4cd562f 100644
---- a/drivers/scsi/qla2xxx/qla_target.c
-+++ b/drivers/scsi/qla2xxx/qla_target.c
-@@ -932,7 +932,7 @@ qlt_send_first_logo(struct scsi_qla_host *vha, qlt_port_logo_t *logo)
- 
- 	mutex_unlock(&vha->vha_tgt.tgt_mutex);
- 
--	res = qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, logo->id);
-+	res = qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, logo->id, true);
- 
- 	mutex_lock(&vha->vha_tgt.tgt_mutex);
- 	list_del(&logo->list);
---
-2.24.0
+V291bGQgdGhpcyBub3QgcmVzdWx0IGluIGEgbWVtb3J5IGxlYWsgaW4gdGhlICdlbHNlJyBwYXRo
+IC0gc2tpcGluZyBzcC0+ZnJlZShzcCk/DQogIA0KICAtCXdhaXRfZm9yX2NvbXBsZXRpb24oJmVs
+c2lvLT51LmVsc19sb2dvLmNvbXApOw0KICAgICsJaWYgKHdhaXQpIHsNCiAgICArCQl3YWl0X2Zv
+cl9jb21wbGV0aW9uKCZlbHNpby0+dS5lbHNfbG9nby5jb21wKTsNCiAgICArCX0gZWxzZSB7DQog
+ICAgKwkJZ290byBkb25lOw0KICAgICsJfQ0KICAgICANCiAgICAgCXNwLT5mcmVlKHNwKTsNCiAg
+ICArZG9uZToNCiAgICAgCXJldHVybiBydmFsOw0KICAgICB9DQoNCu+7v09uIDIyLzExLzE5LCA5
+OjUxIGFtLCAidGFyZ2V0LWRldmVsLW93bmVyQHZnZXIua2VybmVsLm9yZyBvbiBiZWhhbGYgb2Yg
+UXVpbm4gVHJhbiIgPHRhcmdldC1kZXZlbC1vd25lckB2Z2VyLmtlcm5lbC5vcmcgb24gYmVoYWxm
+IG9mIHF1dHJhbkBtYXJ2ZWxsLmNvbT4gd3JvdGU6DQoNCiAgICBMb29rcyBnb29kLg0KICAgIA0K
+ICAgIEFja2VkLWJ5OiBRdWlubiBUcmFuIDxxdXRyYW5AbWFydmVsbC5jb20+DQogICAgDQogICAg
+DQogICAgUmVnYXJkcywNCiAgICBRdWlubiBUcmFuDQogICAgDQogICAgLS0tLS1PcmlnaW5hbCBN
+ZXNzYWdlLS0tLS0NCiAgICBGcm9tOiBSb21hbiBCb2xzaGFrb3YgPHIuYm9sc2hha292QHlhZHJv
+LmNvbT4gDQogICAgU2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAyMCwgMjAxOSAyOjI3IFBNDQog
+ICAgVG86IGxpbnV4LXNjc2lAdmdlci5rZXJuZWwub3JnOyB0YXJnZXQtZGV2ZWxAdmdlci5rZXJu
+ZWwub3JnDQogICAgQ2M6IGxpbnV4QHlhZHJvLmNvbTsgUm9tYW4gQm9sc2hha292IDxyLmJvbHNo
+YWtvdkB5YWRyby5jb20+OyBRdWlubiBUcmFuIDxxdXRyYW5AbWFydmVsbC5jb20+DQogICAgU3Vi
+amVjdDogW0VYVF0gW1BBVENIIHYyIDEzLzE1XSBzY3NpOiBxbGEyeHh4OiBBZGQgYXN5bmMgbW9k
+ZSBmb3IgcWxhMjR4eF9lbHNfZGNtZF9pb2NiDQogICAgDQogICAgRXh0ZXJuYWwgRW1haWwNCiAg
+ICANCiAgICAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tDQogICAgcWxhMjR4eF9lbHNfZGNtZF9pb2NiKCkgcGVyZm9y
+bXMgTE9HTyBhbmQgbWlnaHQgYmUgaW52b2tlZCBpbiBjb250ZXh0cyB3aGVyZSBpdCBpcyBwcm9o
+aWJpdGVkIHRvIHNsZWVwLiBUaGUgbmV3IHdhaXQgcGFyYW1ldGVyIHByb3ZpZGVzIGEgd2F5IHRv
+IHVzZSB0aGUgZnVuY3Rpb24gaW4gc3VjaCBjb250ZXh0LCBzaW1pbGFybHkgdG8gcWxhMjR4eF9l
+bHNfZGNtZDJfaW9jYigpLg0KICAgIA0KICAgIENjOiBRdWlubiBUcmFuIDxxdXRyYW5AbWFydmVs
+bC5jb20+DQogICAgQ2M6IEhpbWFuc2h1IE1hZGhhbmkgPGhtYWRoYW5pQG1hcnZlbGwuY29tDQog
+ICAgU2lnbmVkLW9mZi1ieTogUm9tYW4gQm9sc2hha292IDxyLmJvbHNoYWtvdkB5YWRyby5jb20+
+DQogICAgLS0tDQogICAgIGRyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9hdHRyLmMgICB8ICAyICst
+DQogICAgIGRyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9nYmwuaCAgICB8ICAyICstDQogICAgIGRy
+aXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMgICB8IDExICsrKysrKysrKy0tDQogICAgIGRy
+aXZlcnMvc2NzaS9xbGEyeHh4L3FsYV90YXJnZXQuYyB8ICAyICstDQogICAgIDQgZmlsZXMgY2hh
+bmdlZCwgMTIgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMoLSkNCiAgICANCiAgICBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2F0dHIuYyBiL2RyaXZlcnMvc2NzaS9xbGEy
+eHh4L3FsYV9hdHRyLmMgaW5kZXggNDgxYzA1ZGJlYTA2Li4zNWM3MDNlYzU5YWQgMTAwNjQ0DQog
+ICAgLS0tIGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2F0dHIuYw0KICAgICsrKyBiL2RyaXZl
+cnMvc2NzaS9xbGEyeHh4L3FsYV9hdHRyLmMNCiAgICBAQCAtODI4LDcgKzgyOCw3IEBAIHFsYTJ4
+MDBfaXNzdWVfbG9nbyhzdHJ1Y3QgZmlsZSAqZmlscCwgc3RydWN0IGtvYmplY3QgKmtvYmosDQog
+ICAgIA0KICAgICAJcWxfbG9nKHFsX2xvZ19pbmZvLCB2aGEsIDB4NzBlNCwgIiVzOiAlZFxuIiwg
+X19mdW5jX18sIHR5cGUpOw0KICAgICANCiAgICAtCXFsYTI0eHhfZWxzX2RjbWRfaW9jYih2aGEs
+IEVMU19EQ01EX0xPR08sIGRpZCk7DQogICAgKwlxbGEyNHh4X2Vsc19kY21kX2lvY2IodmhhLCBF
+TFNfRENNRF9MT0dPLCBkaWQsIHRydWUpOw0KICAgICAJcmV0dXJuIGNvdW50Ow0KICAgICB9DQog
+ICAgIA0KICAgIGRpZmYgLS1naXQgYS9kcml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfZ2JsLmggYi9k
+cml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfZ2JsLmggaW5kZXggNWIxNjNhZDg1YzM0Li5kZjBmMzQy
+MWUzYmIgMTAwNjQ0DQogICAgLS0tIGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2dibC5oDQog
+ICAgKysrIGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX2dibC5oDQogICAgQEAgLTQzLDcgKzQz
+LDcgQEAgZXh0ZXJuIHZvaWQgcWxhMngwMF9jbGVhcl9sb29wX2lkKGZjX3BvcnRfdCAqZmNwb3J0
+KTsgIGV4dGVybiBpbnQgcWxhMngwMF9mYWJyaWNfbG9naW4oc2NzaV9xbGFfaG9zdF90ICosIGZj
+X3BvcnRfdCAqLCB1aW50MTZfdCAqKTsgIGV4dGVybiBpbnQgcWxhMngwMF9sb2NhbF9kZXZpY2Vf
+bG9naW4oc2NzaV9xbGFfaG9zdF90ICosIGZjX3BvcnRfdCAqKTsNCiAgICAgDQogICAgLWV4dGVy
+biBpbnQgcWxhMjR4eF9lbHNfZGNtZF9pb2NiKHNjc2lfcWxhX2hvc3RfdCAqLCBpbnQsIHBvcnRf
+aWRfdCk7DQogICAgK2V4dGVybiBpbnQgcWxhMjR4eF9lbHNfZGNtZF9pb2NiKHNjc2lfcWxhX2hv
+c3RfdCAqLCBpbnQsIHBvcnRfaWRfdCwgDQogICAgK2Jvb2wpOw0KICAgICBleHRlcm4gaW50IHFs
+YTI0eHhfZWxzX2RjbWQyX2lvY2Ioc2NzaV9xbGFfaG9zdF90ICosIGludCwgZmNfcG9ydF90ICos
+IGJvb2wpOyAgZXh0ZXJuIHZvaWQgcWxhMngwMF9lbHNfZGNtZDJfZnJlZShzY3NpX3FsYV9ob3N0
+X3QgKnZoYSwNCiAgICAgCQkJCSAgIHN0cnVjdCBlbHNfcGxvZ2kgKmVsc19wbG9naSk7DQogICAg
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMgYi9kcml2ZXJzL3Nj
+c2kvcWxhMnh4eC9xbGFfaW9jYi5jIGluZGV4IDUzY2NiZDZiNzFlZC4uMTJiMzdiNzExYWU4IDEw
+MDY0NA0KICAgIC0tLSBhL2RyaXZlcnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMNCiAgICArKysg
+Yi9kcml2ZXJzL3Njc2kvcWxhMnh4eC9xbGFfaW9jYi5jDQogICAgQEAgLTI1NjIsNyArMjU2Miw3
+IEBAIHN0YXRpYyB2b2lkIHFsYTJ4MDBfZWxzX2RjbWRfc3BfZG9uZShzcmJfdCAqc3AsIGludCBy
+ZXMpDQogICAgIA0KICAgICBpbnQNCiAgICAgcWxhMjR4eF9lbHNfZGNtZF9pb2NiKHNjc2lfcWxh
+X2hvc3RfdCAqdmhhLCBpbnQgZWxzX29wY29kZSwNCiAgICAtICAgIHBvcnRfaWRfdCByZW1vdGVf
+ZGlkKQ0KICAgICsgICAgcG9ydF9pZF90IHJlbW90ZV9kaWQsIGJvb2wgd2FpdCkNCiAgICAgew0K
+ICAgICAJc3JiX3QgKnNwOw0KICAgICAJZmNfcG9ydF90ICpmY3BvcnQgPSBOVUxMOw0KICAgIEBA
+IC0yNjAxLDYgKzI2MDEsOCBAQCBxbGEyNHh4X2Vsc19kY21kX2lvY2Ioc2NzaV9xbGFfaG9zdF90
+ICp2aGEsIGludCBlbHNfb3Bjb2RlLA0KICAgICAJZWxzaW8tPnRpbWVvdXQgPSBxbGEyeDAwX2Vs
+c19kY21kX2lvY2JfdGltZW91dDsNCiAgICAgCXFsYTJ4MDBfaW5pdF90aW1lcihzcCwgRUxTX0RD
+TURfVElNRU9VVCk7DQogICAgIAlpbml0X2NvbXBsZXRpb24oJnNwLT51LmlvY2JfY21kLnUuZWxz
+X2xvZ28uY29tcCk7DQogICAgKwlpZiAod2FpdCkNCiAgICArCQlzcC0+ZmxhZ3MgPSBTUkJfV0FL
+RVVQX09OX0NPTVA7DQogICAgIAlzcC0+ZG9uZSA9IHFsYTJ4MDBfZWxzX2RjbWRfc3BfZG9uZTsN
+CiAgICAgCXNwLT5mcmVlID0gcWxhMngwMF9lbHNfZGNtZF9zcF9mcmVlOw0KICAgICANCiAgICBA
+QCAtMjYzNyw5ICsyNjM5LDE0IEBAIHFsYTI0eHhfZWxzX2RjbWRfaW9jYihzY3NpX3FsYV9ob3N0
+X3QgKnZoYSwgaW50IGVsc19vcGNvZGUsDQogICAgIAkgICAgc3AtPm5hbWUsIHNwLT5oYW5kbGUs
+IGZjcG9ydC0+bG9vcF9pZCwgZmNwb3J0LT5kX2lkLmIuZG9tYWluLA0KICAgICAJICAgIGZjcG9y
+dC0+ZF9pZC5iLmFyZWEsIGZjcG9ydC0+ZF9pZC5iLmFsX3BhKTsNCiAgICAgDQogICAgLQl3YWl0
+X2Zvcl9jb21wbGV0aW9uKCZlbHNpby0+dS5lbHNfbG9nby5jb21wKTsNCiAgICArCWlmICh3YWl0
+KSB7DQogICAgKwkJd2FpdF9mb3JfY29tcGxldGlvbigmZWxzaW8tPnUuZWxzX2xvZ28uY29tcCk7
+DQogICAgKwl9IGVsc2Ugew0KICAgICsJCWdvdG8gZG9uZTsNCiAgICArCX0NCiAgICAgDQogICAg
+IAlzcC0+ZnJlZShzcCk7DQogICAgK2RvbmU6DQogICAgIAlyZXR1cm4gcnZhbDsNCiAgICAgfQ0K
+ICAgICANCiAgICBkaWZmIC0tZ2l0IGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX3RhcmdldC5j
+IGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX3RhcmdldC5jDQogICAgaW5kZXggNjhjMTQxNDNl
+NTBlLi4wZjJiYzRjZDU2MmYgMTAwNjQ0DQogICAgLS0tIGEvZHJpdmVycy9zY3NpL3FsYTJ4eHgv
+cWxhX3RhcmdldC5jDQogICAgKysrIGIvZHJpdmVycy9zY3NpL3FsYTJ4eHgvcWxhX3RhcmdldC5j
+DQogICAgQEAgLTkzMiw3ICs5MzIsNyBAQCBxbHRfc2VuZF9maXJzdF9sb2dvKHN0cnVjdCBzY3Np
+X3FsYV9ob3N0ICp2aGEsIHFsdF9wb3J0X2xvZ29fdCAqbG9nbykNCiAgICAgDQogICAgIAltdXRl
+eF91bmxvY2soJnZoYS0+dmhhX3RndC50Z3RfbXV0ZXgpOw0KICAgICANCiAgICAtCXJlcyA9IHFs
+YTI0eHhfZWxzX2RjbWRfaW9jYih2aGEsIEVMU19EQ01EX0xPR08sIGxvZ28tPmlkKTsNCiAgICAr
+CXJlcyA9IHFsYTI0eHhfZWxzX2RjbWRfaW9jYih2aGEsIEVMU19EQ01EX0xPR08sIGxvZ28tPmlk
+LCB0cnVlKTsNCiAgICAgDQogICAgIAltdXRleF9sb2NrKCZ2aGEtPnZoYV90Z3QudGd0X211dGV4
+KTsNCiAgICAgCWxpc3RfZGVsKCZsb2dvLT5saXN0KTsNCiAgICAtLQ0KICAgIDIuMjQuMA0KICAg
+IA0KICAgIA0KDQo
