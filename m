@@ -1,7 +1,7 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 22 Nov 2019 05:24:03 +0000
+Date: Fri, 22 Nov 2019 05:24:59 +0000
 Subject: [PATCH AUTOSEL 4.19 001/219] scsi: target/tcmu: Fix queue_cmd_ring() declaration
-Message-Id: <20191122052741.32499-1-sashal@kernel.org>
+Message-Id: <20191122052837.357-1-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191122051903.31749-1-sashal@kernel.org>
 In-Reply-To: <20191122051903.31749-1-sashal@kernel.org>
