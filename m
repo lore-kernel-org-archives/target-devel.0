@@ -1,142 +1,245 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Wed, 20 Nov 2019 22:27:23 +0000
-Subject: [PATCH v2 15/15] scsi: qla2xxx: Handle ABTS according to FCP spec for logged out ports
-Message-Id: <20191120222723.27779-16-r.bolshakov@yadro.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 23 Nov 2019 05:57:24 +0000
+Subject: Re: [PATCH v2 15/15] scsi: qla2xxx: Handle ABTS according to FCP spec for logged out ports
+Message-Id: <201911231335.1Zob6cyP%lkp@intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191120222723.27779-1-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-1-r.bolshakov@yadro.com>
+References: <20191120222723.27779-16-r.bolshakov@yadro.com>
+In-Reply-To: <20191120222723.27779-16-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>
+To: Roman Bolshakov <r.bolshakov@yadro.com>
+Cc: kbuild-all@lists.01.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>
 
-Fibre Channel Protocol for SCSI, Fourth Version (FCP-4) 12.3.3, "Target
-FCP_Port response to Exchange termination" states:
+Hi Roman,
 
-  When an ABTS-LS is received at the target FCP_Port, it shall abort the
-  designated Exchange and return one of the following responses:
+Thank you for the patch! Perhaps something to improve:
 
-    a) the target FCP_Port shall discard the ABTS-LS and transmit a LOGO ELS if
-       the Nx_Port issuing the ABTS-LS is not currently logged in (i.e., no
-       N_Port Login exists);
+[auto build test WARNING on scsi/for-next]
+[also build test WARNING on next-20191122]
+[cannot apply to v5.4-rc8]
+[if your patch is applied to the wrong git tree, please drop us a note to help
+improve the system. BTW, we also suggest to use '--base' option to specify the
+base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
 
-However, current implementation tries to send a real BA_RJT in response to ABTS
-from logged-out ports. The oparation fails because N_Port handle was freed
-shortly after logout and ABTS Recieved IOCB contains 0xFFFF N_Port handle.
-Existing implementation doesn't send LOGO at all.
+url:    https://github.com/0day-ci/linux/commits/Roman-Bolshakov/scsi-qla2xxx-Bug-fixes/20191122-011503
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi.git for-next
+reproduce:
+        # apt-get install sparse
+        # sparse version: v0.6.1-36-g9305d48-dirty
+        make ARCH=x86_64 allmodconfig
+        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
 
-The correct way to discard ABTS-LS frame when N_Port handle wasn't found is to
-set Terminate ABTS Exchange bit in control flags of ABTS Response IOCB.
-LOGO is sent after that.
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
 
-To avoid a deadlock in qla2x00_start_sp(), hardware_lock should be released.
-The unlocking should be safe because ABTS Recieved IOCB is not needed after
-s_id is saved on the stack and qlt_24xx_send_abts_resp() is invoked.
 
-Fixes: 2d70c103fd2a ("[SCSI] qla2xxx: Add LLD target-mode infrastructure for >= 24xx series")
-Cc: Quinn Tran <qutran@marvell.com>
-Cc: Himanshu Madhani <hmadhani@marvell.com>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+sparse warnings: (new ones prefixed by >>)
+
+   drivers/scsi/qla2xxx/qla_target.c:5780:21: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:5791:21: sparse: sparse: restricted __le16 degrades to integer
+   drivers/scsi/qla2xxx/qla_target.c:5795:29: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:5840:21: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:5850:21: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:5866:29: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:5867:29: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:5870:29: sparse: sparse: restricted __le16 degrades to integer
+   drivers/scsi/qla2xxx/qla_target.c:5874:37: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:1689:13: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:1691:25: sparse: sparse: restricted __le32 degrades to integer
+   drivers/scsi/qla2xxx/qla_target.c:1700:33: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] srr_flags @@    got resunsigned short [usertype] srr_flags @@
+   drivers/scsi/qla2xxx/qla_target.c:1700:33: sparse:    expected unsigned short [usertype] srr_flags
+   drivers/scsi/qla2xxx/qla_target.c:1700:33: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2136:13: sparse: sparse: cast to restricted __le32
+   drivers/scsi/qla2xxx/qla_target.c:2158:13: sparse: sparse: cast to restricted __le32
+   drivers/scsi/qla2xxx/qla_target.c:837:13: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:845:19: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:1177:19: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:1318:36: sparse: sparse: cast to restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:1760:15: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned int [usertype] f_ctl @@    got restrunsigned int [usertype] f_ctl @@
+   drivers/scsi/qla2xxx/qla_target.c:1760:15: sparse:    expected unsigned int [usertype] f_ctl
+   drivers/scsi/qla2xxx/qla_target.c:1760:15: sparse:    got restricted __le32 [usertype]
+>> drivers/scsi/qla2xxx/qla_target.c:1829:37: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] control_flags @@    got resunsigned short [usertype] control_flags @@
+>> drivers/scsi/qla2xxx/qla_target.c:1829:37: sparse:    expected unsigned short [usertype] control_flags
+   drivers/scsi/qla2xxx/qla_target.c:1829:37: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:1836:15: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned int [usertype] f_ctl @@    got restrunsigned int [usertype] f_ctl @@
+   drivers/scsi/qla2xxx/qla_target.c:1836:15: sparse:    expected unsigned int [usertype] f_ctl
+   drivers/scsi/qla2xxx/qla_target.c:1836:15: sparse:    got restricted __le32 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:1909:23: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] timeout @@    got resunsigned short [usertype] timeout @@
+   drivers/scsi/qla2xxx/qla_target.c:1909:23: sparse:    expected unsigned short [usertype] timeout
+   drivers/scsi/qla2xxx/qla_target.c:1909:23: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:1928:31: sparse: sparse: incorrect type in assignment (different base types) @@    expected restricted __le16 [usertype] ox_id @@    got tricted __le16 [usertype] ox_id @@
+   drivers/scsi/qla2xxx/qla_target.c:1928:31: sparse:    expected restricted __le16 [usertype] ox_id
+   drivers/scsi/qla2xxx/qla_target.c:1928:31: sparse:    got unsigned short [usertype] ox_id
+   drivers/scsi/qla2xxx/qla_target.c:2230:23: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] timeout @@    got resunsigned short [usertype] timeout @@
+   drivers/scsi/qla2xxx/qla_target.c:2230:23: sparse:    expected unsigned short [usertype] timeout
+   drivers/scsi/qla2xxx/qla_target.c:2230:23: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2239:37: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] scsi_status @@    got resunsigned short [usertype] scsi_status @@
+   drivers/scsi/qla2xxx/qla_target.c:2239:37: sparse:    expected unsigned short [usertype] scsi_status
+   drivers/scsi/qla2xxx/qla_target.c:2239:37: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2241:38: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] response_len @@    got resunsigned short [usertype] response_len @@
+   drivers/scsi/qla2xxx/qla_target.c:2241:38: sparse:    expected unsigned short [usertype] response_len
+   drivers/scsi/qla2xxx/qla_target.c:2241:38: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2287:23: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] timeout @@    got resunsigned short [usertype] timeout @@
+   drivers/scsi/qla2xxx/qla_target.c:2287:23: sparse:    expected unsigned short [usertype] timeout
+   drivers/scsi/qla2xxx/qla_target.c:2287:23: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2296:37: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] scsi_status @@    got resunsigned short [usertype] scsi_status @@
+   drivers/scsi/qla2xxx/qla_target.c:2296:37: sparse:    expected unsigned short [usertype] scsi_status
+   drivers/scsi/qla2xxx/qla_target.c:2296:37: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2298:38: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] response_len @@    got resunsigned short [usertype] response_len @@
+   drivers/scsi/qla2xxx/qla_target.c:2298:38: sparse:    expected unsigned short [usertype] response_len
+   drivers/scsi/qla2xxx/qla_target.c:2298:38: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.h:382:17: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.h:382:17: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.h:382:17: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.h:382:17: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.h:382:17: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.h:382:17: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.c:2299:34: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned int [usertype] residual @@    got restrunsigned int [usertype] residual @@
+   drivers/scsi/qla2xxx/qla_target.c:2299:34: sparse:    expected unsigned int [usertype] residual
+   drivers/scsi/qla2xxx/qla_target.c:2299:34: sparse:    got restricted __le32 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2302:45: sparse: sparse: invalid assignment: |   drivers/scsi/qla2xxx/qla_target.c:2302:45: sparse:    left side has type unsigned short
+   drivers/scsi/qla2xxx/qla_target.c:2302:45: sparse:    right side has type restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:2588:27: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] nport_handle @@    got resunsigned short [usertype] nport_handle @@
+   drivers/scsi/qla2xxx/qla_target.c:2588:27: sparse:    expected unsigned short [usertype] nport_handle
+   drivers/scsi/qla2xxx/qla_target.c:2588:27: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2589:22: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] timeout @@    got resunsigned short [usertype] timeout @@
+   drivers/scsi/qla2xxx/qla_target.c:2589:22: sparse:    expected unsigned short [usertype] timeout
+   drivers/scsi/qla2xxx/qla_target.c:2589:22: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2596:40: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned int [usertype] relative_offset @@    got restrunsigned int [usertype] relative_offset @@
+   drivers/scsi/qla2xxx/qla_target.c:2596:40: sparse:    expected unsigned int [usertype] relative_offset
+   drivers/scsi/qla2xxx/qla_target.c:2596:40: sparse:    got restricted __le32 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2651:42: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned int [usertype] transfer_length @@    got restrunsigned int [usertype] transfer_length @@
+   drivers/scsi/qla2xxx/qla_target.c:2651:42: sparse:    expected unsigned int [usertype] transfer_length
+   drivers/scsi/qla2xxx/qla_target.c:2651:42: sparse:    got restricted __le32 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2658:35: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] dseg_count @@    got resunsigned short [usertype] dseg_count @@
+   drivers/scsi/qla2xxx/qla_target.c:2658:35: sparse:    expected unsigned short [usertype] dseg_count
+   drivers/scsi/qla2xxx/qla_target.c:2658:35: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2820:34: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned int [usertype] residual @@    got restrunsigned int [usertype] residual @@
+   drivers/scsi/qla2xxx/qla_target.c:2820:34: sparse:    expected unsigned int [usertype] residual
+   drivers/scsi/qla2xxx/qla_target.c:2820:34: sparse:    got restricted __le32 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2821:37: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] scsi_status @@    got resunsigned short [usertype] scsi_status @@
+   drivers/scsi/qla2xxx/qla_target.c:2821:37: sparse:    expected unsigned short [usertype] scsi_status
+   drivers/scsi/qla2xxx/qla_target.c:2821:37: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2842:45: sparse: sparse: invalid assignment: |   drivers/scsi/qla2xxx/qla_target.c:2842:45: sparse:    left side has type unsigned short
+   drivers/scsi/qla2xxx/qla_target.c:2842:45: sparse:    right side has type restricted __le16
+   drivers/scsi/qla2xxx/qla_target.c:2844:46: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] sense_length @@    got resunsigned short [usertype] sense_length @@
+   drivers/scsi/qla2xxx/qla_target.c:2844:46: sparse:    expected unsigned short [usertype] sense_length
+   drivers/scsi/qla2xxx/qla_target.c:2844:46: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2847:69: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned int [usertype] @@    got restrunsigned int [usertype] @@
+   drivers/scsi/qla2xxx/qla_target.c:2847:69: sparse:    expected unsigned int [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:2847:69: sparse:    got restricted __be32 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:3101:27: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] nport_handle @@    got resunsigned short [usertype] nport_handle @@
+   drivers/scsi/qla2xxx/qla_target.c:3101:27: sparse:    expected unsigned short [usertype] nport_handle
+   drivers/scsi/qla2xxx/qla_target.c:3101:27: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:3283:60: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] scsi_status @@    got resunsigned short [usertype] scsi_status @@
+   drivers/scsi/qla2xxx/qla_target.c:3283:60: sparse:    expected unsigned short [usertype] scsi_status
+   drivers/scsi/qla2xxx/qla_target.c:3283:60: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:3285:57: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned int [usertype] residual @@    got restrunsigned int [usertype] residual @@
+   drivers/scsi/qla2xxx/qla_target.c:3285:57: sparse:    expected unsigned int [usertype] residual
+   drivers/scsi/qla2xxx/qla_target.c:3285:57: sparse:    got restricted __le32 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:3101:27: sparse: sparse: incorrect type in assignment (different base types) @@    expected unsigned short [usertype] nport_handle @@    got resunsigned short [usertype] nport_handle @@
+   drivers/scsi/qla2xxx/qla_target.c:3101:27: sparse:    expected unsigned short [usertype] nport_handle
+   drivers/scsi/qla2xxx/qla_target.c:3101:27: sparse:    got restricted __le16 [usertype]
+   drivers/scsi/qla2xxx/qla_target.c:3461:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3461:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3461:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3461:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3462:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3462:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3462:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3462:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3463:26: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.c:3463:26: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.c:3463:26: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.c:3463:26: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.c:3463:26: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.c:3463:26: sparse: sparse: cast to restricted __be32
+   drivers/scsi/qla2xxx/qla_target.c:3465:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3465:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3465:26: sparse: sparse: cast to restricted __be16
+   drivers/scsi/qla2xxx/qla_target.c:3465:26: sparse: sparse: cast to restricted __be16
+
+vim +1829 drivers/scsi/qla2xxx/qla_target.c
+
+  1797	
+  1798	/*
+  1799	 * ha->hardware_lock supposed to be held on entry. Might drop it, then reaquire
+  1800	 */
+  1801	static void qlt_24xx_send_abts_resp(struct qla_qpair *qpair,
+  1802		struct abts_recv_from_24xx *abts, uint32_t status,
+  1803		bool ids_reversed, bool term_exchange)
+  1804	{
+  1805		struct scsi_qla_host *vha = qpair->vha;
+  1806		struct qla_hw_data *ha = vha->hw;
+  1807		struct abts_resp_to_24xx *resp;
+  1808		uint32_t f_ctl;
+  1809		uint8_t *p;
+  1810	
+  1811		ql_dbg(ql_dbg_tgt, vha, 0xe006,
+  1812		    "Sending task mgmt ABTS response (ha=%p, atio=%p, status=%x\n",
+  1813		    ha, abts, status);
+  1814	
+  1815		resp = (struct abts_resp_to_24xx *)qla2x00_alloc_iocbs_ready(qpair,
+  1816		    NULL);
+  1817		if (!resp) {
+  1818			ql_dbg(ql_dbg_tgt, vha, 0xe04a,
+  1819			    "qla_target(%d): %s failed: unable to allocate "
+  1820			    "request packet", vha->vp_idx, __func__);
+  1821			return;
+  1822		}
+  1823	
+  1824		resp->entry_type = ABTS_RESP_24XX;
+  1825		resp->handle = QLA_TGT_SKIP_HANDLE;
+  1826		resp->entry_count = 1;
+  1827		resp->nport_handle = abts->nport_handle;
+  1828		if (term_exchange)
+> 1829			resp->control_flags = cpu_to_le16(ABTS_CONTR_FLG_TERM_EXCHG);
+  1830		else
+  1831			resp->control_flags = 0;
+  1832		resp->vp_index = vha->vp_idx;
+  1833		resp->sof_type = abts->sof_type;
+  1834		resp->exchange_address = abts->exchange_address;
+  1835		resp->fcp_hdr_le = abts->fcp_hdr_le;
+  1836		f_ctl = cpu_to_le32(F_CTL_EXCH_CONTEXT_RESP |
+  1837		    F_CTL_LAST_SEQ | F_CTL_END_SEQ |
+  1838		    F_CTL_SEQ_INITIATIVE);
+  1839		p = (uint8_t *)&f_ctl;
+  1840		resp->fcp_hdr_le.f_ctl[0] = *p++;
+  1841		resp->fcp_hdr_le.f_ctl[1] = *p++;
+  1842		resp->fcp_hdr_le.f_ctl[2] = *p;
+  1843		if (ids_reversed) {
+  1844			resp->fcp_hdr_le.d_id = abts->fcp_hdr_le.d_id;
+  1845			resp->fcp_hdr_le.s_id = abts->fcp_hdr_le.s_id;
+  1846		} else {
+  1847			resp->fcp_hdr_le.d_id = abts->fcp_hdr_le.s_id;
+  1848			resp->fcp_hdr_le.s_id = abts->fcp_hdr_le.d_id;
+  1849		}
+  1850		resp->exchange_addr_to_abort = abts->exchange_addr_to_abort;
+  1851		if (status = FCP_TMF_CMPL) {
+  1852			resp->fcp_hdr_le.r_ctl = R_CTL_BASIC_LINK_SERV | R_CTL_B_ACC;
+  1853			resp->payload.ba_acct.seq_id_valid = SEQ_ID_INVALID;
+  1854			resp->payload.ba_acct.low_seq_cnt = 0x0000;
+  1855			resp->payload.ba_acct.high_seq_cnt = 0xFFFF;
+  1856			resp->payload.ba_acct.ox_id = abts->fcp_hdr_le.ox_id;
+  1857			resp->payload.ba_acct.rx_id = abts->fcp_hdr_le.rx_id;
+  1858		} else {
+  1859			resp->fcp_hdr_le.r_ctl = R_CTL_BASIC_LINK_SERV | R_CTL_B_RJT;
+  1860			resp->payload.ba_rjt.reason_code   1861				BA_RJT_REASON_CODE_UNABLE_TO_PERFORM;
+  1862			/* Other bytes are zero */
+  1863		}
+  1864	
+  1865		vha->vha_tgt.qla_tgt->abts_resp_expected++;
+  1866	
+  1867		/* Memory Barrier */
+  1868		wmb();
+  1869		if (qpair->reqq_start_iocbs)
+  1870			qpair->reqq_start_iocbs(qpair);
+  1871		else
+  1872			qla2x00_start_iocbs(vha, qpair->req);
+  1873	}
+  1874	
+
 ---
- drivers/scsi/qla2xxx/qla_target.c | 28 ++++++++++++++++++++--------
- 1 file changed, 20 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
-index 0f2bc4cd562f..331e7adf4b15 100644
---- a/drivers/scsi/qla2xxx/qla_target.c
-+++ b/drivers/scsi/qla2xxx/qla_target.c
-@@ -1800,7 +1800,7 @@ static int qlt_build_abts_resp_iocb(struct qla_tgt_mgmt_cmd *mcmd)
-  */
- static void qlt_24xx_send_abts_resp(struct qla_qpair *qpair,
- 	struct abts_recv_from_24xx *abts, uint32_t status,
--	bool ids_reversed)
-+	bool ids_reversed, bool term_exchange)
- {
- 	struct scsi_qla_host *vha = qpair->vha;
- 	struct qla_hw_data *ha = vha->hw;
-@@ -1825,6 +1825,10 @@ static void qlt_24xx_send_abts_resp(struct qla_qpair *qpair,
- 	resp->handle = QLA_TGT_SKIP_HANDLE;
- 	resp->entry_count = 1;
- 	resp->nport_handle = abts->nport_handle;
-+	if (term_exchange)
-+		resp->control_flags = cpu_to_le16(ABTS_CONTR_FLG_TERM_EXCHG);
-+	else
-+		resp->control_flags = 0;
- 	resp->vp_index = vha->vp_idx;
- 	resp->sof_type = abts->sof_type;
- 	resp->exchange_address = abts->exchange_address;
-@@ -1940,7 +1944,7 @@ static void qlt_24xx_retry_term_exchange(struct scsi_qla_host *vha,
- 		qlt_build_abts_resp_iocb(mcmd);
- 	else
- 		qlt_24xx_send_abts_resp(qpair,
--		    (struct abts_recv_from_24xx *)entry, FCP_TMF_CMPL, true);
-+		    (struct abts_recv_from_24xx *)entry, FCP_TMF_CMPL, true, false);
- 
- }
- 
-@@ -2134,7 +2138,7 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
- 		    "qla_target(%d): ABTS: Abort Sequence not "
- 		    "supported\n", vha->vp_idx);
- 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
--		    false);
-+		    false, false);
- 		return;
- 	}
- 
-@@ -2143,7 +2147,7 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
- 		    "qla_target(%d): ABTS: Unknown Exchange "
- 		    "Address received\n", vha->vp_idx);
- 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
--		    false);
-+		    false, false);
- 		return;
- 	}
- 
-@@ -2163,8 +2167,16 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
- 		    vha->vp_idx);
- 		spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
- 
-+		/*
-+		 * According to FCP-4 12.3.3,
-+		 * ABTS-LS frame shall be discarded
-+		 */
- 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
--			    false);
-+			    false, true);
-+		spin_unlock_irqrestore(&ha->hardware_lock, flags);
-+		/* and LOGO ELS transmitted */
-+		qla24xx_els_dcmd_iocb(vha, ELS_DCMD_LOGO, be_to_port_id(s_id), false);
-+		spin_lock_irqsave(&ha->hardware_lock, flags);
- 		return;
- 	}
- 	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
-@@ -2172,7 +2184,7 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
- 
- 	if (sess->deleted) {
- 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
--		    false);
-+		    false, false);
- 		return;
- 	}
- 
-@@ -2182,7 +2194,7 @@ static void qlt_24xx_handle_abts(struct scsi_qla_host *vha,
- 		    "qla_target(%d): __qlt_24xx_handle_abts() failed: %d\n",
- 		    vha->vp_idx, rc);
- 		qlt_24xx_send_abts_resp(ha->base_qpair, abts, FCP_TMF_REJECTED,
--		    false);
-+		    false, false);
- 		return;
- 	}
- }
-@@ -6213,7 +6225,7 @@ static void qlt_abort_work(struct qla_tgt *tgt,
- out_term:
- 	spin_lock_irqsave(&ha->hardware_lock, flags);
- 	qlt_24xx_send_abts_resp(ha->base_qpair, &prm->abts,
--	    FCP_TMF_REJECTED, false);
-+	    FCP_TMF_REJECTED, false, false);
- 	spin_unlock_irqrestore(&ha->hardware_lock, flags);
- }
- 
--- 
-2.24.0
+0-DAY kernel test infrastructure                 Open Source Technology Center
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org Intel Corporation
