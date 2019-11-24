@@ -1,108 +1,46 @@
-From: Martin Wilck <mwilck@suse.de>
-Date: Fri, 22 Nov 2019 21:36:06 +0000
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Sun, 24 Nov 2019 18:31:04 +0000
 Subject: Re: [PATCH v2 00/15] scsi: qla2xxx: Bug fixes
-Message-Id: <139c4a1040a9077fff39486f47134960d543ca53.camel@suse.de>
+Message-Id: <20191124183104.fg364dol5rol3xfh@SPB-NB-133.local>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191120222723.27779-1-r.bolshakov@yadro.com>
-         <b84e274f-c20e-9351-27de-4cf1b34916d9@suse.de>
-In-Reply-To: <b84e274f-c20e-9351-27de-4cf1b34916d9@suse.de>
+ <b84e274f-c20e-9351-27de-4cf1b34916d9@suse.de>
+ <139c4a1040a9077fff39486f47134960d543ca53.camel@suse.de>
+In-Reply-To: <139c4a1040a9077fff39486f47134960d543ca53.camel@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hannes Reinecke <hare@suse.de>, Roman Bolshakov <r.bolshakov@yadro.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com
+To: Martin Wilck <mwilck@suse.de>
+Cc: Hannes Reinecke <hare@suse.de>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux@yadro.com
 
-On Fri, 2019-11-22 at 10:14 +0100, Hannes Reinecke wrote:
-> On 11/20/19 11:27 PM, Roman Bolshakov wrote:
-> > Hi Martin,
-> > 
-> > The patch series contains fixes for qla2xxx and solves two visible
-> > issues:
-> >   - Target port in N2N topology doesn't perform login if it has
-> > higher
-> >     WWPN than initiator
-> >   - ABORT TASK TMF leads to crash if it's received shortly after
-> > ACL of
-> >     an initiator is deleted and there's active I/O from the
-> > initiator
-> > 
-> > It also contains reliability improvements and cleanups.
-> > 
-> > Unfortunately, there's still an issue the latest patch. The discard
-> > works but ELS IOCB for LOGO is likely built incorrectly by
-> > qla24xx_els_dcmd_iocb(). The issue can also be exposed when "1" is
-> > written to fc_host/hostN/device/issue_logo file with logging turned
-> > on.
-> > 
-> > Changes since v1 (https://patchwork.kernel.org/cover/11141979/):
-> > - Fixes target port in N2N mode were added (patches 5-11);
-> > - Target port makes explicit LOGO on session teardown in the patch
-> > made
-> >   by Quinn. Together with patch 1, it helps to immediately turn
-> >   fc_remote_port to the Blocked stated on client side and avoids
-> > visibly
-> >   stuck session;
-> > - The last three patches address violation of FCP specification
-> > with
-> >   regards to handling of ABTS-LS from ports that are not currently
-> >   logged in.
-> > 
-> > Thank you,
-> > Roman
-> > 
-> > Quinn Tran (1):
-> >   scsi: qla2xxx: Use explicit LOGO in target mode
-> > 
-> > Roman Bolshakov (14):
-> >   scsi: qla2xxx: Ignore NULL pointer in tcm_qla2xxx_free_mcmd
-> >   scsi: qla2xxx: Initialize free_work before flushing it
-> >   scsi: qla2xxx: Drop superfluous INIT_WORK of del_work
-> >   scsi: qla2xxx: Change discovery state before PLOGI
-> >   scsi: qla2xxx: Allow PLOGI in target mode
-> >   scsi: qla2xxx: Don't call qlt_async_event twice
-> >   scsi: qla2xxx: Fix PLOGI payload and ELS IOCB dump length
-> >   scsi: qla2xxx: Configure local loop for N2N target
-> >   scsi: qla2xxx: Send Notify ACK after N2N PLOGI
-> >   scsi: qla2xxx: Don't defer relogin unconditonally
-> >   scsi: qla2xxx: Ignore PORT UPDATE after N2N PLOGI
-> >   scsi: qla2xxx: Add async mode for qla24xx_els_dcmd_iocb
-> >   scsi: qla2xxx: Add debug dump of LOGO payload and ELS IOCB
-> >   scsi: qla2xxx: Handle ABTS according to FCP spec for logged out
-> > ports
-> > 
-> >  drivers/scsi/qla2xxx/qla_attr.c    |  2 +-
-> >  drivers/scsi/qla2xxx/qla_def.h     |  1 +
-> >  drivers/scsi/qla2xxx/qla_gbl.h     |  2 +-
-> >  drivers/scsi/qla2xxx/qla_init.c    | 21 ++++++---------
-> >  drivers/scsi/qla2xxx/qla_iocb.c    | 42 ++++++++++++++++++++++++
-> > ------
-> >  drivers/scsi/qla2xxx/qla_isr.c     |  4 ---
-> >  drivers/scsi/qla2xxx/qla_mbx.c     |  3 ++-
-> >  drivers/scsi/qla2xxx/qla_target.c  | 34 ++++++++++++++++--------
-> >  drivers/scsi/qla2xxx/tcm_qla2xxx.c |  3 +++
-> >  9 files changed, 73 insertions(+), 39 deletions(-)
-> > 
-> This patchset has the nice benefit that it has fixed the crashes on
-> rmmod we had been seeing.
-
-Well, I investigated two distinct crash-at-rmmod cases, and one was
-already fixed by the earlier commit f45bca8c5052 ("scsi: qla2xxx: Fix
-double scsi_done for abort path"), whereas the other is still present,
-even after applying this series.
-
-Not to say the series is bad - we just shouldn't raise expectations
-too high.
-
-Martin
-
+On Fri, Nov 22, 2019 at 10:36:06PM +0100, Martin Wilck wrote:
+> On Fri, 2019-11-22 at 10:14 +0100, Hannes Reinecke wrote:
+> > This patchset has the nice benefit that it has fixed the crashes on
+> > rmmod we had been seeing.
 > 
-> So, for the entire patchset:
+> Well, I investigated two distinct crash-at-rmmod cases, and one was
+> already fixed by the earlier commit f45bca8c5052 ("scsi: qla2xxx: Fix
+> double scsi_done for abort path"), whereas the other is still present,
+> even after applying this series.
 > 
-> Reviewed-by: Hannes Reinecke <hare@suse.de>
-> Tested-by: Hannes Reinecke <hare@suse.de>
+> Not to say the series is bad - we just shouldn't raise expectations
+> too high.
 > 
 
+Hi Martin,
 
-> Cheers,
-> 
-> Hannes
+This patch series only fixes a crash when there's active I/O and ACL of
+the initiator is getting deleted. The issue can be reproduced quite
+easily:
+
+  1. Configure a target with 1 LUN and 1 ACL (and 1 Mapped LUN inside)
+  2. Run I/O from initiator
+  3. Delete ACL while running the I/O
+
+The crash happens ~30s after the ACL is deleted when the initiator
+starts sending ABORT TASK TMF to abort timed out I/O. It might happen at
+rmmod time but that's just coincidence of ABORT TASK being processed. It
+might not happen if a rig shuts off in less than 30 seconds.
+
+Thanks,
+Roman
