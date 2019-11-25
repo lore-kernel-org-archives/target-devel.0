@@ -1,56 +1,41 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Wed, 13 Nov 2019 19:27:31 +0000
-Subject: Re: [PATCH v3 2/3] target/core: Fix a use-after-free in the TMF handling code
-Message-Id: <45dd927b-9bbd-0358-7ee9-ef3e432f5503@acm.org>
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Mon, 25 Nov 2019 16:56:53 +0000
+Subject: [PATCH v3 04/13] scsi: qla2xxx: Drop superfluous INIT_WORK of del_work
+Message-Id: <20191125165702.1013-5-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191113175239.147389-3-bvanassche@acm.org>
-In-Reply-To: <20191113175239.147389-3-bvanassche@acm.org>
+References: <20191125165702.1013-1-r.bolshakov@yadro.com>
+In-Reply-To: <20191125165702.1013-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
 
-On 11/13/19 10:18 AM, Roman Bolshakov wrote:
-> On Wed, Nov 13, 2019 at 09:52:38AM -0800, Bart Van Assche wrote:
->> diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
->> index 09f833c1de8a..944777f4356f 100644
->> --- a/drivers/target/target_core_transport.c
->> +++ b/drivers/target/target_core_transport.c
->> @@ -3256,6 +3256,8 @@ static void target_tmr_work(struct work_struct *work)
->>   	struct se_tmr_req *tmr = cmd->se_tmr_req;
->>   	int ret;
->>   
->> +	config_item_get(&dev->dev_group.cg_item);
->> +
->>   	if (cmd->transport_state & CMD_T_ABORTED)
->>   		goto aborted;
->>   
->> @@ -3297,10 +3299,14 @@ static void target_tmr_work(struct work_struct *work)
->>   	cmd->se_tfo->queue_tm_rsp(cmd);
->>   
->>   	transport_cmd_check_stop_to_fabric(cmd);
->> +
->> +out:
->> +	config_item_put(&dev->dev_group.cg_item);
->>   	return;
->>   
->>   aborted:
->>   	target_handle_abort(cmd);
->> +	goto out;
->>   }
->>   
->>   int transport_generic_handle_tmr(
-> 
-> I might be well wrong but could it happen that refcount of se_device
-> becomes zero before the work starts? Shouldn't we get the refcount
-> increased before the work is scheduled in transport_generic_handle_tmr()?
+del_work is already initialized inside qla2x00_alloc_fcport, there's no
+need to overwrite it. Indeed, it might prevent complete traversal of
+workqueue list.
 
-Hi Roman,
+Fixes: a01c77d2cbc45 ("scsi: qla2xxx: Move session delete to driver work queue")
+Cc: Quinn Tran <qutran@marvell.com>
+Acked-by: Himanshu Madhani <hmadhani@marvell.com>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
+Tested-by: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+---
+ drivers/scsi/qla2xxx/qla_target.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Looking closer into this, I couldn't find an explanation why lun_ref 
-does not prevent 'dev' to disappear. In the tests I ran without this 
-patch the issue did not reappear. So the call trace mentioned in the 
-patch description probably has the same root cause as patch 3/3. I will 
-drop this patch.
-
-Bart.
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index 74cfcb13fe8a..eeb069d52f3d 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -1265,7 +1265,6 @@ void qlt_schedule_sess_for_deletion(struct fc_port *sess)
+ 	    "Scheduling sess %p for deletion %8phC\n",
+ 	    sess, sess->port_name);
+ 
+-	INIT_WORK(&sess->del_work, qla24xx_delete_sess_fn);
+ 	WARN_ON(!queue_work(sess->vha->hw->wq, &sess->del_work));
+ }
+ 
+-- 
+2.24.0
