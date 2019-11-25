@@ -1,70 +1,44 @@
-From: Quinn Tran <qutran@marvell.com>
-Date: Thu, 21 Nov 2019 22:52:08 +0000
-Subject: RE: [EXT] [PATCH v2 14/15] scsi: qla2xxx: Add debug dump of LOGO payload and ELS IOCB
-Message-Id: <BYAPR18MB275952D745988ACBAFC8067FD54E0@BYAPR18MB2759.namprd18.prod.outlook.com>
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Mon, 25 Nov 2019 16:56:54 +0000
+Subject: [PATCH v3 05/13] scsi: qla2xxx: Change discovery state before PLOGI
+Message-Id: <20191125165702.1013-6-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191120222723.27779-1-r.bolshakov@yadro.com>
- <20191120222723.27779-15-r.bolshakov@yadro.com>
-In-Reply-To: <20191120222723.27779-15-r.bolshakov@yadro.com>
+References: <20191125165702.1013-1-r.bolshakov@yadro.com>
+In-Reply-To: <20191125165702.1013-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: "linux@yadro.com" <linux@yadro.com>, Himanshu Madhani <hmadhani@marvell.com>
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, stable@vger.kernel.org, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
 
-Looks good.
+When a port sends PLOGI, discovery state should be changed to login
+pending, otherwise RELOGIN_NEEDED bit is set in
+qla24xx_handle_plogi_done_event(). RELOGIN_NEEDED triggers another
+PLOGI, and it never goes out of the loop until login timer expires.
 
-Acked-by: Quinn Tran <qutran@marvell.com>
-
-
-
-Regards,
-Quinn Tran
-
------Original Message-----
-From: Roman Bolshakov <r.bolshakov@yadro.com> 
-Sent: Wednesday, November 20, 2019 2:27 PM
-To: linux-scsi@vger.kernel.org; target-devel@vger.kernel.org
-Cc: linux@yadro.com; Roman Bolshakov <r.bolshakov@yadro.com>; Quinn Tran <qutran@marvell.com>; Himanshu Madhani <hmadhani@marvell.com>
-Subject: [EXT] [PATCH v2 14/15] scsi: qla2xxx: Add debug dump of LOGO payload and ELS IOCB
-
-External Email
-
-----------------------------------------------------------------------
-The change adds a way to debug LOGO ELS, likewise PLOGI.
-
+Fixes: 8777e4314d397 ("scsi: qla2xxx: Migrate NVME N2N handling into state machine")
+Fixes: 8b5292bcfcacf ("scsi: qla2xxx: Fix Relogin to prevent modifying scan_state flag")
 Cc: Quinn Tran <qutran@marvell.com>
-Cc: Himanshu Madhani <hmadhani@marvell.com>
+Cc: stable@vger.kernel.org
+Acked-by: Himanshu Madhani <hmadhani@marvell.com>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
+Tested-by: Hannes Reinecke <hare@suse.de>
 Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/scsi/qla2xxx/qla_iocb.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/scsi/qla2xxx/qla_init.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c index 12b37b711ae8..cd2e0f89e9b5 100644
---- a/drivers/scsi/qla2xxx/qla_iocb.c
-+++ b/drivers/scsi/qla2xxx/qla_iocb.c
-@@ -2627,6 +2627,10 @@ qla24xx_els_dcmd_iocb(scsi_qla_host_t *vha, int els_opcode,
+diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c
+index 4f3da968163e..fcb309be50d9 100644
+--- a/drivers/scsi/qla2xxx/qla_init.c
++++ b/drivers/scsi/qla2xxx/qla_init.c
+@@ -533,6 +533,7 @@ static int qla_post_els_plogi_work(struct scsi_qla_host *vha, fc_port_t *fcport)
  
- 	memcpy(elsio->u.els_logo.els_logo_pyld, &logo_pyld,
- 	    sizeof(struct els_logo_payload));
-+	ql_dbg(ql_dbg_disc + ql_dbg_buffer, vha, 0x3075, "LOGO buffer:");
-+	ql_dump_buffer(ql_dbg_disc + ql_dbg_buffer, vha, 0x010a,
-+		       elsio->u.els_logo.els_logo_pyld,
-+		       sizeof(*elsio->u.els_logo.els_logo_pyld));
+ 	e->u.fcport.fcport = fcport;
+ 	fcport->flags |= FCF_ASYNC_ACTIVE;
++	fcport->disc_state = DSC_LOGIN_PEND;
+ 	return qla2x00_post_work(vha, e);
+ }
  
- 	rval = qla2x00_start_sp(sp);
- 	if (rval != QLA_SUCCESS) {
-@@ -2704,6 +2708,11 @@ qla24xx_els_logo_iocb(srb_t *sp, struct els_entry_24xx *els_iocb)
- 		els_iocb->rx_byte_count = 0;
- 		els_iocb->rx_address = 0;
- 		els_iocb->rx_len = 0;
-+		ql_dbg(ql_dbg_io + ql_dbg_buffer, vha, 0x3076,
-+		       "LOGO ELS IOCB:");
-+		ql_dump_buffer(ql_log_info, vha, 0x010b,
-+			       els_iocb,
-+			       sizeof(*els_iocb));
- 	}
- 
- 	sp->vha->qla_stats.control_requests++;
---
+-- 
 2.24.0
