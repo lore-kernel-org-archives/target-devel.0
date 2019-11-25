@@ -1,7 +1,7 @@
 From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Mon, 25 Nov 2019 16:56:58 +0000
-Subject: [PATCH v3 09/13] scsi: qla2xxx: Configure local loop for N2N target
-Message-Id: <20191125165702.1013-10-r.bolshakov@yadro.com>
+Date: Mon, 25 Nov 2019 16:56:55 +0000
+Subject: [PATCH v3 06/13] scsi: qla2xxx: Allow PLOGI in target mode
+Message-Id: <20191125165702.1013-7-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191125165702.1013-1-r.bolshakov@yadro.com>
 In-Reply-To: <20191125165702.1013-1-r.bolshakov@yadro.com>
@@ -9,49 +9,53 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
+Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>
 
-qla2x00_configure_local_loop initializes PLOGI payload for PLOGI ELS
-using Get Parameters mailbox command.
+According to FC-LS-3 (Fibre Channel Link Services) 6.3.2.4
+"N_Port Login - No Fabric present", if both parties in the point-to-point
+connection know N_Port_Names of each other, Nx_Port with the highest
+N_Port_name shall transmit PLOGI. The specification sets no restrictions
+on the port role that should send PLOGI.
 
-In the case when the driver is running in target mode, the topology is
-N2N and the target port has higher WWPN, LOCAL_LOOP_UPDATE bit is
-cleared too early and PLOGI payload is not initialized by the Get
-Parameters command. That causes a failure of ELS IOCB carrying the
-PLOGI with 0x15 aka Data Underrun error.
+However, FCP-4 (Fibre Channel Protocol for SCSI, Fourth Version) 6.2
+"Overview of Process Login and Process Logout", instructs that in
+point-to-point topology, initiator shall send explicit PRLI ELS.
 
-LOCAL_LOOP_UPDATE has to be set to initialize PLOGI payload.
+The change fixes stuck P2P login, when target WWPN is higher than
+initiator WWPN.
 
-Fixes: 48acad099074 ("scsi: qla2xxx: Fix N2N link re-connect")
-Acked-by: Quinn Tran <qutran@marvell.com>
-Acked-by: Himanshu Madhani <hmadhani@marvell.com>
-Reviewed-by: Hannes Reinecke <hare@suse.de>
-Tested-by: Hannes Reinecke <hare@suse.de>
+Cc: Quinn Tran <qutran@marvell.com>
+Cc: Himanshu Madhani <hmadhani@marvell.com>
 Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/scsi/qla2xxx/qla_init.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/scsi/qla2xxx/qla_init.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c
-index b4283a3126d0..bc3695dc9b9e 100644
+index fcb309be50d9..b4283a3126d0 100644
 --- a/drivers/scsi/qla2xxx/qla_init.c
 +++ b/drivers/scsi/qla2xxx/qla_init.c
-@@ -4936,14 +4936,8 @@ qla2x00_configure_loop(scsi_qla_host_t *vha)
- 		set_bit(RSCN_UPDATE, &flags);
- 		clear_bit(LOCAL_LOOP_UPDATE, &flags);
+@@ -1527,8 +1527,8 @@ int qla24xx_fcport_handle_login(struct scsi_qla_host *vha, fc_port_t *fcport)
+ 		}
+ 	}
  
--	} else if (ha->current_topology = ISP_CFG_N) {
--		clear_bit(RSCN_UPDATE, &flags);
--		if (qla_tgt_mode_enabled(vha)) {
--			/* allow the other side to start the login */
--			clear_bit(LOCAL_LOOP_UPDATE, &flags);
--			set_bit(RELOGIN_NEEDED, &vha->dpc_flags);
--		}
--	} else if (ha->current_topology = ISP_CFG_NL) {
-+	} else if (ha->current_topology = ISP_CFG_NL ||
-+		   ha->current_topology = ISP_CFG_N) {
- 		clear_bit(RSCN_UPDATE, &flags);
- 		set_bit(LOCAL_LOOP_UPDATE, &flags);
- 	} else if (!vha->flags.online ||
+-	/* for pure Target Mode. Login will not be initiated */
+-	if (vha->host->active_mode = MODE_TARGET)
++	/* Target won't initiate port login if fabric is present */
++	if (vha->host->active_mode = MODE_TARGET && !N2N_TOPO(vha->hw))
+ 		return 0;
+ 
+ 	if (fcport->flags & FCF_ASYNC_SENT) {
+@@ -1720,6 +1720,10 @@ void qla24xx_handle_relogin_event(scsi_qla_host_t *vha,
+ void qla_handle_els_plogi_done(scsi_qla_host_t *vha,
+ 				      struct event_arg *ea)
+ {
++	/* for pure Target Mode, PRLI will not be initiated */
++	if (vha->host->active_mode = MODE_TARGET)
++		return;
++
+ 	ql_dbg(ql_dbg_disc, vha, 0x2118,
+ 	    "%s %d %8phC post PRLI\n",
+ 	    __func__, __LINE__, ea->fcport->port_name);
 -- 
 2.24.0
