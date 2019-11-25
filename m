@@ -1,123 +1,100 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Wed, 13 Nov 2019 17:52:37 +0000
-Subject: [PATCH v3 1/3] target/core: Release SPC-2 reservations when closing a session
-Message-Id: <20191113175239.147389-2-bvanassche@acm.org>
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Mon, 25 Nov 2019 16:56:51 +0000
+Subject: [PATCH v3 02/13] scsi: qla2xxx: Use explicit LOGO in target mode
+Message-Id: <20191125165702.1013-3-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20191125165702.1013-1-r.bolshakov@yadro.com>
+In-Reply-To: <20191125165702.1013-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: linux@yadro.com, Quinn Tran <qutran@marvell.com>, Hannes Reinecke <hare@suse.de>, Himanshu Madhani <hmadhani@marvell.com>, Roman Bolshakov <r.bolshakov@yadro.com>
 
-The SCSI specs require to release SPC-2 reservations when a session is
-closed. Make sure that the target core does this.
+From: Quinn Tran <qutran@marvell.com>
 
-Running the libiscsi tests triggers the KASAN complaint shown below.
-This patch fixes that use-after-free.
+Target makes implicit LOGO on session teardown. LOGO ELS is not send on
+the wire and initiator is not aware that target no longer wants talking
+to it. Initiator keeps sending I/O requests, target responds with
+BA_RJT, they time out and then initiator sends ABORT TASK (ABTS-LS).
 
-BUG: KASAN: use-after-free in target_check_reservation+0x171/0x980 [target_core_mod]
-Read of size 8 at addr ffff88802ecd1878 by task iscsi_trx/17200
+Current behaviour incurs unneeded I/O timeout and can be fixed for some
+initiators by making explicit LOGO on session deletion.
 
-CPU: 0 PID: 17200 Comm: iscsi_trx Not tainted 5.4.0-rc1-dbg+ #1
-Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
-Call Trace:
- dump_stack+0x8a/0xd6
- print_address_description.constprop.0+0x40/0x60
- __kasan_report.cold+0x1b/0x34
- kasan_report+0x16/0x20
- __asan_load8+0x58/0x90
- target_check_reservation+0x171/0x980 [target_core_mod]
- __target_execute_cmd+0xb1/0xf0 [target_core_mod]
- target_execute_cmd+0x22d/0x4d0 [target_core_mod]
- transport_generic_new_cmd+0x31f/0x5b0 [target_core_mod]
- transport_handle_cdb_direct+0x6f/0x90 [target_core_mod]
- iscsit_execute_cmd+0x381/0x3f0 [iscsi_target_mod]
- iscsit_sequence_cmd+0x13b/0x1f0 [iscsi_target_mod]
- iscsit_process_scsi_cmd+0x4c/0x130 [iscsi_target_mod]
- iscsit_get_rx_pdu+0x8e8/0x15f0 [iscsi_target_mod]
- iscsi_target_rx_thread+0x105/0x1b0 [iscsi_target_mod]
- kthread+0x1bc/0x210
- ret_from_fork+0x24/0x30
-
-Allocated by task 1079:
- save_stack+0x23/0x90
- __kasan_kmalloc.constprop.0+0xcf/0xe0
- kasan_slab_alloc+0x12/0x20
- kmem_cache_alloc+0xfe/0x3a0
- transport_alloc_session+0x29/0x80 [target_core_mod]
- iscsi_target_login_thread+0xceb/0x1920 [iscsi_target_mod]
- kthread+0x1bc/0x210
- ret_from_fork+0x24/0x30
-
-Freed by task 17193:
- save_stack+0x23/0x90
- __kasan_slab_free+0x13a/0x190
- kasan_slab_free+0x12/0x20
- kmem_cache_free+0xc8/0x3e0
- transport_free_session+0x179/0x2f0 [target_core_mod]
- transport_deregister_session+0x121/0x170 [target_core_mod]
- iscsit_close_session+0x12c/0x350 [iscsi_target_mod]
- iscsit_logout_post_handler+0x136/0x380 [iscsi_target_mod]
- iscsit_response_queue+0x8fa/0xc00 [iscsi_target_mod]
- iscsi_target_tx_thread+0x28e/0x390 [iscsi_target_mod]
- kthread+0x1bc/0x210
- ret_from_fork+0x24/0x30
-
-The buggy address belongs to the object at ffff88802ecd1860
- which belongs to the cache se_sess_cache of size 352
-The buggy address is located 24 bytes inside of
- 352-byte region [ffff88802ecd1860, ffff88802ecd19c0)
-The buggy address belongs to the page:
-page:ffffea0000bb3400 refcount:1 mapcount:0 mapping:ffff8880bef2ed00 index:0x0 compound_mapcount: 0
-flags: 0x1000000000010200(slab|head)
-raw: 1000000000010200 dead000000000100 dead000000000122 ffff8880bef2ed00
-raw: 0000000000000000 0000000080270027 00000001ffffffff 0000000000000000
-page dumped because: kasan: bad access detected
-
-Memory state around the buggy address:
- ffff88802ecd1700: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
- ffff88802ecd1780: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
->ffff88802ecd1800: fb fb fb fb fc fc fc fc fc fc fc fc fb fb fb fb
-                                                                ^
- ffff88802ecd1880: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
- ffff88802ecd1900: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-
-Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
-Cc: Mike Christie <mchristi@redhat.com>
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
+Tested-by: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Quinn Tran <qutran@marvell.com>
+Signed-off-by: Himanshu Madhani <hmadhani@marvell.com>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/target/target_core_transport.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/scsi/qla2xxx/qla_def.h     |  1 +
+ drivers/scsi/qla2xxx/qla_iocb.c    | 16 ++++++++++++----
+ drivers/scsi/qla2xxx/qla_target.c  |  1 +
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c |  1 +
+ 4 files changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index ba7a01bcad7c..09f833c1de8a 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -584,6 +584,15 @@ void transport_free_session(struct se_session *se_sess)
- }
- EXPORT_SYMBOL(transport_free_session);
+diff --git a/drivers/scsi/qla2xxx/qla_def.h b/drivers/scsi/qla2xxx/qla_def.h
+index 460f443f6471..2edd9f7b3074 100644
+--- a/drivers/scsi/qla2xxx/qla_def.h
++++ b/drivers/scsi/qla2xxx/qla_def.h
+@@ -2401,6 +2401,7 @@ typedef struct fc_port {
+ 	unsigned int id_changed:1;
+ 	unsigned int scan_needed:1;
+ 	unsigned int n2n_flag:1;
++	unsigned int explicit_logout:1;
  
-+static int target_release_res(struct se_device *dev, void *data)
-+{
-+	struct se_session *sess = data;
-+
-+	if (dev->reservation_holder = sess)
-+		target_release_reservation(dev);
-+	return 0;
-+}
-+
- void transport_deregister_session(struct se_session *se_sess)
+ 	struct completion nvme_del_done;
+ 	uint32_t nvme_prli_service_param;
+diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c
+index b25f87ff8cde..c5a7736c45be 100644
+--- a/drivers/scsi/qla2xxx/qla_iocb.c
++++ b/drivers/scsi/qla2xxx/qla_iocb.c
+@@ -2405,11 +2405,19 @@ qla2x00_login_iocb(srb_t *sp, struct mbx_entry *mbx)
+ static void
+ qla24xx_logout_iocb(srb_t *sp, struct logio_entry_24xx *logio)
  {
- 	struct se_portal_group *se_tpg = se_sess->se_tpg;
-@@ -600,6 +609,12 @@ void transport_deregister_session(struct se_session *se_sess)
- 	se_sess->fabric_sess_ptr = NULL;
- 	spin_unlock_irqrestore(&se_tpg->session_lock, flags);
- 
-+	/*
-+	 * Since the session is being removed, release SPC-2
-+	 * reservations held by the session that is disappearing.
-+	 */
-+	target_for_each_device(target_release_res, se_sess);
++	u16 control_flags = LCF_COMMAND_LOGO;
+ 	logio->entry_type = LOGINOUT_PORT_IOCB_TYPE;
+-	logio->control_flags -	    cpu_to_le16(LCF_COMMAND_LOGO|LCF_IMPL_LOGO);
+-	if (!sp->fcport->keep_nport_handle)
+-		logio->control_flags |= cpu_to_le16(LCF_FREE_NPORT);
 +
- 	pr_debug("TARGET_CORE[%s]: Deregistered fabric_sess\n",
- 		se_tpg->se_tpg_tfo->fabric_name);
- 	/*
++	if (sp->fcport->explicit_logout) {
++		control_flags |= LCF_EXPL_LOGO|LCF_FREE_NPORT;
++	} else {
++		control_flags |= LCF_IMPL_LOGO;
++
++		if (!sp->fcport->keep_nport_handle)
++			control_flags |= LCF_FREE_NPORT;
++	}
++
++	logio->control_flags = cpu_to_le16(control_flags);
+ 	logio->nport_handle = cpu_to_le16(sp->fcport->loop_id);
+ 	logio->port_id[0] = sp->fcport->d_id.b.al_pa;
+ 	logio->port_id[1] = sp->fcport->d_id.b.area;
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index 51b275a575a5..f94afb3fe448 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -1104,6 +1104,7 @@ void qlt_free_session_done(struct work_struct *work)
+ 		}
+ 	}
+ 
++	sess->explicit_logout = 0;
+ 	spin_unlock_irqrestore(&ha->tgt.sess_lock, flags);
+ 	sess->free_pending = 0;
+ 
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index bab2073c1f72..abe7f79bb789 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -350,6 +350,7 @@ static void tcm_qla2xxx_close_session(struct se_session *se_sess)
+ 	target_sess_cmd_list_set_waiting(se_sess);
+ 	spin_unlock_irqrestore(&vha->hw->tgt.sess_lock, flags);
+ 
++	sess->explicit_logout = 1;
+ 	tcm_qla2xxx_put_sess(sess);
+ }
+ 
+-- 
+2.24.0
