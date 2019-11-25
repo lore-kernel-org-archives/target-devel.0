@@ -1,53 +1,51 @@
-From: Damien Le Moal <damien.lemoal@wdc.com>
-Date: Fri, 08 Nov 2019 08:27:35 +0000
-Subject: [PATCH] target: core: Prevent memory reclaim recursion
-Message-Id: <20191108082735.417876-1-damien.lemoal@wdc.com>
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Mon, 25 Nov 2019 16:56:57 +0000
+Subject: [PATCH v3 08/13] scsi: qla2xxx: Fix PLOGI payload and ELS IOCB dump length
+Message-Id: <20191125165702.1013-9-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20191125165702.1013-1-r.bolshakov@yadro.com>
+In-Reply-To: <20191125165702.1013-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, target-devel@vger.kernel.org
-Cc: Mike Christie <mchristi@redhat.com>
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
 
-Prevent recursion into the IO path under low memory conditions by using
-GFP_NOIO in place of GFP_KERNEL when allocating a new command with
-tcmu_alloc_cmd() and user ring space with tcmu_get_empty_block().
+The size of the buffer is hardcoded as 0x70 or 112 bytes, while the
+size of ELS IOCB is 0x40 and the size of PLOGI payload returned by
+Get Parameters command is 0x74.
 
-Signed-off-by: Damien Le Moal <damien.lemoal@wdc.com>
+Cc: Quinn Tran <qutran@marvell.com>
+Acked-by: Himanshu Madhani <hmadhani@marvell.com>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
+Tested-by: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/target/target_core_user.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/scsi/qla2xxx/qla_iocb.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 35be1be87d2a..0b9dfa6b17bc 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -499,7 +499,7 @@ static inline bool tcmu_get_empty_block(struct tcmu_dev *udev,
- 			schedule_delayed_work(&tcmu_unmap_work, 0);
+diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c
+index c5a7736c45be..53ccbd6b71ed 100644
+--- a/drivers/scsi/qla2xxx/qla_iocb.c
++++ b/drivers/scsi/qla2xxx/qla_iocb.c
+@@ -2684,7 +2684,8 @@ qla24xx_els_logo_iocb(srb_t *sp, struct els_entry_24xx *els_iocb)
+ 		ql_dbg(ql_dbg_io + ql_dbg_buffer, vha, 0x3073,
+ 		    "PLOGI ELS IOCB:\n");
+ 		ql_dump_buffer(ql_log_info, vha, 0x0109,
+-		    (uint8_t *)els_iocb, 0x70);
++		    (uint8_t *)els_iocb,
++		    sizeof(*els_iocb));
+ 	} else {
+ 		els_iocb->control_flags = 1 << 13;
+ 		els_iocb->tx_byte_count @@ -2942,7 +2943,8 @@ qla24xx_els_dcmd2_iocb(scsi_qla_host_t *vha, int els_opcode,
  
- 		/* try to get new page from the mm */
--		page = alloc_page(GFP_KERNEL);
-+		page = alloc_page(GFP_NOIO);
- 		if (!page)
- 			goto err_alloc;
+ 	ql_dbg(ql_dbg_disc + ql_dbg_buffer, vha, 0x3073, "PLOGI buffer:\n");
+ 	ql_dump_buffer(ql_dbg_disc + ql_dbg_buffer, vha, 0x0109,
+-	    (uint8_t *)elsio->u.els_plogi.els_plogi_pyld, 0x70);
++	    (uint8_t *)elsio->u.els_plogi.els_plogi_pyld,
++	    sizeof(*elsio->u.els_plogi.els_plogi_pyld));
  
-@@ -573,7 +573,7 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
- 	struct tcmu_dev *udev = TCMU_DEV(se_dev);
- 	struct tcmu_cmd *tcmu_cmd;
- 
--	tcmu_cmd = kmem_cache_zalloc(tcmu_cmd_cache, GFP_KERNEL);
-+	tcmu_cmd = kmem_cache_zalloc(tcmu_cmd_cache, GFP_NOIO);
- 	if (!tcmu_cmd)
- 		return NULL;
- 
-@@ -584,7 +584,7 @@ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
- 	tcmu_cmd_reset_dbi_cur(tcmu_cmd);
- 	tcmu_cmd->dbi_cnt = tcmu_cmd_get_block_cnt(tcmu_cmd);
- 	tcmu_cmd->dbi = kcalloc(tcmu_cmd->dbi_cnt, sizeof(uint32_t),
--				GFP_KERNEL);
-+				GFP_NOIO);
- 	if (!tcmu_cmd->dbi) {
- 		kmem_cache_free(tcmu_cmd_cache, tcmu_cmd);
- 		return NULL;
+ 	rval = qla2x00_start_sp(sp);
+ 	if (rval != QLA_SUCCESS) {
 -- 
-2.23.0
+2.24.0
