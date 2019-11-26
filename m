@@ -1,41 +1,20 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Mon, 25 Nov 2019 16:56:53 +0000
-Subject: [PATCH v3 04/13] scsi: qla2xxx: Drop superfluous INIT_WORK of del_work
-Message-Id: <20191125165702.1013-5-r.bolshakov@yadro.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Tue, 26 Nov 2019 20:56:07 +0000
+Subject: Re: [PATCH v3 04/13] scsi: qla2xxx: Drop superfluous INIT_WORK of del_work
+Message-Id: <d8ed8672-ac41-16fc-d51c-a20f2dbd4f14@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <20191125165702.1013-1-r.bolshakov@yadro.com>
-In-Reply-To: <20191125165702.1013-1-r.bolshakov@yadro.com>
+ <20191125165702.1013-5-r.bolshakov@yadro.com>
+In-Reply-To: <20191125165702.1013-5-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
+To: Roman Bolshakov <r.bolshakov@yadro.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: linux@yadro.com, Quinn Tran <qutran@marvell.com>, Himanshu Madhani <hmadhani@marvell.com>, Hannes Reinecke <hare@suse.de>
 
-del_work is already initialized inside qla2x00_alloc_fcport, there's no
-need to overwrite it. Indeed, it might prevent complete traversal of
-workqueue list.
+On 11/25/19 8:56 AM, Roman Bolshakov wrote:
+> del_work is already initialized inside qla2x00_alloc_fcport, there's no
+> need to overwrite it. Indeed, it might prevent complete traversal of
+> workqueue list.
 
-Fixes: a01c77d2cbc45 ("scsi: qla2xxx: Move session delete to driver work queue")
-Cc: Quinn Tran <qutran@marvell.com>
-Acked-by: Himanshu Madhani <hmadhani@marvell.com>
-Reviewed-by: Hannes Reinecke <hare@suse.de>
-Tested-by: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/scsi/qla2xxx/qla_target.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
-index 74cfcb13fe8a..eeb069d52f3d 100644
---- a/drivers/scsi/qla2xxx/qla_target.c
-+++ b/drivers/scsi/qla2xxx/qla_target.c
-@@ -1265,7 +1265,6 @@ void qlt_schedule_sess_for_deletion(struct fc_port *sess)
- 	    "Scheduling sess %p for deletion %8phC\n",
- 	    sess, sess->port_name);
- 
--	INIT_WORK(&sess->del_work, qla24xx_delete_sess_fn);
- 	WARN_ON(!queue_work(sess->vha->hw->wq, &sess->del_work));
- }
- 
--- 
-2.24.0
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
