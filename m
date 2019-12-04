@@ -1,7 +1,7 @@
 From: Ming Lei <ming.lei@redhat.com>
-Date: Wed, 04 Dec 2019 01:05:29 +0000
+Date: Wed, 04 Dec 2019 02:39:39 +0000
 Subject: Re: Data corruption in kernel 5.1+ with iSER attached ramdisk
-Message-Id: <20191204010529.GA3910@ming.t460p>
+Message-Id: <20191204023939.GD3910@ming.t460p>
 List-Id: <target-devel.vger.kernel.org>
 References: <CAAFE1bfsXsKGyw7SU_z4NanT+wmtuJT=XejBYbHHMCDQwm73sw@mail.gmail.com>
  <20191128091210.GC15549@ming.t460p>
@@ -65,51 +65,27 @@ On Tue, Dec 03, 2019 at 02:56:08PM -0500, Stephen Rust wrote:
 > 8192 76
 > 4096 0
 > 4096 0
-> ...
-> [snip]
-> 
-> What do you think are appropriate next steps?
 
-OK, my guess should be correct, and the issue is related with un-aligned
-bvec->bv_offset.
+The following delta change against last patch should fix the issue
+with >4096 bvec length:
 
-So firstly, I'd suggest to investigate from RDMA driver side to see why
-un-aligned buffer is passed to block layer.
+diff --git a/drivers/block/brd.c b/drivers/block/brd.c
+index 9ea1894c820d..49e37a7dda63 100644
+--- a/drivers/block/brd.c
++++ b/drivers/block/brd.c
+@@ -308,7 +308,7 @@ static blk_qc_t brd_make_request(struct request_queue *q, struct bio *bio)
+                if (err)
+                        goto io_error;
+                sector += secs;
+-               offset_in_sec = len - (secs << SECTOR_SHIFT);
++               offset_in_sec += len - (secs << SECTOR_SHIFT);
+        }
 
-According to previous discussion, 512 aligned buffer should be provided
-to block layer.
+        bio_endio(bio);
 
-So looks the driver needs to be fixed.
-
-> Do you think you have an
-> idea on why the specific "multi-page bvec helpers" commit could have
-> exposed this particular latent issue? Please let me know what else I
-> can try, or additional data I can provide for you.
- 
-The patch might not cover the big offset case, could you collect bpftrace
-via the following script when you reproduce the issue with >4096 offset?
-
-kprobe:iblock_execute_rw
-{
-    @start[tid]=1;
-}
-
-kretprobe:iblock_execute_rw
-{
-    @start[tid]=0;
-}
-
-kprobe:bio_add_page
-/@start[tid]/
-{
-  printf("%d %d\n", arg2, arg3);
-}
-
-kprobe:brd_do_bvec
-{
-  printf("%d %d %d %d\n", arg2, arg3, arg4, arg5);
-}
+However, the change on brd is a workaround just for confirming the
+issue.
 
 
-Thanks,
+Thanks, 
 Ming
