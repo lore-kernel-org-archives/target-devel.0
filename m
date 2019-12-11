@@ -1,111 +1,49 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Mon, 30 Dec 2019 16:56:52 +0000
-Subject: Re: Trace seen on target during iSER login
-Message-Id: <53ca2c5e-25e1-9762-9a8e-0036c02fdb3b@acm.org>
+From: Israel Rukshin <israelr@mellanox.com>
+Date: Wed, 11 Dec 2019 15:36:02 +0000
+Subject: [PATCH] scsi: target/iblock: Fix protection error with sectors greater than 512B
+Message-Id: <1576078562-15240-1-git-send-email-israelr@mellanox.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <BYAPR12MB3080466CC0D6B968D3525F5BEF270@BYAPR12MB3080.namprd12.prod.outlook.com>
-In-Reply-To: <BYAPR12MB3080466CC0D6B968D3525F5BEF270@BYAPR12MB3080.namprd12.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rahul Kundu <rahul.kundu@chelsio.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Cc: Potnuri Bharat Teja <bharat@chelsio.com>, Nirranjan Kirubaharan <nirranjan@chelsio.com>, Sagi Grimberg <sagi@grimberg.me>
+To: Target-devel <target-devel@vger.kernel.org>, Linux-scsi <linux-scsi@vger.kernel.org>
+Cc: Israel Rukshin <israelr@mellanox.com>, Max Gurtovoy <maxg@mellanox.com>, Sagi Grimberg <sagi@grimberg.me>, Christoph Hellwig <hch@lst.de>, "Martin K. Petersen" <martin.petersen@oracle.com>
 
-On 2019-12-29 23:21, Rahul Kundu wrote:
-> Below is the patch diff which removes redundant function calls added by the above commit, but I am not sure whether this is the ideal fix:
-> ========================================================> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-> index 7251a87bb576..503a76e9cc62 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -4234,8 +4234,6 @@ int iscsit_close_connection(
->          * must wait until they have completed.
->          */
->         iscsit_check_conn_usage_count(conn);
-> -       target_sess_cmd_list_set_waiting(sess->se_sess);
-> -       target_wait_for_sess_cmds(sess->se_sess);
-> 
->         ahash_request_free(conn->conn_tx_hash);
->         if (conn->conn_rx_hash) {
+The sector size of the block layer is 512 bytes, but integrity interval
+size might be different (in case of 4K block size of the media). At the
+initiator side the virtual start sector is the one that was originally
+submitted by the block layer (512 bytes) for the Reftag usage. The
+initiator converts the Reftag to integrity interval units and sends it to
+the target. So the target virtual start sector should be calculated at
+integrity interval units. prepare_fn() and complete_fn() don't remap
+correctly the Reftag when using incorrect units of the virtual start
+sector, which leads to the following protection error at the device:
 
-I don't like the above change because it would reintroduce the issue fixed by
-commit e9d3009cb936. How about the patch below?
+"blk_update_request: protection error, dev sdb, sector 2048 op 0x0:(READ)
+flags 0x10000 phys_seg 1 prio class 0"
 
-Thanks,
+To fix that, set the seed in integrity interval units.
 
-Bart.
-
-
-From f25182525499b52db6be00b34dbfd3662d29e403 Mon Sep 17 00:00:00 2001
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Mon, 30 Dec 2019 07:48:20 -0800
-Subject: [PATCH] RDMA/isert: Fix a recently introduced regression related to
- logout
-
-iscsit_close_connection() calls isert_wait_conn(). Due to commit
-e9d3009cb936 both functions call target_wait_for_sess_cmds() although
-that last function should be called only once. Fix this by removing
-the target_wait_for_sess_cmds() call from isert_wait_conn() and by
-only calling isert_wait_conn() after target_wait_for_sess_cmds().
-
-Reported-by: Rahul Kundu <rahul.kundu@chelsio.com>
-Fixes: e9d3009cb936 ("scsi: target: iscsi: Wait for all commands to finish before freeing a session").
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: Israel Rukshin <israelr@mellanox.com>
+Reviewed-by: Max Gurtovoy <maxg@mellanox.com>
 ---
- drivers/infiniband/ulp/isert/ib_isert.c | 12 ------------
- drivers/target/iscsi/iscsi_target.c     |  6 +++---
- 2 files changed, 3 insertions(+), 15 deletions(-)
+ drivers/target/target_core_iblock.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index a1a035270cab..b273e421e910 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -2575,17 +2575,6 @@ isert_wait4logout(struct isert_conn *isert_conn)
+diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
+index 6949ea8..51ffd5c 100644
+--- a/drivers/target/target_core_iblock.c
++++ b/drivers/target/target_core_iblock.c
+@@ -646,7 +646,9 @@ static ssize_t iblock_show_configfs_dev_params(struct se_device *dev, char *b)
  	}
- }
-
--static void
--isert_wait4cmds(struct iscsi_conn *conn)
--{
--	isert_info("iscsi_conn %p\n", conn);
--
--	if (conn->sess) {
--		target_sess_cmd_list_set_waiting(conn->sess->se_sess);
--		target_wait_for_sess_cmds(conn->sess->se_sess);
--	}
--}
--
- /**
-  * isert_put_unsol_pending_cmds() - Drop commands waiting for
-  *     unsolicitate dataout
-@@ -2633,7 +2622,6 @@ static void isert_wait_conn(struct iscsi_conn *conn)
-
- 	ib_drain_qp(isert_conn->qp);
- 	isert_put_unsol_pending_cmds(conn);
--	isert_wait4cmds(conn);
- 	isert_wait4logout(isert_conn);
-
- 	queue_work(isert_release_wq, &isert_conn->release_work);
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 7251a87bb576..b94ed4e30770 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4149,9 +4149,6 @@ int iscsit_close_connection(
- 	iscsit_stop_nopin_response_timer(conn);
- 	iscsit_stop_nopin_timer(conn);
-
--	if (conn->conn_transport->iscsit_wait_conn)
--		conn->conn_transport->iscsit_wait_conn(conn);
--
- 	/*
- 	 * During Connection recovery drop unacknowledged out of order
- 	 * commands for this connection, and prepare the other commands
-@@ -4237,6 +4234,9 @@ int iscsit_close_connection(
- 	target_sess_cmd_list_set_waiting(sess->se_sess);
- 	target_wait_for_sess_cmds(sess->se_sess);
-
-+	if (conn->conn_transport->iscsit_wait_conn)
-+		conn->conn_transport->iscsit_wait_conn(conn);
-+
- 	ahash_request_free(conn->conn_tx_hash);
- 	if (conn->conn_rx_hash) {
- 		struct crypto_ahash *tfm;
+ 
+ 	bip->bip_iter.bi_size = bio_integrity_bytes(bi, bio_sectors(bio));
+-	bip_set_seed(bip, bio->bi_iter.bi_sector);
++	/* virtual start sector must be in integrity interval units */
++	bip_set_seed(bip, bio->bi_iter.bi_sector >>
++				  (bi->interval_exp - SECTOR_SHIFT));
+ 
+ 	pr_debug("IBLOCK BIP Size: %u Sector: %llu\n", bip->bip_iter.bi_size,
+ 		 (unsigned long long)bip->bip_iter.bi_sector);
+-- 
+1.8.3.1
