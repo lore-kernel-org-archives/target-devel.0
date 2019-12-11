@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 11 Dec 2019 15:11:14 +0000
-Subject: [PATCH AUTOSEL 5.4 098/134] scsi: target: iscsi: Wait for all commands to finish before freeing a se
-Message-Id: <20191211151150.19073-98-sashal@kernel.org>
+Date: Wed, 11 Dec 2019 15:28:17 +0000
+Subject: [PATCH AUTOSEL 4.14 44/58] scsi: target: iscsi: Wait for all commands to finish before freeing a ses
+Message-Id: <20191211152831.23507-44-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191211151150.19073-1-sashal@kernel.org>
-In-Reply-To: <20191211151150.19073-1-sashal@kernel.org>
+References: <20191211152831.23507-1-sashal@kernel.org>
+In-Reply-To: <20191211152831.23507-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -100,10 +100,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index d19e051f2bc23..f194ffc4699e0 100644
+index fb7bd422e2e1f..21ce92ee16527 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1165,7 +1165,9 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+@@ -1158,7 +1158,9 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
  		hdr->cmdsn, be32_to_cpu(hdr->data_length), payload_length,
  		conn->cid);
  
@@ -114,7 +114,7 @@ index d19e051f2bc23..f194ffc4699e0 100644
  
  	cmd->sense_reason = transport_lookup_cmd_lun(&cmd->se_cmd,
  						     scsilun_to_int(&hdr->lun));
-@@ -2002,7 +2004,9 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+@@ -2004,7 +2006,9 @@ iscsit_handle_task_mgt_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
  			      conn->sess->se_sess, 0, DMA_NONE,
  			      TCM_SIMPLE_TAG, cmd->sense_buffer + 2);
  
@@ -125,7 +125,7 @@ index d19e051f2bc23..f194ffc4699e0 100644
  
  	/*
  	 * TASK_REASSIGN for ERL=2 / connection stays inside of
-@@ -4232,6 +4236,8 @@ int iscsit_close_connection(
+@@ -4236,6 +4240,8 @@ int iscsit_close_connection(
  	 * must wait until they have completed.
  	 */
  	iscsit_check_conn_usage_count(conn);
@@ -135,10 +135,10 @@ index d19e051f2bc23..f194ffc4699e0 100644
  	ahash_request_free(conn->conn_tx_hash);
  	if (conn->conn_rx_hash) {
 diff --git a/include/scsi/iscsi_proto.h b/include/scsi/iscsi_proto.h
-index b71b5c4f418c5..533f56733ba84 100644
+index df156f1d50b2d..f0a01a54bd153 100644
 --- a/include/scsi/iscsi_proto.h
 +++ b/include/scsi/iscsi_proto.h
-@@ -627,6 +627,7 @@ struct iscsi_reject {
+@@ -638,6 +638,7 @@ struct iscsi_reject {
  #define ISCSI_REASON_BOOKMARK_INVALID	9
  #define ISCSI_REASON_BOOKMARK_NO_RESOURCES	10
  #define ISCSI_REASON_NEGOTIATION_RESET	11
