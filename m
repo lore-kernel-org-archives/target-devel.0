@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 11 Dec 2019 15:37:41 +0000
-Subject: [PATCH AUTOSEL 4.4 05/37] scsi: target: compare full CHAP_A Algorithm strings
-Message-Id: <20191211153813.24126-5-sashal@kernel.org>
+Date: Wed, 11 Dec 2019 15:34:33 +0000
+Subject: [PATCH AUTOSEL 4.9 05/42] scsi: target: compare full CHAP_A Algorithm strings
+Message-Id: <20191211153510.23861-5-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191211153813.24126-1-sashal@kernel.org>
-In-Reply-To: <20191211153813.24126-1-sashal@kernel.org>
+References: <20191211153510.23861-1-sashal@kernel.org>
+In-Reply-To: <20191211153510.23861-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -44,7 +44,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index 3184e023a0529..1dd6028eccb99 100644
+index f0d97305575d7..aa3f98994c7d6 100644
 --- a/drivers/target/iscsi/iscsi_target_auth.c
 +++ b/drivers/target/iscsi/iscsi_target_auth.c
 @@ -74,7 +74,7 @@ static int chap_check_algorithm(const char *a_str)
