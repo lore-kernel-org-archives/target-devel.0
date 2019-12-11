@@ -1,22 +1,60 @@
-From: Suvarnan PP <ksd.suvarnan@kite.kerala.gov.in>
-Date: Sun, 08 Dec 2019 00:26:27 +0000
-Subject: Proposition!
-Message-Id: <919999883.248219.1575764067610.JavaMail.zimbra@kite.kerala.gov.in>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 11 Dec 2019 15:25:33 +0000
+Subject: [PATCH AUTOSEL 4.19 09/79] scsi: target: compare full CHAP_A Algorithm strings
+Message-Id: <20191211152643.23056-9-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20191211152643.23056-1-sashal@kernel.org>
+In-Reply-To: <20191211152643.23056-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: David Disseldorp <ddiss@suse.de>, Lee Duncan <lduncan@suse.com>, Mike Christie <mchristi@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Bonjour,
-Je soussignée ANNIE MARTINEZ de nationalité française. Je vous envoie ce présent message afin de solliciter votre accord pour la réalisation d'un projet de donation. Ayant perdu mon époux et mon enfant de 8 ans au cours d'un accident tragique et mortel Il y a quelques années, je n'ai ni famille ni enfant qui pourra bénéficier de ma fortune.
+From: David Disseldorp <ddiss@suse.de>
 
-Actuellement hospitalisée aux USA pour un cancer en phase terminale, je décide de faire don de ma fortune afin que vous puissiez réaliser les œuvres de charité de votre choix.
+[ Upstream commit 9cef2a7955f2754257a7cddedec16edae7b587d0 ]
 
-Pour cela je vous lègue à titre de don une somme de un million cinq cent mille dollars américain en banque en Afrique de l’ouest où je m’étais installée après la mort de mon mari et mon enfant.
+RFC 2307 states:
 
-« N’hésitez pas à me répondre pour me parlé directement  pour plus de détails»
+  For CHAP [RFC1994], in the first step, the initiator MUST send:
 
-Sincèrement
-Mme ANNIE MARTINEZ
-E-mail: annie.martinez121@gmail.com
+      CHAP_A=<A1,A2...>
+
+   Where A1,A2... are proposed algorithms, in order of preference.
+...
+   For the Algorithm, as stated in [RFC1994], one value is required to
+   be implemented:
+
+       5     (CHAP with MD5)
+
+LIO currently checks for this value by only comparing a single byte in
+the tokenized Algorithm string, which means that any value starting with
+a '5' (e.g. "55") is interpreted as "CHAP with MD5". Fix this by
+comparing the entire tokenized string.
+
+Reviewed-by: Lee Duncan <lduncan@suse.com>
+Reviewed-by: Mike Christie <mchristi@redhat.com>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Link: https://lore.kernel.org/r/20190912095547.22427-2-ddiss@suse.de
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/target/iscsi/iscsi_target_auth.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index e2fa3a3bc81df..b6bf605fa5c15 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -78,7 +78,7 @@ static int chap_check_algorithm(const char *a_str)
+ 		if (!token)
+ 			goto out;
+ 
+-		if (!strncmp(token, "5", 1)) {
++		if (!strcmp(token, "5")) {
+ 			pr_debug("Selected MD5 Algorithm\n");
+ 			kfree(orig);
+ 			return CHAP_DIGEST_MD5;
+-- 
+2.20.1
