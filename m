@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 11 Dec 2019 15:27:39 +0000
-Subject: [PATCH AUTOSEL 4.14 06/58] scsi: target: compare full CHAP_A Algorithm strings
-Message-Id: <20191211152831.23507-6-sashal@kernel.org>
+Date: Wed, 11 Dec 2019 15:37:41 +0000
+Subject: [PATCH AUTOSEL 4.4 05/37] scsi: target: compare full CHAP_A Algorithm strings
+Message-Id: <20191211153813.24126-5-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191211152831.23507-1-sashal@kernel.org>
-In-Reply-To: <20191211152831.23507-1-sashal@kernel.org>
+References: <20191211153813.24126-1-sashal@kernel.org>
+In-Reply-To: <20191211153813.24126-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -44,10 +44,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
-index e2fa3a3bc81df..b6bf605fa5c15 100644
+index 3184e023a0529..1dd6028eccb99 100644
 --- a/drivers/target/iscsi/iscsi_target_auth.c
 +++ b/drivers/target/iscsi/iscsi_target_auth.c
-@@ -78,7 +78,7 @@ static int chap_check_algorithm(const char *a_str)
+@@ -74,7 +74,7 @@ static int chap_check_algorithm(const char *a_str)
  		if (!token)
  			goto out;
  
