@@ -1,24 +1,38 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Thu, 19 Dec 2019 23:45:17 +0000
-Subject: Re: [PATCH] scsi: libfc: remove unnecessary assertion on ep variable
-Message-Id: <yq18sn7c22a.fsf@oracle.com>
+From: Aditya Pakki <pakki001@umn.edu>
+Date: Tue, 17 Dec 2019 19:44:37 +0000
+Subject: [PATCH v2] scsi: RDMA/srpt: remove unnecessary assertion in srpt_queue_response
+Message-Id: <20191217194437.25568-1-pakki001@umn.edu>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191217212214.30722-1-pakki001@umn.edu>
-In-Reply-To: <20191217212214.30722-1-pakki001@umn.edu> (Aditya Pakki's message
-        of "Tue, 17 Dec 2019 15:22:13 -0600")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aditya Pakki <pakki001@umn.edu>
-Cc: kjlu@umn.edu, "Martin K. Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ira Weiny <ira.weiny@intel.com>, Allison Randal <allison@lohutok.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: pakki001@umn.edu
+Cc: kjlu@umn.edu, Bart Van Assche <bvanassche@acm.org>, Doug Ledford <dledford@redhat.com>, Jason Gunthorpe <jgg@ziepe.ca>, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Currently, BUG_ON in srpt_queue_response, is used as an assertion for
+empty rdma channel. However, if the channel is NULL, the call trace
+on console is sufficient for diagnosis.
 
-Aditya,
+Signed-off-by: Aditya Pakki <pakki001@umn.edu>
+---
+v1: Avoid potential NULL pointer derefernce of ch. Current fix
+suggested by Bart Van Assche
+---
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-> In ft_recv_write_data(), the pointer ep is dereferenced first and
-> then asserts for NULL. The patch removes the unnecessary assertion.
-
-Applied to 5.6/scsi-queue, thanks!
-
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 23c782e3d49a..98552749d71c 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -2810,8 +2810,6 @@ static void srpt_queue_response(struct se_cmd *cmd)
+ 	int resp_len, ret, i;
+ 	u8 srp_tm_status;
+ 
+-	BUG_ON(!ch);
+-
+ 	state = ioctx->state;
+ 	switch (state) {
+ 	case SRPT_STATE_NEW:
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.20.1
