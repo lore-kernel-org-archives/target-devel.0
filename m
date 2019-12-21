@@ -2,44 +2,44 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CD1AC19F28
-	for <target-devel@archiver.kernel.org>; Wed,  3 Aug 2022 16:29:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34BB0C25B06
+	for <target-devel@archiver.kernel.org>; Wed,  3 Aug 2022 16:29:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238298AbiHCQ3d (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 3 Aug 2022 12:29:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50580 "EHLO
+        id S238373AbiHCQ3e (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 3 Aug 2022 12:29:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50590 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236503AbiHCQ3T (ORCPT
+        with ESMTP id S238236AbiHCQ3T (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
         Wed, 3 Aug 2022 12:29:19 -0400
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E4A3DEBD;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF368167D4;
         Wed,  3 Aug 2022 09:29:18 -0700 (PDT)
 Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id E4574412D8;
-        Wed,  3 Aug 2022 16:29:16 +0000 (UTC)
+        by mta-01.yadro.com (Postfix) with ESMTP id 61443412C6;
+        Wed,  3 Aug 2022 16:29:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
         content-type:content-type:content-transfer-encoding:mime-version
         :references:in-reply-to:x-mailer:message-id:date:date:subject
         :subject:from:from:received:received:received:received; s=
-        mta-01; t=1659544155; x=1661358556; bh=uDcexxKfPmb+UsKJ436OueHFa
-        f0oq73Ey9mzgbzMB5Q=; b=aL6ojNbNJatsA8l+779hB9xCPH1pcTlObwD6ezNYb
-        JmgGZv5VfsGx2RWrOmsQKK2X3c2vZxGzt7hw5pL8IgRwQvwn+rocvKNwpwqeb1QO
-        OJQoGjfOYtWDuDg613QdDWdDWx+OgJB3r0rWvzhRzKe8WDkD8k9zu7YOWtbMWxAt
-        P0=
+        mta-01; t=1659544156; x=1661358557; bh=xtaI47DiYCSiYCtfR0l+q74xA
+        h2uT5t2R4YiDZGtSe0=; b=JfhglayCYIJ4/fpQwgrhLvbx9cE9BKNJkTFMP8/5T
+        mvfCRAmb6yJqtQv56wOMzEJf9kAM593ArfNDHqcvno19zWCywZLWK7gphaNCNtcM
+        z04/TZCQiY4VxI3KuIarkh+m5rT3HDe0oYXxE/QJwsofyc+nyn45O/FjQClkDia2
+        +Q=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
         by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id N8i05648f5uN; Wed,  3 Aug 2022 19:29:15 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com [172.17.10.102])
+        with ESMTP id 3S_keEhZiq14; Wed,  3 Aug 2022 19:29:16 +0300 (MSK)
+Received: from T-EXCH-01.corp.yadro.com (t-exch-01.corp.yadro.com [172.17.10.101])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id B5E8241292;
+        by mta-01.yadro.com (Postfix) with ESMTPS id 0066A4127C;
         Wed,  3 Aug 2022 19:29:12 +0300 (MSK)
 Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
- T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
+ T-EXCH-01.corp.yadro.com (172.17.10.101) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Wed, 3 Aug 2022 19:29:12 +0300
+ 15.1.669.32; Wed, 3 Aug 2022 19:29:13 +0300
 Received: from NB-591.corp.yadro.com (10.199.18.20) by
  T-EXCH-08.corp.yadro.com (172.17.11.58) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
@@ -50,9 +50,9 @@ To:     Martin Petersen <martin.petersen@oracle.com>,
 CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
         Roman Bolshakov <r.bolshakov@yadro.com>,
         Dmitry Bogdanov <d.bogdanov@yadro.com>
-Subject: [RFC PATCH 06/48] scsi: target/core: Drop device-based RTPI
-Date:   Sun, 22 Dec 2019 02:49:48 +0300
-Message-ID: <20220803162857.27770-7-d.bogdanov@yadro.com>
+Subject: [RFC PATCH 07/48] scsi: target/core: Add common port attributes
+Date:   Sat, 21 Dec 2019 03:53:23 +0300
+Message-ID: <20220803162857.27770-8-d.bogdanov@yadro.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220803162857.27770-1-d.bogdanov@yadro.com>
 References: <20220803162857.27770-1-d.bogdanov@yadro.com>
@@ -68,128 +68,135 @@ X-Mailing-List: target-devel@vger.kernel.org
 
 From: Roman Bolshakov <r.bolshakov@yadro.com>
 
-The code is not needed since target port-based RTPI allocation replaced
-it.
+All SCSI target port attributes (tpgN/attribs/attrname) are defined and
+implemented in fabric modules in existing implementation.
+
+The change introduces a way to have common tpg attribs in configfs for
+all fabrics without code duplication.
 
 Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
 ---
- drivers/target/target_core_device.c   | 41 ---------------------------
- drivers/target/target_core_internal.h |  1 -
- drivers/target/target_core_tpg.c      |  6 ----
- include/target/target_core_base.h     |  4 ---
- 4 files changed, 52 deletions(-)
+ drivers/target/target_core_configfs.c        |  9 ++++-
+ drivers/target/target_core_fabric_configfs.c | 39 +++++++++++++++++++-
+ drivers/target/target_core_internal.h        |  1 +
+ drivers/target/target_core_tpg.c             |  4 ++
+ 4 files changed, 50 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index bbef6b869ee9..40a582b084d7 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -470,47 +470,6 @@ void core_clear_lun_from_tpg(struct se_lun *lun, struct se_portal_group *tpg)
- 	mutex_unlock(&tpg->acl_node_mutex);
- }
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 7c0e42e782de..40b9808738d2 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -464,13 +464,19 @@ int target_register_template(const struct target_core_fabric_ops *fo)
+ 	INIT_LIST_HEAD(&tf->tf_list);
+ 	atomic_set(&tf->tf_access_cnt, 0);
+ 	tf->tf_ops = fo;
+-	target_fabric_setup_cits(tf);
++	ret = target_fabric_setup_cits(tf);
++	if (ret)
++		goto out;
  
--int core_alloc_rtpi(struct se_lun *lun, struct se_device *dev)
--{
--	struct se_lun *tmp;
--
--	spin_lock(&dev->se_port_lock);
--	if (dev->export_count == 0x0000ffff) {
--		pr_warn("Reached dev->dev_port_count =="
--				" 0x0000ffff\n");
--		spin_unlock(&dev->se_port_lock);
--		return -ENOSPC;
--	}
--again:
--	/*
--	 * Allocate the next RELATIVE TARGET PORT IDENTIFIER for this struct se_device
--	 * Here is the table from spc4r17 section 7.7.3.8.
--	 *
--	 *    Table 473 -- RELATIVE TARGET PORT IDENTIFIER field
--	 *
--	 * Code      Description
--	 * 0h        Reserved
--	 * 1h        Relative port 1, historically known as port A
--	 * 2h        Relative port 2, historically known as port B
--	 * 3h to FFFFh    Relative port 3 through 65 535
--	 */
--	lun->lun_rtpi = dev->dev_rpti_counter++;
--	if (!lun->lun_rtpi)
--		goto again;
--
--	list_for_each_entry(tmp, &dev->dev_sep_list, lun_dev_link) {
--		/*
--		 * Make sure RELATIVE TARGET PORT IDENTIFIER is unique
--		 * for 16-bit wrap..
--		 */
--		if (lun->lun_rtpi == tmp->lun_rtpi)
--			goto again;
--	}
--	spin_unlock(&dev->se_port_lock);
--
--	return 0;
--}
--
- static void se_release_vpd_for_dev(struct se_device *dev)
- {
- 	struct t10_vpd *vpd, *vpd_tmp;
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index a889a6237d9c..7dcc62749edd 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -59,7 +59,6 @@ struct target_fabric_configfs {
- extern struct t10_alua_lu_gp *default_lu_gp;
- 
- /* target_core_device.c */
--int	core_alloc_rtpi(struct se_lun *lun, struct se_device *dev);
- struct se_dev_entry *core_get_se_deve_from_rtpi(struct se_node_acl *, u16);
- void	target_pr_kref_release(struct kref *);
- void	core_free_device_list_for_node(struct se_node_acl *,
-diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index 1b7ab98bbd04..502bd85bf75c 100644
---- a/drivers/target/target_core_tpg.c
-+++ b/drivers/target/target_core_tpg.c
-@@ -648,10 +648,6 @@ int core_tpg_add_lun(
- 	if (ret < 0)
- 		goto out;
- 
--	ret = core_alloc_rtpi(lun, dev);
--	if (ret)
--		goto out_kill_ref;
--
- 	if (!(dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA) &&
- 	    !(dev->se_hba->hba_flags & HBA_FLAGS_INTERNAL_USE))
- 		target_attach_tg_pt_gp(lun, dev->t10_alua.default_tg_pt_gp);
-@@ -675,8 +671,6 @@ int core_tpg_add_lun(
+ 	mutex_lock(&g_tf_lock);
+ 	list_add_tail(&tf->tf_list, &g_tf_list);
+ 	mutex_unlock(&g_tf_lock);
  
  	return 0;
- 
--out_kill_ref:
--	percpu_ref_exit(&lun->lun_ref);
- out:
- 	return ret;
++
++out:
++	kfree(tf);
++	return ret;
  }
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 72fe94afc7a5..6ed484683ab6 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -734,8 +734,6 @@ struct se_lun {
- 	bool			lun_access_ro;
- 	u32			lun_index;
+ EXPORT_SYMBOL(target_register_template);
  
--	/* RELATIVE TARGET PORT IDENTIFER */
--	u16			lun_rtpi;
- 	atomic_t		lun_acl_count;
- 	struct se_device __rcu	*lun_se_dev;
+@@ -491,6 +497,7 @@ void target_unregister_template(const struct target_core_fabric_ops *fo)
+ 			 */
+ 			rcu_barrier();
+ 			kfree(t->tf_tpg_base_cit.ct_attrs);
++			kfree(t->tf_tpg_attrib_cit.ct_attrs);
+ 			kfree(t);
+ 			return;
+ 		}
+diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
+index 95a88f6224cd..a34b5db4eec5 100644
+--- a/drivers/target/target_core_fabric_configfs.c
++++ b/drivers/target/target_core_fabric_configfs.c
+@@ -795,7 +795,38 @@ TF_CIT_SETUP(tpg_lun, NULL, &target_fabric_lun_group_ops, NULL);
  
-@@ -787,8 +785,6 @@ struct se_device_queue {
- };
+ /* End of tfc_tpg_lun_cit */
  
- struct se_device {
--	/* RELATIVE TARGET PORT IDENTIFER Counter */
--	u16			dev_rpti_counter;
- 	/* Used for SAM Task Attribute ordering */
- 	u32			dev_cur_ordered_id;
- 	u32			dev_flags;
+-TF_CIT_SETUP_DRV(tpg_attrib, NULL, NULL);
++static int
++target_fabric_setup_tpg_attrib_cit(struct target_fabric_configfs *tf)
++{
++	int i, k, len = 0;
++	struct config_item_type *cit = &tf->tf_tpg_attrib_cit;
++	struct configfs_attribute **attrs;
++
++	for (i = 0; core_tpg_attrib_attrs[i]; i++)
++		len += sizeof(struct configfs_attribute *);
++	if (tf->tf_ops->tfc_tpg_attrib_attrs)
++		for (i = 0; tf->tf_ops->tfc_tpg_attrib_attrs[i]; i++)
++			len += sizeof(struct configfs_attribute *);
++	len += sizeof(struct configfs_attribute *);
++
++	attrs = kzalloc(len, GFP_KERNEL);
++	if (!attrs)
++		return -ENOMEM;
++
++	for (i = 0; core_tpg_attrib_attrs[i]; i++)
++		attrs[i] = core_tpg_attrib_attrs[i];
++	if (tf->tf_ops->tfc_tpg_attrib_attrs)
++		for (k = 0; tf->tf_ops->tfc_tpg_attrib_attrs[k]; k++, i++)
++			attrs[i] = tf->tf_ops->tfc_tpg_attrib_attrs[k];
++	attrs[i] = NULL;
++
++	cit->ct_attrs = attrs;
++	cit->ct_owner = tf->tf_ops->module;
++	pr_debug("Setup generic tpg_attrib\n");
++
++	return 0;
++}
++
+ TF_CIT_SETUP_DRV(tpg_auth, NULL, NULL);
+ TF_CIT_SETUP_DRV(tpg_param, NULL, NULL);
+ 
+@@ -1113,7 +1144,11 @@ int target_fabric_setup_cits(struct target_fabric_configfs *tf)
+ 	target_fabric_setup_tpg_lun_cit(tf);
+ 	target_fabric_setup_tpg_np_cit(tf);
+ 	target_fabric_setup_tpg_np_base_cit(tf);
+-	target_fabric_setup_tpg_attrib_cit(tf);
++
++	ret = target_fabric_setup_tpg_attrib_cit(tf);
++	if (ret)
++		return ret;
++
+ 	target_fabric_setup_tpg_auth_cit(tf);
+ 	target_fabric_setup_tpg_param_cit(tf);
+ 	target_fabric_setup_tpg_nacl_cit(tf);
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index 7dcc62749edd..d662cdc9a04c 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -117,6 +117,7 @@ int	core_tmr_lun_reset(struct se_device *, struct se_tmr_req *,
+ 
+ /* target_core_tpg.c */
+ extern struct se_device *g_lun0_dev;
++extern struct configfs_attribute *core_tpg_attrib_attrs[];
+ 
+ struct se_node_acl *__core_tpg_get_initiator_node_acl(struct se_portal_group *tpg,
+ 		const char *);
+diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
+index 502bd85bf75c..61fad44cf205 100644
+--- a/drivers/target/target_core_tpg.c
++++ b/drivers/target/target_core_tpg.c
+@@ -714,3 +714,7 @@ void core_tpg_remove_lun(
+ 
+ 	percpu_ref_exit(&lun->lun_ref);
+ }
++
++struct configfs_attribute *core_tpg_attrib_attrs[] = {
++	NULL,
++};
 -- 
 2.25.1
 
