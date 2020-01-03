@@ -1,27 +1,179 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Tue, 21 Jan 2020 05:30:53 +0000
-Subject: Re: [PATCH] RDMA/isert: Fix a recently introduced regression related to logout
-Message-Id: <yq1d0bdidf6.fsf@oracle.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Fri, 03 Jan 2020 19:27:19 +0000
+Subject: [PATCH] tcm_qla2xxx: Make qlt_alloc_qfull_cmd() set cmd->se_cmd.map_tag
+Message-Id: <20200103192719.205158-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200116044737.19507-1-bvanassche@acm.org>
-In-Reply-To: <20200116044737.19507-1-bvanassche@acm.org> (Bart Van Assche's
-        message of "Wed, 15 Jan 2020 20:47:37 -0800")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, target-devel@vger.kernel.org, linux-rdma@vger.kernel.org, Rahul Kundu <rahul.kundu@chelsio.com>
+To: target-devel@vger.kernel.org
 
+Reduce code duplication by introducing the tcm_qla2xxx_{get,rel}_cmd()
+functions. Introduce these functions in the tcm_qla2xxx.c source files
+such that the qla_target.c source file becomes independent of the SCSI
+target core header files. This patch fixes a bug, namely by ensuring that
+qlt_alloc_qfull_cmd() sets cmd->se_cmd.map_tag.
 
-Bart,
+Cc: Himanshu Madhani <hmadhani@marvell.com>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/scsi/qla2xxx/qla_target.c  | 28 ++++++----------------------
+ drivers/scsi/qla2xxx/qla_target.h  |  2 ++
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c | 25 +++++++++++++++++++++++++
+ 3 files changed, 33 insertions(+), 22 deletions(-)
 
-> iscsit_close_connection() calls isert_wait_conn(). Due to commit
-> e9d3009cb936 both functions call target_wait_for_sess_cmds() although
-> that last function should be called only once. Fix this by removing
-> the target_wait_for_sess_cmds() call from isert_wait_conn() and by
-> only calling isert_wait_conn() after target_wait_for_sess_cmds().
-
-Applied to 5.5/scsi-fixes, thanks!
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index 512041b3163c..bb6a4b7d4134 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -27,8 +27,6 @@
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_host.h>
+ #include <scsi/scsi_tcq.h>
+-#include <target/target_core_base.h>
+-#include <target/target_core_fabric.h>
+ 
+ #include "qla_def.h"
+ #include "qla_target.h"
+@@ -3819,7 +3817,7 @@ void qlt_free_cmd(struct qla_tgt_cmd *cmd)
+ 		return;
+ 	}
+ 	cmd->jiffies_at_free = get_jiffies_64();
+-	target_free_tag(sess->se_sess, &cmd->se_cmd);
++	cmd->vha->hw->tgt.tgt_ops->rel_cmd(cmd);
+ }
+ EXPORT_SYMBOL(qlt_free_cmd);
+ 
+@@ -4153,7 +4151,7 @@ static void __qlt_do_work(struct qla_tgt_cmd *cmd)
+ 	qlt_send_term_exchange(qpair, NULL, &cmd->atio, 1, 0);
+ 
+ 	qlt_decr_num_pend_cmds(vha);
+-	target_free_tag(sess->se_sess, &cmd->se_cmd);
++	cmd->vha->hw->tgt.tgt_ops->rel_cmd(cmd);
+ 	spin_unlock_irqrestore(qpair->qp_lock_ptr, flags);
+ 
+ 	ha->tgt.tgt_ops->put_sess(sess);
+@@ -4280,24 +4278,18 @@ static struct qla_tgt_cmd *qlt_get_tag(scsi_qla_host_t *vha,
+ 				       struct fc_port *sess,
+ 				       struct atio_from_isp *atio)
+ {
+-	struct se_session *se_sess = sess->se_sess;
+ 	struct qla_tgt_cmd *cmd;
+-	int tag, cpu;
+ 
+-	tag = sbitmap_queue_get(&se_sess->sess_tag_pool, &cpu);
+-	if (tag < 0)
++	cmd = vha->hw->tgt.tgt_ops->get_cmd(sess);
++	if (!cmd)
+ 		return NULL;
+ 
+-	cmd = &((struct qla_tgt_cmd *)se_sess->sess_cmd_map)[tag];
+-	memset(cmd, 0, sizeof(struct qla_tgt_cmd));
+ 	cmd->cmd_type = TYPE_TGT_CMD;
+ 	memcpy(&cmd->atio, atio, sizeof(*atio));
+ 	cmd->state = QLA_TGT_STATE_NEW;
+ 	cmd->tgt = vha->vha_tgt.qla_tgt;
+ 	qlt_incr_num_pend_cmds(vha);
+ 	cmd->vha = vha;
+-	cmd->se_cmd.map_tag = tag;
+-	cmd->se_cmd.map_cpu = cpu;
+ 	cmd->sess = sess;
+ 	cmd->loop_id = sess->loop_id;
+ 	cmd->conf_compl_supported = sess->conf_compl_supported;
+@@ -5355,9 +5347,7 @@ qlt_alloc_qfull_cmd(struct scsi_qla_host *vha,
+ 	struct qla_tgt *tgt = vha->vha_tgt.qla_tgt;
+ 	struct qla_hw_data *ha = vha->hw;
+ 	struct fc_port *sess;
+-	struct se_session *se_sess;
+ 	struct qla_tgt_cmd *cmd;
+-	int tag, cpu;
+ 	unsigned long flags;
+ 
+ 	if (unlikely(tgt->tgt_stop)) {
+@@ -5387,10 +5377,8 @@ qlt_alloc_qfull_cmd(struct scsi_qla_host *vha,
+ 	if (!sess)
+ 		return;
+ 
+-	se_sess = sess->se_sess;
+-
+-	tag = sbitmap_queue_get(&se_sess->sess_tag_pool, &cpu);
+-	if (tag < 0) {
++	cmd = ha->tgt.tgt_ops->get_cmd(sess);
++	if (!cmd) {
+ 		ql_dbg(ql_dbg_io, vha, 0x3009,
+ 			"qla_target(%d): %s: Allocation of cmd failed\n",
+ 			vha->vp_idx, __func__);
+@@ -5405,9 +5393,6 @@ qlt_alloc_qfull_cmd(struct scsi_qla_host *vha,
+ 		return;
+ 	}
+ 
+-	cmd = &((struct qla_tgt_cmd *)se_sess->sess_cmd_map)[tag];
+-	memset(cmd, 0, sizeof(struct qla_tgt_cmd));
+-
+ 	qlt_incr_num_pend_cmds(vha);
+ 	INIT_LIST_HEAD(&cmd->cmd_list);
+ 	memcpy(&cmd->atio, atio, sizeof(*atio));
+@@ -5417,7 +5402,6 @@ qlt_alloc_qfull_cmd(struct scsi_qla_host *vha,
+ 	cmd->reset_count = ha->base_qpair->chip_reset;
+ 	cmd->q_full = 1;
+ 	cmd->qpair = ha->base_qpair;
+-	cmd->se_cmd.map_cpu = cpu;
+ 
+ 	if (qfull) {
+ 		cmd->q_full = 1;
+diff --git a/drivers/scsi/qla2xxx/qla_target.h b/drivers/scsi/qla2xxx/qla_target.h
+index 4378788f8832..eb176fd9c105 100644
+--- a/drivers/scsi/qla2xxx/qla_target.h
++++ b/drivers/scsi/qla2xxx/qla_target.h
+@@ -671,6 +671,8 @@ struct qla_tgt_func_tmpl {
+ 	void (*handle_data)(struct qla_tgt_cmd *);
+ 	int (*handle_tmr)(struct qla_tgt_mgmt_cmd *, u64, uint16_t,
+ 			uint32_t);
++	struct qla_tgt_cmd *(*get_cmd)(struct fc_port *);
++	void (*rel_cmd)(struct qla_tgt_cmd *);
+ 	void (*free_cmd)(struct qla_tgt_cmd *);
+ 	void (*free_mcmd)(struct qla_tgt_mgmt_cmd *);
+ 	void (*free_session)(struct fc_port *);
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index 148f8e3645fd..9f7a79aff1ee 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -268,6 +268,29 @@ static void tcm_qla2xxx_complete_free(struct work_struct *work)
+ 	transport_generic_free_cmd(&cmd->se_cmd, 0);
+ }
+ 
++static struct qla_tgt_cmd *tcm_qla2xxx_get_cmd(struct fc_port *sess)
++{
++	struct se_session *se_sess = sess->se_sess;
++	struct qla_tgt_cmd *cmd;
++	int tag, cpu;
++
++	tag = sbitmap_queue_get(&se_sess->sess_tag_pool, &cpu);
++	if (tag < 0)
++		return NULL;
++
++	cmd = &((struct qla_tgt_cmd *)se_sess->sess_cmd_map)[tag];
++	memset(cmd, 0, sizeof(struct qla_tgt_cmd));
++	cmd->se_cmd.map_tag = tag;
++	cmd->se_cmd.map_cpu = cpu;
++
++	return cmd;
++}
++
++static void tcm_qla2xxx_rel_cmd(struct qla_tgt_cmd *cmd)
++{
++	target_free_tag(cmd->sess->se_sess, &cmd->se_cmd);
++}
++
+ /*
+  * Called from qla_target_template->free_cmd(), and will call
+  * tcm_qla2xxx_release_cmd via normal struct target_core_fabric_ops
+@@ -1549,6 +1572,8 @@ static struct qla_tgt_func_tmpl tcm_qla2xxx_template = {
+ 	.handle_cmd		= tcm_qla2xxx_handle_cmd,
+ 	.handle_data		= tcm_qla2xxx_handle_data,
+ 	.handle_tmr		= tcm_qla2xxx_handle_tmr,
++	.get_cmd		= tcm_qla2xxx_get_cmd,
++	.rel_cmd		= tcm_qla2xxx_rel_cmd,
+ 	.free_cmd		= tcm_qla2xxx_free_cmd,
+ 	.free_mcmd		= tcm_qla2xxx_free_mcmd,
+ 	.free_session		= tcm_qla2xxx_free_session,
