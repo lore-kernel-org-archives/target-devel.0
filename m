@@ -1,42 +1,31 @@
-From: Amol Grover <frextrite@gmail.com>
-Date: Fri, 17 Jan 2020 13:50:55 +0000
-Subject: [PATCH v3 2/3] drivers: target: target_core_tpg: Pass lockdep expression to RCU lists
-Message-Id: <20200117133854.32550-2-frextrite@gmail.com>
+From: Jason Gunthorpe <jgg@ziepe.ca>
+Date: Fri, 03 Jan 2020 20:23:23 +0000
+Subject: Re: [PATCH v2] scsi: RDMA/srpt: remove unnecessary assertion in srpt_queue_response
+Message-Id: <20200103202323.GA15557@ziepe.ca>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200117133854.32550-1-frextrite@gmail.com>
-In-Reply-To: <20200117133854.32550-1-frextrite@gmail.com>
+References: <20191217194437.25568-1-pakki001@umn.edu>
+In-Reply-To: <20191217194437.25568-1-pakki001@umn.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: "Paul E . McKenney" <paulmck@kernel.org>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, Joel Fernandes <joel@joelfernandes.org>, linux-kernel-mentees@lists.linuxfoundation.org
+To: Aditya Pakki <pakki001@umn.edu>
+Cc: kjlu@umn.edu, Bart Van Assche <bvanassche@acm.org>, Doug Ledford <dledford@redhat.com>, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-tpg->tpg_lun_hlist is traversed with hlist_for_each_entry_rcu
-outside an RCU read-side critical section but under the
-protection of tpg->tpg_lun_mutex.
+On Tue, Dec 17, 2019 at 01:44:37PM -0600, Aditya Pakki wrote:
+> Currently, BUG_ON in srpt_queue_response, is used as an assertion for
+> empty rdma channel. However, if the channel is NULL, the call trace
+> on console is sufficient for diagnosis.
+> 
+> Signed-off-by: Aditya Pakki <pakki001@umn.edu>
+> Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+> ---
+> v1: Avoid potential NULL pointer derefernce of ch. Current fix
+> suggested by Bart Van Assche
+> ---
+>  drivers/infiniband/ulp/srpt/ib_srpt.c | 2 --
+>  1 file changed, 2 deletions(-)
 
-Hence, add the corresponding lockdep expression to the list traversal
-primitive to silence false-positive lockdep warnings, and
-harden RCU lists.
+Applied to for-next with the reworked commit message Bart suggested
 
-Signed-off-by: Amol Grover <frextrite@gmail.com>
----
- drivers/target/target_core_tpg.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index d24e0a3ba3ff..7aa0240a7948 100644
---- a/drivers/target/target_core_tpg.c
-+++ b/drivers/target/target_core_tpg.c
-@@ -110,7 +110,8 @@ void core_tpg_add_node_to_devs(
- 	struct se_device *dev;
- 
- 	mutex_lock(&tpg->tpg_lun_mutex);
--	hlist_for_each_entry_rcu(lun, &tpg->tpg_lun_hlist, link) {
-+	hlist_for_each_entry_rcu(lun, &tpg->tpg_lun_hlist, link,
-+				 lockdep_is_held(&tpg->tpg_lun_mutex)) {
- 		if (lun_orig && lun != lun_orig)
- 			continue;
- 
--- 
-2.24.1
+Thanks,
+Jason
