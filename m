@@ -1,7 +1,7 @@
 From: Amol Grover <frextrite@gmail.com>
-Date: Fri, 10 Jan 2020 17:17:57 +0000
-Subject: [PATCH v2 1/3] drivers: target: target_core_device: Pass lockdep expression to RCU lists
-Message-Id: <20200110170558.23466-1-frextrite@gmail.com>
+Date: Fri, 10 Jan 2020 12:56:03 +0000
+Subject: [PATCH 1/3] drivers: target: target_core_device: Pass lockdep expression to RCU lists
+Message-Id: <20200110124403.27882-1-frextrite@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,15 +22,11 @@ clean and concise.
 
 Signed-off-by: Amol Grover <frextrite@gmail.com>
 ---
-v2:
-- Fix sparse error
-  CHECK: Alignment should match open parenthesis
-
  drivers/target/target_core_device.c | 18 ++++++++++++------
  1 file changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 2d19f0e332b0..7627583e2509 100644
+index 2d19f0e332b0..2d1277a83916 100644
 --- a/drivers/target/target_core_device.c
 +++ b/drivers/target/target_core_device.c
 @@ -36,6 +36,9 @@
@@ -49,7 +45,7 @@ index 2d19f0e332b0..7627583e2509 100644
  	mutex_lock(&nacl->lun_entry_mutex);
 -	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link) {
 +	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link,
-+				 lun_entry_mutex_held()) {
++							lun_entry_mutex_held()) {
  		struct se_lun *lun = rcu_dereference_check(deve->se_lun,
 -					lockdep_is_held(&nacl->lun_entry_mutex));
 +							lun_entry_mutex_held());
@@ -62,7 +58,7 @@ index 2d19f0e332b0..7627583e2509 100644
  
 -	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link)
 +	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link,
-+				 rcu_read_lock_held() || lun_entry_mutex_held())
++				rcu_read_lock_held() || lun_entry_mutex_held())
  		if (deve->mapped_lun = mapped_lun)
  			return deve;
  
@@ -81,7 +77,7 @@ index 2d19f0e332b0..7627583e2509 100644
  		mutex_lock(&nacl->lun_entry_mutex);
 -		hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link) {
 +		hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link,
-+					 lun_entry_mutex_held()) {
++							lun_entry_mutex_held()) {
  			struct se_lun *tmp_lun = rcu_dereference_check(deve->se_lun,
 -					lockdep_is_held(&nacl->lun_entry_mutex));
 +							lun_entry_mutex_held());
