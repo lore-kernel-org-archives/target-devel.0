@@ -1,31 +1,92 @@
-From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Fri, 03 Jan 2020 20:23:23 +0000
-Subject: Re: [PATCH v2] scsi: RDMA/srpt: remove unnecessary assertion in srpt_queue_response
-Message-Id: <20200103202323.GA15557@ziepe.ca>
+From: Amol Grover <frextrite@gmail.com>
+Date: Fri, 10 Jan 2020 17:17:57 +0000
+Subject: [PATCH v2 1/3] drivers: target: target_core_device: Pass lockdep expression to RCU lists
+Message-Id: <20200110170558.23466-1-frextrite@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20191217194437.25568-1-pakki001@umn.edu>
-In-Reply-To: <20191217194437.25568-1-pakki001@umn.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aditya Pakki <pakki001@umn.edu>
-Cc: kjlu@umn.edu, Bart Van Assche <bvanassche@acm.org>, Doug Ledford <dledford@redhat.com>, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: "Paul E . McKenney" <paulmck@kernel.org>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, Joel Fernandes <joel@joelfernandes.org>, linux-kernel-mentees@lists.linuxfoundation.org
 
-On Tue, Dec 17, 2019 at 01:44:37PM -0600, Aditya Pakki wrote:
-> Currently, BUG_ON in srpt_queue_response, is used as an assertion for
-> empty rdma channel. However, if the channel is NULL, the call trace
-> on console is sufficient for diagnosis.
-> 
-> Signed-off-by: Aditya Pakki <pakki001@umn.edu>
-> Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-> ---
-> v1: Avoid potential NULL pointer derefernce of ch. Current fix
-> suggested by Bart Van Assche
-> ---
->  drivers/infiniband/ulp/srpt/ib_srpt.c | 2 --
->  1 file changed, 2 deletions(-)
+nacl->lun_entry_hlist is traversed with hlist_for_each_entry_rcu
+outside an RCU read-side critical section but under the
+protection of nacl->lun_entry_mutex.
 
-Applied to for-next with the reworked commit message Bart suggested
+Hence, add the corresponding lockdep expression to the list traversal
+primitive to silence false-positive lockdep warnings, and
+harden RCU lists.
 
-Thanks,
-Jason
+Add macro for the corresponding lockdep expression to make the code
+clean and concise.
+
+Signed-off-by: Amol Grover <frextrite@gmail.com>
+---
+v2:
+- Fix sparse error
+  CHECK: Alignment should match open parenthesis
+
+ drivers/target/target_core_device.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index 2d19f0e332b0..7627583e2509 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -36,6 +36,9 @@
+ #include "target_core_pr.h"
+ #include "target_core_ua.h"
+ 
++#define lun_entry_mutex_held() \
++	lockdep_is_held(&nacl->lun_entry_mutex)
++
+ static DEFINE_MUTEX(device_mutex);
+ static LIST_HEAD(device_list);
+ static DEFINE_IDR(devices_idr);
+@@ -247,9 +250,10 @@ void core_free_device_list_for_node(
+ 	struct se_dev_entry *deve;
+ 
+ 	mutex_lock(&nacl->lun_entry_mutex);
+-	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link) {
++	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link,
++				 lun_entry_mutex_held()) {
+ 		struct se_lun *lun = rcu_dereference_check(deve->se_lun,
+-					lockdep_is_held(&nacl->lun_entry_mutex));
++							lun_entry_mutex_held());
+ 		core_disable_device_list_for_node(lun, deve, nacl, tpg);
+ 	}
+ 	mutex_unlock(&nacl->lun_entry_mutex);
+@@ -276,7 +280,8 @@ struct se_dev_entry *target_nacl_find_deve(struct se_node_acl *nacl, u64 mapped_
+ {
+ 	struct se_dev_entry *deve;
+ 
+-	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link)
++	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link,
++				 rcu_read_lock_held() || lun_entry_mutex_held())
+ 		if (deve->mapped_lun = mapped_lun)
+ 			return deve;
+ 
+@@ -339,7 +344,7 @@ int core_enable_device_list_for_node(
+ 	orig = target_nacl_find_deve(nacl, mapped_lun);
+ 	if (orig && orig->se_lun) {
+ 		struct se_lun *orig_lun = rcu_dereference_check(orig->se_lun,
+-					lockdep_is_held(&nacl->lun_entry_mutex));
++							lun_entry_mutex_held());
+ 
+ 		if (orig_lun != lun) {
+ 			pr_err("Existing orig->se_lun doesn't match new lun"
+@@ -460,9 +465,10 @@ void core_clear_lun_from_tpg(struct se_lun *lun, struct se_portal_group *tpg)
+ 	list_for_each_entry(nacl, &tpg->acl_node_list, acl_list) {
+ 
+ 		mutex_lock(&nacl->lun_entry_mutex);
+-		hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link) {
++		hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link,
++					 lun_entry_mutex_held()) {
+ 			struct se_lun *tmp_lun = rcu_dereference_check(deve->se_lun,
+-					lockdep_is_held(&nacl->lun_entry_mutex));
++							lun_entry_mutex_held());
+ 
+ 			if (lun != tmp_lun)
+ 				continue;
+-- 
+2.24.1
