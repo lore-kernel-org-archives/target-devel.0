@@ -1,27 +1,61 @@
-From: Rick Schaech <msjulianaalfred@gmail.com>
-Date: Mon, 13 Jan 2020 06:05:31 +0000
-Subject: I wait for your swift response,
-Message-Id: <CADBcy2Lqxb=ZWNZ6xRSS-sEQmC4JhrXZzDhEQhXpwEFX8UNWDQ@mail.gmail.com>
+From: Amol Grover <frextrite@gmail.com>
+Date: Fri, 10 Jan 2020 12:56:05 +0000
+Subject: [PATCH 2/3] drivers: target: target_core_tpg: Pass lockdep expression to RCU lists
+Message-Id: <20200110124403.27882-2-frextrite@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200110124403.27882-1-frextrite@gmail.com>
+In-Reply-To: <20200110124403.27882-1-frextrite@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: "Paul E . McKenney" <paulmck@kernel.org>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, Joel Fernandes <joel@joelfernandes.org>, linux-kernel-mentees@lists.linuxfoundation.org
 
-Dear, I'm Mr Rick Schaech, I am the General Account Auditor, Though i
-know we have not meet each other before but sometimes in life God have
-a reason of bringing two people from two different countries together
-as business partners or life partners.
+tpg->tpg_lun_hlist is traversed with hlist_for_each_entry_rcu
+outside an RCU read-side critical section but under the
+protection of tpg->tpg_lun_mutex.
 
-My dear friend, I have the sum of 15.7 Million USD i wish to put in
-your name due to the death of my late client who died several years
-ago as his next of kin column still remain blank. Though the internet
-medium is highly abuse these days but am assuring you that this
-transaction is legitimate and I am contacting you that we may have a
-deal, note for your cooperation and collaboration 40% of the sum will
-be for you while the other 60% will be for me as well. I wait for your
-swift response for more details. please forward your response to my
-personal E-mail: rickschaech@gmail.com
+Hence, add the corresponding lockdep expression to the list traversal
+primitive to silence false-positive lockdep warnings, and
+harden RCU lists.
 
-Yours sincerely,
-Rick Schaech.
+Add macro for the corresponding lockdep expression to make the code
+clean and concise.
+
+Signed-off-by: Amol Grover <frextrite@gmail.com>
+---
+ drivers/target/target_core_tpg.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
+index d24e0a3ba3ff..bc1c5dda81bf 100644
+--- a/drivers/target/target_core_tpg.c
++++ b/drivers/target/target_core_tpg.c
+@@ -30,6 +30,9 @@
+ #include "target_core_pr.h"
+ #include "target_core_ua.h"
+ 
++#define tpg_lun_mutex_held() \
++	lockdep_is_held(&tpg->tpg_lun_mutex)
++
+ extern struct se_device *g_lun0_dev;
+ 
+ /*	__core_tpg_get_initiator_node_acl():
+@@ -110,12 +113,12 @@ void core_tpg_add_node_to_devs(
+ 	struct se_device *dev;
+ 
+ 	mutex_lock(&tpg->tpg_lun_mutex);
+-	hlist_for_each_entry_rcu(lun, &tpg->tpg_lun_hlist, link) {
++	hlist_for_each_entry_rcu(lun, &tpg->tpg_lun_hlist, link,
++							tpg_lun_mutex_held()) {
+ 		if (lun_orig && lun != lun_orig)
+ 			continue;
+ 
+-		dev = rcu_dereference_check(lun->lun_se_dev,
+-					    lockdep_is_held(&tpg->tpg_lun_mutex));
++		dev = rcu_dereference_check(lun->lun_se_dev, tpg_lun_mutex_held());
+ 		/*
+ 		 * By default in LIO-Target $FABRIC_MOD,
+ 		 * demo_mode_write_protect is ON, or READ_ONLY;
+-- 
+2.24.1
