@@ -1,59 +1,27 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 17:20:31 +0000
-Subject: [PATCH AUTOSEL 4.14 159/371] scsi: target/core: Fix a race condition in the LUN lookup code
-Message-Id: <20200116172403.18149-102-sashal@kernel.org>
+From: Rick Schaech <msjulianaalfred@gmail.com>
+Date: Mon, 13 Jan 2020 06:05:31 +0000
+Subject: I wait for your swift response,
+Message-Id: <CADBcy2Lqxb=ZWNZ6xRSS-sEQmC4JhrXZzDhEQhXpwEFX8UNWDQ@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200116172403.18149-1-sashal@kernel.org>
-In-Reply-To: <20200116172403.18149-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bart Van Assche <bvanassche@acm.org>, Mike Christie <mchristi@redhat.com>, Christoph Hellwig <hch@lst.de>, Hannes Reinecke <hare@suse.com>, Nicholas Bellinger <nab@linux-iscsi.org>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-From: Bart Van Assche <bvanassche@acm.org>
+Dear, I'm Mr Rick Schaech, I am the General Account Auditor, Though i
+know we have not meet each other before but sometimes in life God have
+a reason of bringing two people from two different countries together
+as business partners or life partners.
 
-[ Upstream commit 63f7479439c95bcd49b7dd4af809862c316c71a3 ]
+My dear friend, I have the sum of 15.7 Million USD i wish to put in
+your name due to the death of my late client who died several years
+ago as his next of kin column still remain blank. Though the internet
+medium is highly abuse these days but am assuring you that this
+transaction is legitimate and I am contacting you that we may have a
+deal, note for your cooperation and collaboration 40% of the sum will
+be for you while the other 60% will be for me as well. I wait for your
+swift response for more details. please forward your response to my
+personal E-mail: rickschaech@gmail.com
 
-The rcu_dereference(deve->se_lun) expression occurs twice in the LUN lookup
-functions. Since these expressions are not serialized against deve->se_lun
-assignments each of these expressions may yield a different result. Avoid
-that the wrong LUN pointer is stored in se_cmd by reading deve->se_lun only
-once.
-
-Cc: Mike Christie <mchristi@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: Nicholas Bellinger <nab@linux-iscsi.org>
-Fixes: 29a05deebf6c ("target: Convert se_node_acl->device_list[] to RCU hlist") # v4.10
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/target_core_device.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 92b52d2314b5..cebef8e5a43d 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -85,7 +85,7 @@ transport_lookup_cmd_lun(struct se_cmd *se_cmd, u64 unpacked_lun)
- 			goto out_unlock;
- 		}
- 
--		se_cmd->se_lun = rcu_dereference(deve->se_lun);
-+		se_cmd->se_lun = se_lun;
- 		se_cmd->pr_res_key = deve->pr_res_key;
- 		se_cmd->orig_fe_lun = unpacked_lun;
- 		se_cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
-@@ -176,7 +176,7 @@ int transport_lookup_tmr_lun(struct se_cmd *se_cmd, u64 unpacked_lun)
- 			goto out_unlock;
- 		}
- 
--		se_cmd->se_lun = rcu_dereference(deve->se_lun);
-+		se_cmd->se_lun = se_lun;
- 		se_cmd->pr_res_key = deve->pr_res_key;
- 		se_cmd->orig_fe_lun = unpacked_lun;
- 		se_cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
--- 
-2.20.1
+Yours sincerely,
+Rick Schaech.
