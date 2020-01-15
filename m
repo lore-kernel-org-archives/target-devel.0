@@ -1,36 +1,38 @@
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-Date: Mon, 13 Jan 2020 16:51:28 +0000
-Subject: Cannot log in from BIOS to linux target
-Message-Id: <20200113165128.GC4113@kitsune.suse.cz>
+From: Zhu Lingshan <lingshan.zhu@linux.intel.com>
+Date: Wed, 15 Jan 2020 05:15:50 +0000
+Subject: Re: Cannot log in from BIOS to linux target
+Message-Id: <b8c09533-3d1e-bebf-6bb3-74f3a1aa6a75@linux.intel.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200113165128.GC4113@kitsune.suse.cz>
+In-Reply-To: <20200113165128.GC4113@kitsune.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ibm852"
+Content-Transfer-Encoding: base64
 To: target-devel@vger.kernel.org
 
-Hello,
-
-my system BIOS support booting from iSCSI.
-
-I set up readonly target with no authentication:
-
-targetcli shell version 2.1.fb49
-
-grub .................................................................. [/scratch/ISO/GRUB (1.8MiB) write-back activated]
-  | |   o- alua ................................................................................................. [ALUA Groups: 1]
-  | |     o- default_tg_pt_gp ..................................................................... [ALUA state: Active/optimized]
-
- | | o- tpg1 ................................................................................................ [gen-acls, no-auth]
-  | |   |   o- mapped_lun0 ............................................................................... [lun0 fileio/grub (rw)]
-The readonly flag does not seem to be honored                                                                                 ^^^
-
-Anyway, the initiator cannot log in:
-
-3,1360,2329588663878,-;Initiator sent zero length security payload, login failed
-3,1361,2329588663897,-;iSCSI Login negotiation failed.
-
-How can I export a LUN without a password?
-
-Thanks
-
-Michal
+SGkgTWljaGFsLAoKdHJ5IGRlbW8gbW9kZSBmb3IgYSBleHBlcmltZW50PyBIZXJlIGlzIGEgZ3Vp
+ZGUgCmh0dHA6Ly93d3cubGludXgtaXNjc2kub3JnL3dpa2kvSVNDU0kjRGVtb19tb2RlCnlvdSBj
+YW4gYWxzbyBmaW5kIGhvdyB0byBjb25maWcgdXNlcm5hbWUgL3Bhc3N3b3JkIHRoZXJlLgoKVGhh
+bmtzLApaaHUgTGluZ3NoYW4KT24gMS8xNC8yMDIwIDEyOjUxIEFNLCBNaWNoYWwgU3VjaMOhbmVr
+IHdyb3RlOgo+IEhlbGxvLAo+Cj4gbXkgc3lzdGVtIEJJT1Mgc3VwcG9ydCBib290aW5nIGZyb20g
+aVNDU0kuCj4KPiBJIHNldCB1cCByZWFkb25seSB0YXJnZXQgd2l0aCBubyBhdXRoZW50aWNhdGlv
+bjoKPgo+IHRhcmdldGNsaSBzaGVsbCB2ZXJzaW9uIDIuMS5mYjQ5Cj4KPiBncnViIC4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+LiBbL3NjcmF0Y2gvSVNPL0dSVUIgKDEuOE1pQikgd3JpdGUtYmFjayBhY3RpdmF0ZWRdCj4gICAg
+fCB8ICAgby0gYWx1YSAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtB
+TFVBIEdyb3VwczogMV0KPiAgICB8IHwgICAgIG8tIGRlZmF1bHRfdGdfcHRfZ3AgLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uIFtBTFVBIHN0YXRlOiBBY3RpdmUvb3B0aW1pemVkXQo+Cj4gICB8IHwgby0gdHBnMSAuLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4gW2dlbi1hY2xzLCBuby1hdXRoXQo+
+ICAgIHwgfCAgIHwgICBvLSBtYXBwZWRfbHVuMCAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtsdW4w
+IGZpbGVpby9ncnViIChydyldCj4gVGhlIHJlYWRvbmx5IGZsYWcgZG9lcyBub3Qgc2VlbSB0byBi
+ZSBob25vcmVkICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXl5eCj4KPiBBbnl3YXksIHRoZSBpbml0
+aWF0b3IgY2Fubm90IGxvZyBpbjoKPgo+IDMsMTM2MCwyMzI5NTg4NjYzODc4LC07SW5pdGlhdG9y
+IHNlbnQgemVybyBsZW5ndGggc2VjdXJpdHkgcGF5bG9hZCwgbG9naW4gZmFpbGVkCj4gMywxMzYx
+LDIzMjk1ODg2NjM4OTcsLTtpU0NTSSBMb2dpbiBuZWdvdGlhdGlvbiBmYWlsZWQuCj4KPiBIb3cg
+Y2FuIEkgZXhwb3J0IGEgTFVOIHdpdGhvdXQgYSBwYXNzd29yZD8KPgo+IFRoYW5rcwo+Cj4gTWlj
+aGFs
