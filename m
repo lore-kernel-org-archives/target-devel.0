@@ -1,77 +1,48 @@
-From: Zhu Lingshan <lingshan.zhu@linux.intel.com>
-Date: Wed, 15 Jan 2020 09:26:35 +0000
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+Date: Wed, 15 Jan 2020 09:41:12 +0000
 Subject: Re: Cannot log in from BIOS to linux target
-Message-Id: <bc2b330a-9624-9e21-6a41-7ad7675b1f63@linux.intel.com>
+Message-Id: <20200115094112.GK4113@kitsune.suse.cz>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200113165128.GC4113@kitsune.suse.cz>
 In-Reply-To: <20200113165128.GC4113@kitsune.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="windows-1250"
+Content-Transfer-Encoding: base64
 To: target-devel@vger.kernel.org
 
-Hi Michal,
-
-Why not give a try on Yast2 iscsi target module? It would be easy to 
-config your target with it.
-
-Thanks,
-BR
-Zhu Lingshan
-
-On 1/15/2020 3:07 PM, Hannes Reinecke wrote:
-> On 1/15/20 6:15 AM, Zhu Lingshan wrote:
->> Hi Michal,
->>
->> try demo mode for a experiment? Here is a guide
->> http://www.linux-iscsi.org/wiki/ISCSI#Demo_mode
->> you can also find how to config username /password there.
->>
->> Thanks,
->> Zhu Lingshan
->> On 1/14/2020 12:51 AM, Michal Suchánek wrote:
->>> Hello,
->>>
->>> my system BIOS support booting from iSCSI.
->>>
->>> I set up readonly target with no authentication:
->>>
->>> targetcli shell version 2.1.fb49
->>>
->>> grub
->>> ..................................................................
->>> [/scratch/ISO/GRUB (1.8MiB) write-back activated]
->>>     | |   o- alua
->>> .................................................................................................
->>> [ALUA Groups: 1]
->>>     | |     o- default_tg_pt_gp
->>> .....................................................................
->>> [ALUA state: Active/optimized]
->>>
->>>    | | o- tpg1
->>> ................................................................................................
->>> [gen-acls, no-auth]
->>>     | |   |   o- mapped_lun0
->>> ...............................................................................
->>> [lun0 fileio/grub (rw)]
->>> The readonly flag does not seem to be
->>> honored
->>> ^^^
->>>
->>> Anyway, the initiator cannot log in:
->>>
->>> 3,1360,2329588663878,-;Initiator sent zero length security payload,
->>> login failed
->>> 3,1361,2329588663897,-;iSCSI Login negotiation failed.
->>>
->>> How can I export a LUN without a password?
->>>
->>> Thanks
->>>
->>> Michal
-> It's actually not the password that's missing, it's the ACL.
-> You have registered your iSCSI initiatorname with the target, right?
->
-> Cheers,
->
-> Hannes
+T24gV2VkLCBKYW4gMTUsIDIwMjAgYXQgMDg6MDc6NTlBTSArMDEwMCwgSGFubmVzIFJlaW5lY2tl
+IHdyb3RlOgo+IE9uIDEvMTUvMjAgNjoxNSBBTSwgWmh1IExpbmdzaGFuIHdyb3RlOgo+ID4gSGkg
+TWljaGFsLAo+ID4gCj4gPiB0cnkgZGVtbyBtb2RlIGZvciBhIGV4cGVyaW1lbnQ/IEhlcmUgaXMg
+YSBndWlkZQpUaGF0J3Mgd2hhdCBJIGRpZC4KPiA+IGh0dHA6Ly93d3cubGludXgtaXNjc2kub3Jn
+L3dpa2kvSVNDU0kjRGVtb19tb2RlCj4gPiB5b3UgY2FuIGFsc28gZmluZCBob3cgdG8gY29uZmln
+IHVzZXJuYW1lIC9wYXNzd29yZCB0aGVyZS4KTm8uCj4gPiAKPiA+IFRoYW5rcywKPiA+IFpodSBM
+aW5nc2hhbgo+ID4gT24gMS8xNC8yMDIwIDEyOjUxIEFNLCBNaWNoYWwgU3VjaOFuZWsgd3JvdGU6
+Cj4gPj4gSGVsbG8sCj4gPj4KPiA+PiBteSBzeXN0ZW0gQklPUyBzdXBwb3J0IGJvb3RpbmcgZnJv
+bSBpU0NTSS4KPiA+Pgo+ID4+IEkgc2V0IHVwIHJlYWRvbmx5IHRhcmdldCB3aXRoIG5vIGF1dGhl
+bnRpY2F0aW9uOgo+ID4+Cj4gPj4gdGFyZ2V0Y2xpIHNoZWxsIHZlcnNpb24gMi4xLmZiNDkKPiA+
+Pgo+ID4+IGdydWIKPiA+PiAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4KPiA+PiBbL3NjcmF0Y2gvSVNPL0dSVUIgKDEuOE1p
+Qikgd3JpdGUtYmFjayBhY3RpdmF0ZWRdCj4gPj4goKAgfCB8oKAgby0gYWx1YQo+ID4+IC4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4KPiA+PiBbQUxVQSBHcm91cHM6IDFd
+Cj4gPj4goKAgfCB8oKCgoCBvLSBkZWZhdWx0X3RnX3B0X2dwCj4gPj4gLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uCj4g
+Pj4gW0FMVUEgc3RhdGU6IEFjdGl2ZS9vcHRpbWl6ZWRdCj4gPj4KPiA+PiCgIHwgfCBvLSB0cGcx
+Cj4gPj4gLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uCj4gPj4gW2dlbi1h
+Y2xzLCBuby1hdXRoXQo+ID4+IKCgIHwgfKCgIHygoCBvLSBtYXBwZWRfbHVuMAo+ID4+IC4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4KPiA+PiBbbHVuMCBmaWxlaW8vZ3J1YiAocncpXQo+ID4+IFRoZSBy
+ZWFkb25seSBmbGFnIGRvZXMgbm90IHNlZW0gdG8gYmUKPiA+PiBob25vcmVkoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKAKPiA+PiBeXl4KPiA+Pgo+ID4+IEFueXdheSwgdGhlIGluaXRpYXRvciBjYW5u
+b3QgbG9nIGluOgo+ID4+Cj4gPj4gMywxMzYwLDIzMjk1ODg2NjM4NzgsLTtJbml0aWF0b3Igc2Vu
+dCB6ZXJvIGxlbmd0aCBzZWN1cml0eSBwYXlsb2FkLAo+ID4+IGxvZ2luIGZhaWxlZAo+ID4+IDMs
+MTM2MSwyMzI5NTg4NjYzODk3LC07aVNDU0kgTG9naW4gbmVnb3RpYXRpb24gZmFpbGVkLgo+ID4+
+Cj4gPj4gSG93IGNhbiBJIGV4cG9ydCBhIExVTiB3aXRob3V0IGEgcGFzc3dvcmQ/Cj4gPj4KPiA+
+PiBUaGFua3MKPiA+Pgo+ID4+IE1pY2hhbAo+IAo+IEl0J3MgYWN0dWFsbHkgbm90IHRoZSBwYXNz
+d29yZCB0aGF0J3MgbWlzc2luZywgaXQncyB0aGUgQUNMLgo+IFlvdSBoYXZlIHJlZ2lzdGVyZWQg
+eW91ciBpU0NTSSBpbml0aWF0b3JuYW1lIHdpdGggdGhlIHRhcmdldCwgcmlnaHQ/CkkgZGlkIG5v
+dCBpbml0aWFsbHkgYnV0IHNpbmNlIHRoZSB0YXJnZXQgaW5zaXN0ZWQgSSBjaGFuZ2VkIHRoZQpp
+bml0aWF0b3IgbmFtZSB0byB2YWxpZCBpcW4gYW5kIHJlZ2lzdGVyZWQgaXQuCgpTbyBsb29rcyBs
+aWtlIHRoZSBkZW1vIG1vZGUgZG9lcyBub3Qgd29yay4KClRoYW5rcwoKTWljaGFs
