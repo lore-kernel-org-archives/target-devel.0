@@ -1,38 +1,73 @@
-From: Zhu Lingshan <lingshan.zhu@linux.intel.com>
-Date: Wed, 15 Jan 2020 05:16:42 +0000
+From: Hannes Reinecke <hare@suse.de>
+Date: Wed, 15 Jan 2020 07:07:59 +0000
 Subject: Re: Cannot log in from BIOS to linux target
-Message-Id: <23aa78e6-01b1-8678-e39a-6fb997b92d7e@linux.intel.com>
+Message-Id: <9c1d4e16-4cb6-5c78-46b1-f3f88158037d@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200113165128.GC4113@kitsune.suse.cz>
 In-Reply-To: <20200113165128.GC4113@kitsune.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ibm852"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: target-devel@vger.kernel.org
 
-SGkgTWljaGFsLAoKdHJ5IGRlbW8gbW9kZSBmb3IgYSBleHBlcmltZW50PyBIZXJlIGlzIGEgZ3Vp
-ZGUgCmh0dHA6Ly93d3cubGludXgtaXNjc2kub3JnL3dpa2kvSVNDU0kjRGVtb19tb2RlCnlvdSBj
-YW4gYWxzbyBmaW5kIGhvdyB0byBjb25maWcgdXNlcm5hbWUgL3Bhc3N3b3JkIHRoZXJlLgoKVGhh
-bmtzLApaaHUgTGluZ3NoYW4KCk9uIDEvMTQvMjAyMCAxMjo1MSBBTSwgTWljaGFsIFN1Y2jDoW5l
-ayB3cm90ZToKPiBIZWxsbywKPgo+IG15IHN5c3RlbSBCSU9TIHN1cHBvcnQgYm9vdGluZyBmcm9t
-IGlTQ1NJLgo+Cj4gSSBzZXQgdXAgcmVhZG9ubHkgdGFyZ2V0IHdpdGggbm8gYXV0aGVudGljYXRp
-b246Cj4KPiB0YXJnZXRjbGkgc2hlbGwgdmVyc2lvbiAyLjEuZmI0OQo+Cj4gZ3J1YiAuLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4gWy9zY3JhdGNoL0lTTy9HUlVCICgxLjhNaUIpIHdyaXRlLWJhY2sgYWN0aXZhdGVkXQo+ICAg
-IHwgfCAgIG8tIGFsdWEgLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLiBb
-QUxVQSBHcm91cHM6IDFdCj4gICAgfCB8ICAgICBvLSBkZWZhdWx0X3RnX3B0X2dwIC4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLiBbQUxVQSBzdGF0ZTogQWN0aXZlL29wdGltaXplZF0KPgo+ICAgfCB8IG8tIHRwZzEgLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uIFtnZW4tYWNscywgbm8tYXV0aF0K
-PiAgICB8IHwgICB8ICAgby0gbWFwcGVkX2x1bjAgLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLiBbbHVu
-MCBmaWxlaW8vZ3J1YiAocncpXQo+IFRoZSByZWFkb25seSBmbGFnIGRvZXMgbm90IHNlZW0gdG8g
-YmUgaG9ub3JlZCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIF5eXgo+Cj4gQW55d2F5LCB0aGUgaW5p
-dGlhdG9yIGNhbm5vdCBsb2cgaW46Cj4KPiAzLDEzNjAsMjMyOTU4ODY2Mzg3OCwtO0luaXRpYXRv
-ciBzZW50IHplcm8gbGVuZ3RoIHNlY3VyaXR5IHBheWxvYWQsIGxvZ2luIGZhaWxlZAo+IDMsMTM2
-MSwyMzI5NTg4NjYzODk3LC07aVNDU0kgTG9naW4gbmVnb3RpYXRpb24gZmFpbGVkLgo+Cj4gSG93
-IGNhbiBJIGV4cG9ydCBhIExVTiB3aXRob3V0IGEgcGFzc3dvcmQ/Cj4KPiBUaGFua3MKPgo+IE1p
-Y2hhbA==
+On 1/15/20 6:15 AM, Zhu Lingshan wrote:
+> Hi Michal,
+> 
+> try demo mode for a experiment? Here is a guide
+> http://www.linux-iscsi.org/wiki/ISCSI#Demo_mode
+> you can also find how to config username /password there.
+> 
+> Thanks,
+> Zhu Lingshan
+> On 1/14/2020 12:51 AM, Michal Suchánek wrote:
+>> Hello,
+>>
+>> my system BIOS support booting from iSCSI.
+>>
+>> I set up readonly target with no authentication:
+>>
+>> targetcli shell version 2.1.fb49
+>>
+>> grub
+>> ..................................................................
+>> [/scratch/ISO/GRUB (1.8MiB) write-back activated]
+>>    | |   o- alua
+>> .................................................................................................
+>> [ALUA Groups: 1]
+>>    | |     o- default_tg_pt_gp
+>> .....................................................................
+>> [ALUA state: Active/optimized]
+>>
+>>   | | o- tpg1
+>> ................................................................................................
+>> [gen-acls, no-auth]
+>>    | |   |   o- mapped_lun0
+>> ...............................................................................
+>> [lun0 fileio/grub (rw)]
+>> The readonly flag does not seem to be
+>> honored                                                                                
+>> ^^^
+>>
+>> Anyway, the initiator cannot log in:
+>>
+>> 3,1360,2329588663878,-;Initiator sent zero length security payload,
+>> login failed
+>> 3,1361,2329588663897,-;iSCSI Login negotiation failed.
+>>
+>> How can I export a LUN without a password?
+>>
+>> Thanks
+>>
+>> Michal
+
+It's actually not the password that's missing, it's the ACL.
+You have registered your iSCSI initiatorname with the target, right?
+
+Cheers,
+
+Hannes
+-- 
+Dr. Hannes Reinecke		      Teamlead Storage & Networking
+hare@suse.de			                  +49 911 74053 688
+SUSE Software Solutions Germany GmbH, Maxfeldstr. 5, 90409 Nürnberg
+HRB 36809 (AG Nürnberg), GF: Felix Imendörffer
