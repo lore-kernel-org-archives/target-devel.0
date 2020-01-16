@@ -1,61 +1,45 @@
-From: Amol Grover <frextrite@gmail.com>
-Date: Fri, 10 Jan 2020 12:56:05 +0000
-Subject: [PATCH 2/3] drivers: target: target_core_tpg: Pass lockdep expression to RCU lists
-Message-Id: <20200110124403.27882-2-frextrite@gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 16 Jan 2020 17:42:47 +0000
+Subject: [PATCH AUTOSEL 4.4 170/174] scsi: target: core: Fix a pr_debug() argument
+Message-Id: <20200116174251.24326-170-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200110124403.27882-1-frextrite@gmail.com>
-In-Reply-To: <20200110124403.27882-1-frextrite@gmail.com>
+References: <20200116174251.24326-1-sashal@kernel.org>
+In-Reply-To: <20200116174251.24326-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: "Paul E . McKenney" <paulmck@kernel.org>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, Joel Fernandes <joel@joelfernandes.org>, linux-kernel-mentees@lists.linuxfoundation.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bart Van Assche <bvanassche@acm.org>, Christoph Hellwig <hch@lst.de>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-tpg->tpg_lun_hlist is traversed with hlist_for_each_entry_rcu
-outside an RCU read-side critical section but under the
-protection of tpg->tpg_lun_mutex.
+From: Bart Van Assche <bvanassche@acm.org>
 
-Hence, add the corresponding lockdep expression to the list traversal
-primitive to silence false-positive lockdep warnings, and
-harden RCU lists.
+[ Upstream commit c941e0d172605731de9b4628bd4146d35cf2e7d6 ]
 
-Add macro for the corresponding lockdep expression to make the code
-clean and concise.
+Print the string for which conversion failed instead of printing the
+function name twice.
 
-Signed-off-by: Amol Grover <frextrite@gmail.com>
+Fixes: 2650d71e244f ("target: move transport ID handling to the core")
+Cc: Christoph Hellwig <hch@lst.de>
+Link: https://lore.kernel.org/r/20191107215525.64415-1-bvanassche@acm.org
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_tpg.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/target/target_core_fabric_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index d24e0a3ba3ff..bc1c5dda81bf 100644
---- a/drivers/target/target_core_tpg.c
-+++ b/drivers/target/target_core_tpg.c
-@@ -30,6 +30,9 @@
- #include "target_core_pr.h"
- #include "target_core_ua.h"
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index cb6497ce4b61..6e75095af681 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -130,7 +130,7 @@ static int srp_get_pr_transport_id(
+ 	memset(buf + 8, 0, leading_zero_bytes);
+ 	rc = hex2bin(buf + 8 + leading_zero_bytes, p, count);
+ 	if (rc < 0) {
+-		pr_debug("hex2bin failed for %s: %d\n", __func__, rc);
++		pr_debug("hex2bin failed for %s: %d\n", p, rc);
+ 		return rc;
+ 	}
  
-+#define tpg_lun_mutex_held() \
-+	lockdep_is_held(&tpg->tpg_lun_mutex)
-+
- extern struct se_device *g_lun0_dev;
- 
- /*	__core_tpg_get_initiator_node_acl():
-@@ -110,12 +113,12 @@ void core_tpg_add_node_to_devs(
- 	struct se_device *dev;
- 
- 	mutex_lock(&tpg->tpg_lun_mutex);
--	hlist_for_each_entry_rcu(lun, &tpg->tpg_lun_hlist, link) {
-+	hlist_for_each_entry_rcu(lun, &tpg->tpg_lun_hlist, link,
-+							tpg_lun_mutex_held()) {
- 		if (lun_orig && lun != lun_orig)
- 			continue;
- 
--		dev = rcu_dereference_check(lun->lun_se_dev,
--					    lockdep_is_held(&tpg->tpg_lun_mutex));
-+		dev = rcu_dereference_check(lun->lun_se_dev, tpg_lun_mutex_held());
- 		/*
- 		 * By default in LIO-Target $FABRIC_MOD,
- 		 * demo_mode_write_protect is ON, or READ_ONLY;
 -- 
-2.24.1
+2.20.1
