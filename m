@@ -1,21 +1,45 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Tue, 28 Jan 2020 03:09:41 +0000
-Subject: Re: [EXT] [PATCH] tcm_qla2xxx: Make qlt_alloc_qfull_cmd() set cmd->se_cmd.map_tag
-Message-Id: <yq1tv4gb7ka.fsf@oracle.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 16 Jan 2020 17:04:52 +0000
+Subject: [PATCH AUTOSEL 4.19 654/671] scsi: target: core: Fix a pr_debug() argument
+Message-Id: <20200116170509.12787-391-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200116170509.12787-1-sashal@kernel.org>
+In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bart Van Assche <bvanassche@acm.org>, Christoph Hellwig <hch@lst.de>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
+From: Bart Van Assche <bvanassche@acm.org>
 
-> Reduce code duplication by introducing the tcm_qla2xxx_{get,rel}_cmd()
-> functions. Introduce these functions in the tcm_qla2xxx.c source files
-> such that the qla_target.c source file becomes independent of the SCSI
-> target core header files. This patch fixes a bug, namely by ensuring that
-> qlt_alloc_qfull_cmd() sets cmd->se_cmd.map_tag.
+[ Upstream commit c941e0d172605731de9b4628bd4146d35cf2e7d6 ]
 
-Applied to 5.7/scsi-queue. Thanks!
+Print the string for which conversion failed instead of printing the
+function name twice.
 
+Fixes: 2650d71e244f ("target: move transport ID handling to the core")
+Cc: Christoph Hellwig <hch@lst.de>
+Link: https://lore.kernel.org/r/20191107215525.64415-1-bvanassche@acm.org
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/target/target_core_fabric_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index 71a80257a052..10fae26b44ad 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -131,7 +131,7 @@ static int srp_get_pr_transport_id(
+ 	memset(buf + 8, 0, leading_zero_bytes);
+ 	rc = hex2bin(buf + 8 + leading_zero_bytes, p, count);
+ 	if (rc < 0) {
+-		pr_debug("hex2bin failed for %s: %d\n", __func__, rc);
++		pr_debug("hex2bin failed for %s: %d\n", p, rc);
+ 		return rc;
+ 	}
+ 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.20.1
