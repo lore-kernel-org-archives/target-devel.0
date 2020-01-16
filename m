@@ -1,54 +1,79 @@
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-Date: Wed, 15 Jan 2020 09:57:24 +0000
-Subject: Re: Cannot log in from BIOS to linux target
-Message-Id: <20200115095724.GL4113@kitsune.suse.cz>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Thu, 16 Jan 2020 04:47:37 +0000
+Subject: [PATCH] RDMA/isert: Fix a recently introduced regression related to logout
+Message-Id: <20200116044737.19507-1-bvanassche@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200113165128.GC4113@kitsune.suse.cz>
-In-Reply-To: <20200113165128.GC4113@kitsune.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1250"
-Content-Transfer-Encoding: base64
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: target-devel@vger.kernel.org, linux-rdma@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>, Rahul Kundu <rahul.kundu@chelsio.com>
 
-T24gV2VkLCBKYW4gMTUsIDIwMjAgYXQgMDU6MjY6MzVQTSArMDgwMCwgWmh1IExpbmdzaGFuIHdy
-b3RlOgo+IEhpIE1pY2hhbCwKPiAKPiBXaHkgbm90IGdpdmUgYSB0cnkgb24gWWFzdDIgaXNjc2kg
-dGFyZ2V0IG1vZHVsZT8gSXQgd291bGQgYmUgZWFzeSB0byBjb25maWcKPiB5b3VyIHRhcmdldCB3
-aXRoIGl0LgoKUHJlc3VtYWJseSBpdCdzIGVhc3kgd2l0aCB0YXJnZXRjbGkgYXMgd2VsbCwgYW5k
-IHNob3VsZCB3b3JrIG9uIGFueQpkaXN0cmlidXRpb24uIEkgZG9uJ3QgdGhpbmsgY2hhbmdpbmcg
-dGhlIHRvb2wgd2lsbCBjaGFuZ2UgdGhlIGZhY3QgdGhhdAphdXRoZW50aWNhdGlvbiBpcyByZXF1
-aXJlZCB3aGVuIGl0IGlzIGRpc2FibGVkLgoKVGhhbmtzCgpNaWNoYWwKPiAKPiBUaGFua3MsCj4g
-QlIKPiBaaHUgTGluZ3NoYW4KPiAKPiBPbiAxLzE1LzIwMjAgMzowNyBQTSwgSGFubmVzIFJlaW5l
-Y2tlIHdyb3RlOgo+ID4gT24gMS8xNS8yMCA2OjE1IEFNLCBaaHUgTGluZ3NoYW4gd3JvdGU6Cj4g
-PiA+IEhpIE1pY2hhbCwKPiA+ID4gCj4gPiA+IHRyeSBkZW1vIG1vZGUgZm9yIGEgZXhwZXJpbWVu
-dD8gSGVyZSBpcyBhIGd1aWRlCj4gPiA+IGh0dHA6Ly93d3cubGludXgtaXNjc2kub3JnL3dpa2kv
-SVNDU0kjRGVtb19tb2RlCj4gPiA+IHlvdSBjYW4gYWxzbyBmaW5kIGhvdyB0byBjb25maWcgdXNl
-cm5hbWUgL3Bhc3N3b3JkIHRoZXJlLgo+ID4gPiAKPiA+ID4gVGhhbmtzLAo+ID4gPiBaaHUgTGlu
-Z3NoYW4KPiA+ID4gT24gMS8xNC8yMDIwIDEyOjUxIEFNLCBNaWNoYWwgU3VjaOFuZWsgd3JvdGU6
-Cj4gPiA+ID4gSGVsbG8sCj4gPiA+ID4gCj4gPiA+ID4gbXkgc3lzdGVtIEJJT1Mgc3VwcG9ydCBi
-b290aW5nIGZyb20gaVNDU0kuCj4gPiA+ID4gCj4gPiA+ID4gSSBzZXQgdXAgcmVhZG9ubHkgdGFy
-Z2V0IHdpdGggbm8gYXV0aGVudGljYXRpb246Cj4gPiA+ID4gCj4gPiA+ID4gdGFyZ2V0Y2xpIHNo
-ZWxsIHZlcnNpb24gMi4xLmZiNDkKPiA+ID4gPiAKPiA+ID4gPiBncnViCj4gPiA+ID4gLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uCj4gPiA+ID4gWy9zY3JhdGNoL0lTTy9HUlVCICgxLjhNaUIpIHdyaXRlLWJhY2sgYWN0aXZh
-dGVkXQo+ID4gPiA+ICCgoCB8IHygoCBvLSBhbHVhCj4gPiA+ID4gLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLgo+ID4gPiA+IFtBTFVBIEdyb3VwczogMV0KPiA+ID4gPiAg
-oKAgfCB8oKCgoCBvLSBkZWZhdWx0X3RnX3B0X2dwCj4gPiA+ID4gLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uCj4gPiA+
-ID4gW0FMVUEgc3RhdGU6IEFjdGl2ZS9vcHRpbWl6ZWRdCj4gPiA+ID4gCj4gPiA+ID4gIKAgfCB8
-IG8tIHRwZzEKPiA+ID4gPiAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4K
-PiA+ID4gPiBbZ2VuLWFjbHMsIG5vLWF1dGhdCj4gPiA+ID4gIKCgIHwgfKCgIHygoCBvLSBtYXBw
-ZWRfbHVuMAo+ID4gPiA+IC4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4KPiA+ID4gPiBbbHVuMCBmaWxl
-aW8vZ3J1YiAocncpXQo+ID4gPiA+IFRoZSByZWFkb25seSBmbGFnIGRvZXMgbm90IHNlZW0gdG8g
-YmUKPiA+ID4gPiBob25vcmVkCj4gPiA+ID4gXl5eCj4gPiA+ID4gCj4gPiA+ID4gQW55d2F5LCB0
-aGUgaW5pdGlhdG9yIGNhbm5vdCBsb2cgaW46Cj4gPiA+ID4gCj4gPiA+ID4gMywxMzYwLDIzMjk1
-ODg2NjM4NzgsLTtJbml0aWF0b3Igc2VudCB6ZXJvIGxlbmd0aCBzZWN1cml0eSBwYXlsb2FkLAo+
-ID4gPiA+IGxvZ2luIGZhaWxlZAo+ID4gPiA+IDMsMTM2MSwyMzI5NTg4NjYzODk3LC07aVNDU0kg
-TG9naW4gbmVnb3RpYXRpb24gZmFpbGVkLgo+ID4gPiA+IAo+ID4gPiA+IEhvdyBjYW4gSSBleHBv
-cnQgYSBMVU4gd2l0aG91dCBhIHBhc3N3b3JkPwo+ID4gPiA+IAo+ID4gPiA+IFRoYW5rcwo+ID4g
-PiA+IAo+ID4gPiA+IE1pY2hhbAo+ID4gSXQncyBhY3R1YWxseSBub3QgdGhlIHBhc3N3b3JkIHRo
-YXQncyBtaXNzaW5nLCBpdCdzIHRoZSBBQ0wuCj4gPiBZb3UgaGF2ZSByZWdpc3RlcmVkIHlvdXIg
-aVNDU0kgaW5pdGlhdG9ybmFtZSB3aXRoIHRoZSB0YXJnZXQsIHJpZ2h0Pwo+ID4gCj4gPiBDaGVl
-cnMsCj4gPiAKPiA+IEhhbm5lcw==
+iscsit_close_connection() calls isert_wait_conn(). Due to commit
+e9d3009cb936 both functions call target_wait_for_sess_cmds() although
+that last function should be called only once. Fix this by removing
+the target_wait_for_sess_cmds() call from isert_wait_conn() and by
+only calling isert_wait_conn() after target_wait_for_sess_cmds().
+
+Reported-by: Rahul Kundu <rahul.kundu@chelsio.com>
+Fixes: e9d3009cb936 ("scsi: target: iscsi: Wait for all commands to finish before freeing a session").
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/infiniband/ulp/isert/ib_isert.c | 12 ------------
+ drivers/target/iscsi/iscsi_target.c     |  6 +++---
+ 2 files changed, 3 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index a1a035270cab..b273e421e910 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -2575,17 +2575,6 @@ isert_wait4logout(struct isert_conn *isert_conn)
+ 	}
+ }
+ 
+-static void
+-isert_wait4cmds(struct iscsi_conn *conn)
+-{
+-	isert_info("iscsi_conn %p\n", conn);
+-
+-	if (conn->sess) {
+-		target_sess_cmd_list_set_waiting(conn->sess->se_sess);
+-		target_wait_for_sess_cmds(conn->sess->se_sess);
+-	}
+-}
+-
+ /**
+  * isert_put_unsol_pending_cmds() - Drop commands waiting for
+  *     unsolicitate dataout
+@@ -2633,7 +2622,6 @@ static void isert_wait_conn(struct iscsi_conn *conn)
+ 
+ 	ib_drain_qp(isert_conn->qp);
+ 	isert_put_unsol_pending_cmds(conn);
+-	isert_wait4cmds(conn);
+ 	isert_wait4logout(isert_conn);
+ 
+ 	queue_work(isert_release_wq, &isert_conn->release_work);
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 7251a87bb576..b94ed4e30770 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4149,9 +4149,6 @@ int iscsit_close_connection(
+ 	iscsit_stop_nopin_response_timer(conn);
+ 	iscsit_stop_nopin_timer(conn);
+ 
+-	if (conn->conn_transport->iscsit_wait_conn)
+-		conn->conn_transport->iscsit_wait_conn(conn);
+-
+ 	/*
+ 	 * During Connection recovery drop unacknowledged out of order
+ 	 * commands for this connection, and prepare the other commands
+@@ -4237,6 +4234,9 @@ int iscsit_close_connection(
+ 	target_sess_cmd_list_set_waiting(sess->se_sess);
+ 	target_wait_for_sess_cmds(sess->se_sess);
+ 
++	if (conn->conn_transport->iscsit_wait_conn)
++		conn->conn_transport->iscsit_wait_conn(conn);
++
+ 	ahash_request_free(conn->conn_tx_hash);
+ 	if (conn->conn_rx_hash) {
+ 		struct crypto_ahash *tfm;
