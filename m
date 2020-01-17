@@ -1,88 +1,72 @@
 From: Amol Grover <frextrite@gmail.com>
-Date: Fri, 10 Jan 2020 12:56:03 +0000
-Subject: [PATCH 1/3] drivers: target: target_core_device: Pass lockdep expression to RCU lists
-Message-Id: <20200110124403.27882-1-frextrite@gmail.com>
+Date: Fri, 17 Jan 2020 13:50:57 +0000
+Subject: [PATCH v3 3/3] drivers: target: tcm_fc: tfc_sess: Pass lockdep expression to RCU lists
+Message-Id: <20200117133854.32550-3-frextrite@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200117133854.32550-1-frextrite@gmail.com>
+In-Reply-To: <20200117133854.32550-1-frextrite@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Martin K. Petersen" <martin.petersen@oracle.com>
 Cc: "Paul E . McKenney" <paulmck@kernel.org>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, Joel Fernandes <joel@joelfernandes.org>, linux-kernel-mentees@lists.linuxfoundation.org
 
-nacl->lun_entry_hlist is traversed with hlist_for_each_entry_rcu
+head is traversed with hlist_for_each_entry_rcu
 outside an RCU read-side critical section but under the
-protection of nacl->lun_entry_mutex.
+protection of ft_lport_lock.
 
 Hence, add the corresponding lockdep expression to the list traversal
 primitive to silence false-positive lockdep warnings, and
 harden RCU lists.
 
-Add macro for the corresponding lockdep expression to make the code
-clean and concise.
-
 Signed-off-by: Amol Grover <frextrite@gmail.com>
 ---
- drivers/target/target_core_device.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ drivers/target/tcm_fc/tfc_sess.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 2d19f0e332b0..2d1277a83916 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -36,6 +36,9 @@
- #include "target_core_pr.h"
- #include "target_core_ua.h"
- 
-+#define lun_entry_mutex_held() \
-+	lockdep_is_held(&nacl->lun_entry_mutex)
-+
- static DEFINE_MUTEX(device_mutex);
- static LIST_HEAD(device_list);
- static DEFINE_IDR(devices_idr);
-@@ -247,9 +250,10 @@ void core_free_device_list_for_node(
- 	struct se_dev_entry *deve;
- 
- 	mutex_lock(&nacl->lun_entry_mutex);
--	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link) {
-+	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link,
-+							lun_entry_mutex_held()) {
- 		struct se_lun *lun = rcu_dereference_check(deve->se_lun,
--					lockdep_is_held(&nacl->lun_entry_mutex));
-+							lun_entry_mutex_held());
- 		core_disable_device_list_for_node(lun, deve, nacl, tpg);
+diff --git a/drivers/target/tcm_fc/tfc_sess.c b/drivers/target/tcm_fc/tfc_sess.c
+index 4fd6a1de947c..bb70f61237a6 100644
+--- a/drivers/target/tcm_fc/tfc_sess.c
++++ b/drivers/target/tcm_fc/tfc_sess.c
+@@ -170,7 +170,8 @@ static struct ft_sess *ft_sess_get(struct fc_lport *lport, u32 port_id)
  	}
- 	mutex_unlock(&nacl->lun_entry_mutex);
-@@ -276,7 +280,8 @@ struct se_dev_entry *target_nacl_find_deve(struct se_node_acl *nacl, u64 mapped_
- {
- 	struct se_dev_entry *deve;
  
--	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link)
-+	hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link,
-+				rcu_read_lock_held() || lun_entry_mutex_held())
- 		if (deve->mapped_lun = mapped_lun)
- 			return deve;
+ 	head = &tport->hash[ft_sess_hash(port_id)];
+-	hlist_for_each_entry_rcu(sess, head, hash) {
++	hlist_for_each_entry_rcu(sess, head, hash,
++				 lockdep_is_held(&ft_lport_lock)) {
+ 		if (sess->port_id = port_id) {
+ 			kref_get(&sess->kref);
+ 			rcu_read_unlock();
+@@ -215,7 +216,8 @@ static struct ft_sess *ft_sess_create(struct ft_tport *tport, u32 port_id,
+ 	ft_format_wwn(&initiatorname[0], TRANSPORT_IQN_LEN, rdata->ids.port_name);
  
-@@ -339,7 +344,7 @@ int core_enable_device_list_for_node(
- 	orig = target_nacl_find_deve(nacl, mapped_lun);
- 	if (orig && orig->se_lun) {
- 		struct se_lun *orig_lun = rcu_dereference_check(orig->se_lun,
--					lockdep_is_held(&nacl->lun_entry_mutex));
-+							lun_entry_mutex_held());
+ 	head = &tport->hash[ft_sess_hash(port_id)];
+-	hlist_for_each_entry_rcu(sess, head, hash)
++	hlist_for_each_entry_rcu(sess, head, hash,
++				 lockdep_is_held(&ft_lport_lock))
+ 		if (sess->port_id = port_id)
+ 			return sess;
  
- 		if (orig_lun != lun) {
- 			pr_err("Existing orig->se_lun doesn't match new lun"
-@@ -460,9 +465,10 @@ void core_clear_lun_from_tpg(struct se_lun *lun, struct se_portal_group *tpg)
- 	list_for_each_entry(nacl, &tpg->acl_node_list, acl_list) {
+@@ -264,7 +266,8 @@ static struct ft_sess *ft_sess_delete(struct ft_tport *tport, u32 port_id)
+ 	struct ft_sess *sess;
  
- 		mutex_lock(&nacl->lun_entry_mutex);
--		hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link) {
-+		hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link,
-+							lun_entry_mutex_held()) {
- 			struct se_lun *tmp_lun = rcu_dereference_check(deve->se_lun,
--					lockdep_is_held(&nacl->lun_entry_mutex));
-+							lun_entry_mutex_held());
+ 	head = &tport->hash[ft_sess_hash(port_id)];
+-	hlist_for_each_entry_rcu(sess, head, hash) {
++	hlist_for_each_entry_rcu(sess, head, hash,
++				 lockdep_is_held(&ft_lport_lock)) {
+ 		if (sess->port_id = port_id) {
+ 			ft_sess_unhash(sess);
+ 			return sess;
+@@ -291,7 +294,8 @@ static void ft_sess_delete_all(struct ft_tport *tport)
  
- 			if (lun != tmp_lun)
- 				continue;
+ 	for (head = tport->hash;
+ 	     head < &tport->hash[FT_SESS_HASH_SIZE]; head++) {
+-		hlist_for_each_entry_rcu(sess, head, hash) {
++		hlist_for_each_entry_rcu(sess, head, hash,
++					 lockdep_is_held(&ft_lport_lock)) {
+ 			ft_sess_unhash(sess);
+ 			ft_close_sess(sess);	/* release from table */
+ 		}
 -- 
 2.24.1
