@@ -1,79 +1,30 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Thu, 16 Jan 2020 04:47:37 +0000
-Subject: [PATCH] RDMA/isert: Fix a recently introduced regression related to logout
-Message-Id: <20200116044737.19507-1-bvanassche@acm.org>
+From: "Marciniszyn, Mike" <mike.marciniszyn@intel.com>
+Date: Fri, 17 Jan 2020 16:42:29 +0000
+Subject: RE: [PATCH] RDMA/isert: Fix a recently introduced regression related to logout
+Message-Id: <MWHPR1101MB22715AD3606D8C7DCB6C740F86310@MWHPR1101MB2271.namprd11.prod.outlook.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200116044737.19507-1-bvanassche@acm.org>
+In-Reply-To: <20200116044737.19507-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K . Petersen" <martin.petersen@oracle.com>
-Cc: target-devel@vger.kernel.org, linux-rdma@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>, Rahul Kundu <rahul.kundu@chelsio.com>
+To: Bart Van Assche <bvanassche@acm.org>, "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, Rahul Kundu <rahul.kundu@chelsio.com>
 
-iscsit_close_connection() calls isert_wait_conn(). Due to commit
-e9d3009cb936 both functions call target_wait_for_sess_cmds() although
-that last function should be called only once. Fix this by removing
-the target_wait_for_sess_cmds() call from isert_wait_conn() and by
-only calling isert_wait_conn() after target_wait_for_sess_cmds().
+> Subject: [PATCH] RDMA/isert: Fix a recently introduced regression related to
+> logout
+> 
+> iscsit_close_connection() calls isert_wait_conn(). Due to commit
+> e9d3009cb936 both functions call target_wait_for_sess_cmds() although
+> that last function should be called only once. Fix this by removing
+> the target_wait_for_sess_cmds() call from isert_wait_conn() and by
+> only calling isert_wait_conn() after target_wait_for_sess_cmds().
+> 
+> Reported-by: Rahul Kundu <rahul.kundu@chelsio.com>
+> Fixes: e9d3009cb936 ("scsi: target: iscsi: Wait for all commands to finish
+> before freeing a session").
+> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 
-Reported-by: Rahul Kundu <rahul.kundu@chelsio.com>
-Fixes: e9d3009cb936 ("scsi: target: iscsi: Wait for all commands to finish before freeing a session").
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
----
- drivers/infiniband/ulp/isert/ib_isert.c | 12 ------------
- drivers/target/iscsi/iscsi_target.c     |  6 +++---
- 2 files changed, 3 insertions(+), 15 deletions(-)
+Tested-by: Mike Marciniszyn <mike.marciniszyn@intel.com>
 
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index a1a035270cab..b273e421e910 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -2575,17 +2575,6 @@ isert_wait4logout(struct isert_conn *isert_conn)
- 	}
- }
- 
--static void
--isert_wait4cmds(struct iscsi_conn *conn)
--{
--	isert_info("iscsi_conn %p\n", conn);
--
--	if (conn->sess) {
--		target_sess_cmd_list_set_waiting(conn->sess->se_sess);
--		target_wait_for_sess_cmds(conn->sess->se_sess);
--	}
--}
--
- /**
-  * isert_put_unsol_pending_cmds() - Drop commands waiting for
-  *     unsolicitate dataout
-@@ -2633,7 +2622,6 @@ static void isert_wait_conn(struct iscsi_conn *conn)
- 
- 	ib_drain_qp(isert_conn->qp);
- 	isert_put_unsol_pending_cmds(conn);
--	isert_wait4cmds(conn);
- 	isert_wait4logout(isert_conn);
- 
- 	queue_work(isert_release_wq, &isert_conn->release_work);
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 7251a87bb576..b94ed4e30770 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4149,9 +4149,6 @@ int iscsit_close_connection(
- 	iscsit_stop_nopin_response_timer(conn);
- 	iscsit_stop_nopin_timer(conn);
- 
--	if (conn->conn_transport->iscsit_wait_conn)
--		conn->conn_transport->iscsit_wait_conn(conn);
--
- 	/*
- 	 * During Connection recovery drop unacknowledged out of order
- 	 * commands for this connection, and prepare the other commands
-@@ -4237,6 +4234,9 @@ int iscsit_close_connection(
- 	target_sess_cmd_list_set_waiting(sess->se_sess);
- 	target_wait_for_sess_cmds(sess->se_sess);
- 
-+	if (conn->conn_transport->iscsit_wait_conn)
-+		conn->conn_transport->iscsit_wait_conn(conn);
-+
- 	ahash_request_free(conn->conn_tx_hash);
- 	if (conn->conn_rx_hash) {
- 		struct crypto_ahash *tfm;
+Mike
