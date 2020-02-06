@@ -1,27 +1,27 @@
-From: "Mr. Theophilus Odadudu" <siramsarmull@gmail.com>
-Date: Fri, 07 Feb 2020 20:56:26 +0000
-Subject: LETTER OF INQUIRY
-Message-Id: <CAB==GxxDGxy_LJN7UcCDf7B+MjjUHUDU_mu5fA-sekJUXUz=jA@mail.gmail.com>
+From: "MS. MARYANNA B. THOMASON" <westernunion.benin982@gmail.com>
+Date: Thu, 06 Feb 2020 13:59:26 +0000
+Subject: Contact Federal Reserve Bank New York to receive your inheritance contract payment (US$12.8M)
+Message-Id: <CAP=nHBK0nO3C-jA3kRcC_AgUBSNV3kuXhFQBdgvBNUguoX1mSg@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Good Day,
-
-I work as a clerk in a Bank here in Nigeria, I have a very
-confidential Business Proposition for you. There is a said amount of
-money floating in the bank unclaimed, belonging to the bank Foreign
-customer who die with his family in the Ethiopian Airline crash of
-March 11, 2019.
-
-I seek your good collaboration to move the fund for our benefit. we
-have agreed that 40% be yours once you help claim.
-
-Do get back to with 1) Your Full Name: (2) Residential Address: (3)
-Phone, Mobile  (4) Scan Copy of Your ID. to apply for claims of the
-funds.
-
-Regards
-Theophilus Odadudu
+Attention Fund Beneficiary,
+Contact Federal Reserve Bank New York to receive your inheritance
+contract payment  (US$12.8M)
+Payment Release Instruction from US department of Homeland Security New York.
+Contact Federal Reserve Bank New York to receive your inheritance
+contract payment  (US$12.8M) deposited this morning in your favor.
+Contact Person, Dr. Jerome H. Powell.
+CEO Director, Federal Reserve Bank New York
+Email: reservebank.ny93@gmail.com
+Telephone- (917) 983-4846)
+Note.I have paid the deposit and insurance fee for you,but only money
+you are required to send to the bank is $US25.00,your processing funds
+transfer fee only to enable them release your funds to you today.
+Thank you for your anticipated co-operation.
+TREAT AS URGENT.
+Mr.Richard Longhair
+DIRECTOR OF FUNDS CLEARANCE UNIT
