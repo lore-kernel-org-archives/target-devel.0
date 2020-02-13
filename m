@@ -1,78 +1,40 @@
 From: Bart Van Assche <bvanassche@acm.org>
-Date: Thu, 13 Feb 2020 05:08:59 +0000
-Subject: [PATCH 1/2] Revert "RDMA/isert: Fix a recently introduced regression related to logout"
-Message-Id: <20200213050900.19094-1-bvanassche@acm.org>
+Date: Thu, 13 Feb 2020 05:25:12 +0000
+Subject: Re: [PATCH 1/2] Revert "RDMA/isert: Fix a recently introduced regression related to logout"
+Message-Id: <fcc55797-40d0-a04f-e2de-6a20a02e6fb6@acm.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200213050900.19094-1-bvanassche@acm.org>
+In-Reply-To: <20200213050900.19094-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Since commit 04060db41178 introduces soft lockups when toggling network
-interfaces, revert it.
+On 2020-02-12 21:08, Bart Van Assche wrote:
+> [ ... ]
 
-Cc: Rahul Kundu <rahul.kundu@chelsio.com>
-Cc: Mike Marciniszyn <mike.marciniszyn@intel.com>
-Cc: Sagi Grimberg <sagi@grimberg.me>
-Reported-by: Dakshaja Uppalapati <dakshaja@chelsio.com>
-Fixes: 04060db41178 ("scsi: RDMA/isert: Fix a recently introduced regression related to logout")
-Signed-off-by: Bart Van Assche <bvanassche@acm.org>
----
+Oops, the cover letter has not been included. This is the cover letter I
+wanted to include:
+
+[PATCH 0/2] Revert two recent iSCSI / iSER patches
+
+Hi Martin,
+
+Recently Dakshaja Uppalapati reported a regression in the iSER driver
+and confirmed that the regression is fixed by reverting the two most
+recent iSCSI / iSER patches. Hence this patch series with two reverts.
+
+Thanks,
+
+Bart.
+
+Bart Van Assche (2):
+  Revert "RDMA/isert: Fix a recently introduced regression related to
+    logout"
+  Revert "target: iscsi: Wait for all commands to finish before freeing
+    a session"
+
  drivers/infiniband/ulp/isert/ib_isert.c | 12 ++++++++++++
- drivers/target/iscsi/iscsi_target.c     |  6 +++---
- 2 files changed, 15 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index b273e421e910..a1a035270cab 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -2575,6 +2575,17 @@ isert_wait4logout(struct isert_conn *isert_conn)
- 	}
- }
- 
-+static void
-+isert_wait4cmds(struct iscsi_conn *conn)
-+{
-+	isert_info("iscsi_conn %p\n", conn);
-+
-+	if (conn->sess) {
-+		target_sess_cmd_list_set_waiting(conn->sess->se_sess);
-+		target_wait_for_sess_cmds(conn->sess->se_sess);
-+	}
-+}
-+
- /**
-  * isert_put_unsol_pending_cmds() - Drop commands waiting for
-  *     unsolicitate dataout
-@@ -2622,6 +2633,7 @@ static void isert_wait_conn(struct iscsi_conn *conn)
- 
- 	ib_drain_qp(isert_conn->qp);
- 	isert_put_unsol_pending_cmds(conn);
-+	isert_wait4cmds(conn);
- 	isert_wait4logout(isert_conn);
- 
- 	queue_work(isert_release_wq, &isert_conn->release_work);
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index b94ed4e30770..7251a87bb576 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4149,6 +4149,9 @@ int iscsit_close_connection(
- 	iscsit_stop_nopin_response_timer(conn);
- 	iscsit_stop_nopin_timer(conn);
- 
-+	if (conn->conn_transport->iscsit_wait_conn)
-+		conn->conn_transport->iscsit_wait_conn(conn);
-+
- 	/*
- 	 * During Connection recovery drop unacknowledged out of order
- 	 * commands for this connection, and prepare the other commands
-@@ -4234,9 +4237,6 @@ int iscsit_close_connection(
- 	target_sess_cmd_list_set_waiting(sess->se_sess);
- 	target_wait_for_sess_cmds(sess->se_sess);
- 
--	if (conn->conn_transport->iscsit_wait_conn)
--		conn->conn_transport->iscsit_wait_conn(conn);
--
- 	ahash_request_free(conn->conn_tx_hash);
- 	if (conn->conn_rx_hash) {
- 		struct crypto_ahash *tfm;
+ drivers/target/iscsi/iscsi_target.c     | 16 +++++-----------
+ include/scsi/iscsi_proto.h              |  1 -
+ 3 files changed, 17 insertions(+), 12 deletions(-)
