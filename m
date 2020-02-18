@@ -1,25 +1,38 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Fri, 21 Feb 2020 22:40:09 +0000
-Subject: Re: [PATCH v2 0/2] scsi: target: modify boolean configfs attributes
-Message-Id: <yq17e0ftvhy.fsf@oracle.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Tue, 18 Feb 2020 18:05:46 +0000
+Subject: [PATCH] scsi: target: fix unmap_zeroes_data boolean initialisation
+Message-Id: <20200218180546.21313-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200219130136.18946-1-ddiss@suse.de>
-In-Reply-To: <20200219130136.18946-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+The LIO unmap_zeroes_data device attribute is mapped to the LBPRZ flag in
+the READ CAPACITY (16) and Thin Provisioning VPD INQUIRY responses.
+It's exposed via configfs, where any write value is correctly validated
+via strtobool(), defaults to 0. However, when initialised via
+target_configure_unmap_from_queue() it takes the value of the device's
+max_write_zeroes_sectors queue limit, which is non-boolean.
 
-David,
+Fixes: 2237498f0b5c ("target/iblock: Convert WRITE_SAME to blkdev_issue_zeroout")
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> This series includes a fix for a regression in the configfs interface
-> and has a subsequent type cleanup to avoid similar mistakes in future.
-
-Applied to 5.7/scsi-queue, thanks!
-
-Please don't forget to CC: linux-scsi. Otherwise things won't get
-captured by lore.
-
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index 2d19f0e332b0..2c7ba2f7e13c 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -829,7 +829,7 @@ bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
+ 	attrib->unmap_granularity = q->limits.discard_granularity / block_size;
+ 	attrib->unmap_granularity_alignment = q->limits.discard_alignment /
+ 								block_size;
+-	attrib->unmap_zeroes_data = (q->limits.max_write_zeroes_sectors);
++	attrib->unmap_zeroes_data = !!(q->limits.max_write_zeroes_sectors);
+ 	return true;
+ }
+ EXPORT_SYMBOL(target_configure_unmap_from_queue);
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.16.4
