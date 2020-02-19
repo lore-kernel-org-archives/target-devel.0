@@ -1,60 +1,25 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Wed, 19 Feb 2020 17:32:16 +0000
-Subject: Re: [PATCH v2 1/2] scsi: target: fix unmap_zeroes_data boolean initialisation
-Message-Id: <3b7e0f30-3d75-779b-9c8e-67f227cedc96@acm.org>
+From: David Disseldorp <ddiss@suse.de>
+Date: Wed, 19 Feb 2020 13:01:34 +0000
+Subject: [PATCH v2 0/2] scsi: target: modify boolean configfs attributes
+Message-Id: <20200219130136.18946-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200219130136.18946-2-ddiss@suse.de>
-In-Reply-To: <20200219130136.18946-2-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-On 2/19/20 5:01 AM, David Disseldorp wrote:
-> The LIO unmap_zeroes_data device attribute is mapped to the LBPRZ flag
-> in the READ CAPACITY (16) and Thin Provisioning VPD INQUIRY responses.
-> 
-> The unmap_zeroes_data attribute is exposed via configfs, where any write
-> value is correctly validated via strtobool(). However, when initialised
-> via target_configure_unmap_from_queue() it takes the value of the
-> device's max_write_zeroes_sectors queue limit, which is non-boolean.
-> 
-> A non-boolean value can be read from configfs, but attempting to write
-> the same value back results in -EINVAL, causing problems for configuration
-> utilities such as targetcli.
-> 
-> Fixes: 2237498f0b5c ("target/iblock: Convert WRITE_SAME to blkdev_issue_zeroout")
-> Signed-off-by: David Disseldorp <ddiss@suse.de>
-> ---
->   drivers/target/target_core_device.c | 2 +-
->   include/target/target_core_base.h   | 2 +-
->   2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-> index 2d19f0e332b0..2c7ba2f7e13c 100644
-> --- a/drivers/target/target_core_device.c
-> +++ b/drivers/target/target_core_device.c
-> @@ -829,7 +829,7 @@ bool target_configure_unmap_from_queue(struct se_dev_attrib *attrib,
->   	attrib->unmap_granularity = q->limits.discard_granularity / block_size;
->   	attrib->unmap_granularity_alignment = q->limits.discard_alignment /
->   								block_size;
-> -	attrib->unmap_zeroes_data = (q->limits.max_write_zeroes_sectors);
-> +	attrib->unmap_zeroes_data = !!(q->limits.max_write_zeroes_sectors);
->   	return true;
->   }
->   EXPORT_SYMBOL(target_configure_unmap_from_queue);
-> diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-> index 1728e883b7b2..35188e64239e 100644
-> --- a/include/target/target_core_base.h
-> +++ b/include/target/target_core_base.h
-> @@ -682,7 +682,7 @@ struct se_dev_attrib {
->   	int		force_pr_aptpl;
->   	int		is_nonrot;
->   	int		emulate_rest_reord;
-> -	int		unmap_zeroes_data;
-> +	bool		unmap_zeroes_data;
->   	u32		hw_block_size;
->   	u32		block_size;
->   	u32		hw_max_sectors;
+This series includes a fix for a regression in the configfs interface
+and has a subsequent type cleanup to avoid similar mistakes in future.
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Changes since v1:
+- change unmap_zeroes_data type from int to bool and do the same for
+  other attributes in a follow-up commit
+
+David Disseldorp (2):
+      scsi: target: fix unmap_zeroes_data boolean initialisation
+      scsi: target: convert boolean se_dev_attrib types to bool
+
+ drivers/target/target_core_device.c |  2 +-
+ drivers/target/target_core_tmr.c    |  6 ++---
+ include/target/target_core_base.h   | 34 ++++++++++++++---------------
+ 3 files changed, 21 insertions(+), 21 deletions(-)
