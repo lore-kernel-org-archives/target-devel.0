@@ -1,85 +1,98 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Thu, 27 Feb 2020 23:42:32 +0000
-Subject: Re: Connection errors with ISER IO
-Message-Id: <b021295a-cc41-d8e9-8605-cfbc77cead80@grimberg.me>
+From: David Disseldorp <ddiss@suse.de>
+Date: Wed, 19 Feb 2020 13:01:36 +0000
+Subject: [PATCH v2 2/2] scsi: target: convert boolean se_dev_attrib types to bool
+Message-Id: <20200219130136.18946-3-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200226155241.GA28594@chelsio.com>
-In-Reply-To: <20200226155241.GA28594@chelsio.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
+This should harden us against configfs API regressions similar to the
+one fixed by the previous commit.
 
->>> Hi All,
->>> I observe connection errors almost immediately after I start iozone over iser
->>> luns. Atached are the connection error and hung task traces on initator and
->>> target respecively.
->>> Interestingly, I see connection errors only if LUN size is less than 512MB.
->>> In my case I could consistently reproduce the issue with 511MB LUN and 300MB
->>> lun size. Connections errors are not seen if I create 512MB or greated LUN.
->>
->> Can you share log output on the target to before hung tasks?
-> 
-> Sure, Attached are the target and initiator dmesg logs.
->>
->>> Further, after the connection errors, I noticed that the poll work queue is
->>> stuck and never processes drain CQE resulting in hung tasks on the target side.
->>
->> Is the drain CQE actually generated?
->>
-> 
-> Yes it is generated. I was able to track it with prints until queue_work() in
-> ib_cq_completion_workqueue(). Work Function ib_cq_poll_work() is never getting
-> scheduled. Therefore, I see drain CQE unpolled and hung task due to
-> __ib_drain_sq() waiting forever for complete() to be called from drain CQE
-> done() handler.
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_tmr.c  |  6 +++---
+ include/target/target_core_base.h | 32 ++++++++++++++++----------------
+ 2 files changed, 19 insertions(+), 19 deletions(-)
 
-Hmm, that is interesting. This tells me that cq->work is probably
-blocked by another completion invokation (which hangs), which means that
-queuing the cq->work did not happen as workqueues are not re-entrant.
-
-Looking at the code, nothing should be blocking in the isert ->done()
-handlers, so its not clear to me how this can happen.
-
-Would it be possible to run:
-echo t > /proc/sysrq-trigger when this happens? I'd like to see where
-that cq->work is blocking.
-
-I'd also enable pr_debug on iscsi_traget.c
-
-> 
->>> I tried changing the CQ poll workqueue to be UNBOUND but it did not fix the issue.
->>>
->>> Here is what my test does:
->>> Create 8 targets with 511MB lun each, login and format disks to ext3, mount the
->>> disks and run iozone over them.
->>> #iozone -a -I -+d -g 256m
->>
->> Does it happen specifically with iozone? or can dd/fio also
->> reproduce this issue? on which I/O pattern do you see the issue?
->>
-> I see it with iozone. I am trying with fio, shall soon update.
-> I see issue with at iosizes around 128k/256k block sizes of iozone. Its not
-> consistent.
->>> I am not sure how LUN size could cause the connection errors. I appreciate any
->>> inputs on this.
->>
->> I imagine that a single LUN is enough to reproduce the issue?
->>
-> 
-> yes, attached is the target conf.
->> btw, I tried reproducing the issue with rxe (couldn't setup an iser
->> listener with siw) in 2 VMs on my laptop using lio to a file backend but
->> I cannot reproduce the issue..
-> I see the issue quickly with 40G/25G links. I have not seen the issue on a 100G
-> link. BTW i a trying iwarp(T6/t5)
-> 
-> Thanks for looking into it.
-> 
-
- From the log, looks like the hang happens when the initiator tries to
-login after the failure (trace starts in iscsi_target_do_login). and
-looks like the target gave up on login timeout, but what is not
-indicated is why did the initiator got a ping timeout in the
-first place...
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index feeba3966617..afbd492c76a9 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -78,7 +78,7 @@ static int target_check_cdb_and_preempt(struct list_head *list,
+ }
+ 
+ static bool __target_check_io_state(struct se_cmd *se_cmd,
+-				    struct se_session *tmr_sess, int tas)
++				    struct se_session *tmr_sess, bool tas)
+ {
+ 	struct se_session *sess = se_cmd->se_sess;
+ 
+@@ -251,7 +251,7 @@ static void core_tmr_drain_state_list(
+ 	struct se_device *dev,
+ 	struct se_cmd *prout_cmd,
+ 	struct se_session *tmr_sess,
+-	int tas,
++	bool tas,
+ 	struct list_head *preempt_and_abort_list)
+ {
+ 	LIST_HEAD(drain_task_list);
+@@ -334,7 +334,7 @@ int core_tmr_lun_reset(
+ 	struct se_node_acl *tmr_nacl = NULL;
+ 	struct se_portal_group *tmr_tpg = NULL;
+ 	struct se_session *tmr_sess = NULL;
+-	int tas;
++	bool tas;
+         /*
+ 	 * TASK_ABORTED status bit, this is configurable via ConfigFS
+ 	 * struct se_device attributes.  spc4r17 section 7.4.6 Control mode page
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 35188e64239e..bbac0f1c3ba1 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -663,25 +663,25 @@ struct se_dev_entry {
+ };
+ 
+ struct se_dev_attrib {
+-	int		emulate_model_alias;
+-	int		emulate_dpo;
+-	int		emulate_fua_write;
+-	int		emulate_fua_read;
+-	int		emulate_write_cache;
++	bool		emulate_model_alias;
++	bool		emulate_dpo;		/* deprecated */
++	bool		emulate_fua_write;
++	bool		emulate_fua_read;	/* deprecated */
++	bool		emulate_write_cache;
+ 	int		emulate_ua_intlck_ctrl;
+-	int		emulate_tas;
+-	int		emulate_tpu;
+-	int		emulate_tpws;
+-	int		emulate_caw;
+-	int		emulate_3pc;
+-	int		emulate_pr;
++	bool		emulate_tas;
++	bool		emulate_tpu;
++	bool		emulate_tpws;
++	bool		emulate_caw;
++	bool		emulate_3pc;
++	bool		emulate_pr;
+ 	enum target_prot_type pi_prot_type;
+ 	enum target_prot_type hw_pi_prot_type;
+-	int		pi_prot_verify;
+-	int		enforce_pr_isids;
+-	int		force_pr_aptpl;
+-	int		is_nonrot;
+-	int		emulate_rest_reord;
++	bool		pi_prot_verify;
++	bool		enforce_pr_isids;
++	bool		force_pr_aptpl;
++	bool		is_nonrot;
++	bool		emulate_rest_reord;
+ 	bool		unmap_zeroes_data;
+ 	u32		hw_block_size;
+ 	u32		block_size;
+-- 
+2.16.4
