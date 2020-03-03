@@ -1,39 +1,22 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Thu, 26 Mar 2020 22:15:00 +0000
-Subject: [PATCH v2 0/5] scsi: target:
-Message-Id: <20200326221505.5303-1-ddiss@suse.de>
+From: DR CHALLY NOAH <mayorabrahamedge404@gmail.com>
+Date: Tue, 03 Mar 2020 18:08:16 +0000
+Subject: Hello Dear
+Message-Id: <CALqVJWfO+TJrXDYQ0B9qrk3T=QhdDT4b_mvf_RXqRrtuYZMdbw@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org
 
-These changes remove unnecessary heap allocations in the XCOPY
-READ/WRITE dispatch loop.
-
-Synthetic benchmarks on my laptop using the libiscsi iscsi-dd utility
-(--xcopy --max 1 --blocks 65535 src=dst) against a target backed by an
-8G zram (DEBUG_KMEMLEAK=y) iblock backstore (avg across four runs) show:
-before: 5.30845G/s
-after:  5.99056G/s (approx. +12.8%)
-
-Changes since v1:
-- drop RFC
-- rework 3/5 and 5/5 following Christoph's feedback
-
-Feedback appreciated.
-
-Cheers, David
-
-----------------------------------------------------------------
-David Disseldorp (5):
-      scsi: target: use #def for xcopy descriptor len
-      scsi: target: drop xcopy DISK BLOCK LENGTH debug
-      scsi: target: avoid per-loop XCOPY buffer allocations
-      scsi: target: increase XCOPY I/O size
-      scsi: target: use the stack for XCOPY passthrough cmds
-
- drivers/target/target_core_xcopy.c | 160 ++++++++++-------------------
- drivers/target/target_core_xcopy.h |   9 +-
- 2 files changed, 55 insertions(+), 114 deletions(-)
+Hello Dear,
+What Have Kept You Waiting To Claim Your $600,000.00 USD Compensation Award?
+This said fund was issued out by the UNITED NATIONS To compensate
+you.Please If You Have Not Claim Your Fund (Award),Kindly contact me
+at   DR.CHALLYNOAH@GMAIL.COM   for further details on how to proceed your
+fund (award)release to you or better still reply back Immediately You
+Receive This Information For An Urgent Confirmation And Release Of Your
+Fund To You Without Delays, as your email was listed among those to be
+compensated this year.Congratulations..
+Best Regards,
+Dr Chally Noah.
+Minister Of Finance On Foreign Remittance:
