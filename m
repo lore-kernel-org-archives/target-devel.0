@@ -1,18 +1,44 @@
-From: postmaster@hokusetubad.sakura.ne.jp
-Date: Sun, 08 Mar 2020 15:53:00 +0000
-Subject: BUSINESS PROPOSAL
-Message-Id: <202003081553.028Fr0UG061804@www752.sakura.ne.jp>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Fri, 13 Mar 2020 17:06:56 +0000
+Subject: [PATCH RESEND 3/3] iscsi target: calling iscsit_stop_session() inside iscsit_close_session() has no 
+Message-Id: <20200313170656.9716-4-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200313170656.9716-1-mlombard@redhat.com>
+In-Reply-To: <20200313170656.9716-1-mlombard@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
+Cc: martin.petersen@oracle.com, bvanassche@acm.org, ddiss@suse.de, mcoleman@datto.com, linux-scsi@vger.kernel.org
 
-Dearest Friend
+iscsit_close_session() can only be called when nconn is zero (otherwise
+a kernel panic is triggered); if nconn is zero then
+iscsit_stop_session() does nothing and exits, so calling it
+makes no sense.
 
-I am Mr Abdul Kareem working with Emirate NBD Bank Dubai,United Arab Emirate as Finance Manager.
-I have a very profitable Business that concerns you and will benefit both of us after completion.
-Kindly get back to me for more details.
-Awaiting your response.
-Regards
-Abdul Kareem
+We still need to call iscsit_check_session_usage_count() because
+this function will sleep if the session's refcount is not zero and
+we don't want to destroy the session structure if
+it's still being referenced.
+
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/target/iscsi/iscsi_target.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 9e90edc875f1..14f4842e3517 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4385,8 +4385,7 @@ int iscsit_close_session(struct iscsi_session *sess)
+ 	 * restart the timer and exit.
+ 	 */
+ 	if (!in_interrupt()) {
+-		if (iscsit_check_session_usage_count(sess) == 1)
+-			iscsit_stop_session(sess, 1, 1);
++		iscsit_check_session_usage_count(sess);
+ 	} else {
+ 		if (iscsit_check_session_usage_count(sess) == 2) {
+ 			atomic_set(&sess->session_logout, 0);
+-- 
+2.21.0
