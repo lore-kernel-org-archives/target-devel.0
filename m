@@ -1,22 +1,36 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Tue, 24 Mar 2020 09:16:52 +0000
-Subject: Re: [RFC PATCH 4/5] scsi: target: increase XCOPY I/O size
-Message-Id: <20200324091652.GD18399@infradead.org>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Fri, 13 Mar 2020 17:06:53 +0000
+Subject: [PATCH RESEND 0/3] Fix a race condition in the target driver
+Message-Id: <20200313170656.9716-1-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200323165410.24423-1-ddiss@suse.de>
- <20200323165410.24423-5-ddiss@suse.de>
-In-Reply-To: <20200323165410.24423-5-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Disseldorp <ddiss@suse.de>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org
+To: target-devel@vger.kernel.org
+Cc: martin.petersen@oracle.com, bvanassche@acm.org, ddiss@suse.de, mcoleman@datto.com, linux-scsi@vger.kernel.org
 
-On Mon, Mar 23, 2020 at 05:54:09PM +0100, David Disseldorp wrote:
-> The I/O size is already bound by dev_attrib.hw_max_sectors, so increase
-> the hardcoded XCOPY_MAX_SECTORS maximum to improve performance against
-> backstores with high-latency.
+Multiple threads may try to destroy the same iscsi session
+structure by calling iscsit_close_session() and then end
+up hanging.
 
-Looks good,
+This patchset modifies the driver so the session
+structure is destroyed by iscsit_close_connection() when
+the last connection gets closed, thus preventing
+the race condition.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Maurizio Lombardi (3):
+  target: remove boilerplate code
+  target: fix target hang when multiple threads try to destroy the same
+    iscsi session.
+  iscsi target: calling iscsit_stop_session() inside
+    iscsit_close_session() has no effect
+
+ drivers/target/iscsi/iscsi_target.c          | 82 ++++++--------------
+ drivers/target/iscsi/iscsi_target.h          |  1 -
+ drivers/target/iscsi/iscsi_target_configfs.c |  5 +-
+ drivers/target/iscsi/iscsi_target_login.c    |  5 +-
+ include/target/iscsi/iscsi_target_core.h     |  2 +-
+ 5 files changed, 32 insertions(+), 63 deletions(-)
+
+-- 
+2.21.0
