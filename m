@@ -1,60 +1,104 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Fri, 27 Mar 2020 09:27:27 +0000
-Subject: Re: [PATCH v2 5/5] scsi: target: use the stack for XCOPY passthrough cmds
-Message-Id: <20200327092727.GB7952@infradead.org>
+From: Viacheslav Dubeyko <slava@dubeyko.com>
+Date: Mon, 16 Mar 2020 13:07:17 +0000
+Subject: [PATCH] scsi: target: core: add task tag to trace events
+Message-Id: <226e01deaa9baf46d6ff3b8698bc9fe881f7dfc1.camel@dubeyko.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200326221505.5303-1-ddiss@suse.de>
- <20200326221505.5303-6-ddiss@suse.de>
-In-Reply-To: <20200326221505.5303-6-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Disseldorp <ddiss@suse.de>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, linux@yadro.com, v.dubeiko@yadro.com, rostedt@goodmis.org, mingo@redhat.com, r.bolshakov@yadro.com, k.shelekhin@yadro.com
 
-On Thu, Mar 26, 2020 at 11:15:05PM +0100, David Disseldorp wrote:
-> Reads and writes in the XCOPY loop are synchronous, so needn't be
-> heap allocated / freed with each loop.
-> 
-> Signed-off-by: David Disseldorp <ddiss@suse.de>
+From: Viacheslav Dubeyko <v.dubeiko@yadro.com>
+Date: Tue, 10 Mar 2020 17:04:41 +0300
+Subject: [PATCH] scsi: target: core: add task tag to trace events
 
-Looks good:
+Trace events target_sequencer_start and target_cmd_complete
+(include/trace/events/target.h) are ready to show NAA identifier,
+LUN ID, and many other important command details in the system log:
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+TP_printk("%s -> LUN %03u %s data_length %6u  CDB %s  (TA:%s C:%02x)",
 
-But a few cleanup opportunities if you don't mind a respin:
+However, it's still hard to identify command on the initiator
+and command on the target in the real life output of system log.
+For that purpose SCSI provides a command identifier or
+task tag (term used in previous standards). This patch adds
+tag ID in the system log's output:
 
-> -	rc = target_xcopy_setup_pt_cmd(xpt_cmd, xop, src_dev, &cdb[0],
-> +	rc = target_xcopy_setup_pt_cmd(&xpt_cmd, xop, src_dev, &cdb[0],
->  				remote_port);
->  	if (rc < 0) {
-> -		ec_cmd->scsi_status = xpt_cmd->se_cmd.scsi_status;
-> +		ec_cmd->scsi_status = se_cmd->scsi_status;
->  		transport_generic_free_cmd(se_cmd, 0);
->  		return rc;
->  	}
-> @@ -603,13 +598,14 @@ static int target_xcopy_read_source(
->  	pr_debug("XCOPY-READ: Saved xop->xop_data_sg: %p, num: %u for READ"
->  		" memory\n", xop->xop_data_sg, xop->xop_data_nents);
->  
-> -	rc = target_xcopy_issue_pt_cmd(xpt_cmd);
-> +	rc = target_xcopy_issue_pt_cmd(&xpt_cmd);
->  	if (rc < 0) {
-> -		ec_cmd->scsi_status = xpt_cmd->se_cmd.scsi_status;
-> +		ec_cmd->scsi_status = se_cmd->scsi_status;
->  		transport_generic_free_cmd(se_cmd, 0);
->  		return rc;
->  	}
->  
-> +	transport_generic_free_cmd(se_cmd, 0);
->  	return 0;
+TP_printk("%s -> LUN %03u tag %#llx %s data_length %6u  CDB %s  (TA:%s C:%02x)",
 
-I think this should use a common label to free the command.  Same
-for the write side.
+kworker/1:1-35    [001] ....  1392.989452: target_sequencer_start:
+naa.5001405ec1ba6364 -> LUN 001 tag 0x1
+SERVICE_ACTION_IN_16 data_length     32
+CDB 9e 10 00 00 00 00 00 00 00 00 00 00 00 20 00 00  (TA:SIMPLE C:00)
 
->  		if (rc < 0) {
-> -			transport_generic_free_cmd(&xop->src_pt_cmd->se_cmd, 0);
->  			goto out;
->  		}
+kworker/1:1-35    [001] ....  1392.989456: target_cmd_complete:
+naa.5001405ec1ba6364 <- LUN 001 tag 0x1 status GOOD (sense len 0) 
+SERVICE_ACTION_IN_16 data_length     32
+CDB 9e 10 00 00 00 00 00 00 00 00 00 00 00 20 00 00  (TA:SIMPLE C:00)
 
-No need for the braces now.
+Signed-off-by: Viacheslav Dubeyko <v.dubeiko@yadro.com>
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Reviewed-by: Konstantin Shelekhin <k.shelekhin@yadro.com>
+
+diff --git a/include/trace/events/target.h b/include/trace/events/target.h
+index 50fea660c0f8..7f4525d12aeb 100644
+--- a/include/trace/events/target.h
++++ b/include/trace/events/target.h
+@@ -136,6 +136,7 @@ TRACE_EVENT(target_sequencer_start,
+ 
+ 	TP_STRUCT__entry(
+ 		__field( unsigned int,	unpacked_lun	)
++		__field( unsigned long long,	tag	)
+ 		__field( unsigned int,	opcode		)
+ 		__field( unsigned int,	data_length	)
+ 		__field( unsigned int,	task_attribute  )
+@@ -145,6 +146,7 @@ TRACE_EVENT(target_sequencer_start,
+ 
+ 	TP_fast_assign(
+ 		__entry->unpacked_lun	= cmd->orig_fe_lun;
++		__entry->tag		= cmd->tag;
+ 		__entry->opcode		= cmd->t_task_cdb[0];
+ 		__entry->data_length	= cmd->data_length;
+ 		__entry->task_attribute	= cmd->sam_task_attr;
+@@ -152,9 +154,9 @@ TRACE_EVENT(target_sequencer_start,
+ 		__assign_str(initiator, cmd->se_sess->se_node_acl->initiatorname);
+ 	),
+ 
+-	TP_printk("%s -> LUN %03u %s data_length %6u  CDB %s  (TA:%s C:%02x)",
++	TP_printk("%s -> LUN %03u tag %#llx %s data_length %6u  CDB %s  (TA:%s C:%02x)",
+ 		  __get_str(initiator), __entry->unpacked_lun,
+-		  show_opcode_name(__entry->opcode),
++		  __entry->tag, show_opcode_name(__entry->opcode),
+ 		  __entry->data_length, __print_hex(__entry->cdb, 16),
+ 		  show_task_attribute_name(__entry->task_attribute),
+ 		  scsi_command_size(__entry->cdb) <= 16 ?
+@@ -171,6 +173,7 @@ TRACE_EVENT(target_cmd_complete,
+ 
+ 	TP_STRUCT__entry(
+ 		__field( unsigned int,	unpacked_lun	)
++		__field( unsigned long long,	tag	)
+ 		__field( unsigned int,	opcode		)
+ 		__field( unsigned int,	data_length	)
+ 		__field( unsigned int,	task_attribute  )
+@@ -183,6 +186,7 @@ TRACE_EVENT(target_cmd_complete,
+ 
+ 	TP_fast_assign(
+ 		__entry->unpacked_lun	= cmd->orig_fe_lun;
++		__entry->tag		= cmd->tag;
+ 		__entry->opcode		= cmd->t_task_cdb[0];
+ 		__entry->data_length	= cmd->data_length;
+ 		__entry->task_attribute	= cmd->sam_task_attr;
+@@ -194,8 +198,9 @@ TRACE_EVENT(target_cmd_complete,
+ 		__assign_str(initiator, cmd->se_sess->se_node_acl->initiatorname);
+ 	),
+ 
+-	TP_printk("%s <- LUN %03u status %s (sense len %d%s%s)  %s data_length %6u  CDB %s  (TA:%s C:%02x)",
++	TP_printk("%s <- LUN %03u tag %#llx status %s (sense len %d%s%s)  %s data_length %6u  CDB %s  (TA:%s C:%02x)",
+ 		  __get_str(initiator), __entry->unpacked_lun,
++		  __entry->tag,
+ 		  show_scsi_status_name(__entry->scsi_status),
+ 		  __entry->sense_length, __entry->sense_length ? " / " : "",
+ 		  __print_hex(__entry->sense_data, __entry->sense_length),
+-- 
+2.17.1
