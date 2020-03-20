@@ -1,256 +1,265 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Fri, 13 Mar 2020 17:06:55 +0000
-Subject: [PATCH RESEND 2/3] target: fix target hang when multiple threads try to destroy the same iscsi sessi
-Message-Id: <20200313170656.9716-3-mlombard@redhat.com>
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Fri, 20 Mar 2020 15:11:02 +0000
+Subject: [PATCH v2 1/2] docs: prevent warnings due to autosectionlabel
+Message-Id: <2bffb91e4a63d41bf5fae1c23e1e8b3bba0b8806.1584716446.git.mchehab+huawei@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200313170656.9716-1-mlombard@redhat.com>
-In-Reply-To: <20200313170656.9716-1-mlombard@redhat.com>
+References: <cover.1584716446.git.mchehab+huawei@kernel.org>
+In-Reply-To: <cover.1584716446.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
-Cc: martin.petersen@oracle.com, bvanassche@acm.org, ddiss@suse.de, mcoleman@datto.com, linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Vinod Koul <vkoul@kernel.org>, Tyler Hicks <code@tyhicks.com>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Martin K. Petersen" <martin.petersen@oracle.com>, Harry Wei <harryxiyou@gmail.com>, Alex Shi <alex.shi@linux.alibaba.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Johannes Berg <johannes.berg@intel.com>, Madhuparna Bhowmik <madhuparnabhowmik04@gmail.com>, Matthias Maennich <maennich@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans Verkuil <hverkuil-cisco@xs4all.nl>, Luca Ceresoli <luca@lucaceresoli.net>, Ricardo Ribalda Delgado <ribalda@kernel.org>, Jacopo Mondi <jacopo@jmondi.org>, dmaengine@vger.kernel.org, ecryptfs@vger.kernel.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-A number of hangs have been reported against the target driver; they
-are due to the fact that multiple threads may try to destroy the
-iscsi session at the same time, this may be reproduced
-for example when a "targetcli iscsi/iqn.../tpg1 disable" command
-is executed while a logout operation is underway.
+Changeset 58ad30cf91f0 ("docs: fix reference to core-api/namespaces.rst")
+enabled a new feature at Sphinx: it will now generate index for each
+document title, plus to each chapter inside it.
 
-When this happens, two or more threads may end up sleeping and waiting for
-iscsit_close_connection() to execute "complete(session_wait_comp)".
-Only one of the threads will wake up and proceed to destroy
-the session structure, the remaining threads will hang forever.
+There's a drawback, though: one document cannot have two sections
+with the same name anymore.
 
-Note that if the blocked threads are somehow forced to
-wake up with complete_all(), they will try to free the same
-iscsi session structure destroyed by the first thread, causing
-double frees, memory corruptions etc...
+A followup patch will change the logic of autosectionlabel to
+avoid most creating references for every single section title,
+but still we need to be able to reference the chapters inside
+a document.
 
-With this patch, the threads that want to destroy the iscsi session will
-increase the session refcount and will set the "session_close" flag to 1;
-then they wait for the driver to close the remaining active connections.
-When the last connection is closed, iscsit_close_connection() will wake
-up all the threads and will wait for the session's refcount to reach zero;
-when this happens, iscsit_close_connection() will destroy the session
-structure because no one is referencing it anymore.
+There are a few places where there are two chapters with the
+same name. This patch renames one of the chapters, in order to
+avoid symbol conflict within the same document.
 
- INFO: task targetcli:5971 blocked for more than 120 seconds.
-       Tainted: P           OE    4.15.0-72-generic #81~16.04.1
- "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
- targetcli       D    0  5971      1 0x00000080
- Call Trace:
-  __schedule+0x3d6/0x8b0
-  ? vprintk_func+0x44/0xe0
-  schedule+0x36/0x80
-  schedule_timeout+0x1db/0x370
-  ? __dynamic_pr_debug+0x8a/0xb0
-  wait_for_completion+0xb4/0x140
-  ? wake_up_q+0x70/0x70
-  iscsit_free_session+0x13d/0x1a0 [iscsi_target_mod]
-  iscsit_release_sessions_for_tpg+0x16b/0x1e0 [iscsi_target_mod]
-  iscsit_tpg_disable_portal_group+0xca/0x1c0 [iscsi_target_mod]
-  lio_target_tpg_enable_store+0x66/0xe0 [iscsi_target_mod]
-  configfs_write_file+0xb9/0x120
-  __vfs_write+0x1b/0x40
-  vfs_write+0xb8/0x1b0
-  SyS_write+0x5c/0xe0
-  do_syscall_64+0x73/0x130
-  entry_SYSCALL_64_after_hwframe+0x3d/0xa2
+PS.: as I don't speach Chinese, I had some help from a friend
+(Wen Liu) at the Chinese translation for "publishing patches"
+for this document:
 
-Reported-by: Matt Coleman <mcoleman@datto.com>
-Tested-by: Matt Coleman <mcoleman@datto.com>
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+	Documentation/translations/zh_CN/process/5.Posting.rst
+
+Fixes: 58ad30cf91f0 ("docs: fix reference to core-api/namespaces.rst")
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- drivers/target/iscsi/iscsi_target.c          | 35 ++++++++++++--------
- drivers/target/iscsi/iscsi_target_configfs.c |  5 ++-
- drivers/target/iscsi/iscsi_target_login.c    |  5 +--
- include/target/iscsi/iscsi_target_core.h     |  2 +-
- 4 files changed, 30 insertions(+), 17 deletions(-)
+ Documentation/driver-api/80211/mac80211-advanced.rst  |  8 ++++----
+ Documentation/driver-api/dmaengine/index.rst          |  4 ++--
+ Documentation/filesystems/ecryptfs.rst                | 11 +++++------
+ Documentation/kernel-hacking/hacking.rst              |  4 ++--
+ Documentation/media/kapi/v4l2-controls.rst            |  8 ++++----
+ Documentation/networking/snmp_counter.rst             |  4 ++--
+ Documentation/powerpc/ultravisor.rst                  |  4 ++--
+ Documentation/security/siphash.rst                    |  8 ++++----
+ Documentation/target/tcmu-design.rst                  |  6 +++---
+ .../translations/zh_CN/process/5.Posting.rst          |  2 +-
+ Documentation/x86/intel-iommu.rst                     |  3 ++-
+ 11 files changed, 31 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index a955ab73eaae..9e90edc875f1 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4311,30 +4311,37 @@ int iscsit_close_connection(
- 	if (!atomic_read(&sess->session_reinstatement) &&
- 	     atomic_read(&sess->session_fall_back_to_erl0)) {
- 		spin_unlock_bh(&sess->conn_lock);
-+		complete_all(&sess->session_wait_comp);
- 		iscsit_close_session(sess);
+diff --git a/Documentation/driver-api/80211/mac80211-advanced.rst b/Documentation/driver-api/80211/mac80211-advanced.rst
+index 9f1c5bb7ac35..24cb64b3b715 100644
+--- a/Documentation/driver-api/80211/mac80211-advanced.rst
++++ b/Documentation/driver-api/80211/mac80211-advanced.rst
+@@ -272,8 +272,8 @@ STA information lifetime rules
+ .. kernel-doc:: net/mac80211/sta_info.c
+    :doc: STA information lifetime rules
  
- 		return 0;
- 	} else if (atomic_read(&sess->session_logout)) {
- 		pr_debug("Moving to TARG_SESS_STATE_FREE.\n");
- 		sess->session_state = TARG_SESS_STATE_FREE;
--		spin_unlock_bh(&sess->conn_lock);
+-Aggregation
+-=====+Aggregation Functions
++========== 
+ .. kernel-doc:: net/mac80211/sta_info.h
+    :functions: sta_ampdu_mlme
+@@ -284,8 +284,8 @@ Aggregation
+ .. kernel-doc:: net/mac80211/sta_info.h
+    :functions: tid_ampdu_rx
  
--		if (atomic_read(&sess->sleep_on_sess_wait_comp))
--			complete(&sess->session_wait_comp);
-+		if (atomic_read(&sess->session_close)) {
-+			spin_unlock_bh(&sess->conn_lock);
-+			complete_all(&sess->session_wait_comp);
-+			iscsit_close_session(sess);
-+		} else {
-+			spin_unlock_bh(&sess->conn_lock);
-+		}
+-Synchronisation
+-=======+Synchronisation Functions
++============ 
+ TBD
  
- 		return 0;
- 	} else {
- 		pr_debug("Moving to TARG_SESS_STATE_FAILED.\n");
- 		sess->session_state = TARG_SESS_STATE_FAILED;
+diff --git a/Documentation/driver-api/dmaengine/index.rst b/Documentation/driver-api/dmaengine/index.rst
+index b9df904d0a79..bdc45d8b4cfb 100644
+--- a/Documentation/driver-api/dmaengine/index.rst
++++ b/Documentation/driver-api/dmaengine/index.rst
+@@ -5,8 +5,8 @@ DMAEngine documentation
+ DMAEngine documentation provides documents for various aspects of DMAEngine
+ framework.
  
--		if (!atomic_read(&sess->session_continuation)) {
--			spin_unlock_bh(&sess->conn_lock);
-+		if (!atomic_read(&sess->session_continuation))
- 			iscsit_start_time2retain_handler(sess);
--		} else
--			spin_unlock_bh(&sess->conn_lock);
+-DMAEngine documentation
+------------------------
++DMAEngine development documentation
++-----------------------------------
  
--		if (atomic_read(&sess->sleep_on_sess_wait_comp))
--			complete(&sess->session_wait_comp);
-+		if (atomic_read(&sess->session_close)) {
-+			spin_unlock_bh(&sess->conn_lock);
-+			complete_all(&sess->session_wait_comp);
-+			iscsit_close_session(sess);
-+		} else {
-+			spin_unlock_bh(&sess->conn_lock);
-+		}
+ This book helps with DMAengine internal APIs and guide for DMAEngine device
+ driver writers.
+diff --git a/Documentation/filesystems/ecryptfs.rst b/Documentation/filesystems/ecryptfs.rst
+index 7236172300ef..1f2edef4c57a 100644
+--- a/Documentation/filesystems/ecryptfs.rst
++++ b/Documentation/filesystems/ecryptfs.rst
+@@ -30,13 +30,12 @@ Userspace requirements include:
+ - Libgcrypt
  
- 		return 0;
- 	}
-@@ -4440,9 +4447,9 @@ static void iscsit_logout_post_handler_closesession(
- 	complete(&conn->conn_logout_comp);
  
- 	iscsit_dec_conn_usage_count(conn);
-+	atomic_set(&sess->session_close, 1);
- 	iscsit_stop_session(sess, sleep, sleep);
- 	iscsit_dec_session_usage_count(sess);
--	iscsit_close_session(sess);
- }
+-Notes
+-==+.. note::
  
- static void iscsit_logout_post_handler_samecid(
-@@ -4587,8 +4594,6 @@ void iscsit_stop_session(
- 	int is_last;
+-In the beta/experimental releases of eCryptfs, when you upgrade
+-eCryptfs, you should copy the files to an unencrypted location and
+-then copy the files back into the new eCryptfs mount to migrate the
+-files.
++   In the beta/experimental releases of eCryptfs, when you upgrade
++   eCryptfs, you should copy the files to an unencrypted location and
++   then copy the files back into the new eCryptfs mount to migrate the
++   files.
  
- 	spin_lock_bh(&sess->conn_lock);
--	if (session_sleep)
--		atomic_set(&sess->sleep_on_sess_wait_comp, 1);
  
- 	if (connection_sleep) {
- 		list_for_each_entry_safe(conn, conn_tmp, &sess->sess_conn_list,
-@@ -4646,12 +4651,15 @@ int iscsit_release_sessions_for_tpg(struct iscsi_portal_group *tpg, int force)
- 		spin_lock(&sess->conn_lock);
- 		if (atomic_read(&sess->session_fall_back_to_erl0) ||
- 		    atomic_read(&sess->session_logout) ||
-+		    atomic_read(&sess->session_close) ||
- 		    (sess->time2retain_timer_flags & ISCSI_TF_EXPIRED)) {
- 			spin_unlock(&sess->conn_lock);
- 			continue;
- 		}
-+		iscsit_inc_session_usage_count(sess);
- 		atomic_set(&sess->session_reinstatement, 1);
- 		atomic_set(&sess->session_fall_back_to_erl0, 1);
-+		atomic_set(&sess->session_close, 1);
- 		spin_unlock(&sess->conn_lock);
+ Mount-wide Passphrase
+diff --git a/Documentation/kernel-hacking/hacking.rst b/Documentation/kernel-hacking/hacking.rst
+index d707a0a61cc9..eed2136d847f 100644
+--- a/Documentation/kernel-hacking/hacking.rst
++++ b/Documentation/kernel-hacking/hacking.rst
+@@ -601,7 +601,7 @@ Defined in ``include/linux/export.h``
  
- 		list_move_tail(&se_sess->sess_list, &free_list);
-@@ -4661,8 +4669,9 @@ int iscsit_release_sessions_for_tpg(struct iscsi_portal_group *tpg, int force)
- 	list_for_each_entry_safe(se_sess, se_sess_tmp, &free_list, sess_list) {
- 		sess = (struct iscsi_session *)se_sess->fabric_sess_ptr;
+ This is the variant of `EXPORT_SYMBOL()` that allows specifying a symbol
+ namespace. Symbol Namespaces are documented in
+-:ref:`Documentation/core-api/symbol-namespaces.rst <Symbol Namespaces>`
++:doc:`../core-api/symbol-namespaces`
  
-+		list_del_init(&se_sess->sess_list);
- 		iscsit_stop_session(sess, 1, 1);
--		iscsit_close_session(sess);
-+		iscsit_dec_session_usage_count(sess);
- 		session_count++;
- 	}
+ :c:func:`EXPORT_SYMBOL_NS_GPL()`
+ --------------------------------
+@@ -610,7 +610,7 @@ Defined in ``include/linux/export.h``
  
-diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
-index cac94c94ef5d..fce192a0d0ba 100644
---- a/drivers/target/iscsi/iscsi_target_configfs.c
-+++ b/drivers/target/iscsi/iscsi_target_configfs.c
-@@ -1484,20 +1484,23 @@ static void lio_tpg_close_session(struct se_session *se_sess)
- 	spin_lock(&sess->conn_lock);
- 	if (atomic_read(&sess->session_fall_back_to_erl0) ||
- 	    atomic_read(&sess->session_logout) ||
-+	    atomic_read(&sess->session_close) ||
- 	    (sess->time2retain_timer_flags & ISCSI_TF_EXPIRED)) {
- 		spin_unlock(&sess->conn_lock);
- 		spin_unlock_bh(&se_tpg->session_lock);
- 		return;
- 	}
-+	iscsit_inc_session_usage_count(sess);
- 	atomic_set(&sess->session_reinstatement, 1);
- 	atomic_set(&sess->session_fall_back_to_erl0, 1);
-+	atomic_set(&sess->session_close, 1);
- 	spin_unlock(&sess->conn_lock);
+ This is the variant of `EXPORT_SYMBOL_GPL()` that allows specifying a symbol
+ namespace. Symbol Namespaces are documented in
+-:ref:`Documentation/core-api/symbol-namespaces.rst <Symbol Namespaces>`
++:doc:`../core-api/symbol-namespaces`
  
- 	iscsit_stop_time2retain_timer(sess);
- 	spin_unlock_bh(&se_tpg->session_lock);
+ Routines and Conventions
+ ============
+diff --git a/Documentation/media/kapi/v4l2-controls.rst b/Documentation/media/kapi/v4l2-controls.rst
+index b20800cae3f2..5129019afb49 100644
+--- a/Documentation/media/kapi/v4l2-controls.rst
++++ b/Documentation/media/kapi/v4l2-controls.rst
+@@ -291,8 +291,8 @@ and QUERYMENU. And G/S_CTRL as well as G/TRY/S_EXT_CTRLS are automatically suppo
+    In practice the basic usage as described above is sufficient for most drivers.
  
- 	iscsit_stop_session(sess, 1, 1);
--	iscsit_close_session(sess);
-+	iscsit_dec_session_usage_count(sess);
- }
  
- static u32 lio_tpg_get_inst_index(struct se_portal_group *se_tpg)
-diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index 683d04580eb3..9de7abedfebe 100644
---- a/drivers/target/iscsi/iscsi_target_login.c
-+++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -164,6 +164,7 @@ int iscsi_check_for_session_reinstatement(struct iscsi_conn *conn)
- 		spin_lock(&sess_p->conn_lock);
- 		if (atomic_read(&sess_p->session_fall_back_to_erl0) ||
- 		    atomic_read(&sess_p->session_logout) ||
-+		    atomic_read(&sess_p->session_close) ||
- 		    (sess_p->time2retain_timer_flags & ISCSI_TF_EXPIRED)) {
- 			spin_unlock(&sess_p->conn_lock);
- 			continue;
-@@ -174,6 +175,7 @@ int iscsi_check_for_session_reinstatement(struct iscsi_conn *conn)
- 		   (sess_p->sess_ops->SessionType == sessiontype))) {
- 			atomic_set(&sess_p->session_reinstatement, 1);
- 			atomic_set(&sess_p->session_fall_back_to_erl0, 1);
-+			atomic_set(&sess_p->session_close, 1);
- 			spin_unlock(&sess_p->conn_lock);
- 			iscsit_inc_session_usage_count(sess_p);
- 			iscsit_stop_time2retain_timer(sess_p);
-@@ -198,7 +200,6 @@ int iscsi_check_for_session_reinstatement(struct iscsi_conn *conn)
- 	if (sess->session_state == TARG_SESS_STATE_FAILED) {
- 		spin_unlock_bh(&sess->conn_lock);
- 		iscsit_dec_session_usage_count(sess);
--		iscsit_close_session(sess);
- 		return 0;
- 	}
- 	spin_unlock_bh(&sess->conn_lock);
-@@ -206,7 +207,6 @@ int iscsi_check_for_session_reinstatement(struct iscsi_conn *conn)
- 	iscsit_stop_session(sess, 1, 1);
- 	iscsit_dec_session_usage_count(sess);
+-Inheriting Controls
+--------------------
++Inheriting Sub-device Controls
++------------------------------
  
--	iscsit_close_session(sess);
- 	return 0;
- }
+ When a sub-device is registered with a V4L2 driver by calling
+ v4l2_device_register_subdev() and the ctrl_handler fields of both v4l2_subdev
+@@ -757,8 +757,8 @@ attempting to find another control from the same handler will deadlock.
+ It is recommended not to use this function from inside the control ops.
  
-@@ -494,6 +494,7 @@ static int iscsi_login_non_zero_tsih_s2(
- 		sess_p = (struct iscsi_session *)se_sess->fabric_sess_ptr;
- 		if (atomic_read(&sess_p->session_fall_back_to_erl0) ||
- 		    atomic_read(&sess_p->session_logout) ||
-+		    atomic_read(&sess_p->session_close) ||
- 		   (sess_p->time2retain_timer_flags & ISCSI_TF_EXPIRED))
- 			continue;
- 		if (!memcmp(sess_p->isid, pdu->isid, 6) &&
-diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-index a49d37140a64..591cd9e4692c 100644
---- a/include/target/iscsi/iscsi_target_core.h
-+++ b/include/target/iscsi/iscsi_target_core.h
-@@ -676,7 +676,7 @@ struct iscsi_session {
- 	atomic_t		session_logout;
- 	atomic_t		session_reinstatement;
- 	atomic_t		session_stop_active;
--	atomic_t		sleep_on_sess_wait_comp;
-+	atomic_t		session_close;
- 	/* connection list */
- 	struct list_head	sess_conn_list;
- 	struct list_head	cr_active_list;
+ 
+-Inheriting Controls
+--------------------
++Preventing Controls inheritance
++-------------------------------
+ 
+ When one control handler is added to another using v4l2_ctrl_add_handler, then
+ by default all controls from one are merged to the other. But a subdev might
+diff --git a/Documentation/networking/snmp_counter.rst b/Documentation/networking/snmp_counter.rst
+index 38a4edc4522b..10e11099e74a 100644
+--- a/Documentation/networking/snmp_counter.rst
++++ b/Documentation/networking/snmp_counter.rst
+@@ -908,8 +908,8 @@ A TLP probe packet is sent.
+ 
+ A packet loss is detected and recovered by TLP.
+ 
+-TCP Fast Open
+-======+TCP Fast Open description
++============ TCP Fast Open is a technology which allows data transfer before the
+ 3-way handshake complete. Please refer the `TCP Fast Open wiki`_ for a
+ general description.
+diff --git a/Documentation/powerpc/ultravisor.rst b/Documentation/powerpc/ultravisor.rst
+index 363736d7fd36..df136c8f91fa 100644
+--- a/Documentation/powerpc/ultravisor.rst
++++ b/Documentation/powerpc/ultravisor.rst
+@@ -8,8 +8,8 @@ Protected Execution Facility
+ .. contents::
+     :depth: 3
+ 
+-Protected Execution Facility
+-############################
++Introduction
++############
+ 
+     Protected Execution Facility (PEF) is an architectural change for
+     POWER 9 that enables Secure Virtual Machines (SVMs). DD2.3 chips
+diff --git a/Documentation/security/siphash.rst b/Documentation/security/siphash.rst
+index 9965821ab333..4eba68cdf0a1 100644
+--- a/Documentation/security/siphash.rst
++++ b/Documentation/security/siphash.rst
+@@ -128,8 +128,8 @@ then when you can be absolutely certain that the outputs will never be
+ transmitted out of the kernel. This is only remotely useful over `jhash` as a
+ means of mitigating hashtable flooding denial of service attacks.
+ 
+-Generating a key
+-========
++Generating a HalfSipHash key
++==============
+ 
+ Keys should always be generated from a cryptographically secure source of
+ random numbers, either using get_random_bytes or get_random_once:
+@@ -139,8 +139,8 @@ get_random_bytes(&key, sizeof(key));
+ 
+ If you're not deriving your key from here, you're doing it wrong.
+ 
+-Using the functions
+-=========+Using the HalfSipHash functions
++=============== 
+ There are two variants of the function, one that takes a list of integers, and
+ one that takes a buffer::
+diff --git a/Documentation/target/tcmu-design.rst b/Documentation/target/tcmu-design.rst
+index a7b426707bf6..e47047e32e27 100644
+--- a/Documentation/target/tcmu-design.rst
++++ b/Documentation/target/tcmu-design.rst
+@@ -5,7 +5,7 @@ TCM Userspace Design
+ 
+ .. Contents:
+ 
+-   1) TCM Userspace Design
++   1) Design
+      a) Background
+      b) Benefits
+      c) Design constraints
+@@ -23,8 +23,8 @@ TCM Userspace Design
+    3) A final note
+ 
+ 
+-TCM Userspace Design
+-==========
++Design
++===
+ 
+ TCM is another name for LIO, an in-kernel iSCSI target (server).
+ Existing TCM targets run in the kernel.  TCMU (TCM in Userspace)
+diff --git a/Documentation/translations/zh_CN/process/5.Posting.rst b/Documentation/translations/zh_CN/process/5.Posting.rst
+index 41aba21ff050..9ff9945f918c 100644
+--- a/Documentation/translations/zh_CN/process/5.Posting.rst
++++ b/Documentation/translations/zh_CN/process/5.Posting.rst
+@@ -5,7 +5,7 @@
+ 
+ .. _cn_development_posting:
+ 
+-发送补丁
++发布补丁
+ ====
+ 
+ 迟早，当您的工作准备好提交给社区进行审查，并最终包含到主线内核中时。不出所料，
+diff --git a/Documentation/x86/intel-iommu.rst b/Documentation/x86/intel-iommu.rst
+index 9dae6b47e398..099f13d51d5f 100644
+--- a/Documentation/x86/intel-iommu.rst
++++ b/Documentation/x86/intel-iommu.rst
+@@ -95,9 +95,10 @@ and any RMRR's processed::
+ When DMAR is enabled for use, you will notice..
+ 
+ PCI-DMA: Using DMAR IOMMU
++-------------------------
+ 
+ Fault reporting
+----------------
++^^^^^^^^^^^^^^^
+ 
+ ::
+ 
 -- 
-2.21.0
+2.24.1
