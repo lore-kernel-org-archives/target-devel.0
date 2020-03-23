@@ -1,26 +1,53 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 20 Mar 2020 23:10:20 +0000
-Subject: Re: [PATCH v2 0/2] Don't generate thousands of new warnings when building docs
-Message-Id: <20200320171020.78f045c5@lwn.net>
+From: David Disseldorp <ddiss@suse.de>
+Date: Mon, 23 Mar 2020 16:54:07 +0000
+Subject: [RFC PATCH 2/5] scsi: target: drop xcopy DISK BLOCK LENGTH debug
+Message-Id: <20200323165410.24423-3-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <cover.1584716446.git.mchehab+huawei@kernel.org>
-In-Reply-To: <cover.1584716446.git.mchehab+huawei@kernel.org>
+References: <20200323165410.24423-1-ddiss@suse.de>
+In-Reply-To: <20200323165410.24423-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, linux-kernel@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Paul Mackerras <paulus@samba.org>, Madhuparna Bhowmik <madhuparnabhowmik04@gmail.com>, "David S. Miller" <davem@davemloft.net>, Ricardo Ribalda Delgado <ribalda@kernel.org>, Luca Ceresoli <luca@lucaceresoli.net>, dmaengine@vger.kernel.org, Matthias Maennich <maennich@google.com>, Harry Wei <harryxiyou@gmail.com>, x86@kernel.org, ecryptfs@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, target-devel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Hans Verkuil <hverkuil-cisco@xs4all.nl>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Johannes Berg <johannes.berg@intel.com>, Jacopo Mondi <jacopo@jmondi.org>, Tyler Hicks <code@tyhicks.com>, Vinod Koul <vkoul@kernel.org>, Alex Shi <alex.shi@linux.alibaba.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, linux-scsi@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, netdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, Borislav Petkov <bp@alien8.de>
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org, David Disseldorp <ddiss@suse.de>
 
-On Fri, 20 Mar 2020 16:11:01 +0100
-Mauro Carvalho Chehab <mchehab+huawei@kernel.org> wrote:
+The DISK BLOCK LENGTH field is carried with XCOPY target descriptors on
+the wire, but is currently unmarshalled during 0x02 segment descriptor
+passing. The unmarshalled value is currently unused, so drop it.
 
-> This small series address a regression caused by a new patch at
-> docs-next (and at linux-next).
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_xcopy.c | 5 -----
+ drivers/target/target_core_xcopy.h | 1 -
+ 2 files changed, 6 deletions(-)
 
-I don't know how I missed that mess, sorry.  I plead distracting times or
-something like that.  Heck, I think I'll blame everything on the plague
-for at least the next few weeks.
-
-Anyway, I've applied this, thanks for cleaning it up.
-
-jon
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index 7e5b13da0c20..66b68295c50f 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -315,11 +315,6 @@ static int target_xcopy_parse_segdesc_02(struct se_cmd *se_cmd, struct xcopy_op
+ 		xop->nolb, (unsigned long long)xop->src_lba,
+ 		(unsigned long long)xop->dst_lba);
+ 
+-	if (dc != 0) {
+-		xop->dbl = get_unaligned_be24(&desc[29]);
+-
+-		pr_debug("XCOPY seg desc 0x02: DC=1 w/ dbl: %u\n", xop->dbl);
+-	}
+ 	return 0;
+ }
+ 
+diff --git a/drivers/target/target_core_xcopy.h b/drivers/target/target_core_xcopy.h
+index 26ba4c3c9cff..0840b03e8faa 100644
+--- a/drivers/target/target_core_xcopy.h
++++ b/drivers/target/target_core_xcopy.h
+@@ -35,7 +35,6 @@ struct xcopy_op {
+ 	unsigned short stdi;
+ 	unsigned short dtdi;
+ 	unsigned short nolb;
+-	unsigned int dbl;
+ 
+ 	struct xcopy_pt_cmd *src_pt_cmd;
+ 	struct xcopy_pt_cmd *dst_pt_cmd;
+-- 
+2.16.4
