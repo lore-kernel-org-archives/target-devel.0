@@ -1,28 +1,157 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Fri, 27 Mar 2020 02:33:36 +0000
-Subject: Re: [PATCH RESEND 0/3] Fix a race condition in the target driver
-Message-Id: <yq1bloiedbz.fsf@oracle.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Mon, 23 Mar 2020 16:54:10 +0000
+Subject: [RFC PATCH 5/5] scsi: target: avoid XCOPY per-loop read/write cmd allocations
+Message-Id: <20200323165410.24423-6-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200313170656.9716-1-mlombard@redhat.com>
-In-Reply-To: <20200313170656.9716-1-mlombard@redhat.com> (Maurizio Lombardi's
-        message of "Fri, 13 Mar 2020 18:06:53 +0100")
+References: <20200323165410.24423-1-ddiss@suse.de>
+In-Reply-To: <20200323165410.24423-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Maurizio Lombardi <mlombard@redhat.com>
-Cc: target-devel@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org, ddiss@suse.de, mcoleman@datto.com, linux-scsi@vger.kernel.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org, David Disseldorp <ddiss@suse.de>
 
+Reads and writes in the XCOPY loop are synchronous, so needn't be
+allocated / freed with each loop.
 
-Maurizio,
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_xcopy.c | 33 +++++++++------------------------
+ drivers/target/target_core_xcopy.h | 10 +++++++---
+ 2 files changed, 16 insertions(+), 27 deletions(-)
 
-> Multiple threads may try to destroy the same iscsi session structure
-> by calling iscsit_close_session() and then end up hanging.
->
-> This patchset modifies the driver so the session structure is
-> destroyed by iscsit_close_connection() when the last connection gets
-> closed, thus preventing the race condition.
-
-Applied to 5.7/scsi-queue, thanks!
-
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index e9c50766d4fc..cdc6c65168da 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -374,12 +374,6 @@ static int target_xcopy_parse_segment_descriptors(struct se_cmd *se_cmd,
+  * Start xcopy_pt ops
+  */
+ 
+-struct xcopy_pt_cmd {
+-	struct se_cmd se_cmd;
+-	struct completion xpt_passthrough_sem;
+-	unsigned char sense_buffer[TRANSPORT_SENSE_BUFFER];
+-};
+-
+ struct se_portal_group xcopy_pt_tpg;
+ static struct se_session xcopy_pt_sess;
+ static struct se_node_acl xcopy_pt_nacl;
+@@ -410,7 +404,8 @@ static void xcopy_pt_release_cmd(struct se_cmd *se_cmd)
+ 	struct xcopy_pt_cmd *xpt_cmd = container_of(se_cmd,
+ 				struct xcopy_pt_cmd, se_cmd);
+ 
+-	kfree(xpt_cmd);
++	/* xpt_cmd is backed by parent xop, nothing to free */
++	pr_debug("xpt_cmd done: %p\n", xpt_cmd);
+ }
+ 
+ static int xcopy_pt_check_stop_free(struct se_cmd *se_cmd)
+@@ -582,18 +577,14 @@ static int target_xcopy_read_source(
+ 	sector_t src_lba,
+ 	u32 src_sectors)
+ {
+-	struct xcopy_pt_cmd *xpt_cmd;
++	struct xcopy_pt_cmd *xpt_cmd = &xop->src_pt_cmd;
+ 	struct se_cmd *se_cmd;
+ 	u32 length = (src_sectors * src_dev->dev_attrib.block_size);
+ 	int rc;
+ 	unsigned char cdb[16];
+ 	bool remote_port = (xop->op_origin = XCOL_DEST_RECV_OP);
+ 
+-	xpt_cmd = kzalloc(sizeof(struct xcopy_pt_cmd), GFP_KERNEL);
+-	if (!xpt_cmd) {
+-		pr_err("Unable to allocate xcopy_pt_cmd\n");
+-		return -ENOMEM;
+-	}
++	memset(xpt_cmd, 0, sizeof(*xpt_cmd));
+ 	init_completion(&xpt_cmd->xpt_passthrough_sem);
+ 	se_cmd = &xpt_cmd->se_cmd;
+ 
+@@ -606,7 +597,6 @@ static int target_xcopy_read_source(
+ 
+ 	transport_init_se_cmd(se_cmd, &xcopy_pt_tfo, &xcopy_pt_sess, length,
+ 			      DMA_FROM_DEVICE, 0, &xpt_cmd->sense_buffer[0]);
+-	xop->src_pt_cmd = xpt_cmd;
+ 
+ 	rc = target_xcopy_setup_pt_cmd(xpt_cmd, xop, src_dev, &cdb[0],
+ 				remote_port);
+@@ -636,18 +626,14 @@ static int target_xcopy_write_destination(
+ 	sector_t dst_lba,
+ 	u32 dst_sectors)
+ {
+-	struct xcopy_pt_cmd *xpt_cmd;
++	struct xcopy_pt_cmd *xpt_cmd = &xop->dst_pt_cmd;
+ 	struct se_cmd *se_cmd;
+ 	u32 length = (dst_sectors * dst_dev->dev_attrib.block_size);
+ 	int rc;
+ 	unsigned char cdb[16];
+ 	bool remote_port = (xop->op_origin = XCOL_SOURCE_RECV_OP);
+ 
+-	xpt_cmd = kzalloc(sizeof(struct xcopy_pt_cmd), GFP_KERNEL);
+-	if (!xpt_cmd) {
+-		pr_err("Unable to allocate xcopy_pt_cmd\n");
+-		return -ENOMEM;
+-	}
++	memset(xpt_cmd, 0, sizeof(*xpt_cmd));
+ 	init_completion(&xpt_cmd->xpt_passthrough_sem);
+ 	se_cmd = &xpt_cmd->se_cmd;
+ 
+@@ -660,7 +646,6 @@ static int target_xcopy_write_destination(
+ 
+ 	transport_init_se_cmd(se_cmd, &xcopy_pt_tfo, &xcopy_pt_sess, length,
+ 			      DMA_TO_DEVICE, 0, &xpt_cmd->sense_buffer[0]);
+-	xop->dst_pt_cmd = xpt_cmd;
+ 
+ 	rc = target_xcopy_setup_pt_cmd(xpt_cmd, xop, dst_dev, &cdb[0],
+ 				remote_port);
+@@ -754,7 +739,7 @@ static void target_xcopy_do_work(struct work_struct *work)
+ 		rc = target_xcopy_write_destination(ec_cmd, xop, dst_dev,
+ 						dst_lba, cur_nolb);
+ 		if (rc < 0) {
+-			transport_generic_free_cmd(&xop->src_pt_cmd->se_cmd, 0);
++			transport_generic_free_cmd(&xop->src_pt_cmd.se_cmd, 0);
+ 			goto out;
+ 		}
+ 
+@@ -765,8 +750,8 @@ static void target_xcopy_do_work(struct work_struct *work)
+ 		copied_nolb += cur_nolb;
+ 		nolb -= cur_nolb;
+ 
+-		transport_generic_free_cmd(&xop->src_pt_cmd->se_cmd, 0);
+-		transport_generic_free_cmd(&xop->dst_pt_cmd->se_cmd, 0);
++		transport_generic_free_cmd(&xop->src_pt_cmd.se_cmd, 0);
++		transport_generic_free_cmd(&xop->dst_pt_cmd.se_cmd, 0);
+ 	}
+ 
+ 	xcopy_pt_undepend_remotedev(xop);
+diff --git a/drivers/target/target_core_xcopy.h b/drivers/target/target_core_xcopy.h
+index f1aaf7140798..f52640fcb12d 100644
+--- a/drivers/target/target_core_xcopy.h
++++ b/drivers/target/target_core_xcopy.h
+@@ -18,7 +18,11 @@ enum xcopy_origin_list {
+ 	XCOL_DEST_RECV_OP = 0x02,
+ };
+ 
+-struct xcopy_pt_cmd;
++struct xcopy_pt_cmd {
++	struct se_cmd se_cmd;
++	struct completion xpt_passthrough_sem;
++	unsigned char sense_buffer[TRANSPORT_SENSE_BUFFER];
++};
+ 
+ struct xcopy_op {
+ 	int op_origin;
+@@ -36,8 +40,8 @@ struct xcopy_op {
+ 	unsigned short dtdi;
+ 	unsigned short nolb;
+ 
+-	struct xcopy_pt_cmd *src_pt_cmd;
+-	struct xcopy_pt_cmd *dst_pt_cmd;
++	struct xcopy_pt_cmd src_pt_cmd;
++	struct xcopy_pt_cmd dst_pt_cmd;
+ 
+ 	u32 xop_data_bytes;
+ 	u32 xop_data_nents;
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.16.4
