@@ -1,27 +1,33 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Fri, 27 Mar 2020 01:56:44 +0000
-Subject: Re: [PATCH] scsi: target: core: add task tag to trace events
-Message-Id: <yq17dz6ftlv.fsf@oracle.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Mon, 23 Mar 2020 16:54:06 +0000
+Subject: [RFC PATCH 1/5] scsi: target: use #def for xcopy descriptor len
+Message-Id: <20200323165410.24423-2-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <226e01deaa9baf46d6ff3b8698bc9fe881f7dfc1.camel@dubeyko.com>
-In-Reply-To: <226e01deaa9baf46d6ff3b8698bc9fe881f7dfc1.camel@dubeyko.com>
-        (Viacheslav Dubeyko's message of "Mon, 16 Mar 2020 16:07:17 +0300")
+References: <20200323165410.24423-1-ddiss@suse.de>
+In-Reply-To: <20200323165410.24423-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Viacheslav Dubeyko <slava@dubeyko.com>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, linux@yadro.com, v.dubeiko@yadro.com, rostedt@goodmis.org, mingo@redhat.com, r.bolshakov@yadro.com, k.shelekhin@yadro.com
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org, David Disseldorp <ddiss@suse.de>
 
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_xcopy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Viacheslav,
-
-> However, it's still hard to identify command on the initiator and
-> command on the target in the real life output of system log.  For that
-> purpose SCSI provides a command identifier or task tag (term used in
-> previous standards). This patch adds tag ID in the system log's
-> output:
-
-Applied to 5.7/scsi-queue, thanks!
-
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index 425c1070de08..7e5b13da0c20 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -134,7 +134,7 @@ static int target_xcopy_parse_tiddesc_e4(struct se_cmd *se_cmd, struct xcopy_op
+ 	 * Assigned designator
+ 	 */
+ 	desig_len = desc[7];
+-	if (desig_len != 16) {
++	if (desig_len != XCOPY_NAA_IEEE_REGEX_LEN) {
+ 		pr_err("XCOPY 0xe4: invalid desig_len: %d\n", (int)desig_len);
+ 		return -EINVAL;
+ 	}
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.16.4
