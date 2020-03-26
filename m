@@ -1,39 +1,194 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Fri, 20 Mar 2020 06:22:10 +0000
-Subject: Re: Connection errors with ISER IO
-Message-Id: <24e7c897-fcc1-1712-100f-9c36ba607729@grimberg.me>
+From: David Disseldorp <ddiss@suse.de>
+Date: Thu, 26 Mar 2020 22:15:05 +0000
+Subject: [PATCH v2 5/5] scsi: target: use the stack for XCOPY passthrough cmds
+Message-Id: <20200326221505.5303-6-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200226155241.GA28594@chelsio.com>
-In-Reply-To: <20200226155241.GA28594@chelsio.com>
+References: <20200326221505.5303-1-ddiss@suse.de>
+In-Reply-To: <20200326221505.5303-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org, David Disseldorp <ddiss@suse.de>
 
-This seems the a possible root-cause...
+Reads and writes in the XCOPY loop are synchronous, so needn't be
+heap allocated / freed with each loop.
 
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+---
+ drivers/target/target_core_xcopy.c | 57 +++++++++++++++-----------------------
+ drivers/target/target_core_xcopy.h |  5 ----
+ 2 files changed, 22 insertions(+), 40 deletions(-)
 
-> [11367.785938] kworker/5:1H    S    0   768      2 0x80004000
-> [11367.786401] Workqueue: ib-comp-wq ib_cq_poll_work [ib_core]
-> [11367.786958] Call Trace:
-> [11367.787446]  ? __schedule+0x31a/0x850
-> [11367.787988]  schedule+0x36/0xc0
-> [11367.788488]  iscsit_allocate_cmd+0x246/0x2c0 [iscsi_target_mod]
-> [11367.789042]  ? finish_wait+0x80/0x80
-> [11367.789564]  isert_allocate_cmd+0x1d/0x60 [ib_isert]
-> [11367.790120]  isert_recv_done+0x282/0xa30 [ib_isert]
-> [11367.790620]  __ib_process_cq+0x76/0xc0 [ib_core]
-> [11367.791181]  ib_cq_poll_work+0x26/0x80 [ib_core]
-> [11367.791697]  process_one_work+0x235/0x5d0
-> [11367.792300]  worker_thread+0x3c/0x390
-> [11367.792818]  ? process_one_work+0x5d0/0x5d0
-> [11367.793366]  kthread+0x11f/0x140
-> [11367.793850]  ? kthread_park+0x90/0x90
-> [11367.794440]  ret_from_fork+0x24/0x30
-
-The only way that the workqueue cannot process the drain completion
-is if it is stuck. This appears to be the cq workqueue blocks on
-a command allocation that apparently never completes.
-
-The question is why does that happen only for 511MB luns, and
-how come this allocation never completes...
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index d61c41f33f81..cd579d3a9300 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -410,7 +410,8 @@ static void xcopy_pt_release_cmd(struct se_cmd *se_cmd)
+ 	struct xcopy_pt_cmd *xpt_cmd = container_of(se_cmd,
+ 				struct xcopy_pt_cmd, se_cmd);
+ 
+-	kfree(xpt_cmd);
++	/* xpt_cmd is on the stack, nothing to free here */
++	pr_debug("xpt_cmd done: %p\n", xpt_cmd);
+ }
+ 
+ static int xcopy_pt_check_stop_free(struct se_cmd *se_cmd)
+@@ -566,20 +567,15 @@ static int target_xcopy_read_source(
+ 	sector_t src_lba,
+ 	u32 src_sectors)
+ {
+-	struct xcopy_pt_cmd *xpt_cmd;
+-	struct se_cmd *se_cmd;
++	struct xcopy_pt_cmd xpt_cmd;
++	struct se_cmd *se_cmd = &xpt_cmd.se_cmd;
+ 	u32 length = (src_sectors * src_dev->dev_attrib.block_size);
+ 	int rc;
+ 	unsigned char cdb[16];
+ 	bool remote_port = (xop->op_origin = XCOL_DEST_RECV_OP);
+ 
+-	xpt_cmd = kzalloc(sizeof(struct xcopy_pt_cmd), GFP_KERNEL);
+-	if (!xpt_cmd) {
+-		pr_err("Unable to allocate xcopy_pt_cmd\n");
+-		return -ENOMEM;
+-	}
+-	init_completion(&xpt_cmd->xpt_passthrough_sem);
+-	se_cmd = &xpt_cmd->se_cmd;
++	memset(&xpt_cmd, 0, sizeof(xpt_cmd));
++	init_completion(&xpt_cmd.xpt_passthrough_sem);
+ 
+ 	memset(&cdb[0], 0, 16);
+ 	cdb[0] = READ_16;
+@@ -589,13 +585,12 @@ static int target_xcopy_read_source(
+ 		(unsigned long long)src_lba, src_sectors, length);
+ 
+ 	transport_init_se_cmd(se_cmd, &xcopy_pt_tfo, &xcopy_pt_sess, length,
+-			      DMA_FROM_DEVICE, 0, &xpt_cmd->sense_buffer[0]);
+-	xop->src_pt_cmd = xpt_cmd;
++			      DMA_FROM_DEVICE, 0, &xpt_cmd.sense_buffer[0]);
+ 
+-	rc = target_xcopy_setup_pt_cmd(xpt_cmd, xop, src_dev, &cdb[0],
++	rc = target_xcopy_setup_pt_cmd(&xpt_cmd, xop, src_dev, &cdb[0],
+ 				remote_port);
+ 	if (rc < 0) {
+-		ec_cmd->scsi_status = xpt_cmd->se_cmd.scsi_status;
++		ec_cmd->scsi_status = se_cmd->scsi_status;
+ 		transport_generic_free_cmd(se_cmd, 0);
+ 		return rc;
+ 	}
+@@ -603,13 +598,14 @@ static int target_xcopy_read_source(
+ 	pr_debug("XCOPY-READ: Saved xop->xop_data_sg: %p, num: %u for READ"
+ 		" memory\n", xop->xop_data_sg, xop->xop_data_nents);
+ 
+-	rc = target_xcopy_issue_pt_cmd(xpt_cmd);
++	rc = target_xcopy_issue_pt_cmd(&xpt_cmd);
+ 	if (rc < 0) {
+-		ec_cmd->scsi_status = xpt_cmd->se_cmd.scsi_status;
++		ec_cmd->scsi_status = se_cmd->scsi_status;
+ 		transport_generic_free_cmd(se_cmd, 0);
+ 		return rc;
+ 	}
+ 
++	transport_generic_free_cmd(se_cmd, 0);
+ 	return 0;
+ }
+ 
+@@ -620,20 +616,15 @@ static int target_xcopy_write_destination(
+ 	sector_t dst_lba,
+ 	u32 dst_sectors)
+ {
+-	struct xcopy_pt_cmd *xpt_cmd;
+-	struct se_cmd *se_cmd;
++	struct xcopy_pt_cmd xpt_cmd;
++	struct se_cmd *se_cmd = &xpt_cmd.se_cmd;
+ 	u32 length = (dst_sectors * dst_dev->dev_attrib.block_size);
+ 	int rc;
+ 	unsigned char cdb[16];
+ 	bool remote_port = (xop->op_origin = XCOL_SOURCE_RECV_OP);
+ 
+-	xpt_cmd = kzalloc(sizeof(struct xcopy_pt_cmd), GFP_KERNEL);
+-	if (!xpt_cmd) {
+-		pr_err("Unable to allocate xcopy_pt_cmd\n");
+-		return -ENOMEM;
+-	}
+-	init_completion(&xpt_cmd->xpt_passthrough_sem);
+-	se_cmd = &xpt_cmd->se_cmd;
++	memset(&xpt_cmd, 0, sizeof(xpt_cmd));
++	init_completion(&xpt_cmd.xpt_passthrough_sem);
+ 
+ 	memset(&cdb[0], 0, 16);
+ 	cdb[0] = WRITE_16;
+@@ -643,24 +634,24 @@ static int target_xcopy_write_destination(
+ 		(unsigned long long)dst_lba, dst_sectors, length);
+ 
+ 	transport_init_se_cmd(se_cmd, &xcopy_pt_tfo, &xcopy_pt_sess, length,
+-			      DMA_TO_DEVICE, 0, &xpt_cmd->sense_buffer[0]);
+-	xop->dst_pt_cmd = xpt_cmd;
++			      DMA_TO_DEVICE, 0, &xpt_cmd.sense_buffer[0]);
+ 
+-	rc = target_xcopy_setup_pt_cmd(xpt_cmd, xop, dst_dev, &cdb[0],
++	rc = target_xcopy_setup_pt_cmd(&xpt_cmd, xop, dst_dev, &cdb[0],
+ 				remote_port);
+ 	if (rc < 0) {
+-		ec_cmd->scsi_status = xpt_cmd->se_cmd.scsi_status;
++		ec_cmd->scsi_status = se_cmd->scsi_status;
+ 		transport_generic_free_cmd(se_cmd, 0);
+ 		return rc;
+ 	}
+ 
+-	rc = target_xcopy_issue_pt_cmd(xpt_cmd);
++	rc = target_xcopy_issue_pt_cmd(&xpt_cmd);
+ 	if (rc < 0) {
+-		ec_cmd->scsi_status = xpt_cmd->se_cmd.scsi_status;
++		ec_cmd->scsi_status = se_cmd->scsi_status;
+ 		transport_generic_free_cmd(se_cmd, 0);
+ 		return rc;
+ 	}
+ 
++	transport_generic_free_cmd(se_cmd, 0);
+ 	return 0;
+ }
+ 
+@@ -737,7 +728,6 @@ static void target_xcopy_do_work(struct work_struct *work)
+ 		rc = target_xcopy_write_destination(ec_cmd, xop, dst_dev,
+ 						dst_lba, cur_nolb);
+ 		if (rc < 0) {
+-			transport_generic_free_cmd(&xop->src_pt_cmd->se_cmd, 0);
+ 			goto out;
+ 		}
+ 
+@@ -747,9 +737,6 @@ static void target_xcopy_do_work(struct work_struct *work)
+ 
+ 		copied_nolb += cur_nolb;
+ 		nolb -= cur_nolb;
+-
+-		transport_generic_free_cmd(&xop->src_pt_cmd->se_cmd, 0);
+-		transport_generic_free_cmd(&xop->dst_pt_cmd->se_cmd, 0);
+ 	}
+ 
+ 	xcopy_pt_undepend_remotedev(xop);
+diff --git a/drivers/target/target_core_xcopy.h b/drivers/target/target_core_xcopy.h
+index f1aaf7140798..c56a1bde9417 100644
+--- a/drivers/target/target_core_xcopy.h
++++ b/drivers/target/target_core_xcopy.h
+@@ -18,8 +18,6 @@ enum xcopy_origin_list {
+ 	XCOL_DEST_RECV_OP = 0x02,
+ };
+ 
+-struct xcopy_pt_cmd;
+-
+ struct xcopy_op {
+ 	int op_origin;
+ 
+@@ -36,9 +34,6 @@ struct xcopy_op {
+ 	unsigned short dtdi;
+ 	unsigned short nolb;
+ 
+-	struct xcopy_pt_cmd *src_pt_cmd;
+-	struct xcopy_pt_cmd *dst_pt_cmd;
+-
+ 	u32 xop_data_bytes;
+ 	u32 xop_data_nents;
+ 	struct scatterlist *xop_data_sg;
+-- 
+2.16.4
