@@ -1,38 +1,39 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 27 Mar 2020 14:19:53 +0000
-Subject: [PATCH v3 4/5] scsi: target: increase XCOPY I/O size
-Message-Id: <20200327141954.955-5-ddiss@suse.de>
+Date: Thu, 26 Mar 2020 22:15:00 +0000
+Subject: [PATCH v2 0/5] scsi: target:
+Message-Id: <20200326221505.5303-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200327141954.955-1-ddiss@suse.de>
-In-Reply-To: <20200327141954.955-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org, David Disseldorp <ddiss@suse.de>
+Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org
 
-The I/O size is already bound by dev_attrib.hw_max_sectors, so increase
-the hardcoded XCOPY_MAX_SECTORS maximum to improve performance against
-backstores with high-latency.
+These changes remove unnecessary heap allocations in the XCOPY
+READ/WRITE dispatch loop.
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
----
- drivers/target/target_core_xcopy.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Synthetic benchmarks on my laptop using the libiscsi iscsi-dd utility
+(--xcopy --max 1 --blocks 65535 src=dst) against a target backed by an
+8G zram (DEBUG_KMEMLEAK=y) iblock backstore (avg across four runs) show:
+before: 5.30845G/s
+after:  5.99056G/s (approx. +12.8%)
 
-diff --git a/drivers/target/target_core_xcopy.h b/drivers/target/target_core_xcopy.h
-index 9558974185ea..f1aaf7140798 100644
---- a/drivers/target/target_core_xcopy.h
-+++ b/drivers/target/target_core_xcopy.h
-@@ -5,7 +5,7 @@
- #define XCOPY_TARGET_DESC_LEN		32
- #define XCOPY_SEGMENT_DESC_LEN		28
- #define XCOPY_NAA_IEEE_REGEX_LEN	16
--#define XCOPY_MAX_SECTORS		1024
-+#define XCOPY_MAX_SECTORS		4096
- 
- /*
-  * SPC4r37 6.4.6.1
--- 
-2.16.4
+Changes since v1:
+- drop RFC
+- rework 3/5 and 5/5 following Christoph's feedback
+
+Feedback appreciated.
+
+Cheers, David
+
+----------------------------------------------------------------
+David Disseldorp (5):
+      scsi: target: use #def for xcopy descriptor len
+      scsi: target: drop xcopy DISK BLOCK LENGTH debug
+      scsi: target: avoid per-loop XCOPY buffer allocations
+      scsi: target: increase XCOPY I/O size
+      scsi: target: use the stack for XCOPY passthrough cmds
+
+ drivers/target/target_core_xcopy.c | 160 ++++++++++-------------------
+ drivers/target/target_core_xcopy.h |   9 +-
+ 2 files changed, 55 insertions(+), 114 deletions(-)
