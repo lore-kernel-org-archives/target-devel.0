@@ -1,35 +1,54 @@
 From: David Disseldorp <ddiss@suse.de>
-Date: Mon, 23 Mar 2020 16:54:05 +0000
-Subject: [RFC PATCH 0/5] scsi: target: XCOPY performance
-Message-Id: <20200323165410.24423-1-ddiss@suse.de>
+Date: Thu, 26 Mar 2020 22:15:02 +0000
+Subject: [PATCH v2 2/5] scsi: target: drop xcopy DISK BLOCK LENGTH debug
+Message-Id: <20200326221505.5303-3-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200326221505.5303-1-ddiss@suse.de>
+In-Reply-To: <20200326221505.5303-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org
+Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org, David Disseldorp <ddiss@suse.de>
 
-These changes remove unnecessary heap allocations in the XCOPY
-READ/WRITE dispatch loop.
+The DISK BLOCK LENGTH field is carried with XCOPY target descriptors on
+the wire, but is currently unmarshalled during 0x02 segment descriptor
+passing. The unmarshalled value is currently unused, so drop it.
 
-Synthetic benchmarks on my laptop using the libiscsi iscsi-dd utility
-(--xcopy --max 1 --blocks 65535 src=dst) against a target backed by an 8G
-zram (DEBUG_KMEMLEAK=y) iblock backstore (avg across four runs) show:
-before: 5.35776G/s
-after:  6.12636G/s (approx. +14%)
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/target/target_core_xcopy.c | 5 -----
+ drivers/target/target_core_xcopy.h | 1 -
+ 2 files changed, 6 deletions(-)
 
-Feedback appreciated.
-
-Cheers, David
-
-----------------------------------------------------------------
-David Disseldorp (5):
-      scsi: target: use #def for xcopy descriptor len
-      scsi: target: drop xcopy DISK BLOCK LENGTH debug
-      scsi: target: avoid per-loop XCOPY buffer allocations
-      scsi: target: increase XCOPY I/O size
-      scsi: target: avoid XCOPY per-loop read/write cmd allocations
-
- drivers/target/target_core_xcopy.c | 135 ++++++++++-------------------
- drivers/target/target_core_xcopy.h |  14 +--
- 2 files changed, 57 insertions(+), 92 deletions(-)
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index 7e5b13da0c20..66b68295c50f 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -315,11 +315,6 @@ static int target_xcopy_parse_segdesc_02(struct se_cmd *se_cmd, struct xcopy_op
+ 		xop->nolb, (unsigned long long)xop->src_lba,
+ 		(unsigned long long)xop->dst_lba);
+ 
+-	if (dc != 0) {
+-		xop->dbl = get_unaligned_be24(&desc[29]);
+-
+-		pr_debug("XCOPY seg desc 0x02: DC=1 w/ dbl: %u\n", xop->dbl);
+-	}
+ 	return 0;
+ }
+ 
+diff --git a/drivers/target/target_core_xcopy.h b/drivers/target/target_core_xcopy.h
+index 26ba4c3c9cff..0840b03e8faa 100644
+--- a/drivers/target/target_core_xcopy.h
++++ b/drivers/target/target_core_xcopy.h
+@@ -35,7 +35,6 @@ struct xcopy_op {
+ 	unsigned short stdi;
+ 	unsigned short dtdi;
+ 	unsigned short nolb;
+-	unsigned int dbl;
+ 
+ 	struct xcopy_pt_cmd *src_pt_cmd;
+ 	struct xcopy_pt_cmd *dst_pt_cmd;
+-- 
+2.16.4
