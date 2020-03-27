@@ -1,23 +1,38 @@
-From: Stephen Li <stenn6@gabg.net>
-Date: Tue, 17 Mar 2020 12:09:35 +0000
-Subject: REF
-Message-Id: <518482929.1810933.1584446975070@mail.yahoo.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 27 Mar 2020 14:19:53 +0000
+Subject: [PATCH v3 4/5] scsi: target: increase XCOPY I/O size
+Message-Id: <20200327141954.955-5-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <518482929.1810933.1584446975070.ref@mail.yahoo.com>
+References: <20200327141954.955-1-ddiss@suse.de>
+In-Reply-To: <20200327141954.955-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org, David Disseldorp <ddiss@suse.de>
 
+The I/O size is already bound by dev_attrib.hw_max_sectors, so increase
+the hardcoded XCOPY_MAX_SECTORS maximum to improve performance against
+backstores with high-latency.
 
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/target/target_core_xcopy.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Greetings,
-I was searching through a local business directory when I found your
-profile. I am Soliciting On-Behalf of my private client who is
-interested in having a serious business investment in your country. If
-you have a valid business, investment or project he can invest
-back to me for more details. Your swift response is highly needed.
-Sincerely
-Stephen Li
-Please response back to me with is my private email below for more details
-stephli947701@gmail.com
+diff --git a/drivers/target/target_core_xcopy.h b/drivers/target/target_core_xcopy.h
+index 9558974185ea..f1aaf7140798 100644
+--- a/drivers/target/target_core_xcopy.h
++++ b/drivers/target/target_core_xcopy.h
+@@ -5,7 +5,7 @@
+ #define XCOPY_TARGET_DESC_LEN		32
+ #define XCOPY_SEGMENT_DESC_LEN		28
+ #define XCOPY_NAA_IEEE_REGEX_LEN	16
+-#define XCOPY_MAX_SECTORS		1024
++#define XCOPY_MAX_SECTORS		4096
+ 
+ /*
+  * SPC4r37 6.4.6.1
+-- 
+2.16.4
