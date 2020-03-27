@@ -1,24 +1,54 @@
-From: ''Michael weirsky'' <ronald.pena@11d01.mspz7.gob.ec>
-Date: Tue, 10 Mar 2020 08:13:03 +0000
-Subject: =?utf-8?q?Wohlt=C3=A4tigkeitsspende_von_2=2E000=2E000_Millionen_Euro?=
-Message-Id: <20200310074336.9B22C2F6B67D@mail.11d01.mspz7.gob.ec>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 27 Mar 2020 14:19:51 +0000
+Subject: [PATCH v3 2/5] scsi: target: drop xcopy DISK BLOCK LENGTH debug
+Message-Id: <20200327141954.955-3-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200327141954.955-1-ddiss@suse.de>
+In-Reply-To: <20200327141954.955-1-ddiss@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, martin.petersen@oracle.com, bvanassche@acm.org, David Disseldorp <ddiss@suse.de>
 
-Lieber Freund,
+The DISK BLOCK LENGTH field is carried with XCOPY target descriptors on
+the wire, but is currently unmarshalled during 0x02 segment descriptor
+passing. The unmarshalled value is currently unused, so drop it.
 
-Ich bin Herr Mike Weirsky, New Jersey, Vereinigte Staaten von Amerika, der Mega-Gewinner von $ 273million In Mega Millions Jackpot, spende ich an 5 zufällige Personen, wenn Sie diese E-Mail erhalten, dann wurde Ihre E-Mail nach einem Spinball ausgewählt.Ich habe den größten Teil meines Vermögens auf eine Reihe von Wohltätigkeitsorganisationen und Organisationen verteilt.Ich habe mich freiwillig dazu entschieden, die Summe von € 2.000.000,00 an Sie als eine der ausgewählten 5 zu spenden, um meine Gewinne zu überprüfen.
-Das ist dein Spendencode: [MW530342019]
-www.youtube.com/watch?v=un8yRTmrYMY
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/target/target_core_xcopy.c | 5 -----
+ drivers/target/target_core_xcopy.h | 1 -
+ 2 files changed, 6 deletions(-)
 
-Antworten Sie mit dem SPENDE-CODE an diese 
-
-E-Mail:mikeweirskyspende@gmail.com
-
-Ich hoffe, Sie und Ihre Familie glücklich zu machen.
-
-Grüße
-Herr Mike Weirsky
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index 7e5b13da0c20..66b68295c50f 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -315,11 +315,6 @@ static int target_xcopy_parse_segdesc_02(struct se_cmd *se_cmd, struct xcopy_op
+ 		xop->nolb, (unsigned long long)xop->src_lba,
+ 		(unsigned long long)xop->dst_lba);
+ 
+-	if (dc != 0) {
+-		xop->dbl = get_unaligned_be24(&desc[29]);
+-
+-		pr_debug("XCOPY seg desc 0x02: DC=1 w/ dbl: %u\n", xop->dbl);
+-	}
+ 	return 0;
+ }
+ 
+diff --git a/drivers/target/target_core_xcopy.h b/drivers/target/target_core_xcopy.h
+index 26ba4c3c9cff..0840b03e8faa 100644
+--- a/drivers/target/target_core_xcopy.h
++++ b/drivers/target/target_core_xcopy.h
+@@ -35,7 +35,6 @@ struct xcopy_op {
+ 	unsigned short stdi;
+ 	unsigned short dtdi;
+ 	unsigned short nolb;
+-	unsigned int dbl;
+ 
+ 	struct xcopy_pt_cmd *src_pt_cmd;
+ 	struct xcopy_pt_cmd *dst_pt_cmd;
+-- 
+2.16.4
