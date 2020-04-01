@@ -1,54 +1,41 @@
-From: Leon Romanovsky <leonro@mellanox.com>
-Date: Mon, 20 Apr 2020 13:36:07 +0000
-Subject: Re: [PATCH rdma-next v2 0/7] Add Enhanced Connection Established (ECE)
-Message-Id: <20200420133607.GD121146@unreal>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Wed, 01 Apr 2020 13:21:53 +0000
+Subject: [PATCH] target: tcmu: add missing pr attributes to passthrough backends
+Message-Id: <20200401132153.23501-1-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200413141538.935574-1-leon@kernel.org>
-In-Reply-To: <20200413141538.935574-1-leon@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Doug Ledford <dledford@redhat.com>, Jason Gunthorpe <jgg@mellanox.com>
-Cc: rds-devel@oss.oracle.com, Bart Van Assche <bvanassche@acm.org>, Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, Santosh Shilimkar <santosh.shilimkar@oracle.com>, linux-nvme@lists.infradead.org, Christoph Hellwig <hch@lst.de>, target-devel@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, "David S. Miller" <davem@davemloft.net>, Sagi Grimberg <sagi@grimberg.me>
+To: target-devel@vger.kernel.org
 
-On Mon, Apr 13, 2020 at 05:15:31PM +0300, Leon Romanovsky wrote:
-> From: Leon Romanovsky <leonro@mellanox.com>
->
-> Changelog:
->  v2:
->  * Rebased on latest rdma-next and removed already accepted patches.
->  * Updated all rdma_reject in-kernel users to provide reject reason.
->  v1: Dropped field_avail patch in favor of mass conversion to use function
->      which already exists in the kernel code.
->  https://lore.kernel.org/lkml/20200310091438.248429-1-leon@kernel.org
->  v0: https://lore.kernel.org/lkml/20200305150105.207959-1-leon@kernel.org
->
-> Enhanced Connection Established or ECE is new negotiation scheme
-> introduced in IBTA v1.4 to exchange extra information about nodes
-> capabilities and later negotiate them at the connection establishment
-> phase.
->
-> The RDMA-CM messages (REQ, REP, SIDR_REQ and SIDR_REP) were extended
-> to carry two fields, one new and another gained new functionality:
->  * VendorID is a new field that indicates that common subset of vendor
->    option bits are supported as indicated by that VendorID.
->  * AttributeModifier already exists, but overloaded to indicate which
->    vendor options are supported by this VendorID.
->
-> This is kernel part of such functionality which is responsible to get data
-> from librdmacm and properly create and handle RDMA-CM messages.
->
-> Thanks
->
-> Leon Romanovsky (7):
->   RDMA/cm: Add Enhanced Connection Establishment (ECE) bits
->   RDMA/uapi: Add ECE definitions to UCMA
->   RDMA/ucma: Extend ucma_connect to receive ECE parameters
->   RDMA/ucma: Deliver ECE parameters through UCMA events
->   RDMA/cm: Send and receive ECE parameter over the wire
->   RDMA/cma: Connect ECE to rdma_accept
->   RDMA/cma: Provide ECE reject reason
+In commit b49d6f7885306ee636d5c1af52170f3069ccf5f7 the new attribute
+emulate_pr was added.
+passthrough_parse_cdb() uses the attribute's value to distinguish,
+whether reservation commands should be rejected or not.
+But the new attribute was not added to passthrough_attrib_attrs, so in
+pscsi and tcmu - the users of passthrough_parse_cdb() - the attribute
+is not available to change parser's behavior.
+This patch adds the new attribute as well as the "pr control" attributes
+enforce_pr_isids and force_pr_aptpl to passthrough_attrib_attrs.
 
-PR: https://github.com/linux-rdma/rdma-core/pull/745
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+---
+ drivers/target/target_core_configfs.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Thanks
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index ff82b21fdcce..c5a974c5b31d 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1203,6 +1203,9 @@ struct configfs_attribute *passthrough_attrib_attrs[] = {
+ 	&attr_hw_block_size,
+ 	&attr_hw_max_sectors,
+ 	&attr_hw_queue_depth,
++	&attr_emulate_pr,
++	&attr_enforce_pr_isids,
++	&attr_force_pr_aptpl,
+ 	&attr_alua_support,
+ 	&attr_pgr_support,
+ 	NULL,
+-- 
+2.12.3
