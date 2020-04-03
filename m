@@ -1,59 +1,170 @@
-From: Waiman Long <longman@redhat.com>
-Date: Mon, 13 Apr 2020 21:52:24 +0000
-Subject: Re: [PATCH 2/2] crypto: Remove unnecessary memzero_explicit()
-Message-Id: <7e13a94b-2e92-850f-33f7-0f42cfcd9009@redhat.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Fri, 03 Apr 2020 14:32:14 +0000
+Subject: [PATCH 2/2] target: make pgr_support and alua_support attributes writable
+Message-Id: <20200403143214.18303-3-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200413211550.8307-1-longman@redhat.com>
- <20200413211550.8307-3-longman@redhat.com>
- <efd6ceb1f182aa7364e9706422768a1c1335aee4.camel@perches.com>
-In-Reply-To: <efd6ceb1f182aa7364e9706422768a1c1335aee4.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Linus Torvalds <torvalds@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, David Rientjes <rientjes@google.com>
-Cc: samba-technical@lists.samba.org, virtualization@lists.linux-foundation.org, linux-mm@kvack.org, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, x86@kernel.org, kasan-dev@googlegroups.com, cocci@systeme.lip6.fr, linux-wpan@vger.kernel.org, intel-wired-lan@lists.osuosl.org, linux-crypto@vger.kernel.org, linux-pm@vger.kernel.org, ecryptfs@vger.kernel.org, linux-nfs@vger.kernel.org, linux-fscrypt@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, tipc-discussion@lists.sourceforge.net, wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-On 4/13/20 5:31 PM, Joe Perches wrote:
-> On Mon, 2020-04-13 at 17:15 -0400, Waiman Long wrote:
->> Since kfree_sensitive() will do an implicit memzero_explicit(), there
->> is no need to call memzero_explicit() before it. Eliminate those
->> memzero_explicit() and simplify the call sites.
-> 2 bits of trivia:
->
->> diff --git a/drivers/crypto/allwinner/sun8i-ce/sun8i-ce-cipher.c b/drivers/crypto/allwinner/sun8i-ce/sun8i-ce-cipher.c
-> []
->> @@ -391,10 +388,7 @@ int sun8i_ce_aes_setkey(struct crypto_skcipher *tfm, const u8 *key,
->>  		dev_dbg(ce->dev, "ERROR: Invalid keylen %u\n", keylen);
->>  		return -EINVAL;
->>  	}
->> -	if (op->key) {
->> -		memzero_explicit(op->key, op->keylen);
->> -		kfree(op->key);
->> -	}
->> +	kfree_sensitive(op->key);
->>  	op->keylen = keylen;
->>  	op->key = kmemdup(key, keylen, GFP_KERNEL | GFP_DMA);
->>  	if (!op->key)
-> It might be a defect to set op->keylen before the kmemdup succeeds.
-It could be. I can move it down after the op->key check.
->> @@ -416,10 +410,7 @@ int sun8i_ce_des3_setkey(struct crypto_skcipher *tfm, const u8 *key,
->>  	if (err)
->>  		return err;
->>  
->> -	if (op->key) {
->> -		memzero_explicit(op->key, op->keylen);
->> -		kfree(op->key);
->> -	}
->> +	free_sensitive(op->key, op->keylen);
-> Why not kfree_sensitive(op->key) ?
+Currently in tcmu reservation commands are handled by core's
+pr implementation (default) or completely rejected (emulate_pr
+set to 0). We additionally want to be able to do full
+reservation handling in userspace. Therefore we need a way to
+set the TRANSPORT_FLAG_PASSTHROUGH_PGR.
+The inverted flag is displayed by attribute pgr_support.
+Since we moved the flag from transport/backend to se_device in
+the previous patch, we now can make it changeable per device by
+allowing to write the attribute.
+The new field transport_flags_changeable in transport/backend
+is used to reject writing if not allowed for a backend.
 
-Oh, it is a bug. I will send out v2 to fix that.
+I think, that it also makes sense to allow to reset
+TRANSPORT_FLAG_PASSTHROUGH_PGR in pscsi, which is set by default,
+because this enables usage of core's pr implementation in pscsi.
 
-Thanks for spotting it.
+Regarding ALUA we also want to be able to passthrough commands
+to userspace in tcmu. Therefore we want
+TRANSPORT_FLAG_PASSTHROUGH_ALUA to be changeable, because
+by setting it we can switch off all ALUA checks in core. So we
+also need to set TRANSPORT_FLAG_PASSTHROUGH_ALUA in tcmu's
+transport_flags_changeable.
 
-Cheers,
-Longman
+For pscsi, we do not allow to change / reset
+TRANSPORT_FLAG_PASSTHROUGH_ALUA, because ALUA is not implemented
+in passthrough_parse_cdb() yet.
 
+Of course, ALUA and reservation handling in userspace will work
+only, if session/nexus information is sent to userspace along with
+every command. This will be object of a following patch or patch
+series.
 
->
->
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+---
+ drivers/target/target_core_configfs.c | 56 +++++++++++++++++++++++++++++++++--
+ drivers/target/target_core_pscsi.c    |  1 +
+ drivers/target/target_core_user.c     |  2 ++
+ include/target/target_core_backend.h  |  1 +
+ 4 files changed, 58 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 074614e19f9e..337bc12c890b 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1105,6 +1105,32 @@ static ssize_t alua_support_show(struct config_item *item, char *page)
+ 			flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA ? 0 : 1);
+ }
+ 
++static ssize_t alua_support_store(struct config_item *item,
++		const char *page, size_t count)
++{
++	struct se_dev_attrib *da = to_attrib(item);
++	struct se_device *dev = da->da_dev;
++	bool flag;
++	int ret;
++
++	if (!(dev->transport->transport_flags_changeable &
++	      TRANSPORT_FLAG_PASSTHROUGH_ALUA)) {
++		pr_err("dev[%p]: Unable to change SE Device alua_support:"
++			" alua_support has fixed value\n", dev);
++		return -EINVAL;
++	}
++
++	ret = strtobool(page, &flag);
++	if (ret < 0)
++		return ret;
++
++	if (flag)
++		dev->transport_flags &= ~TRANSPORT_FLAG_PASSTHROUGH_ALUA;
++	else
++		dev->transport_flags |= TRANSPORT_FLAG_PASSTHROUGH_ALUA;
++	return count;
++}
++
+ static ssize_t pgr_support_show(struct config_item *item, char *page)
+ {
+ 	struct se_dev_attrib *da = to_attrib(item);
+@@ -1114,6 +1140,32 @@ static ssize_t pgr_support_show(struct config_item *item, char *page)
+ 			flags & TRANSPORT_FLAG_PASSTHROUGH_PGR ? 0 : 1);
+ }
+ 
++static ssize_t pgr_support_store(struct config_item *item,
++		const char *page, size_t count)
++{
++	struct se_dev_attrib *da = to_attrib(item);
++	struct se_device *dev = da->da_dev;
++	bool flag;
++	int ret;
++
++	if (!(dev->transport->transport_flags_changeable &
++	      TRANSPORT_FLAG_PASSTHROUGH_PGR)) {
++		pr_err("dev[%p]: Unable to change SE Device pgr_support:"
++			" pgr_support has fixed value\n", dev);
++		return -EINVAL;
++	}
++
++	ret = strtobool(page, &flag);
++	if (ret < 0)
++		return ret;
++
++	if (flag)
++		dev->transport_flags &= ~TRANSPORT_FLAG_PASSTHROUGH_PGR;
++	else
++		dev->transport_flags |= TRANSPORT_FLAG_PASSTHROUGH_PGR;
++	return count;
++}
++
+ CONFIGFS_ATTR(, emulate_model_alias);
+ CONFIGFS_ATTR(, emulate_dpo);
+ CONFIGFS_ATTR(, emulate_fua_write);
+@@ -1146,8 +1198,8 @@ CONFIGFS_ATTR(, unmap_granularity);
+ CONFIGFS_ATTR(, unmap_granularity_alignment);
+ CONFIGFS_ATTR(, unmap_zeroes_data);
+ CONFIGFS_ATTR(, max_write_same_len);
+-CONFIGFS_ATTR_RO(, alua_support);
+-CONFIGFS_ATTR_RO(, pgr_support);
++CONFIGFS_ATTR(, alua_support);
++CONFIGFS_ATTR(, pgr_support);
+ 
+ /*
+  * dev_attrib attributes for devices using the target core SBC/SPC
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+index 4e37fa9b409d..e7d92ef43ca4 100644
+--- a/drivers/target/target_core_pscsi.c
++++ b/drivers/target/target_core_pscsi.c
+@@ -1073,6 +1073,7 @@ static const struct target_backend_ops pscsi_ops = {
+ 	.transport_flags_default = TRANSPORT_FLAG_PASSTHROUGH |
+ 				   TRANSPORT_FLAG_PASSTHROUGH_ALUA |
+ 				   TRANSPORT_FLAG_PASSTHROUGH_PGR,
++	.transport_flags_changeable = TRANSPORT_FLAG_PASSTHROUGH_PGR,
+ 	.attach_hba		= pscsi_attach_hba,
+ 	.detach_hba		= pscsi_detach_hba,
+ 	.pmode_enable_hba	= pscsi_pmode_enable_hba,
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 8251f0c734cc..d6ddc95a6331 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -2617,6 +2617,8 @@ static struct target_backend_ops tcmu_ops = {
+ 	.name			= "user",
+ 	.owner			= THIS_MODULE,
+ 	.transport_flags_default = TRANSPORT_FLAG_PASSTHROUGH,
++	.transport_flags_changeable = TRANSPORT_FLAG_PASSTHROUGH_PGR |
++	                              TRANSPORT_FLAG_PASSTHROUGH_ALUA,
+ 	.attach_hba		= tcmu_attach_hba,
+ 	.detach_hba		= tcmu_detach_hba,
+ 	.alloc_device		= tcmu_alloc_device,
+diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
+index 9d1c16d24edf..6468c5a7c9d1 100644
+--- a/include/target/target_core_backend.h
++++ b/include/target/target_core_backend.h
+@@ -24,6 +24,7 @@ struct target_backend_ops {
+ 	struct module *owner;
+ 
+ 	u8 transport_flags_default;
++	u8 transport_flags_changeable;
+ 
+ 	int (*attach_hba)(struct se_hba *, u32);
+ 	void (*detach_hba)(struct se_hba *);
+-- 
+2.12.3
