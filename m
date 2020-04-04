@@ -2,62 +2,57 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03BF3C6FA8D
-	for <target-devel@archiver.kernel.org>; Mon,  5 Sep 2022 17:39:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82275ECAAD5
+	for <target-devel@archiver.kernel.org>; Mon,  5 Sep 2022 19:13:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232048AbiIERj4 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 5 Sep 2022 13:39:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45030 "EHLO
+        id S231450AbiIETNL (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 5 Sep 2022 15:13:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59080 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231707AbiIERju (ORCPT
+        with ESMTP id S229866AbiIETNK (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 5 Sep 2022 13:39:50 -0400
+        Mon, 5 Sep 2022 15:13:10 -0400
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27EAA1A072;
-        Mon,  5 Sep 2022 10:39:44 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1552D3719C;
+        Mon,  5 Sep 2022 12:13:09 -0700 (PDT)
 Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id BD28643B04;
-        Mon,  5 Sep 2022 17:39:42 +0000 (UTC)
+        by mta-01.yadro.com (Postfix) with ESMTP id AB87744AB8;
+        Mon,  5 Sep 2022 19:13:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
         content-type:content-type:content-transfer-encoding:mime-version
-        :references:in-reply-to:x-mailer:message-id:date:date:subject
-        :subject:from:from:received:received:received:received; s=
-        mta-01; t=1662399580; x=1664213981; bh=+aistd/cBMXI6QQrzHxU069vI
-        Rx3DOzXlrt2ObK40Vc=; b=Kmm4SdTXK4vr6vjS2Fbfb+00IcvBMSnTarPBbRQMT
-        MK2AIogKYjJmXHNnGR2wsiPutmMRcN37Oflm/EGf+DfChcOipVvg/93WaeNPA6id
-        /mCdKbLFapVYKWy5lRCTjKEFQevteUtL3KDXTS5N0a3819tDXid1cA9mMeE0+n6b
-        nM=
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received:received; s=mta-01; t=1662405186; x=
+        1664219587; bh=BKc/e2IBxlGsSoQLXTxX0s+zvYDvnyxpjcYaKmUaYLU=; b=U
+        RSMQ3lkqz3ebJISYsN5e+jC+9Tr4c7ZSMegoVJVr1eYcl4+iU51/dSgQzzlG0tJb
+        owlop1e+rOV5FOTr57xEX78qHUKo2WDyE7U/N+34SLp5kzXnyQsjv/1hMhmwR+bZ
+        3SG/dS0iqTNFtE+t5S8Z9pVnlRbyRMf8gcOecemLPQ=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
         by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id ryNlJqxeCm9M; Mon,  5 Sep 2022 20:39:40 +0300 (MSK)
+        with ESMTP id S2lJAsb4BCjl; Mon,  5 Sep 2022 22:13:06 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (T-EXCH-02.corp.yadro.com [172.17.10.102])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id E35BF43B58;
-        Mon,  5 Sep 2022 20:38:49 +0300 (MSK)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 5FABB44ACB;
+        Mon,  5 Sep 2022 22:07:37 +0300 (MSK)
 Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
  T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Mon, 5 Sep 2022 20:38:48 +0300
+ 15.1.669.32; Mon, 5 Sep 2022 22:07:37 +0300
 Received: from NB-591.corp.yadro.com (10.199.18.20) by
  T-EXCH-08.corp.yadro.com (172.17.11.58) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.1118.9; Mon, 5 Sep 2022 20:38:47 +0300
+ 15.2.1118.9; Mon, 5 Sep 2022 22:07:36 +0300
 From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
 To:     Martin Petersen <martin.petersen@oracle.com>,
         <target-devel@vger.kernel.org>
-CC:     Mike Christie <michael.christie@oracle.com>,
-        <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
-        Dmitry Bogdanov <d.bogdanov@yadro.com>,
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
         Roman Bolshakov <r.bolshakov@yadro.com>,
-        Konstantin Shelekhin <k.shelekhin@yadro.com>
-Subject: [PATCH v2 6/6] scsi: target: core: dynamicaly set dpofua in usage_bits
-Date:   Mon, 26 Apr 2021 15:51:48 +0300
-Message-ID: <20220905173837.2383-7-d.bogdanov@yadro.com>
+        Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: [PATCH] scsi: target: core: Add a way to hide a port group
+Date:   Sat, 4 Apr 2020 13:48:52 +0300
+Message-ID: <20220905190731.16992-1-d.bogdanov@yadro.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220905173837.2383-1-d.bogdanov@yadro.com>
-References: <20220905173837.2383-1-d.bogdanov@yadro.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -68,169 +63,122 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-libiscsi tests check the support of DPO & FUA bits in usage bits of RSOC
-response.
-This patch adds support of dynamic usage bits for each opcode.
-Set support of DPO & FUA bits in usage_bits of RSOC response depending
-on support DPOFUA in the backstore device.
+From: Roman Bolshakov <r.bolshakov@yadro.com>
 
-Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
-Reviewed-by: Konstantin Shelekhin <k.shelekhin@yadro.com>
+Default target port group is always returned in the list of port groups,
+even if the behaviour is unwanted, i.e. it has no members and
+non-default port groups are primary port groups.
+
+A new port group attribute - "hidden" can be used to hide empty port
+groups with no ports in REPORT TARGET PORT GROUPS, including default
+target port group:
+
+  echo 1 > $DEVICE/alua/default_tg_pt_gp/hidden
+
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
 ---
- drivers/target/target_core_spc.c  | 34 +++++++++++++++++++++++++++++--
- include/target/target_core_base.h |  2 ++
- 2 files changed, 34 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index 828251163cf0..a97a2f43a061 100644
---- a/drivers/target/target_core_spc.c
-+++ b/drivers/target/target_core_spc.c
-@@ -1308,6 +1308,22 @@ spc_emulate_testunitready(struct se_cmd *cmd)
- 	return 0;
+The patch is intended for 6.1/scsi-queue branch.
+
+---
+ drivers/target/target_core_alua.c     |  8 ++++++++
+ drivers/target/target_core_configfs.c | 29 +++++++++++++++++++++++++++
+ include/target/target_core_base.h     |  1 +
+ 3 files changed, 38 insertions(+)
+
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index fb91423a4e2e..dbf9a950d01b 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -164,6 +164,8 @@ target_emulate_report_target_port_groups(struct se_cmd *cmd)
+ 	spin_lock(&dev->t10_alua.tg_pt_gps_lock);
+ 	list_for_each_entry(tg_pt_gp, &dev->t10_alua.tg_pt_gps_list,
+ 			tg_pt_gp_list) {
++		if (tg_pt_gp->tg_pt_gp_hidden && !tg_pt_gp->tg_pt_gp_members)
++			continue;
+ 		/*
+ 		 * Check if the Target port group and Target port descriptor list
+ 		 * based on tg_pt_gp_members count will fit into the response payload.
+@@ -308,6 +310,12 @@ target_emulate_set_target_port_groups(struct se_cmd *cmd)
+ 		rc = TCM_UNSUPPORTED_SCSI_OPCODE;
+ 		goto out;
+ 	}
++	if (l_tg_pt_gp->tg_pt_gp_hidden && !tg_pt_gp->tg_pt_gp_members) {
++		spin_unlock(&l_lun->lun_tg_pt_gp_lock);
++		pr_err("Unable to change state for hidden port group with no members\n");
++		rc = TCM_INVALID_CDB_FIELD;
++		goto out;
++	}
+ 	valid_states = l_tg_pt_gp->tg_pt_gp_alua_supported_states;
+ 	rcu_read_unlock();
+ 
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 416514c5c7ac..7c0e42e782de 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -3029,6 +3029,33 @@ static ssize_t target_tg_pt_gp_preferred_store(struct config_item *item,
+ 	return core_alua_store_preferred_bit(to_tg_pt_gp(item), page, count);
  }
  
-+static void set_dpofua_usage_bits(u8 *usage_bits, struct se_device *dev)
++static ssize_t target_tg_pt_gp_hidden_show(struct config_item *item,
++					   char *page)
 +{
-+	if (!target_check_fua(dev))
-+		usage_bits[1] &= ~0x18;
-+	else
-+		usage_bits[1] |= 0x18;
++	return sysfs_emit(page, "%d\n", to_tg_pt_gp(item)->tg_pt_gp_hidden);
 +}
 +
-+static void set_dpofua_usage_bits32(u8 *usage_bits, struct se_device *dev)
++static ssize_t target_tg_pt_gp_hidden_store(struct config_item *item,
++					    const char *page, size_t count)
 +{
-+	if (!target_check_fua(dev))
-+		usage_bits[10] &= ~0x18;
-+	else
-+		usage_bits[10] |= 0x18;
++	struct t10_alua_tg_pt_gp *tg_pt_gp = to_tg_pt_gp(item);
++	int tmp, ret;
++
++	ret = kstrtoint(page, 0, &tmp);
++	if (ret < 0) {
++		pr_err("Unable to extract hidden flag: %d\n", ret);
++		return ret;
++	}
++
++	if (tmp != 0 && tmp != 1) {
++		pr_err("Illegal value for hidden flag: %d\n", tmp);
++		return -EINVAL;
++	}
++	tg_pt_gp->tg_pt_gp_hidden = tmp;
++
++	return count;
 +}
 +
- static struct target_opcode_descriptor tcm_opcode_read6 = {
- 	.support = SCSI_SUPPORT_FULL,
- 	.opcode = READ_6,
-@@ -1323,6 +1339,7 @@ static struct target_opcode_descriptor tcm_opcode_read10 = {
- 	.usage_bits = {READ_10, 0xf8, 0xff, 0xff,
- 		       0xff, 0xff, SCSI_GROUP_NUMBER_MASK, 0xff,
- 		       0xff, SCSI_CONTROL_MASK},
-+	.update_usage_bits = set_dpofua_usage_bits,
- };
- 
- static struct target_opcode_descriptor tcm_opcode_read12 = {
-@@ -1332,6 +1349,7 @@ static struct target_opcode_descriptor tcm_opcode_read12 = {
- 	.usage_bits = {READ_12, 0xf8, 0xff, 0xff,
- 		       0xff, 0xff, 0xff, 0xff,
- 		       0xff, 0xff, SCSI_GROUP_NUMBER_MASK, SCSI_CONTROL_MASK},
-+	.update_usage_bits = set_dpofua_usage_bits,
- };
- 
- static struct target_opcode_descriptor tcm_opcode_read16 = {
-@@ -1342,6 +1360,7 @@ static struct target_opcode_descriptor tcm_opcode_read16 = {
- 		       0xff, 0xff, 0xff, 0xff,
- 		       0xff, 0xff, 0xff, 0xff,
- 		       0xff, 0xff, SCSI_GROUP_NUMBER_MASK, SCSI_CONTROL_MASK},
-+	.update_usage_bits = set_dpofua_usage_bits,
- };
- 
- static struct target_opcode_descriptor tcm_opcode_write6 = {
-@@ -1359,6 +1378,7 @@ static struct target_opcode_descriptor tcm_opcode_write10 = {
- 	.usage_bits = {WRITE_10, 0xf8, 0xff, 0xff,
- 		       0xff, 0xff, SCSI_GROUP_NUMBER_MASK, 0xff,
- 		       0xff, SCSI_CONTROL_MASK},
-+	.update_usage_bits = set_dpofua_usage_bits,
- };
- 
- static struct target_opcode_descriptor tcm_opcode_write_verify10 = {
-@@ -1368,6 +1388,7 @@ static struct target_opcode_descriptor tcm_opcode_write_verify10 = {
- 	.usage_bits = {WRITE_VERIFY, 0xf0, 0xff, 0xff,
- 		       0xff, 0xff, SCSI_GROUP_NUMBER_MASK, 0xff,
- 		       0xff, SCSI_CONTROL_MASK},
-+	.update_usage_bits = set_dpofua_usage_bits,
- };
- 
- static struct target_opcode_descriptor tcm_opcode_write12 = {
-@@ -1377,6 +1398,7 @@ static struct target_opcode_descriptor tcm_opcode_write12 = {
- 	.usage_bits = {WRITE_12, 0xf8, 0xff, 0xff,
- 		       0xff, 0xff, 0xff, 0xff,
- 		       0xff, 0xff, SCSI_GROUP_NUMBER_MASK, SCSI_CONTROL_MASK},
-+	.update_usage_bits = set_dpofua_usage_bits,
- };
- 
- static struct target_opcode_descriptor tcm_opcode_write16 = {
-@@ -1387,6 +1409,7 @@ static struct target_opcode_descriptor tcm_opcode_write16 = {
- 		       0xff, 0xff, 0xff, 0xff,
- 		       0xff, 0xff, 0xff, 0xff,
- 		       0xff, 0xff, SCSI_GROUP_NUMBER_MASK, SCSI_CONTROL_MASK},
-+	.update_usage_bits = set_dpofua_usage_bits,
- };
- 
- static struct target_opcode_descriptor tcm_opcode_write_verify16 = {
-@@ -1397,6 +1420,7 @@ static struct target_opcode_descriptor tcm_opcode_write_verify16 = {
- 		       0xff, 0xff, 0xff, 0xff,
- 		       0xff, 0xff, 0xff, 0xff,
- 		       0xff, 0xff, SCSI_GROUP_NUMBER_MASK, SCSI_CONTROL_MASK},
-+	.update_usage_bits = set_dpofua_usage_bits,
- };
- 
- static bool tcm_is_ws_enabled(struct se_cmd *cmd)
-@@ -1423,6 +1447,7 @@ static struct target_opcode_descriptor tcm_opcode_write_same32 = {
- 		       0x00, 0x00, 0x00, 0x00,
- 		       0xff, 0xff, 0xff, 0xff},
- 	.enabled = tcm_is_ws_enabled,
-+	.update_usage_bits = set_dpofua_usage_bits32,
- };
- 
- static bool tcm_is_caw_enabled(struct se_cmd *cmd)
-@@ -1441,6 +1466,7 @@ static struct target_opcode_descriptor tcm_opcode_compare_write = {
- 		       0xff, 0xff, 0x00, 0x00,
- 		       0x00, 0xff, SCSI_GROUP_NUMBER_MASK, SCSI_CONTROL_MASK},
- 	.enabled = tcm_is_caw_enabled,
-+	.update_usage_bits = set_dpofua_usage_bits,
- };
- 
- static struct target_opcode_descriptor tcm_opcode_read_capacity = {
-@@ -2027,7 +2053,8 @@ spc_rsoc_encode_command_descriptor(unsigned char *buf, u8 ctdp,
- 
- static int
- spc_rsoc_encode_one_command_descriptor(unsigned char *buf, u8 ctdp,
--				       struct target_opcode_descriptor *descr)
-+				       struct target_opcode_descriptor *descr,
-+				       struct se_device *dev)
+ static ssize_t target_tg_pt_gp_tg_pt_gp_id_show(struct config_item *item,
+ 		char *page)
  {
- 	int td_size = 0;
- 
-@@ -2039,6 +2066,8 @@ spc_rsoc_encode_one_command_descriptor(unsigned char *buf, u8 ctdp,
- 	buf[1] = (ctdp << 7) | SCSI_SUPPORT_FULL;
- 	put_unaligned_be16(descr->cdb_size, &buf[2]);
- 	memcpy(&buf[4], descr->usage_bits, descr->cdb_size);
-+	if (descr->update_usage_bits)
-+		descr->update_usage_bits(&buf[4], dev);
- 
- 	td_size = spc_rsoc_encode_command_timeouts_descriptor(
- 			&buf[4 + descr->cdb_size], ctdp, descr);
-@@ -2181,7 +2210,8 @@ spc_emulate_report_supp_op_codes(struct se_cmd *cmd)
- 		put_unaligned_be32(response_length - 3, buf);
- 	} else {
- 		response_length = spc_rsoc_encode_one_command_descriptor(
--				&buf[response_length], rctd, descr);
-+				&buf[response_length], rctd, descr,
-+				cmd->se_dev);
- 	}
- 
- 	memcpy(rbuf, buf, min_t(u32, response_length, cmd->data_length));
+@@ -3115,6 +3142,7 @@ CONFIGFS_ATTR(target_tg_pt_gp_, alua_support_standby);
+ CONFIGFS_ATTR(target_tg_pt_gp_, alua_support_active_optimized);
+ CONFIGFS_ATTR(target_tg_pt_gp_, alua_support_active_nonoptimized);
+ CONFIGFS_ATTR(target_tg_pt_gp_, alua_write_metadata);
++CONFIGFS_ATTR(target_tg_pt_gp_, hidden);
+ CONFIGFS_ATTR(target_tg_pt_gp_, nonop_delay_msecs);
+ CONFIGFS_ATTR(target_tg_pt_gp_, trans_delay_msecs);
+ CONFIGFS_ATTR(target_tg_pt_gp_, implicit_trans_secs);
+@@ -3138,6 +3166,7 @@ static struct configfs_attribute *target_core_alua_tg_pt_gp_attrs[] = {
+ 	&target_tg_pt_gp_attr_trans_delay_msecs,
+ 	&target_tg_pt_gp_attr_implicit_trans_secs,
+ 	&target_tg_pt_gp_attr_preferred,
++	&target_tg_pt_gp_attr_hidden,
+ 	&target_tg_pt_gp_attr_tg_pt_gp_id,
+ 	&target_tg_pt_gp_attr_members,
+ 	NULL,
 diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 062ee8b6c433..0c1e43980985 100644
+index 8c920456edd9..28cce4ed3f0e 100644
 --- a/include/target/target_core_base.h
 +++ b/include/target/target_core_base.h
-@@ -880,6 +880,8 @@ struct target_opcode_descriptor {
- 	u16			nominal_timeout;
- 	u16			recommended_timeout;
- 	bool			(*enabled)(struct se_cmd *cmd);
-+	void			(*update_usage_bits)(u8 *usage_bits,
-+						     struct se_device *dev);
- 	u8			usage_bits[];
- };
- 
+@@ -297,6 +297,7 @@ struct t10_alua_tg_pt_gp {
+ 	int	tg_pt_gp_trans_delay_msecs;
+ 	int	tg_pt_gp_implicit_trans_secs;
+ 	int	tg_pt_gp_pref;
++	int	tg_pt_gp_hidden;
+ 	int	tg_pt_gp_write_metadata;
+ 	u32	tg_pt_gp_members;
+ 	int	tg_pt_gp_alua_access_state;
 -- 
 2.25.1
 
