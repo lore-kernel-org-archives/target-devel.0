@@ -1,43 +1,37 @@
-From: Sagi Grimberg <sagi@grimberg.me>
-Date: Thu, 02 Apr 2020 22:16:53 +0000
-Subject: Re: Data corruption in kernel 5.1+ with iSER attached ramdisk
-Message-Id: <1f6bc60e-7f2b-d959-f1ce-5055752e2323@grimberg.me>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Tue, 07 Apr 2020 15:21:19 +0000
+Subject: [PATCH 2/2] target: fix PR IN / READ FULL STATUS for FC
+Message-Id: <20200407152119.29042-3-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <CAAFE1beMkvyRctGqpffd3o_QtDH0CrmQSb=fV4GzqMUXWzPyOw@mail.gmail.com>
- <20191203005849.GB25002@ming.t460p>
- <CAAFE1bcG8c1Q3iwh-LUjruBMAuFTJ4qWxNGsnhfKvGWHNLAeEQ@mail.gmail.com>
- <20191203031444.GB6245@ming.t460p>
- <CAAFE1besnb=HV4C_buORYpWbkXecmtybwX8d_Ka2NsKmiym53w@mail.gmail.com>
- <CAAFE1bfpUWCZrtR8v3S++0-+gi8DJ79X3e0XqDe93i8nuGTnNg@mail.gmail.com>
- <20191203124558.GA22805@ming.t460p>
- <CAAFE1bfB2Km+e=T0ahwq0r9BQrBMnSguQQ+y=yzYi3tursS+TQ@mail.gmail.com>
- <20191204010529.GA3910@ming.t460p>
- <CAAFE1bcJmRP5OSu=5asNTpvkF=kjEZu=GafaS9h52776tVgpPA@mail.gmail.com>
- <20191204230225.GA26189@ming.t460p>
- <d9d39d10-d3f3-f2d8-b32e-96896ba0cdb2@grimberg.me>
- <CAAFE1beqFBQS_zVYEXFTD2qu8PAF9hBSW4j1k9ZD6MhU_gWg5Q@mail.gmail.com>
- <d2f633f1-57ef-4618-c3a6-c5ff0afead5b@grimberg.me>
- <CAAFE1bdAbKfqbf05pKBcMUj+58fijDMT-8WBSuwiKk2Bmm4v2w@mail.gmail.com>
- <95750c05-eb49-d1db-311f-4edf9b4fd6ec@grimberg.me>
- <CAAFE1bcmFxb6MYbicUVdVsK6QNjweaow3v+vHe6szwfFN6K-=A@mail.gmail.com>
-In-Reply-To: <CAAFE1bcmFxb6MYbicUVdVsK6QNjweaow3v+vHe6szwfFN6K-=A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Rust <srust@blockbridge.com>
-Cc: Ming Lei <ming.lei@redhat.com>, Rob Townley <rob.townley@gmail.com>, Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>, linux-block@vger.kernel.org, linux-rdma@vger.kernel.org, linux-scsi@vger.kernel.org, martin.petersen@oracle.com, target-devel@vger.kernel.org, Doug Ledford <dledford@redhat.com>, Jason Gunthorpe <jgg@ziepe.ca>, Max Gurtovoy <maxg@mellanox.com>
+To: target-devel@vger.kernel.org
 
+Creation of the response to READ FULL STATUS fails for FC
+based reservations. Reason is the too high loop limit (< 24)
+in fc_get_pr_transport_id(). The string representation of FC
+WWPN is 23 chars long only ("11:22:33:44:55:66:77:88"). So
+when i is 23, the loop body is executed a last time for the
+ending '\0' of the string and thus hex2bin() reports an error.
 
-> Hi Sagi,
-> 
->> Does the attached patch work for you?
-> 
-> This patch _does_ work for our tests. I see all the writes aligned to
-> 512 bytes as, I think, would be expected. Thanks!
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+---
+ drivers/target/target_core_fabric_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Good to hear, I'll wait for your further testing before submitting
-it as a patch as I don't have resources to test this thoroughly
-at the moment.
-
-Thanks,
-Sagi
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index f5f673e128ef..1e031d81e59e 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -63,7 +63,7 @@ static int fc_get_pr_transport_id(
+ 	 * encoded TransportID.
+ 	 */
+ 	ptr = &se_nacl->initiatorname[0];
+-	for (i = 0; i < 24; ) {
++	for (i = 0; i < 23; ) {
+ 		if (!strncmp(&ptr[i], ":", 1)) {
+ 			i++;
+ 			continue;
+-- 
+2.12.3
