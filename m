@@ -1,12 +1,15 @@
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Tue, 07 Apr 2020 15:21:18 +0000
+Date: Wed, 08 Apr 2020 13:26:09 +0000
 Subject: [PATCH 1/2] target: Write NULL to *port_nexus_ptr if no ISID
-Message-Id: <20200407152119.29042-2-bstroesser@ts.fujitsu.com>
+Message-Id: <20200408132610.14623-2-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200408132610.14623-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200408132610.14623-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: mchristi@redhat.com, martin.petersen@oracle.com, Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
 This patch fixes a minor flaw that could be triggered by
 a PR OUT RESERVE on iSCSI, if TRANSPORT IDs with and without ISID
