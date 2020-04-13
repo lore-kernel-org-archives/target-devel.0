@@ -1,68 +1,57 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 28 Apr 2020 06:10:58 +0000
-Subject: [PATCH 00/11] target: add sysfs support
-Message-Id: <20200428061109.3042-1-mchristi@redhat.com>
+From: Barrister Robert Richter UN-Attorney at Law Court-Benin  <info.zennitbankplcnige
+Date: Mon, 13 Apr 2020 11:43:28 +0000
+Subject: I have already sent you first payment US$5000.00 this morning through MONEY Gram service.it is avail
+Message-Id: <CABHzvrkwD2fUnnJ0oQrWEyM9uH6JjG-H4j2cY7u_pKX6haqt-g@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org
 
-The following patches made over Linus's current tree allow lio to
-export info about structs that the kernel initiates creation of
-via events like initiator login where there is no user interaction
-like a mkdir. These patches specificially focus on the
-I_T_nexus/session but could be used for other objects if we want.
+ATTN DEAR BENEFICIARY.
 
-Why sysfs when we have configfs?
+GOOD NEWS.
 
-I started with configfs and hit bugs like:
+I have already sent you first payment US$5000.00 this morning through
+MONEY Gram service.
 
-commit cc57c07343bd071cdf1915a91a24ab7d40c9b590
-Author: Mike Christie <mchristi@redhat.com>
-Date:   Sun Jul 15 18:16:17 2018 -0500
+So we advise you to Contact This Money Gram office to pick up your
+transfer $US5000.00 today.
+it is available to pick up in address now.
 
-    configfs: fix registered group removal
+Note that your compensation payment funds is total amount $US2.800,000
+Million Dollars.We have instructed the Money Gram Agent,Mr. James
+Gadner to keep sending the transfer to you daily, but the maximum
+amount you will be receiving everyday is US$5000.00. Contact Agent now
+to pick up your first payment $US5000.00 immediately.
 
-but it turns out that bug was not really a bug and was just how
-configfs was meant to work. It seems it was not meant to be used
-where the kernel initiates creation of dirs/files as a result of
-some internal action. It's more geared to the user initiating
-the creation, and my patch just lead to other bugs and was
-reverted:
+Contact Person, Mr. James Gadner, Dir. Money Gram Benin.
+Email: mgbenin903@gmail.com
+Telephone Numbers: +229 62819378/ +229 98477762
 
-commit f19e4ed1e1edbfa3c9ccb9fed17759b7d6db24c6
-Author: Al Viro <viro@zeniv.linux.org.uk>
-Date:   Thu Aug 29 23:13:30 2019 -0400
+HERE IS YOUR PAYMENT DETAILS FOR THE FIRST £US5000.00 SENT TODAY.
 
-    configfs_register_group() shouldn't be (and isn't) called in
-rmdirable parts
+Track View Website link:
+https://secure.moneygram.com/track
+Sender’s First name: David
+Sender’s Last Name: Joiner
+Money Transfer Control Number (MTCN) (REFERENCE)# 26046856
 
-So to export the session info we have debugfs, sysfs, ioctl,
-netlink, etc. sysfs just seemed like a decent fit since one of the
-primary users is rtslib and it already has lots of file/dir
-handling code.
+Contact the Mmoney Gram Urgent and reconfirm your address to the
+office before, they will allow you to pick up the transfer today.
 
-V3:
-- drop format field
-- delay tpg deletion to allow fabric modules time to remove their
-  sessions.
-- Added root sessions dir for easier lookup if userspace has the
-  session id.
-- add session symlink
-- use simple ida.
-- Fix goto use. Actually moved sysfs addition call to after nego
-  to avoid sysfs additions when login ends up failing.
-- Dropped target_setup_session callback fixups and dropped the
-  init/free session callback for now. It's not immediately needed
-  for this base session sysfs info support.
+HERE IS WHAT REQUIRED OF YOU.
 
-V2:
-- rename top level dir to scsi_target
-- Fix extra newline
-- Copy data that's exported to sysfs so we do not have to worry about
-configfs and sysfs refcounts.
-- Export session info needed for tracking sessions in userspace and
-handling commands like PGRs there (still needs a way to notify userspace
-when sessions are added/deleted, but that will be a different set since
-the focus is different).
+YOUR FULL NAME---------
+ADDRESS--------------
+COUNTRY-----------------------------
+TELEPHONE NUMBERS-----------------
+
+Note, I paid the transfer fee for you, but only you are required to
+send to the office is $75.00 only,Been Your Payment File activation
+fee, Send once you contact the office,before you can able to pick up
+your transfer today.
+
+Let me know once you pick up first payment today.
+
+Barrister Robert Richter UN-Attorney at Law Court-Benin
