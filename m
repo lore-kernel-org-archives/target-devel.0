@@ -1,29 +1,64 @@
-From: Christoph Hellwig <hch@infradead.org>
-Date: Sun, 19 Apr 2020 08:15:50 +0000
-Subject: Re: [PATCH 8/9] dax: fix empty-body warnings in bus.c
-Message-Id: <20200419081550.GA22341@infradead.org>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Mon, 13 Apr 2020 14:15:31 +0000
+Subject: [PATCH rdma-next v2 0/7] Add Enhanced Connection Established (ECE)
+Message-Id: <20200413141538.935574-1-leon@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200418184111.13401-1-rdunlap@infradead.org>
- <20200418184111.13401-9-rdunlap@infradead.org>
-In-Reply-To: <20200418184111.13401-9-rdunlap@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: alsa-devel@alsa-project.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zzy Wysm <zzy@zzywysm.com>, linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Chuck Lever <chuck.lever@oracle.com>, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Doug Ledford <dledford@redhat.com>, Jason Gunthorpe <jgg@mellanox.com>
+Cc: rds-devel@oss.oracle.com, Bart Van Assche <bvanassche@acm.org>, Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, Santosh Shilimkar <santosh.shilimkar@oracle.com>, linux-nvme@lists.infradead.org, Christoph Hellwig <hch@lst.de>, Leon Romanovsky <leonro@mellanox.com>, target-devel@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, "David S. Miller" <davem@davemloft.net>, Sagi Grimberg <sagi@grimberg.me>
 
-On Sat, Apr 18, 2020 at 11:41:10AM -0700, Randy Dunlap wrote:
->  				rc = -ENOMEM;
->  		} else
-> -			/* nothing to remove */;
-> +			do_empty(); /* nothing to remove */
->  	} else if (action = ID_REMOVE) {
->  		list_del(&dax_id->list);
->  		kfree(dax_id);
->  	} else
-> -		/* dax_id already added */;
-> +		do_empty(); /* dax_id already added */
+From: Leon Romanovsky <leonro@mellanox.com>
 
-This is just nasty.  Please just always turn this bogus warning off
-as the existing code is a perfectly readable idiom while the new code
-is just nasty crap for no good reason at all.
+Changelog:
+ v2:
+ * Rebased on latest rdma-next and removed already accepted patches.
+ * Updated all rdma_reject in-kernel users to provide reject reason.
+ v1: Dropped field_avail patch in favor of mass conversion to use function
+     which already exists in the kernel code.
+ https://lore.kernel.org/lkml/20200310091438.248429-1-leon@kernel.org
+ v0: https://lore.kernel.org/lkml/20200305150105.207959-1-leon@kernel.org
+
+Enhanced Connection Established or ECE is new negotiation scheme
+introduced in IBTA v1.4 to exchange extra information about nodes
+capabilities and later negotiate them at the connection establishment
+phase.
+
+The RDMA-CM messages (REQ, REP, SIDR_REQ and SIDR_REP) were extended
+to carry two fields, one new and another gained new functionality:
+ * VendorID is a new field that indicates that common subset of vendor
+   option bits are supported as indicated by that VendorID.
+ * AttributeModifier already exists, but overloaded to indicate which
+   vendor options are supported by this VendorID.
+
+This is kernel part of such functionality which is responsible to get data
+from librdmacm and properly create and handle RDMA-CM messages.
+
+Thanks
+
+Leon Romanovsky (7):
+  RDMA/cm: Add Enhanced Connection Establishment (ECE) bits
+  RDMA/uapi: Add ECE definitions to UCMA
+  RDMA/ucma: Extend ucma_connect to receive ECE parameters
+  RDMA/ucma: Deliver ECE parameters through UCMA events
+  RDMA/cm: Send and receive ECE parameter over the wire
+  RDMA/cma: Connect ECE to rdma_accept
+  RDMA/cma: Provide ECE reject reason
+
+ drivers/infiniband/core/cm.c            | 41 ++++++++++++++++---
+ drivers/infiniband/core/cma.c           | 52 ++++++++++++++++++++++---
+ drivers/infiniband/core/cma_priv.h      |  1 +
+ drivers/infiniband/core/ucma.c          | 40 +++++++++++++++----
+ drivers/infiniband/ulp/isert/ib_isert.c |  4 +-
+ drivers/infiniband/ulp/srpt/ib_srpt.c   |  2 +-
+ drivers/nvme/target/rdma.c              |  2 +-
+ include/rdma/ib_cm.h                    | 10 ++++-
+ include/rdma/ibta_vol1_c12.h            |  6 +++
+ include/rdma/rdma_cm.h                  | 18 ++++++++-
+ include/uapi/rdma/rdma_user_cm.h        | 15 ++++++-
+ net/rds/ib_cm.c                         |  2 +-
+ 12 files changed, 167 insertions(+), 26 deletions(-)
+
+--
+2.25.2
