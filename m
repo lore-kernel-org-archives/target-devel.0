@@ -1,69 +1,44 @@
 From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 28 Apr 2020 06:11:07 +0000
-Subject: [PATCH 09/11] target: add target_setup_session sysfs support
-Message-Id: <20200428061109.3042-10-mchristi@redhat.com>
+Date: Tue, 14 Apr 2020 05:15:09 +0000
+Subject: [RFC PATCH 0/5] target: add sysfs support
+Message-Id: <20200414051514.7296-1-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200428061109.3042-1-mchristi@redhat.com>
-In-Reply-To: <20200428061109.3042-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Mike Christie <mchristi@redhat.com>
+To: jsmart2021@gmail.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
 
-This adds a session dir per session for users of target_setup_session.
+The following patches made over Linus's current tree allow lio to
+export info about structs that the kernel initiates creation of
+via events like initiator login where there is no user interaction
+like a mkdir. These patches specificially focus on the
+I_T_nexus/session but could be used for other objects if we want.
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
----
- drivers/target/target_core_transport.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+Why sysfs when we have configfs?
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 7f04b7bf..37aa6de 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -446,6 +446,7 @@ struct se_session *
- 
- 	if (IS_ERR(sess))
- 		return sess;
-+	sess->tfo = tpg->se_tpg_tfo;
- 
- 	sess->tpid = target_cp_transport_id(tpid);
- 	if (!sess->tpid) {
-@@ -459,6 +460,10 @@ struct se_session *
- 		rc = -EACCES;
- 		goto free_sess;
- 	}
-+
-+	rc = target_sysfs_add_session(tpg, sess);
-+	if (rc)
-+		goto free_sess;
- 	/*
- 	 * Go ahead and perform any remaining fabric setup that is
- 	 * required before transport_register_session().
-@@ -466,12 +471,14 @@ struct se_session *
- 	if (callback != NULL) {
- 		rc = callback(tpg, sess, private);
- 		if (rc)
--			goto free_sess;
-+			goto rm_sysfs;
- 	}
- 
- 	transport_register_session(tpg, sess->se_node_acl, sess, private);
- 	return sess;
- 
-+rm_sysfs:
-+	target_sysfs_remove_session(sess);
- free_sess:
- 	transport_free_session(sess);
- 	return ERR_PTR(rc);
-@@ -662,6 +669,7 @@ void transport_deregister_session(struct se_session *se_sess)
- 
- void target_remove_session(struct se_session *se_sess)
- {
-+	target_sysfs_remove_session(se_sess);
- 	transport_deregister_session_configfs(se_sess);
- 	transport_deregister_session(se_sess);
- }
--- 
-1.8.3.1
+I started with configfs and hit bugs like:
+
+commit cc57c07343bd071cdf1915a91a24ab7d40c9b590
+Author: Mike Christie <mchristi@redhat.com>
+Date:   Sun Jul 15 18:16:17 2018 -0500
+
+    configfs: fix registered group removal
+
+but it turns out that bug was not really a bug and was just how
+configfs was meant to work. It seems it was not meant to be used
+where the kernel initiates creation of dirs/files as a result of
+some internal action. It's more geared to the user initiating
+the creation, and my patch just lead to other bugs and was
+reverted:
+
+commit f19e4ed1e1edbfa3c9ccb9fed17759b7d6db24c6
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date:   Thu Aug 29 23:13:30 2019 -0400
+
+    configfs_register_group() shouldn't be (and isn't) called in
+rmdirable parts
+
+So to export the session info we have debugfs, sysfs, ioctl,
+netlink, etc. sysfs just seemed like a decent fit since one of the
+primary users is rtslib and it already has lots of file/dir
+handling code.
