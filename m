@@ -1,197 +1,337 @@
-From: Hou Pu <houpu@bytedance.com>
-Date: Wed, 29 Apr 2020 06:59:10 +0000
-Subject: Re: [PATCH v3 1/2] iscsi-target: fix login error when receiving is too fast
-Message-Id: <bdaaa620-ff31-baee-9a3e-d6eeccc160a9@bytedance.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 14 Apr 2020 05:15:11 +0000
+Subject: [RFC PATCH 2/5] target: add sysfs session helper functions
+Message-Id: <20200414051514.7296-3-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200424123528.17627-1-houpu@bytedance.com>
- <20200424123528.17627-2-houpu@bytedance.com>
- <cee3c624-4d43-fd4c-1436-cfc0c08a4321@redhat.com>
- <8f3b123e-1dc3-54ba-ae6d-90e76e5702b5@redhat.com>
- <44a02338-0923-5b57-ed26-8528bf9cde70@bytedance.com>
- <ef4dce23-dca8-c75a-0e18-c4bb49fe503a@bytedance.com>
- <f8e06fd6-d2d5-b237-7d32-86ee3277e85f@redhat.com>
-In-Reply-To: <f8e06fd6-d2d5-b237-7d32-86ee3277e85f@redhat.com>
+References: <20200414051514.7296-1-mchristi@redhat.com>
+In-Reply-To: <20200414051514.7296-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: Mike Christie <mchristi@redhat.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: jsmart2021@gmail.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, nab@linux-iscsi.org
+Cc: Mike Christie <mchristi@redhat.com>
 
+This patch adds helpers to add/remove a dir per session. There is
+only one default file in there which points to the ACL being used
+if there is one.
 
+iSCSI example:
 
-On 2020/4/29 1:50 上午, Mike Christie wrote:
-> On 4/26/20 1:09 AM, Hou Pu wrote:
->>
->>>>>> +     */
->>>>>> +    if (conn->sock) {
->>>>>> +        struct sock *sk = conn->sock->sk;
->>>>>> +
->>>>>> +        write_lock_bh(&sk->sk_callback_lock);
->>>>>> +        clear_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags);
->>>>>> +        set_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags);
->>>>>> +        write_unlock_bh(&sk->sk_callback_lock);
->>>>>> +    }
->>>>>> +
->>>>> Hey,
->>>>>
->>>>> I had one more question.
->>>>>
->>>>> With the above code, I think we have a race where if we clear the bit
->>>>> above early and iscsi_target_sk_data_ready runs while
->>>>> iscsi_target_do_login_rx is still running then we could queue the work
->>>>> an extra time and get stuck. Because the bit is now not set, if
->>>>> iscsi_target_sk_data_ready runs it will end up calling
->>>>> schedule_delayed_work which will queue up the work again since the work
->>>>> is running and not pending.
->>>
->>> Yes. I was trying to allow queuing the delayed work early.
->>>
->>>>>
->>>>> If that is correct and we hit the race what happens if this was the
->>>>> last
->>>>> login pdu, and we are supposed to go to full feature phase next? For
->>>>> example if iscsi_target_do_login_rx runs an extra time, will we end up
->>>>> stuck waiting in iscsi_target_do_login_rx's call to:
->>>>>
->>>>> rc = conn->conn_transport->iscsit_get_login_rx(conn, login);
->>>>>
->>>>> ?
->>>
->>> For the last login pdu, we may have race as you said. thanks for
->>> pointing it out.
->>>
->>> I was trying to image a case where we can hit the race, normally it is
->>> case a).
->>>
->>> a). initiator send last login pdu -> target received -> target replied
->>>
->>> b). initiator send last login pdu -> target received -> initiator send
->>> something -> target replied
->>>
->>> in case b). we will queue another delayed work which we should not.
->>> After the target replied
->>>
->>> the last login pdu, conn->conn_login is freed. we might visited it in
->>> the delayed wo>>
->>>
->>>> Just answering my own question. It looks like we do not get stuck. But
->>>> we either get nothing on the session so the login timeout fires and we
->>>> drop the session. Or, we get a PDU and the login thread reads it in
->>>> before the normal rx thread does, but it assumes it is a login related
->>>> and we most likely drop the session due to invalid fields.
->>>>
->>>> I think in iscsi_target_restore_sock_callbacks we want to do a:
->>>>
->>>> cancel_delayed_work(&conn->login_work)
->>>>
->>>> after we reset the callbacks and drop the sk_callback_lock lock.
->>>
->>> I am not very sure if we could or if it is good to cancel_delayed_work
->>> from the work itself.
->>>
->>> If it is ok then i am ok with it. Or in another way, I think we could
->>> just clear
->>>
->>> LOGIN_FLAGS_READ_ACTIVE and set LOGIN_FLAGS_WRITE_ACTIVE
->>>
->>> after iscsi_target_restore_sock_callbacks when finish process last
->>> login pdu.
->>
->> That would look like (in iscsi_target_do_tx_login_io):
->>
->> diff --git a/drivers/target/iscsi/iscsi_target_nego.c
->> b/drivers/target/iscsi/iscsi_target_nego.c
->> index 685d771b51d4..4d0658731382 100644
->> --- a/drivers/target/iscsi/iscsi_target_nego.c
->> +++ b/drivers/target/iscsi/iscsi_target_nego.c
->> @@ -328,6 +328,28 @@ static int iscsi_target_do_tx_login_io(struct
->> iscsi_conn *conn, struct iscsi_log
->>          u32 padding = 0;
->>          struct iscsi_login_rsp *login_rsp;
->>
->> +       /*
->> +        * LOGIN_FLAGS_READ_ACTIVE is cleared so that sk_data_ready
->> +        * could be trigger again after this.
->> +        *
->> +        * LOGIN_FLAGS_WRITE_ACTIVE is cleared after we successfully
->> +        * process a login pdu, so that sk_state_chage could do login
->> +        * cleanup as needed if the socket is closed. If a delayed work is
->> +        * ongoing (LOGIN_FLAGS_WRITE_ACTIVE or LOGIN_FLAGS_READ_ACTIVE),
->> +        * sk_state_change will leave the cleanup to the delayed work or
->> +        * it will schedule a delayed work to do cleanup.
->> +        */
->> +       if (conn->sock) {
->> +               struct sock *sk = conn->sock->sk;
->> +
->> +               write_lock_bh(&sk->sk_callback_lock);
->> +               if (!test_bit(LOGIN_FLAGS_INITIAL_PDU,
->> &conn->login_flags)) {
->> +                       clear_bit(LOGIN_FLAGS_READ_ACTIVE,
->> &conn->login_flags);
->> +                       set_bit(LOGIN_FLAGS_WRITE_ACTIVE,
->> &conn->login_flags);
->> +               }
->> +               write_unlock_bh(&sk->sk_callback_lock);
->> +       }
-> 
-> You lost me. I didn't understand this part. Would you still be doing the
-> above bit manipulation in iscsi_target_do_login_rx too?
+target_core/
+└── iscsi
+    └── iqn.1999-09.com.tcmu:alua
+        └── tpgt_1
+            └── sessions
+                └── session-1
+                    └── acl
 
-By moving this chunk here(from iscsi_target_do_login_rx to 
-iscsi_target_do_tx_login_io), we have already
-restore sock callbacks(like below in iscsi_target_do_login),
-So clearing READ_ACTIVE would not cause another delayed
-work being scheduled.
+cat acl 
+iqn.2005-03.com.ceph:ini1
 
-So I think we would not have the race you pointed out
-for last login pdu.
+Fabric drivers like iscsi or elx can add pass in an attribute_group
+to add driver specific attrs.
 
-[code snippet
+This patch just adds the helpers and does the initial kobject refcount
+hookup. The next 2 patches will convert lio core and the fabric drivers
+like iscsi to use these functions.
 
-iscsi_target_do_login()
-...
-login->login_complete = 1;
-iscsi_target_restore_sock_callbacks(conn);
-if (iscsi_target_do_tx_login_io(conn,
-                           login) < 0)
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/Makefile                      |   1 +
+ drivers/target/target_core_fabric_configfs.c |   3 +
+ drivers/target/target_core_internal.h        |   4 +
+ drivers/target/target_core_sysfs.c           | 143 +++++++++++++++++++++++++++
+ drivers/target/target_core_transport.c       |   9 +-
+ include/target/target_core_base.h            |   5 +
+ include/target/target_core_fabric.h          |   5 +-
+ 7 files changed, 168 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/target/target_core_sysfs.c
 
-...
-]
-
-
-
-> 
-> Is the above code then to handle when
-> iscsi_target_start_negotiation->iscsi_target_do_login->iscsi_target_do_tx_login_io
-> runs?
-> 
-> I was thinking when you mentioned the final login PDU you were going to
-> do something when you detect login->login_complete is true.
-> 
-
-Even if we move above chunk here, I realize that we
-could still theoretically have problem.
-
-For login pdus which is not initial or last login pdus,
-after enable scheduling delayed work by clearing READ_ACTIVE.
-It is possible to queue a delayed work. (i.e. a out of order
-initiator could send pdus at any time).
-In case we received such out of order pdu, we need
-to cancel them when we have an error and later
-doing the clean up.
-
-I will try to solve this and resend these patches.
-Maybe it's better to cancel_delayed_work() in
-iscsi_target_do_login_rx.
-
-I might not express myself very clear. Please
-see next version of these patch.
-
-
-> This code is not my expertise area, so I might just not be understanding
-> something simple about how it all works.
-
-Your comments make sense and are helpful for me. Thanks.
-> 
-
-Thanks,
-Hou
+diff --git a/drivers/target/Makefile b/drivers/target/Makefile
+index 4563474..4a7246e 100644
+--- a/drivers/target/Makefile
++++ b/drivers/target/Makefile
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+ target_core_mod-y		:= target_core_configfs.o \
++				   target_core_sysfs.o \
+ 				   target_core_device.o \
+ 				   target_core_fabric_configfs.o \
+ 				   target_core_fabric_lib.o \
+diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
+index 4d208e4..b37c530 100644
+--- a/drivers/target/target_core_fabric_configfs.c
++++ b/drivers/target/target_core_fabric_configfs.c
+@@ -960,6 +960,8 @@ static struct config_group *target_fabric_make_wwn(
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	wwn->wwn_tf = tf;
++	ida_init(&wwn->sid_ida);
++
+ 	wwn->kobj = kobject_create_and_add(name, tf->kobj);
+ 	if (!wwn->kobj)
+ 		goto drop_wwn;
+@@ -987,6 +989,7 @@ static void target_fabric_drop_wwn(
+ 	struct se_wwn *wwn = container_of(to_config_group(item),
+ 				struct se_wwn, wwn_group);
+ 
++	ida_destroy(&wwn->sid_ida);
+ 	kobject_del(wwn->kobj);
+ 	kobject_put(wwn->kobj);
+ 	configfs_remove_default_groups(&wwn->wwn_group);
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index 16ae020..1b683ce 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -106,6 +106,9 @@ int	target_get_pr_transport_id(struct se_node_acl *nacl,
+ const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
+ 		char *buf, u32 *out_tid_len, char **port_nexus_ptr);
+ 
++/* target_core_sysfs.c */
++void	target_sysfs_init_session(struct se_session *sess);
++
+ /* target_core_hba.c */
+ struct se_hba *core_alloc_hba(const char *, u32, u32);
+ int	core_delete_hba(struct se_hba *);
+@@ -153,6 +156,7 @@ void	transport_dump_dev_info(struct se_device *, struct se_lun *,
+ bool	target_check_wce(struct se_device *dev);
+ bool	target_check_fua(struct se_device *dev);
+ void	__target_execute_cmd(struct se_cmd *, bool);
++void	__target_free_session(struct se_session *);
+ 
+ /* target_core_stat.c */
+ void	target_stat_setup_dev_default_groups(struct se_device *);
+diff --git a/drivers/target/target_core_sysfs.c b/drivers/target/target_core_sysfs.c
+new file mode 100644
+index 0000000..d4f9d33
+--- /dev/null
++++ b/drivers/target/target_core_sysfs.c
+@@ -0,0 +1,143 @@
++// SPDX-License-Identifier: GPL-2.0-only
++#include <linux/kobject.h>
++#include <linux/idr.h>
++
++#include <target/target_core_base.h>
++#include "target_core_internal.h"
++
++static void target_sysfs_session_release(struct kobject *kobj)
++{
++	struct se_session *se_sess = container_of(kobj, struct se_session, kobj);
++
++	__target_free_session(se_sess);
++}
++
++struct session_attr {
++	struct attribute attr;
++	ssize_t (*show)(struct se_session *, char *);
++	ssize_t (*store)(struct se_session *, const char *, size_t);
++};
++
++#define to_session(atr) container_of((atr), struct session_attr, attr)
++
++static ssize_t
++session_attr_store(struct kobject *kobj, struct attribute *attr,
++		   const char *page, size_t length)
++{
++	struct se_session *se_sess = container_of(kobj, struct se_session, kobj);
++	struct session_attr *sess_attr = to_session(attr);
++
++	if (!sess_attr->store)
++		return -ENOSYS;
++
++	return sess_attr->store(se_sess, page, length);
++}
++
++static ssize_t session_acl_show(struct se_session *se_sess, char *page)
++{
++	struct se_node_acl *acl;
++	ssize_t len;
++
++	acl = se_sess->se_node_acl;
++	if (!acl)
++		return -ENOTCONN;
++
++	if (acl->dynamic_node_acl) {
++		page[0] = '\0';
++		len = 0;
++	} else {
++		len = snprintf(page, PAGE_SIZE, "%s\n", acl->initiatorname);
++	}
++
++	return len;
++}
++
++static struct session_attr session_acl_attr = {
++	.attr = { .name = "acl", .mode = 0444 },
++	.show = session_acl_show,
++};
++
++static struct attribute *session_attrs[] = {
++	&session_acl_attr.attr,
++	NULL
++};
++ATTRIBUTE_GROUPS(session);
++
++static ssize_t
++session_attr_show(struct kobject *kobj, struct attribute *attr, char *page)
++{
++	struct se_session *se_sess = container_of(kobj, struct se_session, kobj);
++	struct session_attr *sess_attr = to_session(attr);
++
++	if (!sess_attr->show)
++		return -ENOSYS;
++
++	return sess_attr->show(se_sess, page);
++}
++
++static const struct sysfs_ops session_sysfs_ops = {
++	.show	= session_attr_show,
++	.store	= session_attr_store,
++};
++
++static struct kobj_type session_ktype = {
++	.sysfs_ops	= &session_sysfs_ops,
++	.release	= target_sysfs_session_release,
++	.default_groups	= session_groups,
++};
++
++void target_sysfs_init_session(struct se_session *se_sess)
++{
++	kobject_init(&se_sess->kobj, &session_ktype);
++}
++
++int target_sysfs_add_session(struct se_portal_group *se_tpg,
++			     struct se_session *se_sess,
++			     struct attribute_group *fabric_attrs)
++{
++	int ret;
++
++	ret = ida_simple_get(&se_tpg->se_tpg_wwn->sid_ida, 1, 0, GFP_KERNEL);
++	if (ret < 0) {
++		pr_err("Could not allocate session id. Error %d.\n", ret);
++		return ret;
++	}
++	se_sess->sid = ret;
++
++	ret = kobject_add(&se_sess->kobj, se_tpg->sessions_kobj, "session-%d",
++			  se_sess->sid);
++	if (ret) {
++		pr_err("Could not add session%d to sysfs. Error %d.\n",
++		       se_sess->sid, ret);
++		goto remove_id;
++	}
++
++	if (fabric_attrs) {
++		ret = sysfs_create_group(&se_sess->kobj, fabric_attrs);
++		if (ret)
++			goto del_kobj;
++		se_sess->fabric_attrs = fabric_attrs;	
++	}
++
++	return 0;
++
++del_kobj:
++	kobject_del(&se_sess->kobj);
++remove_id:
++	ida_simple_remove(&se_tpg->se_tpg_wwn->sid_ida, se_sess->sid);
++	return ret;
++}
++EXPORT_SYMBOL(target_sysfs_add_session);
++
++void target_sysfs_remove_session(struct se_session *se_sess)
++{
++	/* discovery sessions are normally not added to sysfs */
++	if (!se_sess->sid)
++		return;
++
++	if (se_sess->fabric_attrs)
++		sysfs_remove_group(&se_sess->kobj, se_sess->fabric_attrs);
++	ida_simple_remove(&se_sess->se_tpg->se_tpg_wwn->sid_ida, se_sess->sid);
++	kobject_del(&se_sess->kobj);
++}
++EXPORT_SYMBOL(target_sysfs_remove_session);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 594b724..fba059c 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -257,6 +257,7 @@ struct se_session *transport_alloc_session(enum target_prot_op sup_prot_ops)
+ 		return ERR_PTR(ret);
+ 	}
+ 	se_sess->sup_prot_ops = sup_prot_ops;
++	target_sysfs_init_session(se_sess);
+ 
+ 	return se_sess;
+ }
+@@ -537,8 +538,15 @@ void transport_deregister_session_configfs(struct se_session *se_sess)
+ }
+ EXPORT_SYMBOL(transport_deregister_session_configfs);
+ 
++
+ void transport_free_session(struct se_session *se_sess)
+ {
++	kobject_put(&se_sess->kobj);
++}
++EXPORT_SYMBOL(transport_free_session);
++
++void __target_free_session(struct se_session *se_sess)
++{
+ 	struct se_node_acl *se_nacl = se_sess->se_node_acl;
+ 
+ 	/*
+@@ -582,7 +590,6 @@ void transport_free_session(struct se_session *se_sess)
+ 	percpu_ref_exit(&se_sess->cmd_count);
+ 	kmem_cache_free(se_sess_cache, se_sess);
+ }
+-EXPORT_SYMBOL(transport_free_session);
+ 
+ static int target_release_res(struct se_device *dev, void *data)
+ {
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 9d38b53..3bc2498 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -9,6 +9,7 @@
+ #include <linux/semaphore.h>     /* struct semaphore */
+ #include <linux/completion.h>
+ #include <linux/kobject.h>
++#include <linux/idr.h>
+ 
+ #define TARGET_CORE_VERSION		"v5.0"
+ 
+@@ -624,6 +625,9 @@ struct se_session {
+ 	wait_queue_head_t	cmd_list_wq;
+ 	void			*sess_cmd_map;
+ 	struct sbitmap_queue	sess_tag_pool;
++	struct kobject		kobj;
++	int			sid;
++	struct attribute_group	*fabric_attrs;
+ };
+ 
+ struct se_device;
+@@ -932,6 +936,7 @@ struct se_wwn {
+ 	struct config_group	wwn_group;
+ 	struct config_group	fabric_stat_group;
+ 	struct kobject		*kobj;
++	struct ida		sid_ida;
+ };
+ 
+ static inline void atomic_inc_mb(atomic_t *v)
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 063f133..5948b87 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -146,7 +146,10 @@ void	transport_register_session(struct se_portal_group *,
+ void	target_put_nacl(struct se_node_acl *);
+ void	transport_deregister_session_configfs(struct se_session *);
+ void	transport_deregister_session(struct se_session *);
+-
++void	target_sysfs_remove_session(struct se_session *se_sess);
++int	target_sysfs_add_session(struct se_portal_group *se_tpg,
++				 struct se_session *se_sess,
++				 struct attribute_group *fabric_attrs);
+ 
+ void	transport_init_se_cmd(struct se_cmd *,
+ 		const struct target_core_fabric_ops *,
+-- 
+1.8.3.1
