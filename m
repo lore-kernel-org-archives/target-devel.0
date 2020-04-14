@@ -1,71 +1,30 @@
-From: Waiman Long <longman@redhat.com>
-Date: Tue, 14 Apr 2020 19:37:51 +0000
+From: Joe Perches <joe@perches.com>
+Date: Tue, 14 Apr 2020 19:44:49 +0000
 Subject: Re: [PATCH v2 2/2] crypto: Remove unnecessary memzero_explicit()
-Message-Id: <578fe9b6-1ccd-2698-60aa-96c3f2dd2c31@redhat.com>
+Message-Id: <2a58f592879cf67b4c6b8e859ce87e1f9652902a.camel@perches.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200413211550.8307-1-longman@redhat.com>
  <20200413222846.24240-1-longman@redhat.com>
  <eca85e0b-0af3-c43a-31e4-bd5c3f519798@c-s.fr>
  <e194a51f-a5e5-a557-c008-b08cac558572@redhat.com>
  <20200414191601.GZ25468@kitsune.suse.cz>
-In-Reply-To: <20200414191601.GZ25468@kitsune.suse.cz>
+ <578fe9b6-1ccd-2698-60aa-96c3f2dd2c31@redhat.com>
+In-Reply-To: <578fe9b6-1ccd-2698-60aa-96c3f2dd2c31@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1250"
-Content-Transfer-Encoding: base64
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-Cc: linux-btrfs@vger.kernel.org, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, virtualization@lists.linux-foundation.org, David Howells <dhowells@redhat.com>, linux-mm@kvack.org, linux-sctp@vger.kernel.org, keyrings@vger.kernel.org, kasan-dev@googlegroups.com, samba-technical@lists.samba.org, linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, x86@kernel.org, James Morris <jmorris@namei.org>, Matthew Wilcox <willy@infradead.org>, cocci@systeme.lip6.fr, linux-wpan@vger.kernel.org, intel-wired-lan@lists.osuosl.org, David Rientjes <rientjes@google.com>, "Serge E. Hallyn" <serge@hallyn.com>, linux-pm@vger.kernel.org, ecryptfs@vger.kernel.org, linux-nfs@vger.kernel.org, linux-fscrypt@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org, linux-integrity@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Christophe Leroy <christophe.leroy@c-s.fr>, linux-cifs@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org, target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org, netdev@vger.kernel.org, Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Waiman Long <longman@redhat.com>, Michal =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+Cc: linux-btrfs@vger.kernel.org, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, virtualization@lists.linux-foundation.org, David Howells <dhowells@redhat.com>, linux-mm@kvack.org, linux-sctp@vger.kernel.org, keyrings@vger.kernel.org, kasan-dev@googlegroups.com, samba-technical@lists.samba.org, linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, x86@kernel.org, James Morris <jmorris@namei.org>, Matthew Wilcox <willy@infradead.org>, cocci@systeme.lip6.fr, linux-wpan@vger.kernel.org, intel-wired-lan@lists.osuosl.org, David Rientjes <rientjes@google.com>, "Serge E. Hallyn" <serge@hallyn.com>, linux-pm@vger.kernel.org, ecryptfs@vger.kernel.org, linux-nfs@vger.kernel.org, linux-fscrypt@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org, linux-integrity@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Christophe Leroy <christophe.leroy@c-s.fr>, linux-cifs@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org, target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org, netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
 
-T24gNC8xNC8yMCAzOjE2IFBNLCBNaWNoYWwgU3VjaOFuZWsgd3JvdGU6Cj4gT24gVHVlLCBBcHIg
-MTQsIDIwMjAgYXQgMTI6MjQ6MzZQTSAtMDQwMCwgV2FpbWFuIExvbmcgd3JvdGU6Cj4+IE9uIDQv
-MTQvMjAgMjowOCBBTSwgQ2hyaXN0b3BoZSBMZXJveSB3cm90ZToKPj4+Cj4+PiBMZSAxNC8wNC8y
-MDIwIOAgMDA6MjgsIFdhaW1hbiBMb25nIGEg6WNyaXSgOgo+Pj4+IFNpbmNlIGtmcmVlX3NlbnNp
-dGl2ZSgpIHdpbGwgZG8gYW4gaW1wbGljaXQgbWVtemVyb19leHBsaWNpdCgpLCB0aGVyZQo+Pj4+
-IGlzIG5vIG5lZWQgdG8gY2FsbCBtZW16ZXJvX2V4cGxpY2l0KCkgYmVmb3JlIGl0LiBFbGltaW5h
-dGUgdGhvc2UKPj4+PiBtZW16ZXJvX2V4cGxpY2l0KCkgYW5kIHNpbXBsaWZ5IHRoZSBjYWxsIHNp
-dGVzLiBGb3IgYmV0dGVyIGNvcnJlY3RuZXNzLAo+Pj4+IHRoZSBzZXR0aW5nIG9mIGtleWxlbiBp
-cyBhbHNvIG1vdmVkIGRvd24gYWZ0ZXIgdGhlIGtleSBwb2ludGVyIGNoZWNrLgo+Pj4+Cj4+Pj4g
-U2lnbmVkLW9mZi1ieTogV2FpbWFuIExvbmcgPGxvbmdtYW5AcmVkaGF0LmNvbT4KPj4+PiAtLS0K
-Pj4+PiCgIC4uLi9hbGx3aW5uZXIvc3VuOGktY2Uvc3VuOGktY2UtY2lwaGVyLmOgoKCgoCB8IDE5
-ICsrKysrLS0tLS0tLS0tLS0tLQo+Pj4+IKAgLi4uL2FsbHdpbm5lci9zdW44aS1zcy9zdW44aS1z
-cy1jaXBoZXIuY6CgoKCgIHwgMjAgKysrKystLS0tLS0tLS0tLS0tLQo+Pj4+IKAgZHJpdmVycy9j
-cnlwdG8vYW1sb2dpYy9hbWxvZ2ljLWd4bC1jaXBoZXIuY6CgIHwgMTIgKysrLS0tLS0tLS0KPj4+
-PiCgIGRyaXZlcnMvY3J5cHRvL2luc2lkZS1zZWN1cmUvc2FmZXhjZWxfaGFzaC5joCB8oCAzICst
-LQo+Pj4+IKAgNCBmaWxlcyBjaGFuZ2VkLCAxNCBpbnNlcnRpb25zKCspLCA0MCBkZWxldGlvbnMo
-LSkKPj4+Pgo+Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NyeXB0by9hbGx3aW5uZXIvc3VuOGkt
-Y2Uvc3VuOGktY2UtY2lwaGVyLmMKPj4+PiBiL2RyaXZlcnMvY3J5cHRvL2FsbHdpbm5lci9zdW44
-aS1jZS9zdW44aS1jZS1jaXBoZXIuYwo+Pj4+IGluZGV4IGFhNGU4ZmRjMmIzMi4uODM1OGZhYzk4
-NzE5IDEwMDY0NAo+Pj4+IC0tLSBhL2RyaXZlcnMvY3J5cHRvL2FsbHdpbm5lci9zdW44aS1jZS9z
-dW44aS1jZS1jaXBoZXIuYwo+Pj4+ICsrKyBiL2RyaXZlcnMvY3J5cHRvL2FsbHdpbm5lci9zdW44
-aS1jZS9zdW44aS1jZS1jaXBoZXIuYwo+Pj4+IEBAIC0zNjYsMTAgKzM2Niw3IEBAIHZvaWQgc3Vu
-OGlfY2VfY2lwaGVyX2V4aXQoc3RydWN0IGNyeXB0b190Zm0gKnRmbSkKPj4+PiCgIHsKPj4+PiCg
-oKCgoCBzdHJ1Y3Qgc3VuOGlfY2lwaGVyX3RmbV9jdHggKm9wID0gY3J5cHRvX3RmbV9jdHgodGZt
-KTsKPj4+PiCgIC2goKAgaWYgKG9wLT5rZXkpIHsKPj4+PiAtoKCgoKCgoCBtZW16ZXJvX2V4cGxp
-Y2l0KG9wLT5rZXksIG9wLT5rZXlsZW4pOwo+Pj4+IC2goKCgoKCgIGtmcmVlKG9wLT5rZXkpOwo+
-Pj4+IC2goKAgfQo+Pj4+ICugoKAga2ZyZWVfc2Vuc2l0aXZlKG9wLT5rZXkpOwo+Pj4+IKCgoKCg
-IGNyeXB0b19mcmVlX3N5bmNfc2tjaXBoZXIob3AtPmZhbGxiYWNrX3RmbSk7Cj4+Pj4goKCgoKAg
-cG1fcnVudGltZV9wdXRfc3luY19zdXNwZW5kKG9wLT5jZS0+ZGV2KTsKPj4+PiCgIH0KPj4+PiBA
-QCAtMzkxLDE0ICszODgsMTEgQEAgaW50IHN1bjhpX2NlX2Flc19zZXRrZXkoc3RydWN0IGNyeXB0
-b19za2NpcGhlcgo+Pj4+ICp0Zm0sIGNvbnN0IHU4ICprZXksCj4+Pj4goKCgoKCgoKCgIGRldl9k
-YmcoY2UtPmRldiwgIkVSUk9SOiBJbnZhbGlkIGtleWxlbiAldVxuIiwga2V5bGVuKTsKPj4+PiCg
-oKCgoKCgoKAgcmV0dXJuIC1FSU5WQUw7Cj4+Pj4goKCgoKAgfQo+Pj4+IC2goKAgaWYgKG9wLT5r
-ZXkpIHsKPj4+PiAtoKCgoKCgoCBtZW16ZXJvX2V4cGxpY2l0KG9wLT5rZXksIG9wLT5rZXlsZW4p
-Owo+Pj4+IC2goKCgoKCgIGtmcmVlKG9wLT5rZXkpOwo+Pj4+IC2goKAgfQo+Pj4+IC2goKAgb3At
-PmtleWxlbiA9IGtleWxlbjsKPj4+PiAroKCgIGtmcmVlX3NlbnNpdGl2ZShvcC0+a2V5KTsKPj4+
-PiCgoKCgoCBvcC0+a2V5ID0ga21lbWR1cChrZXksIGtleWxlbiwgR0ZQX0tFUk5FTCB8IEdGUF9E
-TUEpOwo+Pj4+IKCgoKCgIGlmICghb3AtPmtleSkKPj4+PiCgoKCgoKCgoKAgcmV0dXJuIC1FTk9N
-RU07Cj4+Pj4gK6CgoCBvcC0+a2V5bGVuID0ga2V5bGVuOwo+Pj4gRG9lcyBpdCBtYXR0ZXIgYXQg
-YWxsIHRvIGVuc3VyZSBvcC0+a2V5bGVuIGlzIG5vdCBzZXQgd2hlbiBvZi0+a2V5IGlzCj4+PiBO
-VUxMID8gSSdtIG5vdCBzdXJlLgo+Pj4KPj4+IEJ1dCBpZiBpdCBkb2VzLCB0aGVuIG9wLT5rZXls
-ZW4gc2hvdWxkIGJlIHNldCB0byAwIHdoZW4gZnJlZWluZyBvcC0+a2V5LiAKPj4gTXkgdGhpbmtp
-bmcgaXMgdGhhdCBpZiBtZW1vcnkgYWxsb2NhdGlvbiBmYWlscywgd2UganVzdCBkb24ndCB0b3Vj
-aAo+PiBhbnl0aGluZyBhbmQgcmV0dXJuIGFuIGVycm9yIGNvZGUuIEkgd2lsbCBub3QgZXhwbGlj
-aXRseSBzZXQga2V5bGVuIHRvIDAKPj4gaW4gdGhpcyBjYXNlIHVubGVzcyBpdCBpcyBzcGVjaWZp
-ZWQgaW4gdGhlIEFQSSBkb2N1bWVudGF0aW9uLgo+IFlvdSBhbHJlYWR5IGZyZWVkIHRoZSBrZXkg
-Ynkgbm93IHNvIG5vdCB0b3VjaGluZyBhbnl0aGluZyBpcyBub3QKPiBwb3NzaWJsZS4gVGhlIGtl
-eSBpcyBzZXQgdG8gTlVMTCBvbiBhbGxvY2F0aW9uIGZhaWx1cmUgc28gc2V0dGluZyBrZXlsZW4K
-PiB0byAwIHNob3VsZCBiZSByZWR1bmRhbnQuIEhvd2V2ZXIsIHNldHRpbmcga2V5bGVuIHRvIDAg
-aXMgY29uc2lzZW50IHdpdGgKPiBub3QgaGF2aW5nIGEga2V5LCBhbmQgaXQgYXZvaWRzIHRoZSBw
-b3NzaWJpbGl0eSBvZiBsZWFraW5nIHRoZSBsZW5ndGgKPiBsYXRlciBzaG91bGQgdGhhdCBldmVy
-IGNhdXNlIGFueSBwcm9ibGVtLgoKT0ssIEkgY2FuIGNoYW5nZSBpdCB0byBjbGVhciB0aGUga2V5
-IGxlbmd0aCB3aGVuIHRoZSBhbGxvY2F0aW9uIGZhaWxlZAp3aGljaCBpc24ndCBsaWtlbHkuCgpD
-aGVlcnMsCkxvbmdtYW4KCg==
+On Tue, 2020-04-14 at 15:37 -0400, Waiman Long wrote:
+> OK, I can change it to clear the key length when the allocation failed
+> which isn't likely.
+
+
+Perhaps:
+
+	kfree_sensitive(op->key);
+	op->key = NULL;
+	op->keylen = 0;
+
+but I don't know that it impacts any possible state.
