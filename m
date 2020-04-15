@@ -1,48 +1,43 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 24 Apr 2020 12:24:58 +0000
-Subject: [PATCH AUTOSEL 4.4 3/8] scsi: target: fix PR IN / READ FULL STATUS for FC
-Message-Id: <20200424122503.11046-3-sashal@kernel.org>
+From: Pu Hou <houpu@bytedance.com>
+Date: Wed, 15 Apr 2020 08:08:19 +0000
+Subject: [PATCH 2/2] iscsi-target: Fix inconsistent debug message in __iscsi_target_sk_check_close
+Message-Id: <20200415080819.27327-3-houpu@bytedance.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200424122503.11046-1-sashal@kernel.org>
-In-Reply-To: <20200424122503.11046-1-sashal@kernel.org>
+References: <20200415080819.27327-1-houpu@bytedance.com>
+In-Reply-To: <20200415080819.27327-1-houpu@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Mike Christie <mchristi@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: mchristi@redhat.com, Pu Hou <houpu@bytedance.com>
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Following commit changed the return value of __iscsi_target_sk_check_close.
+But the pr_debug is still printing FALSE when returing TRUE which is a little
+confusing.
 
-[ Upstream commit 8fed04eb79a74cbf471dfaa755900a51b37273ab ]
+commit 25cdda95fda78d22d44157da15aa7ea34be3c804
+Author: Nicholas Bellinger <nab@linux-iscsi.org>
+Date:   Wed May 24 21:47:09 2017 -0700
 
-Creation of the response to READ FULL STATUS fails for FC based
-reservations. Reason is the too high loop limit (< 24) in
-fc_get_pr_transport_id(). The string representation of FC WWPN is 23 chars
-long only ("11:22:33:44:55:66:77:88"). So when i is 23, the loop body is
-executed a last time for the ending '\0' of the string and thus hex2bin()
-reports an error.
+    iscsi-target: Fix initial login PDU asynchronous socket close OOPs
 
-Link: https://lore.kernel.org/r/20200408132610.14623-3-bstroesser@ts.fujitsu.com
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Reviewed-by: Mike Christie <mchristi@redhat.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Pu Hou <houpu@bytedance.com>
 ---
- drivers/target/target_core_fabric_lib.c | 2 +-
+ drivers/target/iscsi/iscsi_target_nego.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index 6e75095af6818..2ecb2f7042a13 100644
---- a/drivers/target/target_core_fabric_lib.c
-+++ b/drivers/target/target_core_fabric_lib.c
-@@ -75,7 +75,7 @@ static int fc_get_pr_transport_id(
- 	 * encoded TransportID.
- 	 */
- 	ptr = &se_nacl->initiatorname[0];
--	for (i = 0; i < 24; ) {
-+	for (i = 0; i < 23; ) {
- 		if (!strncmp(&ptr[i], ":", 1)) {
- 			i++;
- 			continue;
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 950339655778..56686e880d23 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -481,7 +481,7 @@ static bool __iscsi_target_sk_check_close(struct sock *sk)
+ {
+ 	if (sk->sk_state = TCP_CLOSE_WAIT || sk->sk_state = TCP_CLOSE) {
+ 		pr_debug("__iscsi_target_sk_check_close: TCP_CLOSE_WAIT|TCP_CLOSE,"
+-			"returning FALSE\n");
++			"returning TRUE\n");
+ 		return true;
+ 	}
+ 	return false;
 -- 
-2.20.1
+2.11.0
