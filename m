@@ -1,47 +1,50 @@
-From: Jani Nikula <jani.nikula@linux.intel.com>
-Date: Thu, 16 Apr 2020 10:05:39 +0000
-Subject: Re: [PATCH v2 0/2] Don't generate thousands of new warnings when building docs
-Message-Id: <87a73b4ufg.fsf@intel.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 18 Apr 2020 18:41:09 +0000
+Subject: [PATCH 7/9] drivers/base: fix empty-body warnings in devcoredump.c
+Message-Id: <20200418184111.13401-8-rdunlap@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <cover.1584716446.git.mchehab+huawei@kernel.org> <20200320171020.78f045c5@lwn.net>
-In-Reply-To: <20200320171020.78f045c5@lwn.net>
+References: <20200418184111.13401-1-rdunlap@infradead.org>
+In-Reply-To: <20200418184111.13401-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jonathan Corbet <corbet@lwn.net>, Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, linux-kernel@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Paul Mackerras <paulus@samba.org>, Madhuparna Bhowmik <madhuparnabhowmik04@gmail.com>, "David S. Miller" <davem@davemloft.net>, Ricardo Ribalda Delgado <ribalda@kernel.org>, Luca Ceresoli <luca@lucaceresoli.net>, dmaengine@vger.kernel.org, Matthias Maennich <maennich@google.com>, Harry Wei <harryxiyou@gmail.com>, x86@kernel.org, ecryptfs@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, target-devel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Hans Verkuil <hverkuil-cisco@xs4all.nl>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Johannes Berg <johannes.berg@intel.com>, Jacopo Mondi <jacopo@jmondi.org>, Tyler Hicks <code@tyhicks.com>, Vinod Koul <vkoul@kernel.org>, Alex Shi <alex.shi@linux.alibaba.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, linux-scsi@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, netdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, Borislav Petkov <bp@alien8.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, Randy Dunlap <rdunlap@infradead.org>, Zzy Wysm <zzy@zzywysm.com>, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, Chuck Lever <chuck.lever@oracle.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On Fri, 20 Mar 2020, Jonathan Corbet <corbet@lwn.net> wrote:
-> On Fri, 20 Mar 2020 16:11:01 +0100
-> Mauro Carvalho Chehab <mchehab+huawei@kernel.org> wrote:
->
->> This small series address a regression caused by a new patch at
->> docs-next (and at linux-next).
->
-> I don't know how I missed that mess, sorry.  I plead distracting times or
-> something like that.  Heck, I think I'll blame everything on the plague
-> for at least the next few weeks.
->
-> Anyway, I've applied this, thanks for cleaning it up.
+Fix gcc empty-body warning when -Wextra is used:
 
-There's still more fallout from the autosectionlabel extension
-introduced in 58ad30cf91f0 ("docs: fix reference to
-core-api/namespaces.rst"), e.g. in i915.rst.
+../drivers/base/devcoredump.c:297:42: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
+../drivers/base/devcoredump.c:301:42: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
 
-The biggest trouble is, if you have headings in kernel-doc comments,
-Sphinx is unable pinpoint where the dupes are. For example:
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ drivers/base/devcoredump.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
- Documentation/gpu/i915.rst:610: WARNING: duplicate label gpu/i915:layout, other instance in
- Documentation/gpu/i915.rst
-
-However there is no "layout" label in i915.rst. The one being warned
-about I can dig into based on the line number, but not the second
-one. You have to resort to grepping the source. And avoiding duplicate
-subsection headings in completely isolated places is a minefield.
-
-BR,
-Jani.
-
-
--- 
-Jani Nikula, Intel Open Source Graphics Center
+--- linux-next-20200417.orig/drivers/base/devcoredump.c
++++ linux-next-20200417/drivers/base/devcoredump.c
+@@ -9,6 +9,7 @@
+  *
+  * Author: Johannes Berg <johannes@sipsolutions.net>
+  */
++#include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
+ #include <linux/devcoredump.h>
+@@ -294,11 +295,11 @@ void dev_coredumpm(struct device *dev, s
+ 
+ 	if (sysfs_create_link(&devcd->devcd_dev.kobj, &dev->kobj,
+ 			      "failing_device"))
+-		/* nothing - symlink will be missing */;
++		do_empty(); /* nothing - symlink will be missing */
+ 
+ 	if (sysfs_create_link(&dev->kobj, &devcd->devcd_dev.kobj,
+ 			      "devcoredump"))
+-		/* nothing - symlink will be missing */;
++		do_empty(); /* nothing - symlink will be missing */
+ 
+ 	INIT_DELAYED_WORK(&devcd->del_wk, devcd_del);
+ 	schedule_delayed_work(&devcd->del_wk, DEVCD_TIMEOUT);
