@@ -1,41 +1,54 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Mon, 20 Apr 2020 16:54:38 +0000
-Subject: Re: [PATCH] target: pr: fix PR IN, READ FULL STATUS
-Message-Id: <c68c457c-7b8b-db30-f5bd-16eabb528e96@ts.fujitsu.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 18 Apr 2020 18:41:10 +0000
+Subject: [PATCH 8/9] dax: fix empty-body warnings in bus.c
+Message-Id: <20200418184111.13401-9-rdunlap@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200406182951.17446-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200406182951.17446-1-bstroesser@ts.fujitsu.com>
+References: <20200418184111.13401-1-rdunlap@infradead.org>
+In-Reply-To: <20200418184111.13401-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, Randy Dunlap <rdunlap@infradead.org>, Zzy Wysm <zzy@zzywysm.com>, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, Chuck Lever <chuck.lever@oracle.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
 
+Fix gcc empty-body warning when -Wextra is used:
 
-On 04/06/20 23:05, Mike Christie wrote:
-> 
-> There is actually another isid fix needed for the core pr code:
-> 
-> https://patchwork.kernel.org/patch/10525287/
-> 
-> Handling Bart's review comment for that patch ended up being crazy
-> because of other issues in the PR code so I have not completed that fix.
-Sorry for coming back to this so lately.
+../drivers/dax/bus.c:93:27: warning: suggest braces around empty body in an ‘else’ statement [-Wempty-body]
+../drivers/dax/bus.c:98:29: warning: suggest braces around empty body in an ‘else’ statement [-Wempty-body]
 
-I again had a look into your old patch. To me it seems to be clear
-that apart from architectural discussion a fix is needed here.
-The usage of get_unaligned_be64() is of course just wrong.
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Vishal Verma <vishal.l.verma@intel.com>
+Cc: Dave Jiang <dave.jiang@intel.com>
+Cc: linux-nvdimm@lists.01.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ drivers/dax/bus.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Replacing with hex2bin I think is also not ideal, because hex2bin
-does not respect byte ordering of the ISID: in the protocol messages
-iSCSI receives 48 bit big endian ISID. On little endian machines
-hex2bin() does not do the byte swap necessary to have the same
-value in string format and in u64.
-
-BTW: I'm wondering if the double storage of ISID as u64 and as a
-string should be kept. I think I'd prefer to use u64 only.
-In that case lio_sess_get_initiator_sid() could just return s64
-swapped to the right enianness and the isid values in session and pr
-could be s64 (with -1 meaning "no ISID" in session).
-
-BR,
-Bodo
+--- linux-next-20200417.orig/drivers/dax/bus.c
++++ linux-next-20200417/drivers/dax/bus.c
+@@ -2,6 +2,7 @@
+ /* Copyright(c) 2017-2018 Intel Corporation. All rights reserved. */
+ #include <linux/memremap.h>
+ #include <linux/device.h>
++#include <linux/kernel.h>
+ #include <linux/mutex.h>
+ #include <linux/list.h>
+ #include <linux/slab.h>
+@@ -90,12 +91,12 @@ static ssize_t do_id_store(struct device
+ 			} else
+ 				rc = -ENOMEM;
+ 		} else
+-			/* nothing to remove */;
++			do_empty(); /* nothing to remove */
+ 	} else if (action = ID_REMOVE) {
+ 		list_del(&dax_id->list);
+ 		kfree(dax_id);
+ 	} else
+-		/* dax_id already added */;
++		do_empty(); /* dax_id already added */
+ 	mutex_unlock(&dax_bus_lock);
+ 
+ 	if (rc < 0)
