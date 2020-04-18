@@ -1,80 +1,48 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 20 Apr 2020 19:14:17 +0000
-Subject: [RFC PATCH 03/12] iscsi target: setup transport_id
-Message-Id: <20200420191426.17055-4-mchristi@redhat.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 18 Apr 2020 18:41:05 +0000
+Subject: [PATCH 3/9] input: fix empty-body warning in synaptics.c
+Message-Id: <20200418184111.13401-4-rdunlap@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200420191426.17055-1-mchristi@redhat.com>
-In-Reply-To: <20200420191426.17055-1-mchristi@redhat.com>
+References: <20200418184111.13401-1-rdunlap@infradead.org>
+In-Reply-To: <20200418184111.13401-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: jsmart2021@gmail.com, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Mike Christie <mchristi@redhat.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, Randy Dunlap <rdunlap@infradead.org>, Zzy Wysm <zzy@zzywysm.com>, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, Chuck Lever <chuck.lever@oracle.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
 
-The iscsi target does its own session setup. This patch updates the
-driver so it sets up the transport id.
+Fix gcc empty-body warning when -Wextra is used:
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+../drivers/input/mouse/synaptics.c: In function ‘synaptics_process_packet’:
+../drivers/input/mouse/synaptics.c:1106:6: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
+      ;   /* Nothing, treat a pen as a single finger */
+      ^
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/target/iscsi/iscsi_target_nego.c | 38 ++++++++++++++++++++++++++++----
- 1 file changed, 34 insertions(+), 4 deletions(-)
+ drivers/input/mouse/synaptics.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-index 685d771..dd9bfa7 100644
---- a/drivers/target/iscsi/iscsi_target_nego.c
-+++ b/drivers/target/iscsi/iscsi_target_nego.c
-@@ -1032,6 +1032,26 @@ static void iscsi_initiatorname_tolower(
- 	}
- }
- 
-+static int iscsi_setup_i_tpid(struct iscsi_session *sess, char *iname)
-+{
-+	struct t10_transport_id tpid;
-+	char isid_buf[13];
-+
-+	sprintf(isid_buf, "%6phN", sess->isid);
-+
-+	memset(&tpid, 0, sizeof(tpid));
-+	tpid.proto = SCSI_PROTOCOL_ISCSI;
-+	tpid.format = 1;
-+	tpid.iscsi.name = iname;
-+	tpid.iscsi.session_id = isid_buf;
-+
-+	sess->se_sess->tpid = target_cp_transport_id(&tpid);
-+	if (!sess->se_sess->tpid)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
- /*
-  * Processes the first Login Request..
+--- linux-next-20200327.orig/drivers/input/mouse/synaptics.c
++++ linux-next-20200327/drivers/input/mouse/synaptics.c
+@@ -20,6 +20,7 @@
+  * Trademarks are the property of their respective owners.
   */
-@@ -1260,11 +1280,21 @@ int iscsi_target_locate_portal(
- 	tag_size = sizeof(struct iscsi_cmd) + conn->conn_transport->priv_size;
  
- 	ret = transport_alloc_session_tags(sess->se_sess, tag_num, tag_size);
--	if (ret < 0) {
--		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
--				    ISCSI_LOGIN_STATUS_NO_RESOURCES);
--		ret = -1;
-+	if (ret < 0)
-+		goto return_oom;
-+
-+	if (conn->tpg != iscsit_global->discovery_tpg) {
-+		if (iscsi_setup_i_tpid(sess, i_buf))
-+			/* tags and nacl released when session is freed */
-+			goto return_oom;
- 	}
-+
-+	goto out;
-+
-+return_oom:
-+	iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
-+			    ISCSI_LOGIN_STATUS_NO_RESOURCES);
-+	ret = -1;
- out:
- 	kfree(tmpbuf);
- 	return ret;
--- 
-1.8.3.1
++#include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/delay.h>
+ #include <linux/dmi.h>
+@@ -1103,7 +1104,7 @@ static void synaptics_process_packet(str
+ 				break;
+ 			case 2:
+ 				if (SYN_MODEL_PEN(info->model_id))
+-					;   /* Nothing, treat a pen as a single finger */
++					do_empty(); /* Nothing, treat a pen as a single finger */
+ 				break;
+ 			case 4 ... 15:
+ 				if (SYN_CAP_PALMDETECT(info->capabilities))
