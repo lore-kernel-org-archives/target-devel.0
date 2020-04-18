@@ -1,38 +1,46 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 28 Apr 2020 17:06:46 +0000
-Subject: Re: [PATCH 08/11] target: add sysfs session helper functions
-Message-Id: <3b071301-3fc4-bc5b-d367-a9e9d5595e0e@redhat.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 18 Apr 2020 18:41:08 +0000
+Subject: [PATCH 6/9] nfsd: fix empty-body warning in nfs4state.c
+Message-Id: <20200418184111.13401-7-rdunlap@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200428061109.3042-1-mchristi@redhat.com>
- <20200428061109.3042-9-mchristi@redhat.com>
- <1c97ee38-7a0e-5aac-6065-41267baea648@acm.org>
-In-Reply-To: <1c97ee38-7a0e-5aac-6065-41267baea648@acm.org>
+References: <20200418184111.13401-1-rdunlap@infradead.org>
+In-Reply-To: <20200418184111.13401-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, Randy Dunlap <rdunlap@infradead.org>, Zzy Wysm <zzy@zzywysm.com>, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, Chuck Lever <chuck.lever@oracle.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On 4/28/20 11:43 AM, Bart Van Assche wrote:
-> On 2020-04-27 23:11, Mike Christie wrote:
->> +	ret = kobject_add(&se_sess->kobj, se_tpg->sessions_kobj, "session-%d",
->> +			  se_sess->sid);
->> +	if (ret) {
->> +		pr_err("Could not add session%d to sysfs. Error %d.\n",
->> +		       se_sess->sid, ret);
->> +		goto free_acl_name;
->> +	}
-> 
-> Has it been considered to derive the directory name for a session from
-> the initiator name (se_node_acl.initiatorname-%d)? Would that be more
-> convenient for users than the session-%d naming scheme?
+Fix gcc empty-body warning when -Wextra is used:
 
-It seems nicer. I can do the initaitorname-%d.
+../fs/nfsd/nfs4state.c:3898:3: warning: suggest braces around empty body in an ‘else’ statement [-Wempty-body]
 
-It will also handle the iscsi case where we have multiple sessions from
-the same initiator to the same target port.
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Chuck Lever <chuck.lever@oracle.com>
+Cc: linux-nfs@vger.kernel.org
+---
+ fs/nfsd/nfs4state.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> 
-> Thanks,
-> 
-> Bart.
-> 
+--- linux-next-20200417.orig/fs/nfsd/nfs4state.c
++++ linux-next-20200417/fs/nfsd/nfs4state.c
+@@ -34,6 +34,7 @@
+ 
+ #include <linux/file.h>
+ #include <linux/fs.h>
++#include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/namei.h>
+ #include <linux/swap.h>
+@@ -3895,7 +3896,7 @@ nfsd4_setclientid(struct svc_rqst *rqstp
+ 		copy_clid(new, conf);
+ 		gen_confirm(new, nn);
+ 	} else /* case 4 (new client) or cases 2, 3 (client reboot): */
+-		;
++		do_empty();
+ 	new->cl_minorversion = 0;
+ 	gen_callback(new, setclid, rqstp);
+ 	add_to_unconfirmed(new);
