@@ -1,62 +1,65 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Fri, 03 Apr 2020 10:26:44 +0000
-Subject: Re: [PATCH] target: tcmu: add missing pr attributes to passthrough backends
-Message-Id: <b5b27cb5-bf42-6b85-66d6-dff1bc87af7a@ts.fujitsu.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 18 Apr 2020 18:41:03 +0000
+Subject: [RFC PATCH 1/9] kernel.h: add do_empty() macro
+Message-Id: <20200418184111.13401-2-rdunlap@infradead.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200401132153.23501-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200401132153.23501-1-bstroesser@ts.fujitsu.com>
+References: <20200418184111.13401-1-rdunlap@infradead.org>
+In-Reply-To: <20200418184111.13401-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, Randy Dunlap <rdunlap@infradead.org>, Zzy Wysm <zzy@zzywysm.com>, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, Chuck Lever <chuck.lever@oracle.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
 
-Hi David,
+Add the do_empty() macro to silence gcc warnings about an empty body
+following an "if" statement when -Wextra is used.
 
-On 04/03/20 01:30, David Disseldorp wrote:
-> Hi,
-> 
-> On Wed,  1 Apr 2020 15:21:53 +0200, Bodo Stroesser wrote:
-> 
->> diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
->> index ff82b21fdcce..c5a974c5b31d 100644
->> --- a/drivers/target/target_core_configfs.c
->> +++ b/drivers/target/target_core_configfs.c
->> @@ -1203,6 +1203,9 @@ struct configfs_attribute *passthrough_attrib_attrs[] = {
->>   	&attr_hw_block_size,
->>   	&attr_hw_max_sectors,
->>   	&attr_hw_queue_depth,
->> +	&attr_emulate_pr,
->> +	&attr_enforce_pr_isids,
->> +	&attr_force_pr_aptpl,
->>   	&attr_alua_support,
->>   	&attr_pgr_support,
->>   	NULL,
-> 
-> The attr_emulate_pr addition here looks fine. If you and Mike agree to
-> proceed with the other two attrs then it probably makes sense to add
-> them via a separate patch.
+However, for debug printk calls that are being disabled, use either
+no_printk() or pr_debug() [and optionally dynamic printk debugging]
+instead.
 
-Before my patch and also after it if setting of emulate_pr is not
-changed tcmu uses the core's pr emulation.
-So I think at least for tcmu it makes sense to add the two "pr control"
-attributes here, because they are missing for the default mode of tcmu,
-while the emulate_pr attribute should be added to be able to switch off
-pr in total.
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: alsa-devel@alsa-project.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-usb@vger.kernel.org
+Cc: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Chuck Lever <chuck.lever@oracle.com>
+Cc: linux-nfs@vger.kernel.org
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Vishal Verma <vishal.l.verma@intel.com>
+Cc: Dave Jiang <dave.jiang@intel.com>
+Cc: linux-nvdimm@lists.01.org
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-scsi@vger.kernel.org
+Cc: target-devel@vger.kernel.org
+Cc: Zzy Wysm <zzy@zzywysm.com>
+---
+ include/linux/kernel.h |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Of course we end up then having the "pr control" attributes for pscsi
-also and they have no effect because TRANSPORT_FLAG_PASSTHROUGH_PGR
-is set in pscsi. Regarding this I'll soon send a patch that converts
-pgr_support and alua_support attribute from readonly to read write,
-if the backend allows writing it.
-I need that for full userspace emulation with tcmu, but I guess for
-pscsi it would also be good to allow writing of at least pgr_support.
-Writing 1 to that attribute would reset TRANSPORT_FLAG_PASSTHROUGH_PGR
-and thus switch on core's pr emulation for pscsi, making
-enforce_pr_isids and force_pr_aptpl useful for pscsi.
-
-Thank you,
-Bodo
-
-> 
-> Cheers, David
-> 
+--- linux-next-20200327.orig/include/linux/kernel.h
++++ linux-next-20200327/include/linux/kernel.h
+@@ -40,6 +40,14 @@
+ #define READ			0
+ #define WRITE			1
+ 
++/*
++ * When using -Wextra, an "if" statement followed by an empty block
++ * (containing only a ';'), produces a warning from gcc:
++ * warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
++ * Replace the empty body with do_empty() to silence this warning.
++ */
++#define do_empty()		do { } while (0)
++
+ /**
+  * ARRAY_SIZE - get the number of elements in array @arr
+  * @arr: array to be sized
