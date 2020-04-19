@@ -1,41 +1,51 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sun, 19 Apr 2020 06:04:04 +0000
+Date: Sun, 19 Apr 2020 12:03:04 +0000
 Subject: Re: [PATCH 7/9] drivers/base: fix empty-body warnings in devcoredump.c
-Message-Id: <20200419060404.GB3535909@kroah.com>
+Message-Id: <20200419120304.GA3668771@kroah.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200418184111.13401-1-rdunlap@infradead.org>
  <20200418184111.13401-8-rdunlap@infradead.org>
- <20200419060247.GA3535909@kroah.com>
-In-Reply-To: <20200419060247.GA3535909@kroah.com>
+ <20200418185033.GQ5820@bombadil.infradead.org>
+ <b88d6f8b-e6af-7071-cefa-dc12e79116b6@infradead.org>
+ <d018321b0f281ff29efb04dd1496c8e6499812fb.camel@perches.com>
+ <CAHk-=wi4QU90W1j1VVUrqdrkrq-0XPA06sjGUm-g1VHRB-35YA@mail.gmail.com>
+In-Reply-To: <CAHk-=wi4QU90W1j1VVUrqdrkrq-0XPA06sjGUm-g1VHRB-35YA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: alsa-devel@alsa-project.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zzy Wysm <zzy@zzywysm.com>, linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-usb@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Chuck Lever <chuck.lever@oracle.com>, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: alsa-devel@alsa-project.org, Randy Dunlap <rdunlap@infradead.org>, Rafael Wysocki <rafael@kernel.org>, Zzy Wysm <zzy@zzywysm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "J. Bruce Fields" <bfields@fieldses.org>, target-devel <target-devel@vger.kernel.org>, Dave Jiang <dave.jiang@intel.com>, linux-scsi <linux-scsi@vger.kernel.org>, linux-nvdimm <linux-nvdimm@lists.01.org>, Vishal Verma <vishal.l.verma@intel.com>, Matthew Wilcox <willy@infradead.org>, Chuck Lever <chuck.lever@oracle.com>, linux-input@vger.kernel.org, Joe Perches <joe@perches.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "open list:NFS, SUNRPC,
+ AND..." <linux-nfs@vger.kernel.org>, "Martin K. Petersen" <martin.petersen@oracle.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, linux-usb@vger.kernel.org, linux-fsdevel <linux-fsdevel@vger.kernel.org>, Johannes Berg <johannes@sipsolutions.net>
 
-On Sun, Apr 19, 2020 at 08:02:47AM +0200, Greg Kroah-Hartman wrote:
-> On Sat, Apr 18, 2020 at 11:41:09AM -0700, Randy Dunlap wrote:
-> > Fix gcc empty-body warning when -Wextra is used:
-> > 
-> > ../drivers/base/devcoredump.c:297:42: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
-> > ../drivers/base/devcoredump.c:301:42: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
-> > 
-> > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> > Cc: Johannes Berg <johannes@sipsolutions.net>
-> > Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> >  drivers/base/devcoredump.c |    5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > 
-> > --- linux-next-20200417.orig/drivers/base/devcoredump.c
-> > +++ linux-next-20200417/drivers/base/devcoredump.c
-> > @@ -9,6 +9,7 @@
-> >   *
-> >   * Author: Johannes Berg <johannes@sipsolutions.net>
-> >   */
-> > +#include <linux/kernel.h>
+On Sat, Apr 18, 2020 at 12:15:57PM -0700, Linus Torvalds wrote:
+> On Sat, Apr 18, 2020 at 11:57 AM Joe Perches <joe@perches.com> wrote:
+> >
+> > sysfs_create_link is __must_check
 > 
-> Why the need for this .h file being added for reformatting the code?
+> The way to handle __must_check if you really really don't want to test
+> and have good reasons is
+> 
+>  (a) add a big comment about why this case ostensibly doesn't need the check
+> 
+>  (b) cast a test of it to '(void)' or something (I guess we could add
+> a helper for this). So something like
+> 
+>         /* We will always clean up, we don't care whether this fails
+> or succeeds */
+>         (void)!!sysfs_create_link(...)
+> 
+> There are other alternatives (like using WARN_ON_ONCE() instead, for
+> example). So it depends on the code. Which is why that comment is
+> important to show why the code chose that option.
+> 
+> However, I wonder if in this case we should just remove the
+> __must_check. Greg? It goes back a long long time.
 
-Ah, the function you add, nevermind, need more coffee...
+Yeah, maybe it is time to remove it, the gyrations people go through to
+remove the warning when they "know" they are doing it right feels pretty
+bad compared to forcing people to check things for "normal" calls to the
+function.
+
+thanks,
+
+greg k-h
