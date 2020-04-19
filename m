@@ -1,56 +1,41 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Date: Sat, 18 Apr 2020 19:16:19 +0000
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Sun, 19 Apr 2020 06:02:47 +0000
 Subject: Re: [PATCH 7/9] drivers/base: fix empty-body warnings in devcoredump.c
-Message-Id: <ae170e7c4988399e63a00ad8505e397665563d22.camel@sipsolutions.net>
+Message-Id: <20200419060247.GA3535909@kroah.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200418184111.13401-1-rdunlap@infradead.org>
  <20200418184111.13401-8-rdunlap@infradead.org>
- <20200418185033.GQ5820@bombadil.infradead.org>
- <b88d6f8b-e6af-7071-cefa-dc12e79116b6@infradead.org>
- <d018321b0f281ff29efb04dd1496c8e6499812fb.camel@perches.com>
- <20200418191338.GR5820@bombadil.infradead.org>
-In-Reply-To: <20200418191338.GR5820@bombadil.infradead.org>
+In-Reply-To: <20200418184111.13401-8-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Matthew Wilcox <willy@infradead.org>, Joe Perches <joe@perches.com>
-Cc: alsa-devel@alsa-project.org, Randy Dunlap <rdunlap@infradead.org>, Zzy Wysm <zzy@zzywysm.com>, linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, Chuck Lever <chuck.lever@oracle.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: alsa-devel@alsa-project.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zzy Wysm <zzy@zzywysm.com>, linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-usb@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Chuck Lever <chuck.lever@oracle.com>, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On Sat, 2020-04-18 at 12:13 -0700, Matthew Wilcox wrote:
+On Sat, Apr 18, 2020 at 11:41:09AM -0700, Randy Dunlap wrote:
+> Fix gcc empty-body warning when -Wextra is used:
 > 
-> > > > >  	if (sysfs_create_link(&devcd->devcd_dev.kobj, &dev->kobj,
-> > > > >  			      "failing_device"))
-> > > > > -		/* nothing - symlink will be missing */;
-> > > > > +		do_empty(); /* nothing - symlink will be missing */
-> > > > >  
-> > > > >  	if (sysfs_create_link(&dev->kobj, &devcd->devcd_dev.kobj,
-> > > > >  			      "devcoredump"))
-> > > > > -		/* nothing - symlink will be missing */;
-> > > > > +		do_empty(); /* nothing - symlink will be missing */
-> > > > >  
-> > > > >  	INIT_DELAYED_WORK(&devcd->del_wk, devcd_del);
-> > > > >  	schedule_delayed_work(&devcd->del_wk, DEVCD_TIMEOUT);
-> > > > 
-> > > > Could just remove the 'if's?
-> > > > 
-> > > > +	sysfs_create_link(&devcd->devcd_dev.kobj, &dev->kobj,
-> > > > +			"failing_device");
-> > > > 
-> > > 
-> > > OK.
-> > 
-> > sysfs_create_link is __must_check
+> ../drivers/base/devcoredump.c:297:42: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
+> ../drivers/base/devcoredump.c:301:42: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
 > 
-> Oh, I missed the declaration -- I just saw the definition.  This is a
-> situation where __must_check hurts us and it should be removed.
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  drivers/base/devcoredump.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 > 
-> Or this code is wrong and it should be
-> 
-> 	WARN(sysfs_create_link(&devcd->devcd_dev.kobj, &dev->kobj,
-> 			"failing_device");
+> --- linux-next-20200417.orig/drivers/base/devcoredump.c
+> +++ linux-next-20200417/drivers/base/devcoredump.c
+> @@ -9,6 +9,7 @@
+>   *
+>   * Author: Johannes Berg <johannes@sipsolutions.net>
+>   */
+> +#include <linux/kernel.h>
 
-Perhaps it should be. I didn't think it really mattered _that_ much if
-the symlink suddenly went missing, but OTOH I don't even know how it
-could possibly fail.
+Why the need for this .h file being added for reformatting the code?
 
-johannes
+thanks,
+
+greg k-h
