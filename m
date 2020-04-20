@@ -1,46 +1,54 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Sat, 18 Apr 2020 18:41:06 +0000
-Subject: [PATCH 4/9] sound: fix empty-body warning in vx_core.c
-Message-Id: <20200418184111.13401-5-rdunlap@infradead.org>
+From: Mike Christie <mchristi@redhat.com>
+Date: Mon, 20 Apr 2020 19:14:14 +0000
+Subject: RFC PATCH 00/12] target: add sysfs support
+Message-Id: <20200420191426.17055-1-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200418184111.13401-1-rdunlap@infradead.org>
-In-Reply-To: <20200418184111.13401-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org
-Cc: alsa-devel@alsa-project.org, Randy Dunlap <rdunlap@infradead.org>, Zzy Wysm <zzy@zzywysm.com>, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, Chuck Lever <chuck.lever@oracle.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, linux-usb@vger.kernel.org, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: jsmart2021@gmail.com, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Fix gcc empty-body warning when -Wextra is used:
+The following patches made over Linus's current tree allow lio to
+export info about structs that the kernel initiates creation of
+via events like initiator login where there is no user interaction
+like a mkdir. These patches specificially focus on the
+I_T_nexus/session but could be used for other objects if we want.
 
-../sound/drivers/vx/vx_core.c:515:3: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
+Why sysfs when we have configfs?
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Takashi Iwai <tiwai@suse.com>
-Cc: alsa-devel@alsa-project.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- sound/drivers/vx/vx_core.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+I started with configfs and hit bugs like:
 
---- linux-next-20200327.orig/sound/drivers/vx/vx_core.c
-+++ linux-next-20200327/sound/drivers/vx/vx_core.c
-@@ -13,6 +13,7 @@
- #include <linux/init.h>
- #include <linux/device.h>
- #include <linux/firmware.h>
-+#include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/io.h>
- #include <sound/core.h>
-@@ -512,7 +513,7 @@ irqreturn_t snd_vx_threaded_irq_handler(
- 	 * received by the board is equal to one of those given to it).
- 	 */
- 	if (events & TIME_CODE_EVENT_PENDING)
--		; /* so far, nothing to do yet */
-+		do_empty(); /* so far, nothing to do yet */
- 
- 	/* The frequency has changed on the board (UER mode). */
- 	if (events & FREQUENCY_CHANGE_EVENT_PENDING)
+commit cc57c07343bd071cdf1915a91a24ab7d40c9b590
+Author: Mike Christie <mchristi@redhat.com>
+Date:   Sun Jul 15 18:16:17 2018 -0500
+
+    configfs: fix registered group removal
+
+but it turns out that bug was not really a bug and was just how
+configfs was meant to work. It seems it was not meant to be used
+where the kernel initiates creation of dirs/files as a result of
+some internal action. It's more geared to the user initiating
+the creation, and my patch just lead to other bugs and was
+reverted:
+
+commit f19e4ed1e1edbfa3c9ccb9fed17759b7d6db24c6
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date:   Thu Aug 29 23:13:30 2019 -0400
+
+    configfs_register_group() shouldn't be (and isn't) called in
+rmdirable parts
+
+So to export the session info we have debugfs, sysfs, ioctl,
+netlink, etc. sysfs just seemed like a decent fit since one of the
+primary users is rtslib and it already has lots of file/dir
+handling code.
+
+V2:
+- rename top level dir to scsi_target
+- Fix extra newline
+- Copy data that's exported to sysfs so we do not have to worry about
+configfs and sysfs refcounts.
+- Export session info needed for tracking sessions in userspace and
+handling commands like PGRs there (still needs a way to notify userspace
+when sessions are added/deleted, but that will be a different set since
+the focus is different).
