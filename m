@@ -1,76 +1,48 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 20 Apr 2020 19:14:15 +0000
-Subject: [RFC PATCH 01/12] target: check enforce_pr_isids during registration
-Message-Id: <20200420191426.17055-2-mchristi@redhat.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Fri, 24 Apr 2020 12:23:44 +0000
+Subject: [PATCH AUTOSEL 4.19 07/18] scsi: target: fix PR IN / READ FULL STATUS for FC
+Message-Id: <20200424122355.10453-7-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200420191426.17055-1-mchristi@redhat.com>
-In-Reply-To: <20200420191426.17055-1-mchristi@redhat.com>
+References: <20200424122355.10453-1-sashal@kernel.org>
+In-Reply-To: <20200424122355.10453-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jsmart2021@gmail.com, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Mike Christie <mchristi@redhat.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Mike Christie <mchristi@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Move the check for enforce_pr_isids to the registration code where we
-can fail at the time an initiator tries to register a path without an
-isid. In its current place in __core_scsi3_locate_pr_reg, it is too
-late because it can be registered and be reported in PR in commands and
-it is stuck in this state because we cannot unregister it.
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-I am sending this bug fix patch with the RFC ones, because the bug
-intersects with patch 5 "target: drop sess_get_initiator_sid from PR code".
-I will break this out and send as a proper bug fix later.
+[ Upstream commit 8fed04eb79a74cbf471dfaa755900a51b37273ab ]
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+Creation of the response to READ FULL STATUS fails for FC based
+reservations. Reason is the too high loop limit (< 24) in
+fc_get_pr_transport_id(). The string representation of FC WWPN is 23 chars
+long only ("11:22:33:44:55:66:77:88"). So when i is 23, the loop body is
+executed a last time for the ending '\0' of the string and thus hex2bin()
+reports an error.
+
+Link: https://lore.kernel.org/r/20200408132610.14623-3-bstroesser@ts.fujitsu.com
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Reviewed-by: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_pr.c | 24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
+ drivers/target/target_core_fabric_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 5e93169..cd2d32f 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -1176,15 +1176,6 @@ static struct t10_pr_registration *__core_scsi3_locate_pr_reg(
- 		 * ISID, then we have found a match.
- 		 */
- 		if (!pr_reg->isid_present_at_reg) {
--			/*
--			 * Determine if this SCSI device server requires that
--			 * SCSI Intiatior TransportID w/ ISIDs is enforced
--			 * for fabric modules (iSCSI) requiring them.
--			 */
--			if (tpg->se_tpg_tfo->sess_get_initiator_sid != NULL) {
--				if (dev->dev_attrib.enforce_pr_isids)
--					continue;
--			}
- 			atomic_inc_mb(&pr_reg->pr_res_holders);
- 			spin_unlock(&pr_tmpl->registration_lock);
- 			return pr_reg;
-@@ -1591,10 +1582,25 @@ static void core_scsi3_lunacl_undepend_item(struct se_dev_entry *se_deve)
- 				continue;
- 			dest_rtpi = tmp_lun->lun_rtpi;
- 
-+			iport_ptr = NULL;
- 			i_str = target_parse_pr_out_transport_id(tmp_tpg,
- 					ptr, &tid_len, &iport_ptr);
- 			if (!i_str)
- 				continue;
-+			/*
-+			 * Determine if this SCSI device server requires that
-+			 * SCSI Intiatior TransportID w/ ISIDs is enforced
-+			 * for fabric modules (iSCSI) requiring them.
-+			 */
-+			if (tpg->se_tpg_tfo->sess_get_initiator_sid &&
-+                            dev->dev_attrib.enforce_pr_isids &&
-+			    !iport_ptr) {
-+				pr_warn("SPC-PR: enforce_pr_isids is set but a isid has not been sent in the SPEC_I_PT data for %s.",
-+					i_str);
-+				ret = TCM_INVALID_PARAMETER_LIST;
-+				spin_unlock(&dev->se_port_lock);
-+				goto out_unmap;
-+			}
- 
- 			atomic_inc_mb(&tmp_tpg->tpg_pr_ref_count);
- 			spin_unlock(&dev->se_port_lock);
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index 10fae26b44add..939c6212d2ac5 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -76,7 +76,7 @@ static int fc_get_pr_transport_id(
+ 	 * encoded TransportID.
+ 	 */
+ 	ptr = &se_nacl->initiatorname[0];
+-	for (i = 0; i < 24; ) {
++	for (i = 0; i < 23; ) {
+ 		if (!strncmp(&ptr[i], ":", 1)) {
+ 			i++;
+ 			continue;
 -- 
-1.8.3.1
+2.20.1
