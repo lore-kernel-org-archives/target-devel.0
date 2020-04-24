@@ -1,59 +1,134 @@
-From: Ursula Braun <ubraun@linux.ibm.com>
-Date: Thu, 23 Apr 2020 09:39:43 +0000
-Subject: Re: [PATCH rdma-next] RDMA: Allow ib_client's to fail when add() is called
-Message-Id: <8ee742d7-952b-b521-d05c-17de601f6e32@linux.ibm.com>
+From: Hou Pu <houpu@bytedance.com>
+Date: Fri, 24 Apr 2020 12:35:27 +0000
+Subject: [PATCH v3 1/2] iscsi-target: fix login error when receiving is too fast
+Message-Id: <20200424123528.17627-2-houpu@bytedance.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200421172440.387069-1-leon@kernel.org>
-In-Reply-To: <20200421172440.387069-1-leon@kernel.org>
+References: <20200424123528.17627-1-houpu@bytedance.com>
+In-Reply-To: <20200424123528.17627-1-houpu@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Leon Romanovsky <leon@kernel.org>, Doug Ledford <dledford@redhat.com>, Jason Gunthorpe <jgg@mellanox.com>
-Cc: Bart Van Assche <bvanassche@acm.org>, "David S. Miller" <davem@davemloft.net>, Dennis Dalessandro <dennis.dalessandro@intel.com>, Jakub Kicinski <kuba@kernel.org>, Karsten Graul <kgraul@linux.ibm.com>, linux-rdma@vger.kernel.org, linux-s390@vger.kernel.org, netdev@vger.kernel.org, Niranjana Vishwanathapura <niranjana.vishwanathapura@intel.com>, rds-devel@oss.oracle.com, Santosh Shilimkar <santosh.shilimkar@oracle.com>, target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: mchristi@redhat.com, Hou Pu <houpu@bytedance.com>
 
+iscsi_target_sk_data_ready() could be invoked indirectly
+by iscsi_target_do_login_rx() from workqueue like following:
 
+iscsi_target_do_login_rx()
+  iscsi_target_do_login()
+    iscsi_target_do_tx_login_io()
+      iscsit_put_login_tx()
+        iscsi_login_tx_data()
+          tx_data()
+            sock_sendmsg_nosec()
+              tcp_sendmsg()
+                release_sock()
+                  sk_backlog_rcv()
+                    tcp_v4_do_rcv()
+                      tcp_data_ready()
+                        iscsi_target_sk_data_ready()
 
-On 4/21/20 7:24 PM, Leon Romanovsky wrote:
-> From: Jason Gunthorpe <jgg@mellanox.com>
-> 
-> When a client is added it isn't allowed to fail, but all the client's have
-> various failure paths within their add routines.
-> 
-> This creates the very fringe condition where the client was added, failed
-> during add and didn't set the client_data. The core code will then still
-> call other client_data centric ops like remove(), rename(), get_nl_info(),
-> and get_net_dev_by_params() with NULL client_data - which is confusing and
-> unexpected.
-> 
-> If the add() callback fails, then do not call any more client ops for the
-> device, even remove.
-> 
-> Remove all the now redundant checks for NULL client_data in ops callbacks.
-> 
-> Update all the add() callbacks to return error codes
-> appropriately. EOPNOTSUPP is used for cases where the ULP does not support
-> the ib_device - eg because it only works with IB.
-> 
-> Signed-off-by: Jason Gunthorpe <jgg@mellanox.com>
-> Signed-off-by: Leon Romanovsky <leonro@mellanox.com>
-> ---
->  drivers/infiniband/core/cm.c                  | 24 ++++++++++--------
->  drivers/infiniband/core/cma.c                 | 23 +++++++++--------
->  drivers/infiniband/core/device.c              | 16 ++++++++++--
->  drivers/infiniband/core/mad.c                 | 17 ++++++++++---
->  drivers/infiniband/core/multicast.c           | 12 ++++-----
->  drivers/infiniband/core/sa_query.c            | 22 ++++++++--------
->  drivers/infiniband/core/user_mad.c            | 22 ++++++++--------
->  drivers/infiniband/core/uverbs_main.c         | 24 +++++++++---------
->  drivers/infiniband/ulp/ipoib/ipoib_main.c     | 15 ++++-------
->  .../infiniband/ulp/opa_vnic/opa_vnic_vema.c   | 12 ++++-----
->  drivers/infiniband/ulp/srp/ib_srp.c           | 21 ++++++++--------
->  drivers/infiniband/ulp/srpt/ib_srpt.c         | 25 ++++++++-----------
->  include/rdma/ib_verbs.h                       |  2 +-
->  net/rds/ib.c                                  | 21 ++++++++++------
->  net/smc/smc_ib.c                              | 10 +++-----
->  15 files changed, 142 insertions(+), 124 deletions(-)
-> 
+At that time LOGIN_FLAGS_READ_ACTIVE is not cleared.
+and iscsi_target_sk_data_ready will not read data
+from the socket. And some iscsi initiator(i.e. libiscsi)
+will wait forever for a reply.
 
-For the net/smc part:
-Acked-by: Ursula Braun <ubraun@linux.ibm.com>
+LOGIN_FLAGS_READ_ACTIVE should be cleared early just after
+doing the receive and before writing to the socket in
+iscsi_target_do_login_rx.
+
+But sad news is that LOGIN_FLAGS_READ_ACTIVE is also used
+by sk_state_change to do login cleanup if a socket was closed
+at login time. It is supposed to be cleared after the login
+pdu is successfully processed and replied.
+
+So introduce another flag LOGIN_FLAGS_WRITE_ACTIVE to cover
+the transmit part so that sk_state_change could work well
+and clear LOGIN_FLAGS_READ_ACTIVE early so that sk_data_ready
+could also work.
+
+While at here, use login_flags more efficient.
+
+Signed-off-by: Hou Pu <houpu@bytedance.com>
+---
+ drivers/target/iscsi/iscsi_target_nego.c | 30 ++++++++++++++++++++++++++----
+ include/target/iscsi/iscsi_target_core.h |  9 +++++----
+ 2 files changed, 31 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 685d771b51d4..4cfa742e61df 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -622,6 +622,26 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
+ 	if (rc < 0)
+ 		goto err;
+ 
++	/*
++	 * LOGIN_FLAGS_READ_ACTIVE is cleared so that sk_data_ready
++	 * could be trigger again after this.
++	 *
++	 * LOGIN_FLAGS_WRITE_ACTIVE is cleared after we successfully
++	 * process a login pdu, so that sk_state_chage could do login
++	 * cleanup as needed if the socket is closed. If a delayed work is
++	 * ongoing (LOGIN_FLAGS_WRITE_ACTIVE or LOGIN_FLAGS_READ_ACTIVE),
++	 * sk_state_change will leave the cleanup to the delayed work or
++	 * it will schedule a delayed work to do cleanup.
++	 */
++	if (conn->sock) {
++		struct sock *sk = conn->sock->sk;
++
++		write_lock_bh(&sk->sk_callback_lock);
++		clear_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags);
++		set_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags);
++		write_unlock_bh(&sk->sk_callback_lock);
++	}
++
+ 	pr_debug("iscsi_target_do_login_rx after rx_login_io, %p, %s:%d\n",
+ 			conn, current->comm, current->pid);
+ 
+@@ -629,7 +649,8 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
+ 	if (rc < 0) {
+ 		goto err;
+ 	} else if (!rc) {
+-		if (iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_READ_ACTIVE))
++		if (iscsi_target_sk_check_and_clear(conn,
++						    LOGIN_FLAGS_WRITE_ACTIVE))
+ 			goto err;
+ 	} else if (rc = 1) {
+ 		iscsi_target_nego_release(conn);
+@@ -670,9 +691,10 @@ static void iscsi_target_sk_state_change(struct sock *sk)
+ 	state = __iscsi_target_sk_check_close(sk);
+ 	pr_debug("__iscsi_target_sk_close_change: state: %d\n", state);
+ 
+-	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags)) {
+-		pr_debug("Got LOGIN_FLAGS_READ_ACTIVE=1 sk_state_change"
+-			 " conn: %p\n", conn);
++	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags) ||
++	    test_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags)) {
++		pr_debug("Got LOGIN_FLAGS_{READ|WRITE}_ACTIVE=1"
++			 " sk_state_change conn: %p\n", conn);
+ 		if (state)
+ 			set_bit(LOGIN_FLAGS_CLOSED, &conn->login_flags);
+ 		write_unlock_bh(&sk->sk_callback_lock);
+diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+index 591cd9e4692c..844bef255e89 100644
+--- a/include/target/iscsi/iscsi_target_core.h
++++ b/include/target/iscsi/iscsi_target_core.h
+@@ -566,10 +566,11 @@ struct iscsi_conn {
+ 	struct socket		*sock;
+ 	void			(*orig_data_ready)(struct sock *);
+ 	void			(*orig_state_change)(struct sock *);
+-#define LOGIN_FLAGS_READ_ACTIVE		1
+-#define LOGIN_FLAGS_CLOSED		2
+-#define LOGIN_FLAGS_READY		4
+-#define LOGIN_FLAGS_INITIAL_PDU		8
++#define LOGIN_FLAGS_READY		0
++#define LOGIN_FLAGS_INITIAL_PDU		1
++#define LOGIN_FLAGS_READ_ACTIVE		2
++#define LOGIN_FLAGS_WRITE_ACTIVE	3
++#define LOGIN_FLAGS_CLOSED		4
+ 	unsigned long		login_flags;
+ 	struct delayed_work	login_work;
+ 	struct iscsi_login	*login;
+-- 
+2.11.0
