@@ -1,57 +1,50 @@
-From: Barrister Robert Richter UN-Attorney at Law Court-Benin  <info.zennitbankplcnige
-Date: Mon, 13 Apr 2020 11:43:28 +0000
-Subject: I have already sent you first payment US$5000.00 this morning through MONEY Gram service.it is avail
-Message-Id: <CABHzvrkwD2fUnnJ0oQrWEyM9uH6JjG-H4j2cY7u_pKX6haqt-g@mail.gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Fri, 24 Apr 2020 12:23:10 +0000
+Subject: [PATCH AUTOSEL 5.4 13/26] scsi: target: tcmu: reset_ring should reset TCMU_DEV_BIT_BROKEN
+Message-Id: <20200424122323.10194-13-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200424122323.10194-1-sashal@kernel.org>
+In-Reply-To: <20200424122323.10194-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Mike Christie <mchristi@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-ATTN DEAR BENEFICIARY.
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-GOOD NEWS.
+[ Upstream commit 066f79a5fd6d1b9a5cc57b5cd445b3e4bb68a5b2 ]
 
-I have already sent you first payment US$5000.00 this morning through
-MONEY Gram service.
+In case command ring buffer becomes inconsistent, tcmu sets device flag
+TCMU_DEV_BIT_BROKEN.  If the bit is set, tcmu rejects new commands from LIO
+core with TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE, and no longer processes
+completions from the ring.  The reset_ring attribute can be used to
+completely clean up the command ring, so after reset_ring the ring no
+longer is inconsistent.
 
-So we advise you to Contact This Money Gram office to pick up your
-transfer $US5000.00 today.
-it is available to pick up in address now.
+Therefore reset_ring also should reset bit TCMU_DEV_BIT_BROKEN to allow
+normal processing.
 
-Note that your compensation payment funds is total amount $US2.800,000
-Million Dollars.We have instructed the Money Gram Agent,Mr. James
-Gadner to keep sending the transfer to you daily, but the maximum
-amount you will be receiving everyday is US$5000.00. Contact Agent now
-to pick up your first payment $US5000.00 immediately.
+Link: https://lore.kernel.org/r/20200409101026.17872-1-bstroesser@ts.fujitsu.com
+Acked-by: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/target/target_core_user.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Contact Person, Mr. James Gadner, Dir. Money Gram Benin.
-Email: mgbenin903@gmail.com
-Telephone Numbers: +229 62819378/ +229 98477762
-
-HERE IS YOUR PAYMENT DETAILS FOR THE FIRST £US5000.00 SENT TODAY.
-
-Track View Website link:
-https://secure.moneygram.com/track
-Sender’s First name: David
-Sender’s Last Name: Joiner
-Money Transfer Control Number (MTCN) (REFERENCE)# 26046856
-
-Contact the Mmoney Gram Urgent and reconfirm your address to the
-office before, they will allow you to pick up the transfer today.
-
-HERE IS WHAT REQUIRED OF YOU.
-
-YOUR FULL NAME---------
-ADDRESS--------------
-COUNTRY-----------------------------
-TELEPHONE NUMBERS-----------------
-
-Note, I paid the transfer fee for you, but only you are required to
-send to the office is $75.00 only,Been Your Payment File activation
-fee, Send once you contact the office,before you can able to pick up
-your transfer today.
-
-Let me know once you pick up first payment today.
-
-Barrister Robert Richter UN-Attorney at Law Court-Benin
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 35be1be87d2a1..9425354aef99c 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -2073,6 +2073,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+ 	mb->cmd_tail = 0;
+ 	mb->cmd_head = 0;
+ 	tcmu_flush_dcache_range(mb, sizeof(*mb));
++	clear_bit(TCMU_DEV_BIT_BROKEN, &udev->flags);
+ 
+ 	del_timer(&udev->cmd_timer);
+ 
+-- 
+2.20.1
