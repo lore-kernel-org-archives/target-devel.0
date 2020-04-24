@@ -1,46 +1,43 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Date: Sun, 19 Apr 2020 09:32:08 +0000
-Subject: Re: [PATCH 6/9] nfsd: fix empty-body warning in nfs4state.c
-Message-Id: <34fe524d-f9f0-ba8a-d5cb-ffbeacf1b5d8@cogentembedded.com>
+From: Hou Pu <houpu@bytedance.com>
+Date: Fri, 24 Apr 2020 03:58:43 +0000
+Subject: [PATCH v2 2/2] iscsi-target: Fix inconsistent debug message in __iscsi_target_sk_check_close
+Message-Id: <20200424035843.5914-3-houpu@bytedance.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200418184111.13401-1-rdunlap@infradead.org>
- <20200418184111.13401-7-rdunlap@infradead.org>
-In-Reply-To: <20200418184111.13401-7-rdunlap@infradead.org>
+References: <20200424035843.5914-1-houpu@bytedance.com>
+In-Reply-To: <20200424035843.5914-1-houpu@bytedance.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-Cc: alsa-devel@alsa-project.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zzy Wysm <zzy@zzywysm.com>, "J. Bruce Fields" <bfields@fieldses.org>, target-devel@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, Vishal Verma <vishal.l.verma@intel.com>, linux-input@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Chuck Lever <chuck.lever@oracle.com>, linux-fsdevel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: martin.petersen@oracle.com, mchristi@redhat.com
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Hou Pu <houpu@bytedance.com>
 
-Hello!
+Following commit changed the return value of __iscsi_target_sk_check_close.
+But the pr_debug is still printing FALSE when returing TRUE which is a little
+confusing.
 
-On 18.04.2020 21:41, Randy Dunlap wrote:
+commit 25cdda95fda78d22d44157da15aa7ea34be3c804
+Author: Nicholas Bellinger <nab@linux-iscsi.org>
+Date:   Wed May 24 21:47:09 2017 -0700
 
-> Fix gcc empty-body warning when -Wextra is used:
-> 
-> ../fs/nfsd/nfs4state.c:3898:3: warning: suggest braces around empty body in an ‘else’ statement [-Wempty-body]
-> 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: "J. Bruce Fields" <bfields@fieldses.org>
-> Cc: Chuck Lever <chuck.lever@oracle.com>
-> Cc: linux-nfs@vger.kernel.org
-> ---
->   fs/nfsd/nfs4state.c |    3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> --- linux-next-20200417.orig/fs/nfsd/nfs4state.c
-> +++ linux-next-20200417/fs/nfsd/nfs4state.c
-[...]
-> @@ -3895,7 +3896,7 @@ nfsd4_setclientid(struct svc_rqst *rqstp
->   		copy_clid(new, conf);
->   		gen_confirm(new, nn);
->   	} else /* case 4 (new client) or cases 2, 3 (client reboot): */
-> -		;
-> +		do_empty();
+    iscsi-target: Fix initial login PDU asynchronous socket close OOPs
 
-    In this case explicit {} would probably have been better, as described in 
-Documentation/process/coding-style.rst, clause (3).
+Signed-off-by: Hou Pu <houpu@bytedance.com>
+---
+ drivers/target/iscsi/iscsi_target_nego.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-MBR, Sergei
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 5292b6c51b4e..2fee1946fb7a 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -481,7 +481,7 @@ static bool __iscsi_target_sk_check_close(struct sock *sk)
+ {
+ 	if (sk->sk_state = TCP_CLOSE_WAIT || sk->sk_state = TCP_CLOSE) {
+ 		pr_debug("__iscsi_target_sk_check_close: TCP_CLOSE_WAIT|TCP_CLOSE,"
+-			"returning FALSE\n");
++			"returning TRUE\n");
+ 		return true;
+ 	}
+ 	return false;
+-- 
+2.11.0
