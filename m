@@ -1,75 +1,50 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Tue, 28 Apr 2020 06:10:59 +0000
-Subject: [PATCH 01/11] target: check enforce_pr_isids during registration
-Message-Id: <20200428061109.3042-2-mchristi@redhat.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Fri, 24 Apr 2020 12:22:14 +0000
+Subject: [PATCH AUTOSEL 5.6 16/38] scsi: target: tcmu: reset_ring should reset TCMU_DEV_BIT_BROKEN
+Message-Id: <20200424122237.9831-16-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200428061109.3042-1-mchristi@redhat.com>
-In-Reply-To: <20200428061109.3042-1-mchristi@redhat.com>
+References: <20200424122237.9831-1-sashal@kernel.org>
+In-Reply-To: <20200424122237.9831-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Mike Christie <mchristi@redhat.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Mike Christie <mchristi@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Move the check for enforce_pr_isids to the registration code where we
-can fail at the time an initiator tries to register a path without an
-isid. In its current place in __core_scsi3_locate_pr_reg, it is too
-late because it can be registered and be reported in PR in commands and
-it is stuck in this state because we cannot unregister it.
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-Note.
-I am including in this patchset, because the 5th patch is built on top.
+[ Upstream commit 066f79a5fd6d1b9a5cc57b5cd445b3e4bb68a5b2 ]
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+In case command ring buffer becomes inconsistent, tcmu sets device flag
+TCMU_DEV_BIT_BROKEN.  If the bit is set, tcmu rejects new commands from LIO
+core with TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE, and no longer processes
+completions from the ring.  The reset_ring attribute can be used to
+completely clean up the command ring, so after reset_ring the ring no
+longer is inconsistent.
+
+Therefore reset_ring also should reset bit TCMU_DEV_BIT_BROKEN to allow
+normal processing.
+
+Link: https://lore.kernel.org/r/20200409101026.17872-1-bstroesser@ts.fujitsu.com
+Acked-by: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_pr.c | 24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
+ drivers/target/target_core_user.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 5e93169..cd2d32f 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -1176,15 +1176,6 @@ static struct t10_pr_registration *__core_scsi3_locate_pr_reg(
- 		 * ISID, then we have found a match.
- 		 */
- 		if (!pr_reg->isid_present_at_reg) {
--			/*
--			 * Determine if this SCSI device server requires that
--			 * SCSI Intiatior TransportID w/ ISIDs is enforced
--			 * for fabric modules (iSCSI) requiring them.
--			 */
--			if (tpg->se_tpg_tfo->sess_get_initiator_sid != NULL) {
--				if (dev->dev_attrib.enforce_pr_isids)
--					continue;
--			}
- 			atomic_inc_mb(&pr_reg->pr_res_holders);
- 			spin_unlock(&pr_tmpl->registration_lock);
- 			return pr_reg;
-@@ -1591,10 +1582,25 @@ static void core_scsi3_lunacl_undepend_item(struct se_dev_entry *se_deve)
- 				continue;
- 			dest_rtpi = tmp_lun->lun_rtpi;
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 0b9dfa6b17bc7..f769bb1e37356 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -2073,6 +2073,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+ 	mb->cmd_tail = 0;
+ 	mb->cmd_head = 0;
+ 	tcmu_flush_dcache_range(mb, sizeof(*mb));
++	clear_bit(TCMU_DEV_BIT_BROKEN, &udev->flags);
  
-+			iport_ptr = NULL;
- 			i_str = target_parse_pr_out_transport_id(tmp_tpg,
- 					ptr, &tid_len, &iport_ptr);
- 			if (!i_str)
- 				continue;
-+			/*
-+			 * Determine if this SCSI device server requires that
-+			 * SCSI Intiatior TransportID w/ ISIDs is enforced
-+			 * for fabric modules (iSCSI) requiring them.
-+			 */
-+			if (tpg->se_tpg_tfo->sess_get_initiator_sid &&
-+                            dev->dev_attrib.enforce_pr_isids &&
-+			    !iport_ptr) {
-+				pr_warn("SPC-PR: enforce_pr_isids is set but a isid has not been sent in the SPEC_I_PT data for %s.",
-+					i_str);
-+				ret = TCM_INVALID_PARAMETER_LIST;
-+				spin_unlock(&dev->se_port_lock);
-+				goto out_unmap;
-+			}
+ 	del_timer(&udev->cmd_timer);
  
- 			atomic_inc_mb(&tmp_tpg->tpg_pr_ref_count);
- 			spin_unlock(&dev->se_port_lock);
 -- 
-1.8.3.1
+2.20.1
