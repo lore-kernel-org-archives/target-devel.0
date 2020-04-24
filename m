@@ -1,152 +1,50 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Mon, 27 Apr 2020 15:08:23 +0000
-Subject: [PATCH 4/4] target: tcmu: make pgr_support and alua_support attributes writable
-Message-Id: <20200427150823.15350-5-bstroesser@ts.fujitsu.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Fri, 24 Apr 2020 12:23:45 +0000
+Subject: [PATCH AUTOSEL 4.19 08/18] scsi: target: tcmu: reset_ring should reset TCMU_DEV_BIT_BROKEN
+Message-Id: <20200424122355.10453-8-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
+References: <20200424122355.10453-1-sashal@kernel.org>
+In-Reply-To: <20200424122355.10453-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: mchristi@redhat.com, ddiss@suse.de, hch@lst.de, martin.petersen@oracle.com, Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Mike Christie <mchristi@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Currently in tcmu reservation commands are handled by core's
-pr implementation (default) or completely rejected (emulate_pr
-set to 0). We additionally want to be able to do full
-reservation handling in userspace. Therefore we need a way to
-set the TRANSPORT_FLAG_PASSTHROUGH_PGR.
-The inverted flag is displayed by attribute pgr_support.
-Since we moved the flag from transport/backend to se_device in
-the previous patch, we now can make it changeable per device by
-allowing to write the attribute.
-The new field transport_flags_changeable in transport/backend
-is used to reject writing if not allowed for a backend.
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-Regarding ALUA we also want to be able to passthrough commands
-to userspace in tcmu. Therefore we need
-TRANSPORT_FLAG_PASSTHROUGH_ALUA to be changeable, because
-by setting it we can switch off all ALUA checks in core. So we
-also set TRANSPORT_FLAG_PASSTHROUGH_ALUA in tcmu's
-transport_flags_changeable.
+[ Upstream commit 066f79a5fd6d1b9a5cc57b5cd445b3e4bb68a5b2 ]
 
-Of course, ALUA and reservation handling in userspace will work
-only, if session/nexus information is sent to userspace along with
-every command. This will be object of a patch series announced
-by Mike Christie.
+In case command ring buffer becomes inconsistent, tcmu sets device flag
+TCMU_DEV_BIT_BROKEN.  If the bit is set, tcmu rejects new commands from LIO
+core with TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE, and no longer processes
+completions from the ring.  The reset_ring attribute can be used to
+completely clean up the command ring, so after reset_ring the ring no
+longer is inconsistent.
 
+Therefore reset_ring also should reset bit TCMU_DEV_BIT_BROKEN to allow
+normal processing.
+
+Link: https://lore.kernel.org/r/20200409101026.17872-1-bstroesser@ts.fujitsu.com
+Acked-by: Mike Christie <mchristi@redhat.com>
 Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_configfs.c | 56 +++++++++++++++++++++++++++++++++--
- drivers/target/target_core_user.c     |  2 ++
- include/target/target_core_backend.h  |  1 +
- 3 files changed, 57 insertions(+), 2 deletions(-)
+ drivers/target/target_core_user.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 279989e32e64..f04352285155 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -1105,6 +1105,32 @@ static ssize_t alua_support_show(struct config_item *item, char *page)
- 			flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA ? 0 : 1);
- }
- 
-+static ssize_t alua_support_store(struct config_item *item,
-+		const char *page, size_t count)
-+{
-+	struct se_dev_attrib *da = to_attrib(item);
-+	struct se_device *dev = da->da_dev;
-+	bool flag;
-+	int ret;
-+
-+	if (!(dev->transport->transport_flags_changeable &
-+	      TRANSPORT_FLAG_PASSTHROUGH_ALUA)) {
-+		pr_err("dev[%p]: Unable to change SE Device alua_support:"
-+			" alua_support has fixed value\n", dev);
-+		return -EINVAL;
-+	}
-+
-+	ret = strtobool(page, &flag);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (flag)
-+		dev->transport_flags &= ~TRANSPORT_FLAG_PASSTHROUGH_ALUA;
-+	else
-+		dev->transport_flags |= TRANSPORT_FLAG_PASSTHROUGH_ALUA;
-+	return count;
-+}
-+
- static ssize_t pgr_support_show(struct config_item *item, char *page)
- {
- 	struct se_dev_attrib *da = to_attrib(item);
-@@ -1114,6 +1140,32 @@ static ssize_t pgr_support_show(struct config_item *item, char *page)
- 			flags & TRANSPORT_FLAG_PASSTHROUGH_PGR ? 0 : 1);
- }
- 
-+static ssize_t pgr_support_store(struct config_item *item,
-+		const char *page, size_t count)
-+{
-+	struct se_dev_attrib *da = to_attrib(item);
-+	struct se_device *dev = da->da_dev;
-+	bool flag;
-+	int ret;
-+
-+	if (!(dev->transport->transport_flags_changeable &
-+	      TRANSPORT_FLAG_PASSTHROUGH_PGR)) {
-+		pr_err("dev[%p]: Unable to change SE Device pgr_support:"
-+			" pgr_support has fixed value\n", dev);
-+		return -EINVAL;
-+	}
-+
-+	ret = strtobool(page, &flag);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (flag)
-+		dev->transport_flags &= ~TRANSPORT_FLAG_PASSTHROUGH_PGR;
-+	else
-+		dev->transport_flags |= TRANSPORT_FLAG_PASSTHROUGH_PGR;
-+	return count;
-+}
-+
- CONFIGFS_ATTR(, emulate_model_alias);
- CONFIGFS_ATTR(, emulate_dpo);
- CONFIGFS_ATTR(, emulate_fua_write);
-@@ -1146,8 +1198,8 @@ CONFIGFS_ATTR(, unmap_granularity);
- CONFIGFS_ATTR(, unmap_granularity_alignment);
- CONFIGFS_ATTR(, unmap_zeroes_data);
- CONFIGFS_ATTR(, max_write_same_len);
--CONFIGFS_ATTR_RO(, alua_support);
--CONFIGFS_ATTR_RO(, pgr_support);
-+CONFIGFS_ATTR(, alua_support);
-+CONFIGFS_ATTR(, pgr_support);
- 
- /*
-  * dev_attrib attributes for devices using the target core SBC/SPC
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 264f19ba8453..b02760b2e9c0 100644
+index 7ee0a75ce4526..eff1e36ca03c2 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -2618,6 +2618,8 @@ static struct target_backend_ops tcmu_ops = {
- 	.name			= "user",
- 	.owner			= THIS_MODULE,
- 	.transport_flags_default = TRANSPORT_FLAG_PASSTHROUGH,
-+	.transport_flags_changeable = TRANSPORT_FLAG_PASSTHROUGH_PGR |
-+	                              TRANSPORT_FLAG_PASSTHROUGH_ALUA,
- 	.attach_hba		= tcmu_attach_hba,
- 	.detach_hba		= tcmu_detach_hba,
- 	.alloc_device		= tcmu_alloc_device,
-diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
-index 959163504f82..f51452e3b984 100644
---- a/include/target/target_core_backend.h
-+++ b/include/target/target_core_backend.h
-@@ -24,6 +24,7 @@ struct target_backend_ops {
- 	struct module *owner;
+@@ -2067,6 +2067,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+ 	mb->cmd_tail = 0;
+ 	mb->cmd_head = 0;
+ 	tcmu_flush_dcache_range(mb, sizeof(*mb));
++	clear_bit(TCMU_DEV_BIT_BROKEN, &udev->flags);
  
- 	u8 transport_flags_default;
-+	u8 transport_flags_changeable;
+ 	del_timer(&udev->cmd_timer);
  
- 	int (*attach_hba)(struct se_hba *, u32);
- 	void (*detach_hba)(struct se_hba *);
 -- 
-2.12.3
+2.20.1
