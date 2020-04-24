@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 24 Apr 2020 12:22:13 +0000
-Subject: [PATCH AUTOSEL 5.6 15/38] scsi: target: fix PR IN / READ FULL STATUS for FC
-Message-Id: <20200424122237.9831-15-sashal@kernel.org>
+Date: Fri, 24 Apr 2020 12:23:09 +0000
+Subject: [PATCH AUTOSEL 5.4 12/26] scsi: target: fix PR IN / READ FULL STATUS for FC
+Message-Id: <20200424122323.10194-12-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200424122237.9831-1-sashal@kernel.org>
-In-Reply-To: <20200424122237.9831-1-sashal@kernel.org>
+References: <20200424122323.10194-1-sashal@kernel.org>
+In-Reply-To: <20200424122323.10194-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
