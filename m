@@ -1,147 +1,133 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Wed, 29 Apr 2020 09:44:38 +0000
-Subject: [RFC PATCH 05/11] scsi: target/core: Use RTPI from target port
-Message-Id: <20200429094443.43937-6-r.bolshakov@yadro.com>
+From: Hou Pu <houpu@bytedance.com>
+Date: Fri, 24 Apr 2020 03:58:42 +0000
+Subject: [PATCH v2 1/2] iscsi-target: fix login error when receiving is too fast
+Message-Id: <20200424035843.5914-2-houpu@bytedance.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200429094443.43937-1-r.bolshakov@yadro.com>
-In-Reply-To: <20200429094443.43937-1-r.bolshakov@yadro.com>
+References: <20200424035843.5914-1-houpu@bytedance.com>
+In-Reply-To: <20200424035843.5914-1-houpu@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, Mike Christie <mchristi@redhat.com>, Bart Van Assche <bvanassche@acm.org>, David Disseldorp <ddiss@suse.de>
-Cc: linux-scsi@vger.kernel.org, linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>
+To: martin.petersen@oracle.com, mchristi@redhat.com
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Hou Pu <houpu@bytedance.com>
 
-Replace all references to RTPI from LUN field to se_portal_group field.
-It introduces consitent reporting of RTPI for all LUNs and all target
-ports.
+iscsi_target_sk_data_ready() could be invoked indirectly
+by iscsi_target_do_login_rx() from workqueue like following:
 
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+iscsi_target_do_login_rx()
+  iscsi_target_do_login()
+    iscsi_target_do_tx_login_io()
+      iscsit_put_login_tx()
+        iscsi_login_tx_data()
+          tx_data()
+            sock_sendmsg_nosec()
+              tcp_sendmsg()
+                release_sock()
+                  sk_backlog_rcv()
+                    tcp_v4_do_rcv()
+                      tcp_data_ready()
+                        iscsi_target_sk_data_ready()
+
+At that time LOGIN_FLAGS_READ_ACTIVE is not cleared.
+and iscsi_target_sk_data_ready will not read data
+from the socket. And some iscsi initiator(i.e. libiscsi)
+will wait forever for a reply.
+
+LOGIN_FLAGS_READ_ACTIVE should be cleared early just after
+doing the receive and before writing to the socket in
+iscsi_target_do_login_rx.
+
+But sad news is that LOGIN_FLAGS_READ_ACTIVE is also used
+by sk_state_change to do login cleanup if a socket was closed
+at login time. It is supposed to be cleared after the login
+pdu is successfully processed and reponsed.
+
+So introduce another flag LOGIN_FLAGS_WRITE_ACTIVE to cover
+the transmit part so that sk_state_change could work well
+and clear LOGIN_FLAGS_READ_ACTIVE early so that sk_data_ready
+could also work.
+
+While at here, use login_flags more efficient.
+
+Signed-off-by: Hou Pu <houpu@bytedance.com>
 ---
- drivers/target/target_core_alua.c   | 4 ++--
- drivers/target/target_core_device.c | 2 +-
- drivers/target/target_core_pr.c     | 8 ++++----
- drivers/target/target_core_spc.c    | 2 +-
- drivers/target/target_core_stat.c   | 6 +++---
- 5 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/target/iscsi/iscsi_target_nego.c | 29 +++++++++++++++++++++++++----
+ include/target/iscsi/iscsi_target_core.h |  9 +++++----
+ 2 files changed, 30 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-index b98a5b5fce49..8053f3989bbb 100644
---- a/drivers/target/target_core_alua.c
-+++ b/drivers/target/target_core_alua.c
-@@ -224,7 +224,7 @@ target_emulate_report_target_port_groups(struct se_cmd *cmd)
- 			/*
- 			 * Set RELATIVE TARGET PORT IDENTIFIER
- 			 */
--			put_unaligned_be16(lun->lun_rtpi, &buf[off]);
-+			put_unaligned_be16(lun->lun_tpg->tpg_rtpi, &buf[off]);
- 			off += 2;
- 			rd_len += 4;
- 		}
-@@ -405,7 +405,7 @@ target_emulate_set_target_port_groups(struct se_cmd *cmd)
- 			spin_lock(&dev->se_port_lock);
- 			list_for_each_entry(lun, &dev->dev_sep_list,
- 							lun_dev_link) {
--				if (lun->lun_rtpi != rtpi)
-+				if (lun->lun_tpg->tpg_rtpi != rtpi)
- 					continue;
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 685d771b51d4..5292b6c51b4e 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -622,6 +622,26 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
+ 	if (rc < 0)
+ 		goto err;
  
- 				// XXX: racy unlock
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 4cee1138284b..cb4d8cc4ff45 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -227,7 +227,7 @@ struct se_dev_entry *core_get_se_deve_from_rtpi(
- 				tpg->se_tpg_tfo->fabric_name);
- 			continue;
- 		}
--		if (lun->lun_rtpi != rtpi)
-+		if (lun->lun_tpg->tpg_rtpi != rtpi)
- 			continue;
++	/*
++	 * LOGIN_FLAGS_READ_ACTIVE is cleared so that sk_data_ready
++	 * could be trigger again after this.
++	 *
++	 * LOGIN_FLAGS_WRITE_ACTIVE is cleared after we successfully
++	 * process a login pdu, so that sk_state_chage could do login
++	 * cleanup as needed if the socket is closed. If a delayed work is
++	 * ongoing (LOGIN_FLAGS_WRITE_ACTIVE or LOGIN_FLAGS_READ_ACTIVE),
++	 * sk_state_change will leave the cleanup to the delayed work or
++	 * it will schedule a delayed work to do cleanup.
++	 */
++	if (conn->sock) {
++		struct sock *sk = conn->sock->sk;
++
++		write_lock_bh(&sk->sk_callback_lock);
++		clear_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags);
++		set_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags);
++		write_unlock_bh(&sk->sk_callback_lock);
++	}
++
+ 	pr_debug("iscsi_target_do_login_rx after rx_login_io, %p, %s:%d\n",
+ 			conn, current->comm, current->pid);
  
- 		kref_get(&deve->pr_kref);
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 5e931690e697..87af494c4e75 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -662,7 +662,7 @@ static struct t10_pr_registration *__core_scsi3_do_alloc_registration(
- 	}
- 	pr_reg->pr_res_mapped_lun = mapped_lun;
- 	pr_reg->pr_aptpl_target_lun = lun->unpacked_lun;
--	pr_reg->tg_pt_sep_rtpi = lun->lun_rtpi;
-+	pr_reg->tg_pt_sep_rtpi = lun->lun_tpg->tpg_rtpi;
- 	pr_reg->pr_res_key = sa_res_key;
- 	pr_reg->pr_reg_all_tg_pt = all_tg_pt;
- 	pr_reg->pr_reg_aptpl = aptpl;
-@@ -971,7 +971,7 @@ static int __core_scsi3_check_aptpl_registration(
- 			rcu_read_unlock();
+@@ -629,7 +649,7 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
+ 	if (rc < 0) {
+ 		goto err;
+ 	} else if (!rc) {
+-		if (iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_READ_ACTIVE))
++		if (iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_WRITE_ACTIVE))
+ 			goto err;
+ 	} else if (rc = 1) {
+ 		iscsi_target_nego_release(conn);
+@@ -670,9 +690,10 @@ static void iscsi_target_sk_state_change(struct sock *sk)
+ 	state = __iscsi_target_sk_check_close(sk);
+ 	pr_debug("__iscsi_target_sk_close_change: state: %d\n", state);
  
- 			pr_reg->pr_reg_nacl = nacl;
--			pr_reg->tg_pt_sep_rtpi = lun->lun_rtpi;
-+			pr_reg->tg_pt_sep_rtpi = lun->lun_tpg->tpg_rtpi;
- 			list_del(&pr_reg->pr_reg_aptpl_list);
- 			spin_unlock(&pr_tmpl->aptpl_reg_lock);
- 			/*
-@@ -1589,7 +1589,7 @@ core_scsi3_decode_spec_i_port(
- 			 */
- 			if (tmp_tpg->proto_id != proto_ident)
- 				continue;
--			dest_rtpi = tmp_lun->lun_rtpi;
-+			dest_rtpi = tmp_lun->lun_tpg->tpg_rtpi;
- 
- 			i_str = target_parse_pr_out_transport_id(tmp_tpg,
- 					ptr, &tid_len, &iport_ptr);
-@@ -3225,7 +3225,7 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
- 
- 	spin_lock(&dev->se_port_lock);
- 	list_for_each_entry(tmp_lun, &dev->dev_sep_list, lun_dev_link) {
--		if (tmp_lun->lun_rtpi != rtpi)
-+		if (tmp_lun->lun_tpg->tpg_rtpi != rtpi)
- 			continue;
- 		dest_se_tpg = tmp_lun->lun_tpg;
- 		dest_tf_ops = dest_se_tpg->se_tpg_tfo;
-diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index 633dee9ac877..0b276c79fdba 100644
---- a/drivers/target/target_core_spc.c
-+++ b/drivers/target/target_core_spc.c
-@@ -301,7 +301,7 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
- 		/* Skip over Obsolete field in RTPI payload
- 		 * in Table 472 */
- 		off += 2;
--		put_unaligned_be16(lun->lun_rtpi, &buf[off]);
-+		put_unaligned_be16(lun->lun_tpg->tpg_rtpi, &buf[off]);
- 		off += 2;
- 		len += 8; /* Header size + Designation descriptor */
- 		/*
-diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
-index 237309db4b33..9d5a2bc43d4e 100644
---- a/drivers/target/target_core_stat.c
-+++ b/drivers/target/target_core_stat.c
-@@ -458,7 +458,7 @@ static ssize_t target_stat_port_indx_show(struct config_item *item, char *page)
- 	rcu_read_lock();
- 	dev = rcu_dereference(lun->lun_se_dev);
- 	if (dev)
--		ret = snprintf(page, PAGE_SIZE, "%u\n", lun->lun_rtpi);
-+		ret = snprintf(page, PAGE_SIZE, "%u\n", lun->lun_tpg->tpg_rtpi);
- 	rcu_read_unlock();
- 	return ret;
- }
-@@ -564,7 +564,7 @@ static ssize_t target_stat_tgt_port_indx_show(struct config_item *item,
- 	rcu_read_lock();
- 	dev = rcu_dereference(lun->lun_se_dev);
- 	if (dev)
--		ret = snprintf(page, PAGE_SIZE, "%u\n", lun->lun_rtpi);
-+		ret = snprintf(page, PAGE_SIZE, "%u\n", lun->lun_tpg->tpg_rtpi);
- 	rcu_read_unlock();
- 	return ret;
- }
-@@ -582,7 +582,7 @@ static ssize_t target_stat_tgt_port_name_show(struct config_item *item,
- 	if (dev)
- 		ret = snprintf(page, PAGE_SIZE, "%sPort#%u\n",
- 			tpg->se_tpg_tfo->fabric_name,
--			lun->lun_rtpi);
-+			lun->lun_tpg->tpg_rtpi);
- 	rcu_read_unlock();
- 	return ret;
- }
+-	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags)) {
+-		pr_debug("Got LOGIN_FLAGS_READ_ACTIVE=1 sk_state_change"
+-			 " conn: %p\n", conn);
++	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags) ||
++	    test_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags)) {
++		pr_debug("Got LOGIN_FLAGS_{READ|WRITE}_ACTIVE=1"
++			 "sk_state_change conn: %p\n", conn);
+ 		if (state)
+ 			set_bit(LOGIN_FLAGS_CLOSED, &conn->login_flags);
+ 		write_unlock_bh(&sk->sk_callback_lock);
+diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+index 591cd9e4692c..844bef255e89 100644
+--- a/include/target/iscsi/iscsi_target_core.h
++++ b/include/target/iscsi/iscsi_target_core.h
+@@ -566,10 +566,11 @@ struct iscsi_conn {
+ 	struct socket		*sock;
+ 	void			(*orig_data_ready)(struct sock *);
+ 	void			(*orig_state_change)(struct sock *);
+-#define LOGIN_FLAGS_READ_ACTIVE		1
+-#define LOGIN_FLAGS_CLOSED		2
+-#define LOGIN_FLAGS_READY		4
+-#define LOGIN_FLAGS_INITIAL_PDU		8
++#define LOGIN_FLAGS_READY		0
++#define LOGIN_FLAGS_INITIAL_PDU		1
++#define LOGIN_FLAGS_READ_ACTIVE		2
++#define LOGIN_FLAGS_WRITE_ACTIVE	3
++#define LOGIN_FLAGS_CLOSED		4
+ 	unsigned long		login_flags;
+ 	struct delayed_work	login_work;
+ 	struct iscsi_login	*login;
 -- 
-2.26.1
+2.11.0
