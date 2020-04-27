@@ -1,50 +1,100 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 24 Apr 2020 12:22:14 +0000
-Subject: [PATCH AUTOSEL 5.6 16/38] scsi: target: tcmu: reset_ring should reset TCMU_DEV_BIT_BROKEN
-Message-Id: <20200424122237.9831-16-sashal@kernel.org>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Mon, 27 Apr 2020 15:08:21 +0000
+Subject: [PATCH 2/4] target: tcmu: add attrbutes enforce_pr_isids and force_pr_aptpl
+Message-Id: <20200427150823.15350-3-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200424122237.9831-1-sashal@kernel.org>
-In-Reply-To: <20200424122237.9831-1-sashal@kernel.org>
+References: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Mike Christie <mchristi@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: mchristi@redhat.com, ddiss@suse.de, hch@lst.de, martin.petersen@oracle.com, Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+tcmu has not set TRANSPORT_FLAG_PASSTHROUGH_PGR. Therefore the
+in core pr emulation is active by default, but there are some
+attributes for configuration missing. So we add them now.
 
-[ Upstream commit 066f79a5fd6d1b9a5cc57b5cd445b3e4bb68a5b2 ]
-
-In case command ring buffer becomes inconsistent, tcmu sets device flag
-TCMU_DEV_BIT_BROKEN.  If the bit is set, tcmu rejects new commands from LIO
-core with TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE, and no longer processes
-completions from the ring.  The reset_ring attribute can be used to
-completely clean up the command ring, so after reset_ring the ring no
-longer is inconsistent.
-
-Therefore reset_ring also should reset bit TCMU_DEV_BIT_BROKEN to allow
-normal processing.
-
-Link: https://lore.kernel.org/r/20200409101026.17872-1-bstroesser@ts.fujitsu.com
-Acked-by: Mike Christie <mchristi@redhat.com>
 Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_user.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/target/target_core_configfs.c | 11 +++++++++++
+ drivers/target/target_core_user.c     | 19 +++++++++----------
+ include/target/target_core_backend.h  |  1 +
+ 3 files changed, 21 insertions(+), 10 deletions(-)
 
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index d8589bb39c53..efa92d836946 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1210,6 +1210,17 @@ struct configfs_attribute *passthrough_attrib_attrs[] = {
+ };
+ EXPORT_SYMBOL(passthrough_attrib_attrs);
+ 
++/*
++ * pr related dev_attrib attributes for devices passing through CDBs,
++ * but allowing in core pr emulation.
++ */
++struct configfs_attribute *passthrough_pr_attrib_attrs[] = {
++	&attr_enforce_pr_isids,
++	&attr_force_pr_aptpl,
++	NULL,
++};
++EXPORT_SYMBOL(passthrough_pr_attrib_attrs);
++
+ TB_CIT_SETUP_DRV(dev_attrib, NULL, NULL);
+ TB_CIT_SETUP_DRV(dev_action, NULL, NULL);
+ 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 0b9dfa6b17bc7..f769bb1e37356 100644
+index f769bb1e3735..8adde343182f 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -2073,6 +2073,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
- 	mb->cmd_tail = 0;
- 	mb->cmd_head = 0;
- 	tcmu_flush_dcache_range(mb, sizeof(*mb));
-+	clear_bit(TCMU_DEV_BIT_BROKEN, &udev->flags);
+@@ -2753,12 +2753,12 @@ static int __init tcmu_module_init(void)
+ 		goto out_unreg_device;
+ 	}
  
- 	del_timer(&udev->cmd_timer);
+-	for (i = 0; passthrough_attrib_attrs[i] != NULL; i++) {
++	for (i = 0; passthrough_attrib_attrs[i] != NULL; i++)
+ 		len += sizeof(struct configfs_attribute *);
+-	}
+-	for (i = 0; tcmu_attrib_attrs[i] != NULL; i++) {
++	for (i = 0; passthrough_pr_attrib_attrs[i] != NULL; i++)
++		len += sizeof(struct configfs_attribute *);
++	for (i = 0; tcmu_attrib_attrs[i] != NULL; i++)
+ 		len += sizeof(struct configfs_attribute *);
+-	}
+ 	len += sizeof(struct configfs_attribute *);
  
+ 	tcmu_attrs = kzalloc(len, GFP_KERNEL);
+@@ -2767,13 +2767,12 @@ static int __init tcmu_module_init(void)
+ 		goto out_unreg_genl;
+ 	}
+ 
+-	for (i = 0; passthrough_attrib_attrs[i] != NULL; i++) {
++	for (i = 0; passthrough_attrib_attrs[i] != NULL; i++)
+ 		tcmu_attrs[i] = passthrough_attrib_attrs[i];
+-	}
+-	for (k = 0; tcmu_attrib_attrs[k] != NULL; k++) {
+-		tcmu_attrs[i] = tcmu_attrib_attrs[k];
+-		i++;
+-	}
++	for (k = 0; passthrough_pr_attrib_attrs[k] != NULL; k++)
++		tcmu_attrs[i++] = passthrough_pr_attrib_attrs[k];
++	for (k = 0; tcmu_attrib_attrs[k] != NULL; k++)
++		tcmu_attrs[i++] = tcmu_attrib_attrs[k];
+ 	tcmu_ops.tb_dev_attrib_attrs = tcmu_attrs;
+ 
+ 	ret = transport_backend_register(&tcmu_ops);
+diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
+index 1b752d8ea529..8177667eba6d 100644
+--- a/include/target/target_core_backend.h
++++ b/include/target/target_core_backend.h
+@@ -94,6 +94,7 @@ int	transport_set_vpd_ident(struct t10_vpd *, unsigned char *);
+ 
+ extern struct configfs_attribute *sbc_attrib_attrs[];
+ extern struct configfs_attribute *passthrough_attrib_attrs[];
++extern struct configfs_attribute *passthrough_pr_attrib_attrs[];
+ 
+ /* core helpers also used by command snooping in pscsi */
+ void	*transport_kmap_data_sg(struct se_cmd *);
 -- 
-2.20.1
+2.12.3
