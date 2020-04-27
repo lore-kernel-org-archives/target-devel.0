@@ -1,67 +1,152 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 20 Apr 2020 19:14:24 +0000
-Subject: [RFC PATCH 10/12] target: add target_setup_session sysfs support
-Message-Id: <20200420191426.17055-11-mchristi@redhat.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Mon, 27 Apr 2020 15:08:23 +0000
+Subject: [PATCH 4/4] target: tcmu: make pgr_support and alua_support attributes writable
+Message-Id: <20200427150823.15350-5-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200420191426.17055-1-mchristi@redhat.com>
-In-Reply-To: <20200420191426.17055-1-mchristi@redhat.com>
+References: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jsmart2021@gmail.com, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Mike Christie <mchristi@redhat.com>
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: mchristi@redhat.com, ddiss@suse.de, hch@lst.de, martin.petersen@oracle.com, Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-This adds a session dir per session for users of target_setup_session.
+Currently in tcmu reservation commands are handled by core's
+pr implementation (default) or completely rejected (emulate_pr
+set to 0). We additionally want to be able to do full
+reservation handling in userspace. Therefore we need a way to
+set the TRANSPORT_FLAG_PASSTHROUGH_PGR.
+The inverted flag is displayed by attribute pgr_support.
+Since we moved the flag from transport/backend to se_device in
+the previous patch, we now can make it changeable per device by
+allowing to write the attribute.
+The new field transport_flags_changeable in transport/backend
+is used to reject writing if not allowed for a backend.
 
-TODO:
-1. drivers like tcm_qla2xxx allocate resources in the fabric ops
-init_session callback, but I have not implemented free_session
-callbacks for them yet.
+Regarding ALUA we also want to be able to passthrough commands
+to userspace in tcmu. Therefore we need
+TRANSPORT_FLAG_PASSTHROUGH_ALUA to be changeable, because
+by setting it we can switch off all ALUA checks in core. So we
+also set TRANSPORT_FLAG_PASSTHROUGH_ALUA in tcmu's
+transport_flags_changeable.
 
-2. Drivers that delete their tpg before the sessions need to
-be updated.
+Of course, ALUA and reservation handling in userspace will work
+only, if session/nexus information is sent to userspace along with
+every command. This will be object of a patch series announced
+by Mike Christie.
 
-Signed-off-by: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 ---
- drivers/target/target_core_transport.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/target/target_core_configfs.c | 56 +++++++++++++++++++++++++++++++++--
+ drivers/target/target_core_user.c     |  2 ++
+ include/target/target_core_backend.h  |  1 +
+ 3 files changed, 57 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 7aa830e..fd41f35 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -472,10 +472,24 @@ struct se_session *
- 		if (rc)
- 			goto free_sess;
- 	}
-+	/*
-+	 * init_session was successful so set the tfo now, because if there
-+	 * is a failure going forward we will want to call the free_session
-+	 * callback.
-+	 */
-+	sess->tfo = tpg->se_tpg_tfo;
- 
- 	transport_register_session(tpg, sess->se_node_acl, sess, private);
-+
-+	rc = target_sysfs_add_session(tpg, sess);
-+	if (rc)
-+		goto dereg_sess;
-+
- 	return sess;
- 
-+dereg_sess:
-+	transport_deregister_session_configfs(sess);
-+	transport_deregister_session(sess);
- free_sess:
- 	transport_free_session(sess);
- 	return ERR_PTR(rc);
-@@ -671,6 +685,7 @@ void transport_deregister_session(struct se_session *se_sess)
- 
- void target_remove_session(struct se_session *se_sess)
- {
-+	target_sysfs_remove_session(se_sess);
- 	transport_deregister_session_configfs(se_sess);
- 	transport_deregister_session(se_sess);
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 279989e32e64..f04352285155 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1105,6 +1105,32 @@ static ssize_t alua_support_show(struct config_item *item, char *page)
+ 			flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA ? 0 : 1);
  }
+ 
++static ssize_t alua_support_store(struct config_item *item,
++		const char *page, size_t count)
++{
++	struct se_dev_attrib *da = to_attrib(item);
++	struct se_device *dev = da->da_dev;
++	bool flag;
++	int ret;
++
++	if (!(dev->transport->transport_flags_changeable &
++	      TRANSPORT_FLAG_PASSTHROUGH_ALUA)) {
++		pr_err("dev[%p]: Unable to change SE Device alua_support:"
++			" alua_support has fixed value\n", dev);
++		return -EINVAL;
++	}
++
++	ret = strtobool(page, &flag);
++	if (ret < 0)
++		return ret;
++
++	if (flag)
++		dev->transport_flags &= ~TRANSPORT_FLAG_PASSTHROUGH_ALUA;
++	else
++		dev->transport_flags |= TRANSPORT_FLAG_PASSTHROUGH_ALUA;
++	return count;
++}
++
+ static ssize_t pgr_support_show(struct config_item *item, char *page)
+ {
+ 	struct se_dev_attrib *da = to_attrib(item);
+@@ -1114,6 +1140,32 @@ static ssize_t pgr_support_show(struct config_item *item, char *page)
+ 			flags & TRANSPORT_FLAG_PASSTHROUGH_PGR ? 0 : 1);
+ }
+ 
++static ssize_t pgr_support_store(struct config_item *item,
++		const char *page, size_t count)
++{
++	struct se_dev_attrib *da = to_attrib(item);
++	struct se_device *dev = da->da_dev;
++	bool flag;
++	int ret;
++
++	if (!(dev->transport->transport_flags_changeable &
++	      TRANSPORT_FLAG_PASSTHROUGH_PGR)) {
++		pr_err("dev[%p]: Unable to change SE Device pgr_support:"
++			" pgr_support has fixed value\n", dev);
++		return -EINVAL;
++	}
++
++	ret = strtobool(page, &flag);
++	if (ret < 0)
++		return ret;
++
++	if (flag)
++		dev->transport_flags &= ~TRANSPORT_FLAG_PASSTHROUGH_PGR;
++	else
++		dev->transport_flags |= TRANSPORT_FLAG_PASSTHROUGH_PGR;
++	return count;
++}
++
+ CONFIGFS_ATTR(, emulate_model_alias);
+ CONFIGFS_ATTR(, emulate_dpo);
+ CONFIGFS_ATTR(, emulate_fua_write);
+@@ -1146,8 +1198,8 @@ CONFIGFS_ATTR(, unmap_granularity);
+ CONFIGFS_ATTR(, unmap_granularity_alignment);
+ CONFIGFS_ATTR(, unmap_zeroes_data);
+ CONFIGFS_ATTR(, max_write_same_len);
+-CONFIGFS_ATTR_RO(, alua_support);
+-CONFIGFS_ATTR_RO(, pgr_support);
++CONFIGFS_ATTR(, alua_support);
++CONFIGFS_ATTR(, pgr_support);
+ 
+ /*
+  * dev_attrib attributes for devices using the target core SBC/SPC
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 264f19ba8453..b02760b2e9c0 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -2618,6 +2618,8 @@ static struct target_backend_ops tcmu_ops = {
+ 	.name			= "user",
+ 	.owner			= THIS_MODULE,
+ 	.transport_flags_default = TRANSPORT_FLAG_PASSTHROUGH,
++	.transport_flags_changeable = TRANSPORT_FLAG_PASSTHROUGH_PGR |
++	                              TRANSPORT_FLAG_PASSTHROUGH_ALUA,
+ 	.attach_hba		= tcmu_attach_hba,
+ 	.detach_hba		= tcmu_detach_hba,
+ 	.alloc_device		= tcmu_alloc_device,
+diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
+index 959163504f82..f51452e3b984 100644
+--- a/include/target/target_core_backend.h
++++ b/include/target/target_core_backend.h
+@@ -24,6 +24,7 @@ struct target_backend_ops {
+ 	struct module *owner;
+ 
+ 	u8 transport_flags_default;
++	u8 transport_flags_changeable;
+ 
+ 	int (*attach_hba)(struct se_hba *, u32);
+ 	void (*detach_hba)(struct se_hba *);
 -- 
-1.8.3.1
+2.12.3
