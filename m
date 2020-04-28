@@ -1,152 +1,79 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Wed, 29 Apr 2020 09:44:40 +0000
-Subject: [RFC PATCH 07/11] scsi: target/core: Add common port attributes
-Message-Id: <20200429094443.43937-8-r.bolshakov@yadro.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 28 Apr 2020 06:11:01 +0000
+Subject: [PATCH 03/11] iscsi target: setup transport_id
+Message-Id: <20200428061109.3042-4-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200429094443.43937-1-r.bolshakov@yadro.com>
-In-Reply-To: <20200429094443.43937-1-r.bolshakov@yadro.com>
+References: <20200428061109.3042-1-mchristi@redhat.com>
+In-Reply-To: <20200428061109.3042-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, Mike Christie <mchristi@redhat.com>, Bart Van Assche <bvanassche@acm.org>, David Disseldorp <ddiss@suse.de>
-Cc: linux-scsi@vger.kernel.org, linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-All SCSI target port attributes (tpgN/attribs/attrname) are defined and
-implemented in fabric modules in existing implementation.
+The iscsi target does its own session setup. This patch updates the
+driver so it sets up the transport id.
 
-The change introduces a way to have common tpg attribs in configfs for
-all fabrics without code duplication.
-
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_configfs.c        |  9 ++++-
- drivers/target/target_core_fabric_configfs.c | 41 +++++++++++++++++++-
- drivers/target/target_core_internal.h        |  1 +
- drivers/target/target_core_tpg.c             |  4 ++
- 4 files changed, 52 insertions(+), 3 deletions(-)
+ drivers/target/iscsi/iscsi_target_nego.c | 37 ++++++++++++++++++++++++++++----
+ 1 file changed, 33 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 42390ce9d4db..3311d29ecad8 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -464,13 +464,19 @@ int target_register_template(const struct target_core_fabric_ops *fo)
- 	INIT_LIST_HEAD(&tf->tf_list);
- 	atomic_set(&tf->tf_access_cnt, 0);
- 	tf->tf_ops = fo;
--	target_fabric_setup_cits(tf);
-+	ret = target_fabric_setup_cits(tf);
-+	if (ret)
-+		goto out;
- 
- 	mutex_lock(&g_tf_lock);
- 	list_add_tail(&tf->tf_list, &g_tf_list);
- 	mutex_unlock(&g_tf_lock);
- 
- 	return 0;
-+
-+out:
-+	kfree(tf);
-+	return ret;
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 685d771..dce2fe2 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -1032,6 +1032,25 @@ static void iscsi_initiatorname_tolower(
+ 	}
  }
- EXPORT_SYMBOL(target_register_template);
  
-@@ -490,6 +496,7 @@ void target_unregister_template(const struct target_core_fabric_ops *fo)
- 			 * fabric driver unload of TFO->module to proceed.
- 			 */
- 			rcu_barrier();
-+			kfree(t->tf_tpg_attrib_cit.ct_attrs);
- 			kfree(t);
- 			return;
- 		}
-diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
-index ee85602213f7..883ec9cac835 100644
---- a/drivers/target/target_core_fabric_configfs.c
-+++ b/drivers/target/target_core_fabric_configfs.c
-@@ -795,7 +795,38 @@ TF_CIT_SETUP(tpg_lun, NULL, &target_fabric_lun_group_ops, NULL);
- 
- /* End of tfc_tpg_lun_cit */
- 
--TF_CIT_SETUP_DRV(tpg_attrib, NULL, NULL);
-+static int
-+target_fabric_setup_tpg_attrib_cit(struct target_fabric_configfs *tf)
++static int iscsi_setup_i_tpid(struct iscsi_session *sess, char *iname)
 +{
-+	int i, k, len = 0;
-+	struct config_item_type *cit = &tf->tf_tpg_attrib_cit;
-+	struct configfs_attribute **attrs;
++	struct t10_transport_id tpid;
++	char isid_buf[13];
 +
-+	for (i = 0; core_tpg_attrib_attrs[i]; i++)
-+		len += sizeof(struct configfs_attribute *);
-+	if (tf->tf_ops->tfc_tpg_attrib_attrs)
-+		for (i = 0; tf->tf_ops->tfc_tpg_attrib_attrs[i]; i++)
-+			len += sizeof(struct configfs_attribute *);
-+	len += sizeof(struct configfs_attribute *);
++	sprintf(isid_buf, "%6phN", sess->isid);
 +
-+	attrs = kzalloc(len, GFP_KERNEL);
-+	if (!attrs)
++	memset(&tpid, 0, sizeof(tpid));
++	tpid.proto = SCSI_PROTOCOL_ISCSI;
++	tpid.name = iname;
++	tpid.session_id = isid_buf;
++
++	sess->se_sess->tpid = target_cp_transport_id(&tpid);
++	if (!sess->se_sess->tpid)
 +		return -ENOMEM;
-+
-+	for (i = 0; core_tpg_attrib_attrs[i]; i++)
-+		attrs[i] = core_tpg_attrib_attrs[i];
-+	if (tf->tf_ops->tfc_tpg_attrib_attrs)
-+		for (k = 0; tf->tf_ops->tfc_tpg_attrib_attrs[k]; k++, i++)
-+			attrs[i] = tf->tf_ops->tfc_tpg_attrib_attrs[k];
-+	attrs[i] = NULL;
-+
-+	cit->ct_attrs = attrs;
-+	cit->ct_owner = tf->tf_ops->module;
-+	pr_debug("Setup generic tpg_attrib\n");
 +
 +	return 0;
 +}
 +
- TF_CIT_SETUP_DRV(tpg_auth, NULL, NULL);
- TF_CIT_SETUP_DRV(tpg_param, NULL, NULL);
+ /*
+  * Processes the first Login Request..
+  */
+@@ -1260,11 +1279,21 @@ int iscsi_target_locate_portal(
+ 	tag_size = sizeof(struct iscsi_cmd) + conn->conn_transport->priv_size;
  
-@@ -971,6 +1002,8 @@ TF_CIT_SETUP_DRV(discovery, NULL, NULL);
- 
- int target_fabric_setup_cits(struct target_fabric_configfs *tf)
- {
-+	int ret;
+ 	ret = transport_alloc_session_tags(sess->se_sess, tag_num, tag_size);
+-	if (ret < 0) {
+-		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
+-				    ISCSI_LOGIN_STATUS_NO_RESOURCES);
+-		ret = -1;
++	if (ret < 0)
++		goto return_oom;
 +
- 	target_fabric_setup_discovery_cit(tf);
- 	target_fabric_setup_wwn_cit(tf);
- 	target_fabric_setup_wwn_fabric_stats_cit(tf);
-@@ -981,7 +1014,11 @@ int target_fabric_setup_cits(struct target_fabric_configfs *tf)
- 	target_fabric_setup_tpg_lun_cit(tf);
- 	target_fabric_setup_tpg_np_cit(tf);
- 	target_fabric_setup_tpg_np_base_cit(tf);
--	target_fabric_setup_tpg_attrib_cit(tf);
++	if (conn->tpg != iscsit_global->discovery_tpg) {
++		if (iscsi_setup_i_tpid(sess, i_buf))
++			/* tags and nacl released when session is freed */
++			goto return_oom;
+ 	}
 +
-+	ret = target_fabric_setup_tpg_attrib_cit(tf);
-+	if (ret)
-+		return ret;
++	goto out;
 +
- 	target_fabric_setup_tpg_auth_cit(tf);
- 	target_fabric_setup_tpg_param_cit(tf);
- 	target_fabric_setup_tpg_nacl_cit(tf);
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index aed38c9705f8..e1aabb79467a 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -116,6 +116,7 @@ int	core_tmr_lun_reset(struct se_device *, struct se_tmr_req *,
- 
- /* target_core_tpg.c */
- extern struct se_device *g_lun0_dev;
-+extern struct configfs_attribute *core_tpg_attrib_attrs[];
- 
- struct se_node_acl *__core_tpg_get_initiator_node_acl(struct se_portal_group *tpg,
- 		const char *);
-diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index 32bc28afe93c..67474690720d 100644
---- a/drivers/target/target_core_tpg.c
-+++ b/drivers/target/target_core_tpg.c
-@@ -719,3 +719,7 @@ void core_tpg_remove_lun(
- 
- 	percpu_ref_exit(&lun->lun_ref);
- }
-+
-+struct configfs_attribute *core_tpg_attrib_attrs[] = {
-+	NULL,
-+};
++return_oom:
++	iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
++			    ISCSI_LOGIN_STATUS_NO_RESOURCES);
++	ret = -1;
+ out:
+ 	kfree(tmpbuf);
+ 	return ret;
 -- 
-2.26.1
+1.8.3.1
