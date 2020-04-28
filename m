@@ -1,40 +1,69 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Mon, 27 Apr 2020 15:08:20 +0000
-Subject: [PATCH 1/4] target: add missing emulate_pr attribute to passthrough backends
-Message-Id: <20200427150823.15350-2-bstroesser@ts.fujitsu.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 28 Apr 2020 06:11:07 +0000
+Subject: [PATCH 09/11] target: add target_setup_session sysfs support
+Message-Id: <20200428061109.3042-10-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
+References: <20200428061109.3042-1-mchristi@redhat.com>
+In-Reply-To: <20200428061109.3042-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: mchristi@redhat.com, ddiss@suse.de, hch@lst.de, martin.petersen@oracle.com, Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-In commit b49d6f7885306ee636d5c1af52170f3069ccf5f7 the new attribute
-emulate_pr was added.
-passthrough_parse_cdb() uses the attribute's value to distinguish,
-whether reservation commands should be rejected or not.
-But the new attribute was not added to passthrough_attrib_attrs, so in
-pscsi and tcmu - the users of passthrough_parse_cdb() - the attribute
-is not available to change parser's behavior.
+This adds a session dir per session for users of target_setup_session.
 
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/target_core_configfs.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/target/target_core_transport.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index ff82b21fdcce..d8589bb39c53 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -1203,6 +1203,7 @@ struct configfs_attribute *passthrough_attrib_attrs[] = {
- 	&attr_hw_block_size,
- 	&attr_hw_max_sectors,
- 	&attr_hw_queue_depth,
-+	&attr_emulate_pr,
- 	&attr_alua_support,
- 	&attr_pgr_support,
- 	NULL,
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 7f04b7bf..37aa6de 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -446,6 +446,7 @@ struct se_session *
+ 
+ 	if (IS_ERR(sess))
+ 		return sess;
++	sess->tfo = tpg->se_tpg_tfo;
+ 
+ 	sess->tpid = target_cp_transport_id(tpid);
+ 	if (!sess->tpid) {
+@@ -459,6 +460,10 @@ struct se_session *
+ 		rc = -EACCES;
+ 		goto free_sess;
+ 	}
++
++	rc = target_sysfs_add_session(tpg, sess);
++	if (rc)
++		goto free_sess;
+ 	/*
+ 	 * Go ahead and perform any remaining fabric setup that is
+ 	 * required before transport_register_session().
+@@ -466,12 +471,14 @@ struct se_session *
+ 	if (callback != NULL) {
+ 		rc = callback(tpg, sess, private);
+ 		if (rc)
+-			goto free_sess;
++			goto rm_sysfs;
+ 	}
+ 
+ 	transport_register_session(tpg, sess->se_node_acl, sess, private);
+ 	return sess;
+ 
++rm_sysfs:
++	target_sysfs_remove_session(sess);
+ free_sess:
+ 	transport_free_session(sess);
+ 	return ERR_PTR(rc);
+@@ -662,6 +669,7 @@ void transport_deregister_session(struct se_session *se_sess)
+ 
+ void target_remove_session(struct se_session *se_sess)
+ {
++	target_sysfs_remove_session(se_sess);
+ 	transport_deregister_session_configfs(se_sess);
+ 	transport_deregister_session(se_sess);
+ }
 -- 
-2.12.3
+1.8.3.1
