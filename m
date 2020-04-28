@@ -1,133 +1,68 @@
-From: Hou Pu <houpu@bytedance.com>
-Date: Fri, 24 Apr 2020 03:58:42 +0000
-Subject: [PATCH v2 1/2] iscsi-target: fix login error when receiving is too fast
-Message-Id: <20200424035843.5914-2-houpu@bytedance.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 28 Apr 2020 06:10:58 +0000
+Subject: [PATCH 00/11] target: add sysfs support
+Message-Id: <20200428061109.3042-1-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200424035843.5914-1-houpu@bytedance.com>
-In-Reply-To: <20200424035843.5914-1-houpu@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, mchristi@redhat.com
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Hou Pu <houpu@bytedance.com>
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-iscsi_target_sk_data_ready() could be invoked indirectly
-by iscsi_target_do_login_rx() from workqueue like following:
+The following patches made over Linus's current tree allow lio to
+export info about structs that the kernel initiates creation of
+via events like initiator login where there is no user interaction
+like a mkdir. These patches specificially focus on the
+I_T_nexus/session but could be used for other objects if we want.
 
-iscsi_target_do_login_rx()
-  iscsi_target_do_login()
-    iscsi_target_do_tx_login_io()
-      iscsit_put_login_tx()
-        iscsi_login_tx_data()
-          tx_data()
-            sock_sendmsg_nosec()
-              tcp_sendmsg()
-                release_sock()
-                  sk_backlog_rcv()
-                    tcp_v4_do_rcv()
-                      tcp_data_ready()
-                        iscsi_target_sk_data_ready()
+Why sysfs when we have configfs?
 
-At that time LOGIN_FLAGS_READ_ACTIVE is not cleared.
-and iscsi_target_sk_data_ready will not read data
-from the socket. And some iscsi initiator(i.e. libiscsi)
-will wait forever for a reply.
+I started with configfs and hit bugs like:
 
-LOGIN_FLAGS_READ_ACTIVE should be cleared early just after
-doing the receive and before writing to the socket in
-iscsi_target_do_login_rx.
+commit cc57c07343bd071cdf1915a91a24ab7d40c9b590
+Author: Mike Christie <mchristi@redhat.com>
+Date:   Sun Jul 15 18:16:17 2018 -0500
 
-But sad news is that LOGIN_FLAGS_READ_ACTIVE is also used
-by sk_state_change to do login cleanup if a socket was closed
-at login time. It is supposed to be cleared after the login
-pdu is successfully processed and reponsed.
+    configfs: fix registered group removal
 
-So introduce another flag LOGIN_FLAGS_WRITE_ACTIVE to cover
-the transmit part so that sk_state_change could work well
-and clear LOGIN_FLAGS_READ_ACTIVE early so that sk_data_ready
-could also work.
+but it turns out that bug was not really a bug and was just how
+configfs was meant to work. It seems it was not meant to be used
+where the kernel initiates creation of dirs/files as a result of
+some internal action. It's more geared to the user initiating
+the creation, and my patch just lead to other bugs and was
+reverted:
 
-While at here, use login_flags more efficient.
+commit f19e4ed1e1edbfa3c9ccb9fed17759b7d6db24c6
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date:   Thu Aug 29 23:13:30 2019 -0400
 
-Signed-off-by: Hou Pu <houpu@bytedance.com>
----
- drivers/target/iscsi/iscsi_target_nego.c | 29 +++++++++++++++++++++++++----
- include/target/iscsi/iscsi_target_core.h |  9 +++++----
- 2 files changed, 30 insertions(+), 8 deletions(-)
+    configfs_register_group() shouldn't be (and isn't) called in
+rmdirable parts
 
-diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-index 685d771b51d4..5292b6c51b4e 100644
---- a/drivers/target/iscsi/iscsi_target_nego.c
-+++ b/drivers/target/iscsi/iscsi_target_nego.c
-@@ -622,6 +622,26 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
- 	if (rc < 0)
- 		goto err;
- 
-+	/*
-+	 * LOGIN_FLAGS_READ_ACTIVE is cleared so that sk_data_ready
-+	 * could be trigger again after this.
-+	 *
-+	 * LOGIN_FLAGS_WRITE_ACTIVE is cleared after we successfully
-+	 * process a login pdu, so that sk_state_chage could do login
-+	 * cleanup as needed if the socket is closed. If a delayed work is
-+	 * ongoing (LOGIN_FLAGS_WRITE_ACTIVE or LOGIN_FLAGS_READ_ACTIVE),
-+	 * sk_state_change will leave the cleanup to the delayed work or
-+	 * it will schedule a delayed work to do cleanup.
-+	 */
-+	if (conn->sock) {
-+		struct sock *sk = conn->sock->sk;
-+
-+		write_lock_bh(&sk->sk_callback_lock);
-+		clear_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags);
-+		set_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags);
-+		write_unlock_bh(&sk->sk_callback_lock);
-+	}
-+
- 	pr_debug("iscsi_target_do_login_rx after rx_login_io, %p, %s:%d\n",
- 			conn, current->comm, current->pid);
- 
-@@ -629,7 +649,7 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
- 	if (rc < 0) {
- 		goto err;
- 	} else if (!rc) {
--		if (iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_READ_ACTIVE))
-+		if (iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_WRITE_ACTIVE))
- 			goto err;
- 	} else if (rc = 1) {
- 		iscsi_target_nego_release(conn);
-@@ -670,9 +690,10 @@ static void iscsi_target_sk_state_change(struct sock *sk)
- 	state = __iscsi_target_sk_check_close(sk);
- 	pr_debug("__iscsi_target_sk_close_change: state: %d\n", state);
- 
--	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags)) {
--		pr_debug("Got LOGIN_FLAGS_READ_ACTIVE=1 sk_state_change"
--			 " conn: %p\n", conn);
-+	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags) ||
-+	    test_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags)) {
-+		pr_debug("Got LOGIN_FLAGS_{READ|WRITE}_ACTIVE=1"
-+			 "sk_state_change conn: %p\n", conn);
- 		if (state)
- 			set_bit(LOGIN_FLAGS_CLOSED, &conn->login_flags);
- 		write_unlock_bh(&sk->sk_callback_lock);
-diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-index 591cd9e4692c..844bef255e89 100644
---- a/include/target/iscsi/iscsi_target_core.h
-+++ b/include/target/iscsi/iscsi_target_core.h
-@@ -566,10 +566,11 @@ struct iscsi_conn {
- 	struct socket		*sock;
- 	void			(*orig_data_ready)(struct sock *);
- 	void			(*orig_state_change)(struct sock *);
--#define LOGIN_FLAGS_READ_ACTIVE		1
--#define LOGIN_FLAGS_CLOSED		2
--#define LOGIN_FLAGS_READY		4
--#define LOGIN_FLAGS_INITIAL_PDU		8
-+#define LOGIN_FLAGS_READY		0
-+#define LOGIN_FLAGS_INITIAL_PDU		1
-+#define LOGIN_FLAGS_READ_ACTIVE		2
-+#define LOGIN_FLAGS_WRITE_ACTIVE	3
-+#define LOGIN_FLAGS_CLOSED		4
- 	unsigned long		login_flags;
- 	struct delayed_work	login_work;
- 	struct iscsi_login	*login;
--- 
-2.11.0
+So to export the session info we have debugfs, sysfs, ioctl,
+netlink, etc. sysfs just seemed like a decent fit since one of the
+primary users is rtslib and it already has lots of file/dir
+handling code.
+
+V3:
+- drop format field
+- delay tpg deletion to allow fabric modules time to remove their
+  sessions.
+- Added root sessions dir for easier lookup if userspace has the
+  session id.
+- add session symlink
+- use simple ida.
+- Fix goto use. Actually moved sysfs addition call to after nego
+  to avoid sysfs additions when login ends up failing.
+- Dropped target_setup_session callback fixups and dropped the
+  init/free session callback for now. It's not immediately needed
+  for this base session sysfs info support.
+
+V2:
+- rename top level dir to scsi_target
+- Fix extra newline
+- Copy data that's exported to sysfs so we do not have to worry about
+configfs and sysfs refcounts.
+- Export session info needed for tracking sessions in userspace and
+handling commands like PGRs there (still needs a way to notify userspace
+when sessions are added/deleted, but that will be a different set since
+the focus is different).
