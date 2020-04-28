@@ -1,43 +1,58 @@
-From: Pu Hou <houpu@bytedance.com>
-Date: Wed, 15 Apr 2020 08:08:19 +0000
-Subject: [PATCH 2/2] iscsi-target: Fix inconsistent debug message in __iscsi_target_sk_check_close
-Message-Id: <20200415080819.27327-3-houpu@bytedance.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 28 Apr 2020 06:11:02 +0000
+Subject: [PATCH 04/11] target: use tpid in target_stat_iport_port_ident_show
+Message-Id: <20200428061109.3042-5-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200415080819.27327-1-houpu@bytedance.com>
-In-Reply-To: <20200415080819.27327-1-houpu@bytedance.com>
+References: <20200428061109.3042-1-mchristi@redhat.com>
+In-Reply-To: <20200428061109.3042-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: mchristi@redhat.com, Pu Hou <houpu@bytedance.com>
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-Following commit changed the return value of __iscsi_target_sk_check_close.
-But the pr_debug is still printing FALSE when returing TRUE which is a little
-confusing.
+Use the tpid session id instead of sess_get_initiator_sid.
 
-commit 25cdda95fda78d22d44157da15aa7ea34be3c804
-Author: Nicholas Bellinger <nab@linux-iscsi.org>
-Date:   Wed May 24 21:47:09 2017 -0700
+Note that for userspace compat this patch continues the behavior:
 
-    iscsi-target: Fix initial login PDU asynchronous socket close OOPs
+1. Still add the "+i+" even if there is no session_id.
+2. Use the acl initiatorname instead of the transportID port/addr/name.
 
-Signed-off-by: Pu Hou <houpu@bytedance.com>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- drivers/target/iscsi/iscsi_target_nego.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_stat.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-index 950339655778..56686e880d23 100644
---- a/drivers/target/iscsi/iscsi_target_nego.c
-+++ b/drivers/target/iscsi/iscsi_target_nego.c
-@@ -481,7 +481,7 @@ static bool __iscsi_target_sk_check_close(struct sock *sk)
- {
- 	if (sk->sk_state = TCP_CLOSE_WAIT || sk->sk_state = TCP_CLOSE) {
- 		pr_debug("__iscsi_target_sk_check_close: TCP_CLOSE_WAIT|TCP_CLOSE,"
--			"returning FALSE\n");
-+			"returning TRUE\n");
- 		return true;
+diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
+index 237309d..69ba7c3 100644
+--- a/drivers/target/target_core_stat.c
++++ b/drivers/target/target_core_stat.c
+@@ -1308,9 +1308,7 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
+ 	struct se_lun_acl *lacl = iport_to_lacl(item);
+ 	struct se_node_acl *nacl = lacl->se_lun_nacl;
+ 	struct se_session *se_sess;
+-	struct se_portal_group *tpg;
+ 	ssize_t ret;
+-	unsigned char buf[64];
+ 
+ 	spin_lock_irq(&nacl->nacl_sess_lock);
+ 	se_sess = nacl->nacl_sess;
+@@ -1319,13 +1317,9 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
+ 		return -ENODEV;
  	}
- 	return false;
+ 
+-	tpg = nacl->se_tpg;
+-	/* scsiAttIntrPortName+scsiAttIntrPortIdentifier */
+-	memset(buf, 0, 64);
+-	if (tpg->se_tpg_tfo->sess_get_initiator_sid != NULL)
+-		tpg->se_tpg_tfo->sess_get_initiator_sid(se_sess, buf, 64);
+-
+-	ret = snprintf(page, PAGE_SIZE, "%s+i+%s\n", nacl->initiatorname, buf);
++	ret = snprintf(page, PAGE_SIZE, "%s+i+%s\n", nacl->initiatorname,
++		       se_sess->tpid->session_id ? se_sess->tpid->session_id :
++		       "");
+ 	spin_unlock_irq(&nacl->nacl_sess_lock);
+ 	return ret;
+ }
 -- 
-2.11.0
+1.8.3.1
