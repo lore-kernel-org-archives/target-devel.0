@@ -1,53 +1,157 @@
-From: Johannes Weiner <hannes@cmpxchg.org>
-Date: Wed, 15 Apr 2020 05:01:06 +0000
-Subject: Re: [PATCH 1/2] mm, treewide: Rename kzfree() to kfree_sensitive()
-Message-Id: <20200415050106.GA154671@cmpxchg.org>
+From: Mike Christie <mchristi@redhat.com>
+Date: Tue, 28 Apr 2020 06:11:04 +0000
+Subject: [PATCH 06/11] target: drop sess_get_initiator_sid
+Message-Id: <20200428061109.3042-7-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200413211550.8307-1-longman@redhat.com>
- <20200413211550.8307-2-longman@redhat.com>
-In-Reply-To: <20200413211550.8307-2-longman@redhat.com>
+References: <20200428061109.3042-1-mchristi@redhat.com>
+In-Reply-To: <20200428061109.3042-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Waiman Long <longman@redhat.com>
-Cc: linux-btrfs@vger.kernel.org, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, virtualization@lists.linux-foundation.org, David Howells <dhowells@redhat.com>, linux-mm@kvack.org, linux-sctp@vger.kernel.org, keyrings@vger.kernel.org, kasan-dev@googlegroups.com, samba-technical@lists.samba.org, linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, x86@kernel.org, James Morris <jmorris@namei.org>, Matthew Wilcox <willy@infradead.org>, cocci@systeme.lip6.fr, linux-wpan@vger.kernel.org, intel-wired-lan@lists.osuosl.org, David Rientjes <rientjes@google.com>, "Serge E. Hallyn" <serge@hallyn.com>, linux-pm@vger.kernel.org, ecryptfs@vger.kernel.org, linux-nfs@vger.kernel.org, linux-fscrypt@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org, linux-integrity@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org, target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org, netdev@vger.kernel.org, Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-On Mon, Apr 13, 2020 at 05:15:49PM -0400, Waiman Long wrote:
-> As said by Linus:
-> 
->   A symmetric naming is only helpful if it implies symmetries in use.
->   Otherwise it's actively misleading.
+sess_get_initiator_sid is no longer used. Drop it.
 
-As the btrfs example proves - people can be tempted by this false
-symmetry to pair kzalloc with kzfree, which isn't what we wanted.
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/infiniband/ulp/srpt/ib_srpt.c        |  1 -
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c           |  2 --
+ drivers/target/iscsi/iscsi_target_configfs.c | 13 -------------
+ drivers/target/tcm_fc/tfc_conf.c             |  1 -
+ drivers/usb/gadget/function/f_tcm.c          |  1 -
+ drivers/vhost/scsi.c                         |  1 -
+ drivers/xen/xen-scsiback.c                   |  1 -
+ include/target/target_core_fabric.h          |  6 ------
+ 8 files changed, 26 deletions(-)
 
->   In "kzalloc()", the z is meaningful and an important part of what the
->   caller wants.
-> 
->   In "kzfree()", the z is actively detrimental, because maybe in the
->   future we really _might_ want to use that "memfill(0xdeadbeef)" or
->   something. The "zero" part of the interface isn't even _relevant_.
-> 
-> The main reason that kzfree() exists is to clear sensitive information
-> that should not be leaked to other future users of the same memory
-> objects.
-> 
-> Rename kzfree() to kfree_sensitive() to follow the example of the
-> recently added kvfree_sensitive() and make the intention of the API
-> more explicit. In addition, memzero_explicit() is used to clear the
-> memory to make sure that it won't get optimized away by the compiler.
-> 
-> The renaming is done by using the command sequence:
-> 
->   git grep -w --name-only kzfree |\
->   xargs sed -i 's/\bkzfree\b/kfree_sensitive/'
-> 
-> followed by some editing of the kfree_sensitive() kerneldoc and the
-> use of memzero_explicit() instead of memset().
-> 
-> Suggested-by: Joe Perches <joe@perches.com>
-> Signed-off-by: Waiman Long <longman@redhat.com>
-
-Looks good to me. Thanks for fixing this very old mistake.
-
-Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 9952731..10b6a02 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -3847,7 +3847,6 @@ static ssize_t srpt_wwn_version_show(struct config_item *item, char *buf)
+ 	.check_stop_free		= srpt_check_stop_free,
+ 	.close_session			= srpt_close_session,
+ 	.sess_get_index			= srpt_sess_get_index,
+-	.sess_get_initiator_sid		= NULL,
+ 	.write_pending			= srpt_write_pending,
+ 	.set_default_node_attributes	= srpt_set_default_node_attrs,
+ 	.get_cmd_state			= srpt_get_tcm_cmd_state,
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index 517c698..43fcf81 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -1833,7 +1833,6 @@ static ssize_t tcm_qla2xxx_wwn_version_show(struct config_item *item,
+ 	.release_cmd			= tcm_qla2xxx_release_cmd,
+ 	.close_session			= tcm_qla2xxx_close_session,
+ 	.sess_get_index			= tcm_qla2xxx_sess_get_index,
+-	.sess_get_initiator_sid		= NULL,
+ 	.write_pending			= tcm_qla2xxx_write_pending,
+ 	.set_default_node_attributes	= tcm_qla2xxx_set_default_node_attrs,
+ 	.get_cmd_state			= tcm_qla2xxx_get_cmd_state,
+@@ -1873,7 +1872,6 @@ static ssize_t tcm_qla2xxx_wwn_version_show(struct config_item *item,
+ 	.release_cmd			= tcm_qla2xxx_release_cmd,
+ 	.close_session			= tcm_qla2xxx_close_session,
+ 	.sess_get_index			= tcm_qla2xxx_sess_get_index,
+-	.sess_get_initiator_sid		= NULL,
+ 	.write_pending			= tcm_qla2xxx_write_pending,
+ 	.set_default_node_attributes	= tcm_qla2xxx_set_default_node_attrs,
+ 	.get_cmd_state			= tcm_qla2xxx_get_cmd_state,
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 42b369f..f640e7a 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -1349,18 +1349,6 @@ static u32 lio_sess_get_index(struct se_session *se_sess)
+ 	return sess->session_index;
+ }
+ 
+-static u32 lio_sess_get_initiator_sid(
+-	struct se_session *se_sess,
+-	unsigned char *buf,
+-	u32 size)
+-{
+-	struct iscsi_session *sess = se_sess->fabric_sess_ptr;
+-	/*
+-	 * iSCSI Initiator Session Identifier from RFC-3720.
+-	 */
+-	return snprintf(buf, size, "%6phN", sess->isid);
+-}
+-
+ static int lio_queue_data_in(struct se_cmd *se_cmd)
+ {
+ 	struct iscsi_cmd *cmd = container_of(se_cmd, struct iscsi_cmd, se_cmd);
+@@ -1542,7 +1530,6 @@ static void lio_release_cmd(struct se_cmd *se_cmd)
+ 	.release_cmd			= lio_release_cmd,
+ 	.close_session			= lio_tpg_close_session,
+ 	.sess_get_index			= lio_sess_get_index,
+-	.sess_get_initiator_sid		= lio_sess_get_initiator_sid,
+ 	.write_pending			= lio_write_pending,
+ 	.set_default_node_attributes	= lio_set_default_node_attributes,
+ 	.get_cmd_state			= iscsi_get_cmd_state,
+diff --git a/drivers/target/tcm_fc/tfc_conf.c b/drivers/target/tcm_fc/tfc_conf.c
+index 1a38c98..870b7bb 100644
+--- a/drivers/target/tcm_fc/tfc_conf.c
++++ b/drivers/target/tcm_fc/tfc_conf.c
+@@ -427,7 +427,6 @@ static u32 ft_tpg_get_inst_index(struct se_portal_group *se_tpg)
+ 	.release_cmd =			ft_release_cmd,
+ 	.close_session =		ft_sess_close,
+ 	.sess_get_index =		ft_sess_get_index,
+-	.sess_get_initiator_sid =	NULL,
+ 	.write_pending =		ft_write_pending,
+ 	.set_default_node_attributes =	ft_set_default_node_attr,
+ 	.get_cmd_state =		ft_get_cmd_state,
+diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
+index 1157d68..e6d7232 100644
+--- a/drivers/usb/gadget/function/f_tcm.c
++++ b/drivers/usb/gadget/function/f_tcm.c
+@@ -1721,7 +1721,6 @@ static int usbg_check_stop_free(struct se_cmd *se_cmd)
+ 	.tpg_get_inst_index		= usbg_tpg_get_inst_index,
+ 	.release_cmd			= usbg_release_cmd,
+ 	.sess_get_index			= usbg_sess_get_index,
+-	.sess_get_initiator_sid		= NULL,
+ 	.write_pending			= usbg_send_write_request,
+ 	.set_default_node_attributes	= usbg_set_default_node_attrs,
+ 	.get_cmd_state			= usbg_get_cmd_state,
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index bd7875e..182d2ea 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -2305,7 +2305,6 @@ static void vhost_scsi_drop_tport(struct se_wwn *wwn)
+ 	.release_cmd			= vhost_scsi_release_cmd,
+ 	.check_stop_free		= vhost_scsi_check_stop_free,
+ 	.sess_get_index			= vhost_scsi_sess_get_index,
+-	.sess_get_initiator_sid		= NULL,
+ 	.write_pending			= vhost_scsi_write_pending,
+ 	.set_default_node_attributes	= vhost_scsi_set_default_node_attrs,
+ 	.get_cmd_state			= vhost_scsi_get_cmd_state,
+diff --git a/drivers/xen/xen-scsiback.c b/drivers/xen/xen-scsiback.c
+index ef685ed..67b4092 100644
+--- a/drivers/xen/xen-scsiback.c
++++ b/drivers/xen/xen-scsiback.c
+@@ -1826,7 +1826,6 @@ static int scsiback_check_false(struct se_portal_group *se_tpg)
+ 	.check_stop_free		= scsiback_check_stop_free,
+ 	.release_cmd			= scsiback_release_cmd,
+ 	.sess_get_index			= scsiback_sess_get_index,
+-	.sess_get_initiator_sid		= NULL,
+ 	.write_pending			= scsiback_write_pending,
+ 	.set_default_node_attributes	= scsiback_set_default_node_attrs,
+ 	.get_cmd_state			= scsiback_get_cmd_state,
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 6b8a6bc..0c1720d 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -67,12 +67,6 @@ struct target_core_fabric_ops {
+ 	void (*release_cmd)(struct se_cmd *);
+ 	void (*close_session)(struct se_session *);
+ 	u32 (*sess_get_index)(struct se_session *);
+-	/*
+-	 * Used only for SCSI fabrics that contain multi-value TransportIDs
+-	 * (like iSCSI).  All other SCSI fabrics should set this to NULL.
+-	 */
+-	u32 (*sess_get_initiator_sid)(struct se_session *,
+-				      unsigned char *, u32);
+ 	int (*write_pending)(struct se_cmd *);
+ 	void (*set_default_node_attributes)(struct se_node_acl *);
+ 	int (*get_cmd_state)(struct se_cmd *);
+-- 
+1.8.3.1
