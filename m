@@ -1,291 +1,184 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Mon, 27 Apr 2020 15:08:22 +0000
-Subject: [PATCH 3/4] target: make transport_flags per device
-Message-Id: <20200427150823.15350-4-bstroesser@ts.fujitsu.com>
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Wed, 29 Apr 2020 09:44:37 +0000
+Subject: [RFC PATCH 04/11] scsi: target/core: Add RTPI field to target port
+Message-Id: <20200429094443.43937-5-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200427150823.15350-1-bstroesser@ts.fujitsu.com>
+References: <20200429094443.43937-1-r.bolshakov@yadro.com>
+In-Reply-To: <20200429094443.43937-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: mchristi@redhat.com, ddiss@suse.de, hch@lst.de, martin.petersen@oracle.com, Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: target-devel@vger.kernel.org, Mike Christie <mchristi@redhat.com>, Bart Van Assche <bvanassche@acm.org>, David Disseldorp <ddiss@suse.de>
+Cc: linux-scsi@vger.kernel.org, linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>
 
-pgr_support and alua_support device attributes show the
-inverted value of the transport_flags
- * TRANSPORT_FLAG_PASSTHROUGH_PGR
- * TRANSPORT_FLAG_PASSTHROUGH_ALUA
+SAM-5 4.6.5.2 (Relative Port Identifier attribute) defines the attribute
+as unique across SCSI target ports.
 
-These attributes are per device, while the flags are per
-backend. So we rename the transport_flags in backend/transport
-to transport_flags_default and use its value to initialize
-the new transport_flags field in the se_device structure.
+The change introduces RTPI attribute to se_portal group. The value is
+auto-incremented and unique across all SCSI target ports. It also limits
+number of SCSI target ports to 65535.
 
-Now data and attribute both are per se_device.
-
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/target/target_core_alua.c      | 10 +++++-----
- drivers/target/target_core_configfs.c  | 14 +++++++-------
- drivers/target/target_core_device.c    |  3 ++-
- drivers/target/target_core_pr.c        |  2 +-
- drivers/target/target_core_pscsi.c     |  6 +++---
- drivers/target/target_core_tpg.c       |  3 +--
- drivers/target/target_core_transport.c |  6 +++---
- drivers/target/target_core_user.c      |  2 +-
- include/target/target_core_backend.h   |  2 +-
- include/target/target_core_base.h      |  1 +
- 10 files changed, 25 insertions(+), 24 deletions(-)
+ drivers/target/target_core_tpg.c  | 80 +++++++++++++++++++++++++++++--
+ include/target/target_core_base.h |  4 ++
+ 2 files changed, 80 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-index 385e4cf9cfa6..6b72afee2f8b 100644
---- a/drivers/target/target_core_alua.c
-+++ b/drivers/target/target_core_alua.c
-@@ -677,7 +677,7 @@ target_alua_state_check(struct se_cmd *cmd)
- 
- 	if (dev->se_hba->hba_flags & HBA_FLAGS_INTERNAL_USE)
- 		return 0;
--	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA)
-+	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA)
- 		return 0;
- 
- 	/*
-@@ -1090,7 +1090,7 @@ int core_alua_do_port_transition(
- 	struct t10_alua_tg_pt_gp *tg_pt_gp;
- 	int primary, valid_states, rc = 0;
- 
--	if (l_dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA)
-+	if (l_dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA)
- 		return -ENODEV;
- 
- 	valid_states = l_tg_pt_gp->tg_pt_gp_alua_supported_states;
-@@ -1920,7 +1920,7 @@ ssize_t core_alua_store_tg_pt_gp_info(
- 	unsigned char buf[TG_PT_GROUP_NAME_BUF];
- 	int move = 0;
- 
--	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA ||
-+	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA ||
- 	    (dev->se_hba->hba_flags & HBA_FLAGS_INTERNAL_USE))
- 		return -ENODEV;
- 
-@@ -2177,7 +2177,7 @@ ssize_t core_alua_store_offline_bit(
- 	unsigned long tmp;
- 	int ret;
- 
--	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA ||
-+	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA ||
- 	    (dev->se_hba->hba_flags & HBA_FLAGS_INTERNAL_USE))
- 		return -ENODEV;
- 
-@@ -2263,7 +2263,7 @@ ssize_t core_alua_store_secondary_write_metadata(
- 
- int core_setup_alua(struct se_device *dev)
- {
--	if (!(dev->transport->transport_flags &
-+	if (!(dev->transport_flags &
- 	     TRANSPORT_FLAG_PASSTHROUGH_ALUA) &&
- 	    !(dev->se_hba->hba_flags & HBA_FLAGS_INTERNAL_USE)) {
- 		struct t10_alua_lu_gp_member *lu_gp_mem;
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index efa92d836946..279989e32e64 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -1099,7 +1099,7 @@ static ssize_t block_size_store(struct config_item *item,
- static ssize_t alua_support_show(struct config_item *item, char *page)
- {
- 	struct se_dev_attrib *da = to_attrib(item);
--	u8 flags = da->da_dev->transport->transport_flags;
-+	u8 flags = da->da_dev->transport_flags;
- 
- 	return snprintf(page, PAGE_SIZE, "%d\n",
- 			flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA ? 0 : 1);
-@@ -1108,7 +1108,7 @@ static ssize_t alua_support_show(struct config_item *item, char *page)
- static ssize_t pgr_support_show(struct config_item *item, char *page)
- {
- 	struct se_dev_attrib *da = to_attrib(item);
--	u8 flags = da->da_dev->transport->transport_flags;
-+	u8 flags = da->da_dev->transport_flags;
- 
- 	return snprintf(page, PAGE_SIZE, "%d\n",
- 			flags & TRANSPORT_FLAG_PASSTHROUGH_PGR ? 0 : 1);
-@@ -1654,7 +1654,7 @@ static ssize_t target_pr_res_holder_show(struct config_item *item, char *page)
- 	if (!dev->dev_attrib.emulate_pr)
- 		return sprintf(page, "SPC_RESERVATIONS_DISABLED\n");
- 
--	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR)
-+	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR)
- 		return sprintf(page, "Passthrough\n");
- 
- 	spin_lock(&dev->dev_reservation_lock);
-@@ -1796,7 +1796,7 @@ static ssize_t target_pr_res_type_show(struct config_item *item, char *page)
- 
- 	if (!dev->dev_attrib.emulate_pr)
- 		return sprintf(page, "SPC_RESERVATIONS_DISABLED\n");
--	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR)
-+	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR)
- 		return sprintf(page, "SPC_PASSTHROUGH\n");
- 	if (dev->dev_reservation_flags & DRF_SPC2_RESERVATIONS)
- 		return sprintf(page, "SPC2_RESERVATIONS\n");
-@@ -1810,7 +1810,7 @@ static ssize_t target_pr_res_aptpl_active_show(struct config_item *item,
- 	struct se_device *dev = pr_to_dev(item);
- 
- 	if (!dev->dev_attrib.emulate_pr ||
--	    (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR))
-+	    (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR))
- 		return 0;
- 
- 	return sprintf(page, "APTPL Bit Status: %s\n",
-@@ -1823,7 +1823,7 @@ static ssize_t target_pr_res_aptpl_metadata_show(struct config_item *item,
- 	struct se_device *dev = pr_to_dev(item);
- 
- 	if (!dev->dev_attrib.emulate_pr ||
--	    (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR))
-+	    (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR))
- 		return 0;
- 
- 	return sprintf(page, "Ready to process PR APTPL metadata..\n");
-@@ -1870,7 +1870,7 @@ static ssize_t target_pr_res_aptpl_metadata_store(struct config_item *item,
- 	u8 type = 0;
- 
- 	if (!dev->dev_attrib.emulate_pr ||
--	    (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR))
-+	    (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR))
- 		return count;
- 	if (dev->dev_reservation_flags & DRF_SPC2_RESERVATIONS)
- 		return count;
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 4cee1138284b..d5800cf22df7 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -732,6 +732,7 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
- 
- 	dev->se_hba = hba;
- 	dev->transport = hba->backend->ops;
-+	dev->transport_flags = dev->transport->transport_flags_default;
- 	dev->prot_length = sizeof(struct t10_pi_tuple);
- 	dev->hba_index = hba->hba_index;
- 
-@@ -1100,7 +1101,7 @@ passthrough_parse_cdb(struct se_cmd *cmd,
- 	 * emulate the response, since tcmu does not have the information
- 	 * required to process these commands.
- 	 */
--	if (!(dev->transport->transport_flags &
-+	if (!(dev->transport_flags &
- 	      TRANSPORT_FLAG_PASSTHROUGH_PGR)) {
- 		if (cdb[0] = PERSISTENT_RESERVE_IN) {
- 			cmd->execute_cmd = target_scsi3_emulate_pr_in;
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 5e931690e697..91e41cc55704 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -4086,7 +4086,7 @@ target_check_reservation(struct se_cmd *cmd)
- 		return 0;
- 	if (!dev->dev_attrib.emulate_pr)
- 		return 0;
--	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR)
-+	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR)
- 		return 0;
- 
- 	spin_lock(&dev->dev_reservation_lock);
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index c9d92b3e777d..4e37fa9b409d 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -1070,9 +1070,9 @@ static void pscsi_req_done(struct request *req, blk_status_t status)
- static const struct target_backend_ops pscsi_ops = {
- 	.name			= "pscsi",
- 	.owner			= THIS_MODULE,
--	.transport_flags	= TRANSPORT_FLAG_PASSTHROUGH |
--				  TRANSPORT_FLAG_PASSTHROUGH_ALUA |
--				  TRANSPORT_FLAG_PASSTHROUGH_PGR,
-+	.transport_flags_default = TRANSPORT_FLAG_PASSTHROUGH |
-+				   TRANSPORT_FLAG_PASSTHROUGH_ALUA |
-+				   TRANSPORT_FLAG_PASSTHROUGH_PGR,
- 	.attach_hba		= pscsi_attach_hba,
- 	.detach_hba		= pscsi_detach_hba,
- 	.pmode_enable_hba	= pscsi_pmode_enable_hba,
 diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index d24e0a3ba3ff..62aa5fa63ac0 100644
+index d3896c3f2f95..e9f6b0aadbcf 100644
 --- a/drivers/target/target_core_tpg.c
 +++ b/drivers/target/target_core_tpg.c
-@@ -582,8 +582,7 @@ int core_tpg_add_lun(
- 	if (ret)
- 		goto out_kill_ref;
+@@ -31,6 +31,10 @@
+ #include "target_core_ua.h"
  
--	if (!(dev->transport->transport_flags &
--	     TRANSPORT_FLAG_PASSTHROUGH_ALUA) &&
-+	if (!(dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA) &&
- 	    !(dev->se_hba->hba_flags & HBA_FLAGS_INTERNAL_USE))
- 		target_attach_tg_pt_gp(lun, dev->t10_alua.default_tg_pt_gp);
+ extern struct se_device *g_lun0_dev;
++static u16 g_tpg_count;
++static u16 g_tpg_rtpi_counter = 1;
++static LIST_HEAD(g_tpg_list);
++static DEFINE_MUTEX(g_tpg_mutex);
  
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 594b724bbf79..e6b448f43071 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1397,7 +1397,7 @@ transport_check_alloc_task_attr(struct se_cmd *cmd)
- 	 * Check if SAM Task Attribute emulation is enabled for this
- 	 * struct se_device storage object
- 	 */
--	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)
-+	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)
- 		return 0;
+ /*	__core_tpg_get_initiator_node_acl():
+  *
+@@ -439,6 +443,60 @@ static void core_tpg_lun_ref_release(struct percpu_ref *ref)
+ 	complete(&lun->lun_shutdown_comp);
+ }
  
- 	if (cmd->sam_task_attr = TCM_ACA_TAG) {
-@@ -2012,7 +2012,7 @@ static bool target_handle_task_attr(struct se_cmd *cmd)
- {
- 	struct se_device *dev = cmd->se_dev;
++static int core_tpg_register_rtpi(struct se_portal_group *se_tpg)
++{
++	struct se_portal_group *tpg;
++	int ret;
++
++	/*
++	 * Allocate the next RELATIVE TARGET PORT IDENTIFIER.
++	 * Here is the table from SPC-4 4.3.4:
++	 *
++	 *    Table 34 -- Relative target port identifier values
++	 *
++	 * Value		Description
++	 * 0h			Reserved
++	 * 1h			Relative port 1, historically known as port A
++	 * 2h			Relative port 2, historically known as port B
++	 * 3h to FFFFh		Relative port 3 through 65 535
++	 */
++	ret = mutex_lock_interruptible(&g_tpg_mutex);
++	if (ret < 0)
++		return ret;
++
++	if (g_tpg_count = 0xffff) {
++		mutex_unlock(&g_tpg_mutex);
++		pr_warn("Reached g_tpg_count = 0xffff\n");
++		return -ENOSPC;
++	}
++again:
++	se_tpg->tpg_rtpi = g_tpg_rtpi_counter++;
++	if (!se_tpg->tpg_rtpi)
++		goto again;
++
++	list_for_each_entry(tpg, &g_tpg_list, tpg_list) {
++		/*
++		 * Make sure RELATIVE TARGET PORT IDENTIFIER is unique
++		 * for 16-bit wrap..
++		 */
++		if (se_tpg->tpg_rtpi = tpg->tpg_rtpi)
++			goto again;
++	}
++	list_add(&se_tpg->tpg_list, &g_tpg_list);
++	g_tpg_count++;
++	mutex_unlock(&g_tpg_mutex);
++
++	return 0;
++}
++
++static void core_tpg_deregister_rtpi(struct se_portal_group *se_tpg)
++{
++	mutex_lock(&g_tpg_mutex);
++	list_del(&se_tpg->tpg_list);
++	g_tpg_count--;
++	mutex_unlock(&g_tpg_mutex);
++}
++
+ /* Does not change se_wwn->priv. */
+ int core_tpg_register(
+ 	struct se_wwn *se_wwn,
+@@ -471,6 +529,7 @@ int core_tpg_register(
+ 	se_tpg->proto_id = proto_id;
+ 	se_tpg->se_tpg_wwn = se_wwn;
+ 	atomic_set(&se_tpg->tpg_pr_ref_count, 0);
++	INIT_LIST_HEAD(&se_tpg->tpg_list);
+ 	INIT_LIST_HEAD(&se_tpg->acl_node_list);
+ 	INIT_LIST_HEAD(&se_tpg->tpg_sess_list);
+ 	spin_lock_init(&se_tpg->session_lock);
+@@ -478,9 +537,15 @@ int core_tpg_register(
+ 	mutex_init(&se_tpg->acl_node_mutex);
  
--	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)
-+	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)
- 		return false;
+ 	if (se_tpg->proto_id >= 0) {
++		ret = core_tpg_register_rtpi(se_tpg);
++		if (ret < 0)
++			return ret;
++
+ 		se_tpg->tpg_virt_lun0 = core_tpg_alloc_lun(se_tpg, 0);
+-		if (IS_ERR(se_tpg->tpg_virt_lun0))
+-			return PTR_ERR(se_tpg->tpg_virt_lun0);
++		if (IS_ERR(se_tpg->tpg_virt_lun0)) {
++			ret = PTR_ERR(se_tpg->tpg_virt_lun0);
++			goto out_deregister_rtpi;
++		}
  
- 	cmd->se_cmd_flags |= SCF_TASK_ATTR_SET;
-@@ -2126,7 +2126,7 @@ static void transport_complete_task_attr(struct se_cmd *cmd)
- {
- 	struct se_device *dev = cmd->se_dev;
+ 		ret = core_tpg_add_lun(se_tpg, se_tpg->tpg_virt_lun0,
+ 				true, g_lun0_dev);
+@@ -489,15 +554,20 @@ int core_tpg_register(
+ 	}
  
--	if (dev->transport->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)
-+	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH)
- 		return;
+ 	pr_debug("TARGET_CORE[%s]: Allocated portal_group for endpoint: %s, "
+-		 "Proto: %d, Portal Tag: %u\n", se_tpg->se_tpg_tfo->fabric_name,
++		 "Proto: %d, Portal Tag: %u, RTPI: %#2x\n",
++		se_tpg->se_tpg_tfo->fabric_name,
+ 		se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg) ?
+ 		se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg) : NULL,
+-		se_tpg->proto_id, se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg));
++		se_tpg->proto_id,
++		se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg),
++		se_tpg->tpg_rtpi);
  
- 	if (!(cmd->se_cmd_flags & SCF_TASK_ATTR_SET))
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 8adde343182f..264f19ba8453 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -2617,7 +2617,7 @@ static struct configfs_attribute *tcmu_action_attrs[] = {
- static struct target_backend_ops tcmu_ops = {
- 	.name			= "user",
- 	.owner			= THIS_MODULE,
--	.transport_flags	= TRANSPORT_FLAG_PASSTHROUGH,
-+	.transport_flags_default = TRANSPORT_FLAG_PASSTHROUGH,
- 	.attach_hba		= tcmu_attach_hba,
- 	.detach_hba		= tcmu_detach_hba,
- 	.alloc_device		= tcmu_alloc_device,
-diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
-index 8177667eba6d..959163504f82 100644
---- a/include/target/target_core_backend.h
-+++ b/include/target/target_core_backend.h
-@@ -23,7 +23,7 @@ struct target_backend_ops {
- 	char inquiry_rev[4];
- 	struct module *owner;
+ 	return 0;
  
--	u8 transport_flags;
-+	u8 transport_flags_default;
+ out_free_lun0:
+ 	kfree(se_tpg->tpg_virt_lun0);
++out_deregister_rtpi:
++	core_tpg_deregister_rtpi(se_tpg);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(core_tpg_register);
+@@ -537,6 +607,8 @@ int core_tpg_deregister(struct se_portal_group *se_tpg)
+ 		kfree_rcu(se_tpg->tpg_virt_lun0, rcu_head);
+ 	}
  
- 	int (*attach_hba)(struct se_hba *, u32);
- 	void (*detach_hba)(struct se_hba *);
++	core_tpg_deregister_rtpi(se_tpg);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(core_tpg_deregister);
 diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 6d4a694f6ea7..18c3f277b770 100644
+index 922b3086e408..cd7c29f46acc 100644
 --- a/include/target/target_core_base.h
 +++ b/include/target/target_core_base.h
-@@ -772,6 +772,7 @@ struct se_device {
- #define DF_USING_UDEV_PATH			0x00000008
- #define DF_USING_ALIAS				0x00000010
- #define DF_READ_ONLY				0x00000020
-+	u8			transport_flags;
- 	/* Physical device queue depth */
- 	u32			queue_depth;
- 	/* Used for SPC-2 reservations enforce of ISIDs */
+@@ -875,6 +875,8 @@ struct se_portal_group {
+ 	 * Negative values can be used by fabric drivers for internal use TPGs.
+ 	 */
+ 	int			proto_id;
++	/* RELATIVE TARGET PORT IDENTIFIER */
++	u16			tpg_rtpi;
+ 	/* Used for PR SPEC_I_PT=1 and REGISTER_AND_MOVE */
+ 	atomic_t		tpg_pr_ref_count;
+ 	/* Spinlock for adding/removing ACLed Nodes */
+@@ -882,6 +884,8 @@ struct se_portal_group {
+ 	/* Spinlock for adding/removing sessions */
+ 	spinlock_t		session_lock;
+ 	struct mutex		tpg_lun_mutex;
++	/* List of all SCSI target ports */
++	struct list_head	tpg_list;
+ 	/* linked list for initiator ACL list */
+ 	struct list_head	acl_node_list;
+ 	struct hlist_head	tpg_lun_hlist;
 -- 
-2.12.3
+2.26.1
