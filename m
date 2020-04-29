@@ -1,42 +1,51 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Wed, 08 Apr 2020 13:26:09 +0000
-Subject: [PATCH 1/2] target: Write NULL to *port_nexus_ptr if no ISID
-Message-Id: <20200408132610.14623-2-bstroesser@ts.fujitsu.com>
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Wed, 29 Apr 2020 09:44:36 +0000
+Subject: [RFC PATCH 03/11] scsi: target/core: Add cleanup sequence in core_tpg_register()
+Message-Id: <20200429094443.43937-4-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200408132610.14623-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200408132610.14623-1-bstroesser@ts.fujitsu.com>
+References: <20200429094443.43937-1-r.bolshakov@yadro.com>
+In-Reply-To: <20200429094443.43937-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: mchristi@redhat.com, martin.petersen@oracle.com, Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: target-devel@vger.kernel.org, Mike Christie <mchristi@redhat.com>, Bart Van Assche <bvanassche@acm.org>, David Disseldorp <ddiss@suse.de>
+Cc: linux-scsi@vger.kernel.org, linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>
 
-This patch fixes a minor flaw that could be triggered by
-a PR OUT RESERVE on iSCSI, if TRANSPORT IDs with and without ISID
-are used in the same command.
-In case an ISCSI Transport ID has no ISID, port_nexus_ptr was not
-used to write NULL, so value from previous call might persist.
-I don't know, if that ever could happen, but with the change the
-code is cleaner, I think.
+It does not change any functionality but allows to introduce more steps
+in the cleanup sequence without code duplication later.
 
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/target/target_core_fabric_lib.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/target/target_core_tpg.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index 6b4b354c88aa..f5f673e128ef 100644
---- a/drivers/target/target_core_fabric_lib.c
-+++ b/drivers/target/target_core_fabric_lib.c
-@@ -341,7 +341,8 @@ static char *iscsi_parse_pr_out_transport_id(
- 			*p = tolower(*p);
- 			p++;
- 		}
--	}
-+	} else
-+		*port_nexus_ptr = NULL;
+diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
+index d24e0a3ba3ff..d3896c3f2f95 100644
+--- a/drivers/target/target_core_tpg.c
++++ b/drivers/target/target_core_tpg.c
+@@ -484,10 +484,8 @@ int core_tpg_register(
  
- 	return &buf[4];
+ 		ret = core_tpg_add_lun(se_tpg, se_tpg->tpg_virt_lun0,
+ 				true, g_lun0_dev);
+-		if (ret < 0) {
+-			kfree(se_tpg->tpg_virt_lun0);
+-			return ret;
+-		}
++		if (ret < 0)
++			goto out_free_lun0;
+ 	}
+ 
+ 	pr_debug("TARGET_CORE[%s]: Allocated portal_group for endpoint: %s, "
+@@ -497,6 +495,10 @@ int core_tpg_register(
+ 		se_tpg->proto_id, se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg));
+ 
+ 	return 0;
++
++out_free_lun0:
++	kfree(se_tpg->tpg_virt_lun0);
++	return ret;
  }
+ EXPORT_SYMBOL(core_tpg_register);
+ 
 -- 
-2.12.3
+2.26.1
