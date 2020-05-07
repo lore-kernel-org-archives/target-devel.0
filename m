@@ -1,96 +1,55 @@
-From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
-Date: Thu, 21 May 2020 22:13:25 +0000
-Subject: [PATCH v2 3/3] target: rename target_setup_cmd_from_cdb() to target_cmd_parse_cdb()
-Message-Id: <1590099205-7997-4-git-send-email-sudhakar.panneerselvam@oracle.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 07 May 2020 14:29:31 +0000
+Subject: [PATCH AUTOSEL 4.14 04/16] scsi: target/iblock: fix WRITE SAME zeroing
+Message-Id: <20200507142943.26848-4-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1590099205-7997-1-git-send-email-sudhakar.panneerselvam@oracle.com>
-In-Reply-To: <1590099205-7997-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+References: <20200507142943.26848-1-sashal@kernel.org>
+In-Reply-To: <20200507142943.26848-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, mchristi@redhat.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: shirley.ma@oracle.com
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: David Disseldorp <ddiss@suse.de>, Bart Van Assche <bvanassche@acm.org>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-This commit also removes the unused argument, cdb that was passed
-to this function.
+From: David Disseldorp <ddiss@suse.de>
 
-Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+[ Upstream commit 1d2ff149b263c9325875726a7804a0c75ef7112e ]
+
+SBC4 specifies that WRITE SAME requests with the UNMAP bit set to zero
+"shall perform the specified write operation to each LBA specified by the
+command".  Commit 2237498f0b5c ("target/iblock: Convert WRITE_SAME to
+blkdev_issue_zeroout") modified the iblock backend to call
+blkdev_issue_zeroout() when handling WRITE SAME requests with UNMAP=0 and a
+zero data segment.
+
+The iblock blkdev_issue_zeroout() call incorrectly provides a flags
+parameter of 0 (bool false), instead of BLKDEV_ZERO_NOUNMAP.  The bool
+false parameter reflects the blkdev_issue_zeroout() API prior to commit
+ee472d835c26 ("block: add a flags argument to (__)blkdev_issue_zeroout")
+which was merged shortly before 2237498f0b5c.
+
+Link: https://lore.kernel.org/r/20200419163109.11689-1-ddiss@suse.de
+Fixes: 2237498f0b5c ("target/iblock: Convert WRITE_SAME to blkdev_issue_zeroout")
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/iscsi/iscsi_target.c    | 2 +-
- drivers/target/target_core_transport.c | 6 +++---
- drivers/target/target_core_xcopy.c     | 2 +-
- include/target/target_core_fabric.h    | 2 +-
- 4 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/target/target_core_iblock.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 1110ea507b83..d89983b2e8d6 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1185,7 +1185,7 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
+index 60429011292a2..2a9e023f54291 100644
+--- a/drivers/target/target_core_iblock.c
++++ b/drivers/target/target_core_iblock.c
+@@ -447,7 +447,7 @@ iblock_execute_zero_out(struct block_device *bdev, struct se_cmd *cmd)
+ 				target_to_linux_sector(dev, cmd->t_task_lba),
+ 				target_to_linux_sector(dev,
+ 					sbc_get_write_same_sectors(cmd)),
+-				GFP_KERNEL, false);
++				GFP_KERNEL, BLKDEV_ZERO_NOUNMAP);
+ 	if (ret)
+ 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
  
- 	/* only used for printks or comparing with ->ref_task_tag */
- 	cmd->se_cmd.tag = (__force u32)cmd->init_task_tag;
--	cmd->sense_reason = target_setup_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
-+	cmd->sense_reason = target_cmd_parse_cdb(&cmd->se_cmd, hdr->cdb);
- 	if (cmd->sense_reason)
- 		goto attach_cmd;
- 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 67bfac1081c1..74ef89c1e7fb 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1450,7 +1450,7 @@ void transport_init_se_cmd(
- EXPORT_SYMBOL(target_cmd_init_cdb);
- 
- sense_reason_t
--target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
-+target_cmd_parse_cdb(struct se_cmd *cmd, unsigned char *cdb)
- {
- 	struct se_device *dev = cmd->se_dev;
- 	sense_reason_t ret;
-@@ -1472,7 +1472,7 @@ void transport_init_se_cmd(
- 	atomic_long_inc(&cmd->se_lun->lun_stats.cmd_pdus);
- 	return 0;
- }
--EXPORT_SYMBOL(target_setup_cmd_from_cdb);
-+EXPORT_SYMBOL(target_cmd_parse_cdb);
- 
- /*
-  * Used by fabric module frontends to queue tasks directly.
-@@ -1636,7 +1636,7 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
- 		return 0;
- 	}
- 
--	rc = target_setup_cmd_from_cdb(se_cmd, cdb);
-+	rc = target_cmd_parse_cdb(se_cmd, cdb);
- 	if (rc != 0) {
- 		transport_generic_request_failure(se_cmd, rc);
- 		return 0;
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index fdd8234906b6..ed43086bf965 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -530,7 +530,7 @@ static int target_xcopy_setup_pt_cmd(
- 		return -EINVAL;
- 
- 	cmd->tag = 0;
--	if (target_setup_cmd_from_cdb(cmd, cdb))
-+	if (target_cmd_parse_cdb(cmd, cdb))
- 		return -EINVAL;
- 
- 	if (transport_generic_map_mem_to_cmd(cmd, xop->xop_data_sg,
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index 6a2bfcca0c98..65496b2a7ad6 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -153,7 +153,7 @@ void	transport_init_se_cmd(struct se_cmd *,
- 		struct se_session *, u32, int, int, unsigned char *);
- sense_reason_t transport_lookup_cmd_lun(struct se_cmd *, u64);
- sense_reason_t target_cmd_init_cdb(struct se_cmd *, unsigned char *);
--sense_reason_t target_setup_cmd_from_cdb(struct se_cmd *, unsigned char *);
-+sense_reason_t target_cmd_parse_cdb(struct se_cmd *, unsigned char *);
- int	target_submit_cmd_map_sgls(struct se_cmd *, struct se_session *,
- 		unsigned char *, unsigned char *, u64, u32, int, int, int,
- 		struct scatterlist *, u32, struct scatterlist *, u32,
 -- 
-1.8.3.1
+2.20.1
