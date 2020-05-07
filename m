@@ -1,76 +1,60 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 20 May 2020 19:54:58 +0000
-Subject: [PATCH 22/33] ipv4: add ip_sock_set_recverr
-Message-Id: <20200520195509.2215098-23-hch@lst.de>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Thu, 07 May 2020 15:33:20 +0000
+Subject: Lun unlink from configFS for Loopback after TMR execution hangs forever
+Message-Id: <ffee233a-fe6d-e1c9-7071-9fb463453b0c@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200520195509.2215098-1-hch@lst.de>
-In-Reply-To: <20200520195509.2215098-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Eric Dumazet <edumazet@google.com>, linux-nvme@lists.infradead.org, David Howells <dhowells@redhat.com>, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, cluster-devel@redhat.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, drbd-dev@tron.linbit.com, ceph-devel@vger.kernel.org, linux-nfs@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, Vlad Yasevich <vyasevich@gmail.com>, linux-kernel@vger.kernel.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, ocfs2-devel@oss.oracle.com
+To: Bart Van Assche <bvanassche@acm.org>, Mike Christie <mchristi@redhat.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
 
-Add a helper to directly set the IP_RECVERR sockopt from kernel space
-without going through a fake uaccess.
+Hi,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: David Howells <dhowells@redhat.com>
----
- include/net/ip.h         | 1 +
- net/ipv4/ip_sockglue.c   | 8 ++++++++
- net/rxrpc/local_object.c | 8 +-------
- 3 files changed, 10 insertions(+), 7 deletions(-)
+I am testing with Loopback and found, that after a
+Loopback LUN has executed a TMR, I can no longer unlink
+the LUN.
 
-diff --git a/include/net/ip.h b/include/net/ip.h
-index 5f5d8226b6abc..f063a491b9063 100644
---- a/include/net/ip.h
-+++ b/include/net/ip.h
-@@ -766,6 +766,7 @@ static inline bool inetdev_valid_mtu(unsigned int mtu)
- }
- 
- void ip_sock_set_freebind(struct sock *sk);
-+void ip_sock_set_recverr(struct sock *sk);
- void ip_sock_set_tos(struct sock *sk, int val);
- 
- #endif	/* _IP_H */
-diff --git a/net/ipv4/ip_sockglue.c b/net/ipv4/ip_sockglue.c
-index 62e642ab80126..9a6a65b66f9d3 100644
---- a/net/ipv4/ip_sockglue.c
-+++ b/net/ipv4/ip_sockglue.c
-@@ -589,6 +589,14 @@ void ip_sock_set_freebind(struct sock *sk)
- }
- EXPORT_SYMBOL(ip_sock_set_freebind);
- 
-+void ip_sock_set_recverr(struct sock *sk)
-+{
-+	lock_sock(sk);
-+	inet_sk(sk)->recverr = true;
-+	release_sock(sk);
-+}
-+EXPORT_SYMBOL(ip_sock_set_recverr);
-+
- /*
-  *	Socket option code for IP. This is the end of the line after any
-  *	TCP,UDP etc options on an IP socket.
-diff --git a/net/rxrpc/local_object.c b/net/rxrpc/local_object.c
-index 5ea2bd01fdd59..4c0e8fe5ec1fb 100644
---- a/net/rxrpc/local_object.c
-+++ b/net/rxrpc/local_object.c
-@@ -171,13 +171,7 @@ static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
- 		/* Fall through */
- 	case AF_INET:
- 		/* we want to receive ICMP errors */
--		opt = 1;
--		ret = kernel_setsockopt(local->socket, SOL_IP, IP_RECVERR,
--					(char *) &opt, sizeof(opt));
--		if (ret < 0) {
--			_debug("setsockopt failed");
--			goto error;
--		}
-+		ip_sock_set_recverr(local->socket->sk);
- 
- 		/* we want to set the don't fragment bit */
- 		opt = IP_PMTUDISC_DO;
--- 
-2.26.2
+The rm command hangs in transport_clear_lun_ref() at
+wait_for_completion(&lun->lun_shutdown_comp)
+
+The reason is, that transport_lun_remove_cmd() is not
+called at the end of target_tmr_work().
+
+It seems, that in other fabrics this call happens implicitly
+when the fabric driver calls transport_generic_free_cmd()
+during its ->queue_tm_rsp().
+
+Unfortunately the Loopback seems to not comply to the common
+way of calling transport_generic_free_cmd() from ->queue_*(),
+but calls it from its ->check_stop_free() only.
+
+But the ->check_stop_free() is called by
+transport_cmd_check_stop_to_fabric() after it has reset the
+se_cmd->se_lun pointer.
+Therefore the following transport_generic_free_cmd() skips the
+transport_lun_remove_cmd().
+
+So it seems, that Loopback driver is doing wrong.
+
+OTOH, target_tmr_work() seems to be the only place, where
+transport_cmd_check_stop_to_fabric() is called without
+calling transport_lun_remove_cmd() before.
+
+Now I'm wondering, how to fix the problem:
+1) Just (re-)add a call to transport_lun_remove_cmd() before
+    calling transport_cmd_check_stop_to_fabric() in
+    target_tmr_work()
+2) Change Loopback driver to comply with the usual way
+    of using transport_generic_free_cmd()
+
+I think I'd prefer 1 and already tested it, works fine for
+Loopback. Currently I'm not able to test other fabrics, but
+AFAICS the change should not harm other fabric drivers,
+because transport_lun_remove_cmd() uses a bit to make safe,
+that lun_ref is dropped only once.
+Additionally, before commit 2c9fa49e100f "scsi: target/core:
+  Make ABORT and LUN RESET handling synchronous" the code
+contained the transport_lun_remove_cmd() call.
+
+Regards,
+Bodo
