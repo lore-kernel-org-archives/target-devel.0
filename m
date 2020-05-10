@@ -1,135 +1,349 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 28 May 2020 05:12:23 +0000
-Subject: [PATCH 15/28] tcp: add tcp_sock_set_keepidle
-Message-Id: <20200528051236.620353-16-hch@lst.de>
+From: Mike Christie <mchristi@redhat.com>
+Date: Sun, 10 May 2020 21:57:44 +0000
+Subject: [PATCH 15/15] target: drop sess_get_index
+Message-Id: <20200510215744.21999-16-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200528051236.620353-1-hch@lst.de>
-In-Reply-To: <20200528051236.620353-1-hch-jcswGhMUV9g@public.gmane.org>
+References: <20200510215744.21999-1-mchristi@redhat.com>
+In-Reply-To: <20200510215744.21999-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tipc-discussion-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-Add a helper to directly set the TCP_KEEP_IDLE sockopt from kernel
-space without going through a fake uaccess.
+LIO now handles session id allocation so drop the callout.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
 ---
- include/linux/tcp.h   |  1 +
- net/ipv4/tcp.c        | 49 ++++++++++++++++++++++++++++++-------------
- net/rds/tcp_listen.c  |  5 +----
- net/sunrpc/xprtsock.c |  3 +--
- 4 files changed, 37 insertions(+), 21 deletions(-)
+ drivers/infiniband/ulp/srpt/ib_srpt.c        | 15 ---------------
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c     |  6 ------
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c           |  7 -------
+ drivers/target/iscsi/iscsi_target_configfs.c |  6 ------
+ drivers/target/loopback/tcm_loop.c           |  6 ------
+ drivers/target/sbp/sbp_target.c              |  6 ------
+ drivers/target/target_core_configfs.c        |  4 ----
+ drivers/target/target_core_stat.c            |  5 +----
+ drivers/target/tcm_fc/tfc_conf.c             |  1 -
+ drivers/target/tcm_fc/tfc_sess.c             |  7 -------
+ drivers/usb/gadget/function/f_tcm.c          |  6 ------
+ drivers/vhost/scsi.c                         |  6 ------
+ drivers/xen/xen-scsiback.c                   |  6 ------
+ include/target/target_core_fabric.h          |  1 -
+ 14 files changed, 1 insertion(+), 81 deletions(-)
 
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index de682143efe4d..5724dd84a85ed 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -498,6 +498,7 @@ int tcp_skb_shift(struct sk_buff *to, struct sk_buff *from, int pcount,
- 		  int shiftlen);
- 
- void tcp_sock_set_cork(struct sock *sk, bool on);
-+int tcp_sock_set_keepidle(struct sock *sk, int val);
- void tcp_sock_set_nodelay(struct sock *sk);
- void tcp_sock_set_quickack(struct sock *sk, int val);
- int tcp_sock_set_syncnt(struct sock *sk, int val);
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index 0004bd9ae7b0a..bdf0ff9333514 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2901,6 +2901,39 @@ void tcp_sock_set_user_timeout(struct sock *sk, u32 val)
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 3cda73c..7fe76e0 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -3353,20 +3353,6 @@ static void srpt_close_session(struct se_session *se_sess)
+ 	srpt_disconnect_ch_sync(ch);
  }
- EXPORT_SYMBOL(tcp_sock_set_user_timeout);
  
-+static int __tcp_sock_set_keepidle(struct sock *sk, int val)
-+{
-+	struct tcp_sock *tp = tcp_sk(sk);
-+
-+	if (val < 1 || val > MAX_TCP_KEEPIDLE)
-+		return -EINVAL;
-+
-+	tp->keepalive_time = val * HZ;
-+	if (sock_flag(sk, SOCK_KEEPOPEN) &&
-+	    !((1 << sk->sk_state) & (TCPF_CLOSE | TCPF_LISTEN))) {
-+		u32 elapsed = keepalive_time_elapsed(tp);
-+
-+		if (tp->keepalive_time > elapsed)
-+			elapsed = tp->keepalive_time - elapsed;
-+		else
-+			elapsed = 0;
-+		inet_csk_reset_keepalive_timer(sk, elapsed);
-+	}
-+
-+	return 0;
-+}
-+
-+int tcp_sock_set_keepidle(struct sock *sk, int val)
-+{
-+	int err;
-+
-+	lock_sock(sk);
-+	err = __tcp_sock_set_keepidle(sk, val);
-+	release_sock(sk);
-+	return err;
-+}
-+EXPORT_SYMBOL(tcp_sock_set_keepidle);
-+
- /*
-  *	Socket option code for TCP.
-  */
-@@ -3070,21 +3103,7 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
- 		break;
+-/**
+- * srpt_sess_get_index - return the value of scsiAttIntrPortIndex (SCSI-MIB)
+- * @se_sess: SCSI target session.
+- *
+- * A quote from RFC 4455 (SCSI-MIB) about this MIB object:
+- * This object represents an arbitrary integer used to uniquely identify a
+- * particular attached remote initiator port to a particular SCSI target port
+- * within a particular SCSI target device within a particular SCSI instance.
+- */
+-static u32 srpt_sess_get_index(struct se_session *se_sess)
+-{
+-	return 0;
+-}
+-
+ static void srpt_set_default_node_attrs(struct se_node_acl *nacl)
+ {
+ }
+@@ -3843,7 +3829,6 @@ static ssize_t srpt_wwn_version_show(struct config_item *item, char *buf)
+ 	.release_cmd			= srpt_release_cmd,
+ 	.check_stop_free		= srpt_check_stop_free,
+ 	.close_session			= srpt_close_session,
+-	.sess_get_index			= srpt_sess_get_index,
+ 	.write_pending			= srpt_write_pending,
+ 	.set_default_node_attributes	= srpt_set_default_node_attrs,
+ 	.get_cmd_state			= srpt_get_tcm_cmd_state,
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index 31459f3..8d37375 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -3739,11 +3739,6 @@ static void ibmvscsis_release_cmd(struct se_cmd *se_cmd)
+ 	spin_unlock_bh(&vscsi->intr_lock);
+ }
  
- 	case TCP_KEEPIDLE:
--		if (val < 1 || val > MAX_TCP_KEEPIDLE)
--			err = -EINVAL;
--		else {
--			tp->keepalive_time = val * HZ;
--			if (sock_flag(sk, SOCK_KEEPOPEN) &&
--			    !((1 << sk->sk_state) &
--			      (TCPF_CLOSE | TCPF_LISTEN))) {
--				u32 elapsed = keepalive_time_elapsed(tp);
--				if (tp->keepalive_time > elapsed)
--					elapsed = tp->keepalive_time - elapsed;
--				else
--					elapsed = 0;
--				inet_csk_reset_keepalive_timer(sk, elapsed);
--			}
--		}
-+		err = __tcp_sock_set_keepidle(sk, val);
- 		break;
- 	case TCP_KEEPINTVL:
- 		if (val < 1 || val > MAX_TCP_KEEPINTVL)
-diff --git a/net/rds/tcp_listen.c b/net/rds/tcp_listen.c
-index 6f90ea077adcd..79f9adc008114 100644
---- a/net/rds/tcp_listen.c
-+++ b/net/rds/tcp_listen.c
-@@ -52,10 +52,7 @@ int rds_tcp_keepalive(struct socket *sock)
- 	if (ret < 0)
- 		goto bail;
+-static u32 ibmvscsis_sess_get_index(struct se_session *se_sess)
+-{
+-	return 0;
+-}
+-
+ static int ibmvscsis_write_pending(struct se_cmd *se_cmd)
+ {
+ 	struct ibmvscsis_cmd *cmd = container_of(se_cmd, struct ibmvscsis_cmd,
+@@ -4034,7 +4029,6 @@ static ssize_t ibmvscsis_tpg_enable_store(struct config_item *item,
+ 	.tpg_get_inst_index		= ibmvscsis_tpg_get_inst_index,
+ 	.check_stop_free		= ibmvscsis_check_stop_free,
+ 	.release_cmd			= ibmvscsis_release_cmd,
+-	.sess_get_index			= ibmvscsis_sess_get_index,
+ 	.write_pending			= ibmvscsis_write_pending,
+ 	.set_default_node_attributes	= ibmvscsis_set_default_node_attrs,
+ 	.get_cmd_state			= ibmvscsis_get_cmd_state,
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index fff695a..8a68085 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -377,11 +377,6 @@ static void tcm_qla2xxx_close_session(struct se_session *se_sess)
+ 	tcm_qla2xxx_put_sess(sess);
+ }
  
--	ret = kernel_setsockopt(sock, IPPROTO_TCP, TCP_KEEPIDLE,
--				(char *)&keepidle, sizeof(keepidle));
--	if (ret < 0)
--		goto bail;
-+	tcp_sock_set_keepidle(sock->sk, keepidle);
+-static u32 tcm_qla2xxx_sess_get_index(struct se_session *se_sess)
+-{
+-	return 0;
+-}
+-
+ static int tcm_qla2xxx_write_pending(struct se_cmd *se_cmd)
+ {
+ 	struct qla_tgt_cmd *cmd = container_of(se_cmd,
+@@ -1851,7 +1846,6 @@ static ssize_t tcm_qla2xxx_wwn_version_show(struct config_item *item,
+ 	.check_stop_free		= tcm_qla2xxx_check_stop_free,
+ 	.release_cmd			= tcm_qla2xxx_release_cmd,
+ 	.close_session			= tcm_qla2xxx_close_session,
+-	.sess_get_index			= tcm_qla2xxx_sess_get_index,
+ 	.write_pending			= tcm_qla2xxx_write_pending,
+ 	.set_default_node_attributes	= tcm_qla2xxx_set_default_node_attrs,
+ 	.get_cmd_state			= tcm_qla2xxx_get_cmd_state,
+@@ -1890,7 +1884,6 @@ static ssize_t tcm_qla2xxx_wwn_version_show(struct config_item *item,
+ 	.check_stop_free                = tcm_qla2xxx_check_stop_free,
+ 	.release_cmd			= tcm_qla2xxx_release_cmd,
+ 	.close_session			= tcm_qla2xxx_close_session,
+-	.sess_get_index			= tcm_qla2xxx_sess_get_index,
+ 	.write_pending			= tcm_qla2xxx_write_pending,
+ 	.set_default_node_attributes	= tcm_qla2xxx_set_default_node_attrs,
+ 	.get_cmd_state			= tcm_qla2xxx_get_cmd_state,
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 9301793..141455e 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -1342,11 +1342,6 @@ static int iscsi_get_cmd_state(struct se_cmd *se_cmd)
+ 	return cmd->i_state;
+ }
  
- 	/* KEEPINTVL is the interval between successive probes. We follow
- 	 * the model in xs_tcp_finish_connecting() and re-use keepidle.
-diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
-index 231fd6162f68d..473290f7c5c0a 100644
---- a/net/sunrpc/xprtsock.c
-+++ b/net/sunrpc/xprtsock.c
-@@ -2107,8 +2107,7 @@ static void xs_tcp_set_socket_timeouts(struct rpc_xprt *xprt,
+-static u32 lio_sess_get_index(struct se_session *se_sess)
+-{
+-	return se_sess->sid;
+-}
+-
+ static int lio_queue_data_in(struct se_cmd *se_cmd)
+ {
+ 	struct iscsi_cmd *cmd = container_of(se_cmd, struct iscsi_cmd, se_cmd);
+@@ -1530,7 +1525,6 @@ static void lio_release_cmd(struct se_cmd *se_cmd)
+ 	.check_stop_free		= lio_check_stop_free,
+ 	.release_cmd			= lio_release_cmd,
+ 	.close_session			= lio_tpg_close_session,
+-	.sess_get_index			= lio_sess_get_index,
+ 	.write_pending			= lio_write_pending,
+ 	.set_default_node_attributes	= lio_set_default_node_attributes,
+ 	.get_cmd_state			= iscsi_get_cmd_state,
+diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+index 64e5f1f..8daa424 100644
+--- a/drivers/target/loopback/tcm_loop.c
++++ b/drivers/target/loopback/tcm_loop.c
+@@ -512,11 +512,6 @@ static u32 tcm_loop_get_inst_index(struct se_portal_group *se_tpg)
+ 	return 1;
+ }
  
- 	/* TCP Keepalive options */
- 	sock_set_keepalive(sock->sk);
--	kernel_setsockopt(sock, SOL_TCP, TCP_KEEPIDLE,
--			(char *)&keepidle, sizeof(keepidle));
-+	tcp_sock_set_keepidle(sock->sk, keepidle);
- 	kernel_setsockopt(sock, SOL_TCP, TCP_KEEPINTVL,
- 			(char *)&keepidle, sizeof(keepidle));
- 	kernel_setsockopt(sock, SOL_TCP, TCP_KEEPCNT,
+-static u32 tcm_loop_sess_get_index(struct se_session *se_sess)
+-{
+-	return 1;
+-}
+-
+ static void tcm_loop_set_default_node_attributes(struct se_node_acl *se_acl)
+ {
+ 	return;
+@@ -1093,7 +1088,6 @@ static ssize_t tcm_loop_wwn_version_show(struct config_item *item, char *page)
+ 	.tpg_get_inst_index		= tcm_loop_get_inst_index,
+ 	.check_stop_free		= tcm_loop_check_stop_free,
+ 	.release_cmd			= tcm_loop_release_cmd,
+-	.sess_get_index			= tcm_loop_sess_get_index,
+ 	.write_pending			= tcm_loop_write_pending,
+ 	.set_default_node_attributes	= tcm_loop_set_default_node_attributes,
+ 	.get_cmd_state			= tcm_loop_get_cmd_state,
+diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
+index 2cac4d9..782c326 100644
+--- a/drivers/target/sbp/sbp_target.c
++++ b/drivers/target/sbp/sbp_target.c
+@@ -1708,11 +1708,6 @@ static void sbp_release_cmd(struct se_cmd *se_cmd)
+ 	sbp_free_request(req);
+ }
+ 
+-static u32 sbp_sess_get_index(struct se_session *se_sess)
+-{
+-	return 0;
+-}
+-
+ static int sbp_write_pending(struct se_cmd *se_cmd)
+ {
+ 	struct sbp_target_request *req = container_of(se_cmd,
+@@ -2309,7 +2304,6 @@ static ssize_t sbp_tpg_attrib_max_logins_per_lun_store(struct config_item *item,
+ 	.tpg_check_prod_mode_write_protect = sbp_check_false,
+ 	.tpg_get_inst_index		= sbp_tpg_get_inst_index,
+ 	.release_cmd			= sbp_release_cmd,
+-	.sess_get_index			= sbp_sess_get_index,
+ 	.write_pending			= sbp_write_pending,
+ 	.set_default_node_attributes	= sbp_set_default_node_attrs,
+ 	.get_cmd_state			= sbp_get_cmd_state,
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 7a9f607..b3e52eb 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -400,10 +400,6 @@ static int target_fabric_tf_ops_check(const struct target_core_fabric_ops *tfo)
+ 		pr_err("Missing tfo->release_cmd()\n");
+ 		return -EINVAL;
+ 	}
+-	if (!tfo->sess_get_index) {
+-		pr_err("Missing tfo->sess_get_index()\n");
+-		return -EINVAL;
+-	}
+ 	if (!tfo->write_pending) {
+ 		pr_err("Missing tfo->write_pending()\n");
+ 		return -EINVAL;
+diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
+index 3eb1b9b..621dc17 100644
+--- a/drivers/target/target_core_stat.c
++++ b/drivers/target/target_core_stat.c
+@@ -1264,7 +1264,6 @@ static ssize_t target_stat_iport_indx_show(struct config_item *item,
+ 	struct se_lun_acl *lacl = iport_to_lacl(item);
+ 	struct se_node_acl *nacl = lacl->se_lun_nacl;
+ 	struct se_session *se_sess;
+-	struct se_portal_group *tpg;
+ 	ssize_t ret;
+ 
+ 	spin_lock_irq(&nacl->nacl_sess_lock);
+@@ -1274,10 +1273,8 @@ static ssize_t target_stat_iport_indx_show(struct config_item *item,
+ 		return -ENODEV;
+ 	}
+ 
+-	tpg = nacl->se_tpg;
+ 	/* scsiAttIntrPortIndex */
+-	ret = snprintf(page, PAGE_SIZE, "%u\n",
+-			tpg->se_tpg_tfo->sess_get_index(se_sess));
++	ret = snprintf(page, PAGE_SIZE, "%u\n", se_sess->sid);
+ 	spin_unlock_irq(&nacl->nacl_sess_lock);
+ 	return ret;
+ }
+diff --git a/drivers/target/tcm_fc/tfc_conf.c b/drivers/target/tcm_fc/tfc_conf.c
+index 870b7bb..747824f 100644
+--- a/drivers/target/tcm_fc/tfc_conf.c
++++ b/drivers/target/tcm_fc/tfc_conf.c
+@@ -426,7 +426,6 @@ static u32 ft_tpg_get_inst_index(struct se_portal_group *se_tpg)
+ 	.check_stop_free =		ft_check_stop_free,
+ 	.release_cmd =			ft_release_cmd,
+ 	.close_session =		ft_sess_close,
+-	.sess_get_index =		ft_sess_get_index,
+ 	.write_pending =		ft_write_pending,
+ 	.set_default_node_attributes =	ft_set_default_node_attr,
+ 	.get_cmd_state =		ft_get_cmd_state,
+diff --git a/drivers/target/tcm_fc/tfc_sess.c b/drivers/target/tcm_fc/tfc_sess.c
+index 1d1c460..84a2c5d 100644
+--- a/drivers/target/tcm_fc/tfc_sess.c
++++ b/drivers/target/tcm_fc/tfc_sess.c
+@@ -326,13 +326,6 @@ void ft_sess_close(struct se_session *se_sess)
+ 	synchronize_rcu();		/* let transport deregister happen */
+ }
+ 
+-u32 ft_sess_get_index(struct se_session *se_sess)
+-{
+-	struct ft_sess *sess = se_sess->fabric_sess_ptr;
+-
+-	return sess->port_id;	/* XXX TBD probably not what is needed */
+-}
+-
+ u32 ft_sess_get_port_name(struct se_session *se_sess,
+ 			  unsigned char *buf, u32 len)
+ {
+diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
+index e81bdbd..7bdd7c5 100644
+--- a/drivers/usb/gadget/function/f_tcm.c
++++ b/drivers/usb/gadget/function/f_tcm.c
+@@ -1287,11 +1287,6 @@ static void usbg_release_cmd(struct se_cmd *se_cmd)
+ 	target_free_tag(se_sess, se_cmd);
+ }
+ 
+-static u32 usbg_sess_get_index(struct se_session *se_sess)
+-{
+-	return 0;
+-}
+-
+ static void usbg_set_default_node_attrs(struct se_node_acl *nacl)
+ {
+ }
+@@ -1715,7 +1710,6 @@ static int usbg_check_stop_free(struct se_cmd *se_cmd)
+ 	.tpg_check_prod_mode_write_protect = usbg_check_false,
+ 	.tpg_get_inst_index		= usbg_tpg_get_inst_index,
+ 	.release_cmd			= usbg_release_cmd,
+-	.sess_get_index			= usbg_sess_get_index,
+ 	.write_pending			= usbg_send_write_request,
+ 	.set_default_node_attributes	= usbg_set_default_node_attrs,
+ 	.get_cmd_state			= usbg_get_cmd_state,
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index d7c9bfc..14f7c3bf 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -340,11 +340,6 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
+ 	target_free_tag(se_sess, se_cmd);
+ }
+ 
+-static u32 vhost_scsi_sess_get_index(struct se_session *se_sess)
+-{
+-	return 0;
+-}
+-
+ static int vhost_scsi_write_pending(struct se_cmd *se_cmd)
+ {
+ 	/* Go ahead and process the write immediately */
+@@ -2244,7 +2239,6 @@ static void vhost_scsi_drop_tport(struct se_wwn *wwn)
+ 	.tpg_get_inst_index		= vhost_scsi_tpg_get_inst_index,
+ 	.release_cmd			= vhost_scsi_release_cmd,
+ 	.check_stop_free		= vhost_scsi_check_stop_free,
+-	.sess_get_index			= vhost_scsi_sess_get_index,
+ 	.write_pending			= vhost_scsi_write_pending,
+ 	.set_default_node_attributes	= vhost_scsi_set_default_node_attrs,
+ 	.get_cmd_state			= vhost_scsi_get_cmd_state,
+diff --git a/drivers/xen/xen-scsiback.c b/drivers/xen/xen-scsiback.c
+index 883b15c..923c96a 100644
+--- a/drivers/xen/xen-scsiback.c
++++ b/drivers/xen/xen-scsiback.c
+@@ -1392,11 +1392,6 @@ static void scsiback_release_cmd(struct se_cmd *se_cmd)
+ 	target_free_tag(se_cmd->se_sess, se_cmd);
+ }
+ 
+-static u32 scsiback_sess_get_index(struct se_session *se_sess)
+-{
+-	return 0;
+-}
+-
+ static int scsiback_write_pending(struct se_cmd *se_cmd)
+ {
+ 	/* Go ahead and process the write immediately */
+@@ -1768,7 +1763,6 @@ static int scsiback_check_false(struct se_portal_group *se_tpg)
+ 	.tpg_get_inst_index		= scsiback_tpg_get_inst_index,
+ 	.check_stop_free		= scsiback_check_stop_free,
+ 	.release_cmd			= scsiback_release_cmd,
+-	.sess_get_index			= scsiback_sess_get_index,
+ 	.write_pending			= scsiback_write_pending,
+ 	.set_default_node_attributes	= scsiback_set_default_node_attrs,
+ 	.get_cmd_state			= scsiback_get_cmd_state,
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index f876a05..54ce800 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -66,7 +66,6 @@ struct target_core_fabric_ops {
+ 	int (*check_stop_free)(struct se_cmd *);
+ 	void (*release_cmd)(struct se_cmd *);
+ 	void (*close_session)(struct se_session *);
+-	u32 (*sess_get_index)(struct se_session *);
+ 	int (*write_pending)(struct se_cmd *);
+ 	void (*set_default_node_attributes)(struct se_node_acl *);
+ 	int (*get_cmd_state)(struct se_cmd *);
 -- 
-2.26.2
+1.8.3.1
