@@ -1,36 +1,58 @@
-From: David Teigland <teigland@redhat.com>
-Date: Thu, 14 May 2020 14:24:03 +0000
-Subject: Re: is it ok to always pull in sctp for dlm, was: Re: [PATCH 27/33] sctp: export sctp_setsockopt_bin
-Message-Id: <20200514142403.GA1447@redhat.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Sun, 10 May 2020 21:57:37 +0000
+Subject: [PATCH 08/15] target: use tpt_id in target_stat_iport_port_ident_show
+Message-Id: <20200510215744.21999-9-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200513062649.2100053-1-hch@lst.de>
- <20200513062649.2100053-28-hch@lst.de>
- <20200513180058.GB2491@localhost.localdomain>
- <20200514104040.GA12979@lst.de>
-In-Reply-To: <20200514104040.GA12979@lst.de>
+References: <20200510215744.21999-1-mchristi@redhat.com>
+In-Reply-To: <20200510215744.21999-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Christine Caulfield <ccaulfie@redhat.com>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Vlad Yasevich <vyasevich@gmail.com>, Neil Horman <nhorman@tuxdriver.com>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, linux-sctp@vger.kernel
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-On Thu, May 14, 2020 at 12:40:40PM +0200, Christoph Hellwig wrote:
-> On Wed, May 13, 2020 at 03:00:58PM -0300, Marcelo Ricardo Leitner wrote:
-> > On Wed, May 13, 2020 at 08:26:42AM +0200, Christoph Hellwig wrote:
-> > > And call it directly from dlm instead of going through kernel_setsockopt.
-> > 
-> > The advantage on using kernel_setsockopt here is that sctp module will
-> > only be loaded if dlm actually creates a SCTP socket.  With this
-> > change, sctp will be loaded on setups that may not be actually using
-> > it. It's a quite big module and might expose the system.
-> > 
-> > I'm okay with the SCTP changes, but I'll defer to DLM folks to whether
-> > that's too bad or what for DLM.
-> 
-> So for ipv6 I could just move the helpers inline as they were trivial
-> and avoid that issue.  But some of the sctp stuff really is way too
-> big for that, so the only other option would be to use symbol_get.
+Use the tpt_id session id instead of sess_get_initiator_sid.
 
-Let's try symbol_get, having the sctp module always loaded caused problems
-last time it happened (almost nobody uses dlm with it.)
-Dave 
+Note that for userspace compat this patch continues the behavior:
+
+1. Still add the "+i+" even if there is no session_id.
+2. Use the acl initiatorname instead of the transportID port/addr/name.
+
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_stat.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
+index 237309d..3eb1b9b 100644
+--- a/drivers/target/target_core_stat.c
++++ b/drivers/target/target_core_stat.c
+@@ -1308,9 +1308,7 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
+ 	struct se_lun_acl *lacl = iport_to_lacl(item);
+ 	struct se_node_acl *nacl = lacl->se_lun_nacl;
+ 	struct se_session *se_sess;
+-	struct se_portal_group *tpg;
+ 	ssize_t ret;
+-	unsigned char buf[64];
+ 
+ 	spin_lock_irq(&nacl->nacl_sess_lock);
+ 	se_sess = nacl->nacl_sess;
+@@ -1319,13 +1317,9 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
+ 		return -ENODEV;
+ 	}
+ 
+-	tpg = nacl->se_tpg;
+-	/* scsiAttIntrPortName+scsiAttIntrPortIdentifier */
+-	memset(buf, 0, 64);
+-	if (tpg->se_tpg_tfo->sess_get_initiator_sid != NULL)
+-		tpg->se_tpg_tfo->sess_get_initiator_sid(se_sess, buf, 64);
+-
+-	ret = snprintf(page, PAGE_SIZE, "%s+i+%s\n", nacl->initiatorname, buf);
++	ret = snprintf(page, PAGE_SIZE, "%s+i+%s\n", nacl->initiatorname,
++		       se_sess->tpt_id->session_id ? se_sess->tpt_id->session_id :
++		       "");
+ 	spin_unlock_irq(&nacl->nacl_sess_lock);
+ 	return ret;
+ }
+-- 
+1.8.3.1
