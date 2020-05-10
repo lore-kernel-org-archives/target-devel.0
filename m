@@ -1,33 +1,124 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Sat, 23 May 2020 07:23:16 +0000
-Subject: Re: remove kernel_setsockopt and kernel_getsockopt v2
-Message-Id: <20200523072316.GA10575@lst.de>
+From: Mike Christie <mchristi@redhat.com>
+Date: Sun, 10 May 2020 21:57:35 +0000
+Subject: [PATCH 06/15] xen scsiback: use target_parse_emulated_name
+Message-Id: <20200510215744.21999-7-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200520195509.2215098-1-hch@lst.de>
-In-Reply-To: <20200520195509.2215098-1-hch@lst.de>
+References: <20200510215744.21999-1-mchristi@redhat.com>
+In-Reply-To: <20200510215744.21999-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Eric Dumazet <edumazet@google.com>, linux-nvme@lists.infradead.org, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, drbd-dev@lists.linbit.com, linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, cluster-devel@redhat.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, ceph-devel@vger.kernel.org, linux-nfs@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, Vlad Yasevich <vyasevich@gmail.com>, linux-kernel@vger.kernel.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, ocfs2-devel@oss.oracle.com
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>, Juergen Gross <jgross@suse.com>
 
-On Wed, May 20, 2020 at 09:54:36PM +0200, Christoph Hellwig wrote:
-> Hi Dave,
-> 
-> this series removes the kernel_setsockopt and kernel_getsockopt
-> functions, and instead switches their users to small functions that
-> implement setting (or in one case getting) a sockopt directly using
-> a normal kernel function call with type safety and all the other
-> benefits of not having a function call.
-> 
-> In some cases these functions seem pretty heavy handed as they do
-> a lock_sock even for just setting a single variable, but this mirrors
-> the real setsockopt implementation unlike a few drivers that just set
-> set the fields directly.
+Use target_parse_emulated_name so the acl and SCSI names are
+properly formatted.
 
-Hi Dave and other maintainers,
+Cc: Juergen Gross <jgross@suse.com>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/xen/xen-scsiback.c | 66 ++++++++--------------------------------------
+ 1 file changed, 11 insertions(+), 55 deletions(-)
 
-can you take a look at and potentially merge patches 1-30 while we
-discuss the sctp refactoring?  It would get a nice headstart by removing
-kernel_getsockopt and most kernel_setsockopt users, and for the next
-follow on I wouldn't need to spam lots of lists with 30+ patches again.
+diff --git a/drivers/xen/xen-scsiback.c b/drivers/xen/xen-scsiback.c
+index 93cb386..f70b6da 100644
+--- a/drivers/xen/xen-scsiback.c
++++ b/drivers/xen/xen-scsiback.c
+@@ -1509,7 +1509,8 @@ static int scsiback_alloc_sess_cb(struct se_portal_group *se_tpg,
+ }
+ 
+ static int scsiback_make_nexus(struct scsiback_tpg *tpg,
+-				const char *name)
++				const char *tpt_id_name,
++				const char *acl_name)
+ {
+ 	struct scsiback_nexus *tv_nexus;
+ 	int ret = 0;
+@@ -1530,8 +1531,9 @@ static int scsiback_make_nexus(struct scsiback_tpg *tpg,
+ 	tv_nexus->tvn_se_sess = target_setup_session(&tpg->se_tpg,
+ 						     VSCSI_DEFAULT_SESSION_TAGS,
+ 						     sizeof(struct vscsibk_pend),
+-						     TARGET_PROT_NORMAL, name,
+-						     name, tv_nexus,
++						     TARGET_PROT_NORMAL,
++						     tpt_id_name, acl_name,
++						     tv_nexus,
+ 						     scsiback_alloc_sess_cb);
+ 	if (IS_ERR(tv_nexus->tvn_se_sess)) {
+ 		kfree(tv_nexus);
+@@ -1619,7 +1621,7 @@ static ssize_t scsiback_tpg_nexus_store(struct config_item *item,
+ 	struct scsiback_tpg *tpg = container_of(se_tpg,
+ 				struct scsiback_tpg, se_tpg);
+ 	struct scsiback_tport *tport_wwn = tpg->tport;
+-	unsigned char i_port[VSCSI_NAMELEN], *ptr, *port_ptr;
++	unsigned char i_port[VSCSI_NAMELEN], *tpt_id_name;
+ 	int ret;
+ 	/*
+ 	 * Shutdown the active I_T nexus if 'NULL' is passed.
+@@ -1628,59 +1630,13 @@ static ssize_t scsiback_tpg_nexus_store(struct config_item *item,
+ 		ret = scsiback_drop_nexus(tpg);
+ 		return (!ret) ? count : ret;
+ 	}
+-	/*
+-	 * Otherwise make sure the passed virtual Initiator port WWN matches
+-	 * the fabric protocol_id set in scsiback_make_tport(), and call
+-	 * scsiback_make_nexus().
+-	 */
+-	if (strlen(page) >= VSCSI_NAMELEN) {
+-		pr_err("Emulated NAA Sas Address: %s, exceeds max: %d\n",
+-			page, VSCSI_NAMELEN);
+-		return -EINVAL;
+-	}
+-	snprintf(&i_port[0], VSCSI_NAMELEN, "%s", page);
+ 
+-	ptr = strstr(i_port, "naa.");
+-	if (ptr) {
+-		if (tport_wwn->tport_proto_id != SCSI_PROTOCOL_SAS) {
+-			pr_err("Passed SAS Initiator Port %s does not match target port protoid: %s\n",
+-				i_port, scsiback_dump_proto_id(tport_wwn));
+-			return -EINVAL;
+-		}
+-		port_ptr = &i_port[0];
+-		goto check_newline;
+-	}
+-	ptr = strstr(i_port, "fc.");
+-	if (ptr) {
+-		if (tport_wwn->tport_proto_id != SCSI_PROTOCOL_FCP) {
+-			pr_err("Passed FCP Initiator Port %s does not match target port protoid: %s\n",
+-				i_port, scsiback_dump_proto_id(tport_wwn));
+-			return -EINVAL;
+-		}
+-		port_ptr = &i_port[3]; /* Skip over "fc." */
+-		goto check_newline;
+-	}
+-	ptr = strstr(i_port, "iqn.");
+-	if (ptr) {
+-		if (tport_wwn->tport_proto_id != SCSI_PROTOCOL_ISCSI) {
+-			pr_err("Passed iSCSI Initiator Port %s does not match target port protoid: %s\n",
+-				i_port, scsiback_dump_proto_id(tport_wwn));
+-			return -EINVAL;
+-		}
+-		port_ptr = &i_port[0];
+-		goto check_newline;
+-	}
+-	pr_err("Unable to locate prefix for emulated Initiator Port: %s\n",
+-		i_port);
+-	return -EINVAL;
+-	/*
+-	 * Clear any trailing newline for the NAA WWN
+-	 */
+-check_newline:
+-	if (i_port[strlen(i_port) - 1] = '\n')
+-		i_port[strlen(i_port) - 1] = '\0';
++	ret = target_parse_emulated_name(tport_wwn->tport_proto_id, page,
++					 i_port, VSCSI_NAMELEN, &tpt_id_name);
++	if (ret)
++		return ret;
+ 
+-	ret = scsiback_make_nexus(tpg, port_ptr);
++	ret = scsiback_make_nexus(tpg, tpt_id_name, i_port);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-- 
+1.8.3.1
