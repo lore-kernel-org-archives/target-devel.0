@@ -1,65 +1,75 @@
-From: Lee Duncan <lduncan@suse.com>
-Date: Wed, 13 May 2020 23:35:43 +0000
-Subject: Re: [PATCH 02/15] target: separate acl name from port ids
-Message-Id: <ebce879c-2187-4d10-9e7e-74d0a68aafbd@suse.com>
+From: Mike Christie <mchristi@redhat.com>
+Date: Sun, 10 May 2020 21:57:30 +0000
+Subject: [PATCH 01/15] target: check enforce_pr_isids during registration
+Message-Id: <20200510215744.21999-2-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200510215744.21999-1-mchristi@redhat.com>
- <20200510215744.21999-3-mchristi@redhat.com>
-In-Reply-To: <20200510215744.21999-3-mchristi@redhat.com>
+In-Reply-To: <20200510215744.21999-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <mchristi@redhat.com>, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: "Michael S . Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, Stefan Hajnoczi <stefanha@redhat.com>, Juergen Gross <jgross@suse.com>
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>
 
-On 5/10/20 2:57 PM, Mike Christie wrote:
-> The PGR code assumes the ACL name is going to be based on the SPC4
-> transportID type of values. The problem is that for iSCSI we have an extra
-> session id as part of the SCSI port id and some fabric modules support or
-> would like to support non transportID values for the ACL name. For example,
-> iSCSI and SRP would like to use the source address for the ACL name, but
-> that is not a valud transportID value that you can get in a PGR request.
-> 
-> This patch adds a new transport_id struct which maps to the SPC4
-> transportID. In the future it will be used for PGR commands instead of the
-> ACL name. In this patchset it is used to export the initiator info in the
-> session's sysfs dir, so tools can display the info and daemons that execute
-> commands like PGRs in userspace can build a session id to I_T nexus mapping.
-> 
-> In this patch only srp is passing in different values for the transport id
-> and acl name. The next patches will convert loop, scsi vhost and xen
-> scsiback that are more complex due to their initiator name emulation.
-> 
-> Cc: Michael S. Tsirkin <mst@redhat.com>
-> Cc: Jason Wang <jasowang@redhat.com>
-> Cc: Paolo Bonzini <pbonzini@redhat.com>
-> Cc: Stefan Hajnoczi <stefanha@redhat.com>
-> Cc: Juergen Gross <jgross@suse.com>
-> Signed-off-by: Mike Christie <mchristi@redhat.com>
-> ---
-> 
-> V4:
-> - Don't drop const char use. We still have target_setup_session allocate
-> the transport_id struct, but because every uses format=0 we just need to
-> pass in the transport_id's name.
-> 
-> V3:
-> - drop format
-> 
->  drivers/infiniband/ulp/srpt/ib_srpt.c    | 10 +++++---
->  drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c |  4 +--
->  drivers/scsi/qla2xxx/tcm_qla2xxx.c       |  2 +-
->  drivers/target/loopback/tcm_loop.c       |  3 ++-
->  drivers/target/sbp/sbp_target.c          |  2 +-
->  drivers/target/target_core_fabric_lib.c  | 41 +++++++++++++++++++++++++++++++
->  drivers/target/target_core_transport.c   | 42 ++++++++++++++++++++++++--------
->  drivers/target/tcm_fc/tfc_sess.c         |  3 ++-
->  drivers/usb/gadget/function/f_tcm.c      |  3 ++-
->  drivers/vhost/scsi.c                     |  1 +
->  drivers/xen/xen-scsiback.c               |  3 ++-
->  include/target/target_core_base.h        | 12 +++++++++
->  include/target/target_core_fabric.h      |  5 +++-
->  13 files changed, 108 insertions(+), 23 deletions(-)
-> 
+Move the check for enforce_pr_isids to the registration code where we
+can fail at the time an initiator tries to register a path without an
+isid. In its current place in __core_scsi3_locate_pr_reg, it is too
+late because it can be registered and be reported in PR in commands and
+it is stuck in this state because we cannot unregister it.
 
-Reviewed-by: Lee Duncan <lduncan@suse.com>
+Note.
+I am including in this patchset, because the 5th patch is built on top.
+
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/target/target_core_pr.c | 24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index 5e93169..cd2d32f 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -1176,15 +1176,6 @@ static struct t10_pr_registration *__core_scsi3_locate_pr_reg(
+ 		 * ISID, then we have found a match.
+ 		 */
+ 		if (!pr_reg->isid_present_at_reg) {
+-			/*
+-			 * Determine if this SCSI device server requires that
+-			 * SCSI Intiatior TransportID w/ ISIDs is enforced
+-			 * for fabric modules (iSCSI) requiring them.
+-			 */
+-			if (tpg->se_tpg_tfo->sess_get_initiator_sid != NULL) {
+-				if (dev->dev_attrib.enforce_pr_isids)
+-					continue;
+-			}
+ 			atomic_inc_mb(&pr_reg->pr_res_holders);
+ 			spin_unlock(&pr_tmpl->registration_lock);
+ 			return pr_reg;
+@@ -1591,10 +1582,25 @@ static void core_scsi3_lunacl_undepend_item(struct se_dev_entry *se_deve)
+ 				continue;
+ 			dest_rtpi = tmp_lun->lun_rtpi;
+ 
++			iport_ptr = NULL;
+ 			i_str = target_parse_pr_out_transport_id(tmp_tpg,
+ 					ptr, &tid_len, &iport_ptr);
+ 			if (!i_str)
+ 				continue;
++			/*
++			 * Determine if this SCSI device server requires that
++			 * SCSI Intiatior TransportID w/ ISIDs is enforced
++			 * for fabric modules (iSCSI) requiring them.
++			 */
++			if (tpg->se_tpg_tfo->sess_get_initiator_sid &&
++                            dev->dev_attrib.enforce_pr_isids &&
++			    !iport_ptr) {
++				pr_warn("SPC-PR: enforce_pr_isids is set but a isid has not been sent in the SPEC_I_PT data for %s.",
++					i_str);
++				ret = TCM_INVALID_PARAMETER_LIST;
++				spin_unlock(&dev->se_port_lock);
++				goto out_unmap;
++			}
+ 
+ 			atomic_inc_mb(&tmp_tpg->tpg_pr_ref_count);
+ 			spin_unlock(&dev->se_port_lock);
+-- 
+1.8.3.1
