@@ -1,126 +1,72 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 20 May 2020 19:54:44 +0000
-Subject: [PATCH 08/33] net: add sock_enable_timestamps
-Message-Id: <20200520195509.2215098-9-hch@lst.de>
+From: Mike Christie <mchristi@redhat.com>
+Date: Sun, 10 May 2020 21:57:29 +0000
+Subject: [PATCH v5 00/15] target: add sysfs support
+Message-Id: <20200510215744.21999-1-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200520195509.2215098-1-hch@lst.de>
-In-Reply-To: <20200520195509.2215098-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Add a helper to directly enable timestamps instead of setting the
-SO_TIMESTAMP* sockopts from kernel space and going through a fake
-uaccess.
+The following patches made over Linus's current tree allow lio to export
+info about structs like the se_session that the kernel initiates creation
+of via events like initiator login where there is no local user interaction
+like a mkdir.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- include/net/sock.h       |  1 +
- net/core/sock.c          | 47 +++++++++++++++++++++++++---------------
- net/rxrpc/local_object.c |  8 +------
- 3 files changed, 31 insertions(+), 25 deletions(-)
+Why sysfs when we have configfs?
 
-diff --git a/include/net/sock.h b/include/net/sock.h
-index cdec7bc055d5b..99ef43508d2b5 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -2689,6 +2689,7 @@ static inline bool sk_dev_equal_l3scope(struct sock *sk, int dif)
- void sock_def_readable(struct sock *sk);
- 
- int sock_bindtoindex(struct sock *sk, int ifindex);
-+void sock_enable_timestamps(struct sock *sk);
- void sock_no_linger(struct sock *sk);
- void sock_set_priority(struct sock *sk, u32 priority);
- void sock_set_reuseaddr(struct sock *sk);
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 23f80880fbb2c..e4a4dd2b3d8b3 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -757,6 +757,28 @@ void sock_set_sndtimeo(struct sock *sk, s64 secs)
- }
- EXPORT_SYMBOL(sock_set_sndtimeo);
- 
-+static void __sock_set_timestamps(struct sock *sk, bool val, bool new, bool ns)
-+{
-+	if (val)  {
-+		sock_valbool_flag(sk, SOCK_TSTAMP_NEW, new);
-+		sock_valbool_flag(sk, SOCK_RCVTSTAMPNS, ns);
-+		sock_set_flag(sk, SOCK_RCVTSTAMP);
-+		sock_enable_timestamp(sk, SOCK_TIMESTAMP);
-+	} else {
-+		sock_reset_flag(sk, SOCK_RCVTSTAMP);
-+		sock_reset_flag(sk, SOCK_RCVTSTAMPNS);
-+		sock_reset_flag(sk, SOCK_TSTAMP_NEW);
-+	}
-+}
-+
-+void sock_enable_timestamps(struct sock *sk)
-+{
-+	lock_sock(sk);
-+	__sock_set_timestamps(sk, true, false, true);
-+	release_sock(sk);
-+}
-+EXPORT_SYMBOL(sock_enable_timestamps);
-+
- /*
-  *	This is meant for all protocols to use and covers goings on
-  *	at the socket level. Everything here is generic.
-@@ -948,28 +970,17 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
- 		break;
- 
- 	case SO_TIMESTAMP_OLD:
-+		__sock_set_timestamps(sk, valbool, false, false);
-+		break;
- 	case SO_TIMESTAMP_NEW:
-+		__sock_set_timestamps(sk, valbool, true, false);
-+		break;
- 	case SO_TIMESTAMPNS_OLD:
-+		__sock_set_timestamps(sk, valbool, false, true);
-+		break;
- 	case SO_TIMESTAMPNS_NEW:
--		if (valbool)  {
--			if (optname = SO_TIMESTAMP_NEW || optname = SO_TIMESTAMPNS_NEW)
--				sock_set_flag(sk, SOCK_TSTAMP_NEW);
--			else
--				sock_reset_flag(sk, SOCK_TSTAMP_NEW);
--
--			if (optname = SO_TIMESTAMP_OLD || optname = SO_TIMESTAMP_NEW)
--				sock_reset_flag(sk, SOCK_RCVTSTAMPNS);
--			else
--				sock_set_flag(sk, SOCK_RCVTSTAMPNS);
--			sock_set_flag(sk, SOCK_RCVTSTAMP);
--			sock_enable_timestamp(sk, SOCK_TIMESTAMP);
--		} else {
--			sock_reset_flag(sk, SOCK_RCVTSTAMP);
--			sock_reset_flag(sk, SOCK_RCVTSTAMPNS);
--			sock_reset_flag(sk, SOCK_TSTAMP_NEW);
--		}
-+		__sock_set_timestamps(sk, valbool, true, true);
- 		break;
--
- 	case SO_TIMESTAMPING_NEW:
- 		sock_set_flag(sk, SOCK_TSTAMP_NEW);
- 		/* fall through */
-diff --git a/net/rxrpc/local_object.c b/net/rxrpc/local_object.c
-index 01135e54d95d2..5ea2bd01fdd59 100644
---- a/net/rxrpc/local_object.c
-+++ b/net/rxrpc/local_object.c
-@@ -189,13 +189,7 @@ static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
- 		}
- 
- 		/* We want receive timestamps. */
--		opt = 1;
--		ret = kernel_setsockopt(local->socket, SOL_SOCKET, SO_TIMESTAMPNS_OLD,
--					(char *)&opt, sizeof(opt));
--		if (ret < 0) {
--			_debug("setsockopt failed");
--			goto error;
--		}
-+		sock_enable_timestamps(local->socket->sk);
- 		break;
- 
- 	default:
--- 
-2.26.2
+I started with configfs and hit bugs like:
+
+commit cc57c07343bd071cdf1915a91a24ab7d40c9b590
+Author: Mike Christie <mchristi@redhat.com>
+Date:   Sun Jul 15 18:16:17 2018 -0500
+
+    configfs: fix registered group removal
+
+and it turns out that bug was not really a bug and was just how configfs
+was meant to work. It seems it was not meant to be used where the kernel
+initiates creation of dirs/files as a result of some internal action. It's
+more geared to the user initiating the creation, and my patch just lead
+to other bugs and was reverted:
+
+commit f19e4ed1e1edbfa3c9ccb9fed17759b7d6db24c6
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date:   Thu Aug 29 23:13:30 2019 -0400
+
+    configfs_register_group() shouldn't be (and isn't) called in
+rmdirable parts
+
+So to export the session info we have debugfs, sysfs, ioctl, netlink, etc.
+sysfs just seemed like a decent fit since one of the primary users is
+rtslib and it already has lots of file/dir handling code.
+
+
+V4:
+- Don't drop const char use in fabric drivers.
+- add Documentation/ABI
+- use initaitor port prefix instead of generic "session"
+- only make session_id file if iSCSI format=1 is being used.
+
+V3:
+- drop format field
+- delay tpg deletion to allow fabric modules time to remove their
+  sessions.
+- Added root sessions dir for easier lookup if userspace has the
+  session id.
+- add session symlink
+- use simple ida.
+- Fix goto use. Actually moved sysfs addition call to after nego
+  to avoid sysfs additions when login ends up failing.
+- Dropped target_setup_session callback fixups and dropped the
+  init/free session callback for now. It's not immediately needed
+  for this base session sysfs info support.
+
+V2:
+- rename top level dir to scsi_target
+- Fix extra newline
+- Copy data that's exported to sysfs so we do not have to worry about
+configfs and sysfs refcounts.
+- Export session info needed for tracking sessions in userspace and
+handling commands like PGRs there (still needs a way to notify userspace
+when sessions are added/deleted, but that will be a different set since
+the focus is different).
