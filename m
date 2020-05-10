@@ -1,38 +1,130 @@
-From: Chris Boot <bootc@bootc.net>
-Date: Thu, 28 May 2020 15:16:51 +0000
-Subject: Re: [PATCH] sbp-target: add the missed kfree() in an error path
-Message-Id: <dcb29beb-0996-a141-89af-ac9c9c5fd5c0@bootc.net>
+From: Mike Christie <mchristi@redhat.com>
+Date: Sun, 10 May 2020 21:57:34 +0000
+Subject: [PATCH 05/15] vhost scsi: use target_parse_emulated_name
+Message-Id: <20200510215744.21999-6-mchristi@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200528102056.911825-1-hslester96@gmail.com>
- <475e4f50-6d20-d653-8288-0676bc708bcc@acm.org>
-In-Reply-To: <475e4f50-6d20-d653-8288-0676bc708bcc@acm.org>
+References: <20200510215744.21999-1-mchristi@redhat.com>
+In-Reply-To: <20200510215744.21999-1-mchristi@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: Chuhong Yuan <hslester96@gmail.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Nicholas Bellinger <nab@linux-iscsi.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Mike Christie <mchristi@redhat.com>, "Michael S . Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, Stefan Hajnoczi <stefanha@redhat.com>
 
-On 28/05/2020 15:53, Bart Van Assche wrote:
-> On 2020-05-28 03:20, Chuhong Yuan wrote:
->> sbp_fetch_command() forgets to call kfree() in an error path.
->> Add the missed call to fix it.
-> 
-> Hi Chris,
-> 
-> The changelog of the code under drivers/target/sbp makes we wonder
-> whether this driver has ever had any other users than its original
-> author. Do you agree with this? If so, do you want to keep this driver
-> in the kernel tree?
+Use target_parse_emulated_name so the acl and SCSI names are
+properly formatted.
 
-Hi Bart,
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: Jason Wang <jasowang@redhat.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Stefan Hajnoczi <stefanha@redhat.com>
+Signed-off-by: Mike Christie <mchristi@redhat.com>
+---
+ drivers/vhost/scsi.c | 69 +++++++++-------------------------------------------
+ 1 file changed, 11 insertions(+), 58 deletions(-)
 
-I think you might be right. I also don't have much time to maintain it
-these days and the hardware I had is long dead. It probably should be
-removed for everyone's sanity.
-
-Best regards,
-Chris
-
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 15aabc2..37f66f8 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1938,7 +1938,8 @@ static int vhost_scsi_nexus_cb(struct se_portal_group *se_tpg,
+ }
+ 
+ static int vhost_scsi_make_nexus(struct vhost_scsi_tpg *tpg,
+-				const char *name)
++				const char *tpt_id_name,
++				const char *acl_name)
+ {
+ 	struct vhost_scsi_nexus *tv_nexus;
+ 
+@@ -1964,8 +1965,8 @@ static int vhost_scsi_make_nexus(struct vhost_scsi_tpg *tpg,
+ 					VHOST_SCSI_DEFAULT_TAGS,
+ 					sizeof(struct vhost_scsi_cmd),
+ 					TARGET_PROT_DIN_PASS | TARGET_PROT_DOUT_PASS,
+-					(unsigned char *)name,
+-					(unsigned char *)name, tv_nexus,
++					(unsigned char *)tpt_id_name,
++					(unsigned char *)acl_name, tv_nexus,
+ 					vhost_scsi_nexus_cb);
+ 	if (IS_ERR(tv_nexus->tvn_se_sess)) {
+ 		mutex_unlock(&tpg->tv_tpg_mutex);
+@@ -2056,7 +2057,7 @@ static ssize_t vhost_scsi_tpg_nexus_store(struct config_item *item,
+ 	struct vhost_scsi_tpg *tpg = container_of(se_tpg,
+ 				struct vhost_scsi_tpg, se_tpg);
+ 	struct vhost_scsi_tport *tport_wwn = tpg->tport;
+-	unsigned char i_port[VHOST_SCSI_NAMELEN], *ptr, *port_ptr;
++	unsigned char i_port[VHOST_SCSI_NAMELEN], *tpt_id_name;
+ 	int ret;
+ 	/*
+ 	 * Shutdown the active I_T nexus if 'NULL' is passed..
+@@ -2065,62 +2066,14 @@ static ssize_t vhost_scsi_tpg_nexus_store(struct config_item *item,
+ 		ret = vhost_scsi_drop_nexus(tpg);
+ 		return (!ret) ? count : ret;
+ 	}
+-	/*
+-	 * Otherwise make sure the passed virtual Initiator port WWN matches
+-	 * the fabric protocol_id set in vhost_scsi_make_tport(), and call
+-	 * vhost_scsi_make_nexus().
+-	 */
+-	if (strlen(page) >= VHOST_SCSI_NAMELEN) {
+-		pr_err("Emulated NAA Sas Address: %s, exceeds"
+-				" max: %d\n", page, VHOST_SCSI_NAMELEN);
+-		return -EINVAL;
+-	}
+-	snprintf(&i_port[0], VHOST_SCSI_NAMELEN, "%s", page);
+ 
+-	ptr = strstr(i_port, "naa.");
+-	if (ptr) {
+-		if (tport_wwn->tport_proto_id != SCSI_PROTOCOL_SAS) {
+-			pr_err("Passed SAS Initiator Port %s does not"
+-				" match target port protoid: %s\n", i_port,
+-				vhost_scsi_dump_proto_id(tport_wwn));
+-			return -EINVAL;
+-		}
+-		port_ptr = &i_port[0];
+-		goto check_newline;
+-	}
+-	ptr = strstr(i_port, "fc.");
+-	if (ptr) {
+-		if (tport_wwn->tport_proto_id != SCSI_PROTOCOL_FCP) {
+-			pr_err("Passed FCP Initiator Port %s does not"
+-				" match target port protoid: %s\n", i_port,
+-				vhost_scsi_dump_proto_id(tport_wwn));
+-			return -EINVAL;
+-		}
+-		port_ptr = &i_port[3]; /* Skip over "fc." */
+-		goto check_newline;
+-	}
+-	ptr = strstr(i_port, "iqn.");
+-	if (ptr) {
+-		if (tport_wwn->tport_proto_id != SCSI_PROTOCOL_ISCSI) {
+-			pr_err("Passed iSCSI Initiator Port %s does not"
+-				" match target port protoid: %s\n", i_port,
+-				vhost_scsi_dump_proto_id(tport_wwn));
+-			return -EINVAL;
+-		}
+-		port_ptr = &i_port[0];
+-		goto check_newline;
+-	}
+-	pr_err("Unable to locate prefix for emulated Initiator Port:"
+-			" %s\n", i_port);
+-	return -EINVAL;
+-	/*
+-	 * Clear any trailing newline for the NAA WWN
+-	 */
+-check_newline:
+-	if (i_port[strlen(i_port)-1] = '\n')
+-		i_port[strlen(i_port)-1] = '\0';
++	ret = target_parse_emulated_name(tport_wwn->tport_proto_id, page,
++					 i_port, VHOST_SCSI_NAMELEN,
++					 &tpt_id_name);
++	if (ret)
++		return ret;
+ 
+-	ret = vhost_scsi_make_nexus(tpg, port_ptr);
++	ret = vhost_scsi_make_nexus(tpg, tpt_id_name, i_port);
+ 	if (ret < 0)
+ 		return ret;
+ 
 -- 
-Chris Boot
-bootc@bootc.net
+1.8.3.1
