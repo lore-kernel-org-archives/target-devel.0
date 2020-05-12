@@ -1,62 +1,63 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Thu, 14 May 2020 13:27:46 +0000
-Subject: RE: [PATCH 32/33] sctp: add sctp_sock_get_primary_addr
-Message-Id: <aff8f5ec8d6d44dbace63825af197086@AcuMS.aculab.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Tue, 12 May 2020 16:17:53 +0000
+Subject: [PATCH] scsi: target: put lun_ref at end of tmr processing
+Message-Id: <20200512161753.10625-1-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200513062649.2100053-1-hch@lst.de>
- <20200513062649.2100053-33-hch@lst.de>
- <20200513180302.GC2491@localhost.localdomain>
- <d112e18bfbdd40dfb219ed2c1f2082d4@AcuMS.aculab.com>
- <c66e0309572345f5b0f32d078701f2d7@AcuMS.aculab.com>
-In-Reply-To: <c66e0309572345f5b0f32d078701f2d7@AcuMS.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Marcelo Ricardo Leitner' <marcelo.leitner@gmail.com>, 'Christoph Hellwig' <hch@lst.de>
-Cc: "'David S. Miller'" <davem@davemloft.net>, 'Jakub Kicinski' <kuba@kernel.org>, 'Eric Dumazet' <edumazet@google.com>, 'Alexey Kuznetsov' <kuznet@ms2.inr.ac.ru>, 'Hideaki YOSHIFUJI' <yoshfuji@linux-ipv6.org>, 'Vlad Yasevich' <vyasevich@gmail.com>, 'Neil Horman' <nhorman@tuxdriver.com>, 'Jon Maloy' <jmaloy@redhat.com>, 'Ying Xue' <ying.xue@windriver.com>, "'drbd-dev@lists.linbit.com'" <drbd-dev@lists.linbit.com>, "'linux-block@vger.kernel.org'" <linux-block@vger.kernel.org>, "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>, "'linux-rdma@vger.kernel.org'" <linux-rdma@vger.kernel.org>, "'linux-nvme@lists.infradead.org'" <linux-nvme@lists.infradead.org>, "'target-devel@vger.kernel.org'" <target-devel@vger.kernel.org>
+To: martin.petersen@oracle.com, bvanassche@acm.org, mchristi@readhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, bly@catalogicsoftware.com
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-From: David Laight
-> Sent: 14 May 2020 13:30
-> Subject: RE: [PATCH 32/33] sctp: add sctp_sock_get_primary_addr
-> 
-> From: David Laight
-> > Sent: 14 May 2020 10:51
-> > From: Marcelo Ricardo Leitner
-> > > Sent: 13 May 2020 19:03
-> > >
-> > > On Wed, May 13, 2020 at 08:26:47AM +0200, Christoph Hellwig wrote:
-> > > > Add a helper to directly get the SCTP_PRIMARY_ADDR sockopt from kernel
-> > > > space without going through a fake uaccess.
-> > >
-> > > Same comment as on the other dlm/sctp patch.
-> >
-> > Wouldn't it be best to write sctp_[gs]etsockotp() that
-> > use a kernel buffer and then implement the user-space
-> > calls using a wrapper that does the copies to an on-stack
-> > (or malloced if big) buffer.
-> 
-> Actually looking at __sys_setsockopt() it calls
-> BPF_CGROUP_RUN_PROG_SETSOCKOPT() which (by the look of it)
-> can copy the user buffer into malloc()ed memory and
-> cause set_fs(KERNEL_DS) be called.
-> 
-> The only way to get rid of that set_fs() is to always
-> have the buffer in kernel memory when the underlying
-> setsockopt() code is called.
+Testing with Loopback I found, that after a Loopback LUN
+has executed a TMR, I can no longer unlink the LUN.
+The rm command hangs in transport_clear_lun_ref() at
+wait_for_completion(&lun->lun_shutdown_comp)
+The reason is, that transport_lun_remove_cmd() is not
+called at the end of target_tmr_work().
 
-And having started to try coding __sys_setsockopt()
-and then found the compat code I suspect that would
-be a whole lot more sane if the buffer was in kernel
-and it knew that at least (say) 64 bytes were allocated.
+It seems, that in other fabrics this call happens implicitly
+when the fabric drivers call transport_generic_free_cmd()
+during their ->queue_tm_rsp().
 
-The whole compat_alloc_user_space() 'crap' could probably go.
+Unfortunately Loopback seems to not comply to the common way
+of calling transport_generic_free_cmd() from ->queue_*().
+Instead it calls transport_generic_free_cmd() from its
+  ->check_stop_free() only.
 
-Actually it looks like an application can avoid whatever
-checks BPF_CGROUP_RUN_PROG_SETSOCKOPT() is trying to do
-by using the 32bit compat ioctls.
+But the ->check_stop_free() is called by
+transport_cmd_check_stop_to_fabric() after it has reset the
+se_cmd->se_lun pointer.
+Therefore the following transport_generic_free_cmd() skips the
+transport_lun_remove_cmd().
 
-	David
+So this patch re-adds the transport_lun_remove_cmd() at the end
+of target_tmr_work(), which was removed during commit
+2c9fa49e100f962af988f1c0529231bf14905cda
+"scsi: target/core: Make ABORT and LUN RESET handling synchronous"
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
+For fabrics using transport_generic_free_cmd() in the usual way
+the double call to transport_lun_remove_cmd() doesn't harm, as
+transport_lun_remove_cmd() checks for this situation and does
+not release lun_ref twice.
+
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Tested-by: Bryant G. Ly <bryangly@gmail.com>
+---
+ drivers/target/target_core_transport.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 594b724bbf79..264a822c0bfa 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3350,6 +3350,7 @@ static void target_tmr_work(struct work_struct *work)
+ 
+ 	cmd->se_tfo->queue_tm_rsp(cmd);
+ 
++	transport_lun_remove_cmd(cmd);
+ 	transport_cmd_check_stop_to_fabric(cmd);
+ 	return;
+ 
+-- 
+2.12.3
