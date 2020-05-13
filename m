@@ -1,27 +1,71 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 20 May 2020 14:18:30 +0000
-Subject: Re: [PATCH 20/33] ipv4: add ip_sock_set_recverr
-Message-Id: <20200520141830.GA28867@lst.de>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Wed, 13 May 2020 15:34:43 +0000
+Subject: [PATCH v2] scsi: target: put lun_ref at end of tmr processing
+Message-Id: <20200513153443.3554-1-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200513062649.2100053-1-hch@lst.de>
-	<20200513062649.2100053-21-hch@lst.de>
-	<0ee5acfaca4cf32d4efad162046b858981a4dae3.camel@perches.com>
-	<20200514103025.GB12680@lst.de>
-	<9992a1fe768a0b1e9bb9470d2728ba25dbe042db.camel@perches.com>
-In-Reply-To: <9992a1fe768a0b1e9bb9470d2728ba25dbe042db.camel-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Cc: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
+To: martin.petersen@oracle.com, bvanassche@acm.org, mchristi@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, bly@catalogicsoftware.com
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, stable@vger.kernel.org
 
-On Thu, May 14, 2020 at 04:51:26AM -0700, Joe Perches wrote:
-> > Mostly to keep it symmetric with the sockopt.  I could probably remove
-> > a few arguments in the series if we want to be strict.
-> 
-> My preference would use strict and add
-> arguments only when necessary.
+Testing with Loopback I found, that after a Loopback LUN
+has executed a TMR, I can no longer unlink the LUN.
+The rm command hangs in transport_clear_lun_ref() at
+wait_for_completion(&lun->lun_shutdown_comp)
+The reason is, that transport_lun_remove_cmd() is not
+called at the end of target_tmr_work().
 
-In a few cases that would create confusion as the arguments are rather
-overloaded.  But for a lot of the cases where it doesn't and there isn't
-really much use for other arguments I've done that now.
+It seems, that in other fabrics this call happens implicitly
+when the fabric drivers call transport_generic_free_cmd()
+during their ->queue_tm_rsp().
+
+Unfortunately Loopback seems to not comply to the common way
+of calling transport_generic_free_cmd() from ->queue_*().
+Instead it calls transport_generic_free_cmd() from its
+  ->check_stop_free() only.
+
+But the ->check_stop_free() is called by
+transport_cmd_check_stop_to_fabric() after it has reset the
+se_cmd->se_lun pointer.
+Therefore the following transport_generic_free_cmd() skips the
+transport_lun_remove_cmd().
+
+So this patch re-adds the transport_lun_remove_cmd() at the end
+of target_tmr_work(), which was removed during commit
+2c9fa49e100f962af988f1c0529231bf14905cda
+"scsi: target/core: Make ABORT and LUN RESET handling synchronous"
+
+For fabrics using transport_generic_free_cmd() in the usual way
+the double call to transport_lun_remove_cmd() doesn't harm, as
+transport_lun_remove_cmd() checks for this situation and does
+not release lun_ref twice.
+
+Fixes: 2c9fa49e100f ("scsi: target/core: Make ABORT and LUN RESET handling synchronous")
+Cc: stable@vger.kernel.org
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Tested-by: Bryant G. Ly <bryangly@gmail.com>
+Reviewed-by: Bart van Assche <bvanassche@acm.org>
+---
+
+v2:
+ - Resend of the same patch with added tags "Fixes:",
+   "Cc: stable@.." and "Reviewed-by:"
+
+ drivers/target/target_core_transport.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 594b724bbf79..264a822c0bfa 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3350,6 +3350,7 @@ static void target_tmr_work(struct work_struct *work)
+ 
+ 	cmd->se_tfo->queue_tm_rsp(cmd);
+ 
++	transport_lun_remove_cmd(cmd);
+ 	transport_cmd_check_stop_to_fabric(cmd);
+ 	return;
+ 
+-- 
+2.12.3
