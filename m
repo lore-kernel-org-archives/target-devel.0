@@ -1,60 +1,118 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Thu, 07 May 2020 15:33:20 +0000
-Subject: Lun unlink from configFS for Loopback after TMR execution hangs forever
-Message-Id: <ffee233a-fe6d-e1c9-7071-9fb463453b0c@ts.fujitsu.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Wed, 13 May 2020 06:26:22 +0000
+Subject: [PATCH 07/33] net: add sock_set_keepalive
+Message-Id: <20200513062649.2100053-8-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200513062649.2100053-1-hch@lst.de>
+In-Reply-To: <20200513062649.2100053-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>, Mike Christie <mchristi@redhat.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Vlad Yasevich <vyasevich@gmail.com>, Neil Horman <nhorman@tuxdriver.com>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, linux-sctp@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org
 
-Hi,
+Add a helper to directly set the SO_KEEPALIVE sockopt from kernel space
+without going through a fake uaccess.
 
-I am testing with Loopback and found, that after a
-Loopback LUN has executed a TMR, I can no longer unlink
-the LUN.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ fs/dlm/lowcomms.c     |  6 +-----
+ include/net/sock.h    |  1 +
+ net/core/sock.c       | 10 ++++++++++
+ net/rds/tcp_listen.c  |  6 +-----
+ net/sunrpc/xprtsock.c |  4 +---
+ 5 files changed, 14 insertions(+), 13 deletions(-)
 
-The rm command hangs in transport_clear_lun_ref() at
-wait_for_completion(&lun->lun_shutdown_comp)
-
-The reason is, that transport_lun_remove_cmd() is not
-called at the end of target_tmr_work().
-
-It seems, that in other fabrics this call happens implicitly
-when the fabric driver calls transport_generic_free_cmd()
-during its ->queue_tm_rsp().
-
-Unfortunately the Loopback seems to not comply to the common
-way of calling transport_generic_free_cmd() from ->queue_*(),
-but calls it from its ->check_stop_free() only.
-
-But the ->check_stop_free() is called by
-transport_cmd_check_stop_to_fabric() after it has reset the
-se_cmd->se_lun pointer.
-Therefore the following transport_generic_free_cmd() skips the
-transport_lun_remove_cmd().
-
-So it seems, that Loopback driver is doing wrong.
-
-OTOH, target_tmr_work() seems to be the only place, where
-transport_cmd_check_stop_to_fabric() is called without
-calling transport_lun_remove_cmd() before.
-
-Now I'm wondering, how to fix the problem:
-1) Just (re-)add a call to transport_lun_remove_cmd() before
-    calling transport_cmd_check_stop_to_fabric() in
-    target_tmr_work()
-2) Change Loopback driver to comply with the usual way
-    of using transport_generic_free_cmd()
-
-I think I'd prefer 1 and already tested it, works fine for
-Loopback. Currently I'm not able to test other fabrics, but
-AFAICS the change should not harm other fabric drivers,
-because transport_lun_remove_cmd() uses a bit to make safe,
-that lun_ref is dropped only once.
-Additionally, before commit 2c9fa49e100f "scsi: target/core:
-  Make ABORT and LUN RESET handling synchronous" the code
-contained the transport_lun_remove_cmd() call.
-
-Regards,
-Bodo
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index 0c0a6413fdfcc..16d616c180613 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -1259,11 +1259,7 @@ static struct socket *tcp_create_listen_sock(struct connection *con,
+ 		con->sock = NULL;
+ 		goto create_out;
+ 	}
+-	result = kernel_setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE,
+-				 (char *)&one, sizeof(one));
+-	if (result < 0) {
+-		log_print("Set keepalive failed: %d", result);
+-	}
++	sock_set_keepalive(sock->sk, true);
+ 
+ 	result = sock->ops->listen(sock, 5);
+ 	if (result < 0) {
+diff --git a/include/net/sock.h b/include/net/sock.h
+index cf8a30e0168de..4cedde585424f 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -2691,6 +2691,7 @@ void sock_set_reuseaddr(struct sock *sk, unsigned char reuse);
+ void sock_set_linger(struct sock *sk, bool onoff, unsigned int linger);
+ void sock_set_priority(struct sock *sk, u32 priority);
+ void sock_set_sndtimeo(struct sock *sk, unsigned int secs);
++void sock_set_keepalive(struct sock *sk, bool keepalive);
+ int sock_bindtoindex(struct sock *sk, int ifindex);
+ void sock_set_timestamps(struct sock *sk, bool val, bool new, bool ns);
+ 
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 1589f242ecc7e..dfd2b839f88bb 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -794,6 +794,16 @@ void sock_set_timestamps(struct sock *sk, bool val, bool new, bool ns)
+ }
+ EXPORT_SYMBOL(sock_set_timestamps);
+ 
++void sock_set_keepalive(struct sock *sk, bool keepalive)
++{
++	lock_sock(sk);
++	if (sk->sk_prot->keepalive)
++		sk->sk_prot->keepalive(sk, keepalive);
++	sock_valbool_flag(sk, SOCK_KEEPOPEN, keepalive);
++	release_sock(sk);
++}
++EXPORT_SYMBOL(sock_set_keepalive);
++
+ /*
+  *	This is meant for all protocols to use and covers goings on
+  *	at the socket level. Everything here is generic.
+diff --git a/net/rds/tcp_listen.c b/net/rds/tcp_listen.c
+index 96f7538e5fa8d..a55b39cd45a6c 100644
+--- a/net/rds/tcp_listen.c
++++ b/net/rds/tcp_listen.c
+@@ -43,13 +43,9 @@ int rds_tcp_keepalive(struct socket *sock)
+ 	/* values below based on xs_udp_default_timeout */
+ 	int keepidle = 5; /* send a probe 'keepidle' secs after last data */
+ 	int keepcnt = 5; /* number of unack'ed probes before declaring dead */
+-	int keepalive = 1;
+ 	int ret = 0;
+ 
+-	ret = kernel_setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE,
+-				(char *)&keepalive, sizeof(keepalive));
+-	if (ret < 0)
+-		goto bail;
++	sock_set_keepalive(sock->sk, true);
+ 
+ 	ret = kernel_setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT,
+ 				(char *)&keepcnt, sizeof(keepcnt));
+diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+index 845d0be805ece..bb61d3758be2b 100644
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -2110,7 +2110,6 @@ static void xs_tcp_set_socket_timeouts(struct rpc_xprt *xprt,
+ 	struct sock_xprt *transport = container_of(xprt, struct sock_xprt, xprt);
+ 	unsigned int keepidle;
+ 	unsigned int keepcnt;
+-	unsigned int opt_on = 1;
+ 	unsigned int timeo;
+ 
+ 	spin_lock(&xprt->transport_lock);
+@@ -2122,8 +2121,7 @@ static void xs_tcp_set_socket_timeouts(struct rpc_xprt *xprt,
+ 	spin_unlock(&xprt->transport_lock);
+ 
+ 	/* TCP Keepalive options */
+-	kernel_setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE,
+-			(char *)&opt_on, sizeof(opt_on));
++	sock_set_keepalive(sock->sk, 1);
+ 	kernel_setsockopt(sock, SOL_TCP, TCP_KEEPIDLE,
+ 			(char *)&keepidle, sizeof(keepidle));
+ 	kernel_setsockopt(sock, SOL_TCP, TCP_KEEPINTVL,
+-- 
+2.26.2
