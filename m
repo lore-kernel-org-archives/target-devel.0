@@ -1,73 +1,115 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 20 May 2020 19:55:04 +0000
-Subject: [PATCH 28/33] ipv6: add ip6_sock_set_recvpktinfo
-Message-Id: <20200520195509.2215098-29-hch@lst.de>
+Date: Wed, 13 May 2020 06:26:18 +0000
+Subject: [PATCH 03/33] net: add sock_set_priority
+Message-Id: <20200513062649.2100053-4-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200520195509.2215098-1-hch@lst.de>
-In-Reply-To: <20200520195509.2215098-1-hch@lst.de>
+References: <20200513062649.2100053-1-hch@lst.de>
+In-Reply-To: <20200513062649.2100053-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Eric Dumazet <edumazet@google.com>, linux-nvme@lists.infradead.org, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, cluster-devel@redhat.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, drbd-dev@tron.linbit.com, ceph-devel@vger.kernel.org, linux-nfs@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, Vlad Yasevich <vyasevich@gmail.com>, linux-kernel@vger.kernel.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, ocfs2-devel@oss.oracle.com
+Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Vlad Yasevich <vyasevich@gmail.com>, Neil Horman <nhorman@tuxdriver.com>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, linux-sctp@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org
 
-Add a helper to directly set the IPV6_RECVPKTINFO sockopt from kernel
-space without going through a fake uaccess.
+Add a helper to directly set the SO_PRIORITY sockopt from kernel space
+without going through a fake uaccess.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- include/net/ipv6.h   |  7 +++++++
- net/sunrpc/svcsock.c | 10 ++--------
- 2 files changed, 9 insertions(+), 8 deletions(-)
+ drivers/nvme/host/tcp.c   | 12 ++----------
+ drivers/nvme/target/tcp.c | 18 ++++--------------
+ include/net/sock.h        |  1 +
+ net/core/sock.c           |  8 ++++++++
+ 4 files changed, 15 insertions(+), 24 deletions(-)
 
-diff --git a/include/net/ipv6.h b/include/net/ipv6.h
-index 80260cff7e0c0..79b68ee3820e7 100644
---- a/include/net/ipv6.h
-+++ b/include/net/ipv6.h
-@@ -1261,4 +1261,11 @@ static inline int ip6_sock_set_addr_preferences(struct sock *sk, bool val)
- 	return ret;
- }
+diff --git a/drivers/nvme/host/tcp.c b/drivers/nvme/host/tcp.c
+index 5cacb61c73229..cd6a8fc14a139 100644
+--- a/drivers/nvme/host/tcp.c
++++ b/drivers/nvme/host/tcp.c
+@@ -1362,16 +1362,8 @@ static int nvme_tcp_alloc_queue(struct nvme_ctrl *nctrl,
+ 	 */
+ 	sock_set_linger(queue->sock->sk, true, 0);
  
-+static inline void ip6_sock_set_recvpktinfo(struct sock *sk)
+-	if (so_priority > 0) {
+-		ret = kernel_setsockopt(queue->sock, SOL_SOCKET, SO_PRIORITY,
+-				(char *)&so_priority, sizeof(so_priority));
+-		if (ret) {
+-			dev_err(ctrl->ctrl.device,
+-				"failed to set SO_PRIORITY sock opt, ret %d\n",
+-				ret);
+-			goto err_sock;
+-		}
+-	}
++	if (so_priority > 0)
++		sock_set_priority(queue->sock->sk, so_priority);
+ 
+ 	/* Set socket type of service */
+ 	if (nctrl->opts->tos >= 0) {
+diff --git a/drivers/nvme/target/tcp.c b/drivers/nvme/target/tcp.c
+index 87aba417189d2..778c1ce3137b7 100644
+--- a/drivers/nvme/target/tcp.c
++++ b/drivers/nvme/target/tcp.c
+@@ -1448,12 +1448,8 @@ static int nvmet_tcp_set_queue_sock(struct nvmet_tcp_queue *queue)
+ 	 */
+ 	sock_set_linger(sock->sk, true, 0);
+ 
+-	if (so_priority > 0) {
+-		ret = kernel_setsockopt(sock, SOL_SOCKET, SO_PRIORITY,
+-				(char *)&so_priority, sizeof(so_priority));
+-		if (ret)
+-			return ret;
+-	}
++	if (so_priority > 0)
++		sock_set_priority(sock->sk, so_priority);
+ 
+ 	/* Set socket type of service */
+ 	if (inet->rcv_tos > 0) {
+@@ -1638,14 +1634,8 @@ static int nvmet_tcp_add_port(struct nvmet_port *nport)
+ 		goto err_sock;
+ 	}
+ 
+-	if (so_priority > 0) {
+-		ret = kernel_setsockopt(port->sock, SOL_SOCKET, SO_PRIORITY,
+-				(char *)&so_priority, sizeof(so_priority));
+-		if (ret) {
+-			pr_err("failed to set SO_PRIORITY sock opt %d\n", ret);
+-			goto err_sock;
+-		}
+-	}
++	if (so_priority > 0)
++		sock_set_priority(port->sock->sk, so_priority);
+ 
+ 	ret = kernel_bind(port->sock, (struct sockaddr *)&port->addr,
+ 			sizeof(port->addr));
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 60890fb47fbc0..cce11782dc295 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -2689,5 +2689,6 @@ static inline bool sk_dev_equal_l3scope(struct sock *sk, int dif)
+ void sock_def_readable(struct sock *sk);
+ void sock_set_reuseaddr(struct sock *sk, unsigned char reuse);
+ void sock_set_linger(struct sock *sk, bool onoff, unsigned int linger);
++void sock_set_priority(struct sock *sk, u32 priority);
+ 
+ #endif	/* _SOCK_H */
+diff --git a/net/core/sock.c b/net/core/sock.c
+index cbc5104ca3515..e9f1e2247b004 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -744,6 +744,14 @@ void sock_set_linger(struct sock *sk, bool onoff, unsigned int linger)
+ }
+ EXPORT_SYMBOL(sock_set_linger);
+ 
++void sock_set_priority(struct sock *sk, u32 priority)
 +{
 +	lock_sock(sk);
-+	inet6_sk(sk)->rxopt.bits.rxinfo = true;
++	sk->sk_priority = priority;
 +	release_sock(sk);
 +}
++EXPORT_SYMBOL(sock_set_priority);
 +
- #endif /* _NET_IPV6_H */
-diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
-index a391892977cd2..e7a0037d9b56c 100644
---- a/net/sunrpc/svcsock.c
-+++ b/net/sunrpc/svcsock.c
-@@ -595,8 +595,6 @@ static struct svc_xprt_class svc_udp_class = {
- 
- static void svc_udp_init(struct svc_sock *svsk, struct svc_serv *serv)
- {
--	int err, level, optname, one = 1;
--
- 	svc_xprt_init(sock_net(svsk->sk_sock->sk), &svc_udp_class,
- 		      &svsk->sk_xprt, serv);
- 	clear_bit(XPT_CACHE_AUTH, &svsk->sk_xprt.xpt_flags);
-@@ -617,17 +615,13 @@ static void svc_udp_init(struct svc_sock *svsk, struct svc_serv *serv)
- 	switch (svsk->sk_sk->sk_family) {
- 	case AF_INET:
- 		ip_sock_set_pktinfo(svsk->sk_sock->sk);
--		return;
-+		break;
- 	case AF_INET6:
--		level = SOL_IPV6;
--		optname = IPV6_RECVPKTINFO;
-+		ip6_sock_set_recvpktinfo(svsk->sk_sock->sk);
- 		break;
- 	default:
- 		BUG();
- 	}
--	err = kernel_setsockopt(svsk->sk_sock, level, optname,
--					(char *)&one, sizeof(one));
--	dprintk("svc: kernel_setsockopt returned %d\n", err);
- }
- 
  /*
+  *	This is meant for all protocols to use and covers goings on
+  *	at the socket level. Everything here is generic.
 -- 
 2.26.2
