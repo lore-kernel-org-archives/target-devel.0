@@ -1,18 +1,18 @@
-From: Hannes Reinecke <hare@suse.de>
-Date: Mon, 11 May 2020 06:09:14 +0000
+From: Lee Duncan <lduncan@suse.com>
+Date: Wed, 13 May 2020 23:35:43 +0000
 Subject: Re: [PATCH 02/15] target: separate acl name from port ids
-Message-Id: <6eced3be-7934-7492-f413-26f5fcf12f82@suse.de>
+Message-Id: <ebce879c-2187-4d10-9e7e-74d0a68aafbd@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200510215744.21999-1-mchristi@redhat.com>
  <20200510215744.21999-3-mchristi@redhat.com>
 In-Reply-To: <20200510215744.21999-3-mchristi@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Mike Christie <mchristi@redhat.com>, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc: "Michael S . Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, Stefan Hajnoczi <stefanha@redhat.com>, Juergen Gross <jgross@suse.com>
 
-On 5/10/20 11:57 PM, Mike Christie wrote:
+On 5/10/20 2:57 PM, Mike Christie wrote:
 > The PGR code assumes the ACL name is going to be based on the SPC4
 > transportID type of values. The problem is that for iSCSI we have an extra
 > session id as part of the SCSI port id and some fabric modules support or
@@ -46,28 +46,20 @@ On 5/10/20 11:57 PM, Mike Christie wrote:
 > V3:
 > - drop format
 > 
->   drivers/infiniband/ulp/srpt/ib_srpt.c    | 10 +++++---
->   drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c |  4 +--
->   drivers/scsi/qla2xxx/tcm_qla2xxx.c       |  2 +-
->   drivers/target/loopback/tcm_loop.c       |  3 ++-
->   drivers/target/sbp/sbp_target.c          |  2 +-
->   drivers/target/target_core_fabric_lib.c  | 41 +++++++++++++++++++++++++++++++
->   drivers/target/target_core_transport.c   | 42 ++++++++++++++++++++++++--------
->   drivers/target/tcm_fc/tfc_sess.c         |  3 ++-
->   drivers/usb/gadget/function/f_tcm.c      |  3 ++-
->   drivers/vhost/scsi.c                     |  1 +
->   drivers/xen/xen-scsiback.c               |  3 ++-
->   include/target/target_core_base.h        | 12 +++++++++
->   include/target/target_core_fabric.h      |  5 +++-
->   13 files changed, 108 insertions(+), 23 deletions(-)
+>  drivers/infiniband/ulp/srpt/ib_srpt.c    | 10 +++++---
+>  drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c |  4 +--
+>  drivers/scsi/qla2xxx/tcm_qla2xxx.c       |  2 +-
+>  drivers/target/loopback/tcm_loop.c       |  3 ++-
+>  drivers/target/sbp/sbp_target.c          |  2 +-
+>  drivers/target/target_core_fabric_lib.c  | 41 +++++++++++++++++++++++++++++++
+>  drivers/target/target_core_transport.c   | 42 ++++++++++++++++++++++++--------
+>  drivers/target/tcm_fc/tfc_sess.c         |  3 ++-
+>  drivers/usb/gadget/function/f_tcm.c      |  3 ++-
+>  drivers/vhost/scsi.c                     |  1 +
+>  drivers/xen/xen-scsiback.c               |  3 ++-
+>  include/target/target_core_base.h        | 12 +++++++++
+>  include/target/target_core_fabric.h      |  5 +++-
+>  13 files changed, 108 insertions(+), 23 deletions(-)
 > 
-Reviewed-by: Hannes Reinecke <hare@suse.de>
 
-Cheers,
-
-Hannes
--- 
-Dr. Hannes Reinecke            Teamlead Storage & Networking
-hare@suse.de                               +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
+Reviewed-by: Lee Duncan <lduncan@suse.com>
