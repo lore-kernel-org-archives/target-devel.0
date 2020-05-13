@@ -1,126 +1,92 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 28 May 2020 05:12:14 +0000
-Subject: [PATCH 06/28] net: add sock_enable_timestamps
-Message-Id: <20200528051236.620353-7-hch@lst.de>
+Date: Wed, 13 May 2020 06:26:31 +0000
+Subject: [PATCH 16/33] tcp: add tcp_sock_set_keepintvl
+Message-Id: <20200513062649.2100053-17-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200528051236.620353-1-hch@lst.de>
-In-Reply-To: <20200528051236.620353-1-hch-jcswGhMUV9g@public.gmane.org>
+References: <20200513062649.2100053-1-hch@lst.de>
+In-Reply-To: <20200513062649.2100053-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tipc-discussion-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+Cc: Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Add a helper to directly enable timestamps instead of setting the
-SO_TIMESTAMP* sockopts from kernel space and going through a fake
-uaccess.
+Add a helper to directly set the TCP_KEEPINTVL sockopt from kernel space
+without going through a fake uaccess.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- include/net/sock.h       |  1 +
- net/core/sock.c          | 47 +++++++++++++++++++++++++---------------
- net/rxrpc/local_object.c |  8 +------
- 3 files changed, 31 insertions(+), 25 deletions(-)
+ include/linux/tcp.h   |  1 +
+ net/ipv4/tcp.c        | 12 ++++++++++++
+ net/rds/tcp_listen.c  |  4 +---
+ net/sunrpc/xprtsock.c |  3 +--
+ 4 files changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/include/net/sock.h b/include/net/sock.h
-index cdec7bc055d5b..99ef43508d2b5 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -2689,6 +2689,7 @@ static inline bool sk_dev_equal_l3scope(struct sock *sk, int dif)
- void sock_def_readable(struct sock *sk);
+diff --git a/include/linux/tcp.h b/include/linux/tcp.h
+index 4d3a3e959e45b..dad18ca361c01 100644
+--- a/include/linux/tcp.h
++++ b/include/linux/tcp.h
+@@ -500,5 +500,6 @@ void tcp_sock_set_quickack(struct sock *sk, int val);
+ int tcp_sock_set_syncnt(struct sock *sk, int val);
+ void tcp_sock_set_user_timeout(struct sock *sk, u32 val);
+ int tcp_sock_set_keepidle(struct sock *sk, int val);
++int tcp_sock_set_keepintvl(struct sock *sk, int val);
  
- int sock_bindtoindex(struct sock *sk, int ifindex);
-+void sock_enable_timestamps(struct sock *sk);
- void sock_no_linger(struct sock *sk);
- void sock_set_priority(struct sock *sk, u32 priority);
- void sock_set_reuseaddr(struct sock *sk);
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 23f80880fbb2c..e4a4dd2b3d8b3 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -757,6 +757,28 @@ void sock_set_sndtimeo(struct sock *sk, s64 secs)
+ #endif	/* _LINUX_TCP_H */
+diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+index 22eb9159c7d05..b714f2b2fa54e 100644
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -2923,6 +2923,18 @@ int tcp_sock_set_keepidle(struct sock *sk, int val)
  }
- EXPORT_SYMBOL(sock_set_sndtimeo);
+ EXPORT_SYMBOL(tcp_sock_set_keepidle);
  
-+static void __sock_set_timestamps(struct sock *sk, bool val, bool new, bool ns)
++int tcp_sock_set_keepintvl(struct sock *sk, int val)
 +{
-+	if (val)  {
-+		sock_valbool_flag(sk, SOCK_TSTAMP_NEW, new);
-+		sock_valbool_flag(sk, SOCK_RCVTSTAMPNS, ns);
-+		sock_set_flag(sk, SOCK_RCVTSTAMP);
-+		sock_enable_timestamp(sk, SOCK_TIMESTAMP);
-+	} else {
-+		sock_reset_flag(sk, SOCK_RCVTSTAMP);
-+		sock_reset_flag(sk, SOCK_RCVTSTAMPNS);
-+		sock_reset_flag(sk, SOCK_TSTAMP_NEW);
-+	}
-+}
++	if (val < 1 || val > MAX_TCP_KEEPINTVL)
++		return -EINVAL;
 +
-+void sock_enable_timestamps(struct sock *sk)
-+{
 +	lock_sock(sk);
-+	__sock_set_timestamps(sk, true, false, true);
++	tcp_sk(sk)->keepalive_intvl = val * HZ;
 +	release_sock(sk);
++	return 0;
 +}
-+EXPORT_SYMBOL(sock_enable_timestamps);
++EXPORT_SYMBOL(tcp_sock_set_keepintvl);
 +
  /*
-  *	This is meant for all protocols to use and covers goings on
-  *	at the socket level. Everything here is generic.
-@@ -948,28 +970,17 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
- 		break;
+  *	Socket option code for TCP.
+  */
+diff --git a/net/rds/tcp_listen.c b/net/rds/tcp_listen.c
+index 8c76969d8c878..a5db2f8bb7339 100644
+--- a/net/rds/tcp_listen.c
++++ b/net/rds/tcp_listen.c
+@@ -53,12 +53,10 @@ int rds_tcp_keepalive(struct socket *sock)
+ 		goto bail;
  
- 	case SO_TIMESTAMP_OLD:
-+		__sock_set_timestamps(sk, valbool, false, false);
-+		break;
- 	case SO_TIMESTAMP_NEW:
-+		__sock_set_timestamps(sk, valbool, true, false);
-+		break;
- 	case SO_TIMESTAMPNS_OLD:
-+		__sock_set_timestamps(sk, valbool, false, true);
-+		break;
- 	case SO_TIMESTAMPNS_NEW:
--		if (valbool)  {
--			if (optname = SO_TIMESTAMP_NEW || optname = SO_TIMESTAMPNS_NEW)
--				sock_set_flag(sk, SOCK_TSTAMP_NEW);
--			else
--				sock_reset_flag(sk, SOCK_TSTAMP_NEW);
+ 	tcp_sock_set_keepidle(sock->sk, keepidle);
 -
--			if (optname = SO_TIMESTAMP_OLD || optname = SO_TIMESTAMP_NEW)
--				sock_reset_flag(sk, SOCK_RCVTSTAMPNS);
--			else
--				sock_set_flag(sk, SOCK_RCVTSTAMPNS);
--			sock_set_flag(sk, SOCK_RCVTSTAMP);
--			sock_enable_timestamp(sk, SOCK_TIMESTAMP);
--		} else {
--			sock_reset_flag(sk, SOCK_RCVTSTAMP);
--			sock_reset_flag(sk, SOCK_RCVTSTAMPNS);
--			sock_reset_flag(sk, SOCK_TSTAMP_NEW);
--		}
-+		__sock_set_timestamps(sk, valbool, true, true);
- 		break;
--
- 	case SO_TIMESTAMPING_NEW:
- 		sock_set_flag(sk, SOCK_TSTAMP_NEW);
- 		/* fall through */
-diff --git a/net/rxrpc/local_object.c b/net/rxrpc/local_object.c
-index 01135e54d95d2..5ea2bd01fdd59 100644
---- a/net/rxrpc/local_object.c
-+++ b/net/rxrpc/local_object.c
-@@ -189,13 +189,7 @@ static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
- 		}
+ 	/* KEEPINTVL is the interval between successive probes. We follow
+ 	 * the model in xs_tcp_finish_connecting() and re-use keepidle.
+ 	 */
+-	ret = kernel_setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL,
+-				(char *)&keepidle, sizeof(keepidle));
++	tcp_sock_set_keepintvl(sock->sk, keepidle);
+ bail:
+ 	return ret;
+ }
+diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+index ea79446789c69..e20de4a52edb7 100644
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -2108,8 +2108,7 @@ static void xs_tcp_set_socket_timeouts(struct rpc_xprt *xprt,
+ 	/* TCP Keepalive options */
+ 	sock_set_keepalive(sock->sk, 1);
+ 	tcp_sock_set_keepidle(sock->sk, keepidle);
+-	kernel_setsockopt(sock, SOL_TCP, TCP_KEEPINTVL,
+-			(char *)&keepidle, sizeof(keepidle));
++	tcp_sock_set_keepintvl(sock->sk, keepidle);
+ 	kernel_setsockopt(sock, SOL_TCP, TCP_KEEPCNT,
+ 			(char *)&keepcnt, sizeof(keepcnt));
  
- 		/* We want receive timestamps. */
--		opt = 1;
--		ret = kernel_setsockopt(local->socket, SOL_SOCKET, SO_TIMESTAMPNS_OLD,
--					(char *)&opt, sizeof(opt));
--		if (ret < 0) {
--			_debug("setsockopt failed");
--			goto error;
--		}
-+		sock_enable_timestamps(local->socket->sk);
- 		break;
- 
- 	default:
 -- 
 2.26.2
