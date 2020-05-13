@@ -1,58 +1,148 @@
-From: Martin Wilck <mwilck@suse.com>
-Date: Tue, 26 May 2020 19:21:52 +0000
-Subject: Re: [PATCH] scsi: qla2xxx: Keep initiator ports after RSCN
-Message-Id: <06a74050412a378acf31f41ce5e39c6c739ee91e.camel@suse.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Wed, 13 May 2020 06:26:47 +0000
+Subject: [PATCH 32/33] sctp: add sctp_sock_get_primary_addr
+Message-Id: <20200513062649.2100053-33-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200518183141.66621-1-r.bolshakov@yadro.com>
-         <3ee76f0fc5df716523bfbdd34726b6cccd4971cd.camel@suse.com>
-         <20200521151730.GA73599@SPB-NB-133.local>
-In-Reply-To: <20200521151730.GA73599@SPB-NB-133.local>
+References: <20200513062649.2100053-1-hch@lst.de>
+In-Reply-To: <20200513062649.2100053-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>
-Cc: linux-scsi@vger.kernel.org, GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Himanshu Madhani <himanshu.madhani@oracle.com>, stable@vger.kernel.org
+To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+Cc: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Eric Dumazet <edumazet@google.com>, linux-nvme@lists.infradead.org, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, cluster-devel@redhat.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, linux-block@vger.kernel.org, drbd-dev@tron.linbit.com, ceph-devel@vger.kernel.org, linux-nfs@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, Vlad Yasevich <vyasevich@gmail.com>, linux-kernel@vger.kernel.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, ocfs2-devel@oss.oracle.com
 
-Roman,
+Add a helper to directly get the SCTP_PRIMARY_ADDR sockopt from kernel
+space without going through a fake uaccess.
 
-> [...]
->
-> So, as a summary, it seems that the existing code mostly keeps
-> sessions
-> until:
->  - a conflict of N_Port_ID, N_Port_Name or N_Port handle detected;
->  - the session is in the middle of refresh/rescan and RSCN arrives;
->  - there's an explicit process or port logout from the session, i.e.
->    PRLO, TPRLO, LOGO
->  - there's a new port or process login from the same session, i.e.
->    PLOGI, PRLI;
->  - target is shut down;
->  - target port link is reset;
-> 
-> And if a session of an initiator is deleted when driver works in
-> target
-> mode, new session won't be established until a PLOGI and PRLI come
-> from
-> the initiator.
-> 
-> The assumption is used qlt_handle_cmd_for_atio() and
-> qlt_handle_task_mgmt() to discard commands and TMFs from initiators
-> that
-> are not logged in.
-> 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ fs/dlm/lowcomms.c       | 11 +++-----
+ include/net/sctp/sctp.h |  1 +
+ net/sctp/socket.c       | 57 +++++++++++++++++++++++++----------------
+ 3 files changed, 39 insertions(+), 30 deletions(-)
 
-thank you for this incredibly extensive response. I'll bookmark it,
-I guess it can serve as a reference for future qla2xxx work. I hope you
-didn't do all this work just for my little question.
-
-Forgive me that I won't immediately try to review this document in
-detail. You've studied and understood this driver in much more depth
-than I probably ever will.
-
-Thanks again,
-Martin
-
-
-
-> Thanks,
-> Roman
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index 6fa45365666a8..46d2d71b62c57 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -855,10 +855,9 @@ static int tcp_accept_from_sock(struct connection *con)
+ static int sctp_accept_from_sock(struct connection *con)
+ {
+ 	/* Check that the new node is in the lockspace */
+-	struct sctp_prim prim;
++	struct sctp_prim prim = { };
+ 	int nodeid;
+-	int prim_len, ret;
+-	int addr_len;
++	int addr_len, ret;
+ 	struct connection *newcon;
+ 	struct connection *addcon;
+ 	struct socket *newsock;
+@@ -876,11 +875,7 @@ static int sctp_accept_from_sock(struct connection *con)
+ 	if (ret < 0)
+ 		goto accept_err;
+ 
+-	memset(&prim, 0, sizeof(struct sctp_prim));
+-	prim_len = sizeof(struct sctp_prim);
+-
+-	ret = kernel_getsockopt(newsock, IPPROTO_SCTP, SCTP_PRIMARY_ADDR,
+-				(char *)&prim, &prim_len);
++	ret = sctp_sock_get_primary_addr(con->sock->sk, &prim);
+ 	if (ret < 0) {
+ 		log_print("getsockopt/sctp_primary_addr failed: %d", ret);
+ 		goto accept_err;
+diff --git a/include/net/sctp/sctp.h b/include/net/sctp/sctp.h
+index b505fa082f254..c98b1d14db853 100644
+--- a/include/net/sctp/sctp.h
++++ b/include/net/sctp/sctp.h
+@@ -618,5 +618,6 @@ static inline bool sctp_newsk_ready(const struct sock *sk)
+ int sctp_setsockopt_bindx(struct sock *sk, struct sockaddr *kaddrs,
+ 		int addrs_size, int op);
+ void sctp_sock_set_nodelay(struct sock *sk, bool val);
++int sctp_sock_get_primary_addr(struct sock *sk, struct sctp_prim *prim);
+ 
+ #endif /* __net_sctp_h__ */
+diff --git a/net/sctp/socket.c b/net/sctp/socket.c
+index 64c395f7a86d5..39bf8090dbe1e 100644
+--- a/net/sctp/socket.c
++++ b/net/sctp/socket.c
+@@ -6411,6 +6411,35 @@ static int sctp_getsockopt_local_addrs(struct sock *sk, int len,
+ 	return err;
+ }
+ 
++static int __sctp_sock_get_primary_addr(struct sock *sk, struct sctp_prim *prim)
++{
++	struct sctp_association *asoc;
++
++	asoc = sctp_id2assoc(sk, prim->ssp_assoc_id);
++	if (!asoc)
++		return -EINVAL;
++	if (!asoc->peer.primary_path)
++		return -ENOTCONN;
++
++	memcpy(&prim->ssp_addr, &asoc->peer.primary_path->ipaddr,
++		asoc->peer.primary_path->af_specific->sockaddr_len);
++
++	sctp_get_pf_specific(sk->sk_family)->addr_to_user(sctp_sk(sk),
++			(union sctp_addr *)&prim->ssp_addr);
++	return 0;
++}
++
++int sctp_sock_get_primary_addr(struct sock *sk, struct sctp_prim *prim)
++{
++	int ret;
++
++	lock_sock(sk);
++	ret = __sctp_sock_get_primary_addr(sk, prim);
++	release_sock(sk);
++	return ret;
++}
++EXPORT_SYMBOL(sctp_sock_get_primary_addr);
++
+ /* 7.1.10 Set Primary Address (SCTP_PRIMARY_ADDR)
+  *
+  * Requests that the local SCTP stack use the enclosed peer address as
+@@ -6421,35 +6450,19 @@ static int sctp_getsockopt_primary_addr(struct sock *sk, int len,
+ 					char __user *optval, int __user *optlen)
+ {
+ 	struct sctp_prim prim;
+-	struct sctp_association *asoc;
+-	struct sctp_sock *sp = sctp_sk(sk);
++	int ret;
+ 
+ 	if (len < sizeof(struct sctp_prim))
+ 		return -EINVAL;
+-
+-	len = sizeof(struct sctp_prim);
+-
+-	if (copy_from_user(&prim, optval, len))
++	if (copy_from_user(&prim, optval, sizeof(struct sctp_prim)))
+ 		return -EFAULT;
+ 
+-	asoc = sctp_id2assoc(sk, prim.ssp_assoc_id);
+-	if (!asoc)
+-		return -EINVAL;
+-
+-	if (!asoc->peer.primary_path)
+-		return -ENOTCONN;
+-
+-	memcpy(&prim.ssp_addr, &asoc->peer.primary_path->ipaddr,
+-		asoc->peer.primary_path->af_specific->sockaddr_len);
+-
+-	sctp_get_pf_specific(sk->sk_family)->addr_to_user(sp,
+-			(union sctp_addr *)&prim.ssp_addr);
++	ret = __sctp_sock_get_primary_addr(sk, &prim);
++	if (ret)
++		return ret;
+ 
+-	if (put_user(len, optlen))
++	if (put_user(len, optlen) || copy_to_user(optval, &prim, len))
+ 		return -EFAULT;
+-	if (copy_to_user(optval, &prim, len))
+-		return -EFAULT;
+-
+ 	return 0;
+ }
+ 
+-- 
+2.26.2
