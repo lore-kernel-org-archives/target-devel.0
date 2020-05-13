@@ -1,182 +1,187 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 20 May 2020 19:54:37 +0000
-Subject: [PATCH 01/33] dlm: use the tcp version of accept_from_sock for sctp as well
-Message-Id: <20200520195509.2215098-2-hch@lst.de>
+Date: Wed, 13 May 2020 06:26:17 +0000
+Subject: [PATCH 02/33] net: add sock_set_linger
+Message-Id: <20200513062649.2100053-3-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200520195509.2215098-1-hch@lst.de>
-In-Reply-To: <20200520195509.2215098-1-hch-jcswGhMUV9g@public.gmane.org>
+References: <20200513062649.2100053-1-hch@lst.de>
+In-Reply-To: <20200513062649.2100053-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
+Cc: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
 
-The only difference between a few missing fixes applied to the SCTP
-one is that TCP uses ->getpeername to get the remote address, while
-SCTP uses kernel_getsockopt(.. SCTP_PRIMARY_ADDR).  But given that
-getpeername is defined to return the primary address for sctp, there
-doesn't seem to be any reason for the different way of quering the
-peername, or all the code duplication.
+Add a helper to directly set the SO_LINGER sockopt from kernel space
+without going through a fake uaccess.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- fs/dlm/lowcomms.c | 123 ++--------------------------------------------
- 1 file changed, 3 insertions(+), 120 deletions(-)
+ drivers/nvme/host/tcp.c   |  9 +--------
+ drivers/nvme/target/tcp.c |  6 +-----
+ include/net/sock.h        |  1 +
+ net/core/sock.c           | 36 +++++++++++++++++++++++++-----------
+ net/rds/tcp_listen.c      |  8 +-------
+ net/sunrpc/svcsock.c      | 12 ++----------
+ 6 files changed, 31 insertions(+), 41 deletions(-)
 
-diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
-index cdfaf4f0e11a0..f13dad0fd9ef3 100644
---- a/fs/dlm/lowcomms.c
-+++ b/fs/dlm/lowcomms.c
-@@ -724,7 +724,7 @@ static int receive_from_sock(struct connection *con)
- }
- 
- /* Listening socket is busy, accept a connection */
--static int tcp_accept_from_sock(struct connection *con)
-+static int accept_from_sock(struct connection *con)
+diff --git a/drivers/nvme/host/tcp.c b/drivers/nvme/host/tcp.c
+index c15a92163c1f7..5cacb61c73229 100644
+--- a/drivers/nvme/host/tcp.c
++++ b/drivers/nvme/host/tcp.c
+@@ -1313,7 +1313,6 @@ static int nvme_tcp_alloc_queue(struct nvme_ctrl *nctrl,
  {
- 	int result;
- 	struct sockaddr_storage peeraddr;
-@@ -852,123 +852,6 @@ static int tcp_accept_from_sock(struct connection *con)
- 	return result;
- }
+ 	struct nvme_tcp_ctrl *ctrl = to_tcp_ctrl(nctrl);
+ 	struct nvme_tcp_queue *queue = &ctrl->queues[qid];
+-	struct linger sol = { .l_onoff = 1, .l_linger = 0 };
+ 	int ret, opt, rcv_pdu_size;
  
--static int sctp_accept_from_sock(struct connection *con)
--{
--	/* Check that the new node is in the lockspace */
--	struct sctp_prim prim;
--	int nodeid;
--	int prim_len, ret;
--	int addr_len;
--	struct connection *newcon;
--	struct connection *addcon;
--	struct socket *newsock;
--
--	mutex_lock(&connections_lock);
--	if (!dlm_allow_conn) {
--		mutex_unlock(&connections_lock);
--		return -1;
--	}
--	mutex_unlock(&connections_lock);
--
--	mutex_lock_nested(&con->sock_mutex, 0);
--
--	ret = kernel_accept(con->sock, &newsock, O_NONBLOCK);
--	if (ret < 0)
--		goto accept_err;
--
--	memset(&prim, 0, sizeof(struct sctp_prim));
--	prim_len = sizeof(struct sctp_prim);
--
--	ret = kernel_getsockopt(newsock, IPPROTO_SCTP, SCTP_PRIMARY_ADDR,
--				(char *)&prim, &prim_len);
--	if (ret < 0) {
--		log_print("getsockopt/sctp_primary_addr failed: %d", ret);
--		goto accept_err;
--	}
--
--	make_sockaddr(&prim.ssp_addr, 0, &addr_len);
--	ret = addr_to_nodeid(&prim.ssp_addr, &nodeid);
+ 	queue->ctrl = ctrl;
+@@ -1361,13 +1360,7 @@ static int nvme_tcp_alloc_queue(struct nvme_ctrl *nctrl,
+ 	 * close. This is done to prevent stale data from being sent should
+ 	 * the network connection be restored before TCP times out.
+ 	 */
+-	ret = kernel_setsockopt(queue->sock, SOL_SOCKET, SO_LINGER,
+-			(char *)&sol, sizeof(sol));
 -	if (ret) {
--		unsigned char *b = (unsigned char *)&prim.ssp_addr;
--
--		log_print("reject connect from unknown addr");
--		print_hex_dump_bytes("ss: ", DUMP_PREFIX_NONE,
--				     b, sizeof(struct sockaddr_storage));
--		goto accept_err;
+-		dev_err(nctrl->device,
+-			"failed to set SO_LINGER sock opt %d\n", ret);
+-		goto err_sock;
 -	}
--
--	newcon = nodeid2con(nodeid, GFP_NOFS);
--	if (!newcon) {
--		ret = -ENOMEM;
--		goto accept_err;
--	}
--
--	mutex_lock_nested(&newcon->sock_mutex, 1);
--
--	if (newcon->sock) {
--		struct connection *othercon = newcon->othercon;
--
--		if (!othercon) {
--			othercon = kmem_cache_zalloc(con_cache, GFP_NOFS);
--			if (!othercon) {
--				log_print("failed to allocate incoming socket");
--				mutex_unlock(&newcon->sock_mutex);
--				ret = -ENOMEM;
--				goto accept_err;
--			}
--			othercon->nodeid = nodeid;
--			othercon->rx_action = receive_from_sock;
--			mutex_init(&othercon->sock_mutex);
--			INIT_LIST_HEAD(&othercon->writequeue);
--			spin_lock_init(&othercon->writequeue_lock);
--			INIT_WORK(&othercon->swork, process_send_sockets);
--			INIT_WORK(&othercon->rwork, process_recv_sockets);
--			set_bit(CF_IS_OTHERCON, &othercon->flags);
--		}
--		mutex_lock_nested(&othercon->sock_mutex, 2);
--		if (!othercon->sock) {
--			newcon->othercon = othercon;
--			add_sock(newsock, othercon);
--			addcon = othercon;
--			mutex_unlock(&othercon->sock_mutex);
--		} else {
--			printk("Extra connection from node %d attempted\n", nodeid);
--			ret = -EAGAIN;
--			mutex_unlock(&othercon->sock_mutex);
--			mutex_unlock(&newcon->sock_mutex);
--			goto accept_err;
--		}
--	} else {
--		newcon->rx_action = receive_from_sock;
--		add_sock(newsock, newcon);
--		addcon = newcon;
--	}
--
--	log_print("connected to %d", nodeid);
--
--	mutex_unlock(&newcon->sock_mutex);
--
--	/*
--	 * Add it to the active queue in case we got data
--	 * between processing the accept adding the socket
--	 * to the read_sockets list
--	 */
--	if (!test_and_set_bit(CF_READ_PENDING, &addcon->flags))
--		queue_work(recv_workqueue, &addcon->rwork);
--	mutex_unlock(&con->sock_mutex);
--
--	return 0;
--
--accept_err:
--	mutex_unlock(&con->sock_mutex);
--	if (newsock)
--		sock_release(newsock);
--	if (ret != -EAGAIN)
--		log_print("error accepting connection from node: %d", ret);
--
--	return ret;
--}
--
- static void free_entry(struct writequeue_entry *e)
++	sock_set_linger(queue->sock->sk, true, 0);
+ 
+ 	if (so_priority > 0) {
+ 		ret = kernel_setsockopt(queue->sock, SOL_SOCKET, SO_PRIORITY,
+diff --git a/drivers/nvme/target/tcp.c b/drivers/nvme/target/tcp.c
+index 791aa32beeb98..87aba417189d2 100644
+--- a/drivers/nvme/target/tcp.c
++++ b/drivers/nvme/target/tcp.c
+@@ -1429,7 +1429,6 @@ static int nvmet_tcp_set_queue_sock(struct nvmet_tcp_queue *queue)
  {
- 	__free_page(e->page);
-@@ -1253,7 +1136,7 @@ static struct socket *tcp_create_listen_sock(struct connection *con,
- 	write_lock_bh(&sock->sk->sk_callback_lock);
- 	sock->sk->sk_user_data = con;
- 	save_listen_callbacks(sock);
--	con->rx_action = tcp_accept_from_sock;
-+	con->rx_action = accept_from_sock;
- 	con->connect_action = tcp_connect_to_sock;
- 	write_unlock_bh(&sock->sk->sk_callback_lock);
+ 	struct socket *sock = queue->sock;
+ 	struct inet_sock *inet = inet_sk(sock->sk);
+-	struct linger sol = { .l_onoff = 1, .l_linger = 0 };
+ 	int ret;
  
-@@ -1340,7 +1223,7 @@ static int sctp_listen_for_all(void)
- 	save_listen_callbacks(sock);
- 	con->sock = sock;
- 	con->sock->sk->sk_data_ready = lowcomms_data_ready;
--	con->rx_action = sctp_accept_from_sock;
-+	con->rx_action = accept_from_sock;
- 	con->connect_action = sctp_connect_to_sock;
+ 	ret = kernel_getsockname(sock,
+@@ -1447,10 +1446,7 @@ static int nvmet_tcp_set_queue_sock(struct nvmet_tcp_queue *queue)
+ 	 * close. This is done to prevent stale data from being sent should
+ 	 * the network connection be restored before TCP times out.
+ 	 */
+-	ret = kernel_setsockopt(sock, SOL_SOCKET, SO_LINGER,
+-			(char *)&sol, sizeof(sol));
+-	if (ret)
+-		return ret;
++	sock_set_linger(sock->sk, true, 0);
  
- 	write_unlock_bh(&sock->sk->sk_callback_lock);
+ 	if (so_priority > 0) {
+ 		ret = kernel_setsockopt(sock, SOL_SOCKET, SO_PRIORITY,
+diff --git a/include/net/sock.h b/include/net/sock.h
+index e801a147ad746..60890fb47fbc0 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -2688,5 +2688,6 @@ static inline bool sk_dev_equal_l3scope(struct sock *sk, int dif)
+ 
+ void sock_def_readable(struct sock *sk);
+ void sock_set_reuseaddr(struct sock *sk, unsigned char reuse);
++void sock_set_linger(struct sock *sk, bool onoff, unsigned int linger);
+ 
+ #endif	/* _SOCK_H */
+diff --git a/net/core/sock.c b/net/core/sock.c
+index ff4faa3e68ac4..cbc5104ca3515 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -720,6 +720,30 @@ void sock_set_reuseaddr(struct sock *sk, unsigned char reuse)
+ }
+ EXPORT_SYMBOL(sock_set_reuseaddr);
+ 
++static void __sock_set_linger(struct sock *sk, bool onoff, unsigned int linger)
++{
++	if (!onoff) {
++		sock_reset_flag(sk, SOCK_LINGER);
++		return;
++	}
++
++#if (BITS_PER_LONG = 32)
++	if (linger >= MAX_SCHEDULE_TIMEOUT / HZ)
++		sk->sk_lingertime = MAX_SCHEDULE_TIMEOUT;
++	else
++#endif
++		sk->sk_lingertime = linger * HZ;
++	sock_set_flag(sk, SOCK_LINGER);
++}
++
++void sock_set_linger(struct sock *sk, bool onoff, unsigned int linger)
++{
++	lock_sock(sk);
++	__sock_set_linger(sk, onoff, linger);
++	release_sock(sk);
++}
++EXPORT_SYMBOL(sock_set_linger);
++
+ /*
+  *	This is meant for all protocols to use and covers goings on
+  *	at the socket level. Everything here is generic.
+@@ -886,17 +910,7 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
+ 			ret = -EFAULT;
+ 			break;
+ 		}
+-		if (!ling.l_onoff)
+-			sock_reset_flag(sk, SOCK_LINGER);
+-		else {
+-#if (BITS_PER_LONG = 32)
+-			if ((unsigned int)ling.l_linger >= MAX_SCHEDULE_TIMEOUT/HZ)
+-				sk->sk_lingertime = MAX_SCHEDULE_TIMEOUT;
+-			else
+-#endif
+-				sk->sk_lingertime = (unsigned int)ling.l_linger * HZ;
+-			sock_set_flag(sk, SOCK_LINGER);
+-		}
++		__sock_set_linger(sk, ling.l_onoff, ling.l_linger);
+ 		break;
+ 
+ 	case SO_BSDCOMPAT:
+diff --git a/net/rds/tcp_listen.c b/net/rds/tcp_listen.c
+index 810a3a49e9474..96f7538e5fa8d 100644
+--- a/net/rds/tcp_listen.c
++++ b/net/rds/tcp_listen.c
+@@ -113,13 +113,7 @@ struct rds_tcp_connection *rds_tcp_accept_one_path(struct rds_connection *conn)
+ 
+ void rds_tcp_set_linger(struct socket *sock)
+ {
+-	struct linger no_linger = {
+-		.l_onoff = 1,
+-		.l_linger = 0,
+-	};
+-
+-	kernel_setsockopt(sock, SOL_SOCKET, SO_LINGER,
+-			  (char *)&no_linger, sizeof(no_linger));
++	sock_set_linger(sock->sk, true, 0);
+ }
+ 
+ int rds_tcp_accept_one(struct socket *sock)
+diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+index 023514e392b31..0f6b78d0e6170 100644
+--- a/net/sunrpc/svcsock.c
++++ b/net/sunrpc/svcsock.c
+@@ -323,17 +323,9 @@ static int svc_tcp_has_wspace(struct svc_xprt *xprt)
+ 
+ static void svc_tcp_kill_temp_xprt(struct svc_xprt *xprt)
+ {
+-	struct svc_sock *svsk;
+-	struct socket *sock;
+-	struct linger no_linger = {
+-		.l_onoff = 1,
+-		.l_linger = 0,
+-	};
++	struct svc_sock *svsk = container_of(xprt, struct svc_sock, sk_xprt);
+ 
+-	svsk = container_of(xprt, struct svc_sock, sk_xprt);
+-	sock = svsk->sk_sock;
+-	kernel_setsockopt(sock, SOL_SOCKET, SO_LINGER,
+-			  (char *)&no_linger, sizeof(no_linger));
++	sock_set_linger(svsk->sk_sock->sk, true, 0);
+ }
+ 
+ /*
 -- 
 2.26.2
