@@ -1,80 +1,78 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 28 May 2020 05:12:21 +0000
-Subject: [PATCH 13/28] tcp: add tcp_sock_set_syncnt
-Message-Id: <20200528051236.620353-14-hch@lst.de>
+Date: Wed, 13 May 2020 06:26:46 +0000
+Subject: [PATCH 31/33] net: remove kernel_setsockopt
+Message-Id: <20200513062649.2100053-32-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200528051236.620353-1-hch@lst.de>
-In-Reply-To: <20200528051236.620353-1-hch@lst.de>
+References: <20200513062649.2100053-1-hch@lst.de>
+In-Reply-To: <20200513062649.2100053-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org, tipc-discussion@lists.sourceforge.net, Sagi Grimberg <sagi@grimberg.me>
+Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Vlad Yasevich <vyasevich@gmail.com>, Neil Horman <nhorman@tuxdriver.com>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, linux-sctp@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org
 
-Add a helper to directly set the TCP_SYNCNT sockopt from kernel space
-without going through a fake uaccess.
+No users left.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Sagi Grimberg <sagi@grimberg.me>
 ---
- drivers/nvme/host/tcp.c |  9 +--------
- include/linux/tcp.h     |  1 +
- net/ipv4/tcp.c          | 12 ++++++++++++
- 3 files changed, 14 insertions(+), 8 deletions(-)
+ include/linux/net.h |  2 --
+ net/socket.c        | 31 -------------------------------
+ 2 files changed, 33 deletions(-)
 
-diff --git a/drivers/nvme/host/tcp.c b/drivers/nvme/host/tcp.c
-index 4e4a750ecdb97..2872584f52f63 100644
---- a/drivers/nvme/host/tcp.c
-+++ b/drivers/nvme/host/tcp.c
-@@ -1336,14 +1336,7 @@ static int nvme_tcp_alloc_queue(struct nvme_ctrl *nctrl,
- 	}
- 
- 	/* Single syn retry */
--	opt = 1;
--	ret = kernel_setsockopt(queue->sock, IPPROTO_TCP, TCP_SYNCNT,
--			(char *)&opt, sizeof(opt));
--	if (ret) {
--		dev_err(nctrl->device,
--			"failed to set TCP_SYNCNT sock opt %d\n", ret);
--		goto err_sock;
--	}
-+	tcp_sock_set_syncnt(queue->sock->sk, 1);
- 
- 	/* Set TCP no delay */
- 	tcp_sock_set_nodelay(queue->sock->sk);
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 2eaf8320b9db0..6aa4ae5ebf3d5 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -500,5 +500,6 @@ int tcp_skb_shift(struct sk_buff *to, struct sk_buff *from, int pcount,
- void tcp_sock_set_cork(struct sock *sk, bool on);
- void tcp_sock_set_nodelay(struct sock *sk);
- void tcp_sock_set_quickack(struct sock *sk, int val);
-+int tcp_sock_set_syncnt(struct sock *sk, int val);
- 
- #endif	/* _LINUX_TCP_H */
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index 27b5e7a4e2ef9..d2c67ae1da07a 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2881,6 +2881,18 @@ void tcp_sock_set_quickack(struct sock *sk, int val)
+diff --git a/include/linux/net.h b/include/linux/net.h
+index 6451425e828f5..ece7513326293 100644
+--- a/include/linux/net.h
++++ b/include/linux/net.h
+@@ -305,8 +305,6 @@ int kernel_getsockname(struct socket *sock, struct sockaddr *addr);
+ int kernel_getpeername(struct socket *sock, struct sockaddr *addr);
+ int kernel_getsockopt(struct socket *sock, int level, int optname, char *optval,
+ 		      int *optlen);
+-int kernel_setsockopt(struct socket *sock, int level, int optname, char *optval,
+-		      unsigned int optlen);
+ int kernel_sendpage(struct socket *sock, struct page *page, int offset,
+ 		    size_t size, int flags);
+ int kernel_sendpage_locked(struct sock *sk, struct page *page, int offset,
+diff --git a/net/socket.c b/net/socket.c
+index 1c9a7260a41de..f37c3ef508691 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -3749,37 +3749,6 @@ int kernel_getsockopt(struct socket *sock, int level, int optname,
  }
- EXPORT_SYMBOL(tcp_sock_set_quickack);
+ EXPORT_SYMBOL(kernel_getsockopt);
  
-+int tcp_sock_set_syncnt(struct sock *sk, int val)
-+{
-+	if (val < 1 || val > MAX_TCP_SYNCNT)
-+		return -EINVAL;
-+
-+	lock_sock(sk);
-+	inet_csk(sk)->icsk_syn_retries = val;
-+	release_sock(sk);
-+	return 0;
-+}
-+EXPORT_SYMBOL(tcp_sock_set_syncnt);
-+
- /*
-  *	Socket option code for TCP.
-  */
+-/**
+- *	kernel_setsockopt - set a socket option (kernel space)
+- *	@sock: socket
+- *	@level: API level (SOL_SOCKET, ...)
+- *	@optname: option tag
+- *	@optval: option value
+- *	@optlen: option length
+- *
+- *	Returns 0 or an error.
+- */
+-
+-int kernel_setsockopt(struct socket *sock, int level, int optname,
+-			char *optval, unsigned int optlen)
+-{
+-	mm_segment_t oldfs = get_fs();
+-	char __user *uoptval;
+-	int err;
+-
+-	uoptval = (char __user __force *) optval;
+-
+-	set_fs(KERNEL_DS);
+-	if (level = SOL_SOCKET)
+-		err = sock_setsockopt(sock, level, optname, uoptval, optlen);
+-	else
+-		err = sock->ops->setsockopt(sock, level, optname, uoptval,
+-					    optlen);
+-	set_fs(oldfs);
+-	return err;
+-}
+-EXPORT_SYMBOL(kernel_setsockopt);
+-
+ /**
+  *	kernel_sendpage - send a &page through a socket (kernel space)
+  *	@sock: socket
 -- 
 2.26.2
