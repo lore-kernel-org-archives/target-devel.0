@@ -1,7 +1,7 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 13 May 2020 06:26:41 +0000
-Subject: [PATCH 26/33] sctp: lift copying in addrs into sctp_setsockopt
-Message-Id: <20200513062649.2100053-27-hch@lst.de>
+Date: Wed, 13 May 2020 06:26:24 +0000
+Subject: [PATCH 09/33] net: add sock_set_reuseport
+Message-Id: <20200513062649.2100053-10-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200513062649.2100053-1-hch@lst.de>
 In-Reply-To: <20200513062649.2100053-1-hch@lst.de>
@@ -11,174 +11,81 @@ Content-Transfer-Encoding: 7bit
 To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
 Cc: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Eric Dumazet <edumazet@google.com>, linux-nvme@lists.infradead.org, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, cluster-devel@redhat.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, linux-block@vger.kernel.org, drbd-dev@tron.linbit.com, ceph-devel@vger.kernel.org, linux-nfs@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, Vlad Yasevich <vyasevich@gmail.com>, linux-kernel@vger.kernel.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, ocfs2-devel@oss.oracle.com
 
-Prepare for additional kernel-space callers of sctp_setsockopt_bindx.
+Add a helper to directly set the SO_REUSEPORT sockopt from kernel space
+without going through a fake uaccess.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- net/sctp/socket.c | 71 ++++++++++++++++++-----------------------------
- 1 file changed, 27 insertions(+), 44 deletions(-)
+ include/net/sock.h    |  1 +
+ net/core/sock.c       |  8 ++++++++
+ net/sunrpc/xprtsock.c | 17 +----------------
+ 3 files changed, 10 insertions(+), 16 deletions(-)
 
-diff --git a/net/sctp/socket.c b/net/sctp/socket.c
-index 827a9903ee288..1c96b52c4aa28 100644
---- a/net/sctp/socket.c
-+++ b/net/sctp/socket.c
-@@ -972,18 +972,16 @@ int sctp_asconf_mgmt(struct sctp_sock *sp, struct sctp_sockaddr_entry *addrw)
-  * it.
-  *
-  * sk        The sk of the socket
-- * addrs     The pointer to the addresses in user land
-+ * addrs     The pointer to the addresses
-  * addrssize Size of the addrs buffer
-  * op        Operation to perform (add or remove, see the flags of
-  *           sctp_bindx)
-  *
-  * Returns 0 if ok, <0 errno code on error.
-  */
--static int sctp_setsockopt_bindx(struct sock *sk,
--				 struct sockaddr __user *addrs,
-+static int sctp_setsockopt_bindx(struct sock *sk, struct sockaddr *kaddrs,
- 				 int addrs_size, int op)
+diff --git a/include/net/sock.h b/include/net/sock.h
+index e1ed40ff01312..6b8e06947b243 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -2688,6 +2688,7 @@ static inline bool sk_dev_equal_l3scope(struct sock *sk, int dif)
+ 
+ void sock_def_readable(struct sock *sk);
+ void sock_set_reuseaddr(struct sock *sk, unsigned char reuse);
++void sock_set_reuseport(struct sock *sk, bool reuseport);
+ void sock_set_linger(struct sock *sk, bool onoff, unsigned int linger);
+ void sock_set_priority(struct sock *sk, u32 priority);
+ void sock_set_sndtimeo(struct sock *sk, unsigned int secs);
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 6af01b757cf24..7f0baf1ccde17 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -729,6 +729,14 @@ void sock_set_reuseaddr(struct sock *sk, unsigned char reuse)
+ }
+ EXPORT_SYMBOL(sock_set_reuseaddr);
+ 
++void sock_set_reuseport(struct sock *sk, bool reuseport)
++{
++	lock_sock(sk);
++	sk->sk_reuseport = reuseport;
++	release_sock(sk);
++}
++EXPORT_SYMBOL(sock_set_reuseport);
++
+ static void __sock_set_linger(struct sock *sk, bool onoff, unsigned int linger)
  {
--	struct sockaddr *kaddrs;
- 	int err;
- 	int addrcnt = 0;
- 	int walk_size = 0;
-@@ -991,23 +989,13 @@ static int sctp_setsockopt_bindx(struct sock *sk,
- 	void *addr_buf;
- 	struct sctp_af *af;
- 
--	pr_debug("%s: sk:%p addrs:%p addrs_size:%d opt:%d\n",
--		 __func__, sk, addrs, addrs_size, op);
--
--	if (unlikely(addrs_size <= 0))
--		return -EINVAL;
-+	pr_debug("%s: sk:%p kaddrs:%p addrs_size:%d opt:%d\n",
-+		 __func__, sk, kaddrs, addrs_size, op);
- 
--	kaddrs = memdup_user(addrs, addrs_size);
--	if (IS_ERR(kaddrs))
--		return PTR_ERR(kaddrs);
--
--	/* Walk through the addrs buffer and count the number of addresses. */
- 	addr_buf = kaddrs;
- 	while (walk_size < addrs_size) {
--		if (walk_size + sizeof(sa_family_t) > addrs_size) {
--			kfree(kaddrs);
-+		if (walk_size + sizeof(sa_family_t) > addrs_size)
- 			return -EINVAL;
--		}
- 
- 		sa_addr = addr_buf;
- 		af = sctp_get_af_specific(sa_addr->sa_family);
-@@ -1015,10 +1003,8 @@ static int sctp_setsockopt_bindx(struct sock *sk,
- 		/* If the address family is not supported or if this address
- 		 * causes the address buffer to overflow return EINVAL.
- 		 */
--		if (!af || (walk_size + af->sockaddr_len) > addrs_size) {
--			kfree(kaddrs);
-+		if (!af || (walk_size + af->sockaddr_len) > addrs_size)
- 			return -EINVAL;
--		}
- 		addrcnt++;
- 		addr_buf += af->sockaddr_len;
- 		walk_size += af->sockaddr_len;
-@@ -1032,29 +1018,19 @@ static int sctp_setsockopt_bindx(struct sock *sk,
- 						 (struct sockaddr *)kaddrs,
- 						 addrs_size);
- 		if (err)
--			goto out;
-+			return err;
- 		err = sctp_bindx_add(sk, kaddrs, addrcnt);
- 		if (err)
--			goto out;
--		err = sctp_send_asconf_add_ip(sk, kaddrs, addrcnt);
--		break;
--
-+			return err;
-+		return sctp_send_asconf_add_ip(sk, kaddrs, addrcnt);
- 	case SCTP_BINDX_REM_ADDR:
- 		err = sctp_bindx_rem(sk, kaddrs, addrcnt);
- 		if (err)
--			goto out;
--		err = sctp_send_asconf_del_ip(sk, kaddrs, addrcnt);
--		break;
--
-+			return err;
-+		return sctp_send_asconf_del_ip(sk, kaddrs, addrcnt);
- 	default:
--		err = -EINVAL;
--		break;
-+		return -EINVAL;
- 	}
--
--out:
--	kfree(kaddrs);
--
--	return err;
+ 	if (!onoff) {
+diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+index bb61d3758be2b..3dc2d52371a0e 100644
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -1594,21 +1594,6 @@ static int xs_get_random_port(void)
+ 	return rand + min;
  }
  
- static int sctp_connect_new_asoc(struct sctp_endpoint *ep,
-@@ -4670,6 +4646,7 @@ static int sctp_setsockopt_pf_expose(struct sock *sk,
- static int sctp_setsockopt(struct sock *sk, int level, int optname,
- 			   char __user *optval, unsigned int optlen)
- {
-+	struct sockaddr *kaddrs;
- 	int retval = 0;
- 
- 	pr_debug("%s: sk:%p, optname:%d\n", __func__, sk, optname);
-@@ -4682,30 +4659,37 @@ static int sctp_setsockopt(struct sock *sk, int level, int optname,
- 	 */
- 	if (level != SOL_SCTP) {
- 		struct sctp_af *af = sctp_sk(sk)->pf->af;
--		retval = af->setsockopt(sk, level, optname, optval, optlen);
--		goto out_nounlock;
-+		return af->setsockopt(sk, level, optname, optval, optlen);
- 	}
- 
-+	if (unlikely(optlen <= 0))
-+		return -EINVAL;
-+
-+	kaddrs = memdup_user(optval, optlen);
-+	if (IS_ERR(kaddrs))
-+		return PTR_ERR(kaddrs);
-+
-+	/* Walk through the addrs buffer and count the number of addresses. */
-+
- 	lock_sock(sk);
- 
- 	switch (optname) {
- 	case SCTP_SOCKOPT_BINDX_ADD:
- 		/* 'optlen' is the size of the addresses buffer. */
--		retval = sctp_setsockopt_bindx(sk, (struct sockaddr __user *)optval,
-+		retval = sctp_setsockopt_bindx(sk, (struct sockaddr *)optval,
- 					       optlen, SCTP_BINDX_ADD_ADDR);
- 		break;
- 
- 	case SCTP_SOCKOPT_BINDX_REM:
- 		/* 'optlen' is the size of the addresses buffer. */
--		retval = sctp_setsockopt_bindx(sk, (struct sockaddr __user *)optval,
-+		retval = sctp_setsockopt_bindx(sk, (struct sockaddr *)optval,
- 					       optlen, SCTP_BINDX_REM_ADDR);
- 		break;
- 
- 	case SCTP_SOCKOPT_CONNECTX_OLD:
- 		/* 'optlen' is the size of the addresses buffer. */
- 		retval = sctp_setsockopt_connectx_old(sk,
--					    (struct sockaddr __user *)optval,
--					    optlen);
-+					    (struct sockaddr *)optval, optlen);
- 		break;
- 
- 	case SCTP_SOCKOPT_CONNECTX:
-@@ -4871,8 +4855,7 @@ static int sctp_setsockopt(struct sock *sk, int level, int optname,
- 	}
- 
- 	release_sock(sk);
+-/**
+- * xs_set_reuseaddr_port - set the socket's port and address reuse options
+- * @sock: socket
+- *
+- * Note that this function has to be called on all sockets that share the
+- * same port, and it must be called before binding.
+- */
+-static void xs_sock_set_reuseport(struct socket *sock)
+-{
+-	int opt = 1;
 -
--out_nounlock:
-+	kfree(kaddrs);
- 	return retval;
- }
+-	kernel_setsockopt(sock, SOL_SOCKET, SO_REUSEPORT,
+-			(char *)&opt, sizeof(opt));
+-}
+-
+ static unsigned short xs_sock_getport(struct socket *sock)
+ {
+ 	struct sockaddr_storage buf;
+@@ -1801,7 +1786,7 @@ static struct socket *xs_create_sock(struct rpc_xprt *xprt,
+ 	xs_reclassify_socket(family, sock);
  
+ 	if (reuseport)
+-		xs_sock_set_reuseport(sock);
++		sock_set_reuseport(sock->sk, true);
+ 
+ 	err = xs_bind(transport, sock);
+ 	if (err) {
 -- 
 2.26.2
