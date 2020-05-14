@@ -1,32 +1,28 @@
-From: Hannes Reinecke <hare@suse.de>
-Date: Mon, 11 May 2020 06:13:52 +0000
-Subject: Re: [PATCH 09/15] target: drop sess_get_initiator_sid from PR code
-Message-Id: <f25ddc37-71dc-0bd7-e33e-e9ca54a1b342@suse.de>
+From: Christoph Hellwig <hch@lst.de>
+Date: Thu, 14 May 2020 10:40:40 +0000
+Subject: is it ok to always pull in sctp for dlm, was: Re: [PATCH 27/33] sctp: export sctp_setsockopt_bindx
+Message-Id: <20200514104040.GA12979@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200510215744.21999-1-mchristi@redhat.com>
- <20200510215744.21999-10-mchristi@redhat.com>
-In-Reply-To: <20200510215744.21999-10-mchristi@redhat.com>
+References: <20200513062649.2100053-1-hch@lst.de> <20200513062649.2100053-28-hch@lst.de> <20200513180058.GB2491@localhost.localdomain>
+In-Reply-To: <20200513180058.GB2491@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Mike Christie <mchristi@redhat.com>, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Christine Caulfield <ccaulfie@redhat.com>, David Teigland <teigland@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Vlad Yasevich <vyasevich@gmail.com>, Neil Horman <nhorman@tuxdriver.com>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, linux-sctp@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.comlinu
 
-On 5/10/20 11:57 PM, Mike Christie wrote:
-> Use the transport id session id in the PR related code.
+On Wed, May 13, 2020 at 03:00:58PM -0300, Marcelo Ricardo Leitner wrote:
+> On Wed, May 13, 2020 at 08:26:42AM +0200, Christoph Hellwig wrote:
+> > And call it directly from dlm instead of going through kernel_setsockopt.
 > 
-> Signed-off-by: Mike Christie <mchristi@redhat.com>
-> ---
->   drivers/target/target_core_pr.c        | 23 ++++-------------------
->   drivers/target/target_core_transport.c | 11 ++++-------
->   2 files changed, 8 insertions(+), 26 deletions(-)
+> The advantage on using kernel_setsockopt here is that sctp module will
+> only be loaded if dlm actually creates a SCTP socket.  With this
+> change, sctp will be loaded on setups that may not be actually using
+> it. It's a quite big module and might expose the system.
 > 
-Reviewed-by: Hannes Reinecke <hare@suse.de>
+> I'm okay with the SCTP changes, but I'll defer to DLM folks to whether
+> that's too bad or what for DLM.
 
-Cheers,
-
-Hannes
--- 
-Dr. Hannes Reinecke            Teamlead Storage & Networking
-hare@suse.de                               +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
+So for ipv6 I could just move the helpers inline as they were trivial
+and avoid that issue.  But some of the sctp stuff really is way too
+big for that, so the only other option would be to use symbol_get.
