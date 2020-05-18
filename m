@@ -1,25 +1,56 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 21 May 2020 13:57:23 +0000
-Subject: Re: [PATCH 31/33] sctp: add sctp_sock_set_nodelay
-Message-Id: <20200521135723.GA12368@lst.de>
+From: Lance Digby <lance.digby@gmail.com>
+Date: Mon, 18 May 2020 01:02:16 +0000
+Subject: [PATCH v1 target] target: Add initiatorname to NON_EXISTENT_LUN error
+Message-Id: <9b13bb2e1f52f1792cd81850ee95bf3781bb5363.1589759816.git.lance.digby@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200520195509.2215098-1-hch@lst.de>
-	<20200520195509.2215098-32-hch@lst.de>
-	<20200520231001.GU2491@localhost.localdomain>
-	<20200520.162355.2212209708127373208.davem@davemloft.net>
-	<20200520233913.GV2491@localhost.localdomain>
-	<20200521083442.GA7771@lst.de>
-	<20200521133348.GX2491@localhost.localdomain>
-In-Reply-To: <20200521133348.GX2491-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org, kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org, yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org, David Miller <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
+To: mchristi@redhat.com, martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2020 at 10:33:48AM -0300, Marcelo Ricardo Leitner wrote:
-> With the patch there are now two ways of enabling nodelay.
+The NON_EXISTENT_LUN error can be written without an error condition
+on the initiator responsible. Adding the initiatorname to this message
+will reduce the effort required to fix this when many initiators are
+supported by a target.
 
-There is exactly one way to do for user applications, and one way
-for kernel drivers.  (actually they could just set the field directly,
-which no one does for sctp, but for ipv4 a few do just that).
+This version ensures the initiator name is also printed on the same
+message in transport_lookup_tmr_lun for consistency.
+
+Signed-off-by: Lance Digby <lance.digby@gmail.com>
+---
+ drivers/target/target_core_device.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index 4cee113..15064a5 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -100,9 +100,10 @@
+ 		 */
+ 		if (unpacked_lun != 0) {
+ 			pr_err("TARGET_CORE[%s]: Detected NON_EXISTENT_LUN"
+-				" Access for 0x%08llx\n",
++				" Access for 0x%08llx from %s\n",
+ 				se_cmd->se_tfo->fabric_name,
+-				unpacked_lun);
++				unpacked_lun,
++				nacl->initiatorname);
+ 			return TCM_NON_EXISTENT_LUN;
+ 		}
+ 
+@@ -174,9 +175,10 @@ int transport_lookup_tmr_lun(struct se_cmd *se_cmd, u64 unpacked_lun)
+ 
+ 	if (!se_lun) {
+ 		pr_debug("TARGET_CORE[%s]: Detected NON_EXISTENT_LUN"
+-			" Access for 0x%08llx\n",
++			" Access for 0x%08llx for %s\n",
+ 			se_cmd->se_tfo->fabric_name,
+-			unpacked_lun);
++			unpacked_lun,
++			nacl->initiatorname);
+ 		return -ENODEV;
+ 	}
+ 	se_cmd->se_dev = rcu_dereference_raw(se_lun->lun_se_dev);
+-- 
+1.8.3.1
