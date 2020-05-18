@@ -1,27 +1,27 @@
-From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
-Date: Thu, 21 May 2020 17:41:48 +0000
-Subject: [PATCH 0/3] target: fix NULL pointer dereference
-Message-Id: <1590082908-884-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+From: pedro hills <abhay@dvp24.com>
+Date: Mon, 18 May 2020 10:38:51 +0000
+Subject: (DONATION) $2 Million Has Been Donated
+Message-Id: <5d00217bc4c820e5584517e0957d97b4@dvp24.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: shirley.ma@oracle.com, ssudhakarp@gmail.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org
 
-The following set of commits address a NULL pointer dereference and some
-refactoring around this issue.
 
-Sudhakar Panneerselvam (3):
-  target: factor out a new helper, target_init_cmd_from_cdb()
-  target: fix NULL pointer dereference
-  target: rename target_setup_cmd_from_cdb() to target_parse_cdb()
-
- drivers/target/iscsi/iscsi_target.c    | 21 +++++++++++++--------
- drivers/target/target_core_transport.c | 27 +++++++++++++++++++++------
- drivers/target/target_core_xcopy.c     |  5 ++++-
- include/target/target_core_fabric.h    |  3 ++-
- 4 files changed, 40 insertions(+), 16 deletions(-)
 
 -- 
-1.8.3.1
+$2 Million Has Been Donated To You,By PEDRO this is Real For More Info
+  Contact PEDRO immediately for your clame This Email:
+  pedrohills@outlook.es
+
+  Contact phone number +34632232897
+  Send Your Response To: pedrohills@outlook.es
+
+  2 Millionen US-Dollar wurden an Sie gespendet. Von PEDRO ist dies für
+weitere Informationen real
+  Wenden Sie sich umgehend an PEDRO. Diese E-Mail:
+  pedrohills@outlook.es
+
+  Kontakttelefonnummer +34632232897
+  Senden Sie Ihre Antwort an: pedrohills@outlook.es
