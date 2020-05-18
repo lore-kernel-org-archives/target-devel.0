@@ -1,19 +1,17 @@
-From: Himanshu Madhani <himanshu.madhani@oracle.com>
-Date: Mon, 18 May 2020 22:40:58 +0000
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Mon, 18 May 2020 23:22:48 +0000
 Subject: Re: [PATCH] scsi: qla2xxx: Keep initiator ports after RSCN
-Message-Id: <59107930-dfae-35be-9fb7-cef729e55412@oracle.com>
+Message-Id: <20200518232248.GG75422@SPB-NB-133.local>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200518183141.66621-1-r.bolshakov@yadro.com>
 In-Reply-To: <20200518183141.66621-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, linux-scsi@vger.kernel.org
-Cc: GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Martin Wilck <mwilck@suse.com>, stable@vger.kernel.org
+To: linux-scsi@vger.kernel.org
+Cc: GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Himanshu Madhani <himanshu.madhani@oracle.com>, Martin Wilck <mwilck@suse.com>, stable@vger.kernel.org
 
-
-
-On 5/18/20 1:31 PM, Roman Bolshakov wrote:
+On Mon, May 18, 2020 at 09:31:42PM +0300, Roman Bolshakov wrote:
 > The driver performs SCR (state change registration) in all modes
 > including pure target mode.
 > 
@@ -29,16 +27,16 @@ On 5/18/20 1:31 PM, Roman Bolshakov wrote:
 > session of the command/TMF, and that results in invocation of
 > qlt_send_busy():
 > 
->    qlt_24xx_atio_pkt_all_vps: qla_target(0): type 6 ox_id 0014
->    qla_target(0): Unable to send command to target, sending BUSY status
+>   qlt_24xx_atio_pkt_all_vps: qla_target(0): type 6 ox_id 0014
+>   qla_target(0): Unable to send command to target, sending BUSY status
 > 
 > Such response causes command timeout on the initiator. Error handler
 > thread on the initiator will be spawned to abort the commands:
 > 
->    scsi 23:0:0:0: tag#0 abort scheduled
->    scsi 23:0:0:0: tag#0 aborting command
->    qla2xxx [0000:af:00.0]-188c:23: Entered qla24xx_abort_command.
->    qla2xxx [0000:af:00.0]-801c:23: Abort command issued nexus#:0:0 -- 0 2003.
+>   scsi 23:0:0:0: tag#0 abort scheduled
+>   scsi 23:0:0:0: tag#0 aborting command
+>   qla2xxx [0000:af:00.0]-188c:23: Entered qla24xx_abort_command.
+>   qla2xxx [0000:af:00.0]-801c:23: Abort command issued nexus#:0:0 -- 0 2003.
 > 
 > Command abort is rejected by target and fails (2003), error handler then
 > tries to perform DEVICE RESET and TARGET RESET but they're also doomed
@@ -64,8 +62,8 @@ On 5/18/20 1:31 PM, Roman Bolshakov wrote:
 > Cc: stable@vger.kernel.org # v5.4+
 > Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 > ---
->   drivers/scsi/qla2xxx/qla_gs.c | 6 ++++--
->   1 file changed, 4 insertions(+), 2 deletions(-)
+>  drivers/scsi/qla2xxx/qla_gs.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
 > Hi Martin,
 > 
@@ -82,22 +80,41 @@ On 5/18/20 1:31 PM, Roman Bolshakov wrote:
 > --- a/drivers/scsi/qla2xxx/qla_gs.c
 > +++ b/drivers/scsi/qla2xxx/qla_gs.c
 > @@ -3495,8 +3495,10 @@ void qla24xx_async_gnnft_done(scsi_qla_host_t *vha, srb_t *sp)
->   			if ((fcport->flags & FCF_FABRIC_DEVICE) = 0) {
->   				qla2x00_clear_loop_id(fcport);
->   				fcport->flags |= FCF_FABRIC_DEVICE;
+>  			if ((fcport->flags & FCF_FABRIC_DEVICE) = 0) {
+>  				qla2x00_clear_loop_id(fcport);
+>  				fcport->flags |= FCF_FABRIC_DEVICE;
 > -			} else if (fcport->d_id.b24 != rp->id.b24 ||
 > -				fcport->scan_needed) {
 > +			} else if ((fcport->d_id.b24 != rp->id.b24 ||
 > +				    fcport->scan_needed) &&
 > +				   (fcport->port_type != FCT_INITIATOR &&
 > +				    fcport->port_type != FCT_NVME_INITIATOR)) {
->   				qlt_schedule_sess_for_deletion(fcport);
->   			}
->   			fcport->d_id.b24 = rp->id.b24;
+>  				qlt_schedule_sess_for_deletion(fcport);
+>  			}
+>  			fcport->d_id.b24 = rp->id.b24;
+> -- 
+> 2.26.1
 > 
-Looks okay.
 
-Reviewed-by: Himanshu Madhani <himanshu.madhani@oracle.com>
+P.S. A little bit cleaner alternative would be to avoid session deletion
+only if scan needed is set (that allows session deletion of initiator
+ports after fabric discovery if N_Port ID change happened). Please let
+me know if I should submit v2 like this:
 
--- 
-Himanshu Madhani                     Oracle Linux Engineering
+diff --git a/drivers/scsi/qla2xxx/qla_gs.c b/drivers/scsi/qla2xxx/qla_gs.c
+index 42c3ad27f1cb..b9955af5cffe 100644
+--- a/drivers/scsi/qla2xxx/qla_gs.c
++++ b/drivers/scsi/qla2xxx/qla_gs.c
+@@ -3495,8 +3495,10 @@ void qla24xx_async_gnnft_done(scsi_qla_host_t *vha, srb_t *sp)
+ 			if ((fcport->flags & FCF_FABRIC_DEVICE) = 0) {
+ 				qla2x00_clear_loop_id(fcport);
+ 				fcport->flags |= FCF_FABRIC_DEVICE;
+-			} else if (fcport->d_id.b24 != rp->id.b24 ||
+-				fcport->scan_needed) {
++			} else if (fcport->d_id.b24 != rp->id.b24 ||
++				   (fcport->scan_needed &&
++				    fcport->port_type != FCT_INITIATOR &&
++				    fcport->port_type != FCT_NVME_INITIATOR)) {
+ 				qlt_schedule_sess_for_deletion(fcport);
+ 			}
+ 			fcport->d_id.b24 = rp->id.b24;
