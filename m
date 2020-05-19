@@ -1,21 +1,22 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Mon, 18 May 2020 23:22:48 +0000
+From: Martin Wilck <mwilck@suse.com>
+Date: Tue, 19 May 2020 08:46:54 +0000
 Subject: Re: [PATCH] scsi: qla2xxx: Keep initiator ports after RSCN
-Message-Id: <20200518232248.GG75422@SPB-NB-133.local>
+Message-Id: <3ee76f0fc5df716523bfbdd34726b6cccd4971cd.camel@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200518183141.66621-1-r.bolshakov@yadro.com>
 In-Reply-To: <20200518183141.66621-1-r.bolshakov@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org
-Cc: GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Himanshu Madhani <himanshu.madhani@oracle.com>, Martin Wilck <mwilck@suse.com>, stable@vger.kernel.org
+To: Roman Bolshakov <r.bolshakov@yadro.com>, linux-scsi@vger.kernel.org
+Cc: GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Himanshu Madhani <himanshu.madhani@oracle.com>, stable@vger.kernel.org
 
-On Mon, May 18, 2020 at 09:31:42PM +0300, Roman Bolshakov wrote:
+On Mon, 2020-05-18 at 21:31 +0300, Roman Bolshakov wrote:
 > The driver performs SCR (state change registration) in all modes
 > including pure target mode.
 > 
-> For each RSCN, scan_needed flag is set in qla2x00_handle_rscn() for the
+> For each RSCN, scan_needed flag is set in qla2x00_handle_rscn() for
+> the
 > port mentioned in the RSCN and fabric rescan is scheduled. During the
 > rescan, GNN_FT handler, qla24xx_async_gnnft_done() deletes session of
 > the port that caused the RSCN.
@@ -28,7 +29,8 @@ On Mon, May 18, 2020 at 09:31:42PM +0300, Roman Bolshakov wrote:
 > qlt_send_busy():
 > 
 >   qlt_24xx_atio_pkt_all_vps: qla_target(0): type 6 ox_id 0014
->   qla_target(0): Unable to send command to target, sending BUSY status
+>   qla_target(0): Unable to send command to target, sending BUSY
+> status
 > 
 > Such response causes command timeout on the initiator. Error handler
 > thread on the initiator will be spawned to abort the commands:
@@ -36,19 +38,24 @@ On Mon, May 18, 2020 at 09:31:42PM +0300, Roman Bolshakov wrote:
 >   scsi 23:0:0:0: tag#0 abort scheduled
 >   scsi 23:0:0:0: tag#0 aborting command
 >   qla2xxx [0000:af:00.0]-188c:23: Entered qla24xx_abort_command.
->   qla2xxx [0000:af:00.0]-801c:23: Abort command issued nexus#:0:0 -- 0 2003.
+>   qla2xxx [0000:af:00.0]-801c:23: Abort command issued nexus#:0:0
+> -- 0 2003.
 > 
-> Command abort is rejected by target and fails (2003), error handler then
-> tries to perform DEVICE RESET and TARGET RESET but they're also doomed
+> Command abort is rejected by target and fails (2003), error handler
+> then
+> tries to perform DEVICE RESET and TARGET RESET but they're also
+> doomed
 > to fail because TMFs are ignored for the deleted sessions.
 > 
 > Then initiator makes BUS RESET that resets the link via
-> qla2x00_full_login_lip(). BUS RESET succeeds and brings initiator port
+> qla2x00_full_login_lip(). BUS RESET succeeds and brings initiator
+> port
 > up, SAN switch detects that and sends RSCN to the target port and it
 > fails again the same way as described above. It never goes out of the
 > loop.
 > 
-> The change breaks the RSCN loop by keeping initiator sessions mentioned
+> The change breaks the RSCN loop by keeping initiator sessions
+> mentioned
 > in RSCN payload in all modes, including dual and pure target mode.
 > 
 > Fixes: 2037ce49d30a ("scsi: qla2xxx: Fix stale session")
@@ -67,19 +74,23 @@ On Mon, May 18, 2020 at 09:31:42PM +0300, Roman Bolshakov wrote:
 > 
 > Hi Martin,
 > 
-> Please apply the patch to scsi-fixes/5.7 at your earliest convenience.
+> Please apply the patch to scsi-fixes/5.7 at your earliest
+> convenience.
 > 
-> qla2xxx in target and, likely, dual mode is unusable in some SAN fabrics
+> qla2xxx in target and, likely, dual mode is unusable in some SAN
+> fabrics
 > due to the bug.
 > 
 > Thanks,
 > Roman
 > 
-> diff --git a/drivers/scsi/qla2xxx/qla_gs.c b/drivers/scsi/qla2xxx/qla_gs.c
+> diff --git a/drivers/scsi/qla2xxx/qla_gs.c
+> b/drivers/scsi/qla2xxx/qla_gs.c
 > index 42c3ad27f1cb..b9955af5cffe 100644
 > --- a/drivers/scsi/qla2xxx/qla_gs.c
 > +++ b/drivers/scsi/qla2xxx/qla_gs.c
-> @@ -3495,8 +3495,10 @@ void qla24xx_async_gnnft_done(scsi_qla_host_t *vha, srb_t *sp)
+> @@ -3495,8 +3495,10 @@ void qla24xx_async_gnnft_done(scsi_qla_host_t
+> *vha, srb_t *sp)
 >  			if ((fcport->flags & FCF_FABRIC_DEVICE) = 0) {
 >  				qla2x00_clear_loop_id(fcport);
 >  				fcport->flags |= FCF_FABRIC_DEVICE;
@@ -87,34 +98,18 @@ On Mon, May 18, 2020 at 09:31:42PM +0300, Roman Bolshakov wrote:
 > -				fcport->scan_needed) {
 > +			} else if ((fcport->d_id.b24 != rp->id.b24 ||
 > +				    fcport->scan_needed) &&
-> +				   (fcport->port_type != FCT_INITIATOR &&
-> +				    fcport->port_type != FCT_NVME_INITIATOR)) {
+> +				   (fcport->port_type != FCT_INITIATOR
+> &&
+> +				    fcport->port_type !> FCT_NVME_INITIATOR)) {
 >  				qlt_schedule_sess_for_deletion(fcport);
 >  			}
 >  			fcport->d_id.b24 = rp->id.b24;
-> -- 
-> 2.26.1
-> 
 
-P.S. A little bit cleaner alternative would be to avoid session deletion
-only if scan needed is set (that allows session deletion of initiator
-ports after fabric discovery if N_Port ID change happened). Please let
-me know if I should submit v2 like this:
+Hi Roman,
 
-diff --git a/drivers/scsi/qla2xxx/qla_gs.c b/drivers/scsi/qla2xxx/qla_gs.c
-index 42c3ad27f1cb..b9955af5cffe 100644
---- a/drivers/scsi/qla2xxx/qla_gs.c
-+++ b/drivers/scsi/qla2xxx/qla_gs.c
-@@ -3495,8 +3495,10 @@ void qla24xx_async_gnnft_done(scsi_qla_host_t *vha, srb_t *sp)
- 			if ((fcport->flags & FCF_FABRIC_DEVICE) = 0) {
- 				qla2x00_clear_loop_id(fcport);
- 				fcport->flags |= FCF_FABRIC_DEVICE;
--			} else if (fcport->d_id.b24 != rp->id.b24 ||
--				fcport->scan_needed) {
-+			} else if (fcport->d_id.b24 != rp->id.b24 ||
-+				   (fcport->scan_needed &&
-+				    fcport->port_type != FCT_INITIATOR &&
-+				    fcport->port_type != FCT_NVME_INITIATOR)) {
- 				qlt_schedule_sess_for_deletion(fcport);
- 			}
- 			fcport->d_id.b24 = rp->id.b24;
+what if the session does need to be deleted eventually? E.g. if after
+the RSCN the connection to the initiator is actually lost, either
+temporarily or for good? Would the session be deleted in some other
+code path, or would it just continue to lurk around?
+
+Martin
