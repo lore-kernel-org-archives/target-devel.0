@@ -1,146 +1,182 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 28 May 2020 05:12:16 +0000
-Subject: [PATCH 08/28] net: add sock_set_rcvbuf
-Message-Id: <20200528051236.620353-9-hch@lst.de>
+Date: Wed, 20 May 2020 19:54:37 +0000
+Subject: [PATCH 01/33] dlm: use the tcp version of accept_from_sock for sctp as well
+Message-Id: <20200520195509.2215098-2-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200528051236.620353-1-hch@lst.de>
-In-Reply-To: <20200528051236.620353-1-hch-jcswGhMUV9g@public.gmane.org>
+References: <20200520195509.2215098-1-hch@lst.de>
+In-Reply-To: <20200520195509.2215098-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tipc-discussion-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org
+Cc: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
 
-Add a helper to directly set the SO_RCVBUFFORCE sockopt from kernel space
-without going through a fake uaccess.
+The only difference between a few missing fixes applied to the SCTP
+one is that TCP uses ->getpeername to get the remote address, while
+SCTP uses kernel_getsockopt(.. SCTP_PRIMARY_ADDR).  But given that
+getpeername is defined to return the primary address for sctp, there
+doesn't seem to be any reason for the different way of quering the
+peername, or all the code duplication.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- fs/dlm/lowcomms.c  |  7 +-----
- include/net/sock.h |  1 +
- net/core/sock.c    | 59 +++++++++++++++++++++++++---------------------
- 3 files changed, 34 insertions(+), 33 deletions(-)
+ fs/dlm/lowcomms.c | 123 ++--------------------------------------------
+ 1 file changed, 3 insertions(+), 120 deletions(-)
 
 diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
-index 138009c6a2ee1..45c37f572c9d2 100644
+index cdfaf4f0e11a0..f13dad0fd9ef3 100644
 --- a/fs/dlm/lowcomms.c
 +++ b/fs/dlm/lowcomms.c
-@@ -1297,7 +1297,6 @@ static int sctp_listen_for_all(void)
- 	struct socket *sock = NULL;
- 	int result = -EINVAL;
- 	struct connection *con = nodeid2con(0, GFP_NOFS);
--	int bufsize = NEEDED_RMEM;
- 	int one = 1;
- 
- 	if (!con)
-@@ -1312,11 +1311,7 @@ static int sctp_listen_for_all(void)
- 		goto out;
- 	}
- 
--	result = kernel_setsockopt(sock, SOL_SOCKET, SO_RCVBUFFORCE,
--				 (char *)&bufsize, sizeof(bufsize));
--	if (result)
--		log_print("Error increasing buffer space on socket %d", result);
--
-+	sock_set_rcvbuf(sock->sk, NEEDED_RMEM);
- 	result = kernel_setsockopt(sock, SOL_SCTP, SCTP_NODELAY, (char *)&one,
- 				   sizeof(one));
- 	if (result < 0)
-diff --git a/include/net/sock.h b/include/net/sock.h
-index dc08c176238fd..c997289aabbf9 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -2693,6 +2693,7 @@ void sock_enable_timestamps(struct sock *sk);
- void sock_no_linger(struct sock *sk);
- void sock_set_keepalive(struct sock *sk);
- void sock_set_priority(struct sock *sk, u32 priority);
-+void sock_set_rcvbuf(struct sock *sk, int val);
- void sock_set_reuseaddr(struct sock *sk);
- void sock_set_sndtimeo(struct sock *sk, s64 secs);
- 
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 728f5fb156a0c..3c6ebf952e9ad 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -789,6 +789,35 @@ void sock_set_keepalive(struct sock *sk)
+@@ -724,7 +724,7 @@ static int receive_from_sock(struct connection *con)
  }
- EXPORT_SYMBOL(sock_set_keepalive);
  
-+static void __sock_set_rcvbuf(struct sock *sk, int val)
-+{
-+	/* Ensure val * 2 fits into an int, to prevent max_t() from treating it
-+	 * as a negative value.
-+	 */
-+	val = min_t(int, val, INT_MAX / 2);
-+	sk->sk_userlocks |= SOCK_RCVBUF_LOCK;
-+
-+	/* We double it on the way in to account for "struct sk_buff" etc.
-+	 * overhead.   Applications assume that the SO_RCVBUF setting they make
-+	 * will allow that much actual data to be received on that socket.
-+	 *
-+	 * Applications are unaware that "struct sk_buff" and other overheads
-+	 * allocate from the receive buffer during socket buffer allocation.
-+	 *
-+	 * And after considering the possible alternatives, returning the value
-+	 * we actually used in getsockopt is the most desirable behavior.
-+	 */
-+	WRITE_ONCE(sk->sk_rcvbuf, max_t(int, val * 2, SOCK_MIN_RCVBUF));
-+}
-+
-+void sock_set_rcvbuf(struct sock *sk, int val)
-+{
-+	lock_sock(sk);
-+	__sock_set_rcvbuf(sk, val);
-+	release_sock(sk);
-+}
-+EXPORT_SYMBOL(sock_set_rcvbuf);
-+
- /*
-  *	This is meant for all protocols to use and covers goings on
-  *	at the socket level. Everything here is generic.
-@@ -885,30 +914,7 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
- 		 * play 'guess the biggest size' games. RCVBUF/SNDBUF
- 		 * are treated in BSD as hints
- 		 */
--		val = min_t(u32, val, sysctl_rmem_max);
--set_rcvbuf:
--		/* Ensure val * 2 fits into an int, to prevent max_t()
--		 * from treating it as a negative value.
--		 */
--		val = min_t(int, val, INT_MAX / 2);
--		sk->sk_userlocks |= SOCK_RCVBUF_LOCK;
--		/*
--		 * We double it on the way in to account for
--		 * "struct sk_buff" etc. overhead.   Applications
--		 * assume that the SO_RCVBUF setting they make will
--		 * allow that much actual data to be received on that
--		 * socket.
--		 *
--		 * Applications are unaware that "struct sk_buff" and
--		 * other overheads allocate from the receive buffer
--		 * during socket buffer allocation.
--		 *
--		 * And after considering the possible alternatives,
--		 * returning the value we actually used in getsockopt
--		 * is the most desirable behavior.
--		 */
--		WRITE_ONCE(sk->sk_rcvbuf,
--			   max_t(int, val * 2, SOCK_MIN_RCVBUF));
-+		__sock_set_rcvbuf(sk, min_t(u32, val, sysctl_rmem_max));
- 		break;
+ /* Listening socket is busy, accept a connection */
+-static int tcp_accept_from_sock(struct connection *con)
++static int accept_from_sock(struct connection *con)
+ {
+ 	int result;
+ 	struct sockaddr_storage peeraddr;
+@@ -852,123 +852,6 @@ static int tcp_accept_from_sock(struct connection *con)
+ 	return result;
+ }
  
- 	case SO_RCVBUFFORCE:
-@@ -920,9 +926,8 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
- 		/* No negative values (to prevent underflow, as val will be
- 		 * multiplied by 2).
- 		 */
--		if (val < 0)
--			val = 0;
--		goto set_rcvbuf;
-+		__sock_set_rcvbuf(sk, max(val, 0));
-+		break;
+-static int sctp_accept_from_sock(struct connection *con)
+-{
+-	/* Check that the new node is in the lockspace */
+-	struct sctp_prim prim;
+-	int nodeid;
+-	int prim_len, ret;
+-	int addr_len;
+-	struct connection *newcon;
+-	struct connection *addcon;
+-	struct socket *newsock;
+-
+-	mutex_lock(&connections_lock);
+-	if (!dlm_allow_conn) {
+-		mutex_unlock(&connections_lock);
+-		return -1;
+-	}
+-	mutex_unlock(&connections_lock);
+-
+-	mutex_lock_nested(&con->sock_mutex, 0);
+-
+-	ret = kernel_accept(con->sock, &newsock, O_NONBLOCK);
+-	if (ret < 0)
+-		goto accept_err;
+-
+-	memset(&prim, 0, sizeof(struct sctp_prim));
+-	prim_len = sizeof(struct sctp_prim);
+-
+-	ret = kernel_getsockopt(newsock, IPPROTO_SCTP, SCTP_PRIMARY_ADDR,
+-				(char *)&prim, &prim_len);
+-	if (ret < 0) {
+-		log_print("getsockopt/sctp_primary_addr failed: %d", ret);
+-		goto accept_err;
+-	}
+-
+-	make_sockaddr(&prim.ssp_addr, 0, &addr_len);
+-	ret = addr_to_nodeid(&prim.ssp_addr, &nodeid);
+-	if (ret) {
+-		unsigned char *b = (unsigned char *)&prim.ssp_addr;
+-
+-		log_print("reject connect from unknown addr");
+-		print_hex_dump_bytes("ss: ", DUMP_PREFIX_NONE,
+-				     b, sizeof(struct sockaddr_storage));
+-		goto accept_err;
+-	}
+-
+-	newcon = nodeid2con(nodeid, GFP_NOFS);
+-	if (!newcon) {
+-		ret = -ENOMEM;
+-		goto accept_err;
+-	}
+-
+-	mutex_lock_nested(&newcon->sock_mutex, 1);
+-
+-	if (newcon->sock) {
+-		struct connection *othercon = newcon->othercon;
+-
+-		if (!othercon) {
+-			othercon = kmem_cache_zalloc(con_cache, GFP_NOFS);
+-			if (!othercon) {
+-				log_print("failed to allocate incoming socket");
+-				mutex_unlock(&newcon->sock_mutex);
+-				ret = -ENOMEM;
+-				goto accept_err;
+-			}
+-			othercon->nodeid = nodeid;
+-			othercon->rx_action = receive_from_sock;
+-			mutex_init(&othercon->sock_mutex);
+-			INIT_LIST_HEAD(&othercon->writequeue);
+-			spin_lock_init(&othercon->writequeue_lock);
+-			INIT_WORK(&othercon->swork, process_send_sockets);
+-			INIT_WORK(&othercon->rwork, process_recv_sockets);
+-			set_bit(CF_IS_OTHERCON, &othercon->flags);
+-		}
+-		mutex_lock_nested(&othercon->sock_mutex, 2);
+-		if (!othercon->sock) {
+-			newcon->othercon = othercon;
+-			add_sock(newsock, othercon);
+-			addcon = othercon;
+-			mutex_unlock(&othercon->sock_mutex);
+-		} else {
+-			printk("Extra connection from node %d attempted\n", nodeid);
+-			ret = -EAGAIN;
+-			mutex_unlock(&othercon->sock_mutex);
+-			mutex_unlock(&newcon->sock_mutex);
+-			goto accept_err;
+-		}
+-	} else {
+-		newcon->rx_action = receive_from_sock;
+-		add_sock(newsock, newcon);
+-		addcon = newcon;
+-	}
+-
+-	log_print("connected to %d", nodeid);
+-
+-	mutex_unlock(&newcon->sock_mutex);
+-
+-	/*
+-	 * Add it to the active queue in case we got data
+-	 * between processing the accept adding the socket
+-	 * to the read_sockets list
+-	 */
+-	if (!test_and_set_bit(CF_READ_PENDING, &addcon->flags))
+-		queue_work(recv_workqueue, &addcon->rwork);
+-	mutex_unlock(&con->sock_mutex);
+-
+-	return 0;
+-
+-accept_err:
+-	mutex_unlock(&con->sock_mutex);
+-	if (newsock)
+-		sock_release(newsock);
+-	if (ret != -EAGAIN)
+-		log_print("error accepting connection from node: %d", ret);
+-
+-	return ret;
+-}
+-
+ static void free_entry(struct writequeue_entry *e)
+ {
+ 	__free_page(e->page);
+@@ -1253,7 +1136,7 @@ static struct socket *tcp_create_listen_sock(struct connection *con,
+ 	write_lock_bh(&sock->sk->sk_callback_lock);
+ 	sock->sk->sk_user_data = con;
+ 	save_listen_callbacks(sock);
+-	con->rx_action = tcp_accept_from_sock;
++	con->rx_action = accept_from_sock;
+ 	con->connect_action = tcp_connect_to_sock;
+ 	write_unlock_bh(&sock->sk->sk_callback_lock);
  
- 	case SO_KEEPALIVE:
- 		if (sk->sk_prot->keepalive)
+@@ -1340,7 +1223,7 @@ static int sctp_listen_for_all(void)
+ 	save_listen_callbacks(sock);
+ 	con->sock = sock;
+ 	con->sock->sk->sk_data_ready = lowcomms_data_ready;
+-	con->rx_action = sctp_accept_from_sock;
++	con->rx_action = accept_from_sock;
+ 	con->connect_action = sctp_connect_to_sock;
+ 
+ 	write_unlock_bh(&sock->sk->sk_callback_lock);
 -- 
 2.26.2
