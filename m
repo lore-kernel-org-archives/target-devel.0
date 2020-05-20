@@ -1,16 +1,18 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Mon, 18 May 2020 19:39:38 +0000
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Wed, 20 May 2020 02:30:01 +0000
 Subject: Re: [PATCH v2] scsi: target: tcmu: userspace must not complete queued commands
-Message-Id: <cbc8d169-2bf0-34ed-ccd7-e4a6f74260e7@redhat.com>
+Message-Id: <158994171818.20861.2092677585621625446.b4-ty@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200518164833.12775-1-bstroesser@ts.fujitsu.com>
 In-Reply-To: <20200518164833.12775-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bodo Stroesser <bstroesser@ts.fujitsu.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: mchristi@redhat.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>
 
-On 5/18/20 11:48 AM, Bodo Stroesser wrote:
+On Mon, 18 May 2020 18:48:33 +0200, Bodo Stroesser wrote:
+
 > When tcmu queues a new command - no matter whether in command
 > ring or in qfull_queue - a cmd_id from IDR udev->commands is
 > assigned to the command.
@@ -21,13 +23,14 @@ On 5/18/20 11:48 AM, Bodo Stroesser wrote:
 > for it. This might do some nasty things, because commands in
 > qfull_queue do not have a valid dbi list.
 > 
-> To fix this bug, we no longer add queued commands to the idr.
-> Instead the cmd_id is assign when a command is written to
-> the command ring.
-> 
-> Due to this change I had to adapt the source code at several
-> places where up to now an idr_for_each had been done.
-> 
-> Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+> [...]
 
-Acked-by: Mike Christie <mchristi@redhat.com>
+Applied to 5.8/scsi-queue, thanks!
+
+[1/1] scsi: target: tcmu: Userspace must not complete queued commands
+      https://git.kernel.org/mkp/scsi/c/61fb24822166
+
+PS. Please run checkpatch. Had to fix a bunch of whitespace errors.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
