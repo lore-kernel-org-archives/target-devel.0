@@ -1,25 +1,82 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 27 May 2020 02:12:55 +0000
-Subject: Re: [PATCH] scsi: target: tcmu: Fix a use after free in tcmu_check_expired_queue_cmd()
-Message-Id: <159054550934.12032.1754394879666854643.b4-ty@oracle.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Wed, 20 May 2020 19:55:07 +0000
+Subject: [PATCH 31/33] sctp: add sctp_sock_set_nodelay
+Message-Id: <20200520195509.2215098-32-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200523101129.GB98132@mwanda>
-In-Reply-To: <20200523101129.GB98132@mwanda>
+References: <20200520195509.2215098-1-hch@lst.de>
+In-Reply-To: <20200520195509.2215098-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>, Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, Mike Christie <mchristi@redhat.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Sat, 23 May 2020 13:11:29 +0300, Dan Carpenter wrote:
+Add a helper to directly set the SCTP_NODELAY sockopt from kernel space
+without going through a fake uaccess.
 
-> The pr_debug() dereferences "cmd" after we already freed it by calling
-> tcmu_free_cmd(cmd).  The debug printk needs to be done earlier.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ fs/dlm/lowcomms.c       | 10 ++--------
+ include/net/sctp/sctp.h |  7 +++++++
+ 2 files changed, 9 insertions(+), 8 deletions(-)
 
-Applied to 5.8/scsi-queue, thanks!
-
-[1/1] scsi: target: tcmu: Fix a use after free in tcmu_check_expired_queue_cmd()
-      https://git.kernel.org/mkp/scsi/c/9d7464b18892
-
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index 69333728d871b..9f1c3cdc9d653 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -914,7 +914,6 @@ static int sctp_bind_addrs(struct connection *con, uint16_t port)
+ static void sctp_connect_to_sock(struct connection *con)
+ {
+ 	struct sockaddr_storage daddr;
+-	int one = 1;
+ 	int result;
+ 	int addr_len;
+ 	struct socket *sock;
+@@ -961,8 +960,7 @@ static void sctp_connect_to_sock(struct connection *con)
+ 	log_print("connecting to %d", con->nodeid);
+ 
+ 	/* Turn off Nagle's algorithm */
+-	kernel_setsockopt(sock, SOL_SCTP, SCTP_NODELAY, (char *)&one,
+-			  sizeof(one));
++	sctp_sock_set_nodelay(sock->sk);
+ 
+ 	/*
+ 	 * Make sock->ops->connect() function return in specified time,
+@@ -1176,7 +1174,6 @@ static int sctp_listen_for_all(void)
+ 	struct socket *sock = NULL;
+ 	int result = -EINVAL;
+ 	struct connection *con = nodeid2con(0, GFP_NOFS);
+-	int one = 1;
+ 
+ 	if (!con)
+ 		return -ENOMEM;
+@@ -1191,10 +1188,7 @@ static int sctp_listen_for_all(void)
+ 	}
+ 
+ 	sock_set_rcvbuf(sock->sk, NEEDED_RMEM);
+-	result = kernel_setsockopt(sock, SOL_SCTP, SCTP_NODELAY, (char *)&one,
+-				   sizeof(one));
+-	if (result < 0)
+-		log_print("Could not set SCTP NODELAY error %d\n", result);
++	sctp_sock_set_nodelay(sock->sk);
+ 
+ 	write_lock_bh(&sock->sk->sk_callback_lock);
+ 	/* Init con struct */
+diff --git a/include/net/sctp/sctp.h b/include/net/sctp/sctp.h
+index 3ab5c6bbb90bd..f8bcb75bb0448 100644
+--- a/include/net/sctp/sctp.h
++++ b/include/net/sctp/sctp.h
+@@ -615,4 +615,11 @@ static inline bool sctp_newsk_ready(const struct sock *sk)
+ 	return sock_flag(sk, SOCK_DEAD) || sk->sk_socket;
+ }
+ 
++static inline void sctp_sock_set_nodelay(struct sock *sk)
++{
++	lock_sock(sk);
++	sctp_sk(sk)->nodelay = true;
++	release_sock(sk);
++}
++
+ #endif /* __net_sctp_h__ */
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.26.2
