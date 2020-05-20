@@ -1,120 +1,88 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 13 May 2020 06:26:20 +0000
-Subject: [PATCH 05/33] net: add sock_bindtoindex
-Message-Id: <20200513062649.2100053-6-hch@lst.de>
+Date: Wed, 20 May 2020 19:54:42 +0000
+Subject: [PATCH 06/33] net: add sock_set_sndtimeo
+Message-Id: <20200520195509.2215098-7-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200513062649.2100053-1-hch@lst.de>
-In-Reply-To: <20200513062649.2100053-1-hch@lst.de>
+References: <20200520195509.2215098-1-hch@lst.de>
+In-Reply-To: <20200520195509.2215098-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Vlad Yasevich <vyasevich@gmail.com>, Neil Horman <nhorman@tuxdriver.com>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, linux-sctp@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org
+To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
 
-Add a helper to directly set the SO_BINDTOIFINDEX sockopt from kernel
-space without going through a fake uaccess.
+Add a helper to directly set the SO_SNDTIMEO_NEW sockopt from kernel
+space without going through a fake uaccess.  The interface is
+simplified to only pass the seconds value, as that is the only
+thing needed at the moment.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- include/net/sock.h        |  1 +
- net/core/sock.c           | 21 +++++++++++++++------
- net/ipv4/udp_tunnel.c     |  4 +---
- net/ipv6/ip6_udp_tunnel.c |  4 +---
- 4 files changed, 18 insertions(+), 12 deletions(-)
+ fs/dlm/lowcomms.c  |  8 ++------
+ include/net/sock.h |  1 +
+ net/core/sock.c    | 11 +++++++++++
+ 3 files changed, 14 insertions(+), 6 deletions(-)
 
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index 88f2574ca63ad..b79711d0aac72 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -918,7 +918,6 @@ static void sctp_connect_to_sock(struct connection *con)
+ 	int result;
+ 	int addr_len;
+ 	struct socket *sock;
+-	struct __kernel_sock_timeval tv = { .tv_sec = 5, .tv_usec = 0 };
+ 
+ 	if (con->nodeid = 0) {
+ 		log_print("attempt to connect sock 0 foiled");
+@@ -970,13 +969,10 @@ static void sctp_connect_to_sock(struct connection *con)
+ 	 * since O_NONBLOCK argument in connect() function does not work here,
+ 	 * then, we should restore the default value of this attribute.
+ 	 */
+-	kernel_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO_NEW, (char *)&tv,
+-			  sizeof(tv));
++	sock_set_sndtimeo(sock->sk, 5);
+ 	result = sock->ops->connect(sock, (struct sockaddr *)&daddr, addr_len,
+ 				   0);
+-	memset(&tv, 0, sizeof(tv));
+-	kernel_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO_NEW, (char *)&tv,
+-			  sizeof(tv));
++	sock_set_sndtimeo(sock->sk, 0);
+ 
+ 	if (result = -EINPROGRESS)
+ 		result = 0;
 diff --git a/include/net/sock.h b/include/net/sock.h
-index 809596ffd32d2..b63ea15362065 100644
+index a3a43141a4be2..9a7b9e98685ac 100644
 --- a/include/net/sock.h
 +++ b/include/net/sock.h
-@@ -2691,5 +2691,6 @@ void sock_set_reuseaddr(struct sock *sk, unsigned char reuse);
- void sock_set_linger(struct sock *sk, bool onoff, unsigned int linger);
+@@ -2691,5 +2691,6 @@ void sock_def_readable(struct sock *sk);
+ void sock_no_linger(struct sock *sk);
  void sock_set_priority(struct sock *sk, u32 priority);
- void sock_set_sndtimeo(struct sock *sk, unsigned int secs);
-+int sock_bindtoindex(struct sock *sk, int ifindex);
+ void sock_set_reuseaddr(struct sock *sk);
++void sock_set_sndtimeo(struct sock *sk, s64 secs);
  
  #endif	/* _SOCK_H */
 diff --git a/net/core/sock.c b/net/core/sock.c
-index 76527681e50b9..4b7439308caec 100644
+index ceda1a9248b3e..d3b1d61e4f768 100644
 --- a/net/core/sock.c
 +++ b/net/core/sock.c
-@@ -566,7 +566,7 @@ struct dst_entry *sk_dst_check(struct sock *sk, u32 cookie)
+@@ -737,6 +737,17 @@ void sock_set_priority(struct sock *sk, u32 priority)
  }
- EXPORT_SYMBOL(sk_dst_check);
+ EXPORT_SYMBOL(sock_set_priority);
  
--static int sock_setbindtodevice_locked(struct sock *sk, int ifindex)
-+static int sock_bindtoindex_locked(struct sock *sk, int ifindex)
- {
- 	int ret = -ENOPROTOOPT;
- #ifdef CONFIG_NETDEVICES
-@@ -594,6 +594,18 @@ static int sock_setbindtodevice_locked(struct sock *sk, int ifindex)
- 	return ret;
- }
- 
-+int sock_bindtoindex(struct sock *sk, int ifindex)
++void sock_set_sndtimeo(struct sock *sk, s64 secs)
 +{
-+	int ret;
-+
 +	lock_sock(sk);
-+	ret = sock_bindtoindex_locked(sk, ifindex);
++	if (secs && secs < MAX_SCHEDULE_TIMEOUT / HZ - 1)
++		sk->sk_sndtimeo = secs * HZ;
++	else
++		sk->sk_sndtimeo = MAX_SCHEDULE_TIMEOUT;
 +	release_sock(sk);
-+
-+	return ret;
 +}
-+EXPORT_SYMBOL(sock_bindtoindex);
++EXPORT_SYMBOL(sock_set_sndtimeo);
 +
- static int sock_setbindtodevice(struct sock *sk, char __user *optval,
- 				int optlen)
- {
-@@ -634,10 +646,7 @@ static int sock_setbindtodevice(struct sock *sk, char __user *optval,
- 			goto out;
- 	}
- 
--	lock_sock(sk);
--	ret = sock_setbindtodevice_locked(sk, index);
--	release_sock(sk);
--
-+	return sock_bindtoindex(sk, index);
- out:
- #endif
- 
-@@ -1221,7 +1230,7 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
- 		break;
- 
- 	case SO_BINDTOIFINDEX:
--		ret = sock_setbindtodevice_locked(sk, val);
-+		ret = sock_bindtoindex_locked(sk, val);
- 		break;
- 
- 	default:
-diff --git a/net/ipv4/udp_tunnel.c b/net/ipv4/udp_tunnel.c
-index 150e6f0fdbf59..2158e8bddf41c 100644
---- a/net/ipv4/udp_tunnel.c
-+++ b/net/ipv4/udp_tunnel.c
-@@ -22,9 +22,7 @@ int udp_sock_create4(struct net *net, struct udp_port_cfg *cfg,
- 		goto error;
- 
- 	if (cfg->bind_ifindex) {
--		err = kernel_setsockopt(sock, SOL_SOCKET, SO_BINDTOIFINDEX,
--					(void *)&cfg->bind_ifindex,
--					sizeof(cfg->bind_ifindex));
-+		err = sock_bindtoindex(sock->sk, cfg->bind_ifindex);
- 		if (err < 0)
- 			goto error;
- 	}
-diff --git a/net/ipv6/ip6_udp_tunnel.c b/net/ipv6/ip6_udp_tunnel.c
-index 58956a6b66a21..6523609516d25 100644
---- a/net/ipv6/ip6_udp_tunnel.c
-+++ b/net/ipv6/ip6_udp_tunnel.c
-@@ -33,9 +33,7 @@ int udp_sock_create6(struct net *net, struct udp_port_cfg *cfg,
- 			goto error;
- 	}
- 	if (cfg->bind_ifindex) {
--		err = kernel_setsockopt(sock, SOL_SOCKET, SO_BINDTOIFINDEX,
--					(void *)&cfg->bind_ifindex,
--					sizeof(cfg->bind_ifindex));
-+		err = sock_bindtoindex(sock->sk, cfg->bind_ifindex);
- 		if (err < 0)
- 			goto error;
- 	}
+ /*
+  *	This is meant for all protocols to use and covers goings on
+  *	at the socket level. Everything here is generic.
 -- 
 2.26.2
