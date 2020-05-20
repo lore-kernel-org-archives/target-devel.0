@@ -1,210 +1,121 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 13 May 2020 06:26:39 +0000
-Subject: [PATCH 24/33] ipv6: add ip6_sock_set_addr_preferences
-Message-Id: <20200513062649.2100053-25-hch@lst.de>
+Date: Wed, 20 May 2020 19:54:43 +0000
+Subject: [PATCH 07/33] net: add sock_bindtoindex
+Message-Id: <20200520195509.2215098-8-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200513062649.2100053-1-hch@lst.de>
-In-Reply-To: <20200513062649.2100053-1-hch@lst.de>
+References: <20200520195509.2215098-1-hch@lst.de>
+In-Reply-To: <20200520195509.2215098-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Vlad Yasevich <vyasevich@gmail.com>, Neil Horman <nhorman@tuxdriver.com>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, linux-sctp@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org
+To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
 
-Add a helper to directly set the IPV6_ADD_PREFERENCES sockopt from kernel
+Add a helper to directly set the SO_BINDTOIFINDEX sockopt from kernel
 space without going through a fake uaccess.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- include/net/ipv6.h       |   1 +
- net/ipv6/ipv6_sockglue.c | 127 +++++++++++++++++++++------------------
- net/sunrpc/xprtsock.c    |   8 ++-
- 3 files changed, 75 insertions(+), 61 deletions(-)
+ include/net/sock.h        |  1 +
+ net/core/sock.c           | 21 +++++++++++++++------
+ net/ipv4/udp_tunnel.c     |  4 +---
+ net/ipv6/ip6_udp_tunnel.c |  4 +---
+ 4 files changed, 18 insertions(+), 12 deletions(-)
 
-diff --git a/include/net/ipv6.h b/include/net/ipv6.h
-index 69bc1651aaef8..04b2bc1935054 100644
---- a/include/net/ipv6.h
-+++ b/include/net/ipv6.h
-@@ -1177,5 +1177,6 @@ int ipv6_sock_mc_drop(struct sock *sk, int ifindex,
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 9a7b9e98685ac..cdec7bc055d5b 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -2688,6 +2688,7 @@ static inline bool sk_dev_equal_l3scope(struct sock *sk, int dif)
  
- int ip6_sock_set_v6only(struct sock *sk, bool val);
- void ip6_sock_set_recverr(struct sock *sk, bool val);
-+int ip6_sock_set_addr_preferences(struct sock *sk, bool val);
+ void sock_def_readable(struct sock *sk);
  
- #endif /* _NET_IPV6_H */
-diff --git a/net/ipv6/ipv6_sockglue.c b/net/ipv6/ipv6_sockglue.c
-index 3c67626b6f5a9..c23d42e809d7e 100644
---- a/net/ipv6/ipv6_sockglue.c
-+++ b/net/ipv6/ipv6_sockglue.c
-@@ -157,6 +157,74 @@ void ip6_sock_set_recverr(struct sock *sk, bool val)
++int sock_bindtoindex(struct sock *sk, int ifindex);
+ void sock_no_linger(struct sock *sk);
+ void sock_set_priority(struct sock *sk, u32 priority);
+ void sock_set_reuseaddr(struct sock *sk);
+diff --git a/net/core/sock.c b/net/core/sock.c
+index d3b1d61e4f768..23f80880fbb2c 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -566,7 +566,7 @@ struct dst_entry *sk_dst_check(struct sock *sk, u32 cookie)
  }
- EXPORT_SYMBOL(ip6_sock_set_recverr);
+ EXPORT_SYMBOL(sk_dst_check);
  
-+static int __ip6_sock_set_addr_preferences(struct sock *sk, int val)
-+{
-+	unsigned int pref = 0;
-+	unsigned int prefmask = ~0;
-+
-+	/* check PUBLIC/TMP/PUBTMP_DEFAULT conflicts */
-+	switch (val & (IPV6_PREFER_SRC_PUBLIC |
-+		       IPV6_PREFER_SRC_TMP |
-+		       IPV6_PREFER_SRC_PUBTMP_DEFAULT)) {
-+	case IPV6_PREFER_SRC_PUBLIC:
-+		pref |= IPV6_PREFER_SRC_PUBLIC;
-+		prefmask &= ~(IPV6_PREFER_SRC_PUBLIC |
-+			      IPV6_PREFER_SRC_TMP);
-+		break;
-+	case IPV6_PREFER_SRC_TMP:
-+		pref |= IPV6_PREFER_SRC_TMP;
-+		prefmask &= ~(IPV6_PREFER_SRC_PUBLIC |
-+			      IPV6_PREFER_SRC_TMP);
-+		break;
-+	case IPV6_PREFER_SRC_PUBTMP_DEFAULT:
-+		prefmask &= ~(IPV6_PREFER_SRC_PUBLIC |
-+			      IPV6_PREFER_SRC_TMP);
-+		break;
-+	case 0:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* check HOME/COA conflicts */
-+	switch (val & (IPV6_PREFER_SRC_HOME | IPV6_PREFER_SRC_COA)) {
-+	case IPV6_PREFER_SRC_HOME:
-+		prefmask &= ~IPV6_PREFER_SRC_COA;
-+		break;
-+	case IPV6_PREFER_SRC_COA:
-+		pref |= IPV6_PREFER_SRC_COA;
-+		break;
-+	case 0:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* check CGA/NONCGA conflicts */
-+	switch (val & (IPV6_PREFER_SRC_CGA|IPV6_PREFER_SRC_NONCGA)) {
-+	case IPV6_PREFER_SRC_CGA:
-+	case IPV6_PREFER_SRC_NONCGA:
-+	case 0:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	inet6_sk(sk)->srcprefs = (inet6_sk(sk)->srcprefs & prefmask) | pref;
-+	return 0;
-+}
-+
-+int ip6_sock_set_addr_preferences(struct sock *sk, bool val)
+-static int sock_setbindtodevice_locked(struct sock *sk, int ifindex)
++static int sock_bindtoindex_locked(struct sock *sk, int ifindex)
+ {
+ 	int ret = -ENOPROTOOPT;
+ #ifdef CONFIG_NETDEVICES
+@@ -594,6 +594,18 @@ static int sock_setbindtodevice_locked(struct sock *sk, int ifindex)
+ 	return ret;
+ }
+ 
++int sock_bindtoindex(struct sock *sk, int ifindex)
 +{
 +	int ret;
 +
 +	lock_sock(sk);
-+	ret = __ip6_sock_set_addr_preferences(sk, val);
++	ret = sock_bindtoindex_locked(sk, ifindex);
 +	release_sock(sk);
++
 +	return ret;
 +}
-+EXPORT_SYMBOL(ip6_sock_set_addr_preferences);
++EXPORT_SYMBOL(sock_bindtoindex);
 +
- static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
- 		    char __user *optval, unsigned int optlen)
+ static int sock_setbindtodevice(struct sock *sk, char __user *optval,
+ 				int optlen)
  {
-@@ -859,67 +927,10 @@ static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
+@@ -634,10 +646,7 @@ static int sock_setbindtodevice(struct sock *sk, char __user *optval,
+ 			goto out;
+ 	}
+ 
+-	lock_sock(sk);
+-	ret = sock_setbindtodevice_locked(sk, index);
+-	release_sock(sk);
+-
++	return sock_bindtoindex(sk, index);
+ out:
+ #endif
+ 
+@@ -1216,7 +1225,7 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
  		break;
  
- 	case IPV6_ADDR_PREFERENCES:
--	    {
--		unsigned int pref = 0;
--		unsigned int prefmask = ~0;
--
- 		if (optlen < sizeof(int))
- 			goto e_inval;
--
--		retv = -EINVAL;
--
--		/* check PUBLIC/TMP/PUBTMP_DEFAULT conflicts */
--		switch (val & (IPV6_PREFER_SRC_PUBLIC|
--			       IPV6_PREFER_SRC_TMP|
--			       IPV6_PREFER_SRC_PUBTMP_DEFAULT)) {
--		case IPV6_PREFER_SRC_PUBLIC:
--			pref |= IPV6_PREFER_SRC_PUBLIC;
--			break;
--		case IPV6_PREFER_SRC_TMP:
--			pref |= IPV6_PREFER_SRC_TMP;
--			break;
--		case IPV6_PREFER_SRC_PUBTMP_DEFAULT:
--			break;
--		case 0:
--			goto pref_skip_pubtmp;
--		default:
--			goto e_inval;
--		}
--
--		prefmask &= ~(IPV6_PREFER_SRC_PUBLIC|
--			      IPV6_PREFER_SRC_TMP);
--pref_skip_pubtmp:
--
--		/* check HOME/COA conflicts */
--		switch (val & (IPV6_PREFER_SRC_HOME|IPV6_PREFER_SRC_COA)) {
--		case IPV6_PREFER_SRC_HOME:
--			break;
--		case IPV6_PREFER_SRC_COA:
--			pref |= IPV6_PREFER_SRC_COA;
--		case 0:
--			goto pref_skip_coa;
--		default:
--			goto e_inval;
--		}
--
--		prefmask &= ~IPV6_PREFER_SRC_COA;
--pref_skip_coa:
--
--		/* check CGA/NONCGA conflicts */
--		switch (val & (IPV6_PREFER_SRC_CGA|IPV6_PREFER_SRC_NONCGA)) {
--		case IPV6_PREFER_SRC_CGA:
--		case IPV6_PREFER_SRC_NONCGA:
--		case 0:
--			break;
--		default:
--			goto e_inval;
--		}
--
--		np->srcprefs = (np->srcprefs & prefmask) | pref;
--		retv = 0;
--
-+		retv = __ip6_sock_set_addr_preferences(sk, val);
+ 	case SO_BINDTOIFINDEX:
+-		ret = sock_setbindtodevice_locked(sk, val);
++		ret = sock_bindtoindex_locked(sk, val);
  		break;
--	    }
- 	case IPV6_MINHOPCOUNT:
- 		if (optlen < sizeof(int))
- 			goto e_inval;
-diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
-index 88aa198456858..7aaf2baf0c393 100644
---- a/net/sunrpc/xprtsock.c
-+++ b/net/sunrpc/xprtsock.c
-@@ -2150,7 +2150,6 @@ static int xs_tcp_finish_connecting(struct rpc_xprt *xprt, struct socket *sock)
  
- 	if (!transport->inet) {
- 		struct sock *sk = sock->sk;
--		unsigned int addr_pref = IPV6_PREFER_SRC_PUBLIC;
+ 	default:
+diff --git a/net/ipv4/udp_tunnel.c b/net/ipv4/udp_tunnel.c
+index 150e6f0fdbf59..2158e8bddf41c 100644
+--- a/net/ipv4/udp_tunnel.c
++++ b/net/ipv4/udp_tunnel.c
+@@ -22,9 +22,7 @@ int udp_sock_create4(struct net *net, struct udp_port_cfg *cfg,
+ 		goto error;
  
- 		/* Avoid temporary address, they are bad for long-lived
- 		 * connections such as NFS mounts.
-@@ -2159,8 +2158,11 @@ static int xs_tcp_finish_connecting(struct rpc_xprt *xprt, struct socket *sock)
- 		 *    knowledge about the normal duration of connections,
- 		 *    MAY override this as appropriate.
- 		 */
--		kernel_setsockopt(sock, SOL_IPV6, IPV6_ADDR_PREFERENCES,
--				(char *)&addr_pref, sizeof(addr_pref));
-+		if (xs_addr(xprt)->sa_family = PF_INET6 &&
-+		    IS_REACHABLE(CONFIG_IPV6)) {
-+			ip6_sock_set_addr_preferences(sk,
-+				IPV6_PREFER_SRC_PUBLIC);
-+		}
- 
- 		xs_tcp_set_socket_timeouts(xprt, sock);
- 
+ 	if (cfg->bind_ifindex) {
+-		err = kernel_setsockopt(sock, SOL_SOCKET, SO_BINDTOIFINDEX,
+-					(void *)&cfg->bind_ifindex,
+-					sizeof(cfg->bind_ifindex));
++		err = sock_bindtoindex(sock->sk, cfg->bind_ifindex);
+ 		if (err < 0)
+ 			goto error;
+ 	}
+diff --git a/net/ipv6/ip6_udp_tunnel.c b/net/ipv6/ip6_udp_tunnel.c
+index 58956a6b66a21..6523609516d25 100644
+--- a/net/ipv6/ip6_udp_tunnel.c
++++ b/net/ipv6/ip6_udp_tunnel.c
+@@ -33,9 +33,7 @@ int udp_sock_create6(struct net *net, struct udp_port_cfg *cfg,
+ 			goto error;
+ 	}
+ 	if (cfg->bind_ifindex) {
+-		err = kernel_setsockopt(sock, SOL_SOCKET, SO_BINDTOIFINDEX,
+-					(void *)&cfg->bind_ifindex,
+-					sizeof(cfg->bind_ifindex));
++		err = sock_bindtoindex(sock->sk, cfg->bind_ifindex);
+ 		if (err < 0)
+ 			goto error;
+ 	}
 -- 
 2.26.2
