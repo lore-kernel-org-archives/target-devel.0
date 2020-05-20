@@ -1,99 +1,69 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Fri, 29 May 2020 09:26:56 +0000
-Subject: [PATCH RFC] scsi: target: tcmu: optimize use of flush_dcache_page
-Message-Id: <20200529092656.1048-1-bstroesser@ts.fujitsu.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Wed, 20 May 2020 19:55:02 +0000
+Subject: [PATCH 26/33] ipv6: add ip6_sock_set_recverr
+Message-Id: <20200520195509.2215098-27-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200520195509.2215098-1-hch@lst.de>
+In-Reply-To: <20200520195509.2215098-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, michael.christie@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+Cc: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Eric Dumazet <edumazet@google.com>, linux-nvme@lists.infradead.org, David Howells <dhowells@redhat.com>, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, cluster-devel@redhat.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, drbd-dev@tron.linbit.com, ceph-devel@vger.kernel.org, linux-nfs@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, Vlad Yasevich <vyasevich@gmail.com>, linux-kernel@vger.kernel.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, ocfs2-devel@oss.oracle.com
 
-(scatter|gather)_data_area() need to flush dcache after
-writing data to or before reading data from a page in
-uio data area.
-The two routines are able to handle data transfer to/from
-such a page in fragments and flush the cache after each
-fragment is copied by calling the wrapper
-tcmu_flush_dcache_range().
+Add a helper to directly set the IPV6_RECVERR sockopt from kernel space
+without going through a fake uaccess.
 
-That means:
-1) flush_dcache_page() can be called multiple times for
-   the same page.
-2) Calling flush_dcache_page() indirectly using the
-   wrapper does not make sense, because each call of the
-   wrapper is for one single page only and the calling
-   routine already has the correct page pointer.
-
-Therefore I changed (scatter|gather)_data_area() such,
-that instead of calling tcmu_flush_dcache_range()
-before/after each memcpy, it now calls flush_dcache_page()
-before unmapping a page (when writing is complete for
-that page) or after mapping a page (when starting to read
-the page).
-
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: David Howells <dhowells@redhat.com>
 ---
+ include/net/ipv6.h       |  7 +++++++
+ net/rxrpc/local_object.c | 10 ++--------
+ 2 files changed, 9 insertions(+), 8 deletions(-)
 
-Since I have x86 machines only, where flush_dcache_page()
-is empty, this patch indeed is compile tested only.
-Therefore it needs thorough review or ideally a test on
-an architecture that has a non empty flush_dcache_page().
-
-
- drivers/target/target_core_user.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index cdb4848d23c6..d922a7087c31 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -676,8 +676,10 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 		from = kmap_atomic(sg_page(sg)) + sg->offset;
- 		while (sg_remaining > 0) {
- 			if (block_remaining = 0) {
--				if (to)
-+				if (to) {
-+					flush_dcache_page(page);
- 					kunmap_atomic(to);
-+				}
- 
- 				block_remaining = DATA_BLOCK_SIZE;
- 				dbi = tcmu_cmd_get_dbi(tcmu_cmd);
-@@ -722,7 +724,6 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 				memcpy(to + offset,
- 				       from + sg->length - sg_remaining,
- 				       copy_bytes);
--				tcmu_flush_dcache_range(to, copy_bytes);
- 			}
- 
- 			sg_remaining -= copy_bytes;
-@@ -731,8 +732,10 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 		kunmap_atomic(from - sg->offset);
- 	}
- 
--	if (to)
-+	if (to) {
-+		flush_dcache_page(page);
- 		kunmap_atomic(to);
-+	}
+diff --git a/include/net/ipv6.h b/include/net/ipv6.h
+index 7d1cb9f0f5388..3b02049d2e582 100644
+--- a/include/net/ipv6.h
++++ b/include/net/ipv6.h
+@@ -1187,4 +1187,11 @@ static inline int ip6_sock_set_v6only(struct sock *sk)
+ 	return 0;
  }
  
- static void gather_data_area(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
-@@ -778,13 +781,13 @@ static void gather_data_area(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
- 				dbi = tcmu_cmd_get_dbi(cmd);
- 				page = tcmu_get_block_page(udev, dbi);
- 				from = kmap_atomic(page);
-+				flush_dcache_page(page);
- 			}
- 			copy_bytes = min_t(size_t, sg_remaining,
- 					block_remaining);
- 			if (read_len < copy_bytes)
- 				copy_bytes = read_len;
- 			offset = DATA_BLOCK_SIZE - block_remaining;
--			tcmu_flush_dcache_range(from, copy_bytes);
- 			memcpy(to + sg->length - sg_remaining, from + offset,
- 					copy_bytes);
++static inline void ip6_sock_set_recverr(struct sock *sk)
++{
++	lock_sock(sk);
++	inet6_sk(sk)->recverr = true;
++	release_sock(sk);
++}
++
+ #endif /* _NET_IPV6_H */
+diff --git a/net/rxrpc/local_object.c b/net/rxrpc/local_object.c
+index 6f4e6b4817cf2..c8b2097f499c0 100644
+--- a/net/rxrpc/local_object.c
++++ b/net/rxrpc/local_object.c
+@@ -107,7 +107,7 @@ static struct rxrpc_local *rxrpc_alloc_local(struct rxrpc_net *rxnet,
+ static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
+ {
+ 	struct sock *usk;
+-	int ret, opt;
++	int ret;
  
+ 	_enter("%p{%d,%d}",
+ 	       local, local->srx.transport_type, local->srx.transport.family);
+@@ -157,13 +157,7 @@ static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
+ 	switch (local->srx.transport.family) {
+ 	case AF_INET6:
+ 		/* we want to receive ICMPv6 errors */
+-		opt = 1;
+-		ret = kernel_setsockopt(local->socket, SOL_IPV6, IPV6_RECVERR,
+-					(char *) &opt, sizeof(opt));
+-		if (ret < 0) {
+-			_debug("setsockopt failed");
+-			goto error;
+-		}
++		ip6_sock_set_recverr(local->socket->sk);
+ 
+ 		/* Fall through and set IPv4 options too otherwise we don't get
+ 		 * errors from IPv4 packets sent through the IPv6 socket.
 -- 
-2.12.3
+2.26.2
