@@ -1,36 +1,91 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Fri, 08 May 2020 02:54:23 +0000
-Subject: Re: [PATCH 1/4] target: add missing emulate_pr attribute to passthrough backends
-Message-Id: <158890633246.6466.3989954217345857639.b4-ty@oracle.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Wed, 20 May 2020 19:54:47 +0000
+Subject: [PATCH 11/33] net: add sock_set_reuseport
+Message-Id: <20200520195509.2215098-12-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200427150823.15350-1-bstroesser@ts.fujitsu.com> <20200427150823.15350-2-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200427150823.15350-2-bstroesser@ts.fujitsu.com>
+References: <20200520195509.2215098-1-hch@lst.de>
+In-Reply-To: <20200520195509.2215098-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, mchristi@redhat.com, ddiss@suse.de, hch@lst.de
+To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Vlad Yasevich <vyasevich@gmail.com>, Neil Horman <nhorman@tuxdriver.com>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, linux-sctp@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org
 
-On Mon, 27 Apr 2020 17:08:20 +0200, Bodo Stroesser wrote:
+Add a helper to directly set the SO_REUSEPORT sockopt from kernel space
+without going through a fake uaccess.
 
-> In commit b49d6f7885306ee636d5c1af52170f3069ccf5f7 the new attribute
-> emulate_pr was added.
-> passthrough_parse_cdb() uses the attribute's value to distinguish,
-> whether reservation commands should be rejected or not.
-> But the new attribute was not added to passthrough_attrib_attrs, so in
-> pscsi and tcmu - the users of passthrough_parse_cdb() - the attribute
-> is not available to change parser's behavior.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ include/net/sock.h    |  1 +
+ net/core/sock.c       |  8 ++++++++
+ net/sunrpc/xprtsock.c | 17 +----------------
+ 3 files changed, 10 insertions(+), 16 deletions(-)
 
-Applied to 5.8/scsi-queue, thanks!
-
-[1/4] scsi: target: Add missing emulate_pr attribute to passthrough backends
-      https://git.kernel.org/mkp/scsi/c/9299941716a3
-[2/4] scsi: target: tcmu: Add attributes enforce_pr_isids and force_pr_aptpl
-      https://git.kernel.org/mkp/scsi/c/4703b6252b33
-[3/4] scsi: target: Make transport_flags per device
-      https://git.kernel.org/mkp/scsi/c/69088a049488
-[4/4] scsi: target: tcmu: Make pgr_support and alua_support attributes writable
-      https://git.kernel.org/mkp/scsi/c/356ba2a8bc8d
-
+diff --git a/include/net/sock.h b/include/net/sock.h
+index c997289aabbf9..d994daa418ec2 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -2695,6 +2695,7 @@ void sock_set_keepalive(struct sock *sk);
+ void sock_set_priority(struct sock *sk, u32 priority);
+ void sock_set_rcvbuf(struct sock *sk, int val);
+ void sock_set_reuseaddr(struct sock *sk);
++void sock_set_reuseport(struct sock *sk);
+ void sock_set_sndtimeo(struct sock *sk, s64 secs);
+ 
+ #endif	/* _SOCK_H */
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 3c6ebf952e9ad..2ca3425b519c0 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -729,6 +729,14 @@ void sock_set_reuseaddr(struct sock *sk)
+ }
+ EXPORT_SYMBOL(sock_set_reuseaddr);
+ 
++void sock_set_reuseport(struct sock *sk)
++{
++	lock_sock(sk);
++	sk->sk_reuseport = true;
++	release_sock(sk);
++}
++EXPORT_SYMBOL(sock_set_reuseport);
++
+ void sock_no_linger(struct sock *sk)
+ {
+ 	lock_sock(sk);
+diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+index 30082cd039960..399848c2bcb29 100644
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -1594,21 +1594,6 @@ static int xs_get_random_port(void)
+ 	return rand + min;
+ }
+ 
+-/**
+- * xs_set_reuseaddr_port - set the socket's port and address reuse options
+- * @sock: socket
+- *
+- * Note that this function has to be called on all sockets that share the
+- * same port, and it must be called before binding.
+- */
+-static void xs_sock_set_reuseport(struct socket *sock)
+-{
+-	int opt = 1;
+-
+-	kernel_setsockopt(sock, SOL_SOCKET, SO_REUSEPORT,
+-			(char *)&opt, sizeof(opt));
+-}
+-
+ static unsigned short xs_sock_getport(struct socket *sock)
+ {
+ 	struct sockaddr_storage buf;
+@@ -1801,7 +1786,7 @@ static struct socket *xs_create_sock(struct rpc_xprt *xprt,
+ 	xs_reclassify_socket(family, sock);
+ 
+ 	if (reuseport)
+-		xs_sock_set_reuseport(sock);
++		sock_set_reuseport(sock->sk);
+ 
+ 	err = xs_bind(transport, sock);
+ 	if (err) {
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.26.2
