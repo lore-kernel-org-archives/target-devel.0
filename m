@@ -1,126 +1,126 @@
-From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
-Date: Thu, 21 May 2020 22:13:24 +0000
-Subject: [PATCH v2 2/3] target: fix NULL pointer dereference
-Message-Id: <1590099205-7997-3-git-send-email-sudhakar.panneerselvam@oracle.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Wed, 20 May 2020 19:54:44 +0000
+Subject: [PATCH 08/33] net: add sock_enable_timestamps
+Message-Id: <20200520195509.2215098-9-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <1590099205-7997-1-git-send-email-sudhakar.panneerselvam@oracle.com>
-In-Reply-To: <1590099205-7997-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+References: <20200520195509.2215098-1-hch@lst.de>
+In-Reply-To: <20200520195509.2215098-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, mchristi@redhat.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: shirley.ma@oracle.com
+To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
 
-NULL pointer dereference happens when a SCSI command is received for a
-non-existing LU and tracing is enabled. The following call sequences
-lead to NULL pointer dereference:
+Add a helper to directly enable timestamps instead of setting the
+SO_TIMESTAMP* sockopts from kernel space and going through a fake
+uaccess.
 
-1) iscsit_setup_scsi_cmd
-     transport_lookup_cmd_lun <-- lookup fails.
-   iscsit_process_scsi_cmd
-     iscsit_sequence_cmd
-       transport_send_check_condition_and_sense
-         trace_target_cmd_complete <-- NULL dereference
-
-2) target_submit_cmd_map_sgls
-     transport_lookup_cmd_lun <-- lookup fails
-       transport_send_check_condition_and_sense
-         trace_target_cmd_complete <-- NULL dereference
-
-In the above sequence, cmd->t_task_cdb is uninitialized which when
-referenced in trace_target_cmd_complete() causes NULL pointer dereference.
-
-The fix is to use the helper, target_cmd_init_cdb() and call it
-before transport_lookup_cmd_lun() is called, so that cmd->t_task_cdb can
-be initialized and hence can be referenced in trace_target_cmd_complete().
-
-Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/target/iscsi/iscsi_target.c    | 19 ++++++++++++-------
- drivers/target/target_core_transport.c | 11 +++++++++--
- drivers/target/target_core_xcopy.c     |  3 +++
- 3 files changed, 24 insertions(+), 9 deletions(-)
+ include/net/sock.h       |  1 +
+ net/core/sock.c          | 47 +++++++++++++++++++++++++---------------
+ net/rxrpc/local_object.c |  8 +------
+ 3 files changed, 31 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 59379d662626..1110ea507b83 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1167,6 +1167,17 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+diff --git a/include/net/sock.h b/include/net/sock.h
+index cdec7bc055d5b..99ef43508d2b5 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -2689,6 +2689,7 @@ static inline bool sk_dev_equal_l3scope(struct sock *sk, int dif)
+ void sock_def_readable(struct sock *sk);
  
- 	target_get_sess_cmd(&cmd->se_cmd, true);
+ int sock_bindtoindex(struct sock *sk, int ifindex);
++void sock_enable_timestamps(struct sock *sk);
+ void sock_no_linger(struct sock *sk);
+ void sock_set_priority(struct sock *sk, u32 priority);
+ void sock_set_reuseaddr(struct sock *sk);
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 23f80880fbb2c..e4a4dd2b3d8b3 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -757,6 +757,28 @@ void sock_set_sndtimeo(struct sock *sk, s64 secs)
+ }
+ EXPORT_SYMBOL(sock_set_sndtimeo);
  
-+	cmd->se_cmd.orig_fe_lun = scsilun_to_int(&hdr->lun);
-+	cmd->sense_reason = target_cmd_init_cdb(&cmd->se_cmd, hdr->cdb);
-+	if (cmd->sense_reason) {
-+		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
-+			return iscsit_add_reject_cmd(cmd,
-+				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
-+		}
-+
-+		goto attach_cmd;
++static void __sock_set_timestamps(struct sock *sk, bool val, bool new, bool ns)
++{
++	if (val)  {
++		sock_valbool_flag(sk, SOCK_TSTAMP_NEW, new);
++		sock_valbool_flag(sk, SOCK_RCVTSTAMPNS, ns);
++		sock_set_flag(sk, SOCK_RCVTSTAMP);
++		sock_enable_timestamp(sk, SOCK_TIMESTAMP);
++	} else {
++		sock_reset_flag(sk, SOCK_RCVTSTAMP);
++		sock_reset_flag(sk, SOCK_RCVTSTAMPNS);
++		sock_reset_flag(sk, SOCK_TSTAMP_NEW);
 +	}
++}
 +
- 	cmd->sense_reason = transport_lookup_cmd_lun(&cmd->se_cmd,
- 						     scsilun_to_int(&hdr->lun));
- 	if (cmd->sense_reason)
-@@ -1175,14 +1186,8 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	/* only used for printks or comparing with ->ref_task_tag */
- 	cmd->se_cmd.tag = (__force u32)cmd->init_task_tag;
- 	cmd->sense_reason = target_setup_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
--	if (cmd->sense_reason) {
--		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
--			return iscsit_add_reject_cmd(cmd,
--					ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
++void sock_enable_timestamps(struct sock *sk)
++{
++	lock_sock(sk);
++	__sock_set_timestamps(sk, true, false, true);
++	release_sock(sk);
++}
++EXPORT_SYMBOL(sock_enable_timestamps);
++
+ /*
+  *	This is meant for all protocols to use and covers goings on
+  *	at the socket level. Everything here is generic.
+@@ -948,28 +970,17 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
+ 		break;
+ 
+ 	case SO_TIMESTAMP_OLD:
++		__sock_set_timestamps(sk, valbool, false, false);
++		break;
+ 	case SO_TIMESTAMP_NEW:
++		__sock_set_timestamps(sk, valbool, true, false);
++		break;
+ 	case SO_TIMESTAMPNS_OLD:
++		__sock_set_timestamps(sk, valbool, false, true);
++		break;
+ 	case SO_TIMESTAMPNS_NEW:
+-		if (valbool)  {
+-			if (optname = SO_TIMESTAMP_NEW || optname = SO_TIMESTAMPNS_NEW)
+-				sock_set_flag(sk, SOCK_TSTAMP_NEW);
+-			else
+-				sock_reset_flag(sk, SOCK_TSTAMP_NEW);
+-
+-			if (optname = SO_TIMESTAMP_OLD || optname = SO_TIMESTAMP_NEW)
+-				sock_reset_flag(sk, SOCK_RCVTSTAMPNS);
+-			else
+-				sock_set_flag(sk, SOCK_RCVTSTAMPNS);
+-			sock_set_flag(sk, SOCK_RCVTSTAMP);
+-			sock_enable_timestamp(sk, SOCK_TIMESTAMP);
+-		} else {
+-			sock_reset_flag(sk, SOCK_RCVTSTAMP);
+-			sock_reset_flag(sk, SOCK_RCVTSTAMPNS);
+-			sock_reset_flag(sk, SOCK_TSTAMP_NEW);
 -		}
++		__sock_set_timestamps(sk, valbool, true, true);
+ 		break;
 -
-+	if (cmd->sense_reason)
- 		goto attach_cmd;
--	}
+ 	case SO_TIMESTAMPING_NEW:
+ 		sock_set_flag(sk, SOCK_TSTAMP_NEW);
+ 		/* fall through */
+diff --git a/net/rxrpc/local_object.c b/net/rxrpc/local_object.c
+index 01135e54d95d2..5ea2bd01fdd59 100644
+--- a/net/rxrpc/local_object.c
++++ b/net/rxrpc/local_object.c
+@@ -189,13 +189,7 @@ static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
+ 		}
  
- 	if (iscsit_build_pdu_and_seq_lists(cmd, payload_length) < 0) {
- 		return iscsit_add_reject_cmd(cmd,
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index f2f7c5b818cc..67bfac1081c1 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1455,8 +1455,6 @@ void transport_init_se_cmd(
- 	struct se_device *dev = cmd->se_dev;
- 	sense_reason_t ret;
+ 		/* We want receive timestamps. */
+-		opt = 1;
+-		ret = kernel_setsockopt(local->socket, SOL_SOCKET, SO_TIMESTAMPNS_OLD,
+-					(char *)&opt, sizeof(opt));
+-		if (ret < 0) {
+-			_debug("setsockopt failed");
+-			goto error;
+-		}
++		sock_enable_timestamps(local->socket->sk);
+ 		break;
  
--	target_cmd_init_cdb(cmd, cdb);
--
- 	ret = dev->transport->parse_cdb(cmd);
- 	if (ret = TCM_UNSUPPORTED_SCSI_OPCODE)
- 		pr_warn_ratelimited("%s/%s: Unsupported SCSI Opcode 0x%02x, sending CHECK_CONDITION.\n",
-@@ -1619,6 +1617,15 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
- 	 */
- 	if (flags & TARGET_SCF_BIDI_OP)
- 		se_cmd->se_cmd_flags |= SCF_BIDI;
-+
-+	se_cmd->orig_fe_lun = unpacked_lun;
-+	rc = target_cmd_init_cdb(se_cmd, cdb);
-+	if (rc) {
-+		transport_send_check_condition_and_sense(se_cmd, rc, 0);
-+		target_put_sess_cmd(se_cmd);
-+		return 0;
-+	}
-+
- 	/*
- 	 * Locate se_lun pointer and attach it to struct se_cmd
- 	 */
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index bd3ed6ce7571..fdd8234906b6 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -526,6 +526,9 @@ static int target_xcopy_setup_pt_cmd(
- 	}
- 	cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
- 
-+	if (target_cmd_init_cdb(cmd, cdb))
-+		return -EINVAL;
-+
- 	cmd->tag = 0;
- 	if (target_setup_cmd_from_cdb(cmd, cdb))
- 		return -EINVAL;
+ 	default:
 -- 
-1.8.3.1
+2.26.2
