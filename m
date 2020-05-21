@@ -1,55 +1,27 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 07 May 2020 14:26:47 +0000
-Subject: [PATCH AUTOSEL 5.6 11/50] scsi: target/iblock: fix WRITE SAME zeroing
-Message-Id: <20200507142726.25751-11-sashal@kernel.org>
+From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Date: Thu, 21 May 2020 17:41:48 +0000
+Subject: [PATCH 0/3] target: fix NULL pointer dereference
+Message-Id: <1590082908-884-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200507142726.25751-1-sashal@kernel.org>
-In-Reply-To: <20200507142726.25751-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: David Disseldorp <ddiss@suse.de>, Bart Van Assche <bvanassche@acm.org>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: shirley.ma@oracle.com, ssudhakarp@gmail.com
 
-From: David Disseldorp <ddiss@suse.de>
+The following set of commits address a NULL pointer dereference and some
+refactoring around this issue.
 
-[ Upstream commit 1d2ff149b263c9325875726a7804a0c75ef7112e ]
+Sudhakar Panneerselvam (3):
+  target: factor out a new helper, target_init_cmd_from_cdb()
+  target: fix NULL pointer dereference
+  target: rename target_setup_cmd_from_cdb() to target_parse_cdb()
 
-SBC4 specifies that WRITE SAME requests with the UNMAP bit set to zero
-"shall perform the specified write operation to each LBA specified by the
-command".  Commit 2237498f0b5c ("target/iblock: Convert WRITE_SAME to
-blkdev_issue_zeroout") modified the iblock backend to call
-blkdev_issue_zeroout() when handling WRITE SAME requests with UNMAP=0 and a
-zero data segment.
+ drivers/target/iscsi/iscsi_target.c    | 21 +++++++++++++--------
+ drivers/target/target_core_transport.c | 27 +++++++++++++++++++++------
+ drivers/target/target_core_xcopy.c     |  5 ++++-
+ include/target/target_core_fabric.h    |  3 ++-
+ 4 files changed, 40 insertions(+), 16 deletions(-)
 
-The iblock blkdev_issue_zeroout() call incorrectly provides a flags
-parameter of 0 (bool false), instead of BLKDEV_ZERO_NOUNMAP.  The bool
-false parameter reflects the blkdev_issue_zeroout() API prior to commit
-ee472d835c26 ("block: add a flags argument to (__)blkdev_issue_zeroout")
-which was merged shortly before 2237498f0b5c.
-
-Link: https://lore.kernel.org/r/20200419163109.11689-1-ddiss@suse.de
-Fixes: 2237498f0b5c ("target/iblock: Convert WRITE_SAME to blkdev_issue_zeroout")
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/target_core_iblock.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index 51ffd5c002dee..1c181d31f4c87 100644
---- a/drivers/target/target_core_iblock.c
-+++ b/drivers/target/target_core_iblock.c
-@@ -432,7 +432,7 @@ iblock_execute_zero_out(struct block_device *bdev, struct se_cmd *cmd)
- 				target_to_linux_sector(dev, cmd->t_task_lba),
- 				target_to_linux_sector(dev,
- 					sbc_get_write_same_sectors(cmd)),
--				GFP_KERNEL, false);
-+				GFP_KERNEL, BLKDEV_ZERO_NOUNMAP);
- 	if (ret)
- 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
- 
 -- 
-2.20.1
+1.8.3.1
