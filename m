@@ -1,27 +1,32 @@
-From: "Mrs.Judith Rice" <hamurafujimi@tmail.plala.or.jp>
-Date: Wed, 27 May 2020 13:08:05 +0000
-Subject: Spende
-Message-Id: <20200527220805.CF82T.792.root@mwebp13>
+From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Date: Thu, 21 May 2020 22:13:22 +0000
+Subject: [PATCH v2 0/3] target: fix NULL pointer dereference
+Message-Id: <1590099205-7997-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, mchristi@redhat.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: shirley.ma@oracle.com
 
-Attn:
+The following set of commits address a NULL pointer dereference and some
+refactoring around this issue.
 
-Es tut uns leid, dass wir Sie aufgrund eines Mismanagent of Beneficaries-Fonds von unseren ernannten Zonal Managern versp&#228;tet kontaktiert haben. Bitte beachten Sie, dass Sie qualifiziert sind, die Zahlung von 900.000,00 USD an der ATM-Karte mit neunhunderttausend Dollar zu erhalten.
+v2:
+ - new helper is named as target_cmd_init_cdb()
+ - existing function, target_setup_cmd_from_cdb is renamed as
+   target_cmd_parse_cdb()
 
-Als Entsch&#228;digung von WORLD BANK / IWF (Internationaler W&#228;hrungsfonds) f&#252;r die automatisch &#252;ber einen E-Mail-Wahlautomaten gezogenen, die in der Vergangenheit noch nicht abgeschlossene Transaktionen hatten.
+Sudhakar Panneerselvam (3):
+  target: factor out a new helper, target_cmd_init_cdb()
+  target: fix NULL pointer dereference
+  target: rename target_setup_cmd_from_cdb() to target_cmd_parse_cdb()
 
-F&#252;r weitere Informationen kontaktieren Sie bitte Rev.EVANS JONES ( jonesevansje@gmail.com )
+ drivers/target/iscsi/iscsi_target.c    | 21 +++++++++++++--------
+ drivers/target/target_core_transport.c | 27 +++++++++++++++++++++------
+ drivers/target/target_core_xcopy.c     |  5 ++++-
+ include/target/target_core_fabric.h    |  3 ++-
+ 4 files changed, 40 insertions(+), 16 deletions(-)
 
-Bitte senden Sie ihm Ihre pers&#246;nlichen Daten wie:
-
-Vollst&#228;ndiger Name:
-Wohnanschrift:
-Telefonnummer:
-Herkunftsland:
-
-Gr&#252;&#223;e,
-Mrs. Judith Rice
+-- 
+1.8.3.1
