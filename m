@@ -1,69 +1,96 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 20 May 2020 19:55:02 +0000
-Subject: [PATCH 26/33] ipv6: add ip6_sock_set_recverr
-Message-Id: <20200520195509.2215098-27-hch@lst.de>
+From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Date: Thu, 21 May 2020 22:13:25 +0000
+Subject: [PATCH v2 3/3] target: rename target_setup_cmd_from_cdb() to target_cmd_parse_cdb()
+Message-Id: <1590099205-7997-4-git-send-email-sudhakar.panneerselvam@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200520195509.2215098-1-hch@lst.de>
-In-Reply-To: <20200520195509.2215098-1-hch@lst.de>
+References: <1590099205-7997-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+In-Reply-To: <1590099205-7997-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Eric Dumazet <edumazet@google.com>, linux-nvme@lists.infradead.org, David Howells <dhowells@redhat.com>, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, cluster-devel@redhat.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, drbd-dev@tron.linbit.com, ceph-devel@vger.kernel.org, linux-nfs@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, Vlad Yasevich <vyasevich@gmail.com>, linux-kernel@vger.kernel.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, ocfs2-devel@oss.oracle.com
+To: martin.petersen@oracle.com, mchristi@redhat.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: shirley.ma@oracle.com
 
-Add a helper to directly set the IPV6_RECVERR sockopt from kernel space
-without going through a fake uaccess.
+This commit also removes the unused argument, cdb that was passed
+to this function.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
 ---
- include/net/ipv6.h       |  7 +++++++
- net/rxrpc/local_object.c | 10 ++--------
- 2 files changed, 9 insertions(+), 8 deletions(-)
+ drivers/target/iscsi/iscsi_target.c    | 2 +-
+ drivers/target/target_core_transport.c | 6 +++---
+ drivers/target/target_core_xcopy.c     | 2 +-
+ include/target/target_core_fabric.h    | 2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/include/net/ipv6.h b/include/net/ipv6.h
-index 7d1cb9f0f5388..3b02049d2e582 100644
---- a/include/net/ipv6.h
-+++ b/include/net/ipv6.h
-@@ -1187,4 +1187,11 @@ static inline int ip6_sock_set_v6only(struct sock *sk)
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 1110ea507b83..d89983b2e8d6 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -1185,7 +1185,7 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 
+ 	/* only used for printks or comparing with ->ref_task_tag */
+ 	cmd->se_cmd.tag = (__force u32)cmd->init_task_tag;
+-	cmd->sense_reason = target_setup_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
++	cmd->sense_reason = target_cmd_parse_cdb(&cmd->se_cmd, hdr->cdb);
+ 	if (cmd->sense_reason)
+ 		goto attach_cmd;
+ 
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 67bfac1081c1..74ef89c1e7fb 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1450,7 +1450,7 @@ void transport_init_se_cmd(
+ EXPORT_SYMBOL(target_cmd_init_cdb);
+ 
+ sense_reason_t
+-target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
++target_cmd_parse_cdb(struct se_cmd *cmd, unsigned char *cdb)
+ {
+ 	struct se_device *dev = cmd->se_dev;
+ 	sense_reason_t ret;
+@@ -1472,7 +1472,7 @@ void transport_init_se_cmd(
+ 	atomic_long_inc(&cmd->se_lun->lun_stats.cmd_pdus);
  	return 0;
  }
+-EXPORT_SYMBOL(target_setup_cmd_from_cdb);
++EXPORT_SYMBOL(target_cmd_parse_cdb);
  
-+static inline void ip6_sock_set_recverr(struct sock *sk)
-+{
-+	lock_sock(sk);
-+	inet6_sk(sk)->recverr = true;
-+	release_sock(sk);
-+}
-+
- #endif /* _NET_IPV6_H */
-diff --git a/net/rxrpc/local_object.c b/net/rxrpc/local_object.c
-index 6f4e6b4817cf2..c8b2097f499c0 100644
---- a/net/rxrpc/local_object.c
-+++ b/net/rxrpc/local_object.c
-@@ -107,7 +107,7 @@ static struct rxrpc_local *rxrpc_alloc_local(struct rxrpc_net *rxnet,
- static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
- {
- 	struct sock *usk;
--	int ret, opt;
-+	int ret;
+ /*
+  * Used by fabric module frontends to queue tasks directly.
+@@ -1636,7 +1636,7 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
+ 		return 0;
+ 	}
  
- 	_enter("%p{%d,%d}",
- 	       local, local->srx.transport_type, local->srx.transport.family);
-@@ -157,13 +157,7 @@ static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
- 	switch (local->srx.transport.family) {
- 	case AF_INET6:
- 		/* we want to receive ICMPv6 errors */
--		opt = 1;
--		ret = kernel_setsockopt(local->socket, SOL_IPV6, IPV6_RECVERR,
--					(char *) &opt, sizeof(opt));
--		if (ret < 0) {
--			_debug("setsockopt failed");
--			goto error;
--		}
-+		ip6_sock_set_recverr(local->socket->sk);
+-	rc = target_setup_cmd_from_cdb(se_cmd, cdb);
++	rc = target_cmd_parse_cdb(se_cmd, cdb);
+ 	if (rc != 0) {
+ 		transport_generic_request_failure(se_cmd, rc);
+ 		return 0;
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index fdd8234906b6..ed43086bf965 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -530,7 +530,7 @@ static int target_xcopy_setup_pt_cmd(
+ 		return -EINVAL;
  
- 		/* Fall through and set IPv4 options too otherwise we don't get
- 		 * errors from IPv4 packets sent through the IPv6 socket.
+ 	cmd->tag = 0;
+-	if (target_setup_cmd_from_cdb(cmd, cdb))
++	if (target_cmd_parse_cdb(cmd, cdb))
+ 		return -EINVAL;
+ 
+ 	if (transport_generic_map_mem_to_cmd(cmd, xop->xop_data_sg,
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 6a2bfcca0c98..65496b2a7ad6 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -153,7 +153,7 @@ void	transport_init_se_cmd(struct se_cmd *,
+ 		struct se_session *, u32, int, int, unsigned char *);
+ sense_reason_t transport_lookup_cmd_lun(struct se_cmd *, u64);
+ sense_reason_t target_cmd_init_cdb(struct se_cmd *, unsigned char *);
+-sense_reason_t target_setup_cmd_from_cdb(struct se_cmd *, unsigned char *);
++sense_reason_t target_cmd_parse_cdb(struct se_cmd *, unsigned char *);
+ int	target_submit_cmd_map_sgls(struct se_cmd *, struct se_session *,
+ 		unsigned char *, unsigned char *, u64, u32, int, int, int,
+ 		struct scatterlist *, u32, struct scatterlist *, u32,
 -- 
-2.26.2
+1.8.3.1
