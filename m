@@ -1,28 +1,94 @@
-From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Sun, 17 May 2020 23:39:33 +0000
-Subject: Re: [PATCH] RDMA/srpt: Add a newline when printing parameter 'srpt_service_guid' by sysfs
-Message-Id: <20200517233933.GA21233@ziepe.ca>
+From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Date: Thu, 21 May 2020 17:42:39 +0000
+Subject: [PATCH 3/3] target: rename target_setup_cmd_from_cdb() to target_parse_cdb()
+Message-Id: <1590082959-1034-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1589182629-27743-1-git-send-email-wangxiongfeng2@huawei.com>
-In-Reply-To: <1589182629-27743-1-git-send-email-wangxiongfeng2@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Cc: bvanassche@acm.org, dledford@redhat.com, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+To: martin.petersen@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: shirley.ma@oracle.com, ssudhakarp@gmail.com
 
-On Mon, May 11, 2020 at 03:37:09PM +0800, Xiongfeng Wang wrote:
-> When I cat module parameter 'srpt_service_guid', it displays as follows.
-> It is better to add a newline for easy reading.
-> 
-> [root@hulk-202 ~]# cat /sys/module/ib_srpt/parameters/srpt_service_guid
-> 0x0205cdfffe8346b9[root@hulk-202 ~]#
-> 
-> Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-> ---
->  drivers/infiniband/ulp/srpt/ib_srpt.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+This commit also removes the unused argument, cdb that was passed
+to this function.
 
-Applied to for-next, thanks
+Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+---
+ drivers/target/iscsi/iscsi_target.c    | 2 +-
+ drivers/target/target_core_transport.c | 6 +++---
+ drivers/target/target_core_xcopy.c     | 2 +-
+ include/target/target_core_fabric.h    | 2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-Jason
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index a90b80aee9d8..38b14291eb76 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -1185,7 +1185,7 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 
+ 	/* only used for printks or comparing with ->ref_task_tag */
+ 	cmd->se_cmd.tag = (__force u32)cmd->init_task_tag;
+-	cmd->sense_reason = target_setup_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
++	cmd->sense_reason = target_parse_cdb(&cmd->se_cmd);
+ 	if (cmd->sense_reason)
+ 		goto attach_cmd;
+ 
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 2e878188dff7..329c301129c2 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1450,7 +1450,7 @@ void transport_init_se_cmd(
+ EXPORT_SYMBOL(target_init_cmd_from_cdb);
+ 
+ sense_reason_t
+-target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
++target_parse_cdb(struct se_cmd *cmd)
+ {
+ 	struct se_device *dev = cmd->se_dev;
+ 	sense_reason_t ret;
+@@ -1472,7 +1472,7 @@ void transport_init_se_cmd(
+ 	atomic_long_inc(&cmd->se_lun->lun_stats.cmd_pdus);
+ 	return 0;
+ }
+-EXPORT_SYMBOL(target_setup_cmd_from_cdb);
++EXPORT_SYMBOL(target_parse_cdb);
+ 
+ /*
+  * Used by fabric module frontends to queue tasks directly.
+@@ -1636,7 +1636,7 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
+ 		return 0;
+ 	}
+ 
+-	rc = target_setup_cmd_from_cdb(se_cmd, cdb);
++	rc = target_parse_cdb(se_cmd);
+ 	if (rc != 0) {
+ 		transport_generic_request_failure(se_cmd, rc);
+ 		return 0;
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index b20c25343cf1..5cd1e81b33f8 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -530,7 +530,7 @@ static int target_xcopy_setup_pt_cmd(
+ 		return -EINVAL;
+ 
+ 	cmd->tag = 0;
+-	if (target_setup_cmd_from_cdb(cmd, cdb))
++	if (target_parse_cdb(cmd))
+ 		return -EINVAL;
+ 
+ 	if (transport_generic_map_mem_to_cmd(cmd, xop->xop_data_sg,
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 5c92a5ccc9f0..6eb04a87ca97 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -153,7 +153,7 @@ void	transport_init_se_cmd(struct se_cmd *,
+ 		struct se_session *, u32, int, int, unsigned char *);
+ sense_reason_t transport_lookup_cmd_lun(struct se_cmd *, u64);
+ sense_reason_t target_init_cmd_from_cdb(struct se_cmd *, unsigned char *);
+-sense_reason_t target_setup_cmd_from_cdb(struct se_cmd *, unsigned char *);
++sense_reason_t target_parse_cdb(struct se_cmd *);
+ int	target_submit_cmd_map_sgls(struct se_cmd *, struct se_session *,
+ 		unsigned char *, unsigned char *, u64, u32, int, int, int,
+ 		struct scatterlist *, u32, struct scatterlist *, u32,
+-- 
+1.8.3.1
