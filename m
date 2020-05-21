@@ -1,78 +1,126 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 13 May 2020 06:26:46 +0000
-Subject: [PATCH 31/33] net: remove kernel_setsockopt
-Message-Id: <20200513062649.2100053-32-hch@lst.de>
+From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Date: Thu, 21 May 2020 22:13:24 +0000
+Subject: [PATCH v2 2/3] target: fix NULL pointer dereference
+Message-Id: <1590099205-7997-3-git-send-email-sudhakar.panneerselvam@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200513062649.2100053-1-hch@lst.de>
-In-Reply-To: <20200513062649.2100053-1-hch@lst.de>
+References: <1590099205-7997-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+In-Reply-To: <1590099205-7997-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Vlad Yasevich <vyasevich@gmail.com>, Neil Horman <nhorman@tuxdriver.com>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, linux-sctp@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org
+To: martin.petersen@oracle.com, mchristi@redhat.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: shirley.ma@oracle.com
 
-No users left.
+NULL pointer dereference happens when a SCSI command is received for a
+non-existing LU and tracing is enabled. The following call sequences
+lead to NULL pointer dereference:
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+1) iscsit_setup_scsi_cmd
+     transport_lookup_cmd_lun <-- lookup fails.
+   iscsit_process_scsi_cmd
+     iscsit_sequence_cmd
+       transport_send_check_condition_and_sense
+         trace_target_cmd_complete <-- NULL dereference
+
+2) target_submit_cmd_map_sgls
+     transport_lookup_cmd_lun <-- lookup fails
+       transport_send_check_condition_and_sense
+         trace_target_cmd_complete <-- NULL dereference
+
+In the above sequence, cmd->t_task_cdb is uninitialized which when
+referenced in trace_target_cmd_complete() causes NULL pointer dereference.
+
+The fix is to use the helper, target_cmd_init_cdb() and call it
+before transport_lookup_cmd_lun() is called, so that cmd->t_task_cdb can
+be initialized and hence can be referenced in trace_target_cmd_complete().
+
+Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
 ---
- include/linux/net.h |  2 --
- net/socket.c        | 31 -------------------------------
- 2 files changed, 33 deletions(-)
+ drivers/target/iscsi/iscsi_target.c    | 19 ++++++++++++-------
+ drivers/target/target_core_transport.c | 11 +++++++++--
+ drivers/target/target_core_xcopy.c     |  3 +++
+ 3 files changed, 24 insertions(+), 9 deletions(-)
 
-diff --git a/include/linux/net.h b/include/linux/net.h
-index 6451425e828f5..ece7513326293 100644
---- a/include/linux/net.h
-+++ b/include/linux/net.h
-@@ -305,8 +305,6 @@ int kernel_getsockname(struct socket *sock, struct sockaddr *addr);
- int kernel_getpeername(struct socket *sock, struct sockaddr *addr);
- int kernel_getsockopt(struct socket *sock, int level, int optname, char *optval,
- 		      int *optlen);
--int kernel_setsockopt(struct socket *sock, int level, int optname, char *optval,
--		      unsigned int optlen);
- int kernel_sendpage(struct socket *sock, struct page *page, int offset,
- 		    size_t size, int flags);
- int kernel_sendpage_locked(struct sock *sk, struct page *page, int offset,
-diff --git a/net/socket.c b/net/socket.c
-index 1c9a7260a41de..f37c3ef508691 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -3749,37 +3749,6 @@ int kernel_getsockopt(struct socket *sock, int level, int optname,
- }
- EXPORT_SYMBOL(kernel_getsockopt);
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 59379d662626..1110ea507b83 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -1167,6 +1167,17 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
  
--/**
-- *	kernel_setsockopt - set a socket option (kernel space)
-- *	@sock: socket
-- *	@level: API level (SOL_SOCKET, ...)
-- *	@optname: option tag
-- *	@optval: option value
-- *	@optlen: option length
-- *
-- *	Returns 0 or an error.
-- */
+ 	target_get_sess_cmd(&cmd->se_cmd, true);
+ 
++	cmd->se_cmd.orig_fe_lun = scsilun_to_int(&hdr->lun);
++	cmd->sense_reason = target_cmd_init_cdb(&cmd->se_cmd, hdr->cdb);
++	if (cmd->sense_reason) {
++		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
++			return iscsit_add_reject_cmd(cmd,
++				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
++		}
++
++		goto attach_cmd;
++	}
++
+ 	cmd->sense_reason = transport_lookup_cmd_lun(&cmd->se_cmd,
+ 						     scsilun_to_int(&hdr->lun));
+ 	if (cmd->sense_reason)
+@@ -1175,14 +1186,8 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 	/* only used for printks or comparing with ->ref_task_tag */
+ 	cmd->se_cmd.tag = (__force u32)cmd->init_task_tag;
+ 	cmd->sense_reason = target_setup_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
+-	if (cmd->sense_reason) {
+-		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
+-			return iscsit_add_reject_cmd(cmd,
+-					ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+-		}
 -
--int kernel_setsockopt(struct socket *sock, int level, int optname,
--			char *optval, unsigned int optlen)
--{
--	mm_segment_t oldfs = get_fs();
--	char __user *uoptval;
--	int err;
++	if (cmd->sense_reason)
+ 		goto attach_cmd;
+-	}
+ 
+ 	if (iscsit_build_pdu_and_seq_lists(cmd, payload_length) < 0) {
+ 		return iscsit_add_reject_cmd(cmd,
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index f2f7c5b818cc..67bfac1081c1 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1455,8 +1455,6 @@ void transport_init_se_cmd(
+ 	struct se_device *dev = cmd->se_dev;
+ 	sense_reason_t ret;
+ 
+-	target_cmd_init_cdb(cmd, cdb);
 -
--	uoptval = (char __user __force *) optval;
--
--	set_fs(KERNEL_DS);
--	if (level = SOL_SOCKET)
--		err = sock_setsockopt(sock, level, optname, uoptval, optlen);
--	else
--		err = sock->ops->setsockopt(sock, level, optname, uoptval,
--					    optlen);
--	set_fs(oldfs);
--	return err;
--}
--EXPORT_SYMBOL(kernel_setsockopt);
--
- /**
-  *	kernel_sendpage - send a &page through a socket (kernel space)
-  *	@sock: socket
+ 	ret = dev->transport->parse_cdb(cmd);
+ 	if (ret = TCM_UNSUPPORTED_SCSI_OPCODE)
+ 		pr_warn_ratelimited("%s/%s: Unsupported SCSI Opcode 0x%02x, sending CHECK_CONDITION.\n",
+@@ -1619,6 +1617,15 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
+ 	 */
+ 	if (flags & TARGET_SCF_BIDI_OP)
+ 		se_cmd->se_cmd_flags |= SCF_BIDI;
++
++	se_cmd->orig_fe_lun = unpacked_lun;
++	rc = target_cmd_init_cdb(se_cmd, cdb);
++	if (rc) {
++		transport_send_check_condition_and_sense(se_cmd, rc, 0);
++		target_put_sess_cmd(se_cmd);
++		return 0;
++	}
++
+ 	/*
+ 	 * Locate se_lun pointer and attach it to struct se_cmd
+ 	 */
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index bd3ed6ce7571..fdd8234906b6 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -526,6 +526,9 @@ static int target_xcopy_setup_pt_cmd(
+ 	}
+ 	cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
+ 
++	if (target_cmd_init_cdb(cmd, cdb))
++		return -EINVAL;
++
+ 	cmd->tag = 0;
+ 	if (target_setup_cmd_from_cdb(cmd, cdb))
+ 		return -EINVAL;
 -- 
-2.26.2
+1.8.3.1
