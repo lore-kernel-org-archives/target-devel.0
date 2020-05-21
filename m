@@ -1,199 +1,125 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 28 May 2020 05:12:33 +0000
-Subject: [PATCH 25/28] ipv6: add ip6_sock_set_addr_preferences
-Message-Id: <20200528051236.620353-26-hch@lst.de>
+From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Date: Thu, 21 May 2020 17:42:27 +0000
+Subject: [PATCH 2/3] target: fix NULL pointer dereference
+Message-Id: <1590082947-993-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200528051236.620353-1-hch@lst.de>
-In-Reply-To: <20200528051236.620353-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org, tipc-discussion@lists.sourceforge.net
+To: martin.petersen@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: shirley.ma@oracle.com, ssudhakarp@gmail.com
 
-Add a helper to directly set the IPV6_ADD_PREFERENCES sockopt from kernel
-space without going through a fake uaccess.
+NULL pointer dereference happens when a SCSI command is received for a
+non-existing LU and tracing is enabled. The following call sequences
+lead to NULL pointer dereference:
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+1) iscsit_setup_scsi_cmd
+     transport_lookup_cmd_lun <-- lookup fails.
+   iscsit_process_scsi_cmd
+     iscsit_sequence_cmd
+       transport_send_check_condition_and_sense
+         trace_target_cmd_complete <-- NULL dereference
+
+2) target_submit_cmd_map_sgls
+     transport_lookup_cmd_lun <-- lookup fails
+       transport_send_check_condition_and_sense
+         trace_target_cmd_complete <-- NULL dereference
+
+In the above sequence, cmd->t_task_cdb is uninitialized which when
+referenced in trace_target_cmd_complete() causes NULL pointer dereference.
+
+The fix is to use the helper, target_init_cmd_from_cdb() and call it
+before transport_lookup_cmd_lun() is called, so that cmd->t_task_cdb can
+be initialized and hence can be referenced in
+trace_target_cmd_complete().
+
+Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
 ---
- include/net/ipv6.h       | 67 ++++++++++++++++++++++++++++++++++++++++
- net/ipv6/ipv6_sockglue.c | 59 +----------------------------------
- net/sunrpc/xprtsock.c    |  7 +++--
- 3 files changed, 72 insertions(+), 61 deletions(-)
+ drivers/target/iscsi/iscsi_target.c    | 19 ++++++++++++-------
+ drivers/target/target_core_transport.c | 11 +++++++++--
+ drivers/target/target_core_xcopy.c     |  3 +++
+ 3 files changed, 24 insertions(+), 9 deletions(-)
 
-diff --git a/include/net/ipv6.h b/include/net/ipv6.h
-index 49c4abf991489..9a90759830162 100644
---- a/include/net/ipv6.h
-+++ b/include/net/ipv6.h
-@@ -1195,4 +1195,71 @@ static inline void ip6_sock_set_recverr(struct sock *sk)
- 	release_sock(sk);
- }
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 59379d662626..a90b80aee9d8 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -1167,6 +1167,17 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
  
-+static inline int __ip6_sock_set_addr_preferences(struct sock *sk, int val)
-+{
-+	unsigned int pref = 0;
-+	unsigned int prefmask = ~0;
-+
-+	/* check PUBLIC/TMP/PUBTMP_DEFAULT conflicts */
-+	switch (val & (IPV6_PREFER_SRC_PUBLIC |
-+		       IPV6_PREFER_SRC_TMP |
-+		       IPV6_PREFER_SRC_PUBTMP_DEFAULT)) {
-+	case IPV6_PREFER_SRC_PUBLIC:
-+		pref |= IPV6_PREFER_SRC_PUBLIC;
-+		prefmask &= ~(IPV6_PREFER_SRC_PUBLIC |
-+			      IPV6_PREFER_SRC_TMP);
-+		break;
-+	case IPV6_PREFER_SRC_TMP:
-+		pref |= IPV6_PREFER_SRC_TMP;
-+		prefmask &= ~(IPV6_PREFER_SRC_PUBLIC |
-+			      IPV6_PREFER_SRC_TMP);
-+		break;
-+	case IPV6_PREFER_SRC_PUBTMP_DEFAULT:
-+		prefmask &= ~(IPV6_PREFER_SRC_PUBLIC |
-+			      IPV6_PREFER_SRC_TMP);
-+		break;
-+	case 0:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* check HOME/COA conflicts */
-+	switch (val & (IPV6_PREFER_SRC_HOME | IPV6_PREFER_SRC_COA)) {
-+	case IPV6_PREFER_SRC_HOME:
-+		prefmask &= ~IPV6_PREFER_SRC_COA;
-+		break;
-+	case IPV6_PREFER_SRC_COA:
-+		pref |= IPV6_PREFER_SRC_COA;
-+		break;
-+	case 0:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* check CGA/NONCGA conflicts */
-+	switch (val & (IPV6_PREFER_SRC_CGA|IPV6_PREFER_SRC_NONCGA)) {
-+	case IPV6_PREFER_SRC_CGA:
-+	case IPV6_PREFER_SRC_NONCGA:
-+	case 0:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	inet6_sk(sk)->srcprefs = (inet6_sk(sk)->srcprefs & prefmask) | pref;
-+	return 0;
-+}
-+
-+static inline int ip6_sock_set_addr_preferences(struct sock *sk, bool val)
-+{
-+	int ret;
-+
-+	lock_sock(sk);
-+	ret = __ip6_sock_set_addr_preferences(sk, val);
-+	release_sock(sk);
-+	return ret;
-+}
-+
- #endif /* _NET_IPV6_H */
-diff --git a/net/ipv6/ipv6_sockglue.c b/net/ipv6/ipv6_sockglue.c
-index e10258c2210e8..adbfed6adf11c 100644
---- a/net/ipv6/ipv6_sockglue.c
-+++ b/net/ipv6/ipv6_sockglue.c
-@@ -845,67 +845,10 @@ static int do_ipv6_setsockopt(struct sock *sk, int level, int optname,
- 		break;
+ 	target_get_sess_cmd(&cmd->se_cmd, true);
  
- 	case IPV6_ADDR_PREFERENCES:
--	    {
--		unsigned int pref = 0;
--		unsigned int prefmask = ~0;
--
- 		if (optlen < sizeof(int))
- 			goto e_inval;
--
--		retv = -EINVAL;
--
--		/* check PUBLIC/TMP/PUBTMP_DEFAULT conflicts */
--		switch (val & (IPV6_PREFER_SRC_PUBLIC|
--			       IPV6_PREFER_SRC_TMP|
--			       IPV6_PREFER_SRC_PUBTMP_DEFAULT)) {
--		case IPV6_PREFER_SRC_PUBLIC:
--			pref |= IPV6_PREFER_SRC_PUBLIC;
--			break;
--		case IPV6_PREFER_SRC_TMP:
--			pref |= IPV6_PREFER_SRC_TMP;
--			break;
--		case IPV6_PREFER_SRC_PUBTMP_DEFAULT:
--			break;
--		case 0:
--			goto pref_skip_pubtmp;
--		default:
--			goto e_inval;
--		}
--
--		prefmask &= ~(IPV6_PREFER_SRC_PUBLIC|
--			      IPV6_PREFER_SRC_TMP);
--pref_skip_pubtmp:
--
--		/* check HOME/COA conflicts */
--		switch (val & (IPV6_PREFER_SRC_HOME|IPV6_PREFER_SRC_COA)) {
--		case IPV6_PREFER_SRC_HOME:
--			break;
--		case IPV6_PREFER_SRC_COA:
--			pref |= IPV6_PREFER_SRC_COA;
--		case 0:
--			goto pref_skip_coa;
--		default:
--			goto e_inval;
--		}
--
--		prefmask &= ~IPV6_PREFER_SRC_COA;
--pref_skip_coa:
--
--		/* check CGA/NONCGA conflicts */
--		switch (val & (IPV6_PREFER_SRC_CGA|IPV6_PREFER_SRC_NONCGA)) {
--		case IPV6_PREFER_SRC_CGA:
--		case IPV6_PREFER_SRC_NONCGA:
--		case 0:
--			break;
--		default:
--			goto e_inval;
--		}
--
--		np->srcprefs = (np->srcprefs & prefmask) | pref;
--		retv = 0;
--
-+		retv = __ip6_sock_set_addr_preferences(sk, val);
- 		break;
--	    }
- 	case IPV6_MINHOPCOUNT:
- 		if (optlen < sizeof(int))
- 			goto e_inval;
-diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
-index 0d3ec055bc12f..3a143e250b9ac 100644
---- a/net/sunrpc/xprtsock.c
-+++ b/net/sunrpc/xprtsock.c
-@@ -2150,7 +2150,6 @@ static int xs_tcp_finish_connecting(struct rpc_xprt *xprt, struct socket *sock)
- 
- 	if (!transport->inet) {
- 		struct sock *sk = sock->sk;
--		unsigned int addr_pref = IPV6_PREFER_SRC_PUBLIC;
- 
- 		/* Avoid temporary address, they are bad for long-lived
- 		 * connections such as NFS mounts.
-@@ -2159,8 +2158,10 @@ static int xs_tcp_finish_connecting(struct rpc_xprt *xprt, struct socket *sock)
- 		 *    knowledge about the normal duration of connections,
- 		 *    MAY override this as appropriate.
- 		 */
--		kernel_setsockopt(sock, SOL_IPV6, IPV6_ADDR_PREFERENCES,
--				(char *)&addr_pref, sizeof(addr_pref));
-+		if (xs_addr(xprt)->sa_family = PF_INET6) {
-+			ip6_sock_set_addr_preferences(sk,
-+				IPV6_PREFER_SRC_PUBLIC);
++	cmd->se_cmd.orig_fe_lun = scsilun_to_int(&hdr->lun);
++	cmd->sense_reason = target_init_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
++	if (cmd->sense_reason) {
++		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
++			return iscsit_add_reject_cmd(cmd,
++				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
 +		}
++
++		goto attach_cmd;
++	}
++
+ 	cmd->sense_reason = transport_lookup_cmd_lun(&cmd->se_cmd,
+ 						     scsilun_to_int(&hdr->lun));
+ 	if (cmd->sense_reason)
+@@ -1175,14 +1186,8 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+ 	/* only used for printks or comparing with ->ref_task_tag */
+ 	cmd->se_cmd.tag = (__force u32)cmd->init_task_tag;
+ 	cmd->sense_reason = target_setup_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
+-	if (cmd->sense_reason) {
+-		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
+-			return iscsit_add_reject_cmd(cmd,
+-					ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+-		}
+-
++	if (cmd->sense_reason)
+ 		goto attach_cmd;
+-	}
  
- 		xs_tcp_set_socket_timeouts(xprt, sock);
+ 	if (iscsit_build_pdu_and_seq_lists(cmd, payload_length) < 0) {
+ 		return iscsit_add_reject_cmd(cmd,
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index f93e25baa664..2e878188dff7 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1455,8 +1455,6 @@ void transport_init_se_cmd(
+ 	struct se_device *dev = cmd->se_dev;
+ 	sense_reason_t ret;
  
+-	target_init_cmd_from_cdb(cmd, cdb);
+-
+ 	ret = dev->transport->parse_cdb(cmd);
+ 	if (ret = TCM_UNSUPPORTED_SCSI_OPCODE)
+ 		pr_warn_ratelimited("%s/%s: Unsupported SCSI Opcode 0x%02x, sending CHECK_CONDITION.\n",
+@@ -1619,6 +1617,15 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
+ 	 */
+ 	if (flags & TARGET_SCF_BIDI_OP)
+ 		se_cmd->se_cmd_flags |= SCF_BIDI;
++
++	se_cmd->orig_fe_lun = unpacked_lun;
++	rc = target_init_cmd_from_cdb(se_cmd, cdb);
++	if (rc) {
++		transport_send_check_condition_and_sense(se_cmd, rc, 0);
++		target_put_sess_cmd(se_cmd);
++		return 0;
++	}
++
+ 	/*
+ 	 * Locate se_lun pointer and attach it to struct se_cmd
+ 	 */
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index bd3ed6ce7571..b20c25343cf1 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -526,6 +526,9 @@ static int target_xcopy_setup_pt_cmd(
+ 	}
+ 	cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
+ 
++	if (target_init_cmd_from_cdb(cmd, cdb))
++		return -EINVAL;
++
+ 	cmd->tag = 0;
+ 	if (target_setup_cmd_from_cdb(cmd, cdb))
+ 		return -EINVAL;
 -- 
-2.26.2
+1.8.3.1
