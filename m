@@ -1,39 +1,43 @@
-From: Hannes Reinecke <hare@suse.de>
-Date: Mon, 11 May 2020 06:14:25 +0000
-Subject: Re: [PATCH 10/15] target: drop sess_get_initiator_sid
-Message-Id: <5dee32d3-7e41-eaab-2544-c73bc9aaf0af@suse.de>
+From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Date: Fri, 22 May 2020 16:51:57 +0000
+Subject: [PATCH 1/1] vhost: scsi: notify TCM about the maximum sg entries supported per command.
+Message-Id: <1590166317-953-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200510215744.21999-1-mchristi@redhat.com>
- <20200510215744.21999-11-mchristi@redhat.com>
-In-Reply-To: <20200510215744.21999-11-mchristi@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Mike Christie <mchristi@redhat.com>, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: martin.petersen@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, shirley.ma@oracle.com
 
-On 5/10/20 11:57 PM, Mike Christie wrote:
-> sess_get_initiator_sid is no longer used. Drop it.
-> 
-> Signed-off-by: Mike Christie <mchristi@redhat.com>
-> Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-> ---
->   drivers/infiniband/ulp/srpt/ib_srpt.c        |  1 -
->   drivers/scsi/qla2xxx/tcm_qla2xxx.c           |  2 --
->   drivers/target/iscsi/iscsi_target_configfs.c | 13 -------------
->   drivers/target/tcm_fc/tfc_conf.c             |  1 -
->   drivers/usb/gadget/function/f_tcm.c          |  1 -
->   drivers/vhost/scsi.c                         |  1 -
->   drivers/xen/xen-scsiback.c                   |  1 -
->   include/target/target_core_fabric.h          |  6 ------
->   8 files changed, 26 deletions(-)
-> 
-Reviewed-by: Hannes Reinecke <hare@suse.de>
+vhost-scsi pre-allocates the maximum sg entries per command and if a
+command requires more than VHOST_SCSI_PREALLOC_SGLS entries, then that
+command is failed by it. This patch lets vhost communicate the max sg limit
+when it registers vhost_scsi_ops with TCM. With this change, TCM would
+report the max sg entries through "Block Limits" VPD page which will be
+typically queried by the SCSI initiator during device discovery. By knowing
+this limit, the initiator could ensure the maximum transfer length is less
+than or equal to what is reported by vhost-scsi.
 
-Cheers,
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: Jason Wang <jasowang@redhat.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Stefan Hajnoczi <stefanha@redhat.com>
+Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+---
+ drivers/vhost/scsi.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Hannes
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index c39952243fd3..8b104f76f324 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -2280,6 +2280,7 @@ static void vhost_scsi_drop_tport(struct se_wwn *wwn)
+ static const struct target_core_fabric_ops vhost_scsi_ops = {
+ 	.module				= THIS_MODULE,
+ 	.fabric_name			= "vhost",
++	.max_data_sg_nents		= VHOST_SCSI_PREALLOC_SGLS,
+ 	.tpg_get_wwn			= vhost_scsi_get_fabric_wwn,
+ 	.tpg_get_tag			= vhost_scsi_get_tpgt,
+ 	.tpg_check_demo_mode		= vhost_scsi_check_true,
 -- 
-Dr. Hannes Reinecke            Teamlead Storage & Networking
-hare@suse.de                               +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
+1.8.3.1
