@@ -1,55 +1,58 @@
 From: Martin Wilck <mwilck@suse.com>
-Date: Tue, 26 May 2020 19:17:54 +0000
+Date: Tue, 26 May 2020 19:21:52 +0000
 Subject: Re: [PATCH] scsi: qla2xxx: Keep initiator ports after RSCN
-Message-Id: <c8e5cc8030542ee8b39639135534c6fe843a7b33.camel@suse.com>
+Message-Id: <06a74050412a378acf31f41ce5e39c6c739ee91e.camel@suse.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200518183141.66621-1-r.bolshakov@yadro.com>
-         <20200518232248.GG75422@SPB-NB-133.local>
-In-Reply-To: <20200518232248.GG75422@SPB-NB-133.local>
+         <3ee76f0fc5df716523bfbdd34726b6cccd4971cd.camel@suse.com>
+         <20200521151730.GA73599@SPB-NB-133.local>
+In-Reply-To: <20200521151730.GA73599@SPB-NB-133.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Roman Bolshakov <r.bolshakov@yadro.com>, linux-scsi@vger.kernel.org
-Cc: GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Himanshu Madhani <himanshu.madhani@oracle.com>, stable@vger.kernel.org
+To: Roman Bolshakov <r.bolshakov@yadro.com>
+Cc: linux-scsi@vger.kernel.org, GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Himanshu Madhani <himanshu.madhani@oracle.com>, stable@vger.kernel.org
 
-On Tue, 2020-05-19 at 02:22 +0300, Roman Bolshakov wrote:
-> On Mon, May 18, 2020 at 09:31:42PM +0300, Roman Bolshakov wrote:
-> > 
+Roman,
+
+> [...]
+>
+> So, as a summary, it seems that the existing code mostly keeps
+> sessions
+> until:
+>  - a conflict of N_Port_ID, N_Port_Name or N_Port handle detected;
+>  - the session is in the middle of refresh/rescan and RSCN arrives;
+>  - there's an explicit process or port logout from the session, i.e.
+>    PRLO, TPRLO, LOGO
+>  - there's a new port or process login from the same session, i.e.
+>    PLOGI, PRLI;
+>  - target is shut down;
+>  - target port link is reset;
 > 
-> P.S. A little bit cleaner alternative would be to avoid session
-> deletion
-> only if scan needed is set (that allows session deletion of initiator
-> ports after fabric discovery if N_Port ID change happened). Please
-> let
-> me know if I should submit v2 like this:
+> And if a session of an initiator is deleted when driver works in
+> target
+> mode, new session won't be established until a PLOGI and PRLI come
+> from
+> the initiator.
 > 
-> diff --git a/drivers/scsi/qla2xxx/qla_gs.c
-> b/drivers/scsi/qla2xxx/qla_gs.c
-> index 42c3ad27f1cb..b9955af5cffe 100644
-> --- a/drivers/scsi/qla2xxx/qla_gs.c
-> +++ b/drivers/scsi/qla2xxx/qla_gs.c
-> @@ -3495,8 +3495,10 @@ void qla24xx_async_gnnft_done(scsi_qla_host_t
-> *vha, srb_t *sp)
->  			if ((fcport->flags & FCF_FABRIC_DEVICE) = 0) {
->  				qla2x00_clear_loop_id(fcport);
->  				fcport->flags |= FCF_FABRIC_DEVICE;
-> -			} else if (fcport->d_id.b24 != rp->id.b24 ||
-> -				fcport->scan_needed) {
-> +			} else if (fcport->d_id.b24 != rp->id.b24 ||
-> +				   (fcport->scan_needed &&
-> +				    fcport->port_type != FCT_INITIATOR
-> &&
-> +				    fcport->port_type !> FCT_NVME_INITIATOR)) {
->  				qlt_schedule_sess_for_deletion(fcport);
->  			}
->  			fcport->d_id.b24 = rp->id.b24;
+> The assumption is used qlt_handle_cmd_for_atio() and
+> qlt_handle_task_mgmt() to discard commands and TMFs from initiators
+> that
+> are not logged in.
+> 
 
+thank you for this incredibly extensive response. I'll bookmark it,
+I guess it can serve as a reference for future qla2xxx work. I hope you
+didn't do all this work just for my little question.
 
-Yes, this looks like an improvement to me. To express it in my own
-words (as the logic is subtle): wrt the original code, this only
-changes the behavior if the NPort ID is unchanged but "scan_needed" is
-set - in this case the session used to be deleted, but with this patch
-it isn't any more.
+Forgive me that I won't immediately try to review this document in
+detail. You've studied and understood this driver in much more depth
+than I probably ever will.
 
-Thanks,
+Thanks again,
 Martin
+
+
+
+> Thanks,
+> Roman
