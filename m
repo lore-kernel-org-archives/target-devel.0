@@ -1,17 +1,18 @@
-From: Mike Christie <mchristi@redhat.com>
-Date: Sat, 23 May 2020 19:05:19 +0000
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Wed, 27 May 2020 02:13:00 +0000
 Subject: Re: [PATCH 1/1] vhost: scsi: notify TCM about the maximum sg entries supported per command.
-Message-Id: <a0cd35c6-71b0-1b9f-ef29-d937b6484290@redhat.com>
+Message-Id: <159054550934.12032.480617639517233845.b4-ty@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1590166317-953-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 In-Reply-To: <1590166317-953-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>, martin.petersen@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, shirley.ma@oracle.com
+To: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, jasowang@redhat.com, shirley.ma@oracle.com, mst@redhat.com, pbonzini@redhat.com, stefanha@redhat.com
 
-On 5/22/20 11:51 AM, Sudhakar Panneerselvam wrote:
+On Fri, 22 May 2020 16:51:57 +0000, Sudhakar Panneerselvam wrote:
+
 > vhost-scsi pre-allocates the maximum sg entries per command and if a
 > command requires more than VHOST_SCSI_PREALLOC_SGLS entries, then that
 > command is failed by it. This patch lets vhost communicate the max sg limit
@@ -20,30 +21,11 @@ On 5/22/20 11:51 AM, Sudhakar Panneerselvam wrote:
 > typically queried by the SCSI initiator during device discovery. By knowing
 > this limit, the initiator could ensure the maximum transfer length is less
 > than or equal to what is reported by vhost-scsi.
-> 
-> Cc: Michael S. Tsirkin <mst@redhat.com>
-> Cc: Jason Wang <jasowang@redhat.com>
-> Cc: Paolo Bonzini <pbonzini@redhat.com>
-> Cc: Stefan Hajnoczi <stefanha@redhat.com>
-> Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
-> ---
->  drivers/vhost/scsi.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-> index c39952243fd3..8b104f76f324 100644
-> --- a/drivers/vhost/scsi.c
-> +++ b/drivers/vhost/scsi.c
-> @@ -2280,6 +2280,7 @@ static void vhost_scsi_drop_tport(struct se_wwn *wwn)
->  static const struct target_core_fabric_ops vhost_scsi_ops = {
->  	.module				= THIS_MODULE,
->  	.fabric_name			= "vhost",
-> +	.max_data_sg_nents		= VHOST_SCSI_PREALLOC_SGLS,
->  	.tpg_get_wwn			= vhost_scsi_get_fabric_wwn,
->  	.tpg_get_tag			= vhost_scsi_get_tpgt,
->  	.tpg_check_demo_mode		= vhost_scsi_check_true,
-> 
 
-Looks ok to me.
+Applied to 5.8/scsi-queue, thanks!
 
-Reviewed-by: Mike Christie <mchristi@redhat.com>
+[1/1] scsi: vhost: Notify TCM about the maximum sg entries supported per command
+      https://git.kernel.org/mkp/scsi/c/5ae6a6a91503
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
