@@ -1,36 +1,25 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 26 May 2020 12:26:45 +0000
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Wed, 27 May 2020 02:12:55 +0000
 Subject: Re: [PATCH] scsi: target: tcmu: Fix a use after free in tcmu_check_expired_queue_cmd()
-Message-Id: <20200526122645.GG22511@kadam>
+Message-Id: <159054550934.12032.1754394879666854643.b4-ty@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200523101129.GB98132@mwanda>
- <68d6b1e9-65fa-e91c-e55e-f520839b5efe@ts.fujitsu.com>
-In-Reply-To: <68d6b1e9-65fa-e91c-e55e-f520839b5efe@ts.fujitsu.com>
+In-Reply-To: <20200523101129.GB98132@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <mchristi@redhat.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>, Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, Mike Christie <mchristi@redhat.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-On Mon, May 25, 2020 at 11:11:38AM +0200, Bodo Stroesser wrote:
-> On 05/23/20 12:11, Dan Carpenter wrote:
-> > The pr_debug() dereferences "cmd" after we already freed it by calling
-> > tcmu_free_cmd(cmd).  The debug printk needs to be done earlier.
-> > 
-> > Fixes: 61fb24822166 ("scsi: target: tcmu: Userspace must not complete queued commands")
-> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> > ---
-> >   drivers/target/target_core_user.c | 6 +++---
-> >   1 file changed, 3 insertions(+), 3 deletions(-)
-> > 
-> 
-> Thank you.
-> 
-> I'm very sorry for this stupid bug.
+On Sat, 23 May 2020 13:11:29 +0300, Dan Carpenter wrote:
 
-Bugs like this are super common.  Part of being human.  It would have
-been hard to discover via testing because you have disable memory
-poisoning on free and debugging at the same time.
+> The pr_debug() dereferences "cmd" after we already freed it by calling
+> tcmu_free_cmd(cmd).  The debug printk needs to be done earlier.
 
-regards,
-dan carpenter
+Applied to 5.8/scsi-queue, thanks!
+
+[1/1] scsi: target: tcmu: Fix a use after free in tcmu_check_expired_queue_cmd()
+      https://git.kernel.org/mkp/scsi/c/9d7464b18892
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
