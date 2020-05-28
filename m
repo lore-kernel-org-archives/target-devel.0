@@ -1,125 +1,135 @@
-From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
-Date: Thu, 21 May 2020 17:42:27 +0000
-Subject: [PATCH 2/3] target: fix NULL pointer dereference
-Message-Id: <1590082947-993-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Thu, 28 May 2020 05:12:25 +0000
+Subject: [PATCH 17/28] tcp: add tcp_sock_set_keepcnt
+Message-Id: <20200528051236.620353-18-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200528051236.620353-1-hch@lst.de>
+In-Reply-To: <20200528051236.620353-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: shirley.ma@oracle.com, ssudhakarp@gmail.com
+To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tipc-discussion-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
 
-NULL pointer dereference happens when a SCSI command is received for a
-non-existing LU and tracing is enabled. The following call sequences
-lead to NULL pointer dereference:
+Add a helper to directly set the TCP_KEEPCNT sockopt from kernel space
+without going through a fake uaccess.
 
-1) iscsit_setup_scsi_cmd
-     transport_lookup_cmd_lun <-- lookup fails.
-   iscsit_process_scsi_cmd
-     iscsit_sequence_cmd
-       transport_send_check_condition_and_sense
-         trace_target_cmd_complete <-- NULL dereference
-
-2) target_submit_cmd_map_sgls
-     transport_lookup_cmd_lun <-- lookup fails
-       transport_send_check_condition_and_sense
-         trace_target_cmd_complete <-- NULL dereference
-
-In the above sequence, cmd->t_task_cdb is uninitialized which when
-referenced in trace_target_cmd_complete() causes NULL pointer dereference.
-
-The fix is to use the helper, target_init_cmd_from_cdb() and call it
-before transport_lookup_cmd_lun() is called, so that cmd->t_task_cdb can
-be initialized and hence can be referenced in
-trace_target_cmd_complete().
-
-Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/target/iscsi/iscsi_target.c    | 19 ++++++++++++-------
- drivers/target/target_core_transport.c | 11 +++++++++--
- drivers/target/target_core_xcopy.c     |  3 +++
- 3 files changed, 24 insertions(+), 9 deletions(-)
+ include/linux/tcp.h   |  1 +
+ net/ipv4/tcp.c        | 12 ++++++++++++
+ net/rds/tcp.h         |  2 +-
+ net/rds/tcp_listen.c  | 17 +++--------------
+ net/sunrpc/xprtsock.c |  3 +--
+ 5 files changed, 18 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 59379d662626..a90b80aee9d8 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1167,6 +1167,17 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+diff --git a/include/linux/tcp.h b/include/linux/tcp.h
+index 1f9bada00faab..9aac824c523cf 100644
+--- a/include/linux/tcp.h
++++ b/include/linux/tcp.h
+@@ -498,6 +498,7 @@ int tcp_skb_shift(struct sk_buff *to, struct sk_buff *from, int pcount,
+ 		  int shiftlen);
  
- 	target_get_sess_cmd(&cmd->se_cmd, true);
+ void tcp_sock_set_cork(struct sock *sk, bool on);
++int tcp_sock_set_keepcnt(struct sock *sk, int val);
+ int tcp_sock_set_keepidle(struct sock *sk, int val);
+ int tcp_sock_set_keepintvl(struct sock *sk, int val);
+ void tcp_sock_set_nodelay(struct sock *sk);
+diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+index 7eb083e09786a..15d47d5e79510 100644
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -2946,6 +2946,18 @@ int tcp_sock_set_keepintvl(struct sock *sk, int val)
+ }
+ EXPORT_SYMBOL(tcp_sock_set_keepintvl);
  
-+	cmd->se_cmd.orig_fe_lun = scsilun_to_int(&hdr->lun);
-+	cmd->sense_reason = target_init_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
-+	if (cmd->sense_reason) {
-+		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
-+			return iscsit_add_reject_cmd(cmd,
-+				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
-+		}
-+
-+		goto attach_cmd;
-+	}
-+
- 	cmd->sense_reason = transport_lookup_cmd_lun(&cmd->se_cmd,
- 						     scsilun_to_int(&hdr->lun));
- 	if (cmd->sense_reason)
-@@ -1175,14 +1186,8 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	/* only used for printks or comparing with ->ref_task_tag */
- 	cmd->se_cmd.tag = (__force u32)cmd->init_task_tag;
- 	cmd->sense_reason = target_setup_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
--	if (cmd->sense_reason) {
--		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
--			return iscsit_add_reject_cmd(cmd,
--					ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
--		}
--
-+	if (cmd->sense_reason)
- 		goto attach_cmd;
--	}
- 
- 	if (iscsit_build_pdu_and_seq_lists(cmd, payload_length) < 0) {
- 		return iscsit_add_reject_cmd(cmd,
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index f93e25baa664..2e878188dff7 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1455,8 +1455,6 @@ void transport_init_se_cmd(
- 	struct se_device *dev = cmd->se_dev;
- 	sense_reason_t ret;
- 
--	target_init_cmd_from_cdb(cmd, cdb);
--
- 	ret = dev->transport->parse_cdb(cmd);
- 	if (ret = TCM_UNSUPPORTED_SCSI_OPCODE)
- 		pr_warn_ratelimited("%s/%s: Unsupported SCSI Opcode 0x%02x, sending CHECK_CONDITION.\n",
-@@ -1619,6 +1617,15 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
- 	 */
- 	if (flags & TARGET_SCF_BIDI_OP)
- 		se_cmd->se_cmd_flags |= SCF_BIDI;
-+
-+	se_cmd->orig_fe_lun = unpacked_lun;
-+	rc = target_init_cmd_from_cdb(se_cmd, cdb);
-+	if (rc) {
-+		transport_send_check_condition_and_sense(se_cmd, rc, 0);
-+		target_put_sess_cmd(se_cmd);
-+		return 0;
-+	}
-+
- 	/*
- 	 * Locate se_lun pointer and attach it to struct se_cmd
- 	 */
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index bd3ed6ce7571..b20c25343cf1 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -526,6 +526,9 @@ static int target_xcopy_setup_pt_cmd(
- 	}
- 	cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
- 
-+	if (target_init_cmd_from_cdb(cmd, cdb))
++int tcp_sock_set_keepcnt(struct sock *sk, int val)
++{
++	if (val < 1 || val > MAX_TCP_KEEPCNT)
 +		return -EINVAL;
 +
- 	cmd->tag = 0;
- 	if (target_setup_cmd_from_cdb(cmd, cdb))
- 		return -EINVAL;
++	lock_sock(sk);
++	tcp_sk(sk)->keepalive_probes = val;
++	release_sock(sk);
++	return 0;
++}
++EXPORT_SYMBOL(tcp_sock_set_keepcnt);
++
+ /*
+  *	Socket option code for TCP.
+  */
+diff --git a/net/rds/tcp.h b/net/rds/tcp.h
+index f6d75d8cb167a..bad9cf49d5657 100644
+--- a/net/rds/tcp.h
++++ b/net/rds/tcp.h
+@@ -70,7 +70,7 @@ struct socket *rds_tcp_listen_init(struct net *net, bool isv6);
+ void rds_tcp_listen_stop(struct socket *sock, struct work_struct *acceptor);
+ void rds_tcp_listen_data_ready(struct sock *sk);
+ int rds_tcp_accept_one(struct socket *sock);
+-int rds_tcp_keepalive(struct socket *sock);
++void rds_tcp_keepalive(struct socket *sock);
+ void *rds_tcp_listen_sock_def_readable(struct net *net);
+ 
+ /* tcp_recv.c */
+diff --git a/net/rds/tcp_listen.c b/net/rds/tcp_listen.c
+index 9ad555c48d15d..101cf14215a0b 100644
+--- a/net/rds/tcp_listen.c
++++ b/net/rds/tcp_listen.c
+@@ -38,27 +38,19 @@
+ #include "rds.h"
+ #include "tcp.h"
+ 
+-int rds_tcp_keepalive(struct socket *sock)
++void rds_tcp_keepalive(struct socket *sock)
+ {
+ 	/* values below based on xs_udp_default_timeout */
+ 	int keepidle = 5; /* send a probe 'keepidle' secs after last data */
+ 	int keepcnt = 5; /* number of unack'ed probes before declaring dead */
+-	int ret = 0;
+ 
+ 	sock_set_keepalive(sock->sk);
+-
+-	ret = kernel_setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT,
+-				(char *)&keepcnt, sizeof(keepcnt));
+-	if (ret < 0)
+-		goto bail;
+-
++	tcp_sock_set_keepcnt(sock->sk, keepcnt);
+ 	tcp_sock_set_keepidle(sock->sk, keepidle);
+ 	/* KEEPINTVL is the interval between successive probes. We follow
+ 	 * the model in xs_tcp_finish_connecting() and re-use keepidle.
+ 	 */
+ 	tcp_sock_set_keepintvl(sock->sk, keepidle);
+-bail:
+-	return ret;
+ }
+ 
+ /* rds_tcp_accept_one_path(): if accepting on cp_index > 0, make sure the
+@@ -140,10 +132,7 @@ int rds_tcp_accept_one(struct socket *sock)
+ 	new_sock->ops = sock->ops;
+ 	__module_get(new_sock->ops->owner);
+ 
+-	ret = rds_tcp_keepalive(new_sock);
+-	if (ret < 0)
+-		goto out;
+-
++	rds_tcp_keepalive(new_sock);
+ 	rds_tcp_tune(new_sock);
+ 
+ 	inet = inet_sk(new_sock->sk);
+diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+index 5ca64e12af0c5..0d3ec055bc12f 100644
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -2109,8 +2109,7 @@ static void xs_tcp_set_socket_timeouts(struct rpc_xprt *xprt,
+ 	sock_set_keepalive(sock->sk);
+ 	tcp_sock_set_keepidle(sock->sk, keepidle);
+ 	tcp_sock_set_keepintvl(sock->sk, keepidle);
+-	kernel_setsockopt(sock, SOL_TCP, TCP_KEEPCNT,
+-			(char *)&keepcnt, sizeof(keepcnt));
++	tcp_sock_set_keepcnt(sock->sk, keepcnt);
+ 
+ 	/* TCP user timeout (see RFC5482) */
+ 	tcp_sock_set_user_timeout(sock->sk, timeo);
 -- 
-1.8.3.1
+2.26.2
