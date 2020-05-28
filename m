@@ -1,88 +1,125 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 20 May 2020 19:54:42 +0000
-Subject: [PATCH 06/33] net: add sock_set_sndtimeo
-Message-Id: <20200520195509.2215098-7-hch@lst.de>
+Date: Thu, 28 May 2020 05:12:35 +0000
+Subject: [PATCH 27/28] rxrpc: add rxrpc_sock_set_min_security_level
+Message-Id: <20200528051236.620353-28-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200520195509.2215098-1-hch@lst.de>
-In-Reply-To: <20200520195509.2215098-1-hch-jcswGhMUV9g@public.gmane.org>
+References: <20200528051236.620353-1-hch@lst.de>
+In-Reply-To: <20200528051236.620353-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Marcelo Ricardo Leitner <marcelo.leitner-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Neil Horman <nhorman-2XuSBdqkA4R54TAoqtyWWQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vlad Yasevich <vyasevich-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org
+To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
+Cc: linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, cluster-devel@redhat.com, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, Eric Dumazet <edumazet@google.com>, target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-nfs@vger.kernel.org, David Howells <dhowells@redhat.com>, drbd-dev@tron.linbit.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, ceph-devel@vger.kernel.org, linux-afs@lists.infradead.org, ocfs2-devel@oss.oracle.com, linux-rdma@vger.kernel.org
 
-Add a helper to directly set the SO_SNDTIMEO_NEW sockopt from kernel
-space without going through a fake uaccess.  The interface is
-simplified to only pass the seconds value, as that is the only
-thing needed at the moment.
+Add a helper to directly set the RXRPC_MIN_SECURITY_LEVEL sockopt from
+kernel space without going through a fake uaccess.
+
+Thanks to David Howells for the documentation updates.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: David Howells <dhowells@redhat.com>
 ---
- fs/dlm/lowcomms.c  |  8 ++------
- include/net/sock.h |  1 +
- net/core/sock.c    | 11 +++++++++++
- 3 files changed, 14 insertions(+), 6 deletions(-)
+ Documentation/networking/rxrpc.rst | 13 +++++++++++--
+ fs/afs/rxrpc.c                     |  6 ++----
+ include/net/af_rxrpc.h             |  2 ++
+ net/rxrpc/af_rxrpc.c               | 13 +++++++++++++
+ 4 files changed, 28 insertions(+), 6 deletions(-)
 
-diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
-index 88f2574ca63ad..b79711d0aac72 100644
---- a/fs/dlm/lowcomms.c
-+++ b/fs/dlm/lowcomms.c
-@@ -918,7 +918,6 @@ static void sctp_connect_to_sock(struct connection *con)
- 	int result;
- 	int addr_len;
- 	struct socket *sock;
--	struct __kernel_sock_timeval tv = { .tv_sec = 5, .tv_usec = 0 };
+diff --git a/Documentation/networking/rxrpc.rst b/Documentation/networking/rxrpc.rst
+index 5ad35113d0f46..68552b92dc442 100644
+--- a/Documentation/networking/rxrpc.rst
++++ b/Documentation/networking/rxrpc.rst
+@@ -477,7 +477,7 @@ AF_RXRPC sockets support a few socket options at the SOL_RXRPC level:
+ 	 Encrypted checksum plus packet padded and first eight bytes of packet
+ 	 encrypted - which includes the actual packet length.
  
- 	if (con->nodeid = 0) {
- 		log_print("attempt to connect sock 0 foiled");
-@@ -970,13 +969,10 @@ static void sctp_connect_to_sock(struct connection *con)
- 	 * since O_NONBLOCK argument in connect() function does not work here,
- 	 * then, we should restore the default value of this attribute.
- 	 */
--	kernel_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO_NEW, (char *)&tv,
--			  sizeof(tv));
-+	sock_set_sndtimeo(sock->sk, 5);
- 	result = sock->ops->connect(sock, (struct sockaddr *)&daddr, addr_len,
- 				   0);
--	memset(&tv, 0, sizeof(tv));
--	kernel_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO_NEW, (char *)&tv,
--			  sizeof(tv));
-+	sock_set_sndtimeo(sock->sk, 0);
+-     (c) RXRPC_SECURITY_ENCRYPTED
++     (c) RXRPC_SECURITY_ENCRYPT
  
- 	if (result = -EINPROGRESS)
- 		result = 0;
-diff --git a/include/net/sock.h b/include/net/sock.h
-index a3a43141a4be2..9a7b9e98685ac 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -2691,5 +2691,6 @@ void sock_def_readable(struct sock *sk);
- void sock_no_linger(struct sock *sk);
- void sock_set_priority(struct sock *sk, u32 priority);
- void sock_set_reuseaddr(struct sock *sk);
-+void sock_set_sndtimeo(struct sock *sk, s64 secs);
+ 	 Encrypted checksum plus entire packet padded and encrypted, including
+ 	 actual packet length.
+@@ -578,7 +578,7 @@ A client would issue an operation by:
+      This issues a request_key() to get the key representing the security
+      context.  The minimum security level can be set::
  
- #endif	/* _SOCK_H */
-diff --git a/net/core/sock.c b/net/core/sock.c
-index ceda1a9248b3e..d3b1d61e4f768 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -737,6 +737,17 @@ void sock_set_priority(struct sock *sk, u32 priority)
+-	unsigned int sec = RXRPC_SECURITY_ENCRYPTED;
++	unsigned int sec = RXRPC_SECURITY_ENCRYPT;
+ 	setsockopt(client, SOL_RXRPC, RXRPC_MIN_SECURITY_LEVEL,
+ 		   &sec, sizeof(sec));
+ 
+@@ -1090,6 +1090,15 @@ The kernel interface functions are as follows:
+      jiffies).  In the event of the timeout occurring, the call will be
+      aborted and -ETIME or -ETIMEDOUT will be returned.
+ 
++ (#) Apply the RXRPC_MIN_SECURITY_LEVEL sockopt to a socket from within in the
++     kernel::
++
++       int rxrpc_sock_set_min_security_level(struct sock *sk,
++					     unsigned int val);
++
++     This specifies the minimum security level required for calls on this
++     socket.
++
+ 
+ Configurable Parameters
+ ===========diff --git a/fs/afs/rxrpc.c b/fs/afs/rxrpc.c
+index 1ecc67da6c1a4..e313dae01674f 100644
+--- a/fs/afs/rxrpc.c
++++ b/fs/afs/rxrpc.c
+@@ -37,7 +37,6 @@ int afs_open_socket(struct afs_net *net)
+ {
+ 	struct sockaddr_rxrpc srx;
+ 	struct socket *socket;
+-	unsigned int min_level;
+ 	int ret;
+ 
+ 	_enter("");
+@@ -57,9 +56,8 @@ int afs_open_socket(struct afs_net *net)
+ 	srx.transport.sin6.sin6_family	= AF_INET6;
+ 	srx.transport.sin6.sin6_port	= htons(AFS_CM_PORT);
+ 
+-	min_level = RXRPC_SECURITY_ENCRYPT;
+-	ret = kernel_setsockopt(socket, SOL_RXRPC, RXRPC_MIN_SECURITY_LEVEL,
+-				(void *)&min_level, sizeof(min_level));
++	ret = rxrpc_sock_set_min_security_level(socket->sk,
++						RXRPC_SECURITY_ENCRYPT);
+ 	if (ret < 0)
+ 		goto error_2;
+ 
+diff --git a/include/net/af_rxrpc.h b/include/net/af_rxrpc.h
+index ab988940bf045..91eacbdcf33d2 100644
+--- a/include/net/af_rxrpc.h
++++ b/include/net/af_rxrpc.h
+@@ -72,4 +72,6 @@ bool rxrpc_kernel_call_is_complete(struct rxrpc_call *);
+ void rxrpc_kernel_set_max_life(struct socket *, struct rxrpc_call *,
+ 			       unsigned long);
+ 
++int rxrpc_sock_set_min_security_level(struct sock *sk, unsigned int val);
++
+ #endif /* _NET_RXRPC_H */
+diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
+index 15ee92d795815..394189b81849f 100644
+--- a/net/rxrpc/af_rxrpc.c
++++ b/net/rxrpc/af_rxrpc.c
+@@ -571,6 +571,19 @@ static int rxrpc_sendmsg(struct socket *sock, struct msghdr *m, size_t len)
+ 	return ret;
  }
- EXPORT_SYMBOL(sock_set_priority);
  
-+void sock_set_sndtimeo(struct sock *sk, s64 secs)
++int rxrpc_sock_set_min_security_level(struct sock *sk, unsigned int val)
 +{
++	if (sk->sk_state != RXRPC_UNBOUND)
++		return -EISCONN;
++	if (val > RXRPC_SECURITY_MAX)
++		return -EINVAL;
 +	lock_sock(sk);
-+	if (secs && secs < MAX_SCHEDULE_TIMEOUT / HZ - 1)
-+		sk->sk_sndtimeo = secs * HZ;
-+	else
-+		sk->sk_sndtimeo = MAX_SCHEDULE_TIMEOUT;
++	rxrpc_sk(sk)->min_sec_level = val;
 +	release_sock(sk);
++	return 0;
 +}
-+EXPORT_SYMBOL(sock_set_sndtimeo);
++EXPORT_SYMBOL(rxrpc_sock_set_min_security_level);
 +
  /*
-  *	This is meant for all protocols to use and covers goings on
-  *	at the socket level. Everything here is generic.
+  * set RxRPC socket options
+  */
 -- 
 2.26.2
