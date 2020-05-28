@@ -1,37 +1,27 @@
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Thu, 28 May 2020 10:20:56 +0000
-Subject: [PATCH] sbp-target: add the missed kfree() in an error path
-Message-Id: <20200528102056.911825-1-hslester96@gmail.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Thu, 28 May 2020 14:53:34 +0000
+Subject: Re: [PATCH] sbp-target: add the missed kfree() in an error path
+Message-Id: <475e4f50-6d20-d653-8288-0676bc708bcc@acm.org>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200528102056.911825-1-hslester96@gmail.com>
+In-Reply-To: <20200528102056.911825-1-hslester96@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Chris Boot <bootc@bootc.net>, "Martin K . Petersen" <martin.petersen@oracle.com>, Nicholas Bellinger <nab@linux-iscsi.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>
+To: Chris Boot <bootc@bootc.net>
+Cc: Chuhong Yuan <hslester96@gmail.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Nicholas Bellinger <nab@linux-iscsi.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-sbp_fetch_command() forgets to call kfree() in an error path.
-Add the missed call to fix it.
+On 2020-05-28 03:20, Chuhong Yuan wrote:
+> sbp_fetch_command() forgets to call kfree() in an error path.
+> Add the missed call to fix it.
 
-Fixes: a511ce339780 ("sbp-target: Initial merge of firewire/ieee-1394 target mode support")
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
----
- drivers/target/sbp/sbp_target.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Hi Chris,
 
-diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
-index e4a9b9fe3dfb..504a755ea344 100644
---- a/drivers/target/sbp/sbp_target.c
-+++ b/drivers/target/sbp/sbp_target.c
-@@ -1128,8 +1128,10 @@ static int sbp_fetch_command(struct sbp_target_request *req)
- 				req->orb_pointer + sizeof(req->orb),
- 				req->cmd_buf + sizeof(req->orb.command_block),
- 				copy_len);
--		if (ret != RCODE_COMPLETE)
-+		if (ret != RCODE_COMPLETE) {
-+			kfree(req->cmd_buf);
- 			return -EIO;
-+		}
- 	}
- 
- 	return 0;
--- 
-2.26.2
+The changelog of the code under drivers/target/sbp makes we wonder
+whether this driver has ever had any other users than its original
+author. Do you agree with this? If so, do you want to keep this driver
+in the kernel tree?
+
+Thanks,
+
+Bart.
