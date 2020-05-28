@@ -1,55 +1,12 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 07 May 2020 14:29:02 +0000
-Subject: [PATCH AUTOSEL 4.19 06/20] scsi: target/iblock: fix WRITE SAME zeroing
-Message-Id: <20200507142917.26612-6-sashal@kernel.org>
+From: "manuel franco" <manuel@info.com>
+Date: Thu, 28 May 2020 17:12:00 +0000
+Subject: Spende von 2.000.000,00 Euro
+Message-Id: <20200528171212.094D438E3BD8@correo.bnv.gob.ve>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200507142917.26612-1-sashal@kernel.org>
-In-Reply-To: <20200507142917.26612-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: David Disseldorp <ddiss@suse.de>, Bart Van Assche <bvanassche@acm.org>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
+To: target-devel@vger.kernel.org
 
-From: David Disseldorp <ddiss@suse.de>
-
-[ Upstream commit 1d2ff149b263c9325875726a7804a0c75ef7112e ]
-
-SBC4 specifies that WRITE SAME requests with the UNMAP bit set to zero
-"shall perform the specified write operation to each LBA specified by the
-command".  Commit 2237498f0b5c ("target/iblock: Convert WRITE_SAME to
-blkdev_issue_zeroout") modified the iblock backend to call
-blkdev_issue_zeroout() when handling WRITE SAME requests with UNMAP=0 and a
-zero data segment.
-
-The iblock blkdev_issue_zeroout() call incorrectly provides a flags
-parameter of 0 (bool false), instead of BLKDEV_ZERO_NOUNMAP.  The bool
-false parameter reflects the blkdev_issue_zeroout() API prior to commit
-ee472d835c26 ("block: add a flags argument to (__)blkdev_issue_zeroout")
-which was merged shortly before 2237498f0b5c.
-
-Link: https://lore.kernel.org/r/20200419163109.11689-1-ddiss@suse.de
-Fixes: 2237498f0b5c ("target/iblock: Convert WRITE_SAME to blkdev_issue_zeroout")
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/target_core_iblock.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index 854b2bcca7c1a..5668d02de10b0 100644
---- a/drivers/target/target_core_iblock.c
-+++ b/drivers/target/target_core_iblock.c
-@@ -445,7 +445,7 @@ iblock_execute_zero_out(struct block_device *bdev, struct se_cmd *cmd)
- 				target_to_linux_sector(dev, cmd->t_task_lba),
- 				target_to_linux_sector(dev,
- 					sbc_get_write_same_sectors(cmd)),
--				GFP_KERNEL, false);
-+				GFP_KERNEL, BLKDEV_ZERO_NOUNMAP);
- 	if (ret)
- 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
- 
--- 
-2.20.1
+Ich bin Manuel Franco, ich spende Ihnen 2.000.000,00 Euro. Nehmen Sie jetzt=
+ Kontakt mit mir auf, damit wir fortfahren k=F6nnen.
