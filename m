@@ -1,136 +1,94 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 28 May 2020 05:12:20 +0000
-Subject: [PATCH 12/28] tcp: add tcp_sock_set_quickack
-Message-Id: <20200528051236.620353-13-hch@lst.de>
+Date: Thu, 28 May 2020 05:12:27 +0000
+Subject: [PATCH 19/28] ipv4: add ip_sock_set_freebind
+Message-Id: <20200528051236.620353-20-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200528051236.620353-1-hch@lst.de>
-In-Reply-To: <20200528051236.620353-1-hch@lst.de>
+In-Reply-To: <20200528051236.620353-1-hch-jcswGhMUV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org, tipc-discussion@lists.sourceforge.net
+To: "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jakub Kicinski <kuba-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Eric Dumazet <edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Alexey Kuznetsov <kuznet-v/Mj1YrvjDBInbfyfbPRSQ@public.gmane.org>, Hideaki YOSHIFUJI <yoshfuji-VfPWfsRibaP+Ru+s062T9g@public.gmane.org>, Jon Maloy <jmaloy-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ying Xue <ying.xue-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-afs-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-cifs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cluster-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, ocfs2-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rds-devel-N0ozoZBvEnrZJqsBc5GL+g@public.gmane.org, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tipc-discussion-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
 
-Add a helper to directly set the TCP_QUICKACK sockopt from kernel space
-without going through a fake uaccess.  Cleanup the callers to avoid
-pointless wrappers now that this is a simple function call.
+Add a helper to directly set the IP_FREEBIND sockopt from kernel space
+without going through a fake uaccess.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/block/drbd/drbd_int.h      |  7 ------
- drivers/block/drbd/drbd_receiver.c |  5 ++--
- include/linux/tcp.h                |  1 +
- net/ipv4/tcp.c                     | 39 ++++++++++++++++++++----------
- 4 files changed, 29 insertions(+), 23 deletions(-)
+ drivers/target/iscsi/iscsi_target_login.c | 13 +++----------
+ include/net/ip.h                          |  1 +
+ net/ipv4/ip_sockglue.c                    |  8 ++++++++
+ 3 files changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/block/drbd/drbd_int.h b/drivers/block/drbd/drbd_int.h
-index e24bba87c8e02..14345a87c7cc5 100644
---- a/drivers/block/drbd/drbd_int.h
-+++ b/drivers/block/drbd/drbd_int.h
-@@ -1570,13 +1570,6 @@ extern void drbd_set_recv_tcq(struct drbd_device *device, int tcq_enabled);
- extern void _drbd_clear_done_ee(struct drbd_device *device, struct list_head *to_be_freed);
- extern int drbd_connected(struct drbd_peer_device *);
- 
--static inline void drbd_tcp_quickack(struct socket *sock)
--{
--	int val = 2;
--	(void) kernel_setsockopt(sock, SOL_TCP, TCP_QUICKACK,
--			(char*)&val, sizeof(val));
--}
--
- /* sets the number of 512 byte sectors of our virtual device */
- void drbd_set_my_capacity(struct drbd_device *device, sector_t size);
- 
-diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 20a5e94494acd..3a3f2b6a821f3 100644
---- a/drivers/block/drbd/drbd_receiver.c
-+++ b/drivers/block/drbd/drbd_receiver.c
-@@ -1223,7 +1223,7 @@ static int drbd_recv_header_maybe_unplug(struct drbd_connection *connection, str
- 		 * quickly as possible, and let remote TCP know what we have
- 		 * received so far. */
- 		if (err = -EAGAIN) {
--			drbd_tcp_quickack(connection->data.socket);
-+			tcp_sock_set_quickack(connection->data.socket->sk, 2);
- 			drbd_unplug_all_devices(connection);
- 		}
- 		if (err > 0) {
-@@ -4959,8 +4959,7 @@ static int receive_UnplugRemote(struct drbd_connection *connection, struct packe
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index b561b07a869a0..85748e3388582 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -15,6 +15,7 @@
+ #include <linux/sched/signal.h>
+ #include <linux/idr.h>
+ #include <linux/tcp.h>        /* TCP_NODELAY */
++#include <net/ip.h>
+ #include <net/ipv6.h>         /* ipv6_addr_v4mapped() */
+ #include <scsi/iscsi_proto.h>
+ #include <target/target_core_base.h>
+@@ -855,7 +856,7 @@ int iscsit_setup_np(
+ 	struct sockaddr_storage *sockaddr)
  {
- 	/* Make sure we've acked all the TCP data associated
- 	 * with the data requests being unplugged */
--	drbd_tcp_quickack(connection->data.socket);
+ 	struct socket *sock = NULL;
+-	int backlog = ISCSIT_TCP_BACKLOG, ret, opt = 0, len;
++	int backlog = ISCSIT_TCP_BACKLOG, ret, len;
+ 
+ 	switch (np->np_network_transport) {
+ 	case ISCSI_TCP:
+@@ -900,15 +901,7 @@ int iscsit_setup_np(
+ 	if (np->np_network_transport = ISCSI_TCP)
+ 		tcp_sock_set_nodelay(sock->sk);
+ 	sock_set_reuseaddr(sock->sk);
 -
-+	tcp_sock_set_quickack(connection->data.socket->sk, 2);
- 	return 0;
+-	opt = 1;
+-	ret = kernel_setsockopt(sock, IPPROTO_IP, IP_FREEBIND,
+-			(char *)&opt, sizeof(opt));
+-	if (ret < 0) {
+-		pr_err("kernel_setsockopt() for IP_FREEBIND"
+-			" failed\n");
+-		goto fail;
+-	}
++	ip_sock_set_freebind(sock->sk);
+ 
+ 	ret = kernel_bind(sock, (struct sockaddr *)&np->np_sockaddr, len);
+ 	if (ret < 0) {
+diff --git a/include/net/ip.h b/include/net/ip.h
+index 2fc52e26fa88b..5f5d8226b6abc 100644
+--- a/include/net/ip.h
++++ b/include/net/ip.h
+@@ -765,6 +765,7 @@ static inline bool inetdev_valid_mtu(unsigned int mtu)
+ 	return likely(mtu >= IPV4_MIN_MTU);
  }
  
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 9e42c7fe50a8b..2eaf8320b9db0 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -499,5 +499,6 @@ int tcp_skb_shift(struct sk_buff *to, struct sk_buff *from, int pcount,
++void ip_sock_set_freebind(struct sock *sk);
+ void ip_sock_set_tos(struct sock *sk, int val);
  
- void tcp_sock_set_cork(struct sock *sk, bool on);
- void tcp_sock_set_nodelay(struct sock *sk);
-+void tcp_sock_set_quickack(struct sock *sk, int val);
- 
- #endif	/* _LINUX_TCP_H */
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index a65f293a19fac..27b5e7a4e2ef9 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2856,6 +2856,31 @@ void tcp_sock_set_nodelay(struct sock *sk)
+ #endif	/* _IP_H */
+diff --git a/net/ipv4/ip_sockglue.c b/net/ipv4/ip_sockglue.c
+index b43a29e11f4a5..767838d2030d8 100644
+--- a/net/ipv4/ip_sockglue.c
++++ b/net/ipv4/ip_sockglue.c
+@@ -581,6 +581,14 @@ void ip_sock_set_tos(struct sock *sk, int val)
  }
- EXPORT_SYMBOL(tcp_sock_set_nodelay);
+ EXPORT_SYMBOL(ip_sock_set_tos);
  
-+static void __tcp_sock_set_quickack(struct sock *sk, int val)
-+{
-+	if (!val) {
-+		inet_csk_enter_pingpong_mode(sk);
-+		return;
-+	}
-+
-+	inet_csk_exit_pingpong_mode(sk);
-+	if ((1 << sk->sk_state) & (TCPF_ESTABLISHED | TCPF_CLOSE_WAIT) &&
-+	    inet_csk_ack_scheduled(sk)) {
-+		inet_csk(sk)->icsk_ack.pending |= ICSK_ACK_PUSHED;
-+		tcp_cleanup_rbuf(sk, 1);
-+		if (!(val & 1))
-+			inet_csk_enter_pingpong_mode(sk);
-+	}
-+}
-+
-+void tcp_sock_set_quickack(struct sock *sk, int val)
++void ip_sock_set_freebind(struct sock *sk)
 +{
 +	lock_sock(sk);
-+	__tcp_sock_set_quickack(sk, val);
++	inet_sk(sk)->freebind = true;
 +	release_sock(sk);
 +}
-+EXPORT_SYMBOL(tcp_sock_set_quickack);
++EXPORT_SYMBOL(ip_sock_set_freebind);
 +
  /*
-  *	Socket option code for TCP.
-  */
-@@ -3096,19 +3121,7 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
- 		break;
- 
- 	case TCP_QUICKACK:
--		if (!val) {
--			inet_csk_enter_pingpong_mode(sk);
--		} else {
--			inet_csk_exit_pingpong_mode(sk);
--			if ((1 << sk->sk_state) &
--			    (TCPF_ESTABLISHED | TCPF_CLOSE_WAIT) &&
--			    inet_csk_ack_scheduled(sk)) {
--				icsk->icsk_ack.pending |= ICSK_ACK_PUSHED;
--				tcp_cleanup_rbuf(sk, 1);
--				if (!(val & 1))
--					inet_csk_enter_pingpong_mode(sk);
--			}
--		}
-+		__tcp_sock_set_quickack(sk, val);
- 		break;
- 
- #ifdef CONFIG_TCP_MD5SIG
+  *	Socket option code for IP. This is the end of the line after any
+  *	TCP,UDP etc options on an IP socket.
 -- 
 2.26.2
