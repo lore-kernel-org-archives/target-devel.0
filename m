@@ -1,7 +1,7 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 28 May 2020 05:12:32 +0000
-Subject: [PATCH 24/28] ipv6: add ip6_sock_set_recverr
-Message-Id: <20200528051236.620353-25-hch@lst.de>
+Date: Thu, 28 May 2020 05:12:13 +0000
+Subject: [PATCH 05/28] net: add sock_bindtoindex
+Message-Id: <20200528051236.620353-6-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200528051236.620353-1-hch@lst.de>
 In-Reply-To: <20200528051236.620353-1-hch@lst.de>
@@ -9,61 +9,113 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org, tipc-discussion@lists.sourceforge.net, David Howells <dhowells@redhat.com>
+Cc: Eric Dumazet <edumazet@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, drbd-dev@lists.linbit.com, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-nvme@lists.infradead.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-cifs@vger.kernel.org, cluster-devel@redhat.com, ocfs2-devel@oss.oracle.com, netdev@vger.kernel.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com, linux-nfs@vger.kernel.org, tipc-discussion@lists.sourceforge.net
 
-Add a helper to directly set the IPV6_RECVERR sockopt from kernel space
-without going through a fake uaccess.
+Add a helper to directly set the SO_BINDTOIFINDEX sockopt from kernel
+space without going through a fake uaccess.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: David Howells <dhowells@redhat.com>
 ---
- include/net/ipv6.h       |  7 +++++++
- net/rxrpc/local_object.c | 10 ++--------
- 2 files changed, 9 insertions(+), 8 deletions(-)
+ include/net/sock.h        |  1 +
+ net/core/sock.c           | 21 +++++++++++++++------
+ net/ipv4/udp_tunnel.c     |  4 +---
+ net/ipv6/ip6_udp_tunnel.c |  4 +---
+ 4 files changed, 18 insertions(+), 12 deletions(-)
 
-diff --git a/include/net/ipv6.h b/include/net/ipv6.h
-index 9b91188c9a74c..49c4abf991489 100644
---- a/include/net/ipv6.h
-+++ b/include/net/ipv6.h
-@@ -1188,4 +1188,11 @@ static inline int ip6_sock_set_v6only(struct sock *sk)
- 	return 0;
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 9a7b9e98685ac..cdec7bc055d5b 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -2688,6 +2688,7 @@ static inline bool sk_dev_equal_l3scope(struct sock *sk, int dif)
+ 
+ void sock_def_readable(struct sock *sk);
+ 
++int sock_bindtoindex(struct sock *sk, int ifindex);
+ void sock_no_linger(struct sock *sk);
+ void sock_set_priority(struct sock *sk, u32 priority);
+ void sock_set_reuseaddr(struct sock *sk);
+diff --git a/net/core/sock.c b/net/core/sock.c
+index d3b1d61e4f768..23f80880fbb2c 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -566,7 +566,7 @@ struct dst_entry *sk_dst_check(struct sock *sk, u32 cookie)
+ }
+ EXPORT_SYMBOL(sk_dst_check);
+ 
+-static int sock_setbindtodevice_locked(struct sock *sk, int ifindex)
++static int sock_bindtoindex_locked(struct sock *sk, int ifindex)
+ {
+ 	int ret = -ENOPROTOOPT;
+ #ifdef CONFIG_NETDEVICES
+@@ -594,6 +594,18 @@ static int sock_setbindtodevice_locked(struct sock *sk, int ifindex)
+ 	return ret;
  }
  
-+static inline void ip6_sock_set_recverr(struct sock *sk)
++int sock_bindtoindex(struct sock *sk, int ifindex)
 +{
-+	lock_sock(sk);
-+	inet6_sk(sk)->recverr = true;
-+	release_sock(sk);
-+}
-+
- #endif /* _NET_IPV6_H */
-diff --git a/net/rxrpc/local_object.c b/net/rxrpc/local_object.c
-index 6f4e6b4817cf2..c8b2097f499c0 100644
---- a/net/rxrpc/local_object.c
-+++ b/net/rxrpc/local_object.c
-@@ -107,7 +107,7 @@ static struct rxrpc_local *rxrpc_alloc_local(struct rxrpc_net *rxnet,
- static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
- {
- 	struct sock *usk;
--	int ret, opt;
 +	int ret;
++
++	lock_sock(sk);
++	ret = sock_bindtoindex_locked(sk, ifindex);
++	release_sock(sk);
++
++	return ret;
++}
++EXPORT_SYMBOL(sock_bindtoindex);
++
+ static int sock_setbindtodevice(struct sock *sk, char __user *optval,
+ 				int optlen)
+ {
+@@ -634,10 +646,7 @@ static int sock_setbindtodevice(struct sock *sk, char __user *optval,
+ 			goto out;
+ 	}
  
- 	_enter("%p{%d,%d}",
- 	       local, local->srx.transport_type, local->srx.transport.family);
-@@ -157,13 +157,7 @@ static int rxrpc_open_socket(struct rxrpc_local *local, struct net *net)
- 	switch (local->srx.transport.family) {
- 	case AF_INET6:
- 		/* we want to receive ICMPv6 errors */
--		opt = 1;
--		ret = kernel_setsockopt(local->socket, SOL_IPV6, IPV6_RECVERR,
--					(char *) &opt, sizeof(opt));
--		if (ret < 0) {
--			_debug("setsockopt failed");
--			goto error;
--		}
-+		ip6_sock_set_recverr(local->socket->sk);
+-	lock_sock(sk);
+-	ret = sock_setbindtodevice_locked(sk, index);
+-	release_sock(sk);
+-
++	return sock_bindtoindex(sk, index);
+ out:
+ #endif
  
- 		/* Fall through and set IPv4 options too otherwise we don't get
- 		 * errors from IPv4 packets sent through the IPv6 socket.
+@@ -1216,7 +1225,7 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
+ 		break;
+ 
+ 	case SO_BINDTOIFINDEX:
+-		ret = sock_setbindtodevice_locked(sk, val);
++		ret = sock_bindtoindex_locked(sk, val);
+ 		break;
+ 
+ 	default:
+diff --git a/net/ipv4/udp_tunnel.c b/net/ipv4/udp_tunnel.c
+index 150e6f0fdbf59..2158e8bddf41c 100644
+--- a/net/ipv4/udp_tunnel.c
++++ b/net/ipv4/udp_tunnel.c
+@@ -22,9 +22,7 @@ int udp_sock_create4(struct net *net, struct udp_port_cfg *cfg,
+ 		goto error;
+ 
+ 	if (cfg->bind_ifindex) {
+-		err = kernel_setsockopt(sock, SOL_SOCKET, SO_BINDTOIFINDEX,
+-					(void *)&cfg->bind_ifindex,
+-					sizeof(cfg->bind_ifindex));
++		err = sock_bindtoindex(sock->sk, cfg->bind_ifindex);
+ 		if (err < 0)
+ 			goto error;
+ 	}
+diff --git a/net/ipv6/ip6_udp_tunnel.c b/net/ipv6/ip6_udp_tunnel.c
+index 58956a6b66a21..6523609516d25 100644
+--- a/net/ipv6/ip6_udp_tunnel.c
++++ b/net/ipv6/ip6_udp_tunnel.c
+@@ -33,9 +33,7 @@ int udp_sock_create6(struct net *net, struct udp_port_cfg *cfg,
+ 			goto error;
+ 	}
+ 	if (cfg->bind_ifindex) {
+-		err = kernel_setsockopt(sock, SOL_SOCKET, SO_BINDTOIFINDEX,
+-					(void *)&cfg->bind_ifindex,
+-					sizeof(cfg->bind_ifindex));
++		err = sock_bindtoindex(sock->sk, cfg->bind_ifindex);
+ 		if (err < 0)
+ 			goto error;
+ 	}
 -- 
 2.26.2
