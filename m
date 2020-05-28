@@ -1,7 +1,7 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 28 May 2020 05:12:35 +0000
-Subject: [PATCH 27/28] rxrpc: add rxrpc_sock_set_min_security_level
-Message-Id: <20200528051236.620353-28-hch@lst.de>
+Date: Thu, 28 May 2020 05:12:30 +0000
+Subject: [PATCH 22/28] ipv4: add ip_sock_set_pktinfo
+Message-Id: <20200528051236.620353-23-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200528051236.620353-1-hch@lst.de>
 In-Reply-To: <20200528051236.620353-1-hch@lst.de>
@@ -9,117 +9,64 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>
-Cc: linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, cluster-devel@redhat.com, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, Eric Dumazet <edumazet@google.com>, target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-nfs@vger.kernel.org, David Howells <dhowells@redhat.com>, drbd-dev@tron.linbit.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, ceph-devel@vger.kernel.org, linux-afs@lists.infradead.org, ocfs2-devel@oss.oracle.com, linux-rdma@vger.kernel.org
+Cc: linux-cifs@vger.kernel.org, rds-devel@oss.oracle.com, cluster-devel@redhat.com, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org, Jon Maloy <jmaloy@redhat.com>, Ying Xue <ying.xue@windriver.com>, Eric Dumazet <edumazet@google.com>, target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-nfs@vger.kernel.org, drbd-dev@tron.linbit.com, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, ceph-devel@vger.kernel.org, linux-afs@lists.infradead.org, ocfs2-devel@oss.oracle.com, linux-rdma@vger.kernel.org
 
-Add a helper to directly set the RXRPC_MIN_SECURITY_LEVEL sockopt from
-kernel space without going through a fake uaccess.
-
-Thanks to David Howells for the documentation updates.
+Add a helper to directly set the IP_PKTINFO sockopt from kernel
+space without going through a fake uaccess.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: David Howells <dhowells@redhat.com>
 ---
- Documentation/networking/rxrpc.rst | 13 +++++++++++--
- fs/afs/rxrpc.c                     |  6 ++----
- include/net/af_rxrpc.h             |  2 ++
- net/rxrpc/af_rxrpc.c               | 13 +++++++++++++
- 4 files changed, 28 insertions(+), 6 deletions(-)
+ include/net/ip.h       | 1 +
+ net/ipv4/ip_sockglue.c | 8 ++++++++
+ net/sunrpc/svcsock.c   | 5 ++---
+ 3 files changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/networking/rxrpc.rst b/Documentation/networking/rxrpc.rst
-index 5ad35113d0f46..68552b92dc442 100644
---- a/Documentation/networking/rxrpc.rst
-+++ b/Documentation/networking/rxrpc.rst
-@@ -477,7 +477,7 @@ AF_RXRPC sockets support a few socket options at the SOL_RXRPC level:
- 	 Encrypted checksum plus packet padded and first eight bytes of packet
- 	 encrypted - which includes the actual packet length.
+diff --git a/include/net/ip.h b/include/net/ip.h
+index d3649c49dd333..04ebe7bf54c6a 100644
+--- a/include/net/ip.h
++++ b/include/net/ip.h
+@@ -767,6 +767,7 @@ static inline bool inetdev_valid_mtu(unsigned int mtu)
  
--     (c) RXRPC_SECURITY_ENCRYPTED
-+     (c) RXRPC_SECURITY_ENCRYPT
+ void ip_sock_set_freebind(struct sock *sk);
+ int ip_sock_set_mtu_discover(struct sock *sk, int val);
++void ip_sock_set_pktinfo(struct sock *sk);
+ void ip_sock_set_recverr(struct sock *sk);
+ void ip_sock_set_tos(struct sock *sk, int val);
  
- 	 Encrypted checksum plus entire packet padded and encrypted, including
- 	 actual packet length.
-@@ -578,7 +578,7 @@ A client would issue an operation by:
-      This issues a request_key() to get the key representing the security
-      context.  The minimum security level can be set::
- 
--	unsigned int sec = RXRPC_SECURITY_ENCRYPTED;
-+	unsigned int sec = RXRPC_SECURITY_ENCRYPT;
- 	setsockopt(client, SOL_RXRPC, RXRPC_MIN_SECURITY_LEVEL,
- 		   &sec, sizeof(sec));
- 
-@@ -1090,6 +1090,15 @@ The kernel interface functions are as follows:
-      jiffies).  In the event of the timeout occurring, the call will be
-      aborted and -ETIME or -ETIMEDOUT will be returned.
- 
-+ (#) Apply the RXRPC_MIN_SECURITY_LEVEL sockopt to a socket from within in the
-+     kernel::
-+
-+       int rxrpc_sock_set_min_security_level(struct sock *sk,
-+					     unsigned int val);
-+
-+     This specifies the minimum security level required for calls on this
-+     socket.
-+
- 
- Configurable Parameters
- ===========diff --git a/fs/afs/rxrpc.c b/fs/afs/rxrpc.c
-index 1ecc67da6c1a4..e313dae01674f 100644
---- a/fs/afs/rxrpc.c
-+++ b/fs/afs/rxrpc.c
-@@ -37,7 +37,6 @@ int afs_open_socket(struct afs_net *net)
- {
- 	struct sockaddr_rxrpc srx;
- 	struct socket *socket;
--	unsigned int min_level;
- 	int ret;
- 
- 	_enter("");
-@@ -57,9 +56,8 @@ int afs_open_socket(struct afs_net *net)
- 	srx.transport.sin6.sin6_family	= AF_INET6;
- 	srx.transport.sin6.sin6_port	= htons(AFS_CM_PORT);
- 
--	min_level = RXRPC_SECURITY_ENCRYPT;
--	ret = kernel_setsockopt(socket, SOL_RXRPC, RXRPC_MIN_SECURITY_LEVEL,
--				(void *)&min_level, sizeof(min_level));
-+	ret = rxrpc_sock_set_min_security_level(socket->sk,
-+						RXRPC_SECURITY_ENCRYPT);
- 	if (ret < 0)
- 		goto error_2;
- 
-diff --git a/include/net/af_rxrpc.h b/include/net/af_rxrpc.h
-index ab988940bf045..91eacbdcf33d2 100644
---- a/include/net/af_rxrpc.h
-+++ b/include/net/af_rxrpc.h
-@@ -72,4 +72,6 @@ bool rxrpc_kernel_call_is_complete(struct rxrpc_call *);
- void rxrpc_kernel_set_max_life(struct socket *, struct rxrpc_call *,
- 			       unsigned long);
- 
-+int rxrpc_sock_set_min_security_level(struct sock *sk, unsigned int val);
-+
- #endif /* _NET_RXRPC_H */
-diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
-index 15ee92d795815..394189b81849f 100644
---- a/net/rxrpc/af_rxrpc.c
-+++ b/net/rxrpc/af_rxrpc.c
-@@ -571,6 +571,19 @@ static int rxrpc_sendmsg(struct socket *sock, struct msghdr *m, size_t len)
- 	return ret;
+diff --git a/net/ipv4/ip_sockglue.c b/net/ipv4/ip_sockglue.c
+index aa115be11dcfb..84ec3703c9091 100644
+--- a/net/ipv4/ip_sockglue.c
++++ b/net/ipv4/ip_sockglue.c
+@@ -608,6 +608,14 @@ int ip_sock_set_mtu_discover(struct sock *sk, int val)
  }
+ EXPORT_SYMBOL(ip_sock_set_mtu_discover);
  
-+int rxrpc_sock_set_min_security_level(struct sock *sk, unsigned int val)
++void ip_sock_set_pktinfo(struct sock *sk)
 +{
-+	if (sk->sk_state != RXRPC_UNBOUND)
-+		return -EISCONN;
-+	if (val > RXRPC_SECURITY_MAX)
-+		return -EINVAL;
 +	lock_sock(sk);
-+	rxrpc_sk(sk)->min_sec_level = val;
++	inet_sk(sk)->cmsg_flags |= IP_CMSG_PKTINFO;
 +	release_sock(sk);
-+	return 0;
 +}
-+EXPORT_SYMBOL(rxrpc_sock_set_min_security_level);
++EXPORT_SYMBOL(ip_sock_set_pktinfo);
 +
  /*
-  * set RxRPC socket options
-  */
+  *	Socket option code for IP. This is the end of the line after any
+  *	TCP,UDP etc options on an IP socket.
+diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+index 6773dacc64d8e..7a805d165689c 100644
+--- a/net/sunrpc/svcsock.c
++++ b/net/sunrpc/svcsock.c
+@@ -616,9 +616,8 @@ static void svc_udp_init(struct svc_sock *svsk, struct svc_serv *serv)
+ 	/* make sure we get destination address info */
+ 	switch (svsk->sk_sk->sk_family) {
+ 	case AF_INET:
+-		level = SOL_IP;
+-		optname = IP_PKTINFO;
+-		break;
++		ip_sock_set_pktinfo(svsk->sk_sock->sk);
++		return;
+ 	case AF_INET6:
+ 		level = SOL_IPV6;
+ 		optname = IPV6_RECVPKTINFO;
 -- 
 2.26.2
