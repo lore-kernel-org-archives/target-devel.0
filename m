@@ -1,68 +1,73 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Tue, 30 Jun 2020 10:47:04 +0000
-Subject: [RFC PATCH 3/8] scsi: target: tcmu: Use priv pointer in se_cmd
-Message-Id: <20200630104709.23066-4-bstroesser@ts.fujitsu.com>
+From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Date: Tue, 02 Jun 2020 18:33:43 +0000
+Subject: [PATCH v3 1/3] target: factor out a new helper, target_cmd_init_cdb()
+Message-Id: <1591122825-2652-2-git-send-email-sudhakar.panneerselvam@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
+References: <1591122825-2652-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+In-Reply-To: <1591122825-2652-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: martin.petersen@oracle.com, michael.christie@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: shirley.ma@oracle.com
 
-We initialize and clean up the se_cmd's priv pointer
-under cmd_ring_lock to point to the corresponding tcmu_cmd.
+target_setup_cmd_from_cdb() is called after a successful call to
+transport_lookup_cmd_lun(). The new helper factors out the code that can
+be called before the call to transport_lookup_cmd_lun(). This helper
+will be used in an upcoming commit to address NULL pointer dereference.
 
-In the patch that implements tmr_notify callback in
-tcmu we will use the priv pointer.
-
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
 ---
- drivers/target/target_core_user.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/target/target_core_transport.c | 16 ++++++++++++----
+ include/target/target_core_fabric.h    |  1 +
+ 2 files changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 82e476d48194..c900e3dd25aa 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -541,6 +541,8 @@ tcmu_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index e6b448f43071..f2f7c5b818cc 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1410,11 +1410,8 @@ void transport_init_se_cmd(
+ }
  
- static inline void tcmu_free_cmd(struct tcmu_cmd *tcmu_cmd)
+ sense_reason_t
+-target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
++target_cmd_init_cdb(struct se_cmd *cmd, unsigned char *cdb)
  {
-+	if (tcmu_cmd->se_cmd)
-+		tcmu_cmd->se_cmd->priv = NULL;
- 	kfree(tcmu_cmd->dbi);
- 	kmem_cache_free(tcmu_cmd_cache, tcmu_cmd);
- }
-@@ -1109,10 +1111,11 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
- 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+-	struct se_device *dev = cmd->se_dev;
+-	sense_reason_t ret;
+-
+ 	/*
+ 	 * Ensure that the received CDB is less than the max (252 + 8) bytes
+ 	 * for VARIABLE_LENGTH_CMD
+@@ -1448,6 +1445,17 @@ void transport_init_se_cmd(
+ 	memcpy(cmd->t_task_cdb, cdb, scsi_command_size(cdb));
  
- 	mutex_lock(&udev->cmdr_lock);
-+	se_cmd->priv = tcmu_cmd;
- 	ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
--	mutex_unlock(&udev->cmdr_lock);
- 	if (ret < 0)
- 		tcmu_free_cmd(tcmu_cmd);
-+	mutex_unlock(&udev->cmdr_lock);
- 	return scsi_ret;
- }
+ 	trace_target_sequencer_start(cmd);
++	return 0;
++}
++EXPORT_SYMBOL(target_cmd_init_cdb);
++
++sense_reason_t
++target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
++{
++	struct se_device *dev = cmd->se_dev;
++	sense_reason_t ret;
++
++	target_cmd_init_cdb(cmd, cdb);
  
-@@ -1179,7 +1182,6 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
- 		target_complete_cmd(cmd->se_cmd, entry->rsp.scsi_status);
- 
- out:
--	cmd->se_cmd = NULL;
- 	tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
- 	tcmu_free_cmd(cmd);
- }
-@@ -1285,6 +1287,7 @@ static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
- 	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
- 	list_del_init(&cmd->queue_entry);
- 	se_cmd = cmd->se_cmd;
-+	se_cmd->priv = NULL;
- 	cmd->se_cmd = NULL;
- 
- 	pr_debug("Timing out inflight cmd %u on dev %s.\n",
+ 	ret = dev->transport->parse_cdb(cmd);
+ 	if (ret = TCM_UNSUPPORTED_SCSI_OPCODE)
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 063f133e47c2..6a2bfcca0c98 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -152,6 +152,7 @@ void	transport_init_se_cmd(struct se_cmd *,
+ 		const struct target_core_fabric_ops *,
+ 		struct se_session *, u32, int, int, unsigned char *);
+ sense_reason_t transport_lookup_cmd_lun(struct se_cmd *, u64);
++sense_reason_t target_cmd_init_cdb(struct se_cmd *, unsigned char *);
+ sense_reason_t target_setup_cmd_from_cdb(struct se_cmd *, unsigned char *);
+ int	target_submit_cmd_map_sgls(struct se_cmd *, struct se_session *,
+ 		unsigned char *, unsigned char *, u64, u32, int, int, int,
 -- 
-2.12.3
+1.8.3.1
