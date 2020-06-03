@@ -1,51 +1,27 @@
-From: Stefan Hajnoczi <stefanha@redhat.com>
-Date: Tue, 09 Jun 2020 10:21:19 +0000
-Subject: Re: [PATCH 05/17] vhost scsi: use target_parse_emulated_name
-Message-Id: <20200609102119.GB92564@stefanha-x1.localdomain>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="VrqPEDrXMn8OVzN4"
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Wed, 03 Jun 2020 01:42:06 +0000
+Subject: Re: [PATCH] scsi: qla2xxx: Keep initiator ports after RSCN
+Message-Id: <yq11rmx9b9w.fsf@ca-mkp.ca.oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
- <1591562164-9766-6-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1591562164-9766-6-git-send-email-michael.christie@oracle.com>
-To: Mike Christie <michael.christie@oracle.com>
-Cc: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>
+References: <20200518183141.66621-1-r.bolshakov@yadro.com>
+In-Reply-To: <20200518183141.66621-1-r.bolshakov@yadro.com> (Roman Bolshakov's
+        message of "Mon, 18 May 2020 21:31:42 +0300")
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Roman Bolshakov <r.bolshakov@yadro.com>
+Cc: linux-scsi@vger.kernel.org, GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Himanshu Madhani <himanshu.madhani@oracle.com>, Martin Wilck <mwilck@suse.com>, stable@vger.kernel.org
 
---VrqPEDrXMn8OVzN4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Sun, Jun 07, 2020 at 03:35:52PM -0500, Mike Christie wrote:
-> Use target_parse_emulated_name so the acl and SCSI names are
-> properly formatted.
->=20
-> Cc: Michael S. Tsirkin <mst@redhat.com>
-> Cc: Jason Wang <jasowang@redhat.com>
-> Cc: Paolo Bonzini <pbonzini@redhat.com>
-> Cc: Stefan Hajnoczi <stefanha@redhat.com>
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> Reviewed-by: Hannes Reinecke <hare@suse.de>
-> ---
->  drivers/vhost/scsi.c | 69 +++++++++-------------------------------------=
-------
->  1 file changed, 11 insertions(+), 58 deletions(-)
+Roman,
 
-Reviewed-by: Stefan Hajnoczi <stefanha@redhat.com>
+> The driver performs SCR (state change registration) in all modes
+> including pure target mode.
 
---VrqPEDrXMn8OVzN4
-Content-Type: application/pgp-signature; name="signature.asc"
+What is the current status of this patch? There was a bunch of going
+back and forth wrt. whether this was the correct approach.
 
------BEGIN PGP SIGNATURE-----
+Thanks!
 
-iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAl7fYp8ACgkQnKSrs4Gr
-c8jVcwf/dCPPBFnjbBercpCQ+KQvH9cb46oCRgiAVI1ZmNntflqqRZ2Kyz+sg+jw
-PyGBF1KQZ+mEVSinhIBPapi7Hqbn9kAHzrfyQZ8BUXOjT7NghRazIyiCdq8MxhoW
-r4Y16YseuxyEeV67dYe88VFzH6Bv2LofJDBfItcKTBvSJPDG9yQllbeWCAOk4vby
-NUVDr/W64qsczGGwXtOlTLIbqzt6FWOmrIbcqgbqivTWKpdD5FH4s+IKMhByO5JS
-+yoD/TryxdmwCO+jCPVpD4rP/Qc/S62Dmo6l27bYJ/1pDsfxruss2ae0erWDZxam
-eHNBNlQqEsws97RHGwLn0AkPIkBAOQ==
-=rzYj
------END PGP SIGNATURE-----
-
---VrqPEDrXMn8OVzN4--
+-- 
+Martin K. Petersen	Oracle Linux Engineering
