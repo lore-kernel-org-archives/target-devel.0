@@ -1,49 +1,91 @@
-From: Hannes Reinecke <hare@suse.de>
-Date: Mon, 08 Jun 2020 06:19:48 +0000
-Subject: Re: [PATCH 14/17] target: add free_session callout
-Message-Id: <61f5abdb-9733-aa7c-b712-bba709745b19@suse.de>
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Fri, 05 Jun 2020 14:44:37 +0000
+Subject: [PATCH v2] scsi: qla2xxx: Keep initiator ports after RSCN
+Message-Id: <20200605144435.27023-1-r.bolshakov@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
- <1591562164-9766-15-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1591562164-9766-15-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Mike Christie <michael.christie@oracle.com>, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-scsi@vger.kernel.org
+Cc: GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Himanshu Madhani <himanshu.madhani@oracle.com>, Martin Wilck <mwilck@suse.com>, stable@vger.kernel.org
 
-On 6/7/20 10:36 PM, Mike Christie wrote:
-> The next patches hook the iscsi target into the syfs API and has it
-> export some basic info about the session.
-> 
-> To allow fabric drivers to export info in sysfs, they need to be able
-> to free resources when all userspace refs have dropped. This patch
-> adds a new session callback free_session which the fabric drivers can
-> use to free their internal resources that are accessed via sysfs.
-> 
-> This also moves the setting of the fabric_sess_ptr to
-> transport_alloc_session so drivers like iscsi that use that function
-> can know that if that function returns success then they can always
-> free the resources pointed at fabric_sess_ptr in the free_session
-> callback.
-> 
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> ---
->   drivers/target/iscsi/iscsi_target.c          |  7 +----
->   drivers/target/iscsi/iscsi_target_configfs.c |  9 ++++++
->   drivers/target/iscsi/iscsi_target_login.c    |  8 ++---
->   drivers/target/target_core_transport.c       | 47 +++++++++++++++++-----------
->   include/target/target_core_base.h            |  1 +
->   include/target/target_core_fabric.h          | 12 +++++--
->   6 files changed, 51 insertions(+), 33 deletions(-)
-> One wonders why this isn't refcounted, but otherwise:
+The driver performs SCR (state change registration) in all modes
+including pure target mode.
 
-Reviewed-by: Hannes Reinecke <hare@suse.de>
+For each RSCN, scan_needed flag is set in qla2x00_handle_rscn() for the
+port mentioned in the RSCN and fabric rescan is scheduled. During the
+rescan, GNN_FT handler, qla24xx_async_gnnft_done() deletes session of
+the port that caused the RSCN.
 
-Cheers,
+In target mode, the session deletion has an impact on ATIO handler,
+qlt_24xx_atio_pkt(). Target responds with SAM STATUS BUSY to I/O
+incoming from the deleted session. qlt_handle_cmd_for_atio() and
+qlt_handle_task_mgmt() return -EFAULT if they are not able to find
+session of the command/TMF, and that results in invocation of
+qlt_send_busy():
 
-Hannes
+  qlt_24xx_atio_pkt_all_vps: qla_target(0): type 6 ox_id 0014
+  qla_target(0): Unable to send command to target, sending BUSY status
+
+Such response causes command timeout on the initiator. Error handler
+thread on the initiator will be spawned to abort the commands:
+
+  scsi 23:0:0:0: tag#0 abort scheduled
+  scsi 23:0:0:0: tag#0 aborting command
+  qla2xxx [0000:af:00.0]-188c:23: Entered qla24xx_abort_command.
+  qla2xxx [0000:af:00.0]-801c:23: Abort command issued nexus#:0:0 -- 0 2003.
+
+Command abort is rejected by target and fails (2003), error handler then
+tries to perform DEVICE RESET and TARGET RESET but they're also doomed
+to fail because TMFs are ignored for the deleted sessions.
+
+Then initiator makes BUS RESET that resets the link via
+qla2x00_full_login_lip(). BUS RESET succeeds and brings initiator port
+up, SAN switch detects that and sends RSCN to the target port and it
+fails again the same way as described above. It never goes out of the
+loop.
+
+The change breaks the RSCN loop by keeping initiator sessions mentioned
+in RSCN payload in all modes, including dual and pure target mode.
+
+Fixes: 2037ce49d30a ("scsi: qla2xxx: Fix stale session")
+Cc: Quinn Tran <qutran@marvell.com>
+Cc: Arun Easi <aeasi@marvell.com>
+Cc: Nilesh Javali <njavali@marvell.com>
+Cc: Bart Van Assche <bvanassche@acm.org>
+Cc: Daniel Wagner <dwagner@suse.de>
+Cc: Himanshu Madhani <himanshu.madhani@oracle.com>
+Cc: Martin Wilck <mwilck@suse.com>
+Cc: stable@vger.kernel.org # v5.4+
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+---
+ drivers/scsi/qla2xxx/qla_gs.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Changes since v1:
+  - Corrected an error when N_Port_ID change wouldn't clean up stale
+    session (Martin W.).
+
+    N_Port_ID may change in the switched fabric topology if initiator
+    cable is replugged to another physical port on the SAN switch (some
+    fabrics assign physical port number to domain area). Physical
+    reconnection implies that initiator is going to relogin anyway and
+    previous session is no longer needed.
+
+diff --git a/drivers/scsi/qla2xxx/qla_gs.c b/drivers/scsi/qla2xxx/qla_gs.c
+index 42c3ad27f1cb..df670fba2ab8 100644
+--- a/drivers/scsi/qla2xxx/qla_gs.c
++++ b/drivers/scsi/qla2xxx/qla_gs.c
+@@ -3496,7 +3496,9 @@ void qla24xx_async_gnnft_done(scsi_qla_host_t *vha, srb_t *sp)
+ 				qla2x00_clear_loop_id(fcport);
+ 				fcport->flags |= FCF_FABRIC_DEVICE;
+ 			} else if (fcport->d_id.b24 != rp->id.b24 ||
+-				fcport->scan_needed) {
++				   (fcport->scan_needed &&
++				    fcport->port_type != FCT_INITIATOR &&
++				    fcport->port_type != FCT_NVME_INITIATOR)) {
+ 				qlt_schedule_sess_for_deletion(fcport);
+ 			}
+ 			fcport->d_id.b24 = rp->id.b24;
 -- 
-Dr. Hannes Reinecke            Teamlead Storage & Networking
-hare@suse.de                               +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
+2.26.1
