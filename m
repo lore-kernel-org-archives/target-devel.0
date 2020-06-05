@@ -1,344 +1,262 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 18 Jun 2020 01:05:39 +0000
-Subject: [PATCH AUTOSEL 5.7 242/388] scsi: target: tcmu: Userspace must not complete queued commands
-Message-Id: <20200618010805.600873-242-sashal@kernel.org>
+From: Pavel Zakharov <pavel.zakharov@delphix.com>
+Date: Fri, 05 Jun 2020 21:12:37 +0000
+Subject: iscsi-target: hang if connection closed when processing LUN resets
+Message-Id: <21949F25-9DA7-4A5C-829E-B730365414AB@delphix.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200618010805.600873-1-sashal@kernel.org>
-In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Mike Christie <mchristi@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Bart Van Assche <bvanassche@acm.org>, Maurizio Lombardi <mlombard@redhat.com>, David Disseldorp <ddiss@suse.de>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+This issue can be reproduced when running with a Windows initiator and is triggered by a 60 second disk IO timeout in Windows.
 
-[ Upstream commit 61fb2482216679b9e1e797440c148bb143a5040a ]
+This happens when the device that backs the backstore is extremely slow for a short period of time. From my observation, if an iSCSI request takes more than 60 seconds, Windows will send a LUN RESET command to the target, followed by an iSCSI Login command 20 seconds later. If the LUN RESET has not completed by the time the iSCSI Login is received (due to very slow backend IO), there’s a very high chance this bug will be hit.
 
-When tcmu queues a new command - no matter whether in command ring or in
-qfull_queue - a cmd_id from IDR udev->commands is assigned to the command.
+When an iSCSI Login request is received, the existing connection is closed, and so iscsit_release_commands_from_conn() is called. The logic for freeing commands in iscsit_release_commands_from_conn() will free an aborted command despite the command still being in the drain_tmr_list of core_tmr_drain_tmr_list(). When this command is finally processed by core_tmr_drain_tmr_list(), its cmd_kref is already at 0, so target_put_cmd_and_wait() will bring its cmd_kref to -1 and the function will never return. iscsit_release_commands_from_conn() will then be stuck waiting for the LUN reset command to be freed, and so the iSCSI connection will never be closed nor re-established.
 
-If userspace sends a wrong command completion containing the cmd_id of a
-command on the qfull_queue, tcmu_handle_completions() finds the command in
-the IDR and calls tcmu_handle_completion() for it. This might do some nasty
-things because commands in qfull_queue do not have a valid dbi list.
+When this issue is hit, we can see 3 hung tasks. I’ve inserted some functions in the stack as they were inlined by the compiler.
 
-To fix this bug, we no longer add queued commands to the idr.  Instead the
-cmd_id is assign when a command is written to the command ring.
+INFO: task kworker/0:2:93 blocked for more than 120 seconds.
+      Tainted: P        W  OE     5.0.0-1020-azure #21~18.04.1-Ubuntu
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
+kworker/0:2     D    0    93      2 0x80000000
+Workqueue: events target_tmr_work [target_core_mod]
+Call Trace:
+ __schedule+0x2a2/0x870
+ schedule+0x2c/0x70
+ schedule_timeout+0x1db/0x360
+ ? do_invalid_op+0x3b/0x50
+ ? target_core_exit_configfs+0x136/0xaa1 [target_core_mod]
+ ? invalid_op+0x14/0x20
+ wait_for_completion+0xb4/0x130
+ ? wake_up_q+0x80/0x80
+ target_put_cmd_and_wait+0x72/0xa0 [target_core_mod]
+ (core_tmr_drain_state_list)
+ core_tmr_lun_reset+0x2fd/0x6b0 [target_core_mod]
+ target_tmr_work+0xa8/0xf0 [target_core_mod]
+ process_one_work+0x1f7/0x3f0
+ worker_thread+0x34/0x400
+ kthread+0x121/0x140
+ ? process_one_work+0x3f0/0x3f0
+ ? kthread_park+0x90/0x90
+ ret_from_fork+0x1f/0x40
 
-Due to this change I had to adapt the source code at several places where
-up to now an idr_for_each had been done.
 
-[mkp: fix checkpatch warnings]
+INFO: task kworker/4:1:210 blocked for more than 120 seconds.
+      Tainted: P        W  OE     5.0.0-1020-azure #21~18.04.1-Ubuntu
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
+kworker/4:1     D    0   210      2 0x80000000
+Workqueue: events iscsi_target_do_login_rx [iscsi_target_mod]
+Call Trace:
+ __schedule+0x2a2/0x870
+ schedule+0x2c/0x70
+ schedule_timeout+0x1db/0x360
+ wait_for_completion+0xb4/0x130
+ ? wake_up_q+0x80/0x80
+ iscsit_stop_session+0x185/0x1a0 [iscsi_target_mod]
+ iscsi_check_for_session_reinstatement+0x1d2/0x280 [iscsi_target_mod]
+ iscsi_target_check_for_existing_instances+0x2f/0x40 [
+ iscsi_target_do_login+0x2e6/0x5e0 [iscsi_target_mod]
+ iscsi_target_do_login_rx+0x268/0x330 [iscsi_target_mod]
+ ? iscsi_target_restore_sock_callbacks+0xd0/0xd0 [iscsi_target_mod]
+ process_one_work+0x1f7/0x3f0
+ worker_thread+0x34/0x400
+ kthread+0x121/0x140
+ ? process_one_work+0x3f0/0x3f0
+ ? kthread_park+0x90/0x90
+ ret_from_fork+0x1f/0x40
 
-Link: https://lore.kernel.org/r/20200518164833.12775-1-bstroesser@ts.fujitsu.com
-Acked-by: Mike Christie <mchristi@redhat.com>
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+
+INFO: task iscsi_ttx:10910 blocked for more than 120 seconds.
+      Tainted: P        W  OE     5.0.0-1020-azure #21~18.04.1-Ubuntu
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
+iscsi_ttx       D    0 10910      2 0x80000084
+Call Trace:
+ __schedule+0x2a2/0x870
+ schedule+0x2c/0x70
+ schedule_timeout+0x1db/0x360
+ ? iscsit_release_cmd+0x91/0xe0 [iscsi_target_mod]
+ ? kfree+0x169/0x180
+ wait_for_completion+0xb4/0x130
+ ? wake_up_q+0x80/0x80
+ transport_generic_free_cmd+0x8e/0x160 [target_core_mod]
+ iscsit_free_cmd+0x43/0x90 [iscsi_target_mod]
+ (iscsit_release_commands_from_conn)
+ iscsit_close_connection+0x4f5/0x850 [iscsi_target_mod]
+ iscsit_take_action_for_connection_exit+0x7f/0x110 [iscsi_target_mod]
+ iscsi_target_tx_thread+0x166/0x1f0 [iscsi_target_mod]
+ ? wait_woken+0x80/0x80
+ kthread+0x121/0x140
+ ? iscsit_thread_get_cpumask+0xb0/0xb0 [iscsi_target_mod]
+ ? kthread_park+0x90/0x90
+ ret_from_fork+0x1f/0x40
+
+Given that the thread that is re-establishing the connection is stuck, but the initiator keeps attempting to establish a connection we’ll see the following messages printed every 20 seconds:
+iSCSI Login timeout on Network Portal 0.0.0.0:3260
+iSCSI Login negotiation failed.
+
+It also generated a bunch of warnings. I’ve included the actual warning that was hit.
+
+WARNING: CPU: 10 PID: 223 at /build/linux-azure-9v78ef/linux-azure-5.0.0/drivers/target/target_core_transport.c:790 target_handle_abort+0xe0/0x1a0 [target_core_mod]
+WARN_ON_ONCE(target_put_sess_cmd(cmd) != 0);
+Call Trace:
+ target_abort_work+0x15/0x20 [target_core_mod]
+ process_one_work+0x1f7/0x3f0
+ worker_thread+0x34/0x400
+ kthread+0x121/0x140
+ ? process_one_work+0x3f0/0x3f0
+ ? kthread_park+0x90/0x90
+ ret_from_fork+0x1f/0x40
+
+WARNING: CPU: 2 PID: 280 at /build/linux-azure-9v78ef/linux-azure-5.0.0/drivers/target/target_core_transport.c:798 target_handle_abort+0xe7/0x1a0 [target_core_mod]
+WARN_ON_ONCE(kref_read(&cmd->cmd_kref) == 0);
+Call Trace:
+ target_abort_work+0x15/0x20 [target_core_mod]
+ process_one_work+0x1f7/0x3f0
+ worker_thread+0x34/0x400
+ kthread+0x121/0x140
+ ? process_one_work+0x3f0/0x3f0
+ ? kthread_park+0x90/0x90
+ ret_from_fork+0x1f/0x40
+
+WARNING: CPU: 13 PID: 221 at /build/linux-azure-9v78ef/linux-azure-5.0.0/drivers/target/iscsi/iscsi_target_util.c:751 __iscsit_free_cmd+0x22a/0x270 [iscsi_target_mod]
+WARN_ON(!list_empty(&cmd->i_conn_node));
+Workqueue: target_completion target_abort_work [target_core_mod]
+Call Trace:
+ iscsit_aborted_task+0x72/0x80 [iscsi_target_mod]
+ lio_aborted_task+0x2a/0x30 [iscsi_target_mod]
+ target_handle_abort+0x4a/0x1a0 [target_core_mod]
+ target_abort_work+0x15/0x20 [target_core_mod]
+ process_one_work+0x1f7/0x3f0
+ worker_thread+0x34/0x400
+ kthread+0x121/0x140
+ ? process_one_work+0x3f0/0x3f0
+ ? kthread_park+0x90/0x90
+ ret_from_fork+0x1f/0x40
+
+WARNING: CPU: 1 PID: 95 at /build/linux-azure-9v78ef/linux-azure-5.0.0/drivers/target/iscsi/iscsi_target_util.c:727 iscsit_release_cmd+0xd4/0xe0 [iscsi_target_mod]
+WARN_ON(!list_empty(&cmd->i_conn_node));
+Workqueue: events target_tmr_work [target_core_mod]
+Call Trace:
+ lio_release_cmd+0x1e/0x50 [iscsi_target_mod]
+ target_release_cmd_kref+0xfe/0x240 [target_core_mod]
+ target_put_cmd_and_wait+0x6a/0xa0 [target_core_mod]
+ core_tmr_lun_reset+0x2fd/0x6b0 [target_core_mod]
+ target_tmr_work+0xa8/0xf0 [target_core_mod]
+ process_one_work+0x1f7/0x3f0
+ worker_thread+0x34/0x400
+ kthread+0x121/0x140
+ ? process_one_work+0x3f0/0x3f0
+ ? kthread_park+0x90/0x90
+ ret_from_fork+0x1f/0x40
+
+Note that some of those warnings are generated in a slightly different scenario, where the command is first processed by core_tmr_drain_tmr_list(), and then later is freed by iscsit_release_commands_from_conn(), at which point the cmd_kref will also be at -1, but no hang would occur. When multiple commands are aborted by LUN RESET, we’ll often see a combination of both scenarios at the same time, depending on how the commands are ordered in the 2 lists.
+
+I’ve got a tentative fix for this issue, which seems to solve that problem, but I haven’t yet tested a few scenarios:
+1. I’ve been running with ERL=0. ERL=2 might behave somewhat differently.
+2. I’m not sure what would happen if there’s several LUN RESETS /ABORT TASKS happening at the same time, or if there are multiple LUNs being reset.
+3. I haven’t tested with persistent reservation.
+4. Although I have emulate_tas=1, CMD_T_TAS is not set because of a condition in __target_check_io_state() that also checks for tmr_sess != se_cmd->se_sess which returned false in my tests.
+
+In the meanwhile, I’d like to know what folks think about the tentative fix:
+
+From ebb0af5b1d71944ae98e6589cadd98af2fb15904 Mon Sep 17 00:00:00 2001
+From: Pavel Zakharov <pavel.zakharov@delphix.com>
+Date: Fri, 5 Jun 2020 16:02:17 -0400
+Subject: [PATCH] cmd_kref leak prevents reestablishing iSCSI connection
+
+When a LUN_RESET TMR is being processed and an iSCSI connection is closed
+at the same time, cmd_kref goes to -1 causing multiple issues, that
+culminate in several threads hanging, which prevents the closed iSCSI
+connection from being re-established.
+
+Signed-off-by: Pavel Zakharov <pavel.zakharov@delphix.com>
 ---
- drivers/target/target_core_user.c | 154 ++++++++++++++----------------
- 1 file changed, 71 insertions(+), 83 deletions(-)
+ drivers/target/iscsi/iscsi_target.c | 46 ++++++++++++++++++++++++-----
+ 1 file changed, 39 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index f769bb1e3735..517570e47958 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -882,41 +882,24 @@ static inline size_t tcmu_cmd_get_cmd_size(struct tcmu_cmd *tcmu_cmd,
- 	return command_size;
- }
- 
--static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
--				struct timer_list *timer)
-+static void tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
-+				 struct timer_list *timer)
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 59379d662626..68806e8f3d43 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -483,9 +483,7 @@ EXPORT_SYMBOL(iscsit_queue_rsp);
+ void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
  {
--	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
--	int cmd_id;
--
--	if (tcmu_cmd->cmd_id)
--		goto setup_timer;
--
--	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 1, USHRT_MAX, GFP_NOWAIT);
--	if (cmd_id < 0) {
--		pr_err("tcmu: Could not allocate cmd id.\n");
--		return cmd_id;
--	}
--	tcmu_cmd->cmd_id = cmd_id;
--
--	pr_debug("allocated cmd %u for dev %s tmo %lu\n", tcmu_cmd->cmd_id,
--		 udev->name, tmo / MSEC_PER_SEC);
--
--setup_timer:
- 	if (!tmo)
--		return 0;
-+		return;
+ 	spin_lock_bh(&conn->cmd_lock);
+-	if (!list_empty(&cmd->i_conn_node) &&
+-	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
+-		list_del_init(&cmd->i_conn_node);
++	list_del_init(&cmd->i_conn_node);
+ 	spin_unlock_bh(&conn->cmd_lock);
  
- 	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
- 	if (!timer_pending(timer))
- 		mod_timer(timer, tcmu_cmd->deadline);
+ 	__iscsit_free_cmd(cmd, true);
+@@ -4056,7 +4054,8 @@ int iscsi_target_rx_thread(void *arg)
  
--	return 0;
-+	pr_debug("Timeout set up for cmd %p, dev = %s, tmo = %lu\n", tcmu_cmd,
-+		 tcmu_cmd->tcmu_dev->name, tmo / MSEC_PER_SEC);
- }
- 
- static int add_to_qfull_queue(struct tcmu_cmd *tcmu_cmd)
+ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
  {
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
- 	unsigned int tmo;
--	int ret;
- 
+-	LIST_HEAD(tmp_list);
++	LIST_HEAD(tmp_cmd_list);
++	LIST_HEAD(tmp_tmr_list);
+ 	struct iscsi_cmd *cmd = NULL, *cmd_tmp = NULL;
+ 	struct iscsi_session *sess = conn->sess;
  	/*
- 	 * For backwards compat if qfull_time_out is not set use
-@@ -931,13 +914,11 @@ static int add_to_qfull_queue(struct tcmu_cmd *tcmu_cmd)
- 	else
- 		tmo = TCMU_TIME_OUT;
+@@ -4065,9 +4064,9 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
+ 	 * has been reset -> returned sleeping pre-handler state.
+ 	 */
+ 	spin_lock_bh(&conn->cmd_lock);
+-	list_splice_init(&conn->conn_cmd_list, &tmp_list);
++	list_splice_init(&conn->conn_cmd_list, &tmp_cmd_list);
  
--	ret = tcmu_setup_cmd_timer(tcmu_cmd, tmo, &udev->qfull_timer);
--	if (ret)
--		return ret;
-+	tcmu_setup_cmd_timer(tcmu_cmd, tmo, &udev->qfull_timer);
+-	list_for_each_entry(cmd, &tmp_list, i_conn_node) {
++	list_for_each_entry_safe(cmd, cmd_tmp, &tmp_cmd_list, i_conn_node) {
+ 		struct se_cmd *se_cmd = &cmd->se_cmd;
  
- 	list_add_tail(&tcmu_cmd->queue_entry, &udev->qfull_queue);
--	pr_debug("adding cmd %u on dev %s to ring space wait queue\n",
--		 tcmu_cmd->cmd_id, udev->name);
-+	pr_debug("adding cmd %p on dev %s to ring space wait queue\n",
-+		 tcmu_cmd, udev->name);
- 	return 0;
- }
- 
-@@ -959,7 +940,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	struct tcmu_mailbox *mb;
- 	struct tcmu_cmd_entry *entry;
- 	struct iovec *iov;
--	int iov_cnt, ret;
-+	int iov_cnt, cmd_id;
- 	uint32_t cmd_head;
- 	uint64_t cdb_off;
- 	bool copy_to_data_area;
-@@ -1060,14 +1041,21 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	}
- 	entry->req.iov_bidi_cnt = iov_cnt;
- 
--	ret = tcmu_setup_cmd_timer(tcmu_cmd, udev->cmd_time_out,
--				   &udev->cmd_timer);
--	if (ret) {
--		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
-+	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 1, USHRT_MAX, GFP_NOWAIT);
-+	if (cmd_id < 0) {
-+		pr_err("tcmu: Could not allocate cmd id.\n");
- 
-+		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
- 		*scsi_err = TCM_OUT_OF_RESOURCES;
- 		return -1;
- 	}
-+	tcmu_cmd->cmd_id = cmd_id;
-+
-+	pr_debug("allocated cmd id %u for cmd %p dev %s\n", tcmu_cmd->cmd_id,
-+		 tcmu_cmd, udev->name);
-+
-+	tcmu_setup_cmd_timer(tcmu_cmd, udev->cmd_time_out, &udev->cmd_timer);
-+
- 	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
- 
- 	/*
-@@ -1279,50 +1267,39 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- 	return handled;
- }
- 
--static int tcmu_check_expired_cmd(int id, void *p, void *data)
-+static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
- {
--	struct tcmu_cmd *cmd = p;
--	struct tcmu_dev *udev = cmd->tcmu_dev;
--	u8 scsi_status;
- 	struct se_cmd *se_cmd;
--	bool is_running;
--
--	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags))
--		return 0;
- 
- 	if (!time_after(jiffies, cmd->deadline))
--		return 0;
-+		return;
- 
--	is_running = test_bit(TCMU_CMD_BIT_INFLIGHT, &cmd->flags);
-+	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
-+	list_del_init(&cmd->queue_entry);
- 	se_cmd = cmd->se_cmd;
-+	cmd->se_cmd = NULL;
- 
--	if (is_running) {
--		/*
--		 * If cmd_time_out is disabled but qfull is set deadline
--		 * will only reflect the qfull timeout. Ignore it.
--		 */
--		if (!udev->cmd_time_out)
--			return 0;
-+	pr_debug("Timing out inflight cmd %u on dev %s.\n",
-+		 cmd->cmd_id, cmd->tcmu_dev->name);
- 
--		set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
--		/*
--		 * target_complete_cmd will translate this to LUN COMM FAILURE
--		 */
--		scsi_status = SAM_STAT_CHECK_CONDITION;
--		list_del_init(&cmd->queue_entry);
--		cmd->se_cmd = NULL;
--	} else {
--		list_del_init(&cmd->queue_entry);
--		idr_remove(&udev->commands, id);
--		tcmu_free_cmd(cmd);
--		scsi_status = SAM_STAT_TASK_SET_FULL;
--	}
-+	target_complete_cmd(se_cmd, SAM_STAT_CHECK_CONDITION);
-+}
- 
--	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
--		 id, udev->name, is_running ? "inflight" : "queued");
-+static void tcmu_check_expired_queue_cmd(struct tcmu_cmd *cmd)
-+{
-+	struct se_cmd *se_cmd;
- 
--	target_complete_cmd(se_cmd, scsi_status);
--	return 0;
-+	if (!time_after(jiffies, cmd->deadline))
-+		return;
-+
-+	list_del_init(&cmd->queue_entry);
-+	se_cmd = cmd->se_cmd;
-+	tcmu_free_cmd(cmd);
-+
-+	pr_debug("Timing out queued cmd %p on dev %s.\n",
-+		  cmd, cmd->tcmu_dev->name);
-+
-+	target_complete_cmd(se_cmd, SAM_STAT_TASK_SET_FULL);
- }
- 
- static void tcmu_device_timedout(struct tcmu_dev *udev)
-@@ -1407,16 +1384,15 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 	return &udev->se_dev;
- }
- 
--static bool run_qfull_queue(struct tcmu_dev *udev, bool fail)
-+static void run_qfull_queue(struct tcmu_dev *udev, bool fail)
- {
- 	struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
- 	LIST_HEAD(cmds);
--	bool drained = true;
- 	sense_reason_t scsi_ret;
- 	int ret;
- 
- 	if (list_empty(&udev->qfull_queue))
--		return true;
-+		return;
- 
- 	pr_debug("running %s's cmdr queue forcefail %d\n", udev->name, fail);
- 
-@@ -1425,11 +1401,10 @@ static bool run_qfull_queue(struct tcmu_dev *udev, bool fail)
- 	list_for_each_entry_safe(tcmu_cmd, tmp_cmd, &cmds, queue_entry) {
- 		list_del_init(&tcmu_cmd->queue_entry);
- 
--	        pr_debug("removing cmd %u on dev %s from queue\n",
--		         tcmu_cmd->cmd_id, udev->name);
-+		pr_debug("removing cmd %p on dev %s from queue\n",
-+			 tcmu_cmd, udev->name);
- 
- 		if (fail) {
--			idr_remove(&udev->commands, tcmu_cmd->cmd_id);
- 			/*
- 			 * We were not able to even start the command, so
- 			 * fail with busy to allow a retry in case runner
-@@ -1444,10 +1419,8 @@ static bool run_qfull_queue(struct tcmu_dev *udev, bool fail)
- 
- 		ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
- 		if (ret < 0) {
--		        pr_debug("cmd %u on dev %s failed with %u\n",
--			         tcmu_cmd->cmd_id, udev->name, scsi_ret);
--
--			idr_remove(&udev->commands, tcmu_cmd->cmd_id);
-+			pr_debug("cmd %p on dev %s failed with %u\n",
-+				 tcmu_cmd, udev->name, scsi_ret);
- 			/*
- 			 * Ignore scsi_ret for now. target_complete_cmd
- 			 * drops it.
-@@ -1462,13 +1435,11 @@ static bool run_qfull_queue(struct tcmu_dev *udev, bool fail)
- 			 * the queue
- 			 */
- 			list_splice_tail(&cmds, &udev->qfull_queue);
--			drained = false;
- 			break;
+ 		if (se_cmd->se_tfo != NULL) {
+@@ -4075,11 +4074,44 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
+ 			se_cmd->transport_state |= CMD_T_FABRIC_STOP;
+ 			spin_unlock_irq(&se_cmd->t_state_lock);
  		}
- 	}
- 
- 	tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
--	return drained;
- }
- 
- static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
-@@ -1652,6 +1623,8 @@ static void tcmu_dev_kref_release(struct kref *kref)
- 		if (tcmu_check_and_free_pending_cmd(cmd) != 0)
- 			all_expired = false;
- 	}
-+	if (!list_empty(&udev->qfull_queue))
-+		all_expired = false;
- 	idr_destroy(&udev->commands);
- 	WARN_ON(!all_expired);
- 
-@@ -2037,9 +2010,6 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
- 	mutex_lock(&udev->cmdr_lock);
- 
- 	idr_for_each_entry(&udev->commands, cmd, i) {
--		if (!test_bit(TCMU_CMD_BIT_INFLIGHT, &cmd->flags))
--			continue;
--
- 		pr_debug("removing cmd %u on dev %s from ring (is expired %d)\n",
- 			  cmd->cmd_id, udev->name,
- 			  test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags));
-@@ -2077,6 +2047,8 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
- 
- 	del_timer(&udev->cmd_timer);
- 
-+	run_qfull_queue(udev, false);
 +
- 	mutex_unlock(&udev->cmdr_lock);
- }
++		if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
++			list_move_tail(&cmd->i_conn_node, &tmp_tmr_list);
+ 	}
+ 	spin_unlock_bh(&conn->cmd_lock);
  
-@@ -2698,6 +2670,7 @@ static void find_free_blocks(void)
- static void check_timedout_devices(void)
- {
- 	struct tcmu_dev *udev, *tmp_dev;
-+	struct tcmu_cmd *cmd, *tmp_cmd;
- 	LIST_HEAD(devs);
- 
- 	spin_lock_bh(&timed_out_udevs_lock);
-@@ -2708,9 +2681,24 @@ static void check_timedout_devices(void)
- 		spin_unlock_bh(&timed_out_udevs_lock);
- 
- 		mutex_lock(&udev->cmdr_lock);
--		idr_for_each(&udev->commands, tcmu_check_expired_cmd, NULL);
- 
--		tcmu_set_next_deadline(&udev->inflight_queue, &udev->cmd_timer);
+-	list_for_each_entry_safe(cmd, cmd_tmp, &tmp_list, i_conn_node) {
++	/*
++	 * We must wait for TMRs to be processed first. Any commands that were
++	 * aborted by those TMRs will have been freed and removed from the
++	 * tmp_cmd_list once we have finished traversing tmp_tmr_list.
++	 */
++	list_for_each_entry_safe(cmd, cmd_tmp, &tmp_tmr_list, i_conn_node) {
++		struct se_cmd *se_cmd = &cmd->se_cmd;
++
++		spin_lock_bh(&conn->cmd_lock);
+ 		list_del_init(&cmd->i_conn_node);
++		spin_unlock_bh(&conn->cmd_lock);
++
++		iscsit_increment_maxcmdsn(cmd, sess);
++		iscsit_free_cmd(cmd, true);
++	}
++
++	list_for_each_entry_safe(cmd, cmd_tmp, &tmp_cmd_list, i_conn_node) {
++		struct se_cmd *se_cmd = &cmd->se_cmd;
++
 +		/*
-+		 * If cmd_time_out is disabled but qfull is set deadline
-+		 * will only reflect the qfull timeout. Ignore it.
++		 * We shouldn't be freeing any aborted commands here. Those
++		 * commands should be freed by iscsit_aborted_task, and the
++		 * last reference will be released by target_put_cmd_and_wait,
++		 * called from core_tmr_drain_tmr_list or core_tmr_abort_task.
 +		 */
-+		if (udev->cmd_time_out) {
-+			list_for_each_entry_safe(cmd, tmp_cmd,
-+						 &udev->inflight_queue,
-+						 queue_entry) {
-+				tcmu_check_expired_ring_cmd(cmd);
-+			}
-+			tcmu_set_next_deadline(&udev->inflight_queue,
-+					       &udev->cmd_timer);
-+		}
-+		list_for_each_entry_safe(cmd, tmp_cmd, &udev->qfull_queue,
-+					 queue_entry) {
-+			tcmu_check_expired_queue_cmd(cmd);
-+		}
- 		tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
++		spin_lock_irq(&se_cmd->t_state_lock);
++		WARN_ON(se_cmd->transport_state & CMD_T_ABORTED);
++		spin_unlock_irq(&se_cmd->t_state_lock);
++
++		spin_lock_bh(&conn->cmd_lock);
++		list_del_init(&cmd->i_conn_node);
++		spin_unlock_bh(&conn->cmd_lock);
  
- 		mutex_unlock(&udev->cmdr_lock);
+ 		iscsit_increment_maxcmdsn(cmd, sess);
+ 		iscsit_free_cmd(cmd, true);
 -- 
-2.25.1
+2.21.1 (Apple Git-122.3)
