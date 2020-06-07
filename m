@@ -1,28 +1,62 @@
-From: Jason Gunthorpe <jgg@nvidia.com>
-Date: Thu, 18 Jun 2020 18:18:16 +0000
-Subject: Re: [PATCH v3] IB/srpt: Remove WARN_ON from srpt_cm_req_recv
-Message-Id: <20200618181816.GA2453631@mellanox.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Sun, 07 Jun 2020 20:36:02 +0000
+Subject: [PATCH 15/17] iscsi target: hook iscsi target into sysfs API
+Message-Id: <1591562164-9766-16-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200617140803.181333-1-jingxiangfeng@huawei.com>
-In-Reply-To: <20200617140803.181333-1-jingxiangfeng@huawei.com>
+References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jing Xiangfeng <jingxiangfeng@huawei.com>
-Cc: bvanassche@acm.org, dledford@redhat.com, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-On Wed, Jun 17, 2020 at 10:08:03PM +0800, Jing Xiangfeng wrote:
-> The callers pass the pointer '&req' or 'private_data' to
-> srpt_cm_req_recv(), and 'private_data' is initialized in srp_send_req().
-> 'sdev' is allocated and stored in srpt_add_one(). It's easy to show that
-> sdev and req are always valid. So we remove unnecessary WARN_ON.
-> 
-> Signed-off-by: Jing Xiangfeng <jingxiangfeng@huawei.com>
-> Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-> ---
->  drivers/infiniband/ulp/srpt/ib_srpt.c | 3 ---
->  1 file changed, 3 deletions(-)
+Have the iscsi target export it's sessions in sysfs.
 
-Applied to for-next, thanks
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/target/iscsi/iscsi_target.c      | 2 ++
+ drivers/target/iscsi/iscsi_target_nego.c | 9 +++++++++
+ 2 files changed, 11 insertions(+)
 
-Jason
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 4c73374..f26d364 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4383,6 +4383,8 @@ int iscsit_close_session(struct iscsi_session *sess)
+ 		}
+ 	}
+ 
++	target_sysfs_remove_session(sess->se_sess);
++
+ 	if (sess->sess_ops->ErrorRecoveryLevel = 2)
+ 		iscsit_free_connection_recovery_entries(sess);
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index c44613a2..6dcb8ff 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -359,6 +359,13 @@ static int iscsi_target_do_tx_login_io(struct iscsi_conn *conn, struct iscsi_log
+ 					    ISCSI_LOGIN_STATUS_NO_RESOURCES);
+ 			return -1;
+ 		}
++
++		if (target_sysfs_add_session(&conn->tpg->tpg_se_tpg,
++					     conn->sess->se_sess)) {
++			iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
++					    ISCSI_LOGIN_STATUS_NO_RESOURCES);
++			return -1;
++		}
+ 	}
+ 
+ 	if (conn->conn_transport->iscsit_put_login_tx(conn, login,
+@@ -371,6 +378,8 @@ static int iscsi_target_do_tx_login_io(struct iscsi_conn *conn, struct iscsi_log
+ 
+ err:
+ 	if (login->login_complete) {
++		target_sysfs_remove_session(conn->sess->se_sess);
++
+ 		if (conn->rx_thread && conn->rx_thread_active) {
+ 			send_sig(SIGINT, conn->rx_thread, 1);
+ 			complete(&conn->rx_login_comp);
+-- 
+1.8.3.1
