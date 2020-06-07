@@ -1,112 +1,126 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 18 Jun 2020 01:04:43 +0000
-Subject: [PATCH AUTOSEL 5.7 186/388] scsi: target: loopback: Fix READ with data and sensebytes
-Message-Id: <20200618010805.600873-186-sashal@kernel.org>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Sun, 07 Jun 2020 20:35:53 +0000
+Subject: [PATCH 06/17] xen scsiback: use target_parse_emulated_name
+Message-Id: <1591562164-9766-7-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200618010805.600873-1-sashal@kernel.org>
-In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
+References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Juergen Gross <jgross@suse.com>
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Use target_parse_emulated_name so the acl and SCSI names are
+properly formatted.
 
-[ Upstream commit c68a56736c129f5dd1632856956f9c3e04bae200 ]
-
-We use tcm_loop with tape emulations running on tcmu.
-
-In case application reads a short tape block with a longer READ, or a long
-tape block with a short READ, according to SCC spec data has to be
-tranferred _and_ sensebytes with ILI set and information field containing
-the residual count. Similar problem also exists when using fixed block
-size in READ.
-
-Up to now tcm_loop is not prepared to handle sensebytes if input data is
-provided, as in tcm_loop_queue_data_in() it only sets SAM_STAT_GOOD and, if
-necessary, the residual count.
-
-To fix the bug, the same handling for sensebytes as present in
-tcm_loop_queue_status() must be done in tcm_loop_queue_data_in() also.
-
-After adding this handling, the two function now are nearly identical, so I
-created a single function with two wrappers.
-
-Link: https://lore.kernel.org/r/20200428182617.32726-1-bstroesser@ts.fujitsu.com
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Cc: Juergen Gross <jgross@suse.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Acked-by: Juergen Gross <jgross@suse.com>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
 ---
- drivers/target/loopback/tcm_loop.c | 36 +++++++++++++-----------------
- 1 file changed, 15 insertions(+), 21 deletions(-)
+ drivers/xen/xen-scsiback.c | 66 ++++++++--------------------------------------
+ 1 file changed, 11 insertions(+), 55 deletions(-)
 
-diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-index 3305b47fdf53..16d5a4e117a2 100644
---- a/drivers/target/loopback/tcm_loop.c
-+++ b/drivers/target/loopback/tcm_loop.c
-@@ -545,32 +545,15 @@ static int tcm_loop_write_pending(struct se_cmd *se_cmd)
- 	return 0;
+diff --git a/drivers/xen/xen-scsiback.c b/drivers/xen/xen-scsiback.c
+index 93cb386..f70b6da 100644
+--- a/drivers/xen/xen-scsiback.c
++++ b/drivers/xen/xen-scsiback.c
+@@ -1509,7 +1509,8 @@ static int scsiback_alloc_sess_cb(struct se_portal_group *se_tpg,
  }
  
--static int tcm_loop_queue_data_in(struct se_cmd *se_cmd)
-+static int tcm_loop_queue_data_or_status(const char *func,
-+		struct se_cmd *se_cmd, u8 scsi_status)
+ static int scsiback_make_nexus(struct scsiback_tpg *tpg,
+-				const char *name)
++				const char *tpt_id_name,
++				const char *acl_name)
  {
- 	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
- 				struct tcm_loop_cmd, tl_se_cmd);
- 	struct scsi_cmnd *sc = tl_cmd->sc;
+ 	struct scsiback_nexus *tv_nexus;
+ 	int ret = 0;
+@@ -1530,8 +1531,9 @@ static int scsiback_make_nexus(struct scsiback_tpg *tpg,
+ 	tv_nexus->tvn_se_sess = target_setup_session(&tpg->se_tpg,
+ 						     VSCSI_DEFAULT_SESSION_TAGS,
+ 						     sizeof(struct vscsibk_pend),
+-						     TARGET_PROT_NORMAL, name,
+-						     name, tv_nexus,
++						     TARGET_PROT_NORMAL,
++						     tpt_id_name, acl_name,
++						     tv_nexus,
+ 						     scsiback_alloc_sess_cb);
+ 	if (IS_ERR(tv_nexus->tvn_se_sess)) {
+ 		kfree(tv_nexus);
+@@ -1619,7 +1621,7 @@ static ssize_t scsiback_tpg_nexus_store(struct config_item *item,
+ 	struct scsiback_tpg *tpg = container_of(se_tpg,
+ 				struct scsiback_tpg, se_tpg);
+ 	struct scsiback_tport *tport_wwn = tpg->tport;
+-	unsigned char i_port[VSCSI_NAMELEN], *ptr, *port_ptr;
++	unsigned char i_port[VSCSI_NAMELEN], *tpt_id_name;
+ 	int ret;
+ 	/*
+ 	 * Shutdown the active I_T nexus if 'NULL' is passed.
+@@ -1628,59 +1630,13 @@ static ssize_t scsiback_tpg_nexus_store(struct config_item *item,
+ 		ret = scsiback_drop_nexus(tpg);
+ 		return (!ret) ? count : ret;
+ 	}
+-	/*
+-	 * Otherwise make sure the passed virtual Initiator port WWN matches
+-	 * the fabric protocol_id set in scsiback_make_tport(), and call
+-	 * scsiback_make_nexus().
+-	 */
+-	if (strlen(page) >= VSCSI_NAMELEN) {
+-		pr_err("Emulated NAA Sas Address: %s, exceeds max: %d\n",
+-			page, VSCSI_NAMELEN);
+-		return -EINVAL;
+-	}
+-	snprintf(&i_port[0], VSCSI_NAMELEN, "%s", page);
  
- 	pr_debug("%s() called for scsi_cmnd: %p cdb: 0x%02x\n",
--		 __func__, sc, sc->cmnd[0]);
--
--	sc->result = SAM_STAT_GOOD;
--	set_host_byte(sc, DID_OK);
--	if ((se_cmd->se_cmd_flags & SCF_OVERFLOW_BIT) ||
--	    (se_cmd->se_cmd_flags & SCF_UNDERFLOW_BIT))
--		scsi_set_resid(sc, se_cmd->residual_count);
--	sc->scsi_done(sc);
--	return 0;
--}
--
--static int tcm_loop_queue_status(struct se_cmd *se_cmd)
--{
--	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
--				struct tcm_loop_cmd, tl_se_cmd);
--	struct scsi_cmnd *sc = tl_cmd->sc;
--
--	pr_debug("%s() called for scsi_cmnd: %p cdb: 0x%02x\n",
--		 __func__, sc, sc->cmnd[0]);
-+		 func, sc, sc->cmnd[0]);
+-	ptr = strstr(i_port, "naa.");
+-	if (ptr) {
+-		if (tport_wwn->tport_proto_id != SCSI_PROTOCOL_SAS) {
+-			pr_err("Passed SAS Initiator Port %s does not match target port protoid: %s\n",
+-				i_port, scsiback_dump_proto_id(tport_wwn));
+-			return -EINVAL;
+-		}
+-		port_ptr = &i_port[0];
+-		goto check_newline;
+-	}
+-	ptr = strstr(i_port, "fc.");
+-	if (ptr) {
+-		if (tport_wwn->tport_proto_id != SCSI_PROTOCOL_FCP) {
+-			pr_err("Passed FCP Initiator Port %s does not match target port protoid: %s\n",
+-				i_port, scsiback_dump_proto_id(tport_wwn));
+-			return -EINVAL;
+-		}
+-		port_ptr = &i_port[3]; /* Skip over "fc." */
+-		goto check_newline;
+-	}
+-	ptr = strstr(i_port, "iqn.");
+-	if (ptr) {
+-		if (tport_wwn->tport_proto_id != SCSI_PROTOCOL_ISCSI) {
+-			pr_err("Passed iSCSI Initiator Port %s does not match target port protoid: %s\n",
+-				i_port, scsiback_dump_proto_id(tport_wwn));
+-			return -EINVAL;
+-		}
+-		port_ptr = &i_port[0];
+-		goto check_newline;
+-	}
+-	pr_err("Unable to locate prefix for emulated Initiator Port: %s\n",
+-		i_port);
+-	return -EINVAL;
+-	/*
+-	 * Clear any trailing newline for the NAA WWN
+-	 */
+-check_newline:
+-	if (i_port[strlen(i_port) - 1] = '\n')
+-		i_port[strlen(i_port) - 1] = '\0';
++	ret = target_parse_emulated_name(tport_wwn->tport_proto_id, page,
++					 i_port, VSCSI_NAMELEN, &tpt_id_name);
++	if (ret)
++		return ret;
  
- 	if (se_cmd->sense_buffer &&
- 	   ((se_cmd->se_cmd_flags & SCF_TRANSPORT_TASK_SENSE) ||
-@@ -581,7 +564,7 @@ static int tcm_loop_queue_status(struct se_cmd *se_cmd)
- 		sc->result = SAM_STAT_CHECK_CONDITION;
- 		set_driver_byte(sc, DRIVER_SENSE);
- 	} else
--		sc->result = se_cmd->scsi_status;
-+		sc->result = scsi_status;
+-	ret = scsiback_make_nexus(tpg, port_ptr);
++	ret = scsiback_make_nexus(tpg, tpt_id_name, i_port);
+ 	if (ret < 0)
+ 		return ret;
  
- 	set_host_byte(sc, DID_OK);
- 	if ((se_cmd->se_cmd_flags & SCF_OVERFLOW_BIT) ||
-@@ -591,6 +574,17 @@ static int tcm_loop_queue_status(struct se_cmd *se_cmd)
- 	return 0;
- }
- 
-+static int tcm_loop_queue_data_in(struct se_cmd *se_cmd)
-+{
-+	return tcm_loop_queue_data_or_status(__func__, se_cmd, SAM_STAT_GOOD);
-+}
-+
-+static int tcm_loop_queue_status(struct se_cmd *se_cmd)
-+{
-+	return tcm_loop_queue_data_or_status(__func__,
-+					     se_cmd, se_cmd->scsi_status);
-+}
-+
- static void tcm_loop_queue_tm_rsp(struct se_cmd *se_cmd)
- {
- 	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
 -- 
-2.25.1
+1.8.3.1
