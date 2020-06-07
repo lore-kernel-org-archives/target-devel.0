@@ -1,133 +1,73 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Sun, 07 Jun 2020 20:35:50 +0000
-Subject: [PATCH 03/17] target: add helper to parse acl and transport name
-Message-Id: <1591562164-9766-4-git-send-email-michael.christie@oracle.com>
+From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Date: Sun, 07 Jun 2020 19:58:30 +0000
+Subject: [PATCH v4 1/4] target: factor out a new helper, target_cmd_init_cdb()
+Message-Id: <1591559913-8388-2-git-send-email-sudhakar.panneerselvam@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
+References: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+In-Reply-To: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, Stefan Hajnoczi <stefanha@redhat.com>, Juergen Gross <jgross@suse.com>
+To: martin.petersen@oracle.com, michael.christie@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: shirley.ma@oracle.com
 
-The drivers that emulate the initiator port id (loop, scsi vhost, xen scsiback)
-do almost the extact same parsing when making their I_T_nexus. This adds a
-helper that parses out the acl name and port name from the user buffer, so
-these types of drivers drop prefixes like "naa." when they need to for the
-SCSI SPC4 TransportID SAS address, but then keep it for the LIO ACL name.
+target_setup_cmd_from_cdb() is called after a successful call to
+transport_lookup_cmd_lun(). The new helper factors out the code that can
+be called before the call to transport_lookup_cmd_lun(). This helper
+will be used in an upcoming commit to address NULL pointer dereference.
 
-The next patches will then convert those drivers.
-
-Cc: Michael S. Tsirkin <mst@redhat.com>
-Cc: Jason Wang <jasowang@redhat.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Stefan Hajnoczi <stefanha@redhat.com>
-Cc: Juergen Gross <jgross@suse.com>
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
-Reviewed-by: Hannes Reinecke <hare@suse.de>
-Reviewed-by: Lee Duncan <lduncan@suse.com>
+Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
 ---
- drivers/target/target_core_fabric_lib.c | 73 +++++++++++++++++++++++++++++++++
- include/target/target_core_fabric.h     |  2 +
- 2 files changed, 75 insertions(+)
+ drivers/target/target_core_transport.c | 16 ++++++++++++----
+ include/target/target_core_fabric.h    |  1 +
+ 2 files changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index e89b3d8..81ed7d5 100644
---- a/drivers/target/target_core_fabric_lib.c
-+++ b/drivers/target/target_core_fabric_lib.c
-@@ -423,6 +423,79 @@ const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
- 	return buf + offset;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index e6b448f43071..f2f7c5b818cc 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1410,11 +1410,8 @@ void transport_init_se_cmd(
  }
  
-+/**
-+ * target_parse_emulated_name - parse TransportID and acl name from user buffer
-+ * @proto_id: SCSI protocol identifier
-+ * @user_buf: buffer with emualted name to extract acl and TransportID from
-+ * @acl_name: buffer to store se_node_acl name in
-+ * @max_name_len: len of acl_name buffer
-+ * @tpt_id_name: Pointer to the TransportID name will be stored here.
-+ */
-+int target_parse_emulated_name(u8 proto_id, const char *user_buf,
-+			       unsigned char *acl_name, int max_name_len,
-+			       unsigned char **tpt_id_name)
-+{
-+	int user_len = strlen(user_buf);
-+	char *proto_prefix, *name_start;
-+
-+	if (user_len >= max_name_len) {
-+		pr_err("Emulated name: %s, exceeds max: %d\n", user_buf,
-+		       max_name_len);
-+		return -EINVAL;
-+	}
-+
-+	switch (proto_id) {
-+	case SCSI_PROTOCOL_SAS:
-+		proto_prefix = "naa.";
-+		break;
-+	case SCSI_PROTOCOL_FCP:
-+		proto_prefix = "fc.";
-+		break;
-+	case SCSI_PROTOCOL_ISCSI:
-+		proto_prefix = "iqn.";
-+		break;
-+	default:
-+		pr_err("Unsupported proto_id: 0x%02x\n", proto_id);
-+		return -EINVAL;
-+	}
-+
-+	name_start = strstr(user_buf, proto_prefix);
-+	if (!name_start) {
-+		pr_err("Invalid emulated name %s. Must start with %s\n",
-+		       user_buf, proto_prefix);
-+		return -EINVAL;
-+	}
-+
-+	switch (proto_id) {
-+	case SCSI_PROTOCOL_SAS:
-+		sprintf(acl_name, name_start);
-+		break;
-+	case SCSI_PROTOCOL_FCP:
-+		sprintf(acl_name, &name_start[3]); /* Skip over "fc." */
-+		break;
-+	case SCSI_PROTOCOL_ISCSI:
-+		sprintf(acl_name, name_start);
-+		break;
-+	}
-+
-+	if (acl_name[user_len - 1] = '\n')
-+		acl_name[user_len - 1] = '\0';
-+
-+	if (proto_id = SCSI_PROTOCOL_SAS) {
-+		/*
-+		 * target_setup_session will want the naa. prefix to match
-+		 * the ACL name, but the t10 transport id only wants the
-+		 * address.
-+		 */
-+		*tpt_id_name = acl_name + 4;
-+	} else {
-+		*tpt_id_name = acl_name;
-+	}
-+
+ sense_reason_t
+-target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
++target_cmd_init_cdb(struct se_cmd *cmd, unsigned char *cdb)
+ {
+-	struct se_device *dev = cmd->se_dev;
+-	sense_reason_t ret;
+-
+ 	/*
+ 	 * Ensure that the received CDB is less than the max (252 + 8) bytes
+ 	 * for VARIABLE_LENGTH_CMD
+@@ -1448,6 +1445,17 @@ void transport_init_se_cmd(
+ 	memcpy(cmd->t_task_cdb, cdb, scsi_command_size(cdb));
+ 
+ 	trace_target_sequencer_start(cmd);
 +	return 0;
 +}
-+EXPORT_SYMBOL(target_parse_emulated_name);
++EXPORT_SYMBOL(target_cmd_init_cdb);
 +
- struct t10_transport_id *target_create_transport_id(u8 proto, const char *name,
- 						    const char *session_id)
- {
++sense_reason_t
++target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
++{
++	struct se_device *dev = cmd->se_dev;
++	sense_reason_t ret;
++
++	target_cmd_init_cdb(cmd, cdb);
+ 
+ 	ret = dev->transport->parse_cdb(cmd);
+ 	if (ret = TCM_UNSUPPORTED_SCSI_OPCODE)
 diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index af1dd81..0113e1c 100644
+index 063f133e47c2..6a2bfcca0c98 100644
 --- a/include/target/target_core_fabric.h
 +++ b/include/target/target_core_fabric.h
-@@ -125,6 +125,8 @@ struct target_core_fabric_ops {
- int target_depend_item(struct config_item *item);
- void target_undepend_item(struct config_item *item);
- 
-+int target_parse_emulated_name(u8, const char *, unsigned char *, int,
-+			       unsigned char **);
- struct t10_transport_id *target_create_transport_id(u8, const char *,
- 						    const char *);
- void target_free_transport_id(struct t10_transport_id *);
+@@ -152,6 +152,7 @@ void	transport_init_se_cmd(struct se_cmd *,
+ 		const struct target_core_fabric_ops *,
+ 		struct se_session *, u32, int, int, unsigned char *);
+ sense_reason_t transport_lookup_cmd_lun(struct se_cmd *, u64);
++sense_reason_t target_cmd_init_cdb(struct se_cmd *, unsigned char *);
+ sense_reason_t target_setup_cmd_from_cdb(struct se_cmd *, unsigned char *);
+ int	target_submit_cmd_map_sgls(struct se_cmd *, struct se_session *,
+ 		unsigned char *, unsigned char *, u64, u32, int, int, int,
 -- 
 1.8.3.1
