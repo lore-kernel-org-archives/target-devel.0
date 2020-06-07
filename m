@@ -1,112 +1,58 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 18 Jun 2020 01:14:17 +0000
-Subject: [PATCH AUTOSEL 5.4 132/266] scsi: target: loopback: Fix READ with data and sensebytes
-Message-Id: <20200618011631.604574-132-sashal@kernel.org>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Sun, 07 Jun 2020 20:35:55 +0000
+Subject: [PATCH 08/17] target: use tpt_id in target_stat_iport_port_ident_show
+Message-Id: <1591562164-9766-9-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200618011631.604574-1-sashal@kernel.org>
-In-Reply-To: <20200618011631.604574-1-sashal@kernel.org>
+References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Use the tpt_id session id instead of sess_get_initiator_sid.
 
-[ Upstream commit c68a56736c129f5dd1632856956f9c3e04bae200 ]
+Note that for userspace compat this patch continues the behavior:
 
-We use tcm_loop with tape emulations running on tcmu.
+1. Still add the "+i+" even if there is no session_id.
+2. Use the acl initiatorname instead of the transportID port/addr/name.
 
-In case application reads a short tape block with a longer READ, or a long
-tape block with a short READ, according to SCC spec data has to be
-tranferred _and_ sensebytes with ILI set and information field containing
-the residual count. Similar problem also exists when using fixed block
-size in READ.
-
-Up to now tcm_loop is not prepared to handle sensebytes if input data is
-provided, as in tcm_loop_queue_data_in() it only sets SAM_STAT_GOOD and, if
-necessary, the residual count.
-
-To fix the bug, the same handling for sensebytes as present in
-tcm_loop_queue_status() must be done in tcm_loop_queue_data_in() also.
-
-After adding this handling, the two function now are nearly identical, so I
-created a single function with two wrappers.
-
-Link: https://lore.kernel.org/r/20200428182617.32726-1-bstroesser@ts.fujitsu.com
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
 ---
- drivers/target/loopback/tcm_loop.c | 36 +++++++++++++-----------------
- 1 file changed, 15 insertions(+), 21 deletions(-)
+ drivers/target/target_core_stat.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-index 3305b47fdf53..16d5a4e117a2 100644
---- a/drivers/target/loopback/tcm_loop.c
-+++ b/drivers/target/loopback/tcm_loop.c
-@@ -545,32 +545,15 @@ static int tcm_loop_write_pending(struct se_cmd *se_cmd)
- 	return 0;
+diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
+index 237309d..3eb1b9b 100644
+--- a/drivers/target/target_core_stat.c
++++ b/drivers/target/target_core_stat.c
+@@ -1308,9 +1308,7 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
+ 	struct se_lun_acl *lacl = iport_to_lacl(item);
+ 	struct se_node_acl *nacl = lacl->se_lun_nacl;
+ 	struct se_session *se_sess;
+-	struct se_portal_group *tpg;
+ 	ssize_t ret;
+-	unsigned char buf[64];
+ 
+ 	spin_lock_irq(&nacl->nacl_sess_lock);
+ 	se_sess = nacl->nacl_sess;
+@@ -1319,13 +1317,9 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
+ 		return -ENODEV;
+ 	}
+ 
+-	tpg = nacl->se_tpg;
+-	/* scsiAttIntrPortName+scsiAttIntrPortIdentifier */
+-	memset(buf, 0, 64);
+-	if (tpg->se_tpg_tfo->sess_get_initiator_sid != NULL)
+-		tpg->se_tpg_tfo->sess_get_initiator_sid(se_sess, buf, 64);
+-
+-	ret = snprintf(page, PAGE_SIZE, "%s+i+%s\n", nacl->initiatorname, buf);
++	ret = snprintf(page, PAGE_SIZE, "%s+i+%s\n", nacl->initiatorname,
++		       se_sess->tpt_id->session_id ? se_sess->tpt_id->session_id :
++		       "");
+ 	spin_unlock_irq(&nacl->nacl_sess_lock);
+ 	return ret;
  }
- 
--static int tcm_loop_queue_data_in(struct se_cmd *se_cmd)
-+static int tcm_loop_queue_data_or_status(const char *func,
-+		struct se_cmd *se_cmd, u8 scsi_status)
- {
- 	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
- 				struct tcm_loop_cmd, tl_se_cmd);
- 	struct scsi_cmnd *sc = tl_cmd->sc;
- 
- 	pr_debug("%s() called for scsi_cmnd: %p cdb: 0x%02x\n",
--		 __func__, sc, sc->cmnd[0]);
--
--	sc->result = SAM_STAT_GOOD;
--	set_host_byte(sc, DID_OK);
--	if ((se_cmd->se_cmd_flags & SCF_OVERFLOW_BIT) ||
--	    (se_cmd->se_cmd_flags & SCF_UNDERFLOW_BIT))
--		scsi_set_resid(sc, se_cmd->residual_count);
--	sc->scsi_done(sc);
--	return 0;
--}
--
--static int tcm_loop_queue_status(struct se_cmd *se_cmd)
--{
--	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
--				struct tcm_loop_cmd, tl_se_cmd);
--	struct scsi_cmnd *sc = tl_cmd->sc;
--
--	pr_debug("%s() called for scsi_cmnd: %p cdb: 0x%02x\n",
--		 __func__, sc, sc->cmnd[0]);
-+		 func, sc, sc->cmnd[0]);
- 
- 	if (se_cmd->sense_buffer &&
- 	   ((se_cmd->se_cmd_flags & SCF_TRANSPORT_TASK_SENSE) ||
-@@ -581,7 +564,7 @@ static int tcm_loop_queue_status(struct se_cmd *se_cmd)
- 		sc->result = SAM_STAT_CHECK_CONDITION;
- 		set_driver_byte(sc, DRIVER_SENSE);
- 	} else
--		sc->result = se_cmd->scsi_status;
-+		sc->result = scsi_status;
- 
- 	set_host_byte(sc, DID_OK);
- 	if ((se_cmd->se_cmd_flags & SCF_OVERFLOW_BIT) ||
-@@ -591,6 +574,17 @@ static int tcm_loop_queue_status(struct se_cmd *se_cmd)
- 	return 0;
- }
- 
-+static int tcm_loop_queue_data_in(struct se_cmd *se_cmd)
-+{
-+	return tcm_loop_queue_data_or_status(__func__, se_cmd, SAM_STAT_GOOD);
-+}
-+
-+static int tcm_loop_queue_status(struct se_cmd *se_cmd)
-+{
-+	return tcm_loop_queue_data_or_status(__func__,
-+					     se_cmd, se_cmd->scsi_status);
-+}
-+
- static void tcm_loop_queue_tm_rsp(struct se_cmd *se_cmd)
- {
- 	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
 -- 
-2.25.1
+1.8.3.1
