@@ -1,33 +1,74 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Tue, 30 Jun 2020 03:23:03 +0000
-Subject: Re: [PATCH v2] scsi: target: tcmu: Fix crash on ARM during cmd completion
-Message-Id: <159348736490.22355.1210827363211730704.b4-ty@oracle.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Sun, 07 Jun 2020 20:35:54 +0000
+Subject: [PATCH 07/17] iscsi target: setup transport_id
+Message-Id: <1591562164-9766-8-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200629093756.8947-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200629093756.8947-1-bstroesser@ts.fujitsu.com>
+References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>, Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, JiangYu <lnsyyj@hotmail.com>, Henry Willard <henry.willard@oracle.com>, Daniel Meyerholt <dxm523@gmail.com>
+To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-On Mon, 29 Jun 2020 11:37:56 +0200, Bodo Stroesser wrote:
+The iscsi target does its own session setup. This patch updates the
+driver so it sets up the transport id.
 
-> If tcmu_handle_completions() has to process a padding shorter
-> than sizeof(struct tcmu_cmd_entry), the current call to
-> tcmu_flush_dcache_range() with sizeof(struct tcmu_cmd_entry) as
-> length param is wrong and causes crashes on e.g. ARM, because
-> tcmu_flush_dcache_range() in this case calls
-> 	flush_dcache_page(vmalloc_to_page(start));
-> with start being an invalid address above the end of the
-> vmalloc'ed area.
-> 
-> [...]
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
+---
+ drivers/target/iscsi/iscsi_target_nego.c | 32 ++++++++++++++++++++++++++++----
+ 1 file changed, 28 insertions(+), 4 deletions(-)
 
-Applied to 5.9/scsi-queue, thanks!
-
-[1/1] scsi: target: tcmu: Fix crash on ARM during cmd completion
-      https://git.kernel.org/mkp/scsi/c/5a0c256d96f0
-
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 685d771..c44613a2 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -1032,6 +1032,20 @@ static void iscsi_initiatorname_tolower(
+ 	}
+ }
+ 
++static int iscsi_setup_i_tpt_id(struct iscsi_session *sess, char *iname)
++{
++	char isid_buf[13];
++
++	sprintf(isid_buf, "%6phN", sess->isid);
++
++	sess->se_sess->tpt_id = target_create_transport_id(SCSI_PROTOCOL_ISCSI,
++							   iname, isid_buf);
++	if (!sess->se_sess->tpt_id)
++		return -ENOMEM;
++
++	return 0;
++}
++
+ /*
+  * Processes the first Login Request..
+  */
+@@ -1260,11 +1274,21 @@ int iscsi_target_locate_portal(
+ 	tag_size = sizeof(struct iscsi_cmd) + conn->conn_transport->priv_size;
+ 
+ 	ret = transport_alloc_session_tags(sess->se_sess, tag_num, tag_size);
+-	if (ret < 0) {
+-		iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
+-				    ISCSI_LOGIN_STATUS_NO_RESOURCES);
+-		ret = -1;
++	if (ret < 0)
++		goto return_oom;
++
++	if (conn->tpg != iscsit_global->discovery_tpg) {
++		if (iscsi_setup_i_tpt_id(sess, i_buf))
++			/* tags and nacl released when session is freed */
++			goto return_oom;
+ 	}
++
++	goto out;
++
++return_oom:
++	iscsit_tx_login_rsp(conn, ISCSI_STATUS_CLS_TARGET_ERR,
++			    ISCSI_LOGIN_STATUS_NO_RESOURCES);
++	ret = -1;
+ out:
+ 	kfree(tmpbuf);
+ 	return ret;
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+1.8.3.1
