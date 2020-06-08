@@ -1,7 +1,7 @@
-From: Hannes Reinecke <hare@suse.de>
-Date: Mon, 08 Jun 2020 06:14:28 +0000
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Mon, 08 Jun 2020 12:06:08 +0000
 Subject: Re: [PATCH 11/17] target: add session sysfs class support
-Message-Id: <f0bd2a33-c084-6c9b-faa1-9d92bdb2df7a@suse.de>
+Message-Id: <780d2db6-2a29-677d-8ee2-a731bb98fb0f@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
  <1591562164-9766-12-git-send-email-michael.christie@oracle.com>
@@ -9,10 +9,10 @@ In-Reply-To: <1591562164-9766-12-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: Mike Christie <michael.christie@oracle.com>, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: Mike Christie <michael.christie@oracle.com>, bvanassche@acm.org, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 6/7/20 10:35 PM, Mike Christie wrote:
+On 06/07/20 22:35, Mike Christie wrote:
 > This patch adds a sysfs interface to export the target module's
 > sessions using the driver module class structure. With this we
 > now have a common way to export session info for all fabric modules
@@ -25,20 +25,20 @@ On 6/7/20 10:35 PM, Mike Christie wrote:
 > 
 > session-1/
 > ├── power
-> │   ├── autosuspend_delay_ms
-> │   ├── control
-> │   ├── runtime_active_time
-> │   ├── runtime_status
-> │   └── runtime_suspended_time
+> │   ├── autosuspend_delay_ms
+> │   ├── control
+> │   ├── runtime_active_time
+> │   ├── runtime_status
+> │   └── runtime_suspended_time
 > ├── subsystem -> ../../../../class/scsi_target_session
 > ├── tcm_endpoint
-> │   ├── acl
-> │   ├── fabric
-> │   ├── target
-> │   └── tpg
+> │   ├── acl
+> │   ├── fabric
+> │   ├── target
+> │   └── tpg
 > ├── transport_id
-> │   ├── name
-> │   └── proto
+> │   ├── name
+> │   └── proto
 > └── uevent
 > 
 > The Documentation/ABI/testing/sysfs-scsi-target-session file in this
@@ -148,6 +148,14 @@ On 6/7/20 10:35 PM, Mike Christie wrote:
 > +		characters that are the hexadecimal digits converted from the
 > +		binary iSCSI initiator session identifier value. If iSCSI and
 > +		format=1 is not used by this session this file will not exist.
+
+If I got it right, this is not how the code works.
+AFAICS, the file will always exist, but reading it delivers data only if
+proto=0x5 (iSCSI) and TPID FORMAT=1
+
+Thank you,
+Bodo
+
 > diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
 > index 8533444..93bf5fed 100644
 > --- a/drivers/target/target_core_internal.h
@@ -356,18 +364,133 @@ On 6/7/20 10:35 PM, Mike Christie wrote:
 > +		goto free_fabric;
 > +
 > +	return 0;
-
-I wonder if we need to copy these variables.
-Why can't we display them directly, returning an error if the respective
-link is not available?
-If one is worried about the sysfs/configfs reference counting we can get 
-the reference in the _show() functions; wouldn't that be a better solution?
-
-Cheers,
-
-Hannes
--- 
-Dr. Hannes Reinecke            Teamlead Storage & Networking
-hare@suse.de                               +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
+> +
+> +free_fabric:
+> +	kfree(se_sess->fabric_name);
+> +	se_sess->fabric_name = NULL;
+> +free_target:
+> +	kfree(se_sess->target_name);
+> +	se_sess->target_name = NULL;
+> +free_acl:
+> +	kfree(se_sess->acl_name);
+> +	se_sess->acl_name = NULL;
+> +	return -ENOMEM;
+> +}
+> +
+> +int target_sysfs_add_session(struct se_portal_group *se_tpg,
+> +			     struct se_session *se_sess)
+> +{
+> +	struct t10_transport_id *tpt_id = se_sess->tpt_id;
+> +	int ret;
+> +
+> +	if (!try_module_get(se_sess->tfo->module))
+> +		return -EINVAL;
+> +
+> +	ret = target_cp_endpoint_strs(se_tpg, se_sess);
+> +	if (ret)
+> +		goto put_mod;
+> +
+> +	se_sess->dev.groups = se_sess->tfo->session_attr_groups;
+> +	ret = device_add(&se_sess->dev);
+> +	if (ret) {
+> +		pr_err("Could not add session%d to sysfs. Error %d.\n",
+> +		       se_sess->sid, ret);
+> +		goto free_ep_strs;
+> +	}
+> +
+> +	pr_info("TCM added session-%d from [fabric: %s, target: %s, tpg %s, acl: %s] to [initiator port: %s%s%s]",
+> +		se_sess->sid, se_sess->fabric_name, se_sess->target_name,
+> +		se_sess->tpg_name, se_sess->acl_name ? se_sess->acl_name : "dynamic",
+> +		tpt_id->name, tpt_id->session_id ? "," : "",
+> +		tpt_id->session_id ? tpt_id->session_id : "");
+> +
+> +	se_sess->sysfs_added = true;
+> +	return 0;
+> +
+> +free_ep_strs:
+> +	target_free_endpoint_strs(se_sess);
+> +put_mod:
+> +	module_put(se_sess->tfo->module);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(target_sysfs_add_session);
+> +
+> +void target_sysfs_remove_session(struct se_session *se_sess)
+> +{
+> +	struct t10_transport_id *tpt_id = se_sess->tpt_id;
+> +
+> +	/* discovery sessions are normally not added to sysfs */
+> +	if (!se_sess->sysfs_added)
+> +		return;
+> +	se_sess->sysfs_added = false;
+> +
+> +	pr_info("TCM removed session-%d from [fabric: %s, target: %s, tpg %s, acl: %s] to [initiator port: %s%s%s]",
+> +		se_sess->sid, se_sess->fabric_name, se_sess->target_name,
+> +		se_sess->tpg_name, se_sess->acl_name ? se_sess->acl_name : "dynamic",
+> +		tpt_id->name, tpt_id->session_id ? "," : "",
+> +		tpt_id->session_id ? tpt_id->session_id : "");
+> +
+> +	device_del(&se_sess->dev);
+> +}
+> +EXPORT_SYMBOL(target_sysfs_remove_session);
+> +
+> +void target_sysfs_init(void)
+> +{
+> +	class_register(&session_class);
+> +}
+> +
+> +void target_sysfs_exit(void)
+> +{
+> +	class_unregister(&session_class);
+> +}
+> diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+> index 2e79cce..0d9916b 100644
+> --- a/include/target/target_core_base.h
+> +++ b/include/target/target_core_base.h
+> @@ -8,6 +8,7 @@
+>   #include <linux/percpu-refcount.h>
+>   #include <linux/semaphore.h>     /* struct semaphore */
+>   #include <linux/completion.h>
+> +#include <linux/device.h>
+>   
+>   #define TARGET_CORE_VERSION		"v5.0"
+>   
+> @@ -635,6 +636,13 @@ struct se_session {
+>   	wait_queue_head_t	cmd_list_wq;
+>   	void			*sess_cmd_map;
+>   	struct sbitmap_queue	sess_tag_pool;
+> +	struct device		dev;
+> +	int			sid;
+> +	bool			sysfs_added;
+> +	char			*acl_name;
+> +	char			*tpg_name;
+> +	char			*target_name;
+> +	char			*fabric_name;
+>   };
+>   
+>   struct se_device;
+> diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+> index ced377f..2a93daa 100644
+> --- a/include/target/target_core_fabric.h
+> +++ b/include/target/target_core_fabric.h
+> @@ -105,6 +105,8 @@ struct target_core_fabric_ops {
+>   	struct configfs_attribute **tfc_tpg_nacl_auth_attrs;
+>   	struct configfs_attribute **tfc_tpg_nacl_param_attrs;
+>   
+> +	const struct attribute_group **session_attr_groups;
+> +
+>   	/*
+>   	 * Set this member variable to true if the SCSI transport protocol
+>   	 * (e.g. iSCSI) requires that the Data-Out buffer is transferred in
+> @@ -145,7 +147,9 @@ void	transport_register_session(struct se_portal_group *,
+>   void	target_put_nacl(struct se_node_acl *);
+>   void	transport_deregister_session_configfs(struct se_session *);
+>   void	transport_deregister_session(struct se_session *);
+> -
+> +void	target_sysfs_remove_session(struct se_session *se_sess);
+> +int	target_sysfs_add_session(struct se_portal_group *se_tpg,
+> +				 struct se_session *se_sess);
+>   
+>   void	transport_init_se_cmd(struct se_cmd *,
+>   		const struct target_core_fabric_ops *,
+> 
