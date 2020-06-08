@@ -1,181 +1,72 @@
-From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
-Date: Sun, 07 Jun 2020 19:58:32 +0000
-Subject: [PATCH v4 3/4] target: fix NULL pointer dereference
-Message-Id: <1591559913-8388-4-git-send-email-sudhakar.panneerselvam@oracle.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 08 Jun 2020 23:04:33 +0000
+Subject: [PATCH AUTOSEL 5.6 148/606] scsi: target: Put lun_ref at end of tmr processing
+Message-Id: <20200608231211.3363633-148-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
-In-Reply-To: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+References: <20200608231211.3363633-1-sashal@kernel.org>
+In-Reply-To: <20200608231211.3363633-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, michael.christie@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: shirley.ma@oracle.com
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, "Bryant G . Ly" <bryangly@gmail.com>, Bart van Assche <bvanassche@acm.org>, "Martin K . Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-NULL pointer dereference happens when the following conditions are met
-1) A SCSI command is received for a non-existing LU or cdb
-initialization fails in target_setup_cmd_from_cdb().
-2) Tracing is enabled.
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-The following call sequences lead to NULL pointer dereference:
+commit f2e6b75f6ee82308ef7b00f29e71e5f1c6b3d52a upstream.
 
-1) iscsit_setup_scsi_cmd
-     transport_lookup_cmd_lun <-- lookup fails.
-          or
-     target_setup_cmd_from_cdb() <-- cdb initialization fails
-   iscsit_process_scsi_cmd
-     iscsit_sequence_cmd
-       transport_send_check_condition_and_sense
-         trace_target_cmd_complete <-- NULL dereference
+Testing with Loopback I found that, after a Loopback LUN has executed a
+TMR, I can no longer unlink the LUN.  The rm command hangs in
+transport_clear_lun_ref() at wait_for_completion(&lun->lun_shutdown_comp)
+The reason is, that transport_lun_remove_cmd() is not called at the end of
+target_tmr_work().
 
-2) target_submit_cmd_map_sgls
-     transport_lookup_cmd_lun <-- lookup fails
-          or
-     target_setup_cmd_from_cdb() <-- cdb initialization fails
-       transport_send_check_condition_and_sense
-         trace_target_cmd_complete <-- NULL dereference
+It seems, that in other fabrics this call happens implicitly when the
+fabric drivers call transport_generic_free_cmd() during their
+->queue_tm_rsp().
 
-In the above sequence, cmd->t_task_cdb is uninitialized which when
-referenced in trace_target_cmd_complete() causes NULL pointer dereference.
+Unfortunately Loopback seems to not comply to the common way
+of calling transport_generic_free_cmd() from ->queue_*().
+Instead it calls transport_generic_free_cmd() from its
+  ->check_stop_free() only.
 
-The fix is to use the helper, target_cmd_init_cdb() and call it after
-transport_init_se_cmd() is called, so that cmd->t_task_cdb can
-be initialized and hence can be referenced in trace_target_cmd_complete().
+But the ->check_stop_free() is called by
+transport_cmd_check_stop_to_fabric() after it has reset the se_cmd->se_lun
+pointer.  Therefore the following transport_generic_free_cmd() skips the
+transport_lun_remove_cmd().
 
-Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+So this patch re-adds the transport_lun_remove_cmd() at the end of
+target_tmr_work(), which was removed during commit 2c9fa49e100f ("scsi:
+target/core: Make ABORT and LUN RESET handling synchronous").
+
+For fabrics using transport_generic_free_cmd() in the usual way the double
+call to transport_lun_remove_cmd() doesn't harm, as
+transport_lun_remove_cmd() checks for this situation and does not release
+lun_ref twice.
+
+Link: https://lore.kernel.org/r/20200513153443.3554-1-bstroesser@ts.fujitsu.com
+Fixes: 2c9fa49e100f ("scsi: target/core: Make ABORT and LUN RESET handling synchronous")
+Cc: stable@vger.kernel.org
+Tested-by: Bryant G. Ly <bryangly@gmail.com>
+Reviewed-by: Bart van Assche <bvanassche@acm.org>
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/target/iscsi/iscsi_target.c    | 18 +++++++++++-------
- drivers/target/target_core_transport.c | 31 +++++++++++++++++++++++++------
- drivers/target/target_core_xcopy.c     |  3 +++
- 3 files changed, 39 insertions(+), 13 deletions(-)
+ drivers/target/target_core_transport.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 1b453629b516..93534dcc66c9 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1167,6 +1167,16 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 
- 	target_get_sess_cmd(&cmd->se_cmd, true);
- 
-+	cmd->sense_reason = target_cmd_init_cdb(&cmd->se_cmd, hdr->cdb);
-+	if (cmd->sense_reason) {
-+		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
-+			return iscsit_add_reject_cmd(cmd,
-+				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
-+		}
-+
-+		goto attach_cmd;
-+	}
-+
- 	cmd->sense_reason = transport_lookup_cmd_lun(&cmd->se_cmd);
- 	if (cmd->sense_reason)
- 		goto attach_cmd;
-@@ -1174,14 +1184,8 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	/* only used for printks or comparing with ->ref_task_tag */
- 	cmd->se_cmd.tag = (__force u32)cmd->init_task_tag;
- 	cmd->sense_reason = target_setup_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
--	if (cmd->sense_reason) {
--		if (cmd->sense_reason = TCM_OUT_OF_RESOURCES) {
--			return iscsit_add_reject_cmd(cmd,
--					ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
--		}
--
-+	if (cmd->sense_reason)
- 		goto attach_cmd;
--	}
- 
- 	if (iscsit_build_pdu_and_seq_lists(cmd, payload_length) < 0) {
- 		return iscsit_add_reject_cmd(cmd,
 diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 7ea77933e64d..0fbb38254535 100644
+index 0ae9e60fc4d5..61486e5abee4 100644
 --- a/drivers/target/target_core_transport.c
 +++ b/drivers/target/target_core_transport.c
-@@ -1413,6 +1413,9 @@ void transport_init_se_cmd(
- sense_reason_t
- target_cmd_init_cdb(struct se_cmd *cmd, unsigned char *cdb)
- {
-+	sense_reason_t ret;
-+
-+	cmd->t_task_cdb = &cmd->__t_task_cdb[0];
- 	/*
- 	 * Ensure that the received CDB is less than the max (252 + 8) bytes
- 	 * for VARIABLE_LENGTH_CMD
-@@ -1421,7 +1424,8 @@ void transport_init_se_cmd(
- 		pr_err("Received SCSI CDB with command_size: %d that"
- 			" exceeds SCSI_MAX_VARLEN_CDB_SIZE: %d\n",
- 			scsi_command_size(cdb), SCSI_MAX_VARLEN_CDB_SIZE);
--		return TCM_INVALID_CDB_FIELD;
-+		ret = TCM_INVALID_CDB_FIELD;
-+		goto err;
- 	}
- 	/*
- 	 * If the received CDB is larger than TCM_MAX_COMMAND_SIZE,
-@@ -1436,10 +1440,10 @@ void transport_init_se_cmd(
- 				" %u > sizeof(cmd->__t_task_cdb): %lu ops\n",
- 				scsi_command_size(cdb),
- 				(unsigned long)sizeof(cmd->__t_task_cdb));
--			return TCM_OUT_OF_RESOURCES;
-+			ret = TCM_OUT_OF_RESOURCES;
-+			goto err;
- 		}
--	} else
--		cmd->t_task_cdb = &cmd->__t_task_cdb[0];
-+	}
- 	/*
- 	 * Copy the original CDB into cmd->
- 	 */
-@@ -1447,6 +1451,15 @@ void transport_init_se_cmd(
+@@ -3349,6 +3349,7 @@ static void target_tmr_work(struct work_struct *work)
  
- 	trace_target_sequencer_start(cmd);
- 	return 0;
-+
-+err:
-+	/*
-+	 * Copy the CDB here to allow trace_target_cmd_complete() to
-+	 * print the cdb to the trace buffers.
-+	 */
-+	memcpy(cmd->t_task_cdb, cdb, min(scsi_command_size(cdb),
-+					 (unsigned int)TCM_MAX_COMMAND_SIZE));
-+	return ret;
- }
- EXPORT_SYMBOL(target_cmd_init_cdb);
+ 	cmd->se_tfo->queue_tm_rsp(cmd);
  
-@@ -1456,8 +1469,6 @@ void transport_init_se_cmd(
- 	struct se_device *dev = cmd->se_dev;
- 	sense_reason_t ret;
++	transport_lun_remove_cmd(cmd);
+ 	transport_cmd_check_stop_to_fabric(cmd);
+ 	return;
  
--	target_cmd_init_cdb(cmd, cdb);
--
- 	ret = dev->transport->parse_cdb(cmd);
- 	if (ret = TCM_UNSUPPORTED_SCSI_OPCODE)
- 		pr_warn_ratelimited("%s/%s: Unsupported SCSI Opcode 0x%02x, sending CHECK_CONDITION.\n",
-@@ -1621,6 +1632,14 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
- 	 */
- 	if (flags & TARGET_SCF_BIDI_OP)
- 		se_cmd->se_cmd_flags |= SCF_BIDI;
-+
-+	rc = target_cmd_init_cdb(se_cmd, cdb);
-+	if (rc) {
-+		transport_send_check_condition_and_sense(se_cmd, rc, 0);
-+		target_put_sess_cmd(se_cmd);
-+		return 0;
-+	}
-+
- 	/*
- 	 * Locate se_lun pointer and attach it to struct se_cmd
- 	 */
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index 5f1bab37a6bf..7f9c93b5cba6 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -526,6 +526,9 @@ static int target_xcopy_setup_pt_cmd(
- 	}
- 	cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
- 
-+	if (target_cmd_init_cdb(cmd, cdb))
-+		return -EINVAL;
-+
- 	cmd->tag = 0;
- 	if (target_setup_cmd_from_cdb(cmd, cdb))
- 		return -EINVAL;
 -- 
-1.8.3.1
+2.25.1
