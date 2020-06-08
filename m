@@ -1,74 +1,69 @@
-From: Michael Christie <michael.christie@oracle.com>
-Date: Mon, 08 Jun 2020 15:55:00 +0000
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 08 Jun 2020 16:36:56 +0000
 Subject: Re: [PATCH 11/17] target: add session sysfs class support
-Message-Id: <7598A2AE-B43F-41BB-82E0-8882FA7D66E0@oracle.com>
+Message-Id: <20200608163656.GA425601@kroah.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
  <1591562164-9766-12-git-send-email-michael.christie@oracle.com>
- <f0bd2a33-c084-6c9b-faa1-9d92bdb2df7a@suse.de>
- <75aa23e1-2194-31fb-ef12-90f868e12494@oracle.com>
-In-Reply-To: <75aa23e1-2194-31fb-ef12-90f868e12494@oracle.com>
+ <20200608053259.GA241877@kroah.com>
+ <1bb2e8f9-d433-de3b-3c4a-2ded2fa54240@oracle.com>
+In-Reply-To: <1bb2e8f9-d433-de3b-3c4a-2ded2fa54240@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hannes Reinecke <hare@suse.de>, bvanassche@acm.org, bstroesser@ts.fujitsu.com, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Mike Christie <michael.christie@oracle.com>
+Cc: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-
-
-> On Jun 8, 2020, at 10:21 AM, Mike Christie <michael.christie@oracle.com> wrote:
+On Mon, Jun 08, 2020 at 10:35:56AM -0500, Mike Christie wrote:
 > 
-> On 6/8/20 1:14 AM, Hannes Reinecke wrote:
->>> +    se_sess->target_name = kstrdup(se_tpg->se_tpg_wwn->wwn_group.cg_item.ci_name,
->>> +                       GFP_KERNEL);
->>> +    if (!se_sess->target_name)
->>> +        goto free_acl;
->>> +
->>> +    if (se_sess->tfo->fabric_alias)
->>> +        se_sess->fabric_name = kstrdup(se_sess->tfo->fabric_alias,
->>> +                           GFP_KERNEL);
->>> +    else
->>> +        se_sess->fabric_name = kstrdup(se_sess->tfo->fabric_name,
->>> +                           GFP_KERNEL);
->>> +    if (!se_sess->fabric_name)
->>> +        goto free_target;
->>> +
->>> +    se_sess->tpg_name = kstrdup(se_tpg->tpg_group.cg_item.ci_name,
->>> +                    GFP_KERNEL);
->>> +    if (!se_sess->tpg_name)
->>> +        goto free_fabric;
->>> +
->>> +    return 0;
->> I wonder if we need to copy these variables.
->> Why can't we display them directly, returning an error if the respective
->> link is not available?
->> If one is worried about the sysfs/configfs reference counting we can get the reference in the _show() functions; wouldn't that be a better solution?
 > 
-> Do you mean in the sysfs show function do a configfs_depend_item() on the tpg, www, acl, etc? If so, I'm not sure that's safe, because for the tpg for example, we could do:
+> On 6/8/20 12:32 AM, Greg Kroah-Hartman wrote:
+> > On Sun, Jun 07, 2020 at 03:35:58PM -0500, Mike Christie wrote:
+> > > +int target_sysfs_add_session(struct se_portal_group *se_tpg,
+> > > +			     struct se_session *se_sess)
+> > > +{
+> > > +	struct t10_transport_id *tpt_id = se_sess->tpt_id;
+> > > +	int ret;
+> > > +
+> > > +	if (!try_module_get(se_sess->tfo->module))
+> > > +		return -EINVAL;
+> > > +
+> > > +	ret = target_cp_endpoint_strs(se_tpg, se_sess);
+> > > +	if (ret)
+> > > +		goto put_mod;
+> > > +
+> > > +	se_sess->dev.groups = se_sess->tfo->session_attr_groups;
+> > > +	ret = device_add(&se_sess->dev);
+> > > +	if (ret) {
+> > > +		pr_err("Could not add session%d to sysfs. Error %d.\n",
+> > > +		       se_sess->sid, ret);
+> > > +		goto free_ep_strs;
+> > > +	}
+> > > +
+> > > +	pr_info("TCM added session-%d from [fabric: %s, target: %s, tpg %s, acl: %s] to [initiator port: %s%s%s]",
+> > > +		se_sess->sid, se_sess->fabric_name, se_sess->target_name,
+> > > +		se_sess->tpg_name, se_sess->acl_name ? se_sess->acl_name : "dynamic",
+> > > +		tpt_id->name, tpt_id->session_id ? "," : "",
+> > > +		tpt_id->session_id ? tpt_id->session_id : "");
+> > 
+> > You have a 'struct device', so please use it, no need for pr_info(),
+> > always use the dev_*() calls instead.
+> > 
+> > but, when drivers and kernel code is all working properly, no need to be
+> > noisy at all, this should just be a dev_dbg() call, right?
 > 
-> 1. Userspace starts tpg removal with a rmdir.
-> 2. Userspace also opens sysfs session file and has a ref to the session, but not the tpg yet.
-> 3. kernel tears down tpg and sessions under it. The tpg is freed. The session is not because of the ref taken in #2.
-> 4. sysfs session show function starts to reference se_sess->se_tpg so it can do a configfs_depend_item on the tpg_group.cg_item, but the se_tpg is freed in #3.
+> I liked the info one, because the the code can work correctly, but the
+> remote devices we are connecting to are normally going to hit issues.
 > 
-> We either need to:
-> 1. cp like above.
-> 2. Handle both configfs and device struct refcounts for the same struct. So add a device struct to the www, tpg, acl and then coordinate the refcounting.
-> 3. take a reference to the se_tpg when the session is created then drop it in the session release.
+> For example every time the storage network goes down temporarily the driver
+> code will call remove function, then call the add again when it comes back
+> up. Having it always logged helps us figure out the root problem later when
+> the customer only has logs available.
 
+Then make this a tracepoint or something, again, do not be noisy for
+normal system operations.  Do you want this to be the case for all of
+your hardware devices all the time?
 
-Ignore #3. That does not work. Userspace expects to be able to rmdir on a tpg and that will remove the underlying sessions. If the session takes a ref to the tpg, then it breaks userspace because something now has to do the session removal before the tpg rmdir.
+thanks,
 
-
-
-
-> 4. add some code and end up mix locking and state checks with refcounts. For example the tpg would have its configfs refcount like it does today (no new device struct in it), and when it deletes the sessions under it make sure the se_sess->se_tpg is NULL'd in a way that the session show function can do
-> 
-> lock()
-> if (!se_sess->se_tpg)
-> 	return
-> 
-> se_sess->se_tpg access
-> unlock()
-> 
-> And then you have to do that up the stack for the other structs we want to ref.
+greg k-h
