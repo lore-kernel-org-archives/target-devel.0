@@ -1,53 +1,29 @@
-From: Chris Boot <bootc@boo.tc>
-Date: Sun, 14 Jun 2020 10:34:17 +0000
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sun, 14 Jun 2020 23:28:56 +0000
 Subject: Re: [PATCH] scsi: target/sbp: remove firewire SBP target driver
-Message-Id: <7ad14946-5c25-fc49-1e48-72d37a607832@boo.tc>
+Message-Id: <alpine.LNX.2.22.394.2006150919110.8@nippy.intranet>
 List-Id: <target-devel.vger.kernel.org>
-References: <01020172acd3d10f-3964f076-a820-43fc-9494-3f3946e9b7b5-000000@eu-west-1.amazonses.com>
- <alpine.LNX.2.22.394.2006140934520.15@nippy.intranet>
-In-Reply-To: <alpine.LNX.2.22.394.2006140934520.15@nippy.intranet>
+References: <01020172acd3d10f-3964f076-a820-43fc-9494-3f3946e9b7b5-000000@eu-west-1.amazonses.com> <alpine.LNX.2.22.394.2006140934520.15@nippy.intranet> <7ad14946-5c25-fc49-1e48-72d37a607832@boo.tc>
+In-Reply-To: <7ad14946-5c25-fc49-1e48-72d37a607832@boo.tc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Finn Thain <fthain@telegraphics.com.au>, Chris Boot <bootc@bootc.net>
-Cc: linuxppc-dev@lists.ozlabs.org, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>, Chuhong Yuan <hslester96@gmail.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Nicholas Bellinger <nab@linux-iscsi.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
+To: Chris Boot <bootc@boo.tc>
+Cc: Chris Boot <bootc@bootc.net>, linuxppc-dev@lists.ozlabs.org, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>, Chuhong Yuan <hslester96@gmail.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Nicholas Bellinger <nab@linux-iscsi.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-On 14/06/2020 01:03, Finn Thain wrote:
-> On Sat, 13 Jun 2020, Chris Boot wrote:
+On Sun, 14 Jun 2020, Chris Boot wrote:
+
+> I expect that if someone finds this useful it can stick around (but 
+> that's not my call).
+
+Who's call is that? If the patch had said "From: Martin K. Petersen" and 
+"This driver is being removed because it has the following defects..." 
+that would be some indication of a good-faith willingness to accept users 
+as developers in the spirit of the GPL, which is what you seem to be 
+alluding to (?).
+
+> I just don't have the time or inclination or hardware to be able to 
+> maintain it anymore, so someone else would have to pick it up.
 > 
->> I no longer have the time to maintain this subsystem nor the hardware to
->> test patches with. 
-> 
-> Then why not patch MAINTAINERS, and orphan it, as per usual practice?
-> 
-> $ git log --oneline MAINTAINERS | grep -i orphan
 
-My patch to remove it was in response to:
-
-https://lore.kernel.org/lkml/yq1img99d4k.fsf@ca-mkp.ca.oracle.com/
-
->> It also doesn't appear to have any active users so I doubt anyone will 
->> miss it.
->>
-> 
-> It's not unusual that any Linux driver written more than 5 years ago 
-> "doesn't appear to have any active users".
-> 
-> If a driver has been orphaned and broken in the past, and no-one stepped 
-> up to fix it within a reasonable period, removal would make sense. But 
-> that's not the case here.
-> 
-> I haven't used this driver for a long time, but I still own PowerMacs with 
-> firewire, and I know I'm not the only one.
-
-I expect that if someone finds this useful it can stick around (but
-that's not my call). I just don't have the time or inclination or
-hardware to be able to maintain it anymore, so someone else would have
-to pick it up.
-
-Cheers,
-Chris
-
--- 
-Chris Boot
-bootc@boo.tc
+Which is why most drivers get orphaned, right?
