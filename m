@@ -1,59 +1,51 @@
-From: Jing Xiangfeng <jingxiangfeng@huawei.com>
-Date: Tue, 16 Jun 2020 00:51:24 +0000
-Subject: Re: [PATCH] IB/srpt: Fix a potential null pointer dereference
-Message-Id: <5EE8178C.9090005@huawei.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sun, 14 Jun 2020 00:03:31 +0000
+Subject: Re: [PATCH] scsi: target/sbp: remove firewire SBP target driver
+Message-Id: <alpine.LNX.2.22.394.2006140934520.15@nippy.intranet>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200615091220.6439-1-jingxiangfeng@huawei.com>
- <7366b608-4474-cfaa-c465-957fd2d2366d@acm.org>
-In-Reply-To: <7366b608-4474-cfaa-c465-957fd2d2366d@acm.org>
+References: <01020172acd3d10f-3964f076-a820-43fc-9494-3f3946e9b7b5-000000@eu-west-1.amazonses.com>
+In-Reply-To: <01020172acd3d10f-3964f076-a820-43fc-9494-3f3946e9b7b5-000000@eu-west-1.amazonses.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>, dledford@redhat.com, jgg@ziepe.ca
-Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+To: Chris Boot <bootc@bootc.net>
+Cc: linuxppc-dev@lists.ozlabs.org, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>, Chuhong Yuan <hslester96@gmail.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Nicholas Bellinger <nab@linux-iscsi.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
 
+On Sat, 13 Jun 2020, Chris Boot wrote:
 
+> I no longer have the time to maintain this subsystem nor the hardware to
+> test patches with. 
 
-On 2020/6/15 21:37, Bart Van Assche wrote:
-> On 2020-06-15 02:12, Jing Xiangfeng wrote:
->> In srpt_cm_req_recv(), it is possible that sdev is NULL,
->> so we should test sdev before using it.
->>
->> Signed-off-by: Jing Xiangfeng <jingxiangfeng@huawei.com>
->> ---
->>   drivers/infiniband/ulp/srpt/ib_srpt.c | 3 ++-
->>   1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
->> index 98552749d71c..72053254bf84 100644
->> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
->> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
->> @@ -2143,7 +2143,7 @@ static int srpt_cm_req_recv(struct srpt_device *const sdev,
->>   			    const struct srp_login_req *req,
->>   			    const char *src_addr)
->>   {
->> -	struct srpt_port *sport = &sdev->port[port_num - 1];
->> +	struct srpt_port *sport;
->>   	struct srpt_nexus *nexus;
->>   	struct srp_login_rsp *rsp = NULL;
->>   	struct srp_login_rej *rej = NULL;
->> @@ -2162,6 +2162,7 @@ static int srpt_cm_req_recv(struct srpt_device *const sdev,
->>   	if (WARN_ON(!sdev || !req))
->>   		return -EINVAL;
->>
->> +	sport = &sdev->port[port_num - 1];
->>   	it_iu_len = be32_to_cpu(req->req_it_iu_len);
->>
->
-> Please remove the (!sdev || !req) check instead of making the above
-> change. It's easy to show that both pointers are always valid.
+Then why not patch MAINTAINERS, and orphan it, as per usual practice?
 
-OK, I will send a v2 with this change.
+$ git log --oneline MAINTAINERS | grep -i orphan
 
-Thanks
->
-> Thanks,
->
-> Bart.
-> .
->
+> It also doesn't appear to have any active users so I doubt anyone will 
+> miss it.
+> 
+
+It's not unusual that any Linux driver written more than 5 years ago 
+"doesn't appear to have any active users".
+
+If a driver has been orphaned and broken in the past, and no-one stepped 
+up to fix it within a reasonable period, removal would make sense. But 
+that's not the case here.
+
+I haven't used this driver for a long time, but I still own PowerMacs with 
+firewire, and I know I'm not the only one.
+
+> Signed-off-by: Chris Boot <bootc@bootc.net>
+> ---
+>  MAINTAINERS                     |    9 -
+>  drivers/target/Kconfig          |    1 -
+>  drivers/target/Makefile         |    1 -
+>  drivers/target/sbp/Kconfig      |   12 -
+>  drivers/target/sbp/Makefile     |    2 -
+>  drivers/target/sbp/sbp_target.c | 2350 -------------------------------
+>  drivers/target/sbp/sbp_target.h |  243 ----
+>  7 files changed, 2618 deletions(-)
+>  delete mode 100644 drivers/target/sbp/Kconfig
+>  delete mode 100644 drivers/target/sbp/Makefile
+>  delete mode 100644 drivers/target/sbp/sbp_target.c
+>  delete mode 100644 drivers/target/sbp/sbp_target.h
+> 
