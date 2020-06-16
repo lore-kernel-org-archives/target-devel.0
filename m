@@ -1,1294 +1,3057 @@
-From: kernel test robot <lkp@intel.com>
-Date: Mon, 08 Jun 2020 10:20:30 +0000
-Subject: Re: [PATCH 12/17] target: hook most target users into sysfs API
-Message-Id: <202006081827.YEB3tIoU%lkp@intel.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ZPt4rx8FFjLCG7dd"
+From: Waiman Long <longman@redhat.com>
+Date: Tue, 16 Jun 2020 15:43:11 +0000
+Subject: [PATCH v5 2/2] mm, treewide: Rename kzfree() to kfree_sensitive()
+Message-Id: <20200616154311.12314-3-longman@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591562164-9766-13-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1591562164-9766-13-git-send-email-michael.christie@oracle.com>
-To: Mike Christie <michael.christie@oracle.com>, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: kbuild-all@lists.01.org
+References: <20200616154311.12314-1-longman@redhat.com>
+In-Reply-To: <20200616154311.12314-1-longman@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>, David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Linus Torvalds <torvalds@linux-foundation.org>, Joe Perches <joe@perches.com>, Matthew Wilcox <willy@infradead.org>, David Rientjes <rientjes@google.com>
+Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Michal Hocko <mhocko@suse.com>, virtualization@lists.linux-foundation.org, linux-mm@kvack.org, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-scsi@vger.kernel.org, kasan-dev@googlegroups.com, linux-wpan@vger.kernel.org, Waiman Long <longman@redhat.com>, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, ecryptfs@vger.kernel.org, linux-fscrypt@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
 
+As said by Linus:
 
---ZPt4rx8FFjLCG7dd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+  A symmetric naming is only helpful if it implies symmetries in use.
+  Otherwise it's actively misleading.
 
-Hi Mike,
+  In "kzalloc()", the z is meaningful and an important part of what the
+  caller wants.
 
-Thank you for the patch! Yet something to improve:
+  In "kzfree()", the z is actively detrimental, because maybe in the
+  future we really _might_ want to use that "memfill(0xdeadbeef)" or
+  something. The "zero" part of the interface isn't even _relevant_.
 
-[auto build test ERROR on mkp-scsi/for-next]
-[also build test ERROR on scsi/for-next vhost/linux-next xen-tip/linux-next v5.7 next-20200605]
-[if your patch is applied to the wrong git tree, please drop us a note to help
-improve the system. BTW, we also suggest to use '--base' option to specify the
-base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
+The main reason that kzfree() exists is to clear sensitive information
+that should not be leaked to other future users of the same memory
+objects.
 
-url:    https://github.com/0day-ci/linux/commits/Mike-Christie/target-add-sysfs-support/20200608-044027
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
-config: sparc-allyesconfig (attached as .config)
-compiler: sparc64-linux-gcc (GCC) 9.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=sparc 
+Rename kzfree() to kfree_sensitive() to follow the example of the
+recently added kvfree_sensitive() and make the intention of the API
+more explicit. In addition, memzero_explicit() is used to clear the
+memory to make sure that it won't get optimized away by the compiler.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+The renaming is done by using the command sequence:
 
-Note: the linux-review/Mike-Christie/target-add-sysfs-support/20200608-044027 HEAD fc08cd1eb111346ece0dceae6f01be21509d2c49 builds fine.
-      It only hurts bisectibility.
+  git grep -w --name-only kzfree |\
+  xargs sed -i 's/\bkzfree\b/kfree_sensitive/'
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
+followed by some editing of the kfree_sensitive() kerneldoc and adding
+a kzfree backward compatibility macro in slab.h.
 
-drivers/target/target_core_sysfs.c: In function 'target_cp_endpoint_strs':
->> drivers/target/target_core_sysfs.c:172:13: error: 'struct se_session' has no member named 'tfo'
-172 |  if (se_sess->tfo->fabric_alias)
-|             ^~
-drivers/target/target_core_sysfs.c:173:41: error: 'struct se_session' has no member named 'tfo'
-173 |   se_sess->fabric_name = kstrdup(se_sess->tfo->fabric_alias,
-|                                         ^~
-drivers/target/target_core_sysfs.c:176:41: error: 'struct se_session' has no member named 'tfo'
-176 |   se_sess->fabric_name = kstrdup(se_sess->tfo->fabric_name,
-|                                         ^~
-drivers/target/target_core_sysfs.c: In function 'target_sysfs_add_session':
-drivers/target/target_core_sysfs.c:206:29: error: 'struct se_session' has no member named 'tfo'
-206 |  if (!try_module_get(se_sess->tfo->module))
-|                             ^~
-drivers/target/target_core_sysfs.c:213:31: error: 'struct se_session' has no member named 'tfo'
-213 |  se_sess->dev.groups = se_sess->tfo->session_attr_groups;
-|                               ^~
-drivers/target/target_core_sysfs.c:233:20: error: 'struct se_session' has no member named 'tfo'
-233 |  module_put(se_sess->tfo->module);
-|                    ^~
-
-vim +172 drivers/target/target_core_sysfs.c
-
-03975f2939ad69 Mike Christie 2020-06-07  151  
-03975f2939ad69 Mike Christie 2020-06-07  152  static int target_cp_endpoint_strs(struct se_portal_group *se_tpg,
-03975f2939ad69 Mike Christie 2020-06-07  153  				   struct se_session *se_sess)
-03975f2939ad69 Mike Christie 2020-06-07  154  {
-03975f2939ad69 Mike Christie 2020-06-07  155  	/*
-03975f2939ad69 Mike Christie 2020-06-07  156  	 * Copy configfs dir/object names so userspace can match the session
-03975f2939ad69 Mike Christie 2020-06-07  157  	 * to its target, and we also don't have to worry about mixing configfs
-03975f2939ad69 Mike Christie 2020-06-07  158  	 * refcounts with sysfs.
-03975f2939ad69 Mike Christie 2020-06-07  159  	 */
-03975f2939ad69 Mike Christie 2020-06-07  160  	if (!se_sess->se_node_acl->dynamic_node_acl) {
-03975f2939ad69 Mike Christie 2020-06-07  161  		se_sess->acl_name = kstrdup(se_sess->se_node_acl->initiatorname,
-03975f2939ad69 Mike Christie 2020-06-07  162  					    GFP_KERNEL);
-03975f2939ad69 Mike Christie 2020-06-07  163  		if (!se_sess->acl_name)
-03975f2939ad69 Mike Christie 2020-06-07  164  			return -ENOMEM;
-03975f2939ad69 Mike Christie 2020-06-07  165  	}
-03975f2939ad69 Mike Christie 2020-06-07  166  
-03975f2939ad69 Mike Christie 2020-06-07  167  	se_sess->target_name = kstrdup(se_tpg->se_tpg_wwn->wwn_group.cg_item.ci_name,
-03975f2939ad69 Mike Christie 2020-06-07  168  				       GFP_KERNEL);
-03975f2939ad69 Mike Christie 2020-06-07  169  	if (!se_sess->target_name)
-03975f2939ad69 Mike Christie 2020-06-07  170  		goto free_acl;
-03975f2939ad69 Mike Christie 2020-06-07  171  
-03975f2939ad69 Mike Christie 2020-06-07 @172  	if (se_sess->tfo->fabric_alias)
-03975f2939ad69 Mike Christie 2020-06-07  173  		se_sess->fabric_name = kstrdup(se_sess->tfo->fabric_alias,
-03975f2939ad69 Mike Christie 2020-06-07  174  					       GFP_KERNEL);
-03975f2939ad69 Mike Christie 2020-06-07  175  	else
-03975f2939ad69 Mike Christie 2020-06-07  176  		se_sess->fabric_name = kstrdup(se_sess->tfo->fabric_name,
-03975f2939ad69 Mike Christie 2020-06-07  177  					       GFP_KERNEL);
-03975f2939ad69 Mike Christie 2020-06-07  178  	if (!se_sess->fabric_name)
-03975f2939ad69 Mike Christie 2020-06-07  179  		goto free_target;
-03975f2939ad69 Mike Christie 2020-06-07  180  
-03975f2939ad69 Mike Christie 2020-06-07  181  	se_sess->tpg_name = kstrdup(se_tpg->tpg_group.cg_item.ci_name,
-03975f2939ad69 Mike Christie 2020-06-07  182  				    GFP_KERNEL);
-03975f2939ad69 Mike Christie 2020-06-07  183  	if (!se_sess->tpg_name)
-03975f2939ad69 Mike Christie 2020-06-07  184  		goto free_fabric;
-03975f2939ad69 Mike Christie 2020-06-07  185  
-03975f2939ad69 Mike Christie 2020-06-07  186  	return 0;
-03975f2939ad69 Mike Christie 2020-06-07  187  
-03975f2939ad69 Mike Christie 2020-06-07  188  free_fabric:
-03975f2939ad69 Mike Christie 2020-06-07  189  	kfree(se_sess->fabric_name);
-03975f2939ad69 Mike Christie 2020-06-07  190  	se_sess->fabric_name = NULL;
-03975f2939ad69 Mike Christie 2020-06-07  191  free_target:
-03975f2939ad69 Mike Christie 2020-06-07  192  	kfree(se_sess->target_name);
-03975f2939ad69 Mike Christie 2020-06-07  193  	se_sess->target_name = NULL;
-03975f2939ad69 Mike Christie 2020-06-07  194  free_acl:
-03975f2939ad69 Mike Christie 2020-06-07  195  	kfree(se_sess->acl_name);
-03975f2939ad69 Mike Christie 2020-06-07  196  	se_sess->acl_name = NULL;
-03975f2939ad69 Mike Christie 2020-06-07  197  	return -ENOMEM;
-03975f2939ad69 Mike Christie 2020-06-07  198  }
-03975f2939ad69 Mike Christie 2020-06-07  199  
-
-:::::: The code at line 172 was first introduced by commit
-:::::: 03975f2939ad69a19b1a7cdd49cb83e66258688e target: add session sysfs class support
-
-:::::: TO: Mike Christie <michael.christie@oracle.com>
-:::::: CC: 0day robot <lkp@intel.com>
-
+Suggested-by: Joe Perches <joe@perches.com>
+Acked-by: David Howells <dhowells@redhat.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+Signed-off-by: Waiman Long <longman@redhat.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ arch/s390/crypto/prng.c                       |  4 +--
+ arch/x86/power/hibernate.c                    |  2 +-
+ crypto/adiantum.c                             |  2 +-
+ crypto/ahash.c                                |  4 +--
+ crypto/api.c                                  |  2 +-
+ crypto/asymmetric_keys/verify_pefile.c        |  4 +--
+ crypto/deflate.c                              |  2 +-
+ crypto/drbg.c                                 | 10 +++---
+ crypto/ecc.c                                  |  8 ++---
+ crypto/ecdh.c                                 |  2 +-
+ crypto/gcm.c                                  |  2 +-
+ crypto/gf128mul.c                             |  4 +--
+ crypto/jitterentropy-kcapi.c                  |  2 +-
+ crypto/rng.c                                  |  2 +-
+ crypto/rsa-pkcs1pad.c                         |  6 ++--
+ crypto/seqiv.c                                |  2 +-
+ crypto/shash.c                                |  2 +-
+ crypto/skcipher.c                             |  2 +-
+ crypto/testmgr.c                              |  6 ++--
+ crypto/zstd.c                                 |  2 +-
+ .../allwinner/sun8i-ce/sun8i-ce-cipher.c      |  2 +-
+ .../allwinner/sun8i-ss/sun8i-ss-cipher.c      |  2 +-
+ drivers/crypto/amlogic/amlogic-gxl-cipher.c   |  4 +--
+ drivers/crypto/atmel-ecc.c                    |  2 +-
+ drivers/crypto/caam/caampkc.c                 | 28 +++++++--------
+ drivers/crypto/cavium/cpt/cptvf_main.c        |  6 ++--
+ drivers/crypto/cavium/cpt/cptvf_reqmanager.c  | 12 +++----
+ drivers/crypto/cavium/nitrox/nitrox_lib.c     |  4 +--
+ drivers/crypto/cavium/zip/zip_crypto.c        |  6 ++--
+ drivers/crypto/ccp/ccp-crypto-rsa.c           |  6 ++--
+ drivers/crypto/ccree/cc_aead.c                |  4 +--
+ drivers/crypto/ccree/cc_buffer_mgr.c          |  4 +--
+ drivers/crypto/ccree/cc_cipher.c              |  6 ++--
+ drivers/crypto/ccree/cc_hash.c                |  8 ++---
+ drivers/crypto/ccree/cc_request_mgr.c         |  2 +-
+ drivers/crypto/marvell/cesa/hash.c            |  2 +-
+ .../crypto/marvell/octeontx/otx_cptvf_main.c  |  6 ++--
+ .../marvell/octeontx/otx_cptvf_reqmgr.h       |  2 +-
+ drivers/crypto/mediatek/mtk-aes.c             |  2 +-
+ drivers/crypto/nx/nx.c                        |  4 +--
+ drivers/crypto/virtio/virtio_crypto_algs.c    | 12 +++----
+ drivers/crypto/virtio/virtio_crypto_core.c    |  2 +-
+ drivers/md/dm-crypt.c                         | 32 ++++++++---------
+ drivers/md/dm-integrity.c                     |  6 ++--
+ drivers/misc/ibmvmc.c                         |  6 ++--
+ .../hisilicon/hns3/hns3pf/hclge_mbx.c         |  2 +-
+ .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    |  6 ++--
+ drivers/net/ppp/ppp_mppe.c                    |  6 ++--
+ drivers/net/wireguard/noise.c                 |  4 +--
+ drivers/net/wireguard/peer.c                  |  2 +-
+ drivers/net/wireless/intel/iwlwifi/pcie/rx.c  |  2 +-
+ .../net/wireless/intel/iwlwifi/pcie/tx-gen2.c |  6 ++--
+ drivers/net/wireless/intel/iwlwifi/pcie/tx.c  |  6 ++--
+ drivers/net/wireless/intersil/orinoco/wext.c  |  4 +--
+ drivers/s390/crypto/ap_bus.h                  |  4 +--
+ drivers/staging/ks7010/ks_hostif.c            |  2 +-
+ drivers/staging/rtl8723bs/core/rtw_security.c |  2 +-
+ drivers/staging/wlan-ng/p80211netdev.c        |  2 +-
+ drivers/target/iscsi/iscsi_target_auth.c      |  2 +-
+ fs/cifs/cifsencrypt.c                         |  2 +-
+ fs/cifs/connect.c                             | 10 +++---
+ fs/cifs/dfs_cache.c                           |  2 +-
+ fs/cifs/misc.c                                |  8 ++---
+ fs/crypto/keyring.c                           |  6 ++--
+ fs/crypto/keysetup_v1.c                       |  4 +--
+ fs/ecryptfs/keystore.c                        |  4 +--
+ fs/ecryptfs/messaging.c                       |  2 +-
+ include/crypto/aead.h                         |  2 +-
+ include/crypto/akcipher.h                     |  2 +-
+ include/crypto/gf128mul.h                     |  2 +-
+ include/crypto/hash.h                         |  2 +-
+ include/crypto/internal/acompress.h           |  2 +-
+ include/crypto/kpp.h                          |  2 +-
+ include/crypto/skcipher.h                     |  2 +-
+ include/linux/slab.h                          |  4 ++-
+ lib/mpi/mpiutil.c                             |  6 ++--
+ lib/test_kasan.c                              |  6 ++--
+ mm/slab_common.c                              |  8 ++---
+ net/atm/mpoa_caches.c                         |  4 +--
+ net/bluetooth/ecdh_helper.c                   |  6 ++--
+ net/bluetooth/smp.c                           | 24 ++++++-------
+ net/core/sock.c                               |  2 +-
+ net/ipv4/tcp_fastopen.c                       |  2 +-
+ net/mac80211/aead_api.c                       |  4 +--
+ net/mac80211/aes_gmac.c                       |  2 +-
+ net/mac80211/key.c                            |  2 +-
+ net/mac802154/llsec.c                         | 20 +++++------
+ net/sctp/auth.c                               |  2 +-
+ net/sctp/socket.c                             |  2 +-
+ net/sunrpc/auth_gss/gss_krb5_crypto.c         |  4 +--
+ net/sunrpc/auth_gss/gss_krb5_keys.c           |  6 ++--
+ net/sunrpc/auth_gss/gss_krb5_mech.c           |  2 +-
+ net/tipc/crypto.c                             | 10 +++---
+ net/wireless/core.c                           |  2 +-
+ net/wireless/ibss.c                           |  4 +--
+ net/wireless/lib80211_crypt_tkip.c            |  2 +-
+ net/wireless/lib80211_crypt_wep.c             |  2 +-
+ net/wireless/nl80211.c                        | 24 ++++++-------
+ net/wireless/sme.c                            |  6 ++--
+ net/wireless/util.c                           |  2 +-
+ net/wireless/wext-sme.c                       |  2 +-
+ scripts/coccinelle/free/devm_free.cocci       |  4 +--
+ scripts/coccinelle/free/ifnullfree.cocci      |  4 +--
+ scripts/coccinelle/free/kfree.cocci           |  6 ++--
+ scripts/coccinelle/free/kfreeaddr.cocci       |  2 +-
+ security/apparmor/domain.c                    |  4 +--
+ security/apparmor/include/file.h              |  2 +-
+ security/apparmor/policy.c                    | 24 ++++++-------
+ security/apparmor/policy_ns.c                 |  6 ++--
+ security/apparmor/policy_unpack.c             | 14 ++++----
+ security/keys/big_key.c                       |  6 ++--
+ security/keys/dh.c                            | 14 ++++----
+ security/keys/encrypted-keys/encrypted.c      | 14 ++++----
+ security/keys/trusted-keys/trusted_tpm1.c     | 34 +++++++++----------
+ security/keys/user_defined.c                  |  6 ++--
+ 115 files changed, 322 insertions(+), 320 deletions(-)
 
---ZPt4rx8FFjLCG7dd
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
-
-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
-
---ZPt4rx8FFjLCG7dd--
+diff --git a/arch/s390/crypto/prng.c b/arch/s390/crypto/prng.c
+index d977643fa627..04caac037b7a 100644
+--- a/arch/s390/crypto/prng.c
++++ b/arch/s390/crypto/prng.c
+@@ -249,7 +249,7 @@ static void prng_tdes_deinstantiate(void)
+ {
+ 	pr_debug("The prng module stopped "
+ 		 "after running in triple DES mode\n");
+-	kzfree(prng_data);
++	kfree_sensitive(prng_data);
+ }
+ 
+ 
+@@ -442,7 +442,7 @@ static int __init prng_sha512_instantiate(void)
+ static void prng_sha512_deinstantiate(void)
+ {
+ 	pr_debug("The prng module stopped after running in SHA-512 mode\n");
+-	kzfree(prng_data);
++	kfree_sensitive(prng_data);
+ }
+ 
+ 
+diff --git a/arch/x86/power/hibernate.c b/arch/x86/power/hibernate.c
+index d147f1b2c925..cd3914fc9f3d 100644
+--- a/arch/x86/power/hibernate.c
++++ b/arch/x86/power/hibernate.c
+@@ -98,7 +98,7 @@ static int get_e820_md5(struct e820_table *table, void *buf)
+ 	if (crypto_shash_digest(desc, (u8 *)table, size, buf))
+ 		ret = -EINVAL;
+ 
+-	kzfree(desc);
++	kfree_sensitive(desc);
+ 
+ free_tfm:
+ 	crypto_free_shash(tfm);
+diff --git a/crypto/adiantum.c b/crypto/adiantum.c
+index cf2b9f4103dd..b7824e214961 100644
+--- a/crypto/adiantum.c
++++ b/crypto/adiantum.c
+@@ -177,7 +177,7 @@ static int adiantum_setkey(struct crypto_skcipher *tfm, const u8 *key,
+ 	keyp += NHPOLY1305_KEY_SIZE;
+ 	WARN_ON(keyp != &data->derived_keys[ARRAY_SIZE(data->derived_keys)]);
+ out:
+-	kzfree(data);
++	kfree_sensitive(data);
+ 	return err;
+ }
+ 
+diff --git a/crypto/ahash.c b/crypto/ahash.c
+index 68a0f0cb75c4..d9d65d1cc669 100644
+--- a/crypto/ahash.c
++++ b/crypto/ahash.c
+@@ -183,7 +183,7 @@ static int ahash_setkey_unaligned(struct crypto_ahash *tfm, const u8 *key,
+ 	alignbuffer = (u8 *)ALIGN((unsigned long)buffer, alignmask + 1);
+ 	memcpy(alignbuffer, key, keylen);
+ 	ret = tfm->setkey(tfm, alignbuffer, keylen);
+-	kzfree(buffer);
++	kfree_sensitive(buffer);
+ 	return ret;
+ }
+ 
+@@ -302,7 +302,7 @@ static void ahash_restore_req(struct ahash_request *req, int err)
+ 	req->priv = NULL;
+ 
+ 	/* Free the req->priv.priv from the ADJUSTED request. */
+-	kzfree(priv);
++	kfree_sensitive(priv);
+ }
+ 
+ static void ahash_notify_einprogress(struct ahash_request *req)
+diff --git a/crypto/api.c b/crypto/api.c
+index edcf690800d4..58f66ba09dac 100644
+--- a/crypto/api.c
++++ b/crypto/api.c
+@@ -565,7 +565,7 @@ void crypto_destroy_tfm(void *mem, struct crypto_tfm *tfm)
+ 		alg->cra_exit(tfm);
+ 	crypto_exit_ops(tfm);
+ 	crypto_mod_put(alg);
+-	kzfree(mem);
++	kfree_sensitive(mem);
+ }
+ EXPORT_SYMBOL_GPL(crypto_destroy_tfm);
+ 
+diff --git a/crypto/asymmetric_keys/verify_pefile.c b/crypto/asymmetric_keys/verify_pefile.c
+index cc9dbcecaaca..7553ab18db89 100644
+--- a/crypto/asymmetric_keys/verify_pefile.c
++++ b/crypto/asymmetric_keys/verify_pefile.c
+@@ -376,7 +376,7 @@ static int pefile_digest_pe(const void *pebuf, unsigned int pelen,
+ 	}
+ 
+ error:
+-	kzfree(desc);
++	kfree_sensitive(desc);
+ error_no_desc:
+ 	crypto_free_shash(tfm);
+ 	kleave(" = %d", ret);
+@@ -447,6 +447,6 @@ int verify_pefile_signature(const void *pebuf, unsigned pelen,
+ 	ret = pefile_digest_pe(pebuf, pelen, &ctx);
+ 
+ error:
+-	kzfree(ctx.digest);
++	kfree_sensitive(ctx.digest);
+ 	return ret;
+ }
+diff --git a/crypto/deflate.c b/crypto/deflate.c
+index 4c0e6c9d942a..b2a46f6dc961 100644
+--- a/crypto/deflate.c
++++ b/crypto/deflate.c
+@@ -163,7 +163,7 @@ static void __deflate_exit(void *ctx)
+ static void deflate_free_ctx(struct crypto_scomp *tfm, void *ctx)
+ {
+ 	__deflate_exit(ctx);
+-	kzfree(ctx);
++	kfree_sensitive(ctx);
+ }
+ 
+ static void deflate_exit(struct crypto_tfm *tfm)
+diff --git a/crypto/drbg.c b/crypto/drbg.c
+index 37526eb8c5d5..23ce5b55f40b 100644
+--- a/crypto/drbg.c
++++ b/crypto/drbg.c
+@@ -1218,19 +1218,19 @@ static inline void drbg_dealloc_state(struct drbg_state *drbg)
+ {
+ 	if (!drbg)
+ 		return;
+-	kzfree(drbg->Vbuf);
++	kfree_sensitive(drbg->Vbuf);
+ 	drbg->Vbuf = NULL;
+ 	drbg->V = NULL;
+-	kzfree(drbg->Cbuf);
++	kfree_sensitive(drbg->Cbuf);
+ 	drbg->Cbuf = NULL;
+ 	drbg->C = NULL;
+-	kzfree(drbg->scratchpadbuf);
++	kfree_sensitive(drbg->scratchpadbuf);
+ 	drbg->scratchpadbuf = NULL;
+ 	drbg->reseed_ctr = 0;
+ 	drbg->d_ops = NULL;
+ 	drbg->core = NULL;
+ 	if (IS_ENABLED(CONFIG_CRYPTO_FIPS)) {
+-		kzfree(drbg->prev);
++		kfree_sensitive(drbg->prev);
+ 		drbg->prev = NULL;
+ 		drbg->fips_primed = false;
+ 	}
+@@ -1699,7 +1699,7 @@ static int drbg_fini_hash_kernel(struct drbg_state *drbg)
+ 	struct sdesc *sdesc = (struct sdesc *)drbg->priv_data;
+ 	if (sdesc) {
+ 		crypto_free_shash(sdesc->shash.tfm);
+-		kzfree(sdesc);
++		kfree_sensitive(sdesc);
+ 	}
+ 	drbg->priv_data = NULL;
+ 	return 0;
+diff --git a/crypto/ecc.c b/crypto/ecc.c
+index 02d35be7702b..37540332c1f3 100644
+--- a/crypto/ecc.c
++++ b/crypto/ecc.c
+@@ -67,7 +67,7 @@ static u64 *ecc_alloc_digits_space(unsigned int ndigits)
+ 
+ static void ecc_free_digits_space(u64 *space)
+ {
+-	kzfree(space);
++	kfree_sensitive(space);
+ }
+ 
+ static struct ecc_point *ecc_alloc_point(unsigned int ndigits)
+@@ -101,9 +101,9 @@ static void ecc_free_point(struct ecc_point *p)
+ 	if (!p)
+ 		return;
+ 
+-	kzfree(p->x);
+-	kzfree(p->y);
+-	kzfree(p);
++	kfree_sensitive(p->x);
++	kfree_sensitive(p->y);
++	kfree_sensitive(p);
+ }
+ 
+ static void vli_clear(u64 *vli, unsigned int ndigits)
+diff --git a/crypto/ecdh.c b/crypto/ecdh.c
+index bd599053a8c4..b0232d6ab4ce 100644
+--- a/crypto/ecdh.c
++++ b/crypto/ecdh.c
+@@ -124,7 +124,7 @@ static int ecdh_compute_value(struct kpp_request *req)
+ 
+ 	/* fall through */
+ free_all:
+-	kzfree(shared_secret);
++	kfree_sensitive(shared_secret);
+ free_pubkey:
+ 	kfree(public_key);
+ 	return ret;
+diff --git a/crypto/gcm.c b/crypto/gcm.c
+index 0103d28c541e..5c2fbb08be56 100644
+--- a/crypto/gcm.c
++++ b/crypto/gcm.c
+@@ -139,7 +139,7 @@ static int crypto_gcm_setkey(struct crypto_aead *aead, const u8 *key,
+ 			       CRYPTO_TFM_REQ_MASK);
+ 	err = crypto_ahash_setkey(ghash, (u8 *)&data->hash, sizeof(be128));
+ out:
+-	kzfree(data);
++	kfree_sensitive(data);
+ 	return err;
+ }
+ 
+diff --git a/crypto/gf128mul.c b/crypto/gf128mul.c
+index a4b1c026aaee..a69ae3e6c16c 100644
+--- a/crypto/gf128mul.c
++++ b/crypto/gf128mul.c
+@@ -304,8 +304,8 @@ void gf128mul_free_64k(struct gf128mul_64k *t)
+ 	int i;
+ 
+ 	for (i = 0; i < 16; i++)
+-		kzfree(t->t[i]);
+-	kzfree(t);
++		kfree_sensitive(t->t[i]);
++	kfree_sensitive(t);
+ }
+ EXPORT_SYMBOL(gf128mul_free_64k);
+ 
+diff --git a/crypto/jitterentropy-kcapi.c b/crypto/jitterentropy-kcapi.c
+index b43684c0dade..eb7d1dd506bf 100644
+--- a/crypto/jitterentropy-kcapi.c
++++ b/crypto/jitterentropy-kcapi.c
+@@ -57,7 +57,7 @@ void *jent_zalloc(unsigned int len)
+ 
+ void jent_zfree(void *ptr)
+ {
+-	kzfree(ptr);
++	kfree_sensitive(ptr);
+ }
+ 
+ int jent_fips_enabled(void)
+diff --git a/crypto/rng.c b/crypto/rng.c
+index 1490d210f1a1..a888d84b524a 100644
+--- a/crypto/rng.c
++++ b/crypto/rng.c
+@@ -53,7 +53,7 @@ int crypto_rng_reset(struct crypto_rng *tfm, const u8 *seed, unsigned int slen)
+ 	err = crypto_rng_alg(tfm)->seed(tfm, seed, slen);
+ 	crypto_stats_rng_seed(alg, err);
+ out:
+-	kzfree(buf);
++	kfree_sensitive(buf);
+ 	return err;
+ }
+ EXPORT_SYMBOL_GPL(crypto_rng_reset);
+diff --git a/crypto/rsa-pkcs1pad.c b/crypto/rsa-pkcs1pad.c
+index d31031de51bc..6c992eb5c72f 100644
+--- a/crypto/rsa-pkcs1pad.c
++++ b/crypto/rsa-pkcs1pad.c
+@@ -199,7 +199,7 @@ static int pkcs1pad_encrypt_sign_complete(struct akcipher_request *req, int err)
+ 	sg_copy_from_buffer(req->dst,
+ 			    sg_nents_for_len(req->dst, ctx->key_size),
+ 			    out_buf, ctx->key_size);
+-	kzfree(out_buf);
++	kfree_sensitive(out_buf);
+ 
+ out:
+ 	req->dst_len = ctx->key_size;
+@@ -322,7 +322,7 @@ static int pkcs1pad_decrypt_complete(struct akcipher_request *req, int err)
+ 				out_buf + pos, req->dst_len);
+ 
+ done:
+-	kzfree(req_ctx->out_buf);
++	kfree_sensitive(req_ctx->out_buf);
+ 
+ 	return err;
+ }
+@@ -500,7 +500,7 @@ static int pkcs1pad_verify_complete(struct akcipher_request *req, int err)
+ 		   req->dst_len) != 0)
+ 		err = -EKEYREJECTED;
+ done:
+-	kzfree(req_ctx->out_buf);
++	kfree_sensitive(req_ctx->out_buf);
+ 
+ 	return err;
+ }
+diff --git a/crypto/seqiv.c b/crypto/seqiv.c
+index f124b9b54e15..27b2387bc972 100644
+--- a/crypto/seqiv.c
++++ b/crypto/seqiv.c
+@@ -33,7 +33,7 @@ static void seqiv_aead_encrypt_complete2(struct aead_request *req, int err)
+ 	memcpy(req->iv, subreq->iv, crypto_aead_ivsize(geniv));
+ 
+ out:
+-	kzfree(subreq->iv);
++	kfree_sensitive(subreq->iv);
+ }
+ 
+ static void seqiv_aead_encrypt_complete(struct crypto_async_request *base,
+diff --git a/crypto/shash.c b/crypto/shash.c
+index e6a4b5f39b8c..2e3433ad9762 100644
+--- a/crypto/shash.c
++++ b/crypto/shash.c
+@@ -44,7 +44,7 @@ static int shash_setkey_unaligned(struct crypto_shash *tfm, const u8 *key,
+ 	alignbuffer = (u8 *)ALIGN((unsigned long)buffer, alignmask + 1);
+ 	memcpy(alignbuffer, key, keylen);
+ 	err = shash->setkey(tfm, alignbuffer, keylen);
+-	kzfree(buffer);
++	kfree_sensitive(buffer);
+ 	return err;
+ }
+ 
+diff --git a/crypto/skcipher.c b/crypto/skcipher.c
+index 7221def7b9a7..1c4a0d2132c3 100644
+--- a/crypto/skcipher.c
++++ b/crypto/skcipher.c
+@@ -592,7 +592,7 @@ static int skcipher_setkey_unaligned(struct crypto_skcipher *tfm,
+ 	alignbuffer = (u8 *)ALIGN((unsigned long)buffer, alignmask + 1);
+ 	memcpy(alignbuffer, key, keylen);
+ 	ret = cipher->setkey(tfm, alignbuffer, keylen);
+-	kzfree(buffer);
++	kfree_sensitive(buffer);
+ 	return ret;
+ }
+ 
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index 6863f911fcee..23c27fc96394 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -1744,7 +1744,7 @@ static int test_hash_vs_generic_impl(const char *driver,
+ 	kfree(vec.plaintext);
+ 	kfree(vec.digest);
+ 	crypto_free_shash(generic_tfm);
+-	kzfree(generic_desc);
++	kfree_sensitive(generic_desc);
+ 	return err;
+ }
+ #else /* !CONFIG_CRYPTO_MANAGER_EXTRA_TESTS */
+@@ -3665,7 +3665,7 @@ static int drbg_cavs_test(const struct drbg_testvec *test, int pr,
+ 	if (IS_ERR(drng)) {
+ 		printk(KERN_ERR "alg: drbg: could not allocate DRNG handle for "
+ 		       "%s\n", driver);
+-		kzfree(buf);
++		kfree_sensitive(buf);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -3712,7 +3712,7 @@ static int drbg_cavs_test(const struct drbg_testvec *test, int pr,
+ 
+ outbuf:
+ 	crypto_free_rng(drng);
+-	kzfree(buf);
++	kfree_sensitive(buf);
+ 	return ret;
+ }
+ 
+diff --git a/crypto/zstd.c b/crypto/zstd.c
+index 5a3ff258d8f7..1a3309f066f7 100644
+--- a/crypto/zstd.c
++++ b/crypto/zstd.c
+@@ -137,7 +137,7 @@ static void __zstd_exit(void *ctx)
+ static void zstd_free_ctx(struct crypto_scomp *tfm, void *ctx)
+ {
+ 	__zstd_exit(ctx);
+-	kzfree(ctx);
++	kfree_sensitive(ctx);
+ }
+ 
+ static void zstd_exit(struct crypto_tfm *tfm)
+diff --git a/drivers/crypto/allwinner/sun8i-ce/sun8i-ce-cipher.c b/drivers/crypto/allwinner/sun8i-ce/sun8i-ce-cipher.c
+index a6abb701bfc6..999a357364d8 100644
+--- a/drivers/crypto/allwinner/sun8i-ce/sun8i-ce-cipher.c
++++ b/drivers/crypto/allwinner/sun8i-ce/sun8i-ce-cipher.c
+@@ -257,7 +257,7 @@ static int sun8i_ce_cipher(struct skcipher_request *areq)
+ 		offset = areq->cryptlen - ivsize;
+ 		if (rctx->op_dir & CE_DECRYPTION) {
+ 			memcpy(areq->iv, backup_iv, ivsize);
+-			kzfree(backup_iv);
++			kfree_sensitive(backup_iv);
+ 		} else {
+ 			scatterwalk_map_and_copy(areq->iv, areq->dst, offset,
+ 						 ivsize, 0);
+diff --git a/drivers/crypto/allwinner/sun8i-ss/sun8i-ss-cipher.c b/drivers/crypto/allwinner/sun8i-ss/sun8i-ss-cipher.c
+index c89cb2ee2496..a1d175589e18 100644
+--- a/drivers/crypto/allwinner/sun8i-ss/sun8i-ss-cipher.c
++++ b/drivers/crypto/allwinner/sun8i-ss/sun8i-ss-cipher.c
+@@ -250,7 +250,7 @@ static int sun8i_ss_cipher(struct skcipher_request *areq)
+ 			if (rctx->op_dir & SS_DECRYPTION) {
+ 				memcpy(areq->iv, backup_iv, ivsize);
+ 				memzero_explicit(backup_iv, ivsize);
+-				kzfree(backup_iv);
++				kfree_sensitive(backup_iv);
+ 			} else {
+ 				scatterwalk_map_and_copy(areq->iv, areq->dst, offset,
+ 							 ivsize, 0);
+diff --git a/drivers/crypto/amlogic/amlogic-gxl-cipher.c b/drivers/crypto/amlogic/amlogic-gxl-cipher.c
+index 9819dd50fbad..fd1269900d67 100644
+--- a/drivers/crypto/amlogic/amlogic-gxl-cipher.c
++++ b/drivers/crypto/amlogic/amlogic-gxl-cipher.c
+@@ -254,8 +254,8 @@ static int meson_cipher(struct skcipher_request *areq)
+ 		}
+ 	}
+ theend:
+-	kzfree(bkeyiv);
+-	kzfree(backup_iv);
++	kfree_sensitive(bkeyiv);
++	kfree_sensitive(backup_iv);
+ 
+ 	return err;
+ }
+diff --git a/drivers/crypto/atmel-ecc.c b/drivers/crypto/atmel-ecc.c
+index ff02cc05affb..9bd8e5167be3 100644
+--- a/drivers/crypto/atmel-ecc.c
++++ b/drivers/crypto/atmel-ecc.c
+@@ -69,7 +69,7 @@ static void atmel_ecdh_done(struct atmel_i2c_work_data *work_data, void *areq,
+ 
+ 	/* fall through */
+ free_work_data:
+-	kzfree(work_data);
++	kfree_sensitive(work_data);
+ 	kpp_request_complete(req, status);
+ }
+ 
+diff --git a/drivers/crypto/caam/caampkc.c b/drivers/crypto/caam/caampkc.c
+index 2e44d685618f..dd5f101e43f8 100644
+--- a/drivers/crypto/caam/caampkc.c
++++ b/drivers/crypto/caam/caampkc.c
+@@ -854,14 +854,14 @@ static int caam_rsa_dec(struct akcipher_request *req)
+ 
+ static void caam_rsa_free_key(struct caam_rsa_key *key)
+ {
+-	kzfree(key->d);
+-	kzfree(key->p);
+-	kzfree(key->q);
+-	kzfree(key->dp);
+-	kzfree(key->dq);
+-	kzfree(key->qinv);
+-	kzfree(key->tmp1);
+-	kzfree(key->tmp2);
++	kfree_sensitive(key->d);
++	kfree_sensitive(key->p);
++	kfree_sensitive(key->q);
++	kfree_sensitive(key->dp);
++	kfree_sensitive(key->dq);
++	kfree_sensitive(key->qinv);
++	kfree_sensitive(key->tmp1);
++	kfree_sensitive(key->tmp2);
+ 	kfree(key->e);
+ 	kfree(key->n);
+ 	memset(key, 0, sizeof(*key));
+@@ -1018,17 +1018,17 @@ static void caam_rsa_set_priv_key_form(struct caam_rsa_ctx *ctx,
+ 	return;
+ 
+ free_dq:
+-	kzfree(rsa_key->dq);
++	kfree_sensitive(rsa_key->dq);
+ free_dp:
+-	kzfree(rsa_key->dp);
++	kfree_sensitive(rsa_key->dp);
+ free_tmp2:
+-	kzfree(rsa_key->tmp2);
++	kfree_sensitive(rsa_key->tmp2);
+ free_tmp1:
+-	kzfree(rsa_key->tmp1);
++	kfree_sensitive(rsa_key->tmp1);
+ free_q:
+-	kzfree(rsa_key->q);
++	kfree_sensitive(rsa_key->q);
+ free_p:
+-	kzfree(rsa_key->p);
++	kfree_sensitive(rsa_key->p);
+ }
+ 
+ static int caam_rsa_set_priv_key(struct crypto_akcipher *tfm, const void *key,
+diff --git a/drivers/crypto/cavium/cpt/cptvf_main.c b/drivers/crypto/cavium/cpt/cptvf_main.c
+index 0f72e9abdefe..a15245992cf9 100644
+--- a/drivers/crypto/cavium/cpt/cptvf_main.c
++++ b/drivers/crypto/cavium/cpt/cptvf_main.c
+@@ -74,7 +74,7 @@ static void cleanup_worker_threads(struct cpt_vf *cptvf)
+ 	for (i = 0; i < cptvf->nr_queues; i++)
+ 		tasklet_kill(&cwqe_info->vq_wqe[i].twork);
+ 
+-	kzfree(cwqe_info);
++	kfree_sensitive(cwqe_info);
+ 	cptvf->wqe_info = NULL;
+ }
+ 
+@@ -88,7 +88,7 @@ static void free_pending_queues(struct pending_qinfo *pqinfo)
+ 			continue;
+ 
+ 		/* free single queue */
+-		kzfree((queue->head));
++		kfree_sensitive((queue->head));
+ 
+ 		queue->front = 0;
+ 		queue->rear = 0;
+@@ -189,7 +189,7 @@ static void free_command_queues(struct cpt_vf *cptvf,
+ 			chunk->head = NULL;
+ 			chunk->dma_addr = 0;
+ 			hlist_del(&chunk->nextchunk);
+-			kzfree(chunk);
++			kfree_sensitive(chunk);
+ 		}
+ 
+ 		queue->nchunks = 0;
+diff --git a/drivers/crypto/cavium/cpt/cptvf_reqmanager.c b/drivers/crypto/cavium/cpt/cptvf_reqmanager.c
+index 7a24019356b5..472dbc2d7c5c 100644
+--- a/drivers/crypto/cavium/cpt/cptvf_reqmanager.c
++++ b/drivers/crypto/cavium/cpt/cptvf_reqmanager.c
+@@ -305,12 +305,12 @@ static void do_request_cleanup(struct cpt_vf *cptvf,
+ 		}
+ 	}
+ 
+-	kzfree(info->scatter_components);
+-	kzfree(info->gather_components);
+-	kzfree(info->out_buffer);
+-	kzfree(info->in_buffer);
+-	kzfree((void *)info->completion_addr);
+-	kzfree(info);
++	kfree_sensitive(info->scatter_components);
++	kfree_sensitive(info->gather_components);
++	kfree_sensitive(info->out_buffer);
++	kfree_sensitive(info->in_buffer);
++	kfree_sensitive((void *)info->completion_addr);
++	kfree_sensitive(info);
+ }
+ 
+ static void do_post_process(struct cpt_vf *cptvf, struct cpt_info_buffer *info)
+diff --git a/drivers/crypto/cavium/nitrox/nitrox_lib.c b/drivers/crypto/cavium/nitrox/nitrox_lib.c
+index 5cbc64b851b9..a5cdc2b48bd6 100644
+--- a/drivers/crypto/cavium/nitrox/nitrox_lib.c
++++ b/drivers/crypto/cavium/nitrox/nitrox_lib.c
+@@ -90,7 +90,7 @@ static void nitrox_free_aqm_queues(struct nitrox_device *ndev)
+ 
+ 	for (i = 0; i < ndev->nr_queues; i++) {
+ 		nitrox_cmdq_cleanup(ndev->aqmq[i]);
+-		kzfree(ndev->aqmq[i]);
++		kfree_sensitive(ndev->aqmq[i]);
+ 		ndev->aqmq[i] = NULL;
+ 	}
+ }
+@@ -122,7 +122,7 @@ static int nitrox_alloc_aqm_queues(struct nitrox_device *ndev)
+ 
+ 		err = nitrox_cmdq_init(cmdq, AQM_Q_ALIGN_BYTES);
+ 		if (err) {
+-			kzfree(cmdq);
++			kfree_sensitive(cmdq);
+ 			goto aqmq_fail;
+ 		}
+ 		ndev->aqmq[i] = cmdq;
+diff --git a/drivers/crypto/cavium/zip/zip_crypto.c b/drivers/crypto/cavium/zip/zip_crypto.c
+index 4985bc812b0e..7df71fcebe8f 100644
+--- a/drivers/crypto/cavium/zip/zip_crypto.c
++++ b/drivers/crypto/cavium/zip/zip_crypto.c
+@@ -260,7 +260,7 @@ void *zip_alloc_scomp_ctx_deflate(struct crypto_scomp *tfm)
+ 	ret = zip_ctx_init(zip_ctx, 0);
+ 
+ 	if (ret) {
+-		kzfree(zip_ctx);
++		kfree_sensitive(zip_ctx);
+ 		return ERR_PTR(ret);
+ 	}
+ 
+@@ -279,7 +279,7 @@ void *zip_alloc_scomp_ctx_lzs(struct crypto_scomp *tfm)
+ 	ret = zip_ctx_init(zip_ctx, 1);
+ 
+ 	if (ret) {
+-		kzfree(zip_ctx);
++		kfree_sensitive(zip_ctx);
+ 		return ERR_PTR(ret);
+ 	}
+ 
+@@ -291,7 +291,7 @@ void zip_free_scomp_ctx(struct crypto_scomp *tfm, void *ctx)
+ 	struct zip_kernel_ctx *zip_ctx = ctx;
+ 
+ 	zip_ctx_exit(zip_ctx);
+-	kzfree(zip_ctx);
++	kfree_sensitive(zip_ctx);
+ }
+ 
+ int zip_scomp_compress(struct crypto_scomp *tfm,
+diff --git a/drivers/crypto/ccp/ccp-crypto-rsa.c b/drivers/crypto/ccp/ccp-crypto-rsa.c
+index 649c91d60401..1223ac70aea2 100644
+--- a/drivers/crypto/ccp/ccp-crypto-rsa.c
++++ b/drivers/crypto/ccp/ccp-crypto-rsa.c
+@@ -112,13 +112,13 @@ static int ccp_check_key_length(unsigned int len)
+ static void ccp_rsa_free_key_bufs(struct ccp_ctx *ctx)
+ {
+ 	/* Clean up old key data */
+-	kzfree(ctx->u.rsa.e_buf);
++	kfree_sensitive(ctx->u.rsa.e_buf);
+ 	ctx->u.rsa.e_buf = NULL;
+ 	ctx->u.rsa.e_len = 0;
+-	kzfree(ctx->u.rsa.n_buf);
++	kfree_sensitive(ctx->u.rsa.n_buf);
+ 	ctx->u.rsa.n_buf = NULL;
+ 	ctx->u.rsa.n_len = 0;
+-	kzfree(ctx->u.rsa.d_buf);
++	kfree_sensitive(ctx->u.rsa.d_buf);
+ 	ctx->u.rsa.d_buf = NULL;
+ 	ctx->u.rsa.d_len = 0;
+ }
+diff --git a/drivers/crypto/ccree/cc_aead.c b/drivers/crypto/ccree/cc_aead.c
+index 1cf51edbc4b9..35794c7271fb 100644
+--- a/drivers/crypto/ccree/cc_aead.c
++++ b/drivers/crypto/ccree/cc_aead.c
+@@ -448,7 +448,7 @@ static int cc_get_plain_hmac_key(struct crypto_aead *tfm, const u8 *authkey,
+ 		if (dma_mapping_error(dev, key_dma_addr)) {
+ 			dev_err(dev, "Mapping key va=0x%p len=%u for DMA failed\n",
+ 				key, keylen);
+-			kzfree(key);
++			kfree_sensitive(key);
+ 			return -ENOMEM;
+ 		}
+ 		if (keylen > blocksize) {
+@@ -533,7 +533,7 @@ static int cc_get_plain_hmac_key(struct crypto_aead *tfm, const u8 *authkey,
+ 	if (key_dma_addr)
+ 		dma_unmap_single(dev, key_dma_addr, keylen, DMA_TO_DEVICE);
+ 
+-	kzfree(key);
++	kfree_sensitive(key);
+ 
+ 	return rc;
+ }
+diff --git a/drivers/crypto/ccree/cc_buffer_mgr.c b/drivers/crypto/ccree/cc_buffer_mgr.c
+index b2bd093e7013..a5e041d9d2cf 100644
+--- a/drivers/crypto/ccree/cc_buffer_mgr.c
++++ b/drivers/crypto/ccree/cc_buffer_mgr.c
+@@ -488,7 +488,7 @@ void cc_unmap_aead_request(struct device *dev, struct aead_request *req)
+ 	if (areq_ctx->gen_ctx.iv_dma_addr) {
+ 		dma_unmap_single(dev, areq_ctx->gen_ctx.iv_dma_addr,
+ 				 hw_iv_size, DMA_BIDIRECTIONAL);
+-		kzfree(areq_ctx->gen_ctx.iv);
++		kfree_sensitive(areq_ctx->gen_ctx.iv);
+ 	}
+ 
+ 	/* Release pool */
+@@ -559,7 +559,7 @@ static int cc_aead_chain_iv(struct cc_drvdata *drvdata,
+ 	if (dma_mapping_error(dev, areq_ctx->gen_ctx.iv_dma_addr)) {
+ 		dev_err(dev, "Mapping iv %u B at va=%pK for DMA failed\n",
+ 			hw_iv_size, req->iv);
+-		kzfree(areq_ctx->gen_ctx.iv);
++		kfree_sensitive(areq_ctx->gen_ctx.iv);
+ 		areq_ctx->gen_ctx.iv = NULL;
+ 		rc = -ENOMEM;
+ 		goto chain_iv_exit;
+diff --git a/drivers/crypto/ccree/cc_cipher.c b/drivers/crypto/ccree/cc_cipher.c
+index 872ea3ff1c6b..110456e06c5e 100644
+--- a/drivers/crypto/ccree/cc_cipher.c
++++ b/drivers/crypto/ccree/cc_cipher.c
+@@ -229,7 +229,7 @@ static void cc_cipher_exit(struct crypto_tfm *tfm)
+ 		&ctx_p->user.key_dma_addr);
+ 
+ 	/* Free key buffer in context */
+-	kzfree(ctx_p->user.key);
++	kfree_sensitive(ctx_p->user.key);
+ 	dev_dbg(dev, "Free key buffer in context. key=@%p\n", ctx_p->user.key);
+ }
+ 
+@@ -825,7 +825,7 @@ static void cc_cipher_complete(struct device *dev, void *cc_req, int err)
+ 		/* Not a BACKLOG notification */
+ 		cc_unmap_cipher_request(dev, req_ctx, ivsize, src, dst);
+ 		memcpy(req->iv, req_ctx->iv, ivsize);
+-		kzfree(req_ctx->iv);
++		kfree_sensitive(req_ctx->iv);
+ 	}
+ 
+ 	skcipher_request_complete(req, err);
+@@ -927,7 +927,7 @@ static int cc_cipher_process(struct skcipher_request *req,
+ 
+ exit_process:
+ 	if (rc != -EINPROGRESS && rc != -EBUSY) {
+-		kzfree(req_ctx->iv);
++		kfree_sensitive(req_ctx->iv);
+ 	}
+ 
+ 	return rc;
+diff --git a/drivers/crypto/ccree/cc_hash.c b/drivers/crypto/ccree/cc_hash.c
+index d5310783af15..683c9a430e11 100644
+--- a/drivers/crypto/ccree/cc_hash.c
++++ b/drivers/crypto/ccree/cc_hash.c
+@@ -764,7 +764,7 @@ static int cc_hash_setkey(struct crypto_ahash *ahash, const u8 *key,
+ 		if (dma_mapping_error(dev, ctx->key_params.key_dma_addr)) {
+ 			dev_err(dev, "Mapping key va=0x%p len=%u for DMA failed\n",
+ 				ctx->key_params.key, keylen);
+-			kzfree(ctx->key_params.key);
++			kfree_sensitive(ctx->key_params.key);
+ 			return -ENOMEM;
+ 		}
+ 		dev_dbg(dev, "mapping key-buffer: key_dma_addr=%pad keylen=%u\n",
+@@ -913,7 +913,7 @@ static int cc_hash_setkey(struct crypto_ahash *ahash, const u8 *key,
+ 			&ctx->key_params.key_dma_addr, ctx->key_params.keylen);
+ 	}
+ 
+-	kzfree(ctx->key_params.key);
++	kfree_sensitive(ctx->key_params.key);
+ 
+ 	return rc;
+ }
+@@ -950,7 +950,7 @@ static int cc_xcbc_setkey(struct crypto_ahash *ahash,
+ 	if (dma_mapping_error(dev, ctx->key_params.key_dma_addr)) {
+ 		dev_err(dev, "Mapping key va=0x%p len=%u for DMA failed\n",
+ 			key, keylen);
+-		kzfree(ctx->key_params.key);
++		kfree_sensitive(ctx->key_params.key);
+ 		return -ENOMEM;
+ 	}
+ 	dev_dbg(dev, "mapping key-buffer: key_dma_addr=%pad keylen=%u\n",
+@@ -999,7 +999,7 @@ static int cc_xcbc_setkey(struct crypto_ahash *ahash,
+ 	dev_dbg(dev, "Unmapped key-buffer: key_dma_addr=%pad keylen=%u\n",
+ 		&ctx->key_params.key_dma_addr, ctx->key_params.keylen);
+ 
+-	kzfree(ctx->key_params.key);
++	kfree_sensitive(ctx->key_params.key);
+ 
+ 	return rc;
+ }
+diff --git a/drivers/crypto/ccree/cc_request_mgr.c b/drivers/crypto/ccree/cc_request_mgr.c
+index 1d7649ecf44e..33fb27745d52 100644
+--- a/drivers/crypto/ccree/cc_request_mgr.c
++++ b/drivers/crypto/ccree/cc_request_mgr.c
+@@ -107,7 +107,7 @@ void cc_req_mgr_fini(struct cc_drvdata *drvdata)
+ 	/* Kill tasklet */
+ 	tasklet_kill(&req_mgr_h->comptask);
+ #endif
+-	kzfree(req_mgr_h);
++	kfree_sensitive(req_mgr_h);
+ 	drvdata->request_mgr_handle = NULL;
+ }
+ 
+diff --git a/drivers/crypto/marvell/cesa/hash.c b/drivers/crypto/marvell/cesa/hash.c
+index b971284332b6..2fdd3d55ed08 100644
+--- a/drivers/crypto/marvell/cesa/hash.c
++++ b/drivers/crypto/marvell/cesa/hash.c
+@@ -1154,7 +1154,7 @@ static int mv_cesa_ahmac_pad_init(struct ahash_request *req,
+ 		}
+ 
+ 		/* Set the memory region to 0 to avoid any leak. */
+-		kzfree(keydup);
++		kfree_sensitive(keydup);
+ 
+ 		if (ret)
+ 			return ret;
+diff --git a/drivers/crypto/marvell/octeontx/otx_cptvf_main.c b/drivers/crypto/marvell/octeontx/otx_cptvf_main.c
+index ce3168327a39..228fe8e47e0e 100644
+--- a/drivers/crypto/marvell/octeontx/otx_cptvf_main.c
++++ b/drivers/crypto/marvell/octeontx/otx_cptvf_main.c
+@@ -68,7 +68,7 @@ static void cleanup_worker_threads(struct otx_cptvf *cptvf)
+ 	for (i = 0; i < cptvf->num_queues; i++)
+ 		tasklet_kill(&cwqe_info->vq_wqe[i].twork);
+ 
+-	kzfree(cwqe_info);
++	kfree_sensitive(cwqe_info);
+ 	cptvf->wqe_info = NULL;
+ }
+ 
+@@ -82,7 +82,7 @@ static void free_pending_queues(struct otx_cpt_pending_qinfo *pqinfo)
+ 			continue;
+ 
+ 		/* free single queue */
+-		kzfree((queue->head));
++		kfree_sensitive((queue->head));
+ 		queue->front = 0;
+ 		queue->rear = 0;
+ 		queue->qlen = 0;
+@@ -176,7 +176,7 @@ static void free_command_queues(struct otx_cptvf *cptvf,
+ 			chunk->head = NULL;
+ 			chunk->dma_addr = 0;
+ 			list_del(&chunk->nextchunk);
+-			kzfree(chunk);
++			kfree_sensitive(chunk);
+ 		}
+ 		queue->num_chunks = 0;
+ 		queue->idx = 0;
+diff --git a/drivers/crypto/marvell/octeontx/otx_cptvf_reqmgr.h b/drivers/crypto/marvell/octeontx/otx_cptvf_reqmgr.h
+index a4c9ff730b13..cfaaf8e2f9c2 100644
+--- a/drivers/crypto/marvell/octeontx/otx_cptvf_reqmgr.h
++++ b/drivers/crypto/marvell/octeontx/otx_cptvf_reqmgr.h
+@@ -215,7 +215,7 @@ static inline void do_request_cleanup(struct pci_dev *pdev,
+ 						 DMA_BIDIRECTIONAL);
+ 		}
+ 	}
+-	kzfree(info);
++	kfree_sensitive(info);
+ }
+ 
+ struct otx_cptvf_wqe;
+diff --git a/drivers/crypto/mediatek/mtk-aes.c b/drivers/crypto/mediatek/mtk-aes.c
+index 78d660d963e2..5c71f85da7e2 100644
+--- a/drivers/crypto/mediatek/mtk-aes.c
++++ b/drivers/crypto/mediatek/mtk-aes.c
+@@ -1057,7 +1057,7 @@ static int mtk_aes_gcm_setkey(struct crypto_aead *aead, const u8 *key,
+ 	mtk_aes_write_state_be(ctx->key + ctx->keylen, data->hash,
+ 			       AES_BLOCK_SIZE);
+ out:
+-	kzfree(data);
++	kfree_sensitive(data);
+ 	return err;
+ }
+ 
+diff --git a/drivers/crypto/nx/nx.c b/drivers/crypto/nx/nx.c
+index f03c238f5a31..40882d6d52c1 100644
+--- a/drivers/crypto/nx/nx.c
++++ b/drivers/crypto/nx/nx.c
+@@ -746,7 +746,7 @@ void nx_crypto_ctx_exit(struct crypto_tfm *tfm)
+ {
+ 	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(tfm);
+ 
+-	kzfree(nx_ctx->kmem);
++	kfree_sensitive(nx_ctx->kmem);
+ 	nx_ctx->csbcpb = NULL;
+ 	nx_ctx->csbcpb_aead = NULL;
+ 	nx_ctx->in_sg = NULL;
+@@ -762,7 +762,7 @@ void nx_crypto_ctx_aead_exit(struct crypto_aead *tfm)
+ {
+ 	struct nx_crypto_ctx *nx_ctx = crypto_aead_ctx(tfm);
+ 
+-	kzfree(nx_ctx->kmem);
++	kfree_sensitive(nx_ctx->kmem);
+ }
+ 
+ static int nx_probe(struct vio_dev *viodev, const struct vio_device_id *id)
+diff --git a/drivers/crypto/virtio/virtio_crypto_algs.c b/drivers/crypto/virtio/virtio_crypto_algs.c
+index cb8a6ea2a4bc..930fc802d399 100644
+--- a/drivers/crypto/virtio/virtio_crypto_algs.c
++++ b/drivers/crypto/virtio/virtio_crypto_algs.c
+@@ -167,7 +167,7 @@ static int virtio_crypto_alg_skcipher_init_session(
+ 				num_in, vcrypto, GFP_ATOMIC);
+ 	if (err < 0) {
+ 		spin_unlock(&vcrypto->ctrl_lock);
+-		kzfree(cipher_key);
++		kfree_sensitive(cipher_key);
+ 		return err;
+ 	}
+ 	virtqueue_kick(vcrypto->ctrl_vq);
+@@ -184,7 +184,7 @@ static int virtio_crypto_alg_skcipher_init_session(
+ 		spin_unlock(&vcrypto->ctrl_lock);
+ 		pr_err("virtio_crypto: Create session failed status: %u\n",
+ 			le32_to_cpu(vcrypto->input.status));
+-		kzfree(cipher_key);
++		kfree_sensitive(cipher_key);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -197,7 +197,7 @@ static int virtio_crypto_alg_skcipher_init_session(
+ 
+ 	spin_unlock(&vcrypto->ctrl_lock);
+ 
+-	kzfree(cipher_key);
++	kfree_sensitive(cipher_key);
+ 	return 0;
+ }
+ 
+@@ -472,9 +472,9 @@ __virtio_crypto_skcipher_do_req(struct virtio_crypto_sym_request *vc_sym_req,
+ 	return 0;
+ 
+ free_iv:
+-	kzfree(iv);
++	kfree_sensitive(iv);
+ free:
+-	kzfree(req_data);
++	kfree_sensitive(req_data);
+ 	kfree(sgs);
+ 	return err;
+ }
+@@ -583,7 +583,7 @@ static void virtio_crypto_skcipher_finalize_req(
+ 		scatterwalk_map_and_copy(req->iv, req->dst,
+ 					 req->cryptlen - AES_BLOCK_SIZE,
+ 					 AES_BLOCK_SIZE, 0);
+-	kzfree(vc_sym_req->iv);
++	kfree_sensitive(vc_sym_req->iv);
+ 	virtcrypto_clear_request(&vc_sym_req->base);
+ 
+ 	crypto_finalize_skcipher_request(vc_sym_req->base.dataq->engine,
+diff --git a/drivers/crypto/virtio/virtio_crypto_core.c b/drivers/crypto/virtio/virtio_crypto_core.c
+index c8a962c62663..ba8a19c72391 100644
+--- a/drivers/crypto/virtio/virtio_crypto_core.c
++++ b/drivers/crypto/virtio/virtio_crypto_core.c
+@@ -17,7 +17,7 @@ void
+ virtcrypto_clear_request(struct virtio_crypto_request *vc_req)
+ {
+ 	if (vc_req) {
+-		kzfree(vc_req->req_data);
++		kfree_sensitive(vc_req->req_data);
+ 		kfree(vc_req->sgs);
+ 	}
+ }
+diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
+index 000ddfab5ba0..5799df0c6643 100644
+--- a/drivers/md/dm-crypt.c
++++ b/drivers/md/dm-crypt.c
+@@ -407,7 +407,7 @@ static void crypt_iv_lmk_dtr(struct crypt_config *cc)
+ 		crypto_free_shash(lmk->hash_tfm);
+ 	lmk->hash_tfm = NULL;
+ 
+-	kzfree(lmk->seed);
++	kfree_sensitive(lmk->seed);
+ 	lmk->seed = NULL;
+ }
+ 
+@@ -558,9 +558,9 @@ static void crypt_iv_tcw_dtr(struct crypt_config *cc)
+ {
+ 	struct iv_tcw_private *tcw = &cc->iv_gen_private.tcw;
+ 
+-	kzfree(tcw->iv_seed);
++	kfree_sensitive(tcw->iv_seed);
+ 	tcw->iv_seed = NULL;
+-	kzfree(tcw->whitening);
++	kfree_sensitive(tcw->whitening);
+ 	tcw->whitening = NULL;
+ 
+ 	if (tcw->crc32_tfm && !IS_ERR(tcw->crc32_tfm))
+@@ -994,8 +994,8 @@ static int crypt_iv_elephant(struct crypt_config *cc, struct dm_crypt_request *d
+ 
+ 	kunmap_atomic(data);
+ out:
+-	kzfree(ks);
+-	kzfree(es);
++	kfree_sensitive(ks);
++	kfree_sensitive(es);
+ 	skcipher_request_free(req);
+ 	return r;
+ }
+@@ -2294,7 +2294,7 @@ static int crypt_set_keyring_key(struct crypt_config *cc, const char *key_string
+ 
+ 	key = request_key(type, key_desc + 1, NULL);
+ 	if (IS_ERR(key)) {
+-		kzfree(new_key_string);
++		kfree_sensitive(new_key_string);
+ 		return PTR_ERR(key);
+ 	}
+ 
+@@ -2304,7 +2304,7 @@ static int crypt_set_keyring_key(struct crypt_config *cc, const char *key_string
+ 	if (ret < 0) {
+ 		up_read(&key->sem);
+ 		key_put(key);
+-		kzfree(new_key_string);
++		kfree_sensitive(new_key_string);
+ 		return ret;
+ 	}
+ 
+@@ -2318,10 +2318,10 @@ static int crypt_set_keyring_key(struct crypt_config *cc, const char *key_string
+ 
+ 	if (!ret) {
+ 		set_bit(DM_CRYPT_KEY_VALID, &cc->flags);
+-		kzfree(cc->key_string);
++		kfree_sensitive(cc->key_string);
+ 		cc->key_string = new_key_string;
+ 	} else
+-		kzfree(new_key_string);
++		kfree_sensitive(new_key_string);
+ 
+ 	return ret;
+ }
+@@ -2382,7 +2382,7 @@ static int crypt_set_key(struct crypt_config *cc, char *key)
+ 	clear_bit(DM_CRYPT_KEY_VALID, &cc->flags);
+ 
+ 	/* wipe references to any kernel keyring key */
+-	kzfree(cc->key_string);
++	kfree_sensitive(cc->key_string);
+ 	cc->key_string = NULL;
+ 
+ 	/* Decode key from its hex representation. */
+@@ -2414,7 +2414,7 @@ static int crypt_wipe_key(struct crypt_config *cc)
+ 			return r;
+ 	}
+ 
+-	kzfree(cc->key_string);
++	kfree_sensitive(cc->key_string);
+ 	cc->key_string = NULL;
+ 	r = crypt_setkey(cc);
+ 	memset(&cc->key, 0, cc->key_size * sizeof(u8));
+@@ -2493,15 +2493,15 @@ static void crypt_dtr(struct dm_target *ti)
+ 	if (cc->dev)
+ 		dm_put_device(ti, cc->dev);
+ 
+-	kzfree(cc->cipher_string);
+-	kzfree(cc->key_string);
+-	kzfree(cc->cipher_auth);
+-	kzfree(cc->authenc_key);
++	kfree_sensitive(cc->cipher_string);
++	kfree_sensitive(cc->key_string);
++	kfree_sensitive(cc->cipher_auth);
++	kfree_sensitive(cc->authenc_key);
+ 
+ 	mutex_destroy(&cc->bio_alloc_lock);
+ 
+ 	/* Must zero key material before freeing */
+-	kzfree(cc);
++	kfree_sensitive(cc);
+ 
+ 	spin_lock(&dm_crypt_clients_lock);
+ 	WARN_ON(!dm_crypt_clients_n);
+diff --git a/drivers/md/dm-integrity.c b/drivers/md/dm-integrity.c
+index 81dc5ff08909..cb4a3c569802 100644
+--- a/drivers/md/dm-integrity.c
++++ b/drivers/md/dm-integrity.c
+@@ -3405,8 +3405,8 @@ static struct scatterlist **dm_integrity_alloc_journal_scatterlist(struct dm_int
+ 
+ static void free_alg(struct alg_spec *a)
+ {
+-	kzfree(a->alg_string);
+-	kzfree(a->key);
++	kfree_sensitive(a->alg_string);
++	kfree_sensitive(a->key);
+ 	memset(a, 0, sizeof *a);
+ }
+ 
+@@ -4337,7 +4337,7 @@ static void dm_integrity_dtr(struct dm_target *ti)
+ 		for (i = 0; i < ic->journal_sections; i++) {
+ 			struct skcipher_request *req = ic->sk_requests[i];
+ 			if (req) {
+-				kzfree(req->iv);
++				kfree_sensitive(req->iv);
+ 				skcipher_request_free(req);
+ 			}
+ 		}
+diff --git a/drivers/misc/ibmvmc.c b/drivers/misc/ibmvmc.c
+index 2ed23c99f59f..beda69075a97 100644
+--- a/drivers/misc/ibmvmc.c
++++ b/drivers/misc/ibmvmc.c
+@@ -286,7 +286,7 @@ static void *alloc_dma_buffer(struct vio_dev *vdev, size_t size,
+ 
+ 	if (dma_mapping_error(&vdev->dev, *dma_handle)) {
+ 		*dma_handle = 0;
+-		kzfree(buffer);
++		kfree_sensitive(buffer);
+ 		return NULL;
+ 	}
+ 
+@@ -310,7 +310,7 @@ static void free_dma_buffer(struct vio_dev *vdev, size_t size, void *vaddr,
+ 	dma_unmap_single(&vdev->dev, dma_handle, size, DMA_BIDIRECTIONAL);
+ 
+ 	/* deallocate memory */
+-	kzfree(vaddr);
++	kfree_sensitive(vaddr);
+ }
+ 
+ /**
+@@ -883,7 +883,7 @@ static int ibmvmc_close(struct inode *inode, struct file *file)
+ 		spin_unlock_irqrestore(&hmc->lock, flags);
+ 	}
+ 
+-	kzfree(session);
++	kfree_sensitive(session);
+ 
+ 	return rc;
+ }
+diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_mbx.c b/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_mbx.c
+index 0874ae47cb03..3ab6db2588d3 100644
+--- a/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_mbx.c
++++ b/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_mbx.c
+@@ -137,7 +137,7 @@ static void hclge_free_vector_ring_chain(struct hnae3_ring_chain_node *head)
+ 
+ 	while (chain) {
+ 		chain_tmp = chain->next;
+-		kzfree(chain);
++		kfree_sensitive(chain);
+ 		chain = chain_tmp;
+ 	}
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index 113f6087c7c9..e567f4ab8a79 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -960,9 +960,9 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
+ 	return 0;
+ 
+ err_aead:
+-	kzfree(xs->aead);
++	kfree_sensitive(xs->aead);
+ err_xs:
+-	kzfree(xs);
++	kfree_sensitive(xs);
+ err_out:
+ 	msgbuf[1] = err;
+ 	return err;
+@@ -1047,7 +1047,7 @@ int ixgbe_ipsec_vf_del_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
+ 	ixgbe_ipsec_del_sa(xs);
+ 
+ 	/* remove the xs that was made-up in the add request */
+-	kzfree(xs);
++	kfree_sensitive(xs);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ppp/ppp_mppe.c b/drivers/net/ppp/ppp_mppe.c
+index de3b57d09d0c..208f6e24f37c 100644
+--- a/drivers/net/ppp/ppp_mppe.c
++++ b/drivers/net/ppp/ppp_mppe.c
+@@ -222,7 +222,7 @@ static void *mppe_alloc(unsigned char *options, int optlen)
+ 	kfree(state->sha1_digest);
+ 	if (state->sha1) {
+ 		crypto_free_shash(state->sha1->tfm);
+-		kzfree(state->sha1);
++		kfree_sensitive(state->sha1);
+ 	}
+ 	kfree(state);
+ out:
+@@ -238,8 +238,8 @@ static void mppe_free(void *arg)
+ 	if (state) {
+ 		kfree(state->sha1_digest);
+ 		crypto_free_shash(state->sha1->tfm);
+-		kzfree(state->sha1);
+-		kzfree(state);
++		kfree_sensitive(state->sha1);
++		kfree_sensitive(state);
+ 	}
+ }
+ 
+diff --git a/drivers/net/wireguard/noise.c b/drivers/net/wireguard/noise.c
+index 626433690abb..4687e3d35d55 100644
+--- a/drivers/net/wireguard/noise.c
++++ b/drivers/net/wireguard/noise.c
+@@ -114,7 +114,7 @@ static struct noise_keypair *keypair_create(struct wg_peer *peer)
+ 
+ static void keypair_free_rcu(struct rcu_head *rcu)
+ {
+-	kzfree(container_of(rcu, struct noise_keypair, rcu));
++	kfree_sensitive(container_of(rcu, struct noise_keypair, rcu));
+ }
+ 
+ static void keypair_free_kref(struct kref *kref)
+@@ -821,7 +821,7 @@ bool wg_noise_handshake_begin_session(struct noise_handshake *handshake,
+ 			handshake->entry.peer->device->index_hashtable,
+ 			&handshake->entry, &new_keypair->entry);
+ 	} else {
+-		kzfree(new_keypair);
++		kfree_sensitive(new_keypair);
+ 	}
+ 	rcu_read_unlock_bh();
+ 
+diff --git a/drivers/net/wireguard/peer.c b/drivers/net/wireguard/peer.c
+index 1d634bd3038f..b3b6370e6b95 100644
+--- a/drivers/net/wireguard/peer.c
++++ b/drivers/net/wireguard/peer.c
+@@ -203,7 +203,7 @@ static void rcu_release(struct rcu_head *rcu)
+ 	/* The final zeroing takes care of clearing any remaining handshake key
+ 	 * material and other potentially sensitive information.
+ 	 */
+-	kzfree(peer);
++	kfree_sensitive(peer);
+ }
+ 
+ static void kref_release(struct kref *refcount)
+diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
+index 24cb1b1f21f0..9463c108aa96 100644
+--- a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
++++ b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
+@@ -1369,7 +1369,7 @@ static void iwl_pcie_rx_handle_rb(struct iwl_trans *trans,
+ 					   &rxcb, rxq->id);
+ 
+ 		if (reclaim) {
+-			kzfree(txq->entries[cmd_index].free_buf);
++			kfree_sensitive(txq->entries[cmd_index].free_buf);
+ 			txq->entries[cmd_index].free_buf = NULL;
+ 		}
+ 
+diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/tx-gen2.c b/drivers/net/wireless/intel/iwlwifi/pcie/tx-gen2.c
+index 7fc7542535d8..606bef2ecc7b 100644
+--- a/drivers/net/wireless/intel/iwlwifi/pcie/tx-gen2.c
++++ b/drivers/net/wireless/intel/iwlwifi/pcie/tx-gen2.c
+@@ -1026,7 +1026,7 @@ static int iwl_pcie_gen2_enqueue_hcmd(struct iwl_trans *trans,
+ 	BUILD_BUG_ON(IWL_TFH_NUM_TBS > sizeof(out_meta->tbs) * BITS_PER_BYTE);
+ 	out_meta->flags = cmd->flags;
+ 	if (WARN_ON_ONCE(txq->entries[idx].free_buf))
+-		kzfree(txq->entries[idx].free_buf);
++		kfree_sensitive(txq->entries[idx].free_buf);
+ 	txq->entries[idx].free_buf = dup_buf;
+ 
+ 	trace_iwlwifi_dev_hcmd(trans->dev, cmd, cmd_size, &out_cmd->hdr_wide);
+@@ -1257,8 +1257,8 @@ static void iwl_pcie_gen2_txq_free(struct iwl_trans *trans, int txq_id)
+ 	/* De-alloc array of command/tx buffers */
+ 	if (txq_id = trans->txqs.cmd.q_id)
+ 		for (i = 0; i < txq->n_window; i++) {
+-			kzfree(txq->entries[i].cmd);
+-			kzfree(txq->entries[i].free_buf);
++			kfree_sensitive(txq->entries[i].cmd);
++			kfree_sensitive(txq->entries[i].free_buf);
+ 		}
+ 	del_timer_sync(&txq->stuck_timer);
+ 
+diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/tx.c b/drivers/net/wireless/intel/iwlwifi/pcie/tx.c
+index 5c6c3fa0d29f..eb396c06b7fb 100644
+--- a/drivers/net/wireless/intel/iwlwifi/pcie/tx.c
++++ b/drivers/net/wireless/intel/iwlwifi/pcie/tx.c
+@@ -721,8 +721,8 @@ static void iwl_pcie_txq_free(struct iwl_trans *trans, int txq_id)
+ 	/* De-alloc array of command/tx buffers */
+ 	if (txq_id = trans->txqs.cmd.q_id)
+ 		for (i = 0; i < txq->n_window; i++) {
+-			kzfree(txq->entries[i].cmd);
+-			kzfree(txq->entries[i].free_buf);
++			kfree_sensitive(txq->entries[i].cmd);
++			kfree_sensitive(txq->entries[i].free_buf);
+ 		}
+ 
+ 	/* De-alloc circular buffer of TFDs */
+@@ -1765,7 +1765,7 @@ static int iwl_pcie_enqueue_hcmd(struct iwl_trans *trans,
+ 	BUILD_BUG_ON(IWL_TFH_NUM_TBS > sizeof(out_meta->tbs) * BITS_PER_BYTE);
+ 	out_meta->flags = cmd->flags;
+ 	if (WARN_ON_ONCE(txq->entries[idx].free_buf))
+-		kzfree(txq->entries[idx].free_buf);
++		kfree_sensitive(txq->entries[idx].free_buf);
+ 	txq->entries[idx].free_buf = dup_buf;
+ 
+ 	trace_iwlwifi_dev_hcmd(trans->dev, cmd, cmd_size, &out_cmd->hdr_wide);
+diff --git a/drivers/net/wireless/intersil/orinoco/wext.c b/drivers/net/wireless/intersil/orinoco/wext.c
+index 1d4dae422106..7b6c4ae8ddb3 100644
+--- a/drivers/net/wireless/intersil/orinoco/wext.c
++++ b/drivers/net/wireless/intersil/orinoco/wext.c
+@@ -31,8 +31,8 @@ static int orinoco_set_key(struct orinoco_private *priv, int index,
+ 			   enum orinoco_alg alg, const u8 *key, int key_len,
+ 			   const u8 *seq, int seq_len)
+ {
+-	kzfree(priv->keys[index].key);
+-	kzfree(priv->keys[index].seq);
++	kfree_sensitive(priv->keys[index].key);
++	kfree_sensitive(priv->keys[index].seq);
+ 
+ 	if (key_len) {
+ 		priv->keys[index].key = kzalloc(key_len, GFP_ATOMIC);
+diff --git a/drivers/s390/crypto/ap_bus.h b/drivers/s390/crypto/ap_bus.h
+index 053cc34d2ca2..823de10479bd 100644
+--- a/drivers/s390/crypto/ap_bus.h
++++ b/drivers/s390/crypto/ap_bus.h
+@@ -218,8 +218,8 @@ static inline void ap_init_message(struct ap_message *ap_msg)
+  */
+ static inline void ap_release_message(struct ap_message *ap_msg)
+ {
+-	kzfree(ap_msg->message);
+-	kzfree(ap_msg->private);
++	kfree_sensitive(ap_msg->message);
++	kfree_sensitive(ap_msg->private);
+ }
+ 
+ /*
+diff --git a/drivers/staging/ks7010/ks_hostif.c b/drivers/staging/ks7010/ks_hostif.c
+index 2666f9e30c15..d70b671b06aa 100644
+--- a/drivers/staging/ks7010/ks_hostif.c
++++ b/drivers/staging/ks7010/ks_hostif.c
+@@ -246,7 +246,7 @@ michael_mic(u8 *key, u8 *data, unsigned int len, u8 priority, u8 *result)
+ 	ret = crypto_shash_finup(desc, data + 12, len - 12, result);
+ 
+ err_free_desc:
+-	kzfree(desc);
++	kfree_sensitive(desc);
+ 
+ err_free_tfm:
+ 	crypto_free_shash(tfm);
+diff --git a/drivers/staging/rtl8723bs/core/rtw_security.c b/drivers/staging/rtl8723bs/core/rtw_security.c
+index 0f95009a30b6..ec9122070e58 100644
+--- a/drivers/staging/rtl8723bs/core/rtw_security.c
++++ b/drivers/staging/rtl8723bs/core/rtw_security.c
+@@ -2251,7 +2251,7 @@ static void gf_mulx(u8 *pad)
+ 
+ static void aes_encrypt_deinit(void *ctx)
+ {
+-	kzfree(ctx);
++	kfree_sensitive(ctx);
+ }
+ 
+ 
+diff --git a/drivers/staging/wlan-ng/p80211netdev.c b/drivers/staging/wlan-ng/p80211netdev.c
+index b809c0015c0c..7b091c5a2984 100644
+--- a/drivers/staging/wlan-ng/p80211netdev.c
++++ b/drivers/staging/wlan-ng/p80211netdev.c
+@@ -429,7 +429,7 @@ static netdev_tx_t p80211knetdev_hard_start_xmit(struct sk_buff *skb,
+ failed:
+ 	/* Free up the WEP buffer if it's not the same as the skb */
+ 	if ((p80211_wep.data) && (p80211_wep.data != skb->data))
+-		kzfree(p80211_wep.data);
++		kfree_sensitive(p80211_wep.data);
+ 
+ 	/* we always free the skb here, never in a lower level. */
+ 	if (!result)
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index 0e54627d9aa8..62d912b79c61 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -484,7 +484,7 @@ static int chap_server_compute_hash(
+ 	pr_debug("[server] Sending CHAP_R=0x%s\n", response);
+ 	auth_ret = 0;
+ out:
+-	kzfree(desc);
++	kfree_sensitive(desc);
+ 	if (tfm)
+ 		crypto_free_shash(tfm);
+ 	kfree(initiatorchg);
+diff --git a/fs/cifs/cifsencrypt.c b/fs/cifs/cifsencrypt.c
+index 874a551f339c..9daa256f69d4 100644
+--- a/fs/cifs/cifsencrypt.c
++++ b/fs/cifs/cifsencrypt.c
+@@ -797,7 +797,7 @@ calc_seckey(struct cifs_ses *ses)
+ 	ses->auth_key.len = CIFS_SESS_KEY_SIZE;
+ 
+ 	memzero_explicit(sec_key, CIFS_SESS_KEY_SIZE);
+-	kzfree(ctx_arc4);
++	kfree_sensitive(ctx_arc4);
+ 	return 0;
+ }
+ 
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index 5fac34f192af..467db43d1e34 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -2182,7 +2182,7 @@ cifs_parse_mount_options(const char *mountdata, const char *devname,
+ 			tmp_end++;
+ 			if (!(tmp_end < end && tmp_end[1] = delim)) {
+ 				/* No it is not. Set the password to NULL */
+-				kzfree(vol->password);
++				kfree_sensitive(vol->password);
+ 				vol->password = NULL;
+ 				break;
+ 			}
+@@ -2220,7 +2220,7 @@ cifs_parse_mount_options(const char *mountdata, const char *devname,
+ 					options = end;
+ 			}
+ 
+-			kzfree(vol->password);
++			kfree_sensitive(vol->password);
+ 			/* Now build new password string */
+ 			temp_len = strlen(value);
+ 			vol->password = kzalloc(temp_len+1, GFP_KERNEL);
+@@ -3198,7 +3198,7 @@ cifs_set_cifscreds(struct smb_vol *vol, struct cifs_ses *ses)
+ 			rc = -ENOMEM;
+ 			kfree(vol->username);
+ 			vol->username = NULL;
+-			kzfree(vol->password);
++			kfree_sensitive(vol->password);
+ 			vol->password = NULL;
+ 			goto out_key_put;
+ 		}
+@@ -4219,7 +4219,7 @@ void
+ cifs_cleanup_volume_info_contents(struct smb_vol *volume_info)
+ {
+ 	kfree(volume_info->username);
+-	kzfree(volume_info->password);
++	kfree_sensitive(volume_info->password);
+ 	kfree(volume_info->UNC);
+ 	kfree(volume_info->domainname);
+ 	kfree(volume_info->iocharset);
+@@ -5343,7 +5343,7 @@ cifs_construct_tcon(struct cifs_sb_info *cifs_sb, kuid_t fsuid)
+ 
+ out:
+ 	kfree(vol_info->username);
+-	kzfree(vol_info->password);
++	kfree_sensitive(vol_info->password);
+ 	kfree(vol_info);
+ 
+ 	return tcon;
+diff --git a/fs/cifs/dfs_cache.c b/fs/cifs/dfs_cache.c
+index df81c718d2fa..7a8d41493aad 100644
+--- a/fs/cifs/dfs_cache.c
++++ b/fs/cifs/dfs_cache.c
+@@ -1131,7 +1131,7 @@ static int dup_vol(struct smb_vol *vol, struct smb_vol *new)
+ err_free_unc:
+ 	kfree(new->UNC);
+ err_free_password:
+-	kzfree(new->password);
++	kfree_sensitive(new->password);
+ err_free_username:
+ 	kfree(new->username);
+ 	kfree(new);
+diff --git a/fs/cifs/misc.c b/fs/cifs/misc.c
+index 56791a692c8b..2393e8aec5c6 100644
+--- a/fs/cifs/misc.c
++++ b/fs/cifs/misc.c
+@@ -103,12 +103,12 @@ sesInfoFree(struct cifs_ses *buf_to_free)
+ 	kfree(buf_to_free->serverOS);
+ 	kfree(buf_to_free->serverDomain);
+ 	kfree(buf_to_free->serverNOS);
+-	kzfree(buf_to_free->password);
++	kfree_sensitive(buf_to_free->password);
+ 	kfree(buf_to_free->user_name);
+ 	kfree(buf_to_free->domainName);
+-	kzfree(buf_to_free->auth_key.response);
++	kfree_sensitive(buf_to_free->auth_key.response);
+ 	kfree(buf_to_free->iface_list);
+-	kzfree(buf_to_free);
++	kfree_sensitive(buf_to_free);
+ }
+ 
+ struct cifs_tcon *
+@@ -148,7 +148,7 @@ tconInfoFree(struct cifs_tcon *buf_to_free)
+ 	}
+ 	atomic_dec(&tconInfoAllocCount);
+ 	kfree(buf_to_free->nativeFileSystem);
+-	kzfree(buf_to_free->password);
++	kfree_sensitive(buf_to_free->password);
+ 	kfree(buf_to_free->crfid.fid);
+ #ifdef CONFIG_CIFS_DFS_UPCALL
+ 	kfree(buf_to_free->dfs_path);
+diff --git a/fs/crypto/keyring.c b/fs/crypto/keyring.c
+index e24eb48bfbe1..484086feea35 100644
+--- a/fs/crypto/keyring.c
++++ b/fs/crypto/keyring.c
+@@ -51,7 +51,7 @@ static void free_master_key(struct fscrypt_master_key *mk)
+ 	}
+ 
+ 	key_put(mk->mk_users);
+-	kzfree(mk);
++	kfree_sensitive(mk);
+ }
+ 
+ static inline bool valid_key_spec(const struct fscrypt_key_specifier *spec)
+@@ -522,7 +522,7 @@ static int fscrypt_provisioning_key_preparse(struct key_preparsed_payload *prep)
+ static void fscrypt_provisioning_key_free_preparse(
+ 					struct key_preparsed_payload *prep)
+ {
+-	kzfree(prep->payload.data[0]);
++	kfree_sensitive(prep->payload.data[0]);
+ }
+ 
+ static void fscrypt_provisioning_key_describe(const struct key *key,
+@@ -539,7 +539,7 @@ static void fscrypt_provisioning_key_describe(const struct key *key,
+ 
+ static void fscrypt_provisioning_key_destroy(struct key *key)
+ {
+-	kzfree(key->payload.data[0]);
++	kfree_sensitive(key->payload.data[0]);
+ }
+ 
+ static struct key_type key_type_fscrypt_provisioning = {
+diff --git a/fs/crypto/keysetup_v1.c b/fs/crypto/keysetup_v1.c
+index 801b48c0cd7f..c8a930f8faf2 100644
+--- a/fs/crypto/keysetup_v1.c
++++ b/fs/crypto/keysetup_v1.c
+@@ -155,7 +155,7 @@ static void free_direct_key(struct fscrypt_direct_key *dk)
+ {
+ 	if (dk) {
+ 		crypto_free_skcipher(dk->dk_ctfm);
+-		kzfree(dk);
++		kfree_sensitive(dk);
+ 	}
+ }
+ 
+@@ -285,7 +285,7 @@ static int setup_v1_file_key_derived(struct fscrypt_info *ci,
+ 
+ 	err = fscrypt_set_per_file_enc_key(ci, derived_key);
+ out:
+-	kzfree(derived_key);
++	kfree_sensitive(derived_key);
+ 	return err;
+ }
+ 
+diff --git a/fs/ecryptfs/keystore.c b/fs/ecryptfs/keystore.c
+index af3eb02bbca1..f6a17d259db7 100644
+--- a/fs/ecryptfs/keystore.c
++++ b/fs/ecryptfs/keystore.c
+@@ -838,7 +838,7 @@ ecryptfs_write_tag_70_packet(char *dest, size_t *remaining_bytes,
+ out_release_free_unlock:
+ 	crypto_free_shash(s->hash_tfm);
+ out_free_unlock:
+-	kzfree(s->block_aligned_filename);
++	kfree_sensitive(s->block_aligned_filename);
+ out_unlock:
+ 	mutex_unlock(s->tfm_mutex);
+ out:
+@@ -847,7 +847,7 @@ ecryptfs_write_tag_70_packet(char *dest, size_t *remaining_bytes,
+ 		key_put(auth_tok_key);
+ 	}
+ 	skcipher_request_free(s->skcipher_req);
+-	kzfree(s->hash_desc);
++	kfree_sensitive(s->hash_desc);
+ 	kfree(s);
+ 	return rc;
+ }
+diff --git a/fs/ecryptfs/messaging.c b/fs/ecryptfs/messaging.c
+index 8646ba76def3..c0dfd9647627 100644
+--- a/fs/ecryptfs/messaging.c
++++ b/fs/ecryptfs/messaging.c
+@@ -175,7 +175,7 @@ int ecryptfs_exorcise_daemon(struct ecryptfs_daemon *daemon)
+ 	}
+ 	hlist_del(&daemon->euid_chain);
+ 	mutex_unlock(&daemon->mux);
+-	kzfree(daemon);
++	kfree_sensitive(daemon);
+ out:
+ 	return rc;
+ }
+diff --git a/include/crypto/aead.h b/include/crypto/aead.h
+index 62c68550aab6..c32a6f5664e9 100644
+--- a/include/crypto/aead.h
++++ b/include/crypto/aead.h
+@@ -425,7 +425,7 @@ static inline struct aead_request *aead_request_alloc(struct crypto_aead *tfm,
+  */
+ static inline void aead_request_free(struct aead_request *req)
+ {
+-	kzfree(req);
++	kfree_sensitive(req);
+ }
+ 
+ /**
+diff --git a/include/crypto/akcipher.h b/include/crypto/akcipher.h
+index 6924b091adec..1d3aa252caba 100644
+--- a/include/crypto/akcipher.h
++++ b/include/crypto/akcipher.h
+@@ -207,7 +207,7 @@ static inline struct akcipher_request *akcipher_request_alloc(
+  */
+ static inline void akcipher_request_free(struct akcipher_request *req)
+ {
+-	kzfree(req);
++	kfree_sensitive(req);
+ }
+ 
+ /**
+diff --git a/include/crypto/gf128mul.h b/include/crypto/gf128mul.h
+index fa0a63d298dc..81330c6446f6 100644
+--- a/include/crypto/gf128mul.h
++++ b/include/crypto/gf128mul.h
+@@ -230,7 +230,7 @@ void gf128mul_4k_bbe(be128 *a, const struct gf128mul_4k *t);
+ void gf128mul_x8_ble(le128 *r, const le128 *x);
+ static inline void gf128mul_free_4k(struct gf128mul_4k *t)
+ {
+-	kzfree(t);
++	kfree_sensitive(t);
+ }
+ 
+ 
+diff --git a/include/crypto/hash.h b/include/crypto/hash.h
+index 4829d2367eda..8d036b54cbff 100644
+--- a/include/crypto/hash.h
++++ b/include/crypto/hash.h
+@@ -606,7 +606,7 @@ static inline struct ahash_request *ahash_request_alloc(
+  */
+ static inline void ahash_request_free(struct ahash_request *req)
+ {
+-	kzfree(req);
++	kfree_sensitive(req);
+ }
+ 
+ static inline void ahash_request_zero(struct ahash_request *req)
+diff --git a/include/crypto/internal/acompress.h b/include/crypto/internal/acompress.h
+index cf478681b53e..cfc47e18820f 100644
+--- a/include/crypto/internal/acompress.h
++++ b/include/crypto/internal/acompress.h
+@@ -46,7 +46,7 @@ static inline struct acomp_req *__acomp_request_alloc(struct crypto_acomp *tfm)
+ 
+ static inline void __acomp_request_free(struct acomp_req *req)
+ {
+-	kzfree(req);
++	kfree_sensitive(req);
+ }
+ 
+ /**
+diff --git a/include/crypto/kpp.h b/include/crypto/kpp.h
+index cd9a9b500624..88b591215d5c 100644
+--- a/include/crypto/kpp.h
++++ b/include/crypto/kpp.h
+@@ -187,7 +187,7 @@ static inline struct kpp_request *kpp_request_alloc(struct crypto_kpp *tfm,
+  */
+ static inline void kpp_request_free(struct kpp_request *req)
+ {
+-	kzfree(req);
++	kfree_sensitive(req);
+ }
+ 
+ /**
+diff --git a/include/crypto/skcipher.h b/include/crypto/skcipher.h
+index 141e7690f9c3..1013c9cbae69 100644
+--- a/include/crypto/skcipher.h
++++ b/include/crypto/skcipher.h
+@@ -508,7 +508,7 @@ static inline struct skcipher_request *skcipher_request_alloc(
+  */
+ static inline void skcipher_request_free(struct skcipher_request *req)
+ {
+-	kzfree(req);
++	kfree_sensitive(req);
+ }
+ 
+ static inline void skcipher_request_zero(struct skcipher_request *req)
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index 6d454886bcaf..0884d82c55ee 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -186,10 +186,12 @@ void memcg_deactivate_kmem_caches(struct mem_cgroup *, struct mem_cgroup *);
+  */
+ void * __must_check krealloc(const void *, size_t, gfp_t);
+ void kfree(const void *);
+-void kzfree(const void *);
++void kfree_sensitive(const void *);
+ size_t __ksize(const void *);
+ size_t ksize(const void *);
+ 
++#define kzfree(x)	kfree_sensitive(x)	/* For backward compatibility */
++
+ #ifdef CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR
+ void __check_heap_object(const void *ptr, unsigned long n, struct page *page,
+ 			bool to_user);
+diff --git a/lib/mpi/mpiutil.c b/lib/mpi/mpiutil.c
+index 20ed0f766787..4cd2b335cb7f 100644
+--- a/lib/mpi/mpiutil.c
++++ b/lib/mpi/mpiutil.c
+@@ -69,7 +69,7 @@ void mpi_free_limb_space(mpi_ptr_t a)
+ 	if (!a)
+ 		return;
+ 
+-	kzfree(a);
++	kfree_sensitive(a);
+ }
+ 
+ void mpi_assign_limb_space(MPI a, mpi_ptr_t ap, unsigned nlimbs)
+@@ -95,7 +95,7 @@ int mpi_resize(MPI a, unsigned nlimbs)
+ 		if (!p)
+ 			return -ENOMEM;
+ 		memcpy(p, a->d, a->alloced * sizeof(mpi_limb_t));
+-		kzfree(a->d);
++		kfree_sensitive(a->d);
+ 		a->d = p;
+ 	} else {
+ 		a->d = kcalloc(nlimbs, sizeof(mpi_limb_t), GFP_KERNEL);
+@@ -112,7 +112,7 @@ void mpi_free(MPI a)
+ 		return;
+ 
+ 	if (a->flags & 4)
+-		kzfree(a->d);
++		kfree_sensitive(a->d);
+ 	else
+ 		mpi_free_limb_space(a->d);
+ 
+diff --git a/lib/test_kasan.c b/lib/test_kasan.c
+index dc2c6a51d11a..e4d9a86b174b 100644
+--- a/lib/test_kasan.c
++++ b/lib/test_kasan.c
+@@ -766,15 +766,15 @@ static noinline void __init kmalloc_double_kzfree(void)
+ 	char *ptr;
+ 	size_t size = 16;
+ 
+-	pr_info("double-free (kzfree)\n");
++	pr_info("double-free (kfree_sensitive)\n");
+ 	ptr = kmalloc(size, GFP_KERNEL);
+ 	if (!ptr) {
+ 		pr_err("Allocation failed\n");
+ 		return;
+ 	}
+ 
+-	kzfree(ptr);
+-	kzfree(ptr);
++	kfree_sensitive(ptr);
++	kfree_sensitive(ptr);
+ }
+ 
+ #ifdef CONFIG_KASAN_VMALLOC
+diff --git a/mm/slab_common.c b/mm/slab_common.c
+index 37d48a56431d..aeedf241e2e6 100644
+--- a/mm/slab_common.c
++++ b/mm/slab_common.c
+@@ -1708,17 +1708,17 @@ void *krealloc(const void *p, size_t new_size, gfp_t flags)
+ EXPORT_SYMBOL(krealloc);
+ 
+ /**
+- * kzfree - like kfree but zero memory
++ * kfree_sensitive - Clear sensitive information in memory before freeing
+  * @p: object to free memory of
+  *
+  * The memory of the object @p points to is zeroed before freed.
+- * If @p is %NULL, kzfree() does nothing.
++ * If @p is %NULL, kfree_sensitive() does nothing.
+  *
+  * Note: this function zeroes the whole allocated buffer which can be a good
+  * deal bigger than the requested buffer size passed to kmalloc(). So be
+  * careful when using this function in performance sensitive code.
+  */
+-void kzfree(const void *p)
++void kfree_sensitive(const void *p)
+ {
+ 	size_t ks;
+ 	void *mem = (void *)p;
+@@ -1729,7 +1729,7 @@ void kzfree(const void *p)
+ 	memzero_explicit(mem, ks);
+ 	kfree(mem);
+ }
+-EXPORT_SYMBOL(kzfree);
++EXPORT_SYMBOL(kfree_sensitive);
+ 
+ /**
+  * ksize - get the actual amount of memory allocated for a given object
+diff --git a/net/atm/mpoa_caches.c b/net/atm/mpoa_caches.c
+index 3286f9d527d3..f7a2f0e41105 100644
+--- a/net/atm/mpoa_caches.c
++++ b/net/atm/mpoa_caches.c
+@@ -180,7 +180,7 @@ static int cache_hit(in_cache_entry *entry, struct mpoa_client *mpc)
+ static void in_cache_put(in_cache_entry *entry)
+ {
+ 	if (refcount_dec_and_test(&entry->use)) {
+-		kzfree(entry);
++		kfree_sensitive(entry);
+ 	}
+ }
+ 
+@@ -415,7 +415,7 @@ static eg_cache_entry *eg_cache_get_by_src_ip(__be32 ipaddr,
+ static void eg_cache_put(eg_cache_entry *entry)
+ {
+ 	if (refcount_dec_and_test(&entry->use)) {
+-		kzfree(entry);
++		kfree_sensitive(entry);
+ 	}
+ }
+ 
+diff --git a/net/bluetooth/ecdh_helper.c b/net/bluetooth/ecdh_helper.c
+index 2155ce802877..3226fe02e875 100644
+--- a/net/bluetooth/ecdh_helper.c
++++ b/net/bluetooth/ecdh_helper.c
+@@ -104,7 +104,7 @@ int compute_ecdh_secret(struct crypto_kpp *tfm, const u8 public_key[64],
+ free_all:
+ 	kpp_request_free(req);
+ free_tmp:
+-	kzfree(tmp);
++	kfree_sensitive(tmp);
+ 	return err;
+ }
+ 
+@@ -151,9 +151,9 @@ int set_ecdh_privkey(struct crypto_kpp *tfm, const u8 private_key[32])
+ 	err = crypto_kpp_set_secret(tfm, buf, buf_len);
+ 	/* fall through */
+ free_all:
+-	kzfree(buf);
++	kfree_sensitive(buf);
+ free_tmp:
+-	kzfree(tmp);
++	kfree_sensitive(tmp);
+ 	return err;
+ }
+ 
+diff --git a/net/bluetooth/smp.c b/net/bluetooth/smp.c
+index c2c5ab05fa7e..684e60e1915c 100644
+--- a/net/bluetooth/smp.c
++++ b/net/bluetooth/smp.c
+@@ -753,9 +753,9 @@ static void smp_chan_destroy(struct l2cap_conn *conn)
+ 	complete = test_bit(SMP_FLAG_COMPLETE, &smp->flags);
+ 	mgmt_smp_complete(hcon, complete);
+ 
+-	kzfree(smp->csrk);
+-	kzfree(smp->slave_csrk);
+-	kzfree(smp->link_key);
++	kfree_sensitive(smp->csrk);
++	kfree_sensitive(smp->slave_csrk);
++	kfree_sensitive(smp->link_key);
+ 
+ 	crypto_free_shash(smp->tfm_cmac);
+ 	crypto_free_kpp(smp->tfm_ecdh);
+@@ -789,7 +789,7 @@ static void smp_chan_destroy(struct l2cap_conn *conn)
+ 	}
+ 
+ 	chan->data = NULL;
+-	kzfree(smp);
++	kfree_sensitive(smp);
+ 	hci_conn_drop(hcon);
+ }
+ 
+@@ -1156,7 +1156,7 @@ static void sc_generate_link_key(struct smp_chan *smp)
+ 		const u8 salt[16] = { 0x31, 0x70, 0x6d, 0x74 };
+ 
+ 		if (smp_h7(smp->tfm_cmac, smp->tk, salt, smp->link_key)) {
+-			kzfree(smp->link_key);
++			kfree_sensitive(smp->link_key);
+ 			smp->link_key = NULL;
+ 			return;
+ 		}
+@@ -1165,14 +1165,14 @@ static void sc_generate_link_key(struct smp_chan *smp)
+ 		const u8 tmp1[4] = { 0x31, 0x70, 0x6d, 0x74 };
+ 
+ 		if (smp_h6(smp->tfm_cmac, smp->tk, tmp1, smp->link_key)) {
+-			kzfree(smp->link_key);
++			kfree_sensitive(smp->link_key);
+ 			smp->link_key = NULL;
+ 			return;
+ 		}
+ 	}
+ 
+ 	if (smp_h6(smp->tfm_cmac, smp->link_key, lebr, smp->link_key)) {
+-		kzfree(smp->link_key);
++		kfree_sensitive(smp->link_key);
+ 		smp->link_key = NULL;
+ 		return;
+ 	}
+@@ -1407,7 +1407,7 @@ static struct smp_chan *smp_chan_create(struct l2cap_conn *conn)
+ free_shash:
+ 	crypto_free_shash(smp->tfm_cmac);
+ zfree_smp:
+-	kzfree(smp);
++	kfree_sensitive(smp);
+ 	return NULL;
+ }
+ 
+@@ -3278,7 +3278,7 @@ static struct l2cap_chan *smp_add_cid(struct hci_dev *hdev, u16 cid)
+ 	tfm_cmac = crypto_alloc_shash("cmac(aes)", 0, 0);
+ 	if (IS_ERR(tfm_cmac)) {
+ 		BT_ERR("Unable to create CMAC crypto context");
+-		kzfree(smp);
++		kfree_sensitive(smp);
+ 		return ERR_CAST(tfm_cmac);
+ 	}
+ 
+@@ -3286,7 +3286,7 @@ static struct l2cap_chan *smp_add_cid(struct hci_dev *hdev, u16 cid)
+ 	if (IS_ERR(tfm_ecdh)) {
+ 		BT_ERR("Unable to create ECDH crypto context");
+ 		crypto_free_shash(tfm_cmac);
+-		kzfree(smp);
++		kfree_sensitive(smp);
+ 		return ERR_CAST(tfm_ecdh);
+ 	}
+ 
+@@ -3300,7 +3300,7 @@ static struct l2cap_chan *smp_add_cid(struct hci_dev *hdev, u16 cid)
+ 		if (smp) {
+ 			crypto_free_shash(smp->tfm_cmac);
+ 			crypto_free_kpp(smp->tfm_ecdh);
+-			kzfree(smp);
++			kfree_sensitive(smp);
+ 		}
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+@@ -3347,7 +3347,7 @@ static void smp_del_chan(struct l2cap_chan *chan)
+ 		chan->data = NULL;
+ 		crypto_free_shash(smp->tfm_cmac);
+ 		crypto_free_kpp(smp->tfm_ecdh);
+-		kzfree(smp);
++		kfree_sensitive(smp);
+ 	}
+ 
+ 	l2cap_chan_put(chan);
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 6c4acf1f0220..8cf1a6a5cc5b 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -2271,7 +2271,7 @@ static inline void __sock_kfree_s(struct sock *sk, void *mem, int size,
+ 	if (WARN_ON_ONCE(!mem))
+ 		return;
+ 	if (nullify)
+-		kzfree(mem);
++		kfree_sensitive(mem);
+ 	else
+ 		kfree(mem);
+ 	atomic_sub(size, &sk->sk_omem_alloc);
+diff --git a/net/ipv4/tcp_fastopen.c b/net/ipv4/tcp_fastopen.c
+index 19ad9586c720..c1a54f3d58f5 100644
+--- a/net/ipv4/tcp_fastopen.c
++++ b/net/ipv4/tcp_fastopen.c
+@@ -38,7 +38,7 @@ static void tcp_fastopen_ctx_free(struct rcu_head *head)
+ 	struct tcp_fastopen_context *ctx  	    container_of(head, struct tcp_fastopen_context, rcu);
+ 
+-	kzfree(ctx);
++	kfree_sensitive(ctx);
+ }
+ 
+ void tcp_fastopen_destroy_cipher(struct sock *sk)
+diff --git a/net/mac80211/aead_api.c b/net/mac80211/aead_api.c
+index c5fe95e49c68..d7b3d905d535 100644
+--- a/net/mac80211/aead_api.c
++++ b/net/mac80211/aead_api.c
+@@ -41,7 +41,7 @@ int aead_encrypt(struct crypto_aead *tfm, u8 *b_0, u8 *aad, size_t aad_len,
+ 	aead_request_set_ad(aead_req, sg[0].length);
+ 
+ 	crypto_aead_encrypt(aead_req);
+-	kzfree(aead_req);
++	kfree_sensitive(aead_req);
+ 
+ 	return 0;
+ }
+@@ -76,7 +76,7 @@ int aead_decrypt(struct crypto_aead *tfm, u8 *b_0, u8 *aad, size_t aad_len,
+ 	aead_request_set_ad(aead_req, sg[0].length);
+ 
+ 	err = crypto_aead_decrypt(aead_req);
+-	kzfree(aead_req);
++	kfree_sensitive(aead_req);
+ 
+ 	return err;
+ }
+diff --git a/net/mac80211/aes_gmac.c b/net/mac80211/aes_gmac.c
+index 16ba09cb5def..6f3b3a0cc10a 100644
+--- a/net/mac80211/aes_gmac.c
++++ b/net/mac80211/aes_gmac.c
+@@ -60,7 +60,7 @@ int ieee80211_aes_gmac(struct crypto_aead *tfm, const u8 *aad, u8 *nonce,
+ 	aead_request_set_ad(aead_req, GMAC_AAD_LEN + data_len);
+ 
+ 	crypto_aead_encrypt(aead_req);
+-	kzfree(aead_req);
++	kfree_sensitive(aead_req);
+ 
+ 	return 0;
+ }
+diff --git a/net/mac80211/key.c b/net/mac80211/key.c
+index 8f403c1bb908..6bb765721862 100644
+--- a/net/mac80211/key.c
++++ b/net/mac80211/key.c
+@@ -732,7 +732,7 @@ static void ieee80211_key_free_common(struct ieee80211_key *key)
+ 		ieee80211_aes_gcm_key_free(key->u.gcmp.tfm);
+ 		break;
+ 	}
+-	kzfree(key);
++	kfree_sensitive(key);
+ }
+ 
+ static void __ieee80211_key_destroy(struct ieee80211_key *key,
+diff --git a/net/mac802154/llsec.c b/net/mac802154/llsec.c
+index c079ee69d3d0..585d33144c33 100644
+--- a/net/mac802154/llsec.c
++++ b/net/mac802154/llsec.c
+@@ -49,7 +49,7 @@ void mac802154_llsec_destroy(struct mac802154_llsec *sec)
+ 
+ 		msl = container_of(sl, struct mac802154_llsec_seclevel, level);
+ 		list_del(&sl->list);
+-		kzfree(msl);
++		kfree_sensitive(msl);
+ 	}
+ 
+ 	list_for_each_entry_safe(dev, dn, &sec->table.devices, list) {
+@@ -66,7 +66,7 @@ void mac802154_llsec_destroy(struct mac802154_llsec *sec)
+ 		mkey = container_of(key->key, struct mac802154_llsec_key, key);
+ 		list_del(&key->list);
+ 		llsec_key_put(mkey);
+-		kzfree(key);
++		kfree_sensitive(key);
+ 	}
+ }
+ 
+@@ -155,7 +155,7 @@ llsec_key_alloc(const struct ieee802154_llsec_key *template)
+ 		if (key->tfm[i])
+ 			crypto_free_aead(key->tfm[i]);
+ 
+-	kzfree(key);
++	kfree_sensitive(key);
+ 	return NULL;
+ }
+ 
+@@ -170,7 +170,7 @@ static void llsec_key_release(struct kref *ref)
+ 		crypto_free_aead(key->tfm[i]);
+ 
+ 	crypto_free_sync_skcipher(key->tfm0);
+-	kzfree(key);
++	kfree_sensitive(key);
+ }
+ 
+ static struct mac802154_llsec_key*
+@@ -261,7 +261,7 @@ int mac802154_llsec_key_add(struct mac802154_llsec *sec,
+ 	return 0;
+ 
+ fail:
+-	kzfree(new);
++	kfree_sensitive(new);
+ 	return -ENOMEM;
+ }
+ 
+@@ -341,10 +341,10 @@ static void llsec_dev_free(struct mac802154_llsec_device *dev)
+ 				      devkey);
+ 
+ 		list_del(&pos->list);
+-		kzfree(devkey);
++		kfree_sensitive(devkey);
+ 	}
+ 
+-	kzfree(dev);
++	kfree_sensitive(dev);
+ }
+ 
+ int mac802154_llsec_dev_add(struct mac802154_llsec *sec,
+@@ -682,7 +682,7 @@ llsec_do_encrypt_auth(struct sk_buff *skb, const struct mac802154_llsec *sec,
+ 
+ 	rc = crypto_aead_encrypt(req);
+ 
+-	kzfree(req);
++	kfree_sensitive(req);
+ 
+ 	return rc;
+ }
+@@ -886,7 +886,7 @@ llsec_do_decrypt_auth(struct sk_buff *skb, const struct mac802154_llsec *sec,
+ 
+ 	rc = crypto_aead_decrypt(req);
+ 
+-	kzfree(req);
++	kfree_sensitive(req);
+ 	skb_trim(skb, skb->len - authlen);
+ 
+ 	return rc;
+@@ -926,7 +926,7 @@ llsec_update_devkey_record(struct mac802154_llsec_device *dev,
+ 		if (!devkey)
+ 			list_add_rcu(&next->devkey.list, &dev->dev.keys);
+ 		else
+-			kzfree(next);
++			kfree_sensitive(next);
+ 
+ 		spin_unlock_bh(&dev->lock);
+ 	}
+diff --git a/net/sctp/auth.c b/net/sctp/auth.c
+index 83e97e8892e0..9e289c770574 100644
+--- a/net/sctp/auth.c
++++ b/net/sctp/auth.c
+@@ -49,7 +49,7 @@ void sctp_auth_key_put(struct sctp_auth_bytes *key)
+ 		return;
+ 
+ 	if (refcount_dec_and_test(&key->refcnt)) {
+-		kzfree(key);
++		kfree_sensitive(key);
+ 		SCTP_DBG_OBJCNT_DEC(keys);
+ 	}
+ }
+diff --git a/net/sctp/socket.c b/net/sctp/socket.c
+index d57e1a002ffc..3581ccee34d6 100644
+--- a/net/sctp/socket.c
++++ b/net/sctp/socket.c
+@@ -3755,7 +3755,7 @@ static int sctp_setsockopt_auth_key(struct sock *sk,
+ 	}
+ 
+ out:
+-	kzfree(authkey);
++	kfree_sensitive(authkey);
+ 	return ret;
+ }
+ 
+diff --git a/net/sunrpc/auth_gss/gss_krb5_crypto.c b/net/sunrpc/auth_gss/gss_krb5_crypto.c
+index e7180da1fc6a..794fb3001880 100644
+--- a/net/sunrpc/auth_gss/gss_krb5_crypto.c
++++ b/net/sunrpc/auth_gss/gss_krb5_crypto.c
+@@ -1003,7 +1003,7 @@ krb5_rc4_setup_seq_key(struct krb5_ctx *kctx,
+ 	err = 0;
+ 
+ out_err:
+-	kzfree(desc);
++	kfree_sensitive(desc);
+ 	crypto_free_shash(hmac);
+ 	dprintk("%s: returning %d\n", __func__, err);
+ 	return err;
+@@ -1079,7 +1079,7 @@ krb5_rc4_setup_enc_key(struct krb5_ctx *kctx,
+ 	err = 0;
+ 
+ out_err:
+-	kzfree(desc);
++	kfree_sensitive(desc);
+ 	crypto_free_shash(hmac);
+ 	dprintk("%s: returning %d\n", __func__, err);
+ 	return err;
+diff --git a/net/sunrpc/auth_gss/gss_krb5_keys.c b/net/sunrpc/auth_gss/gss_krb5_keys.c
+index 3b7f721c023b..726c076950c0 100644
+--- a/net/sunrpc/auth_gss/gss_krb5_keys.c
++++ b/net/sunrpc/auth_gss/gss_krb5_keys.c
+@@ -228,11 +228,11 @@ u32 krb5_derive_key(const struct gss_krb5_enctype *gk5e,
+ 	ret = 0;
+ 
+ err_free_raw:
+-	kzfree(rawkey);
++	kfree_sensitive(rawkey);
+ err_free_out:
+-	kzfree(outblockdata);
++	kfree_sensitive(outblockdata);
+ err_free_in:
+-	kzfree(inblockdata);
++	kfree_sensitive(inblockdata);
+ err_free_cipher:
+ 	crypto_free_sync_skcipher(cipher);
+ err_return:
+diff --git a/net/sunrpc/auth_gss/gss_krb5_mech.c b/net/sunrpc/auth_gss/gss_krb5_mech.c
+index 75b3c2e9e8f8..a84a5b289484 100644
+--- a/net/sunrpc/auth_gss/gss_krb5_mech.c
++++ b/net/sunrpc/auth_gss/gss_krb5_mech.c
+@@ -443,7 +443,7 @@ context_derive_keys_rc4(struct krb5_ctx *ctx)
+ 	desc->tfm = hmac;
+ 
+ 	err = crypto_shash_digest(desc, sigkeyconstant, slen, ctx->cksum);
+-	kzfree(desc);
++	kfree_sensitive(desc);
+ 	if (err)
+ 		goto out_err_free_hmac;
+ 	/*
+diff --git a/net/tipc/crypto.c b/net/tipc/crypto.c
+index c8c47fc72653..001bcb0f2480 100644
+--- a/net/tipc/crypto.c
++++ b/net/tipc/crypto.c
+@@ -441,7 +441,7 @@ static int tipc_aead_init(struct tipc_aead **aead, struct tipc_aead_key *ukey,
+ 	/* Allocate per-cpu TFM entry pointer */
+ 	tmp->tfm_entry = alloc_percpu(struct tipc_tfm *);
+ 	if (!tmp->tfm_entry) {
+-		kzfree(tmp);
++		kfree_sensitive(tmp);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -491,7 +491,7 @@ static int tipc_aead_init(struct tipc_aead **aead, struct tipc_aead_key *ukey,
+ 	/* Not any TFM is allocated? */
+ 	if (!tfm_cnt) {
+ 		free_percpu(tmp->tfm_entry);
+-		kzfree(tmp);
++		kfree_sensitive(tmp);
+ 		return err;
+ 	}
+ 
+@@ -545,7 +545,7 @@ static int tipc_aead_clone(struct tipc_aead **dst, struct tipc_aead *src)
+ 
+ 	aead->tfm_entry = alloc_percpu_gfp(struct tipc_tfm *, GFP_ATOMIC);
+ 	if (unlikely(!aead->tfm_entry)) {
+-		kzfree(aead);
++		kfree_sensitive(aead);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -1352,7 +1352,7 @@ int tipc_crypto_start(struct tipc_crypto **crypto, struct net *net,
+ 	/* Allocate statistic structure */
+ 	c->stats = alloc_percpu_gfp(struct tipc_crypto_stats, GFP_ATOMIC);
+ 	if (!c->stats) {
+-		kzfree(c);
++		kfree_sensitive(c);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -1408,7 +1408,7 @@ void tipc_crypto_stop(struct tipc_crypto **crypto)
+ 	free_percpu(c->stats);
+ 
+ 	*crypto = NULL;
+-	kzfree(c);
++	kfree_sensitive(c);
+ }
+ 
+ void tipc_crypto_timeout(struct tipc_crypto *rx)
+diff --git a/net/wireless/core.c b/net/wireless/core.c
+index c623d9bf5096..8e764e170c73 100644
+--- a/net/wireless/core.c
++++ b/net/wireless/core.c
+@@ -1124,7 +1124,7 @@ static void __cfg80211_unregister_wdev(struct wireless_dev *wdev, bool sync)
+ 	}
+ 
+ #ifdef CONFIG_CFG80211_WEXT
+-	kzfree(wdev->wext.keys);
++	kfree_sensitive(wdev->wext.keys);
+ 	wdev->wext.keys = NULL;
+ #endif
+ 	/* only initialized if we have a netdev */
+diff --git a/net/wireless/ibss.c b/net/wireless/ibss.c
+index ae8fe66a9bb8..a0621bb76d8e 100644
+--- a/net/wireless/ibss.c
++++ b/net/wireless/ibss.c
+@@ -127,7 +127,7 @@ int __cfg80211_join_ibss(struct cfg80211_registered_device *rdev,
+ 		return -EINVAL;
+ 
+ 	if (WARN_ON(wdev->connect_keys))
+-		kzfree(wdev->connect_keys);
++		kfree_sensitive(wdev->connect_keys);
+ 	wdev->connect_keys = connkeys;
+ 
+ 	wdev->ibss_fixed = params->channel_fixed;
+@@ -161,7 +161,7 @@ static void __cfg80211_clear_ibss(struct net_device *dev, bool nowext)
+ 
+ 	ASSERT_WDEV_LOCK(wdev);
+ 
+-	kzfree(wdev->connect_keys);
++	kfree_sensitive(wdev->connect_keys);
+ 	wdev->connect_keys = NULL;
+ 
+ 	rdev_set_qos_map(rdev, dev, NULL);
+diff --git a/net/wireless/lib80211_crypt_tkip.c b/net/wireless/lib80211_crypt_tkip.c
+index f5e842ba7673..1b4d6c87a5c5 100644
+--- a/net/wireless/lib80211_crypt_tkip.c
++++ b/net/wireless/lib80211_crypt_tkip.c
+@@ -131,7 +131,7 @@ static void lib80211_tkip_deinit(void *priv)
+ 		crypto_free_shash(_priv->tx_tfm_michael);
+ 		crypto_free_shash(_priv->rx_tfm_michael);
+ 	}
+-	kzfree(priv);
++	kfree_sensitive(priv);
+ }
+ 
+ static inline u16 RotR1(u16 val)
+diff --git a/net/wireless/lib80211_crypt_wep.c b/net/wireless/lib80211_crypt_wep.c
+index dafc6f3571db..6ab9957b8f96 100644
+--- a/net/wireless/lib80211_crypt_wep.c
++++ b/net/wireless/lib80211_crypt_wep.c
+@@ -56,7 +56,7 @@ static void *lib80211_wep_init(int keyidx)
+ 
+ static void lib80211_wep_deinit(void *priv)
+ {
+-	kzfree(priv);
++	kfree_sensitive(priv);
+ }
+ 
+ /* Add WEP IV/key info to a frame that has at least 4 bytes of headroom */
+diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
+index 263ae395ad44..d30cf356a412 100644
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -9829,7 +9829,7 @@ static int nl80211_join_ibss(struct sk_buff *skb, struct genl_info *info)
+ 
+ 		if ((ibss.chandef.width != NL80211_CHAN_WIDTH_20_NOHT) &&
+ 		    no_ht) {
+-			kzfree(connkeys);
++			kfree_sensitive(connkeys);
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -9841,7 +9841,7 @@ static int nl80211_join_ibss(struct sk_buff *skb, struct genl_info *info)
+ 		int r = validate_pae_over_nl80211(rdev, info);
+ 
+ 		if (r < 0) {
+-			kzfree(connkeys);
++			kfree_sensitive(connkeys);
+ 			return r;
+ 		}
+ 
+@@ -9854,7 +9854,7 @@ static int nl80211_join_ibss(struct sk_buff *skb, struct genl_info *info)
+ 	wdev_lock(dev->ieee80211_ptr);
+ 	err = __cfg80211_join_ibss(rdev, dev, &ibss, connkeys);
+ 	if (err)
+-		kzfree(connkeys);
++		kfree_sensitive(connkeys);
+ 	else if (info->attrs[NL80211_ATTR_SOCKET_OWNER])
+ 		dev->ieee80211_ptr->conn_owner_nlportid = info->snd_portid;
+ 	wdev_unlock(dev->ieee80211_ptr);
+@@ -10282,7 +10282,7 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
+ 
+ 	if (info->attrs[NL80211_ATTR_HT_CAPABILITY]) {
+ 		if (!info->attrs[NL80211_ATTR_HT_CAPABILITY_MASK]) {
+-			kzfree(connkeys);
++			kfree_sensitive(connkeys);
+ 			return -EINVAL;
+ 		}
+ 		memcpy(&connect.ht_capa,
+@@ -10300,7 +10300,7 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
+ 
+ 	if (info->attrs[NL80211_ATTR_VHT_CAPABILITY]) {
+ 		if (!info->attrs[NL80211_ATTR_VHT_CAPABILITY_MASK]) {
+-			kzfree(connkeys);
++			kfree_sensitive(connkeys);
+ 			return -EINVAL;
+ 		}
+ 		memcpy(&connect.vht_capa,
+@@ -10314,7 +10314,7 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
+ 		       (rdev->wiphy.features & NL80211_FEATURE_QUIET)) &&
+ 		    !wiphy_ext_feature_isset(&rdev->wiphy,
+ 					     NL80211_EXT_FEATURE_RRM)) {
+-			kzfree(connkeys);
++			kfree_sensitive(connkeys);
+ 			return -EINVAL;
+ 		}
+ 		connect.flags |= ASSOC_REQ_USE_RRM;
+@@ -10322,21 +10322,21 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
+ 
+ 	connect.pbss = nla_get_flag(info->attrs[NL80211_ATTR_PBSS]);
+ 	if (connect.pbss && !rdev->wiphy.bands[NL80211_BAND_60GHZ]) {
+-		kzfree(connkeys);
++		kfree_sensitive(connkeys);
+ 		return -EOPNOTSUPP;
+ 	}
+ 
+ 	if (info->attrs[NL80211_ATTR_BSS_SELECT]) {
+ 		/* bss selection makes no sense if bssid is set */
+ 		if (connect.bssid) {
+-			kzfree(connkeys);
++			kfree_sensitive(connkeys);
+ 			return -EINVAL;
+ 		}
+ 
+ 		err = parse_bss_select(info->attrs[NL80211_ATTR_BSS_SELECT],
+ 				       wiphy, &connect.bss_select);
+ 		if (err) {
+-			kzfree(connkeys);
++			kfree_sensitive(connkeys);
+ 			return err;
+ 		}
+ 	}
+@@ -10366,13 +10366,13 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
+ 		   info->attrs[NL80211_ATTR_FILS_ERP_REALM] ||
+ 		   info->attrs[NL80211_ATTR_FILS_ERP_NEXT_SEQ_NUM] ||
+ 		   info->attrs[NL80211_ATTR_FILS_ERP_RRK]) {
+-		kzfree(connkeys);
++		kfree_sensitive(connkeys);
+ 		return -EINVAL;
+ 	}
+ 
+ 	if (nla_get_flag(info->attrs[NL80211_ATTR_EXTERNAL_AUTH_SUPPORT])) {
+ 		if (!info->attrs[NL80211_ATTR_SOCKET_OWNER]) {
+-			kzfree(connkeys);
++			kfree_sensitive(connkeys);
+ 			GENL_SET_ERR_MSG(info,
+ 					 "external auth requires connection ownership");
+ 			return -EINVAL;
+@@ -10385,7 +10385,7 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
+ 	err = cfg80211_connect(rdev, dev, &connect, connkeys,
+ 			       connect.prev_bssid);
+ 	if (err)
+-		kzfree(connkeys);
++		kfree_sensitive(connkeys);
+ 
+ 	if (!err && info->attrs[NL80211_ATTR_SOCKET_OWNER]) {
+ 		dev->ieee80211_ptr->conn_owner_nlportid = info->snd_portid;
+diff --git a/net/wireless/sme.c b/net/wireless/sme.c
+index 15595cf401de..985f3c23f054 100644
+--- a/net/wireless/sme.c
++++ b/net/wireless/sme.c
+@@ -742,7 +742,7 @@ void __cfg80211_connect_result(struct net_device *dev,
+ 	}
+ 
+ 	if (cr->status != WLAN_STATUS_SUCCESS) {
+-		kzfree(wdev->connect_keys);
++		kfree_sensitive(wdev->connect_keys);
+ 		wdev->connect_keys = NULL;
+ 		wdev->ssid_len = 0;
+ 		wdev->conn_owner_nlportid = 0;
+@@ -1098,7 +1098,7 @@ void __cfg80211_disconnected(struct net_device *dev, const u8 *ie,
+ 	wdev->current_bss = NULL;
+ 	wdev->ssid_len = 0;
+ 	wdev->conn_owner_nlportid = 0;
+-	kzfree(wdev->connect_keys);
++	kfree_sensitive(wdev->connect_keys);
+ 	wdev->connect_keys = NULL;
+ 
+ 	nl80211_send_disconnected(rdev, dev, reason, ie, ie_len, from_ap);
+@@ -1281,7 +1281,7 @@ int cfg80211_disconnect(struct cfg80211_registered_device *rdev,
+ 
+ 	ASSERT_WDEV_LOCK(wdev);
+ 
+-	kzfree(wdev->connect_keys);
++	kfree_sensitive(wdev->connect_keys);
+ 	wdev->connect_keys = NULL;
+ 
+ 	wdev->conn_owner_nlportid = 0;
+diff --git a/net/wireless/util.c b/net/wireless/util.c
+index 4d3b76f94f55..29adb1010c18 100644
+--- a/net/wireless/util.c
++++ b/net/wireless/util.c
+@@ -863,7 +863,7 @@ void cfg80211_upload_connect_keys(struct wireless_dev *wdev)
+ 		}
+ 	}
+ 
+-	kzfree(wdev->connect_keys);
++	kfree_sensitive(wdev->connect_keys);
+ 	wdev->connect_keys = NULL;
+ }
+ 
+diff --git a/net/wireless/wext-sme.c b/net/wireless/wext-sme.c
+index 73fd0eae08ca..73df23570d43 100644
+--- a/net/wireless/wext-sme.c
++++ b/net/wireless/wext-sme.c
+@@ -57,7 +57,7 @@ int cfg80211_mgd_wext_connect(struct cfg80211_registered_device *rdev,
+ 	err = cfg80211_connect(rdev, wdev->netdev,
+ 			       &wdev->wext.connect, ck, prev_bssid);
+ 	if (err)
+-		kzfree(ck);
++		kfree_sensitive(ck);
+ 
+ 	return err;
+ }
+diff --git a/scripts/coccinelle/free/devm_free.cocci b/scripts/coccinelle/free/devm_free.cocci
+index 3357bf4dbd7c..da80050b91ff 100644
+--- a/scripts/coccinelle/free/devm_free.cocci
++++ b/scripts/coccinelle/free/devm_free.cocci
+@@ -89,7 +89,7 @@ position p;
+ (
+  kfree@p(x)
+ |
+- kzfree@p(x)
++ kfree_sensitive@p(x)
+ |
+  krealloc@p(x, ...)
+ |
+@@ -112,7 +112,7 @@ position p != safe.p;
+ (
+ * kfree@p(x)
+ |
+-* kzfree@p(x)
++* kfree_sensitive@p(x)
+ |
+ * krealloc@p(x, ...)
+ |
+diff --git a/scripts/coccinelle/free/ifnullfree.cocci b/scripts/coccinelle/free/ifnullfree.cocci
+index b3290c4ee239..2045391e36a0 100644
+--- a/scripts/coccinelle/free/ifnullfree.cocci
++++ b/scripts/coccinelle/free/ifnullfree.cocci
+@@ -21,7 +21,7 @@ expression E;
+ (
+   kfree(E);
+ |
+-  kzfree(E);
++  kfree_sensitive(E);
+ |
+   debugfs_remove(E);
+ |
+@@ -42,7 +42,7 @@ position p;
+ @@
+ 
+ * if (E != NULL)
+-*	\(kfree@p\|kzfree@p\|debugfs_remove@p\|debugfs_remove_recursive@p\|
++*	\(kfree@p\|kfree_sensitive@p\|debugfs_remove@p\|debugfs_remove_recursive@p\|
+ *         usb_free_urb@p\|kmem_cache_destroy@p\|mempool_destroy@p\|
+ *         dma_pool_destroy@p\)(E);
+ 
+diff --git a/scripts/coccinelle/free/kfree.cocci b/scripts/coccinelle/free/kfree.cocci
+index e9d50e718e46..168568386034 100644
+--- a/scripts/coccinelle/free/kfree.cocci
++++ b/scripts/coccinelle/free/kfree.cocci
+@@ -24,7 +24,7 @@ position p1;
+ (
+ * kfree@p1(E)
+ |
+-* kzfree@p1(E)
++* kfree_sensitive@p1(E)
+ )
+ 
+ @print expression@
+@@ -68,7 +68,7 @@ while (1) { ...
+ (
+ * kfree@ok(E)
+ |
+-* kzfree@ok(E)
++* kfree_sensitive@ok(E)
+ )
+   ... when != break;
+       when != goto l;
+@@ -86,7 +86,7 @@ position free.p1!=loop.ok,p2!={print.p,sz.p};
+ (
+ * kfree@p1(E,...)
+ |
+-* kzfree@p1(E,...)
++* kfree_sensitive@p1(E,...)
+ )
+ ...
+ (
+diff --git a/scripts/coccinelle/free/kfreeaddr.cocci b/scripts/coccinelle/free/kfreeaddr.cocci
+index cfaf308328d8..142af6337a04 100644
+--- a/scripts/coccinelle/free/kfreeaddr.cocci
++++ b/scripts/coccinelle/free/kfreeaddr.cocci
+@@ -20,7 +20,7 @@ position p;
+ (
+ * kfree@p(&e->f)
+ |
+-* kzfree@p(&e->f)
++* kfree_sensitive@p(&e->f)
+ )
+ 
+ @script:python depends on org@
+diff --git a/security/apparmor/domain.c b/security/apparmor/domain.c
+index 1c898055a476..7b0e13ce7dc7 100644
+--- a/security/apparmor/domain.c
++++ b/security/apparmor/domain.c
+@@ -40,8 +40,8 @@ void aa_free_domain_entries(struct aa_domain *domain)
+ 			return;
+ 
+ 		for (i = 0; i < domain->size; i++)
+-			kzfree(domain->table[i]);
+-		kzfree(domain->table);
++			kfree_sensitive(domain->table[i]);
++		kfree_sensitive(domain->table);
+ 		domain->table = NULL;
+ 	}
+ }
+diff --git a/security/apparmor/include/file.h b/security/apparmor/include/file.h
+index aff26fc71407..d4f8948517d9 100644
+--- a/security/apparmor/include/file.h
++++ b/security/apparmor/include/file.h
+@@ -72,7 +72,7 @@ static inline void aa_free_file_ctx(struct aa_file_ctx *ctx)
+ {
+ 	if (ctx) {
+ 		aa_put_label(rcu_access_pointer(ctx->label));
+-		kzfree(ctx);
++		kfree_sensitive(ctx);
+ 	}
+ }
+ 
+diff --git a/security/apparmor/policy.c b/security/apparmor/policy.c
+index af4f50fda9e3..4c010c9a6af1 100644
+--- a/security/apparmor/policy.c
++++ b/security/apparmor/policy.c
+@@ -187,9 +187,9 @@ static void aa_free_data(void *ptr, void *arg)
+ {
+ 	struct aa_data *data = ptr;
+ 
+-	kzfree(data->data);
+-	kzfree(data->key);
+-	kzfree(data);
++	kfree_sensitive(data->data);
++	kfree_sensitive(data->key);
++	kfree_sensitive(data);
+ }
+ 
+ /**
+@@ -217,19 +217,19 @@ void aa_free_profile(struct aa_profile *profile)
+ 	aa_put_profile(rcu_access_pointer(profile->parent));
+ 
+ 	aa_put_ns(profile->ns);
+-	kzfree(profile->rename);
++	kfree_sensitive(profile->rename);
+ 
+ 	aa_free_file_rules(&profile->file);
+ 	aa_free_cap_rules(&profile->caps);
+ 	aa_free_rlimit_rules(&profile->rlimits);
+ 
+ 	for (i = 0; i < profile->xattr_count; i++)
+-		kzfree(profile->xattrs[i]);
+-	kzfree(profile->xattrs);
++		kfree_sensitive(profile->xattrs[i]);
++	kfree_sensitive(profile->xattrs);
+ 	for (i = 0; i < profile->secmark_count; i++)
+-		kzfree(profile->secmark[i].label);
+-	kzfree(profile->secmark);
+-	kzfree(profile->dirname);
++		kfree_sensitive(profile->secmark[i].label);
++	kfree_sensitive(profile->secmark);
++	kfree_sensitive(profile->dirname);
+ 	aa_put_dfa(profile->xmatch);
+ 	aa_put_dfa(profile->policy.dfa);
+ 
+@@ -237,14 +237,14 @@ void aa_free_profile(struct aa_profile *profile)
+ 		rht = profile->data;
+ 		profile->data = NULL;
+ 		rhashtable_free_and_destroy(rht, aa_free_data, NULL);
+-		kzfree(rht);
++		kfree_sensitive(rht);
+ 	}
+ 
+-	kzfree(profile->hash);
++	kfree_sensitive(profile->hash);
+ 	aa_put_loaddata(profile->rawdata);
+ 	aa_label_destroy(&profile->label);
+ 
+-	kzfree(profile);
++	kfree_sensitive(profile);
+ }
+ 
+ /**
+diff --git a/security/apparmor/policy_ns.c b/security/apparmor/policy_ns.c
+index d7ef540027a5..70921d95fb40 100644
+--- a/security/apparmor/policy_ns.c
++++ b/security/apparmor/policy_ns.c
+@@ -121,9 +121,9 @@ static struct aa_ns *alloc_ns(const char *prefix, const char *name)
+ 	return ns;
+ 
+ fail_unconfined:
+-	kzfree(ns->base.hname);
++	kfree_sensitive(ns->base.hname);
+ fail_ns:
+-	kzfree(ns);
++	kfree_sensitive(ns);
+ 	return NULL;
+ }
+ 
+@@ -145,7 +145,7 @@ void aa_free_ns(struct aa_ns *ns)
+ 
+ 	ns->unconfined->ns = NULL;
+ 	aa_free_profile(ns->unconfined);
+-	kzfree(ns);
++	kfree_sensitive(ns);
+ }
+ 
+ /**
+diff --git a/security/apparmor/policy_unpack.c b/security/apparmor/policy_unpack.c
+index b67322abcc33..dc345ac93205 100644
+--- a/security/apparmor/policy_unpack.c
++++ b/security/apparmor/policy_unpack.c
+@@ -163,10 +163,10 @@ static void do_loaddata_free(struct work_struct *work)
+ 		aa_put_ns(ns);
+ 	}
+ 
+-	kzfree(d->hash);
+-	kzfree(d->name);
++	kfree_sensitive(d->hash);
++	kfree_sensitive(d->name);
+ 	kvfree(d->data);
+-	kzfree(d);
++	kfree_sensitive(d);
+ }
+ 
+ void aa_loaddata_kref(struct kref *kref)
+@@ -894,7 +894,7 @@ static struct aa_profile *unpack_profile(struct aa_ext *e, char **ns_name)
+ 		while (unpack_strdup(e, &key, NULL)) {
+ 			data = kzalloc(sizeof(*data), GFP_KERNEL);
+ 			if (!data) {
+-				kzfree(key);
++				kfree_sensitive(key);
+ 				goto fail;
+ 			}
+ 
+@@ -902,8 +902,8 @@ static struct aa_profile *unpack_profile(struct aa_ext *e, char **ns_name)
+ 			data->size = unpack_blob(e, &data->data, NULL);
+ 			data->data = kvmemdup(data->data, data->size);
+ 			if (data->size && !data->data) {
+-				kzfree(data->key);
+-				kzfree(data);
++				kfree_sensitive(data->key);
++				kfree_sensitive(data);
+ 				goto fail;
+ 			}
+ 
+@@ -1037,7 +1037,7 @@ void aa_load_ent_free(struct aa_load_ent *ent)
+ 		aa_put_profile(ent->old);
+ 		aa_put_profile(ent->new);
+ 		kfree(ent->ns_name);
+-		kzfree(ent);
++		kfree_sensitive(ent);
+ 	}
+ }
+ 
+diff --git a/security/keys/big_key.c b/security/keys/big_key.c
+index dd708e8f13c0..691347dea3c1 100644
+--- a/security/keys/big_key.c
++++ b/security/keys/big_key.c
+@@ -138,7 +138,7 @@ int big_key_preparse(struct key_preparsed_payload *prep)
+ err_fput:
+ 	fput(file);
+ err_enckey:
+-	kzfree(enckey);
++	kfree_sensitive(enckey);
+ error:
+ 	memzero_explicit(buf, enclen);
+ 	kvfree(buf);
+@@ -155,7 +155,7 @@ void big_key_free_preparse(struct key_preparsed_payload *prep)
+ 
+ 		path_put(path);
+ 	}
+-	kzfree(prep->payload.data[big_key_data]);
++	kfree_sensitive(prep->payload.data[big_key_data]);
+ }
+ 
+ /*
+@@ -187,7 +187,7 @@ void big_key_destroy(struct key *key)
+ 		path->mnt = NULL;
+ 		path->dentry = NULL;
+ 	}
+-	kzfree(key->payload.data[big_key_data]);
++	kfree_sensitive(key->payload.data[big_key_data]);
+ 	key->payload.data[big_key_data] = NULL;
+ }
+ 
+diff --git a/security/keys/dh.c b/security/keys/dh.c
+index c4c629bb1c03..1abfa70ed6e1 100644
+--- a/security/keys/dh.c
++++ b/security/keys/dh.c
+@@ -58,9 +58,9 @@ static ssize_t dh_data_from_key(key_serial_t keyid, void **data)
+ 
+ static void dh_free_data(struct dh *dh)
+ {
+-	kzfree(dh->key);
+-	kzfree(dh->p);
+-	kzfree(dh->g);
++	kfree_sensitive(dh->key);
++	kfree_sensitive(dh->p);
++	kfree_sensitive(dh->g);
+ }
+ 
+ struct dh_completion {
+@@ -126,7 +126,7 @@ static void kdf_dealloc(struct kdf_sdesc *sdesc)
+ 	if (sdesc->shash.tfm)
+ 		crypto_free_shash(sdesc->shash.tfm);
+ 
+-	kzfree(sdesc);
++	kfree_sensitive(sdesc);
+ }
+ 
+ /*
+@@ -220,7 +220,7 @@ static int keyctl_dh_compute_kdf(struct kdf_sdesc *sdesc,
+ 		ret = -EFAULT;
+ 
+ err:
+-	kzfree(outbuf);
++	kfree_sensitive(outbuf);
+ 	return ret;
+ }
+ 
+@@ -395,11 +395,11 @@ long __keyctl_dh_compute(struct keyctl_dh_params __user *params,
+ out6:
+ 	kpp_request_free(req);
+ out5:
+-	kzfree(outbuf);
++	kfree_sensitive(outbuf);
+ out4:
+ 	crypto_free_kpp(tfm);
+ out3:
+-	kzfree(secret);
++	kfree_sensitive(secret);
+ out2:
+ 	dh_free_data(&dh_inputs);
+ out1:
+diff --git a/security/keys/encrypted-keys/encrypted.c b/security/keys/encrypted-keys/encrypted.c
+index 14cf81d1a30b..deebbf14eeca 100644
+--- a/security/keys/encrypted-keys/encrypted.c
++++ b/security/keys/encrypted-keys/encrypted.c
+@@ -370,7 +370,7 @@ static int get_derived_key(u8 *derived_key, enum derived_key_type key_type,
+ 	       master_keylen);
+ 	ret = crypto_shash_tfm_digest(hash_tfm, derived_buf, derived_buf_len,
+ 				      derived_key);
+-	kzfree(derived_buf);
++	kfree_sensitive(derived_buf);
+ 	return ret;
+ }
+ 
+@@ -812,13 +812,13 @@ static int encrypted_instantiate(struct key *key,
+ 	ret = encrypted_init(epayload, key->description, format, master_desc,
+ 			     decrypted_datalen, hex_encoded_iv);
+ 	if (ret < 0) {
+-		kzfree(epayload);
++		kfree_sensitive(epayload);
+ 		goto out;
+ 	}
+ 
+ 	rcu_assign_keypointer(key, epayload);
+ out:
+-	kzfree(datablob);
++	kfree_sensitive(datablob);
+ 	return ret;
+ }
+ 
+@@ -827,7 +827,7 @@ static void encrypted_rcu_free(struct rcu_head *rcu)
+ 	struct encrypted_key_payload *epayload;
+ 
+ 	epayload = container_of(rcu, struct encrypted_key_payload, rcu);
+-	kzfree(epayload);
++	kfree_sensitive(epayload);
+ }
+ 
+ /*
+@@ -885,7 +885,7 @@ static int encrypted_update(struct key *key, struct key_preparsed_payload *prep)
+ 	rcu_assign_keypointer(key, new_epayload);
+ 	call_rcu(&epayload->rcu, encrypted_rcu_free);
+ out:
+-	kzfree(buf);
++	kfree_sensitive(buf);
+ 	return ret;
+ }
+ 
+@@ -946,7 +946,7 @@ static long encrypted_read(const struct key *key, char *buffer,
+ 	memzero_explicit(derived_key, sizeof(derived_key));
+ 
+ 	memcpy(buffer, ascii_buf, asciiblob_len);
+-	kzfree(ascii_buf);
++	kfree_sensitive(ascii_buf);
+ 
+ 	return asciiblob_len;
+ out:
+@@ -961,7 +961,7 @@ static long encrypted_read(const struct key *key, char *buffer,
+  */
+ static void encrypted_destroy(struct key *key)
+ {
+-	kzfree(key->payload.data[0]);
++	kfree_sensitive(key->payload.data[0]);
+ }
+ 
+ struct key_type key_type_encrypted = {
+diff --git a/security/keys/trusted-keys/trusted_tpm1.c b/security/keys/trusted-keys/trusted_tpm1.c
+index 8001ab07e63b..b9fe02e5f84f 100644
+--- a/security/keys/trusted-keys/trusted_tpm1.c
++++ b/security/keys/trusted-keys/trusted_tpm1.c
+@@ -68,7 +68,7 @@ static int TSS_sha1(const unsigned char *data, unsigned int datalen,
+ 	}
+ 
+ 	ret = crypto_shash_digest(&sdesc->shash, data, datalen, digest);
+-	kzfree(sdesc);
++	kfree_sensitive(sdesc);
+ 	return ret;
+ }
+ 
+@@ -112,7 +112,7 @@ static int TSS_rawhmac(unsigned char *digest, const unsigned char *key,
+ 	if (!ret)
+ 		ret = crypto_shash_final(&sdesc->shash, digest);
+ out:
+-	kzfree(sdesc);
++	kfree_sensitive(sdesc);
+ 	return ret;
+ }
+ 
+@@ -166,7 +166,7 @@ int TSS_authhmac(unsigned char *digest, const unsigned char *key,
+ 				  paramdigest, TPM_NONCE_SIZE, h1,
+ 				  TPM_NONCE_SIZE, h2, 1, &c, 0, 0);
+ out:
+-	kzfree(sdesc);
++	kfree_sensitive(sdesc);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(TSS_authhmac);
+@@ -251,7 +251,7 @@ int TSS_checkhmac1(unsigned char *buffer,
+ 	if (memcmp(testhmac, authdata, SHA1_DIGEST_SIZE))
+ 		ret = -EINVAL;
+ out:
+-	kzfree(sdesc);
++	kfree_sensitive(sdesc);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(TSS_checkhmac1);
+@@ -353,7 +353,7 @@ static int TSS_checkhmac2(unsigned char *buffer,
+ 	if (memcmp(testhmac2, authdata2, SHA1_DIGEST_SIZE))
+ 		ret = -EINVAL;
+ out:
+-	kzfree(sdesc);
++	kfree_sensitive(sdesc);
+ 	return ret;
+ }
+ 
+@@ -563,7 +563,7 @@ static int tpm_seal(struct tpm_buf *tb, uint16_t keytype,
+ 		*bloblen = storedsize;
+ 	}
+ out:
+-	kzfree(td);
++	kfree_sensitive(td);
+ 	return ret;
+ }
+ 
+@@ -1031,12 +1031,12 @@ static int trusted_instantiate(struct key *key,
+ 	if (!ret && options->pcrlock)
+ 		ret = pcrlock(options->pcrlock);
+ out:
+-	kzfree(datablob);
+-	kzfree(options);
++	kfree_sensitive(datablob);
++	kfree_sensitive(options);
+ 	if (!ret)
+ 		rcu_assign_keypointer(key, payload);
+ 	else
+-		kzfree(payload);
++		kfree_sensitive(payload);
+ 	return ret;
+ }
+ 
+@@ -1045,7 +1045,7 @@ static void trusted_rcu_free(struct rcu_head *rcu)
+ 	struct trusted_key_payload *p;
+ 
+ 	p = container_of(rcu, struct trusted_key_payload, rcu);
+-	kzfree(p);
++	kfree_sensitive(p);
+ }
+ 
+ /*
+@@ -1087,13 +1087,13 @@ static int trusted_update(struct key *key, struct key_preparsed_payload *prep)
+ 	ret = datablob_parse(datablob, new_p, new_o);
+ 	if (ret != Opt_update) {
+ 		ret = -EINVAL;
+-		kzfree(new_p);
++		kfree_sensitive(new_p);
+ 		goto out;
+ 	}
+ 
+ 	if (!new_o->keyhandle) {
+ 		ret = -EINVAL;
+-		kzfree(new_p);
++		kfree_sensitive(new_p);
+ 		goto out;
+ 	}
+ 
+@@ -1107,22 +1107,22 @@ static int trusted_update(struct key *key, struct key_preparsed_payload *prep)
+ 	ret = key_seal(new_p, new_o);
+ 	if (ret < 0) {
+ 		pr_info("trusted_key: key_seal failed (%d)\n", ret);
+-		kzfree(new_p);
++		kfree_sensitive(new_p);
+ 		goto out;
+ 	}
+ 	if (new_o->pcrlock) {
+ 		ret = pcrlock(new_o->pcrlock);
+ 		if (ret < 0) {
+ 			pr_info("trusted_key: pcrlock failed (%d)\n", ret);
+-			kzfree(new_p);
++			kfree_sensitive(new_p);
+ 			goto out;
+ 		}
+ 	}
+ 	rcu_assign_keypointer(key, new_p);
+ 	call_rcu(&p->rcu, trusted_rcu_free);
+ out:
+-	kzfree(datablob);
+-	kzfree(new_o);
++	kfree_sensitive(datablob);
++	kfree_sensitive(new_o);
+ 	return ret;
+ }
+ 
+@@ -1154,7 +1154,7 @@ static long trusted_read(const struct key *key, char *buffer,
+  */
+ static void trusted_destroy(struct key *key)
+ {
+-	kzfree(key->payload.data[0]);
++	kfree_sensitive(key->payload.data[0]);
+ }
+ 
+ struct key_type key_type_trusted = {
+diff --git a/security/keys/user_defined.c b/security/keys/user_defined.c
+index 07d4287e9084..749e2a4dcb13 100644
+--- a/security/keys/user_defined.c
++++ b/security/keys/user_defined.c
+@@ -82,7 +82,7 @@ EXPORT_SYMBOL_GPL(user_preparse);
+  */
+ void user_free_preparse(struct key_preparsed_payload *prep)
+ {
+-	kzfree(prep->payload.data[0]);
++	kfree_sensitive(prep->payload.data[0]);
+ }
+ EXPORT_SYMBOL_GPL(user_free_preparse);
+ 
+@@ -91,7 +91,7 @@ static void user_free_payload_rcu(struct rcu_head *head)
+ 	struct user_key_payload *payload;
+ 
+ 	payload = container_of(head, struct user_key_payload, rcu);
+-	kzfree(payload);
++	kfree_sensitive(payload);
+ }
+ 
+ /*
+@@ -147,7 +147,7 @@ void user_destroy(struct key *key)
+ {
+ 	struct user_key_payload *upayload = key->payload.data[0];
+ 
+-	kzfree(upayload);
++	kfree_sensitive(upayload);
+ }
+ 
+ EXPORT_SYMBOL_GPL(user_destroy);
+-- 
+2.18.1
