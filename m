@@ -1,39 +1,43 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 10 Jun 2020 02:02:48 +0000
-Subject: Re: [PATCH v4 0/4] target: fix NULL pointer dereference
-Message-Id: <159175452258.16072.16589931095798965569.b4-ty@oracle.com>
+From: Waiman Long <longman@redhat.com>
+Date: Tue, 16 Jun 2020 01:57:16 +0000
+Subject: [PATCH v4 1/3] mm/slab: Use memzero_explicit() in kzfree()
+Message-Id: <20200616015718.7812-2-longman@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
-In-Reply-To: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+References: <20200616015718.7812-1-longman@redhat.com>
+In-Reply-To: <20200616015718.7812-1-longman@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, michael.christie@oracle.com, Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>, linux-scsi@vger.kernel.org
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, shirley.ma@oracle.com
+To: Andrew Morton <akpm@linux-foundation.org>, David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Linus Torvalds <torvalds@linux-foundation.org>, Joe Perches <joe@perches.com>, Matthew Wilcox <willy@infradead.org>, David Rientjes <rientjes@google.com>
+Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Michal Hocko <mhocko@suse.com>, linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-scsi@vger.kernel.org, kasan-dev@googlegroups.com, linux-wpan@vger.kernel.org, Waiman Long <longman@redhat.com>, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, ecryptfs@vger.kernel.org, linux-fscrypt@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org, virtualization@lists.linux-foundation.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, David Sterba <dsterba@suse.cz>, stable@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
 
-On Sun, 7 Jun 2020 19:58:29 +0000, Sudhakar Panneerselvam wrote:
+The kzfree() function is normally used to clear some sensitive
+information, like encryption keys, in the buffer before freeing it back
+to the pool. Memset() is currently used for the buffer clearing. However,
+it is entirely possible that the compiler may choose to optimize away the
+memory clearing especially if LTO is being used. To make sure that this
+optimization will not happen, memzero_explicit(), which is introduced
+in v3.18, is now used in kzfree() to do the clearing.
 
-> The following set of commits address a NULL pointer dereference and some
-> refactoring around this issue.
-> 
-> v4:
->  - initialize the LUN in transport_init_se_cmd()
-> 
-> v3:
->  - fix NULL pointer dereference when cdb initialization fails
-> 
-> [...]
+Fixes: 3ef0e5ba4673 ("slab: introduce kzfree()")
+Cc: stable@vger.kernel.org
+Signed-off-by: Waiman Long <longman@redhat.com>
+---
+ mm/slab_common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied to 5.8/scsi-queue, thanks!
-
-[1/4] scsi: target: Factor out a new helper, target_cmd_init_cdb()
-      https://git.kernel.org/mkp/scsi/c/f98c2ddf8ba3
-[2/4] scsi: target: Initialize LUN in transport_init_se_cmd()
-      https://git.kernel.org/mkp/scsi/c/a36840d80027
-[3/4] scsi: target: Fix NULL pointer dereference
-      https://git.kernel.org/mkp/scsi/c/9e95fb805dc0
-[4/4] scsi: target: Rename target_setup_cmd_from_cdb() to target_cmd_parse_cdb()
-      https://git.kernel.org/mkp/scsi/c/987db58737e2
-
+diff --git a/mm/slab_common.c b/mm/slab_common.c
+index 9e72ba224175..37d48a56431d 100644
+--- a/mm/slab_common.c
++++ b/mm/slab_common.c
+@@ -1726,7 +1726,7 @@ void kzfree(const void *p)
+ 	if (unlikely(ZERO_OR_NULL_PTR(mem)))
+ 		return;
+ 	ks = ksize(mem);
+-	memset(mem, 0, ks);
++	memzero_explicit(mem, ks);
+ 	kfree(mem);
+ }
+ EXPORT_SYMBOL(kzfree);
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.18.1
