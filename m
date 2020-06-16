@@ -1,387 +1,151 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Sat, 27 Jun 2020 04:35:09 +0000
-Subject: [RFC PATCH 10/10] target: export sessions via configfs
-Message-Id: <1593232509-13720-11-git-send-email-michael.christie@oracle.com>
+From: Waiman Long <longman@redhat.com>
+Date: Tue, 16 Jun 2020 01:57:15 +0000
+Subject: [PATCH v4 0/3] mm, treewide: Rename kzfree() to kfree_sensitive()
+Message-Id: <20200616015718.7812-1-longman@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1593232509-13720-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1593232509-13720-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: hare@suse.de, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>, David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Linus Torvalds <torvalds@linux-foundation.org>, Joe Perches <joe@perches.com>, Matthew Wilcox <willy@infradead.org>, David Rientjes <rientjes@google.com>
+Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Michal Hocko <mhocko@suse.com>, linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-scsi@vger.kernel.org, kasan-dev@googlegroups.com, linux-wpan@vger.kernel.org, Waiman Long <longman@redhat.com>, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, ecryptfs@vger.kernel.org, linux-fscrypt@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org, virtualization@lists.linux-foundation.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, David Sterba <dsterba@suse.cz>, linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
 
-This patch exports the LIO sessions via configfs. If userspace makes
-a "sessions" dir on the ACL or TPG dir to indicate to the kernel it
-supports the new interface on that TPG, then the kernel will make a
-dir per session in the tpg/sessions or tpg/acls/alc/sessions dir
+ v4:
+  - Break out the memzero_explicit() change as suggested by Dan Carpenter
+    so that it can be backported to stable.
+  - Drop the "crypto: Remove unnecessary memzero_explicit()" patch for
+    now as there can be a bit more discussion on what is best. It will be
+    introduced as a separate patch later on after this one is merged.
 
-It works similar to how some targets export their session info today
-where if it's dynamic session then it goes in the tpg dir and if
-there is an ACL then it goes in the acl's sessions dir. The name of
-the dir is "session-$sid".
+This patchset makes a global rename of the kzfree() to kfree_sensitive()
+to highlight the fact buffer clearing is only needed if the data objects
+contain sensitive information like encrpytion key. The fact that kzfree()
+uses memset() to do the clearing isn't totally safe either as compiler
+may compile out the clearing in their optimizer especially if LTO is
+used. Instead, the new kfree_sensitive() uses memzero_explicit() which
+won't get compiled out.
 
-qla2xxx example:
+Waiman Long (3):
+  mm/slab: Use memzero_explicit() in kzfree()
+  mm, treewide: Rename kzfree() to kfree_sensitive()
+  btrfs: Use kfree() in btrfs_ioctl_get_subvol_info()
 
-For ACL based sessions:
+ arch/s390/crypto/prng.c                       |  4 +--
+ arch/x86/power/hibernate.c                    |  2 +-
+ crypto/adiantum.c                             |  2 +-
+ crypto/ahash.c                                |  4 +--
+ crypto/api.c                                  |  2 +-
+ crypto/asymmetric_keys/verify_pefile.c        |  4 +--
+ crypto/deflate.c                              |  2 +-
+ crypto/drbg.c                                 | 10 +++---
+ crypto/ecc.c                                  |  8 ++---
+ crypto/ecdh.c                                 |  2 +-
+ crypto/gcm.c                                  |  2 +-
+ crypto/gf128mul.c                             |  4 +--
+ crypto/jitterentropy-kcapi.c                  |  2 +-
+ crypto/rng.c                                  |  2 +-
+ crypto/rsa-pkcs1pad.c                         |  6 ++--
+ crypto/seqiv.c                                |  2 +-
+ crypto/shash.c                                |  2 +-
+ crypto/skcipher.c                             |  2 +-
+ crypto/testmgr.c                              |  6 ++--
+ crypto/zstd.c                                 |  2 +-
+ .../allwinner/sun8i-ce/sun8i-ce-cipher.c      |  2 +-
+ .../allwinner/sun8i-ss/sun8i-ss-cipher.c      |  2 +-
+ drivers/crypto/amlogic/amlogic-gxl-cipher.c   |  4 +--
+ drivers/crypto/atmel-ecc.c                    |  2 +-
+ drivers/crypto/caam/caampkc.c                 | 28 +++++++--------
+ drivers/crypto/cavium/cpt/cptvf_main.c        |  6 ++--
+ drivers/crypto/cavium/cpt/cptvf_reqmanager.c  | 12 +++----
+ drivers/crypto/cavium/nitrox/nitrox_lib.c     |  4 +--
+ drivers/crypto/cavium/zip/zip_crypto.c        |  6 ++--
+ drivers/crypto/ccp/ccp-crypto-rsa.c           |  6 ++--
+ drivers/crypto/ccree/cc_aead.c                |  4 +--
+ drivers/crypto/ccree/cc_buffer_mgr.c          |  4 +--
+ drivers/crypto/ccree/cc_cipher.c              |  6 ++--
+ drivers/crypto/ccree/cc_hash.c                |  8 ++---
+ drivers/crypto/ccree/cc_request_mgr.c         |  2 +-
+ drivers/crypto/marvell/cesa/hash.c            |  2 +-
+ .../crypto/marvell/octeontx/otx_cptvf_main.c  |  6 ++--
+ .../marvell/octeontx/otx_cptvf_reqmgr.h       |  2 +-
+ drivers/crypto/mediatek/mtk-aes.c             |  2 +-
+ drivers/crypto/nx/nx.c                        |  4 +--
+ drivers/crypto/virtio/virtio_crypto_algs.c    | 12 +++----
+ drivers/crypto/virtio/virtio_crypto_core.c    |  2 +-
+ drivers/md/dm-crypt.c                         | 32 ++++++++---------
+ drivers/md/dm-integrity.c                     |  6 ++--
+ drivers/misc/ibmvmc.c                         |  6 ++--
+ .../hisilicon/hns3/hns3pf/hclge_mbx.c         |  2 +-
+ .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    |  6 ++--
+ drivers/net/ppp/ppp_mppe.c                    |  6 ++--
+ drivers/net/wireguard/noise.c                 |  4 +--
+ drivers/net/wireguard/peer.c                  |  2 +-
+ drivers/net/wireless/intel/iwlwifi/pcie/rx.c  |  2 +-
+ .../net/wireless/intel/iwlwifi/pcie/tx-gen2.c |  6 ++--
+ drivers/net/wireless/intel/iwlwifi/pcie/tx.c  |  6 ++--
+ drivers/net/wireless/intersil/orinoco/wext.c  |  4 +--
+ drivers/s390/crypto/ap_bus.h                  |  4 +--
+ drivers/staging/ks7010/ks_hostif.c            |  2 +-
+ drivers/staging/rtl8723bs/core/rtw_security.c |  2 +-
+ drivers/staging/wlan-ng/p80211netdev.c        |  2 +-
+ drivers/target/iscsi/iscsi_target_auth.c      |  2 +-
+ fs/btrfs/ioctl.c                              |  2 +-
+ fs/cifs/cifsencrypt.c                         |  2 +-
+ fs/cifs/connect.c                             | 10 +++---
+ fs/cifs/dfs_cache.c                           |  2 +-
+ fs/cifs/misc.c                                |  8 ++---
+ fs/crypto/keyring.c                           |  6 ++--
+ fs/crypto/keysetup_v1.c                       |  4 +--
+ fs/ecryptfs/keystore.c                        |  4 +--
+ fs/ecryptfs/messaging.c                       |  2 +-
+ include/crypto/aead.h                         |  2 +-
+ include/crypto/akcipher.h                     |  2 +-
+ include/crypto/gf128mul.h                     |  2 +-
+ include/crypto/hash.h                         |  2 +-
+ include/crypto/internal/acompress.h           |  2 +-
+ include/crypto/kpp.h                          |  2 +-
+ include/crypto/skcipher.h                     |  2 +-
+ include/linux/slab.h                          |  2 +-
+ lib/mpi/mpiutil.c                             |  6 ++--
+ lib/test_kasan.c                              |  6 ++--
+ mm/slab_common.c                              | 10 +++---
+ net/atm/mpoa_caches.c                         |  4 +--
+ net/bluetooth/ecdh_helper.c                   |  6 ++--
+ net/bluetooth/smp.c                           | 24 ++++++-------
+ net/core/sock.c                               |  2 +-
+ net/ipv4/tcp_fastopen.c                       |  2 +-
+ net/mac80211/aead_api.c                       |  4 +--
+ net/mac80211/aes_gmac.c                       |  2 +-
+ net/mac80211/key.c                            |  2 +-
+ net/mac802154/llsec.c                         | 20 +++++------
+ net/sctp/auth.c                               |  2 +-
+ net/sctp/socket.c                             |  2 +-
+ net/sunrpc/auth_gss/gss_krb5_crypto.c         |  4 +--
+ net/sunrpc/auth_gss/gss_krb5_keys.c           |  6 ++--
+ net/sunrpc/auth_gss/gss_krb5_mech.c           |  2 +-
+ net/tipc/crypto.c                             | 10 +++---
+ net/wireless/core.c                           |  2 +-
+ net/wireless/ibss.c                           |  4 +--
+ net/wireless/lib80211_crypt_tkip.c            |  2 +-
+ net/wireless/lib80211_crypt_wep.c             |  2 +-
+ net/wireless/nl80211.c                        | 24 ++++++-------
+ net/wireless/sme.c                            |  6 ++--
+ net/wireless/util.c                           |  2 +-
+ net/wireless/wext-sme.c                       |  2 +-
+ scripts/coccinelle/free/devm_free.cocci       |  4 +--
+ scripts/coccinelle/free/ifnullfree.cocci      |  4 +--
+ scripts/coccinelle/free/kfree.cocci           |  6 ++--
+ scripts/coccinelle/free/kfreeaddr.cocci       |  2 +-
+ security/apparmor/domain.c                    |  4 +--
+ security/apparmor/include/file.h              |  2 +-
+ security/apparmor/policy.c                    | 24 ++++++-------
+ security/apparmor/policy_ns.c                 |  6 ++--
+ security/apparmor/policy_unpack.c             | 14 ++++----
+ security/keys/big_key.c                       |  6 ++--
+ security/keys/dh.c                            | 14 ++++----
+ security/keys/encrypted-keys/encrypted.c      | 14 ++++----
+ security/keys/trusted-keys/trusted_tpm1.c     | 34 +++++++++----------
+ security/keys/user_defined.c                  |  6 ++--
+ 116 files changed, 322 insertions(+), 322 deletions(-)
 
-├── 21:00:00:24:ff:46:b8:88
-│   ├── fabric_statistics
-│   └── tpgt_1
-│       ├── acls
-│       │   └── 21:00:00:24:ff:46:b8:8a
-│       │       └── sessions
-│       │           └── session-1
-
-
-or for a dynamic session it would be in the tpg dir
-.....
-
-│       ├── param
-│       └── sessions
-│           └── session-1
-
-
-
-There is currently nothing in the session-$sid dir. To make the RFC
-easier to read I did not post the transport id patches or the iscsi
-conversion one, but on the final send I'll include them.
-
-Note/Warning:
-
-The interface has 2 quirks:
-
-1. It works similar to the loop/vhost/usb/xen nexus file interface
-where instead of a rmdir to delete the session you write to some special
-file. For this new interface we have:
-
-/fabric/target/tpgt/sessions/remove_session
-
-2. Because the kernel is making the session, there is no mkdir/rmdir
-support for each session like other objects like LUN, tpg, target, np,
-etc. But, before we remove the parent tpg, we have to remove the
-children sessions still. This gives configfs the behavior it expects
-where parents can't be removed before children and we will not hit
-issues like we hit before.
-
-To signal that this new requirement is supported, userspace must do
-mkdir "sessions" on the tpg/acl to create the root sessions dir that
-will contain the individual sessions. See this rtslib patch:
-
-https://github.com/mikechristie/rtslib-fb/commit/4af906d2955b739c0585d81b4b1a0d498cc2f663
-
-If userspace does not do a mkdir "sessions" on the tpg, then the old
-behavior is supported (we just don't register the session in configfs)
-for that tpg.
-
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
----
- drivers/target/target_core_fabric_configfs.c | 187 +++++++++++++++++++++++++--
- drivers/target/target_core_transport.c       |   5 +
- include/target/target_core_base.h            |   4 +
- include/target/target_core_fabric.h          |   4 +-
- 4 files changed, 189 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
-index 2b70bdf..3c1288b 100644
---- a/drivers/target/target_core_fabric_configfs.c
-+++ b/drivers/target/target_core_fabric_configfs.c
-@@ -322,15 +322,45 @@ static struct config_group *target_fabric_make_mappedlun(
- 	return ERR_PTR(ret);
- }
- 
--static void target_fabric_drop_mappedlun(
--	struct config_group *group,
--	struct config_item *item)
-+static struct config_item_type target_nacl_sess_type = {
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+static struct config_group *
-+target_make_nacl_sess_group(struct config_group *group)
- {
--	struct se_lun_acl *lacl = container_of(to_config_group(item),
--			struct se_lun_acl, se_lun_group);
-+	struct se_node_acl *se_nacl = container_of(group, struct se_node_acl,
-+						   acl_group);
-+	struct se_portal_group *se_tpg = se_nacl->se_tpg;
-+
-+	config_group_init_type_name(&se_nacl->acl_sess_group, "sessions",
-+				    &target_nacl_sess_type);
-+	se_tpg->cfgfs_sess_supp = true;
-+
-+	return &se_nacl->acl_sess_group;
-+}
-+
-+static struct config_group *target_make_nacl_group(struct config_group *group,
-+						   const char *name)
-+{
-+	if (!strcmp(name, "sessions")) {
-+		return target_make_nacl_sess_group(group);
-+	} else {
-+		return target_fabric_make_mappedlun(group, name);
-+	}
-+}
- 
--	configfs_remove_default_groups(&lacl->ml_stat_grps.stat_group);
--	configfs_remove_default_groups(&lacl->se_lun_group);
-+static void target_drop_nacl_group(struct config_group *group,
-+				   struct config_item *item)
-+{
-+	struct se_lun_acl *lacl;
-+
-+	if (strstr(config_item_name(item), "lun_")) {
-+		lacl = container_of(to_config_group(item), struct se_lun_acl,
-+				    se_lun_group);
-+		configfs_remove_default_groups(&lacl->ml_stat_grps.stat_group);
-+		configfs_remove_default_groups(&lacl->se_lun_group);
-+	}
- 
- 	config_item_put(item);
- }
-@@ -349,8 +379,8 @@ static void target_fabric_nacl_base_release(struct config_item *item)
- };
- 
- static struct configfs_group_operations target_fabric_nacl_base_group_ops = {
--	.make_group		= target_fabric_make_mappedlun,
--	.drop_item		= target_fabric_drop_mappedlun,
-+	.make_group		= target_make_nacl_group,
-+	.drop_item		= target_drop_nacl_group,
- };
- 
- TF_CIT_SETUP_DRV(tpg_nacl_base, &target_fabric_nacl_base_item_ops,
-@@ -799,6 +829,8 @@ static void target_fabric_drop_lun(
- TF_CIT_SETUP_DRV(tpg_auth, NULL, NULL);
- TF_CIT_SETUP_DRV(tpg_param, NULL, NULL);
- 
-+/* Start of tfc_tpg_session_cit */
-+
- static void target_cfgfs_sess_release(struct config_item *item)
- {
- 	struct se_session *se_sess = container_of(to_config_group(item),
-@@ -832,6 +864,82 @@ int target_cfgfs_init_session(struct se_session *se_sess)
- 	return 0;
- }
- 
-+int target_cfgfs_register_session(struct se_portal_group *se_tpg,
-+				  struct se_session *se_sess)
-+{
-+	struct se_node_acl *se_nacl;
-+	int ret;
-+
-+	/*
-+	 * If the fabric doesn't support close_session, there's no way for
-+	 * userspace to clean up the session during nacl/tpg deletion.
-+	 */
-+	if (!se_tpg->cfgfs_sess_supp || !se_tpg->se_tpg_tfo->close_session)
-+		return 0;
-+
-+	se_nacl = se_sess->se_node_acl;
-+	if (se_nacl->dynamic_node_acl) {
-+		ret = configfs_register_group(&se_tpg->tpg_sess_group,
-+					      &se_sess->group);
-+	} else {
-+		ret = configfs_register_group(&se_nacl->acl_sess_group,
-+					      &se_sess->group);
-+	}
-+	if (ret)
-+		goto fail;
-+
-+	/*
-+	 * The session is not created via a mkdir like other objects. A
-+	 * transport event like a login or userspace used the nexus file to
-+	 * initiate creation. However, we want the same behavior as other
-+	 * objects where we must remove the children before removing the
-+	 * parent dir, so do a depend on the parent that is released when the
-+	 * session is removed.
-+	 */
-+	if (se_nacl->dynamic_node_acl) {
-+		ret = target_depend_item(&se_tpg->tpg_sess_group.cg_item);
-+	} else {
-+		ret = target_depend_item(&se_nacl->acl_sess_group.cg_item);
-+	}
-+	if (ret)
-+		goto unreg_cfgfs;
-+
-+	se_sess->added_to_cfgfs = true;
-+	return 0;
-+
-+unreg_cfgfs:
-+	configfs_unregister_group(&se_sess->group);
-+fail:
-+	pr_err("Could not register session dir %d. Error %d.\n", se_sess->sid,
-+	       ret);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(target_cfgfs_register_session);
-+
-+void target_cfgfs_unregister_session(struct se_session *se_sess)
-+{
-+	struct se_node_acl *se_nacl;
-+
-+	/*
-+	 * The session attr interface may not be enabled and discovery
-+	 * sessions are not registered.
-+	 */
-+	if (!se_sess->added_to_cfgfs)
-+		return;
-+
-+	configfs_unregister_group(&se_sess->group);
-+
-+	se_nacl = se_sess->se_node_acl;
-+	if (se_nacl->dynamic_node_acl) {
-+		target_undepend_item(&se_sess->se_tpg->tpg_sess_group.cg_item);
-+	} else {
-+		target_undepend_item(&se_nacl->acl_sess_group.cg_item);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(target_cfgfs_unregister_session);
-+
-+/* End of tfc_tpg_session_cit */
-+
- /* Start of tfc_tpg_base_cit */
- 
- static void target_fabric_tpg_release(struct config_item *item)
-@@ -848,7 +956,66 @@ static void target_fabric_tpg_release(struct config_item *item)
- 	.release		= target_fabric_tpg_release,
- };
- 
--TF_CIT_SETUP_DRV(tpg_base, &target_fabric_tpg_base_item_ops, NULL);
-+static ssize_t target_tpg_remove_session_store(struct config_item *item,
-+					       const char *page, size_t count)
-+{
-+	struct se_portal_group *se_tpg = container_of(to_config_group(item),
-+						      struct se_portal_group,
-+						      tpg_sess_group);
-+	int ret, sid;
-+
-+	ret = kstrtoint(page, 10, &sid);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = target_close_session_sync(se_tpg, sid);
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+CONFIGFS_ATTR_WO(target_tpg_, remove_session);
-+
-+static struct configfs_attribute *target_tpg_sess_attrs[] = {
-+	&target_tpg_attr_remove_session,
-+	NULL,
-+};
-+
-+static struct config_item_type target_tpg_sess_type = {
-+	.ct_owner	= THIS_MODULE,
-+	.ct_attrs	= target_tpg_sess_attrs,
-+};
-+
-+static struct config_group *
-+target_make_tpg_sess_group(struct config_group *group, const char *name)
-+{
-+	struct se_portal_group *se_tpg = container_of(group,
-+						      struct se_portal_group,
-+						      tpg_group);
-+
-+	if (strcmp(name, "sessions"))
-+		return ERR_PTR(-EINVAL);
-+
-+	config_group_init_type_name(&se_tpg->tpg_sess_group, name,
-+				    &target_tpg_sess_type);
-+	se_tpg->cfgfs_sess_supp = true;
-+
-+	return &se_tpg->tpg_sess_group;
-+}
-+
-+static void target_drop_tpg_sess_group(struct config_group *group,
-+				       struct config_item *item)
-+{
-+	config_item_put(item);
-+}
-+
-+static struct configfs_group_operations target_tpg_sess_group_ops = {
-+	.make_group	= target_make_tpg_sess_group,
-+	.drop_item	= target_drop_tpg_sess_group,
-+};
-+
-+TF_CIT_SETUP_DRV(tpg_base, &target_fabric_tpg_base_item_ops,
-+		 &target_tpg_sess_group_ops);
- 
- /* End of tfc_tpg_base_cit */
- 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 942b0c5..87aac76 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -480,6 +480,10 @@ struct se_session *
- 		rc = -EACCES;
- 		goto free_session;
- 	}
-+
-+	rc = target_cfgfs_register_session(tpg, sess);
-+	if (rc)
-+		goto free_session;
- 	/*
- 	 * Go ahead and perform any remaining fabric setup that is
- 	 * required before transport_register_session().
-@@ -775,6 +779,7 @@ void target_remove_session(struct se_session *se_sess)
- 	se_sess->sess_remove_running = 1;
- 	spin_unlock_irqrestore(&se_tpg->session_lock, flags);
- 
-+	target_cfgfs_unregister_session(se_sess);
- 	transport_deregister_session_configfs(se_sess);
- 	transport_deregister_session(se_sess);
- }
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 690fff2..f78c1f4 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -571,6 +571,7 @@ struct se_node_acl {
- 	struct config_group	acl_auth_group;
- 	struct config_group	acl_param_group;
- 	struct config_group	acl_fabric_stat_group;
-+	struct config_group	acl_sess_group;
- 	struct list_head	acl_list;
- 	struct list_head	acl_sess_list;
- 	struct completion	acl_free_comp;
-@@ -626,6 +627,7 @@ struct se_session {
- 	void			*sess_cmd_map;
- 	struct sbitmap_queue	sess_tag_pool;
- 	int			sid;
-+	bool			added_to_cfgfs;
- 	struct config_group	group;
- 	const struct target_core_fabric_ops *tfo;
- };
-@@ -887,6 +889,7 @@ struct se_portal_group {
- 	/* Spinlock for adding/removing sessions */
- 	spinlock_t		session_lock;
- 	struct mutex		tpg_lun_mutex;
-+	bool			cfgfs_sess_supp;
- 	/* linked list for initiator ACL list */
- 	struct list_head	acl_node_list;
- 	struct hlist_head	tpg_lun_hlist;
-@@ -903,6 +906,7 @@ struct se_portal_group {
- 	struct config_group	tpg_attrib_group;
- 	struct config_group	tpg_auth_group;
- 	struct config_group	tpg_param_group;
-+	struct config_group	tpg_sess_group;
- };
- 
- static inline struct se_portal_group *to_tpg(struct config_item *item)
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index e200faa..1582455 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -154,7 +154,9 @@ void	transport_register_session(struct se_portal_group *,
- void	target_put_nacl(struct se_node_acl *);
- void	transport_deregister_session_configfs(struct se_session *);
- void	transport_deregister_session(struct se_session *);
--
-+int	target_cfgfs_register_session(struct se_portal_group *,
-+				      struct se_session *);
-+void	target_cfgfs_unregister_session(struct se_session *);
- 
- void	transport_init_se_cmd(struct se_cmd *,
- 		const struct target_core_fabric_ops *,
 -- 
-1.8.3.1
+2.18.1
