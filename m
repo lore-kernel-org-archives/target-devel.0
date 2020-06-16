@@ -1,35 +1,35 @@
-From: Roman Bolshakov <r.bolshakov@yadro.com>
-Date: Fri, 05 Jun 2020 14:23:11 +0000
-Subject: Re: [PATCH] scsi: qla2xxx: Keep initiator ports after RSCN
-Message-Id: <20200605142311.GC56901@SPB-NB-133.local>
+From: Jing Xiangfeng <jingxiangfeng@huawei.com>
+Date: Tue, 16 Jun 2020 01:17:15 +0000
+Subject: [PATCH v2] IB/srpt: Remove WARN_ON from srpt_cm_req_recv
+Message-Id: <20200616011715.140197-1-jingxiangfeng@huawei.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200518183141.66621-1-r.bolshakov@yadro.com>
- <yq11rmx9b9w.fsf@ca-mkp.ca.oracle.com>
-In-Reply-To: <yq11rmx9b9w.fsf@ca-mkp.ca.oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-scsi@vger.kernel.org, GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, linux@yadro.com, Quinn Tran <qutran@marvell.com>, Arun Easi <aeasi@marvell.com>, Nilesh Javali <njavali@marvell.com>, Bart Van Assche <bvanassche@acm.org>, Daniel Wagner <dwagner@suse.de>, Himanshu Madhani <himanshu.madhani@oracle.com>, Martin Wilck <mwilck@suse.com>, stable@vger.kernel.org
+To: bvanassche@acm.org, dledford@redhat.com, jgg@ziepe.ca
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, jingxiangfeng@huawei.com
 
-On Tue, Jun 02, 2020 at 09:42:06PM -0400, Martin K. Petersen wrote:
-> 
-> Roman,
-> 
-> > The driver performs SCR (state change registration) in all modes
-> > including pure target mode.
-> 
-> What is the current status of this patch? There was a bunch of going
-> back and forth wrt. whether this was the correct approach.
-> 
-> Thanks!
-> 
+It's easy to show that sdev and req are always valid,
+so we remove unnecessary WARN_ON.
 
-Hi Martin,
+Signed-off-by: Jing Xiangfeng <jingxiangfeng@huawei.com>
+---
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-The patch has a logic error that prevents session deletion if N_Port ID
-was changed after fabric rescan and shouldn't be merged IMO. I'll send a
-correct v2 shortly.
-
-Thanks,
-Roman
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index ef7fcd3..0fa65c6 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -2156,9 +2156,6 @@ static int srpt_cm_req_recv(struct srpt_device *const sdev,
+ 
+ 	WARN_ON_ONCE(irqs_disabled());
+ 
+-	if (WARN_ON(!sdev || !req))
+-		return -EINVAL;
+-
+ 	it_iu_len = be32_to_cpu(req->req_it_iu_len);
+ 
+ 	pr_info("Received SRP_LOGIN_REQ with i_port_id %pI6, t_port_id %pI6 and it_iu_len %d on port %d (guid=%pI6); pkey %#04x\n",
+-- 
+1.8.3.1
