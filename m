@@ -1,51 +1,37 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 17 Jun 2020 23:12:06 +0000
-Subject: Re: [PATCH v4 0/3] mm, treewide: Rename kzfree() to kfree_sensitive()
-Message-Id: <38c5745d14cff75fe264a3bc61d19fd837baf7ad.camel@perches.com>
+From: Jing Xiangfeng <jingxiangfeng@huawei.com>
+Date: Wed, 17 Jun 2020 14:08:03 +0000
+Subject: [PATCH v3] IB/srpt: Remove WARN_ON from srpt_cm_req_recv
+Message-Id: <20200617140803.181333-1-jingxiangfeng@huawei.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200616015718.7812-1-longman@redhat.com>
- <fe3b9a437be4aeab3bac68f04193cb6daaa5bee4.camel@perches.com>
- <17e4fede-bab0-d93c-6964-69decc889d7d@ispras.ru>
-In-Reply-To: <17e4fede-bab0-d93c-6964-69decc889d7d@ispras.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Denis Efremov <efremov@ispras.ru>, Waiman Long <longman@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Linus Torvalds <torvalds@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, David Rientjes <rientjes@google.com>
-Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Michal Hocko <mhocko@suse.com>, linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-sctp@vger.kernel.org, target-devel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-scsi@vger.kernel.org, kasan-dev@googlegroups.com, linux-wpan@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, ecryptfs@vger.kernel.org, linux-fscrypt@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org, virtualization@lists.linux-foundation.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, David Sterba <dsterba@suse.cz>, linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
+To: bvanassche@acm.org, dledford@redhat.com, jgg@ziepe.ca
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, jingxiangfeng@huawei.com
 
-On Thu, 2020-06-18 at 00:31 +0300, Denis Efremov wrote:
-> 
-> On 6/16/20 9:53 PM, Joe Perches wrote:
-> > On Mon, 2020-06-15 at 21:57 -0400, Waiman Long wrote:
-> > >  v4:
-> > >   - Break out the memzero_explicit() change as suggested by Dan Carpenter
-> > >     so that it can be backported to stable.
-> > >   - Drop the "crypto: Remove unnecessary memzero_explicit()" patch for
-> > >     now as there can be a bit more discussion on what is best. It will be
-> > >     introduced as a separate patch later on after this one is merged.
-> > 
-> > To this larger audience and last week without reply:
-> > https://lore.kernel.org/lkml/573b3fbd5927c643920e1364230c296b23e7584d.camel@perches.com/
-> > 
-> > Are there _any_ fastpath uses of kfree or vfree?
-> > 
-> > Many patches have been posted recently to fix mispairings
-> > of specific types of alloc and free functions.
-> 
-> I've prepared a coccinelle script to highlight these mispairings in a function
-> a couple of days ago: https://lkml.org/lkml/2020/6/5/953
-> I've listed all the fixes in the commit message. 
-> 
-> Not so many mispairings actually, and most of them are harmless like:
-> kmalloc(E) -> kvfree(E)
-> 
-> However, coccinelle script can't detect cross-functions mispairings, i.e.
-> allocation in one function, free in another funtion.
+The callers pass the pointer '&req' or 'private_data' to
+srpt_cm_req_recv(), and 'private_data' is initialized in srp_send_req().
+'sdev' is allocated and stored in srpt_add_one(). It's easy to show that
+sdev and req are always valid. So we remove unnecessary WARN_ON.
 
-Hey Denis, thanks for those patches.
+Signed-off-by: Jing Xiangfeng <jingxiangfeng@huawei.com>
+---
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-If possible, it's probably better to not require these pairings
-and use a single standard kfree/free function.
-
-Given the existing ifs in kfree in slab/slob/slub, it seems
-likely that adding a few more wouldn't have much impact.
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index ef7fcd3..0fa65c6 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -2156,9 +2156,6 @@ static int srpt_cm_req_recv(struct srpt_device *const sdev,
+ 
+ 	WARN_ON_ONCE(irqs_disabled());
+ 
+-	if (WARN_ON(!sdev || !req))
+-		return -EINVAL;
+-
+ 	it_iu_len = be32_to_cpu(req->req_it_iu_len);
+ 
+ 	pr_info("Received SRP_LOGIN_REQ with i_port_id %pI6, t_port_id %pI6 and it_iu_len %d on port %d (guid=%pI6); pkey %#04x\n",
+-- 
+1.8.3.1
