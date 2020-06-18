@@ -1,73 +1,112 @@
-From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
-Date: Sun, 07 Jun 2020 19:58:30 +0000
-Subject: [PATCH v4 1/4] target: factor out a new helper, target_cmd_init_cdb()
-Message-Id: <1591559913-8388-2-git-send-email-sudhakar.panneerselvam@oracle.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 18 Jun 2020 01:04:43 +0000
+Subject: [PATCH AUTOSEL 5.7 186/388] scsi: target: loopback: Fix READ with data and sensebytes
+Message-Id: <20200618010805.600873-186-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
-In-Reply-To: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+References: <20200618010805.600873-1-sashal@kernel.org>
+In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, michael.christie@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: shirley.ma@oracle.com
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-target_setup_cmd_from_cdb() is called after a successful call to
-transport_lookup_cmd_lun(). The new helper factors out the code that can
-be called before the call to transport_lookup_cmd_lun(). This helper
-will be used in an upcoming commit to address NULL pointer dereference.
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+[ Upstream commit c68a56736c129f5dd1632856956f9c3e04bae200 ]
+
+We use tcm_loop with tape emulations running on tcmu.
+
+In case application reads a short tape block with a longer READ, or a long
+tape block with a short READ, according to SCC spec data has to be
+tranferred _and_ sensebytes with ILI set and information field containing
+the residual count. Similar problem also exists when using fixed block
+size in READ.
+
+Up to now tcm_loop is not prepared to handle sensebytes if input data is
+provided, as in tcm_loop_queue_data_in() it only sets SAM_STAT_GOOD and, if
+necessary, the residual count.
+
+To fix the bug, the same handling for sensebytes as present in
+tcm_loop_queue_status() must be done in tcm_loop_queue_data_in() also.
+
+After adding this handling, the two function now are nearly identical, so I
+created a single function with two wrappers.
+
+Link: https://lore.kernel.org/r/20200428182617.32726-1-bstroesser@ts.fujitsu.com
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_transport.c | 16 ++++++++++++----
- include/target/target_core_fabric.h    |  1 +
- 2 files changed, 13 insertions(+), 4 deletions(-)
+ drivers/target/loopback/tcm_loop.c | 36 +++++++++++++-----------------
+ 1 file changed, 15 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index e6b448f43071..f2f7c5b818cc 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1410,11 +1410,8 @@ void transport_init_se_cmd(
+diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+index 3305b47fdf53..16d5a4e117a2 100644
+--- a/drivers/target/loopback/tcm_loop.c
++++ b/drivers/target/loopback/tcm_loop.c
+@@ -545,32 +545,15 @@ static int tcm_loop_write_pending(struct se_cmd *se_cmd)
+ 	return 0;
  }
  
- sense_reason_t
--target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
-+target_cmd_init_cdb(struct se_cmd *cmd, unsigned char *cdb)
+-static int tcm_loop_queue_data_in(struct se_cmd *se_cmd)
++static int tcm_loop_queue_data_or_status(const char *func,
++		struct se_cmd *se_cmd, u8 scsi_status)
  {
--	struct se_device *dev = cmd->se_dev;
--	sense_reason_t ret;
+ 	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
+ 				struct tcm_loop_cmd, tl_se_cmd);
+ 	struct scsi_cmnd *sc = tl_cmd->sc;
+ 
+ 	pr_debug("%s() called for scsi_cmnd: %p cdb: 0x%02x\n",
+-		 __func__, sc, sc->cmnd[0]);
 -
- 	/*
- 	 * Ensure that the received CDB is less than the max (252 + 8) bytes
- 	 * for VARIABLE_LENGTH_CMD
-@@ -1448,6 +1445,17 @@ void transport_init_se_cmd(
- 	memcpy(cmd->t_task_cdb, cdb, scsi_command_size(cdb));
+-	sc->result = SAM_STAT_GOOD;
+-	set_host_byte(sc, DID_OK);
+-	if ((se_cmd->se_cmd_flags & SCF_OVERFLOW_BIT) ||
+-	    (se_cmd->se_cmd_flags & SCF_UNDERFLOW_BIT))
+-		scsi_set_resid(sc, se_cmd->residual_count);
+-	sc->scsi_done(sc);
+-	return 0;
+-}
+-
+-static int tcm_loop_queue_status(struct se_cmd *se_cmd)
+-{
+-	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
+-				struct tcm_loop_cmd, tl_se_cmd);
+-	struct scsi_cmnd *sc = tl_cmd->sc;
+-
+-	pr_debug("%s() called for scsi_cmnd: %p cdb: 0x%02x\n",
+-		 __func__, sc, sc->cmnd[0]);
++		 func, sc, sc->cmnd[0]);
  
- 	trace_target_sequencer_start(cmd);
-+	return 0;
-+}
-+EXPORT_SYMBOL(target_cmd_init_cdb);
-+
-+sense_reason_t
-+target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
+ 	if (se_cmd->sense_buffer &&
+ 	   ((se_cmd->se_cmd_flags & SCF_TRANSPORT_TASK_SENSE) ||
+@@ -581,7 +564,7 @@ static int tcm_loop_queue_status(struct se_cmd *se_cmd)
+ 		sc->result = SAM_STAT_CHECK_CONDITION;
+ 		set_driver_byte(sc, DRIVER_SENSE);
+ 	} else
+-		sc->result = se_cmd->scsi_status;
++		sc->result = scsi_status;
+ 
+ 	set_host_byte(sc, DID_OK);
+ 	if ((se_cmd->se_cmd_flags & SCF_OVERFLOW_BIT) ||
+@@ -591,6 +574,17 @@ static int tcm_loop_queue_status(struct se_cmd *se_cmd)
+ 	return 0;
+ }
+ 
++static int tcm_loop_queue_data_in(struct se_cmd *se_cmd)
 +{
-+	struct se_device *dev = cmd->se_dev;
-+	sense_reason_t ret;
++	return tcm_loop_queue_data_or_status(__func__, se_cmd, SAM_STAT_GOOD);
++}
 +
-+	target_cmd_init_cdb(cmd, cdb);
- 
- 	ret = dev->transport->parse_cdb(cmd);
- 	if (ret = TCM_UNSUPPORTED_SCSI_OPCODE)
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index 063f133e47c2..6a2bfcca0c98 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -152,6 +152,7 @@ void	transport_init_se_cmd(struct se_cmd *,
- 		const struct target_core_fabric_ops *,
- 		struct se_session *, u32, int, int, unsigned char *);
- sense_reason_t transport_lookup_cmd_lun(struct se_cmd *, u64);
-+sense_reason_t target_cmd_init_cdb(struct se_cmd *, unsigned char *);
- sense_reason_t target_setup_cmd_from_cdb(struct se_cmd *, unsigned char *);
- int	target_submit_cmd_map_sgls(struct se_cmd *, struct se_session *,
- 		unsigned char *, unsigned char *, u64, u32, int, int, int,
++static int tcm_loop_queue_status(struct se_cmd *se_cmd)
++{
++	return tcm_loop_queue_data_or_status(__func__,
++					     se_cmd, se_cmd->scsi_status);
++}
++
+ static void tcm_loop_queue_tm_rsp(struct se_cmd *se_cmd)
+ {
+ 	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
 -- 
-1.8.3.1
+2.25.1
