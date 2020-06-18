@@ -1,311 +1,344 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Sat, 27 Jun 2020 04:35:07 +0000
-Subject: [RFC PATCH 08/10] ibm,loop,vhost,xenscsi: add close_session callouts
-Message-Id: <1593232509-13720-9-git-send-email-michael.christie@oracle.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 18 Jun 2020 01:21:10 +0000
+Subject: [PATCH AUTOSEL 4.19 104/172] scsi: target: tcmu: Userspace must not complete queued commands
+Message-Id: <20200618012218.607130-104-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <1593232509-13720-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1593232509-13720-1-git-send-email-michael.christie@oracle.com>
+References: <20200618012218.607130-1-sashal@kernel.org>
+In-Reply-To: <20200618012218.607130-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: hare@suse.de, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, Mike Christie <mchristi@redhat.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Call the fabric modules drop nexus functions from the close_session
-callout.
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
+[ Upstream commit 61fb2482216679b9e1e797440c148bb143a5040a ]
+
+When tcmu queues a new command - no matter whether in command ring or in
+qfull_queue - a cmd_id from IDR udev->commands is assigned to the command.
+
+If userspace sends a wrong command completion containing the cmd_id of a
+command on the qfull_queue, tcmu_handle_completions() finds the command in
+the IDR and calls tcmu_handle_completion() for it. This might do some nasty
+things because commands in qfull_queue do not have a valid dbi list.
+
+To fix this bug, we no longer add queued commands to the idr.  Instead the
+cmd_id is assign when a command is written to the command ring.
+
+Due to this change I had to adapt the source code at several places where
+up to now an idr_for_each had been done.
+
+[mkp: fix checkpatch warnings]
+
+Link: https://lore.kernel.org/r/20200518164833.12775-1-bstroesser@ts.fujitsu.com
+Acked-by: Mike Christie <mchristi@redhat.com>
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
+ drivers/target/target_core_user.c | 154 ++++++++++++++----------------
+ 1 file changed, 71 insertions(+), 83 deletions(-)
 
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 14 +++++++++++---
- drivers/target/loopback/tcm_loop.c       | 17 ++++++++++++-----
- drivers/usb/gadget/function/f_tcm.c      | 17 ++++++++++++-----
- drivers/vhost/scsi.c                     | 16 ++++++++++++----
- drivers/xen/xen-scsiback.c               | 16 ++++++++++++----
- 5 files changed, 59 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-index a817524..81f9649 100644
---- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-+++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-@@ -2239,10 +2239,12 @@ static int ibmvscsis_make_nexus(struct ibmvscsis_tport *tport)
- 	return rc;
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index eff1e36ca03c..ac523f247a9c 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -893,41 +893,24 @@ static inline size_t tcmu_cmd_get_cmd_size(struct tcmu_cmd *tcmu_cmd,
+ 	return command_size;
  }
  
--static int ibmvscsis_drop_nexus(struct ibmvscsis_tport *tport)
-+static int ibmvscsis_drop_nexus(struct se_portal_group *se_tpg)
+-static int tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
+-				struct timer_list *timer)
++static void tcmu_setup_cmd_timer(struct tcmu_cmd *tcmu_cmd, unsigned int tmo,
++				 struct timer_list *timer)
  {
--	struct se_session *se_sess;
-+	struct ibmvscsis_tport *tport +		container_of(se_tpg, struct ibmvscsis_tport, se_tpg);
- 	struct ibmvscsis_nexus *nexus;
-+	struct se_session *se_sess;
+-	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
+-	int cmd_id;
+-
+-	if (tcmu_cmd->cmd_id)
+-		goto setup_timer;
+-
+-	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 1, USHRT_MAX, GFP_NOWAIT);
+-	if (cmd_id < 0) {
+-		pr_err("tcmu: Could not allocate cmd id.\n");
+-		return cmd_id;
+-	}
+-	tcmu_cmd->cmd_id = cmd_id;
+-
+-	pr_debug("allocated cmd %u for dev %s tmo %lu\n", tcmu_cmd->cmd_id,
+-		 udev->name, tmo / MSEC_PER_SEC);
+-
+-setup_timer:
+ 	if (!tmo)
+-		return 0;
++		return;
  
- 	nexus = tport->ibmv_nexus;
- 	if (!nexus)
-@@ -2262,6 +2264,11 @@ static int ibmvscsis_drop_nexus(struct ibmvscsis_tport *tport)
- 	return 0;
+ 	tcmu_cmd->deadline = round_jiffies_up(jiffies + msecs_to_jiffies(tmo));
+ 	if (!timer_pending(timer))
+ 		mod_timer(timer, tcmu_cmd->deadline);
+ 
+-	return 0;
++	pr_debug("Timeout set up for cmd %p, dev = %s, tmo = %lu\n", tcmu_cmd,
++		 tcmu_cmd->tcmu_dev->name, tmo / MSEC_PER_SEC);
  }
  
-+static int ibmvscsis_close_session(struct se_session *se_sess)
-+{
-+	return ibmvscsis_drop_nexus(se_sess->se_tpg);
-+}
-+
- /**
-  * ibmvscsis_srp_login() - Process an SRP Login Request
-  * @vscsi:	Pointer to our adapter structure
-@@ -3934,7 +3941,7 @@ static void ibmvscsis_drop_tpg(struct se_portal_group *se_tpg)
- 	/*
- 	 * Release the virtual I_T Nexus for this ibmvscsis TPG
- 	 */
--	ibmvscsis_drop_nexus(tport);
-+	ibmvscsis_drop_nexus(se_tpg);
- 	/*
- 	 * Deregister the se_tpg from TCM..
- 	 */
-@@ -4036,6 +4043,7 @@ static ssize_t ibmvscsis_tpg_enable_store(struct config_item *item,
- 	.queue_status			= ibmvscsis_queue_status,
- 	.queue_tm_rsp			= ibmvscsis_queue_tm_rsp,
- 	.aborted_task			= ibmvscsis_aborted_task,
-+	.close_session			= ibmvscsis_close_session,
- 	/*
- 	 * Setup function pointers for logic in target_core_fabric_configfs.c
- 	 */
-diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-index 570dff2..d5e616e 100644
---- a/drivers/target/loopback/tcm_loop.c
-+++ b/drivers/target/loopback/tcm_loop.c
-@@ -749,11 +749,12 @@ static int tcm_loop_make_nexus(
- 	return 0;
- }
- 
--static int tcm_loop_drop_nexus(
--	struct tcm_loop_tpg *tpg)
-+static int tcm_loop_drop_nexus(struct se_portal_group *se_tpg)
+ static int add_to_qfull_queue(struct tcmu_cmd *tcmu_cmd)
  {
--	struct se_session *se_sess;
-+	struct tcm_loop_tpg *tpg = container_of(se_tpg, struct tcm_loop_tpg,
-+						tl_se_tpg);
- 	struct tcm_loop_nexus *tl_nexus;
-+	struct se_session *se_sess;
+ 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
+ 	unsigned int tmo;
+-	int ret;
  
- 	mutex_lock(&tpg->tl_nexus_mutex);
- 	tl_nexus = tpg->tl_nexus;
-@@ -789,6 +790,11 @@ static int tcm_loop_drop_nexus(
+ 	/*
+ 	 * For backwards compat if qfull_time_out is not set use
+@@ -942,13 +925,11 @@ static int add_to_qfull_queue(struct tcmu_cmd *tcmu_cmd)
+ 	else
+ 		tmo = TCMU_TIME_OUT;
+ 
+-	ret = tcmu_setup_cmd_timer(tcmu_cmd, tmo, &udev->qfull_timer);
+-	if (ret)
+-		return ret;
++	tcmu_setup_cmd_timer(tcmu_cmd, tmo, &udev->qfull_timer);
+ 
+ 	list_add_tail(&tcmu_cmd->queue_entry, &udev->qfull_queue);
+-	pr_debug("adding cmd %u on dev %s to ring space wait queue\n",
+-		 tcmu_cmd->cmd_id, udev->name);
++	pr_debug("adding cmd %p on dev %s to ring space wait queue\n",
++		 tcmu_cmd, udev->name);
  	return 0;
  }
  
-+static int tcm_loop_close_session(struct se_session *se_sess)
-+{
-+	return tcm_loop_drop_nexus(se_sess->se_tpg);
-+}
-+
- /* End items for tcm_loop_nexus_cit */
- 
- static ssize_t tcm_loop_tpg_nexus_show(struct config_item *item, char *page)
-@@ -826,7 +832,7 @@ static ssize_t tcm_loop_tpg_nexus_store(struct config_item *item,
- 	 * Shutdown the active I_T nexus if 'NULL' is passed..
- 	 */
- 	if (!strncmp(page, "NULL", 4)) {
--		ret = tcm_loop_drop_nexus(tl_tpg);
-+		ret = tcm_loop_drop_nexus(se_tpg);
- 		return (!ret) ? count : ret;
+@@ -970,7 +951,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
+ 	struct tcmu_mailbox *mb;
+ 	struct tcmu_cmd_entry *entry;
+ 	struct iovec *iov;
+-	int iov_cnt, ret;
++	int iov_cnt, cmd_id;
+ 	uint32_t cmd_head;
+ 	uint64_t cdb_off;
+ 	bool copy_to_data_area;
+@@ -1071,14 +1052,21 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
  	}
- 	/*
-@@ -1017,7 +1023,7 @@ static void tcm_loop_drop_naa_tpg(
- 	/*
- 	 * Release the I_T Nexus for the Virtual target link if present
- 	 */
--	tcm_loop_drop_nexus(tl_tpg);
-+	tcm_loop_drop_nexus(se_tpg);
- 	/*
- 	 * Deregister the tl_tpg as a emulated TCM Target Endpoint
- 	 */
-@@ -1155,6 +1161,7 @@ static ssize_t tcm_loop_wwn_version_show(struct config_item *item, char *page)
- 	.queue_status			= tcm_loop_queue_status,
- 	.queue_tm_rsp			= tcm_loop_queue_tm_rsp,
- 	.aborted_task			= tcm_loop_aborted_task,
-+	.close_session			= tcm_loop_close_session,
- 	.fabric_make_wwn		= tcm_loop_make_scsi_hba,
- 	.fabric_drop_wwn		= tcm_loop_drop_scsi_hba,
- 	.fabric_make_tpg		= tcm_loop_make_naa_tpg,
-diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
-index e66884f..ed449ab 100644
---- a/drivers/usb/gadget/function/f_tcm.c
-+++ b/drivers/usb/gadget/function/f_tcm.c
-@@ -1415,7 +1415,7 @@ static struct se_portal_group *usbg_make_tpg(struct se_wwn *wwn,
- 	return ERR_PTR(ret);
- }
+ 	entry->req.iov_bidi_cnt = iov_cnt;
  
--static int tcm_usbg_drop_nexus(struct usbg_tpg *);
-+static int tcm_usbg_drop_nexus(struct se_portal_group *);
+-	ret = tcmu_setup_cmd_timer(tcmu_cmd, udev->cmd_time_out,
+-				   &udev->cmd_timer);
+-	if (ret) {
+-		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
++	cmd_id = idr_alloc(&udev->commands, tcmu_cmd, 1, USHRT_MAX, GFP_NOWAIT);
++	if (cmd_id < 0) {
++		pr_err("tcmu: Could not allocate cmd id.\n");
  
- static void usbg_drop_tpg(struct se_portal_group *se_tpg)
- {
-@@ -1424,7 +1424,7 @@ static void usbg_drop_tpg(struct se_portal_group *se_tpg)
- 	unsigned i;
- 	struct f_tcm_opts *opts;
- 
--	tcm_usbg_drop_nexus(tpg);
-+	tcm_usbg_drop_nexus(se_tpg);
- 	core_tpg_deregister(se_tpg);
- 	destroy_workqueue(tpg->workqueue);
- 
-@@ -1597,10 +1597,11 @@ static int tcm_usbg_make_nexus(struct usbg_tpg *tpg, char *name)
- 	return ret;
- }
- 
--static int tcm_usbg_drop_nexus(struct usbg_tpg *tpg)
-+static int tcm_usbg_drop_nexus(struct se_portal_group *se_tpg)
- {
--	struct se_session *se_sess;
-+	struct usbg_tpg *tpg = container_of(se_tpg, struct usbg_tpg, se_tpg);
- 	struct tcm_usbg_nexus *tv_nexus;
-+	struct se_session *se_sess;
- 	int ret = -ENODEV;
- 
- 	mutex_lock(&tpg->tpg_mutex);
-@@ -1635,6 +1636,11 @@ static int tcm_usbg_drop_nexus(struct usbg_tpg *tpg)
- 	return ret;
- }
- 
-+static int tcm_usbg_close_session(struct se_session *se_sess)
-+{
-+	return tcm_usbg_drop_nexus(se_sess->se_tpg);
-+}
++		tcmu_cmd_free_data(tcmu_cmd, tcmu_cmd->dbi_cnt);
+ 		*scsi_err = TCM_OUT_OF_RESOURCES;
+ 		return -1;
+ 	}
++	tcmu_cmd->cmd_id = cmd_id;
 +
- static ssize_t tcm_usbg_tpg_nexus_store(struct config_item *item,
- 		const char *page, size_t count)
++	pr_debug("allocated cmd id %u for cmd %p dev %s\n", tcmu_cmd->cmd_id,
++		 tcmu_cmd, udev->name);
++
++	tcmu_setup_cmd_timer(tcmu_cmd, udev->cmd_time_out, &udev->cmd_timer);
++
+ 	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
+ 
+ 	/*
+@@ -1290,50 +1278,39 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+ 	return handled;
+ }
+ 
+-static int tcmu_check_expired_cmd(int id, void *p, void *data)
++static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
  {
-@@ -1644,7 +1650,7 @@ static ssize_t tcm_usbg_tpg_nexus_store(struct config_item *item,
+-	struct tcmu_cmd *cmd = p;
+-	struct tcmu_dev *udev = cmd->tcmu_dev;
+-	u8 scsi_status;
+ 	struct se_cmd *se_cmd;
+-	bool is_running;
+-
+-	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags))
+-		return 0;
+ 
+ 	if (!time_after(jiffies, cmd->deadline))
+-		return 0;
++		return;
+ 
+-	is_running = test_bit(TCMU_CMD_BIT_INFLIGHT, &cmd->flags);
++	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
++	list_del_init(&cmd->queue_entry);
+ 	se_cmd = cmd->se_cmd;
++	cmd->se_cmd = NULL;
+ 
+-	if (is_running) {
+-		/*
+-		 * If cmd_time_out is disabled but qfull is set deadline
+-		 * will only reflect the qfull timeout. Ignore it.
+-		 */
+-		if (!udev->cmd_time_out)
+-			return 0;
++	pr_debug("Timing out inflight cmd %u on dev %s.\n",
++		 cmd->cmd_id, cmd->tcmu_dev->name);
+ 
+-		set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
+-		/*
+-		 * target_complete_cmd will translate this to LUN COMM FAILURE
+-		 */
+-		scsi_status = SAM_STAT_CHECK_CONDITION;
+-		list_del_init(&cmd->queue_entry);
+-		cmd->se_cmd = NULL;
+-	} else {
+-		list_del_init(&cmd->queue_entry);
+-		idr_remove(&udev->commands, id);
+-		tcmu_free_cmd(cmd);
+-		scsi_status = SAM_STAT_TASK_SET_FULL;
+-	}
++	target_complete_cmd(se_cmd, SAM_STAT_CHECK_CONDITION);
++}
+ 
+-	pr_debug("Timing out cmd %u on dev %s that is %s.\n",
+-		 id, udev->name, is_running ? "inflight" : "queued");
++static void tcmu_check_expired_queue_cmd(struct tcmu_cmd *cmd)
++{
++	struct se_cmd *se_cmd;
+ 
+-	target_complete_cmd(se_cmd, scsi_status);
+-	return 0;
++	if (!time_after(jiffies, cmd->deadline))
++		return;
++
++	list_del_init(&cmd->queue_entry);
++	se_cmd = cmd->se_cmd;
++	tcmu_free_cmd(cmd);
++
++	pr_debug("Timing out queued cmd %p on dev %s.\n",
++		  cmd, cmd->tcmu_dev->name);
++
++	target_complete_cmd(se_cmd, SAM_STAT_TASK_SET_FULL);
+ }
+ 
+ static void tcmu_device_timedout(struct tcmu_dev *udev)
+@@ -1418,16 +1395,15 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+ 	return &udev->se_dev;
+ }
+ 
+-static bool run_qfull_queue(struct tcmu_dev *udev, bool fail)
++static void run_qfull_queue(struct tcmu_dev *udev, bool fail)
+ {
+ 	struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
+ 	LIST_HEAD(cmds);
+-	bool drained = true;
+ 	sense_reason_t scsi_ret;
  	int ret;
  
- 	if (!strncmp(page, "NULL", 4)) {
--		ret = tcm_usbg_drop_nexus(tpg);
-+		ret = tcm_usbg_drop_nexus(se_tpg);
- 		return (!ret) ? count : ret;
+ 	if (list_empty(&udev->qfull_queue))
+-		return true;
++		return;
+ 
+ 	pr_debug("running %s's cmdr queue forcefail %d\n", udev->name, fail);
+ 
+@@ -1436,11 +1412,10 @@ static bool run_qfull_queue(struct tcmu_dev *udev, bool fail)
+ 	list_for_each_entry_safe(tcmu_cmd, tmp_cmd, &cmds, queue_entry) {
+ 		list_del_init(&tcmu_cmd->queue_entry);
+ 
+-	        pr_debug("removing cmd %u on dev %s from queue\n",
+-		         tcmu_cmd->cmd_id, udev->name);
++		pr_debug("removing cmd %p on dev %s from queue\n",
++			 tcmu_cmd, udev->name);
+ 
+ 		if (fail) {
+-			idr_remove(&udev->commands, tcmu_cmd->cmd_id);
+ 			/*
+ 			 * We were not able to even start the command, so
+ 			 * fail with busy to allow a retry in case runner
+@@ -1455,10 +1430,8 @@ static bool run_qfull_queue(struct tcmu_dev *udev, bool fail)
+ 
+ 		ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
+ 		if (ret < 0) {
+-		        pr_debug("cmd %u on dev %s failed with %u\n",
+-			         tcmu_cmd->cmd_id, udev->name, scsi_ret);
+-
+-			idr_remove(&udev->commands, tcmu_cmd->cmd_id);
++			pr_debug("cmd %p on dev %s failed with %u\n",
++				 tcmu_cmd, udev->name, scsi_ret);
+ 			/*
+ 			 * Ignore scsi_ret for now. target_complete_cmd
+ 			 * drops it.
+@@ -1473,13 +1446,11 @@ static bool run_qfull_queue(struct tcmu_dev *udev, bool fail)
+ 			 * the queue
+ 			 */
+ 			list_splice_tail(&cmds, &udev->qfull_queue);
+-			drained = false;
+ 			break;
+ 		}
  	}
- 	if (strlen(page) >= USBG_NAMELEN) {
-@@ -1723,6 +1729,7 @@ static int usbg_check_stop_free(struct se_cmd *se_cmd)
- 	.queue_tm_rsp			= usbg_queue_tm_rsp,
- 	.aborted_task			= usbg_aborted_task,
- 	.check_stop_free		= usbg_check_stop_free,
-+	.close_session			= tcm_usbg_close_session,
  
- 	.fabric_make_wwn		= usbg_make_tport,
- 	.fabric_drop_wwn		= usbg_drop_tport,
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 7896e69..d30b8da 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -1972,10 +1972,12 @@ static int vhost_scsi_make_nexus(struct vhost_scsi_tpg *tpg,
- 	return 0;
+ 	tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
+-	return drained;
  }
  
--static int vhost_scsi_drop_nexus(struct vhost_scsi_tpg *tpg)
-+static int vhost_scsi_drop_nexus(struct se_portal_group *se_tpg)
- {
--	struct se_session *se_sess;
-+	struct vhost_scsi_tpg *tpg = container_of(se_tpg, struct vhost_scsi_tpg,
-+						  se_tpg);
- 	struct vhost_scsi_nexus *tv_nexus;
-+	struct se_session *se_sess;
+ static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
+@@ -1663,6 +1634,8 @@ static void tcmu_dev_kref_release(struct kref *kref)
+ 		if (tcmu_check_and_free_pending_cmd(cmd) != 0)
+ 			all_expired = false;
+ 	}
++	if (!list_empty(&udev->qfull_queue))
++		all_expired = false;
+ 	idr_destroy(&udev->commands);
+ 	WARN_ON(!all_expired);
  
- 	mutex_lock(&tpg->tv_tpg_mutex);
- 	tv_nexus = tpg->tpg_nexus;
-@@ -2022,6 +2024,11 @@ static int vhost_scsi_drop_nexus(struct vhost_scsi_tpg *tpg)
- 	return 0;
- }
+@@ -2031,9 +2004,6 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+ 	mutex_lock(&udev->cmdr_lock);
  
-+static int vhost_scsi_close_session(struct se_session *se_sess)
-+{
-+	return vhost_scsi_drop_nexus(se_sess->se_tpg);
-+}
+ 	idr_for_each_entry(&udev->commands, cmd, i) {
+-		if (!test_bit(TCMU_CMD_BIT_INFLIGHT, &cmd->flags))
+-			continue;
+-
+ 		pr_debug("removing cmd %u on dev %s from ring (is expired %d)\n",
+ 			  cmd->cmd_id, udev->name,
+ 			  test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags));
+@@ -2071,6 +2041,8 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+ 
+ 	del_timer(&udev->cmd_timer);
+ 
++	run_qfull_queue(udev, false);
 +
- static ssize_t vhost_scsi_tpg_nexus_show(struct config_item *item, char *page)
- {
- 	struct se_portal_group *se_tpg = to_tpg(item);
-@@ -2056,7 +2063,7 @@ static ssize_t vhost_scsi_tpg_nexus_store(struct config_item *item,
- 	 * Shutdown the active I_T nexus if 'NULL' is passed..
- 	 */
- 	if (!strncmp(page, "NULL", 4)) {
--		ret = vhost_scsi_drop_nexus(tpg);
-+		ret = vhost_scsi_drop_nexus(se_tpg);
- 		return (!ret) ? count : ret;
- 	}
- 	/*
-@@ -2176,7 +2183,7 @@ static void vhost_scsi_drop_tpg(struct se_portal_group *se_tpg)
- 	/*
- 	 * Release the virtual I_T Nexus for this vhost TPG
- 	 */
--	vhost_scsi_drop_nexus(tpg);
-+	vhost_scsi_drop_nexus(se_tpg);
- 	/*
- 	 * Deregister the se_tpg from TCM..
- 	 */
-@@ -2294,6 +2301,7 @@ static void vhost_scsi_drop_tport(struct se_wwn *wwn)
- 	.queue_status			= vhost_scsi_queue_status,
- 	.queue_tm_rsp			= vhost_scsi_queue_tm_rsp,
- 	.aborted_task			= vhost_scsi_aborted_task,
-+	.close_session			= vhost_scsi_close_session,
- 	/*
- 	 * Setup callers for generic logic in target_core_fabric_configfs.c
- 	 */
-diff --git a/drivers/xen/xen-scsiback.c b/drivers/xen/xen-scsiback.c
-index f0a8fc7..ffd1a7a 100644
---- a/drivers/xen/xen-scsiback.c
-+++ b/drivers/xen/xen-scsiback.c
-@@ -1538,10 +1538,12 @@ static int scsiback_make_nexus(struct scsiback_tpg *tpg,
- 	return ret;
+ 	mutex_unlock(&udev->cmdr_lock);
  }
  
--static int scsiback_drop_nexus(struct scsiback_tpg *tpg)
-+static int scsiback_drop_nexus(struct se_portal_group *se_tpg)
+@@ -2692,6 +2664,7 @@ static void find_free_blocks(void)
+ static void check_timedout_devices(void)
  {
--	struct se_session *se_sess;
-+	struct scsiback_tpg *tpg = container_of(se_tpg, struct scsiback_tpg,
-+						se_tpg);
- 	struct scsiback_nexus *tv_nexus;
-+	struct se_session *se_sess;
+ 	struct tcmu_dev *udev, *tmp_dev;
++	struct tcmu_cmd *cmd, *tmp_cmd;
+ 	LIST_HEAD(devs);
  
- 	mutex_lock(&tpg->tv_tpg_mutex);
- 	tv_nexus = tpg->tpg_nexus;
-@@ -1585,6 +1587,11 @@ static int scsiback_drop_nexus(struct scsiback_tpg *tpg)
- 	return 0;
- }
+ 	spin_lock_bh(&timed_out_udevs_lock);
+@@ -2702,9 +2675,24 @@ static void check_timedout_devices(void)
+ 		spin_unlock_bh(&timed_out_udevs_lock);
  
-+static int scsiback_close_session(struct se_session *se_sess)
-+{
-+	return scsiback_drop_nexus(se_sess->se_tpg);
-+}
-+
- static ssize_t scsiback_tpg_nexus_show(struct config_item *item, char *page)
- {
- 	struct se_portal_group *se_tpg = to_tpg(item);
-@@ -1619,7 +1626,7 @@ static ssize_t scsiback_tpg_nexus_store(struct config_item *item,
- 	 * Shutdown the active I_T nexus if 'NULL' is passed.
- 	 */
- 	if (!strncmp(page, "NULL", 4)) {
--		ret = scsiback_drop_nexus(tpg);
-+		ret = scsiback_drop_nexus(se_tpg);
- 		return (!ret) ? count : ret;
- 	}
- 	/*
-@@ -1776,7 +1783,7 @@ static void scsiback_drop_tpg(struct se_portal_group *se_tpg)
- 	/*
- 	 * Release the virtual I_T Nexus for this xen-pvscsi TPG
- 	 */
--	scsiback_drop_nexus(tpg);
-+	scsiback_drop_nexus(se_tpg);
- 	/*
- 	 * Deregister the se_tpg from TCM.
- 	 */
-@@ -1814,6 +1821,7 @@ static int scsiback_check_false(struct se_portal_group *se_tpg)
- 	.queue_status			= scsiback_queue_status,
- 	.queue_tm_rsp			= scsiback_queue_tm_rsp,
- 	.aborted_task			= scsiback_aborted_task,
-+	.close_session			= scsiback_close_session,
- 	/*
- 	 * Setup callers for generic logic in target_core_fabric_configfs.c
- 	 */
+ 		mutex_lock(&udev->cmdr_lock);
+-		idr_for_each(&udev->commands, tcmu_check_expired_cmd, NULL);
+ 
+-		tcmu_set_next_deadline(&udev->inflight_queue, &udev->cmd_timer);
++		/*
++		 * If cmd_time_out is disabled but qfull is set deadline
++		 * will only reflect the qfull timeout. Ignore it.
++		 */
++		if (udev->cmd_time_out) {
++			list_for_each_entry_safe(cmd, tmp_cmd,
++						 &udev->inflight_queue,
++						 queue_entry) {
++				tcmu_check_expired_ring_cmd(cmd);
++			}
++			tcmu_set_next_deadline(&udev->inflight_queue,
++					       &udev->cmd_timer);
++		}
++		list_for_each_entry_safe(cmd, tmp_cmd, &udev->qfull_queue,
++					 queue_entry) {
++			tcmu_check_expired_queue_cmd(cmd);
++		}
+ 		tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
+ 
+ 		mutex_unlock(&udev->cmdr_lock);
 -- 
-1.8.3.1
+2.25.1
