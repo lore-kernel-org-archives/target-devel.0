@@ -1,84 +1,93 @@
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Tue, 30 Jun 2020 10:47:02 +0000
-Subject: [RFC PATCH 1/8] scsi: target: Modify core_tmr_abort_task()
-Message-Id: <20200630104709.23066-2-bstroesser@ts.fujitsu.com>
+Date: Thu, 18 Jun 2020 13:03:00 +0000
+Subject: [PATCH 2/2] scsi: target: tcmu: Fix crash in tcmu_flush_dcache_range on ARM
+Message-Id: <20200618130300.31094-3-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
+References: <20200618130300.31094-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200618130300.31094-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Cc: JiangYu <lnsyyj@hotmail.com>, Daniel Meyerholt <dxm523@gmail.com>, Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-This patch modifies core_tmr_abort_task() to use same looping
-and locking scheme as core_tmr_drain_state_list() does.
+This patch fixes the following crash
+(see https://bugzilla.kernel.org/show_bug.cgi?id 8045)
 
-This frees the state_list element in se_cmd for later use
-by tmr notification handling.
+ Process iscsi_trx (pid: 7496, stack limit = 0x0000000010dd111a)
+ CPU: 0 PID: 7496 Comm: iscsi_trx Not tainted 4.19.118-0419118-generic
+        #202004230533
+ Hardware name: Greatwall QingTian DF720/F601, BIOS 601FBE20 Sep 26 2019
+ pstate: 80400005 (Nzcv daif +PAN -UAO)
+ pc : flush_dcache_page+0x18/0x40
+ lr : is_ring_space_avail+0x68/0x2f8 [target_core_user]
+ sp : ffff000015123a80
+ x29: ffff000015123a80 x28: 0000000000000000
+ x27: 0000000000001000 x26: ffff000023ea5000
+ x25: ffffcfa25bbe08b8 x24: 0000000000000078
+ x23: ffff7e0000000000 x22: ffff000023ea5001
+ x21: ffffcfa24b79c000 x20: 0000000000000fff
+ x19: ffff7e00008fa940 x18: 0000000000000000
+ x17: 0000000000000000 x16: ffff2d047e709138
+ x15: 0000000000000000 x14: 0000000000000000
+ x13: 0000000000000000 x12: ffff2d047fbd0a40
+ x11: 0000000000000000 x10: 0000000000000030
+ x9 : 0000000000000000 x8 : ffffc9a254820a00
+ x7 : 00000000000013b0 x6 : 000000000000003f
+ x5 : 0000000000000040 x4 : ffffcfa25bbe08e8
+ x3 : 0000000000001000 x2 : 0000000000000078
+ x1 : ffffcfa25bbe08b8 x0 : ffff2d040bc88a18
+ Call trace:
+  flush_dcache_page+0x18/0x40
+  is_ring_space_avail+0x68/0x2f8 [target_core_user]
+  queue_cmd_ring+0x1f8/0x680 [target_core_user]
+  tcmu_queue_cmd+0xe4/0x158 [target_core_user]
+  __target_execute_cmd+0x30/0xf0 [target_core_mod]
+  target_execute_cmd+0x294/0x390 [target_core_mod]
+  transport_generic_new_cmd+0x1e8/0x358 [target_core_mod]
+  transport_handle_cdb_direct+0x50/0xb0 [target_core_mod]
+  iscsit_execute_cmd+0x2b4/0x350 [iscsi_target_mod]
+  iscsit_sequence_cmd+0xd8/0x1d8 [iscsi_target_mod]
+  iscsit_process_scsi_cmd+0xac/0xf8 [iscsi_target_mod]
+  iscsit_get_rx_pdu+0x404/0xd00 [iscsi_target_mod]
+  iscsi_target_rx_thread+0xb8/0x130 [iscsi_target_mod]
+  kthread+0x130/0x138
+  ret_from_fork+0x10/0x18
+ Code: f9000bf3 aa0003f3 aa1e03e0 d503201f (f9400260)
+ ---[ end trace 1e451c73f4266776 ]---
 
-Note: __target_check_io_state() now is called with param 0
-instead of dev->dev_attrib.emulate_tas, because tas is not
-relevant since we always get ABRT on same session like the
-aborted command.
+The solution is based on patch:
+
+  "scsi: target: tcmu: Optimize use of flush_dcache_page"
+
+which restricts the use of tcmu_flush_dcache_range() to
+addresses from vmalloc'ed areas only.
+
+This patch now replaces the virt_to_page() call in
+tcmu_flush_dcache_range() - which is wrong for vmalloced addrs -
+by vmalloc_to_page().
+
+The patch was tested on ARM with kernel 4.19.118 and 5.7.2
 
 Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Tested-by: JiangYu <lnsyyj@hotmail.com>
+Tested-by: Daniel Meyerholt <dxm523@gmail.com>
 ---
- drivers/target/target_core_tmr.c | 22 ++++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
+ drivers/target/target_core_user.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
-index 89c84d472cd7..b65d7a0a5df1 100644
---- a/drivers/target/target_core_tmr.c
-+++ b/drivers/target/target_core_tmr.c
-@@ -116,14 +116,15 @@ void core_tmr_abort_task(
- 	struct se_tmr_req *tmr,
- 	struct se_session *se_sess)
- {
--	struct se_cmd *se_cmd;
-+	struct se_cmd *se_cmd, *next;
- 	unsigned long flags;
-+	bool rc;
- 	u64 ref_tag;
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index a65e9671ae7a..835d3001cb0e 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -601,7 +601,7 @@ static inline void tcmu_flush_dcache_range(void *vaddr, size_t size)
+ 	size = round_up(size+offset, PAGE_SIZE);
  
--	spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
--	list_for_each_entry(se_cmd, &se_sess->sess_cmd_list, se_cmd_list) {
-+	spin_lock_irqsave(&dev->execute_task_lock, flags);
-+	list_for_each_entry_safe(se_cmd, next, &dev->state_list, state_list) {
- 
--		if (dev != se_cmd->se_dev)
-+		if (se_sess != se_cmd->se_sess)
- 			continue;
- 
- 		/* skip task management functions, including tmr->task_cmd */
-@@ -137,11 +138,16 @@ void core_tmr_abort_task(
- 		printk("ABORT_TASK: Found referenced %s task_tag: %llu\n",
- 			se_cmd->se_tfo->fabric_name, ref_tag);
- 
--		if (!__target_check_io_state(se_cmd, se_sess,
--					     dev->dev_attrib.emulate_tas))
-+		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
-+		rc = __target_check_io_state(se_cmd, se_sess, 0);
-+		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
-+		if (!rc)
- 			continue;
- 
--		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
-+		list_del_init(&se_cmd->state_list);
-+		se_cmd->state_active = false;
-+
-+		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
- 
- 		/*
- 		 * Ensure that this ABORT request is visible to the LU RESET
-@@ -159,7 +165,7 @@ void core_tmr_abort_task(
- 		atomic_long_inc(&dev->aborts_complete);
- 		return;
+ 	while (size) {
+-		flush_dcache_page(virt_to_page(start));
++		flush_dcache_page(vmalloc_to_page(start));
+ 		start += PAGE_SIZE;
+ 		size -= PAGE_SIZE;
  	}
--	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
-+	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
- 
- 	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
- 			tmr->ref_task_tag);
 -- 
 2.12.3
