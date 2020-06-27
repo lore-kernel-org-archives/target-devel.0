@@ -1,35 +1,39 @@
-From: Claudia Beck <claudiabeck@pr-form.net>
-Date: Tue, 02 Jun 2020 12:33:32 +0000
-Subject: Guest post on your site
-Message-Id: <14856157.3759.1591101212448.JavaMail.Aword1@Lior>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----=_Part_1773_678569.1591081452029"
+From: lookman joe <mrlookmanjoe@gmail.com>
+Date: Sat, 27 Jun 2020 21:58:17 +0000
+Subject: 
+Message-Id: <CAG9X5Hfvk-fmbqs9+RtHRqyUu35f9-A5+EbwjPrw9eVNH09ftg@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-To: target-devel@vger.kernel.org
-
-------=_Part_1773_678569.1591081452029
-Content-Type: text/plain; charset=utf-8
+MIME-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
+To: linux-sctp@vger.kernel.org
 
-Hello,
+MONEY-GRAM TRANSFERRED PAYMENT INFO:
 
-My name is Claudia and I=E2=80=99m an account manager at PR-form.net
-I found your site http://linux-iscsi.org recently on the web and was=20
-impressed by its layout and content I feel that it could be suitable for my=
-=20
-client.
-We are interested in publishing an article (which I can supply) on=20
-your website,
-The article will have a link to my client's site in it. The link must=20
-be do follow and we can't have any disclaimers\advertising tags.
-Let me know if this is something you offer, and if so, what do you=20
-charge for it?
+Below is the sender=E2=80=99s information
 
-you charge for it?
 
-Best Regards,=20
 
-Claudia Beck
-Account Manager
-PR-form.net
-------=_Part_1773_678569.1591081452029--
+1. MG. REFERENCE NO#: 36360857
+
+2. SENDER'S NAME: Johnson Williams
+
+3. AMOUNT TO PICKUP: US$10,000
+
+
+
+Go to any Money Gram office near you and pick up the payment Track the
+
+Reference Number by visiting and click the link below
+
+(https://secure.moneygram.com/embed/track) and enter the Reference
+
+Number: 36360857 and the Last Name: Williams, you will find the payment
+
+available for pickup instantly.
+
+Yours Sincerely,
+
+Mrs. Helen Marvis
+United Nations Liaison Office
+Directorate for International Payments
