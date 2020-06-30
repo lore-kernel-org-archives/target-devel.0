@@ -1,58 +1,84 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Sun, 07 Jun 2020 20:35:55 +0000
-Subject: [PATCH 08/17] target: use tpt_id in target_stat_iport_port_ident_show
-Message-Id: <1591562164-9766-9-git-send-email-michael.christie@oracle.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Tue, 30 Jun 2020 10:47:02 +0000
+Subject: [RFC PATCH 1/8] scsi: target: Modify core_tmr_abort_task()
+Message-Id: <20200630104709.23066-2-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
+References: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-Use the tpt_id session id instead of sess_get_initiator_sid.
+This patch modifies core_tmr_abort_task() to use same looping
+and locking scheme as core_tmr_drain_state_list() does.
 
-Note that for userspace compat this patch continues the behavior:
+This frees the state_list element in se_cmd for later use
+by tmr notification handling.
 
-1. Still add the "+i+" even if there is no session_id.
-2. Use the acl initiatorname instead of the transportID port/addr/name.
+Note: __target_check_io_state() now is called with param 0
+instead of dev->dev_attrib.emulate_tas, because tas is not
+relevant since we always get ABRT on same session like the
+aborted command.
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
-Reviewed-by: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 ---
- drivers/target/target_core_stat.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/target/target_core_tmr.c | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
-index 237309d..3eb1b9b 100644
---- a/drivers/target/target_core_stat.c
-+++ b/drivers/target/target_core_stat.c
-@@ -1308,9 +1308,7 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
- 	struct se_lun_acl *lacl = iport_to_lacl(item);
- 	struct se_node_acl *nacl = lacl->se_lun_nacl;
- 	struct se_session *se_sess;
--	struct se_portal_group *tpg;
- 	ssize_t ret;
--	unsigned char buf[64];
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index 89c84d472cd7..b65d7a0a5df1 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -116,14 +116,15 @@ void core_tmr_abort_task(
+ 	struct se_tmr_req *tmr,
+ 	struct se_session *se_sess)
+ {
+-	struct se_cmd *se_cmd;
++	struct se_cmd *se_cmd, *next;
+ 	unsigned long flags;
++	bool rc;
+ 	u64 ref_tag;
  
- 	spin_lock_irq(&nacl->nacl_sess_lock);
- 	se_sess = nacl->nacl_sess;
-@@ -1319,13 +1317,9 @@ static ssize_t target_stat_iport_port_ident_show(struct config_item *item,
- 		return -ENODEV;
+-	spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
+-	list_for_each_entry(se_cmd, &se_sess->sess_cmd_list, se_cmd_list) {
++	spin_lock_irqsave(&dev->execute_task_lock, flags);
++	list_for_each_entry_safe(se_cmd, next, &dev->state_list, state_list) {
+ 
+-		if (dev != se_cmd->se_dev)
++		if (se_sess != se_cmd->se_sess)
+ 			continue;
+ 
+ 		/* skip task management functions, including tmr->task_cmd */
+@@ -137,11 +138,16 @@ void core_tmr_abort_task(
+ 		printk("ABORT_TASK: Found referenced %s task_tag: %llu\n",
+ 			se_cmd->se_tfo->fabric_name, ref_tag);
+ 
+-		if (!__target_check_io_state(se_cmd, se_sess,
+-					     dev->dev_attrib.emulate_tas))
++		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
++		rc = __target_check_io_state(se_cmd, se_sess, 0);
++		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
++		if (!rc)
+ 			continue;
+ 
+-		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
++		list_del_init(&se_cmd->state_list);
++		se_cmd->state_active = false;
++
++		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+ 
+ 		/*
+ 		 * Ensure that this ABORT request is visible to the LU RESET
+@@ -159,7 +165,7 @@ void core_tmr_abort_task(
+ 		atomic_long_inc(&dev->aborts_complete);
+ 		return;
  	}
+-	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
++	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
  
--	tpg = nacl->se_tpg;
--	/* scsiAttIntrPortName+scsiAttIntrPortIdentifier */
--	memset(buf, 0, 64);
--	if (tpg->se_tpg_tfo->sess_get_initiator_sid != NULL)
--		tpg->se_tpg_tfo->sess_get_initiator_sid(se_sess, buf, 64);
--
--	ret = snprintf(page, PAGE_SIZE, "%s+i+%s\n", nacl->initiatorname, buf);
-+	ret = snprintf(page, PAGE_SIZE, "%s+i+%s\n", nacl->initiatorname,
-+		       se_sess->tpt_id->session_id ? se_sess->tpt_id->session_id :
-+		       "");
- 	spin_unlock_irq(&nacl->nacl_sess_lock);
- 	return ret;
- }
+ 	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
+ 			tmr->ref_task_tag);
 -- 
-1.8.3.1
+2.12.3
