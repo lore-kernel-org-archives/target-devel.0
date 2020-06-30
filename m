@@ -1,53 +1,123 @@
-From: Hannes Reinecke <hare@suse.de>
-Date: Mon, 08 Jun 2020 06:21:46 +0000
-Subject: Re: [PATCH 17/17] target: drop sess_get_index
-Message-Id: <0f369872-ebd0-9df8-49a5-c7fe15d2a4b4@suse.de>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Tue, 30 Jun 2020 16:49:01 +0000
+Subject: [RFC] scsi: target: tcmu: running 32bit userspace on 64bit kernel
+Message-Id: <364c13da-6d4f-c28b-36b3-082db8c3de58@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591562164-9766-1-git-send-email-michael.christie@oracle.com>
- <1591562164-9766-18-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1591562164-9766-18-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Mike Christie <michael.christie@oracle.com>, bvanassche@acm.org, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-On 6/7/20 10:36 PM, Mike Christie wrote:
-> Use the LIO session id for the scsiAttIntrPortIndex. iSCSI was
-> already using this value and the other drivers used hard coded
-> values of 1 or 0. The SCSI-MIB specs says:
-> 
-> This object represents an arbitrary integer used to uniquely
-> identify a particular attached remote initiator port to a
-> particular SCSI target port within a particular SCSI target device
-> within a particular SCSI instance.
-> 
-> So the lio session sid can be used.
-> 
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> ---
->   drivers/infiniband/ulp/srpt/ib_srpt.c        | 15 ---------------
->   drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c     |  6 ------
->   drivers/scsi/qla2xxx/tcm_qla2xxx.c           |  7 -------
->   drivers/target/iscsi/iscsi_target_configfs.c |  6 ------
->   drivers/target/loopback/tcm_loop.c           |  6 ------
->   drivers/target/sbp/sbp_target.c              |  6 ------
->   drivers/target/target_core_configfs.c        |  4 ----
->   drivers/target/target_core_stat.c            |  5 +----
->   drivers/target/tcm_fc/tfc_conf.c             |  1 -
->   drivers/target/tcm_fc/tfc_sess.c             |  7 -------
->   drivers/usb/gadget/function/f_tcm.c          |  6 ------
->   drivers/vhost/scsi.c                         |  6 ------
->   drivers/xen/xen-scsiback.c                   |  6 ------
->   include/target/target_core_fabric.h          |  1 -
->   14 files changed, 1 insertion(+), 81 deletions(-)
-> 
-Reviewed-by: Hannes Reinecke <hare@suse.de>
+Hi,
 
-Cheers,
+When using tcmu it might happen, that userspace application cannot be
+built as 64 bit program even on a 64 bit host due to existing 32 bit
+libraries that must be used, e.g. for compression, encryption,
+deduplication, ...
 
-Hannes
--- 
-Dr. Hannes Reinecke            Teamlead Storage & Networking
-hare@suse.de                               +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
+Currently this only works with manual changes in userspace include
+file target_core_user.h due to a missing padding field in
+struct tcmu_cmd_entry.
+
+Here are field offsets printed by a small program on a 64 bit host,
+compiled as 64 bit program and as 32 bit:
+
+Devel:~ # gcc -o print_offsets print_offsets.c
+Devel:~ # ./print_offsets
+Offset of tcmu_cmd_entry.hdr.len_op          = 0000
+Offset of tcmu_cmd_entry.hdr.cmd_id          = 0004
+Offset of tcmu_cmd_entry.hdr.kflags          = 0006
+Offset of tcmu_cmd_entry.hdr.uflags          = 0007
+
+Offset of tcmu_cmd_entry.req.iov_cnt         = 0008
+Offset of tcmu_cmd_entry.req.iov_bidi_cnt    = 000c
+Offset of tcmu_cmd_entry.req.iov_dif_cnt     = 0010
+Offset of tcmu_cmd_entry.req.cdb_off         = 0018
+Offset of tcmu_cmd_entry.req.iov[0]          = 0030
+
+Offset of tcmu_cmd_entry.rsp.scsi_status     = 0008
+Offset of tcmu_cmd_entry.rsp.read_len        = 000c
+Offset of tcmu_cmd_entry.rsp.sense_buffer[0] = 0010
+
+Size of struct tcmu_cmd_entry = 0070
+
+
+Devel:~ # gcc -m32 -o print_offsets print_offsets.c
+Devel:~ # ./print_offsets
+Offset of tcmu_cmd_entry.hdr.len_op          = 0000
+Offset of tcmu_cmd_entry.hdr.cmd_id          = 0004
+Offset of tcmu_cmd_entry.hdr.kflags          = 0006
+Offset of tcmu_cmd_entry.hdr.uflags          = 0007
+
+Offset of tcmu_cmd_entry.req.iov_cnt         = 0008
+Offset of tcmu_cmd_entry.req.iov_bidi_cnt    = 000c
+Offset of tcmu_cmd_entry.req.iov_dif_cnt     = 0010
+Offset of tcmu_cmd_entry.req.cdb_off         = 0014
+Offset of tcmu_cmd_entry.req.iov[0]          = 002c
+
+Offset of tcmu_cmd_entry.rsp.scsi_status     = 0008
+Offset of tcmu_cmd_entry.rsp.read_len        = 000c
+Offset of tcmu_cmd_entry.rsp.sense_buffer[0] = 0010
+
+Size of struct tcmu_cmd_entry = 0070
+
+
+The offset of the fields req.cdb_off and req.iov differ for 64-bit
+and 32-bit compilation.
+
+That means:
+ - 64-bit application on 64-bit host works well
+ - 32-bit application on 32-bit host works well
+ - 32-bit application on 64-bit host fails.
+
+Unfortunately I don't see a way to fix this problem such, that
+32-bit application runs fine on 32-bit and 64-bit host without
+breaking compatibility.
+
+So I'm wondering whether the following change would be a viable
+solution:
+
+diff --git a/include/uapi/linux/target_core_user.h b/include/uapi/linux/target_core_user.h
+--- a/include/uapi/linux/target_core_user.h
++++ b/include/uapi/linux/target_core_user.h
+@@ -114,6 +114,9 @@ struct tcmu_cmd_entry {
+ 			__u32 iov_cnt;
+ 			__u32 iov_bidi_cnt;
+ 			__u32 iov_dif_cnt;
++#ifdef APPL32BIT_ON_KERNEL64BIT
++			__u32 __pad9;
++#endif
+ 			__u64 cdb_off;
+ 			__u64 __pad1;
+ 			__u64 __pad2;
+
+
+Using this change we can do:
+
+Devel:~ # gcc -m32 -DAPPL32BIT_ON_KERNEL64BIT -o print_offsets print_offsets.c
+Devel:~ # ./print_offsets
+Offset of tcmu_cmd_entry.hdr.len_op          = 0000
+Offset of tcmu_cmd_entry.hdr.cmd_id          = 0004
+Offset of tcmu_cmd_entry.hdr.kflags          = 0006
+Offset of tcmu_cmd_entry.hdr.uflags          = 0007
+
+Offset of tcmu_cmd_entry.req.iov_cnt         = 0008
+Offset of tcmu_cmd_entry.req.iov_bidi_cnt    = 000c
+Offset of tcmu_cmd_entry.req.iov_dif_cnt     = 0010
+Offset of tcmu_cmd_entry.req.cdb_off         = 0018
+Offset of tcmu_cmd_entry.req.iov[0]          = 0030
+
+Offset of tcmu_cmd_entry.rsp.scsi_status     = 0008
+Offset of tcmu_cmd_entry.rsp.read_len        = 000c
+Offset of tcmu_cmd_entry.rsp.sense_buffer[0] = 0010
+
+Size of struct tcmu_cmd_entry = 0070
+
+
+So we can compile a 32-bit application that works on 64-bit kernel without
+need to manipulate the include file prepared by the kernel.
+
+What do you think? Do you know a better solution?
+
+Thank you,
+Bodo
