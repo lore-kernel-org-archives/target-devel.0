@@ -1,54 +1,29 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 18 Jun 2020 01:21:27 +0000
-Subject: [PATCH AUTOSEL 4.19 121/172] scsi: target: tcmu: Fix a use after free in tcmu_check_expired_queue_cm
-Message-Id: <20200618012218.607130-121-sashal@kernel.org>
+From: charles jackson <lisa.petel@sd73.bc.ca>
+Date: Tue, 30 Jun 2020 07:40:46 +0000
+Subject: =?UTF-8?Q?=5BPossible_Spam=5D_Covid?= =?UTF-8?Q?_19_Wohlt=C3=A4tigkeitsfon?= =?UTF-8?Q?ds?=
+Message-Id: <767049656.67031506.1593502846147.JavaMail.zimbra@zimbra.sd73.bc.ca>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200618012218.607130-1-sashal@kernel.org>
-In-Reply-To: <20200618012218.607130-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Dan Carpenter <dan.carpenter@oracle.com>, Mike Christie <mchristi@redhat.com>, David Disseldorp <ddiss@suse.de>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
 
-[ Upstream commit 9d7464b18892332e35ff37f0b024429a1a9835e6 ]
 
-The pr_debug() dereferences "cmd" after we already freed it by calling
-tcmu_free_cmd(cmd).  The debug printk needs to be done earlier.
-
-Link: https://lore.kernel.org/r/20200523101129.GB98132@mwanda
-Fixes: 61fb24822166 ("scsi: target: tcmu: Userspace must not complete queued commands")
-Reviewed-by: Mike Christie <mchristi@redhat.com>
-Reviewed-by: David Disseldorp <ddiss@suse.de>
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/target_core_user.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index ac523f247a9c..8da89925a874 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1303,13 +1303,13 @@ static void tcmu_check_expired_queue_cmd(struct tcmu_cmd *cmd)
- 	if (!time_after(jiffies, cmd->deadline))
- 		return;
- 
-+	pr_debug("Timing out queued cmd %p on dev %s.\n",
-+		  cmd, cmd->tcmu_dev->name);
-+
- 	list_del_init(&cmd->queue_entry);
- 	se_cmd = cmd->se_cmd;
- 	tcmu_free_cmd(cmd);
- 
--	pr_debug("Timing out queued cmd %p on dev %s.\n",
--		  cmd, cmd->tcmu_dev->name);
--
- 	target_complete_cmd(se_cmd, SAM_STAT_TASK_SET_FULL);
- }
- 
 -- 
-2.25.1
+Hallo
+ 
+ Ich bin Charles W. Jackson aus North Carolina, Vereinigte Staaten von Amerika, und ich bin der Gewinner des Mega-Millionen-Jackpots von 344 Millionen US-Dollar. Ich spende die Summe von 2.000.000 Millionen Euro als Teil der Hilfsgelder f&uuml;r das Corona-Virus.
+ 
+ Dies ist Ihr Spendencode: [CJ530342019]
+ 
+ www.youtube.com/watch?v=BSr8myiLPMQ
+ 
+ Bitte antworten Sie auf diese E-Mail mit dem SPENDERCODE:
+ 
+ charlesjacksonjr001@gmail.com
+ 
+ Ich hoffe, dass Sie und Ihre Familie dies durchkommen
+ 
+ 
+ Herr Charles Jackson
