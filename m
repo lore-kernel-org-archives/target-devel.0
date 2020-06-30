@@ -1,102 +1,122 @@
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Thu, 18 Jun 2020 13:02:59 +0000
-Subject: [PATCH 1/2] scsi: target: tcmu: Optimize use of flush_dcache_page
-Message-Id: <20200618130300.31094-2-bstroesser@ts.fujitsu.com>
+Date: Tue, 30 Jun 2020 10:47:03 +0000
+Subject: [RFC PATCH 2/8] scsi: target: Add tmr_notify backend function
+Message-Id: <20200630104709.23066-3-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200618130300.31094-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200618130300.31094-1-bstroesser@ts.fujitsu.com>
+References: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: JiangYu <lnsyyj@hotmail.com>, Daniel Meyerholt <dxm523@gmail.com>, Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-(scatter|gather)_data_area() need to flush dcache after
-writing data to or before reading data from a page in
-uio data area.
-The two routines are able to handle data transfer to/from
-such a page in fragments and flush the cache after each
-fragment was copied by calling the wrapper
-tcmu_flush_dcache_range().
-
-That means:
-1) flush_dcache_page() can be called multiple times for
-   the same page.
-2) Calling flush_dcache_page() indirectly using the
-   wrapper does not make sense, because each call of the
-   wrapper is for one single page only and the calling
-   routine already has the correct page pointer.
-
-Therefore I changed (scatter|gather)_data_area() such,
-that instead of calling tcmu_flush_dcache_range()
-before/after each memcpy, it now calls flush_dcache_page()
-before unmapping a page (when writing is complete for
-that page) or after mapping a page (when starting to read
-the page).
-
-After this change only calls to tcmu_flush_dcache_range()
-for addresses in vmalloc'ed command ring are left over.
-This is a good preparation for the second patch of the series.
-
-The patch was tested on ARM with kernel 4.19.118 and 5.7.2
+Target core is modified to call an optional backend
+callback function if a TMR is received or commands
+are aborted implicitly after a PR command was received.
+The backend function takes as parameters the se_dev, the
+type of the TMR, and the list of aborted commands.
+If no commands were aborted, an empty list is supplied.
 
 Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Tested-by: JiangYu <lnsyyj@hotmail.com>
-Tested-by: Daniel Meyerholt <dxm523@gmail.com>
 ---
- drivers/target/target_core_user.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/target/target_core_tmr.c       | 16 +++++++++++++++-
+ drivers/target/target_core_transport.c |  1 +
+ include/target/target_core_backend.h   |  2 ++
+ include/target/target_core_base.h      |  1 +
+ 4 files changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 560bfec933bc..a65e9671ae7a 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -676,8 +676,10 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 		from = kmap_atomic(sg_page(sg)) + sg->offset;
- 		while (sg_remaining > 0) {
- 			if (block_remaining = 0) {
--				if (to)
-+				if (to) {
-+					flush_dcache_page(page);
- 					kunmap_atomic(to);
-+				}
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index b65d7a0a5df1..39d93357db65 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -116,6 +116,7 @@ void core_tmr_abort_task(
+ 	struct se_tmr_req *tmr,
+ 	struct se_session *se_sess)
+ {
++	LIST_HEAD(aborted_list);
+ 	struct se_cmd *se_cmd, *next;
+ 	unsigned long flags;
+ 	bool rc;
+@@ -144,7 +145,7 @@ void core_tmr_abort_task(
+ 		if (!rc)
+ 			continue;
  
- 				block_remaining = DATA_BLOCK_SIZE;
- 				dbi = tcmu_cmd_get_dbi(tcmu_cmd);
-@@ -722,7 +724,6 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 				memcpy(to + offset,
- 				       from + sg->length - sg_remaining,
- 				       copy_bytes);
--				tcmu_flush_dcache_range(to, copy_bytes);
- 			}
+-		list_del_init(&se_cmd->state_list);
++		list_move_tail(&se_cmd->state_list, &aborted_list);
+ 		se_cmd->state_active = false;
  
- 			sg_remaining -= copy_bytes;
-@@ -731,8 +732,10 @@ static void scatter_data_area(struct tcmu_dev *udev,
- 		kunmap_atomic(from - sg->offset);
+ 		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+@@ -157,6 +158,11 @@ void core_tmr_abort_task(
+ 			WARN_ON_ONCE(transport_lookup_tmr_lun(tmr->task_cmd) <
+ 					0);
+ 
++		if (dev->transport->tmr_notify)
++			dev->transport->tmr_notify(dev, TMR_ABORT_TASK,
++						   &aborted_list);
++
++		list_del_init(&se_cmd->state_list);
+ 		target_put_cmd_and_wait(se_cmd);
+ 
+ 		printk("ABORT_TASK: Sending TMR_FUNCTION_COMPLETE for"
+@@ -167,6 +173,9 @@ void core_tmr_abort_task(
  	}
+ 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
  
--	if (to)
-+	if (to) {
-+		flush_dcache_page(page);
- 		kunmap_atomic(to);
-+	}
- }
++	if (dev->transport->tmr_notify)
++		dev->transport->tmr_notify(dev, TMR_ABORT_TASK, &aborted_list);
++
+ 	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
+ 			tmr->ref_task_tag);
+ 	tmr->response = TMR_TASK_DOES_NOT_EXIST;
+@@ -318,6 +327,11 @@ static void core_tmr_drain_state_list(
+ 	}
+ 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
  
- static void gather_data_area(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
-@@ -778,13 +781,13 @@ static void gather_data_area(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
- 				dbi = tcmu_cmd_get_dbi(cmd);
- 				page = tcmu_get_block_page(udev, dbi);
- 				from = kmap_atomic(page);
-+				flush_dcache_page(page);
- 			}
- 			copy_bytes = min_t(size_t, sg_remaining,
- 					block_remaining);
- 			if (read_len < copy_bytes)
- 				copy_bytes = read_len;
- 			offset = DATA_BLOCK_SIZE - block_remaining;
--			tcmu_flush_dcache_range(from, copy_bytes);
- 			memcpy(to + sg->length - sg_remaining, from + offset,
- 					copy_bytes);
++	if (dev->transport->tmr_notify)
++		dev->transport->tmr_notify(dev, preempt_and_abort_list ?
++					   TMR_LUN_RESET_PRO : TMR_LUN_RESET,
++					   &drain_task_list);
++
+ 	while (!list_empty(&drain_task_list)) {
+ 		cmd = list_entry(drain_task_list.next, struct se_cmd, state_list);
+ 		list_del_init(&cmd->state_list);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 90ecdd706a01..5834679c1b29 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -2941,6 +2941,7 @@ static const char *target_tmf_name(enum tcm_tmreq_table tmf)
+ 	case TMR_LUN_RESET:		return "LUN_RESET";
+ 	case TMR_TARGET_WARM_RESET:	return "TARGET_WARM_RESET";
+ 	case TMR_TARGET_COLD_RESET:	return "TARGET_COLD_RESET";
++	case TMR_LUN_RESET_PRO:		return "LUN_RESET_PRO";
+ 	case TMR_UNKNOWN:		break;
+ 	}
+ 	return "(?)";
+diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
+index f51452e3b984..6336780d83a7 100644
+--- a/include/target/target_core_backend.h
++++ b/include/target/target_core_backend.h
+@@ -40,6 +40,8 @@ struct target_backend_ops {
+ 	ssize_t (*show_configfs_dev_params)(struct se_device *, char *);
+ 
+ 	sense_reason_t (*parse_cdb)(struct se_cmd *cmd);
++	void (*tmr_notify)(struct se_device *se_dev, enum tcm_tmreq_table,
++			   struct list_head *aborted_cmds);
+ 	u32 (*get_device_type)(struct se_device *);
+ 	sector_t (*get_blocks)(struct se_device *);
+ 	sector_t (*get_alignment_offset_lbas)(struct se_device *);
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 18c3f277b770..549947d407cf 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -207,6 +207,7 @@ enum tcm_tmreq_table {
+ 	TMR_LUN_RESET		= 5,
+ 	TMR_TARGET_WARM_RESET	= 6,
+ 	TMR_TARGET_COLD_RESET	= 7,
++	TMR_LUN_RESET_PRO	= 0x80,
+ 	TMR_UNKNOWN		= 0xff,
+ };
  
 -- 
 2.12.3
