@@ -1,96 +1,48 @@
-From: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
-Date: Sun, 07 Jun 2020 19:58:33 +0000
-Subject: [PATCH v4 4/4] target: rename target_setup_cmd_from_cdb() to target_cmd_parse_cdb()
-Message-Id: <1591559913-8388-5-git-send-email-sudhakar.panneerselvam@oracle.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Tue, 30 Jun 2020 10:47:05 +0000
+Subject: [RFC PATCH 4/8] scsi: target: tcmu: Do not queue aborted commands
+Message-Id: <20200630104709.23066-5-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
-In-Reply-To: <1591559913-8388-1-git-send-email-sudhakar.panneerselvam@oracle.com>
+References: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200630104709.23066-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, michael.christie@oracle.com, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: shirley.ma@oracle.com
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-This commit also removes the unused argument, cdb that was passed
-to this function.
+If tcmu receives an already aborted command, tcmu_queue_cmd()
+should reject it.
 
-Signed-off-by: Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 ---
- drivers/target/iscsi/iscsi_target.c    | 2 +-
- drivers/target/target_core_transport.c | 6 +++---
- drivers/target/target_core_xcopy.c     | 2 +-
- include/target/target_core_fabric.h    | 2 +-
- 4 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/target/target_core_user.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 93534dcc66c9..c9689610e186 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1183,7 +1183,7 @@ int iscsit_setup_scsi_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index c900e3dd25aa..be95518a31dd 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1103,8 +1103,8 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
+ 	struct se_device *se_dev = se_cmd->se_dev;
+ 	struct tcmu_dev *udev = TCMU_DEV(se_dev);
+ 	struct tcmu_cmd *tcmu_cmd;
+-	sense_reason_t scsi_ret;
+-	int ret;
++	sense_reason_t scsi_ret = TCM_CHECK_CONDITION_ABORT_CMD;
++	int ret = -1;
  
- 	/* only used for printks or comparing with ->ref_task_tag */
- 	cmd->se_cmd.tag = (__force u32)cmd->init_task_tag;
--	cmd->sense_reason = target_setup_cmd_from_cdb(&cmd->se_cmd, hdr->cdb);
-+	cmd->sense_reason = target_cmd_parse_cdb(&cmd->se_cmd);
- 	if (cmd->sense_reason)
- 		goto attach_cmd;
+ 	tcmu_cmd = tcmu_alloc_cmd(se_cmd);
+ 	if (!tcmu_cmd)
+@@ -1112,7 +1112,8 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
  
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 0fbb38254535..229407d81613 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1464,7 +1464,7 @@ void transport_init_se_cmd(
- EXPORT_SYMBOL(target_cmd_init_cdb);
- 
- sense_reason_t
--target_setup_cmd_from_cdb(struct se_cmd *cmd, unsigned char *cdb)
-+target_cmd_parse_cdb(struct se_cmd *cmd)
- {
- 	struct se_device *dev = cmd->se_dev;
- 	sense_reason_t ret;
-@@ -1486,7 +1486,7 @@ void transport_init_se_cmd(
- 	atomic_long_inc(&cmd->se_lun->lun_stats.cmd_pdus);
- 	return 0;
- }
--EXPORT_SYMBOL(target_setup_cmd_from_cdb);
-+EXPORT_SYMBOL(target_cmd_parse_cdb);
- 
- /*
-  * Used by fabric module frontends to queue tasks directly.
-@@ -1650,7 +1650,7 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
- 		return 0;
- 	}
- 
--	rc = target_setup_cmd_from_cdb(se_cmd, cdb);
-+	rc = target_cmd_parse_cdb(se_cmd);
- 	if (rc != 0) {
- 		transport_generic_request_failure(se_cmd, rc);
- 		return 0;
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index 7f9c93b5cba6..0d00ccbeb050 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -530,7 +530,7 @@ static int target_xcopy_setup_pt_cmd(
- 		return -EINVAL;
- 
- 	cmd->tag = 0;
--	if (target_setup_cmd_from_cdb(cmd, cdb))
-+	if (target_cmd_parse_cdb(cmd))
- 		return -EINVAL;
- 
- 	if (transport_generic_map_mem_to_cmd(cmd, xop->xop_data_sg,
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index 92f6cb20775e..6adf4d71acf6 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -153,7 +153,7 @@ void	transport_init_se_cmd(struct se_cmd *,
- 		struct se_session *, u32, int, int, unsigned char *, u64);
- sense_reason_t transport_lookup_cmd_lun(struct se_cmd *);
- sense_reason_t target_cmd_init_cdb(struct se_cmd *, unsigned char *);
--sense_reason_t target_setup_cmd_from_cdb(struct se_cmd *, unsigned char *);
-+sense_reason_t target_cmd_parse_cdb(struct se_cmd *);
- int	target_submit_cmd_map_sgls(struct se_cmd *, struct se_session *,
- 		unsigned char *, unsigned char *, u64, u32, int, int, int,
- 		struct scatterlist *, u32, struct scatterlist *, u32,
+ 	mutex_lock(&udev->cmdr_lock);
+ 	se_cmd->priv = tcmu_cmd;
+-	ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
++	if (!(se_cmd->transport_state & CMD_T_ABORTED))
++		ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
+ 	if (ret < 0)
+ 		tcmu_free_cmd(tcmu_cmd);
+ 	mutex_unlock(&udev->cmdr_lock);
 -- 
-1.8.3.1
+2.12.3
