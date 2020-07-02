@@ -1,68 +1,90 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Sun, 26 Jul 2020 15:35:05 +0000
-Subject: [PATCH v3 3/8] scsi: target: tcmu: Use priv pointer in se_cmd
-Message-Id: <20200726153510.13077-4-bstroesser@ts.fujitsu.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 02 Jul 2020 01:43:23 +0000
+Subject: [PATCH 7/7] target: handle short iSIDs
+Message-Id: <1593654203-12442-8-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
+References: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: martin.petersen@oracle.com, bstroesser@ts.fujitsu.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-We initialize and clean up the se_cmd's priv pointer
-under cmd_ring_lock to point to the corresponding tcmu_cmd.
+SPC4 has:
 
-In the patch that implements tmr_notify callback in
-tcmu we will use the priv pointer.
+The first ISCSI INITIATOR SESSION ID field byte containing an ASCII
+null character terminates the ISCSI INITIATOR SESSION ID field without
+regard for the specified length of the iSCSI TransportID or the contents
+of the ADDITIONAL LENGTH field.
+----------------------------------------
 
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+which sounds like we can get an iSID shorter than 12 chars. SPC and
+the iSCSI RFC do not say how to handle that case other than just
+cutting off the iSID. This patch just makes sure that if we get an
+iSID like that, we only copy/send that string.
+
+There is no OS that does this right now, so there was no test case.
+I did test with sg utils to check it works as expected and nothing
+breaks.
+
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/target/target_core_user.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/target/target_core_fabric_lib.c | 21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 366878b0b2fd..b06b18d1b135 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -541,6 +541,8 @@ tcmu_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
- 
- static inline void tcmu_free_cmd(struct tcmu_cmd *tcmu_cmd)
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index 1d2762a..6600ae4 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -132,6 +132,7 @@ static int iscsi_get_pr_transport_id(
+ 	unsigned char *buf)
  {
-+	if (tcmu_cmd->se_cmd)
-+		tcmu_cmd->se_cmd->priv = NULL;
- 	kfree(tcmu_cmd->dbi);
- 	kmem_cache_free(tcmu_cmd_cache, tcmu_cmd);
- }
-@@ -1109,10 +1111,11 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
- 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+ 	u32 off = 4, padding = 0;
++	int isid_len;
+ 	u16 len = 0;
  
- 	mutex_lock(&udev->cmdr_lock);
-+	se_cmd->priv = tcmu_cmd;
- 	ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
--	mutex_unlock(&udev->cmdr_lock);
- 	if (ret < 0)
- 		tcmu_free_cmd(tcmu_cmd);
-+	mutex_unlock(&udev->cmdr_lock);
- 	return scsi_ret;
- }
+ 	spin_lock_irq(&se_nacl->nacl_sess_lock);
+@@ -184,11 +185,11 @@ static int iscsi_get_pr_transport_id(
+ 		buf[off++] = 0x2c; /* ASCII Character: "," */
+ 		buf[off++] = 0x30; /* ASCII Character: "0" */
+ 		buf[off++] = 0x78; /* ASCII Character: "x" */
++		len += 5;
  
-@@ -1179,7 +1182,6 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
- 		target_complete_cmd(cmd->se_cmd, entry->rsp.scsi_status);
- 
- out:
--	cmd->se_cmd = NULL;
- 	tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
- 	tcmu_free_cmd(cmd);
- }
-@@ -1285,6 +1287,7 @@ static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
- 	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
- 	list_del_init(&cmd->queue_entry);
- 	se_cmd = cmd->se_cmd;
-+	se_cmd->priv = NULL;
- 	cmd->se_cmd = NULL;
- 
- 	pr_debug("Timing out inflight cmd %u on dev %s.\n",
+-		memcpy(buf + off, pr_reg->pr_reg_isid, 12);
+-		off += 12;
+-
+-		len += 17;
++		isid_len = sprintf(buf + off, "%s", pr_reg->pr_reg_isid);
++		off += isid_len;
++		len += isid_len;
+ 	}
+ 	buf[off] = '\0';
+ 	len += 1;
+@@ -234,7 +235,7 @@ static int iscsi_get_pr_transport_id_len(
+ 	 */
+ 	if (pr_reg->isid_present_at_reg) {
+ 		len += 5; /* For ",i,0x" ASCII separator */
+-		len += 12; /* For iSCSI Initiator Session ID */
++		len += strlen(pr_reg->pr_reg_isid);
+ 		*format_code = 1;
+ 	} else
+ 		*format_code = 0;
+@@ -318,6 +319,16 @@ static char *iscsi_parse_pr_out_transport_id(
+ 		 * iscsi_target.c:lio_sess_get_initiator_sid()
+ 		 */
+ 		for (i = 0; i < 12; i++) {
++			/*
++			 * The first ISCSI INITIATOR SESSION ID field byte
++			 * containing an ASCII null character terminates the
++			 * ISCSI INITIATOR SESSION ID field without regard for
++			 * the specified length of the iSCSI TransportID or the
++			 * contents of the ADDITIONAL LENGTH field.
++			 */
++			if (*p = '\0')
++				break;
++
+ 			if (isdigit(*p)) {
+ 				p++;
+ 				continue;
 -- 
-2.12.3
+1.8.3.1
