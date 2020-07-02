@@ -1,122 +1,73 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Sun, 26 Jul 2020 15:35:04 +0000
-Subject: [PATCH v3 2/8] scsi: target: Add tmr_notify backend function
-Message-Id: <20200726153510.13077-3-bstroesser@ts.fujitsu.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 02 Jul 2020 01:43:17 +0000
+Subject: [PATCH 1/7] target: check enforce_pr_isids during registration
+Message-Id: <1593654203-12442-2-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
+References: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: martin.petersen@oracle.com, bstroesser@ts.fujitsu.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Target core is modified to call an optional backend
-callback function if a TMR is received or commands
-are aborted implicitly after a PR command was received.
-The backend function takes as parameters the se_dev, the
-type of the TMR, and the list of aborted commands.
-If no commands were aborted, an empty list is supplied.
+Move the check for enforce_pr_isids to the registration code where we
+can fail at the time an initiator tries to register a path without an
+isid. In its current place in __core_scsi3_locate_pr_reg, it is too
+late because it can be registered and be reported in PR in commands and
+it is stuck in this state because we cannot unregister it.
 
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Reviewed-by: Hannes Reinecke <hare@suse.de>
+Reviewed-by: Lee Duncan <lduncan@suse.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/target/target_core_tmr.c       | 16 +++++++++++++++-
- drivers/target/target_core_transport.c |  1 +
- include/target/target_core_backend.h   |  2 ++
- include/target/target_core_base.h      |  1 +
- 4 files changed, 19 insertions(+), 1 deletion(-)
+ drivers/target/target_core_pr.c | 24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
-index 73c4155f3c1e..e4513ef09159 100644
---- a/drivers/target/target_core_tmr.c
-+++ b/drivers/target/target_core_tmr.c
-@@ -116,6 +116,7 @@ void core_tmr_abort_task(
- 	struct se_tmr_req *tmr,
- 	struct se_session *se_sess)
- {
-+	LIST_HEAD(aborted_list);
- 	struct se_cmd *se_cmd, *next;
- 	unsigned long flags;
- 	bool rc;
-@@ -144,7 +145,7 @@ void core_tmr_abort_task(
- 		if (!rc)
- 			continue;
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index 91e41cc..293f518 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -1176,15 +1176,6 @@ static struct t10_pr_registration *__core_scsi3_locate_pr_reg(
+ 		 * ISID, then we have found a match.
+ 		 */
+ 		if (!pr_reg->isid_present_at_reg) {
+-			/*
+-			 * Determine if this SCSI device server requires that
+-			 * SCSI Intiatior TransportID w/ ISIDs is enforced
+-			 * for fabric modules (iSCSI) requiring them.
+-			 */
+-			if (tpg->se_tpg_tfo->sess_get_initiator_sid != NULL) {
+-				if (dev->dev_attrib.enforce_pr_isids)
+-					continue;
+-			}
+ 			atomic_inc_mb(&pr_reg->pr_res_holders);
+ 			spin_unlock(&pr_tmpl->registration_lock);
+ 			return pr_reg;
+@@ -1591,10 +1582,25 @@ static void core_scsi3_lunacl_undepend_item(struct se_dev_entry *se_deve)
+ 				continue;
+ 			dest_rtpi = tmp_lun->lun_rtpi;
  
--		list_del_init(&se_cmd->state_list);
-+		list_move_tail(&se_cmd->state_list, &aborted_list);
- 		se_cmd->state_active = false;
++			iport_ptr = NULL;
+ 			i_str = target_parse_pr_out_transport_id(tmp_tpg,
+ 					ptr, &tid_len, &iport_ptr);
+ 			if (!i_str)
+ 				continue;
++			/*
++			 * Determine if this SCSI device server requires that
++			 * SCSI Intiatior TransportID w/ ISIDs is enforced
++			 * for fabric modules (iSCSI) requiring them.
++			 */
++			if (tpg->se_tpg_tfo->sess_get_initiator_sid &&
++                            dev->dev_attrib.enforce_pr_isids &&
++			    !iport_ptr) {
++				pr_warn("SPC-PR: enforce_pr_isids is set but a isid has not been sent in the SPEC_I_PT data for %s.",
++					i_str);
++				ret = TCM_INVALID_PARAMETER_LIST;
++				spin_unlock(&dev->se_port_lock);
++				goto out_unmap;
++			}
  
- 		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
-@@ -157,6 +158,11 @@ void core_tmr_abort_task(
- 			WARN_ON_ONCE(transport_lookup_tmr_lun(tmr->task_cmd) <
- 					0);
- 
-+		if (dev->transport->tmr_notify)
-+			dev->transport->tmr_notify(dev, TMR_ABORT_TASK,
-+						   &aborted_list);
-+
-+		list_del_init(&se_cmd->state_list);
- 		target_put_cmd_and_wait(se_cmd);
- 
- 		printk("ABORT_TASK: Sending TMR_FUNCTION_COMPLETE for"
-@@ -167,6 +173,9 @@ void core_tmr_abort_task(
- 	}
- 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
- 
-+	if (dev->transport->tmr_notify)
-+		dev->transport->tmr_notify(dev, TMR_ABORT_TASK, &aborted_list);
-+
- 	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
- 			tmr->ref_task_tag);
- 	tmr->response = TMR_TASK_DOES_NOT_EXIST;
-@@ -318,6 +327,11 @@ static void core_tmr_drain_state_list(
- 	}
- 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
- 
-+	if (dev->transport->tmr_notify)
-+		dev->transport->tmr_notify(dev, preempt_and_abort_list ?
-+					   TMR_LUN_RESET_PRO : TMR_LUN_RESET,
-+					   &drain_task_list);
-+
- 	while (!list_empty(&drain_task_list)) {
- 		cmd = list_entry(drain_task_list.next, struct se_cmd, state_list);
- 		list_del_init(&cmd->state_list);
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index e6e1fa68de54..9fb0be0aa620 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -2946,6 +2946,7 @@ static const char *target_tmf_name(enum tcm_tmreq_table tmf)
- 	case TMR_LUN_RESET:		return "LUN_RESET";
- 	case TMR_TARGET_WARM_RESET:	return "TARGET_WARM_RESET";
- 	case TMR_TARGET_COLD_RESET:	return "TARGET_COLD_RESET";
-+	case TMR_LUN_RESET_PRO:		return "LUN_RESET_PRO";
- 	case TMR_UNKNOWN:		break;
- 	}
- 	return "(?)";
-diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
-index f51452e3b984..6336780d83a7 100644
---- a/include/target/target_core_backend.h
-+++ b/include/target/target_core_backend.h
-@@ -40,6 +40,8 @@ struct target_backend_ops {
- 	ssize_t (*show_configfs_dev_params)(struct se_device *, char *);
- 
- 	sense_reason_t (*parse_cdb)(struct se_cmd *cmd);
-+	void (*tmr_notify)(struct se_device *se_dev, enum tcm_tmreq_table,
-+			   struct list_head *aborted_cmds);
- 	u32 (*get_device_type)(struct se_device *);
- 	sector_t (*get_blocks)(struct se_device *);
- 	sector_t (*get_alignment_offset_lbas)(struct se_device *);
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 18c3f277b770..549947d407cf 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -207,6 +207,7 @@ enum tcm_tmreq_table {
- 	TMR_LUN_RESET		= 5,
- 	TMR_TARGET_WARM_RESET	= 6,
- 	TMR_TARGET_COLD_RESET	= 7,
-+	TMR_LUN_RESET_PRO	= 0x80,
- 	TMR_UNKNOWN		= 0xff,
- };
- 
+ 			atomic_inc_mb(&tmp_tpg->tpg_pr_ref_count);
+ 			spin_unlock(&dev->se_port_lock);
 -- 
-2.12.3
+1.8.3.1
