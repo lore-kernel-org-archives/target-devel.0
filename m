@@ -1,16 +1,97 @@
-From: Lerynne West <acarrasquel@conatel.gob.ve>
-Date: Wed, 22 Jul 2020 05:50:05 +0000
-Subject: RE
-Message-Id: <817567849.88106.1595397725352.JavaMail.zimbra@conatel.gob.ve>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 02 Jul 2020 01:43:18 +0000
+Subject: [PATCH 2/7] target: fix xcopy sess release leak
+Message-Id: <1593654203-12442-3-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, bstroesser@ts.fujitsu.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
+transport_init_session can allocate memory via percpu_ref_init, and
+target_xcopy_release_pt never frees it. This adds a
+transport_uninit_session function to handle cleanup of resources
+allocated in the init function.
 
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/target/target_core_internal.h  |  1 +
+ drivers/target/target_core_transport.c |  7 ++++++-
+ drivers/target/target_core_xcopy.c     | 11 +++++++++--
+ 3 files changed, 16 insertions(+), 3 deletions(-)
 
-Hallo, Sie haben eine Spende in H&ouml;he von 2.800.000,00 &euro;. Ich habe die America-Lotterie in Amerika im Wert von 343 Millionen Dollar gewonnen und einen Teil davon an f&uuml;nf gl&uuml;ckliche Menschen und Wohlt&auml;tigkeitsorganisationen gespendet, um an das Leben meines verstorbenen Sohnes zu erinnern, der an Krebs gestorben ist Viele Menschen, die von diesem Coronavirus betroffen sind, kontaktieren mich f&uuml;r weitere Informationen unter; callumfoundation01@outlook.com
-
-Gr&uuml;&szlig;e
-Mrs.Lerynne West
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index 8533444..e7b3c6e 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -138,6 +138,7 @@ struct se_node_acl *core_tpg_add_initiator_node_acl(struct se_portal_group *tpg,
+ void	release_se_kmem_caches(void);
+ u32	scsi_get_new_index(scsi_index_t);
+ void	transport_subsystem_check_init(void);
++void	transport_uninit_session(struct se_session *);
+ unsigned char *transport_dump_cmd_direction(struct se_cmd *);
+ void	transport_dump_dev_state(struct se_device *, char *, int *);
+ void	transport_dump_dev_info(struct se_device *, struct se_lun *,
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 90ecdd7..e6e1fa6 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -236,6 +236,11 @@ int transport_init_session(struct se_session *se_sess)
+ }
+ EXPORT_SYMBOL(transport_init_session);
+ 
++void transport_uninit_session(struct se_session *se_sess)
++{
++	percpu_ref_exit(&se_sess->cmd_count);
++}
++
+ /**
+  * transport_alloc_session - allocate a session object and initialize it
+  * @sup_prot_ops: bitmask that defines which T10-PI modes are supported.
+@@ -579,7 +584,7 @@ void transport_free_session(struct se_session *se_sess)
+ 		sbitmap_queue_free(&se_sess->sess_tag_pool);
+ 		kvfree(se_sess->sess_cmd_map);
+ 	}
+-	percpu_ref_exit(&se_sess->cmd_count);
++	transport_uninit_session(se_sess);
+ 	kmem_cache_free(se_sess_cache, se_sess);
+ }
+ EXPORT_SYMBOL(transport_free_session);
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index 0d00ccb..44e15d7 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -474,7 +474,7 @@ int target_xcopy_setup_pt(void)
+ 	memset(&xcopy_pt_sess, 0, sizeof(struct se_session));
+ 	ret = transport_init_session(&xcopy_pt_sess);
+ 	if (ret < 0)
+-		return ret;
++		goto destroy_wq;
+ 
+ 	xcopy_pt_nacl.se_tpg = &xcopy_pt_tpg;
+ 	xcopy_pt_nacl.nacl_sess = &xcopy_pt_sess;
+@@ -483,12 +483,19 @@ int target_xcopy_setup_pt(void)
+ 	xcopy_pt_sess.se_node_acl = &xcopy_pt_nacl;
+ 
+ 	return 0;
++
++destroy_wq:
++	destroy_workqueue(xcopy_wq);
++	xcopy_wq = NULL;
++	return ret;
+ }
+ 
+ void target_xcopy_release_pt(void)
+ {
+-	if (xcopy_wq)
++	if (xcopy_wq) {
+ 		destroy_workqueue(xcopy_wq);
++		transport_uninit_session(&xcopy_pt_sess);
++	}
+ }
+ 
+ /*
+-- 
+1.8.3.1
