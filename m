@@ -1,108 +1,113 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Sun, 26 Jul 2020 15:35:07 +0000
-Subject: [PATCH v3 5/8] scsi: target: tcmu: Factor out new helper ring_insert_padding
-Message-Id: <20200726153510.13077-6-bstroesser@ts.fujitsu.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 02 Jul 2020 01:43:19 +0000
+Subject: [PATCH 3/7] target: fix crash during SPEC_I_PT handling
+Message-Id: <1593654203-12442-4-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
+References: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: martin.petersen@oracle.com, bstroesser@ts.fujitsu.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-The new helper ring_insert_padding is split off from and then
-called by queue_cmd_ring. It inserts a padding if necessary.
-The new helper will in a further patch be used during writing
-of TMR notifications to command ring.
+__core_scsi3_add_registration clears the t10_pr_registration
+pr_reg_deve and does a core_scsi3_lunacl_undepend_item which does an
+undepend and also does a kref_put from the get done in
+__core_scsi3_alloc_registration. So when we get to the bottom of
+core_scsi3_decode_spec_i_port the pr_reg_deve is NULL and we crash when
+trying to access the local_pr_reg's pr_reg_deve. We've also done an extra
+undepend for local_pr_reg and if we didn't crash on the NULL we would
+have done an extra kref_put too.
 
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+This patch has us do a core_scsi3_lunacl_depend_item for local_pr_reg
+and then let __core_scsi3_add_registration handle the cleanup for the
+pr_reg_deve. We then just skip the undepend for the acl and tpg for the
+local pr_reg.
+
+The erorr path then works in a similar way, but we always do the
+core_scsi3_lunacl_undepend_item since we never call
+__core_scsi3_add_registration in that code path.
+
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/target/target_core_user.c | 51 +++++++++++++++++++++++----------------
- 1 file changed, 30 insertions(+), 21 deletions(-)
+ drivers/target/target_core_pr.c | 35 +++++++++++++++++++----------------
+ 1 file changed, 19 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 25c480fde9ee..eb68c5fee7b7 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -926,6 +926,34 @@ static int add_to_qfull_queue(struct tcmu_cmd *tcmu_cmd)
- 	return 0;
- }
- 
-+static uint32_t ring_insert_padding(struct tcmu_dev *udev, size_t cmd_size)
-+{
-+	struct tcmu_cmd_entry_hdr *hdr;
-+	struct tcmu_mailbox *mb = udev->mb_addr;
-+	uint32_t cmd_head = mb->cmd_head % udev->cmdr_size; /* UAM */
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index 293f518..d5e6344 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -1521,13 +1521,16 @@ static void core_scsi3_lunacl_undepend_item(struct se_dev_entry *se_deve)
+ 		kfree(tidh_new);
+ 		return TCM_INSUFFICIENT_REGISTRATION_RESOURCES;
+ 	}
 +
-+	/* Insert a PAD if end-of-ring space is too small */
-+	if (head_to_end(cmd_head, udev->cmdr_size) < cmd_size) {
-+		size_t pad_size = head_to_end(cmd_head, udev->cmdr_size);
-+
-+		hdr = (void *) mb + CMDR_OFF + cmd_head;
-+		tcmu_hdr_set_op(&hdr->len_op, TCMU_OP_PAD);
-+		tcmu_hdr_set_len(&hdr->len_op, pad_size);
-+		hdr->cmd_id = 0; /* not used for PAD */
-+		hdr->kflags = 0;
-+		hdr->uflags = 0;
-+		tcmu_flush_dcache_range(hdr, sizeof(*hdr));
-+
-+		UPDATE_HEAD(mb->cmd_head, pad_size, udev->cmdr_size);
-+		tcmu_flush_dcache_range(mb, sizeof(*mb));
-+
-+		cmd_head = mb->cmd_head % udev->cmdr_size; /* UAM */
-+		WARN_ON(cmd_head != 0);
++	if (core_scsi3_lunacl_depend_item(local_pr_reg->pr_reg_deve)) {
++		kfree(tidh_new);
++		kref_put(&local_pr_reg->pr_reg_deve->pr_kref,
++			 target_pr_kref_release);
++		kmem_cache_free(t10_pr_reg_cache, local_pr_reg);
++		return TCM_INSUFFICIENT_REGISTRATION_RESOURCES;
 +	}
 +
-+	return cmd_head;
-+}
+ 	tidh_new->dest_pr_reg = local_pr_reg;
+-	/*
+-	 * The local I_T nexus does not hold any configfs dependances,
+-	 * so we set tidh_new->dest_se_deve to NULL to prevent the
+-	 * configfs_undepend_item() calls in the tid_dest_list loops below.
+-	 */
+-	tidh_new->dest_se_deve = NULL;
+ 	list_add_tail(&tidh_new->dest_list, &tid_dest_list);
+ 
+ 	if (cmd->data_length < 28) {
+@@ -1816,12 +1819,9 @@ static void core_scsi3_lunacl_undepend_item(struct se_dev_entry *se_deve)
+ 			dest_node_acl->initiatorname, i_buf, (dest_se_deve) ?
+ 			dest_se_deve->mapped_lun : 0);
+ 
+-		if (!dest_se_deve) {
+-			kref_put(&local_pr_reg->pr_reg_deve->pr_kref,
+-				 target_pr_kref_release);
++		if (dest_pr_reg = local_pr_reg)
+ 			continue;
+-		}
+-		core_scsi3_lunacl_undepend_item(dest_se_deve);
 +
- /**
-  * queue_cmd_ring - queue cmd to ring or internally
-  * @tcmu_cmd: cmd to queue
-@@ -941,7 +969,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
- 	struct se_cmd *se_cmd = tcmu_cmd->se_cmd;
- 	size_t base_command_size, command_size;
--	struct tcmu_mailbox *mb;
-+	struct tcmu_mailbox *mb = udev->mb_addr;
- 	struct tcmu_cmd_entry *entry;
- 	struct iovec *iov;
- 	int iov_cnt, cmd_id;
-@@ -980,8 +1008,6 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	if (!list_empty(&udev->qfull_queue))
- 		goto queue;
- 
--	mb = udev->mb_addr;
--	cmd_head = mb->cmd_head % udev->cmdr_size; /* UAM */
- 	if ((command_size > (udev->cmdr_size / 2)) ||
- 	    data_length > udev->data_size) {
- 		pr_warn("TCMU: Request of size %zu/%zu is too big for %u/%zu "
-@@ -1001,24 +1027,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 		goto queue;
+ 		core_scsi3_nodeacl_undepend_item(dest_node_acl);
+ 		core_scsi3_tpg_undepend_item(dest_tpg);
  	}
+@@ -1835,11 +1835,16 @@ static void core_scsi3_lunacl_undepend_item(struct se_dev_entry *se_deve)
+ 	 * including *dest_pr_reg and the configfs dependances..
+ 	 */
+ 	list_for_each_entry_safe(tidh, tidh_tmp, &tid_dest_list, dest_list) {
++		bool is_local = false;
++
+ 		dest_tpg = tidh->dest_tpg;
+ 		dest_node_acl = tidh->dest_node_acl;
+ 		dest_se_deve = tidh->dest_se_deve;
+ 		dest_pr_reg = tidh->dest_pr_reg;
  
--	/* Insert a PAD if end-of-ring space is too small */
--	if (head_to_end(cmd_head, udev->cmdr_size) < command_size) {
--		size_t pad_size = head_to_end(cmd_head, udev->cmdr_size);
--
--		entry = (void *) mb + CMDR_OFF + cmd_head;
--		tcmu_hdr_set_op(&entry->hdr.len_op, TCMU_OP_PAD);
--		tcmu_hdr_set_len(&entry->hdr.len_op, pad_size);
--		entry->hdr.cmd_id = 0; /* not used for PAD */
--		entry->hdr.kflags = 0;
--		entry->hdr.uflags = 0;
--		tcmu_flush_dcache_range(entry, sizeof(entry->hdr));
--
--		UPDATE_HEAD(mb->cmd_head, pad_size, udev->cmdr_size);
--		tcmu_flush_dcache_range(mb, sizeof(*mb));
--
--		cmd_head = mb->cmd_head % udev->cmdr_size; /* UAM */
--		WARN_ON(cmd_head != 0);
--	}
-+	cmd_head = ring_insert_padding(udev, command_size);
++		if (dest_pr_reg = local_pr_reg)
++			is_local = true;
++
+ 		list_del(&tidh->dest_list);
+ 		kfree(tidh);
+ 		/*
+@@ -1855,13 +1860,11 @@ static void core_scsi3_lunacl_undepend_item(struct se_dev_entry *se_deve)
+ 		}
  
- 	entry = (void *) mb + CMDR_OFF + cmd_head;
- 	memset(entry, 0, command_size);
+ 		kmem_cache_free(t10_pr_reg_cache, dest_pr_reg);
++		core_scsi3_lunacl_undepend_item(dest_se_deve);
+ 
+-		if (!dest_se_deve) {
+-			kref_put(&local_pr_reg->pr_reg_deve->pr_kref,
+-				 target_pr_kref_release);
++		if (is_local)
+ 			continue;
+-		}
+-		core_scsi3_lunacl_undepend_item(dest_se_deve);
++
+ 		core_scsi3_nodeacl_undepend_item(dest_node_acl);
+ 		core_scsi3_tpg_undepend_item(dest_tpg);
+ 	}
 -- 
-2.12.3
+1.8.3.1
