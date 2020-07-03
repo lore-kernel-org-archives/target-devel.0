@@ -1,46 +1,32 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 29 Jul 2020 04:10:32 +0000
-Subject: Re: [PATCH v3 0/8] scsi: target: tcmu: Add TMR notification for tcmu
-Message-Id: <159599579268.11289.16855842795289437175.b4-ty@oracle.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Fri, 03 Jul 2020 17:37:42 +0000
+Subject: Re: [RFC PATCH 00/10] target: add configfs interface
+Message-Id: <0b59d643-61bf-6876-cc42-83ee8040da10@acm.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
+References: <1593232509-13720-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1593232509-13720-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>
+To: Mike Christie <michael.christie@oracle.com>, hare@suse.de, bstroesser@ts.fujitsu.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-On Sun, 26 Jul 2020 17:35:02 +0200, Bodo Stroesser wrote:
+On 2020-06-26 21:34, Mike Christie wrote:
+> With Hannes not liking the refcounting/tricks in the sysfs approach
+> I took another stab at configfs. This approach works similar to the
+> loop/vhost/usb/xen nexus interface where there is a special file
+> that allows userspace to add/remove sessions.
 
-> This patch series is made on top of Martin's for-next branch.
-> 
-> ChangeLog:
-> 
-> v2: in patch "scsi: target: tcmu: Implement tmr_notify callback"
->     changed new comment's style from "// ..." to "/* ... */"
->     and correctly use "/** " for function doc.
-> 
-> [...]
+Hi Mike,
 
-Applied to 5.9/scsi-queue, thanks!
+Are you perhaps referring to the comment in the following message?
+https://lore.kernel.org/linux-scsi/f0bd2a33-c084-6c9b-faa1-9d92bdb2df7a@suse.de/
+The duplication of strings in that patch also looks weird to me.
+I think kobject_del() waits for ongoing sysfs show and store callbacks to finish.
+Since patch 12/15 adds a kobject_del() call in target_sysfs_remove_session(), is
+that call perhaps sufficient to guarantee that the
+se_sess->se_node_acl->initiatorname pointer and similar pointers are all valid
+at least as long the session sysfs object exists?
 
-[1/8] scsi: target: Modify core_tmr_abort_task()
-      https://git.kernel.org/mkp/scsi/c/f5e2714ad1a6
-[2/8] scsi: target: Add tmr_notify backend function
-      https://git.kernel.org/mkp/scsi/c/2e45a1a9c75d
-[3/8] scsi: target: tcmu: Use priv pointer in se_cmd
-      https://git.kernel.org/mkp/scsi/c/a35129024e88
-[4/8] scsi: target: tcmu: Do not queue aborted commands
-      https://git.kernel.org/mkp/scsi/c/c96849276211
-[5/8] scsi: target: tcmu: Factor out new helper ring_insert_padding
-      https://git.kernel.org/mkp/scsi/c/3d3f9d56a570
-[6/8] scsi: target: tcmu: Fix and simplify timeout handling
-      https://git.kernel.org/mkp/scsi/c/ed212ca87897
-[7/8] scsi: target: tcmu: Implement tmr_notify callback
-      https://git.kernel.org/mkp/scsi/c/bc2d214af5db
-[8/8] scsi: target: tcmu: Make TMR notification optional
-      https://git.kernel.org/mkp/scsi/c/59526d7a187f
+Thanks,
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Bart.
