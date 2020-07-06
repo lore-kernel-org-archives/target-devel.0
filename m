@@ -1,141 +1,51 @@
-From: Michael Christie <michael.christie@oracle.com>
-Date: Fri, 03 Jul 2020 21:19:27 +0000
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Mon, 06 Jul 2020 12:32:42 +0000
 Subject: Re: [RFC PATCH 10/10] target: export sessions via configfs
-Message-Id: <7642F0BE-2E98-47FA-B1B9-00CA083B6530@oracle.com>
+Message-Id: <2dc8a518-01c8-fa28-dac5-3fe0162d2f62@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1593232509-13720-1-git-send-email-michael.christie@oracle.com>
  <1593232509-13720-11-git-send-email-michael.christie@oracle.com>
  <24118898-006c-0538-6685-b4902f9eee48@ts.fujitsu.com>
  <8e557b7a-aebc-7b3c-d02f-637cff0fd4b9@oracle.com>
  <2e70df6e-560f-590f-721c-2532f7af3d50@ts.fujitsu.com>
-In-Reply-To: <2e70df6e-560f-590f-721c-2532f7af3d50@ts.fujitsu.com>
+ <7642F0BE-2E98-47FA-B1B9-00CA083B6530@oracle.com>
+In-Reply-To: <7642F0BE-2E98-47FA-B1B9-00CA083B6530@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: Michael Christie <michael.christie@oracle.com>
 Cc: Hannes Reinecke <hare@suse.de>, Bart Van Assche <bvanassche@acm.org>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
 
 
-> On Jul 3, 2020, at 11:57 AM, Bodo Stroesser <bstroesser@ts.fujitsu.com> wrote:
-> 
-> On 2020-07-03 18:27, Mike Christie wrote:
->> On 7/3/20 7:51 AM, Bodo Stroesser wrote:
->>> On 2020-06-27 06:35, Mike Christie wrote:
->>>> This patch exports the LIO sessions via configfs. If userspace makes
->>>> a "sessions" dir on the ACL or TPG dir to indicate to the kernel it
->>>> supports the new interface on that TPG, then the kernel will make a
->>>> dir per session in the tpg/sessions or tpg/acls/alc/sessions dir
->>> 
->>> I someone creates a new ACL on a running tpg, can it happen that a
->>> session already is created before user can create the sessions folder?
->> 
->> Right now yes. In the patch I started to try to support a per tpg mix. If a session exists then you do mkdir sessions, then before you can delete the tpg you have to delete the sessions that were created after the mkdir.
->> 
->> But to handle all the side cases, it becomes a pain, and I don't think anyone will ever use that feature, so I plan to make it either on or off for all sessions on the tpg and no mixing. I think normally we see different tools at the per target or per fabric level, so we should be ok.
-> 
-> Maybe I don't get it. What I meant is:
-> 
-> Creation of the "sessions" folders in tpg and acl has to be done by
-> user.
-> If user creates a new acl while tpg is active, the acl immediately
-> becomes active, I think.
-> If user then creates the "sessions" folder, it could happen that
-> a session already is started meanwhile. That session would be
-> invisible then.
-> Maybe an "enable" attr for acl would help?
+On 2020-07-03 23:19, Michael Christie wrote:
 
-I see what you are saying. See below.
+...
 
-
->> No. It works the same as today. When you do a tpg removal like when you do
->> 
->> targetlci clearconfig
->> 
->> rtslib disables the tpg which prevents the target from creating new sessions. We then bring down the objects under it like luns, portals, etc. When we get to sessions, if the target has not yet brought them down (some targets do this on tpg disablement and some do not), then with that github patch rtslib will kill them like it does for the other objects.
->> 
+>> Why is the cfgfs_sess_supp flag per tpg? It seems to be set if either
+>> tpg/sessions or any acl/sessions folder is created.
+>> So what will happen here if e.g session for an acl is created while
+>> only tpg/sessions exists?
 > 
-> Ahh, I see.
+> Ah yeah, that is bogus. I am still working on an issue in this code. I wasn’t expecting a line by line and just a general review of cfgfs vs sysfs :) Sorry about that.
+> 
+> I originally made it so when we make the tpg and before it is enabled you had to do mkdir sessions on the tpg to signal the kernel that the app supports the new interface. The kernel would then make the acl sessions dir for you.
+> 
+> I was tracking down a bug in that though, and for the posting I made it so userspace had to create the acl sessions dir. While cutting and pasting the code I forgot to fix up that code.
+
+Ah, ok. Please see below.
 > 
 > 
 > 
+>> Do we need an similar flag per acl also?
+>> And if we have a per acl and the tpg flag I think they should be removed
+>> when user removes an empty sessions folder.
 > 
-> Let me resend another part of my response, that was far down:
+> It’s just a lot easier to leave it set if userspace has enabled it once. You actually need to take into account if the tpg is enabled, and then you have some issues with the drivers that have their own nexus interface, and then there are different userspace code paths that handle this.
 > 
->>  }
->>  +int target_cfgfs_register_session(struct se_portal_group *se_tpg,
->> +                  struct se_session *se_sess)
->> +{
->> +    struct se_node_acl *se_nacl;
->> +    int ret;
->> +
->> +    /*
->> +     * If the fabric doesn't support close_session, there's no way for
->> +     * userspace to clean up the session during nacl/tpg deletion.
->> +     */
->> +    if (!se_tpg->cfgfs_sess_supp || !se_tpg->se_tpg_tfo->close_session)
->> +        return 0;
-> 
-> Why is the cfgfs_sess_supp flag per tpg? It seems to be set if either
-> tpg/sessions or any acl/sessions folder is created.
-> So what will happen here if e.g session for an acl is created while
-> only tpg/sessions exists?
+> I don’t think it’s going to be common to mix and match updated and non-updated tools, so once its set, it’s set. If you disagree let me know. It can be done.
 
-Ah yeah, that is bogus. I am still working on an issue in this code. I wasn’t expecting a line by line and just a general review of cfgfs vs sysfs :) Sorry about that.
+I see no need for such a mix.
 
-I originally made it so when we make the tpg and before it is enabled you had to do mkdir sessions on the tpg to signal the kernel that the app supports the new interface. The kernel would then make the acl sessions dir for you.
-
-I was tracking down a bug in that though, and for the posting I made it so userspace had to create the acl sessions dir. While cutting and pasting the code I forgot to fix up that code.
-
-
-
-> Do we need an similar flag per acl also?
-> And if we have a per acl and the tpg flag I think they should be removed
-> when user removes an empty sessions folder.
-
-It’s just a lot easier to leave it set if userspace has enabled it once. You actually need to take into account if the tpg is enabled, and then you have some issues with the drivers that have their own nexus interface, and then there are different userspace code paths that handle this.
-
-I don’t think it’s going to be common to mix and match updated and non-updated tools, so once its set, it’s set. If you disagree let me know. It can be done.
-
-
-
-
-
-> 
->> +
->> +    se_nacl = se_sess->se_node_acl;
->> +    if (se_nacl->dynamic_node_acl) {
->> +        ret = configfs_register_group(&se_tpg->tpg_sess_group,
->> +                          &se_sess->group);
->> +    } else {
->> +        ret = configfs_register_group(&se_nacl->acl_sess_group,
->> +                          &se_sess->group);
->> +    }
->> +    if (ret)
->> +        goto fail;
-> 
-> Do we have a possible race here? I think it would be better to first
-> call target_depend_item() and then register the new session's group.
-
-Yes. Will fix.
-
-> 
->> +
->> +    /*
->> +     * The session is not created via a mkdir like other objects. A
->> +     * transport event like a login or userspace used the nexus file to
->> +     * initiate creation. However, we want the same behavior as other
->> +     * objects where we must remove the children before removing the
->> +     * parent dir, so do a depend on the parent that is released when the
->> +     * session is removed.
->> +     */
->> +    if (se_nacl->dynamic_node_acl) {
->> +        ret = target_depend_item(&se_tpg->tpg_sess_group.cg_item);
->> +    } else {
->> +        ret = target_depend_item(&se_nacl->acl_sess_group.cg_item);
->> +    }
->> +    if (ret)
->> +        goto unreg_cfgfs;
->> +
->> +    se_sess->added_to_cfgfs = true;
->> +    return 0;
+If it works like you described above - kernel creates acl/sessions dirs
+after user created tpg/sessions - I think it is really fine.
