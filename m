@@ -1,93 +1,156 @@
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Fri, 10 Jul 2020 10:48:09 +0000
-Subject: [PATCH 0/8] scsi: target: tcmu: Add TMR notification for tcmu
-Message-Id: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
+Date: Fri, 10 Jul 2020 10:48:15 +0000
+Subject: [PATCH 6/8] scsi: target: tcmu: Fix and simplify timeout handling
+Message-Id: <20200710104817.19462-7-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-This patch series is made on top of Martin's for-next branch.
-I already sent it as "RFC PATCH" 10 days ago. Since there is
-no response yet, I decided to be optimistic and re-send the
-series as normal patch, just rebased to current for-next.
+During cmd timeout handling in check_timedout_devices() due to
+a race it can happen, that tcmu_set_next_deadline() does not
+start a timer as expected:
+ 1) Either tcmu_check_expired_ring_cmd() checks the
+    inflight_queue or tcmu_check_expired_queue_cmd() checks the
+    qfull_queue while jiffies has the value X
+ 2) At the end of the check the queue contains one remaining
+    command with deadline X (time_after(X, X) is false and
+    thus the command is not handled as being timed out).
+ 3) After tcmu_check_expired_xxxxx_cmd() a timer interrupt
+    happens and jiffies is incremented to X+1.
+ 4) Now tcmu_set_next_deadline() is called, but it skips
+    the command, since time_after(X+1, X) is true. Therefore
+    tcmu_set_next_deadline() finds no new deadline and stops
+    the timer, which it shouldn't.
 
-TCM/LIO core handles TMRs without involving backends.
-But TMR completion message is sent to initiator only after
-commands aborted by the TMR are completed by the backend.
-Especially in case of tcmu backend, if userspace executes long
-running commands and therefore initiator sends ABORT_TASK on
-timeout, the ABORT itself can time out if core still waits for
-userspace/tcmu to complete the command.
+Since commands that time out are removed from inflight_queue
+or qfull_queue, we don't need the check with time_after() in
+tcmu_set_next_deadline(), but can use the deadline from the
+first cmd in the queue.
 
-It would be very helpful for userspace to get a notification
-about received TMR and which commands were aborted by that TMR.
-Then userspace can decide whether to cancel command processing,
-and it can send command completion earlier than it would without
-TMR notification.
-It is also helpful for userspace traces and device emulation to
-get notification about TMR events.
+Additionally I replaced the remaining time_after() calls in
+tcmu_check_expired_xxxxx_cmd() with time_after_eq(), because
+it is not useful to set the timeout to deadline, but then check
+for jiffies being greater than deadline.
 
-So this patch series in the first two patches implements in
-core the usage of a new optional backend callback for TMR
-notifications. The core calls it before core waits for
-completion of aborted commands (params: se_dev, TMR type,
-and list of se_cmds aborted by this TMR).
-Of course other backends than tcmu can use this part of the
-series also to implement their own TMR notification if
-necessary.
+Next I simplified the end of tcmu_handle_completions() and
+changed the check for no more pending commands from
+ "mb->cmd_tail = mb->cmd_head"
+to
+ "idr_is_empty(&udev->commands)"
+because the old check doesn't work correctly if paddings or in
+the future TMRs are in the ring.
 
-The further six patches implement the TMR notify callback for
-tcmu. The new configFS attribute tmr_notification allows to
-switch on TMR messages on the cmd ring. The default of the
-attribute is the old behavior without TMR info on the ring, but
-with following changes:
- - if tcmu receives an already aborted command, it immediately
-   rejects it. So it will never appear in userspace.
- - if tcmu finds, that according to TMR notification a cmd on
-   the qfull_queue was aborted, tcmu removes it from qfull_queue
-   and completes it immediately. So userspace will not 'see'
-   those commands.
+Finally tcmu_set_next_deadline() was shifted in the source as
+preparation for later implementation of tmr_notify callback.
 
-When attribute tmr_notification is set to 1, tcmu additionally
-prepares a list of cmd_ids from those commands, that are aborted
-by the TMR and are active in cmd ring (not timed out).
-This list together with the TMR type is either immediately
-written to cmd ring (new TMR entry type) or queued in a separate
-tmr queue if ring space is too small.
-TMRs in the tmr queue do not time out. If ring space becomes
-available, tcmu moves TMRs from tmr queue to ring with higher
-priority than cmds from qfull queue.
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+---
+ drivers/target/target_core_user.c | 59 +++++++++++++++------------------------
+ 1 file changed, 23 insertions(+), 36 deletions(-)
 
-This mechanism makes sure that userspace receives TMR
-notifications as early as possible. Userspace can use the
-list of cmd_ids attached to the TMR notification to identify
-aborted commands from its list of received and not yet completed
-commands. In case userspace has meanwhile completed some of the
-cmd_ids on the list, it can just ignore these cmd_ids.
-A possible new command having the same cmd_id as one of the
-aborted commands will always appear on the ring after the TMR
-notification.
-
-Bodo Stroesser (8):
-  scsi: target: Modify core_tmr_abort_task()
-  scsi: target: Add tmr_notify backend function
-  scsi: target: tcmu: Use priv pointer in se_cmd
-  scsi: target: tcmu: Do not queue aborted commands
-  scsi: target: tcmu: Factor out new helper ring_insert_padding
-  scsi: target: tcmu: Fix and simplify timeout handling
-  scsi: target: tcmu: Implement tmr_notify callback
-  scsi: target: tcmu: Make TMR notification optional
-
- drivers/target/target_core_tmr.c       |  36 +++-
- drivers/target/target_core_transport.c |   1 +
- drivers/target/target_core_user.c      | 375 +++++++++++++++++++++++++++------
- include/target/target_core_backend.h   |   2 +
- include/target/target_core_base.h      |   1 +
- include/uapi/linux/target_core_user.h  |  25 +++
- 6 files changed, 368 insertions(+), 72 deletions(-)
-
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 7a27e838a7d3..6adf4e7cc00b 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1129,6 +1129,18 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
+ 	return scsi_ret;
+ }
+ 
++static void tcmu_set_next_deadline(struct list_head *queue,
++				   struct timer_list *timer)
++{
++	struct tcmu_cmd *cmd;
++
++	if (!list_empty(queue)) {
++		cmd = list_first_entry(queue, struct tcmu_cmd, queue_entry);
++		mod_timer(timer, cmd->deadline);
++	} else
++		del_timer(timer);
++}
++
+ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *entry)
+ {
+ 	struct se_cmd *se_cmd = cmd->se_cmd;
+@@ -1196,25 +1208,6 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 	tcmu_free_cmd(cmd);
+ }
+ 
+-static void tcmu_set_next_deadline(struct list_head *queue,
+-				   struct timer_list *timer)
+-{
+-	struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
+-	unsigned long deadline = 0;
+-
+-	list_for_each_entry_safe(tcmu_cmd, tmp_cmd, queue, queue_entry) {
+-		if (!time_after(jiffies, tcmu_cmd->deadline)) {
+-			deadline = tcmu_cmd->deadline;
+-			break;
+-		}
+-	}
+-
+-	if (deadline)
+-		mod_timer(timer, deadline);
+-	else
+-		del_timer(timer);
+-}
+-
+ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+ {
+ 	struct tcmu_mailbox *mb;
+@@ -1267,22 +1260,16 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+ 		handled++;
+ 	}
+ 
+-	if (mb->cmd_tail = mb->cmd_head) {
+-		/* no more pending commands */
+-		del_timer(&udev->cmd_timer);
+-
+-		if (list_empty(&udev->qfull_queue)) {
+-			/*
+-			 * no more pending or waiting commands so try to
+-			 * reclaim blocks if needed.
+-			 */
+-			if (atomic_read(&global_db_count) >
+-			    tcmu_global_max_blocks)
+-				schedule_delayed_work(&tcmu_unmap_work, 0);
+-		}
+-	} else if (udev->cmd_time_out) {
+-		tcmu_set_next_deadline(&udev->inflight_queue, &udev->cmd_timer);
++	if (atomic_read(&global_db_count) > tcmu_global_max_blocks &&
++	    idr_is_empty(&udev->commands) && list_empty(&udev->qfull_queue)) {
++		/*
++		 * Allocated blocks exceeded global block limit, currently no
++		 * more pending or waiting commands so try to reclaim blocks.
++		 */
++		schedule_delayed_work(&tcmu_unmap_work, 0);
+ 	}
++	if (udev->cmd_time_out)
++		tcmu_set_next_deadline(&udev->inflight_queue, &udev->cmd_timer);
+ 
+ 	return handled;
+ }
+@@ -1291,7 +1278,7 @@ static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
+ {
+ 	struct se_cmd *se_cmd;
+ 
+-	if (!time_after(jiffies, cmd->deadline))
++	if (!time_after_eq(jiffies, cmd->deadline))
+ 		return;
+ 
+ 	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
+@@ -1310,7 +1297,7 @@ static void tcmu_check_expired_queue_cmd(struct tcmu_cmd *cmd)
+ {
+ 	struct se_cmd *se_cmd;
+ 
+-	if (!time_after(jiffies, cmd->deadline))
++	if (!time_after_eq(jiffies, cmd->deadline))
+ 		return;
+ 
+ 	pr_debug("Timing out queued cmd %p on dev %s.\n",
 -- 
 2.12.3
