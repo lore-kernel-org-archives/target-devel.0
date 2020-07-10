@@ -1,108 +1,93 @@
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Fri, 10 Jul 2020 10:48:14 +0000
-Subject: [PATCH 5/8] scsi: target: tcmu: Factor out new helper ring_insert_padding
-Message-Id: <20200710104817.19462-6-bstroesser@ts.fujitsu.com>
+Date: Fri, 10 Jul 2020 10:48:09 +0000
+Subject: [PATCH 0/8] scsi: target: tcmu: Add TMR notification for tcmu
+Message-Id: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-The new helper ring_insert_padding is split off from and then
-called by queue_cmd_ring. It inserts a padding if necessary.
-The new helper will in a further patch be used during writing
-of TMR notifications to command ring.
+This patch series is made on top of Martin's for-next branch.
+I already sent it as "RFC PATCH" 10 days ago. Since there is
+no response yet, I decided to be optimistic and re-send the
+series as normal patch, just rebased to current for-next.
 
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
----
- drivers/target/target_core_user.c | 51 +++++++++++++++++++++++----------------
- 1 file changed, 30 insertions(+), 21 deletions(-)
+TCM/LIO core handles TMRs without involving backends.
+But TMR completion message is sent to initiator only after
+commands aborted by the TMR are completed by the backend.
+Especially in case of tcmu backend, if userspace executes long
+running commands and therefore initiator sends ABORT_TASK on
+timeout, the ABORT itself can time out if core still waits for
+userspace/tcmu to complete the command.
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 25c480fde9ee..7a27e838a7d3 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -926,6 +926,34 @@ static int add_to_qfull_queue(struct tcmu_cmd *tcmu_cmd)
- 	return 0;
- }
- 
-+static uint32_t ring_insert_padding(struct tcmu_dev *dev, size_t cmd_size)
-+{
-+	struct tcmu_cmd_entry_hdr *hdr;
-+	struct tcmu_mailbox *mb = dev->mb_addr;
-+	uint32_t cmd_head = mb->cmd_head % dev->cmdr_size; /* UAM */
-+
-+	/* Insert a PAD if end-of-ring space is too small */
-+	if (head_to_end(cmd_head, dev->cmdr_size) < cmd_size) {
-+		size_t pad_size = head_to_end(cmd_head, dev->cmdr_size);
-+
-+		hdr = (void *) mb + CMDR_OFF + cmd_head;
-+		tcmu_hdr_set_op(&hdr->len_op, TCMU_OP_PAD);
-+		tcmu_hdr_set_len(&hdr->len_op, pad_size);
-+		hdr->cmd_id = 0; /* not used for PAD */
-+		hdr->kflags = 0;
-+		hdr->uflags = 0;
-+		tcmu_flush_dcache_range(hdr, sizeof(*hdr));
-+
-+		UPDATE_HEAD(mb->cmd_head, pad_size, dev->cmdr_size);
-+		tcmu_flush_dcache_range(mb, sizeof(*mb));
-+
-+		cmd_head = mb->cmd_head % dev->cmdr_size; /* UAM */
-+		WARN_ON(cmd_head != 0);
-+	}
-+
-+	return cmd_head;
-+}
-+
- /**
-  * queue_cmd_ring - queue cmd to ring or internally
-  * @tcmu_cmd: cmd to queue
-@@ -941,7 +969,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
- 	struct se_cmd *se_cmd = tcmu_cmd->se_cmd;
- 	size_t base_command_size, command_size;
--	struct tcmu_mailbox *mb;
-+	struct tcmu_mailbox *mb = udev->mb_addr;
- 	struct tcmu_cmd_entry *entry;
- 	struct iovec *iov;
- 	int iov_cnt, cmd_id;
-@@ -980,8 +1008,6 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	if (!list_empty(&udev->qfull_queue))
- 		goto queue;
- 
--	mb = udev->mb_addr;
--	cmd_head = mb->cmd_head % udev->cmdr_size; /* UAM */
- 	if ((command_size > (udev->cmdr_size / 2)) ||
- 	    data_length > udev->data_size) {
- 		pr_warn("TCMU: Request of size %zu/%zu is too big for %u/%zu "
-@@ -1001,24 +1027,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 		goto queue;
- 	}
- 
--	/* Insert a PAD if end-of-ring space is too small */
--	if (head_to_end(cmd_head, udev->cmdr_size) < command_size) {
--		size_t pad_size = head_to_end(cmd_head, udev->cmdr_size);
--
--		entry = (void *) mb + CMDR_OFF + cmd_head;
--		tcmu_hdr_set_op(&entry->hdr.len_op, TCMU_OP_PAD);
--		tcmu_hdr_set_len(&entry->hdr.len_op, pad_size);
--		entry->hdr.cmd_id = 0; /* not used for PAD */
--		entry->hdr.kflags = 0;
--		entry->hdr.uflags = 0;
--		tcmu_flush_dcache_range(entry, sizeof(entry->hdr));
--
--		UPDATE_HEAD(mb->cmd_head, pad_size, udev->cmdr_size);
--		tcmu_flush_dcache_range(mb, sizeof(*mb));
--
--		cmd_head = mb->cmd_head % udev->cmdr_size; /* UAM */
--		WARN_ON(cmd_head != 0);
--	}
-+	cmd_head = ring_insert_padding(udev, command_size);
- 
- 	entry = (void *) mb + CMDR_OFF + cmd_head;
- 	memset(entry, 0, command_size);
+It would be very helpful for userspace to get a notification
+about received TMR and which commands were aborted by that TMR.
+Then userspace can decide whether to cancel command processing,
+and it can send command completion earlier than it would without
+TMR notification.
+It is also helpful for userspace traces and device emulation to
+get notification about TMR events.
+
+So this patch series in the first two patches implements in
+core the usage of a new optional backend callback for TMR
+notifications. The core calls it before core waits for
+completion of aborted commands (params: se_dev, TMR type,
+and list of se_cmds aborted by this TMR).
+Of course other backends than tcmu can use this part of the
+series also to implement their own TMR notification if
+necessary.
+
+The further six patches implement the TMR notify callback for
+tcmu. The new configFS attribute tmr_notification allows to
+switch on TMR messages on the cmd ring. The default of the
+attribute is the old behavior without TMR info on the ring, but
+with following changes:
+ - if tcmu receives an already aborted command, it immediately
+   rejects it. So it will never appear in userspace.
+ - if tcmu finds, that according to TMR notification a cmd on
+   the qfull_queue was aborted, tcmu removes it from qfull_queue
+   and completes it immediately. So userspace will not 'see'
+   those commands.
+
+When attribute tmr_notification is set to 1, tcmu additionally
+prepares a list of cmd_ids from those commands, that are aborted
+by the TMR and are active in cmd ring (not timed out).
+This list together with the TMR type is either immediately
+written to cmd ring (new TMR entry type) or queued in a separate
+tmr queue if ring space is too small.
+TMRs in the tmr queue do not time out. If ring space becomes
+available, tcmu moves TMRs from tmr queue to ring with higher
+priority than cmds from qfull queue.
+
+This mechanism makes sure that userspace receives TMR
+notifications as early as possible. Userspace can use the
+list of cmd_ids attached to the TMR notification to identify
+aborted commands from its list of received and not yet completed
+commands. In case userspace has meanwhile completed some of the
+cmd_ids on the list, it can just ignore these cmd_ids.
+A possible new command having the same cmd_id as one of the
+aborted commands will always appear on the ring after the TMR
+notification.
+
+Bodo Stroesser (8):
+  scsi: target: Modify core_tmr_abort_task()
+  scsi: target: Add tmr_notify backend function
+  scsi: target: tcmu: Use priv pointer in se_cmd
+  scsi: target: tcmu: Do not queue aborted commands
+  scsi: target: tcmu: Factor out new helper ring_insert_padding
+  scsi: target: tcmu: Fix and simplify timeout handling
+  scsi: target: tcmu: Implement tmr_notify callback
+  scsi: target: tcmu: Make TMR notification optional
+
+ drivers/target/target_core_tmr.c       |  36 +++-
+ drivers/target/target_core_transport.c |   1 +
+ drivers/target/target_core_user.c      | 375 +++++++++++++++++++++++++++------
+ include/target/target_core_backend.h   |   2 +
+ include/target/target_core_base.h      |   1 +
+ include/uapi/linux/target_core_user.h  |  25 +++
+ 6 files changed, 368 insertions(+), 72 deletions(-)
+
 -- 
 2.12.3
