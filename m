@@ -1,84 +1,68 @@
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Sun, 26 Jul 2020 15:35:03 +0000
-Subject: [PATCH v3 1/8] scsi: target: Modify core_tmr_abort_task()
-Message-Id: <20200726153510.13077-2-bstroesser@ts.fujitsu.com>
+Date: Fri, 10 Jul 2020 10:48:12 +0000
+Subject: [PATCH 3/8] scsi: target: tcmu: Use priv pointer in se_cmd
+Message-Id: <20200710104817.19462-4-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
+References: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-This patch modifies core_tmr_abort_task() to use same looping
-and locking scheme as core_tmr_drain_state_list() does.
+We initialize and clean up the se_cmd's priv pointer
+under cmd_ring_lock to point to the corresponding tcmu_cmd.
 
-This frees the state_list element in se_cmd for later use
-by tmr notification handling.
-
-Note: __target_check_io_state() now is called with param 0
-instead of dev->dev_attrib.emulate_tas, because tas is not
-relevant since we always get ABRT on same session like the
-aborted command.
+In the patch that implements tmr_notify callback in
+tcmu we will use the priv pointer.
 
 Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 ---
- drivers/target/target_core_tmr.c | 22 ++++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
+ drivers/target/target_core_user.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
-index 89c84d472cd7..73c4155f3c1e 100644
---- a/drivers/target/target_core_tmr.c
-+++ b/drivers/target/target_core_tmr.c
-@@ -116,14 +116,15 @@ void core_tmr_abort_task(
- 	struct se_tmr_req *tmr,
- 	struct se_session *se_sess)
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 366878b0b2fd..b06b18d1b135 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -541,6 +541,8 @@ tcmu_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
+ 
+ static inline void tcmu_free_cmd(struct tcmu_cmd *tcmu_cmd)
  {
--	struct se_cmd *se_cmd;
-+	struct se_cmd *se_cmd, *next;
- 	unsigned long flags;
-+	bool rc;
- 	u64 ref_tag;
++	if (tcmu_cmd->se_cmd)
++		tcmu_cmd->se_cmd->priv = NULL;
+ 	kfree(tcmu_cmd->dbi);
+ 	kmem_cache_free(tcmu_cmd_cache, tcmu_cmd);
+ }
+@@ -1109,10 +1111,11 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
+ 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
  
--	spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
--	list_for_each_entry(se_cmd, &se_sess->sess_cmd_list, se_cmd_list) {
-+	spin_lock_irqsave(&dev->execute_task_lock, flags);
-+	list_for_each_entry_safe(se_cmd, next, &dev->state_list, state_list) {
+ 	mutex_lock(&udev->cmdr_lock);
++	se_cmd->priv = tcmu_cmd;
+ 	ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
+-	mutex_unlock(&udev->cmdr_lock);
+ 	if (ret < 0)
+ 		tcmu_free_cmd(tcmu_cmd);
++	mutex_unlock(&udev->cmdr_lock);
+ 	return scsi_ret;
+ }
  
--		if (dev != se_cmd->se_dev)
-+		if (se_sess != se_cmd->se_sess)
- 			continue;
+@@ -1179,7 +1182,6 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 		target_complete_cmd(cmd->se_cmd, entry->rsp.scsi_status);
  
- 		/* skip task management functions, including tmr->task_cmd */
-@@ -137,11 +138,16 @@ void core_tmr_abort_task(
- 		printk("ABORT_TASK: Found referenced %s task_tag: %llu\n",
- 			se_cmd->se_tfo->fabric_name, ref_tag);
+ out:
+-	cmd->se_cmd = NULL;
+ 	tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
+ 	tcmu_free_cmd(cmd);
+ }
+@@ -1285,6 +1287,7 @@ static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
+ 	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
+ 	list_del_init(&cmd->queue_entry);
+ 	se_cmd = cmd->se_cmd;
++	se_cmd->priv = NULL;
+ 	cmd->se_cmd = NULL;
  
--		if (!__target_check_io_state(se_cmd, se_sess,
--					     dev->dev_attrib.emulate_tas))
-+		spin_lock(&se_sess->sess_cmd_lock);
-+		rc = __target_check_io_state(se_cmd, se_sess, 0);
-+		spin_unlock(&se_sess->sess_cmd_lock);
-+		if (!rc)
- 			continue;
- 
--		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
-+		list_del_init(&se_cmd->state_list);
-+		se_cmd->state_active = false;
-+
-+		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
- 
- 		/*
- 		 * Ensure that this ABORT request is visible to the LU RESET
-@@ -159,7 +165,7 @@ void core_tmr_abort_task(
- 		atomic_long_inc(&dev->aborts_complete);
- 		return;
- 	}
--	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
-+	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
- 
- 	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
- 			tmr->ref_task_tag);
+ 	pr_debug("Timing out inflight cmd %u on dev %s.\n",
 -- 
 2.12.3
