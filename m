@@ -1,24 +1,48 @@
-From: "CHRISTOPHER WANG" <christopherwang36@gmail.com>
-Date: Fri, 24 Jul 2020 18:43:16 +0000
-Subject: INVESTMENT
-Message-Id: <WIN-DAONO245HJFfdDh008f43b7@WIN-DAONO245HJF>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Fri, 10 Jul 2020 10:48:13 +0000
+Subject: [PATCH 4/8] scsi: target: tcmu: Do not queue aborted commands
+Message-Id: <20200710104817.19462-5-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
+If tcmu receives an already aborted command, tcmu_queue_cmd()
+should reject it.
 
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+---
+ drivers/target/target_core_user.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Good day,
-
-You were recommended by a mutual associate. I write you regarding an investment of bearer bonds I made on behalf of a client. 
-
-       The investment was made in 2009 and has been under my management. The said investor is deceased. The window is now available to assign these bonds to any name or company of my choice. I have all the necessary information to achieve this within 10 banking days.
-      
-       The total value of the bond is 100million pounds sterling, in a million pound denominations.
-      
-        If you can handle this, do contact me at your earliest convenience via my email christopherwang36@gmail.com
-So we can discuss the final details Thank you.
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index b06b18d1b135..25c480fde9ee 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1103,8 +1103,8 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
+ 	struct se_device *se_dev = se_cmd->se_dev;
+ 	struct tcmu_dev *udev = TCMU_DEV(se_dev);
+ 	struct tcmu_cmd *tcmu_cmd;
+-	sense_reason_t scsi_ret;
+-	int ret;
++	sense_reason_t scsi_ret = TCM_CHECK_CONDITION_ABORT_CMD;
++	int ret = -1;
  
-Mr CHRISTOPHER WANG
+ 	tcmu_cmd = tcmu_alloc_cmd(se_cmd);
+ 	if (!tcmu_cmd)
+@@ -1112,7 +1112,8 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
+ 
+ 	mutex_lock(&udev->cmdr_lock);
+ 	se_cmd->priv = tcmu_cmd;
+-	ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
++	if (!(se_cmd->transport_state & CMD_T_ABORTED))
++		ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
+ 	if (ret < 0)
+ 		tcmu_free_cmd(tcmu_cmd);
+ 	mutex_unlock(&udev->cmdr_lock);
+-- 
+2.12.3
