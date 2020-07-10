@@ -1,82 +1,122 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Mon, 27 Jul 2020 18:13:50 +0000
-Subject: Re: [PATCH] scsi: target: loop: Fix handling of aborted TMRs
-Message-Id: <b8fc90b9-7038-b202-e7ef-bc4da56816f0@oracle.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Fri, 10 Jul 2020 10:48:11 +0000
+Subject: [PATCH 2/8] scsi: target: Add tmr_notify backend function
+Message-Id: <20200710104817.19462-3-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200715160403.12578-1-bstroesser@ts.fujitsu.com>
- <795a006d-6d66-a635-7e76-601cb7807f5b@oracle.com>
- <2694d1fc-8792-0fe2-4dec-78f15d3b4ec5@ts.fujitsu.com>
- <90048ea8-3b8f-cc06-7869-dca645cd68f2@oracle.com>
- <7c2d8052-fb5e-0a3b-a894-df8bfab44f21@ts.fujitsu.com>
-In-Reply-To: <7c2d8052-fb5e-0a3b-a894-df8bfab44f21@ts.fujitsu.com>
+References: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bodo Stroesser <bstroesser@ts.fujitsu.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-On 7/27/20 9:26 AM, Bodo Stroesser wrote:
-> On 2020-07-26 20:37, Mike Christie wrote:
->> On 7/26/20 6:02 AM, Bodo Stroesser wrote:
->>> On 2020-07-26 07:16, Mike Christie wrote:
->>>> On 7/15/20 11:04 AM, Bodo Stroesser wrote:
->>>>> Fix:
->>>>> After calling the aborted_task callback the core immediately
->>>>> releases the se_cmd that represents the ABORT_TASK. The woken
->>>>> up thread (tcm_loop_issue_tmr) therefore must not access se_cmd
->>>>> and tl_cmd in case of aborted TMRs.
->>>>
->>>> The code and fix description below look ok. I didn't get the above part though. If we have TARGET_SCF_ACK_KREF set then doesn't the se_cmd and tl_cmd stay around until we do the target_put_sess_cmd in tcm_loop_issue_tmr?
->>>
->>> No. For an aborted ABORT_TASK, target_handle_abort is called.
->>> If tas is not set, it executes this code:
->>>
->>>          } else {
->>>                  /*
->>>                   * Allow the fabric driver to unmap any resources before
->>>                   * releasing the descriptor via TFO->release_cmd().
->>>                   */
->>>                  cmd->se_tfo->aborted_task(cmd);
->>>                  if (ack_kref)
->>>                          WARN_ON_ONCE(target_put_sess_cmd(cmd) != 0);
->>>                  /*
->>>                   * To do: establish a unit attention condition on the I_T
->>>                   * nexus associated with cmd. See also the paragraph "Aborting
->>>                   * commands" in SAM.
->>>                   */
->>>          }
->>>
->>>          WARN_ON_ONCE(kref_read(&cmd->cmd_kref) = 0);
->>>
->>>          transport_lun_remove_cmd(cmd);
->>>
->>>          transport_cmd_check_stop_to_fabric(cmd);
->>>
->>> That means: no matter whether SCF_ACK_REF is set in the cmd or not:
->>> 1) fabric's aborted_task handler and a waiter woken up by aborted_task must not call target_put_sess_cmd.
->>> 2) a waiter woken up by aborted_task() must not access se_cmd (or tl_cmd) since target_handle_abort
->>>     might have released it completely meanwhile.
->>>
->>
->> Oh no, so xen has the same cmd lifetime issue as loop right?
-> 
-> To me it looks like xen uses nearly the same code like tcm_loop did before my patch.
-> There is nothing wrong with that code regarding the cmd lifetim> The problem instead is, that the thread which started a TMR (ABORT_TASK) will sleep forever if that TMR itself is aborted by a further TMR (LUN_RESET).
-> This is because tcm_loop_aborted_task() misses the complete() call.
->  
-> But if we just add the complete() call to XXXX_aborted_task(), we run into trouble because what core expects from fabric handlers is different:
-> 1) If core calls XXXX_queue_tm_rsp(), then fabric has to release one ref count only if SCF_ACK_REF is set. Otherwise it must not.
-> 2) If core calls XXXX_aborted_task(), then fabric must not release ref count, no matter whether SCF_ACK_REF is set.
+Target core is modified to call an optional backend
+callback function if a TMR is received or commands
+are aborted implicitly after a PR command was received.
+The backend function takes as parameters the se_dev, the
+type of the TMR, and the list of aborted commands.
+If no commands were aborted, an empty list is supplied.
 
-Maybe we agree.
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+---
+ drivers/target/target_core_tmr.c       | 16 +++++++++++++++-
+ drivers/target/target_core_transport.c |  1 +
+ include/target/target_core_backend.h   |  2 ++
+ include/target/target_core_base.h      |  1 +
+ 4 files changed, 19 insertions(+), 1 deletion(-)
 
-I was calling #2 a cmd lifetime issue. At least loop, xen and iscsi think they can access the cmd after aborted_cmd. For loop/xen we just don't hit it, because we hit #1 first. For iscsi we are.
-
-> 
-> So I decided for my patch to no longer use TARGET_SCF_ACK_KREF, since then we can handle both situation the same way.
-> After that it was a short step to move the data fields used by the thread after wakeup() from tl_cmd to stack, because then the woken up theqard has no need to access tl_cmd, which can be freed meanwhile.
-> 
-> I think, the same way to fix the problem would be fine for xen also, but I'm still wondering why the thread there does not call target_put_sess_cmd, but calls transport_generic_free_cmd.
-
-For xen and #1 and #2 I agree we can do a similar fix as you did for xen.
-
-I would really like to figure out if #2 is a regression and understand what happened so we don't make the same mistake again and also fix iscsi. The problem with iscsi though is every couple kernels has a bug in this code path so git bisect is being a pain.
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index b65d7a0a5df1..39d93357db65 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -116,6 +116,7 @@ void core_tmr_abort_task(
+ 	struct se_tmr_req *tmr,
+ 	struct se_session *se_sess)
+ {
++	LIST_HEAD(aborted_list);
+ 	struct se_cmd *se_cmd, *next;
+ 	unsigned long flags;
+ 	bool rc;
+@@ -144,7 +145,7 @@ void core_tmr_abort_task(
+ 		if (!rc)
+ 			continue;
+ 
+-		list_del_init(&se_cmd->state_list);
++		list_move_tail(&se_cmd->state_list, &aborted_list);
+ 		se_cmd->state_active = false;
+ 
+ 		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+@@ -157,6 +158,11 @@ void core_tmr_abort_task(
+ 			WARN_ON_ONCE(transport_lookup_tmr_lun(tmr->task_cmd) <
+ 					0);
+ 
++		if (dev->transport->tmr_notify)
++			dev->transport->tmr_notify(dev, TMR_ABORT_TASK,
++						   &aborted_list);
++
++		list_del_init(&se_cmd->state_list);
+ 		target_put_cmd_and_wait(se_cmd);
+ 
+ 		printk("ABORT_TASK: Sending TMR_FUNCTION_COMPLETE for"
+@@ -167,6 +173,9 @@ void core_tmr_abort_task(
+ 	}
+ 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+ 
++	if (dev->transport->tmr_notify)
++		dev->transport->tmr_notify(dev, TMR_ABORT_TASK, &aborted_list);
++
+ 	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
+ 			tmr->ref_task_tag);
+ 	tmr->response = TMR_TASK_DOES_NOT_EXIST;
+@@ -318,6 +327,11 @@ static void core_tmr_drain_state_list(
+ 	}
+ 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+ 
++	if (dev->transport->tmr_notify)
++		dev->transport->tmr_notify(dev, preempt_and_abort_list ?
++					   TMR_LUN_RESET_PRO : TMR_LUN_RESET,
++					   &drain_task_list);
++
+ 	while (!list_empty(&drain_task_list)) {
+ 		cmd = list_entry(drain_task_list.next, struct se_cmd, state_list);
+ 		list_del_init(&cmd->state_list);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index e6e1fa68de54..9fb0be0aa620 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -2946,6 +2946,7 @@ static const char *target_tmf_name(enum tcm_tmreq_table tmf)
+ 	case TMR_LUN_RESET:		return "LUN_RESET";
+ 	case TMR_TARGET_WARM_RESET:	return "TARGET_WARM_RESET";
+ 	case TMR_TARGET_COLD_RESET:	return "TARGET_COLD_RESET";
++	case TMR_LUN_RESET_PRO:		return "LUN_RESET_PRO";
+ 	case TMR_UNKNOWN:		break;
+ 	}
+ 	return "(?)";
+diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
+index f51452e3b984..6336780d83a7 100644
+--- a/include/target/target_core_backend.h
++++ b/include/target/target_core_backend.h
+@@ -40,6 +40,8 @@ struct target_backend_ops {
+ 	ssize_t (*show_configfs_dev_params)(struct se_device *, char *);
+ 
+ 	sense_reason_t (*parse_cdb)(struct se_cmd *cmd);
++	void (*tmr_notify)(struct se_device *se_dev, enum tcm_tmreq_table,
++			   struct list_head *aborted_cmds);
+ 	u32 (*get_device_type)(struct se_device *);
+ 	sector_t (*get_blocks)(struct se_device *);
+ 	sector_t (*get_alignment_offset_lbas)(struct se_device *);
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 18c3f277b770..549947d407cf 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -207,6 +207,7 @@ enum tcm_tmreq_table {
+ 	TMR_LUN_RESET		= 5,
+ 	TMR_TARGET_WARM_RESET	= 6,
+ 	TMR_TARGET_COLD_RESET	= 7,
++	TMR_LUN_RESET_PRO	= 0x80,
+ 	TMR_UNKNOWN		= 0xff,
+ };
+ 
+-- 
+2.12.3
