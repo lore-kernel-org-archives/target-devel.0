@@ -1,38 +1,41 @@
-From: "Alexander A. Klimov" <grandmaster@al2klimov.de>
-Date: Fri, 10 Jul 2020 18:12:26 +0000
+From: Bart Van Assche <bvanassche@acm.org>
+Date: Sun, 12 Jul 2020 19:52:02 +0000
 Subject: Re: [PATCH] SCSI RDMA PROTOCOL (SRP) TARGET: Replace HTTP links with HTTPS ones
-Message-Id: <8fca4633-41ad-7e86-2354-36381bf5c734@al2klimov.de>
+Message-Id: <bf85e454-cccc-37ef-d55f-d44a5c5c51df@acm.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200709194820.27032-1-grandmaster@al2klimov.de>
  <3d230abd-752e-8ac1-e18d-b64561b409ff@acm.org>
-In-Reply-To: <3d230abd-752e-8ac1-e18d-b64561b409ff@acm.org>
+ <8fca4633-41ad-7e86-2354-36381bf5c734@al2klimov.de>
+In-Reply-To: <8fca4633-41ad-7e86-2354-36381bf5c734@al2klimov.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>, dledford@redhat.com, jgg@ziepe.ca, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: "Alexander A. Klimov" <grandmaster@al2klimov.de>, dledford@redhat.com, jgg@ziepe.ca, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On 2020-07-10 11:12, Alexander A. Klimov wrote:
+> Am 10.07.20 um 16:22 schrieb Bart Van Assche:
+>> On 2020-07-09 12:48, Alexander A. Klimov wrote:
+>>> diff --git a/drivers/infiniband/ulp/srpt/Kconfig b/drivers/infiniband/ulp/srpt/Kconfig
+>>> index 4b5d9b792cfa..f63b34d9ae32 100644
+>>> --- a/drivers/infiniband/ulp/srpt/Kconfig
+>>> +++ b/drivers/infiniband/ulp/srpt/Kconfig
+>>> @@ -10,4 +10,4 @@ config INFINIBAND_SRPT
+>>>         that supports the RDMA protocol. Currently the RDMA protocol is
+>>>         supported by InfiniBand and by iWarp network hardware. More
+>>>         information about the SRP protocol can be found on the website
+>>> -      of the INCITS T10 technical committee (http://www.t10.org/).
+>>> +      of the INCITS T10 technical committee (https://www.t10.org/).
+>>
+>> It is not clear to me how modifying an URL in a Kconfig file helps to
+>> reduce the attack surface on kernel devs?
+>
+> Not on all, just on the ones who open it.
 
+Is changing every single HTTP URL in the kernel into a HTTPS URL the best
+solution? Is this the only solution? Has it been considered to recommend
+kernel developers who are concerned about MITM attacks to install a browser
+extension like HTTPS Everywhere instead?
 
-Am 10.07.20 um 16:22 schrieb Bart Van Assche:
-> On 2020-07-09 12:48, Alexander A. Klimov wrote:
->> diff --git a/drivers/infiniband/ulp/srpt/Kconfig b/drivers/infiniband/ulp/srpt/Kconfig
->> index 4b5d9b792cfa..f63b34d9ae32 100644
->> --- a/drivers/infiniband/ulp/srpt/Kconfig
->> +++ b/drivers/infiniband/ulp/srpt/Kconfig
->> @@ -10,4 +10,4 @@ config INFINIBAND_SRPT
->>   	  that supports the RDMA protocol. Currently the RDMA protocol is
->>   	  supported by InfiniBand and by iWarp network hardware. More
->>   	  information about the SRP protocol can be found on the website
->> -	  of the INCITS T10 technical committee (http://www.t10.org/).
->> +	  of the INCITS T10 technical committee (https://www.t10.org/).
-> 
-> It is not clear to me how modifying an URL in a Kconfig file helps to
-> reduce the attack surface on kernel devs?
-Not on all, just on the ones who open it.
+Thanks,
 
-> 
-> Thanks,
-> 
-> Bart.
-> 
-> 
+Bart.
