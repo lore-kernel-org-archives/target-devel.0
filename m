@@ -1,123 +1,154 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Wed, 15 Jul 2020 18:44:05 +0000
-Subject: Re: [PATCH 7/8] scsi: target: tcmu: Implement tmr_notify callback
-Message-Id: <2a6a9b1d-e0cf-a68a-f060-53f000356118@oracle.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Wed, 15 Jul 2020 16:04:03 +0000
+Subject: [PATCH] scsi: target: loop: Fix handling of aborted TMRs
+Message-Id: <20200715160403.12578-1-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200710104817.19462-1-bstroesser@ts.fujitsu.com>
- <20200710104817.19462-8-bstroesser@ts.fujitsu.com>
- <24d9afb0-3ea9-e83b-acf0-b44f04583a6e@oracle.com>
- <b8bb9898-6ff8-2ffb-47d6-d96534c6d315@ts.fujitsu.com>
- <a32b8b9e-c993-6709-b71e-3fbf80d0bdf3@oracle.com>
- <53776e18-675a-3eea-4be8-703433a247dd@ts.fujitsu.com>
-In-Reply-To: <53776e18-675a-3eea-4be8-703433a247dd@ts.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Bodo Stroesser <bstroesser@ts.fujitsu.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-On 7/15/20 10:08 AM, Bodo Stroesser wrote:
-> On 2020-07-14 20:10, Mike Christie wrote:
->> On 7/13/20 7:03 AM, Bodo Stroesser wrote:
->>> On 2020-07-12 03:15, Mike Christie wrote:
->>>> On 7/10/20 5:48 AM, Bodo Stroesser wrote:
->>>
-> 
-> ...
-> 
->>>>> +struct tcmu_tmr_entry {
->>>>> +    struct tcmu_cmd_entry_hdr hdr;
->>>>> +
->>>>> +#define TCMU_TMR_UNKNOWN        0
->>>>> +#define TCMU_TMR_ABORT_TASK        1
->>>>> +#define TCMU_TMR_ABORT_TASK_SET        2
->>>>> +#define TCMU_TMR_CLEAR_ACA        3
->>>>> +#define TCMU_TMR_CLEAR_TASK_SET        4
->>>>> +#define TCMU_TMR_LUN_RESET        5
->>>>> +#define TCMU_TMR_TARGET_WARM_RESET    6
->>>>> +#define TCMU_TMR_TARGET_COLD_RESET    7
->>>>> +/* Pseudo reset due to received PR OUT */
->>>>> +#define TCMU_TMR_LUN_RESET_PRO        128
->>>>> +    __u8 tmr_type;
->>>>> +
->>>>> +    __u8 __pad1;
->>>>> +    __u16 __pad2;
->>>>> +    __u32 cmd_cnt;
->>>>> +    __u64 __pad3;
->>>>> +    __u64 __pad4;
->>>>> +    __u16 cmd_ids[0];
->>>>> +} __packed;
->>>>> +
->>>>
->>>> Is this new request and the tmr_notify callback just supposed to 
->>>> clean up the requested commands or is it supposed to perform the 
->>>> actions of the task management function defined in the specs?
->>>>
->>>> The callback name makes it feel like it's just a notification, but 
->>>> the names above make it seem like we are supposed to execute the TMF 
->>>> in userspace. But if the latter, then how do we notify the kernel if 
->>>> the TMF was successful or failed?
->>>
->>> My plan is to have a notification only. IMHO userspace (and also tcmu
->>> or another backend) must not interfere with core's TMR handling.
->>> The new callback tmr_notify just allows backend to be helpful during
->>> TMR handling by completing in core aborted, but in backend/userspace
->>> still running commands early.
->>>
->>> Do you refer to the TCMU_TMR_* definitions? I just defined these names
->>> because TMR_* definitions are in target_core_base.h which is not exposed
->>> to userspace programs. Knowing the type of TMR that aborted a command is
->>> useful at least for userspace tracin
->>
->> I see where you are going. Makes sense to me now.
->>
->>>
->>> BTW: I hope there are enough padding fields in the tcmu_tmr_entry to
->>> allow additional session info later?
->>
->> Yes.
->>
->> One question on that. Were you going to use the tcmu_cmd_entry_hdr 
->> flags, or add a flag field to tcmu_tmr_entry?
-> 
-> The header has a flag field, tcmu_cmd_entry has not. So I didn't
-> give tcmu_tmr_entry a flags field.
-> We already use the header's uflags for the flag that tells tcmu that
-> user defined an explicit length for data transfer to initiator.
-> So, if a new flag is necessary I'd prefer to use header's kflags.
-> 
->>
->> Or will userspace just know its enabled because we would eventually 
->> add a add/delete session callback to the backend modules. And from the 
->> add callout, we would then notify userspace of the new session and 
->> that other commands like tcmu_tmr_entry have session info in it.
->>
-> 
-> It is still not completely clear to me how you want to send session info
-> to userspace. I assume session id will be written into a renamed padding
-> field in cmd and tmr. That would be compatible to old userspace tools.
+If an ABORT_TASK TMR is aborted by a LUN_RESET, core calls
+tcm_loop's aborted_task fabric callback for the ABORT_TASK.
 
-Yes.
+The aborted_task callback is not prepared to handle aborted TMRs,
+but is an empty function which is ok for aborted SCSI cmds only.
+So it does not wake up tcm_loop_issue_tmr() sleeping in
+wait_for_completion(). Therefore scmd_eh_abort_handler
+hangs forever and we get the following messages:
 
-> Since session IDs start at 1, new userspace can easily see that there is
-> a valid session ID.
-> 
-> If userspace finds a session id it not knows yet, it could retrieve
-> session info from sysFS or configFS.
-> 
-> But even then at least if a session is removed I think we will need a
-> new tcmu_XXXXX_entry type telling userspace which session ID now is
-> invalid.
+INFO: task kworker/u48:1:31216 blocked for more than 3932 seconds.
+      Tainted: G           OE     5.8.0-rc1+ #1
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+kworker/u48:1   D    0 31216      2 0x00004000
+Workqueue: scsi_tmf_14 scmd_eh_abort_handler [scsi_mod]
+Call Trace:
+ __schedule+0x2aa/0x6d0
+ schedule+0x42/0xb0
+ schedule_timeout+0x1ba/0x280
+ ? __queue_work+0x13b/0x3d0
+ ? kmem_cache_alloc_trace+0x1e6/0x200
+ wait_for_completion+0x7f/0xd0
+ tcm_loop_issue_tmr.isra.10+0xc1/0x110 [tcm_loop]
+ tcm_loop_abort_task+0x3d/0x50 [tcm_loop]
+ scmd_eh_abort_handler+0x91/0x230 [scsi_mod]
+ process_one_work+0x166/0x370
+ worker_thread+0x49/0x3e0
+ ? rescuer_thread+0x320/0x320
+ kthread+0xfc/0x130
+ ? kthread_bind+0x10/0x10
+ ret_from_fork+0x22/0x30
 
-I was hoping to just add a TCMU_OP for session addition/deletion. For 
-the addition case we can check for unknown session ids like you 
-mentioned, but just in case someone needed it I thought an addition op 
-would be helpful.
+Fix:
+After calling the aborted_task callback the core immediately
+releases the se_cmd that represents the ABORT_TASK. The woken
+up thread (tcm_loop_issue_tmr) therefore must not access se_cmd
+and tl_cmd in case of aborted TMRs.
 
-> Therefore I assume that a new attribute in configFS is needed to switch
-> on the per default deactivated session ID notification. Otherwise
-> existing userspace tools might print errors or even exit if they see an
-> entry type they don't know.
-> If userspace via configFS attribute can switch session info on and off,
-> there probably is no need for flags, right?
+So I changed aborted_task and queue_tm_rsp to transfer result
+code from se_cmd to tcm_loop_issue_tmr's stack and added the
+missing wake_up() to aborted_task.
+Now tcm_loop_issue_tmr after waking up no longer accesses se_cmd
+and tl_cmd. Therefore tcm_loop_issue_tmr no longer needs to call
+target_put_sess_cmd and flag TARGET_SCF_ACK_KREF is no longer
+needed in se_cmd.
 
-Yeah.
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+---
+ drivers/target/loopback/tcm_loop.c | 39 ++++++++++++++++++++++----------------
+ drivers/target/loopback/tcm_loop.h |  4 +++-
+ 2 files changed, 26 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+index 16d5a4e117a2..0968bc8b6640 100644
+--- a/drivers/target/loopback/tcm_loop.c
++++ b/drivers/target/loopback/tcm_loop.c
+@@ -199,6 +199,7 @@ static int tcm_loop_issue_tmr(struct tcm_loop_tpg *tl_tpg,
+ 	struct tcm_loop_nexus *tl_nexus;
+ 	struct tcm_loop_cmd *tl_cmd;
+ 	int ret = TMR_FUNCTION_FAILED, rc;
++	DECLARE_COMPLETION_ONSTACK(compl);
+ 
+ 	/*
+ 	 * Locate the tl_nexus and se_sess pointers
+@@ -213,26 +214,23 @@ static int tcm_loop_issue_tmr(struct tcm_loop_tpg *tl_tpg,
+ 	if (!tl_cmd)
+ 		return ret;
+ 
+-	init_completion(&tl_cmd->tmr_done);
++	tl_cmd->is_tmr = true;
++	tl_cmd->tmr_done = &compl;
++	tl_cmd->tmr_result = &ret;
+ 
+ 	se_cmd = &tl_cmd->tl_se_cmd;
+ 	se_sess = tl_tpg->tl_nexus->se_sess;
+ 
+ 	rc = target_submit_tmr(se_cmd, se_sess, tl_cmd->tl_sense_buf, lun,
+-			       NULL, tmr, GFP_KERNEL, task,
+-			       TARGET_SCF_ACK_KREF);
+-	if (rc < 0)
+-		goto release;
+-	wait_for_completion(&tl_cmd->tmr_done);
+-	ret = se_cmd->se_tmr_req->response;
+-	target_put_sess_cmd(se_cmd);
++			       NULL, tmr, GFP_KERNEL, task, 0);
++	if (rc < 0) {
++		kmem_cache_free(tcm_loop_cmd_cache, tl_cmd);
++		return ret;
++	}
+ 
+-out:
+-	return ret;
++	wait_for_completion(tl_cmd->tmr_done);
+ 
+-release:
+-	kmem_cache_free(tcm_loop_cmd_cache, tl_cmd);
+-	goto out;
++	return ret;
+ }
+ 
+ static int tcm_loop_abort_task(struct scsi_cmnd *sc)
+@@ -590,13 +588,22 @@ static void tcm_loop_queue_tm_rsp(struct se_cmd *se_cmd)
+ 	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
+ 				struct tcm_loop_cmd, tl_se_cmd);
+ 
+-	/* Wake up tcm_loop_issue_tmr(). */
+-	complete(&tl_cmd->tmr_done);
++	/* Set tmr result and wake up tcm_loop_issue_tmr(). */
++	*tl_cmd->tmr_result = se_cmd->se_tmr_req->response;
++	complete(tl_cmd->tmr_done);
+ }
+ 
+ static void tcm_loop_aborted_task(struct se_cmd *se_cmd)
+ {
+-	return;
++	struct tcm_loop_cmd *tl_cmd = container_of(se_cmd,
++				struct tcm_loop_cmd, tl_se_cmd);
++
++	if (!tl_cmd->is_tmr)
++		return;
++
++	/* Set tmr result and wake up tcm_loop_issue_tmr(). */
++	*tl_cmd->tmr_result = TMR_FUNCTION_REJECTED;
++	complete(tl_cmd->tmr_done);
+ }
+ 
+ static char *tcm_loop_dump_proto_id(struct tcm_loop_hba *tl_hba)
+diff --git a/drivers/target/loopback/tcm_loop.h b/drivers/target/loopback/tcm_loop.h
+index d3110909a213..e7615b9f5ed1 100644
+--- a/drivers/target/loopback/tcm_loop.h
++++ b/drivers/target/loopback/tcm_loop.h
+@@ -17,7 +17,9 @@ struct tcm_loop_cmd {
+ 	/* The TCM I/O descriptor that is accessed via container_of() */
+ 	struct se_cmd tl_se_cmd;
+ 	struct work_struct work;
+-	struct completion tmr_done;
++	struct completion *tmr_done;
++	bool is_tmr;
++	int *tmr_result;
+ 	/* Sense buffer that will be mapped into outgoing status */
+ 	unsigned char tl_sense_buf[TRANSPORT_SENSE_BUFFER];
+ };
+-- 
+2.12.3
