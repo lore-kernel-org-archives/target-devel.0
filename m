@@ -1,108 +1,144 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Fri, 17 Jul 2020 16:12:09 +0000
-Subject: [PATCH v2 5/8] scsi: target: tcmu: Factor out new helper ring_insert_padding
-Message-Id: <20200717161212.10731-6-bstroesser@ts.fujitsu.com>
+From: Hou Pu <houpu@bytedance.com>
+Date: Thu, 16 Jul 2020 10:02:11 +0000
+Subject: [PATCH v4 1/2] iscsi-target: fix login error when receiving is too fast
+Message-Id: <20200716100212.4237-2-houpu@bytedance.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
+References: <20200716100212.4237-1-houpu@bytedance.com>
+In-Reply-To: <20200716100212.4237-1-houpu@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: mchristi@redhat.com, Hou Pu <houpu@bytedance.com>
 
-The new helper ring_insert_padding is split off from and then
-called by queue_cmd_ring. It inserts a padding if necessary.
-The new helper will in a further patch be used during writing
-of TMR notifications to command ring.
+iscsi_target_sk_data_ready() could be invoked indirectly
+by iscsi_target_do_login_rx() from workqueue like following:
 
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+iscsi_target_do_login_rx()
+  iscsi_target_do_login()
+    iscsi_target_do_tx_login_io()
+      iscsit_put_login_tx()
+        iscsi_login_tx_data()
+          tx_data()
+            sock_sendmsg_nosec()
+              tcp_sendmsg()
+                release_sock()
+                  sk_backlog_rcv()
+                    tcp_v4_do_rcv()
+                      tcp_data_ready()
+                        iscsi_target_sk_data_ready()
+
+At that time LOGIN_FLAGS_READ_ACTIVE is not cleared.
+and iscsi_target_sk_data_ready will not read data
+from the socket. And some iscsi initiator(i.e. libiscsi)
+will wait forever for a reply.
+
+LOGIN_FLAGS_READ_ACTIVE should be cleared early just after
+doing the receive and before writing to the socket in
+iscsi_target_do_login_rx.
+
+But sad news is that LOGIN_FLAGS_READ_ACTIVE is also used
+by sk_state_change to do login cleanup if a socket was closed
+at login time. It is supposed to be cleared after the login
+pdu is successfully processed and replied.
+
+So introduce another flag LOGIN_FLAGS_WRITE_ACTIVE to cover
+the transmit part so that sk_state_change could work well
+and clear LOGIN_FLAGS_READ_ACTIVE early so that sk_data_ready
+could also work.
+
+While at here, use login_flags more efficient.
+
+Signed-off-by: Hou Pu <houpu@bytedance.com>
 ---
- drivers/target/target_core_user.c | 51 +++++++++++++++++++++++----------------
- 1 file changed, 30 insertions(+), 21 deletions(-)
+ drivers/target/iscsi/iscsi_target_nego.c | 34 ++++++++++++++++++++++++++++----
+ include/target/iscsi/iscsi_target_core.h |  9 +++++----
+ 2 files changed, 35 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 25c480fde9ee..7a27e838a7d3 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -926,6 +926,34 @@ static int add_to_qfull_queue(struct tcmu_cmd *tcmu_cmd)
- 	return 0;
- }
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 685d771b51d4..10477e44d17b 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -625,13 +625,37 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
+ 	pr_debug("iscsi_target_do_login_rx after rx_login_io, %p, %s:%d\n",
+ 			conn, current->comm, current->pid);
  
-+static uint32_t ring_insert_padding(struct tcmu_dev *dev, size_t cmd_size)
-+{
-+	struct tcmu_cmd_entry_hdr *hdr;
-+	struct tcmu_mailbox *mb = dev->mb_addr;
-+	uint32_t cmd_head = mb->cmd_head % dev->cmdr_size; /* UAM */
++	/*
++	 * LOGIN_FLAGS_READ_ACTIVE is cleared so that sk_data_ready
++	 * could be trigger again after this.
++	 *
++	 * LOGIN_FLAGS_WRITE_ACTIVE is cleared after we successfully
++	 * process a login pdu, so that sk_state_chage could do login
++	 * cleanup as needed if the socket is closed. If a delayed work is
++	 * ongoing (LOGIN_FLAGS_WRITE_ACTIVE or LOGIN_FLAGS_READ_ACTIVE),
++	 * sk_state_change will leave the cleanup to the delayed work or
++	 * it will schedule a delayed work to do cleanup.
++	 */
++	if (conn->sock) {
++		struct sock *sk = conn->sock->sk;
 +
-+	/* Insert a PAD if end-of-ring space is too small */
-+	if (head_to_end(cmd_head, dev->cmdr_size) < cmd_size) {
-+		size_t pad_size = head_to_end(cmd_head, dev->cmdr_size);
-+
-+		hdr = (void *) mb + CMDR_OFF + cmd_head;
-+		tcmu_hdr_set_op(&hdr->len_op, TCMU_OP_PAD);
-+		tcmu_hdr_set_len(&hdr->len_op, pad_size);
-+		hdr->cmd_id = 0; /* not used for PAD */
-+		hdr->kflags = 0;
-+		hdr->uflags = 0;
-+		tcmu_flush_dcache_range(hdr, sizeof(*hdr));
-+
-+		UPDATE_HEAD(mb->cmd_head, pad_size, dev->cmdr_size);
-+		tcmu_flush_dcache_range(mb, sizeof(*mb));
-+
-+		cmd_head = mb->cmd_head % dev->cmdr_size; /* UAM */
-+		WARN_ON(cmd_head != 0);
++		write_lock_bh(&sk->sk_callback_lock);
++		if (!test_bit(LOGIN_FLAGS_INITIAL_PDU, &conn->login_flags)) {
++			clear_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags);
++			set_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags);
++		}
++		write_unlock_bh(&sk->sk_callback_lock);
 +	}
 +
-+	return cmd_head;
-+}
-+
- /**
-  * queue_cmd_ring - queue cmd to ring or internally
-  * @tcmu_cmd: cmd to queue
-@@ -941,7 +969,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
- 	struct se_cmd *se_cmd = tcmu_cmd->se_cmd;
- 	size_t base_command_size, command_size;
--	struct tcmu_mailbox *mb;
-+	struct tcmu_mailbox *mb = udev->mb_addr;
- 	struct tcmu_cmd_entry *entry;
- 	struct iovec *iov;
- 	int iov_cnt, cmd_id;
-@@ -980,8 +1008,6 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	if (!list_empty(&udev->qfull_queue))
- 		goto queue;
+ 	rc = iscsi_target_do_login(conn, login);
+ 	if (rc < 0) {
+ 		goto err;
+ 	} else if (!rc) {
+-		if (iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_READ_ACTIVE))
++		if (iscsi_target_sk_check_and_clear(conn,
++						    LOGIN_FLAGS_WRITE_ACTIVE))
+ 			goto err;
+ 	} else if (rc = 1) {
++		cancel_delayed_work(&conn->login_work);
+ 		iscsi_target_nego_release(conn);
+ 		iscsi_post_login_handler(np, conn, zero_tsih);
+ 		iscsit_deaccess_np(np, tpg, tpg_np);
+@@ -640,6 +664,7 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
  
--	mb = udev->mb_addr;
--	cmd_head = mb->cmd_head % udev->cmdr_size; /* UAM */
- 	if ((command_size > (udev->cmdr_size / 2)) ||
- 	    data_length > udev->data_size) {
- 		pr_warn("TCMU: Request of size %zu/%zu is too big for %u/%zu "
-@@ -1001,24 +1027,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 		goto queue;
- 	}
+ err:
+ 	iscsi_target_restore_sock_callbacks(conn);
++	cancel_delayed_work(&conn->login_work);
+ 	iscsi_target_login_drop(conn, login);
+ 	iscsit_deaccess_np(np, tpg, tpg_np);
+ }
+@@ -670,9 +695,10 @@ static void iscsi_target_sk_state_change(struct sock *sk)
+ 	state = __iscsi_target_sk_check_close(sk);
+ 	pr_debug("__iscsi_target_sk_close_change: state: %d\n", state);
  
--	/* Insert a PAD if end-of-ring space is too small */
--	if (head_to_end(cmd_head, udev->cmdr_size) < command_size) {
--		size_t pad_size = head_to_end(cmd_head, udev->cmdr_size);
--
--		entry = (void *) mb + CMDR_OFF + cmd_head;
--		tcmu_hdr_set_op(&entry->hdr.len_op, TCMU_OP_PAD);
--		tcmu_hdr_set_len(&entry->hdr.len_op, pad_size);
--		entry->hdr.cmd_id = 0; /* not used for PAD */
--		entry->hdr.kflags = 0;
--		entry->hdr.uflags = 0;
--		tcmu_flush_dcache_range(entry, sizeof(entry->hdr));
--
--		UPDATE_HEAD(mb->cmd_head, pad_size, udev->cmdr_size);
--		tcmu_flush_dcache_range(mb, sizeof(*mb));
--
--		cmd_head = mb->cmd_head % udev->cmdr_size; /* UAM */
--		WARN_ON(cmd_head != 0);
--	}
-+	cmd_head = ring_insert_padding(udev, command_size);
- 
- 	entry = (void *) mb + CMDR_OFF + cmd_head;
- 	memset(entry, 0, command_size);
+-	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags)) {
+-		pr_debug("Got LOGIN_FLAGS_READ_ACTIVE=1 sk_state_change"
+-			 " conn: %p\n", conn);
++	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags) ||
++	    test_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags)) {
++		pr_debug("Got LOGIN_FLAGS_{READ|WRITE}_ACTIVE=1"
++			 " sk_state_change conn: %p\n", conn);
+ 		if (state)
+ 			set_bit(LOGIN_FLAGS_CLOSED, &conn->login_flags);
+ 		write_unlock_bh(&sk->sk_callback_lock);
+diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+index 591cd9e4692c..844bef255e89 100644
+--- a/include/target/iscsi/iscsi_target_core.h
++++ b/include/target/iscsi/iscsi_target_core.h
+@@ -566,10 +566,11 @@ struct iscsi_conn {
+ 	struct socket		*sock;
+ 	void			(*orig_data_ready)(struct sock *);
+ 	void			(*orig_state_change)(struct sock *);
+-#define LOGIN_FLAGS_READ_ACTIVE		1
+-#define LOGIN_FLAGS_CLOSED		2
+-#define LOGIN_FLAGS_READY		4
+-#define LOGIN_FLAGS_INITIAL_PDU		8
++#define LOGIN_FLAGS_READY		0
++#define LOGIN_FLAGS_INITIAL_PDU		1
++#define LOGIN_FLAGS_READ_ACTIVE		2
++#define LOGIN_FLAGS_WRITE_ACTIVE	3
++#define LOGIN_FLAGS_CLOSED		4
+ 	unsigned long		login_flags;
+ 	struct delayed_work	login_work;
+ 	struct iscsi_login	*login;
 -- 
-2.12.3
+2.11.0
