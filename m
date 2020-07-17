@@ -1,144 +1,98 @@
-From: Hou Pu <houpu@bytedance.com>
-Date: Thu, 16 Jul 2020 10:02:11 +0000
-Subject: [PATCH v4 1/2] iscsi-target: fix login error when receiving is too fast
-Message-Id: <20200716100212.4237-2-houpu@bytedance.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Fri, 17 Jul 2020 16:12:04 +0000
+Subject: [PATCH v2 0/8] scsi: target: tcmu: Add TMR notification for tcmu
+Message-Id: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200716100212.4237-1-houpu@bytedance.com>
-In-Reply-To: <20200716100212.4237-1-houpu@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: mchristi@redhat.com, Hou Pu <houpu@bytedance.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-iscsi_target_sk_data_ready() could be invoked indirectly
-by iscsi_target_do_login_rx() from workqueue like following:
+This patch series is made on top of Martin's for-next branch.
 
-iscsi_target_do_login_rx()
-  iscsi_target_do_login()
-    iscsi_target_do_tx_login_io()
-      iscsit_put_login_tx()
-        iscsi_login_tx_data()
-          tx_data()
-            sock_sendmsg_nosec()
-              tcp_sendmsg()
-                release_sock()
-                  sk_backlog_rcv()
-                    tcp_v4_do_rcv()
-                      tcp_data_ready()
-                        iscsi_target_sk_data_ready()
+ChangeLog:
 
-At that time LOGIN_FLAGS_READ_ACTIVE is not cleared.
-and iscsi_target_sk_data_ready will not read data
-from the socket. And some iscsi initiator(i.e. libiscsi)
-will wait forever for a reply.
+v2: in patch "scsi: target: tcmu: Implement tmr_notify callback"
+    changed new comment's style from "// ..." to "/* ... */"
+    and correctly use "/** " for function doc.
 
-LOGIN_FLAGS_READ_ACTIVE should be cleared early just after
-doing the receive and before writing to the socket in
-iscsi_target_do_login_rx.
-
-But sad news is that LOGIN_FLAGS_READ_ACTIVE is also used
-by sk_state_change to do login cleanup if a socket was closed
-at login time. It is supposed to be cleared after the login
-pdu is successfully processed and replied.
-
-So introduce another flag LOGIN_FLAGS_WRITE_ACTIVE to cover
-the transmit part so that sk_state_change could work well
-and clear LOGIN_FLAGS_READ_ACTIVE early so that sk_data_ready
-could also work.
-
-While at here, use login_flags more efficient.
-
-Signed-off-by: Hou Pu <houpu@bytedance.com>
 ---
- drivers/target/iscsi/iscsi_target_nego.c | 34 ++++++++++++++++++++++++++++----
- include/target/iscsi/iscsi_target_core.h |  9 +++++----
- 2 files changed, 35 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-index 685d771b51d4..10477e44d17b 100644
---- a/drivers/target/iscsi/iscsi_target_nego.c
-+++ b/drivers/target/iscsi/iscsi_target_nego.c
-@@ -625,13 +625,37 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
- 	pr_debug("iscsi_target_do_login_rx after rx_login_io, %p, %s:%d\n",
- 			conn, current->comm, current->pid);
- 
-+	/*
-+	 * LOGIN_FLAGS_READ_ACTIVE is cleared so that sk_data_ready
-+	 * could be trigger again after this.
-+	 *
-+	 * LOGIN_FLAGS_WRITE_ACTIVE is cleared after we successfully
-+	 * process a login pdu, so that sk_state_chage could do login
-+	 * cleanup as needed if the socket is closed. If a delayed work is
-+	 * ongoing (LOGIN_FLAGS_WRITE_ACTIVE or LOGIN_FLAGS_READ_ACTIVE),
-+	 * sk_state_change will leave the cleanup to the delayed work or
-+	 * it will schedule a delayed work to do cleanup.
-+	 */
-+	if (conn->sock) {
-+		struct sock *sk = conn->sock->sk;
-+
-+		write_lock_bh(&sk->sk_callback_lock);
-+		if (!test_bit(LOGIN_FLAGS_INITIAL_PDU, &conn->login_flags)) {
-+			clear_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags);
-+			set_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags);
-+		}
-+		write_unlock_bh(&sk->sk_callback_lock);
-+	}
-+
- 	rc = iscsi_target_do_login(conn, login);
- 	if (rc < 0) {
- 		goto err;
- 	} else if (!rc) {
--		if (iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_READ_ACTIVE))
-+		if (iscsi_target_sk_check_and_clear(conn,
-+						    LOGIN_FLAGS_WRITE_ACTIVE))
- 			goto err;
- 	} else if (rc = 1) {
-+		cancel_delayed_work(&conn->login_work);
- 		iscsi_target_nego_release(conn);
- 		iscsi_post_login_handler(np, conn, zero_tsih);
- 		iscsit_deaccess_np(np, tpg, tpg_np);
-@@ -640,6 +664,7 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
- 
- err:
- 	iscsi_target_restore_sock_callbacks(conn);
-+	cancel_delayed_work(&conn->login_work);
- 	iscsi_target_login_drop(conn, login);
- 	iscsit_deaccess_np(np, tpg, tpg_np);
- }
-@@ -670,9 +695,10 @@ static void iscsi_target_sk_state_change(struct sock *sk)
- 	state = __iscsi_target_sk_check_close(sk);
- 	pr_debug("__iscsi_target_sk_close_change: state: %d\n", state);
- 
--	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags)) {
--		pr_debug("Got LOGIN_FLAGS_READ_ACTIVE=1 sk_state_change"
--			 " conn: %p\n", conn);
-+	if (test_bit(LOGIN_FLAGS_READ_ACTIVE, &conn->login_flags) ||
-+	    test_bit(LOGIN_FLAGS_WRITE_ACTIVE, &conn->login_flags)) {
-+		pr_debug("Got LOGIN_FLAGS_{READ|WRITE}_ACTIVE=1"
-+			 " sk_state_change conn: %p\n", conn);
- 		if (state)
- 			set_bit(LOGIN_FLAGS_CLOSED, &conn->login_flags);
- 		write_unlock_bh(&sk->sk_callback_lock);
-diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-index 591cd9e4692c..844bef255e89 100644
---- a/include/target/iscsi/iscsi_target_core.h
-+++ b/include/target/iscsi/iscsi_target_core.h
-@@ -566,10 +566,11 @@ struct iscsi_conn {
- 	struct socket		*sock;
- 	void			(*orig_data_ready)(struct sock *);
- 	void			(*orig_state_change)(struct sock *);
--#define LOGIN_FLAGS_READ_ACTIVE		1
--#define LOGIN_FLAGS_CLOSED		2
--#define LOGIN_FLAGS_READY		4
--#define LOGIN_FLAGS_INITIAL_PDU		8
-+#define LOGIN_FLAGS_READY		0
-+#define LOGIN_FLAGS_INITIAL_PDU		1
-+#define LOGIN_FLAGS_READ_ACTIVE		2
-+#define LOGIN_FLAGS_WRITE_ACTIVE	3
-+#define LOGIN_FLAGS_CLOSED		4
- 	unsigned long		login_flags;
- 	struct delayed_work	login_work;
- 	struct iscsi_login	*login;
+TCM/LIO core handles TMRs without involving backends.
+But TMR completion message is sent to initiator only after
+commands aborted by the TMR are completed by the backend.
+Especially in case of tcmu backend, if userspace executes long
+running commands and therefore initiator sends ABORT_TASK on
+timeout, the ABORT itself can time out if core still waits for
+userspace/tcmu to complete the command.
+
+It would be very helpful for userspace to get a notification
+about received TMR and which commands were aborted by that TMR.
+Then userspace can decide whether to cancel command processing,
+and it can send command completion earlier than it would without
+TMR notification.
+It is also helpful for userspace traces and device emulation to
+get notification about TMR events.
+
+So this patch series in the first two patches implements in
+core the usage of a new optional backend callback for TMR
+notifications. The core calls it before core waits for
+completion of aborted commands (params: se_dev, TMR type,
+and list of se_cmds aborted by this TMR).
+Of course other backends than tcmu can use this part of the
+series also to implement their own TMR notification if
+necessary.
+
+The further six patches implement the TMR notify callback for
+tcmu. The new configFS attribute tmr_notification allows to
+switch on TMR messages on the cmd ring. The default of the
+attribute is the old behavior without TMR info on the ring, but
+with following changes:
+ - if tcmu receives an already aborted command, it immediately
+   rejects it. So it will never appear in userspace.
+ - if tcmu finds, that according to TMR notification a cmd on
+   the qfull_queue was aborted, tcmu removes it from qfull_queue
+   and completes it immediately. So userspace will not 'see'
+   those commands.
+
+When attribute tmr_notification is set to 1, tcmu additionally
+prepares a list of cmd_ids from those commands, that are aborted
+by the TMR and are active in cmd ring (not timed out).
+This list together with the TMR type is either immediately
+written to cmd ring (new TMR entry type) or queued in a separate
+tmr queue if ring space is too small.
+TMRs in the tmr queue do not time out. If ring space becomes
+available, tcmu moves TMRs from tmr queue to ring with higher
+priority than cmds from qfull queue.
+
+This mechanism makes sure that userspace receives TMR
+notifications as early as possible. Userspace can use the
+list of cmd_ids attached to the TMR notification to identify
+aborted commands from its list of received and not yet completed
+commands. In case userspace has meanwhile completed some of the
+cmd_ids on the list, it can just ignore these cmd_ids.
+A possible new command having the same cmd_id as one of the
+aborted commands will always appear on the ring after the TMR
+notification.
+
+Bodo Stroesser (8):
+  scsi: target: Modify core_tmr_abort_task()
+  scsi: target: Add tmr_notify backend function
+  scsi: target: tcmu: Use priv pointer in se_cmd
+  scsi: target: tcmu: Do not queue aborted commands
+  scsi: target: tcmu: Factor out new helper ring_insert_padding
+  scsi: target: tcmu: Fix and simplify timeout handling
+  scsi: target: tcmu: Implement tmr_notify callback
+  scsi: target: tcmu: Make TMR notification optional
+
+ drivers/target/target_core_tmr.c       |  36 +++-
+ drivers/target/target_core_transport.c |   1 +
+ drivers/target/target_core_user.c      | 374 +++++++++++++++++++++++++++------
+ include/target/target_core_backend.h   |   2 +
+ include/target/target_core_base.h      |   1 +
+ include/uapi/linux/target_core_user.h  |  25 +++
+ 6 files changed, 367 insertions(+), 72 deletions(-)
+
 -- 
-2.11.0
+2.12.3
