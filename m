@@ -1,106 +1,97 @@
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Sun, 26 Jul 2020 11:35:03 +0000
-Subject: Re: [PATCH v2 1/8] scsi: target: Modify core_tmr_abort_task()
-Message-Id: <388238d9-e698-db39-ec30-b61723da0dd5@ts.fujitsu.com>
+Date: Fri, 17 Jul 2020 16:12:12 +0000
+Subject: [PATCH v2 8/8] scsi: target: tcmu: Make TMR notification optional
+Message-Id: <20200717161212.10731-9-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
- <20200717161212.10731-2-bstroesser@ts.fujitsu.com>
- <12707afb-4821-f0d9-baff-4078b599a5ea@oracle.com>
-In-Reply-To: <12707afb-4821-f0d9-baff-4078b599a5ea@oracle.com>
+In-Reply-To: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <michael.christie@oracle.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-On 2020-07-26 02:03, Mike Christie wrote:
-> On 7/17/20 11:12 AM, Bodo Stroesser wrote:
->> This patch modifies core_tmr_abort_task() to use same looping
->> and locking scheme as core_tmr_drain_state_list() does.
->>
->> This frees the state_list element in se_cmd for later use
->> by tmr notification handling.
->>
->> Note: __target_check_io_state() now is called with param 0
->> instead of dev->dev_attrib.emulate_tas, because tas is not
->> relevant since we always get ABRT on same session like the
->> aborted command.
->>
->> Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
->> ---
->>   drivers/target/target_core_tmr.c | 22 ++++++++++++++--------
->>   1 file changed, 14 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
->> index 89c84d472cd7..b65d7a0a5df1 100644
->> --- a/drivers/target/target_core_tmr.c
->> +++ b/drivers/target/target_core_tmr.c
->> @@ -116,14 +116,15 @@ void core_tmr_abort_task(
->>   	struct se_tmr_req *tmr,
->>   	struct se_session *se_sess)
->>   {
->> -	struct se_cmd *se_cmd;
->> +	struct se_cmd *se_cmd, *next;
->>   	unsigned long flags;
->> +	bool rc;
->>   	u64 ref_tag;
->>   
->> -	spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
->> -	list_for_each_entry(se_cmd, &se_sess->sess_cmd_list, se_cmd_list) {
->> +	spin_lock_irqsave(&dev->execute_task_lock, flags);
->> +	list_for_each_entry_safe(se_cmd, next, &dev->state_list, state_list) {
->>   
->> -		if (dev != se_cmd->se_dev)
->> +		if (se_sess != se_cmd->se_sess)
->>   			continue;
->>   
->>   		/* skip task management functions, including tmr->task_cmd */
->> @@ -137,11 +138,16 @@ void core_tmr_abort_task(
->>   		printk("ABORT_TASK: Found referenced %s task_tag: %llu\n",
->>   			se_cmd->se_tfo->fabric_name, ref_tag);
->>   
->> -		if (!__target_check_io_state(se_cmd, se_sess,
->> -					     dev->dev_attrib.emulate_tas))
->> +		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
-> 
-> I don't think you can use flags twice. This call seems to be overwriting the outer spin lock caller's value, and I'm seeing a lot of warnings.
+Add "tmr_notification" configFS attribute to tcmu devices.
+If default value 0 of the attribute is used, tcmu only
+removes aborted commands from qfull_queue.
+If user changes tmr_notification to 1, additionally
+TMR notifications will be written to the cmd ring.
 
-Oops. Thank you!
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+---
+ drivers/target/target_core_user.c | 39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
-Bad cut and paste. I wanted to make core_tmr_abort_task similar to core_tmr_drain_state_list.
-But then I moved the calls for se_sess->sess_cmd_lock inside core_tmr_abort_task instead of copying the ones from core_tmr_drain_state_list.
-
-I'm wondering why I don't see warnings when waiting with irq blocked ...
-
-I'll resend without _irqsave / _irqrestore.
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 92b7a2e84e64..95e66b707373 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -118,6 +118,7 @@ struct tcmu_dev {
+ #define TCMU_DEV_BIT_OPEN 0
+ #define TCMU_DEV_BIT_BROKEN 1
+ #define TCMU_DEV_BIT_BLOCKED 2
++#define TCMU_DEV_BIT_TMR_NOTIFY 3
+ 	unsigned long flags;
  
-> 
-> 
->> +		rc = __target_check_io_state(se_cmd, se_sess, 0);
->> +		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
-> 
-> 
-> Use spin_lock/spin_unlock since we know above we have disabled irqs right above. Or make the drain users work like above.
-> 
-> Just make it consistent so future devs don't have to wonder why we use different calls.
-> 
->> +		if (!rc)
->>   			continue;
->>   
->> -		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);> +		list_del_init(&se_cmd->state_list);
->> +		se_cmd->state_active = false;
->> +
->> +		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
->>   
->>   		/*
->>   		 * Ensure that this ABORT request is visible to the LU RESET
->> @@ -159,7 +165,7 @@ void core_tmr_abort_task(
->>   		atomic_long_inc(&dev->aborts_complete);
->>   		return;
->>   	}
->> -	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
->> +	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
->>   
->>   	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
->>   			tmr->ref_task_tag);
->>
-> 
+ 	struct uio_info uio_info;
+@@ -1260,6 +1261,9 @@ tcmu_tmr_notify(struct se_device *se_dev, enum tcm_tmreq_table tmf,
+ 	if (unqueued)
+ 		tcmu_set_next_deadline(&dev->qfull_queue, &dev->qfull_timer);
+ 
++	if (!test_bit(TCMU_DEV_BIT_TMR_NOTIFY, &dev->flags))
++		goto unlock;
++
+ 	pr_debug("TMR event %d on dev %s, aborted cmds %d, afflicted cmd_ids %d\n",
+ 		 tcmu_tmr_type(tmf), dev->name, i, cmd_cnt);
+ 
+@@ -2706,6 +2710,40 @@ static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
+ }
+ CONFIGFS_ATTR(tcmu_, emulate_write_cache);
+ 
++static ssize_t tcmu_tmr_notification_show(struct config_item *item,
++					     char *page)
++{
++	struct se_dev_attrib *da = container_of(to_config_group(item),
++					struct se_dev_attrib, da_group);
++	struct tcmu_dev *dev = TCMU_DEV(da->da_dev);
++
++	return snprintf(page, PAGE_SIZE, "%i\n",
++			test_bit(TCMU_DEV_BIT_TMR_NOTIFY, &dev->flags));
++}
++
++static ssize_t tcmu_tmr_notification_store(struct config_item *item,
++					   const char *page, size_t count)
++{
++	struct se_dev_attrib *da = container_of(to_config_group(item),
++					struct se_dev_attrib, da_group);
++	struct tcmu_dev *dev = TCMU_DEV(da->da_dev);
++	u8 val;
++	int ret;
++
++	ret = kstrtou8(page, 0, &val);
++	if (ret < 0)
++		return ret;
++	if (val > 1)
++		return -EINVAL;
++
++	if (val)
++		set_bit(TCMU_DEV_BIT_TMR_NOTIFY, &dev->flags);
++	else
++		clear_bit(TCMU_DEV_BIT_TMR_NOTIFY, &dev->flags);
++	return count;
++}
++CONFIGFS_ATTR(tcmu_, tmr_notification);
++
+ static ssize_t tcmu_block_dev_show(struct config_item *item, char *page)
+ {
+ 	struct se_device *se_dev = container_of(to_config_group(item),
+@@ -2787,6 +2825,7 @@ static struct configfs_attribute *tcmu_attrib_attrs[] = {
+ 	&tcmu_attr_dev_config,
+ 	&tcmu_attr_dev_size,
+ 	&tcmu_attr_emulate_write_cache,
++	&tcmu_attr_tmr_notification,
+ 	&tcmu_attr_nl_reply_supported,
+ 	NULL,
+ };
+-- 
+2.12.3
