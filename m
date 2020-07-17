@@ -1,38 +1,68 @@
-From: Hou Pu <houpu@bytedance.com>
-Date: Thu, 16 Jul 2020 10:02:12 +0000
-Subject: [PATCH v4 2/2] iscsi-target: Fix inconsistent debug message in __iscsi_target_sk_check_close
-Message-Id: <20200716100212.4237-3-houpu@bytedance.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Fri, 17 Jul 2020 16:12:07 +0000
+Subject: [PATCH v2 3/8] scsi: target: tcmu: Use priv pointer in se_cmd
+Message-Id: <20200717161212.10731-4-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200716100212.4237-1-houpu@bytedance.com>
-In-Reply-To: <20200716100212.4237-1-houpu@bytedance.com>
+References: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: mchristi@redhat.com, Hou Pu <houpu@bytedance.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-The commit 25cdda95fda7 ("iscsi-target: Fix initial login PDU
-asynchronous socket close OOPs") changed the return value of
-__iscsi_target_sk_check_close. But the pr_debug is still printing
-FALSE when returning TRUE which is a little confusing.
+We initialize and clean up the se_cmd's priv pointer
+under cmd_ring_lock to point to the corresponding tcmu_cmd.
 
-Signed-off-by: Hou Pu <houpu@bytedance.com>
+In the patch that implements tmr_notify callback in
+tcmu we will use the priv pointer.
+
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 ---
- drivers/target/iscsi/iscsi_target_nego.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_user.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-index 10477e44d17b..701c008d6bd5 100644
---- a/drivers/target/iscsi/iscsi_target_nego.c
-+++ b/drivers/target/iscsi/iscsi_target_nego.c
-@@ -481,7 +481,7 @@ static bool __iscsi_target_sk_check_close(struct sock *sk)
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 366878b0b2fd..b06b18d1b135 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -541,6 +541,8 @@ tcmu_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
+ 
+ static inline void tcmu_free_cmd(struct tcmu_cmd *tcmu_cmd)
  {
- 	if (sk->sk_state = TCP_CLOSE_WAIT || sk->sk_state = TCP_CLOSE) {
- 		pr_debug("__iscsi_target_sk_check_close: TCP_CLOSE_WAIT|TCP_CLOSE,"
--			"returning FALSE\n");
-+			"returning TRUE\n");
- 		return true;
- 	}
- 	return false;
++	if (tcmu_cmd->se_cmd)
++		tcmu_cmd->se_cmd->priv = NULL;
+ 	kfree(tcmu_cmd->dbi);
+ 	kmem_cache_free(tcmu_cmd_cache, tcmu_cmd);
+ }
+@@ -1109,10 +1111,11 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
+ 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+ 
+ 	mutex_lock(&udev->cmdr_lock);
++	se_cmd->priv = tcmu_cmd;
+ 	ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
+-	mutex_unlock(&udev->cmdr_lock);
+ 	if (ret < 0)
+ 		tcmu_free_cmd(tcmu_cmd);
++	mutex_unlock(&udev->cmdr_lock);
+ 	return scsi_ret;
+ }
+ 
+@@ -1179,7 +1182,6 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 		target_complete_cmd(cmd->se_cmd, entry->rsp.scsi_status);
+ 
+ out:
+-	cmd->se_cmd = NULL;
+ 	tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
+ 	tcmu_free_cmd(cmd);
+ }
+@@ -1285,6 +1287,7 @@ static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
+ 	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
+ 	list_del_init(&cmd->queue_entry);
+ 	se_cmd = cmd->se_cmd;
++	se_cmd->priv = NULL;
+ 	cmd->se_cmd = NULL;
+ 
+ 	pr_debug("Timing out inflight cmd %u on dev %s.\n",
 -- 
-2.11.0
+2.12.3
