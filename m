@@ -1,48 +1,28 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Sun, 26 Jul 2020 15:35:06 +0000
-Subject: [PATCH v3 4/8] scsi: target: tcmu: Do not queue aborted commands
-Message-Id: <20200726153510.13077-5-bstroesser@ts.fujitsu.com>
+From: "MOORE GATES LTD" <TEXT@TEXT.COM>
+Date: Tue, 21 Jul 2020 01:07:42 +0000
+Subject: FROM MR. MOORE
+Message-Id: <b0u$8it2-$$3$ft4r3h@4bouphz2>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="AD8FD3B.2D394"
 List-Id: <target-devel.vger.kernel.org>
-References: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: target-devel@vger.kernel.org
 
-If tcmu receives an already aborted command, tcmu_queue_cmd()
-should reject it.
 
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
----
- drivers/target/target_core_user.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+--AD8FD3B.2D394
+Content-Type: text/plain;
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index b06b18d1b135..25c480fde9ee 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1103,8 +1103,8 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
- 	struct se_device *se_dev = se_cmd->se_dev;
- 	struct tcmu_dev *udev = TCMU_DEV(se_dev);
- 	struct tcmu_cmd *tcmu_cmd;
--	sense_reason_t scsi_ret;
--	int ret;
-+	sense_reason_t scsi_ret = TCM_CHECK_CONDITION_ABORT_CMD;
-+	int ret = -1;
- 
- 	tcmu_cmd = tcmu_alloc_cmd(se_cmd);
- 	if (!tcmu_cmd)
-@@ -1112,7 +1112,8 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
- 
- 	mutex_lock(&udev->cmdr_lock);
- 	se_cmd->priv = tcmu_cmd;
--	ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
-+	if (!(se_cmd->transport_state & CMD_T_ABORTED))
-+		ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
- 	if (ret < 0)
- 		tcmu_free_cmd(tcmu_cmd);
- 	mutex_unlock(&udev->cmdr_lock);
--- 
-2.12.3
+Dear Beloved,
+Peace of the Lord be with you and family, I am Fitzpatrick Moore a
+United Kingdom Citizen, I have ($ 25M) Twenty five Million united
+states dollars with a finance House in United State. I will want you
+to help me collect this deposit and dispatch it to charity
+organizations. You will take out 30% of these funds for your
+assistance to help ME disburse this fund to charities. I will like you
+to acknowledge the receipt of this e-mail as soon as possible and
+treats with absolute confidentiality and sincerity. Please reply to my
+Email: (moorefitzpatrick@gmail.com)
+Yours Sincerely,
+Fitzpatrick Moore
+
+--AD8FD3B.2D394--
