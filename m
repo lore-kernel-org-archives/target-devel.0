@@ -1,38 +1,16 @@
-From: Rashid Al-Wahaibi <pdlarsen550@gmail.com>
-Date: Tue, 28 Jul 2020 11:38:13 +0000
-Subject: Your Partnership
-Message-Id: <CAE00X2F5SUiQf0qCZYq3Yx353S0Esu1hA3RH4THqOM0WZMKHFQ@mail.gmail.com>
+From: Lerynne West <acarrasquel@conatel.gob.ve>
+Date: Wed, 22 Jul 2020 05:50:05 +0000
+Subject: RE
+Message-Id: <817567849.88106.1595397725352.JavaMail.zimbra@conatel.gob.ve>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
--- 
-Good day,
-My name is Rashid Al-Wahaibi, I am from Oman but base here in the UK
-and a Managing Partner of BP Partnership Ltd, a Financial Consultancy
-Firm with office in the United Kingdom. I am contacting you based on
-the request of Ms Rosmah Mansor Najib Razak, wife of Najib Razak, the
-immediate past Malaysian Prime Minister.
-
-I found your profile satisfying and decided to contact you based on Ms
-Rosmah Mansor Najib Razak desire to invest in any viable project in
-your region.
-
-I need you to guide me on the type of investment that will be of best
-interest and provide good return on investment in your country and
-also act as her investment manager. She is ready to invest $25m to
-$50m USD
-
-I will explain further detail of this business proposal when you reply
-to this email indicating your interest.
 
 
-Regards,
+Hallo, Sie haben eine Spende in H&ouml;he von 2.800.000,00 &euro;. Ich habe die America-Lotterie in Amerika im Wert von 343 Millionen Dollar gewonnen und einen Teil davon an f&uuml;nf gl&uuml;ckliche Menschen und Wohlt&auml;tigkeitsorganisationen gespendet, um an das Leben meines verstorbenen Sohnes zu erinnern, der an Krebs gestorben ist Viele Menschen, die von diesem Coronavirus betroffen sind, kontaktieren mich f&uuml;r weitere Informationen unter; callumfoundation01@outlook.com
 
-Rashid Al-Wahaibi,
-Bp Partnership Ltd
-60 Raglan Road
-Reigate, ENG RH2 0HN,
-United Kingdom
+Gr&uuml;&szlig;e
+Mrs.Lerynne West
