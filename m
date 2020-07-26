@@ -1,49 +1,38 @@
-From: Hou Pu <houpu@bytedance.com>
-Date: Thu, 16 Jul 2020 10:02:10 +0000
-Subject: [PATCH v4 0/2] iscsi-target: fix login error when receiving is too fast
-Message-Id: <20200716100212.4237-1-houpu@bytedance.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Sun, 26 Jul 2020 02:58:55 +0000
+Subject: Re: [PATCH v4 0/2] iscsi-target: fix login error when receiving is too fast
+Message-Id: <a78662d5-0bb4-8b27-125e-b4c2176b70c6@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200716100212.4237-1-houpu@bytedance.com>
+In-Reply-To: <20200716100212.4237-1-houpu@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: mchristi@redhat.com, Hou Pu <houpu@bytedance.com>
+To: Hou Pu <houpu@bytedance.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: mchristi@redhat.com
 
-Hi,
-We encountered "iSCSI Login negotiation failed" several times.
-After enable debug log in iscsi_target_nego.c of iSCSI target.
-Error shows:
-  "Got LOGIN_FLAGS_READ_ACTIVE=1, conn: xxxxxxxxxx >>>>"
+On 7/16/20 5:02 AM, Hou Pu wrote:
+> Hi,
+> We encountered "iSCSI Login negotiation failed" several times.
+> After enable debug log in iscsi_target_nego.c of iSCSI target.
+> Error shows:
+>   "Got LOGIN_FLAGS_READ_ACTIVE=1, conn: xxxxxxxxxx >>>>"
+> 
+> Patch 1 is trying to fix this problem. Please see comment in patch 1
+> for details.
+> 
+> Sorry for delay of v4. Version 3 of this patchset could be found here[1].
+> 
+> Changes from v4:
+> * In iscsi_target_do_login_rx(), call cancel_delayed_work() if it is final
+>   login pdu. Also call cancel_delayed_work() if current negotiation is failed.
+>   This is advised by Mike Christie. See below[1] for more details.
+> 
+> Changes from v3:
+> * Fix style problem found by checkpatch.pl.
+> 
+Ah sorry, I thought I replied a little later about my concerns being overly paranoid and your patch being ok. I don't see it on the list so not sure what happened.
 
-Patch 1 is trying to fix this problem. Please see comment in patch 1
-for details.
+If you are still not liking the cancel call, I'm ok with v3. Add my reviewed by to either version you prefer.
 
-Sorry for delay of v4. Version 3 of this patchset could be found here[1].
-
-Changes from v4:
-* In iscsi_target_do_login_rx(), call cancel_delayed_work() if it is final
-  login pdu. Also call cancel_delayed_work() if current negotiation is failed.
-  This is advised by Mike Christie. See below[1] for more details.
-
-Changes from v3:
-* Fix style problem found by checkpatch.pl.
-
-Changes from v2:
-* Improve comments in patch #1.
-* Change bit possition of login_flags in patch #1.
-
-
-[1]:
-https://www.spinics.net/lists/target-devel/msg18281.html
-
-Hou Pu (2):
-  iscsi-target: fix login error when receiving is too fast
-  iscsi-target: Fix inconsistent debug message in
-    __iscsi_target_sk_check_close
-
- drivers/target/iscsi/iscsi_target_nego.c | 36 +++++++++++++++++++++++++++-----
- include/target/iscsi/iscsi_target_core.h |  9 ++++----
- 2 files changed, 36 insertions(+), 9 deletions(-)
-
--- 
-2.11.0
+Reviewed-by: Mike Christie <michael.christie@oracle.com>
