@@ -1,66 +1,122 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 02 Jul 2020 01:43:20 +0000
-Subject: [PATCH 4/7] target: fix iscsi transport id parsing
-Message-Id: <1593654203-12442-5-git-send-email-michael.christie@oracle.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Sun, 26 Jul 2020 15:35:04 +0000
+Subject: [PATCH v3 2/8] scsi: target: Add tmr_notify backend function
+Message-Id: <20200726153510.13077-3-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1593654203-12442-1-git-send-email-michael.christie@oracle.com>
+References: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, bstroesser@ts.fujitsu.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-The length passed in the ADDITIONAL LENGTH field includes padding and
-the terminating NULL for the last field (name or isid depending on the
-format), so we should not also try to calculate that and then double add
-that to the returned length.
+Target core is modified to call an optional backend
+callback function if a TMR is received or commands
+are aborted implicitly after a PR command was received.
+The backend function takes as parameters the se_dev, the
+type of the TMR, and the list of aborted commands.
+If no commands were aborted, an empty list is supplied.
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 ---
- drivers/target/target_core_fabric_lib.c | 22 ++++------------------
- 1 file changed, 4 insertions(+), 18 deletions(-)
+ drivers/target/target_core_tmr.c       | 16 +++++++++++++++-
+ drivers/target/target_core_transport.c |  1 +
+ include/target/target_core_backend.h   |  2 ++
+ include/target/target_core_base.h      |  1 +
+ 4 files changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index 1e031d8..81bc8ec 100644
---- a/drivers/target/target_core_fabric_lib.c
-+++ b/drivers/target/target_core_fabric_lib.c
-@@ -265,9 +265,7 @@ static char *iscsi_parse_pr_out_transport_id(
- 	char **port_nexus_ptr)
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index 73c4155f3c1e..e4513ef09159 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -116,6 +116,7 @@ void core_tmr_abort_task(
+ 	struct se_tmr_req *tmr,
+ 	struct se_session *se_sess)
  {
- 	char *p;
--	u32 tid_len, padding;
- 	int i;
--	u16 add_len;
- 	u8 format_code = (buf[0] & 0xc0);
- 	/*
- 	 * Check for FORMAT CODE 00b or 01b from spc4r17, section 7.5.4.6:
-@@ -293,23 +291,11 @@ static char *iscsi_parse_pr_out_transport_id(
- 	 */
- 	if (out_tid_len) {
- 		/* The shift works thanks to integer promotion rules */
--		add_len = get_unaligned_be16(&buf[2]);
--
--		tid_len = strlen(&buf[4]);
--		tid_len += 4; /* Add four bytes for iSCSI Transport ID header */
--		tid_len += 1; /* Add one byte for NULL terminator */
--		padding = ((-tid_len) & 3);
--		if (padding != 0)
--			tid_len += padding;
--
--		if ((add_len + 4) != tid_len) {
--			pr_debug("LIO-Target Extracted add_len: %hu "
--				"does not match calculated tid_len: %u,"
--				" using tid_len instead\n", add_len+4, tid_len);
--			*out_tid_len = tid_len;
--		} else
--			*out_tid_len = (add_len + 4);
-+		*out_tid_len = get_unaligned_be16(&buf[2]);
-+		/* Add four bytes for iSCSI Transport ID header */
-+		*out_tid_len += 4;
- 	}
++	LIST_HEAD(aborted_list);
+ 	struct se_cmd *se_cmd, *next;
+ 	unsigned long flags;
+ 	bool rc;
+@@ -144,7 +145,7 @@ void core_tmr_abort_task(
+ 		if (!rc)
+ 			continue;
+ 
+-		list_del_init(&se_cmd->state_list);
++		list_move_tail(&se_cmd->state_list, &aborted_list);
+ 		se_cmd->state_active = false;
+ 
+ 		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+@@ -157,6 +158,11 @@ void core_tmr_abort_task(
+ 			WARN_ON_ONCE(transport_lookup_tmr_lun(tmr->task_cmd) <
+ 					0);
+ 
++		if (dev->transport->tmr_notify)
++			dev->transport->tmr_notify(dev, TMR_ABORT_TASK,
++						   &aborted_list);
 +
- 	/*
- 	 * Check for ',i,0x' separator between iSCSI Name and iSCSI Initiator
- 	 * Session ID as defined in Table 390 - iSCSI initiator port TransportID
++		list_del_init(&se_cmd->state_list);
+ 		target_put_cmd_and_wait(se_cmd);
+ 
+ 		printk("ABORT_TASK: Sending TMR_FUNCTION_COMPLETE for"
+@@ -167,6 +173,9 @@ void core_tmr_abort_task(
+ 	}
+ 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+ 
++	if (dev->transport->tmr_notify)
++		dev->transport->tmr_notify(dev, TMR_ABORT_TASK, &aborted_list);
++
+ 	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
+ 			tmr->ref_task_tag);
+ 	tmr->response = TMR_TASK_DOES_NOT_EXIST;
+@@ -318,6 +327,11 @@ static void core_tmr_drain_state_list(
+ 	}
+ 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+ 
++	if (dev->transport->tmr_notify)
++		dev->transport->tmr_notify(dev, preempt_and_abort_list ?
++					   TMR_LUN_RESET_PRO : TMR_LUN_RESET,
++					   &drain_task_list);
++
+ 	while (!list_empty(&drain_task_list)) {
+ 		cmd = list_entry(drain_task_list.next, struct se_cmd, state_list);
+ 		list_del_init(&cmd->state_list);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index e6e1fa68de54..9fb0be0aa620 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -2946,6 +2946,7 @@ static const char *target_tmf_name(enum tcm_tmreq_table tmf)
+ 	case TMR_LUN_RESET:		return "LUN_RESET";
+ 	case TMR_TARGET_WARM_RESET:	return "TARGET_WARM_RESET";
+ 	case TMR_TARGET_COLD_RESET:	return "TARGET_COLD_RESET";
++	case TMR_LUN_RESET_PRO:		return "LUN_RESET_PRO";
+ 	case TMR_UNKNOWN:		break;
+ 	}
+ 	return "(?)";
+diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
+index f51452e3b984..6336780d83a7 100644
+--- a/include/target/target_core_backend.h
++++ b/include/target/target_core_backend.h
+@@ -40,6 +40,8 @@ struct target_backend_ops {
+ 	ssize_t (*show_configfs_dev_params)(struct se_device *, char *);
+ 
+ 	sense_reason_t (*parse_cdb)(struct se_cmd *cmd);
++	void (*tmr_notify)(struct se_device *se_dev, enum tcm_tmreq_table,
++			   struct list_head *aborted_cmds);
+ 	u32 (*get_device_type)(struct se_device *);
+ 	sector_t (*get_blocks)(struct se_device *);
+ 	sector_t (*get_alignment_offset_lbas)(struct se_device *);
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 18c3f277b770..549947d407cf 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -207,6 +207,7 @@ enum tcm_tmreq_table {
+ 	TMR_LUN_RESET		= 5,
+ 	TMR_TARGET_WARM_RESET	= 6,
+ 	TMR_TARGET_COLD_RESET	= 7,
++	TMR_LUN_RESET_PRO	= 0x80,
+ 	TMR_UNKNOWN		= 0xff,
+ };
+ 
 -- 
-1.8.3.1
+2.12.3
