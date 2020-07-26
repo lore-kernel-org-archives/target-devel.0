@@ -1,7 +1,7 @@
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Sun, 26 Jul 2020 15:35:10 +0000
-Subject: [PATCH v3 8/8] scsi: target: tcmu: Make TMR notification optional
-Message-Id: <20200726153510.13077-9-bstroesser@ts.fujitsu.com>
+Date: Sun, 26 Jul 2020 15:35:05 +0000
+Subject: [PATCH v3 3/8] scsi: target: tcmu: Use priv pointer in se_cmd
+Message-Id: <20200726153510.13077-4-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
 In-Reply-To: <20200726153510.13077-1-bstroesser@ts.fujitsu.com>
@@ -11,86 +11,58 @@ Content-Transfer-Encoding: 7bit
 To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-Add "tmr_notification" configFS attribute to tcmu devices.
-If default value 0 of the attribute is used, tcmu only
-removes aborted commands from qfull_queue.
-If user changes tmr_notification to 1, additionally
-TMR notifications will be written to the cmd ring.
+We initialize and clean up the se_cmd's priv pointer
+under cmd_ring_lock to point to the corresponding tcmu_cmd.
+
+In the patch that implements tmr_notify callback in
+tcmu we will use the priv pointer.
 
 Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 ---
- drivers/target/target_core_user.c | 38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ drivers/target/target_core_user.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index cb5a561a46e8..9b7592350502 100644
+index 366878b0b2fd..b06b18d1b135 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -118,6 +118,7 @@ struct tcmu_dev {
- #define TCMU_DEV_BIT_OPEN 0
- #define TCMU_DEV_BIT_BROKEN 1
- #define TCMU_DEV_BIT_BLOCKED 2
-+#define TCMU_DEV_BIT_TMR_NOTIFY 3
- 	unsigned long flags;
+@@ -541,6 +541,8 @@ tcmu_get_block_page(struct tcmu_dev *udev, uint32_t dbi)
  
- 	struct uio_info uio_info;
-@@ -1260,6 +1261,9 @@ tcmu_tmr_notify(struct se_device *se_dev, enum tcm_tmreq_table tmf,
- 	if (unqueued)
- 		tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
- 
-+	if (!test_bit(TCMU_DEV_BIT_TMR_NOTIFY, &udev->flags))
-+		goto unlock;
-+
- 	pr_debug("TMR event %d on dev %s, aborted cmds %d, afflicted cmd_ids %d\n",
- 		 tcmu_tmr_type(tmf), udev->name, i, cmd_cnt);
- 
-@@ -2706,6 +2710,39 @@ static ssize_t tcmu_emulate_write_cache_store(struct config_item *item,
- }
- CONFIGFS_ATTR(tcmu_, emulate_write_cache);
- 
-+static ssize_t tcmu_tmr_notification_show(struct config_item *item, char *page)
-+{
-+	struct se_dev_attrib *da = container_of(to_config_group(item),
-+					struct se_dev_attrib, da_group);
-+	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
-+
-+	return snprintf(page, PAGE_SIZE, "%i\n",
-+			test_bit(TCMU_DEV_BIT_TMR_NOTIFY, &udev->flags));
-+}
-+
-+static ssize_t tcmu_tmr_notification_store(struct config_item *item,
-+					   const char *page, size_t count)
-+{
-+	struct se_dev_attrib *da = container_of(to_config_group(item),
-+					struct se_dev_attrib, da_group);
-+	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
-+	u8 val;
-+	int ret;
-+
-+	ret = kstrtou8(page, 0, &val);
-+	if (ret < 0)
-+		return ret;
-+	if (val > 1)
-+		return -EINVAL;
-+
-+	if (val)
-+		set_bit(TCMU_DEV_BIT_TMR_NOTIFY, &udev->flags);
-+	else
-+		clear_bit(TCMU_DEV_BIT_TMR_NOTIFY, &udev->flags);
-+	return count;
-+}
-+CONFIGFS_ATTR(tcmu_, tmr_notification);
-+
- static ssize_t tcmu_block_dev_show(struct config_item *item, char *page)
+ static inline void tcmu_free_cmd(struct tcmu_cmd *tcmu_cmd)
  {
- 	struct se_device *se_dev = container_of(to_config_group(item),
-@@ -2787,6 +2824,7 @@ static struct configfs_attribute *tcmu_attrib_attrs[] = {
- 	&tcmu_attr_dev_config,
- 	&tcmu_attr_dev_size,
- 	&tcmu_attr_emulate_write_cache,
-+	&tcmu_attr_tmr_notification,
- 	&tcmu_attr_nl_reply_supported,
- 	NULL,
- };
++	if (tcmu_cmd->se_cmd)
++		tcmu_cmd->se_cmd->priv = NULL;
+ 	kfree(tcmu_cmd->dbi);
+ 	kmem_cache_free(tcmu_cmd_cache, tcmu_cmd);
+ }
+@@ -1109,10 +1111,11 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
+ 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+ 
+ 	mutex_lock(&udev->cmdr_lock);
++	se_cmd->priv = tcmu_cmd;
+ 	ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
+-	mutex_unlock(&udev->cmdr_lock);
+ 	if (ret < 0)
+ 		tcmu_free_cmd(tcmu_cmd);
++	mutex_unlock(&udev->cmdr_lock);
+ 	return scsi_ret;
+ }
+ 
+@@ -1179,7 +1182,6 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 		target_complete_cmd(cmd->se_cmd, entry->rsp.scsi_status);
+ 
+ out:
+-	cmd->se_cmd = NULL;
+ 	tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
+ 	tcmu_free_cmd(cmd);
+ }
+@@ -1285,6 +1287,7 @@ static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
+ 	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
+ 	list_del_init(&cmd->queue_entry);
+ 	se_cmd = cmd->se_cmd;
++	se_cmd->priv = NULL;
+ 	cmd->se_cmd = NULL;
+ 
+ 	pr_debug("Timing out inflight cmd %u on dev %s.\n",
 -- 
 2.12.3
