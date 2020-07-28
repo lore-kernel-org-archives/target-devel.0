@@ -1,7 +1,7 @@
-From: '''Tayeb souami' <aguayenergia@tlalpan.gob.mx>
-Date: Tue, 28 Jul 2020 07:41:14 +0000
+From: ''Tayeb Souami'' <aguayenergia@tlalpan.gob.mx>
+Date: Tue, 28 Jul 2020 08:33:20 +0000
 Subject: =?utf-8?q?Covid_19_Wohlt=C3=A4tigkeitsfonds?=
-Message-Id: <20200728073655.EAE9D39F6F2@correo.tlalpan.gob.mx>
+Message-Id: <20200728082903.DE22A432735@correo.tlalpan.gob.mx>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200708071412.D63EA60844B@mail.elsol.com.pe>
 In-Reply-To: <20200708071412.D63EA60844B@mail.elsol.com.pe>
@@ -17,9 +17,7 @@ Ich bin Herr Tayeb Souami, New Jersey, Vereinigte Staaten von Amerika, der Mega-
 UHR MICH HIER: https://www.youtube.com/watch?v=Z6ui8ZDQ6Ks
 
 
-
 Das ist dein Spendencode: [TS530342018]
-
 
 
 Antworten Sie mit dem SPENDE-CODE an diese
