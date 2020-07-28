@@ -1,156 +1,38 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Fri, 17 Jul 2020 16:12:10 +0000
-Subject: [PATCH v2 6/8] scsi: target: tcmu: Fix and simplify timeout handling
-Message-Id: <20200717161212.10731-7-bstroesser@ts.fujitsu.com>
+From: Rashid Al-Wahaibi <pdlarsen550@gmail.com>
+Date: Tue, 28 Jul 2020 11:38:13 +0000
+Subject: Your Partnership
+Message-Id: <CAE00X2F5SUiQf0qCZYq3Yx353S0Esu1hA3RH4THqOM0WZMKHFQ@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: target-devel@vger.kernel.org
 
-During cmd timeout handling in check_timedout_devices() due to
-a race it can happen, that tcmu_set_next_deadline() does not
-start a timer as expected:
- 1) Either tcmu_check_expired_ring_cmd() checks the
-    inflight_queue or tcmu_check_expired_queue_cmd() checks the
-    qfull_queue while jiffies has the value X
- 2) At the end of the check the queue contains one remaining
-    command with deadline X (time_after(X, X) is false and
-    thus the command is not handled as being timed out).
- 3) After tcmu_check_expired_xxxxx_cmd() a timer interrupt
-    happens and jiffies is incremented to X+1.
- 4) Now tcmu_set_next_deadline() is called, but it skips
-    the command, since time_after(X+1, X) is true. Therefore
-    tcmu_set_next_deadline() finds no new deadline and stops
-    the timer, which it shouldn't.
-
-Since commands that time out are removed from inflight_queue
-or qfull_queue, we don't need the check with time_after() in
-tcmu_set_next_deadline(), but can use the deadline from the
-first cmd in the queue.
-
-Additionally I replaced the remaining time_after() calls in
-tcmu_check_expired_xxxxx_cmd() with time_after_eq(), because
-it is not useful to set the timeout to deadline, but then check
-for jiffies being greater than deadline.
-
-Next I simplified the end of tcmu_handle_completions() and
-changed the check for no more pending commands from
- "mb->cmd_tail = mb->cmd_head"
-to
- "idr_is_empty(&udev->commands)"
-because the old check doesn't work correctly if paddings or in
-the future TMRs are in the ring.
-
-Finally tcmu_set_next_deadline() was shifted in the source as
-preparation for later implementation of tmr_notify callback.
-
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
----
- drivers/target/target_core_user.c | 59 +++++++++++++++------------------------
- 1 file changed, 23 insertions(+), 36 deletions(-)
-
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 7a27e838a7d3..6adf4e7cc00b 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1129,6 +1129,18 @@ tcmu_queue_cmd(struct se_cmd *se_cmd)
- 	return scsi_ret;
- }
- 
-+static void tcmu_set_next_deadline(struct list_head *queue,
-+				   struct timer_list *timer)
-+{
-+	struct tcmu_cmd *cmd;
-+
-+	if (!list_empty(queue)) {
-+		cmd = list_first_entry(queue, struct tcmu_cmd, queue_entry);
-+		mod_timer(timer, cmd->deadline);
-+	} else
-+		del_timer(timer);
-+}
-+
- static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *entry)
- {
- 	struct se_cmd *se_cmd = cmd->se_cmd;
-@@ -1196,25 +1208,6 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
- 	tcmu_free_cmd(cmd);
- }
- 
--static void tcmu_set_next_deadline(struct list_head *queue,
--				   struct timer_list *timer)
--{
--	struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
--	unsigned long deadline = 0;
--
--	list_for_each_entry_safe(tcmu_cmd, tmp_cmd, queue, queue_entry) {
--		if (!time_after(jiffies, tcmu_cmd->deadline)) {
--			deadline = tcmu_cmd->deadline;
--			break;
--		}
--	}
--
--	if (deadline)
--		mod_timer(timer, deadline);
--	else
--		del_timer(timer);
--}
--
- static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- {
- 	struct tcmu_mailbox *mb;
-@@ -1267,22 +1260,16 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- 		handled++;
- 	}
- 
--	if (mb->cmd_tail = mb->cmd_head) {
--		/* no more pending commands */
--		del_timer(&udev->cmd_timer);
--
--		if (list_empty(&udev->qfull_queue)) {
--			/*
--			 * no more pending or waiting commands so try to
--			 * reclaim blocks if needed.
--			 */
--			if (atomic_read(&global_db_count) >
--			    tcmu_global_max_blocks)
--				schedule_delayed_work(&tcmu_unmap_work, 0);
--		}
--	} else if (udev->cmd_time_out) {
--		tcmu_set_next_deadline(&udev->inflight_queue, &udev->cmd_timer);
-+	if (atomic_read(&global_db_count) > tcmu_global_max_blocks &&
-+	    idr_is_empty(&udev->commands) && list_empty(&udev->qfull_queue)) {
-+		/*
-+		 * Allocated blocks exceeded global block limit, currently no
-+		 * more pending or waiting commands so try to reclaim blocks.
-+		 */
-+		schedule_delayed_work(&tcmu_unmap_work, 0);
- 	}
-+	if (udev->cmd_time_out)
-+		tcmu_set_next_deadline(&udev->inflight_queue, &udev->cmd_timer);
- 
- 	return handled;
- }
-@@ -1291,7 +1278,7 @@ static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
- {
- 	struct se_cmd *se_cmd;
- 
--	if (!time_after(jiffies, cmd->deadline))
-+	if (!time_after_eq(jiffies, cmd->deadline))
- 		return;
- 
- 	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
-@@ -1310,7 +1297,7 @@ static void tcmu_check_expired_queue_cmd(struct tcmu_cmd *cmd)
- {
- 	struct se_cmd *se_cmd;
- 
--	if (!time_after(jiffies, cmd->deadline))
-+	if (!time_after_eq(jiffies, cmd->deadline))
- 		return;
- 
- 	pr_debug("Timing out queued cmd %p on dev %s.\n",
 -- 
-2.12.3
+Good day,
+My name is Rashid Al-Wahaibi, I am from Oman but base here in the UK
+and a Managing Partner of BP Partnership Ltd, a Financial Consultancy
+Firm with office in the United Kingdom. I am contacting you based on
+the request of Ms Rosmah Mansor Najib Razak, wife of Najib Razak, the
+immediate past Malaysian Prime Minister.
+
+I found your profile satisfying and decided to contact you based on Ms
+Rosmah Mansor Najib Razak desire to invest in any viable project in
+your region.
+
+I need you to guide me on the type of investment that will be of best
+interest and provide good return on investment in your country and
+also act as her investment manager. She is ready to invest $25m to
+$50m USD
+
+I will explain further detail of this business proposal when you reply
+to this email indicating your interest.
+
+
+Regards,
+
+Rashid Al-Wahaibi,
+Bp Partnership Ltd
+60 Raglan Road
+Reigate, ENG RH2 0HN,
+United Kingdom
