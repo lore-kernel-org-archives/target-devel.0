@@ -1,8 +1,10 @@
-From: ''Tayeb Souami'' <dreyes@elsol.com.pe>
-Date: Wed, 08 Jul 2020 07:10:26 +0000
+From: '''Tayeb souami' <aguayenergia@tlalpan.gob.mx>
+Date: Tue, 28 Jul 2020 07:41:14 +0000
 Subject: =?utf-8?q?Covid_19_Wohlt=C3=A4tigkeitsfonds?=
-Message-Id: <20200708071412.D63EA60844B@mail.elsol.com.pe>
+Message-Id: <20200728073655.EAE9D39F6F2@correo.tlalpan.gob.mx>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200708071412.D63EA60844B@mail.elsol.com.pe>
+In-Reply-To: <20200708071412.D63EA60844B@mail.elsol.com.pe>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
