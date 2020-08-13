@@ -1,58 +1,42 @@
-From: Varun Prakash <varun@chelsio.com>
-Date: Tue, 25 Aug 2020 12:47:10 +0000
-Subject: [PATCH] scsi: target: iscsi: Fix data digest calculation
-Message-Id: <1598358910-3052-1-git-send-email-varun@chelsio.com>
+From: ''Tayeb Souami'' <danny.puetate@mail.hmvi.gob.ec>
+Date: Thu, 13 Aug 2020 16:53:02 +0000
+Subject: =?utf-8?q?Covid_19_Wohlt=C3=A4tigkeitsfonds?=
+Message-Id: <20200813165322.53EEFC0343B53@mail.hmvi.gob.ec>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200708071412.D63EA60844B@mail.elsol.com.pe>
+In-Reply-To: <20200708071412.D63EA60844B@mail.elsol.com.pe>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, michael.christie@oracle.com, bvanassche@acm.org, nab@linux-iscsi.org, varun@chelsio.com, stable@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org
 
-Current code does not consider 'page_off' in data digest
-calculation, to fix this add a local variable 'first_sg' and
-set first_sg.offset to sg->offset + page_off.
+Lieber Freund,
 
-Fixes: e48354ce078c ("iscsi-target: Add iSCSI fabric support for target v4.1")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Varun Prakash <varun@chelsio.com>
----
- drivers/target/iscsi/iscsi_target.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+Ich bin Herr Tayeb Souami, New Jersey, Vereinigte Staaten von Amerika,
+der Mega-Gewinner von $ 315million In Mega Millions Jackpot, spende ich
+an 5 zufällige Personen, wenn Sie diese E-Mail erhalten, dann wurde Ihre
+E-Mail nach einem Spinball ausgewählt.Ich habe den größten Teil meines
+Vermögens auf eine Reihe von Wohltätigkeitsorganisationen und
+Organisationen verteilt.Ich habe mich freiwillig dazu entschieden, die
+Summe von € 2.000.000,00 an Sie als eine der ausgewählten 5 zu spenden,
+um meine Gewinne zu überprüfen, sehen Sie bitte meine You Tube Seite
+unten.
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index c968961..2ec778e 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1389,14 +1389,27 @@ static u32 iscsit_do_crypto_hash_sg(
- 	sg = cmd->first_data_sg;
- 	page_off = cmd->first_data_sg_off;
- 
-+	if (data_length && page_off) {
-+		struct scatterlist first_sg;
-+		u32 len = min_t(u32, data_length, sg->length - page_off);
-+
-+		sg_init_table(&first_sg, 1);
-+		sg_set_page(&first_sg, sg_page(sg), len, sg->offset + page_off);
-+
-+		ahash_request_set_crypt(hash, &first_sg, NULL, len);
-+		crypto_ahash_update(hash);
-+
-+		data_length -= len;
-+		sg = sg_next(sg);
-+	}
-+
- 	while (data_length) {
--		u32 cur_len = min_t(u32, data_length, (sg->length - page_off));
-+		u32 cur_len = min_t(u32, data_length, sg->length);
- 
- 		ahash_request_set_crypt(hash, sg, NULL, cur_len);
- 		crypto_ahash_update(hash);
- 
- 		data_length -= cur_len;
--		page_off = 0;
- 		/* iscsit_map_iovec has already checked for invalid sg pointers */
- 		sg = sg_next(sg);
- 	}
--- 
-2.0.2
+
+UHR MICH HIER: https://www.youtube.com/watch?v=Z6ui8ZDQ6Ks
+
+
+Das ist dein Spendencode: [TS530342018]
+
+
+Antworten Sie mit dem SPENDE-CODE an diese
+
+E-Mail:Tayebsouam.spende@gmail.com
+
+
+Ich hoffe, Sie und Ihre Familie glücklich zu machen.
+
+
+Grüße
+
+Herr Tayeb Souami
