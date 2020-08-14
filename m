@@ -1,42 +1,31 @@
-From: ''Tayeb Souami'' <danny.puetate@mail.hmvi.gob.ec>
-Date: Thu, 13 Aug 2020 16:53:02 +0000
+From: ''charles jackson'' <lu.marin@munisurquillo.gob.pe>
+Date: Fri, 14 Aug 2020 06:58:18 +0000
 Subject: =?utf-8?q?Covid_19_Wohlt=C3=A4tigkeitsfonds?=
-Message-Id: <20200813165322.53EEFC0343B53@mail.hmvi.gob.ec>
+Message-Id: <20200814065829.E67A84041A4A5@mail.munisurquillo.gob.pe>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200708071412.D63EA60844B@mail.elsol.com.pe>
 In-Reply-To: <20200708071412.D63EA60844B@mail.elsol.com.pe>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: target-devel@vger.kernel.org
 
-Lieber Freund,
+Hallo
 
-Ich bin Herr Tayeb Souami, New Jersey, Vereinigte Staaten von Amerika,
-der Mega-Gewinner von $ 315million In Mega Millions Jackpot, spende ich
-an 5 zufällige Personen, wenn Sie diese E-Mail erhalten, dann wurde Ihre
-E-Mail nach einem Spinball ausgewählt.Ich habe den größten Teil meines
-Vermögens auf eine Reihe von Wohltätigkeitsorganisationen und
-Organisationen verteilt.Ich habe mich freiwillig dazu entschieden, die
-Summe von € 2.000.000,00 an Sie als eine der ausgewählten 5 zu spenden,
-um meine Gewinne zu überprüfen, sehen Sie bitte meine You Tube Seite
-unten.
+Ich bin Charles W. Jackson aus North Carolina, Vereinigte Staaten von Ameri=
+ka, und ich bin der Gewinner des Mega-Millionen-Jackpots von 344 Millionen =
+US-Dollar. Ich spende die Summe von 2.000.000 Millionen Euro als Teil der H=
+ilfsgelder f=FCr das Corona-Virus.
 
+Dies ist Ihr Spendencode: [CJ530342019]
 
-UHR MICH HIER: https://www.youtube.com/watch?v=Z6ui8ZDQ6Ks
+www.youtube.com/watch?v=3DBSr8myiLPMQ
 
+Bitte antworten Sie auf diese E-Mail mit dem SPENDERCODE:
 
-Das ist dein Spendencode: [TS530342018]
+charlesjacksonjr001@gmail.com
 
-
-Antworten Sie mit dem SPENDE-CODE an diese
-
-E-Mail:Tayebsouam.spende@gmail.com
+Ich hoffe, dass Sie und Ihre Familie dies durchkommen
 
 
-Ich hoffe, Sie und Ihre Familie glücklich zu machen.
-
-
-Grüße
-
-Herr Tayeb Souami
+Herr Charles Jackson
