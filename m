@@ -1,101 +1,188 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 20 Aug 2020 00:01:33 +0000
-Subject: [PATCH AUTOSEL 5.7 02/24] scsi: target: tcmu: Fix crash in tcmu_flush_dcache_range on ARM
-Message-Id: <20200820000155.215089-2-sashal@kernel.org>
+From: Allen Pais <allen.cryptic@gmail.com>
+Date: Mon, 17 Aug 2020 08:55:26 +0000
+Subject: [PATCH 5/8] scsi: megaraid: convert tasklets to use new tasklet_setup() API
+Message-Id: <20200817085409.25268-6-allen.cryptic@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200820000155.215089-1-sashal@kernel.org>
-In-Reply-To: <20200820000155.215089-1-sashal@kernel.org>
+References: <20200817085409.25268-1-allen.cryptic@gmail.com>
+In-Reply-To: <20200817085409.25268-1-allen.cryptic@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, JiangYu <lnsyyj@hotmail.com>, Daniel Meyerholt <dxm523@gmail.com>, Mike Christie <michael.christie@oracle.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: jejb@linux.ibm.com, martin.petersen@oracle.com, kashyap.desai@broadcom.com, sumit.saxena@broadcom.com, shivasharan.srikanteshwara@broadcom.com
+Cc: keescook@chromium.org, linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, megaraidlinux.pdl@broadcom.com, Allen Pais <allen.lkml@gmail.com>, Romain Perier <romain.perier@gmail.com>
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+From: Allen Pais <allen.lkml@gmail.com>
 
-[ Upstream commit 3145550a7f8b08356c8ff29feaa6c56aca12901d ]
+In preparation for unconditionally passing the
+struct tasklet_struct pointer to all tasklet
+callbacks, switch to using the new tasklet_setup()
+and from_tasklet() to pass the tasklet pointer explicitly.
 
-This patch fixes the following crash (see
-https://bugzilla.kernel.org/show_bug.cgi?id 8045)
-
- Process iscsi_trx (pid: 7496, stack limit = 0x0000000010dd111a)
- CPU: 0 PID: 7496 Comm: iscsi_trx Not tainted 4.19.118-0419118-generic
-        #202004230533
- Hardware name: Greatwall QingTian DF720/F601, BIOS 601FBE20 Sep 26 2019
- pstate: 80400005 (Nzcv daif +PAN -UAO)
- pc : flush_dcache_page+0x18/0x40
- lr : is_ring_space_avail+0x68/0x2f8 [target_core_user]
- sp : ffff000015123a80
- x29: ffff000015123a80 x28: 0000000000000000
- x27: 0000000000001000 x26: ffff000023ea5000
- x25: ffffcfa25bbe08b8 x24: 0000000000000078
- x23: ffff7e0000000000 x22: ffff000023ea5001
- x21: ffffcfa24b79c000 x20: 0000000000000fff
- x19: ffff7e00008fa940 x18: 0000000000000000
- x17: 0000000000000000 x16: ffff2d047e709138
- x15: 0000000000000000 x14: 0000000000000000
- x13: 0000000000000000 x12: ffff2d047fbd0a40
- x11: 0000000000000000 x10: 0000000000000030
- x9 : 0000000000000000 x8 : ffffc9a254820a00
- x7 : 00000000000013b0 x6 : 000000000000003f
- x5 : 0000000000000040 x4 : ffffcfa25bbe08e8
- x3 : 0000000000001000 x2 : 0000000000000078
- x1 : ffffcfa25bbe08b8 x0 : ffff2d040bc88a18
- Call trace:
-  flush_dcache_page+0x18/0x40
-  is_ring_space_avail+0x68/0x2f8 [target_core_user]
-  queue_cmd_ring+0x1f8/0x680 [target_core_user]
-  tcmu_queue_cmd+0xe4/0x158 [target_core_user]
-  __target_execute_cmd+0x30/0xf0 [target_core_mod]
-  target_execute_cmd+0x294/0x390 [target_core_mod]
-  transport_generic_new_cmd+0x1e8/0x358 [target_core_mod]
-  transport_handle_cdb_direct+0x50/0xb0 [target_core_mod]
-  iscsit_execute_cmd+0x2b4/0x350 [iscsi_target_mod]
-  iscsit_sequence_cmd+0xd8/0x1d8 [iscsi_target_mod]
-  iscsit_process_scsi_cmd+0xac/0xf8 [iscsi_target_mod]
-  iscsit_get_rx_pdu+0x404/0xd00 [iscsi_target_mod]
-  iscsi_target_rx_thread+0xb8/0x130 [iscsi_target_mod]
-  kthread+0x130/0x138
-  ret_from_fork+0x10/0x18
- Code: f9000bf3 aa0003f3 aa1e03e0 d503201f (f9400260)
- ---[ end trace 1e451c73f4266776 ]---
-
-The solution is based on patch:
-
-  "scsi: target: tcmu: Optimize use of flush_dcache_page"
-
-which restricts the use of tcmu_flush_dcache_range() to addresses from
-vmalloc'ed areas only.
-
-This patch now replaces the virt_to_page() call in
-tcmu_flush_dcache_range() - which is wrong for vmalloced addrs - by
-vmalloc_to_page().
-
-The patch was tested on ARM with kernel 4.19.118 and 5.7.2
-
-Link: https://lore.kernel.org/r/20200618131632.32748-3-bstroesser@ts.fujitsu.com
-Tested-by: JiangYu <lnsyyj@hotmail.com>
-Tested-by: Daniel Meyerholt <dxm523@gmail.com>
-Acked-by: Mike Christie <michael.christie@oracle.com>
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Romain Perier <romain.perier@gmail.com>
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- drivers/target/target_core_user.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/megaraid/megaraid_mbox.c       |  9 ++++-----
+ drivers/scsi/megaraid/megaraid_sas.h        |  2 +-
+ drivers/scsi/megaraid/megaraid_sas_base.c   | 16 +++++++---------
+ drivers/scsi/megaraid/megaraid_sas_fusion.c | 14 +++++++-------
+ 4 files changed, 19 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index b63a1e0c4aa6d..a55114975b00d 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -601,7 +601,7 @@ static inline void tcmu_flush_dcache_range(void *vaddr, size_t size)
- 	size = round_up(size+offset, PAGE_SIZE);
+diff --git a/drivers/scsi/megaraid/megaraid_mbox.c b/drivers/scsi/megaraid/megaraid_mbox.c
+index 19469a2c0ea3..47b2d8045c9d 100644
+--- a/drivers/scsi/megaraid/megaraid_mbox.c
++++ b/drivers/scsi/megaraid/megaraid_mbox.c
+@@ -119,7 +119,7 @@ static void megaraid_mbox_prepare_epthru(adapter_t *, scb_t *,
  
- 	while (size) {
--		flush_dcache_page(virt_to_page(start));
-+		flush_dcache_page(vmalloc_to_page(start));
- 		start += PAGE_SIZE;
- 		size -= PAGE_SIZE;
+ static irqreturn_t megaraid_isr(int, void *);
+ 
+-static void megaraid_mbox_dpc(unsigned long);
++static void megaraid_mbox_dpc(struct tasklet_struct *t);
+ 
+ static ssize_t megaraid_sysfs_show_app_hndl(struct device *, struct device_attribute *attr, char *);
+ static ssize_t megaraid_sysfs_show_ldnum(struct device *, struct device_attribute *attr, char *);
+@@ -878,8 +878,7 @@ megaraid_init_mbox(adapter_t *adapter)
  	}
+ 
+ 	// setup tasklet for DPC
+-	tasklet_init(&adapter->dpc_h, megaraid_mbox_dpc,
+-			(unsigned long)adapter);
++	tasklet_setup(&adapter->dpc_h, megaraid_mbox_dpc);
+ 
+ 	con_log(CL_DLEVEL1, (KERN_INFO
+ 		"megaraid mbox hba successfully initialized\n"));
+@@ -2168,9 +2167,9 @@ megaraid_isr(int irq, void *devp)
+  * it is being called.
+  */
+ static void
+-megaraid_mbox_dpc(unsigned long devp)
++megaraid_mbox_dpc(struct tasklet_struct *t)
+ {
+-	adapter_t		*adapter = (adapter_t *)devp;
++	adapter_t		*adapter = from_tasklet(adapter, t, dpc_h);
+ 	mraid_device_t		*raid_dev;
+ 	struct list_head	clist;
+ 	struct scatterlist	*sgl;
+diff --git a/drivers/scsi/megaraid/megaraid_sas.h b/drivers/scsi/megaraid/megaraid_sas.h
+index 5e4137f10e0e..ce361b2b9f14 100644
+--- a/drivers/scsi/megaraid/megaraid_sas.h
++++ b/drivers/scsi/megaraid/megaraid_sas.h
+@@ -2531,7 +2531,7 @@ struct megasas_instance_template {
+ 	int (*check_reset)(struct megasas_instance *, \
+ 		struct megasas_register_set __iomem *);
+ 	irqreturn_t (*service_isr)(int irq, void *devp);
+-	void (*tasklet)(unsigned long);
++	void (*tasklet)(struct tasklet_struct *t);
+ 	u32 (*init_adapter)(struct megasas_instance *);
+ 	u32 (*build_and_issue_cmd) (struct megasas_instance *,
+ 				    struct scsi_cmnd *);
+diff --git a/drivers/scsi/megaraid/megaraid_sas_base.c b/drivers/scsi/megaraid/megaraid_sas_base.c
+index 861f7140f52e..dba60cc1cf41 100644
+--- a/drivers/scsi/megaraid/megaraid_sas_base.c
++++ b/drivers/scsi/megaraid/megaraid_sas_base.c
+@@ -217,7 +217,7 @@ megasas_init_adapter_mfi(struct megasas_instance *instance);
+ u32
+ megasas_build_and_issue_cmd(struct megasas_instance *instance,
+ 			    struct scsi_cmnd *scmd);
+-static void megasas_complete_cmd_dpc(unsigned long instance_addr);
++static void megasas_complete_cmd_dpc(struct tasklet_struct *t);
+ int
+ wait_and_poll(struct megasas_instance *instance, struct megasas_cmd *cmd,
+ 	int seconds);
+@@ -2217,14 +2217,14 @@ megasas_check_and_restore_queue_depth(struct megasas_instance *instance)
+  *
+  * Tasklet to complete cmds
+  */
+-static void megasas_complete_cmd_dpc(unsigned long instance_addr)
++static void megasas_complete_cmd_dpc(struct tasklet_struct *t)
+ {
+ 	u32 producer;
+ 	u32 consumer;
+ 	u32 context;
+ 	struct megasas_cmd *cmd;
+-	struct megasas_instance *instance -				(struct megasas_instance *)instance_addr;
++	struct megasas_instance *instance = from_tasklet(instance, t,
++							 isr_tasklet);
+ 	unsigned long flags;
+ 
+ 	/* If we have already declared adapter dead, donot complete cmds */
+@@ -2769,7 +2769,7 @@ static int megasas_wait_for_outstanding(struct megasas_instance *instance)
+ 			 * Call cmd completion routine. Cmd to be
+ 			 * be completed directly without depending on isr.
+ 			 */
+-			megasas_complete_cmd_dpc((unsigned long)instance);
++			megasas_complete_cmd_dpc(&instance->isr_tasklet);
+ 		}
+ 
+ 		msleep(1000);
+@@ -6180,8 +6180,7 @@ static int megasas_init_fw(struct megasas_instance *instance)
+ 	dev_info(&instance->pdev->dev,
+ 		"RDPQ mode\t: (%s)\n", instance->is_rdpq ? "enabled" : "disabled");
+ 
+-	tasklet_init(&instance->isr_tasklet, instance->instancet->tasklet,
+-		(unsigned long)instance);
++	tasklet_setup(&instance->isr_tasklet, instance->instancet->tasklet);
+ 
+ 	/*
+ 	 * Below are default value for legacy Firmware.
+@@ -7719,8 +7718,7 @@ megasas_resume(struct pci_dev *pdev)
+ 	if (megasas_get_ctrl_info(instance) != DCMD_SUCCESS)
+ 		goto fail_init_mfi;
+ 
+-	tasklet_init(&instance->isr_tasklet, instance->instancet->tasklet,
+-		     (unsigned long)instance);
++	tasklet_setup(&instance->isr_tasklet, instance->instancet->tasklet);
+ 
+ 	if (instance->msix_vectors ?
+ 			megasas_setup_irqs_msix(instance, 0) :
+diff --git a/drivers/scsi/megaraid/megaraid_sas_fusion.c b/drivers/scsi/megaraid/megaraid_sas_fusion.c
+index 0824410f78f8..67b07660971a 100644
+--- a/drivers/scsi/megaraid/megaraid_sas_fusion.c
++++ b/drivers/scsi/megaraid/megaraid_sas_fusion.c
+@@ -3705,15 +3705,15 @@ int megasas_irqpoll(struct irq_poll *irqpoll, int budget)
+ 
+ /**
+  * megasas_complete_cmd_dpc_fusion -	Completes command
+- * @instance_addr:			Adapter soft state address
++ * @t:	Instance of the tasklet being run
+  *
+  * Tasklet to complete cmds
+  */
+ static void
+-megasas_complete_cmd_dpc_fusion(unsigned long instance_addr)
++megasas_complete_cmd_dpc_fusion(struct tasklet_struct *t)
+ {
+-	struct megasas_instance *instance -		(struct megasas_instance *)instance_addr;
++	struct megasas_instance *instance = from_tasklet(instance, t,
++							 isr_tasklet);
+ 	u32 count, MSIxIndex;
+ 
+ 	count = instance->msix_vectors > 0 ? instance->msix_vectors : 1;
+@@ -4062,7 +4062,7 @@ megasas_wait_for_outstanding_fusion(struct megasas_instance *instance,
+ 	if (reason = MFI_IO_TIMEOUT_OCR) {
+ 		dev_info(&instance->pdev->dev,
+ 			"MFI command is timed out\n");
+-		megasas_complete_cmd_dpc_fusion((unsigned long)instance);
++		megasas_complete_cmd_dpc_fusion(&instance->isr_tasklet);
+ 		if (instance->snapdump_wait_time)
+ 			megasas_trigger_snap_dump(instance);
+ 		retval = 1;
+@@ -4078,7 +4078,7 @@ megasas_wait_for_outstanding_fusion(struct megasas_instance *instance,
+ 				   "FW in FAULT state Fault code:0x%x subcode:0x%x func:%s\n",
+ 				   abs_state & MFI_STATE_FAULT_CODE,
+ 				   abs_state & MFI_STATE_FAULT_SUBCODE, __func__);
+-			megasas_complete_cmd_dpc_fusion((unsigned long)instance);
++			megasas_complete_cmd_dpc_fusion(&instance->isr_tasklet);
+ 			if (instance->requestorId && reason) {
+ 				dev_warn(&instance->pdev->dev, "SR-IOV Found FW in FAULT"
+ 				" state while polling during"
+@@ -4122,7 +4122,7 @@ megasas_wait_for_outstanding_fusion(struct megasas_instance *instance,
+ 			}
+ 		}
+ 
+-		megasas_complete_cmd_dpc_fusion((unsigned long)instance);
++		megasas_complete_cmd_dpc_fusion(&instance->isr_tasklet);
+ 		outstanding = atomic_read(&instance->fw_outstanding);
+ 		if (!outstanding)
+ 			goto out;
 -- 
-2.25.1
+2.17.1
