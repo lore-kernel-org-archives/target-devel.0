@@ -1,64 +1,74 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 21 Aug 2020 16:15:01 +0000
-Subject: [PATCH AUTOSEL 5.7 17/61] scsi: target: tcmu: Fix crash on ARM during cmd completion
-Message-Id: <20200821161545.347622-17-sashal@kernel.org>
+From: Allen Pais <allen.cryptic@gmail.com>
+Date: Mon, 17 Aug 2020 08:54:50 +0000
+Subject: [PATCH 2/8] scsi: esas2r: convert tasklets to use new tasklet_setup() API
+Message-Id: <20200817085409.25268-3-allen.cryptic@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200821161545.347622-1-sashal@kernel.org>
-In-Reply-To: <20200821161545.347622-1-sashal@kernel.org>
+References: <20200817085409.25268-1-allen.cryptic@gmail.com>
+In-Reply-To: <20200817085409.25268-1-allen.cryptic@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, JiangYu <lnsyyj@hotmail.com>, Mike Christie <michael.christie@oracle.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: jejb@linux.ibm.com, martin.petersen@oracle.com, kashyap.desai@broadcom.com, sumit.saxena@broadcom.com, shivasharan.srikanteshwara@broadcom.com
+Cc: keescook@chromium.org, linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, megaraidlinux.pdl@broadcom.com, Allen Pais <allen.lkml@gmail.com>, Romain Perier <romain.perier@gmail.com>
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+From: Allen Pais <allen.lkml@gmail.com>
 
-[ Upstream commit 5a0c256d96f020e4771f6fd5524b80f89a2d3132 ]
+In preparation for unconditionally passing the
+struct tasklet_struct pointer to all tasklet
+callbacks, switch to using the new tasklet_setup()
+and from_tasklet() to pass the tasklet pointer explicitly.
 
-If tcmu_handle_completions() has to process a padding shorter than
-sizeof(struct tcmu_cmd_entry), the current call to
-tcmu_flush_dcache_range() with sizeof(struct tcmu_cmd_entry) as length
-param is wrong and causes crashes on e.g. ARM, because
-tcmu_flush_dcache_range() in this case calls
-flush_dcache_page(vmalloc_to_page(start)); with start being an invalid
-address above the end of the vmalloc'ed area.
-
-The fix is to use the minimum of remaining ring space and sizeof(struct
-tcmu_cmd_entry) as the length param.
-
-The patch was tested on kernel 4.19.118.
-
-See https://bugzilla.kernel.org/show_bug.cgi?id 8045#c10
-
-Link: https://lore.kernel.org/r/20200629093756.8947-1-bstroesser@ts.fujitsu.com
-Tested-by: JiangYu <lnsyyj@hotmail.com>
-Acked-by: Mike Christie <michael.christie@oracle.com>
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Romain Perier <romain.perier@gmail.com>
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- drivers/target/target_core_user.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/scsi/esas2r/esas2r.h      | 2 +-
+ drivers/scsi/esas2r/esas2r_init.c | 4 +---
+ drivers/scsi/esas2r/esas2r_main.c | 4 ++--
+ 3 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index b63a1e0c4aa6d..b64ed7dbaa68a 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1220,7 +1220,14 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+diff --git a/drivers/scsi/esas2r/esas2r.h b/drivers/scsi/esas2r/esas2r.h
+index e30d2f1f5368..b99434e24868 100644
+--- a/drivers/scsi/esas2r/esas2r.h
++++ b/drivers/scsi/esas2r/esas2r.h
+@@ -992,7 +992,7 @@ int esas2r_write_vda(struct esas2r_adapter *a, const char *buf, long off,
+ int esas2r_read_fs(struct esas2r_adapter *a, char *buf, long off, int count);
+ int esas2r_write_fs(struct esas2r_adapter *a, const char *buf, long off,
+ 		    int count);
+-void esas2r_adapter_tasklet(unsigned long context);
++void esas2r_adapter_tasklet(struct tasklet_struct *t);
+ irqreturn_t esas2r_interrupt(int irq, void *dev_id);
+ irqreturn_t esas2r_msi_interrupt(int irq, void *dev_id);
+ void esas2r_kickoff_timer(struct esas2r_adapter *a);
+diff --git a/drivers/scsi/esas2r/esas2r_init.c b/drivers/scsi/esas2r/esas2r_init.c
+index eb7d139ffc00..55387c14fb8d 100644
+--- a/drivers/scsi/esas2r/esas2r_init.c
++++ b/drivers/scsi/esas2r/esas2r_init.c
+@@ -401,9 +401,7 @@ int esas2r_init_adapter(struct Scsi_Host *host, struct pci_dev *pcid,
+ 		return 0;
+ 	}
  
- 		struct tcmu_cmd_entry *entry = (void *) mb + CMDR_OFF + udev->cmdr_last_cleaned;
+-	tasklet_init(&a->tasklet,
+-		     esas2r_adapter_tasklet,
+-		     (unsigned long)a);
++	tasklet_setup(&a->tasklet, esas2r_adapter_tasklet);
  
--		tcmu_flush_dcache_range(entry, sizeof(*entry));
-+		/*
-+		 * Flush max. up to end of cmd ring since current entry might
-+		 * be a padding that is shorter than sizeof(*entry)
-+		 */
-+		size_t ring_left = head_to_end(udev->cmdr_last_cleaned,
-+					       udev->cmdr_size);
-+		tcmu_flush_dcache_range(entry, ring_left < sizeof(*entry) ?
-+					ring_left : sizeof(*entry));
+ 	/*
+ 	 * Disable chip interrupts to prevent spurious interrupts
+diff --git a/drivers/scsi/esas2r/esas2r_main.c b/drivers/scsi/esas2r/esas2r_main.c
+index 7b49e2e9fcde..7ffa9406ab4d 100644
+--- a/drivers/scsi/esas2r/esas2r_main.c
++++ b/drivers/scsi/esas2r/esas2r_main.c
+@@ -1546,9 +1546,9 @@ void esas2r_complete_request_cb(struct esas2r_adapter *a,
+ }
  
- 		if (tcmu_hdr_get_op(entry->hdr.len_op) = TCMU_OP_PAD) {
- 			UPDATE_HEAD(udev->cmdr_last_cleaned,
+ /* Run tasklet to handle stuff outside of interrupt context. */
+-void esas2r_adapter_tasklet(unsigned long context)
++void esas2r_adapter_tasklet(struct tasklet_struct *t)
+ {
+-	struct esas2r_adapter *a = (struct esas2r_adapter *)context;
++	struct esas2r_adapter *a = from_tasklet(a, t, tasklet);
+ 
+ 	if (unlikely(test_bit(AF2_TIMER_TICK, &a->flags2))) {
+ 		clear_bit(AF2_TIMER_TICK, &a->flags2);
 -- 
-2.25.1
+2.17.1
