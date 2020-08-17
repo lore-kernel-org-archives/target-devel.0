@@ -1,46 +1,50 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Fri, 28 Aug 2020 08:43:35 +0000
-Subject: Re: [PATCH v2 0/2] scsi: target: tcmu: fix crashes on ARM
-Message-Id: <ec08c542-5903-4ebd-d18e-9c9b2f067eb6@ts.fujitsu.com>
+From: Allen Pais <allen.cryptic@gmail.com>
+Date: Mon, 17 Aug 2020 08:54:27 +0000
+Subject: [PATCH 0/8] scsi: convert tasklets to use new tasklet_setup()
+Message-Id: <20200817085409.25268-1-allen.cryptic@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200618131632.32748-1-bstroesser@ts.fujitsu.com>
- <159262354735.7800.15424809109743064228.b4-ty@oracle.com>
-In-Reply-To: <159262354735.7800.15424809109743064228.b4-ty@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Mike Christie <michael.christie@oracle.com>, stable@vger.kernel.org
-Cc: JiangYu <lnsyyj@hotmail.com>, Daniel Meyerholt <dxm523@gmail.com>
+To: jejb@linux.ibm.com, martin.petersen@oracle.com, kashyap.desai@broadcom.com, sumit.saxena@broadcom.com, shivasharan.srikanteshwara@broadcom.com
+Cc: keescook@chromium.org, linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, megaraidlinux.pdl@broadcom.com, Allen Pais <allen.lkml@gmail.com>
 
-Hi,
+From: Allen Pais <allen.lkml@gmail.com>
 
-I'm adding stable@vger.kernel.org
+Commit 12cc923f1ccc ("tasklet: Introduce new initialization API")'
+introduced a new tasklet initialization API. This series converts 
+all the scsi drivers to use the new tasklet_setup() API
 
-On 2020-06-20 05:26, Martin K. Petersen wrote:
-> On Thu, 18 Jun 2020 15:16:30 +0200, Bodo Stroesser wrote:
-> 
->> This small series of patches consists of:
->>     [PATCH 1/2 v2] scsi: target: tcmu: Optimize use of flush_dcache_page
->>     [PATCH 2/2 v2] scsi: target: tcmu: Fix crash in tcmu_flush_dcache_range
->>
->> Together with commit
->>     8c4e0f212398 scsi: target: tcmu: Fix size in calls to tcmu_flush_dcache_range
->> these patches fix crashes in tcmu on ARM.
->>
->> [...]
-> 
-> Applied to 5.9/scsi-queue, thanks!
-> 
-> [1/2] scsi: target: tcmu: Optimize use of flush_dcache_page
->        https://git.kernel.org/mkp/scsi/c/3c58f737231e
-> [2/2] scsi: target: tcmu: Fix crash in tcmu_flush_dcache_range on ARM
->        https://git.kernel.org/mkp/scsi/c/3145550a7f8b
-> 
+Allen Pais (8):
+  scsi: aic94xx: convert tasklets to use new tasklet_setup() API
+  scsi: esas2r: convert tasklets to use new tasklet_setup() API
+  scsi: ibmvscsi: convert tasklets to use new tasklet_setup() API
+  scsi: isci: convert tasklets to use new tasklet_setup() API
+  scsi: megaraid: convert tasklets to use new tasklet_setup() API
+  scsi: mvsas: convert tasklets to use new tasklet_setup() API
+  scsi: pm8001: convert tasklets to use new tasklet_setup() API
+  scsi: pmcraid: convert tasklets to use new tasklet_setup() API
 
-Patch 2/2 of this series already made it into 5.8, (5.7,) 5.4 and 4.19,
-but patch 1/2 was not added yet. The crash will be fixed with with both
-patches only. So please consider adding patch 1/2 also. The full commit
-is 3c58f737231e2c8cbf543a09d84d8c8e80e05e43
+ drivers/scsi/aic94xx/aic94xx_hwi.c          |  9 ++--
+ drivers/scsi/esas2r/esas2r.h                |  2 +-
+ drivers/scsi/esas2r/esas2r_init.c           |  4 +-
+ drivers/scsi/esas2r/esas2r_main.c           |  4 +-
+ drivers/scsi/ibmvscsi/ibmvfc.c              |  6 +--
+ drivers/scsi/ibmvscsi/ibmvscsi.c            |  8 +--
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c    |  7 ++-
+ drivers/scsi/isci/host.c                    |  4 +-
+ drivers/scsi/isci/host.h                    |  2 +-
+ drivers/scsi/isci/init.c                    |  3 +-
+ drivers/scsi/megaraid/megaraid_mbox.c       |  9 ++--
+ drivers/scsi/megaraid/megaraid_sas.h        |  2 +-
+ drivers/scsi/megaraid/megaraid_sas_base.c   | 16 +++---
+ drivers/scsi/megaraid/megaraid_sas_fusion.c | 14 +++---
+ drivers/scsi/mvsas/mv_init.c                |  8 +--
+ drivers/scsi/pm8001/pm8001_init.c           | 55 ++++++++++++---------
+ drivers/scsi/pm8001/pm8001_sas.h            |  6 ++-
+ drivers/scsi/pmcraid.c                      | 29 +++++------
+ drivers/scsi/pmcraid.h                      |  9 +++-
+ 19 files changed, 104 insertions(+), 93 deletions(-)
 
-Thank you
-Bodo
+-- 
+2.17.1
