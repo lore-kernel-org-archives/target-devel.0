@@ -1,7 +1,7 @@
 From: Allen Pais <allen.cryptic@gmail.com>
-Date: Mon, 17 Aug 2020 08:55:26 +0000
-Subject: [PATCH 4/8] scsi: isci: convert tasklets to use new tasklet_setup() API
-Message-Id: <20200817085409.25268-5-allen.cryptic@gmail.com>
+Date: Mon, 17 Aug 2020 08:55:18 +0000
+Subject: [PATCH 8/8] scsi: pmcraid: convert tasklets to use new tasklet_setup() API
+Message-Id: <20200817085409.25268-9-allen.cryptic@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200817085409.25268-1-allen.cryptic@gmail.com>
 In-Reply-To: <20200817085409.25268-1-allen.cryptic@gmail.com>
@@ -21,53 +21,111 @@ and from_tasklet() to pass the tasklet pointer explicitly.
 Signed-off-by: Romain Perier <romain.perier@gmail.com>
 Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- drivers/scsi/isci/host.c | 4 ++--
- drivers/scsi/isci/host.h | 2 +-
- drivers/scsi/isci/init.c | 3 +--
- 3 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/scsi/pmcraid.c | 29 +++++++++++++++--------------
+ drivers/scsi/pmcraid.h |  9 +++++++--
+ 2 files changed, 22 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/scsi/isci/host.c b/drivers/scsi/isci/host.c
-index 7b5deae68d33..599adebd039e 100644
---- a/drivers/scsi/isci/host.c
-+++ b/drivers/scsi/isci/host.c
-@@ -1113,9 +1113,9 @@ void ireq_done(struct isci_host *ihost, struct isci_request *ireq, struct sas_ta
-  * @data: This parameter specifies the ISCI host object
-  *
+diff --git a/drivers/scsi/pmcraid.c b/drivers/scsi/pmcraid.c
+index aa9ae2ae8579..b7bbefcbb11d 100644
+--- a/drivers/scsi/pmcraid.c
++++ b/drivers/scsi/pmcraid.c
+@@ -4198,7 +4198,7 @@ static irqreturn_t pmcraid_isr_msix(int irq, void *dev_id)
+ 		}
+ 	}
+ 
+-	tasklet_schedule(&(pinstance->isr_tasklet[hrrq_id]));
++	tasklet_schedule(&(pinstance->isr_tasklet[hrrq_id]).tasklet);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -4267,7 +4267,7 @@ static irqreturn_t pmcraid_isr(int irq, void *dev_id)
+ 				pinstance->int_regs.ioa_host_interrupt_clr_reg);
+ 
+ 			tasklet_schedule(
+-					&(pinstance->isr_tasklet[hrrq_id]));
++				&(pinstance->isr_tasklet[hrrq_id].tasklet));
+ 		}
+ 	}
+ 
+@@ -4380,20 +4380,20 @@ static void pmcraid_worker_function(struct work_struct *workp)
+  * Return Value
+  *	None
   */
--void isci_host_completion_routine(unsigned long data)
-+void isci_host_completion_routine(struct tasklet_struct *t)
+-static void pmcraid_tasklet_function(unsigned long instance)
++static void pmcraid_tasklet_function(struct tasklet_struct *t)
  {
--	struct isci_host *ihost = (struct isci_host *)data;
-+	struct isci_host *ihost = from_tasklet(ihost, t, completion_tasklet);
- 	u16 active;
+-	struct pmcraid_isr_param *hrrq_vector;
+-	struct pmcraid_instance *pinstance;
++	struct pmcraid_tsk_param *tsk_param = from_tasklet(tsk_param, t,
++							   tasklet);
++	int id = tsk_param->isr_tasklet_id;
++	struct pmcraid_instance *pinstance = container_of(tsk_param,
++							  typeof(*pinstance),
++							  isr_tasklet[id]);
+ 	unsigned long hrrq_lock_flags;
+ 	unsigned long pending_lock_flags;
+ 	unsigned long host_lock_flags;
+ 	spinlock_t *lockp; /* hrrq buffer lock */
+-	int id;
+ 	u32 resp;
  
- 	spin_lock_irq(&ihost->scic_lock);
-diff --git a/drivers/scsi/isci/host.h b/drivers/scsi/isci/host.h
-index 6bc3f022630a..6abe23682d9b 100644
---- a/drivers/scsi/isci/host.h
-+++ b/drivers/scsi/isci/host.h
-@@ -478,7 +478,7 @@ void isci_tci_free(struct isci_host *ihost, u16 tci);
- void ireq_done(struct isci_host *ihost, struct isci_request *ireq, struct sas_task *task);
+-	hrrq_vector = (struct pmcraid_isr_param *)instance;
+-	pinstance = hrrq_vector->drv_inst;
+-	id = hrrq_vector->hrrq_id;
+ 	lockp = &(pinstance->hrrq_lock[id]);
  
- int isci_host_init(struct isci_host *);
--void isci_host_completion_routine(unsigned long data);
-+void isci_host_completion_routine(struct tasklet_struct *t);
- void isci_host_deinit(struct isci_host *);
- void sci_controller_disable_interrupts(struct isci_host *ihost);
- bool sci_controller_has_remote_devices_stopping(struct isci_host *ihost);
-diff --git a/drivers/scsi/isci/init.c b/drivers/scsi/isci/init.c
-index 085e285f427d..32a0117b5ff4 100644
---- a/drivers/scsi/isci/init.c
-+++ b/drivers/scsi/isci/init.c
-@@ -511,8 +511,7 @@ static struct isci_host *isci_host_alloc(struct pci_dev *pdev, int id)
- 	init_waitqueue_head(&ihost->eventq);
- 	ihost->sas_ha.dev = &ihost->pdev->dev;
- 	ihost->sas_ha.lldd_ha = ihost;
--	tasklet_init(&ihost->completion_tasklet,
--		     isci_host_completion_routine, (unsigned long)ihost);
-+	tasklet_setup(&ihost->completion_tasklet, isci_host_completion_routine);
+ 	/* loop through each of the commands responded by IOA. Each HRRQ buf is
+@@ -4882,10 +4882,11 @@ static int pmcraid_allocate_config_buffers(struct pmcraid_instance *pinstance)
+ static void pmcraid_init_tasklets(struct pmcraid_instance *pinstance)
+ {
+ 	int i;
+-	for (i = 0; i < pinstance->num_hrrq; i++)
+-		tasklet_init(&pinstance->isr_tasklet[i],
+-			     pmcraid_tasklet_function,
+-			     (unsigned long)&pinstance->hrrq_vector[i]);
++	for (i = 0; i < pinstance->num_hrrq; i++) {
++		pinstance->isr_tasklet[i].isr_tasklet_id = i;
++		tasklet_setup(&pinstance->isr_tasklet[i].tasklet,
++			     pmcraid_tasklet_function);
++	}
+ }
  
- 	/* validate module parameters */
- 	/* TODO: kill struct sci_user_parameters and reference directly */
+ /**
+@@ -4900,7 +4901,7 @@ static void pmcraid_kill_tasklets(struct pmcraid_instance *pinstance)
+ {
+ 	int i;
+ 	for (i = 0; i < pinstance->num_hrrq; i++)
+-		tasklet_kill(&pinstance->isr_tasklet[i]);
++		tasklet_kill(&pinstance->isr_tasklet[i].tasklet);
+ }
+ 
+ /**
+diff --git a/drivers/scsi/pmcraid.h b/drivers/scsi/pmcraid.h
+index 15c962108075..68dab849d4c1 100644
+--- a/drivers/scsi/pmcraid.h
++++ b/drivers/scsi/pmcraid.h
+@@ -617,6 +617,11 @@ struct pmcraid_isr_param {
+ 	u8 hrrq_id;			/* hrrq entry index */
+ };
+ 
++/* Tasklet parameters (one for each enabled tasklet) */
++struct pmcraid_tsk_param {
++	struct tasklet_struct tasklet;
++	u8 isr_tasklet_id;              /* isr_tasklet entry index */
++};
+ 
+ /* AEN message header sent as part of event data to applications */
+ struct pmcraid_aen_msg {
+@@ -752,8 +757,8 @@ struct pmcraid_instance {
+ 	spinlock_t free_pool_lock;		/* free pool lock */
+ 	spinlock_t pending_pool_lock;		/* pending pool lock */
+ 
+-	/* Tasklet to handle deferred processing */
+-	struct tasklet_struct isr_tasklet[PMCRAID_NUM_MSIX_VECTORS];
++	/* Tasklet parameters and tasklets to handle deferred processing */
++	struct pmcraid_tsk_param isr_tasklet[PMCRAID_NUM_MSIX_VECTORS];
+ 
+ 	/* Work-queue (Shared) for deferred reset processing */
+ 	struct work_struct worker_q;
 -- 
 2.17.1
