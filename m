@@ -1,148 +1,168 @@
-From: Hou Pu <houpu@bytedance.com>
-Date: Mon, 31 Aug 2020 12:02:20 +0000
-Subject: Re: [PATCH] iscsi-target: fix hang in iscsit_access_np() when getting tpg->np_login_sem
-Message-Id: <01a58989-8777-3967-ebcd-f8c080e18a3c@bytedance.com>
+From: Allen Pais <allen.cryptic@gmail.com>
+Date: Mon, 17 Aug 2020 08:55:12 +0000
+Subject: [PATCH 7/8] scsi: pm8001: convert tasklets to use new tasklet_setup() API
+Message-Id: <20200817085409.25268-8-allen.cryptic@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200729130343.24976-1-houpu@bytedance.com>
-In-Reply-To: <20200729130343.24976-1-houpu@bytedance.com>
+References: <20200817085409.25268-1-allen.cryptic@gmail.com>
+In-Reply-To: <20200817085409.25268-1-allen.cryptic@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, michael.christie@oracle.com
-Cc: stable@vger.kernel.org
+To: jejb@linux.ibm.com, martin.petersen@oracle.com, kashyap.desai@broadcom.com, sumit.saxena@broadcom.com, shivasharan.srikanteshwara@broadcom.com
+Cc: keescook@chromium.org, linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, megaraidlinux.pdl@broadcom.com, Allen Pais <allen.lkml@gmail.com>, Romain Perier <romain.perier@gmail.com>
 
+From: Allen Pais <allen.lkml@gmail.com>
 
-Hi,
+In preparation for unconditionally passing the
+struct tasklet_struct pointer to all tasklet
+callbacks, switch to using the new tasklet_setup()
+and from_tasklet() to pass the tasklet pointer explicitly.
 
-Could anyone help review this patch? It is an important
-fix.
+Signed-off-by: Romain Perier <romain.perier@gmail.com>
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+---
+ drivers/scsi/pm8001/pm8001_init.c | 55 ++++++++++++++++++-------------
+ drivers/scsi/pm8001/pm8001_sas.h  |  6 +++-
+ 2 files changed, 37 insertions(+), 24 deletions(-)
 
-Login thread could hang __forever__ and only reboot could
-solve this. This happened several times in our production
-environment.
-
-np->np_login_timer is shared by all TPGs of a portal.
-should be used carefully. If a connection to iqn-TPG A start
-login timer, It should not stop by another connection
-to iqn-TPG B.
-
-np->np_login_timer protect potential hangs in
-__iscsi_target_login_thread.
-should be used locally in this function. It should really
-not be used in iscsi_target_login_sess_out from workqueue
-context.
-
-Thanks,
-Hou
-
-On 2020/7/29 9:03 PM, Hou Pu wrote:
-> The iscsi target login thread might stuck in following stack:
-> 
-> cat /proc/`pidof iscsi_np`/stack
-> [<0>] down_interruptible+0x42/0x50
-> [<0>] iscsit_access_np+0xe3/0x167
-> [<0>] iscsi_target_locate_portal+0x695/0x8ac
-> [<0>] __iscsi_target_login_thread+0x855/0xb82
-> [<0>] iscsi_target_login_thread+0x2f/0x5a
-> [<0>] kthread+0xfa/0x130
-> [<0>] ret_from_fork+0x1f/0x30
-> 
-> This could be reproduced by following steps:
-> 1. Initiator A try to login iqn1-tpg1 on port 3260. After finishing
->     PDU exchange in the login thread and before the negotiation is
->     finished, at this time the network link is down. In a production
->     environment, this could happen. I could emulated it by bring
->     the network card down in the initiator node by ifconfig eth0 down.
->     (Now A could never finish this login. And tpg->np_login_sem is
->     hold by it).
-> 2. Initiator B try to login iqn2-tpg1 on port 3260. After finishing
->     PDU exchange in the login thread. The target expect to process
->     remaining login PDUs in workqueue context.
-> 3. Initiator A' try to re-login to iqn1-tpg1 on port 3260 from
->     a new socket. It will wait for tpg->np_login_sem with
->     np->np_login_timer loaded to wait for at most 15 second.
->     (Because the lock is held by A. A never gets a change to
->     release tpg->np_login_sem. so A' should finally get timeout).
-> 4. Before A' got timeout. Initiator B gets negotiation failed and
->     calls iscsi_target_login_drop()->iscsi_target_login_sess_out().
->     The np->np_login_timer is canceled. And initiator A' will hang
->     there forever. Because A' is now in the login thread. All other
->     login requests could not be serviced.
-> 
-> Fix this by moving iscsi_stop_login_thread_timer() out of
-> iscsi_target_login_sess_out(). Also remove iscsi_np parameter
-> from iscsi_target_login_sess_out().
-> 
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Hou Pu <houpu@bytedance.com>
-> ---
->   drivers/target/iscsi/iscsi_target_login.c | 6 +++---
->   drivers/target/iscsi/iscsi_target_login.h | 3 +--
->   drivers/target/iscsi/iscsi_target_nego.c  | 3 +--
->   3 files changed, 5 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-> index 85748e338858..893d1b406c29 100644
-> --- a/drivers/target/iscsi/iscsi_target_login.c
-> +++ b/drivers/target/iscsi/iscsi_target_login.c
-> @@ -1149,7 +1149,7 @@ void iscsit_free_conn(struct iscsi_conn *conn)
->   }
->   
->   void iscsi_target_login_sess_out(struct iscsi_conn *conn,
-> -		struct iscsi_np *np, bool zero_tsih, bool new_sess)
-> +				 bool zero_tsih, bool new_sess)
->   {
->   	if (!new_sess)
->   		goto old_sess_out;
-> @@ -1167,7 +1167,6 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
->   	conn->sess = NULL;
->   
->   old_sess_out:
-> -	iscsi_stop_login_thread_timer(np);
->   	/*
->   	 * If login negotiation fails check if the Time2Retain timer
->   	 * needs to be restarted.
-> @@ -1407,8 +1406,9 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
->   new_sess_out:
->   	new_sess = true;
->   old_sess_out:
-> +	iscsi_stop_login_thread_timer(np);
->   	tpg_np = conn->tpg_np;
-> -	iscsi_target_login_sess_out(conn, np, zero_tsih, new_sess);
-> +	iscsi_target_login_sess_out(conn, zero_tsih, new_sess);
->   	new_sess = false;
->   
->   	if (tpg) {
-> diff --git a/drivers/target/iscsi/iscsi_target_login.h b/drivers/target/iscsi/iscsi_target_login.h
-> index 3b8e3639ff5d..fc95e6150253 100644
-> --- a/drivers/target/iscsi/iscsi_target_login.h
-> +++ b/drivers/target/iscsi/iscsi_target_login.h
-> @@ -22,8 +22,7 @@ extern int iscsit_put_login_tx(struct iscsi_conn *, struct iscsi_login *, u32);
->   extern void iscsit_free_conn(struct iscsi_conn *);
->   extern int iscsit_start_kthreads(struct iscsi_conn *);
->   extern void iscsi_post_login_handler(struct iscsi_np *, struct iscsi_conn *, u8);
-> -extern void iscsi_target_login_sess_out(struct iscsi_conn *, struct iscsi_np *,
-> -				bool, bool);
-> +extern void iscsi_target_login_sess_out(struct iscsi_conn *, bool, bool);
->   extern int iscsi_target_login_thread(void *);
->   extern void iscsi_handle_login_thread_timeout(struct timer_list *t);
->   
-> diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-> index 685d771b51d4..e32d93b92742 100644
-> --- a/drivers/target/iscsi/iscsi_target_nego.c
-> +++ b/drivers/target/iscsi/iscsi_target_nego.c
-> @@ -535,12 +535,11 @@ static bool iscsi_target_sk_check_and_clear(struct iscsi_conn *conn, unsigned in
->   
->   static void iscsi_target_login_drop(struct iscsi_conn *conn, struct iscsi_login *login)
->   {
-> -	struct iscsi_np *np = login->np;
->   	bool zero_tsih = login->zero_tsih;
->   
->   	iscsi_remove_failed_auth_entry(conn);
->   	iscsi_target_nego_release(conn);
-> -	iscsi_target_login_sess_out(conn, np, zero_tsih, true);
-> +	iscsi_target_login_sess_out(conn, zero_tsih, true);
->   }
->   
->   struct conn_timeout {
-> 
+diff --git a/drivers/scsi/pm8001/pm8001_init.c b/drivers/scsi/pm8001/pm8001_init.c
+index 20fa96cbc9d3..818816c8b295 100644
+--- a/drivers/scsi/pm8001/pm8001_init.c
++++ b/drivers/scsi/pm8001/pm8001_init.c
+@@ -187,12 +187,15 @@ static void pm8001_free(struct pm8001_hba_info *pm8001_ha)
+  * @opaque: the passed general host adapter struct
+  * Note: pm8001_tasklet is common for pm8001 & pm80xx
+  */
+-static void pm8001_tasklet(unsigned long opaque)
++static void pm8001_tasklet(struct tasklet_struct *t)
+ {
+-	struct pm8001_hba_info *pm8001_ha;
++	struct tsk_param *tsk_param = from_tasklet(tsk_param, t, tasklet);
++	struct pm8001_hba_info *pm8001_ha = container_of(tsk_param,
++						typeof(*pm8001_ha),
++						tasklet[tsk_param->irq_id]);
+ 	struct isr_param *irq_vector;
+ 
+-	irq_vector = (struct isr_param *)opaque;
++	irq_vector = &pm8001_ha->irq_vector[tsk_param->irq_id];
+ 	pm8001_ha = irq_vector->drv_inst;
+ 	if (unlikely(!pm8001_ha))
+ 		BUG_ON(1);
+@@ -221,7 +224,7 @@ static irqreturn_t pm8001_interrupt_handler_msix(int irq, void *opaque)
+ 	if (!PM8001_CHIP_DISP->is_our_interrupt(pm8001_ha))
+ 		return IRQ_NONE;
+ #ifdef PM8001_USE_TASKLET
+-	tasklet_schedule(&pm8001_ha->tasklet[irq_vector->irq_id]);
++	tasklet_schedule(&pm8001_ha->tasklet[irq_vector->irq_id].tasklet);
+ #else
+ 	ret = PM8001_CHIP_DISP->isr(pm8001_ha, irq_vector->irq_id);
+ #endif
+@@ -246,7 +249,7 @@ static irqreturn_t pm8001_interrupt_handler_intx(int irq, void *dev_id)
+ 		return IRQ_NONE;
+ 
+ #ifdef PM8001_USE_TASKLET
+-	tasklet_schedule(&pm8001_ha->tasklet[0]);
++	tasklet_schedule(&pm8001_ha->tasklet[0].tasklet);
+ #else
+ 	ret = PM8001_CHIP_DISP->isr(pm8001_ha, 0);
+ #endif
+@@ -507,13 +510,16 @@ static struct pm8001_hba_info *pm8001_pci_alloc(struct pci_dev *pdev,
+ #ifdef PM8001_USE_TASKLET
+ 	/* Tasklet for non msi-x interrupt handler */
+ 	if ((!pdev->msix_cap || !pci_msi_enabled())
+-	    || (pm8001_ha->chip_id = chip_8001))
+-		tasklet_init(&pm8001_ha->tasklet[0], pm8001_tasklet,
+-			(unsigned long)&(pm8001_ha->irq_vector[0]));
+-	else
+-		for (j = 0; j < PM8001_MAX_MSIX_VEC; j++)
+-			tasklet_init(&pm8001_ha->tasklet[j], pm8001_tasklet,
+-				(unsigned long)&(pm8001_ha->irq_vector[j]));
++	    || (pm8001_ha->chip_id = chip_8001)) {
++		pm8001_ha->tasklet[0].irq_id = 0;
++		tasklet_setup(&pm8001_ha->tasklet[0].tasklet, pm8001_tasklet);
++	} else {
++		for (j = 0; j < PM8001_MAX_MSIX_VEC; j++) {
++			pm8001_ha->tasklet[j].irq_id = j;
++			tasklet_setup(&pm8001_ha->tasklet[j].tasklet,
++				      pm8001_tasklet);
++		}
++	}
+ #endif
+ 	pm8001_ioremap(pm8001_ha);
+ 	if (!pm8001_alloc(pm8001_ha, ent))
+@@ -1162,10 +1168,10 @@ static void pm8001_pci_remove(struct pci_dev *pdev)
+ 	/* For non-msix and msix interrupts */
+ 	if ((!pdev->msix_cap || !pci_msi_enabled()) ||
+ 	    (pm8001_ha->chip_id = chip_8001))
+-		tasklet_kill(&pm8001_ha->tasklet[0]);
++		tasklet_kill(&pm8001_ha->tasklet[0].tasklet);
+ 	else
+ 		for (j = 0; j < PM8001_MAX_MSIX_VEC; j++)
+-			tasklet_kill(&pm8001_ha->tasklet[j]);
++			tasklet_kill(&pm8001_ha->tasklet[j].tasklet);
+ #endif
+ 	scsi_host_put(pm8001_ha->shost);
+ 	pm8001_free(pm8001_ha);
+@@ -1212,10 +1218,10 @@ static int pm8001_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	/* For non-msix and msix interrupts */
+ 	if ((!pdev->msix_cap || !pci_msi_enabled()) ||
+ 	    (pm8001_ha->chip_id = chip_8001))
+-		tasklet_kill(&pm8001_ha->tasklet[0]);
++		tasklet_kill(&pm8001_ha->tasklet[0].tasklet);
+ 	else
+ 		for (j = 0; j < PM8001_MAX_MSIX_VEC; j++)
+-			tasklet_kill(&pm8001_ha->tasklet[j]);
++			tasklet_kill(&pm8001_ha->tasklet[j].tasklet);
+ #endif
+ 	device_state = pci_choose_state(pdev, state);
+ 	pm8001_printk("pdev=0x%p, slot=%s, entering "
+@@ -1281,13 +1287,16 @@ static int pm8001_pci_resume(struct pci_dev *pdev)
+ #ifdef PM8001_USE_TASKLET
+ 	/*  Tasklet for non msi-x interrupt handler */
+ 	if ((!pdev->msix_cap || !pci_msi_enabled()) ||
+-	    (pm8001_ha->chip_id = chip_8001))
+-		tasklet_init(&pm8001_ha->tasklet[0], pm8001_tasklet,
+-			(unsigned long)&(pm8001_ha->irq_vector[0]));
+-	else
+-		for (j = 0; j < PM8001_MAX_MSIX_VEC; j++)
+-			tasklet_init(&pm8001_ha->tasklet[j], pm8001_tasklet,
+-				(unsigned long)&(pm8001_ha->irq_vector[j]));
++	    (pm8001_ha->chip_id = chip_8001)) {
++		pm8001_ha->tasklet[0].irq_id = 0;
++		tasklet_setup(&pm8001_ha->tasklet[0].tasklet, pm8001_tasklet);
++	} else {
++		for (j = 0; j < PM8001_MAX_MSIX_VEC; j++) {
++			pm8001_ha->tasklet[j].irq_id = j;
++			tasklet_setup(&pm8001_ha->tasklet[j].tasklet,
++				      pm8001_tasklet);
++		}
++	}
+ #endif
+ 	PM8001_CHIP_DISP->interrupt_enable(pm8001_ha, 0);
+ 	if (pm8001_ha->chip_id != chip_8001) {
+diff --git a/drivers/scsi/pm8001/pm8001_sas.h b/drivers/scsi/pm8001/pm8001_sas.h
+index ae7ba9b3c4bc..6dbaa394a08b 100644
+--- a/drivers/scsi/pm8001/pm8001_sas.h
++++ b/drivers/scsi/pm8001/pm8001_sas.h
+@@ -494,6 +494,10 @@ struct isr_param {
+ 	struct pm8001_hba_info *drv_inst;
+ 	u32 irq_id;
+ };
++struct tsk_param {
++	struct tasklet_struct tasklet;
++	u32 irq_id;
++};
+ struct pm8001_hba_info {
+ 	char			name[PM8001_NAME_LENGTH];
+ 	struct list_head	list;
+@@ -549,7 +553,7 @@ struct pm8001_hba_info {
+ 				[PM8001_NAME_LENGTH+1+3+1];
+ #endif
+ #ifdef PM8001_USE_TASKLET
+-	struct tasklet_struct	tasklet[PM8001_MAX_MSIX_VEC];
++	struct tsk_param	tasklet[PM8001_MAX_MSIX_VEC];
+ #endif
+ 	u32			logging_level;
+ 	u32			link_rate;
+-- 
+2.17.1
