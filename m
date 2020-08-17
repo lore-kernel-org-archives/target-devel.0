@@ -1,7 +1,7 @@
 From: Allen Pais <allen.cryptic@gmail.com>
-Date: Mon, 17 Aug 2020 08:54:50 +0000
-Subject: [PATCH 2/8] scsi: esas2r: convert tasklets to use new tasklet_setup() API
-Message-Id: <20200817085409.25268-3-allen.cryptic@gmail.com>
+Date: Mon, 17 Aug 2020 08:55:26 +0000
+Subject: [PATCH 4/8] scsi: isci: convert tasklets to use new tasklet_setup() API
+Message-Id: <20200817085409.25268-5-allen.cryptic@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200817085409.25268-1-allen.cryptic@gmail.com>
 In-Reply-To: <20200817085409.25268-1-allen.cryptic@gmail.com>
@@ -21,54 +21,53 @@ and from_tasklet() to pass the tasklet pointer explicitly.
 Signed-off-by: Romain Perier <romain.perier@gmail.com>
 Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- drivers/scsi/esas2r/esas2r.h      | 2 +-
- drivers/scsi/esas2r/esas2r_init.c | 4 +---
- drivers/scsi/esas2r/esas2r_main.c | 4 ++--
- 3 files changed, 4 insertions(+), 6 deletions(-)
+ drivers/scsi/isci/host.c | 4 ++--
+ drivers/scsi/isci/host.h | 2 +-
+ drivers/scsi/isci/init.c | 3 +--
+ 3 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/scsi/esas2r/esas2r.h b/drivers/scsi/esas2r/esas2r.h
-index e30d2f1f5368..b99434e24868 100644
---- a/drivers/scsi/esas2r/esas2r.h
-+++ b/drivers/scsi/esas2r/esas2r.h
-@@ -992,7 +992,7 @@ int esas2r_write_vda(struct esas2r_adapter *a, const char *buf, long off,
- int esas2r_read_fs(struct esas2r_adapter *a, char *buf, long off, int count);
- int esas2r_write_fs(struct esas2r_adapter *a, const char *buf, long off,
- 		    int count);
--void esas2r_adapter_tasklet(unsigned long context);
-+void esas2r_adapter_tasklet(struct tasklet_struct *t);
- irqreturn_t esas2r_interrupt(int irq, void *dev_id);
- irqreturn_t esas2r_msi_interrupt(int irq, void *dev_id);
- void esas2r_kickoff_timer(struct esas2r_adapter *a);
-diff --git a/drivers/scsi/esas2r/esas2r_init.c b/drivers/scsi/esas2r/esas2r_init.c
-index eb7d139ffc00..55387c14fb8d 100644
---- a/drivers/scsi/esas2r/esas2r_init.c
-+++ b/drivers/scsi/esas2r/esas2r_init.c
-@@ -401,9 +401,7 @@ int esas2r_init_adapter(struct Scsi_Host *host, struct pci_dev *pcid,
- 		return 0;
- 	}
- 
--	tasklet_init(&a->tasklet,
--		     esas2r_adapter_tasklet,
--		     (unsigned long)a);
-+	tasklet_setup(&a->tasklet, esas2r_adapter_tasklet);
- 
- 	/*
- 	 * Disable chip interrupts to prevent spurious interrupts
-diff --git a/drivers/scsi/esas2r/esas2r_main.c b/drivers/scsi/esas2r/esas2r_main.c
-index 7b49e2e9fcde..7ffa9406ab4d 100644
---- a/drivers/scsi/esas2r/esas2r_main.c
-+++ b/drivers/scsi/esas2r/esas2r_main.c
-@@ -1546,9 +1546,9 @@ void esas2r_complete_request_cb(struct esas2r_adapter *a,
- }
- 
- /* Run tasklet to handle stuff outside of interrupt context. */
--void esas2r_adapter_tasklet(unsigned long context)
-+void esas2r_adapter_tasklet(struct tasklet_struct *t)
+diff --git a/drivers/scsi/isci/host.c b/drivers/scsi/isci/host.c
+index 7b5deae68d33..599adebd039e 100644
+--- a/drivers/scsi/isci/host.c
++++ b/drivers/scsi/isci/host.c
+@@ -1113,9 +1113,9 @@ void ireq_done(struct isci_host *ihost, struct isci_request *ireq, struct sas_ta
+  * @data: This parameter specifies the ISCI host object
+  *
+  */
+-void isci_host_completion_routine(unsigned long data)
++void isci_host_completion_routine(struct tasklet_struct *t)
  {
--	struct esas2r_adapter *a = (struct esas2r_adapter *)context;
-+	struct esas2r_adapter *a = from_tasklet(a, t, tasklet);
+-	struct isci_host *ihost = (struct isci_host *)data;
++	struct isci_host *ihost = from_tasklet(ihost, t, completion_tasklet);
+ 	u16 active;
  
- 	if (unlikely(test_bit(AF2_TIMER_TICK, &a->flags2))) {
- 		clear_bit(AF2_TIMER_TICK, &a->flags2);
+ 	spin_lock_irq(&ihost->scic_lock);
+diff --git a/drivers/scsi/isci/host.h b/drivers/scsi/isci/host.h
+index 6bc3f022630a..6abe23682d9b 100644
+--- a/drivers/scsi/isci/host.h
++++ b/drivers/scsi/isci/host.h
+@@ -478,7 +478,7 @@ void isci_tci_free(struct isci_host *ihost, u16 tci);
+ void ireq_done(struct isci_host *ihost, struct isci_request *ireq, struct sas_task *task);
+ 
+ int isci_host_init(struct isci_host *);
+-void isci_host_completion_routine(unsigned long data);
++void isci_host_completion_routine(struct tasklet_struct *t);
+ void isci_host_deinit(struct isci_host *);
+ void sci_controller_disable_interrupts(struct isci_host *ihost);
+ bool sci_controller_has_remote_devices_stopping(struct isci_host *ihost);
+diff --git a/drivers/scsi/isci/init.c b/drivers/scsi/isci/init.c
+index 085e285f427d..32a0117b5ff4 100644
+--- a/drivers/scsi/isci/init.c
++++ b/drivers/scsi/isci/init.c
+@@ -511,8 +511,7 @@ static struct isci_host *isci_host_alloc(struct pci_dev *pdev, int id)
+ 	init_waitqueue_head(&ihost->eventq);
+ 	ihost->sas_ha.dev = &ihost->pdev->dev;
+ 	ihost->sas_ha.lldd_ha = ihost;
+-	tasklet_init(&ihost->completion_tasklet,
+-		     isci_host_completion_routine, (unsigned long)ihost);
++	tasklet_setup(&ihost->completion_tasklet, isci_host_completion_routine);
+ 
+ 	/* validate module parameters */
+ 	/* TODO: kill struct sci_user_parameters and reference directly */
 -- 
 2.17.1
