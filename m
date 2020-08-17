@@ -1,64 +1,108 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 21 Aug 2020 16:19:56 +0000
-Subject: [PATCH AUTOSEL 4.4 04/22] scsi: target: tcmu: Fix crash on ARM during cmd completion
-Message-Id: <20200821162014.349506-4-sashal@kernel.org>
+From: Allen Pais <allen.cryptic@gmail.com>
+Date: Mon, 17 Aug 2020 08:54:52 +0000
+Subject: [PATCH 3/8] scsi: ibmvscsi: convert tasklets to use new tasklet_setup() API
+Message-Id: <20200817085409.25268-4-allen.cryptic@gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200821162014.349506-1-sashal@kernel.org>
-In-Reply-To: <20200821162014.349506-1-sashal@kernel.org>
+References: <20200817085409.25268-1-allen.cryptic@gmail.com>
+In-Reply-To: <20200817085409.25268-1-allen.cryptic@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, JiangYu <lnsyyj@hotmail.com>, Mike Christie <michael.christie@oracle.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: jejb@linux.ibm.com, martin.petersen@oracle.com, kashyap.desai@broadcom.com, sumit.saxena@broadcom.com, shivasharan.srikanteshwara@broadcom.com
+Cc: keescook@chromium.org, linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, megaraidlinux.pdl@broadcom.com, Allen Pais <allen.lkml@gmail.com>, Romain Perier <romain.perier@gmail.com>
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+From: Allen Pais <allen.lkml@gmail.com>
 
-[ Upstream commit 5a0c256d96f020e4771f6fd5524b80f89a2d3132 ]
+In preparation for unconditionally passing the
+struct tasklet_struct pointer to all tasklet
+callbacks, switch to using the new tasklet_setup()
+and from_tasklet() to pass the tasklet pointer explicitly.
 
-If tcmu_handle_completions() has to process a padding shorter than
-sizeof(struct tcmu_cmd_entry), the current call to
-tcmu_flush_dcache_range() with sizeof(struct tcmu_cmd_entry) as length
-param is wrong and causes crashes on e.g. ARM, because
-tcmu_flush_dcache_range() in this case calls
-flush_dcache_page(vmalloc_to_page(start)); with start being an invalid
-address above the end of the vmalloc'ed area.
-
-The fix is to use the minimum of remaining ring space and sizeof(struct
-tcmu_cmd_entry) as the length param.
-
-The patch was tested on kernel 4.19.118.
-
-See https://bugzilla.kernel.org/show_bug.cgi?id 8045#c10
-
-Link: https://lore.kernel.org/r/20200629093756.8947-1-bstroesser@ts.fujitsu.com
-Tested-by: JiangYu <lnsyyj@hotmail.com>
-Acked-by: Mike Christie <michael.christie@oracle.com>
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Romain Perier <romain.perier@gmail.com>
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- drivers/target/target_core_user.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c           | 6 +++---
+ drivers/scsi/ibmvscsi/ibmvscsi.c         | 8 ++++----
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 7 +++----
+ 3 files changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index c43c942e1f876..bccde58bc5e30 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -590,7 +590,14 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
- 		struct tcmu_cmd_entry *entry = (void *) mb + CMDR_OFF + udev->cmdr_last_cleaned;
- 		struct tcmu_cmd *cmd;
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 77f4d37d5bd6..50f025cdabbd 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -3204,9 +3204,9 @@ static irqreturn_t ibmvfc_interrupt(int irq, void *dev_instance)
+  * Returns:
+  *	Nothing
+  **/
+-static void ibmvfc_tasklet(void *data)
++static void ibmvfc_tasklet(struct tasklet_struct *t)
+ {
+-	struct ibmvfc_host *vhost = data;
++	struct ibmvfc_host *vhost = from_tasklet(vhost, t, tasklet);
+ 	struct vio_dev *vdev = to_vio_dev(vhost->dev);
+ 	struct ibmvfc_crq *crq;
+ 	struct ibmvfc_async_crq *async;
+@@ -4676,7 +4676,7 @@ static int ibmvfc_init_crq(struct ibmvfc_host *vhost)
  
--		tcmu_flush_dcache_range(entry, sizeof(*entry));
-+		/*
-+		 * Flush max. up to end of cmd ring since current entry might
-+		 * be a padding that is shorter than sizeof(*entry)
-+		 */
-+		size_t ring_left = head_to_end(udev->cmdr_last_cleaned,
-+					       udev->cmdr_size);
-+		tcmu_flush_dcache_range(entry, ring_left < sizeof(*entry) ?
-+					ring_left : sizeof(*entry));
+ 	retrc = 0;
  
- 		if (tcmu_hdr_get_op(entry->hdr.len_op) = TCMU_OP_PAD) {
- 			UPDATE_HEAD(udev->cmdr_last_cleaned,
+-	tasklet_init(&vhost->tasklet, (void *)ibmvfc_tasklet, (unsigned long)vhost);
++	tasklet_setup(&vhost->tasklet, (void *)ibmvfc_tasklet);
+ 
+ 	if ((rc = request_irq(vdev->irq, ibmvfc_interrupt, 0, IBMVFC_NAME, vhost))) {
+ 		dev_err(dev, "Couldn't register irq 0x%x. rc=%d\n", vdev->irq, rc);
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index b1f3017b6547..46b818daa957 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -208,9 +208,10 @@ static int ibmvscsi_send_crq(struct ibmvscsi_host_data *hostdata,
+  * ibmvscsi_task: - Process srps asynchronously
+  * @data:	ibmvscsi_host_data of host
+  */
+-static void ibmvscsi_task(void *data)
++static void ibmvscsi_task(struct tasklet_struct *t)
+ {
+-	struct ibmvscsi_host_data *hostdata = (struct ibmvscsi_host_data *)data;
++	struct ibmvscsi_host_data *hostdata = from_tasklet(hostdata, t,
++							   srp_task);
+ 	struct vio_dev *vdev = to_vio_dev(hostdata->dev);
+ 	struct viosrp_crq *crq;
+ 	int done = 0;
+@@ -366,8 +367,7 @@ static int ibmvscsi_init_crq_queue(struct crq_queue *queue,
+ 	queue->cur = 0;
+ 	spin_lock_init(&queue->lock);
+ 
+-	tasklet_init(&hostdata->srp_task, (void *)ibmvscsi_task,
+-		     (unsigned long)hostdata);
++	tasklet_setup(&hostdata->srp_task, ibmvscsi_task);
+ 
+ 	if (request_irq(vdev->irq,
+ 			ibmvscsi_handle_event,
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index d9e94e81da01..e62fd6c67001 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -3328,9 +3328,9 @@ static int ibmvscsis_rdma(struct ibmvscsis_cmd *cmd, struct scatterlist *sg,
+  *
+  * Note: this is an edge triggered interrupt. It can not be shared.
+  */
+-static void ibmvscsis_handle_crq(unsigned long data)
++static void ibmvscsis_handle_crq(struct tasklet_struct *t)
+ {
+-	struct scsi_info *vscsi = (struct scsi_info *)data;
++	struct scsi_info *vscsi = from_tasklet(vscsi, t, work_task);
+ 	struct viosrp_crq *crq;
+ 	long rc;
+ 	bool ack = true;
+@@ -3541,8 +3541,7 @@ static int ibmvscsis_probe(struct vio_dev *vdev,
+ 	dev_dbg(&vscsi->dev, "probe hrc %ld, client partition num %d\n",
+ 		hrc, vscsi->client_data.partition_number);
+ 
+-	tasklet_init(&vscsi->work_task, ibmvscsis_handle_crq,
+-		     (unsigned long)vscsi);
++	tasklet_setup(&vscsi->work_task, ibmvscsis_handle_crq);
+ 
+ 	init_completion(&vscsi->wait_idle);
+ 	init_completion(&vscsi->unconfig);
 -- 
-2.25.1
+2.17.1
