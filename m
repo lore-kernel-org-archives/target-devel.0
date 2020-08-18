@@ -1,122 +1,70 @@
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Date: Fri, 17 Jul 2020 16:12:06 +0000
-Subject: [PATCH v2 2/8] scsi: target: Add tmr_notify backend function
-Message-Id: <20200717161212.10731-3-bstroesser@ts.fujitsu.com>
+From: Wu Bo <wubo40@huawei.com>
+Date: Tue, 18 Aug 2020 11:16:10 +0000
+Subject: [PATCH] target:iscsi-target:Fix null pointer access while logout the iscsi session
+Message-Id: <1597749370-631500-1-git-send-email-wubo40@huawei.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200717161212.10731-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+To: martin.petersen@oracle.com, michael.christie@oracle.com, bvanassche@acm.org, sudhakar.panneerselvam@oracle.com, mlombard@redhat.com, ddiss@suse.de
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linfeilong@huawei.com, liuzhiqiang26@huawei.com, wubo40@huawei.com
 
-Target core is modified to call an optional backend
-callback function if a TMR is received or commands
-are aborted implicitly after a PR command was received.
-The backend function takes as parameters the se_dev, the
-type of the TMR, and the list of aborted commands.
-If no commands were aborted, an empty list is supplied.
+From: Wu Bo <wubo40@huawei.com>
 
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+When I use fio to test the iscsi volumes and logout of the iscsi session
+at the same time, the following crash occurs:
+
+[24912.893443] BUG: unable to handle kernel NULL pointer dereference at 0000000000000140
+[24912.893748] Oops: 0002 [#1] SMP PTI
+[24912.893883] CPU: 3 PID: 239032 Comm: kworker/3:2 Kdump: loaded Tainted:  
+[24912.894316] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996)
+[24912.894773] Workqueue: target_completion target_complete_ok_work [target_core_mod]
+[24912.895065] RIP: 0010:sbitmap_queue_clear+0x2a/0x70
+[24912.895328] Code: 41 54 41 89 f4 55 89 d5 53 48 89 fb 8b 4f 04 89 f0 d3 e8 48 8d 3c
+[24912.895906] RSP: 0018:ffff9eb14129bdf0 EFLAGS: 00010206
+[24912.896268] RAX: 000000000000001b RBX: ffff9065367f23c0 RCX: 0000000000000005
+[24912.896591] RDX: 0000000000000000 RSI: 000000000000003b RDI: 00000000000000c0
+[24912.896919] RBP: 0000000000000000 R08: 0000000000000001 R09: 0000000000000000
+[24912.897556] R10: ffff9064bf6261e0 R11: 0000000000000100 R12: 000000000000003b
+[24912.897913] R13: 0000000000000000 R14: 0000000000000000 R15: ffff906518610c18
+[24912.897916] FS:  0000000000000000(0000) GS:ffff90653ad80000(0000) knlGS:0000000000000000
+[24912.898988] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[24912.899410] CR2: 0000000000000140 CR3: 0000000127c0a004 CR4: 00000000000206e0
+[24912.899830] Call Trace:
+[24912.900278]  target_release_cmd_kref+0x11d/0x2b0 [target_core_mod]
+[24912.900727]  target_put_sess_cmd+0x23/0x30 [target_core_mod]
+[24912.901181]  target_complete_ok_work+0xc2/0x370 [target_core_mod]
+[24912.901649]  ? __schedule+0x304/0x930
+[24912.902921]  process_one_work+0x195/0x390
+[24912.903396]  worker_thread+0x30/0x390
+[24912.903866]  ? process_one_work+0x390/0x390
+[24912.904355]  kthread+0x10d/0x130
+[24912.904835]  ? kthread_flush_work_fn+0x10/0x10
+[24912.905335]  ret_from_fork+0x35/0x40
+
+The iscsi-target thread executes the logout operation, 
+deletes the session,and releases the sess_tag_pool without waiting 
+for all cmds to complete. When the cmds is completed, the target_complete
+worker put the tag to sess_tag_pool, the sess_tag_pool has been released 
+at this time, So accessed the NULL pointer.
+
+Signed-off-by: Wu Bo <wubo40@huawei.com>
 ---
- drivers/target/target_core_tmr.c       | 16 +++++++++++++++-
- drivers/target/target_core_transport.c |  1 +
- include/target/target_core_backend.h   |  2 ++
- include/target/target_core_base.h      |  1 +
- 4 files changed, 19 insertions(+), 1 deletion(-)
+ drivers/target/iscsi/iscsi_target.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
-index b65d7a0a5df1..39d93357db65 100644
---- a/drivers/target/target_core_tmr.c
-+++ b/drivers/target/target_core_tmr.c
-@@ -116,6 +116,7 @@ void core_tmr_abort_task(
- 	struct se_tmr_req *tmr,
- 	struct se_session *se_sess)
- {
-+	LIST_HEAD(aborted_list);
- 	struct se_cmd *se_cmd, *next;
- 	unsigned long flags;
- 	bool rc;
-@@ -144,7 +145,7 @@ void core_tmr_abort_task(
- 		if (!rc)
- 			continue;
- 
--		list_del_init(&se_cmd->state_list);
-+		list_move_tail(&se_cmd->state_list, &aborted_list);
- 		se_cmd->state_active = false;
- 
- 		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
-@@ -157,6 +158,11 @@ void core_tmr_abort_task(
- 			WARN_ON_ONCE(transport_lookup_tmr_lun(tmr->task_cmd) <
- 					0);
- 
-+		if (dev->transport->tmr_notify)
-+			dev->transport->tmr_notify(dev, TMR_ABORT_TASK,
-+						   &aborted_list);
-+
-+		list_del_init(&se_cmd->state_list);
- 		target_put_cmd_and_wait(se_cmd);
- 
- 		printk("ABORT_TASK: Sending TMR_FUNCTION_COMPLETE for"
-@@ -167,6 +173,9 @@ void core_tmr_abort_task(
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index c968961..a8ea4a7 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4387,6 +4387,8 @@ int iscsit_close_session(struct iscsi_session *sess)
+ 		}
  	}
- 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
  
-+	if (dev->transport->tmr_notify)
-+		dev->transport->tmr_notify(dev, TMR_ABORT_TASK, &aborted_list);
-+
- 	printk("ABORT_TASK: Sending TMR_TASK_DOES_NOT_EXIST for ref_tag: %lld\n",
- 			tmr->ref_task_tag);
- 	tmr->response = TMR_TASK_DOES_NOT_EXIST;
-@@ -318,6 +327,11 @@ static void core_tmr_drain_state_list(
- 	}
- 	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
++	target_sess_cmd_list_set_waiting(sess->se_sess);
++	target_wait_for_sess_cmds(sess->se_sess);
+ 	transport_deregister_session(sess->se_sess);
  
-+	if (dev->transport->tmr_notify)
-+		dev->transport->tmr_notify(dev, preempt_and_abort_list ?
-+					   TMR_LUN_RESET_PRO : TMR_LUN_RESET,
-+					   &drain_task_list);
-+
- 	while (!list_empty(&drain_task_list)) {
- 		cmd = list_entry(drain_task_list.next, struct se_cmd, state_list);
- 		list_del_init(&cmd->state_list);
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index e6e1fa68de54..9fb0be0aa620 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -2946,6 +2946,7 @@ static const char *target_tmf_name(enum tcm_tmreq_table tmf)
- 	case TMR_LUN_RESET:		return "LUN_RESET";
- 	case TMR_TARGET_WARM_RESET:	return "TARGET_WARM_RESET";
- 	case TMR_TARGET_COLD_RESET:	return "TARGET_COLD_RESET";
-+	case TMR_LUN_RESET_PRO:		return "LUN_RESET_PRO";
- 	case TMR_UNKNOWN:		break;
- 	}
- 	return "(?)";
-diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
-index f51452e3b984..6336780d83a7 100644
---- a/include/target/target_core_backend.h
-+++ b/include/target/target_core_backend.h
-@@ -40,6 +40,8 @@ struct target_backend_ops {
- 	ssize_t (*show_configfs_dev_params)(struct se_device *, char *);
- 
- 	sense_reason_t (*parse_cdb)(struct se_cmd *cmd);
-+	void (*tmr_notify)(struct se_device *se_dev, enum tcm_tmreq_table,
-+			   struct list_head *aborted_cmds);
- 	u32 (*get_device_type)(struct se_device *);
- 	sector_t (*get_blocks)(struct se_device *);
- 	sector_t (*get_alignment_offset_lbas)(struct se_device *);
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 18c3f277b770..549947d407cf 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -207,6 +207,7 @@ enum tcm_tmreq_table {
- 	TMR_LUN_RESET		= 5,
- 	TMR_TARGET_WARM_RESET	= 6,
- 	TMR_TARGET_COLD_RESET	= 7,
-+	TMR_LUN_RESET_PRO	= 0x80,
- 	TMR_UNKNOWN		= 0xff,
- };
- 
+ 	if (sess->sess_ops->ErrorRecoveryLevel = 2)
 -- 
-2.12.3
+1.8.3.1
