@@ -1,70 +1,30 @@
-From: Wu Bo <wubo40@huawei.com>
-Date: Tue, 18 Aug 2020 11:16:10 +0000
-Subject: [PATCH] target:iscsi-target:Fix null pointer access while logout the iscsi session
-Message-Id: <1597749370-631500-1-git-send-email-wubo40@huawei.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Tue, 18 Aug 2020 14:11:25 +0000
+Subject: Re: [PATCH] target:iscsi-target:Fix null pointer access while logout the iscsi session
+Message-Id: <20200818161125.359383ef@suse.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <1597749370-631500-1-git-send-email-wubo40@huawei.com>
+In-Reply-To: <1597749370-631500-1-git-send-email-wubo40@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, michael.christie@oracle.com, bvanassche@acm.org, sudhakar.panneerselvam@oracle.com, mlombard@redhat.com, ddiss@suse.de
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linfeilong@huawei.com, liuzhiqiang26@huawei.com, wubo40@huawei.com
+To: Wu Bo <wubo40@huawei.com>
+Cc: martin.petersen@oracle.com, michael.christie@oracle.com, bvanassche@acm.org, sudhakar.panneerselvam@oracle.com, mlombard@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linfeilong@huawei.com, liuzhiqiang26@huawei.com
 
-From: Wu Bo <wubo40@huawei.com>
+Hi,
 
-When I use fio to test the iscsi volumes and logout of the iscsi session
-at the same time, the following crash occurs:
+On Tue, 18 Aug 2020 19:16:10 +0800, Wu Bo wrote:
 
-[24912.893443] BUG: unable to handle kernel NULL pointer dereference at 0000000000000140
-[24912.893748] Oops: 0002 [#1] SMP PTI
-[24912.893883] CPU: 3 PID: 239032 Comm: kworker/3:2 Kdump: loaded Tainted:  
-[24912.894316] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996)
-[24912.894773] Workqueue: target_completion target_complete_ok_work [target_core_mod]
-[24912.895065] RIP: 0010:sbitmap_queue_clear+0x2a/0x70
-[24912.895328] Code: 41 54 41 89 f4 55 89 d5 53 48 89 fb 8b 4f 04 89 f0 d3 e8 48 8d 3c
-[24912.895906] RSP: 0018:ffff9eb14129bdf0 EFLAGS: 00010206
-[24912.896268] RAX: 000000000000001b RBX: ffff9065367f23c0 RCX: 0000000000000005
-[24912.896591] RDX: 0000000000000000 RSI: 000000000000003b RDI: 00000000000000c0
-[24912.896919] RBP: 0000000000000000 R08: 0000000000000001 R09: 0000000000000000
-[24912.897556] R10: ffff9064bf6261e0 R11: 0000000000000100 R12: 000000000000003b
-[24912.897913] R13: 0000000000000000 R14: 0000000000000000 R15: ffff906518610c18
-[24912.897916] FS:  0000000000000000(0000) GS:ffff90653ad80000(0000) knlGS:0000000000000000
-[24912.898988] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[24912.899410] CR2: 0000000000000140 CR3: 0000000127c0a004 CR4: 00000000000206e0
-[24912.899830] Call Trace:
-[24912.900278]  target_release_cmd_kref+0x11d/0x2b0 [target_core_mod]
-[24912.900727]  target_put_sess_cmd+0x23/0x30 [target_core_mod]
-[24912.901181]  target_complete_ok_work+0xc2/0x370 [target_core_mod]
-[24912.901649]  ? __schedule+0x304/0x930
-[24912.902921]  process_one_work+0x195/0x390
-[24912.903396]  worker_thread+0x30/0x390
-[24912.903866]  ? process_one_work+0x390/0x390
-[24912.904355]  kthread+0x10d/0x130
-[24912.904835]  ? kthread_flush_work_fn+0x10/0x10
-[24912.905335]  ret_from_fork+0x35/0x40
+> From: Wu Bo <wubo40@huawei.com>
+> 
+> When I use fio to test the iscsi volumes and logout of the iscsi session
+> at the same time, the following crash occurs:
 
-The iscsi-target thread executes the logout operation, 
-deletes the session,and releases the sess_tag_pool without waiting 
-for all cmds to complete. When the cmds is completed, the target_complete
-worker put the tag to sess_tag_pool, the sess_tag_pool has been released 
-at this time, So accessed the NULL pointer.
+The change looks reasonable here, but I'd like get a reproducer for it.
+I've attempted something via:
+https://github.com/ddiss/libiscsi/tree/async_logout_during_write
+(run iscsi-test-cu --test iSCSI.iSCSITMF.LogoutDuringIOAsync)
 
-Signed-off-by: Wu Bo <wubo40@huawei.com>
----
- drivers/target/iscsi/iscsi_target.c | 2 ++
- 1 file changed, 2 insertions(+)
+Do you have any ideas why I'm not able to hit this oops?
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index c968961..a8ea4a7 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4387,6 +4387,8 @@ int iscsit_close_session(struct iscsi_session *sess)
- 		}
- 	}
- 
-+	target_sess_cmd_list_set_waiting(sess->se_sess);
-+	target_wait_for_sess_cmds(sess->se_sess);
- 	transport_deregister_session(sess->se_sess);
- 
- 	if (sess->sess_ops->ErrorRecoveryLevel = 2)
--- 
-1.8.3.1
+Thanks, David
