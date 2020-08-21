@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 21 Aug 2020 16:13:38 +0000
-Subject: [PATCH AUTOSEL 5.8 17/62] scsi: target: tcmu: Fix crash on ARM during cmd completion
-Message-Id: <20200821161423.347071-17-sashal@kernel.org>
+Date: Fri, 21 Aug 2020 16:16:29 +0000
+Subject: [PATCH AUTOSEL 5.4 13/48] scsi: target: tcmu: Fix crash on ARM during cmd completion
+Message-Id: <20200821161704.348164-13-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200821161423.347071-1-sashal@kernel.org>
-In-Reply-To: <20200821161423.347071-1-sashal@kernel.org>
+References: <20200821161704.348164-1-sashal@kernel.org>
+In-Reply-To: <20200821161704.348164-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -41,7 +41,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 560bfec933bc3..1eb1fb0165cd5 100644
+index a497e7c1f4fcc..1de341a65a18a 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
 @@ -1220,7 +1220,14 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
