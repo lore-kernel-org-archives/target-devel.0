@@ -1,188 +1,105 @@
-From: Allen Pais <allen.cryptic@gmail.com>
-Date: Mon, 17 Aug 2020 08:55:26 +0000
-Subject: [PATCH 5/8] scsi: megaraid: convert tasklets to use new tasklet_setup() API
-Message-Id: <20200817085409.25268-6-allen.cryptic@gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Fri, 21 Aug 2020 16:15:16 +0000
+Subject: [PATCH AUTOSEL 5.7 32/61] scsi: target: Fix xcopy sess release leak
+Message-Id: <20200821161545.347622-32-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200817085409.25268-1-allen.cryptic@gmail.com>
-In-Reply-To: <20200817085409.25268-1-allen.cryptic@gmail.com>
+References: <20200821161545.347622-1-sashal@kernel.org>
+In-Reply-To: <20200821161545.347622-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jejb@linux.ibm.com, martin.petersen@oracle.com, kashyap.desai@broadcom.com, sumit.saxena@broadcom.com, shivasharan.srikanteshwara@broadcom.com
-Cc: keescook@chromium.org, linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, megaraidlinux.pdl@broadcom.com, Allen Pais <allen.lkml@gmail.com>, Romain Perier <romain.perier@gmail.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Mike Christie <michael.christie@oracle.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-From: Allen Pais <allen.lkml@gmail.com>
+From: Mike Christie <michael.christie@oracle.com>
 
-In preparation for unconditionally passing the
-struct tasklet_struct pointer to all tasklet
-callbacks, switch to using the new tasklet_setup()
-and from_tasklet() to pass the tasklet pointer explicitly.
+[ Upstream commit 3c006c7d23aac928279f7cbe83bbac4361255d53 ]
 
-Signed-off-by: Romain Perier <romain.perier@gmail.com>
-Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+transport_init_session can allocate memory via percpu_ref_init, and
+target_xcopy_release_pt never frees it. This adds a
+transport_uninit_session function to handle cleanup of resources allocated
+in the init function.
+
+Link: https://lore.kernel.org/r/1593654203-12442-3-git-send-email-michael.christie@oracle.com
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/scsi/megaraid/megaraid_mbox.c       |  9 ++++-----
- drivers/scsi/megaraid/megaraid_sas.h        |  2 +-
- drivers/scsi/megaraid/megaraid_sas_base.c   | 16 +++++++---------
- drivers/scsi/megaraid/megaraid_sas_fusion.c | 14 +++++++-------
- 4 files changed, 19 insertions(+), 22 deletions(-)
+ drivers/target/target_core_internal.h  |  1 +
+ drivers/target/target_core_transport.c |  7 ++++++-
+ drivers/target/target_core_xcopy.c     | 11 +++++++++--
+ 3 files changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/megaraid/megaraid_mbox.c b/drivers/scsi/megaraid/megaraid_mbox.c
-index 19469a2c0ea3..47b2d8045c9d 100644
---- a/drivers/scsi/megaraid/megaraid_mbox.c
-+++ b/drivers/scsi/megaraid/megaraid_mbox.c
-@@ -119,7 +119,7 @@ static void megaraid_mbox_prepare_epthru(adapter_t *, scb_t *,
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index 8533444159635..e7b3c6e5d5744 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -138,6 +138,7 @@ int	init_se_kmem_caches(void);
+ void	release_se_kmem_caches(void);
+ u32	scsi_get_new_index(scsi_index_t);
+ void	transport_subsystem_check_init(void);
++void	transport_uninit_session(struct se_session *);
+ unsigned char *transport_dump_cmd_direction(struct se_cmd *);
+ void	transport_dump_dev_state(struct se_device *, char *, int *);
+ void	transport_dump_dev_info(struct se_device *, struct se_lun *,
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 264a822c0bfac..989d5e5924816 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -236,6 +236,11 @@ int transport_init_session(struct se_session *se_sess)
+ }
+ EXPORT_SYMBOL(transport_init_session);
  
- static irqreturn_t megaraid_isr(int, void *);
- 
--static void megaraid_mbox_dpc(unsigned long);
-+static void megaraid_mbox_dpc(struct tasklet_struct *t);
- 
- static ssize_t megaraid_sysfs_show_app_hndl(struct device *, struct device_attribute *attr, char *);
- static ssize_t megaraid_sysfs_show_ldnum(struct device *, struct device_attribute *attr, char *);
-@@ -878,8 +878,7 @@ megaraid_init_mbox(adapter_t *adapter)
- 	}
- 
- 	// setup tasklet for DPC
--	tasklet_init(&adapter->dpc_h, megaraid_mbox_dpc,
--			(unsigned long)adapter);
-+	tasklet_setup(&adapter->dpc_h, megaraid_mbox_dpc);
- 
- 	con_log(CL_DLEVEL1, (KERN_INFO
- 		"megaraid mbox hba successfully initialized\n"));
-@@ -2168,9 +2167,9 @@ megaraid_isr(int irq, void *devp)
-  * it is being called.
-  */
- static void
--megaraid_mbox_dpc(unsigned long devp)
-+megaraid_mbox_dpc(struct tasklet_struct *t)
- {
--	adapter_t		*adapter = (adapter_t *)devp;
-+	adapter_t		*adapter = from_tasklet(adapter, t, dpc_h);
- 	mraid_device_t		*raid_dev;
- 	struct list_head	clist;
- 	struct scatterlist	*sgl;
-diff --git a/drivers/scsi/megaraid/megaraid_sas.h b/drivers/scsi/megaraid/megaraid_sas.h
-index 5e4137f10e0e..ce361b2b9f14 100644
---- a/drivers/scsi/megaraid/megaraid_sas.h
-+++ b/drivers/scsi/megaraid/megaraid_sas.h
-@@ -2531,7 +2531,7 @@ struct megasas_instance_template {
- 	int (*check_reset)(struct megasas_instance *, \
- 		struct megasas_register_set __iomem *);
- 	irqreturn_t (*service_isr)(int irq, void *devp);
--	void (*tasklet)(unsigned long);
-+	void (*tasklet)(struct tasklet_struct *t);
- 	u32 (*init_adapter)(struct megasas_instance *);
- 	u32 (*build_and_issue_cmd) (struct megasas_instance *,
- 				    struct scsi_cmnd *);
-diff --git a/drivers/scsi/megaraid/megaraid_sas_base.c b/drivers/scsi/megaraid/megaraid_sas_base.c
-index 861f7140f52e..dba60cc1cf41 100644
---- a/drivers/scsi/megaraid/megaraid_sas_base.c
-+++ b/drivers/scsi/megaraid/megaraid_sas_base.c
-@@ -217,7 +217,7 @@ megasas_init_adapter_mfi(struct megasas_instance *instance);
- u32
- megasas_build_and_issue_cmd(struct megasas_instance *instance,
- 			    struct scsi_cmnd *scmd);
--static void megasas_complete_cmd_dpc(unsigned long instance_addr);
-+static void megasas_complete_cmd_dpc(struct tasklet_struct *t);
- int
- wait_and_poll(struct megasas_instance *instance, struct megasas_cmd *cmd,
- 	int seconds);
-@@ -2217,14 +2217,14 @@ megasas_check_and_restore_queue_depth(struct megasas_instance *instance)
-  *
-  * Tasklet to complete cmds
-  */
--static void megasas_complete_cmd_dpc(unsigned long instance_addr)
-+static void megasas_complete_cmd_dpc(struct tasklet_struct *t)
- {
- 	u32 producer;
- 	u32 consumer;
- 	u32 context;
- 	struct megasas_cmd *cmd;
--	struct megasas_instance *instance -				(struct megasas_instance *)instance_addr;
-+	struct megasas_instance *instance = from_tasklet(instance, t,
-+							 isr_tasklet);
- 	unsigned long flags;
- 
- 	/* If we have already declared adapter dead, donot complete cmds */
-@@ -2769,7 +2769,7 @@ static int megasas_wait_for_outstanding(struct megasas_instance *instance)
- 			 * Call cmd completion routine. Cmd to be
- 			 * be completed directly without depending on isr.
- 			 */
--			megasas_complete_cmd_dpc((unsigned long)instance);
-+			megasas_complete_cmd_dpc(&instance->isr_tasklet);
- 		}
- 
- 		msleep(1000);
-@@ -6180,8 +6180,7 @@ static int megasas_init_fw(struct megasas_instance *instance)
- 	dev_info(&instance->pdev->dev,
- 		"RDPQ mode\t: (%s)\n", instance->is_rdpq ? "enabled" : "disabled");
- 
--	tasklet_init(&instance->isr_tasklet, instance->instancet->tasklet,
--		(unsigned long)instance);
-+	tasklet_setup(&instance->isr_tasklet, instance->instancet->tasklet);
- 
- 	/*
- 	 * Below are default value for legacy Firmware.
-@@ -7719,8 +7718,7 @@ megasas_resume(struct pci_dev *pdev)
- 	if (megasas_get_ctrl_info(instance) != DCMD_SUCCESS)
- 		goto fail_init_mfi;
- 
--	tasklet_init(&instance->isr_tasklet, instance->instancet->tasklet,
--		     (unsigned long)instance);
-+	tasklet_setup(&instance->isr_tasklet, instance->instancet->tasklet);
- 
- 	if (instance->msix_vectors ?
- 			megasas_setup_irqs_msix(instance, 0) :
-diff --git a/drivers/scsi/megaraid/megaraid_sas_fusion.c b/drivers/scsi/megaraid/megaraid_sas_fusion.c
-index 0824410f78f8..67b07660971a 100644
---- a/drivers/scsi/megaraid/megaraid_sas_fusion.c
-+++ b/drivers/scsi/megaraid/megaraid_sas_fusion.c
-@@ -3705,15 +3705,15 @@ int megasas_irqpoll(struct irq_poll *irqpoll, int budget)
- 
++void transport_uninit_session(struct se_session *se_sess)
++{
++	percpu_ref_exit(&se_sess->cmd_count);
++}
++
  /**
-  * megasas_complete_cmd_dpc_fusion -	Completes command
-- * @instance_addr:			Adapter soft state address
-+ * @t:	Instance of the tasklet being run
-  *
-  * Tasklet to complete cmds
-  */
- static void
--megasas_complete_cmd_dpc_fusion(unsigned long instance_addr)
-+megasas_complete_cmd_dpc_fusion(struct tasklet_struct *t)
+  * transport_alloc_session - allocate a session object and initialize it
+  * @sup_prot_ops: bitmask that defines which T10-PI modes are supported.
+@@ -579,7 +584,7 @@ void transport_free_session(struct se_session *se_sess)
+ 		sbitmap_queue_free(&se_sess->sess_tag_pool);
+ 		kvfree(se_sess->sess_cmd_map);
+ 	}
+-	percpu_ref_exit(&se_sess->cmd_count);
++	transport_uninit_session(se_sess);
+ 	kmem_cache_free(se_sess_cache, se_sess);
+ }
+ EXPORT_SYMBOL(transport_free_session);
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index bd3ed6ce75719..4a01d7c195da7 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -474,7 +474,7 @@ int target_xcopy_setup_pt(void)
+ 	memset(&xcopy_pt_sess, 0, sizeof(struct se_session));
+ 	ret = transport_init_session(&xcopy_pt_sess);
+ 	if (ret < 0)
+-		return ret;
++		goto destroy_wq;
+ 
+ 	xcopy_pt_nacl.se_tpg = &xcopy_pt_tpg;
+ 	xcopy_pt_nacl.nacl_sess = &xcopy_pt_sess;
+@@ -483,12 +483,19 @@ int target_xcopy_setup_pt(void)
+ 	xcopy_pt_sess.se_node_acl = &xcopy_pt_nacl;
+ 
+ 	return 0;
++
++destroy_wq:
++	destroy_workqueue(xcopy_wq);
++	xcopy_wq = NULL;
++	return ret;
+ }
+ 
+ void target_xcopy_release_pt(void)
  {
--	struct megasas_instance *instance -		(struct megasas_instance *)instance_addr;
-+	struct megasas_instance *instance = from_tasklet(instance, t,
-+							 isr_tasklet);
- 	u32 count, MSIxIndex;
+-	if (xcopy_wq)
++	if (xcopy_wq) {
+ 		destroy_workqueue(xcopy_wq);
++		transport_uninit_session(&xcopy_pt_sess);
++	}
+ }
  
- 	count = instance->msix_vectors > 0 ? instance->msix_vectors : 1;
-@@ -4062,7 +4062,7 @@ megasas_wait_for_outstanding_fusion(struct megasas_instance *instance,
- 	if (reason = MFI_IO_TIMEOUT_OCR) {
- 		dev_info(&instance->pdev->dev,
- 			"MFI command is timed out\n");
--		megasas_complete_cmd_dpc_fusion((unsigned long)instance);
-+		megasas_complete_cmd_dpc_fusion(&instance->isr_tasklet);
- 		if (instance->snapdump_wait_time)
- 			megasas_trigger_snap_dump(instance);
- 		retval = 1;
-@@ -4078,7 +4078,7 @@ megasas_wait_for_outstanding_fusion(struct megasas_instance *instance,
- 				   "FW in FAULT state Fault code:0x%x subcode:0x%x func:%s\n",
- 				   abs_state & MFI_STATE_FAULT_CODE,
- 				   abs_state & MFI_STATE_FAULT_SUBCODE, __func__);
--			megasas_complete_cmd_dpc_fusion((unsigned long)instance);
-+			megasas_complete_cmd_dpc_fusion(&instance->isr_tasklet);
- 			if (instance->requestorId && reason) {
- 				dev_warn(&instance->pdev->dev, "SR-IOV Found FW in FAULT"
- 				" state while polling during"
-@@ -4122,7 +4122,7 @@ megasas_wait_for_outstanding_fusion(struct megasas_instance *instance,
- 			}
- 		}
- 
--		megasas_complete_cmd_dpc_fusion((unsigned long)instance);
-+		megasas_complete_cmd_dpc_fusion(&instance->isr_tasklet);
- 		outstanding = atomic_read(&instance->fw_outstanding);
- 		if (!outstanding)
- 			goto out;
+ /*
 -- 
-2.17.1
+2.25.1
