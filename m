@@ -1,101 +1,64 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 20 Aug 2020 00:02:09 +0000
-Subject: [PATCH AUTOSEL 5.4 02/22] scsi: target: tcmu: Fix crash in tcmu_flush_dcache_range on ARM
-Message-Id: <20200820000229.215333-2-sashal@kernel.org>
+Date: Fri, 21 Aug 2020 16:15:01 +0000
+Subject: [PATCH AUTOSEL 5.7 17/61] scsi: target: tcmu: Fix crash on ARM during cmd completion
+Message-Id: <20200821161545.347622-17-sashal@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200820000229.215333-1-sashal@kernel.org>
-In-Reply-To: <20200820000229.215333-1-sashal@kernel.org>
+References: <20200821161545.347622-1-sashal@kernel.org>
+In-Reply-To: <20200821161545.347622-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, JiangYu <lnsyyj@hotmail.com>, Daniel Meyerholt <dxm523@gmail.com>, Mike Christie <michael.christie@oracle.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, JiangYu <lnsyyj@hotmail.com>, Mike Christie <michael.christie@oracle.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
 From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-[ Upstream commit 3145550a7f8b08356c8ff29feaa6c56aca12901d ]
+[ Upstream commit 5a0c256d96f020e4771f6fd5524b80f89a2d3132 ]
 
-This patch fixes the following crash (see
-https://bugzilla.kernel.org/show_bug.cgi?id 8045)
+If tcmu_handle_completions() has to process a padding shorter than
+sizeof(struct tcmu_cmd_entry), the current call to
+tcmu_flush_dcache_range() with sizeof(struct tcmu_cmd_entry) as length
+param is wrong and causes crashes on e.g. ARM, because
+tcmu_flush_dcache_range() in this case calls
+flush_dcache_page(vmalloc_to_page(start)); with start being an invalid
+address above the end of the vmalloc'ed area.
 
- Process iscsi_trx (pid: 7496, stack limit = 0x0000000010dd111a)
- CPU: 0 PID: 7496 Comm: iscsi_trx Not tainted 4.19.118-0419118-generic
-        #202004230533
- Hardware name: Greatwall QingTian DF720/F601, BIOS 601FBE20 Sep 26 2019
- pstate: 80400005 (Nzcv daif +PAN -UAO)
- pc : flush_dcache_page+0x18/0x40
- lr : is_ring_space_avail+0x68/0x2f8 [target_core_user]
- sp : ffff000015123a80
- x29: ffff000015123a80 x28: 0000000000000000
- x27: 0000000000001000 x26: ffff000023ea5000
- x25: ffffcfa25bbe08b8 x24: 0000000000000078
- x23: ffff7e0000000000 x22: ffff000023ea5001
- x21: ffffcfa24b79c000 x20: 0000000000000fff
- x19: ffff7e00008fa940 x18: 0000000000000000
- x17: 0000000000000000 x16: ffff2d047e709138
- x15: 0000000000000000 x14: 0000000000000000
- x13: 0000000000000000 x12: ffff2d047fbd0a40
- x11: 0000000000000000 x10: 0000000000000030
- x9 : 0000000000000000 x8 : ffffc9a254820a00
- x7 : 00000000000013b0 x6 : 000000000000003f
- x5 : 0000000000000040 x4 : ffffcfa25bbe08e8
- x3 : 0000000000001000 x2 : 0000000000000078
- x1 : ffffcfa25bbe08b8 x0 : ffff2d040bc88a18
- Call trace:
-  flush_dcache_page+0x18/0x40
-  is_ring_space_avail+0x68/0x2f8 [target_core_user]
-  queue_cmd_ring+0x1f8/0x680 [target_core_user]
-  tcmu_queue_cmd+0xe4/0x158 [target_core_user]
-  __target_execute_cmd+0x30/0xf0 [target_core_mod]
-  target_execute_cmd+0x294/0x390 [target_core_mod]
-  transport_generic_new_cmd+0x1e8/0x358 [target_core_mod]
-  transport_handle_cdb_direct+0x50/0xb0 [target_core_mod]
-  iscsit_execute_cmd+0x2b4/0x350 [iscsi_target_mod]
-  iscsit_sequence_cmd+0xd8/0x1d8 [iscsi_target_mod]
-  iscsit_process_scsi_cmd+0xac/0xf8 [iscsi_target_mod]
-  iscsit_get_rx_pdu+0x404/0xd00 [iscsi_target_mod]
-  iscsi_target_rx_thread+0xb8/0x130 [iscsi_target_mod]
-  kthread+0x130/0x138
-  ret_from_fork+0x10/0x18
- Code: f9000bf3 aa0003f3 aa1e03e0 d503201f (f9400260)
- ---[ end trace 1e451c73f4266776 ]---
+The fix is to use the minimum of remaining ring space and sizeof(struct
+tcmu_cmd_entry) as the length param.
 
-The solution is based on patch:
+The patch was tested on kernel 4.19.118.
 
-  "scsi: target: tcmu: Optimize use of flush_dcache_page"
+See https://bugzilla.kernel.org/show_bug.cgi?id 8045#c10
 
-which restricts the use of tcmu_flush_dcache_range() to addresses from
-vmalloc'ed areas only.
-
-This patch now replaces the virt_to_page() call in
-tcmu_flush_dcache_range() - which is wrong for vmalloced addrs - by
-vmalloc_to_page().
-
-The patch was tested on ARM with kernel 4.19.118 and 5.7.2
-
-Link: https://lore.kernel.org/r/20200618131632.32748-3-bstroesser@ts.fujitsu.com
+Link: https://lore.kernel.org/r/20200629093756.8947-1-bstroesser@ts.fujitsu.com
 Tested-by: JiangYu <lnsyyj@hotmail.com>
-Tested-by: Daniel Meyerholt <dxm523@gmail.com>
 Acked-by: Mike Christie <michael.christie@oracle.com>
 Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_user.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_user.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index a497e7c1f4fcc..d766fb14942b3 100644
+index b63a1e0c4aa6d..b64ed7dbaa68a 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -601,7 +601,7 @@ static inline void tcmu_flush_dcache_range(void *vaddr, size_t size)
- 	size = round_up(size+offset, PAGE_SIZE);
+@@ -1220,7 +1220,14 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
  
- 	while (size) {
--		flush_dcache_page(virt_to_page(start));
-+		flush_dcache_page(vmalloc_to_page(start));
- 		start += PAGE_SIZE;
- 		size -= PAGE_SIZE;
- 	}
+ 		struct tcmu_cmd_entry *entry = (void *) mb + CMDR_OFF + udev->cmdr_last_cleaned;
+ 
+-		tcmu_flush_dcache_range(entry, sizeof(*entry));
++		/*
++		 * Flush max. up to end of cmd ring since current entry might
++		 * be a padding that is shorter than sizeof(*entry)
++		 */
++		size_t ring_left = head_to_end(udev->cmdr_last_cleaned,
++					       udev->cmdr_size);
++		tcmu_flush_dcache_range(entry, ring_left < sizeof(*entry) ?
++					ring_left : sizeof(*entry));
+ 
+ 		if (tcmu_hdr_get_op(entry->hdr.len_op) = TCMU_OP_PAD) {
+ 			UPDATE_HEAD(udev->cmdr_last_cleaned,
 -- 
 2.25.1
