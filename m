@@ -1,37 +1,148 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Fri, 07 Aug 2020 01:42:07 +0000
-Subject: Re: [PATCH] scsi: target: loop: Fix handling of aborted TMRs
-Message-Id: <61420558-b077-13ca-b5e3-6269fb419233@oracle.com>
+From: Hou Pu <houpu@bytedance.com>
+Date: Mon, 31 Aug 2020 12:02:20 +0000
+Subject: Re: [PATCH] iscsi-target: fix hang in iscsit_access_np() when getting tpg->np_login_sem
+Message-Id: <01a58989-8777-3967-ebcd-f8c080e18a3c@bytedance.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200715160403.12578-1-bstroesser@ts.fujitsu.com>
- <795a006d-6d66-a635-7e76-601cb7807f5b@oracle.com>
- <2694d1fc-8792-0fe2-4dec-78f15d3b4ec5@ts.fujitsu.com>
- <90048ea8-3b8f-cc06-7869-dca645cd68f2@oracle.com>
- <7c2d8052-fb5e-0a3b-a894-df8bfab44f21@ts.fujitsu.com>
- <b8fc90b9-7038-b202-e7ef-bc4da56816f0@oracle.com>
-In-Reply-To: <b8fc90b9-7038-b202-e7ef-bc4da56816f0@oracle.com>
+References: <20200729130343.24976-1-houpu@bytedance.com>
+In-Reply-To: <20200729130343.24976-1-houpu@bytedance.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bodo Stroesser <bstroesser@ts.fujitsu.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, michael.christie@oracle.com
+Cc: stable@vger.kernel.org
 
-On 7/27/20 1:13 PM, Mike Christie wrote:
-> I would really like to figure out if #2 is a regression and understand what happened so we don't make the same mistake again and also fix iscsi. The problem with iscsi though is every couple kernels has a bug in this code path so git bisect is being a pain.
 
-Sorry for the delay. I was able to track down the hang part of this. It turns out loop did work at some point. It worked a couple times over the years, but every X kernels we would break it again.
+Hi,
 
-The last time we didn't have the hang was because we executed TMFs one at a time. We would end up always calling queue_tm_rsp since the LUN reset was always going to execute after the abort. So to fix the wake up / hang part of the bug for everyone we could revert:
+Could anyone help review this patch? It is an important
+fix.
 
-commit db5b21a24e01d35495014076700efa02d6dcbb68
-Author: Bart Van Assche <bvanassche@acm.org>
-Date:   Tue Nov 27 15:51:59 2018 -0800
+Login thread could hang __forever__ and only reboot could
+solve this. This happened several times in our production
+environment.
 
-    scsi: target/core: Use system workqueues for TMF
+np->np_login_timer is shared by all TPGs of a portal.
+should be used carefully. If a connection to iqn-TPG A start
+login timer, It should not stop by another connection
+to iqn-TPG B.
 
-It's not clear how much processing TMFs for the same device in parallel helps. If it doesn't help, this would be an easy fix for everyone.
+np->np_login_timer protect potential hangs in
+__iscsi_target_login_thread.
+should be used locally in this function. It should really
+not be used in iscsi_target_login_sess_out from workqueue
+context.
 
-One other thing that is not clear to me is if aborted_task was always meant to be used for task management requests. I think when it was first added, it was only called for normal cmds. I couldn't tell exactly when we meant (vs it snuck in by accident) to start calling it for all commands.
+Thanks,
+Hou
 
-If the async TMF feature helps, then I'm ok with with your fix for loop where we say the aborted_task callout was meant for all commands and go from there. We then have to do something similar in xen, and check that the other drivers didn't expect the old behavior. I think for that qla2xxx bug you mentioned, tcm_qla2xxx_aborted_task didn't expect a qla_tgt_mgmt_cmd to be passed into aborted_task so it crashed trying to access it as a qla_tgt_cmd.
-
-What do you think?
+On 2020/7/29 9:03 PM, Hou Pu wrote:
+> The iscsi target login thread might stuck in following stack:
+> 
+> cat /proc/`pidof iscsi_np`/stack
+> [<0>] down_interruptible+0x42/0x50
+> [<0>] iscsit_access_np+0xe3/0x167
+> [<0>] iscsi_target_locate_portal+0x695/0x8ac
+> [<0>] __iscsi_target_login_thread+0x855/0xb82
+> [<0>] iscsi_target_login_thread+0x2f/0x5a
+> [<0>] kthread+0xfa/0x130
+> [<0>] ret_from_fork+0x1f/0x30
+> 
+> This could be reproduced by following steps:
+> 1. Initiator A try to login iqn1-tpg1 on port 3260. After finishing
+>     PDU exchange in the login thread and before the negotiation is
+>     finished, at this time the network link is down. In a production
+>     environment, this could happen. I could emulated it by bring
+>     the network card down in the initiator node by ifconfig eth0 down.
+>     (Now A could never finish this login. And tpg->np_login_sem is
+>     hold by it).
+> 2. Initiator B try to login iqn2-tpg1 on port 3260. After finishing
+>     PDU exchange in the login thread. The target expect to process
+>     remaining login PDUs in workqueue context.
+> 3. Initiator A' try to re-login to iqn1-tpg1 on port 3260 from
+>     a new socket. It will wait for tpg->np_login_sem with
+>     np->np_login_timer loaded to wait for at most 15 second.
+>     (Because the lock is held by A. A never gets a change to
+>     release tpg->np_login_sem. so A' should finally get timeout).
+> 4. Before A' got timeout. Initiator B gets negotiation failed and
+>     calls iscsi_target_login_drop()->iscsi_target_login_sess_out().
+>     The np->np_login_timer is canceled. And initiator A' will hang
+>     there forever. Because A' is now in the login thread. All other
+>     login requests could not be serviced.
+> 
+> Fix this by moving iscsi_stop_login_thread_timer() out of
+> iscsi_target_login_sess_out(). Also remove iscsi_np parameter
+> from iscsi_target_login_sess_out().
+> 
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Hou Pu <houpu@bytedance.com>
+> ---
+>   drivers/target/iscsi/iscsi_target_login.c | 6 +++---
+>   drivers/target/iscsi/iscsi_target_login.h | 3 +--
+>   drivers/target/iscsi/iscsi_target_nego.c  | 3 +--
+>   3 files changed, 5 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+> index 85748e338858..893d1b406c29 100644
+> --- a/drivers/target/iscsi/iscsi_target_login.c
+> +++ b/drivers/target/iscsi/iscsi_target_login.c
+> @@ -1149,7 +1149,7 @@ void iscsit_free_conn(struct iscsi_conn *conn)
+>   }
+>   
+>   void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+> -		struct iscsi_np *np, bool zero_tsih, bool new_sess)
+> +				 bool zero_tsih, bool new_sess)
+>   {
+>   	if (!new_sess)
+>   		goto old_sess_out;
+> @@ -1167,7 +1167,6 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+>   	conn->sess = NULL;
+>   
+>   old_sess_out:
+> -	iscsi_stop_login_thread_timer(np);
+>   	/*
+>   	 * If login negotiation fails check if the Time2Retain timer
+>   	 * needs to be restarted.
+> @@ -1407,8 +1406,9 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+>   new_sess_out:
+>   	new_sess = true;
+>   old_sess_out:
+> +	iscsi_stop_login_thread_timer(np);
+>   	tpg_np = conn->tpg_np;
+> -	iscsi_target_login_sess_out(conn, np, zero_tsih, new_sess);
+> +	iscsi_target_login_sess_out(conn, zero_tsih, new_sess);
+>   	new_sess = false;
+>   
+>   	if (tpg) {
+> diff --git a/drivers/target/iscsi/iscsi_target_login.h b/drivers/target/iscsi/iscsi_target_login.h
+> index 3b8e3639ff5d..fc95e6150253 100644
+> --- a/drivers/target/iscsi/iscsi_target_login.h
+> +++ b/drivers/target/iscsi/iscsi_target_login.h
+> @@ -22,8 +22,7 @@ extern int iscsit_put_login_tx(struct iscsi_conn *, struct iscsi_login *, u32);
+>   extern void iscsit_free_conn(struct iscsi_conn *);
+>   extern int iscsit_start_kthreads(struct iscsi_conn *);
+>   extern void iscsi_post_login_handler(struct iscsi_np *, struct iscsi_conn *, u8);
+> -extern void iscsi_target_login_sess_out(struct iscsi_conn *, struct iscsi_np *,
+> -				bool, bool);
+> +extern void iscsi_target_login_sess_out(struct iscsi_conn *, bool, bool);
+>   extern int iscsi_target_login_thread(void *);
+>   extern void iscsi_handle_login_thread_timeout(struct timer_list *t);
+>   
+> diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+> index 685d771b51d4..e32d93b92742 100644
+> --- a/drivers/target/iscsi/iscsi_target_nego.c
+> +++ b/drivers/target/iscsi/iscsi_target_nego.c
+> @@ -535,12 +535,11 @@ static bool iscsi_target_sk_check_and_clear(struct iscsi_conn *conn, unsigned in
+>   
+>   static void iscsi_target_login_drop(struct iscsi_conn *conn, struct iscsi_login *login)
+>   {
+> -	struct iscsi_np *np = login->np;
+>   	bool zero_tsih = login->zero_tsih;
+>   
+>   	iscsi_remove_failed_auth_entry(conn);
+>   	iscsi_target_nego_release(conn);
+> -	iscsi_target_login_sess_out(conn, np, zero_tsih, true);
+> +	iscsi_target_login_sess_out(conn, zero_tsih, true);
+>   }
+>   
+>   struct conn_timeout {
+> 
