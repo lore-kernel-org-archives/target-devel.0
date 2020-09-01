@@ -1,37 +1,54 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 30 Sep 2020 03:34:46 +0000
-Subject: Re: [PATCH 0/3] target: scsi: tcmu: code rework and speed up of read data handling
-Message-Id: <160143685412.27701.100112187449074876.b4-ty@oracle.com>
+From: Allen <allen.lkml@gmail.com>
+Date: Tue, 01 Sep 2020 10:18:46 +0000
+Subject: Re: [PATCH 0/8] scsi: convert tasklets to use new tasklet_setup()
+Message-Id: <CAOMdWSKmNVQTpJtdEMNHc5SS75WNS7F0duzQi14kg62R4Un8zA@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200910155041.17654-1-bstroesser@ts.fujitsu.com>
-In-Reply-To: <20200910155041.17654-1-bstroesser@ts.fujitsu.com>
+References: <20200817085409.25268-1-allen.cryptic@gmail.com>
+ <1597675318.4475.11.camel@linux.ibm.com> <202008171227.D3A4F454D8@keescook> <1597694252.22390.12.camel@linux.ibm.com>
+In-Reply-To: <1597694252.22390.12.camel@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, Bodo Stroesser <bstroesser@ts.fujitsu.com>, Mike Christie <michael.christie@oracle.com>, target-devel@vger.kernel.org
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>
+To: jejb@linux.ibm.com
+Cc: Kees Cook <keescook@chromium.org>, Allen Pais <allen.cryptic@gmail.com>, martin.petersen@oracle.com, kashyap.desai@broadcom.com, sumit.saxena@broadcom.com, shivasharan.srikanteshwara@broadcom.com, linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, target-devel@vger.kernel.org, megaraidlinux.pdl@broadcom.com
 
-On Thu, 10 Sep 2020 17:50:38 +0200, Bodo Stroesser wrote:
+> > > >
+> > > > Commit 12cc923f1ccc ("tasklet: Introduce new initialization
+> > > > API")' introduced a new tasklet initialization API. This series
+> > > > converts all the scsi drivers to use the new tasklet_setup() API
+> > >
+> > > I've got to say I agree with Jens, this was a silly obfuscation:
+> > >
+> > > +#define from_tasklet(var, callback_tasklet, tasklet_fieldname) \
+> > > +       container_of(callback_tasklet, typeof(*var),
+> > > tasklet_fieldname)
+> > >
+> > > Just use container_of directly since we all understand what it
+> > > does.
+> >
+> > But then the lines get really long, wrapped, etc.
+>
+> I really don't think that's a problem but if you want to add a new
+> generic container_of that does typeof instead of insisting on the type,
+> I'd be sort of OK with that ... provided you don't gratuitously alter
+> the argument order.
+>
+> The thing I object to is that this encourages everyone to roll their
+> own unnecessary container_of type macros in spite of the fact that it's
+> function is wholly generic.  It's fine if you're eliminating one of the
+> arguments, or actually making the macro specific to the type, but in
+> this case you're not, you're making a completely generic macro where
+> the name is the only thing that's specific to this case.
+>
+> >  This is what the timer_struct conversion did too (added a
+> > container_of wrapper), so I think it makes sense here too.
+>
+> I didn't see that one to object to it ...
 
-> This small series is made on top of Martin's 5.10/scsi-queue branch.
-> 
-> The patches simplify some code, splits off new helper functions
-> or implement a cleaner code sequence to prevent double work.
-> The 3rd patch speeds up buffer preparation for SCSI commands with
-> long read data.
-> The series is also base for cleaned up version v3 of my patch
->   scsi: target: tcmu: add compat mode for 32bit userspace on 64bit kernel
-> 
-> [...]
+Since we could not get the generic API accepted, can I send out V2
+which would use container_of()?
 
-Applied to 5.10/scsi-queue, thanks!
-
-[1/3] scsi: target: tcmu: Join tcmu_cmd_get_data_length() and tcmu_cmd_get_block_cnt()
-      https://git.kernel.org/mkp/scsi/c/52ef2743f16c
-[2/3] scsi: target: tcmu: Optimize queue_cmd_ring()
-      https://git.kernel.org/mkp/scsi/c/7e98905e9d0d
-[3/3] scsi: target: tcmu: Optimize scatter_data_area()
-      https://git.kernel.org/mkp/scsi/c/3c9a7c58ea3d
+Thanks,
 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+       - Allen
