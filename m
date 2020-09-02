@@ -1,65 +1,126 @@
-From: Hou Pu <houpu@bytedance.com>
-Date: Wed, 02 Sep 2020 04:16:03 +0000
+From: Mike Christie <michael.christie@oracle.com>
+Date: Wed, 02 Sep 2020 19:02:10 +0000
 Subject: Re: [PATCH] iscsi-target: fix hang in iscsit_access_np() when getting tpg->np_login_sem
-Message-Id: <e655c868-966d-1846-6bd8-19671cf966d4@bytedance.com>
+Message-Id: <32079608-6e37-e70b-821e-8519af4e590a@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200729130343.24976-1-houpu@bytedance.com>
- <24875CC6-70FA-477D-BB74-51FBFDD96732@oracle.com>
-In-Reply-To: <24875CC6-70FA-477D-BB74-51FBFDD96732@oracle.com>
+In-Reply-To: <20200729130343.24976-1-houpu@bytedance.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1258"
-Content-Transfer-Encoding: base64
-To: Michael Christie <michael.christie@oracle.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Hou Pu <houpu@bytedance.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: stable@vger.kernel.org
 
-CgpPbiAyMDIwLzkvMiAxMDo1NyBBTSwgTWljaGFlbCBDaHJpc3RpZSB3cm90ZToKPiAKPiAKPj4g
-T24gSnVsIDI5LCAyMDIwLCBhdCA4OjAzIEFNLCBIb3UgUHUgPGhvdXB1QGJ5dGVkYW5jZS5jb20+
-IHdyb3RlOgo+Pgo+PiBUaGUgaXNjc2kgdGFyZ2V0IGxvZ2luIHRocmVhZCBtaWdodCBzdHVjayBp
-biBmb2xsb3dpbmcgc3RhY2s6Cj4+Cj4+IGNhdCAvcHJvYy9gcGlkb2YgaXNjc2lfbnBgL3N0YWNr
-Cj4+IFs8MD5dIGRvd25faW50ZXJydXB0aWJsZSsweDQyLzB4NTAKPj4gWzwwPl0gaXNjc2l0X2Fj
-Y2Vzc19ucCsweGUzLzB4MTY3Cj4+IFs8MD5dIGlzY3NpX3RhcmdldF9sb2NhdGVfcG9ydGFsKzB4
-Njk1LzB4OGFjCj4+IFs8MD5dIF9faXNjc2lfdGFyZ2V0X2xvZ2luX3RocmVhZCsweDg1NS8weGI4
-Mgo+PiBbPDA+XSBpc2NzaV90YXJnZXRfbG9naW5fdGhyZWFkKzB4MmYvMHg1YQo+PiBbPDA+XSBr
-dGhyZWFkKzB4ZmEvMHgxMzAKPj4gWzwwPl0gcmV0X2Zyb21fZm9yaysweDFmLzB4MzAKPj4KPj4g
-VGhpcyBjb3VsZCBiZSByZXByb2R1Y2VkIGJ5IGZvbGxvd2luZyBzdGVwczoKPj4gMS4gSW5pdGlh
-dG9yIEEgdHJ5IHRvIGxvZ2luIGlxbjEtdHBnMSBvbiBwb3J0IDMyNjAuIEFmdGVyIGZpbmlzaGlu
-Zwo+PiAgICBQRFUgZXhjaGFuZ2UgaW4gdGhlIGxvZ2luIHRocmVhZCBhbmQgYmVmb3JlIHRoZSBu
-ZWdvdGlhdGlvbiBpcwo+PiAgICBmaW5pc2hlZCwgYXQgdGhpcyB0aW1lIHRoZSBuZXR3b3JrIGxp
-bmsgaXMgZG93bi4gSW4gYSBwcm9kdWN0aW9uCj4+ICAgIGVudmlyb25tZW50LCB0aGlzIGNvdWxk
-IGhhcHBlbi4gSSBjb3VsZCBlbXVsYXRlZCBpdCBieSBicmluZwo+PiAgICB0aGUgbmV0d29yayBj
-YXJkIGRvd24gaW4gdGhlIGluaXRpYXRvciBub2RlIGJ5IGlmY29uZmlnIGV0aDAgZG93bi4KPj4g
-ICAgKE5vdyBBIGNvdWxkIG5ldmVyIGZpbmlzaCB0aGlzIGxvZ2luLiBBbmQgdHBnLT5ucF9sb2dp
-bl9zZW0gaXMKPj4gICAgaG9sZCBieSBpdCkuCj4+IDIuIEluaXRpYXRvciBCIHRyeSB0byBsb2dp
-biBpcW4yLXRwZzEgb24gcG9ydCAzMjYwLiBBZnRlciBmaW5pc2hpbmcKPj4gICAgUERVIGV4Y2hh
-bmdlIGluIHRoZSBsb2dpbiB0aHJlYWQuIFRoZSB0YXJnZXQgZXhwZWN0IHRvIHByb2Nlc3MKPj4g
-ICAgcmVtYWluaW5nIGxvZ2luIFBEVXMgaW4gd29ya3F1ZXVlIGNvbnRleHQuCj4+IDMuIEluaXRp
-YXRvciBBJyB0cnkgdG8gcmUtbG9naW4gdG8gaXFuMS10cGcxIG9uIHBvcnQgMzI2MCBmcm9tCj4+
-ICAgIGEgbmV3IHNvY2tldC4gSXQgd2lsbCB3YWl0IGZvciB0cGctPm5wX2xvZ2luX3NlbSB3aXRo
-Cj4+ICAgIG5wLT5ucF9sb2dpbl90aW1lciBsb2FkZWQgdG8gd2FpdCBmb3IgYXQgbW9zdCAxNSBz
-ZWNvbmQuCj4+ICAgIChCZWNhdXNlIHRoZSBsb2NrIGlzIGhlbGQgYnkgQS4gQSBuZXZlciBnZXRz
-IGEgY2hhbmdlIHRvCj4+ICAgIHJlbGVhc2UgdHBnLT5ucF9sb2dpbl9zZW0uIHNvIEEnIHNob3Vs
-ZCBmaW5hbGx5IGdldCB0aW1lb3V0KS4KPj4gNC4gQmVmb3JlIEEnIGdvdCB0aW1lb3V0LiBJbml0
-aWF0b3IgQiBnZXRzIG5lZ290aWF0aW9uIGZhaWxlZCBhbmQKPj4gICAgY2FsbHMgaXNjc2lfdGFy
-Z2V0X2xvZ2luX2Ryb3AoKS0+aXNjc2lfdGFyZ2V0X2xvZ2luX3Nlc3Nfb3V0KCkuCj4+ICAgIFRo
-ZSBucC0+bnBfbG9naW5fdGltZXIgaXMgY2FuY2VsZWQuIEFuZCBpbml0aWF0b3IgQScgd2lsbCBo
-YW5nCj4+ICAgIHRoZXJlIGZvcmV2ZXIuIEJlY2F1c2UgQScgaXMgbm93IGluIHRoZSBsb2dpbiB0
-aHJlYWQuIEFsbCBvdGhlcgo+PiAgICBsb2dpbiByZXF1ZXN0cyBjb3VsZCBub3QgYmUgc2Vydmlj
-ZWQuCj4gCj4gaXFuMSBhbmQgaXFuMSBhcmUgZGlmZmVyZW50IHRhcmdldHMgcmlnaHQ/IEl04oCZ
-cyBub3QgY2xlYXIgdG8gbWUgaG93IHdoZW4gaW5pdGlhdG9yIEIgZmFpbHMgbmVnb3RpYXRpb24g
-dGhhdCBpdCBjYW5jZWxzIHRoZSB0aW1lciBmb3IgdGhlIHBvcnRhbCB1bmRlciBhIGRpZmZlcmVu
-dCBpcW4vdGFyZ2V0LgoKaXFuMS10cGcxIGluIHN0ZXAxIGFuZCBzdGVwMyBhcmUgc2FtZSBvbmUu
-IChzYW1lIHRhcmdldCB2b2x1bWUpCmlxbjItdHBnMSBpbiBzdGVwMiBpcyBhIGRpZmZlcmVudCB2
-b2x1bWUgb24gdGhlIHNhbWUgaG9zdC4KVGhlIGNvbmZpZ3VyYXRpb24gbGlrZXMgYmVsb3c6Cgpp
-cW4xLXRwZzE6CnJvb3RAc3RvcmFnZVhYWDovc3lzL2tlcm5lbC9jb25maWcvdGFyZ2V0L2lzY3Np
-IyBscyAKaXFuLjIwMTAtMTAub3JnLm9wZW5zdGFja1w6dm9sdW1lLTAwZTUwZGViLTUyOTYtNGYx
-OC14eHh4LTEwNmY5NmE4ODBjOC90cGd0XzEvbnAvCjEwLjEyOS43Ny4xNjozMjYwCgppcW4yLXRw
-ZzE6CnJvb3RAc3RvcmFnZVhYWDovc3lzL2tlcm5lbC9jb25maWcvdGFyZ2V0L2lzY3NpIyBscyAK
-aXFuLjIwMTAtMTAub3JnLm9wZW5zdGFja1w6dm9sdW1lLTg2YWYxNWM2LWM1MjktNDcxNS14eHh4
-LTNjOWNhMDY4NjM1ZC90cGd0XzEvbnAvCjEwLjEyOS43Ny4xNjozMjYwCgooSSBjb3VsZCBwcm92
-aWRlIG1vcmUgaXMgbmVlZGVkKQoKPiAKPiBJcyBpcW4yLXRwZzEtPm5wMSBhIGRpZmZlcmVudCBz
-dHJ1Y3QgdGhhbiBpcW4xLXRwZzEtbnAxPyBJIG1lYW4gaXNjc2l0X2dldF90cGdfZnJvbV9ucCB3
-b3VsZCByZXR1cm4gYSBkaWZmZXJlbnQgbnAgc3RydWN0IGZvciBpbml0aWF0b3IgQiBhbmQgZm9y
-IEE/Cj4gCgppc2NzaXRfZ2V0X3RwZ19mcm9tX25wKCkgcmV0dXJuZWQgZGlmZmVyZW50IHN0cnVj
-dCBpc2NzaV9wb3J0YWxfZ3JvdXAKZm9yIGluaXRpYXRvciBBIGFuZCBCLiBCdXQgc3RydWN0IGlz
-Y3NpX25wIGlzIHNoYXJlZCBieSB0aGVtLgpCZWNhdXNlIHRoZXkgaGF2ZSB0aGUgc2FtZSBwb3J0
-YWwoaXAgYWRkcmVzcyBhbmQgcG9ydCkuCgoKVGhhbmtzLApIb3UKCgoKCgoKCgoK
+On 7/29/20 8:03 AM, Hou Pu wrote:
+> The iscsi target login thread might stuck in following stack:
+> 
+> cat /proc/`pidof iscsi_np`/stack
+> [<0>] down_interruptible+0x42/0x50
+> [<0>] iscsit_access_np+0xe3/0x167
+> [<0>] iscsi_target_locate_portal+0x695/0x8ac
+> [<0>] __iscsi_target_login_thread+0x855/0xb82
+> [<0>] iscsi_target_login_thread+0x2f/0x5a
+> [<0>] kthread+0xfa/0x130
+> [<0>] ret_from_fork+0x1f/0x30
+> 
+> This could be reproduced by following steps:
+> 1. Initiator A try to login iqn1-tpg1 on port 3260. After finishing
+>    PDU exchange in the login thread and before the negotiation is
+>    finished, at this time the network link is down. In a production
+>    environment, this could happen. I could emulated it by bring
+>    the network card down in the initiator node by ifconfig eth0 down.
+>    (Now A could never finish this login. And tpg->np_login_sem is
+>    hold by it).
+> 2. Initiator B try to login iqn2-tpg1 on port 3260. After finishing
+>    PDU exchange in the login thread. The target expect to process
+>    remaining login PDUs in workqueue context.
+> 3. Initiator A' try to re-login to iqn1-tpg1 on port 3260 from
+>    a new socket. It will wait for tpg->np_login_sem with
+>    np->np_login_timer loaded to wait for at most 15 second.
+>    (Because the lock is held by A. A never gets a change to
+>    release tpg->np_login_sem. so A' should finally get timeout).
+> 4. Before A' got timeout. Initiator B gets negotiation failed and
+>    calls iscsi_target_login_drop()->iscsi_target_login_sess_out().
+>    The np->np_login_timer is canceled. And initiator A' will hang
+>    there forever. Because A' is now in the login thread. All other
+>    login requests could not be serviced.
+> 
+> Fix this by moving iscsi_stop_login_thread_timer() out of
+> iscsi_target_login_sess_out(). Also remove iscsi_np parameter
+> from iscsi_target_login_sess_out().
+> 
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Hou Pu <houpu@bytedance.com>
+> ---
+>  drivers/target/iscsi/iscsi_target_login.c | 6 +++---
+>  drivers/target/iscsi/iscsi_target_login.h | 3 +--
+>  drivers/target/iscsi/iscsi_target_nego.c  | 3 +--
+>  3 files changed, 5 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+> index 85748e338858..893d1b406c29 100644
+> --- a/drivers/target/iscsi/iscsi_target_login.c
+> +++ b/drivers/target/iscsi/iscsi_target_login.c
+> @@ -1149,7 +1149,7 @@ void iscsit_free_conn(struct iscsi_conn *conn)
+>  }
+>  
+>  void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+> -		struct iscsi_np *np, bool zero_tsih, bool new_sess)
+> +				 bool zero_tsih, bool new_sess)
+>  {
+>  	if (!new_sess)
+>  		goto old_sess_out;
+> @@ -1167,7 +1167,6 @@ void iscsi_target_login_sess_out(struct iscsi_conn *conn,
+>  	conn->sess = NULL;
+>  
+>  old_sess_out:
+> -	iscsi_stop_login_thread_timer(np);
+>  	/*
+>  	 * If login negotiation fails check if the Time2Retain timer
+>  	 * needs to be restarted.
+> @@ -1407,8 +1406,9 @@ static int __iscsi_target_login_thread(struct iscsi_np *np)
+>  new_sess_out:
+>  	new_sess = true;
+>  old_sess_out:
+> +	iscsi_stop_login_thread_timer(np);
+>  	tpg_np = conn->tpg_np;
+> -	iscsi_target_login_sess_out(conn, np, zero_tsih, new_sess);
+> +	iscsi_target_login_sess_out(conn, zero_tsih, new_sess);
+>  	new_sess = false;
+>  
+>  	if (tpg) {
+> diff --git a/drivers/target/iscsi/iscsi_target_login.h b/drivers/target/iscsi/iscsi_target_login.h
+> index 3b8e3639ff5d..fc95e6150253 100644
+> --- a/drivers/target/iscsi/iscsi_target_login.h
+> +++ b/drivers/target/iscsi/iscsi_target_login.h
+> @@ -22,8 +22,7 @@ extern int iscsit_put_login_tx(struct iscsi_conn *, struct iscsi_login *, u32);
+>  extern void iscsit_free_conn(struct iscsi_conn *);
+>  extern int iscsit_start_kthreads(struct iscsi_conn *);
+>  extern void iscsi_post_login_handler(struct iscsi_np *, struct iscsi_conn *, u8);
+> -extern void iscsi_target_login_sess_out(struct iscsi_conn *, struct iscsi_np *,
+> -				bool, bool);
+> +extern void iscsi_target_login_sess_out(struct iscsi_conn *, bool, bool);
+>  extern int iscsi_target_login_thread(void *);
+>  extern void iscsi_handle_login_thread_timeout(struct timer_list *t);
+>  
+> diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+> index 685d771b51d4..e32d93b92742 100644
+> --- a/drivers/target/iscsi/iscsi_target_nego.c
+> +++ b/drivers/target/iscsi/iscsi_target_nego.c
+> @@ -535,12 +535,11 @@ static bool iscsi_target_sk_check_and_clear(struct iscsi_conn *conn, unsigned in
+>  
+>  static void iscsi_target_login_drop(struct iscsi_conn *conn, struct iscsi_login *login)
+>  {
+> -	struct iscsi_np *np = login->np;
+>  	bool zero_tsih = login->zero_tsih;
+>  
+>  	iscsi_remove_failed_auth_entry(conn);
+>  	iscsi_target_nego_release(conn);
+> -	iscsi_target_login_sess_out(conn, np, zero_tsih, true);
+> +	iscsi_target_login_sess_out(conn, zero_tsih, true);
+>  }
+>  
+>  struct conn_timeout {
+> 
+
+Reviewed-by: Mike Christie <michael.christie@oracle.com>
