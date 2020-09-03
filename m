@@ -1,46 +1,38 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Wed, 23 Sep 2020 15:16:20 +0000
-Subject: Re: [PATCH 00/14] drop double zeroing
-Message-Id: <20200923151620.GC5707@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="NU0Ex4SbNnrxsi6C"
+From: Christoph Hellwig <hch@lst.de>
+Date: Thu, 03 Sep 2020 05:40:55 +0000
+Subject: clean up is partition checks
+Message-Id: <20200903054104.228829-1-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <1600601186-7420-1-git-send-email-Julia.Lawall@inria.fr>
- <160070750168.56292.17961674601916397869.b4-ty@kernel.org>
- <c3b33526-936d-ffa4-c301-4d0485822be1@reintjes.nrw>
-In-Reply-To: <c3b33526-936d-ffa4-c301-4d0485822be1@reintjes.nrw>
-To: Rolf Reintjes <lists2.rolf@reintjes.nrw>
-Cc: linux-spi@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>, linux-serial@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-media@vger.kernel.org, linux-block@vger.kernel.org, Yossi Leybovich <sleybo@amazon.com>, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, dmaengine@vger.kernel.org, linux-pci@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, linux-rdma@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, rds-devel@oss.oracle.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jens Axboe <axboe@kernel.dk>
+Cc: dm-devel@redhat.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, drbd-dev@lists.linbit.com, linux-ide@vger.kernel.org, linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
+Hi Jens,
 
---NU0Ex4SbNnrxsi6C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+this series add a new helepr to check if a struct block_device represents
+a parition, and removes most direct access to ->bd_contained from
+drivers.
 
-On Wed, Sep 23, 2020 at 05:10:33PM +0200, Rolf Reintjes wrote:
-> On 21.09.20 18:58, Mark Brown wrote:
-
-> I do not understand which of the 14 patches you applied. Your mail responds
-> to the 00/14 mail.
-
-As the mail you're replying to says:
-
-> > [1/1] spi/topcliff-pch: drop double zeroing
-> >        commit: ca03dba30f2b8ff45a2972c6691e4c96d8c52b3b
-
---NU0Ex4SbNnrxsi6C
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl9rZsMACgkQJNaLcl1U
-h9AxAgf/UlZBlBEQmArmMghyqM+HNmgNqZcFWWNnNQSmBBrgl8128+pLwAgIeZLw
-0l6J3hL0JAr1ozAMpm1RGS/xj2CD8a6QFiRw+9wAgL9eY3DAdognRwtwLJlW6zq3
-nj2VF+7+R6LhZGxqub8TnxUZLSdlop3wn9ZuAnTRZjjhPq2iidr4iYPWYsGqo+j5
-svVy+eYILC3/Y6X31PpT2OXujQXkrrCGlONZz2ieOMTLSLNQhL8pZh8tkJB9s/F5
-U60+SPDeI7yrVh6k5/iCldI5JHQyjXAmHza4R6BzKTc6kgSDvUlzrVOZxw1aaGy+
-EFLE4qdwQYEPaeRMZ+XVpSUbf3dGUw==
-=Rrao
------END PGP SIGNATURE-----
-
---NU0Ex4SbNnrxsi6C--
+Diffstat:
+ Documentation/userspace-api/ioctl/hdio.rst |   24 ++++++++++++------------
+ block/blk-lib.c                            |    2 +-
+ block/genhd.c                              |    2 +-
+ block/ioctl.c                              |    4 ++--
+ block/scsi_ioctl.c                         |    2 +-
+ drivers/block/drbd/drbd_main.c             |    2 --
+ drivers/block/drbd/drbd_receiver.c         |    2 +-
+ drivers/block/drbd/drbd_worker.c           |    2 +-
+ drivers/ide/ide-ioctls.c                   |    4 ++--
+ drivers/md/dm-table.c                      |    2 +-
+ drivers/md/md.c                            |    9 ++++-----
+ drivers/md/md.h                            |    2 +-
+ drivers/mmc/core/block.c                   |    2 +-
+ drivers/s390/block/dasd_ioctl.c            |    8 ++++----
+ drivers/target/target_core_iblock.c        |    5 ++---
+ fs/nfsd/blocklayout.c                      |    4 ++--
+ include/linux/blkdev.h                     |    9 +++++++--
+ kernel/trace/blktrace.c                    |    2 +-
+ lib/vsprintf.c                             |    4 ++--
+ 19 files changed, 46 insertions(+), 45 deletions(-)
