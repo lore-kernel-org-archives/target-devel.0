@@ -1,101 +1,49 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 20 Aug 2020 00:00:51 +0000
-Subject: [PATCH AUTOSEL 5.8 02/27] scsi: target: tcmu: Fix crash in tcmu_flush_dcache_range on ARM
-Message-Id: <20200820000116.214821-2-sashal@kernel.org>
+From: Christoph Hellwig <hch@lst.de>
+Date: Thu, 03 Sep 2020 05:40:59 +0000
+Subject: [PATCH 4/9] md: don't detour through bd_contains for the gendisk
+Message-Id: <20200903054104.228829-5-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200820000116.214821-1-sashal@kernel.org>
-In-Reply-To: <20200820000116.214821-1-sashal@kernel.org>
+References: <20200903054104.228829-1-hch@lst.de>
+In-Reply-To: <20200903054104.228829-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>, JiangYu <lnsyyj@hotmail.com>, Daniel Meyerholt <dxm523@gmail.com>, Mike Christie <michael.christie@oracle.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: Jens Axboe <axboe@kernel.dk>
+Cc: dm-devel@redhat.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, drbd-dev@lists.linbit.com, linux-ide@vger.kernel.org, linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+bd_disk is set on all block devices, including those for partitions.
 
-[ Upstream commit 3145550a7f8b08356c8ff29feaa6c56aca12901d ]
-
-This patch fixes the following crash (see
-https://bugzilla.kernel.org/show_bug.cgi?id 8045)
-
- Process iscsi_trx (pid: 7496, stack limit = 0x0000000010dd111a)
- CPU: 0 PID: 7496 Comm: iscsi_trx Not tainted 4.19.118-0419118-generic
-        #202004230533
- Hardware name: Greatwall QingTian DF720/F601, BIOS 601FBE20 Sep 26 2019
- pstate: 80400005 (Nzcv daif +PAN -UAO)
- pc : flush_dcache_page+0x18/0x40
- lr : is_ring_space_avail+0x68/0x2f8 [target_core_user]
- sp : ffff000015123a80
- x29: ffff000015123a80 x28: 0000000000000000
- x27: 0000000000001000 x26: ffff000023ea5000
- x25: ffffcfa25bbe08b8 x24: 0000000000000078
- x23: ffff7e0000000000 x22: ffff000023ea5001
- x21: ffffcfa24b79c000 x20: 0000000000000fff
- x19: ffff7e00008fa940 x18: 0000000000000000
- x17: 0000000000000000 x16: ffff2d047e709138
- x15: 0000000000000000 x14: 0000000000000000
- x13: 0000000000000000 x12: ffff2d047fbd0a40
- x11: 0000000000000000 x10: 0000000000000030
- x9 : 0000000000000000 x8 : ffffc9a254820a00
- x7 : 00000000000013b0 x6 : 000000000000003f
- x5 : 0000000000000040 x4 : ffffcfa25bbe08e8
- x3 : 0000000000001000 x2 : 0000000000000078
- x1 : ffffcfa25bbe08b8 x0 : ffff2d040bc88a18
- Call trace:
-  flush_dcache_page+0x18/0x40
-  is_ring_space_avail+0x68/0x2f8 [target_core_user]
-  queue_cmd_ring+0x1f8/0x680 [target_core_user]
-  tcmu_queue_cmd+0xe4/0x158 [target_core_user]
-  __target_execute_cmd+0x30/0xf0 [target_core_mod]
-  target_execute_cmd+0x294/0x390 [target_core_mod]
-  transport_generic_new_cmd+0x1e8/0x358 [target_core_mod]
-  transport_handle_cdb_direct+0x50/0xb0 [target_core_mod]
-  iscsit_execute_cmd+0x2b4/0x350 [iscsi_target_mod]
-  iscsit_sequence_cmd+0xd8/0x1d8 [iscsi_target_mod]
-  iscsit_process_scsi_cmd+0xac/0xf8 [iscsi_target_mod]
-  iscsit_get_rx_pdu+0x404/0xd00 [iscsi_target_mod]
-  iscsi_target_rx_thread+0xb8/0x130 [iscsi_target_mod]
-  kthread+0x130/0x138
-  ret_from_fork+0x10/0x18
- Code: f9000bf3 aa0003f3 aa1e03e0 d503201f (f9400260)
- ---[ end trace 1e451c73f4266776 ]---
-
-The solution is based on patch:
-
-  "scsi: target: tcmu: Optimize use of flush_dcache_page"
-
-which restricts the use of tcmu_flush_dcache_range() to addresses from
-vmalloc'ed areas only.
-
-This patch now replaces the virt_to_page() call in
-tcmu_flush_dcache_range() - which is wrong for vmalloced addrs - by
-vmalloc_to_page().
-
-The patch was tested on ARM with kernel 4.19.118 and 5.7.2
-
-Link: https://lore.kernel.org/r/20200618131632.32748-3-bstroesser@ts.fujitsu.com
-Tested-by: JiangYu <lnsyyj@hotmail.com>
-Tested-by: Daniel Meyerholt <dxm523@gmail.com>
-Acked-by: Mike Christie <michael.christie@oracle.com>
-Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/target/target_core_user.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/md/md.c | 2 +-
+ drivers/md/md.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 560bfec933bc3..63cca0e1e9123 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -601,7 +601,7 @@ static inline void tcmu_flush_dcache_range(void *vaddr, size_t size)
- 	size = round_up(size+offset, PAGE_SIZE);
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 3f33562d10d6f5..5a0fd93769a70e 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -8444,7 +8444,7 @@ static int is_mddev_idle(struct mddev *mddev, int init)
+ 	idle = 1;
+ 	rcu_read_lock();
+ 	rdev_for_each_rcu(rdev, mddev) {
+-		struct gendisk *disk = rdev->bdev->bd_contains->bd_disk;
++		struct gendisk *disk = rdev->bdev->bd_disk;
+ 		curr_events = (int)part_stat_read_accum(&disk->part0, sectors) -
+ 			      atomic_read(&disk->sync_io);
+ 		/* sync IO will cause sync_io to increase before the disk_stats
+diff --git a/drivers/md/md.h b/drivers/md/md.h
+index f9e2ccdd22c478..2175a5ac4f7c68 100644
+--- a/drivers/md/md.h
++++ b/drivers/md/md.h
+@@ -551,7 +551,7 @@ extern void mddev_unlock(struct mddev *mddev);
  
- 	while (size) {
--		flush_dcache_page(virt_to_page(start));
-+		flush_dcache_page(vmalloc_to_page(start));
- 		start += PAGE_SIZE;
- 		size -= PAGE_SIZE;
- 	}
+ static inline void md_sync_acct(struct block_device *bdev, unsigned long nr_sectors)
+ {
+-	atomic_add(nr_sectors, &bdev->bd_contains->bd_disk->sync_io);
++	atomic_add(nr_sectors, &bdev->bd_disk->sync_io);
+ }
+ 
+ static inline void md_sync_acct_bio(struct bio *bio, unsigned long nr_sectors)
 -- 
-2.25.1
+2.28.0
