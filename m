@@ -1,54 +1,79 @@
-From: Michael Christie <michael.christie@oracle.com>
-Date: Thu, 03 Sep 2020 15:36:58 +0000
+From: David Disseldorp <ddiss@suse.de>
+Date: Thu, 03 Sep 2020 20:54:24 +0000
 Subject: Re: [RFC PATCH] scsi: target: detect XCOPY NAA descriptor conflicts
-Message-Id: <7F596A9A-2116-4BA8-8A32-E98EDE996D8C@oracle.com>
+Message-Id: <20200903225424.331f1d94@suse.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200813002142.13820-1-ddiss@suse.de>
- <2155E745-0E65-441B-93AF-7B4C0A53F5F4@oracle.com>
- <20200903002336.083e88a4@suse.de>
-In-Reply-To: <20200903002336.083e88a4@suse.de>
+        <2155E745-0E65-441B-93AF-7B4C0A53F5F4@oracle.com>
+        <20200903002336.083e88a4@suse.de>
+        <7F596A9A-2116-4BA8-8A32-E98EDE996D8C@oracle.com>
+In-Reply-To: <7F596A9A-2116-4BA8-8A32-E98EDE996D8C@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: David Disseldorp <ddiss@suse.de>
+Content-Type: text/plain; charset="windows-1250"
+Content-Transfer-Encoding: base64
+To: Michael Christie <michael.christie@oracle.com>
 Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
 
-
-
-> On Sep 2, 2020, at 5:23 PM, David Disseldorp <ddiss@suse.de> wrote:
-> 
-> Hi Mike,
-> 
-> On Tue, 1 Sep 2020 22:17:51 -0500, Michael Christie wrote:
-> 
->>> --- a/drivers/target/target_core_xcopy.c
->>> +++ b/drivers/target/target_core_xcopy.c
->>> @@ -68,8 +68,14 @@ static int target_xcopy_locate_se_dev_e4_iter(struct se_device *se_dev,
->>> 	if (rc != 0)
->>> 		return 0;
->>> 
->>> -	info->found_dev = se_dev;
->>> 	pr_debug("XCOPY 0xe4: located se_dev: %p\n", se_dev);
->>> +	if (info->found_dev) {
->>> +		pr_warn("XCOPY 0xe4 descriptor conflict for se_dev %p and %p\n",
->>> +			info->found_dev, se_dev);
->>> +		target_undepend_item(&info->found_dev->dev_group.cg_item);
->>> +		return -ENOTUNIQ;
->>> +	}
->>> +	info->found_dev = se_dev;  
->> 
->> Was it valid to copy to/from the same LUN? You would copy from/to different src/destinations on that LUN. Would your patch break that?
-> 
-> XCOPY allows for copies to occur on the same LUN or between separate
-> src/destinations. The intention of this patch is that regardless of the
-> source or destination, if the NAA WWN could refer to multiple LUNs on
-> the same target (via target_for_each_device()) then the XCOPY should
-> fail and force the initiator to fallback to initiator driver copy.
-
-So is the answer to my question a maybe but it probably will never happen?
-
-If the user has multiple backend devices with the same serial, then your patch would now return error right? Is the reason that this patch is a RFC to try and figure out if that case is valid or ever happens? If so, the only way I could see that happening on purpose is if someone was trying to bypass a device issue.
-
-For example, I create 2 tcmu devices. They both point to the same real device. Then export dev1 through target port1 and dev2 through target port2. Each tcmu device would then have it’s own data/cmd ring and locking, so you do not hit those perf issues. I do this for perf testing. I don’t think that type of thing is common or ever done, so I think the patch would be ok if that is a concern and it’s better than possible data corruption.
-
-Code wise it looks ok to me.
+T24gVGh1LCAzIFNlcCAyMDIwIDEwOjM2OjU4IC0wNTAwLCBNaWNoYWVsIENocmlzdGllIHdyb3Rl
+OgoKPiA+IE9uIFNlcCAyLCAyMDIwLCBhdCA1OjIzIFBNLCBEYXZpZCBEaXNzZWxkb3JwIDxkZGlz
+c0BzdXNlLmRlPiB3cm90ZToKPiA+IAo+ID4gSGkgTWlrZSwKPiA+IAo+ID4gT24gVHVlLCAxIFNl
+cCAyMDIwIDIyOjE3OjUxIC0wNTAwLCBNaWNoYWVsIENocmlzdGllIHdyb3RlOgo+ID4gICAKPiA+
+Pj4gLS0tIGEvZHJpdmVycy90YXJnZXQvdGFyZ2V0X2NvcmVfeGNvcHkuYwo+ID4+PiArKysgYi9k
+cml2ZXJzL3RhcmdldC90YXJnZXRfY29yZV94Y29weS5jCj4gPj4+IEBAIC02OCw4ICs2OCwxNCBA
+QCBzdGF0aWMgaW50IHRhcmdldF94Y29weV9sb2NhdGVfc2VfZGV2X2U0X2l0ZXIoc3RydWN0IHNl
+X2RldmljZSAqc2VfZGV2LAo+ID4+PiAJaWYgKHJjICE9IDApCj4gPj4+IAkJcmV0dXJuIDA7Cj4g
+Pj4+IAo+ID4+PiAtCWluZm8tPmZvdW5kX2RldiA9IHNlX2RldjsKPiA+Pj4gCXByX2RlYnVnKCJY
+Q09QWSAweGU0OiBsb2NhdGVkIHNlX2RldjogJXBcbiIsIHNlX2Rldik7Cj4gPj4+ICsJaWYgKGlu
+Zm8tPmZvdW5kX2Rldikgewo+ID4+PiArCQlwcl93YXJuKCJYQ09QWSAweGU0IGRlc2NyaXB0b3Ig
+Y29uZmxpY3QgZm9yIHNlX2RldiAlcCBhbmQgJXBcbiIsCj4gPj4+ICsJCQlpbmZvLT5mb3VuZF9k
+ZXYsIHNlX2Rldik7Cj4gPj4+ICsJCXRhcmdldF91bmRlcGVuZF9pdGVtKCZpbmZvLT5mb3VuZF9k
+ZXYtPmRldl9ncm91cC5jZ19pdGVtKTsKPiA+Pj4gKwkJcmV0dXJuIC1FTk9UVU5JUTsKPiA+Pj4g
+Kwl9Cj4gPj4+ICsJaW5mby0+Zm91bmRfZGV2ID0gc2VfZGV2OyAgICAKPiA+PiAKPiA+PiBXYXMg
+aXQgdmFsaWQgdG8gY29weSB0by9mcm9tIHRoZSBzYW1lIExVTj8gWW91IHdvdWxkIGNvcHkgZnJv
+bS90byBkaWZmZXJlbnQgc3JjL2Rlc3RpbmF0aW9ucyBvbiB0aGF0IExVTi4gV291bGQgeW91ciBw
+YXRjaCBicmVhayB0aGF0PyAgCj4gPiAKPiA+IFhDT1BZIGFsbG93cyBmb3IgY29waWVzIHRvIG9j
+Y3VyIG9uIHRoZSBzYW1lIExVTiBvciBiZXR3ZWVuIHNlcGFyYXRlCj4gPiBzcmMvZGVzdGluYXRp
+b25zLiBUaGUgaW50ZW50aW9uIG9mIHRoaXMgcGF0Y2ggaXMgdGhhdCByZWdhcmRsZXNzIG9mIHRo
+ZQo+ID4gc291cmNlIG9yIGRlc3RpbmF0aW9uLCBpZiB0aGUgTkFBIFdXTiBjb3VsZCByZWZlciB0
+byBtdWx0aXBsZSBMVU5zIG9uCj4gPiB0aGUgc2FtZSB0YXJnZXQgKHZpYSB0YXJnZXRfZm9yX2Vh
+Y2hfZGV2aWNlKCkpIHRoZW4gdGhlIFhDT1BZIHNob3VsZAo+ID4gZmFpbCBhbmQgZm9yY2UgdGhl
+IGluaXRpYXRvciB0byBmYWxsYmFjayB0byBpbml0aWF0b3IgZHJpdmVyIGNvcHkuICAKPiAKPiBT
+byBpcyB0aGUgYW5zd2VyIHRvIG15IHF1ZXN0aW9uIGEgbWF5YmUgYnV0IGl0IHByb2JhYmx5IHdp
+bGwgbmV2ZXIgaGFwcGVuPwoKQSBzcmPec3QgWENPUFk/IEkgdGhpbmsgaXQncyBqdXN0IGFzIGxp
+a2VseSBhcyBhIGNyb3NzIGRldmljZSBYQ09QWS4KVGhlIFVVSUQgY29sbGlzaW9uIGVycm9yIGlz
+IHByb2JhYmx5IHVubGlrZWx5IHRvIGJlIHRyaWdnZXJlZCBiZWNhdXNlOgotIFhDT1BZIGlzIGEg
+cHJldHR5IGV4b3RpYyBTQ1NJIGNvbW1hbmQgbW9zdGx5IHVzZWQgYnkgRVNYaQotIFVzZXJzIG1h
+eSBhbHJlYWR5IHByb3ZpZGUgYSB2cGRfdW5pdF9zZXJpYWwgd2l0aCBlbm91Z2ggdW5pcXVlCiAg
+aGV4YWRlY2ltYWwgY2hhcmFjdGVycyg/KQotIFRoZSBpbml0aWF0b3IgY291bGQgZGV0ZWN0IHRo
+ZSBOQUEgV1dOIGNvbGxpc2lvbiBpdHNlbGYgYnkgY29tcGFyaW5nCiAgdGhlIElOUVVJUlkoZGV2
+LWlkKS0+TkFBIGJldHdlZW4gb3RoZXIgTFVOcyBvbiB0aGUgdGFyZ2V0LCBhbmQgdGhlcmVieQog
+IGRldGVjdCthdm9pZCBzZW5kaW5nIFhDT1BZIHJlcXVlc3RzIHdpdGggYW1iaWd1b3VzIHNyYy9k
+ZXN0IFdXTnMKCj4gSWYgdGhlIHVzZXIgaGFzIG11bHRpcGxlIGJhY2tlbmQgZGV2aWNlcyB3aXRo
+IHRoZSBzYW1lIHNlcmlhbCwgdGhlbiB5b3VyIHBhdGNoIHdvdWxkIG5vdyByZXR1cm4gZXJyb3Ig
+cmlnaHQ/CgpZZXMsIFhDT1BZIHdpbGwgbm93IGZhaWwgaWYgdGhlIHNyYyBvciBkZXN0IE5BQSBX
+V04gbWF0Y2hlcyBtb3JlIHRoYW4Kb25lIHNlX2Rldi4gS2VlcCBpbiBtaW5kIHRoYXQgdGhlIE5B
+QSBXV04gaXMgZGVyaXZlZCBmcm9tIG9ubHkgdGhlCmhleGFkZWNpbWFsIGNoYXJhY3RlcnMgb2Yg
+dGhlIHZwZF91bml0X3NlcmlhbCAoc2VlCnNwY19wYXJzZV9uYWFfNmhfdmVuZG9yX3NwZWNpZmlj
+KSwgc28gY29sbGlzaW9uIG1pZ2h0IGJlIG1vcmUgbGlrZWx5LgoKPiBJcyB0aGUgcmVhc29uIHRo
+YXQgdGhpcyBwYXRjaCBpcyBhIFJGQyB0byB0cnkgYW5kIGZpZ3VyZSBvdXQgaWYgdGhhdCBjYXNl
+IGlzIHZhbGlkIG9yIGV2ZXIgaGFwcGVucz8gSWYgc28sIHRoZSBvbmx5IHdheSBJIGNvdWxkIHNl
+ZSB0aGF0IGhhcHBlbmluZyBvbiBwdXJwb3NlIGlzIGlmIHNvbWVvbmUgd2FzIHRyeWluZyB0byBi
+eXBhc3MgYSBkZXZpY2UgaXNzdWUuCgpTb3JyeSwgSSBzaG91bGQgaGF2ZSBtb2RlIHRoaXMgbW9y
+ZSBjbGVhciBpbiB0aGUgcGF0Y2ggaXRzZWxmLiBUaGUKcmVhc29ucyBmb3IgUkZDIGFyZToKLSB0
+aGVyZSBtaWdodCBiZSBhIGJldHRlciBhcHByb2FjaC4gSSBjb25zaWRlcmVkIGRldGVjdGluZyBO
+QUEgV1dOCiAgY29sbGlzaW9ucyB3aGVuIHRoZSB2cGRfdW5pdF9zZXJpYWwgaXMgc2V0IHZpYSBj
+b25maWdmcy4gVGhyb3dpbmcgYQogIGNvbmZpZ2ZzIGVycm9yIG1pZ2h0IGJyZWFrIGV4aXN0aW5n
+IHNldHVwcywgcmF0aGVyIHRoYW4ganVzdAogIHRyaWdnZXJpbmcgdGhlIFhDT1BZIGVycm9yIChh
+bGxvd2luZyBmb3Igc3Vic2VxdWVudCBSRUFEL1dSSVRFCiAgZmFsbGJhY2spLgotIEkndmUgdGVz
+dGVkIHRoaXMgd2l0aCBsaWJpc2NzaSdzIGlzY3NpLWRkICgteCkgYW5kIHRlc3Qgc3VpdGUsIGJ1
+dCBub3QKICBhZ2FpbnN0IHRoZSBFU1hpIGluaXRpYXRvciB5ZXQuCgo+IEZvciBleGFtcGxlLCBJ
+IGNyZWF0ZSAyIHRjbXUgZGV2aWNlcy4gVGhleSBib3RoIHBvaW50IHRvIHRoZSBzYW1lIHJlYWwg
+ZGV2aWNlLiBUaGVuIGV4cG9ydCBkZXYxIHRocm91Z2ggdGFyZ2V0IHBvcnQxIGFuZCBkZXYyIHRo
+cm91Z2ggdGFyZ2V0IHBvcnQyLiBFYWNoIHRjbXUgZGV2aWNlIHdvdWxkIHRoZW4gaGF2ZSBpdOKA
+mXMgb3duIGRhdGEvY21kIHJpbmcgYW5kIGxvY2tpbmcsIHNvIHlvdSBkbyBub3QgaGl0IHRob3Nl
+IHBlcmYgaXNzdWVzLiBJIGRvIHRoaXMgZm9yIHBlcmYgdGVzdGluZy4gSSBkb27igJl0IHRoaW5r
+IHRoYXQgdHlwZSBvZiB0aGluZyBpcyBjb21tb24gb3IgZXZlciBkb25lLCBzbyBJIHRoaW5rIHRo
+ZSBwYXRjaCB3b3VsZCBiZSBvayBpZiB0aGF0IGlzIGEgY29uY2VybiBhbmQgaXTigJlzIGJldHRl
+ciB0aGFuIHBvc3NpYmxlIGRhdGEgY29ycnVwdGlvbi4KPiAKPiBDb2RlIHdpc2UgaXQgbG9va3Mg
+b2sgdG8gbWUuCgpUaGFua3MgYSBsb3QgZm9yIHRoZSBmZWVkYmFjaywgTWlrZS4KCkNoZWVycywg
+RGF2aWQ=
