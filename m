@@ -1,32 +1,37 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Tue, 22 Sep 2020 02:51:16 +0000
-Subject: Re: [PATCH 4/8] vhost scsi: fix cmd completion race
-Message-Id: <89c3be36-c03f-c8a0-c4dc-d46d57de86ae@acm.org>
+From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Date: Thu, 03 Sep 2020 11:29:33 +0000
+Subject: [PATCH] scsi: target: tcmu: add a missing newline when printing parameters
+Message-Id: <1599132573-33818-1-git-send-email-wangxiongfeng2@huawei.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
- <1600712588-9514-5-git-send-email-michael.christie@oracle.com>
- <cf8e5b11-dfd2-4570-1dab-25486c591dde@acm.org>
-In-Reply-To: <cf8e5b11-dfd2-4570-1dab-25486c591dde@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, wangxiongfeng2@huawei.com
 
-On 2020-09-21 19:48, Bart Van Assche wrote:
-> On 2020-09-21 11:23, Mike Christie wrote:
->> We might not do the final se_cmd put from vhost_scsi_complete_cmd_work.
->> If the last put happens a little later then we could race where
->> vhost_scsi_complete_cmd_work does vhost_signal, the guest runs and sends
->> more IO, and vhost_scsi_handle_vq runs but does not find any free cmds.
->>
->> This patch has us delay completing the cmd until the last lio core ref
->> is dropped. We then know that once we signal to the guest that the cmd
->> is completed that if it queues a new command it will find a free cmd.
-> 
-> It seems weird to me to see a reference to LIO in the description of a
-> vhost patch? Since this driver supports more backends than LIO, shouldn't
-> the patch description be made more generic?
+When I cat module paramter 'global_max_data_area_mb' by sysfs, it
+displays as follows. It's better to add a newline for easy reading.
 
-Please ignore the above comment.
+root@(none):/# cat /sys/module/target_core_user/parameters/global_max_data_area_mb
+2048noneroot@(none):/#
 
-Bart.
+Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+---
+ drivers/target/target_core_user.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 9b75923..9775670 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -242,7 +242,7 @@ static int tcmu_set_global_max_data_area(const char *str,
+ static int tcmu_get_global_max_data_area(char *buffer,
+ 					 const struct kernel_param *kp)
+ {
+-	return sprintf(buffer, "%d", TCMU_BLOCKS_TO_MBS(tcmu_global_max_blocks));
++	return sprintf(buffer, "%d\n", TCMU_BLOCKS_TO_MBS(tcmu_global_max_blocks));
+ }
+ 
+ static const struct kernel_param_ops tcmu_global_max_data_area_op = {
+-- 
+1.7.12.4
