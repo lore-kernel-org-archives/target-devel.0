@@ -1,16 +1,49 @@
-From: "manuel franco" <manuelfranco@info.com>
-Date: Sun, 13 Sep 2020 23:27:40 +0000
-Subject: Spende von 2.000.000,00 Euro.
-Message-Id: <20200913232749.AF91333829E6@correo.bnv.gob.ve>
+From: Christoph Hellwig <hch@lst.de>
+Date: Thu, 03 Sep 2020 05:41:00 +0000
+Subject: [PATCH 5/9] drbd: don't detour through bd_contains for the gendisk
+Message-Id: <20200903054104.228829-6-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
+References: <20200903054104.228829-1-hch@lst.de>
+In-Reply-To: <20200903054104.228829-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jens Axboe <axboe@kernel.dk>
+Cc: dm-devel@redhat.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, drbd-dev@lists.linbit.com, linux-ide@vger.kernel.org, linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
- Sie haben eine Spende von 2.000.000,00 Euro.
+bd_disk is set on all block devices, including those for partitions.
 
-Mein Name ist Manuel Franco aus den USA.
-Ich habe die America-Lotterie im Wert von 768 Millionen US-Dollar gewonnen =
-und spende einen Teil davon an nur 5 gl=FCckliche Menschen und einige Waise=
-nh=E4user als Wohlwollen f=FCr die Menschheit.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/block/drbd/drbd_receiver.c | 2 +-
+ drivers/block/drbd/drbd_worker.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
+index 422363daa6180b..2d16fb0905999d 100644
+--- a/drivers/block/drbd/drbd_receiver.c
++++ b/drivers/block/drbd/drbd_receiver.c
+@@ -2789,7 +2789,7 @@ bool drbd_rs_should_slow_down(struct drbd_device *device, sector_t sector,
+ 
+ bool drbd_rs_c_min_rate_throttle(struct drbd_device *device)
+ {
+-	struct gendisk *disk = device->ldev->backing_bdev->bd_contains->bd_disk;
++	struct gendisk *disk = device->ldev->backing_bdev->bd_disk;
+ 	unsigned long db, dt, dbdt;
+ 	unsigned int c_min_rate;
+ 	int curr_events;
+diff --git a/drivers/block/drbd/drbd_worker.c b/drivers/block/drbd/drbd_worker.c
+index 7c903de5c4e103..9107b109ba7bcb 100644
+--- a/drivers/block/drbd/drbd_worker.c
++++ b/drivers/block/drbd/drbd_worker.c
+@@ -1672,7 +1672,7 @@ void drbd_resync_after_changed(struct drbd_device *device)
+ 
+ void drbd_rs_controller_reset(struct drbd_device *device)
+ {
+-	struct gendisk *disk = device->ldev->backing_bdev->bd_contains->bd_disk;
++	struct gendisk *disk = device->ldev->backing_bdev->bd_disk;
+ 	struct fifo_buffer *plan;
+ 
+ 	atomic_set(&device->rs_sect_in, 0);
+-- 
+2.28.0
