@@ -1,7 +1,7 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 03 Sep 2020 05:41:03 +0000
-Subject: [PATCH 8/9] block: use bd_partno in bdevname
-Message-Id: <20200903054104.228829-9-hch@lst.de>
+Date: Thu, 03 Sep 2020 05:41:01 +0000
+Subject: [PATCH 6/9] drbd: don't set ->bd_contains
+Message-Id: <20200903054104.228829-7-hch@lst.de>
 List-Id: <target-devel.vger.kernel.org>
 References: <20200903054104.228829-1-hch@lst.de>
 In-Reply-To: <20200903054104.228829-1-hch@lst.de>
@@ -11,25 +11,26 @@ Content-Transfer-Encoding: 7bit
 To: Jens Axboe <axboe@kernel.dk>
 Cc: dm-devel@redhat.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, drbd-dev@lists.linbit.com, linux-ide@vger.kernel.org, linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-No need to go through the hd_struct to find the partition number.
+The ->bd_contains field is set by __blkdev_get and drivers have no
+business manipulating it.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- block/genhd.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/block/drbd/drbd_main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index 081f1039d9367f..771aa56b1a8c3d 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -85,7 +85,7 @@ char *disk_name(struct gendisk *hd, int partno, char *buf)
+diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
+index 04b6bde9419d2a..bd8b129196d49a 100644
+--- a/drivers/block/drbd/drbd_main.c
++++ b/drivers/block/drbd/drbd_main.c
+@@ -2766,8 +2766,6 @@ enum drbd_ret_code drbd_create_device(struct drbd_config_context *adm_ctx, unsig
+ 	disk->private_data = device;
  
- const char *bdevname(struct block_device *bdev, char *buf)
- {
--	return disk_name(bdev->bd_disk, bdev->bd_part->partno, buf);
-+	return disk_name(bdev->bd_disk, bdev->bd_partno, buf);
- }
- EXPORT_SYMBOL(bdevname);
+ 	device->this_bdev = bdget(MKDEV(DRBD_MAJOR, minor));
+-	/* we have no partitions. we contain only ourselves. */
+-	device->this_bdev->bd_contains = device->this_bdev;
  
+ 	blk_queue_write_cache(q, true, true);
+ 	/* Setting the max_hw_sectors to an odd value of 8kibyte here
 -- 
 2.28.0
