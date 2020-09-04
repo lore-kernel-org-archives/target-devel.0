@@ -1,26 +1,36 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 30 Sep 2020 03:33:58 +0000
-Subject: Re: [PATCH] scsi: target: Fix lun lookup for TARGET_SCF_LOOKUP_LUN_FROM_TAG case.
-Message-Id: <160143682620.27626.3126650527213630749.b4-ty@oracle.com>
+From: "William Saha" <wils@send.com>
+Date: Fri, 04 Sep 2020 18:56:44 +0000
+Subject: Greetings
+Message-Id: <2n-r$tsbl9o0mo-$gsebo-wv@dc4a4qa8ut.o2n>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary=".5.09.B22D7D_3FD_6._32"
 List-Id: <target-devel.vger.kernel.org>
-References: <1600300471-26135-1-git-send-email-sudhakar.panneerselvam@oracle.com>
-In-Reply-To: <1600300471-26135-1-git-send-email-sudhakar.panneerselvam@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Sudhakar Panneerselvam <sudhakar.panneerselvam@oracle.com>, michael.christie@oracle.com
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, ssudhakarp@gmail.com
+To: target-devel@vger.kernel.org
 
-On Wed, 16 Sep 2020 23:54:31 +0000, Sudhakar Panneerselvam wrote:
 
-> transport_lookup_tmr_lun() uses "orig_fe_lun" member of struct se_cmd
-> for the lookup. Hence, update this field directly for the
-> TARGET_SCF_LOOKUP_LUN_FROM_TAG case.
+--.5.09.B22D7D_3FD_6._32
+Content-Type: text/plain;
+Content-Transfer-Encoding: quoted-printable
 
-Applied to 5.9/scsi-fixes, thanks!
+Send your reply to: fkinneyofd@tampabay.rr.com 
 
-[1/1] scsi: target: Fix lun lookup for TARGET_SCF_LOOKUP_LUN_FROM_TAG case
-      https://git.kernel.org/mkp/scsi/c/149415586243
+Greetings
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+This notification memo has been sent to you three times without a response=
+ from you and this will be the last time and I do hope you receive it.
+This inquiry is about an account holder, who died and has no successor ove=
+r his fund with the bank.
+The essence of this communication with you is to request your willingness =
+to accept this inheritance left behind by my client if you are legally and=
+ legitimately appointed.
+You must appreciate that I am constrained from providing you with more det=
+ailed information at this point. Upon your response, I will give you more =
+detailed information on the deceased client and the process of nominating =
+you to inherit his wealth. Send your comments with your full names and you=
+r telephone number to enable us discuss .
+
+Yours faithfully,
+William Saha.
+fkinneyofd@tampabay.rr.com
+
+--.5.09.B22D7D_3FD_6._32--
