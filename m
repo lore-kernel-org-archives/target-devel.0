@@ -1,14 +1,16 @@
 From: "William Saha" <wils@send.com>
-Date: Fri, 04 Sep 2020 18:56:44 +0000
+Date: Sat, 05 Sep 2020 09:22:41 +0000
 Subject: Greetings
-Message-Id: <2n-r$tsbl9o0mo-$gsebo-wv@dc4a4qa8ut.o2n>
+Message-Id: <x$xy24ru1$48$x$4ze7@pxmv8txbg73>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary=".5.09.B22D7D_3FD_6._32"
+Content-Type: multipart/mixed; boundary="._9B21C9A33_.9DD.B_.8"
 List-Id: <target-devel.vger.kernel.org>
+References: <2n-r$tsbl9o0mo-$gsebo-wv@dc4a4qa8ut.o2n>
+In-Reply-To: <2n-r$tsbl9o0mo-$gsebo-wv@dc4a4qa8ut.o2n>
 To: target-devel@vger.kernel.org
 
 
---.5.09.B22D7D_3FD_6._32
+--._9B21C9A33_.9DD.B_.8
 Content-Type: text/plain;
 Content-Transfer-Encoding: quoted-printable
 
@@ -33,4 +35,4 @@ Yours faithfully,
 William Saha.
 fkinneyofd@tampabay.rr.com
 
---.5.09.B22D7D_3FD_6._32--
+--._9B21C9A33_.9DD.B_.8--
