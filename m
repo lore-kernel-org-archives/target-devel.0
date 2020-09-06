@@ -1,14 +1,16 @@
 From: "Nassir Uddin" <fkinneyofd@tampabay.rr.com>
-Date: Thu, 03 Sep 2020 02:46:15 +0000
+Date: Sun, 06 Sep 2020 04:46:38 +0000
 Subject: Dear Sir/Madam
-Message-Id: <67$-9$-$q8f$qb53fwqwj-c9pel2@17t74mhu>
+Message-Id: <40vw35drb91v4w3-82-9lvfzx3m8r@3f4dw>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary=".E_E7A215_FE5BD6.C4B_.A"
+Content-Type: multipart/mixed; boundary=".158CBE_893"
 List-Id: <target-devel.vger.kernel.org>
+References: <67$-9$-$q8f$qb53fwqwj-c9pel2@17t74mhu>
+In-Reply-To: <67$-9$-$q8f$qb53fwqwj-c9pel2@17t74mhu>
 To: target-devel@vger.kernel.org
 
 
---.E_E7A215_FE5BD6.C4B_.A
+--.158CBE_893
 Content-Type: text/plain;
 Content-Transfer-Encoding: quoted-printable
 
@@ -23,4 +25,4 @@ Kindly express your interest to partner with us.
 Regards.
 Nassir Uddin
 
---.E_E7A215_FE5BD6.C4B_.A--
+--.158CBE_893--
