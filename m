@@ -1,26 +1,56 @@
-From: "Mr.Ghazi Ahmed" <ghazia137@gmail.com>
-Date: Sun, 27 Sep 2020 05:38:52 +0000
-Subject: YOUR URGENT RESPONSE IS NEEDED
-Message-Id: <CAFOsbUroq2F6+jxaDcnFGuFQear+X7zjrFfxjxEzEPGFe07WrA@mail.gmail.com>
+From: piyin.crhe@live.com.mx
+Date: Wed, 09 Sep 2020 10:30:31 +0000
+Subject: =?utf-8?Q?=5BSpam=5D?= We are still waiting for your email...
+Message-Id: <20200909033031.203C582051B72938@live.com.mx>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1250"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-SSBoYXZlIGEgYnVzaW5lc3MgcHJvcG9zYWwgaW4gdGhlIHR1bmUgb2YgJDEwLjJtIFVTRCBmb3Ig
-eW91IHRvIGhhbmRsZQp3aXRoIG1lLiBJIGhhdmUgb3Bwb3J0dW5pdHkgdG8gdHJhbnNmZXIgdGhp
-cyBhYmFuZG9uIGZ1bmQgdG8geW91ciBiYW5rCmFjY291bnQgaW4geW91ciBjb3VudHJ5IHdoaWNo
-IGJlbG9uZ3MgdG8gb3VyIGNsaWVudC4KCkkgYW0gaW52aXRpbmcgeW91IGluIHRoaXMgdHJhbnNh
-Y3Rpb24gd2hlcmUgdGhpcyBtb25leSBjYW4gYmUgc2hhcmVkCmJldHdlZW4gdXMgYXQgcmF0aW8g
-b2YgNTAvNTAlIGFuZCBoZWxwIHRoZSBuZWVkeSBhcm91bmQgdXMgZG9u4oCZdCBiZQphZnJhaWQg
-b2YgYW55dGhpbmcgSSBhbSB3aXRoIHlvdSBJIHdpbGwgaW5zdHJ1Y3QgeW91IHdoYXQgeW91IHdp
-bGwgZG8KdG8gbWFpbnRhaW4gdGhpcyBmdW5kLgoKUGxlYXNlIGtpbmRseSBjb250YWN0IG1lIHdp
-dGggeW91ciBpbmZvcm1hdGlvbidzIGlmIHlvdSBhcmUgaW50ZXJlc3RlZAppbiB0aGlzIHRyYW5h
-c2N0aW9uIGZvciBtb3JlIGRldGFpbHMoZ2hhemlhaG1lZEBteXNlbGYuY29tKQoKMS4gWW91ciBG
-dWxsIE5hbWUuLi4uLi4uLi4uLi4uLi4uLi4uLi4KMi4gWW91ciBBZGRyZXNzLi4uLi4uLi4uLi4u
-Li4uLi4uLi4uLgozLiBZb3VyIENvdW50cnkgb2YgT3JpZ2luLi4uLi4uLi4uLi4uLgo0LiBXaGF0
-IGRvIHlvdSBkbyBmb3IgbGl2aW5nIC4uLi4uLi4uLi4uLi4uLgo1LiBZb3VyIEFnZS4uLi4uLi4u
-Li4uLi4uLi4uLi4uLi4uLi4uCjYuIEdlbmRlci4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4KNy4g
-WW91ciBJRCBjYXJkIGNvcHkgYW5kIHRlbGVwaG9uZSBudW1iZXIgZm9yIGVhc3kgY29tbXVuaWNh
-dGlvbi4uLi4uLi4uLi4uLi4uLgoKTXIuR2hhemkgQWhtZWQ=
+Dear Beneficiary,
+
+We wish to inform you that a power of attorney was forwarded to 
+our office  by two gentlemen regarding your unclaimed fund of $56 
+Million Dollar. One of them is an American citizen named Mr. 
+Robert Porter and the other is Mr. Wilhelm Berg a Swedish 
+citizen.We have be waiting for you to contact us since last year.
+
+The document claims these gentlemen to be your authorized 
+representatives, and the power of attorney states that you are 
+already deceased.  It further states that your death was due to 
+lung cancer, with your date of death being January 27th, 2020.
+
+They have now submitted a new account to replace the receiving 
+account that was in the original claim of funds. These funds have 
+remained unclaimed for quite some time and the need for 
+resolution is pressing. Below is the new account they have 
+submitted.
+
+Account Name's :  Robert Porter /Wilhelm Berg
+Account: 5007-29 438 66
+IBAN-nr: SE4150000000050072943866
+Bic-kod: ESSESESS
+Skandinaviska Enskilda Banken. (SEB :)
+SWEDEN .
+
+In the event that you are in fact still alive, we ask that you 
+confirm your existence by responding to this email. You are to 
+view this as a matter requiring immediate attention and response. 
+We have 48 hr monitoring of all activities within Federal Reserve 
+Bank.On this regard,you will be directed to any of our office 
+center that you will go in person to sign the final papers,
+because we have our payment center in Europe,Asia,America and 
+Canada.You will go to any of the office that you will be directed 
+to with the copy of the documents of your fund.
+
+We have contacted the bank in the Sweden asking them to wait for 
+further directives from Federal Reserve Bank, prior to 
+authorizing any withdrawals in any form.  Our request is based 
+entirely on our attempt to verify that you are in fact deceased, 
+before money is wrongly disbursed.
+
+Your in Service,
+
+Robert Steven Kaplan
+2200 N Pearl St, Dallas, TX 75201, United States
