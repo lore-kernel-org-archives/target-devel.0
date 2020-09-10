@@ -1,291 +1,249 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Mon, 21 Sep 2020 18:23:06 +0000
-Subject: [PATCH 6/8] vhost scsi: Add support for LUN resets.
-Message-Id: <1600712588-9514-7-git-send-email-michael.christie@oracle.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Thu, 10 Sep 2020 15:50:41 +0000
+Subject: [PATCH 3/3] scsi: target: tcmu: optimize scatter_data_area
+Message-Id: <20200910155041.17654-4-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
+References: <20200910155041.17654-1-bstroesser@ts.fujitsu.com>
+In-Reply-To: <20200910155041.17654-1-bstroesser@ts.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-In newer versions of virtio-scsi we just reset the timer when an a
-command times out, so TMFs are never sent for the cmd time out case.
-However, in older kernels and for the TMF inject cases, we can still get
-resets and we end up just failing immediately so the guest might see the
-device get offlined and IO errors.
+scatter_data_area has two purposes:
+ 1) create the iovs for data area buffer of a SCSI cmd
+ 2) If there is data in DMA_TO_DEVICE direction, it copies
+   the data from sg_list to data area buffer.
+Both is done in a common loop.
 
-For the older kernel cases, we want the same end result as the
-modern virtio-scsi driver where we let the lower levels fire their error
-handling and handle the problem. And at the upper levels we want to
-wait. This patch ties the LUN reset handling into the LIO TMF code which
-will just wait for outstanding commands to complete like we are doing in
-the modern virtio-scsi case.
+In case of DMA_FROM_DEVICE data transfer, scatter_data_area is
+called with parameter copy_data = false. But this flag is used
+just to skip memcpy() for data, while radix_tree_lookup still
+is called for every dbi of the area area buffer, and kmap and
+kunmap are called for every page from sg_list and data_area as
+well as flush_dcache_page() for the data area pages.
+Since the only thing to do with copy_data = false would be to
+set up the iovs, this is a noticeable overhead.
+Therefore I reworked the iov creation in the main loop of
+scatter_data_area providing the new function new_block_to_iov.
+Based on this I created the short new function tcmu_setup_iovs
+that only writes the iovs with no overhead.
+This new function is now called instead of scatter_data_area
+for bidi buffers and for data buffers in those cases, where
+memcpy would have been skipped.
 
-Note: I did not handle the ABORT case to keep this simple. For ABORTs
-LIO just waits on the cmd like how it does for the RESET case. If
-an ABORT fails, the guest OS ends up escalating to LUN RESET, so in
-the end we get the same behavior where we wait on the outstanding
-cmds.
-
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 ---
- drivers/vhost/scsi.c | 147 ++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 134 insertions(+), 13 deletions(-)
+ drivers/target/target_core_user.c | 139 +++++++++++++++++---------------------
+ 1 file changed, 63 insertions(+), 76 deletions(-)
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 736ce19..8791db8 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -139,6 +139,7 @@ struct vhost_scsi_tpg {
- 	struct se_portal_group se_tpg;
- 	/* Pointer back to vhost_scsi, protected by tv_tpg_mutex */
- 	struct vhost_scsi *vhost_scsi;
-+	struct list_head tmf_queue;
- };
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 5587bd4d1060..18798c5422c7 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -181,6 +181,8 @@ struct tcmu_cmd {
+ 	uint32_t dbi_cur;
+ 	uint32_t *dbi;
  
- struct vhost_scsi_tport {
-@@ -211,6 +212,20 @@ struct vhost_scsi {
- 	int vs_events_nr; /* num of pending events, protected by vq->mutex */
- };
- 
-+struct vhost_scsi_tmf {
-+	struct vhost_work vwork;
-+	struct vhost_scsi_tpg *tpg;
-+	struct vhost_scsi *vhost;
-+	struct vhost_scsi_virtqueue *svq;
-+	struct list_head queue_entry;
++	uint32_t data_len_bidi;
 +
-+	struct se_cmd se_cmd;
-+	struct vhost_scsi_inflight *inflight;
-+	struct iovec resp_iov;
-+	int in_iovs;
-+	int vq_desc;
-+};
-+
- /*
-  * Context for processing request and control queue operations.
-  */
-@@ -344,14 +359,32 @@ static void vhost_scsi_release_cmd_res(struct se_cmd *se_cmd)
- 	vhost_scsi_put_inflight(inflight);
- }
+ 	unsigned long deadline;
  
-+static void vhost_scsi_release_tmf_res(struct vhost_scsi_tmf *tmf)
-+{
-+	struct vhost_scsi_tpg *tpg = tmf->tpg;
-+	struct vhost_scsi_inflight *inflight = tmf->inflight;
-+
-+	mutex_lock(&tpg->tv_tpg_mutex);
-+	list_add_tail(&tpg->tmf_queue, &tmf->queue_entry);
-+	mutex_unlock(&tpg->tv_tpg_mutex);
-+	vhost_scsi_put_inflight(inflight);
-+}
-+
- static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
- {
--	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
-+	if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB) {
-+		struct vhost_scsi_tmf *tmf = container_of(se_cmd,
-+					struct vhost_scsi_tmf, se_cmd);
-+
-+		vhost_work_queue(&tmf->vhost->dev, &tmf->vwork);
-+	} else {
-+		struct vhost_scsi_cmd *cmd = container_of(se_cmd,
- 					struct vhost_scsi_cmd, tvc_se_cmd);
--	struct vhost_scsi *vs = cmd->tvc_vhost;
-+		struct vhost_scsi *vs = cmd->tvc_vhost;
- 
--	llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
--	vhost_work_queue(&vs->dev, &vs->vs_completion_work);
-+		llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
-+		vhost_work_queue(&vs->dev, &vs->vs_completion_work);
-+	}
- }
- 
- static u32 vhost_scsi_sess_get_index(struct se_session *se_sess)
-@@ -390,7 +423,10 @@ static int vhost_scsi_queue_status(struct se_cmd *se_cmd)
- 
- static void vhost_scsi_queue_tm_rsp(struct se_cmd *se_cmd)
- {
--	return;
-+	struct vhost_scsi_tmf *tmf = container_of(se_cmd, struct vhost_scsi_tmf,
-+						  se_cmd);
-+
-+	transport_generic_free_cmd(&tmf->se_cmd, 0);
- }
- 
- static void vhost_scsi_aborted_task(struct se_cmd *se_cmd)
-@@ -1121,9 +1157,9 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- }
- 
- static void
--vhost_scsi_send_tmf_reject(struct vhost_scsi *vs,
--			   struct vhost_virtqueue *vq,
--			   struct vhost_scsi_ctx *vc)
-+vhost_scsi_send_tmf_resp(struct vhost_scsi *vs, struct vhost_virtqueue *vq,
-+			 int in_iovs, int vq_desc, struct iovec *resp_iov,
-+			 int tmf_resp_code)
- {
- 	struct virtio_scsi_ctrl_tmf_resp rsp;
- 	struct iov_iter iov_iter;
-@@ -1131,17 +1167,87 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- 
- 	pr_debug("%s\n", __func__);
- 	memset(&rsp, 0, sizeof(rsp));
--	rsp.response = VIRTIO_SCSI_S_FUNCTION_REJECTED;
-+	rsp.response = tmf_resp_code;
- 
--	iov_iter_init(&iov_iter, READ, &vq->iov[vc->out], vc->in, sizeof(rsp));
-+	iov_iter_init(&iov_iter, READ, resp_iov, in_iovs, sizeof(rsp));
- 
- 	ret = copy_to_iter(&rsp, sizeof(rsp), &iov_iter);
- 	if (likely(ret = sizeof(rsp)))
--		vhost_add_used_and_signal(&vs->dev, vq, vc->head, 0);
-+		vhost_add_used_and_signal(&vs->dev, vq, vq_desc, 0);
- 	else
- 		pr_err("Faulted on virtio_scsi_ctrl_tmf_resp\n");
- }
- 
-+static void vhost_scsi_tmf_resp_work(struct vhost_work *work)
-+{
-+	struct vhost_scsi_tmf *tmf = container_of(work, struct vhost_scsi_tmf,
-+						  vwork);
-+	int resp_code;
-+
-+	if (tmf->se_cmd.se_tmr_req->response = TMR_FUNCTION_COMPLETE)
-+		resp_code = VIRTIO_SCSI_S_FUNCTION_SUCCEEDED;
-+	else
-+		resp_code = VIRTIO_SCSI_S_FUNCTION_REJECTED;
-+
-+	vhost_scsi_send_tmf_resp(tmf->vhost, &tmf->svq->vq, tmf->in_iovs,
-+				 tmf->vq_desc, &tmf->resp_iov, resp_code);
-+	vhost_scsi_release_tmf_res(tmf);
-+}
-+
-+static void
-+vhost_scsi_handle_tmf(struct vhost_scsi *vs, struct vhost_scsi_tpg *tpg,
-+		      struct vhost_virtqueue *vq,
-+		      struct virtio_scsi_ctrl_tmf_req *vtmf,
-+		      struct vhost_scsi_ctx *vc)
-+{
-+	struct vhost_scsi_virtqueue *svq = container_of(vq,
-+					struct vhost_scsi_virtqueue, vq);
-+	struct vhost_scsi_tmf *tmf;
-+
-+	if (vhost32_to_cpu(vq, vtmf->subtype) !+	    VIRTIO_SCSI_T_TMF_LOGICAL_UNIT_RESET)
-+		goto send_reject;
-+
-+	if (!tpg->tpg_nexus || !tpg->tpg_nexus->tvn_se_sess) {
-+		pr_err("Unable to locate active struct vhost_scsi_nexus for LUN RESET.\n");
-+		goto send_reject;
-+        }
-+
-+	mutex_lock(&tpg->tv_tpg_mutex);
-+	if (list_empty(&tpg->tmf_queue)) {
-+		pr_err("Missing reserve TMF. Could not handle LUN RESET.\n");
-+		mutex_unlock(&tpg->tv_tpg_mutex);
-+		goto send_reject;
-+	}
-+
-+	tmf = list_first_entry(&tpg->tmf_queue, struct vhost_scsi_tmf,
-+			       queue_entry);
-+	list_del_init(&tmf->queue_entry);
-+	mutex_unlock(&tpg->tv_tpg_mutex);
-+
-+	tmf->tpg = tpg;
-+	tmf->vhost = vs;
-+	tmf->svq = svq;
-+	tmf->resp_iov = vq->iov[vc->out];
-+	tmf->vq_desc = vc->head;
-+	tmf->in_iovs = vc->in;
-+	tmf->inflight = vhost_scsi_get_inflight(vq);
-+
-+	if (target_submit_tmr(&tmf->se_cmd, tpg->tpg_nexus->tvn_se_sess, NULL,
-+			      vhost_buf_to_lun(vtmf->lun), NULL,
-+			      TMR_LUN_RESET, GFP_KERNEL, 0,
-+			      TARGET_SCF_ACK_KREF) < 0) {
-+		vhost_scsi_release_tmf_res(tmf);
-+		goto send_reject;
-+	}
-+
-+	return;
-+
-+send_reject:
-+	vhost_scsi_send_tmf_resp(vs, vq, vc->in, vc->head, &vq->iov[vc->out],
-+				 VIRTIO_SCSI_S_FUNCTION_REJECTED);
-+}
-+
- static void
- vhost_scsi_send_an_resp(struct vhost_scsi *vs,
- 			struct vhost_virtqueue *vq,
-@@ -1167,6 +1273,7 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- static void
- vhost_scsi_ctl_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
- {
-+	struct vhost_scsi_tpg *tpg;
- 	union {
- 		__virtio32 type;
- 		struct virtio_scsi_ctrl_an_req an;
-@@ -1248,12 +1355,12 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- 		vc.req += typ_size;
- 		vc.req_size -= typ_size;
- 
--		ret = vhost_scsi_get_req(vq, &vc, NULL);
-+		ret = vhost_scsi_get_req(vq, &vc, &tpg);
- 		if (ret)
- 			goto err;
- 
- 		if (v_req.type = VIRTIO_SCSI_T_TMF)
--			vhost_scsi_send_tmf_reject(vs, vq, &vc);
-+			vhost_scsi_handle_tmf(vs, tpg, vq, &v_req.tmf, &vc);
- 		else
- 			vhost_scsi_send_an_resp(vs, vq, &vc);
- err:
-@@ -1914,11 +2021,19 @@ static int vhost_scsi_port_link(struct se_portal_group *se_tpg,
- {
- 	struct vhost_scsi_tpg *tpg = container_of(se_tpg,
- 				struct vhost_scsi_tpg, se_tpg);
-+	struct vhost_scsi_tmf *tmf;
-+
-+	tmf = kzalloc(sizeof(*tmf), GFP_KERNEL);
-+	if (!tmf)
-+		return -ENOMEM;
-+	INIT_LIST_HEAD(&tmf->queue_entry);
-+	vhost_work_init(&tmf->vwork, vhost_scsi_tmf_resp_work);
- 
- 	mutex_lock(&vhost_scsi_mutex);
- 
- 	mutex_lock(&tpg->tv_tpg_mutex);
- 	tpg->tv_tpg_port_count++;
-+	list_add_tail(&tmf->queue_entry, &tpg->tmf_queue);
- 	mutex_unlock(&tpg->tv_tpg_mutex);
- 
- 	vhost_scsi_hotplug(tpg, lun);
-@@ -1933,11 +2048,16 @@ static void vhost_scsi_port_unlink(struct se_portal_group *se_tpg,
- {
- 	struct vhost_scsi_tpg *tpg = container_of(se_tpg,
- 				struct vhost_scsi_tpg, se_tpg);
-+	struct vhost_scsi_tmf *tmf;
- 
- 	mutex_lock(&vhost_scsi_mutex);
- 
- 	mutex_lock(&tpg->tv_tpg_mutex);
- 	tpg->tv_tpg_port_count--;
-+	tmf = list_first_entry(&tpg->tmf_queue, struct vhost_scsi_tmf,
-+			       queue_entry);
-+	list_del(&tmf->queue_entry);
-+	kfree(tmf);
- 	mutex_unlock(&tpg->tv_tpg_mutex);
- 
- 	vhost_scsi_hotunplug(tpg, lun);
-@@ -2198,6 +2318,7 @@ static ssize_t vhost_scsi_tpg_nexus_store(struct config_item *item,
+ #define TCMU_CMD_BIT_EXPIRED 0
+@@ -579,9 +581,47 @@ static inline void tcmu_cmd_set_block_cnts(struct tcmu_cmd *cmd)
+ 			len += se_cmd->t_bidi_data_sg[i].length;
+ 		cmd->dbi_bidi_cnt = DIV_ROUND_UP(len, DATA_BLOCK_SIZE);
+ 		cmd->dbi_cnt += cmd->dbi_bidi_cnt;
++		cmd->data_len_bidi = len;
  	}
- 	mutex_init(&tpg->tv_tpg_mutex);
- 	INIT_LIST_HEAD(&tpg->tv_tpg_list);
-+	INIT_LIST_HEAD(&tpg->tmf_queue);
- 	tpg->tport = tport;
- 	tpg->tport_tpgt = tpgt;
+ }
+ 
++static int new_block_to_iov(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
++			    struct iovec **iov, int prev_dbi, int *remain)
++{
++	/* Get the next dbi */
++	int dbi = tcmu_cmd_get_dbi(cmd);
++	/* Do not add more than DATA_BLOCK_SIZE to iov */
++	int len = min_t(int, DATA_BLOCK_SIZE, *remain);
++
++	*remain -= len;
++	/*
++	 * The following code will gather and map the blocks to the same iovec
++	 * when the blocks are all next to each other.
++	 */
++	if (dbi != prev_dbi + 1) {
++		/* dbi is not next to previous dbi, so start new iov */
++		if (prev_dbi >= 0)
++			(*iov)++;
++		/* write offset relative to mb_addr */
++		(*iov)->iov_base = (void __user *)
++				(udev->data_off + dbi * DATA_BLOCK_SIZE);
++	}
++	(*iov)->iov_len += len;
++
++	return dbi;
++}
++
++static void tcmu_setup_iovs(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
++			    struct iovec **iov, int data_length)
++{
++	/* start value of dbi + 1 must not be a valid dbi */
++	int dbi = -2;
++
++	/* We prepare the IOVs for DMA_FROM_DEVICE transfer direction */
++	while (data_length > 0)
++		dbi = new_block_to_iov(udev, cmd, iov, dbi, &data_length);
++}
++
+ static struct tcmu_cmd *tcmu_alloc_cmd(struct se_cmd *se_cmd)
+ {
+ 	struct se_device *se_dev = se_cmd->se_dev;
+@@ -646,45 +686,22 @@ static inline size_t head_to_end(size_t head, size_t size)
+ 	return size - head;
+ }
+ 
+-static inline void new_iov(struct iovec **iov, bool first)
+-{
+-	struct iovec *iovec;
+-
+-	if (!first)
+-		(*iov)++;
+-
+-	iovec = *iov;
+-	memset(iovec, 0, sizeof(struct iovec));
+-}
+-
+ #define UPDATE_HEAD(head, used, size) smp_store_release(&head, ((head % size) + used) % size)
+ 
+-/* offset is relative to mb_addr */
+-static inline size_t get_block_offset_user(struct tcmu_dev *dev,
+-		int dbi, int remaining)
+-{
+-	return dev->data_off + dbi * DATA_BLOCK_SIZE +
+-		DATA_BLOCK_SIZE - remaining;
+-}
+-
+-static inline size_t iov_tail(struct iovec *iov)
+-{
+-	return (size_t)iov->iov_base + iov->iov_len;
+-}
+-
+-static void scatter_data_area(struct tcmu_dev *udev,
+-	struct tcmu_cmd *tcmu_cmd, struct scatterlist *data_sg,
+-	unsigned int data_nents, struct iovec **iov, bool copy_data)
++static void scatter_data_area(struct tcmu_dev *udev, struct tcmu_cmd *tcmu_cmd,
++			      struct iovec **iov)
+ {
+-	int i, dbi;
++	struct se_cmd *se_cmd = tcmu_cmd->se_cmd;
++	/* start value of dbi + 1 must not be a valid dbi */
++	int i, dbi = -2;
+ 	int block_remaining = 0;
++	int data_len = se_cmd->data_length;
+ 	void *from, *to = NULL;
+-	size_t copy_bytes, to_offset, offset;
++	size_t copy_bytes, offset;
+ 	struct scatterlist *sg;
+ 	struct page *page;
+-	bool first = true;
+ 
+-	for_each_sg(data_sg, sg, data_nents, i) {
++	for_each_sg(se_cmd->t_data_sg, sg, se_cmd->t_data_nents, i) {
+ 		int sg_remaining = sg->length;
+ 		from = kmap_atomic(sg_page(sg)) + sg->offset;
+ 		while (sg_remaining > 0) {
+@@ -694,50 +711,19 @@ static void scatter_data_area(struct tcmu_dev *udev,
+ 					kunmap_atomic(to);
+ 				}
+ 
+-				block_remaining = DATA_BLOCK_SIZE;
+-				dbi = tcmu_cmd_get_dbi(tcmu_cmd);
++				/* get next dbi and add to IOVs */
++				dbi = new_block_to_iov(udev, tcmu_cmd, iov, dbi,
++						       &data_len);
+ 				page = tcmu_get_block_page(udev, dbi);
+ 				to = kmap_atomic(page);
++				block_remaining = DATA_BLOCK_SIZE;
+ 			}
+ 
+-			/*
+-			 * Covert to virtual offset of the ring data area.
+-			 */
+-			to_offset = get_block_offset_user(udev, dbi,
+-					block_remaining);
+-
+-			/*
+-			 * The following code will gather and map the blocks
+-			 * to the same iovec when the blocks are all next to
+-			 * each other.
+-			 */
+ 			copy_bytes = min_t(size_t, sg_remaining,
+ 					block_remaining);
+-			if (!first && to_offset = iov_tail(*iov)) {
+-				/*
+-				 * Will append to the current iovec, because
+-				 * the current block page is next to the
+-				 * previous one.
+-				 */
+-				(*iov)->iov_len += copy_bytes;
+-			} else {
+-				/*
+-				 * Will allocate a new iovec because we are
+-				 * first time here or the current block page
+-				 * is not next to the previous one.
+-				 */
+-				new_iov(iov, first);
+-				(*iov)->iov_base = (void __user *)to_offset;
+-				(*iov)->iov_len = copy_bytes;
+-				first = false;
+-			}
+-
+-			if (copy_data) {
+-				offset = DATA_BLOCK_SIZE - block_remaining;
+-				memcpy(to + offset,
+-				       from + sg->length - sg_remaining,
+-				       copy_bytes);
+-			}
++			offset = DATA_BLOCK_SIZE - block_remaining;
++			memcpy(to + offset, from + sg->length - sg_remaining,
++			       copy_bytes);
+ 
+ 			sg_remaining -= copy_bytes;
+ 			block_remaining -= copy_bytes;
+@@ -1010,7 +996,6 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
+ 	int iov_cnt, iov_bidi_cnt, cmd_id;
+ 	uint32_t cmd_head;
+ 	uint64_t cdb_off;
+-	bool copy_to_data_area;
+ 	/* size of data buffer needed */
+ 	size_t data_length = (size_t)tcmu_cmd->dbi_cnt * DATA_BLOCK_SIZE;
+ 
+@@ -1084,17 +1069,19 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
+ 	/* prepare iov list and copy data to data area if necessary */
+ 	tcmu_cmd_reset_dbi_cur(tcmu_cmd);
+ 	iov = &entry->req.iov[0];
+-	copy_to_data_area = (se_cmd->data_direction = DMA_TO_DEVICE
+-		|| se_cmd->se_cmd_flags & SCF_BIDI);
+-	scatter_data_area(udev, tcmu_cmd, se_cmd->t_data_sg,
+-			  se_cmd->t_data_nents, &iov, copy_to_data_area);
++
++	if (se_cmd->data_direction = DMA_TO_DEVICE ||
++	    se_cmd->se_cmd_flags & SCF_BIDI)
++		scatter_data_area(udev, tcmu_cmd, &iov);
++	else
++		tcmu_setup_iovs(udev, tcmu_cmd, &iov, se_cmd->data_length);
++
+ 	entry->req.iov_cnt = iov_cnt - iov_bidi_cnt;
+ 
+ 	/* Handle BIDI commands */
+ 	if (se_cmd->se_cmd_flags & SCF_BIDI) {
+ 		iov++;
+-		scatter_data_area(udev, tcmu_cmd, se_cmd->t_bidi_data_sg,
+-				  se_cmd->t_bidi_data_nents, &iov, false);
++		tcmu_setup_iovs(udev, tcmu_cmd, &iov, tcmu_cmd->data_len_bidi);
+ 		entry->req.iov_bidi_cnt = iov_bidi_cnt;
+ 	}
  
 -- 
-1.8.3.1
+2.12.3
