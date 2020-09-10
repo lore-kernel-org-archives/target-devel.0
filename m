@@ -1,26 +1,30 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Thu, 03 Sep 2020 03:01:05 +0000
-Subject: Re: [PATCH] scsi: target: iscsi: Fix data digest calculation
-Message-Id: <159910202092.23499.16081491903720380193.b4-ty@oracle.com>
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+Date: Thu, 10 Sep 2020 15:50:38 +0000
+Subject: [PATCH 0/3] target: scsi: tcmu: code rework and speed up of read data handling
+Message-Id: <20200910155041.17654-1-bstroesser@ts.fujitsu.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1598358910-3052-1-git-send-email-varun@chelsio.com>
-In-Reply-To: <1598358910-3052-1-git-send-email-varun@chelsio.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Varun Prakash <varun@chelsio.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, bvanassche@acm.org, stable@vger.kernel.org, michael.christie@oracle.com, nab@linux-iscsi.org, target-devel@vger.kernel.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>, Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-On Tue, 25 Aug 2020 18:05:10 +0530, Varun Prakash wrote:
+This small series is made on top of Martin's 5.10/scsi-queue branch.
 
-> Current code does not consider 'page_off' in data digest
-> calculation, to fix this add a local variable 'first_sg' and
-> set first_sg.offset to sg->offset + page_off.
+The patches simplify some code, splits off new helper functions
+or implement a cleaner code sequence to prevent double work.
+The 3rd patch speeds up buffer preparation for SCSI commands with
+long read data.
+The series is also base for cleaned up version v3 of my patch
+  scsi: target: tcmu: add compat mode for 32bit userspace on 64bit kernel
 
-Applied to 5.9/scsi-fixes, thanks!
+Bodo Stroesser (3):
+  scsi: target: tcmu: join tcmu_cmd_get_data_length and tcmu_cmd_get_block_cnt
+  scsi: target: tcmu: optimize queue_cmd_ring
+  scsi: target: tcmu: optimize scatter_data_area
 
-[1/1] scsi: target: iscsi: Fix data digest calculation
-      https://git.kernel.org/mkp/scsi/c/5528d03183fe
+ drivers/target/target_core_user.c | 340 +++++++++++++++++++-------------------
+ 1 file changed, 170 insertions(+), 170 deletions(-)
 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.12.3
