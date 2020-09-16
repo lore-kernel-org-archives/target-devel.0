@@ -1,37 +1,24 @@
-From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Date: Thu, 03 Sep 2020 11:29:33 +0000
-Subject: [PATCH] scsi: target: tcmu: add a missing newline when printing parameters
-Message-Id: <1599132573-33818-1-git-send-email-wangxiongfeng2@huawei.com>
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Wed, 16 Sep 2020 00:19:39 +0000
+Subject: Re: [PATCH] scsi: target: tcmu: add a missing newline when printing parameters
+Message-Id: <yq1zh5q1skp.fsf@ca-mkp.ca.oracle.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1599132573-33818-1-git-send-email-wangxiongfeng2@huawei.com>
+In-Reply-To: <1599132573-33818-1-git-send-email-wangxiongfeng2@huawei.com>
+        (Xiongfeng Wang's message of "Thu, 3 Sep 2020 19:29:33 +0800")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, wangxiongfeng2@huawei.com
+To: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-When I cat module paramter 'global_max_data_area_mb' by sysfs, it
-displays as follows. It's better to add a newline for easy reading.
 
-root@(none):/# cat /sys/module/target_core_user/parameters/global_max_data_area_mb
-2048noneroot@(none):/#
+Xiongfeng,
 
-Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
----
- drivers/target/target_core_user.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> When I cat module paramter 'global_max_data_area_mb' by sysfs, it
+> displays as follows. It's better to add a newline for easy reading.
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 9b75923..9775670 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -242,7 +242,7 @@ static int tcmu_set_global_max_data_area(const char *str,
- static int tcmu_get_global_max_data_area(char *buffer,
- 					 const struct kernel_param *kp)
- {
--	return sprintf(buffer, "%d", TCMU_BLOCKS_TO_MBS(tcmu_global_max_blocks));
-+	return sprintf(buffer, "%d\n", TCMU_BLOCKS_TO_MBS(tcmu_global_max_blocks));
- }
- 
- static const struct kernel_param_ops tcmu_global_max_data_area_op = {
+Applied to 5.10/scsi-staging, thanks!
+
 -- 
-1.7.12.4
+Martin K. Petersen	Oracle Linux Engineering
