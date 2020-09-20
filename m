@@ -1,54 +1,31 @@
-From: Song Liu <song@kernel.org>
-Date: Wed, 09 Sep 2020 00:55:29 +0000
-Subject: Re: [PATCH 3/9] md: compare bd_disk instead of bd_contains
-Message-Id: <CAPhsuW7ZtGruPhBWZpjCDoyq1DwoA3t_p3UXbSPrHGMnHh7enw@mail.gmail.com>
+From: Julia Lawall <Julia.Lawall@inria.fr>
+Date: Sun, 20 Sep 2020 11:26:12 +0000
+Subject: [PATCH 00/14] drop double zeroing
+Message-Id: <1600601186-7420-1-git-send-email-Julia.Lawall@inria.fr>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200903054104.228829-1-hch@lst.de> <20200903054104.228829-4-hch@lst.de>
-In-Reply-To: <20200903054104.228829-4-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: Jens Axboe <axboe@kernel.dk>, dm-devel@redhat.com, Linux Doc Mailing List <linux-doc@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, linux-block@vger.kernel.org, drbd-dev@lists.linbit.com, linux-ide@vger.kernel.org, linux-raid <linux-raid@vger.kernel.org>, linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: linux-spi@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, Yossi Leybovich <sleybo@amazon.com>, netdev@vger.kernel.org, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, dmaengine@vger.kernel.org, linux-block@vger.kernel.org, linux-nfs@vger.kernel.org, linux-wireless@vger.kernel.org, linux-media@vger.kernel.org, linux-pci@vger.kernel.org
 
-On Wed, Sep 2, 2020 at 10:43 PM Christoph Hellwig <hch@lst.de> wrote:
->
-> To check for partitions of the same disk bd_contains works as well, but
-> bd_disk is way more obvious.
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+sg_init_table zeroes its first argument, so the allocation of that argument
+doesn't have to.
 
-Acked-by: Song Liu <song@kernel.org>
+---
 
-> ---
->  drivers/md/md.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/md/md.c b/drivers/md/md.c
-> index 9562ef598ae1f4..3f33562d10d6f5 100644
-> --- a/drivers/md/md.c
-> +++ b/drivers/md/md.c
-> @@ -2322,8 +2322,7 @@ static int match_mddev_units(struct mddev *mddev1, struct mddev *mddev2)
->                             test_bit(Journal, &rdev2->flags) ||
->                             rdev2->raid_disk = -1)
->                                 continue;
-> -                       if (rdev->bdev->bd_contains =
-> -                           rdev2->bdev->bd_contains) {
-> +                       if (rdev->bdev->bd_disk = rdev2->bdev->bd_disk) {
->                                 rcu_read_unlock();
->                                 return 1;
->                         }
-> @@ -5944,8 +5943,8 @@ int md_run(struct mddev *mddev)
->                 rdev_for_each(rdev, mddev)
->                         rdev_for_each(rdev2, mddev) {
->                                 if (rdev < rdev2 &&
-> -                                   rdev->bdev->bd_contains =
-> -                                   rdev2->bdev->bd_contains) {
-> +                                   rdev->bdev->bd_disk =
-> +                                   rdev2->bdev->bd_disk) {
->                                         pr_warn("%s: WARNING: %s appears to be on the same physical disk as %s.\n",
->                                                 mdname(mddev),
->                                                 bdevname(rdev->bdev,b),
-> --
-> 2.28.0
->
+ block/bsg-lib.c                                  |    2 +-
+ drivers/dma/sh/rcar-dmac.c                       |    2 +-
+ drivers/dma/sh/shdma-base.c                      |    2 +-
+ drivers/infiniband/hw/efa/efa_verbs.c            |    2 +-
+ drivers/media/common/saa7146/saa7146_core.c      |    2 +-
+ drivers/misc/mic/scif/scif_nodeqp.c              |    2 +-
+ drivers/net/ethernet/freescale/dpaa2/dpaa2-eth.c |    2 +-
+ drivers/net/wireless/intel/iwlwifi/fw/dbg.c      |    2 +-
+ drivers/pci/p2pdma.c                             |    2 +-
+ drivers/spi/spi-topcliff-pch.c                   |    4 ++--
+ drivers/target/target_core_rd.c                  |    2 +-
+ drivers/tty/serial/pch_uart.c                    |    2 +-
+ net/rds/rdma.c                                   |    2 +-
+ net/sunrpc/xprtrdma/frwr_ops.c                   |    2 +-
+ 14 files changed, 15 insertions(+), 15 deletions(-)
