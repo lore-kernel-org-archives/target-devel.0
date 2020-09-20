@@ -1,53 +1,50 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Mon, 21 Sep 2020 18:23:08 +0000
-Subject: [PATCH 8/8] vhost scsi: remove extra flushes
-Message-Id: <1600712588-9514-9-git-send-email-michael.christie@oracle.com>
+From: Julia Lawall <Julia.Lawall@inria.fr>
+Date: Sun, 20 Sep 2020 11:26:14 +0000
+Subject: [PATCH 02/14] target/rd: drop double zeroing
+Message-Id: <1600601186-7420-3-git-send-email-Julia.Lawall@inria.fr>
 List-Id: <target-devel.vger.kernel.org>
-References: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
+References: <1600601186-7420-1-git-send-email-Julia.Lawall@inria.fr>
+In-Reply-To: <1600601186-7420-1-git-send-email-Julia.Lawall@inria.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: kernel-janitors@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The vhost work flush function was flushing the entire work queue, so
-there is no need for the double vhost_work_dev_flush calls in
-vhost_scsi_flush.
+sg_init_table zeroes its first argument, so the allocation of that argument
+doesn't have to.
 
-And we do not need to call vhost_poll_flush for each poller because
-that call also ends up flushing the same work queue thread the
-vhost_work_dev_flush call flushed.
+the semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
+// <smpl>
+@@
+expression x,n,flags;
+@@
+
+x = 
+- kcalloc
++ kmalloc_array
+  (n,sizeof(*x),flags)
+...
+sg_init_table(x,n)
+// </smpl>
+
+Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+
 ---
- drivers/vhost/scsi.c | 8 --------
- 1 file changed, 8 deletions(-)
+ drivers/target/target_core_rd.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 5833059..cdc8364 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -1444,11 +1444,6 @@ static void vhost_scsi_handle_kick(struct vhost_work *work)
- 	vhost_scsi_handle_vq(vs, vq);
- }
+diff -u -p a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
+--- a/drivers/target/target_core_rd.c
++++ b/drivers/target/target_core_rd.c
+@@ -131,7 +131,7 @@ static int rd_allocate_sgl_table(struct
+ 		if (sg_per_table < total_sg_needed)
+ 			chain_entry = 1;
  
--static void vhost_scsi_flush_vq(struct vhost_scsi *vs, int index)
--{
--	vhost_poll_flush(&vs->vqs[index].vq.poll);
--}
--
- /* Callers must hold dev mutex */
- static void vhost_scsi_flush(struct vhost_scsi *vs)
- {
-@@ -1467,9 +1462,6 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
- 		kref_put(&old_inflight[i]->kref, vhost_scsi_done_inflight);
- 
- 	/* Flush both the vhost poll and vhost work */
--	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
--		vhost_scsi_flush_vq(vs, i);
--	vhost_work_dev_flush(&vs->dev);
- 	vhost_work_dev_flush(&vs->dev);
- 
- 	/* Wait for all reqs issued before the flush to be finished */
--- 
-1.8.3.1
+-		sg = kcalloc(sg_per_table + chain_entry, sizeof(*sg),
++		sg = kmalloc_array(sg_per_table + chain_entry, sizeof(*sg),
+ 				GFP_KERNEL);
+ 		if (!sg)
+ 			return -ENOMEM;
