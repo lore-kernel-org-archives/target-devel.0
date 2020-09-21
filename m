@@ -1,55 +1,53 @@
-From: Song Liu <song@kernel.org>
-Date: Wed, 09 Sep 2020 00:55:48 +0000
-Subject: Re: [PATCH 4/9] md: don't detour through bd_contains for the gendisk
-Message-Id: <CAPhsuW62Cd329s-LUR9uQVcFvn4pbOj7H0434P7zwRhbNVScgA@mail.gmail.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Mon, 21 Sep 2020 18:23:05 +0000
+Subject: [PATCH 5/8] vhost scsi: add lun parser helper
+Message-Id: <1600712588-9514-6-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200903054104.228829-1-hch@lst.de> <20200903054104.228829-5-hch@lst.de>
-In-Reply-To: <20200903054104.228829-5-hch@lst.de>
+References: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: Jens Axboe <axboe@kernel.dk>, dm-devel@redhat.com, Linux Doc Mailing List <linux-doc@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, linux-block@vger.kernel.org, drbd-dev@lists.linbit.com, linux-ide@vger.kernel.org, linux-raid <linux-raid@vger.kernel.org>, linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-On Wed, Sep 2, 2020 at 10:43 PM Christoph Hellwig <hch@lst.de> wrote:
->
-> bd_disk is set on all block devices, including those for partitions.
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Move code to parse lun from req's lun_buf to helper, so tmf code
+can use it in the next patch.
 
-Acked-by: Song Liu <song@kernel.org>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/vhost/scsi.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-> ---
->  drivers/md/md.c | 2 +-
->  drivers/md/md.h | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/md/md.c b/drivers/md/md.c
-> index 3f33562d10d6f5..5a0fd93769a70e 100644
-> --- a/drivers/md/md.c
-> +++ b/drivers/md/md.c
-> @@ -8444,7 +8444,7 @@ static int is_mddev_idle(struct mddev *mddev, int init)
->         idle = 1;
->         rcu_read_lock();
->         rdev_for_each_rcu(rdev, mddev) {
-> -               struct gendisk *disk = rdev->bdev->bd_contains->bd_disk;
-> +               struct gendisk *disk = rdev->bdev->bd_disk;
->                 curr_events = (int)part_stat_read_accum(&disk->part0, sectors) -
->                               atomic_read(&disk->sync_io);
->                 /* sync IO will cause sync_io to increase before the disk_stats
-> diff --git a/drivers/md/md.h b/drivers/md/md.h
-> index f9e2ccdd22c478..2175a5ac4f7c68 100644
-> --- a/drivers/md/md.h
-> +++ b/drivers/md/md.h
-> @@ -551,7 +551,7 @@ extern void mddev_unlock(struct mddev *mddev);
->
->  static inline void md_sync_acct(struct block_device *bdev, unsigned long nr_sectors)
->  {
-> -       atomic_add(nr_sectors, &bdev->bd_contains->bd_disk->sync_io);
-> +       atomic_add(nr_sectors, &bdev->bd_disk->sync_io);
->  }
->
->  static inline void md_sync_acct_bio(struct bio *bio, unsigned long nr_sectors)
-> --
-> 2.28.0
->
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 26d0f75..736ce19 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -899,6 +899,11 @@ static void vhost_scsi_submission_work(struct work_struct *work)
+ 	return ret;
+ }
+ 
++static u16 vhost_buf_to_lun(u8 *lun_buf)
++{
++	return ((lun_buf[2] << 8) | lun_buf[3]) & 0x3FFF;
++}
++
+ static void
+ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
+ {
+@@ -1037,12 +1042,12 @@ static void vhost_scsi_submission_work(struct work_struct *work)
+ 			tag = vhost64_to_cpu(vq, v_req_pi.tag);
+ 			task_attr = v_req_pi.task_attr;
+ 			cdb = &v_req_pi.cdb[0];
+-			lun = ((v_req_pi.lun[2] << 8) | v_req_pi.lun[3]) & 0x3FFF;
++			lun = vhost_buf_to_lun(v_req_pi.lun);
+ 		} else {
+ 			tag = vhost64_to_cpu(vq, v_req.tag);
+ 			task_attr = v_req.task_attr;
+ 			cdb = &v_req.cdb[0];
+-			lun = ((v_req.lun[2] << 8) | v_req.lun[3]) & 0x3FFF;
++			lun = vhost_buf_to_lun(v_req.lun);
+ 		}
+ 		/*
+ 		 * Check that the received CDB size does not exceeded our
+-- 
+1.8.3.1
