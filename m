@@ -1,24 +1,106 @@
-From: Jens Axboe <axboe@kernel.dk>
-Date: Fri, 25 Sep 2020 14:19:08 +0000
-Subject: Re: clean up is partition checks
-Message-Id: <7a0600d8-d886-c546-378c-5298a16e979c@kernel.dk>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Mon, 21 Sep 2020 18:23:07 +0000
+Subject: [PATCH 7/8] vhost: remove work arg from vhost_work_flush
+Message-Id: <1600712588-9514-8-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200903054104.228829-1-hch@lst.de>
-In-Reply-To: <20200903054104.228829-1-hch@lst.de>
+References: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: dm-devel@redhat.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, drbd-dev@lists.linbit.com, linux-ide@vger.kernel.org, linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-On 9/2/20 11:40 PM, Christoph Hellwig wrote:
-> Hi Jens,
-> 
-> this series add a new helepr to check if a struct block_device represents
-> a parition, and removes most direct access to ->bd_contained from
-> drivers.
+vhost_work_flush doesn't do anything with the work arg. This patch drops
+it and then renames vhost_work_flush to vhost_work_dev_flush to reflect
+that the function flushes all the works in the dev and not just a
+specific queue or work item.
 
-Applied, thanks.
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/vhost/scsi.c  | 4 ++--
+ drivers/vhost/vhost.c | 8 ++++----
+ drivers/vhost/vhost.h | 2 +-
+ drivers/vhost/vsock.c | 2 +-
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 8791db8..5833059 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1469,8 +1469,8 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 	/* Flush both the vhost poll and vhost work */
+ 	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
+ 		vhost_scsi_flush_vq(vs, i);
+-	vhost_work_flush(&vs->dev, &vs->vs_completion_work);
+-	vhost_work_flush(&vs->dev, &vs->vs_event_work);
++	vhost_work_dev_flush(&vs->dev);
++	vhost_work_dev_flush(&vs->dev);
+ 
+ 	/* Wait for all reqs issued before the flush to be finished */
+ 	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
+diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+index 5dd9eb1..f83674e 100644
+--- a/drivers/vhost/vhost.c
++++ b/drivers/vhost/vhost.c
+@@ -231,7 +231,7 @@ void vhost_poll_stop(struct vhost_poll *poll)
+ }
+ EXPORT_SYMBOL_GPL(vhost_poll_stop);
+ 
+-void vhost_work_flush(struct vhost_dev *dev, struct vhost_work *work)
++void vhost_work_dev_flush(struct vhost_dev *dev)
+ {
+ 	struct vhost_flush_struct flush;
+ 
+@@ -243,13 +243,13 @@ void vhost_work_flush(struct vhost_dev *dev, struct vhost_work *work)
+ 		wait_for_completion(&flush.wait_event);
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(vhost_work_flush);
++EXPORT_SYMBOL_GPL(vhost_work_dev_flush);
+ 
+ /* Flush any work that has been scheduled. When calling this, don't hold any
+  * locks that are also used by the callback. */
+ void vhost_poll_flush(struct vhost_poll *poll)
+ {
+-	vhost_work_flush(poll->dev, &poll->work);
++	vhost_work_dev_flush(poll->dev);
+ }
+ EXPORT_SYMBOL_GPL(vhost_poll_flush);
+ 
+@@ -542,7 +542,7 @@ static int vhost_attach_cgroups(struct vhost_dev *dev)
+ 	attach.owner = current;
+ 	vhost_work_init(&attach.work, vhost_attach_cgroups_work);
+ 	vhost_work_queue(dev, &attach.work);
+-	vhost_work_flush(dev, &attach.work);
++	vhost_work_dev_flush(dev);
+ 	return attach.ret;
+ }
+ 
+diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
+index 3d30b3d..b91efb5 100644
+--- a/drivers/vhost/vhost.h
++++ b/drivers/vhost/vhost.h
+@@ -46,7 +46,7 @@ void vhost_poll_init(struct vhost_poll *poll, vhost_work_fn_t fn,
+ void vhost_poll_stop(struct vhost_poll *poll);
+ void vhost_poll_flush(struct vhost_poll *poll);
+ void vhost_poll_queue(struct vhost_poll *poll);
+-void vhost_work_flush(struct vhost_dev *dev, struct vhost_work *work);
++void vhost_work_dev_flush(struct vhost_dev *dev);
+ long vhost_vring_ioctl(struct vhost_dev *d, unsigned int ioctl, void __user *argp);
+ 
+ struct vhost_log {
+diff --git a/drivers/vhost/vsock.c b/drivers/vhost/vsock.c
+index a483cec..f40205f 100644
+--- a/drivers/vhost/vsock.c
++++ b/drivers/vhost/vsock.c
+@@ -652,7 +652,7 @@ static void vhost_vsock_flush(struct vhost_vsock *vsock)
+ 	for (i = 0; i < ARRAY_SIZE(vsock->vqs); i++)
+ 		if (vsock->vqs[i].handle_kick)
+ 			vhost_poll_flush(&vsock->vqs[i].poll);
+-	vhost_work_flush(&vsock->dev, &vsock->send_pkt_work);
++	vhost_work_dev_flush(&vsock->dev);
+ }
+ 
+ static void vhost_vsock_reset_orphans(struct sock *sk)
 -- 
-Jens Axboe
+1.8.3.1
