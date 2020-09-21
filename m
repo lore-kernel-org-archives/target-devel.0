@@ -1,49 +1,53 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 03 Sep 2020 05:41:00 +0000
-Subject: [PATCH 5/9] drbd: don't detour through bd_contains for the gendisk
-Message-Id: <20200903054104.228829-6-hch@lst.de>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Mon, 21 Sep 2020 18:23:08 +0000
+Subject: [PATCH 8/8] vhost scsi: remove extra flushes
+Message-Id: <1600712588-9514-9-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200903054104.228829-1-hch@lst.de>
-In-Reply-To: <20200903054104.228829-1-hch@lst.de>
+References: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1600712588-9514-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jens Axboe <axboe@kernel.dk>
-Cc: dm-devel@redhat.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, drbd-dev@lists.linbit.com, linux-ide@vger.kernel.org, linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-bd_disk is set on all block devices, including those for partitions.
+The vhost work flush function was flushing the entire work queue, so
+there is no need for the double vhost_work_dev_flush calls in
+vhost_scsi_flush.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+And we do not need to call vhost_poll_flush for each poller because
+that call also ends up flushing the same work queue thread the
+vhost_work_dev_flush call flushed.
+
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/block/drbd/drbd_receiver.c | 2 +-
- drivers/block/drbd/drbd_worker.c   | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/vhost/scsi.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 422363daa6180b..2d16fb0905999d 100644
---- a/drivers/block/drbd/drbd_receiver.c
-+++ b/drivers/block/drbd/drbd_receiver.c
-@@ -2789,7 +2789,7 @@ bool drbd_rs_should_slow_down(struct drbd_device *device, sector_t sector,
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 5833059..cdc8364 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1444,11 +1444,6 @@ static void vhost_scsi_handle_kick(struct vhost_work *work)
+ 	vhost_scsi_handle_vq(vs, vq);
+ }
  
- bool drbd_rs_c_min_rate_throttle(struct drbd_device *device)
+-static void vhost_scsi_flush_vq(struct vhost_scsi *vs, int index)
+-{
+-	vhost_poll_flush(&vs->vqs[index].vq.poll);
+-}
+-
+ /* Callers must hold dev mutex */
+ static void vhost_scsi_flush(struct vhost_scsi *vs)
  {
--	struct gendisk *disk = device->ldev->backing_bdev->bd_contains->bd_disk;
-+	struct gendisk *disk = device->ldev->backing_bdev->bd_disk;
- 	unsigned long db, dt, dbdt;
- 	unsigned int c_min_rate;
- 	int curr_events;
-diff --git a/drivers/block/drbd/drbd_worker.c b/drivers/block/drbd/drbd_worker.c
-index 7c903de5c4e103..9107b109ba7bcb 100644
---- a/drivers/block/drbd/drbd_worker.c
-+++ b/drivers/block/drbd/drbd_worker.c
-@@ -1672,7 +1672,7 @@ void drbd_resync_after_changed(struct drbd_device *device)
+@@ -1467,9 +1462,6 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 		kref_put(&old_inflight[i]->kref, vhost_scsi_done_inflight);
  
- void drbd_rs_controller_reset(struct drbd_device *device)
- {
--	struct gendisk *disk = device->ldev->backing_bdev->bd_contains->bd_disk;
-+	struct gendisk *disk = device->ldev->backing_bdev->bd_disk;
- 	struct fifo_buffer *plan;
+ 	/* Flush both the vhost poll and vhost work */
+-	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
+-		vhost_scsi_flush_vq(vs, i);
+-	vhost_work_dev_flush(&vs->dev);
+ 	vhost_work_dev_flush(&vs->dev);
  
- 	atomic_set(&device->rs_sect_in, 0);
+ 	/* Wait for all reqs issued before the flush to be finished */
 -- 
-2.28.0
+1.8.3.1
