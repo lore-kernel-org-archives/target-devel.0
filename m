@@ -1,42 +1,34 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 03 Sep 2020 05:41:04 +0000
-Subject: [PATCH 9/9] vsprintf: use bd_partno in bdev_name
-Message-Id: <20200903054104.228829-10-hch@lst.de>
+From: Blue Oak Mortgage and Loans <em@rusoil.net>
+Date: Mon, 21 Sep 2020 23:50:48 +0000
+Subject: Wir finanzieren Projekte und Unternehmen
+Message-Id: <1132312692.909225.1600732248449.JavaMail.zimbra@rusoil.net>
 List-Id: <target-devel.vger.kernel.org>
-References: <20200903054104.228829-1-hch@lst.de>
-In-Reply-To: <20200903054104.228829-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jens Axboe <axboe@kernel.dk>
-Cc: dm-devel@redhat.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, drbd-dev@lists.linbit.com, linux-ide@vger.kernel.org, linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org
 
-No need to go through the hd_struct to find the partition number.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- lib/vsprintf.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index afb9521ddf9197..14c9a6af1b239a 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -940,13 +940,13 @@ char *bdev_name(char *buf, char *end, struct block_device *bdev,
- 
- 	hd = bdev->bd_disk;
- 	buf = string(buf, end, hd->disk_name, spec);
--	if (bdev->bd_part->partno) {
-+	if (bdev->bd_partno) {
- 		if (isdigit(hd->disk_name[strlen(hd->disk_name)-1])) {
- 			if (buf < end)
- 				*buf = 'p';
- 			buf++;
- 		}
--		buf = number(buf, end, bdev->bd_part->partno, spec);
-+		buf = number(buf, end, bdev->bd_partno, spec);
- 	}
- 	return buf;
- }
--- 
-2.28.0
+Dies ist ein Newsletter von Blue Oak Mortgage and Loans. Bitte melden Sie sich ab, wenn Sie keine E-Mail mehr von uns erhalten möchten.
+
+
+Eine kurze Einführung.
+
+Wir sind ein führendes Finanzierungsunternehmen in Europa. Wir finanzieren Startups / etablierte Unternehmen, finanzieren Großprojekte (Bau, Landwirtschaft, Immobilien und dergleichen) zu einem niedrigen Zinssatz von 2% pro Jahr.
+
+
+Darlehensverfahren
+
+1. Sie müssen das Online-Bewerbungsformular ausfüllen und eine ordnungsgemäß unterschriebene Kopie an uns zurücksenden.
+
+2. Möglicherweise müssen Sie Finanzdokumente als unterstützenden Nachweis für die Fähigkeit zur Rückzahlung von Krediten vorlegen.
+
+3. Wenn Ihr Darlehen genehmigt wurde, müssen Sie eine Versicherungsgarantie für die Darlehenssicherheit vorlegen. Wir empfehlen eine Versicherungsgesellschaft. Sie sind allein verantwortlich für die Zahlung und den Erwerb der Anleihe, die als Sicherheit dienen. Die Höhe der Anleihe hängt von Ihrem Darlehensbetrag ab. Die Versicherungsgesellschaft wird Sie durch den Prozess führen. (Für Großprojekte)
+
+4. Ihr Überweisungsprozess wird eingeleitet, sobald die Versicherungsanleihe überprüft wurde. Ihr Darlehensrückzahlungsplan wird im NC-Darlehensvertragsformular aufgeführt.
+
+Wenn die Bedingungen Sie beruhigen, können Sie uns über die WhatsApp-Nummer / E-Mail kontaktieren und auch unsere Website besuchen, um weitere Informationen zu erhalten. Wir freuen uns darauf, von Ihnen zu hören.
+
+WhatsApp: + 90-552-365-3483
+E-Mail: info@bluelmtg.net
