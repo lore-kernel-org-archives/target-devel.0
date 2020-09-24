@@ -1,21 +1,18 @@
-From: "Mrs. Susan Carter" <test@mail.bless.gov.my>
-Date: Wed, 30 Sep 2020 00:21:19 +0000
-Subject: Good day,
-Message-Id: <20200930002056.862C143EFC61@mail.bless.gov.my>
+From: "Mariacarmen Gutierrez" <fernrodyup12@gmx.es>
+Date: Thu, 24 Sep 2020 21:48:53 +0000
+Subject: This is nice one!
+Message-Id: <20200924214420.B035B4553DF6@mail.hanmingtech.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
 
-Good day,
+Hello friend!
 
-My name are Mrs. Susan Carter an America but a United Kingdom Citizen, I???m 57 years old, widow, married to late Eng Martins Carter who is a British, who until his death worked with Dutch Filtration for Twenty-Six years before he died in the year 2015 after a brief illness that lasted only five days.
+I would like to contact you personally for an important proposal that could of interest to you.
+I send this email only to know if this email address is functional.
+I have something very important to discuss with you. Contact me for details by:  Email: fernrodyup1215@aol.com with your direct contacts.
 
-When my late husband was alive he deposited the sum of US$50 Million in bank USA through his Financial Lawyer in the United State of America and we all agreed as a couple to donate all of that to charity. Following my health (Lung Cancer), my Doctor told me that I may not live longer than required due to my health condition.
-
-Looking forward to seeing someone who can use the money for charitable work.
-
-Best Regards
-Yours sincerely
-Mrs. Susan Carter
+Kind regards.
+Maria Carmen Gutierrez
