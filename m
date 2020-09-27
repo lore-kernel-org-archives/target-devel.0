@@ -1,34 +1,26 @@
-From: Blue Oak Mortgage and Loans <em@rusoil.net>
-Date: Mon, 21 Sep 2020 23:50:48 +0000
-Subject: Wir finanzieren Projekte und Unternehmen
-Message-Id: <1132312692.909225.1600732248449.JavaMail.zimbra@rusoil.net>
+From: "Mr.Ghazi Ahmed" <ghazia137@gmail.com>
+Date: Sun, 27 Sep 2020 05:38:52 +0000
+Subject: YOUR URGENT RESPONSE IS NEEDED
+Message-Id: <CAFOsbUroq2F6+jxaDcnFGuFQear+X7zjrFfxjxEzEPGFe07WrA@mail.gmail.com>
 List-Id: <target-devel.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="windows-1250"
+Content-Transfer-Encoding: base64
 To: target-devel@vger.kernel.org
 
-
-
-Dies ist ein Newsletter von Blue Oak Mortgage and Loans. Bitte melden Sie sich ab, wenn Sie keine E-Mail mehr von uns erhalten möchten.
-
-
-Eine kurze Einführung.
-
-Wir sind ein führendes Finanzierungsunternehmen in Europa. Wir finanzieren Startups / etablierte Unternehmen, finanzieren Großprojekte (Bau, Landwirtschaft, Immobilien und dergleichen) zu einem niedrigen Zinssatz von 2% pro Jahr.
-
-
-Darlehensverfahren
-
-1. Sie müssen das Online-Bewerbungsformular ausfüllen und eine ordnungsgemäß unterschriebene Kopie an uns zurücksenden.
-
-2. Möglicherweise müssen Sie Finanzdokumente als unterstützenden Nachweis für die Fähigkeit zur Rückzahlung von Krediten vorlegen.
-
-3. Wenn Ihr Darlehen genehmigt wurde, müssen Sie eine Versicherungsgarantie für die Darlehenssicherheit vorlegen. Wir empfehlen eine Versicherungsgesellschaft. Sie sind allein verantwortlich für die Zahlung und den Erwerb der Anleihe, die als Sicherheit dienen. Die Höhe der Anleihe hängt von Ihrem Darlehensbetrag ab. Die Versicherungsgesellschaft wird Sie durch den Prozess führen. (Für Großprojekte)
-
-4. Ihr Überweisungsprozess wird eingeleitet, sobald die Versicherungsanleihe überprüft wurde. Ihr Darlehensrückzahlungsplan wird im NC-Darlehensvertragsformular aufgeführt.
-
-Wenn die Bedingungen Sie beruhigen, können Sie uns über die WhatsApp-Nummer / E-Mail kontaktieren und auch unsere Website besuchen, um weitere Informationen zu erhalten. Wir freuen uns darauf, von Ihnen zu hören.
-
-WhatsApp: + 90-552-365-3483
-E-Mail: info@bluelmtg.net
+SSBoYXZlIGEgYnVzaW5lc3MgcHJvcG9zYWwgaW4gdGhlIHR1bmUgb2YgJDEwLjJtIFVTRCBmb3Ig
+eW91IHRvIGhhbmRsZQp3aXRoIG1lLiBJIGhhdmUgb3Bwb3J0dW5pdHkgdG8gdHJhbnNmZXIgdGhp
+cyBhYmFuZG9uIGZ1bmQgdG8geW91ciBiYW5rCmFjY291bnQgaW4geW91ciBjb3VudHJ5IHdoaWNo
+IGJlbG9uZ3MgdG8gb3VyIGNsaWVudC4KCkkgYW0gaW52aXRpbmcgeW91IGluIHRoaXMgdHJhbnNh
+Y3Rpb24gd2hlcmUgdGhpcyBtb25leSBjYW4gYmUgc2hhcmVkCmJldHdlZW4gdXMgYXQgcmF0aW8g
+b2YgNTAvNTAlIGFuZCBoZWxwIHRoZSBuZWVkeSBhcm91bmQgdXMgZG9u4oCZdCBiZQphZnJhaWQg
+b2YgYW55dGhpbmcgSSBhbSB3aXRoIHlvdSBJIHdpbGwgaW5zdHJ1Y3QgeW91IHdoYXQgeW91IHdp
+bGwgZG8KdG8gbWFpbnRhaW4gdGhpcyBmdW5kLgoKUGxlYXNlIGtpbmRseSBjb250YWN0IG1lIHdp
+dGggeW91ciBpbmZvcm1hdGlvbidzIGlmIHlvdSBhcmUgaW50ZXJlc3RlZAppbiB0aGlzIHRyYW5h
+c2N0aW9uIGZvciBtb3JlIGRldGFpbHMoZ2hhemlhaG1lZEBteXNlbGYuY29tKQoKMS4gWW91ciBG
+dWxsIE5hbWUuLi4uLi4uLi4uLi4uLi4uLi4uLi4KMi4gWW91ciBBZGRyZXNzLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLgozLiBZb3VyIENvdW50cnkgb2YgT3JpZ2luLi4uLi4uLi4uLi4uLgo0LiBXaGF0
+IGRvIHlvdSBkbyBmb3IgbGl2aW5nIC4uLi4uLi4uLi4uLi4uLgo1LiBZb3VyIEFnZS4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uCjYuIEdlbmRlci4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4KNy4g
+WW91ciBJRCBjYXJkIGNvcHkgYW5kIHRlbGVwaG9uZSBudW1iZXIgZm9yIGVhc3kgY29tbXVuaWNh
+dGlvbi4uLi4uLi4uLi4uLi4uLgoKTXIuR2hhemkgQWhtZWQ=
