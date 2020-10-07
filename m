@@ -1,70 +1,83 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Fri, 23 Oct 2020 16:22:47 +0000
-Subject: Re: [PATCH 00/16 V2] vhost: fix scsi cmd handling and IOPs
-Message-Id: <b1323161-c712-bcf4-91bb-e1c9b20dacac@oracle.com>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Wed, 07 Oct 2020 14:53:26 +0000
+Subject: [PATCH 2/2] target: iscsi: fix a race condition when aborting a task
+Message-Id: <20201007145326.56850-3-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1602104101-5592-1-git-send-email-michael.christie@oracle.com>
- <20201023114539-mutt-send-email-mst@kernel.org>
-In-Reply-To: <20201023114539-mutt-send-email-mst@kernel.org>
+References: <20201007145326.56850-1-mlombard@redhat.com>
+In-Reply-To: <20201007145326.56850-1-mlombard@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, bvanassche@acm.org, michael.christie@oracle.com
 
-On 10/23/20 10:46 AM, Michael S. Tsirkin wrote:
-> On Wed, Oct 07, 2020 at 03:54:45PM -0500, Mike Christie wrote:
->> The following patches were made over Michael's vhost branch here:
->> https://urldefense.com/v3/__https://git.kernel.org/pub/scm/linux/kernel/git/mst/vhost.git/log/?h=vhost__;!!GqivPVa7Brio!IVNw3V-uPEJyaYcHGpZrPo_0vnAuPXchguJJZG5qCapOYzR8bOwuFyTZf49rMcokFOMG$
->>   
->> The patches also apply to Linus's or Martin's trees if you apply
->> https://urldefense.com/v3/__https://patchwork.kernel.org/patch/11790681/__;!!GqivPVa7Brio!IVNw3V-uPEJyaYcHGpZrPo_0vnAuPXchguJJZG5qCapOYzR8bOwuFyTZf49rMfl3id0D$
->> which was merged into mst's tree already.
->>
->> The following patches are a follow up to this post:
->> https://urldefense.com/v3/__https://patchwork.kernel.org/cover/11790763/__;!!GqivPVa7Brio!IVNw3V-uPEJyaYcHGpZrPo_0vnAuPXchguJJZG5qCapOYzR8bOwuFyTZf49rMWyfBwDA$
->> which originally was fixing how vhost-scsi handled cmds so we would
->> not get IO errors when sending more than 256 cmds.
->>
->> In that patchset I needed to detect if a vq was in use and for this
->> patch:
->> https://urldefense.com/v3/__https://patchwork.kernel.org/patch/11790685/__;!!GqivPVa7Brio!IVNw3V-uPEJyaYcHGpZrPo_0vnAuPXchguJJZG5qCapOYzR8bOwuFyTZf49rMWWcMjJi$
->> it was suggested to add support for VHOST_RING_ENABLE. While doing
->> that though I hit a couple problems:
->>
->> 1. The patches moved how vhost-scsi allocated cmds from per lio
->> session to per vhost vq. To support both VHOST_RING_ENABLE and
->> where userspace didn't support it, I would have to keep around the
->> old per session/device cmd allocator/completion and then also maintain
->> the new code. Or, I would still have to use this patch
->> patchwork.kernel.org/cover/11790763/ for the compat case so there
->> adding the new ioctl would not help much.
->>
->> 2. For vhost-scsi I also wanted to prevent where we allocate iovecs
->> for 128 vqs even though we normally use a couple. To do this, I needed
->> something similar to #1, but the problem is that the VHOST_RING_ENABLE
->> call would come too late.
->>
->> To try and balance #1 and #2, these patches just allow vhost-scsi
->> to setup a vq when userspace starts to config it. This allows the
->> driver to only fully setup (we still waste some memory to support older
->> setups but do not have to preallocate everything like before) what
->> is used plus I do not need to maintain 2 code paths.
->>
->> Note that in this posting I am also including additional patches
->> that create multiple vhost worker threads, because I wanted to see
->> if people felt that maybe to support that and for this enablement
->> issue we want a completely a new ioctl.
->>
->>
->> V2:
->> - fix use before set cpu var errors
->> - drop vhost_vq_is_setup
->> - include patches to do a worker thread per scsi IO vq
-> 
-> Stefan, Paolo, Jason any input?
-> 
+The iscsit_release_commands_from_conn() function does the following
+operations:
 
-Just a FYI there is a updated version of this patchset here:
+1) locks the cmd_lock spinlock
+2) Scans the list of commands and sets the CMD_T_FABRIC_STOP flag
+3) Releases the cmd_lock spinlock
+4) Rescans the list again and clears the i_conn_node link of each command
 
-https://patchwork.kernel.org/project/target-devel/list/?series68487
+If an abort task timer is fired between 3) and 4), it will find
+the CMD_T_FABRIC_STOP flag set and won't call list_del_init();
+therefore it may end up calling __iscsit_free_cmd() with a
+non-empty i_conn_node list, thus triggering the warning.
+
+Considering that:
+
+- we expect list_del_init() to be executed by
+  iscsit_release_commands_from_conn() when the CMD_T_FABRIC_STOP is set.
+- iscsit_aborted_task() is the only function that calls __iscsit_free_cmd()
+  directly, while all the other functions call iscsit_free_cmd().
+- the warning in __iscsit_free_cmd() is a duplicate (the same warning
+  can be found in iscsit_free_cmd().
+
+We can fix the bug by simply removing the warning from __iscsit_free_cmd()
+
+kernel: ------------[ cut here ]------------
+kernel: WARNING: CPU: 1 PID: 21173 at drivers/target/iscsi/iscsi_target_util.c:720 __iscsit_free_cmd+0x26e/0x290 [iscsi_target_mod]
+...
+kernel: CPU: 1 PID: 21173 Comm: kworker/u8:3 Kdump: loaded Not tainted 3.10.0-1062.4.1.el7.x86_64 #1
+kernel: Hardware name: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 09/17/2015
+kernel: Workqueue: tmr-user target_tmr_work [target_core_mod]
+kernel: Call Trace:
+kernel: [<ffffffff91d78ba4>] dump_stack+0x19/0x1b
+kernel: [<ffffffff9169a958>] __warn+0xd8/0x100
+kernel: [<ffffffff9169aa9d>] warn_slowpath_null+0x1d/0x20
+kernel: [<ffffffffc0a6f69e>] __iscsit_free_cmd+0x26e/0x290 [iscsi_target_mod]
+kernel: [<ffffffffc0a70bc4>] iscsit_aborted_task+0x64/0x70 [iscsi_target_mod]
+kernel: [<ffffffffc0a7830a>] lio_aborted_task+0x2a/0x30 [iscsi_target_mod]
+kernel: [<ffffffffc09fa516>] transport_cmd_finish_abort+0x66/0xb0 [target_core_mod]
+kernel: [<ffffffffc09f4d92>] core_tmr_abort_task+0x102/0x180 [target_core_mod]
+kernel: [<ffffffffc09f7bb2>] target_tmr_work+0x152/0x170 [target_core_mod]
+kernel: [<ffffffff916bd1df>] process_one_work+0x17f/0x440
+kernel: [<ffffffff916be2f6>] worker_thread+0x126/0x3c0
+kernel: [<ffffffff916be1d0>] ? manage_workers.isra.26+0x2a0/0x2a0
+kernel: [<ffffffff916c51b1>] kthread+0xd1/0xe0
+kernel: [<ffffffff916c50e0>] ? insert_kthread_work+0x40/0x40
+kernel: [<ffffffff91d8bd37>] ret_from_fork_nospec_begin+0x21/0x21
+kernel: [<ffffffff916c50e0>] ? insert_kthread_work+0x40/0x40
+kernel: ---[ end trace ed2119501826ec7a ]---
+
+
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/target/iscsi/iscsi_target_util.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+index 3082f5bde9fa..61233755ece0 100644
+--- a/drivers/target/iscsi/iscsi_target_util.c
++++ b/drivers/target/iscsi/iscsi_target_util.c
+@@ -741,8 +741,6 @@ void __iscsit_free_cmd(struct iscsi_cmd *cmd, bool check_queues)
+ {
+ 	struct iscsi_conn *conn = cmd->conn;
+ 
+-	WARN_ON(!list_empty(&cmd->i_conn_node));
+-
+ 	if (cmd->data_direction = DMA_TO_DEVICE) {
+ 		iscsit_stop_dataout_timer(cmd);
+ 		iscsit_free_r2ts_from_list(cmd);
+-- 
+2.26.2
