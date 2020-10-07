@@ -1,43 +1,26 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:50:29 +0000
-Subject: [PATCH RFC PKS/PMEM 54/58] powerpc: Utilize new kmap_thread()
-Message-Id: <20201009195033.3208459-55-ira.weiny@intel.com>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Wed, 07 Oct 2020 14:53:24 +0000
+Subject: [PATCH 0/2] fix race conditions with task aborts
+Message-Id: <20201007145326.56850-1-mlombard@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, linux-mmc@vger.kernel.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, xen-devel@lists.xenproject.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, linux-mtd@lists.infradead.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, bvanassche@acm.org, michael.christie@oracle.com
 
-From: Ira Weiny <ira.weiny@intel.com>
+This patchset fixes some possible race conditions when
+2 threads call iscsit_free_cmd()/__iscsit_free_cmd() at
+the same time.
 
-These kmap() calls are localized to a single thread.  To avoid the over
-head of global PKRS updates use the new kmap_thread() call.
+Maurizio Lombardi (2):
+  target: iscsi: prevent a race condition in iscsit_unmap_cmd()
+  target: iscsi: fix a race condition when aborting a task
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
----
- arch/powerpc/mm/mem.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/target/iscsi/iscsi_target_login.c | 1 +
+ drivers/target/iscsi/iscsi_target_util.c  | 7 ++++---
+ include/target/iscsi/iscsi_target_core.h  | 1 +
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 42e25874f5a8..6ef557b8dda6 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -573,9 +573,9 @@ void flush_icache_user_page(struct vm_area_struct *vma, struct page *page,
- {
- 	unsigned long maddr;
- 
--	maddr = (unsigned long) kmap(page) + (addr & ~PAGE_MASK);
-+	maddr = (unsigned long) kmap_thread(page) + (addr & ~PAGE_MASK);
- 	flush_icache_range(maddr, maddr + len);
--	kunmap(page);
-+	kunmap_thread(page);
- }
- 
- /*
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+2.26.2
