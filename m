@@ -1,93 +1,107 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Sat, 31 Oct 2020 23:32:08 +0000
-Subject: [PATCH v4 1/4] scsi: target: rename struct sense_info to sense_detail
-Message-Id: <20201031233211.5207-2-ddiss@suse.de>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Wed, 07 Oct 2020 20:54:47 +0000
+Subject: [PATCH 02/16] vhost: remove work arg from vhost_work_flush
+Message-Id: <1602104101-5592-3-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201031233211.5207-1-ddiss@suse.de>
-In-Reply-To: <20201031233211.5207-1-ddiss@suse.de>
+References: <1602104101-5592-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1602104101-5592-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>, Mike Christie <michael.christie@oracle.com>
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-This helps distinguish it from the SCSI sense INFORMATION field.
+vhost_work_flush doesn't do anything with the work arg. This patch drops
+it and then renames vhost_work_flush to vhost_work_dev_flush to reflect
+that the function flushes all the works in the dev and not just a
+specific queue or work item.
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Mike Christie <michael.christie@oracle.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Acked-by: Jason Wang <jasowang@redhat.com>
 ---
- drivers/target/target_core_transport.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ drivers/vhost/scsi.c  | 4 ++--
+ drivers/vhost/vhost.c | 8 ++++----
+ drivers/vhost/vhost.h | 2 +-
+ drivers/vhost/vsock.c | 2 +-
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index ff26ab0a5f60..caa3a7b34826 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -3094,14 +3094,14 @@ bool transport_wait_for_tasks(struct se_cmd *cmd)
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 0ea78d0..86617bb 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1370,8 +1370,8 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 	/* Flush both the vhost poll and vhost work */
+ 	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
+ 		vhost_scsi_flush_vq(vs, i);
+-	vhost_work_flush(&vs->dev, &vs->vs_completion_work);
+-	vhost_work_flush(&vs->dev, &vs->vs_event_work);
++	vhost_work_dev_flush(&vs->dev);
++	vhost_work_dev_flush(&vs->dev);
+ 
+ 	/* Wait for all reqs issued before the flush to be finished */
+ 	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
+diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+index 9ad45e1..fbb66f6 100644
+--- a/drivers/vhost/vhost.c
++++ b/drivers/vhost/vhost.c
+@@ -231,7 +231,7 @@ void vhost_poll_stop(struct vhost_poll *poll)
  }
- EXPORT_SYMBOL(transport_wait_for_tasks);
+ EXPORT_SYMBOL_GPL(vhost_poll_stop);
  
--struct sense_info {
-+struct sense_detail {
- 	u8 key;
- 	u8 asc;
- 	u8 ascq;
- 	bool add_sector_info;
- };
- 
--static const struct sense_info sense_info_table[] = {
-+static const struct sense_detail sense_detail_table[] = {
- 	[TCM_NO_SENSE] = {
- 		.key = NOT_READY
- 	},
-@@ -3261,39 +3261,39 @@ static const struct sense_info sense_info_table[] = {
-  */
- static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
+-void vhost_work_flush(struct vhost_dev *dev, struct vhost_work *work)
++void vhost_work_dev_flush(struct vhost_dev *dev)
  {
--	const struct sense_info *si;
-+	const struct sense_detail *sd;
- 	u8 *buffer = cmd->sense_buffer;
- 	int r = (__force int)reason;
- 	u8 key, asc, ascq;
- 	bool desc_format = target_sense_desc_format(cmd->se_dev);
+ 	struct vhost_flush_struct flush;
  
--	if (r < ARRAY_SIZE(sense_info_table) && sense_info_table[r].key)
--		si = &sense_info_table[r];
-+	if (r < ARRAY_SIZE(sense_detail_table) && sense_detail_table[r].key)
-+		sd = &sense_detail_table[r];
- 	else
--		si = &sense_info_table[(__force int)
-+		sd = &sense_detail_table[(__force int)
- 				       TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE];
- 
--	key = si->key;
-+	key = sd->key;
- 	if (reason = TCM_CHECK_CONDITION_UNIT_ATTENTION) {
- 		if (!core_scsi3_ua_for_check_condition(cmd, &key, &asc,
- 						       &ascq)) {
- 			cmd->scsi_status = SAM_STAT_BUSY;
- 			return;
- 		}
--	} else if (si->asc = 0) {
-+	} else if (sd->asc = 0) {
- 		WARN_ON_ONCE(cmd->scsi_asc = 0);
- 		asc = cmd->scsi_asc;
- 		ascq = cmd->scsi_ascq;
- 	} else {
--		asc = si->asc;
--		ascq = si->ascq;
-+		asc = sd->asc;
-+		ascq = sd->ascq;
+@@ -243,13 +243,13 @@ void vhost_work_flush(struct vhost_dev *dev, struct vhost_work *work)
+ 		wait_for_completion(&flush.wait_event);
  	}
+ }
+-EXPORT_SYMBOL_GPL(vhost_work_flush);
++EXPORT_SYMBOL_GPL(vhost_work_dev_flush);
  
- 	cmd->se_cmd_flags |= SCF_EMULATED_TASK_SENSE;
- 	cmd->scsi_status = SAM_STAT_CHECK_CONDITION;
- 	cmd->scsi_sense_length  = TRANSPORT_SENSE_BUFFER;
- 	scsi_build_sense_buffer(desc_format, buffer, key, asc, ascq);
--	if (si->add_sector_info)
-+	if (sd->add_sector_info)
- 		WARN_ON_ONCE(scsi_set_sense_information(buffer,
- 							cmd->scsi_sense_length,
- 							cmd->bad_sector) < 0);
+ /* Flush any work that has been scheduled. When calling this, don't hold any
+  * locks that are also used by the callback. */
+ void vhost_poll_flush(struct vhost_poll *poll)
+ {
+-	vhost_work_flush(poll->dev, &poll->work);
++	vhost_work_dev_flush(poll->dev);
+ }
+ EXPORT_SYMBOL_GPL(vhost_poll_flush);
+ 
+@@ -533,7 +533,7 @@ static int vhost_attach_cgroups(struct vhost_dev *dev)
+ 	attach.owner = current;
+ 	vhost_work_init(&attach.work, vhost_attach_cgroups_work);
+ 	vhost_work_queue(dev, &attach.work);
+-	vhost_work_flush(dev, &attach.work);
++	vhost_work_dev_flush(dev);
+ 	return attach.ret;
+ }
+ 
+diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
+index 9032d3c..11db183 100644
+--- a/drivers/vhost/vhost.h
++++ b/drivers/vhost/vhost.h
+@@ -46,7 +46,7 @@ void vhost_poll_init(struct vhost_poll *poll, vhost_work_fn_t fn,
+ void vhost_poll_stop(struct vhost_poll *poll);
+ void vhost_poll_flush(struct vhost_poll *poll);
+ void vhost_poll_queue(struct vhost_poll *poll);
+-void vhost_work_flush(struct vhost_dev *dev, struct vhost_work *work);
++void vhost_work_dev_flush(struct vhost_dev *dev);
+ long vhost_vring_ioctl(struct vhost_dev *d, unsigned int ioctl, void __user *argp);
+ 
+ struct vhost_log {
+diff --git a/drivers/vhost/vsock.c b/drivers/vhost/vsock.c
+index a483cec..f40205f 100644
+--- a/drivers/vhost/vsock.c
++++ b/drivers/vhost/vsock.c
+@@ -652,7 +652,7 @@ static void vhost_vsock_flush(struct vhost_vsock *vsock)
+ 	for (i = 0; i < ARRAY_SIZE(vsock->vqs); i++)
+ 		if (vsock->vqs[i].handle_kick)
+ 			vhost_poll_flush(&vsock->vqs[i].poll);
+-	vhost_work_flush(&vsock->dev, &vsock->send_pkt_work);
++	vhost_work_dev_flush(&vsock->dev);
+ }
+ 
+ static void vhost_vsock_reset_orphans(struct sock *sk)
 -- 
-2.26.2
+1.8.3.1
