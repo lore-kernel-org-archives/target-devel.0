@@ -1,48 +1,44 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Fri, 23 Oct 2020 16:15:47 +0000
-Subject: Re: [PATCH 04/17] vhost: prep vhost_dev_init users to handle failures
-Message-Id: <8663f5b8-d743-2a75-4bf1-350e3690957b@oracle.com>
+From: ira.weiny@intel.com
+Date: Fri, 09 Oct 2020 19:50:23 +0000
+Subject: [PATCH RFC PKS/PMEM 48/58] drivers/md: Utilize new kmap_thread()
+Message-Id: <20201009195033.3208459-49-ira.weiny@intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
- <1603326903-27052-5-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1603326903-27052-5-git-send-email-michael.christie@oracle.com>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Kent Overstreet <kent.overstreet@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, Coly Li <colyli@suse.de>, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
 
-On 10/21/20 7:34 PM, Mike Christie wrote:
-> diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-> index 86617bb..63ba363 100644
-> --- a/drivers/vhost/scsi.c
-> +++ b/drivers/vhost/scsi.c
-> @@ -1632,14 +1632,17 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
->   		vqs[i] = &vs->vqs[i].vq;
->   		vs->vqs[i].vq.handle_kick = vhost_scsi_handle_kick;
->   	}
-> -	vhost_dev_init(&vs->dev, vqs, VHOST_SCSI_MAX_VQ, UIO_MAXIOV,
-> -		       VHOST_SCSI_WEIGHT, 0, true, NULL);
-> +	if (vhost_dev_init(&vs->dev, vqs, VHOST_SCSI_MAX_VQ, UIO_MAXIOV,
-> +			   VHOST_SCSI_WEIGHT, 0, true, NULL))
+From: Ira Weiny <ira.weiny@intel.com>
 
+These kmap() calls are localized to a single thread.  To avoid the over
+head of global PKRS updates use the new kmap_thread() call.
 
-> diff --git a/drivers/vhost/vsock.c b/drivers/vhost/vsock.c
-> index f40205f..a1a35e1 100644
-> --- a/drivers/vhost/vsock.c
-> +++ b/drivers/vhost/vsock.c
-> @@ -630,9 +630,10 @@ static int vhost_vsock_dev_open(struct inode *inode, struct file *file)
->   	vsock->vqs[VSOCK_VQ_TX].handle_kick = vhost_vsock_handle_tx_kick;
->   	vsock->vqs[VSOCK_VQ_RX].handle_kick = vhost_vsock_handle_rx_kick;
->   
-> -	vhost_dev_init(&vsock->dev, vqs, ARRAY_SIZE(vsock->vqs),
-> -		       UIO_MAXIOV, VHOST_VSOCK_PKT_WEIGHT,
-> -		       VHOST_VSOCK_WEIGHT, true, NULL);
-> +	if (vhost_dev_init(&vsock->dev, vqs, ARRAY_SIZE(vsock->vqs),
-> +			   UIO_MAXIOV, VHOST_VSOCK_PKT_WEIGHT,
->
+Cc: Coly Li <colyli@suse.de> (maintainer:BCACHE (BLOCK LAYER CACHE))
+Cc: Kent Overstreet <kent.overstreet@gmail.com> (maintainer:BCACHE (BLOCK LAYER CACHE))
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+---
+ drivers/md/bcache/request.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Just giving myself a review comment, so it doesn't happen like last time 
-where multiple people waste their time and hit the same issue :)
-
-I will fix this one found by the kernel test robot and fix up a similar 
-scsi.c case where the return value is not propagated above.
+diff --git a/drivers/md/bcache/request.c b/drivers/md/bcache/request.c
+index c7cadaafa947..a4571f6d09dd 100644
+--- a/drivers/md/bcache/request.c
++++ b/drivers/md/bcache/request.c
+@@ -44,10 +44,10 @@ static void bio_csum(struct bio *bio, struct bkey *k)
+ 	uint64_t csum = 0;
+ 
+ 	bio_for_each_segment(bv, bio, iter) {
+-		void *d = kmap(bv.bv_page) + bv.bv_offset;
++		void *d = kmap_thread(bv.bv_page) + bv.bv_offset;
+ 
+ 		csum = bch_crc64_update(csum, d, bv.bv_len);
+-		kunmap(bv.bv_page);
++		kunmap_thread(bv.bv_page);
+ 	}
+ 
+ 	k->ptr[KEY_PTRS(k)] = csum & (~0ULL >> 1);
+-- 
+2.28.0.rc0.12.gb6a658bd00c9
