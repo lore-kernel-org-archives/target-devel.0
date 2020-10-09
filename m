@@ -1,104 +1,42 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Fri, 23 Oct 2020 16:21:18 +0000
-Subject: Re: [PATCH 04/16] vhost: prep vhost_dev_init users to handle failures
-Message-Id: <3361538b-15bf-fb92-040b-fd9c33370c70@oracle.com>
+From: ira.weiny@intel.com
+Date: Fri, 09 Oct 2020 19:49:59 +0000
+Subject: [PATCH RFC PKS/PMEM 24/58] fs/freevxfs: Utilize new kmap_thread()
+Message-Id: <20201009195033.3208459-25-ira.weiny@intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1602104101-5592-5-git-send-email-michael.christie@oracle.com>
- <20201009114126.GI1042@kadam> <20201023115635-mutt-send-email-mst@kernel.org>
-In-Reply-To: <20201023115635-mutt-send-email-mst@kernel.org>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Michael S. Tsirkin" <mst@redhat.com>, Dan Carpenter <dan.carpenter@oracle.com>
-Cc: kbuild@lists.01.org, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org, lkp@intel.com, kbuild-all@lists.01.org
+To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, cluster-devel@redhat.com, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, Christoph Hellwig <hch@infradead.org>, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-cifs@vger.kernel.org, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
 
-On 10/23/20 10:56 AM, Michael S. Tsirkin wrote:
-> On Fri, Oct 09, 2020 at 02:41:26PM +0300, Dan Carpenter wrote:
->> Hi Mike,
->>
->> url:    https://urldefense.com/v3/__https://github.com/0day-ci/linux/commits/Mike-Christie/vhost-fix-scsi-cmd-handling-and-IOPs/20201008-045802__;!!GqivPVa7Brio!PSUeg8MO8B2TLNpewKuGd0oWY8N3pkO7w9hbCh3xgWK3TgFsPr78zcIUZ8Orgxgaqydf$
->> base:   https://urldefense.com/v3/__https://git.kernel.org/pub/scm/linux/kernel/git/mst/vhost.git__;!!GqivPVa7Brio!PSUeg8MO8B2TLNpewKuGd0oWY8N3pkO7w9hbCh3xgWK3TgFsPr78zcIUZ8Org7WbKd27$  linux-next
->> config: x86_64-randconfig-m001-20201008 (attached as .config)
->> compiler: gcc-9 (Debian 9.3.0-15) 9.3.0
->>
->> If you fix the issue, kindly add following tag as appropriate
->> Reported-by: kernel test robot <lkp@intel.com>
->> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
->>
->> New smatch warnings:
->> drivers/vhost/vdpa.c:844 vhost_vdpa_open() error: uninitialized symbol 'r'.
->>
->> Old smatch warnings:
->> drivers/vhost/vdpa.c:436 vhost_vdpa_unlocked_ioctl() warn: maybe return -EFAULT instead of the bytes remaining?
->> drivers/vhost/vdpa.c:489 vhost_vdpa_unlocked_ioctl() warn: maybe return -EFAULT instead of the bytes remaining?
->>
->> vim +/r +844 drivers/vhost/vdpa.c
->>
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  793  static int vhost_vdpa_open(struct inode *inode, struct file *filep)
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  794  {
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  795  	struct vhost_vdpa *v;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  796  	struct vhost_dev *dev;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  797  	struct vhost_virtqueue **vqs;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  798  	int nvqs, i, r, opened;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  799
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  800  	v = container_of(inode->i_cdev, struct vhost_vdpa, cdev);
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  801
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  802  	opened = atomic_cmpxchg(&v->opened, 0, 1);
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  803  	if (opened)
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  804  		return -EBUSY;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  805
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  806  	nvqs = v->nvqs;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  807  	vhost_vdpa_reset(v);
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  808
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  809  	vqs = kmalloc_array(nvqs, sizeof(*vqs), GFP_KERNEL);
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  810  	if (!vqs) {
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  811  		r = -ENOMEM;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  812  		goto err;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  813  	}
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  814
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  815  	dev = &v->vdev;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  816  	for (i = 0; i < nvqs; i++) {
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  817  		vqs[i] = &v->vqs[i];
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  818  		vqs[i]->handle_kick = handle_vq_kick;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  819  	}
->> 7dc4d1082d406f3 Mike Christie 2020-10-07  820  	if (vhost_dev_init(dev, vqs, nvqs, 0, 0, 0, false,
->> 7dc4d1082d406f3 Mike Christie 2020-10-07  821  			   vhost_vdpa_process_iotlb_msg))
->> 7dc4d1082d406f3 Mike Christie 2020-10-07  822  		goto err_dev_init;
->>
->> "r" not set on this error path.
->>
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  823
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  824  	dev->iotlb = vhost_iotlb_alloc(0, 0);
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  825  	if (!dev->iotlb) {
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  826  		r = -ENOMEM;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  827  		goto err_init_iotlb;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  828  	}
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  829
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  830  	r = vhost_vdpa_alloc_domain(v);
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  831  	if (r)
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  832  		goto err_init_iotlb;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  833
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  834  	filep->private_data = v;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  835
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  836  	return 0;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  837
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  838  err_init_iotlb:
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  839  	vhost_dev_cleanup(&v->vdev);
->> 7dc4d1082d406f3 Mike Christie 2020-10-07  840  err_dev_init:
->> 37787e9f81e2e58 Mike Christie 2020-09-21  841  	kfree(vqs);
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  842  err:
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  843  	atomic_dec(&v->opened);
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26 @844  	return r;
->> 4c8cf31885f69e8 Tiwei Bie     2020-03-26  845  }
-> 
-> 
-> Yes looks like it would use r uninitialized ...
-> Mike?
-> 
+From: Ira Weiny <ira.weiny@intel.com>
 
-Ah sorry, I had posted a v3 of this patchset:
+The kmap() calls in this FS are localized to a single thread.  To avoid
+the over head of global PKRS updates use the new kmap_thread() call.
 
-https://patchwork.kernel.org/project/target-devel/list/?series68487
+Cc: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+---
+ fs/freevxfs/vxfs_immed.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-and I fixed that but there was another cases of uninitialized variable 
-that I missed. I fixed that up now, but have not posted an updated set.
+diff --git a/fs/freevxfs/vxfs_immed.c b/fs/freevxfs/vxfs_immed.c
+index bfc780c682fb..9c42fec4cd85 100644
+--- a/fs/freevxfs/vxfs_immed.c
++++ b/fs/freevxfs/vxfs_immed.c
+@@ -69,9 +69,9 @@ vxfs_immed_readpage(struct file *fp, struct page *pp)
+ 	u_int64_t	offset = (u_int64_t)pp->index << PAGE_SHIFT;
+ 	caddr_t		kaddr;
+ 
+-	kaddr = kmap(pp);
++	kaddr = kmap_thread(pp);
+ 	memcpy(kaddr, vip->vii_immed.vi_immed + offset, PAGE_SIZE);
+-	kunmap(pp);
++	kunmap_thread(pp);
+ 	
+ 	flush_dcache_page(pp);
+ 	SetPageUptodate(pp);
+-- 
+2.28.0.rc0.12.gb6a658bd00c9
