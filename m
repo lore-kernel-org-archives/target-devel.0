@@ -1,120 +1,213 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Mon, 26 Oct 2020 19:06:46 +0000
-Subject: [PATCH v2 5/5] scsi: target: return COMPARE AND WRITE miscompare offsets
-Message-Id: <20201026190646.8727-6-ddiss@suse.de>
+From: ira.weiny@intel.com
+Date: Fri, 09 Oct 2020 19:49:47 +0000
+Subject: [PATCH RFC PKS/PMEM 12/58] fs/afs: Utilize new kmap_thread()
+Message-Id: <20201009195033.3208459-13-ira.weiny@intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201026190646.8727-1-ddiss@suse.de>
-In-Reply-To: <20201026190646.8727-1-ddiss@suse.de>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, David Howells <dhowells@redhat.com>, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
 
-SBC-4 r15 5.3 COMPARE AND WRITE command states:
-  if the compare operation does not indicate a match, then terminate the
-  command with CHECK CONDITION status with the sense key set to
-  MISCOMPARE and the additional sense code set to MISCOMPARE DURING
-  VERIFY OPERATION. In the sense data (see 4.18 and SPC-5) the offset
-  from the start of the Data-Out Buffer to the first byte of data that
-  was not equal shall be reported in the INFORMATION field.
+From: Ira Weiny <ira.weiny@intel.com>
 
-This change implements the missing logic to report the miscompare offset
-in the sense data INFORMATION field.
+The kmap() calls in this FS are localized to a single thread.  To
+avoid the over head of global PKRS updates use the new kmap_thread()
+call.
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
+Cc: David Howells <dhowells@redhat.com>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/target/target_core_sbc.c       | 34 ++++++++++++++++++--------
- drivers/target/target_core_transport.c |  1 +
- 2 files changed, 25 insertions(+), 10 deletions(-)
+ fs/afs/dir.c      | 16 ++++++++--------
+ fs/afs/dir_edit.c | 16 ++++++++--------
+ fs/afs/mntpt.c    |  4 ++--
+ fs/afs/write.c    |  4 ++--
+ 4 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index 22d0cbba6ff3..0fa52a98d6cf 100644
---- a/drivers/target/target_core_sbc.c
-+++ b/drivers/target/target_core_sbc.c
-@@ -435,13 +435,13 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
- }
+diff --git a/fs/afs/dir.c b/fs/afs/dir.c
+index 1d2e61e0ab04..5d01cdb590de 100644
+--- a/fs/afs/dir.c
++++ b/fs/afs/dir.c
+@@ -127,14 +127,14 @@ static bool afs_dir_check_page(struct afs_vnode *dvnode, struct page *page,
+ 	qty /= sizeof(union afs_xdr_dir_block);
  
- /*
-- * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare return
-- * TCM_MISCOMPARE_VERIFY.
-+ * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare, fill
-+ * @miscmp_off and return TCM_MISCOMPARE_VERIFY.
-  */
- static sense_reason_t
- compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
- 			 struct scatterlist *cmp_sgl, unsigned int cmp_nents,
--			 unsigned int cmp_len)
-+			 unsigned int cmp_len, unsigned int *miscmp_off)
- {
- 	unsigned char *buf = NULL;
- 	struct scatterlist *sg;
-@@ -467,17 +467,20 @@ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
- 	 */
- 	offset = 0;
- 	for_each_sg(read_sgl, sg, read_nents, i) {
-+		unsigned int i;
- 		unsigned int len = min(sg->length, cmp_len);
- 		unsigned char *addr = kmap_atomic(sg_page(sg));
- 
--		if (memcmp(addr, buf + offset, len)) {
--			pr_warn("Detected MISCOMPARE for addr: %p buf: %p\n",
--				addr, buf + offset);
--			kunmap_atomic(addr);
-+		for (i = 0; i < len && addr[i] = buf[offset + i]; i++)
-+			;
-+		kunmap_atomic(addr);
-+		if (i < len) {
-+			*miscmp_off = offset + i;
-+			pr_warn("Detected MISCOMPARE at offset %u\n",
-+				*miscmp_off);
- 			ret = TCM_MISCOMPARE_VERIFY;
- 			goto out;
+ 	/* check them */
+-	dbuf = kmap(page);
++	dbuf = kmap_thread(page);
+ 	for (tmp = 0; tmp < qty; tmp++) {
+ 		if (dbuf->blocks[tmp].hdr.magic != AFS_DIR_MAGIC) {
+ 			printk("kAFS: %s(%lx): bad magic %d/%d is %04hx\n",
+ 			       __func__, dvnode->vfs_inode.i_ino, tmp, qty,
+ 			       ntohs(dbuf->blocks[tmp].hdr.magic));
+ 			trace_afs_dir_check_failed(dvnode, off, i_size);
+-			kunmap(page);
++			kunmap_thread(page);
+ 			trace_afs_file_error(dvnode, -EIO, afs_file_error_dir_bad_magic);
+ 			goto error;
  		}
--		kunmap_atomic(addr);
+@@ -146,7 +146,7 @@ static bool afs_dir_check_page(struct afs_vnode *dvnode, struct page *page,
+ 		((u8 *)&dbuf->blocks[tmp])[AFS_DIR_BLOCK_SIZE - 1] = 0;
+ 	}
  
- 		offset += len;
- 		cmp_len -= len;
-@@ -501,6 +504,7 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
- 	unsigned int len;
- 	unsigned int block_size = dev->dev_attrib.block_size;
- 	unsigned int compare_len = (cmd->t_task_nolb * block_size);
-+	unsigned int miscmp_off = 0;
- 	sense_reason_t ret = TCM_NO_SENSE;
- 	int i;
+-	kunmap(page);
++	kunmap_thread(page);
  
-@@ -532,8 +536,18 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
- 				       cmd->t_bidi_data_nents,
- 				       cmd->t_data_sg,
- 				       cmd->t_data_nents,
--				       compare_len);
--	if (ret)
-+				       compare_len,
-+				       &miscmp_off);
-+	if (ret = TCM_MISCOMPARE_VERIFY) {
-+		/*
-+		 * SBC-4 r15: 5.3 COMPARE AND WRITE command
-+		 * In the sense data (see 4.18 and SPC-5) the offset from the
-+		 * start of the Data-Out Buffer to the first byte of data that
-+		 * was not equal shall be reported in the INFORMATION field.
-+		 */
-+		cmd->sense_info = miscmp_off;
-+		goto out;
-+	} else if (ret)
- 		goto out;
+ checked:
+ 	afs_stat_v(dvnode, n_read_dir);
+@@ -177,13 +177,13 @@ static bool afs_dir_check_pages(struct afs_vnode *dvnode, struct afs_read *req)
+ 		req->pos, req->index, req->nr_pages, req->offset);
  
- 	if (sg_alloc_table(&write_tbl, cmd->t_data_nents, GFP_KERNEL) < 0) {
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index c6f45c12d564..693ed3fe4388 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -3196,6 +3196,7 @@ static const struct sense_detail sense_detail_table[] = {
- 		.key = MISCOMPARE,
- 		.asc = 0x1d, /* MISCOMPARE DURING VERIFY OPERATION */
- 		.ascq = 0x00,
-+		.add_sense_info = true,
- 	},
- 	[TCM_LOGICAL_BLOCK_GUARD_CHECK_FAILED] = {
- 		.key = ABORTED_COMMAND,
+ 	for (i = 0; i < req->nr_pages; i++) {
+-		dbuf = kmap(req->pages[i]);
++		dbuf = kmap_thread(req->pages[i]);
+ 		for (j = 0; j < qty; j++) {
+ 			union afs_xdr_dir_block *block = &dbuf->blocks[j];
+ 
+ 			pr_warn("[%02x] %32phN\n", i * qty + j, block);
+ 		}
+-		kunmap(req->pages[i]);
++		kunmap_thread(req->pages[i]);
+ 	}
+ 	return false;
+ }
+@@ -481,7 +481,7 @@ static int afs_dir_iterate(struct inode *dir, struct dir_context *ctx,
+ 
+ 		limit = blkoff & ~(PAGE_SIZE - 1);
+ 
+-		dbuf = kmap(page);
++		dbuf = kmap_thread(page);
+ 
+ 		/* deal with the individual blocks stashed on this page */
+ 		do {
+@@ -489,7 +489,7 @@ static int afs_dir_iterate(struct inode *dir, struct dir_context *ctx,
+ 					       sizeof(union afs_xdr_dir_block)];
+ 			ret = afs_dir_iterate_block(dvnode, ctx, dblock, blkoff);
+ 			if (ret != 1) {
+-				kunmap(page);
++				kunmap_thread(page);
+ 				goto out;
+ 			}
+ 
+@@ -497,7 +497,7 @@ static int afs_dir_iterate(struct inode *dir, struct dir_context *ctx,
+ 
+ 		} while (ctx->pos < dir->i_size && blkoff < limit);
+ 
+-		kunmap(page);
++		kunmap_thread(page);
+ 		ret = 0;
+ 	}
+ 
+diff --git a/fs/afs/dir_edit.c b/fs/afs/dir_edit.c
+index b108528bf010..35ed6828e205 100644
+--- a/fs/afs/dir_edit.c
++++ b/fs/afs/dir_edit.c
+@@ -218,7 +218,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
+ 	need_slots = round_up(12 + name->len + 1 + 4, AFS_DIR_DIRENT_SIZE);
+ 	need_slots /= AFS_DIR_DIRENT_SIZE;
+ 
+-	meta_page = kmap(page0);
++	meta_page = kmap_thread(page0);
+ 	meta = &meta_page->blocks[0];
+ 	if (i_size = 0)
+ 		goto new_directory;
+@@ -247,7 +247,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
+ 				set_page_private(page, 1);
+ 				SetPagePrivate(page);
+ 			}
+-			dir_page = kmap(page);
++			dir_page = kmap_thread(page);
+ 		}
+ 
+ 		/* Abandon the edit if we got a callback break. */
+@@ -284,7 +284,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
+ 
+ 		if (page != page0) {
+ 			unlock_page(page);
+-			kunmap(page);
++			kunmap_thread(page);
+ 			put_page(page);
+ 		}
+ 	}
+@@ -323,7 +323,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
+ 	afs_set_contig_bits(block, slot, need_slots);
+ 	if (page != page0) {
+ 		unlock_page(page);
+-		kunmap(page);
++		kunmap_thread(page);
+ 		put_page(page);
+ 	}
+ 
+@@ -337,7 +337,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
+ 
+ out_unmap:
+ 	unlock_page(page0);
+-	kunmap(page0);
++	kunmap_thread(page0);
+ 	put_page(page0);
+ 	_leave("");
+ 	return;
+@@ -346,7 +346,7 @@ void afs_edit_dir_add(struct afs_vnode *vnode,
+ 	trace_afs_edit_dir(vnode, why, afs_edit_dir_create_inval, 0, 0, 0, 0, name->name);
+ 	clear_bit(AFS_VNODE_DIR_VALID, &vnode->flags);
+ 	if (page != page0) {
+-		kunmap(page);
++		kunmap_thread(page);
+ 		put_page(page);
+ 	}
+ 	goto out_unmap;
+@@ -398,7 +398,7 @@ void afs_edit_dir_remove(struct afs_vnode *vnode,
+ 	need_slots = round_up(12 + name->len + 1 + 4, AFS_DIR_DIRENT_SIZE);
+ 	need_slots /= AFS_DIR_DIRENT_SIZE;
+ 
+-	meta_page = kmap(page0);
++	meta_page = kmap_thread(page0);
+ 	meta = &meta_page->blocks[0];
+ 
+ 	/* Find a page that has sufficient slots available.  Each VM page
+@@ -410,7 +410,7 @@ void afs_edit_dir_remove(struct afs_vnode *vnode,
+ 			page = find_lock_page(vnode->vfs_inode.i_mapping, index);
+ 			if (!page)
+ 				goto error;
+-			dir_page = kmap(page);
++			dir_page = kmap_thread(page);
+ 		} else {
+ 			page = page0;
+ 			dir_page = meta_page;
+diff --git a/fs/afs/mntpt.c b/fs/afs/mntpt.c
+index 79bc5f1338ed..562454e2fd5c 100644
+--- a/fs/afs/mntpt.c
++++ b/fs/afs/mntpt.c
+@@ -139,11 +139,11 @@ static int afs_mntpt_set_params(struct fs_context *fc, struct dentry *mntpt)
+ 			return ret;
+ 		}
+ 
+-		buf = kmap(page);
++		buf = kmap_thread(page);
+ 		ret = -EINVAL;
+ 		if (buf[size - 1] = '.')
+ 			ret = vfs_parse_fs_string(fc, "source", buf, size - 1);
+-		kunmap(page);
++		kunmap_thread(page);
+ 		put_page(page);
+ 		if (ret < 0)
+ 			return ret;
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index 4b2265cb1891..c56e5b4db4ae 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -38,9 +38,9 @@ static int afs_fill_page(struct afs_vnode *vnode, struct key *key,
+ 	if (pos >= vnode->vfs_inode.i_size) {
+ 		p = pos & ~PAGE_MASK;
+ 		ASSERTCMP(p + len, <=, PAGE_SIZE);
+-		data = kmap(page);
++		data = kmap_thread(page);
+ 		memset(data + p, 0, len);
+-		kunmap(page);
++		kunmap_thread(page);
+ 		return 0;
+ 	}
+ 
 -- 
-2.26.2
+2.28.0.rc0.12.gb6a658bd00c9
