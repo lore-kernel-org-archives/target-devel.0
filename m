@@ -1,7 +1,7 @@
 From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:49:41 +0000
-Subject: [PATCH RFC PKS/PMEM 06/58] kmap: Introduce k[un]map_thread debugging
-Message-Id: <20201009195033.3208459-7-ira.weiny@intel.com>
+Date: Fri, 09 Oct 2020 19:49:49 +0000
+Subject: [PATCH RFC PKS/PMEM 14/58] fs/cifs: Utilize new kmap_thread()
+Message-Id: <20201009195033.3208459-15-ira.weiny@intel.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
@@ -9,241 +9,131 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, Ben Segall <bsegall@google.com>, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, io-uring@vger.kernel.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, Mel Gorman <mgorman@suse.de>, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-afs@lists.infradead.org, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, Steve French <sfrench@samba.org>, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-Most kmap() callers use the map within a single thread and have no need
-for the protection domain to be enabled globally.
+The kmap() calls in this FS are localized to a single thread.  To avoid
+the over head of global PKRS updates use the new kmap_thread() call.
 
-To differentiate these kmap users, new k[un]map_thread() calls were
-introduced which are thread local.
-
-To aid in debugging the new use of kmap_thread(), add a reference count,
-a check on that count, and tracing to ID where mapping errors occur.
-
-Cc: Juri Lelli <juri.lelli@redhat.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ben Segall <bsegall@google.com>
-Cc: Mel Gorman <mgorman@suse.de>
+Cc: Steve French <sfrench@samba.org>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- include/linux/highmem.h            |  5 +++
- include/linux/sched.h              |  5 +++
- include/trace/events/kmap_thread.h | 56 ++++++++++++++++++++++++++++++
- init/init_task.c                   |  3 ++
- kernel/fork.c                      | 15 ++++++++
- lib/Kconfig.debug                  |  8 +++++
- mm/debug.c                         | 23 ++++++++++++
- 7 files changed, 115 insertions(+)
- create mode 100644 include/trace/events/kmap_thread.h
+ fs/cifs/cifsencrypt.c |  6 +++---
+ fs/cifs/file.c        | 16 ++++++++--------
+ fs/cifs/smb2ops.c     |  8 ++++----
+ 3 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index ef7813544719..22d1c000802e 100644
---- a/include/linux/highmem.h
-+++ b/include/linux/highmem.h
-@@ -247,6 +247,10 @@ static inline void kunmap(struct page *page)
- 	__kunmap(page, true);
+diff --git a/fs/cifs/cifsencrypt.c b/fs/cifs/cifsencrypt.c
+index 9daa256f69d4..2f8232d01a56 100644
+--- a/fs/cifs/cifsencrypt.c
++++ b/fs/cifs/cifsencrypt.c
+@@ -82,17 +82,17 @@ int __cifs_calc_signature(struct smb_rqst *rqst,
+ 
+ 		rqst_page_get_length(rqst, i, &len, &offset);
+ 
+-		kaddr = (char *) kmap(rqst->rq_pages[i]) + offset;
++		kaddr = (char *) kmap_thread(rqst->rq_pages[i]) + offset;
+ 
+ 		rc = crypto_shash_update(shash, kaddr, len);
+ 		if (rc) {
+ 			cifs_dbg(VFS, "%s: Could not update with payload\n",
+ 				 __func__);
+-			kunmap(rqst->rq_pages[i]);
++			kunmap_thread(rqst->rq_pages[i]);
+ 			return rc;
+ 		}
+ 
+-		kunmap(rqst->rq_pages[i]);
++		kunmap_thread(rqst->rq_pages[i]);
+ 	}
+ 
+ 	rc = crypto_shash_final(shash, signature);
+diff --git a/fs/cifs/file.c b/fs/cifs/file.c
+index be46fab4c96d..6db2caab8852 100644
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -2145,17 +2145,17 @@ static int cifs_partialpagewrite(struct page *page, unsigned from, unsigned to)
+ 	inode = page->mapping->host;
+ 
+ 	offset += (loff_t)from;
+-	write_data = kmap(page);
++	write_data = kmap_thread(page);
+ 	write_data += from;
+ 
+ 	if ((to > PAGE_SIZE) || (from > to)) {
+-		kunmap(page);
++		kunmap_thread(page);
+ 		return -EIO;
+ 	}
+ 
+ 	/* racing with truncate? */
+ 	if (offset > mapping->host->i_size) {
+-		kunmap(page);
++		kunmap_thread(page);
+ 		return 0; /* don't care */
+ 	}
+ 
+@@ -2183,7 +2183,7 @@ static int cifs_partialpagewrite(struct page *page, unsigned from, unsigned to)
+ 			rc = -EIO;
+ 	}
+ 
+-	kunmap(page);
++	kunmap_thread(page);
+ 	return rc;
  }
  
-+#ifdef CONFIG_DEBUG_KMAP_THREAD
-+void *kmap_thread(struct page *page);
-+void kunmap_thread(struct page *page);
-+#else
- static inline void *kmap_thread(struct page *page)
- {
- 	return __kmap(page, false);
-@@ -255,6 +259,7 @@ static inline void kunmap_thread(struct page *page)
- {
- 	__kunmap(page, false);
- }
-+#endif
+@@ -2559,10 +2559,10 @@ static int cifs_write_end(struct file *file, struct address_space *mapping,
+ 		   known which we might as well	leverage */
+ 		/* BB check if anything else missing out of ppw
+ 		   such as updating last write time */
+-		page_data = kmap(page);
++		page_data = kmap_thread(page);
+ 		rc = cifs_write(cfile, pid, page_data + offset, copied, &pos);
+ 		/* if (rc < 0) should we set writebehind rc? */
+-		kunmap(page);
++		kunmap_thread(page);
  
- /*
-  * Prevent people trying to call kunmap_atomic() as if it were kunmap()
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 25d97ab6c757..4627ea4a49e6 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1318,6 +1318,11 @@ struct task_struct {
- #ifdef CONFIG_ZONE_DEVICE_ACCESS_PROTECTION
- 	unsigned int			dev_page_access_ref;
- #endif
-+
-+#ifdef CONFIG_DEBUG_KMAP_THREAD
-+	unsigned int			kmap_thread_cnt;
-+#endif
-+
- 	/*
- 	 * New fields for task_struct should be added above here, so that
- 	 * they are included in the randomized portion of task_struct.
-diff --git a/include/trace/events/kmap_thread.h b/include/trace/events/kmap_thread.h
-new file mode 100644
-index 000000000000..e7143cfe0daf
---- /dev/null
-+++ b/include/trace/events/kmap_thread.h
-@@ -0,0 +1,56 @@
-+/* SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB */
-+
-+/*
-+ * Copyright (c) 2020 Intel Corporation.  All rights reserved.
-+ *
-+ */
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM kmap_thread
-+
-+#if !defined(_TRACE_KMAP_THREAD_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_KMAP_THREAD_H
-+
-+#include <linux/tracepoint.h>
-+
-+DECLARE_EVENT_CLASS(kmap_thread_template,
-+	TP_PROTO(struct task_struct *tsk, struct page *page,
-+		 void *caller_addr, int cnt),
-+	TP_ARGS(tsk, page, caller_addr, cnt),
-+
-+	TP_STRUCT__entry(
-+		__field(int, pid)
-+		__field(struct page *, page)
-+		__field(void *, caller_addr)
-+		__field(int, cnt)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->pid = tsk->pid;
-+		__entry->page = page;
-+		__entry->caller_addr = caller_addr;
-+		__entry->cnt = cnt;
-+	),
-+
-+	TP_printk("PID %d; (%d) %pS %p",
-+		__entry->pid,
-+		__entry->cnt,
-+		__entry->caller_addr,
-+		__entry->page
-+	)
-+);
-+
-+DEFINE_EVENT(kmap_thread_template, kmap_thread,
-+	TP_PROTO(struct task_struct *tsk, struct page *page,
-+		 void *caller_addr, int cnt),
-+	TP_ARGS(tsk, page, caller_addr, cnt));
-+
-+DEFINE_EVENT(kmap_thread_template, kunmap_thread,
-+	TP_PROTO(struct task_struct *tsk, struct page *page,
-+		 void *caller_addr, int cnt),
-+	TP_ARGS(tsk, page, caller_addr, cnt));
-+
-+
-+#endif /* _TRACE_KMAP_THREAD_H */
-+
-+#include <trace/define_trace.h>
-diff --git a/init/init_task.c b/init/init_task.c
-index 9b39f25de59b..19f09965eb34 100644
---- a/init/init_task.c
-+++ b/init/init_task.c
-@@ -212,6 +212,9 @@ struct task_struct init_task
- #ifdef CONFIG_ZONE_DEVICE_ACCESS_PROTECTION
- 	.dev_page_access_ref = 0,
- #endif
-+#ifdef CONFIG_DEBUG_KMAP_THREAD
-+	.kmap_thread_cnt = 0,
-+#endif
- };
- EXPORT_SYMBOL(init_task);
+ 		free_xid(xid);
+ 	} else {
+@@ -4511,7 +4511,7 @@ static int cifs_readpage_worker(struct file *file, struct page *page,
+ 	if (rc = 0)
+ 		goto read_complete;
  
-diff --git a/kernel/fork.c b/kernel/fork.c
-index b6a3ee328a89..2c66e49b7614 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -722,6 +722,17 @@ static inline void put_signal_struct(struct signal_struct *sig)
- 		free_signal_struct(sig);
- }
+-	read_data = kmap(page);
++	read_data = kmap_thread(page);
+ 	/* for reads over a certain size could initiate async read ahead */
  
-+#ifdef CONFIG_DEBUG_KMAP_THREAD
-+static void check_outstanding_kmap_thread(struct task_struct *tsk)
-+{
-+	if (tsk->kmap_thread_cnt)
-+		pr_warn(KERN_ERR "WARNING: PID %d; Failed to kunmap_thread() [cnt %d]\n",
-+			tsk->pid, tsk->kmap_thread_cnt);
-+}
-+#else
-+static void check_outstanding_kmap_thread(struct task_struct *tsk) { }
-+#endif
-+
- void __put_task_struct(struct task_struct *tsk)
- {
- 	WARN_ON(!tsk->exit_state);
-@@ -734,6 +745,7 @@ void __put_task_struct(struct task_struct *tsk)
- 	exit_creds(tsk);
- 	delayacct_tsk_free(tsk);
- 	put_signal_struct(tsk->signal);
-+	check_outstanding_kmap_thread(tsk);
+ 	rc = cifs_read(file, read_data, PAGE_SIZE, poffset);
+@@ -4540,7 +4540,7 @@ static int cifs_readpage_worker(struct file *file, struct page *page,
+ 	rc = 0;
  
- 	if (!profile_handoff_task(tsk))
- 		free_task(tsk);
-@@ -943,6 +955,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
- #endif
- #ifdef CONFIG_ZONE_DEVICE_ACCESS_PROTECTION
- 	tsk->dev_page_access_ref = 0;
-+#endif
-+#ifdef CONFIG_DEBUG_KMAP_THREAD
-+	tsk->kmap_thread_cnt = 0;
- #endif
- 	return tsk;
+ io_error:
+-	kunmap(page);
++	kunmap_thread(page);
+ 	unlock_page(page);
  
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index f015c09ba5a1..6507b43d5b0c 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -858,6 +858,14 @@ config DEBUG_HIGHMEM
- 	  This option enables additional error checking for high memory
- 	  systems.  Disable for production systems.
+ read_complete:
+diff --git a/fs/cifs/smb2ops.c b/fs/cifs/smb2ops.c
+index 32f90dc82c84..a3e7ebab38b6 100644
+--- a/fs/cifs/smb2ops.c
++++ b/fs/cifs/smb2ops.c
+@@ -4068,12 +4068,12 @@ smb3_init_transform_rq(struct TCP_Server_Info *server, int num_rqst,
  
-+config DEBUG_KMAP_THREAD
-+	bool "Kmap debugging"
-+	depends on DEBUG_KERNEL
-+	help
-+	  This option enables additional error checking for kernel mapping code
-+	  specifically the k[un]map_thread() calls.  Disable for production
-+	  systems.
-+
- config HAVE_DEBUG_STACKOVERFLOW
- 	bool
+ 			rqst_page_get_length(&new_rq[i], j, &len, &offset);
  
-diff --git a/mm/debug.c b/mm/debug.c
-index ca8d1cacdecc..68d186f3570e 100644
---- a/mm/debug.c
-+++ b/mm/debug.c
-@@ -320,3 +320,26 @@ void page_init_poison(struct page *page, size_t size)
- }
- EXPORT_SYMBOL_GPL(page_init_poison);
- #endif		/* CONFIG_DEBUG_VM */
-+
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/kmap_thread.h>
-+
-+#ifdef CONFIG_DEBUG_KMAP_THREAD
-+void *kmap_thread(struct page *page)
-+{
-+	trace_kmap_thread(current, page, __builtin_return_address(0),
-+			  current->kmap_thread_cnt);
-+	current->kmap_thread_cnt++;
-+	return __kmap(page, false);
-+}
-+EXPORT_SYMBOL_GPL(kmap_thread);
-+
-+void kunmap_thread(struct page *page)
-+{
-+	__kunmap(page, false);
-+	current->kmap_thread_cnt--;
-+	trace_kunmap_thread(current, page, __builtin_return_address(0),
-+			    current->kmap_thread_cnt);
-+}
-+EXPORT_SYMBOL_GPL(kunmap_thread);
-+#endif
+-			dst = (char *) kmap(new_rq[i].rq_pages[j]) + offset;
+-			src = (char *) kmap(old_rq[i - 1].rq_pages[j]) + offset;
++			dst = (char *) kmap_thread(new_rq[i].rq_pages[j]) + offset;
++			src = (char *) kmap_thread(old_rq[i - 1].rq_pages[j]) + offset;
+ 
+ 			memcpy(dst, src, len);
+-			kunmap(new_rq[i].rq_pages[j]);
+-			kunmap(old_rq[i - 1].rq_pages[j]);
++			kunmap_thread(new_rq[i].rq_pages[j]);
++			kunmap_thread(old_rq[i - 1].rq_pages[j]);
+ 		}
+ 	}
+ 
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
