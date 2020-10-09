@@ -1,113 +1,66 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Mon, 26 Oct 2020 17:57:57 +0000
-Subject: Re: [PATCH 4/5] scsi: target: split out COMPARE AND WRITE memcmp into helper
-Message-Id: <20201026185757.7f4b2c12@suse.de>
+From: ira.weiny@intel.com
+Date: Fri, 09 Oct 2020 19:50:26 +0000
+Subject: [PATCH RFC PKS/PMEM 51/58] kernel: Utilize new kmap_thread()
+Message-Id: <20201009195033.3208459-52-ira.weiny@intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201023205723.17880-1-ddiss@suse.de>
-        <20201023205723.17880-5-ddiss@suse.de>
-        <34b6d335-7f72-4ebc-f3b3-873d6d82e4bc@gmail.com>
-In-Reply-To: <34b6d335-7f72-4ebc-f3b3-873d6d82e4bc@gmail.com>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bodo Stroesser <bostroesser@gmail.com>
-Cc: target-devel@vger.kernel.org, Douglas Gilbert <dgilbert@interlog.com>, linux-scsi@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, Eric Biederman <ebiederm@xmission.com>, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
 
-Hi Bodo,
+From: Ira Weiny <ira.weiny@intel.com>
 
-On Mon, 26 Oct 2020 17:44:50 +0100, Bodo Stroesser wrote:
+This kmap() call is localized to a single thread.  To avoid the over
+head of global PKRS updates use the new kmap_thread() call.
 
-> Am 23.10.20 um 22:57 schrieb David Disseldorp:
-> > In preparation for finding and returning the miscompare offset.
-> > 
-> > Signed-off-by: David Disseldorp <ddiss@suse.de>
-> > ---
-> >   drivers/target/target_core_sbc.c | 117 ++++++++++++++++++-------------
-> >   1 file changed, 67 insertions(+), 50 deletions(-)
-> > 
-> > diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-> > index 5f77dd95f1b9..79216d0355e7 100644
-> > --- a/drivers/target/target_core_sbc.c
-> > +++ b/drivers/target/target_core_sbc.c
-> > @@ -434,20 +434,77 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
-> >   	return ret;
-> >   }
-> >   
-> > +/*
-> > + * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare return
-> > + * TCM_MISCOMPARE_VERIFY.
-> > + */
-> > +static sense_reason_t
-> > +compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
-> > +			 struct scatterlist *cmp_sgl, unsigned int cmp_nents,
-> > +			 unsigned int cmp_len)
-> > +{
-> > +	unsigned char *buf = NULL;
-> > +	struct scatterlist *sg;
-> > +	sense_reason_t ret;
-> > +	unsigned int offset;
-> > +	size_t rc;
-> > +	int i;
-> > +
-> > +	buf = kzalloc(cmp_len, GFP_KERNEL);
-> > +	if (!buf) {
-> > +		pr_err("Unable to allocate compare_and_write buf\n");
-> > +		ret = TCM_OUT_OF_RESOURCES;
-> > +		goto out;
-> > +	}
-> > +
-> > +	rc = sg_copy_to_buffer(cmp_sgl, cmp_nents, buf, cmp_len);
-> > +	if (!rc) {
-> > +		pr_err("sg_copy_to_buffer() failed for compare_and_write\n");
-> > +		ret = TCM_OUT_OF_RESOURCES;
-> > +		goto out;
-> > +	}
-> > +	/*
-> > +	 * Compare SCSI READ payload against verify payload
-> > +	 */
-> > +	offset = 0;
-> > +	for_each_sg(read_sgl, sg, read_nents, i) {
-> > +		unsigned int len = min(sg->length, cmp_len);
-> > +		unsigned char *addr = kmap_atomic(sg_page(sg));
-> > +
-> > +		if (memcmp(addr, buf + offset, len)) {
-> > +			pr_warn("Detected MISCOMPARE for addr: %p buf: %p\n",
-> > +				addr, buf + offset);
-> > +			kunmap_atomic(addr);
-> > +			ret = TCM_MISCOMPARE_VERIFY;
-> > +			goto out;
-> > +		}
-> > +		kunmap_atomic(addr);
-> > +
-> > +		offset += len;
-> > +		cmp_len -= len;
-> > +		if (!cmp_len)
-> > +			break;
-> > +	}
-> > +	pr_debug("COMPARE AND WRITE read data matches compare data\n");
-> > +	ret = TCM_NO_SENSE;
-> > +out:
-> > +	kfree(buf);
-> > +	return ret;
-> > +}
-> > +  
-> 
-> Since you are going to split out a new helper, did you consider to re-write helper's code to avoid the intermediate buffer?
-> 
-> Douglas Gilbert currently tries to add new functions to lib/scatterlist.c
-> One of them is sgl_compare_sgl, which directly compares content of two sg lists:
->    https://patchwork.kernel.org/project/linux-block/patch/20201019191928.77845-4-dgilbert@interlog.com/
-> 
-> This code - based on the sg_miter_* calls - works without intermediate buffer.
-> Maybe your helper could use similar code or you could even call Douglas' helper, if he can enhance it to
-> (optionally) return the miscompare offset.
+Cc: Eric Biederman <ebiederm@xmission.com>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+---
+ kernel/kexec_core.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Interesting, thanks for the heads-up. Dropping the intermediate compare
-buffer would be good, but I think this optimization should be left for a
-separate patchset, at least until sgl_compare_sgl() lands in mainline.
-LIO currently only supports 1-block compare-and-write requests, so the
-performance benefits would likely only be modest.
-@Douglas: would you be open to returning the miscompare offset from
-sgl_compare_sgl()?
-
-Cheers, David
+diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
+index c19c0dad1ebe..272a9920c0d6 100644
+--- a/kernel/kexec_core.c
++++ b/kernel/kexec_core.c
+@@ -815,7 +815,7 @@ static int kimage_load_normal_segment(struct kimage *image,
+ 		if (result < 0)
+ 			goto out;
+ 
+-		ptr = kmap(page);
++		ptr = kmap_thread(page);
+ 		/* Start with a clear page */
+ 		clear_page(ptr);
+ 		ptr += maddr & ~PAGE_MASK;
+@@ -828,7 +828,7 @@ static int kimage_load_normal_segment(struct kimage *image,
+ 			memcpy(ptr, kbuf, uchunk);
+ 		else
+ 			result = copy_from_user(ptr, buf, uchunk);
+-		kunmap(page);
++		kunmap_thread(page);
+ 		if (result) {
+ 			result = -EFAULT;
+ 			goto out;
+@@ -879,7 +879,7 @@ static int kimage_load_crash_segment(struct kimage *image,
+ 			goto out;
+ 		}
+ 		arch_kexec_post_alloc_pages(page_address(page), 1, 0);
+-		ptr = kmap(page);
++		ptr = kmap_thread(page);
+ 		ptr += maddr & ~PAGE_MASK;
+ 		mchunk = min_t(size_t, mbytes,
+ 				PAGE_SIZE - (maddr & ~PAGE_MASK));
+@@ -895,7 +895,7 @@ static int kimage_load_crash_segment(struct kimage *image,
+ 		else
+ 			result = copy_from_user(ptr, buf, uchunk);
+ 		kexec_flush_icache_page(page);
+-		kunmap(page);
++		kunmap_thread(page);
+ 		arch_kexec_pre_free_pages(page_address(page), 1);
+ 		if (result) {
+ 			result = -EFAULT;
+-- 
+2.28.0.rc0.12.gb6a658bd00c9
