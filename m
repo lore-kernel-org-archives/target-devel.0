@@ -1,93 +1,47 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 30 Oct 2020 21:39:28 +0000
-Subject: [PATCH v3 1/4] scsi: target: rename struct sense_info to sense_detail
-Message-Id: <20201030213931.10720-2-ddiss@suse.de>
+From: ira.weiny@intel.com
+Date: Fri, 09 Oct 2020 19:50:13 +0000
+Subject: [PATCH RFC PKS/PMEM 38/58] fs/isofs: Utilize new kmap_thread()
+Message-Id: <20201009195033.3208459-39-ira.weiny@intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201030213931.10720-1-ddiss@suse.de>
-In-Reply-To: <20201030213931.10720-1-ddiss@suse.de>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>, Mike Christie <michael.christie@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
 
-This helps distinguish it from the SCSI sense INFORMATION field.
+From: Ira Weiny <ira.weiny@intel.com>
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Mike Christie <michael.christie@oracle.com>
+These kmap() calls are localized to a single thread.  To avoid the over head of
+global PKRS updates use the new kmap_thread() call.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/target/target_core_transport.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ fs/isofs/compress.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index ff26ab0a5f60..caa3a7b34826 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -3094,14 +3094,14 @@ bool transport_wait_for_tasks(struct se_cmd *cmd)
- }
- EXPORT_SYMBOL(transport_wait_for_tasks);
- 
--struct sense_info {
-+struct sense_detail {
- 	u8 key;
- 	u8 asc;
- 	u8 ascq;
- 	bool add_sector_info;
- };
- 
--static const struct sense_info sense_info_table[] = {
-+static const struct sense_detail sense_detail_table[] = {
- 	[TCM_NO_SENSE] = {
- 		.key = NOT_READY
- 	},
-@@ -3261,39 +3261,39 @@ static const struct sense_info sense_info_table[] = {
-  */
- static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
- {
--	const struct sense_info *si;
-+	const struct sense_detail *sd;
- 	u8 *buffer = cmd->sense_buffer;
- 	int r = (__force int)reason;
- 	u8 key, asc, ascq;
- 	bool desc_format = target_sense_desc_format(cmd->se_dev);
- 
--	if (r < ARRAY_SIZE(sense_info_table) && sense_info_table[r].key)
--		si = &sense_info_table[r];
-+	if (r < ARRAY_SIZE(sense_detail_table) && sense_detail_table[r].key)
-+		sd = &sense_detail_table[r];
- 	else
--		si = &sense_info_table[(__force int)
-+		sd = &sense_detail_table[(__force int)
- 				       TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE];
- 
--	key = si->key;
-+	key = sd->key;
- 	if (reason = TCM_CHECK_CONDITION_UNIT_ATTENTION) {
- 		if (!core_scsi3_ua_for_check_condition(cmd, &key, &asc,
- 						       &ascq)) {
- 			cmd->scsi_status = SAM_STAT_BUSY;
- 			return;
+diff --git a/fs/isofs/compress.c b/fs/isofs/compress.c
+index bc12ac7e2312..ddd3fd99d2e1 100644
+--- a/fs/isofs/compress.c
++++ b/fs/isofs/compress.c
+@@ -344,7 +344,7 @@ static int zisofs_readpage(struct file *file, struct page *page)
+ 			pages[i] = grab_cache_page_nowait(mapping, index);
+ 		if (pages[i]) {
+ 			ClearPageError(pages[i]);
+-			kmap(pages[i]);
++			kmap_thread(pages[i]);
  		}
--	} else if (si->asc = 0) {
-+	} else if (sd->asc = 0) {
- 		WARN_ON_ONCE(cmd->scsi_asc = 0);
- 		asc = cmd->scsi_asc;
- 		ascq = cmd->scsi_ascq;
- 	} else {
--		asc = si->asc;
--		ascq = si->ascq;
-+		asc = sd->asc;
-+		ascq = sd->ascq;
  	}
  
- 	cmd->se_cmd_flags |= SCF_EMULATED_TASK_SENSE;
- 	cmd->scsi_status = SAM_STAT_CHECK_CONDITION;
- 	cmd->scsi_sense_length  = TRANSPORT_SENSE_BUFFER;
- 	scsi_build_sense_buffer(desc_format, buffer, key, asc, ascq);
--	if (si->add_sector_info)
-+	if (sd->add_sector_info)
- 		WARN_ON_ONCE(scsi_set_sense_information(buffer,
- 							cmd->scsi_sense_length,
- 							cmd->bad_sector) < 0);
+@@ -356,7 +356,7 @@ static int zisofs_readpage(struct file *file, struct page *page)
+ 			flush_dcache_page(pages[i]);
+ 			if (i = full_page && err)
+ 				SetPageError(pages[i]);
+-			kunmap(pages[i]);
++			kunmap_thread(pages[i]);
+ 			unlock_page(pages[i]);
+ 			if (i != full_page)
+ 				put_page(pages[i]);
 -- 
-2.26.2
+2.28.0.rc0.12.gb6a658bd00c9
