@@ -1,128 +1,63 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 30 Oct 2020 21:39:29 +0000
-Subject: [PATCH v3 2/4] scsi: target: rename cmd.bad_sector to cmd.sense_info
-Message-Id: <20201030213931.10720-3-ddiss@suse.de>
+From: ira.weiny@intel.com
+Date: Fri, 09 Oct 2020 19:50:33 +0000
+Subject: [PATCH RFC PKS/PMEM 58/58] [dax|pmem]: Enable stray access protection
+Message-Id: <20201009195033.3208459-59-ira.weiny@intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201030213931.10720-1-ddiss@suse.de>
-In-Reply-To: <20201030213931.10720-1-ddiss@suse.de>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>, Mike Christie <michael.christie@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
 
-cmd.bad_sector currently gets packed into the sense INFORMATION field
-for TCM_LOGICAL_BLOCK_{GUARD,APP_TAG,REF_TAG}_CHECK_FAILED errors, which
-carry an .add_sector_info flag in the sense_detail_table to ensure this.
+From: Ira Weiny <ira.weiny@intel.com>
 
-In preparation for propagating a byte offset on COMPARE AND WRITE
-TCM_MISCOMPARE_VERIFY error, rename cmd.bad_sector to cmd.sense_info
-and sense_detail.add_sector_info to sense_detail.add_sense_info so
-that it better reflects the sense INFORMATION field destination.
+Protecting against stray writes is particularly important for PMEM
+because, unlike writes to anonymous memory, writes to PMEM persists
+across a reboot.  Thus data corruption could result in permanent loss of
+data.
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Mike Christie <michael.christie@oracle.com>
-[ddiss: update previously overlooked ib_isert]
+While stray writes are more serious than reads, protection is also
+enabled for reads.  This helps to detect bugs in code which would
+incorrectly access device memory and prevents a more serious machine
+checks should those bug reads from a poison page.
+
+Enable stray access protection by setting the flag in pgmap which
+requests it.  There is no option presented to the user.  If Zone Device
+Access Protection not be supported this flag will have no affect.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/infiniband/ulp/isert/ib_isert.c |  4 ++--
- drivers/target/target_core_sbc.c        |  2 +-
- drivers/target/target_core_transport.c  | 12 ++++++------
- include/target/target_core_base.h       |  2 +-
- 4 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/dax/device.c  | 2 ++
+ drivers/nvdimm/pmem.c | 2 ++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index 436e17f1d0e5..a3ba0c4d0d39 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -1528,12 +1528,12 @@ isert_check_pi_status(struct se_cmd *se_cmd, struct ib_mr *sig_mr)
- 		}
- 		sec_offset_err = mr_status.sig_err.sig_err_offset;
- 		do_div(sec_offset_err, block_size);
--		se_cmd->bad_sector = sec_offset_err + se_cmd->t_task_lba;
-+		se_cmd->sense_info = sec_offset_err + se_cmd->t_task_lba;
+diff --git a/drivers/dax/device.c b/drivers/dax/device.c
+index 1e89513f3c59..e6fb35b4f0fb 100644
+--- a/drivers/dax/device.c
++++ b/drivers/dax/device.c
+@@ -430,6 +430,8 @@ int dev_dax_probe(struct device *dev)
+ 	}
  
- 		isert_err("PI error found type %d at sector 0x%llx "
- 			  "expected 0x%x vs actual 0x%x\n",
- 			  mr_status.sig_err.err_type,
--			  (unsigned long long)se_cmd->bad_sector,
-+			  (unsigned long long)se_cmd->sense_info,
- 			  mr_status.sig_err.expected,
- 			  mr_status.sig_err.actual);
- 		ret = 1;
-diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index 6e8b8d30938f..5f77dd95f1b9 100644
---- a/drivers/target/target_core_sbc.c
-+++ b/drivers/target/target_core_sbc.c
-@@ -1439,7 +1439,7 @@ sbc_dif_verify(struct se_cmd *cmd, sector_t start, unsigned int sectors,
- 			if (rc) {
- 				kunmap_atomic(daddr - dsg->offset);
- 				kunmap_atomic(paddr - psg->offset);
--				cmd->bad_sector = sector;
-+				cmd->sense_info = sector;
- 				return rc;
- 			}
- next:
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index caa3a7b34826..c6f45c12d564 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -3098,7 +3098,7 @@ struct sense_detail {
- 	u8 key;
- 	u8 asc;
- 	u8 ascq;
--	bool add_sector_info;
-+	bool add_sense_info;
- };
+ 	dev_dax->pgmap.type = MEMORY_DEVICE_GENERIC;
++	dev_dax->pgmap.flags |= PGMAP_PROT_ENABLED;
++
+ 	addr = devm_memremap_pages(dev, &dev_dax->pgmap);
+ 	if (IS_ERR(addr))
+ 		return PTR_ERR(addr);
+diff --git a/drivers/nvdimm/pmem.c b/drivers/nvdimm/pmem.c
+index e4dc1ae990fc..9fcd8338e23f 100644
+--- a/drivers/nvdimm/pmem.c
++++ b/drivers/nvdimm/pmem.c
+@@ -426,6 +426,8 @@ static int pmem_attach_disk(struct device *dev,
+ 		return -EBUSY;
+ 	}
  
- static const struct sense_detail sense_detail_table[] = {
-@@ -3201,19 +3201,19 @@ static const struct sense_detail sense_detail_table[] = {
- 		.key = ABORTED_COMMAND,
- 		.asc = 0x10,
- 		.ascq = 0x01, /* LOGICAL BLOCK GUARD CHECK FAILED */
--		.add_sector_info = true,
-+		.add_sense_info = true,
- 	},
- 	[TCM_LOGICAL_BLOCK_APP_TAG_CHECK_FAILED] = {
- 		.key = ABORTED_COMMAND,
- 		.asc = 0x10,
- 		.ascq = 0x02, /* LOGICAL BLOCK APPLICATION TAG CHECK FAILED */
--		.add_sector_info = true,
-+		.add_sense_info = true,
- 	},
- 	[TCM_LOGICAL_BLOCK_REF_TAG_CHECK_FAILED] = {
- 		.key = ABORTED_COMMAND,
- 		.asc = 0x10,
- 		.ascq = 0x03, /* LOGICAL BLOCK REFERENCE TAG CHECK FAILED */
--		.add_sector_info = true,
-+		.add_sense_info = true,
- 	},
- 	[TCM_COPY_TARGET_DEVICE_NOT_REACHABLE] = {
- 		.key = COPY_ABORTED,
-@@ -3293,10 +3293,10 @@ static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
- 	cmd->scsi_status = SAM_STAT_CHECK_CONDITION;
- 	cmd->scsi_sense_length  = TRANSPORT_SENSE_BUFFER;
- 	scsi_build_sense_buffer(desc_format, buffer, key, asc, ascq);
--	if (sd->add_sector_info)
-+	if (sd->add_sense_info)
- 		WARN_ON_ONCE(scsi_set_sense_information(buffer,
- 							cmd->scsi_sense_length,
--							cmd->bad_sector) < 0);
-+							cmd->sense_info) < 0);
- }
- 
- int
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 549947d407cf..7ee2bee46b3a 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -540,7 +540,7 @@ struct se_cmd {
- 	struct scatterlist	*t_prot_sg;
- 	unsigned int		t_prot_nents;
- 	sense_reason_t		pi_err;
--	sector_t		bad_sector;
-+	u64			sense_info;
- 	int			cpuid;
- };
- 
++	pmem->pgmap.flags |= PGMAP_PROT_ENABLED;
++
+ 	q = blk_alloc_queue(dev_to_node(dev));
+ 	if (!q)
+ 		return -ENOMEM;
 -- 
-2.26.2
+2.28.0.rc0.12.gb6a658bd00c9
