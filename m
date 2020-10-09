@@ -1,131 +1,249 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Sat, 31 Oct 2020 23:32:11 +0000
-Subject: [PATCH v4 4/4] scsi: target: return COMPARE AND WRITE miscompare offsets
-Message-Id: <20201031233211.5207-5-ddiss@suse.de>
+From: ira.weiny@intel.com
+Date: Fri, 09 Oct 2020 19:49:41 +0000
+Subject: [PATCH RFC PKS/PMEM 06/58] kmap: Introduce k[un]map_thread debugging
+Message-Id: <20201009195033.3208459-7-ira.weiny@intel.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201031233211.5207-1-ddiss@suse.de>
-In-Reply-To: <20201031233211.5207-1-ddiss@suse.de>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, Ben Segall <bsegall@google.com>, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, io-uring@vger.kernel.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, Mel Gorman <mgorman@suse.de>, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-afs@lists.infradead.org, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
 
-SBC-4 r15 5.3 COMPARE AND WRITE command states:
-  if the compare operation does not indicate a match, then terminate the
-  command with CHECK CONDITION status with the sense key set to
-  MISCOMPARE and the additional sense code set to MISCOMPARE DURING
-  VERIFY OPERATION. In the sense data (see 4.18 and SPC-5) the offset
-  from the start of the Data-Out Buffer to the first byte of data that
-  was not equal shall be reported in the INFORMATION field.
+From: Ira Weiny <ira.weiny@intel.com>
 
-This change implements the missing logic to report the miscompare offset
-in the sense data INFORMATION field. As an optimization, byte-by-byte
-miscompare offset calculation is only performed after memcmp() mismatch.
+Most kmap() callers use the map within a single thread and have no need
+for the protection domain to be enabled globally.
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
+To differentiate these kmap users, new k[un]map_thread() calls were
+introduced which are thread local.
+
+To aid in debugging the new use of kmap_thread(), add a reference count,
+a check on that count, and tracing to ID where mapping errors occur.
+
+Cc: Juri Lelli <juri.lelli@redhat.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ben Segall <bsegall@google.com>
+Cc: Mel Gorman <mgorman@suse.de>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/target/target_core_sbc.c       | 35 ++++++++++++++++++--------
- drivers/target/target_core_transport.c |  1 +
- 2 files changed, 26 insertions(+), 10 deletions(-)
+ include/linux/highmem.h            |  5 +++
+ include/linux/sched.h              |  5 +++
+ include/trace/events/kmap_thread.h | 56 ++++++++++++++++++++++++++++++
+ init/init_task.c                   |  3 ++
+ kernel/fork.c                      | 15 ++++++++
+ lib/Kconfig.debug                  |  8 +++++
+ mm/debug.c                         | 23 ++++++++++++
+ 7 files changed, 115 insertions(+)
+ create mode 100644 include/trace/events/kmap_thread.h
 
-diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index 22d0cbba6ff3..768c4878e0d3 100644
---- a/drivers/target/target_core_sbc.c
-+++ b/drivers/target/target_core_sbc.c
-@@ -435,13 +435,13 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
+diff --git a/include/linux/highmem.h b/include/linux/highmem.h
+index ef7813544719..22d1c000802e 100644
+--- a/include/linux/highmem.h
++++ b/include/linux/highmem.h
+@@ -247,6 +247,10 @@ static inline void kunmap(struct page *page)
+ 	__kunmap(page, true);
  }
  
- /*
-- * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare return
-- * TCM_MISCOMPARE_VERIFY.
-+ * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare, fill
-+ * @miscmp_off and return TCM_MISCOMPARE_VERIFY.
-  */
- static sense_reason_t
- compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
- 			 struct scatterlist *cmp_sgl, unsigned int cmp_nents,
--			 unsigned int cmp_len)
-+			 unsigned int cmp_len, unsigned int *miscmp_off)
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++void *kmap_thread(struct page *page);
++void kunmap_thread(struct page *page);
++#else
+ static inline void *kmap_thread(struct page *page)
  {
- 	unsigned char *buf = NULL;
- 	struct scatterlist *sg;
-@@ -466,18 +466,23 @@ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
- 	 * Compare SCSI READ payload against verify payload
- 	 */
- 	offset = 0;
-+	ret = TCM_NO_SENSE;
- 	for_each_sg(read_sgl, sg, read_nents, i) {
- 		unsigned int len = min(sg->length, cmp_len);
- 		unsigned char *addr = kmap_atomic(sg_page(sg));
+ 	return __kmap(page, false);
+@@ -255,6 +259,7 @@ static inline void kunmap_thread(struct page *page)
+ {
+ 	__kunmap(page, false);
+ }
++#endif
  
- 		if (memcmp(addr, buf + offset, len)) {
--			pr_warn("Detected MISCOMPARE for addr: %p buf: %p\n",
--				addr, buf + offset);
--			kunmap_atomic(addr);
-+			unsigned int i;
-+			for (i = 0; i < len && addr[i] = buf[offset + i]; i++)
-+				;
-+			*miscmp_off = offset + i;
-+			pr_warn("Detected MISCOMPARE at offset %u\n",
-+				*miscmp_off);
- 			ret = TCM_MISCOMPARE_VERIFY;
--			goto out;
- 		}
- 		kunmap_atomic(addr);
-+		if (ret != TCM_NO_SENSE)
-+			goto out;
+ /*
+  * Prevent people trying to call kunmap_atomic() as if it were kunmap()
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 25d97ab6c757..4627ea4a49e6 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1318,6 +1318,11 @@ struct task_struct {
+ #ifdef CONFIG_ZONE_DEVICE_ACCESS_PROTECTION
+ 	unsigned int			dev_page_access_ref;
+ #endif
++
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++	unsigned int			kmap_thread_cnt;
++#endif
++
+ 	/*
+ 	 * New fields for task_struct should be added above here, so that
+ 	 * they are included in the randomized portion of task_struct.
+diff --git a/include/trace/events/kmap_thread.h b/include/trace/events/kmap_thread.h
+new file mode 100644
+index 000000000000..e7143cfe0daf
+--- /dev/null
++++ b/include/trace/events/kmap_thread.h
+@@ -0,0 +1,56 @@
++/* SPDX-License-Identifier: GPL-2.0 OR Linux-OpenIB */
++
++/*
++ * Copyright (c) 2020 Intel Corporation.  All rights reserved.
++ *
++ */
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM kmap_thread
++
++#if !defined(_TRACE_KMAP_THREAD_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_KMAP_THREAD_H
++
++#include <linux/tracepoint.h>
++
++DECLARE_EVENT_CLASS(kmap_thread_template,
++	TP_PROTO(struct task_struct *tsk, struct page *page,
++		 void *caller_addr, int cnt),
++	TP_ARGS(tsk, page, caller_addr, cnt),
++
++	TP_STRUCT__entry(
++		__field(int, pid)
++		__field(struct page *, page)
++		__field(void *, caller_addr)
++		__field(int, cnt)
++	),
++
++	TP_fast_assign(
++		__entry->pid = tsk->pid;
++		__entry->page = page;
++		__entry->caller_addr = caller_addr;
++		__entry->cnt = cnt;
++	),
++
++	TP_printk("PID %d; (%d) %pS %p",
++		__entry->pid,
++		__entry->cnt,
++		__entry->caller_addr,
++		__entry->page
++	)
++);
++
++DEFINE_EVENT(kmap_thread_template, kmap_thread,
++	TP_PROTO(struct task_struct *tsk, struct page *page,
++		 void *caller_addr, int cnt),
++	TP_ARGS(tsk, page, caller_addr, cnt));
++
++DEFINE_EVENT(kmap_thread_template, kunmap_thread,
++	TP_PROTO(struct task_struct *tsk, struct page *page,
++		 void *caller_addr, int cnt),
++	TP_ARGS(tsk, page, caller_addr, cnt));
++
++
++#endif /* _TRACE_KMAP_THREAD_H */
++
++#include <trace/define_trace.h>
+diff --git a/init/init_task.c b/init/init_task.c
+index 9b39f25de59b..19f09965eb34 100644
+--- a/init/init_task.c
++++ b/init/init_task.c
+@@ -212,6 +212,9 @@ struct task_struct init_task
+ #ifdef CONFIG_ZONE_DEVICE_ACCESS_PROTECTION
+ 	.dev_page_access_ref = 0,
+ #endif
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++	.kmap_thread_cnt = 0,
++#endif
+ };
+ EXPORT_SYMBOL(init_task);
  
- 		offset += len;
- 		cmp_len -= len;
-@@ -485,7 +490,6 @@ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
- 			break;
- 	}
- 	pr_debug("COMPARE AND WRITE read data matches compare data\n");
--	ret = TCM_NO_SENSE;
- out:
- 	kfree(buf);
- 	return ret;
-@@ -501,6 +505,7 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
- 	unsigned int len;
- 	unsigned int block_size = dev->dev_attrib.block_size;
- 	unsigned int compare_len = (cmd->t_task_nolb * block_size);
-+	unsigned int miscmp_off = 0;
- 	sense_reason_t ret = TCM_NO_SENSE;
- 	int i;
+diff --git a/kernel/fork.c b/kernel/fork.c
+index b6a3ee328a89..2c66e49b7614 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -722,6 +722,17 @@ static inline void put_signal_struct(struct signal_struct *sig)
+ 		free_signal_struct(sig);
+ }
  
-@@ -532,8 +537,18 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
- 				       cmd->t_bidi_data_nents,
- 				       cmd->t_data_sg,
- 				       cmd->t_data_nents,
--				       compare_len);
--	if (ret)
-+				       compare_len,
-+				       &miscmp_off);
-+	if (ret = TCM_MISCOMPARE_VERIFY) {
-+		/*
-+		 * SBC-4 r15: 5.3 COMPARE AND WRITE command
-+		 * In the sense data (see 4.18 and SPC-5) the offset from the
-+		 * start of the Data-Out Buffer to the first byte of data that
-+		 * was not equal shall be reported in the INFORMATION field.
-+		 */
-+		cmd->sense_info = miscmp_off;
-+		goto out;
-+	} else if (ret)
- 		goto out;
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++static void check_outstanding_kmap_thread(struct task_struct *tsk)
++{
++	if (tsk->kmap_thread_cnt)
++		pr_warn(KERN_ERR "WARNING: PID %d; Failed to kunmap_thread() [cnt %d]\n",
++			tsk->pid, tsk->kmap_thread_cnt);
++}
++#else
++static void check_outstanding_kmap_thread(struct task_struct *tsk) { }
++#endif
++
+ void __put_task_struct(struct task_struct *tsk)
+ {
+ 	WARN_ON(!tsk->exit_state);
+@@ -734,6 +745,7 @@ void __put_task_struct(struct task_struct *tsk)
+ 	exit_creds(tsk);
+ 	delayacct_tsk_free(tsk);
+ 	put_signal_struct(tsk->signal);
++	check_outstanding_kmap_thread(tsk);
  
- 	if (sg_alloc_table(&write_tbl, cmd->t_data_nents, GFP_KERNEL) < 0) {
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index c6f45c12d564..693ed3fe4388 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -3196,6 +3196,7 @@ static const struct sense_detail sense_detail_table[] = {
- 		.key = MISCOMPARE,
- 		.asc = 0x1d, /* MISCOMPARE DURING VERIFY OPERATION */
- 		.ascq = 0x00,
-+		.add_sense_info = true,
- 	},
- 	[TCM_LOGICAL_BLOCK_GUARD_CHECK_FAILED] = {
- 		.key = ABORTED_COMMAND,
+ 	if (!profile_handoff_task(tsk))
+ 		free_task(tsk);
+@@ -943,6 +955,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
+ #endif
+ #ifdef CONFIG_ZONE_DEVICE_ACCESS_PROTECTION
+ 	tsk->dev_page_access_ref = 0;
++#endif
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++	tsk->kmap_thread_cnt = 0;
+ #endif
+ 	return tsk;
+ 
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index f015c09ba5a1..6507b43d5b0c 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -858,6 +858,14 @@ config DEBUG_HIGHMEM
+ 	  This option enables additional error checking for high memory
+ 	  systems.  Disable for production systems.
+ 
++config DEBUG_KMAP_THREAD
++	bool "Kmap debugging"
++	depends on DEBUG_KERNEL
++	help
++	  This option enables additional error checking for kernel mapping code
++	  specifically the k[un]map_thread() calls.  Disable for production
++	  systems.
++
+ config HAVE_DEBUG_STACKOVERFLOW
+ 	bool
+ 
+diff --git a/mm/debug.c b/mm/debug.c
+index ca8d1cacdecc..68d186f3570e 100644
+--- a/mm/debug.c
++++ b/mm/debug.c
+@@ -320,3 +320,26 @@ void page_init_poison(struct page *page, size_t size)
+ }
+ EXPORT_SYMBOL_GPL(page_init_poison);
+ #endif		/* CONFIG_DEBUG_VM */
++
++#define CREATE_TRACE_POINTS
++#include <trace/events/kmap_thread.h>
++
++#ifdef CONFIG_DEBUG_KMAP_THREAD
++void *kmap_thread(struct page *page)
++{
++	trace_kmap_thread(current, page, __builtin_return_address(0),
++			  current->kmap_thread_cnt);
++	current->kmap_thread_cnt++;
++	return __kmap(page, false);
++}
++EXPORT_SYMBOL_GPL(kmap_thread);
++
++void kunmap_thread(struct page *page)
++{
++	__kunmap(page, false);
++	current->kmap_thread_cnt--;
++	trace_kunmap_thread(current, page, __builtin_return_address(0),
++			    current->kmap_thread_cnt);
++}
++EXPORT_SYMBOL_GPL(kunmap_thread);
++#endif
 -- 
-2.26.2
+2.28.0.rc0.12.gb6a658bd00c9
