@@ -1,7 +1,7 @@
 From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:50:13 +0000
-Subject: [PATCH RFC PKS/PMEM 38/58] fs/isofs: Utilize new kmap_thread()
-Message-Id: <20201009195033.3208459-39-ira.weiny@intel.com>
+Date: Fri, 09 Oct 2020 19:50:31 +0000
+Subject: [PATCH RFC PKS/PMEM 56/58] dax: Stray access protection for dax_direct_access()
+Message-Id: <20201009195033.3208459-57-ira.weiny@intel.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
@@ -13,35 +13,41 @@ Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-d
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-These kmap() calls are localized to a single thread.  To avoid the over head of
-global PKRS updates use the new kmap_thread() call.
+dax_direct_access() is a special case of accessing pmem via a page
+offset and without a struct page.
+
+Because the dax driver is well aware of the special protections it has
+mapped memory with, call dev_access_[en|dis]able() directly instead of
+the unnecessary overhead of trying to get a page to kmap.
+
+Similar to kmap, we leverage existing functions, dax_read_[un]lock(),
+because they are already required to surround the use of the memory
+returned from dax_direct_access().
 
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- fs/isofs/compress.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/dax/super.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/fs/isofs/compress.c b/fs/isofs/compress.c
-index bc12ac7e2312..ddd3fd99d2e1 100644
---- a/fs/isofs/compress.c
-+++ b/fs/isofs/compress.c
-@@ -344,7 +344,7 @@ static int zisofs_readpage(struct file *file, struct page *page)
- 			pages[i] = grab_cache_page_nowait(mapping, index);
- 		if (pages[i]) {
- 			ClearPageError(pages[i]);
--			kmap(pages[i]);
-+			kmap_thread(pages[i]);
- 		}
- 	}
+diff --git a/drivers/dax/super.c b/drivers/dax/super.c
+index e84070b55463..0ddb3ee73e36 100644
+--- a/drivers/dax/super.c
++++ b/drivers/dax/super.c
+@@ -30,6 +30,7 @@ static DEFINE_SPINLOCK(dax_host_lock);
  
-@@ -356,7 +356,7 @@ static int zisofs_readpage(struct file *file, struct page *page)
- 			flush_dcache_page(pages[i]);
- 			if (i = full_page && err)
- 				SetPageError(pages[i]);
--			kunmap(pages[i]);
-+			kunmap_thread(pages[i]);
- 			unlock_page(pages[i]);
- 			if (i != full_page)
- 				put_page(pages[i]);
+ int dax_read_lock(void)
+ {
++	dev_access_enable(false);
+ 	return srcu_read_lock(&dax_srcu);
+ }
+ EXPORT_SYMBOL_GPL(dax_read_lock);
+@@ -37,6 +38,7 @@ EXPORT_SYMBOL_GPL(dax_read_lock);
+ void dax_read_unlock(int id)
+ {
+ 	srcu_read_unlock(&dax_srcu, id);
++	dev_access_disable(false);
+ }
+ EXPORT_SYMBOL_GPL(dax_read_unlock);
+ 
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
