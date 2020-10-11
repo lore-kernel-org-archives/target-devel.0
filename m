@@ -1,150 +1,18 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Wed, 28 Oct 2020 20:37:55 +0000
-Subject: Re: [PATCH 2/2] target: iscsi: fix a race condition when aborting a task
-Message-Id: <d7107857-ef7a-3c88-8146-a5e7abce5ce6@oracle.com>
+From: "Mariacarmen Gutierrez" <fernrodyup12@gmx.es>
+Date: Sun, 11 Oct 2020 14:04:40 +0000
+Subject: PLEASE TAKE NOTE!
+Message-Id: <20201011220655.D39D345409DB@mail.hanmingtech.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201007145326.56850-1-mlombard@redhat.com>
- <20201007145326.56850-3-mlombard@redhat.com>
- <20daa17d-08e7-a412-4d33-bcf75587eca6@oracle.com>
- <1852a8bd-3edc-5c49-fa51-9afe52f125a8@redhat.com>
- <184667b1-032b-c36f-d1e7-5cfef961c763@oracle.com>
- <71691FED-C164-482C-B629-A8B89B81E566@oracle.com>
- <a936cc4e-1610-5201-5960-107689b81820@redhat.com>
-In-Reply-To: <a936cc4e-1610-5201-5960-107689b81820@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Maurizio Lombardi <mlombard@redhat.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, bvanassche@acm.org
+To: target-devel@vger.kernel.org
 
-On 10/28/20 12:09 PM, Maurizio Lombardi wrote:
-> 
-> 
-> Dne 27. 10. 20 v 21:03 Michael Christie napsal(a):
->>
->>
->>> On Oct 27, 2020, at 12:54 PM, Mike Christie <michael.christie@oracle.com> wrote:
->>>
->>> On 10/27/20 8:49 AM, Maurizio Lombardi wrote:
->>>> Hello Mike,
->>>>
->>>> Dne 22. 10. 20 v 4:42 Mike Christie napsal(a):
->>>>> If we free the cmd from the abort path, then for your conn stop plus abort race case, could we do:
->>>>>
->>>>> 1. thread1 runs iscsit_release_commands_from_conn and sets CMD_T_FABRIC_STOP.
->>>>> 2. thread2 runs iscsit_aborted_task and then does __iscsit_free_cmd. It then returns from the aborted_task callout and we finish target_handle_abort and do:
->>>>>
->>>>> target_handle_abort -> transport_cmd_check_stop_to_fabric -> lio_check_stop_free -> target_put_sess_cmd
->>>>>
->>>>> The cmd is now freed.
->>>>> 3. thread1 now finishes iscsit_release_commands_from_conn and runs iscsit_free_cmd while accessing a command we just released.
->>>>>
->>>>>
->>>>
->>>> Thanks for the review!
->>>>
->>>> There are definitely some problems with task aborts and commands' refcounting *
->>>> but this is a different bug than the one this patch is trying to solve (a race to list_del_init());
->>>> unless you are saying that abort tasks should never be executed when the connection
->>>> is going down and we have to prevent such cases from happening at all.
->>>
->>> Yeah, I think if we prevent the race then we fix the refcount issue and your issue.
->>> Here is a patch that is only compile tested:
->>>
->>>  From 209709bcedd9a6ce6003e6bb86f3ebf547dca6af Mon Sep 17 00:00:00 2001
->>> From: Mike Christie <michael.christie@oracle.com>
->>> Date: Tue, 27 Oct 2020 12:30:53 -0500
->>> Subject: [PATCH] iscsi target: fix cmd abort vs fabric stop race
->>>
->>> The abort and cmd stop paths can race where:
->>>
->>> 1. thread1 runs iscsit_release_commands_from_conn and sets
->>> CMD_T_FABRIC_STOP.
->>> 2. thread2 runs iscsit_aborted_task and then does __iscsit_free_cmd. It
->>> then returns from the aborted_task callout and we finish
->>> target_handle_abort and do:
->>>
->>> target_handle_abort -> transport_cmd_check_stop_to_fabric ->
->>> lio_check_stop_free -> target_put_sess_cmd
->>>
->>> The cmd is now freed.
->>> 3. thread1 now finishes iscsit_release_commands_from_conn and runs
->>> iscsit_free_cmd while accessing a command we just released.
->>>
->>> In __target_check_io_state we check for CMD_T_FABRIC_STOP and set the
->>> CMD_T_ABORTED if the driver is not cleaning up the cmd because of
->>> a session shutdown. However, iscsit_release_commands_from_conn only
->>> sets the CMD_T_FABRIC_STOP and does not check to see if the abort path
->>> has claimed completion ownership of the command.
->>>
->>> This adds a check in iscsit_release_commands_from_conn so only the
->>> abort or fabric stop path cleanup the command.
->>> ---
->>> drivers/target/iscsi/iscsi_target.c | 13 +++++++++++--
->>> 1 file changed, 11 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
->>> index f77e5ee..85027d3 100644
->>> --- a/drivers/target/iscsi/iscsi_target.c
->>> +++ b/drivers/target/iscsi/iscsi_target.c
->>> @@ -483,8 +483,7 @@ int iscsit_queue_rsp(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
->>> void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
->>> {
->>> 	spin_lock_bh(&conn->cmd_lock);
->>> -	if (!list_empty(&cmd->i_conn_node) &&
->>> -	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
->>> +	if (!list_empty(&cmd->i_conn_node))
->>> 		list_del_init(&cmd->i_conn_node);
->>> 	spin_unlock_bh(&conn->cmd_lock);
->>>
->>> @@ -4088,6 +4087,16 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
->>>
->>> 		if (se_cmd->se_tfo != NULL) {
->>> 			spin_lock_irq(&se_cmd->t_state_lock);
->>> +			if (se_cmd->transport_state & CMD_T_ABORTED) {
->>> +				/*
->>> +				 * LIO's abort path owns the cleanup for this,
->>> +				 * so put it back on the list and let
->>> +				 * aborted_task handle it.
->>> +				 */
->>> +				list_add_tail(&cmd->i_conn_node,
->>> +					      &conn->conn_cmd_list);
->>
->>
->> That should have been a move from the tmp list back to the conn_cmd_list.
-> 
-> Nice, it looks simple and I will test it.
-> I am a bit worried there could be other possible race conditions.
-> 
-> Example:
-> 
-> thread1: connection is going to be closed,
-> iscsit_release_commands_from_conn() finds a command that is about
-> to be aborted, re-adds it to conn_cmd_list and proceeds.
-> iscsit_close_connection() decreases the conn usage count and finally calls iscsit_free_conn(conn)
-> that destroys the conn structure.
-> 
-> thread2: iscsit_aborted_task() gets called and tries to lock the conn->cmd_lock spinlock, dereferencing
-> an invalid pointer.
+Hello friend!
 
-Nice catch. You are right.
+I would like to contact you personally for an important proposal that could of interest to you.
+I send this email only to know if this email address is functional.
+I have something very important to discuss with you. Contact me for details by:  Email: fernrodyup1215@aol.com with your direct contacts.
 
-> 
-> Possible solutions that I can think of:
-> 
-> - Make iscsit_release_commands_from_conn() wait for the abort task to finish
-
-Yeah you could set a completion in there then have aborted_task do the 
-complete() call maybe?
-
-There is also the transport_cmd_check_stop_to_fabric 
-t_transport_stop_comp completion and transport_wait_for_tasks pairing 
-that seems close to what we want. I think we would have to change it to 
-make it work for this case. Oh yeah, that is more of a brain stroming 
-guess than a review type of comment :)
-
-
-> or
-> - abort handler could hold a reference to the conn structure so that iscsit_close_connection()
-> will sleep when calling iscsit_check_conn_usage_count(conn) until abort finishes.
-> 
+Kind regards.
+Maria Carmen Gutierrez
