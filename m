@@ -1,20 +1,25 @@
-From: Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-Date: Thu, 22 Oct 2020 00:39:12 +0000
-Subject: Re: [PATCH 12/17] vhost poll: fix coding style
-Message-Id: <BYAPR04MB49654D29552506A024896C32861D0@BYAPR04MB4965.namprd04.prod.outlook.com>
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Tue, 13 Oct 2020 22:42:52 +0000
+Subject: Re: [PATCH 00/14] drop double zeroing
+Message-Id: <160262862433.3018.13907233755506910409.b4-ty@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
- <1603326903-27052-13-git-send-email-michael.christie@oracle.com>
+References: <1600601186-7420-1-git-send-email-Julia.Lawall@inria.fr>
+In-Reply-To: <1600601186-7420-1-git-send-email-Julia.Lawall@inria.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <michael.christie@oracle.com>, "martin.petersen@oracle.com" <martin.petersen@oracle.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "mst@redhat.com" <mst@redhat.com>, "jasowang@redhat.com" <jasowang@redhat.com>, "pbonzini@redhat.com" <pbonzini@redhat.com>, "stefanha@redhat.com" <stefanha@redhat.com>, "virtualization@lists.linux-foundation.org" <virtualization@lists.linux-foundation.org>
+To: linux-spi@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, dmaengine@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-media@vger.kernel.org, target-devel@vger.kernel.org, linux-rdma@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, linux-serial@vger.kernel.org, linux-nfs@vger.kernel.org, linux-scsi@vger.kernel.org, Yossi Leybovich <sleybo@amazon.com>, linux-block@vger.kernel.org, rds-devel@oss.oracle.com
 
-On 10/21/20 17:35, Mike Christie wrote:
-> We use like 3 coding styles in this struct. Switch to just tabs.
->
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+On Sun, 20 Sep 2020 13:26:12 +0200, Julia Lawall wrote:
 
-Looks good.
+> sg_init_table zeroes its first argument, so the allocation of that argument
+> doesn't have to.
 
-Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+Applied to 5.10/scsi-queue, thanks!
+
+[02/14] scsi: target: rd: Drop double zeroing
+        https://git.kernel.org/mkp/scsi/c/4b217e015b75
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
