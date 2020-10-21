@@ -1,64 +1,42 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Tue, 27 Oct 2020 05:34:56 +0000
-Subject: Re: [PATCH rdma-next] IB/srpt: Fix memory leak in srpt_add_one
-Message-Id: <20201027053456.GD4821@unreal>
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Wed, 21 Oct 2020 12:17:25 +0000
+Subject: [PATCH v3 4/6] IB/srpt: docs: add a description for cq_size  member
+Message-Id: <32f4060a4300c20894b38f2504ee76ccfa497215.1603282193.git.mchehab+huawei@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201026132737.1338171-1-leon@kernel.org>
- <93385ff4-cab7-05f2-e29a-82c9c71e47fa@acm.org>
-In-Reply-To: <93385ff4-cab7-05f2-e29a-82c9c71e47fa@acm.org>
+References: <cover.1603282193.git.mchehab+huawei@kernel.org>
+In-Reply-To: <cover.1603282193.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: Doug Ledford <dledford@redhat.com>, Jason Gunthorpe <jgg@nvidia.com>, Maor Gottlieb <maorg@nvidia.com>, linux-rdma@vger.kernel.org, "Nicholas A. Bellinger" <nab@risingtidesystems.com>, target-devel@vger.kernel.org
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Bart Van Assche <bvanassche@acm.org>, Doug Ledford <dledford@redhat.com>, Jason Gunthorpe <jgg@ziepe.ca>, Max Gurtovoy <maxg@mellanox.com>, Sagi Grimberg <sagi@grimberg.me>, Yamin Friedman <yaminf@mellanox.com>, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org
 
-On Mon, Oct 26, 2020 at 07:22:07PM -0700, Bart Van Assche wrote:
-> On 10/26/20 6:27 AM, Leon Romanovsky wrote:
-> > From: Maor Gottlieb <maorg@nvidia.com>
-> >
-> > In case srpt_refresh_port failed for the second port, then
-> > we don't unregister the MAD agnet.
->                               ^^^^^
->                               agent?
->
-> The commit message is incomplete. Why does this patch have a Fixes tag?
-> The commit message should explain this but doesn't explain this.
->
-> What does this patch actually change? ib_unregister_mad_agent() is only
-> called by the current code if sport->mad_agent != NULL.
+Changeset c804af2c1d31 ("IB/srpt: use new shared CQ mechanism")
+added a new member for struct srpt_rdma_ch, but didn't add the
+corresponding kernel-doc markup, as repoted when doing
+"make htmldocs":
 
-Failure in srpt_refresh_port() for the second port will leave MAD
-registered for the first one, however the srpt_add_one() will be
-marked as "failed" and SRPT will leak resources for that registered
-but not used and released first port.
+	./drivers/infiniband/ulp/srpt/ib_srpt.h:331: warning: Function parameter or member 'cq_size' not described in 'srpt_rdma_ch'
 
-This is what is written in the commit message.
+Add a description for it.
 
->
-> > -static void srpt_unregister_mad_agent(struct srpt_device *sdev)
-> > +static void __srpt_unregister_mad_agent(struct srpt_device *sdev, int port_cnt)
-> >  {
-> >  	struct ib_port_modify port_modify = {
-> >  		.clr_port_cap_mask = IB_PORT_DEVICE_MGMT_SUP,
-> > @@ -633,7 +627,10 @@ static void srpt_unregister_mad_agent(struct srpt_device *sdev)
-> >  	struct srpt_port *sport;
-> >  	int i;
-> >
-> > -	for (i = 1; i <= sdev->device->phys_port_cnt; i++) {
-> > +	if (!port_cnt)
-> > +		return;
-> > +
-> > +	for (i = 1; i <= port_cnt; i++) {
-> >  		sport = &sdev->port[i - 1];
-> >  		WARN_ON(sport->port != i);
-> >  		if (sport->mad_agent) {
->
-> If this patch is retained, please leave the if-test out if you agree
-> that it is not necessary. I'm concerned that it will confuse readers.
+Fixes: c804af2c1d31 ("IB/srpt: use new shared CQ mechanism")
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ drivers/infiniband/ulp/srpt/ib_srpt.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-No problem.
-
->
-> Thanks,
->
-> Bart.
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.h b/drivers/infiniband/ulp/srpt/ib_srpt.h
+index 41435a699b53..bdeb010efee6 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.h
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.h
+@@ -256,6 +256,7 @@ enum rdma_ch_state {
+  * @rdma_cm:	   See below.
+  * @rdma_cm.cm_id: RDMA CM ID associated with the channel.
+  * @cq:            IB completion queue for this channel.
++ * @cq_size:	   Number of CQEs in @cq.
+  * @zw_cqe:	   Zero-length write CQE.
+  * @rcu:           RCU head.
+  * @kref:	   kref for this channel.
+-- 
+2.26.2
