@@ -1,41 +1,53 @@
-From: "Mr. John Galvan" <no-reply@msgroupspa.com>
-Date: Fri, 30 Oct 2020 08:07:24 +0000
-Subject: Hello/Hallo
-Message-Id: <8970d4ac30f8022b0ae628d9b69a2d43@msgroupspa.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 22 Oct 2020 00:34:57 +0000
+Subject: [PATCH 11/17] vhost scsi: remove extra flushes
+Message-Id: <1603326903-27052-12-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: target-devel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
+The vhost work flush function was flushing the entire work queue, so
+there is no need for the double vhost_work_dev_flush calls in
+vhost_scsi_flush.
 
+And we do not need to call vhost_poll_flush for each poller because
+that call also ends up flushing the same work queue thread the
+vhost_work_dev_flush call flushed.
 
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/vhost/scsi.c | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index f543fa0..b348e9c 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1443,11 +1443,6 @@ static void vhost_scsi_handle_kick(struct vhost_work *work)
+ 	vhost_scsi_handle_vq(vs, vq);
+ }
+ 
+-static void vhost_scsi_flush_vq(struct vhost_scsi *vs, int index)
+-{
+-	vhost_poll_flush(&vs->vqs[index].vq.poll);
+-}
+-
+ /* Callers must hold dev mutex */
+ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ {
+@@ -1466,9 +1461,6 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 		kref_put(&old_inflight[i]->kref, vhost_scsi_done_inflight);
+ 
+ 	/* Flush both the vhost poll and vhost work */
+-	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
+-		vhost_scsi_flush_vq(vs, i);
+-	vhost_work_dev_flush(&vs->dev);
+ 	vhost_work_dev_flush(&vs->dev);
+ 
+ 	/* Wait for all reqs issued before the flush to be finished */
 -- 
-Sir/Madam,
-
-I have access to very vital information that can be used to move a huge 
-amount of money. I have done my homework very well and I have the 
-machineries in place to get it done since I am still in active service. 
-If it was possible for me to do it alone I would not have bothered 
-contacting you. Ultimately I need an honest foreigner to play an 
-important role in the completion of this business transaction. Send 
-responds to this email: galvan.johnny@outlook.com
-
-Regards,
-John Galvan
-
----------------------------------------------------------------
-
-Sir / Madam,
-
-Ich habe Zugang zu sehr wichtigen Informationen, mit denen ich eine 
-große Menge Geld bewegen kann. Ich habe meine Hausaufgaben sehr gut 
-gemacht und ich habe die Maschinen, um sie zu erledigen, da ich immer 
-noch im aktiven Dienst bin. Wenn es mir möglich gewesen wäre, es alleine 
-zu tun, hätte ich mich nicht darum gekümmert, Sie zu kontaktieren. 
-Letztendlich brauche ich einen ehrlichen Ausländer, der eine wichtige 
-Rolle beim Abschluss dieses Geschäftsvorgangs spielt. Senden Sie 
-Antworten auf diese E-Mail: galvan.johnny@outlook.com
-
-Grüße,
-John Galvan
+1.8.3.1
