@@ -1,36 +1,51 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Sat, 03 Oct 2020 17:19:24 +0000
-Subject: Re: [PATCH] Revert "scsi: target/iscsi: Detect conn_cmd_list corruption early"
-Message-Id: <e2f1f376-45c5-35b0-b8fd-09bef76ce410@redhat.com>
+From: Anastasia Kovaleva <a.kovaleva@yadro.com>
+Date: Thu, 22 Oct 2020 17:20:08 +0000
+Subject: [PATCH 0/3] scsi: target: Set correct residual data
+Message-Id: <20201022172011.42367-1-a.kovaleva@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201002073341.12470-1-mlombard@redhat.com>
- <ce44115e-f8ac-0307-88bd-f6a2e9d7f7f3@acm.org>
- <fea1f8a6-615e-6d44-ec20-b4f46da10d55@redhat.com>
- <49bcd5f9-a528-f52d-3093-494e76eaac10@acm.org>
-In-Reply-To: <49bcd5f9-a528-f52d-3093-494e76eaac10@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bart Van Assche <bvanassche@acm.org>, martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, linux@yadro.com, Anastasia Kovaleva <a.kovaleva@yadro.com>
 
+Hi Martin,
+Please apply the changes to 5.10/scsi-queue at your earliest
+convenience.
 
+Tne series changes the behavior of the target in regard to processing
+commands with overflow/underflow in accordance with the standarts.
 
-Dne 03. 10. 20 v 17:17 Bart Van Assche napsal(a):
-> On 2020-10-03 00:46, Maurizio Lombardi wrote:
->> Dne 03. 10. 20 v 2:23 Bart Van Assche napsal(a):
->>> I agree that the same WARN_ON() occurs inside __iscsit_free_cmd(). What is not
->>> clear to me is how removing the WARN_ON() statement from iscsit_free_cmd() can
->>> help since an identical statement occurs inside __iscsit_free_cmd()?
->>
->> It doesn't help indeed, this patch just removes one duplicate warning but doesn't
->> really change anything.
->>
->> The bug I am trying to fix will need a different patch to prevent the race condition.
-> 
-> How about addressing both issues with a single patch?
+The target driver used to process the DMA_TO_DEVICE commands with
+residuals (in particular, WRITE command) incorrectly. The target
+response contained neither a residual count, nor an OVERFLOW/UNDERFLOW
+bit. Such behavior did not comply with the RFC 7143. Also the
+returned ASC and ASCQ were incorrect according to FCP-4,
+and residuals were not set for the 4Kn devices.
 
-I've nothing against it, I will just need a bit more time to come
-up with a patch.
+This patches fix the major inconsistances in processing these kind of
+commands.
 
-Maurizio
+This patch series has been tested with a modified libiscsi testing
+library.
+The link to the pull request:
+https://github.com/sahlberg/libiscsi/pull/345
+
+Write10Residuals, Write12Residuals, Write16Residuals tests have passed.
+
+Thanks,
+Anastasia
+
+Anastasia Kovaleva (2):
+  scsi: target: core: Signal WRITE residuals
+  scsi: target: core: Change ASCQ for residual write
+
+Roman Bolshakov (1):
+  scsi: target: core: Set residuals for 4Kn devices
+
+ drivers/target/target_core_transport.c | 53 +++++++++++++-------------
+ include/target/target_core_base.h      |  1 +
+ 2 files changed, 28 insertions(+), 26 deletions(-)
+
+-- 
+2.24.3 (Apple Git-128)
