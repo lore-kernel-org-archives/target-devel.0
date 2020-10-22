@@ -1,101 +1,163 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 29 Oct 2020 22:19:07 +0000
-Subject: Re: [PATCH 00/17 V3] vhost: fix scsi cmd handling and cgroup support
-Message-Id: <c95612d5-104a-f8f5-d335-bd20e74e9ecc@oracle.com>
+Date: Thu, 22 Oct 2020 00:35:01 +0000
+Subject: [PATCH 15/17] host: support delayed vq creation
+Message-Id: <1603326903-27052-16-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
- <20201029174719-mutt-send-email-mst@kernel.org>
-In-Reply-To: <20201029174719-mutt-send-email-mst@kernel.org>
+In-Reply-To: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-On 10/29/20 4:47 PM, Michael S. Tsirkin wrote:
-> On Wed, Oct 21, 2020 at 07:34:46PM -0500, Mike Christie wrote:
->> In-Reply-To:
->>
->> The following patches were made over Michael's vhost branch here:
->>
->> https://urldefense.com/v3/__https://git.kernel.org/pub/scm/linux/kernel/git/mst/vhost.git/log/?h=vhost__;!!GqivPVa7Brio!ORlQVwL5FxDLtNmvh5l9nLqhQJOO6UexX4vl-NrAhagQG9dAGFNFCPXoSNU8rW75g3OH$
->>
->> They fix a couple issues with vhost-scsi when we hit the 256 cmd limit
->> that result in the guest getting IO errors, add LUN reset support so
->> devices are not offlined during transient errors, allow us to manage
->> vhost scsi IO with cgroups, and imrpove IOPs up to 2X.
->>
->> The following patches are a follow up to this post:
->> https://urldefense.com/v3/__https://patchwork.kernel.org/project/target-devel/cover/1600712588-9514-1-git-send-email-michael.christie@oracle.com/__;!!GqivPVa7Brio!ORlQVwL5FxDLtNmvh5l9nLqhQJOO6UexX4vl-NrAhagQG9dAGFNFCPXoSNU8rXJWM8fh$
->> which originally was fixing how vhost-scsi handled cmds so we would
->> not get IO errors when sending more than 256 cmds.
->>
->> In that patchset I needed to detect if a vq was in use and for this
->> patch:
->> https://urldefense.com/v3/__https://patchwork.kernel.org/project/target-devel/patch/1600712588-9514-3-git-send-email-michael.christie@oracle.com/__;!!GqivPVa7Brio!ORlQVwL5FxDLtNmvh5l9nLqhQJOO6UexX4vl-NrAhagQG9dAGFNFCPXoSNU8rbRNqMbK$
->> It was suggested to add support for VHOST_RING_ENABLE. While doing
->> that though I hit a couple problems:
->>
->> 1. The patches moved how vhost-scsi allocated cmds from per lio
->> session to per vhost vq. To support both VHOST_RING_ENABLE and
->> where userspace didn't support it, I would have to keep around the
->> old per session/device cmd allocator/completion and then also maintain
->> the new code. Or, I would still have to use this patch
->> patchwork.kernel.org/cover/11790763/ for the compat case so there
->> adding the new ioctl would not help much.
->>
->> 2. For vhost-scsi I also wanted to prevent where we allocate iovecs
->> for 128 vqs even though we normally use a couple. To do this, I needed
->> something similar to #1, but the problem is that the VHOST_RING_ENABLE
->> call would come too late.
->>
->> To try and balance #1 and #2, these patches just allow vhost-scsi
->> to setup a vq when userspace starts to config it. This allows the
->> driver to only fully setup (we still waste some memory to support older
->> setups but do not have to preallocate everything like before) what
->> is used plus I do not need to maintain 2 code paths.
-> 
-> 
-> OK, so could we get a patchset with just bugfixes for this release
-> please? > And features should go into next one ...
+This allows vq creation to be done when it's first accessed by
+userspace. vhost-scsi doesn't know how many queues the user requested
+until they are first setup, and we don't want to allocate resources
+like the iovecs for 128 vqs when we are only using 1 or 2 most of the
+time. In the next pathces, vhost-scsi will also switch to preallocating
+cmds per vq instead of per lio session and we don't want to allocate
+them for 127 extra vqs if they are not in use.
 
-Yeah, that sounds good.
+With this patch when a driver calls vhost_dev_init they pass in the
+number of vqs that they know they need and the max they can support.
+This patch has all the drivers pass in the same value for both the
+initial number of vqs and the max. The next patch will convert scsi.
+The other drivers like net/vsock have their vqs hard coded in the
+kernel or setup/discovered via other methods like with vdpa.
 
-Just to make sure I am on the same page as you and Jason about what 
-patches are features vs fixes/cleanups. I'm thinking patches 1 - 11 are 
-to resend in the fixes patchset?
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/vhost/scsi.c | 48 +++++++++++++++++++++++++-----------------------
+ 1 file changed, 25 insertions(+), 23 deletions(-)
 
-0. Patches 1 - 2 are adding helpers I use later.
-
-1. Patches 3 - 8 are related to fixing IO errors due to the VM sending 
-virtqueue_size/cmd_per_lun commands but vhost-scsi having 256 hard coded.
-
-Patch:
-
-[PATCH 08/17] vhost scsi: alloc cmds per vq instead of session
-
-is what fixes the issue in vhost-scsi so we allocate enough resource to 
-match what the VM is going to send us, but is built on patches 3 - 7 
-which allow vhost-scsi to know which vqs to allocate cmd resrouces for.
-
-[PATCH 03/17] vhost net: use goto error handling in open
-[PATCH 04/17] vhost: prep vhost_dev_init users to handle failures
-[PATCH 05/17] vhost: move vq iovec allocation to dev init time
-[PATCH 06/17] vhost: support delayed vq creation
-[PATCH 07/17] vhost scsi: support delayed IO vq creation
-
-2. Patch 9 fixes a race where we signal userspace the cmd is done before 
-we were done with it. We can then get IO errors if the VM sends a new IO 
-before we free up the old cmd.
-
-
-3. Patch 10 adds LUN reset support. Currently, if the real/backing 
-device hits a temp issue, the VM's scsi/block layer cmd timer might fire 
-and send a reset. We don't implement this, so we just fail. The VM's 
-device goes offline and the app in the VM gets IO errors.
-
-4. Patch 11 removes extra flush calls.
-
-
-Patches 12 - 17 are adding support for the thread per VQ which is a perf 
-feature so resend them separately when we figure what is best.
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index b348e9c..5d6dc15 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -178,6 +178,7 @@ enum {
+ 
+ struct vhost_scsi_virtqueue {
+ 	struct vhost_virtqueue vq;
++	struct vhost_scsi *vs;
+ 	/*
+ 	 * Reference counting for inflight reqs, used for flush operation. At
+ 	 * each time, one reference tracks new commands submitted, while we
+@@ -192,6 +193,9 @@ struct vhost_scsi_virtqueue {
+ 	struct vhost_scsi_cmd *scsi_cmds;
+ 	struct sbitmap scsi_tags;
+ 	int max_cmds;
++
++	struct vhost_work completion_work;
++	struct llist_head completion_list;
+ };
+ 
+ struct vhost_scsi {
+@@ -202,9 +206,6 @@ struct vhost_scsi {
+ 	struct vhost_dev dev;
+ 	struct vhost_scsi_virtqueue vqs[VHOST_SCSI_MAX_VQ];
+ 
+-	struct vhost_work vs_completion_work; /* cmd completion work item */
+-	struct llist_head vs_completion_list; /* cmd completion queue */
+-
+ 	struct vhost_work vs_event_work; /* evt injection work item */
+ 	struct llist_head vs_event_list; /* evt injection queue */
+ 
+@@ -380,10 +381,11 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
+ 	} else {
+ 		struct vhost_scsi_cmd *cmd = container_of(se_cmd,
+ 					struct vhost_scsi_cmd, tvc_se_cmd);
+-		struct vhost_scsi *vs = cmd->tvc_vhost;
++		struct vhost_scsi_virtqueue *svq =  container_of(cmd->tvc_vq,
++					struct vhost_scsi_virtqueue, vq);
+ 
+-		llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
+-		vhost_work_queue(&vs->dev, &vs->vs_completion_work);
++		llist_add(&cmd->tvc_completion_list, &svq->completion_list);
++		vhost_vq_work_queue(&svq->vq, &svq->completion_work);
+ 	}
+ }
+ 
+@@ -545,18 +547,17 @@ static void vhost_scsi_evt_work(struct vhost_work *work)
+  */
+ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ {
+-	struct vhost_scsi *vs = container_of(work, struct vhost_scsi,
+-					vs_completion_work);
+-	DECLARE_BITMAP(signal, VHOST_SCSI_MAX_VQ);
++	struct vhost_scsi_virtqueue *svq = container_of(work,
++				struct vhost_scsi_virtqueue, completion_work);
+ 	struct virtio_scsi_cmd_resp v_rsp;
+ 	struct vhost_scsi_cmd *cmd, *t;
+ 	struct llist_node *llnode;
+ 	struct se_cmd *se_cmd;
+ 	struct iov_iter iov_iter;
+-	int ret, vq;
++	bool signal = false;
++	int ret;
+ 
+-	bitmap_zero(signal, VHOST_SCSI_MAX_VQ);
+-	llnode = llist_del_all(&vs->vs_completion_list);
++	llnode = llist_del_all(&svq->completion_list);
+ 	llist_for_each_entry_safe(cmd, t, llnode, tvc_completion_list) {
+ 		se_cmd = &cmd->tvc_se_cmd;
+ 
+@@ -576,21 +577,16 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ 			      cmd->tvc_in_iovs, sizeof(v_rsp));
+ 		ret = copy_to_iter(&v_rsp, sizeof(v_rsp), &iov_iter);
+ 		if (likely(ret = sizeof(v_rsp))) {
+-			struct vhost_scsi_virtqueue *q;
++			signal = true;
+ 			vhost_add_used(cmd->tvc_vq, cmd->tvc_vq_desc, 0);
+-			q = container_of(cmd->tvc_vq, struct vhost_scsi_virtqueue, vq);
+-			vq = q - vs->vqs;
+-			__set_bit(vq, signal);
+ 		} else
+ 			pr_err("Faulted on virtio_scsi_cmd_resp\n");
+ 
+ 		vhost_scsi_release_cmd_res(se_cmd);
+ 	}
+ 
+-	vq = -1;
+-	while ((vq = find_next_bit(signal, VHOST_SCSI_MAX_VQ, vq + 1))
+-		< VHOST_SCSI_MAX_VQ)
+-		vhost_signal(&vs->dev, &vs->vqs[vq].vq);
++	if (signal)
++		vhost_signal(&svq->vs->dev, &svq->vq);
+ }
+ 
+ static struct vhost_scsi_cmd *
+@@ -1805,6 +1801,7 @@ static int vhost_scsi_set_features(struct vhost_scsi *vs, u64 features)
+ 
+ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ {
++	struct vhost_scsi_virtqueue *svq;
+ 	struct vhost_scsi *vs;
+ 	struct vhost_virtqueue **vqs;
+ 	int r = -ENOMEM, i;
+@@ -1820,7 +1817,6 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ 	if (!vqs)
+ 		goto err_vqs;
+ 
+-	vhost_work_init(&vs->vs_completion_work, vhost_scsi_complete_cmd_work);
+ 	vhost_work_init(&vs->vs_event_work, vhost_scsi_evt_work);
+ 
+ 	vs->vs_events_nr = 0;
+@@ -1831,8 +1827,14 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ 	vs->vqs[VHOST_SCSI_VQ_CTL].vq.handle_kick = vhost_scsi_ctl_handle_kick;
+ 	vs->vqs[VHOST_SCSI_VQ_EVT].vq.handle_kick = vhost_scsi_evt_handle_kick;
+ 	for (i = VHOST_SCSI_VQ_IO; i < VHOST_SCSI_MAX_VQ; i++) {
+-		vqs[i] = &vs->vqs[i].vq;
+-		vs->vqs[i].vq.handle_kick = vhost_scsi_handle_kick;
++		svq = &vs->vqs[i];
++
++		vqs[i] = &svq->vq;
++		svq->vs = vs;
++		init_llist_head(&svq->completion_list);
++		vhost_work_init(&svq->completion_work,
++				vhost_scsi_complete_cmd_work);
++		svq->vq.handle_kick = vhost_scsi_handle_kick;
+ 	}
+ 
+ 	/*
+-- 
+1.8.3.1
