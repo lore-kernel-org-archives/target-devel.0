@@ -1,63 +1,69 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:50:33 +0000
-Subject: [PATCH RFC PKS/PMEM 58/58] [dax|pmem]: Enable stray access protection
-Message-Id: <20201009195033.3208459-59-ira.weiny@intel.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 22 Oct 2020 00:35:02 +0000
+Subject: [PATCH 16/17] vhost scsi: multiple worker support
+Message-Id: <1603326903-27052-17-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-From: Ira Weiny <ira.weiny@intel.com>
+Create a vhost_worker per IO vq. When using more than 2 vqs and/or
+multiple LUNs per vhost-scsi dev, we hit a bottleneck with the single
+worker where we want to start and complete all vqs and all LUNs from the
+same thread.
 
-Protecting against stray writes is particularly important for PMEM
-because, unlike writes to anonymous memory, writes to PMEM persists
-across a reboot.  Thus data corruption could result in permanent loss of
-data.
+Combined with the previous patches that allow us to increase the
+queue depths and virtqueue count, for a single LUN/device with 8
+virtqueues at queue depth of 128 cmds per queue, IOPs heavy workloads
+(like 50/50 randrw 4K IOs with numjobs=virtqueues and iodepth=queue
+depth) go from 180K to 400K where the native device can get 500K IOPs.
 
-While stray writes are more serious than reads, protection is also
-enabled for reads.  This helps to detect bugs in code which would
-incorrectly access device memory and prevents a more serious machine
-checks should those bug reads from a poison page.
+When using the null_blk driver, with a single LUN/device and the
+same number of virtqueues/queuedepth and fio workload we see IOPs go
+from 360K to 640K.
 
-Enable stray access protection by setting the flag in pgmap which
-requests it.  There is no option presented to the user.  If Zone Device
-Access Protection not be supported this flag will have no affect.
-
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/dax/device.c  | 2 ++
- drivers/nvdimm/pmem.c | 2 ++
- 2 files changed, 4 insertions(+)
+ drivers/vhost/scsi.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/drivers/dax/device.c b/drivers/dax/device.c
-index 1e89513f3c59..e6fb35b4f0fb 100644
---- a/drivers/dax/device.c
-+++ b/drivers/dax/device.c
-@@ -430,6 +430,8 @@ int dev_dax_probe(struct device *dev)
- 	}
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 5d6dc15..4e91a90 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1624,6 +1624,22 @@ static int vhost_scsi_setup_vq_cmds(struct vhost_virtqueue *vq, int max_cmds)
+ 		memcpy(vs->vs_vhost_wwpn, t->vhost_wwpn,
+ 		       sizeof(vs->vs_vhost_wwpn));
  
- 	dev_dax->pgmap.type = MEMORY_DEVICE_GENERIC;
-+	dev_dax->pgmap.flags |= PGMAP_PROT_ENABLED;
++		/*
++		 * For compat, have the evt and ctl vqs share worker0 with
++		 * the first IO vq like is setup as default already. Any
++		 * additional vqs will get their own worker.
++		 *
++		 * Note: if we fail later, then the vhost_dev_cleanup call on
++		 * release() will clean up all the workers.
++		 */
++		ret = vhost_workers_create(&vs->dev,
++					   vs->dev.nvqs - VHOST_SCSI_VQ_IO);
++		if (ret) {
++			pr_err("Could not create vhost-scsi workers. Error %d.",
++			       ret);
++			goto undepend;
++		}
 +
- 	addr = devm_memremap_pages(dev, &dev_dax->pgmap);
- 	if (IS_ERR(addr))
- 		return PTR_ERR(addr);
-diff --git a/drivers/nvdimm/pmem.c b/drivers/nvdimm/pmem.c
-index e4dc1ae990fc..9fcd8338e23f 100644
---- a/drivers/nvdimm/pmem.c
-+++ b/drivers/nvdimm/pmem.c
-@@ -426,6 +426,8 @@ static int pmem_attach_disk(struct device *dev,
- 		return -EBUSY;
- 	}
+ 		for (i = VHOST_SCSI_VQ_IO; i < VHOST_SCSI_MAX_VQ; i++) {
+ 			vq = &vs->vqs[i].vq;
+ 			if (!vq->initialized)
+@@ -1631,6 +1647,7 @@ static int vhost_scsi_setup_vq_cmds(struct vhost_virtqueue *vq, int max_cmds)
  
-+	pmem->pgmap.flags |= PGMAP_PROT_ENABLED;
-+
- 	q = blk_alloc_queue(dev_to_node(dev));
- 	if (!q)
- 		return -ENOMEM;
+ 			if (vhost_scsi_setup_vq_cmds(vq, vq->num))
+ 				goto destroy_vq_cmds;
++			vhost_vq_set_worker(vq, i - VHOST_SCSI_VQ_IO);
+ 		}
+ 
+ 		for (i = 0; i < VHOST_SCSI_MAX_VQ; i++) {
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+1.8.3.1
