@@ -1,77 +1,26 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 22 Oct 2020 00:34:49 +0000
-Subject: [PATCH 03/17] vhost net: use goto error handling in open
-Message-Id: <1603326903-27052-4-git-send-email-michael.christie@oracle.com>
+From: Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
+Date: Thu, 22 Oct 2020 00:45:55 +0000
+Subject: Re: [PATCH 03/17] vhost net: use goto error handling in open
+Message-Id: <BYAPR04MB4965B45205A531226FAD1843861D0@BYAPR04MB4965.namprd04.prod.outlook.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
+ <1603326903-27052-4-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: Mike Christie <michael.christie@oracle.com>, "martin.petersen@oracle.com" <martin.petersen@oracle.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "mst@redhat.com" <mst@redhat.com>, "jasowang@redhat.com" <jasowang@redhat.com>, "pbonzini@redhat.com" <pbonzini@redhat.com>, "stefanha@redhat.com" <stefanha@redhat.com>, "virtualization@lists.linux-foundation.org" <virtualization@lists.linux-foundation.org>
 
-In the next patches vhost_dev_init will be able to fail. This patch has
-vhost_net_open use goto error handling like is done in the other vhost
-code to make handling vhost_dev_init failures easier to handle and
-extend in the future.
+On 10/21/20 17:35, Mike Christie wrote:
+> In the next patches vhost_dev_init will be able to fail. This patch has
+> vhost_net_open use goto error handling like is done in the other vhost
+> code to make handling vhost_dev_init failures easier to handle and
+> extend in the future.
+>
+> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+> ---
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
----
- drivers/vhost/net.c | 29 ++++++++++++++---------------
- 1 file changed, 14 insertions(+), 15 deletions(-)
+Also, not it reduces the repeated kfree() calls in the code for vqs and
 
-diff --git a/drivers/vhost/net.c b/drivers/vhost/net.c
-index 531a00d..831d824 100644
---- a/drivers/vhost/net.c
-+++ b/drivers/vhost/net.c
-@@ -1286,27 +1286,18 @@ static int vhost_net_open(struct inode *inode, struct file *f)
- 	if (!n)
- 		return -ENOMEM;
- 	vqs = kmalloc_array(VHOST_NET_VQ_MAX, sizeof(*vqs), GFP_KERNEL);
--	if (!vqs) {
--		kvfree(n);
--		return -ENOMEM;
--	}
-+	if (!vqs)
-+		goto err_vqs;
- 
- 	queue = kmalloc_array(VHOST_NET_BATCH, sizeof(void *),
- 			      GFP_KERNEL);
--	if (!queue) {
--		kfree(vqs);
--		kvfree(n);
--		return -ENOMEM;
--	}
-+	if (!queue)
-+		goto err_queue;
- 	n->vqs[VHOST_NET_VQ_RX].rxq.queue = queue;
- 
- 	xdp = kmalloc_array(VHOST_NET_BATCH, sizeof(*xdp), GFP_KERNEL);
--	if (!xdp) {
--		kfree(vqs);
--		kvfree(n);
--		kfree(queue);
--		return -ENOMEM;
--	}
-+	if (!xdp)
-+		goto err_xdp;
- 	n->vqs[VHOST_NET_VQ_TX].xdp = xdp;
- 
- 	dev = &n->dev;
-@@ -1338,6 +1329,14 @@ static int vhost_net_open(struct inode *inode, struct file *f)
- 	n->refcnt_bias = 0;
- 
- 	return 0;
-+
-+err_xdp:
-+	kfree(queue);
-+err_queue:
-+	kfree(vqs);
-+err_vqs:
-+	kvfree(n);
-+	return -ENOMEM;
- }
- 
- static struct socket *vhost_net_stop_vq(struct vhost_net *n,
--- 
-1.8.3.1
+n, looks good.
+
+Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
