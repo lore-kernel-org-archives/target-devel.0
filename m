@@ -1,38 +1,91 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Sat, 31 Oct 2020 10:38:52 +0000
-Subject: Re: [PATCH v3 4/4] scsi: target: return COMPARE AND WRITE miscompare offsets
-Message-Id: <20201031113852.39110f4c@suse.de>
+From: Anastasia Kovaleva <a.kovaleva@yadro.com>
+Date: Thu, 22 Oct 2020 17:20:11 +0000
+Subject: [PATCH 3/3] scsi: target: core: Change ASCQ for residual write
+Message-Id: <20201022172011.42367-4-a.kovaleva@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201030213931.10720-1-ddiss@suse.de>
-        <20201030213931.10720-5-ddiss@suse.de>
-        <e475cbf3-6dc8-901f-b5e3-30228e9a03a4@interlog.com>
-In-Reply-To: <e475cbf3-6dc8-901f-b5e3-30228e9a03a4@interlog.com>
+References: <20201022172011.42367-1-a.kovaleva@yadro.com>
+In-Reply-To: <20201022172011.42367-1-a.kovaleva@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Douglas Gilbert <dgilbert@interlog.com>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, Mike Christie <michael.christie@oracle.com>, "Dirk Hohndel (VMware)" <dirk@hohndel.org>
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, linux@yadro.com, Anastasia Kovaleva <a.kovaleva@yadro.com>, Roman Bolshakov <r.bolshakov@yadro.com>
 
-On Fri, 30 Oct 2020 20:06:31 -0400, Douglas Gilbert wrote:
+According to FCP-4 (9.4.2):
 
-> I believe the logic is correct (and scsi_debug doesn't set the INFO field
-> in its CAW, but should), but I wonder about performance.
-> 
-> If the probability of equality is high (e.g. like it is usually with
-> VERIFY(BytChk=1) ) and memcmp() is faster than that for-loop (which
-> could be optimized), then a better strategy might be to always do memcmp()
-> first and only if it fails go into the byte by byte for-loop to find the
-> offset of the first miscompare.
+  If the command requested that data beyond the length specified by the
+  FCP_DL field be transferred, then the device server shall set the
+  FCP_RESID_OVER bit (see 9.5.8) to one in the FCP_RSP IU and:
 
-While adding the INFO return to tgt I noticed that it had the same
-memcmp-with-miscompare-for-loop logic that you describe. I'm only aware
-of ESXi as a COMPARE AND WRITE consumer and I think probability of
-equality is quite high (@Dirk: perhaps you can confirm?).
+  a) process the command normally except that data beyond the FCP_DL
+  count shall not be requested or transferred;
 
-> IMO this should only be considered, if there is going to be a "v4" of
-> this patchset.
+  b) transfer no data and return CHECK CONDITION status with the sense
+  key set to ILLEGAL REQUEST and the additional sense code set to INVALID
+  FIELD IN COMMAND INFORMATION UNIT; or
 
-I think this optimization wouldn't make the code much more complex, so
-I'll do a re-spin with this change. Thanks for the feedback.
+  c) may transfer data and return CHECK CONDITION status with the sense
+  key set to ABORTED COMMAND and the additional sense code set to
+  INVALID FIELD IN COMMAND INFORMATION UNIT.
 
-Cheers, David
+TCM follows b) and transfers no data for residual writes but returns
+INVALID FIELD IN CDB instead of INVALID FIELD IN COMMAND INFORMATION
+UNIT.
+
+Change the ASCQ to INVALID FIELD IN COMMAND INFORMATION UNIT to meet the
+standart.
+
+Signed-off-by: Anastasia Kovaleva <a.kovaleva@yadro.com>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+---
+ drivers/target/target_core_transport.c | 8 +++++++-
+ include/target/target_core_base.h      | 1 +
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 8cb3012721d8..b225dab4deb9 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1331,7 +1331,7 @@ target_cmd_size_check(struct se_cmd *cmd, unsigned int size)
+ 			if (cmd->se_cmd_flags & SCF_SCSI_DATA_CDB) {
+ 				pr_err_ratelimited("Rejecting underflow/overflow"
+ 						   " for WRITE data CDB\n");
+-				return TCM_INVALID_CDB_FIELD;
++				return TCM_INVALID_FIELD_IN_COMMAND_IU;
+ 			}
+ 			/*
+ 			 * Some fabric drivers like iscsi-target still expect to
+@@ -1904,6 +1904,7 @@ void transport_generic_request_failure(struct se_cmd *cmd,
+ 	case TCM_UNSUPPORTED_TARGET_DESC_TYPE_CODE:
+ 	case TCM_TOO_MANY_SEGMENT_DESCS:
+ 	case TCM_UNSUPPORTED_SEGMENT_DESC_TYPE_CODE:
++	case TCM_INVALID_FIELD_IN_COMMAND_IU:
+ 		break;
+ 	case TCM_OUT_OF_RESOURCES:
+ 		cmd->scsi_status = SAM_STAT_TASK_SET_FULL;
+@@ -3240,6 +3241,11 @@ static const struct sense_info sense_info_table[] = {
+ 		.asc = 0x55,
+ 		.ascq = 0x04, /* INSUFFICIENT REGISTRATION RESOURCES */
+ 	},
++	[TCM_INVALID_FIELD_IN_COMMAND_IU] = {
++		.key = ILLEGAL_REQUEST,
++		.asc = 0x0e,
++		.ascq = 0x03, /* INVALID FIELD IN COMMAND INFORMATION UNIT */
++	},
+ };
+ 
+ /**
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 549947d407cf..01296d62ba5e 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -187,6 +187,7 @@ enum tcm_sense_reason_table {
+ 	TCM_UNSUPPORTED_SEGMENT_DESC_TYPE_CODE	= R(0x1c),
+ 	TCM_INSUFFICIENT_REGISTRATION_RESOURCES	= R(0x1d),
+ 	TCM_LUN_BUSY				= R(0x1e),
++	TCM_INVALID_FIELD_IN_COMMAND_IU         = R(0x1f),
+ #undef R
+ };
+ 
+-- 
+2.24.3 (Apple Git-128)
