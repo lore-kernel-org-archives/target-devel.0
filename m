@@ -1,112 +1,94 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 22 Oct 2020 00:35:03 +0000
-Subject: [PATCH 17/17] vhost scsi: drop submission workqueue
-Message-Id: <1603326903-27052-18-git-send-email-michael.christie@oracle.com>
+From: Anastasia Kovaleva <a.kovaleva@yadro.com>
+Date: Thu, 22 Oct 2020 17:20:10 +0000
+Subject: [PATCH 2/3] scsi: target: core: Signal WRITE residuals
+Message-Id: <20201022172011.42367-3-a.kovaleva@yadro.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
+References: <20201022172011.42367-1-a.kovaleva@yadro.com>
+In-Reply-To: <20201022172011.42367-1-a.kovaleva@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, linux@yadro.com, Anastasia Kovaleva <a.kovaleva@yadro.com>, Roman Bolshakov <r.bolshakov@yadro.com>
 
-We can't control a VM's vhost scsi IO right now because the vhost worker
-is added to the VM's blk cgroup, but the vhost worker thread actually
-just passes the cmd to a vhost-scsi driver workqueue which ends up
-submitting the cmd to the block layer.
+According to RFC 7143 11.4.5.2.:
 
-This patch has us submit from the vhost worker thread and removes the
-work queue.
+  If SPDTL > EDTL for a task, iSCSI Overflow MUST be signaled in the
+  SCSI Response PDU as specified in Section 11.4.5.1.  The Residual
+  Count MUST be set to the numerical value of (SPDTL - EDTL).
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
+  If SPDTL < EDTL for a task, iSCSI Underflow MUST be signaled in the
+  SCSI Response PDU as specified in Section 11.4.5.1.  The Residual
+  Count MUST be set to the numerical value of (EDTL - SPDTL).
+
+libiscsi has residual write tests that check residual kind and residual
+amount and all of them (Write10Residuals, Write12Residuals,
+Write16Residuals) currently fail.
+
+One of the reasons why they fail is because target completes write
+commands with INVALID FIELD IN CDB before setting the Overflow/Underflow
+bit and residual amount.
+
+Set the Overflow/Underflow bit and the residual amount before failing a
+write to comply with RFC 7143.
+
+Signed-off-by: Anastasia Kovaleva <a.kovaleva@yadro.com>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/vhost/scsi.c | 30 +++---------------------------
- 1 file changed, 3 insertions(+), 27 deletions(-)
+ drivers/target/target_core_transport.c | 34 +++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 4e91a90..3178bf54 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -101,8 +101,6 @@ struct vhost_scsi_cmd {
- 	struct vhost_scsi_nexus *tvc_nexus;
- 	/* The TCM I/O descriptor that is accessed via container_of() */
- 	struct se_cmd tvc_se_cmd;
--	/* work item used for cmwq dispatch to vhost_scsi_submission_work() */
--	struct work_struct work;
- 	/* Copy of the incoming SCSI command descriptor block (CDB) */
- 	unsigned char tvc_cdb[VHOST_SCSI_MAX_CDB_SIZE];
- 	/* Sense buffer that will be mapped into outgoing status */
-@@ -240,8 +238,6 @@ struct vhost_scsi_ctx {
- 	struct iov_iter out_iter;
- };
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 6d73b453c2cb..8cb3012721d8 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1306,6 +1306,26 @@ target_cmd_size_check(struct se_cmd *cmd, unsigned int size)
+ 			" %u does not match SCSI CDB Length: %u for SAM Opcode:"
+ 			" 0x%02x\n", cmd->se_tfo->fabric_name,
+ 				cmd->data_length, size, cmd->t_task_cdb[0]);
++		/*
++		 * For READ command for the overflow case keep the existing
++		 * fabric provided ->data_length. Otherwise for the underflow
++		 * case, reset ->data_length to the smaller SCSI expected data
++		 * transfer length.
++		 */
++		if (size > cmd->data_length) {
++			cmd->se_cmd_flags |= SCF_OVERFLOW_BIT;
++			cmd->residual_count = (size - cmd->data_length);
++		} else {
++			cmd->se_cmd_flags |= SCF_UNDERFLOW_BIT;
++			cmd->residual_count = (cmd->data_length - size);
++			/*
++			 * Do not truncate ->data_length for WRITE command to
++			 * dump all payload
++			 */
++			if (cmd->data_direction = DMA_FROM_DEVICE) {
++				cmd->data_length = size;
++			}
++		}
  
--static struct workqueue_struct *vhost_scsi_workqueue;
--
- /* Global spinlock to protect vhost_scsi TPG list for vhost IOCTL access */
- static DEFINE_MUTEX(vhost_scsi_mutex);
- static LIST_HEAD(vhost_scsi_list);
-@@ -776,10 +772,8 @@ static int vhost_scsi_to_tcm_attr(int attr)
- 	return TCM_SIMPLE_TAG;
- }
- 
--static void vhost_scsi_submission_work(struct work_struct *work)
-+static void vhost_scsi_target_submit(struct vhost_scsi_cmd *cmd)
- {
--	struct vhost_scsi_cmd *cmd -		container_of(work, struct vhost_scsi_cmd, work);
- 	struct vhost_scsi_nexus *tv_nexus;
- 	struct se_cmd *se_cmd = &cmd->tvc_se_cmd;
- 	struct scatterlist *sg_ptr, *sg_prot_ptr = NULL;
-@@ -1126,14 +1120,7 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- 		 * vhost_scsi_queue_data_in() and vhost_scsi_queue_status()
- 		 */
- 		cmd->tvc_vq_desc = vc.head;
+ 		if (cmd->data_direction = DMA_TO_DEVICE) {
+ 			if (cmd->se_cmd_flags & SCF_SCSI_DATA_CDB) {
+@@ -1325,20 +1345,6 @@ target_cmd_size_check(struct se_cmd *cmd, unsigned int size)
+ 				return TCM_INVALID_CDB_FIELD;
+ 			}
+ 		}
 -		/*
--		 * Dispatch cmd descriptor for cmwq execution in process
--		 * context provided by vhost_scsi_workqueue.  This also ensures
--		 * cmd is executed on the same kworker CPU as this vhost
--		 * thread to gain positive L2 cache locality effects.
+-		 * For the overflow case keep the existing fabric provided
+-		 * ->data_length.  Otherwise for the underflow case, reset
+-		 * ->data_length to the smaller SCSI expected data transfer
+-		 * length.
 -		 */
--		INIT_WORK(&cmd->work, vhost_scsi_submission_work);
--		queue_work(vhost_scsi_workqueue, &cmd->work);
-+		vhost_scsi_target_submit(cmd);
- 		ret = 0;
- err:
- 		/*
-@@ -2511,17 +2498,9 @@ static int __init vhost_scsi_init(void)
- 		" on "UTS_RELEASE"\n", VHOST_SCSI_VERSION, utsname()->sysname,
- 		utsname()->machine);
+-		if (size > cmd->data_length) {
+-			cmd->se_cmd_flags |= SCF_OVERFLOW_BIT;
+-			cmd->residual_count = (size - cmd->data_length);
+-		} else {
+-			cmd->se_cmd_flags |= SCF_UNDERFLOW_BIT;
+-			cmd->residual_count = (cmd->data_length - size);
+-			cmd->data_length = size;
+-		}
+ 	}
  
--	/*
--	 * Use our own dedicated workqueue for submitting I/O into
--	 * target core to avoid contention within system_wq.
--	 */
--	vhost_scsi_workqueue = alloc_workqueue("vhost_scsi", 0, 0);
--	if (!vhost_scsi_workqueue)
--		goto out;
--
- 	ret = vhost_scsi_register();
- 	if (ret < 0)
--		goto out_destroy_workqueue;
-+		goto out;
- 
- 	ret = target_register_template(&vhost_scsi_ops);
- 	if (ret < 0)
-@@ -2531,8 +2510,6 @@ static int __init vhost_scsi_init(void)
- 
- out_vhost_scsi_deregister:
- 	vhost_scsi_deregister();
--out_destroy_workqueue:
--	destroy_workqueue(vhost_scsi_workqueue);
- out:
- 	return ret;
- };
-@@ -2541,7 +2518,6 @@ static void vhost_scsi_exit(void)
- {
- 	target_unregister_template(&vhost_scsi_ops);
- 	vhost_scsi_deregister();
--	destroy_workqueue(vhost_scsi_workqueue);
- };
- 
- MODULE_DESCRIPTION("VHOST_SCSI series fabric driver");
+ 	return target_check_max_data_sg_nents(cmd, dev, size);
 -- 
-1.8.3.1
+2.24.3 (Apple Git-128)
