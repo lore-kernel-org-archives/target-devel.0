@@ -1,151 +1,112 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:49:39 +0000
-Subject: [PATCH RFC PKS/PMEM 04/58] kmap: Add stray access protection for device pages
-Message-Id: <20201009195033.3208459-5-ira.weiny@intel.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 22 Oct 2020 00:35:03 +0000
+Subject: [PATCH 17/17] vhost scsi: drop submission workqueue
+Message-Id: <1603326903-27052-18-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-From: Ira Weiny <ira.weiny@intel.com>
+We can't control a VM's vhost scsi IO right now because the vhost worker
+is added to the VM's blk cgroup, but the vhost worker thread actually
+just passes the cmd to a vhost-scsi driver workqueue which ends up
+submitting the cmd to the block layer.
 
-Device managed pages may have additional protections.  These protections
-need to be removed prior to valid use by kernel users.
+This patch has us submit from the vhost worker thread and removes the
+work queue.
 
-Check for special treatment of device managed pages in kmap and take
-action if needed.  We use kmap as an interface for generic kernel code
-because under normal circumstances it would be a bug for general kernel
-code to not use kmap prior to accessing kernel memory.  Therefore, this
-should allow any valid kernel users to seamlessly use these pages
-without issues.
-
-Because of the critical nature of kmap it must be pointed out that the
-over head on regular DRAM is carefully implemented to be as fast as
-possible.  Furthermore the underlying MSR write required on device pages
-when protected is better than a normal MSR write.
-
-Specifically, WRMSR(MSR_IA32_PKRS) is not serializing but still
-maintains ordering properties similar to WRPKRU.  The current SDM
-section on PKRS needs updating but should be the same as that of WRPKRU.
-So to quote from the WRPKRU text:
-
-	WRPKRU will never execute speculatively. Memory accesses
-	affected by PKRU register will not execute (even speculatively)
-	until all prior executions of WRPKRU have completed execution
-	and updated the PKRU register.
-
-Still this will make accessing pmem more expensive from the kernel but
-the overhead is minimized and many pmem users access this memory through
-user page mappings which are not affected at all.
-
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- include/linux/highmem.h | 32 +++++++++++++++++++++++++++++++-
- 1 file changed, 31 insertions(+), 1 deletion(-)
+ drivers/vhost/scsi.c | 30 +++---------------------------
+ 1 file changed, 3 insertions(+), 27 deletions(-)
 
-diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index 14e6202ce47f..2a9806e3b8d2 100644
---- a/include/linux/highmem.h
-+++ b/include/linux/highmem.h
-@@ -8,6 +8,7 @@
- #include <linux/mm.h>
- #include <linux/uaccess.h>
- #include <linux/hardirq.h>
-+#include <linux/memremap.h>
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 4e91a90..3178bf54 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -101,8 +101,6 @@ struct vhost_scsi_cmd {
+ 	struct vhost_scsi_nexus *tvc_nexus;
+ 	/* The TCM I/O descriptor that is accessed via container_of() */
+ 	struct se_cmd tvc_se_cmd;
+-	/* work item used for cmwq dispatch to vhost_scsi_submission_work() */
+-	struct work_struct work;
+ 	/* Copy of the incoming SCSI command descriptor block (CDB) */
+ 	unsigned char tvc_cdb[VHOST_SCSI_MAX_CDB_SIZE];
+ 	/* Sense buffer that will be mapped into outgoing status */
+@@ -240,8 +238,6 @@ struct vhost_scsi_ctx {
+ 	struct iov_iter out_iter;
+ };
  
- #include <asm/cacheflush.h>
- 
-@@ -31,6 +32,20 @@ static inline void invalidate_kernel_vmap_range(void *vaddr, int size)
- 
- #include <asm/kmap_types.h>
- 
-+static inline void dev_page_enable_access(struct page *page, bool global)
-+{
-+	if (!page_is_access_protected(page))
-+		return;
-+	dev_access_enable(global);
-+}
-+
-+static inline void dev_page_disable_access(struct page *page, bool global)
-+{
-+	if (!page_is_access_protected(page))
-+		return;
-+	dev_access_disable(global);
-+}
-+
- #ifdef CONFIG_HIGHMEM
- extern void *kmap_atomic_high_prot(struct page *page, pgprot_t prot);
- extern void kunmap_atomic_high(void *kvaddr);
-@@ -55,6 +70,11 @@ static inline void *kmap(struct page *page)
- 	else
- 		addr = kmap_high(page);
- 	kmap_flush_tlb((unsigned long)addr);
-+	/*
-+	 * Even non-highmem pages may have additional access protections which
-+	 * need to be checked and potentially enabled.
-+	 */
-+	dev_page_enable_access(page, true);
- 	return addr;
+-static struct workqueue_struct *vhost_scsi_workqueue;
+-
+ /* Global spinlock to protect vhost_scsi TPG list for vhost IOCTL access */
+ static DEFINE_MUTEX(vhost_scsi_mutex);
+ static LIST_HEAD(vhost_scsi_list);
+@@ -776,10 +772,8 @@ static int vhost_scsi_to_tcm_attr(int attr)
+ 	return TCM_SIMPLE_TAG;
  }
  
-@@ -63,6 +83,11 @@ void kunmap_high(struct page *page);
- static inline void kunmap(struct page *page)
+-static void vhost_scsi_submission_work(struct work_struct *work)
++static void vhost_scsi_target_submit(struct vhost_scsi_cmd *cmd)
  {
- 	might_sleep();
-+	/*
-+	 * Even non-highmem pages may have additional access protections which
-+	 * need to be checked and potentially disabled.
-+	 */
-+	dev_page_disable_access(page, true);
- 	if (!PageHighMem(page))
- 		return;
- 	kunmap_high(page);
-@@ -85,6 +110,7 @@ static inline void *kmap_atomic_prot(struct page *page, pgprot_t prot)
- {
- 	preempt_disable();
- 	pagefault_disable();
-+	dev_page_enable_access(page, false);
- 	if (!PageHighMem(page))
- 		return page_address(page);
- 	return kmap_atomic_high_prot(page, prot);
-@@ -137,6 +163,7 @@ static inline unsigned long totalhigh_pages(void) { return 0UL; }
- static inline void *kmap(struct page *page)
- {
- 	might_sleep();
-+	dev_page_enable_access(page, true);
- 	return page_address(page);
- }
+-	struct vhost_scsi_cmd *cmd -		container_of(work, struct vhost_scsi_cmd, work);
+ 	struct vhost_scsi_nexus *tv_nexus;
+ 	struct se_cmd *se_cmd = &cmd->tvc_se_cmd;
+ 	struct scatterlist *sg_ptr, *sg_prot_ptr = NULL;
+@@ -1126,14 +1120,7 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
+ 		 * vhost_scsi_queue_data_in() and vhost_scsi_queue_status()
+ 		 */
+ 		cmd->tvc_vq_desc = vc.head;
+-		/*
+-		 * Dispatch cmd descriptor for cmwq execution in process
+-		 * context provided by vhost_scsi_workqueue.  This also ensures
+-		 * cmd is executed on the same kworker CPU as this vhost
+-		 * thread to gain positive L2 cache locality effects.
+-		 */
+-		INIT_WORK(&cmd->work, vhost_scsi_submission_work);
+-		queue_work(vhost_scsi_workqueue, &cmd->work);
++		vhost_scsi_target_submit(cmd);
+ 		ret = 0;
+ err:
+ 		/*
+@@ -2511,17 +2498,9 @@ static int __init vhost_scsi_init(void)
+ 		" on "UTS_RELEASE"\n", VHOST_SCSI_VERSION, utsname()->sysname,
+ 		utsname()->machine);
  
-@@ -146,6 +173,7 @@ static inline void kunmap_high(struct page *page)
+-	/*
+-	 * Use our own dedicated workqueue for submitting I/O into
+-	 * target core to avoid contention within system_wq.
+-	 */
+-	vhost_scsi_workqueue = alloc_workqueue("vhost_scsi", 0, 0);
+-	if (!vhost_scsi_workqueue)
+-		goto out;
+-
+ 	ret = vhost_scsi_register();
+ 	if (ret < 0)
+-		goto out_destroy_workqueue;
++		goto out;
  
- static inline void kunmap(struct page *page)
+ 	ret = target_register_template(&vhost_scsi_ops);
+ 	if (ret < 0)
+@@ -2531,8 +2510,6 @@ static int __init vhost_scsi_init(void)
+ 
+ out_vhost_scsi_deregister:
+ 	vhost_scsi_deregister();
+-out_destroy_workqueue:
+-	destroy_workqueue(vhost_scsi_workqueue);
+ out:
+ 	return ret;
+ };
+@@ -2541,7 +2518,6 @@ static void vhost_scsi_exit(void)
  {
-+	dev_page_disable_access(page, true);
- #ifdef ARCH_HAS_FLUSH_ON_KUNMAP
- 	kunmap_flush_on_unmap(page_address(page));
- #endif
-@@ -155,6 +183,7 @@ static inline void *kmap_atomic(struct page *page)
- {
- 	preempt_disable();
- 	pagefault_disable();
-+	dev_page_enable_access(page, false);
- 	return page_address(page);
- }
- #define kmap_atomic_prot(page, prot)	kmap_atomic(page)
-@@ -216,7 +245,8 @@ static inline void kmap_atomic_idx_pop(void)
- #define kunmap_atomic(addr)                                     \
- do {                                                            \
- 	BUILD_BUG_ON(__same_type((addr), struct page *));       \
--	kunmap_atomic_high(addr);                                  \
-+	dev_page_disable_access(kmap_to_page(addr), false);     \
-+	kunmap_atomic_high(addr);                               \
- 	pagefault_enable();                                     \
- 	preempt_enable();                                       \
- } while (0)
+ 	target_unregister_template(&vhost_scsi_ops);
+ 	vhost_scsi_deregister();
+-	destroy_workqueue(vhost_scsi_workqueue);
+ };
+ 
+ MODULE_DESCRIPTION("VHOST_SCSI series fabric driver");
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+1.8.3.1
