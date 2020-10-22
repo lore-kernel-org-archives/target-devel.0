@@ -1,167 +1,390 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:49:52 +0000
-Subject: [PATCH RFC PKS/PMEM 17/58] fs/nilfs2: Utilize new kmap_thread()
-Message-Id: <20201009195033.3208459-18-ira.weiny@intel.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 22 Oct 2020 00:34:54 +0000
+Subject: [PATCH 08/17] vhost scsi: alloc cmds per vq instead of session
+Message-Id: <1603326903-27052-9-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, io-uring@vger.kernel.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-afs@lists.infradead.org, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, Ryusuke Konishi <konishi.ryusuke@gmail.com>, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-From: Ira Weiny <ira.weiny@intel.com>
+We currently are limited to 256 cmds per session. This leads to problems
+where if the user has increased virtqueue_size to more than 2 or
+cmd_per_lun to more than 256 vhost_scsi_get_tag can fail and the guest
+will get IO errors.
 
-The kmap() calls in this FS are localized to a single thread.  To avoid
-the over head of global PKRS updates use the new kmap_thread() call.
+This patch moves the cmd allocation to per vq so we can easily match
+whatever the user has specified for num_queues and
+virtqueue_size/cmd_per_lun. It also makes it easier to control how much
+memory we preallocate. For cases, where perf is not as important and
+we can use the current defaults (1 vq and 128 cmds per vq) memory use
+from preallocate cmds is cut in half. For cases, where we are willing
+to use more memory for higher perf, cmd mem use will now increase as
+the num queues and queue depth increases.
 
-Cc: Ryusuke Konishi <konishi.ryusuke@gmail.com>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- fs/nilfs2/alloc.c  | 34 +++++++++++++++++-----------------
- fs/nilfs2/cpfile.c |  4 ++--
- 2 files changed, 19 insertions(+), 19 deletions(-)
+ drivers/vhost/scsi.c | 207 +++++++++++++++++++++++++++++++--------------------
+ 1 file changed, 128 insertions(+), 79 deletions(-)
 
-diff --git a/fs/nilfs2/alloc.c b/fs/nilfs2/alloc.c
-index adf3bb0a8048..2aa4c34094ef 100644
---- a/fs/nilfs2/alloc.c
-+++ b/fs/nilfs2/alloc.c
-@@ -524,7 +524,7 @@ int nilfs_palloc_prepare_alloc_entry(struct inode *inode,
- 		ret = nilfs_palloc_get_desc_block(inode, group, 1, &desc_bh);
- 		if (ret < 0)
- 			return ret;
--		desc_kaddr = kmap(desc_bh->b_page);
-+		desc_kaddr = kmap_thread(desc_bh->b_page);
- 		desc = nilfs_palloc_block_get_group_desc(
- 			inode, group, desc_bh, desc_kaddr);
- 		n = nilfs_palloc_rest_groups_in_desc_block(inode, group,
-@@ -536,7 +536,7 @@ int nilfs_palloc_prepare_alloc_entry(struct inode *inode,
- 					inode, group, 1, &bitmap_bh);
- 				if (ret < 0)
- 					goto out_desc;
--				bitmap_kaddr = kmap(bitmap_bh->b_page);
-+				bitmap_kaddr = kmap_thread(bitmap_bh->b_page);
- 				bitmap = bitmap_kaddr + bh_offset(bitmap_bh);
- 				pos = nilfs_palloc_find_available_slot(
- 					bitmap, group_offset,
-@@ -547,21 +547,21 @@ int nilfs_palloc_prepare_alloc_entry(struct inode *inode,
- 						desc, lock, -1);
- 					req->pr_entry_nr  						entries_per_group * group + pos;
--					kunmap(desc_bh->b_page);
--					kunmap(bitmap_bh->b_page);
-+					kunmap_thread(desc_bh->b_page);
-+					kunmap_thread(bitmap_bh->b_page);
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index ab1b656..f6b9010 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -52,7 +52,6 @@
+ #define VHOST_SCSI_VERSION  "v0.1"
+ #define VHOST_SCSI_NAMELEN 256
+ #define VHOST_SCSI_MAX_CDB_SIZE 32
+-#define VHOST_SCSI_DEFAULT_TAGS 256
+ #define VHOST_SCSI_PREALLOC_SGLS 2048
+ #define VHOST_SCSI_PREALLOC_UPAGES 2048
+ #define VHOST_SCSI_PREALLOC_PROT_SGLS 2048
+@@ -189,6 +188,9 @@ struct vhost_scsi_virtqueue {
+ 	 * Writers must also take dev mutex and flush under it.
+ 	 */
+ 	int inflight_idx;
++	struct vhost_scsi_cmd *scsi_cmds;
++	struct sbitmap scsi_tags;
++	int max_cmds;
+ };
  
- 					req->pr_desc_bh = desc_bh;
- 					req->pr_bitmap_bh = bitmap_bh;
- 					return 0;
- 				}
--				kunmap(bitmap_bh->b_page);
-+				kunmap_thread(bitmap_bh->b_page);
- 				brelse(bitmap_bh);
- 			}
+ struct vhost_scsi {
+@@ -324,7 +326,9 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
+ {
+ 	struct vhost_scsi_cmd *tv_cmd = container_of(se_cmd,
+ 				struct vhost_scsi_cmd, tvc_se_cmd);
+-	struct se_session *se_sess = tv_cmd->tvc_nexus->tvn_se_sess;
++	struct vhost_scsi_virtqueue *svq = container_of(tv_cmd->tvc_vq,
++				struct vhost_scsi_virtqueue, vq);
++	struct vhost_scsi_inflight *inflight = tv_cmd->inflight;
+ 	int i;
  
- 			group_offset = 0;
- 		}
- 
--		kunmap(desc_bh->b_page);
-+		kunmap_thread(desc_bh->b_page);
- 		brelse(desc_bh);
+ 	if (tv_cmd->tvc_sgl_count) {
+@@ -336,8 +340,8 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
+ 			put_page(sg_page(&tv_cmd->tvc_prot_sgl[i]));
  	}
  
-@@ -569,7 +569,7 @@ int nilfs_palloc_prepare_alloc_entry(struct inode *inode,
- 	return -ENOSPC;
- 
-  out_desc:
--	kunmap(desc_bh->b_page);
-+	kunmap_thread(desc_bh->b_page);
- 	brelse(desc_bh);
- 	return ret;
+-	vhost_scsi_put_inflight(tv_cmd->inflight);
+-	target_free_tag(se_sess, se_cmd);
++	sbitmap_clear_bit(&svq->scsi_tags, se_cmd->map_tag);
++	vhost_scsi_put_inflight(inflight);
  }
-@@ -605,10 +605,10 @@ void nilfs_palloc_commit_free_entry(struct inode *inode,
- 	spinlock_t *lock;
  
- 	group = nilfs_palloc_group(inode, req->pr_entry_nr, &group_offset);
--	desc_kaddr = kmap(req->pr_desc_bh->b_page);
-+	desc_kaddr = kmap_thread(req->pr_desc_bh->b_page);
- 	desc = nilfs_palloc_block_get_group_desc(inode, group,
- 						 req->pr_desc_bh, desc_kaddr);
--	bitmap_kaddr = kmap(req->pr_bitmap_bh->b_page);
-+	bitmap_kaddr = kmap_thread(req->pr_bitmap_bh->b_page);
- 	bitmap = bitmap_kaddr + bh_offset(req->pr_bitmap_bh);
- 	lock = nilfs_mdt_bgl_lock(inode, group);
+ static u32 vhost_scsi_sess_get_index(struct se_session *se_sess)
+@@ -566,31 +570,31 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ }
  
-@@ -620,8 +620,8 @@ void nilfs_palloc_commit_free_entry(struct inode *inode,
- 	else
- 		nilfs_palloc_group_desc_add_entries(desc, lock, 1);
+ static struct vhost_scsi_cmd *
+-vhost_scsi_get_tag(struct vhost_virtqueue *vq, struct vhost_scsi_tpg *tpg,
++vhost_scsi_get_cmd(struct vhost_virtqueue *vq, struct vhost_scsi_tpg *tpg,
+ 		   unsigned char *cdb, u64 scsi_tag, u16 lun, u8 task_attr,
+ 		   u32 exp_data_len, int data_direction)
+ {
++	struct vhost_scsi_virtqueue *svq = container_of(vq,
++					struct vhost_scsi_virtqueue, vq);
+ 	struct vhost_scsi_cmd *cmd;
+ 	struct vhost_scsi_nexus *tv_nexus;
+-	struct se_session *se_sess;
+ 	struct scatterlist *sg, *prot_sg;
+ 	struct page **pages;
+-	int tag, cpu;
++	int tag;
  
--	kunmap(req->pr_bitmap_bh->b_page);
--	kunmap(req->pr_desc_bh->b_page);
-+	kunmap_thread(req->pr_bitmap_bh->b_page);
-+	kunmap_thread(req->pr_desc_bh->b_page);
+ 	tv_nexus = tpg->tpg_nexus;
+ 	if (!tv_nexus) {
+ 		pr_err("Unable to locate active struct vhost_scsi_nexus\n");
+ 		return ERR_PTR(-EIO);
+ 	}
+-	se_sess = tv_nexus->tvn_se_sess;
  
- 	mark_buffer_dirty(req->pr_desc_bh);
- 	mark_buffer_dirty(req->pr_bitmap_bh);
-@@ -646,10 +646,10 @@ void nilfs_palloc_abort_alloc_entry(struct inode *inode,
- 	spinlock_t *lock;
+-	tag = sbitmap_queue_get(&se_sess->sess_tag_pool, &cpu);
++	tag = sbitmap_get(&svq->scsi_tags, 0, false);
+ 	if (tag < 0) {
+ 		pr_err("Unable to obtain tag for vhost_scsi_cmd\n");
+ 		return ERR_PTR(-ENOMEM);
+ 	}
  
- 	group = nilfs_palloc_group(inode, req->pr_entry_nr, &group_offset);
--	desc_kaddr = kmap(req->pr_desc_bh->b_page);
-+	desc_kaddr = kmap_thread(req->pr_desc_bh->b_page);
- 	desc = nilfs_palloc_block_get_group_desc(inode, group,
- 						 req->pr_desc_bh, desc_kaddr);
--	bitmap_kaddr = kmap(req->pr_bitmap_bh->b_page);
-+	bitmap_kaddr = kmap_thread(req->pr_bitmap_bh->b_page);
- 	bitmap = bitmap_kaddr + bh_offset(req->pr_bitmap_bh);
- 	lock = nilfs_mdt_bgl_lock(inode, group);
+-	cmd = &((struct vhost_scsi_cmd *)se_sess->sess_cmd_map)[tag];
++	cmd = &svq->scsi_cmds[tag];
+ 	sg = cmd->tvc_sgl;
+ 	prot_sg = cmd->tvc_prot_sgl;
+ 	pages = cmd->tvc_upages;
+@@ -599,7 +603,6 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ 	cmd->tvc_prot_sgl = prot_sg;
+ 	cmd->tvc_upages = pages;
+ 	cmd->tvc_se_cmd.map_tag = tag;
+-	cmd->tvc_se_cmd.map_cpu = cpu;
+ 	cmd->tvc_tag = scsi_tag;
+ 	cmd->tvc_lun = lun;
+ 	cmd->tvc_task_attr = task_attr;
+@@ -1070,11 +1073,11 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
+ 				scsi_command_size(cdb), VHOST_SCSI_MAX_CDB_SIZE);
+ 				goto err;
+ 		}
+-		cmd = vhost_scsi_get_tag(vq, tpg, cdb, tag, lun, task_attr,
++		cmd = vhost_scsi_get_cmd(vq, tpg, cdb, tag, lun, task_attr,
+ 					 exp_data_len + prot_bytes,
+ 					 data_direction);
+ 		if (IS_ERR(cmd)) {
+-			vq_err(vq, "vhost_scsi_get_tag failed %ld\n",
++			vq_err(vq, "vhost_scsi_get_cmd failed %ld\n",
+ 			       PTR_ERR(cmd));
+ 			goto err;
+ 		}
+@@ -1378,6 +1381,83 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 		wait_for_completion(&old_inflight[i]->comp);
+ }
  
-@@ -661,8 +661,8 @@ void nilfs_palloc_abort_alloc_entry(struct inode *inode,
- 	else
- 		nilfs_palloc_group_desc_add_entries(desc, lock, 1);
++static void vhost_scsi_destroy_vq_cmds(struct vhost_virtqueue *vq)
++{
++	struct vhost_scsi_virtqueue *svq = container_of(vq,
++					struct vhost_scsi_virtqueue, vq);
++	struct vhost_scsi_cmd *tv_cmd;
++	unsigned int i;
++
++	if (!svq->scsi_cmds)
++		return;
++
++	for (i = 0; i < svq->max_cmds; i++) {
++		tv_cmd = &svq->scsi_cmds[i];
++
++		kfree(tv_cmd->tvc_sgl);
++		kfree(tv_cmd->tvc_prot_sgl);
++		kfree(tv_cmd->tvc_upages);
++	}
++
++	sbitmap_free(&svq->scsi_tags);
++	kfree(svq->scsi_cmds);
++	svq->scsi_cmds = NULL;
++}
++
++static int vhost_scsi_setup_vq_cmds(struct vhost_virtqueue *vq, int max_cmds)
++{
++	struct vhost_scsi_virtqueue *svq = container_of(vq,
++					struct vhost_scsi_virtqueue, vq);
++	struct vhost_scsi_cmd *tv_cmd;
++	unsigned int i;
++
++	if (svq->scsi_cmds)
++		return 0;
++
++	if (sbitmap_init_node(&svq->scsi_tags, max_cmds, -1, GFP_KERNEL,
++			      NUMA_NO_NODE))
++		return -ENOMEM;
++	svq->max_cmds = max_cmds;
++
++	svq->scsi_cmds = kcalloc(max_cmds, sizeof(*tv_cmd), GFP_KERNEL);
++	if (!svq->scsi_cmds) {
++		sbitmap_free(&svq->scsi_tags);
++		return -ENOMEM;
++	}
++
++	for (i = 0; i < max_cmds; i++) {
++		tv_cmd = &svq->scsi_cmds[i];
++
++		tv_cmd->tvc_sgl = kcalloc(VHOST_SCSI_PREALLOC_SGLS,
++					  sizeof(struct scatterlist),
++					  GFP_KERNEL);
++		if (!tv_cmd->tvc_sgl) {
++			pr_err("Unable to allocate tv_cmd->tvc_sgl\n");
++			goto out;
++		}
++
++		tv_cmd->tvc_upages = kcalloc(VHOST_SCSI_PREALLOC_UPAGES,
++					     sizeof(struct page *),
++					     GFP_KERNEL);
++		if (!tv_cmd->tvc_upages) {
++			pr_err("Unable to allocate tv_cmd->tvc_upages\n");
++			goto out;
++		}
++
++		tv_cmd->tvc_prot_sgl = kcalloc(VHOST_SCSI_PREALLOC_PROT_SGLS,
++					       sizeof(struct scatterlist),
++					       GFP_KERNEL);
++		if (!tv_cmd->tvc_prot_sgl) {
++			pr_err("Unable to allocate tv_cmd->tvc_prot_sgl\n");
++			goto out;
++		}
++	}
++	return 0;
++out:
++	vhost_scsi_destroy_vq_cmds(vq);
++	return -ENOMEM;
++}
++
+ /*
+  * Called from vhost_scsi_ioctl() context to walk the list of available
+  * vhost_scsi_tpg with an active struct vhost_scsi_nexus
+@@ -1432,10 +1512,9 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
  
--	kunmap(req->pr_bitmap_bh->b_page);
--	kunmap(req->pr_desc_bh->b_page);
-+	kunmap_thread(req->pr_bitmap_bh->b_page);
-+	kunmap_thread(req->pr_desc_bh->b_page);
+ 		if (!strcmp(tv_tport->tport_name, t->vhost_wwpn)) {
+ 			if (vs->vs_tpg && vs->vs_tpg[tpg->tport_tpgt]) {
+-				kfree(vs_tpg);
+ 				mutex_unlock(&tpg->tv_tpg_mutex);
+ 				ret = -EEXIST;
+-				goto out;
++				goto undepend;
+ 			}
+ 			/*
+ 			 * In order to ensure individual vhost-scsi configfs
+@@ -1447,9 +1526,8 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 			ret = target_depend_item(&se_tpg->tpg_group.cg_item);
+ 			if (ret) {
+ 				pr_warn("target_depend_item() failed: %d\n", ret);
+-				kfree(vs_tpg);
+ 				mutex_unlock(&tpg->tv_tpg_mutex);
+-				goto out;
++				goto undepend;
+ 			}
+ 			tpg->tv_tpg_vhost_count++;
+ 			tpg->vhost_scsi = vs;
+@@ -1462,6 +1540,16 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 	if (match) {
+ 		memcpy(vs->vs_vhost_wwpn, t->vhost_wwpn,
+ 		       sizeof(vs->vs_vhost_wwpn));
++
++		for (i = VHOST_SCSI_VQ_IO; i < VHOST_SCSI_MAX_VQ; i++) {
++			vq = &vs->vqs[i].vq;
++			if (!vq->initialized)
++				continue;
++
++			if (vhost_scsi_setup_vq_cmds(vq, vq->num))
++				goto destroy_vq_cmds;
++		}
++
+ 		for (i = 0; i < VHOST_SCSI_MAX_VQ; i++) {
+ 			vq = &vs->vqs[i].vq;
+ 			if (!vq->initialized)
+@@ -1484,7 +1572,22 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 	vhost_scsi_flush(vs);
+ 	kfree(vs->vs_tpg);
+ 	vs->vs_tpg = vs_tpg;
++	goto out;
  
- 	brelse(req->pr_bitmap_bh);
- 	brelse(req->pr_desc_bh);
-@@ -754,7 +754,7 @@ int nilfs_palloc_freev(struct inode *inode, __u64 *entry_nrs, size_t nitems)
- 		/* Get the first entry number of the group */
- 		group_min_nr = (__u64)group * epg;
++destroy_vq_cmds:
++	for (i--; i >= VHOST_SCSI_VQ_IO; i--) {
++		if (!vhost_vq_get_backend(&vs->vqs[i].vq))
++			vhost_scsi_destroy_vq_cmds(&vs->vqs[i].vq);
++	}
++undepend:
++	for (i = 0; i < VHOST_SCSI_MAX_TARGET; i++) {
++		tpg = vs_tpg[i];
++		if (tpg) {
++			tpg->tv_tpg_vhost_count--;
++			target_undepend_item(&tpg->se_tpg.tpg_group.cg_item);
++		}
++	}
++	kfree(vs_tpg);
+ out:
+ 	mutex_unlock(&vs->dev.mutex);
+ 	mutex_unlock(&vhost_scsi_mutex);
+@@ -1560,6 +1663,12 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 			mutex_lock(&vq->mutex);
+ 			vhost_vq_set_backend(vq, NULL);
+ 			mutex_unlock(&vq->mutex);
++			/*
++			 * Make sure cmds are not running before tearing them
++			 * down.
++			 */
++			vhost_scsi_flush(vs);
++			vhost_scsi_destroy_vq_cmds(vq);
+ 		}
+ 	}
+ 	/*
+@@ -1861,23 +1970,6 @@ static void vhost_scsi_port_unlink(struct se_portal_group *se_tpg,
+ 	mutex_unlock(&vhost_scsi_mutex);
+ }
  
--		bitmap_kaddr = kmap(bitmap_bh->b_page);
-+		bitmap_kaddr = kmap_thread(bitmap_bh->b_page);
- 		bitmap = bitmap_kaddr + bh_offset(bitmap_bh);
- 		lock = nilfs_mdt_bgl_lock(inode, group);
+-static void vhost_scsi_free_cmd_map_res(struct se_session *se_sess)
+-{
+-	struct vhost_scsi_cmd *tv_cmd;
+-	unsigned int i;
+-
+-	if (!se_sess->sess_cmd_map)
+-		return;
+-
+-	for (i = 0; i < VHOST_SCSI_DEFAULT_TAGS; i++) {
+-		tv_cmd = &((struct vhost_scsi_cmd *)se_sess->sess_cmd_map)[i];
+-
+-		kfree(tv_cmd->tvc_sgl);
+-		kfree(tv_cmd->tvc_prot_sgl);
+-		kfree(tv_cmd->tvc_upages);
+-	}
+-}
+-
+ static ssize_t vhost_scsi_tpg_attrib_fabric_prot_type_store(
+ 		struct config_item *item, const char *page, size_t count)
+ {
+@@ -1917,45 +2009,6 @@ static ssize_t vhost_scsi_tpg_attrib_fabric_prot_type_show(
+ 	NULL,
+ };
  
-@@ -800,7 +800,7 @@ int nilfs_palloc_freev(struct inode *inode, __u64 *entry_nrs, size_t nitems)
- 			entry_start = rounddown(group_offset, epb);
- 		} while (true);
+-static int vhost_scsi_nexus_cb(struct se_portal_group *se_tpg,
+-			       struct se_session *se_sess, void *p)
+-{
+-	struct vhost_scsi_cmd *tv_cmd;
+-	unsigned int i;
+-
+-	for (i = 0; i < VHOST_SCSI_DEFAULT_TAGS; i++) {
+-		tv_cmd = &((struct vhost_scsi_cmd *)se_sess->sess_cmd_map)[i];
+-
+-		tv_cmd->tvc_sgl = kcalloc(VHOST_SCSI_PREALLOC_SGLS,
+-					  sizeof(struct scatterlist),
+-					  GFP_KERNEL);
+-		if (!tv_cmd->tvc_sgl) {
+-			pr_err("Unable to allocate tv_cmd->tvc_sgl\n");
+-			goto out;
+-		}
+-
+-		tv_cmd->tvc_upages = kcalloc(VHOST_SCSI_PREALLOC_UPAGES,
+-					     sizeof(struct page *),
+-					     GFP_KERNEL);
+-		if (!tv_cmd->tvc_upages) {
+-			pr_err("Unable to allocate tv_cmd->tvc_upages\n");
+-			goto out;
+-		}
+-
+-		tv_cmd->tvc_prot_sgl = kcalloc(VHOST_SCSI_PREALLOC_PROT_SGLS,
+-					       sizeof(struct scatterlist),
+-					       GFP_KERNEL);
+-		if (!tv_cmd->tvc_prot_sgl) {
+-			pr_err("Unable to allocate tv_cmd->tvc_prot_sgl\n");
+-			goto out;
+-		}
+-	}
+-	return 0;
+-out:
+-	vhost_scsi_free_cmd_map_res(se_sess);
+-	return -ENOMEM;
+-}
+-
+ static int vhost_scsi_make_nexus(struct vhost_scsi_tpg *tpg,
+ 				const char *name)
+ {
+@@ -1979,12 +2032,9 @@ static int vhost_scsi_make_nexus(struct vhost_scsi_tpg *tpg,
+ 	 * struct se_node_acl for the vhost_scsi struct se_portal_group with
+ 	 * the SCSI Initiator port name of the passed configfs group 'name'.
+ 	 */
+-	tv_nexus->tvn_se_sess = target_setup_session(&tpg->se_tpg,
+-					VHOST_SCSI_DEFAULT_TAGS,
+-					sizeof(struct vhost_scsi_cmd),
++	tv_nexus->tvn_se_sess = target_setup_session(&tpg->se_tpg, 0, 0,
+ 					TARGET_PROT_DIN_PASS | TARGET_PROT_DOUT_PASS,
+-					(unsigned char *)name, tv_nexus,
+-					vhost_scsi_nexus_cb);
++					(unsigned char *)name, tv_nexus, NULL);
+ 	if (IS_ERR(tv_nexus->tvn_se_sess)) {
+ 		mutex_unlock(&tpg->tv_tpg_mutex);
+ 		kfree(tv_nexus);
+@@ -2034,7 +2084,6 @@ static int vhost_scsi_drop_nexus(struct vhost_scsi_tpg *tpg)
+ 		" %s Initiator Port: %s\n", vhost_scsi_dump_proto_id(tpg->tport),
+ 		tv_nexus->tvn_se_sess->se_node_acl->initiatorname);
  
--		kunmap(bitmap_bh->b_page);
-+		kunmap_thread(bitmap_bh->b_page);
- 		mark_buffer_dirty(bitmap_bh);
- 		brelse(bitmap_bh);
- 
-diff --git a/fs/nilfs2/cpfile.c b/fs/nilfs2/cpfile.c
-index 86d4d850d130..402ab8bfce29 100644
---- a/fs/nilfs2/cpfile.c
-+++ b/fs/nilfs2/cpfile.c
-@@ -235,11 +235,11 @@ int nilfs_cpfile_get_checkpoint(struct inode *cpfile,
- 	ret = nilfs_cpfile_get_checkpoint_block(cpfile, cno, create, &cp_bh);
- 	if (ret < 0)
- 		goto out_header;
--	kaddr = kmap(cp_bh->b_page);
-+	kaddr = kmap_thread(cp_bh->b_page);
- 	cp = nilfs_cpfile_block_get_checkpoint(cpfile, cno, cp_bh, kaddr);
- 	if (nilfs_checkpoint_invalid(cp)) {
- 		if (!create) {
--			kunmap(cp_bh->b_page);
-+			kunmap_thread(cp_bh->b_page);
- 			brelse(cp_bh);
- 			ret = -ENOENT;
- 			goto out_header;
+-	vhost_scsi_free_cmd_map_res(se_sess);
+ 	/*
+ 	 * Release the SCSI I_T Nexus to the emulated vhost Target Port
+ 	 */
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+1.8.3.1
