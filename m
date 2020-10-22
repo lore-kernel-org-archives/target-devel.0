@@ -1,83 +1,57 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Wed, 07 Oct 2020 14:53:26 +0000
-Subject: [PATCH 2/2] target: iscsi: fix a race condition when aborting a task
-Message-Id: <20201007145326.56850-3-mlombard@redhat.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 22 Oct 2020 02:42:23 +0000
+Subject: Re: [PATCH 2/2] target: iscsi: fix a race condition when aborting a task
+Message-Id: <20daa17d-08e7-a412-4d33-bcf75587eca6@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20201007145326.56850-1-mlombard@redhat.com>
-In-Reply-To: <20201007145326.56850-1-mlombard@redhat.com>
+ <20201007145326.56850-3-mlombard@redhat.com>
+In-Reply-To: <20201007145326.56850-3-mlombard@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, bvanassche@acm.org, michael.christie@oracle.com
+To: Maurizio Lombardi <mlombard@redhat.com>, martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, bvanassche@acm.org
 
-The iscsit_release_commands_from_conn() function does the following
-operations:
+On 10/7/20 9:53 AM, Maurizio Lombardi wrote:
+> The iscsit_release_commands_from_conn() function does the following
+> operations:
+> 
+> 1) locks the cmd_lock spinlock
+> 2) Scans the list of commands and sets the CMD_T_FABRIC_STOP flag
+> 3) Releases the cmd_lock spinlock
+> 4) Rescans the list again and clears the i_conn_node link of each command
+> 
+> If an abort task timer is fired between 3) and 4), it will find
+> the CMD_T_FABRIC_STOP flag set and won't call list_del_init();
+> therefore it may end up calling __iscsit_free_cmd() with a
+> non-empty i_conn_node list, thus triggering the warning.
+> 
+> Considering that:
+> 
+> - we expect list_del_init() to be executed by
+>   iscsit_release_commands_from_conn() when the CMD_T_FABRIC_STOP is set.
+> - iscsit_aborted_task() is the only function that calls __iscsit_free_cmd()
+>   directly, while all the other functions call iscsit_free_cmd().
+> - the warning in __iscsit_free_cmd() is a duplicate (the same warning
+>   can be found in iscsit_free_cmd().
+> 
 
-1) locks the cmd_lock spinlock
-2) Scans the list of commands and sets the CMD_T_FABRIC_STOP flag
-3) Releases the cmd_lock spinlock
-4) Rescans the list again and clears the i_conn_node link of each command
+For iscsi, what does the last put on the cmd for a successful abort. Ignore this conn stop case.
 
-If an abort task timer is fired between 3) and 4), it will find
-the CMD_T_FABRIC_STOP flag set and won't call list_del_init();
-therefore it may end up calling __iscsit_free_cmd() with a
-non-empty i_conn_node list, thus triggering the warning.
+If we abort a command successfully, the abort path does:
 
-Considering that:
+target_handle_abort -> transport_cmd_check_stop_to_fabric -> lio_check_stop_free -> target_put_sess_cmd
 
-- we expect list_del_init() to be executed by
-  iscsit_release_commands_from_conn() when the CMD_T_FABRIC_STOP is set.
-- iscsit_aborted_task() is the only function that calls __iscsit_free_cmd()
-  directly, while all the other functions call iscsit_free_cmd().
-- the warning in __iscsit_free_cmd() is a duplicate (the same warning
-  can be found in iscsit_free_cmd().
+When we create the cmd we do transport_init_se_cmd and that sets the refcount=1. We do target_get_sess_cmd with ack_kref=true so that sets refcount=2.
 
-We can fix the bug by simply removing the warning from __iscsit_free_cmd()
+On the abort completion path, target_handle_abort does target_put_sess_cmd (refcount=1 after), check_stop_free ends up doing a put (refcount=0 after).
 
-kernel: ------------[ cut here ]------------
-kernel: WARNING: CPU: 1 PID: 21173 at drivers/target/iscsi/iscsi_target_util.c:720 __iscsit_free_cmd+0x26e/0x290 [iscsi_target_mod]
-...
-kernel: CPU: 1 PID: 21173 Comm: kworker/u8:3 Kdump: loaded Not tainted 3.10.0-1062.4.1.el7.x86_64 #1
-kernel: Hardware name: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 09/17/2015
-kernel: Workqueue: tmr-user target_tmr_work [target_core_mod]
-kernel: Call Trace:
-kernel: [<ffffffff91d78ba4>] dump_stack+0x19/0x1b
-kernel: [<ffffffff9169a958>] __warn+0xd8/0x100
-kernel: [<ffffffff9169aa9d>] warn_slowpath_null+0x1d/0x20
-kernel: [<ffffffffc0a6f69e>] __iscsit_free_cmd+0x26e/0x290 [iscsi_target_mod]
-kernel: [<ffffffffc0a70bc4>] iscsit_aborted_task+0x64/0x70 [iscsi_target_mod]
-kernel: [<ffffffffc0a7830a>] lio_aborted_task+0x2a/0x30 [iscsi_target_mod]
-kernel: [<ffffffffc09fa516>] transport_cmd_finish_abort+0x66/0xb0 [target_core_mod]
-kernel: [<ffffffffc09f4d92>] core_tmr_abort_task+0x102/0x180 [target_core_mod]
-kernel: [<ffffffffc09f7bb2>] target_tmr_work+0x152/0x170 [target_core_mod]
-kernel: [<ffffffff916bd1df>] process_one_work+0x17f/0x440
-kernel: [<ffffffff916be2f6>] worker_thread+0x126/0x3c0
-kernel: [<ffffffff916be1d0>] ? manage_workers.isra.26+0x2a0/0x2a0
-kernel: [<ffffffff916c51b1>] kthread+0xd1/0xe0
-kernel: [<ffffffff916c50e0>] ? insert_kthread_work+0x40/0x40
-kernel: [<ffffffff91d8bd37>] ret_from_fork_nospec_begin+0x21/0x21
-kernel: [<ffffffff916c50e0>] ? insert_kthread_work+0x40/0x40
-kernel: ---[ end trace ed2119501826ec7a ]---
+If we free the cmd from the abort path, then for your conn stop plus abort race case, could we do:
 
+1. thread1 runs iscsit_release_commands_from_conn and sets CMD_T_FABRIC_STOP.
+2. thread2 runs iscsit_aborted_task and then does __iscsit_free_cmd. It then returns from the aborted_task callout and we finish target_handle_abort and do:
 
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
----
- drivers/target/iscsi/iscsi_target_util.c | 2 --
- 1 file changed, 2 deletions(-)
+target_handle_abort -> transport_cmd_check_stop_to_fabric -> lio_check_stop_free -> target_put_sess_cmd
 
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 3082f5bde9fa..61233755ece0 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -741,8 +741,6 @@ void __iscsit_free_cmd(struct iscsi_cmd *cmd, bool check_queues)
- {
- 	struct iscsi_conn *conn = cmd->conn;
- 
--	WARN_ON(!list_empty(&cmd->i_conn_node));
--
- 	if (cmd->data_direction = DMA_TO_DEVICE) {
- 		iscsit_stop_dataout_timer(cmd);
- 		iscsit_free_r2ts_from_list(cmd);
--- 
-2.26.2
+The cmd is now freed.
+3. thread1 now finishes iscsit_release_commands_from_conn and runs iscsit_free_cmd while accessing a command we just released.
