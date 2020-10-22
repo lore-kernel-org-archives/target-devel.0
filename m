@@ -1,56 +1,54 @@
-From: "Michael S. Tsirkin" <mst@redhat.com>
-Date: Fri, 23 Oct 2020 15:43:14 +0000
-Subject: Re: [PATCH 14/16] vhost: poll support support multiple workers
-Message-Id: <20201023114247-mutt-send-email-mst@kernel.org>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 22 Oct 2020 00:34:47 +0000
+Subject: [PATCH 01/17] vhost scsi: add lun parser helper
+Message-Id: <1603326903-27052-2-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1602104101-5592-15-git-send-email-michael.christie@oracle.com>
- <202010080822.dOGbzKC9-lkp@intel.com>
-In-Reply-To: <202010080822.dOGbzKC9-lkp@intel.com>
+References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kernel test robot <lkp@intel.com>
-Cc: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org, kbuild-all@lists.01.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-On Thu, Oct 08, 2020 at 08:46:42AM +0800, kernel test robot wrote:
-> Hi Mike,
-> 
-> Thank you for the patch! Yet something to improve:
-> 
-> [auto build test ERROR on vhost/linux-next]
-> [also build test ERROR on next-20201007]
-> [cannot apply to v5.9-rc8]
-> [If your patch is applied to the wrong git tree, kindly drop us a note.
-> And when submitting patch, we suggest to use '--base' as documented in
-> https://git-scm.com/docs/git-format-patch]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Mike-Christie/vhost-fix-scsi-cmd-handling-and-IOPs/20201008-045802
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/mst/vhost.git linux-next
-> config: m68k-allyesconfig (attached as .config)
-> compiler: m68k-linux-gcc (GCC) 9.3.0
-> reproduce (this is a W=1 build):
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # https://github.com/0day-ci/linux/commit/c9bcafefcac3c32ade0ba533609d7b1ddc343c54
->         git remote add linux-review https://github.com/0day-ci/linux
->         git fetch --no-tags linux-review Mike-Christie/vhost-fix-scsi-cmd-handling-and-IOPs/20201008-045802
->         git checkout c9bcafefcac3c32ade0ba533609d7b1ddc343c54
->         # save the attached .config to linux build tree
->         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=m68k 
-> 
-> If you fix the issue, kindly add following tag as appropriate
-> Reported-by: kernel test robot <lkp@intel.com>
-> 
-> All errors (new ones prefixed by >>):
-> 
-> >> m68k-linux-ld: drivers/vhost/scsi.o:(.bss+0x0): multiple definition of `vq'; drivers/vhost/net.o:(.bss+0x0): first defined here
->    m68k-linux-ld: drivers/vhost/vsock.o:(.bss+0x0): multiple definition of `vq'; drivers/vhost/net.o:(.bss+0x0): first defined here
->    m68k-linux-ld: drivers/vhost/vdpa.o:(.bss+0x0): multiple definition of `vq'; drivers/vhost/net.o:(.bss+0x0): first defined here
->    m68k-linux-ld: drivers/vhost/vhost.o:(.bss+0x0): multiple definition of `vq'; drivers/vhost/net.o:(.bss+0x0): first defined here
+Move code to parse lun from req's lun_buf to helper, so tmf code
+can use it in the next patch.
 
-Mike, what's going on with these failures?
-Can you figure it out pls?
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+---
+ drivers/vhost/scsi.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-> ---
-> 0-DAY CI Kernel Test Service, Intel Corporation
-> https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index b22adf0..0ea78d0 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -907,6 +907,11 @@ static void vhost_scsi_submission_work(struct work_struct *work)
+ 	return ret;
+ }
+ 
++static u16 vhost_buf_to_lun(u8 *lun_buf)
++{
++	return ((lun_buf[2] << 8) | lun_buf[3]) & 0x3FFF;
++}
++
+ static void
+ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
+ {
+@@ -1045,12 +1050,12 @@ static void vhost_scsi_submission_work(struct work_struct *work)
+ 			tag = vhost64_to_cpu(vq, v_req_pi.tag);
+ 			task_attr = v_req_pi.task_attr;
+ 			cdb = &v_req_pi.cdb[0];
+-			lun = ((v_req_pi.lun[2] << 8) | v_req_pi.lun[3]) & 0x3FFF;
++			lun = vhost_buf_to_lun(v_req_pi.lun);
+ 		} else {
+ 			tag = vhost64_to_cpu(vq, v_req.tag);
+ 			task_attr = v_req.task_attr;
+ 			cdb = &v_req.cdb[0];
+-			lun = ((v_req.lun[2] << 8) | v_req.lun[3]) & 0x3FFF;
++			lun = vhost_buf_to_lun(v_req.lun);
+ 		}
+ 		/*
+ 		 * Check that the received CDB size does not exceeded our
+-- 
+1.8.3.1
