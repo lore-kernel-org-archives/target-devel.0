@@ -1,216 +1,92 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:49:37 +0000
-Subject: [PATCH RFC PKS/PMEM 02/58] x86/pks/test: Add testing for global option
-Message-Id: <20201009195033.3208459-3-ira.weiny@intel.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 23 Oct 2020 20:57:20 +0000
+Subject: [PATCH 2/5] scsi: target: rename struct sense_info to sense_detail
+Message-Id: <20201023205723.17880-3-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <20201023205723.17880-1-ddiss@suse.de>
+In-Reply-To: <20201023205723.17880-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>
 
-From: Ira Weiny <ira.weiny@intel.com>
+This helps distinguish it from the SCSI sense INFORMATION field.
 
-Now that PKS can be enabled globaly (for all threads) add a test which
-spawns a thread and tests the same PKS functionality.
-
-The test enables/disables PKS in 1 thread while attempting to access the
-page in another thread.  We use the same test array as in the 'local'
-PKS testing.
-
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
- arch/x86/mm/fault.c |   4 ++
- lib/pks/pks_test.c  | 128 +++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 124 insertions(+), 8 deletions(-)
+ drivers/target/target_core_transport.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 4b4ff9efa298..4c74f52fbc23 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -1108,6 +1108,10 @@ static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte,
- 		if (global_pkey_is_enabled(pte, is_write, irq_state))
- 			return 1;
- 
-+		/*
-+		 * NOTE: This must be after the global_pkey_is_enabled() call
-+		 * to allow the fixup code to be tested.
-+		 */
- 		if (handle_pks_testing(error_code, irq_state))
- 			return 1;
- 
-diff --git a/lib/pks/pks_test.c b/lib/pks/pks_test.c
-index 286c8b8457da..dfddccbe4cb6 100644
---- a/lib/pks/pks_test.c
-+++ b/lib/pks/pks_test.c
-@@ -154,7 +154,8 @@ static void check_exception(irqentry_state_t *irq_state)
- 	}
- 
- 	/* Check the exception state */
--	if (!check_pkrs(test_armed_key, PKEY_DISABLE_ACCESS)) {
-+	if (!check_pkrs(test_armed_key,
-+			PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE)) {
- 		pr_err("     FAIL: PKRS cache and MSR\n");
- 		test_exception_ctx->pass = false;
- 	}
-@@ -308,24 +309,29 @@ static int test_it(struct pks_test_ctx *ctx, struct pks_access_test *test, void
- 	return ret;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index ff26ab0a5f60..caa3a7b34826 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3094,14 +3094,14 @@ bool transport_wait_for_tasks(struct se_cmd *cmd)
  }
+ EXPORT_SYMBOL(transport_wait_for_tasks);
  
--static int run_access_test(struct pks_test_ctx *ctx,
--			   struct pks_access_test *test,
--			   void *ptr)
-+static void set_protection(int pkey, enum pks_access_mode mode, bool global)
+-struct sense_info {
++struct sense_detail {
+ 	u8 key;
+ 	u8 asc;
+ 	u8 ascq;
+ 	bool add_sector_info;
+ };
+ 
+-static const struct sense_info sense_info_table[] = {
++static const struct sense_detail sense_detail_table[] = {
+ 	[TCM_NO_SENSE] = {
+ 		.key = NOT_READY
+ 	},
+@@ -3261,39 +3261,39 @@ static const struct sense_info sense_info_table[] = {
+  */
+ static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
  {
--	switch (test->mode) {
-+	switch (mode) {
- 		case PKS_TEST_NO_ACCESS:
--			pks_mknoaccess(ctx->pkey, false);
-+			pks_mknoaccess(pkey, global);
- 			break;
- 		case PKS_TEST_RDWR:
--			pks_mkrdwr(ctx->pkey, false);
-+			pks_mkrdwr(pkey, global);
- 			break;
- 		case PKS_TEST_RDONLY:
--			pks_mkread(ctx->pkey, false);
-+			pks_mkread(pkey, global);
- 			break;
- 		default:
- 			pr_err("BUG in test invalid mode\n");
- 			break;
- 	}
-+}
-+
-+static int run_access_test(struct pks_test_ctx *ctx,
-+			   struct pks_access_test *test,
-+			   void *ptr)
-+{
-+	set_protection(ctx->pkey, test->mode, false);
+-	const struct sense_info *si;
++	const struct sense_detail *sd;
+ 	u8 *buffer = cmd->sense_buffer;
+ 	int r = (__force int)reason;
+ 	u8 key, asc, ascq;
+ 	bool desc_format = target_sense_desc_format(cmd->se_dev);
  
- 	return test_it(ctx, test, ptr);
- }
-@@ -516,6 +522,110 @@ static void run_exception_test(void)
- 		 pass ? "PASS" : "FAIL");
- }
+-	if (r < ARRAY_SIZE(sense_info_table) && sense_info_table[r].key)
+-		si = &sense_info_table[r];
++	if (r < ARRAY_SIZE(sense_detail_table) && sense_detail_table[r].key)
++		sd = &sense_detail_table[r];
+ 	else
+-		si = &sense_info_table[(__force int)
++		sd = &sense_detail_table[(__force int)
+ 				       TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE];
  
-+struct shared_data {
-+	struct mutex lock;
-+	struct pks_test_ctx *ctx;
-+	void *kmap_addr;
-+	struct pks_access_test *test;
-+};
-+
-+static int thread_main(void *d)
-+{
-+	struct shared_data *data = d;
-+	struct pks_test_ctx *ctx = data->ctx;
-+
-+	while (!kthread_should_stop()) {
-+		mutex_lock(&data->lock);
-+		/*
-+		 * wait for the main thread to hand us the page
-+		 * We should be spinning so hopefully we will not have gotten
-+		 * the global value from a schedule in.
-+		 */
-+		if (data->kmap_addr) {
-+			if (test_it(ctx, data->test, data->kmap_addr))
-+				ctx->pass = false;
-+			data->kmap_addr = NULL;
-+		}
-+		mutex_unlock(&data->lock);
-+	}
-+
-+	return 0;
-+}
-+
-+static void run_thread_access_test(struct shared_data *data,
-+				   struct pks_test_ctx *ctx,
-+				   struct pks_access_test *test,
-+				   void *ptr)
-+{
-+	set_protection(ctx->pkey, test->mode, true);
-+
-+	pr_info("checking...  mode %s; write %s\n",
-+			get_mode_str(test->mode), test->write ? "TRUE" : "FALSE");
-+
-+	mutex_lock(&data->lock);
-+	data->test = test;
-+	data->kmap_addr = ptr;
-+	mutex_unlock(&data->lock);
-+
-+	while (data->kmap_addr) {
-+		msleep(10);
-+	}
-+}
-+
-+static void run_global_test(void)
-+{
-+	struct task_struct *other_task;
-+	struct pks_test_ctx *ctx;
-+	struct shared_data data;
-+	bool pass = true;
-+	void *ptr;
-+	int i;
-+
-+	pr_info("     ***** BEGIN: global pkey checking\n");
-+
-+	/* Set up context, data pgae, and thread */
-+	ctx = alloc_ctx("global pkey test");
-+	if (IS_ERR(ctx)) {
-+		pr_err("     FAIL: no context\n");
-+		pass = false;
-+		goto result;
-+	}
-+	ptr = alloc_test_page(ctx->pkey);
-+	if (!ptr) {
-+		pr_err("     FAIL: no vmalloc page\n");
-+		pass = false;
-+		goto free_context;
-+	}
-+	other_task = kthread_run(thread_main, &data, "PKRS global test");
-+	if (IS_ERR(other_task)) {
-+		pr_err("     FAIL: Failed to start thread\n");
-+		pass = false;
-+		goto free_page;
-+	}
-+
-+	memset(&data, 0, sizeof(data));
-+	mutex_init(&data.lock);
-+	data.ctx = ctx;
-+
-+	/* Start testing */
-+	ctx->pass = true;
-+
-+	for (i = 0; i < ARRAY_SIZE(pkey_test_ary); i++) {
-+		run_thread_access_test(&data, ctx, &pkey_test_ary[i], ptr);
-+	}
-+
-+	kthread_stop(other_task);
-+	pass = ctx->pass;
-+
-+free_page:
-+	vfree(ptr);
-+free_context:
-+	free_ctx(ctx);
-+result:
-+	pr_info("     ***** END: global pkey checking : %s\n",
-+		 pass ? "PASS" : "FAIL");
-+}
-+
- static void run_all(void)
- {
- 	struct pks_test_ctx *ctx[PKS_NUM_KEYS];
-@@ -538,6 +648,8 @@ static void run_all(void)
+-	key = si->key;
++	key = sd->key;
+ 	if (reason = TCM_CHECK_CONDITION_UNIT_ATTENTION) {
+ 		if (!core_scsi3_ua_for_check_condition(cmd, &key, &asc,
+ 						       &ascq)) {
+ 			cmd->scsi_status = SAM_STAT_BUSY;
+ 			return;
+ 		}
+-	} else if (si->asc = 0) {
++	} else if (sd->asc = 0) {
+ 		WARN_ON_ONCE(cmd->scsi_asc = 0);
+ 		asc = cmd->scsi_asc;
+ 		ascq = cmd->scsi_ascq;
+ 	} else {
+-		asc = si->asc;
+-		ascq = si->ascq;
++		asc = sd->asc;
++		ascq = sd->ascq;
  	}
  
- 	run_exception_test();
-+
-+	run_global_test();
- }
- 
- static void crash_it(void)
+ 	cmd->se_cmd_flags |= SCF_EMULATED_TASK_SENSE;
+ 	cmd->scsi_status = SAM_STAT_CHECK_CONDITION;
+ 	cmd->scsi_sense_length  = TRANSPORT_SENSE_BUFFER;
+ 	scsi_build_sense_buffer(desc_format, buffer, key, asc, ascq);
+-	if (si->add_sector_info)
++	if (sd->add_sector_info)
+ 		WARN_ON_ONCE(scsi_set_sense_information(buffer,
+ 							cmd->scsi_sense_length,
+ 							cmd->bad_sector) < 0);
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+2.26.2
