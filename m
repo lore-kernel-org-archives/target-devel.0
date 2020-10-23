@@ -1,94 +1,106 @@
-From: Anastasia Kovaleva <a.kovaleva@yadro.com>
-Date: Thu, 22 Oct 2020 17:20:10 +0000
-Subject: [PATCH 2/3] scsi: target: core: Signal WRITE residuals
-Message-Id: <20201022172011.42367-3-a.kovaleva@yadro.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 23 Oct 2020 20:57:21 +0000
+Subject: [PATCH 3/5] scsi: target: rename cmd.bad_sector to cmd.sense_info
+Message-Id: <20201023205723.17880-4-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201022172011.42367-1-a.kovaleva@yadro.com>
-In-Reply-To: <20201022172011.42367-1-a.kovaleva@yadro.com>
+References: <20201023205723.17880-1-ddiss@suse.de>
+In-Reply-To: <20201023205723.17880-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, linux@yadro.com, Anastasia Kovaleva <a.kovaleva@yadro.com>, Roman Bolshakov <r.bolshakov@yadro.com>
+Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>
 
-According to RFC 7143 11.4.5.2.:
+cmd.bad_sector currently gets packed into the sense INFORMATION field
+for TCM_LOGICAL_BLOCK_{GUARD,APP_TAG,REF_TAG}_CHECK_FAILED errors, which
+carry an .add_sector_info flag in the sense_detail_table to ensure this.
 
-  If SPDTL > EDTL for a task, iSCSI Overflow MUST be signaled in the
-  SCSI Response PDU as specified in Section 11.4.5.1.  The Residual
-  Count MUST be set to the numerical value of (SPDTL - EDTL).
+In preparation for propagating a byte offset on COMPARE AND WRITE
+TCM_MISCOMPARE_VERIFY error, rename cmd.bad_sector to cmd.sense_info
+and sense_detail.add_sector_info to sense_detail.add_sense_info so
+that it better reflects the sense INFORMATION field destination.
 
-  If SPDTL < EDTL for a task, iSCSI Underflow MUST be signaled in the
-  SCSI Response PDU as specified in Section 11.4.5.1.  The Residual
-  Count MUST be set to the numerical value of (EDTL - SPDTL).
-
-libiscsi has residual write tests that check residual kind and residual
-amount and all of them (Write10Residuals, Write12Residuals,
-Write16Residuals) currently fail.
-
-One of the reasons why they fail is because target completes write
-commands with INVALID FIELD IN CDB before setting the Overflow/Underflow
-bit and residual amount.
-
-Set the Overflow/Underflow bit and the residual amount before failing a
-write to comply with RFC 7143.
-
-Signed-off-by: Anastasia Kovaleva <a.kovaleva@yadro.com>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
- drivers/target/target_core_transport.c | 34 +++++++++++++++-----------
- 1 file changed, 20 insertions(+), 14 deletions(-)
+ drivers/target/target_core_sbc.c       |  2 +-
+ drivers/target/target_core_transport.c | 12 ++++++------
+ include/target/target_core_base.h      |  2 +-
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 6e8b8d30938f..5f77dd95f1b9 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -1439,7 +1439,7 @@ sbc_dif_verify(struct se_cmd *cmd, sector_t start, unsigned int sectors,
+ 			if (rc) {
+ 				kunmap_atomic(daddr - dsg->offset);
+ 				kunmap_atomic(paddr - psg->offset);
+-				cmd->bad_sector = sector;
++				cmd->sense_info = sector;
+ 				return rc;
+ 			}
+ next:
 diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 6d73b453c2cb..8cb3012721d8 100644
+index caa3a7b34826..c6f45c12d564 100644
 --- a/drivers/target/target_core_transport.c
 +++ b/drivers/target/target_core_transport.c
-@@ -1306,6 +1306,26 @@ target_cmd_size_check(struct se_cmd *cmd, unsigned int size)
- 			" %u does not match SCSI CDB Length: %u for SAM Opcode:"
- 			" 0x%02x\n", cmd->se_tfo->fabric_name,
- 				cmd->data_length, size, cmd->t_task_cdb[0]);
-+		/*
-+		 * For READ command for the overflow case keep the existing
-+		 * fabric provided ->data_length. Otherwise for the underflow
-+		 * case, reset ->data_length to the smaller SCSI expected data
-+		 * transfer length.
-+		 */
-+		if (size > cmd->data_length) {
-+			cmd->se_cmd_flags |= SCF_OVERFLOW_BIT;
-+			cmd->residual_count = (size - cmd->data_length);
-+		} else {
-+			cmd->se_cmd_flags |= SCF_UNDERFLOW_BIT;
-+			cmd->residual_count = (cmd->data_length - size);
-+			/*
-+			 * Do not truncate ->data_length for WRITE command to
-+			 * dump all payload
-+			 */
-+			if (cmd->data_direction = DMA_FROM_DEVICE) {
-+				cmd->data_length = size;
-+			}
-+		}
+@@ -3098,7 +3098,7 @@ struct sense_detail {
+ 	u8 key;
+ 	u8 asc;
+ 	u8 ascq;
+-	bool add_sector_info;
++	bool add_sense_info;
+ };
  
- 		if (cmd->data_direction = DMA_TO_DEVICE) {
- 			if (cmd->se_cmd_flags & SCF_SCSI_DATA_CDB) {
-@@ -1325,20 +1345,6 @@ target_cmd_size_check(struct se_cmd *cmd, unsigned int size)
- 				return TCM_INVALID_CDB_FIELD;
- 			}
- 		}
--		/*
--		 * For the overflow case keep the existing fabric provided
--		 * ->data_length.  Otherwise for the underflow case, reset
--		 * ->data_length to the smaller SCSI expected data transfer
--		 * length.
--		 */
--		if (size > cmd->data_length) {
--			cmd->se_cmd_flags |= SCF_OVERFLOW_BIT;
--			cmd->residual_count = (size - cmd->data_length);
--		} else {
--			cmd->se_cmd_flags |= SCF_UNDERFLOW_BIT;
--			cmd->residual_count = (cmd->data_length - size);
--			cmd->data_length = size;
--		}
- 	}
+ static const struct sense_detail sense_detail_table[] = {
+@@ -3201,19 +3201,19 @@ static const struct sense_detail sense_detail_table[] = {
+ 		.key = ABORTED_COMMAND,
+ 		.asc = 0x10,
+ 		.ascq = 0x01, /* LOGICAL BLOCK GUARD CHECK FAILED */
+-		.add_sector_info = true,
++		.add_sense_info = true,
+ 	},
+ 	[TCM_LOGICAL_BLOCK_APP_TAG_CHECK_FAILED] = {
+ 		.key = ABORTED_COMMAND,
+ 		.asc = 0x10,
+ 		.ascq = 0x02, /* LOGICAL BLOCK APPLICATION TAG CHECK FAILED */
+-		.add_sector_info = true,
++		.add_sense_info = true,
+ 	},
+ 	[TCM_LOGICAL_BLOCK_REF_TAG_CHECK_FAILED] = {
+ 		.key = ABORTED_COMMAND,
+ 		.asc = 0x10,
+ 		.ascq = 0x03, /* LOGICAL BLOCK REFERENCE TAG CHECK FAILED */
+-		.add_sector_info = true,
++		.add_sense_info = true,
+ 	},
+ 	[TCM_COPY_TARGET_DEVICE_NOT_REACHABLE] = {
+ 		.key = COPY_ABORTED,
+@@ -3293,10 +3293,10 @@ static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
+ 	cmd->scsi_status = SAM_STAT_CHECK_CONDITION;
+ 	cmd->scsi_sense_length  = TRANSPORT_SENSE_BUFFER;
+ 	scsi_build_sense_buffer(desc_format, buffer, key, asc, ascq);
+-	if (sd->add_sector_info)
++	if (sd->add_sense_info)
+ 		WARN_ON_ONCE(scsi_set_sense_information(buffer,
+ 							cmd->scsi_sense_length,
+-							cmd->bad_sector) < 0);
++							cmd->sense_info) < 0);
+ }
  
- 	return target_check_max_data_sg_nents(cmd, dev, size);
+ int
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 549947d407cf..7ee2bee46b3a 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -540,7 +540,7 @@ struct se_cmd {
+ 	struct scatterlist	*t_prot_sg;
+ 	unsigned int		t_prot_nents;
+ 	sense_reason_t		pi_err;
+-	sector_t		bad_sector;
++	u64			sense_info;
+ 	int			cpuid;
+ };
+ 
 -- 
-2.24.3 (Apple Git-128)
+2.26.2
