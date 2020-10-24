@@ -1,49 +1,97 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Date: Sat, 24 Oct 2020 04:07:38 +0000
+From: Roman Bolshakov <r.bolshakov@yadro.com>
+Date: Sat, 24 Oct 2020 12:13:15 +0000
 Subject: Re: [PATCH 3/3] scsi: target: core: Change ASCQ for residual write
-Message-Id: <e2b215ca-0aa8-bdae-e5bd-292a09d8282e@acm.org>
+Message-Id: <20201024121315.GA35317@SPB-NB-133.local>
 List-Id: <target-devel.vger.kernel.org>
 References: <20201022172011.42367-1-a.kovaleva@yadro.com>
  <20201022172011.42367-4-a.kovaleva@yadro.com>
-In-Reply-To: <20201022172011.42367-4-a.kovaleva@yadro.com>
+ <e2b215ca-0aa8-bdae-e5bd-292a09d8282e@acm.org>
+In-Reply-To: <e2b215ca-0aa8-bdae-e5bd-292a09d8282e@acm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Anastasia Kovaleva <a.kovaleva@yadro.com>, target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>
+To: Bart Van Assche <bvanassche@acm.org>
+Cc: Anastasia Kovaleva <a.kovaleva@yadro.com>, target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, linux@yadro.com
 
-On 10/22/20 10:20 AM, Anastasia Kovaleva wrote:
-> According to FCP-4 (9.4.2):
+On Fri, Oct 23, 2020 at 09:07:38PM -0700, Bart Van Assche wrote:
+> On 10/22/20 10:20 AM, Anastasia Kovaleva wrote:
+> > According to FCP-4 (9.4.2):
+> > 
+> >   If the command requested that data beyond the length specified by the
+> >   FCP_DL field be transferred, then the device server shall set the
+> >   FCP_RESID_OVER bit (see 9.5.8) to one in the FCP_RSP IU and:
+> > 
+> >   a) process the command normally except that data beyond the FCP_DL
+> >   count shall not be requested or transferred;
+> > 
+> >   b) transfer no data and return CHECK CONDITION status with the sense
+> >   key set to ILLEGAL REQUEST and the additional sense code set to INVALID
+> >   FIELD IN COMMAND INFORMATION UNIT; or
+> > 
+> >   c) may transfer data and return CHECK CONDITION status with the sense
+> >   key set to ABORTED COMMAND and the additional sense code set to
+> >   INVALID FIELD IN COMMAND INFORMATION UNIT.
+> > 
+> > TCM follows b) and transfers no data for residual writes but returns
+> > INVALID FIELD IN CDB instead of INVALID FIELD IN COMMAND INFORMATION
+> > UNIT.
+> > 
+> > Change the ASCQ to INVALID FIELD IN COMMAND INFORMATION UNIT to meet the
+> > standart.
 > 
->   If the command requested that data beyond the length specified by the
->   FCP_DL field be transferred, then the device server shall set the
->   FCP_RESID_OVER bit (see 9.5.8) to one in the FCP_RSP IU and:
+> Is FCP the only standard that requires to report INVALID FIELD IN COMMAND
+> INFORMATION UNIT for residual overflow? I haven't found any similar
+> requirement in the iSCSI RFC nor in the SRP standard.
 > 
->   a) process the command normally except that data beyond the FCP_DL
->   count shall not be requested or transferred;
-> 
->   b) transfer no data and return CHECK CONDITION status with the sense
->   key set to ILLEGAL REQUEST and the additional sense code set to INVALID
->   FIELD IN COMMAND INFORMATION UNIT; or
-> 
->   c) may transfer data and return CHECK CONDITION status with the sense
->   key set to ABORTED COMMAND and the additional sense code set to
->   INVALID FIELD IN COMMAND INFORMATION UNIT.
-> 
-> TCM follows b) and transfers no data for residual writes but returns
-> INVALID FIELD IN CDB instead of INVALID FIELD IN COMMAND INFORMATION
-> UNIT.
-> 
-> Change the ASCQ to INVALID FIELD IN COMMAND INFORMATION UNIT to meet the
-> standart.
 
-Is FCP the only standard that requires to report INVALID FIELD IN COMMAND
-INFORMATION UNIT for residual overflow? I haven't found any similar
-requirement in the iSCSI RFC nor in the SRP standard.
+Hi Bart,
 
-Additionally, what benefits does it provide to report a CHECK CONDITION
-upon residual overflow? The SCST QLogic FC target driver doesn't do this
-as far as I know, is more than ten years old, is widely used and so far
-nobody complained about this.
+iSCSI doesn't specify a specific code but mentions a possibility of CHECK
+CONDITION for residuals (11.4.5.1.  Field Semantics):
 
-Bart.
+  Targets may set the residual count, and initiators may use it when the
+  response code is Command Completed at Target (even if the status
+  returned is not GOOD).
+
+I have skimmed over SRP and haven't found if it's explicitly disallowed
+to send CHECK CONDITION for READ/WRITEs with residuals.
+
+> Additionally, what benefits does it provide to report a CHECK CONDITION
+> upon residual overflow?
+
+Typical use case for CHECK CONDITION in case of Underflow/Overflow is
+extra robustness against buggy initiators [1][2]. Failing both READ and
+WRITE is the most solid approach in that sense [3][4][5] as it prevents
+data corruption at all costs.
+
+Suppose an initiator wants to WRITE 8 LBA. For 512-byte formatted LUN,
+8 LBAs need a buffer of 4K bytes. For 4096-byte formatted LUN the
+command would need 32K data buffer.
+
+An Overflow happens if initiator treats 4Kn device like 512n one but
+provides a buffer of 4K. i.e. to complete the WRITE target needs to
+consume 28K more data, otherwise only 1 LBA would be written and the
+rest 7 LBAs would have indeterminate content.
+
+An Underflow happens if initiator confuses 512n device with 4Kn one and
+provides a buffer of 32K, i.e. target doesn't utilize all buffer for the
+command.
+
+> The SCST QLogic FC target driver doesn't do this as far as I know, is
+> more than ten years old, is widely used and so far nobody complained
+> about this.
+> 
+
+It might be true but there are no public tests for FC. We're planning to
+extend libiscsi using SG_IO v4 to cover more corner cases, like FC
+residuals and aborts/error recovery. Also, SLER (Sequence level error
+recovery) is comming to FCP-5/FC-NVMe-2, it be useful to test it too.
+
+1. https://www.t10.org/pipermail/t10/2014-June/017369.html
+2. https://www.t10.org/pipermail/t10/2014-June/017370.html
+3. https://www.t10.org/pipermail/t10/2012-September/016340.html
+4. https://www.t10.org/pipermail/t10/2012-September/016350.html
+5. https://mailarchive.ietf.org/arch/msg/ips/PpMCMQw-HzKQ5gwteFD54CN_0EY/
+
+Regards,
+Roman
