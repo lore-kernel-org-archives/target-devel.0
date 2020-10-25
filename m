@@ -1,53 +1,105 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:50:12 +0000
-Subject: [PATCH RFC PKS/PMEM 37/58] fs/ext2: Utilize new kmap_thread()
-Message-Id: <20201009195033.3208459-38-ira.weiny@intel.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Sun, 25 Oct 2020 23:03:12 +0000
+Subject: [PATCH 1/7] tcm qla2xxx: drop TARGET_SCF_LOOKUP_LUN_FROM_TAG
+Message-Id: <1603666998-8086-2-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <1603666998-8086-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1603666998-8086-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, Jan Kara <jack@suse.com>, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: himanshu.madhani@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Nilesh Javali <njavali@marvell.com>
 
-From: Ira Weiny <ira.weiny@intel.com>
+It looks like only the __qlt_24xx_handle_abts code path does not know
+the lun for an abort and it uses the TARGET_SCF_LOOKUP_LUN_FROM_TAG
+flag to have lio core look it up. LIO uses target_lookup_lun_from_tag
+to go from cmd tag to lun for the driver. However, qla2xxx has a
+tcm_qla2xxx_find_cmd_by_tag which does almost the same thing as the
+LIO helper (it finds the cmd but does not return the lun). This patch
+has qla2xxx use its internal helper.
 
-These kmap() calls are localized to a single thread.  To avoid the over
-head of global PKRS update use the new kmap_thread() call instead.
+This is more of a transition patch and that is why I'm having qla2xxx
+use its internal function instead of killing it. The tcm qla2xxx driver
+is the only that needs the sess_cmd_list, so the first couple of patches
+move that list from LIO core to the driver. The final patches then
+remove the sess_cmd_lock from the main IO path.
 
-Cc: Jan Kara <jack@suse.com>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Cc: Nilesh Javali <njavali@marvell.com>
+Cc: Himanshu Madhani <himanshu.madhani@oracle.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- fs/ext2/dir.c  | 2 +-
- fs/ext2/ext2.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
-index f3194bf20733..abe97ba458c8 100644
---- a/fs/ext2/dir.c
-+++ b/fs/ext2/dir.c
-@@ -196,7 +196,7 @@ static struct page * ext2_get_page(struct inode *dir, unsigned long n,
- 	struct address_space *mapping = dir->i_mapping;
- 	struct page *page = read_mapping_page(mapping, n, NULL);
- 	if (!IS_ERR(page)) {
--		kmap(page);
-+		kmap_thread(page);
- 		if (unlikely(!PageChecked(page))) {
- 			if (PageError(page) || !ext2_check_page(page, quiet))
- 				goto fail;
-diff --git a/fs/ext2/ext2.h b/fs/ext2/ext2.h
-index 021ec8b42ac3..9bcb6714c255 100644
---- a/fs/ext2/ext2.h
-+++ b/fs/ext2/ext2.h
-@@ -749,7 +749,7 @@ extern struct ext2_dir_entry_2 * ext2_dotdot (struct inode *, struct page **);
- extern void ext2_set_link(struct inode *, struct ext2_dir_entry_2 *, struct page *, struct inode *, int);
- static inline void ext2_put_page(struct page *page)
- {
--	kunmap(page);
-+	kunmap_thread(page);
- 	put_page(page);
+ drivers/scsi/qla2xxx/qla_target.c  | 21 +++++++++++----------
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c |  4 +---
+ 2 files changed, 12 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index 2d445bd..5c417d3 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -2080,6 +2080,7 @@ static int __qlt_24xx_handle_abts(struct scsi_qla_host *vha,
+ 	struct qla_hw_data *ha = vha->hw;
+ 	struct qla_tgt_mgmt_cmd *mcmd;
+ 	struct qla_qpair_hint *h = &vha->vha_tgt.qla_tgt->qphints[0];
++	struct qla_tgt_cmd *abort_cmd;
+ 
+ 	ql_dbg(ql_dbg_tgt_mgt, vha, 0xf00f,
+ 	    "qla_target(%d): task abort (tag=%d)\n",
+@@ -2107,17 +2108,17 @@ static int __qlt_24xx_handle_abts(struct scsi_qla_host *vha,
+ 	 */
+ 	mcmd->se_cmd.cpuid = h->cpuid;
+ 
+-	if (ha->tgt.tgt_ops->find_cmd_by_tag) {
+-		struct qla_tgt_cmd *abort_cmd;
+-
+-		abort_cmd = ha->tgt.tgt_ops->find_cmd_by_tag(sess,
++	abort_cmd = ha->tgt.tgt_ops->find_cmd_by_tag(sess,
+ 				le32_to_cpu(abts->exchange_addr_to_abort));
+-		if (abort_cmd && abort_cmd->qpair) {
+-			mcmd->qpair = abort_cmd->qpair;
+-			mcmd->se_cmd.cpuid = abort_cmd->se_cmd.cpuid;
+-			mcmd->abort_io_attr = abort_cmd->atio.u.isp24.attr;
+-			mcmd->flags = QLA24XX_MGMT_ABORT_IO_ATTR_VALID;
+-		}
++	if (!abort_cmd)
++		return -EIO;
++	mcmd->unpacked_lun = abort_cmd->se_cmd.orig_fe_lun;
++
++	if (abort_cmd->qpair) {
++		mcmd->qpair = abort_cmd->qpair;
++		mcmd->se_cmd.cpuid = abort_cmd->se_cmd.cpuid;
++		mcmd->abort_io_attr = abort_cmd->atio.u.isp24.attr;
++		mcmd->flags = QLA24XX_MGMT_ABORT_IO_ATTR_VALID;
+ 	}
+ 
+ 	INIT_WORK(&mcmd->work, qlt_do_tmr_work);
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index 44bfe162..4abf24c 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -574,13 +574,11 @@ static int tcm_qla2xxx_handle_tmr(struct qla_tgt_mgmt_cmd *mcmd, u64 lun,
+ 	struct fc_port *sess = mcmd->sess;
+ 	struct se_cmd *se_cmd = &mcmd->se_cmd;
+ 	int transl_tmr_func = 0;
+-	int flags = TARGET_SCF_ACK_KREF;
+ 
+ 	switch (tmr_func) {
+ 	case QLA_TGT_ABTS:
+ 		pr_debug("%ld: ABTS received\n", sess->vha->host_no);
+ 		transl_tmr_func = TMR_ABORT_TASK;
+-		flags |= TARGET_SCF_LOOKUP_LUN_FROM_TAG;
+ 		break;
+ 	case QLA_TGT_2G_ABORT_TASK:
+ 		pr_debug("%ld: 2G Abort Task received\n", sess->vha->host_no);
+@@ -613,7 +611,7 @@ static int tcm_qla2xxx_handle_tmr(struct qla_tgt_mgmt_cmd *mcmd, u64 lun,
+ 	}
+ 
+ 	return target_submit_tmr(se_cmd, sess->se_sess, NULL, lun, mcmd,
+-	    transl_tmr_func, GFP_ATOMIC, tag, flags);
++	    transl_tmr_func, GFP_ATOMIC, tag, TARGET_SCF_ACK_KREF);
  }
  
+ static struct qla_tgt_cmd *tcm_qla2xxx_find_cmd_by_tag(struct fc_port *sess,
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+1.8.3.1
