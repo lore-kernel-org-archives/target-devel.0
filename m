@@ -1,91 +1,63 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:49:50 +0000
-Subject: [PATCH RFC PKS/PMEM 15/58] fs/ecryptfs: Utilize new kmap_thread()
-Message-Id: <20201009195033.3208459-16-ira.weiny@intel.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Sun, 25 Oct 2020 23:03:18 +0000
+Subject: [PATCH 7/7] tcm loop: allow queues, can queue and cmd per lun to be settable
+Message-Id: <1603666998-8086-8-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <1603666998-8086-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1603666998-8086-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, Eric Biggers <ebiggers@google.com>, kexec@lists.infradead.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, Aditya Pakki <pakki001@umn.edu>, linux-mmc@vger.kernel.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, xen-devel@lists.xenproject.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: himanshu.madhani@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-From: Ira Weiny <ira.weiny@intel.com>
+Make can_queue, nr_hw_queues and cmd_per_lun settable by the user
+instead of hard coding them.
 
-The kmap() calls in this FS are localized to a single thread.  To avoid
-the over head of global PKRS updates use the new kmap_thread() call.
-
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Eric Biggers <ebiggers@google.com>
-Cc: Aditya Pakki <pakki001@umn.edu>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- fs/ecryptfs/crypto.c     | 8 ++++----
- fs/ecryptfs/read_write.c | 8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/target/loopback/tcm_loop.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
-index 0681540c48d9..e73e00994bee 100644
---- a/fs/ecryptfs/crypto.c
-+++ b/fs/ecryptfs/crypto.c
-@@ -469,10 +469,10 @@ int ecryptfs_encrypt_page(struct page *page)
- 	}
+diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+index 16d5a4e..31315b5 100644
+--- a/drivers/target/loopback/tcm_loop.c
++++ b/drivers/target/loopback/tcm_loop.c
+@@ -46,6 +46,15 @@
  
- 	lower_offset = lower_offset_for_page(crypt_stat, page);
--	enc_extent_virt = kmap(enc_extent_page);
-+	enc_extent_virt = kmap_thread(enc_extent_page);
- 	rc = ecryptfs_write_lower(ecryptfs_inode, enc_extent_virt, lower_offset,
- 				  PAGE_SIZE);
--	kunmap(enc_extent_page);
-+	kunmap_thread(enc_extent_page);
- 	if (rc < 0) {
- 		ecryptfs_printk(KERN_ERR,
- 			"Error attempting to write lower page; rc = [%d]\n",
-@@ -518,10 +518,10 @@ int ecryptfs_decrypt_page(struct page *page)
- 	BUG_ON(!(crypt_stat->flags & ECRYPTFS_ENCRYPTED));
+ static int tcm_loop_queue_status(struct se_cmd *se_cmd);
  
- 	lower_offset = lower_offset_for_page(crypt_stat, page);
--	page_virt = kmap(page);
-+	page_virt = kmap_thread(page);
- 	rc = ecryptfs_read_lower(page_virt, lower_offset, PAGE_SIZE,
- 				 ecryptfs_inode);
--	kunmap(page);
-+	kunmap_thread(page);
- 	if (rc < 0) {
- 		ecryptfs_printk(KERN_ERR,
- 			"Error attempting to read lower page; rc = [%d]\n",
-diff --git a/fs/ecryptfs/read_write.c b/fs/ecryptfs/read_write.c
-index 0438997ac9d8..5eca4330c0c0 100644
---- a/fs/ecryptfs/read_write.c
-+++ b/fs/ecryptfs/read_write.c
-@@ -64,11 +64,11 @@ int ecryptfs_write_lower_page_segment(struct inode *ecryptfs_inode,
++static unsigned int tcm_loop_nr_hw_queues = 1;
++module_param_named(nr_hw_queues, tcm_loop_nr_hw_queues, uint, 0644);
++
++static unsigned int tcm_loop_can_queue = 1024;
++module_param_named(can_queue, tcm_loop_can_queue, uint, 0644);
++
++static unsigned int tcm_loop_cmd_per_lun = 1024;
++module_param_named(cmd_per_lun, tcm_loop_cmd_per_lun, uint, 0644);
++
+ /*
+  * Called from struct target_core_fabric_ops->check_stop_free()
+  */
+@@ -305,10 +314,8 @@ static int tcm_loop_target_reset(struct scsi_cmnd *sc)
+ 	.eh_abort_handler = tcm_loop_abort_task,
+ 	.eh_device_reset_handler = tcm_loop_device_reset,
+ 	.eh_target_reset_handler = tcm_loop_target_reset,
+-	.can_queue		= 1024,
+ 	.this_id		= -1,
+ 	.sg_tablesize		= 256,
+-	.cmd_per_lun		= 1024,
+ 	.max_sectors		= 0xFFFF,
+ 	.dma_boundary		= PAGE_SIZE - 1,
+ 	.module			= THIS_MODULE,
+@@ -342,6 +349,9 @@ static int tcm_loop_driver_probe(struct device *dev)
+ 	sh->max_lun = 0;
+ 	sh->max_channel = 0;
+ 	sh->max_cmd_len = SCSI_MAX_VARLEN_CDB_SIZE;
++	sh->nr_hw_queues = tcm_loop_nr_hw_queues;
++	sh->can_queue = tcm_loop_can_queue;
++	sh->cmd_per_lun = tcm_loop_cmd_per_lun;
  
- 	offset = ((((loff_t)page_for_lower->index) << PAGE_SHIFT)
- 		  + offset_in_page);
--	virt = kmap(page_for_lower);
-+	virt = kmap_thread(page_for_lower);
- 	rc = ecryptfs_write_lower(ecryptfs_inode, virt, offset, size);
- 	if (rc > 0)
- 		rc = 0;
--	kunmap(page_for_lower);
-+	kunmap_thread(page_for_lower);
- 	return rc;
- }
- 
-@@ -251,11 +251,11 @@ int ecryptfs_read_lower_page_segment(struct page *page_for_ecryptfs,
- 	int rc;
- 
- 	offset = ((((loff_t)page_index) << PAGE_SHIFT) + offset_in_page);
--	virt = kmap(page_for_ecryptfs);
-+	virt = kmap_thread(page_for_ecryptfs);
- 	rc = ecryptfs_read_lower(virt, offset, size, ecryptfs_inode);
- 	if (rc > 0)
- 		rc = 0;
--	kunmap(page_for_ecryptfs);
-+	kunmap_thread(page_for_ecryptfs);
- 	flush_dcache_page(page_for_ecryptfs);
- 	return rc;
- }
+ 	host_prot = SHOST_DIF_TYPE1_PROTECTION | SHOST_DIF_TYPE2_PROTECTION |
+ 		    SHOST_DIF_TYPE3_PROTECTION | SHOST_DIX_TYPE1_PROTECTION |
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+1.8.3.1
