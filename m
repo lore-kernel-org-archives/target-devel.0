@@ -1,95 +1,85 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:49:42 +0000
-Subject: [PATCH RFC PKS/PMEM 07/58] drivers/drbd: Utilize new kmap_thread()
-Message-Id: <20201009195033.3208459-8-ira.weiny@intel.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Sun, 25 Oct 2020 23:03:13 +0000
+Subject: [PATCH 2/7] target: remove TARGET_SCF_LOOKUP_LUN_FROM_TAG
+Message-Id: <1603666998-8086-3-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <1603666998-8086-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1603666998-8086-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, kexec@lists.infradead.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, Jens Axboe <axboe@kernel.dk>, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: himanshu.madhani@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-From: Ira Weiny <ira.weiny@intel.com>
+TARGET_SCF_LOOKUP_LUN_FROM_TAG is no longer used so remove it.
 
-The kmap() calls in this driver are localized to a single thread.  To
-avoid the over head of global PKRS updates use the new kmap_thread()
-call.
-
-Cc: Jens Axboe <axboe@kernel.dk>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/block/drbd/drbd_main.c     |  4 ++--
- drivers/block/drbd/drbd_receiver.c | 12 ++++++------
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/target/target_core_transport.c | 33 ---------------------------------
+ include/target/target_core_base.h      |  1 -
+ 2 files changed, 34 deletions(-)
 
-diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
-index 573dbf6f0c31..f0d0c6b0745e 100644
---- a/drivers/block/drbd/drbd_main.c
-+++ b/drivers/block/drbd/drbd_main.c
-@@ -1532,9 +1532,9 @@ static int _drbd_no_send_page(struct drbd_peer_device *peer_device, struct page
- 	int err;
- 
- 	socket = peer_device->connection->data.socket;
--	addr = kmap(page) + offset;
-+	addr = kmap_thread(page) + offset;
- 	err = drbd_send_all(peer_device->connection, socket, addr, size, msg_flags);
--	kunmap(page);
-+	kunmap_thread(page);
- 	if (!err)
- 		peer_device->device->send_cnt += size >> 9;
- 	return err;
-diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 422363daa618..4704bc0564e2 100644
---- a/drivers/block/drbd/drbd_receiver.c
-+++ b/drivers/block/drbd/drbd_receiver.c
-@@ -1951,13 +1951,13 @@ read_in_block(struct drbd_peer_device *peer_device, u64 id, sector_t sector,
- 	page = peer_req->pages;
- 	page_chain_for_each(page) {
- 		unsigned len = min_t(int, ds, PAGE_SIZE);
--		data = kmap(page);
-+		data = kmap_thread(page);
- 		err = drbd_recv_all_warn(peer_device->connection, data, len);
- 		if (drbd_insert_fault(device, DRBD_FAULT_RECEIVE)) {
- 			drbd_err(device, "Fault injection: Corrupting data on receive\n");
- 			data[0] = data[0] ^ (unsigned long)-1;
- 		}
--		kunmap(page);
-+		kunmap_thread(page);
- 		if (err) {
- 			drbd_free_peer_req(device, peer_req);
- 			return NULL;
-@@ -1992,7 +1992,7 @@ static int drbd_drain_block(struct drbd_peer_device *peer_device, int data_size)
- 
- 	page = drbd_alloc_pages(peer_device, 1, 1);
- 
--	data = kmap(page);
-+	data = kmap_thread(page);
- 	while (data_size) {
- 		unsigned int len = min_t(int, data_size, PAGE_SIZE);
- 
-@@ -2001,7 +2001,7 @@ static int drbd_drain_block(struct drbd_peer_device *peer_device, int data_size)
- 			break;
- 		data_size -= len;
- 	}
--	kunmap(page);
-+	kunmap_thread(page);
- 	drbd_free_pages(peer_device->device, page, 0);
- 	return err;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index ff26ab0..ee2d2db 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1764,29 +1764,6 @@ static void target_complete_tmr_failure(struct work_struct *work)
+ 	transport_cmd_check_stop_to_fabric(se_cmd);
  }
-@@ -2033,10 +2033,10 @@ static int recv_dless_read(struct drbd_peer_device *peer_device, struct drbd_req
- 	D_ASSERT(peer_device->device, sector = bio->bi_iter.bi_sector);
  
- 	bio_for_each_segment(bvec, bio, iter) {
--		void *mapped = kmap(bvec.bv_page) + bvec.bv_offset;
-+		void *mapped = kmap_thread(bvec.bv_page) + bvec.bv_offset;
- 		expect = min_t(int, data_size, bvec.bv_len);
- 		err = drbd_recv_all_warn(peer_device->connection, mapped, expect);
--		kunmap(bvec.bv_page);
-+		kunmap_thread(bvec.bv_page);
- 		if (err)
- 			return err;
- 		data_size -= expect;
+-static bool target_lookup_lun_from_tag(struct se_session *se_sess, u64 tag,
+-				       u64 *unpacked_lun)
+-{
+-	struct se_cmd *se_cmd;
+-	unsigned long flags;
+-	bool ret = false;
+-
+-	spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
+-	list_for_each_entry(se_cmd, &se_sess->sess_cmd_list, se_cmd_list) {
+-		if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
+-			continue;
+-
+-		if (se_cmd->tag = tag) {
+-			*unpacked_lun = se_cmd->orig_fe_lun;
+-			ret = true;
+-			break;
+-		}
+-	}
+-	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
+-
+-	return ret;
+-}
+-
+ /**
+  * target_submit_tmr - lookup unpacked lun and submit uninitialized se_cmd
+  *                     for TMR CDBs
+@@ -1834,16 +1811,6 @@ int target_submit_tmr(struct se_cmd *se_cmd, struct se_session *se_sess,
+ 		core_tmr_release_req(se_cmd->se_tmr_req);
+ 		return ret;
+ 	}
+-	/*
+-	 * If this is ABORT_TASK with no explicit fabric provided LUN,
+-	 * go ahead and search active session tags for a match to figure
+-	 * out unpacked_lun for the original se_cmd.
+-	 */
+-	if (tm_type = TMR_ABORT_TASK && (flags & TARGET_SCF_LOOKUP_LUN_FROM_TAG)) {
+-		if (!target_lookup_lun_from_tag(se_sess, tag,
+-						&se_cmd->orig_fe_lun))
+-			goto failure;
+-	}
+ 
+ 	ret = transport_lookup_tmr_lun(se_cmd);
+ 	if (ret)
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 549947d..b3c9946 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -195,7 +195,6 @@ enum target_sc_flags_table {
+ 	TARGET_SCF_ACK_KREF		= 0x02,
+ 	TARGET_SCF_UNKNOWN_SIZE		= 0x04,
+ 	TARGET_SCF_USE_CPUID		= 0x08,
+-	TARGET_SCF_LOOKUP_LUN_FROM_TAG	= 0x10,
+ };
+ 
+ /* fabric independent task management function values */
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+1.8.3.1
