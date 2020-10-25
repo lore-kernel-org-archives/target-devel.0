@@ -1,160 +1,173 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:50:10 +0000
-Subject: [PATCH RFC PKS/PMEM 35/58] fs: Utilize new kmap_thread()
-Message-Id: <20201009195033.3208459-36-ira.weiny@intel.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Sun, 25 Oct 2020 23:03:14 +0000
+Subject: [PATCH 3/7] tcm qlaxx: move sess cmd list/lock to driver
+Message-Id: <1603666998-8086-4-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <1603666998-8086-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1603666998-8086-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, Jens Axboe <axboe@kernel.dk>, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: himanshu.madhani@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: Nilesh Javali <njavali@marvell.com>
 
-From: Ira Weiny <ira.weiny@intel.com>
+Except for debug output in the shutdown path, tcm qla2xxx is the only
+driver using the se_session sess_cmd_list. This moves the list to that
+driver so in the next patches we can remove the sess_cmd_lock from the
+main IO path for the rest of the drivers.
 
-These kmap() calls are localized to a single thread.  To avoid the over
-head of global PKRS updates use the new kmap_thread() call.
-
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Jens Axboe <axboe@kernel.dk>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Cc: Nilesh Javali <njavali@marvell.com>
+Cc: Himanshu Madhani <himanshu.madhani@oracle.com>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- fs/aio.c              |  4 ++--
- fs/binfmt_elf.c       |  4 ++--
- fs/binfmt_elf_fdpic.c |  4 ++--
- fs/exec.c             | 10 +++++-----
- fs/io_uring.c         |  4 ++--
- fs/splice.c           |  4 ++--
- 6 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/scsi/qla2xxx/qla_def.h     |  2 ++
+ drivers/scsi/qla2xxx/qla_target.c  |  2 +-
+ drivers/scsi/qla2xxx/qla_target.h  |  1 +
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c | 47 +++++++++++++++++++++++---------------
+ 4 files changed, 32 insertions(+), 20 deletions(-)
 
-diff --git a/fs/aio.c b/fs/aio.c
-index d5ec30385566..27f95996d25f 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -1223,10 +1223,10 @@ static long aio_read_events_ring(struct kioctx *ctx,
- 		avail = min(avail, nr - ret);
- 		avail = min_t(long, avail, AIO_EVENTS_PER_PAGE - pos);
+diff --git a/drivers/scsi/qla2xxx/qla_def.h b/drivers/scsi/qla2xxx/qla_def.h
+index a165120..b6284ad 100644
+--- a/drivers/scsi/qla2xxx/qla_def.h
++++ b/drivers/scsi/qla2xxx/qla_def.h
+@@ -2484,6 +2484,8 @@ enum rscn_addr_format {
+ 	int generation;
  
--		ev = kmap(page);
-+		ev = kmap_thread(page);
- 		copy_ret = copy_to_user(event + ret, ev + pos,
- 					sizeof(*ev) * avail);
--		kunmap(page);
-+		kunmap_thread(page);
+ 	struct se_session *se_sess;
++	struct list_head sess_cmd_list;
++	spinlock_t sess_cmd_lock;
+ 	struct kref sess_kref;
+ 	struct qla_tgt *tgt;
+ 	unsigned long expires;
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index 5c417d3..6cb4348 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -4366,7 +4366,7 @@ static int qlt_handle_cmd_for_atio(struct scsi_qla_host *vha,
+ 	cmd->trc_flags |= TRC_NEW_CMD;
  
- 		if (unlikely(copy_ret)) {
- 			ret = -EFAULT;
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 13d053982dd7..1a332ef1ae03 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -2430,9 +2430,9 @@ static int elf_core_dump(struct coredump_params *cprm)
+ 	spin_lock_irqsave(&vha->cmd_list_lock, flags);
+-	list_add_tail(&cmd->cmd_list, &vha->qla_cmd_list);
++	list_add_tail(&cmd->sess_cmd_list, &vha->qla_cmd_list);
+ 	spin_unlock_irqrestore(&vha->cmd_list_lock, flags);
  
- 			page = get_dump_page(addr);
- 			if (page) {
--				void *kaddr = kmap(page);
-+				void *kaddr = kmap_thread(page);
- 				stop = !dump_emit(cprm, kaddr, PAGE_SIZE);
--				kunmap(page);
-+				kunmap_thread(page);
- 				put_page(page);
- 			} else
- 				stop = !dump_skip(cprm, PAGE_SIZE);
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 50f845702b92..8fbe188e0fdd 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -1542,9 +1542,9 @@ static bool elf_fdpic_dump_segments(struct coredump_params *cprm)
- 			bool res;
- 			struct page *page = get_dump_page(addr);
- 			if (page) {
--				void *kaddr = kmap(page);
-+				void *kaddr = kmap_thread(page);
- 				res = dump_emit(cprm, kaddr, PAGE_SIZE);
--				kunmap(page);
-+				kunmap_thread(page);
- 				put_page(page);
- 			} else {
- 				res = dump_skip(cprm, PAGE_SIZE);
-diff --git a/fs/exec.c b/fs/exec.c
-index a91003e28eaa..3948b8511e3a 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -575,11 +575,11 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
+ 	INIT_WORK(&cmd->work, qlt_do_work);
+diff --git a/drivers/scsi/qla2xxx/qla_target.h b/drivers/scsi/qla2xxx/qla_target.h
+index 1cff7c6..10e5e6c8 100644
+--- a/drivers/scsi/qla2xxx/qla_target.h
++++ b/drivers/scsi/qla2xxx/qla_target.h
+@@ -856,6 +856,7 @@ struct qla_tgt_cmd {
+ 	uint8_t cmd_type;
+ 	uint8_t pad[7];
+ 	struct se_cmd se_cmd;
++	struct list_head sess_cmd_list;
+ 	struct fc_port *sess;
+ 	struct qla_qpair *qpair;
+ 	uint32_t reset_count;
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index 4abf24c..076e0ab 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -255,6 +255,7 @@ static void tcm_qla2xxx_free_mcmd(struct qla_tgt_mgmt_cmd *mcmd)
+ static void tcm_qla2xxx_complete_free(struct work_struct *work)
+ {
+ 	struct qla_tgt_cmd *cmd = container_of(work, struct qla_tgt_cmd, work);
++	unsigned long flags;
  
- 				if (kmapped_page) {
- 					flush_kernel_dcache_page(kmapped_page);
--					kunmap(kmapped_page);
-+					kunmap_thread(kmapped_page);
- 					put_arg_page(kmapped_page);
- 				}
- 				kmapped_page = page;
--				kaddr = kmap(kmapped_page);
-+				kaddr = kmap_thread(kmapped_page);
- 				kpos = pos & PAGE_MASK;
- 				flush_arg_page(bprm, kpos, kmapped_page);
- 			}
-@@ -593,7 +593,7 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
- out:
- 	if (kmapped_page) {
- 		flush_kernel_dcache_page(kmapped_page);
--		kunmap(kmapped_page);
-+		kunmap_thread(kmapped_page);
- 		put_arg_page(kmapped_page);
- 	}
- 	return ret;
-@@ -871,11 +871,11 @@ int transfer_args_to_stack(struct linux_binprm *bprm,
+ 	cmd->cmd_in_wq = 0;
  
- 	for (index = MAX_ARG_PAGES - 1; index >= stop; index--) {
- 		unsigned int offset = index = stop ? bprm->p & ~PAGE_MASK : 0;
--		char *src = kmap(bprm->page[index]) + offset;
-+		char *src = kmap_thread(bprm->page[index]) + offset;
- 		sp -= PAGE_SIZE - offset;
- 		if (copy_to_user((void *) sp, src, PAGE_SIZE - offset) != 0)
- 			ret = -EFAULT;
--		kunmap(bprm->page[index]);
-+		kunmap_thread(bprm->page[index]);
- 		if (ret)
- 			goto out;
- 	}
-diff --git a/fs/io_uring.c b/fs/io_uring.c
-index aae0ef2ec34d..f59bb079822d 100644
---- a/fs/io_uring.c
-+++ b/fs/io_uring.c
-@@ -2903,7 +2903,7 @@ static ssize_t loop_rw_iter(int rw, struct file *file, struct kiocb *kiocb,
- 			iovec = iov_iter_iovec(iter);
- 		} else {
- 			/* fixed buffers import bvec */
--			iovec.iov_base = kmap(iter->bvec->bv_page)
-+			iovec.iov_base = kmap_thread(iter->bvec->bv_page)
- 						+ iter->iov_offset;
- 			iovec.iov_len = min(iter->count,
- 					iter->bvec->bv_len - iter->iov_offset);
-@@ -2918,7 +2918,7 @@ static ssize_t loop_rw_iter(int rw, struct file *file, struct kiocb *kiocb,
- 		}
+@@ -265,6 +266,10 @@ static void tcm_qla2xxx_complete_free(struct work_struct *work)
+ 	cmd->trc_flags |= TRC_CMD_FREE;
+ 	cmd->cmd_sent_to_fw = 0;
  
- 		if (iov_iter_is_bvec(iter))
--			kunmap(iter->bvec->bv_page);
-+			kunmap_thread(iter->bvec->bv_page);
- 
- 		if (nr < 0) {
- 			if (!ret)
-diff --git a/fs/splice.c b/fs/splice.c
-index ce75aec52274..190c4d218c30 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -815,9 +815,9 @@ static int write_pipe_buf(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
- 	void *data;
- 	loff_t tmp = sd->pos;
- 
--	data = kmap(buf->page);
-+	data = kmap_thread(buf->page);
- 	ret = __kernel_write(sd->u.file, data + buf->offset, sd->len, &tmp);
--	kunmap(buf->page);
-+	kunmap_thread(buf->page);
- 
- 	return ret;
++	spin_lock_irqsave(&cmd->sess->sess_cmd_lock, flags);
++	list_del_init(&cmd->sess_cmd_list);
++	spin_unlock_irqrestore(&cmd->sess->sess_cmd_lock, flags);
++
+ 	transport_generic_free_cmd(&cmd->se_cmd, 0);
  }
+ 
+@@ -451,13 +456,14 @@ static int tcm_qla2xxx_handle_cmd(scsi_qla_host_t *vha, struct qla_tgt_cmd *cmd,
+ 	struct se_portal_group *se_tpg;
+ 	struct tcm_qla2xxx_tpg *tpg;
+ #endif
+-	int flags = TARGET_SCF_ACK_KREF;
++	int target_flags = TARGET_SCF_ACK_KREF, ret;
++	unsigned long flags;
+ 
+ 	if (bidi)
+-		flags |= TARGET_SCF_BIDI_OP;
++		target_flags |= TARGET_SCF_BIDI_OP;
+ 
+ 	if (se_cmd->cpuid != WORK_CPU_UNBOUND)
+-		flags |= TARGET_SCF_USE_CPUID;
++		target_flags |= TARGET_SCF_USE_CPUID;
+ 
+ 	sess = cmd->sess;
+ 	if (!sess) {
+@@ -479,11 +485,17 @@ static int tcm_qla2xxx_handle_cmd(scsi_qla_host_t *vha, struct qla_tgt_cmd *cmd,
+ 		return 0;
+ 	}
+ #endif
+-
+ 	cmd->qpair->tgt_counters.qla_core_sbt_cmd++;
+-	return target_submit_cmd(se_cmd, se_sess, cdb, &cmd->sense_buffer[0],
++	ret = target_submit_cmd(se_cmd, se_sess, cdb, &cmd->sense_buffer[0],
+ 				cmd->unpacked_lun, data_length, fcp_task_attr,
+-				data_dir, flags);
++				data_dir, target_flags);
++	if (!ret) {
++		spin_lock_irqsave(&sess->sess_cmd_lock, flags);
++		list_add_tail(&cmd->sess_cmd_list, &sess->sess_cmd_list);
++		spin_unlock_irqrestore(&sess->sess_cmd_lock, flags);
++	}
++
++	return ret;
+ }
+ 
+ static void tcm_qla2xxx_handle_data_work(struct work_struct *work)
+@@ -617,25 +629,20 @@ static int tcm_qla2xxx_handle_tmr(struct qla_tgt_mgmt_cmd *mcmd, u64 lun,
+ static struct qla_tgt_cmd *tcm_qla2xxx_find_cmd_by_tag(struct fc_port *sess,
+     uint64_t tag)
+ {
+-	struct qla_tgt_cmd *cmd = NULL;
+-	struct se_cmd *secmd;
++	struct qla_tgt_cmd *cmd;
+ 	unsigned long flags;
+ 
+ 	if (!sess->se_sess)
+ 		return NULL;
+ 
+-	spin_lock_irqsave(&sess->se_sess->sess_cmd_lock, flags);
+-	list_for_each_entry(secmd, &sess->se_sess->sess_cmd_list, se_cmd_list) {
+-		/* skip task management functions, including tmr->task_cmd */
+-		if (secmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
+-			continue;
+-
+-		if (secmd->tag = tag) {
+-			cmd = container_of(secmd, struct qla_tgt_cmd, se_cmd);
+-			break;
+-		}
++	spin_lock_irqsave(&sess->sess_cmd_lock, flags);
++	list_for_each_entry(cmd, &sess->sess_cmd_list, sess_cmd_list) {
++		if (cmd->se_cmd.tag = tag)
++			goto done;
+ 	}
+-	spin_unlock_irqrestore(&sess->se_sess->sess_cmd_lock, flags);
++	cmd = NULL;
++done:
++	spin_unlock_irqrestore(&sess->sess_cmd_lock, flags);
+ 
+ 	return cmd;
+ }
+@@ -1426,6 +1433,8 @@ static int tcm_qla2xxx_session_cb(struct se_portal_group *se_tpg,
+ 	uint16_t loop_id = qlat_sess->loop_id;
+ 	unsigned long flags;
+ 
++	INIT_LIST_HEAD(&qlat_sess->sess_cmd_list);
++	spin_lock_init(&qlat_sess->sess_cmd_lock);
+ 	/*
+ 	 * And now setup se_nacl and session pointers into HW lport internal
+ 	 * mappings for fabric S_ID and LOOP_ID.
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+1.8.3.1
