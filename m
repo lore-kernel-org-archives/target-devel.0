@@ -1,85 +1,92 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Wed, 07 Oct 2020 20:54:52 +0000
-Subject: [PATCH 07/16] vhost scsi: support delayed IO vq creation
-Message-Id: <1602104101-5592-8-git-send-email-michael.christie@oracle.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Mon, 26 Oct 2020 19:06:43 +0000
+Subject: [PATCH v2 2/5] scsi: target: rename struct sense_info to sense_detail
+Message-Id: <20201026190646.8727-3-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <1602104101-5592-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1602104101-5592-1-git-send-email-michael.christie@oracle.com>
+References: <20201026190646.8727-1-ddiss@suse.de>
+In-Reply-To: <20201026190646.8727-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>
 
-Each vhost-scsi device will need a evt and ctl queue, but the number
-of IO queues depends on whatever the user has configured in userspace.
-This patch has vhost-scsi create the evt, ctl and one IO vq at device
-open time. We then create the other IO vqs when userspace starts to
-set them up. We still waste some mem on the vq and scsi vq structs,
-but we don't waste mem on iovec related arrays and for later patches
-we know which queues are used by the dev->nvqs value.
+This helps distinguish it from the SCSI sense INFORMATION field.
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
- drivers/vhost/scsi.c | 19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ drivers/target/target_core_transport.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 5d412f1..ab1b656 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -1401,7 +1401,7 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
- 	mutex_lock(&vs->dev.mutex);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index ff26ab0a5f60..caa3a7b34826 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3094,14 +3094,14 @@ bool transport_wait_for_tasks(struct se_cmd *cmd)
+ }
+ EXPORT_SYMBOL(transport_wait_for_tasks);
  
- 	/* Verify that ring has been setup correctly. */
--	for (index = 0; index < vs->dev.nvqs; ++index) {
-+	for (index = 0; index < vs->dev.max_nvqs; ++index) {
- 		/* Verify that ring has been setup correctly. */
- 		if (!vhost_vq_access_ok(&vs->vqs[index].vq)) {
- 			ret = -EFAULT;
-@@ -1464,6 +1464,9 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
- 		       sizeof(vs->vs_vhost_wwpn));
- 		for (i = 0; i < VHOST_SCSI_MAX_VQ; i++) {
- 			vq = &vs->vqs[i].vq;
-+			if (!vq->initialized)
-+				continue;
-+
- 			mutex_lock(&vq->mutex);
- 			vhost_vq_set_backend(vq, vs_tpg);
- 			vhost_vq_init_access(vq);
-@@ -1503,7 +1506,7 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
- 	mutex_lock(&vhost_scsi_mutex);
- 	mutex_lock(&vs->dev.mutex);
- 	/* Verify that ring has been setup correctly. */
--	for (index = 0; index < vs->dev.nvqs; ++index) {
-+	for (index = 0; index < vs->dev.max_nvqs; ++index) {
- 		if (!vhost_vq_access_ok(&vs->vqs[index].vq)) {
- 			ret = -EFAULT;
- 			goto err_dev;
-@@ -1551,6 +1554,9 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
- 	if (match) {
- 		for (i = 0; i < VHOST_SCSI_MAX_VQ; i++) {
- 			vq = &vs->vqs[i].vq;
-+			if (!vq->initialized)
-+				continue;
-+
- 			mutex_lock(&vq->mutex);
- 			vhost_vq_set_backend(vq, NULL);
- 			mutex_unlock(&vq->mutex);
-@@ -1632,8 +1638,13 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
- 		vqs[i] = &vs->vqs[i].vq;
- 		vs->vqs[i].vq.handle_kick = vhost_scsi_handle_kick;
+-struct sense_info {
++struct sense_detail {
+ 	u8 key;
+ 	u8 asc;
+ 	u8 ascq;
+ 	bool add_sector_info;
+ };
+ 
+-static const struct sense_info sense_info_table[] = {
++static const struct sense_detail sense_detail_table[] = {
+ 	[TCM_NO_SENSE] = {
+ 		.key = NOT_READY
+ 	},
+@@ -3261,39 +3261,39 @@ static const struct sense_info sense_info_table[] = {
+  */
+ static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
+ {
+-	const struct sense_info *si;
++	const struct sense_detail *sd;
+ 	u8 *buffer = cmd->sense_buffer;
+ 	int r = (__force int)reason;
+ 	u8 key, asc, ascq;
+ 	bool desc_format = target_sense_desc_format(cmd->se_dev);
+ 
+-	if (r < ARRAY_SIZE(sense_info_table) && sense_info_table[r].key)
+-		si = &sense_info_table[r];
++	if (r < ARRAY_SIZE(sense_detail_table) && sense_detail_table[r].key)
++		sd = &sense_detail_table[r];
+ 	else
+-		si = &sense_info_table[(__force int)
++		sd = &sense_detail_table[(__force int)
+ 				       TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE];
+ 
+-	key = si->key;
++	key = sd->key;
+ 	if (reason = TCM_CHECK_CONDITION_UNIT_ATTENTION) {
+ 		if (!core_scsi3_ua_for_check_condition(cmd, &key, &asc,
+ 						       &ascq)) {
+ 			cmd->scsi_status = SAM_STAT_BUSY;
+ 			return;
+ 		}
+-	} else if (si->asc = 0) {
++	} else if (sd->asc = 0) {
+ 		WARN_ON_ONCE(cmd->scsi_asc = 0);
+ 		asc = cmd->scsi_asc;
+ 		ascq = cmd->scsi_ascq;
+ 	} else {
+-		asc = si->asc;
+-		ascq = si->ascq;
++		asc = sd->asc;
++		ascq = sd->ascq;
  	}
--	if (vhost_dev_init(&vs->dev, vqs, VHOST_SCSI_MAX_VQ, VHOST_SCSI_MAX_VQ,
--			   UIO_MAXIOV, VHOST_SCSI_WEIGHT, 0, true, NULL))
-+
-+	/*
-+	 * We will always need the ctl, evt and at least 1 IO vq. Create more
-+	 * IO vqs if userspace requests them.
-+	 */
-+	if (vhost_dev_init(&vs->dev, vqs, 3, VHOST_SCSI_MAX_VQ, UIO_MAXIOV,
-+			   VHOST_SCSI_WEIGHT, 0, true, NULL))
- 		goto err_dev_init;
  
- 	vhost_scsi_init_inflight(vs, NULL);
+ 	cmd->se_cmd_flags |= SCF_EMULATED_TASK_SENSE;
+ 	cmd->scsi_status = SAM_STAT_CHECK_CONDITION;
+ 	cmd->scsi_sense_length  = TRANSPORT_SENSE_BUFFER;
+ 	scsi_build_sense_buffer(desc_format, buffer, key, asc, ascq);
+-	if (si->add_sector_info)
++	if (sd->add_sector_info)
+ 		WARN_ON_ONCE(scsi_set_sense_information(buffer,
+ 							cmd->scsi_sense_length,
+ 							cmd->bad_sector) < 0);
 -- 
-1.8.3.1
+2.26.2
