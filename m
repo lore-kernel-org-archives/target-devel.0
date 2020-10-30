@@ -1,68 +1,128 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:50:22 +0000
-Subject: [PATCH RFC PKS/PMEM 47/58] drivers/mtd: Utilize new kmap_thread()
-Message-Id: <20201009195033.3208459-48-ira.weiny@intel.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 30 Oct 2020 21:39:29 +0000
+Subject: [PATCH v3 2/4] scsi: target: rename cmd.bad_sector to cmd.sense_info
+Message-Id: <20201030213931.10720-3-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <20201030213931.10720-1-ddiss@suse.de>
+In-Reply-To: <20201030213931.10720-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, Vignesh Raghavendra <vigneshr@ti.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, Miquel Raynal <miquel.raynal@bootlin.com>, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, Richard Weinberger <richard@nod.at>, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>, Mike Christie <michael.christie@oracle.com>
 
-From: Ira Weiny <ira.weiny@intel.com>
+cmd.bad_sector currently gets packed into the sense INFORMATION field
+for TCM_LOGICAL_BLOCK_{GUARD,APP_TAG,REF_TAG}_CHECK_FAILED errors, which
+carry an .add_sector_info flag in the sense_detail_table to ensure this.
 
-These kmap() calls are localized to a single thread.  To avoid the over
-head of global PKRS updates use the new kmap_thread() call.
+In preparation for propagating a byte offset on COMPARE AND WRITE
+TCM_MISCOMPARE_VERIFY error, rename cmd.bad_sector to cmd.sense_info
+and sense_detail.add_sector_info to sense_detail.add_sense_info so
+that it better reflects the sense INFORMATION field destination.
 
-Cc: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Richard Weinberger <richard@nod.at>
-Cc: Vignesh Raghavendra <vigneshr@ti.com>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Mike Christie <michael.christie@oracle.com>
+[ddiss: update previously overlooked ib_isert]
 ---
- drivers/mtd/mtd_blkdevs.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/infiniband/ulp/isert/ib_isert.c |  4 ++--
+ drivers/target/target_core_sbc.c        |  2 +-
+ drivers/target/target_core_transport.c  | 12 ++++++------
+ include/target/target_core_base.h       |  2 +-
+ 4 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
-index 0c05f77f9b21..4b18998273fa 100644
---- a/drivers/mtd/mtd_blkdevs.c
-+++ b/drivers/mtd/mtd_blkdevs.c
-@@ -88,14 +88,14 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
- 			return BLK_STS_IOERR;
- 		return BLK_STS_OK;
- 	case REQ_OP_READ:
--		buf = kmap(bio_page(req->bio)) + bio_offset(req->bio);
-+		buf = kmap_thread(bio_page(req->bio)) + bio_offset(req->bio);
- 		for (; nsect > 0; nsect--, block++, buf += tr->blksize) {
- 			if (tr->readsect(dev, block, buf)) {
--				kunmap(bio_page(req->bio));
-+				kunmap_thread(bio_page(req->bio));
- 				return BLK_STS_IOERR;
- 			}
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index 436e17f1d0e5..a3ba0c4d0d39 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -1528,12 +1528,12 @@ isert_check_pi_status(struct se_cmd *se_cmd, struct ib_mr *sig_mr)
  		}
--		kunmap(bio_page(req->bio));
-+		kunmap_thread(bio_page(req->bio));
- 		rq_flush_dcache_pages(req);
- 		return BLK_STS_OK;
- 	case REQ_OP_WRITE:
-@@ -103,14 +103,14 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
- 			return BLK_STS_IOERR;
+ 		sec_offset_err = mr_status.sig_err.sig_err_offset;
+ 		do_div(sec_offset_err, block_size);
+-		se_cmd->bad_sector = sec_offset_err + se_cmd->t_task_lba;
++		se_cmd->sense_info = sec_offset_err + se_cmd->t_task_lba;
  
- 		rq_flush_dcache_pages(req);
--		buf = kmap(bio_page(req->bio)) + bio_offset(req->bio);
-+		buf = kmap_thread(bio_page(req->bio)) + bio_offset(req->bio);
- 		for (; nsect > 0; nsect--, block++, buf += tr->blksize) {
- 			if (tr->writesect(dev, block, buf)) {
--				kunmap(bio_page(req->bio));
-+				kunmap_thread(bio_page(req->bio));
- 				return BLK_STS_IOERR;
+ 		isert_err("PI error found type %d at sector 0x%llx "
+ 			  "expected 0x%x vs actual 0x%x\n",
+ 			  mr_status.sig_err.err_type,
+-			  (unsigned long long)se_cmd->bad_sector,
++			  (unsigned long long)se_cmd->sense_info,
+ 			  mr_status.sig_err.expected,
+ 			  mr_status.sig_err.actual);
+ 		ret = 1;
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 6e8b8d30938f..5f77dd95f1b9 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -1439,7 +1439,7 @@ sbc_dif_verify(struct se_cmd *cmd, sector_t start, unsigned int sectors,
+ 			if (rc) {
+ 				kunmap_atomic(daddr - dsg->offset);
+ 				kunmap_atomic(paddr - psg->offset);
+-				cmd->bad_sector = sector;
++				cmd->sense_info = sector;
+ 				return rc;
  			}
- 		}
--		kunmap(bio_page(req->bio));
-+		kunmap_thread(bio_page(req->bio));
- 		return BLK_STS_OK;
- 	default:
- 		return BLK_STS_IOERR;
+ next:
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index caa3a7b34826..c6f45c12d564 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3098,7 +3098,7 @@ struct sense_detail {
+ 	u8 key;
+ 	u8 asc;
+ 	u8 ascq;
+-	bool add_sector_info;
++	bool add_sense_info;
+ };
+ 
+ static const struct sense_detail sense_detail_table[] = {
+@@ -3201,19 +3201,19 @@ static const struct sense_detail sense_detail_table[] = {
+ 		.key = ABORTED_COMMAND,
+ 		.asc = 0x10,
+ 		.ascq = 0x01, /* LOGICAL BLOCK GUARD CHECK FAILED */
+-		.add_sector_info = true,
++		.add_sense_info = true,
+ 	},
+ 	[TCM_LOGICAL_BLOCK_APP_TAG_CHECK_FAILED] = {
+ 		.key = ABORTED_COMMAND,
+ 		.asc = 0x10,
+ 		.ascq = 0x02, /* LOGICAL BLOCK APPLICATION TAG CHECK FAILED */
+-		.add_sector_info = true,
++		.add_sense_info = true,
+ 	},
+ 	[TCM_LOGICAL_BLOCK_REF_TAG_CHECK_FAILED] = {
+ 		.key = ABORTED_COMMAND,
+ 		.asc = 0x10,
+ 		.ascq = 0x03, /* LOGICAL BLOCK REFERENCE TAG CHECK FAILED */
+-		.add_sector_info = true,
++		.add_sense_info = true,
+ 	},
+ 	[TCM_COPY_TARGET_DEVICE_NOT_REACHABLE] = {
+ 		.key = COPY_ABORTED,
+@@ -3293,10 +3293,10 @@ static void translate_sense_reason(struct se_cmd *cmd, sense_reason_t reason)
+ 	cmd->scsi_status = SAM_STAT_CHECK_CONDITION;
+ 	cmd->scsi_sense_length  = TRANSPORT_SENSE_BUFFER;
+ 	scsi_build_sense_buffer(desc_format, buffer, key, asc, ascq);
+-	if (sd->add_sector_info)
++	if (sd->add_sense_info)
+ 		WARN_ON_ONCE(scsi_set_sense_information(buffer,
+ 							cmd->scsi_sense_length,
+-							cmd->bad_sector) < 0);
++							cmd->sense_info) < 0);
+ }
+ 
+ int
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 549947d407cf..7ee2bee46b3a 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -540,7 +540,7 @@ struct se_cmd {
+ 	struct scatterlist	*t_prot_sg;
+ 	unsigned int		t_prot_nents;
+ 	sense_reason_t		pi_err;
+-	sector_t		bad_sector;
++	u64			sense_info;
+ 	int			cpuid;
+ };
+ 
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+2.26.2
