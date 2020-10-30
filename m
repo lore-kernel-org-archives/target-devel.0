@@ -1,130 +1,38 @@
-From: "Michael S. Tsirkin" <mst@redhat.com>
-Date: Fri, 30 Oct 2020 08:51:16 +0000
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Fri, 30 Oct 2020 16:04:12 +0000
 Subject: Re: [PATCH 09/17] vhost scsi: fix cmd completion race
-Message-Id: <20201030045053-mutt-send-email-mst@kernel.org>
+Message-Id: <5c319f1a-cf4c-f522-ecde-5b6b5a2e1ddd@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
  <1603326903-27052-10-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1603326903-27052-10-git-send-email-michael.christie@oracle.com>
+ <20201030045053-mutt-send-email-mst@kernel.org>
+In-Reply-To: <20201030045053-mutt-send-email-mst@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <michael.christie@oracle.com>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: "Michael S. Tsirkin" <mst@redhat.com>, Mike Christie <michael.christie@oracle.com>
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, jasowang@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-On Wed, Oct 21, 2020 at 07:34:55PM -0500, Mike Christie wrote:
-> We might not do the final se_cmd put from vhost_scsi_complete_cmd_work.
-> When the last put happens a little later then we could race where
-> vhost_scsi_complete_cmd_work does vhost_signal, the guest runs and sends
-> more IO, and vhost_scsi_handle_vq runs but does not find any free cmds.
+On 30/10/20 09:51, Michael S. Tsirkin wrote:
+> On Wed, Oct 21, 2020 at 07:34:55PM -0500, Mike Christie wrote:
+>> We might not do the final se_cmd put from vhost_scsi_complete_cmd_work.
+>> When the last put happens a little later then we could race where
+>> vhost_scsi_complete_cmd_work does vhost_signal, the guest runs and sends
+>> more IO, and vhost_scsi_handle_vq runs but does not find any free cmds.
+>>
+>> This patch has us delay completing the cmd until the last lio core ref
+>> is dropped. We then know that once we signal to the guest that the cmd
+>> is completed that if it queues a new command it will find a free cmd.
+>>
+>> Signed-off-by: Mike Christie <michael.christie@oracle.com>
 > 
-> This patch has us delay completing the cmd until the last lio core ref
-> is dropped. We then know that once we signal to the guest that the cmd
-> is completed that if it queues a new command it will find a free cmd.
-> 
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+> Paolo, could you review this one?
 
+I don't know how LIO does all the callbacks, honestly (I have only ever
+worked on the virtio-scsi driver, not vhost-scsi, and I have only ever
+reviewed some virtio-scsi spec bits of vhost-scsi).
 
-Paolo, could you review this one?
+The vhost_scsi_complete_cmd_work parts look fine, but I have no idea why
+vhost_scsi_queue_data_in and vhost_scsi_queue_status call.
 
-> ---
->  drivers/vhost/scsi.c | 42 +++++++++++++++---------------------------
->  1 file changed, 15 insertions(+), 27 deletions(-)
-> 
-> diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-> index f6b9010..2fa48dd 100644
-> --- a/drivers/vhost/scsi.c
-> +++ b/drivers/vhost/scsi.c
-> @@ -322,7 +322,7 @@ static u32 vhost_scsi_tpg_get_inst_index(struct se_portal_group *se_tpg)
->  	return 1;
->  }
->  
-> -static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
-> +static void vhost_scsi_release_cmd_res(struct se_cmd *se_cmd)
->  {
->  	struct vhost_scsi_cmd *tv_cmd = container_of(se_cmd,
->  				struct vhost_scsi_cmd, tvc_se_cmd);
-> @@ -344,6 +344,16 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
->  	vhost_scsi_put_inflight(inflight);
->  }
->  
-> +static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
-> +{
-> +	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
-> +					struct vhost_scsi_cmd, tvc_se_cmd);
-> +	struct vhost_scsi *vs = cmd->tvc_vhost;
-> +
-> +	llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
-> +	vhost_work_queue(&vs->dev, &vs->vs_completion_work);
-> +}
-> +
->  static u32 vhost_scsi_sess_get_index(struct se_session *se_sess)
->  {
->  	return 0;
-> @@ -366,28 +376,15 @@ static int vhost_scsi_get_cmd_state(struct se_cmd *se_cmd)
->  	return 0;
->  }
->  
-> -static void vhost_scsi_complete_cmd(struct vhost_scsi_cmd *cmd)
-> -{
-> -	struct vhost_scsi *vs = cmd->tvc_vhost;
-> -
-> -	llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
-> -
-> -	vhost_work_queue(&vs->dev, &vs->vs_completion_work);
-> -}
-> -
->  static int vhost_scsi_queue_data_in(struct se_cmd *se_cmd)
->  {
-> -	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
-> -				struct vhost_scsi_cmd, tvc_se_cmd);
-> -	vhost_scsi_complete_cmd(cmd);
-> +	transport_generic_free_cmd(se_cmd, 0);
->  	return 0;
->  }
->  
->  static int vhost_scsi_queue_status(struct se_cmd *se_cmd)
->  {
-> -	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
-> -				struct vhost_scsi_cmd, tvc_se_cmd);
-> -	vhost_scsi_complete_cmd(cmd);
-> +	transport_generic_free_cmd(se_cmd, 0);
->  	return 0;
->  }
->  
-> @@ -433,15 +430,6 @@ static void vhost_scsi_free_evt(struct vhost_scsi *vs, struct vhost_scsi_evt *ev
->  	return evt;
->  }
->  
-> -static void vhost_scsi_free_cmd(struct vhost_scsi_cmd *cmd)
-> -{
-> -	struct se_cmd *se_cmd = &cmd->tvc_se_cmd;
-> -
-> -	/* TODO locking against target/backend threads? */
-> -	transport_generic_free_cmd(se_cmd, 0);
-> -
-> -}
-> -
->  static int vhost_scsi_check_stop_free(struct se_cmd *se_cmd)
->  {
->  	return target_put_sess_cmd(se_cmd);
-> @@ -560,7 +548,7 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
->  		} else
->  			pr_err("Faulted on virtio_scsi_cmd_resp\n");
->  
-> -		vhost_scsi_free_cmd(cmd);
-> +		vhost_scsi_release_cmd_res(se_cmd);
->  	}
->  
->  	vq = -1;
-> @@ -1096,7 +1084,7 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
->  						      &prot_iter, exp_data_len,
->  						      &data_iter))) {
->  				vq_err(vq, "Failed to map iov to sgl\n");
-> -				vhost_scsi_release_cmd(&cmd->tvc_se_cmd);
-> +				vhost_scsi_release_cmd_res(&cmd->tvc_se_cmd);
->  				goto err;
->  			}
->  		}
-> -- 
-> 1.8.3.1
+Paolo
