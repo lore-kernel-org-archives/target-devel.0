@@ -1,55 +1,121 @@
-From: Damien Le Moal <Damien.LeMoal@wdc.com>
-Date: Mon, 12 Oct 2020 02:30:18 +0000
-Subject: Re: [PATCH RFC PKS/PMEM 26/58] fs/zonefs: Utilize new kmap_thread()
-Message-Id: <BL0PR04MB65146627753E6A8125C30044E7070@BL0PR04MB6514.namprd04.prod.outlook.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Fri, 30 Oct 2020 21:39:31 +0000
+Subject: [PATCH v3 4/4] scsi: target: return COMPARE AND WRITE miscompare offsets
+Message-Id: <20201030213931.10720-5-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
- <20201009195033.3208459-27-ira.weiny@intel.com>
+References: <20201030213931.10720-1-ddiss@suse.de>
+In-Reply-To: <20201030213931.10720-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "ira.weiny@intel.com" <ira.weiny@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "linux-aio@kvack.org" <linux-aio@kvack.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "kexec@lists.infradead.org" <kexec@lists.infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>, "samba-technical@lists.samba.org" <samba-technical@lists.samba.org>, "ceph-devel@vger.kernel.org" <ceph-devel@vger.kernel.org>, "drbd-dev@lists.linbit.com" <drbd-dev@lists.linbit.com>, Naohiro Aota <Naohiro.Aota@wdc.com>, "linux-cifs@vger.kernel.org" <linux-cifs@vger.kernel.org>, "linux-nilfs@vger.kernel.org" <linux-nilfs@vger.kernel.org>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>, "linux-afs@lists.infradead.org" <linux-afs@lists.infradead.org>, "cluster-devel@redhat.com" <cluster-devel@redhat.com>, "linux-cachefs@redhat.com" <linux-cachefs@redhat.com>, "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>, Fenghua Yu <fenghua.yu@intel.com>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-um@lists.infradead.org" <linux-um@lists.infradead.org>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, "ecryptfs@vger.kernel.org" <ecryptfs@vger.kernel.org>, "linux-erofs@lists.ozlabs.org" <linux-erofs@lists.ozlabs.org>, "reiserfs-devel@vger.kernel.org" <reiserfs-devel@vger.kernel.org>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "linux-bcache@vger.kernel.org" <linux-bcache@vger.kernel.org>, Dan Williams <dan.j.williams@intel.com>, "io-uring@vger.kernel.org" <io-uring@vger.kernel.org>, "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>, "linux-ntfs-dev@lists.sourceforge.net" <linux-ntfs-dev@lists.sourceforge.net>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-f2fs-devel@lists.sourceforge.net" <linux-f2fs-devel@lists.sourceforge.net>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "bpf@vger.kernel.org" <bpf@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>, Mike Christie <michael.christie@oracle.com>
 
-On 2020/10/10 4:52, ira.weiny@intel.com wrote:
-> From: Ira Weiny <ira.weiny@intel.com>
-> 
-> The kmap() calls in this FS are localized to a single thread.  To avoid
-> the over head of global PKRS updates use the new kmap_thread() call.
-> 
-> Cc: Damien Le Moal <damien.lemoal@wdc.com>
-> Cc: Naohiro Aota <naohiro.aota@wdc.com>
-> Signed-off-by: Ira Weiny <ira.weiny@intel.com>
-> ---
->  fs/zonefs/super.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/fs/zonefs/super.c b/fs/zonefs/super.c
-> index 8ec7c8f109d7..2fd6c86beee1 100644
-> --- a/fs/zonefs/super.c
-> +++ b/fs/zonefs/super.c
-> @@ -1297,7 +1297,7 @@ static int zonefs_read_super(struct super_block *sb)
->  	if (ret)
->  		goto free_page;
->  
-> -	super = kmap(page);
-> +	super = kmap_thread(page);
->  
->  	ret = -EINVAL;
->  	if (le32_to_cpu(super->s_magic) != ZONEFS_MAGIC)
-> @@ -1349,7 +1349,7 @@ static int zonefs_read_super(struct super_block *sb)
->  	ret = 0;
->  
->  unmap:
-> -	kunmap(page);
-> +	kunmap_thread(page);
->  free_page:
->  	__free_page(page);
->  
-> 
+SBC-4 r15 5.3 COMPARE AND WRITE command states:
+  if the compare operation does not indicate a match, then terminate the
+  command with CHECK CONDITION status with the sense key set to
+  MISCOMPARE and the additional sense code set to MISCOMPARE DURING
+  VERIFY OPERATION. In the sense data (see 4.18 and SPC-5) the offset
+  from the start of the Data-Out Buffer to the first byte of data that
+  was not equal shall be reported in the INFORMATION field.
 
-acked-by: Damien Le Moal <damien.lemoal@wdc.com>
+This change implements the missing logic to report the miscompare offset
+in the sense data INFORMATION field.
 
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/target/target_core_sbc.c       | 34 ++++++++++++++++++--------
+ drivers/target/target_core_transport.c |  1 +
+ 2 files changed, 25 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 22d0cbba6ff3..0fa52a98d6cf 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -435,13 +435,13 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
+ }
+ 
+ /*
+- * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare return
+- * TCM_MISCOMPARE_VERIFY.
++ * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare, fill
++ * @miscmp_off and return TCM_MISCOMPARE_VERIFY.
+  */
+ static sense_reason_t
+ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
+ 			 struct scatterlist *cmp_sgl, unsigned int cmp_nents,
+-			 unsigned int cmp_len)
++			 unsigned int cmp_len, unsigned int *miscmp_off)
+ {
+ 	unsigned char *buf = NULL;
+ 	struct scatterlist *sg;
+@@ -467,17 +467,20 @@ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
+ 	 */
+ 	offset = 0;
+ 	for_each_sg(read_sgl, sg, read_nents, i) {
++		unsigned int i;
+ 		unsigned int len = min(sg->length, cmp_len);
+ 		unsigned char *addr = kmap_atomic(sg_page(sg));
+ 
+-		if (memcmp(addr, buf + offset, len)) {
+-			pr_warn("Detected MISCOMPARE for addr: %p buf: %p\n",
+-				addr, buf + offset);
+-			kunmap_atomic(addr);
++		for (i = 0; i < len && addr[i] = buf[offset + i]; i++)
++			;
++		kunmap_atomic(addr);
++		if (i < len) {
++			*miscmp_off = offset + i;
++			pr_warn("Detected MISCOMPARE at offset %u\n",
++				*miscmp_off);
+ 			ret = TCM_MISCOMPARE_VERIFY;
+ 			goto out;
+ 		}
+-		kunmap_atomic(addr);
+ 
+ 		offset += len;
+ 		cmp_len -= len;
+@@ -501,6 +504,7 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 	unsigned int len;
+ 	unsigned int block_size = dev->dev_attrib.block_size;
+ 	unsigned int compare_len = (cmd->t_task_nolb * block_size);
++	unsigned int miscmp_off = 0;
+ 	sense_reason_t ret = TCM_NO_SENSE;
+ 	int i;
+ 
+@@ -532,8 +536,18 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 				       cmd->t_bidi_data_nents,
+ 				       cmd->t_data_sg,
+ 				       cmd->t_data_nents,
+-				       compare_len);
+-	if (ret)
++				       compare_len,
++				       &miscmp_off);
++	if (ret = TCM_MISCOMPARE_VERIFY) {
++		/*
++		 * SBC-4 r15: 5.3 COMPARE AND WRITE command
++		 * In the sense data (see 4.18 and SPC-5) the offset from the
++		 * start of the Data-Out Buffer to the first byte of data that
++		 * was not equal shall be reported in the INFORMATION field.
++		 */
++		cmd->sense_info = miscmp_off;
++		goto out;
++	} else if (ret)
+ 		goto out;
+ 
+ 	if (sg_alloc_table(&write_tbl, cmd->t_data_nents, GFP_KERNEL) < 0) {
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index c6f45c12d564..693ed3fe4388 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3196,6 +3196,7 @@ static const struct sense_detail sense_detail_table[] = {
+ 		.key = MISCOMPARE,
+ 		.asc = 0x1d, /* MISCOMPARE DURING VERIFY OPERATION */
+ 		.ascq = 0x00,
++		.add_sense_info = true,
+ 	},
+ 	[TCM_LOGICAL_BLOCK_GUARD_CHECK_FAILED] = {
+ 		.key = ABORTED_COMMAND,
 -- 
-Damien Le Moal
-Western Digital Research
+2.26.2
