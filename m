@@ -1,44 +1,41 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Wed, 07 Oct 2020 20:54:58 +0000
-Subject: [PATCH 13/16] vhost poll: fix coding style
-Message-Id: <1602104101-5592-14-git-send-email-michael.christie@oracle.com>
+From: "Mr. John Galvan" <no-reply@msgroupspa.com>
+Date: Fri, 30 Oct 2020 08:07:24 +0000
+Subject: Hello/Hallo
+Message-Id: <8970d4ac30f8022b0ae628d9b69a2d43@msgroupspa.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1602104101-5592-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1602104101-5592-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: target-devel@vger.kernel.org
 
-We use like 3 coding styles in this struct. Switch to just tabs.
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
----
- drivers/vhost/vhost.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
-index a91be8a..2bbe85f 100644
---- a/drivers/vhost/vhost.h
-+++ b/drivers/vhost/vhost.h
-@@ -34,12 +34,12 @@ struct vhost_worker {
- /* Poll a file (eventfd or socket) */
- /* Note: there's nothing vhost specific about this structure. */
- struct vhost_poll {
--	poll_table                table;
--	wait_queue_head_t        *wqh;
--	wait_queue_entry_t              wait;
--	struct vhost_work	  work;
--	__poll_t		  mask;
--	struct vhost_dev	 *dev;
-+	poll_table		table;
-+	wait_queue_head_t	*wqh;
-+	wait_queue_entry_t	wait;
-+	struct vhost_work	work;
-+	__poll_t		mask;
-+	struct vhost_dev	*dev;
- };
- 
- void vhost_work_init(struct vhost_work *work, vhost_work_fn_t fn);
 -- 
-1.8.3.1
+Sir/Madam,
+
+I have access to very vital information that can be used to move a huge 
+amount of money. I have done my homework very well and I have the 
+machineries in place to get it done since I am still in active service. 
+If it was possible for me to do it alone I would not have bothered 
+contacting you. Ultimately I need an honest foreigner to play an 
+important role in the completion of this business transaction. Send 
+responds to this email: galvan.johnny@outlook.com
+
+Regards,
+John Galvan
+
+---------------------------------------------------------------
+
+Sir / Madam,
+
+Ich habe Zugang zu sehr wichtigen Informationen, mit denen ich eine 
+große Menge Geld bewegen kann. Ich habe meine Hausaufgaben sehr gut 
+gemacht und ich habe die Maschinen, um sie zu erledigen, da ich immer 
+noch im aktiven Dienst bin. Wenn es mir möglich gewesen wäre, es alleine 
+zu tun, hätte ich mich nicht darum gekümmert, Sie zu kontaktieren. 
+Letztendlich brauche ich einen ehrlichen Ausländer, der eine wichtige 
+Rolle beim Abschluss dieses Geschäftsvorgangs spielt. Senden Sie 
+Antworten auf diese E-Mail: galvan.johnny@outlook.com
+
+Grüße,
+John Galvan
