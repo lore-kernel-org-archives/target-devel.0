@@ -1,7 +1,7 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Tue, 27 Oct 2020 13:07:13 +0000
+From: "Michael S. Tsirkin" <mst@redhat.com>
+Date: Fri, 30 Oct 2020 08:51:16 +0000
 Subject: Re: [PATCH 09/17] vhost scsi: fix cmd completion race
-Message-Id: <8662eb42-7632-a05f-cb55-5dc80b444612@redhat.com>
+Message-Id: <20201030045053-mutt-send-email-mst@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <1603326903-27052-1-git-send-email-michael.christie@oracle.com>
  <1603326903-27052-10-git-send-email-michael.christie@oracle.com>
@@ -9,11 +9,10 @@ In-Reply-To: <1603326903-27052-10-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: Mike Christie <michael.christie@oracle.com>
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-
-
-Dne 22. 10. 20 v 2:34 Mike Christie napsal(a):
+On Wed, Oct 21, 2020 at 07:34:55PM -0500, Mike Christie wrote:
 > We might not do the final se_cmd put from vhost_scsi_complete_cmd_work.
 > When the last put happens a little later then we could race where
 > vhost_scsi_complete_cmd_work does vhost_signal, the guest runs and sends
@@ -24,6 +23,10 @@ Dne 22. 10. 20 v 2:34 Mike Christie napsal(a):
 > is completed that if it queues a new command it will find a free cmd.
 > 
 > Signed-off-by: Mike Christie <michael.christie@oracle.com>
+
+
+Paolo, could you review this one?
+
 > ---
 >  drivers/vhost/scsi.c | 42 +++++++++++++++---------------------------
 >  1 file changed, 15 insertions(+), 27 deletions(-)
@@ -123,8 +126,5 @@ Dne 22. 10. 20 v 2:34 Mike Christie napsal(a):
 >  				goto err;
 >  			}
 >  		}
-> 
-
-Looks ok to me.
-
-Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
+> -- 
+> 1.8.3.1
