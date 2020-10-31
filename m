@@ -1,121 +1,137 @@
-From: David Disseldorp <ddiss@suse.de>
-Date: Fri, 30 Oct 2020 21:39:31 +0000
-Subject: [PATCH v3 4/4] scsi: target: return COMPARE AND WRITE miscompare offsets
-Message-Id: <20201030213931.10720-5-ddiss@suse.de>
+From: Douglas Gilbert <dgilbert@interlog.com>
+Date: Sat, 31 Oct 2020 00:06:31 +0000
+Subject: Re: [PATCH v3 4/4] scsi: target: return COMPARE AND WRITE miscompare offsets
+Message-Id: <e475cbf3-6dc8-901f-b5e3-30228e9a03a4@interlog.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <20201030213931.10720-1-ddiss@suse.de>
-In-Reply-To: <20201030213931.10720-1-ddiss@suse.de>
+ <20201030213931.10720-5-ddiss@suse.de>
+In-Reply-To: <20201030213931.10720-5-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>, Mike Christie <michael.christie@oracle.com>
+To: David Disseldorp <ddiss@suse.de>, target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, Mike Christie <michael.christie@oracle.com>
 
-SBC-4 r15 5.3 COMPARE AND WRITE command states:
-  if the compare operation does not indicate a match, then terminate the
-  command with CHECK CONDITION status with the sense key set to
-  MISCOMPARE and the additional sense code set to MISCOMPARE DURING
-  VERIFY OPERATION. In the sense data (see 4.18 and SPC-5) the offset
-  from the start of the Data-Out Buffer to the first byte of data that
-  was not equal shall be reported in the INFORMATION field.
+On 2020-10-30 5:39 p.m., David Disseldorp wrote:
+> SBC-4 r15 5.3 COMPARE AND WRITE command states:
+>    if the compare operation does not indicate a match, then terminate the
+>    command with CHECK CONDITION status with the sense key set to
+>    MISCOMPARE and the additional sense code set to MISCOMPARE DURING
+>    VERIFY OPERATION. In the sense data (see 4.18 and SPC-5) the offset
+>    from the start of the Data-Out Buffer to the first byte of data that
+>    was not equal shall be reported in the INFORMATION field.
+> 
+> This change implements the missing logic to report the miscompare offset
+> in the sense data INFORMATION field.
+> 
+> Signed-off-by: David Disseldorp <ddiss@suse.de>
+> Reviewed-by: Mike Christie <michael.christie@oracle.com>
+> ---
+>   drivers/target/target_core_sbc.c       | 34 ++++++++++++++++++--------
+>   drivers/target/target_core_transport.c |  1 +
+>   2 files changed, 25 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+> index 22d0cbba6ff3..0fa52a98d6cf 100644
+> --- a/drivers/target/target_core_sbc.c
+> +++ b/drivers/target/target_core_sbc.c
+> @@ -435,13 +435,13 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
+>   }
+>   
+>   /*
+> - * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare return
+> - * TCM_MISCOMPARE_VERIFY.
+> + * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare, fill
+> + * @miscmp_off and return TCM_MISCOMPARE_VERIFY.
+>    */
+>   static sense_reason_t
+>   compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
+>   			 struct scatterlist *cmp_sgl, unsigned int cmp_nents,
+> -			 unsigned int cmp_len)
+> +			 unsigned int cmp_len, unsigned int *miscmp_off)
+>   {
+>   	unsigned char *buf = NULL;
+>   	struct scatterlist *sg;
+> @@ -467,17 +467,20 @@ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
+>   	 */
+>   	offset = 0;
+>   	for_each_sg(read_sgl, sg, read_nents, i) {
+> +		unsigned int i;
+>   		unsigned int len = min(sg->length, cmp_len);
+>   		unsigned char *addr = kmap_atomic(sg_page(sg));
+>   
+> -		if (memcmp(addr, buf + offset, len)) {
+> -			pr_warn("Detected MISCOMPARE for addr: %p buf: %p\n",
+> -				addr, buf + offset);
+> -			kunmap_atomic(addr);
+> +		for (i = 0; i < len && addr[i] = buf[offset + i]; i++)
+> +			;
 
-This change implements the missing logic to report the miscompare offset
-in the sense data INFORMATION field.
+I believe the logic is correct (and scsi_debug doesn't set the INFO field
+in its CAW, but should), but I wonder about performance.
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
-Reviewed-by: Mike Christie <michael.christie@oracle.com>
----
- drivers/target/target_core_sbc.c       | 34 ++++++++++++++++++--------
- drivers/target/target_core_transport.c |  1 +
- 2 files changed, 25 insertions(+), 10 deletions(-)
+If the probability of equality is high (e.g. like it is usually with
+VERIFY(BytChk=1) ) and memcmp() is faster than that for-loop (which
+could be optimized), then a better strategy might be to always do memcmp()
+first and only if it fails go into the byte by byte for-loop to find the
+offset of the first miscompare.
 
-diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index 22d0cbba6ff3..0fa52a98d6cf 100644
---- a/drivers/target/target_core_sbc.c
-+++ b/drivers/target/target_core_sbc.c
-@@ -435,13 +435,13 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
- }
- 
- /*
-- * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare return
-- * TCM_MISCOMPARE_VERIFY.
-+ * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare, fill
-+ * @miscmp_off and return TCM_MISCOMPARE_VERIFY.
-  */
- static sense_reason_t
- compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
- 			 struct scatterlist *cmp_sgl, unsigned int cmp_nents,
--			 unsigned int cmp_len)
-+			 unsigned int cmp_len, unsigned int *miscmp_off)
- {
- 	unsigned char *buf = NULL;
- 	struct scatterlist *sg;
-@@ -467,17 +467,20 @@ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
- 	 */
- 	offset = 0;
- 	for_each_sg(read_sgl, sg, read_nents, i) {
-+		unsigned int i;
- 		unsigned int len = min(sg->length, cmp_len);
- 		unsigned char *addr = kmap_atomic(sg_page(sg));
- 
--		if (memcmp(addr, buf + offset, len)) {
--			pr_warn("Detected MISCOMPARE for addr: %p buf: %p\n",
--				addr, buf + offset);
--			kunmap_atomic(addr);
-+		for (i = 0; i < len && addr[i] = buf[offset + i]; i++)
-+			;
-+		kunmap_atomic(addr);
-+		if (i < len) {
-+			*miscmp_off = offset + i;
-+			pr_warn("Detected MISCOMPARE at offset %u\n",
-+				*miscmp_off);
- 			ret = TCM_MISCOMPARE_VERIFY;
- 			goto out;
- 		}
--		kunmap_atomic(addr);
- 
- 		offset += len;
- 		cmp_len -= len;
-@@ -501,6 +504,7 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
- 	unsigned int len;
- 	unsigned int block_size = dev->dev_attrib.block_size;
- 	unsigned int compare_len = (cmd->t_task_nolb * block_size);
-+	unsigned int miscmp_off = 0;
- 	sense_reason_t ret = TCM_NO_SENSE;
- 	int i;
- 
-@@ -532,8 +536,18 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
- 				       cmd->t_bidi_data_nents,
- 				       cmd->t_data_sg,
- 				       cmd->t_data_nents,
--				       compare_len);
--	if (ret)
-+				       compare_len,
-+				       &miscmp_off);
-+	if (ret = TCM_MISCOMPARE_VERIFY) {
-+		/*
-+		 * SBC-4 r15: 5.3 COMPARE AND WRITE command
-+		 * In the sense data (see 4.18 and SPC-5) the offset from the
-+		 * start of the Data-Out Buffer to the first byte of data that
-+		 * was not equal shall be reported in the INFORMATION field.
-+		 */
-+		cmd->sense_info = miscmp_off;
-+		goto out;
-+	} else if (ret)
- 		goto out;
- 
- 	if (sg_alloc_table(&write_tbl, cmd->t_data_nents, GFP_KERNEL) < 0) {
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index c6f45c12d564..693ed3fe4388 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -3196,6 +3196,7 @@ static const struct sense_detail sense_detail_table[] = {
- 		.key = MISCOMPARE,
- 		.asc = 0x1d, /* MISCOMPARE DURING VERIFY OPERATION */
- 		.ascq = 0x00,
-+		.add_sense_info = true,
- 	},
- 	[TCM_LOGICAL_BLOCK_GUARD_CHECK_FAILED] = {
- 		.key = ABORTED_COMMAND,
--- 
-2.26.2
+IMO this should only be considered, if there is going to be a "v4" of
+this patchset.
+
+Doug Gilbert
+
+> +		kunmap_atomic(addr);
+> +		if (i < len) {
+> +			*miscmp_off = offset + i;
+> +			pr_warn("Detected MISCOMPARE at offset %u\n",
+> +				*miscmp_off);
+>   			ret = TCM_MISCOMPARE_VERIFY;
+>   			goto out;
+>   		}
+> -		kunmap_atomic(addr);
+>   
+>   		offset += len;
+>   		cmp_len -= len;
+> @@ -501,6 +504,7 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+>   	unsigned int len;
+>   	unsigned int block_size = dev->dev_attrib.block_size;
+>   	unsigned int compare_len = (cmd->t_task_nolb * block_size);
+> +	unsigned int miscmp_off = 0;
+>   	sense_reason_t ret = TCM_NO_SENSE;
+>   	int i;
+>   
+> @@ -532,8 +536,18 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+>   				       cmd->t_bidi_data_nents,
+>   				       cmd->t_data_sg,
+>   				       cmd->t_data_nents,
+> -				       compare_len);
+> -	if (ret)
+> +				       compare_len,
+> +				       &miscmp_off);
+> +	if (ret = TCM_MISCOMPARE_VERIFY) {
+> +		/*
+> +		 * SBC-4 r15: 5.3 COMPARE AND WRITE command
+> +		 * In the sense data (see 4.18 and SPC-5) the offset from the
+> +		 * start of the Data-Out Buffer to the first byte of data that
+> +		 * was not equal shall be reported in the INFORMATION field.
+> +		 */
+> +		cmd->sense_info = miscmp_off;
+> +		goto out;
+> +	} else if (ret)
+>   		goto out;
+>   
+>   	if (sg_alloc_table(&write_tbl, cmd->t_data_nents, GFP_KERNEL) < 0) {
+> diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+> index c6f45c12d564..693ed3fe4388 100644
+> --- a/drivers/target/target_core_transport.c
+> +++ b/drivers/target/target_core_transport.c
+> @@ -3196,6 +3196,7 @@ static const struct sense_detail sense_detail_table[] = {
+>   		.key = MISCOMPARE,
+>   		.asc = 0x1d, /* MISCOMPARE DURING VERIFY OPERATION */
+>   		.ascq = 0x00,
+> +		.add_sense_info = true,
+>   	},
+>   	[TCM_LOGICAL_BLOCK_GUARD_CHECK_FAILED] = {
+>   		.key = ABORTED_COMMAND,
+> 
