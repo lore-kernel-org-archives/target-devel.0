@@ -1,25 +1,43 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Fri, 30 Oct 2020 01:52:30 +0000
-Subject: Re: [PATCH 1/2] libfc: move scsi/fc_encode.h to libfc
-Message-Id: <yq1y2jo1nvx.fsf@ca-mkp.ca.oracle.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Sat, 31 Oct 2020 23:32:07 +0000
+Subject: [PATCH v4 0/4] scsi: target: COMPARE AND WRITE miscompare sense
+Message-Id: <20201031233211.5207-1-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201026160705.3706396-1-arnd@kernel.org>
-In-Reply-To: <20201026160705.3706396-1-arnd@kernel.org> (Arnd Bergmann's
-        message of "Mon, 26 Oct 2020 17:06:12 +0100")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Hannes Reinecke <hare@suse.de>, Arnd Bergmann <arnd@arndb.de>, Saurav Kashyap <skashyap@marvell.com>, Javed Hasan <jhasan@marvell.com>, GR-QLogic-Storage-Upstream@marvell.com, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
 
+This patchset adds missing functionality to return the offset of
+non-matching read/compare data in the sense INFORMATION field on
+COMPARE AND WRITE miscompare.
 
-Arnd,
+The functionality can be tested using the libiscsi
+CompareAndWrite.MiscompareSense test proposed via:
+  https://github.com/sahlberg/libiscsi/pull/344
 
-> Most of this file is only used inside of libfc, so move it to where it
-> is actually used, with only fc_fill_fc_hdr() left inside of the
-> header.
+Changes since v3:
+- (4/4) optimize for equality, as suggested by Doug
+  + perform byte-by-byte offset check only after memcmp() failure
+  + drop Mike's RB tag due to this rework
 
-Applied to 5.11/scsi-staging, thanks!
+Changes since v2:
+- perform bad_sector->sense_info rename in overlooked ib_isert
+- drop scatterlist change queued via Jens' tree
+- add Mike's reviewed-by tag
+- rebase against Martin's 5.11/scsi-queue branch
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Changes since v1:
+- drop unnecessary WARN_ON()
+- fix two checkpatch warnings
+- drop single-use nlbas variable
+- avoid compare_len recalculation
+
+Cheers, David
+
+ drivers/infiniband/ulp/isert/ib_isert.c |   4 +-
+ drivers/target/target_core_sbc.c        | 138 ++++++++++++++----------
+ drivers/target/target_core_transport.c  |  33 +++---
+ include/target/target_core_base.h       |   2 +-
+ 4 files changed, 104 insertions(+), 73 deletions(-)
