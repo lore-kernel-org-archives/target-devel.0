@@ -1,108 +1,131 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:50:11 +0000
-Subject: [PATCH RFC PKS/PMEM 36/58] fs/ext2: Use ext2_put_page
-Message-Id: <20201009195033.3208459-37-ira.weiny@intel.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Sat, 31 Oct 2020 23:32:11 +0000
+Subject: [PATCH v4 4/4] scsi: target: return COMPARE AND WRITE miscompare offsets
+Message-Id: <20201031233211.5207-5-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <20201031233211.5207-1-ddiss@suse.de>
+In-Reply-To: <20201031233211.5207-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, Jan Kara <jack@suse.com>, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>
 
-From: Ira Weiny <ira.weiny@intel.com>
+SBC-4 r15 5.3 COMPARE AND WRITE command states:
+  if the compare operation does not indicate a match, then terminate the
+  command with CHECK CONDITION status with the sense key set to
+  MISCOMPARE and the additional sense code set to MISCOMPARE DURING
+  VERIFY OPERATION. In the sense data (see 4.18 and SPC-5) the offset
+  from the start of the Data-Out Buffer to the first byte of data that
+  was not equal shall be reported in the INFORMATION field.
 
-There are 3 places in namei.c where the equivalent of ext2_put_page() is
-open coded.  We want to use k[un]map_thread() instead of k[un]map() in
-ext2_[get|put]_page().
+This change implements the missing logic to report the miscompare offset
+in the sense data INFORMATION field. As an optimization, byte-by-byte
+miscompare offset calculation is only performed after memcmp() mismatch.
 
-Move ext2_put_page() to ext2.h and use it in namei.c in prep for
-converting the k[un]map() code.
-
-Cc: Jan Kara <jack@suse.com>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
 ---
- fs/ext2/dir.c   |  6 ------
- fs/ext2/ext2.h  |  8 ++++++++
- fs/ext2/namei.c | 15 +++++----------
- 3 files changed, 13 insertions(+), 16 deletions(-)
+ drivers/target/target_core_sbc.c       | 35 ++++++++++++++++++--------
+ drivers/target/target_core_transport.c |  1 +
+ 2 files changed, 26 insertions(+), 10 deletions(-)
 
-diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
-index 70355ab6740e..f3194bf20733 100644
---- a/fs/ext2/dir.c
-+++ b/fs/ext2/dir.c
-@@ -66,12 +66,6 @@ static inline unsigned ext2_chunk_size(struct inode *inode)
- 	return inode->i_sb->s_blocksize;
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 22d0cbba6ff3..768c4878e0d3 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -435,13 +435,13 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
  }
  
--static inline void ext2_put_page(struct page *page)
--{
--	kunmap(page);
--	put_page(page);
--}
--
  /*
-  * Return the offset into page `page_nr' of the last valid
-  * byte in that page, plus one.
-diff --git a/fs/ext2/ext2.h b/fs/ext2/ext2.h
-index 5136b7289e8d..021ec8b42ac3 100644
---- a/fs/ext2/ext2.h
-+++ b/fs/ext2/ext2.h
-@@ -16,6 +16,8 @@
- #include <linux/blockgroup_lock.h>
- #include <linux/percpu_counter.h>
- #include <linux/rbtree.h>
-+#include <linux/mm.h>
-+#include <linux/highmem.h>
+- * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare return
+- * TCM_MISCOMPARE_VERIFY.
++ * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare, fill
++ * @miscmp_off and return TCM_MISCOMPARE_VERIFY.
+  */
+ static sense_reason_t
+ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
+ 			 struct scatterlist *cmp_sgl, unsigned int cmp_nents,
+-			 unsigned int cmp_len)
++			 unsigned int cmp_len, unsigned int *miscmp_off)
+ {
+ 	unsigned char *buf = NULL;
+ 	struct scatterlist *sg;
+@@ -466,18 +466,23 @@ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
+ 	 * Compare SCSI READ payload against verify payload
+ 	 */
+ 	offset = 0;
++	ret = TCM_NO_SENSE;
+ 	for_each_sg(read_sgl, sg, read_nents, i) {
+ 		unsigned int len = min(sg->length, cmp_len);
+ 		unsigned char *addr = kmap_atomic(sg_page(sg));
  
- /* XXX Here for now... not interested in restructing headers JUST now */
+ 		if (memcmp(addr, buf + offset, len)) {
+-			pr_warn("Detected MISCOMPARE for addr: %p buf: %p\n",
+-				addr, buf + offset);
+-			kunmap_atomic(addr);
++			unsigned int i;
++			for (i = 0; i < len && addr[i] = buf[offset + i]; i++)
++				;
++			*miscmp_off = offset + i;
++			pr_warn("Detected MISCOMPARE at offset %u\n",
++				*miscmp_off);
+ 			ret = TCM_MISCOMPARE_VERIFY;
+-			goto out;
+ 		}
+ 		kunmap_atomic(addr);
++		if (ret != TCM_NO_SENSE)
++			goto out;
  
-@@ -745,6 +747,12 @@ extern int ext2_delete_entry (struct ext2_dir_entry_2 *, struct page *);
- extern int ext2_empty_dir (struct inode *);
- extern struct ext2_dir_entry_2 * ext2_dotdot (struct inode *, struct page **);
- extern void ext2_set_link(struct inode *, struct ext2_dir_entry_2 *, struct page *, struct inode *, int);
-+static inline void ext2_put_page(struct page *page)
-+{
-+	kunmap(page);
-+	put_page(page);
-+}
-+
- 
- /* ialloc.c */
- extern struct inode * ext2_new_inode (struct inode *, umode_t, const struct qstr *);
-diff --git a/fs/ext2/namei.c b/fs/ext2/namei.c
-index 5bf2c145643b..ea980f1e2e99 100644
---- a/fs/ext2/namei.c
-+++ b/fs/ext2/namei.c
-@@ -389,23 +389,18 @@ static int ext2_rename (struct inode * old_dir, struct dentry * old_dentry,
- 	if (dir_de) {
- 		if (old_dir != new_dir)
- 			ext2_set_link(old_inode, dir_de, dir_page, new_dir, 0);
--		else {
--			kunmap(dir_page);
--			put_page(dir_page);
--		}
-+		else
-+			ext2_put_page(dir_page);
- 		inode_dec_link_count(old_dir);
+ 		offset += len;
+ 		cmp_len -= len;
+@@ -485,7 +490,6 @@ compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
+ 			break;
  	}
- 	return 0;
- 
- 
- out_dir:
--	if (dir_de) {
--		kunmap(dir_page);
--		put_page(dir_page);
--	}
-+	if (dir_de)
-+		ext2_put_page(dir_page);
- out_old:
--	kunmap(old_page);
--	put_page(old_page);
-+	ext2_put_page(old_page);
+ 	pr_debug("COMPARE AND WRITE read data matches compare data\n");
+-	ret = TCM_NO_SENSE;
  out:
- 	return err;
- }
+ 	kfree(buf);
+ 	return ret;
+@@ -501,6 +505,7 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 	unsigned int len;
+ 	unsigned int block_size = dev->dev_attrib.block_size;
+ 	unsigned int compare_len = (cmd->t_task_nolb * block_size);
++	unsigned int miscmp_off = 0;
+ 	sense_reason_t ret = TCM_NO_SENSE;
+ 	int i;
+ 
+@@ -532,8 +537,18 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 				       cmd->t_bidi_data_nents,
+ 				       cmd->t_data_sg,
+ 				       cmd->t_data_nents,
+-				       compare_len);
+-	if (ret)
++				       compare_len,
++				       &miscmp_off);
++	if (ret = TCM_MISCOMPARE_VERIFY) {
++		/*
++		 * SBC-4 r15: 5.3 COMPARE AND WRITE command
++		 * In the sense data (see 4.18 and SPC-5) the offset from the
++		 * start of the Data-Out Buffer to the first byte of data that
++		 * was not equal shall be reported in the INFORMATION field.
++		 */
++		cmd->sense_info = miscmp_off;
++		goto out;
++	} else if (ret)
+ 		goto out;
+ 
+ 	if (sg_alloc_table(&write_tbl, cmd->t_data_nents, GFP_KERNEL) < 0) {
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index c6f45c12d564..693ed3fe4388 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3196,6 +3196,7 @@ static const struct sense_detail sense_detail_table[] = {
+ 		.key = MISCOMPARE,
+ 		.asc = 0x1d, /* MISCOMPARE DURING VERIFY OPERATION */
+ 		.ascq = 0x00,
++		.add_sense_info = true,
+ 	},
+ 	[TCM_LOGICAL_BLOCK_GUARD_CHECK_FAILED] = {
+ 		.key = ABORTED_COMMAND,
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+2.26.2
