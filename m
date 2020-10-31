@@ -1,42 +1,196 @@
-From: ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:49:58 +0000
-Subject: [PATCH RFC PKS/PMEM 23/58] fs/fuse: Utilize new kmap_thread()
-Message-Id: <20201009195033.3208459-24-ira.weiny@intel.com>
+From: David Disseldorp <ddiss@suse.de>
+Date: Sat, 31 Oct 2020 23:32:10 +0000
+Subject: [PATCH v4 3/4] scsi: target: split out COMPARE AND WRITE memcmp into helper
+Message-Id: <20201031233211.5207-4-ddiss@suse.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
+References: <20201031233211.5207-1-ddiss@suse.de>
+In-Reply-To: <20201031233211.5207-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, Miklos Szeredi <miklos@szeredi.hu>, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, linux-nvdimm@lists.01.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+To: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, David Disseldorp <ddiss@suse.de>, Mike Christie <michael.christie@oracle.com>
 
-From: Ira Weiny <ira.weiny@intel.com>
+In preparation for finding and returning the miscompare offset.
 
-The kmap() calls in this FS are localized to a single thread.  To avoid
-the over head of global PKRS updates use the new kmap_thread() call.
-
-Cc: Miklos Szeredi <miklos@szeredi.hu>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: David Disseldorp <ddiss@suse.de>
+Reviewed-by: Mike Christie <michael.christie@oracle.com>
 ---
- fs/fuse/readdir.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/target/target_core_sbc.c | 121 +++++++++++++++++--------------
+ 1 file changed, 68 insertions(+), 53 deletions(-)
 
-diff --git a/fs/fuse/readdir.c b/fs/fuse/readdir.c
-index 90e3f01bd796..953ffe6f56e3 100644
---- a/fs/fuse/readdir.c
-+++ b/fs/fuse/readdir.c
-@@ -536,9 +536,9 @@ static int fuse_readdir_cached(struct file *file, struct dir_context *ctx)
- 	 * Contents of the page are now protected against changing by holding
- 	 * the page lock.
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 5f77dd95f1b9..22d0cbba6ff3 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -434,20 +434,75 @@ static sense_reason_t compare_and_write_post(struct se_cmd *cmd, bool success,
+ 	return ret;
+ }
+ 
++/*
++ * compare @cmp_len bytes of @read_sgl with @cmp_sgl. On miscompare return
++ * TCM_MISCOMPARE_VERIFY.
++ */
++static sense_reason_t
++compare_and_write_do_cmp(struct scatterlist *read_sgl, unsigned int read_nents,
++			 struct scatterlist *cmp_sgl, unsigned int cmp_nents,
++			 unsigned int cmp_len)
++{
++	unsigned char *buf = NULL;
++	struct scatterlist *sg;
++	sense_reason_t ret;
++	unsigned int offset;
++	size_t rc;
++	int i;
++
++	buf = kzalloc(cmp_len, GFP_KERNEL);
++	if (!buf) {
++		ret = TCM_OUT_OF_RESOURCES;
++		goto out;
++	}
++
++	rc = sg_copy_to_buffer(cmp_sgl, cmp_nents, buf, cmp_len);
++	if (!rc) {
++		pr_err("sg_copy_to_buffer() failed for compare_and_write\n");
++		ret = TCM_OUT_OF_RESOURCES;
++		goto out;
++	}
++	/*
++	 * Compare SCSI READ payload against verify payload
++	 */
++	offset = 0;
++	for_each_sg(read_sgl, sg, read_nents, i) {
++		unsigned int len = min(sg->length, cmp_len);
++		unsigned char *addr = kmap_atomic(sg_page(sg));
++
++		if (memcmp(addr, buf + offset, len)) {
++			pr_warn("Detected MISCOMPARE for addr: %p buf: %p\n",
++				addr, buf + offset);
++			kunmap_atomic(addr);
++			ret = TCM_MISCOMPARE_VERIFY;
++			goto out;
++		}
++		kunmap_atomic(addr);
++
++		offset += len;
++		cmp_len -= len;
++		if (!cmp_len)
++			break;
++	}
++	pr_debug("COMPARE AND WRITE read data matches compare data\n");
++	ret = TCM_NO_SENSE;
++out:
++	kfree(buf);
++	return ret;
++}
++
+ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool success,
+ 						 int *post_ret)
+ {
+ 	struct se_device *dev = cmd->se_dev;
+ 	struct sg_table write_tbl = { };
+-	struct scatterlist *write_sg, *sg;
+-	unsigned char *buf = NULL, *addr;
++	struct scatterlist *write_sg;
+ 	struct sg_mapping_iter m;
+-	unsigned int offset = 0, len;
+-	unsigned int nlbas = cmd->t_task_nolb;
++	unsigned int len;
+ 	unsigned int block_size = dev->dev_attrib.block_size;
+-	unsigned int compare_len = (nlbas * block_size);
++	unsigned int compare_len = (cmd->t_task_nolb * block_size);
+ 	sense_reason_t ret = TCM_NO_SENSE;
+-	int rc, i;
++	int i;
+ 
+ 	/*
+ 	 * Handle early failure in transport_generic_request_failure(),
+@@ -473,12 +528,13 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 		goto out;
+ 	}
+ 
+-	buf = kzalloc(cmd->data_length, GFP_KERNEL);
+-	if (!buf) {
+-		pr_err("Unable to allocate compare_and_write buf\n");
+-		ret = TCM_OUT_OF_RESOURCES;
++	ret = compare_and_write_do_cmp(cmd->t_bidi_data_sg,
++				       cmd->t_bidi_data_nents,
++				       cmd->t_data_sg,
++				       cmd->t_data_nents,
++				       compare_len);
++	if (ret)
+ 		goto out;
+-	}
+ 
+ 	if (sg_alloc_table(&write_tbl, cmd->t_data_nents, GFP_KERNEL) < 0) {
+ 		pr_err("Unable to allocate compare_and_write sg\n");
+@@ -486,44 +542,9 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 		goto out;
+ 	}
+ 	write_sg = write_tbl.sgl;
+-	/*
+-	 * Setup verify and write data payloads from total NumberLBAs.
+-	 */
+-	rc = sg_copy_to_buffer(cmd->t_data_sg, cmd->t_data_nents, buf,
+-			       cmd->data_length);
+-	if (!rc) {
+-		pr_err("sg_copy_to_buffer() failed for compare_and_write\n");
+-		ret = TCM_OUT_OF_RESOURCES;
+-		goto out;
+-	}
+-	/*
+-	 * Compare against SCSI READ payload against verify payload
+-	 */
+-	for_each_sg(cmd->t_bidi_data_sg, sg, cmd->t_bidi_data_nents, i) {
+-		addr = (unsigned char *)kmap_atomic(sg_page(sg));
+-		if (!addr) {
+-			ret = TCM_OUT_OF_RESOURCES;
+-			goto out;
+-		}
+-
+-		len = min(sg->length, compare_len);
+-
+-		if (memcmp(addr, buf + offset, len)) {
+-			pr_warn("Detected MISCOMPARE for addr: %p buf: %p\n",
+-				addr, buf + offset);
+-			kunmap_atomic(addr);
+-			goto miscompare;
+-		}
+-		kunmap_atomic(addr);
+-
+-		offset += len;
+-		compare_len -= len;
+-		if (!compare_len)
+-			break;
+-	}
+ 
+ 	i = 0;
+-	len = cmd->t_task_nolb * block_size;
++	len = compare_len;
+ 	sg_miter_start(&m, cmd->t_data_sg, cmd->t_data_nents, SG_MITER_TO_SG);
+ 	/*
+ 	 * Currently assumes NoLB=1 and SGLs are PAGE_SIZE..
+@@ -568,13 +589,8 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
+ 
+ 	__target_execute_cmd(cmd, false);
+ 
+-	kfree(buf);
+ 	return ret;
+ 
+-miscompare:
+-	pr_warn("Target/%s: Send MISCOMPARE check condition and sense\n",
+-		dev->transport->name);
+-	ret = TCM_MISCOMPARE_VERIFY;
+ out:
+ 	/*
+ 	 * In the MISCOMPARE or failure case, unlock ->caw_sem obtained in
+@@ -582,7 +598,6 @@ static sense_reason_t compare_and_write_callback(struct se_cmd *cmd, bool succes
  	 */
--	addr = kmap(page);
-+	addr = kmap_thread(page);
- 	res = fuse_parse_cache(ff, addr, size, ctx);
--	kunmap(page);
-+	kunmap_thread(page);
- 	unlock_page(page);
- 	put_page(page);
+ 	up(&dev->caw_sem);
+ 	sg_free_table(&write_tbl);
+-	kfree(buf);
+ 	return ret;
+ }
  
 -- 
-2.28.0.rc0.12.gb6a658bd00c9
+2.26.2
