@@ -1,92 +1,199 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 12 Nov 2020 23:19:09 +0000
-Subject: [PATCH 09/10] vhost: add VHOST_SET_VRING_ENABLE support
-Message-Id: <1605223150-10888-11-git-send-email-michael.christie@oracle.com>
+Date: Sun, 01 Nov 2020 18:59:31 +0000
+Subject: [PATCH 5/8] qla2xxx: move sess cmd list/lock to driver
+Message-Id: <1604257174-4524-6-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
+References: <1604257174-4524-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1604257174-4524-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, virtualization@lists.linux-foundation.org
+To: himanshu.madhani@oracle.com, njavali@marvell.com, james.bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-This adds a new ioctl VHOST_SET_VRING_ENABLE that the vhost drivers can
-implement a callout for and execute an operation when the vq is
-enabled/disabled.
+Except for debug output in the shutdown path, tcm qla2xxx is the only
+driver using the se_session sess_cmd_list. This moves the list to that
+driver so in the next patches we can remove the sess_cmd_lock from the
+main IO path for the rest of the drivers.
 
+Cc: Nilesh Javali <njavali@marvell.com>
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
----
- drivers/vhost/vhost.c      | 25 +++++++++++++++++++++++++
- drivers/vhost/vhost.h      |  1 +
- include/uapi/linux/vhost.h |  1 +
- 3 files changed, 27 insertions(+)
+Reviewed-by: Himanshu Madhani <himanshu.madhani@oracle.com>
 
-diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index 2f98b81..e953031 100644
---- a/drivers/vhost/vhost.c
-+++ b/drivers/vhost/vhost.c
-@@ -1736,6 +1736,28 @@ static long vhost_vring_set_num_addr(struct vhost_dev *d,
+---
+ drivers/scsi/qla2xxx/qla_def.h     |  2 ++
+ drivers/scsi/qla2xxx/qla_init.c    |  3 ++
+ drivers/scsi/qla2xxx/qla_target.c  |  1 +
+ drivers/scsi/qla2xxx/qla_target.h  |  1 +
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c | 57 +++++++++++++++++++++++---------------
+ 5 files changed, 42 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/scsi/qla2xxx/qla_def.h b/drivers/scsi/qla2xxx/qla_def.h
+index 4f0486f..ed9b10f 100644
+--- a/drivers/scsi/qla2xxx/qla_def.h
++++ b/drivers/scsi/qla2xxx/qla_def.h
+@@ -2493,6 +2493,8 @@ enum rscn_addr_format {
+ 	int generation;
  
- 	return r;
+ 	struct se_session *se_sess;
++	struct list_head sess_cmd_list;
++	spinlock_t sess_cmd_lock;
+ 	struct kref sess_kref;
+ 	struct qla_tgt *tgt;
+ 	unsigned long expires;
+diff --git a/drivers/scsi/qla2xxx/qla_init.c b/drivers/scsi/qla2xxx/qla_init.c
+index 898c70b..5626e9b 100644
+--- a/drivers/scsi/qla2xxx/qla_init.c
++++ b/drivers/scsi/qla2xxx/qla_init.c
+@@ -4974,6 +4974,9 @@ void qla2x00_set_fcport_state(fc_port_t *fcport, int state)
+ 	INIT_LIST_HEAD(&fcport->gnl_entry);
+ 	INIT_LIST_HEAD(&fcport->list);
+ 
++	INIT_LIST_HEAD(&fcport->sess_cmd_list);
++	spin_lock_init(&fcport->sess_cmd_lock);
++
+ 	return fcport;
  }
-+
-+static long vhost_vring_set_enable(struct vhost_dev *d,
-+				   struct vhost_virtqueue *vq,
-+				   void __user *argp)
-+{
-+	struct vhost_vring_state s;
-+	int ret = 0;
-+
-+	if (vq->private_data)
-+		return -EBUSY;
-+
-+	if (copy_from_user(&s, argp, sizeof s))
-+		return -EFAULT;
-+
-+	if (s.num != 1 && s.num != 0)
-+		return -EINVAL;
-+
-+	if (d->ops && d->ops->enable_vring)
-+		ret = d->ops->enable_vring(vq, s.num);
-+	return ret;
-+}
-+
- long vhost_vring_ioctl(struct vhost_dev *d, unsigned int ioctl, void __user *argp)
+ 
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index f88548b..6603cad 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -4292,6 +4292,7 @@ static struct qla_tgt_cmd *qlt_get_tag(scsi_qla_host_t *vha,
+ 
+ 	cmd->cmd_type = TYPE_TGT_CMD;
+ 	memcpy(&cmd->atio, atio, sizeof(*atio));
++	INIT_LIST_HEAD(&cmd->sess_cmd_list);
+ 	cmd->state = QLA_TGT_STATE_NEW;
+ 	cmd->tgt = vha->vha_tgt.qla_tgt;
+ 	qlt_incr_num_pend_cmds(vha);
+diff --git a/drivers/scsi/qla2xxx/qla_target.h b/drivers/scsi/qla2xxx/qla_target.h
+index 1cff7c6..10e5e6c8 100644
+--- a/drivers/scsi/qla2xxx/qla_target.h
++++ b/drivers/scsi/qla2xxx/qla_target.h
+@@ -856,6 +856,7 @@ struct qla_tgt_cmd {
+ 	uint8_t cmd_type;
+ 	uint8_t pad[7];
+ 	struct se_cmd se_cmd;
++	struct list_head sess_cmd_list;
+ 	struct fc_port *sess;
+ 	struct qla_qpair *qpair;
+ 	uint32_t reset_count;
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index f5a91bf..e122da9 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -255,6 +255,7 @@ static void tcm_qla2xxx_free_mcmd(struct qla_tgt_mgmt_cmd *mcmd)
+ static void tcm_qla2xxx_complete_free(struct work_struct *work)
  {
- 	struct file *eventfp, *filep = NULL;
-@@ -1765,6 +1787,9 @@ long vhost_vring_ioctl(struct vhost_dev *d, unsigned int ioctl, void __user *arg
- 	mutex_lock(&vq->mutex);
+ 	struct qla_tgt_cmd *cmd = container_of(work, struct qla_tgt_cmd, work);
++	unsigned long flags;
  
- 	switch (ioctl) {
-+	case VHOST_SET_VRING_ENABLE:
-+		r = vhost_vring_set_enable(d, vq, argp);
-+		break;
- 	case VHOST_SET_VRING_BASE:
- 		/* Moving base with an active backend?
- 		 * You don't want to do that. */
-diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
-index a293f48..1279c09 100644
---- a/drivers/vhost/vhost.h
-+++ b/drivers/vhost/vhost.h
-@@ -158,6 +158,7 @@ struct vhost_msg_node {
+ 	cmd->cmd_in_wq = 0;
  
- struct vhost_dev_ops {
- 	int (*msg_handler)(struct vhost_dev *dev, struct vhost_iotlb_msg *msg);
-+	int (*enable_vring)(struct vhost_virtqueue *vq, bool enable);
- };
+@@ -265,6 +266,10 @@ static void tcm_qla2xxx_complete_free(struct work_struct *work)
+ 	cmd->trc_flags |= TRC_CMD_FREE;
+ 	cmd->cmd_sent_to_fw = 0;
  
- struct vhost_dev {
-diff --git a/include/uapi/linux/vhost.h b/include/uapi/linux/vhost.h
-index c998860..3ffd133 100644
---- a/include/uapi/linux/vhost.h
-+++ b/include/uapi/linux/vhost.h
-@@ -70,6 +70,7 @@
- #define VHOST_VRING_BIG_ENDIAN 1
- #define VHOST_SET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x13, struct vhost_vring_state)
- #define VHOST_GET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x14, struct vhost_vring_state)
-+#define VHOST_SET_VRING_ENABLE _IOW(VHOST_VIRTIO, 0x15, struct vhost_vring_state)
++	spin_lock_irqsave(&cmd->sess->sess_cmd_lock, flags);
++	list_del_init(&cmd->sess_cmd_list);
++	spin_unlock_irqrestore(&cmd->sess->sess_cmd_lock, flags);
++
+ 	transport_generic_free_cmd(&cmd->se_cmd, 0);
+ }
  
- /* The following ioctls use eventfd file descriptors to signal and poll
-  * for events. */
+@@ -451,13 +456,14 @@ static int tcm_qla2xxx_handle_cmd(scsi_qla_host_t *vha, struct qla_tgt_cmd *cmd,
+ 	struct se_portal_group *se_tpg;
+ 	struct tcm_qla2xxx_tpg *tpg;
+ #endif
+-	int flags = TARGET_SCF_ACK_KREF;
++	int target_flags = TARGET_SCF_ACK_KREF;
++	unsigned long flags;
+ 
+ 	if (bidi)
+-		flags |= TARGET_SCF_BIDI_OP;
++		target_flags |= TARGET_SCF_BIDI_OP;
+ 
+ 	if (se_cmd->cpuid != WORK_CPU_UNBOUND)
+-		flags |= TARGET_SCF_USE_CPUID;
++		target_flags |= TARGET_SCF_USE_CPUID;
+ 
+ 	sess = cmd->sess;
+ 	if (!sess) {
+@@ -479,11 +485,15 @@ static int tcm_qla2xxx_handle_cmd(scsi_qla_host_t *vha, struct qla_tgt_cmd *cmd,
+ 		return 0;
+ 	}
+ #endif
+-
+ 	cmd->qpair->tgt_counters.qla_core_sbt_cmd++;
++
++	spin_lock_irqsave(&sess->sess_cmd_lock, flags);
++	list_add_tail(&cmd->sess_cmd_list, &sess->sess_cmd_list);
++	spin_unlock_irqrestore(&sess->sess_cmd_lock, flags);
++
+ 	return target_submit_cmd(se_cmd, se_sess, cdb, &cmd->sense_buffer[0],
+-				cmd->unpacked_lun, data_length, fcp_task_attr,
+-				data_dir, flags);
++				 cmd->unpacked_lun, data_length, fcp_task_attr,
++				 data_dir, target_flags);
+ }
+ 
+ static void tcm_qla2xxx_handle_data_work(struct work_struct *work)
+@@ -617,25 +627,20 @@ static int tcm_qla2xxx_handle_tmr(struct qla_tgt_mgmt_cmd *mcmd, u64 lun,
+ static struct qla_tgt_cmd *tcm_qla2xxx_find_cmd_by_tag(struct fc_port *sess,
+     uint64_t tag)
+ {
+-	struct qla_tgt_cmd *cmd = NULL;
+-	struct se_cmd *secmd;
++	struct qla_tgt_cmd *cmd;
+ 	unsigned long flags;
+ 
+ 	if (!sess->se_sess)
+ 		return NULL;
+ 
+-	spin_lock_irqsave(&sess->se_sess->sess_cmd_lock, flags);
+-	list_for_each_entry(secmd, &sess->se_sess->sess_cmd_list, se_cmd_list) {
+-		/* skip task management functions, including tmr->task_cmd */
+-		if (secmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
+-			continue;
+-
+-		if (secmd->tag = tag) {
+-			cmd = container_of(secmd, struct qla_tgt_cmd, se_cmd);
+-			break;
+-		}
++	spin_lock_irqsave(&sess->sess_cmd_lock, flags);
++	list_for_each_entry(cmd, &sess->sess_cmd_list, sess_cmd_list) {
++		if (cmd->se_cmd.tag = tag)
++			goto done;
+ 	}
+-	spin_unlock_irqrestore(&sess->se_sess->sess_cmd_lock, flags);
++	cmd = NULL;
++done:
++	spin_unlock_irqrestore(&sess->sess_cmd_lock, flags);
+ 
+ 	return cmd;
+ }
+@@ -765,11 +770,19 @@ static void tcm_qla2xxx_queue_tm_rsp(struct se_cmd *se_cmd)
+ 
+ static void tcm_qla2xxx_aborted_task(struct se_cmd *se_cmd)
+ {
+-	struct qla_tgt_cmd *cmd = container_of(se_cmd,
+-				struct qla_tgt_cmd, se_cmd);
++	struct qla_tgt_cmd *cmd;
++	unsigned long flags;
+ 
+-	if (qlt_abort_cmd(cmd))
++	if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
+ 		return;
++
++	cmd  = container_of(se_cmd, struct qla_tgt_cmd, se_cmd);
++
++	spin_lock_irqsave(&cmd->sess->sess_cmd_lock, flags);
++	list_del_init(&cmd->sess_cmd_list);
++	spin_unlock_irqrestore(&cmd->sess->sess_cmd_lock, flags);
++
++	qlt_abort_cmd(cmd);
+ }
+ 
+ static void tcm_qla2xxx_clear_sess_lookup(struct tcm_qla2xxx_lport *,
 -- 
 1.8.3.1
