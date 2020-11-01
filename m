@@ -1,291 +1,322 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Tue, 10 Nov 2020 05:33:23 +0000
-Subject: [PATCH 5/5] vhost scsi: Add support for LUN resets.
-Message-Id: <1604986403-4931-6-git-send-email-michael.christie@oracle.com>
+Date: Sun, 01 Nov 2020 18:59:32 +0000
+Subject: [PATCH 6/8] target: Drop sess_cmd_lock from IO path
+Message-Id: <1604257174-4524-7-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1604986403-4931-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1604986403-4931-1-git-send-email-michael.christie@oracle.com>
+References: <1604257174-4524-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1604257174-4524-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: himanshu.madhani@oracle.com, njavali@marvell.com, james.bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-In newer versions of virtio-scsi we just reset the timer when an a
-command times out, so TMFs are never sent for the cmd time out case.
-However, in older kernels and for the TMF inject cases, we can still get
-resets and we end up just failing immediately so the guest might see the
-device get offlined and IO errors.
+To remove the sess_cmd_lock this patch does:
 
-For the older kernel cases, we want the same end result as the
-modern virtio-scsi driver where we let the lower levels fire their error
-handling and handle the problem. And at the upper levels we want to
-wait. This patch ties the LUN reset handling into the LIO TMF code which
-will just wait for outstanding commands to complete like we are doing in
-the modern virtio-scsi case.
+- Removes the sess_cmd_list use from lio core, because it's been
+moved to qla2xxx.
 
-Note: I did not handle the ABORT case to keep this simple. For ABORTs
-LIO just waits on the cmd like how it does for the RESET case. If
-an ABORT fails, the guest OS ends up escalating to LUN RESET, so in
-the end we get the same behavior where we wait on the outstanding
-cmds.
+- Removes sess_tearing_down check in the IO path. Instead of using
+that bit and the sess_cmd_lock, we rely on the cmd_count percpu
+ref. To do this we switch to
+percpu_ref_kill_and_confirm/percpu_ref_tryget_live.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
----
- drivers/vhost/scsi.c | 147 ++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 134 insertions(+), 13 deletions(-)
+Reviewed-by: Himanshu Madhani <himanshu.madhani@oracle.com>
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index ed7dc6b..f22fce5 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -139,6 +139,7 @@ struct vhost_scsi_tpg {
- 	struct se_portal_group se_tpg;
- 	/* Pointer back to vhost_scsi, protected by tv_tpg_mutex */
- 	struct vhost_scsi *vhost_scsi;
-+	struct list_head tmf_queue;
- };
+---
+ drivers/infiniband/ulp/isert/ib_isert.c |  2 +-
+ drivers/infiniband/ulp/srpt/ib_srpt.c   |  2 +-
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c      |  9 +---
+ drivers/target/target_core_tpg.c        |  2 +-
+ drivers/target/target_core_transport.c  | 77 ++++++++++++++-------------------
+ drivers/target/tcm_fc/tfc_sess.c        |  2 +-
+ include/target/target_core_base.h       |  6 +--
+ include/target/target_core_fabric.h     |  2 +-
+ 8 files changed, 43 insertions(+), 59 deletions(-)
+
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index 436e17f..3d21bf3 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -2471,7 +2471,7 @@ static void isert_release_work(struct work_struct *work)
+ 	isert_info("iscsi_conn %p\n", conn);
  
- struct vhost_scsi_tport {
-@@ -211,6 +212,20 @@ struct vhost_scsi {
- 	int vs_events_nr; /* num of pending events, protected by vq->mutex */
- };
- 
-+struct vhost_scsi_tmf {
-+	struct vhost_work vwork;
-+	struct vhost_scsi_tpg *tpg;
-+	struct vhost_scsi *vhost;
-+	struct vhost_scsi_virtqueue *svq;
-+	struct list_head queue_entry;
-+
-+	struct se_cmd se_cmd;
-+	struct vhost_scsi_inflight *inflight;
-+	struct iovec resp_iov;
-+	int in_iovs;
-+	int vq_desc;
-+};
-+
- /*
-  * Context for processing request and control queue operations.
-  */
-@@ -344,14 +359,32 @@ static void vhost_scsi_release_cmd_res(struct se_cmd *se_cmd)
- 	vhost_scsi_put_inflight(inflight);
- }
- 
-+static void vhost_scsi_release_tmf_res(struct vhost_scsi_tmf *tmf)
-+{
-+	struct vhost_scsi_tpg *tpg = tmf->tpg;
-+	struct vhost_scsi_inflight *inflight = tmf->inflight;
-+
-+	mutex_lock(&tpg->tv_tpg_mutex);
-+	list_add_tail(&tpg->tmf_queue, &tmf->queue_entry);
-+	mutex_unlock(&tpg->tv_tpg_mutex);
-+	vhost_scsi_put_inflight(inflight);
-+}
-+
- static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
- {
--	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
-+	if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB) {
-+		struct vhost_scsi_tmf *tmf = container_of(se_cmd,
-+					struct vhost_scsi_tmf, se_cmd);
-+
-+		vhost_work_queue(&tmf->vhost->dev, &tmf->vwork);
-+	} else {
-+		struct vhost_scsi_cmd *cmd = container_of(se_cmd,
- 					struct vhost_scsi_cmd, tvc_se_cmd);
--	struct vhost_scsi *vs = cmd->tvc_vhost;
-+		struct vhost_scsi *vs = cmd->tvc_vhost;
- 
--	llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
--	vhost_work_queue(&vs->dev, &vs->vs_completion_work);
-+		llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
-+		vhost_work_queue(&vs->dev, &vs->vs_completion_work);
-+	}
- }
- 
- static u32 vhost_scsi_sess_get_index(struct se_session *se_sess)
-@@ -390,7 +423,10 @@ static int vhost_scsi_queue_status(struct se_cmd *se_cmd)
- 
- static void vhost_scsi_queue_tm_rsp(struct se_cmd *se_cmd)
- {
--	return;
-+	struct vhost_scsi_tmf *tmf = container_of(se_cmd, struct vhost_scsi_tmf,
-+						  se_cmd);
-+
-+	transport_generic_free_cmd(&tmf->se_cmd, 0);
- }
- 
- static void vhost_scsi_aborted_task(struct se_cmd *se_cmd)
-@@ -1120,9 +1156,9 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- }
- 
- static void
--vhost_scsi_send_tmf_reject(struct vhost_scsi *vs,
--			   struct vhost_virtqueue *vq,
--			   struct vhost_scsi_ctx *vc)
-+vhost_scsi_send_tmf_resp(struct vhost_scsi *vs, struct vhost_virtqueue *vq,
-+			 int in_iovs, int vq_desc, struct iovec *resp_iov,
-+			 int tmf_resp_code)
- {
- 	struct virtio_scsi_ctrl_tmf_resp rsp;
- 	struct iov_iter iov_iter;
-@@ -1130,17 +1166,87 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- 
- 	pr_debug("%s\n", __func__);
- 	memset(&rsp, 0, sizeof(rsp));
--	rsp.response = VIRTIO_SCSI_S_FUNCTION_REJECTED;
-+	rsp.response = tmf_resp_code;
- 
--	iov_iter_init(&iov_iter, READ, &vq->iov[vc->out], vc->in, sizeof(rsp));
-+	iov_iter_init(&iov_iter, READ, resp_iov, in_iovs, sizeof(rsp));
- 
- 	ret = copy_to_iter(&rsp, sizeof(rsp), &iov_iter);
- 	if (likely(ret = sizeof(rsp)))
--		vhost_add_used_and_signal(&vs->dev, vq, vc->head, 0);
-+		vhost_add_used_and_signal(&vs->dev, vq, vq_desc, 0);
- 	else
- 		pr_err("Faulted on virtio_scsi_ctrl_tmf_resp\n");
- }
- 
-+static void vhost_scsi_tmf_resp_work(struct vhost_work *work)
-+{
-+	struct vhost_scsi_tmf *tmf = container_of(work, struct vhost_scsi_tmf,
-+						  vwork);
-+	int resp_code;
-+
-+	if (tmf->se_cmd.se_tmr_req->response = TMR_FUNCTION_COMPLETE)
-+		resp_code = VIRTIO_SCSI_S_FUNCTION_SUCCEEDED;
-+	else
-+		resp_code = VIRTIO_SCSI_S_FUNCTION_REJECTED;
-+
-+	vhost_scsi_send_tmf_resp(tmf->vhost, &tmf->svq->vq, tmf->in_iovs,
-+				 tmf->vq_desc, &tmf->resp_iov, resp_code);
-+	vhost_scsi_release_tmf_res(tmf);
-+}
-+
-+static void
-+vhost_scsi_handle_tmf(struct vhost_scsi *vs, struct vhost_scsi_tpg *tpg,
-+		      struct vhost_virtqueue *vq,
-+		      struct virtio_scsi_ctrl_tmf_req *vtmf,
-+		      struct vhost_scsi_ctx *vc)
-+{
-+	struct vhost_scsi_virtqueue *svq = container_of(vq,
-+					struct vhost_scsi_virtqueue, vq);
-+	struct vhost_scsi_tmf *tmf;
-+
-+	if (vhost32_to_cpu(vq, vtmf->subtype) !+	    VIRTIO_SCSI_T_TMF_LOGICAL_UNIT_RESET)
-+		goto send_reject;
-+
-+	if (!tpg->tpg_nexus || !tpg->tpg_nexus->tvn_se_sess) {
-+		pr_err("Unable to locate active struct vhost_scsi_nexus for LUN RESET.\n");
-+		goto send_reject;
-+	}
-+
-+	mutex_lock(&tpg->tv_tpg_mutex);
-+	if (list_empty(&tpg->tmf_queue)) {
-+		pr_err("Missing reserve TMF. Could not handle LUN RESET.\n");
-+		mutex_unlock(&tpg->tv_tpg_mutex);
-+		goto send_reject;
-+	}
-+
-+	tmf = list_first_entry(&tpg->tmf_queue, struct vhost_scsi_tmf,
-+			       queue_entry);
-+	list_del_init(&tmf->queue_entry);
-+	mutex_unlock(&tpg->tv_tpg_mutex);
-+
-+	tmf->tpg = tpg;
-+	tmf->vhost = vs;
-+	tmf->svq = svq;
-+	tmf->resp_iov = vq->iov[vc->out];
-+	tmf->vq_desc = vc->head;
-+	tmf->in_iovs = vc->in;
-+	tmf->inflight = vhost_scsi_get_inflight(vq);
-+
-+	if (target_submit_tmr(&tmf->se_cmd, tpg->tpg_nexus->tvn_se_sess, NULL,
-+			      vhost_buf_to_lun(vtmf->lun), NULL,
-+			      TMR_LUN_RESET, GFP_KERNEL, 0,
-+			      TARGET_SCF_ACK_KREF) < 0) {
-+		vhost_scsi_release_tmf_res(tmf);
-+		goto send_reject;
-+	}
-+
-+	return;
-+
-+send_reject:
-+	vhost_scsi_send_tmf_resp(vs, vq, vc->in, vc->head, &vq->iov[vc->out],
-+				 VIRTIO_SCSI_S_FUNCTION_REJECTED);
-+}
-+
- static void
- vhost_scsi_send_an_resp(struct vhost_scsi *vs,
- 			struct vhost_virtqueue *vq,
-@@ -1166,6 +1272,7 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- static void
- vhost_scsi_ctl_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
- {
-+	struct vhost_scsi_tpg *tpg;
- 	union {
- 		__virtio32 type;
- 		struct virtio_scsi_ctrl_an_req an;
-@@ -1247,12 +1354,12 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- 		vc.req += typ_size;
- 		vc.req_size -= typ_size;
- 
--		ret = vhost_scsi_get_req(vq, &vc, NULL);
-+		ret = vhost_scsi_get_req(vq, &vc, &tpg);
- 		if (ret)
- 			goto err;
- 
- 		if (v_req.type = VIRTIO_SCSI_T_TMF)
--			vhost_scsi_send_tmf_reject(vs, vq, &vc);
-+			vhost_scsi_handle_tmf(vs, tpg, vq, &v_req.tmf, &vc);
- 		else
- 			vhost_scsi_send_an_resp(vs, vq, &vc);
- err:
-@@ -1913,11 +2020,19 @@ static int vhost_scsi_port_link(struct se_portal_group *se_tpg,
- {
- 	struct vhost_scsi_tpg *tpg = container_of(se_tpg,
- 				struct vhost_scsi_tpg, se_tpg);
-+	struct vhost_scsi_tmf *tmf;
-+
-+	tmf = kzalloc(sizeof(*tmf), GFP_KERNEL);
-+	if (!tmf)
-+		return -ENOMEM;
-+	INIT_LIST_HEAD(&tmf->queue_entry);
-+	vhost_work_init(&tmf->vwork, vhost_scsi_tmf_resp_work);
- 
- 	mutex_lock(&vhost_scsi_mutex);
- 
- 	mutex_lock(&tpg->tv_tpg_mutex);
- 	tpg->tv_tpg_port_count++;
-+	list_add_tail(&tmf->queue_entry, &tpg->tmf_queue);
- 	mutex_unlock(&tpg->tv_tpg_mutex);
- 
- 	vhost_scsi_hotplug(tpg, lun);
-@@ -1932,11 +2047,16 @@ static void vhost_scsi_port_unlink(struct se_portal_group *se_tpg,
- {
- 	struct vhost_scsi_tpg *tpg = container_of(se_tpg,
- 				struct vhost_scsi_tpg, se_tpg);
-+	struct vhost_scsi_tmf *tmf;
- 
- 	mutex_lock(&vhost_scsi_mutex);
- 
- 	mutex_lock(&tpg->tv_tpg_mutex);
- 	tpg->tv_tpg_port_count--;
-+	tmf = list_first_entry(&tpg->tmf_queue, struct vhost_scsi_tmf,
-+			       queue_entry);
-+	list_del(&tmf->queue_entry);
-+	kfree(tmf);
- 	mutex_unlock(&tpg->tv_tpg_mutex);
- 
- 	vhost_scsi_hotunplug(tpg, lun);
-@@ -2197,6 +2317,7 @@ static ssize_t vhost_scsi_tpg_nexus_store(struct config_item *item,
+ 	if (conn->sess) {
+-		target_sess_cmd_list_set_waiting(conn->sess->se_sess);
++		target_stop_session(conn->sess->se_sess);
+ 		target_wait_for_sess_cmds(conn->sess->se_sess);
  	}
- 	mutex_init(&tpg->tv_tpg_mutex);
- 	INIT_LIST_HEAD(&tpg->tv_tpg_list);
-+	INIT_LIST_HEAD(&tpg->tmf_queue);
- 	tpg->tport = tport;
- 	tpg->tport_tpgt = tpgt;
+ }
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 0065eb1..8377113 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -2084,7 +2084,7 @@ static void srpt_release_channel_work(struct work_struct *w)
+ 	se_sess = ch->sess;
+ 	BUG_ON(!se_sess);
+ 
+-	target_sess_cmd_list_set_waiting(se_sess);
++	target_stop_session(se_sess);
+ 	target_wait_for_sess_cmds(se_sess);
+ 
+ 	target_remove_session(se_sess);
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index e122da9..784b43f 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -368,15 +368,10 @@ static void tcm_qla2xxx_put_sess(struct fc_port *sess)
+ static void tcm_qla2xxx_close_session(struct se_session *se_sess)
+ {
+ 	struct fc_port *sess = se_sess->fabric_sess_ptr;
+-	struct scsi_qla_host *vha;
+-	unsigned long flags;
+ 
+ 	BUG_ON(!sess);
+-	vha = sess->vha;
+ 
+-	spin_lock_irqsave(&vha->hw->tgt.sess_lock, flags);
+-	target_sess_cmd_list_set_waiting(se_sess);
+-	spin_unlock_irqrestore(&vha->hw->tgt.sess_lock, flags);
++	target_stop_session(se_sess);
+ 
+ 	sess->explicit_logout = 1;
+ 	tcm_qla2xxx_put_sess(sess);
+@@ -831,7 +826,7 @@ static void tcm_qla2xxx_clear_nacl_from_fcport_map(struct fc_port *sess)
+ 
+ static void tcm_qla2xxx_shutdown_sess(struct fc_port *sess)
+ {
+-	target_sess_cmd_list_set_waiting(sess->se_sess);
++	target_stop_session(sess->se_sess);
+ }
+ 
+ static int tcm_qla2xxx_init_nodeacl(struct se_node_acl *se_nacl,
+diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
+index 62aa5fa..736847c 100644
+--- a/drivers/target/target_core_tpg.c
++++ b/drivers/target/target_core_tpg.c
+@@ -328,7 +328,7 @@ static void target_shutdown_sessions(struct se_node_acl *acl)
+ restart:
+ 	spin_lock_irqsave(&acl->nacl_sess_lock, flags);
+ 	list_for_each_entry(sess, &acl->acl_sess_list, sess_acl_list) {
+-		if (sess->sess_tearing_down)
++		if (atomic_read(&sess->stopped))
+ 			continue;
+ 
+ 		list_del_init(&sess->sess_acl_list);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 465b6583..b228c66 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -215,7 +215,7 @@ static void target_release_sess_cmd_refcnt(struct percpu_ref *ref)
+ {
+ 	struct se_session *sess = container_of(ref, typeof(*sess), cmd_count);
+ 
+-	wake_up(&sess->cmd_list_wq);
++	wake_up(&sess->cmd_count_wq);
+ }
+ 
+ /**
+@@ -228,9 +228,10 @@ int transport_init_session(struct se_session *se_sess)
+ {
+ 	INIT_LIST_HEAD(&se_sess->sess_list);
+ 	INIT_LIST_HEAD(&se_sess->sess_acl_list);
+-	INIT_LIST_HEAD(&se_sess->sess_cmd_list);
+ 	spin_lock_init(&se_sess->sess_cmd_lock);
+-	init_waitqueue_head(&se_sess->cmd_list_wq);
++	init_waitqueue_head(&se_sess->cmd_count_wq);
++	init_completion(&se_sess->stop_done);
++	atomic_set(&se_sess->stopped, 0);
+ 	return percpu_ref_init(&se_sess->cmd_count,
+ 			       target_release_sess_cmd_refcnt, 0, GFP_KERNEL);
+ }
+@@ -239,11 +240,11 @@ int transport_init_session(struct se_session *se_sess)
+ void transport_uninit_session(struct se_session *se_sess)
+ {
+ 	/*
+-	 * Drivers like iscsi and loop do not call
+-	 * target_sess_cmd_list_set_waiting during session shutdown so we
+-	 * have to drop the ref taken at init time here.
++	 * Drivers like iscsi and loop do not call target_stop_session
++	 * during session shutdown so we have to drop the ref taken at init
++	 * time here.
+ 	 */
+-	if (!se_sess->sess_tearing_down)
++	if (!atomic_read(&se_sess->stopped))
+ 		percpu_ref_put(&se_sess->cmd_count);
+ 
+ 	percpu_ref_exit(&se_sess->cmd_count);
+@@ -1632,9 +1633,8 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
+ 	if (flags & TARGET_SCF_UNKNOWN_SIZE)
+ 		se_cmd->unknown_data_length = 1;
+ 	/*
+-	 * Obtain struct se_cmd->cmd_kref reference and add new cmd to
+-	 * se_sess->sess_cmd_list.  A second kref_get here is necessary
+-	 * for fabrics using TARGET_SCF_ACK_KREF that expect a second
++	 * Obtain struct se_cmd->cmd_kref reference. A second kref_get here is
++	 * necessary for fabrics using TARGET_SCF_ACK_KREF that expect a second
+ 	 * kref_put() to happen during fabric packet acknowledgement.
+ 	 */
+ 	ret = target_get_sess_cmd(se_cmd, flags & TARGET_SCF_ACK_KREF);
+@@ -2763,14 +2763,13 @@ int transport_generic_free_cmd(struct se_cmd *cmd, int wait_for_tasks)
+ EXPORT_SYMBOL(transport_generic_free_cmd);
+ 
+ /**
+- * target_get_sess_cmd - Add command to active ->sess_cmd_list
++ * target_get_sess_cmd - Verify the session is accepting cmds and take ref
+  * @se_cmd:	command descriptor to add
+  * @ack_kref:	Signal that fabric will perform an ack target_put_sess_cmd()
+  */
+ int target_get_sess_cmd(struct se_cmd *se_cmd, bool ack_kref)
+ {
+ 	struct se_session *se_sess = se_cmd->se_sess;
+-	unsigned long flags;
+ 	int ret = 0;
+ 
+ 	/*
+@@ -2785,15 +2784,8 @@ int target_get_sess_cmd(struct se_cmd *se_cmd, bool ack_kref)
+ 		se_cmd->se_cmd_flags |= SCF_ACK_KREF;
+ 	}
+ 
+-	spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
+-	if (se_sess->sess_tearing_down) {
++	if (!percpu_ref_tryget_live(&se_sess->cmd_count))
+ 		ret = -ESHUTDOWN;
+-		goto out;
+-	}
+-	list_add_tail(&se_cmd->se_cmd_list, &se_sess->sess_cmd_list);
+-	percpu_ref_get(&se_sess->cmd_count);
+-out:
+-	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
+ 
+ 	if (ret && ack_kref)
+ 		target_put_sess_cmd(se_cmd);
+@@ -2818,13 +2810,6 @@ static void target_release_cmd_kref(struct kref *kref)
+ 	struct se_session *se_sess = se_cmd->se_sess;
+ 	struct completion *free_compl = se_cmd->free_compl;
+ 	struct completion *abrt_compl = se_cmd->abrt_compl;
+-	unsigned long flags;
+-
+-	if (se_sess) {
+-		spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
+-		list_del_init(&se_cmd->se_cmd_list);
+-		spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
+-	}
+ 
+ 	target_free_cmd_mem(se_cmd);
+ 	se_cmd->se_tfo->release_cmd(se_cmd);
+@@ -2952,21 +2937,25 @@ void target_show_cmd(const char *pfx, struct se_cmd *cmd)
+ }
+ EXPORT_SYMBOL(target_show_cmd);
+ 
++static void target_stop_session_confirm(struct percpu_ref *ref)
++{
++	struct se_session *se_sess = container_of(ref, struct se_session,
++						  cmd_count);
++	complete_all(&se_sess->stop_done);
++}
++
+ /**
+- * target_sess_cmd_list_set_waiting - Set sess_tearing_down so no new commands are queued.
+- * @se_sess:	session to flag
++ * target_stop_session - Stop new IO from being queued on the session.
++ * @se_sess:    session to stop
+  */
+-void target_sess_cmd_list_set_waiting(struct se_session *se_sess)
++void target_stop_session(struct se_session *se_sess)
+ {
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&se_sess->sess_cmd_lock, flags);
+-	se_sess->sess_tearing_down = 1;
+-	spin_unlock_irqrestore(&se_sess->sess_cmd_lock, flags);
+-
+-	percpu_ref_kill(&se_sess->cmd_count);
++	pr_debug("Stopping session queue.\n");
++	if (atomic_cmpxchg(&se_sess->stopped, 0, 1) = 0)
++		percpu_ref_kill_and_confirm(&se_sess->cmd_count,
++					    target_stop_session_confirm);
+ }
+-EXPORT_SYMBOL(target_sess_cmd_list_set_waiting);
++EXPORT_SYMBOL(target_stop_session);
+ 
+ /**
+  * target_wait_for_sess_cmds - Wait for outstanding commands
+@@ -2974,19 +2963,19 @@ void target_sess_cmd_list_set_waiting(struct se_session *se_sess)
+  */
+ void target_wait_for_sess_cmds(struct se_session *se_sess)
+ {
+-	struct se_cmd *cmd;
+ 	int ret;
+ 
+-	WARN_ON_ONCE(!se_sess->sess_tearing_down);
++	WARN_ON_ONCE(!atomic_read(&se_sess->stopped));
+ 
+ 	do {
+-		ret = wait_event_timeout(se_sess->cmd_list_wq,
++		pr_debug("Waiting for running cmds to complete.\n");
++		ret = wait_event_timeout(se_sess->cmd_count_wq,
+ 				percpu_ref_is_zero(&se_sess->cmd_count),
+ 				180 * HZ);
+-		list_for_each_entry(cmd, &se_sess->sess_cmd_list, se_cmd_list)
+-			target_show_cmd("session shutdown: still waiting for ",
+-					cmd);
+ 	} while (ret <= 0);
++
++	wait_for_completion(&se_sess->stop_done);
++	pr_debug("Waiting for cmds done.\n");
+ }
+ EXPORT_SYMBOL(target_wait_for_sess_cmds);
+ 
+diff --git a/drivers/target/tcm_fc/tfc_sess.c b/drivers/target/tcm_fc/tfc_sess.c
+index 4fd6a1d..23ce506 100644
+--- a/drivers/target/tcm_fc/tfc_sess.c
++++ b/drivers/target/tcm_fc/tfc_sess.c
+@@ -275,7 +275,7 @@ static struct ft_sess *ft_sess_delete(struct ft_tport *tport, u32 port_id)
+ 
+ static void ft_close_sess(struct ft_sess *sess)
+ {
+-	target_sess_cmd_list_set_waiting(sess->se_sess);
++	target_stop_session(sess->se_sess);
+ 	target_wait_for_sess_cmds(sess->se_sess);
+ 	ft_sess_put(sess);
+ }
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index b3c9946..2824463 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -608,7 +608,7 @@ static inline struct se_node_acl *fabric_stat_to_nacl(struct config_item *item)
+ }
+ 
+ struct se_session {
+-	unsigned		sess_tearing_down:1;
++	atomic_t		stopped;
+ 	u64			sess_bin_isid;
+ 	enum target_prot_op	sup_prot_ops;
+ 	enum target_prot_type	sess_prot_type;
+@@ -618,9 +618,9 @@ struct se_session {
+ 	struct percpu_ref	cmd_count;
+ 	struct list_head	sess_list;
+ 	struct list_head	sess_acl_list;
+-	struct list_head	sess_cmd_list;
+ 	spinlock_t		sess_cmd_lock;
+-	wait_queue_head_t	cmd_list_wq;
++	wait_queue_head_t	cmd_count_wq;
++	struct completion	stop_done;
+ 	void			*sess_cmd_map;
+ 	struct sbitmap_queue	sess_tag_pool;
+ };
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index 6adf4d7..d60a3eb 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -178,7 +178,7 @@ int	transport_send_check_condition_and_sense(struct se_cmd *,
+ int	target_send_busy(struct se_cmd *cmd);
+ int	target_get_sess_cmd(struct se_cmd *, bool);
+ int	target_put_sess_cmd(struct se_cmd *);
+-void	target_sess_cmd_list_set_waiting(struct se_session *);
++void	target_stop_session(struct se_session *se_sess);
+ void	target_wait_for_sess_cmds(struct se_session *);
+ void	target_show_cmd(const char *pfx, struct se_cmd *cmd);
  
 -- 
 1.8.3.1
