@@ -1,153 +1,417 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 12 Nov 2020 23:19:06 +0000
-Subject: [PATCH 06/10] vhost scsi: make SCSI cmd completion per vq
-Message-Id: <1605223150-10888-8-git-send-email-michael.christie@oracle.com>
+Date: Sun, 01 Nov 2020 18:59:33 +0000
+Subject: [PATCH 7/8] target: make state_list per cpu
+Message-Id: <1604257174-4524-8-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
+References: <1604257174-4524-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1604257174-4524-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, virtualization@lists.linux-foundation.org
+To: himanshu.madhani@oracle.com, njavali@marvell.com, james.bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-In the last patches we are going to have a worker thread per IO vq.
-This patch separates the scsi cmd completion code paths so we can
-complete cmds based on their vq instead of having all cmds complete
-on the same worker thread.
+Do a state_list/execute_task_lock per cpu, so we can do submissions
+from different CPUs without contention with each other.
+
+Note: tcm_fc was passing TARGET_SCF_USE_CPUID, but never set cpuid.
+I think it wanted to set the cpuid to the CPU it was submitting
+from so it will get this behavior with this patch.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
----
- drivers/vhost/scsi.c | 48 +++++++++++++++++++++++++-----------------------
- 1 file changed, 25 insertions(+), 23 deletions(-)
+Reviewed-by: Himanshu Madhani <himanshu.madhani@oracle.com>
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 4725a08..2bbe1a8 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -178,6 +178,7 @@ enum {
+---
+ drivers/target/target_core_device.c    |  16 +++-
+ drivers/target/target_core_tmr.c       | 166 +++++++++++++++++----------------
+ drivers/target/target_core_transport.c |  27 +++---
+ drivers/target/tcm_fc/tfc_cmd.c        |   2 +-
+ include/target/target_core_base.h      |  13 ++-
+ 5 files changed, 126 insertions(+), 98 deletions(-)
+
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index 1f673fb..7787c52 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -721,11 +721,24 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
+ {
+ 	struct se_device *dev;
+ 	struct se_lun *xcopy_lun;
++	int i;
  
- struct vhost_scsi_virtqueue {
- 	struct vhost_virtqueue vq;
-+	struct vhost_scsi *vs;
- 	/*
- 	 * Reference counting for inflight reqs, used for flush operation. At
- 	 * each time, one reference tracks new commands submitted, while we
-@@ -192,6 +193,9 @@ struct vhost_scsi_virtqueue {
- 	struct vhost_scsi_cmd *scsi_cmds;
- 	struct sbitmap scsi_tags;
- 	int max_cmds;
+ 	dev = hba->backend->ops->alloc_device(hba, name);
+ 	if (!dev)
+ 		return NULL;
+ 
++	dev->queues = kcalloc(nr_cpu_ids, sizeof(*dev->queues), GFP_KERNEL);
++	if (!dev->queues) {
++		dev->transport->free_device(dev);
++		return NULL;
++	}
 +
-+	struct vhost_work completion_work;
-+	struct llist_head completion_list;
++	dev->queue_cnt = nr_cpu_ids;
++	for (i = 0; i < dev->queue_cnt; i++) {
++		INIT_LIST_HEAD(&dev->queues[i].state_list);
++		spin_lock_init(&dev->queues[i].lock);
++	}
++
+ 	dev->se_hba = hba;
+ 	dev->transport = hba->backend->ops;
+ 	dev->transport_flags = dev->transport->transport_flags_default;
+@@ -735,9 +748,7 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
+ 	INIT_LIST_HEAD(&dev->dev_sep_list);
+ 	INIT_LIST_HEAD(&dev->dev_tmr_list);
+ 	INIT_LIST_HEAD(&dev->delayed_cmd_list);
+-	INIT_LIST_HEAD(&dev->state_list);
+ 	INIT_LIST_HEAD(&dev->qf_cmd_list);
+-	spin_lock_init(&dev->execute_task_lock);
+ 	spin_lock_init(&dev->delayed_cmd_lock);
+ 	spin_lock_init(&dev->dev_reservation_lock);
+ 	spin_lock_init(&dev->se_port_lock);
+@@ -1010,6 +1021,7 @@ void target_free_device(struct se_device *dev)
+ 	if (dev->transport->free_prot)
+ 		dev->transport->free_prot(dev);
+ 
++	kfree(dev->queues);
+ 	dev->transport->free_device(dev);
+ }
+ 
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index e4513ef..6e12541 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -121,57 +121,61 @@ void core_tmr_abort_task(
+ 	unsigned long flags;
+ 	bool rc;
+ 	u64 ref_tag;
+-
+-	spin_lock_irqsave(&dev->execute_task_lock, flags);
+-	list_for_each_entry_safe(se_cmd, next, &dev->state_list, state_list) {
+-
+-		if (se_sess != se_cmd->se_sess)
+-			continue;
+-
+-		/* skip task management functions, including tmr->task_cmd */
+-		if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
+-			continue;
+-
+-		ref_tag = se_cmd->tag;
+-		if (tmr->ref_task_tag != ref_tag)
+-			continue;
+-
+-		printk("ABORT_TASK: Found referenced %s task_tag: %llu\n",
+-			se_cmd->se_tfo->fabric_name, ref_tag);
+-
+-		spin_lock(&se_sess->sess_cmd_lock);
+-		rc = __target_check_io_state(se_cmd, se_sess, 0);
+-		spin_unlock(&se_sess->sess_cmd_lock);
+-		if (!rc)
+-			continue;
+-
+-		list_move_tail(&se_cmd->state_list, &aborted_list);
+-		se_cmd->state_active = false;
+-
+-		spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+-
+-		/*
+-		 * Ensure that this ABORT request is visible to the LU RESET
+-		 * code.
+-		 */
+-		if (!tmr->tmr_dev)
+-			WARN_ON_ONCE(transport_lookup_tmr_lun(tmr->task_cmd) <
+-					0);
+-
+-		if (dev->transport->tmr_notify)
+-			dev->transport->tmr_notify(dev, TMR_ABORT_TASK,
+-						   &aborted_list);
+-
+-		list_del_init(&se_cmd->state_list);
+-		target_put_cmd_and_wait(se_cmd);
+-
+-		printk("ABORT_TASK: Sending TMR_FUNCTION_COMPLETE for"
+-				" ref_tag: %llu\n", ref_tag);
+-		tmr->response = TMR_FUNCTION_COMPLETE;
+-		atomic_long_inc(&dev->aborts_complete);
+-		return;
++	int i;
++
++	for (i = 0; i < dev->queue_cnt; i++) {
++		spin_lock_irqsave(&dev->queues[i].lock, flags);
++		list_for_each_entry_safe(se_cmd, next, &dev->queues[i].state_list,
++					 state_list) {
++			if (se_sess != se_cmd->se_sess)
++				continue;
++
++			/*
++			 * skip task management functions, including
++			 * tmr->task_cmd
++			 */
++			if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
++				continue;
++
++			ref_tag = se_cmd->tag;
++			if (tmr->ref_task_tag != ref_tag)
++				continue;
++
++			printk("ABORT_TASK: Found referenced %s task_tag: %llu\n",
++			       se_cmd->se_tfo->fabric_name, ref_tag);
++
++			spin_lock(&se_sess->sess_cmd_lock);
++			rc = __target_check_io_state(se_cmd, se_sess, 0);
++			spin_unlock(&se_sess->sess_cmd_lock);
++			if (!rc)
++				continue;
++
++			list_move_tail(&se_cmd->state_list, &aborted_list);
++			se_cmd->state_active = false;
++			spin_unlock_irqrestore(&dev->queues[i].lock, flags);
++
++			/*
++			 * Ensure that this ABORT request is visible to the LU
++			 * RESET code.
++			 */
++			if (!tmr->tmr_dev)
++				WARN_ON_ONCE(transport_lookup_tmr_lun(tmr->task_cmd) < 0);
++
++			if (dev->transport->tmr_notify)
++				dev->transport->tmr_notify(dev, TMR_ABORT_TASK,
++							   &aborted_list);
++
++			list_del_init(&se_cmd->state_list);
++			target_put_cmd_and_wait(se_cmd);
++
++			printk("ABORT_TASK: Sending TMR_FUNCTION_COMPLETE for ref_tag: %llu\n",
++			       ref_tag);
++			tmr->response = TMR_FUNCTION_COMPLETE;
++			atomic_long_inc(&dev->aborts_complete);
++			return;
++		}
++		spin_unlock_irqrestore(&dev->queues[i].lock, flags);
+ 	}
+-	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+ 
+ 	if (dev->transport->tmr_notify)
+ 		dev->transport->tmr_notify(dev, TMR_ABORT_TASK, &aborted_list);
+@@ -273,7 +277,7 @@ static void core_tmr_drain_state_list(
+ 	struct se_session *sess;
+ 	struct se_cmd *cmd, *next;
+ 	unsigned long flags;
+-	int rc;
++	int rc, i;
+ 
+ 	/*
+ 	 * Complete outstanding commands with TASK_ABORTED SAM status.
+@@ -297,35 +301,39 @@ static void core_tmr_drain_state_list(
+ 	 * Note that this seems to be independent of TAS (Task Aborted Status)
+ 	 * in the Control Mode Page.
+ 	 */
+-	spin_lock_irqsave(&dev->execute_task_lock, flags);
+-	list_for_each_entry_safe(cmd, next, &dev->state_list, state_list) {
+-		/*
+-		 * For PREEMPT_AND_ABORT usage, only process commands
+-		 * with a matching reservation key.
+-		 */
+-		if (target_check_cdb_and_preempt(preempt_and_abort_list, cmd))
+-			continue;
+-
+-		/*
+-		 * Not aborting PROUT PREEMPT_AND_ABORT CDB..
+-		 */
+-		if (prout_cmd = cmd)
+-			continue;
+-
+-		sess = cmd->se_sess;
+-		if (WARN_ON_ONCE(!sess))
+-			continue;
+-
+-		spin_lock(&sess->sess_cmd_lock);
+-		rc = __target_check_io_state(cmd, tmr_sess, tas);
+-		spin_unlock(&sess->sess_cmd_lock);
+-		if (!rc)
+-			continue;
+-
+-		list_move_tail(&cmd->state_list, &drain_task_list);
+-		cmd->state_active = false;
++	for (i = 0; i < dev->queue_cnt; i++) {
++		spin_lock_irqsave(&dev->queues[i].lock, flags);
++		list_for_each_entry_safe(cmd, next, &dev->queues[i].state_list,
++					 state_list) {
++			/*
++			 * For PREEMPT_AND_ABORT usage, only process commands
++			 * with a matching reservation key.
++			 */
++			if (target_check_cdb_and_preempt(preempt_and_abort_list,
++							 cmd))
++				continue;
++
++			/*
++			 * Not aborting PROUT PREEMPT_AND_ABORT CDB..
++			 */
++			if (prout_cmd = cmd)
++				continue;
++
++			sess = cmd->se_sess;
++			if (WARN_ON_ONCE(!sess))
++				continue;
++
++			spin_lock(&sess->sess_cmd_lock);
++			rc = __target_check_io_state(cmd, tmr_sess, tas);
++			spin_unlock(&sess->sess_cmd_lock);
++			if (!rc)
++				continue;
++
++			list_move_tail(&cmd->state_list, &drain_task_list);
++			cmd->state_active = false;
++		}
++		spin_unlock_irqrestore(&dev->queues[i].lock, flags);
+ 	}
+-	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
+ 
+ 	if (dev->transport->tmr_notify)
+ 		dev->transport->tmr_notify(dev, preempt_and_abort_list ?
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index b228c66..16495c3a 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -659,12 +659,12 @@ static void target_remove_from_state_list(struct se_cmd *cmd)
+ 	if (!dev)
+ 		return;
+ 
+-	spin_lock_irqsave(&dev->execute_task_lock, flags);
++	spin_lock_irqsave(&dev->queues[cmd->cpuid].lock, flags);
+ 	if (cmd->state_active) {
+ 		list_del(&cmd->state_list);
+ 		cmd->state_active = false;
+ 	}
+-	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
++	spin_unlock_irqrestore(&dev->queues[cmd->cpuid].lock, flags);
+ }
+ 
+ /*
+@@ -875,10 +875,7 @@ void target_complete_cmd(struct se_cmd *cmd, u8 scsi_status)
+ 
+ 	INIT_WORK(&cmd->work, success ? target_complete_ok_work :
+ 		  target_complete_failure_work);
+-	if (cmd->se_cmd_flags & SCF_USE_CPUID)
+-		queue_work_on(cmd->cpuid, target_completion_wq, &cmd->work);
+-	else
+-		queue_work(target_completion_wq, &cmd->work);
++	queue_work_on(cmd->cpuid, target_completion_wq, &cmd->work);
+ }
+ EXPORT_SYMBOL(target_complete_cmd);
+ 
+@@ -906,12 +903,13 @@ static void target_add_to_state_list(struct se_cmd *cmd)
+ 	struct se_device *dev = cmd->se_dev;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&dev->execute_task_lock, flags);
++	spin_lock_irqsave(&dev->queues[cmd->cpuid].lock, flags);
+ 	if (!cmd->state_active) {
+-		list_add_tail(&cmd->state_list, &dev->state_list);
++		list_add_tail(&cmd->state_list,
++			      &dev->queues[cmd->cpuid].state_list);
+ 		cmd->state_active = true;
+ 	}
+-	spin_unlock_irqrestore(&dev->execute_task_lock, flags);
++	spin_unlock_irqrestore(&dev->queues[cmd->cpuid].lock, flags);
+ }
+ 
+ /*
+@@ -1399,6 +1397,9 @@ void transport_init_se_cmd(
+ 	cmd->sense_buffer = sense_buffer;
+ 	cmd->orig_fe_lun = unpacked_lun;
+ 
++	if (!(cmd->se_cmd_flags & SCF_USE_CPUID))
++		cmd->cpuid = smp_processor_id();
++
+ 	cmd->state_active = false;
+ }
+ EXPORT_SYMBOL(transport_init_se_cmd);
+@@ -1616,6 +1617,9 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
+ 	BUG_ON(!se_tpg);
+ 	BUG_ON(se_cmd->se_tfo || se_cmd->se_sess);
+ 	BUG_ON(in_interrupt());
++
++	if (flags & TARGET_SCF_USE_CPUID)
++		se_cmd->se_cmd_flags |= SCF_USE_CPUID;
+ 	/*
+ 	 * Initialize se_cmd for target operation.  From this point
+ 	 * exceptions are handled by sending exception status via
+@@ -1625,11 +1629,6 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
+ 				data_length, data_dir, task_attr, sense,
+ 				unpacked_lun);
+ 
+-	if (flags & TARGET_SCF_USE_CPUID)
+-		se_cmd->se_cmd_flags |= SCF_USE_CPUID;
+-	else
+-		se_cmd->cpuid = WORK_CPU_UNBOUND;
+-
+ 	if (flags & TARGET_SCF_UNKNOWN_SIZE)
+ 		se_cmd->unknown_data_length = 1;
+ 	/*
+diff --git a/drivers/target/tcm_fc/tfc_cmd.c b/drivers/target/tcm_fc/tfc_cmd.c
+index a7ed566..8936a09 100644
+--- a/drivers/target/tcm_fc/tfc_cmd.c
++++ b/drivers/target/tcm_fc/tfc_cmd.c
+@@ -551,7 +551,7 @@ static void ft_send_work(struct work_struct *work)
+ 	if (target_submit_cmd(&cmd->se_cmd, cmd->sess->se_sess, fcp->fc_cdb,
+ 			      &cmd->ft_sense_buffer[0], scsilun_to_int(&fcp->fc_lun),
+ 			      ntohl(fcp->fc_dl), task_attr, data_dir,
+-			      TARGET_SCF_ACK_KREF | TARGET_SCF_USE_CPUID))
++			      TARGET_SCF_ACK_KREF))
+ 		goto err;
+ 
+ 	pr_debug("r_ctl %x target_submit_cmd %p\n", fh->fh_r_ctl, cmd);
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 2824463..7dc5462 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -540,6 +540,10 @@ struct se_cmd {
+ 	unsigned int		t_prot_nents;
+ 	sense_reason_t		pi_err;
+ 	sector_t		bad_sector;
++	/*
++	 * CPU LIO will execute the cmd on. Defaults to the CPU the cmd is
++	 * initialized on. Drivers can override.
++	 */
+ 	int			cpuid;
  };
  
- struct vhost_scsi {
-@@ -202,9 +206,6 @@ struct vhost_scsi {
- 	struct vhost_dev dev;
- 	struct vhost_scsi_virtqueue vqs[VHOST_SCSI_MAX_VQ];
+@@ -760,6 +764,11 @@ struct se_dev_stat_grps {
+ 	struct config_group scsi_lu_group;
+ };
  
--	struct vhost_work vs_completion_work; /* cmd completion work item */
--	struct llist_head vs_completion_list; /* cmd completion queue */
--
- 	struct vhost_work vs_event_work; /* evt injection work item */
- 	struct llist_head vs_event_list; /* evt injection queue */
- 
-@@ -380,10 +381,11 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
- 	} else {
- 		struct vhost_scsi_cmd *cmd = container_of(se_cmd,
- 					struct vhost_scsi_cmd, tvc_se_cmd);
--		struct vhost_scsi *vs = cmd->tvc_vhost;
-+		struct vhost_scsi_virtqueue *svq =  container_of(cmd->tvc_vq,
-+					struct vhost_scsi_virtqueue, vq);
- 
--		llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
--		vhost_work_queue(&vs->dev, &vs->vs_completion_work);
-+		llist_add(&cmd->tvc_completion_list, &svq->completion_list);
-+		vhost_vq_work_queue(&svq->vq, &svq->completion_work);
- 	}
- }
- 
-@@ -545,18 +547,17 @@ static void vhost_scsi_evt_work(struct vhost_work *work)
-  */
- static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
- {
--	struct vhost_scsi *vs = container_of(work, struct vhost_scsi,
--					vs_completion_work);
--	DECLARE_BITMAP(signal, VHOST_SCSI_MAX_VQ);
-+	struct vhost_scsi_virtqueue *svq = container_of(work,
-+				struct vhost_scsi_virtqueue, completion_work);
- 	struct virtio_scsi_cmd_resp v_rsp;
- 	struct vhost_scsi_cmd *cmd, *t;
- 	struct llist_node *llnode;
- 	struct se_cmd *se_cmd;
- 	struct iov_iter iov_iter;
--	int ret, vq;
-+	bool signal = false;
-+	int ret;
- 
--	bitmap_zero(signal, VHOST_SCSI_MAX_VQ);
--	llnode = llist_del_all(&vs->vs_completion_list);
-+	llnode = llist_del_all(&svq->completion_list);
- 	llist_for_each_entry_safe(cmd, t, llnode, tvc_completion_list) {
- 		se_cmd = &cmd->tvc_se_cmd;
- 
-@@ -576,21 +577,16 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
- 			      cmd->tvc_in_iovs, sizeof(v_rsp));
- 		ret = copy_to_iter(&v_rsp, sizeof(v_rsp), &iov_iter);
- 		if (likely(ret = sizeof(v_rsp))) {
--			struct vhost_scsi_virtqueue *q;
-+			signal = true;
- 			vhost_add_used(cmd->tvc_vq, cmd->tvc_vq_desc, 0);
--			q = container_of(cmd->tvc_vq, struct vhost_scsi_virtqueue, vq);
--			vq = q - vs->vqs;
--			__set_bit(vq, signal);
- 		} else
- 			pr_err("Faulted on virtio_scsi_cmd_resp\n");
- 
- 		vhost_scsi_release_cmd_res(se_cmd);
- 	}
- 
--	vq = -1;
--	while ((vq = find_next_bit(signal, VHOST_SCSI_MAX_VQ, vq + 1))
--		< VHOST_SCSI_MAX_VQ)
--		vhost_signal(&vs->dev, &vs->vqs[vq].vq);
-+	if (signal)
-+		vhost_signal(&svq->vs->dev, &svq->vq);
- }
- 
- static struct vhost_scsi_cmd *
-@@ -1799,6 +1795,7 @@ static int vhost_scsi_set_features(struct vhost_scsi *vs, u64 features)
- 
- static int vhost_scsi_open(struct inode *inode, struct file *f)
- {
-+	struct vhost_scsi_virtqueue *svq;
- 	struct vhost_scsi *vs;
- 	struct vhost_virtqueue **vqs;
- 	int r = -ENOMEM, i;
-@@ -1814,7 +1811,6 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
- 	if (!vqs)
- 		goto err_vqs;
- 
--	vhost_work_init(&vs->vs_completion_work, vhost_scsi_complete_cmd_work);
- 	vhost_work_init(&vs->vs_event_work, vhost_scsi_evt_work);
- 
- 	vs->vs_events_nr = 0;
-@@ -1825,8 +1821,14 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
- 	vs->vqs[VHOST_SCSI_VQ_CTL].vq.handle_kick = vhost_scsi_ctl_handle_kick;
- 	vs->vqs[VHOST_SCSI_VQ_EVT].vq.handle_kick = vhost_scsi_evt_handle_kick;
- 	for (i = VHOST_SCSI_VQ_IO; i < VHOST_SCSI_MAX_VQ; i++) {
--		vqs[i] = &vs->vqs[i].vq;
--		vs->vqs[i].vq.handle_kick = vhost_scsi_handle_kick;
-+		svq = &vs->vqs[i];
++struct se_device_queue {
++	struct list_head	state_list;
++	spinlock_t		lock;
++};
 +
-+		vqs[i] = &svq->vq;
-+		svq->vs = vs;
-+		init_llist_head(&svq->completion_list);
-+		vhost_work_init(&svq->completion_work,
-+				vhost_scsi_complete_cmd_work);
-+		svq->vq.handle_kick = vhost_scsi_handle_kick;
- 	}
- 	vhost_dev_init(&vs->dev, vqs, VHOST_SCSI_MAX_VQ, UIO_MAXIOV,
- 		       VHOST_SCSI_WEIGHT, 0, true, NULL);
+ struct se_device {
+ 	/* RELATIVE TARGET PORT IDENTIFER Counter */
+ 	u16			dev_rpti_counter;
+@@ -792,7 +801,6 @@ struct se_device {
+ 	atomic_t		dev_qf_count;
+ 	u32			export_count;
+ 	spinlock_t		delayed_cmd_lock;
+-	spinlock_t		execute_task_lock;
+ 	spinlock_t		dev_reservation_lock;
+ 	unsigned int		dev_reservation_flags;
+ #define DRF_SPC2_RESERVATIONS			0x00000001
+@@ -811,7 +819,6 @@ struct se_device {
+ 	struct list_head	dev_tmr_list;
+ 	struct work_struct	qf_work_queue;
+ 	struct list_head	delayed_cmd_list;
+-	struct list_head	state_list;
+ 	struct list_head	qf_cmd_list;
+ 	/* Pointer to associated SE HBA */
+ 	struct se_hba		*se_hba;
+@@ -838,6 +845,8 @@ struct se_device {
+ 	/* For se_lun->lun_se_dev RCU read-side critical access */
+ 	u32			hba_index;
+ 	struct rcu_head		rcu_head;
++	int			queue_cnt;
++	struct se_device_queue	*queues;
+ };
+ 
+ struct se_hba {
 -- 
 1.8.3.1
