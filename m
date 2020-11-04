@@ -1,105 +1,53 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 12 Nov 2020 23:19:00 +0000
-Subject: [PATCH 1/1] qemu vhost scsi: add VHOST_SET_VRING_ENABLE support
-Message-Id: <1605223150-10888-2-git-send-email-michael.christie@oracle.com>
+Date: Wed, 04 Nov 2020 22:26:44 +0000
+Subject: [PATCH 11/11] vhost scsi: remove extra flushes
+Message-Id: <1604528804-2878-12-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
+References: <1604528804-2878-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1604528804-2878-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, virtualization@lists.linux-foundation.org
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-This patch made over the master branch allows the vhost-scsi
-driver to call into the kernel and tell it to enable/disable
-a virtqueue.
+The vhost work flush function was flushing the entire work queue, so
+there is no need for the double vhost_work_dev_flush calls in
+vhost_scsi_flush.
 
-The kernel patches included with this set, will create
-a worker per IO vq when multiple IO queues have been setup.
+And we do not need to call vhost_poll_flush for each poller because
+that call also ends up flushing the same work queue thread the
+vhost_work_dev_flush call flushed.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- hw/scsi/vhost-scsi.c        |  6 ++++++
- hw/virtio/vhost-backend.c   | 30 ++++++++++++++++++++++++++++++
- linux-headers/linux/vhost.h |  1 +
- 3 files changed, 37 insertions(+)
+ drivers/vhost/scsi.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/hw/scsi/vhost-scsi.c b/hw/scsi/vhost-scsi.c
-index 4d70fa0..bbb2ba3 100644
---- a/hw/scsi/vhost-scsi.c
-+++ b/hw/scsi/vhost-scsi.c
-@@ -93,6 +93,12 @@ static int vhost_scsi_start(VHostSCSI *s)
-         return ret;
-     }
- 
-+    ret = vsc->dev.vhost_ops->vhost_set_vring_enable(&vsc->dev, 1);
-+    if (ret) {
-+        error_report("Error enabling vhost-scsi vqs %d", ret);
-+        vhost_scsi_common_stop(vsc);
-+    }
-+
-     ret = vhost_scsi_set_endpoint(s);
-     if (ret < 0) {
-         error_report("Error setting vhost-scsi endpoint");
-diff --git a/hw/virtio/vhost-backend.c b/hw/virtio/vhost-backend.c
-index 88c8ecc..e190c8e 100644
---- a/hw/virtio/vhost-backend.c
-+++ b/hw/virtio/vhost-backend.c
-@@ -102,6 +102,35 @@ static int vhost_kernel_set_mem_table(struct vhost_dev *dev,
-     return vhost_kernel_call(dev, VHOST_SET_MEM_TABLE, mem);
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 144cd05..774bffe 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1443,11 +1443,6 @@ static void vhost_scsi_handle_kick(struct vhost_work *work)
+ 	vhost_scsi_handle_vq(vs, vq);
  }
  
-+static int vhost_kernel_set_vring_enable(struct vhost_dev *dev, int enable)
-+{
-+    struct vhost_vring_state s;
-+    int i, ret;
-+
-+    s.num = 1;
-+    for (i = 0; i < dev->nvqs; ++i) {
-+        s.index = i;
-+
-+        ret = vhost_kernel_call(dev, VHOST_SET_VRING_ENABLE, &s);
-+        /* Ignore kernels that do not support the cmd */
-+        if (ret = -EPERM)
-+            return 0;
-+        if (ret)
-+            goto disable_vrings;
-+    }
-+
-+    return 0;
-+
-+disable_vrings:
-+    s.num = 0;
-+    for (i--; i < dev->nvqs; ++i) {
-+        s.index = i;
-+        vhost_kernel_call(dev, VHOST_SET_VRING_ENABLE, &s);
-+    }
-+
-+    return ret;
-+}
-+
- static int vhost_kernel_set_vring_addr(struct vhost_dev *dev,
-                                        struct vhost_vring_addr *addr)
+-static void vhost_scsi_flush_vq(struct vhost_scsi *vs, int index)
+-{
+-	vhost_poll_flush(&vs->vqs[index].vq.poll);
+-}
+-
+ /* Callers must hold dev mutex */
+ static void vhost_scsi_flush(struct vhost_scsi *vs)
  {
-@@ -302,6 +331,7 @@ static const VhostOps kernel_ops = {
-         .vhost_scsi_get_abi_version = vhost_kernel_scsi_get_abi_version,
-         .vhost_set_log_base = vhost_kernel_set_log_base,
-         .vhost_set_mem_table = vhost_kernel_set_mem_table,
-+        .vhost_set_vring_enable = vhost_kernel_set_vring_enable,
-         .vhost_set_vring_addr = vhost_kernel_set_vring_addr,
-         .vhost_set_vring_endian = vhost_kernel_set_vring_endian,
-         .vhost_set_vring_num = vhost_kernel_set_vring_num,
-diff --git a/linux-headers/linux/vhost.h b/linux-headers/linux/vhost.h
-index 7523218..98dd919 100644
---- a/linux-headers/linux/vhost.h
-+++ b/linux-headers/linux/vhost.h
-@@ -70,6 +70,7 @@
- #define VHOST_VRING_BIG_ENDIAN 1
- #define VHOST_SET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x13, struct vhost_vring_state)
- #define VHOST_GET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x14, struct vhost_vring_state)
-+#define VHOST_SET_VRING_ENABLE _IOW(VHOST_VIRTIO, 0x15, struct vhost_vring_state)
+@@ -1466,9 +1461,6 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 		kref_put(&old_inflight[i]->kref, vhost_scsi_done_inflight);
  
- /* The following ioctls use eventfd file descriptors to signal and poll
-  * for events. */
+ 	/* Flush both the vhost poll and vhost work */
+-	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
+-		vhost_scsi_flush_vq(vs, i);
+-	vhost_work_dev_flush(&vs->dev);
+ 	vhost_work_dev_flush(&vs->dev);
+ 
+ 	/* Wait for all reqs issued before the flush to be finished */
 -- 
 1.8.3.1
