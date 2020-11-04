@@ -1,7 +1,7 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Wed, 04 Nov 2020 22:26:36 +0000
-Subject: [PATCH 03/11] vhost net: use goto error handling in open
-Message-Id: <1604528804-2878-4-git-send-email-michael.christie@oracle.com>
+Date: Wed, 04 Nov 2020 22:26:42 +0000
+Subject: [PATCH 09/11] vhost scsi: fix cmd completion race
+Message-Id: <1604528804-2878-10-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1604528804-2878-1-git-send-email-michael.christie@oracle.com>
 In-Reply-To: <1604528804-2878-1-git-send-email-michael.christie@oracle.com>
@@ -10,70 +10,115 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-In the next patches vhost_dev_init will be able to fail. This patch has
-vhost_net_open use goto error handling like is done in the other vhost
-code to make handling vhost_dev_init failures easier to handle and
-extend in the future.
+We might not do the final se_cmd put from vhost_scsi_complete_cmd_work.
+When the last put happens a little later then we could race where
+vhost_scsi_complete_cmd_work does vhost_signal, the guest runs and sends
+more IO, and vhost_scsi_handle_vq runs but does not find any free cmds.
+
+This patch has us delay completing the cmd until the last lio core ref
+is dropped. We then know that once we signal to the guest that the cmd
+is completed that if it queues a new command it will find a free cmd.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
-Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-Acked-by: Jason Wang <jasowang@redhat.com>
+Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
 ---
- drivers/vhost/net.c | 29 ++++++++++++++---------------
- 1 file changed, 14 insertions(+), 15 deletions(-)
+ drivers/vhost/scsi.c | 42 +++++++++++++++---------------------------
+ 1 file changed, 15 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/vhost/net.c b/drivers/vhost/net.c
-index 531a00d..831d824 100644
---- a/drivers/vhost/net.c
-+++ b/drivers/vhost/net.c
-@@ -1286,27 +1286,18 @@ static int vhost_net_open(struct inode *inode, struct file *f)
- 	if (!n)
- 		return -ENOMEM;
- 	vqs = kmalloc_array(VHOST_NET_VQ_MAX, sizeof(*vqs), GFP_KERNEL);
--	if (!vqs) {
--		kvfree(n);
--		return -ENOMEM;
--	}
-+	if (!vqs)
-+		goto err_vqs;
- 
- 	queue = kmalloc_array(VHOST_NET_BATCH, sizeof(void *),
- 			      GFP_KERNEL);
--	if (!queue) {
--		kfree(vqs);
--		kvfree(n);
--		return -ENOMEM;
--	}
-+	if (!queue)
-+		goto err_queue;
- 	n->vqs[VHOST_NET_VQ_RX].rxq.queue = queue;
- 
- 	xdp = kmalloc_array(VHOST_NET_BATCH, sizeof(*xdp), GFP_KERNEL);
--	if (!xdp) {
--		kfree(vqs);
--		kvfree(n);
--		kfree(queue);
--		return -ENOMEM;
--	}
-+	if (!xdp)
-+		goto err_xdp;
- 	n->vqs[VHOST_NET_VQ_TX].xdp = xdp;
- 
- 	dev = &n->dev;
-@@ -1338,6 +1329,14 @@ static int vhost_net_open(struct inode *inode, struct file *f)
- 	n->refcnt_bias = 0;
- 
- 	return 0;
-+
-+err_xdp:
-+	kfree(queue);
-+err_queue:
-+	kfree(vqs);
-+err_vqs:
-+	kvfree(n);
-+	return -ENOMEM;
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index aecfa5f..0d5cec5 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -322,7 +322,7 @@ static u32 vhost_scsi_tpg_get_inst_index(struct se_portal_group *se_tpg)
+ 	return 1;
  }
  
- static struct socket *vhost_net_stop_vq(struct vhost_net *n,
+-static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
++static void vhost_scsi_release_cmd_res(struct se_cmd *se_cmd)
+ {
+ 	struct vhost_scsi_cmd *tv_cmd = container_of(se_cmd,
+ 				struct vhost_scsi_cmd, tvc_se_cmd);
+@@ -344,6 +344,16 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
+ 	vhost_scsi_put_inflight(inflight);
+ }
+ 
++static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
++{
++	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
++					struct vhost_scsi_cmd, tvc_se_cmd);
++	struct vhost_scsi *vs = cmd->tvc_vhost;
++
++	llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
++	vhost_work_queue(&vs->dev, &vs->vs_completion_work);
++}
++
+ static u32 vhost_scsi_sess_get_index(struct se_session *se_sess)
+ {
+ 	return 0;
+@@ -366,28 +376,15 @@ static int vhost_scsi_get_cmd_state(struct se_cmd *se_cmd)
+ 	return 0;
+ }
+ 
+-static void vhost_scsi_complete_cmd(struct vhost_scsi_cmd *cmd)
+-{
+-	struct vhost_scsi *vs = cmd->tvc_vhost;
+-
+-	llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
+-
+-	vhost_work_queue(&vs->dev, &vs->vs_completion_work);
+-}
+-
+ static int vhost_scsi_queue_data_in(struct se_cmd *se_cmd)
+ {
+-	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
+-				struct vhost_scsi_cmd, tvc_se_cmd);
+-	vhost_scsi_complete_cmd(cmd);
++	transport_generic_free_cmd(se_cmd, 0);
+ 	return 0;
+ }
+ 
+ static int vhost_scsi_queue_status(struct se_cmd *se_cmd)
+ {
+-	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
+-				struct vhost_scsi_cmd, tvc_se_cmd);
+-	vhost_scsi_complete_cmd(cmd);
++	transport_generic_free_cmd(se_cmd, 0);
+ 	return 0;
+ }
+ 
+@@ -433,15 +430,6 @@ static void vhost_scsi_free_evt(struct vhost_scsi *vs, struct vhost_scsi_evt *ev
+ 	return evt;
+ }
+ 
+-static void vhost_scsi_free_cmd(struct vhost_scsi_cmd *cmd)
+-{
+-	struct se_cmd *se_cmd = &cmd->tvc_se_cmd;
+-
+-	/* TODO locking against target/backend threads? */
+-	transport_generic_free_cmd(se_cmd, 0);
+-
+-}
+-
+ static int vhost_scsi_check_stop_free(struct se_cmd *se_cmd)
+ {
+ 	return target_put_sess_cmd(se_cmd);
+@@ -560,7 +548,7 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ 		} else
+ 			pr_err("Faulted on virtio_scsi_cmd_resp\n");
+ 
+-		vhost_scsi_free_cmd(cmd);
++		vhost_scsi_release_cmd_res(se_cmd);
+ 	}
+ 
+ 	vq = -1;
+@@ -1096,7 +1084,7 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
+ 						      &prot_iter, exp_data_len,
+ 						      &data_iter))) {
+ 				vq_err(vq, "Failed to map iov to sgl\n");
+-				vhost_scsi_release_cmd(&cmd->tvc_se_cmd);
++				vhost_scsi_release_cmd_res(&cmd->tvc_se_cmd);
+ 				goto err;
+ 			}
+ 		}
 -- 
 1.8.3.1
