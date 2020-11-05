@@ -1,28 +1,25 @@
 From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Thu, 05 Nov 2020 04:21:43 +0000
-Subject: Re: [PATCH 1/2] libfc: move scsi/fc_encode.h to libfc
-Message-Id: <160455005255.26277.5936613179662668851.b4-ty@oracle.com>
+Date: Thu, 05 Nov 2020 03:03:20 +0000
+Subject: Re: [PATCH v4 0/4] scsi: target: COMPARE AND WRITE miscompare sense
+Message-Id: <yq1blgctsi5.fsf@ca-mkp.ca.oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201026160705.3706396-1-arnd@kernel.org>
-In-Reply-To: <20201026160705.3706396-1-arnd@kernel.org>
+References: <20201031233211.5207-1-ddiss@suse.de>
+In-Reply-To: <20201031233211.5207-1-ddiss@suse.de> (David Disseldorp's message
+        of "Sun, 1 Nov 2020 00:32:07 +0100")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hannes Reinecke <hare@suse.de>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Arnd Bergmann <arnd@kernel.org>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, GR-QLogic-Storage-Upstream@marvell.com, target-devel@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Lee Jones <lee.jones@linaro.org>, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Javed Hasan <jhasan@marvell.com>, Saurav Kashyap <skashyap@marvell.com>
+To: David Disseldorp <ddiss@suse.de>
+Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
 
-On Mon, 26 Oct 2020 17:06:12 +0100, Arnd Bergmann wrote:
 
-> Most of this file is only used inside of libfc, so move
-> it to where it is actually used, with only fc_fill_fc_hdr()
-> left inside of the header.
+David,
 
-Applied to 5.11/scsi-queue, thanks!
+> This patchset adds missing functionality to return the offset of
+> non-matching read/compare data in the sense INFORMATION field on
+> COMPARE AND WRITE miscompare.
 
-[1/2] scsi: libfc: Move scsi/fc_encode.h to libfc
-      https://git.kernel.org/mkp/scsi/c/e31ac898ac29
-[2/2] scsi: libfc: Work around -Warray-bounds warning
-      https://git.kernel.org/mkp/scsi/c/8fd9efca86d0
+Applied to 5.11/scsi-staging, thanks!
 
 -- 
 Martin K. Petersen	Oracle Linux Engineering
