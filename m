@@ -1,36 +1,44 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Mon, 09 Nov 2020 20:30:36 +0000
+From: "Michael S. Tsirkin" <mst@redhat.com>
+Date: Mon, 09 Nov 2020 22:32:18 +0000
 Subject: Re: [PATCH 06/11] vhost: support delayed vq creation
-Message-Id: <fc22b679-08c1-85bb-515a-8f63de7148a2@oracle.com>
+Message-Id: <20201109173058-mutt-send-email-mst@kernel.org>
 List-Id: <target-devel.vger.kernel.org>
 References: <1604528804-2878-1-git-send-email-michael.christie@oracle.com>
  <1604528804-2878-7-git-send-email-michael.christie@oracle.com>
  <56056e8d-d6ff-9a6e-2a7e-1ea1737b1d27@redhat.com>
  <54285b79-637e-3dcd-382f-ddeff44f6019@oracle.com>
-In-Reply-To: <54285b79-637e-3dcd-382f-ddeff44f6019@oracle.com>
+ <fc22b679-08c1-85bb-515a-8f63de7148a2@oracle.com>
+In-Reply-To: <fc22b679-08c1-85bb-515a-8f63de7148a2@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Wang <jasowang@redhat.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: Mike Christie <michael.christie@oracle.com>
+Cc: Jason Wang <jasowang@redhat.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-On 11/9/20 12:41 PM, Mike Christie wrote:
+On Mon, Nov 09, 2020 at 02:30:36PM -0600, Mike Christie wrote:
+> On 11/9/20 12:41 PM, Mike Christie wrote:
+> > 
+> > If you want to pair this patchset down to it's bare bug fixes that
+> > prevent users from getting IO errors, I would do ring.addr check only
+> > approach for this bug fix patchset.
 > 
-> If you want to pair this patchset down to it's bare bug fixes that 
-> prevent users from getting IO errors, I would do ring.addr check only 
-> approach for this bug fix patchset.
+> Oh yeah, just so we don't have to burn an extra day, above I'm proposing I
+> repost the original patchset:
+> 
+> https://lore.kernel.org/linux-scsi/1600712588-9514-1-git-send-email-michael.christie@oracle.com/t/
+> 
+> for the bug fix only patches. It will have the compile error fixed and
+> Bart's comment handled.
+> 
+> To even trim it down more I can also drop the last 2 patches:
+> 
+> 0007-vhost-remove-work-arg-from-vhost_work_flush.patch
+> 0008-vhost-scsi-remove-extra-flushes.patch
+> 
+> and send separately in a cleanups patchset since the extra flushes it kills
+> don't really hurt.
 
-Oh yeah, just so we don't have to burn an extra day, above I'm proposing 
-I repost the original patchset:
+Makes sense to me.
 
-https://lore.kernel.org/linux-scsi/1600712588-9514-1-git-send-email-michael.christie@oracle.com/t/
-
-for the bug fix only patches. It will have the compile error fixed and 
-Bart's comment handled.
-
-To even trim it down more I can also drop the last 2 patches:
-
-0007-vhost-remove-work-arg-from-vhost_work_flush.patch
-0008-vhost-scsi-remove-extra-flushes.patch
-
-and send separately in a cleanups patchset since the extra flushes it 
-kills don't really hurt.
+-- 
+MST
