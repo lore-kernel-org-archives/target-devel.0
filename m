@@ -1,59 +1,85 @@
-From: Jason Wang <jasowang@redhat.com>
-Date: Tue, 10 Nov 2020 07:20:42 +0000
-Subject: Re: [PATCH 1/5] vhost: add helper to check if a vq has been setup
-Message-Id: <8ca030cf-593b-3b43-1551-7de37ebe4187@redhat.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 10 Nov 2020 01:13:56 +0000
+Subject: Re: [PATCH RFC PKS/PMEM 05/58] kmap: Introduce k[un]map_thread
+Message-Id: <87h7pyhv3f.fsf@nanos.tec.linutronix.de>
 List-Id: <target-devel.vger.kernel.org>
-References: <1604986403-4931-1-git-send-email-michael.christie@oracle.com>
- <1604986403-4931-2-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1604986403-4931-2-git-send-email-michael.christie@oracle.com>
+References: <20201009195033.3208459-1-ira.weiny@intel.com>
+ <20201009195033.3208459-6-ira.weiny@intel.com>
+In-Reply-To: <20201009195033.3208459-6-ira.weiny@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Mike Christie <michael.christie@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: ira.weiny@intel.com, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, target-devel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org, ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org, linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, linux-afs@lists.infradead.org, cluster-devel@redhat.com, linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org, xen-devel@lists.xenproject.org, linux-ext4@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org, reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org, linux-bcache@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, io-uring@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
 
+Ira,
 
-On 2020/11/10 下午1:33, Mike Christie wrote:
-> This adds a helper check if a vq has been setup. The next patches
-> will use this when we move the vhost scsi cmd preallocation from per
-> session to per vq. In the per vq case, we only want to allocate cmds
-> for vqs that have actually been setup and not for all the possible
-> vqs.
+On Fri, Oct 09 2020 at 12:49, ira weiny wrote:
+> From: Ira Weiny <ira.weiny@intel.com>
 >
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> ---
->   drivers/vhost/vhost.c | 6 ++++++
->   drivers/vhost/vhost.h | 1 +
->   2 files changed, 7 insertions(+)
+> To correctly support the semantics of kmap() with Kernel protection keys
+> (PKS), kmap() may be required to set the protections on multiple
+> processors (globally).  Enabling PKS globally can be very expensive
+> depending on the requested operation.  Furthermore, enabling a domain
+> globally reduces the protection afforded by PKS.
 >
-> diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-> index 5c835a2..a262e12 100644
-> --- a/drivers/vhost/vhost.c
-> +++ b/drivers/vhost/vhost.c
-> @@ -304,6 +304,12 @@ static void vhost_vring_call_reset(struct vhost_vring_call *call_ctx)
->   	memset(&call_ctx->producer, 0x0, sizeof(struct irq_bypass_producer));
->   }
->   
-> +bool vhost_vq_is_setup(struct vhost_virtqueue *vq)
-> +{
-> +	return vq->avail && vq->desc && vq->used && vhost_vq_access_ok(vq);
-> +}
-> +EXPORT_SYMBOL_GPL(vhost_vq_is_setup);
-> +
->   static void vhost_vq_reset(struct vhost_dev *dev,
->   			   struct vhost_virtqueue *vq)
->   {
-> diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
-> index e016cd3..b063324 100644
-> --- a/drivers/vhost/vhost.h
-> +++ b/drivers/vhost/vhost.h
-> @@ -190,6 +190,7 @@ int vhost_get_vq_desc(struct vhost_virtqueue *,
->   		      struct vhost_log *log, unsigned int *log_num);
->   void vhost_discard_vq_desc(struct vhost_virtqueue *, int n);
->   
-> +bool vhost_vq_is_setup(struct vhost_virtqueue *vq);
->   int vhost_vq_init_access(struct vhost_virtqueue *);
->   int vhost_add_used(struct vhost_virtqueue *, unsigned int head, int len);
->   int vhost_add_used_n(struct vhost_virtqueue *, struct vring_used_elem *heads,
+> Most kmap() (Aprox 209 of 229) callers use the map within a single thread and
+> have no need for the protection domain to be enabled globally.  However, the
+> remaining callers do not follow this pattern and, as best I can tell, expect
+> the mapping to be 'global' and available to any thread who may access the
+> mapping.[1]
+>
+> We don't anticipate global mappings to pmem, however in general there is a
+> danger in changing the semantics of kmap().  Effectively, this would cause an
+> unresolved page fault with little to no information about why the failure
+> occurred.
+>
+> To resolve this a number of options were considered.
+>
+> 1) Attempt to change all the thread local kmap() calls to kmap_atomic()[2]
+> 2) Introduce a flags parameter to kmap() to indicate if the mapping should be
+>    global or not
+> 3) Change ~20 call sites to 'kmap_global()' to indicate that they require a
+>    global enablement of the pages.
+> 4) Change ~209 call sites to 'kmap_thread()' to indicate that the mapping is to
+>    be used within that thread of execution only
+>
+> Option 1 is simply not feasible.  Option 2 would require all of the call sites
+> of kmap() to change.  Option 3 seems like a good minimal change but there is a
+> danger that new code may miss the semantic change of kmap() and not get the
+> behavior the developer intended.  Therefore, #4 was chosen.
 
+There is Option #5:
 
-Acked-by: Jason Wang <jasowang@redhat.com>
+Convert the thread local kmap() invocations to the proposed kmap_local()
+interface which is coming along [1].
+
+That solves a couple of issues:
+
+ 1) It relieves the current kmap_atomic() usage sites from the implict
+    pagefault/preempt disable semantics which apply even when
+    CONFIG_HIGHMEM is disabled. kmap_local() still can be invoked from
+    atomic context.
+
+ 2) Due to #1 it allows to replace the conditional usage of kmap() and
+    kmap_atomic() for purely thread local mappings.
+
+ 3) It puts the burden on the HIGHMEM inflicted systems
+
+ 4) It is actually more efficient for most of the pure thread local use
+    cases on HIGHMEM inflicted systems because it avoids the overhead of
+    the global lock and the potential kmap slot exhaustion. A potential
+    preemption will be more expensive, but that's not really the case we
+    want to optimize for.
+
+ 5) It solves the RT issue vs. kmap_atomic()
+
+So instead of creating yet another variety of kmap() which is just
+scratching the particular PKRS itch, can we please consolidate all of
+that on the wider reaching kmap_local() approach?
+
+Thanks,
+
+        tglx
+     
+[1] https://lore.kernel.org/lkml/20201103092712.714480842@linutronix.de/
