@@ -1,45 +1,55 @@
-From: Jason Wang <jasowang@redhat.com>
-Date: Tue, 10 Nov 2020 02:50:29 +0000
-Subject: Re: [PATCH 06/11] vhost: support delayed vq creation
-Message-Id: <5a64e2d5-1b8b-7bc6-2793-a34206c59d75@redhat.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Tue, 10 Nov 2020 05:33:19 +0000
+Subject: [PATCH 1/5] vhost: add helper to check if a vq has been setup
+Message-Id: <1604986403-4931-2-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1604528804-2878-1-git-send-email-michael.christie@oracle.com>
- <1604528804-2878-7-git-send-email-michael.christie@oracle.com>
- <56056e8d-d6ff-9a6e-2a7e-1ea1737b1d27@redhat.com>
- <54285b79-637e-3dcd-382f-ddeff44f6019@oracle.com>
- <fc22b679-08c1-85bb-515a-8f63de7148a2@oracle.com>
-In-Reply-To: <fc22b679-08c1-85bb-515a-8f63de7148a2@oracle.com>
+References: <1604986403-4931-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1604986403-4931-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
+This adds a helper check if a vq has been setup. The next patches
+will use this when we move the vhost scsi cmd preallocation from per
+session to per vq. In the per vq case, we only want to allocate cmds
+for vqs that have actually been setup and not for all the possible
+vqs.
 
-On 2020/11/10 上午4:30, Mike Christie wrote:
-> On 11/9/20 12:41 PM, Mike Christie wrote:
->>
->> If you want to pair this patchset down to it's bare bug fixes that 
->> prevent users from getting IO errors, I would do ring.addr check only 
->> approach for this bug fix patchset.
->
-> Oh yeah, just so we don't have to burn an extra day, above I'm 
-> proposing I repost the original patchset:
->
-> https://lore.kernel.org/linux-scsi/1600712588-9514-1-git-send-email-michael.christie@oracle.com/t/ 
->
->
-> for the bug fix only patches. It will have the compile error fixed and 
-> Bart's comment handled.
->
-> To even trim it down more I can also drop the last 2 patches:
->
-> 0007-vhost-remove-work-arg-from-vhost_work_flush.patch
-> 0008-vhost-scsi-remove-extra-flushes.patch
->
-> and send separately in a cleanups patchset since the extra flushes it 
-> kills don't really hurt.
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/vhost/vhost.c | 6 ++++++
+ drivers/vhost/vhost.h | 1 +
+ 2 files changed, 7 insertions(+)
 
-
-Fine with me.
-
-Thanks
+diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+index 5c835a2..a262e12 100644
+--- a/drivers/vhost/vhost.c
++++ b/drivers/vhost/vhost.c
+@@ -304,6 +304,12 @@ static void vhost_vring_call_reset(struct vhost_vring_call *call_ctx)
+ 	memset(&call_ctx->producer, 0x0, sizeof(struct irq_bypass_producer));
+ }
+ 
++bool vhost_vq_is_setup(struct vhost_virtqueue *vq)
++{
++	return vq->avail && vq->desc && vq->used && vhost_vq_access_ok(vq);
++}
++EXPORT_SYMBOL_GPL(vhost_vq_is_setup);
++
+ static void vhost_vq_reset(struct vhost_dev *dev,
+ 			   struct vhost_virtqueue *vq)
+ {
+diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
+index e016cd3..b063324 100644
+--- a/drivers/vhost/vhost.h
++++ b/drivers/vhost/vhost.h
+@@ -190,6 +190,7 @@ int vhost_get_vq_desc(struct vhost_virtqueue *,
+ 		      struct vhost_log *log, unsigned int *log_num);
+ void vhost_discard_vq_desc(struct vhost_virtqueue *, int n);
+ 
++bool vhost_vq_is_setup(struct vhost_virtqueue *vq);
+ int vhost_vq_init_access(struct vhost_virtqueue *);
+ int vhost_add_used(struct vhost_virtqueue *, unsigned int head, int len);
+ int vhost_add_used_n(struct vhost_virtqueue *, struct vring_used_elem *heads,
+-- 
+1.8.3.1
