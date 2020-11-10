@@ -1,49 +1,115 @@
-From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Date: Mon, 16 Nov 2020 10:36:16 +0000
-Subject: Re: [PATCH v4 07/27] IB: fix kernel-doc markups
-Message-Id: <20201116103616.GA13162@embeddedor>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Tue, 10 Nov 2020 21:29:33 +0000
+Subject: Re: [PATCH 2/2] target: iscsi: fix a race condition when aborting a task
+Message-Id: <840cb2fe-5642-78d0-e700-d3652021cb5d@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <cover.1605521731.git.mchehab+huawei@kernel.org>
- <4983a0c6fe5dbc2c779d2b5950a6f90f81a16d56.1605521731.git.mchehab+huawei@kernel.org>
-In-Reply-To: <4983a0c6fe5dbc2c779d2b5950a6f90f81a16d56.1605521731.git.mchehab+huawei@kernel.org>
+References: <20201007145326.56850-1-mlombard@redhat.com>
+ <20201007145326.56850-3-mlombard@redhat.com>
+ <20daa17d-08e7-a412-4d33-bcf75587eca6@oracle.com>
+ <1852a8bd-3edc-5c49-fa51-9afe52f125a8@redhat.com>
+ <184667b1-032b-c36f-d1e7-5cfef961c763@oracle.com>
+ <71691FED-C164-482C-B629-A8B89B81E566@oracle.com>
+ <a936cc4e-1610-5201-5960-107689b81820@redhat.com>
+ <d7107857-ef7a-3c88-8146-a5e7abce5ce6@oracle.com>
+In-Reply-To: <d7107857-ef7a-3c88-8146-a5e7abce5ce6@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, =?iso-8859-1?Q?H=E5kon?= Bugge <haakon.bugge@oracle.com>, Jonathan Corbet <corbet@lwn.net>, Bart Van Assche <bvanassche@acm.org>, Chuck Lever <chuck.lever@oracle.com>, Danit Goldberg <danitg@mellanox.com>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, Divya Indi <divya.indi@oracle.com>, Doug Ledford <dledford@redhat.com>, Gal Pressman <galpress@amazon.com>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, Maor Gottlieb <maorg@mellanox.com>, Max Gurtovoy <mgurtovoy@nvidia.com>, Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>, Moni Shoua <monis@mellanox.com>, Or Gerlitz <ogerlitz@mellanox.com>, Parav Pandit <parav@mellanox.com>, Sagi Grimberg <sagi@grimberg.me>, Ursula Braun <ubraun@linux.ibm.com>, Xi Wang <wangxi11@huawei.com>, Yamin Friedman <yaminf@mellanox.com>, linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org
+To: Mike Christie <michael.christie@oracle.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, bvanassche@acm.org, m.lombardi85@gmail.com
 
-On Mon, Nov 16, 2020 at 11:18:03AM +0100, Mauro Carvalho Chehab wrote:
 
-[..]
 
-> diff --git a/drivers/infiniband/sw/rdmavt/ah.c b/drivers/infiniband/sw/rdmavt/ah.c
-> index f9754dcd250b..480b621d1a9f 100644
-> --- a/drivers/infiniband/sw/rdmavt/ah.c
-> +++ b/drivers/infiniband/sw/rdmavt/ah.c
-[..]
->  /**
-> - * rvt_destory_ah - Destory an address handle
-> + * rvt_destroy_ah - Destory an address handle
+Dne 28. 10. 20 v 21:37 Mike Christie napsal(a):
+>>
+>> Possible solutions that I can think of:
+>>
+>> - Make iscsit_release_commands_from_conn() wait for the abort task to finish
+> 
+> Yeah you could set a completion in there then have aborted_task do the complete() call maybe?
+> 
 
-s/Destory/Destroy
+We could do something like this, what do you think?
 
->   * @ibah: address handle
->   * @destroy_flags: destroy address handle flags (see enum rdma_destroy_ah_flags)
->   * Return: 0 on success
->   */
->  int rvt_destroy_ah(struct ib_ah *ibah, u32 destroy_flags)
->  {
->  	struct rvt_dev_info *dev = ib_to_rvt(ibah->device);
->  	struct rvt_ah *ah = ibah_to_rvtah(ibah);
->  	unsigned long flags;
->  
->  	spin_lock_irqsave(&dev->n_ahs_lock, flags);
->  	dev->n_ahs_allocated--;
->  	spin_unlock_irqrestore(&dev->n_ahs_lock, flags);
->  
->  	rdma_destroy_ah_attr(&ah->attr);
->  	return 0;
->  }
-
---
-Gustavo
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 067074ef50818..ffd3dbc53a42f 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -490,13 +490,16 @@ EXPORT_SYMBOL(iscsit_queue_rsp);
+ 
+ void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
+ {
++	struct se_cmd *se_cmd = cmd->se_cmd.se_tfo ? &cmd->se_cmd : NULL;
++
+ 	spin_lock_bh(&conn->cmd_lock);
+-	if (!list_empty(&cmd->i_conn_node) &&
+-	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
++	if (!list_empty(&cmd->i_conn_node))
+ 		list_del_init(&cmd->i_conn_node);
+ 	spin_unlock_bh(&conn->cmd_lock);
+ 
+ 	__iscsit_free_cmd(cmd, true);
++	if (se_cmd && se_cmd->abrt_task_compl)
++		complete(se_cmd->abrt_task_compl);
+ }
+ EXPORT_SYMBOL(iscsit_aborted_task);
+ 
+@@ -4080,6 +4083,7 @@ int iscsi_target_rx_thread(void *arg)
+ 
+ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
+ {
++	DECLARE_COMPLETION_ONSTACK(compl);
+ 	LIST_HEAD(tmp_list);
+ 	struct iscsi_cmd *cmd = NULL, *cmd_tmp = NULL;
+ 	struct iscsi_session *sess = conn->sess;
+@@ -4096,8 +4100,24 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
+ 
+ 		if (se_cmd->se_tfo != NULL) {
+ 			spin_lock_irq(&se_cmd->t_state_lock);
++			if (se_cmd->transport_state & CMD_T_ABORTED) {
++				/*
++				 * LIO's abort path owns the cleanup for this,
++				 * so put it back on the list and let
++				 * aborted_task handle it.
++				 */
++				list_move_tail(&cmd->i_conn_node, &conn->conn_cmd_list);
++				WARN_ON_ONCE(se_cmd->abrt_task_compl);
++				se_cmd->abrt_task_compl = &compl;
++			}
+ 			se_cmd->transport_state |= CMD_T_FABRIC_STOP;
+ 			spin_unlock_irq(&se_cmd->t_state_lock);
++
++			if (se_cmd->abrt_task_compl) {
++				spin_unlock_bh(&conn->cmd_lock);
++				wait_for_completion(&compl);
++				spin_lock_bh(&conn->cmd_lock);
++			}
+ 		}
+ 	}
+ 	spin_unlock_bh(&conn->cmd_lock);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index db53a0d649da7..5611e6c00f18c 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1391,6 +1391,7 @@ void transport_init_se_cmd(
+ 	init_completion(&cmd->t_transport_stop_comp);
+ 	cmd->free_compl = NULL;
+ 	cmd->abrt_compl = NULL;
++	cmd->abrt_task_compl = NULL;
+ 	spin_lock_init(&cmd->t_state_lock);
+ 	INIT_WORK(&cmd->work, NULL);
+ 	kref_init(&cmd->cmd_kref);
+diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
+index 549947d407cfd..25cc451930281 100644
+--- a/include/target/target_core_base.h
++++ b/include/target/target_core_base.h
+@@ -491,6 +491,7 @@ struct se_cmd {
+ 	struct list_head	se_cmd_list;
+ 	struct completion	*free_compl;
+ 	struct completion	*abrt_compl;
++	struct completion	*abrt_task_compl;
+ 	const struct target_core_fabric_ops *se_tfo;
+ 	sense_reason_t		(*execute_cmd)(struct se_cmd *);
+ 	sense_reason_t (*transport_complete_callback)(struct se_cmd *, bool, int *);
+-- 
+2.26.2
