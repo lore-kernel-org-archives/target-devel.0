@@ -1,41 +1,124 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Wed, 04 Nov 2020 22:26:33 +0000
-Subject: [PATCH 00/11 V4] vhost: vhost-scsi bug fixes
-Message-Id: <1604528804-2878-1-git-send-email-michael.christie@oracle.com>
+Date: Tue, 10 Nov 2020 05:33:21 +0000
+Subject: [PATCH 3/5] vhost scsi: fix cmd completion race
+Message-Id: <1604986403-4931-4-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1604986403-4931-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1604986403-4931-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
 
-The following patches made over Michael's vhost branch
-https://git.kernel.org/pub/scm/linux/kernel/git/mst/vhost.git/log/?h=vhost
+We might not do the final se_cmd put from vhost_scsi_complete_cmd_work.
+When the last put happens a little later then we could race where
+vhost_scsi_complete_cmd_work does vhost_signal, the guest runs and sends
+more IO, and vhost_scsi_handle_vq runs but does not find any free cmds.
 
-The patches fix issues with vhost-scsi's 256 cmd limit
-where if the guest sends more than 256 cmds it will get IO
-errors, or even if exactly 256 are being sent then we can race and
-get IO errors. The patches also add LUN RESET support so guests
-that do not support resetting command timers will not get IO
-errors and offlined devices when the physical device hits temp
-issues.
+This patch has us delay completing the cmd until the last lio core ref
+is dropped. We then know that once we signal to the guest that the cmd
+is completed that if it queues a new command it will find a free cmd.
 
-Jason, you reviewed ever non scsi patch but 2 of them. I was not
-sure if that was an oversight or you were ok with them. I'm sending
-this out hoping you were ok with them and forgot to reply (or I guess
-will be ok with them if you just missed them last time).
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/vhost/scsi.c | 42 +++++++++++++++---------------------------
+ 1 file changed, 15 insertions(+), 27 deletions(-)
 
-V4:
-- really really fix compile errors
-- dropped threading patches so we can figure that out separately.
-
-V3:
-- fix compile errors
-- fix possible crash where cmd could be freed while adding it to
-completion list
-- fix issue where we added the worker thread to the blk cgroup but
-the blk IO was submitted by a driver workqueue.
-
-V2:
-- fix use before set cpu var errors
-- drop vhost_vq_is_setup
-- include patches to do a worker thread per scsi IO vq
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index e31339b..5d8850f 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -322,7 +322,7 @@ static u32 vhost_scsi_tpg_get_inst_index(struct se_portal_group *se_tpg)
+ 	return 1;
+ }
+ 
+-static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
++static void vhost_scsi_release_cmd_res(struct se_cmd *se_cmd)
+ {
+ 	struct vhost_scsi_cmd *tv_cmd = container_of(se_cmd,
+ 				struct vhost_scsi_cmd, tvc_se_cmd);
+@@ -344,6 +344,16 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
+ 	vhost_scsi_put_inflight(inflight);
+ }
+ 
++static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
++{
++	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
++					struct vhost_scsi_cmd, tvc_se_cmd);
++	struct vhost_scsi *vs = cmd->tvc_vhost;
++
++	llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
++	vhost_work_queue(&vs->dev, &vs->vs_completion_work);
++}
++
+ static u32 vhost_scsi_sess_get_index(struct se_session *se_sess)
+ {
+ 	return 0;
+@@ -366,28 +376,15 @@ static int vhost_scsi_get_cmd_state(struct se_cmd *se_cmd)
+ 	return 0;
+ }
+ 
+-static void vhost_scsi_complete_cmd(struct vhost_scsi_cmd *cmd)
+-{
+-	struct vhost_scsi *vs = cmd->tvc_vhost;
+-
+-	llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
+-
+-	vhost_work_queue(&vs->dev, &vs->vs_completion_work);
+-}
+-
+ static int vhost_scsi_queue_data_in(struct se_cmd *se_cmd)
+ {
+-	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
+-				struct vhost_scsi_cmd, tvc_se_cmd);
+-	vhost_scsi_complete_cmd(cmd);
++	transport_generic_free_cmd(se_cmd, 0);
+ 	return 0;
+ }
+ 
+ static int vhost_scsi_queue_status(struct se_cmd *se_cmd)
+ {
+-	struct vhost_scsi_cmd *cmd = container_of(se_cmd,
+-				struct vhost_scsi_cmd, tvc_se_cmd);
+-	vhost_scsi_complete_cmd(cmd);
++	transport_generic_free_cmd(se_cmd, 0);
+ 	return 0;
+ }
+ 
+@@ -433,15 +430,6 @@ static void vhost_scsi_free_evt(struct vhost_scsi *vs, struct vhost_scsi_evt *ev
+ 	return evt;
+ }
+ 
+-static void vhost_scsi_free_cmd(struct vhost_scsi_cmd *cmd)
+-{
+-	struct se_cmd *se_cmd = &cmd->tvc_se_cmd;
+-
+-	/* TODO locking against target/backend threads? */
+-	transport_generic_free_cmd(se_cmd, 0);
+-
+-}
+-
+ static int vhost_scsi_check_stop_free(struct se_cmd *se_cmd)
+ {
+ 	return target_put_sess_cmd(se_cmd);
+@@ -560,7 +548,7 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ 		} else
+ 			pr_err("Faulted on virtio_scsi_cmd_resp\n");
+ 
+-		vhost_scsi_free_cmd(cmd);
++		vhost_scsi_release_cmd_res(se_cmd);
+ 	}
+ 
+ 	vq = -1;
+@@ -1091,7 +1079,7 @@ static void vhost_scsi_submission_work(struct work_struct *work)
+ 						      &prot_iter, exp_data_len,
+ 						      &data_iter))) {
+ 				vq_err(vq, "Failed to map iov to sgl\n");
+-				vhost_scsi_release_cmd(&cmd->tvc_se_cmd);
++				vhost_scsi_release_cmd_res(&cmd->tvc_se_cmd);
+ 				goto err;
+ 			}
+ 		}
+-- 
+1.8.3.1
