@@ -1,25 +1,27 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Thu, 05 Nov 2020 03:41:32 +0000
-Subject: Re: [PATCH 0/8 v3] target: fix up locking/refcounting in IO paths
-Message-Id: <yq1tuu4scev.fsf@ca-mkp.ca.oracle.com>
+From: "Investment  Corporate" <financialcapability6@gmail.com>
+Date: Wed, 11 Nov 2020 07:23:53 +0000
+Subject: Corporate and Personal Loan *
+Message-Id: <202011110723.0AB7NYq6024014@oa.trendtek.com.tw>
 List-Id: <target-devel.vger.kernel.org>
-References: <1604257174-4524-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1604257174-4524-1-git-send-email-michael.christie@oracle.com>
-        (Mike Christie's message of "Sun, 1 Nov 2020 12:59:26 -0600")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <michael.christie@oracle.com>
-Cc: himanshu.madhani@oracle.com, njavali@marvell.com, james.bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: target-devel@vger.kernel.org
+
+Hello target-devel@vger.kernel.org
 
 
-Mike,
+We are Base Investment Company offering Corporate and Personal Loan at 3% Interest Rate for a duration of 10Years.
 
-> The following patches made over Martin's staging branch fix some
-> ref counting issues I hit while testing and improves the locking
-> in the IO paths. To do the latter, the patches:
 
-Applied to 5.11/scsi-staging, thanks!
+We also pay 1% commission to brokers, who introduce project owners for finance or other opportunities.
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+
+Please get back to me if you are interested for more
+
+details.
+
+
+Yours faithfully,
+
+Hashim Murrah
