@@ -1,22 +1,26 @@
-From: "JOHN PHIL" <gerradfinancialplanning@gmail.com>
-Date: Sat, 31 Oct 2020 02:01:38 +0000
-Subject: November Equity Investment 20-20
-Message-Id: <j$v0o7pvj-94$5zat$4w-3n9x8dl@a8n.s8g8>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="EBE1.AE7A_.6BE9.B05.3__"
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Wed, 11 Nov 2020 02:59:06 +0000
+Subject: Re: [PATCH v2] scsi: target: tcmu: scatter_/gather_data_area rework
+Message-Id: <160506354082.14637.11461453377174362789.b4-ty@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-To: target-devel@vger.kernel.org
+References: <20201019115118.11949-1-bostroesser@gmail.com>
+In-Reply-To: <20201019115118.11949-1-bostroesser@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bodo Stroesser <bostroesser@gmail.com>, Mike Christie <michael.christie@oracle.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
+On Mon, 19 Oct 2020 13:51:18 +0200, Bodo Stroesser wrote:
 
---EBE1.AE7A_.6BE9.B05.3__
-Content-Type: text/plain;
-Content-Transfer-Encoding: quoted-printable
+> This is made on top of the scsi-staging tree plus my previous
+> patch:
+> "scsi: target: tcmu: add compat mode for 32bit userspace on 64bit kernel"
 
-How are you doing today I have a proposal which i think may interest you a=
-nd benefit you.I will like to give you full details of this via email:  ge=
-rradfinancialplanning@gmail.com
-Thanks.
+Applied to 5.11/scsi-queue, thanks!
 
-John PHIL
+[1/1] scsi: target: tcmu: scatter_/gather_data_area() rework
+      https://git.kernel.org/mkp/scsi/c/c8ed1ff88c02
 
---EBE1.AE7A_.6BE9.B05.3__--
+-- 
+Martin K. Petersen	Oracle Linux Engineering
