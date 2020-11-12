@@ -1,38 +1,38 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Wed, 11 Nov 2020 02:58:22 +0000
-Subject: Re: [PATCH v4 0/4] scsi: target: COMPARE AND WRITE miscompare sense
-Message-Id: <160506295513.14063.16995021450167842819.b4-ty@oracle.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Thu, 12 Nov 2020 14:54:43 +0000
+Subject: [PATCH] IB/srpt: Fix passing zero to 'PTR_ERR'
+Message-Id: <20201112145443.17832-1-yuehaibing@huawei.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <20201031233211.5207-1-ddiss@suse.de>
-In-Reply-To: <20201031233211.5207-1-ddiss@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: target-devel@vger.kernel.org, David Disseldorp <ddiss@suse.de>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org
+To: bvanassche@acm.org, dledford@redhat.com, jgg@ziepe.ca
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>
 
-On Sun, 1 Nov 2020 00:32:07 +0100, David Disseldorp wrote:
+Fix smatch warning:
 
-> This patchset adds missing functionality to return the offset of
-> non-matching read/compare data in the sense INFORMATION field on
-> COMPARE AND WRITE miscompare.
-> 
-> The functionality can be tested using the libiscsi
-> CompareAndWrite.MiscompareSense test proposed via:
->   https://github.com/sahlberg/libiscsi/pull/344
-> 
-> [...]
+drivers/infiniband/ulp/srpt/ib_srpt.c:2341 srpt_cm_req_recv() warn: passing zero to 'PTR_ERR'
 
-Applied to 5.11/scsi-queue, thanks!
+Use PTR_ERR_OR_ZERO instead of PTR_ERR
 
-[1/4] scsi: target: Rename struct sense_info to sense_detail
-      https://git.kernel.org/mkp/scsi/c/b455233dcc40
-[2/4] scsi: target: Rename cmd.bad_sector to cmd.sense_info
-      https://git.kernel.org/mkp/scsi/c/8dd992fb67f3
-[3/4] scsi: target: Split out COMPARE AND WRITE memcmp into helper
-      https://git.kernel.org/mkp/scsi/c/ab628b9fc8c2
-[4/4] scsi: target: Return COMPARE AND WRITE miscompare offsets
-      https://git.kernel.org/mkp/scsi/c/749c226cf56e
+Fixes: 847462de3a0a ("IB/srpt: Fix srpt_cm_req_recv() error path (1/2)")
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 6be60aa5ffe2..3ff24b5048ac 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -2338,7 +2338,7 @@ static int srpt_cm_req_recv(struct srpt_device *const sdev,
+ 
+ 	if (IS_ERR_OR_NULL(ch->sess)) {
+ 		WARN_ON_ONCE(ch->sess = NULL);
+-		ret = PTR_ERR(ch->sess);
++		ret = PTR_ERR_OR_ZERO(ch->sess);
+ 		ch->sess = NULL;
+ 		pr_info("Rejected login for initiator %s: ret = %d.\n",
+ 			ch->sess_name, ret);
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.17.1
