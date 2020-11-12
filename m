@@ -1,7 +1,7 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 12 Nov 2020 23:19:01 +0000
-Subject: [PATCH 01/10] vhost: remove work arg from vhost_work_flush
-Message-Id: <1605223150-10888-3-git-send-email-michael.christie@oracle.com>
+Date: Thu, 12 Nov 2020 23:19:10 +0000
+Subject: [PATCH 10/10] vhost-scsi: create a woker per IO vq
+Message-Id: <1605223150-10888-12-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
 In-Reply-To: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
@@ -10,99 +10,78 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, virtualization@lists.linux-foundation.org
 
-vhost_work_flush doesn't do anything with the work arg. This patch drops
-it and then renames vhost_work_flush to vhost_work_dev_flush to reflect
-that the function flushes all the works in the dev and not just a
-specific queue or work item.
+This patch has vhost-scsi create a worker thread per IO vq.
+It also adds a modparam to enable the feature, because I was thinking
+existing setups might not be expecting the extra threading use, so the
+default is to use the old single thread multiple vq behavior.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
-Acked-by: Jason Wang <jasowang@redhat.com>
-Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 ---
- drivers/vhost/scsi.c  | 4 ++--
- drivers/vhost/vhost.c | 8 ++++----
- drivers/vhost/vhost.h | 2 +-
- drivers/vhost/vsock.c | 2 +-
- 4 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/vhost/scsi.c | 38 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 37 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index f22fce5..8795fd3 100644
+index 612359d..3fb147f 100644
 --- a/drivers/vhost/scsi.c
 +++ b/drivers/vhost/scsi.c
-@@ -1468,8 +1468,8 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
- 	/* Flush both the vhost poll and vhost work */
- 	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
- 		vhost_scsi_flush_vq(vs, i);
--	vhost_work_flush(&vs->dev, &vs->vs_completion_work);
--	vhost_work_flush(&vs->dev, &vs->vs_event_work);
-+	vhost_work_dev_flush(&vs->dev);
-+	vhost_work_dev_flush(&vs->dev);
+@@ -62,6 +62,12 @@
+  */
+ #define VHOST_SCSI_WEIGHT 256
  
- 	/* Wait for all reqs issued before the flush to be finished */
- 	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
-diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index a262e12..78d9535 100644
---- a/drivers/vhost/vhost.c
-+++ b/drivers/vhost/vhost.c
-@@ -231,7 +231,7 @@ void vhost_poll_stop(struct vhost_poll *poll)
++static bool vhost_scsi_worker_per_io_vq;
++module_param_named(thread_per_io_virtqueue, vhost_scsi_worker_per_io_vq, bool,
++		   0644);
++MODULE_PARM_DESC(thread_per_io_virtqueue,
++		 "Create a worker thread per IO virtqueue. Set to true to turn on. Default is false where all virtqueues share a thread.");
++
+ struct vhost_scsi_inflight {
+ 	/* Wait for the flush operation to finish */
+ 	struct completion comp;
+@@ -1805,6 +1811,36 @@ static int vhost_scsi_set_features(struct vhost_scsi *vs, u64 features)
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(vhost_poll_stop);
  
--void vhost_work_flush(struct vhost_dev *dev, struct vhost_work *work)
-+void vhost_work_dev_flush(struct vhost_dev *dev)
++static int vhost_scsi_enable_vring(struct vhost_virtqueue *vq, bool enable)
++{
++	struct vhost_scsi *vs = container_of(vq->dev, struct vhost_scsi, dev);
++	/*
++	 * For compat, we have the evt, ctl and first IO vq share worker0 like
++	 * is setup by default. Additional vqs get their own worker.
++	 */
++	if (vq = &vs->vqs[VHOST_SCSI_VQ_CTL].vq ||
++	    vq = &vs->vqs[VHOST_SCSI_VQ_EVT].vq ||
++	    vq = &vs->vqs[VHOST_SCSI_VQ_IO].vq)
++		return 0;
++
++	if (enable) {
++		if (!vhost_scsi_worker_per_io_vq)
++			return 0;
++		if (vq->worker_id != 0)
++			return 0;
++		return vhost_vq_worker_add(vq->dev, vq);
++	} else {
++		if (vq->worker_id = 0)
++			return 0;
++		vhost_vq_worker_remove(vq->dev, vq);
++		return 0;
++	}
++}
++
++static struct vhost_dev_ops vhost_scsi_dev_ops = {
++	.enable_vring = vhost_scsi_enable_vring,
++};
++
+ static int vhost_scsi_open(struct inode *inode, struct file *f)
  {
- 	struct vhost_flush_struct flush;
- 
-@@ -243,13 +243,13 @@ void vhost_work_flush(struct vhost_dev *dev, struct vhost_work *work)
- 		wait_for_completion(&flush.wait_event);
+ 	struct vhost_scsi_virtqueue *svq;
+@@ -1843,7 +1879,7 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ 		svq->vq.handle_kick = vhost_scsi_handle_kick;
  	}
- }
--EXPORT_SYMBOL_GPL(vhost_work_flush);
-+EXPORT_SYMBOL_GPL(vhost_work_dev_flush);
+ 	vhost_dev_init(&vs->dev, vqs, VHOST_SCSI_MAX_VQ, UIO_MAXIOV,
+-		       VHOST_SCSI_WEIGHT, 0, true, NULL);
++		       VHOST_SCSI_WEIGHT, 0, true, &vhost_scsi_dev_ops);
  
- /* Flush any work that has been scheduled. When calling this, don't hold any
-  * locks that are also used by the callback. */
- void vhost_poll_flush(struct vhost_poll *poll)
- {
--	vhost_work_flush(poll->dev, &poll->work);
-+	vhost_work_dev_flush(poll->dev);
- }
- EXPORT_SYMBOL_GPL(vhost_poll_flush);
+ 	vhost_scsi_init_inflight(vs, NULL);
  
-@@ -538,7 +538,7 @@ static int vhost_attach_cgroups(struct vhost_dev *dev)
- 	attach.owner = current;
- 	vhost_work_init(&attach.work, vhost_attach_cgroups_work);
- 	vhost_work_queue(dev, &attach.work);
--	vhost_work_flush(dev, &attach.work);
-+	vhost_work_dev_flush(dev);
- 	return attach.ret;
- }
- 
-diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
-index b063324..1ba8e81 100644
---- a/drivers/vhost/vhost.h
-+++ b/drivers/vhost/vhost.h
-@@ -46,7 +46,7 @@ void vhost_poll_init(struct vhost_poll *poll, vhost_work_fn_t fn,
- void vhost_poll_stop(struct vhost_poll *poll);
- void vhost_poll_flush(struct vhost_poll *poll);
- void vhost_poll_queue(struct vhost_poll *poll);
--void vhost_work_flush(struct vhost_dev *dev, struct vhost_work *work);
-+void vhost_work_dev_flush(struct vhost_dev *dev);
- long vhost_vring_ioctl(struct vhost_dev *d, unsigned int ioctl, void __user *argp);
- 
- struct vhost_log {
-diff --git a/drivers/vhost/vsock.c b/drivers/vhost/vsock.c
-index a483cec..f40205f 100644
---- a/drivers/vhost/vsock.c
-+++ b/drivers/vhost/vsock.c
-@@ -652,7 +652,7 @@ static void vhost_vsock_flush(struct vhost_vsock *vsock)
- 	for (i = 0; i < ARRAY_SIZE(vsock->vqs); i++)
- 		if (vsock->vqs[i].handle_kick)
- 			vhost_poll_flush(&vsock->vqs[i].poll);
--	vhost_work_flush(&vsock->dev, &vsock->send_pkt_work);
-+	vhost_work_dev_flush(&vsock->dev);
- }
- 
- static void vhost_vsock_reset_orphans(struct sock *sk)
 -- 
 1.8.3.1
