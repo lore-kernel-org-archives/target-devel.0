@@ -1,55 +1,53 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Tue, 10 Nov 2020 05:33:22 +0000
-Subject: [PATCH 4/5] vhost scsi: add lun parser helper
-Message-Id: <1604986403-4931-5-git-send-email-michael.christie@oracle.com>
+Date: Thu, 12 Nov 2020 23:19:02 +0000
+Subject: [PATCH 02/10] vhost scsi: remove extra flushes
+Message-Id: <1605223150-10888-4-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1604986403-4931-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1604986403-4931-1-git-send-email-michael.christie@oracle.com>
+References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, stefanha@redhat.com, virtualization@lists.linux-foundation.org
+To: stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, virtualization@lists.linux-foundation.org
 
-Move code to parse lun from req's lun_buf to helper, so tmf code
-can use it in the next patch.
+The vhost work flush function was flushing the entire work queue, so
+there is no need for the double vhost_work_dev_flush calls in
+vhost_scsi_flush.
+
+And we do not need to call vhost_poll_flush for each poller because
+that call also ends up flushing the same work queue thread the
+vhost_work_dev_flush call flushed.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
-Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-Acked-by: Jason Wang <jasowang@redhat.com>
 ---
- drivers/vhost/scsi.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/vhost/scsi.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
 diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 5d8850f..ed7dc6b 100644
+index 8795fd3..4725a08 100644
 --- a/drivers/vhost/scsi.c
 +++ b/drivers/vhost/scsi.c
-@@ -898,6 +898,11 @@ static void vhost_scsi_submission_work(struct work_struct *work)
- 	return ret;
+@@ -1443,11 +1443,6 @@ static void vhost_scsi_handle_kick(struct vhost_work *work)
+ 	vhost_scsi_handle_vq(vs, vq);
  }
  
-+static u16 vhost_buf_to_lun(u8 *lun_buf)
-+{
-+	return ((lun_buf[2] << 8) | lun_buf[3]) & 0x3FFF;
-+}
-+
- static void
- vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
+-static void vhost_scsi_flush_vq(struct vhost_scsi *vs, int index)
+-{
+-	vhost_poll_flush(&vs->vqs[index].vq.poll);
+-}
+-
+ /* Callers must hold dev mutex */
+ static void vhost_scsi_flush(struct vhost_scsi *vs)
  {
-@@ -1036,12 +1041,12 @@ static void vhost_scsi_submission_work(struct work_struct *work)
- 			tag = vhost64_to_cpu(vq, v_req_pi.tag);
- 			task_attr = v_req_pi.task_attr;
- 			cdb = &v_req_pi.cdb[0];
--			lun = ((v_req_pi.lun[2] << 8) | v_req_pi.lun[3]) & 0x3FFF;
-+			lun = vhost_buf_to_lun(v_req_pi.lun);
- 		} else {
- 			tag = vhost64_to_cpu(vq, v_req.tag);
- 			task_attr = v_req.task_attr;
- 			cdb = &v_req.cdb[0];
--			lun = ((v_req.lun[2] << 8) | v_req.lun[3]) & 0x3FFF;
-+			lun = vhost_buf_to_lun(v_req.lun);
- 		}
- 		/*
- 		 * Check that the received CDB size does not exceeded our
+@@ -1466,9 +1461,6 @@ static void vhost_scsi_flush(struct vhost_scsi *vs)
+ 		kref_put(&old_inflight[i]->kref, vhost_scsi_done_inflight);
+ 
+ 	/* Flush both the vhost poll and vhost work */
+-	for (i = 0; i < VHOST_SCSI_MAX_VQ; i++)
+-		vhost_scsi_flush_vq(vs, i);
+-	vhost_work_dev_flush(&vs->dev);
+ 	vhost_work_dev_flush(&vs->dev);
+ 
+ 	/* Wait for all reqs issued before the flush to be finished */
 -- 
 1.8.3.1
