@@ -1,88 +1,153 @@
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Mon, 16 Nov 2020 13:38:24 +0000
-Subject: Re: [PATCH] iscsi target: fix cmd abort fabric stop race
-Message-Id: <4c55f623-9347-ead7-0f5b-6cf1f7687584@redhat.com>
+From: Mike Christie <michael.christie@oracle.com>
+Date: Thu, 12 Nov 2020 23:19:06 +0000
+Subject: [PATCH 06/10] vhost scsi: make SCSI cmd completion per vq
+Message-Id: <1605223150-10888-8-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1605318378-9269-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1605318378-9269-1-git-send-email-michael.christie@oracle.com>
+References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, virtualization@lists.linux-foundation.org
 
+In the last patches we are going to have a worker thread per IO vq.
+This patch separates the scsi cmd completion code paths so we can
+complete cmds based on their vq instead of having all cmds complete
+on the same worker thread.
 
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/vhost/scsi.c | 48 +++++++++++++++++++++++++-----------------------
+ 1 file changed, 25 insertions(+), 23 deletions(-)
 
-Dne 14. 11. 20 v 2:46 Mike Christie napsal(a):
-> Maurizio Lombardi <mlombard@redhat.com> found a race where the abort
-> and cmd stop paths can race as follows:
-> 
-> 1. thread1 runs iscsit_release_commands_from_conn and sets
-> CMD_T_FABRIC_STOP.
-> 2. thread2 runs iscsit_aborted_task and then does __iscsit_free_cmd. It
-> then returns from the aborted_task callout and we finish
-> target_handle_abort and do:
-> 
-> target_handle_abort -> transport_cmd_check_stop_to_fabric ->
-> lio_check_stop_free -> target_put_sess_cmd
-> 
-> The cmd is now freed.
-> 3. thread1 now finishes iscsit_release_commands_from_conn and runs
-> iscsit_free_cmd while accessing a command we just released.
-> 
-> In __target_check_io_state we check for CMD_T_FABRIC_STOP and set the
-> CMD_T_ABORTED if the driver is not cleaning up the cmd because of
-> a session shutdown. However, iscsit_release_commands_from_conn only
-> sets the CMD_T_FABRIC_STOP and does not check to see if the abort path
-> has claimed completion ownership of the command.
-> 
-> This adds a check in iscsit_release_commands_from_conn so only the
-> abort or fabric stop path cleanup the command.
-> 
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> 
-> ---
->  drivers/target/iscsi/iscsi_target.c | 17 +++++++++++++----
->  1 file changed, 13 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-> index f77e5ee..518fac4 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -483,8 +483,7 @@ int iscsit_queue_rsp(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
->  void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
->  {
->  	spin_lock_bh(&conn->cmd_lock);
-> -	if (!list_empty(&cmd->i_conn_node) &&
-> -	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
-> +	if (!list_empty(&cmd->i_conn_node))
->  		list_del_init(&cmd->i_conn_node);
->  	spin_unlock_bh(&conn->cmd_lock);
->  
-> @@ -4083,12 +4082,22 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
->  	spin_lock_bh(&conn->cmd_lock);
->  	list_splice_init(&conn->conn_cmd_list, &tmp_list);
->  
-> -	list_for_each_entry(cmd, &tmp_list, i_conn_node) {
-> +	list_for_each_entry_safe(cmd, cmd_tmp, &tmp_list, i_conn_node) {
->  		struct se_cmd *se_cmd = &cmd->se_cmd;
->  
->  		if (se_cmd->se_tfo != NULL) {
->  			spin_lock_irq(&se_cmd->t_state_lock);
-> -			se_cmd->transport_state |= CMD_T_FABRIC_STOP;
-> +			if (se_cmd->transport_state & CMD_T_ABORTED) {
-> +				/*
-> +				 * LIO's abort path owns the cleanup for this,
-> +				 * so put it back on the list and let
-> +				 * aborted_task handle it.
-> +				 */
-> +				list_move_tail(&cmd->i_conn_node,
-> +					       &conn->conn_cmd_list);
-> +			} else {
-> +				se_cmd->transport_state |= CMD_T_FABRIC_STOP;
-> +			}
->  			spin_unlock_irq(&se_cmd->t_state_lock);
->  		}
->  	}
-> 
-
-Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 4725a08..2bbe1a8 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -178,6 +178,7 @@ enum {
+ 
+ struct vhost_scsi_virtqueue {
+ 	struct vhost_virtqueue vq;
++	struct vhost_scsi *vs;
+ 	/*
+ 	 * Reference counting for inflight reqs, used for flush operation. At
+ 	 * each time, one reference tracks new commands submitted, while we
+@@ -192,6 +193,9 @@ struct vhost_scsi_virtqueue {
+ 	struct vhost_scsi_cmd *scsi_cmds;
+ 	struct sbitmap scsi_tags;
+ 	int max_cmds;
++
++	struct vhost_work completion_work;
++	struct llist_head completion_list;
+ };
+ 
+ struct vhost_scsi {
+@@ -202,9 +206,6 @@ struct vhost_scsi {
+ 	struct vhost_dev dev;
+ 	struct vhost_scsi_virtqueue vqs[VHOST_SCSI_MAX_VQ];
+ 
+-	struct vhost_work vs_completion_work; /* cmd completion work item */
+-	struct llist_head vs_completion_list; /* cmd completion queue */
+-
+ 	struct vhost_work vs_event_work; /* evt injection work item */
+ 	struct llist_head vs_event_list; /* evt injection queue */
+ 
+@@ -380,10 +381,11 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
+ 	} else {
+ 		struct vhost_scsi_cmd *cmd = container_of(se_cmd,
+ 					struct vhost_scsi_cmd, tvc_se_cmd);
+-		struct vhost_scsi *vs = cmd->tvc_vhost;
++		struct vhost_scsi_virtqueue *svq =  container_of(cmd->tvc_vq,
++					struct vhost_scsi_virtqueue, vq);
+ 
+-		llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
+-		vhost_work_queue(&vs->dev, &vs->vs_completion_work);
++		llist_add(&cmd->tvc_completion_list, &svq->completion_list);
++		vhost_vq_work_queue(&svq->vq, &svq->completion_work);
+ 	}
+ }
+ 
+@@ -545,18 +547,17 @@ static void vhost_scsi_evt_work(struct vhost_work *work)
+  */
+ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ {
+-	struct vhost_scsi *vs = container_of(work, struct vhost_scsi,
+-					vs_completion_work);
+-	DECLARE_BITMAP(signal, VHOST_SCSI_MAX_VQ);
++	struct vhost_scsi_virtqueue *svq = container_of(work,
++				struct vhost_scsi_virtqueue, completion_work);
+ 	struct virtio_scsi_cmd_resp v_rsp;
+ 	struct vhost_scsi_cmd *cmd, *t;
+ 	struct llist_node *llnode;
+ 	struct se_cmd *se_cmd;
+ 	struct iov_iter iov_iter;
+-	int ret, vq;
++	bool signal = false;
++	int ret;
+ 
+-	bitmap_zero(signal, VHOST_SCSI_MAX_VQ);
+-	llnode = llist_del_all(&vs->vs_completion_list);
++	llnode = llist_del_all(&svq->completion_list);
+ 	llist_for_each_entry_safe(cmd, t, llnode, tvc_completion_list) {
+ 		se_cmd = &cmd->tvc_se_cmd;
+ 
+@@ -576,21 +577,16 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ 			      cmd->tvc_in_iovs, sizeof(v_rsp));
+ 		ret = copy_to_iter(&v_rsp, sizeof(v_rsp), &iov_iter);
+ 		if (likely(ret = sizeof(v_rsp))) {
+-			struct vhost_scsi_virtqueue *q;
++			signal = true;
+ 			vhost_add_used(cmd->tvc_vq, cmd->tvc_vq_desc, 0);
+-			q = container_of(cmd->tvc_vq, struct vhost_scsi_virtqueue, vq);
+-			vq = q - vs->vqs;
+-			__set_bit(vq, signal);
+ 		} else
+ 			pr_err("Faulted on virtio_scsi_cmd_resp\n");
+ 
+ 		vhost_scsi_release_cmd_res(se_cmd);
+ 	}
+ 
+-	vq = -1;
+-	while ((vq = find_next_bit(signal, VHOST_SCSI_MAX_VQ, vq + 1))
+-		< VHOST_SCSI_MAX_VQ)
+-		vhost_signal(&vs->dev, &vs->vqs[vq].vq);
++	if (signal)
++		vhost_signal(&svq->vs->dev, &svq->vq);
+ }
+ 
+ static struct vhost_scsi_cmd *
+@@ -1799,6 +1795,7 @@ static int vhost_scsi_set_features(struct vhost_scsi *vs, u64 features)
+ 
+ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ {
++	struct vhost_scsi_virtqueue *svq;
+ 	struct vhost_scsi *vs;
+ 	struct vhost_virtqueue **vqs;
+ 	int r = -ENOMEM, i;
+@@ -1814,7 +1811,6 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ 	if (!vqs)
+ 		goto err_vqs;
+ 
+-	vhost_work_init(&vs->vs_completion_work, vhost_scsi_complete_cmd_work);
+ 	vhost_work_init(&vs->vs_event_work, vhost_scsi_evt_work);
+ 
+ 	vs->vs_events_nr = 0;
+@@ -1825,8 +1821,14 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ 	vs->vqs[VHOST_SCSI_VQ_CTL].vq.handle_kick = vhost_scsi_ctl_handle_kick;
+ 	vs->vqs[VHOST_SCSI_VQ_EVT].vq.handle_kick = vhost_scsi_evt_handle_kick;
+ 	for (i = VHOST_SCSI_VQ_IO; i < VHOST_SCSI_MAX_VQ; i++) {
+-		vqs[i] = &vs->vqs[i].vq;
+-		vs->vqs[i].vq.handle_kick = vhost_scsi_handle_kick;
++		svq = &vs->vqs[i];
++
++		vqs[i] = &svq->vq;
++		svq->vs = vs;
++		init_llist_head(&svq->completion_list);
++		vhost_work_init(&svq->completion_work,
++				vhost_scsi_complete_cmd_work);
++		svq->vq.handle_kick = vhost_scsi_handle_kick;
+ 	}
+ 	vhost_dev_init(&vs->dev, vqs, VHOST_SCSI_MAX_VQ, UIO_MAXIOV,
+ 		       VHOST_SCSI_WEIGHT, 0, true, NULL);
+-- 
+1.8.3.1
