@@ -1,45 +1,32 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 12 Nov 2020 23:19:03 +0000
-Subject: [PATCH 03/10] vhost poll: fix coding style
-Message-Id: <1605223150-10888-5-git-send-email-michael.christie@oracle.com>
+Date: Thu, 12 Nov 2020 23:18:59 +0000
+Subject: [PATCH 00/10] vhost/qemu: thread per IO SCSI vq
+Message-Id: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
-References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
-In-Reply-To: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, virtualization@lists.linux-foundation.org
 
-We use like 3 coding styles in this struct. Switch to just tabs.
+The following kernel patches were made over Michael's vhost branch:
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
-Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
----
- drivers/vhost/vhost.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/mst/vhost.git/log/?h=vhost
 
-diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
-index 1ba8e81..575c818 100644
---- a/drivers/vhost/vhost.h
-+++ b/drivers/vhost/vhost.h
-@@ -28,12 +28,12 @@ struct vhost_work {
- /* Poll a file (eventfd or socket) */
- /* Note: there's nothing vhost specific about this structure. */
- struct vhost_poll {
--	poll_table                table;
--	wait_queue_head_t        *wqh;
--	wait_queue_entry_t              wait;
--	struct vhost_work	  work;
--	__poll_t		  mask;
--	struct vhost_dev	 *dev;
-+	poll_table		table;
-+	wait_queue_head_t	*wqh;
-+	wait_queue_entry_t	wait;
-+	struct vhost_work	work;
-+	__poll_t		mask;
-+	struct vhost_dev	*dev;
- };
- 
- void vhost_work_init(struct vhost_work *work, vhost_work_fn_t fn);
--- 
-1.8.3.1
+and the vhost-scsi bug fix patchset:
+
+https://lore.kernel.org/linux-scsi/20201112170008.GB1555653@stefanha-x1.localdomain/T/#t
+
+And the qemu patch was made over the qemu master branch.
+
+vhost-scsi currently supports multiple queues with the num_queues
+setting, but we end up with a setup where the guest's scsi/block
+layer can do a queue per vCPU and the layers below vhost can do
+a queue per CPU. vhost-scsi will then do a num_queue virtqueues,
+but all IO gets set on and completed on a single vhost-scsi thread.
+After 2 - 4 vqs this becomes a bottleneck.
+
+This patchset allows us to create a worker thread per IO vq, so we
+can better utilize multiple CPUs with the multiple queues. It
+implments Jason's suggestion to create the initial worker like
+normal, then create the extra workers for IO vqs with the
+VHOST_SET_VRING_ENABLE ioctl command added in this patchset.
