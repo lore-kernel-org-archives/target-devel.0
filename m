@@ -1,7 +1,7 @@
 From: Mike Christie <michael.christie@oracle.com>
-Date: Thu, 12 Nov 2020 23:19:08 +0000
-Subject: [PATCH 08/10] vhost: move msg_handler to new ops struct
-Message-Id: <1605223150-10888-10-git-send-email-michael.christie@oracle.com>
+Date: Thu, 12 Nov 2020 23:19:00 +0000
+Subject: [PATCH 1/1] qemu vhost scsi: add VHOST_SET_VRING_ENABLE support
+Message-Id: <1605223150-10888-2-git-send-email-michael.christie@oracle.com>
 List-Id: <target-devel.vger.kernel.org>
 References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
 In-Reply-To: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
@@ -10,111 +10,96 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com, virtualization@lists.linux-foundation.org
 
-The next patch adds a callout so drivers can perform some action when we
-get a VHOST_SET_VRING_ENABLE, so this patch moves the msg_handler callout
-to a new vhost_dev_ops struct just to keep all the callouts better
-organized.
+This patch made over the master branch allows the vhost-scsi
+driver to call into the kernel and tell it to enable/disable
+a virtqueue.
+
+The kernel patches included with this set, will create
+a worker per IO vq when multiple IO queues have been setup.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/vhost/vdpa.c  |  7 +++++--
- drivers/vhost/vhost.c | 10 ++++------
- drivers/vhost/vhost.h | 11 ++++++-----
- 3 files changed, 15 insertions(+), 13 deletions(-)
+ hw/scsi/vhost-scsi.c        |  6 ++++++
+ hw/virtio/vhost-backend.c   | 30 ++++++++++++++++++++++++++++++
+ linux-headers/linux/vhost.h |  1 +
+ 3 files changed, 37 insertions(+)
 
-diff --git a/drivers/vhost/vdpa.c b/drivers/vhost/vdpa.c
-index 2754f30..f271f42 100644
---- a/drivers/vhost/vdpa.c
-+++ b/drivers/vhost/vdpa.c
-@@ -802,6 +802,10 @@ static void vhost_vdpa_set_iova_range(struct vhost_vdpa *v)
- 	}
+diff --git a/hw/scsi/vhost-scsi.c b/hw/scsi/vhost-scsi.c
+index 4d70fa0..bbb2ba3 100644
+--- a/hw/scsi/vhost-scsi.c
++++ b/hw/scsi/vhost-scsi.c
+@@ -93,6 +93,12 @@ static int vhost_scsi_start(VHostSCSI *s)
+         return ret;
+     }
+ 
++    ret = vsc->dev.vhost_ops->vhost_set_vring_enable(&vsc->dev, 1);
++    if (ret) {
++        error_report("Error enabling vhost-scsi vqs %d", ret);
++        vhost_scsi_common_stop(vsc);
++    }
++
+     ret = vhost_scsi_set_endpoint(s);
+     if (ret < 0) {
+         error_report("Error setting vhost-scsi endpoint");
+diff --git a/hw/virtio/vhost-backend.c b/hw/virtio/vhost-backend.c
+index 88c8ecc..e190c8e 100644
+--- a/hw/virtio/vhost-backend.c
++++ b/hw/virtio/vhost-backend.c
+@@ -102,6 +102,35 @@ static int vhost_kernel_set_mem_table(struct vhost_dev *dev,
+     return vhost_kernel_call(dev, VHOST_SET_MEM_TABLE, mem);
  }
  
-+static struct vhost_dev_ops vdpa_dev_ops = {
-+	.msg_handler	= vhost_vdpa_process_iotlb_msg,
-+};
++static int vhost_kernel_set_vring_enable(struct vhost_dev *dev, int enable)
++{
++    struct vhost_vring_state s;
++    int i, ret;
 +
- static int vhost_vdpa_open(struct inode *inode, struct file *filep)
- {
- 	struct vhost_vdpa *v;
-@@ -829,8 +833,7 @@ static int vhost_vdpa_open(struct inode *inode, struct file *filep)
- 		vqs[i] = &v->vqs[i];
- 		vqs[i]->handle_kick = handle_vq_kick;
- 	}
--	vhost_dev_init(dev, vqs, nvqs, 0, 0, 0, false,
--		       vhost_vdpa_process_iotlb_msg);
-+	vhost_dev_init(dev, vqs, nvqs, 0, 0, 0, false, &vdpa_dev_ops);
- 
- 	dev->iotlb = vhost_iotlb_alloc(0, 0);
- 	if (!dev->iotlb) {
-diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index 6a6abfc..2f98b81 100644
---- a/drivers/vhost/vhost.c
-+++ b/drivers/vhost/vhost.c
-@@ -504,9 +504,7 @@ static size_t vhost_get_desc_size(struct vhost_virtqueue *vq,
- void vhost_dev_init(struct vhost_dev *dev,
- 		    struct vhost_virtqueue **vqs, int nvqs,
- 		    int iov_limit, int weight, int byte_weight,
--		    bool use_worker,
--		    int (*msg_handler)(struct vhost_dev *dev,
--				       struct vhost_iotlb_msg *msg))
-+		    bool use_worker, struct vhost_dev_ops *ops)
- {
- 	struct vhost_virtqueue *vq;
- 	int i;
-@@ -524,7 +522,7 @@ void vhost_dev_init(struct vhost_dev *dev,
- 	dev->weight = weight;
- 	dev->byte_weight = byte_weight;
- 	dev->use_worker = use_worker;
--	dev->msg_handler = msg_handler;
-+	dev->ops = ops;
- 	init_waitqueue_head(&dev->wait);
- 	INIT_LIST_HEAD(&dev->read_list);
- 	INIT_LIST_HEAD(&dev->pending_list);
-@@ -1328,8 +1326,8 @@ ssize_t vhost_chr_write_iter(struct vhost_dev *dev,
- 		goto done;
- 	}
- 
--	if (dev->msg_handler)
--		ret = dev->msg_handler(dev, &msg);
-+	if (dev->ops && dev->ops->msg_handler)
-+		ret = dev->ops->msg_handler(dev, &msg);
- 	else
- 		ret = vhost_process_iotlb_msg(dev, &msg);
- 	if (ret) {
-diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
-index 0837133..a293f48 100644
---- a/drivers/vhost/vhost.h
-+++ b/drivers/vhost/vhost.h
-@@ -156,6 +156,10 @@ struct vhost_msg_node {
-   struct list_head node;
- };
- 
-+struct vhost_dev_ops {
-+	int (*msg_handler)(struct vhost_dev *dev, struct vhost_iotlb_msg *msg);
-+};
++    s.num = 1;
++    for (i = 0; i < dev->nvqs; ++i) {
++        s.index = i;
 +
- struct vhost_dev {
- 	struct mm_struct *mm;
- 	struct mutex mutex;
-@@ -175,16 +179,13 @@ struct vhost_dev {
- 	int byte_weight;
- 	u64 kcov_handle;
- 	bool use_worker;
--	int (*msg_handler)(struct vhost_dev *dev,
--			   struct vhost_iotlb_msg *msg);
-+	struct vhost_dev_ops *ops;
- };
++        ret = vhost_kernel_call(dev, VHOST_SET_VRING_ENABLE, &s);
++        /* Ignore kernels that do not support the cmd */
++        if (ret = -EPERM)
++            return 0;
++        if (ret)
++            goto disable_vrings;
++    }
++
++    return 0;
++
++disable_vrings:
++    s.num = 0;
++    for (i--; i < dev->nvqs; ++i) {
++        s.index = i;
++        vhost_kernel_call(dev, VHOST_SET_VRING_ENABLE, &s);
++    }
++
++    return ret;
++}
++
+ static int vhost_kernel_set_vring_addr(struct vhost_dev *dev,
+                                        struct vhost_vring_addr *addr)
+ {
+@@ -302,6 +331,7 @@ static const VhostOps kernel_ops = {
+         .vhost_scsi_get_abi_version = vhost_kernel_scsi_get_abi_version,
+         .vhost_set_log_base = vhost_kernel_set_log_base,
+         .vhost_set_mem_table = vhost_kernel_set_mem_table,
++        .vhost_set_vring_enable = vhost_kernel_set_vring_enable,
+         .vhost_set_vring_addr = vhost_kernel_set_vring_addr,
+         .vhost_set_vring_endian = vhost_kernel_set_vring_endian,
+         .vhost_set_vring_num = vhost_kernel_set_vring_num,
+diff --git a/linux-headers/linux/vhost.h b/linux-headers/linux/vhost.h
+index 7523218..98dd919 100644
+--- a/linux-headers/linux/vhost.h
++++ b/linux-headers/linux/vhost.h
+@@ -70,6 +70,7 @@
+ #define VHOST_VRING_BIG_ENDIAN 1
+ #define VHOST_SET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x13, struct vhost_vring_state)
+ #define VHOST_GET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x14, struct vhost_vring_state)
++#define VHOST_SET_VRING_ENABLE _IOW(VHOST_VIRTIO, 0x15, struct vhost_vring_state)
  
- bool vhost_exceeds_weight(struct vhost_virtqueue *vq, int pkts, int total_len);
- void vhost_dev_init(struct vhost_dev *, struct vhost_virtqueue **vqs,
- 		    int nvqs, int iov_limit, int weight, int byte_weight,
--		    bool use_worker,
--		    int (*msg_handler)(struct vhost_dev *dev,
--				       struct vhost_iotlb_msg *msg));
-+		    bool use_worker, struct vhost_dev_ops *ops);
- long vhost_dev_set_owner(struct vhost_dev *dev);
- bool vhost_dev_has_owner(struct vhost_dev *dev);
- long vhost_dev_check_owner(struct vhost_dev *);
+ /* The following ioctls use eventfd file descriptors to signal and poll
+  * for events. */
 -- 
 1.8.3.1
