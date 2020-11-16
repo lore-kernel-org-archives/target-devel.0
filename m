@@ -1,82 +1,88 @@
-From: Mike Christie <michael.christie@oracle.com>
-Date: Sat, 14 Nov 2020 01:46:18 +0000
-Subject: [PATCH] iscsi target: fix cmd abort fabric stop race
-Message-Id: <1605318378-9269-1-git-send-email-michael.christie@oracle.com>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Mon, 16 Nov 2020 13:38:24 +0000
+Subject: Re: [PATCH] iscsi target: fix cmd abort fabric stop race
+Message-Id: <4c55f623-9347-ead7-0f5b-6cf1f7687584@redhat.com>
 List-Id: <target-devel.vger.kernel.org>
+References: <1605318378-9269-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <1605318378-9269-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: martin.petersen@oracle.com, mlombard@redhat.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+To: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 
-Maurizio Lombardi <mlombard@redhat.com> found a race where the abort
-and cmd stop paths can race as follows:
 
-1. thread1 runs iscsit_release_commands_from_conn and sets
-CMD_T_FABRIC_STOP.
-2. thread2 runs iscsit_aborted_task and then does __iscsit_free_cmd. It
-then returns from the aborted_task callout and we finish
-target_handle_abort and do:
 
-target_handle_abort -> transport_cmd_check_stop_to_fabric ->
-lio_check_stop_free -> target_put_sess_cmd
+Dne 14. 11. 20 v 2:46 Mike Christie napsal(a):
+> Maurizio Lombardi <mlombard@redhat.com> found a race where the abort
+> and cmd stop paths can race as follows:
+> 
+> 1. thread1 runs iscsit_release_commands_from_conn and sets
+> CMD_T_FABRIC_STOP.
+> 2. thread2 runs iscsit_aborted_task and then does __iscsit_free_cmd. It
+> then returns from the aborted_task callout and we finish
+> target_handle_abort and do:
+> 
+> target_handle_abort -> transport_cmd_check_stop_to_fabric ->
+> lio_check_stop_free -> target_put_sess_cmd
+> 
+> The cmd is now freed.
+> 3. thread1 now finishes iscsit_release_commands_from_conn and runs
+> iscsit_free_cmd while accessing a command we just released.
+> 
+> In __target_check_io_state we check for CMD_T_FABRIC_STOP and set the
+> CMD_T_ABORTED if the driver is not cleaning up the cmd because of
+> a session shutdown. However, iscsit_release_commands_from_conn only
+> sets the CMD_T_FABRIC_STOP and does not check to see if the abort path
+> has claimed completion ownership of the command.
+> 
+> This adds a check in iscsit_release_commands_from_conn so only the
+> abort or fabric stop path cleanup the command.
+> 
+> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+> 
+> ---
+>  drivers/target/iscsi/iscsi_target.c | 17 +++++++++++++----
+>  1 file changed, 13 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+> index f77e5ee..518fac4 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -483,8 +483,7 @@ int iscsit_queue_rsp(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
+>  void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
+>  {
+>  	spin_lock_bh(&conn->cmd_lock);
+> -	if (!list_empty(&cmd->i_conn_node) &&
+> -	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
+> +	if (!list_empty(&cmd->i_conn_node))
+>  		list_del_init(&cmd->i_conn_node);
+>  	spin_unlock_bh(&conn->cmd_lock);
+>  
+> @@ -4083,12 +4082,22 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
+>  	spin_lock_bh(&conn->cmd_lock);
+>  	list_splice_init(&conn->conn_cmd_list, &tmp_list);
+>  
+> -	list_for_each_entry(cmd, &tmp_list, i_conn_node) {
+> +	list_for_each_entry_safe(cmd, cmd_tmp, &tmp_list, i_conn_node) {
+>  		struct se_cmd *se_cmd = &cmd->se_cmd;
+>  
+>  		if (se_cmd->se_tfo != NULL) {
+>  			spin_lock_irq(&se_cmd->t_state_lock);
+> -			se_cmd->transport_state |= CMD_T_FABRIC_STOP;
+> +			if (se_cmd->transport_state & CMD_T_ABORTED) {
+> +				/*
+> +				 * LIO's abort path owns the cleanup for this,
+> +				 * so put it back on the list and let
+> +				 * aborted_task handle it.
+> +				 */
+> +				list_move_tail(&cmd->i_conn_node,
+> +					       &conn->conn_cmd_list);
+> +			} else {
+> +				se_cmd->transport_state |= CMD_T_FABRIC_STOP;
+> +			}
+>  			spin_unlock_irq(&se_cmd->t_state_lock);
+>  		}
+>  	}
+> 
 
-The cmd is now freed.
-3. thread1 now finishes iscsit_release_commands_from_conn and runs
-iscsit_free_cmd while accessing a command we just released.
-
-In __target_check_io_state we check for CMD_T_FABRIC_STOP and set the
-CMD_T_ABORTED if the driver is not cleaning up the cmd because of
-a session shutdown. However, iscsit_release_commands_from_conn only
-sets the CMD_T_FABRIC_STOP and does not check to see if the abort path
-has claimed completion ownership of the command.
-
-This adds a check in iscsit_release_commands_from_conn so only the
-abort or fabric stop path cleanup the command.
-
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
-
----
- drivers/target/iscsi/iscsi_target.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index f77e5ee..518fac4 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -483,8 +483,7 @@ int iscsit_queue_rsp(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
- void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
- {
- 	spin_lock_bh(&conn->cmd_lock);
--	if (!list_empty(&cmd->i_conn_node) &&
--	    !(cmd->se_cmd.transport_state & CMD_T_FABRIC_STOP))
-+	if (!list_empty(&cmd->i_conn_node))
- 		list_del_init(&cmd->i_conn_node);
- 	spin_unlock_bh(&conn->cmd_lock);
- 
-@@ -4083,12 +4082,22 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
- 	spin_lock_bh(&conn->cmd_lock);
- 	list_splice_init(&conn->conn_cmd_list, &tmp_list);
- 
--	list_for_each_entry(cmd, &tmp_list, i_conn_node) {
-+	list_for_each_entry_safe(cmd, cmd_tmp, &tmp_list, i_conn_node) {
- 		struct se_cmd *se_cmd = &cmd->se_cmd;
- 
- 		if (se_cmd->se_tfo != NULL) {
- 			spin_lock_irq(&se_cmd->t_state_lock);
--			se_cmd->transport_state |= CMD_T_FABRIC_STOP;
-+			if (se_cmd->transport_state & CMD_T_ABORTED) {
-+				/*
-+				 * LIO's abort path owns the cleanup for this,
-+				 * so put it back on the list and let
-+				 * aborted_task handle it.
-+				 */
-+				list_move_tail(&cmd->i_conn_node,
-+					       &conn->conn_cmd_list);
-+			} else {
-+				se_cmd->transport_state |= CMD_T_FABRIC_STOP;
-+			}
- 			spin_unlock_irq(&se_cmd->t_state_lock);
- 		}
- 	}
--- 
-1.8.3.1
+Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
