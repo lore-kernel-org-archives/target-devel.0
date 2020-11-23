@@ -2,171 +2,190 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7A4CC63798
-	for <target-devel@archiver.kernel.org>; Mon, 23 Nov 2020 15:18:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B89AC64E8A
+	for <target-devel@archiver.kernel.org>; Mon, 23 Nov 2020 15:58:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 77E1420729
-	for <target-devel@archiver.kernel.org>; Mon, 23 Nov 2020 15:18:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F172021D40
+	for <target-devel@archiver.kernel.org>; Mon, 23 Nov 2020 15:58:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Xah1o01d"
+	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="tw2BKkTz";
+	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="tw2BKkTz"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732205AbgKWPSK (ORCPT
+        id S2389819AbgKWP6P (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 23 Nov 2020 10:18:10 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:58808 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1732197AbgKWPSJ (ORCPT
+        Mon, 23 Nov 2020 10:58:15 -0500
+Received: from bedivere.hansenpartnership.com ([96.44.175.130]:35000 "EHLO
+        bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1732564AbgKWP6L (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 23 Nov 2020 10:18:09 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1606144687;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Gjysr2TGm2BHd6PEXB4bmvN9WC4d9mZ2jNM8y3Hhwb0=;
-        b=Xah1o01dFT+wqRq3ggLLKE+OwXADT0/eqBLfkcnn6ExinElPaKu2efEQTYtZiNb06tFAsk
-        aB0onpYk7nNCtK14qYitHEauzlIcq4eAheWQNRiBdPcFXRIrgRsPZzwaIGNMfIHxGosNQm
-        EjIwmdjALgdlrnLoa7Y+jYMD1+vb90g=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-448-2YWNL0mxMYOzp4buz_w9-w-1; Mon, 23 Nov 2020 10:18:05 -0500
-X-MC-Unique: 2YWNL0mxMYOzp4buz_w9-w-1
-Received: by mail-wm1-f71.google.com with SMTP id g17so3933670wmg.1
-        for <target-devel@vger.kernel.org>; Mon, 23 Nov 2020 07:18:04 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=Gjysr2TGm2BHd6PEXB4bmvN9WC4d9mZ2jNM8y3Hhwb0=;
-        b=J32d+g7lztt/6iwxeSlq6y73oR8+dK2isOojt7Ku6mjvv6BjQz78YnmgVsXH+XMa+S
-         0R3b1vaB4j/2yG6OcblPf+o1gjng/DAHljNCEQD657RLpZggbymLa0BlCS0wDM7gQdB6
-         X4iQI9XFR7GKv+WZsvqdenP1qc4By5BN/D3GUieqe4JTYfpVqXEjqS8curQvY3p0G99l
-         M/2wPh3ANiGJ5sX/WlOdNQhcgSQwcXzrub3ljLkU5clATz+VtcYQyKS4OCKFHx2ARZ+l
-         xugZ8f012vkHB/uZNDp7OCgxqCtdubpYEk8fLkwBfvJ/B/ygGVnTn6/qa95BdJkuDnyx
-         p1Wg==
-X-Gm-Message-State: AOAM531obZYOjnnTOTTMsCkMg6k5XP6ByggwqMT8NT27psIe9ii7EICt
-        jZ/Gf7yypMal9FkYy3s/koF1FvoEU4gW3phKHH/1rgOYAWCDlCO4KsfUW/iu6P2/wYZQO+PtbsK
-        LqNw+q5ohWN1y86FRZS3wrsZq
-X-Received: by 2002:adf:e84e:: with SMTP id d14mr145421wrn.190.1606144683205;
-        Mon, 23 Nov 2020 07:18:03 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJy2R4lL1Mq2Y1aVC5dDdaeyjFkJP6dOyeHTSlEN3C3ieAvijxPn9ns3PNbleWjgoJ6rtHRlSg==
-X-Received: by 2002:adf:e84e:: with SMTP id d14mr145403wrn.190.1606144682981;
-        Mon, 23 Nov 2020 07:18:02 -0800 (PST)
-Received: from steredhat (host-79-17-248-175.retail.telecomitalia.it. [79.17.248.175])
-        by smtp.gmail.com with ESMTPSA id n4sm15266610wmc.30.2020.11.23.07.18.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Nov 2020 07:18:02 -0800 (PST)
-Date:   Mon, 23 Nov 2020 16:17:58 +0100
-From:   Stefano Garzarella <sgarzare@redhat.com>
-To:     Stefan Hajnoczi <stefanha@gmail.com>
-Cc:     Mike Christie <michael.christie@oracle.com>,
-        "Michael S. Tsirkin" <mst@redhat.com>,
-        Stefan Hajnoczi <stefanha@redhat.com>, fam <fam@euphon.net>,
-        linux-scsi <linux-scsi@vger.kernel.org>,
-        Jason Wang <jasowang@redhat.com>,
-        qemu-devel <qemu-devel@nongnu.org>,
-        Linux Virtualization <virtualization@lists.linux-foundation.org>,
-        target-devel <target-devel@vger.kernel.org>,
-        Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [PATCH 00/10] vhost/qemu: thread per IO SCSI vq
-Message-ID: <20201123151758.5bik46pu4aqrtmd5@steredhat>
-References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
- <20201117164043.GS131917@stefanha-x1.localdomain>
- <b3343762-bb11-b750-46ec-43b5556f2b8e@oracle.com>
- <20201118113117.GF182763@stefanha-x1.localdomain>
- <20201119094315-mutt-send-email-mst@kernel.org>
- <ceebdc90-3ffc-1563-ff85-12a848bcba18@oracle.com>
- <CAJSP0QUvSwX5NCPmfSODV_C+D41E21LZT=oXQ2PLc6baAsGGDQ@mail.gmail.com>
- <ffd88f0c-981e-a102-4b08-f29d6b9a0f71@oracle.com>
- <CAJSP0QUfqd=QNFa-RikH4dVcLmfcP-pYCwznP3W0zobYkM+KDw@mail.gmail.com>
- <CAJSP0QVu4P6c+kdFkhw1S_OEaj7B-eiDqFOVDxWAaSOcsAADrA@mail.gmail.com>
+        Mon, 23 Nov 2020 10:58:11 -0500
+Received: from localhost (localhost [127.0.0.1])
+        by bedivere.hansenpartnership.com (Postfix) with ESMTP id 82CCB12803A5;
+        Mon, 23 Nov 2020 07:58:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+        d=hansenpartnership.com; s=20151216; t=1606147090;
+        bh=lBjYTVUJkmNX+Ql1BcMOHCS5uLgrfuyir/PBRp4vAgY=;
+        h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
+        b=tw2BKkTzWzFWEQdrm6zgBKJtIh2PRfv5Mb0TfkjZKqSr5KeTmWZWgl8VEPx5No8bX
+         gdEQ1NYoCzrZ51ueWl3PIAwT19fSirwyiz4cqIKbNqhoqeMTMjHgs4jilQhkGLvH0x
+         +YA09wNIiuW9eCRS9chAzVTlxjJYgA69RXyn6sLU=
+Received: from bedivere.hansenpartnership.com ([127.0.0.1])
+        by localhost (bedivere.hansenpartnership.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id aM_gK-Y9XcvU; Mon, 23 Nov 2020 07:58:10 -0800 (PST)
+Received: from jarvis.int.hansenpartnership.com (unknown [IPv6:2601:600:8280:66d1::527])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by bedivere.hansenpartnership.com (Postfix) with ESMTPSA id 1690C12802D9;
+        Mon, 23 Nov 2020 07:58:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+        d=hansenpartnership.com; s=20151216; t=1606147090;
+        bh=lBjYTVUJkmNX+Ql1BcMOHCS5uLgrfuyir/PBRp4vAgY=;
+        h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
+        b=tw2BKkTzWzFWEQdrm6zgBKJtIh2PRfv5Mb0TfkjZKqSr5KeTmWZWgl8VEPx5No8bX
+         gdEQ1NYoCzrZ51ueWl3PIAwT19fSirwyiz4cqIKbNqhoqeMTMjHgs4jilQhkGLvH0x
+         +YA09wNIiuW9eCRS9chAzVTlxjJYgA69RXyn6sLU=
+Message-ID: <fc45750b6d0277c401015b7aa11e16cd15f32ab2.camel@HansenPartnership.com>
+Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
+From:   James Bottomley <James.Bottomley@HansenPartnership.com>
+To:     Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc:     Kees Cook <keescook@chromium.org>,
+        Jakub Kicinski <kuba@kernel.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        alsa-devel@alsa-project.org, amd-gfx@lists.freedesktop.org,
+        bridge@lists.linux-foundation.org, ceph-devel@vger.kernel.org,
+        cluster-devel@redhat.com, coreteam@netfilter.org,
+        devel@driverdev.osuosl.org, dm-devel@redhat.com,
+        drbd-dev@lists.linbit.com, dri-devel@lists.freedesktop.org,
+        GR-everest-linux-l2@marvell.com, GR-Linux-NIC-Dev@marvell.com,
+        intel-gfx@lists.freedesktop.org, intel-wired-lan@lists.osuosl.org,
+        keyrings@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+        linux-acpi@vger.kernel.org, linux-afs@lists.infradead.org,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        linux-arm-msm@vger.kernel.org,
+        linux-atm-general@lists.sourceforge.net,
+        linux-block@vger.kernel.org, linux-can@vger.kernel.org,
+        linux-cifs@vger.kernel.org,
+        Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+        linux-decnet-user@lists.sourceforge.net,
+        Ext4 Developers List <linux-ext4@vger.kernel.org>,
+        linux-fbdev@vger.kernel.org, linux-geode@lists.infradead.org,
+        linux-gpio@vger.kernel.org, linux-hams@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-i3c@lists.infradead.org,
+        linux-ide@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-input <linux-input@vger.kernel.org>,
+        linux-integrity@vger.kernel.org,
+        linux-mediatek@lists.infradead.org,
+        Linux Media Mailing List <linux-media@vger.kernel.org>,
+        linux-mmc@vger.kernel.org, Linux-MM <linux-mm@kvack.org>,
+        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
+        linux-rdma@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
+        linux-security-module@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-usb@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        linux-wireless <linux-wireless@vger.kernel.org>,
+        Network Development <netdev@vger.kernel.org>,
+        netfilter-devel@vger.kernel.org, nouveau@lists.freedesktop.org,
+        op-tee@lists.trustedfirmware.org, oss-drivers@netronome.com,
+        patches@opensource.cirrus.com, rds-devel@oss.oracle.com,
+        reiserfs-devel@vger.kernel.org, samba-technical@lists.samba.org,
+        selinux@vger.kernel.org, target-devel@vger.kernel.org,
+        tipc-discussion@lists.sourceforge.net,
+        usb-storage@lists.one-eyed-alien.net,
+        virtualization@lists.linux-foundation.org,
+        wcn36xx@lists.infradead.org,
+        "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
+        xen-devel@lists.xenproject.org, linux-hardening@vger.kernel.org,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Miguel Ojeda <ojeda@kernel.org>, Joe Perches <joe@perches.com>
+Date:   Mon, 23 Nov 2020 07:58:06 -0800
+In-Reply-To: <CANiq72m22Jb5_+62NnwX8xds2iUdWDMAqD8PZw9cuxdHd95W0A@mail.gmail.com>
+References: <cover.1605896059.git.gustavoars@kernel.org>
+         <20201120105344.4345c14e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+         <202011201129.B13FDB3C@keescook>
+         <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+         <202011220816.8B6591A@keescook>
+         <9b57fd4914b46f38d54087d75e072d6e947cb56d.camel@HansenPartnership.com>
+         <CANiq72nZrHWTA4_Msg6MP9snTyenC6-eGfD27CyfNSu7QoVZbw@mail.gmail.com>
+         <1c7d7fde126bc0acf825766de64bf2f9b888f216.camel@HansenPartnership.com>
+         <CANiq72m22Jb5_+62NnwX8xds2iUdWDMAqD8PZw9cuxdHd95W0A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <CAJSP0QVu4P6c+kdFkhw1S_OEaj7B-eiDqFOVDxWAaSOcsAADrA@mail.gmail.com>
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Fri, Nov 20, 2020 at 08:45:49AM +0000, Stefan Hajnoczi wrote:
->On Thu, Nov 19, 2020 at 5:08 PM Stefan Hajnoczi <stefanha@gmail.com> wrote:
->>
->> On Thu, Nov 19, 2020 at 4:43 PM Mike Christie
->> <michael.christie@oracle.com> wrote:
->> >
->> > On 11/19/20 10:24 AM, Stefan Hajnoczi wrote:
->> > > On Thu, Nov 19, 2020 at 4:13 PM Mike Christie
->> > > <michael.christie@oracle.com> wrote:
->> > >>
->> > >> On 11/19/20 8:46 AM, Michael S. Tsirkin wrote:
->> > >>> On Wed, Nov 18, 2020 at 11:31:17AM +0000, Stefan Hajnoczi wrote:
->> > > struct vhost_run_worker_info {
->> > >      struct timespec *timeout;
->> > >      sigset_t *sigmask;
->> > >
->> > >      /* List of virtqueues to process */
->> > >      unsigned nvqs;
->> > >      unsigned vqs[];
->> > > };
->> > >
->> > > /* This blocks until the timeout is reached, a signal is received, or
->> > > the vhost device is destroyed */
->> > > int ret = ioctl(vhost_fd, VHOST_RUN_WORKER, &info);
->> > >
->> > > As you can see, userspace isn't involved with dealing with the
->> > > requests. It just acts as a thread donor to the vhost driver.
->> > >
->> > > We would want the VHOST_RUN_WORKER calls to be infrequent to avoid the
->> > > penalty of switching into the kernel, copying in the arguments, etc.
->> >
->> > I didn't get this part. Why have the timeout? When the timeout expires,
->> > does userspace just call right back down to the kernel or does it do
->> > some sort of processing/operation?
->> >
->> > You could have your worker function run from that ioctl wait for a
->> > signal or a wake up call from the vhost_work/poll functions.
->>
->> An optional timeout argument is common in blocking interfaces like
->> poll(2), recvmmsg(2), etc.
->>
->> Although something can send a signal to the thread instead,
->> implementing that in an application is more awkward than passing a
->> struct timespec.
->>
->> Compared to other blocking calls we don't expect
->> ioctl(VHOST_RUN_WORKER) to return soon, so maybe the timeout will
->> rarely be used and can be dropped from the interface.
->>
->> BTW the code I posted wasn't a carefully thought out proposal :). The
->> details still need to be considered and I'm going to be offline for
->> the next week so maybe someone else can think it through in the
->> meantime.
->
->One final thought before I'm offline for a week. If
->ioctl(VHOST_RUN_WORKER) is specific to a single vhost device instance
->then it's hard to support poll-mode (busy waiting) workers because
->each device instance consumes a whole CPU. If we stick to an interface
->where the kernel manages the worker threads then it's easier to share
->workers between devices for polling.
+On Mon, 2020-11-23 at 15:19 +0100, Miguel Ojeda wrote:
+> On Sun, Nov 22, 2020 at 11:36 PM James Bottomley
+> <James.Bottomley@hansenpartnership.com> wrote:
+> > Well, it seems to be three years of someone's time plus the
+> > maintainer review time and series disruption of nearly a thousand
+> > patches.  Let's be conservative and assume the producer worked
+> > about 30% on the series and it takes about 5-10 minutes per patch
+> > to review, merge and for others to rework existing series.  So
+> > let's say it's cost a person year of a relatively junior engineer
+> > producing the patches and say 100h of review and application
+> > time.  The latter is likely the big ticket item because it's what
+> > we have in least supply in the kernel (even though it's 20x vs the
+> > producer time).
+> 
+> How are you arriving at such numbers? It is a total of ~200 trivial
+> lines.
 
-Agree, ioctl(VHOST_RUN_WORKER) is interesting and perhaps simplifies 
-thread management (pinning, etc.), but with kthread would be easier to 
-implement polling sharing worker with multiple devices.
+Well, I used git.  It says that as of today in Linus' tree we have 889
+patches related to fall throughs and the first series went in in
+october 2017 ... ignoring a couple of outliers back to February.
 
->
->I have CCed Stefano Garzarella, who is looking at similar designs for
->vDPA software device implementations.
+> > It's not about the risk of the changes it's about the cost of
+> > implementing them.  Even if you discount the producer time (which
+> > someone gets to pay for, and if I were the engineering manager, I'd
+> > be unhappy about), the review/merge/rework time is pretty
+> > significant in exchange for six minor bug fixes.  Fine, when a new
+> > compiler warning comes along it's certainly reasonable to see if we
+> > can benefit from it and the fact that the compiler people think
+> > it's worthwhile is enough evidence to assume this initially.  But
+> > at some point you have to ask whether that assumption is supported
+> > by the evidence we've accumulated over the time we've been using
+> > it.  And if the evidence doesn't support it perhaps it is time to
+> > stop the experiment.
+> 
+> Maintainers routinely review 1-line trivial patches, not to mention
+> internal API changes, etc.
 
-Thanks, Mike please can you keep me in CC for this work?
+We're also complaining about the inability to recruit maintainers:
 
-It's really interesting since I'll have similar issues to solve with 
-vDPA software device.
+https://www.theregister.com/2020/06/30/hard_to_find_linux_maintainers_says_torvalds/
 
-Thanks,
-Stefano
+And burn out:
+
+http://antirez.com/news/129
+
+The whole crux of your argument seems to be maintainers' time isn't
+important so we should accept all trivial patches ... I'm pushing back
+on that assumption in two places, firstly the valulessness of the time
+and secondly that all trivial patches are valuable.
+
+> If some company does not want to pay for that, that's fine, but they
+> don't get to be maintainers and claim `Supported`.
+
+What I'm actually trying to articulate is a way of measuring value of
+the patch vs cost ... it has nothing really to do with who foots the
+actual bill.
+
+One thesis I'm actually starting to formulate is that this continual
+devaluing of maintainers is why we have so much difficulty keeping and
+recruiting them.
+
+James
+
+
 
