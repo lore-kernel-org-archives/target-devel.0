@@ -4,36 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D666EC56202
-	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 15:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC94CC64E7B
+	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 15:42:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6D25E206CA
-	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 15:41:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 50A6B206CA
+	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 15:42:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="e6Xe9rEe"
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tkn/M+il"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730719AbgKYPky (ORCPT
+        id S1730647AbgKYPgb (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 25 Nov 2020 10:40:54 -0500
-Received: from mail.kernel.org ([198.145.29.99]:55226 "EHLO mail.kernel.org"
+        Wed, 25 Nov 2020 10:36:31 -0500
+Received: from mail.kernel.org ([198.145.29.99]:53788 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730910AbgKYPhI (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Wed, 25 Nov 2020 10:37:08 -0500
+        id S1730618AbgKYPg3 (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Wed, 25 Nov 2020 10:36:29 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id E178D221F8;
-        Wed, 25 Nov 2020 15:37:05 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 949B721D46;
+        Wed, 25 Nov 2020 15:36:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1606318626;
-        bh=vKN+smQs+O6NRO7xw/6qlFUKjZ99MLpoAhY7O11xeok=;
+        s=default; t=1606318588;
+        bh=pUGDZrd+Ioaup822M6QC2UlHABmuW71vc5EibKGl3Wk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=e6Xe9rEe1CNKwt62hov/qEp+pLQlVuAo0xTXWRavaVBnrbpCZFeNvlfzyz3Dwkr3U
-         +vlzDdEiuqbgJINVauRoFGYrzeJsQEaMmq7cSeIeqT0WIg4QsYpGWXwG3wfUvNj+JZ
-         bbv8kkpt004HV1cSHF1UOpLCz7a338uoXKt9f1kI=
+        b=Tkn/M+ilXVg81Snopv2/tL1RZ2uuIvYZRxOTxMySb7LmHoQQay4oa2+8+jwbxBh/M
+         C5eLpXM0ze31k1eNjTchR4D1v9MSk9uhlj5NFvVFKGiTmYChP2SVIpBNaG7Mv9r2bK
+         o6AIXpK9MqIhXVgnkNm3lSj+aHbOHAP0S+lQVpIY=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mike Christie <michael.christie@oracle.com>,
@@ -41,12 +41,12 @@ Cc:     Mike Christie <michael.christie@oracle.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 20/23] scsi: target: iscsi: Fix cmd abort fabric stop race
-Date:   Wed, 25 Nov 2020 10:36:35 -0500
-Message-Id: <20201125153638.810419-20-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.9 27/33] scsi: target: iscsi: Fix cmd abort fabric stop race
+Date:   Wed, 25 Nov 2020 10:35:44 -0500
+Message-Id: <20201125153550.810101-27-sashal@kernel.org>
 X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201125153638.810419-1-sashal@kernel.org>
-References: <20201125153638.810419-1-sashal@kernel.org>
+In-Reply-To: <20201125153550.810101-1-sashal@kernel.org>
+References: <20201125153550.810101-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -97,7 +97,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 13 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index bca183369ad8b..3403667a9592f 100644
+index 7b56fe9f10628..2e18ec42c7045 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
 @@ -483,8 +483,7 @@ EXPORT_SYMBOL(iscsit_queue_rsp);
@@ -110,7 +110,7 @@ index bca183369ad8b..3403667a9592f 100644
  		list_del_init(&cmd->i_conn_node);
  	spin_unlock_bh(&conn->cmd_lock);
  
-@@ -4082,12 +4081,22 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
+@@ -4083,12 +4082,22 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
  	spin_lock_bh(&conn->cmd_lock);
  	list_splice_init(&conn->conn_cmd_list, &tmp_list);
  
