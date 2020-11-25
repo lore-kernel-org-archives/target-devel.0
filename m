@@ -7,33 +7,33 @@ X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56B15C83016
-	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 15:40:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12808C6379D
+	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 15:40:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0216321D81
-	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 15:40:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9BE3C21D81
+	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 15:40:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="wtkBUuTC"
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="GyNjsHQ2"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731164AbgKYPhz (ORCPT
+        id S1731088AbgKYPhc (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 25 Nov 2020 10:37:55 -0500
-Received: from mail.kernel.org ([198.145.29.99]:55726 "EHLO mail.kernel.org"
+        Wed, 25 Nov 2020 10:37:32 -0500
+Received: from mail.kernel.org ([198.145.29.99]:55464 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731209AbgKYPhv (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Wed, 25 Nov 2020 10:37:51 -0500
+        id S1731077AbgKYPhb (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Wed, 25 Nov 2020 10:37:31 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id BE010221F7;
-        Wed, 25 Nov 2020 15:37:49 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 82089221F9;
+        Wed, 25 Nov 2020 15:37:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1606318670;
-        bh=0aG6pmoJmjNvoBa3rfNR2bzU5m8tJReV1TSDXab/2Yc=;
+        s=default; t=1606318650;
+        bh=xRhEKCxH1itKE1wlM/YR80gfrAOlSyTV8ixtllnBiPs=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=wtkBUuTCwiDiv4ybPtQNoC7BYftggrJJUW7nyqptgaa1Og6TQfSH0fvKVJ/gcwk0K
-         HNTFm3hUt3MIRD2ieJe13lJ8z+O5iLqLaTZ0nXPkPwgYLqbj4NYzjjtT8eYDBowI1c
-         YYysr5JQzbemUikHb9xyKGr0/kq8ajYeJAos28Qg=
+        b=GyNjsHQ2CCbEXzTlRkkK6YMhHEOxoeaJIvNEy9ZOZVNamQTqgRzFw2jkqnmjb9DdW
+         0bTPkXOxyTDWrZQVYZPly1qOxmf9/7JN5aKG0BmJBxHr1v2AkYEc8oCWccqdJjTOSh
+         74S5LzIL14RmIUChygFFPZgxgnEQOb4FRV+Qs5Hs=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mike Christie <michael.christie@oracle.com>,
@@ -41,12 +41,12 @@ Cc:     Mike Christie <michael.christie@oracle.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 11/12] scsi: target: iscsi: Fix cmd abort fabric stop race
-Date:   Wed, 25 Nov 2020 10:37:33 -0500
-Message-Id: <20201125153734.810826-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 13/15] scsi: target: iscsi: Fix cmd abort fabric stop race
+Date:   Wed, 25 Nov 2020 10:37:10 -0500
+Message-Id: <20201125153712.810655-13-sashal@kernel.org>
 X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201125153734.810826-1-sashal@kernel.org>
-References: <20201125153734.810826-1-sashal@kernel.org>
+In-Reply-To: <20201125153712.810655-1-sashal@kernel.org>
+References: <20201125153712.810655-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -97,10 +97,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 13 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index da80c03de6ea4..d9fcef82ddf59 100644
+index 2602b57936d4b..58ccded1be857 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -490,8 +490,7 @@ EXPORT_SYMBOL(iscsit_queue_rsp);
+@@ -492,8 +492,7 @@ EXPORT_SYMBOL(iscsit_queue_rsp);
  void iscsit_aborted_task(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
  {
  	spin_lock_bh(&conn->cmd_lock);
@@ -110,7 +110,7 @@ index da80c03de6ea4..d9fcef82ddf59 100644
  		list_del_init(&cmd->i_conn_node);
  	spin_unlock_bh(&conn->cmd_lock);
  
-@@ -4086,12 +4085,22 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
+@@ -4054,12 +4053,22 @@ static void iscsit_release_commands_from_conn(struct iscsi_conn *conn)
  	spin_lock_bh(&conn->cmd_lock);
  	list_splice_init(&conn->conn_cmd_list, &tmp_list);
  
