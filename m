@@ -2,31 +2,77 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-13.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_IN_DEF_DKIM_WL
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34615C8300F
-	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 21:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA3DBC64E7C
+	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 22:11:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D1B60206E0
-	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 21:33:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 50749206D9
+	for <target-devel@archiver.kernel.org>; Wed, 25 Nov 2020 22:11:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="L3KZpP3L"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732462AbgKYVdg (ORCPT
+        id S1733182AbgKYWJt (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 25 Nov 2020 16:33:36 -0500
-Received: from kvm5.telegraphics.com.au ([98.124.60.144]:38476 "EHLO
-        kvm5.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730364AbgKYVdc (ORCPT
+        Wed, 25 Nov 2020 17:09:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55474 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733184AbgKYWJm (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 25 Nov 2020 16:33:32 -0500
-Received: from localhost (localhost.localdomain [127.0.0.1])
-        by kvm5.telegraphics.com.au (Postfix) with ESMTP id 9789F29FB0;
-        Wed, 25 Nov 2020 16:33:24 -0500 (EST)
-Date:   Thu, 26 Nov 2020 08:33:24 +1100 (AEDT)
-From:   Finn Thain <fthain@telegraphics.com.au>
-To:     Nick Desaulniers <ndesaulniers@google.com>
-cc:     James Bottomley <James.Bottomley@hansenpartnership.com>,
+        Wed, 25 Nov 2020 17:09:42 -0500
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com [IPv6:2607:f8b0:4864:20::642])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D199C094240
+        for <target-devel@vger.kernel.org>; Wed, 25 Nov 2020 14:09:42 -0800 (PST)
+Received: by mail-pl1-x642.google.com with SMTP id bj5so99669plb.4
+        for <target-devel@vger.kernel.org>; Wed, 25 Nov 2020 14:09:42 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=/ob3FEJdYP5qhdHPeLajEb6PUDm9frxLF1mdXzRdH3M=;
+        b=L3KZpP3LXxZlW/DP5AmTnD4MuZ72/rcy+coOeUVeCNTiwrWtzoVQx/hBMoKUsqDMm0
+         Foet9vcyJsJZ2PSgueU+Q+MvDj0KUWyeWX5guwBWRMdbnXZ08cX56htqXhsZrxHUuRIn
+         vYFnIpmbgrasg1vSD5AH5hKwOy9NejMhVovtjBrzY+2P0ug3w3+5RlYsOk03C83VD9da
+         OdGtf9c6uotPHdYcmuyOqbnF5k3fP8Yo6l5eFDVR7n6m5okfFX1oHlXNOB3u6UsnrVGE
+         wa6MluYkHn1XOYZTDyrE2KQmcun7Qe6vVmhaYurLDnZVMQG/lFJsGakXcuEY3+Obie2U
+         RVfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=/ob3FEJdYP5qhdHPeLajEb6PUDm9frxLF1mdXzRdH3M=;
+        b=rFnHugRTN9agYJKi0ZIVYM33KaKrDfuUbtyEXOY8Hqf3EHyEEwhuIx7Boz9njsOQcJ
+         WoRE0pttNGx4UgfbqZvK8QXx6387eZM69cGF+CoZYwRJpPBE6717TSptgA5tVnc2vr28
+         iaZ4Wo50fhXbFn4nEyFUCW5ega2QhCPO81x7BstHXSS6u+bt/eaM7fe5D8Sut3pzzYyr
+         5vIKuq73e6YoIdm8CIdrRv5dxdceyoYKZbYFDyvf9ApD/UokZC2FhZpslb0JCmkx+IkV
+         fQiX8R5nAMx3m6tjvvhQKz7RBxFXurrYI/BNjfUw1lXTEIIT0fyGOIfMaoCf61eIlc8+
+         bPMA==
+X-Gm-Message-State: AOAM532W979U683Ecm+9ML1XQgg/C7WMbffL0OX4Z/69wquzWojrIWEI
+        OENGzoAT4ZXCbJAz8idD7gal6dpEv73hUXuiiHZTzg==
+X-Google-Smtp-Source: ABdhPJz8lLt/1COGEMpWkFDfyIK6h7HwbxIAa+xtHaAqLUfnjsVh22wexUgkVgdtXLczfRnuDI51yr8PXCWqKuZKul4=
+X-Received: by 2002:a17:902:c14a:b029:d8:dc05:d7ef with SMTP id
+ 10-20020a170902c14ab02900d8dc05d7efmr4885886plj.83.1606342180784; Wed, 25 Nov
+ 2020 14:09:40 -0800 (PST)
+MIME-Version: 1.0
+References: <202011201129.B13FDB3C@keescook> <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+ <202011220816.8B6591A@keescook> <9b57fd4914b46f38d54087d75e072d6e947cb56d.camel@HansenPartnership.com>
+ <ca071decb87cc7e905411423c05a48f9fd2f58d7.camel@perches.com>
+ <0147972a72bc13f3629de8a32dee6f1f308994b5.camel@HansenPartnership.com>
+ <d8d1e9add08cdd4158405e77762d4946037208f8.camel@perches.com>
+ <dbd2cb703ed9eefa7dde9281ea26ab0f7acc8afe.camel@HansenPartnership.com>
+ <20201123130348.GA3119@embeddedor> <8f5611bb015e044fa1c0a48147293923c2d904e4.camel@HansenPartnership.com>
+ <202011241327.BB28F12F6@keescook> <a841536fe65bb33f1c72ce2455a6eb47a0107565.camel@HansenPartnership.com>
+ <CAKwvOdkGBn7nuWTAqrORMeN1G+w3YwBfCqqaRD2nwvoAXKi=Aw@mail.gmail.com> <alpine.LNX.2.23.453.2011260750300.6@nippy.intranet>
+In-Reply-To: <alpine.LNX.2.23.453.2011260750300.6@nippy.intranet>
+From:   Nick Desaulniers <ndesaulniers@google.com>
+Date:   Wed, 25 Nov 2020 14:09:29 -0800
+Message-ID: <CAKwvOdna5Zj_O=sB7Q0jHZX0BJSaakX=ZyftwQ_3=L3-ZB54XQ@mail.gmail.com>
+Subject: Re: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for Clang
+To:     Finn Thain <fthain@telegraphics.com.au>
+Cc:     James Bottomley <James.Bottomley@hansenpartnership.com>,
         Kees Cook <keescook@chromium.org>,
         "Gustavo A. R. Silva" <gustavoars@kernel.org>,
         Joe Perches <joe@perches.com>,
@@ -82,40 +128,38 @@ cc:     James Bottomley <James.Bottomley@hansenpartnership.com>,
         linux-hardening@vger.kernel.org,
         Jonathan Cameron <Jonathan.Cameron@huawei.com>,
         Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
- Clang
-In-Reply-To: <CAKwvOdkGBn7nuWTAqrORMeN1G+w3YwBfCqqaRD2nwvoAXKi=Aw@mail.gmail.com>
-Message-ID: <alpine.LNX.2.23.453.2011260750300.6@nippy.intranet>
-References: <202011201129.B13FDB3C@keescook> <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com> <202011220816.8B6591A@keescook> <9b57fd4914b46f38d54087d75e072d6e947cb56d.camel@HansenPartnership.com> <ca071decb87cc7e905411423c05a48f9fd2f58d7.camel@perches.com>
- <0147972a72bc13f3629de8a32dee6f1f308994b5.camel@HansenPartnership.com> <d8d1e9add08cdd4158405e77762d4946037208f8.camel@perches.com> <dbd2cb703ed9eefa7dde9281ea26ab0f7acc8afe.camel@HansenPartnership.com> <20201123130348.GA3119@embeddedor>
- <8f5611bb015e044fa1c0a48147293923c2d904e4.camel@HansenPartnership.com> <202011241327.BB28F12F6@keescook> <a841536fe65bb33f1c72ce2455a6eb47a0107565.camel@HansenPartnership.com> <CAKwvOdkGBn7nuWTAqrORMeN1G+w3YwBfCqqaRD2nwvoAXKi=Aw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, 25 Nov 2020, Nick Desaulniers wrote:
+On Wed, Nov 25, 2020 at 1:33 PM Finn Thain <fthain@telegraphics.com.au> wrote:
+>
+> Or do you think that a codebase can somehow satisfy multiple checkers and
+> their divergent interpretations of the language spec?
 
-> So developers and distributions using Clang can't have 
-> -Wimplicit-fallthrough enabled because GCC is less strict (which has 
-> been shown in this thread to lead to bugs)?  We'd like to have nice 
-> things too, you know.
-> 
+Have we found any cases yet that are divergent? I don't think so.  It
+sounds to me like GCC's cases it warns for is a subset of Clang's.
+Having additional coverage with Clang then should ensure coverage for
+both.
 
-Apparently the GCC developers don't want you to have "nice things" either. 
-Do you think that the kernel should drop gcc in favour of clang?
-Or do you think that a codebase can somehow satisfy multiple checkers and 
-their divergent interpretations of the language spec?
+> > This is not a shiny new warning; it's already on for GCC and has existed
+> > in both compilers for multiple releases.
+> >
+>
+> Perhaps you're referring to the compiler feature that lead to the
+> ill-fated, tree-wide /* fallthrough */ patch series.
+>
+> When the ink dries on the C23 language spec and the implementations figure
+> out how to interpret it then sure, enforce the warning for new code -- the
+> cost/benefit analysis is straight forward. However, the case for patching
+> existing mature code is another story.
 
-> This is not a shiny new warning; it's already on for GCC and has existed 
-> in both compilers for multiple releases.
-> 
-
-Perhaps you're referring to the compiler feature that lead to the 
-ill-fated, tree-wide /* fallthrough */ patch series.
-
-When the ink dries on the C23 language spec and the implementations figure 
-out how to interpret it then sure, enforce the warning for new code -- the 
-cost/benefit analysis is straight forward. However, the case for patching 
-existing mature code is another story.
+I don't think we need to wait for the ink to dry on the C23 language
+spec to understand that implicit fallthrough is an obvious defect of
+the C language.  While the kernel is a mature codebase, it's not
+immune to bugs.  And its maturity has yet to slow its rapid pace of
+development.
+-- 
+Thanks,
+~Nick Desaulniers
