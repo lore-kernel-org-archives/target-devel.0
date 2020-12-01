@@ -4,108 +4,151 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFE8CC71156
-	for <target-devel@archiver.kernel.org>; Tue,  1 Dec 2020 08:22:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A51BC71156
+	for <target-devel@archiver.kernel.org>; Tue,  1 Dec 2020 11:40:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5CA54216C4
-	for <target-devel@archiver.kernel.org>; Tue,  1 Dec 2020 08:22:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E4DA32086A
+	for <target-devel@archiver.kernel.org>; Tue,  1 Dec 2020 11:40:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="0ugfFVtm"
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="xsE2iYZL"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387483AbgLAIWK (ORCPT
+        id S1730761AbgLALkM (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 1 Dec 2020 03:22:10 -0500
-Received: from mail.kernel.org ([198.145.29.99]:47644 "EHLO mail.kernel.org"
+        Tue, 1 Dec 2020 06:40:12 -0500
+Received: from mail.kernel.org ([198.145.29.99]:49758 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727192AbgLAIWH (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 1 Dec 2020 03:22:07 -0500
-Received: from embeddedor (187-162-31-110.static.axtel.net [187.162.31.110])
+        id S1728042AbgLALkM (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 1 Dec 2020 06:40:12 -0500
+Received: from coco.lan (ip5f5ad5d9.dynamic.kabel-deutschland.de [95.90.213.217])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 94ECB20659;
-        Tue,  1 Dec 2020 08:21:17 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 4FAA220770;
+        Tue,  1 Dec 2020 11:39:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1606810884;
-        bh=xHTFstOj6O/KMLPWIJ9livXkeh5E3cNJZoMEX1ICbl0=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=0ugfFVtmDEFz3qweRxNJGIbdlhHbJEbe+SPrGbc9I44gM+O6I2rVgrcZagGiPQlJe
-         qDa/e9cJY/n7rREFFqWQI6CYR7sTmaWJfiub5J4ReXH3L76qQfPF0XWoTZ+/KCqBa1
-         43uSa/AsDxhQJOFTJrlenu8ULt+S2HlexiyIiZjk=
-Date:   Tue, 1 Dec 2020 02:20:47 -0600
-From:   "Gustavo A. R. Silva" <gustavoars@kernel.org>
-To:     "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc:     linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-        amd-gfx@lists.freedesktop.org, bridge@lists.linux-foundation.org,
-        ceph-devel@vger.kernel.org, cluster-devel@redhat.com,
-        coreteam@netfilter.org, devel@driverdev.osuosl.org,
-        dm-devel@redhat.com, drbd-dev@tron.linbit.com,
-        dri-devel@lists.freedesktop.org, GR-everest-linux-l2@marvell.com,
-        GR-Linux-NIC-Dev@marvell.com, intel-gfx@lists.freedesktop.org,
-        intel-wired-lan@lists.osuosl.org, keyrings@vger.kernel.org,
-        linux1394-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org,
-        linux-afs@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org,
-        linux-atm-general@lists.sourceforge.net,
-        linux-block@vger.kernel.org, linux-can@vger.kernel.org,
-        linux-cifs@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-decnet-user@lists.sourceforge.net,
-        linux-ext4@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-geode@lists.infradead.org, linux-gpio@vger.kernel.org,
-        linux-hams@vger.kernel.org, linux-hwmon@vger.kernel.org,
-        linux-i3c@lists.infradead.org, linux-ide@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-integrity@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-media@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-mm@kvack.org,
-        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
-        linux-rdma@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-        linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
-        linux-security-module@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-usb@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-        netfilter-devel@vger.kernel.org, nouveau@lists.freedesktop.org,
-        op-tee@lists.trustedfirmware.org, oss-drivers@netronome.com,
-        patches@opensource.cirrus.com, rds-devel@oss.oracle.com,
-        reiserfs-devel@vger.kernel.org, samba-technical@lists.samba.org,
-        selinux@vger.kernel.org, target-devel@vger.kernel.org,
-        tipc-discussion@lists.sourceforge.net,
-        usb-storage@lists.one-eyed-alien.net,
-        virtualization@lists.linux-foundation.org,
-        wcn36xx@lists.infradead.org, x86@kernel.org,
-        xen-devel@lists.xenproject.org, linux-hardening@vger.kernel.org,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Nathan Chancellor <natechancellor@gmail.com>,
-        Miguel Ojeda <ojeda@kernel.org>, Joe Perches <joe@perches.com>,
-        Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Message-ID: <20201201082047.GA11832@embeddedor>
-References: <cover.1605896059.git.gustavoars@kernel.org>
- <yq1h7p6gjkk.fsf@ca-mkp.ca.oracle.com>
+        s=default; t=1606822771;
+        bh=PQ9EZbSMFKUHeX+XY1hPlkXxxs7DFScv3x/xqnCA6Ko=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=xsE2iYZLZhjhWy8fwKUBv5uNG5IGT6zeeytWsuNR2WK3hzRz4hCkWlmizxAWhYI68
+         oytsPRsNsd86jy/cEo1HdWQi/2upVYfHgs/LjEUEs97agRWt2Jp3aTsemdLpGBydY8
+         bHOmv7o38g/Uaw78EbGbuPnPg3VJR+3BIujLttHI=
+Date:   Tue, 1 Dec 2020 12:39:21 +0100
+From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To:     Jason Gunthorpe <jgg@nvidia.com>
+Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        =?UTF-8?B?SMOla29u?= Bugge <haakon.bugge@oracle.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Bart Van Assche <bvanassche@acm.org>,
+        Chuck Lever <chuck.lever@oracle.com>,
+        Danit Goldberg <danitg@mellanox.com>,
+        Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+        Divya Indi <divya.indi@oracle.com>,
+        Doug Ledford <dledford@redhat.com>,
+        Gal Pressman <galpress@amazon.com>,
+        Leon Romanovsky <leon@kernel.org>,
+        Maor Gottlieb <maorg@mellanox.com>,
+        Max Gurtovoy <mgurtovoy@nvidia.com>,
+        Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>,
+        Moni Shoua <monis@mellanox.com>,
+        "Or Gerlitz" <ogerlitz@mellanox.com>,
+        Parav Pandit <parav@mellanox.com>,
+        "Sagi Grimberg" <sagi@grimberg.me>,
+        Ursula Braun <ubraun@linux.ibm.com>,
+        Xi Wang <wangxi11@huawei.com>,
+        Yamin Friedman <yaminf@mellanox.com>,
+        <linux-kernel@vger.kernel.org>, <linux-rdma@vger.kernel.org>,
+        <target-devel@vger.kernel.org>
+Subject: Re: [PATCH v4 07/27] IB: fix kernel-doc markups
+Message-ID: <20201201123921.2009cbea@coco.lan>
+In-Reply-To: <20201123234542.GA142861@nvidia.com>
+References: <cover.1605521731.git.mchehab+huawei@kernel.org>
+        <4983a0c6fe5dbc2c779d2b5950a6f90f81a16d56.1605521731.git.mchehab+huawei@kernel.org>
+        <20201123234542.GA142861@nvidia.com>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <yq1h7p6gjkk.fsf@ca-mkp.ca.oracle.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Dec 01, 2020 at 12:52:27AM -0500, Martin K. Petersen wrote:
-> 
-> Gustavo,
-> 
-> > This series aims to fix almost all remaining fall-through warnings in
-> > order to enable -Wimplicit-fallthrough for Clang.
-> 
-> Applied 20-22,54,120-124 to 5.11/scsi-staging, thanks.
+Em Mon, 23 Nov 2020 19:45:42 -0400
+Jason Gunthorpe <jgg@nvidia.com> escreveu:
 
-Awesome! :)
+> On Mon, Nov 16, 2020 at 11:18:03AM +0100, Mauro Carvalho Chehab wrote:
+> 
+> > +/**
+> > + * ib_alloc_pd - Allocates an unused protection domain.
+> > + * @device: The device on which to allocate the protection domain.
+> > + * @flags: protection domain flags
+> > + *
+> > + * A protection domain object provides an association between QPs, shared
+> > + * receive queues, address handles, memory regions, and memory windows.
+> > + *
+> > + * Every PD has a local_dma_lkey which can be used as the lkey value for local
+> > + * memory operations.
+> > + */
+> >  #define ib_alloc_pd(device, flags) \
+> >  	__ib_alloc_pd((device), (flags), KBUILD_MODNAME)  
+> 
+> Why this hunk adding a completely new description in this patch?
 
-Thanks, Martin.
---
-Gustavo
+In order to document ib_alloc_pd().
+
+See, currently, verbs.c has this kernel-doc markup:
+
+	/**
+	 * ib_alloc_pd - Allocates an unused protection domain.
+	 * @device: The device on which to allocate the protection domain.
+	 * @flags: protection domain flags
+	 * @caller: caller's build-time module name
+	 *
+	 * A protection domain object provides an association between QPs, shared
+	 * receive queues, address handles, memory regions, and memory windows.
+	 *
+	 * Every PD has a local_dma_lkey which can be used as the lkey value for local
+	 * memory operations.
+	 */
+	struct ib_pd *__ib_alloc_pd(struct ib_device *device, unsigned int flags,
+	                const char *caller)
+
+Which doesn't actually work as expected, as kernel-doc will, instead,
+document __ib_alloc_pd():
+
+	$ ./scripts/kernel-doc -sphinx-version 3.1 -function ib_alloc_pd drivers/infiniband/core/verbs.c 
+	drivers/infiniband/core/verbs.c:1: warning: 'ib_alloc_pd' not found
+
+	$ ./scripts/kernel-doc -sphinx-version 3.1 -function __ib_alloc_pd drivers/infiniband/core/verbs.c 
+	.. c:function:: struct ib_pd * __ib_alloc_pd (struct ib_device *device, unsigned int flags, const char *caller)
+
+	   Allocates an unused protection domain.
+
+	**Parameters**
+
+	``struct ib_device *device``
+	  The device on which to allocate the protection domain.
+
+	``unsigned int flags``
+	  protection domain flags
+	
+	``const char *caller``
+	  caller's build-time module name
+
+	**Description**
+
+	A protection domain object provides an association between QPs, shared
+	receive queues, address handles, memory regions, and memory windows.
+
+	Every PD has a local_dma_lkey which can be used as the lkey value for local
+	memory operations.
+
+So, what this patch does is to fix the kernel-doc markup at verbs.c for
+it to reflect the function that it is documented, adding a new markup for
+ib_alloc_pd(), which is identical to __ib_alloc_pd(), except for the
+@caller field, which is set to KBUILD_MODNAME by this macro.
+
+Thanks,
+Mauro
