@@ -2,201 +2,263 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B15AC83014
-	for <target-devel@archiver.kernel.org>; Tue,  1 Dec 2020 14:11:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2021DC64E7B
+	for <target-devel@archiver.kernel.org>; Tue,  1 Dec 2020 17:45:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C4D42207FF
-	for <target-devel@archiver.kernel.org>; Tue,  1 Dec 2020 14:11:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ADC152151B
+	for <target-devel@archiver.kernel.org>; Tue,  1 Dec 2020 17:45:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="Q8Pq03hi"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="EqqwaJsp"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391652AbgLAOKw (ORCPT
+        id S2389020AbgLARpR (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 1 Dec 2020 09:10:52 -0500
-Received: from aserp2120.oracle.com ([141.146.126.78]:36918 "EHLO
-        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388604AbgLAOKu (ORCPT
+        Tue, 1 Dec 2020 12:45:17 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:53115 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S2388004AbgLARpR (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 1 Dec 2020 09:10:50 -0500
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
-        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B1Dt2KT119141;
-        Tue, 1 Dec 2020 14:09:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=corp-2020-01-29;
- bh=CVxJrJvszPiYRoVvo8QMoaANjq0rT1w3VAIVepGqitY=;
- b=Q8Pq03hifJp4hxcZYQuiJvbKTKZMKP2mLNTS1aHW6hAxlDpObu2xNteC6Yj/L36I1kmY
- WSfMJZMdSk8bN2J9+UmYiF9MWo5KvhVT37I7ctRf5KKEocNW4v8PFVCDeiU3k6pn404k
- Igra+V15xZpvhIpriUlAo6fac2mI985JVt4CqtU5vfkzzkfANqieFePUQJBzO6eRndXt
- r4RGB+aUeJDKgHUaSwwmUD5k/B0oZ1T+RFudNU+Upzz4yF4kbfdExpcaXwIzXbiJCqdd
- NFMbLYQpnYBf2dU4wooUhfeXNwTuWm/ESbR6RxVNN2eeS+ZfeOwZNtuQUXq4Dn72Z2fB vg== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
-        by aserp2120.oracle.com with ESMTP id 353egkjmec-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 01 Dec 2020 14:09:31 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
-        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B1Du5d4003800;
-        Tue, 1 Dec 2020 14:09:30 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by aserp3020.oracle.com with ESMTP id 3540ey0nww-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 01 Dec 2020 14:09:30 +0000
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0B1E8IaF039759;
-        Tue, 1 Dec 2020 14:09:29 GMT
-Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
-        by aserp3020.oracle.com with ESMTP id 3540ey0nvu-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 01 Dec 2020 14:09:29 +0000
-Received: from abhmp0010.oracle.com (abhmp0010.oracle.com [141.146.116.16])
-        by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 0B1E9NOp018011;
-        Tue, 1 Dec 2020 14:09:24 GMT
-Received: from kadam (/102.36.221.92)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Tue, 01 Dec 2020 06:09:23 -0800
-Date:   Tue, 1 Dec 2020 17:08:49 +0300
-From:   Dan Carpenter <dan.carpenter@oracle.com>
-To:     Nick Desaulniers <ndesaulniers@google.com>
-Cc:     Kees Cook <keescook@chromium.org>, alsa-devel@alsa-project.org,
-        linux-atm-general@lists.sourceforge.net,
-        reiserfs-devel@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-wireless <linux-wireless@vger.kernel.org>,
-        linux-fbdev@vger.kernel.org,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Nathan Chancellor <natechancellor@gmail.com>,
-        linux-ide@vger.kernel.org, dm-devel@redhat.com,
-        keyrings@vger.kernel.org, linux-mtd@lists.infradead.org,
-        GR-everest-linux-l2@marvell.com, wcn36xx@lists.infradead.org,
-        samba-technical@lists.samba.org, linux-i3c@lists.infradead.org,
-        linux1394-devel@lists.sourceforge.net,
-        linux-afs@lists.infradead.org,
-        usb-storage@lists.one-eyed-alien.net, drbd-dev@tron.linbit.com,
-        devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org,
-        rds-devel@oss.oracle.com, linux-scsi@vger.kernel.org,
-        linux-rdma@vger.kernel.org, oss-drivers@netronome.com,
-        bridge@lists.linux-foundation.org,
-        linux-security-module@vger.kernel.org,
-        amd-gfx list <amd-gfx@lists.freedesktop.org>,
-        linux-stm32@st-md-mailman.stormreply.com, cluster-devel@redhat.com,
-        linux-acpi@vger.kernel.org, coreteam@netfilter.org,
-        intel-wired-lan@lists.osuosl.org, linux-input@vger.kernel.org,
-        Miguel Ojeda <ojeda@kernel.org>,
-        Jakub Kicinski <kuba@kernel.org>, linux-ext4@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        selinux@vger.kernel.org,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        intel-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org,
-        linux-can@vger.kernel.org, linux-block@vger.kernel.org,
-        linux-gpio@vger.kernel.org, op-tee@lists.trustedfirmware.org,
-        linux-mediatek@lists.infradead.org, xen-devel@lists.xenproject.org,
-        nouveau@lists.freedesktop.org, linux-hams@vger.kernel.org,
-        ceph-devel@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        linux-hwmon@vger.kernel.org,
-        "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
-        linux-nfs@vger.kernel.org, GR-Linux-NIC-Dev@marvell.com,
-        tipc-discussion@lists.sourceforge.net,
-        Linux Memory Management List <linux-mm@kvack.org>,
-        Network Development <netdev@vger.kernel.org>,
-        linux-decnet-user@lists.sourceforge.net, linux-mmc@vger.kernel.org,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        linux-sctp@vger.kernel.org, linux-usb@vger.kernel.org,
-        netfilter-devel@vger.kernel.org,
-        "open list:HARDWARE RANDOM NUMBER GENERATOR CORE" 
-        <linux-crypto@vger.kernel.org>, patches@opensource.cirrus.com,
-        Joe Perches <joe@perches.com>, linux-integrity@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-Message-ID: <20201201140849.GH2767@kadam>
-References: <cover.1605896059.git.gustavoars@kernel.org>
- <20201120105344.4345c14e@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <202011201129.B13FDB3C@keescook>
- <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <202011220816.8B6591A@keescook>
- <CAKwvOdntVfXj2WRR5n6Kw7BfG7FdKpTeHeh5nPu5AzwVMhOHTg@mail.gmail.com>
+        Tue, 1 Dec 2020 12:45:17 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1606844630;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=knIDZSVvEYg05Fp1QEgiwa+zurWE4bXcDiX5a26vU3s=;
+        b=EqqwaJsp9yeCIOxirdeoIgBMWRgsPvRFdEL8vnJ+Yw7XKdPmB5qK9vkR9uMRgm3Ceou4gh
+        7MKu0IgGP2d922X8QmWDPRzJe3S/FLWMESjaAe9LZSNWYrdgs8sCsWvBp+gup9AGzfWjaU
+        Dtgd1/irlsFk95WdmdobU9OT9n8z5ZU=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-258-KXv7Gs4cP82CK0P_xSKa6g-1; Tue, 01 Dec 2020 12:43:48 -0500
+X-MC-Unique: KXv7Gs4cP82CK0P_xSKa6g-1
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com [10.5.11.16])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 425C61842164;
+        Tue,  1 Dec 2020 17:43:46 +0000 (UTC)
+Received: from localhost (ovpn-114-82.ams2.redhat.com [10.36.114.82])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 58BDC5C1B4;
+        Tue,  1 Dec 2020 17:43:39 +0000 (UTC)
+Date:   Tue, 1 Dec 2020 17:43:38 +0000
+From:   Stefan Hajnoczi <stefanha@redhat.com>
+To:     Stefano Garzarella <sgarzare@redhat.com>
+Cc:     "Michael S. Tsirkin" <mst@redhat.com>,
+        Stefan Hajnoczi <stefanha@gmail.com>,
+        Mike Christie <michael.christie@oracle.com>,
+        fam <fam@euphon.net>, linux-scsi <linux-scsi@vger.kernel.org>,
+        Jason Wang <jasowang@redhat.com>,
+        qemu-devel <qemu-devel@nongnu.org>,
+        Linux Virtualization <virtualization@lists.linux-foundation.org>,
+        target-devel <target-devel@vger.kernel.org>,
+        Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [PATCH 00/10] vhost/qemu: thread per IO SCSI vq
+Message-ID: <20201201174338.GB595829@stefanha-x1.localdomain>
+References: <20201118113117.GF182763@stefanha-x1.localdomain>
+ <20201119094315-mutt-send-email-mst@kernel.org>
+ <ceebdc90-3ffc-1563-ff85-12a848bcba18@oracle.com>
+ <CAJSP0QUvSwX5NCPmfSODV_C+D41E21LZT=oXQ2PLc6baAsGGDQ@mail.gmail.com>
+ <ffd88f0c-981e-a102-4b08-f29d6b9a0f71@oracle.com>
+ <CAJSP0QUfqd=QNFa-RikH4dVcLmfcP-pYCwznP3W0zobYkM+KDw@mail.gmail.com>
+ <CAJSP0QVu4P6c+kdFkhw1S_OEaj7B-eiDqFOVDxWAaSOcsAADrA@mail.gmail.com>
+ <20201120072802-mutt-send-email-mst@kernel.org>
+ <20201201125943.GE585157@stefanha-x1.localdomain>
+ <20201201134518.pwrggkmixpyro4sg@steredhat>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20201201134518.pwrggkmixpyro4sg@steredhat>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+Authentication-Results: relay.mimecast.com;
+        auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=stefanha@redhat.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="/WwmFnJnmDyWGHa4"
 Content-Disposition: inline
-In-Reply-To: <CAKwvOdntVfXj2WRR5n6Kw7BfG7FdKpTeHeh5nPu5AzwVMhOHTg@mail.gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9821 signatures=668682
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 bulkscore=0 suspectscore=0
- phishscore=0 mlxlogscore=999 lowpriorityscore=0 malwarescore=0
- priorityscore=1501 spamscore=0 impostorscore=0 clxscore=1015 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012010090
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Mon, Nov 23, 2020 at 05:32:51PM -0800, Nick Desaulniers wrote:
-> On Sun, Nov 22, 2020 at 8:17 AM Kees Cook <keescook@chromium.org> wrote:
-> >
-> > On Fri, Nov 20, 2020 at 11:51:42AM -0800, Jakub Kicinski wrote:
-> > > If none of the 140 patches here fix a real bug, and there is no change
-> > > to machine code then it sounds to me like a W=2 kind of a warning.
-> >
-> > FWIW, this series has found at least one bug so far:
-> > https://lore.kernel.org/lkml/CAFCwf11izHF=g1mGry1fE5kvFFFrxzhPSM6qKAO8gxSp=Kr_CQ@mail.gmail.com/
-> 
-> So looks like the bulk of these are:
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     break;
-> }
+--/WwmFnJnmDyWGHa4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This should not generate a warning.
+On Tue, Dec 01, 2020 at 02:45:18PM +0100, Stefano Garzarella wrote:
+> On Tue, Dec 01, 2020 at 12:59:43PM +0000, Stefan Hajnoczi wrote:
+> > On Fri, Nov 20, 2020 at 07:31:08AM -0500, Michael S. Tsirkin wrote:
+> > > On Fri, Nov 20, 2020 at 08:45:49AM +0000, Stefan Hajnoczi wrote:
+> > > > On Thu, Nov 19, 2020 at 5:08 PM Stefan Hajnoczi <stefanha@gmail.com=
+> wrote:
+> > > > >
+> > > > > On Thu, Nov 19, 2020 at 4:43 PM Mike Christie
+> > > > > <michael.christie@oracle.com> wrote:
+> > > > > >
+> > > > > > On 11/19/20 10:24 AM, Stefan Hajnoczi wrote:
+> > > > > > > On Thu, Nov 19, 2020 at 4:13 PM Mike Christie
+> > > > > > > <michael.christie@oracle.com> wrote:
+> > > > > > >>
+> > > > > > >> On 11/19/20 8:46 AM, Michael S. Tsirkin wrote:
+> > > > > > >>> On Wed, Nov 18, 2020 at 11:31:17AM +0000, Stefan Hajnoczi w=
+rote:
+> > > > > > > struct vhost_run_worker_info {
+> > > > > > >      struct timespec *timeout;
+> > > > > > >      sigset_t *sigmask;
+> > > > > > >
+> > > > > > >      /* List of virtqueues to process */
+> > > > > > >      unsigned nvqs;
+> > > > > > >      unsigned vqs[];
+> > > > > > > };
+> > > > > > >
+> > > > > > > /* This blocks until the timeout is reached, a signal is rece=
+ived, or
+> > > > > > > the vhost device is destroyed */
+> > > > > > > int ret =3D ioctl(vhost_fd, VHOST_RUN_WORKER, &info);
+> > > > > > >
+> > > > > > > As you can see, userspace isn't involved with dealing with th=
+e
+> > > > > > > requests. It just acts as a thread donor to the vhost driver.
+> > > > > > >
+> > > > > > > We would want the VHOST_RUN_WORKER calls to be infrequent to =
+avoid the
+> > > > > > > penalty of switching into the kernel, copying in the argument=
+s, etc.
+> > > > > >
+> > > > > > I didn't get this part. Why have the timeout? When the timeout =
+expires,
+> > > > > > does userspace just call right back down to the kernel or does =
+it do
+> > > > > > some sort of processing/operation?
+> > > > > >
+> > > > > > You could have your worker function run from that ioctl wait fo=
+r a
+> > > > > > signal or a wake up call from the vhost_work/poll functions.
+> > > > >
+> > > > > An optional timeout argument is common in blocking interfaces lik=
+e
+> > > > > poll(2), recvmmsg(2), etc.
+> > > > >
+> > > > > Although something can send a signal to the thread instead,
+> > > > > implementing that in an application is more awkward than passing =
+a
+> > > > > struct timespec.
+> > > > >
+> > > > > Compared to other blocking calls we don't expect
+> > > > > ioctl(VHOST_RUN_WORKER) to return soon, so maybe the timeout will
+> > > > > rarely be used and can be dropped from the interface.
+> > > > >
+> > > > > BTW the code I posted wasn't a carefully thought out proposal :).=
+ The
+> > > > > details still need to be considered and I'm going to be offline f=
+or
+> > > > > the next week so maybe someone else can think it through in the
+> > > > > meantime.
+> > > >
+> > > > One final thought before I'm offline for a week. If
+> > > > ioctl(VHOST_RUN_WORKER) is specific to a single vhost device instan=
+ce
+> > > > then it's hard to support poll-mode (busy waiting) workers because
+> > > > each device instance consumes a whole CPU. If we stick to an interf=
+ace
+> > > > where the kernel manages the worker threads then it's easier to sha=
+re
+> > > > workers between devices for polling.
+> > >=20
+> > >=20
+> > > Yes that is the reason vhost did its own reason in the first place.
+> > >=20
+> > >=20
+> > > I am vaguely thinking about poll(2) or a similar interface,
+> > > which can wait for an event on multiple FDs.
+> >=20
+> > I can imagine how using poll(2) would work from a userspace perspective=
+,
+> > but on the kernel side I don't think it can be implemented cleanly.
+> > poll(2) is tied to the file_operations->poll() callback and
+> > read/write/error events. Not to mention there isn't a way to substitue
+> > the vhost worker thread function instead of scheduling out the current
+> > thread while waiting for poll fd events.
+> >=20
+> > But maybe ioctl(VHOST_WORKER_RUN) can do it:
+> >=20
+> >  struct vhost_run_worker_dev {
+> >      int vhostfd;      /* /dev/vhost-TYPE fd */
+> >      unsigned nvqs;    /* number of virtqueues in vqs[] */
+> >      unsigned vqs[];   /* virtqueues to process */
+> >  };
+> >=20
+> >  struct vhost_run_worker_info {
+> >       struct timespec *timeout;
+> >       sigset_t *sigmask;
+> >=20
+> >       unsigned ndevices;
+> >       struct vhost_run_worker_dev *devices[];
+> >  };
+> >=20
+> > In the simple case userspace sets ndevices to 1 and we just handle
+> > virtqueues for the current device.
+> >=20
+> > In the fancier shared worker thread case the userspace process has the
+> > vhost fds of all the devices it is processing and passes them to
+> > ioctl(VHOST_WORKER_RUN) via struct vhost_run_worker_dev elements.
+>=20
+> Which fd will be used for this IOCTL? One of the 'vhostfd' or we should
+> create a new /dev/vhost-workers (or something similar)?
+>=20
+> Maybe the new device will be cleaner and can be reused also for other stu=
+ff
+> (I'm thinking about vDPA software devices).
+>=20
+> >=20
+> > From a security perspective it means the userspace thread has access to
+> > all vhost devices (because it has their fds).
+> >=20
+> > I'm not sure how the mm is supposed to work. The devices might be
+> > associated with different userspace processes (guests) and therefore
+> > have different virtual memory.
+>=20
+> Maybe in this case we should do something similar to io_uring SQPOLL kthr=
+ead
+> where kthread_use_mm()/kthread_unuse_mm() is used to switch virtual memor=
+y
+> spaces.
+>=20
+> After writing, I saw that we already do it this in the vhost_worker() in
+> drivers/vhost/vhost.c
+>=20
+> >=20
+> > Just wanted to push this discussion along a little further. I'm buried
+> > under emails and probably wont be very active over the next few days.
+> >=20
+>=20
+> I think ioctl(VHOST_WORKER_RUN) might be the right way and also maybe the
+> least difficult one.
 
-> 
-> I have a patch that fixes those up for clang:
-> https://reviews.llvm.org/D91895
-> 
-> There's 3 other cases that don't quite match between GCC and Clang I
-> observe in the kernel:
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     goto y;
-> }
-> y:;
+Sending an ioctl API proposal email could help progress this discussion.
 
-This should generate a warning.
+Interesting questions:
+1. How to specify which virtqueues to process (Mike's use case)?
+2. How to process multiple devices?
 
-> 
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     return;
-> }
+Stefan
 
-Warn for this.
+--/WwmFnJnmDyWGHa4
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
-> 
-> switch (x) {
->   case 0:
->     ++x;
->   default:
->     ;
-> }
+iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAl/GgMoACgkQnKSrs4Gr
+c8hCoQf/SoerwKarSrCbMrILigfYpuYZc5i96I08ZMQHTdP2+lpWd0bn+y5JglIl
+dkket7paJtwxqGLPtyH3TZW3iO608L3tci9Mx/+tUBZLUBipTI9KqMPoseUvS/bQ
+kyBs7NFFuaLK+XUmaEy73JMY8dU6c/Xl9PC8F1j4FK6Yx+U25bK4M5cSzyZzR/T3
+AyroUbt9e9cu6e41wsgCMhQYzXG0rT6V+KUJBhtOWTZ8Oa1AFyiX1SoIaAWUfcgi
+b+RHSUhamjv87mb7jivsB/XFKDcyceL2LuRcL68UIlXt8rsZDGRmYCpHln9QMPIy
+fFXgjie3aGN5eVISirSwGny2nFGUfg==
+=jWcN
+-----END PGP SIGNATURE-----
 
-Don't warn for this.
+--/WwmFnJnmDyWGHa4--
 
-If adding a break statement changes the flow of the code then warn about
-potentially missing break statements, but if it doesn't change anything
-then don't warn about it.
-
-regards,
-dan carpenter
