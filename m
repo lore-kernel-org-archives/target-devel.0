@@ -2,110 +2,113 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-12.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E50E5C64E7B
-	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 14:50:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 731B1C64E7C
+	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 16:06:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 94EFE22203
-	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 14:50:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 12CD521D7A
+	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 16:06:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726158AbgLBOtu (ORCPT
+        id S1728132AbgLBQG1 (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 2 Dec 2020 09:49:50 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:48119 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727941AbgLBOtu (ORCPT
+        Wed, 2 Dec 2020 11:06:27 -0500
+Received: from aserp2130.oracle.com ([141.146.126.79]:50068 "EHLO
+        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728124AbgLBQG1 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 2 Dec 2020 09:49:50 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1606920504;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=3/ciYHLKJ3yILLDkyTRzHDrbddemmdv1ABt1jTeUwBY=;
-        b=cbxIcb2ZQ+QplGyxzL6us2gWxLd+CdRgVQ1d1sEqLqRh3BvLVhKXUv5G1HVYzKf1pOqKxC
-        IJtawwOo5rh4NTYaep+0IaITZzmQ/6CzOR1z2ZpTJoZNvhWNZHG0QzesvENeDDs0PalwqO
-        F+nCSveuR+gmUgDiOw6b5pbUW2w3PuI=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-7-D1PchtsSN9eOsqlRyAadYQ-1; Wed, 02 Dec 2020 09:48:21 -0500
-X-MC-Unique: D1PchtsSN9eOsqlRyAadYQ-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 86DBD185E48E;
-        Wed,  2 Dec 2020 14:48:20 +0000 (UTC)
-Received: from localhost (ovpn-114-255.ams2.redhat.com [10.36.114.255])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id F2C0C5D6BA;
-        Wed,  2 Dec 2020 14:48:16 +0000 (UTC)
-Date:   Wed, 2 Dec 2020 14:48:15 +0000
-From:   Stefan Hajnoczi <stefanha@redhat.com>
-To:     Mike Christie <michael.christie@oracle.com>
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        mst@redhat.com, virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 1/1 V2] vhost scsi: fix lun reset completion handling
-Message-ID: <20201202144815.GN655829@stefanha-x1.localdomain>
-References: <1605716857-4949-1-git-send-email-michael.christie@oracle.com>
-MIME-Version: 1.0
-In-Reply-To: <1605716857-4949-1-git-send-email-michael.christie@oracle.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
-Authentication-Results: relay.mimecast.com;
-        auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=stefanha@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="dPW7zu3hTOhZvCDO"
-Content-Disposition: inline
+        Wed, 2 Dec 2020 11:06:27 -0500
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B2G0mJm030523;
+        Wed, 2 Dec 2020 16:05:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to;
+ s=corp-2020-01-29; bh=xxcjt3mtG/KHaHQo8wbjGj0uXaf0aqSvVB1wzb68+XY=;
+ b=Ng6LiJvBxoTLeeEEscwn8EX4TpUHsrxSmJzWO4/rQ3wRS62vip44iU0QTVTJVqyjT8Yp
+ 1GIFZxWuNBNVVYZHgoli3rnLpLgUPo6ldW0PkjMhvci6CT8nDJu5AtmCdF+gFUG65qI5
+ WDsbJgUcGFsw29u7JQzgRF0Syvqa1i8YOuO3hpYxeeh0DaxbUleQVKsPxkiFNYGjcjse
+ qCbbc9u4WoL9rhf8Gk8QhpMYFIkaW8EnGise+pQlsnCb8YMxqFES5JmSOPJTNuwF0G0t
+ Z5d+qsVOIte6zvxL+wIWdIy3rdp1DCluR/OGeNLsYIgvWE3/8n1ZOiSgF+1gUT0vQOIZ 4g== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+        by aserp2130.oracle.com with ESMTP id 353c2b18gu-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Wed, 02 Dec 2020 16:05:05 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B2FaYLT105718;
+        Wed, 2 Dec 2020 16:05:05 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+        by userp3020.oracle.com with ESMTP id 3540aug246-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 02 Dec 2020 16:05:04 +0000
+Received: from abhmp0008.oracle.com (abhmp0008.oracle.com [141.146.116.14])
+        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 0B2G52hx017490;
+        Wed, 2 Dec 2020 16:05:02 GMT
+Received: from [20.15.0.5] (/73.88.28.6)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Wed, 02 Dec 2020 08:05:01 -0800
+Content-Type: text/plain;
+        charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.120.23.2.4\))
+Subject: Re: [PATCH 1/1] qemu vhost scsi: add VHOST_SET_VRING_ENABLE support
+From:   Michael Christie <michael.christie@oracle.com>
+In-Reply-To: <20201202045807-mutt-send-email-mst@kernel.org>
+Date:   Wed, 2 Dec 2020 10:05:00 -0600
+Cc:     stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        jasowang@redhat.com, pbonzini@redhat.com,
+        virtualization@lists.linux-foundation.org
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <62EE5A4E-E817-43FC-91B7-0B1050D034C7@oracle.com>
+References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
+ <1605223150-10888-2-git-send-email-michael.christie@oracle.com>
+ <20201202045807-mutt-send-email-mst@kernel.org>
+To:     "Michael S. Tsirkin" <mst@redhat.com>
+X-Mailer: Apple Mail (2.3608.120.23.2.4)
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9823 signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 bulkscore=0
+ phishscore=0 mlxscore=0 adultscore=0 malwarescore=0 suspectscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012020095
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9823 signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 lowpriorityscore=0
+ clxscore=1015 bulkscore=0 mlxlogscore=999 phishscore=0 malwarescore=0
+ spamscore=0 adultscore=0 mlxscore=0 priorityscore=1501 impostorscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2012020095
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
---dPW7zu3hTOhZvCDO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 18, 2020 at 10:27:37AM -0600, Mike Christie wrote:
-> vhost scsi owns the scsi se_cmd but lio frees the se_cmd->se_tmr
-> before calling release_cmd, so while with normal cmd completion we
-> can access the se_cmd from the vhost work, we can't do the same with
-> se_cmd->se_tmr. This has us copy the tmf response in
-> vhost_scsi_queue_tm_rsp to our internal vhost-scsi tmf struct for
-> when it gets sent to the guest from our worker thread.
+
+> On Dec 2, 2020, at 3:59 AM, Michael S. Tsirkin <mst@redhat.com> wrote:
 >=20
-> Fixes: Fixes: efd838fec17b ("vhost scsi: Add support for LUN resets.")
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> Acked-by: Stefan Hajnoczi <stefanha@redhat.com>
-> ---
+> On Thu, Nov 12, 2020 at 05:19:00PM -0600, Mike Christie wrote:
+>> diff --git a/linux-headers/linux/vhost.h =
+b/linux-headers/linux/vhost.h
+>> index 7523218..98dd919 100644
+>> --- a/linux-headers/linux/vhost.h
+>> +++ b/linux-headers/linux/vhost.h
+>> @@ -70,6 +70,7 @@
+>> #define VHOST_VRING_BIG_ENDIAN 1
+>> #define VHOST_SET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x13, struct =
+vhost_vring_state)
+>> #define VHOST_GET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x14, struct =
+vhost_vring_state)
+>> +#define VHOST_SET_VRING_ENABLE _IOW(VHOST_VIRTIO, 0x15, struct =
+vhost_vring_state)
 >=20
-> V2:
-> - Added fixes line.
->=20
->  drivers/vhost/scsi.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> OK so first we need the kernel patches, then update the header, then
+> we can apply the qemu patch.
 
-Acked-by: Stefan Hajnoczi <stefanha@redhat.com>
+Hey Michael,
 
-This will go through Michael Tsirkin or Martin K. Petersen's tree.
+Don=E2=80=99t waste any more of your time on this patch and the kernel =
+related ones.
 
---dPW7zu3hTOhZvCDO
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAl/HqS8ACgkQnKSrs4Gr
-c8jtgggAxim0I6O6jk2HCjqRjI0QXlKtp0ziC1scmHzQSibKHY+nJ5CiZ45ec5lV
-mZofBAD7UDhyo+nBTxZN1eTWsE42CPBEcicLX8ZmUCUfjtUtM1o7MumfdTJ0ezt2
-MtVi00JVN4AIrJYG74a9V7v/KCctNHoaCUCy/kXJYb++tuPFBFKWe2OuNncKVJe5
-f6QvCIHvdTAHDDnjz4HvVlJZLBOjzbGenPntQ6NxYFCm9Lsk1WyPJEQhxdUvfvBL
-wzbSC2Wzbqp7h06WXoQMZxTbFfl1sA4KnQM+aT1u+O54YCck7UoxnYo8sj9JzYqa
-g8+8MjtpZxwB3tmuKFcCEzE25ZHQ3g==
-=SZ59
------END PGP SIGNATURE-----
-
---dPW7zu3hTOhZvCDO--
-
+I=E2=80=99m working on the userspace initiated threading approach =
+discussed the other week.=
