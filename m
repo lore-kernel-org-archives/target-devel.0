@@ -2,239 +2,110 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1906C83012
-	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 10:36:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E50E5C64E7B
+	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 14:50:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9A9892222E
-	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 10:36:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 94EFE22203
+	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 14:50:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725885AbgLBKg4 (ORCPT
+        id S1726158AbgLBOtu (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 2 Dec 2020 05:36:56 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:38313 "EHLO
+        Wed, 2 Dec 2020 09:49:50 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:48119 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725971AbgLBKgz (ORCPT
+        by vger.kernel.org with ESMTP id S1727941AbgLBOtu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 2 Dec 2020 05:36:55 -0500
+        Wed, 2 Dec 2020 09:49:50 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1606905327;
+        s=mimecast20190719; t=1606920504;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=3biZU2ib5viPRJCou3JOHYRY94yDNXXShVi1+6C8pEw=;
-        b=IzQXJzBAjycUrhLr9xhHK2p2D74eiS8+5IVu5qzk6/+BnMf7xfXYKkboMIBCPQzYqotPOY
-        +QCitP+Xtg5hbCKgbmO3LEz12/rB23vLtpEixYyu8XPVr3+gs9sjX7V98L8VYRE4brqvIJ
-        DqIDbz+Jo4FLahwddY7FyWg2NLNWamU=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-198-NK_8b0xEMaW68F4er-GRwQ-1; Wed, 02 Dec 2020 05:35:26 -0500
-X-MC-Unique: NK_8b0xEMaW68F4er-GRwQ-1
-Received: by mail-wm1-f70.google.com with SMTP id a130so1964071wmf.0
-        for <target-devel@vger.kernel.org>; Wed, 02 Dec 2020 02:35:25 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=3biZU2ib5viPRJCou3JOHYRY94yDNXXShVi1+6C8pEw=;
-        b=aLHADIsmyHB+nCyAi+Uwv0xDjuRwW6TOEz9Ox9kOE7yHTNtsrrWEZw4M6IlNNIF4fB
-         jczJyXkcZ3svBvEty6ZE/pTNRj6lMvytPL/45nivGOI1/elpM8LrDys63IknD6NcwwsZ
-         J+bI/oAroSOdXX5OXYUAnu6HpkEVd2TyDrbWpJDXalDRTk5a+LXLv0SWg7vikXoVzrFN
-         cqBbEvVDRSZbq5RL4PxgZhCzPdN+cOtGfHtsqAd5il+HHxjZCBGSt43NMDhinAcFJFKO
-         tooq49g2d4SlUr4LKtKGHUVsQPYjigSGnEmXsYFCs+n7EKXk02cwkRUnvuj4DFCSmSrW
-         a4oQ==
-X-Gm-Message-State: AOAM533VztasvcPPnmcUV2fXS52wEGfsHcnn6mV/rSxtkNVP7vizWp0Z
-        kH/6HRXkOsPJo5OtQGf6UU0jdEifXfFdAhEX5TV1co5tFfsYVkuOZbzqzbxP7775Vw3RodTriOc
-        9OQXE7G2BMtszneQQ0QBIKWtO
-X-Received: by 2002:adf:e444:: with SMTP id t4mr2612652wrm.152.1606905324180;
-        Wed, 02 Dec 2020 02:35:24 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJy1G52zx/D6FTjkqg/WRk+lsbXo1JOGnu/Zs55bQdmcV/Xo+k5q5tdEbmGqxIbc8Io7T5XkVg==
-X-Received: by 2002:adf:e444:: with SMTP id t4mr2612627wrm.152.1606905323904;
-        Wed, 02 Dec 2020 02:35:23 -0800 (PST)
-Received: from steredhat (host-79-17-248-175.retail.telecomitalia.it. [79.17.248.175])
-        by smtp.gmail.com with ESMTPSA id n189sm1482761wmf.20.2020.12.02.02.35.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 02 Dec 2020 02:35:23 -0800 (PST)
-Date:   Wed, 2 Dec 2020 11:35:20 +0100
-From:   Stefano Garzarella <sgarzare@redhat.com>
-To:     Stefan Hajnoczi <stefanha@redhat.com>
-Cc:     "Michael S. Tsirkin" <mst@redhat.com>,
-        Stefan Hajnoczi <stefanha@gmail.com>,
-        Mike Christie <michael.christie@oracle.com>,
-        fam <fam@euphon.net>, linux-scsi <linux-scsi@vger.kernel.org>,
-        Jason Wang <jasowang@redhat.com>,
-        qemu-devel <qemu-devel@nongnu.org>,
-        Linux Virtualization <virtualization@lists.linux-foundation.org>,
-        target-devel <target-devel@vger.kernel.org>,
-        Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [PATCH 00/10] vhost/qemu: thread per IO SCSI vq
-Message-ID: <20201202103520.qpyzdzsqi3aw7fii@steredhat>
-References: <20201119094315-mutt-send-email-mst@kernel.org>
- <ceebdc90-3ffc-1563-ff85-12a848bcba18@oracle.com>
- <CAJSP0QUvSwX5NCPmfSODV_C+D41E21LZT=oXQ2PLc6baAsGGDQ@mail.gmail.com>
- <ffd88f0c-981e-a102-4b08-f29d6b9a0f71@oracle.com>
- <CAJSP0QUfqd=QNFa-RikH4dVcLmfcP-pYCwznP3W0zobYkM+KDw@mail.gmail.com>
- <CAJSP0QVu4P6c+kdFkhw1S_OEaj7B-eiDqFOVDxWAaSOcsAADrA@mail.gmail.com>
- <20201120072802-mutt-send-email-mst@kernel.org>
- <20201201125943.GE585157@stefanha-x1.localdomain>
- <20201201134518.pwrggkmixpyro4sg@steredhat>
- <20201201174338.GB595829@stefanha-x1.localdomain>
+        bh=3/ciYHLKJ3yILLDkyTRzHDrbddemmdv1ABt1jTeUwBY=;
+        b=cbxIcb2ZQ+QplGyxzL6us2gWxLd+CdRgVQ1d1sEqLqRh3BvLVhKXUv5G1HVYzKf1pOqKxC
+        IJtawwOo5rh4NTYaep+0IaITZzmQ/6CzOR1z2ZpTJoZNvhWNZHG0QzesvENeDDs0PalwqO
+        F+nCSveuR+gmUgDiOw6b5pbUW2w3PuI=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-7-D1PchtsSN9eOsqlRyAadYQ-1; Wed, 02 Dec 2020 09:48:21 -0500
+X-MC-Unique: D1PchtsSN9eOsqlRyAadYQ-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 86DBD185E48E;
+        Wed,  2 Dec 2020 14:48:20 +0000 (UTC)
+Received: from localhost (ovpn-114-255.ams2.redhat.com [10.36.114.255])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id F2C0C5D6BA;
+        Wed,  2 Dec 2020 14:48:16 +0000 (UTC)
+Date:   Wed, 2 Dec 2020 14:48:15 +0000
+From:   Stefan Hajnoczi <stefanha@redhat.com>
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        mst@redhat.com, virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 1/1 V2] vhost scsi: fix lun reset completion handling
+Message-ID: <20201202144815.GN655829@stefanha-x1.localdomain>
+References: <1605716857-4949-1-git-send-email-michael.christie@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <1605716857-4949-1-git-send-email-michael.christie@oracle.com>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+Authentication-Results: relay.mimecast.com;
+        auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=stefanha@redhat.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="dPW7zu3hTOhZvCDO"
 Content-Disposition: inline
-In-Reply-To: <20201201174338.GB595829@stefanha-x1.localdomain>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Dec 01, 2020 at 05:43:38PM +0000, Stefan Hajnoczi wrote:
->On Tue, Dec 01, 2020 at 02:45:18PM +0100, Stefano Garzarella wrote:
->> On Tue, Dec 01, 2020 at 12:59:43PM +0000, Stefan Hajnoczi wrote:
->> > On Fri, Nov 20, 2020 at 07:31:08AM -0500, Michael S. Tsirkin wrote:
->> > > On Fri, Nov 20, 2020 at 08:45:49AM +0000, Stefan Hajnoczi wrote:
->> > > > On Thu, Nov 19, 2020 at 5:08 PM Stefan Hajnoczi <stefanha@gmail.com> wrote:
->> > > > >
->> > > > > On Thu, Nov 19, 2020 at 4:43 PM Mike Christie
->> > > > > <michael.christie@oracle.com> wrote:
->> > > > > >
->> > > > > > On 11/19/20 10:24 AM, Stefan Hajnoczi wrote:
->> > > > > > > On Thu, Nov 19, 2020 at 4:13 PM Mike Christie
->> > > > > > > <michael.christie@oracle.com> wrote:
->> > > > > > >>
->> > > > > > >> On 11/19/20 8:46 AM, Michael S. Tsirkin wrote:
->> > > > > > >>> On Wed, Nov 18, 2020 at 11:31:17AM +0000, Stefan Hajnoczi wrote:
->> > > > > > > struct vhost_run_worker_info {
->> > > > > > >      struct timespec *timeout;
->> > > > > > >      sigset_t *sigmask;
->> > > > > > >
->> > > > > > >      /* List of virtqueues to process */
->> > > > > > >      unsigned nvqs;
->> > > > > > >      unsigned vqs[];
->> > > > > > > };
->> > > > > > >
->> > > > > > > /* This blocks until the timeout is reached, a signal is received, or
->> > > > > > > the vhost device is destroyed */
->> > > > > > > int ret = ioctl(vhost_fd, VHOST_RUN_WORKER, &info);
->> > > > > > >
->> > > > > > > As you can see, userspace isn't involved with dealing with the
->> > > > > > > requests. It just acts as a thread donor to the vhost driver.
->> > > > > > >
->> > > > > > > We would want the VHOST_RUN_WORKER calls to be infrequent to avoid the
->> > > > > > > penalty of switching into the kernel, copying in the arguments, etc.
->> > > > > >
->> > > > > > I didn't get this part. Why have the timeout? When the timeout expires,
->> > > > > > does userspace just call right back down to the kernel or does it do
->> > > > > > some sort of processing/operation?
->> > > > > >
->> > > > > > You could have your worker function run from that ioctl wait for a
->> > > > > > signal or a wake up call from the vhost_work/poll functions.
->> > > > >
->> > > > > An optional timeout argument is common in blocking interfaces like
->> > > > > poll(2), recvmmsg(2), etc.
->> > > > >
->> > > > > Although something can send a signal to the thread instead,
->> > > > > implementing that in an application is more awkward than passing a
->> > > > > struct timespec.
->> > > > >
->> > > > > Compared to other blocking calls we don't expect
->> > > > > ioctl(VHOST_RUN_WORKER) to return soon, so maybe the timeout will
->> > > > > rarely be used and can be dropped from the interface.
->> > > > >
->> > > > > BTW the code I posted wasn't a carefully thought out proposal 
->> > > > > :). The
->> > > > > details still need to be considered and I'm going to be offline for
->> > > > > the next week so maybe someone else can think it through in the
->> > > > > meantime.
->> > > >
->> > > > One final thought before I'm offline for a week. If
->> > > > ioctl(VHOST_RUN_WORKER) is specific to a single vhost device instance
->> > > > then it's hard to support poll-mode (busy waiting) workers because
->> > > > each device instance consumes a whole CPU. If we stick to an interface
->> > > > where the kernel manages the worker threads then it's easier to 
->> > > > share
->> > > > workers between devices for polling.
->> > >
->> > >
->> > > Yes that is the reason vhost did its own reason in the first place.
->> > >
->> > >
->> > > I am vaguely thinking about poll(2) or a similar interface,
->> > > which can wait for an event on multiple FDs.
->> >
->> > I can imagine how using poll(2) would work from a userspace perspective,
->> > but on the kernel side I don't think it can be implemented cleanly.
->> > poll(2) is tied to the file_operations->poll() callback and
->> > read/write/error events. Not to mention there isn't a way to substitue
->> > the vhost worker thread function instead of scheduling out the current
->> > thread while waiting for poll fd events.
->> >
->> > But maybe ioctl(VHOST_WORKER_RUN) can do it:
->> >
->> >  struct vhost_run_worker_dev {
->> >      int vhostfd;      /* /dev/vhost-TYPE fd */
->> >      unsigned nvqs;    /* number of virtqueues in vqs[] */
->> >      unsigned vqs[];   /* virtqueues to process */
->> >  };
->> >
->> >  struct vhost_run_worker_info {
->> >       struct timespec *timeout;
->> >       sigset_t *sigmask;
->> >
->> >       unsigned ndevices;
->> >       struct vhost_run_worker_dev *devices[];
->> >  };
->> >
->> > In the simple case userspace sets ndevices to 1 and we just handle
->> > virtqueues for the current device.
->> >
->> > In the fancier shared worker thread case the userspace process has the
->> > vhost fds of all the devices it is processing and passes them to
->> > ioctl(VHOST_WORKER_RUN) via struct vhost_run_worker_dev elements.
->>
->> Which fd will be used for this IOCTL? One of the 'vhostfd' or we should
->> create a new /dev/vhost-workers (or something similar)?
->>
->> Maybe the new device will be cleaner and can be reused also for other stuff
->> (I'm thinking about vDPA software devices).
->>
->> >
->> > From a security perspective it means the userspace thread has access to
->> > all vhost devices (because it has their fds).
->> >
->> > I'm not sure how the mm is supposed to work. The devices might be
->> > associated with different userspace processes (guests) and therefore
->> > have different virtual memory.
->>
->> Maybe in this case we should do something similar to io_uring SQPOLL kthread
->> where kthread_use_mm()/kthread_unuse_mm() is used to switch virtual memory
->> spaces.
->>
->> After writing, I saw that we already do it this in the vhost_worker() in
->> drivers/vhost/vhost.c
->>
->> >
->> > Just wanted to push this discussion along a little further. I'm buried
->> > under emails and probably wont be very active over the next few days.
->> >
->>
->> I think ioctl(VHOST_WORKER_RUN) might be the right way and also maybe the
->> least difficult one.
->
->Sending an ioctl API proposal email could help progress this 
->discussion.
->
->Interesting questions:
->1. How to specify which virtqueues to process (Mike's use case)?
->2. How to process multiple devices?
->
+--dPW7zu3hTOhZvCDO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Okay, I'll try to prepare a tentative proposal next week with that 
-questions in mind :-)
+On Wed, Nov 18, 2020 at 10:27:37AM -0600, Mike Christie wrote:
+> vhost scsi owns the scsi se_cmd but lio frees the se_cmd->se_tmr
+> before calling release_cmd, so while with normal cmd completion we
+> can access the se_cmd from the vhost work, we can't do the same with
+> se_cmd->se_tmr. This has us copy the tmf response in
+> vhost_scsi_queue_tm_rsp to our internal vhost-scsi tmf struct for
+> when it gets sent to the guest from our worker thread.
+>=20
+> Fixes: Fixes: efd838fec17b ("vhost scsi: Add support for LUN resets.")
+> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+> Acked-by: Stefan Hajnoczi <stefanha@redhat.com>
+> ---
+>=20
+> V2:
+> - Added fixes line.
+>=20
+>  drivers/vhost/scsi.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
-Thanks,
-Stefano
+Acked-by: Stefan Hajnoczi <stefanha@redhat.com>
+
+This will go through Michael Tsirkin or Martin K. Petersen's tree.
+
+--dPW7zu3hTOhZvCDO
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAl/HqS8ACgkQnKSrs4Gr
+c8jtgggAxim0I6O6jk2HCjqRjI0QXlKtp0ziC1scmHzQSibKHY+nJ5CiZ45ec5lV
+mZofBAD7UDhyo+nBTxZN1eTWsE42CPBEcicLX8ZmUCUfjtUtM1o7MumfdTJ0ezt2
+MtVi00JVN4AIrJYG74a9V7v/KCctNHoaCUCy/kXJYb++tuPFBFKWe2OuNncKVJe5
+f6QvCIHvdTAHDDnjz4HvVlJZLBOjzbGenPntQ6NxYFCm9Lsk1WyPJEQhxdUvfvBL
+wzbSC2Wzbqp7h06WXoQMZxTbFfl1sA4KnQM+aT1u+O54YCck7UoxnYo8sj9JzYqa
+g8+8MjtpZxwB3tmuKFcCEzE25ZHQ3g==
+=SZ59
+-----END PGP SIGNATURE-----
+
+--dPW7zu3hTOhZvCDO--
 
