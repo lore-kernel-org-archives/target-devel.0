@@ -2,113 +2,104 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 731B1C64E7C
-	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 16:06:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C49D0C71156
+	for <target-devel@archiver.kernel.org>; Thu,  3 Dec 2020 08:21:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 12CD521D7A
-	for <target-devel@archiver.kernel.org>; Wed,  2 Dec 2020 16:06:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B5A820BED
+	for <target-devel@archiver.kernel.org>; Thu,  3 Dec 2020 08:21:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728132AbgLBQG1 (ORCPT
+        id S2388379AbgLCIVt (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 2 Dec 2020 11:06:27 -0500
-Received: from aserp2130.oracle.com ([141.146.126.79]:50068 "EHLO
-        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728124AbgLBQG1 (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Wed, 2 Dec 2020 11:06:27 -0500
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
-        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B2G0mJm030523;
-        Wed, 2 Dec 2020 16:05:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to;
- s=corp-2020-01-29; bh=xxcjt3mtG/KHaHQo8wbjGj0uXaf0aqSvVB1wzb68+XY=;
- b=Ng6LiJvBxoTLeeEEscwn8EX4TpUHsrxSmJzWO4/rQ3wRS62vip44iU0QTVTJVqyjT8Yp
- 1GIFZxWuNBNVVYZHgoli3rnLpLgUPo6ldW0PkjMhvci6CT8nDJu5AtmCdF+gFUG65qI5
- WDsbJgUcGFsw29u7JQzgRF0Syvqa1i8YOuO3hpYxeeh0DaxbUleQVKsPxkiFNYGjcjse
- qCbbc9u4WoL9rhf8Gk8QhpMYFIkaW8EnGise+pQlsnCb8YMxqFES5JmSOPJTNuwF0G0t
- Z5d+qsVOIte6zvxL+wIWdIy3rdp1DCluR/OGeNLsYIgvWE3/8n1ZOiSgF+1gUT0vQOIZ 4g== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by aserp2130.oracle.com with ESMTP id 353c2b18gu-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 02 Dec 2020 16:05:05 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B2FaYLT105718;
-        Wed, 2 Dec 2020 16:05:05 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
-        by userp3020.oracle.com with ESMTP id 3540aug246-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 02 Dec 2020 16:05:04 +0000
-Received: from abhmp0008.oracle.com (abhmp0008.oracle.com [141.146.116.14])
-        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 0B2G52hx017490;
-        Wed, 2 Dec 2020 16:05:02 GMT
-Received: from [20.15.0.5] (/73.88.28.6)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Wed, 02 Dec 2020 08:05:01 -0800
-Content-Type: text/plain;
-        charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.120.23.2.4\))
-Subject: Re: [PATCH 1/1] qemu vhost scsi: add VHOST_SET_VRING_ENABLE support
-From:   Michael Christie <michael.christie@oracle.com>
-In-Reply-To: <20201202045807-mutt-send-email-mst@kernel.org>
-Date:   Wed, 2 Dec 2020 10:05:00 -0600
-Cc:     stefanha@redhat.com, qemu-devel@nongnu.org, fam@euphon.net,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        jasowang@redhat.com, pbonzini@redhat.com,
-        virtualization@lists.linux-foundation.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <62EE5A4E-E817-43FC-91B7-0B1050D034C7@oracle.com>
-References: <1605223150-10888-1-git-send-email-michael.christie@oracle.com>
- <1605223150-10888-2-git-send-email-michael.christie@oracle.com>
- <20201202045807-mutt-send-email-mst@kernel.org>
-To:     "Michael S. Tsirkin" <mst@redhat.com>
-X-Mailer: Apple Mail (2.3608.120.23.2.4)
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9823 signatures=668682
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 bulkscore=0
- phishscore=0 mlxscore=0 adultscore=0 malwarescore=0 suspectscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012020095
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9823 signatures=668682
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 lowpriorityscore=0
- clxscore=1015 bulkscore=0 mlxlogscore=999 phishscore=0 malwarescore=0
- spamscore=0 adultscore=0 mlxscore=0 priorityscore=1501 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012020095
+        Thu, 3 Dec 2020 03:21:49 -0500
+Received: from mta-02.yadro.com ([89.207.88.252]:59922 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S2388328AbgLCIVt (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Thu, 3 Dec 2020 03:21:49 -0500
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id EDAC5413A8;
+        Thu,  3 Dec 2020 08:21:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1606983666; x=
+        1608798067; bh=MmD9P7mah3e4vs5onyHpqWruAlxXsB+lYNcJktt3FLM=; b=g
+        ElJuAxevEYRY5lrBklXZPf4UdJxBfY0BBUMJR6SB+raxRxYG7VDsBY4XXOm0DlaQ
+        Fjm2UOo8qlHesOImYft1+t3TfbcMRikvsHu9bgrbN8gqed8o4JpnZM/y7dOHIvpW
+        021H39KnORzsjWjqfF9UAPtM7TFA9kDTiVTF3IYXng=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id jBmX92YdGIEs; Thu,  3 Dec 2020 11:21:06 +0300 (MSK)
+Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 96296412DF;
+        Thu,  3 Dec 2020 11:21:06 +0300 (MSK)
+Received: from localhost (172.17.204.63) by T-EXCH-03.corp.yadro.com
+ (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 3 Dec
+ 2020 11:21:05 +0300
+From:   Anastasia Kovaleva <a.kovaleva@yadro.com>
+To:     <martin.petersen@oracle.com>
+CC:     <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+        <linux@yadro.com>, Anastasia Kovaleva <a.kovaleva@yadro.com>
+Subject: [RESEND PATCH 0/3] scsi: target: Set correct residual data
+Date:   Thu, 3 Dec 2020 11:20:32 +0300
+Message-ID: <20201203082035.54566-1-a.kovaleva@yadro.com>
+X-Mailer: git-send-email 2.24.3 (Apple Git-128)
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [172.17.204.63]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+Hi Martin,
+Please apply the changes to 5.11/scsi-queue at your earliest
+convenience.
 
+The series changes the behavior of the target in regard to processing
+commands with overflow/underflow in accordance with the standarts.
 
-> On Dec 2, 2020, at 3:59 AM, Michael S. Tsirkin <mst@redhat.com> wrote:
->=20
-> On Thu, Nov 12, 2020 at 05:19:00PM -0600, Mike Christie wrote:
->> diff --git a/linux-headers/linux/vhost.h =
-b/linux-headers/linux/vhost.h
->> index 7523218..98dd919 100644
->> --- a/linux-headers/linux/vhost.h
->> +++ b/linux-headers/linux/vhost.h
->> @@ -70,6 +70,7 @@
->> #define VHOST_VRING_BIG_ENDIAN 1
->> #define VHOST_SET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x13, struct =
-vhost_vring_state)
->> #define VHOST_GET_VRING_ENDIAN _IOW(VHOST_VIRTIO, 0x14, struct =
-vhost_vring_state)
->> +#define VHOST_SET_VRING_ENABLE _IOW(VHOST_VIRTIO, 0x15, struct =
-vhost_vring_state)
->=20
-> OK so first we need the kernel patches, then update the header, then
-> we can apply the qemu patch.
+The target driver used to process the DMA_TO_DEVICE commands with
+residuals (in particular, WRITE command) incorrectly. The target
+response contained neither a residual count, nor an OVERFLOW/UNDERFLOW
+bit. Such behavior did not comply with the RFC 7143. Also the
+returned ASC and ASCQ were incorrect according to FCP-4,
+and residuals were not set for the 4Kn devices.
 
-Hey Michael,
+This patches fix the major inconsistances in processing these kind of
+commands.
 
-Don=E2=80=99t waste any more of your time on this patch and the kernel =
-related ones.
+This patch series has been tested with a modified libiscsi testing
+library.
+The link to the pull request:
+https://github.com/sahlberg/libiscsi/pull/345
 
-I=E2=80=99m working on the userspace initiated threading approach =
-discussed the other week.=
+Write10Residuals, Write12Residuals, Write16Residuals tests have passed.
+
+Thanks,
+Anastasia
+
+Anastasia Kovaleva (2):
+  scsi: target: core: Signal WRITE residuals
+  scsi: target: core: Change ASCQ for residual write
+
+Roman Bolshakov (1):
+  scsi: target: core: Set residuals for 4Kn devices
+
+ drivers/target/target_core_transport.c | 53 +++++++++++++-------------
+ include/target/target_core_base.h      |  1 +
+ 2 files changed, 28 insertions(+), 26 deletions(-)
+
+-- 
+2.24.3 (Apple Git-128)
+
