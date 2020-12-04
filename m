@@ -7,127 +7,127 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B6BC433FE
-	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 16:33:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 764A3C433FE
+	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 17:13:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 174F2229C4
-	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 16:33:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 402B122B40
+	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 17:13:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729311AbgLDQdn (ORCPT
+        id S1730928AbgLDRNj (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 4 Dec 2020 11:33:43 -0500
-Received: from aserp2120.oracle.com ([141.146.126.78]:36322 "EHLO
-        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726085AbgLDQdn (ORCPT
+        Fri, 4 Dec 2020 12:13:39 -0500
+Received: from aserp2130.oracle.com ([141.146.126.79]:37966 "EHLO
+        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730905AbgLDRNj (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 4 Dec 2020 11:33:43 -0500
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
-        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B4GTCKP178673;
-        Fri, 4 Dec 2020 16:32:59 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=subject : to :
+        Fri, 4 Dec 2020 12:13:39 -0500
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B4H9Euo064924;
+        Fri, 4 Dec 2020 17:12:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=subject : to : cc :
  references : from : message-id : date : mime-version : in-reply-to :
  content-type : content-transfer-encoding; s=corp-2020-01-29;
- bh=OdRo3BfsP6FJ3mlRU1YB0eBUSCCRQ7rMFsS3pO2KKdU=;
- b=LIh/FkWhUKDEQ13tdYojgRRx+j3a6BdW4JWkaqCu0KzppmTNZwTMJQXpb1GgvktkflHI
- MfGmkLdXazg/73nJn/f8lxdPBT5k59sqi4d/okERoOGlv699pSNxdVliR1qN3NY5RgjV
- l/OKRz/Bf0No5SlwrcR5qijbpnw8m+hwDfvXWFnLsLdx4be07AlxVmLMo/rvzFpV4tmF
- HJWLTca7/x6hHBQ1vAiib5g2CiD3DQH8TrSgPK09AH4NOuqfYV7sUlUHhU0BleWmNVMS
- ubcw5qNTKevZGkbpLUBgjRue6+xmVy1XwWyAHQHXCPs4zcMK7u1crKwS9AMGicdtdnqS MA== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
-        by aserp2120.oracle.com with ESMTP id 353egm405w-1
+ bh=z8vrJFmnHBre5s0X+Ha8ju5ZAxkwmLaUqRsNel02kvc=;
+ b=Tj//AQAH3OfkK8y2g8A1mplf8UvbCIG3BZYMDPZhfL39G5E6s6mXvJUOBlTjNR9TNxwY
+ CEv42ptjxyubCvHWdLOK7JqJds4KtG210Txx8cjzk35kvAw8RwzijJtWikLvYJkLA7tP
+ yH4ICmL9Aw9Rm+89K24vqz2Jb0349/N80xNbnC/fnAAOMnaGiEUm5PSf9AvhEB0WvMVH
+ VhX2lGojcITyIF7Jv1vAfFkWjSrm1/4Uq9EWK793EQd1h5bp6sfAKK8ujBFBlYPFCFBx
+ hQuKbR4fLP3hJohevh5c9dkTTPpXcjMgi1vqouSE1jLgdMk4gc7u2WxTnPWcJukwTrWG xw== 
+Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
+        by aserp2130.oracle.com with ESMTP id 353c2bca43-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Fri, 04 Dec 2020 16:32:58 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
-        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B4GUJc1085453;
-        Fri, 4 Dec 2020 16:32:58 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by aserp3020.oracle.com with ESMTP id 3540f3hkvq-1
+        Fri, 04 Dec 2020 17:12:54 +0000
+Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
+        by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B4H9UwK081250;
+        Fri, 4 Dec 2020 17:10:54 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+        by userp3030.oracle.com with ESMTP id 3540g3xtc5-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 04 Dec 2020 16:32:58 +0000
-Received: from abhmp0010.oracle.com (abhmp0010.oracle.com [141.146.116.16])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 0B4GWvJq014261;
-        Fri, 4 Dec 2020 16:32:57 GMT
+        Fri, 04 Dec 2020 17:10:54 +0000
+Received: from abhmp0011.oracle.com (abhmp0011.oracle.com [141.146.116.17])
+        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 0B4HAq5A031978;
+        Fri, 4 Dec 2020 17:10:53 GMT
 Received: from [20.15.0.5] (/73.88.28.6)
         by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Fri, 04 Dec 2020 08:32:57 -0800
-Subject: Re: [RFC PATCH 5/8] vhost: allow userspace to bind vqs to CPUs
-To:     Jason Wang <jasowang@redhat.com>, sgarzare@redhat.com,
-        stefanha@redhat.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, mst@redhat.com, pbonzini@redhat.com,
-        virtualization@lists.linux-foundation.org
+        with ESMTP ; Fri, 04 Dec 2020 09:10:52 -0800
+Subject: Re: [RFC PATCH 0/8] vhost: allow userspace to control vq cpu affinity
+To:     Stefano Garzarella <sgarzare@redhat.com>
+Cc:     stefanha@redhat.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com,
+        pbonzini@redhat.com, virtualization@lists.linux-foundation.org
 References: <1607068593-16932-1-git-send-email-michael.christie@oracle.com>
- <1607068593-16932-6-git-send-email-michael.christie@oracle.com>
- <4546ef72-da7c-df9e-53be-c937a5437436@redhat.com>
+ <20201204160651.7wlselx4jm6k66mb@steredhat>
 From:   Mike Christie <michael.christie@oracle.com>
-Message-ID: <30746f1c-ed8c-d2ae-9513-54fca8f52739@oracle.com>
-Date:   Fri, 4 Dec 2020 10:32:56 -0600
+Message-ID: <40b22c4a-f9db-1389-aed1-b3d33678cfda@oracle.com>
+Date:   Fri, 4 Dec 2020 11:10:51 -0600
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
  Gecko/20100101 Thunderbird/78.5.1
 MIME-Version: 1.0
-In-Reply-To: <4546ef72-da7c-df9e-53be-c937a5437436@redhat.com>
+In-Reply-To: <20201204160651.7wlselx4jm6k66mb@steredhat>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9825 signatures=668682
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 malwarescore=0 phishscore=0
- suspectscore=0 bulkscore=0 spamscore=0 adultscore=0 mlxlogscore=999
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 suspectscore=0
+ phishscore=0 mlxlogscore=999 adultscore=0 mlxscore=0 bulkscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012040097
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9824 signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 lowpriorityscore=0
+ clxscore=1015 bulkscore=0 mlxlogscore=999 phishscore=0 malwarescore=0
+ spamscore=0 adultscore=0 mlxscore=0 priorityscore=1501 impostorscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012040094
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9825 signatures=668682
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 bulkscore=0 suspectscore=0
- phishscore=0 mlxlogscore=999 lowpriorityscore=0 malwarescore=0
- priorityscore=1501 spamscore=0 impostorscore=0 clxscore=1015 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012040094
+ definitions=main-2012040097
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 12/4/20 2:09 AM, Jason Wang wrote:
+On 12/4/20 10:06 AM, Stefano Garzarella wrote:
+> Hi Mike,
 > 
-> On 2020/12/4 下午3:56, Mike Christie wrote:
->> +static long vhost_vring_set_cpu(struct vhost_dev *d, struct 
->> vhost_virtqueue *vq,
->> +                void __user *argp)
->> +{
->> +    struct vhost_vring_state s;
->> +    int ret = 0;
->> +
->> +    if (vq->private_data)
->> +        return -EBUSY;
->> +
->> +    if (copy_from_user(&s, argp, sizeof s))
->> +        return -EFAULT;
->> +
->> +    if (s.num == -1) {
->> +        vq->cpu = s.num;
->> +        return 0;
->> +    }
->> +
->> +    if (s.num >= nr_cpu_ids)
->> +        return -EINVAL;
->> +
->> +    if (!d->ops || !d->ops->get_workqueue)
->> +        return -EINVAL;
->> +
->> +    if (!d->wq)
->> +        d->wq = d->ops->get_workqueue();
->> +    if (!d->wq)
->> +        return -EINVAL;
->> +
->> +    vq->cpu = s.num;
->> +    return ret;
->> +}
+> On Fri, Dec 04, 2020 at 01:56:25AM -0600, Mike Christie wrote:
+>> These patches were made over mst's vhost branch.
+>>
+>> The following patches, made over mst's vhost branch, allow userspace
+>> to set each vq's cpu affinity. Currently, with cgroups the worker thread
+>> inherits the affinity settings, but we are at the mercy of the CPU
+>> scheduler for where the vq's IO will be executed on. This can result in
+>> the scheduler sometimes hammering a couple queues on the host instead of
+>> spreading it out like how the guest's app might have intended if it was
+>> mq aware.
+>>
+>> This version of the patches is not what you guys were talking about
+>> initially like with the interface that was similar to nbd's old
+>> (3.x kernel days) NBD_DO_IT ioctl where userspace calls down to the
+>> kernel and we run from that context. These patches instead just
+>> allow userspace to tell the kernel which CPU a vq should run on.
+>> We then use the kernel's workqueue code to handle the thread
+>> management.
 > 
+> I agree that reusing kernel's workqueue code would be a good strategy.
 > 
-> So one question here. Who is in charge of doing this set_cpu? Note 
-> that sched_setaffinity(2) requires CAP_SYS_NICE to work, so I wonder 
-> whether or not it's legal for unprivileged Qemu to do this.
+> One concern is how easy it is to implement an adaptive polling strategy 
+> using workqueues. From what I've seen, adding some polling of both 
+> backend and virtqueue helps to eliminate interrupts and reduce latency.
+> 
+Would the polling you need to do be similar to the vhost net poll code 
+like in vhost_net_busy_poll (different algorithm though)? But, we want 
+to be able to poll multiple devs/vqs from the same CPU right? Something 
+like:
 
+retry:
 
-I was having qemu do it when it's setting up the vqs since it had the 
-info there already.
+for each poller on CPU N
+	if poller has work
+		driver->run work fn
 
-Is it normally the tool that makes calls into qemu that does the 
-operations that require CAP_SYS_NICE? If so, then I see the interface 
-needs to be changed.
+if (poll limit hit)
+	return
+else
+	cpu_relax();
+goto retry:
+
+?
+
+If so, I had an idea for it. Let me send an additional patch on top of 
+this set.
