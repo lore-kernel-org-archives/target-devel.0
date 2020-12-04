@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-20.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D750DC1B0E3
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C715C1B0D9
 	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 07:57:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A39F322581
+	by mail.kernel.org (Postfix) with ESMTP id 502C722581
 	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 07:57:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728846AbgLDH5e (ORCPT
+        id S1728347AbgLDH5e (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
         Fri, 4 Dec 2020 02:57:34 -0500
-Received: from aserp2120.oracle.com ([141.146.126.78]:59638 "EHLO
+Received: from aserp2120.oracle.com ([141.146.126.78]:59624 "EHLO
         aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728858AbgLDH5c (ORCPT
+        with ESMTP id S1728846AbgLDH5c (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
         Fri, 4 Dec 2020 02:57:32 -0500
 Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
-        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B47oOOk026140;
-        Fri, 4 Dec 2020 07:56:49 GMT
+        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B47nBqo025401;
+        Fri, 4 Dec 2020 07:56:46 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : subject :
  date : message-id : in-reply-to : references; s=corp-2020-01-29;
- bh=0xHJTknsigptAmxtGR0ya6vv59PHoXzUKSgeLJA21UY=;
- b=h5PjlktXCjshlaCkwWhccoNo2v5p4yN+sAJNonajBM2D/xUjtvIH1cORvUBfL0gShGik
- NcRTYjZatO0QehOas6PsqApn2pJxjjuDzm5ZmhF+rE+1ogbr5saPamqjeDiqQszGE8Jt
- BJRdIh/fl0sCplHrPg+tdiqcHZl32y2PgHl+tVo9x4kzPE4jDXvnL+9hvBTkT7OumLjl
- gZPoF+RHmEUQEpbwxkwGT8vKmPi3Le7O5G9FqXxUkBHijExS+9ZCiLjwtk4C4ChmFpaN
- 5XY99n1Hb1TIf6tjYYjK7xP6hMKo6tgXA+KqdXA/BcfyiMvW7iGdtb7FS7zNoWSVtJXj 5A== 
+ bh=jOv9YPr2bcD4HPbNyC5GLOaqYbv61fg7/dPB67/jLhA=;
+ b=uLckWixRqiXLSR4IPj9ZB9qB8wXnNJD2MqCzhTqvj/gJoOvstHxqPImRghUl7w3+WMiu
+ 55cbWsjev10lBAqNLaCeDwmKYXGxaXk3NbGNfTQOv+/jljophF44zp2FXmPMbE10OXQh
+ zVHRHGDGLnNZar/R797Pjs6ap+MlA5J88jqXW69QnhhzZTLbb5PKcbTL6trJT581TK+u
+ V+y3Mnui+Pc8AMR03eRG9cFe0nWCnlyq4HiJby/awxYgWwDfg0+I8v11qEDWmLXG77vR
+ HGvy52yl5njGVXSKyo/bDTST0ir8BzgK7Tj31a+euMItEsXOAWK+3w8Owf97yUHKilN9 aw== 
 Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
-        by aserp2120.oracle.com with ESMTP id 353egm1u80-1
+        by aserp2120.oracle.com with ESMTP id 353egm1u7r-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Fri, 04 Dec 2020 07:56:49 +0000
+        Fri, 04 Dec 2020 07:56:46 +0000
 Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
-        by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B47pUvo142397;
-        Fri, 4 Dec 2020 07:56:48 GMT
+        by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B47pTK3142377;
+        Fri, 4 Dec 2020 07:56:45 GMT
 Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
-        by userp3030.oracle.com with ESMTP id 3540g37q72-1
+        by userp3030.oracle.com with ESMTP id 3540g37q2x-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 04 Dec 2020 07:56:48 +0000
+        Fri, 04 Dec 2020 07:56:45 +0000
 Received: from abhmp0012.oracle.com (abhmp0012.oracle.com [141.146.116.18])
-        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 0B47uldh007288;
-        Fri, 4 Dec 2020 07:56:47 GMT
+        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 0B47uipf007273;
+        Fri, 4 Dec 2020 07:56:44 GMT
 Received: from ol2.localdomain (/73.88.28.6)
         by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Thu, 03 Dec 2020 23:56:47 -0800
+        with ESMTP ; Thu, 03 Dec 2020 23:56:44 -0800
 From:   Mike Christie <michael.christie@oracle.com>
 To:     sgarzare@redhat.com, stefanha@redhat.com,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
         mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com,
         virtualization@lists.linux-foundation.org
-Subject: [RFC PATCH 8/8] vhost-scsi: hook vhost-scsi into vring set cpu support
-Date:   Fri,  4 Dec 2020 01:56:33 -0600
-Message-Id: <1607068593-16932-9-git-send-email-michael.christie@oracle.com>
+Subject: [RFC PATCH 3/8] vhost poll: fix coding style
+Date:   Fri,  4 Dec 2020 01:56:28 -0600
+Message-Id: <1607068593-16932-4-git-send-email-michael.christie@oracle.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1607068593-16932-1-git-send-email-michael.christie@oracle.com>
 References: <1607068593-16932-1-git-send-email-michael.christie@oracle.com>
@@ -76,90 +76,38 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-This hooks vhost-scsi into the vring set cpu ioctl support by
-just replacing it's existing workqueue use with the vhost
-support.
+We use like 3 coding styles in this struct. Switch to just tabs.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+Reviewed-by: Stefan Hajnoczi <stefanha@redhat.com>
 ---
- drivers/vhost/scsi.c | 28 +++++++++++++---------------
- 1 file changed, 13 insertions(+), 15 deletions(-)
+ drivers/vhost/vhost.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 8005a7f..29b139c 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -101,8 +101,6 @@ struct vhost_scsi_cmd {
- 	struct vhost_scsi_nexus *tvc_nexus;
- 	/* The TCM I/O descriptor that is accessed via container_of() */
- 	struct se_cmd tvc_se_cmd;
--	/* work item used for cmwq dispatch to vhost_scsi_submission_work() */
--	struct work_struct work;
- 	/* Copy of the incoming SCSI command descriptor block (CDB) */
- 	unsigned char tvc_cdb[VHOST_SCSI_MAX_CDB_SIZE];
- 	/* Sense buffer that will be mapped into outgoing status */
-@@ -778,10 +776,8 @@ static int vhost_scsi_to_tcm_attr(int attr)
- 	return TCM_SIMPLE_TAG;
- }
+diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
+index 1ba8e81..575c818 100644
+--- a/drivers/vhost/vhost.h
++++ b/drivers/vhost/vhost.h
+@@ -28,12 +28,12 @@ struct vhost_work {
+ /* Poll a file (eventfd or socket) */
+ /* Note: there's nothing vhost specific about this structure. */
+ struct vhost_poll {
+-	poll_table                table;
+-	wait_queue_head_t        *wqh;
+-	wait_queue_entry_t              wait;
+-	struct vhost_work	  work;
+-	__poll_t		  mask;
+-	struct vhost_dev	 *dev;
++	poll_table		table;
++	wait_queue_head_t	*wqh;
++	wait_queue_entry_t	wait;
++	struct vhost_work	work;
++	__poll_t		mask;
++	struct vhost_dev	*dev;
+ };
  
--static void vhost_scsi_submission_work(struct work_struct *work)
-+static void vhost_scsi_target_submit(struct vhost_scsi_cmd *cmd)
- {
--	struct vhost_scsi_cmd *cmd =
--		container_of(work, struct vhost_scsi_cmd, work);
- 	struct vhost_scsi_nexus *tv_nexus;
- 	struct se_cmd *se_cmd = &cmd->tvc_se_cmd;
- 	struct scatterlist *sg_ptr, *sg_prot_ptr = NULL;
-@@ -1128,14 +1124,7 @@ static u16 vhost_buf_to_lun(u8 *lun_buf)
- 		 * vhost_scsi_queue_data_in() and vhost_scsi_queue_status()
- 		 */
- 		cmd->tvc_vq_desc = vc.head;
--		/*
--		 * Dispatch cmd descriptor for cmwq execution in process
--		 * context provided by vhost_scsi_workqueue.  This also ensures
--		 * cmd is executed on the same kworker CPU as this vhost
--		 * thread to gain positive L2 cache locality effects.
--		 */
--		INIT_WORK(&cmd->work, vhost_scsi_submission_work);
--		queue_work(vhost_scsi_workqueue, &cmd->work);
-+		vhost_scsi_target_submit(cmd);
- 		ret = 0;
- err:
- 		/*
-@@ -1811,6 +1800,15 @@ static int vhost_scsi_set_features(struct vhost_scsi *vs, u64 features)
- 	return 0;
- }
- 
-+static struct workqueue_struct *vhost_scsi_get_workqueue(void)
-+{
-+	return vhost_scsi_workqueue;
-+}
-+
-+static struct vhost_dev_ops vhost_scsi_dev_ops = {
-+	.get_workqueue = vhost_scsi_get_workqueue,	
-+};
-+
- static int vhost_scsi_open(struct inode *inode, struct file *f)
- {
- 	struct vhost_scsi_virtqueue *svq;
-@@ -1849,7 +1847,7 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
- 		svq->vq.handle_kick = vhost_scsi_handle_kick;
- 	}
- 	vhost_dev_init(&vs->dev, vqs, VHOST_SCSI_MAX_VQ, UIO_MAXIOV,
--		       VHOST_SCSI_WEIGHT, 0, true, NULL);
-+		       VHOST_SCSI_WEIGHT, 0, true, &vhost_scsi_dev_ops);
- 
- 	vhost_scsi_init_inflight(vs, NULL);
- 
-@@ -2502,7 +2500,7 @@ static int __init vhost_scsi_init(void)
- 	 * Use our own dedicated workqueue for submitting I/O into
- 	 * target core to avoid contention within system_wq.
- 	 */
--	vhost_scsi_workqueue = alloc_workqueue("vhost_scsi", 0, 0);
-+	vhost_scsi_workqueue = alloc_workqueue("vhost_scsi", WQ_SYSFS, 0);
- 	if (!vhost_scsi_workqueue)
- 		goto out;
- 
+ void vhost_work_init(struct vhost_work *work, vhost_work_fn_t fn);
 -- 
 1.8.3.1
 
