@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-20.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E63ABC4167B
-	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 07:57:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C4BAC19425
+	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 07:57:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A4C2222581
-	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 07:57:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 286B022597
+	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 07:57:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728849AbgLDH5b (ORCPT
+        id S1728863AbgLDH5e (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 4 Dec 2020 02:57:31 -0500
-Received: from userp2130.oracle.com ([156.151.31.86]:43716 "EHLO
+        Fri, 4 Dec 2020 02:57:34 -0500
+Received: from userp2130.oracle.com ([156.151.31.86]:43802 "EHLO
         userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728746AbgLDH5b (ORCPT
+        with ESMTP id S1728347AbgLDH5b (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
         Fri, 4 Dec 2020 02:57:31 -0500
 Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
-        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B47ncq2001125;
-        Fri, 4 Dec 2020 07:56:46 GMT
+        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B47ntkq001242;
+        Fri, 4 Dec 2020 07:56:47 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : subject :
  date : message-id : in-reply-to : references; s=corp-2020-01-29;
- bh=cZyFI5n2A7L4LJEbKIRH1MmYalBJ/jDJniUTE4TPNew=;
- b=Ppv4m4l7cgFbVdP7wkoduSe53bWB30h3dJcYkb4ktZAQ7Io0rKDk28YhqwKyihjMiD3R
- gcl+lesvbuxQOHHpDZFcfokbTLFPqrjGbny8uupno4fsbPCwwMs56zkPjBkDkVk2mMvj
- CzOwM9CQrSJQLjRotwMfCTm9JnSpOoeliYXoL65yFeyMkRdHT9aScfA/3oQGyiM74PON
- YV+lZr4WqsWNm17tSYfI7rl2UACF1WddB1/ye1RGeg2qv88J1yP6D1YERVRItJwQRDa8
- AmJTCU5IgPcF8PJpx8rLewW57SrG2GQmBvM6PUjQHASe/2XRjTKV8TgDi8lk0AyiNWby OA== 
+ bh=An+U38odSam/BUq+3HljQRgG9dBVwi/ID120m0T7DWE=;
+ b=HFPSAT7Ffny8A9qMZhL55aWOOI+ApcAN/cm32Rja0YEzy5dcNv44Q23hy4+NPavrN2Zc
+ PqIO+VaUSjk2tlR+QD6bxZ9Ee1sXv7lQHIhD6dNEMRbpWXFPvppmFljyes//gVm2yvXD
+ atjZNIEtBNuIwtmoC7OqYAU0YZpXfR9afXYV2gjKeC9q22VtA1jBTw4xFH7f+PyurD3m
+ Rq0lyaFORNsg06vP885mLuk8emskNIScjqQHIujfSQJdg9piWqF0rO6C7d3mdPvS1WtK
+ 63fH8D/H8Z97Nrn3UWa3HNQL63XdZkAJJgpBZreiiB9A0pd3+ivOXqGeFAEmxWT86VKL nw== 
 Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
-        by userp2130.oracle.com with ESMTP id 353dyr1wtw-1
+        by userp2130.oracle.com with ESMTP id 353dyr1wu0-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Fri, 04 Dec 2020 07:56:46 +0000
+        Fri, 04 Dec 2020 07:56:47 +0000
 Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
-        by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B47oXHD066700;
-        Fri, 4 Dec 2020 07:56:45 GMT
+        by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B47oXHE066700;
+        Fri, 4 Dec 2020 07:56:46 GMT
 Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by aserp3030.oracle.com with ESMTP id 35404ryfsj-1
+        by aserp3030.oracle.com with ESMTP id 35404ryfsw-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 04 Dec 2020 07:56:45 +0000
+        Fri, 04 Dec 2020 07:56:46 +0000
 Received: from abhmp0012.oracle.com (abhmp0012.oracle.com [141.146.116.18])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 0B47ujlS015544;
-        Fri, 4 Dec 2020 07:56:45 GMT
+        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 0B47ukvc015553;
+        Fri, 4 Dec 2020 07:56:46 GMT
 Received: from ol2.localdomain (/73.88.28.6)
         by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Thu, 03 Dec 2020 23:56:45 -0800
+        with ESMTP ; Thu, 03 Dec 2020 23:56:46 -0800
 From:   Mike Christie <michael.christie@oracle.com>
 To:     sgarzare@redhat.com, stefanha@redhat.com,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
         mst@redhat.com, jasowang@redhat.com, pbonzini@redhat.com,
         virtualization@lists.linux-foundation.org
-Subject: [RFC PATCH 4/8] vhost: move msg_handler to new ops struct
-Date:   Fri,  4 Dec 2020 01:56:29 -0600
-Message-Id: <1607068593-16932-5-git-send-email-michael.christie@oracle.com>
+Subject: [RFC PATCH 6/8] vhost-scsi: make SCSI cmd completion per vq
+Date:   Fri,  4 Dec 2020 01:56:31 -0600
+Message-Id: <1607068593-16932-7-git-send-email-michael.christie@oracle.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1607068593-16932-1-git-send-email-michael.christie@oracle.com>
 References: <1607068593-16932-1-git-send-email-michael.christie@oracle.com>
@@ -76,111 +76,145 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-The next patch adds a callout so drivers can perform some action when we
-bind a vq to a cpu, so this patch moves the msg_handler callout to a new
-vhost_dev_ops struct just to keep all the callouts better organized.
+In the last patches we are going to allow userspace to bind a vq
+to specific CPUs. This patch separates the scsi cmd completion code
+paths so we can complete cmds based on their vq instead of having all
+cmds complete on the same CPU.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/vhost/vdpa.c  |  7 +++++--
- drivers/vhost/vhost.c | 10 ++++------
- drivers/vhost/vhost.h | 11 ++++++-----
- 3 files changed, 15 insertions(+), 13 deletions(-)
+ drivers/vhost/scsi.c | 48 +++++++++++++++++++++++++-----------------------
+ 1 file changed, 25 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/vhost/vdpa.c b/drivers/vhost/vdpa.c
-index ef688c8..1c8c2bf 100644
---- a/drivers/vhost/vdpa.c
-+++ b/drivers/vhost/vdpa.c
-@@ -844,6 +844,10 @@ static void vhost_vdpa_set_iova_range(struct vhost_vdpa *v)
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index 2ba1c19..08bc513 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -178,6 +178,7 @@ enum {
+ 
+ struct vhost_scsi_virtqueue {
+ 	struct vhost_virtqueue vq;
++	struct vhost_scsi *vs;
+ 	/*
+ 	 * Reference counting for inflight reqs, used for flush operation. At
+ 	 * each time, one reference tracks new commands submitted, while we
+@@ -192,6 +193,9 @@ struct vhost_scsi_virtqueue {
+ 	struct vhost_scsi_cmd *scsi_cmds;
+ 	struct sbitmap scsi_tags;
+ 	int max_cmds;
++
++	struct vhost_work completion_work;
++	struct llist_head completion_list;
+ };
+ 
+ struct vhost_scsi {
+@@ -202,9 +206,6 @@ struct vhost_scsi {
+ 	struct vhost_dev dev;
+ 	struct vhost_scsi_virtqueue vqs[VHOST_SCSI_MAX_VQ];
+ 
+-	struct vhost_work vs_completion_work; /* cmd completion work item */
+-	struct llist_head vs_completion_list; /* cmd completion queue */
+-
+ 	struct vhost_work vs_event_work; /* evt injection work item */
+ 	struct llist_head vs_event_list; /* evt injection queue */
+ 
+@@ -381,10 +382,11 @@ static void vhost_scsi_release_cmd(struct se_cmd *se_cmd)
+ 	} else {
+ 		struct vhost_scsi_cmd *cmd = container_of(se_cmd,
+ 					struct vhost_scsi_cmd, tvc_se_cmd);
+-		struct vhost_scsi *vs = cmd->tvc_vhost;
++		struct vhost_scsi_virtqueue *svq =  container_of(cmd->tvc_vq,
++					struct vhost_scsi_virtqueue, vq);
+ 
+-		llist_add(&cmd->tvc_completion_list, &vs->vs_completion_list);
+-		vhost_work_queue(&vs->dev, &vs->vs_completion_work);
++		llist_add(&cmd->tvc_completion_list, &svq->completion_list);
++		vhost_vq_work_queue(&svq->vq, &svq->completion_work);
  	}
  }
  
-+static struct vhost_dev_ops vdpa_dev_ops = {
-+	.msg_handler	= vhost_vdpa_process_iotlb_msg,
-+};
-+
- static int vhost_vdpa_open(struct inode *inode, struct file *filep)
+@@ -547,18 +549,17 @@ static void vhost_scsi_evt_work(struct vhost_work *work)
+  */
+ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
  {
- 	struct vhost_vdpa *v;
-@@ -871,8 +875,7 @@ static int vhost_vdpa_open(struct inode *inode, struct file *filep)
- 		vqs[i] = &v->vqs[i];
- 		vqs[i]->handle_kick = handle_vq_kick;
- 	}
--	vhost_dev_init(dev, vqs, nvqs, 0, 0, 0, false,
--		       vhost_vdpa_process_iotlb_msg);
-+	vhost_dev_init(dev, vqs, nvqs, 0, 0, 0, false, &vdpa_dev_ops);
+-	struct vhost_scsi *vs = container_of(work, struct vhost_scsi,
+-					vs_completion_work);
+-	DECLARE_BITMAP(signal, VHOST_SCSI_MAX_VQ);
++	struct vhost_scsi_virtqueue *svq = container_of(work,
++				struct vhost_scsi_virtqueue, completion_work);
+ 	struct virtio_scsi_cmd_resp v_rsp;
+ 	struct vhost_scsi_cmd *cmd, *t;
+ 	struct llist_node *llnode;
+ 	struct se_cmd *se_cmd;
+ 	struct iov_iter iov_iter;
+-	int ret, vq;
++	bool signal = false;
++	int ret;
  
- 	dev->iotlb = vhost_iotlb_alloc(0, 0);
- 	if (!dev->iotlb) {
-diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
-index 78d9535..ee2551c 100644
---- a/drivers/vhost/vhost.c
-+++ b/drivers/vhost/vhost.c
-@@ -467,9 +467,7 @@ static size_t vhost_get_desc_size(struct vhost_virtqueue *vq,
- void vhost_dev_init(struct vhost_dev *dev,
- 		    struct vhost_virtqueue **vqs, int nvqs,
- 		    int iov_limit, int weight, int byte_weight,
--		    bool use_worker,
--		    int (*msg_handler)(struct vhost_dev *dev,
--				       struct vhost_iotlb_msg *msg))
-+		    bool use_worker, struct vhost_dev_ops *ops)
- {
- 	struct vhost_virtqueue *vq;
- 	int i;
-@@ -486,7 +484,7 @@ void vhost_dev_init(struct vhost_dev *dev,
- 	dev->weight = weight;
- 	dev->byte_weight = byte_weight;
- 	dev->use_worker = use_worker;
--	dev->msg_handler = msg_handler;
-+	dev->ops = ops;
- 	init_llist_head(&dev->work_list);
- 	init_waitqueue_head(&dev->wait);
- 	INIT_LIST_HEAD(&dev->read_list);
-@@ -1164,8 +1162,8 @@ ssize_t vhost_chr_write_iter(struct vhost_dev *dev,
- 		goto done;
+-	bitmap_zero(signal, VHOST_SCSI_MAX_VQ);
+-	llnode = llist_del_all(&vs->vs_completion_list);
++	llnode = llist_del_all(&svq->completion_list);
+ 	llist_for_each_entry_safe(cmd, t, llnode, tvc_completion_list) {
+ 		se_cmd = &cmd->tvc_se_cmd;
+ 
+@@ -578,21 +579,16 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ 			      cmd->tvc_in_iovs, sizeof(v_rsp));
+ 		ret = copy_to_iter(&v_rsp, sizeof(v_rsp), &iov_iter);
+ 		if (likely(ret == sizeof(v_rsp))) {
+-			struct vhost_scsi_virtqueue *q;
++			signal = true;
+ 			vhost_add_used(cmd->tvc_vq, cmd->tvc_vq_desc, 0);
+-			q = container_of(cmd->tvc_vq, struct vhost_scsi_virtqueue, vq);
+-			vq = q - vs->vqs;
+-			__set_bit(vq, signal);
+ 		} else
+ 			pr_err("Faulted on virtio_scsi_cmd_resp\n");
+ 
+ 		vhost_scsi_release_cmd_res(se_cmd);
  	}
  
--	if (dev->msg_handler)
--		ret = dev->msg_handler(dev, &msg);
-+	if (dev->ops && dev->ops->msg_handler)
-+		ret = dev->ops->msg_handler(dev, &msg);
- 	else
- 		ret = vhost_process_iotlb_msg(dev, &msg);
- 	if (ret) {
-diff --git a/drivers/vhost/vhost.h b/drivers/vhost/vhost.h
-index 575c818..64fa638 100644
---- a/drivers/vhost/vhost.h
-+++ b/drivers/vhost/vhost.h
-@@ -143,6 +143,10 @@ struct vhost_msg_node {
-   struct list_head node;
- };
+-	vq = -1;
+-	while ((vq = find_next_bit(signal, VHOST_SCSI_MAX_VQ, vq + 1))
+-		< VHOST_SCSI_MAX_VQ)
+-		vhost_signal(&vs->dev, &vs->vqs[vq].vq);
++	if (signal)
++		vhost_signal(&svq->vs->dev, &svq->vq);
+ }
  
-+struct vhost_dev_ops {
-+	int (*msg_handler)(struct vhost_dev *dev, struct vhost_iotlb_msg *msg);
-+};
+ static struct vhost_scsi_cmd *
+@@ -1801,6 +1797,7 @@ static int vhost_scsi_set_features(struct vhost_scsi *vs, u64 features)
+ 
+ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ {
++	struct vhost_scsi_virtqueue *svq;
+ 	struct vhost_scsi *vs;
+ 	struct vhost_virtqueue **vqs;
+ 	int r = -ENOMEM, i;
+@@ -1816,7 +1813,6 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ 	if (!vqs)
+ 		goto err_vqs;
+ 
+-	vhost_work_init(&vs->vs_completion_work, vhost_scsi_complete_cmd_work);
+ 	vhost_work_init(&vs->vs_event_work, vhost_scsi_evt_work);
+ 
+ 	vs->vs_events_nr = 0;
+@@ -1827,8 +1823,14 @@ static int vhost_scsi_open(struct inode *inode, struct file *f)
+ 	vs->vqs[VHOST_SCSI_VQ_CTL].vq.handle_kick = vhost_scsi_ctl_handle_kick;
+ 	vs->vqs[VHOST_SCSI_VQ_EVT].vq.handle_kick = vhost_scsi_evt_handle_kick;
+ 	for (i = VHOST_SCSI_VQ_IO; i < VHOST_SCSI_MAX_VQ; i++) {
+-		vqs[i] = &vs->vqs[i].vq;
+-		vs->vqs[i].vq.handle_kick = vhost_scsi_handle_kick;
++		svq = &vs->vqs[i];
 +
- struct vhost_dev {
- 	struct mm_struct *mm;
- 	struct mutex mutex;
-@@ -162,16 +166,13 @@ struct vhost_dev {
- 	int byte_weight;
- 	u64 kcov_handle;
- 	bool use_worker;
--	int (*msg_handler)(struct vhost_dev *dev,
--			   struct vhost_iotlb_msg *msg);
-+	struct vhost_dev_ops *ops;
- };
- 
- bool vhost_exceeds_weight(struct vhost_virtqueue *vq, int pkts, int total_len);
- void vhost_dev_init(struct vhost_dev *, struct vhost_virtqueue **vqs,
- 		    int nvqs, int iov_limit, int weight, int byte_weight,
--		    bool use_worker,
--		    int (*msg_handler)(struct vhost_dev *dev,
--				       struct vhost_iotlb_msg *msg));
-+		    bool use_worker, struct vhost_dev_ops *ops);
- long vhost_dev_set_owner(struct vhost_dev *dev);
- bool vhost_dev_has_owner(struct vhost_dev *dev);
- long vhost_dev_check_owner(struct vhost_dev *);
++		vqs[i] = &svq->vq;
++		svq->vs = vs;
++		init_llist_head(&svq->completion_list);
++		vhost_work_init(&svq->completion_work,
++				vhost_scsi_complete_cmd_work);
++		svq->vq.handle_kick = vhost_scsi_handle_kick;
+ 	}
+ 	vhost_dev_init(&vs->dev, vqs, VHOST_SCSI_MAX_VQ, UIO_MAXIOV,
+ 		       VHOST_SCSI_WEIGHT, 0, true, NULL);
 -- 
 1.8.3.1
 
