@@ -2,128 +2,132 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F655C433FE
-	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 16:08:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B6BC433FE
+	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 16:33:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D32B622582
-	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 16:08:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 174F2229C4
+	for <target-devel@archiver.kernel.org>; Fri,  4 Dec 2020 16:33:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728355AbgLDQIY (ORCPT
+        id S1729311AbgLDQdn (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 4 Dec 2020 11:08:24 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:37734 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726309AbgLDQIY (ORCPT
+        Fri, 4 Dec 2020 11:33:43 -0500
+Received: from aserp2120.oracle.com ([141.146.126.78]:36322 "EHLO
+        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726085AbgLDQdn (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 4 Dec 2020 11:08:24 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1607098017;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=9eAbWgXkbv2eDi+txBHbhzeU9UsROTvRNfv5Pgs5m+M=;
-        b=fxVQ7oJtBADuZolPKwcGemA9dq5Yk0KaQe94HiQzVU+N25InimNB+GE4SKAjKDWyrYjbVt
-        en8KFDtRt97GyeCykgSG7OwFScZqQyRZAvcSDzzObCkQRiCfObam5/UaHQfv+3js9FJ6ym
-        a9Z8S869pnJF4zBQRpuUNIYlRvg3xoA=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-36-t6FEVaNsNbeSCNQ52gRZyg-1; Fri, 04 Dec 2020 11:06:56 -0500
-X-MC-Unique: t6FEVaNsNbeSCNQ52gRZyg-1
-Received: by mail-wr1-f70.google.com with SMTP id v1so2673155wri.16
-        for <target-devel@vger.kernel.org>; Fri, 04 Dec 2020 08:06:55 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=9eAbWgXkbv2eDi+txBHbhzeU9UsROTvRNfv5Pgs5m+M=;
-        b=Bi6xm5WzKdKehiPQ5jiGsWjJk7vmIKPuxa8Un4RwoUK5FJvcuEJbMeIEk216B5Lxrh
-         AnNkRFe2h/oOyD7gYkLO/hHgZK4Ntrw2/FaeKpSx4vFtRRiQnzxI/PGVe+2RX1T9glSo
-         ifYtMZDdVy9PebObFWlTHgR7sqtv3ePt+t00sWBOITZNElxwX+Lx+murEyzIHmjywXWk
-         KKZmSelhLdv5irwWR1fP8+yISA/eSv3DofctjbpCGe5YP9q9aPOmQTLj1cLw/jur/uzl
-         oNF1N84o+U7eVQlt/rMk0E2y2HGOu9Anqp7D18M8pnEBh63+h03UFF8hZMiDP+t/fleN
-         V8rA==
-X-Gm-Message-State: AOAM531fvfQRkrjqXAnyk8qaLvwd8bgo8VX4M+BgORIpfmMkTfNSoneT
-        63BscyxXxQK24iXiXrO9N8KtfTXWdKRyJa/XZDQcRSzk1gcxoAolMhf/3OPQAaP6vtWAWgHtZmF
-        CsRJhvUtrVunMHJsufLSLWDlY
-X-Received: by 2002:adf:f2d1:: with SMTP id d17mr5697085wrp.339.1607098014702;
-        Fri, 04 Dec 2020 08:06:54 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJyh1gDOi04oyZ2v1FusnkNbGm/lSr5qmo45s0i41AvRQyKg5Lky0V7syJMDHqbbPfTgzo71XQ==
-X-Received: by 2002:adf:f2d1:: with SMTP id d17mr5697059wrp.339.1607098014454;
-        Fri, 04 Dec 2020 08:06:54 -0800 (PST)
-Received: from steredhat (host-79-17-248-175.retail.telecomitalia.it. [79.17.248.175])
-        by smtp.gmail.com with ESMTPSA id b83sm3766348wmd.48.2020.12.04.08.06.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Dec 2020 08:06:53 -0800 (PST)
-Date:   Fri, 4 Dec 2020 17:06:51 +0100
-From:   Stefano Garzarella <sgarzare@redhat.com>
-To:     Mike Christie <michael.christie@oracle.com>
-Cc:     stefanha@redhat.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com,
-        pbonzini@redhat.com, virtualization@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 0/8] vhost: allow userspace to control vq cpu affinity
-Message-ID: <20201204160651.7wlselx4jm6k66mb@steredhat>
+        Fri, 4 Dec 2020 11:33:43 -0500
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B4GTCKP178673;
+        Fri, 4 Dec 2020 16:32:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=subject : to :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2020-01-29;
+ bh=OdRo3BfsP6FJ3mlRU1YB0eBUSCCRQ7rMFsS3pO2KKdU=;
+ b=LIh/FkWhUKDEQ13tdYojgRRx+j3a6BdW4JWkaqCu0KzppmTNZwTMJQXpb1GgvktkflHI
+ MfGmkLdXazg/73nJn/f8lxdPBT5k59sqi4d/okERoOGlv699pSNxdVliR1qN3NY5RgjV
+ l/OKRz/Bf0No5SlwrcR5qijbpnw8m+hwDfvXWFnLsLdx4be07AlxVmLMo/rvzFpV4tmF
+ HJWLTca7/x6hHBQ1vAiib5g2CiD3DQH8TrSgPK09AH4NOuqfYV7sUlUHhU0BleWmNVMS
+ ubcw5qNTKevZGkbpLUBgjRue6+xmVy1XwWyAHQHXCPs4zcMK7u1crKwS9AMGicdtdnqS MA== 
+Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
+        by aserp2120.oracle.com with ESMTP id 353egm405w-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Fri, 04 Dec 2020 16:32:58 +0000
+Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
+        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B4GUJc1085453;
+        Fri, 4 Dec 2020 16:32:58 GMT
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+        by aserp3020.oracle.com with ESMTP id 3540f3hkvq-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 04 Dec 2020 16:32:58 +0000
+Received: from abhmp0010.oracle.com (abhmp0010.oracle.com [141.146.116.16])
+        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 0B4GWvJq014261;
+        Fri, 4 Dec 2020 16:32:57 GMT
+Received: from [20.15.0.5] (/73.88.28.6)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Fri, 04 Dec 2020 08:32:57 -0800
+Subject: Re: [RFC PATCH 5/8] vhost: allow userspace to bind vqs to CPUs
+To:     Jason Wang <jasowang@redhat.com>, sgarzare@redhat.com,
+        stefanha@redhat.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, mst@redhat.com, pbonzini@redhat.com,
+        virtualization@lists.linux-foundation.org
 References: <1607068593-16932-1-git-send-email-michael.christie@oracle.com>
+ <1607068593-16932-6-git-send-email-michael.christie@oracle.com>
+ <4546ef72-da7c-df9e-53be-c937a5437436@redhat.com>
+From:   Mike Christie <michael.christie@oracle.com>
+Message-ID: <30746f1c-ed8c-d2ae-9513-54fca8f52739@oracle.com>
+Date:   Fri, 4 Dec 2020 10:32:56 -0600
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.5.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <1607068593-16932-1-git-send-email-michael.christie@oracle.com>
+In-Reply-To: <4546ef72-da7c-df9e-53be-c937a5437436@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9825 signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 malwarescore=0 phishscore=0
+ suspectscore=0 bulkscore=0 spamscore=0 adultscore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2012040094
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9825 signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 bulkscore=0 suspectscore=0
+ phishscore=0 mlxlogscore=999 lowpriorityscore=0 malwarescore=0
+ priorityscore=1501 spamscore=0 impostorscore=0 clxscore=1015 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2012040094
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Mike,
+On 12/4/20 2:09 AM, Jason Wang wrote:
+> 
+> On 2020/12/4 下午3:56, Mike Christie wrote:
+>> +static long vhost_vring_set_cpu(struct vhost_dev *d, struct 
+>> vhost_virtqueue *vq,
+>> +                void __user *argp)
+>> +{
+>> +    struct vhost_vring_state s;
+>> +    int ret = 0;
+>> +
+>> +    if (vq->private_data)
+>> +        return -EBUSY;
+>> +
+>> +    if (copy_from_user(&s, argp, sizeof s))
+>> +        return -EFAULT;
+>> +
+>> +    if (s.num == -1) {
+>> +        vq->cpu = s.num;
+>> +        return 0;
+>> +    }
+>> +
+>> +    if (s.num >= nr_cpu_ids)
+>> +        return -EINVAL;
+>> +
+>> +    if (!d->ops || !d->ops->get_workqueue)
+>> +        return -EINVAL;
+>> +
+>> +    if (!d->wq)
+>> +        d->wq = d->ops->get_workqueue();
+>> +    if (!d->wq)
+>> +        return -EINVAL;
+>> +
+>> +    vq->cpu = s.num;
+>> +    return ret;
+>> +}
+> 
+> 
+> So one question here. Who is in charge of doing this set_cpu? Note 
+> that sched_setaffinity(2) requires CAP_SYS_NICE to work, so I wonder 
+> whether or not it's legal for unprivileged Qemu to do this.
 
-On Fri, Dec 04, 2020 at 01:56:25AM -0600, Mike Christie wrote:
->These patches were made over mst's vhost branch.
->
->The following patches, made over mst's vhost branch, allow userspace
->to set each vq's cpu affinity. Currently, with cgroups the worker thread
->inherits the affinity settings, but we are at the mercy of the CPU
->scheduler for where the vq's IO will be executed on. This can result in
->the scheduler sometimes hammering a couple queues on the host instead of
->spreading it out like how the guest's app might have intended if it was
->mq aware.
->
->This version of the patches is not what you guys were talking about
->initially like with the interface that was similar to nbd's old
->(3.x kernel days) NBD_DO_IT ioctl where userspace calls down to the
->kernel and we run from that context. These patches instead just
->allow userspace to tell the kernel which CPU a vq should run on.
->We then use the kernel's workqueue code to handle the thread
->management.
 
-I agree that reusing kernel's workqueue code would be a good strategy.
+I was having qemu do it when it's setting up the vqs since it had the 
+info there already.
 
-One concern is how easy it is to implement an adaptive polling strategy 
-using workqueues. From what I've seen, adding some polling of both 
-backend and virtqueue helps to eliminate interrupts and reduce latency.
-
-Anyway, I'll take a closer look at your patches next week. :-)
-
-Thanks,
-Stefano
-
->
->I wanted to post this version first, because it is flexible
->in that userspace can set things up so devs/vqs share threads/CPUs
->and we don't have to worry about replicating a bunch of features
->that the workqueue code already has like dynamic thread creation,
->blocked work detection, idle thread detection and thread reaping,
->and it also has an interface to control how many threads can be
->created and which CPUs work can run on if we want to further restrict
->that from userspace.
->
->Note that these patches have been lightly tested. I more wanted
->to get comments on the overall approach, because I know it's
->not really what you were thinking about. But while I worked
->on being able to share threads with multiple devices, I kept
->coming back to the existing workqueue code and thinking I'll
->just copy and paste that.
->
->
-
+Is it normally the tool that makes calls into qemu that does the 
+operations that require CAP_SYS_NICE? If so, then I see the interface 
+needs to be changed.
