@@ -2,143 +2,177 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 115E2C1B0D9
-	for <target-devel@archiver.kernel.org>; Tue,  8 Dec 2020 04:54:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EB88C4361B
+	for <target-devel@archiver.kernel.org>; Wed,  9 Dec 2020 16:00:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B764F23A5B
-	for <target-devel@archiver.kernel.org>; Tue,  8 Dec 2020 04:54:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6914723433
+	for <target-devel@archiver.kernel.org>; Wed,  9 Dec 2020 16:00:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727558AbgLHEyC (ORCPT
+        id S1730549AbgLIQA1 (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 7 Dec 2020 23:54:02 -0500
-Received: from aserp2120.oracle.com ([141.146.126.78]:58180 "EHLO
-        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727451AbgLHEyB (ORCPT
+        Wed, 9 Dec 2020 11:00:27 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:35712 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1730278AbgLIQA0 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 7 Dec 2020 23:54:01 -0500
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
-        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B84nxYX064111;
-        Tue, 8 Dec 2020 04:52:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2020-01-29;
- bh=1e3cV7XKyt5cBPHNeWYhYMHu3W87CKppja6U1Jvw5F4=;
- b=V+G180Fh0lHbcmydQJqS5i+cerb42SoRrRI9QCXlQMjyWKKfj0acXqExTQUiK+7OEtft
- OuMy/8L57grCegXY4FPi2mfpdUD9NETOrjU6XyLEGnB6yCKU9e30d2WSgQTsYBxq/cMN
- 5junVfgiRpfFB5rc1EfDtZHP43anCs3FIrUtz16u4yPsKG0NCInMT5yeMTaPCX1MMJeq
- qZ1GHIcbwNatFRQ/tELhwJDJybfqjlIskC/pDoCLpTPJ2KTrod7PX9rst5aaRTC3xIQA
- veh/+mbPHLjYXfePq5oiUCHv2+7Gowf8M2KKiHFzojpZKSSSQD2meZy2nTRpI8CVh6TQ Yg== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by aserp2120.oracle.com with ESMTP id 35825m0srp-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 08 Dec 2020 04:52:35 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B84ocFe155422;
-        Tue, 8 Dec 2020 04:52:34 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by userp3020.oracle.com with ESMTP id 358kys9m8t-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 08 Dec 2020 04:52:34 +0000
-Received: from userp3020.oracle.com (userp3020.oracle.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0B84qX4M159553;
-        Tue, 8 Dec 2020 04:52:33 GMT
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
-        by userp3020.oracle.com with ESMTP id 358kys9m7s-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 08 Dec 2020 04:52:33 +0000
-Received: from abhmp0013.oracle.com (abhmp0013.oracle.com [141.146.116.19])
-        by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 0B84qDZf015901;
-        Tue, 8 Dec 2020 04:52:15 GMT
-Received: from ca-mkp.ca.oracle.com (/10.156.108.201)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Mon, 07 Dec 2020 20:52:13 -0800
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     linux-kernel@vger.kernel.org,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        coreteam@netfilter.org, selinux@vger.kernel.org,
-        Miguel Ojeda <ojeda@kernel.org>, Joe Perches <joe@perches.com>,
-        linux-hardening@vger.kernel.org, reiserfs-devel@vger.kernel.org,
-        amd-gfx@lists.freedesktop.org, patches@opensource.cirrus.com,
-        linux-fbdev@vger.kernel.org, keyrings@vger.kernel.org,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        linux-geode@lists.infradead.org, linux-gpio@vger.kernel.org,
-        linux-hams@vger.kernel.org, linux-ext4@vger.kernel.org,
-        wcn36xx@lists.infradead.org, GR-everest-linux-l2@marvell.com,
-        x86@kernel.org, linux-watchdog@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-cifs@vger.kernel.org,
-        linux-nfs@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-usb@vger.kernel.org, devel@driverdev.osuosl.org,
-        linux-atm-general@lists.sourceforge.net,
-        linux-wireless@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-decnet-user@lists.sourceforge.net,
-        Nathan Chancellor <natechancellor@gmail.com>,
-        netfilter-devel@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-integrity@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        linux-mediatek@lists.infradead.org,
-        Kees Cook <keescook@chromium.org>,
-        samba-technical@lists.samba.org, ceph-devel@vger.kernel.org,
-        drbd-dev@tron.linbit.com, intel-gfx@lists.freedesktop.org,
-        dm-devel@redhat.com, linux-acpi@vger.kernel.org,
-        linux-ide@vger.kernel.org, xen-devel@lists.xenproject.org,
-        op-tee@lists.trustedfirmware.org, linux-hwmon@vger.kernel.org,
-        linux-sctp@vger.kernel.org, bridge@lists.linux-foundation.org,
-        linux-mtd@lists.infradead.org, linux-input@vger.kernel.org,
-        linux-can@vger.kernel.org, rds-devel@oss.oracle.com,
-        oss-drivers@netronome.com, tipc-discussion@lists.sourceforge.net,
-        cluster-devel@redhat.com, linux-rdma@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
-        usb-storage@lists.one-eyed-alien.net,
-        linux1394-devel@lists.sourceforge.net, alsa-devel@alsa-project.org,
-        linux-i3c@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-afs@lists.infradead.org, nouveau@lists.freedesktop.org,
-        GR-Linux-NIC-Dev@marvell.com, netdev@vger.kernel.org,
-        linux-security-module@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com, linux-mm@kvack.org,
-        intel-wired-lan@lists.osuosl.org, linux-renesas-soc@vger.kernel.org
-Subject: Re: (subset) [PATCH 000/141] Fix fall-through warnings for Clang
-Date:   Mon,  7 Dec 2020 23:52:01 -0500
-Message-Id: <160740299787.710.4201881220590518200.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <cover.1605896059.git.gustavoars@kernel.org>
-References: <cover.1605896059.git.gustavoars@kernel.org>
+        Wed, 9 Dec 2020 11:00:26 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1607529539;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=YEJSbJgiaDtb+7xVfW+bk1IzQ6Qu9Ts+yErRDxVgSNc=;
+        b=L3MCNysjRcGPIc15i+6n+gbDvwoltg22l2BEppnecZ6CWhP5LgkPgj1Blf1/Nysd4BMoQ/
+        yau6gNv0Nnlo97h21Q9Ujcx10wiPPmqliZqC9VhpOaRnnxbE3TKefXUm9f3KqJjtSQudxc
+        +Y/aV87TCCyl9vc0gyg3uRqVswhG3GU=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-303-_HrCjEb0Mym9i9nqxrIhSg-1; Wed, 09 Dec 2020 10:58:57 -0500
+X-MC-Unique: _HrCjEb0Mym9i9nqxrIhSg-1
+Received: by mail-wm1-f72.google.com with SMTP id a205so508473wme.9
+        for <target-devel@vger.kernel.org>; Wed, 09 Dec 2020 07:58:57 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=YEJSbJgiaDtb+7xVfW+bk1IzQ6Qu9Ts+yErRDxVgSNc=;
+        b=QUKvtDCiSPcKnfYtNvUutBphHSXQkgg9e6IkKEj8JNeyDuu+O4H22ROsJWeF3ap2fb
+         mjDIopKas3aoY6MESCK0ypZ4jb/wck3nOIiU565kfVq1rK75QvMsj2AS/rq15My0Bwt+
+         k5W4hXfUWWQPH4bPojSvbybeib2+KdRold3gn6+WSFd/QXl52C0nvoTIUR36zRne/j8b
+         p4XWG3dpFnlY6D+BlojWtz3QXPgY3Z/T9ms6enhSC2WAKTCLnzYps9h1S+tXGrCMIEvO
+         zRDltZKIz3C7FmLFS7AhvJHWLjC0NB+jZ7Qyzc3rrazb7RNIVSVN+eIbND1588mYAaGT
+         YL/g==
+X-Gm-Message-State: AOAM531mgbahNqQRnKAVnXRHfuxWXZPuPNod0Mv6bKK5Zb0GNPk1nxWn
+        UeJVxpDWxpGA3CvTjErzSu2D4qFQvGrvoVAoi81C8oUaR+q7bVgxjIkJTHfh/f0e8x4QxwiOT8q
+        izgfiOGQXwBk5z8hRPuLO642D
+X-Received: by 2002:adf:92c2:: with SMTP id 60mr3530076wrn.266.1607529536743;
+        Wed, 09 Dec 2020 07:58:56 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJxXPiTjoweiFCd8lPhQbRI1pAc1gIvVHQ/dWn2SnAqjW7JdMQnbm3SW51ntkLYMg4+CVwMjSA==
+X-Received: by 2002:adf:92c2:: with SMTP id 60mr3530064wrn.266.1607529536555;
+        Wed, 09 Dec 2020 07:58:56 -0800 (PST)
+Received: from steredhat (host-79-24-227-66.retail.telecomitalia.it. [79.24.227.66])
+        by smtp.gmail.com with ESMTPSA id u66sm4556862wmg.2.2020.12.09.07.58.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 09 Dec 2020 07:58:55 -0800 (PST)
+Date:   Wed, 9 Dec 2020 16:58:53 +0100
+From:   Stefano Garzarella <sgarzare@redhat.com>
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     stefanha@redhat.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com,
+        pbonzini@redhat.com, virtualization@lists.linux-foundation.org
+Subject: Re: [RFC PATCH 0/8] vhost: allow userspace to control vq cpu affinity
+Message-ID: <20201209155853.rdzh5a5qyhmzj3lq@steredhat>
+References: <1607068593-16932-1-git-send-email-michael.christie@oracle.com>
+ <20201204160651.7wlselx4jm6k66mb@steredhat>
+ <40b22c4a-f9db-1389-aed1-b3d33678cfda@oracle.com>
+ <73defee7-2c9b-7a2b-a532-3c297fc56ca6@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9828 signatures=668682
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 adultscore=0 bulkscore=0
- phishscore=0 mlxlogscore=740 clxscore=1015 priorityscore=1501 mlxscore=0
- spamscore=0 lowpriorityscore=0 malwarescore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012080029
+In-Reply-To: <73defee7-2c9b-7a2b-a532-3c297fc56ca6@oracle.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Fri, 20 Nov 2020 12:21:39 -0600, Gustavo A. R. Silva wrote:
+Hi Mike,
+sorry for the delay but there were holidays.
 
-> This series aims to fix almost all remaining fall-through warnings in
-> order to enable -Wimplicit-fallthrough for Clang.
-> 
-> In preparation to enable -Wimplicit-fallthrough for Clang, explicitly
-> add multiple break/goto/return/fallthrough statements instead of just
-> letting the code fall through to the next case.
-> 
-> [...]
+On Fri, Dec 04, 2020 at 11:33:11AM -0600, Mike Christie wrote:
+>On 12/4/20 11:10 AM, Mike Christie wrote:
+>>On 12/4/20 10:06 AM, Stefano Garzarella wrote:
+>>>Hi Mike,
+>>>
+>>>On Fri, Dec 04, 2020 at 01:56:25AM -0600, Mike Christie wrote:
+>>>>These patches were made over mst's vhost branch.
+>>>>
+>>>>The following patches, made over mst's vhost branch, allow userspace
+>>>>to set each vq's cpu affinity. Currently, with cgroups the worker thread
+>>>>inherits the affinity settings, but we are at the mercy of the CPU
+>>>>scheduler for where the vq's IO will be executed on. This can result in
+>>>>the scheduler sometimes hammering a couple queues on the host instead of
+>>>>spreading it out like how the guest's app might have intended if it was
+>>>>mq aware.
+>>>>
+>>>>This version of the patches is not what you guys were talking about
+>>>>initially like with the interface that was similar to nbd's old
+>>>>(3.x kernel days) NBD_DO_IT ioctl where userspace calls down to the
+>>>>kernel and we run from that context. These patches instead just
+>>>>allow userspace to tell the kernel which CPU a vq should run on.
+>>>>We then use the kernel's workqueue code to handle the thread
+>>>>management.
+>>>
+>>>I agree that reusing kernel's workqueue code would be a good strategy.
+>>>
+>>>One concern is how easy it is to implement an adaptive polling 
+>>>strategy using workqueues. From what I've seen, adding some 
+>>>polling of both backend and virtqueue helps to eliminate 
+>>>interrupts and reduce latency.
+>>>
+>>Would the polling you need to do be similar to the vhost net poll 
+>>code like in vhost_net_busy_poll (different algorithm though)? But, 
+>>we want to be able to poll multiple devs/vqs from the same CPU 
+>>right? Something like:
+>>
+>>retry:
+>>
+>>for each poller on CPU N
+>>     if poller has work
+>>         driver->run work fn
+>>
+>>if (poll limit hit)
+>>     return
+>>else
+>>     cpu_relax();
+>>goto retry:
+>>
+>>?
 
-Applied to 5.11/scsi-queue, thanks!
+Yeah, something similar. IIUC vhost_net_busy_poll() polls both vring and 
+backend (socket).
 
-[054/141] target: Fix fall-through warnings for Clang
-          https://git.kernel.org/mkp/scsi/c/492096ecfa39
+Maybe we need to limit the work->fn amount of work to avoid starvation.
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+>>
+>>If so, I had an idea for it. Let me send an additional patch on top 
+>>of this set.
+
+Sure :-)
+
+>
+>Oh yeah, just to make sure I am on the same page for vdpa, because 
+>scsi and net work so differnetly.
+>
+>Were you thinking that you would initially run from
+>
+>vhost_poll_wakeup -> work->fn
+>
+>then in the vdpa work->fn you would do the kick_vq still, but then 
+>also kick off a group backend/vq poller. This would then poll the 
+>vqs/devs that were bound to that CPU from the worker/wq thread.
+
+Yes, this seams reasonable!
+
+>
+>So I was thinking you want something similar to network's NAPI. Here 
+
+I don't know NAPI very well, but IIUC the goal is the same: try to avoid 
+notifications (IRQs from the device, vm-exit from the guest) doing an 
+adaptive polling.
+
+>our work->fn is the hard irq, and then the worker is like their softirq 
+>we poll from.
+>
+
+I'm a little lost here...
+
+Thanks,
+Stefano
+
