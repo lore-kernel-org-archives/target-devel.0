@@ -2,62 +2,61 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C270C2BB40
-	for <target-devel@archiver.kernel.org>; Tue, 15 Dec 2020 00:28:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 285D4C2BB48
+	for <target-devel@archiver.kernel.org>; Tue, 15 Dec 2020 00:29:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 62CFE22273
-	for <target-devel@archiver.kernel.org>; Tue, 15 Dec 2020 00:28:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 01EF422262
+	for <target-devel@archiver.kernel.org>; Tue, 15 Dec 2020 00:29:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729177AbgLOA1w (ORCPT
+        id S1727174AbgLOAYo (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 14 Dec 2020 19:27:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53504 "EHLO
+        Mon, 14 Dec 2020 19:24:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53434 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728450AbgLOAZI (ORCPT
+        with ESMTP id S1725976AbgLOAYo (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 14 Dec 2020 19:25:08 -0500
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B547C06138C;
-        Mon, 14 Dec 2020 16:24:10 -0800 (PST)
-Received: by mail-wm1-x343.google.com with SMTP id k10so15342145wmi.3;
-        Mon, 14 Dec 2020 16:24:10 -0800 (PST)
+        Mon, 14 Dec 2020 19:24:44 -0500
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 961A6C061793;
+        Mon, 14 Dec 2020 16:24:03 -0800 (PST)
+Received: by mail-wm1-x341.google.com with SMTP id q75so16855449wme.2;
+        Mon, 14 Dec 2020 16:24:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=v0AauUnwA0hTGdBXNj6ZzKlUOrb4jF47iEjWqFK5L8s=;
-        b=DmTQasMwcOvVC2HGyReHTCHsrRm49zPi6M3MRtAMOhqhX/MN7tDKz9tL+2pg6+QqYB
-         CXap+KpU5xs24Y+WYCf1WmIMcbkqlrNyus789gDHv7ZcPFhHbkPbeOMS/zQtebq3NWL0
-         g6sKVXm18j9BbKfBTXinHBaJ1rkacOcYlffL1aBWZLdVYiAedGshDJV8apYteChI1dp3
-         kwkWBENwuxx4wSeb6aRKG2sPyMMMglhBwVrK8hYRjGz+bUIbsu2XwQ7RGM4HF38LI006
-         yaGms8xc0u3XMms3xpgR52HhDX5ov0KL7K0BuvZS+UZXQZh49414R/7FwDK2hlXJMadg
-         TuBw==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=8jc3AIzkIPReSThseVXRAPm4odmJMoGYu8KGcGUo5xA=;
+        b=UdWHcglApp9RdDZeyVfl7LsJgdxW48tzLbgNRju6ud80NwZdq8pS6rNA48XayxnD2y
+         gxp99ju2U22s0IgeHpYxNkwEmEsSWmjKvkDVgboRjCL0u2BjvWzJuRm3fQuna6NzrVJX
+         tY83rFJle/+8UqxI4cOpq7ZEPwQanA4rNBX48zfg4PVtL5ODTFYQfgYr+oKNqJ85Y/gd
+         599roSuL8vkZuUsB+DMvesJq5/Qay+HaVljVBmkn57M9MaFlDCjvpgkaWPWHAqXbqbH5
+         awkn32y9RHX7Bg8npAuH4ig4MoKopNAyVbodgQEudUlOhmPl/5BfCRzLw7S/Tb6KT7TR
+         Av8A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=v0AauUnwA0hTGdBXNj6ZzKlUOrb4jF47iEjWqFK5L8s=;
-        b=QyfMUBFuUm3Mfyzzb9fuP3ipEImcyr8tKELyi/+ZUCAPLuav8EL3G3tOKM6We2PZrY
-         CDBzdgYzC9ahxAT08eTJvoIiwsvaUkBL+9cpE3J6H0OTXb9bK4d7ZC6UydHWeIH07MYH
-         ieIy06LpjjGkc+9Uz5RsRbeoMUOIZwE4NXk87W6ONhfdcd2LyI5YyYzetneG8P59lxEF
-         M/gHmyvOaKoo5Q6am/x0QUD6CSzlkusH1mIGRh/N4lGilN07WdrWGtMcSl0mV9jvdksi
-         YfBU+SPPtRC+empqUcE2SSmUiFYFQCsuvcnoMihSj7tXGrC593wuEk0JOdJM9tjufmog
-         vY7A==
-X-Gm-Message-State: AOAM532MMyZUprFztZ57rCLu6/Q7N6PwiBCyihtG8e/hb0mRPbzNL51n
-        zTDXQVeQXJgEW2pqcu7AGBXRcE4THF/DkzlL
-X-Google-Smtp-Source: ABdhPJxINkanVy2QGQhY1u+YaY38qOJLZ6n+hZXE+kGwMf8ljRg3x4j8lZkvZFRa2g0tfnchLTq01Q==
-X-Received: by 2002:a1c:64c4:: with SMTP id y187mr25944685wmb.165.1607991848997;
-        Mon, 14 Dec 2020 16:24:08 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=8jc3AIzkIPReSThseVXRAPm4odmJMoGYu8KGcGUo5xA=;
+        b=JjH7Xp3ZjrUPqt0bm0f52mOdf+VEv41WWJNFd5zZmerIWueDZ4ud/4wCS4AHQn//KP
+         yz7xTY1dr+tIjnd+qTmFJ3C8nmB3UamvlZyBkQqVebySh2wZ7ewMbhPSKjjTN2EbMXMm
+         pkC+c6B1isPYgjQ+jgRfaH7J1mErUMrdZm4DAm6L3PzHI5i73sKrY0tNM94kJ21aQudX
+         2X8qjebGo3JUPuKZCgEGC7yLidNoK82iGc5aof7gyDw7T7mtssCSujCHcaBFbXw5zbef
+         DS0ix2m5rk6/U7dFwwfw66FJlxh4HHAiJlOkZrAUc6Rnyv0gvC0RpdiRGewsAWPI9Ett
+         +nVQ==
+X-Gm-Message-State: AOAM531NvqE4EFF++ZUDnUIa/hgiy0BnypCXAdurAe2lnojwulERxGBs
+        wUMdrDWQkqSSQVRaFCw/5r8V+SagMKvQzKLc
+X-Google-Smtp-Source: ABdhPJwGNnrKGp65JFv4dDtyk0FguiKKzh1xTxkYj/G+sMLant4a7Rnm4MCbD8CKdIpwjoDGsmxiog==
+X-Received: by 2002:a05:600c:258:: with SMTP id 24mr30918877wmj.16.1607991842015;
+        Mon, 14 Dec 2020 16:24:02 -0800 (PST)
 Received: from localhost.localdomain ([85.255.232.163])
-        by smtp.gmail.com with ESMTPSA id b19sm5362012wmj.37.2020.12.14.16.24.07
+        by smtp.gmail.com with ESMTPSA id b19sm5362012wmj.37.2020.12.14.16.24.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Dec 2020 16:24:08 -0800 (PST)
+        Mon, 14 Dec 2020 16:24:01 -0800 (PST)
 From:   Pavel Begunkov <asml.silence@gmail.com>
 To:     linux-block@vger.kernel.org
 Cc:     Jens Axboe <axboe@kernel.dk>,
@@ -72,113 +71,64 @@ Cc:     Jens Axboe <axboe@kernel.dk>,
         linux-fsdevel@vger.kernel.org, io-uring@vger.kernel.org,
         linux-kernel@vger.kernel.org, target-devel@vger.kernel.org,
         linux-scsi@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: [PATCH v1 5/6] bio: add a helper calculating nr segments to alloc
-Date:   Tue, 15 Dec 2020 00:20:24 +0000
-Message-Id: <94b6f76d2d47569742ee47caede1504926f9807a.1607976425.git.asml.silence@gmail.com>
+Subject: [PATCH v1 0/6] no-copy bvec
+Date:   Tue, 15 Dec 2020 00:20:19 +0000
+Message-Id: <cover.1607976425.git.asml.silence@gmail.com>
 X-Mailer: git-send-email 2.24.0
-In-Reply-To: <cover.1607976425.git.asml.silence@gmail.com>
-References: <cover.1607976425.git.asml.silence@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-A preparation patch. It adds a simple helper which abstracts out number
-of segments we're allocating for a bio from iov_iter_npages().
+Instead of creating a full copy of iter->bvec into bio in direct I/O,
+the patchset makes use of the one provided. It changes semantics and
+obliges users of asynchronous kiocb to track bvec lifetime, and [1/6]
+converts the only place that doesn't.
 
-Signed-off-by: Pavel Begunkov <asml.silence@gmail.com>
----
- fs/block_dev.c       | 7 ++++---
- fs/iomap/direct-io.c | 9 ++++-----
- include/linux/bio.h  | 6 ++++++
- 3 files changed, 14 insertions(+), 8 deletions(-)
+bio_iov_iter_get_pages() is still does iov_iter_advance(), which is
+not great, but neccessary for revert to work. It's desirable to have
+a fast version of iov_iter_advance(i, i->count), so we may want to
+hack something up for that. E.g. allow to not keep it consistent
+in some cases when i->count==0. Also we can add a separate bio pool
+without inlined bvec. Very easy to do and shrinks bios from 3 to 2
+cachelines.
 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 9e56ee1f2652..1cbbc794edc6 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -417,7 +417,7 @@ __blkdev_direct_IO(struct kiocb *iocb, struct iov_iter *iter, int nr_pages)
- 		dio->size += bio->bi_iter.bi_size;
- 		pos += bio->bi_iter.bi_size;
- 
--		nr_pages = iov_iter_npages(iter, BIO_MAX_PAGES);
-+		nr_pages = bio_iov_vecs_to_alloc(iter, BIO_MAX_PAGES);
- 		if (!nr_pages) {
- 			bool polled = false;
- 
-@@ -482,9 +482,10 @@ blkdev_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
- {
- 	int nr_pages;
- 
--	nr_pages = iov_iter_npages(iter, BIO_MAX_PAGES + 1);
--	if (!nr_pages)
-+	if (!iov_iter_count(iter))
- 		return 0;
-+
-+	nr_pages = bio_iov_vecs_to_alloc(iter, BIO_MAX_PAGES + 1);
- 	if (is_sync_kiocb(iocb) && nr_pages <= BIO_MAX_PAGES)
- 		return __blkdev_direct_IO_simple(iocb, iter, nr_pages);
- 
-diff --git a/fs/iomap/direct-io.c b/fs/iomap/direct-io.c
-index 933f234d5bec..ea1e8f696076 100644
---- a/fs/iomap/direct-io.c
-+++ b/fs/iomap/direct-io.c
-@@ -250,11 +250,8 @@ iomap_dio_bio_actor(struct inode *inode, loff_t pos, loff_t length,
- 	orig_count = iov_iter_count(dio->submit.iter);
- 	iov_iter_truncate(dio->submit.iter, length);
- 
--	nr_pages = iov_iter_npages(dio->submit.iter, BIO_MAX_PAGES);
--	if (nr_pages <= 0) {
--		ret = nr_pages;
-+	if (!iov_iter_count(dio->submit.iter))
- 		goto out;
--	}
- 
- 	if (need_zeroout) {
- 		/* zero out from the start of the block to the write offset */
-@@ -263,6 +260,7 @@ iomap_dio_bio_actor(struct inode *inode, loff_t pos, loff_t length,
- 			iomap_dio_zero(dio, iomap, pos - pad, pad);
- 	}
- 
-+	nr_pages = bio_iov_vecs_to_alloc(dio->submit.iter, BIO_MAX_PAGES);
- 	do {
- 		size_t n;
- 		if (dio->error) {
-@@ -308,7 +306,8 @@ iomap_dio_bio_actor(struct inode *inode, loff_t pos, loff_t length,
- 		dio->size += n;
- 		copied += n;
- 
--		nr_pages = iov_iter_npages(dio->submit.iter, BIO_MAX_PAGES);
-+		nr_pages = bio_iov_vecs_to_alloc(dio->submit.iter,
-+						 BIO_MAX_PAGES);
- 		iomap_dio_submit_bio(dio, iomap, bio, pos);
- 		pos += n;
- 	} while (nr_pages);
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 1edda614f7ce..2a9f3f0bbe0a 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -10,6 +10,7 @@
- #include <linux/ioprio.h>
- /* struct bio, bio_vec and BIO_* flags are defined in blk_types.h */
- #include <linux/blk_types.h>
-+#include <linux/uio.h>
- 
- #define BIO_DEBUG
- 
-@@ -441,6 +442,11 @@ static inline void bio_wouldblock_error(struct bio *bio)
- 	bio_endio(bio);
- }
- 
-+static inline int bio_iov_vecs_to_alloc(struct iov_iter *iter, int max_segs)
-+{
-+	return iov_iter_npages(iter, max_segs);
-+}
-+
- struct request_queue;
- 
- extern int submit_bio_wait(struct bio *bio);
+Also as suggested it removes BIO_WORKINGSET from direct paths: blkdev,
+iomap, fs/direct-io. Even though the last one is not very important as
+more filesystems are converted to iomap, but still looks hacky. Maybe,
+as Johannes mentioned in another thread, moving it to the writeback
+code (or other option) would be better in the end. Afterwards?
+
+since RFC:
+- add target_core_file patch by Christoph
+- make no-copy default behaviour, remove iter flag
+- iter_advance() instead of hacks to revert to work
+- add bvec iter_advance() optimisation patch
+- remove PSI annotations from direct IO (iomap, block and fs/direct)
+- note in d/f/porting
+
+Christoph Hellwig (1):
+  target/file: allocate the bvec array as part of struct
+    target_core_file_cmd
+
+Pavel Begunkov (5):
+  iov_iter: optimise bvec iov_iter_advance()
+  bio: deduplicate adding a page into bio
+  block/psi: remove PSI annotations from direct IO
+  bio: add a helper calculating nr segments to alloc
+  block/iomap: don't copy bvec for direct IO
+
+ Documentation/filesystems/porting.rst |   9 +++
+ block/bio.c                           | 103 ++++++++++++--------------
+ drivers/target/target_core_file.c     |  20 ++---
+ fs/block_dev.c                        |   7 +-
+ fs/direct-io.c                        |   2 +
+ fs/iomap/direct-io.c                  |   9 +--
+ include/linux/bio.h                   |   9 +++
+ lib/iov_iter.c                        |  19 +++++
+ 8 files changed, 102 insertions(+), 76 deletions(-)
+
 -- 
 2.24.0
 
