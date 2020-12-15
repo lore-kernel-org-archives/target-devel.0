@@ -2,177 +2,157 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EB88C4361B
-	for <target-devel@archiver.kernel.org>; Wed,  9 Dec 2020 16:00:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BF68C2BBCA
+	for <target-devel@archiver.kernel.org>; Tue, 15 Dec 2020 00:25:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6914723433
-	for <target-devel@archiver.kernel.org>; Wed,  9 Dec 2020 16:00:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E7DC522258
+	for <target-devel@archiver.kernel.org>; Tue, 15 Dec 2020 00:25:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730549AbgLIQA1 (ORCPT
+        id S1728021AbgLOAY6 (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 9 Dec 2020 11:00:27 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:35712 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1730278AbgLIQA0 (ORCPT
+        Mon, 14 Dec 2020 19:24:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53438 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725976AbgLOAYp (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 9 Dec 2020 11:00:26 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1607529539;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=YEJSbJgiaDtb+7xVfW+bk1IzQ6Qu9Ts+yErRDxVgSNc=;
-        b=L3MCNysjRcGPIc15i+6n+gbDvwoltg22l2BEppnecZ6CWhP5LgkPgj1Blf1/Nysd4BMoQ/
-        yau6gNv0Nnlo97h21Q9Ujcx10wiPPmqliZqC9VhpOaRnnxbE3TKefXUm9f3KqJjtSQudxc
-        +Y/aV87TCCyl9vc0gyg3uRqVswhG3GU=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-303-_HrCjEb0Mym9i9nqxrIhSg-1; Wed, 09 Dec 2020 10:58:57 -0500
-X-MC-Unique: _HrCjEb0Mym9i9nqxrIhSg-1
-Received: by mail-wm1-f72.google.com with SMTP id a205so508473wme.9
-        for <target-devel@vger.kernel.org>; Wed, 09 Dec 2020 07:58:57 -0800 (PST)
+        Mon, 14 Dec 2020 19:24:45 -0500
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D32DC06179C;
+        Mon, 14 Dec 2020 16:24:05 -0800 (PST)
+Received: by mail-wr1-x441.google.com with SMTP id c5so14509321wrp.6;
+        Mon, 14 Dec 2020 16:24:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=LOsfOtb4JF9iqyizeOjm4tVRPPo2GoTdvRn37AEB3XM=;
+        b=kG976mlGUAT54hMTsT4qHl3ePNNRWB9LFy2HmmL+t6mfRSKdk5umZ6WYomCULDQW9E
+         YuWby+j3W4gWivHpVQQOA/7aIwmkSSLngHeQdb6klQaCptqFG/YV5ejnTwIwlz9HFf2m
+         eDUwq7Rwt+h66HV9wnAS1sesppf+Fpl+3qYXxpDR3ZoWJ27/ZiY4pBb1I/35pIXw34kB
+         Lbi1nxTdy0WE+OGKwC0NKqucdKqyJIKuQSjNNW99pLcDkW/m1CtBI/gMiqbPxZ8kxwzH
+         aobpyU6IKfyxV7UT1aOSZWNXNJ0RQdHNyYaHbm5kYkm08wWJNvMk2ZyFR9EbrghRw0A9
+         lUHA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=YEJSbJgiaDtb+7xVfW+bk1IzQ6Qu9Ts+yErRDxVgSNc=;
-        b=QUKvtDCiSPcKnfYtNvUutBphHSXQkgg9e6IkKEj8JNeyDuu+O4H22ROsJWeF3ap2fb
-         mjDIopKas3aoY6MESCK0ypZ4jb/wck3nOIiU565kfVq1rK75QvMsj2AS/rq15My0Bwt+
-         k5W4hXfUWWQPH4bPojSvbybeib2+KdRold3gn6+WSFd/QXl52C0nvoTIUR36zRne/j8b
-         p4XWG3dpFnlY6D+BlojWtz3QXPgY3Z/T9ms6enhSC2WAKTCLnzYps9h1S+tXGrCMIEvO
-         zRDltZKIz3C7FmLFS7AhvJHWLjC0NB+jZ7Qyzc3rrazb7RNIVSVN+eIbND1588mYAaGT
-         YL/g==
-X-Gm-Message-State: AOAM531mgbahNqQRnKAVnXRHfuxWXZPuPNod0Mv6bKK5Zb0GNPk1nxWn
-        UeJVxpDWxpGA3CvTjErzSu2D4qFQvGrvoVAoi81C8oUaR+q7bVgxjIkJTHfh/f0e8x4QxwiOT8q
-        izgfiOGQXwBk5z8hRPuLO642D
-X-Received: by 2002:adf:92c2:: with SMTP id 60mr3530076wrn.266.1607529536743;
-        Wed, 09 Dec 2020 07:58:56 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxXPiTjoweiFCd8lPhQbRI1pAc1gIvVHQ/dWn2SnAqjW7JdMQnbm3SW51ntkLYMg4+CVwMjSA==
-X-Received: by 2002:adf:92c2:: with SMTP id 60mr3530064wrn.266.1607529536555;
-        Wed, 09 Dec 2020 07:58:56 -0800 (PST)
-Received: from steredhat (host-79-24-227-66.retail.telecomitalia.it. [79.24.227.66])
-        by smtp.gmail.com with ESMTPSA id u66sm4556862wmg.2.2020.12.09.07.58.55
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=LOsfOtb4JF9iqyizeOjm4tVRPPo2GoTdvRn37AEB3XM=;
+        b=LyijsfZas5MN+fpGuiUTO2FGEottJJAESBvtic/a74zNus+hT0RmsfyFSUK/1AXLtt
+         BwgEPKOIqMUawCsaUeJe51wCCKbEmIToRqcdSeH2QD1JSSYG5p/YBvOxfjeSECtGAXq2
+         gaBQBFsBPryLWtXPTZAWW9n8eWtbZhDL/LkhpxirHRb5ht4e6rkIoXbqkS3yA8YQjJdd
+         bipuX84mikhLIsUMWpzLhPqdcBsjnQgpRyTwvGIdst0+EEX6rIR3gT1e9LBoNpQi/Hts
+         PnMYShvisPWzWcwRMaO2qozvZkWs5mgJ0KetUkMRSjTv5yD8I8wYmLbSgDK1+fwYNfrs
+         R8Kw==
+X-Gm-Message-State: AOAM5314kP+8hivUKxxpB6HXY4NsKLXshXfQw7XVXM4vuxIrcGrtOATG
+        Y7GlEtTcTvO6jv7s3urnRORnRks6gjzeGgEL
+X-Google-Smtp-Source: ABdhPJz/AygAoS74uaniu7lJWQGPmncFabpUEeaVcLaoDdNn4iTUPpmUbiF5aWlFvAES8KDtC5RTLg==
+X-Received: by 2002:a5d:4c4e:: with SMTP id n14mr31759423wrt.209.1607991843559;
+        Mon, 14 Dec 2020 16:24:03 -0800 (PST)
+Received: from localhost.localdomain ([85.255.232.163])
+        by smtp.gmail.com with ESMTPSA id b19sm5362012wmj.37.2020.12.14.16.24.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Dec 2020 07:58:55 -0800 (PST)
-Date:   Wed, 9 Dec 2020 16:58:53 +0100
-From:   Stefano Garzarella <sgarzare@redhat.com>
-To:     Mike Christie <michael.christie@oracle.com>
-Cc:     stefanha@redhat.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, mst@redhat.com, jasowang@redhat.com,
-        pbonzini@redhat.com, virtualization@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 0/8] vhost: allow userspace to control vq cpu affinity
-Message-ID: <20201209155853.rdzh5a5qyhmzj3lq@steredhat>
-References: <1607068593-16932-1-git-send-email-michael.christie@oracle.com>
- <20201204160651.7wlselx4jm6k66mb@steredhat>
- <40b22c4a-f9db-1389-aed1-b3d33678cfda@oracle.com>
- <73defee7-2c9b-7a2b-a532-3c297fc56ca6@oracle.com>
+        Mon, 14 Dec 2020 16:24:03 -0800 (PST)
+From:   Pavel Begunkov <asml.silence@gmail.com>
+To:     linux-block@vger.kernel.org
+Cc:     Jens Axboe <axboe@kernel.dk>,
+        Christoph Hellwig <hch@infradead.org>,
+        Matthew Wilcox <willy@infradead.org>,
+        Ming Lei <ming.lei@redhat.com>,
+        Johannes Weiner <hannes@cmpxchg.org>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        "Darrick J . Wong" <darrick.wong@oracle.com>,
+        "Martin K . Petersen" <martin.petersen@oracle.com>,
+        Jonathan Corbet <corbet@lwn.net>, linux-xfs@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, io-uring@vger.kernel.org,
+        linux-kernel@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-doc@vger.kernel.org,
+        Christoph Hellwig <hch@lst.de>
+Subject: [PATCH v1 1/6] target/file: allocate the bvec array as part of struct target_core_file_cmd
+Date:   Tue, 15 Dec 2020 00:20:20 +0000
+Message-Id: <ea68179b3f896ed1800c0a315bb4276e0ac77f7d.1607976425.git.asml.silence@gmail.com>
+X-Mailer: git-send-email 2.24.0
+In-Reply-To: <cover.1607976425.git.asml.silence@gmail.com>
+References: <cover.1607976425.git.asml.silence@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <73defee7-2c9b-7a2b-a532-3c297fc56ca6@oracle.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Mike,
-sorry for the delay but there were holidays.
+From: Christoph Hellwig <hch@lst.de>
 
-On Fri, Dec 04, 2020 at 11:33:11AM -0600, Mike Christie wrote:
->On 12/4/20 11:10 AM, Mike Christie wrote:
->>On 12/4/20 10:06 AM, Stefano Garzarella wrote:
->>>Hi Mike,
->>>
->>>On Fri, Dec 04, 2020 at 01:56:25AM -0600, Mike Christie wrote:
->>>>These patches were made over mst's vhost branch.
->>>>
->>>>The following patches, made over mst's vhost branch, allow userspace
->>>>to set each vq's cpu affinity. Currently, with cgroups the worker thread
->>>>inherits the affinity settings, but we are at the mercy of the CPU
->>>>scheduler for where the vq's IO will be executed on. This can result in
->>>>the scheduler sometimes hammering a couple queues on the host instead of
->>>>spreading it out like how the guest's app might have intended if it was
->>>>mq aware.
->>>>
->>>>This version of the patches is not what you guys were talking about
->>>>initially like with the interface that was similar to nbd's old
->>>>(3.x kernel days) NBD_DO_IT ioctl where userspace calls down to the
->>>>kernel and we run from that context. These patches instead just
->>>>allow userspace to tell the kernel which CPU a vq should run on.
->>>>We then use the kernel's workqueue code to handle the thread
->>>>management.
->>>
->>>I agree that reusing kernel's workqueue code would be a good strategy.
->>>
->>>One concern is how easy it is to implement an adaptive polling 
->>>strategy using workqueues. From what I've seen, adding some 
->>>polling of both backend and virtqueue helps to eliminate 
->>>interrupts and reduce latency.
->>>
->>Would the polling you need to do be similar to the vhost net poll 
->>code like in vhost_net_busy_poll (different algorithm though)? But, 
->>we want to be able to poll multiple devs/vqs from the same CPU 
->>right? Something like:
->>
->>retry:
->>
->>for each poller on CPU N
->>     if poller has work
->>         driver->run work fn
->>
->>if (poll limit hit)
->>     return
->>else
->>     cpu_relax();
->>goto retry:
->>
->>?
+This saves one memory allocation, and ensures the bvecs aren't freed
+before the AIO completion.  This will allow the lower level code to be
+optimized so that it can avoid allocating another bvec array.
 
-Yeah, something similar. IIUC vhost_net_busy_poll() polls both vring and 
-backend (socket).
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Pavel Begunkov <asml.silence@gmail.com>
+---
+ drivers/target/target_core_file.c | 20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
 
-Maybe we need to limit the work->fn amount of work to avoid starvation.
-
->>
->>If so, I had an idea for it. Let me send an additional patch on top 
->>of this set.
-
-Sure :-)
-
->
->Oh yeah, just to make sure I am on the same page for vdpa, because 
->scsi and net work so differnetly.
->
->Were you thinking that you would initially run from
->
->vhost_poll_wakeup -> work->fn
->
->then in the vdpa work->fn you would do the kick_vq still, but then 
->also kick off a group backend/vq poller. This would then poll the 
->vqs/devs that were bound to that CPU from the worker/wq thread.
-
-Yes, this seams reasonable!
-
->
->So I was thinking you want something similar to network's NAPI. Here 
-
-I don't know NAPI very well, but IIUC the goal is the same: try to avoid 
-notifications (IRQs from the device, vm-exit from the guest) doing an 
-adaptive polling.
-
->our work->fn is the hard irq, and then the worker is like their softirq 
->we poll from.
->
-
-I'm a little lost here...
-
-Thanks,
-Stefano
+diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
+index b0cb5b95e892..cce455929778 100644
+--- a/drivers/target/target_core_file.c
++++ b/drivers/target/target_core_file.c
+@@ -241,6 +241,7 @@ struct target_core_file_cmd {
+ 	unsigned long	len;
+ 	struct se_cmd	*cmd;
+ 	struct kiocb	iocb;
++	struct bio_vec	bvecs[];
+ };
+ 
+ static void cmd_rw_aio_complete(struct kiocb *iocb, long ret, long ret2)
+@@ -268,29 +269,22 @@ fd_execute_rw_aio(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 	struct target_core_file_cmd *aio_cmd;
+ 	struct iov_iter iter = {};
+ 	struct scatterlist *sg;
+-	struct bio_vec *bvec;
+ 	ssize_t len = 0;
+ 	int ret = 0, i;
+ 
+-	aio_cmd = kmalloc(sizeof(struct target_core_file_cmd), GFP_KERNEL);
++	aio_cmd = kmalloc(struct_size(aio_cmd, bvecs, sgl_nents), GFP_KERNEL);
+ 	if (!aio_cmd)
+ 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+ 
+-	bvec = kcalloc(sgl_nents, sizeof(struct bio_vec), GFP_KERNEL);
+-	if (!bvec) {
+-		kfree(aio_cmd);
+-		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+-	}
+-
+ 	for_each_sg(sgl, sg, sgl_nents, i) {
+-		bvec[i].bv_page = sg_page(sg);
+-		bvec[i].bv_len = sg->length;
+-		bvec[i].bv_offset = sg->offset;
++		aio_cmd->bvecs[i].bv_page = sg_page(sg);
++		aio_cmd->bvecs[i].bv_len = sg->length;
++		aio_cmd->bvecs[i].bv_offset = sg->offset;
+ 
+ 		len += sg->length;
+ 	}
+ 
+-	iov_iter_bvec(&iter, is_write, bvec, sgl_nents, len);
++	iov_iter_bvec(&iter, is_write, aio_cmd->bvecs, sgl_nents, len);
+ 
+ 	aio_cmd->cmd = cmd;
+ 	aio_cmd->len = len;
+@@ -307,8 +301,6 @@ fd_execute_rw_aio(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 	else
+ 		ret = call_read_iter(file, &aio_cmd->iocb, &iter);
+ 
+-	kfree(bvec);
+-
+ 	if (ret != -EIOCBQUEUED)
+ 		cmd_rw_aio_complete(&aio_cmd->iocb, ret, 0);
+ 
+-- 
+2.24.0
 
