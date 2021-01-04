@@ -2,146 +2,76 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36FA5C433DB
-	for <target-devel@archiver.kernel.org>; Sat,  2 Jan 2021 22:31:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CD8CC433E6
+	for <target-devel@archiver.kernel.org>; Mon,  4 Jan 2021 15:52:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 047BA20798
-	for <target-devel@archiver.kernel.org>; Sat,  2 Jan 2021 22:31:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DF78C224D2
+	for <target-devel@archiver.kernel.org>; Mon,  4 Jan 2021 15:52:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726678AbhABWbh (ORCPT
+        id S1726328AbhADPwn (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Sat, 2 Jan 2021 17:31:37 -0500
-Received: from aserp2130.oracle.com ([141.146.126.79]:49106 "EHLO
-        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726673AbhABWbg (ORCPT
+        Mon, 4 Jan 2021 10:52:43 -0500
+Received: from mail-pl1-f177.google.com ([209.85.214.177]:47082 "EHLO
+        mail-pl1-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725921AbhADPwn (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sat, 2 Jan 2021 17:31:36 -0500
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
-        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 102MUrPo057361;
-        Sat, 2 Jan 2021 22:30:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=corp-2020-01-29;
- bh=CEAaNsIqzlnePH2aCjdw+slJGvweo2T/l2PR/bvFR3M=;
- b=ke7SJv6BCOza8Ou1dGbPaoGmLxVcZX2oL/3U8zuPZ9q2RxnOuSrzHos3v5IoTQQXrTv6
- obRplIxphw7l/goTnBE4D0djJtMvIEB1KVNkHZjXUXF4AgitqlIeinwS7sy/P829kQu0
- a03pCVKsoiUcsKcsxd9lT/rVOxzd9+OiHsSzrl/jJu2rfZxGMY3FOFds15lhXm6glwwx
- TOCRJtGMCRuz3fKPxzYbNuicxuT3IkKfx+qS6wOgnQvrEga9VDLTpuFK7rA706xH7DSw
- XWr5WO7f9br9xx5XaJlRn5vMe9/bZOZzPgEJXnb7GdlYENWozrFtiYAuBjzKitwDXD2M bQ== 
-Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
-        by aserp2130.oracle.com with ESMTP id 35tebah0ca-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Sat, 02 Jan 2021 22:30:53 +0000
-Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
-        by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 102MRMoT153553;
-        Sat, 2 Jan 2021 22:30:52 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by userp3030.oracle.com with ESMTP id 35tfbmkfcr-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Sat, 02 Jan 2021 22:30:52 +0000
-Received: from abhmp0009.oracle.com (abhmp0009.oracle.com [141.146.116.15])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 102MUpCG001491;
-        Sat, 2 Jan 2021 22:30:51 GMT
-Received: from [20.15.0.204] (/73.88.28.6)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Sat, 02 Jan 2021 14:30:51 -0800
-Subject: Re: [PATCH 3/7] tcm qlaxx: move sess cmd list/lock to driver
-To:     Bart Van Assche <bvanassche@acm.org>,
-        Mike Christie <michael.christie@oracle.com>,
-        himanshu.madhani@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Cc:     Nilesh Javali <njavali@marvell.com>
-References: <1603666998-8086-1-git-send-email-michael.christie@oracle.com>
- <1603666998-8086-4-git-send-email-michael.christie@oracle.com>
- <8d94c626-78e4-ed8c-d077-4add314f789c@acm.org>
-From:   Mike Christie <michael.chritie@oracle.com>
-Message-ID: <96d27c3f-6b0a-58b6-bf8a-69a18a9a85fa@oracle.com>
-Date:   Sat, 2 Jan 2021 16:30:50 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        Mon, 4 Jan 2021 10:52:43 -0500
+Received: by mail-pl1-f177.google.com with SMTP id v3so14725679plz.13
+        for <target-devel@vger.kernel.org>; Mon, 04 Jan 2021 07:52:27 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:to:from:subject:message-id:date:user-agent
+         :mime-version:content-language:content-transfer-encoding;
+        bh=/BFImy7XfPqQ+/BPL5kJu8SSJcjgUdo9D8OXbq0nF6Y=;
+        b=NzUaQch6l+tczVg1Hj+ArvpHyABHQth+/7hYxDd1RoNIGM46rbV0bRGmaPTdLQEt/z
+         vUTcCIw4xhDuk9rbo1WDMD16/KXMtT1uFzes2fvncTHUZx+XagXj+/eGi/CKRUj5KQfZ
+         RcBNmMNSfVyT8mRms0Y4DjtT3qZiyynmD51rTtIq7vICWDltFmJoF7q2bdviEr2bOMB+
+         63HPBrlucAT1ExknfZXUqaDP0681vyp0Y4XkGw7RhiFuQpmIuYZQONwRDWppJZdQxQWs
+         4N1tTyG7L+mqXhWFL1l8uAkgvlnus/CKJuF3W/KN2Y57rqsmKKXiwPqRIKdQGia2XbxU
+         aCDw==
+X-Gm-Message-State: AOAM533uKn4qetwfpJd2VWFd7ja6hZIJdTvvEUwEp8ebYiiv2cxg+dcu
+        aBIA+QXKwOTQ0kwDxKK2YL6w1GSMhuI=
+X-Google-Smtp-Source: ABdhPJz6qkE8cl9EYqoPoE7khsGeJvwpMsra1HbdjPq0LUGswY5IzDsMskVvFyBgYEU+QY+4bBOJvQ==
+X-Received: by 2002:a17:902:b18c:b029:da:fc41:baf8 with SMTP id s12-20020a170902b18cb02900dafc41baf8mr72606992plr.58.1609775522207;
+        Mon, 04 Jan 2021 07:52:02 -0800 (PST)
+Received: from [192.168.3.217] (c-73-241-217-19.hsd1.ca.comcast.net. [73.241.217.19])
+        by smtp.gmail.com with ESMTPSA id q16sm55824363pfg.139.2021.01.04.07.52.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 04 Jan 2021 07:52:01 -0800 (PST)
+To:     target-devel@vger.kernel.org,
+        James Bottomley <jejb@linux.vnet.ibm.com>,
+        Hannes Reinecke <hare@suse.com>,
+        Mike Christie <michael.christie@oracle.com>
+From:   Bart Van Assche <bvanassche@acm.org>
+Subject: About the tcm_fc FCoE target driver
+Message-ID: <f5808b3e-0434-9d8b-93fe-94d48d657926@acm.org>
+Date:   Mon, 4 Jan 2021 07:51:59 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.0
 MIME-Version: 1.0
-In-Reply-To: <8d94c626-78e4-ed8c-d077-4add314f789c@acm.org>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9852 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 malwarescore=0
- mlxlogscore=999 mlxscore=0 suspectscore=0 bulkscore=0 phishscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101020142
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9852 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 phishscore=0
- priorityscore=1501 spamscore=0 mlxscore=0 clxscore=1011 bulkscore=0
- lowpriorityscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101020143
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 12/31/20 10:45 PM, Bart Van Assche wrote:
-> On 10/25/20 4:03 PM, Mike Christie wrote:
->> @@ -617,25 +629,20 @@ static int tcm_qla2xxx_handle_tmr(struct qla_tgt_mgmt_cmd *mcmd, u64 lun,
->>  static struct qla_tgt_cmd *tcm_qla2xxx_find_cmd_by_tag(struct fc_port *sess,
->>      uint64_t tag)
->>  {
->> -	struct qla_tgt_cmd *cmd = NULL;
->> -	struct se_cmd *secmd;
->> +	struct qla_tgt_cmd *cmd;
->>  	unsigned long flags;
->>  
->>  	if (!sess->se_sess)
->>  		return NULL;
->>  
->> -	spin_lock_irqsave(&sess->se_sess->sess_cmd_lock, flags);
->> -	list_for_each_entry(secmd, &sess->se_sess->sess_cmd_list, se_cmd_list) {
->> -		/* skip task management functions, including tmr->task_cmd */
->> -		if (secmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
->> -			continue;
->> -
->> -		if (secmd->tag == tag) {
->> -			cmd = container_of(secmd, struct qla_tgt_cmd, se_cmd);
->> -			break;
->> -		}
->> +	spin_lock_irqsave(&sess->sess_cmd_lock, flags);
->> +	list_for_each_entry(cmd, &sess->sess_cmd_list, sess_cmd_list) {
->> +		if (cmd->se_cmd.tag == tag)
->> +			goto done;
->>  	}
->> -	spin_unlock_irqrestore(&sess->se_sess->sess_cmd_lock, flags);
->> +	cmd = NULL;
->> +done:
->> +	spin_unlock_irqrestore(&sess->sess_cmd_lock, flags);
->>  
->>  	return cmd;
->>  }
-> 
-> Hi Mike,
-> 
-> Although this behavior has not been introduced by your patch: what prevents
-> that the command found by tcm_qla2xxx_find_cmd_by_tag() disappears after
-> sess_cmd_lock has been unlocked and before the caller uses the qla_tgt_cmd 
-> pointer? As you may know the corresponding code in SCST increments the SCSI
+Hi,
 
-Nothing.
+My understanding is that the ft_queue_data_in() function in the tcm_fc
+driver gets called while processing SCSI READ commands. That function queues
+data for sending by calling fc_seq_send(). The FCoE driver translates that
+call into a dev_queue_xmit(skb) which sends the data asynchronously.
+ft_queue_data_in() frees the data buffer synchronously from inside
+ft_queue_status(). I believe that this race condition can trigger data
+corruption. Since nobody ever reported this race condition, does this mean
+that the FCoE target driver has no users and hence that it can be removed
+from the kernel tree?
 
-> command reference count before unlocking the lock that protects the command
-> list. See also the __scst_find_cmd_by_tag() call in scst_mgmt_cmd_init().
-> 
+Thanks,
 
-I'll send a patch for that when I get the aborted task crash fixed up. I
-didn't send fixes for existing bugs in the driver like them for this patchset.
-It got a little crazy. For example for the aborted task issue, I reverted the
-patch that made the eh async I mentioned a while back. That fixes the crash,
-but then there was a hang. So I thought I'll just convert it to the async eh
-patch since either way I have to fix the driver. Himanshu was helping me figure
-out how to support it, but it's not trivial.
-
-
-
- 
+Bart.
