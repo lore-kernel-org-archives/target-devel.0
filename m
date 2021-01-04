@@ -2,76 +2,103 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CD8CC433E6
-	for <target-devel@archiver.kernel.org>; Mon,  4 Jan 2021 15:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C5ADC433E6
+	for <target-devel@archiver.kernel.org>; Mon,  4 Jan 2021 16:08:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DF78C224D2
-	for <target-devel@archiver.kernel.org>; Mon,  4 Jan 2021 15:52:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 369E720578
+	for <target-devel@archiver.kernel.org>; Mon,  4 Jan 2021 16:08:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726328AbhADPwn (ORCPT
+        id S1729331AbhADQHj (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 4 Jan 2021 10:52:43 -0500
-Received: from mail-pl1-f177.google.com ([209.85.214.177]:47082 "EHLO
-        mail-pl1-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725921AbhADPwn (ORCPT
+        Mon, 4 Jan 2021 11:07:39 -0500
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:53948 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1728716AbhADQHa (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 4 Jan 2021 10:52:43 -0500
-Received: by mail-pl1-f177.google.com with SMTP id v3so14725679plz.13
-        for <target-devel@vger.kernel.org>; Mon, 04 Jan 2021 07:52:27 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:to:from:subject:message-id:date:user-agent
-         :mime-version:content-language:content-transfer-encoding;
-        bh=/BFImy7XfPqQ+/BPL5kJu8SSJcjgUdo9D8OXbq0nF6Y=;
-        b=NzUaQch6l+tczVg1Hj+ArvpHyABHQth+/7hYxDd1RoNIGM46rbV0bRGmaPTdLQEt/z
-         vUTcCIw4xhDuk9rbo1WDMD16/KXMtT1uFzes2fvncTHUZx+XagXj+/eGi/CKRUj5KQfZ
-         RcBNmMNSfVyT8mRms0Y4DjtT3qZiyynmD51rTtIq7vICWDltFmJoF7q2bdviEr2bOMB+
-         63HPBrlucAT1ExknfZXUqaDP0681vyp0Y4XkGw7RhiFuQpmIuYZQONwRDWppJZdQxQWs
-         4N1tTyG7L+mqXhWFL1l8uAkgvlnus/CKJuF3W/KN2Y57rqsmKKXiwPqRIKdQGia2XbxU
-         aCDw==
-X-Gm-Message-State: AOAM533uKn4qetwfpJd2VWFd7ja6hZIJdTvvEUwEp8ebYiiv2cxg+dcu
-        aBIA+QXKwOTQ0kwDxKK2YL6w1GSMhuI=
-X-Google-Smtp-Source: ABdhPJz6qkE8cl9EYqoPoE7khsGeJvwpMsra1HbdjPq0LUGswY5IzDsMskVvFyBgYEU+QY+4bBOJvQ==
-X-Received: by 2002:a17:902:b18c:b029:da:fc41:baf8 with SMTP id s12-20020a170902b18cb02900dafc41baf8mr72606992plr.58.1609775522207;
-        Mon, 04 Jan 2021 07:52:02 -0800 (PST)
-Received: from [192.168.3.217] (c-73-241-217-19.hsd1.ca.comcast.net. [73.241.217.19])
-        by smtp.gmail.com with ESMTPSA id q16sm55824363pfg.139.2021.01.04.07.52.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 04 Jan 2021 07:52:01 -0800 (PST)
-To:     target-devel@vger.kernel.org,
-        James Bottomley <jejb@linux.vnet.ibm.com>,
+        Mon, 4 Jan 2021 11:07:30 -0500
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 104G1c8W160756;
+        Mon, 4 Jan 2021 11:06:42 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : reply-to : to : date : in-reply-to : references : content-type :
+ mime-version : content-transfer-encoding; s=pp1;
+ bh=XP2NgddM/WrYYdKPAGZP2evPECnBpY2OuFrOwbIfmIM=;
+ b=Gn80gsEYtDthijcKQR91aMrdEZM09fk5VY4xe7t+r7C+/D6Ax9CoRVZnvr+TtoRF6AFq
+ nAbXrb+/H5n/nsKd1oNWGp4/BfN25WfD5Llm7OF5HNzRSFZEIv85HVVIVaOCKHieTuDg
+ I7arwYCM+T5U8kmdk5xxVO50AmT64n2TMtTqggB7Hrr3JsLJBB+asYbJrSH2tGlMp0PJ
+ Ny3SkU+zF7wjUvJEwpnYLRV9ocWbyFi+n+OYNtvdYVlt7EgqExrg7uj6uMRYY8eLff//
+ I8BHtGrupulNsWUK1xUydsrvJ0isgP00LIkT1nW3i7NHqf0wMVzjZjd7xe8tDO7lIim3 dg== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.11])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 35v55w23fa-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 04 Jan 2021 11:06:42 -0500
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+        by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 104Fvo5b026242;
+        Mon, 4 Jan 2021 16:06:41 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+        by ppma03dal.us.ibm.com with ESMTP id 35tgf8k0dn-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 04 Jan 2021 16:06:41 +0000
+Received: from b03ledav004.gho.boulder.ibm.com (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+        by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 104G6elS11338032
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 4 Jan 2021 16:06:40 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 2970D7805C;
+        Mon,  4 Jan 2021 16:06:40 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 04A277805F;
+        Mon,  4 Jan 2021 16:06:38 +0000 (GMT)
+Received: from jarvis.int.hansenpartnership.com (unknown [9.85.172.80])
+        by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+        Mon,  4 Jan 2021 16:06:38 +0000 (GMT)
+Message-ID: <92ab516c9493accb64630e7e86033a87be018458.camel@linux.ibm.com>
+Subject: Re: About the tcm_fc FCoE target driver
+From:   James Bottomley <jejb@linux.ibm.com>
+Reply-To: jejb@linux.ibm.com
+To:     Bart Van Assche <bvanassche@acm.org>, target-devel@vger.kernel.org,
         Hannes Reinecke <hare@suse.com>,
         Mike Christie <michael.christie@oracle.com>
-From:   Bart Van Assche <bvanassche@acm.org>
-Subject: About the tcm_fc FCoE target driver
-Message-ID: <f5808b3e-0434-9d8b-93fe-94d48d657926@acm.org>
-Date:   Mon, 4 Jan 2021 07:51:59 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
+Date:   Mon, 04 Jan 2021 08:06:37 -0800
+In-Reply-To: <f5808b3e-0434-9d8b-93fe-94d48d657926@acm.org>
+References: <f5808b3e-0434-9d8b-93fe-94d48d657926@acm.org>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343,18.0.737
+ definitions=2021-01-04_10:2021-01-04,2021-01-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxlogscore=858
+ suspectscore=0 priorityscore=1501 spamscore=0 lowpriorityscore=0
+ phishscore=0 clxscore=1031 malwarescore=0 mlxscore=0 bulkscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101040101
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi,
+On Mon, 2021-01-04 at 07:51 -0800, Bart Van Assche wrote:
+> Hi,
+> 
+> My understanding is that the ft_queue_data_in() function in the
+> tcm_fc driver gets called while processing SCSI READ commands. That
+> function queues data for sending by calling fc_seq_send(). The FCoE
+> driver translates that call into a dev_queue_xmit(skb) which sends
+> the data asynchronously.  ft_queue_data_in() frees the data buffer
+> synchronously from inside ft_queue_status(). I believe that this race
+> condition can trigger data corruption. Since nobody ever reported
+> this race condition, does this mean that the FCoE target driver has
+> no users and hence that it can be removed from the kernel tree?
 
-My understanding is that the ft_queue_data_in() function in the tcm_fc
-driver gets called while processing SCSI READ commands. That function queues
-data for sending by calling fc_seq_send(). The FCoE driver translates that
-call into a dev_queue_xmit(skb) which sends the data asynchronously.
-ft_queue_data_in() frees the data buffer synchronously from inside
-ft_queue_status(). I believe that this race condition can trigger data
-corruption. Since nobody ever reported this race condition, does this mean
-that the FCoE target driver has no users and hence that it can be removed
-from the kernel tree?
+It could just mean the race condition is so rare no user has ever
+triggered it reliably enough to report ... have you managed to trigger
+it?
 
-Thanks,
+James
 
-Bart.
+
