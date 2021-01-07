@@ -2,105 +2,134 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72E27C433DB
-	for <target-devel@archiver.kernel.org>; Tue,  5 Jan 2021 01:49:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FAAEC433E0
+	for <target-devel@archiver.kernel.org>; Thu,  7 Jan 2021 17:45:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 434DE22573
-	for <target-devel@archiver.kernel.org>; Tue,  5 Jan 2021 01:49:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EA10E23403
+	for <target-devel@archiver.kernel.org>; Thu,  7 Jan 2021 17:45:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727770AbhAEBsu (ORCPT
+        id S1728808AbhAGRoy (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 4 Jan 2021 20:48:50 -0500
-Received: from mail-pg1-f170.google.com ([209.85.215.170]:37962 "EHLO
-        mail-pg1-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727511AbhAEBsu (ORCPT
+        Thu, 7 Jan 2021 12:44:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58578 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728262AbhAGRox (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 4 Jan 2021 20:48:50 -0500
-Received: by mail-pg1-f170.google.com with SMTP id e2so20276664pgi.5;
-        Mon, 04 Jan 2021 17:48:34 -0800 (PST)
+        Thu, 7 Jan 2021 12:44:53 -0500
+Received: from mail-qk1-x736.google.com (mail-qk1-x736.google.com [IPv6:2607:f8b0:4864:20::736])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 64D64C0612FA
+        for <target-devel@vger.kernel.org>; Thu,  7 Jan 2021 09:44:13 -0800 (PST)
+Received: by mail-qk1-x736.google.com with SMTP id v126so6126824qkd.11
+        for <target-devel@vger.kernel.org>; Thu, 07 Jan 2021 09:44:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=lHNm8uDmPy3iG7VP+rZSrjxlKRFNIPZy9iz2Yh/Sa+s=;
+        b=DilJRgOjUGCkNxVbxqaEZR1cwZNNstBr627PIcTB9nAkNhFIAEdj2KP9O/SRdV1mTy
+         fwsNq4eEp0F+MGgRKtNUHxsis3IsLDldIIGRF9oAp4kxNykVi2lUkquJNA3T8hZ8Y0S5
+         BKEOlaehVFxfM/tqZ4q+TczmHy6izyRHS5wE/oLZtnlcdKbSvT5M8372+4oNafqS+J0c
+         VbyMm00QdGgQ9hCdLJqY2hsPbrzaX+gJDeCGl6JjEHQE3ivIvZX2YeuEZjhb55hhBsEw
+         O4EbR0zCO3kQRe/EiyZJNsaQLjfohF5vzinPCUFyJHNbCPwwG/MbuMJNcQcpI4/Yia9h
+         tn2g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=iUVK5navqb95pupmgd9YzX87VeG3u/6V7I7N2PejYtg=;
-        b=onWKYqFZHqCjJ6rKdtU+eY/1dWf79scDQwOR5rBBKS5RtgjthOjkPDnZx1NsyD2AeH
-         0MsAXbmNj6N3vUvCT+xnDEoSCLtn4YqXhduPJetgMnt+UECp74vn3l3kWGP9ylBzDsOg
-         S12gbmHit5E9Aa2FAuWP1HUOXfQAt+8FtQjodjHvbkjobAEovEPVt3UiMm0R5nptrH3h
-         pzGgE98S/syFlmNMk5hZzanCvAE8Z3br7pj4nBwDJI25RDE/aTZJ86KCPl+0agtXhNWS
-         Mo3JhZUHebxIAet4Q9zn8MRqXI/8gjn4+T5TuaeHnPIeTodwq0/Jw/OQ4E4UH0pZJUEJ
-         xgtA==
-X-Gm-Message-State: AOAM532UyNf5rALmy1E+lUEWnZZFUJlUx/SqE6GuufJpw/m+QLIC8zm4
-        rO326kHeKI79Q4PNk8G2lVI=
-X-Google-Smtp-Source: ABdhPJwzgRX+RGhlnQaIjfArrJuHlMKAMOxe4eTbuOyxNFW7vMhZmvmjR2h5swJDzjjpRU13PM4MEw==
-X-Received: by 2002:a63:5d7:: with SMTP id 206mr75322598pgf.384.1609811289105;
-        Mon, 04 Jan 2021 17:48:09 -0800 (PST)
-Received: from [192.168.3.217] (c-73-241-217-19.hsd1.ca.comcast.net. [73.241.217.19])
-        by smtp.gmail.com with ESMTPSA id i7sm56827951pfc.50.2021.01.04.17.48.07
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 04 Jan 2021 17:48:08 -0800 (PST)
-Subject: Re: [PATCH] scsi: target/sbp: remove firewire SBP target driver
-To:     Finn Thain <fthain@telegraphics.com.au>
-Cc:     Chris Boot <bootc@boo.tc>, linuxppc-dev@lists.ozlabs.org,
-        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux1394-devel@lists.sourceforge.net,
-        linux-kernel@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Nicholas Bellinger <nab@linux-iscsi.org>,
-        Stefan Richter <stefanr@s5r6.in-berlin.de>
-References: <01020172acd3d10f-3964f076-a820-43fc-9494-3f3946e9b7b5-000000@eu-west-1.amazonses.com>
- <alpine.LNX.2.22.394.2006140934520.15@nippy.intranet>
- <7ad14946-5c25-fc49-1e48-72d37a607832@boo.tc>
- <alpine.LNX.2.22.394.2006150919110.8@nippy.intranet>
- <8da0c285-d707-a3d2-063e-472af5cc560f@boo.tc>
- <alpine.LNX.2.22.394.2006161929380.8@nippy.intranet>
- <8cbab988-fba7-8e27-7faf-9f7aa36ca235@acm.org>
- <alpine.LNX.2.22.394.2006171104540.11@nippy.intranet>
- <e3b5ce6a-0152-01b8-89d2-80bcdb9c1c57@acm.org>
- <alpine.LNX.2.23.453.2101050840010.6@nippy.intranet>
-From:   Bart Van Assche <bvanassche@acm.org>
-Message-ID: <9103b316-8848-2350-7c0d-b742c8d8c83c@acm.org>
-Date:   Mon, 4 Jan 2021 17:48:06 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=lHNm8uDmPy3iG7VP+rZSrjxlKRFNIPZy9iz2Yh/Sa+s=;
+        b=ZZaV5ysbR8dtYIUvpF66wPsX00NRc9EOQ0OXmxDbWiZxdqtgDrjWM2+6qnS2AOwWXh
+         FzQB0KTCg1d+BUFUDqXXfB8C/TQtIxlNhtZalld/sfv9MucdtqdhaE+QfIaBZd4Hf3J0
+         m9JJta+s+c9J8iUmdA0F8i2Hus4jWF/DEJi4hnwDs2uVpOloiExzSvRkIG7RuZw98Rye
+         PLPSAeZeNFygcKduq6d4wPM9+3e9KL0RfIKNXgGwq1tCI3JSycXyUpepXj7J5iA5qOOY
+         p0I4hzDWDESXIREAN7A/Gic63C6mXMouxGSFX+TZNIiLfsetxmnnatBHc5eTrG5y6JCZ
+         XWgA==
+X-Gm-Message-State: AOAM532UbyMIni4Joc9IErJimfuErRr/Bjqx8pgQ5V8w3RK9MD0lEmDu
+        zVI1j1NqsUIzPAiKOWtgDw21WA==
+X-Google-Smtp-Source: ABdhPJwTdp1mFNmZjd/uTThSUu3tREo6Dtb4VkwqpGpv7ZYVPfWDxnJ3YoPDIOWbz+jR2KjGnUR+yw==
+X-Received: by 2002:a05:620a:9d7:: with SMTP id y23mr10176247qky.181.1610041452516;
+        Thu, 07 Jan 2021 09:44:12 -0800 (PST)
+Received: from ziepe.ca (hlfxns017vw-142-162-115-133.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.162.115.133])
+        by smtp.gmail.com with ESMTPSA id b12sm3053989qtj.12.2021.01.07.09.44.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 07 Jan 2021 09:44:11 -0800 (PST)
+Received: from jgg by mlx with local (Exim 4.94)
+        (envelope-from <jgg@ziepe.ca>)
+        id 1kxZKU-003lqO-Rg; Thu, 07 Jan 2021 13:44:10 -0400
+Date:   Thu, 7 Jan 2021 13:44:10 -0400
+From:   Jason Gunthorpe <jgg@ziepe.ca>
+To:     Douglas Gilbert <dgilbert@interlog.com>
+Cc:     linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-rdma@vger.kernel.org,
+        linux-kernel@vger.kernel.org, martin.petersen@oracle.com,
+        jejb@linux.vnet.ibm.com, bostroesser@gmail.com, bvanassche@acm.org,
+        ddiss@suse.de
+Subject: Re: [PATCH v5 1/4] sgl_alloc_order: remove 4 GiB limit, sgl_free()
+ warning
+Message-ID: <20210107174410.GB504133@ziepe.ca>
+References: <20201228234955.190858-1-dgilbert@interlog.com>
+ <20201228234955.190858-2-dgilbert@interlog.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LNX.2.23.453.2101050840010.6@nippy.intranet>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201228234955.190858-2-dgilbert@interlog.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 1/4/21 2:50 PM, Finn Thain wrote:
-> On Mon, 4 Jan 2021, Bart Van Assche wrote:
->> Additionally, there is a good alternative available for the sbp driver. 
->> Every system I know of that is equipped with a Firewire port also has an 
->> Ethernet port. So users who want to provide SCSI target functionality on 
->> such systems can use any SCSI transport protocol that is compatible with 
->> Ethernet (iSCSI, iSER over soft-RoCE, SRP over soft-RoCE, ...).
-> 
-> Ethernet is not always an alternative. That was already discussed in this 
-> thread. But let's assume for a moment that you can migrate any and all 
-> users of this driver over to an ethernet driver.
-> 
-> Why would the maintainers of that Ethernet driver and its API accept that 
-> plan, if adding users would extend their maintenance and testing 
-> obligations? Do you think those maintainers should pay the "kind of tax 
-> that all developers/users pay to all developers/users?"
+On Mon, Dec 28, 2020 at 06:49:52PM -0500, Douglas Gilbert wrote:
+> diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+> index a59778946404..4986545beef9 100644
+> +++ b/lib/scatterlist.c
+> @@ -554,13 +554,15 @@ EXPORT_SYMBOL(sg_alloc_table_from_pages);
+>  #ifdef CONFIG_SGL_ALLOC
+>  
+>  /**
+> - * sgl_alloc_order - allocate a scatterlist and its pages
+> + * sgl_alloc_order - allocate a scatterlist with equally sized elements
+>   * @length: Length in bytes of the scatterlist. Must be at least one
+> - * @order: Second argument for alloc_pages()
+> + * @order: Second argument for alloc_pages(). Each sgl element size will
+> + *	   be (PAGE_SIZE*2^order) bytes
+>   * @chainable: Whether or not to allocate an extra element in the scatterlist
+> - *	for scatterlist chaining purposes
+> + *	       for scatterlist chaining purposes
+>   * @gfp: Memory allocation flags
+> - * @nent_p: [out] Number of entries in the scatterlist that have pages
+> + * @nent_p: [out] Number of entries in the scatterlist that have pages.
+> + *		  Ignored if NULL is given.
+>   *
+>   * Returns: A pointer to an initialized scatterlist or %NULL upon failure.
+>   */
+> @@ -574,8 +576,8 @@ struct scatterlist *sgl_alloc_order(unsigned long long length,
+>  	u32 elem_len;
+>  
+>  	nent = round_up(length, PAGE_SIZE << order) >> (PAGE_SHIFT + order);
+> -	/* Check for integer overflow */
+> -	if (length > (nent << (PAGE_SHIFT + order)))
+> +	/* Integer overflow if:  length > nent*2^(PAGE_SHIFT+order) */
+> +	if (ilog2(length) > ilog2(nent) + PAGE_SHIFT + order)
+>  		return NULL;
+>  	nalloc = nent;
+>  	if (chainable) {
 
-Hi Finn,
+This is a little bit too tortured now, how about this:
 
-I cannot speak in the name of the iSCSI over TCP/IP or iSER driver
-maintainers. But since I maintain the SRP initiator and target kernel
-drivers myself, I can state that I would be happy to help SBP target users
-(if that driver has any users today) to switch from SCSI over Firewire to
-SCSI over SRP over RoCE or even NVMEoF over TCP.
+	if (length >> (PAGE_SHIFT + order) >= UINT_MAX)
+		return NULL;
+	nent = length >> (PAGE_SHIFT + order);
+	if (length & ((1ULL << (PAGE_SHIFT + order)) - 1))
+		nent++;
 
-Thanks,
+	if (chainable) {
+		if (check_add_overflow(nent, 1, &nalloc))
+			return NULL;
+	}
+	else
+		nalloc = nent;
 
-Bart.
+Jason
