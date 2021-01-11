@@ -2,176 +2,101 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E7B3C433DB
-	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 05:35:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3740C433E0
+	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 06:53:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 54C46224BD
-	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 05:35:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8B311225A9
+	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 06:53:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725536AbhAKFfR (ORCPT
+        id S1727468AbhAKGxu (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 11 Jan 2021 00:35:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35984 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725379AbhAKFfQ (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Mon, 11 Jan 2021 00:35:16 -0500
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0FAB7C061786;
-        Sun, 10 Jan 2021 21:34:36 -0800 (PST)
-Received: by mail-wr1-x436.google.com with SMTP id y17so15017645wrr.10;
-        Sun, 10 Jan 2021 21:34:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=kLURNOPTiz/cA1wF9W0JF1cphEUwA7F56dOaNUie0HI=;
-        b=q3ednVxPdJM9gsDbBW3FHEpNsipAa7X/pTQ4t/D/rmaKNlqZQxgVxlPj/LRD06Bv6o
-         d9ttg3jPc2soAgt5ImEO07lS+wtvul03RoqRX8FggH0aqfE8dCYmmUGn5kywM3EN29Zn
-         sej9pYRtTe0YRUAcYG6moxRiQ2iUmlosF+iBfKFJdNgVpr9qqofKD6Eo8uqQsIIKocNm
-         BZ3KKI0yAXVxDIJg7OhBjoIQUt2jCvSbdYRQiI7u3IBkDeB2RaPk+nOj79dGK0qRF9i/
-         qmvIypBJiCrq9DNiB2Rf4hV2taIXXxoiLD7bkW9kijn+jOs1j54N1r4I7rRkKfCgU80L
-         TIsQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:autocrypt
-         :message-id:date:user-agent:mime-version:in-reply-to
-         :content-language:content-transfer-encoding;
-        bh=kLURNOPTiz/cA1wF9W0JF1cphEUwA7F56dOaNUie0HI=;
-        b=AzYdf7nYjseVpf+nstkG+Q4a33n4OXl1oTozFbH+O5Tt03F2JHBWljfEu9pFDWvr5C
-         Oc7LTc21NjN0YILJuXhUZ/1ziGSR7TG6yIp0imuYPinUeGMz2HbQVa1d5jWCl2RZRn0T
-         FCUhZWs0c7Jhox6bHhV8mHnS7gibjEUwfwTgiU1FxJ3ttgzDgwRf/UN+VqKOoSt/IALr
-         j1dAcBr00QRWTzf0a3XvI7ZuqC7jFHhPi/Kt+T3RvSXQQs/3dPMqT/rUi+51t7ZEZFfq
-         LYNCqu5tT+fodGKFKS3j8J8j0ErW7bS+EVHXRrLVQBTLKJgffHL29WAh7nxL6H2ijMkW
-         W5pg==
-X-Gm-Message-State: AOAM533fpIXi4TATS8npaOPuXlSb+4MH34jiyINqrXn0KPgF3BVzftoX
-        9SqUyPUCE+XTGNsKkMMkkSnVluUCmB4=
-X-Google-Smtp-Source: ABdhPJy4NdH3sTd8gHxpwP44M24BTcydjY0PpYsjXxJpbmbMAsvZmOcN3J8+4zHlX4EWG9Xz63YRSA==
-X-Received: by 2002:a5d:5913:: with SMTP id v19mr14678543wrd.207.1610343274399;
-        Sun, 10 Jan 2021 21:34:34 -0800 (PST)
-Received: from [192.168.8.119] ([85.255.237.6])
-        by smtp.gmail.com with ESMTPSA id v11sm22552703wrt.25.2021.01.10.21.34.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 10 Jan 2021 21:34:33 -0800 (PST)
-Subject: Re: [PATCH] target/file: don't zero iter before iov_iter_bvec
-To:     Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <34cd22d6cec046e3adf402accb1453cc255b9042.1610207523.git.asml.silence@gmail.com>
- <BYAPR04MB4965F4DCF59E5225CF17322D86AD0@BYAPR04MB4965.namprd04.prod.outlook.com>
- <4d063dde-c710-44e3-31b9-8fb6b7e1d952@gmail.com>
- <BYAPR04MB49653C92C7925B8C3EAEF3CE86AD0@BYAPR04MB4965.namprd04.prod.outlook.com>
- <b9558bf8-a7e3-c2f9-ce00-3fc2b90dcc87@gmail.com>
- <BYAPR04MB4965E008861D5B29B9E757D186AB0@BYAPR04MB4965.namprd04.prod.outlook.com>
- <68887abc-2ef4-035e-625b-84569c1b5b24@gmail.com>
- <BYAPR04MB4965683837A93C9D863AAFAF86AB0@BYAPR04MB4965.namprd04.prod.outlook.com>
-From:   Pavel Begunkov <asml.silence@gmail.com>
-Autocrypt: addr=asml.silence@gmail.com; prefer-encrypt=mutual; keydata=
- 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 bA==
-Message-ID: <cc2d2b43-a8c6-bc09-5a62-22465f4554ee@gmail.com>
-Date:   Mon, 11 Jan 2021 05:31:00 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.3.0
+        Mon, 11 Jan 2021 01:53:50 -0500
+Received: from mx2.suse.de ([195.135.220.15]:33348 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727466AbhAKGxu (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 11 Jan 2021 01:53:50 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 5B9E3AB7A;
+        Mon, 11 Jan 2021 06:53:08 +0000 (UTC)
+Subject: Re: [PATCH] Remove the tcm_fc driver
+To:     Bart Van Assche <bvanassche@acm.org>,
+        "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc:     "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>,
+        target-devel@vger.kernel.org, Kiran Patil <kiran.patil@intel.com>,
+        Hannes Reinecke <hare@suse.com>,
+        Mike Christie <michael.christie@oracle.com>,
+        Christoph Hellwig <hch@lst.de>, Yi Zou <yi.zou@intel.com>
+References: <20210111004740.1786-1-bvanassche@acm.org>
+From:   Hannes Reinecke <hare@suse.de>
+Message-ID: <94f1af10-11e4-9f21-c0ad-a2df60cbf521@suse.de>
+Date:   Mon, 11 Jan 2021 07:53:07 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.0
 MIME-Version: 1.0
-In-Reply-To: <BYAPR04MB4965683837A93C9D863AAFAF86AB0@BYAPR04MB4965.namprd04.prod.outlook.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20210111004740.1786-1-bvanassche@acm.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 11/01/2021 05:23, Chaitanya Kulkarni wrote:
-> On 1/10/21 18:32, Pavel Begunkov wrote:
->> On 11/01/2021 02:06, Chaitanya Kulkarni wrote:
->>> On 1/9/21 13:29, Pavel Begunkov wrote:
->>>> On 09/01/2021 20:52, Chaitanya Kulkarni wrote:
->>>>> On 1/9/21 12:40, Pavel Begunkov wrote:
->>>>>> I expect you won't find any, but such little things can pile up
->>>>>> into a not-easy-to-spot overhead over time.
->>>>> That is what I suspected with the resulting assembly. The commit log
->>>>> needs to document that there is no direct impact on the performance
->>>> It's obvious that 3-4 extra mov $0 off(%reg) won't change performance
->>>> but still hasn't been formally confirmed ...
->>> This is obvious for you and me since we spent time into looking into
->>> resulting assembly not every reviewer is expected to do that see [1].
->>>>> which can be seen with this patch, but this is nice to have
->>>> ... so if you don't mind, I won't be resending just for that.
->>> As per commit log guidelines [1] you have to quantify the optimization.
->>>
->>> Since you cannot quantify the optimization modify the commit log explaining
->> And then you see "Optimizations usually aren�t free but trade-offs
->> between", and the patch doesn't fall under it.
-> First part applies to all the optimizations with and without tradeoffs
-> "Quantify optimizations and trade-offs."
-> The later part doesn't mean optimizations without trade-offs should be
-> allowed without having any supportive data.
->>
->> Let me be frank, I see it more like as a whim. If the maintainer agrees
->> with that strange requirement of yours and want to bury it under
->> bureaucracy, fine by me, don't take it, I don't care, but I haven't
->> ever been asked here to do that for patches as this.
-> I didn't write the commit log guidelines, as a reviewer I'm following them.
-> The patch commit log claims optimization with neither having any data nor
-> having the supporting fact ("possibly no observable difference but in the
-> long term it matters") for the completeness.
->> It's not "I cannot" but rather "I haven't even tried to and expect...".
->> Don't mix, there is a huge difference between.
-> Then provide the numbers to support your claim.
+On 1/11/21 1:47 AM, Bart Van Assche wrote:
+> Since its introduction in 2011, the tcm_fc driver processes SCSI read
+> commands as follows if the number of remaining bytes is a multiple of four:
+> - Queue data by calling fc_seq_send(). The FCoE driver translates that
+>    call into a dev_queue_xmit(skb) call which sends the data asynchronously.
+> - After having queued the data for sending, free the data buffer
+>    synchronously from inside ft_queue_status().
+> 
+> This race condition can be triggered by running fio --verify against the
+> FCoE initiator driver. Since this bug causes data corruption and since
+> nobody has reported this bug since the tcm_fc driver went upstream, this
+> is a strong indication that the tcm_fc driver is not being used. Hence
+> remove this driver from the kernel tree.
+> 
+> Cc: Kiran Patil <kiran.patil@intel.com>
+> Cc: Hannes Reinecke <hare@suse.com>
+> Cc: Mike Christie <michael.christie@oracle.com>
+> Cc: Christoph Hellwig <hch@lst.de>
+> Cc: Yi Zou <yi.zou@intel.com>
+> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+> ---
+>   drivers/target/Kconfig           |   1 -
+>   drivers/target/Makefile          |   1 -
+>   drivers/target/tcm_fc/Kconfig    |   6 -
+>   drivers/target/tcm_fc/Makefile   |   7 -
+>   drivers/target/tcm_fc/tcm_fc.h   | 169 ----------
+>   drivers/target/tcm_fc/tfc_cmd.c  | 561 -------------------------------
+>   drivers/target/tcm_fc/tfc_conf.c | 491 ---------------------------
+>   drivers/target/tcm_fc/tfc_io.c   | 359 --------------------
+>   drivers/target/tcm_fc/tfc_sess.c | 503 ---------------------------
+>   9 files changed, 2098 deletions(-)
+>   delete mode 100644 drivers/target/tcm_fc/Kconfig
+>   delete mode 100644 drivers/target/tcm_fc/Makefile
+>   delete mode 100644 drivers/target/tcm_fc/tcm_fc.h
+>   delete mode 100644 drivers/target/tcm_fc/tfc_cmd.c
+>   delete mode 100644 drivers/target/tcm_fc/tfc_conf.c
+>   delete mode 100644 drivers/target/tcm_fc/tfc_io.c
+>   delete mode 100644 drivers/target/tcm_fc/tfc_sess.c
+> 
+Please, no. I'd rather keep it; having the tcm_fc driver in allows one 
+to have a simple virtualized FCoE testbed. We're using it quite heavily 
+for QA and validation.
 
-What claim? I didn't make any regarding performance, you may want to
-re-read the commit message.
+I'd be happy to fix the race condition instead.
 
-Anyway, I'll halt replying to this topic. Nothing personal, but it's
-getting annoying.
+Cheers,
 
+Hannes
 -- 
-Pavel Begunkov
+Dr. Hannes Reinecke                Kernel Storage Architect
+hare@suse.de                              +49 911 74053 688
+SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
+HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
