@@ -2,228 +2,186 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92B79C433E6
-	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 03:02:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57884C433E0
+	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 05:25:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 65561224B0
-	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 03:02:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1D2D622482
+	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 05:25:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726573AbhAKDCL (ORCPT
+        id S1726049AbhAKFZA (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 10 Jan 2021 22:02:11 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:60963 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726151AbhAKDCL (ORCPT
+        Mon, 11 Jan 2021 00:25:00 -0500
+Received: from esa4.hgst.iphmx.com ([216.71.154.42]:35287 "EHLO
+        esa4.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725355AbhAKFZA (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 10 Jan 2021 22:02:11 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1610334045;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=8jASGmhPqP7RCSguFeH346nWqDqUB4CAsxCgAKu7Vfk=;
-        b=MBDBeZYFfQ8S7LIWyGwTcswiCPo/koRVFgFADDBLNBSmYVt4n2sU312sDeR//2Rq3/MpdV
-        f2hLJ5xNhhpbKfYnNq4BXMyUWN0zr7YQqHu5CInFOB2mErN8ywccGKAf3Vo8ScpQgN3YZK
-        eaFGz5nKTMJLqaeuBlB9Hax1wQmDUR8=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-36-qjc6OIoQOX25COSuu0IfnA-1; Sun, 10 Jan 2021 22:00:40 -0500
-X-MC-Unique: qjc6OIoQOX25COSuu0IfnA-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 5F2A7100C62C;
-        Mon, 11 Jan 2021 03:00:28 +0000 (UTC)
-Received: from T590 (ovpn-12-180.pek2.redhat.com [10.72.12.180])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id C971836807;
-        Mon, 11 Jan 2021 03:00:19 +0000 (UTC)
-Date:   Mon, 11 Jan 2021 11:00:14 +0800
-From:   Ming Lei <ming.lei@redhat.com>
+        Mon, 11 Jan 2021 00:25:00 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+  t=1610342698; x=1641878698;
+  h=from:to:cc:subject:date:message-id:references:
+   content-transfer-encoding:mime-version;
+  bh=79h993Jl6+/qkRQI1EalaSmOGtQDGy0quYZPWB50PC4=;
+  b=HDs9yPMNXzto4INWSCpM6idShddUph9EKfyq5p200TOk+kD1XXJlAu9m
+   Y4BGIxeMeKmCLK6HQr5FaMtIs6oH8XceXxYeIkXj6yxuSikut+OBSnQT0
+   MGIYWrjcZCFdI3hKe1EmMRWYh7ezaSDKD1gWikGDc0MFsy8DLnoS3y5Ae
+   F3SKvUjc8PWx4e4tu9ylpPV+ZAsHI2DB0zumGgC7Oq8nc9HKvFM72JgWj
+   a9r16iaWO4l3rLP7+WKcIibZgg1D5xh+Qc0Lk8ysT2/Jo62pue0MdeQPU
+   2IDQIS5arQSYTW/u48jj4jzVNxFLutq5Ecupvg8mXEEhNJebJuJ8xOyJ6
+   g==;
+IronPort-SDR: +tTv24krX1JQEeQ6Z1zvSGv8izcYttkdBTpsVztJLNn04SDsavbfb6unt9smCqxKBGLfbwznAE
+ zADMu5it7QXK14yduFN706iC1Ms3QNWOu6/yDHiXPRgm1fUjcQQpbeNogaSCiKbqZRk8ojFbYk
+ cTY7GEg93p33S2/D5ZD+ZmOQ7ZHXffzXKpKAMnEw7XuaExdSIoBAk0Zt4ZGKiMqoVOt0YExBzk
+ sHBUspBcM7qShxX5phDnB1bp9TbLdmKWyr4TJFN5XlINsr7hps5T/nvC+PEw6/S1Ur5SVdKQ7a
+ e3U=
+X-IronPort-AV: E=Sophos;i="5.79,337,1602518400"; 
+   d="scan'208";a="157124335"
+Received: from mail-dm6nam10lp2105.outbound.protection.outlook.com (HELO NAM10-DM6-obe.outbound.protection.outlook.com) ([104.47.58.105])
+  by ob1.hgst.iphmx.com with ESMTP; 11 Jan 2021 13:23:52 +0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=TS8wpydZ85ub8BKyD4BhI6q/srLeiVAzE1sCtfd885XEdda8k6rDh+uzbXPwpFf87GmQnOnxzW4sLvhiM8N+1gCxRL0qQpqe2N5L1vmcfR9JBBQyuRjuSpnRbAD/dOOOzkahvTFtZapzMm02GTnu3FWbfo+R5uzb5e4V+YMzaXjpEqvyLv8g3L6xjuk1Ae8aMklW0lZQVNdC6IlXydhC7BdhiqoJCvR8bE/RMV6XVPZlG8siyCdS88h+v2qTsyXoJFKqmXvzsW29yLlhKhcQNEl/Lhm/tQ6GT+CCbWdAQFVvb7h8u+m7II4s1EFMwxcmt2bWcL2Lp8jd8o9aDF6ndQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=79h993Jl6+/qkRQI1EalaSmOGtQDGy0quYZPWB50PC4=;
+ b=bigyqmx+CYQbHXT5tNvxlEO3S1fLAISbHGSehds+qjGm5N+qkJXQPI9uSVhCoEO6TH65uNxG/mOfnGtcqtiyDj+4kvK/Kdf0c4YPsD+AVd7CbWaGZ03Sdu7Yzt56AOpwKxPJkW+jsNCVo1TsHVuBpJtqw1nZ/xk+Rc+6rxVr7GdiSeiRXycBreOuZQtI/wEYnztP7YsA7CvPVxtDneoBn0N6+xTmFjOns0HyLanxoO763+rodIEYxTIrEVC9UMVONW86Z8XwP8p7/pxvfkb1/KSLda0WQ0RKx8M1RCys7x454y+2koiDoYL9nG3wrqMUP3AMJEKWkpWNVtJHAQs2hQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=wdc.com; dmarc=pass action=none header.from=wdc.com; dkim=pass
+ header.d=wdc.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=sharedspace.onmicrosoft.com; s=selector2-sharedspace-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=79h993Jl6+/qkRQI1EalaSmOGtQDGy0quYZPWB50PC4=;
+ b=0Cih/vmKDqZ1f4kVJ1cl2IS9dAVBJDsai9e2ZtnY98eO9TaE+u/zRYNHFnZLQUHm0Y768oj0KInv8HvLS1iw+Xlw/wvzCPJ4xzC78j27DH4K4uJ4I2A5e6f1UXGnsbju/9hhRgQWIYvqCw8KYH2Pxk3REfxHzwtD5kJoLsH7GbY=
+Received: from BYAPR04MB4965.namprd04.prod.outlook.com (2603:10b6:a03:4d::25)
+ by BYAPR04MB4039.namprd04.prod.outlook.com (2603:10b6:a02:ab::25) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3742.9; Mon, 11 Jan
+ 2021 05:23:50 +0000
+Received: from BYAPR04MB4965.namprd04.prod.outlook.com
+ ([fe80::716c:4e0c:c6d1:298a]) by BYAPR04MB4965.namprd04.prod.outlook.com
+ ([fe80::716c:4e0c:c6d1:298a%6]) with mapi id 15.20.3742.012; Mon, 11 Jan 2021
+ 05:23:50 +0000
+From:   Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
 To:     Pavel Begunkov <asml.silence@gmail.com>
-Cc:     linux-block@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
-        Christoph Hellwig <hch@infradead.org>,
-        Matthew Wilcox <willy@infradead.org>,
-        Johannes Weiner <hannes@cmpxchg.org>,
-        Alexander Viro <viro@zeniv.linux.org.uk>,
-        "Darrick J . Wong" <darrick.wong@oracle.com>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Jonathan Corbet <corbet@lwn.net>, linux-xfs@vger.kernel.org,
-        linux-fsdevel@vger.kernel.org, io-uring@vger.kernel.org,
-        linux-kernel@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-scsi@vger.kernel.org, linux-doc@vger.kernel.org,
-        Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH v3 7/7] bio: don't copy bvec for direct IO
-Message-ID: <20210111030014.GH4147870@T590>
-References: <cover.1610170479.git.asml.silence@gmail.com>
- <69fef253b37fc44dd28c43398715e27cee5e0fe0.1610170479.git.asml.silence@gmail.com>
+CC:     "Martin K . Petersen" <martin.petersen@oracle.com>,
+        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] target/file: don't zero iter before iov_iter_bvec
+Thread-Topic: [PATCH] target/file: don't zero iter before iov_iter_bvec
+Thread-Index: AQHW5qBkaWm3Wnjfmk+XiYs/GS5+eQ==
+Date:   Mon, 11 Jan 2021 05:23:50 +0000
+Message-ID: <BYAPR04MB4965683837A93C9D863AAFAF86AB0@BYAPR04MB4965.namprd04.prod.outlook.com>
+References: <34cd22d6cec046e3adf402accb1453cc255b9042.1610207523.git.asml.silence@gmail.com>
+ <BYAPR04MB4965F4DCF59E5225CF17322D86AD0@BYAPR04MB4965.namprd04.prod.outlook.com>
+ <4d063dde-c710-44e3-31b9-8fb6b7e1d952@gmail.com>
+ <BYAPR04MB49653C92C7925B8C3EAEF3CE86AD0@BYAPR04MB4965.namprd04.prod.outlook.com>
+ <b9558bf8-a7e3-c2f9-ce00-3fc2b90dcc87@gmail.com>
+ <BYAPR04MB4965E008861D5B29B9E757D186AB0@BYAPR04MB4965.namprd04.prod.outlook.com>
+ <68887abc-2ef4-035e-625b-84569c1b5b24@gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: gmail.com; dkim=none (message not signed)
+ header.d=none;gmail.com; dmarc=none action=none header.from=wdc.com;
+x-originating-ip: [199.255.45.62]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: 9c4c04be-41c5-4666-d7c7-08d8b5f1147c
+x-ms-traffictypediagnostic: BYAPR04MB4039:
+x-microsoft-antispam-prvs: <BYAPR04MB40392F7D7D9B61B86483F7F886AB0@BYAPR04MB4039.namprd04.prod.outlook.com>
+wdcipoutbound: EOP-TRUE
+x-ms-oob-tlc-oobclassifiers: OLM:5236;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: hDSsu2AWpng0Il9L0aaHa1c0PnS/btWnqAO01CR9ndkWWB4LwqtD74aLxHOFIdt0qgvK9x41W6WIOlgJ4BuZURtIPgmfDVCcXpskIa4HgUt/LHeP1YI1Z/Rtwry6Qh/ZKpr86MToRQMsDiqqxszPmZ5r5BuUZjnn6pL+IpXg1vatACHITDN8FnREp2apSiYRDl33qsLi1ldLaxBnkwzOKeWaK+ymYAEek34bN9lPRi97AQGq8sFZxQNZANoi9NddMyibRPmQyhsHNinTRXHtzsjAmNKiC+YNVZkFPWqEJtAsBOECdzm7dhWSqIWziiOzDevefZ8PA9q2iOHvkbrcf9F2isvGgG1jvoGKrDWkW98tGWfMxd243XUQ+yynlvowf3EzYiU+tRmP/SyAKZyfhA==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR04MB4965.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(136003)(376002)(366004)(346002)(39860400002)(396003)(83380400001)(53546011)(66556008)(6506007)(64756008)(316002)(8676002)(54906003)(66476007)(66946007)(5660300002)(76116006)(478600001)(71200400001)(66446008)(55016002)(2906002)(9686003)(8936002)(52536014)(6916009)(4326008)(186003)(7696005)(33656002)(86362001)(26005);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata: =?Windows-1252?Q?oF98f1p+LMDlvHN28CxE9Ri02UhDI0Pirt4zLkaraRAXOvaClVZsuwNJ?=
+ =?Windows-1252?Q?GojheJhjVHF4KskVPf3ES7tXVWqjqPWhLTM1FEBsy3ktYj0hH9A2k1OR?=
+ =?Windows-1252?Q?D7sRlmYcxZ2VPvKXELrThFhP3IR0qyIQx6wnQ5mbGyGfEZsr5KKtNSxa?=
+ =?Windows-1252?Q?O1NxQM3f0r10FkQMlHqHJsLdj9jrnEZdBES84J+GmPPbDyEPFJ62HaNr?=
+ =?Windows-1252?Q?Q8TJPanrUXJdWm6lVm7T9SXix0x/98gNCkT0pG8i+DkmdGam/bcRvbYh?=
+ =?Windows-1252?Q?K70rAqXVdB+6fXLy6l+p3ifKs/CzXHiWznxI/Azzby3uyOLatnxHGohO?=
+ =?Windows-1252?Q?QIJDSivu8g+EmPJPGmWElhD6V9rVCiyN6jrrQIdKlzFC8QzwP02T3Ugs?=
+ =?Windows-1252?Q?qdT0ylNhj07IVES1K9OTKALQkkj1bnFvYx6CxiJMzzysiRlImr/X+reG?=
+ =?Windows-1252?Q?DtkN7MdUPP+RzMNH/68TmjbNTXBgJjRIVPoyDwHvbuxCRk+2WCX4/1DI?=
+ =?Windows-1252?Q?P1c20WkKOHhBbjkITKN0pkknuEJXbN1iIpmGUljuUKsIBDQdWIXYw5sR?=
+ =?Windows-1252?Q?158e6YUozTfnGyU7CFva6LdNsHxL1lLqudybELqRhZfUFiHKQuVH0k/j?=
+ =?Windows-1252?Q?XHZoLYvD2HIfaLpi/FvrRT8ny4/da3hobaba599UCVl67NNWq1YI+1eK?=
+ =?Windows-1252?Q?pXKi7pkpJu6AgLtX6/ibFzu5Iwp0uOXzeDfLG9jwc4842e41RkR1pb5n?=
+ =?Windows-1252?Q?7YfMDWXsiKMYy2Bu+kRIfaojJ3cCvW9wxZNOlOSoBIy85Ar3uxZyXdc1?=
+ =?Windows-1252?Q?aqFzzwNdcpZe9PCVYZbTTKKJTa8u5pK2yNYBmoL3VABmWcvcjU38AqXf?=
+ =?Windows-1252?Q?FnjSq7+2hH6xqnmRn1YMlZTFaJDzpfH37vu1BA4HWThzVUsU/9hJGpt4?=
+ =?Windows-1252?Q?FpJGi973G5NtT/Sh246xwVVUvS3ep0npVhE5B0VURjmK1K5BRHckW8qa?=
+ =?Windows-1252?Q?q3YOlQdoE6pRpQeLqB/X7KiDak/v9Xh5ZtN//vwK+p+JNvCG28KZdgQn?=
+ =?Windows-1252?Q?/Gr5ZeRBEpLQTnft?=
+x-ms-exchange-transport-forked: True
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <69fef253b37fc44dd28c43398715e27cee5e0fe0.1610170479.git.asml.silence@gmail.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+X-OriginatorOrg: wdc.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: BYAPR04MB4965.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9c4c04be-41c5-4666-d7c7-08d8b5f1147c
+X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Jan 2021 05:23:50.7488
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: b61c8803-16f3-4c35-9b17-6f65f441df86
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: REG/LQIMpUcc3hQ/QpJTorPCo/Dk1ev7NsKjjocFi2ebmaOrcfbnfQPv4m4zCS55weQYFeNjlcCirft1E1SouTLuIo6BzQGTYxol6pWSgr8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR04MB4039
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Sat, Jan 09, 2021 at 04:03:03PM +0000, Pavel Begunkov wrote:
-> The block layer spends quite a while in blkdev_direct_IO() to copy and
-> initialise bio's bvec. However, if we've already got a bvec in the input
-> iterator it might be reused in some cases, i.e. when new
-> ITER_BVEC_FLAG_FIXED flag is set. Simple tests show considerable
-> performance boost, and it also reduces memory footprint.
-> 
-> Suggested-by: Matthew Wilcox <willy@infradead.org>
-> Reviewed-by: Christoph Hellwig <hch@lst.de>
-> Signed-off-by: Pavel Begunkov <asml.silence@gmail.com>
-> ---
->  Documentation/filesystems/porting.rst |  9 ++++
->  block/bio.c                           | 67 ++++++++++++---------------
->  include/linux/bio.h                   |  5 +-
->  3 files changed, 42 insertions(+), 39 deletions(-)
-> 
-> diff --git a/Documentation/filesystems/porting.rst b/Documentation/filesystems/porting.rst
-> index c722d94f29ea..1f8cf8e10b34 100644
-> --- a/Documentation/filesystems/porting.rst
-> +++ b/Documentation/filesystems/porting.rst
-> @@ -872,3 +872,12 @@ its result is kern_unmount() or kern_unmount_array().
->  
->  zero-length bvec segments are disallowed, they must be filtered out before
->  passed on to an iterator.
-> +
-> +---
-> +
-> +**mandatory**
-> +
-> +For bvec based itererators bio_iov_iter_get_pages() now doesn't copy bvecs but
-> +uses the one provided. Anyone issuing kiocb-I/O should ensure that the bvec and
-> +page references stay until I/O has completed, i.e. until ->ki_complete() has
-> +been called or returned with non -EIOCBQUEUED code.
-> diff --git a/block/bio.c b/block/bio.c
-> index 9f26984af643..6f031a04b59a 100644
-> --- a/block/bio.c
-> +++ b/block/bio.c
-> @@ -960,21 +960,17 @@ void bio_release_pages(struct bio *bio, bool mark_dirty)
->  }
->  EXPORT_SYMBOL_GPL(bio_release_pages);
->  
-> -static int __bio_iov_bvec_add_pages(struct bio *bio, struct iov_iter *iter)
-> +static int bio_iov_bvec_set(struct bio *bio, struct iov_iter *iter)
->  {
-> -	const struct bio_vec *bv = iter->bvec;
-> -	unsigned int len;
-> -	size_t size;
-> -
-> -	if (WARN_ON_ONCE(iter->iov_offset > bv->bv_len))
-> -		return -EINVAL;
-> -
-> -	len = min_t(size_t, bv->bv_len - iter->iov_offset, iter->count);
-> -	size = bio_add_page(bio, bv->bv_page, len,
-> -				bv->bv_offset + iter->iov_offset);
-> -	if (unlikely(size != len))
-> -		return -EINVAL;
-> -	iov_iter_advance(iter, size);
-> +	WARN_ON_ONCE(BVEC_POOL_IDX(bio) != 0);
-> +
-> +	bio->bi_vcnt = iter->nr_segs;
-> +	bio->bi_max_vecs = iter->nr_segs;
-> +	bio->bi_io_vec = (struct bio_vec *)iter->bvec;
-> +	bio->bi_iter.bi_bvec_done = iter->iov_offset;
-> +	bio->bi_iter.bi_size = iter->count;
-> +
-> +	iov_iter_advance(iter, iter->count);
->  	return 0;
->  }
->  
-> @@ -1088,12 +1084,12 @@ static int __bio_iov_append_get_pages(struct bio *bio, struct iov_iter *iter)
->   * This takes either an iterator pointing to user memory, or one pointing to
->   * kernel pages (BVEC iterator). If we're adding user pages, we pin them and
->   * map them into the kernel. On IO completion, the caller should put those
-> - * pages. If we're adding kernel pages, and the caller told us it's safe to
-> - * do so, we just have to add the pages to the bio directly. We don't grab an
-> - * extra reference to those pages (the user should already have that), and we
-> - * don't put the page on IO completion. The caller needs to check if the bio is
-> - * flagged BIO_NO_PAGE_REF on IO completion. If it isn't, then pages should be
-> - * released.
-> + * pages. For bvec based iterators bio_iov_iter_get_pages() uses the provided
-> + * bvecs rather than copying them. Hence anyone issuing kiocb based IO needs
-> + * to ensure the bvecs and pages stay referenced until the submitted I/O is
-> + * completed by a call to ->ki_complete() or returns with an error other than
-> + * -EIOCBQUEUED. The caller needs to check if the bio is flagged BIO_NO_PAGE_REF
-> + * on IO completion. If it isn't, then pages should be released.
->   *
->   * The function tries, but does not guarantee, to pin as many pages as
->   * fit into the bio, or are requested in @iter, whatever is smaller. If
-> @@ -1105,27 +1101,22 @@ static int __bio_iov_append_get_pages(struct bio *bio, struct iov_iter *iter)
->   */
->  int bio_iov_iter_get_pages(struct bio *bio, struct iov_iter *iter)
->  {
-> -	const bool is_bvec = iov_iter_is_bvec(iter);
-> -	int ret;
-> -
-> -	if (WARN_ON_ONCE(bio->bi_vcnt))
-> -		return -EINVAL;
-> +	int ret = 0;
->  
-> -	do {
-> -		if (bio_op(bio) == REQ_OP_ZONE_APPEND) {
-> -			if (WARN_ON_ONCE(is_bvec))
-> -				return -EINVAL;
-> -			ret = __bio_iov_append_get_pages(bio, iter);
-> -		} else {
-> -			if (is_bvec)
-> -				ret = __bio_iov_bvec_add_pages(bio, iter);
-> +	if (iov_iter_is_bvec(iter)) {
-> +		if (WARN_ON_ONCE(bio_op(bio) == REQ_OP_ZONE_APPEND))
-> +			return -EINVAL;
-> +		bio_iov_bvec_set(bio, iter);
-> +		bio_set_flag(bio, BIO_NO_PAGE_REF);
-> +		return 0;
-> +	} else {
-> +		do {
-> +			if (bio_op(bio) == REQ_OP_ZONE_APPEND)
-> +				ret = __bio_iov_append_get_pages(bio, iter);
->  			else
->  				ret = __bio_iov_iter_get_pages(bio, iter);
-> -		}
-> -	} while (!ret && iov_iter_count(iter) && !bio_full(bio, 0));
-> -
-> -	if (is_bvec)
-> -		bio_set_flag(bio, BIO_NO_PAGE_REF);
-> +		} while (!ret && iov_iter_count(iter) && !bio_full(bio, 0));
-> +	}
->  
->  	/* don't account direct I/O as memory stall */
->  	bio_clear_flag(bio, BIO_WORKINGSET);
-> diff --git a/include/linux/bio.h b/include/linux/bio.h
-> index d8f9077c43ef..1d30572a8c53 100644
-> --- a/include/linux/bio.h
-> +++ b/include/linux/bio.h
-> @@ -444,10 +444,13 @@ static inline void bio_wouldblock_error(struct bio *bio)
->  
->  /*
->   * Calculate number of bvec segments that should be allocated to fit data
-> - * pointed by @iter.
-> + * pointed by @iter. If @iter is backed by bvec it's going to be reused
-> + * instead of allocating a new one.
->   */
->  static inline int bio_iov_vecs_to_alloc(struct iov_iter *iter, int max_segs)
->  {
-> +	if (iov_iter_is_bvec(iter))
-> +		return 0;
->  	return iov_iter_npages(iter, max_segs);
->  }
->  
-> -- 
-> 2.24.0
-> 
-
-Reviewed-by: Ming Lei <ming.lei@redhat.com>
-
--- 
-Ming
-
+On 1/10/21 18:32, Pavel Begunkov wrote:=0A=
+> On 11/01/2021 02:06, Chaitanya Kulkarni wrote:=0A=
+>> On 1/9/21 13:29, Pavel Begunkov wrote:=0A=
+>>> On 09/01/2021 20:52, Chaitanya Kulkarni wrote:=0A=
+>>>> On 1/9/21 12:40, Pavel Begunkov wrote:=0A=
+>>>>> I expect you won't find any, but such little things can pile up=0A=
+>>>>> into a not-easy-to-spot overhead over time.=0A=
+>>>> That is what I suspected with the resulting assembly. The commit log=
+=0A=
+>>>> needs to document that there is no direct impact on the performance=0A=
+>>> It's obvious that 3-4 extra mov $0 off(%reg) won't change performance=
+=0A=
+>>> but still hasn't been formally confirmed ...=0A=
+>> This is obvious for you and me since we spent time into looking into=0A=
+>> resulting assembly not every reviewer is expected to do that see [1].=0A=
+>>>> which can be seen with this patch, but this is nice to have=0A=
+>>> ... so if you don't mind, I won't be resending just for that.=0A=
+>> As per commit log guidelines [1] you have to quantify the optimization.=
+=0A=
+>>=0A=
+>> Since you cannot quantify the optimization modify the commit log explain=
+ing=0A=
+> And then you see "Optimizations usually aren=92t free but trade-offs=0A=
+> between", and the patch doesn't fall under it.=0A=
+First part applies to all the optimizations with and without tradeoffs=0A=
+"Quantify optimizations and trade-offs."=0A=
+The later part doesn't mean optimizations without trade-offs should be=0A=
+allowed without having any supportive data.=0A=
+>=0A=
+> Let me be frank, I see it more like as a whim. If the maintainer agrees=
+=0A=
+> with that strange requirement of yours and want to bury it under=0A=
+> bureaucracy, fine by me, don't take it, I don't care, but I haven't=0A=
+> ever been asked here to do that for patches as this.=0A=
+I didn't write the commit log guidelines, as a reviewer I'm following them.=
+=0A=
+The patch commit log claims optimization with neither having any data nor=
+=0A=
+having the supporting fact ("possibly no observable difference but in the=
+=0A=
+long term it matters") for the completeness.=0A=
+> It's not "I cannot" but rather "I haven't even tried to and expect...".=
+=0A=
+> Don't mix, there is a huge difference between.=0A=
+Then provide the numbers to support your claim.=0A=
