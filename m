@@ -2,101 +2,163 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3740C433E0
-	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 06:53:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B8EC433DB
+	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 14:44:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8B311225A9
-	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 06:53:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 14810227C3
+	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 14:44:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727468AbhAKGxu (ORCPT
+        id S1732743AbhAKOnt (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 11 Jan 2021 01:53:50 -0500
-Received: from mx2.suse.de ([195.135.220.15]:33348 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727466AbhAKGxu (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 11 Jan 2021 01:53:50 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 5B9E3AB7A;
-        Mon, 11 Jan 2021 06:53:08 +0000 (UTC)
-Subject: Re: [PATCH] Remove the tcm_fc driver
-To:     Bart Van Assche <bvanassche@acm.org>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>
-Cc:     "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>,
-        target-devel@vger.kernel.org, Kiran Patil <kiran.patil@intel.com>,
-        Hannes Reinecke <hare@suse.com>,
-        Mike Christie <michael.christie@oracle.com>,
-        Christoph Hellwig <hch@lst.de>, Yi Zou <yi.zou@intel.com>
-References: <20210111004740.1786-1-bvanassche@acm.org>
-From:   Hannes Reinecke <hare@suse.de>
-Message-ID: <94f1af10-11e4-9f21-c0ad-a2df60cbf521@suse.de>
-Date:   Mon, 11 Jan 2021 07:53:07 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
+        Mon, 11 Jan 2021 09:43:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40552 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729772AbhAKOnt (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Mon, 11 Jan 2021 09:43:49 -0500
+Received: from mail-io1-xd2b.google.com (mail-io1-xd2b.google.com [IPv6:2607:f8b0:4864:20::d2b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CE03C0617A2
+        for <target-devel@vger.kernel.org>; Mon, 11 Jan 2021 06:43:09 -0800 (PST)
+Received: by mail-io1-xd2b.google.com with SMTP id q1so3660746ion.8
+        for <target-devel@vger.kernel.org>; Mon, 11 Jan 2021 06:43:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=1Uy4dmSh1YXfPmAlEsVIKk8C/onNwMc2Qs5bzKzONEY=;
+        b=IEBc0YK6atXTkF/0ep40Msod91NjmTr9cLAHeYx9ZEwhH9/ioU/Ke/2QaOxLtPTflQ
+         h5+BFBVQYdQNlmztL63yL9yF/DkIS7V2iwlKHqyZ57yiGKFKpE8Z4DHqNwECA+THTqfg
+         KK39n68NS76uYp4WCHPSKGCW/gZCXz8UFs/Nh+z8uxLeMskRR5ScoHWZvxzqV5kAcR7b
+         kNx2p48bUJZM0tuIXW6mjHt+XYdfvQwyHKmb3zBhoNRGX6b2B3g13TphzPcLudJwyQqQ
+         6kgxwhtTkNyxPxSA/XRHBsFC2o9+3zYifBIBE4/wKNhZRjV/bFn2BjQtWPS0J19LWhAh
+         E8tw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=1Uy4dmSh1YXfPmAlEsVIKk8C/onNwMc2Qs5bzKzONEY=;
+        b=Pz9wOifQBdlrqGZWClou5qhJEgP6ZUmCV4D25i1B4bHFooHRe/eRzoJ0KOSZXYaxST
+         IYfRINv0eSRcfsAHwnMYcaaj0QwlQ9rJICDRuBJ6KdshkH8cZ6orTJ1P8qgiWf157sNp
+         H8G1Gg5ewQeZv/EbHuyg3xoYtDQjG03Xtg5Irgp4B2EE3HImzw0KbVTJc/Alsqx+o/C2
+         3j6ni+ociV4AN5QNIm/RQIAd+O7hxdpEqAxn+q803A47inAgu6DBvDTnlI1Tb7CAnLO2
+         6KcOFSjbUfbLono1+R9vZy9EDn4jnw+6R/DQ95pIIyN6HLOfMTf2LOPgUHz5VC7tBWJX
+         KVLg==
+X-Gm-Message-State: AOAM532bCCQYCsdlZquNpPcv4+baKw46wVRTFQ3dAjktYMOmaTxDrQWk
+        WfSS/yNlQT4QAx6ARBqD/36Rng==
+X-Google-Smtp-Source: ABdhPJyZ4N4cjirnjDbebnDeZG+f7StyYJS43ntMtcIQPUiYPQbNQdhEnL7AFHNuclaajx6Qc8gFDA==
+X-Received: by 2002:a05:6602:1cb:: with SMTP id w11mr14752467iot.45.1610376188168;
+        Mon, 11 Jan 2021 06:43:08 -0800 (PST)
+Received: from ziepe.ca (hlfxns017vw-142-162-115-133.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.162.115.133])
+        by smtp.gmail.com with ESMTPSA id a7sm15427506iln.0.2021.01.11.06.43.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 Jan 2021 06:43:07 -0800 (PST)
+Received: from jgg by mlx with local (Exim 4.94)
+        (envelope-from <jgg@ziepe.ca>)
+        id 1kyyPS-005WSa-NT; Mon, 11 Jan 2021 10:43:06 -0400
+Date:   Mon, 11 Jan 2021 10:43:06 -0400
+From:   Jason Gunthorpe <jgg@ziepe.ca>
+To:     Douglas Gilbert <dgilbert@interlog.com>
+Cc:     linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-rdma@vger.kernel.org,
+        linux-kernel@vger.kernel.org, martin.petersen@oracle.com,
+        jejb@linux.vnet.ibm.com, bostroesser@gmail.com, bvanassche@acm.org,
+        ddiss@suse.de
+Subject: Re: [PATCH v5 1/4] sgl_alloc_order: remove 4 GiB limit, sgl_free()
+ warning
+Message-ID: <20210111144306.GK504133@ziepe.ca>
+References: <20201228234955.190858-1-dgilbert@interlog.com>
+ <20201228234955.190858-2-dgilbert@interlog.com>
+ <20210107174410.GB504133@ziepe.ca>
+ <76827f07-9484-d2c6-346b-0bdccfdf4a7a@interlog.com>
 MIME-Version: 1.0
-In-Reply-To: <20210111004740.1786-1-bvanassche@acm.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <76827f07-9484-d2c6-346b-0bdccfdf4a7a@interlog.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 1/11/21 1:47 AM, Bart Van Assche wrote:
-> Since its introduction in 2011, the tcm_fc driver processes SCSI read
-> commands as follows if the number of remaining bytes is a multiple of four:
-> - Queue data by calling fc_seq_send(). The FCoE driver translates that
->    call into a dev_queue_xmit(skb) call which sends the data asynchronously.
-> - After having queued the data for sending, free the data buffer
->    synchronously from inside ft_queue_status().
+On Sat, Jan 09, 2021 at 05:58:50PM -0500, Douglas Gilbert wrote:
+> On 2021-01-07 12:44 p.m., Jason Gunthorpe wrote:
+> > On Mon, Dec 28, 2020 at 06:49:52PM -0500, Douglas Gilbert wrote:
+> > > diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+> > > index a59778946404..4986545beef9 100644
+> > > +++ b/lib/scatterlist.c
+> > > @@ -554,13 +554,15 @@ EXPORT_SYMBOL(sg_alloc_table_from_pages);
+> > >   #ifdef CONFIG_SGL_ALLOC
+> > >   /**
+> > > - * sgl_alloc_order - allocate a scatterlist and its pages
+> > > + * sgl_alloc_order - allocate a scatterlist with equally sized elements
+> > >    * @length: Length in bytes of the scatterlist. Must be at least one
+> > > - * @order: Second argument for alloc_pages()
+> > > + * @order: Second argument for alloc_pages(). Each sgl element size will
+> > > + *	   be (PAGE_SIZE*2^order) bytes
+> > >    * @chainable: Whether or not to allocate an extra element in the scatterlist
+> > > - *	for scatterlist chaining purposes
+> > > + *	       for scatterlist chaining purposes
+> > >    * @gfp: Memory allocation flags
+> > > - * @nent_p: [out] Number of entries in the scatterlist that have pages
+> > > + * @nent_p: [out] Number of entries in the scatterlist that have pages.
+> > > + *		  Ignored if NULL is given.
+> > >    *
+> > >    * Returns: A pointer to an initialized scatterlist or %NULL upon failure.
+> > >    */
+> > > @@ -574,8 +576,8 @@ struct scatterlist *sgl_alloc_order(unsigned long long length,
+> > >   	u32 elem_len;
+> > >   	nent = round_up(length, PAGE_SIZE << order) >> (PAGE_SHIFT + order);
+> > > -	/* Check for integer overflow */
+> > > -	if (length > (nent << (PAGE_SHIFT + order)))
+> > > +	/* Integer overflow if:  length > nent*2^(PAGE_SHIFT+order) */
+> > > +	if (ilog2(length) > ilog2(nent) + PAGE_SHIFT + order)
+> > >   		return NULL;
+> > >   	nalloc = nent;
+> > >   	if (chainable) {
+> > 
+> > This is a little bit too tortured now, how about this:
+> > 
+> > 	if (length >> (PAGE_SHIFT + order) >= UINT_MAX)
+> > 		return NULL;
+> > 	nent = length >> (PAGE_SHIFT + order);
+> > 	if (length & ((1ULL << (PAGE_SHIFT + order)) - 1))
+> > 		nent++;
+> > 
+> > 	if (chainable) {
+> > 		if (check_add_overflow(nent, 1, &nalloc))
+> > 			return NULL;
+> > 	}
+> > 	else
+> > 		nalloc = nent;
+> > 
 > 
-> This race condition can be triggered by running fio --verify against the
-> FCoE initiator driver. Since this bug causes data corruption and since
-> nobody has reported this bug since the tcm_fc driver went upstream, this
-> is a strong indication that the tcm_fc driver is not being used. Hence
-> remove this driver from the kernel tree.
-> 
-> Cc: Kiran Patil <kiran.patil@intel.com>
-> Cc: Hannes Reinecke <hare@suse.com>
-> Cc: Mike Christie <michael.christie@oracle.com>
-> Cc: Christoph Hellwig <hch@lst.de>
-> Cc: Yi Zou <yi.zou@intel.com>
-> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
-> ---
->   drivers/target/Kconfig           |   1 -
->   drivers/target/Makefile          |   1 -
->   drivers/target/tcm_fc/Kconfig    |   6 -
->   drivers/target/tcm_fc/Makefile   |   7 -
->   drivers/target/tcm_fc/tcm_fc.h   | 169 ----------
->   drivers/target/tcm_fc/tfc_cmd.c  | 561 -------------------------------
->   drivers/target/tcm_fc/tfc_conf.c | 491 ---------------------------
->   drivers/target/tcm_fc/tfc_io.c   | 359 --------------------
->   drivers/target/tcm_fc/tfc_sess.c | 503 ---------------------------
->   9 files changed, 2098 deletions(-)
->   delete mode 100644 drivers/target/tcm_fc/Kconfig
->   delete mode 100644 drivers/target/tcm_fc/Makefile
->   delete mode 100644 drivers/target/tcm_fc/tcm_fc.h
->   delete mode 100644 drivers/target/tcm_fc/tfc_cmd.c
->   delete mode 100644 drivers/target/tcm_fc/tfc_conf.c
->   delete mode 100644 drivers/target/tcm_fc/tfc_io.c
->   delete mode 100644 drivers/target/tcm_fc/tfc_sess.c
-> 
-Please, no. I'd rather keep it; having the tcm_fc driver in allows one 
-to have a simple virtualized FCoE testbed. We're using it quite heavily 
-for QA and validation.
+> And your proposal is less <<tortured>> ?
 
-I'd be happy to fix the race condition instead.
+Yes, obviously checking something fits in a variable is less tortured
+than checking the result of math is correct.
 
-Cheers,
+> I'm looking at performance, not elegance and I'm betting that two
+> ilog2() calls [which boil down to ffs()] are faster than two
+> right-shift-by-n_s and one left-shift-by-n . Perhaps an extra comment
+> could help my code by noting that mathematically:
+>   /* if n > m for positive n and m then: log(n) > log(m) */
 
-Hannes
--- 
-Dr. Hannes Reinecke                Kernel Storage Architect
-hare@suse.de                              +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
+One instruction difference seems completely irrelavent here.
+
+If you care about micro-optimizing this then please add a
+check_shr_overflow() just like we have for check_shl_overflow() that
+has all the right tricks.
+
+Probably:
+
+input_type x = arg >> shift;
+if (x != (output_type)x)
+   fail
+return (output_type)x
+
+Is fastest.
+
+Jason
