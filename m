@@ -2,127 +2,2261 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.5 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65109C433E9
-	for <target-devel@archiver.kernel.org>; Sat,  9 Jan 2021 23:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33108C433E0
+	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 00:48:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 34B4123B02
-	for <target-devel@archiver.kernel.org>; Sat,  9 Jan 2021 23:01:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D028D229C4
+	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 00:48:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726377AbhAIXBY (ORCPT
+        id S1726151AbhAKAsf (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Sat, 9 Jan 2021 18:01:24 -0500
-Received: from mail-1.ca.inter.net ([208.85.220.69]:60552 "EHLO
-        mail-1.ca.inter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726281AbhAIXBY (ORCPT
+        Sun, 10 Jan 2021 19:48:35 -0500
+Received: from mail-pl1-f178.google.com ([209.85.214.178]:46789 "EHLO
+        mail-pl1-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726049AbhAKAse (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sat, 9 Jan 2021 18:01:24 -0500
-Received: from localhost (offload-3.ca.inter.net [208.85.220.70])
-        by mail-1.ca.inter.net (Postfix) with ESMTP id 9D28D2EA01D;
-        Sat,  9 Jan 2021 18:00:42 -0500 (EST)
-Received: from mail-1.ca.inter.net ([208.85.220.69])
-        by localhost (offload-3.ca.inter.net [208.85.220.70]) (amavisd-new, port 10024)
-        with ESMTP id RP9EYr1UqlHY; Sat,  9 Jan 2021 17:47:42 -0500 (EST)
-Received: from [192.168.48.23] (host-104-157-204-209.dyn.295.ca [104.157.204.209])
-        (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: dgilbert@interlog.com)
-        by mail-1.ca.inter.net (Postfix) with ESMTPSA id 1599B2EA0BD;
-        Sat,  9 Jan 2021 18:00:42 -0500 (EST)
-Reply-To: dgilbert@interlog.com
-Subject: Re: [PATCH v5 4/4] scatterlist: add sgl_memset()
-To:     Jason Gunthorpe <jgg@ziepe.ca>
-Cc:     linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-rdma@vger.kernel.org,
-        linux-kernel@vger.kernel.org, martin.petersen@oracle.com,
-        jejb@linux.vnet.ibm.com, bostroesser@gmail.com, bvanassche@acm.org,
-        ddiss@suse.de
-References: <20201228234955.190858-1-dgilbert@interlog.com>
- <20201228234955.190858-5-dgilbert@interlog.com>
- <20210107174629.GC504133@ziepe.ca>
-From:   Douglas Gilbert <dgilbert@interlog.com>
-Message-ID: <9b727a9a-eb58-ab20-f42b-aa9c9e90a49a@interlog.com>
-Date:   Sat, 9 Jan 2021 18:00:41 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        Sun, 10 Jan 2021 19:48:34 -0500
+Received: by mail-pl1-f178.google.com with SMTP id v3so8601344plz.13
+        for <target-devel@vger.kernel.org>; Sun, 10 Jan 2021 16:48:17 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=wsGdk3oxl1TobI1xXDmLoOV1bwP0r+XGWS8wHiSqaks=;
+        b=XGdLkQIL2egB4uJWHD8Q1/yBUjUZG6JoPnfLS4fG+o+W2UdWqlPkih+Rlp36E5THDU
+         SosymFFkOjxc7LgCkoTruoTFm4jTJZuLAIAK/onPFlD6/AP8VC7vNoqhfmEo3nGkdd1g
+         dGb+wsHLE6Dhc+DzbAKJkvAiTIoMKIWf3JqEgO9wAyk+66Z8cGEWmTRQ85kP3tAvYcX5
+         CPQ+1Y2rn5HnUUQDAujYqMBKr9Uy5j0uf70sFkcvOBH54rkdW/u7QfIh6jZHal7pJY4v
+         VksuQxdc4SA25l1DPWgebBqUIMHytO1LeR8RKloz/4r6YyehdeTk3XjIMzNgSVPeKgsy
+         f/Bg==
+X-Gm-Message-State: AOAM532GGqd7ONjQplAguXGQRJMeqd+j/t3J/HuNmOv2BuotQmtREWXl
+        3vWYsGUQDyad34WJVWue5TcGdYkzDUY=
+X-Google-Smtp-Source: ABdhPJz82cn0lwiTdLTFzRucxfABVDQrfYR/zSHM1bbzvnBGDcX+Mm1agNjzZNTZD1CVQZZLGyKYyg==
+X-Received: by 2002:a17:902:ee02:b029:db:c0d6:57f9 with SMTP id z2-20020a170902ee02b02900dbc0d657f9mr14237943plb.65.1610326071035;
+        Sun, 10 Jan 2021 16:47:51 -0800 (PST)
+Received: from asus.hsd1.ca.comcast.net (c-73-241-217-19.hsd1.ca.comcast.net. [73.241.217.19])
+        by smtp.gmail.com with ESMTPSA id y5sm12413369pjt.42.2021.01.10.16.47.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 10 Jan 2021 16:47:49 -0800 (PST)
+From:   Bart Van Assche <bvanassche@acm.org>
+To:     "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc:     "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>,
+        target-devel@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>,
+        Kiran Patil <kiran.patil@intel.com>,
+        Hannes Reinecke <hare@suse.com>,
+        Mike Christie <michael.christie@oracle.com>,
+        Christoph Hellwig <hch@lst.de>, Yi Zou <yi.zou@intel.com>
+Subject: [PATCH] Remove the tcm_fc driver
+Date:   Sun, 10 Jan 2021 16:47:40 -0800
+Message-Id: <20210111004740.1786-1-bvanassche@acm.org>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-In-Reply-To: <20210107174629.GC504133@ziepe.ca>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-CA
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 2021-01-07 12:46 p.m., Jason Gunthorpe wrote:
-> On Mon, Dec 28, 2020 at 06:49:55PM -0500, Douglas Gilbert wrote:
->> The existing sg_zero_buffer() function is a bit restrictive. For
->> example protection information (PI) blocks are usually initialized
->> to 0xff bytes. As its name suggests sgl_memset() is modelled on
->> memset(). One difference is the type of the val argument which is
->> u8 rather than int. Plus it returns the number of bytes (over)written.
->>
->> Change implementation of sg_zero_buffer() to call this new function.
->>
->> Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
->> Signed-off-by: Douglas Gilbert <dgilbert@interlog.com>
->>   include/linux/scatterlist.h |  3 ++
->>   lib/scatterlist.c           | 65 +++++++++++++++++++++++++------------
->>   2 files changed, 48 insertions(+), 20 deletions(-)
->>
->> diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
->> index 71be65f9ebb5..70d3f1f73df1 100644
->> +++ b/include/linux/scatterlist.h
->> @@ -333,6 +333,9 @@ bool sgl_compare_sgl_idx(struct scatterlist *x_sgl, unsigned int x_nents, off_t
->>   			 struct scatterlist *y_sgl, unsigned int y_nents, off_t y_skip,
->>   			 size_t n_bytes, size_t *miscompare_idx);
->>   
->> +size_t sgl_memset(struct scatterlist *sgl, unsigned int nents, off_t skip,
->> +		  u8 val, size_t n_bytes);
->> +
->>   /*
->>    * Maximum number of entries that will be allocated in one piece, if
->>    * a list larger than this is required then chaining will be utilized.
->> diff --git a/lib/scatterlist.c b/lib/scatterlist.c
->> index 9332365e7eb6..f06614a880c8 100644
->> +++ b/lib/scatterlist.c
->> @@ -1038,26 +1038,7 @@ EXPORT_SYMBOL(sg_pcopy_to_buffer);
->>   size_t sg_zero_buffer(struct scatterlist *sgl, unsigned int nents,
->>   		       size_t buflen, off_t skip)
->>   {
->> -	unsigned int offset = 0;
->> -	struct sg_mapping_iter miter;
->> -	unsigned int sg_flags = SG_MITER_ATOMIC | SG_MITER_TO_SG;
->> -
->> -	sg_miter_start(&miter, sgl, nents, sg_flags);
->> -
->> -	if (!sg_miter_skip(&miter, skip))
->> -		return false;
->> -
->> -	while (offset < buflen && sg_miter_next(&miter)) {
->> -		unsigned int len;
->> -
->> -		len = min(miter.length, buflen - offset);
->> -		memset(miter.addr, 0, len);
->> -
->> -		offset += len;
->> -	}
->> -
->> -	sg_miter_stop(&miter);
->> -	return offset;
->> +	return sgl_memset(sgl, nents, skip, 0, buflen);
->>   }
->>   EXPORT_SYMBOL(sg_zero_buffer);
-> 
-> May as well make this one liner a static inline in the header. Just
-> rename this function to sgl_memset so the diff is clearer
+Since its introduction in 2011, the tcm_fc driver processes SCSI read
+commands as follows if the number of remaining bytes is a multiple of four:
+- Queue data by calling fc_seq_send(). The FCoE driver translates that
+  call into a dev_queue_xmit(skb) call which sends the data asynchronously.
+- After having queued the data for sending, free the data buffer
+  synchronously from inside ft_queue_status().
 
-Yes, fine. I can roll a new version.
+This race condition can be triggered by running fio --verify against the
+FCoE initiator driver. Since this bug causes data corruption and since
+nobody has reported this bug since the tcm_fc driver went upstream, this
+is a strong indication that the tcm_fc driver is not being used. Hence
+remove this driver from the kernel tree.
 
-Doug Gilbert
+Cc: Kiran Patil <kiran.patil@intel.com>
+Cc: Hannes Reinecke <hare@suse.com>
+Cc: Mike Christie <michael.christie@oracle.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Yi Zou <yi.zou@intel.com>
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ drivers/target/Kconfig           |   1 -
+ drivers/target/Makefile          |   1 -
+ drivers/target/tcm_fc/Kconfig    |   6 -
+ drivers/target/tcm_fc/Makefile   |   7 -
+ drivers/target/tcm_fc/tcm_fc.h   | 169 ----------
+ drivers/target/tcm_fc/tfc_cmd.c  | 561 -------------------------------
+ drivers/target/tcm_fc/tfc_conf.c | 491 ---------------------------
+ drivers/target/tcm_fc/tfc_io.c   | 359 --------------------
+ drivers/target/tcm_fc/tfc_sess.c | 503 ---------------------------
+ 9 files changed, 2098 deletions(-)
+ delete mode 100644 drivers/target/tcm_fc/Kconfig
+ delete mode 100644 drivers/target/tcm_fc/Makefile
+ delete mode 100644 drivers/target/tcm_fc/tcm_fc.h
+ delete mode 100644 drivers/target/tcm_fc/tfc_cmd.c
+ delete mode 100644 drivers/target/tcm_fc/tfc_conf.c
+ delete mode 100644 drivers/target/tcm_fc/tfc_io.c
+ delete mode 100644 drivers/target/tcm_fc/tfc_sess.c
 
-
+diff --git a/drivers/target/Kconfig b/drivers/target/Kconfig
+index c163b14774d7..4382e56527c0 100644
+--- a/drivers/target/Kconfig
++++ b/drivers/target/Kconfig
+@@ -44,7 +44,6 @@ config TCM_USER2
+ 	is obsolete.
+ 
+ source "drivers/target/loopback/Kconfig"
+-source "drivers/target/tcm_fc/Kconfig"
+ source "drivers/target/iscsi/Kconfig"
+ source "drivers/target/sbp/Kconfig"
+ 
+diff --git a/drivers/target/Makefile b/drivers/target/Makefile
+index 45634747377e..fd6729cfb0ff 100644
+--- a/drivers/target/Makefile
++++ b/drivers/target/Makefile
+@@ -27,6 +27,5 @@ obj-$(CONFIG_TCM_USER2)		+= target_core_user.o
+ 
+ # Fabric modules
+ obj-$(CONFIG_LOOPBACK_TARGET)	+= loopback/
+-obj-$(CONFIG_TCM_FC)		+= tcm_fc/
+ obj-$(CONFIG_ISCSI_TARGET)	+= iscsi/
+ obj-$(CONFIG_SBP_TARGET)	+= sbp/
+diff --git a/drivers/target/tcm_fc/Kconfig b/drivers/target/tcm_fc/Kconfig
+deleted file mode 100644
+index 4f3b926b6a1a..000000000000
+--- a/drivers/target/tcm_fc/Kconfig
++++ /dev/null
+@@ -1,6 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0-only
+-config TCM_FC
+-	tristate "TCM_FC fabric Plugin"
+-	depends on LIBFC
+-	help
+-	Say Y here to enable the TCM FC plugin for accessing FC fabrics in TCM
+diff --git a/drivers/target/tcm_fc/Makefile b/drivers/target/tcm_fc/Makefile
+deleted file mode 100644
+index a7d1593ab5af..000000000000
+--- a/drivers/target/tcm_fc/Makefile
++++ /dev/null
+@@ -1,7 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0
+-tcm_fc-y +=		tfc_cmd.o \
+-			tfc_conf.o \
+-			tfc_io.o \
+-			tfc_sess.o
+-
+-obj-$(CONFIG_TCM_FC)	+= tcm_fc.o
+diff --git a/drivers/target/tcm_fc/tcm_fc.h b/drivers/target/tcm_fc/tcm_fc.h
+deleted file mode 100644
+index 2ff716d8cbdd..000000000000
+--- a/drivers/target/tcm_fc/tcm_fc.h
++++ /dev/null
+@@ -1,169 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- * Copyright (c) 2010 Cisco Systems, Inc.
+- */
+-#ifndef __TCM_FC_H__
+-#define __TCM_FC_H__
+-
+-#include <linux/types.h>
+-#include <target/target_core_base.h>
+-
+-#define FT_VERSION "0.4"
+-
+-#define FT_NAMELEN 32		/* length of ASCII WWPNs including pad */
+-#define FT_TPG_NAMELEN 32	/* max length of TPG name */
+-#define FT_LUN_NAMELEN 32	/* max length of LUN name */
+-#define TCM_FC_DEFAULT_TAGS 512	/* tags used for per-session preallocation */
+-
+-struct ft_transport_id {
+-	__u8	format;
+-	__u8	__resvd1[7];
+-	__u8	wwpn[8];
+-	__u8	__resvd2[8];
+-} __attribute__((__packed__));
+-
+-/*
+- * Session (remote port).
+- */
+-struct ft_sess {
+-	u32 port_id;			/* for hash lookup use only */
+-	u32 params;
+-	u16 max_frame;			/* maximum frame size */
+-	u64 port_name;			/* port name for transport ID */
+-	struct ft_tport *tport;
+-	struct se_session *se_sess;
+-	struct hlist_node hash;		/* linkage in ft_sess_hash table */
+-	struct rcu_head rcu;
+-	struct kref kref;		/* ref for hash and outstanding I/Os */
+-};
+-
+-/*
+- * Hash table of sessions per local port.
+- * Hash lookup by remote port FC_ID.
+- */
+-#define	FT_SESS_HASH_BITS	6
+-#define	FT_SESS_HASH_SIZE	(1 << FT_SESS_HASH_BITS)
+-
+-/*
+- * Per local port data.
+- * This is created only after a TPG exists that allows target function
+- * for the local port.  If the TPG exists, this is allocated when
+- * we're notified that the local port has been created, or when
+- * the first PRLI provider callback is received.
+- */
+-struct ft_tport {
+-	struct fc_lport *lport;
+-	struct ft_tpg *tpg;		/* NULL if TPG deleted before tport */
+-	u32	sess_count;		/* number of sessions in hash */
+-	struct rcu_head rcu;
+-	struct hlist_head hash[FT_SESS_HASH_SIZE];	/* list of sessions */
+-};
+-
+-/*
+- * Node ID and authentication.
+- */
+-struct ft_node_auth {
+-	u64	port_name;
+-	u64	node_name;
+-};
+-
+-/*
+- * Node ACL for FC remote port session.
+- */
+-struct ft_node_acl {
+-	struct se_node_acl se_node_acl;
+-	struct ft_node_auth node_auth;
+-};
+-
+-struct ft_lun {
+-	u32 index;
+-	char name[FT_LUN_NAMELEN];
+-};
+-
+-/*
+- * Target portal group (local port).
+- */
+-struct ft_tpg {
+-	u32 index;
+-	struct ft_lport_wwn *lport_wwn;
+-	struct ft_tport *tport;		/* active tport or NULL */
+-	struct list_head lun_list;	/* head of LUNs */
+-	struct se_portal_group se_tpg;
+-	struct workqueue_struct *workqueue;
+-};
+-
+-struct ft_lport_wwn {
+-	u64 wwpn;
+-	char name[FT_NAMELEN];
+-	struct list_head ft_wwn_node;
+-	struct ft_tpg *tpg;
+-	struct se_wwn se_wwn;
+-};
+-
+-/*
+- * Commands
+- */
+-struct ft_cmd {
+-	struct ft_sess *sess;		/* session held for cmd */
+-	struct fc_seq *seq;		/* sequence in exchange mgr */
+-	struct se_cmd se_cmd;		/* Local TCM I/O descriptor */
+-	struct fc_frame *req_frame;
+-	u32 write_data_len;		/* data received on writes */
+-	struct work_struct work;
+-	/* Local sense buffer */
+-	unsigned char ft_sense_buffer[TRANSPORT_SENSE_BUFFER];
+-	u32 was_ddp_setup:1;		/* Set only if ddp is setup */
+-	u32 aborted:1;			/* Set if aborted by reset or timeout */
+-	struct scatterlist *sg;		/* Set only if DDP is setup */
+-	u32 sg_cnt;			/* No. of item in scatterlist */
+-};
+-
+-extern struct mutex ft_lport_lock;
+-extern struct fc4_prov ft_prov;
+-extern unsigned int ft_debug_logging;
+-
+-/*
+- * Fabric methods.
+- */
+-
+-/*
+- * Session ops.
+- */
+-void ft_sess_put(struct ft_sess *);
+-void ft_sess_close(struct se_session *);
+-u32 ft_sess_get_index(struct se_session *);
+-u32 ft_sess_get_port_name(struct se_session *, unsigned char *, u32);
+-
+-void ft_lport_add(struct fc_lport *, void *);
+-void ft_lport_del(struct fc_lport *, void *);
+-int ft_lport_notify(struct notifier_block *, unsigned long, void *);
+-
+-/*
+- * IO methods.
+- */
+-int ft_check_stop_free(struct se_cmd *);
+-void ft_release_cmd(struct se_cmd *);
+-int ft_queue_status(struct se_cmd *);
+-int ft_queue_data_in(struct se_cmd *);
+-int ft_write_pending(struct se_cmd *);
+-int ft_get_cmd_state(struct se_cmd *);
+-void ft_queue_tm_resp(struct se_cmd *);
+-void ft_aborted_task(struct se_cmd *);
+-
+-/*
+- * other internal functions.
+- */
+-void ft_recv_req(struct ft_sess *, struct fc_frame *);
+-struct ft_tpg *ft_lport_find_tpg(struct fc_lport *);
+-
+-void ft_recv_write_data(struct ft_cmd *, struct fc_frame *);
+-void ft_dump_cmd(struct ft_cmd *, const char *caller);
+-
+-ssize_t ft_format_wwn(char *, size_t, u64);
+-
+-/*
+- * Underlying HW specific helper function
+- */
+-void ft_invl_hw_context(struct ft_cmd *);
+-
+-#endif /* __TCM_FC_H__ */
+diff --git a/drivers/target/tcm_fc/tfc_cmd.c b/drivers/target/tcm_fc/tfc_cmd.c
+deleted file mode 100644
+index 768f250680d9..000000000000
+--- a/drivers/target/tcm_fc/tfc_cmd.c
++++ /dev/null
+@@ -1,561 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Copyright (c) 2010 Cisco Systems, Inc.
+- */
+-
+-/* XXX TBD some includes may be extraneous */
+-
+-#include <linux/module.h>
+-#include <linux/moduleparam.h>
+-#include <linux/utsname.h>
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/kthread.h>
+-#include <linux/types.h>
+-#include <linux/string.h>
+-#include <linux/configfs.h>
+-#include <linux/ctype.h>
+-#include <linux/hash.h>
+-#include <asm/unaligned.h>
+-#include <scsi/scsi_tcq.h>
+-#include <scsi/libfc.h>
+-
+-#include <target/target_core_base.h>
+-#include <target/target_core_fabric.h>
+-
+-#include "tcm_fc.h"
+-
+-/*
+- * Dump cmd state for debugging.
+- */
+-static void _ft_dump_cmd(struct ft_cmd *cmd, const char *caller)
+-{
+-	struct fc_exch *ep;
+-	struct fc_seq *sp;
+-	struct se_cmd *se_cmd;
+-	struct scatterlist *sg;
+-	int count;
+-
+-	se_cmd = &cmd->se_cmd;
+-	pr_debug("%s: cmd %p sess %p seq %p se_cmd %p\n",
+-		caller, cmd, cmd->sess, cmd->seq, se_cmd);
+-
+-	pr_debug("%s: cmd %p data_nents %u len %u se_cmd_flags <0x%x>\n",
+-		caller, cmd, se_cmd->t_data_nents,
+-	       se_cmd->data_length, se_cmd->se_cmd_flags);
+-
+-	for_each_sg(se_cmd->t_data_sg, sg, se_cmd->t_data_nents, count)
+-		pr_debug("%s: cmd %p sg %p page %p "
+-			"len 0x%x off 0x%x\n",
+-			caller, cmd, sg,
+-			sg_page(sg), sg->length, sg->offset);
+-
+-	sp = cmd->seq;
+-	if (sp) {
+-		ep = fc_seq_exch(sp);
+-		pr_debug("%s: cmd %p sid %x did %x "
+-			"ox_id %x rx_id %x seq_id %x e_stat %x\n",
+-			caller, cmd, ep->sid, ep->did, ep->oxid, ep->rxid,
+-			sp->id, ep->esb_stat);
+-	}
+-}
+-
+-void ft_dump_cmd(struct ft_cmd *cmd, const char *caller)
+-{
+-	if (unlikely(ft_debug_logging))
+-		_ft_dump_cmd(cmd, caller);
+-}
+-
+-static void ft_free_cmd(struct ft_cmd *cmd)
+-{
+-	struct fc_frame *fp;
+-	struct ft_sess *sess;
+-
+-	if (!cmd)
+-		return;
+-	sess = cmd->sess;
+-	fp = cmd->req_frame;
+-	if (fr_seq(fp))
+-		fc_seq_release(fr_seq(fp));
+-	fc_frame_free(fp);
+-	target_free_tag(sess->se_sess, &cmd->se_cmd);
+-	ft_sess_put(sess);	/* undo get from lookup at recv */
+-}
+-
+-void ft_release_cmd(struct se_cmd *se_cmd)
+-{
+-	struct ft_cmd *cmd = container_of(se_cmd, struct ft_cmd, se_cmd);
+-
+-	ft_free_cmd(cmd);
+-}
+-
+-int ft_check_stop_free(struct se_cmd *se_cmd)
+-{
+-	return transport_generic_free_cmd(se_cmd, 0);
+-}
+-
+-/*
+- * Send response.
+- */
+-int ft_queue_status(struct se_cmd *se_cmd)
+-{
+-	struct ft_cmd *cmd = container_of(se_cmd, struct ft_cmd, se_cmd);
+-	struct fc_frame *fp;
+-	struct fcp_resp_with_ext *fcp;
+-	struct fc_lport *lport;
+-	struct fc_exch *ep;
+-	size_t len;
+-	int rc;
+-
+-	if (cmd->aborted)
+-		return 0;
+-	ft_dump_cmd(cmd, __func__);
+-	ep = fc_seq_exch(cmd->seq);
+-	lport = ep->lp;
+-	len = sizeof(*fcp) + se_cmd->scsi_sense_length;
+-	fp = fc_frame_alloc(lport, len);
+-	if (!fp) {
+-		se_cmd->scsi_status = SAM_STAT_TASK_SET_FULL;
+-		return -ENOMEM;
+-	}
+-
+-	fcp = fc_frame_payload_get(fp, len);
+-	memset(fcp, 0, len);
+-	fcp->resp.fr_status = se_cmd->scsi_status;
+-
+-	len = se_cmd->scsi_sense_length;
+-	if (len) {
+-		fcp->resp.fr_flags |= FCP_SNS_LEN_VAL;
+-		fcp->ext.fr_sns_len = htonl(len);
+-		memcpy((fcp + 1), se_cmd->sense_buffer, len);
+-	}
+-
+-	/*
+-	 * Test underflow and overflow with one mask.  Usually both are off.
+-	 * Bidirectional commands are not handled yet.
+-	 */
+-	if (se_cmd->se_cmd_flags & (SCF_OVERFLOW_BIT | SCF_UNDERFLOW_BIT)) {
+-		if (se_cmd->se_cmd_flags & SCF_OVERFLOW_BIT)
+-			fcp->resp.fr_flags |= FCP_RESID_OVER;
+-		else
+-			fcp->resp.fr_flags |= FCP_RESID_UNDER;
+-		fcp->ext.fr_resid = cpu_to_be32(se_cmd->residual_count);
+-	}
+-
+-	/*
+-	 * Send response.
+-	 */
+-	cmd->seq = fc_seq_start_next(cmd->seq);
+-	fc_fill_fc_hdr(fp, FC_RCTL_DD_CMD_STATUS, ep->did, ep->sid, FC_TYPE_FCP,
+-		       FC_FC_EX_CTX | FC_FC_LAST_SEQ | FC_FC_END_SEQ, 0);
+-
+-	rc = fc_seq_send(lport, cmd->seq, fp);
+-	if (rc) {
+-		pr_info_ratelimited("%s: Failed to send response frame %p, "
+-				    "xid <0x%x>\n", __func__, fp, ep->xid);
+-		/*
+-		 * Generate a TASK_SET_FULL status to notify the initiator
+-		 * to reduce it's queue_depth after the se_cmd response has
+-		 * been re-queued by target-core.
+-		 */
+-		se_cmd->scsi_status = SAM_STAT_TASK_SET_FULL;
+-		return -ENOMEM;
+-	}
+-	fc_exch_done(cmd->seq);
+-	/*
+-	 * Drop the extra ACK_KREF reference taken by target_submit_cmd()
+-	 * ahead of ft_check_stop_free() -> transport_generic_free_cmd()
+-	 * final se_cmd->cmd_kref put.
+-	 */
+-	target_put_sess_cmd(&cmd->se_cmd);
+-	return 0;
+-}
+-
+-/*
+- * Send TX_RDY (transfer ready).
+- */
+-int ft_write_pending(struct se_cmd *se_cmd)
+-{
+-	struct ft_cmd *cmd = container_of(se_cmd, struct ft_cmd, se_cmd);
+-	struct fc_frame *fp;
+-	struct fcp_txrdy *txrdy;
+-	struct fc_lport *lport;
+-	struct fc_exch *ep;
+-	struct fc_frame_header *fh;
+-	u32 f_ctl;
+-
+-	ft_dump_cmd(cmd, __func__);
+-
+-	if (cmd->aborted)
+-		return 0;
+-	ep = fc_seq_exch(cmd->seq);
+-	lport = ep->lp;
+-	fp = fc_frame_alloc(lport, sizeof(*txrdy));
+-	if (!fp)
+-		return -ENOMEM; /* Signal QUEUE_FULL */
+-
+-	txrdy = fc_frame_payload_get(fp, sizeof(*txrdy));
+-	memset(txrdy, 0, sizeof(*txrdy));
+-	txrdy->ft_burst_len = htonl(se_cmd->data_length);
+-
+-	cmd->seq = fc_seq_start_next(cmd->seq);
+-	fc_fill_fc_hdr(fp, FC_RCTL_DD_DATA_DESC, ep->did, ep->sid, FC_TYPE_FCP,
+-		       FC_FC_EX_CTX | FC_FC_END_SEQ | FC_FC_SEQ_INIT, 0);
+-
+-	fh = fc_frame_header_get(fp);
+-	f_ctl = ntoh24(fh->fh_f_ctl);
+-
+-	/* Only if it is 'Exchange Responder' */
+-	if (f_ctl & FC_FC_EX_CTX) {
+-		/* Target is 'exchange responder' and sending XFER_READY
+-		 * to 'exchange initiator (initiator)'
+-		 */
+-		if ((ep->xid <= lport->lro_xid) &&
+-		    (fh->fh_r_ctl == FC_RCTL_DD_DATA_DESC)) {
+-			if ((se_cmd->se_cmd_flags & SCF_SCSI_DATA_CDB) &&
+-			    lport->tt.ddp_target(lport, ep->xid,
+-						 se_cmd->t_data_sg,
+-						 se_cmd->t_data_nents))
+-				cmd->was_ddp_setup = 1;
+-		}
+-	}
+-	fc_seq_send(lport, cmd->seq, fp);
+-	return 0;
+-}
+-
+-int ft_get_cmd_state(struct se_cmd *se_cmd)
+-{
+-	return 0;
+-}
+-
+-/*
+- * FC sequence response handler for follow-on sequences (data) and aborts.
+- */
+-static void ft_recv_seq(struct fc_seq *sp, struct fc_frame *fp, void *arg)
+-{
+-	struct ft_cmd *cmd = arg;
+-	struct fc_frame_header *fh;
+-
+-	if (IS_ERR(fp)) {
+-		/* XXX need to find cmd if queued */
+-		cmd->seq = NULL;
+-		cmd->aborted = true;
+-		return;
+-	}
+-
+-	fh = fc_frame_header_get(fp);
+-
+-	switch (fh->fh_r_ctl) {
+-	case FC_RCTL_DD_SOL_DATA:	/* write data */
+-		ft_recv_write_data(cmd, fp);
+-		break;
+-	case FC_RCTL_DD_UNSOL_CTL:	/* command */
+-	case FC_RCTL_DD_SOL_CTL:	/* transfer ready */
+-	case FC_RCTL_DD_DATA_DESC:	/* transfer ready */
+-	default:
+-		pr_debug("%s: unhandled frame r_ctl %x\n",
+-		       __func__, fh->fh_r_ctl);
+-		ft_invl_hw_context(cmd);
+-		fc_frame_free(fp);
+-		transport_generic_free_cmd(&cmd->se_cmd, 0);
+-		break;
+-	}
+-}
+-
+-/*
+- * Send a FCP response including SCSI status and optional FCP rsp_code.
+- * status is SAM_STAT_GOOD (zero) iff code is valid.
+- * This is used in error cases, such as allocation failures.
+- */
+-static void ft_send_resp_status(struct fc_lport *lport,
+-				const struct fc_frame *rx_fp,
+-				u32 status, enum fcp_resp_rsp_codes code)
+-{
+-	struct fc_frame *fp;
+-	struct fc_seq *sp;
+-	const struct fc_frame_header *fh;
+-	size_t len;
+-	struct fcp_resp_with_ext *fcp;
+-	struct fcp_resp_rsp_info *info;
+-
+-	fh = fc_frame_header_get(rx_fp);
+-	pr_debug("FCP error response: did %x oxid %x status %x code %x\n",
+-		  ntoh24(fh->fh_s_id), ntohs(fh->fh_ox_id), status, code);
+-	len = sizeof(*fcp);
+-	if (status == SAM_STAT_GOOD)
+-		len += sizeof(*info);
+-	fp = fc_frame_alloc(lport, len);
+-	if (!fp)
+-		return;
+-	fcp = fc_frame_payload_get(fp, len);
+-	memset(fcp, 0, len);
+-	fcp->resp.fr_status = status;
+-	if (status == SAM_STAT_GOOD) {
+-		fcp->ext.fr_rsp_len = htonl(sizeof(*info));
+-		fcp->resp.fr_flags |= FCP_RSP_LEN_VAL;
+-		info = (struct fcp_resp_rsp_info *)(fcp + 1);
+-		info->rsp_code = code;
+-	}
+-
+-	fc_fill_reply_hdr(fp, rx_fp, FC_RCTL_DD_CMD_STATUS, 0);
+-	sp = fr_seq(fp);
+-	if (sp) {
+-		fc_seq_send(lport, sp, fp);
+-		fc_exch_done(sp);
+-	} else {
+-		lport->tt.frame_send(lport, fp);
+-	}
+-}
+-
+-/*
+- * Send error or task management response.
+- */
+-static void ft_send_resp_code(struct ft_cmd *cmd,
+-			      enum fcp_resp_rsp_codes code)
+-{
+-	ft_send_resp_status(cmd->sess->tport->lport,
+-			    cmd->req_frame, SAM_STAT_GOOD, code);
+-}
+-
+-
+-/*
+- * Send error or task management response.
+- * Always frees the cmd and associated state.
+- */
+-static void ft_send_resp_code_and_free(struct ft_cmd *cmd,
+-				      enum fcp_resp_rsp_codes code)
+-{
+-	ft_send_resp_code(cmd, code);
+-	ft_free_cmd(cmd);
+-}
+-
+-/*
+- * Handle Task Management Request.
+- */
+-static void ft_send_tm(struct ft_cmd *cmd)
+-{
+-	struct fcp_cmnd *fcp;
+-	int rc;
+-	u8 tm_func;
+-
+-	fcp = fc_frame_payload_get(cmd->req_frame, sizeof(*fcp));
+-
+-	switch (fcp->fc_tm_flags) {
+-	case FCP_TMF_LUN_RESET:
+-		tm_func = TMR_LUN_RESET;
+-		break;
+-	case FCP_TMF_TGT_RESET:
+-		tm_func = TMR_TARGET_WARM_RESET;
+-		break;
+-	case FCP_TMF_CLR_TASK_SET:
+-		tm_func = TMR_CLEAR_TASK_SET;
+-		break;
+-	case FCP_TMF_ABT_TASK_SET:
+-		tm_func = TMR_ABORT_TASK_SET;
+-		break;
+-	case FCP_TMF_CLR_ACA:
+-		tm_func = TMR_CLEAR_ACA;
+-		break;
+-	default:
+-		/*
+-		 * FCP4r01 indicates having a combination of
+-		 * tm_flags set is invalid.
+-		 */
+-		pr_debug("invalid FCP tm_flags %x\n", fcp->fc_tm_flags);
+-		ft_send_resp_code_and_free(cmd, FCP_CMND_FIELDS_INVALID);
+-		return;
+-	}
+-
+-	/* FIXME: Add referenced task tag for ABORT_TASK */
+-	rc = target_submit_tmr(&cmd->se_cmd, cmd->sess->se_sess,
+-		&cmd->ft_sense_buffer[0], scsilun_to_int(&fcp->fc_lun),
+-		cmd, tm_func, GFP_KERNEL, 0, TARGET_SCF_ACK_KREF);
+-	if (rc < 0)
+-		ft_send_resp_code_and_free(cmd, FCP_TMF_FAILED);
+-}
+-
+-/*
+- * Send status from completed task management request.
+- */
+-void ft_queue_tm_resp(struct se_cmd *se_cmd)
+-{
+-	struct ft_cmd *cmd = container_of(se_cmd, struct ft_cmd, se_cmd);
+-	struct se_tmr_req *tmr = se_cmd->se_tmr_req;
+-	enum fcp_resp_rsp_codes code;
+-
+-	if (cmd->aborted)
+-		return;
+-	switch (tmr->response) {
+-	case TMR_FUNCTION_COMPLETE:
+-		code = FCP_TMF_CMPL;
+-		break;
+-	case TMR_LUN_DOES_NOT_EXIST:
+-		code = FCP_TMF_INVALID_LUN;
+-		break;
+-	case TMR_FUNCTION_REJECTED:
+-		code = FCP_TMF_REJECTED;
+-		break;
+-	case TMR_TASK_DOES_NOT_EXIST:
+-	case TMR_TASK_MGMT_FUNCTION_NOT_SUPPORTED:
+-	default:
+-		code = FCP_TMF_FAILED;
+-		break;
+-	}
+-	pr_debug("tmr fn %d resp %d fcp code %d\n",
+-		  tmr->function, tmr->response, code);
+-	ft_send_resp_code(cmd, code);
+-	/*
+-	 * Drop the extra ACK_KREF reference taken by target_submit_tmr()
+-	 * ahead of ft_check_stop_free() -> transport_generic_free_cmd()
+-	 * final se_cmd->cmd_kref put.
+-	 */
+-	target_put_sess_cmd(&cmd->se_cmd);
+-}
+-
+-void ft_aborted_task(struct se_cmd *se_cmd)
+-{
+-	return;
+-}
+-
+-static void ft_send_work(struct work_struct *work);
+-
+-/*
+- * Handle incoming FCP command.
+- */
+-static void ft_recv_cmd(struct ft_sess *sess, struct fc_frame *fp)
+-{
+-	struct ft_cmd *cmd;
+-	struct fc_lport *lport = sess->tport->lport;
+-	struct se_session *se_sess = sess->se_sess;
+-	int tag, cpu;
+-
+-	tag = sbitmap_queue_get(&se_sess->sess_tag_pool, &cpu);
+-	if (tag < 0)
+-		goto busy;
+-
+-	cmd = &((struct ft_cmd *)se_sess->sess_cmd_map)[tag];
+-	memset(cmd, 0, sizeof(struct ft_cmd));
+-
+-	cmd->se_cmd.map_tag = tag;
+-	cmd->se_cmd.map_cpu = cpu;
+-	cmd->sess = sess;
+-	cmd->seq = fc_seq_assign(lport, fp);
+-	if (!cmd->seq) {
+-		target_free_tag(se_sess, &cmd->se_cmd);
+-		goto busy;
+-	}
+-	cmd->req_frame = fp;		/* hold frame during cmd */
+-
+-	INIT_WORK(&cmd->work, ft_send_work);
+-	queue_work(sess->tport->tpg->workqueue, &cmd->work);
+-	return;
+-
+-busy:
+-	pr_debug("cmd or seq allocation failure - sending BUSY\n");
+-	ft_send_resp_status(lport, fp, SAM_STAT_BUSY, 0);
+-	fc_frame_free(fp);
+-	ft_sess_put(sess);		/* undo get from lookup */
+-}
+-
+-
+-/*
+- * Handle incoming FCP frame.
+- * Caller has verified that the frame is type FCP.
+- */
+-void ft_recv_req(struct ft_sess *sess, struct fc_frame *fp)
+-{
+-	struct fc_frame_header *fh = fc_frame_header_get(fp);
+-
+-	switch (fh->fh_r_ctl) {
+-	case FC_RCTL_DD_UNSOL_CMD:	/* command */
+-		ft_recv_cmd(sess, fp);
+-		break;
+-	case FC_RCTL_DD_SOL_DATA:	/* write data */
+-	case FC_RCTL_DD_UNSOL_CTL:
+-	case FC_RCTL_DD_SOL_CTL:
+-	case FC_RCTL_DD_DATA_DESC:	/* transfer ready */
+-	case FC_RCTL_ELS4_REQ:		/* SRR, perhaps */
+-	default:
+-		pr_debug("%s: unhandled frame r_ctl %x\n",
+-		       __func__, fh->fh_r_ctl);
+-		fc_frame_free(fp);
+-		ft_sess_put(sess);	/* undo get from lookup */
+-		break;
+-	}
+-}
+-
+-/*
+- * Send new command to target.
+- */
+-static void ft_send_work(struct work_struct *work)
+-{
+-	struct ft_cmd *cmd = container_of(work, struct ft_cmd, work);
+-	struct fc_frame_header *fh = fc_frame_header_get(cmd->req_frame);
+-	struct fcp_cmnd *fcp;
+-	int data_dir = 0;
+-	int task_attr;
+-
+-	fcp = fc_frame_payload_get(cmd->req_frame, sizeof(*fcp));
+-	if (!fcp)
+-		goto err;
+-
+-	if (fcp->fc_flags & FCP_CFL_LEN_MASK)
+-		goto err;		/* not handling longer CDBs yet */
+-
+-	/*
+-	 * Check for FCP task management flags
+-	 */
+-	if (fcp->fc_tm_flags) {
+-		ft_send_tm(cmd);
+-		return;
+-	}
+-
+-	switch (fcp->fc_flags & (FCP_CFL_RDDATA | FCP_CFL_WRDATA)) {
+-	case 0:
+-		data_dir = DMA_NONE;
+-		break;
+-	case FCP_CFL_RDDATA:
+-		data_dir = DMA_FROM_DEVICE;
+-		break;
+-	case FCP_CFL_WRDATA:
+-		data_dir = DMA_TO_DEVICE;
+-		break;
+-	case FCP_CFL_WRDATA | FCP_CFL_RDDATA:
+-		goto err;	/* TBD not supported by tcm_fc yet */
+-	}
+-	/*
+-	 * Locate the SAM Task Attr from fc_pri_ta
+-	 */
+-	switch (fcp->fc_pri_ta & FCP_PTA_MASK) {
+-	case FCP_PTA_HEADQ:
+-		task_attr = TCM_HEAD_TAG;
+-		break;
+-	case FCP_PTA_ORDERED:
+-		task_attr = TCM_ORDERED_TAG;
+-		break;
+-	case FCP_PTA_ACA:
+-		task_attr = TCM_ACA_TAG;
+-		break;
+-	case FCP_PTA_SIMPLE:
+-	default:
+-		task_attr = TCM_SIMPLE_TAG;
+-	}
+-
+-	fc_seq_set_resp(cmd->seq, ft_recv_seq, cmd);
+-	cmd->se_cmd.tag = fc_seq_exch(cmd->seq)->rxid;
+-	/*
+-	 * Use a single se_cmd->cmd_kref as we expect to release se_cmd
+-	 * directly from ft_check_stop_free callback in response path.
+-	 */
+-	if (target_submit_cmd(&cmd->se_cmd, cmd->sess->se_sess, fcp->fc_cdb,
+-			      &cmd->ft_sense_buffer[0], scsilun_to_int(&fcp->fc_lun),
+-			      ntohl(fcp->fc_dl), task_attr, data_dir,
+-			      TARGET_SCF_ACK_KREF))
+-		goto err;
+-
+-	pr_debug("r_ctl %x target_submit_cmd %p\n", fh->fh_r_ctl, cmd);
+-	return;
+-
+-err:
+-	ft_send_resp_code_and_free(cmd, FCP_CMND_FIELDS_INVALID);
+-}
+diff --git a/drivers/target/tcm_fc/tfc_conf.c b/drivers/target/tcm_fc/tfc_conf.c
+deleted file mode 100644
+index 1a38c98f681b..000000000000
+--- a/drivers/target/tcm_fc/tfc_conf.c
++++ /dev/null
+@@ -1,491 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*******************************************************************************
+- * Filename:  tcm_fc.c
+- *
+- * This file contains the configfs implementation for TCM_fc fabric node.
+- * Based on tcm_loop_configfs.c
+- *
+- * Copyright (c) 2010 Cisco Systems, Inc.
+- * Copyright (c) 2009,2010 Rising Tide, Inc.
+- * Copyright (c) 2009,2010 Linux-iSCSI.org
+- *
+- * Copyright (c) 2009,2010 Nicholas A. Bellinger <nab@linux-iscsi.org>
+- *
+- ****************************************************************************/
+-
+-#include <linux/module.h>
+-#include <linux/moduleparam.h>
+-#include <generated/utsrelease.h>
+-#include <linux/utsname.h>
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/kthread.h>
+-#include <linux/types.h>
+-#include <linux/string.h>
+-#include <linux/configfs.h>
+-#include <linux/kernel.h>
+-#include <linux/ctype.h>
+-#include <asm/unaligned.h>
+-#include <scsi/libfc.h>
+-
+-#include <target/target_core_base.h>
+-#include <target/target_core_fabric.h>
+-
+-#include "tcm_fc.h"
+-
+-static LIST_HEAD(ft_wwn_list);
+-DEFINE_MUTEX(ft_lport_lock);
+-
+-unsigned int ft_debug_logging;
+-module_param_named(debug_logging, ft_debug_logging, int, S_IRUGO|S_IWUSR);
+-MODULE_PARM_DESC(debug_logging, "a bit mask of logging levels");
+-
+-/*
+- * Parse WWN.
+- * If strict, we require lower-case hex and colon separators to be sure
+- * the name is the same as what would be generated by ft_format_wwn()
+- * so the name and wwn are mapped one-to-one.
+- */
+-static ssize_t ft_parse_wwn(const char *name, u64 *wwn, int strict)
+-{
+-	const char *cp;
+-	char c;
+-	u32 byte = 0;
+-	u32 pos = 0;
+-	u32 err;
+-	int val;
+-
+-	*wwn = 0;
+-	for (cp = name; cp < &name[FT_NAMELEN - 1]; cp++) {
+-		c = *cp;
+-		if (c == '\n' && cp[1] == '\0')
+-			continue;
+-		if (strict && pos++ == 2 && byte++ < 7) {
+-			pos = 0;
+-			if (c == ':')
+-				continue;
+-			err = 1;
+-			goto fail;
+-		}
+-		if (c == '\0') {
+-			err = 2;
+-			if (strict && byte != 8)
+-				goto fail;
+-			return cp - name;
+-		}
+-		err = 3;
+-		val = hex_to_bin(c);
+-		if (val < 0 || (strict && isupper(c)))
+-			goto fail;
+-		*wwn = (*wwn << 4) | val;
+-	}
+-	err = 4;
+-fail:
+-	pr_debug("err %u len %zu pos %u byte %u\n",
+-		    err, cp - name, pos, byte);
+-	return -1;
+-}
+-
+-ssize_t ft_format_wwn(char *buf, size_t len, u64 wwn)
+-{
+-	u8 b[8];
+-
+-	put_unaligned_be64(wwn, b);
+-	return snprintf(buf, len,
+-		 "%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x",
+-		 b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]);
+-}
+-
+-static ssize_t ft_wwn_show(void *arg, char *buf)
+-{
+-	u64 *wwn = arg;
+-	ssize_t len;
+-
+-	len = ft_format_wwn(buf, PAGE_SIZE - 2, *wwn);
+-	buf[len++] = '\n';
+-	return len;
+-}
+-
+-static ssize_t ft_wwn_store(void *arg, const char *buf, size_t len)
+-{
+-	ssize_t ret;
+-	u64 wwn;
+-
+-	ret = ft_parse_wwn(buf, &wwn, 0);
+-	if (ret > 0)
+-		*(u64 *)arg = wwn;
+-	return ret;
+-}
+-
+-/*
+- * ACL auth ops.
+- */
+-
+-static ssize_t ft_nacl_port_name_show(struct config_item *item, char *page)
+-{
+-	struct se_node_acl *se_nacl = acl_to_nacl(item);
+-	struct ft_node_acl *acl = container_of(se_nacl,
+-			struct ft_node_acl, se_node_acl);
+-
+-	return ft_wwn_show(&acl->node_auth.port_name, page);
+-}
+-
+-static ssize_t ft_nacl_port_name_store(struct config_item *item,
+-		const char *page, size_t count)
+-{
+-	struct se_node_acl *se_nacl = acl_to_nacl(item);
+-	struct ft_node_acl *acl = container_of(se_nacl,
+-			struct ft_node_acl, se_node_acl);
+-
+-	return ft_wwn_store(&acl->node_auth.port_name, page, count);
+-}
+-
+-static ssize_t ft_nacl_node_name_show(struct config_item *item,
+-		char *page)
+-{
+-	struct se_node_acl *se_nacl = acl_to_nacl(item);
+-	struct ft_node_acl *acl = container_of(se_nacl,
+-			struct ft_node_acl, se_node_acl);
+-
+-	return ft_wwn_show(&acl->node_auth.node_name, page);
+-}
+-
+-static ssize_t ft_nacl_node_name_store(struct config_item *item,
+-		const char *page, size_t count)
+-{
+-	struct se_node_acl *se_nacl = acl_to_nacl(item);
+-	struct ft_node_acl *acl = container_of(se_nacl,
+-			struct ft_node_acl, se_node_acl);
+-
+-	return ft_wwn_store(&acl->node_auth.node_name, page, count);
+-}
+-
+-CONFIGFS_ATTR(ft_nacl_, node_name);
+-CONFIGFS_ATTR(ft_nacl_, port_name);
+-
+-static ssize_t ft_nacl_tag_show(struct config_item *item,
+-		char *page)
+-{
+-	return snprintf(page, PAGE_SIZE, "%s", acl_to_nacl(item)->acl_tag);
+-}
+-
+-static ssize_t ft_nacl_tag_store(struct config_item *item,
+-		const char *page, size_t count)
+-{
+-	struct se_node_acl *se_nacl = acl_to_nacl(item);
+-	int ret;
+-
+-	ret = core_tpg_set_initiator_node_tag(se_nacl->se_tpg, se_nacl, page);
+-
+-	if (ret < 0)
+-		return ret;
+-	return count;
+-}
+-
+-CONFIGFS_ATTR(ft_nacl_, tag);
+-
+-static struct configfs_attribute *ft_nacl_base_attrs[] = {
+-	&ft_nacl_attr_port_name,
+-	&ft_nacl_attr_node_name,
+-	&ft_nacl_attr_tag,
+-	NULL,
+-};
+-
+-/*
+- * ACL ops.
+- */
+-
+-/*
+- * Add ACL for an initiator.  The ACL is named arbitrarily.
+- * The port_name and/or node_name are attributes.
+- */
+-static int ft_init_nodeacl(struct se_node_acl *nacl, const char *name)
+-{
+-	struct ft_node_acl *acl =
+-		container_of(nacl, struct ft_node_acl, se_node_acl);
+-	u64 wwpn;
+-
+-	if (ft_parse_wwn(name, &wwpn, 1) < 0)
+-		return -EINVAL;
+-
+-	acl->node_auth.port_name = wwpn;
+-	return 0;
+-}
+-
+-/*
+- * local_port port_group (tpg) ops.
+- */
+-static struct se_portal_group *ft_add_tpg(struct se_wwn *wwn, const char *name)
+-{
+-	struct ft_lport_wwn *ft_wwn;
+-	struct ft_tpg *tpg;
+-	struct workqueue_struct *wq;
+-	unsigned long index;
+-	int ret;
+-
+-	pr_debug("tcm_fc: add tpg %s\n", name);
+-
+-	/*
+-	 * Name must be "tpgt_" followed by the index.
+-	 */
+-	if (strstr(name, "tpgt_") != name)
+-		return NULL;
+-
+-	ret = kstrtoul(name + 5, 10, &index);
+-	if (ret)
+-		return NULL;
+-	if (index > UINT_MAX)
+-		return NULL;
+-
+-	if ((index != 1)) {
+-		pr_err("Error, a single TPG=1 is used for HW port mappings\n");
+-		return ERR_PTR(-ENOSYS);
+-	}
+-
+-	ft_wwn = container_of(wwn, struct ft_lport_wwn, se_wwn);
+-	tpg = kzalloc(sizeof(*tpg), GFP_KERNEL);
+-	if (!tpg)
+-		return NULL;
+-	tpg->index = index;
+-	tpg->lport_wwn = ft_wwn;
+-	INIT_LIST_HEAD(&tpg->lun_list);
+-
+-	wq = alloc_workqueue("tcm_fc", 0, 1);
+-	if (!wq) {
+-		kfree(tpg);
+-		return NULL;
+-	}
+-
+-	ret = core_tpg_register(wwn, &tpg->se_tpg, SCSI_PROTOCOL_FCP);
+-	if (ret < 0) {
+-		destroy_workqueue(wq);
+-		kfree(tpg);
+-		return NULL;
+-	}
+-	tpg->workqueue = wq;
+-
+-	mutex_lock(&ft_lport_lock);
+-	ft_wwn->tpg = tpg;
+-	mutex_unlock(&ft_lport_lock);
+-
+-	return &tpg->se_tpg;
+-}
+-
+-static void ft_del_tpg(struct se_portal_group *se_tpg)
+-{
+-	struct ft_tpg *tpg = container_of(se_tpg, struct ft_tpg, se_tpg);
+-	struct ft_lport_wwn *ft_wwn = tpg->lport_wwn;
+-
+-	pr_debug("del tpg %s\n",
+-		    config_item_name(&tpg->se_tpg.tpg_group.cg_item));
+-
+-	destroy_workqueue(tpg->workqueue);
+-
+-	/* Wait for sessions to be freed thru RCU, for BUG_ON below */
+-	synchronize_rcu();
+-
+-	mutex_lock(&ft_lport_lock);
+-	ft_wwn->tpg = NULL;
+-	if (tpg->tport) {
+-		tpg->tport->tpg = NULL;
+-		tpg->tport = NULL;
+-	}
+-	mutex_unlock(&ft_lport_lock);
+-
+-	core_tpg_deregister(se_tpg);
+-	kfree(tpg);
+-}
+-
+-/*
+- * Verify that an lport is configured to use the tcm_fc module, and return
+- * the target port group that should be used.
+- *
+- * The caller holds ft_lport_lock.
+- */
+-struct ft_tpg *ft_lport_find_tpg(struct fc_lport *lport)
+-{
+-	struct ft_lport_wwn *ft_wwn;
+-
+-	list_for_each_entry(ft_wwn, &ft_wwn_list, ft_wwn_node) {
+-		if (ft_wwn->wwpn == lport->wwpn)
+-			return ft_wwn->tpg;
+-	}
+-	return NULL;
+-}
+-
+-/*
+- * target config instance ops.
+- */
+-
+-/*
+- * Add lport to allowed config.
+- * The name is the WWPN in lower-case ASCII, colon-separated bytes.
+- */
+-static struct se_wwn *ft_add_wwn(
+-	struct target_fabric_configfs *tf,
+-	struct config_group *group,
+-	const char *name)
+-{
+-	struct ft_lport_wwn *ft_wwn;
+-	struct ft_lport_wwn *old_ft_wwn;
+-	u64 wwpn;
+-
+-	pr_debug("add wwn %s\n", name);
+-	if (ft_parse_wwn(name, &wwpn, 1) < 0)
+-		return NULL;
+-	ft_wwn = kzalloc(sizeof(*ft_wwn), GFP_KERNEL);
+-	if (!ft_wwn)
+-		return NULL;
+-	ft_wwn->wwpn = wwpn;
+-
+-	mutex_lock(&ft_lport_lock);
+-	list_for_each_entry(old_ft_wwn, &ft_wwn_list, ft_wwn_node) {
+-		if (old_ft_wwn->wwpn == wwpn) {
+-			mutex_unlock(&ft_lport_lock);
+-			kfree(ft_wwn);
+-			return NULL;
+-		}
+-	}
+-	list_add_tail(&ft_wwn->ft_wwn_node, &ft_wwn_list);
+-	ft_format_wwn(ft_wwn->name, sizeof(ft_wwn->name), wwpn);
+-	mutex_unlock(&ft_lport_lock);
+-
+-	return &ft_wwn->se_wwn;
+-}
+-
+-static void ft_del_wwn(struct se_wwn *wwn)
+-{
+-	struct ft_lport_wwn *ft_wwn = container_of(wwn,
+-				struct ft_lport_wwn, se_wwn);
+-
+-	pr_debug("del wwn %s\n", ft_wwn->name);
+-	mutex_lock(&ft_lport_lock);
+-	list_del(&ft_wwn->ft_wwn_node);
+-	mutex_unlock(&ft_lport_lock);
+-
+-	kfree(ft_wwn);
+-}
+-
+-static ssize_t ft_wwn_version_show(struct config_item *item, char *page)
+-{
+-	return sprintf(page, "TCM FC " FT_VERSION " on %s/%s on "
+-		""UTS_RELEASE"\n",  utsname()->sysname, utsname()->machine);
+-}
+-
+-CONFIGFS_ATTR_RO(ft_wwn_, version);
+-
+-static struct configfs_attribute *ft_wwn_attrs[] = {
+-	&ft_wwn_attr_version,
+-	NULL,
+-};
+-
+-static inline struct ft_tpg *ft_tpg(struct se_portal_group *se_tpg)
+-{
+-	return container_of(se_tpg, struct ft_tpg, se_tpg);
+-}
+-
+-static char *ft_get_fabric_wwn(struct se_portal_group *se_tpg)
+-{
+-	return ft_tpg(se_tpg)->lport_wwn->name;
+-}
+-
+-static u16 ft_get_tag(struct se_portal_group *se_tpg)
+-{
+-	/*
+-	 * This tag is used when forming SCSI Name identifier in EVPD=1 0x83
+-	 * to represent the SCSI Target Port.
+-	 */
+-	return ft_tpg(se_tpg)->index;
+-}
+-
+-static int ft_check_false(struct se_portal_group *se_tpg)
+-{
+-	return 0;
+-}
+-
+-static void ft_set_default_node_attr(struct se_node_acl *se_nacl)
+-{
+-}
+-
+-static u32 ft_tpg_get_inst_index(struct se_portal_group *se_tpg)
+-{
+-	return ft_tpg(se_tpg)->index;
+-}
+-
+-static const struct target_core_fabric_ops ft_fabric_ops = {
+-	.module =			THIS_MODULE,
+-	.fabric_name =			"fc",
+-	.node_acl_size =		sizeof(struct ft_node_acl),
+-	.tpg_get_wwn =			ft_get_fabric_wwn,
+-	.tpg_get_tag =			ft_get_tag,
+-	.tpg_check_demo_mode =		ft_check_false,
+-	.tpg_check_demo_mode_cache =	ft_check_false,
+-	.tpg_check_demo_mode_write_protect = ft_check_false,
+-	.tpg_check_prod_mode_write_protect = ft_check_false,
+-	.tpg_get_inst_index =		ft_tpg_get_inst_index,
+-	.check_stop_free =		ft_check_stop_free,
+-	.release_cmd =			ft_release_cmd,
+-	.close_session =		ft_sess_close,
+-	.sess_get_index =		ft_sess_get_index,
+-	.sess_get_initiator_sid =	NULL,
+-	.write_pending =		ft_write_pending,
+-	.set_default_node_attributes =	ft_set_default_node_attr,
+-	.get_cmd_state =		ft_get_cmd_state,
+-	.queue_data_in =		ft_queue_data_in,
+-	.queue_status =			ft_queue_status,
+-	.queue_tm_rsp =			ft_queue_tm_resp,
+-	.aborted_task =			ft_aborted_task,
+-	/*
+-	 * Setup function pointers for generic logic in
+-	 * target_core_fabric_configfs.c
+-	 */
+-	.fabric_make_wwn =		&ft_add_wwn,
+-	.fabric_drop_wwn =		&ft_del_wwn,
+-	.fabric_make_tpg =		&ft_add_tpg,
+-	.fabric_drop_tpg =		&ft_del_tpg,
+-	.fabric_init_nodeacl =		&ft_init_nodeacl,
+-
+-	.tfc_wwn_attrs			= ft_wwn_attrs,
+-	.tfc_tpg_nacl_base_attrs	= ft_nacl_base_attrs,
+-};
+-
+-static struct notifier_block ft_notifier = {
+-	.notifier_call = ft_lport_notify
+-};
+-
+-static int __init ft_init(void)
+-{
+-	int ret;
+-
+-	ret = target_register_template(&ft_fabric_ops);
+-	if (ret)
+-		goto out;
+-
+-	ret = fc_fc4_register_provider(FC_TYPE_FCP, &ft_prov);
+-	if (ret)
+-		goto out_unregister_template;
+-
+-	blocking_notifier_chain_register(&fc_lport_notifier_head, &ft_notifier);
+-	fc_lport_iterate(ft_lport_add, NULL);
+-	return 0;
+-
+-out_unregister_template:
+-	target_unregister_template(&ft_fabric_ops);
+-out:
+-	return ret;
+-}
+-
+-static void __exit ft_exit(void)
+-{
+-	blocking_notifier_chain_unregister(&fc_lport_notifier_head,
+-					   &ft_notifier);
+-	fc_fc4_deregister_provider(FC_TYPE_FCP, &ft_prov);
+-	fc_lport_iterate(ft_lport_del, NULL);
+-	target_unregister_template(&ft_fabric_ops);
+-	synchronize_rcu();
+-}
+-
+-MODULE_DESCRIPTION("FC TCM fabric driver " FT_VERSION);
+-MODULE_LICENSE("GPL");
+-module_init(ft_init);
+-module_exit(ft_exit);
+diff --git a/drivers/target/tcm_fc/tfc_io.c b/drivers/target/tcm_fc/tfc_io.c
+deleted file mode 100644
+index bbe2e29612fa..000000000000
+--- a/drivers/target/tcm_fc/tfc_io.c
++++ /dev/null
+@@ -1,359 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Copyright (c) 2010 Cisco Systems, Inc.
+- *
+- * Portions based on tcm_loop_fabric_scsi.c and libfc/fc_fcp.c
+- *
+- * Copyright (c) 2007 Intel Corporation. All rights reserved.
+- * Copyright (c) 2008 Red Hat, Inc.  All rights reserved.
+- * Copyright (c) 2008 Mike Christie
+- * Copyright (c) 2009 Rising Tide, Inc.
+- * Copyright (c) 2009 Linux-iSCSI.org
+- * Copyright (c) 2009 Nicholas A. Bellinger <nab@linux-iscsi.org>
+- */
+-
+-/* XXX TBD some includes may be extraneous */
+-
+-#include <linux/module.h>
+-#include <linux/moduleparam.h>
+-#include <linux/utsname.h>
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/kthread.h>
+-#include <linux/types.h>
+-#include <linux/string.h>
+-#include <linux/configfs.h>
+-#include <linux/ctype.h>
+-#include <linux/hash.h>
+-#include <linux/ratelimit.h>
+-#include <asm/unaligned.h>
+-#include <scsi/libfc.h>
+-
+-#include <target/target_core_base.h>
+-#include <target/target_core_fabric.h>
+-
+-#include "tcm_fc.h"
+-
+-/*
+- * Deliver read data back to initiator.
+- * XXX TBD handle resource problems later.
+- */
+-int ft_queue_data_in(struct se_cmd *se_cmd)
+-{
+-	struct ft_cmd *cmd = container_of(se_cmd, struct ft_cmd, se_cmd);
+-	struct fc_frame *fp = NULL;
+-	struct fc_exch *ep;
+-	struct fc_lport *lport;
+-	struct scatterlist *sg = NULL;
+-	size_t remaining;
+-	u32 f_ctl = FC_FC_EX_CTX | FC_FC_REL_OFF;
+-	u32 mem_off = 0;
+-	u32 fh_off = 0;
+-	u32 frame_off = 0;
+-	size_t frame_len = 0;
+-	size_t mem_len = 0;
+-	size_t tlen;
+-	size_t off_in_page;
+-	struct page *page = NULL;
+-	int use_sg;
+-	int error;
+-	void *page_addr;
+-	void *from;
+-	void *to = NULL;
+-
+-	if (cmd->aborted)
+-		return 0;
+-
+-	if (se_cmd->scsi_status == SAM_STAT_TASK_SET_FULL)
+-		goto queue_status;
+-
+-	ep = fc_seq_exch(cmd->seq);
+-	lport = ep->lp;
+-	cmd->seq = fc_seq_start_next(cmd->seq);
+-
+-	remaining = se_cmd->data_length;
+-
+-	/*
+-	 * Setup to use first mem list entry, unless no data.
+-	 */
+-	BUG_ON(remaining && !se_cmd->t_data_sg);
+-	if (remaining) {
+-		sg = se_cmd->t_data_sg;
+-		mem_len = sg->length;
+-		mem_off = sg->offset;
+-		page = sg_page(sg);
+-	}
+-
+-	/* no scatter/gather in skb for odd word length due to fc_seq_send() */
+-	use_sg = !(remaining % 4);
+-
+-	while (remaining) {
+-		struct fc_seq *seq = cmd->seq;
+-
+-		if (!seq) {
+-			pr_debug("%s: Command aborted, xid 0x%x\n",
+-				 __func__, ep->xid);
+-			break;
+-		}
+-		if (!mem_len) {
+-			sg = sg_next(sg);
+-			mem_len = min((size_t)sg->length, remaining);
+-			mem_off = sg->offset;
+-			page = sg_page(sg);
+-		}
+-		if (!frame_len) {
+-			/*
+-			 * If lport's has capability of Large Send Offload LSO)
+-			 * , then allow 'frame_len' to be as big as 'lso_max'
+-			 * if indicated transfer length is >= lport->lso_max
+-			 */
+-			frame_len = (lport->seq_offload) ? lport->lso_max :
+-							  cmd->sess->max_frame;
+-			frame_len = min(frame_len, remaining);
+-			fp = fc_frame_alloc(lport, use_sg ? 0 : frame_len);
+-			if (!fp)
+-				return -ENOMEM;
+-			to = fc_frame_payload_get(fp, 0);
+-			fh_off = frame_off;
+-			frame_off += frame_len;
+-			/*
+-			 * Setup the frame's max payload which is used by base
+-			 * driver to indicate HW about max frame size, so that
+-			 * HW can do fragmentation appropriately based on
+-			 * "gso_max_size" of underline netdev.
+-			 */
+-			fr_max_payload(fp) = cmd->sess->max_frame;
+-		}
+-		tlen = min(mem_len, frame_len);
+-
+-		if (use_sg) {
+-			off_in_page = mem_off;
+-			BUG_ON(!page);
+-			get_page(page);
+-			skb_fill_page_desc(fp_skb(fp),
+-					   skb_shinfo(fp_skb(fp))->nr_frags,
+-					   page, off_in_page, tlen);
+-			fr_len(fp) += tlen;
+-			fp_skb(fp)->data_len += tlen;
+-			fp_skb(fp)->truesize += page_size(page);
+-		} else {
+-			BUG_ON(!page);
+-			from = kmap_atomic(page + (mem_off >> PAGE_SHIFT));
+-			page_addr = from;
+-			from += offset_in_page(mem_off);
+-			tlen = min(tlen, (size_t)(PAGE_SIZE -
+-						offset_in_page(mem_off)));
+-			memcpy(to, from, tlen);
+-			kunmap_atomic(page_addr);
+-			to += tlen;
+-		}
+-
+-		mem_off += tlen;
+-		mem_len -= tlen;
+-		frame_len -= tlen;
+-		remaining -= tlen;
+-
+-		if (frame_len &&
+-		    (skb_shinfo(fp_skb(fp))->nr_frags < FC_FRAME_SG_LEN))
+-			continue;
+-		if (!remaining)
+-			f_ctl |= FC_FC_END_SEQ;
+-		fc_fill_fc_hdr(fp, FC_RCTL_DD_SOL_DATA, ep->did, ep->sid,
+-			       FC_TYPE_FCP, f_ctl, fh_off);
+-		error = fc_seq_send(lport, seq, fp);
+-		if (error) {
+-			pr_info_ratelimited("%s: Failed to send frame %p, "
+-						"xid <0x%x>, remaining %zu, "
+-						"lso_max <0x%x>\n",
+-						__func__, fp, ep->xid,
+-						remaining, lport->lso_max);
+-			/*
+-			 * Go ahead and set TASK_SET_FULL status ignoring the
+-			 * rest of the DataIN, and immediately attempt to
+-			 * send the response via ft_queue_status() in order
+-			 * to notify the initiator that it should reduce it's
+-			 * per LUN queue_depth.
+-			 */
+-			se_cmd->scsi_status = SAM_STAT_TASK_SET_FULL;
+-			break;
+-		}
+-	}
+-queue_status:
+-	return ft_queue_status(se_cmd);
+-}
+-
+-static void ft_execute_work(struct work_struct *work)
+-{
+-	struct ft_cmd *cmd = container_of(work, struct ft_cmd, work);
+-
+-	target_execute_cmd(&cmd->se_cmd);
+-}
+-
+-/*
+- * Receive write data frame.
+- */
+-void ft_recv_write_data(struct ft_cmd *cmd, struct fc_frame *fp)
+-{
+-	struct se_cmd *se_cmd = &cmd->se_cmd;
+-	struct fc_seq *seq = cmd->seq;
+-	struct fc_exch *ep;
+-	struct fc_lport *lport;
+-	struct fc_frame_header *fh;
+-	struct scatterlist *sg = NULL;
+-	u32 mem_off = 0;
+-	u32 rel_off;
+-	size_t frame_len;
+-	size_t mem_len = 0;
+-	size_t tlen;
+-	struct page *page = NULL;
+-	void *page_addr;
+-	void *from;
+-	void *to;
+-	u32 f_ctl;
+-	void *buf;
+-
+-	fh = fc_frame_header_get(fp);
+-	if (!(ntoh24(fh->fh_f_ctl) & FC_FC_REL_OFF))
+-		goto drop;
+-
+-	f_ctl = ntoh24(fh->fh_f_ctl);
+-	ep = fc_seq_exch(seq);
+-	lport = ep->lp;
+-	if (cmd->was_ddp_setup) {
+-		BUG_ON(!lport);
+-		/*
+-		 * Since DDP (Large Rx offload) was setup for this request,
+-		 * payload is expected to be copied directly to user buffers.
+-		 */
+-		buf = fc_frame_payload_get(fp, 1);
+-		if (buf)
+-			pr_err("%s: xid 0x%x, f_ctl 0x%x, cmd->sg %p, "
+-				"cmd->sg_cnt 0x%x. DDP was setup"
+-				" hence not expected to receive frame with "
+-				"payload, Frame will be dropped if"
+-				"'Sequence Initiative' bit in f_ctl is"
+-				"not set\n", __func__, ep->xid, f_ctl,
+-				se_cmd->t_data_sg, se_cmd->t_data_nents);
+-		/*
+-		 * Invalidate HW DDP context if it was setup for respective
+-		 * command. Invalidation of HW DDP context is requited in both
+-		 * situation (success and error).
+-		 */
+-		ft_invl_hw_context(cmd);
+-
+-		/*
+-		 * If "Sequence Initiative (TSI)" bit set in f_ctl, means last
+-		 * write data frame is received successfully where payload is
+-		 * posted directly to user buffer and only the last frame's
+-		 * header is posted in receive queue.
+-		 *
+-		 * If "Sequence Initiative (TSI)" bit is not set, means error
+-		 * condition w.r.t. DDP, hence drop the packet and let explict
+-		 * ABORTS from other end of exchange timer trigger the recovery.
+-		 */
+-		if (f_ctl & FC_FC_SEQ_INIT)
+-			goto last_frame;
+-		else
+-			goto drop;
+-	}
+-
+-	rel_off = ntohl(fh->fh_parm_offset);
+-	frame_len = fr_len(fp);
+-	if (frame_len <= sizeof(*fh))
+-		goto drop;
+-	frame_len -= sizeof(*fh);
+-	from = fc_frame_payload_get(fp, 0);
+-	if (rel_off >= se_cmd->data_length)
+-		goto drop;
+-	if (frame_len + rel_off > se_cmd->data_length)
+-		frame_len = se_cmd->data_length - rel_off;
+-
+-	/*
+-	 * Setup to use first mem list entry, unless no data.
+-	 */
+-	BUG_ON(frame_len && !se_cmd->t_data_sg);
+-	if (frame_len) {
+-		sg = se_cmd->t_data_sg;
+-		mem_len = sg->length;
+-		mem_off = sg->offset;
+-		page = sg_page(sg);
+-	}
+-
+-	while (frame_len) {
+-		if (!mem_len) {
+-			sg = sg_next(sg);
+-			mem_len = sg->length;
+-			mem_off = sg->offset;
+-			page = sg_page(sg);
+-		}
+-		if (rel_off >= mem_len) {
+-			rel_off -= mem_len;
+-			mem_len = 0;
+-			continue;
+-		}
+-		mem_off += rel_off;
+-		mem_len -= rel_off;
+-		rel_off = 0;
+-
+-		tlen = min(mem_len, frame_len);
+-
+-		to = kmap_atomic(page + (mem_off >> PAGE_SHIFT));
+-		page_addr = to;
+-		to += offset_in_page(mem_off);
+-		tlen = min(tlen, (size_t)(PAGE_SIZE -
+-					  offset_in_page(mem_off)));
+-		memcpy(to, from, tlen);
+-		kunmap_atomic(page_addr);
+-
+-		from += tlen;
+-		frame_len -= tlen;
+-		mem_off += tlen;
+-		mem_len -= tlen;
+-		cmd->write_data_len += tlen;
+-	}
+-last_frame:
+-	if (cmd->write_data_len == se_cmd->data_length) {
+-		INIT_WORK(&cmd->work, ft_execute_work);
+-		queue_work(cmd->sess->tport->tpg->workqueue, &cmd->work);
+-	}
+-drop:
+-	fc_frame_free(fp);
+-}
+-
+-/*
+- * Handle and cleanup any HW specific resources if
+- * received ABORTS, errors, timeouts.
+- */
+-void ft_invl_hw_context(struct ft_cmd *cmd)
+-{
+-	struct fc_seq *seq;
+-	struct fc_exch *ep = NULL;
+-	struct fc_lport *lport = NULL;
+-
+-	BUG_ON(!cmd);
+-	seq = cmd->seq;
+-
+-	/* Cleanup the DDP context in HW if DDP was setup */
+-	if (cmd->was_ddp_setup && seq) {
+-		ep = fc_seq_exch(seq);
+-		if (ep) {
+-			lport = ep->lp;
+-			if (lport && (ep->xid <= lport->lro_xid)) {
+-				/*
+-				 * "ddp_done" trigger invalidation of HW
+-				 * specific DDP context
+-				 */
+-				cmd->write_data_len = lport->tt.ddp_done(lport,
+-								      ep->xid);
+-
+-				/*
+-				 * Resetting same variable to indicate HW's
+-				 * DDP context has been invalidated to avoid
+-				 * re_invalidation of same context (context is
+-				 * identified using ep->xid)
+-				 */
+-				cmd->was_ddp_setup = 0;
+-			}
+-		}
+-	}
+-}
+diff --git a/drivers/target/tcm_fc/tfc_sess.c b/drivers/target/tcm_fc/tfc_sess.c
+deleted file mode 100644
+index 23ce506d5402..000000000000
+--- a/drivers/target/tcm_fc/tfc_sess.c
++++ /dev/null
+@@ -1,503 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Copyright (c) 2010 Cisco Systems, Inc.
+- */
+-
+-/* XXX TBD some includes may be extraneous */
+-
+-#include <linux/module.h>
+-#include <linux/moduleparam.h>
+-#include <linux/utsname.h>
+-#include <linux/init.h>
+-#include <linux/slab.h>
+-#include <linux/kthread.h>
+-#include <linux/types.h>
+-#include <linux/string.h>
+-#include <linux/configfs.h>
+-#include <linux/ctype.h>
+-#include <linux/hash.h>
+-#include <linux/rcupdate.h>
+-#include <linux/rculist.h>
+-#include <linux/kref.h>
+-#include <asm/unaligned.h>
+-#include <scsi/libfc.h>
+-
+-#include <target/target_core_base.h>
+-#include <target/target_core_fabric.h>
+-
+-#include "tcm_fc.h"
+-
+-#define TFC_SESS_DBG(lport, fmt, args...) \
+-	pr_debug("host%u: rport %6.6x: " fmt,	   \
+-		 (lport)->host->host_no,	   \
+-		 (lport)->port_id, ##args )
+-
+-static void ft_sess_delete_all(struct ft_tport *);
+-
+-/*
+- * Lookup or allocate target local port.
+- * Caller holds ft_lport_lock.
+- */
+-static struct ft_tport *ft_tport_get(struct fc_lport *lport)
+-{
+-	struct ft_tpg *tpg;
+-	struct ft_tport *tport;
+-	int i;
+-
+-	tport = rcu_dereference_protected(lport->prov[FC_TYPE_FCP],
+-					  lockdep_is_held(&ft_lport_lock));
+-	if (tport && tport->tpg)
+-		return tport;
+-
+-	tpg = ft_lport_find_tpg(lport);
+-	if (!tpg)
+-		return NULL;
+-
+-	if (tport) {
+-		tport->tpg = tpg;
+-		tpg->tport = tport;
+-		return tport;
+-	}
+-
+-	tport = kzalloc(sizeof(*tport), GFP_KERNEL);
+-	if (!tport)
+-		return NULL;
+-
+-	tport->lport = lport;
+-	tport->tpg = tpg;
+-	tpg->tport = tport;
+-	for (i = 0; i < FT_SESS_HASH_SIZE; i++)
+-		INIT_HLIST_HEAD(&tport->hash[i]);
+-
+-	rcu_assign_pointer(lport->prov[FC_TYPE_FCP], tport);
+-	return tport;
+-}
+-
+-/*
+- * Delete a target local port.
+- * Caller holds ft_lport_lock.
+- */
+-static void ft_tport_delete(struct ft_tport *tport)
+-{
+-	struct fc_lport *lport;
+-	struct ft_tpg *tpg;
+-
+-	ft_sess_delete_all(tport);
+-	lport = tport->lport;
+-	lport->service_params &= ~FCP_SPPF_TARG_FCN;
+-	BUG_ON(tport != lport->prov[FC_TYPE_FCP]);
+-	RCU_INIT_POINTER(lport->prov[FC_TYPE_FCP], NULL);
+-
+-	tpg = tport->tpg;
+-	if (tpg) {
+-		tpg->tport = NULL;
+-		tport->tpg = NULL;
+-	}
+-	kfree_rcu(tport, rcu);
+-}
+-
+-/*
+- * Add local port.
+- * Called thru fc_lport_iterate().
+- */
+-void ft_lport_add(struct fc_lport *lport, void *arg)
+-{
+-	mutex_lock(&ft_lport_lock);
+-	ft_tport_get(lport);
+-	lport->service_params |= FCP_SPPF_TARG_FCN;
+-	mutex_unlock(&ft_lport_lock);
+-}
+-
+-/*
+- * Delete local port.
+- * Called thru fc_lport_iterate().
+- */
+-void ft_lport_del(struct fc_lport *lport, void *arg)
+-{
+-	struct ft_tport *tport;
+-
+-	mutex_lock(&ft_lport_lock);
+-	tport = lport->prov[FC_TYPE_FCP];
+-	if (tport)
+-		ft_tport_delete(tport);
+-	mutex_unlock(&ft_lport_lock);
+-}
+-
+-/*
+- * Notification of local port change from libfc.
+- * Create or delete local port and associated tport.
+- */
+-int ft_lport_notify(struct notifier_block *nb, unsigned long event, void *arg)
+-{
+-	struct fc_lport *lport = arg;
+-
+-	switch (event) {
+-	case FC_LPORT_EV_ADD:
+-		ft_lport_add(lport, NULL);
+-		break;
+-	case FC_LPORT_EV_DEL:
+-		ft_lport_del(lport, NULL);
+-		break;
+-	}
+-	return NOTIFY_DONE;
+-}
+-
+-/*
+- * Hash function for FC_IDs.
+- */
+-static u32 ft_sess_hash(u32 port_id)
+-{
+-	return hash_32(port_id, FT_SESS_HASH_BITS);
+-}
+-
+-/*
+- * Find session in local port.
+- * Sessions and hash lists are RCU-protected.
+- * A reference is taken which must be eventually freed.
+- */
+-static struct ft_sess *ft_sess_get(struct fc_lport *lport, u32 port_id)
+-{
+-	struct ft_tport *tport;
+-	struct hlist_head *head;
+-	struct ft_sess *sess;
+-	char *reason = "no session created";
+-
+-	rcu_read_lock();
+-	tport = rcu_dereference(lport->prov[FC_TYPE_FCP]);
+-	if (!tport) {
+-		reason = "not an FCP port";
+-		goto out;
+-	}
+-
+-	head = &tport->hash[ft_sess_hash(port_id)];
+-	hlist_for_each_entry_rcu(sess, head, hash) {
+-		if (sess->port_id == port_id) {
+-			kref_get(&sess->kref);
+-			rcu_read_unlock();
+-			TFC_SESS_DBG(lport, "port_id %x found %p\n",
+-				     port_id, sess);
+-			return sess;
+-		}
+-	}
+-out:
+-	rcu_read_unlock();
+-	TFC_SESS_DBG(lport, "port_id %x not found, %s\n",
+-		     port_id, reason);
+-	return NULL;
+-}
+-
+-static int ft_sess_alloc_cb(struct se_portal_group *se_tpg,
+-			    struct se_session *se_sess, void *p)
+-{
+-	struct ft_sess *sess = p;
+-	struct ft_tport *tport = sess->tport;
+-	struct hlist_head *head = &tport->hash[ft_sess_hash(sess->port_id)];
+-
+-	TFC_SESS_DBG(tport->lport, "port_id %x sess %p\n", sess->port_id, sess);
+-	hlist_add_head_rcu(&sess->hash, head);
+-	tport->sess_count++;
+-
+-	return 0;
+-}
+-
+-/*
+- * Allocate session and enter it in the hash for the local port.
+- * Caller holds ft_lport_lock.
+- */
+-static struct ft_sess *ft_sess_create(struct ft_tport *tport, u32 port_id,
+-				      struct fc_rport_priv *rdata)
+-{
+-	struct se_portal_group *se_tpg = &tport->tpg->se_tpg;
+-	struct ft_sess *sess;
+-	struct hlist_head *head;
+-	unsigned char initiatorname[TRANSPORT_IQN_LEN];
+-
+-	ft_format_wwn(&initiatorname[0], TRANSPORT_IQN_LEN, rdata->ids.port_name);
+-
+-	head = &tport->hash[ft_sess_hash(port_id)];
+-	hlist_for_each_entry_rcu(sess, head, hash)
+-		if (sess->port_id == port_id)
+-			return sess;
+-
+-	sess = kzalloc(sizeof(*sess), GFP_KERNEL);
+-	if (!sess)
+-		return ERR_PTR(-ENOMEM);
+-
+-	kref_init(&sess->kref); /* ref for table entry */
+-	sess->tport = tport;
+-	sess->port_id = port_id;
+-
+-	sess->se_sess = target_setup_session(se_tpg, TCM_FC_DEFAULT_TAGS,
+-					     sizeof(struct ft_cmd),
+-					     TARGET_PROT_NORMAL, &initiatorname[0],
+-					     sess, ft_sess_alloc_cb);
+-	if (IS_ERR(sess->se_sess)) {
+-		int rc = PTR_ERR(sess->se_sess);
+-		kfree(sess);
+-		sess = ERR_PTR(rc);
+-	}
+-	return sess;
+-}
+-
+-/*
+- * Unhash the session.
+- * Caller holds ft_lport_lock.
+- */
+-static void ft_sess_unhash(struct ft_sess *sess)
+-{
+-	struct ft_tport *tport = sess->tport;
+-
+-	hlist_del_rcu(&sess->hash);
+-	BUG_ON(!tport->sess_count);
+-	tport->sess_count--;
+-	sess->port_id = -1;
+-	sess->params = 0;
+-}
+-
+-/*
+- * Delete session from hash.
+- * Caller holds ft_lport_lock.
+- */
+-static struct ft_sess *ft_sess_delete(struct ft_tport *tport, u32 port_id)
+-{
+-	struct hlist_head *head;
+-	struct ft_sess *sess;
+-
+-	head = &tport->hash[ft_sess_hash(port_id)];
+-	hlist_for_each_entry_rcu(sess, head, hash) {
+-		if (sess->port_id == port_id) {
+-			ft_sess_unhash(sess);
+-			return sess;
+-		}
+-	}
+-	return NULL;
+-}
+-
+-static void ft_close_sess(struct ft_sess *sess)
+-{
+-	target_stop_session(sess->se_sess);
+-	target_wait_for_sess_cmds(sess->se_sess);
+-	ft_sess_put(sess);
+-}
+-
+-/*
+- * Delete all sessions from tport.
+- * Caller holds ft_lport_lock.
+- */
+-static void ft_sess_delete_all(struct ft_tport *tport)
+-{
+-	struct hlist_head *head;
+-	struct ft_sess *sess;
+-
+-	for (head = tport->hash;
+-	     head < &tport->hash[FT_SESS_HASH_SIZE]; head++) {
+-		hlist_for_each_entry_rcu(sess, head, hash) {
+-			ft_sess_unhash(sess);
+-			ft_close_sess(sess);	/* release from table */
+-		}
+-	}
+-}
+-
+-/*
+- * TCM ops for sessions.
+- */
+-
+-/*
+- * Remove session and send PRLO.
+- * This is called when the ACL is being deleted or queue depth is changing.
+- */
+-void ft_sess_close(struct se_session *se_sess)
+-{
+-	struct ft_sess *sess = se_sess->fabric_sess_ptr;
+-	u32 port_id;
+-
+-	mutex_lock(&ft_lport_lock);
+-	port_id = sess->port_id;
+-	if (port_id == -1) {
+-		mutex_unlock(&ft_lport_lock);
+-		return;
+-	}
+-	TFC_SESS_DBG(sess->tport->lport, "port_id %x close session\n", port_id);
+-	ft_sess_unhash(sess);
+-	mutex_unlock(&ft_lport_lock);
+-	ft_close_sess(sess);
+-	/* XXX Send LOGO or PRLO */
+-	synchronize_rcu();		/* let transport deregister happen */
+-}
+-
+-u32 ft_sess_get_index(struct se_session *se_sess)
+-{
+-	struct ft_sess *sess = se_sess->fabric_sess_ptr;
+-
+-	return sess->port_id;	/* XXX TBD probably not what is needed */
+-}
+-
+-u32 ft_sess_get_port_name(struct se_session *se_sess,
+-			  unsigned char *buf, u32 len)
+-{
+-	struct ft_sess *sess = se_sess->fabric_sess_ptr;
+-
+-	return ft_format_wwn(buf, len, sess->port_name);
+-}
+-
+-/*
+- * libfc ops involving sessions.
+- */
+-
+-static int ft_prli_locked(struct fc_rport_priv *rdata, u32 spp_len,
+-			  const struct fc_els_spp *rspp, struct fc_els_spp *spp)
+-{
+-	struct ft_tport *tport;
+-	struct ft_sess *sess;
+-	u32 fcp_parm;
+-
+-	tport = ft_tport_get(rdata->local_port);
+-	if (!tport)
+-		goto not_target;	/* not a target for this local port */
+-
+-	if (!rspp)
+-		goto fill;
+-
+-	if (rspp->spp_flags & (FC_SPP_OPA_VAL | FC_SPP_RPA_VAL))
+-		return FC_SPP_RESP_NO_PA;
+-
+-	/*
+-	 * If both target and initiator bits are off, the SPP is invalid.
+-	 */
+-	fcp_parm = ntohl(rspp->spp_params);
+-	if (!(fcp_parm & (FCP_SPPF_INIT_FCN | FCP_SPPF_TARG_FCN)))
+-		return FC_SPP_RESP_INVL;
+-
+-	/*
+-	 * Create session (image pair) only if requested by
+-	 * EST_IMG_PAIR flag and if the requestor is an initiator.
+-	 */
+-	if (rspp->spp_flags & FC_SPP_EST_IMG_PAIR) {
+-		spp->spp_flags |= FC_SPP_EST_IMG_PAIR;
+-		if (!(fcp_parm & FCP_SPPF_INIT_FCN))
+-			return FC_SPP_RESP_CONF;
+-		sess = ft_sess_create(tport, rdata->ids.port_id, rdata);
+-		if (IS_ERR(sess)) {
+-			if (PTR_ERR(sess) == -EACCES) {
+-				spp->spp_flags &= ~FC_SPP_EST_IMG_PAIR;
+-				return FC_SPP_RESP_CONF;
+-			} else
+-				return FC_SPP_RESP_RES;
+-		}
+-		if (!sess->params)
+-			rdata->prli_count++;
+-		sess->params = fcp_parm;
+-		sess->port_name = rdata->ids.port_name;
+-		sess->max_frame = rdata->maxframe_size;
+-
+-		/* XXX TBD - clearing actions.  unit attn, see 4.10 */
+-	}
+-
+-	/*
+-	 * OR in our service parameters with other provider (initiator), if any.
+-	 */
+-fill:
+-	fcp_parm = ntohl(spp->spp_params);
+-	fcp_parm &= ~FCP_SPPF_RETRY;
+-	spp->spp_params = htonl(fcp_parm | FCP_SPPF_TARG_FCN);
+-	return FC_SPP_RESP_ACK;
+-
+-not_target:
+-	fcp_parm = ntohl(spp->spp_params);
+-	fcp_parm &= ~FCP_SPPF_TARG_FCN;
+-	spp->spp_params = htonl(fcp_parm);
+-	return 0;
+-}
+-
+-/**
+- * tcm_fcp_prli() - Handle incoming or outgoing PRLI for the FCP target
+- * @rdata: remote port private
+- * @spp_len: service parameter page length
+- * @rspp: received service parameter page (NULL for outgoing PRLI)
+- * @spp: response service parameter page
+- *
+- * Returns spp response code.
+- */
+-static int ft_prli(struct fc_rport_priv *rdata, u32 spp_len,
+-		   const struct fc_els_spp *rspp, struct fc_els_spp *spp)
+-{
+-	int ret;
+-
+-	mutex_lock(&ft_lport_lock);
+-	ret = ft_prli_locked(rdata, spp_len, rspp, spp);
+-	mutex_unlock(&ft_lport_lock);
+-	TFC_SESS_DBG(rdata->local_port, "port_id %x flags %x ret %x\n",
+-		     rdata->ids.port_id, rspp ? rspp->spp_flags : 0, ret);
+-	return ret;
+-}
+-
+-static void ft_sess_free(struct kref *kref)
+-{
+-	struct ft_sess *sess = container_of(kref, struct ft_sess, kref);
+-
+-	target_remove_session(sess->se_sess);
+-	kfree_rcu(sess, rcu);
+-}
+-
+-void ft_sess_put(struct ft_sess *sess)
+-{
+-	int sess_held = kref_read(&sess->kref);
+-
+-	BUG_ON(!sess_held);
+-	kref_put(&sess->kref, ft_sess_free);
+-}
+-
+-static void ft_prlo(struct fc_rport_priv *rdata)
+-{
+-	struct ft_sess *sess;
+-	struct ft_tport *tport;
+-
+-	mutex_lock(&ft_lport_lock);
+-	tport = rcu_dereference_protected(rdata->local_port->prov[FC_TYPE_FCP],
+-					  lockdep_is_held(&ft_lport_lock));
+-
+-	if (!tport) {
+-		mutex_unlock(&ft_lport_lock);
+-		return;
+-	}
+-	sess = ft_sess_delete(tport, rdata->ids.port_id);
+-	if (!sess) {
+-		mutex_unlock(&ft_lport_lock);
+-		return;
+-	}
+-	mutex_unlock(&ft_lport_lock);
+-	ft_close_sess(sess);		/* release from table */
+-	rdata->prli_count--;
+-	/* XXX TBD - clearing actions.  unit attn, see 4.10 */
+-}
+-
+-/*
+- * Handle incoming FCP request.
+- * Caller has verified that the frame is type FCP.
+- */
+-static void ft_recv(struct fc_lport *lport, struct fc_frame *fp)
+-{
+-	struct ft_sess *sess;
+-	u32 sid = fc_frame_sid(fp);
+-
+-	TFC_SESS_DBG(lport, "recv sid %x\n", sid);
+-
+-	sess = ft_sess_get(lport, sid);
+-	if (!sess) {
+-		TFC_SESS_DBG(lport, "sid %x sess lookup failed\n", sid);
+-		/* TBD XXX - if FCP_CMND, send PRLO */
+-		fc_frame_free(fp);
+-		return;
+-	}
+-	ft_recv_req(sess, fp);	/* must do ft_sess_put() */
+-}
+-
+-/*
+- * Provider ops for libfc.
+- */
+-struct fc4_prov ft_prov = {
+-	.prli = ft_prli,
+-	.prlo = ft_prlo,
+-	.recv = ft_recv,
+-	.module = THIS_MODULE,
+-};
