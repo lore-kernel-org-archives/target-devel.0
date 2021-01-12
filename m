@@ -2,279 +2,99 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6762AC433DB
-	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 18:23:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4741BC433E0
+	for <target-devel@archiver.kernel.org>; Tue, 12 Jan 2021 18:39:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 301D7222B6
-	for <target-devel@archiver.kernel.org>; Mon, 11 Jan 2021 18:23:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DCCD022C7B
+	for <target-devel@archiver.kernel.org>; Tue, 12 Jan 2021 18:39:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726668AbhAKSXi (ORCPT
+        id S2391672AbhALSjJ (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 11 Jan 2021 13:23:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59876 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726244AbhAKSXi (ORCPT
+        Tue, 12 Jan 2021 13:39:09 -0500
+Received: from aserp2130.oracle.com ([141.146.126.79]:59260 "EHLO
+        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728112AbhALSjI (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 11 Jan 2021 13:23:38 -0500
-Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CF01C061786;
-        Mon, 11 Jan 2021 10:22:58 -0800 (PST)
-Received: by mail-ej1-x635.google.com with SMTP id w1so960339ejf.11;
-        Mon, 11 Jan 2021 10:22:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=mzN5bz6gja/X5dov9pXQmFrPtsmh4ja4sEQP9VQaaGg=;
-        b=alUB7W1UuzhBjLoGcICmod8MSAAajWbpmzGh9T1xUn34JUoLup1I+GSVAm9WzexkbT
-         jbk/NKXpHhz9uv9L42ah4gSrf45f4BoesCxCQ4RkGYKRgYnbg6ajQMxwWXkCQ7ZakTCy
-         QLIbOrCnOb4FX1q0BfIVqTR1h4mQ5P7PNGJ+WUb0DCSpwnjF2fBQjUucDnxEZBUg+j+U
-         W8WWxcO0HYdp1Cxd3ICCpdSnt70MTlRxqF0IWPCExjlxCT6IaaOOpTdtF9cAoKj2+P73
-         vS3G/hlIpBS1uJaV1+QqLlNZuuPauJIBdtdD/nwaw1A7ORyONo/z13tXG23Si7seB8ZP
-         5aTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=mzN5bz6gja/X5dov9pXQmFrPtsmh4ja4sEQP9VQaaGg=;
-        b=OOpK1ksfXowoTmvSRAaEFDDDvLBNX46knRK0+VMRKrIC0ObMcGlUzTA4eLCDLd8P3J
-         qvuWvJYozjyDWurfxyk+chzZ2M3+nQYDcZ6GomUdMnYqMnq2H8zapCw4B8JYShQxqerW
-         wlv99gJD6OX+9+Y53RHICdOTZM7PXPjjmIZ6gTEBEBk5bKFJRhQSwVNGVmeogdBiXfCv
-         o0vPd3ROGb6v6FCxwXl1FFKphoSqKkXCrdY4QJqw7ylnpmQVYRnIcvETCbFUgAJJAzCD
-         W7yDFeS7vHl1jPM5/ihZ1rmnvYIW21gtJ4xoDbsoWsiNqBJYi40fElx8gRdc3UeE7Rbc
-         SHGA==
-X-Gm-Message-State: AOAM531G/kwG7ueWcuBCci0zyidfYQa7/D1Yn5MqJltU+VJcWzL0Dmcf
-        ZLu6q9umjXW7vbsT15qzdgAURu42Aak=
-X-Google-Smtp-Source: ABdhPJys0oBiETIdWww00NhPjU2FTD1xrVV2d/Ip1plB1NG3CmkcIQhbNGaBIGyVYYtNncUCXnCHxA==
-X-Received: by 2002:a17:906:4d59:: with SMTP id b25mr559961ejv.8.1610389376719;
-        Mon, 11 Jan 2021 10:22:56 -0800 (PST)
-Received: from [192.168.178.40] (ipbcc05d1b.dynamic.kabel-deutschland.de. [188.192.93.27])
-        by smtp.gmail.com with ESMTPSA id b19sm298460edx.47.2021.01.11.10.22.55
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 11 Jan 2021 10:22:56 -0800 (PST)
+        Tue, 12 Jan 2021 13:39:08 -0500
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10CIDWKk139880;
+        Tue, 12 Jan 2021 18:38:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2020-01-29;
+ bh=8KxyImXKDVv3i4kRA62ts8srdgqwl4yl8Hqk9cIzWw0=;
+ b=V3DpagR4gri/p+U59UIkZUgcRBbCkx2Qgu0Fb+WpXHWV1V23Spy44fkismyWs5+9xG+z
+ xSI1g/irj96UYi0U/0tnalGYxci8thh3KVDoD6PyuAL+dkqNuJjQ4XX9Bn7gzEqHg/TZ
+ FxwfYiCt2TpKjerQLiAFr+zfCyGKgd1VhiSoJfc/p9mfcbIVC0ZSk+FZKUXgrdtm9S9P
+ PqshMtRkxaCsPB+opMf2ciWrEBWBY0V/r4xlex1ls5/U+QEUfjXmkdBNh4g5DIkVJIa4
+ XyqeC84ZG7qAl2SKL3fT7dKJh6zbugnecMXlS25UoCuANYGg16Ey6E4TQM+6e0Fm7UPa 9A== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+        by aserp2130.oracle.com with ESMTP id 360kg1quqn-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 12 Jan 2021 18:38:26 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+        by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10CIG28w140849;
+        Tue, 12 Jan 2021 18:36:25 GMT
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+        by aserp3030.oracle.com with ESMTP id 360key7acq-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 12 Jan 2021 18:36:25 +0000
+Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
+        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 10CIaPAs032717;
+        Tue, 12 Jan 2021 18:36:25 GMT
+Received: from [20.15.0.204] (/73.88.28.6)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Tue, 12 Jan 2021 10:36:25 -0800
 Subject: Re: [PATCH] scsi: target: tcmu: Fix wrong uio handling causing big
  memory leak
-To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
+To:     Bodo Stroesser <bostroesser@gmail.com>, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
         "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Mike Christie <michael.christie@oracle.com>,
-        Bodo Stroesser <bostroesser@gmail.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 References: <20201218141534.9918-1-bostroesser@gmail.com>
-From:   Bodo Stroesser <bostroesser@gmail.com>
-Message-ID: <703e98c0-31e6-7d3d-c818-d1f071eb552c@gmail.com>
-Date:   Mon, 11 Jan 2021 19:22:54 +0100
+From:   Mike Christie <michael.christie@oracle.com>
+Message-ID: <73dc2d01-6398-c1d1-df47-66034d184eec@oracle.com>
+Date:   Tue, 12 Jan 2021 12:36:24 -0600
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.10.0
 MIME-Version: 1.0
 In-Reply-To: <20201218141534.9918-1-bostroesser@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9862 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 bulkscore=0 malwarescore=0
+ suspectscore=0 adultscore=0 spamscore=0 mlxlogscore=999 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2101120108
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9862 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 suspectscore=0
+ clxscore=1011 impostorscore=0 spamscore=0 priorityscore=1501 mlxscore=0
+ phishscore=0 mlxlogscore=999 bulkscore=0 adultscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2101120108
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-I'm sending a gentle ping for the below patch.
-
-Especially I'm wondering whether the way how tcmu_destroy_device()
-now 'stops' the uio device is ok. Should we better have something
-like uio_stop_device() instead?
-
-Thank you,
-Bodo
-
-
-On 18.12.20 15:15, Bodo Stroesser wrote:
+On 12/18/20 8:15 AM, Bodo Stroesser wrote:
 > tcmu calls uio_unregister_device from tcmu_destroy_device.
 > After that uio will never call tcmu_release for this device.
 > If userspace still had the uio device open and / or mmap'ed
 > during uio_unregister_device, tcmu_release will not be called and
 > udev->kref will never go down to 0.
 > 
-> So tcmu in this situation will not free:
->   - cmds or tmrs still in the queue or the ring
->   - all pages allocated for mailbox and cmd_ring (vmalloc)
->   - all pages allocated for data space
->   - the udev itself
-> 
-> The vmalloc'ed area is 8 MB, amount of pages allocated for data
-> space depends on previous usage of the tcmu device. Theoretically
-> that can be up to 1GB.
-> 
-> This patch moves the call of uio_unregister_device to the
-> beginning of tcmu_dev_kref_release, which is called when
-> udev->kref drops down to zero. So we know, that uio device is
-> closed and unmap'ed.
-> 
-> In case tcmu_realease drops the last kref, we would end up doing
-> the uio_unregister_device from a function called by uio_release,
-> which causes the process to block forever.
-> So we now do the kref_put from new worker function
-> tcmu_release_work_fn which is scheduled by tcmu_release.
-> 
-> To make userspace still aware of the device being deleted,
-> tcmu_destroy_device instead of uio_unregister_device now does:
->   - sets a bit in udev, so that tcmu_open and tcmu_mmap can check
->     and fail with -EIO
->   - resets udev->uio_info->irq to 0, so uio will fail read() and
->     write() with -EIO
->   - wakes up userspace possibly waiting in read(), so the read
->     fails with -EIO
-> 
-> Avoid possible races in tcmu_open by replacing kref_get with
-> kref_get_unless_zero.
-> 
-> Signed-off-by: Bodo Stroesser <bostroesser@gmail.com>
-> ---
->   drivers/target/target_core_user.c | 54 ++++++++++++++++++++++++++++++++++++---
->   1 file changed, 50 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> index 0458bfb143f8..080760985ebf 100644
-> --- a/drivers/target/target_core_user.c
-> +++ b/drivers/target/target_core_user.c
-> @@ -21,6 +21,7 @@
->   #include <linux/configfs.h>
->   #include <linux/mutex.h>
->   #include <linux/workqueue.h>
-> +#include <linux/delay.h>
->   #include <net/genetlink.h>
->   #include <scsi/scsi_common.h>
->   #include <scsi/scsi_proto.h>
-> @@ -109,6 +110,7 @@ struct tcmu_nl_cmd {
->   struct tcmu_dev {
->   	struct list_head node;
->   	struct kref kref;
-> +	struct work_struct release_work;
->   
->   	struct se_device se_dev;
->   
-> @@ -119,6 +121,7 @@ struct tcmu_dev {
->   #define TCMU_DEV_BIT_BROKEN 1
->   #define TCMU_DEV_BIT_BLOCKED 2
->   #define TCMU_DEV_BIT_TMR_NOTIFY 3
-> +#define TCMU_DEV_BIT_GOING_DOWN 4
->   	unsigned long flags;
->   
->   	struct uio_info uio_info;
-> @@ -1527,6 +1530,8 @@ static void tcmu_detach_hba(struct se_hba *hba)
->   	hba->hba_ptr = NULL;
->   }
->   
-> +static void tcmu_release_work_fn(struct work_struct *work);
-> +
->   static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
->   {
->   	struct tcmu_dev *udev;
-> @@ -1542,6 +1547,8 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
->   		return NULL;
->   	}
->   
-> +	INIT_WORK(&udev->release_work, tcmu_release_work_fn);
-> +
->   	udev->hba = hba;
->   	udev->cmd_time_out = TCMU_TIME_OUT;
->   	udev->qfull_time_out = -1;
-> @@ -1719,6 +1726,9 @@ static int tcmu_mmap(struct uio_info *info, struct vm_area_struct *vma)
->   {
->   	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
->   
-> +	if (test_bit(TCMU_DEV_BIT_GOING_DOWN, &udev->flags))
-> +		return -EIO;
-> +
->   	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
->   	vma->vm_ops = &tcmu_vm_ops;
->   
-> @@ -1735,12 +1745,17 @@ static int tcmu_open(struct uio_info *info, struct inode *inode)
->   {
->   	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
->   
-> +	if (test_bit(TCMU_DEV_BIT_GOING_DOWN, &udev->flags))
-> +		return -EIO;
-> +
->   	/* O_EXCL not supported for char devs, so fake it? */
->   	if (test_and_set_bit(TCMU_DEV_BIT_OPEN, &udev->flags))
->   		return -EBUSY;
->   
->   	udev->inode = inode;
-> -	kref_get(&udev->kref);
-> +	if (!kref_get_unless_zero(&udev->kref))
-> +		/* Race between open and device going down */
-> +		return -EIO;
->   
->   	pr_debug("open\n");
->   
-> @@ -1799,6 +1814,8 @@ static void tcmu_dev_kref_release(struct kref *kref)
->   	bool all_expired = true;
->   	int i;
->   
-> +	uio_unregister_device(&udev->uio_info);
-> +
->   	vfree(udev->mb_addr);
->   	udev->mb_addr = NULL;
->   
-> @@ -1827,6 +1844,15 @@ static void tcmu_dev_kref_release(struct kref *kref)
->   	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
->   }
->   
-> +static void tcmu_release_work_fn(struct work_struct *work)
-> +{
-> +	struct tcmu_dev *udev = container_of(work, struct tcmu_dev,
-> +					     release_work);
-> +
-> +	/* release ref from open */
-> +	kref_put(&udev->kref, tcmu_dev_kref_release);
-> +}
-> +
->   static int tcmu_release(struct uio_info *info, struct inode *inode)
->   {
->   	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
-> @@ -1834,8 +1860,17 @@ static int tcmu_release(struct uio_info *info, struct inode *inode)
->   	clear_bit(TCMU_DEV_BIT_OPEN, &udev->flags);
->   
->   	pr_debug("close\n");
-> -	/* release ref from open */
-> -	kref_put(&udev->kref, tcmu_dev_kref_release);
-> +
-> +	/*
-> +	 * We must not put kref directly from here, since dropping down kref to
-> +	 * zero would implicitly call tcmu_dev_kref_release, which calls
-> +	 * uio_unregister_device --> process hangs forever, since tcmu_release
-> +	 * is called from uio.
-> +	 * So we leave it to tcmu_release_work_fn to put the kref.
-> +	 */
-> +	while (!schedule_work(&udev->release_work))
-> +		usleep_range(1000, 5000);
-> +
->   	return 0;
->   }
->   
-> @@ -2166,7 +2201,18 @@ static void tcmu_destroy_device(struct se_device *dev)
->   
->   	tcmu_send_dev_remove_event(udev);
->   
-> -	uio_unregister_device(&udev->uio_info);
-> +	/*
-> +	 * We must not call uio_unregister_device here. If there is a userspace
-> +	 * process with open or mmap'ed uio device, uio would not call
-> +	 * tcmu_release on later unmap or close.
-> +	 */
-> +
-> +	/* reset uio_info->irq, so uio will reject read() and write() */
-> +	udev->uio_info.irq = 0;
-> +	/* Set bit, so we can reject later calls to tcmu_open and tcmu_mmap */
-> +	set_bit(TCMU_DEV_BIT_GOING_DOWN, &udev->flags);
-> +	/* wake up possible sleeper in uio_read(), it will return -EIO */
-> +	uio_event_notify(&udev->uio_info);
->   
->   	/* release ref from configure */
->   	kref_put(&udev->kref, tcmu_dev_kref_release);
-> 
+
+I didn't get why the release function is not called if you call
+uio_unregister_device while a device is open. Does the device_destroy call in
+uio_unregister_device completely free the device or does it set some bits so
+uio_release is not called later?
+
+Do other drivers hit this? Should uio have refcounting so uio_release is called
+when the last ref (from userspace open/close/mmap calls and from the kernel by
+drivers like target_core_user) is done?
