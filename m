@@ -2,156 +2,200 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21494C433DB
-	for <target-devel@archiver.kernel.org>; Wed, 13 Jan 2021 05:35:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9517CC433E0
+	for <target-devel@archiver.kernel.org>; Wed, 13 Jan 2021 17:11:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B0ED22311F
-	for <target-devel@archiver.kernel.org>; Wed, 13 Jan 2021 05:35:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4A8BD233F6
+	for <target-devel@archiver.kernel.org>; Wed, 13 Jan 2021 17:11:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726488AbhAMFex (ORCPT
+        id S1727301AbhAMRLI (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 13 Jan 2021 00:34:53 -0500
-Received: from userp2130.oracle.com ([156.151.31.86]:56282 "EHLO
-        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726175AbhAMFew (ORCPT
+        Wed, 13 Jan 2021 12:11:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44106 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727144AbhAMRLH (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 13 Jan 2021 00:34:52 -0500
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
-        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10D5PAuK085173;
-        Wed, 13 Jan 2021 05:34:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
- from : message-id : references : date : in-reply-to : content-type :
- mime-version; s=corp-2020-01-29;
- bh=R06REjnk7Jq63/ZFqU5ttr6qN5LnsSKlnsIQZIw4Gd4=;
- b=A/Pyam7o8Bw4sPpPnmDASwICOLWFg4XH/neEUzFWbuXwgJZg0M9nScqMEvzIFYhJpps8
- bb0T0QG0/muSet9LKyGupkRrDnjn/ruPYKjzOL23QgvjaMrV51F/7tp8aVLnNMxSSI4l
- glh291xgptjt0LHUcrHKU/oGJNIksXOelCvI3VEOFKO1frqHfIs+i4c1DXRRAKL+jTmo
- 5N9tKPFdy5kK2tKA7j2WcbkQdDQpBW2nQRvrH4ckKGfEmK3Uf/VvY8Bu4ph2+krKVmE/
- 9KmtmruxvhSk6ZsA0dYzZ6laUh/OgMz+hV7Uuw/XEMJ5ykK3zMUDSsuXpXTQ1bSP2rJ4 qw== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by userp2130.oracle.com with ESMTP id 360kvk1j0n-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 13 Jan 2021 05:34:09 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10D5QZp7026692;
-        Wed, 13 Jan 2021 05:34:09 GMT
-Received: from nam10-dm6-obe.outbound.protection.outlook.com (mail-dm6nam10lp2106.outbound.protection.outlook.com [104.47.58.106])
-        by userp3020.oracle.com with ESMTP id 360kf6v3qn-2
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 13 Jan 2021 05:34:09 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=gK+7HalzeMrMB3uz5pooYzwjnGlxDzsIzuS1xBpA7SRiYRTWVDz2YgjM0jx7dQxWofU4O4H3/8NTBx27hfQVKZje7ENeP85/EISLPzD3m/8vnYAlWVcBNE2OJiJkctOgkXAURhbLy5yKYK3yiTOzoZlD/awOhc0s4B0QSXQwxnPsHXZuMuMlOhaCYjydMWO3QDxAJrOb38Lqx97feBSxnWB3y3lNWB2tRPSBU5uxQ3vsdb3ovTOeFGK15rS6T331L4GWIvKhsyXu/9E+hhWUsmFDB9jCDDV80kyGArUKHe94yA/ZXV7CrERNbtJ9/7M62JvwgIbgnG+PKlKu51zAhA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=R06REjnk7Jq63/ZFqU5ttr6qN5LnsSKlnsIQZIw4Gd4=;
- b=I1sbC7AMsdftCbAEl/zTv/C6TIE6j/x9NBc95U+1NV9dN7RIISTquc6hMrSUiDi4o9BDIYESy0JBXd7pegkZpmMFcfLw4cEUcDhD8cxjnu4wsiCa3UpS5YVlShrfK5K/49TLMiuYAiedyeFdUVll/vIZTcKXgmIDvjwz4mY9lMWEcPc+bs9b4OaWynhdljzr38HQ094wZrpml+aNCfr2D/nSM9AZVzuezA8XRBQGr+QtvYCC7KTdXynw+O17oaPX95k2ZkCbAUFpLr+FBwS92RsiSaLAhZy3ud21Iv3aSRw69M/gR5BvbetqSW1yJQTpaMgWem0IKVjxr1M/JkYXsQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
+        Wed, 13 Jan 2021 12:11:07 -0500
+Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 166D5C061575;
+        Wed, 13 Jan 2021 09:10:27 -0800 (PST)
+Received: by mail-ej1-x62a.google.com with SMTP id 6so4144786ejz.5;
+        Wed, 13 Jan 2021 09:10:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=R06REjnk7Jq63/ZFqU5ttr6qN5LnsSKlnsIQZIw4Gd4=;
- b=haEdvA+I5kDwy5fxiIDL/U3wzG3TG/lJtka0YdmXBBnK5rTWwu13eBQsesypGvkrvr4/FrMrZg3cugwLiLRcCab8Lf9mJdyB8Onsy1wP6jBUlGkjL4gq21AZSXckzNKw3IcYvA2M1/bcFu509TiPP+PIhkU5lcaWvA/1KV8SA7A=
-Authentication-Results: gmail.com; dkim=none (message not signed)
- header.d=none;gmail.com; dmarc=none action=none header.from=oracle.com;
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com (2603:10b6:510:3d::12)
- by PH0PR10MB4584.namprd10.prod.outlook.com (2603:10b6:510:37::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3742.6; Wed, 13 Jan
- 2021 05:34:06 +0000
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::54f3:a8aa:a2cd:a3a4]) by PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::54f3:a8aa:a2cd:a3a4%5]) with mapi id 15.20.3763.009; Wed, 13 Jan 2021
- 05:34:06 +0000
-To:     Pavel Begunkov <asml.silence@gmail.com>
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=rFBmtH1TI8zpSCup/4jrWzYhxSsaVXPS2ThkcS6xCJ0=;
+        b=aIMagPTPW5supDBmENlZq7xdFrzi1OXEo7ZF+Q483gf21qhw4fDc2TqDjy6ROodjhY
+         HMPFMQNT4RJubJpa9mEYiTRexS6oolOfsrfr5p1WE8NpkcMqvGntrhpjV0K9tt6YbNp9
+         HdPTXwAuiHtcxGtwVLUqOwi5tWQIWdud/69FA7w3fDMTsKcBvik43ek+OuZZ6nSUTKPi
+         RWJHE6EiQUGbb48k2DFWLTz14nOOfkDi/xdXwPuL4/dUnJzknwqybUts4UiPctJF0bLk
+         4r+2vMKSOn7GUwRJHbeTGkGJIm59kFryO+N6guxLLXYGjqkSk1EHbuMODOfbEUW7xnWg
+         tPAg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=rFBmtH1TI8zpSCup/4jrWzYhxSsaVXPS2ThkcS6xCJ0=;
+        b=RKEw44ITEMH7t+2dtlgaBmIU7fE1zKquf9IYxQjrmE6ilqC1nD3GbP2SprJNiVzb1X
+         Xjgc+okYMY/1qLtaXuhXHCHs2QQdmKwyAdo/pVGg14E5sHi3cSvNO4TVPIjCBXhcil7q
+         LDLpWxiPGu/O8ifibrdZclbNJtUT5Y3EYhCCKpUcO3BdhEW04JafgrrXwlA2jpBVUmUC
+         3LXHLlH1yMPd67Y+88IylD5DN+EBZXUEzsVehJklNOF1EPjSXv6Wqt0ySH/q9mBnDQS/
+         v/F8DBjGzSuPT7idAhRWPyk4ezvc7ZSuwn0IJLBzsgGUtn2nY4zCGNCK403Z28c3H4K9
+         yLRg==
+X-Gm-Message-State: AOAM532Jp3TsMxQoVm4FGpYyCu6QaE33+5od+4hiIWDkATQNCLJnvoG1
+        rG4A0ikvboFbrjGt1cG6knw=
+X-Google-Smtp-Source: ABdhPJzGYWrWx1+YdVnW0dg98O3rMutlkpoXJNZ/Ah+UuIVDnTp2g6rawPy5mtCs/vv1YtqPangINQ==
+X-Received: by 2002:a17:906:1f8e:: with SMTP id t14mr2312243ejr.350.1610557825759;
+        Wed, 13 Jan 2021 09:10:25 -0800 (PST)
+Received: from [192.168.178.40] (ipbcc05d1b.dynamic.kabel-deutschland.de. [188.192.93.27])
+        by smtp.gmail.com with ESMTPSA id d14sm1148101edn.31.2021.01.13.09.10.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 13 Jan 2021 09:10:25 -0800 (PST)
+Subject: Re: [PATCH] scsi: target: tcmu: Fix use-after-free of se_cmd->priv
+To:     Shin'ichiro Kawasaki <shinichiro.kawasaki@wdc.com>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] target/file: don't zero iter before iov_iter_bvec
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle Corporation
-Message-ID: <yq11rep2yey.fsf@ca-mkp.ca.oracle.com>
-References: <34cd22d6cec046e3adf402accb1453cc255b9042.1610207523.git.asml.silence@gmail.com>
-Date:   Wed, 13 Jan 2021 00:34:03 -0500
-In-Reply-To: <34cd22d6cec046e3adf402accb1453cc255b9042.1610207523.git.asml.silence@gmail.com>
-        (Pavel Begunkov's message of "Sat, 9 Jan 2021 15:53:27 +0000")
-Content-Type: text/plain
-X-Originating-IP: [138.3.200.58]
-X-ClientProxiedBy: SA9PR13CA0095.namprd13.prod.outlook.com
- (2603:10b6:806:24::10) To PH0PR10MB4759.namprd10.prod.outlook.com
- (2603:10b6:510:3d::12)
+        Damien Le Moal <Damien.LeMoal@wdc.com>
+References: <20210113024508.1264992-1-shinichiro.kawasaki@wdc.com>
+From:   Bodo Stroesser <bostroesser@gmail.com>
+Message-ID: <53431c50-e13c-27cf-572f-51b5d0ef6f0c@gmail.com>
+Date:   Wed, 13 Jan 2021 18:10:23 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from ca-mkp.ca.oracle.com (138.3.200.58) by SA9PR13CA0095.namprd13.prod.outlook.com (2603:10b6:806:24::10) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3763.4 via Frontend Transport; Wed, 13 Jan 2021 05:34:05 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 6fd857e8-5937-4ba9-3f32-08d8b784d815
-X-MS-TrafficTypeDiagnostic: PH0PR10MB4584:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <PH0PR10MB45841B29AF661C01A7A048DB8EA90@PH0PR10MB4584.namprd10.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:4941;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: W9xiUzJlYJ2PX/NKrZdnRTBl0A/OyybsMIb4/hwbFU6Kftsv5Ue3oFET2gJ9cOGjxje69ZPlYaz91W+UWeiyLbvNdsNTpoe87xafJCxde7KWlhw5MSQ6xw4N9wFGpa1Y1I+c43+6Ro53IUvAxkBpBV4eHqyZoPtv1YVlsRD/J3oG0qDW7dhEKy4M2vaOSgcttMZusxSSiK93SjYp2oovZ1Dvg1a9ta8nS/kbcxQxNaL/vKb+jSZ4bIq443G/+/PbJHxzKVLDffpxdmFin6PJPM+v1yqtEe/I+yYoXKMoQ4dMpY2ymCZA668JK6wrpc70yXl3zGYoCY3EX/xogQXyFJ55MoYVLHxPwXs5vZx+UIsO3olAjRuSEqB++SCxKhr8Eycf0+h1oX20LooPAJNbrA==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB4759.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(366004)(136003)(39850400004)(376002)(396003)(346002)(52116002)(956004)(4326008)(8676002)(558084003)(7696005)(316002)(478600001)(36916002)(66476007)(26005)(55016002)(6916009)(8936002)(5660300002)(66946007)(66556008)(2906002)(186003)(86362001)(83380400001)(16526019);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?LUvmklxQ2+tk8yhwWB4NWY5dSfNoriw/aCRBejg+6idgGSI0XnHCn6mjAfsB?=
- =?us-ascii?Q?nWpRqy29PF4XBRExbjIX6Ycxi/e0Gmr3PQpiVlPRBFyNpBRxLtjDEIxHNnJa?=
- =?us-ascii?Q?DXoY68AKIZwJ7qPE6VvtSfxNLJbIud0ozM2iBgkGCJaYHIJQXIbSmoikRYkP?=
- =?us-ascii?Q?E4No9RvV67DzMyt1yneHEagOMcAoBMcIJW8+zKiQYwlg8Cf7wdRSNlnv1emn?=
- =?us-ascii?Q?4HNK154ihFlEGQRY9FbQMH6mbEoRE4cn1G6kFDdavGE9+WWu2fd/LDLR7d4w?=
- =?us-ascii?Q?T7e1GdinoJGqjVMdkTR+yalgyHAvXfcWGKiPexr6FG3240DjKLR11tVxR7fU?=
- =?us-ascii?Q?Oj9FitI6XRCaddk8aJtqOcFJO7I2yonMHsoH8EwcBvY8/JL9q707kxmTV1Kt?=
- =?us-ascii?Q?kRUx5LIs+v/Itp0oPXfrRDlkuKxczUbzGMwkBqz9ujUYQwOpzOXCOjrAFmTR?=
- =?us-ascii?Q?QCRmbgqUe2FFMFkkLhgDhKi0PRBYV6AMkR+plQQ3ulCKmxerW82OnF9MFBt8?=
- =?us-ascii?Q?qwZrtBH0j+EosEygNn7/TXX/Dl111mLqrbo7QA0j9Lan2xT+hLWCAvum4ewS?=
- =?us-ascii?Q?I2fNK/xjdgcobPz9gmOS5ql6hakiuiwl0w9HElZ8hOz1Wt1oDufk6IQJH0DO?=
- =?us-ascii?Q?hj51nNJ/2y3Dio30kJclaAyTizSqtG+G8CyG+srhQLIvdXG7gHIfYMIyzNrK?=
- =?us-ascii?Q?GSLxn8Nui6Uq+eQnVfeyH5d0lIRIE4kYuSXI47rJYXreDXQvMaaJp6qaNprm?=
- =?us-ascii?Q?7q68iSw/5AC7sZp5NLoUD96m5v728qEWpDPhrGrzaFP0RknWZ5pyGmSRBDvL?=
- =?us-ascii?Q?+FbVZ0d7XkTn0edxWfCW9AckkcvynrZdERd5YnXC1cEIdR4up7NtVHDm60iQ?=
- =?us-ascii?Q?MYxCr+TnkTfsopr40VATjfr3LKq1PAwyhzBz9gnhV2Z4LG3xVqjPWhZO8zfh?=
- =?us-ascii?Q?Uxgr8NLkP4jSCygDiG2J8q/sePiWeu/QwenjBsBNK+1/a2NDw4zBLawh/zqO?=
- =?us-ascii?Q?6dXG?=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB4759.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jan 2021 05:34:06.0478
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6fd857e8-5937-4ba9-3f32-08d8b784d815
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: H0I3PPsxNiAzeJE+Yz7PVRvn8SCV1dEEHZPOhNfkh/35K4zndckZtf7pmr21HsZAofGZLcQCnFk56m9eGn6tbmbZWkgHVbossaerthT2aXY=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR10MB4584
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9862 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
- mlxlogscore=938 phishscore=0 bulkscore=0 spamscore=0 mlxscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101130032
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9862 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 phishscore=0
- lowpriorityscore=0 bulkscore=0 priorityscore=1501 malwarescore=0
- clxscore=1011 impostorscore=0 spamscore=0 mlxscore=0 suspectscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2101130032
+In-Reply-To: <20210113024508.1264992-1-shinichiro.kawasaki@wdc.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+On 13.01.21 03:45, Shin'ichiro Kawasaki wrote:
+> Commit a35129024e88 ("scsi: target: tcmu: Use priv pointer in se_cmd")
+> modified tcmu_free_cmd() to set NULL to priv pointer in se_cmd. However,
+> se_cmd can be already freed by work queue triggered in
+> target_complete_cmd(). This caused BUG KASAN use-after-free [1].
+> 
+> To fix the bug, do not touch priv pointer in tcmu_free_cmd(). Instead,
+> set NULL to priv pointer before target_complete_cmd() calls. Also, to
+> avoid unnecessary priv pointer change in tcmu_queue_cmd(), modify priv
+> pointer in the function only when tcmu_free_cmd() is not called.
+> 
+> [1]
+> BUG: KASAN: use-after-free in tcmu_handle_completions+0x1172/0x1770 [target_core_user]
+> Write of size 8 at addr ffff88814cf79a40 by task cmdproc-uio0/14842
+> 
+> CPU: 2 PID: 14842 Comm: cmdproc-uio0 Not tainted 5.11.0-rc2 #1
+> Hardware name: Supermicro Super Server/X10SRL-F, BIOS 3.2 11/22/2019
+> Call Trace:
+>   dump_stack+0x9a/0xcc
+>   ? tcmu_handle_completions+0x1172/0x1770 [target_core_user]
+>   print_address_description.constprop.0+0x18/0x130
+>   ? tcmu_handle_completions+0x1172/0x1770 [target_core_user]
+>   ? tcmu_handle_completions+0x1172/0x1770 [target_core_user]
+>   kasan_report.cold+0x7f/0x10e
+>   ? tcmu_handle_completions+0x1172/0x1770 [target_core_user]
+>   tcmu_handle_completions+0x1172/0x1770 [target_core_user]
+>   ? queue_tmr_ring+0x5d0/0x5d0 [target_core_user]
+>   tcmu_irqcontrol+0x28/0x60 [target_core_user]
+>   uio_write+0x155/0x230
+>   ? uio_vma_fault+0x460/0x460
+>   ? security_file_permission+0x4f/0x440
+>   vfs_write+0x1ce/0x860
+>   ksys_write+0xe9/0x1b0
+>   ? __ia32_sys_read+0xb0/0xb0
+>   ? syscall_enter_from_user_mode+0x27/0x70
+>   ? trace_hardirqs_on+0x1c/0x110
+>   do_syscall_64+0x33/0x40
+>   entry_SYSCALL_64_after_hwframe+0x44/0xa9
+> RIP: 0033:0x7fcf8b61905f
+> Code: 89 54 24 18 48 89 74 24 10 89 7c 24 08 e8 b9 fc ff ff 48 8b 54 24 18 48 8b 74 24 10 41 89 c0 8b 7c 24 08 b8 01 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 31 44 89 c7 48 89 44 24 08 e8 0c fd ff ff 48
+> RSP: 002b:00007fcf7b3e6c30 EFLAGS: 00000293 ORIG_RAX: 0000000000000001
+> RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007fcf8b61905f
+> RDX: 0000000000000004 RSI: 00007fcf7b3e6c78 RDI: 000000000000000c
+> RBP: 00007fcf7b3e6c80 R08: 0000000000000000 R09: 00007fcf7b3e6aa8
+> R10: 000000000b01c000 R11: 0000000000000293 R12: 00007ffe0c32a52e
+> R13: 00007ffe0c32a52f R14: 0000000000000000 R15: 00007fcf7b3e7640
+> 
+> Allocated by task 383:
+>   kasan_save_stack+0x1b/0x40
+>   ____kasan_kmalloc.constprop.0+0x84/0xa0
+>   kmem_cache_alloc+0x142/0x330
+>   tcm_loop_queuecommand+0x2a/0x4e0 [tcm_loop]
+>   scsi_queue_rq+0x12ec/0x2d20
+>   blk_mq_dispatch_rq_list+0x30a/0x1db0
+>   __blk_mq_do_dispatch_sched+0x326/0x830
+>   __blk_mq_sched_dispatch_requests+0x2c8/0x3f0
+>   blk_mq_sched_dispatch_requests+0xca/0x120
+>   __blk_mq_run_hw_queue+0x93/0xe0
+>   process_one_work+0x7b6/0x1290
+>   worker_thread+0x590/0xf80
+>   kthread+0x362/0x430
+>   ret_from_fork+0x22/0x30
+> 
+> Freed by task 11655:
+>   kasan_save_stack+0x1b/0x40
+>   kasan_set_track+0x1c/0x30
+>   kasan_set_free_info+0x20/0x30
+>   ____kasan_slab_free+0xec/0x120
+>   slab_free_freelist_hook+0x53/0x160
+>   kmem_cache_free+0xf4/0x5c0
+>   target_release_cmd_kref+0x3ea/0x9e0 [target_core_mod]
+>   transport_generic_free_cmd+0x28b/0x2f0 [target_core_mod]
+>   target_complete_ok_work+0x250/0xac0 [target_core_mod]
+>   process_one_work+0x7b6/0x1290
+>   worker_thread+0x590/0xf80
+>   kthread+0x362/0x430
+>   ret_from_fork+0x22/0x30
+> 
+> Last potentially related work creation:
+>   kasan_save_stack+0x1b/0x40
+>   kasan_record_aux_stack+0xa3/0xb0
+>   insert_work+0x48/0x2e0
+>   __queue_work+0x4e8/0xdf0
+>   queue_work_on+0x78/0x80
+>   tcmu_handle_completions+0xad0/0x1770 [target_core_user]
+>   tcmu_irqcontrol+0x28/0x60 [target_core_user]
+>   uio_write+0x155/0x230
+>   vfs_write+0x1ce/0x860
+>   ksys_write+0xe9/0x1b0
+>   do_syscall_64+0x33/0x40
+>   entry_SYSCALL_64_after_hwframe+0x44/0xa9
+> 
+> Second to last potentially related work creation:
+>   kasan_save_stack+0x1b/0x40
+>   kasan_record_aux_stack+0xa3/0xb0
+>   insert_work+0x48/0x2e0
+>   __queue_work+0x4e8/0xdf0
+>   queue_work_on+0x78/0x80
+>   tcm_loop_queuecommand+0x1c3/0x4e0 [tcm_loop]
+>   scsi_queue_rq+0x12ec/0x2d20
+>   blk_mq_dispatch_rq_list+0x30a/0x1db0
+>   __blk_mq_do_dispatch_sched+0x326/0x830
+>   __blk_mq_sched_dispatch_requests+0x2c8/0x3f0
+>   blk_mq_sched_dispatch_requests+0xca/0x120
+>   __blk_mq_run_hw_queue+0x93/0xe0
+>   process_one_work+0x7b6/0x1290
+>   worker_thread+0x590/0xf80
+>   kthread+0x362/0x430
+>   ret_from_fork+0x22/0x30
+> 
+> The buggy address belongs to the object at ffff88814cf79800
+>   which belongs to the cache tcm_loop_cmd_cache of size 896
+> 
+> Fixes: a35129024e88 ("scsi: target: tcmu: Use priv pointer in se_cmd")
+> Cc: stable@vger.kernel.org # v5.9+
+> Signed-off-by: Shin'ichiro Kawasaki <shinichiro.kawasaki@wdc.com>
 
-Pavel,
+Thank you for the fix.
 
-> iov_iter_bvec() initialises iterators well, no need to pre-zero it
-> beforehand as done in fd_execute_rw_aio(). Compilers can't optimise it
-> out and generate extra code for that (confirmed with assembly).
-
-Applied to 5.12/scsi-staging, thanks!
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Acked-by: Bodo Stroesser <bostroesser@gmail.com>
