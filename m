@@ -2,185 +2,209 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B34FC433E0
-	for <target-devel@archiver.kernel.org>; Mon, 18 Jan 2021 07:07:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1AF4C433E6
+	for <target-devel@archiver.kernel.org>; Mon, 18 Jan 2021 16:31:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 657A7223DB
-	for <target-devel@archiver.kernel.org>; Mon, 18 Jan 2021 07:07:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 981B122BE9
+	for <target-devel@archiver.kernel.org>; Mon, 18 Jan 2021 16:31:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731791AbhARHH1 (ORCPT
+        id S2406274AbhARQbq (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 18 Jan 2021 02:07:27 -0500
-Received: from mta-02.yadro.com ([89.207.88.252]:48144 "EHLO mta-01.yadro.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1730433AbhARHH0 (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 18 Jan 2021 02:07:26 -0500
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 214A8412ED;
-        Mon, 18 Jan 2021 07:06:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        content-type:content-type:content-transfer-encoding:mime-version
-        :x-mailer:message-id:date:date:subject:subject:from:from
-        :received:received:received; s=mta-01; t=1610953602; x=
-        1612768003; bh=hhle16S0/J3MZmEVmyrK/xm9DzNqb3MgPk5rabZDex0=; b=U
-        Xvwg3qvDczeeI/1WZGc6RBJ3vRm22yga7bYGD1LzVDK9mKrbTSaKaM7puX9IHste
-        EntVldZN9YTbItnG84mmg/2hrJIZWXiO2yUKwJSdYY6irlY1hsv6a+J9h6ayS7A4
-        ifbfnmps5UD12Ng8VDH/kaed1ab+JPVAU/tGegAX/U=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id ocS7ykBsy4jB; Mon, 18 Jan 2021 10:06:42 +0300 (MSK)
-Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id 3C8A841273;
-        Mon, 18 Jan 2021 10:06:42 +0300 (MSK)
-Received: from localhost (172.17.204.212) by T-EXCH-03.corp.yadro.com
- (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Mon, 18
- Jan 2021 10:06:42 +0300
-From:   Roman Bolshakov <r.bolshakov@yadro.com>
-To:     <target-devel@vger.kernel.org>
-CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
-        Roman Bolshakov <r.bolshakov@yadro.com>,
-        Himanshu Madhani <himanshu.madhani@oracle.com>,
-        Andrew Vasquez <andrewv@marvell.com>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        <stable@vger.kernel.org>
-Subject: [PATCH] Revert "scsi: qla2xxx: Use a dedicated interrupt handler for 'handshake-required' ISPs"
-Date:   Mon, 18 Jan 2021 10:06:38 +0300
-Message-ID: <20210118070638.9250-1-r.bolshakov@yadro.com>
-X-Mailer: git-send-email 2.30.0
+        Mon, 18 Jan 2021 11:31:46 -0500
+Received: from smtp.infotech.no ([82.134.31.41]:45750 "EHLO smtp.infotech.no"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2406568AbhARQbl (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 18 Jan 2021 11:31:41 -0500
+Received: from localhost (localhost [127.0.0.1])
+        by smtp.infotech.no (Postfix) with ESMTP id 85FF1204278;
+        Mon, 18 Jan 2021 17:30:27 +0100 (CET)
+X-Virus-Scanned: by amavisd-new-2.6.6 (20110518) (Debian) at infotech.no
+Received: from smtp.infotech.no ([127.0.0.1])
+        by localhost (smtp.infotech.no [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id kCyC3bjMC4Wy; Mon, 18 Jan 2021 17:30:24 +0100 (CET)
+Received: from xtwo70.bingwo.ca (host-104-157-204-209.dyn.295.ca [104.157.204.209])
+        by smtp.infotech.no (Postfix) with ESMTPA id B5A0A2042AE;
+        Mon, 18 Jan 2021 17:30:21 +0100 (CET)
+From:   Douglas Gilbert <dgilbert@interlog.com>
+To:     linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-rdma@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     martin.petersen@oracle.com, jejb@linux.vnet.ibm.com,
+        bostroesser@gmail.com, ddiss@suse.de, bvanassche@acm.org,
+        jgg@ziepe.ca
+Subject: [PATCH v6 3/4] scatterlist: add sgl_compare_sgl() function
+Date:   Mon, 18 Jan 2021 11:30:05 -0500
+Message-Id: <20210118163006.61659-4-dgilbert@interlog.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210118163006.61659-1-dgilbert@interlog.com>
+References: <20210118163006.61659-1-dgilbert@interlog.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [172.17.204.212]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-This reverts commit 7b2a73963c91cf6bad6b8f58636560cd1f3cf319.
+After enabling copies between scatter gather lists (sgl_s), another
+storage related operation is to compare two sgl_s. This new function
+is modelled on NVMe's Compare command and the SCSI VERIFY(BYTCHK=1)
+command. Like memcmp() this function returns false on the first
+miscompare and stops comparing.
 
-The offending commit is setting up interrupt handlers in
-qla25xx_create_rsp_que() before disable_msix_handshake is set up for
-pure target mode in qla24xx_config_rings(). That leads to a case when
-host always clears interrupt bit in HCCR despite that's not needed.
-Shortly afterwards firmware stops sending interrupts.
+A helper function called sgl_compare_sgl_idx() is added. It takes an
+additional parameter (miscompare_idx) which is a pointer. If that
+pointer is non-NULL and a miscompare is detected (i.e. the function
+returns false) then the byte index of the first miscompare is written
+to *miscomapre_idx. Knowing the location of the first miscompare is
+needed to implement the SCSI COMPARE AND WRITE command properly.
 
-Cc: Himanshu Madhani <himanshu.madhani@oracle.com>
-Cc: Andrew Vasquez <andrewv@marvell.com>
-Cc: Martin K. Petersen <martin.petersen@oracle.com>
-Cc: stable@vger.kernel.org # >= v5.7
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
+Signed-off-by: Douglas Gilbert <dgilbert@interlog.com>
 ---
- drivers/scsi/qla2xxx/qla_def.h |  1 -
- drivers/scsi/qla2xxx/qla_gbl.h |  2 --
- drivers/scsi/qla2xxx/qla_isr.c | 31 +++++++------------------------
- drivers/scsi/qla2xxx/qla_mid.c |  3 +--
- 4 files changed, 8 insertions(+), 29 deletions(-)
+ include/linux/scatterlist.h |   8 +++
+ lib/scatterlist.c           | 109 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 117 insertions(+)
 
-diff --git a/drivers/scsi/qla2xxx/qla_def.h b/drivers/scsi/qla2xxx/qla_def.h
-index 30c7e5e63851..8490b41d2353 100644
---- a/drivers/scsi/qla2xxx/qla_def.h
-+++ b/drivers/scsi/qla2xxx/qla_def.h
-@@ -3328,7 +3328,6 @@ struct isp_operations {
- #define QLA_MSIX_RSP_Q			0x01
- #define QLA_ATIO_VECTOR		0x02
- #define QLA_MSIX_QPAIR_MULTIQ_RSP_Q	0x03
--#define QLA_MSIX_QPAIR_MULTIQ_RSP_Q_HS	0x04
+diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
+index 3f836a3246aa..71be65f9ebb5 100644
+--- a/include/linux/scatterlist.h
++++ b/include/linux/scatterlist.h
+@@ -325,6 +325,14 @@ size_t sgl_copy_sgl(struct scatterlist *d_sgl, unsigned int d_nents, off_t d_ski
+ 		    struct scatterlist *s_sgl, unsigned int s_nents, off_t s_skip,
+ 		    size_t n_bytes);
  
- #define QLA_MIDX_DEFAULT	0
- #define QLA_MIDX_RSP_Q		1
-diff --git a/drivers/scsi/qla2xxx/qla_gbl.h b/drivers/scsi/qla2xxx/qla_gbl.h
-index e39b4f2da73a..0f626e212e8b 100644
---- a/drivers/scsi/qla2xxx/qla_gbl.h
-+++ b/drivers/scsi/qla2xxx/qla_gbl.h
-@@ -570,8 +570,6 @@ qla2x00_process_completed_request(struct scsi_qla_host *, struct req_que *,
- 	uint32_t);
- extern irqreturn_t
- qla2xxx_msix_rsp_q(int irq, void *dev_id);
--extern irqreturn_t
--qla2xxx_msix_rsp_q_hs(int irq, void *dev_id);
- fc_port_t *qla2x00_find_fcport_by_loopid(scsi_qla_host_t *, uint16_t);
- fc_port_t *qla2x00_find_fcport_by_wwpn(scsi_qla_host_t *, u8 *, u8);
- fc_port_t *qla2x00_find_fcport_by_nportid(scsi_qla_host_t *, port_id_t *, u8);
-diff --git a/drivers/scsi/qla2xxx/qla_isr.c b/drivers/scsi/qla2xxx/qla_isr.c
-index f9142dbec112..f18d46b0efe0 100644
---- a/drivers/scsi/qla2xxx/qla_isr.c
-+++ b/drivers/scsi/qla2xxx/qla_isr.c
-@@ -3895,25 +3895,6 @@ qla24xx_msix_default(int irq, void *dev_id)
- 
- irqreturn_t
- qla2xxx_msix_rsp_q(int irq, void *dev_id)
--{
--	struct qla_hw_data *ha;
--	struct qla_qpair *qpair;
--
--	qpair = dev_id;
--	if (!qpair) {
--		ql_log(ql_log_info, NULL, 0x505b,
--		    "%s: NULL response queue pointer.\n", __func__);
--		return IRQ_NONE;
--	}
--	ha = qpair->hw;
--
--	queue_work_on(smp_processor_id(), ha->wq, &qpair->q_work);
--
--	return IRQ_HANDLED;
--}
--
--irqreturn_t
--qla2xxx_msix_rsp_q_hs(int irq, void *dev_id)
- {
- 	struct qla_hw_data *ha;
- 	struct qla_qpair *qpair;
-@@ -3928,10 +3909,13 @@ qla2xxx_msix_rsp_q_hs(int irq, void *dev_id)
- 	}
- 	ha = qpair->hw;
- 
--	reg = &ha->iobase->isp24;
--	spin_lock_irqsave(&ha->hardware_lock, flags);
--	wrt_reg_dword(&reg->hccr, HCCRX_CLR_RISC_INT);
--	spin_unlock_irqrestore(&ha->hardware_lock, flags);
-+	/* Clear the interrupt, if enabled, for this response queue */
-+	if (unlikely(!ha->flags.disable_msix_handshake)) {
-+		reg = &ha->iobase->isp24;
-+		spin_lock_irqsave(&ha->hardware_lock, flags);
-+		wrt_reg_dword(&reg->hccr, HCCRX_CLR_RISC_INT);
-+		spin_unlock_irqrestore(&ha->hardware_lock, flags);
++bool sgl_compare_sgl(struct scatterlist *x_sgl, unsigned int x_nents, off_t x_skip,
++		     struct scatterlist *y_sgl, unsigned int y_nents, off_t y_skip,
++		     size_t n_bytes);
++
++bool sgl_compare_sgl_idx(struct scatterlist *x_sgl, unsigned int x_nents, off_t x_skip,
++			 struct scatterlist *y_sgl, unsigned int y_nents, off_t y_skip,
++			 size_t n_bytes, size_t *miscompare_idx);
++
+ /*
+  * Maximum number of entries that will be allocated in one piece, if
+  * a list larger than this is required then chaining will be utilized.
+diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+index c06f8caaff91..e3182de753d0 100644
+--- a/lib/scatterlist.c
++++ b/lib/scatterlist.c
+@@ -1131,3 +1131,112 @@ size_t sgl_copy_sgl(struct scatterlist *d_sgl, unsigned int d_nents, off_t d_ski
+ 	return offset;
+ }
+ EXPORT_SYMBOL(sgl_copy_sgl);
++
++/**
++ * sgl_compare_sgl_idx - Compare x and y (both sgl_s)
++ * @x_sgl:		 x (left) sgl
++ * @x_nents:		 Number of SG entries in x (left) sgl
++ * @x_skip:		 Number of bytes to skip in x (left) before starting
++ * @y_sgl:		 y (right) sgl
++ * @y_nents:		 Number of SG entries in y (right) sgl
++ * @y_skip:		 Number of bytes to skip in y (right) before starting
++ * @n_bytes:		 The (maximum) number of bytes to compare
++ * @miscompare_idx:	 if return is false, index of first miscompare written
++ *			 to this pointer (if non-NULL). Value will be < n_bytes
++ *
++ * Returns:
++ *   true if x and y compare equal before x, y or n_bytes is exhausted.
++ *   Otherwise on a miscompare, returns false (and stops comparing). If return
++ *   is false and miscompare_idx is non-NULL, then index of first miscompared
++ *   byte written to *miscompare_idx.
++ *
++ * Notes:
++ *   x and y are symmetrical: they can be swapped and the result is the same.
++ *
++ *   Implementation is based on memcmp(). x and y segments may overlap.
++ *
++ *   The notes in sgl_copy_sgl() about large sgl_s _applies here as well.
++ *
++ **/
++bool sgl_compare_sgl_idx(struct scatterlist *x_sgl, unsigned int x_nents, off_t x_skip,
++			 struct scatterlist *y_sgl, unsigned int y_nents, off_t y_skip,
++			 size_t n_bytes, size_t *miscompare_idx)
++{
++	bool equ = true;
++	size_t len;
++	size_t offset = 0;
++	struct sg_mapping_iter x_iter, y_iter;
++
++	if (n_bytes == 0)
++		return true;
++	sg_miter_start(&x_iter, x_sgl, x_nents, SG_MITER_ATOMIC | SG_MITER_FROM_SG);
++	sg_miter_start(&y_iter, y_sgl, y_nents, SG_MITER_ATOMIC | SG_MITER_FROM_SG);
++	if (!sg_miter_skip(&x_iter, x_skip))
++		goto fini;
++	if (!sg_miter_skip(&y_iter, y_skip))
++		goto fini;
++
++	while (offset < n_bytes) {
++		if (!sg_miter_next(&x_iter))
++			break;
++		if (!sg_miter_next(&y_iter))
++			break;
++		len = min3(x_iter.length, y_iter.length, n_bytes - offset);
++
++		equ = !memcmp(x_iter.addr, y_iter.addr, len);
++		if (!equ)
++			goto fini;
++		offset += len;
++		/* LIFO order is important when SG_MITER_ATOMIC is used */
++		y_iter.consumed = len;
++		sg_miter_stop(&y_iter);
++		x_iter.consumed = len;
++		sg_miter_stop(&x_iter);
 +	}
- 
- 	queue_work_on(smp_processor_id(), ha->wq, &qpair->q_work);
- 
-@@ -3950,7 +3934,6 @@ static const struct qla_init_msix_entry msix_entries[] = {
- 	{ "rsp_q", qla24xx_msix_rsp_q },
- 	{ "atio_q", qla83xx_msix_atio_q },
- 	{ "qpair_multiq", qla2xxx_msix_rsp_q },
--	{ "qpair_multiq_hs", qla2xxx_msix_rsp_q_hs },
- };
- 
- static const struct qla_init_msix_entry qla82xx_msix_entries[] = {
-diff --git a/drivers/scsi/qla2xxx/qla_mid.c b/drivers/scsi/qla2xxx/qla_mid.c
-index c7caf322f445..7e15dc358f04 100644
---- a/drivers/scsi/qla2xxx/qla_mid.c
-+++ b/drivers/scsi/qla2xxx/qla_mid.c
-@@ -893,8 +893,7 @@ qla25xx_create_rsp_que(struct qla_hw_data *ha, uint16_t options,
- 	    rsp->rsp_q_out);
- 
- 	ret = qla25xx_request_irq(ha, qpair, qpair->msix,
--		ha->flags.disable_msix_handshake ?
--		QLA_MSIX_QPAIR_MULTIQ_RSP_Q : QLA_MSIX_QPAIR_MULTIQ_RSP_Q_HS);
-+	    QLA_MSIX_QPAIR_MULTIQ_RSP_Q);
- 	if (ret)
- 		goto que_failed;
- 
++fini:
++	if (miscompare_idx && !equ) {
++		u8 *xp = x_iter.addr;
++		u8 *yp = y_iter.addr;
++		u8 *x_endp;
++
++		for (x_endp = xp + len ; xp < x_endp; ++xp, ++yp) {
++			if (*xp != *yp)
++				break;
++		}
++		*miscompare_idx = offset + len - (x_endp - xp);
++	}
++	sg_miter_stop(&y_iter);
++	sg_miter_stop(&x_iter);
++	return equ;
++}
++EXPORT_SYMBOL(sgl_compare_sgl_idx);
++
++/**
++ * sgl_compare_sgl - Compare x and y (both sgl_s)
++ * @x_sgl:		 x (left) sgl
++ * @x_nents:		 Number of SG entries in x (left) sgl
++ * @x_skip:		 Number of bytes to skip in x (left) before starting
++ * @y_sgl:		 y (right) sgl
++ * @y_nents:		 Number of SG entries in y (right) sgl
++ * @y_skip:		 Number of bytes to skip in y (right) before starting
++ * @n_bytes:		 The (maximum) number of bytes to compare
++ *
++ * Returns:
++ *   true if x and y compare equal before x, y or n_bytes is exhausted.
++ *   Otherwise on a miscompare, returns false (and stops comparing).
++ *
++ * Notes:
++ *   x and y are symmetrical: they can be swapped and the result is the same.
++ *
++ *   Implementation is based on memcmp(). x and y segments may overlap.
++ *
++ *   The notes in sgl_copy_sgl() about large sgl_s _applies here as well.
++ *
++ **/
++bool sgl_compare_sgl(struct scatterlist *x_sgl, unsigned int x_nents, off_t x_skip,
++		     struct scatterlist *y_sgl, unsigned int y_nents, off_t y_skip,
++		     size_t n_bytes)
++{
++	return sgl_compare_sgl_idx(x_sgl, x_nents, x_skip, y_sgl, y_nents, y_skip, n_bytes, NULL);
++}
++EXPORT_SYMBOL(sgl_compare_sgl);
 -- 
-2.30.0
+2.25.1
 
