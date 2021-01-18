@@ -2,146 +2,104 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D484C433DB
-	for <target-devel@archiver.kernel.org>; Mon, 18 Jan 2021 16:38:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CD83C433E0
+	for <target-devel@archiver.kernel.org>; Mon, 18 Jan 2021 18:29:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 66A15206F7
-	for <target-devel@archiver.kernel.org>; Mon, 18 Jan 2021 16:38:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CA0FE22CA2
+	for <target-devel@archiver.kernel.org>; Mon, 18 Jan 2021 18:29:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406625AbhARQbS (ORCPT
+        id S2407605AbhARS3o (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 18 Jan 2021 11:31:18 -0500
-Received: from smtp.infotech.no ([82.134.31.41]:45718 "EHLO smtp.infotech.no"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2406725AbhARQbH (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 18 Jan 2021 11:31:07 -0500
-Received: from localhost (localhost [127.0.0.1])
-        by smtp.infotech.no (Postfix) with ESMTP id 73FE92042B2;
-        Mon, 18 Jan 2021 17:30:21 +0100 (CET)
-X-Virus-Scanned: by amavisd-new-2.6.6 (20110518) (Debian) at infotech.no
-Received: from smtp.infotech.no ([127.0.0.1])
-        by localhost (smtp.infotech.no [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id biqWdKW9SgrG; Mon, 18 Jan 2021 17:30:17 +0100 (CET)
-Received: from xtwo70.bingwo.ca (host-104-157-204-209.dyn.295.ca [104.157.204.209])
-        by smtp.infotech.no (Postfix) with ESMTPA id 6C149204278;
-        Mon, 18 Jan 2021 17:30:14 +0100 (CET)
-From:   Douglas Gilbert <dgilbert@interlog.com>
-To:     linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
+        Mon, 18 Jan 2021 13:29:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49468 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2436757AbhARS3h (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Mon, 18 Jan 2021 13:29:37 -0500
+Received: from mail-qk1-x72a.google.com (mail-qk1-x72a.google.com [IPv6:2607:f8b0:4864:20::72a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59687C061574
+        for <target-devel@vger.kernel.org>; Mon, 18 Jan 2021 10:28:56 -0800 (PST)
+Received: by mail-qk1-x72a.google.com with SMTP id 19so19529923qkm.8
+        for <target-devel@vger.kernel.org>; Mon, 18 Jan 2021 10:28:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=V6OfwHc1CUnuze+sIKYDwiSSMcP1Mnt94yrNdzONXMc=;
+        b=I70gxMCGa6VXFTdCUVqIrxDoriChErMWEhWVmnDCztvFEV9K/n3ElBkgmgrtpg1BjL
+         JCXkgxdsL9K9xEv/0cEKuSXqiuiK5Zk061N68H4RaQ/56J+SpmBKSe2uRjtgWjwu3Ec2
+         NX5qA1+NkpWXw70tjWcvipfP7S9DA4dn6/H9GgFqdazctTtrzJX/fPCeqUHTo0gTwJrl
+         82xJGfkL9mF0QqRezQdtrPfNLCQiTjrXcwyRcZ80pnlFank7cK6kcJoxYmfKzIbst7lK
+         bXFmYGu0MlcKlzYwaIe7d3MvE0MsWb4ucMN22I1k2+G6PbJMn+J79JLr8bQ/Z26005lm
+         dhIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=V6OfwHc1CUnuze+sIKYDwiSSMcP1Mnt94yrNdzONXMc=;
+        b=obHct+p63dMWTfzYZSpjxQ8iWwDkAD+e6yFTL6DKfY3iWH9d7sa2yL0i+VgHUj3RpU
+         LsoP+zsWl/boSb4QBw9yRuGgk0tiPlpSLVMnNqKOzsbLJrfm/orcbywE0647jxxJdK4k
+         Ck0Og2J9/1s4B7DO813omerIE6xkK11XTnfZmmQQ4S8hxVCKVYn3/Ncd5XJZlrILdR1k
+         qAvSyaADUZ+Sihx3SxlZtudnhY1gSQVWrBXgj21+3hdcl5j+HtbnuiKtRKL1DdNRE7xR
+         tijDsmYIx/1KTQ8c5r6u+Ne1ArnJ+2qS59fbLitE1B3jhzsdRmvuclNgyNG224balJjn
+         bgVw==
+X-Gm-Message-State: AOAM531zds4LJU4D7FYG2CbirFDkPdcEBTt1jmvLXjBZ8UFrvKettqYr
+        mgdJkv35LFuQMlkaNq0HO6Wozg==
+X-Google-Smtp-Source: ABdhPJyoVuq3nY/icnfkE0mrabkzzFBuuTfwE9NxFbO6a8QayKjQV5IZB1bxXI2yG/S0i+cPYI2Vfw==
+X-Received: by 2002:a37:6846:: with SMTP id d67mr840329qkc.219.1610994535549;
+        Mon, 18 Jan 2021 10:28:55 -0800 (PST)
+Received: from ziepe.ca (hlfxns017vw-142-162-115-133.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.162.115.133])
+        by smtp.gmail.com with ESMTPSA id u5sm11368459qka.86.2021.01.18.10.28.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 Jan 2021 10:28:54 -0800 (PST)
+Received: from jgg by mlx with local (Exim 4.94)
+        (envelope-from <jgg@ziepe.ca>)
+        id 1l1ZGo-0031bp-7D; Mon, 18 Jan 2021 14:28:54 -0400
+Date:   Mon, 18 Jan 2021 14:28:54 -0400
+From:   Jason Gunthorpe <jgg@ziepe.ca>
+To:     Douglas Gilbert <dgilbert@interlog.com>
+Cc:     linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
         target-devel@vger.kernel.org, linux-rdma@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     martin.petersen@oracle.com, jejb@linux.vnet.ibm.com,
-        bostroesser@gmail.com, ddiss@suse.de, bvanassche@acm.org,
-        jgg@ziepe.ca
-Subject: [PATCH v6 1/4] sgl_alloc_order: remove 4 GiB limit, sgl_free() warning
-Date:   Mon, 18 Jan 2021 11:30:03 -0500
-Message-Id: <20210118163006.61659-2-dgilbert@interlog.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210118163006.61659-1-dgilbert@interlog.com>
+        linux-kernel@vger.kernel.org, martin.petersen@oracle.com,
+        jejb@linux.vnet.ibm.com, bostroesser@gmail.com, ddiss@suse.de,
+        bvanassche@acm.org
+Subject: Re: [PATCH v6 1/4] sgl_alloc_order: remove 4 GiB limit, sgl_free()
+ warning
+Message-ID: <20210118182854.GJ4605@ziepe.ca>
 References: <20210118163006.61659-1-dgilbert@interlog.com>
+ <20210118163006.61659-2-dgilbert@interlog.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210118163006.61659-2-dgilbert@interlog.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-This patch fixes a check done by sgl_alloc_order() before it starts
-any allocations. The comment in the original said: "Check for integer
-overflow" but the check itself contained an integer overflow! The
-right hand side (rhs) of the expression in the condition is resolved
-as u32 so it could not exceed UINT32_MAX (4 GiB) which means 'length'
-could not exceed that value. If that was the intention then the
-comment above it could be dropped and the condition rewritten more
-clearly as:
-     if (length > UINT32_MAX) <<failure path >>;
+On Mon, Jan 18, 2021 at 11:30:03AM -0500, Douglas Gilbert wrote:
 
-After several flawed attempts to detect overflow, take the fastest
-route by stating as a pre-condition that the 'order' function argument
-cannot exceed 16 (2^16 * 4k = 256 MiB).
+> After several flawed attempts to detect overflow, take the fastest
+> route by stating as a pre-condition that the 'order' function argument
+> cannot exceed 16 (2^16 * 4k = 256 MiB).
 
-This function may be used to replace vmalloc(unsigned long) for a
-large allocation (e.g. a ramdisk). vmalloc has no limit at 4 GiB so
-it seems unreasonable that:
-    sgl_alloc_order(unsigned long long length, ....)
-does. sgl_s made with sgl_alloc_order() have equally sized segments
-placed in a scatter gather array. That allows O(1) navigation around
-a big sgl using some simple integer arithmetic.
+That doesn't help, the point of the overflow check is similar to
+overflow checks in kcalloc: to prevent the routine from allocating
+less memory than the caller might assume.
 
-Revise some of this function's description to more accurately reflect
-what this function is doing.
+For instance ipr_store_update_fw() uses request_firmware() (which is
+controlled by userspace) to drive the length argument to
+sgl_alloc_order(). If userpace gives too large a value this will
+corrupt kernel memory.
 
-An earlier patch fixed a memory leak in sg_alloc_order() due to the
-misuse of sgl_free(). Take the opportunity to put a one line comment
-above sgl_free()'s declaration warning that it is not suitable when
-order > 0 .
+So this math:
 
-Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
-Signed-off-by: Douglas Gilbert <dgilbert@interlog.com>
----
- include/linux/scatterlist.h |  1 +
- lib/scatterlist.c           | 21 ++++++++++-----------
- 2 files changed, 11 insertions(+), 11 deletions(-)
+  	nent = round_up(length, PAGE_SIZE << order) >> (PAGE_SHIFT + order);
 
-diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
-index 6f70572b2938..8adff41f7cfa 100644
---- a/include/linux/scatterlist.h
-+++ b/include/linux/scatterlist.h
-@@ -302,6 +302,7 @@ struct scatterlist *sgl_alloc(unsigned long long length, gfp_t gfp,
- 			      unsigned int *nent_p);
- void sgl_free_n_order(struct scatterlist *sgl, int nents, int order);
- void sgl_free_order(struct scatterlist *sgl, int order);
-+/* Only use sgl_free() when order is 0 */
- void sgl_free(struct scatterlist *sgl);
- #endif /* CONFIG_SGL_ALLOC */
- 
-diff --git a/lib/scatterlist.c b/lib/scatterlist.c
-index a59778946404..24ea2d31a405 100644
---- a/lib/scatterlist.c
-+++ b/lib/scatterlist.c
-@@ -554,13 +554,16 @@ EXPORT_SYMBOL(sg_alloc_table_from_pages);
- #ifdef CONFIG_SGL_ALLOC
- 
- /**
-- * sgl_alloc_order - allocate a scatterlist and its pages
-+ * sgl_alloc_order - allocate a scatterlist with equally sized elements each
-+ *		     of which has 2^@order continuous pages
-  * @length: Length in bytes of the scatterlist. Must be at least one
-- * @order: Second argument for alloc_pages()
-+ * @order: Second argument for alloc_pages(). Each sgl element size will
-+ *	   be (PAGE_SIZE*2^@order) bytes. @order must not exceed 16.
-  * @chainable: Whether or not to allocate an extra element in the scatterlist
-- *	for scatterlist chaining purposes
-+ *	       for scatterlist chaining purposes
-  * @gfp: Memory allocation flags
-- * @nent_p: [out] Number of entries in the scatterlist that have pages
-+ * @nent_p: [out] Number of entries in the scatterlist that have pages.
-+ *		  Ignored if NULL is given.
-  *
-  * Returns: A pointer to an initialized scatterlist or %NULL upon failure.
-  */
-@@ -574,15 +577,11 @@ struct scatterlist *sgl_alloc_order(unsigned long long length,
- 	u32 elem_len;
- 
- 	nent = round_up(length, PAGE_SIZE << order) >> (PAGE_SHIFT + order);
--	/* Check for integer overflow */
--	if (length > (nent << (PAGE_SHIFT + order)))
--		return NULL;
--	nalloc = nent;
- 	if (chainable) {
--		/* Check for integer overflow */
--		if (nalloc + 1 < nalloc)
-+		if (check_add_overflow(nent, 1U, &nalloc))
- 			return NULL;
--		nalloc++;
-+	} else {
-+		nalloc = nent;
- 	}
- 	sgl = kmalloc_array(nalloc, sizeof(struct scatterlist),
- 			    gfp & ~GFP_DMA);
--- 
-2.25.1
+Needs to be checked, add a precondition to order does not help. I
+already proposed a straightforward algorithm you can use.
 
+Jason
