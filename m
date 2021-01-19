@@ -2,101 +2,121 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40E8BC433E6
-	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 21:22:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE0FCC43331
+	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 21:42:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E43A322D08
-	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 21:22:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C68B52312D
+	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 21:42:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729063AbhASSqh (ORCPT
+        id S1726705AbhASRuO (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 19 Jan 2021 13:46:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42538 "EHLO
+        Tue, 19 Jan 2021 12:50:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60188 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391234AbhASSEK (ORCPT
+        with ESMTP id S1732604AbhASPFA (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 19 Jan 2021 13:04:10 -0500
-Received: from mail-qk1-x72a.google.com (mail-qk1-x72a.google.com [IPv6:2607:f8b0:4864:20::72a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F8A2C061757
-        for <target-devel@vger.kernel.org>; Tue, 19 Jan 2021 10:03:29 -0800 (PST)
-Received: by mail-qk1-x72a.google.com with SMTP id h4so22754290qkk.4
-        for <target-devel@vger.kernel.org>; Tue, 19 Jan 2021 10:03:29 -0800 (PST)
+        Tue, 19 Jan 2021 10:05:00 -0500
+Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com [IPv6:2607:f8b0:4864:20::829])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A25C8C0613D3
+        for <target-devel@vger.kernel.org>; Tue, 19 Jan 2021 07:01:05 -0800 (PST)
+Received: by mail-qt1-x829.google.com with SMTP id r9so13842007qtp.11
+        for <target-devel@vger.kernel.org>; Tue, 19 Jan 2021 07:01:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=j1M3uq+mXePAcpFXiBOTYof3FY5bhcapXrpc6RKaHY0=;
-        b=Hh9SblNojKOb5EYq3K8qUhYmB3i+erqETW1LvC5Uy6ZQG4qMseKDpiMEz841rNTZtM
-         piAYeqNY5m2TdjvJhkSAWhKNgGCOjG4i/PpQj5QuIIUpP8/qZO/rPv5EdJ1icP8JF/RV
-         zpK2vpvYwcHH2bud0iHBJxcdsOjCrzvlc7iOnWumPvzG4N1kvFI2AfXfG5+Z1Qshu0FK
-         pMwTb9bFOG2y5hZzWellK8LRib/HfIn066Mstgx+ewJPy6QpF/PbTZsnl1A7hBuWbhga
-         zLA/rKh1y/1AVUtAGOnEkigIKTS2hwFmgvEQbdveQmrPiAbvLMAGZA+FpscMSuo87voy
-         w3gw==
+        d=toxicpanda-com.20150623.gappssmtp.com; s=20150623;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=vn5Y0TrG3Ui6LBbbxvYnxl2nn5t3OepGIypDVq8V4YM=;
+        b=pVUDC5WiZM6Lp8yH89xT1k/YpP/3TyrwAZ15/iuWX8RBRpjlf+jFHDFgLTMtLU49SW
+         kEgj71/8gTx8uUrcUqv22pjWXvmAkk4+JJZsk/LNpOAvMGyURf5ntpntikem4UAdkJmG
+         qDOyNrfgyoTi6CRDwvwFDajSm8kWtjdnUlLRIqDQEpqlUC7OINwQ6kVz/aldXxJjQoP5
+         MYUKt/PXULwtUE7UtG7pCk3dYIcLp50Gn7OBfoEA7a8X+HS5qin3yAo+UQVY1bXrt2Uf
+         4/dAwPqazua4LeUKIitWS+j1v7XvAyJz/3HiR12eJJa0QTCjoU3WExHuF4czyxSiqnRH
+         2paQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=j1M3uq+mXePAcpFXiBOTYof3FY5bhcapXrpc6RKaHY0=;
-        b=Y5CWI5QZYApFp3U4EqhXGvunUIlGcWN+sFgmJeNf7fp+XnTbyAIeguqHk+tfGqVKXK
-         86FLNpcQN85Onfu07aqN9Wgj5TNyK6ZZVOPYT/h0nqbuzI7TJMgHZ8WFyBf2K6yWEMU6
-         uN/lmFVnjKIxyDP+GpLhecvt0I309LrGqwEbZRjxaopA2YhgSfdclETyboOqBA1GvWSS
-         FiQyeuCpBRtwLV6PoRBjFc+uQvb7W9J+q3QVzqLDlG3W0M8K2rOUuzh6PsgD12ZoGcum
-         yK1z0ro41f9AsJn6brEm52j5pQDbCIfoPUg8FaMQHKhQsNxjJK7RFIiGAvrMda0Oq2p+
-         JJ1g==
-X-Gm-Message-State: AOAM530/f0vEpp4RMZDvmSPxSKK5MYpOBRXx7eseqWGIiMe8fspyIME9
-        Rxm2HNNr50jqPTPg8zNZ/12cNw==
-X-Google-Smtp-Source: ABdhPJw2XCT7fzRIheQITlzWVeRsNY4eXnLldryVnmv9+vJo9i0eBjqYTuC3jm5yDDU9pEhFsVWc3A==
-X-Received: by 2002:a05:620a:2149:: with SMTP id m9mr5538332qkm.60.1611079408965;
-        Tue, 19 Jan 2021 10:03:28 -0800 (PST)
-Received: from ziepe.ca (hlfxns017vw-142-162-115-133.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.162.115.133])
-        by smtp.gmail.com with ESMTPSA id s30sm12979164qte.44.2021.01.19.10.03.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Jan 2021 10:03:28 -0800 (PST)
-Received: from jgg by mlx with local (Exim 4.94)
-        (envelope-from <jgg@ziepe.ca>)
-        id 1l1vLj-003pDY-Qf; Tue, 19 Jan 2021 14:03:27 -0400
-Date:   Tue, 19 Jan 2021 14:03:27 -0400
-From:   Jason Gunthorpe <jgg@ziepe.ca>
-To:     Bodo Stroesser <bostroesser@gmail.com>
-Cc:     Douglas Gilbert <dgilbert@interlog.com>,
-        linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-rdma@vger.kernel.org,
-        linux-kernel@vger.kernel.org, martin.petersen@oracle.com,
-        jejb@linux.vnet.ibm.com, ddiss@suse.de, bvanassche@acm.org
-Subject: Re: [PATCH v6 1/4] sgl_alloc_order: remove 4 GiB limit, sgl_free()
- warning
-Message-ID: <20210119180327.GX4605@ziepe.ca>
-References: <20210118163006.61659-1-dgilbert@interlog.com>
- <20210118163006.61659-2-dgilbert@interlog.com>
- <20210118182854.GJ4605@ziepe.ca>
- <59707b66-0b6c-b397-82fe-5ad6a6f99ba1@interlog.com>
- <20210118202431.GO4605@ziepe.ca>
- <7f443666-b210-6f99-7b50-6c26d87fa7ca@gmail.com>
- <20210118234818.GP4605@ziepe.ca>
- <6faed1e2-13bc-68ba-7726-91924cf21b66@gmail.com>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=vn5Y0TrG3Ui6LBbbxvYnxl2nn5t3OepGIypDVq8V4YM=;
+        b=bTLER2mtoyOGdwOB8mux8b3jUzOt8fx2BcjGLzhscvS3LwqpUGhMJscDSlC8x15ZOk
+         YFoyTe16Eozds6xVPrFvqK0ohieFRiVDcON7Z8K4mFJcIprGfe73arJYb9+aypffXToO
+         IsAqqLcwUXRDJhximMlsoBXagZHD9rC75fTIYQeBekaMi5/T77qZeVBBBaze24l7QLAv
+         hGSf3RhaU7Gzuo6+WokFRsopyEhhUALqNd9ThjCz4jc7Th7oe6Eg31a1+lz3dO3owHrv
+         ji5eEwZhhvHiMC37HXKvPqk/kqlXzC3Gc+cvTQ/FT36JF4RLKFPd0jYjD/Cz4+gV+g+/
+         C6Vw==
+X-Gm-Message-State: AOAM533jFzHhJCik7LLNKQH4sg9Ciqij/6uYqLHTbJ2gx8MYhFnAJyD2
+        PzAsqVkUNtk2fDbtFvCghp2Gxg==
+X-Google-Smtp-Source: ABdhPJw9hzTjA0HJ6VQUPwDH9drSNqii0WFZZyVd4uYqJRq1euvOSRi+J16/swjVIXriRDU/RjWmOQ==
+X-Received: by 2002:ac8:6f07:: with SMTP id g7mr4493450qtv.308.1611068464463;
+        Tue, 19 Jan 2021 07:01:04 -0800 (PST)
+Received: from ?IPv6:2620:10d:c0a8:11d1::117a? ([2620:10d:c091:480::1:150f])
+        by smtp.gmail.com with ESMTPSA id w91sm6339412qte.83.2021.01.19.07.01.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 19 Jan 2021 07:01:03 -0800 (PST)
+Subject: Re: [RFC PATCH 00/37] block: introduce bio_init_fields()
+To:     Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
+        linux-block@vger.kernel.org, linux-xfs@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+        drbd-dev@lists.linbit.com, linux-bcache@vger.kernel.org,
+        linux-raid@vger.kernel.org, linux-nvme@lists.infradead.org,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-btrfs@vger.kernel.org, linux-ext4@vger.kernel.org,
+        cluster-devel@redhat.com
+Cc:     jfs-discussion@lists.sourceforge.net, dm-devel@redhat.com,
+        axboe@kernel.dk, philipp.reisner@linbit.com,
+        lars.ellenberg@linbit.com, efremov@linux.com, colyli@suse.de,
+        kent.overstreet@gmail.com, agk@redhat.com, snitzer@redhat.com,
+        song@kernel.org, hch@lst.de, sagi@grimberg.me,
+        martin.petersen@oracle.com, viro@zeniv.linux.org.uk, clm@fb.com,
+        dsterba@suse.com, tytso@mit.edu, adilger.kernel@dilger.ca,
+        rpeterso@redhat.com, agruenba@redhat.com, darrick.wong@oracle.com,
+        shaggy@kernel.org, damien.lemoal@wdc.com, naohiro.aota@wdc.com,
+        jth@kernel.org, tj@kernel.org, osandov@fb.com, bvanassche@acm.org,
+        gustavo@embeddedor.com, asml.silence@gmail.com,
+        jefflexu@linux.alibaba.com
+References: <20210119050631.57073-1-chaitanya.kulkarni@wdc.com>
+From:   Josef Bacik <josef@toxicpanda.com>
+Message-ID: <6eab7373-3c7f-fccf-8a6f-b02519258d23@toxicpanda.com>
+Date:   Tue, 19 Jan 2021 10:00:59 -0500
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6faed1e2-13bc-68ba-7726-91924cf21b66@gmail.com>
+In-Reply-To: <20210119050631.57073-1-chaitanya.kulkarni@wdc.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Jan 19, 2021 at 06:24:49PM +0100, Bodo Stroesser wrote:
+On 1/19/21 12:05 AM, Chaitanya Kulkarni wrote:
+> Hi,
 > 
-> I had a second look into math.h, but I don't find any reason why round_up
-> could overflow. Can you give a hint please?
+> This is a *compile only RFC* which adds a generic helper to initialize
+> the various fields of the bio that is repeated all the places in
+> file-systems, block layer, and drivers.
+> 
+> The new helper allows callers to initialize various members such as
+> bdev, sector, private, end io callback, io priority, and write hints.
+> 
+> The objective of this RFC is to only start a discussion, this it not
+> completely tested at all.
 
-#define round_up(x, y) ((((x)-1) | __round_mask(x, y))+1)
-                                                    ^^^^^
+It would help to know what you're trying to accomplish here.  I'd echo Mike's 
+comments about how it makes it annoying to update things in the future.  In 
+addition, there's so many fields that I'm not going to remember what each one is 
+without having to look it up, which makes it annoying to use and to review.  If 
+it's simply to make sure fields are initialized then you could add debug sanity 
+checks to submit_bio().  If it's to clean up duplication, well I'd argue that 
+the duplication is much clearer than positional arguments in a giant function 
+call.  If you are wanting to change a particular part of the bio to be 
+initialized properly, like Dennis's work to make sure the bi_blkg was 
+initialized at bi_bdev set time, then a more targeted patch series with a 
+specific intent will be more useful and more successful.  Thanks,
 
-That +1 can overflow
-
-It looks like it would not be so bad to implement some
-check_round_up_overflow() if people prefer
-
-Jason
+Josef
