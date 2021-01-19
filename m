@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2049AC433E0
-	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 05:35:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2541C433E6
+	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 05:38:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DEC73207B0
-	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 05:35:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9009D22C7E
+	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 05:38:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731442AbhASFe2 (ORCPT
+        id S1732373AbhASFgM (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 19 Jan 2021 00:34:28 -0500
-Received: from esa2.hgst.iphmx.com ([68.232.143.124]:33624 "EHLO
-        esa2.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728159AbhASFJH (ORCPT
+        Tue, 19 Jan 2021 00:36:12 -0500
+Received: from esa1.hgst.iphmx.com ([68.232.141.245]:34587 "EHLO
+        esa1.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726322AbhASFJH (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
         Tue, 19 Jan 2021 00:09:07 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1611033608; x=1642569608;
+  t=1611032947; x=1642568947;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=tvJHgqE+W7G2ML+CypUNmJZ3x4g/IlwhC+0r2ps0VWM=;
-  b=rarcNysrAfxCKlOSY1uDQGGS8dD7wdBzz2EggkNpOdruE47kShSdAen2
-   vi5FjwbSpja6ehTdqbsJN+3uvGWrZDncvYOgVFYwiWj5mMj3TKlcMG8Zq
-   5mQiYCLT9gYSCJ9ezHrfZTRhyUCy/fLdGHJ77jn6r38Jiy+Tc/L53J4hG
-   X3I7F96l/rARbODakszu8d/N/GVEVTLXMG6BCVnePOl1MEmvEoZZbsKNm
-   VdV5E10yAuloxmPEqHj38X1Fj0T9cjUpSAbLKVcrSxPIdzJUy41joE7hC
-   GtqgS7+kb9YBgrCZrwBrAdgg5JPcL8T6ysjqwypCByWeMgjn5Vnms4l4L
+  bh=M0Lda0zS+SL7SE0DDozfWug6B1E4kFe/5QgiyTYkgeo=;
+  b=gBKkty7EvKEuqb71GF+ryOndspp3GoZHMNe9hlTMGz0Y0px3wKg5Xyoc
+   /U0sFq86W4Nv6bEOVEmfFAsKyg+wroj4jvMh97mRk11Ev9nAbbz8GnNim
+   I7nRHnNmcYDo0k2VZHA+GQUaQrs7s9HCAta1S1hf8Q4lpRH0MuC5o9zfY
+   SshxQn71654JSyFFn5F5cAOheZUdxn9wTqiVL0apAzHvhPR2LSFoH7kM1
+   w1QQm7FFPCCN6Fq8cRIa71hdOndiFPsN5JQNAc1Nt4Yj5ISeyZgJJrn+V
+   +Wg0xwB0w3nz810rZ2JFK42q2HzKi7co3HsBP4Mi+z20bZrlBnCqdRlNI
    w==;
-IronPort-SDR: f/ts4orLfs7X3aUKKOJ6nihL7kS07V3wsip7PdqJTrhi6LZ1l+SgdrepA/CM9NESOR3DlVfHMl
- 3yjTj17FqsLJNfEi0UUbnieVKnkVF3Z4DTsWhZJQZFNqWPuP1Sb5Mf2XmqQI6a/PYbysJ3ZJow
- DuCUxaRWqDOB8yRNSbbV1dy0y1mR/o0go0R3dlzSveN4x0UwTLuI10JvCHEnalh4AedggSqux3
- YpLlEzIt8OdsuVk1K+vuKEr2xuBbnsj0vOMZWjEmfJsoP6QGiQgt5gVW5czIKRRnCDWANlzkZJ
- 3zA=
+IronPort-SDR: UQWruiD78H7N4Gkqst/8tOPl2dR7Ggxtam5DUriWi6xcoodRN+tvxqacOU3dOhfPiuUHuxclAQ
+ 73z0Q8nmhI+a3ldbRXrfoDbLHAm9Sx8E+O1CsUdqOkUzQBsmjlyjWd/9mp9bMS/cqkV4lD2MhB
+ LsRymbgHALot1Dcjc6HK+E0Yb42MTP+nPHogAblwKJ/ecxRAIBbIIqNNKgkimVFOhfKvTTo25S
+ Wb+axlef6NsO2TMdk8yMTWnYu3MBBJYtUAIQ3+BpI2ptLEEE0GYb8Lf9IqZCeS6183F+LTL+WV
+ bDE=
 X-IronPort-AV: E=Sophos;i="5.79,357,1602518400"; 
-   d="scan'208";a="261722189"
+   d="scan'208";a="268080941"
 Received: from h199-255-45-14.hgst.com (HELO uls-op-cesaep01.wdc.com) ([199.255.45.14])
-  by ob1.hgst.iphmx.com with ESMTP; 19 Jan 2021 13:18:18 +0800
-IronPort-SDR: Q5ruBnf7xAnrSQuXn5faj9Of4WoP5Um/EkkJpO1Uyi55E6mUT+HTidqnkQdJmUuzr6NKacMIZl
- 2JEodiGWCxxuAE0O/hcQThORDPTXnqZyB7bVEX4xQWp5RjAsd26rv1QXZCNCCdGzRtkigUvo4i
- x1Gui6r55Vosc9IkgC6Nge5x4IHAzb3nq8vUOS7EdxrUvkqE7nxBGYS6RkROoS+lojbVKqBlhW
- aqeREjGZ1StTHubtEH7aRdGxL0zrKiPQ+6dc73bRJx7dIIt8FE3NrTFLxW3MGW9peL/4DcG3i0
- Io5duPItdk0LJ4GmEQZcRbq1
+  by ob1.hgst.iphmx.com with ESMTP; 19 Jan 2021 13:07:19 +0800
+IronPort-SDR: KiNvTzdfh0qM0zmFbJFhmfQuJC42fBwQJLXltFbmaLB1OvXxwaGf/DXulHxbdXwgW7ghAgQEwb
+ 8lxDRDInE6vhwk5bie7sDgShBORVrt7eBsloUXTmMLsXgS32KbSqhxwZbOjQ09LciyRS3qtGgj
+ 9puiFwua2qXS3jervxVR5ZLzhP8VfChUP27ovMOQdFaU+1/MrEy7OwoVbQPVFojgqmqQalGnvG
+ LJPyUh7vxSVHNBeJsMtvs+Bt705eIBKWECRsyGkYLrQQFqfCmvqn5kUwvOyMPpZoldE+Hzw7Te
+ wQ5wz2ue31xkO7HgDJ4V5Xe8
 Received: from uls-op-cesaip02.wdc.com ([10.248.3.37])
-  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jan 2021 20:52:32 -0800
-IronPort-SDR: HfWY3om+yf0xJZDCeO7vzX4qVknDvDGJ6ma4/WV7I62vTgKsXgZzhM0ZULmlPQ+OArppKpZagb
- 2D+mRhA2IGb1emIpbOZ6FTF970SZgSIja2ei7WMigALEAQdtMpSzVo//nIAbZ1wNVJo/414BKz
- A1WUO/T5vGii4BJKAkPud7zlDfpbr9iZjAmuNFOXPO1Y6zbT0Inzt3aMei0oz3YT9sfu+Dztk5
- Fg0ppCRIMSkEdmvmSQl8FchZI4H3p6KBElZq4HVESV4gQgEhlwohxssYunDRqcI1BVUhdQDk7h
- o0c=
+  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jan 2021 20:51:56 -0800
+IronPort-SDR: QBnDS7DVrddQpcsFsBzx6dUP1vCou2zr2+U/E8LncZi1HXSOtDax3BLEkAh4fkXsMSmQFWPGFy
+ i9c3j/giOOU39nkkPY4ax6KBgaPpzPJAoufKOchG2Ou0rmyaYFKJUhk8ZPDWpGoP3x51bQeso4
+ ExxBU/jV033SF8Q+teRhuDUjl9XHjbBJkEt8Ba8a4jICbdKDHOxkWO7MzEPD0dB8h3reWZeWBh
+ KVK+JCC1W+90P0+/EdNiEnUM8xRZsi0+PwhkhSGTp7e4x6m4p6jDgQlTHPkRvWkNPGtHl7ZAoZ
+ Mec=
 WDCIronportException: Internal
 Received: from vm.labspan.wdc.com (HELO vm.sc.wdc.com) ([10.6.137.102])
-  by uls-op-cesaip02.wdc.com with ESMTP; 18 Jan 2021 21:07:54 -0800
+  by uls-op-cesaip02.wdc.com with ESMTP; 18 Jan 2021 21:07:19 -0800
 From:   Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 To:     linux-block@vger.kernel.org, linux-xfs@vger.kernel.org,
         linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -79,9 +79,9 @@ Cc:     jfs-discussion@lists.sourceforge.net, dm-devel@redhat.com,
         osandov@fb.com, bvanassche@acm.org, gustavo@embeddedor.com,
         asml.silence@gmail.com, jefflexu@linux.alibaba.com,
         Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-Subject: [RFC PATCH 11/37] jfs: use bio_init_fields in logmgr
-Date:   Mon, 18 Jan 2021 21:06:05 -0800
-Message-Id: <20210119050631.57073-12-chaitanya.kulkarni@wdc.com>
+Subject: [RFC PATCH 06/37] gfs2: use bio_init_fields in lops
+Date:   Mon, 18 Jan 2021 21:06:00 -0800
+Message-Id: <20210119050631.57073-7-chaitanya.kulkarni@wdc.com>
 X-Mailer: git-send-email 2.22.1
 In-Reply-To: <20210119050631.57073-1-chaitanya.kulkarni@wdc.com>
 References: <20210119050631.57073-1-chaitanya.kulkarni@wdc.com>
@@ -93,48 +93,26 @@ X-Mailing-List: target-devel@vger.kernel.org
 
 Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 ---
- fs/jfs/jfs_logmgr.c | 16 ++++------------
- 1 file changed, 4 insertions(+), 12 deletions(-)
+ fs/gfs2/lops.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/fs/jfs/jfs_logmgr.c b/fs/jfs/jfs_logmgr.c
-index 9330eff210e0..ee7407ca32c0 100644
---- a/fs/jfs/jfs_logmgr.c
-+++ b/fs/jfs/jfs_logmgr.c
-@@ -1980,15 +1980,11 @@ static int lbmRead(struct jfs_log * log, int pn, struct lbuf ** bpp)
- 	bp->l_flag |= lbmREAD;
+diff --git a/fs/gfs2/lops.c b/fs/gfs2/lops.c
+index 3922b26264f5..9f8a9757b086 100644
+--- a/fs/gfs2/lops.c
++++ b/fs/gfs2/lops.c
+@@ -264,10 +264,8 @@ static struct bio *gfs2_log_alloc_bio(struct gfs2_sbd *sdp, u64 blkno,
+ 	struct super_block *sb = sdp->sd_vfs;
+ 	struct bio *bio = bio_alloc(GFP_NOIO, BIO_MAX_PAGES);
  
- 	bio = bio_alloc(GFP_NOFS, 1);
--
--	bio->bi_iter.bi_sector = bp->l_blkno << (log->l2bsize - 9);
--	bio_set_dev(bio, log->bdev);
--
-+	bio_init_fields(bio, log->bdev, bp->l_blkno << (log->l2bsize - 9),
-+			log->bdev, 0, lbmIODone, bp, 0, 0);
- 	bio_add_page(bio, bp->l_page, LOGPSIZE, bp->l_offset);
- 	BUG_ON(bio->bi_iter.bi_size != LOGPSIZE);
+-	bio->bi_iter.bi_sector = blkno << sdp->sd_fsb2bb_shift;
+-	bio_set_dev(bio, sb->s_bdev);
+-	bio->bi_end_io = end_io;
+-	bio->bi_private = sdp;
++	bio_init_fields(bio, sb->s_bdev, blkno << sdp->sd_fsb2bb_shift,
++			sdp, end_io, 0, 0);
  
--	bio->bi_end_io = lbmIODone;
--	bio->bi_private = bp;
- 	bio->bi_opf = REQ_OP_READ;
- 	/*check if journaling to disk has been disabled*/
- 	if (log->no_integrity) {
-@@ -2125,14 +2121,10 @@ static void lbmStartIO(struct lbuf * bp)
- 	jfs_info("lbmStartIO");
- 
- 	bio = bio_alloc(GFP_NOFS, 1);
--	bio->bi_iter.bi_sector = bp->l_blkno << (log->l2bsize - 9);
--	bio_set_dev(bio, log->bdev);
--
-+	bio_init_fields(bio, log->bdev, bp->l_blkno << (log->l2bsize - 9),
-+			log->bdev, 0, lbmIODone, bp, 0, 0);
- 	bio_add_page(bio, bp->l_page, LOGPSIZE, bp->l_offset);
- 	BUG_ON(bio->bi_iter.bi_size != LOGPSIZE);
--
--	bio->bi_end_io = lbmIODone;
--	bio->bi_private = bp;
- 	bio->bi_opf = REQ_OP_WRITE | REQ_SYNC;
- 
- 	/* check if journaling to disk has been disabled */
+ 	return bio;
+ }
 -- 
 2.22.1
 
