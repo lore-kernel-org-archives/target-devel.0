@@ -2,99 +2,166 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46713C41620
-	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 14:57:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED6E0C193F2
+	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 18:28:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 166FE22241
-	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 14:57:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B125B23134
+	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 18:28:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391644AbhASOys (ORCPT
+        id S2389604AbhASRLa (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 19 Jan 2021 09:54:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33476 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2393638AbhASNA4 (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Tue, 19 Jan 2021 08:00:56 -0500
-Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48403C06179B
-        for <target-devel@vger.kernel.org>; Tue, 19 Jan 2021 04:59:07 -0800 (PST)
-Received: by mail-qt1-x835.google.com with SMTP id e15so13527063qte.9
-        for <target-devel@vger.kernel.org>; Tue, 19 Jan 2021 04:59:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=B3Cy0Hm6xTRsmff/JkHOzD1P8m+ZaMSZbwZ78cwq0GQ=;
-        b=ZGSI5bxWjU+x6vpwy6aJhb0H6QN8FxL1hxmj/KVTU1+omQptO3f8ci9LDt5IMdmEm1
-         c4v/0lgymC7G0E3l+2BOtcBk1DueLIbZR8J5cxMMLK3Yi0npvu/r/IIOp2wnIuuEiMOE
-         DrJjzANZhdQ53CfuySR1LOimnUnSIDo4FGY/QmSEA0+i1UEodaNTu5jJ1/O7oInHnfdm
-         qtOg4X7Kif7h5aJ2gi3ToQZLQMqsAQcD3DKwsenq41fiLGO26hoqLlrhFHOsM+1Ha+/8
-         g1zHKQfTf/f2IFzFEdXrbT2v96nn6w01sjb/AslAOhGMjo1PLV9/0FdTcZ/CTpaHjkXR
-         P6zQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=B3Cy0Hm6xTRsmff/JkHOzD1P8m+ZaMSZbwZ78cwq0GQ=;
-        b=RKkR2mSU/46d/Ck4fRBCk6jB1i0xX/yEJCJWFf0HSZS9uSVI/JaNdgno5edPKTvxi6
-         o7RHhowBuT8TWoVDos18ruj6/Oujr+NCTC2VehustKizB2iR2SucgR5bxekZjTsjeeT4
-         POWDfRd80X05tIkk0pPJAXhuv5B9QWO+Q15xNqaofr7v7545w4EuNnM51yURC7STTKbj
-         FTgR99izDD14it93SX+BFGIZBLTogc1jO+NK+TzXbNl20qsq/B4rZhVEPNgZy0sPrZ1/
-         H0G/hO5dZ1pdKiOKRULYtjbzJMW/IHAK3l3B63bVrlehiWh1jBakVgYNkV5BdzDrDIJG
-         sl8g==
-X-Gm-Message-State: AOAM531nfLoy1Bl0lNtfO9oaA1dPq9pLUHO5TeE9zJSG4z2EgiNXhuwQ
-        pCN9u0Xr0YQNraAJUVxUvnfAjg==
-X-Google-Smtp-Source: ABdhPJwlbXLZsM8EZ3zbiuP95L7daX8Gjcn61F+rGmL6G3gAj59bCjoRgpcQVVChw0oLTnlsG4kHzA==
-X-Received: by 2002:a05:622a:4d1:: with SMTP id q17mr4030813qtx.272.1611061145938;
-        Tue, 19 Jan 2021 04:59:05 -0800 (PST)
-Received: from ziepe.ca (hlfxns017vw-142-162-115-133.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.162.115.133])
-        by smtp.gmail.com with ESMTPSA id k64sm13021228qkc.110.2021.01.19.04.59.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Jan 2021 04:59:05 -0800 (PST)
-Received: from jgg by mlx with local (Exim 4.94)
-        (envelope-from <jgg@ziepe.ca>)
-        id 1l1qbA-003bfs-PA; Tue, 19 Jan 2021 08:59:04 -0400
-Date:   Tue, 19 Jan 2021 08:59:04 -0400
-From:   Jason Gunthorpe <jgg@ziepe.ca>
-To:     Douglas Gilbert <dgilbert@interlog.com>
-Cc:     Bodo Stroesser <bostroesser@gmail.com>, linux-scsi@vger.kernel.org,
-        linux-block@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
-        martin.petersen@oracle.com, jejb@linux.vnet.ibm.com, ddiss@suse.de,
-        bvanassche@acm.org
-Subject: Re: [PATCH v6 1/4] sgl_alloc_order: remove 4 GiB limit, sgl_free()
- warning
-Message-ID: <20210119125904.GR4605@ziepe.ca>
-References: <20210118163006.61659-1-dgilbert@interlog.com>
- <20210118163006.61659-2-dgilbert@interlog.com>
- <20210118182854.GJ4605@ziepe.ca>
- <59707b66-0b6c-b397-82fe-5ad6a6f99ba1@interlog.com>
- <20210118202431.GO4605@ziepe.ca>
- <7f443666-b210-6f99-7b50-6c26d87fa7ca@gmail.com>
- <20210118234818.GP4605@ziepe.ca>
- <770a562e-52b9-ba93-59d3-1026340bf4f3@interlog.com>
+        Tue, 19 Jan 2021 12:11:30 -0500
+Received: from smtp.infotech.no ([82.134.31.41]:59504 "EHLO smtp.infotech.no"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2389552AbhASRKt (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 19 Jan 2021 12:10:49 -0500
+Received: from localhost (localhost [127.0.0.1])
+        by smtp.infotech.no (Postfix) with ESMTP id 32E9B2042B2;
+        Tue, 19 Jan 2021 18:09:37 +0100 (CET)
+X-Virus-Scanned: by amavisd-new-2.6.6 (20110518) (Debian) at infotech.no
+Received: from smtp.infotech.no ([127.0.0.1])
+        by localhost (smtp.infotech.no [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id IQ6qjm-zJqzh; Tue, 19 Jan 2021 18:09:34 +0100 (CET)
+Received: from xtwo70.bingwo.ca (host-104-157-204-209.dyn.295.ca [104.157.204.209])
+        by smtp.infotech.no (Postfix) with ESMTPA id 6080A2041AC;
+        Tue, 19 Jan 2021 18:09:33 +0100 (CET)
+From:   Douglas Gilbert <dgilbert@interlog.com>
+To:     linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-rdma@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     martin.petersen@oracle.com, jejb@linux.vnet.ibm.com,
+        bostroesser@gmail.com, ddiss@suse.de, bvanassche@acm.org
+Subject: [PATCH 1/3] scatterlist: add sgl_copy_sgl() function
+Date:   Tue, 19 Jan 2021 12:09:26 -0500
+Message-Id: <20210119170928.79805-2-dgilbert@interlog.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20210119170928.79805-1-dgilbert@interlog.com>
+References: <20210119170928.79805-1-dgilbert@interlog.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <770a562e-52b9-ba93-59d3-1026340bf4f3@interlog.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Mon, Jan 18, 2021 at 08:27:09PM -0500, Douglas Gilbert wrote:
+Both the SCSI and NVMe subsystems receive user data from the block
+layer in scatterlist_s (aka scatter gather lists (sgl) which are
+often arrays). If drivers in those subsystems represent storage
+(e.g. a ramdisk) or cache "hot" user data then they may also
+choose to use scatterlist_s. Currently there are no sgl to sgl
+operations in the kernel. Start with a sgl to sgl copy. Stops
+when the first of the number of requested bytes to copy, or the
+source sgl, or the destination sgl is exhausted. So the
+destination sgl will _not_ grow.
 
-> To protect against the "unsigned long long" length being too big why
-> not pick a large power of two and if someone can justify a larger
-> value, they can send a patch.
-> 
->         if (length > 64ULL * 1024 * 1024 * 1024)
-> 		return NULL;
+Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
+Signed-off-by: Douglas Gilbert <dgilbert@interlog.com>
+---
+ include/linux/scatterlist.h |  4 ++
+ lib/scatterlist.c           | 74 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 78 insertions(+)
 
-That is not how we protect against arithemetic overflows in the kernel
+diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
+index 6f70572b2938..22111ee21383 100644
+--- a/include/linux/scatterlist.h
++++ b/include/linux/scatterlist.h
+@@ -320,6 +320,10 @@ size_t sg_pcopy_to_buffer(struct scatterlist *sgl, unsigned int nents,
+ size_t sg_zero_buffer(struct scatterlist *sgl, unsigned int nents,
+ 		       size_t buflen, off_t skip);
+ 
++size_t sgl_copy_sgl(struct scatterlist *d_sgl, unsigned int d_nents, off_t d_skip,
++		    struct scatterlist *s_sgl, unsigned int s_nents, off_t s_skip,
++		    size_t n_bytes);
++
+ /*
+  * Maximum number of entries that will be allocated in one piece, if
+  * a list larger than this is required then chaining will be utilized.
+diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+index a59778946404..782bcfe72c60 100644
+--- a/lib/scatterlist.c
++++ b/lib/scatterlist.c
+@@ -1058,3 +1058,77 @@ size_t sg_zero_buffer(struct scatterlist *sgl, unsigned int nents,
+ 	return offset;
+ }
+ EXPORT_SYMBOL(sg_zero_buffer);
++
++/**
++ * sgl_copy_sgl - Copy over a destination sgl from a source sgl
++ * @d_sgl:		 Destination sgl
++ * @d_nents:		 Number of SG entries in destination sgl
++ * @d_skip:		 Number of bytes to skip in destination before starting
++ * @s_sgl:		 Source sgl
++ * @s_nents:		 Number of SG entries in source sgl
++ * @s_skip:		 Number of bytes to skip in source before starting
++ * @n_bytes:		 The (maximum) number of bytes to copy
++ *
++ * Returns:
++ *   The number of copied bytes.
++ *
++ * Notes:
++ *   Destination arguments appear before the source arguments, as with memcpy().
++ *
++ *   Stops copying if either d_sgl, s_sgl or n_bytes is exhausted.
++ *
++ *   Since memcpy() is used, overlapping copies (where d_sgl and s_sgl belong
++ *   to the same sgl and the copy regions overlap) are not supported.
++ *
++ *   Large copies are broken into copy segments whose sizes may vary. Those
++ *   copy segment sizes are chosen by the min3() statement in the code below.
++ *   Since SG_MITER_ATOMIC is used for both sides, each copy segment is started
++ *   with kmap_atomic() [in sg_miter_next()] and completed with kunmap_atomic()
++ *   [in sg_miter_stop()]. This means pre-emption is inhibited for relatively
++ *   short periods even in very large copies.
++ *
++ *   If d_skip is large, potentially spanning multiple d_nents then some
++ *   integer arithmetic to adjust d_sgl may improve performance. For example
++ *   if d_sgl is built using sgl_alloc_order(chainable=false) then the sgl
++ *   will be an array with equally sized segments facilitating that
++ *   arithmetic. The suggestion applies to s_skip, s_sgl and s_nents as well.
++ *
++ **/
++size_t sgl_copy_sgl(struct scatterlist *d_sgl, unsigned int d_nents, off_t d_skip,
++		    struct scatterlist *s_sgl, unsigned int s_nents, off_t s_skip,
++		    size_t n_bytes)
++{
++	size_t len;
++	size_t offset = 0;
++	struct sg_mapping_iter d_iter, s_iter;
++
++	if (n_bytes == 0)
++		return 0;
++	sg_miter_start(&s_iter, s_sgl, s_nents, SG_MITER_ATOMIC | SG_MITER_FROM_SG);
++	sg_miter_start(&d_iter, d_sgl, d_nents, SG_MITER_ATOMIC | SG_MITER_TO_SG);
++	if (!sg_miter_skip(&s_iter, s_skip))
++		goto fini;
++	if (!sg_miter_skip(&d_iter, d_skip))
++		goto fini;
++
++	while (offset < n_bytes) {
++		if (!sg_miter_next(&s_iter))
++			break;
++		if (!sg_miter_next(&d_iter))
++			break;
++		len = min3(d_iter.length, s_iter.length, n_bytes - offset);
++
++		memcpy(d_iter.addr, s_iter.addr, len);
++		offset += len;
++		/* LIFO order (stop d_iter before s_iter) needed with SG_MITER_ATOMIC */
++		d_iter.consumed = len;
++		sg_miter_stop(&d_iter);
++		s_iter.consumed = len;
++		sg_miter_stop(&s_iter);
++	}
++fini:
++	sg_miter_stop(&d_iter);
++	sg_miter_stop(&s_iter);
++	return offset;
++}
++EXPORT_SYMBOL(sgl_copy_sgl);
+-- 
+2.25.1
 
-Jason
