@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3913C43332
-	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 05:39:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E978C433E9
+	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 05:39:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 795C122ADC
-	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 05:39:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2DA41207B1
+	for <target-devel@archiver.kernel.org>; Tue, 19 Jan 2021 05:39:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389488AbhASFhz (ORCPT
+        id S2389976AbhASFiB (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 19 Jan 2021 00:37:55 -0500
-Received: from esa4.hgst.iphmx.com ([216.71.154.42]:51850 "EHLO
-        esa4.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388688AbhASFLK (ORCPT
+        Tue, 19 Jan 2021 00:38:01 -0500
+Received: from esa3.hgst.iphmx.com ([216.71.153.141]:57027 "EHLO
+        esa3.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389479AbhASFLu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 19 Jan 2021 00:11:10 -0500
+        Tue, 19 Jan 2021 00:11:50 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1611033069; x=1642569069;
+  t=1611033109; x=1642569109;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=SmRmSEecsPl0dNDxe5lwcfSlZzCbmw+NJIUAkJff7lg=;
-  b=TTvy6az7YfZu3I6RHd9uyLCVnwXWebTAMf6S3xktUuhs2h78+C557uVM
-   OXZgNjJv/UDCvBCzFeQfbVEXTWjwsOvM+wlLiXN8UA9BjePci4j0t4P41
-   phrft7eVbfhtyXDCj8lo7A8of6OfMNgxv2DFo7mf9/Hcz1ROOc/dWQ7aJ
-   sjlri9n9IXMxZCXufh9lcUrMV/GrBq9rB+RBN/dh2BXwLgojReARvZtdh
-   qoDyg8ZTm1hovQHzy3pIMGTJL5bbZ+BsLhyh8yrsjvi2VmHkE7RpD2XL1
-   ZVxncMm2bbNwqwib8zyO5q19tpa36deIcvYCjXIHeeTHQWVL3s59PjfBp
-   Q==;
-IronPort-SDR: kdIIt2x5PMEjTb4EGFggpfl2dYfQSP2xDtYm8mdeYH9f7qSSxJPAzzb88WjlqscRztf9vZyP+b
- vhQOor71N7fuZ/YmXovuKjf11uBcQFvNusA2qzMpBdFq+cf7QDww22iX65ytM5RuX4K7cbXjvK
- Npe4W67SABEJgoC8q6QzihocwyA2irnL2mDeWA5NH0apI8P5RftybOIQpALQclkBz0qdcMkLWn
- QHlxUgOOs3s7xwVoq8aFuBuyQPYX4HYZrBd451ytL2c0kFFHZzRQGh2SvdzQIK090J1FNiMJmF
- DL4=
+  bh=cW+SY0F4uLtssGzI42l+SJRJJ7OOq+Ii5A3v3sT7Yes=;
+  b=Y2d2D4oPfN8X6+6qjUizRevGL0KpGYKqXxsoOfTrW7V5ZXCLjrQbs6+1
+   3EFYjncxwSm3Jm1SFX+VjA2z43vWJYb2q2xdbfdYT0uQBrq6jQGsTW/4P
+   jG9YhwopOibRpY0UnFxVdpqsikwdM/D+lSvMxp+r28VR6oFEtAqEvGVhM
+   +NDNQLboEz3ZJ6Tk8uN8eoO01vqfrvI3p+n4jZMCITbAxIBb8ib9T8jKX
+   EEgpIdkypy5qQKtPdFJQSru3q5zaVpql7n7qwjrPM3p42ZTO19RJoshiP
+   vRosT8qQNJ7NcvCHQZPFhk+ZUE8EwPw9t1Zos6uAIHwyz0lcF7yo1kuRT
+   g==;
+IronPort-SDR: qKGHfO9zN7A1SHGD0sJgeLXKtsxCWCZQCBMta+7tC9HjPa0iIdgq06stafZjSUOuGrWgzH6/Zs
+ qrnOgaWyHIH5wPnOEfNlBrg61+ELtLuy8MVfUmBIrKkY/vrVUQG7KR5YeotmEBAgOpMmT0oPtH
+ 4bhhS/DClbRNw5+WwuKwkC/liLbtp7IJ1QJi8MA4XFdTyf4m9NaN1djmN/HBN1U63o0nBSdZCr
+ hc8ttQjeYcu14uBj4dURdwnwRJd8G/vefW2dPVCvY3WQkIKSvUpsP5tyvHfytQhm5DW0FTqE89
+ Mxc=
 X-IronPort-AV: E=Sophos;i="5.79,357,1602518400"; 
-   d="scan'208";a="157763889"
-Received: from uls-op-cesaip01.wdc.com (HELO uls-op-cesaep01.wdc.com) ([199.255.45.14])
-  by ob1.hgst.iphmx.com with ESMTP; 19 Jan 2021 13:08:14 +0800
-IronPort-SDR: LRuwxLsfABgj/FCitJ0WnK7Gjvqvg6JtsxJOwfFIj2l4BDUeLDVqxwb8vvGjnII3F0zTIsz7Hg
- rNlUiU8qFPgYVZGXHuLfVWEAHJO+lSgJKLtPPd9OLxtfSHEkOJpPWoWQ77jERR+EHu+2SEdrDR
- 2gck+Umd+1Ctbn6H/dAAkP5xYvUnceNTw8BphGocZ4LPmS8SKHdNy7IALc/BjWXNTwK4VP+G5Q
- Rz8YIopnF85w26xAJHC88oJJ2QoWS2RMnI7cw41qWtr1PAnqyv+ix63ozfXpfgTrp48v0vSPbG
- efVVa6oioVUBcBumGIvxib5f
+   d="scan'208";a="162201332"
+Received: from h199-255-45-15.hgst.com (HELO uls-op-cesaep02.wdc.com) ([199.255.45.15])
+  by ob1.hgst.iphmx.com with ESMTP; 19 Jan 2021 13:11:05 +0800
+IronPort-SDR: Jxwf3i9x1B0RHCIROtDE/iuDAINqBt2F/RuDwWDEmyByP2X7eHHcF6VYOb5pX3bjB98MQOBY/k
+ EE7/XY0VHY25Xrc3u2aWXZDj/vhyZzri+REe7jdepimEkX/LSD5BHLSu2lgFdY0PUwWpTUV+wS
+ g0AMlGBKhMvJzUbhNknog1IYhJUgz90bASkg7Nfrls4FH661MmIBfGkT+K0k46pqDk1Gc4u8uP
+ uOawWWUbGxnsrJmwxL+1TtwCKD4GoWRA+UE75WfzG0WxSOHGUYc9zXiaXHV3Kqjokf1MtXYWF1
+ z2f/O4DCt2Qar7cdiXh2oQLW
 Received: from uls-op-cesaip02.wdc.com ([10.248.3.37])
-  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jan 2021 20:52:52 -0800
-IronPort-SDR: p1tcnYwAx/l/NVCOSE++cI0sO4XNQ+lbfc67fxaPGZ0Kwcqxhdz9+u3CPNrCwOw83oDaMA1Qjm
- ESU3xmsUtmMt60eRcgdVRVFxzLHWW7CqjKNcfNh1+RIHGbsJ3Ai97YW6MaxhVDB0yLEg9IysxE
- 83VZ2vSeY/l/vgDGSUb38hhYRsZT54dyq7c3WndcswTCZVlwVMvWGE4bWezbXz6r57OZtdR1bX
- 3lpkUR2AIs9h1PW1353M+8ODhhBWH9ueZ25tUnouwQQq8n8IP+3JRSYVgmwudbuVJ26I/RNNul
- ogs=
+  by uls-op-cesaep02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Jan 2021 20:53:41 -0800
+IronPort-SDR: JhXhgWS0+e3HTDStYfAXJ39RQBEk0euVnqe58ziJOnn1c9Zev+zyQZ1feT8Pf3jy1k/0jfejeB
+ 9eRQsJQYlpsXL/MQdwG+RKeojvlhwZb7/kK3K8LYVIUeWuWwf4teK/xrJ6FiTzChv1xe4/bY5+
+ eWHUFZ+nWTw4YtzlPxnn6S3DZ4LcVreyfhizYCPM9a4WY7tqwq6bMPlFdYm38BooiwkcJvUlM2
+ jto6KJJwnZYWpzG78qeBvec0imqsf+1kIqtJBGsfGtjSerNFR4ZUCja3e3hANc2sx71Lno1zNp
+ h1M=
 WDCIronportException: Internal
 Received: from vm.labspan.wdc.com (HELO vm.sc.wdc.com) ([10.6.137.102])
-  by uls-op-cesaip02.wdc.com with ESMTP; 18 Jan 2021 21:08:14 -0800
+  by uls-op-cesaip02.wdc.com with ESMTP; 18 Jan 2021 21:11:05 -0800
 From:   Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 To:     linux-block@vger.kernel.org, linux-xfs@vger.kernel.org,
         linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -79,9 +79,9 @@ Cc:     jfs-discussion@lists.sourceforge.net, dm-devel@redhat.com,
         osandov@fb.com, bvanassche@acm.org, gustavo@embeddedor.com,
         asml.silence@gmail.com, jefflexu@linux.alibaba.com,
         Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-Subject: [RFC PATCH 14/37] drdb: use bio_init_fields in bitmap
-Date:   Mon, 18 Jan 2021 21:06:08 -0800
-Message-Id: <20210119050631.57073-15-chaitanya.kulkarni@wdc.com>
+Subject: [RFC PATCH 37/37] xfs: use bio_init_fields in xfs_log
+Date:   Mon, 18 Jan 2021 21:06:31 -0800
+Message-Id: <20210119050631.57073-38-chaitanya.kulkarni@wdc.com>
 X-Mailer: git-send-email 2.22.1
 In-Reply-To: <20210119050631.57073-1-chaitanya.kulkarni@wdc.com>
 References: <20210119050631.57073-1-chaitanya.kulkarni@wdc.com>
@@ -93,28 +93,26 @@ X-Mailing-List: target-devel@vger.kernel.org
 
 Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 ---
- drivers/block/drbd/drbd_bitmap.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ fs/xfs/xfs_log.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/block/drbd/drbd_bitmap.c b/drivers/block/drbd/drbd_bitmap.c
-index df53dca5d02c..4fd9746af469 100644
---- a/drivers/block/drbd/drbd_bitmap.c
-+++ b/drivers/block/drbd/drbd_bitmap.c
-@@ -1006,13 +1006,10 @@ static void bm_page_io_async(struct drbd_bm_aio_ctx *ctx, int page_nr) __must_ho
- 		bm_store_page_idx(page, page_nr);
- 	} else
- 		page = b->bm_pages[page_nr];
--	bio_set_dev(bio, device->ldev->md_bdev);
--	bio->bi_iter.bi_sector = on_disk_sector;
-+	bio_init_fields(bio, device->ldev->md_bdev, on_disk_sector, ctx, drbd_bm_endio, 0, 0);
- 	/* bio_add_page of a single page to an empty bio will always succeed,
- 	 * according to api.  Do we want to assert that? */
- 	bio_add_page(bio, page, len, 0);
--	bio->bi_private = ctx;
--	bio->bi_end_io = drbd_bm_endio;
- 	bio_set_op_attrs(bio, op, 0);
+diff --git a/fs/xfs/xfs_log.c b/fs/xfs/xfs_log.c
+index fa2d05e65ff1..062ee664a910 100644
+--- a/fs/xfs/xfs_log.c
++++ b/fs/xfs/xfs_log.c
+@@ -1702,10 +1702,8 @@ xlog_write_iclog(
+ 	}
  
- 	if (drbd_insert_fault(device, (op == REQ_OP_WRITE) ? DRBD_FAULT_MD_WR : DRBD_FAULT_MD_RD)) {
+ 	bio_init(&iclog->ic_bio, iclog->ic_bvec, howmany(count, PAGE_SIZE));
+-	bio_set_dev(&iclog->ic_bio, log->l_targ->bt_bdev);
+-	iclog->ic_bio.bi_iter.bi_sector = log->l_logBBstart + bno;
+-	iclog->ic_bio.bi_end_io = xlog_bio_end_io;
+-	iclog->ic_bio.bi_private = iclog;
++	bio_init_fields(&iclog->ic_bio, log->l_targ->bt_bdev,
++			log->l_logBBstart + bno, iclog, xlog_bio_end_io, 0, 0);
+ 
+ 	/*
+ 	 * We use REQ_SYNC | REQ_IDLE here to tell the block layer the are more
 -- 
 2.22.1
 
