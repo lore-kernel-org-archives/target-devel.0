@@ -2,182 +2,297 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	PDS_BAD_THREAD_QP_64,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F33E0C433DB
-	for <target-devel@archiver.kernel.org>; Thu, 21 Jan 2021 08:27:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53437C433E0
+	for <target-devel@archiver.kernel.org>; Thu, 21 Jan 2021 14:42:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A229423977
-	for <target-devel@archiver.kernel.org>; Thu, 21 Jan 2021 08:27:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 11EDC22248
+	for <target-devel@archiver.kernel.org>; Thu, 21 Jan 2021 14:42:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727996AbhAUI0L (ORCPT
+        id S1731974AbhAUOlx (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 21 Jan 2021 03:26:11 -0500
-Received: from esa2.hgst.iphmx.com ([68.232.143.124]:11106 "EHLO
-        esa2.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726004AbhAUIZC (ORCPT
+        Thu, 21 Jan 2021 09:41:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54802 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731609AbhAUOlj (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 21 Jan 2021 03:25:02 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1611217519; x=1642753519;
-  h=from:to:cc:subject:date:message-id:references:
-   content-transfer-encoding:mime-version;
-  bh=5xDViCNWTWpt74+S63VrlNc8LWu+dxnOf+RyPFe7hss=;
-  b=HhFVAA+E4+S3it4ImT8VrG7pgo76LoNpf/ueeRpCKVdFUK+XoSBoy2Ce
-   1+Bjl/3HIobrEoA/8pYuIfhSnc2KfTWNcKnq1cys+FwgP/HuaHLrauCoC
-   NKO7nws9Zs2Vgak87sS77bOJTxYrnTvu4sxgqp4g+GTRCdCo7Rg17foG6
-   YqVYRy2CmP7fvpEFFy7Pb0Q+lhj0p2yLTM1K//+nQ33LZRSl1GNqZz+dJ
-   KDEf8qXIdLtY5vKU2bVimiT86cwn79kYQh+PPmkG6e0EyaQcXM8YeS1c8
-   6U1V/F+AxGUv1rCrCJNjOdC9nMy8Ysg/SP7ZhQ+xjHzK2KbY3yj5gjvgs
-   g==;
-IronPort-SDR: nopY/1/vZtTbFd6l0+IpzksjZWV827taoYGdI6nTCvXcD+NT6atg+8pFyCQqv+c16JkaXOoL0D
- KZ4ZA1yIKpkpX5wZeHBX/9xKxHqY0oEbQqAoXtVeOlDWitYpkamuITHncU/F4of0v0+vfTCvA1
- 8qvStsDmXY9OCQe7EPLXrsBBarKmqoRU5iWs00KcZ6PkYEsEa49IMfyV+qwhw4SkboXxG08Km6
- tzg8JeOoO/gZkor8VHecJdk53+ftE6lSIRjTitLfOZZNK7atzziYHzHo7RWXAh9orbProOBDgX
- qkU=
-X-IronPort-AV: E=Sophos;i="5.79,363,1602518400"; 
-   d="scan'208";a="261948044"
-Received: from mail-bn8nam11lp2175.outbound.protection.outlook.com (HELO NAM11-BN8-obe.outbound.protection.outlook.com) ([104.47.58.175])
-  by ob1.hgst.iphmx.com with ESMTP; 21 Jan 2021 16:43:06 +0800
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=lw68XCNKrU/qui9r1XSPq6hnWUBUdN/CfDi270C7BJeOnIzrp6qBQlCcjU+S9EGPNdg/DQ8OYphkmMhy7CVeybh82BxKsz4MwvpLcFqZIiOBiSQjpDQ2Bqol9TSWenr6xXXpcqa3xNnfKtOclaOqXDe9MnJy6nuBYdY6xn3P2cH223ZYGc4Yc8qw1KxiWmgpftekj+FIBNuNiz7iUfzVH04NZ+jD1ozB3trYByAOZMz6ZU+c3NCyxa8JoMF/m62PWe0Md2WN9/pUQtGLkUgsHuk6lut1C/P6B3ex214voxw3DMPYPzPhMXbM++tqT3pYdhe93xkdY8lAPQY+rboeag==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=H0PH6GNao/klmOr5IzzIaOMg/PvFVYJ+pZQvveYwX64=;
- b=bOjNMUdbSeuUnFo9IrVW/LqAa07ep3nTQcmI2FgbBgtSEiGlbP9fxaIAWn2bLwbR0qxEwbpdToLb5qVWFFxaJfPspEcT6gxgUWyGagD3htFPcBoSUJobCMw95Ta5QLNipzaiy85bcNYkfnVc84J/ZnGPEkGjqpuM8TjJ28AgBENd0TJ28lmYt1CoJ/MssPzIgsbkg10pF6WAWCw5BgNsH3D9dOpKfeZ9EPW2PXfg4ZRHc/yakrCdIFQj9gu6QfyLcuag8hD2+fj0xanIYMuBDpIhztQAzTX6m6QXhR+FTzbm6JliOr6eDJ5KFR0uLV90E75pq3cV/uBINjreOzEzqg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=wdc.com; dmarc=pass action=none header.from=wdc.com; dkim=pass
- header.d=wdc.com; arc=none
+        Thu, 21 Jan 2021 09:41:39 -0500
+Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C6B1C08EB2F
+        for <target-devel@vger.kernel.org>; Thu, 21 Jan 2021 06:29:27 -0800 (PST)
+Received: by mail-ed1-x52a.google.com with SMTP id n6so2677132edt.10
+        for <target-devel@vger.kernel.org>; Thu, 21 Jan 2021 06:29:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=sharedspace.onmicrosoft.com; s=selector2-sharedspace-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=H0PH6GNao/klmOr5IzzIaOMg/PvFVYJ+pZQvveYwX64=;
- b=tgQ731nUeMOhgE+X8aJokO/3/gyG/vVOcs6a2e/emcs4H/n2HmGEuaZba4xmEtuF7WrO9aQ4Anb5zLf+0Gh/62xUtq6RSHNCkq8+v/D73mis01yDlsTmWrqZaqc9MCJ4Vvx5Fzn5ynIqnpCID+L0WCfk+HJopSJseRjrC1PJxRk=
-Received: from DM6PR04MB4972.namprd04.prod.outlook.com (2603:10b6:5:fc::10) by
- DM5PR04MB1035.namprd04.prod.outlook.com (2603:10b6:4:3e::17) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.3784.11; Thu, 21 Jan 2021 08:23:20 +0000
-Received: from DM6PR04MB4972.namprd04.prod.outlook.com
- ([fe80::9a1:f2ba:2679:8188]) by DM6PR04MB4972.namprd04.prod.outlook.com
- ([fe80::9a1:f2ba:2679:8188%7]) with mapi id 15.20.3763.010; Thu, 21 Jan 2021
- 08:23:20 +0000
-From:   Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-To:     Julian Calaby <julian.calaby@gmail.com>
-CC:     "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
-        "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>,
-        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "drbd-dev@lists.linbit.com" <drbd-dev@lists.linbit.com>,
-        "linux-bcache@vger.kernel.org" <linux-bcache@vger.kernel.org>,
-        "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-        "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
-        Linux SCSI List <linux-scsi@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-        "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>,
-        "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-        "cluster-devel@redhat.com" <cluster-devel@redhat.com>,
-        "jfs-discussion@lists.sourceforge.net" 
-        <jfs-discussion@lists.sourceforge.net>,
-        "dm-devel@redhat.com" <dm-devel@redhat.com>
-Subject: Re: [RFC PATCH 00/37] block: introduce bio_init_fields()
-Thread-Topic: [RFC PATCH 00/37] block: introduce bio_init_fields()
-Thread-Index: AQHW7iDfXiv5iuHOl0mGSxMcJ7OwhA==
-Date:   Thu, 21 Jan 2021 08:23:20 +0000
-Message-ID: <DM6PR04MB4972029B58F81B22033E31F386A10@DM6PR04MB4972.namprd04.prod.outlook.com>
-References: <20210119050631.57073-1-chaitanya.kulkarni@wdc.com>
- <CAGRGNgWLspr6M1COgX9cuDDgYdiXvQQjWQb7XYLsmFpfMYt0sA@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: gmail.com; dkim=none (message not signed)
- header.d=none;gmail.com; dmarc=none action=none header.from=wdc.com;
-x-originating-ip: [2600:1700:31ee:290:6c3f:2942:f9ba:e594]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-ht: Tenant
-x-ms-office365-filtering-correlation-id: 1b399c6d-302c-405d-7f89-08d8bde5cfd2
-x-ms-traffictypediagnostic: DM5PR04MB1035:
-x-microsoft-antispam-prvs: <DM5PR04MB103558D7CAA67BC277FBE0E586A19@DM5PR04MB1035.namprd04.prod.outlook.com>
-wdcipoutbound: EOP-TRUE
-x-ms-oob-tlc-oobclassifiers: OLM:8882;
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: luBm2A9fQFDbAs+wwf5UQLQqGI+U9qrY9qOoLl278vLFEhZYF8PCPE1mzg6Tt00oqorUoJZeH6SroLCiDqfwK9XrIA5LmEasW9gV2WFpREOKVrf0vl5YIGT/uz5MOZLMc95bMXi+Hw5BHRva63Z5/1PuoE1WocRTm129bzScDkldj9CvFwvFGhDH9Et4QKMXUX+IciSSEzf5XTQnwBQ4Ce56JAClngNy5hTRHQCC5L4OmkCPDAyuCVPr/ljXo1Jgx+wBya1uqegcbpFR6wk99WVD4J4hLzl4XOz2eSJuA7hIeWxB1OEAXp8WrdWox86N/lXoRtgzme1lqsuaDmQHfwv/fCM9Q/yzofM2yqu2Jy068UIlRYCsj/6zdaLjN0gxaku4C3m0vY9X1srG/ZD+9g==
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR04MB4972.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(346002)(39860400002)(366004)(136003)(396003)(376002)(316002)(52536014)(6916009)(186003)(54906003)(5660300002)(76116006)(9686003)(55016002)(8936002)(71200400001)(83380400001)(4326008)(53546011)(7416002)(7696005)(8676002)(66476007)(91956017)(478600001)(33656002)(66946007)(64756008)(66556008)(86362001)(2906002)(66446008)(6506007);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata: =?us-ascii?Q?iASZoPJYzsgBoHOG0e4uj4eYwMJzI7AYx9ibXkU8WlIY/45eI5Lozn9IMLqg?=
- =?us-ascii?Q?K1fUjrE61rIj9pVmoTN18nQMr+gvGY4G6wJ+Ny4pZYARx/NQUcSJcxlwZktO?=
- =?us-ascii?Q?bHqvL2+WTuwKfq2jk97rHh4iKZQYlGKj9o5IFGIIiC6E0WKGXNOAogExeiH7?=
- =?us-ascii?Q?tO53jk+LmhpLuLYm0OVz3gHZc25lTvqogVwbwvUqG3rX45XT/251vlSLhLDN?=
- =?us-ascii?Q?BiAaGVE7uBNDX6Lo7JJvKKpz+6vrvuvatx4hhONQ7MN7a+Zn8FxjYQrE2SUa?=
- =?us-ascii?Q?uH7RyUQL1jRl4VoRuKHUwCaNA0ebTkVOQKvC2VmJ6rJqt2gYMsgZjF2sAvYF?=
- =?us-ascii?Q?ZwtuZCJhEJsAawETHIlGBaxry0pr7057QSOs8vA7S+uAfyiqeL3YEqc6ejxT?=
- =?us-ascii?Q?RixON+06jvKRSioN7m1wLJ0XqsMUTEiwAu81zEEefyjFa/50E45jN0Pifbq2?=
- =?us-ascii?Q?YQIZxBpt2Hqxx1KKyTlN2pXg4IQbafIQchs+7TVmwY/vsp9tQR7uEafp0BDS?=
- =?us-ascii?Q?bu5T812yyckpVYAeXogWT4zDgQOCOO47FhLaIz3EFn6kvRW51FFMDKyBoiir?=
- =?us-ascii?Q?wXwhkX75FSf1Qw4pnCXK4hYvl2cDv1YYOEYl1WdmIjJ5O2HNpEWKeTvOxwCX?=
- =?us-ascii?Q?6grVS6+rBLLWAffAcMo7a016G35j79LX7hwn96/LgR3wCcwVNSh6y48Rw/g5?=
- =?us-ascii?Q?buriD3gNHqhP6WETZHEu3zlHI7zs9yJmY9x9tAS7fU8E1W8RjXRnFv3rsLTV?=
- =?us-ascii?Q?mGTcmEpB3F0x56xPLqIzECmw12+8LqLQ8UDlGJuGXusb8MbbIGileZPhB+uM?=
- =?us-ascii?Q?eYZwo7QTxj15lHNkB6nFsDURRPPebs3b77L/3uwexEDpxECQDVj7jI8ssHcj?=
- =?us-ascii?Q?+WRw7u4eTJ3rUDPixBZPxm7sdD54H8NacygfAoLOu7DQVosWaIjmoJMeqwei?=
- =?us-ascii?Q?UQpipq7k3iuDVr8GZd3RD+7YB2iiiLLxt9SAooJrWAExIIw2daPBw3LpDI2I?=
- =?us-ascii?Q?v+AxiMYRd5DaVrZHEoGe1XFXE53nsSzE545xeS/B8kIzqSQ6QWmjCxUgzTIz?=
- =?us-ascii?Q?RlRAUztqVUa3QAZZjmDwWD85Sb5txeijXEhtYjBST9cPs9YLaZg6pekySFU5?=
- =?us-ascii?Q?eMN2lhUlrZ6V1wO6BG46/XYS7R06vKBnUA=3D=3D?=
-x-ms-exchange-transport-forked: True
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-X-OriginatorOrg: wdc.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: DM6PR04MB4972.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1b399c6d-302c-405d-7f89-08d8bde5cfd2
-X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Jan 2021 08:23:20.3555
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: b61c8803-16f3-4c35-9b17-6f65f441df86
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: q/0OYkC/ek5ytB2UVtDM2si2ySo1pVi+WyQqr0ClrR0sMEWiGpRaV17E+ClET0fPiMj8qHuKJIGPJIy3pAz1DySUTHtG+BdCm5OrLj07ghM=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM5PR04MB1035
+        d=cloud.ionos.com; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=UWqGWX0PceAd5JKq7hDiNyPJdxqISRxioeQ6fiCbynw=;
+        b=PwNSrWuEUxblJJ0l2KJow3eZNDvcajwV/n1erINsxrGJuoLodnyRLMyZ8Las0GDAcG
+         a9/ocI2oy2eQ2G4PGoWUNxcxpfzgrOmei4XjXOBWysVGa3Hxshtx+uNrGs3n1fn7uBU3
+         27FFoqbewFQrDQKSeTeSn9Ppa3w3YwF+hohrbszEgnhGisLtwtSC7iDOkxNpE3vnZlzu
+         BBTE27K/bH62QLxg7ObRIhVCuHqD1wnfJPZLP9Ti9mwkis5P+28umXp/wPeUtayEEhJ5
+         8IgrYWer56Fx0YxulSruwOG1psUaMOUjv0KRI2dlsqXPUaTmUz89ili3p71ctFW26seJ
+         MEPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=UWqGWX0PceAd5JKq7hDiNyPJdxqISRxioeQ6fiCbynw=;
+        b=bMTyM1zenFLPPXCKZYAzd64wwVignKn2E5KtDUZw9i7eA55YscmCvgAKvUcyDKLNUp
+         8PHY3iXwolqCpdVIQpEuISU+H8tHqCw8Ia0VhoXdxa9Iz4TSW1B35Z9EcEyLgwuq0pGx
+         VyeuqOblkq8PBF5mVHI7Kbaz6aBU8B/3NmZwR0iOO58pn8iF0auTGhO2zk2HPwDtYh0M
+         hCea2Gu2s6OLxEd6/qY0XyBzq/YfT7CGylFc/PmXHErcOvONtIiKl5IEhAW0srzmfbym
+         /rIE0DWNjV63+FdnjQe/Hw8JMJKlqp5IQ0bKxcyfdoKx7/UNe6prk8fjzNjpbDDgfx/Z
+         UHjQ==
+X-Gm-Message-State: AOAM530IyCowBCkATuLeh2nTGcfvU3BI5PANRztCCDkA7PwKAZF8/ydB
+        hJ15N77VS5L8fvAy6ZesLzm5Pw==
+X-Google-Smtp-Source: ABdhPJww2yUULgxb3Djo1XuYre5p+7XS22kgArglzSnblIXylaukCaJsYXcUlPuGAExiPc9wUPa9yg==
+X-Received: by 2002:aa7:d7c8:: with SMTP id e8mr7171158eds.355.1611239365888;
+        Thu, 21 Jan 2021 06:29:25 -0800 (PST)
+Received: from ls00508.pb.local ([2001:1438:4010:2540:481b:68e3:af3e:e933])
+        by smtp.gmail.com with ESMTPSA id gt18sm2263684ejb.104.2021.01.21.06.29.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 21 Jan 2021 06:29:25 -0800 (PST)
+From:   Guoqing Jiang <guoqing.jiang@cloud.ionos.com>
+To:     axboe@kernel.dk
+Cc:     linux-block@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-scsi@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-ide@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-nvme@lists.infradead.org, linux-nfs@vger.kernel.org,
+        Guoqing Jiang <guoqing.jiang@cloud.ionos.com>
+Subject: [PATCH 1/2] block: remove unnecessary argument from blk_execute_rq_nowait
+Date:   Thu, 21 Jan 2021 15:29:04 +0100
+Message-Id: <20210121142905.13089-2-guoqing.jiang@cloud.ionos.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20210121142905.13089-1-guoqing.jiang@cloud.ionos.com>
+References: <20210121142905.13089-1-guoqing.jiang@cloud.ionos.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 1/20/21 7:01 PM, Julian Calaby wrote:=0A=
-> Hi Chaitanya,=0A=
->=0A=
-> On Tue, Jan 19, 2021 at 5:01 PM Chaitanya Kulkarni=0A=
-> <chaitanya.kulkarni@wdc.com> wrote:=0A=
->> Hi,=0A=
->>=0A=
->> This is a *compile only RFC* which adds a generic helper to initialize=
-=0A=
->> the various fields of the bio that is repeated all the places in=0A=
->> file-systems, block layer, and drivers.=0A=
->>=0A=
->> The new helper allows callers to initialize various members such as=0A=
->> bdev, sector, private, end io callback, io priority, and write hints.=0A=
->>=0A=
->> The objective of this RFC is to only start a discussion, this it not=0A=
->> completely tested at all.=0A=
->> Following diff shows code level benefits of this helper :-=0A=
->>  38 files changed, 124 insertions(+), 236 deletions(-)=0A=
-> On a more abstract note, I don't think this diffstat is actually=0A=
-> illustrating the benefits of this as much as you think it is.=0A=
->=0A=
-> Yeah, we've reduced the code by 112 lines, but that's barely half the=0A=
-> curn here. It looks, from the diffstat, that you've effectively=0A=
-> reduced 2 lines into 1. That isn't much of a saving.=0A=
->=0A=
-> Thanks,=0A=
-The diff stat is not the only measure since every component fs/driver=0A=
-has a different style and nested call it just to show the effect.=0A=
-Thanks for your comment, we have decided to go with the bio_new approach.=
-=0A=
-=0A=
-=0A=
+The 'q' is not used since commit a1ce35fa4985 ("block: remove dead
+elevator code"), also update the comment of the function.
+
+Cc: target-devel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: virtualization@lists.linux-foundation.org
+Cc: linux-ide@vger.kernel.org
+Cc: linux-mmc@vger.kernel.org
+Cc: linux-nvme@lists.infradead.org
+Cc: linux-nfs@vger.kernel.org
+Signed-off-by: Guoqing Jiang <guoqing.jiang@cloud.ionos.com>
+---
+ block/blk-exec.c                   | 10 ++++------
+ drivers/block/sx8.c                |  4 ++--
+ drivers/nvme/host/core.c           |  4 ++--
+ drivers/nvme/host/lightnvm.c       |  2 +-
+ drivers/nvme/host/pci.c            |  4 ++--
+ drivers/nvme/target/passthru.c     |  2 +-
+ drivers/scsi/scsi_error.c          |  2 +-
+ drivers/scsi/sg.c                  |  3 +--
+ drivers/scsi/st.c                  |  2 +-
+ drivers/target/target_core_pscsi.c |  3 +--
+ include/linux/blkdev.h             |  2 +-
+ 11 files changed, 17 insertions(+), 21 deletions(-)
+
+diff --git a/block/blk-exec.c b/block/blk-exec.c
+index 85324d53d072..2e37e85456fb 100644
+--- a/block/blk-exec.c
++++ b/block/blk-exec.c
+@@ -31,8 +31,7 @@ static void blk_end_sync_rq(struct request *rq, blk_status_t error)
+ }
+ 
+ /**
+- * blk_execute_rq_nowait - insert a request into queue for execution
+- * @q:		queue to insert the request in
++ * blk_execute_rq_nowait - insert a request to I/O scheduler for execution
+  * @bd_disk:	matching gendisk
+  * @rq:		request to insert
+  * @at_head:    insert request at head or tail of queue
+@@ -45,9 +44,8 @@ static void blk_end_sync_rq(struct request *rq, blk_status_t error)
+  * Note:
+  *    This function will invoke @done directly if the queue is dead.
+  */
+-void blk_execute_rq_nowait(struct request_queue *q, struct gendisk *bd_disk,
+-			   struct request *rq, int at_head,
+-			   rq_end_io_fn *done)
++void blk_execute_rq_nowait(struct gendisk *bd_disk, struct request *rq,
++			   int at_head, rq_end_io_fn *done)
+ {
+ 	WARN_ON(irqs_disabled());
+ 	WARN_ON(!blk_rq_is_passthrough(rq));
+@@ -83,7 +81,7 @@ void blk_execute_rq(struct request_queue *q, struct gendisk *bd_disk,
+ 	unsigned long hang_check;
+ 
+ 	rq->end_io_data = &wait;
+-	blk_execute_rq_nowait(q, bd_disk, rq, at_head, blk_end_sync_rq);
++	blk_execute_rq_nowait(bd_disk, rq, at_head, blk_end_sync_rq);
+ 
+ 	/* Prevent hang_check timer from firing at us during very long I/O */
+ 	hang_check = sysctl_hung_task_timeout_secs;
+diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
+index 4478eb7efee0..2cdf2771f8e8 100644
+--- a/drivers/block/sx8.c
++++ b/drivers/block/sx8.c
+@@ -539,7 +539,7 @@ static int carm_array_info (struct carm_host *host, unsigned int array_idx)
+ 	spin_unlock_irq(&host->lock);
+ 
+ 	DPRINTK("blk_execute_rq_nowait, tag == %u\n", rq->tag);
+-	blk_execute_rq_nowait(host->oob_q, NULL, rq, true, NULL);
++	blk_execute_rq_nowait(NULL, rq, true, NULL);
+ 
+ 	return 0;
+ 
+@@ -578,7 +578,7 @@ static int carm_send_special (struct carm_host *host, carm_sspc_t func)
+ 	crq->msg_bucket = (u32) rc;
+ 
+ 	DPRINTK("blk_execute_rq_nowait, tag == %u\n", rq->tag);
+-	blk_execute_rq_nowait(host->oob_q, NULL, rq, true, NULL);
++	blk_execute_rq_nowait(NULL, rq, true, NULL);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
+index f320273fc672..63c469edb1bc 100644
+--- a/drivers/nvme/host/core.c
++++ b/drivers/nvme/host/core.c
+@@ -925,7 +925,7 @@ static void nvme_execute_rq_polled(struct request_queue *q,
+ 
+ 	rq->cmd_flags |= REQ_HIPRI;
+ 	rq->end_io_data = &wait;
+-	blk_execute_rq_nowait(q, bd_disk, rq, at_head, nvme_end_sync_rq);
++	blk_execute_rq_nowait(bd_disk, rq, at_head, nvme_end_sync_rq);
+ 
+ 	while (!completion_done(&wait)) {
+ 		blk_poll(q, request_to_qc_t(rq->mq_hctx, rq), true);
+@@ -1202,7 +1202,7 @@ static int nvme_keep_alive(struct nvme_ctrl *ctrl)
+ 	rq->timeout = ctrl->kato * HZ;
+ 	rq->end_io_data = ctrl;
+ 
+-	blk_execute_rq_nowait(rq->q, NULL, rq, 0, nvme_keep_alive_end_io);
++	blk_execute_rq_nowait(NULL, rq, 0, nvme_keep_alive_end_io);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/nvme/host/lightnvm.c b/drivers/nvme/host/lightnvm.c
+index 470cef3abec3..439f2b52e985 100644
+--- a/drivers/nvme/host/lightnvm.c
++++ b/drivers/nvme/host/lightnvm.c
+@@ -695,7 +695,7 @@ static int nvme_nvm_submit_io(struct nvm_dev *dev, struct nvm_rq *rqd,
+ 
+ 	rq->end_io_data = rqd;
+ 
+-	blk_execute_rq_nowait(q, NULL, rq, 0, nvme_nvm_end_io);
++	blk_execute_rq_nowait(NULL, rq, 0, nvme_nvm_end_io);
+ 
+ 	return 0;
+ 
+diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
+index 50d9a20568a2..6aa11067c8d0 100644
+--- a/drivers/nvme/host/pci.c
++++ b/drivers/nvme/host/pci.c
+@@ -1327,7 +1327,7 @@ static enum blk_eh_timer_return nvme_timeout(struct request *req, bool reserved)
+ 	}
+ 
+ 	abort_req->end_io_data = NULL;
+-	blk_execute_rq_nowait(abort_req->q, NULL, abort_req, 0, abort_endio);
++	blk_execute_rq_nowait(NULL, abort_req, 0, abort_endio);
+ 
+ 	/*
+ 	 * The aborted req will be completed on receiving the abort req.
+@@ -2238,7 +2238,7 @@ static int nvme_delete_queue(struct nvme_queue *nvmeq, u8 opcode)
+ 	req->end_io_data = nvmeq;
+ 
+ 	init_completion(&nvmeq->delete_done);
+-	blk_execute_rq_nowait(q, NULL, req, false,
++	blk_execute_rq_nowait(NULL, req, false,
+ 			opcode == nvme_admin_delete_cq ?
+ 				nvme_del_cq_end : nvme_del_queue_end);
+ 	return 0;
+diff --git a/drivers/nvme/target/passthru.c b/drivers/nvme/target/passthru.c
+index b9776fc8f08f..cbc88acdd233 100644
+--- a/drivers/nvme/target/passthru.c
++++ b/drivers/nvme/target/passthru.c
+@@ -275,7 +275,7 @@ static void nvmet_passthru_execute_cmd(struct nvmet_req *req)
+ 		schedule_work(&req->p.work);
+ 	} else {
+ 		rq->end_io_data = req;
+-		blk_execute_rq_nowait(rq->q, ns ? ns->disk : NULL, rq, 0,
++		blk_execute_rq_nowait(ns ? ns->disk : NULL, rq, 0,
+ 				      nvmet_passthru_req_done);
+ 	}
+ 
+diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
+index f11f51e2465f..c00f06e9ecb0 100644
+--- a/drivers/scsi/scsi_error.c
++++ b/drivers/scsi/scsi_error.c
+@@ -2007,7 +2007,7 @@ static void scsi_eh_lock_door(struct scsi_device *sdev)
+ 	req->timeout = 10 * HZ;
+ 	rq->retries = 5;
+ 
+-	blk_execute_rq_nowait(req->q, NULL, req, 1, eh_lock_door_done);
++	blk_execute_rq_nowait(NULL, req, 1, eh_lock_door_done);
+ }
+ 
+ /**
+diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
+index bfa8d77322d7..4383d93110f8 100644
+--- a/drivers/scsi/sg.c
++++ b/drivers/scsi/sg.c
+@@ -829,8 +829,7 @@ sg_common_write(Sg_fd * sfp, Sg_request * srp,
+ 
+ 	srp->rq->timeout = timeout;
+ 	kref_get(&sfp->f_ref); /* sg_rq_end_io() does kref_put(). */
+-	blk_execute_rq_nowait(sdp->device->request_queue, sdp->disk,
+-			      srp->rq, at_head, sg_rq_end_io);
++	blk_execute_rq_nowait(sdp->disk, srp->rq, at_head, sg_rq_end_io);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
+index 43f7624508a9..841ad2fc369a 100644
+--- a/drivers/scsi/st.c
++++ b/drivers/scsi/st.c
+@@ -585,7 +585,7 @@ static int st_scsi_execute(struct st_request *SRpnt, const unsigned char *cmd,
+ 	rq->retries = retries;
+ 	req->end_io_data = SRpnt;
+ 
+-	blk_execute_rq_nowait(req->q, NULL, req, 1, st_scsi_execute_end);
++	blk_execute_rq_nowait(NULL, req, 1, st_scsi_execute_end);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+index 7994f27e4527..33770e5808ce 100644
+--- a/drivers/target/target_core_pscsi.c
++++ b/drivers/target/target_core_pscsi.c
+@@ -1000,8 +1000,7 @@ pscsi_execute_cmd(struct se_cmd *cmd)
+ 		req->timeout = PS_TIMEOUT_OTHER;
+ 	scsi_req(req)->retries = PS_RETRY;
+ 
+-	blk_execute_rq_nowait(pdv->pdv_sd->request_queue, NULL, req,
+-			(cmd->sam_task_attr == TCM_HEAD_TAG),
++	blk_execute_rq_nowait(NULL, req, (cmd->sam_task_attr == TCM_HEAD_TAG),
+ 			pscsi_req_done);
+ 
+ 	return 0;
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 070de09425ad..bf0ddef8aa10 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -942,7 +942,7 @@ extern int blk_rq_map_user_iov(struct request_queue *, struct request *,
+ 			       gfp_t);
+ extern void blk_execute_rq(struct request_queue *, struct gendisk *,
+ 			  struct request *, int);
+-extern void blk_execute_rq_nowait(struct request_queue *, struct gendisk *,
++extern void blk_execute_rq_nowait(struct gendisk *,
+ 				  struct request *, int, rq_end_io_fn *);
+ 
+ /* Helper to convert REQ_OP_XXX to its string format XXX */
+-- 
+2.17.1
+
