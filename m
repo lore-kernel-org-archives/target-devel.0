@@ -2,116 +2,99 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 825D4C433E0
-	for <target-devel@archiver.kernel.org>; Tue, 26 Jan 2021 18:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C8EFC433DB
+	for <target-devel@archiver.kernel.org>; Tue, 26 Jan 2021 19:09:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5A8F4206D4
-	for <target-devel@archiver.kernel.org>; Tue, 26 Jan 2021 18:44:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2BA7E22CE3
+	for <target-devel@archiver.kernel.org>; Tue, 26 Jan 2021 19:09:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390026AbhAZRT1 (ORCPT
+        id S1726733AbhAZF6x (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 26 Jan 2021 12:19:27 -0500
-Received: from mta-02.yadro.com ([89.207.88.252]:43094 "EHLO mta-01.yadro.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S2389340AbhAZJOf (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 26 Jan 2021 04:14:35 -0500
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 7BBE041306;
-        Tue, 26 Jan 2021 09:13:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        in-reply-to:content-disposition:content-type:content-type
-        :mime-version:references:message-id:subject:subject:from:from
-        :date:date:received:received:received; s=mta-01; t=1611652425;
-         x=1613466826; bh=pAwTHpdgiRj9rF1GL0yAcUFqatPELVV254k99kwCScg=; b=
-        aSMXm7DZMBYY2TwO97yWNjk0+nb/e/4Al0UkAdTiONrJn3vV3kJXXJIVvHSgFRjU
-        u7hTiIwAJYOp0KgYNVa5MK/raWOd2VR2kbQMx374onBxFPT6JtWqePue5ETttjd2
-        l3M7vVSSk0x3fLaT1vKVqPl2dSkgoSACqHsuAhJiPqw=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id NlMHm_nbvn1d; Tue, 26 Jan 2021 12:13:45 +0300 (MSK)
-Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id C55DD41280;
-        Tue, 26 Jan 2021 12:13:45 +0300 (MSK)
-Received: from localhost (172.17.204.212) by T-EXCH-03.corp.yadro.com
- (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Tue, 26
- Jan 2021 12:13:45 +0300
-Date:   Tue, 26 Jan 2021 12:13:44 +0300
-From:   Roman Bolshakov <r.bolshakov@yadro.com>
-To:     David Disseldorp <ddiss@suse.de>
-CC:     Dmitry Bogdanov <d.bogdanov@yadro.com>,
-        Martin Petersen <martin.petersen@oracle.com>,
-        <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
-        <linux@yadro.com>
-Subject: Re: [PATCH v2] scsi: target: core: check SR field in REPORT LUNS
-Message-ID: <YA/dSDH2NYSRi9Bi@SPB-NB-133.local>
-References: <20210120102700.5514-1-d.bogdanov@yadro.com>
- <20210122234251.595d5b7a@suse.de>
+        Tue, 26 Jan 2021 00:58:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36300 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728612AbhAYQAT (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Mon, 25 Jan 2021 11:00:19 -0500
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 26EC1C0617AA
+        for <target-devel@vger.kernel.org>; Mon, 25 Jan 2021 07:58:51 -0800 (PST)
+Received: by mail-pj1-x1034.google.com with SMTP id gx1so3296767pjb.1
+        for <target-devel@vger.kernel.org>; Mon, 25 Jan 2021 07:58:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernel-dk.20150623.gappssmtp.com; s=20150623;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=ydjA7lxNDcY9m5HH4n1Isbc66o3HKVgUPIygbXwoUMM=;
+        b=bI02x67oVJOucPOxKOB9n3X6KcNxCqIpxk5n0fxC4X/uFlQaaUy+xP+qcDK0qgJA7t
+         mWFK2tKkiqtuWxZJvB44mpmemEF/S+YGxTW9vjz8KWnzcutGYJEs+vjezSfpdlvaat30
+         NrMsLYnxAPDb/60yNPxEjnOGe2XeZLZa2qteFs3BDDpQq8v+NYEA0j27JKKvD8Jo9hGB
+         m1FubjB+dKRDuIvGoJ5Krq3haj3y4rnOv+TQTyR+lsKZVtOzTkhokVPN9B3vqb9Kf/tF
+         OgnBEzoTN7wXg3qcCOF4/ajnPQb9aZOpN8ShjkT8r+GX28FyVyVD2Nsgv5WX9h7sZf9A
+         iVhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=ydjA7lxNDcY9m5HH4n1Isbc66o3HKVgUPIygbXwoUMM=;
+        b=qde4Vm4H3a7X6GWoC84OFJi2gkeHhqTKrTaDktg16fd+sKW6WMqRlU2ftvWHdX73As
+         ebQEwuUQC8efrXkvNG870Ce2do1LVywMfeTnlHL17MEoBKum6HAh0cRjHRHaHBM6tqtC
+         mwuslZARDGKgz47NCtRkdmU9CPPQaolO9PeHi/5iJ7Q0LMgL9TztOEMTx4JbJpPhK9K9
+         kkxwGH9P5O8qz1Rszx0uptDEybSkRBYASJvBKaXC8E5bjV4QqId7QHMBh1bQRxiMZlvr
+         3qaQ+hfARttbY1quGJmiwn59tFWy8W3dRhrDValpUC/wg6xSdp6w4M5fyjLMwuoTRgBm
+         qfOw==
+X-Gm-Message-State: AOAM5309K6X00C2zpaz8EKRcVMbGQCP88NRyLyz5ejMlOys38rkF22/L
+        sNNKXwL/x1QZqu8CuCDCsWL5Ug==
+X-Google-Smtp-Source: ABdhPJxvYFudM0/t7uvN4OEM1XLPVgOQbMzfZischKww36TwjmQpcH3dkzLr1QJ1pvzT7oKrjCpfaw==
+X-Received: by 2002:a17:90a:6f05:: with SMTP id d5mr843071pjk.145.1611590322691;
+        Mon, 25 Jan 2021 07:58:42 -0800 (PST)
+Received: from [192.168.4.41] (cpe-72-132-29-68.dc.res.rr.com. [72.132.29.68])
+        by smtp.gmail.com with ESMTPSA id i25sm16942011pgb.33.2021.01.25.07.58.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 25 Jan 2021 07:58:41 -0800 (PST)
+Subject: Re: [PATCH v3 0/7] no-copy bvec
+To:     Pavel Begunkov <asml.silence@gmail.com>,
+        linux-block@vger.kernel.org
+Cc:     Christoph Hellwig <hch@infradead.org>,
+        Matthew Wilcox <willy@infradead.org>,
+        Ming Lei <ming.lei@redhat.com>,
+        Johannes Weiner <hannes@cmpxchg.org>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        "Darrick J . Wong" <darrick.wong@oracle.com>,
+        "Martin K . Petersen" <martin.petersen@oracle.com>,
+        Jonathan Corbet <corbet@lwn.net>, linux-xfs@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, io-uring@vger.kernel.org,
+        linux-kernel@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-doc@vger.kernel.org
+References: <cover.1610170479.git.asml.silence@gmail.com>
+From:   Jens Axboe <axboe@kernel.dk>
+Message-ID: <b1d0ae2a-a4ca-2b41-b8df-4c8036afe781@kernel.dk>
+Date:   Mon, 25 Jan 2021 08:58:38 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20210122234251.595d5b7a@suse.de>
-X-Originating-IP: [172.17.204.212]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-03.corp.yadro.com (172.17.100.103)
+In-Reply-To: <cover.1610170479.git.asml.silence@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Fri, Jan 22, 2021 at 11:42:51PM +0100, David Disseldorp wrote:
-> On Wed, 20 Jan 2021 13:27:00 +0300, Dmitry Bogdanov wrote:
-> 
-> > Now REPORT LUNS for software device servers always reports all luns
-> > regardless of SELECT REPORT field.
-> > Add handling of that field according to SPC-4:
-> > * accept known values,
-> > * reject unknown values.
-> 
-> We currently advertise SPC-3 VERSION compliance via standard INQUIRY
-> data, so I think we should either support SPC-3 SELECT REPORT values or
-> bump the VERSION field (SPC-4 behaviour is already scattered throughout
-> LIO).
-> Out of curiosity, do you know of any initiators which use this field?
-> 
+On 1/9/21 9:02 AM, Pavel Begunkov wrote:
+> Currently, when iomap and block direct IO gets a bvec based iterator
+> the bvec will be copied, with all other accounting that takes much
+> CPU time and causes additional allocation for larger bvecs. The
+> patchset makes it to reuse the passed in iter bvec.
 
-Hi David,
+Applied, thanks.
 
-SELECT REPORT field can be used for vVOL (LU conglomerate) discovery and
-for well-known lun listing.
+-- 
+Jens Axboe
 
-The field is used by VMware ESXi:
-https://support.purestorage.com/Solutions/VMware_Platform_Guide/User_Guides_for_VMware_Solutions/Virtual_Volumes_User_Guide/vVols_User_Guide%3A_Protocol_Endpoints
-
-"PEs greatly extend the number of vVols that can be connected to an ESXi
-cluster; each PE can have up to 16,383 vVols per host bound to it
-simultaneously. Moreover, a new binding does not require a complete I/O
-rescan. Instead, ESXi issues a REPORT_LUNS SCSI command with SELECT
-REPORT to the PE to which the sub-lun is bound. The PE returns a list of
-sub-lun IDs for the vVols bound to that host. In large clusters,
-REPORT_LUNS is significantly faster than a full I/O rescan because it is
-more precisely targeted."
-
-The post also confirms that:
-https://sourceforge.net/p/scst/mailman/message/33030432/
-
-A few more targets that support SELECT REPORT field below.
-
-Sun/Oracle tape library:
-https://docs.oracle.com/en/storage/tape-storage/storagetek-sl150-modular-tape-library/slorm/report-luns-a0h.html#GUID-4140F40D-BD9A-495C-9A86-8BD7E91C985C
-
-IBM Flash Storage:
-https://www.ibm.com/support/pages/sites/default/files/support/ssg/ssgdocs.nsf/0/95d7115d7eb428e485257f80005cc3a7/%24FILE/FlashSystem_840_SCSI_Interface_Manual_1.2.pdf
-
-With regards to bumping TCM to SPC-4, are there any objections if we
-submit a separate patch for that? Or resubmit a series with the patch?
-
-Thanks,
-Roman
