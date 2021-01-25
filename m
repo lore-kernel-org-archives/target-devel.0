@@ -2,80 +2,83 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD8B2C433E0
-	for <target-devel@archiver.kernel.org>; Mon, 25 Jan 2021 04:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD3C6C43381
+	for <target-devel@archiver.kernel.org>; Mon, 25 Jan 2021 04:37:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B039022C9F
-	for <target-devel@archiver.kernel.org>; Mon, 25 Jan 2021 04:36:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9CB9D22CAD
+	for <target-devel@archiver.kernel.org>; Mon, 25 Jan 2021 04:37:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726886AbhAYEfy (ORCPT
+        id S1727018AbhAYEhK (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 24 Jan 2021 23:35:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58344 "EHLO
+        Sun, 24 Jan 2021 23:37:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58610 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726810AbhAYEfw (ORCPT
+        with ESMTP id S1727029AbhAYEhB (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 24 Jan 2021 23:35:52 -0500
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B704C061756
-        for <target-devel@vger.kernel.org>; Sun, 24 Jan 2021 20:35:12 -0800 (PST)
-Received: by mail-pl1-x636.google.com with SMTP id 31so6804259plb.10
-        for <target-devel@vger.kernel.org>; Sun, 24 Jan 2021 20:35:12 -0800 (PST)
+        Sun, 24 Jan 2021 23:37:01 -0500
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2F1EC06178A
+        for <target-devel@vger.kernel.org>; Sun, 24 Jan 2021 20:36:20 -0800 (PST)
+Received: by mail-pg1-x530.google.com with SMTP id t25so151063pga.2
+        for <target-devel@vger.kernel.org>; Sun, 24 Jan 2021 20:36:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=cloud.ionos.com; s=google;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=RF+U31mjU+vQtmYKwQP7k4EqO/12hyWNFfFTp846sxc=;
-        b=CfOwQ7limljMA7zl/lIAXVsTIKtNDlhwsicqotNl3TtlKhEjyZeIlEEJtHYW4c2U31
-         UY4hC8hbmTVMaTURi/h7AUevTqeIqn+Q1FFnUUJ35BV9ke4apIRUY5I8NbeB8KXYicfU
-         +trWj06hwAqSeMB9yfxG8wvJYR9/caMYTWeGkZl5KTSBZfynGCBz84SyjX0hbk7AWcGA
-         /222IeHt9HOYYROpDQ0wb25k1uTdAAL1nhrslb3U6So17SP9tJY8mfEDx1CUbEE7qC63
-         qpRcjNyJveRtr7uQu1UM1fJCkiAbkBaCmTSnXoAaT+i+isB4hYXJxGmrbyMs7d8MUbF7
-         BPGQ==
+        bh=FijkUVA4wtqEzKdrwPNqr5BszwjDE0ObYH72kW/p/Qc=;
+        b=ba/PQSHzp1XMXEYfaF8IHUMMLul1kjomGVtf+iR7PS5f0N91qzg13X0RZJ97PPA0Vh
+         2RdglhLdiBxokgZLrklGFKw5elkOv9IMkxXL0wir8HcRac0waGN3dSgDWP5u3/F7/Cgi
+         zYenYmfFAphreQtQ6crnNkJJn2bJDNx+iWqrZ9M/3gKEPnNx6sQ/UjR6GyJB8zRxqnDY
+         8AoCDP3zaCxdj45M0aZ0vmEL3zsal3fLpbCh9fg8FUjTPIm99GyHz5AH1S6u4wgID8kS
+         qSTr2uI9gX38rFZ2+qHIncgSSpsuO7n+wVQHBnvHeHyyCbF6tB6X6fJpGBFJ/5ws39Hs
+         f7Sw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=RF+U31mjU+vQtmYKwQP7k4EqO/12hyWNFfFTp846sxc=;
-        b=JdRzQqy//9b9awtbWkpRZgYfPy5tqFF1HE2VfqjVbrTPKd0ba+n7fhN0IFhPgdWf8V
-         AM980GJWXi14uYvelPffUoweBDTvvTi0fADFFBYnQczQWJgc3nmG0emuiinvSF8m5hql
-         MJJXJIiCXJAVWbZl8rKyRABakobuNo6lb1jySwhHpX4cmJdRe6aTiAY4nAfj0IqqEyLZ
-         7hV5dCloDg34FCc8AgVTG6kN5Sxbo8EygoPj+4yFR4IDIvg3N0BnG6oi8ZFBkqFNDJnd
-         lRKsgRrXiaXHTyzw3KE37wt+SGsQmfGdlqTTDukisyaloPuKfbmV+OUK6UEVGX1llBEE
-         zwig==
-X-Gm-Message-State: AOAM532Ilr1rPxqOqGYffKLP8L5y3vTN8B+IJqefS5dzFbP+cn//e7+k
-        29D08SdwZ3W2R1LW9V+hQXORzA==
-X-Google-Smtp-Source: ABdhPJwcVIfcZhKpz36wBWgY9pEAr1Osy03vWby4EQev/6n4B5mRbyHylHT/8WSUq/UooHKSU12Q8g==
-X-Received: by 2002:a17:90a:1c09:: with SMTP id s9mr6518112pjs.83.1611549310994;
-        Sun, 24 Jan 2021 20:35:10 -0800 (PST)
+        bh=FijkUVA4wtqEzKdrwPNqr5BszwjDE0ObYH72kW/p/Qc=;
+        b=hNDfe8SjcvrFfDoH+z/BT2NAOJZAsG6nT/CMZiKzrIczZId7wcdko8mntx6PkguZkd
+         +EA2K6h0d/EVoCAERvi0B/C/RSyQXYausxAJjtug7XfHAzrhj40+6J5g1WcDho00Z1Y8
+         D+GY6/9qXobettR5vYU6dCQQ5yJGAPXB1r8JIC9L9S2eWFoR6q+/o9yd/fidYICGMvws
+         6Ea7ugsgIPyIkCcs77+AxEn0ar8dGmcQljaPOJOt5iWKrIzFIUVA0UIUno2pEapo1qLm
+         Hw6HQm0FKS4zdZ/FK7Hj5ESR3aOXE+2/Ueivy9JNg1W4fxIKRHQU/cijvhzaB26+IFDI
+         9xEw==
+X-Gm-Message-State: AOAM531xEz1dBw+/E9gCiIV+vfQL38tgf9HvzHm/D6qySe+NfuWxOdgt
+        0TVtS3zPcOXy2+IDPh8W0dYFDeRmZHb2rw==
+X-Google-Smtp-Source: ABdhPJwqMLqKBZAD9FxC+3lNxtWNGWUkaLysCeumNlPXimZYcundbTEt00KrsFB9Hb+bWilXVtUrpA==
+X-Received: by 2002:a63:d917:: with SMTP id r23mr1043183pgg.126.1611549378270;
+        Sun, 24 Jan 2021 20:36:18 -0800 (PST)
 Received: from [10.8.2.15] ([185.125.207.232])
-        by smtp.gmail.com with ESMTPSA id x21sm15191515pgi.75.2021.01.24.20.35.02
+        by smtp.gmail.com with ESMTPSA id k64sm14947157pfd.75.2021.01.24.20.36.04
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 24 Jan 2021 20:35:10 -0800 (PST)
-Subject: Re: [PATCH V2 0/2] remove unused argument from blk_execute_rq_nowait
- and blk_execute_rq
-To:     Jens Axboe <axboe@kernel.dk>
-Cc:     linux-block@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-scsi@vger.kernel.org,
+        Sun, 24 Jan 2021 20:36:17 -0800 (PST)
+Subject: Re: [PATCH V2 2/2] block: remove unnecessary argument from
+ blk_execute_rq
+To:     Ulf Hansson <ulf.hansson@linaro.org>, Jens Axboe <axboe@kernel.dk>
+Cc:     Christoph Hellwig <hch@infradead.org>, linux-nfs@vger.kernel.org,
+        linux-scsi <linux-scsi@vger.kernel.org>,
+        "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+        linux-nvme@lists.infradead.org,
         virtualization@lists.linux-foundation.org,
-        linux-ide@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-nvme@lists.infradead.org, linux-nfs@vger.kernel.org,
-        hch@infradead.org
+        linux-block <linux-block@vger.kernel.org>,
+        linux-ide@vger.kernel.org, target-devel@vger.kernel.org
 References: <20210122092824.20971-1-guoqing.jiang@cloud.ionos.com>
- <683e16be-1146-e60c-cfea-e4606844f080@kernel.dk>
+ <20210122092824.20971-3-guoqing.jiang@cloud.ionos.com>
+ <CAPDyKFoPL4drfh3efKXyhXLp6Ce+j=oHwNd9VnVP4aaKQ0zmDQ@mail.gmail.com>
 From:   Guoqing Jiang <guoqing.jiang@cloud.ionos.com>
-Message-ID: <73fd70be-90bc-9c6c-dcbe-7981f8fef4f5@cloud.ionos.com>
-Date:   Mon, 25 Jan 2021 05:34:52 +0100
+Message-ID: <439d415f-6aed-7092-a593-0d2d490652d2@cloud.ionos.com>
+Date:   Mon, 25 Jan 2021 05:35:54 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <683e16be-1146-e60c-cfea-e4606844f080@kernel.dk>
+In-Reply-To: <CAPDyKFoPL4drfh3efKXyhXLp6Ce+j=oHwNd9VnVP4aaKQ0zmDQ@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -85,20 +88,38 @@ X-Mailing-List: target-devel@vger.kernel.org
 
 
 
-On 1/25/21 02:24, Jens Axboe wrote:
-> On 1/22/21 2:28 AM, Guoqing Jiang wrote:
->> V2 changes:
->> 1. update commit header per Christoph's comment.
+On 1/22/21 10:50, Ulf Hansson wrote:
+> On Fri, 22 Jan 2021 at 10:28, Guoqing Jiang
+> <guoqing.jiang@cloud.ionos.com> wrote:
 >>
->> Hi Jens,
+>> We can remove 'q' from blk_execute_rq as well after the previous change
+>> in blk_execute_rq_nowait.
 >>
->> This series remove unused 'q' from blk_execute_rq_nowait and blk_execute_rq.
->> Also update the comment for blk_execute_rq_nowait.
+>> And more importantly it never really was needed to start with given
+>> that we can trivial derive it from struct request.
+>>
+>> Cc: linux-scsi@vger.kernel.org
+>> Cc: virtualization@lists.linux-foundation.org
+>> Cc: linux-ide@vger.kernel.org
+>> Cc: linux-mmc@vger.kernel.org
+>> Cc: linux-nvme@lists.infradead.org
+>> Cc: linux-nfs@vger.kernel.org
+>> Signed-off-by: Guoqing Jiang <guoqing.jiang@cloud.ionos.com>
 > 
-> What's this against? The lightnvm patch doesn't apply.
+> [...]
+> 
+>>   drivers/mmc/core/block.c          | 10 +++++-----
+> 
+> [...]
+> 
+>  From mmc point of view, please add:
+> 
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> 
+> At the moment I don't think this will conflict with any changes to
+> mmc, but if that happens let's sort it then...
 > 
 
-Sorry for that, will resend against for-5.12/block.
+Thank you! Will resend and add your acked-by.
 
-Thanks,
 Guoqing
