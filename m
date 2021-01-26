@@ -2,300 +2,116 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89A70C433DB
-	for <target-devel@archiver.kernel.org>; Mon, 25 Jan 2021 04:52:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 825D4C433E0
+	for <target-devel@archiver.kernel.org>; Tue, 26 Jan 2021 18:44:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3BDA122CAD
-	for <target-devel@archiver.kernel.org>; Mon, 25 Jan 2021 04:52:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5A8F4206D4
+	for <target-devel@archiver.kernel.org>; Tue, 26 Jan 2021 18:44:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726627AbhAYEwJ (ORCPT
+        id S2390026AbhAZRT1 (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 24 Jan 2021 23:52:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33590 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726791AbhAYEvz (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Sun, 24 Jan 2021 23:51:55 -0500
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C065C061786
-        for <target-devel@vger.kernel.org>; Sun, 24 Jan 2021 20:50:57 -0800 (PST)
-Received: by mail-pf1-x433.google.com with SMTP id j12so7680821pfj.12
-        for <target-devel@vger.kernel.org>; Sun, 24 Jan 2021 20:50:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cloud.ionos.com; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=T5YNgIrxBX6fSO1uhOYj11WRP7y8mCJCG6UXZFMUMjA=;
-        b=EGw97nswwXd08Pj3+sWIL4ti+9YlSXulGKujjjzAHqHGWS5XhVFnpJ02q9S8WUqUZ1
-         yj44hN0tL5eXwuks+p3F0bSmFG2to6KhbLDQ+bSeGWlYgZGfa3CrTNi9FyWkswwdY8VQ
-         biUJPVMdB5U4ANOpJwuKQ6ozsjgEgRZSCJpZMMutGYnifSIVmtC89065pxx6oi78WTaO
-         znsulJubrIh446r3rLooSFpAV4XTTnytEt1c5BeHWmXXQ6aUHRClQDK9cUOZqhYOKCjs
-         mT0nu7qqhOu98tuy3LJq2EGC8SeffErW4mxZ06gRUVouukgx94ADwRTZhuxUjTMpV5R2
-         lVkg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=T5YNgIrxBX6fSO1uhOYj11WRP7y8mCJCG6UXZFMUMjA=;
-        b=uiJ//0zYyxblIlEP9v9Ml39jdyMyx3ohPD+OjYLMbduqMoyt/aqU+YgN2sCBrO3lZc
-         UOl/Peejq9vwX5latY+FTJ7/jy5iMSh2YRKKWQ2yl982jbdvTv287Kzk6HLa639wAcSR
-         zgwsVXpZxJsQjeQBuvFjMJmkHtHwgELpGR48UbYYjcyFHj+1u6rdQ7WOAr6o7OvcBemt
-         iiaDYUMzywsdwvJ6fwcFM3Cpv7KAXFPi6W8OX5SyC2bjzDlEDr1GyU1DrwzGIOIUQOJw
-         CB3rQ1pPrXqla3eZ5D6LB6DmF7CHT1qYOdmn8IwSbFy67Ye7Gbjb58+MrEMqSJH+cXqX
-         LsoA==
-X-Gm-Message-State: AOAM533/DpdUfPLA1FW5CKK8BYKePlS4vrWu2CNdtqn0QB+T5uaJpnZs
-        /4O8UiywLUgTkwA/AmoYD5YzMA==
-X-Google-Smtp-Source: ABdhPJxrjMpd3h6RGgg92+oDLbKLK9Y1xyMwNRPuEq/mP68ZCP68fxGlT9XubdX49i8m563mlVDMRw==
-X-Received: by 2002:a62:444:0:b029:1bc:ebb6:71f8 with SMTP id 65-20020a6204440000b02901bcebb671f8mr5247300pfe.75.1611550255849;
-        Sun, 24 Jan 2021 20:50:55 -0800 (PST)
-Received: from gqjiang-home.profitbricks.net ([185.125.207.232])
-        by smtp.gmail.com with ESMTPSA id l14sm16459423pjy.15.2021.01.24.20.50.35
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 24 Jan 2021 20:50:55 -0800 (PST)
-From:   Guoqing Jiang <guoqing.jiang@cloud.ionos.com>
-To:     axboe@kernel.dk
-Cc:     linux-block@vger.kernel.org, linux-scsi@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        linux-ide@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-nvme@lists.infradead.org, linux-nfs@vger.kernel.org,
-        hch@infradead.org, Guoqing Jiang <guoqing.jiang@cloud.ionos.com>,
-        target-devel@vger.kernel.org
-Subject: [PATCH V3 1/2] block: remove unnecessary argument from blk_execute_rq_nowait
-Date:   Mon, 25 Jan 2021 05:49:57 +0100
-Message-Id: <1611550198-17142-2-git-send-email-guoqing.jiang@cloud.ionos.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1611550198-17142-1-git-send-email-guoqing.jiang@cloud.ionos.com>
-References: <1611550198-17142-1-git-send-email-guoqing.jiang@cloud.ionos.com>
+        Tue, 26 Jan 2021 12:19:27 -0500
+Received: from mta-02.yadro.com ([89.207.88.252]:43094 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S2389340AbhAZJOf (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 26 Jan 2021 04:14:35 -0500
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 7BBE041306;
+        Tue, 26 Jan 2021 09:13:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        in-reply-to:content-disposition:content-type:content-type
+        :mime-version:references:message-id:subject:subject:from:from
+        :date:date:received:received:received; s=mta-01; t=1611652425;
+         x=1613466826; bh=pAwTHpdgiRj9rF1GL0yAcUFqatPELVV254k99kwCScg=; b=
+        aSMXm7DZMBYY2TwO97yWNjk0+nb/e/4Al0UkAdTiONrJn3vV3kJXXJIVvHSgFRjU
+        u7hTiIwAJYOp0KgYNVa5MK/raWOd2VR2kbQMx374onBxFPT6JtWqePue5ETttjd2
+        l3M7vVSSk0x3fLaT1vKVqPl2dSkgoSACqHsuAhJiPqw=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id NlMHm_nbvn1d; Tue, 26 Jan 2021 12:13:45 +0300 (MSK)
+Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id C55DD41280;
+        Tue, 26 Jan 2021 12:13:45 +0300 (MSK)
+Received: from localhost (172.17.204.212) by T-EXCH-03.corp.yadro.com
+ (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Tue, 26
+ Jan 2021 12:13:45 +0300
+Date:   Tue, 26 Jan 2021 12:13:44 +0300
+From:   Roman Bolshakov <r.bolshakov@yadro.com>
+To:     David Disseldorp <ddiss@suse.de>
+CC:     Dmitry Bogdanov <d.bogdanov@yadro.com>,
+        Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+        <linux@yadro.com>
+Subject: Re: [PATCH v2] scsi: target: core: check SR field in REPORT LUNS
+Message-ID: <YA/dSDH2NYSRi9Bi@SPB-NB-133.local>
+References: <20210120102700.5514-1-d.bogdanov@yadro.com>
+ <20210122234251.595d5b7a@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20210122234251.595d5b7a@suse.de>
+X-Originating-IP: [172.17.204.212]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-The 'q' is not used since commit a1ce35fa4985 ("block: remove dead
-elevator code"), also update the comment of the function.
+On Fri, Jan 22, 2021 at 11:42:51PM +0100, David Disseldorp wrote:
+> On Wed, 20 Jan 2021 13:27:00 +0300, Dmitry Bogdanov wrote:
+> 
+> > Now REPORT LUNS for software device servers always reports all luns
+> > regardless of SELECT REPORT field.
+> > Add handling of that field according to SPC-4:
+> > * accept known values,
+> > * reject unknown values.
+> 
+> We currently advertise SPC-3 VERSION compliance via standard INQUIRY
+> data, so I think we should either support SPC-3 SELECT REPORT values or
+> bump the VERSION field (SPC-4 behaviour is already scattered throughout
+> LIO).
+> Out of curiosity, do you know of any initiators which use this field?
+> 
 
-And more importantly it never really was needed to start with given
-that we can trivial derive it from struct request.
+Hi David,
 
-Cc: target-devel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
-Cc: virtualization@lists.linux-foundation.org
-Cc: linux-ide@vger.kernel.org
-Cc: linux-mmc@vger.kernel.org
-Cc: linux-nvme@lists.infradead.org
-Cc: linux-nfs@vger.kernel.org
-Signed-off-by: Guoqing Jiang <guoqing.jiang@cloud.ionos.com>
----
- block/blk-exec.c                   | 10 ++++------
- drivers/block/sx8.c                |  4 ++--
- drivers/nvme/host/core.c           |  4 ++--
- drivers/nvme/host/lightnvm.c       |  2 +-
- drivers/nvme/host/pci.c            |  4 ++--
- drivers/nvme/target/passthru.c     |  2 +-
- drivers/scsi/scsi_error.c          |  2 +-
- drivers/scsi/sg.c                  |  3 +--
- drivers/scsi/st.c                  |  2 +-
- drivers/target/target_core_pscsi.c |  3 +--
- include/linux/blkdev.h             |  2 +-
- 11 files changed, 17 insertions(+), 21 deletions(-)
+SELECT REPORT field can be used for vVOL (LU conglomerate) discovery and
+for well-known lun listing.
 
-diff --git a/block/blk-exec.c b/block/blk-exec.c
-index 85324d5..2e37e85 100644
---- a/block/blk-exec.c
-+++ b/block/blk-exec.c
-@@ -31,8 +31,7 @@ static void blk_end_sync_rq(struct request *rq, blk_status_t error)
- }
- 
- /**
-- * blk_execute_rq_nowait - insert a request into queue for execution
-- * @q:		queue to insert the request in
-+ * blk_execute_rq_nowait - insert a request to I/O scheduler for execution
-  * @bd_disk:	matching gendisk
-  * @rq:		request to insert
-  * @at_head:    insert request at head or tail of queue
-@@ -45,9 +44,8 @@ static void blk_end_sync_rq(struct request *rq, blk_status_t error)
-  * Note:
-  *    This function will invoke @done directly if the queue is dead.
-  */
--void blk_execute_rq_nowait(struct request_queue *q, struct gendisk *bd_disk,
--			   struct request *rq, int at_head,
--			   rq_end_io_fn *done)
-+void blk_execute_rq_nowait(struct gendisk *bd_disk, struct request *rq,
-+			   int at_head, rq_end_io_fn *done)
- {
- 	WARN_ON(irqs_disabled());
- 	WARN_ON(!blk_rq_is_passthrough(rq));
-@@ -83,7 +81,7 @@ void blk_execute_rq(struct request_queue *q, struct gendisk *bd_disk,
- 	unsigned long hang_check;
- 
- 	rq->end_io_data = &wait;
--	blk_execute_rq_nowait(q, bd_disk, rq, at_head, blk_end_sync_rq);
-+	blk_execute_rq_nowait(bd_disk, rq, at_head, blk_end_sync_rq);
- 
- 	/* Prevent hang_check timer from firing at us during very long I/O */
- 	hang_check = sysctl_hung_task_timeout_secs;
-diff --git a/drivers/block/sx8.c b/drivers/block/sx8.c
-index 4478eb7..2cdf277 100644
---- a/drivers/block/sx8.c
-+++ b/drivers/block/sx8.c
-@@ -539,7 +539,7 @@ static int carm_array_info (struct carm_host *host, unsigned int array_idx)
- 	spin_unlock_irq(&host->lock);
- 
- 	DPRINTK("blk_execute_rq_nowait, tag == %u\n", rq->tag);
--	blk_execute_rq_nowait(host->oob_q, NULL, rq, true, NULL);
-+	blk_execute_rq_nowait(NULL, rq, true, NULL);
- 
- 	return 0;
- 
-@@ -578,7 +578,7 @@ static int carm_send_special (struct carm_host *host, carm_sspc_t func)
- 	crq->msg_bucket = (u32) rc;
- 
- 	DPRINTK("blk_execute_rq_nowait, tag == %u\n", rq->tag);
--	blk_execute_rq_nowait(host->oob_q, NULL, rq, true, NULL);
-+	blk_execute_rq_nowait(NULL, rq, true, NULL);
- 
- 	return 0;
- }
-diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
-index a39befb..0bea9ae 100644
---- a/drivers/nvme/host/core.c
-+++ b/drivers/nvme/host/core.c
-@@ -925,7 +925,7 @@ static void nvme_execute_rq_polled(struct request_queue *q,
- 
- 	rq->cmd_flags |= REQ_HIPRI;
- 	rq->end_io_data = &wait;
--	blk_execute_rq_nowait(q, bd_disk, rq, at_head, nvme_end_sync_rq);
-+	blk_execute_rq_nowait(bd_disk, rq, at_head, nvme_end_sync_rq);
- 
- 	while (!completion_done(&wait)) {
- 		blk_poll(q, request_to_qc_t(rq->mq_hctx, rq), true);
-@@ -1202,7 +1202,7 @@ static int nvme_keep_alive(struct nvme_ctrl *ctrl)
- 	rq->timeout = ctrl->kato * HZ;
- 	rq->end_io_data = ctrl;
- 
--	blk_execute_rq_nowait(rq->q, NULL, rq, 0, nvme_keep_alive_end_io);
-+	blk_execute_rq_nowait(NULL, rq, 0, nvme_keep_alive_end_io);
- 
- 	return 0;
- }
-diff --git a/drivers/nvme/host/lightnvm.c b/drivers/nvme/host/lightnvm.c
-index 6c8eab8..0e5a550 100644
---- a/drivers/nvme/host/lightnvm.c
-+++ b/drivers/nvme/host/lightnvm.c
-@@ -695,7 +695,7 @@ static int nvme_nvm_submit_io(struct nvm_dev *dev, struct nvm_rq *rqd,
- 
- 	rq->end_io_data = rqd;
- 
--	blk_execute_rq_nowait(q, NULL, rq, 0, nvme_nvm_end_io);
-+	blk_execute_rq_nowait(NULL, rq, 0, nvme_nvm_end_io);
- 
- 	return 0;
- 
-diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
-index 856aa31..5b78e68 100644
---- a/drivers/nvme/host/pci.c
-+++ b/drivers/nvme/host/pci.c
-@@ -1357,7 +1357,7 @@ static enum blk_eh_timer_return nvme_timeout(struct request *req, bool reserved)
- 	}
- 
- 	abort_req->end_io_data = NULL;
--	blk_execute_rq_nowait(abort_req->q, NULL, abort_req, 0, abort_endio);
-+	blk_execute_rq_nowait(NULL, abort_req, 0, abort_endio);
- 
- 	/*
- 	 * The aborted req will be completed on receiving the abort req.
-@@ -2281,7 +2281,7 @@ static int nvme_delete_queue(struct nvme_queue *nvmeq, u8 opcode)
- 	req->end_io_data = nvmeq;
- 
- 	init_completion(&nvmeq->delete_done);
--	blk_execute_rq_nowait(q, NULL, req, false,
-+	blk_execute_rq_nowait(NULL, req, false,
- 			opcode == nvme_admin_delete_cq ?
- 				nvme_del_cq_end : nvme_del_queue_end);
- 	return 0;
-diff --git a/drivers/nvme/target/passthru.c b/drivers/nvme/target/passthru.c
-index b9776fc..cbc88ac 100644
---- a/drivers/nvme/target/passthru.c
-+++ b/drivers/nvme/target/passthru.c
-@@ -275,7 +275,7 @@ static void nvmet_passthru_execute_cmd(struct nvmet_req *req)
- 		schedule_work(&req->p.work);
- 	} else {
- 		rq->end_io_data = req;
--		blk_execute_rq_nowait(rq->q, ns ? ns->disk : NULL, rq, 0,
-+		blk_execute_rq_nowait(ns ? ns->disk : NULL, rq, 0,
- 				      nvmet_passthru_req_done);
- 	}
- 
-diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
-index f11f51e..c00f06e 100644
---- a/drivers/scsi/scsi_error.c
-+++ b/drivers/scsi/scsi_error.c
-@@ -2007,7 +2007,7 @@ static void scsi_eh_lock_door(struct scsi_device *sdev)
- 	req->timeout = 10 * HZ;
- 	rq->retries = 5;
- 
--	blk_execute_rq_nowait(req->q, NULL, req, 1, eh_lock_door_done);
-+	blk_execute_rq_nowait(NULL, req, 1, eh_lock_door_done);
- }
- 
- /**
-diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
-index bfa8d77..4383d93 100644
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -829,8 +829,7 @@ sg_common_write(Sg_fd * sfp, Sg_request * srp,
- 
- 	srp->rq->timeout = timeout;
- 	kref_get(&sfp->f_ref); /* sg_rq_end_io() does kref_put(). */
--	blk_execute_rq_nowait(sdp->device->request_queue, sdp->disk,
--			      srp->rq, at_head, sg_rq_end_io);
-+	blk_execute_rq_nowait(sdp->disk, srp->rq, at_head, sg_rq_end_io);
- 	return 0;
- }
- 
-diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
-index 43f7624..841ad2f 100644
---- a/drivers/scsi/st.c
-+++ b/drivers/scsi/st.c
-@@ -585,7 +585,7 @@ static int st_scsi_execute(struct st_request *SRpnt, const unsigned char *cmd,
- 	rq->retries = retries;
- 	req->end_io_data = SRpnt;
- 
--	blk_execute_rq_nowait(req->q, NULL, req, 1, st_scsi_execute_end);
-+	blk_execute_rq_nowait(NULL, req, 1, st_scsi_execute_end);
- 	return 0;
- }
- 
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index 7994f27..33770e5 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -1000,8 +1000,7 @@ pscsi_execute_cmd(struct se_cmd *cmd)
- 		req->timeout = PS_TIMEOUT_OTHER;
- 	scsi_req(req)->retries = PS_RETRY;
- 
--	blk_execute_rq_nowait(pdv->pdv_sd->request_queue, NULL, req,
--			(cmd->sam_task_attr == TCM_HEAD_TAG),
-+	blk_execute_rq_nowait(NULL, req, (cmd->sam_task_attr == TCM_HEAD_TAG),
- 			pscsi_req_done);
- 
- 	return 0;
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 4526b9e..623a612 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -950,7 +950,7 @@ extern int blk_rq_map_user_iov(struct request_queue *, struct request *,
- 			       gfp_t);
- extern void blk_execute_rq(struct request_queue *, struct gendisk *,
- 			  struct request *, int);
--extern void blk_execute_rq_nowait(struct request_queue *, struct gendisk *,
-+extern void blk_execute_rq_nowait(struct gendisk *,
- 				  struct request *, int, rq_end_io_fn *);
- 
- /* Helper to convert REQ_OP_XXX to its string format XXX */
--- 
-2.7.4
+The field is used by VMware ESXi:
+https://support.purestorage.com/Solutions/VMware_Platform_Guide/User_Guides_for_VMware_Solutions/Virtual_Volumes_User_Guide/vVols_User_Guide%3A_Protocol_Endpoints
 
+"PEs greatly extend the number of vVols that can be connected to an ESXi
+cluster; each PE can have up to 16,383 vVols per host bound to it
+simultaneously. Moreover, a new binding does not require a complete I/O
+rescan. Instead, ESXi issues a REPORT_LUNS SCSI command with SELECT
+REPORT to the PE to which the sub-lun is bound. The PE returns a list of
+sub-lun IDs for the vVols bound to that host. In large clusters,
+REPORT_LUNS is significantly faster than a full I/O rescan because it is
+more precisely targeted."
+
+The post also confirms that:
+https://sourceforge.net/p/scst/mailman/message/33030432/
+
+A few more targets that support SELECT REPORT field below.
+
+Sun/Oracle tape library:
+https://docs.oracle.com/en/storage/tape-storage/storagetek-sl150-modular-tape-library/slorm/report-luns-a0h.html#GUID-4140F40D-BD9A-495C-9A86-8BD7E91C985C
+
+IBM Flash Storage:
+https://www.ibm.com/support/pages/sites/default/files/support/ssg/ssgdocs.nsf/0/95d7115d7eb428e485257f80005cc3a7/%24FILE/FlashSystem_840_SCSI_Interface_Manual_1.2.pdf
+
+With regards to bumping TCM to SPC-4, are there any objections if we
+submit a separate patch for that? Or resubmit a series with the patch?
+
+Thanks,
+Roman
