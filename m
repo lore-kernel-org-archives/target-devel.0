@@ -2,105 +2,152 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7A5FC433E0
-	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 17:27:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5366CC433E9
+	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 20:12:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8866161481
-	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 17:27:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 17DD564E0C
+	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 20:12:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232983AbhA1R1j (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 28 Jan 2021 12:27:39 -0500
-Received: from mail.kernel.org ([198.145.29.99]:53686 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232965AbhA1RYo (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Thu, 28 Jan 2021 12:24:44 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id B21F464DF9;
-        Thu, 28 Jan 2021 17:24:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1611854642;
-        bh=Zs2s8ZvTIPYGR4BFwbfSOZLDbQpy7x8YdhBNvxD8Dok=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=dYixlgG2K3aWwDLaJowzYgnOFmByUyz6PjYTAvhTfbvB+e9gPk0mBgRRvBez32mDu
-         g+/BEjUeO2s7tBkV+OtFiT2UlC3mn8gjSXsXC5Xpxm6KRmfDNpc8Z7+gIuibodKK4H
-         l1i2cwlyEJsSukyTcGjNrcpQfEjVAbCBE6DwgrePquTtnF0XcOLlk2eq3YbBOrXlcF
-         50KQtEwBjnE5+b+zJhPCQRu9YN8ISWqvJskcg8GQfdpqKteYo166Aso1a23IfJvuVj
-         VfAojNA36QPu6qz6sKkxuvacugxCY5JwWT3tNh6OxRrRzVwkEqP+vyF3JrdyJAT+Ys
-         o8BRepJ02vTLA==
-Date:   Thu, 28 Jan 2021 09:24:02 -0800
-From:   "Darrick J. Wong" <djwong@kernel.org>
-To:     Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-Cc:     linux-xfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        dm-devel@redhat.com, linux-block@vger.kernel.org,
-        linux-kernel@vger.kernel.org, drbd-dev@lists.linbit.com,
-        xen-devel@lists.xenproject.org, linux-nvme@lists.infradead.org,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-fscrypt@vger.kernel.org,
-        jfs-discussion@lists.sourceforge.net, linux-nilfs@vger.kernel.org,
-        ocfs2-devel@oss.oracle.com, linux-pm@vger.kernel.org,
-        linux-mm@kvack.org, axboe@kernel.dk, philipp.reisner@linbit.com,
-        lars.ellenberg@linbit.com, konrad.wilk@oracle.com,
-        roger.pau@citrix.com, minchan@kernel.org, ngupta@vflare.org,
-        sergey.senozhatsky.work@gmail.com, agk@redhat.com,
-        snitzer@redhat.com, hch@lst.de, sagi@grimberg.me,
-        martin.petersen@oracle.com, viro@zeniv.linux.org.uk, tytso@mit.edu,
-        jaegeuk@kernel.org, ebiggers@kernel.org, shaggy@kernel.org,
-        konishi.ryusuke@gmail.com, mark@fasheh.com, jlbec@evilplan.org,
-        joseph.qi@linux.alibaba.com, damien.lemoal@wdc.com,
-        naohiro.aota@wdc.com, jth@kernel.org, rjw@rjwysocki.net,
-        len.brown@intel.com, pavel@ucw.cz, akpm@linux-foundation.org,
-        hare@suse.de, gustavoars@kernel.org, tiwai@suse.de,
-        alex.shi@linux.alibaba.com, asml.silence@gmail.com,
-        ming.lei@redhat.com, tj@kernel.org, osandov@fb.com,
-        bvanassche@acm.org, jefflexu@linux.alibaba.com
-Subject: Re: [RFC PATCH 18/34] iomap: use bio_new in iomap_dio_bio_actor
-Message-ID: <20210128172402.GO7698@magnolia>
-References: <20210128071133.60335-1-chaitanya.kulkarni@wdc.com>
- <20210128071133.60335-19-chaitanya.kulkarni@wdc.com>
+        id S231355AbhA1UMD (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 28 Jan 2021 15:12:03 -0500
+Received: from antares.kleine-koenig.org ([94.130.110.236]:45986 "EHLO
+        antares.kleine-koenig.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229953AbhA1UJf (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Thu, 28 Jan 2021 15:09:35 -0500
+X-Greylist: delayed 80298 seconds by postgrey-1.27 at vger.kernel.org; Thu, 28 Jan 2021 15:09:34 EST
+Received: from antares.kleine-koenig.org (localhost [127.0.0.1])
+        by antares.kleine-koenig.org (Postfix) with ESMTP id 2969DAE1E57;
+        Thu, 28 Jan 2021 21:08:43 +0100 (CET)
+Received: from antares.kleine-koenig.org ([94.130.110.236])
+        by antares.kleine-koenig.org (antares.kleine-koenig.org [94.130.110.236]) (amavisd-new, port 10024)
+        with ESMTP id NYAo-JJQbWWS; Thu, 28 Jan 2021 21:08:40 +0100 (CET)
+Received: from taurus.defre.kleine-koenig.org (unknown [IPv6:2a02:8071:b5ad:20fc:2b29:ca75:841e:b14c])
+        by antares.kleine-koenig.org (Postfix) with ESMTPSA;
+        Thu, 28 Jan 2021 21:08:40 +0100 (CET)
+Subject: Re: [PATCH] vio: make remove callback return void
+To:     Sukadev Bhattiprolu <sukadev@linux.ibm.com>
+Cc:     Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Jens Axboe <axboe@kernel.dk>, Matt Mackall <mpm@selenic.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        Peter Huewe <peterhuewe@gmx.de>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Haren Myneni <haren@us.ibm.com>,
+        =?UTF-8?Q?Breno_Leit=c3=a3o?= <leitao@debian.org>,
+        Nayna Jain <nayna@linux.ibm.com>,
+        Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+        Steven Royer <seroyer@linux.ibm.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Cristobal Forno <cforno12@linux.ibm.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Dany Madden <drt@linux.ibm.com>, Lijun Pan <ljp@linux.ibm.com>,
+        Tyrel Datwyler <tyreld@linux.ibm.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Michael Cyr <mikecyr@linux.ibm.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        sparclinux@vger.kernel.org, linux-block@vger.kernel.org,
+        linux-crypto@vger.kernel.org, linux-integrity@vger.kernel.org,
+        netdev@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org
+References: <20210127215010.99954-1-uwe@kleine-koenig.org>
+ <20210128190750.GA490196@us.ibm.com>
+From:   =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <uwe@kleine-koenig.org>
+Message-ID: <f3655d10-26ba-5f9f-761e-2f48d13d0b11@kleine-koenig.org>
+Date:   Thu, 28 Jan 2021 21:08:36 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210128071133.60335-19-chaitanya.kulkarni@wdc.com>
+In-Reply-To: <20210128190750.GA490196@us.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="0WS2s8Dj7oAQDuvcAexs4Jz4r6U02PT15"
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, Jan 27, 2021 at 11:11:17PM -0800, Chaitanya Kulkarni wrote:
-> Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-> ---
->  fs/iomap/direct-io.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/fs/iomap/direct-io.c b/fs/iomap/direct-io.c
-> index f6c557a1bd25..0737192f7e5c 100644
-> --- a/fs/iomap/direct-io.c
-> +++ b/fs/iomap/direct-io.c
-> @@ -267,9 +267,8 @@ iomap_dio_bio_actor(struct inode *inode, loff_t pos, loff_t length,
->  			goto out;
->  		}
->  
-> -		bio = bio_alloc(GFP_KERNEL, nr_pages);
-> -		bio_set_dev(bio, iomap->bdev);
-> -		bio->bi_iter.bi_sector = iomap_sector(iomap, pos);
-> +		bio = bio_new(iomap->bdev, iomap_sector(iomap, pos), 0, 0,
-> +			      nr_pages, GFP_KERNEL);
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--0WS2s8Dj7oAQDuvcAexs4Jz4r6U02PT15
+Content-Type: multipart/mixed; boundary="C8P4GGVXo3CFpsOyigcYdiPTK9L9mB3i8";
+ protected-headers="v1"
+From: =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <uwe@kleine-koenig.org>
+To: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>,
+ Jens Axboe <axboe@kernel.dk>, Matt Mackall <mpm@selenic.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Peter Huewe <peterhuewe@gmx.de>,
+ Jarkko Sakkinen <jarkko@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Haren Myneni <haren@us.ibm.com>, =?UTF-8?Q?Breno_Leit=c3=a3o?=
+ <leitao@debian.org>, Nayna Jain <nayna@linux.ibm.com>,
+ Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+ Steven Royer <seroyer@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Cristobal Forno <cforno12@linux.ibm.com>, Jakub Kicinski <kuba@kernel.org>,
+ Dany Madden <drt@linux.ibm.com>, Lijun Pan <ljp@linux.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.ibm.com>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Michael Cyr <mikecyr@linux.ibm.com>, Jiri Slaby <jirislaby@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-block@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linux-integrity@vger.kernel.org,
+ netdev@vger.kernel.org, linux-scsi@vger.kernel.org,
+ target-devel@vger.kernel.org
+Message-ID: <f3655d10-26ba-5f9f-761e-2f48d13d0b11@kleine-koenig.org>
+Subject: Re: [PATCH] vio: make remove callback return void
+References: <20210127215010.99954-1-uwe@kleine-koenig.org>
+ <20210128190750.GA490196@us.ibm.com>
+In-Reply-To: <20210128190750.GA490196@us.ibm.com>
 
-op == 0?  It seems a little odd to me that we'd set the field to zero
-and then construct bi_opf later.
+--C8P4GGVXo3CFpsOyigcYdiPTK9L9mB3i8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-It also strikes me as a little strange that bi_opf is combined from the
-third and fourth parameters, but maybe some day you'll want to do some
-parameter verification on debug kernels or something...?
+Hello Sukadev,
 
---D
+On 1/28/21 8:07 PM, Sukadev Bhattiprolu wrote:
+> Slightly off-topic, should ndo_stop() also return a void? Its return va=
+lue
+> seems to be mostly ignored and [...]
 
->  		bio->bi_write_hint = dio->iocb->ki_hint;
->  		bio->bi_ioprio = dio->iocb->ki_ioprio;
->  		bio->bi_private = dio;
-> -- 
-> 2.22.1
-> 
+I don't know enough about the network stack to tell. Probably it's a=20
+good idea to start a separate thread for this and address this to the=20
+netdev list only.
+
+Best regards
+Uwe
+
+
+
+--C8P4GGVXo3CFpsOyigcYdiPTK9L9mB3i8--
+
+--0WS2s8Dj7oAQDuvcAexs4Jz4r6U02PT15
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmATGcQACgkQwfwUeK3K
+7AljPggAhaj+JnoGN++1YO/4Nz81FEvRKFR9Eky+A4TCDGs8NvV1eVbhztqchotk
+bm71ZlCLS23+/m5xoA/4bjOHPxc0ETs8V37z86n9Tcf/QTiwI1eN4UYU0l7cPqGO
+cxuT/eLxm7WQ/kKwlJucUUHREWVCXH5NNTw4/zH9r+qc3MVQ++uUrKjtF94cnkGa
+iOO8nW+fhP+e8bVENm+gcTwONaL45UG+qABpFj9mXiWMrA7L0kSEyqG4wUMgeKb3
+YUtPKsAuS8xpUhT5C/zEQJ6qWI3rXkGCPEMUMcpWk+ut4McB9mE+TP6XWC36nfFy
+uq8ofa7nTpO48ZQIj/PU3d+UIzp2eQ==
+=XsiK
+-----END PGP SIGNATURE-----
+
+--0WS2s8Dj7oAQDuvcAexs4Jz4r6U02PT15--
