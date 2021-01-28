@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84298C433E0
-	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 07:15:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F682C433DB
+	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 07:16:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4602264DD6
-	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 07:15:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EA92464DBD
+	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 07:16:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231683AbhA1HOD (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 28 Jan 2021 02:14:03 -0500
-Received: from esa2.hgst.iphmx.com ([68.232.143.124]:51464 "EHLO
-        esa2.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231472AbhA1HNN (ORCPT
+        id S231714AbhA1HP1 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 28 Jan 2021 02:15:27 -0500
+Received: from esa1.hgst.iphmx.com ([68.232.141.245]:25502 "EHLO
+        esa1.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231693AbhA1HOL (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 28 Jan 2021 02:13:13 -0500
+        Thu, 28 Jan 2021 02:14:11 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1611818102; x=1643354102;
+  t=1611818050; x=1643354050;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=jUCaPFeDv057fdkiILPSRkCuXPSAzqxSiECC+FKJaMI=;
-  b=biP6TdjZ4OfabPui3GqKLBHV3MMX8fYi+zJB43kPQxC6MnV5keOr9WC7
-   KaC4GJWrRBrnaTluFxH6tpTvegjhfroIvyt4XoV9+Ki5/x4e+q3Ewwrmi
-   Hz85jhhFGk7WM4auuLmjOlXnTCrNPcf6etTAwBoAX3iPcBvDPBO2WV5f4
-   H5txwas2MKN8r/WvjTCqY69aOWtMO6KvK5nhYwpc7zCNTQDTFxafHlJBI
-   Vi/+AZFCOUVzguQyOP0qoGYWZKMO92bRoZOp8Mgmm+9j1CLLHBT1yQPuK
-   yeEi0j7cReQT+e71msxkklCn+udpMf58l54JomUqcYQLtLNJaWGwnsVVq
-   Q==;
-IronPort-SDR: 1f55ggMT/kZcqqqIxPkJGjSgnEpKl8hKnpar1NIcBUfLymW0NcBXultaR0ePnq4ZoJGNqNlLTX
- XbYvaGFakpQ1JWKy5OGGyb6x/NF6GQGxPV6Ngn93THiUyAK774snLcVyDfkp8mLXj0KQIPjH6/
- h6skd9RU8wzN0AMpoxO6qYfZlhHi5AM6Qft6CFwMjaDT9q2RwPEfZFpW3IJzmcSa5Q+TzXEFCe
- mFF2cZhMDiiI5k44JLCZzljnvB9b/m7HqoW6n3DVytqAUTUfp+OCeY1IQg4m5aRW5cyozP4m/Y
- mEY=
+  bh=OzcT2XWni+wbNY2uowp8HTdSyU1JsS57dIOzGLP71ak=;
+  b=hajdvK0ZiDQtDkd6I8nLkkJDYsXmKEFUoxwHVDCau5fDpmVNE20YIIWi
+   JotZ1Ixit3LVq4LjMkfRFrECOO9MEBK71mV+j/PWZ5GvqJaa80Stcm/XP
+   /0clIiHA+mW2ONsrhurzCAr5g6TkTFXr/gwFUgLk8T5zcxQptT85Cnw1K
+   8smwNnKyOVDANbw68k9wO9OLlksFukkUEXVa8f/97EyI2PS8+qdal2I8i
+   /acKfqUfnu1Jn5MqPiaA7rCh0ZOUlGO56eKvn5/6IHgW/tyA5V7DwVJed
+   C5+HPAlyzpiJpLR709FPHPnq4Y/a8NI1+qVZCO4OxQzFr0x0Tnxee8xKQ
+   g==;
+IronPort-SDR: ips+qcbHgDovI66x7IazOAW8unTTwMuBCO3DLBbgsGevCGbPVO0rNtVvqvB79ytHFBjbIcXQLw
+ tKOqF+xByrXDRPlhhCAej+myhwsK4Y8HvK/kav4wIJlZgiM17rXuZxa5XeqQkoRfLi3QUh9byZ
+ w+BR9csKJDQFWQ2omiYM0JoVhr7sBcKi3Yb7dgODAT27dfj8maW4bxwFGJZYwzoC1HXI+VSPbg
+ sPKJaMAb6W1/Tbu8q6fX3ILOwFO8skQSYIWQjHDncWbgu0DI+5qFYtX4bgUNVFJHYbIqZH1w2l
+ DaQ=
 X-IronPort-AV: E=Sophos;i="5.79,381,1602518400"; 
-   d="scan'208";a="262548876"
+   d="scan'208";a="268892424"
 Received: from uls-op-cesaip01.wdc.com (HELO uls-op-cesaep01.wdc.com) ([199.255.45.14])
-  by ob1.hgst.iphmx.com with ESMTP; 28 Jan 2021 15:13:22 +0800
-IronPort-SDR: YLSWWJBxJVHqvJkONdlBKuOj/kP4YYZ8cDftupYIf/4vCLMdms2NNRB12aQGHVWc8U8yT2G6Bl
- fo5Tzxr7r4QaZnb81plYSJdBrlwkCqaN4E3aTElQ6xTZxbV3xeDX5lpgkXDBgQn8fljQmTCzMk
- oOvJHzmm4Ba/1+Y6mv8M5dbQyvtBMxPj62g8KYDT/3ETleYhPwsCMlDkwSsc6ftsZjy+qlVHsT
- n61Mfj+WCzIqBChTJF3NNHE/bWxB04K4WvtpGr9feUZN+b0nV72Vu+N9kUPOJAPAT5X1dF211s
- VV/X2ON9CBIt54SYSo9G37OH
+  by ob1.hgst.iphmx.com with ESMTP; 28 Jan 2021 15:13:02 +0800
+IronPort-SDR: MG2ERFEkA4mlL0lFT8NLsb2e6DFhVVRqB+IA5oCVIHXZcss05Vy6lTjpMJpiqCktzY57GMpYzv
+ rszBymD49vU1leR1F5Gy3Yjc76IekQXnx0fbgXq4q0aZjEm/u7IDO3xEyEHGBGucdCzRLsxd4x
+ MEb2W8VL4nHH1jeJZtB0IjnlBFA6yZJRoL1kCDQHzjlf477R/ofs8a+Fo5XXOsvZG7QwA3kJFl
+ fDlxxa2j7d4s9wo8PiIP1RJltpG4SqlD86O6uKpk9Fa6dXIjjlJ5RPsA6I6R6HmnLxfL882+QO
+ AwFSnaAcqcKHdyXK2VDLW7An
 Received: from uls-op-cesaip02.wdc.com ([10.248.3.37])
-  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2021 22:56:26 -0800
-IronPort-SDR: d5xTirF8Ys37shQjxL90xQdmAvrvSyaDd23k+ldZQk6g8Gmyh3lDvEoGm16xcyp5mSBaZTpxOa
- PvC1PFp6twA2TpPlG+Ql+/AG65S9RMLgGFawcQCbg9J6k/x2AMPUiKYtsSCC84Z+EGYfmFKoID
- N3xp6Srvi9c6y+EZp98pFBd59WcY1NGSO1F5aHMorlNIT26uZMyL8pegMXpgjACziNosRf/+TT
- qFeHE9fwJbeXCBkPpJ7sXhYMSQdfV8ojzZIb3gXAYZT1zkKG2mcOAVOk/sf7gRxWJd9WgQISSA
- lhk=
+  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2021 22:57:22 -0800
+IronPort-SDR: m8MWhLly+Q/ggpFQoQazEvRAK79hMprrsJeibomNIX1/4xtKgak83IDhV3hY33IYYgETWfckla
+ 12cflgJcZOLhtYF332W1ZeqMwkaZsc7uQahEN2f8ydynExvlY4KkvRqWC31LBbVv2+B3KXuSeg
+ s9mXwdZWg1TGYc2w+IbnJALYEzC776WPgdLPtLGdrMUnCNPoz5WeDSYQd/QZ1Y+MzxJurZd/eC
+ 94O7CZ/ZfohxaTfsL58Np58+H9TOWMfDJbBI8BFZ4728SkC4ncTHu1ybMvyhjmP7gPrroYjKqQ
+ UWE=
 WDCIronportException: Internal
 Received: from vm.labspan.wdc.com (HELO vm.sc.wdc.com) ([10.6.137.102])
-  by uls-op-cesaip02.wdc.com with ESMTP; 27 Jan 2021 23:12:06 -0800
+  by uls-op-cesaip02.wdc.com with ESMTP; 27 Jan 2021 23:13:02 -0800
 From:   Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 To:     linux-xfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
         dm-devel@redhat.com, linux-block@vger.kernel.org,
@@ -83,9 +83,9 @@ Cc:     axboe@kernel.dk, philipp.reisner@linbit.com,
         alex.shi@linux.alibaba.com, asml.silence@gmail.com,
         ming.lei@redhat.com, tj@kernel.org, osandov@fb.com,
         bvanassche@acm.org, jefflexu@linux.alibaba.com
-Subject: [RFC PATCH 03/34] drdb: use bio_new in drdb
-Date:   Wed, 27 Jan 2021 23:11:02 -0800
-Message-Id: <20210128071133.60335-4-chaitanya.kulkarni@wdc.com>
+Subject: [RFC PATCH 09/34] dm-zoned: use bio_new in dmz_write_mblock
+Date:   Wed, 27 Jan 2021 23:11:08 -0800
+Message-Id: <20210128071133.60335-10-chaitanya.kulkarni@wdc.com>
 X-Mailer: git-send-email 2.22.1
 In-Reply-To: <20210128071133.60335-1-chaitanya.kulkarni@wdc.com>
 References: <20210128071133.60335-1-chaitanya.kulkarni@wdc.com>
@@ -97,37 +97,34 @@ X-Mailing-List: target-devel@vger.kernel.org
 
 Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 ---
- drivers/block/drbd/drbd_receiver.c | 6 ++----
+ drivers/md/dm-zoned-metadata.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/block/drbd/drbd_receiver.c b/drivers/block/drbd/drbd_receiver.c
-index 09c86ef3f0fd..e1cd3427b28b 100644
---- a/drivers/block/drbd/drbd_receiver.c
-+++ b/drivers/block/drbd/drbd_receiver.c
-@@ -1643,6 +1643,7 @@ int drbd_submit_peer_request(struct drbd_device *device,
- 	struct bio *bio;
- 	struct page *page = peer_req->pages;
- 	sector_t sector = peer_req->i.sector;
-+	struct block_device *bdev = device->ldev->backing_bdev;
- 	unsigned data_size = peer_req->i.size;
- 	unsigned n_bios = 0;
- 	unsigned nr_pages = (data_size + PAGE_SIZE -1) >> PAGE_SHIFT;
-@@ -1687,15 +1688,12 @@ int drbd_submit_peer_request(struct drbd_device *device,
- 	 * generated bio, but a bio allocated on behalf of the peer.
- 	 */
- next_bio:
--	bio = bio_alloc(GFP_NOIO, nr_pages);
-+	bio = bio_new(bdev, sector, op, op_flags, GFP_NOIO, nr_pages);
+diff --git a/drivers/md/dm-zoned-metadata.c b/drivers/md/dm-zoned-metadata.c
+index e6252f48a49c..fa0ee732c6e9 100644
+--- a/drivers/md/dm-zoned-metadata.c
++++ b/drivers/md/dm-zoned-metadata.c
+@@ -723,7 +723,8 @@ static int dmz_write_mblock(struct dmz_metadata *zmd, struct dmz_mblock *mblk,
+ 	if (dmz_bdev_is_dying(dev))
+ 		return -EIO;
+ 
+-	bio = bio_alloc(GFP_NOIO, 1);
++	bio = bio_new(dev->bdev, dmz_blk2sect(block), REQ_OP_WRITE,
++		      REQ_META | REQ_PRIO, 1, GFP_NOIO);
  	if (!bio) {
- 		drbd_err(device, "submit_ee: Allocation of a bio failed (nr_pages=%u)\n", nr_pages);
- 		goto fail;
- 	}
- 	/* > peer_req->i.sector, unless this is the first bio */
--	bio->bi_iter.bi_sector = sector;
--	bio_set_dev(bio, device->ldev->backing_bdev);
--	bio_set_op_attrs(bio, op, op_flags);
- 	bio->bi_private = peer_req;
- 	bio->bi_end_io = drbd_peer_request_endio;
+ 		set_bit(DMZ_META_ERROR, &mblk->state);
+ 		return -ENOMEM;
+@@ -731,11 +732,8 @@ static int dmz_write_mblock(struct dmz_metadata *zmd, struct dmz_mblock *mblk,
+ 
+ 	set_bit(DMZ_META_WRITING, &mblk->state);
+ 
+-	bio->bi_iter.bi_sector = dmz_blk2sect(block);
+-	bio_set_dev(bio, dev->bdev);
+ 	bio->bi_private = mblk;
+ 	bio->bi_end_io = dmz_mblock_bio_end_io;
+-	bio_set_op_attrs(bio, REQ_OP_WRITE, REQ_META | REQ_PRIO);
+ 	bio_add_page(bio, mblk->page, DMZ_BLOCK_SIZE, 0);
+ 	submit_bio(bio);
  
 -- 
 2.22.1
