@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43427C4332B
-	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 07:39:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49B98C433DB
+	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 07:40:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 13EE76146D
-	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 07:39:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 04A5E6146D
+	for <target-devel@archiver.kernel.org>; Thu, 28 Jan 2021 07:40:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232176AbhA1HjY (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 28 Jan 2021 02:39:24 -0500
-Received: from esa4.hgst.iphmx.com ([216.71.154.42]:22514 "EHLO
-        esa4.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231719AbhA1HPc (ORCPT
+        id S232166AbhA1HjU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 28 Jan 2021 02:39:20 -0500
+Received: from esa3.hgst.iphmx.com ([216.71.153.141]:57181 "EHLO
+        esa3.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231617AbhA1HPI (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 28 Jan 2021 02:15:32 -0500
+        Thu, 28 Jan 2021 02:15:08 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1611818131; x=1643354131;
+  t=1611818108; x=1643354108;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=ehPvHcNFObZpIErrj099M/D2lwJDNRsp+vZtBu0oImM=;
-  b=NnAKH5lyyfwO1Gwiin4fPWBCqQ3tKqqW+PsDj8mcQ4RMlzuVJ9QfNRyE
-   5CZvQUeXRdi5Mg0fK/Oqzy7qFEPkKUmUb6P6DMQ0WH1HiL2wjqkuJj5BB
-   EV4FklXInbANDZivN+3mhsjJUA8dpnGZTbNA0GxmKGV6Cx6c0UKsMTfJL
-   np60nuNVv7jo1KQqF+DLoDdXV/Ajuu2IRwtBVIadz1xN69teQ+qJ0yrYx
-   0h1xOqz953VTrJiCnEn/yaJAdkiXCApDWlGn4NPljLJJ9Ry2zXYraQoEX
-   djBazIhd2MJAmGJiNoCzmfQbzq5Yf1Y/Nca39Xc/Chs4SFD+fiJ14N9UU
-   A==;
-IronPort-SDR: jh0svJj4UKssDGxkT25U6k22x87TSqdY9GdizYujfpunry9hII/Stb4xprrvZKSibVnwCHDqgM
- yLdXl+Lv23SwJWGDlu8OKda/v/T8BU3GmZEUM6g8BkLbeLgm7UePEmpjHPCMH19HJBxeJLzlqS
- aPfBiK7twLCkRG9dr842ksf07YZemZ3L4DpHH1YW9yUgtwarv88sbX/+pUrU+2r+mbzCT7aWEi
- aM4BX+OrCqw5RZP0EgNVGNv/j18pq28wHrFrIFNyXiHN34TcS77a7xrOvw038Q6nFYwDntGUF/
- sTc=
+  bh=+nCtEeEc6ftLNfXULXJD9MfOSjGF3wrLBEXOv9oezHI=;
+  b=qZ/Yz64PVZQ3vvJYdpiSX1p+dFLu2rIiYRHTb6f7J9Z4VkhhKPXBQnxR
+   VzoD6cup92OHj+sRjGkO2qumFczzUBmuUHX+d5P4MsRKjOYKU/mh+8Ts6
+   u4GKa4M7u32NGccitcxVfVh2uOjiRYU9RME+j1dBMs6EdTUn+2g6zUD1y
+   Qa30C5QD3TPEyLrdgMLxrfasEhOW1wf9RLYY8jnGzsoFw3wRZvrvrMiHN
+   SveJhD32q0n3O4k2FAo5CelDBy3kPbbl1NTjHhavBXYgv1dXEHSNBs2OE
+   XfE13H+L919H5gZcoyX1xe9+vAkHl7iSvUeDDdeu6DnfFFS5sk4sZfAZ5
+   w==;
+IronPort-SDR: c2ok0mPY/6Etdqiu4wLr+O5KJbUSrWjFvvaCeugrcoTay+0VD7RMTErfyt8u1ppuvOGANM5vLf
+ mT1wH+GIVUvEUHXwuKCZIHOI52exL4VAXyYzwkuLkl56jfslKnlTsoL+1KRdgIXwKGgwzckXhD
+ +i+f0kZiZhMs/c4H8MSU1p0xc7/g6UmpdqCiw4tC3fSoo+ArQtZF7NUtphBG+FFxFAhFNLZHEB
+ GVI0uK/FCx5zNgc0Kj9y3AhGIhXSvAgW1JbbTP5UOTQ3H7B8QE57XF/GpetyVCXXyf5X06X0Rv
+ RP8=
 X-IronPort-AV: E=Sophos;i="5.79,381,1602518400"; 
-   d="scan'208";a="158517430"
-Received: from h199-255-45-15.hgst.com (HELO uls-op-cesaep02.wdc.com) ([199.255.45.15])
-  by ob1.hgst.iphmx.com with ESMTP; 28 Jan 2021 15:14:26 +0800
-IronPort-SDR: ge6KmcgkfxAkSyZ59ylI29KOkEr/IGzYlHyJ6i9r8K7+tUBuBpXjU8Vrmmzr7h4HabXHoIibYe
- dgBfvoBr7bCE/3PbR8ZrPCSjHtJ4830Rcz0skXr5odabQMyt55bs54p0a0WAEcgUqjtHNyEMhN
- 09ueczfImOGCw+2V9A7k6NWDUdojrLPMKX6HLRLuq/XZrobqQCDmYwyaZ1s052fOP5FiKnTK1f
- umtgFwkgcGS8fBFiDpOYRzlY927bjkmjmvPhx+dbTaNL8O5OoVOtx3FvFfEB186Fw58zMUcegm
- XuupjC3xX+pA8/pNY2tjyUHd
+   d="scan'208";a="162963301"
+Received: from h199-255-45-14.hgst.com (HELO uls-op-cesaep01.wdc.com) ([199.255.45.14])
+  by ob1.hgst.iphmx.com with ESMTP; 28 Jan 2021 15:14:02 +0800
+IronPort-SDR: B4W2DPbRXk5KkRaHRrB1OI7mbcRYiIweV3tKD/02NShLL3QdnKu94ITyx5iUC7wZOyJqRLwDfX
+ kDUML6AVU8Rie3NPfndFpEXM/sej/SzbH/Tc3WKdTV/3x9IYdsk1URshU31UkSCltyqCDWib/S
+ FNMwLkgzfnVuJTODQby/ofQgP4nrbxlodURGEZjV+YZzsdg793Ic8r7o3W9uUdi1uL9A79/FJ+
+ ik82vmXVA+uPR39qc6J5YhDdL1B2KLrfm4yNfxJm5TaXcE0r09QKfawMqJIkZVr1a9QOaZi2+j
+ 43MOjZz7nUiz8HDTPEiihZts
 Received: from uls-op-cesaip02.wdc.com ([10.248.3.37])
-  by uls-op-cesaep02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2021 22:56:44 -0800
-IronPort-SDR: 8zWpKV1GG73An1zpnhB0A6RHwKcvj53Vuxf9sCqOuA5ZBa5rmYze0QOVvU8HXRv/G7xpZnMIM1
- owK+1cH03BzVuf34Vf4nPTxb3MJRxKHU7MPVsfYKBvoE5U6OUm3WvlKRFiuZT6me2l9YBpl9Dw
- srBAVfHgvdy6RitQaBWTWMkJB+swHKrWKKu/bnpunnMHs5/vTt80z06ovpDFKB7vDmFytTZ38T
- a/jEmxYBTtNgI1MsJxovm0Lez6j5sfQFarO3Hedm9NgwCWDpXDWzTcx88c/FgbEiOtdVVLfaVV
- avQ=
+  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jan 2021 22:58:22 -0800
+IronPort-SDR: bKh0CeniWKxunCNm+jG9l29yuZPN3D1Gz/JAN/nXUgFIRD0d9U6vumFzntseHSRI/MX2HRMaPA
+ UMPAuzQRLKKctTclKUM2aKzz/TiMAXwUZH3o+WrBdocCIchNR3Uaqkot1vGRPosruVN9zghU/S
+ 4vOkqxWogelsFgsfoTKuGHPXS0UKS78L+4719OXJlLRXt4xtaxkQvpBhG3tmxGAdTiSRUPHfPH
+ NMPtpPqqTRUN1CMc8PtnqpeNKU9vUEZxV6F3t4AwWzk79mqUHtn9Cp1IEV7L86NNsrAMFQsKWR
+ ljI=
 WDCIronportException: Internal
 Received: from vm.labspan.wdc.com (HELO vm.sc.wdc.com) ([10.6.137.102])
-  by uls-op-cesaip02.wdc.com with ESMTP; 27 Jan 2021 23:14:26 -0800
+  by uls-op-cesaip02.wdc.com with ESMTP; 27 Jan 2021 23:14:02 -0800
 From:   Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 To:     linux-xfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
         dm-devel@redhat.com, linux-block@vger.kernel.org,
@@ -83,9 +83,9 @@ Cc:     axboe@kernel.dk, philipp.reisner@linbit.com,
         alex.shi@linux.alibaba.com, asml.silence@gmail.com,
         ming.lei@redhat.com, tj@kernel.org, osandov@fb.com,
         bvanassche@acm.org, jefflexu@linux.alibaba.com
-Subject: [RFC PATCH 19/34] fs/jfs/jfs_logmgr.c: use bio_new in lbmRead
-Date:   Wed, 27 Jan 2021 23:11:18 -0800
-Message-Id: <20210128071133.60335-20-chaitanya.kulkarni@wdc.com>
+Subject: [RFC PATCH 16/34] fs/direct-io: use bio_new in dio_bio_alloc
+Date:   Wed, 27 Jan 2021 23:11:15 -0800
+Message-Id: <20210128071133.60335-17-chaitanya.kulkarni@wdc.com>
 X-Mailer: git-send-email 2.22.1
 In-Reply-To: <20210128071133.60335-1-chaitanya.kulkarni@wdc.com>
 References: <20210128071133.60335-1-chaitanya.kulkarni@wdc.com>
@@ -97,33 +97,41 @@ X-Mailing-List: target-devel@vger.kernel.org
 
 Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 ---
- fs/jfs/jfs_logmgr.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ fs/crypto/bio.c | 2 +-
+ fs/direct-io.c  | 6 ++----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/fs/jfs/jfs_logmgr.c b/fs/jfs/jfs_logmgr.c
-index 9330eff210e0..4481f3e33a3f 100644
---- a/fs/jfs/jfs_logmgr.c
-+++ b/fs/jfs/jfs_logmgr.c
-@@ -1979,17 +1979,14 @@ static int lbmRead(struct jfs_log * log, int pn, struct lbuf ** bpp)
+diff --git a/fs/crypto/bio.c b/fs/crypto/bio.c
+index 20dab9bdf098..28cd62ce853e 100644
+--- a/fs/crypto/bio.c
++++ b/fs/crypto/bio.c
+@@ -148,7 +148,7 @@ int fscrypt_zeroout_range(const struct inode *inode, pgoff_t lblk,
+ 		return -EINVAL;
  
- 	bp->l_flag |= lbmREAD;
+ 	/* This always succeeds since __GFP_DIRECT_RECLAIM is set. */
+-	bio = bio_alloc(inode->i_sb->s_bdev, 0, REQ_OP_WRITE, 0, nr_pages,
++	bio = bio_new(inode->i_sb->s_bdev, 0, REQ_OP_WRITE, 0, nr_pages,
+ 			GFP_NOFS);
  
--	bio = bio_alloc(GFP_NOFS, 1);
--
--	bio->bi_iter.bi_sector = bp->l_blkno << (log->l2bsize - 9);
--	bio_set_dev(bio, log->bdev);
-+	bio = bio_new(log->bdev, bp->l_blkno << (log->l2bsize - 9),
-+			REQ_OP_READ, 0, 1, GFP_NOFS);
+ 	do {
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index aa1083ecd623..6aab1bd167bc 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -397,11 +397,9 @@ dio_bio_alloc(struct dio *dio, struct dio_submit *sdio,
+ 	 * bio_alloc() is guaranteed to return a bio when allowed to sleep and
+ 	 * we request a valid number of vectors.
+ 	 */
+-	bio = bio_alloc(GFP_KERNEL, nr_vecs);
++	bio = bio_new(bdev, first_sector, dio->op, dio->op_flags, nr_vecs,
++		      GFP_KERNEL);
  
- 	bio_add_page(bio, bp->l_page, LOGPSIZE, bp->l_offset);
- 	BUG_ON(bio->bi_iter.bi_size != LOGPSIZE);
- 
- 	bio->bi_end_io = lbmIODone;
- 	bio->bi_private = bp;
--	bio->bi_opf = REQ_OP_READ;
- 	/*check if journaling to disk has been disabled*/
- 	if (log->no_integrity) {
- 		bio->bi_iter.bi_size = 0;
+-	bio_set_dev(bio, bdev);
+-	bio->bi_iter.bi_sector = first_sector;
+-	bio_set_op_attrs(bio, dio->op, dio->op_flags);
+ 	if (dio->is_async)
+ 		bio->bi_end_io = dio_bio_end_aio;
+ 	else
 -- 
 2.22.1
 
