@@ -2,126 +2,64 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79931C433E0
-	for <target-devel@archiver.kernel.org>; Fri, 29 Jan 2021 19:10:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97ED6C433E0
+	for <target-devel@archiver.kernel.org>; Wed,  3 Feb 2021 01:51:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 423BF64DE3
-	for <target-devel@archiver.kernel.org>; Fri, 29 Jan 2021 19:10:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4D18B64F75
+	for <target-devel@archiver.kernel.org>; Wed,  3 Feb 2021 01:51:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233032AbhA2TKq (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 29 Jan 2021 14:10:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44544 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232942AbhA2TJn (ORCPT
+        id S231261AbhBCBuk (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 2 Feb 2021 20:50:40 -0500
+Received: from out30-42.freemail.mail.aliyun.com ([115.124.30.42]:38016 "EHLO
+        out30-42.freemail.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S230369AbhBCBuj (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 29 Jan 2021 14:09:43 -0500
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D76A9C06174A;
-        Fri, 29 Jan 2021 11:08:59 -0800 (PST)
-Received: by mail-wr1-x42f.google.com with SMTP id c12so9910723wrc.7;
-        Fri, 29 Jan 2021 11:08:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=O23rlZtfo1FZK0qx/WutTi+hkYR2QPOf0nbtZy10Zxw=;
-        b=DdVDH9ZXqAC6pKsXfQftK93OjTPC27Nw5D2M6I8L/f2uvZev0A9JsuKm0emyUXWDAF
-         SM7M/J5PhQl9LL8FbOW4nNny9Or4Gkqp9wlfYzTawOjIgh2P71w8aSqwWH9J6OkZmR/z
-         GpY8TDRxBO79rLhpmj6+29vwqm6hJmzjOy6ym74Rq3Qd5KbAWfoHO4pMnjuFrxqw5gbE
-         9uGCmsJhWd+lFYGDpi2mUqyJdWdAgaeMHNofQjputA9/s65xjOmhqiCTbD+tW5nU+Ex1
-         RJTAI7mK3KBmLP/le5Q01NDo6Ed8KhScv3SWrGEHMCjKt6GT6Tf5HZfXLQ5/5hIB8Y1Z
-         5qpg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=O23rlZtfo1FZK0qx/WutTi+hkYR2QPOf0nbtZy10Zxw=;
-        b=uISZpXuAqlEj+FCY9gquqskiRK8lGUWuXy3dUzsUrYMN3yU5Ak5FwCSUNfDhJCqYCe
-         QH2Cxbc2YjpM67Td5zhiCFc+NG+AHk4NkErrNwKzK9m3kdTihxgP9prte9su/2Za/xEI
-         WAjYg2Z40NdMyIkChFOoPFo5hvqk4jwGdri/NdGxkphReeJbTsVcdpG7FYMA8bb36vlQ
-         rm7OawgDams0AC+7IpZqhMsb4Xba4y30X9tUnkLs7VLZAb43WrA7ilrOxuGrykyasjg+
-         9nBDktPdKamw9lIO9URTfH4yxmVULD3Y9FntYwqTZRBD62gRDTS+zAAcNpOY773EEuqE
-         8eHQ==
-X-Gm-Message-State: AOAM530zu47yrmWVzv3ouVqpFhVtBnZFAIIFPH2LmZ62kQz4WbVDZqzo
-        U3YPo4ReOneTJ0JOCu6rbI65QE/WLcKcLLR3ySE=
-X-Google-Smtp-Source: ABdhPJzAbgdkkapiGmzGouxTGwveq5m7LmJNveRCk+Kv9qY2evOh0QQsbBh6o6uIYkABxwRfFnIBxorHq8dmbcxo0OQ=
-X-Received: by 2002:a5d:49cf:: with SMTP id t15mr6034971wrs.217.1611947338629;
- Fri, 29 Jan 2021 11:08:58 -0800 (PST)
-MIME-Version: 1.0
-References: <20210127215010.99954-1-uwe@kleine-koenig.org>
-In-Reply-To: <20210127215010.99954-1-uwe@kleine-koenig.org>
-From:   Lijun Pan <lijunp213@gmail.com>
-Date:   Fri, 29 Jan 2021 13:08:45 -0600
-Message-ID: <CAOhMmr4ZMXS+R3AcdKm3qcePfuaZeC-0dNWvsSzowbv5hXo2-Q@mail.gmail.com>
-Subject: Re: [PATCH] vio: make remove callback return void
-To:     =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <uwe@kleine-koenig.org>
-Cc:     Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Jens Axboe <axboe@kernel.dk>, Matt Mackall <mpm@selenic.com>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Peter Huewe <peterhuewe@gmx.de>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        Haren Myneni <haren@us.ibm.com>,
-        =?UTF-8?Q?Breno_Leit=C3=A3o?= <leitao@debian.org>,
-        Nayna Jain <nayna@linux.ibm.com>,
-        Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
-        Steven Royer <seroyer@linux.ibm.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Cristobal Forno <cforno12@linux.ibm.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Dany Madden <drt@linux.ibm.com>, Lijun Pan <ljp@linux.ibm.com>,
-        Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
-        Tyrel Datwyler <tyreld@linux.ibm.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Michael Cyr <mikecyr@linux.ibm.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        sparclinux@vger.kernel.org, linux-block@vger.kernel.org,
-        linux-crypto@vger.kernel.org, linux-integrity@vger.kernel.org,
-        netdev@vger.kernel.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        Tue, 2 Feb 2021 20:50:39 -0500
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R881e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04394;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0UNiznmg_1612316993;
+Received: from j63c13417.sqa.eu95.tbsite.net(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0UNiznmg_1612316993)
+          by smtp.aliyun-inc.com(127.0.0.1);
+          Wed, 03 Feb 2021 09:49:53 +0800
+From:   Yang Li <yang.lee@linux.alibaba.com>
+To:     bootc@bootc.net
+Cc:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org,
+        linux1394-devel@lists.sourceforge.net,
+        linux-kernel@vger.kernel.org, Yang Li <yang.lee@linux.alibaba.com>
+Subject: [PATCH] scsi: target: remove unneeded semicolon
+Date:   Wed,  3 Feb 2021 09:49:52 +0800
+Message-Id: <1612316992-71443-1-git-send-email-yang.lee@linux.alibaba.com>
+X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, Jan 27, 2021 at 6:41 PM Uwe Kleine-K=C3=B6nig <uwe@kleine-koenig.or=
-g> wrote:
->
-> The driver core ignores the return value of struct bus_type::remove()
-> because there is only little that can be done. To simplify the quest to
-> make this function return void, let struct vio_driver::remove() return
-> void, too. All users already unconditionally return 0, this commit makes
-> it obvious that returning an error code is a bad idea and makes it
-> obvious for future driver authors that returning an error code isn't
-> intended.
->
-> Note there are two nominally different implementations for a vio bus:
-> one in arch/sparc/kernel/vio.c and the other in
-> arch/powerpc/platforms/pseries/vio.c. I didn't care to check which
-> driver is using which of these busses (or if even some of them can be
-> used with both) and simply adapt all drivers and the two bus codes in
-> one go.
->
-> Note that for the powerpc implementation there is a semantical change:
-> Before this patch for a device that was bound to a driver without a
-> remove callback vio_cmo_bus_remove(viodev) wasn't called. As the device
-> core still considers the device unbound after vio_bus_remove() returns
-> calling this unconditionally is the consistent behaviour which is
-> implemented here.
->
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <uwe@kleine-koenig.org>
+Eliminate the following coccicheck warning:
+./drivers/target/sbp/sbp_target.c:1009:2-3: Unneeded semicolon
 
-Acked-by: Lijun Pan <ljp@linux.ibm.com>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+---
+ drivers/target/sbp/sbp_target.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
+index e4a9b9f..2a6165f 100644
+--- a/drivers/target/sbp/sbp_target.c
++++ b/drivers/target/sbp/sbp_target.c
+@@ -1006,7 +1006,7 @@ static void tgt_agent_fetch_work(struct work_struct *work)
+ 			agent->state = AGENT_STATE_SUSPENDED;
+ 
+ 		spin_unlock_bh(&agent->lock);
+-	};
++	}
+ }
+ 
+ static struct sbp_target_agent *sbp_target_agent_register(
+-- 
+1.8.3.1
+
