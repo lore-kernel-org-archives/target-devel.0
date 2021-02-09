@@ -2,155 +2,190 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8941C433DB
-	for <target-devel@archiver.kernel.org>; Tue,  9 Feb 2021 07:24:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A63CBC433E0
+	for <target-devel@archiver.kernel.org>; Tue,  9 Feb 2021 12:39:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9517264EBD
-	for <target-devel@archiver.kernel.org>; Tue,  9 Feb 2021 07:24:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6A43D64E88
+	for <target-devel@archiver.kernel.org>; Tue,  9 Feb 2021 12:39:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229464AbhBIHYh (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 9 Feb 2021 02:24:37 -0500
-Received: from mta-02.yadro.com ([89.207.88.252]:37990 "EHLO mta-01.yadro.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S230179AbhBIHY2 (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 9 Feb 2021 02:24:28 -0500
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id F3EC54128C;
-        Tue,  9 Feb 2021 07:23:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        content-type:content-type:content-transfer-encoding:mime-version
-        :reply-to:references:in-reply-to:x-mailer:message-id:date:date
-        :subject:subject:from:from:received:received:received; s=mta-01;
-         t=1612855423; x=1614669824; bh=lgkQvaTcnA9En4xI04uq4efVNNX1qBOu
-        oCmnn4ZoQTQ=; b=gWI+A7PhQjiAVY2z/SKfJhgXsHURTzU12f5p3nq3nZL6ngjE
-        9exQdcVcFjC3sagPmmuyGzRYMElQQ4681BdIFVopzdGQRUSaoFE1cdyTsbrRk15e
-        KdUm3Elux1VCp0gT3qkMtLarCNM7QsoDMfJxWbCBqfdD3L+Nw1i5jdvS0fA=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id fTG4MMfX0Q8j; Tue,  9 Feb 2021 10:23:43 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com [172.17.10.102])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id C40CD41278;
-        Tue,  9 Feb 2021 10:23:43 +0300 (MSK)
-Received: from localhost (10.199.0.114) by T-EXCH-02.corp.yadro.com
- (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Tue, 9 Feb
- 2021 10:23:43 +0300
-From:   Aleksandr Miloserdov <a.miloserdov@yadro.com>
-To:     <target-devel@vger.kernel.org>
-CC:     <linux-scsi@vger.kernel.org>, <martin.petersen@oracle.com>,
-        <r.bolshakov@yadro.com>,
-        Aleksandr Miloserdov <a.miloserdov@yadro.com>
-Subject: [PATCH 2/2] scsi: target: core: Prevent underflow for service actions
-Date:   Tue, 9 Feb 2021 10:22:02 +0300
-Message-ID: <20210209072202.41154-3-a.miloserdov@yadro.com>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20210209072202.41154-1-a.miloserdov@yadro.com>
-References: <20210209072202.41154-1-a.miloserdov@yadro.com>
-Reply-To: <a.miloserdov@yadro.com>
-MIME-Version: 1.0
+        id S229626AbhBIMjp (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 9 Feb 2021 07:39:45 -0500
+Received: from userp2130.oracle.com ([156.151.31.86]:43464 "EHLO
+        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229988AbhBIMjn (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Tue, 9 Feb 2021 07:39:43 -0500
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 119CYjOD038285;
+        Tue, 9 Feb 2021 12:38:58 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : subject :
+ date : message-id : content-transfer-encoding : content-type :
+ mime-version; s=corp-2020-01-29;
+ bh=c2Wby0SKu5sjWfKFJOtH/PiT2u0EGbraW7PzUAc+Zo4=;
+ b=O62icuhnu643nwKoZjXpWLHuArnn50Ck7nssX86x6cnXjZwE0HM1za81FE18789vCX5r
+ 1U+iLTnjy+PFruIseXpLgp8IM7czhWhRqeD/wR5qHUyB9NNnqT+fOWS+LBX8ZP759Fla
+ QKX+3VhQ0aw6/nDBHqvGrUwpYJQURFc6XhV9PQNIUFZj/rc3j4sBxxlXaYiIhhWAcvyA
+ SYfd4nA19KdoJNbK4ScnV1X+h6n+zp7Nyu07sJO7oKkq6o4v0YUilFY17Kh4sdWtOpL/
+ pHnOSsMLpgcGq9kHM1lCT8BuH0/BTNdZsYD09Hobp7QIIXgHBgTX4DdKYRV3Uaka2pdT 6Q== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+        by userp2130.oracle.com with ESMTP id 36hjhqqag5-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 09 Feb 2021 12:38:57 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+        by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 119CaDIC178533;
+        Tue, 9 Feb 2021 12:38:57 GMT
+Received: from nam10-dm6-obe.outbound.protection.outlook.com (mail-dm6nam10lp2100.outbound.protection.outlook.com [104.47.58.100])
+        by aserp3030.oracle.com with ESMTP id 36j4pnn07j-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 09 Feb 2021 12:38:56 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=AhaS6ZYsPZbv+kizynLUAtQgp0P49cOb4vjcjvHJICdT0//iGyF5Git2bJmplORs1cV99FVr94Pd84WepMZMFKxDosW3iA1pBSobDp3PPyijtHIDgwM6BJ+HA03bfp/H4g/D6AsDmnFCW6DIk3ItUC3HEnrjXuJnQqPKUlTrYUKpe0S63XYSrQhT4nrgY+7tyJ2kf5gXxYaOryeJ2tlLP4YbLQzVRKUH9fVz6BR+Og/3jiqAYBPLz3id/gbHllQFvSyL7JuhGbSdMPe+O1Lp8PIu6npZJIFgKP5i+Z7l6AmNj1JORQTNN1IXDC3ToBRiMqdhcRU1QpbpNOZtmzL6qg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=c2Wby0SKu5sjWfKFJOtH/PiT2u0EGbraW7PzUAc+Zo4=;
+ b=LWxbsNtT6orYXEVFWY4OxPi8biSj8/vg9UnFjcyqLakJYLr8d6MXdqjguAcY4x7QgM3YPyjBdFvg5BVKA8MK1Tq7vMtMscpavjILAWoiTY+iAo+w1Cu6Z9GeSt8RLpeBw652V1pwg8Q9bNHneAOA3U1SGFq58M1eOMmb0vuNZ5nTPQbp2DIQmigfiU4ezBdr9rq2ftCxB+7vEB5K9v6je71PdWW60z61N5wvEOod7xiDX8LhvuAEwl1NQ8XT8HtlhWhi+lIVj9YfJfmZ06KhIhqLXvhA4cV75qkAL/W5F2gez8vL82/v/u+cPa9RWURmDrl3JfSI3Hd5VVoeYWPvIQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=c2Wby0SKu5sjWfKFJOtH/PiT2u0EGbraW7PzUAc+Zo4=;
+ b=aIppOK5QAaIyZESqtYZ3wABGZDuwFBAcBYlOsqSQxbXRMf0f3lOow3fRnSSxyG/kWV6uJzsfMpouKxP6lyI+g3vVit35SL937kRkRXVtviZ1TrCzYqNiXROMdodKU51iT/jc0D6C8Zvws8Z7kkK1DUFpsxo4QjtffdGqjl8H2P8=
+Authentication-Results: wdc.com; dkim=none (message not signed)
+ header.d=none;wdc.com; dmarc=none action=none header.from=oracle.com;
+Received: from BYAPR10MB3573.namprd10.prod.outlook.com (2603:10b6:a03:11e::32)
+ by BYAPR10MB2600.namprd10.prod.outlook.com (2603:10b6:a02:aa::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3825.25; Tue, 9 Feb
+ 2021 12:38:54 +0000
+Received: from BYAPR10MB3573.namprd10.prod.outlook.com
+ ([fe80::1d86:b9d7:c9ef:ba20]) by BYAPR10MB3573.namprd10.prod.outlook.com
+ ([fe80::1d86:b9d7:c9ef:ba20%7]) with mapi id 15.20.3825.030; Tue, 9 Feb 2021
+ 12:38:54 +0000
+From:   Mike Christie <michael.christie@oracle.com>
+To:     Chaitanya.Kulkarni@wdc.com, loberman@redhat.com,
+        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, mst@redhat.com, stefanha@redhat.com,
+        virtualization@lists.linux-foundation.org
+Subject: [PATCH 00/12 V2] target: fix cmd plugging and completion
+Date:   Tue,  9 Feb 2021 06:38:32 -0600
+Message-Id: <20210209123845.4856-1-michael.christie@oracle.com>
+X-Mailer: git-send-email 2.25.1
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-Originating-IP: [10.199.0.114]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-02.corp.yadro.com (172.17.10.102)
+X-Originating-IP: [73.88.28.6]
+X-ClientProxiedBy: CH2PR03CA0007.namprd03.prod.outlook.com
+ (2603:10b6:610:59::17) To BYAPR10MB3573.namprd10.prod.outlook.com
+ (2603:10b6:a03:11e::32)
+MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from localhost.localdomain (73.88.28.6) by CH2PR03CA0007.namprd03.prod.outlook.com (2603:10b6:610:59::17) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3846.25 via Frontend Transport; Tue, 9 Feb 2021 12:38:53 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 52dc666f-58e0-4703-7408-08d8ccf7a94e
+X-MS-TrafficTypeDiagnostic: BYAPR10MB2600:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <BYAPR10MB260089BEA5F7E1846B5DE7EAF18E9@BYAPR10MB2600.namprd10.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:8882;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: FneyM39rBBbGhkFTUYL4RTwVoyi1QbMtv59rOZirv/p3lWlsO1rTG6JI1OEVHMRIz8HwsQ4wzH7sQmRHzYDUuWjjpbeoUpDGXdh1vJt94JY7AdJCgot4Cn/222W/71A6CWUJ0SDXOFEUttpXyPTCfN4fFmD9LVTeGXMrQtHErwRg/tbQGi++5XYbpXjhwApvrZ6UAhjsTw9JLpEuSXESHuTdI5a2e5BtCe0z2ygChDFOWdSXNz7OD16H34i8uj1ShzF46e2UHnk5wHBN3Fj9CIuYG75JrRigbiSIkQnVXsf8iowrOz7iufINR/156SCX2N1BWaMpNyEToGgCU8/U6hBTIDidVEKvrDn8tuu+1w7HHBxWnJhtGjrwX2BDYyduL5yY1y/Sy393Zz1GjXcDXIEsg8iw39Y7R5Yrr6HyxPH5wrXpwll8M4jiDRjOGbBpazd8KvlqP6kuiBHCrnjk1a9br1g8pwFd6qbr+Z8IfIf+ArrR5p+934YERUpY6D/9ysXfIIK9s7ejHV3GvIVMEv4T9IZoy9wtW8Wi+8nAxLCQ9uP8SwNpQvrUO4eK9di29IOgsRUpxapSOMSj3BKuQg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR10MB3573.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(39860400002)(346002)(376002)(366004)(136003)(396003)(2906002)(6486002)(16526019)(8676002)(86362001)(8936002)(5660300002)(6666004)(1076003)(478600001)(6512007)(6506007)(52116002)(26005)(69590400011)(186003)(66946007)(66476007)(36756003)(66556008)(316002)(83380400001)(956004)(2616005);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?qLibVrONfhSl6CJRITr9BYGRVz3n4B/20iz8QHV2bJbGUdJBBOMLJDF4KmXg?=
+ =?us-ascii?Q?hCp1QkMyb8TY4JtHD0nNpiHsLpxMiNJaKWIKNy+eVo9yN35Koda1i3bbcgIE?=
+ =?us-ascii?Q?GoaZexAiY4yV4u1xWLog5+MldURNkjF1BreXYp1SDxQatYdCHXLq8L8y2wqw?=
+ =?us-ascii?Q?yZsfOcmcCSFR3oVyK0qtRSvKFvsKe+rY/BvMdM5OMiFsu4GJrlN9MZTlmL9q?=
+ =?us-ascii?Q?UJ7T/ZJOedTzkG265HqA91MBuAFB+YLGBVlqO7+foKqCvBFSIUqqMhZwI7Mr?=
+ =?us-ascii?Q?iN6nH8X30XDOClBPcJ0X2w/1NbEz2/CNtg9wNLLmqOI9fnNu/pBbiNLmdDix?=
+ =?us-ascii?Q?+xybrO7bXc2veEmQ19iVFOt+NjMS9AXmcu8fNe+eyC4degwuwBCx1GEnSnbH?=
+ =?us-ascii?Q?3Yveqx+ua3r7BEwlAgFqG1ilqUdGW78rApNva7Aa4kUUkMThtkSEetEYgj+0?=
+ =?us-ascii?Q?nnjvpmwyBP5ObT0sehfbC5HdO4ny5QWn/haeMDUVbLCQs3o7jra5k29Zduo7?=
+ =?us-ascii?Q?4xuwJkcP16CNDL6lJHEBYyCjXCHxuhE2yVBgG2rvXgh8JhX62YbsiKLW8dc4?=
+ =?us-ascii?Q?IPiRR8WyeKkRG0jwtanEeMbohVWw+A6tHJty6tDgkaBgSqtYQ+Zf6msZjB1n?=
+ =?us-ascii?Q?jFS4tbcnb4dUjsgLN5AvjXwt34JOvCIDGYr3zIC+9OXKM3lnm+KFYFilafP4?=
+ =?us-ascii?Q?J9kcHWhu0Vdp7Q8b0aYSGUmw9HxLEjdwQBXyLOtkq7zClqG3Wk4AZBJ3LPJX?=
+ =?us-ascii?Q?geqxmIFmzeH+sqFDWnpfTPD+wV/qh2DQWfowJHHvAQUbrywhuzQpGKzSeI56?=
+ =?us-ascii?Q?lvI3OoosNAriVA2TLQcXHgC9ZoJnu5DgAzS0oE1PRphy3pi2w15C3f4Ao+ck?=
+ =?us-ascii?Q?i9E93wWbMt77xHWEk5Pbgv4h/PSW9nrBRtiX5WaMtNU2UCAY4MsNPNsptoXm?=
+ =?us-ascii?Q?yJkXhCa4qUM0IWV5nRw0r4i5CLhUzuqm+wHUAaHaGkaQnDYYuIxj7W/c+i3P?=
+ =?us-ascii?Q?NeOhkPBaq4Gs4Ud/UJbt7lvX/h4/HXcnv5ycCRBFp6YxW8eFdwtJJc1UTZot?=
+ =?us-ascii?Q?rLCwq0wY1/w7xicfOXYgTseIV7j8yFkb5I2BuYw3JR43y+/Sl11RhmDnvD+f?=
+ =?us-ascii?Q?8oonJGKu33slozADTbjxwJVdERJd0dfavO+JG+R1nFH9nD6wxCCYu31sqwzc?=
+ =?us-ascii?Q?4B6xalxOG5ZtJzFZxpDls48OWZm4R2FOlTXqluThEr5kzKhddiujgC5dEebj?=
+ =?us-ascii?Q?UxY0t5WgtcNMqgwrP1PZTVdf6E+hSne8bp06zMR8wAvx9y19F5nxcJGunVd9?=
+ =?us-ascii?Q?Q7QdQcGMGjKnjaQesHy6VxvY?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 52dc666f-58e0-4703-7408-08d8ccf7a94e
+X-MS-Exchange-CrossTenant-AuthSource: BYAPR10MB3573.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Feb 2021 12:38:54.3943
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: pNBOD3BmXS2w7Zp4Wet6Q9IHGzFX4NcNYo8W0SPRew4GZ9gVIA9UiH+1ReU3pf8jnClX5KomVYDFVmEfIpKv9ylU9/UZifr5bSteTvwGuQQ=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR10MB2600
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9889 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 adultscore=0
+ mlxlogscore=999 malwarescore=0 bulkscore=0 phishscore=0 spamscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2102090066
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9889 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 impostorscore=0
+ priorityscore=1501 bulkscore=0 suspectscore=0 mlxscore=0 phishscore=0
+ lowpriorityscore=0 mlxlogscore=999 clxscore=1015 spamscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2102090066
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-TCM buffer length doesn't necessarily equal 8 + ADDITIONAL LENGTH which
-might be considered an underflow in case of Data-In size being greater than
-8 + ADDITIONAL LENGTH. So truncate buffer length to prevent underflow.
+The following patches made over Martin's 5.12 branches fix two
+issues:
 
-Signed-off-by: Aleksandr Miloserdov <a.miloserdov@yadro.com>
-Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/target/target_core_pr.c | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+1. target_core_iblock plugs and unplugs the queue for every
+command. To handle this issue and handle an issue that
+vhost-scsi and loop were avoiding by adding their own workqueue,
+I added a new submission workqueue to LIO. Drivers can pass cmds
+to it, and we can then submit batches of cmds.
 
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 14db5e568f22..a13140e95b47 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -3739,6 +3739,7 @@ core_scsi3_pri_read_keys(struct se_cmd *cmd)
- 	spin_unlock(&dev->t10_pr.registration_lock);
- 
- 	put_unaligned_be32(add_len, &buf[4]);
-+	target_set_cmd_data_length(cmd, 8 + add_len);
- 
- 	transport_kunmap_data_sg(cmd);
- 
-@@ -3757,7 +3758,7 @@ core_scsi3_pri_read_reservation(struct se_cmd *cmd)
- 	struct t10_pr_registration *pr_reg;
- 	unsigned char *buf;
- 	u64 pr_res_key;
--	u32 add_len = 16; /* Hardcoded to 16 when a reservation is held. */
-+	u32 add_len = 0;
- 
- 	if (cmd->data_length < 8) {
- 		pr_err("PRIN SA READ_RESERVATIONS SCSI Data Length: %u"
-@@ -3775,8 +3776,9 @@ core_scsi3_pri_read_reservation(struct se_cmd *cmd)
- 	pr_reg = dev->dev_pr_res_holder;
- 	if (pr_reg) {
- 		/*
--		 * Set the hardcoded Additional Length
-+		 * Set the Additional Length to 16 when a reservation is held
- 		 */
-+		add_len = 16;
- 		put_unaligned_be32(add_len, &buf[4]);
- 
- 		if (cmd->data_length < 22)
-@@ -3812,6 +3814,8 @@ core_scsi3_pri_read_reservation(struct se_cmd *cmd)
- 			  (pr_reg->pr_res_type & 0x0f);
- 	}
- 
-+	target_set_cmd_data_length(cmd, 8 + add_len);
-+
- err:
- 	spin_unlock(&dev->dev_reservation_lock);
- 	transport_kunmap_data_sg(cmd);
-@@ -3830,7 +3834,7 @@ core_scsi3_pri_report_capabilities(struct se_cmd *cmd)
- 	struct se_device *dev = cmd->se_dev;
- 	struct t10_reservation *pr_tmpl = &dev->t10_pr;
- 	unsigned char *buf;
--	u16 add_len = 8; /* Hardcoded to 8. */
-+	u16 len = 8; /* Hardcoded to 8. */
- 
- 	if (cmd->data_length < 6) {
- 		pr_err("PRIN SA REPORT_CAPABILITIES SCSI Data Length:"
-@@ -3842,7 +3846,7 @@ core_scsi3_pri_report_capabilities(struct se_cmd *cmd)
- 	if (!buf)
- 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
- 
--	put_unaligned_be16(add_len, &buf[0]);
-+	put_unaligned_be16(len, &buf[0]);
- 	buf[2] |= 0x10; /* CRH: Compatible Reservation Hanlding bit. */
- 	buf[2] |= 0x08; /* SIP_C: Specify Initiator Ports Capable bit */
- 	buf[2] |= 0x04; /* ATP_C: All Target Ports Capable bit */
-@@ -3871,6 +3875,8 @@ core_scsi3_pri_report_capabilities(struct se_cmd *cmd)
- 	buf[4] |= 0x02; /* PR_TYPE_WRITE_EXCLUSIVE */
- 	buf[5] |= 0x01; /* PR_TYPE_EXCLUSIVE_ACCESS_ALLREG */
- 
-+	target_set_cmd_data_length(cmd, len);
-+
- 	transport_kunmap_data_sg(cmd);
- 
- 	return 0;
-@@ -4031,6 +4037,7 @@ core_scsi3_pri_read_full_status(struct se_cmd *cmd)
- 	 * Set ADDITIONAL_LENGTH
- 	 */
- 	put_unaligned_be32(add_len, &buf[4]);
-+	target_set_cmd_data_length(cmd, 8 + add_len);
- 
- 	transport_kunmap_data_sg(cmd);
- 
--- 
-2.28.0
+2. vhost-scsi and loop on the submission side were doing a work
+per cmd and on the lio completion side it was doing a work per
+cmd. The cap on running works is 512 (max_active) and so we can
+end up end up using a lot of threads when submissions start blocking
+because they hit the block tag limit or the completion side blocks
+trying to send the cmd. In this patchset I just use a cmd list
+per session to avoid abusing the workueue layer.
+
+The combined patchset fixes a major perf issue we've been hitting
+where IOPs is stuck at 230K when running:
+
+    fio --filename=/dev/sda  --direct=1 --rw=randrw --bs=4k
+    --ioengine=libaio --iodepth=128  --numjobs=8 --time_based
+    --group_reporting --runtime=60
+
+The patches in this set get me to 350K when using devices that
+have native IOPs of around 400-500K.
+
+Note that 5.12 has some interrupt changes that my patches
+collide with. Martin's 5.12 branches had the changes so I
+based my patches on that.
+
+V2:
+- Fix up container_of use coding style
+- Handle offlist review comment from Laurence where with the
+original code and my patches we can hit a bug where the cmd
+times out, LIO starts up the TMR code, but it misses the cmd
+because it's on the workqueue.
+- Made the work per device work instead of session to handle
+the previous issue and so if one dev hits some issue it sleeps on,
+it won't block other devices.
+
+
 
