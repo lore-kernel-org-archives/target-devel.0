@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC29EC433DB
-	for <target-devel@archiver.kernel.org>; Thu, 11 Feb 2021 15:17:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08B02C433E9
+	for <target-devel@archiver.kernel.org>; Thu, 11 Feb 2021 15:20:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A447A64E87
-	for <target-devel@archiver.kernel.org>; Thu, 11 Feb 2021 15:17:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D3EC264F56
+	for <target-devel@archiver.kernel.org>; Thu, 11 Feb 2021 15:20:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229623AbhBKPQf (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 11 Feb 2021 10:16:35 -0500
-Received: from verein.lst.de ([213.95.11.211]:55759 "EHLO verein.lst.de"
+        id S230202AbhBKPTz (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 11 Feb 2021 10:19:55 -0500
+Received: from verein.lst.de ([213.95.11.211]:55791 "EHLO verein.lst.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230197AbhBKPNd (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Thu, 11 Feb 2021 10:13:33 -0500
+        id S229679AbhBKPRs (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Thu, 11 Feb 2021 10:17:48 -0500
 Received: by verein.lst.de (Postfix, from userid 2407)
-        id 71BCC68BFE; Thu, 11 Feb 2021 16:12:47 +0100 (CET)
-Date:   Thu, 11 Feb 2021 16:12:47 +0100
+        id 26D0968CF0; Thu, 11 Feb 2021 16:16:57 +0100 (CET)
+Date:   Thu, 11 Feb 2021 16:16:56 +0100
 From:   Christoph Hellwig <hch@lst.de>
 To:     Mike Christie <michael.christie@oracle.com>
 Cc:     hch@lst.de, loberman@redhat.com, martin.petersen@oracle.com,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        mst@redhat.com, stefanha@redhat.com,
-        Bart Van Assche <bvanassche@acm.org>,
-        Juergen Gross <jgross@suse.com>,
-        Hannes Reinecke <hare@suse.de>,
-        Nilesh Javali <njavali@marvell.com>,
-        Michael Cyr <mikecyr@linux.ibm.com>,
-        Chris Boot <bootc@bootc.net>, Felipe Balbi <balbi@kernel.org>
-Subject: Re: [PATCH 04/14] target: break up target_submit_cmd_map_sgls
-Message-ID: <20210211151247.GC22082@lst.de>
-References: <20210211122728.31721-1-michael.christie@oracle.com> <20210211122728.31721-5-michael.christie@oracle.com>
+        mst@redhat.com, stefanha@redhat.com
+Subject: Re: [PATCH 13/14] tcm_fc: Convert to new submission API
+Message-ID: <20210211151656.GK22082@lst.de>
+References: <20210211122728.31721-1-michael.christie@oracle.com> <20210211122728.31721-14-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210211122728.31721-5-michael.christie@oracle.com>
+In-Reply-To: <20210211122728.31721-14-michael.christie@oracle.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Looks good,
+> +	if (target_init_cmd(&cmd->se_cmd, cmd->sess->se_sess,
+> +			    &cmd->ft_sense_buffer[0], scsilun_to_int(&fcp->fc_lun),
+> +			    ntohl(fcp->fc_dl), task_attr, data_dir,
+
+It would be nice to avoid the overly long line here.
+
+Otherwise looks good:
 
 Reviewed-by: Christoph Hellwig <hch@lst.de>
