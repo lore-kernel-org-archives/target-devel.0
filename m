@@ -2,229 +2,212 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01A51C433DB
-	for <target-devel@archiver.kernel.org>; Thu, 11 Feb 2021 19:12:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FDDFC433DB
+	for <target-devel@archiver.kernel.org>; Fri, 12 Feb 2021 07:27:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BC2346186A
-	for <target-devel@archiver.kernel.org>; Thu, 11 Feb 2021 19:12:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 04D5864E39
+	for <target-devel@archiver.kernel.org>; Fri, 12 Feb 2021 07:27:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230019AbhBKTFX (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 11 Feb 2021 14:05:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42540 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229553AbhBKTEM (ORCPT
+        id S229719AbhBLH1p (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 12 Feb 2021 02:27:45 -0500
+Received: from userp2130.oracle.com ([156.151.31.86]:40236 "EHLO
+        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229710AbhBLH1n (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 11 Feb 2021 14:04:12 -0500
-Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFBB0C061756;
-        Thu, 11 Feb 2021 11:03:31 -0800 (PST)
-Received: by mail-ed1-x529.google.com with SMTP id df22so8115783edb.1;
-        Thu, 11 Feb 2021 11:03:31 -0800 (PST)
+        Fri, 12 Feb 2021 02:27:43 -0500
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 11C7PNgS016784;
+        Fri, 12 Feb 2021 07:26:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : subject :
+ date : message-id : content-transfer-encoding : content-type :
+ mime-version; s=corp-2020-01-29;
+ bh=7PSiiholU+bj09wr2L1i6BdRlm6F5FaI6m6nJVktJQY=;
+ b=PRdchNX/qapPUcZlD2N3A8KojLyvBKqTGHibdNTpmWlNUhVVyfPQFLaxoDMYo0GQkb9L
+ g/tyGu4kN6BOUpdJM+ItUqMdtUbrCAFnEeSLWepJXHff5PTklxcPbrLI0QZXnIWTx8sV
+ J7ysT262mjgGNIWW5x5HZC1yHOJXmcKa+HuUDDrCUkNIawhbdFugEUKcACjrVrC1bSQB
+ ZJFuTKmV9/9ZZuo/nCXBlI+Kst+4y+a9t8QIQZYMpZT3uJLHTvmW1LPGb33YzYNyYifI
+ OyI6GDZplLw7h+j2KH3VB6SbkiACYbmZZduZrZScrCWxAGON4vUvYDnjEQl/0Lg3LhlF Yg== 
+Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
+        by userp2130.oracle.com with ESMTP id 36mv9dvctv-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 12 Feb 2021 07:26:55 +0000
+Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
+        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 11C7PZdL022757;
+        Fri, 12 Feb 2021 07:26:54 GMT
+Received: from nam11-bn8-obe.outbound.protection.outlook.com (mail-bn8nam11lp2170.outbound.protection.outlook.com [104.47.58.170])
+        by aserp3020.oracle.com with ESMTP id 36j5155a2x-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 12 Feb 2021 07:26:54 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=OK79ub6RkrEJJ7JmXyZIZXVlpE4IUg4FXXFIWADeVHsBp60wlg2/9qvVGDE3QGDe0WeNftjz13O6ucjvHnupcigAXwHrDTx7CTjzEVTxtOb6xB+A4lq/twudMqSWySeydLdY/ouzm4x4FUB6eGMSEJTfB7d1VgGF4EWxb4M/pj0fqPlcYX8NKEPZjO/xMozX/gXxeDt9nOyg4z3uCeOmeuYR2unwaa12xfA4aY0O9PG4YD/BSxm6TWP1XecBmFgA4OmR8764LBxCjoNwfPxPY+VYqENXKIe0P2X3Jap3xo9PvOgN+GyP47mXTF0r0iD1ZOxyGUMPOFhaazUVEkUaiQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7PSiiholU+bj09wr2L1i6BdRlm6F5FaI6m6nJVktJQY=;
+ b=A2f59ucCQGB0u9+7JER6PCl/+frkvIG2esXwI7wHaDh/44Fpiy5OZrKKYelMsy1x1ZihzcL4w5Unh1aOvYuxCiCMxsY9HB7RgBXv68eDgEWq0VZv/DOxjLBc2/syjZDXugtbQLZQ8m9hyV+RMMfw+vCBMY8baRhiN29LvmqHqNgHBxiTvSiuDyEjqVoXT0I0IbGeQ1aGavQYpkWGBz+AzRUCIdZumo3bF7qEfuo4oNT6xuTRCphG/uMsztBvBwdqhi7OM1stoiX9xeADB/OaAD56L9BgBKjJhGNwku6KbddnKnffdAE0U6+Y6evrO1mBky+lI+LboDkrNz7NtaqATQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=kPhjJXfm6+kQOfWXztpcCTmvFWPa71ZgKqQVo0Ho3dI=;
-        b=LbEITIm2GF+EoJHZQsnzpUgZgvHIg5RwynEU8X4cKVwcjKRQR2RsxXo51p/+1zFcws
-         QGC+VhHbZ+k6ZZHoC77bPdXNybPWU8F195qO3EuBjlLnkuzC8nuolstUQtygL4yS0wg7
-         +ybDxAHK92k01MK0Bo6ohfv25/rM7+ZldYlZKYJMIBhiPLC36mhPjjBkcRjYDIEObD9H
-         IFZ0uTiLNCLtJrc818Pq38rMOX5DO7sO+vXaP/x8vMr8paxiexMElapjeFWsi0PVwhNe
-         oPFIEteK+DFnC8XYMYqEczsvsrFKK3gs815OGb4Js0Imr2IEzsnlI8vLf7/bhCbGmSAH
-         u9Vg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=kPhjJXfm6+kQOfWXztpcCTmvFWPa71ZgKqQVo0Ho3dI=;
-        b=L5ePyR/t5B/Q0UQbqJMlCtK3hPBMIhYqJ77vUgg+wyifXBZfJrpRi2zM9dw+YSYHJB
-         aQwN7+GDzNsQdAn8PBIwXTP2f6DeqC/v0BD9C/zy27EDNN5c/Jvf5OmybcXygJyptirw
-         SZ8vVC67d1pPw7oKksJ+4/u+HRY0n+uGlvMhdLPWkQzn1ZgYGKVA8CHpE+QuYGKGgYna
-         AfGKS7nh+D0pKp8O6he+QbkMLSAAdrAfQEslCiCwdeMao28fgTjtvpZk5zNLPkHeot2C
-         //6e1406/EnzKZoGo3jr4/b33+hQXdIZB/+bDt9OUme4fvgmJAB9Mqm7ssiQpGkkGifv
-         JvGA==
-X-Gm-Message-State: AOAM532C6ytSlAPgGGG8GG5swRZbL4NNgI0sxOwK4R6qApHvTVFD3zlb
-        d+AZggVfiBOdIQEH1BIyobT5yP6jN78=
-X-Google-Smtp-Source: ABdhPJyv83sxlk478XZcaUgFcnkwG3zGSGIsUAkaWmG7NrTEmMV7xeaMHHKhQtpVfdcTmBIe2qMf8Q==
-X-Received: by 2002:a05:6402:1383:: with SMTP id b3mr9336825edv.131.1613070210543;
-        Thu, 11 Feb 2021 11:03:30 -0800 (PST)
-Received: from [192.168.178.40] (ipbcc06d06.dynamic.kabel-deutschland.de. [188.192.109.6])
-        by smtp.gmail.com with ESMTPSA id r23sm5045171ejd.56.2021.02.11.11.03.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 11 Feb 2021 11:03:30 -0800 (PST)
-Subject: Re: [PATCH 1/2] uio: Add late_release callback to uio_info
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Mike Christie <michael.christie@oracle.com>
-References: <20210210194031.7422-1-bostroesser@gmail.com>
- <20210210194031.7422-2-bostroesser@gmail.com> <YCQ4aEz29P26ZxaL@kroah.com>
- <7bc9eef9-0a9e-58a9-11f1-2c32010c70f0@gmail.com> <YCTT8HQ7PobTyUz4@kroah.com>
-From:   Bodo Stroesser <bostroesser@gmail.com>
-Message-ID: <fb4d82c3-2add-d745-2044-bb90c98c954f@gmail.com>
-Date:   Thu, 11 Feb 2021 20:03:29 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7PSiiholU+bj09wr2L1i6BdRlm6F5FaI6m6nJVktJQY=;
+ b=U0jKsKMTGoMnbIpC+NsLClGPwMoAKmPFcuS9vmheNYiQ3W27iA6VT2hvcGZIsncnv8z9JZ4d5EU1WJ7dFJjxWTYOXZJ9/BUTQCHD2XlNcJsFsulHk0v0SM/PnxXs+/y+n8lWLiTdmFplnHWP9MEHebg78EBgud30OvB9YxMzGmo=
+Authentication-Results: redhat.com; dkim=none (message not signed)
+ header.d=none;redhat.com; dmarc=none action=none header.from=oracle.com;
+Received: from BN8PR10MB3570.namprd10.prod.outlook.com (2603:10b6:408:ae::12)
+ by BN0PR10MB5256.namprd10.prod.outlook.com (2603:10b6:408:12f::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3846.27; Fri, 12 Feb
+ 2021 07:26:51 +0000
+Received: from BN8PR10MB3570.namprd10.prod.outlook.com
+ ([fe80::513a:2259:52d5:e495]) by BN8PR10MB3570.namprd10.prod.outlook.com
+ ([fe80::513a:2259:52d5:e495%4]) with mapi id 15.20.3846.027; Fri, 12 Feb 2021
+ 07:26:51 +0000
+From:   Mike Christie <michael.christie@oracle.com>
+To:     mst@redhat.com, stefanha@redhat.com, Chaitanya.Kulkarni@wdc.com,
+        hch@lst.de, loberman@redhat.com, martin.petersen@oracle.com,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Subject: PATCH 00/25 V4] target: fix cmd plugging and submission
+Date:   Fri, 12 Feb 2021 01:26:17 -0600
+Message-Id: <20210212072642.17520-1-michael.christie@oracle.com>
+X-Mailer: git-send-email 2.25.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [73.88.28.6]
+X-ClientProxiedBy: CH2PR14CA0050.namprd14.prod.outlook.com
+ (2603:10b6:610:56::30) To BN8PR10MB3570.namprd10.prod.outlook.com
+ (2603:10b6:408:ae::12)
 MIME-Version: 1.0
-In-Reply-To: <YCTT8HQ7PobTyUz4@kroah.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from localhost.localdomain (73.88.28.6) by CH2PR14CA0050.namprd14.prod.outlook.com (2603:10b6:610:56::30) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3846.27 via Frontend Transport; Fri, 12 Feb 2021 07:26:50 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: e5664f02-feec-44d0-393a-08d8cf279079
+X-MS-TrafficTypeDiagnostic: BN0PR10MB5256:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <BN0PR10MB52561515A552144E5AD00F3AF18B9@BN0PR10MB5256.namprd10.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:8273;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: cI3ejF/JxZU7wt0TMs2QPPesLcVwnv746DQ8gYkODRqJzwa7bHmEzK11ybMm2+ePlAeJnz3mbPta2eI6BAaVWBVC2rQlJ9zdodAeWQBzsuMUa10NlVb7b9ulB9ei0yyTqYb8+CrXRPmiPpwQjpLezlRvrC+zxQ1ceDkUQVPUWnspDyzzYFx9sdjTpdNkDELb58De882f55eBf/yLkO1Jejjzx321Ik76nFNvKAHPhF2S8inl3xqI+8c8gr5ir0ouUQQV8iRIFg/31KxsqaL8xYPzJTlyaGpV1fHUampgTfZWyg7fKHHbq4HuUyORQKKjRVYO173RS8vhkLYXBwuz3EYCqt2fE7NfW+20Mi5jla/vZLaWqY8m6C7bDfqQPuM65Y3IW1aRWfQJth/unQjgQa2rSQjtfPzLGfXGpf2VK/4CGRpN/fZa78wUjKrSB7MtnI4IIsRYIAL2cAD9ByTWQGRgQR2GpB5xkBePWrQy9+mQHuAHg7Chsyh0jSNRPCfDsxT410vSRFhDrFuz7vwpZnqjrxZzt46ZCUcCC+ZRwqRsB11/wqAXdxRZNeimGTOWi/ofw02GZSAltTsbH93eNA==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN8PR10MB3570.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(376002)(346002)(396003)(366004)(39860400002)(136003)(478600001)(1076003)(6512007)(83380400001)(8676002)(66556008)(5660300002)(316002)(66476007)(6666004)(8936002)(69590400011)(36756003)(86362001)(6506007)(16526019)(2906002)(186003)(2616005)(956004)(6486002)(52116002)(26005)(66946007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?m8GlFlwcj+32+Wh7gFmv40L3LFUwunQzs6bihRxxWlBsuPQiSGkwbM/AIzZm?=
+ =?us-ascii?Q?FtgK26RP35hnVcuQiK7DjPqURG4lz+qzbgsywlsCiOSwC59ocHyKnZcMK8h/?=
+ =?us-ascii?Q?4J7BCt1qeE79icICl1lQNO6nysH2ILigQIlv7b9tAfL9nYd0qbNlUZCj2gA6?=
+ =?us-ascii?Q?I/Yl2Qm4S7iiozKWlNYmVGE/4X36JUaBUJqiZfaiAmrh8Ma1tgVuI3jJLcb9?=
+ =?us-ascii?Q?wnvy29Ahkw+0tZ+YLUEGz6a2eqwil//qiubs0viy+ZYf0MtaReNgRo8ILyC7?=
+ =?us-ascii?Q?Xh5Qlm1r3X879H9/83tZ7YIgweg3GPuXDHmRFG1q096vZ8ezp+gRACduCyxM?=
+ =?us-ascii?Q?QRfX/F3O/w1JrD00Xgcgu4wPYuciOyZdiZQNAgmhb8ZrBeGqOis3vRkAucoL?=
+ =?us-ascii?Q?y8aXuld8jERIUhVbLq3dUtGCrjWavvEjdPZ3IgzuLq6ELnY4Yo/6L+mQ/awA?=
+ =?us-ascii?Q?THrOMY++NRZfTRQXAvTwzwuqzR6Sd4GdVQKfi2HuYUHiIrAxTC8gKBOwaCsk?=
+ =?us-ascii?Q?i8EA8lMKLC9bIz4qjq8X8fuJ8miGUYkg9xxqJfu8LUtwJr4KTKMBQez3HL1h?=
+ =?us-ascii?Q?CPYNTxf5Xp7aO31yDXiZYcrgs0qGxz/1z9ZZcIguCczHtpjKAckTRov2lnCI?=
+ =?us-ascii?Q?MYVT4lq9xN2Jlgi+MXBSzkvGE3vqSPvzUC8Ep4lQqJD552eoHncUzvoTkhZr?=
+ =?us-ascii?Q?mtuhUz4YYjC8srzKhVPZ0s7rMLvx/9l3mymHiOenIRBQwJEnT/m+aivRAFtU?=
+ =?us-ascii?Q?vzlGl12jzKm3lP6xGi2JArW6KZ3K1qqHL46LDNNwl5jUB9aKY+Q/rcKCPzua?=
+ =?us-ascii?Q?SswmwP1na3g9ZybxJQFdEayZFWI6/kR6VLye/1Z3XxQ78zXiI8W5C9m5H3bU?=
+ =?us-ascii?Q?/XezA7Ms+4EPngwD5aI3+E8dXCwSrR4Ajmh5PGGR7/MmXOMFBWkiGQNxwPkR?=
+ =?us-ascii?Q?EC+T3hyVzD02Ch77Ko42Hi3s0e2kWSHtFfsDuXAEWPgc44TflIWMEowi/eeX?=
+ =?us-ascii?Q?A9m2bnvZ/2dW2zLkeMC10MaOtDus6tCIBdzxJFcRwFsx0yIX/myX9/uw3Ps6?=
+ =?us-ascii?Q?+7JE+LHunsE/eurunfYFIXw/9EVS/Mor5lZeNppu7cfQjDDYvk/rr+Fz+127?=
+ =?us-ascii?Q?raioBZtDyTYU0EQmXXRngr4VZO0SdhFFN0LCMFT6eGnKW5LLC17xSWXQs+hd?=
+ =?us-ascii?Q?/pzlvMQRRubff1QtwzMoJAFtm9FDTLOfNPEqFv8a8oFK8OAAvv+7zY8/7Xzi?=
+ =?us-ascii?Q?Wvu/EflHe66RhUjdWvD/G2XTvoIPIFmfff0Z42NIbolGgCrgK5cYx1wWydvN?=
+ =?us-ascii?Q?hVYgxYs4tr+ii4bfg7rWEp74?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e5664f02-feec-44d0-393a-08d8cf279079
+X-MS-Exchange-CrossTenant-AuthSource: BN8PR10MB3570.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Feb 2021 07:26:51.0461
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: HxWF/ZDkG4zlWm8dryrpZdG96V9weh1doEvcH1XMkH+uc4tw8r8PRR1nw+RHKrKRtKHesURQkTxIL4hi4prv5rGZnq19czdXDYhtIxtqFqI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN0PR10MB5256
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9892 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 bulkscore=0 adultscore=0
+ mlxlogscore=999 phishscore=0 spamscore=0 suspectscore=0 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2102120053
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9892 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 mlxlogscore=999
+ bulkscore=0 suspectscore=0 phishscore=0 adultscore=0 impostorscore=0
+ mlxscore=0 clxscore=1015 lowpriorityscore=0 malwarescore=0 spamscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2102120053
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 11.02.21 07:51, Greg Kroah-Hartman wrote:
-> On Wed, Feb 10, 2021 at 08:57:11PM +0100, Bodo Stroesser wrote:
->> On 10.02.21 20:47, Greg Kroah-Hartman wrote:
->>> On Wed, Feb 10, 2021 at 08:40:30PM +0100, Bodo Stroesser wrote:
->>>> If uio_unregister_device() is called while userspace daemon
->>>> still holds the uio device open or mmap'ed, uio will not call
->>>> uio_info->release() on later close / munmap.
->>>>
->>>> At least one user of uio (tcmu) should not free resources (pages
->>>> allocated by tcmu which are mmap'ed to userspace) while uio
->>>> device still is open, because that could cause userspace daemon
->>>> to be killed by SIGSEGV or SIGBUS. Therefore tcmu frees the
->>>> pages only after it called uio_unregister_device _and_ the device
->>>> was closed.
->>>> So, uio not calling uio_info->release causes trouble.
->>>> tcmu currently leaks memory in that case.
->>>>
->>>> Just waiting for userspace daemon to exit before calling
->>>> uio_unregister_device I think is not the right solution, because
->>>> daemon would not become aware of kernel code wanting to destroy
->>>> the uio device.
->>>> After uio_unregister_device was called, reading or writing the
->>>> uio device returns -EIO, which normally results in daemon exit.
->>>>
->>>> This patch adds new callback pointer 'late_release' to struct
->>>> uio_info. If uio user sets this callback, it will be called by
->>>> uio if userspace closes / munmaps the device after
->>>> uio_unregister_device was executed.
->>>>
->>>> That way we can use uio_unregister_device() to notify userspace
->>>> that we are going to destroy the device, but still get a call
->>>> to late_release when uio device is finally closed.
->>>>
->>>> Signed-off-by: Bodo Stroesser <bostroesser@gmail.com>
->>>> ---
->>>>    Documentation/driver-api/uio-howto.rst | 10 ++++++++++
->>>>    drivers/uio/uio.c                      |  4 ++++
->>>>    include/linux/uio_driver.h             |  4 ++++
->>>>    3 files changed, 18 insertions(+)
->>>>
->>>> diff --git a/Documentation/driver-api/uio-howto.rst b/Documentation/driver-api/uio-howto.rst
->>>> index 907ffa3b38f5..a2d57a7d623a 100644
->>>> --- a/Documentation/driver-api/uio-howto.rst
->>>> +++ b/Documentation/driver-api/uio-howto.rst
->>>> @@ -265,6 +265,16 @@ the members are required, others are optional.
->>>>       function. The parameter ``irq_on`` will be 0 to disable interrupts
->>>>       and 1 to enable them.
->>>> +-  ``int (*late_release)(struct uio_info *info, struct inode *inode)``:
->>>> +   Optional. If you define your own :c:func:`open()`, you will
->>>> +   in certain cases also want a custom :c:func:`late_release()`
->>>> +   function. If uio device is unregistered - by calling
->>>> +   :c:func:`uio_unregister_device()` - while it is open or mmap'ed by
->>>> +   userspace, the custom :c:func:`release()` function will not be
->>>> +   called when userspace later closes the device. An optionally
->>>> +   specified :c:func:`late_release()` function will be called in that
->>>> +   situation.
->>>> +
->>>>    Usually, your device will have one or more memory regions that can be
->>>>    mapped to user space. For each region, you have to set up a
->>>>    ``struct uio_mem`` in the ``mem[]`` array. Here's a description of the
->>>> diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
->>>> index ea96e319c8a0..0b2636f8d373 100644
->>>> --- a/drivers/uio/uio.c
->>>> +++ b/drivers/uio/uio.c
->>>> @@ -532,6 +532,8 @@ static int uio_release(struct inode *inode, struct file *filep)
->>>>    	mutex_lock(&idev->info_lock);
->>>>    	if (idev->info && idev->info->release)
->>>>    		ret = idev->info->release(idev->info, inode);
->>>> +	else if (idev->late_info && idev->late_info->late_release)
->>>> +		ret = idev->late_info->late_release(idev->late_info, inode);
->>>>    	mutex_unlock(&idev->info_lock);
->>>
->>> Why can't release() be called here?  Why doesn't your driver define a
->>> release() if it cares about this information?  Why do we need 2
->>> different callbacks that fire at exactly the same time?
->>>
->>> This feels really wrong.
->>>
->>> greg k-h
->>>
->>
->> tcmu has a release callback. But uio can't call it after
->> uio_unregister_device was executed, because in uio_unregister_device
->> uio sets the uio_device::info to NULL.
-> 
-> As it should because the driver could then be gone.  It should NEVER
-> call back into it again.
+The following patches were made over Martin's 5.12 branches
+to handle conflicts with the in_interrupt changes.
 
-OTOH, uio does try_module_get(idev->owner) in uio_open before calling
-the driver's open callback and module_put(idev_owner) in uio_release
-after calling driver's release callback. So driver's release callback
-is guaranteed to exist until last release is done.
+The patches fix the following issues:
 
-Apart from that, tcmu also has an uio_info::mmap callback. In that
-callback it installs its own vm_operations_struct::fault handler.
-This handler also can happen to be called as long as userspace holds
-the uio device mmap'ed. I think, this is not a problem due to the
-above mentioned mechanism.
+1. target_core_iblock plugs and unplugs the queue for every
+command. To handle this issue and handle an issue that
+vhost-scsi and loop were avoiding by adding their own workqueue,
+I added a new submission workqueue to LIO. Drivers can pass cmds
+to it, and we can then submit batches of cmds.
 
-tcmu just has to ensure, that the tcmu device, which contains the 
-uio_info - is kept until the final release call happens. Unfortunately
-this call will not happen if uio device is open during
-uio_unregister_device. That's why tcmu sometimes leaks memory.
+2. vhost-scsi and loop on the submission side were doing a work
+per cmd but because we can block in the block layer on resources
+like tags we can end up creating lots of threads that will fight
+each other. In this patchset I just use a cmd list per device to
+avoid abusing the workueue layer and to better batch the cmds
+to the lower layers.
 
-> 
->> So, uio would never call both callbacks for the same release action,
->> but would call release before uio_unregister_device is executed, and
->> late_release after that.
-> 
-> That's not ok.
-> 
->> Of course it would be good for tcmu if uio would call uio_info:release even
->> after uio_unregister_device, but changing this AFAICS could cause
->> trouble in other drivers using uio.
-> 
-> You are confusing two different lifetime rules here it seems.  One is
-> the char device and one is the struct device.  They work independently
-> as different users affect them.
-I'm not sure I get your point.
+The combined patchset fixes a major perf issue we've been hitting
+with vhost-scsi where IOPs were stuck at 230K when running:
 
-> 
-> So if one is removed from the system, do not try to keep a callback to
-> it, otherwise you will crash.
+    fio --filename=/dev/sda  --direct=1 --rw=randrw --bs=4k
+    --ioengine=libaio --iodepth=128  --numjobs=8 --time_based
+    --group_reporting --runtime=60
 
-That's why I tried to change uio in a compatible way, so other drivers
-based on it are not afflicted by the change. I saw, that some drivers
-based on uio free their resources directly after calling
-uio_unregister_device. Executing their release callback later would
-definitely cause trouble.
+The patches in this set get me to 350K when using devices that
+have native IOPs of around 400-500K. 
 
-> 
-> And why is scsi using the uio driver in the first place?  That feels
-> really odd to me.  Why not just make a "real" driver if you want to
-> somehow tie these two lifetimes together?
+3. Fix target_submit* error handling. While handling Christoph's
+comment to kill target_submit_cmd_map_sgls I hit several bugs that
+are now also fixed up.
 
-Why tcmu driver is based on uio I don't know. I inherited the driver as
-it is. Maybe it would have been better to not base it on uio, I don't
-know. But changing this now would cause an API change for all existing
-userspace apps, e.g. tcmu-runner. I think I should avoid that and
-therefore have to find an acceptable solution for the tcmu/uio
-combination.
+V4:
+- Fixed the target_submit error handling.
+- Dropped get_cdb callback.
+- Fixed kernel robot errors for incorrect return values and unused
+variables.
+- Used flush instead of cancel to fix bug in tmr code.
+- Fixed race in tcmu.
+- Made completion affinity handling a configfs setting
+- Dropped patch that added the per device work lists. It really helped
+a lot for higher perf initiators and tcm loop but only gave around a 5%
+boost to other drivers. So I dropped it for now to see if there is
+something more generic we can do.
 
-> 
-> thanks,
-> 
-> greg k-h
-> 
+V3:
+- Fix rc type in target_submit so its a sense_reason_t
+- Add BUG_ON if caller uses target_queue_cmd_submit but hasn't
+implemented get_cdb.
+- Drop unused variables in loop.
+- Fix race in tcmu plug check
+- Add comment about how plug check works in iblock
+- Do a flush when handling TMRs instead of cancel
+
+V2:
+- Fix up container_of use coding style
+- Handle offlist review comment from Laurence where with the
+original code and my patches we can hit a bug where the cmd
+times out, LIO starts up the TMR code, but it misses the cmd
+because it's on the workqueue.
+- Made the work per device work instead of session to handle
+the previous issue and so if one dev hits some issue it sleeps on,
+it won't block other devices.
+
+
+
