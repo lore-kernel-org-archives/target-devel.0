@@ -2,53 +2,67 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=BAYES_40,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34CC5C433E0
-	for <target-devel@archiver.kernel.org>; Tue, 16 Feb 2021 19:02:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3D2BC433E6
+	for <target-devel@archiver.kernel.org>; Wed, 17 Feb 2021 16:12:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E083064D99
-	for <target-devel@archiver.kernel.org>; Tue, 16 Feb 2021 19:02:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8FA9E64E33
+	for <target-devel@archiver.kernel.org>; Wed, 17 Feb 2021 16:12:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231151AbhBPTBr (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 16 Feb 2021 14:01:47 -0500
-Received: from mout.perfora.net ([74.208.4.196]:59221 "EHLO mout.perfora.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230520AbhBPTBp (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 16 Feb 2021 14:01:45 -0500
-X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Feb 2021 14:01:45 EST
-Received: from contacter ([167.114.158.33]) by mrelay.perfora.net (mreueus002
- [74.208.5.2]) with ESMTPSA (Nemesis) id 0MRnRf-1lJ4hh23MP-00SsBW for
- <target-devel@vger.kernel.org>; Tue, 16 Feb 2021 19:53:40 +0100
-From:   Maddie <MaddieFKlein@sendspost.com>
+        id S234028AbhBQQL5 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 17 Feb 2021 11:11:57 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:27782 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S234059AbhBQQLp (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Wed, 17 Feb 2021 11:11:45 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1613578219;
+        h=from:from:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:mime-version:mime-version:
+         content-type:content-type:  content-transfer-encoding:content-transfer-encoding;
+        bh=HegTmpKYNVimcYrJcW3wdvDOS7LV1YJeNnKzFbvVb9I=;
+        b=QGWf4fpNHkRWB2q/i+aJ9qETX3KEdEAI87lsjqV8pI3CDqaF8M0SwqUdxqpAm/lTowRHix
+        hk4xq+pdAD++pjAHk+M4rRbui846NUiuyEP9tf7jHxvHR2S7pyqkNjfIKluQ9ZgxpCja4a
+        lGVkigbc5HrDRG5rJ9AUfQ2tq15WSlc=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-60-meVQVvEsOOu0IKziT0j2og-1; Wed, 17 Feb 2021 11:10:17 -0500
+X-MC-Unique: meVQVvEsOOu0IKziT0j2og-1
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 437D2107ACC7
+        for <target-devel@vger.kernel.org>; Wed, 17 Feb 2021 16:10:16 +0000 (UTC)
+Received: from [10.10.112.124] (ovpn-112-124.rdu2.redhat.com [10.10.112.124])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id F1B896A03C
+        for <target-devel@vger.kernel.org>; Wed, 17 Feb 2021 16:10:15 +0000 (UTC)
+Reply-To: tasleson@redhat.com
 To:     target-devel@vger.kernel.org
-Message-ID: <21752909.1613501619647.mail.client@mx.sendspost.com>
-Subject: Error on your website
+From:   Tony Asleson <tasleson@redhat.com>
+Subject: Can LIO configfs handle concurrent changes independently
+Organization: Red Hat
+Message-ID: <94b1290f-4713-460a-43b8-ff00402c64dd@redhat.com>
+Date:   Wed, 17 Feb 2021 10:10:15 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-Date:   Tue, 16 Feb 2021 19:53:40 +0100
-X-Provags-ID: V03:K1:GR8JagT7Pyi9ufF11DrWj62yJbuk/QTUcIWiUYrO+Fv/uU9iXz3
- H0RhM0laxzKGmniAE/E/TX4Dcotn+dsIFMELqP0mPwphA9c+QE3zgC+jIXGfcoUTZPCwilH
- j8dEtpT9NwiSEUaYC1wBQSI1z4Msb1EEDliNJhRsgRCZmD5TG7Lsp8Q4mE/NnloLdphJnKX
- NhyliacEZZyauBOZB7Taw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:A0paEeU5RXc=:Uh+x2We73yIDSCGKtM/fBq
- yBlW+BtJ2nBbz6eSzasj41FUnTb8+Ob27x0Edhi5ehWARzLbma7aPg9VEvCiYVwyXKxGef5nv
- UmBEdd3Urs6kmntxJe2vfKn/NPYeNqdmyXCtbWj2VuROuMICYK4/chNn9ye0R7Wuov0Cku2TG
- RRZ/3EMhWZQNcwL/jQIsERjGvTUQh+zRjlrp0GSIzJZZleo+DWVkMyJVuxP+Q8b4W/uHL7FZ1
- ZDb6IdQOA+L3M9D/P6ngEuKWtXaKpOeI6habq7NKovovQF/4EYExol8G55Al6XFexQ56Mkvx1
- CS3viNzBgc/EIIDw2tUV5qFtgiX+HU8kBuxdl/6yVyTd8OSZnhHVqxY0M3oIk2GliiedD87sx
- VR5weoTey+lBvAvc8XrvzSpP+u+SE+iD6l1fFDvomZLb7fdfHjW3FK7plYMSz41yyZdrKBPcs
- TcB4qKFYTvP735jDpadJ3YvY/3k6hOksltjSC+YUK6X3rccwUwx3Akt7PARwXD7cssuJdGPJi
- j3nE3FkKnHOeckbj8Gm7+SrXqv0r0/Kr8oQqOU9v6VjcQ0eSLfY6ArfQAc1dwekh6r9Xw9XaP
- C2cI7ClH28hGGZGHQIEpZffWLc3ydGH6OnsErRd1QJfMeaD8U9gBMGi+43A2xvNKhilgxIdTB
- CZi9lO03k5L95PI44jBdVjxXgWaewnY8MPhnZdAEnUtVgzZPe5ch17AIxs5LeTUJRI9k=
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-It looks like you've misspelled the word "apear" on your website.  I thought you would like to know :).  Silly mistakes can ruin your site's credibility.  I've used a tool called SpellScan.com in the past to keep mistakes off of my website.
+Can configfs for lio can handle multiple containers making changes
+concurrently and independently?
 
--target-devel
+ref. https://github.com/open-iscsi/targetd/issues/77#issuecomment-757087879
+
+Thanks!
+
