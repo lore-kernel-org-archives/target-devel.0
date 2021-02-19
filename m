@@ -2,261 +2,76 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF9D3C433E9
-	for <target-devel@archiver.kernel.org>; Thu, 18 Feb 2021 19:14:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0165CC433DB
+	for <target-devel@archiver.kernel.org>; Fri, 19 Feb 2021 00:23:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ABBDE64E6F
-	for <target-devel@archiver.kernel.org>; Thu, 18 Feb 2021 19:14:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B3ED264EC0
+	for <target-devel@archiver.kernel.org>; Fri, 19 Feb 2021 00:23:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230442AbhBRTOW (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 18 Feb 2021 14:14:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32784 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234538AbhBRRvo (ORCPT
+        id S229871AbhBSAXR (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 18 Feb 2021 19:23:17 -0500
+Received: from mail-pf1-f179.google.com ([209.85.210.179]:37803 "EHLO
+        mail-pf1-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229812AbhBSAXO (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 18 Feb 2021 12:51:44 -0500
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31B19C061786;
-        Thu, 18 Feb 2021 09:51:02 -0800 (PST)
-Received: by mail-ej1-x630.google.com with SMTP id t11so7082917ejx.6;
-        Thu, 18 Feb 2021 09:51:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=709jOtKADHrRWb/hSokEdJDCvwZZvPL3q+O9JdwciLw=;
-        b=olcyxwVAoUR4+LLVPmRQseUkQmdb8qfmWopqQH2Ph+VRZJG9jUOH86Kc9SRHa0OOGU
-         Qm3Tk2+MAjagmZPBrV+XarH2t8sMlw7FgOQn3b3Az91G9Z16T+DLuOO7eypfVIWJX0tf
-         8zFR2F2LZl/bhVUdkm3zjb0rn5LiYaUVTUmrZ2QMtGrZxZX7JpmmyZr0IzDpGOmZ9cgx
-         CEk8uIeQTuSZoMiKHG8MlHXAD4VzLEWuIF2osV9eQUClgB3fecMGlVpqIYGLLepZ+0AH
-         AzTxLFgZZjZsx0T9yE9/6fYo9U2GHeg9URAOjbBijJi1/Cm47r7jogOIxT9BbfJs2QlN
-         UN4g==
+        Thu, 18 Feb 2021 19:23:14 -0500
+Received: by mail-pf1-f179.google.com with SMTP id b145so2659750pfb.4;
+        Thu, 18 Feb 2021 16:22:59 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=709jOtKADHrRWb/hSokEdJDCvwZZvPL3q+O9JdwciLw=;
-        b=R05vWOIR5PQ8NfFqmxPu+PGytlsAHYTny2da5LR39OzlEXSV8d/zL84cVrYCgJjLT/
-         sJKj4GW0JLnFTHskti4uHiPxlL+o31lwm0HLlbIGIXXUOYVv39++QhClykb44l4T7l4y
-         inAg+WvjMbPLSfj2z6pry016LHai+v2oGHVt5pj6BhhMEHi9UxfHSZuyYlgf1Z2mZi4m
-         h1LXLhBdMA2NrvB61Bgs/M5ugK8/V5Rq1+wAMfpfd3wBU/6dX1I8WTm8XgcxErmk0hgE
-         G4W6uj2NyR1mliR3RZqEoAl9T/LAoT78kaIw+Tm7v7gOKFJxIzHKYKMkx5MKBjnOF2t1
-         0zWA==
-X-Gm-Message-State: AOAM5335uBGJt0lcW/zWjyP8l/gMAYYpWbbC/1OKlnCCGV75GGRb4i/n
-        Clw4RHx8ZMJWYOMFUAgBsfUh7NB52aE=
-X-Google-Smtp-Source: ABdhPJwfh/QVG+363MD7eLz8Z9wsdSPXXGNQhpPDKSXtrsipuX8zlrOMGjFSL5jgch4v2JcPYOiZ3g==
-X-Received: by 2002:a17:906:36cc:: with SMTP id b12mr5118883ejc.323.1613670660932;
-        Thu, 18 Feb 2021 09:51:00 -0800 (PST)
-Received: from localhost (ipbcc06d06.dynamic.kabel-deutschland.de. [188.192.109.6])
-        by smtp.gmail.com with ESMTPSA id l13sm3021919ejk.0.2021.02.18.09.51.00
+        h=x-gm-message-state:subject:to:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=fhtP97i5BTlzs7oWtg22H1k26YH/Kjx2PLZ7YFLoAaU=;
+        b=o94JpXCI9/PZ8AELG6D4c542j4XjPJE3tRFcOzn98jH6ADPULWy0BxzDiwyJPlqgGc
+         eEFrtYma1Clk1nsV5XNN9sVtfT9W0CHiTQnptFbPWmrGNcaW9faiXxWI5JbYiS8YBLGW
+         tljIPv1iZDDaIx8+eA82uXl5I8af3RJDye5GQjP6kzd59ZYjXpb8CA0MJQnyI4P62rEx
+         JPZSDi5e60ZyEgQizzRr/yTjfIg8Ob1Xw32RE6lBrugcizJZJsGSPbV8aWF9vOZ+Psrt
+         hAz6r5TP6g2fAd4mrq31fNB0Fsu/1ZtIaY0tme3zLB7rPDJwNlIPjVs2xc73Vh+1+Epi
+         tj7w==
+X-Gm-Message-State: AOAM532Futea4aZBN+duFZKfo2Z5fnKtARN3SayUuEI7RkQpu0YEURYN
+        ERPpfaWOw+vGLvS3Ll0bV1yCrruhQ78=
+X-Google-Smtp-Source: ABdhPJy2kAXGH26DluN3n5CL0K5sSrbLh+oQ/28STPilrF/fDBDf1/JKchHrmI2zv70DDjC/hcsjeA==
+X-Received: by 2002:a62:29c4:0:b029:1ec:f930:f5f2 with SMTP id p187-20020a6229c40000b02901ecf930f5f2mr6677885pfp.4.1613694153193;
+        Thu, 18 Feb 2021 16:22:33 -0800 (PST)
+Received: from [192.168.51.110] (c-73-241-217-19.hsd1.ca.comcast.net. [73.241.217.19])
+        by smtp.gmail.com with ESMTPSA id u31sm7350816pgl.9.2021.02.18.16.22.31
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 18 Feb 2021 09:51:00 -0800 (PST)
-From:   Bodo Stroesser <bostroesser@gmail.com>
-To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc:     Bodo Stroesser <bostroesser@gmail.com>,
-        Mike Christie <michael.christie@oracle.com>
-Subject: [PATCH 1/2] scsi: target: tcmu: Move some functions without code change
-Date:   Thu, 18 Feb 2021 18:50:38 +0100
-Message-Id: <20210218175039.7829-2-bostroesser@gmail.com>
-X-Mailer: git-send-email 2.12.3
-In-Reply-To: <20210218175039.7829-1-bostroesser@gmail.com>
-References: <20210218175039.7829-1-bostroesser@gmail.com>
+        Thu, 18 Feb 2021 16:22:32 -0800 (PST)
+Subject: Re: [PATCH 05/25] srpt: Convert to new submission API
+To:     Mike Christie <michael.christie@oracle.com>, bostroesser@gmail.com,
+        mst@redhat.com, stefanha@redhat.com, Chaitanya.Kulkarni@wdc.com,
+        hch@lst.de, loberman@redhat.com, martin.petersen@oracle.com,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+References: <20210217202811.5575-1-michael.christie@oracle.com>
+ <20210217202811.5575-6-michael.christie@oracle.com>
+From:   Bart Van Assche <bvanassche@acm.org>
+Message-ID: <5de66bb7-d45f-a59a-2a05-af3711469be6@acm.org>
+Date:   Thu, 18 Feb 2021 16:22:30 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.0
+MIME-Version: 1.0
+In-Reply-To: <20210217202811.5575-6-michael.christie@oracle.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-This patch just moves one block of code containing some functions
-inside target_core_user.c to avoid adding prototypes in next patch.
+On 2/17/21 12:27 PM, Mike Christie wrote:
+> target_submit_cmd_map_sgls is being removed, so convert srpt to
+> the new submission API.
+> 
+> srpt uses target_stop_session to sync session shutdown with lio core,
+> so we use target_init_cmd/target_submit_prep/target_submit, because
+> target_init_cmd will detect the target_stop_session call and return
+> an error.
 
-Signed-off-by: Bodo Stroesser <bostroesser@gmail.com>
----
- drivers/target/target_core_user.c | 160 +++++++++++++++++++-------------------
- 1 file changed, 80 insertions(+), 80 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index a5991df23581..6d010cf22879 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1566,6 +1566,86 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 	return &udev->se_dev;
- }
- 
-+static void tcmu_dev_call_rcu(struct rcu_head *p)
-+{
-+	struct se_device *dev = container_of(p, struct se_device, rcu_head);
-+	struct tcmu_dev *udev = TCMU_DEV(dev);
-+
-+	kfree(udev->uio_info.name);
-+	kfree(udev->name);
-+	kfree(udev);
-+}
-+
-+static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
-+{
-+	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
-+		kmem_cache_free(tcmu_cmd_cache, cmd);
-+		return 0;
-+	}
-+	return -EINVAL;
-+}
-+
-+static void tcmu_blocks_release(struct radix_tree_root *blocks,
-+				int start, int end)
-+{
-+	int i;
-+	struct page *page;
-+
-+	for (i = start; i < end; i++) {
-+		page = radix_tree_delete(blocks, i);
-+		if (page) {
-+			__free_page(page);
-+			atomic_dec(&global_db_count);
-+		}
-+	}
-+}
-+
-+static void tcmu_remove_all_queued_tmr(struct tcmu_dev *udev)
-+{
-+	struct tcmu_tmr *tmr, *tmp;
-+
-+	list_for_each_entry_safe(tmr, tmp, &udev->tmr_queue, queue_entry) {
-+		list_del_init(&tmr->queue_entry);
-+		kfree(tmr);
-+	}
-+}
-+
-+static void tcmu_dev_kref_release(struct kref *kref)
-+{
-+	struct tcmu_dev *udev = container_of(kref, struct tcmu_dev, kref);
-+	struct se_device *dev = &udev->se_dev;
-+	struct tcmu_cmd *cmd;
-+	bool all_expired = true;
-+	int i;
-+
-+	vfree(udev->mb_addr);
-+	udev->mb_addr = NULL;
-+
-+	spin_lock_bh(&timed_out_udevs_lock);
-+	if (!list_empty(&udev->timedout_entry))
-+		list_del(&udev->timedout_entry);
-+	spin_unlock_bh(&timed_out_udevs_lock);
-+
-+	/* Upper layer should drain all requests before calling this */
-+	mutex_lock(&udev->cmdr_lock);
-+	idr_for_each_entry(&udev->commands, cmd, i) {
-+		if (tcmu_check_and_free_pending_cmd(cmd) != 0)
-+			all_expired = false;
-+	}
-+	/* There can be left over TMR cmds. Remove them. */
-+	tcmu_remove_all_queued_tmr(udev);
-+	if (!list_empty(&udev->qfull_queue))
-+		all_expired = false;
-+	idr_destroy(&udev->commands);
-+	WARN_ON(!all_expired);
-+
-+	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
-+	bitmap_free(udev->data_bitmap);
-+	mutex_unlock(&udev->cmdr_lock);
-+
-+	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
-+}
-+
- static void run_qfull_queue(struct tcmu_dev *udev, bool fail)
- {
- 	struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
-@@ -1751,86 +1831,6 @@ static int tcmu_open(struct uio_info *info, struct inode *inode)
- 	return 0;
- }
- 
--static void tcmu_dev_call_rcu(struct rcu_head *p)
--{
--	struct se_device *dev = container_of(p, struct se_device, rcu_head);
--	struct tcmu_dev *udev = TCMU_DEV(dev);
--
--	kfree(udev->uio_info.name);
--	kfree(udev->name);
--	kfree(udev);
--}
--
--static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
--{
--	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
--		kmem_cache_free(tcmu_cmd_cache, cmd);
--		return 0;
--	}
--	return -EINVAL;
--}
--
--static void tcmu_blocks_release(struct radix_tree_root *blocks,
--				int start, int end)
--{
--	int i;
--	struct page *page;
--
--	for (i = start; i < end; i++) {
--		page = radix_tree_delete(blocks, i);
--		if (page) {
--			__free_page(page);
--			atomic_dec(&global_db_count);
--		}
--	}
--}
--
--static void tcmu_remove_all_queued_tmr(struct tcmu_dev *udev)
--{
--	struct tcmu_tmr *tmr, *tmp;
--
--	list_for_each_entry_safe(tmr, tmp, &udev->tmr_queue, queue_entry) {
--		list_del_init(&tmr->queue_entry);
--		kfree(tmr);
--	}
--}
--
--static void tcmu_dev_kref_release(struct kref *kref)
--{
--	struct tcmu_dev *udev = container_of(kref, struct tcmu_dev, kref);
--	struct se_device *dev = &udev->se_dev;
--	struct tcmu_cmd *cmd;
--	bool all_expired = true;
--	int i;
--
--	vfree(udev->mb_addr);
--	udev->mb_addr = NULL;
--
--	spin_lock_bh(&timed_out_udevs_lock);
--	if (!list_empty(&udev->timedout_entry))
--		list_del(&udev->timedout_entry);
--	spin_unlock_bh(&timed_out_udevs_lock);
--
--	/* Upper layer should drain all requests before calling this */
--	mutex_lock(&udev->cmdr_lock);
--	idr_for_each_entry(&udev->commands, cmd, i) {
--		if (tcmu_check_and_free_pending_cmd(cmd) != 0)
--			all_expired = false;
--	}
--	/* There can be left over TMR cmds. Remove them. */
--	tcmu_remove_all_queued_tmr(udev);
--	if (!list_empty(&udev->qfull_queue))
--		all_expired = false;
--	idr_destroy(&udev->commands);
--	WARN_ON(!all_expired);
--
--	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
--	bitmap_free(udev->data_bitmap);
--	mutex_unlock(&udev->cmdr_lock);
--
--	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
--}
--
- static int tcmu_release(struct uio_info *info, struct inode *inode)
- {
- 	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
--- 
-2.12.3
-
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
