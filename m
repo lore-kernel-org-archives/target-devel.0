@@ -2,122 +2,132 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B91D2C433DB
-	for <target-devel@archiver.kernel.org>; Fri, 19 Feb 2021 19:47:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58510C433E0
+	for <target-devel@archiver.kernel.org>; Sat, 20 Feb 2021 21:38:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 67C0F64EB8
-	for <target-devel@archiver.kernel.org>; Fri, 19 Feb 2021 19:47:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 23D9664ED2
+	for <target-devel@archiver.kernel.org>; Sat, 20 Feb 2021 21:38:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230001AbhBSTrR (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 19 Feb 2021 14:47:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54908 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229649AbhBSTrQ (ORCPT
+        id S229838AbhBTViB (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 20 Feb 2021 16:38:01 -0500
+Received: from esa6.hgst.iphmx.com ([216.71.154.45]:14596 "EHLO
+        esa6.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229804AbhBTViA (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 19 Feb 2021 14:47:16 -0500
-Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D77AC061574;
-        Fri, 19 Feb 2021 11:46:36 -0800 (PST)
-Received: by mail-ej1-x629.google.com with SMTP id bl23so15676778ejb.5;
-        Fri, 19 Feb 2021 11:46:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:references:from:message-id:date:user-agent:mime-version
-         :in-reply-to:content-language:content-transfer-encoding;
-        bh=Q+K9jHnpOaQNC9jhm6/BtGo2FCGVYeFqwWB2Nq7ax1s=;
-        b=gxC7wWN0EaHKOFCiyRmiLPGOHDBJiBWGTE7wOpKucGzqXw3wFbf5aJAFqTtwgFu8K7
-         9rq/+EuZVohEI4OrCUWemsxRpMxBG6U+F7F0lUmzAjIDCEMPJS+67tGOwrzERCwsQ0l/
-         oM19ECmy0Cy/xyoPWE7OdvAYLUflOxnEJzF92UUnEUZZ9H4ZmRfG0T5ltWkLvLv9ptoJ
-         JkmOXbmRnIK/8EmzHAVio0VjAWTXW46T1N41ifU+nD67FHL2+FSrda91P0eQmJPzYH5z
-         AUfiu/U5zrqLyJGhsmS/w2Ru7anGTWeIfWrNVUGSB9muVpOSnq6kZ4YXrT6su6yI6cNB
-         eVFQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=Q+K9jHnpOaQNC9jhm6/BtGo2FCGVYeFqwWB2Nq7ax1s=;
-        b=h9LMvfKDOhhT6GtbBs5d9r04HqpACyTspOKimqpmJ3KByELxlaCaS6iLx3SiHzcLNn
-         s0s8zShez6GJe9PB8N5YMtSId6c4sSjqgsd2s8Uz087dcTJFkRztZa9wHTKV63pyCRCz
-         j7Tnt44mLGGQYgVqUf3B/cAkkEuO24uEUDGNMXW4e15UdwCWnEMq6T/aFAln3/jE9QAO
-         6juu9RI4Rv1ykohxi3k+owExhGoGvJpcSJBrHbIpKHY33/zSy6TsxriYbIsit8rDlb4v
-         L3jVB6z5Dd20aQyTT2v5m8g/z0PIoV69f9YK1mpgyKf38/KRmsTESooezwC6sSYhAUFm
-         M0/A==
-X-Gm-Message-State: AOAM533Hf7RjfE8FUepn+TY3hEki2QujVIUh2LcqUlcplp2CKnPS6kiH
-        HgkWYDD2c7Gw7qe40ZgZSycew2x4TAg=
-X-Google-Smtp-Source: ABdhPJwyLa1X/qvLKpXF7IIjj7zTOZVlYcsr3ty7zzGZI0PGISykU0vWXZ6556bTzK/HzCpa7xYSAA==
-X-Received: by 2002:a17:906:cf89:: with SMTP id um9mr10225786ejb.189.1613763995156;
-        Fri, 19 Feb 2021 11:46:35 -0800 (PST)
-Received: from [192.168.178.40] (ipbcc06d06.dynamic.kabel-deutschland.de. [188.192.109.6])
-        by smtp.gmail.com with ESMTPSA id dk18sm5706138edb.92.2021.02.19.11.46.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 19 Feb 2021 11:46:34 -0800 (PST)
-Subject: Re: [PATCH 24/25] target: flush submission work during TMR processing
-To:     Mike Christie <michael.christie@oracle.com>, mst@redhat.com,
-        stefanha@redhat.com, Chaitanya.Kulkarni@wdc.com, hch@lst.de,
-        loberman@redhat.com, martin.petersen@oracle.com,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-References: <20210217202811.5575-1-michael.christie@oracle.com>
- <20210217202811.5575-25-michael.christie@oracle.com>
-From:   Bodo Stroesser <bostroesser@gmail.com>
-Message-ID: <770b06d7-bc73-fb87-6ab0-61144b257e8a@gmail.com>
-Date:   Fri, 19 Feb 2021 20:46:34 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        Sat, 20 Feb 2021 16:38:00 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+  t=1613857080; x=1645393080;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=Ximxbd4So5TBxiG6d7kSZxe1HGelbfcoEPLBr5LT/FE=;
+  b=Q2Ymn3eermu8PJ0d45BWHJbWlHnAgEBjpyX6Ky0M657WVh3W24unWfRy
+   CR7sExF890K+bu4jQPGAoB8rdFRKO9eTjrt0sB+C5CHjTb8kfWaAIcbhY
+   OsMved9ugpkeySnrxq09TFIC4qFMmpvu/gyiKoes3KaGErWOgwDFnWCp2
+   0SamXYnPLHZRSc9JmZSwNgHfV1yGaBiOVC+5lo+6t/+EUC7JRepcwXMxq
+   hk7r/1I0CakAuqE/Osc2RiT8zxU6peAwy9gSTSWYQsFmXxM2Yy30UZuSK
+   vX3+915EqYTJcWfaclJgglh18pNVd65GoLH8mk0GM2OpxesHs5P6Ivqru
+   A==;
+IronPort-SDR: xZuaM93h5XPffR60/Qr+vVj8MorefZ5fZIbKgjyCmW4ZwNTmZPoCR8HzU4t8rGDGW+/wmciivC
+ JE6GRLR+QcihHfAFhCB62GBH8/Y9adrTfC3QY+YSEJ7w1bh47BAqYXIwXJwqRj4rcNJkXNnC8v
+ i4M5tGMhS3w4l0bgA4oaH75YoRB5vEjsizU2JKVcg/fPc3G/ABqhKCV5ugspkseB55xjulhZoJ
+ e5hHM3ISIkrXTuR2R2knvw9PL4fSC3CjAuhtO41N8n6GRYGpCgZ+09PpYVN7ReogXbNyiz15lz
+ d6c=
+X-IronPort-AV: E=Sophos;i="5.81,193,1610380800"; 
+   d="scan'208";a="161591256"
+Received: from h199-255-45-15.hgst.com (HELO uls-op-cesaep02.wdc.com) ([199.255.45.15])
+  by ob1.hgst.iphmx.com with ESMTP; 21 Feb 2021 05:36:54 +0800
+IronPort-SDR: KiLq/GV+IASuiafKIp/Rs7ebgO3WY4OZ6PEOHok9aVkJgFGqcYjtGXXzedje0wbFdGfV3UaNBr
+ FFktpxarjfiC3wjgnlwFJ+uOhuiTmOCBExMrsavOiJJ91L/5w0QC8BEktU/dE2sTx/2vjE1hV4
+ CPK3y8ebE55GgJNFNF0mXkkV+7tdlSby3HQV0z+Mc2lOFto4S7RG02bCliS40dpcmXzKsOeF4x
+ Rz1vMMdXLTLviikPu7R3E9nKR1rJEZU1Yo71Gq1VZprL0R8RLYB5+lzbVRB6uKnH4VxkLWnCFb
+ gr3AZvkw+WNlRgRdCkjqCyhT
+Received: from uls-op-cesaip02.wdc.com ([10.248.3.37])
+  by uls-op-cesaep02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Feb 2021 13:18:28 -0800
+IronPort-SDR: F3tB+vcxXTKbgYUz+ZG7zYUKsXG3rZxguGcMRmmVXMRf2oRr3w5VdkW79SBblBTxB3oevQtxxV
+ vzKZ9MOLvy9b9JUf9ZfDdXMb7bbfnWe4OhunW45ki1hiC4e9JPhqgnEXROLI3I4fqHlxHMF97R
+ DPqSZXlF7oTHeVtD2RH+bAwBjCtZyonMjyl94nocWaW9axszYXHzomkUFxE2oZC8e+uzGDIoxz
+ omEj5FK8wNuOiqCwcltSFXlSDtNdhzbAyr+8iF0cfLgwkvpgc0LYr5//W+pxFZiVKmlmOtKwYa
+ fVs=
+WDCIronportException: Internal
+Received: from vm.labspan.wdc.com (HELO vm.sc.wdc.com) ([10.6.137.102])
+  by uls-op-cesaip02.wdc.com with ESMTP; 20 Feb 2021 13:36:54 -0800
+From:   Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc:     martin.petersen@oracle.com, hare@suse.de, jejb@linux.ibm.com,
+        mlombard@redhat.com, michael.christie@oracle.com,
+        houpu@bytedance.com,
+        Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+Subject: [RFC PATCH 00/24] target: code cleanup 
+Date:   Sat, 20 Feb 2021 13:36:52 -0800
+Message-Id: <20210220213652.6290-1-chaitanya.kulkarni@wdc.com>
+X-Mailer: git-send-email 2.22.1.dirty
 MIME-Version: 1.0
-In-Reply-To: <20210217202811.5575-25-michael.christie@oracle.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 17.02.21 21:28, Mike Christie wrote:
-> If a cmd is on the submission workqueue then the TMR code will
-> miss it, and end up returning task not found or success for
-> lun resets. The fabric driver might then tell the initiator that
-> the running cmds have been handled when they are about to run.
-> 
-> This adds a flush when we are processing TMRs to make sure queued
-> cmds do not run after returning the TMR response.
-> 
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> Tested-by: Laurence Oberman <loberman@redhat.com>
-> ---
->   drivers/target/target_core_tmr.c | 4 ++++
->   1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
-> index 7347285471fa..e7fcbc09f9db 100644
-> --- a/drivers/target/target_core_tmr.c
-> +++ b/drivers/target/target_core_tmr.c
-> @@ -124,6 +124,8 @@ void core_tmr_abort_task(
->   	int i;
->   
->   	for (i = 0; i < dev->queue_cnt; i++) {
-> +		flush_work(&dev->queues[i].sq.work);
-> +
->   		spin_lock_irqsave(&dev->queues[i].lock, flags);
->   		list_for_each_entry_safe(se_cmd, next, &dev->queues[i].state_list,
->   					 state_list) {
-> @@ -302,6 +304,8 @@ static void core_tmr_drain_state_list(
->   	 * in the Control Mode Page.
->   	 */
->   	for (i = 0; i < dev->queue_cnt; i++) {
-> +		flush_work(&dev->queues[i].sq.work);
-> +
->   		spin_lock_irqsave(&dev->queues[i].lock, flags);
->   		list_for_each_entry_safe(cmd, next, &dev->queues[i].state_list,
->   					 state_list) {
-> 
+Hi,
 
-Looks good.
+This removes unused macros, various memsets, extra variable
+in the target/iblock for bio get and fixes some type mismatch for the
+same with fix for smatch warnings.
 
-Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
+Marking it as RFC as I don't know if these cleanups are acceptable or
+not.
+
+I've geterated this on the linux-block, we decided to move forward wicth
+this then I'll send series based on right repo.
+
+-ck
+
+Chaitanya Kulkarni (24):
+  target/iblock: remove an extra argument
+  target/iblock: trim down line longer than 80 char
+  target/iblock: fix the type of the logs_per_phys
+  targe/pscsi: fix the warning in pscsi_complete_cmd
+  target/sbc: get rid of the warning in cmp & write
+  target/pscsi: remove unsed macro ISPRINT
+  target/stat: remove unsed macro ISPRINT
+  target/stat: remove unsed macro NONE
+  target/stat: remove unsed macro
+  target/iscsi: remove unsed macro TEXT_LEN
+  target/iscsi: remove unsed macro PRINT_BUF
+  target/iscsi: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/pr: remove the memset with declare-init
+  target/pr: remove the memset with declare-init
+  target/pr: remove the memset with declare-init
+  target/core: don't duplicate memset 0xff
+  target: mark __rcu to avoid warning
+
+ drivers/target/iscsi/iscsi_target_configfs.c |  3 +-
+ drivers/target/iscsi/iscsi_target_nego.c     |  1 -
+ drivers/target/iscsi/iscsi_target_stat.c     |  1 -
+ drivers/target/iscsi/iscsi_target_util.c     | 17 ---------
+ drivers/target/target_core_configfs.c        | 25 ++++---------
+ drivers/target/target_core_file.c            |  3 +-
+ drivers/target/target_core_iblock.c          | 37 ++++++++++----------
+ drivers/target/target_core_pr.c              | 36 +++++++------------
+ drivers/target/target_core_pscsi.c           |  5 ++-
+ drivers/target/target_core_sbc.c             |  4 +--
+ drivers/target/target_core_stat.c            |  3 --
+ include/scsi/libfc.h                         |  2 +-
+ 12 files changed, 46 insertions(+), 91 deletions(-)
+
+-- 
+2.22.1
+
