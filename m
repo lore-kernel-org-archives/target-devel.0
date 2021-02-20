@@ -5,67 +5,67 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AB57C433DB
-	for <target-devel@archiver.kernel.org>; Sat, 20 Feb 2021 21:39:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D9E2C433E0
+	for <target-devel@archiver.kernel.org>; Sat, 20 Feb 2021 21:40:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EB41A64ED5
-	for <target-devel@archiver.kernel.org>; Sat, 20 Feb 2021 21:39:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0632864ED5
+	for <target-devel@archiver.kernel.org>; Sat, 20 Feb 2021 21:40:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229943AbhBTVj6 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sat, 20 Feb 2021 16:39:58 -0500
-Received: from esa2.hgst.iphmx.com ([68.232.143.124]:38804 "EHLO
-        esa2.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229905AbhBTVj5 (ORCPT
+        id S229947AbhBTVkL (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 20 Feb 2021 16:40:11 -0500
+Received: from esa4.hgst.iphmx.com ([216.71.154.42]:50438 "EHLO
+        esa4.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229905AbhBTVkJ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sat, 20 Feb 2021 16:39:57 -0500
+        Sat, 20 Feb 2021 16:40:09 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1613857325; x=1645393325;
+  t=1613857208; x=1645393208;
   h=from:to:cc:subject:date:message-id:mime-version:
    content-transfer-encoding;
-  bh=VJVhaN+b+7PEVqFWOIeibFiMvdKqcg9V0KTFySe1jX8=;
-  b=CUm+LVFU2/LXy2D+WdHE5pEb7RZ24WKUe7zKKMDQ8nqtB1L6a7KBr+of
-   ICSIZ9UejiFyjaCzyJ9shc1xmGvn4vSLbYiVePz9B3dVxUuCbmb3y37Zh
-   K0LPU6EYIlSoVO6taj29o6A8B3OS9az4e2edElGC/9k58DQ+aUvpc/XsB
-   /+SSmNOSWsWKgC49mMQmEOe8eFJ/WcHG2IXoKc3ljzC1fctu15usB5mXn
-   L5jBOHk0jn2s1q8okMdaq6Kzaat+c40yb+Ri61YK6phOLmmpxrDxoEUo6
-   WdcuKSYUAJmdky+qQZ3HDznVY9pBsTioC8wb7A30Pq43hynM+L5w70V9G
-   g==;
-IronPort-SDR: uR14brqhYca87mbe52daDEyCSRaXmVvnWGGtoCd7LR7Y1vrJQeRMqqTNUXKNI+vCAQQsz0ndIz
- AlOdyieNbHj1GQmUv2NNaAB7eX/a0zE0vF5mzK0Um+uhfu/h2AFVUwt5/DUQROXp1MzZ4kt9lF
- xv/ujHM/R+QybVST6Y257ptdf/HfyWNyw5RXMNSPrcDr9Ncnk2KaLc26+baIa3gTmAXpFJwJ9D
- JyfqzQGq3t5OPLcJ2lR73U6ZqFwZcaKEVegSi4whnG7/MtD0Dm5KJZYbArkApeTNcswrVL8Yne
- HY0=
+  bh=t+dWcFkfTOpQy5hRzCq1aDeZCc0SYWDCIdkoPXD+ysM=;
+  b=Q1Cqlbsx/8/WbUuE7xcFc0dpKZVKxl/OuMu+g3DTZHxyboXkMjPywZ3h
+   snlKY0JjcvWQan1HloXhQKM4vESR/cmRZh9DuYSXHLB4Udqe8QHVvVCEP
+   Jwu+utGLytbXznNhTUE2XhALNYfGZECYXw7sLO+CeGVR0xjixMkkKwDpd
+   clnl66AEoZVyZSVO3YVW4kcjbXrLO/RZ5PTSehr6y6Ibht8Yivocqcr2+
+   yBfoc9McVvZaRs0JFFhCjxDku3G+itUN4THAdE8dGQOJyRjrFewNriIL5
+   cF3njsrTqWVcClY4ZKwRF3G48pfxofJdLG+IfN62+DDNw97laHBMrJrqr
+   Q==;
+IronPort-SDR: FtN6aIVTdq6+AvNMZa/VMHHHUqTC+lWYsVB4iI2+WesZoEgJUbvwfh3MzKUg9X++FXUVe0okQU
+ AgnKjCEZCDADm4tR5jPawo0Mlt8eogShLamo8wkajAwZ8+juQ1mkqlzvXnS2fF7/Q8kWMLhs2p
+ xb/2nD3GuSt9shgMfLoog06RimsUOSjfdn91PfKjc1ot/TvZ8H6Skdid2io9l9Mhab3vb1Zvvi
+ xzpcEidQty/Di4MmDO5Kr6jp0ODxiviriH7UmnF7PvyzO2b0s5pXefnI/igN9VaxZ4lD+BKWym
+ tNg=
 X-IronPort-AV: E=Sophos;i="5.81,193,1610380800"; 
-   d="scan'208";a="264605653"
-Received: from uls-op-cesaip02.wdc.com (HELO uls-op-cesaep02.wdc.com) ([199.255.45.15])
-  by ob1.hgst.iphmx.com with ESMTP; 21 Feb 2021 05:40:12 +0800
-IronPort-SDR: +iV9XL2/WKwhAbGNQRh2bWzZrVT8Oh7TCVbCc256bBF3BaqH+M6QpNxXaHVTfWs1h9wsIS6Tz/
- v43nZwPpUblRzWuW+SSFTx12Mu/VRCoXS/qZ6dgI1ja1KNq/KHcTHkVWVK355yBCqrvu/ELPHg
- PpbaPzfol4jwm6W6JnQHAIVQJFZCk2JsmWVnmEbyKDjR5z8kBYJ4cVIXYL9kA+X4/hQlXouoqn
- IEJhdraLVfmT+3aerFV8QsJcr8gnEP8FZ49iPmpqEKwQA1ysN0ooWttrdDX5/LT2wvdZviaeb6
- hzodRC6B2Qk/LZPdBt40wNjE
+   d="scan'208";a="160409685"
+Received: from uls-op-cesaip01.wdc.com (HELO uls-op-cesaep01.wdc.com) ([199.255.45.14])
+  by ob1.hgst.iphmx.com with ESMTP; 21 Feb 2021 05:39:14 +0800
+IronPort-SDR: 6yM9cQimorA1jRWlOdTWYkMtB53mPPy0PIUuXwmL+6vkc+0qtNpp7daNYfoQRxqXPLqBZq3+p5
+ AheKxjD7xlt+i5hSlkGVKnWbos/Vg8xMSuqosXy+DUB3zGETGVd4O6ehcxLuYBQinCztILeyOs
+ Ep2+LhmeMq1Pp4D3FRXAzbeQgAli7XAF5AOp1PwPcnS2R8tdBvzOQRqry/ZboYs/61gXjs4p9O
+ ZZETI4DDSWztNBJFE+u+C3J2c60m1FlwEZJWJSMql9/1vJGUUKhrG0HgaCw2Q4wQ+5fbO214Fq
+ 2yod442DfNA87P0+z3huggOQ
 Received: from uls-op-cesaip02.wdc.com ([10.248.3.37])
-  by uls-op-cesaep02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Feb 2021 13:20:16 -0800
-IronPort-SDR: cmjWuJrivO3UNPSmYQchr1RFRfKkrDhQMj3sZZMDyEDTpF1ZBPh2zSlFLNxlwopJrfUrp0PgKE
- 8+bkTCtkNEz0Lw/de7rNHvkQ7X+Pmg7M4FVvfIluB+doNyAjeaP042jd3mIKfG5tt3ElWlREJv
- 9rGHgFgeBpO5nEOoNJquy5gHMDmRXpoei1UJUiPznyIVg4DZFRtLIenYD+jxqY++UzPlpZ/yXD
- 8YWfRjBlFDIMK/aBj1PHQPom+lDYvP0JGD8idUi5xvzw8OSd/FUeOzcpFX52NwAn0N/+b+av4F
- M24=
+  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Feb 2021 13:22:37 -0800
+IronPort-SDR: Zzzzy8+0Zr9WPSq8dKwVu6gKeT6mFckmWMdH2UKE0ertHIehnNyG92d8PkJK9ROgLEUC5xVgmJ
+ lxea6ZVsGP2TgAYexH6+KRHC+Z6sz1CVydVWqJ1jN+l/zl8Gz70oqOXSVc55MD7cTv9fVJ0e6D
+ dkHXhtrhc10e7t6pWbIiPf94vG/QkKbOYTTb6qhFSqErovjzfEWlWmTKv4ZGyFptE2t2MOxW9k
+ SdnJrru+CuYLWRH24KbPD5jU/W/DqW6kIOxyV/nI4dXAa2elnoG0EJP5tI0LT14uULv3Nigg8N
+ QLM=
 WDCIronportException: Internal
 Received: from vm.labspan.wdc.com (HELO vm.sc.wdc.com) ([10.6.137.102])
-  by uls-op-cesaip02.wdc.com with ESMTP; 20 Feb 2021 13:38:42 -0800
+  by uls-op-cesaip02.wdc.com with ESMTP; 20 Feb 2021 13:39:15 -0800
 From:   Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 Cc:     martin.petersen@oracle.com, hare@suse.de, jejb@linux.ibm.com,
         mlombard@redhat.com, michael.christie@oracle.com,
         houpu@bytedance.com,
         Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-Subject: [RFC PATCH 10/24] target/iscsi: remove unsed macro TEXT_LEN
-Date:   Sat, 20 Feb 2021 13:38:41 -0800
-Message-Id: <20210220213841.6787-1-chaitanya.kulkarni@wdc.com>
+Subject: [RFC PATCH 13/24] target/configfs: remove the memset with declare-init
+Date:   Sat, 20 Feb 2021 13:39:13 -0800
+Message-Id: <20210220213913.6919-1-chaitanya.kulkarni@wdc.com>
 X-Mailer: git-send-email 2.22.1.dirty
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -75,21 +75,30 @@ X-Mailing-List: target-devel@vger.kernel.org
 
 Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 ---
- drivers/target/iscsi/iscsi_target_nego.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/target/target_core_configfs.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-index 8b40f10976ff..151e2949bb75 100644
---- a/drivers/target/iscsi/iscsi_target_nego.c
-+++ b/drivers/target/iscsi/iscsi_target_nego.c
-@@ -28,7 +28,6 @@
- #include "iscsi_target_auth.h"
- 
- #define MAX_LOGIN_PDUS  7
--#define TEXT_LEN	4096
- 
- void convert_null_to_semi(char *buf, int len)
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index f04352285155..56ea47f5cda9 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1494,7 +1494,7 @@ static ssize_t target_wwn_vpd_unit_serial_store(struct config_item *item,
  {
+ 	struct t10_wwn *t10_wwn = to_t10_wwn(item);
+ 	struct se_device *dev = t10_wwn->t10_dev;
+-	unsigned char buf[INQUIRY_VPD_SERIAL_LEN];
++	unsigned char buf[INQUIRY_VPD_SERIAL_LEN] = { };
+ 
+ 	/*
+ 	 * If Linux/SCSI subsystem_api_t plugin got a VPD Unit Serial
+@@ -1536,7 +1536,6 @@ static ssize_t target_wwn_vpd_unit_serial_store(struct config_item *item,
+ 	 * Also, strip any newline added from the userspace
+ 	 * echo $UUID > $TARGET/$HBA/$STORAGE_OBJECT/wwn/vpd_unit_serial
+ 	 */
+-	memset(buf, 0, INQUIRY_VPD_SERIAL_LEN);
+ 	snprintf(buf, INQUIRY_VPD_SERIAL_LEN, "%s", page);
+ 	snprintf(dev->t10_wwn.unit_serial, INQUIRY_VPD_SERIAL_LEN,
+ 			"%s", strstrip(buf));
 -- 
 2.22.1
 
