@@ -2,160 +2,173 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48633C43381
-	for <target-devel@archiver.kernel.org>; Mon, 22 Feb 2021 15:18:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15272C433E0
+	for <target-devel@archiver.kernel.org>; Mon, 22 Feb 2021 16:01:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EE4ED6148E
-	for <target-devel@archiver.kernel.org>; Mon, 22 Feb 2021 15:18:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C09A664E40
+	for <target-devel@archiver.kernel.org>; Mon, 22 Feb 2021 16:01:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230099AbhBVPRz (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 22 Feb 2021 10:17:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40424 "EHLO
+        id S230037AbhBVQBS (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 22 Feb 2021 11:01:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230474AbhBVPPd (ORCPT
+        with ESMTP id S230207AbhBVQBO (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 22 Feb 2021 10:15:33 -0500
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B73E4C061A28;
-        Mon, 22 Feb 2021 07:13:00 -0800 (PST)
-Received: by mail-wm1-x335.google.com with SMTP id m1so14705764wml.2;
-        Mon, 22 Feb 2021 07:13:00 -0800 (PST)
+        Mon, 22 Feb 2021 11:01:14 -0500
+Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD98DC061574;
+        Mon, 22 Feb 2021 08:00:33 -0800 (PST)
+Received: by mail-ed1-x530.google.com with SMTP id p2so22590386edm.12;
+        Mon, 22 Feb 2021 08:00:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=AaIJGjhVZ09u/EP3bHxMgqdNAjXosc23vp6hWLR+1MA=;
-        b=UmcqE3lzOznpZPI93PnZsK+swpRu7m70pr3gta9k6ZAIq9lPUwIAP1G9soX57vzhSE
-         P/a0sNKNqSnFIIPV7MzCjU+UngDEfNkYIt1Ygt32naA/1AwNmtutkAmWt+cP5uyegNef
-         zE726RgSRt3elVe1YYwaEEYrhpNaIp3q1R/HZBsH0pBTATq61HxX2NdtCGsRw8xtKOvS
-         7zLaHvg7AsObv5YcMHfFoP3BZaymoqvShDHdx5v0vni/ynrG07sM5E3+GEUdzclERKOi
-         3vnvPl7WCz5W7zmqT1YjbquukYOHREJtRbP0rGS9D+SWNg+8POkwIaRGxb5jq0Ro4qqy
-         cXPw==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=YGAvnzMESkS+Z4+Pab/L4bQLX/w0TQcH3GRn/tc/Ao8=;
+        b=t6+RmEOe0FcHDkuCBmi1GLuVNYPmR6YSKQpFB7gaqGDpIt+gI81BaiC1rEbKb7eJ7x
+         P84arTt3qW03ijOGcDQBeGh0uLgioBOz4UUkB4ENP3bSIgUmw2QTuWkKFOttZTjlycPo
+         ySQdI4AexC7BbWqmNr3tvSRVFhU9kxndhD5nwtpyDfjkkUL+t0V8LrGXHeReTbMdGkpo
+         cm9ODgV91GVJ4f8dVCQ9gu2yHvl2nDS9cwVALhWn4xnf0yyRFAiYPkp2tUD8DmRQZ1RB
+         2BteB6apH/4nk31r+ALfnyRphPPrg3z/BxEVf7AryNmPApcCaNYS3xZuJ1Yr3DQbZ8mi
+         ALtw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=AaIJGjhVZ09u/EP3bHxMgqdNAjXosc23vp6hWLR+1MA=;
-        b=oCoBR44oYk8IjZXqmIqalIEKi1sIGRlx0Ufy9I4UiJCkVev3Dz1r2QS5vqrnGwNxud
-         L3UuPIgigakDRnIeMG5StqRTdvWTcqP2nRFU5jvMHLfGAsFN7DsudbyIrCC6JmEbVf/D
-         lRVNzUL5aW0F/20tff3KDjWtrPUb/PUQGobN5FOAVzE3E0VbPb7gZ5MP0Bs2tUE45p4T
-         13hHzF6Q9ww0uL7evZUC06CEnxqQ+2tZN/Ssar/5pLpv4vpdarKV4COvEAwDXFvwbrsZ
-         DHH5Ay3X1jnciiFiGHQ+1c+PpFZ7i7LrUkNyLAGFsNq0rGLTzZ3annpssD8BxFIEvlqb
-         /s2Q==
-X-Gm-Message-State: AOAM531vET1eio+Mem4NtDW7YWD22PVJMD8Xmj6r69kixPTTh/MlIQVI
-        gYiMqh432VntUwdDUNWEDujEc9/4EwTLNkrMTgA=
-X-Google-Smtp-Source: ABdhPJxPIIevSdHpq0bz8dkLKKzkdobBzKa6BG4pC9pZkFSwSrY4yq1GT/LnCNM1hIF4l39fbEWI4g==
-X-Received: by 2002:a1c:2090:: with SMTP id g138mr20574057wmg.137.1614006779236;
-        Mon, 22 Feb 2021 07:12:59 -0800 (PST)
-Received: from debby (176-141-241-253.abo.bbox.fr. [176.141.241.253])
-        by smtp.gmail.com with ESMTPSA id h11sm24964006wmq.26.2021.02.22.07.12.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Feb 2021 07:12:58 -0800 (PST)
-From:   Romain Perier <romain.perier@gmail.com>
-To:     Kees Cook <keescook@chromium.org>,
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=YGAvnzMESkS+Z4+Pab/L4bQLX/w0TQcH3GRn/tc/Ao8=;
+        b=Qnj7+vTq1jhQZcC5GW2yUQCfkmOYAWY71KSI8Q2YhcsSInuEqz3WlJ+0kENudSg5lu
+         ADHp+t9TeFasTJCMa/d7JwU5LRgYFYe8WiKV+6HT0pN8zLZDwK37/GAyyJRQjIhZkIho
+         GwBJ0xmtt3N6S8mCk0VX2F4wSfZ0RkCJfHsI48xUbWa4N2ASI8p8+ksjqHa0o2cTo0r5
+         m3S4pEBa8enr2x6UMl2fa1hO7Zu0vn9JKkuJaXlghGkRlvEnXrNiHYMaFPw/pQNUbjCm
+         AnMxWbKcWTjPu1Rf2o8Xq1envUgYgI3ZA1bav12DBqfA17l90uVRsPR/ViuPVNh/VZHr
+         16/w==
+X-Gm-Message-State: AOAM533eQnO5dDr8/3515Km1pJeQsKwWmZp1gAOd8dcpiZGDnmuUqiQP
+        lAXdwEwa+NmX6NCK5NbYysSk1XN1nbc=
+X-Google-Smtp-Source: ABdhPJxz/wKuipbNFDoAiObiR8UrkysgBqsDub+EMSZUbWYn40+Og5eya8/Tr+lBWKfgZ2ySb0qY+w==
+X-Received: by 2002:aa7:dac7:: with SMTP id x7mr6672502eds.44.1614009631775;
+        Mon, 22 Feb 2021 08:00:31 -0800 (PST)
+Received: from [192.168.178.40] (ipbcc11466.dynamic.kabel-deutschland.de. [188.193.20.102])
+        by smtp.gmail.com with ESMTPSA id v12sm1792101edx.90.2021.02.22.08.00.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 22 Feb 2021 08:00:31 -0800 (PST)
+Subject: Re: [PATCH 14/20] target: Manual replacement of the deprecated
+ strlcpy() with return values
+To:     Romain Perier <romain.perier@gmail.com>,
+        Kees Cook <keescook@chromium.org>,
         kernel-hardening@lists.openwall.com,
         "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc:     Romain Perier <romain.perier@gmail.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 14/20] target: Manual replacement of the deprecated strlcpy() with return values
-Date:   Mon, 22 Feb 2021 16:12:25 +0100
-Message-Id: <20210222151231.22572-15-romain.perier@gmail.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20210222151231.22572-1-romain.perier@gmail.com>
 References: <20210222151231.22572-1-romain.perier@gmail.com>
+ <20210222151231.22572-15-romain.perier@gmail.com>
+From:   Bodo Stroesser <bostroesser@gmail.com>
+Message-ID: <c296eb89-32e2-0866-34f1-0bdd00d80f82@gmail.com>
+Date:   Mon, 22 Feb 2021 17:00:30 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210222151231.22572-15-romain.perier@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-The strlcpy() reads the entire source buffer first, it is dangerous if
-the source buffer lenght is unbounded or possibility non NULL-terminated.
-It can lead to linear read overflows, crashes, etc...
+On 22.02.21 16:12, Romain Perier wrote:
+> The strlcpy() reads the entire source buffer first, it is dangerous if
+> the source buffer lenght is unbounded or possibility non NULL-terminated.
+> It can lead to linear read overflows, crashes, etc...
+> 
+> As recommended in the deprecated interfaces [1], it should be replaced
+> by strscpy.
+> 
+> This commit replaces all calls to strlcpy that handle the return values
+> by the corresponding strscpy calls with new handling of the return
+> values (as it is quite different between the two functions).
+> 
+> [1] https://www.kernel.org/doc/html/latest/process/deprecated.html#strlcpy
+> 
+> Signed-off-by: Romain Perier <romain.perier@gmail.com>
+> ---
+>   drivers/target/target_core_configfs.c |   33 +++++++++------------------------
+>   1 file changed, 9 insertions(+), 24 deletions(-)
+> 
+> diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+> index f04352285155..676215cd8847 100644
+> --- a/drivers/target/target_core_configfs.c
+> +++ b/drivers/target/target_core_configfs.c
+> @@ -1325,16 +1325,11 @@ static ssize_t target_wwn_vendor_id_store(struct config_item *item,
+>   	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
+>   	unsigned char buf[INQUIRY_VENDOR_LEN + 2];
+>   	char *stripped = NULL;
+> -	size_t len;
+> +	ssize_t len;
+>   	ssize_t ret;
+>   
+> -	len = strlcpy(buf, page, sizeof(buf));
+> -	if (len < sizeof(buf)) {
+> -		/* Strip any newline added from userspace. */
+> -		stripped = strstrip(buf);
+> -		len = strlen(stripped);
+> -	}
+> -	if (len > INQUIRY_VENDOR_LEN) {
+> +	len = strscpy(buf, page, sizeof(buf));
+> +	if (len == -E2BIG) {
+>   		pr_err("Emulated T10 Vendor Identification exceeds"
+>   			" INQUIRY_VENDOR_LEN: " __stringify(INQUIRY_VENDOR_LEN)
+>   			"\n");
+> @@ -1381,16 +1376,11 @@ static ssize_t target_wwn_product_id_store(struct config_item *item,
+>   	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
+>   	unsigned char buf[INQUIRY_MODEL_LEN + 2];
+>   	char *stripped = NULL;
+> -	size_t len;
+> +	ssize_t len;
+>   	ssize_t ret;
+>   
+> -	len = strlcpy(buf, page, sizeof(buf));
+> -	if (len < sizeof(buf)) {
+> -		/* Strip any newline added from userspace. */
+> -		stripped = strstrip(buf);
+> -		len = strlen(stripped);
+> -	}
+> -	if (len > INQUIRY_MODEL_LEN) {
+> +	len = strscpy(buf, page, sizeof(buf));
+> +	if (len == -E2BIG) {
+>   		pr_err("Emulated T10 Vendor exceeds INQUIRY_MODEL_LEN: "
+>   			 __stringify(INQUIRY_MODEL_LEN)
+>   			"\n");
+> @@ -1437,16 +1427,11 @@ static ssize_t target_wwn_revision_store(struct config_item *item,
+>   	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
+>   	unsigned char buf[INQUIRY_REVISION_LEN + 2];
+>   	char *stripped = NULL;
+> -	size_t len;
+> +	ssize_t len;
+>   	ssize_t ret;
+>   
+> -	len = strlcpy(buf, page, sizeof(buf));
+> -	if (len < sizeof(buf)) {
+> -		/* Strip any newline added from userspace. */
+> -		stripped = strstrip(buf);
+> -		len = strlen(stripped);
+> -	}
+> -	if (len > INQUIRY_REVISION_LEN) {
+> +	len = strscpy(buf, page, sizeof(buf));
+> +	if (len == -E2BIG) {
+>   		pr_err("Emulated T10 Revision exceeds INQUIRY_REVISION_LEN: "
+>   			 __stringify(INQUIRY_REVISION_LEN)
+>   			"\n");
+> 
 
-As recommended in the deprecated interfaces [1], it should be replaced
-by strscpy.
+AFAICS, you are not only replacing strlcpy with strscpy, but also remove 
+stripping of possible trailing '\n', and remove the necessary length
+check of the remaining string.
 
-This commit replaces all calls to strlcpy that handle the return values
-by the corresponding strscpy calls with new handling of the return
-values (as it is quite different between the two functions).
-
-[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#strlcpy
-
-Signed-off-by: Romain Perier <romain.perier@gmail.com>
----
- drivers/target/target_core_configfs.c |   33 +++++++++------------------------
- 1 file changed, 9 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index f04352285155..676215cd8847 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -1325,16 +1325,11 @@ static ssize_t target_wwn_vendor_id_store(struct config_item *item,
- 	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
- 	unsigned char buf[INQUIRY_VENDOR_LEN + 2];
- 	char *stripped = NULL;
--	size_t len;
-+	ssize_t len;
- 	ssize_t ret;
- 
--	len = strlcpy(buf, page, sizeof(buf));
--	if (len < sizeof(buf)) {
--		/* Strip any newline added from userspace. */
--		stripped = strstrip(buf);
--		len = strlen(stripped);
--	}
--	if (len > INQUIRY_VENDOR_LEN) {
-+	len = strscpy(buf, page, sizeof(buf));
-+	if (len == -E2BIG) {
- 		pr_err("Emulated T10 Vendor Identification exceeds"
- 			" INQUIRY_VENDOR_LEN: " __stringify(INQUIRY_VENDOR_LEN)
- 			"\n");
-@@ -1381,16 +1376,11 @@ static ssize_t target_wwn_product_id_store(struct config_item *item,
- 	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
- 	unsigned char buf[INQUIRY_MODEL_LEN + 2];
- 	char *stripped = NULL;
--	size_t len;
-+	ssize_t len;
- 	ssize_t ret;
- 
--	len = strlcpy(buf, page, sizeof(buf));
--	if (len < sizeof(buf)) {
--		/* Strip any newline added from userspace. */
--		stripped = strstrip(buf);
--		len = strlen(stripped);
--	}
--	if (len > INQUIRY_MODEL_LEN) {
-+	len = strscpy(buf, page, sizeof(buf));
-+	if (len == -E2BIG) {
- 		pr_err("Emulated T10 Vendor exceeds INQUIRY_MODEL_LEN: "
- 			 __stringify(INQUIRY_MODEL_LEN)
- 			"\n");
-@@ -1437,16 +1427,11 @@ static ssize_t target_wwn_revision_store(struct config_item *item,
- 	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
- 	unsigned char buf[INQUIRY_REVISION_LEN + 2];
- 	char *stripped = NULL;
--	size_t len;
-+	ssize_t len;
- 	ssize_t ret;
- 
--	len = strlcpy(buf, page, sizeof(buf));
--	if (len < sizeof(buf)) {
--		/* Strip any newline added from userspace. */
--		stripped = strstrip(buf);
--		len = strlen(stripped);
--	}
--	if (len > INQUIRY_REVISION_LEN) {
-+	len = strscpy(buf, page, sizeof(buf));
-+	if (len == -E2BIG) {
- 		pr_err("Emulated T10 Revision exceeds INQUIRY_REVISION_LEN: "
- 			 __stringify(INQUIRY_REVISION_LEN)
- 			"\n");
-
+-Bodo
