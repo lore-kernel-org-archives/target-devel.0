@@ -2,129 +2,160 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C611C433DB
-	for <target-devel@archiver.kernel.org>; Wed, 24 Feb 2021 11:02:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F732C433DB
+	for <target-devel@archiver.kernel.org>; Wed, 24 Feb 2021 11:56:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 292AC64E83
-	for <target-devel@archiver.kernel.org>; Wed, 24 Feb 2021 11:02:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 12D9A601FA
+	for <target-devel@archiver.kernel.org>; Wed, 24 Feb 2021 11:56:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234933AbhBXLCT (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 24 Feb 2021 06:02:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39080 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234385AbhBXLB6 (ORCPT
+        id S235188AbhBXL4F (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 24 Feb 2021 06:56:05 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:28877 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S235218AbhBXLzU (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 24 Feb 2021 06:01:58 -0500
-Received: from mail-yb1-xb2b.google.com (mail-yb1-xb2b.google.com [IPv6:2607:f8b0:4864:20::b2b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F23DBC061574;
-        Wed, 24 Feb 2021 03:01:17 -0800 (PST)
-Received: by mail-yb1-xb2b.google.com with SMTP id u3so1443540ybk.6;
-        Wed, 24 Feb 2021 03:01:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=q5EBUPu7DHD+FuA5SGZ+0iNoNfQivrRarTOBbjTJdyk=;
-        b=PpKt4nXgl8dkkxBzxuaLrjlXX0hqqCr8wUyXp2yPXNJFwryHemyu90dCsMWVBumO+n
-         1RL9h3nYbcv61lEowunFuKgz64z7Yzeh8Lgpc+qhcQk3o47Q8vXTa/1JqCs0I07wh3ha
-         Uz5wfupBLDaMNbhfqzaE3k0qhkd7I5DtWuNC4bkQLJKrI5aDDHXPPyyYB1y2GQNdUs5T
-         5kHhKZrfhGu76w2/xSocoV9KQw24jWXlmIw0Kwd03g0L4j4RAnepznV2u3xE8Gs6fLMU
-         EAMzIh826mV8TtupQHPvIlfwN+/s/AhkuamaO0KCG5dcOHlst96H3i75lGMtPG9LM+IU
-         /Deg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=q5EBUPu7DHD+FuA5SGZ+0iNoNfQivrRarTOBbjTJdyk=;
-        b=IzZAkbHDJe/QJxIrdWGAU7lMkIiSCp/M20ACbkl7H7Z5BowIQYipLWV7JJ9QJkuuW2
-         kN2KRYe5dcOGCPBVIqqtcpQ61KZsSSD49GQu1czAov4HVUKBslbkpxTCRC1XGaG8D9dQ
-         ZYREryi2RCLrupnbYaye33/JzV03zilCFZANV0ekc+HR+M2kCOielz1OJJbYbmjFROlV
-         60DsShvsNHn70F56NyAX11S9HJTj3eZYrSGBsScWRdo1g6LeIwZGjKLQm6pulRX5oyT6
-         RAeGJM735uA3Q0JYf6Gf6WJFtZe1M6Mw4q6QIop2j9K6Rt1xV21x8c9mIz6PtGJdr9aS
-         K5Fg==
-X-Gm-Message-State: AOAM53144j2dPkZAsYro/5kmeOUcS4zkYpsR/piAqpI8etuM+Yil6d4v
-        lJLETuMZhNYS//i8LnwTuWMrGnELvGVAkZyE49I=
-X-Google-Smtp-Source: ABdhPJxhiCfGjIzPOx2Fqgi7qb3IEYMwNvLkNSu5A5vWCLP2a0ja0byv/ganfMSniEGrB2L8iDsLWc4l18D5rmld2Ec=
-X-Received: by 2002:a25:324b:: with SMTP id y72mr46115248yby.233.1614164477289;
- Wed, 24 Feb 2021 03:01:17 -0800 (PST)
+        Wed, 24 Feb 2021 06:55:20 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1614167633;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=rL0rqJykzi+068H31HVXzImuu55OZFksWorJVNSie2w=;
+        b=fR/yDIqRTkiFGb6NTOsVr1uAvTHpDhEa2l9JWuPh5aEhi9zZ7Zdf8iyVFvTfh2mBaI/KSe
+        788/Su/JUOZ775XEmMexbTHJ2XwtEhHBtCOhcos1sug8GarKBvxhO580XZMRejwpfxo5Av
+        uzmwbhxsSb/HBMlb7zJTPQwS8Y2Us8w=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-525-f_kFJMjjM8aoNLA5ErJwfQ-1; Wed, 24 Feb 2021 06:53:48 -0500
+X-MC-Unique: f_kFJMjjM8aoNLA5ErJwfQ-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com [10.5.11.22])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 9EB0A18B6142;
+        Wed, 24 Feb 2021 11:53:42 +0000 (UTC)
+Received: from localhost (ovpn-115-137.ams2.redhat.com [10.36.115.137])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id A20EE10016F0;
+        Wed, 24 Feb 2021 11:53:30 +0000 (UTC)
+Date:   Wed, 24 Feb 2021 11:53:29 +0000
+From:   Stefan Hajnoczi <stefanha@redhat.com>
+To:     Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+Cc:     linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-ide@vger.kernel.org, linux-mmc@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-nfs@vger.kernel.org,
+        linux-block@vger.kernel.org, dm-devel@redhat.com, axboe@kernel.dk,
+        fujita.tomonori@lab.ntt.co.jp, tim@cyberelk.net, mst@redhat.com,
+        jasowang@redhat.com, pbonzini@redhat.com, davem@davemloft.net,
+        bp@alien8.de, agk@redhat.com, snitzer@redhat.com,
+        ulf.hansson@linaro.org, jejb@linux.ibm.com,
+        martin.petersen@oracle.com, dgilbert@interlog.com,
+        Kai.Makisara@kolumbus.fi, alim.akhtar@samsung.com,
+        avri.altman@wdc.com, bfields@fieldses.org, chuck.lever@oracle.com,
+        baolin.wang@linaro.org, vbadigan@codeaurora.org, zliua@micron.com,
+        richard.peng@oppo.com, guoqing.jiang@cloud.ionos.com,
+        stanley.chu@mediatek.com, cang@codeaurora.org,
+        asutoshd@codeaurora.org, beanhuo@micron.com, jaegeuk@kernel.org
+Subject: Re: [RFC PATCH] blk-core: remove blk_put_request()
+Message-ID: <YDY+ObNNiBMMuSEt@stefanha-x1.localdomain>
+References: <20210222211115.30416-1-chaitanya.kulkarni@wdc.com>
 MIME-Version: 1.0
-References: <20210224072516.74696-1-uwe@kleine-koenig.org>
-In-Reply-To: <20210224072516.74696-1-uwe@kleine-koenig.org>
-From:   Anatoly Pugachev <matorola@gmail.com>
-Date:   Wed, 24 Feb 2021 14:01:06 +0300
-Message-ID: <CADxRZqzG7jtNwYsdnO1xm8FLes_+GqTB=2naxaUTP2MNkzGG3g@mail.gmail.com>
-Subject: Re: [PATCH v2] vio: make remove callback return void
-To:     =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <uwe@kleine-koenig.org>
-Cc:     Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Jens Axboe <axboe@kernel.dk>, Matt Mackall <mpm@selenic.com>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Peter Huewe <peterhuewe@gmx.de>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        Haren Myneni <haren@us.ibm.com>,
-        =?UTF-8?Q?Breno_Leit=C3=A3o?= <leitao@debian.org>,
-        Nayna Jain <nayna@linux.ibm.com>,
-        Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
-        Steven Royer <seroyer@linux.ibm.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Cristobal Forno <cforno12@linux.ibm.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Dany Madden <drt@linux.ibm.com>, Lijun Pan <ljp@linux.ibm.com>,
-        Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
-        Tyrel Datwyler <tyreld@linux.ibm.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Michael Cyr <mikecyr@linux.ibm.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        linuxppc-dev@lists.ozlabs.org,
-        Linux Kernel list <linux-kernel@vger.kernel.org>,
-        Sparc kernel list <sparclinux@vger.kernel.org>,
-        linux-block@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-integrity@vger.kernel.org, netdev@vger.kernel.org,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="nED3gpEEOc5iD8Dg"
+Content-Disposition: inline
+In-Reply-To: <20210222211115.30416-1-chaitanya.kulkarni@wdc.com>
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, Feb 24, 2021 at 11:17 AM Uwe Kleine-K=C3=B6nig <uwe@kleine-koenig.o=
-rg> wrote:
->
-> The driver core ignores the return value of struct bus_type::remove()
-> because there is only little that can be done. To simplify the quest to
-> make this function return void, let struct vio_driver::remove() return
-> void, too. All users already unconditionally return 0, this commit makes
-> it obvious that returning an error code is a bad idea and makes it
-> obvious for future driver authors that returning an error code isn't
-> intended.
->
-> Note there are two nominally different implementations for a vio bus:
-> one in arch/sparc/kernel/vio.c and the other in
-> arch/powerpc/platforms/pseries/vio.c. I didn't care to check which
-> driver is using which of these busses (or if even some of them can be
-> used with both) and simply adapt all drivers and the two bus codes in
-> one go.
 
-Applied over current git kernel, boots on my sparc64 LDOM (sunvdc
-block driver which uses vio).
-Linux ttip 5.11.0-10201-gc03c21ba6f4e-dirty #189 SMP Wed Feb 24
-13:48:37 MSK 2021 sparc64 GNU/Linux
-boot logs (and kernel config) on [1] for "5.11.0-10201-gc03c21ba6f4e-dirty"=
-.
-Up to you to add "tested-by".
-Thanks.
+--nED3gpEEOc5iD8Dg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-1. https://github.com/mator/sparc64-dmesg
+On Mon, Feb 22, 2021 at 01:11:15PM -0800, Chaitanya Kulkarni wrote:
+> The function blk_put_request() is just a wrapper to
+> blk_mq_free_request(), remove the unnecessary wrapper.
+>=20
+> Any feedback is welcome on this RFC.
+>=20
+> Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+> ---
+>  block/blk-core.c                   |  6 ------
+>  block/blk-merge.c                  |  2 +-
+>  block/bsg-lib.c                    |  4 ++--
+>  block/bsg.c                        |  4 ++--
+>  block/scsi_ioctl.c                 |  6 +++---
+>  drivers/block/paride/pd.c          |  2 +-
+>  drivers/block/pktcdvd.c            |  2 +-
+>  drivers/block/virtio_blk.c         |  2 +-
+>  drivers/cdrom/cdrom.c              |  4 ++--
+>  drivers/ide/ide-atapi.c            |  2 +-
+>  drivers/ide/ide-cd.c               |  4 ++--
+>  drivers/ide/ide-cd_ioctl.c         |  2 +-
+>  drivers/ide/ide-devsets.c          |  2 +-
+>  drivers/ide/ide-disk.c             |  2 +-
+>  drivers/ide/ide-ioctls.c           |  4 ++--
+>  drivers/ide/ide-park.c             |  2 +-
+>  drivers/ide/ide-pm.c               |  4 ++--
+>  drivers/ide/ide-tape.c             |  2 +-
+>  drivers/ide/ide-taskfile.c         |  2 +-
+>  drivers/md/dm-mpath.c              |  2 +-
+>  drivers/mmc/core/block.c           | 10 +++++-----
+>  drivers/scsi/scsi_error.c          |  2 +-
+>  drivers/scsi/scsi_lib.c            |  2 +-
+>  drivers/scsi/sg.c                  |  6 +++---
+>  drivers/scsi/st.c                  |  4 ++--
+>  drivers/scsi/ufs/ufshcd.c          |  6 +++---
+>  drivers/target/target_core_pscsi.c |  4 ++--
+>  fs/nfsd/blocklayout.c              |  4 ++--
+>  include/linux/blkdev.h             |  1 -
+>  29 files changed, 46 insertions(+), 53 deletions(-)
+>=20
+> diff --git a/block/blk-core.c b/block/blk-core.c
+> index fc60ff208497..1754f5e7cc80 100644
+> --- a/block/blk-core.c
+> +++ b/block/blk-core.c
+> @@ -642,12 +642,6 @@ struct request *blk_get_request(struct request_queue=
+ *q, unsigned int op,
+>  }
+>  EXPORT_SYMBOL(blk_get_request);
+> =20
+> -void blk_put_request(struct request *req)
+> -{
+> -	blk_mq_free_request(req);
+> -}
+> -EXPORT_SYMBOL(blk_put_request);
 
-PS: going to check with ppc64 later as well on LPAR (uses vio).
+blk_get_request() still exists after this patch. A "get" API usually has
+a corresponding "put" API. I'm not sure this patch helps the consistency
+and clarity of the code.
+
+If you do go ahead, please update the blk_get_request() doc comment
+explicitly mentioning that blk_mq_free_request() needs to be called.
+
+Stefan
+
+--nED3gpEEOc5iD8Dg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmA2PjkACgkQnKSrs4Gr
+c8hCowf/apCHcJenx6DM1jzpYo1NNnpfJb2nifukyVLP2UVasntjvQM1WD7v1t84
+WZMQu4BXSLlqhke4oxGQpx0/dNYaC3vi0/XB4yedtojqiAeLYqUgZf17ZDRybfvo
+o0JmcTVjGtEm48hmt4kulUe9VTeIBaMh8c+IkEjxAEjFN45LgERG9YKRDdTVDCIg
+ozqQR2DJJDN7ND80Mu397WnT32WJAJnpU5fLYIKrp8Y3ZINRly5h9F6rn87RmbHq
+KdfZiGjiKMHIOnF1hP1oXi+a9xckj9US9MbvSBiMovQhs5zxuI0hBnpmsO1J6Pnl
+6OYJzeRg/xtmqSUt8yY53YS9Hur9zg==
+=4OR2
+-----END PGP SIGNATURE-----
+
+--nED3gpEEOc5iD8Dg--
+
