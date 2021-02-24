@@ -2,53 +2,69 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F732C433DB
-	for <target-devel@archiver.kernel.org>; Wed, 24 Feb 2021 11:56:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8960C433E6
+	for <target-devel@archiver.kernel.org>; Wed, 24 Feb 2021 16:49:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 12D9A601FA
-	for <target-devel@archiver.kernel.org>; Wed, 24 Feb 2021 11:56:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8623C64F09
+	for <target-devel@archiver.kernel.org>; Wed, 24 Feb 2021 16:49:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235188AbhBXL4F (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 24 Feb 2021 06:56:05 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:28877 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S235218AbhBXLzU (ORCPT
+        id S235671AbhBXQtM (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 24 Feb 2021 11:49:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57360 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235219AbhBXQtF (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 24 Feb 2021 06:55:20 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1614167633;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=rL0rqJykzi+068H31HVXzImuu55OZFksWorJVNSie2w=;
-        b=fR/yDIqRTkiFGb6NTOsVr1uAvTHpDhEa2l9JWuPh5aEhi9zZ7Zdf8iyVFvTfh2mBaI/KSe
-        788/Su/JUOZ775XEmMexbTHJ2XwtEhHBtCOhcos1sug8GarKBvxhO580XZMRejwpfxo5Av
-        uzmwbhxsSb/HBMlb7zJTPQwS8Y2Us8w=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-525-f_kFJMjjM8aoNLA5ErJwfQ-1; Wed, 24 Feb 2021 06:53:48 -0500
-X-MC-Unique: f_kFJMjjM8aoNLA5ErJwfQ-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com [10.5.11.22])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 9EB0A18B6142;
-        Wed, 24 Feb 2021 11:53:42 +0000 (UTC)
-Received: from localhost (ovpn-115-137.ams2.redhat.com [10.36.115.137])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id A20EE10016F0;
-        Wed, 24 Feb 2021 11:53:30 +0000 (UTC)
-Date:   Wed, 24 Feb 2021 11:53:29 +0000
-From:   Stefan Hajnoczi <stefanha@redhat.com>
-To:     Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+        Wed, 24 Feb 2021 11:49:05 -0500
+Received: from mail-io1-xd35.google.com (mail-io1-xd35.google.com [IPv6:2607:f8b0:4864:20::d35])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5A85C061786
+        for <target-devel@vger.kernel.org>; Wed, 24 Feb 2021 08:48:23 -0800 (PST)
+Received: by mail-io1-xd35.google.com with SMTP id 74so2705931iob.0
+        for <target-devel@vger.kernel.org>; Wed, 24 Feb 2021 08:48:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernel-dk.20150623.gappssmtp.com; s=20150623;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=1+mpX7zx0n4pKPlEw3hBAnsSTnEgaecbMXBQXh8Z37U=;
+        b=bJRnx9a0JrFxWlYgyk2jyiRpJPQJNXNMPWbL5EnUxyVSch3NY812m+zPkaOOeQG9gE
+         rs0rCo0fJuj/glleu3wdzyZ1sbMyHYwsV5BHTbcMpvcNSEN1VzYR9JpF1EJFbPokIpRP
+         pQFA9x0cFcUm+wj/d9C7MittCB6Pzu9NBrIWj0+f0KwN2z25gJ9NY8wag2SjQO0ua0ev
+         ZVb26i7aH9IF/twGU677bbnoqNxjoX/YznSaZOR126/+xhxo8OHS4QMUdKCTDjp0BRQo
+         RNRen7wNfFOzqDylSea/+a0RlJ08r6OWvecZNFxJhZUCe5oZYOK06fy2FnZ88SyWM37D
+         dX/w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=1+mpX7zx0n4pKPlEw3hBAnsSTnEgaecbMXBQXh8Z37U=;
+        b=O2GgoIy7dxa65HeL/MPgBoAiQFD3nQXBXbois+cy3EpkCZnNH2qfeY9hbOddh7d/TK
+         wYrYwUTjDWKa/cGQoyFrACbTiGtU4fd4NUT4ZxSBIO3GqOiEVQ7FtqF9W0I4h1HC0dz/
+         aaIwJ/ghq88lf1Sj0BHMOie3N8cHdTv/tW4Sj+F8FjrKZ94p43qNQ4egItW/yMTX29I2
+         3cunHt/HnwO0W568zDzJoC3n7ADwRz3Y9XtK3PjYhujK8xzDc5ASp2cAdz2TFHG6GNVa
+         MCIihSxgVEoVZxx+0DxxnJz0LztOf3t/h1/axVpcNzxD/qRtr7Aite4FBCWIHsCmR6oG
+         vcPw==
+X-Gm-Message-State: AOAM533p4vWmMBpZTFm5HFvYVU6QFgzIpOX/mXasYD2Y1cGyB9EtQI5d
+        qKXZimdNTZO8lM8x2rHVnCZYxA==
+X-Google-Smtp-Source: ABdhPJwss97019ILy/7qQcv1GNjekopW38KQaiSTkiRj6pTu3XozM6UbMn7yxILO9vbNkFv7yo9ZjA==
+X-Received: by 2002:a02:1c49:: with SMTP id c70mr34122809jac.136.1614185303233;
+        Wed, 24 Feb 2021 08:48:23 -0800 (PST)
+Received: from [192.168.1.30] ([65.144.74.34])
+        by smtp.gmail.com with ESMTPSA id m15sm1760501ilh.6.2021.02.24.08.48.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 24 Feb 2021 08:48:22 -0800 (PST)
+Subject: Re: [RFC PATCH] blk-core: remove blk_put_request()
+To:     Stefan Hajnoczi <stefanha@redhat.com>,
+        Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 Cc:     linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
         virtualization@lists.linux-foundation.org,
         linux-ide@vger.kernel.org, linux-mmc@vger.kernel.org,
         target-devel@vger.kernel.org, linux-nfs@vger.kernel.org,
-        linux-block@vger.kernel.org, dm-devel@redhat.com, axboe@kernel.dk,
+        linux-block@vger.kernel.org, dm-devel@redhat.com,
         fujita.tomonori@lab.ntt.co.jp, tim@cyberelk.net, mst@redhat.com,
         jasowang@redhat.com, pbonzini@redhat.com, davem@davemloft.net,
         bp@alien8.de, agk@redhat.com, snitzer@redhat.com,
@@ -60,102 +76,90 @@ Cc:     linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
         richard.peng@oppo.com, guoqing.jiang@cloud.ionos.com,
         stanley.chu@mediatek.com, cang@codeaurora.org,
         asutoshd@codeaurora.org, beanhuo@micron.com, jaegeuk@kernel.org
-Subject: Re: [RFC PATCH] blk-core: remove blk_put_request()
-Message-ID: <YDY+ObNNiBMMuSEt@stefanha-x1.localdomain>
 References: <20210222211115.30416-1-chaitanya.kulkarni@wdc.com>
+ <YDY+ObNNiBMMuSEt@stefanha-x1.localdomain>
+From:   Jens Axboe <axboe@kernel.dk>
+Message-ID: <f3141eb3-9938-a216-a9f8-cb193589a657@kernel.dk>
+Date:   Wed, 24 Feb 2021 09:48:21 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="nED3gpEEOc5iD8Dg"
-Content-Disposition: inline
-In-Reply-To: <20210222211115.30416-1-chaitanya.kulkarni@wdc.com>
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+In-Reply-To: <YDY+ObNNiBMMuSEt@stefanha-x1.localdomain>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+On 2/24/21 4:53 AM, Stefan Hajnoczi wrote:
+> On Mon, Feb 22, 2021 at 01:11:15PM -0800, Chaitanya Kulkarni wrote:
+>> The function blk_put_request() is just a wrapper to
+>> blk_mq_free_request(), remove the unnecessary wrapper.
+>>
+>> Any feedback is welcome on this RFC.
+>>
+>> Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+>> ---
+>>  block/blk-core.c                   |  6 ------
+>>  block/blk-merge.c                  |  2 +-
+>>  block/bsg-lib.c                    |  4 ++--
+>>  block/bsg.c                        |  4 ++--
+>>  block/scsi_ioctl.c                 |  6 +++---
+>>  drivers/block/paride/pd.c          |  2 +-
+>>  drivers/block/pktcdvd.c            |  2 +-
+>>  drivers/block/virtio_blk.c         |  2 +-
+>>  drivers/cdrom/cdrom.c              |  4 ++--
+>>  drivers/ide/ide-atapi.c            |  2 +-
+>>  drivers/ide/ide-cd.c               |  4 ++--
+>>  drivers/ide/ide-cd_ioctl.c         |  2 +-
+>>  drivers/ide/ide-devsets.c          |  2 +-
+>>  drivers/ide/ide-disk.c             |  2 +-
+>>  drivers/ide/ide-ioctls.c           |  4 ++--
+>>  drivers/ide/ide-park.c             |  2 +-
+>>  drivers/ide/ide-pm.c               |  4 ++--
+>>  drivers/ide/ide-tape.c             |  2 +-
+>>  drivers/ide/ide-taskfile.c         |  2 +-
+>>  drivers/md/dm-mpath.c              |  2 +-
+>>  drivers/mmc/core/block.c           | 10 +++++-----
+>>  drivers/scsi/scsi_error.c          |  2 +-
+>>  drivers/scsi/scsi_lib.c            |  2 +-
+>>  drivers/scsi/sg.c                  |  6 +++---
+>>  drivers/scsi/st.c                  |  4 ++--
+>>  drivers/scsi/ufs/ufshcd.c          |  6 +++---
+>>  drivers/target/target_core_pscsi.c |  4 ++--
+>>  fs/nfsd/blocklayout.c              |  4 ++--
+>>  include/linux/blkdev.h             |  1 -
+>>  29 files changed, 46 insertions(+), 53 deletions(-)
+>>
+>> diff --git a/block/blk-core.c b/block/blk-core.c
+>> index fc60ff208497..1754f5e7cc80 100644
+>> --- a/block/blk-core.c
+>> +++ b/block/blk-core.c
+>> @@ -642,12 +642,6 @@ struct request *blk_get_request(struct request_queue *q, unsigned int op,
+>>  }
+>>  EXPORT_SYMBOL(blk_get_request);
+>>  
+>> -void blk_put_request(struct request *req)
+>> -{
+>> -	blk_mq_free_request(req);
+>> -}
+>> -EXPORT_SYMBOL(blk_put_request);
+> 
+> blk_get_request() still exists after this patch. A "get" API usually has
+> a corresponding "put" API. I'm not sure this patch helps the consistency
+> and clarity of the code.
+> 
+> If you do go ahead, please update the blk_get_request() doc comment
+> explicitly mentioning that blk_mq_free_request() needs to be called.
 
---nED3gpEEOc5iD8Dg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Would make sense to rename blk_get_request() to blk_mq_alloc_request()
+and then we have API symmetry. The get/put don't make sense when there
+are no references involved.
 
-On Mon, Feb 22, 2021 at 01:11:15PM -0800, Chaitanya Kulkarni wrote:
-> The function blk_put_request() is just a wrapper to
-> blk_mq_free_request(), remove the unnecessary wrapper.
->=20
-> Any feedback is welcome on this RFC.
->=20
-> Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-> ---
->  block/blk-core.c                   |  6 ------
->  block/blk-merge.c                  |  2 +-
->  block/bsg-lib.c                    |  4 ++--
->  block/bsg.c                        |  4 ++--
->  block/scsi_ioctl.c                 |  6 +++---
->  drivers/block/paride/pd.c          |  2 +-
->  drivers/block/pktcdvd.c            |  2 +-
->  drivers/block/virtio_blk.c         |  2 +-
->  drivers/cdrom/cdrom.c              |  4 ++--
->  drivers/ide/ide-atapi.c            |  2 +-
->  drivers/ide/ide-cd.c               |  4 ++--
->  drivers/ide/ide-cd_ioctl.c         |  2 +-
->  drivers/ide/ide-devsets.c          |  2 +-
->  drivers/ide/ide-disk.c             |  2 +-
->  drivers/ide/ide-ioctls.c           |  4 ++--
->  drivers/ide/ide-park.c             |  2 +-
->  drivers/ide/ide-pm.c               |  4 ++--
->  drivers/ide/ide-tape.c             |  2 +-
->  drivers/ide/ide-taskfile.c         |  2 +-
->  drivers/md/dm-mpath.c              |  2 +-
->  drivers/mmc/core/block.c           | 10 +++++-----
->  drivers/scsi/scsi_error.c          |  2 +-
->  drivers/scsi/scsi_lib.c            |  2 +-
->  drivers/scsi/sg.c                  |  6 +++---
->  drivers/scsi/st.c                  |  4 ++--
->  drivers/scsi/ufs/ufshcd.c          |  6 +++---
->  drivers/target/target_core_pscsi.c |  4 ++--
->  fs/nfsd/blocklayout.c              |  4 ++--
->  include/linux/blkdev.h             |  1 -
->  29 files changed, 46 insertions(+), 53 deletions(-)
->=20
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index fc60ff208497..1754f5e7cc80 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -642,12 +642,6 @@ struct request *blk_get_request(struct request_queue=
- *q, unsigned int op,
->  }
->  EXPORT_SYMBOL(blk_get_request);
-> =20
-> -void blk_put_request(struct request *req)
-> -{
-> -	blk_mq_free_request(req);
-> -}
-> -EXPORT_SYMBOL(blk_put_request);
+But it's a lot of churn for very little reward, which is always kind
+of annoying. Especially for the person that has to carry the patches.
 
-blk_get_request() still exists after this patch. A "get" API usually has
-a corresponding "put" API. I'm not sure this patch helps the consistency
-and clarity of the code.
-
-If you do go ahead, please update the blk_get_request() doc comment
-explicitly mentioning that blk_mq_free_request() needs to be called.
-
-Stefan
-
---nED3gpEEOc5iD8Dg
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmA2PjkACgkQnKSrs4Gr
-c8hCowf/apCHcJenx6DM1jzpYo1NNnpfJb2nifukyVLP2UVasntjvQM1WD7v1t84
-WZMQu4BXSLlqhke4oxGQpx0/dNYaC3vi0/XB4yedtojqiAeLYqUgZf17ZDRybfvo
-o0JmcTVjGtEm48hmt4kulUe9VTeIBaMh8c+IkEjxAEjFN45LgERG9YKRDdTVDCIg
-ozqQR2DJJDN7ND80Mu397WnT32WJAJnpU5fLYIKrp8Y3ZINRly5h9F6rn87RmbHq
-KdfZiGjiKMHIOnF1hP1oXi+a9xckj9US9MbvSBiMovQhs5zxuI0hBnpmsO1J6Pnl
-6OYJzeRg/xtmqSUt8yY53YS9Hur9zg==
-=4OR2
------END PGP SIGNATURE-----
-
---nED3gpEEOc5iD8Dg--
+-- 
+Jens Axboe
 
