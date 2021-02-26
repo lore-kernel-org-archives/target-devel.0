@@ -2,528 +2,132 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD448C433DB
-	for <target-devel@archiver.kernel.org>; Fri, 26 Feb 2021 07:20:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE7A7C433E0
+	for <target-devel@archiver.kernel.org>; Fri, 26 Feb 2021 08:42:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 721B864EE1
-	for <target-devel@archiver.kernel.org>; Fri, 26 Feb 2021 07:20:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 82AF364E20
+	for <target-devel@archiver.kernel.org>; Fri, 26 Feb 2021 08:42:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230147AbhBZHUw convert rfc822-to-8bit (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 26 Feb 2021 02:20:52 -0500
-Received: from ste-pvt-msa1.bahnhof.se ([213.80.101.70]:25613 "EHLO
-        ste-pvt-msa1.bahnhof.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230146AbhBZHUj (ORCPT
+        id S230356AbhBZImb (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 26 Feb 2021 03:42:31 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33460 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230264AbhBZImW (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 26 Feb 2021 02:20:39 -0500
-Received: from localhost (localhost [127.0.0.1])
-        by ste-pvt-msa1.bahnhof.se (Postfix) with ESMTP id C24FA3F3AE;
-        Fri, 26 Feb 2021 08:19:37 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at bahnhof.se
-Received: from ste-pvt-msa1.bahnhof.se ([127.0.0.1])
-        by localhost (ste-pvt-msa1.bahnhof.se [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id 3xl7NOrUF8Ww; Fri, 26 Feb 2021 08:19:36 +0100 (CET)
-Received: by ste-pvt-msa1.bahnhof.se (Postfix) with ESMTPA id 8CF733F36E;
-        Fri, 26 Feb 2021 08:19:36 +0100 (CET)
-Received: from [192.168.0.126] (port=55406)
-        by tnonline.net with esmtpsa  (TLS1.3) tls TLS_AES_128_GCM_SHA256
-        (Exim 4.93.0.4)
-        (envelope-from <forza@tnonline.net>)
-        id 1lFXPT-000E9r-UC; Fri, 26 Feb 2021 08:19:35 +0100
-Date:   Fri, 26 Feb 2021 08:19:34 +0100 (GMT+01:00)
-From:   Forza <forza@tnonline.net>
-To:     michael.christie@oracle.com, target-devel@vger.kernel.org
-Message-ID: <24226ad.50248908.177dd3502ec@tnonline.net>
-In-Reply-To: <b4397eb1-db51-7cf2-b881-88fe7bcfa7bb@oracle.com>
-References: <af031d3.b2327dec.177db1f2641@tnonline.net> <b4397eb1-db51-7cf2-b881-88fe7bcfa7bb@oracle.com>
-Subject: Re: Stability of FILEIO as backing store?
+        Fri, 26 Feb 2021 03:42:22 -0500
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA218C061756;
+        Fri, 26 Feb 2021 00:41:41 -0800 (PST)
+Received: by mail-ed1-x533.google.com with SMTP id w21so9961296edc.7;
+        Fri, 26 Feb 2021 00:41:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:references:from:message-id:date:user-agent:mime-version
+         :in-reply-to:content-language:content-transfer-encoding;
+        bh=+lM/SFeDdrVac2jsq0UgCe1DVfeaA2cpst9paOfK+/Q=;
+        b=tjXZxwascR/8rqFRNA7nG8uFy3TlQkPYDzLKbUv0azTwcxL2IOXM/fSUS6OIDgQ292
+         NzC1TAla4TmOC9BtgrAMwo7CscRMAAMoFA5DunHz1P0KDnSyebfiTok0s4mXYQzGr4Er
+         P++4HDRbUJFV5n8PykFZdh/jpvkV1WvXBiKho23zexIn4D6sx333IlKgQq6rmlBWGevp
+         o6L8VVgfqurUAL2cnLWx5d56BfnKgNbVsaMDjP8BoUKVAJlZ2z+mNyG7EnD5XZaRUOXO
+         3IccTIAysQW9RJ9GrjugpP4wTmLsclcME9kzpMkGucQdTRVlNHWvJhhyUexsRDSypLKl
+         3tvw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=+lM/SFeDdrVac2jsq0UgCe1DVfeaA2cpst9paOfK+/Q=;
+        b=JzT37SSc1p2xd4PEskRWgrPdjsFDChYhyZdJa0enGXErPNhEGYJB6j3rxggD19oTXW
+         mMmzEAPjYv1SDxeMKcGRxWzTx5cP7Rp5a+A8y9qOGHHusq4m7O0/FO8PNtb9pBi/fPgY
+         dqmiOvNTsVs82M1YT+JwN0TYIHyGiGqqLUdxAgRMcagDv7ZtKb5g/YybyZ1cgh24WwWO
+         NM0s5Ugtfl4UskQG5Yib73toMzwPEuPiGe75RfPweNO6cY3uss+fiKiJzKAdj2kpqsTo
+         j0+f0TdEWFHVa5zjjKEthBAyizaLBkYH2Mo+HRm99Ih1s3dA8UN9BXINxo1tIzU7T5/L
+         FiBA==
+X-Gm-Message-State: AOAM531qdEptVsqh+Qd24aArpL99EtlnxXePwUIHBbwJbMIenvfG7ijP
+        OXXtBBKBJ2kQJbV/51Omp9Y=
+X-Google-Smtp-Source: ABdhPJwPtzPA4V3kCt7anccPeV5gV4Co62QrCTtA8cvu+T5AZccoav34PDswv4Z7hRaIpFFsaT6Z6g==
+X-Received: by 2002:a05:6402:3553:: with SMTP id f19mr2092790edd.271.1614328900703;
+        Fri, 26 Feb 2021 00:41:40 -0800 (PST)
+Received: from [192.168.178.40] (ipbcc11466.dynamic.kabel-deutschland.de. [188.193.20.102])
+        by smtp.gmail.com with ESMTPSA id s18sm5535567edc.21.2021.02.26.00.41.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 26 Feb 2021 00:41:40 -0800 (PST)
+Subject: Re: [PATCH 0/2] scsi: target: tcmu: Replace IDR and radix_tree with
+ XArray
+To:     michael.christie@oracle.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Matthew Wilcox <willy@infradead.org>
+References: <20210224185335.13844-1-bostroesser@gmail.com>
+ <b36fee7f-6fdc-b5de-3a7b-4396e5f9aab1@oracle.com>
+From:   Bodo Stroesser <bostroesser@gmail.com>
+Message-ID: <4a1fece0-fc3e-9588-6494-aaf2270d6ccd@gmail.com>
+Date:   Fri, 26 Feb 2021 09:41:39 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-X-Mailer: R2Mail2
+In-Reply-To: <b36fee7f-6fdc-b5de-3a7b-4396e5f9aab1@oracle.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-
-
----- From: michael.christie@oracle.com -- Sent: 2021-02-26 - 04:41 ----
-
-> On 2/25/21 3:36 PM, Forza wrote:
->> Hi,
->> 
->> I have a weird issue with using a file as backing store with a Win2016 server as initiator. 
->> 
->> Very often if I reboot the Linux server the disk image becomes corrupt so that Windows cannot even detect the gpt partition table on it. It can happen even if I shut down the Windows machine before I reboot the Linux server.
->> 
->> Initially I thought I would be write cache. But I've disabled that with no benefit to this problem. 
->> 
+On 26.02.21 04:59, michael.christie@oracle.com wrote:
+> On 2/24/21 12:53 PM, Bodo Stroesser wrote:
+>> This small series is based on Martin's for-next.
+>>
+>> Future patches will need something like the - meanwhile removed -
+>> radix_tree_for_each_contig macro.
+>> Since general direction is to use xarray as replacement for
+>> radix_tree and IDR, instead of re-introducing or open coding the
+>> removed macro, with this series we switch over to xarray API.
+>> Based on xarray a future patch easily can implement an analog
+>> to radix_tree_for_each_contig.
+>>
+>> Bodo Stroesser (2):
+>>    scsi: target: tcmu: Replace IDR by XArray
+>>    scsi: target: tcmu: Replace radix_tree with XArray
+>>
+>>   drivers/target/target_core_user.c | 64 +++++++++++++++++++--------------------
+>>   1 file changed, 31 insertions(+), 33 deletions(-)
+>>
 > 
-> How are you disabling the write cache? What tools do you use? Is
-> it targetcli or are you doing this manually via configfs?
-
-I am using targetcli, using the documentation http://linux-iscsi.org/Doc/LIO%20Admin%20Manual.pdf
-I created the backstore/fileio with write_back=false but this might not have disabled cache sinze I see in the saveconfig.json that it is still set to true. So I guess this can still be an issue =( 
-
-
+> Looks ok to me.
 > 
-> What is the output of
+> Reviewed-by: Mike Christie <michael.christie@oracle.com>
 > 
-> cat /sys/kernel/config/target/core/fileio_$N/$name/info
-
-Status: ACTIVATED  Max Queue Depth: 128  SectorSize: 512  HwMaxSectors: 16384
-        TCM FILEIO ID: 0        File: /media/iscsi-tgt/dx_media_3.img  Size: 429496729600  Mode: Buffered-WCE Async: 0
-
-
-> cat /sys/kernel/config/target/core/fileio_$N/$name/attrib/write_cache
-
-This does not exist. The curent files are:
-
-# grep . *
-alua_support:1
-block_size:512
-emulate_3pc:1
-emulate_caw:1
-emulate_dpo:1
-emulate_fua_read:1
-emulate_fua_write:1
-emulate_model_alias:1
-emulate_pr:1
-emulate_rest_reord:0
-emulate_tas:1
-emulate_tpu:0
-emulate_tpws:0
-emulate_ua_intlck_ctrl:0
-emulate_write_cache:1
-enforce_pr_isids:1
-force_pr_aptpl:0
-hw_block_size:512
-hw_max_sectors:16384
-hw_pi_prot_type:0
-hw_queue_depth:128
-is_nonrot:0
-max_unmap_block_desc_count:1
-max_unmap_lba_count:8192
-max_write_same_len:4096
-optimal_sectors:16384
-pgr_support:1
-pi_prot_format:0
-pi_prot_type:0
-pi_prot_verify:0
-queue_depth:128
-unmap_granularity:1
-unmap_granularity_alignment:0
-unmap_zeroes_data:0
-
-
+> I think in a separate patch we need to change:
 > 
-> ?
+> +		if (xa_store(&udev->data_blocks, dbi, page, GFP_KERNEL))
+>   			goto err_insert;
 > 
-> If you do a sync manually after shutting down windows does it help?
-
-No. 
-
+> to GFP_NOIO. There were some users doing tcm loop  + tcmu and
+> were hitting issues when GFP_KERNEL lead to write backs back on
+> to the same tcmu device. We tried to change all the gfp flags but
+> we missed that one, because it was hidden in the radix tree's
+> xa_flags.
 > 
-> Are you accessing this from multiple windows machines at the same time?
 
-Only one client.
+But then, for consistency reasons, shouldn't we change
 
++	if (xa_alloc(&udev->commands, &cmd_id, tcmu_cmd, XA_LIMIT(1, 0xffff),
++		     GFP_NOWAIT) < 0) {
 
-> What target driver are you using?
-I am using FILEIO target. 
+to GFP_NOIO also?
 
+Additionally I have to change memory allocation in tcmu_tmr_notify from
+GFP_KERNEL to GFP_NOIO, since it happens while holding cmdr_lock mutex,
+which could also cause the problems you desribed.
 
-Here is the output of saveconfig.json. Originally I have two exports (dxdep2 dxmedia2) but added two more to test different settings (block size and aio). 
-
-{
-  "fabric_modules": [],
-  "storage_objects": [
-    {
-      "aio": false,
-      "alua_tpgs": [
-        {
-          "alua_access_state": 0,
-          "alua_access_status": 0,
-          "alua_access_type": 3,
-          "alua_support_active_nonoptimized": 1,
-          "alua_support_active_optimized": 1,
-          "alua_support_offline": 1,
-          "alua_support_standby": 1,
-          "alua_support_transitioning": 1,
-          "alua_support_unavailable": 1,
-          "alua_write_metadata": 0,
-          "implicit_trans_secs": 0,
-          "name": "default_tg_pt_gp",
-          "nonop_delay_msecs": 100,
-          "preferred": 0,
-          "tg_pt_gp_id": 0,
-          "trans_delay_msecs": 0
-        }
-      ],
-      "attributes": {
-        "alua_support": 1,
-        "block_size": 512,
-        "emulate_3pc": 1,
-        "emulate_caw": 1,
-        "emulate_dpo": 1,
-        "emulate_fua_read": 1,
-        "emulate_fua_write": 1,
-        "emulate_model_alias": 1,
-        "emulate_pr": 1,
-        "emulate_rest_reord": 0,
-        "emulate_tas": 1,
-        "emulate_tpu": 0,
-        "emulate_tpws": 0,
-        "emulate_ua_intlck_ctrl": 0,
-        "emulate_write_cache": 1,
-        "enforce_pr_isids": 1,
-        "force_pr_aptpl": 0,
-        "is_nonrot": 0,
-        "max_unmap_block_desc_count": 1,
-        "max_unmap_lba_count": 8192,
-        "max_write_same_len": 4096,
-        "optimal_sectors": 16384,
-        "pgr_support": 1,
-        "pi_prot_format": 0,
-        "pi_prot_type": 0,
-        "pi_prot_verify": 0,
-        "queue_depth": 128,
-        "unmap_granularity": 1,
-        "unmap_granularity_alignment": 0,
-        "unmap_zeroes_data": 0
-      },
-      "dev": "/media/iscsi-tgt/dx_media_3.img",
-      "name": "dxmedia3",
-      "plugin": "fileio",
-      "size": 429496729600,
-      "write_back": true,
-      "wwn": "a53bd5cc-85d7-47dc-a4d2-9682e9a7b82a"
-    },
-    {
-      "aio": false,
-      "alua_tpgs": [
-        {
-          "alua_access_state": 0,
-          "alua_access_status": 0,
-          "alua_access_type": 3,
-          "alua_support_active_nonoptimized": 1,
-          "alua_support_active_optimized": 1,
-          "alua_support_offline": 1,
-          "alua_support_standby": 1,
-          "alua_support_transitioning": 1,
-          "alua_support_unavailable": 1,
-          "alua_write_metadata": 0,
-          "implicit_trans_secs": 0,
-          "name": "default_tg_pt_gp",
-          "nonop_delay_msecs": 100,
-          "preferred": 0,
-          "tg_pt_gp_id": 0,
-          "trans_delay_msecs": 0
-        }
-      ],
-      "attributes": {
-        "alua_support": 1,
-        "block_size": 512,
-        "emulate_3pc": 1,
-        "emulate_caw": 1,
-        "emulate_dpo": 1,
-        "emulate_fua_read": 1,
-        "emulate_fua_write": 1,
-        "emulate_model_alias": 1,
-        "emulate_pr": 1,
-        "emulate_rest_reord": 0,
-        "emulate_tas": 1,
-        "emulate_tpu": 0,
-        "emulate_tpws": 0,
-        "emulate_ua_intlck_ctrl": 0,
-        "emulate_write_cache": 1,
-        "enforce_pr_isids": 1,
-        "force_pr_aptpl": 0,
-        "is_nonrot": 0,
-        "max_unmap_block_desc_count": 1,
-        "max_unmap_lba_count": 8192,
-        "max_write_same_len": 4096,
-        "optimal_sectors": 16384,
-        "pgr_support": 1,
-        "pi_prot_format": 0,
-        "pi_prot_type": 0,
-        "pi_prot_verify": 0,
-        "queue_depth": 128,
-        "unmap_granularity": 1,
-        "unmap_granularity_alignment": 0,
-        "unmap_zeroes_data": 0
-      },
-      "dev": "/media/iscsi-tgt/dx_dep_3.img",
-      "name": "dxdep3",
-      "plugin": "fileio",
-      "size": 966367641600,
-      "write_back": true,
-      "wwn": "253f2cc0-209c-4a93-b110-9dc45e52229e"
-    },
-    {
-      "aio": true,
-      "alua_tpgs": [
-        {
-          "alua_access_state": 0,
-          "alua_access_status": 0,
-          "alua_access_type": 3,
-          "alua_support_active_nonoptimized": 1,
-          "alua_support_active_optimized": 1,
-          "alua_support_offline": 1,
-          "alua_support_standby": 1,
-          "alua_support_transitioning": 1,
-          "alua_support_unavailable": 1,
-          "alua_write_metadata": 0,
-          "implicit_trans_secs": 0,
-          "name": "default_tg_pt_gp",
-          "nonop_delay_msecs": 100,
-          "preferred": 0,
-          "tg_pt_gp_id": 0,
-          "trans_delay_msecs": 0
-        }
-      ],
-      "attributes": {
-        "alua_support": 1,
-        "block_size": 4096,
-        "emulate_3pc": 1,
-        "emulate_caw": 1,
-        "emulate_dpo": 1,
-        "emulate_fua_read": 1,
-        "emulate_fua_write": 1,
-        "emulate_model_alias": 1,
-        "emulate_pr": 1,
-        "emulate_rest_reord": 0,
-        "emulate_tas": 1,
-        "emulate_tpu": 0,
-        "emulate_tpws": 0,
-        "emulate_ua_intlck_ctrl": 0,
-        "emulate_write_cache": 1,
-        "enforce_pr_isids": 1,
-        "force_pr_aptpl": 0,
-        "is_nonrot": 0,
-        "max_unmap_block_desc_count": 1,
-        "max_unmap_lba_count": 8192,
-        "max_write_same_len": 4096,
-        "optimal_sectors": 2048,
-        "pgr_support": 1,
-        "pi_prot_format": 0,
-        "pi_prot_type": 0,
-        "pi_prot_verify": 0,
-        "queue_depth": 128,
-        "unmap_granularity": 1,
-        "unmap_granularity_alignment": 0,
-        "unmap_zeroes_data": 0
-      },
-      "dev": "/media/iscsi-tgt/dx_media_2.img",
-      "name": "dxmedia2",
-      "plugin": "fileio",
-      "size": 858993459200,
-      "write_back": true,
-      "wwn": "da09b66d-5b23-4540-ab4a-f00b03af294f"
-    },
-    {
-      "aio": true,
-      "alua_tpgs": [
-        {
-          "alua_access_state": 0,
-          "alua_access_status": 0,
-          "alua_access_type": 3,
-          "alua_support_active_nonoptimized": 1,
-          "alua_support_active_optimized": 1,
-          "alua_support_offline": 1,
-          "alua_support_standby": 1,
-          "alua_support_transitioning": 1,
-          "alua_support_unavailable": 1,
-          "alua_write_metadata": 0,
-          "implicit_trans_secs": 0,
-          "name": "default_tg_pt_gp",
-          "nonop_delay_msecs": 100,
-          "preferred": 0,
-          "tg_pt_gp_id": 0,
-          "trans_delay_msecs": 0
-        }
-      ],
-      "attributes": {
-        "alua_support": 1,
-        "block_size": 4096,
-        "emulate_3pc": 1,
-        "emulate_caw": 1,
-        "emulate_dpo": 1,
-        "emulate_fua_read": 1,
-        "emulate_fua_write": 1,
-        "emulate_model_alias": 1,
-        "emulate_pr": 1,
-        "emulate_rest_reord": 0,
-        "emulate_tas": 1,
-        "emulate_tpu": 0,
-        "emulate_tpws": 0,
-        "emulate_ua_intlck_ctrl": 0,
-        "emulate_write_cache": 1,
-        "enforce_pr_isids": 1,
-        "force_pr_aptpl": 0,
-        "is_nonrot": 0,
-        "max_unmap_block_desc_count": 1,
-        "max_unmap_lba_count": 8192,
-        "max_write_same_len": 4096,
-        "optimal_sectors": 2048,
-        "pgr_support": 1,
-        "pi_prot_format": 0,
-        "pi_prot_type": 0,
-        "pi_prot_verify": 0,
-        "queue_depth": 128,
-        "unmap_granularity": 1,
-        "unmap_granularity_alignment": 0,
-        "unmap_zeroes_data": 0
-      },
-      "dev": "/media/iscsi-tgt/dx_dep_2.img",
-      "name": "dxdep2",
-      "plugin": "fileio",
-      "size": 858993459200,
-      "write_back": true,
-      "wwn": "924a476a-482f-414e-8011-83909d8b3b6e"
-    }
-  ],
-  "targets": [
-    {
-      "fabric": "iscsi",
-      "tpgs": [
-        {
-          "attributes": {
-            "authentication": 0,
-            "cache_dynamic_acls": 1,
-            "default_cmdsn_depth": 64,
-            "default_erl": 0,
-            "demo_mode_discovery": 1,
-            "demo_mode_write_protect": 1,
-            "fabric_prot_type": 0,
-            "generate_node_acls": 0,
-            "login_keys_workaround": 1,
-            "login_timeout": 15,
-            "netif_timeout": 2,
-            "prod_mode_write_protect": 0,
-            "t10_pi": 0,
-            "tpg_enabled_sendtargets": 1
-          },
-          "chap_password": "{redacted}",
-          "chap_userid": "iqn.1991-05.com.microsoft:{redacted}",
-          "enable": true,
-          "luns": [
-            {
-              "alias": "0cc1743f36",
-              "alua_tg_pt_gp_name": "default_tg_pt_gp",
-              "index": 1,
-              "storage_object": "/backstores/fileio/dxmedia3"
-            },
-            {
-              "alias": "3d56464288",
-              "alua_tg_pt_gp_name": "default_tg_pt_gp",
-              "index": 0,
-              "storage_object": "/backstores/fileio/dxdep3"
-            },
-            {
-              "alias": "5f63b78f76",
-              "alua_tg_pt_gp_name": "default_tg_pt_gp",
-              "index": 3,
-              "storage_object": "/backstores/fileio/dxmedia2"
-            },
-            {
-              "alias": "aa08fefd1d",
-              "alua_tg_pt_gp_name": "default_tg_pt_gp",
-              "index": 2,
-              "storage_object": "/backstores/fileio/dxdep2"
-            }
-          ],
-          "node_acls": [
-            {
-              "attributes": {
-                "dataout_timeout": 5,
-                "dataout_timeout_retries": 5,
-                "default_erl": 0,
-                "nopin_response_timeout": 30,
-                "nopin_timeout": 15,
-                "random_datain_pdu_offsets": 0,
-                "random_datain_seq_offsets": 0,
-                "random_r2t_offsets": 0
-              },
-              "chap_mutual_password": "{redacted}",
-              "chap_mutual_userid": "{redacted}",
-              "chap_password": "{redacted}",
-              "chap_userid": "iqn.1991-05.com.microsoft:{redacted}",
-              "mapped_luns": [
-                {
-                  "alias": "a2cce5a7e4",
-                  "index": 1,
-                  "tpg_lun": 1,
-                  "write_protect": false
-                },
-                {
-                  "alias": "5e0c5884fa",
-                  "index": 0,
-                  "tpg_lun": 0,
-                  "write_protect": false
-                },
-                {
-                  "alias": "3fb61f1c01",
-                  "index": 3,
-                  "tpg_lun": 3,
-                  "write_protect": false
-                },
-                {
-                  "alias": "ff50cee375",
-                  "index": 2,
-                  "tpg_lun": 2,
-                  "write_protect": false
-                }
-              ],
-              "node_wwn": "iqn.1991-05.com.microsoft:{redacted}"
-            }
-          ],
-          "parameters": {
-            "AuthMethod": "CHAP,None",
-            "DataDigest": "CRC32C",
-            "DataPDUInOrder": "Yes",
-            "DataSequenceInOrder": "Yes",
-            "DefaultTime2Retain": "20",
-            "DefaultTime2Wait": "4",
-            "ErrorRecoveryLevel": "2",
-            "FirstBurstLength": "65536",
-            "HeaderDigest": "CRC32C",
-            "IFMarkInt": "Reject",
-            "IFMarker": "No",
-            "ImmediateData": "Yes",
-            "InitialR2T": "Yes",
-            "MaxBurstLength": "262144",
-            "MaxConnections": "2",
-            "MaxOutstandingR2T": "1",
-            "MaxRecvDataSegmentLength": "8192",
-            "MaxXmitDataSegmentLength": "262144",
-            "OFMarkInt": "Reject",
-            "OFMarker": "No",
-            "TargetAlias": "LIO Target"
-          },
-          "portals": [
-            {
-              "ip_address": "{redacted}",
-              "iser": false,
-              "offload": false,
-              "port": 3260
-            }
-          ],
-          "tag": 1
-        }
-      ],
-      "wwn": "iqn.2020-02.{redacted}:san01"
-    }
-  ]
-}
-
-
-Thanks! 
-
-/Forza
+Shouldn't we better change to new API memalloc_noio_save and
+memalloc_noio_restore in that new patch?
 
 
