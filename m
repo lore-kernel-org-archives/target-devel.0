@@ -2,215 +2,279 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D12ACC433DB
-	for <target-devel@archiver.kernel.org>; Sat, 27 Feb 2021 19:07:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BC5BC433E6
+	for <target-devel@archiver.kernel.org>; Sun, 28 Feb 2021 05:58:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8707264E6B
-	for <target-devel@archiver.kernel.org>; Sat, 27 Feb 2021 19:07:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D211464E54
+	for <target-devel@archiver.kernel.org>; Sun, 28 Feb 2021 05:58:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230019AbhB0THU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sat, 27 Feb 2021 14:07:20 -0500
-Received: from userp2120.oracle.com ([156.151.31.85]:51842 "EHLO
-        userp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229999AbhB0THQ (ORCPT
+        id S230188AbhB1F6A (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sun, 28 Feb 2021 00:58:00 -0500
+Received: from esa1.hgst.iphmx.com ([68.232.141.245]:1300 "EHLO
+        esa1.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230181AbhB1F57 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sat, 27 Feb 2021 14:07:16 -0500
-Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
-        by userp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 11RGx0ov175562;
-        Sat, 27 Feb 2021 17:00:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references :
- content-transfer-encoding : content-type : mime-version;
- s=corp-2020-01-29; bh=E9Wvj0H2DHQ+uysGDfmPsFtvTmQoayJyUcuQ5991k3g=;
- b=l/5beY5SqA1bYZcQd4yPsfx7bQ4trjfyUzHqagdFR3Mo1RqrhMo4X4/XQFdr2itd6YFr
- xILjRbNvEO33kNL5vhDPETNwExb7IAp1JxicdR5NVhuSdZbB058KZ5bcOVnHH35w88Od
- BPUwuoXM8wl22MoNKSK1D+L9o4vCJ+z99U8uHSeXQngWcUfYGpulqArwlTTPFC8L+J0r
- CzuRRlRf8qRmRlV6hNVUJ2GRX/oyUxlAfTDRVnN9IDDeqAjvy8NnP7fUietKaeoQt0U4
- /4G3I08bk0HdqFsjxSLUYKcbsv13PYjeHHlgejOqWr1SO26UTHEd2b+PoeAHSpNJCwI2 Jg== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by userp2120.oracle.com with ESMTP id 36yeqmrptd-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Sat, 27 Feb 2021 17:00:36 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 11RH0Mbh173209;
-        Sat, 27 Feb 2021 17:00:35 GMT
-Received: from nam10-bn7-obe.outbound.protection.outlook.com (mail-bn7nam10lp2108.outbound.protection.outlook.com [104.47.70.108])
-        by userp3020.oracle.com with ESMTP id 36yddhy8te-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Sat, 27 Feb 2021 17:00:35 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=kQJnsyxqv6y6gOsPcED9ZdUblWW7qPV2TogqZowH97yYAOnefp9WiHoqY2jUCBTxOlvJ041068/UgqLKryAqx+2CHb0KQbTdykWrbl9zonNJ1Yyq2paiRs3LCsTafOiLA3XG43w1NKfvXHTsR/iIGzkbZX5QYQ9wTZxrNAva4NNnmsU4PoduKxx7ibEC0mPa9STiHBAYLSRv5hR8m4GY/TKBai8khKs+CrgU24HqqIFS/zUwhyXrV9j2V4jwveBiGxq6W5u1J4bS5x1gJufvEHQa4xVZmU/tjhrBGt8hUhT3LbrNSsVf3vH3bcjb6YVue/WKLwtHYr0ZwoP9i9JySQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=E9Wvj0H2DHQ+uysGDfmPsFtvTmQoayJyUcuQ5991k3g=;
- b=d2pcdXQNIVs4T3i5wYgQVPzRNN/GtyYVwn7FlMdr01+z8PlMMHa5Q8G3wNYRaoF+DzZMtrCIsEN+RLcN5pXrnXfYlkq/7AS4D3Dz8E5lNyd/V7uuirk4SkXfDqS4ck///M3RWkFg/YSO/f5QsRovSxBPHq/UwP4Um5sQrfTfgJCoWHyde2g+AqbdSXWvR2FmqVnzDwBe4nS7wYm9suy36MX0tPvpTCjygjPpR2kz5EydfZ2JSJjyNlf11Z/0m7bTzAdeNKb4K9miylttbZtlCc+pYFi2Lcw30HRb3rmKfu/mZrmwe4FDP/bdc17rkMgFd5UfvrJJK24PQtwWyhw0EA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=E9Wvj0H2DHQ+uysGDfmPsFtvTmQoayJyUcuQ5991k3g=;
- b=pnx75hPvOB/uHIh9wVM4atFm3dNSr9z/O8i9B9CfoKKCXWuIepuLZcxcswF2irCcckbbDWR62aSYwZhJI3gnElgy/VEu/fohr6x0Rkew5jNV4ZOmwAxjxUmWK0ohFatKafZCtEfQlikqHj0/9Qibmd2zeT8l2kCj0/fJrhSy9Zk=
-Authentication-Results: gmail.com; dkim=none (message not signed)
- header.d=none;gmail.com; dmarc=none action=none header.from=oracle.com;
-Received: from DM6PR10MB3577.namprd10.prod.outlook.com (2603:10b6:5:152::16)
- by DM6PR10MB2538.namprd10.prod.outlook.com (2603:10b6:5:b3::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3890.19; Sat, 27 Feb
- 2021 17:00:33 +0000
-Received: from DM6PR10MB3577.namprd10.prod.outlook.com
- ([fe80::5120:8a97:3547:bc3b]) by DM6PR10MB3577.namprd10.prod.outlook.com
- ([fe80::5120:8a97:3547:bc3b%7]) with mapi id 15.20.3868.034; Sat, 27 Feb 2021
- 17:00:33 +0000
-From:   Mike Christie <michael.christie@oracle.com>
-To:     bostroesser@gmail.com, mst@redhat.com, stefanha@redhat.com,
-        Chaitanya.Kulkarni@wdc.com, hch@lst.de, loberman@redhat.com,
-        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Cc:     Mike Christie <michael.christie@oracle.com>,
-        Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
-        Himanshu Madhani <himanshu.madhani@oracle.com>
-Subject: [PATCH 20/25] target: cleanup cmd flag bits
-Date:   Sat, 27 Feb 2021 11:00:01 -0600
-Message-Id: <20210227170006.5077-21-michael.christie@oracle.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210227170006.5077-1-michael.christie@oracle.com>
-References: <20210227170006.5077-1-michael.christie@oracle.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [73.88.28.6]
-X-ClientProxiedBy: CH0PR13CA0027.namprd13.prod.outlook.com
- (2603:10b6:610:b1::32) To DM6PR10MB3577.namprd10.prod.outlook.com
- (2603:10b6:5:152::16)
+        Sun, 28 Feb 2021 00:57:59 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+  t=1614491878; x=1646027878;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=l8ZQJQVzVcLtB2bnlud4aVbMuxVjQgazSjM/4AkOZDw=;
+  b=KQ8i28/BPoCSBHmBq1rtpkxg8lGcstuIoksi4zpekfDyeFWDoAaZ0dGo
+   cfMIFcGqP6GIerCUTGJn+OcjiCX+4jC9qdeLGouvlZKsPWnvnk2EuPyyv
+   DhsjBkZ1yRIgH7jL6z7mj8v6BCelZZ9Fl3z6NdETK3yY/ey5P3UbcnJn+
+   CzlqVvySeuAyRR1iAaBUcJgY7cpw9MD05mPwBjT5oa4fOEt9x5uJJSWIC
+   PRhPbYnJ2kMljU0EQYF8NpHv8HIlK5vXIe44y71iAblzWqBtqprhL2aC1
+   pBuyMBp+O0BAtPjCFpo+iIXJs852GRR5QsVplmDMAslMBnF+zw7DZBhjC
+   A==;
+IronPort-SDR: NHZGeW15SVOD4sZSSivrqcJXqOXkXX8rLmbiR6MaYFLskdOsSE2OTA/+UFt4a6RaCdHdqvTn/c
+ UYstIGi39niQwjey+tGES4pBzKCGMQLm7bLC8XOr0iZTBuNg0vHDMQsofgj7Owugs70f/1xsyT
+ 15W7CThB2tmWrF0XV+ZiXnYlzQcSh56sBXORv9tUA8CSZh6Z2EkS+IZNuYg0dz9A3Uo9SsoSb8
+ AawL2h11dFaiC593/Xirkf61R8DHWlLHD5jSgTxb9mkhniCI1KYA3xRFQp4/hLu0s7SwUvEuKs
+ VnM=
+X-IronPort-AV: E=Sophos;i="5.81,211,1610380800"; 
+   d="scan'208";a="271564035"
+Received: from uls-op-cesaip02.wdc.com (HELO uls-op-cesaep02.wdc.com) ([199.255.45.15])
+  by ob1.hgst.iphmx.com with ESMTP; 28 Feb 2021 13:56:53 +0800
+IronPort-SDR: pyLtltvTUpXwykIg4WMDXevL3rB95/VZYar67whe/Ud3BmgBkN90n6yAtQvruqt9Cy/KxWbrXm
+ 1cvOWMbFXjjZasnccAHbIA9rYONnv47+cZDO2ihfIB0ldwX8xGyHko/PaeqFJFVMuTuR+PajqA
+ 3O/hiiLNTodD7mI53Xkdy5aqknUywi5umbGA2Qof2a/H8P4Tp2NWQ1lSBZZRMd9UUAe1zZrqve
+ M3dIjTwi6ZX7JUmg6XMzlhLVoj/34VYeB2PDpRyUqmPzV7J0MKcZ79IABU0KdvcYpvYidPLfTd
+ ph9qZ74Ky6ur6esTaweiJFdP
+Received: from uls-op-cesaip01.wdc.com ([10.248.3.36])
+  by uls-op-cesaep02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Feb 2021 21:38:12 -0800
+IronPort-SDR: RMuplQuTJZnxihlQni4VkDUYLWYoFLxinoRryklOpe+xFKneo7dx3O7LgUm4Wi3qqM/KGItvt7
+ t6C/w13XyVFNQh2eAuRyd9Cced6uRAwMGAG7YiMUnXKZGJeLQ0Ivg3mQmQ5mOB9H64sR3zgg2a
+ qP1TxPMeJ/Ke/PhYMsAtEzQqS/IbYDMSkB0MlY+qJpcAYRKjZdDIixvaX3msqESVy6tI9XMvP9
+ GZYJVPieMuEdF+cwUKNIkhSWsCBuzu5Y0m5t1I9YJUsvNq6RfX0XjpTbbhnRLbXzekme+MC9q0
+ nQY=
+WDCIronportException: Internal
+Received: from vm.labspan.wdc.com (HELO vm.sc.wdc.com) ([10.6.137.102])
+  by uls-op-cesaip01.wdc.com with ESMTP; 27 Feb 2021 21:56:53 -0800
+From:   Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc:     martin.petersen@oracle.com, hare@suse.de, jejb@linux.ibm.com,
+        mlombard@redhat.com, michael.christie@oracle.com,
+        bvanassche@acm.org, houpu@bytedance.com,
+        Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+Subject: [PATCH 00/23] target: code cleanup
+Date:   Sat, 27 Feb 2021 21:56:22 -0800
+Message-Id: <20210228055645.22253-1-chaitanya.kulkarni@wdc.com>
+X-Mailer: git-send-email 2.22.1.dirty
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from localhost.localdomain (73.88.28.6) by CH0PR13CA0027.namprd13.prod.outlook.com (2603:10b6:610:b1::32) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3912.13 via Frontend Transport; Sat, 27 Feb 2021 17:00:32 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 2af9a3c6-4d09-4a88-2197-08d8db4131eb
-X-MS-TrafficTypeDiagnostic: DM6PR10MB2538:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <DM6PR10MB2538F3456837DAD69A0829B5F19C9@DM6PR10MB2538.namprd10.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:9508;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: mNOqb5w0I1yDl+u318JoBsuB4GEGpQ4MlEHx3DVBgfJDdgJsRYCHRdgLAAhQAZY1FdwSVj9YtoqtqT7V7HqO4aiiEVYIkBtGwbeYpoVUuHzesEcqSCsdJOk2FAMJ/+VEdXwkavJjxr07oB2esoxIaL3z2iJ2IN3XYLzJS8tmZDu2Whj0iE+w2vCNrspJvi3ZRznsYEr6S6ae00VyUeY16A0Kd3FDKV0QBu5hqLZpAgF2owcEmmEmCRci7VqrElR/3S+5NcmoeTjjX96qJpouRBo47gPqDg21oaKDfF0k+dopEfils4KjiUESq0Gxdul7PvpMZirZzYVyCtYKJpmJjrctsHD+Yem1kISPX7aeGu/JZD0gidBSMNduyI2khmrrYZc5wTYO+A5izkqqnb5rv+zamUTUHwMott7dFqE01IZTD4hKn54g8MD6s7IDvxl5/n6Ddt7q9lvvQZ5rnSu26OMF6EzX9olbej3rANLxVAfCwYtvrsp0bS0i6UGiQBgyxduejR909ZYTWl+ghidZmgAp0k8gA7LOVTd9tT14NvXT2x7IUZ09Swjb9gGblJeVtnWxFmKFLSjkPzbGJCGUkQ==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR10MB3577.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(366004)(346002)(396003)(376002)(39860400002)(136003)(69590400012)(478600001)(36756003)(6506007)(5660300002)(54906003)(4326008)(107886003)(83380400001)(316002)(52116002)(6486002)(956004)(2906002)(2616005)(66946007)(6512007)(8676002)(66556008)(66476007)(6666004)(8936002)(16526019)(186003)(86362001)(1076003)(26005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?f1wUxfG17ki3DLUU+rrzRqdh7ZTisz8P2ZtHg93QpFOUA8Dc6FXxCpGCy/oT?=
- =?us-ascii?Q?bXrXhdVlJgMbDu72FxDlQixH6r6U0x0PZjJAgQlov1Gg21xa7iz0fDX2dK68?=
- =?us-ascii?Q?1m5+WJU9oiEqlhaxMQj18y6ng5Tdc6zZDDUPPAdeGoUII07WGQjqv89FtaS2?=
- =?us-ascii?Q?mj6u6OEOJEp6LdiFYvd7GRYbmXLt4e4KB//woW+eX8fLIulsnRu5vvGKwSkj?=
- =?us-ascii?Q?e0kJoxV+vxYm/gq5uFF0pYfkwSVvL8mRly69ztiQVgGxg2keXoEM88PAQTnZ?=
- =?us-ascii?Q?Wb13/rk4l6qI0DkDj5eva8jpf1NyG3Yh3CtRLRkVxReWT6nO8qhrkdW9m1PK?=
- =?us-ascii?Q?loRYFpE7l2dltzUmlSuNvPvxZE32WgKuyq+njMXFk4zrwvag+Arr/CdBS1qH?=
- =?us-ascii?Q?P5zxe4thfK7vNgW28iuu7aKqIHf80LryBjv13ASS1rHsi0miAZxVmH8MYFZM?=
- =?us-ascii?Q?Z9iVPEW8HFZ/mcLrIlJ6y5L6TFToW0VV37faKJGXPy//4l710dz49E2x7aSw?=
- =?us-ascii?Q?4PngzdB4edbh9TnU/cR0SG30JBfcl4lAcPQfLz34FdII1tpiweWMQT8No6rB?=
- =?us-ascii?Q?GWQjr6bZRuzLsgrJjEoblaxjxraoPhZJ5gb0KBZJo/xngUhkJrTPa2ejo81h?=
- =?us-ascii?Q?Ep1CZ/A5n2P3O5Fj8hSPiNEA7l/p2nNL2XVULqMctJdBP09+j21u2vdHxQjY?=
- =?us-ascii?Q?Eh2CbeQ9K32TNWcuazCi6dLVzeELkJTMvN2TwFVjybfUuikR8lfFM4++U/8r?=
- =?us-ascii?Q?X17UX783BIAwljBMdhPoBw+OjUhpD6+X2Nrwn2Y6H7S1yHy1U4+oQsiTmhgZ?=
- =?us-ascii?Q?jAplNGyXn+cH3PdfUyMl1eAxoI4Gc544crC9gFQi0Fy//eZpKq/jMLLmkrbP?=
- =?us-ascii?Q?wX263VUHXZZrhPAKfnbWCUBbH40cUYUcp+Ksd20XDHjLZVMOAfi5Y1EGsChD?=
- =?us-ascii?Q?3Y0u146UO5O37CR/nytO5EvGraRAhhbEBdJdMLBJ6IGKUpajRrOcE7Eq42Si?=
- =?us-ascii?Q?RzdRKY32xAwmPWkEIOQCvnQxhZ0gVWezFbJqEw+e/D0/w+rQhgfaVw/Qk7ee?=
- =?us-ascii?Q?026dn0DK5srkrMmFogm4RNsq4MYd4m44faa5AExQswQse2rQ0IOHsR9Au5Qx?=
- =?us-ascii?Q?LnsxRBGxf4OZ9C2OeoNY4WDCknF+z4RX3YoEE2ERNoBpo1OduXjr3fHj38lA?=
- =?us-ascii?Q?HrsdznYunvloopMKDWL+z1r+Ce8FIC4g/rYjxFkLAGO74KkwKf33v+ZZNa/P?=
- =?us-ascii?Q?hF5hDiESbTXdydK1/kgdF2hwt083+D3NJg2jPo3jp0gR+q6El0Uhxjl4CsPs?=
- =?us-ascii?Q?DwPKrZzYiY4fH1vneAgaqrMH?=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2af9a3c6-4d09-4a88-2197-08d8db4131eb
-X-MS-Exchange-CrossTenant-AuthSource: DM6PR10MB3577.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Feb 2021 17:00:33.1584
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 79sOci/vMCI6tbUpYw1T/OrR1OrYDrNPdrl8i3yOCCnEbhodO3nrgF42DE2LhrIQTveqElKvJOBOwb+SMUOXG2yCbK55GrylJRdbdXC02Qk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR10MB2538
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9908 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 mlxlogscore=999
- spamscore=0 malwarescore=0 mlxscore=0 phishscore=0 bulkscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2102270146
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9908 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 lowpriorityscore=0 clxscore=1015
- priorityscore=1501 mlxlogscore=999 suspectscore=0 malwarescore=0
- impostorscore=0 bulkscore=0 adultscore=0 mlxscore=0 phishscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2102270146
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-We have a couple holes in the cmd flags definitions. This cleans
-up the definitions to fix that and make it easier to read.
+Hi,
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
-Reviewed-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Himanshu Madhani <himanshu.madhani@oracle.com>
----
- include/target/target_core_base.h | 38 +++++++++++++++----------------
- 1 file changed, 19 insertions(+), 19 deletions(-)
+This removes unused macros, various memset, extra variable in the 
+target/iblock for bio get and fixes type mismatch for the same.
 
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 815de4c97230..5e6703ca102d 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -127,25 +127,25 @@ enum transport_state_table {
- 
- /* Used for struct se_cmd->se_cmd_flags */
- enum se_cmd_flags_table {
--	SCF_SUPPORTED_SAM_OPCODE	= 0x00000001,
--	SCF_TRANSPORT_TASK_SENSE	= 0x00000002,
--	SCF_EMULATED_TASK_SENSE		= 0x00000004,
--	SCF_SCSI_DATA_CDB		= 0x00000008,
--	SCF_SCSI_TMR_CDB		= 0x00000010,
--	SCF_FUA				= 0x00000080,
--	SCF_SE_LUN_CMD			= 0x00000100,
--	SCF_BIDI			= 0x00000400,
--	SCF_SENT_CHECK_CONDITION	= 0x00000800,
--	SCF_OVERFLOW_BIT		= 0x00001000,
--	SCF_UNDERFLOW_BIT		= 0x00002000,
--	SCF_ALUA_NON_OPTIMIZED		= 0x00008000,
--	SCF_PASSTHROUGH_SG_TO_MEM_NOALLOC = 0x00020000,
--	SCF_COMPARE_AND_WRITE		= 0x00080000,
--	SCF_PASSTHROUGH_PROT_SG_TO_MEM_NOALLOC = 0x00200000,
--	SCF_ACK_KREF			= 0x00400000,
--	SCF_USE_CPUID			= 0x00800000,
--	SCF_TASK_ATTR_SET		= 0x01000000,
--	SCF_TREAT_READ_AS_NORMAL	= 0x02000000,
-+	SCF_SUPPORTED_SAM_OPCODE		= (1 << 0),
-+	SCF_TRANSPORT_TASK_SENSE		= (1 << 1),
-+	SCF_EMULATED_TASK_SENSE			= (1 << 2),
-+	SCF_SCSI_DATA_CDB			= (1 << 3),
-+	SCF_SCSI_TMR_CDB			= (1 << 4),
-+	SCF_FUA					= (1 << 5),
-+	SCF_SE_LUN_CMD				= (1 << 6),
-+	SCF_BIDI				= (1 << 7),
-+	SCF_SENT_CHECK_CONDITION		= (1 << 8),
-+	SCF_OVERFLOW_BIT			= (1 << 9),
-+	SCF_UNDERFLOW_BIT			= (1 << 10),
-+	SCF_ALUA_NON_OPTIMIZED			= (1 << 11),
-+	SCF_PASSTHROUGH_SG_TO_MEM_NOALLOC	= (1 << 12),
-+	SCF_COMPARE_AND_WRITE			= (1 << 13),
-+	SCF_PASSTHROUGH_PROT_SG_TO_MEM_NOALLOC	= (1 << 14),
-+	SCF_ACK_KREF				= (1 << 15),
-+	SCF_USE_CPUID				= (1 << 16),
-+	SCF_TASK_ATTR_SET			= (1 << 17),
-+	SCF_TREAT_READ_AS_NORMAL		= (1 << 18),
- };
- 
- /*
+The unused macros warning are found at compile time and they are
+documented in each patch commit log. For memset removal, there are no
+warnings.
+
+First four patches are target_core_iblock.c cleanup. The next six
+patches are removal of the unused macros followed by elevan patches to 
+remove the memset for local array buffers. The last patch is for
+removing the duplicate memset to initialize the buffer to 0xff.
+ 
+I've tested this patch series with creating target bdev backend with
+loop back transport, fio verification job seems to work fine.
+
+Any feedback is welcome.
+
+This is generated on today's linux-block for-next.
+
+-ck
+
+Chaitanya Kulkarni (23):
+  target/iblock: remove an extra argument
+  target/iblock: trim down line longer than 80 char
+  target/iblock: fix the type of the logs_per_phys
+  targe/pscsi: fix the warning in pscsi_complete_cmd
+  target/sbc: get rid of the warning in cmp & write
+  target/pscsi: remove unsed macro ISPRINT
+  target/stat: remove unsed macro ISPRINT
+  target/stat: remove unsed macro NONE
+  target/stat: remove unsed macro
+  target/iscsi: remove unsed macro TEXT_LEN
+  target/iscsi: remove unsed macro PRINT_BUF
+  target/iscsi: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/configfs: remove the memset with declare-init
+  target/pr: remove the memset with declare-init
+  target/pr: remove the memset with declare-init
+  target/pr: remove the memset with declare-init
+  target/core: don't duplicate memset 0xff
+
+ drivers/target/iscsi/iscsi_target_configfs.c |  3 +-
+ drivers/target/iscsi/iscsi_target_nego.c     |  1 -
+ drivers/target/iscsi/iscsi_target_stat.c     |  1 -
+ drivers/target/iscsi/iscsi_target_util.c     | 17 ---------
+ drivers/target/target_core_configfs.c        | 25 ++++---------
+ drivers/target/target_core_file.c            |  3 +-
+ drivers/target/target_core_iblock.c          | 37 ++++++++++----------
+ drivers/target/target_core_pr.c              | 36 +++++++------------
+ drivers/target/target_core_pscsi.c           |  5 ++-
+ drivers/target/target_core_sbc.c             |  4 +--
+ drivers/target/target_core_stat.c            |  3 --
+ 11 files changed, 45 insertions(+), 90 deletions(-)
+
+Test log for fio verification job with bdev backend with loop transport:-
+# ./create_lio.sh 
++ targetcli clearconfig confirm=True
++ clear_dmesg
+All configuration cleared
++ rmdir config/target/iscsi
++ rmdir config/target/loopback
++ modprobe -r iscsi_target_mod
++ modprobe -r tcm_loop
++ modprobe -r target_core_file
++ modprobe -r target_core_pscsi
++ modprobe -r target_core_iblock
++ modprobe -r target_core_user
++ modprobe -r target_core_mod
++ lsmod
++ grep target
+++ nproc
++ make -j 64 M=drivers/target modules
++ TARGET=drivers/target
+++ uname -r
++ TARGET_DEST=/lib/modules/5.11.0blk+/kernel/drivers/target/
++ TARGET_LOOPBACK=drivers/target/loopback
+++ uname -r
++ TARGET_LOOPBACK_DEST=/lib/modules/5.11.0blk+/kernel/drivers/target/loopback
++ TARGET_ISCSI=drivers/target/iscsi/
+++ uname -r
++ TARGET_ISCSI_DEST=/lib/modules/5.11.0blk+/kernel/drivers/target/iscsi
++ cp drivers/target/target_core_file.ko drivers/target/target_core_iblock.ko drivers/target/target_core_mod.ko drivers/target/target_core_pscsi.ko drivers/target/target_core_user.ko /lib/modules/5.11.0blk+/kernel/drivers/target//
++ cp drivers/target/loopback/tcm_loop.ko /lib/modules/5.11.0blk+/kernel/drivers/target/loopback/
++ cp drivers/target/iscsi//iscsi_target_mod.ko /lib/modules/5.11.0blk+/kernel/drivers/target/iscsi/
++ find /lib/modules/5.11.0blk+/kernel/drivers/target/ -name '*ko'
++ xargs ls -l
+-rw-r--r--. 1 root root 3650814 Feb 27 18:32 /lib/modules/5.11.0blk+/kernel/drivers/target/iscsi/cxgbit/cxgbit.ko
+-rw-r--r--. 1 root root 9502192 Feb 27 21:15 /lib/modules/5.11.0blk+/kernel/drivers/target/iscsi/iscsi_target_mod.ko
+-rw-r--r--. 1 root root 9502192 Feb 27 21:02 /lib/modules/5.11.0blk+/kernel/drivers/target/loopback/iscsi_target_mod.ko
+-rw-r--r--. 1 root root  610912 Feb 27 21:15 /lib/modules/5.11.0blk+/kernel/drivers/target/loopback/tcm_loop.ko
+-rw-r--r--. 1 root root  554664 Feb 27 21:15 /lib/modules/5.11.0blk+/kernel/drivers/target/target_core_file.ko
+-rw-r--r--. 1 root root  573760 Feb 27 21:15 /lib/modules/5.11.0blk+/kernel/drivers/target/target_core_iblock.ko
+-rw-r--r--. 1 root root 9450112 Feb 27 21:15 /lib/modules/5.11.0blk+/kernel/drivers/target/target_core_mod.ko
+-rw-r--r--. 1 root root  626880 Feb 27 21:15 /lib/modules/5.11.0blk+/kernel/drivers/target/target_core_pscsi.ko
+-rw-r--r--. 1 root root 1044992 Feb 27 21:15 /lib/modules/5.11.0blk+/kernel/drivers/target/target_core_user.ko
+-rw-r--r--. 1 root root 1808854 Feb 27 18:32 /lib/modules/5.11.0blk+/kernel/drivers/target/tcm_fc/tcm_fc.ko
++ modprobe target_core_file
++ modprobe target_core_pscsi
++ modprobe target_core_iblock
++ modprobe target_core_user
++ modprobe target_core_mod
++ lsmod
++ grep target_core
+target_core_user       57344  0 
+uio                    24576  1 target_core_user
+target_core_iblock     28672  0 
+target_core_pscsi      28672  0 
+target_core_file       28672  0 
+target_core_mod       450560  4 target_core_file,target_core_iblock,target_core_pscsi,target_core_user
++ tree config/target
+config/target
+├── core
+│   └── alua
+│       └── lu_gps
+│           └── default_lu_gp
+│               ├── lu_gp_id
+│               └── members
+├── dbroot
+└── version
+
+4 directories, 4 files
++ targetcli restoreconfig ./lio.json
+Configuration restored, 2 recoverable errors:
+Storage Object block/bdev: Cannot set attribute alua_support: [Errno 22] Invalid argument, skipped
+Storage Object block/bdev: Cannot set attribute pgr_support: [Errno 22] Invalid argument, skipped
++ lsscsi
+[0:0:0:0]    disk    ATA      QEMU HARDDISK    2.5+  /dev/sdc 
+[0:0:1:0]    disk    ATA      QEMU HARDDISK    2.5+  /dev/sdd 
+[1:0:0:0]    disk    ATA      QEMU HARDDISK    2.5+  /dev/sda 
+[1:0:1:0]    disk    ATA      QEMU HARDDISK    2.5+  /dev/sdb 
+[2:0:1:0]    disk    LIO-ORG  bdev             4.0   /dev/sde 
+# 
+# 
+# 
+# cat fio/verify.fio 
+[write-and-verify]
+rw=randwrite
+bs=4k
+direct=1
+ioengine=libaio
+iodepth=16
+norandommap
+randrepeat=0
+verify=crc32c
+size=500m
+group_reporting
+# lsblk | grep sde 
+sde                 8:64   0    2G  0 disk 
+# fio fio/verify.fio --filename=/dev/sde
+write-and-verify: (g=0): rw=randwrite, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=16
+fio-3.8-5-g464b
+Starting 1 process
+Jobs: 1 (f=1): [V(1)][84.6%][r=81.2MiB/s,w=0KiB/s][r=20.8k,w=0 IOPS][eta 00m:02s]      
+write-and-verify: (groupid=0, jobs=1): err= 0: pid=20096: Sat Feb 27 21:17:35 2021
+   read: IOPS=21.3k, BW=83.3MiB/s (87.4MB/s)(316MiB/3796msec)
+    slat (usec): min=9, max=348, avg=11.37, stdev= 4.64
+    clat (usec): min=138, max=1946, avg=737.14, stdev=199.40
+     lat (usec): min=208, max=2273, avg=748.62, stdev=202.00
+    clat percentiles (usec):
+     |  1.00th=[  490],  5.00th=[  502], 10.00th=[  519], 20.00th=[  701],
+     | 30.00th=[  709], 40.00th=[  717], 50.00th=[  725], 60.00th=[  725],
+     | 70.00th=[  725], 80.00th=[  734], 90.00th=[  750], 95.00th=[ 1352],
+     | 99.00th=[ 1549], 99.50th=[ 1598], 99.90th=[ 1844], 99.95th=[ 1876],
+     | 99.99th=[ 1926]
+  write: IOPS=17.0k, BW=70.2MiB/s (73.6MB/s)(500MiB/7123msec)
+    slat (usec): min=10, max=420, avg=13.99, stdev= 5.67
+    clat (usec): min=103, max=2436, avg=875.65, stdev=233.59
+     lat (usec): min=116, max=2508, avg=889.75, stdev=236.91
+    clat percentiles (usec):
+     |  1.00th=[  498],  5.00th=[  611], 10.00th=[  709], 20.00th=[  791],
+     | 30.00th=[  807], 40.00th=[  816], 50.00th=[  824], 60.00th=[  832],
+     | 70.00th=[  848], 80.00th=[  906], 90.00th=[  996], 95.00th=[ 1516],
+     | 99.00th=[ 1795], 99.50th=[ 1876], 99.90th=[ 2073], 99.95th=[ 2147],
+     | 99.99th=[ 2343]
+   bw (  KiB/s): min=16864, max=90064, per=94.95%, avg=68247.93, stdev=15516.59, samples=15
+   iops        : min= 4216, max=22516, avg=17061.93, stdev=3879.14, samples=15
+  lat (usec)   : 250=0.01%, 500=2.09%, 750=40.08%, 1000=49.07%
+  lat (msec)   : 2=8.63%, 4=0.13%
+  cpu          : usr=5.50%, sys=26.40%, ctx=13071, majf=0, minf=1913
+  IO depths    : 1=0.1%, 2=0.1%, 4=0.1%, 8=0.1%, 16=100.0%, 32=0.0%, >=64=0.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.1%, 32=0.0%, 64=0.0%, >=64=0.0%
+     issued rwts: total=80978,128000,0,0 short=0,0,0,0 dropped=0,0,0,0
+     latency   : target=0, window=0, percentile=100.00%, depth=16
+
+Run status group 0 (all jobs):
+   READ: bw=83.3MiB/s (87.4MB/s), 83.3MiB/s-83.3MiB/s (87.4MB/s-87.4MB/s), io=316MiB (332MB), run=3796-3796msec
+  WRITE: bw=70.2MiB/s (73.6MB/s), 70.2MiB/s-70.2MiB/s (73.6MB/s-73.6MB/s), io=500MiB (524MB), run=7123-7123msec
+
+Disk stats (read/write):
+  sde: ios=78668/128000, merge=0/0, ticks=47413/92827, in_queue=140240, util=99.16%
+# targetcli clearconfig confirm=True
+All configuration cleared
+#
 -- 
-2.25.1
+2.22.1
 
