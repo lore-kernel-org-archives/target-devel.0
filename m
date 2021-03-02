@@ -7,31 +7,31 @@ X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C628C433DB
-	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:45:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0E95C433DB
+	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:45:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D8FA364E84
-	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:45:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8C6A964E67
+	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:45:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352937AbhCCEgK (ORCPT
+        id S1352944AbhCCEgW (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 2 Mar 2021 23:36:10 -0500
-Received: from mail.kernel.org ([198.145.29.99]:48570 "EHLO mail.kernel.org"
+        Tue, 2 Mar 2021 23:36:22 -0500
+Received: from mail.kernel.org ([198.145.29.99]:49018 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1350403AbhCBMVN (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 2 Mar 2021 07:21:13 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 918A864F9B;
-        Tue,  2 Mar 2021 11:58:33 +0000 (UTC)
+        id S1350706AbhCBMX7 (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 2 Mar 2021 07:23:59 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 8499A64FB2;
+        Tue,  2 Mar 2021 11:59:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1614686314;
-        bh=UBX+hDlWTye2ioLgZ1h7Fsft8q5FcT975NMOEDcdfDc=;
+        s=k20201202; t=1614686342;
+        bh=K4vyjDvJkOiFpKehndvIVftXvjX2fL9eJ71G9Im5Xd4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=V1BylEgInIGN6P0bT/nLYDl+bF0XKuMS6Ek5rTZFbR35rv1FGNyLsZ6FF76uVsvlI
-         Mxnj57xwuoxSEQba/1BXwXZDhLqaErUUkXYQxU0W5bxFqtVmawlOGPdmN8vCWK2f2z
-         Dh8l1xmjh+jnHjL0Ozj7GMPS2SZjImI3xzPL9Ao9R6hDspxnuwS1zIeL/yyFxIKPyM
-         TBJegTvoUmcBan3v4o1ZgrgOHQdKhtrs6kokG2AKX9uOVcuuEMGMi8nS8VNSLQ25QO
-         YMQUZOXEpWX9ChwOQ/Vy/H6MsPgqk0lnZQahTQkJ0FbkDbv/66epeDq9U4RFvsmhNU
-         kU7Qj2i8qRONA==
+        b=RqoZVQ1Y2dDfD0Ggy8sy6J/ScSCktjaPFMWZ2JBkScTt24xwiY9t5xzjROG3uSZX7
+         90DM36dsQZfYjbRpVm5XNtVmC3uvsiWp0VtulO7fJPaLZ2vtorHLH7ySsBkegc3tG8
+         vj5x7C/XbUBJihDd1L9u0OBbSxjYPMQdglEexudAVFu7pWSA+2eDn8tMqKxIj9QMjg
+         Gtg8TZidGHbfydqJKMsi5PvoHxc7UTS3mmtKeQetF61KQgB20duYhzO6FJOgPU9Sbp
+         mcKjfMxFnvLglICquASWzAa2TTV5A1EdvRk0+cgW4dvGhnQtavYlf61/+3ylSEsHcx
+         psP6M0JjKrXFA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Aleksandr Miloserdov <a.miloserdov@yadro.com>,
@@ -40,12 +40,12 @@ Cc:     Aleksandr Miloserdov <a.miloserdov@yadro.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 33/33] scsi: target: core: Prevent underflow for service actions
-Date:   Tue,  2 Mar 2021 06:57:49 -0500
-Message-Id: <20210302115749.62653-33-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 21/21] scsi: target: core: Prevent underflow for service actions
+Date:   Tue,  2 Mar 2021 06:58:35 -0500
+Message-Id: <20210302115835.63269-21-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.1
-In-Reply-To: <20210302115749.62653-1-sashal@kernel.org>
-References: <20210302115749.62653-1-sashal@kernel.org>
+In-Reply-To: <20210302115835.63269-1-sashal@kernel.org>
+References: <20210302115835.63269-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -73,10 +73,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 11 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 5e931690e697..51e690ab4d29 100644
+index 10db5656fd5d..949879f2f1d1 100644
 --- a/drivers/target/target_core_pr.c
 +++ b/drivers/target/target_core_pr.c
-@@ -3731,6 +3731,7 @@ core_scsi3_pri_read_keys(struct se_cmd *cmd)
+@@ -3742,6 +3742,7 @@ core_scsi3_pri_read_keys(struct se_cmd *cmd)
  	spin_unlock(&dev->t10_pr.registration_lock);
  
  	put_unaligned_be32(add_len, &buf[4]);
@@ -84,7 +84,7 @@ index 5e931690e697..51e690ab4d29 100644
  
  	transport_kunmap_data_sg(cmd);
  
-@@ -3749,7 +3750,7 @@ core_scsi3_pri_read_reservation(struct se_cmd *cmd)
+@@ -3760,7 +3761,7 @@ core_scsi3_pri_read_reservation(struct se_cmd *cmd)
  	struct t10_pr_registration *pr_reg;
  	unsigned char *buf;
  	u64 pr_res_key;
@@ -93,7 +93,7 @@ index 5e931690e697..51e690ab4d29 100644
  
  	if (cmd->data_length < 8) {
  		pr_err("PRIN SA READ_RESERVATIONS SCSI Data Length: %u"
-@@ -3767,8 +3768,9 @@ core_scsi3_pri_read_reservation(struct se_cmd *cmd)
+@@ -3778,8 +3779,9 @@ core_scsi3_pri_read_reservation(struct se_cmd *cmd)
  	pr_reg = dev->dev_pr_res_holder;
  	if (pr_reg) {
  		/*
@@ -104,7 +104,7 @@ index 5e931690e697..51e690ab4d29 100644
  		put_unaligned_be32(add_len, &buf[4]);
  
  		if (cmd->data_length < 22)
-@@ -3804,6 +3806,8 @@ core_scsi3_pri_read_reservation(struct se_cmd *cmd)
+@@ -3815,6 +3817,8 @@ core_scsi3_pri_read_reservation(struct se_cmd *cmd)
  			  (pr_reg->pr_res_type & 0x0f);
  	}
  
@@ -113,7 +113,7 @@ index 5e931690e697..51e690ab4d29 100644
  err:
  	spin_unlock(&dev->dev_reservation_lock);
  	transport_kunmap_data_sg(cmd);
-@@ -3822,7 +3826,7 @@ core_scsi3_pri_report_capabilities(struct se_cmd *cmd)
+@@ -3833,7 +3837,7 @@ core_scsi3_pri_report_capabilities(struct se_cmd *cmd)
  	struct se_device *dev = cmd->se_dev;
  	struct t10_reservation *pr_tmpl = &dev->t10_pr;
  	unsigned char *buf;
@@ -122,7 +122,7 @@ index 5e931690e697..51e690ab4d29 100644
  
  	if (cmd->data_length < 6) {
  		pr_err("PRIN SA REPORT_CAPABILITIES SCSI Data Length:"
-@@ -3834,7 +3838,7 @@ core_scsi3_pri_report_capabilities(struct se_cmd *cmd)
+@@ -3845,7 +3849,7 @@ core_scsi3_pri_report_capabilities(struct se_cmd *cmd)
  	if (!buf)
  		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
  
@@ -131,7 +131,7 @@ index 5e931690e697..51e690ab4d29 100644
  	buf[2] |= 0x10; /* CRH: Compatible Reservation Hanlding bit. */
  	buf[2] |= 0x08; /* SIP_C: Specify Initiator Ports Capable bit */
  	buf[2] |= 0x04; /* ATP_C: All Target Ports Capable bit */
-@@ -3863,6 +3867,8 @@ core_scsi3_pri_report_capabilities(struct se_cmd *cmd)
+@@ -3874,6 +3878,8 @@ core_scsi3_pri_report_capabilities(struct se_cmd *cmd)
  	buf[4] |= 0x02; /* PR_TYPE_WRITE_EXCLUSIVE */
  	buf[5] |= 0x01; /* PR_TYPE_EXCLUSIVE_ACCESS_ALLREG */
  
@@ -140,7 +140,7 @@ index 5e931690e697..51e690ab4d29 100644
  	transport_kunmap_data_sg(cmd);
  
  	return 0;
-@@ -4023,6 +4029,7 @@ core_scsi3_pri_read_full_status(struct se_cmd *cmd)
+@@ -4034,6 +4040,7 @@ core_scsi3_pri_read_full_status(struct se_cmd *cmd)
  	 * Set ADDITIONAL_LENGTH
  	 */
  	put_unaligned_be32(add_len, &buf[4]);
