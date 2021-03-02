@@ -7,31 +7,31 @@ X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DCA6C433E6
-	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:45:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 887ABC433DB
+	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:45:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E6D3564E67
-	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:45:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 460D764E67
+	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:45:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344032AbhCCEhN (ORCPT
+        id S1352954AbhCCEhd (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 2 Mar 2021 23:37:13 -0500
-Received: from mail.kernel.org ([198.145.29.99]:49016 "EHLO mail.kernel.org"
+        Tue, 2 Mar 2021 23:37:33 -0500
+Received: from mail.kernel.org ([198.145.29.99]:36434 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1350708AbhCBMX7 (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 2 Mar 2021 07:23:59 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 09A3064FB1;
-        Tue,  2 Mar 2021 11:58:59 +0000 (UTC)
+        id S1351146AbhCBNce (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 2 Mar 2021 08:32:34 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 1B23264F3F;
+        Tue,  2 Mar 2021 11:56:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1614686341;
-        bh=hpTA20+x/ohTHtRp+WJTEbb1TO+3oSW5Dwyo2Yk0Vjg=;
+        s=k20201202; t=1614686204;
+        bh=I2lv/9SStLTy4zZSlYc2iaKDToCb6xpMaXnbTiFrzOk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=kBSCpcSy6gGe7/srGI698hbU/uRrqb4Gcc6yxSx/LoCtBEs0SPeyo5P5HHwn0J/L4
-         R1GImjxjkn8vOf1j6sZYxWe9iKtsBemqHFHZ7nwKJMAsVSO87XA//9asXcuIBGW7vL
-         AsyVYaZXTT211YTkQZWje7jF/CqhCl6jK30n1ILbOBym/DUrTjkM6K58bqZrwpeu4l
-         /FEwza1ftGtxesYHtKuN20H/vYUhCOroFlDicz+ZyjjTjObuMsEZC+upwKZzV4nVoD
-         EAdoEseiwikU+bhRyW0tGRBvq035TR8YPG+svySQKzD6Dld+dIY3xg5OOMn+abHOG6
-         HeHBuTlmcE7zQ==
+        b=APLav2dFBXO6rVWLcEOuUPs7amk7RtPnxVioKLF1G11847ybW56bieueZcaWZQ4JJ
+         KMYCK3dzzBX3+BQ+aIXJoeAjFuebtv6DKqXmD21zOA8hYT4ii7uj/Dppxq7fDuO+p/
+         t/CP1oTElIUXpZRmCvJUCXDSFF/o63FZ2EqPbF8MhRNPlbVW5rPdkyY7IE/IhPCrgx
+         ROk2tB64pjsSs26mqK4utv3t7LDLkJUacFPXtnRc1McpmSqZAzV49dr0lHSUDQhIbm
+         PQZukOn+zyNwQftE63F7Gu2OmTbnzzbqbRULQA3vXAvCYsMcm2vTSuMspdSeluMO3b
+         IK7BeRki1P3qg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Aleksandr Miloserdov <a.miloserdov@yadro.com>,
@@ -41,12 +41,12 @@ Cc:     Aleksandr Miloserdov <a.miloserdov@yadro.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         bcm-kernel-feedback-list@broadcom.com
-Subject: [PATCH AUTOSEL 4.19 20/21] scsi: target: core: Add cmd length set before cmd complete
-Date:   Tue,  2 Mar 2021 06:58:34 -0500
-Message-Id: <20210302115835.63269-20-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.11 51/52] scsi: target: core: Add cmd length set before cmd complete
+Date:   Tue,  2 Mar 2021 06:55:32 -0500
+Message-Id: <20210302115534.61800-51-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.1
-In-Reply-To: <20210302115835.63269-1-sashal@kernel.org>
-References: <20210302115835.63269-1-sashal@kernel.org>
+In-Reply-To: <20210302115534.61800-1-sashal@kernel.org>
+References: <20210302115534.61800-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -79,10 +79,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 12 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index f1b730b77a31..bdada97cd4fe 100644
+index fca4bd079d02..8a4d58fdc9fe 100644
 --- a/drivers/target/target_core_transport.c
 +++ b/drivers/target/target_core_transport.c
-@@ -841,11 +841,9 @@ void target_complete_cmd(struct se_cmd *cmd, u8 scsi_status)
+@@ -879,11 +879,9 @@ void target_complete_cmd(struct se_cmd *cmd, u8 scsi_status)
  }
  EXPORT_SYMBOL(target_complete_cmd);
  
@@ -96,7 +96,7 @@ index f1b730b77a31..bdada97cd4fe 100644
  		if (cmd->se_cmd_flags & SCF_UNDERFLOW_BIT) {
  			cmd->residual_count += cmd->data_length - length;
  		} else {
-@@ -855,6 +853,15 @@ void target_complete_cmd_with_length(struct se_cmd *cmd, u8 scsi_status, int len
+@@ -893,6 +891,15 @@ void target_complete_cmd_with_length(struct se_cmd *cmd, u8 scsi_status, int len
  
  		cmd->data_length = length;
  	}
@@ -113,10 +113,10 @@ index f1b730b77a31..bdada97cd4fe 100644
  	target_complete_cmd(cmd, scsi_status);
  }
 diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
-index 51b6f50eabee..0deeff9b4496 100644
+index 6336780d83a7..ce2fba49c95d 100644
 --- a/include/target/target_core_backend.h
 +++ b/include/target/target_core_backend.h
-@@ -69,6 +69,7 @@ int	transport_backend_register(const struct target_backend_ops *);
+@@ -72,6 +72,7 @@ int	transport_backend_register(const struct target_backend_ops *);
  void	target_backend_unregister(const struct target_backend_ops *);
  
  void	target_complete_cmd(struct se_cmd *, u8);
