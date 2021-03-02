@@ -2,99 +2,128 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D847AC433E0
-	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 018E4C433E6
+	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:44:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 961C564E67
+	by mail.kernel.org (Postfix) with ESMTP id B697264EBA
 	for <target-devel@archiver.kernel.org>; Wed,  3 Mar 2021 04:44:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344207AbhCCEd7 (ORCPT
+        id S1345708AbhCCEeW (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 2 Mar 2021 23:33:59 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:34657 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1383355AbhCBL1h (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Tue, 2 Mar 2021 06:27:37 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1614684370;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=lo2s5SQiKV70dlGo7mTZAO1iOrWIOPSlewk20ESJ59w=;
-        b=Dl4DbX1ZBOnU/L2RI+WQsKo98m02lLS69U+Q7nzJfNC9rUe4M4yoP8pTwqMyih9BXwAYWx
-        oj8FTk9dsbMDZMFs1B9GBCEM2M7sFubkScr/LNj81mq8o2TYKwBXlZoFIXejjEHeWFO+RJ
-        4bOmDawnei+D+J4miTIRqnd0XUGbElA=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-550-yuMhc0nNOTiMBEOaW33iyw-1; Tue, 02 Mar 2021 06:22:19 -0500
-X-MC-Unique: yuMhc0nNOTiMBEOaW33iyw-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com [10.5.11.16])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 4504F107ACE8;
-        Tue,  2 Mar 2021 11:22:18 +0000 (UTC)
-Received: from [10.40.193.149] (unknown [10.40.193.149])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 6B4755C8A7;
-        Tue,  2 Mar 2021 11:22:17 +0000 (UTC)
-Subject: Re: Stability of FILEIO as backing store?
-To:     Forza <forza@tnonline.net>,
-        Mike Christie <michael.christie@oracle.com>,
-        target-devel@vger.kernel.org
-References: <af031d3.b2327dec.177db1f2641@tnonline.net>
- <b4397eb1-db51-7cf2-b881-88fe7bcfa7bb@oracle.com>
- <24226ad.50248908.177dd3502ec@tnonline.net>
- <0d561b83-1bb5-aa4c-8adc-953036e2f003@oracle.com>
- <2feabdd.b5c9def5.177ee7128e8@tnonline.net>
-From:   Maurizio Lombardi <mlombard@redhat.com>
-Message-ID: <08682666-d350-6cbd-14e1-f550f49d75b6@redhat.com>
-Date:   Tue, 2 Mar 2021 12:22:16 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.0
+        Tue, 2 Mar 2021 23:34:22 -0500
+Received: from mail.kernel.org ([198.145.29.99]:45466 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1446889AbhCBMN5 (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 2 Mar 2021 07:13:57 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id C4FCB64F7D;
+        Tue,  2 Mar 2021 11:57:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1614686267;
+        bh=i8g07wjqJRVCIpjaKxeC9uqFL8e7yquQOP0Uz01Q+qI=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=kV6TMUw8OFlFT9nWhTEAamRAuVrNNjNeIE4qSBpFauZv1OTSp7reXu7/cE1HezFFr
+         h2d+v0LKN38Cry3jUGdawCtnGWPGIQVcv7KojWKkc4MZ2vj7fkRkTf92HC9ED3inzz
+         Q8SZ0LZaEUoXhYU7zXofP8X7dkWoVkhVCqxwV8kPcpe1Fzzo79sagG1bPXYhMFSoZx
+         t71TT4qdr+NOMqkKwq4AbdzpdLfPL/sLX1UxxHK8b+bRC/wS+8NRL2pvnf3eC6DEy3
+         OAIXDwjzx/FmK+CfTpQnn0DRY7GFRW3Fq8yCeAmitijuntmUvRZSSwB0wxkH40rTOK
+         mBaaxfmHHRY4A==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Aleksandr Miloserdov <a.miloserdov@yadro.com>,
+        Roman Bolshakov <r.bolshakov@yadro.com>,
+        Bodo Stroesser <bostroesser@gmail.com>,
+        "Martin K . Petersen" <martin.petersen@oracle.com>,
+        Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        bcm-kernel-feedback-list@broadcom.com
+Subject: [PATCH AUTOSEL 5.10 46/47] scsi: target: core: Add cmd length set before cmd complete
+Date:   Tue,  2 Mar 2021 06:56:45 -0500
+Message-Id: <20210302115646.62291-46-sashal@kernel.org>
+X-Mailer: git-send-email 2.30.1
+In-Reply-To: <20210302115646.62291-1-sashal@kernel.org>
+References: <20210302115646.62291-1-sashal@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <2feabdd.b5c9def5.177ee7128e8@tnonline.net>
-Content-Type: text/plain; charset=iso-8859-2
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hello, I'm trying to reproduce the problem you reported on Fedora 33
+From: Aleksandr Miloserdov <a.miloserdov@yadro.com>
 
-Dne 01. 03. 21 v 16:38 Forza napsal(a):
-> 
-> Also, the "aio" attribute  is different. Perhaps I set it manually in Fedora, but I cannot remember. It is not visible in /sys but is in the saveconfig.json.
-> Ubuntu:
->   "storage_objects": [
->     {
->       "aio": false,
-> Fedora:
->   "storage_objects": [
->     {
->       "aio": true,
-> 
-> Does "aio" mean Async I/O in this case? I could not find any documentation for this attribute.
+[ Upstream commit 1c73e0c5e54d5f7d77f422a10b03ebe61eaed5ad ]
 
-Yes, it means "async I/O" but I don't understand why it's set to true.
-Looking at the rtslib/targetcli sources, aio by default is set to false and
-it's not even possible to change it via targetcli.
-You likely changed it manually in the saveconfig.json file.
+TCM doesn't properly handle underflow case for service actions. One way to
+prevent it is to always complete command with
+target_complete_cmd_with_length(), however it requires access to data_sg,
+which is not always available.
 
-Btw, there is a possible race condition in kernel versions < v5.12-rc1
-when async i/o is enabled:
+This change introduces target_set_cmd_data_length() function which allows
+to set command data length before completing it.
 
-In the fd_execute_rw_aio() function, the bvec pointer is freed before the
-async command is completed, might be the reason behind the disk corruptions?
+Link: https://lore.kernel.org/r/20210209072202.41154-2-a.miloserdov@yadro.com
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
+Signed-off-by: Aleksandr Miloserdov <a.miloserdov@yadro.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/target/target_core_transport.c | 15 +++++++++++----
+ include/target/target_core_backend.h   |  1 +
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-This has been fixed with commit ecd7fba0ade1d6d8d49d320df9caf96922a376b2
-
-Maurizio
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index ff26ab0a5f60..484f0ba0a65b 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -873,11 +873,9 @@ void target_complete_cmd(struct se_cmd *cmd, u8 scsi_status)
+ }
+ EXPORT_SYMBOL(target_complete_cmd);
+ 
+-void target_complete_cmd_with_length(struct se_cmd *cmd, u8 scsi_status, int length)
++void target_set_cmd_data_length(struct se_cmd *cmd, int length)
+ {
+-	if ((scsi_status == SAM_STAT_GOOD ||
+-	     cmd->se_cmd_flags & SCF_TREAT_READ_AS_NORMAL) &&
+-	    length < cmd->data_length) {
++	if (length < cmd->data_length) {
+ 		if (cmd->se_cmd_flags & SCF_UNDERFLOW_BIT) {
+ 			cmd->residual_count += cmd->data_length - length;
+ 		} else {
+@@ -887,6 +885,15 @@ void target_complete_cmd_with_length(struct se_cmd *cmd, u8 scsi_status, int len
+ 
+ 		cmd->data_length = length;
+ 	}
++}
++EXPORT_SYMBOL(target_set_cmd_data_length);
++
++void target_complete_cmd_with_length(struct se_cmd *cmd, u8 scsi_status, int length)
++{
++	if (scsi_status == SAM_STAT_GOOD ||
++	    cmd->se_cmd_flags & SCF_TREAT_READ_AS_NORMAL) {
++		target_set_cmd_data_length(cmd, length);
++	}
+ 
+ 	target_complete_cmd(cmd, scsi_status);
+ }
+diff --git a/include/target/target_core_backend.h b/include/target/target_core_backend.h
+index 6336780d83a7..ce2fba49c95d 100644
+--- a/include/target/target_core_backend.h
++++ b/include/target/target_core_backend.h
+@@ -72,6 +72,7 @@ int	transport_backend_register(const struct target_backend_ops *);
+ void	target_backend_unregister(const struct target_backend_ops *);
+ 
+ void	target_complete_cmd(struct se_cmd *, u8);
++void	target_set_cmd_data_length(struct se_cmd *, int);
+ void	target_complete_cmd_with_length(struct se_cmd *, u8, int);
+ 
+ void	transport_copy_sense_to_cmd(struct se_cmd *, unsigned char *);
+-- 
+2.30.1
 
