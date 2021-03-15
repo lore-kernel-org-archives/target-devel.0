@@ -2,100 +2,103 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 555C2C433E0
-	for <target-devel@archiver.kernel.org>; Wed, 10 Mar 2021 18:46:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A44BBC433DB
+	for <target-devel@archiver.kernel.org>; Mon, 15 Mar 2021 21:17:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2638F64FB1
-	for <target-devel@archiver.kernel.org>; Wed, 10 Mar 2021 18:46:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 57A5C601FB
+	for <target-devel@archiver.kernel.org>; Mon, 15 Mar 2021 21:17:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233532AbhCJSpa (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 10 Mar 2021 13:45:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58962 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233257AbhCJSpP (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Wed, 10 Mar 2021 13:45:15 -0500
-Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D4C6C061760;
-        Wed, 10 Mar 2021 10:45:15 -0800 (PST)
-Received: by mail-ej1-x634.google.com with SMTP id mm21so40723173ejb.12;
-        Wed, 10 Mar 2021 10:45:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=F4UjQbhKYU2VqHSu0Zfac1os9kgjl7Y8/tyWFDYx5sE=;
-        b=aThQHTEykges9z2Nq9ZU1A5HKuge7XBI+MX3Ov5oWhpT2fbpl15txm2ubW2A1YSPRn
-         KxtIyDcdzCG80x6Q7rby5O40nWp1+CSch5KC/UUQYyRNqGDvzKrpP9pg8Q1Q5zXrNcsh
-         arPAjNmVmPDjmnvMtbGiJuSJSEqcFQIwlqA9PeqxQS3d1KsibSsVrV+LxdxxmNpZJ7gT
-         QWw7oy+6frgxSZ+apu1/6qA4U35jzJksMnIrGhJJ5nE/5QarbOb1bbdVItcLhNP5spsr
-         iGtHEXeQhw5dV8JLdNzWZ/1/WV+M6iEsgO7Zocrnfg5eiO0j1HjPyvwxfxJqr9QxV6Cv
-         v2JQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=F4UjQbhKYU2VqHSu0Zfac1os9kgjl7Y8/tyWFDYx5sE=;
-        b=ahzdBbuQRWH9NJlMAmr70nXA74WaXIbYEl/eIy7iPSM/H3CFm+ii/MvCnRvOqBp0PM
-         nSVQhlHRUVPLQ1bva9IGHytORV3GwovrmmMzUKE2bf5sIZW2qtLUQTCA5nvKVvmoUMKB
-         tBH1EjJqABya6KmTj31SrgTPw9v7/ePMJlT337G6cK6PYRuCJMJe34YpdIbcwlPkaGhm
-         +qs+1GDurOfW8NCX/S1gk2zDV+bD/Hz9CwwZgSxKNbrLUAS1utnbdzrB6ZWrKzSQTtS9
-         2Gp7eZN4rg9X08ag9u7FoZejkEGbk408dSTE7u7JF0xEZHb+AisM5yFSjxZFmedoMKeh
-         N7uQ==
-X-Gm-Message-State: AOAM531OKRJbUvooiooYMD7g915JT/yD0r2Khl1jS00D+FuFMltaU5sA
-        t+BnvHX8D47Rha7UiXcS2dEuqU5SVb0=
-X-Google-Smtp-Source: ABdhPJyVd72b1ky1LfRQTrpZj3FHlkQ9KAYE722u1OTMlW/8BaFtYeCVBpzBIpX3MbTO15Esn39xLA==
-X-Received: by 2002:a17:906:f283:: with SMTP id gu3mr5010838ejb.91.1615401914113;
-        Wed, 10 Mar 2021 10:45:14 -0800 (PST)
-Received: from localhost (ipbcc11466.dynamic.kabel-deutschland.de. [188.193.20.102])
-        by smtp.gmail.com with ESMTPSA id rs24sm153645ejb.75.2021.03.10.10.45.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 10 Mar 2021 10:45:13 -0800 (PST)
-From:   Bodo Stroesser <bostroesser@gmail.com>
-To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Mike Christie <michael.christie@oracle.com>
-Cc:     Bodo Stroesser <bostroesser@gmail.com>
-Subject: [PATCH] scsi: target: tcmu: Adjust parameter in call to tcmu_blocks_release
-Date:   Wed, 10 Mar 2021 19:44:58 +0100
-Message-Id: <20210310184458.10741-1-bostroesser@gmail.com>
-X-Mailer: git-send-email 2.12.3
+        id S229945AbhCOVRU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 15 Mar 2021 17:17:20 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:53126 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S229613AbhCOVQw (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 15 Mar 2021 17:16:52 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 8517941277;
+        Mon, 15 Mar 2021 21:16:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1615843005; x=
+        1617657406; bh=VP0pfSHJjElj1y2QtV2ldA5TnC9XH6gDI3ExP0SGqf0=; b=J
+        vIeCzjBled3HlfZjPQ3nz8WFmZvFYul4/C1WzYO9zEzLyrix3S/nHQkC6ymqeHMr
+        bhXr5tvCl3cNviHqtIzY8c9w9y5PnuyL7BKT9Jk0wPQVxa9K/JqZdo+qtE5Q7yH/
+        XgxsxhW7A3hBYi8jiMB1rzxor4yFno/bx15F0Olh8w=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id rftK7Hj6QaeU; Tue, 16 Mar 2021 00:16:45 +0300 (MSK)
+Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 5D7BB4124F;
+        Tue, 16 Mar 2021 00:16:44 +0300 (MSK)
+Received: from yadro.com (10.199.0.49) by T-EXCH-03.corp.yadro.com
+ (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Tue, 16
+ Mar 2021 00:16:44 +0300
+From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     <linux@yadro.com>, Konstantin Shelekhin <k.shelekhin@yadro.com>,
+        Roman Bolshakov <r.bolshakov@yadro.com>
+Subject: [PATCH] target: Make logs less verbose
+Date:   Tue, 16 Mar 2021 00:14:54 +0300
+Message-ID: <20210315211453.5580-1-k.shelekhin@yadro.com>
+X-Mailer: git-send-email 2.30.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.0.49]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-In patch
- "scsi: target: tcmu: Replace radix_tree with XArray"
-meaning of last parameter of tcmu_blocks_release was changed.
-So in the callers we should subtract 1 from the previous
-parameter.
+Change the log level of the following message to debug:
 
-Unfortunately that change got lost at one of the two places
-where tcmu_blocks_release is called. That does not lead to any
-problems, but we should adjust it anyway.
+	Unsupported SCSI Opcode 0xXX, sending CHECK_CONDITION.
 
-Signed-off-by: Bodo Stroesser <bostroesser@gmail.com>
+This message is mostly helpful during debugging sessions in order to
+understand errors on the initiator side. But most of the time it's just
+useless and makes reading logs much harder.
+
+It gets particularly annoying if there are many initiators that come and
+go or if an initiator runs a program that does not care whether the
+command is supported and just keeps sending it.
+
+Signed-off-by: Konstantin Shelekhin <k.shelekhin@yadro.com>
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
 ---
- drivers/target/target_core_user.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_transport.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 9e1b115cb032..bdfc057f000c 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1658,7 +1658,7 @@ static void tcmu_dev_kref_release(struct kref *kref)
- 	xa_destroy(&udev->commands);
- 	WARN_ON(!all_expired);
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 5ecb9f18a53d..5e1d2abf5efd 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1488,10 +1488,10 @@ target_cmd_parse_cdb(struct se_cmd *cmd)
  
--	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max + 1);
-+	tcmu_blocks_release(&udev->data_blocks, 0, udev->dbi_max);
- 	bitmap_free(udev->data_bitmap);
- 	mutex_unlock(&udev->cmdr_lock);
+ 	ret = dev->transport->parse_cdb(cmd);
+ 	if (ret == TCM_UNSUPPORTED_SCSI_OPCODE)
+-		pr_warn_ratelimited("%s/%s: Unsupported SCSI Opcode 0x%02x, sending CHECK_CONDITION.\n",
+-				    cmd->se_tfo->fabric_name,
+-				    cmd->se_sess->se_node_acl->initiatorname,
+-				    cmd->t_task_cdb[0]);
++		pr_debug_ratelimited("%s/%s: Unsupported SCSI Opcode 0x%02x, sending CHECK_CONDITION.\n",
++				     cmd->se_tfo->fabric_name,
++				     cmd->se_sess->se_node_acl->initiatorname,
++				     cmd->t_task_cdb[0]);
+ 	if (ret)
+ 		return ret;
  
 -- 
-2.12.3
+2.30.2
 
