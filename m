@@ -2,161 +2,285 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDB94C433E6
-	for <target-devel@archiver.kernel.org>; Tue, 16 Mar 2021 03:19:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5445EC433DB
+	for <target-devel@archiver.kernel.org>; Wed, 17 Mar 2021 09:13:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BDB6F65099
-	for <target-devel@archiver.kernel.org>; Tue, 16 Mar 2021 03:19:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1416A64F37
+	for <target-devel@archiver.kernel.org>; Wed, 17 Mar 2021 09:13:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234802AbhCPDS5 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 15 Mar 2021 23:18:57 -0400
-Received: from aserp2130.oracle.com ([141.146.126.79]:33628 "EHLO
-        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234796AbhCPDSb (ORCPT
+        id S229960AbhCQJMz (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 17 Mar 2021 05:12:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42626 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230159AbhCQJMl (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 15 Mar 2021 23:18:31 -0400
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
-        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 12G39ocf168109;
-        Tue, 16 Mar 2021 03:18:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
- from : message-id : references : date : in-reply-to : content-type :
- mime-version; s=corp-2020-01-29;
- bh=IQp+MqOX3uXGZzdFNhMSfZSnQAWHStCWdN7iiMkzJ4k=;
- b=dVGktv+bQBVsjECaCjmu7Aq7Kwh5dTak70WNwx1tVhA24Ahu7z3ns7sIc2ExDqcgvHFG
- Q9NS2ZE2zw1wVjVah3UG+zeFdQYUxlEPTMEYYX1yreuSmK/8DuzC+o+kUoXZwQOvR3Oy
- hePCrthkNhyawlRiAiBCIwZvIrxvkOwbNlcB68PnYsBsMP87rrtJmk2cxHabesp0ahCQ
- tE56S3fbr9HypZaq4K1V90Q8Vuow1mXN98c9eaMgGDdZN8ArerkMEiBj2DLB8uo9MYAK
- AdX5hBqKecgFlrlYLg5opvSTNzMXN0QkemTBpobyJL53UuyXYgCTaNEQwTLlQOa8lxxQ ow== 
-Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
-        by aserp2130.oracle.com with ESMTP id 378jwbe7wb-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 16 Mar 2021 03:18:29 +0000
-Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
-        by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 12G3AabS193863;
-        Tue, 16 Mar 2021 03:18:29 GMT
-Received: from nam12-mw2-obe.outbound.protection.outlook.com (mail-mw2nam12lp2043.outbound.protection.outlook.com [104.47.66.43])
-        by aserp3030.oracle.com with ESMTP id 3796yswd5r-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 16 Mar 2021 03:18:29 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=kNNGmH5X8ZbjiNoA+l3vlupTk8IuEO08hgkkEOEKLeH6ZMsUmlQ1adXdep/l0BovoGQgDwQfhrj0cvIuANGJcSZhoPNiD3BfL/p49RAy66hXg8GscMeSpPc7jMrDACJ+NpCIpAZAAJ+bQaOMUW+VVz9aphUWytoYZCeZtVwXOxSU5AFql1PQNKLbLKyvCYsuAkwHBzuJUS6/gE/vGIv8IDbyrOgwlGG/vRcma0r3Bg3y1j9dPWa+WFERMzI4h5Ut4xTNih4s7wcrPnNr8qH5fZRJyx0rk7SMQz2EuYfQXh/oYewORlIZ0mF+ARaRB0VqCZmIsjrbY9QJzd9c/J4XVA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=IQp+MqOX3uXGZzdFNhMSfZSnQAWHStCWdN7iiMkzJ4k=;
- b=fcrdoZoDYtMkLefq7iEc5XZqTYcQTp6D6Z5HZVZPxfHMoHnyCG6vJpTJRmi+Y6G1EcZXi+iL7WTWhUpKRXTdltxKGD2eie0J9d4GoLM4c9sUC9K7PMWPT62rgXhrA61JnENktyEdThwh535XwG+5i+7cslOTkYfvgqthzb8o/Mv+JMIEwKmnffAtpmDHWw2n//7e6+gmlSi4KV9J5JAeU9ylhGHxqUBwZnHkHIj1awtKAuLYakK0XVrGVJC/5sBdvG9H5dR+8Fs3PhNmfRUzw83SWNtANftk6N+RHcPCNa3GmF++9kRBTNeqTM1ML8OFpMdSqKyRFYdAX7WVjq2ohA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
+        Wed, 17 Mar 2021 05:12:41 -0400
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CADC3C061760
+        for <target-devel@vger.kernel.org>; Wed, 17 Mar 2021 02:12:40 -0700 (PDT)
+Received: by mail-wr1-x42c.google.com with SMTP id x13so1001796wrs.9
+        for <target-devel@vger.kernel.org>; Wed, 17 Mar 2021 02:12:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=IQp+MqOX3uXGZzdFNhMSfZSnQAWHStCWdN7iiMkzJ4k=;
- b=h+LDu1yKgjgY6E/4j4KZDqm1S7I2bDMrL621xbKF80BqONt+y/nUOZ4++eQqetjDLBcsfBIRxyWeVqCix4GkMBLOuWZCvCWT3oWHu8R50yh4s98gz7g/Gy6QQG3ciRZv+1ce1+kD4gfDzkIHK1hkHJu2v0kP5aLmOzejDLfZ7Nw=
-Authentication-Results: gmail.com; dkim=none (message not signed)
- header.d=none;gmail.com; dmarc=none action=none header.from=oracle.com;
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com (2603:10b6:510:3d::12)
- by PH0PR10MB4647.namprd10.prod.outlook.com (2603:10b6:510:43::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3933.32; Tue, 16 Mar
- 2021 03:18:27 +0000
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::dc39:c9fa:7365:8c8e]) by PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::dc39:c9fa:7365:8c8e%5]) with mapi id 15.20.3933.032; Tue, 16 Mar 2021
- 03:18:27 +0000
-To:     Bodo Stroesser <bostroesser@gmail.com>
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ISKg/iwBQz7CPlp+U8011svc51lofKx9uSYbTL21B/U=;
+        b=qEkvvGwq4ou+j09IT2hRU/qvUjgSWSCOe45KQqgVsEthhPy9Sa3JKnnpMaJKLxbwke
+         JLLENYkkuWjOCKr2EpZh+HVJdlDZ0aHzbAGNBzDLhHgY12utiYihaBb2bJMbRzjk/ENi
+         uKt/bU0qe+GrSCUiT9Gqp2X3A4aGkSFxYrAoicGWu7ijzCzI3hm88mzExqtp7vPdemUM
+         BqJ6S2OcEeSFZ1vxEAetVqW8iigO20sW9vHAhwX97Z0vQY8bnJDn9F8O8CuCS9j45ITu
+         zzKoiL2XcgLmw6hOvUmHz0PTx2Xa07kKDj4PdMG5SA1HSVDW6exvYScTKJgwWLvY1i9H
+         0Aiw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ISKg/iwBQz7CPlp+U8011svc51lofKx9uSYbTL21B/U=;
+        b=Z5UbcsB7jf2j9mZNSXWqzo+DPf5lZEMnTg3nqGuKS0dz4BRl2XRgenuVHu8SWY7liL
+         sv4VEbJ+xw4Def3h2W/EAoLXQQOwYKgd4H+12DmPafrTmd3ai1oHflXc5Zno1RistyRL
+         INqssJw/H9PLGzU+MElwuv2Xmkbsv1s3Jad8M42afQK4aEpUSz8XT0+DhtX0NpKMBZ2V
+         JxJGTbQd/+L3S/vlArohBWzhCF2v1nk2r1jWgp2gyZ5BzgjHYAxd7KNffpuykyR3ntrR
+         fp8HVAEJewFIO1hCJLS5egy+aHCtB6ErvlbGoaD6CaUllab+mORWroUZVZ0RQT+m9edW
+         doZA==
+X-Gm-Message-State: AOAM530PVed5bXKpRKxZoen5ydfsfFm6n33IYAdBYlgI/9czX3SRjpwk
+        BtpyU1XfK+j6uflax6nY1Idlug==
+X-Google-Smtp-Source: ABdhPJx4jE1xGizjBkwwSiVeurLS8NDV4il8pjxUOd25LpFWTAD2G/HRR5q/KCo4sMGl54BLhnhPXw==
+X-Received: by 2002:adf:ecca:: with SMTP id s10mr3193723wro.324.1615972359524;
+        Wed, 17 Mar 2021 02:12:39 -0700 (PDT)
+Received: from dell.default ([91.110.221.194])
+        by smtp.gmail.com with ESMTPSA id e18sm12695886wru.73.2021.03.17.02.12.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 17 Mar 2021 02:12:38 -0700 (PDT)
+From:   Lee Jones <lee.jones@linaro.org>
+To:     lee.jones@linaro.org
+Cc:     linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+        Alex Davis <letmein@erols.com>, Ali Akcaagac <aliakc@web.de>,
+        Anil Ravindranath <anil_ravindranath@pmc-sierra.com>,
+        Artur Paszkiewicz <artur.paszkiewicz@intel.com>,
+        Badari Pulavarty <pbadari@us.ibm.com>,
+        Bas Vermeulen <bvermeul@blackstar.xs4all.nl>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Brian King <brking@linux.vnet.ibm.com>,
+        Brian King <brking@us.ibm.com>,
+        Brian Macy <bmacy@sunshinecomputing.com>,
+        "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+        Christoph Hellwig <hch@lst.de>,
+        "C.L. Huang" <ching@tekram.com.tw>,
+        Colin DeVilbiss <devilbis@us.ibm.com>,
+        Dave Boutcher <boutcher@us.ibm.com>,
+        Dave Boutcher <sleddog@us.ibm.com>,
+        David Chaw <david_chaw@adaptec.com>, dc395x@twibble.org,
+        Douglas Gilbert <dgilbert@interlog.com>,
+        Doug Ledford <dledford@redhat.com>,
+        Drew Eckhardt <drew@colorado.edu>,
+        Erich Chen <erich@tekram.com.tw>,
+        Eric Youngdale <eric@andante.org>,
+        FUJITA Tomonori <tomof@acm.org>,
+        Hannes Reinecke <hare@kernel.org>,
+        Hannes Reinecke <hare@suse.de>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        Jamie Lenehan <lenehan@twibble.org>,
+        Jirka Hanika <geo@ff.cuni.cz>,
+        Jitendra Bhivare <jitendra.bhivare@broadcom.com>,
+        Karan Tilak Kumar <kartilak@cisco.com>,
+        Ketan Mukadam <ketan.mukadam@broadcom.com>,
+        Kurt Garloff <garloff@suse.de>,
+        Le Moal <damien.lemoal@hgst.com>,
+        "Leonard N. Zubkoff" <lnz@dandelion.com>,
+        Linda Xie <lxie@us.ibm.com>, linux-drivers@broadcom.com,
+        Linux GmbH <hare@suse.com>, linuxppc-dev@lists.ozlabs.org,
+        linux-scsi@vger.kernel.org,
+        Luben Tuikov <luben_tuikov@adaptec.com>,
+        "Manoj N. Kumar" <manoj@linux.ibm.com>,
         "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Mike Christie <michael.christie@oracle.com>
-Subject: Re: [PATCH] scsi: target: tcmu: Adjust parameter in call to
- tcmu_blocks_release
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle Corporation
-Message-ID: <yq1zgz34whx.fsf@ca-mkp.ca.oracle.com>
-References: <20210310184458.10741-1-bostroesser@gmail.com>
-Date:   Mon, 15 Mar 2021 23:18:25 -0400
-In-Reply-To: <20210310184458.10741-1-bostroesser@gmail.com> (Bodo Stroesser's
-        message of "Wed, 10 Mar 2021 19:44:58 +0100")
-Content-Type: text/plain
-X-Originating-IP: [138.3.200.58]
-X-ClientProxiedBy: BYAPR06CA0029.namprd06.prod.outlook.com
- (2603:10b6:a03:d4::42) To PH0PR10MB4759.namprd10.prod.outlook.com
- (2603:10b6:510:3d::12)
+        Marvell <jyli@marvell.com>,
+        "Matthew R. Ochs" <mrochs@linux.ibm.com>,
+        Michael Cyr <mikecyr@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        MPT-FusionLinux.pdl@avagotech.com,
+        MPT-FusionLinux.pdl@broadcom.com,
+        "Nicholas A. Bellinger" <nab@kernel.org>,
+        Oliver Neukum <oliver@neukum.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Richard Gooch <rgooch@atnf.csiro.au>,
+        Santiago Leon <santil@us.ibm.com>,
+        Sathya Prakash <sathya.prakash@broadcom.com>,
+        Satish Kharat <satishkh@cisco.com>,
+        Sesidhar Baddela <sebaddel@cisco.com>,
+        Shaun Tancheff <shaun.tancheff@seagate.com>,
+        Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
+        Subbu Seetharaman <subbu.seetharaman@broadcom.com>,
+        Suganath Prabu Subramani 
+        <suganath-prabu.subramani@broadcom.com>,
+        target-devel@vger.kernel.org, Torben Mathiasen <tmm@image.dk>,
+        Tyrel Datwyler <tyreld@linux.ibm.com>,
+        Uma Krishnan <ukrishn@linux.ibm.com>, willy@debian.org
+Subject: [PATCH 00/36] [Set 4] Rid W=1 warnings in SCSI
+Date:   Wed, 17 Mar 2021 09:11:54 +0000
+Message-Id: <20210317091230.2912389-1-lee.jones@linaro.org>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from ca-mkp.ca.oracle.com (138.3.200.58) by BYAPR06CA0029.namprd06.prod.outlook.com (2603:10b6:a03:d4::42) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3933.32 via Frontend Transport; Tue, 16 Mar 2021 03:18:27 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 9029afa0-1e8e-4669-f739-08d8e82a2aa6
-X-MS-TrafficTypeDiagnostic: PH0PR10MB4647:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <PH0PR10MB4647E799E54F436EEAB08A1A8E6B9@PH0PR10MB4647.namprd10.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:7219;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: G0GxW6/pJZ8ics372l/Lse1SWFMnOlkUDMEh3tjomyZ8yEaLqASxoyugnu7JEpPsiwLMhNgpRJtLXHhuuHtEANmPT0f+y9sfp83hgDKBuJ1L2XxZFqUkP3qKtWxgVM/ygre18JMzSo+9o/FGMCkQB06cEsgnFQNFPK2POyhtbfoj0zsy1oXB32UXBOZKuOyrCHW7ax36fzSatfFD3TA/bXQz1wyPVP3hqzT8XVWp/rvpkKVu9+nza1+JQFxyP9ZeRyOuWm5A+Jor67GRb7XHOtU02VBRZqkmCF+kpOmXkPlF06CNxeqtur4cKjk16hFKDubfs9u75qvXYsZLDXHuf5m1C773//Emcd9UXwJwCKAzP3Wx2BegDGa9N0F7vbVMRTC8XAiUetZ7cuymSOb7dAbw+5NOJtuvcjZwUnQ7+Xx15DOfC28iAUO6AdxOpO6lIpwVvSLzJ+SX4+oIV3eqXnCSxcMKEwCRuhqecYxLKNEr4NDWyRZpMewfjOMiI+rAkTA7/JaIf0p+uoW/BDYMwT419R1ncEUiKy2vQtyqXUfWmoEMgS6b6s3cER0TKXlG
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB4759.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(366004)(39860400002)(376002)(396003)(136003)(346002)(2906002)(5660300002)(558084003)(55016002)(4326008)(54906003)(478600001)(66946007)(86362001)(83380400001)(26005)(316002)(107886003)(956004)(8936002)(6916009)(8676002)(186003)(7696005)(16526019)(66556008)(52116002)(66476007)(36916002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?Vj9npeywEsx2SmwDzICp+HsDaxTfo9OkV6y7OOVM5V4wp7FdXJcBZxeTFRrz?=
- =?us-ascii?Q?lj+TqYxhfKmJXkxrAv7cp0UUprWFtvWc5DGTpIwGec9Dnfbq6sqP+D+Uk1q6?=
- =?us-ascii?Q?KBKL9XAl0gT4zeNx7YUieiP5QhyPcjhZhhpEryMKZCJI0pABdsZjaUltVQ6J?=
- =?us-ascii?Q?DaO45JIkEUF+jCmly6mtj0PxEMFO3LEa20U79KiFgWWPD9UpAnQO3LpSsqpj?=
- =?us-ascii?Q?A00EINGn9EhqdsL4GDb5W0kRRv3F9vEHnw223q3mr8tXsDJMJLQjTg1j4yaQ?=
- =?us-ascii?Q?mmfZROPf0lhbwztcyj5ekvMpf1xNjcgMNC9X2T14087fUHny5xV3mL8dYcly?=
- =?us-ascii?Q?L+z0qVsg1eGX41d5ohfvVs36w9eohLRj7UiEyDdM0Eedr4Qolsm4FqT8yopI?=
- =?us-ascii?Q?yoOCWZx3G8EEcPbyaEWZdVFcq4qk8ZMBVQkQS76pAKI31zL5Tzf7cu1IFC0W?=
- =?us-ascii?Q?ifZAd2755cEjUgKadnd6GNdOXTHPY6+9poIUKl02xlOd9cSBCBYjixyR8eOl?=
- =?us-ascii?Q?7RSUfR/r8821AmLwi5ewKnHapmAtRB41tvHhI4z3zOC9soWsuvBkzD7070VK?=
- =?us-ascii?Q?SW7Csetz3QkDfwjAvzGDEpDJTHlFCxzstnBIQmcaPTcDzjiV0rn0zbbO2LDh?=
- =?us-ascii?Q?a3ujEXJ4za0k2REZDgyxteIba5vsAC1tNzIFnM7V5PwjCQ4EAq7BTPsdpOjz?=
- =?us-ascii?Q?XG+jsZRGY5fFq9kZiIaUX4CaCQyr9M+40OdAgXzkW4ru5B5DL6nEXGK6d1fI?=
- =?us-ascii?Q?ma+7YaTjeXo4iL1jNixuq13ICk+9LxG91Hb14PlC20n6y6faGPIpEcb0TuAB?=
- =?us-ascii?Q?iemWn4ko4Z2urOntt+2/jNQs1wbAM6gcmptPtde1vKEJ2WEvqL+e18hAH8EL?=
- =?us-ascii?Q?uHsEWK30UBvZItWGjqlc9tQ4m6SxuPLfX8zoQbJQbCeYj5jlSOe9yh6UGU31?=
- =?us-ascii?Q?IwlIbfaNqwgR2MWJ6H/EEE/+QdYnUqb9TpgYJ6UseLd/IG40W2585sJsc7ii?=
- =?us-ascii?Q?mGdsjoqVpVKw53wxuaeqWecv3PcgvHGgfsAFkGgMOKN0p/shLp2cxRpYCgHW?=
- =?us-ascii?Q?r129Wn1aWASn4ti/i8fwjp3pujHiQZnkQefqrzVYYzkBcL1/WxesCH02IYkS?=
- =?us-ascii?Q?enFhyKgVZhM5w2fsqzjnWdUt0PaR/sqo1wCjiUgppt2UP0/jLwkWbJrJmon8?=
- =?us-ascii?Q?1H4JnFyVkzTFOw60PfsYnCL8bS4oqYblGUQGPftUKAFJOPJn0V5eJShrtkkS?=
- =?us-ascii?Q?eVs8PIfeNgqrsQatZR5/V+6Itcepb848+hNj4OYuESM8JGptIUnL3t4JKS4S?=
- =?us-ascii?Q?sqXSzmaJp6Fk5ldV1chBNjMV?=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9029afa0-1e8e-4669-f739-08d8e82a2aa6
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB4759.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Mar 2021 03:18:27.5667
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 8u/IAAmL2Tv8LIePNdDGHuhOUX+a73rwXFSYhjoTg98UrU910P2ZA6WVw7Ih8JWBzQgX7lODEZNqd8tTr+Yp3hjvFY7Sc/z1tRBpKABdJqY=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR10MB4647
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9924 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 malwarescore=0 spamscore=0
- bulkscore=0 mlxlogscore=822 mlxscore=0 suspectscore=0 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2103160021
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9924 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 mlxlogscore=999
- spamscore=0 mlxscore=0 bulkscore=0 suspectscore=0 priorityscore=1501
- lowpriorityscore=0 clxscore=1015 adultscore=0 phishscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2103160021
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+This set is part of a larger effort attempting to clean-up W=1
+kernel builds, which are currently overwhelmingly riddled with
+niggly little warnings.
 
-Bodo,
+Lee Jones (36):
+  scsi: myrb: Demote non-conformant kernel-doc headers and fix others
+  scsi: ipr: Fix incorrect function names in their headers
+  scsi: mvumi: Fix formatting and doc-rot issues
+  scsi: sd_zbc: Place function name into header
+  scsi: pmcraid: Fix a whole host of kernel-doc issues
+  scsi: sd: Fix function name in header
+  scsi: aic94xx: aic94xx_dump: Correct misspelling of function
+    asd_dump_seq_state()
+  scsi: be2iscsi: be_main: Ensure function follows directly after its
+    header
+  scsi: dc395x: Fix some function param descriptions
+  scsi: initio: Fix a few kernel-doc misdemeanours
+  scsi: a100u2w: Fix some misnaming and formatting issues
+  scsi: myrs: Add missing ':' to make the kernel-doc checker happy
+  scsi: pmcraid: Correct function name pmcraid_show_adapter_id() in
+    header
+  scsi: mpt3sas: mpt3sas_scs: Fix a few kernel-doc issues
+  scsi: be2iscsi: be_main: Demote incomplete/non-conformant kernel-doc
+    header
+  scsi: isci: phy: Fix a few different kernel-doc related issues
+  scsi: fnic: fnic_scsi: Demote non-conformant kernel-doc headers
+  scsi: fnic: fnic_fcs: Kernel-doc headers must contain the function
+    name
+  scsi: isci: phy: Provide function name and demote non-conforming
+    header
+  scsi: isci: request: Fix a myriad of kernel-doc issues
+  scsi: isci: host: Fix bunch of kernel-doc related issues
+  scsi: isci: task: Demote non-conformant header and remove superfluous
+    param
+  scsi: isci: remote_node_table: Fix a bunch of kernel-doc misdemeanours
+  scsi: isci: remote_node_context: Fix one function header and demote a
+    couple more
+  scsi: isci: port_config: Fix a bunch of doc-rot and demote abuses
+  scsi: isci: remote_device: Fix a bunch of doc-rot issues
+  scsi: isci: request: Fix doc-rot issue relating to 'ireq' param
+  scsi: isci: port: Fix a bunch of kernel-doc issues
+  scsi: isci: remote_node_context: Demote kernel-doc abuse
+  scsi: isci: remote_node_table: Provide some missing params and remove
+    others
+  scsi: cxlflash: main: Fix a little do-rot
+  scsi: cxlflash: superpipe: Fix a few misnaming issues
+  scsi: ibmvscsi: Fix a bunch of kernel-doc related issues
+  scsi: ibmvscsi: ibmvfc: Fix a bunch of misdocumentation
+  scsi: ibmvscsi_tgt: ibmvscsi_tgt: Remove duplicate section 'NOTE'
+  scsi: cxlflash: vlun: Fix some misnaming related doc-rot
 
-> In patch "scsi: target: tcmu: Replace radix_tree with XArray" meaning
-> of last parameter of tcmu_blocks_release was changed.  So in the
-> callers we should subtract 1 from the previous parameter.
+ drivers/scsi/a100u2w.c                   |  8 +--
+ drivers/scsi/aic94xx/aic94xx_dump.c      |  2 +-
+ drivers/scsi/be2iscsi/be_main.c          |  5 +-
+ drivers/scsi/cxlflash/main.c             |  8 +--
+ drivers/scsi/cxlflash/superpipe.c        |  6 +-
+ drivers/scsi/cxlflash/vlun.c             |  8 +--
+ drivers/scsi/dc395x.c                    |  3 +-
+ drivers/scsi/fnic/fnic_fcs.c             |  2 +-
+ drivers/scsi/fnic/fnic_scsi.c            |  6 +-
+ drivers/scsi/ibmvscsi/ibmvfc.c           | 29 ++++++----
+ drivers/scsi/ibmvscsi/ibmvscsi.c         | 70 ++++++++++++------------
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c |  8 +--
+ drivers/scsi/initio.c                    | 13 ++---
+ drivers/scsi/ipr.c                       |  8 +--
+ drivers/scsi/isci/host.c                 | 37 ++++++-------
+ drivers/scsi/isci/phy.c                  | 34 ++++++------
+ drivers/scsi/isci/port.c                 | 58 ++++++++++----------
+ drivers/scsi/isci/port_config.c          | 37 +++++++------
+ drivers/scsi/isci/remote_device.c        | 31 ++++++-----
+ drivers/scsi/isci/remote_node_context.c  | 13 +----
+ drivers/scsi/isci/remote_node_table.c    | 64 +++++++++++-----------
+ drivers/scsi/isci/request.c              | 60 ++++++++++----------
+ drivers/scsi/isci/task.c                 |  3 +-
+ drivers/scsi/mpt3sas/mpt3sas_scsih.c     | 18 +++---
+ drivers/scsi/mvumi.c                     |  5 +-
+ drivers/scsi/myrb.c                      | 47 ++++++++--------
+ drivers/scsi/myrs.c                      |  6 +-
+ drivers/scsi/pmcraid.c                   | 70 ++++++++++++------------
+ drivers/scsi/sd.c                        |  2 +-
+ drivers/scsi/sd_zbc.c                    |  2 +-
+ 30 files changed, 329 insertions(+), 334 deletions(-)
 
-Applied to 5.13/scsi-staging, thanks!
-
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Alex Davis <letmein@erols.com>
+Cc: Ali Akcaagac <aliakc@web.de>
+Cc: Anil Ravindranath <anil_ravindranath@pmc-sierra.com>
+Cc: Artur Paszkiewicz <artur.paszkiewicz@intel.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Bas Vermeulen <bvermeul@blackstar.xs4all.nl>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Brian King <brking@linux.vnet.ibm.com>
+Cc: Brian King <brking@us.ibm.com>
+Cc: Brian Macy <bmacy@sunshinecomputing.com>
+Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: "C.L. Huang" <ching@tekram.com.tw>
+Cc: Colin DeVilbiss <devilbis@us.ibm.com>
+Cc: Dave Boutcher <boutcher@us.ibm.com>
+Cc: Dave Boutcher <sleddog@us.ibm.com>
+Cc: David Chaw <david_chaw@adaptec.com>
+Cc: dc395x@twibble.org
+Cc: Douglas Gilbert <dgilbert@interlog.com>
+Cc: Doug Ledford <dledford@redhat.com>
+Cc: Drew Eckhardt <drew@colorado.edu>
+Cc: Erich Chen <erich@tekram.com.tw>
+Cc: Eric Youngdale <eric@andante.org>
+Cc: FUJITA Tomonori <tomof@acm.org>
+Cc: Hannes Reinecke <hare@kernel.org>
+Cc: Hannes Reinecke <hare@suse.de>
+Cc: "James E.J. Bottomley" <jejb@linux.ibm.com>
+Cc: Jamie Lenehan <lenehan@twibble.org>
+Cc: Jirka Hanika <geo@ff.cuni.cz>
+Cc: Jitendra Bhivare <jitendra.bhivare@broadcom.com>
+Cc: Karan Tilak Kumar <kartilak@cisco.com>
+Cc: Ketan Mukadam <ketan.mukadam@broadcom.com>
+Cc: Kurt Garloff <garloff@suse.de>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Le Moal <damien.lemoal@hgst.com>
+Cc: "Leonard N. Zubkoff" <lnz@dandelion.com>
+Cc: Linda Xie <lxie@us.ibm.com>
+Cc: linux-drivers@broadcom.com
+Cc: Linux GmbH <hare@suse.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-scsi@vger.kernel.org
+Cc: Luben Tuikov <luben_tuikov@adaptec.com>
+Cc: "Manoj N. Kumar" <manoj@linux.ibm.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Marvell <jyli@marvell.com>
+Cc: "Matthew R. Ochs" <mrochs@linux.ibm.com>
+Cc: Michael Cyr <mikecyr@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: MPT-FusionLinux.pdl@avagotech.com
+Cc: MPT-FusionLinux.pdl@broadcom.com
+Cc: "Nicholas A. Bellinger" <nab@kernel.org>
+Cc: Oliver Neukum <oliver@neukum.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Richard Gooch <rgooch@atnf.csiro.au>
+Cc: Santiago Leon <santil@us.ibm.com>
+Cc: Sathya Prakash <sathya.prakash@broadcom.com>
+Cc: Satish Kharat <satishkh@cisco.com>
+Cc: Sesidhar Baddela <sebaddel@cisco.com>
+Cc: Shaun Tancheff <shaun.tancheff@seagate.com>
+Cc: Sreekanth Reddy <sreekanth.reddy@broadcom.com>
+Cc: Subbu Seetharaman <subbu.seetharaman@broadcom.com>
+Cc: Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>
+Cc: target-devel@vger.kernel.org
+Cc: Torben Mathiasen <tmm@image.dk>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: Uma Krishnan <ukrishn@linux.ibm.com>
+Cc: willy@debian.org
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.27.0
+
