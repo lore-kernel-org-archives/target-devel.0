@@ -2,164 +2,79 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78C1CC433E0
-	for <target-devel@archiver.kernel.org>; Mon, 22 Mar 2021 15:31:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEE7EC433E0
+	for <target-devel@archiver.kernel.org>; Mon, 22 Mar 2021 15:50:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 454D7619A2
-	for <target-devel@archiver.kernel.org>; Mon, 22 Mar 2021 15:31:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CB5A06199E
+	for <target-devel@archiver.kernel.org>; Mon, 22 Mar 2021 15:50:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229900AbhCVPbY (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 22 Mar 2021 11:31:24 -0400
-Received: from mail.kernel.org ([198.145.29.99]:43278 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229665AbhCVPbM (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 22 Mar 2021 11:31:12 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 518196198D;
-        Mon, 22 Mar 2021 15:31:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1616427072;
-        bh=QTeCwb79KDXmtdPk8PR3/zJRadw5L3iAmL7vbC+YvBg=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=suWjKqKFxJWLKY/0OqlJVAvmG0Nb8Kg/ZVKrYgj1DKiKgtXx696y51TR0YdIpekVV
-         pQvsxgYicIyuNe6uZo4SRiTe6MyB45w7X/vM8iL6tiKGZJT2UV3S3+3r49+umR9Xyy
-         b2V9w9uSseYBaZtlO2NztzKOAVBM9WnrOtEPD+NkwWt0zgMD0fqi+gMcdNlqK7h4tO
-         +771/M2yRlxyTzWMj7FT7f3iH+GNtv036EboTj05waOJmjreLwClKaLvXdMjPjFr5p
-         7HVVtjc5yf470mHaPOZYH4UXtnmiy+Fv2VGtB79XajJ/zPu3bGf7eTe6+ySa/PU2m+
-         V0361Vp8kaDpA==
-Date:   Mon, 22 Mar 2021 17:31:08 +0200
-From:   Leon Romanovsky <leon@kernel.org>
-To:     lyl2019@mail.ustc.edu.cn
-Cc:     sagi@grimberg.me, dledford@redhat.com, jgg@ziepe.ca,
-        linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
+        id S230220AbhCVPtf (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 22 Mar 2021 11:49:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38582 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230237AbhCVPtY (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Mon, 22 Mar 2021 11:49:24 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E42C5C061574;
+        Mon, 22 Mar 2021 08:49:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=xFkVl9GtHpru0bLv4N3vvuoNepAVBKJ0zyP6LRIKoyE=; b=H1NLAfgzVh7fuL7xk8M4VD3TbL
+        /hGvSs6RAxUHYCcDNbGL55p6SAVPlXB+9riC1SmB3ZbaIQmLy2+xKgJkKWkOuHsfzzjvQ8sHPFUHr
+        OR+c2g20qrCmEi8Bn8/M8op8ktcrIA73JEcMnM/JKEIdo5pemCV4pKqMWQj+u9w65h8wMzYgNLzDt
+        gC4XnH9l+IkFnbpmSwg6pIM1V0ICfq9en08QmbEnU+RiNXJ40LW/pjSPGzG3e3J9OGVHJCVmsmJ8r
+        WR60p4c4iZbp2TDS8vx9hq6E45K2kZWPdQNNQrviNIPmxNFY8xiAFzHCLtY16ohK40+hU+l0D6Jmx
+        LOBfOSaA==;
+Received: from hch by casper.infradead.org with local (Exim 4.94 #2 (Red Hat Linux))
+        id 1lOMmF-008jhA-Vh; Mon, 22 Mar 2021 15:47:43 +0000
+Date:   Mon, 22 Mar 2021 15:47:35 +0000
+From:   Christoph Hellwig <hch@infradead.org>
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Arnd Bergmann <arnd@arndb.de>, Jens Axboe <axboe@kernel.dk>,
+        Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
+        Hannes Reinecke <hare@suse.de>,
+        Bodo Stroesser <bstroesser@ts.fujitsu.com>,
+        "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+        Guoqing Jiang <guoqing.jiang@cloud.ionos.com>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: Re: Re: [PATCH] infiniband: Fix a use after free in
- isert_connect_request
-Message-ID: <YFi4PKJLjMkIXmas@unreal>
-References: <20210322135355.5720-1-lyl2019@mail.ustc.edu.cn>
- <YFipRTHpr8Xqho4V@unreal>
- <1af3e912.b6e4.1785a6b7802.Coremail.lyl2019@mail.ustc.edu.cn>
+Subject: Re: [PATCH] target: pscsi: avoid Wempty-body warning
+Message-ID: <20210322154735.GA2079192@infradead.org>
+References: <20210322114441.3479365-1-arnd@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1af3e912.b6e4.1785a6b7802.Coremail.lyl2019@mail.ustc.edu.cn>
+In-Reply-To: <20210322114441.3479365-1-arnd@kernel.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Mon, Mar 22, 2021 at 10:51:35PM +0800, lyl2019@mail.ustc.edu.cn wrote:
+On Mon, Mar 22, 2021 at 12:44:34PM +0100, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
+> Building with 'make W=1' shows a harmless warning for pscsi:
 > 
+> drivers/target/target_core_pscsi.c: In function 'pscsi_complete_cmd':
+> drivers/target/target_core_pscsi.c:624:33: error: suggest braces around empty body in an 'if' statement [-Werror=empty-body]
+>   624 |                                 ; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
+>       |                                 ^
 > 
-> > -----原始邮件-----
-> > 发件人: "Leon Romanovsky" <leon@kernel.org>
-> > 发送时间: 2021-03-22 22:27:17 (星期一)
-> > 收件人: "Lv Yunlong" <lyl2019@mail.ustc.edu.cn>
-> > 抄送: sagi@grimberg.me, dledford@redhat.com, jgg@ziepe.ca, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-> > 主题: Re: [PATCH] infiniband: Fix a use after free in isert_connect_request
-> > 
-> > On Mon, Mar 22, 2021 at 06:53:55AM -0700, Lv Yunlong wrote:
-> > > The device is got by isert_device_get() with refcount is 1,
-> > > and is assigned to isert_conn by isert_conn->device = device.
-> > > When isert_create_qp() failed, device will be freed with
-> > > isert_device_put().
-> > > 
-> > > Later, the device is used in isert_free_login_buf(isert_conn)
-> > > by the isert_conn->device->ib_device statement. My patch
-> > > exchanges the callees order to free the device late.
-> > > 
-> > > Signed-off-by: Lv Yunlong <lyl2019@mail.ustc.edu.cn>
-> > > ---
-> > >  drivers/infiniband/ulp/isert/ib_isert.c | 4 ++--
-> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > The fix needs to be change of isert_free_login_buf() from
-> > isert_free_login_buf(isert_conn) to be isert_free_login_buf(isert_conn, cma_id->device)
-> > 
-> > Thanks
-> > 
-> > > 
-> > > diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-> > > index 7305ed8976c2..d8a533e346b0 100644
-> > > --- a/drivers/infiniband/ulp/isert/ib_isert.c
-> > > +++ b/drivers/infiniband/ulp/isert/ib_isert.c
-> > > @@ -473,10 +473,10 @@ isert_connect_request(struct rdma_cm_id *cma_id, struct rdma_cm_event *event)
-> > >  
-> > >  out_destroy_qp:
-> > >  	isert_destroy_qp(isert_conn);
-> > > -out_conn_dev:
-> > > -	isert_device_put(device);
-> > >  out_rsp_dma_map:
-> > >  	isert_free_login_buf(isert_conn);
-> > > +out_conn_dev:
-> > > +	isert_device_put(device);
-> > >  out:
-> > >  	kfree(isert_conn);
-> > >  	rdma_reject(cma_id, NULL, 0, IB_CM_REJ_CONSUMER_DEFINED);
-> > > -- 
-> > > 2.25.1
-> > > 
-> > > 
-> 
-> I see that function isert_free_login_buf(struct isert_conn *isert_conn) has only
-> a parameter,  do you mean i need change the implementation of isert_free_login_buf?
-> 
-> I'm sorry to say that i am unfamilar with this module and afraid of making more mistakes,
-> because this function is being called elsewhere as well.
-> Could you help me to fix this issue? Or just fix it and tell me your commit number?
+> Rework the coding style as suggested by gcc to avoid the warning.
 
-After checking how isert_connect_release() is implemented, it looks like
-this will fix:
+I would much, much prefer to drop the bogus warning;
 
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index 7305ed8976c2..18266f07c58d 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -438,23 +438,23 @@ isert_connect_request(struct rdma_cm_id *cma_id, struct rdma_cm_event *event)
- 	isert_init_conn(isert_conn);
- 	isert_conn->cm_id = cma_id;
- 
--	ret = isert_alloc_login_buf(isert_conn, cma_id->device);
--	if (ret)
--		goto out;
--
- 	device = isert_device_get(cma_id);
- 	if (IS_ERR(device)) {
- 		ret = PTR_ERR(device);
--		goto out_rsp_dma_map;
-+		goto out;
- 	}
- 	isert_conn->device = device;
- 
-+	ret = isert_alloc_login_buf(isert_conn, cma_id->device);
-+	if (ret)
-+		goto out_conn_dev;
-+
- 	isert_set_nego_params(isert_conn, &event->param.conn);
- 
- 	isert_conn->qp = isert_create_qp(isert_conn, cma_id);
- 	if (IS_ERR(isert_conn->qp)) {
- 		ret = PTR_ERR(isert_conn->qp);
--		goto out_conn_dev;
-+		goto out_rsp_dma_map;
- 	}
- 
- 	ret = isert_login_post_recv(isert_conn);
-@@ -473,10 +473,10 @@ isert_connect_request(struct rdma_cm_id *cma_id, struct rdma_cm_event *event)
- 
- out_destroy_qp:
- 	isert_destroy_qp(isert_conn);
--out_conn_dev:
--	isert_device_put(device);
- out_rsp_dma_map:
- 	isert_free_login_buf(isert_conn);
-+out_conn_dev:
-+	isert_device_put(device);
- out:
- 	kfree(isert_conn);
- 	rdma_reject(cma_id, NULL, 0, IB_CM_REJ_CONSUMER_DEFINED);
+	if (foo)
+		; /* comment */
+
+is a fairly usual and absolutely sensible style.  The warning on hte
+other hand is completely stupid.
