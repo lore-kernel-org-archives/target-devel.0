@@ -2,118 +2,66 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F928C433E4
-	for <target-devel@archiver.kernel.org>; Mon, 22 Mar 2021 20:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D97A9C433DB
+	for <target-devel@archiver.kernel.org>; Tue, 23 Mar 2021 00:48:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1DB1E6198E
-	for <target-devel@archiver.kernel.org>; Mon, 22 Mar 2021 20:10:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A628861923
+	for <target-devel@archiver.kernel.org>; Tue, 23 Mar 2021 00:48:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231195AbhCVUKZ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 22 Mar 2021 16:10:25 -0400
-Received: from mta-02.yadro.com ([89.207.88.252]:33786 "EHLO mta-01.yadro.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S230070AbhCVUKD (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 22 Mar 2021 16:10:03 -0400
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 5D3B9404CB;
-        Mon, 22 Mar 2021 20:10:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        content-type:content-type:content-transfer-encoding:mime-version
-        :references:in-reply-to:x-mailer:message-id:date:date:subject
-        :subject:from:from:received:received:received; s=mta-01; t=
-        1616443800; x=1618258201; bh=jn0F44ilMeAVo9HVIpJDCwun5rsR+QxTPQ8
-        wDGOI4qM=; b=NgMWt+9HB7YDHXsxVa5w/bFRugs3X4r3nR9+oquMksewZhbtwcW
-        IKpqbHmST3vO8R3mHj2aC8FaiklbwxBmr60faGgSOn057Tx8ll7ufAoBRUVBxBaF
-        aTXIhzfgwhcakxFoVhYHhkYSjmnfn0CfypLUXFAt5T+ZDsHa8atyEMXI=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id PYF5w0Jp6ZUt; Mon, 22 Mar 2021 23:10:00 +0300 (MSK)
-Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id 69DA841220;
-        Mon, 22 Mar 2021 23:09:59 +0300 (MSK)
-Received: from yadro.com (10.199.0.64) by T-EXCH-03.corp.yadro.com
- (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Mon, 22
- Mar 2021 23:09:58 +0300
-From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
-To:     Martin Petersen <martin.petersen@oracle.com>,
-        Mike Christie <michael.christie@oracle.com>,
-        <target-devel@vger.kernel.org>
-CC:     <linux@yadro.com>, <linux-scsi@vger.kernel.org>,
-        Konstantin Shelekhin <k.shelekhin@yadro.com>,
-        Roman Bolshakov <r.bolshakov@yadro.com>
-Subject: [PATCH v2 2/2] target: Make the virtual LUN 0 device dummy
-Date:   Mon, 22 Mar 2021 23:09:38 +0300
-Message-ID: <20210322200938.53300-3-k.shelekhin@yadro.com>
-X-Mailer: git-send-email 2.31.0
-In-Reply-To: <20210322200938.53300-1-k.shelekhin@yadro.com>
-References: <20210322200938.53300-1-k.shelekhin@yadro.com>
+        id S230465AbhCWAsH (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 22 Mar 2021 20:48:07 -0400
+Received: from mail-pg1-f181.google.com ([209.85.215.181]:35750 "EHLO
+        mail-pg1-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230295AbhCWAsB (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Mon, 22 Mar 2021 20:48:01 -0400
+Received: by mail-pg1-f181.google.com with SMTP id v3so10016453pgq.2;
+        Mon, 22 Mar 2021 17:48:01 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=+KhrMhcJSvItbb/04gtqwcqQ9SN2qd7j6u0HCMyKS6E=;
+        b=XTM6XrWedMr0NF6MUyg1Toqy65ESDtfsApHnZheoawFKScdkRs2KfZNIKUJQzOYqTb
+         LrS+Pan6LyCQSM2+/pV1mpWNdbtr4/sAO5K4zm3FJu58UOzLW8kK7t/vqVPXNxIxj0Dw
+         hwHNptSQr447DGJD1dPxy9DZAJCm7egfoEoGzzu3NSgGL8HC3BIAs5QLK+GXgyvetkUE
+         873fsNI2aJ42HfpBjgVVGz4y9x074u2Ufilam9czvNXziiXK7gFJbAg53OdKLe72lU+B
+         opmKlYjSHeE0jyL/yNl6IStZOhN6/KS7ihkby5eF1ivVqZbC4c0v02mzwkATAUv8N5fP
+         Vnbw==
+X-Gm-Message-State: AOAM5311uN8fKyfCwCp57DDdp9qcr+urrN00RXCu/dKzBpypehK8UyY+
+        FKz/r2wKmRfiXBEpUb+AzhK+AL952fA=
+X-Google-Smtp-Source: ABdhPJwfDHQHdX4AOnxQt4dcTsdZpNBLmmWNMk5MPKdBEmkXlUf/CHYbnLmdhG3mCCzCHRuk+2jlOA==
+X-Received: by 2002:a65:5543:: with SMTP id t3mr1774498pgr.275.1616460480451;
+        Mon, 22 Mar 2021 17:48:00 -0700 (PDT)
+Received: from ?IPv6:2601:647:4802:9070:2a1:40ef:41b6:3cf0? ([2601:647:4802:9070:2a1:40ef:41b6:3cf0])
+        by smtp.gmail.com with ESMTPSA id p11sm508297pjo.48.2021.03.22.17.47.59
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 22 Mar 2021 17:47:59 -0700 (PDT)
+Subject: Re: [PATCH v2] infiniband: Fix a use after free in
+ isert_connect_request
+To:     Lv Yunlong <lyl2019@mail.ustc.edu.cn>, dledford@redhat.com,
+        jgg@ziepe.ca
+Cc:     linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20210322161325.7491-1-lyl2019@mail.ustc.edu.cn>
+From:   Sagi Grimberg <sagi@grimberg.me>
+Message-ID: <99aa5608-08a3-ce5b-8515-5091b3c9fe79@grimberg.me>
+Date:   Mon, 22 Mar 2021 17:47:58 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.199.0.64]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-03.corp.yadro.com (172.17.100.103)
+In-Reply-To: <20210322161325.7491-1-lyl2019@mail.ustc.edu.cn>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Create the device for the virtual LUN 0 using the DUMMY flag. This
-change makes it possible to remove some special-casing in the
-INQUIRY code.
-
-Signed-off-by: Konstantin Shelekhin <k.shelekhin@yadro.com>
-Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/target/target_core_device.c | 2 +-
- drivers/target/target_core_spc.c    | 6 +-----
- 2 files changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 7787c527aad3..2d50da7840fc 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -1029,7 +1029,7 @@ int core_dev_setup_virtual_lun0(void)
- {
- 	struct se_hba *hba;
- 	struct se_device *dev;
--	char buf[] = "rd_pages=8,rd_nullio=1";
-+	char buf[] = "rd_pages=8,rd_nullio=1,rd_dummy=1";
- 	int ret;
- 
- 	hba = core_alloc_hba("rd_mcp", 0, HBA_FLAGS_INTERNAL_USE);
-diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index ca5579ebc81d..70a661801cb9 100644
---- a/drivers/target/target_core_spc.c
-+++ b/drivers/target/target_core_spc.c
-@@ -701,7 +701,6 @@ static sense_reason_t
- spc_emulate_inquiry(struct se_cmd *cmd)
- {
- 	struct se_device *dev = cmd->se_dev;
--	struct se_portal_group *tpg = cmd->se_lun->lun_tpg;
- 	unsigned char *rbuf;
- 	unsigned char *cdb = cmd->t_task_cdb;
- 	unsigned char *buf;
-@@ -715,10 +714,7 @@ spc_emulate_inquiry(struct se_cmd *cmd)
- 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
- 	}
- 
--	if (dev == rcu_access_pointer(tpg->tpg_virt_lun0->lun_se_dev))
--		buf[0] = 0x3f; /* Not connected */
--	else
--		buf[0] = dev->transport->get_device_type(dev);
-+	buf[0] = dev->transport->get_device_type(dev);
- 
- 	if (!(cdb[1] & 0x1)) {
- 		if (cdb[2]) {
--- 
-2.31.0
-
+Acked-by: Sagi Grimberg <sagi@grimberg.me>
