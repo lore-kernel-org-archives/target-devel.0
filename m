@@ -7,96 +7,85 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2962C433DB
-	for <target-devel@archiver.kernel.org>; Tue, 23 Mar 2021 02:59:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27E0AC433DB
+	for <target-devel@archiver.kernel.org>; Tue, 23 Mar 2021 16:23:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 983B361998
-	for <target-devel@archiver.kernel.org>; Tue, 23 Mar 2021 02:59:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EC304600EF
+	for <target-devel@archiver.kernel.org>; Tue, 23 Mar 2021 16:23:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229574AbhCWC7V (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 22 Mar 2021 22:59:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41380 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229482AbhCWC7H (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Mon, 22 Mar 2021 22:59:07 -0400
-Received: from ustc.edu.cn (email6.ustc.edu.cn [IPv6:2001:da8:d800::8])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 317B4C061574;
-        Mon, 22 Mar 2021 19:58:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=mail.ustc.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
-        Message-Id:MIME-Version:Content-Transfer-Encoding; bh=6nGflbw2M1
-        nIAUTSCNcXju9H6GH0cycjGJaL9m/nRSQ=; b=j2XvpBSWRPZBPZvAHsLRH6+C1W
-        fqDtDX3Z26z0fnwnPyDannxRz0TavFTWo8wG58SSkNH5QQrrYCAPnKvJMfuu8FWh
-        Rpx0CaH4knOASrlqcWSw0M0zTzWs+hjY63uOpd9/C9dnslqtqoDNstrva1gK8u0r
-        /dPkclKgSkvjXkX0s=
-Received: from ubuntu.localdomain (unknown [202.38.69.14])
-        by newmailweb.ustc.edu.cn (Coremail) with SMTP id LkAmygBHTkpuWVlgfX4ZAA--.517S4;
-        Tue, 23 Mar 2021 10:58:54 +0800 (CST)
-From:   Lv Yunlong <lyl2019@mail.ustc.edu.cn>
-To:     martin.petersen@oracle.com
+        id S233095AbhCWQWf (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 23 Mar 2021 12:22:35 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42816 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233173AbhCWQWc (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 23 Mar 2021 12:22:32 -0400
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1616516551; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=2rbPaXRKb7h4KyZ87XmNO0rXGf+RsMQ+Dah0PlV+ljQ=;
+        b=hfynwLKlRO3z12u9rEPiNwPQLyRgGghUs1h8V85F2solE8+kt2XhtHJ5RtkD3lCLJUoQa4
+        f0brXZ4CqFpV45AwLYH3x/xlM/iHFz/m23fusnGf5WJaCho3zqycDImcU9X+FfJXbBcskB
+        o6tYh7oqpa8q7cMqeppXILJPfk9VsO0=
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 5192CADF1;
+        Tue, 23 Mar 2021 16:22:31 +0000 (UTC)
+From:   mwilck@suse.com
+To:     "Martin K. Petersen" <martin.petersen@oracle.com>
 Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Lv Yunlong <lyl2019@mail.ustc.edu.cn>
-Subject: [PATCH] target: Fix a double put in transport_free_session
-Date:   Mon, 22 Mar 2021 19:58:51 -0700
-Message-Id: <20210323025851.11782-1-lyl2019@mail.ustc.edu.cn>
-X-Mailer: git-send-email 2.25.1
+        David Disseldorp <ddiss@suse.com>,
+        =?UTF-8?q?J=C3=BCrgen=20Gro=C3=9F?= <jgross@suse.com>,
+        Martin Wilck <mwilck@suse.com>
+Subject: [PATCH] target: pscsi: avoid OOM in pscsi_map_sg()
+Date:   Tue, 23 Mar 2021 17:22:03 +0100
+Message-Id: <20210323162203.30942-1-mwilck@suse.com>
+X-Mailer: git-send-email 2.30.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: LkAmygBHTkpuWVlgfX4ZAA--.517S4
-X-Coremail-Antispam: 1UD129KBjvdXoWrtF17tr1xtrW5uFyxJr15XFb_yoWkAFb_CF
-        1F9wnrWF1Fgw4DKr47G3W3Xry2yF9Y9F1IvFs2k3yjgrykZF1rJrnrJFn3u34jkrWrZryF
-        yrnFyr1Dur4UXjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-        9fnUUIcSsGvfJTRUUUbVxFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-        6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-        A2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j
-        6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
-        Cq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC
-        0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr
-        1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IE
-        rcIFxwCY02Avz4vE14v_Gr1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr
-        1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE
-        14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7
-        IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWrJr0_WFyUJwCI42IY
-        6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa
-        73UjIFyTuYvjfUO6pBUUUUU
-X-CM-SenderInfo: ho1ojiyrz6zt1loo32lwfovvfxof0/
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-In transport_free_session, se_nacl is got from se_sess
-with the initial reference. If se_nacl->acl_sess_list is
-empty, se_nacl->dynamic_stop is set to true. Then the first
-target_put_nacl(se_nacl) will drop the initial reference
-and free se_nacl. Later there is a second target_put_nacl()
-to put se_nacl. It may cause error in race.
+From: Martin Wilck <mwilck@suse.com>
 
-My patch sets se_nacl->dynamic_stop to false to avoid the
-double put.
+pscsi_map_sg() uses the variable nr_pages as a hint for bio_kmalloc()
+how many vector elements to allocate. If nr_pages is < BIO_MAX_PAGES,
+it will be reset to 0 after successful allocation of the bio.
 
-Signed-off-by: Lv Yunlong <lyl2019@mail.ustc.edu.cn>
+If bio_add_pc_page() fails later for whatever reason, pscsi_map_sg()
+tries to allocate another bio, passing nr_vecs=0. This causes
+bio_add_pc_page() to fail immediately in the next call. pci_map_sg()
+continues to allocate zero-length bios until memory is exhausted and
+the kernel crashes with OOM. This can be easily observed by exporting
+a SATA DVD drive via pscsi. The target crashes as soon as the client
+tries to access the DVD LUN. In the case I analyzed, bio_add_pc_page()
+would fail because the DVD device's max_sectors_kb (128) was
+exceeded.
+
+Avoid this by simply not resetting nr_pages to 0 after allocating the
+bio. This way, the client receives an IO error when it tries to send
+requests exceeding the devices max_sectors_kb, and eventually gets
+it right. The client must still limit max_sectors_kb e.g. by an udev
+rule if (like in my case) the driver doesn't report valid block
+limits, otherwise it encounters I/O errors.
+
+Signed-off-by: Martin Wilck <mwilck@suse.com>
 ---
- drivers/target/target_core_transport.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/target/target_core_pscsi.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 5ecb9f18a53d..c266defe694f 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -584,8 +584,10 @@ void transport_free_session(struct se_session *se_sess)
- 		}
- 		mutex_unlock(&se_tpg->acl_node_mutex);
- 
--		if (se_nacl->dynamic_stop)
-+		if (se_nacl->dynamic_stop) {
- 			target_put_nacl(se_nacl);
-+			se_nacl->dynamic_stop = false;
-+		}
- 
- 		target_put_nacl(se_nacl);
- 	}
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+index 7b1035e..977362d 100644
+--- a/drivers/target/target_core_pscsi.c
++++ b/drivers/target/target_core_pscsi.c
+@@ -881,7 +881,6 @@ pscsi_map_sg(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 			if (!bio) {
+ new_bio:
+ 				nr_vecs = bio_max_segs(nr_pages);
+-				nr_pages -= nr_vecs;
+ 				/*
+ 				 * Calls bio_kmalloc() and sets bio->bi_end_io()
+ 				 */
 -- 
-2.25.1
-
+2.26.2
 
