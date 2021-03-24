@@ -2,163 +2,228 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B332C433C1
-	for <target-devel@archiver.kernel.org>; Wed, 24 Mar 2021 18:16:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 948F9C433E3
+	for <target-devel@archiver.kernel.org>; Wed, 24 Mar 2021 19:29:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E992C61A21
-	for <target-devel@archiver.kernel.org>; Wed, 24 Mar 2021 18:16:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7D0DE61A2B
+	for <target-devel@archiver.kernel.org>; Wed, 24 Mar 2021 19:29:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237498AbhCXSQI (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 24 Mar 2021 14:16:08 -0400
-Received: from de-smtp-delivery-102.mimecast.com ([194.104.109.102]:22108 "EHLO
-        de-smtp-delivery-102.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S237406AbhCXSPu (ORCPT
+        id S237876AbhCXT3X (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 24 Mar 2021 15:29:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58930 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S237755AbhCXT3C (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 24 Mar 2021 14:15:50 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=mimecast20200619;
-        t=1616609749;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=AhSRkFxbN299KpNYV1BNjZhqUWK5Aq2xxDGkM8Usy4g=;
-        b=eAXYTUp2rerJGka620eBoGpnlmYzRUEPUVjVubbpeF1ZjZrYN4nExth2ql16U6QpuDbKaG
-        Qu2v0q6/rSajjytl2cNzDcz8/SmMkZ0Fy+pCuMOxRj5qsbsNbWNtrJpIeDJJTdykmrzJST
-        7GLhmd+G+TV86RooP6r9C5LF/kB/Q7w=
-Received: from EUR04-VI1-obe.outbound.protection.outlook.com
- (mail-vi1eur04lp2059.outbound.protection.outlook.com [104.47.14.59]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- de-mta-19-W6Ssi-EbORmQwU5yCvvcKg-1; Wed, 24 Mar 2021 19:15:48 +0100
-X-MC-Unique: W6Ssi-EbORmQwU5yCvvcKg-1
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=WzwcPT1Veb/hIEIA+ydjYW9pAPFUgx0BIfL0mCJ/p+zpXZh8P2FjMbgbv9UNAGE2fZrAwXOXsAsgr4/nbJnqggattmbMMGa8njS6lThBUB2CbX5nJ7gUztHFP5NYQypbbznnf78Rb33Fl1gjRGe8FuM39UglSs3cSfq5oD6Pla2zjkfTYMKJGTZ0Sq2f4gLvSltsQQgOpiAVuWfPaTeTPiScUNDzuaThIsvBseyMg8Y61F4BAg2IrpxfalBSJ4zK0GjpfMKcP26fC2ewXpbfaEfDN5p5YohWF/yJPhCDOQttwQjxzaUTRrgL8xWO2EzInxW/NOSxdVWCrjDe2rGkqQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=AhSRkFxbN299KpNYV1BNjZhqUWK5Aq2xxDGkM8Usy4g=;
- b=mSM/e2OPEUBQ8hO4+WUOnEmEg9JFCE9G9qfNrnQSojYO2NHwI9HrpgKU0OOliGlOfWJdQFPT/l2mRU72gjio6PisARR5KFboLzj2V5VDDyw7Yt+ed3mJkgCvWcewhvJFmRzXXluNQWH+Yt1qca9O3SVtp0Kl8g5WX8E3du1oj1LUUxdOA30R1bDs8yCIz8gNyBd9qfsZ3SFL5TnZ/P3gQUYNHbp2orW17j2CpL/3Yv8QAEm7FY1zVkML6+SE+8I6fIvOxjK3UtCvwpF6M5nR2I2+zsNfiTbcgHizA8omyn2kroX2V03J+X0XIcuyHVobxTS7KEMr7hJT4Mpn5Lo5Lw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=suse.com; dmarc=pass action=none header.from=suse.com;
- dkim=pass header.d=suse.com; arc=none
-Authentication-Results: vger.kernel.org; dkim=none (message not signed)
- header.d=none;vger.kernel.org; dmarc=none action=none header.from=suse.com;
-Received: from AM5PR04MB3089.eurprd04.prod.outlook.com (2603:10a6:206:b::28)
- by AM7PR04MB7192.eurprd04.prod.outlook.com (2603:10a6:20b:11e::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3977.24; Wed, 24 Mar
- 2021 18:15:47 +0000
-Received: from AM5PR04MB3089.eurprd04.prod.outlook.com
- ([fe80::4587:b624:eec3:6e72]) by AM5PR04MB3089.eurprd04.prod.outlook.com
- ([fe80::4587:b624:eec3:6e72%6]) with mapi id 15.20.3955.027; Wed, 24 Mar 2021
- 18:15:47 +0000
-Subject: Re: [PATCH 1/1] scsi: target: fix htmldocs warning in
- target_submit_prep
-To:     Mike Christie <michael.christie@oracle.com>,
-        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-References: <20210318225858.11863-1-michael.christie@oracle.com>
-From:   Lee Duncan <lduncan@suse.com>
-Message-ID: <72a0d81b-2765-47ec-e9b0-a7a7cd41ba78@suse.com>
-Date:   Wed, 24 Mar 2021 11:15:42 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.0
-In-Reply-To: <20210318225858.11863-1-michael.christie@oracle.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [73.25.22.216]
-X-ClientProxiedBy: AM0PR08CA0015.eurprd08.prod.outlook.com
- (2603:10a6:208:d2::28) To AM5PR04MB3089.eurprd04.prod.outlook.com
- (2603:10a6:206:b::28)
-MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from [192.168.20.3] (73.25.22.216) by AM0PR08CA0015.eurprd08.prod.outlook.com (2603:10a6:208:d2::28) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3977.25 via Frontend Transport; Wed, 24 Mar 2021 18:15:45 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: bec1bae7-ade0-49e2-d13d-08d8eef0d8ab
-X-MS-TrafficTypeDiagnostic: AM7PR04MB7192:
-X-Microsoft-Antispam-PRVS: <AM7PR04MB719251E8568E93CC3AA6C0C6DA639@AM7PR04MB7192.eurprd04.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:1728;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: iGsDKvyFgSq68GyZGjJ17iiRzY4QMwZaiatYU3hR97nJwTqxutQ6IysyKbyz5QVk0GZNJlQXlr9Y3Xry//NOLv3qkP1N0KIqC7fjTS6BDaEV8+x0DXLmVQd/Zc6b0JzrGxmkJ+wvnC19lBFsbdf4/CYByF0nAVg/3iEqpa1tRN2LebYHdy/nQFL6ZIxikbNmNd33PrHvJpZPNKpIWZEb9IapviMadtqbxOMh4BGRU54VhowvMxT7c8pEtn0xTVSrP1YJJ4XR980jDysMLuHLXQCQngnpZdN2ZWqMqQWh4lWvLGtq7N1FFIgwjCZMa/dSSYN7oqx/8ajg990qeeFt+fpGByz/b7vhrZpjLen3JVHRvn7R2r5+sKN4DMpD1kb8yy3CabK8a+I02Jy34EmTISyQrUnlOFRwGGxdmj15aQDTIVGf/nnFG5JGhhugH65UT2Cc10XNIDlR5bpVGuJOZOQWIMGVPs3hQiVQk8+hB2a7XZLh2dWzoc1JJdsNpZRx51sl2b9AuHKMUWRRGlOjI0o48+qk9F/8nJIliLvgBPghQg9nc8g2pB587SWgW65itKzJVoDZvqXoJB500NL9bv7Yhf8Y4gHQFDx5PljNaAnsum1MKCeUIjsqLxczJMU4LuiKN4WJ5TMNMtgtQDV2mcwmVqtOAwNkEkKbk9R7WZxnMIxO3yE8K0o4pjnPQWA1ii0xTtNWh/G825YC2JrgFg==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM5PR04MB3089.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(136003)(346002)(39850400004)(376002)(396003)(366004)(66946007)(4744005)(8936002)(2616005)(53546011)(31696002)(52116002)(956004)(6486002)(66556008)(478600001)(66476007)(6666004)(31686004)(2906002)(5660300002)(83380400001)(38100700001)(186003)(8676002)(36756003)(16576012)(316002)(16526019)(86362001)(26005)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?utf-8?B?WHNjYUluNnFqQ3lXWDQ0QTFuMzRhaEJ6RmFyWWswZThCUzJLOGJ6UkZvWmox?=
- =?utf-8?B?OENnbUQ5MHg3RXFCdmtWbUZqVWNyVXBnaHNHN3MrTkVyTnBIcEl0eHZ3QUtv?=
- =?utf-8?B?RUErVkdzRjJXNE1nU25RZjNFSlMzaEVMamdDSlAzd1UvTFRsbDNFT1pzL2ZU?=
- =?utf-8?B?K2tRS29qb2Y3Q2FJaTE3aHh5VFFYdlRBeldWMlp4bTZFOEYrcnJaTnNJTVR5?=
- =?utf-8?B?eFVZbUhxYk9IWGZKOXlSTXRIblJVL2Z1U0JXV216RWRONnlSY2V0enVEQVRm?=
- =?utf-8?B?eUpHVDdMalhsWmZlZ3NPL2xvSjNGcm4zWW5RNnNCTE9CQ1R5cFgzd2J2M1Zl?=
- =?utf-8?B?bW9iakkxZmdQZThUOWFPbzVEVWRSSGgzM3h2Q3F2bllheVBsRnJDelExMnlO?=
- =?utf-8?B?NEw2NjJhajV1dWdmQ2RBRFNMNmZpekFLWVY2KzErS2s3eEE1dzN0aURKV0JZ?=
- =?utf-8?B?U3Y0Y2MzQy9MV1FXOGlBRkNKbHZ0dEtmL0VPQll3OG11OER5NSt0eWU2QVRE?=
- =?utf-8?B?S3ZKb1oyZlFGb3V3Y3BSeVVobHdRWjdUNElqai9YR2JjZjcyREc3UFNXQ09Z?=
- =?utf-8?B?TndwdHhWZG9KdHZ1TG96K2E5SlRZelJIL1YxUTN6STg4L09EZ3JGUWFucnNw?=
- =?utf-8?B?TGFDN3ZFOUpGdGE0MWpoaHJvZlU0Y0w4aDUxbVNVQjE2Mkg2V2JBM3FZU0Nv?=
- =?utf-8?B?c3VhWDljUHkrVWlxcHV2SmcxbTdwb2tUUWR6MlNCS2xycmNCNFlNZ1FwWWht?=
- =?utf-8?B?cjl6STduL2hXbU9QblFFUUtJWXBtamtzM2dMNmNTTmo5cHlqTEhic2ZiWkZl?=
- =?utf-8?B?bGRlMXkxSlgwbGxRWVlZUExTVzNxSktvdzAwUmMyVk5JcEtEN2l6U2RkU1hR?=
- =?utf-8?B?Y0JSdkM0a0l6TnBYVzVJcVhvL3Fmci9wc0duSFpMYjhtUHBya0IwQjNjYTlt?=
- =?utf-8?B?QnRXUEQrMkZ0S1JlRUF6TUlYc2UvUERRUTNJUTlseFRtL1VVZlZjM3NyYy9j?=
- =?utf-8?B?OW9ZajBEcDBQelo4VlB4QVFGZ05xZndjMmlNWktsQXNERU51d1dtT3RMR2xH?=
- =?utf-8?B?K3k2cFlCOHpSNTJTMUlVWnp1WElFdXpqNkVMSTZGbTM3alI3dnZnZ2JOQzFF?=
- =?utf-8?B?NVV3RXNFc25LVGh4UEVWOGVaTTNFV2d5SXZ6MWZibWU4SkJJUTZ4SVNPOU53?=
- =?utf-8?B?NWNHS2ZXL0xlUUV5cnl5MnNYRHR2aFk4aVVJR0YxWXFVdzhHTEJtempxWlUw?=
- =?utf-8?B?QzhmUFRkVlovbkJWUnZVck5vL0hHY0duaGF3SjdBOTFXRVA2ODEvM1k0a1pk?=
- =?utf-8?B?bFZBYzFISWl0Ti9KMkxXUGFsK1RSdEVxMXF2QVlqZ0FzcHlFTU90RStoVFRs?=
- =?utf-8?B?S2FZSms4dzh1YzdnN0VKUG93MWdiaWxkc0NYeFNRTEgzdEVKR3I0bGs5aDNS?=
- =?utf-8?B?bEhUVHdheUtxd2VTSUZpdHZ6YWV4TmtQSlYvQWozTW50cy9VRFBwRUpPUzRJ?=
- =?utf-8?B?aXlETXhmQVd5OGxTcCtTMC8vZlpteStEQnlabmVoVmFRcFRBMDgrQzJ4K0Zv?=
- =?utf-8?B?cUJxY0xlVUVqN0o2Rk1WbEpJcVplK29aTGdrTjhxalJGK1BpSTJoRGRtQ2tD?=
- =?utf-8?B?aEdrNHdrWFMwdWlPOGE3bjgvaTNYNFhUR1FrcDhBMXdjdGJjeGRoVlVhOUJ5?=
- =?utf-8?B?MGlvNnRpMEdxd0JRUG9OWTliU1hRUzk5dGh1S3BOSGNCZEljRmJ4aXVOcUxh?=
- =?utf-8?Q?+VBVoTjeFj9VAArzB/5jzmVDk41VpbQemJI3lSA?=
-X-OriginatorOrg: suse.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: bec1bae7-ade0-49e2-d13d-08d8eef0d8ab
-X-MS-Exchange-CrossTenant-AuthSource: AM5PR04MB3089.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Mar 2021 18:15:47.2073
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: f7a17af6-1c5c-4a36-aa8b-f5be247aa4ba
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: gh0pGTYgVEtPi+O9v7XFg+aCklSfyhPqDpzQdwxX8Q81jvq4nuXr2k/6n+CVGtcN0nSIG6kEWvbJXm6id6zs4Q==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM7PR04MB7192
+        Wed, 24 Mar 2021 15:29:02 -0400
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3C55C061763;
+        Wed, 24 Mar 2021 12:29:01 -0700 (PDT)
+Received: by mail-ej1-x62d.google.com with SMTP id k10so34814150ejg.0;
+        Wed, 24 Mar 2021 12:29:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=dzcjbeFj+WpxxyXTlFQ0pILyU0z24ZRfU4LjJPFEC9Y=;
+        b=aAfYYdY2MkfeQ5kX7eTV7I5HpN0Q3T6I/ENqrCmVXqxojtf7VSRhXcd9G5ltyzQPu3
+         qlmYOd6spBskWhqeH/IsEQz734PxsZGB6lm/cbTq6prarXxTORy5RmM2zGZ6VB04WL2M
+         CsmyJ3eNis46Km80thkgQrvIARa02mi/vos6JxlFHPn1H+3FTc/ZmQm8548O2e8FSYLR
+         1czpJe3RD6R6UQELE5BAn07kgWtY9Jbl74hxqF8B8ZL/XALhn10v7eDXI0u6+FR2ju7p
+         l9DVOY4ZKa4TKCDqriI8B9+nvU5K2BFus00A701ctX3qcJREQcTAMjCkBsF00OiL6yMD
+         cobg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=dzcjbeFj+WpxxyXTlFQ0pILyU0z24ZRfU4LjJPFEC9Y=;
+        b=YlNGH58X2V3MD02FbXqOV2FuRg9b6uF9qIU4JR7+ggonkiEp9s4PlNWES7X5qrLbVW
+         C38jJKNc+bWfuqsOkNYDQPhdW3b9bTV0BmA/NOhI6m5phPGCBbwdf+3YftIG6AzNPf/6
+         DnWoCH1ZG0rzmtEFjSn4AqwA2ePkduEL4r9i6+uW3YoLRmE3Z7NDDLx3/V2gwl4TIQqw
+         BUpY09Zhctw6ODzk+LKKV0VOhqN05BwQ2B/QVe9VAd6g6y3zL8ghvPmGcK5g0bMGZ2p3
+         aJf/0leIzISqre9NFQ+8VjAMbLS43yUuL3VQJFNcOXS854loF6KxKtIcJzAHz3a49NkC
+         Q5UA==
+X-Gm-Message-State: AOAM5304awU2iHEFjupS9qJF77iecyMAjLHCiYprkO2q5wTR0bGJUW9H
+        U+JRn0Nt3F0aVBMY83Uc4v8ZUlm+uWY=
+X-Google-Smtp-Source: ABdhPJzBcNBJ6sH5ucFxr5Jwq7lzVvoC4G6C6082pRuPGcCRWzE6davfPLT12nk4KgeZtBfgkwpbwQ==
+X-Received: by 2002:a17:906:ae88:: with SMTP id md8mr5312924ejb.264.1616614140694;
+        Wed, 24 Mar 2021 12:29:00 -0700 (PDT)
+Received: from localhost (ipbcc11466.dynamic.kabel-deutschland.de. [188.193.20.102])
+        by smtp.gmail.com with ESMTPSA id mp12sm1316886ejc.1.2021.03.24.12.29.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 24 Mar 2021 12:29:00 -0700 (PDT)
+From:   Bodo Stroesser <bostroesser@gmail.com>
+To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     Bodo Stroesser <bstroesser@ts.fujitsu.com>,
+        Mike Christie <michael.christie@oracle.com>
+Subject: [PATCH 1/6] scsi: target: tcmu: Adjust names of variables and definitions
+Date:   Wed, 24 Mar 2021 20:28:37 +0100
+Message-Id: <20210324192842.30446-2-bostroesser@gmail.com>
+X-Mailer: git-send-email 2.12.3
+In-Reply-To: <20210324192842.30446-1-bostroesser@gmail.com>
+References: <20210324192842.30446-1-bostroesser@gmail.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 3/18/21 3:58 PM, Mike Christie wrote:
-> Fix warning:
-> 
-> drivers/target/target_core_transport.c:1661: WARNING: Block quote ends
-> without a blank line; unexpected unindent.
-> 
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> ---
->  drivers/target/target_core_transport.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-> index a75591c929c0..8fbfe75c5744 100644
-> --- a/drivers/target/target_core_transport.c
-> +++ b/drivers/target/target_core_transport.c
-> @@ -1659,6 +1659,7 @@ EXPORT_SYMBOL_GPL(target_init_cmd);
->   * Returns:
->   *	- less than zero to signal failure.
->   *	- zero on success.
-> + *
->   * If failure is returned, lio will the callers queue_status to complete
->   * the cmd.
->   */
-> 
+From: Bodo Stroesser <bstroesser@ts.fujitsu.com>
 
-Easiest review all year.
+Some definitions and members of struct tcmu_dev had misleading
+names. Examples:
+- ring_size was used for the size of mailbox + cmd ring +
+  data area
+- CMDR_SIZE was used for size of mailbox + cmd ring
 
-Reviewed-by: Lee Duncan <lduncan@suse.com>
+I added the new definition MB_CMDR_SIZE (mailbox + command ring),
+changed CMDR_SIZE to hold the size of the command ring only and
+replaced in struct tcmu_dev the member ring_size with mmap_pages,
+because the member is now used in tcmu_mmap() only, where we need
+page count, not size.
+
+I also added the new struct tcmu_dev member 'cmdr' which is used
+to replace some occurences of '(void *)mb + CMDR_OFF' with
+'udev->cmdr' for better readability.
+
+Signed-off-by: Bodo Stroesser <bstroesser@ts.fujitsu.com>
+---
+ drivers/target/target_core_user.c | 39 ++++++++++++++++++++++-----------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index bdfc057f000c..35975dd75dde 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -60,8 +60,11 @@
+ 
+ #define TCMU_TIME_OUT (30 * MSEC_PER_SEC)
+ 
+-/* For cmd area, the size is fixed 8MB */
+-#define CMDR_SIZE (8 * 1024 * 1024)
++/* For mailbox plus cmd ring, the size is fixed 8MB */
++#define MB_CMDR_SIZE (8 * 1024 * 1024)
++/* Offset of cmd ring is size of mailbox */
++#define CMDR_OFF sizeof(struct tcmu_mailbox)
++#define CMDR_SIZE (MB_CMDR_SIZE - CMDR_OFF)
+ 
+ /*
+  * For data area, the block size is PAGE_SIZE and
+@@ -126,8 +129,10 @@ struct tcmu_dev {
+ 
+ 	struct inode *inode;
+ 
+-	struct tcmu_mailbox *mb_addr;
+ 	uint64_t dev_size;
++
++	struct tcmu_mailbox *mb_addr;
++	void *cmdr;
+ 	u32 cmdr_size;
+ 	u32 cmdr_last_cleaned;
+ 	/* Offset of data area from start of mb */
+@@ -135,7 +140,7 @@ struct tcmu_dev {
+ 	size_t data_off;
+ 	size_t data_size;
+ 	uint32_t max_blocks;
+-	size_t ring_size;
++	size_t mmap_pages;
+ 
+ 	struct mutex cmdr_lock;
+ 	struct list_head qfull_queue;
+@@ -166,8 +171,6 @@ struct tcmu_dev {
+ 
+ #define TCMU_DEV(_se_dev) container_of(_se_dev, struct tcmu_dev, se_dev)
+ 
+-#define CMDR_OFF sizeof(struct tcmu_mailbox)
+-
+ struct tcmu_cmd {
+ 	struct se_cmd *se_cmd;
+ 	struct tcmu_dev *tcmu_dev;
+@@ -941,7 +944,7 @@ static uint32_t ring_insert_padding(struct tcmu_dev *udev, size_t cmd_size)
+ 	if (head_to_end(cmd_head, udev->cmdr_size) < cmd_size) {
+ 		size_t pad_size = head_to_end(cmd_head, udev->cmdr_size);
+ 
+-		hdr = (void *) mb + CMDR_OFF + cmd_head;
++		hdr = udev->cmdr + cmd_head;
+ 		tcmu_hdr_set_op(&hdr->len_op, TCMU_OP_PAD);
+ 		tcmu_hdr_set_len(&hdr->len_op, pad_size);
+ 		hdr->cmd_id = 0; /* not used for PAD */
+@@ -1065,7 +1068,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
+ 
+ 	cmd_head = ring_insert_padding(udev, command_size);
+ 
+-	entry = (void *) mb + CMDR_OFF + cmd_head;
++	entry = udev->cmdr + cmd_head;
+ 	memset(entry, 0, command_size);
+ 	tcmu_hdr_set_op(&entry->hdr.len_op, TCMU_OP_CMD);
+ 
+@@ -1157,7 +1160,7 @@ queue_tmr_ring(struct tcmu_dev *udev, struct tcmu_tmr *tmr)
+ 
+ 	cmd_head = ring_insert_padding(udev, cmd_size);
+ 
+-	entry = (void *)mb + CMDR_OFF + cmd_head;
++	entry = udev->cmdr + cmd_head;
+ 	memset(entry, 0, cmd_size);
+ 	tcmu_hdr_set_op(&entry->hdr.len_op, TCMU_OP_TMR);
+ 	tcmu_hdr_set_len(&entry->hdr.len_op, cmd_size);
+@@ -1412,7 +1415,7 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+ 
+ 	while (udev->cmdr_last_cleaned != READ_ONCE(mb->cmd_tail)) {
+ 
+-		struct tcmu_cmd_entry *entry = (void *) mb + CMDR_OFF + udev->cmdr_last_cleaned;
++		struct tcmu_cmd_entry *entry = udev->cmdr + udev->cmdr_last_cleaned;
+ 
+ 		/*
+ 		 * Flush max. up to end of cmd ring since current entry might
+@@ -1851,7 +1854,7 @@ static int tcmu_mmap(struct uio_info *info, struct vm_area_struct *vma)
+ 	vma->vm_private_data = udev;
+ 
+ 	/* Ensure the mmap is exactly the right size */
+-	if (vma_pages(vma) != (udev->ring_size >> PAGE_SHIFT))
++	if (vma_pages(vma) != udev->mmap_pages)
+ 		return -EINVAL;
+ 
+ 	tcmu_vma_open(vma);
+@@ -2100,20 +2103,22 @@ static int tcmu_configure_device(struct se_device *dev)
+ 		goto err_bitmap_alloc;
+ 	}
+ 
+-	udev->mb_addr = vzalloc(CMDR_SIZE);
+-	if (!udev->mb_addr) {
++	mb = vzalloc(MB_CMDR_SIZE);
++	if (!mb) {
+ 		ret = -ENOMEM;
+ 		goto err_vzalloc;
+ 	}
+ 
+ 	/* mailbox fits in first part of CMDR space */
+-	udev->cmdr_size = CMDR_SIZE - CMDR_OFF;
+-	udev->data_off = CMDR_SIZE;
++	udev->mb_addr = mb;
++	udev->cmdr = (void *)mb + CMDR_OFF;
++	udev->cmdr_size = CMDR_SIZE;
++	udev->data_off = MB_CMDR_SIZE;
+ 	udev->data_size = udev->max_blocks * DATA_BLOCK_SIZE;
++	udev->mmap_pages = (udev->data_size + MB_CMDR_SIZE) >> PAGE_SHIFT;
+ 	udev->dbi_thresh = 0; /* Default in Idle state */
+ 
+ 	/* Initialise the mailbox of the ring buffer */
+-	mb = udev->mb_addr;
+ 	mb->version = TCMU_MAILBOX_VERSION;
+ 	mb->flags = TCMU_MAILBOX_FLAG_CAP_OOOC |
+ 		    TCMU_MAILBOX_FLAG_CAP_READ_LEN |
+@@ -2129,7 +2134,7 @@ static int tcmu_configure_device(struct se_device *dev)
+ 
+ 	info->mem[0].name = "tcm-user command & data buffer";
+ 	info->mem[0].addr = (phys_addr_t)(uintptr_t)udev->mb_addr;
+-	info->mem[0].size = udev->ring_size = udev->data_size + CMDR_SIZE;
++	info->mem[0].size = udev->data_size + MB_CMDR_SIZE;
+ 	info->mem[0].memtype = UIO_MEM_NONE;
+ 
+ 	info->irqcontrol = tcmu_irqcontrol;
+-- 
+2.12.3
 
