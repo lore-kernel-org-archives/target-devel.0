@@ -2,122 +2,115 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90ECFC433DB
-	for <target-devel@archiver.kernel.org>; Thu, 25 Mar 2021 07:49:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47A92C433E2
+	for <target-devel@archiver.kernel.org>; Thu, 25 Mar 2021 07:49:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5F0AF61945
-	for <target-devel@archiver.kernel.org>; Thu, 25 Mar 2021 07:49:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 014CB61A17
+	for <target-devel@archiver.kernel.org>; Thu, 25 Mar 2021 07:49:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229816AbhCYHsq (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 25 Mar 2021 03:48:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48490 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229744AbhCYHsT (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Thu, 25 Mar 2021 03:48:19 -0400
-Received: from ustc.edu.cn (email6.ustc.edu.cn [IPv6:2001:da8:d800::8])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A5CCBC06175F;
-        Thu, 25 Mar 2021 00:48:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=mail.ustc.edu.cn; s=dkim; h=Received:Date:From:To:Cc:Subject:
-        In-Reply-To:References:Content-Transfer-Encoding:Content-Type:
-        MIME-Version:Message-ID; bh=z9FCqpsB9l6HPQ6oPyLY6esBHgWBKxYV7LOs
-        NPRYT5U=; b=MKWL5pKjyvtVX39bX2ccsMNCY5j750hEJ9tU55H5iTcQWV9xcmvp
-        ejSNAFU7t5I+T6itJ8KRx7JV0h2TQs1rnINn881xF3+r0LXMOGXxQqPKyzZCDaPh
-        rTnd4Pr0nUgZUNm0vYoUq8X/cgjpL/xOIsIaOaraxa3y4PoHJPBNcPo=
-Received: by ajax-webmail-newmailweb.ustc.edu.cn (Coremail) ; Thu, 25 Mar
- 2021 15:48:11 +0800 (GMT+08:00)
-X-Originating-IP: [202.38.69.14]
-Date:   Thu, 25 Mar 2021 15:48:11 +0800 (GMT+08:00)
-X-CM-HeaderCharset: UTF-8
-From:   lyl2019@mail.ustc.edu.cn
-To:     michael.christie@oracle.com
-Cc:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Re: [PATCH] target: Fix a double put in transport_free_session
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version XT3.0.8 dev build
- 20190610(cb3344cf) Copyright (c) 2002-2021 www.mailtech.cn ustc-xl
-In-Reply-To: <9d02b016-c924-79e3-9593-c073da0c769d@oracle.com>
-References: <20210323025851.11782-1-lyl2019@mail.ustc.edu.cn>
- <9d02b016-c924-79e3-9593-c073da0c769d@oracle.com>
-X-SendMailWithSms: false
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=UTF-8
+        id S229810AbhCYHtS (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 25 Mar 2021 03:49:18 -0400
+Received: from mail.kernel.org ([198.145.29.99]:41654 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229619AbhCYHtF (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Thu, 25 Mar 2021 03:49:05 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 8042261574;
+        Thu, 25 Mar 2021 07:49:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1616658545;
+        bh=/JQYd6mC27MAlb+cNIvcwb8HZBaUE09MYG3eku/VEL0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=r3KBVOwrJFm1qkGhJuO67qMebjRmMNnTa96D0siLaig4BqcpGXil6ua4dJXVlQMdU
+         GwGFduCfgZHs73NLWLlqCvmwzE5ybZrJwjPULaHWp52Eurq6WrqnHy2o9eP8IApguL
+         g//tf4EERHO4irjJM5RD0gMXlZNZlqn4epO7OcMOk6WLmmYwGMzKwVZF6EV17Zekia
+         d5K9lRCQoomXIF4sr7toswd41TpEEDveZGtnQ7lB2LyJKBvprveO9QFa9OrZtriuyL
+         VjpKzQSXxSTDRgD9uBlD0m0FKKG2Nls1qEm7UfWwoHd01oZJwyRLe0FQvFY8uOwu6l
+         pfChPR3UV1LqA==
+Date:   Thu, 25 Mar 2021 09:49:01 +0200
+From:   Leon Romanovsky <leon@kernel.org>
+To:     Doug Ledford <dledford@redhat.com>,
+        Jason Gunthorpe <jgg@nvidia.com>
+Cc:     Mark Bloch <mbloch@nvidia.com>, Adit Ranadive <aditr@vmware.com>,
+        Ariel Elior <aelior@marvell.com>,
+        Bart Van Assche <bvanassche@acm.org>,
+        Bernard Metzler <bmt@zurich.ibm.com>,
+        Christian Benvenuti <benve@cisco.com>,
+        Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+        Devesh Sharma <devesh.sharma@broadcom.com>,
+        Faisal Latif <faisal.latif@intel.com>,
+        Gal Pressman <galpress@amazon.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Lijun Ou <oulijun@huawei.com>, linux-rdma@vger.kernel.org,
+        Michal Kalderon <mkalderon@marvell.com>,
+        Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>,
+        Naresh Kumar PBS <nareshkumar.pbs@broadcom.com>,
+        Nelson Escobar <neescoba@cisco.com>, netdev@vger.kernel.org,
+        Potnuri Bharat Teja <bharat@chelsio.com>,
+        Saeed Mahameed <saeedm@nvidia.com>,
+        Selvin Xavier <selvin.xavier@broadcom.com>,
+        Shiraz Saleem <shiraz.saleem@intel.com>,
+        Somnath Kotur <somnath.kotur@broadcom.com>,
+        Sriharsha Basavapatna <sriharsha.basavapatna@broadcom.com>,
+        target-devel@vger.kernel.org,
+        VMware PV-Drivers <pv-drivers@vmware.com>,
+        Weihang Li <liweihang@huawei.com>,
+        "Wei Hu(Xavier)" <huwei87@hisilicon.com>,
+        Yishai Hadas <yishaih@nvidia.com>,
+        Zhu Yanjun <zyjzyj2000@gmail.com>
+Subject: Re: [PATCH rdma-next] RDMA: Support more than 255 rdma ports
+Message-ID: <YFxAbeGKAuFJYrll@unreal>
+References: <20210301070420.439400-1-leon@kernel.org>
 MIME-Version: 1.0
-Message-ID: <7378433a.12fee.178685ae745.Coremail.lyl2019@mail.ustc.edu.cn>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID: LkAmygCXnUk7QFxgxLc+AA--.0W
-X-CM-SenderInfo: ho1ojiyrz6zt1loo32lwfovvfxof0/1tbiAQsKBlQhn5ZgeQAEsn
-X-Coremail-Antispam: 1Ur529EdanIXcx71UUUUU7IcSsGvfJ3iIAIbVAYjsxI4VWxJw
-        CS07vEb4IE77IF4wCS07vE1I0E4x80FVAKz4kxMIAIbVAFxVCaYxvI4VCIwcAKzIAtYxBI
-        daVFxhVjvjDU=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210301070420.439400-1-leon@kernel.org>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-DQoNCg0KPiAtLS0tLeWOn+Wni+mCruS7ti0tLS0tDQo+IOWPkeS7tuS6ujogbWljaGFlbC5jaHJp
-c3RpZUBvcmFjbGUuY29tDQo+IOWPkemAgeaXtumXtDogMjAyMS0wMy0yNCAwMDoyODozNSAo5pif
-5pyf5LiJKQ0KPiDmlLbku7bkuro6ICJMdiBZdW5sb25nIiA8bHlsMjAxOUBtYWlsLnVzdGMuZWR1
-LmNuPiwgbWFydGluLnBldGVyc2VuQG9yYWNsZS5jb20NCj4g5oqE6YCBOiBsaW51eC1zY3NpQHZn
-ZXIua2VybmVsLm9yZywgdGFyZ2V0LWRldmVsQHZnZXIua2VybmVsLm9yZywgbGludXgta2VybmVs
-QHZnZXIua2VybmVsLm9yZw0KPiDkuLvpopg6IFJlOiBbUEFUQ0hdIHRhcmdldDogRml4IGEgZG91
-YmxlIHB1dCBpbiB0cmFuc3BvcnRfZnJlZV9zZXNzaW9uDQo+IA0KPiBPbiAzLzIyLzIxIDk6NTgg
-UE0sIEx2IFl1bmxvbmcgd3JvdGU6DQo+ID4gSW4gdHJhbnNwb3J0X2ZyZWVfc2Vzc2lvbiwgc2Vf
-bmFjbCBpcyBnb3QgZnJvbSBzZV9zZXNzDQo+ID4gd2l0aCB0aGUgaW5pdGlhbCByZWZlcmVuY2Uu
-IElmIHNlX25hY2wtPmFjbF9zZXNzX2xpc3QgaXMNCj4gPiBlbXB0eSwgc2VfbmFjbC0+ZHluYW1p
-Y19zdG9wIGlzIHNldCB0byB0cnVlLiBUaGVuIHRoZSBmaXJzdA0KPiA+IHRhcmdldF9wdXRfbmFj
-bChzZV9uYWNsKSB3aWxsIGRyb3AgdGhlIGluaXRpYWwgcmVmZXJlbmNlDQo+ID4gYW5kIGZyZWUg
-c2VfbmFjbC4gTGF0ZXIgdGhlcmUgaXMgYSBzZWNvbmQgdGFyZ2V0X3B1dF9uYWNsKCkNCj4gPiB0
-byBwdXQgc2VfbmFjbC4gSXQgbWF5IGNhdXNlIGVycm9yIGluIHJhY2UuDQo+ID4+IE15IHBhdGNo
-IHNldHMgc2VfbmFjbC0+ZHluYW1pY19zdG9wIHRvIGZhbHNlIHRvIGF2b2lkIHRoZQ0KPiA+IGRv
-dWJsZSBwdXQuDQo+ID4gDQo+ID4gU2lnbmVkLW9mZi1ieTogTHYgWXVubG9uZyA8bHlsMjAxOUBt
-YWlsLnVzdGMuZWR1LmNuPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL3RhcmdldC90YXJnZXRfY29y
-ZV90cmFuc3BvcnQuYyB8IDQgKysrLQ0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgMyBpbnNlcnRpb25z
-KCspLCAxIGRlbGV0aW9uKC0pDQo+ID4gDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGFyZ2V0
-L3RhcmdldF9jb3JlX3RyYW5zcG9ydC5jIGIvZHJpdmVycy90YXJnZXQvdGFyZ2V0X2NvcmVfdHJh
-bnNwb3J0LmMNCj4gPiBpbmRleCA1ZWNiOWYxOGE1M2QuLmMyNjZkZWZlNjk0ZiAxMDA2NDQNCj4g
-PiAtLS0gYS9kcml2ZXJzL3RhcmdldC90YXJnZXRfY29yZV90cmFuc3BvcnQuYw0KPiA+ICsrKyBi
-L2RyaXZlcnMvdGFyZ2V0L3RhcmdldF9jb3JlX3RyYW5zcG9ydC5jDQo+ID4gQEAgLTU4NCw4ICs1
-ODQsMTAgQEAgdm9pZCB0cmFuc3BvcnRfZnJlZV9zZXNzaW9uKHN0cnVjdCBzZV9zZXNzaW9uICpz
-ZV9zZXNzKQ0KPiA+ICAJCX0NCj4gPiAgCQltdXRleF91bmxvY2soJnNlX3RwZy0+YWNsX25vZGVf
-bXV0ZXgpOw0KPiA+ICANCj4gPiAtCQlpZiAoc2VfbmFjbC0+ZHluYW1pY19zdG9wKQ0KPiA+ICsJ
-CWlmIChzZV9uYWNsLT5keW5hbWljX3N0b3ApIHsNCj4gPiAgCQkJdGFyZ2V0X3B1dF9uYWNsKHNl
-X25hY2wpOw0KPiA+ICsJCQlzZV9uYWNsLT5keW5hbWljX3N0b3AgPSBmYWxzZTsNCj4gPiArCQl9
-DQo+ID4gIA0KPiA+ICAJCXRhcmdldF9wdXRfbmFjbChzZV9uYWNsKTsNCj4gQ291bGQgeW91IGRl
-c2NyaWJlIHRoZSByYWNlIGEgbGl0dGxlIG1vcmU/DQo+IA0KPiBJcyB0aGUgcmFjZToNCj4gDQo+
-IDEuIHRocmVhZDEgY2FsbGVkIGNvcmVfdHBnX2NoZWNrX2luaXRpYXRvcl9ub2RlX2FjbCBhbmQg
-Zm91bmQgdGhlIGFjbC4NCj4gc2Vzcy0+c2Vfbm9kZV9hY2wgaXMgc2V0IHRvIHRoZSBmb3VuZCBh
-Y2wuDQo+IDIuIHRocmVhZDIgaXMgcnVubmluZyB0cmFuc3BvcnRfZnJlZV9zZXNzaW9uLiBJdCBu
-b3cgZ3JhYnMgdGhlIGFjbF9ub2RlX211dGV4DQo+IGFuZCBzZWVzIHNlX25hY2wtPmFjbF9zZXNz
-X2xpc3QgaXMgZW1wdHkuDQo+IDMuIHRocmVhZDIgZG9lcyB0aGUgZHluYW1pY19zdG9wPXRydWUg
-b3BlcmF0aW9ucyBpbiB0cmFuc3BvcnRfZnJlZV9zZXNzaW9uLg0KPiA0LiB0aHJlYWQxIG5vdyBj
-YWxscyB0cmFuc3BvcnRfcmVnaXN0ZXJfc2Vzc2lvbiBub3cgYWRkcyB0aGUgc2VzcyB0byBhY2wn
-cw0KPiBhY2xfc2Vzc19saXN0Lg0KPiANCj4gTGF0ZXIgd2hlbiB0aGUgc2Vzc2lvbiB0aGF0IHRo
-cmVhZCAxIGNyZWF0ZWQgaXMgZGVsZXRlZCBkeW5hbWljX3N0b3AgaXMgc3RpbGwNCj4gc2V0LCBz
-byB3ZSBkbyBhbiBleHRyYSB0YXJnZXRfcHV0X25hY2w/DQo+IA0KPiBJJ20gbm90IHN1cmUgeW91
-ciBwYXRjaCB3aWxsIGhhbmRsZSB0aGlzIHJhY2UuIFdoZW4gd2UgZGVsZXRlIHRoZSBzZXNzaW9u
-IHRocmVhZDENCj4gY3JlYXRlZCBkeW5hbWljX25vZGVfYWNsIGlzIHN0aWxsIHNldCwgc28gdGhp
-czoNCj4gDQo+ICAgICAgICAgICAgICAgICBtdXRleF9sb2NrKCZzZV90cGctPmFjbF9ub2RlX211
-dGV4KTsNCj4gICAgICAgICAgICAgICAgIGlmIChzZV9uYWNsLT5keW5hbWljX25vZGVfYWNsICYm
-DQo+ICAgICAgICAgICAgICAgICAgICAgIXNlX3Rmby0+dHBnX2NoZWNrX2RlbW9fbW9kZV9jYWNo
-ZShzZV90cGcpKSB7DQo+ICAgICAgICAgICAgICAgICAgICAgICAgIHNwaW5fbG9ja19pcnFzYXZl
-KCZzZV9uYWNsLT5uYWNsX3Nlc3NfbG9jaywgZmxhZ3MpOw0KPiAgICAgICAgICAgICAgICAgICAg
-ICAgICBpZiAobGlzdF9lbXB0eSgmc2VfbmFjbC0+YWNsX3Nlc3NfbGlzdCkpDQo+ICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgc2VfbmFjbC0+ZHluYW1pY19zdG9wID0gdHJ1ZTsNCj4g
-DQo+IGNhbiBzZXQgZHluYW1pY19zdG9wIHRvIHRydWUgYWdhaW4gYW5kIHdlIGNhbiBlbmQgdXAg
-ZG9pbmcgdGhlIGV4dHJhIHB1dCBzdGlsbC4NCj4gDQo+IE9uIHRvcCBvZiB0aGUgZXh0cmEgcHV0
-IHdlIGFsc28gZG8NCj4gDQo+IGxpc3RfZGVsKCZzZV9uYWNsLT5hY2xfbGlzdCk7DQo+IA0KPiB0
-d2ljZSBzbyB3ZSBoYXZlIHRvIGhhbmRsZSB0aGF0IGFzIHdlbGwuDQo+IA0KPiBJcyB0aGVyZSBh
-bHNvIGFub3RoZXIgYnVnIGluIHRoaXMgY29kZS4gSWYgc29tZW9uZSBhZGRzIGFuIGFjbCB3aGls
-ZSB0aGVyZSBpcyBhDQo+IGR5bmFtaWMgYWNsIGluIHBsYWNlIGNvcmVfdHBnX2FkZF9pbml0aWF0
-b3Jfbm9kZV9hY2wgd2lsbCBjbGVhciBkeW5hbWljX25vZGVfYWNsDQo+IGJ1dCB3ZSBsZWF2ZSB0
-aGUgZXh0cmEgcmVmZXJlbmNlLCBzbyBsYXRlciB3aGVuIHRyYW5zcG9ydF9mcmVlX3Nlc3Npb24g
-aXMgY2FsbGVkDQo+IHdlIHdpbGwgbm90IGRvIHRoZSBleHRyYSBwdXQuDQo+IA0KDQpPaywgdGhh
-bmtzIGZvciB5b3VyIGFuc3dlci4gQWNjb3JkaW5nIHRoZSBkZXNjcmlwdGlvbiBhYm92ZSwgaSB0
-aGluayBpdCBpcyBhIGZhbHNlDQpwb3NpdGl2ZSBub3cuDQoNClRoYW5rcy4=
+On Mon, Mar 01, 2021 at 09:04:20AM +0200, Leon Romanovsky wrote:
+> From: Mark Bloch <mbloch@nvidia.com>
+> 
+> Current code uses many different types when dealing with a port of a
+> RDMA device: u8, unsigned int and u32. Switch to u32 to clean up the
+> logic.
+> 
+> This allows us to make (at least) the core view consistent and use the same
+> type. Unfortunately not all places can be converted. Many uverbs functions
+> expect port to be u8 so keep those places in order not to break UAPIs.
+> HW/Spec defined values must also not be changed.
+> 
+> With the switch to u32 we now can support devices with more than 255
+> ports. U32_MAX is reserved to make control logic a bit easier to deal
+> with. As a device with U32_MAX ports probably isn't going to happen any
+> time soon this seems like a non issue.
+> 
+> When a device with more than 255 ports is created uverbs will report
+> the RDMA device as having 255 ports as this is the max currently supported.
+> 
+> The verbs interface is not changed yet because the IBTA spec limits the
+> port size in too many places to be u8 and all applications that relies in
+> verbs won't be able to cope with this change. At this stage, we are
+> extending the interfaces that are using vendor channel solely
+> 
+> Once the limitation is lifted mlx5 in switchdev mode will be able to have
+> thousands of SFs created by the device. As the only instance of an RDMA
+> device that reports more than 255 ports will be a representor device
+> and it exposes itself as a RAW Ethernet only device CM/MAD/IPoIB and other
+> ULPs aren't effected by this change and their sysfs/interfaces that
+> are exposes to userspace can remain unchanged.
+> 
+> While here cleanup some alignment issues and remove unneeded sanity
+> checks (mainly in rdmavt),
+> 
+> Signed-off-by: Mark Bloch <mbloch@nvidia.com>
+> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+> ---
+
+Jason, ping
+
+Thanks
