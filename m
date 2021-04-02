@@ -2,100 +2,97 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A643C433B4
-	for <target-devel@archiver.kernel.org>; Thu,  1 Apr 2021 19:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9CC6C433B4
+	for <target-devel@archiver.kernel.org>; Fri,  2 Apr 2021 09:22:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 031B06108B
-	for <target-devel@archiver.kernel.org>; Thu,  1 Apr 2021 19:16:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B59F661105
+	for <target-devel@archiver.kernel.org>; Fri,  2 Apr 2021 09:22:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234081AbhDATP4 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 1 Apr 2021 15:15:56 -0400
-Received: from mail-pg1-f172.google.com ([209.85.215.172]:43839 "EHLO
-        mail-pg1-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234558AbhDATNK (ORCPT
+        id S234493AbhDBJWP (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 2 Apr 2021 05:22:15 -0400
+Received: from szxga05-in.huawei.com ([45.249.212.191]:15469 "EHLO
+        szxga05-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229599AbhDBJWP (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 1 Apr 2021 15:13:10 -0400
-Received: by mail-pg1-f172.google.com with SMTP id p12so2159693pgj.10;
-        Thu, 01 Apr 2021 12:13:09 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=6nikUHdC4KYpFBUCD+BpsVYV/5+RzIVusJ8v82wFnsM=;
-        b=Tm/B5EJUcnOt025tjWQIwg+cSetREg2Hxwk13g+aYZE4pgbBFMq5m3RQNPm9NMieO4
-         eA74SiXgdnCLC2qfsYxEekcBcc0JAspTYfM4TRZpdBS9HcG4ovAQrSp7+45KaIUYLp1l
-         5PX44eE51oK3WW2nF9WOV3KwZBqYhI9mjIhD7lqlOcfGBcZYLxdCHGmxAFFlW8z6Iq+0
-         imqmSzpUTYixQi5lxa5C92EMhDZl6lZDw6T5np4xTdTbBkuDY4EXxIK2WXrP/SK5q0aR
-         /3ev1tW+UwC8RbX7CW9FXnhCUoPtopSG8sV/2Vn4a3ka8GFwB2ihyzXmN9rnKO5lyoHG
-         SVJA==
-X-Gm-Message-State: AOAM533mAvoXiRyMMtdFQZ4qeJEdO7B3fxXJtyhPgl7XQnOzHdlUcRA6
-        rGrSn0t8sT4FI8x3YAgWtKA+a552PtI=
-X-Google-Smtp-Source: ABdhPJzCxDGaSf2tNozh/q3faFUNNh/3qhwiuJp07xQ71f6eN2FEIzknAjYAg1mTxIaQh4dawyhqGg==
-X-Received: by 2002:a62:ac1a:0:b029:1f9:5ca4:dd4d with SMTP id v26-20020a62ac1a0000b02901f95ca4dd4dmr8813587pfe.68.1617304387662;
-        Thu, 01 Apr 2021 12:13:07 -0700 (PDT)
-Received: from [192.168.51.110] (c-73-241-217-19.hsd1.ca.comcast.net. [73.241.217.19])
-        by smtp.gmail.com with ESMTPSA id k3sm5933235pgq.21.2021.04.01.12.13.06
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 01 Apr 2021 12:13:07 -0700 (PDT)
-Subject: Re: [PATCH -next] IB/srpt: Fix passing zero to 'PTR_ERR'
-To:     YueHaibing <yuehaibing@huawei.com>, dledford@redhat.com,
-        jgg@ziepe.ca
-Cc:     linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20210324140939.7480-1-yuehaibing@huawei.com>
-From:   Bart Van Assche <bvanassche@acm.org>
-Message-ID: <232b1dc3-ffac-4466-fc58-704fef87ce67@acm.org>
-Date:   Thu, 1 Apr 2021 12:13:05 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.0
+        Fri, 2 Apr 2021 05:22:15 -0400
+Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.59])
+        by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4FBZJk11jBzyNjd;
+        Fri,  2 Apr 2021 17:20:06 +0800 (CST)
+Received: from huawei.com (10.175.103.91) by DGGEMS406-HUB.china.huawei.com
+ (10.3.19.206) with Microsoft SMTP Server id 14.3.498.0; Fri, 2 Apr 2021
+ 17:22:10 +0800
+From:   Yang Yingliang <yangyingliang@huawei.com>
+To:     <linux-kernel@vger.kernel.org>, <target-devel@vger.kernel.org>,
+        <linux-scsi@vger.kernel.org>
+CC:     <martin.petersen@oracle.com>
+Subject: [PATCH -next] scsi: target: iscsi: Switch to kmemdup_nul()
+Date:   Fri, 2 Apr 2021 17:25:17 +0800
+Message-ID: <20210402092517.2445595-1-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <20210324140939.7480-1-yuehaibing@huawei.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.103.91]
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 3/24/21 7:09 AM, YueHaibing wrote:
-> Fix smatch warning:
-> 
-> drivers/infiniband/ulp/srpt/ib_srpt.c:2341 srpt_cm_req_recv() warn: passing zero to 'PTR_ERR'
-> 
-> Use PTR_ERR_OR_ZERO instead of PTR_ERR
-> 
-> Fixes: 847462de3a0a ("IB/srpt: Fix srpt_cm_req_recv() error path (1/2)")
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-> ---
->   drivers/infiniband/ulp/srpt/ib_srpt.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> index 6be60aa5ffe2..3ff24b5048ac 100644
-> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> @@ -2338,7 +2338,7 @@ static int srpt_cm_req_recv(struct srpt_device *const sdev,
->   
->   	if (IS_ERR_OR_NULL(ch->sess)) {
->   		WARN_ON_ONCE(ch->sess == NULL);
-> -		ret = PTR_ERR(ch->sess);
-> +		ret = PTR_ERR_OR_ZERO(ch->sess);
->   		ch->sess = NULL;
->   		pr_info("Rejected login for initiator %s: ret = %d.\n",
->   			ch->sess_name, ret);
+Use kmemdup_nul() helper instead of open-coding to
+simplify the code.
 
-(just noticed this patch)
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+---
+ drivers/target/iscsi/iscsi_target_nego.c       | 4 +---
+ drivers/target/iscsi/iscsi_target_parameters.c | 4 +---
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-target_setup_session() should either return a valid session pointer or 
-an ERR_PTR() but not NULL. Changing IS_ERR_OR_NULL() into IS_ERR() and 
-removing the WARN_ON_ONCE(ch->sess == NULL) may be a better solution.
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 151e2949bb75..9a4a632f631d 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -1082,14 +1082,12 @@ int iscsi_target_locate_portal(
+ 	login_req = (struct iscsi_login_req *) login->req;
+ 	payload_length = ntoh24(login_req->dlength);
+ 
+-	tmpbuf = kzalloc(payload_length + 1, GFP_KERNEL);
++	tmpbuf = kmemdup_nul(login->req_buf, payload_length, GFP_KERNEL);
+ 	if (!tmpbuf) {
+ 		pr_err("Unable to allocate memory for tmpbuf.\n");
+ 		return -1;
+ 	}
+ 
+-	memcpy(tmpbuf, login->req_buf, payload_length);
+-	tmpbuf[payload_length] = '\0';
+ 	start = tmpbuf;
+ 	end = (start + payload_length);
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_parameters.c b/drivers/target/iscsi/iscsi_target_parameters.c
+index 7a461fbb1566..6bc3aaf655fc 100644
+--- a/drivers/target/iscsi/iscsi_target_parameters.c
++++ b/drivers/target/iscsi/iscsi_target_parameters.c
+@@ -1357,14 +1357,12 @@ int iscsi_decode_text_input(
+ 	struct iscsi_param_list *param_list = conn->param_list;
+ 	char *tmpbuf, *start = NULL, *end = NULL;
+ 
+-	tmpbuf = kzalloc(length + 1, GFP_KERNEL);
++	tmpbuf = kmemdup_nul(textbuf, length, GFP_KERNEL);
+ 	if (!tmpbuf) {
+ 		pr_err("Unable to allocate %u + 1 bytes for tmpbuf.\n", length);
+ 		return -ENOMEM;
+ 	}
+ 
+-	memcpy(tmpbuf, textbuf, length);
+-	tmpbuf[length] = '\0';
+ 	start = tmpbuf;
+ 	end = (start + length);
+ 
+-- 
+2.25.1
 
-Thanks,
-
-Bart.
