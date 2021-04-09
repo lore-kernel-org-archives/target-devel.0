@@ -2,96 +2,110 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD3DAC433ED
-	for <target-devel@archiver.kernel.org>; Thu,  8 Apr 2021 16:50:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 906E7C433ED
+	for <target-devel@archiver.kernel.org>; Fri,  9 Apr 2021 12:47:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7D407610A2
-	for <target-devel@archiver.kernel.org>; Thu,  8 Apr 2021 16:50:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 66A63610FB
+	for <target-devel@archiver.kernel.org>; Fri,  9 Apr 2021 12:47:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232144AbhDHQur (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 8 Apr 2021 12:50:47 -0400
-Received: from mail-pf1-f170.google.com ([209.85.210.170]:38739 "EHLO
-        mail-pf1-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231655AbhDHQup (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Thu, 8 Apr 2021 12:50:45 -0400
-Received: by mail-pf1-f170.google.com with SMTP id y16so2259853pfc.5;
-        Thu, 08 Apr 2021 09:50:32 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=sdar1JYqPbP9ANx4vLPaKOvhZp3igugdf1CBVsY07+k=;
-        b=HljPIXqvBVwBfr4CCcxKBJYh/oovt/wMk6XPy0S3WGeM0eHLFhKQOjhv7+FP4mY52n
-         02yB7l1xi4L8X0M2Dt71jKmmzlZP3EN7plqGw642xJrcbFWHkhBqSe+2eDOnMQsgrfQS
-         yE4CB4AhxQ5YPitqGn/RwidRSsbMMVe/02bjTco8Mx/z2N/fVjTYnToQD5BMRnjX3Y19
-         x2guHYrVkcfesmC8bauMXSU0Ckyl6dSQUT781xTkAtJ6h65MLd1tClSyVf6osafK59uf
-         g+pQz3lrLm35+YFmH8gOCLaSeDMInF3x4kq/5QZZL09HTtaOW1waneQZ9cxfaMl5JvBA
-         +6Mw==
-X-Gm-Message-State: AOAM532bEXLO4tyV2u+VvtlB6cdVN6tYV8si4n1C+dWW83y60Xt0lHYW
-        M/Hr4vkxFvZM9+61RtUbogc=
-X-Google-Smtp-Source: ABdhPJzOi9QErRu7oWT8gam8d6+h+7Hg3lrNHxXIOaDY9mV1pB95iEGKetbftSwHe4PLucQY19+chw==
-X-Received: by 2002:a62:6451:0:b029:23f:6ea1:293f with SMTP id y78-20020a6264510000b029023f6ea1293fmr8279846pfb.53.1617900632069;
-        Thu, 08 Apr 2021 09:50:32 -0700 (PDT)
-Received: from ?IPv6:2601:647:4000:d7:7ef5:d4a7:50dd:fa70? ([2601:647:4000:d7:7ef5:d4a7:50dd:fa70])
-        by smtp.gmail.com with ESMTPSA id c16sm29465pfc.112.2021.04.08.09.50.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 08 Apr 2021 09:50:31 -0700 (PDT)
-Subject: Re: [PATCH -next] RDMA/srpt: Fix error return code in
- srpt_cm_req_recv()
-To:     Wang Wensheng <wangwensheng4@huawei.com>, dledford@redhat.com,
-        jgg@ziepe.ca, linux-rdma@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     rui.xiang@huawei.com
-References: <20210408113132.87250-1-wangwensheng4@huawei.com>
-From:   Bart Van Assche <bvanassche@acm.org>
-Message-ID: <241d391f-2f18-18e5-9e3f-3cf214a30b38@acm.org>
-Date:   Thu, 8 Apr 2021 09:50:30 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+        id S233532AbhDIMrz (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 9 Apr 2021 08:47:55 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:55546 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S231946AbhDIMry (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Fri, 9 Apr 2021 08:47:54 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 6AF844120B;
+        Fri,  9 Apr 2021 12:47:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1617972458; x=
+        1619786859; bh=dWQ3r643L8JbW8Zfw4QQJorwu9G+uYrOkhCDI47AwtE=; b=U
+        zBhb4hv1PXSMZZPWzEFr8l7lZEiBq75lEQf8z0hRGcnhDdSHYJuGLAhLtBBVR2Xz
+        1mbWcWaj5ZNlAUcL8vJtpfKLi2tbb8HrMHw4vE0C+tRUR8fY3GjVwlozajXKr7J7
+        JcPNmreDV1KX0dBc7YlrYZr5XrlSy5eEui9nnre6NM=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id PEsvxmWMT6gS; Fri,  9 Apr 2021 15:47:38 +0300 (MSK)
+Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id EB42A4141A;
+        Fri,  9 Apr 2021 15:32:46 +0300 (MSK)
+Received: from NB-591.corp.yadro.com (10.199.0.255) by
+ T-EXCH-03.corp.yadro.com (172.17.100.103) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Fri, 9 Apr 2021 15:32:46 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Konstantin Shelekhin <k.shelekhin@yadro.com>,
+        Nilesh Javali <njavali@marvell.com>,
+        Chris Boot <bootc@bootc.net>,
+        Bart Van Assche <bvanassche@acm.org>,
+        Michael Cyr <mikecyr@linux.ibm.com>,
+        Felipe Balbi <balbi@kernel.org>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: [PATCH v3 0/7] target: make tpg/enable attribute
+Date:   Fri, 9 Apr 2021 15:32:31 +0300
+Message-ID: <20210409123238.26671-1-d.bogdanov@yadro.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <20210408113132.87250-1-wangwensheng4@huawei.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.0.255]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 4/8/21 4:31 AM, Wang Wensheng wrote:
-> Fix to return a negative error code from the error handling
-> case instead of 0, as done elsewhere in this function.
-> 
-> Fixes: db7683d7deb2 ("IB/srpt: Fix login-related race conditions")
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Wang Wensheng <wangwensheng4@huawei.com>
-> ---
->  drivers/infiniband/ulp/srpt/ib_srpt.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> index 98a393d..ea44780 100644
-> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> @@ -2382,6 +2382,7 @@ static int srpt_cm_req_recv(struct srpt_device *const sdev,
->  		pr_info("rejected SRP_LOGIN_REQ because target %s_%d is not enabled\n",
->  			dev_name(&sdev->device->dev), port_num);
->  		mutex_unlock(&sport->mutex);
-> +		ret = -EINVAL;
->  		goto reject;
->  	}
+Many fabric modules provide their own implementation of enable
+attribute in tpg.
+The change set removes the code duplication and automatically adds
+"enable" attribute for fabric modules that has an implementation of
+fabric_enable_tpg() ops.
 
-Please fix the Hulk Robot. The following code occurs three lines above
-the modified code:
+This patchset is intended for scsi-queue.
 
-	ret = -EINVAL;
+v3:
+ refactor tfc_tpg_base_attrs creation
+ avoid alloc of attrs if there are no attributes
+ fix newlines
+ move enable attribute to target_core_fabric_configfs.c
+v2:
+ create enable atribute only for modules with enable_tpg ops
+ add patches for srpt, usb and ibmvscsi
 
-Thanks,
+Dmitry Bogdanov (7):
+  target: core: add common tpg/enable attribute
+  target: iscsi: replace enable attr to ops.enable
+  target: qla2xx: replace enable attr to ops.enable
+  target: sbp: replace enable attr to ops.enable
+  target: srpt replace enable attr to ops.enable
+  target: ibm_vscsi: replace enable attr to ops.enable
+  target: usb: replace enable attr to ops.enable
 
-Bart.
+ drivers/infiniband/ulp/srpt/ib_srpt.c        | 38 +-------
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c     | 42 +--------
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c           | 73 +++-------------
+ drivers/target/iscsi/iscsi_target_configfs.c | 91 +++++++-------------
+ drivers/target/sbp/sbp_target.c              | 30 ++-----
+ drivers/target/target_core_configfs.c        |  3 +-
+ drivers/target/target_core_fabric_configfs.c | 76 +++++++++++++++-
+ drivers/usb/gadget/function/f_tcm.c          | 31 ++-----
+ include/target/target_core_base.h            |  1 +
+ include/target/target_core_fabric.h          |  1 +
+ 10 files changed, 141 insertions(+), 245 deletions(-)
+
+-- 
+2.25.1
+
