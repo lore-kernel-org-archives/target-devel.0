@@ -2,89 +2,103 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17510C433B4
-	for <target-devel@archiver.kernel.org>; Mon, 12 Apr 2021 18:47:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 404A6C433ED
+	for <target-devel@archiver.kernel.org>; Mon, 12 Apr 2021 22:44:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B4FAC61246
-	for <target-devel@archiver.kernel.org>; Mon, 12 Apr 2021 18:47:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 12C5161249
+	for <target-devel@archiver.kernel.org>; Mon, 12 Apr 2021 22:44:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236723AbhDLSsC (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 12 Apr 2021 14:48:02 -0400
-Received: from mail-pf1-f170.google.com ([209.85.210.170]:34801 "EHLO
-        mail-pf1-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229461AbhDLSsA (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Mon, 12 Apr 2021 14:48:00 -0400
-Received: by mail-pf1-f170.google.com with SMTP id 10so893623pfl.1;
-        Mon, 12 Apr 2021 11:47:42 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=q599cja+Cm2p8IjuDqpqW0IPdWPwNsRlxkwQHrgh1MA=;
-        b=hCpIHKPZ5do5VvAIUtHsG9nkoeD7mrHdDa94Nm961GrUGtJKfQnuSS34K56eaEgRMh
-         7t1ArRm3/mJLRB6vystiuPsevsJC9alVUX5WB/lQuUwZlyp85BoY4M3tTbrT8wV2q0zZ
-         jG879WPSMfnlJbMbXtkGb87sXzaXpsIHt2QKcmwQk6/BbqhFaOmqsaUTCOSQQzKa841M
-         JRB8uKneAPVAmOsqoa1ah/3kjT4zgGauJOnGk2pLqZpHhFIN8FjksgVq8scdmI7ixjon
-         A9iBM8uI46Q0W+lckh7x/pvU7MDbZFKal7lENYraE9QFfCks1Mw2gaOXjk8qW5bmJ47q
-         favw==
-X-Gm-Message-State: AOAM533XuoYEUgAw3Y93DzKioXdnDgUh58d3Sz9/oSkrnX50J6b9epz9
-        nUD8f6Ql8FfXlklXOg6i31k=
-X-Google-Smtp-Source: ABdhPJznUrpHK9RXg0eWDQqSicAVbqu8qXb5R6qeueXo/VksaCLHsUDpB2rBiCeSb7swT9uTqS9oTw==
-X-Received: by 2002:a62:2cce:0:b029:21d:97da:833e with SMTP id s197-20020a622cce0000b029021d97da833emr25278871pfs.40.1618253262322;
-        Mon, 12 Apr 2021 11:47:42 -0700 (PDT)
-Received: from ?IPv6:2601:647:4000:d7:5f68:b2bd:8704:6a68? ([2601:647:4000:d7:5f68:b2bd:8704:6a68])
-        by smtp.gmail.com with ESMTPSA id i7sm12112158pgq.16.2021.04.12.11.47.41
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 12 Apr 2021 11:47:41 -0700 (PDT)
-Subject: Re: [PATCH -next] RDMA/srpt: Fix error return code in
- srpt_cm_req_recv()
-To:     Wang Wensheng <wangwensheng4@huawei.com>, dledford@redhat.com,
-        jgg@ziepe.ca, linux-rdma@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     rui.xiang@huawei.com
-References: <20210408113132.87250-1-wangwensheng4@huawei.com>
-From:   Bart Van Assche <bvanassche@acm.org>
-Message-ID: <cdb4321e-99cd-2ca3-fd6e-e273c5000165@acm.org>
-Date:   Mon, 12 Apr 2021 11:47:40 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+        id S238705AbhDLWpA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 12 Apr 2021 18:45:00 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:59388 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S238085AbhDLWo7 (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 12 Apr 2021 18:44:59 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 4E1654131A;
+        Mon, 12 Apr 2021 22:44:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1618267479; x=
+        1620081880; bh=N0OIeACEXus3MdtjW8P9hqZEB1TLbMvkJzDapKB/C6I=; b=A
+        cfng/e6odDeBrnav3mgr5C9ZMjY5dcU3KAbv/k5ROyhchCRGlEknamMG8jGF4g6p
+        VsDEC/fVcOLjrIKdxG9955u0TG0tOkwbOrXzF/4CKydOZJe6eQczPoS4x+DLKVFJ
+        n79JGI06nGxH3wIqP8z8Zz0DFMRJ7xNiSAjX84JgUg=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id 7RarMUK5y5C9; Tue, 13 Apr 2021 01:44:39 +0300 (MSK)
+Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 4D1204131F;
+        Tue, 13 Apr 2021 01:44:39 +0300 (MSK)
+Received: from yadro.com (10.199.0.123) by T-EXCH-03.corp.yadro.com
+ (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Tue, 13
+ Apr 2021 01:44:38 +0300
+From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        Mike Christie <michael.christie@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Konstantin Shelekhin <k.shelekhin@yadro.com>
+Subject: [PATCH 0/2] scsi: target: Introduce the version descriptors
+Date:   Tue, 13 Apr 2021 01:44:25 +0300
+Message-ID: <20210412224427.101167-1-k.shelekhin@yadro.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-In-Reply-To: <20210408113132.87250-1-wangwensheng4@huawei.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.0.123]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 4/8/21 4:31 AM, Wang Wensheng wrote:
-> Fix to return a negative error code from the error handling
-> case instead of 0, as done elsewhere in this function.
-> 
-> Fixes: db7683d7deb2 ("IB/srpt: Fix login-related race conditions")
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Wang Wensheng <wangwensheng4@huawei.com>
-> ---
->  drivers/infiniband/ulp/srpt/ib_srpt.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> index 98a393d..ea44780 100644
-> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> @@ -2382,6 +2382,7 @@ static int srpt_cm_req_recv(struct srpt_device *const sdev,
->  		pr_info("rejected SRP_LOGIN_REQ because target %s_%d is not enabled\n",
->  			dev_name(&sdev->device->dev), port_num);
->  		mutex_unlock(&sport->mutex);
-> +		ret = -EINVAL;
->  		goto reject;
->  	}
+This patch series adds the VERSION DESCRIPTOR fields to the standard INQUIRY
+data. The SCSI primary command set standard bumped to SPC-4 for consistency
+since the version descriptor values for SBC-3 and some other standards are not
+defined in SPC-3.
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+While not essential for normal operation, the version descriptors values are
+often queried as an additional sanity check. For example, Windows Server
+requires proper SCSI transport protocol standard during the iSCSI qualification
+tests.
+
+The layout follows SPC-4:
+
+  SCSI architecture standard
+  SCSI transport protocol standard
+  SCSI primary command set standard
+  SCSI device type command set standard
+
+The physical transport standard is not reported because it requires
+driver-specific probing to be accurate and I'm not aware of any use-case
+to justify the additional complexity.
+
+The values are reported "unclaimed" because I faced several issues with the
+specific ones during the interoperability testing. For example, Windows Server
+2016 fails to parse recent iSCSI standards, libiscsi failed to recognize the
+final SBC-3 standard (however this is fixed now) and so on. Plus both FreeBSD
+and SCST use (or were using) the same values, so the chance of breaking
+something is much smaller.
+
+Konstantin Shelekhin (2):
+  scsi: target: Bump INQUIRY VERSION to SPC-4
+  scsi: target: Add the VERSION DESCRIPTOR fields to the INQUIRY data
+
+ drivers/target/target_core_spc.c | 36 ++++++++++++++++++++++++++++++--
+ include/scsi/scsi_proto.h        | 12 +++++++++++
+ 2 files changed, 46 insertions(+), 2 deletions(-)
+
+-- 
+2.31.1
+
