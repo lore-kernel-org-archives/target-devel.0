@@ -2,148 +2,136 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F927C43462
-	for <target-devel@archiver.kernel.org>; Wed, 14 Apr 2021 12:39:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F028C433B4
+	for <target-devel@archiver.kernel.org>; Thu, 15 Apr 2021 20:36:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EAAF5613C7
-	for <target-devel@archiver.kernel.org>; Wed, 14 Apr 2021 12:39:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2877061132
+	for <target-devel@archiver.kernel.org>; Thu, 15 Apr 2021 20:36:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351050AbhDNMkD (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 14 Apr 2021 08:40:03 -0400
-Received: from stargate.chelsio.com ([12.32.117.8]:11641 "EHLO
-        stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233191AbhDNMkC (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Wed, 14 Apr 2021 08:40:02 -0400
-Received: from fcoe-test11.asicdesigners.com (fcoe-test11.blr.asicdesigners.com [10.193.185.180])
-        by stargate.chelsio.com (8.13.8/8.13.8) with ESMTP id 13ECdVH5018749;
-        Wed, 14 Apr 2021 05:39:32 -0700
-From:   Varun Prakash <varun@chelsio.com>
-To:     martin.petersen@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        varun@chelsio.com, <stable@vger.kernel.org>
-Subject: [PATCH] scsi: target: cxgbit: unmap DMA buffer before calling target_execute_cmd()
-Date:   Wed, 14 Apr 2021 18:09:09 +0530
-Message-Id: <1618403949-3443-1-git-send-email-varun@chelsio.com>
-X-Mailer: git-send-email 2.0.2
+        id S235215AbhDOUgd (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 15 Apr 2021 16:36:33 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:39278 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S234894AbhDOUgd (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Thu, 15 Apr 2021 16:36:33 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 61FDF4138D;
+        Thu, 15 Apr 2021 20:36:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1618518967; x=
+        1620333368; bh=c1eg21lqubOreR37W0K3pDIX2iHmsCML0kLSAeRAJpQ=; b=q
+        mXEauFRc7D/nEpf/V8uVuvE7xd/w2We9Zci81xd/J7dqNs3fgQJ+qRR6dFofwFJ4
+        NSoHW/6+TlqNLsUbljqCgoHvpzuZIWi4UR/FmjCAOxC8j6BYdKLB/fMZki+kraHt
+        SBPGjvZGusCLizYQ/Kj9W3NKtVaWml508bm3BvFzik=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id IkCbtrtiviRI; Thu, 15 Apr 2021 23:36:07 +0300 (MSK)
+Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id BA28A41377;
+        Thu, 15 Apr 2021 23:36:06 +0300 (MSK)
+Received: from NB-591.corp.yadro.com (10.199.0.31) by T-EXCH-03.corp.yadro.com
+ (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 15
+ Apr 2021 23:36:06 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        Nilesh Javali <njavali@marvell.com>,
+        <target-devel@vger.kernel.org>
+CC:     <GR-QLogic-Storage-Upstream@marvell.com>,
+        <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>,
+        Roman Bolshakov <r.bolshakov@yadro.com>
+Subject: [PATCH] scsi: qla2xx: wait for stop_phase1 at wwn removal
+Date:   Thu, 15 Apr 2021 23:35:54 +0300
+Message-ID: <20210415203554.27890-1-d.bogdanov@yadro.com>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.0.31]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Instead of calling dma_unmap_sg() after completing WRITE I/O,
-call dma_unmap_sg() before calling target_execute_cmd() to sync
-the DMA buffer.
+Target de-configuration panics at high CPU load.
+TPGT and WWPN can be removed on separate threads.
+TPGT removal requests a reset HBA on a separate thread and waits for
+reset complete (qlt_stop_phase1). Due to high CPU load that HBA reset
+can be delayed for some time.
+WWPN removal does qlt_stop_phase2 where it is thinked that phase1
+has been already finished and zeroed tgt.tgt_ops that is used by
+incoming traffic and causes several panics:
 
-Cc: <stable@vger.kernel.org> # 5.4+
-Signed-off-by: Varun Prakash <varun@chelsio.com>
+NIP qlt_reset+0x7c/0x220 [qla2xxx]
+LR  qlt_reset+0x68/0x220 [qla2xxx]
+Call Trace:
+0xc000003ffff63a78 (unreliable)
+qlt_handle_imm_notify+0x800/0x10c0 [qla2xxx]
+qlt_24xx_atio_pkt+0x208/0x590 [qla2xxx]
+qlt_24xx_process_atio_queue+0x33c/0x7a0 [qla2xxx]
+qla83xx_msix_atio_q+0x54/0x90 [qla2xxx]
+
+or
+
+NIP qlt_24xx_handle_abts+0xd0/0x2a0 [qla2xxx]
+LR  qlt_24xx_handle_abts+0xb4/0x2a0 [qla2xxx]
+Call Trace:
+qlt_24xx_handle_abts+0x90/0x2a0 [qla2xxx] (unreliable)
+qlt_24xx_process_atio_queue+0x500/0x7a0 [qla2xxx]
+qla83xx_msix_atio_q+0x54/0x90 [qla2xxx]
+
+or
+
+NIP qlt_create_sess+0x90/0x4e0 [qla2xxx]
+LR  qla24xx_do_nack_work+0xa8/0x180 [qla2xxx]
+Call Trace:
+0xc0000000348fba30 (unreliable)
+qla24xx_do_nack_work+0xa8/0x180 [qla2xxx]
+qla2x00_do_work+0x674/0xbf0 [qla2xxx]
+qla2x00_iocb_work_fn
+
+The patch fixes the issue by serializing qlt_stop_phase1 and
+qlt_stop_phase2 functions to make WWPN removal waits for phase1
+completion.
+
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
 ---
- drivers/target/iscsi/cxgbit/cxgbit_ddp.c    | 19 ++++++++++---------
- drivers/target/iscsi/cxgbit/cxgbit_target.c | 21 ++++++++++++++++++---
- 2 files changed, 28 insertions(+), 12 deletions(-)
+Patch is for scsi-fixes tree.
+The issue is very old, but the patch is applicable for 4.20+ versions.
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-index af35251..b044999 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-@@ -265,12 +265,13 @@ void cxgbit_unmap_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
- 	struct cxgbit_cmd *ccmd = iscsit_priv_cmd(cmd);
- 
- 	if (ccmd->release) {
--		struct cxgbi_task_tag_info *ttinfo = &ccmd->ttinfo;
--
--		if (ttinfo->sgl) {
-+		if (cmd->se_cmd.se_cmd_flags & SCF_PASSTHROUGH_SG_TO_MEM_NOALLOC) {
-+			put_page(sg_page(&ccmd->sg));
-+		} else {
- 			struct cxgbit_sock *csk = conn->context;
- 			struct cxgbit_device *cdev = csk->com.cdev;
- 			struct cxgbi_ppm *ppm = cdev2ppm(cdev);
-+			struct cxgbi_task_tag_info *ttinfo = &ccmd->ttinfo;
- 
- 			/* Abort the TCP conn if DDP is not complete to
- 			 * avoid any possibility of DDP after freeing
-@@ -280,14 +281,14 @@ void cxgbit_unmap_cmd(struct iscsi_conn *conn, struct iscsi_cmd *cmd)
- 				     cmd->se_cmd.data_length))
- 				cxgbit_abort_conn(csk);
- 
-+			if (unlikely(ttinfo->sgl)) {
-+				dma_unmap_sg(&ppm->pdev->dev, ttinfo->sgl,
-+					     ttinfo->nents, DMA_FROM_DEVICE);
-+				ttinfo->nents = 0;
-+				ttinfo->sgl = NULL;
-+			}
- 			cxgbi_ppm_ppod_release(ppm, ttinfo->idx);
--
--			dma_unmap_sg(&ppm->pdev->dev, ttinfo->sgl,
--				     ttinfo->nents, DMA_FROM_DEVICE);
--		} else {
--			put_page(sg_page(&ccmd->sg));
- 		}
--
- 		ccmd->release = false;
- 	}
- }
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_target.c b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-index b926e1d..282297f 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_target.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-@@ -997,17 +997,18 @@ static int cxgbit_handle_iscsi_dataout(struct cxgbit_sock *csk)
- 	struct scatterlist *sg_start;
- 	struct iscsi_conn *conn = csk->conn;
- 	struct iscsi_cmd *cmd = NULL;
-+	struct cxgbit_cmd *ccmd;
-+	struct cxgbi_task_tag_info *ttinfo;
- 	struct cxgbit_lro_pdu_cb *pdu_cb = cxgbit_rx_pdu_cb(csk->skb);
- 	struct iscsi_data *hdr = (struct iscsi_data *)pdu_cb->hdr;
- 	u32 data_offset = be32_to_cpu(hdr->offset);
--	u32 data_len = pdu_cb->dlen;
-+	u32 data_len = ntoh24(hdr->dlength);
- 	int rc, sg_nents, sg_off;
- 	bool dcrc_err = false;
- 
- 	if (pdu_cb->flags & PDUCBF_RX_DDP_CMP) {
- 		u32 offset = be32_to_cpu(hdr->offset);
- 		u32 ddp_data_len;
--		u32 payload_length = ntoh24(hdr->dlength);
- 		bool success = false;
- 
- 		cmd = iscsit_find_cmd_from_itt_or_dump(conn, hdr->itt, 0);
-@@ -1022,7 +1023,7 @@ static int cxgbit_handle_iscsi_dataout(struct cxgbit_sock *csk)
- 		cmd->data_sn = be32_to_cpu(hdr->datasn);
- 
- 		rc = __iscsit_check_dataout_hdr(conn, (unsigned char *)hdr,
--						cmd, payload_length, &success);
-+						cmd, data_len, &success);
- 		if (rc < 0)
- 			return rc;
- 		else if (!success)
-@@ -1060,6 +1061,20 @@ static int cxgbit_handle_iscsi_dataout(struct cxgbit_sock *csk)
- 		cxgbit_skb_copy_to_sg(csk->skb, sg_start, sg_nents, skip);
+ drivers/scsi/qla2xxx/qla_target.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index 480e7d2dcf3e..745d6d98c02e 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -1558,10 +1558,12 @@ void qlt_stop_phase2(struct qla_tgt *tgt)
+ 		return;
  	}
  
-+	ccmd = iscsit_priv_cmd(cmd);
-+	ttinfo = &ccmd->ttinfo;
-+
-+	if (ccmd->release && ttinfo->sgl &&
-+	    (cmd->se_cmd.data_length ==	(cmd->write_data_done + data_len))) {
-+		struct cxgbit_device *cdev = csk->com.cdev;
-+		struct cxgbi_ppm *ppm = cdev2ppm(cdev);
-+
-+		dma_unmap_sg(&ppm->pdev->dev, ttinfo->sgl, ttinfo->nents,
-+			     DMA_FROM_DEVICE);
-+		ttinfo->nents = 0;
-+		ttinfo->sgl = NULL;
-+	}
-+
- check_payload:
++	mutex_lock(&tgt->ha->optrom_mutex);
+ 	mutex_lock(&vha->vha_tgt.tgt_mutex);
+ 	tgt->tgt_stop = 0;
+ 	tgt->tgt_stopped = 1;
+ 	mutex_unlock(&vha->vha_tgt.tgt_mutex);
++	mutex_unlock(&tgt->ha->optrom_mutex);
  
- 	rc = iscsit_check_dataout_payload(cmd, hdr, dcrc_err);
+ 	ql_dbg(ql_dbg_tgt_mgt, vha, 0xf00c, "Stop of tgt %p finished\n",
+ 	    tgt);
 -- 
-2.0.2
+2.25.1
 
