@@ -2,47 +2,47 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ADC5C43603
-	for <target-devel@archiver.kernel.org>; Fri, 16 Apr 2021 08:40:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DB58C43617
+	for <target-devel@archiver.kernel.org>; Fri, 16 Apr 2021 08:40:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 00AFD6115B
-	for <target-devel@archiver.kernel.org>; Fri, 16 Apr 2021 08:40:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8461761152
+	for <target-devel@archiver.kernel.org>; Fri, 16 Apr 2021 08:40:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239860AbhDPIlO (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 16 Apr 2021 04:41:14 -0400
-Received: from mta-02.yadro.com ([89.207.88.252]:41996 "EHLO mta-01.yadro.com"
+        id S239950AbhDPIlQ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 16 Apr 2021 04:41:16 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:42074 "EHLO mta-01.yadro.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S239810AbhDPIlH (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Fri, 16 Apr 2021 04:41:07 -0400
+        id S239633AbhDPIlN (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Fri, 16 Apr 2021 04:41:13 -0400
 Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 4580C4138E;
-        Fri, 16 Apr 2021 08:40:38 +0000 (UTC)
+        by mta-01.yadro.com (Postfix) with ESMTP id 1F7794137A;
+        Fri, 16 Apr 2021 08:40:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
         content-type:content-type:content-transfer-encoding:mime-version
         :references:in-reply-to:x-mailer:message-id:date:date:subject
         :subject:from:from:received:received:received; s=mta-01; t=
-        1618562437; x=1620376838; bh=zZESbv+4UpXk0G5Dotj4UFxELuy0p+G4mzP
-        cSbWnPM4=; b=diDZw5zgO3HBhdgeYVnjNj+WGYhS2ZdI8JV6sdSzvzUWoApPHCy
-        6k9m7iPqdoNhAqXqOcO2ioFFT7sI+rInTrZuoS+pYFmU/eGbrhSye7zs+aEsQsOU
-        lqMw6C1p3yRKgKduJhtsrZTyZQfn+9okxQNuGzj/6z+bsJeK+ZHwUcrg=
+        1618562439; x=1620376840; bh=A025upTuld58YH45pt2WsREDXARyHVvjHGG
+        /wptfod4=; b=f9ecdkXhXmjaYcK5Je8cuhmnZR/A//d75AjUiYqz2SdFL3/l0pz
+        n76AlR6N9C+cjS3aDS1OrZ67TckBzsffmomawWdWOjI0HvNKaf65yLQVyr1E8uDU
+        /BoNE0F2adqyjQubfTthL74cpXtphUVh3Y7VXmtHqM6qo/ijuZZN0c3A=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
         by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id uUW7SbhnFVUV; Fri, 16 Apr 2021 11:40:37 +0300 (MSK)
+        with ESMTP id zVXetGQkPnqD; Fri, 16 Apr 2021 11:40:39 +0300 (MSK)
 Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id 3C12A4137A;
-        Fri, 16 Apr 2021 11:40:36 +0300 (MSK)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 196F441389;
+        Fri, 16 Apr 2021 11:40:39 +0300 (MSK)
 Received: from NB-591.corp.yadro.com (10.199.0.63) by T-EXCH-03.corp.yadro.com
  (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Fri, 16
- Apr 2021 11:40:35 +0300
+ Apr 2021 11:40:38 +0300
 From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
 To:     Martin Petersen <martin.petersen@oracle.com>,
         <target-devel@vger.kernel.org>
@@ -55,9 +55,9 @@ CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
         Felipe Balbi <balbi@kernel.org>,
         Dmitry Bogdanov <d.bogdanov@yadro.com>,
         Roman Bolshakov <r.bolshakov@yadro.com>
-Subject: [PATCH v4 2/7] target: iscsi: replace enable attr to ops.enable
-Date:   Fri, 16 Apr 2021 11:26:27 +0300
-Message-ID: <20210416082632.2000-3-d.bogdanov@yadro.com>
+Subject: [PATCH v4 7/7] target: usb: replace enable attr to ops.enable
+Date:   Fri, 16 Apr 2021 11:26:32 +0300
+Message-ID: <20210416082632.2000-8-d.bogdanov@yadro.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210416082632.2000-1-d.bogdanov@yadro.com>
 References: <20210416082632.2000-1-d.bogdanov@yadro.com>
@@ -72,142 +72,89 @@ List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
 Remove tpg/enable attribute.
-Add fabric ops enable_tpg impalmentation instead.
+Add fabric ops enable_tpg implementation instead.
 
 Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
 Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
 ---
-v3:
- fix identation issue
+v4:
+ fix uninitialized use of ret variable
 ---
- drivers/target/iscsi/iscsi_target_configfs.c | 91 +++++++-------------
- 1 file changed, 32 insertions(+), 59 deletions(-)
+ drivers/usb/gadget/function/f_tcm.c | 31 ++++++-----------------------
+ 1 file changed, 6 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
-index 0fa1d57b26fa..28b5acf83c80 100644
---- a/drivers/target/iscsi/iscsi_target_configfs.c
-+++ b/drivers/target/iscsi/iscsi_target_configfs.c
-@@ -1006,74 +1006,15 @@ static struct configfs_attribute *lio_target_tpg_param_attrs[] = {
- 
- /* Start items for lio_target_tpg_cit */
- 
--static ssize_t lio_target_tpg_enable_show(struct config_item *item, char *page)
--{
--	struct se_portal_group *se_tpg = to_tpg(item);
--	struct iscsi_portal_group *tpg = container_of(se_tpg,
--			struct iscsi_portal_group, tpg_se_tpg);
--	ssize_t len;
--
--	spin_lock(&tpg->tpg_state_lock);
--	len = sprintf(page, "%d\n",
--			(tpg->tpg_state == TPG_STATE_ACTIVE) ? 1 : 0);
--	spin_unlock(&tpg->tpg_state_lock);
--
--	return len;
--}
--
--static ssize_t lio_target_tpg_enable_store(struct config_item *item,
--		const char *page, size_t count)
--{
--	struct se_portal_group *se_tpg = to_tpg(item);
--	struct iscsi_portal_group *tpg = container_of(se_tpg,
--			struct iscsi_portal_group, tpg_se_tpg);
--	u32 op;
--	int ret;
--
--	ret = kstrtou32(page, 0, &op);
--	if (ret)
--		return ret;
--	if ((op != 1) && (op != 0)) {
--		pr_err("Illegal value for tpg_enable: %u\n", op);
--		return -EINVAL;
--	}
--
--	ret = iscsit_get_tpg(tpg);
--	if (ret < 0)
--		return -EINVAL;
--
--	if (op) {
--		ret = iscsit_tpg_enable_portal_group(tpg);
--		if (ret < 0)
--			goto out;
--	} else {
--		/*
--		 * iscsit_tpg_disable_portal_group() assumes force=1
--		 */
--		ret = iscsit_tpg_disable_portal_group(tpg, 1);
--		if (ret < 0)
--			goto out;
--	}
--
--	iscsit_put_tpg(tpg);
--	return count;
--out:
--	iscsit_put_tpg(tpg);
--	return -EINVAL;
--}
--
--
- static ssize_t lio_target_tpg_dynamic_sessions_show(struct config_item *item,
- 		char *page)
- {
- 	return target_show_dynamic_sessions(to_tpg(item), page);
- }
- 
--CONFIGFS_ATTR(lio_target_tpg_, enable);
- CONFIGFS_ATTR_RO(lio_target_tpg_, dynamic_sessions);
- 
- static struct configfs_attribute *lio_target_tpg_attrs[] = {
--	&lio_target_tpg_attr_enable,
- 	&lio_target_tpg_attr_dynamic_sessions,
+diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
+index 410fa89eae8f..0e6beb9e86b4 100644
+--- a/drivers/usb/gadget/function/f_tcm.c
++++ b/drivers/usb/gadget/function/f_tcm.c
+@@ -1499,42 +1499,24 @@ static struct configfs_attribute *usbg_wwn_attrs[] = {
  	NULL,
  };
-@@ -1130,6 +1071,37 @@ static struct se_portal_group *lio_target_tiqn_addtpg(struct se_wwn *wwn,
- 	return NULL;
+ 
+-static ssize_t tcm_usbg_tpg_enable_show(struct config_item *item, char *page)
+-{
+-	struct se_portal_group *se_tpg = to_tpg(item);
+-	struct usbg_tpg  *tpg = container_of(se_tpg, struct usbg_tpg, se_tpg);
+-
+-	return snprintf(page, PAGE_SIZE, "%u\n", tpg->gadget_connect);
+-}
+-
+ static int usbg_attach(struct usbg_tpg *);
+ static void usbg_detach(struct usbg_tpg *);
+ 
+-static ssize_t tcm_usbg_tpg_enable_store(struct config_item *item,
+-		const char *page, size_t count)
++static int usbg_enable_tpg(struct se_portal_group *se_tpg, bool enable)
+ {
+-	struct se_portal_group *se_tpg = to_tpg(item);
+ 	struct usbg_tpg  *tpg = container_of(se_tpg, struct usbg_tpg, se_tpg);
+-	bool op;
+-	ssize_t ret;
+-
+-	ret = strtobool(page, &op);
+-	if (ret)
+-		return ret;
+-
+-	if ((op && tpg->gadget_connect) || (!op && !tpg->gadget_connect))
+-		return -EINVAL;
++	int ret = 0;
+ 
+-	if (op)
++	if (enable)
+ 		ret = usbg_attach(tpg);
+ 	else
+ 		usbg_detach(tpg);
+ 	if (ret)
+ 		return ret;
+ 
+-	tpg->gadget_connect = op;
++	tpg->gadget_connect = enable;
+ 
+-	return count;
++	return 0;
  }
  
-+static int lio_target_tiqn_enabletpg(struct se_portal_group *se_tpg,
-+				     bool enable)
-+{
-+	struct iscsi_portal_group *tpg = container_of(se_tpg,
-+			struct iscsi_portal_group, tpg_se_tpg);
-+	int ret;
-+
-+	ret = iscsit_get_tpg(tpg);
-+	if (ret < 0)
-+		return -EINVAL;
-+
-+	if (enable) {
-+		ret = iscsit_tpg_enable_portal_group(tpg);
-+		if (ret < 0)
-+			goto out;
-+	} else {
-+		/*
-+		 * iscsit_tpg_disable_portal_group() assumes force=1
-+		 */
-+		ret = iscsit_tpg_disable_portal_group(tpg, 1);
-+		if (ret < 0)
-+			goto out;
-+	}
-+
-+	iscsit_put_tpg(tpg);
-+	return 0;
-+out:
-+	iscsit_put_tpg(tpg);
-+	return -EINVAL;
-+}
-+
- static void lio_target_tiqn_deltpg(struct se_portal_group *se_tpg)
- {
- 	struct iscsi_portal_group *tpg;
-@@ -1557,6 +1529,7 @@ const struct target_core_fabric_ops iscsi_ops = {
- 	.fabric_drop_wwn		= lio_target_call_coredeltiqn,
- 	.add_wwn_groups			= lio_target_add_wwn_groups,
- 	.fabric_make_tpg		= lio_target_tiqn_addtpg,
-+	.fabric_enable_tpg		= lio_target_tiqn_enabletpg,
- 	.fabric_drop_tpg		= lio_target_tiqn_deltpg,
- 	.fabric_make_np			= lio_target_call_addnptotpg,
- 	.fabric_drop_np			= lio_target_call_delnpfromtpg,
+ static ssize_t tcm_usbg_tpg_nexus_show(struct config_item *item, char *page)
+@@ -1677,11 +1659,9 @@ static ssize_t tcm_usbg_tpg_nexus_store(struct config_item *item,
+ 	return count;
+ }
+ 
+-CONFIGFS_ATTR(tcm_usbg_tpg_, enable);
+ CONFIGFS_ATTR(tcm_usbg_tpg_, nexus);
+ 
+ static struct configfs_attribute *usbg_base_attrs[] = {
+-	&tcm_usbg_tpg_attr_enable,
+ 	&tcm_usbg_tpg_attr_nexus,
+ 	NULL,
+ };
+@@ -1734,6 +1714,7 @@ static const struct target_core_fabric_ops usbg_ops = {
+ 	.fabric_make_wwn		= usbg_make_tport,
+ 	.fabric_drop_wwn		= usbg_drop_tport,
+ 	.fabric_make_tpg		= usbg_make_tpg,
++	.fabric_enable_tpg		= usbg_enable_tpg,
+ 	.fabric_drop_tpg		= usbg_drop_tpg,
+ 	.fabric_post_link		= usbg_port_link,
+ 	.fabric_pre_unlink		= usbg_port_unlink,
 -- 
 2.25.1
 
