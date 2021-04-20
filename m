@@ -2,57 +2,60 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F010C433B4
-	for <target-devel@archiver.kernel.org>; Tue, 20 Apr 2021 18:46:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84777C433ED
+	for <target-devel@archiver.kernel.org>; Tue, 20 Apr 2021 18:47:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2AB11613CD
-	for <target-devel@archiver.kernel.org>; Tue, 20 Apr 2021 18:46:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 41900613D7
+	for <target-devel@archiver.kernel.org>; Tue, 20 Apr 2021 18:47:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233540AbhDTSqr (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 20 Apr 2021 14:46:47 -0400
-Received: from mta-02.yadro.com ([89.207.88.252]:52488 "EHLO mta-01.yadro.com"
+        id S233092AbhDTSrh (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 20 Apr 2021 14:47:37 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:52516 "EHLO mta-01.yadro.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S233498AbhDTSqr (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 20 Apr 2021 14:46:47 -0400
+        id S233540AbhDTSrg (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 20 Apr 2021 14:47:36 -0400
 Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 7934741399;
-        Tue, 20 Apr 2021 18:46:14 +0000 (UTC)
+        by mta-01.yadro.com (Postfix) with ESMTP id 041BB41399;
+        Tue, 20 Apr 2021 18:47:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
         content-type:content-type:content-transfer-encoding:mime-version
-        :x-mailer:message-id:date:date:subject:subject:from:from
-        :received:received:received; s=mta-01; t=1618944373; x=
-        1620758774; bh=mBFonvNyfhwXdP0YxwKa9464TvbOOHPM9Cs3w/vkPaU=; b=T
-        fDhS4qyQvsiYCTsAkAgtVpDQvagJY1oW9oDUZd9LpHC7KpHAPC1fMEZh/g+CMcX6
-        +mn9Bbu3aspqfeGMV0oGisBxwFFLHJxDEnJOLF6DLMM4gmoTIVCAvCMyTcjtCRXV
-        79UYsf6Rs5V7xZlfQxmXQKG6hy5HnAodzzNS+J0+hM=
+        :references:in-reply-to:x-mailer:message-id:date:date:subject
+        :subject:from:from:received:received:received; s=mta-01; t=
+        1618944422; x=1620758823; bh=xpo6q+gG4OET66ikBrty6MRwlRymz6Dolhc
+        tB0Re6Rs=; b=KY6LYvD29wZQhZTVP0Ye0p+TY7MzoBPMf5EITW8U8ldM79IdyFw
+        dlMSTuwOcQoMjDKEY6If7fPajLTPsw1JP5d8NFLPL5xgaHzt5pbMEY3IJo8RJHmE
+        GsrZ+izlrLDErN8x5Gf1zAiuRXyfICv+4SsoRY2XVB7zDYGpAJKEdvfc=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
         by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id ofo1oWfrbc5K; Tue, 20 Apr 2021 21:46:13 +0300 (MSK)
+        with ESMTP id emMRKMef0d9M; Tue, 20 Apr 2021 21:47:02 +0300 (MSK)
 Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id 770DC41312;
-        Tue, 20 Apr 2021 21:46:13 +0300 (MSK)
+        by mta-01.yadro.com (Postfix) with ESMTPS id B136141312;
+        Tue, 20 Apr 2021 21:47:02 +0300 (MSK)
 Received: from yadro.com (10.199.0.227) by T-EXCH-03.corp.yadro.com
  (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Tue, 20
- Apr 2021 21:46:12 +0300
+ Apr 2021 21:47:02 +0300
 From:   Sergey Samoylenko <s.samoylenko@yadro.com>
 To:     Martin Petersen <martin.petersen@oracle.com>,
         Mike Christie <michael.christie@oracle.com>,
         <target-devel@vger.kernel.org>
 CC:     David Disseldorp <ddiss@suse.de>,
-        Sergey Samoylenko <s.samoylenko@yadro.com>
-Subject: [PATCH 0/2] scsi: target: user configurable IEEE Company ID
-Date:   Tue, 20 Apr 2021 21:44:04 +0300
-Message-ID: <20210420184406.42127-1-s.samoylenko@yadro.com>
+        Sergey Samoylenko <s.samoylenko@yadro.com>,
+        Roman Bolshakov <r.bolshakov@yadro.com>
+Subject: [PATCH 1/2] scsi: target: core: Unify NAA identifer generation
+Date:   Tue, 20 Apr 2021 21:44:05 +0300
+Message-ID: <20210420184406.42127-2-s.samoylenko@yadro.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20210420184406.42127-1-s.samoylenko@yadro.com>
+References: <20210420184406.42127-1-s.samoylenko@yadro.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -63,23 +66,167 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-The series allows to change IEEE Company ID component
-of NAA LUN identifier returned on the SCSI INQUIRY VPD
-page (aka WWID). Company ID can be changed via the
-target/core/$backstore/$name/wwn/company_id ConfigFS path.
+INQUIRY and XCOPY commands contain duplicate code paths with hardcoded
+OpenFabrics Company ID for NAA designator.
 
-Sergey Samoylenko (2):
-  scsi: target: core: Unify NAA identifer generation
-  scsi: target: core: Add IEEE Company ID attribute
+Also, the two existing functions are somewhat poorly named:
 
- drivers/target/target_core_configfs.c | 50 +++++++++++++++++++++++++++
- drivers/target/target_core_device.c   |  5 +++
- drivers/target/target_core_pr.h       |  2 +-
- drivers/target/target_core_spc.c      | 47 ++++++++++++-------------
- drivers/target/target_core_xcopy.c    | 17 ++-------
- include/target/target_core_base.h     |  1 +
- 6 files changed, 82 insertions(+), 40 deletions(-)
+ - spc_parse_naa_6h_vendor_specific()
+ - target_xcopy_gen_naa_ieee()
 
+The replacement function combines the names and hopefully better
+reflects its meaning of *producing* NAA 6 designator:
+
+ - spc_gen_naa_6h_vendor_specific()
+
+Signed-off-by: Sergey Samoylenko <s.samoylenko@yadro.com>
+Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
+---
+ drivers/target/target_core_pr.h    |  2 +-
+ drivers/target/target_core_spc.c   | 47 +++++++++++++++---------------
+ drivers/target/target_core_xcopy.c | 17 ++---------
+ 3 files changed, 26 insertions(+), 40 deletions(-)
+
+diff --git a/drivers/target/target_core_pr.h b/drivers/target/target_core_pr.h
+index a31c93e4e19c..b793c99637ab 100644
+--- a/drivers/target/target_core_pr.h
++++ b/drivers/target/target_core_pr.h
+@@ -52,7 +52,7 @@
+ /*
+  *  Function defined in target_core_spc.c
+  */
+-void spc_parse_naa_6h_vendor_specific(struct se_device *, unsigned char *);
++void spc_gen_naa_6h_vendor_specific(struct se_device *, unsigned char *);
+ 
+ extern struct kmem_cache *t10_pr_reg_cache;
+ 
+diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
+index 70a661801cb9..b2d19493a994 100644
+--- a/drivers/target/target_core_spc.c
++++ b/drivers/target/target_core_spc.c
+@@ -129,13 +129,28 @@ spc_emulate_evpd_80(struct se_cmd *cmd, unsigned char *buf)
+ 	return 0;
+ }
+ 
+-void spc_parse_naa_6h_vendor_specific(struct se_device *dev,
+-				      unsigned char *buf)
++/*
++ * Generate NAA IEEE Registered Extended designator
++ */
++void spc_gen_naa_6h_vendor_specific(struct se_device *dev,
++				    unsigned char *buf)
+ {
+ 	unsigned char *p = &dev->t10_wwn.unit_serial[0];
+-	int cnt;
++	int cnt, off = 0;
+ 	bool next = true;
+ 
++	/*
++	 * Start NAA IEEE Registered Extended Identifier/Designator
++	 */
++	buf[off++] = 0x6 << 4;
++
++	/*
++	 * Use OpenFabrics IEEE Company ID: 00 14 05
++	 */
++	buf[off++] = 0x01;
++	buf[off++] = 0x40;
++	buf[off] = (0x5 << 4);
++
+ 	/*
+ 	 * Generate up to 36 bits of VENDOR SPECIFIC IDENTIFIER starting on
+ 	 * byte 3 bit 3-0 for NAA IEEE Registered Extended DESIGNATOR field
+@@ -144,7 +159,7 @@ void spc_parse_naa_6h_vendor_specific(struct se_device *dev,
+ 	 * NUMBER set via vpd_unit_serial in target_core_configfs.c to ensure
+ 	 * per device uniqeness.
+ 	 */
+-	for (cnt = 0; *p && cnt < 13; p++) {
++	for (cnt = off + 13; *p && off < cnt; p++) {
+ 		int val = hex_to_bin(*p);
+ 
+ 		if (val < 0)
+@@ -152,10 +167,10 @@ void spc_parse_naa_6h_vendor_specific(struct se_device *dev,
+ 
+ 		if (next) {
+ 			next = false;
+-			buf[cnt++] |= val;
++			buf[off++] |= val;
+ 		} else {
+ 			next = true;
+-			buf[cnt] = val << 4;
++			buf[off] = val << 4;
+ 		}
+ 	}
+ }
+@@ -203,24 +218,8 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
+ 	/* Identifier/Designator length */
+ 	buf[off++] = 0x10;
+ 
+-	/*
+-	 * Start NAA IEEE Registered Extended Identifier/Designator
+-	 */
+-	buf[off++] = (0x6 << 4);
+-
+-	/*
+-	 * Use OpenFabrics IEEE Company ID: 00 14 05
+-	 */
+-	buf[off++] = 0x01;
+-	buf[off++] = 0x40;
+-	buf[off] = (0x5 << 4);
+-
+-	/*
+-	 * Return ConfigFS Unit Serial Number information for
+-	 * VENDOR_SPECIFIC_IDENTIFIER and
+-	 * VENDOR_SPECIFIC_IDENTIFIER_EXTENTION
+-	 */
+-	spc_parse_naa_6h_vendor_specific(dev, &buf[off]);
++	/* NAA IEEE Registered Extended designator */
++	spc_gen_naa_6h_vendor_specific(dev, &buf[off]);
+ 
+ 	len = 20;
+ 	off = (len + 4);
+diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
+index d31ed071cb08..2e7ce661ef32 100644
+--- a/drivers/target/target_core_xcopy.c
++++ b/drivers/target/target_core_xcopy.c
+@@ -33,19 +33,6 @@ static struct workqueue_struct *xcopy_wq = NULL;
+ 
+ static sense_reason_t target_parse_xcopy_cmd(struct xcopy_op *xop);
+ 
+-static int target_xcopy_gen_naa_ieee(struct se_device *dev, unsigned char *buf)
+-{
+-	int off = 0;
+-
+-	buf[off++] = (0x6 << 4);
+-	buf[off++] = 0x01;
+-	buf[off++] = 0x40;
+-	buf[off] = (0x5 << 4);
+-
+-	spc_parse_naa_6h_vendor_specific(dev, &buf[off]);
+-	return 0;
+-}
+-
+ /**
+  * target_xcopy_locate_se_dev_e4_iter - compare XCOPY NAA device identifiers
+  *
+@@ -65,7 +52,7 @@ static int target_xcopy_locate_se_dev_e4_iter(struct se_device *se_dev,
+ 	}
+ 
+ 	memset(&tmp_dev_wwn[0], 0, XCOPY_NAA_IEEE_REGEX_LEN);
+-	target_xcopy_gen_naa_ieee(se_dev, &tmp_dev_wwn[0]);
++	spc_gen_naa_6h_vendor_specific(se_dev, &tmp_dev_wwn[0]);
+ 
+ 	rc = memcmp(&tmp_dev_wwn[0], dev_wwn, XCOPY_NAA_IEEE_REGEX_LEN);
+ 	if (rc != 0) {
+@@ -241,7 +228,7 @@ static int target_xcopy_parse_target_descriptors(struct se_cmd *se_cmd,
+ 	 * se_device the XCOPY was received upon..
+ 	 */
+ 	memset(&xop->local_dev_wwn[0], 0, XCOPY_NAA_IEEE_REGEX_LEN);
+-	target_xcopy_gen_naa_ieee(local_dev, &xop->local_dev_wwn[0]);
++	spc_gen_naa_6h_vendor_specific(local_dev, &xop->local_dev_wwn[0]);
+ 
+ 	while (start < tdll) {
+ 		/*
 -- 
 2.27.0
 
