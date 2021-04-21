@@ -2,231 +2,114 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3B97C43460
-	for <target-devel@archiver.kernel.org>; Tue, 20 Apr 2021 19:00:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3E64C43460
+	for <target-devel@archiver.kernel.org>; Wed, 21 Apr 2021 15:07:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7DA41613E2
-	for <target-devel@archiver.kernel.org>; Tue, 20 Apr 2021 19:00:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 79F9561426
+	for <target-devel@archiver.kernel.org>; Wed, 21 Apr 2021 15:07:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233617AbhDTTAt (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 20 Apr 2021 15:00:49 -0400
-Received: from mta-02.yadro.com ([89.207.88.252]:52986 "EHLO mta-01.yadro.com"
+        id S243814AbhDUPHy (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 21 Apr 2021 11:07:54 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:36760 "EHLO mta-01.yadro.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S233509AbhDTTAk (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 20 Apr 2021 15:00:40 -0400
+        id S238067AbhDUPHw (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Wed, 21 Apr 2021 11:07:52 -0400
 Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 6E76A41399;
-        Tue, 20 Apr 2021 19:00:07 +0000 (UTC)
+        by mta-01.yadro.com (Postfix) with ESMTP id 9155441268;
+        Wed, 21 Apr 2021 15:07:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        content-type:content-type:content-transfer-encoding:mime-version
-        :references:in-reply-to:x-mailer:message-id:date:date:subject
-        :subject:from:from:received:received:received; s=mta-01; t=
-        1618945206; x=1620759607; bh=xpo6q+gG4OET66ikBrty6MRwlRymz6Dolhc
-        tB0Re6Rs=; b=ZqihTaJu6U7G7GLuBr/wy8ng4J/0tvVqxtv/VKq0zcEoYi2zUWX
-        4IkjxUf9v67FjW0OpYMyj58kgQ0ExQdB1PLnw5f7DbRZFBnhLLVwsR1gy+rozkQe
-        j77iE2Ic4Alf2p5B9g8dYCcKogNXZ1u+C+5iTdOMUVsTXs+3A1XhAOQ4=
+        mime-version:content-transfer-encoding:content-type:content-type
+        :content-language:accept-language:in-reply-to:references
+        :message-id:date:date:subject:subject:from:from:received
+        :received:received:received; s=mta-01; t=1619017630; x=
+        1620832031; bh=naHOwxO5PGhnqzxlQmROUBcliJeUHo+BMhLRonTpiyY=; b=W
+        2yXwKaIcUO4utwYHpR0qffNbifuhO7sNgRY7OK/cWuLsNDbqhehldmUzNbjY5sdM
+        UymUIceJB0CU0WaCTPpx+KbYbhnygBiTARC8nNPw3fzTS50V0R59PnInxguT3Uv0
+        K+Eb5yFzK+vtFB/f65M3iNlD66W1cXnjIQgN533YAA=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
         by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id SF1zIEabhRVd; Tue, 20 Apr 2021 22:00:06 +0300 (MSK)
+        with ESMTP id CWNMFbOLoUnq; Wed, 21 Apr 2021 18:07:10 +0300 (MSK)
 Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id 243A641318;
-        Tue, 20 Apr 2021 22:00:06 +0300 (MSK)
-Received: from yadro.com (10.199.0.227) by T-EXCH-03.corp.yadro.com
- (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Tue, 20
- Apr 2021 22:00:05 +0300
-From:   Sergey Samoylenko <s.samoylenko@yadro.com>
-To:     Martin Petersen <martin.petersen@oracle.com>,
-        Mike Christie <michael.christie@oracle.com>,
-        <target-devel@vger.kernel.org>
-CC:     David Disseldorp <ddiss@suse.de>, <linux-scsi@vger.kernel.org>,
-        <linux@yadro.com>, Sergey Samoylenko <s.samoylenko@yadro.com>,
+        by mta-01.yadro.com (Postfix) with ESMTPS id 1CCAE41241;
+        Wed, 21 Apr 2021 18:07:09 +0300 (MSK)
+Received: from T-EXCH-03.corp.yadro.com (172.17.100.103) by
+ T-EXCH-03.corp.yadro.com (172.17.100.103) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Wed, 21 Apr 2021 18:07:09 +0300
+Received: from T-EXCH-03.corp.yadro.com ([fe80::39f4:7b05:b1d3:5272]) by
+ T-EXCH-03.corp.yadro.com ([fe80::39f4:7b05:b1d3:5272%14]) with mapi id
+ 15.01.0669.032; Wed, 21 Apr 2021 18:07:09 +0300
+From:   Dmitriy Bogdanov <d.bogdanov@yadro.com>
+To:     Mike Christie <michael.christie@oracle.com>,
+        Martin Petersen <martin.petersen@oracle.com>,
+        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+CC:     "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+        "linux@yadro.com" <linux@yadro.com>,
         Roman Bolshakov <r.bolshakov@yadro.com>
-Subject: [PATCH RESEND 1/2] scsi: target: core: Unify NAA identifer generation
-Date:   Tue, 20 Apr 2021 21:59:19 +0300
-Message-ID: <20210420185920.42431-2-s.samoylenko@yadro.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210420185920.42431-1-s.samoylenko@yadro.com>
-References: <20210420185920.42431-1-s.samoylenko@yadro.com>
+Subject: RE: [PATCH v2] target: core: remove from tmr_list at lun unlink
+Thread-Topic: [PATCH v2] target: core: remove from tmr_list at lun unlink
+Thread-Index: AQHXMqI/H57DoNH3mkWn7Ff2D9R1+qq3iwkAgAADNACAByTakA==
+Date:   Wed, 21 Apr 2021 15:07:09 +0000
+Message-ID: <39c7c7c7671742c183cfddd4a4a68ee9@yadro.com>
+References: <20210416092146.3201-1-d.bogdanov@yadro.com>
+ <d4a19bc6-a89a-7572-b726-31df86fc84fd@oracle.com>
+ <a91500ce-5ff8-8f97-03dc-74ae097d22e2@oracle.com>
+In-Reply-To: <a91500ce-5ff8-8f97-03dc-74ae097d22e2@oracle.com>
+Accept-Language: ru-RU, en-US
+Content-Language: ru-RU
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [10.199.0.213]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.199.0.227]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-INQUIRY and XCOPY commands contain duplicate code paths with hardcoded
-OpenFabrics Company ID for NAA designator.
-
-Also, the two existing functions are somewhat poorly named:
-
- - spc_parse_naa_6h_vendor_specific()
- - target_xcopy_gen_naa_ieee()
-
-The replacement function combines the names and hopefully better
-reflects its meaning of *producing* NAA 6 designator:
-
- - spc_gen_naa_6h_vendor_specific()
-
-Signed-off-by: Sergey Samoylenko <s.samoylenko@yadro.com>
-Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
----
- drivers/target/target_core_pr.h    |  2 +-
- drivers/target/target_core_spc.c   | 47 +++++++++++++++---------------
- drivers/target/target_core_xcopy.c | 17 ++---------
- 3 files changed, 26 insertions(+), 40 deletions(-)
-
-diff --git a/drivers/target/target_core_pr.h b/drivers/target/target_core_pr.h
-index a31c93e4e19c..b793c99637ab 100644
---- a/drivers/target/target_core_pr.h
-+++ b/drivers/target/target_core_pr.h
-@@ -52,7 +52,7 @@
- /*
-  *  Function defined in target_core_spc.c
-  */
--void spc_parse_naa_6h_vendor_specific(struct se_device *, unsigned char *);
-+void spc_gen_naa_6h_vendor_specific(struct se_device *, unsigned char *);
- 
- extern struct kmem_cache *t10_pr_reg_cache;
- 
-diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index 70a661801cb9..b2d19493a994 100644
---- a/drivers/target/target_core_spc.c
-+++ b/drivers/target/target_core_spc.c
-@@ -129,13 +129,28 @@ spc_emulate_evpd_80(struct se_cmd *cmd, unsigned char *buf)
- 	return 0;
- }
- 
--void spc_parse_naa_6h_vendor_specific(struct se_device *dev,
--				      unsigned char *buf)
-+/*
-+ * Generate NAA IEEE Registered Extended designator
-+ */
-+void spc_gen_naa_6h_vendor_specific(struct se_device *dev,
-+				    unsigned char *buf)
- {
- 	unsigned char *p = &dev->t10_wwn.unit_serial[0];
--	int cnt;
-+	int cnt, off = 0;
- 	bool next = true;
- 
-+	/*
-+	 * Start NAA IEEE Registered Extended Identifier/Designator
-+	 */
-+	buf[off++] = 0x6 << 4;
-+
-+	/*
-+	 * Use OpenFabrics IEEE Company ID: 00 14 05
-+	 */
-+	buf[off++] = 0x01;
-+	buf[off++] = 0x40;
-+	buf[off] = (0x5 << 4);
-+
- 	/*
- 	 * Generate up to 36 bits of VENDOR SPECIFIC IDENTIFIER starting on
- 	 * byte 3 bit 3-0 for NAA IEEE Registered Extended DESIGNATOR field
-@@ -144,7 +159,7 @@ void spc_parse_naa_6h_vendor_specific(struct se_device *dev,
- 	 * NUMBER set via vpd_unit_serial in target_core_configfs.c to ensure
- 	 * per device uniqeness.
- 	 */
--	for (cnt = 0; *p && cnt < 13; p++) {
-+	for (cnt = off + 13; *p && off < cnt; p++) {
- 		int val = hex_to_bin(*p);
- 
- 		if (val < 0)
-@@ -152,10 +167,10 @@ void spc_parse_naa_6h_vendor_specific(struct se_device *dev,
- 
- 		if (next) {
- 			next = false;
--			buf[cnt++] |= val;
-+			buf[off++] |= val;
- 		} else {
- 			next = true;
--			buf[cnt] = val << 4;
-+			buf[off] = val << 4;
- 		}
- 	}
- }
-@@ -203,24 +218,8 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
- 	/* Identifier/Designator length */
- 	buf[off++] = 0x10;
- 
--	/*
--	 * Start NAA IEEE Registered Extended Identifier/Designator
--	 */
--	buf[off++] = (0x6 << 4);
--
--	/*
--	 * Use OpenFabrics IEEE Company ID: 00 14 05
--	 */
--	buf[off++] = 0x01;
--	buf[off++] = 0x40;
--	buf[off] = (0x5 << 4);
--
--	/*
--	 * Return ConfigFS Unit Serial Number information for
--	 * VENDOR_SPECIFIC_IDENTIFIER and
--	 * VENDOR_SPECIFIC_IDENTIFIER_EXTENTION
--	 */
--	spc_parse_naa_6h_vendor_specific(dev, &buf[off]);
-+	/* NAA IEEE Registered Extended designator */
-+	spc_gen_naa_6h_vendor_specific(dev, &buf[off]);
- 
- 	len = 20;
- 	off = (len + 4);
-diff --git a/drivers/target/target_core_xcopy.c b/drivers/target/target_core_xcopy.c
-index d31ed071cb08..2e7ce661ef32 100644
---- a/drivers/target/target_core_xcopy.c
-+++ b/drivers/target/target_core_xcopy.c
-@@ -33,19 +33,6 @@ static struct workqueue_struct *xcopy_wq = NULL;
- 
- static sense_reason_t target_parse_xcopy_cmd(struct xcopy_op *xop);
- 
--static int target_xcopy_gen_naa_ieee(struct se_device *dev, unsigned char *buf)
--{
--	int off = 0;
--
--	buf[off++] = (0x6 << 4);
--	buf[off++] = 0x01;
--	buf[off++] = 0x40;
--	buf[off] = (0x5 << 4);
--
--	spc_parse_naa_6h_vendor_specific(dev, &buf[off]);
--	return 0;
--}
--
- /**
-  * target_xcopy_locate_se_dev_e4_iter - compare XCOPY NAA device identifiers
-  *
-@@ -65,7 +52,7 @@ static int target_xcopy_locate_se_dev_e4_iter(struct se_device *se_dev,
- 	}
- 
- 	memset(&tmp_dev_wwn[0], 0, XCOPY_NAA_IEEE_REGEX_LEN);
--	target_xcopy_gen_naa_ieee(se_dev, &tmp_dev_wwn[0]);
-+	spc_gen_naa_6h_vendor_specific(se_dev, &tmp_dev_wwn[0]);
- 
- 	rc = memcmp(&tmp_dev_wwn[0], dev_wwn, XCOPY_NAA_IEEE_REGEX_LEN);
- 	if (rc != 0) {
-@@ -241,7 +228,7 @@ static int target_xcopy_parse_target_descriptors(struct se_cmd *se_cmd,
- 	 * se_device the XCOPY was received upon..
- 	 */
- 	memset(&xop->local_dev_wwn[0], 0, XCOPY_NAA_IEEE_REGEX_LEN);
--	target_xcopy_gen_naa_ieee(local_dev, &xop->local_dev_wwn[0]);
-+	spc_gen_naa_6h_vendor_specific(local_dev, &xop->local_dev_wwn[0]);
- 
- 	while (start < tdll) {
- 		/*
--- 
-2.27.0
-
+SGkgTWlrZSwNCg0KPj4+IC0tLSBhL2RyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3RhcmdldC5j
+DQo+Pj4gKysrIGIvZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0LmMNCj4+PiBAQCAt
+MjE0Miw3ICsyMTQyLDcgQEAgaXNjc2l0X2hhbmRsZV90YXNrX21ndF9jbWQoc3RydWN0IGlzY3Np
+X2Nvbm4gKmNvbm4sIHN0cnVjdCBpc2NzaV9jbWQgKmNtZCwNCj4+PiAgCSAqIFRNUiBUQVNLX1JF
+QVNTSUdOLg0KPj4+ICAJICovDQo+Pj4gIAlpc2NzaXRfYWRkX2NtZF90b19yZXNwb25zZV9xdWV1
+ZShjbWQsIGNvbm4sIGNtZC0+aV9zdGF0ZSk7DQo+Pj4gLQl0YXJnZXRfcHV0X3Nlc3NfY21kKCZj
+bWQtPnNlX2NtZCk7DQo+Pj4gKwl0cmFuc3BvcnRfZ2VuZXJpY19mcmVlX2NtZCgmY21kLT5zZV9j
+bWQsIGZhbHNlKTsNCj4+PiAgCXJldHVybiAwOw0KPj4+ICB9DQo+PiANCj4+IERvaC4gSSBzZWUg
+aG93IEkgZ290IGFsbCBjb25mdXNlZC4gSSBndWVzcyB0aGlzIHBhdGggbGVha3MgdGhlIGx1bl9y
+ZWYgDQo+PiB0YWtlbiBieSB0cmFuc3BvcnRfbG9va3VwX3Rtcl9sdW4uIEl0IGxvb2tzIGxpa2Ug
+YW4gb2xkIGlzc3VlIGFuZCANCj4+IG5vdGhpbmcgdG8gZG8gd2l0aCB5b3VyIHBhdGNoLg0KDQo+
+PiBJJ20gbm90IHN1cmUgaWYgd2UgYXJlIHN1cHBvc2VkIHRvIGJlIGNhbGxpbmcgDQo+PiB0cmFu
+c3BvcnRfZ2VuZXJpY19mcmVlX2NtZCB0d2ljZS4gSXQgbG9va3MgbGlrZSBpdCB3b3JrcyBvaywg
+YmVjYXVzZSB5b3VyIHBhdGNoIGFkZGVkIHRoZSAiY21kLT5zZV9sdW4gPSBOVUxMIg0KPj4gaW4g
+dHJhbnNwb3J0X2x1bl9yZW1vdmVfY21kLCBzbyB3ZSB3b24ndCBkbyBhIGRvdWJsZSBsaXN0IGRl
+bGV0aW9uLg0KPj4gSXQgZmVlbHMgZGlydHkgdGhvdWdoLiBJIGNhbiBmZWVsIEJhcnQgc2F5aW5n
+LCAiTWlrZSBkaWQgeW91IHNlZSB0aGUgDQo+PiBjb21tZW50IGF0IHRoZSB0b3Agb2YgdGhlIGZ1
+bmN0aW9uIi4gOikNCj4+IA0KPj4gTWF5YmUgaXQncyBiZXN0IHRvIG1vcmUgY2xlYW5seSB1bndp
+bmQgd2hhdCB3YXMgc2V0dXAgaW4gdGhlIHJyb3IgDQo+PiBwYXRoLiBJIHRoaW5rIHdlIGNhbiBm
+aXggbHVuX3JlZiBsZWFrIHRvby4NCj4+IA0KPj4gU28gaW5zdGVhZCBvZiBkb2luZyB0cmFuc3Bv
+cnRfZ2VuZXJpY19mcmVlX2NtZCBhYm92ZSBkbyANCj4+IHRyYW5zcG9ydF9sdW5fcmVtb3ZlX2Nt
+ZCB0byBtYXRjaC91bmRvIHRoZSB0cmFuc3BvcnRfbG9va3VwX3Rtcl9sdW4gY2FsbCBpbiBpc2Nz
+aXRfaGFuZGxlX3Rhc2tfbWd0X2NtZD8NCj4NCj5TaG9vdC4gSSdtIGFsbCBvdmVyIHRoZSBwbGFj
+ZS4gSSB0aGluayB0aGUgcm9vdCBpc3N1ZSBpcyBteSBvcmlnaW5hbCBjb21tZW50IG9uIHRoZSB2
+MSBwYXRjaCB3YXMgd3JvbmcuDQo+T24gYSBmYWlsdXJlIHdlIHdvdWxkIHN0aWxsIGRvOg0KPmlz
+Y3NpdF9mcmVlX2NtZCAtPiB0cmFuc3BvcnRfZ2VuZXJpY19mcmVlX2NtZCAtPiB0cmFuc3BvcnRf
+bHVuX3JlbW92ZV9jbWQNCj5yaWdodD8gU28gd2UgZG9uJ3QgbmVlZCBhbnkgY2hhbmdlIGluIHRo
+ZSBpc2NzaSB0YXJnZXQuIEl0IHNob3VsZCBhbGwganVzdCB3b3JrLg0KDQppc2NzaXRfZnJlZV9j
+bWQgd2lsbCBiZSBjYWxsZWQgb25seSBhdCByZXNwb25zZSBjb21wbGV0aW9uKG5leHQgaW5jb21p
+bmcgaXNjc2kgY29tbWFuZCk6IGlzY3NpdF9hY2tfZnJvbV9leHBzdGF0c24gLT4gaXNjc2l0X2Zy
+ZWVfY21kLg0KVGhhdCBwcm9kdWNlcyBzb21lIHVuYWNjZXB0YWJsZSBkZWxheSBvZiBsdW4gdW5s
+aW5raW5nIGZyb20gY21kLiBUaGVyZSBpcyBhIGJ1ZyByZXBvcnQgdG8gdGhlIHNpbWlsYXIgYmVo
+YXZpb3I6DQpodHRwOi8vbGttbC5pdS5lZHUvaHlwZXJtYWlsL2xpbnV4L2tlcm5lbC8yMDAyLjAv
+MDUyNzIuaHRtbA0KQmVjYXVzZSBvZiB0aGF0IGNvbXBsYWluLCB0aGUgY29tbWl0IDgzZjg1Yjhl
+YzMwNSwgdGhhdCBzb2x2ZXMgdGhlIHNhbWUgY3Jhc2ggYXMgSSBhbSBmaXhpbmcsICB3YXMgcmV2
+ZXJ0ZWQuDQoNClNvLCB0aGlzIHBpZWNlIG9mIHBhdGNoIGhhcyBzb21lIGluZGlyZWN0IHJlbGF0
+aW9uIDopDQpJIHdpbGwgZXh0cmFjdCBpdCB0byBhIHNlcGFyYXRlIHBhdGNoIGluIHRoZSBjb21p
+bmcgcGF0Y2hzZXQgb24gVE1GIGhhbmRsaW5nLg0KDQpCUiwNCiBEbWl0cnkNCg==
