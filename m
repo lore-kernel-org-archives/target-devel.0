@@ -2,106 +2,93 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45025C433ED
-	for <target-devel@archiver.kernel.org>; Fri, 30 Apr 2021 15:43:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B7A4C433ED
+	for <target-devel@archiver.kernel.org>; Mon,  3 May 2021 16:36:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 11329613BD
-	for <target-devel@archiver.kernel.org>; Fri, 30 Apr 2021 15:43:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 44AF6613C4
+	for <target-devel@archiver.kernel.org>; Mon,  3 May 2021 16:36:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230388AbhD3PoG (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 30 Apr 2021 11:44:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35626 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229877AbhD3PoG (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Fri, 30 Apr 2021 11:44:06 -0400
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DB06C06174A;
-        Fri, 30 Apr 2021 08:43:15 -0700 (PDT)
-Received: by mail-ej1-x62a.google.com with SMTP id t4so22633654ejo.0;
-        Fri, 30 Apr 2021 08:43:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=DxLuz6zxlWQreauy+362yBCD+2mrUuEObBBoPF+b4Lo=;
-        b=JF389vOx/7hgJ0QZ7mJVp93d+3s1Yduyp4zgZC36QBIsm+ktTWU+jrLaRQ+dPT9onu
-         8PouW6XdWGwNtGWZdTEU0B25x5ZRlf+bH5wzHXgy+ETBLiIz/4p2ScQjYlVtV8c6sDHS
-         xSmtTWm4D2KJDaih6TF8xVBqPYnASRLaNr/CXUy3DlNWSnUVJFXkEL+B4pKUe44NQw/O
-         1TTIATL5UJQiTTH3kkpsnu5e7kgGQbu23f5fuxuwsWVC4ugfJoJKE7XhRiRsOo8wBIgU
-         vPDEHSM4mi4JIkQp6ieeTvP0hYZpJOb35L5DXv3Ugtk/g6DWDwgxgLXxS1rVFvV/3q0f
-         +lIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=DxLuz6zxlWQreauy+362yBCD+2mrUuEObBBoPF+b4Lo=;
-        b=Z8fDMSctqKzNOZtQjBr19hO0qgovc3tBODg3sM/sxX1fzjM3yGayiG/pQ7GOlEID/x
-         2VQag7e9Vm+bk1iZhGDMB39GV2+Ict8BmGgyoFlJ+PO1bRkzhgSgXMkMAfgn/ODTf3VF
-         PuY0V2qR5c3pBX6AP8kuE8mVGfO0aLumkBdLN59w0Bq4AClH2eyzZg1CyqaN852x6HA5
-         75u38svrJG3OCPuWI4hFHKtdxkkJP4ap48cp01+Q0cxXg8sMPjM9J/r3HRQY67hrdDfM
-         ieM0u9pJkTMjW0MQzMZU6ZaerQROrCxPhtq/wnEcjGgIIlKkrzZXavRW1Is9guALEPAP
-         NyHw==
-X-Gm-Message-State: AOAM530yGYfxW4R7K1Xv5FeXIpm0jcr2ok8+lt0eA69Wjery/DLt73tg
-        lbGUdQFTihzbVESnacm0uhL6JsTGom8=
-X-Google-Smtp-Source: ABdhPJx4lt4NPgik3Npc5jEdzsOqNJ39xlemogXfnYRBoORbSiVjWiIICt1MEopwjEu4TOzgcv4JbA==
-X-Received: by 2002:a17:906:33da:: with SMTP id w26mr5147543eja.472.1619797394382;
-        Fri, 30 Apr 2021 08:43:14 -0700 (PDT)
-Received: from [192.168.178.40] (ipbcc11466.dynamic.kabel-deutschland.de. [188.193.20.102])
-        by smtp.gmail.com with ESMTPSA id e11sm1590716edq.76.2021.04.30.08.43.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 30 Apr 2021 08:43:14 -0700 (PDT)
-Subject: Re: [PATCH] scsi: target: configfs: Remove redundant assignment to
- ret
-To:     michael.christie@oracle.com,
-        Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
-        martin.petersen@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <1619774627-118766-1-git-send-email-jiapeng.chong@linux.alibaba.com>
- <69ef77bd-4ef8-6446-8192-6d8569516f33@gmail.com>
- <90e67d9f-e524-62b4-df04-2ea2ea28559c@oracle.com>
-From:   Bodo Stroesser <bostroesser@gmail.com>
-Message-ID: <3fad772f-51da-6415-76a4-ed248736ced5@gmail.com>
-Date:   Fri, 30 Apr 2021 17:43:13 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.7.1
+        id S231558AbhECQhn (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 3 May 2021 12:37:43 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38260 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231569AbhECQhA (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 3 May 2021 12:37:00 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id D9FA5613B4;
+        Mon,  3 May 2021 16:35:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1620059755;
+        bh=797DPJgBYy0V1f03bvCENeGmNyA/WI0T8ZcsrmlXkx4=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=H/+4e8pOmp2O9dRRIsA/KwcU6bRS9oJfZeVO2gAxIMvSWC2C8H59lHuGoX7t9GRwh
+         xQBAakBn1Dm6Vi+jdRqpBNaqWNpC0it51sm7aIE/uDWlxnnrR6FpDSrcSLg+01iLeq
+         JHoLj8d7VwOiKklPZdJszp8cQk0x35MX3jJ9hsj32DvuNhhg3GSneShGygTxRpOJGP
+         Hx9KrI32GbUUUP3MRLuW5P3amvjfK+zNdpsAbAPIZFmHvaGajENEw4qIR9lR7X+pgD
+         ZjRJ6nIyqygJK/zxxRfkxG7u+pBg2dMv8GBb7d8l1EOKYvwCFsUO/C9BE3/PN35wUA
+         V3FN6B/Cq9VKw==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
+        Mike Christie <michael.christie@oracle.com>,
+        Johannes Thumshirn <johannes.thumshirn@wdc.com>,
+        "Martin K . Petersen" <martin.petersen@oracle.com>,
+        Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.12 026/134] scsi: target: pscsi: Fix warning in pscsi_complete_cmd()
+Date:   Mon,  3 May 2021 12:33:25 -0400
+Message-Id: <20210503163513.2851510-26-sashal@kernel.org>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210503163513.2851510-1-sashal@kernel.org>
+References: <20210503163513.2851510-1-sashal@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <90e67d9f-e524-62b4-df04-2ea2ea28559c@oracle.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 30.04.21 17:40, michael.christie@oracle.com wrote:
-> On 4/30/21 9:29 AM, Bodo Stroesser wrote:
->> BTW: why is "initiator_sid" input handled as string?
->> core_scsi3_alloc_aptpl_registration later calls get_unaligned_be64 for
->> that string. I don't think this makes sense.
-> 
-> It's broken.
-> 
-> Remember the isid patches that you reviewed of mine trying to fix the
-> isid code in target_core_transport.c? I can't remember all the details but
-> I think it was that the aptpl code thinks the buffer is in the format that
-> sess_get_initiator_sid uses and is trying to do something similar as
-> target_core_transport.c.
-> 
-> I can't find the version of the patches you had looked at. This was the first
-> version of the patch:
-> 
-> https://patchwork.kernel.org/project/target-devel/patch/1531696591-8558-3-git-send-email-mchristi@redhat.com/
-> 
+From: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
 
-Ahh, yes. I remember. Thank you.
+[ Upstream commit fd48c056a32ed6e7754c7c475490f3bed54ed378 ]
 
+This fixes a compilation warning in pscsi_complete_cmd():
 
+     drivers/target/target_core_pscsi.c: In function ‘pscsi_complete_cmd’:
+     drivers/target/target_core_pscsi.c:624:5: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
+     ; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
+
+Link: https://lore.kernel.org/r/20210228055645.22253-5-chaitanya.kulkarni@wdc.com
+Reviewed-by: Mike Christie <michael.christie@oracle.com>
+Reviewed-by: Johannes Thumshirn <johannes.thumshirn@wdc.com>
+Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/target/target_core_pscsi.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+index 9ee797b8cb7e..508b49b0eaf5 100644
+--- a/drivers/target/target_core_pscsi.c
++++ b/drivers/target/target_core_pscsi.c
+@@ -620,8 +620,9 @@ static void pscsi_complete_cmd(struct se_cmd *cmd, u8 scsi_status,
+ 			unsigned char *buf;
+ 
+ 			buf = transport_kmap_data_sg(cmd);
+-			if (!buf)
++			if (!buf) {
+ 				; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
++			}
+ 
+ 			if (cdb[0] == MODE_SENSE_10) {
+ 				if (!(buf[3] & 0x80))
+-- 
+2.30.2
 
