@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 136AEC43619
-	for <target-devel@archiver.kernel.org>; Mon,  3 May 2021 16:57:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EAB5C43617
+	for <target-devel@archiver.kernel.org>; Mon,  3 May 2021 16:57:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C28A061278
-	for <target-devel@archiver.kernel.org>; Mon,  3 May 2021 16:57:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 29890611AD
+	for <target-devel@archiver.kernel.org>; Mon,  3 May 2021 16:57:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233768AbhECQ6k (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 3 May 2021 12:58:40 -0400
-Received: from mail.kernel.org ([198.145.29.99]:44506 "EHLO mail.kernel.org"
+        id S234696AbhECQ6l (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 3 May 2021 12:58:41 -0400
+Received: from mail.kernel.org ([198.145.29.99]:43246 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234323AbhECQxo (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 3 May 2021 12:53:44 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id B23A361278;
-        Mon,  3 May 2021 16:42:08 +0000 (UTC)
+        id S235087AbhECQzr (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 3 May 2021 12:55:47 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 06E7C61955;
+        Mon,  3 May 2021 16:42:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1620060129;
-        bh=dd0vDeJHtFz2d1EP7LUdQgPLk9wSejx9cpXoGNXKWeU=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Sipv577AODlyk7ST88uge+/vn1u667z07AX/ESFnQ01MJDw1N/t1N/o1KByZoyxWB
-         EDdG7W066W4pJHoapO2ORhEqBbADIvyvo/4dxP3ixEWAKOh49kdEBMk8PyDSPzdNas
-         u27JwSoV3m5STKpCs0NzkfDBGGiSaL6PRSE2NnFx0ahS3jdmDF39/z198SyZ/4NdGV
-         IALQ4KTO/gqlbTmMlLAukvV/C9pp9VQuUb5wwrYO8QIJ9GDLqVr93W7h+CA1KpmlSq
-         3R75bcHPuoFztcsv2hjDb3R+POMhuvbcZlVDpZM/tao2aK6xh4UoP5SUyixxGlshO4
-         zqdlPZEmSWEWA==
+        s=k20201202; t=1620060175;
+        bh=kJ+6IGZst7C98XZZn6p9kF14JIzeHsem3vgCqByeiA8=;
+        h=From:To:Cc:Subject:Date:From;
+        b=ffFRGBRj7EO8OaEIAPnc9ivV8gPWXnEiDcF2FSxdko+z4bGPZdIuYXEz4+Mpnus6u
+         dckYaW7SO/e/r/nrabaUxqnE0sLABm6zonq+x7eMoCfKUo9Re9vYfbMz/IJRGwfT4h
+         5mAeD9jvFIt8NPJEoKoZRhBN6v/MHMLfr0GBuFSv3GHQykaP/XJ4Itoil483BSBYqa
+         shcOUR5F7CGO8mXE449IhRb/GJk+Bcx9QHBJCucRhGtXA/J/heNu3v4GRmYsBX0LNl
+         W8LZq1TelINQpdgI3fIs+m4ra3AoipaJkRVt+0TEnahVyb0+/OekvM17TXPQlU0wIo
+         gahXRXQdyNtIg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
@@ -39,12 +39,10 @@ Cc:     Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 03/31] scsi: target: pscsi: Fix warning in pscsi_complete_cmd()
-Date:   Mon,  3 May 2021 12:41:36 -0400
-Message-Id: <20210503164204.2854178-3-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 01/24] scsi: target: pscsi: Fix warning in pscsi_complete_cmd()
+Date:   Mon,  3 May 2021 12:42:29 -0400
+Message-Id: <20210503164252.2854487-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210503164204.2854178-1-sashal@kernel.org>
-References: <20210503164204.2854178-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 X-stable: review
@@ -75,10 +73,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index f80b31b35a0d..a127608a4809 100644
+index 079db0bd3917..089ba39f76a2 100644
 --- a/drivers/target/target_core_pscsi.c
 +++ b/drivers/target/target_core_pscsi.c
-@@ -633,8 +633,9 @@ static void pscsi_complete_cmd(struct se_cmd *cmd, u8 scsi_status,
+@@ -629,8 +629,9 @@ static void pscsi_transport_complete(struct se_cmd *cmd, struct scatterlist *sg,
  			unsigned char *buf;
  
  			buf = transport_kmap_data_sg(cmd);
