@@ -2,91 +2,74 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E42AC43460
-	for <target-devel@archiver.kernel.org>; Mon,  3 May 2021 16:57:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19CFFC433ED
+	for <target-devel@archiver.kernel.org>; Thu,  6 May 2021 10:15:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F359061059
-	for <target-devel@archiver.kernel.org>; Mon,  3 May 2021 16:57:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6D25611CB
+	for <target-devel@archiver.kernel.org>; Thu,  6 May 2021 10:15:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234703AbhECQ6n (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 3 May 2021 12:58:43 -0400
-Received: from mail.kernel.org ([198.145.29.99]:43314 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235317AbhECQ4K (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 3 May 2021 12:56:10 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id C06BD6197C;
-        Mon,  3 May 2021 16:43:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1620060211;
-        bh=oda4eqHRVFvsClBa5OXXc3KjLxo1xhYRA+i0CkL0TGM=;
-        h=From:To:Cc:Subject:Date:From;
-        b=jyc+Bhvgp8WRlV5awzPbfUPhAoLA8+g+jfcdee4iJUWomZOd7BxtScHBaaUVlrSMc
-         NpVrfTeo4n8xI+yVuAAAtwkvvdE8LQewS6unDCPsrt23tYNDIpVZBhkj6AG3awLMws
-         kY7w4TUXdLh6Vcdhpy4Pjy+y1D4O1KUW21J+eqSIKk8NOZFf3xAoFAV9HLDObSKYIa
-         LhR0CthMXomJvZAfGPmAqw/NrQfy7Con9MdSuOeymCnpzhsNUjGGayWiXRyGf9N6NV
-         1TyrihvxYH2ODRZYdvexy0bVtiOz7jQljvoif6ZaYgzhW5NuiXrkQwfqx2VH3a6x0A
-         31S2jibbQsfdQ==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>,
-        Mike Christie <michael.christie@oracle.com>,
-        Johannes Thumshirn <johannes.thumshirn@wdc.com>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 01/16] scsi: target: pscsi: Fix warning in pscsi_complete_cmd()
-Date:   Mon,  3 May 2021 12:43:14 -0400
-Message-Id: <20210503164329.2854739-1-sashal@kernel.org>
-X-Mailer: git-send-email 2.30.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+        id S233791AbhEFKQJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 6 May 2021 06:16:09 -0400
+Received: from out30-57.freemail.mail.aliyun.com ([115.124.30.57]:55482 "EHLO
+        out30-57.freemail.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S232512AbhEFKQI (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Thu, 6 May 2021 06:16:08 -0400
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R201e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04423;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=10;SR=0;TI=SMTPD_---0UXygmBf_1620296106;
+Received: from j63c13417.sqa.eu95.tbsite.net(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0UXygmBf_1620296106)
+          by smtp.aliyun-inc.com(127.0.0.1);
+          Thu, 06 May 2021 18:15:07 +0800
+From:   Yang Li <yang.lee@linux.alibaba.com>
+To:     bvanassche@acm.org
+Cc:     dledford@redhat.com, jgg@ziepe.ca, nathan@kernel.org,
+        ndesaulniers@google.com, linux-rdma@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+        clang-built-linux@googlegroups.com,
+        Yang Li <yang.lee@linux.alibaba.com>
+Subject: [PATCH] ib_srpt: Remove redundant assignment to ret
+Date:   Thu,  6 May 2021 18:15:05 +0800
+Message-Id: <1620296105-121964-1-git-send-email-yang.lee@linux.alibaba.com>
+X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
+Variable 'ret' is set to -ENOMEM but this value is never read as it is
+overwritten with a new value later on, hence it is a redundant
+assignment and can be removed
 
-[ Upstream commit fd48c056a32ed6e7754c7c475490f3bed54ed378 ]
+In 'commit b79fafac70fc ("target: make queue_tm_rsp() return void")'
+srpt_queue_response() has been changed to return void, so after "goto
+out", there is no need to return ret.
 
-This fixes a compilation warning in pscsi_complete_cmd():
+Clean up the following clang-analyzer warning:
 
-     drivers/target/target_core_pscsi.c: In function ‘pscsi_complete_cmd’:
-     drivers/target/target_core_pscsi.c:624:5: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
-     ; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
+drivers/infiniband/ulp/srpt/ib_srpt.c:2860:3: warning: Value stored to
+'ret' is never read [clang-analyzer-deadcode.DeadStores]
 
-Link: https://lore.kernel.org/r/20210228055645.22253-5-chaitanya.kulkarni@wdc.com
-Reviewed-by: Mike Christie <michael.christie@oracle.com>
-Reviewed-by: Johannes Thumshirn <johannes.thumshirn@wdc.com>
-Signed-off-by: Chaitanya Kulkarni <chaitanya.kulkarni@wdc.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 ---
- drivers/target/target_core_pscsi.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index d72a4058fd08..0ce3697ecbd7 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -629,8 +629,9 @@ static void pscsi_transport_complete(struct se_cmd *cmd, struct scatterlist *sg,
- 			unsigned char *buf;
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index ea44780..3cadf12 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -2858,7 +2858,6 @@ static void srpt_queue_response(struct se_cmd *cmd)
+ 			&ch->sq_wr_avail) < 0)) {
+ 		pr_warn("%s: IB send queue full (needed %d)\n",
+ 				__func__, ioctx->n_rdma);
+-		ret = -ENOMEM;
+ 		goto out;
+ 	}
  
- 			buf = transport_kmap_data_sg(cmd);
--			if (!buf)
-+			if (!buf) {
- 				; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
-+			}
- 
- 			if (cdb[0] == MODE_SENSE_10) {
- 				if (!(buf[3] & 0x80))
 -- 
-2.30.2
+1.8.3.1
 
