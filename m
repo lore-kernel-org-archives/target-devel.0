@@ -2,74 +2,75 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19CFFC433ED
-	for <target-devel@archiver.kernel.org>; Thu,  6 May 2021 10:15:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AB9CC433B4
+	for <target-devel@archiver.kernel.org>; Thu,  6 May 2021 11:34:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C6D25611CB
-	for <target-devel@archiver.kernel.org>; Thu,  6 May 2021 10:15:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5508661029
+	for <target-devel@archiver.kernel.org>; Thu,  6 May 2021 11:34:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233791AbhEFKQJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 6 May 2021 06:16:09 -0400
-Received: from out30-57.freemail.mail.aliyun.com ([115.124.30.57]:55482 "EHLO
-        out30-57.freemail.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S232512AbhEFKQI (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Thu, 6 May 2021 06:16:08 -0400
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R201e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04423;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=10;SR=0;TI=SMTPD_---0UXygmBf_1620296106;
-Received: from j63c13417.sqa.eu95.tbsite.net(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0UXygmBf_1620296106)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Thu, 06 May 2021 18:15:07 +0800
-From:   Yang Li <yang.lee@linux.alibaba.com>
-To:     bvanassche@acm.org
-Cc:     dledford@redhat.com, jgg@ziepe.ca, nathan@kernel.org,
-        ndesaulniers@google.com, linux-rdma@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-        clang-built-linux@googlegroups.com,
-        Yang Li <yang.lee@linux.alibaba.com>
-Subject: [PATCH] ib_srpt: Remove redundant assignment to ret
-Date:   Thu,  6 May 2021 18:15:05 +0800
-Message-Id: <1620296105-121964-1-git-send-email-yang.lee@linux.alibaba.com>
-X-Mailer: git-send-email 1.8.3.1
+        id S234735AbhEFLf3 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 6 May 2021 07:35:29 -0400
+Received: from mail.kernel.org ([198.145.29.99]:41602 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S234603AbhEFLf2 (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Thu, 6 May 2021 07:35:28 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id A241E61157;
+        Thu,  6 May 2021 11:34:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1620300870;
+        bh=8/cRQsRVgB8StZWU9Xp8Xr8DXDhLO/Z29n+TRUw5MM8=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=N8F9gJR4X/sfeZY6WomvCBM0VWYm8O4yGQw3tvVP74DVD98XCOTx36h+nprSmXrQT
+         5Kl5evgRcsp1qP3hpvD4WPEvBIaey4PkCQy9V7vU728w7v5OEvDsIXUQojOC7LECzl
+         67Uu05lft0nRp4ycSd4H05pQQfYtKKq/jNVX9wQrTScltBoGJ3aD96jWjizoN6MVhE
+         ruawG2onLNW9xnvJ+1az9K5tRLXB7t4aeRw97fYn77mbu5CV0W3epRjt/iez83rIQo
+         BDHVbOA9FFTZYrQg+evX4poLXZiseOTsGCmvnRkF0hXvlDfx52cWXzY8oygGAGc1LH
+         YgSWyHy7uFniA==
+Date:   Thu, 6 May 2021 14:34:26 +0300
+From:   Leon Romanovsky <leon@kernel.org>
+To:     Yang Li <yang.lee@linux.alibaba.com>
+Cc:     bvanassche@acm.org, dledford@redhat.com, jgg@ziepe.ca,
+        nathan@kernel.org, ndesaulniers@google.com,
+        linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, clang-built-linux@googlegroups.com
+Subject: Re: [PATCH] ib_srpt: Remove redundant assignment to ret
+Message-ID: <YJPUQkQCS86mS9gw@unreal>
+References: <1620296105-121964-1-git-send-email-yang.lee@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1620296105-121964-1-git-send-email-yang.lee@linux.alibaba.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Variable 'ret' is set to -ENOMEM but this value is never read as it is
-overwritten with a new value later on, hence it is a redundant
-assignment and can be removed
+On Thu, May 06, 2021 at 06:15:05PM +0800, Yang Li wrote:
+> Variable 'ret' is set to -ENOMEM but this value is never read as it is
+> overwritten with a new value later on, hence it is a redundant
+> assignment and can be removed
+> 
+> In 'commit b79fafac70fc ("target: make queue_tm_rsp() return void")'
+> srpt_queue_response() has been changed to return void, so after "goto
+> out", there is no need to return ret.
+> 
+> Clean up the following clang-analyzer warning:
+> 
+> drivers/infiniband/ulp/srpt/ib_srpt.c:2860:3: warning: Value stored to
+> 'ret' is never read [clang-analyzer-deadcode.DeadStores]
+> 
+> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+> ---
+>  drivers/infiniband/ulp/srpt/ib_srpt.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
 
-In 'commit b79fafac70fc ("target: make queue_tm_rsp() return void")'
-srpt_queue_response() has been changed to return void, so after "goto
-out", there is no need to return ret.
+Fixes: b99f8e4d7bcd ("IB/srpt: convert to the generic RDMA READ/WRITE API") 
 
-Clean up the following clang-analyzer warning:
-
-drivers/infiniband/ulp/srpt/ib_srpt.c:2860:3: warning: Value stored to
-'ret' is never read [clang-analyzer-deadcode.DeadStores]
-
-Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
----
- drivers/infiniband/ulp/srpt/ib_srpt.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index ea44780..3cadf12 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -2858,7 +2858,6 @@ static void srpt_queue_response(struct se_cmd *cmd)
- 			&ch->sq_wr_avail) < 0)) {
- 		pr_warn("%s: IB send queue full (needed %d)\n",
- 				__func__, ioctx->n_rdma);
--		ret = -ENOMEM;
- 		goto out;
- 	}
- 
--- 
-1.8.3.1
-
+Thanks,
+Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
