@@ -2,98 +2,135 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42704C433B4
-	for <target-devel@archiver.kernel.org>; Thu,  6 May 2021 15:13:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18DCEC433B4
+	for <target-devel@archiver.kernel.org>; Mon, 10 May 2021 04:08:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0EB9961041
-	for <target-devel@archiver.kernel.org>; Thu,  6 May 2021 15:13:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E597360FE8
+	for <target-devel@archiver.kernel.org>; Mon, 10 May 2021 04:08:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235067AbhEFPOI (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 6 May 2021 11:14:08 -0400
-Received: from mail-pl1-f174.google.com ([209.85.214.174]:36553 "EHLO
-        mail-pl1-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234972AbhEFPOH (ORCPT
+        id S229561AbhEJEJ2 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 10 May 2021 00:09:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38354 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229468AbhEJEJ0 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 6 May 2021 11:14:07 -0400
-Received: by mail-pl1-f174.google.com with SMTP id a11so3560491plh.3;
-        Thu, 06 May 2021 08:13:08 -0700 (PDT)
+        Mon, 10 May 2021 00:09:26 -0400
+Received: from mail-oi1-x233.google.com (mail-oi1-x233.google.com [IPv6:2607:f8b0:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C360EC061573;
+        Sun,  9 May 2021 21:08:21 -0700 (PDT)
+Received: by mail-oi1-x233.google.com with SMTP id k25so14666086oic.4;
+        Sun, 09 May 2021 21:08:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=sender:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=oJUQEbV77gLPFPebnUgArJPF0r/oSrX9JEGl+nPDzGo=;
+        b=SJmRazWfGyKyENkVTbbRoORY803IJpnk3AB4JlNAShd+WHC68KnF1zHK+2ZfkbEK4p
+         yfUJ5w5jXPUfGOXj33SAf6qcEVRbzYb23QKEUcxaMVzpmAj9xnK9DW/Div4gIjs5Qr+l
+         3br9HL6nqEaMErocqYVPzfOmaHabU/LKaU+Vl20fsXstYVYFOX5YF3Ut9i7KKpuFutcC
+         CL/GAb9bCm9+pn9QTAp7vvKTSyJVbCXEK/d47Y2S+5kYEhJEBltmfwfKLtAlq2o8RWEI
+         I1veuza5C/sDLNKbfQguiG4gYVh/ea1/o3TgYfRqU3zAq6ii85dbaxS3b50Otu9xvvMs
+         Yb+Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=pRnGiGHsKWfVBqXpARWMO9JiAiHKrow49Ba7ktw3qHY=;
-        b=d45NtWU3rq6RVb+Z1EsMxS4eFHS0RWLIJta2qtEB59fL9RTxZ32QPs2B3UlKcadEsV
-         G3YeWl5zTGSK4XgugNPahs8XEzzpDGr+sWFcxV65WsLNLLACVIPLdUUf4YJFPrvoG/Jv
-         8e9DnWB2vNvTevaOuvCH5eBLs/A5fbryJZkJq/oExx9i3pY4o6gScOtWmzTrmX9Mp3FP
-         PUlvplZ7gGQXUuiE5Srr3ktmn+AmfgfL+KANaSI6d7qu8Uo9SM/v3QCuCojJjLPBs2m7
-         oSO4Mb08I+MjZqTAxRDfnCm2Ra2BBKAFd+sMTy7/m/04bthh6JGX4cl9+TjIDHDGfZeu
-         mgTg==
-X-Gm-Message-State: AOAM532Jp2l1xtSh7LbnyNCfLXSN1DTr+gpG3foC2H80hT3V5pDdlvWZ
-        CIJ3OWWnL3WMNqtdCSyDG3uCf0QRLpI=
-X-Google-Smtp-Source: ABdhPJw8IsXYWTECgE+bP7mQDAdCUNb17MCajwCifVpimtINEmO1pgVLYSewwp8XbqX6rR6G2E0G/Q==
-X-Received: by 2002:a17:903:22c9:b029:ed:7d2a:8d13 with SMTP id y9-20020a17090322c9b02900ed7d2a8d13mr5001619plg.72.1620313988091;
-        Thu, 06 May 2021 08:13:08 -0700 (PDT)
-Received: from ?IPv6:2601:647:4000:d7:c791:bbbb:380d:7882? ([2601:647:4000:d7:c791:bbbb:380d:7882])
-        by smtp.gmail.com with ESMTPSA id j12sm2374018pff.49.2021.05.06.08.13.06
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 06 May 2021 08:13:07 -0700 (PDT)
-Subject: Re: [PATCH] ib_srpt: Remove redundant assignment to ret
-To:     Leon Romanovsky <leon@kernel.org>,
-        Yang Li <yang.lee@linux.alibaba.com>
-Cc:     dledford@redhat.com, jgg@ziepe.ca, nathan@kernel.org,
-        ndesaulniers@google.com, linux-rdma@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-        clang-built-linux@googlegroups.com
-References: <1620296105-121964-1-git-send-email-yang.lee@linux.alibaba.com>
- <YJPUQkQCS86mS9gw@unreal>
-From:   Bart Van Assche <bvanassche@acm.org>
-Message-ID: <b67909dc-c5d6-a8ce-5bea-36b1c7a2b04b@acm.org>
-Date:   Thu, 6 May 2021 08:13:05 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.0
+        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+         :mime-version:content-transfer-encoding;
+        bh=oJUQEbV77gLPFPebnUgArJPF0r/oSrX9JEGl+nPDzGo=;
+        b=oC+4mqmUAJo4zzbOrdkufeBJN/EmQuS5SBeq/xTWCjqFq0UNtyrye3QrnxDNOzbkru
+         JqLeJMxMQy2zO0eAtaaZkf9M8FADIGt4mSWcPlnGPTqCnwoU56ohiqHAwB3cpwZpqtDZ
+         seIGjdygpT/BQCKmx1ayaL5Ep2GUPA7EnQCOush9IBihEy8hgr01lZPWH6D1NEf+K3B5
+         yqhNhIxfSVJ/xHJh6zld2i5O0Fg20BLAv158V8OlpVCkCF5gCady2qhLDxaFAWVPhjqh
+         N+bZS5feoowOgR0zkF18jT5knXNh3zftrQ1gxfgRYxyIsy67AGvSqj+ikiK3TokWqSvu
+         4yEA==
+X-Gm-Message-State: AOAM533KfIVOFsPI+10Am9Yv5BAI71KUi/nXjRuCmuLWXYgJLGjQ2vSs
+        3gwUPC82k8fWGR8WJVDn0TI=
+X-Google-Smtp-Source: ABdhPJzbPz5gq60dA3ewoRmhZRe473t8Nm/xDP5TKJS0TB5VlAOITqGY/H9Tfaik1/KYPjEEab235A==
+X-Received: by 2002:aca:c413:: with SMTP id u19mr24299020oif.41.1620619700547;
+        Sun, 09 May 2021 21:08:20 -0700 (PDT)
+Received: from localhost ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id z9sm2460329oos.16.2021.05.09.21.08.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 09 May 2021 21:08:20 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+From:   Guenter Roeck <linux@roeck-us.net>
+To:     "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
+        Hou Pu <houpu@bytedance.com>,
+        Mike Christie <michael.christie@oracle.com>
+Subject: [PATCH] scsi: target: iscsi: Drop unnecessary container_of
+Date:   Sun,  9 May 2021 21:08:17 -0700
+Message-Id: <20210510040817.2050266-1-linux@roeck-us.net>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <YJPUQkQCS86mS9gw@unreal>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 5/6/21 4:34 AM, Leon Romanovsky wrote:
-> On Thu, May 06, 2021 at 06:15:05PM +0800, Yang Li wrote:
->> Variable 'ret' is set to -ENOMEM but this value is never read as it is
->> overwritten with a new value later on, hence it is a redundant
->> assignment and can be removed
->>
->> In 'commit b79fafac70fc ("target: make queue_tm_rsp() return void")'
->> srpt_queue_response() has been changed to return void, so after "goto
->> out", there is no need to return ret.
->>
->> Clean up the following clang-analyzer warning:
->>
->> drivers/infiniband/ulp/srpt/ib_srpt.c:2860:3: warning: Value stored to
->> 'ret' is never read [clang-analyzer-deadcode.DeadStores]
->>
->> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
->> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
->> ---
->>  drivers/infiniband/ulp/srpt/ib_srpt.c | 1 -
->>  1 file changed, 1 deletion(-)
->>
-> 
-> Fixes: b99f8e4d7bcd ("IB/srpt: convert to the generic RDMA READ/WRITE API") 
-> 
-> Thanks,
-> Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
+The structure pointer passed to container_of() is never NULL; that was
+already checked. That means that the result of container_of() operations
+on it is also never NULL, even though se_node_acl is the first element
+of the structure embedding it. On top of that, it is misleading to perform
+a NULL check on the result of container_of() because the position of the
+contained element could change, which would make the test invalid.
+Remove the unnecessary NULL check.
 
-Reverting commit b99f8e4d7bcd and handling queue_*_rsp() errors in the
-LIO core probably would be a better approach. Anyway:
+As it turns out, the container_of operation was only made for the purpose
+of the NULL check. If the container_of is actually needed, it is repeated
+later. Remove the container_of operation as well.
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+The NULL check was identified and removed with the following Coccinelle
+script.
+
+@@
+type t;
+identifier v;
+statement s;
+@@
+
+<+...
+(
+  t v = container_of(...);
+|
+  v = container_of(...);
+)
+  ...
+  when != v
+- if (\( !v \| v == NULL \) ) s
+...+>
+
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Hou Pu <houpu@bytedance.com>
+Cc: Mike Christie <michael.christie@oracle.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ drivers/target/iscsi/iscsi_target_nego.c | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index 151e2949bb75..fb1b5816a5b6 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -118,13 +118,6 @@ static u32 iscsi_handle_authentication(
+ 					" CHAP auth\n");
+ 			return -1;
+ 		}
+-		iscsi_nacl = container_of(se_nacl, struct iscsi_node_acl,
+-				se_node_acl);
+-		if (!iscsi_nacl) {
+-			pr_err("Unable to locate struct iscsi_node_acl for"
+-					" CHAP auth\n");
+-			return -1;
+-		}
+ 
+ 		if (se_nacl->dynamic_node_acl) {
+ 			iscsi_tpg = container_of(se_nacl->se_tpg,
+-- 
+2.25.1
+
