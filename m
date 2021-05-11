@@ -2,170 +2,350 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84FD3C433B4
-	for <target-devel@archiver.kernel.org>; Tue, 11 May 2021 03:26:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 484B9C433B4
+	for <target-devel@archiver.kernel.org>; Tue, 11 May 2021 16:14:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5D11861494
-	for <target-devel@archiver.kernel.org>; Tue, 11 May 2021 03:26:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 01A69613C3
+	for <target-devel@archiver.kernel.org>; Tue, 11 May 2021 16:14:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230329AbhEKD1F (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 10 May 2021 23:27:05 -0400
-Received: from aserp2120.oracle.com ([141.146.126.78]:41690 "EHLO
-        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230198AbhEKD1C (ORCPT
+        id S230484AbhEKQPv (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 11 May 2021 12:15:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44614 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231299AbhEKQPv (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 10 May 2021 23:27:02 -0400
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
-        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 14B3EXBY073584;
-        Tue, 11 May 2021 03:25:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : content-type :
- content-transfer-encoding : mime-version; s=corp-2020-01-29;
- bh=kx25sdYwMojdQY8XbeqXAL8xkXLXXD25KJKK3ymgqjA=;
- b=cHVSjPtspmXHUW5twlnFhZZTa1Ijm6TMB3e7OnUzp7qhbFowSaKpAOhhTI8wMfgrRjMH
- snaEfnGXy/jjQiwcKK0uURo+2Dz8szkFKc6wkdx7twzaNdSOObokOgzOvkueocfLRCjE
- 4+hqzPfEJDolqFgEUIA9wb7P4Vz/vGeKnkF1yxtmZLHEtwcXMKADdvsYsHQkNRxtEZ1o
- hafl26DArOadf9Dlo/YIbuDn+ib2yLTbzGkUU3ViU4y7hPP2vKmFv3kktxX3UKZhRoto
- kpov5JbU8qygXEZMh2OiMw0M/rUVU9szl6fHcPSccBGz+ZmhWQ/p4T+k4IDZmwdMdwuw gA== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by aserp2120.oracle.com with ESMTP id 38djkmd7vp-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 11 May 2021 03:25:52 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 14B3FvEA152680;
-        Tue, 11 May 2021 03:25:51 GMT
-Received: from nam12-bn8-obe.outbound.protection.outlook.com (mail-bn8nam12lp2175.outbound.protection.outlook.com [104.47.55.175])
-        by userp3020.oracle.com with ESMTP id 38fh3w1u2k-4
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 11 May 2021 03:25:51 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=mHfUWbMjDFb6NkuAUPc3KSQwuSBWomlDB/t5LyIF/AhL7a2f+F7uevdLMbv8ifTApAHyLX2ho/0rp+ByDiWyP+f48UvyHhhRAgStlxBrRHpCnJ7L2OjyMnixFAszpVeDytrhgMKx637jEdjxIA8SoBjl7wluI9D0K7jwwkPgVUkPcefWUOcPbOCapki2MdDlba8ZqkaMDP3GBRIPlqUGHZuhEasyS/6VBbcALbbaHc2p+KIOUxoGzki59Xjq664fNuroH3Q/5Re7jMnLXVpJnL3a1fWoAIyGt+0vECy+dEENmLtS8PyE8pgsOJqFEEiwDCkIckM6uFw+6sFy4M+fKA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=kx25sdYwMojdQY8XbeqXAL8xkXLXXD25KJKK3ymgqjA=;
- b=hg1tg28XOzwRKVCftR98JT7uFa/FnnSamNoq/dXb2xK8G/k3FQ29DK+mZL5UdmNbELB9t+cEEvGLaDrPLO/rGmW0/aZACAURYrwrwWDfEnF4J91kXToivTbv3EjMP+pQyH8IA3Kk9xhIvqJT9p+Cp7jvg8BMETRi7KdKDowBMzD7oLQdnph1F9VagL2Wm97MIL348r745ezr7l7AKBYjV01VX1BFjQeVQiYuur+l+vKfbJVy5/wub0/MBgmcNRcQslbg0HYO13ZGJc09qXwN61/Y0Rchyo+H0DE3jTvW0yl4a6O0qWmhQPOr6tYsRAyFDNQovq9mlpqFLRMC3mBmfA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
+        Tue, 11 May 2021 12:15:51 -0400
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0855C061574;
+        Tue, 11 May 2021 09:14:44 -0700 (PDT)
+Received: by mail-ej1-x636.google.com with SMTP id u21so30542782ejo.13;
+        Tue, 11 May 2021 09:14:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=kx25sdYwMojdQY8XbeqXAL8xkXLXXD25KJKK3ymgqjA=;
- b=q2j3KyfsDzGEYaOfoB13F3/DqABbiC+Diiog//MmlKBUGMfVTc3qQS7VAW3+V1QSTqCB0FD5OeHM9j6sh+Wk3czMqjkm/aoNzWRl2YzByTMK34eJaD9YS1Ysobq5ptbPrIflVezbpMDlQqIvRGId807QSvH0U1OM8DCjJRhu/C8=
-Authentication-Results: vger.kernel.org; dkim=none (message not signed)
- header.d=none;vger.kernel.org; dmarc=none action=none header.from=oracle.com;
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com (2603:10b6:510:3d::12)
- by PH0PR10MB4408.namprd10.prod.outlook.com (2603:10b6:510:39::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4108.27; Tue, 11 May
- 2021 03:25:50 +0000
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::4c61:9532:4af0:8796]) by PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::4c61:9532:4af0:8796%7]) with mapi id 15.20.4108.031; Tue, 11 May 2021
- 03:25:50 +0000
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     linux-scsi@vger.kernel.org,
-        Yang Yingliang <yangyingliang@huawei.com>,
-        linux-kernel@vger.kernel.org, target-devel@vger.kernel.org
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>
-Subject: Re: [PATCH -next] scsi: target: iscsi: Switch to kmemdup_nul()
-Date:   Mon, 10 May 2021 23:25:34 -0400
-Message-Id: <162070348782.27567.18217960019739448581.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20210402092517.2445595-1-yangyingliang@huawei.com>
-References: <20210402092517.2445595-1-yangyingliang@huawei.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [138.3.201.9]
-X-ClientProxiedBy: SN4PR0501CA0144.namprd05.prod.outlook.com
- (2603:10b6:803:2c::22) To PH0PR10MB4759.namprd10.prod.outlook.com
- (2603:10b6:510:3d::12)
-MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from ca-mkp.mkp.ca.oracle.com (138.3.201.9) by SN4PR0501CA0144.namprd05.prod.outlook.com (2603:10b6:803:2c::22) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4129.20 via Frontend Transport; Tue, 11 May 2021 03:25:49 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 5ae90218-0102-415e-729f-08d9142c79b2
-X-MS-TrafficTypeDiagnostic: PH0PR10MB4408:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <PH0PR10MB4408F97C6FF17FFE2995EB1A8E539@PH0PR10MB4408.namprd10.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:4303;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: rhN4wnHLy5Wh+zgeRvuicOeaVm++/lzVSUZ1RG/FrS/GfBIEfSRFyUGhmxDjQL6GiyCg0j/14CF2tqMgJq3o7rSDuqBzXoBgl5CpCRPlmOY55RDY4Bm0iCB1wlinxiMot0ce1blbPkf+TfL3qBSF578GgP1yI/l2Aaw1vyYrNFq0OlgVaozpHUWdELCB+/L4Bp5wt54J6sDiwRvGxF04a2hncmlyNQwlbaaYoUJLnSRJ7qChY0CT+ssu7R3TGUg3EVV8tDWAc17RTq1eDqLulcTEMBR+PVjghMva47ViAOAdhfFOgYvsKt8b2zMBoLmUTKdET8agi2TaTo5/UBtniCkmg2IKZpPbJfKIBlSyM+vki5wWixqJmx7z9q1nm/ari1b6k14LU96cLG7g2wGHWelyqGSskxZ3dMvvX1VJVgp/FmMJnqUwQBxv/NQjQNDaQh+S2PztHtFCDcbf0/y6L+px5XO9FoeYZ83DlvS9nYUUSNJsp08fU40YR6YrSrZKyoFOSjVSnsd2lI8zR2u3d9Gk2LY/eJAR6d8mhCQivIIH+8S28cEW4vw2VAuawjuUI+JF4WQN2amXfEVdTS9joT1r1p7Lkg7+8HhcwYr5s3uG4iPJZ0SjppT0HcnrhuUEirijKaXndPmG1BBi52HzvPVeBpPxGOK3eQE96aHqxWRJnoi8B57KQXxJCg7+3MWRV4/E7l1z8hd0t2RF8gFyKcuYrzIJsTKSUeVYxSyP214=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB4759.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(376002)(136003)(396003)(346002)(366004)(39860400002)(66556008)(6486002)(107886003)(5660300002)(66476007)(16526019)(2616005)(38350700002)(38100700002)(6666004)(478600001)(186003)(66946007)(36756003)(2906002)(4744005)(956004)(103116003)(26005)(4326008)(316002)(966005)(8936002)(8676002)(86362001)(52116002)(7696005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?utf-8?B?YjdZUnZRSEpIZ2VDcU9Dd0poVkJPcWhVdlJvOG5zdlB2bkFhV3FrSmdSd3Rx?=
- =?utf-8?B?bnlPMGxnNk1EOFI3RlhMcFlKdExNYXB2K1VhZG9KdzQ0cERaMUVySUVrN1di?=
- =?utf-8?B?dUFzRktPb0V3eGRsRHVpanh0bXN2WXRnVkUvakl5b0pRN3VOdi9TdEl6a2lN?=
- =?utf-8?B?cHdUZHBJMjF5anV5MEE3ZWdHd3ZZMTRCb3piaWlxWWFNQ1h0clNDZEFMU0pD?=
- =?utf-8?B?VlJqbGRuZ1h1dnFwYmU1Z200WWhFRCtoS2V5Sit4TTRHbkVBdWlDdnRCNG1W?=
- =?utf-8?B?ZmpzQ1lOTFcyOG1ydlpvaE9qajhhdmJFSjFqTytlb3ZCanBneGJSaHdFVHpY?=
- =?utf-8?B?Z0toT3RoNWZoUHNlZlZUQ3E1djI3NWtBaWFteS8ybVlBWmlVcXpzaWdnalVp?=
- =?utf-8?B?dDhwV3lmVWY0N2FIRTZHZEtjY1ZVdjhWVDRPWHlYd1NwTXJhYys4azRNbXpU?=
- =?utf-8?B?WjZqUWg2c294WXpQczNHZWdQZFhFNEs0SEFmdkhpTEdHVkR5Mi9lSE5IaHg2?=
- =?utf-8?B?K1FRWld0TXk5UmpJK0l4Q3hzVDFHaE5tK3cvTkdXRG1QVGwxaWJDbHIyV2VS?=
- =?utf-8?B?UnNmWW5MSTBsYWhxVHZXOE5JQ3R0UlBxQ2lreG5DV0VDT0RkNWVWQ0I2U2Q4?=
- =?utf-8?B?SXdGdU5lYzJYcjZiUkhrTU5UNWl3MDAvTjRXMFFVVGE3eFVMVzlsTWJORDlH?=
- =?utf-8?B?bkx5eDBVT0tiN0xVdXovUkltSzRyZXUrbkQxZjY4eWNQcFQ3UXE5eHRGSnpR?=
- =?utf-8?B?VW5yaUhOeXk3Yi9oTmtTYVdxSEpPRW90ekF4MENmUUptcHM5Q3RudDRYS2hN?=
- =?utf-8?B?Ni9sL0huV1hMVlVaVTB6OTZjcmYwd2NyKzNaWUFYd3Q5WnFQYlE1VUdoQllQ?=
- =?utf-8?B?VWtCZkpKMldPQUptRGZwa0paaXpvZSt2c09kWURIejhBK0RtSDFCOUF1NEpl?=
- =?utf-8?B?dGpDb0l0bWhqdWxoL01BUkk5YmNqUmlaL0Rickc1cEozYllXNGtyYWxlenlv?=
- =?utf-8?B?NTFla1dYbHV4ZGtWY0lBWThENFM3QjZqYVB1Ty9ob3Q5dWQrelpZa1NTWVZK?=
- =?utf-8?B?Q29RMkpQM3ZkRHpSbW5QUHNoMGpGdVp2OWJER3BHNStEdGZKZUE2SWRDSVUx?=
- =?utf-8?B?MlNsSXQrMCtCNk5JdlBEZDROZzNUTmhFV3lTVWtqdWk2aHRBd09rYkJIWnhG?=
- =?utf-8?B?enIwUkY0MVZCSTU1R3ZYK3NaSG84UU9pTjBoQjcydGNMQkxpZzc2eDR3aHZq?=
- =?utf-8?B?dVBkaEc3clZocnhiSWxmQ2MvRzhiS1YyS2k0YVVwYWJIOHVVSHhtVURHaVAw?=
- =?utf-8?B?VFl2UndyNjdsSnZDbzlHeTRJZ2dTL0JURjd3M2JSZVpCOHhOVlFsUDJ3Y2xY?=
- =?utf-8?B?aStPNmo3VHZENFBSUnZFUkp2RXJsS2ljeWdCNUdpbVN1NlFkaTFrKytKK2NG?=
- =?utf-8?B?MUxSSGFiQzQ3Tis4MGJmSTcrMDRCaG5peFpxdDI0b2xXQkFJNnl2dXRSVU45?=
- =?utf-8?B?aXpsZVRMWGd0RFlVNzRORGtFc3JWMmZvTmUrdDJIeXBiNlVMcEtTYkxJbkZK?=
- =?utf-8?B?Nlc2M2RramphaEZqZkVuZFRWRHlNNXpnbU1yd3dZNWJqS3JSRmlrTHROR0hY?=
- =?utf-8?B?dlYvRjgxRUMyRzhDY1MzcHBhUzdHZHZEdTVyTk83NWljQnhuR012aDRiOGhu?=
- =?utf-8?B?OFp5QlNCNy9OS1lLWWdOMlhnZnNNTG8xbU1XeUI4YzVuTXkxNG5oazVvM2lx?=
- =?utf-8?Q?UmDMnJHP8srCeBIkzCEmEWeeAmmUslZY516w4UX?=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5ae90218-0102-415e-729f-08d9142c79b2
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB4759.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 May 2021 03:25:50.4033
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: qpqLEaHhNYcNyUPRO8L9gEcolXBVDBV4omumkVuf8TcXpqEgBIaDILTyVeYxvBb4u8ooOBFprOyRocpUk5j+KsKcAYMtMe6bMKpBVCVXHOg=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR10MB4408
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9980 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 phishscore=0 suspectscore=0
- malwarescore=0 adultscore=0 bulkscore=0 mlxlogscore=999 mlxscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
- definitions=main-2105110024
-X-Proofpoint-GUID: OnL27KCsZltancbK9hCaZ-6TENWIqupV
-X-Proofpoint-ORIG-GUID: OnL27KCsZltancbK9hCaZ-6TENWIqupV
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9980 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 priorityscore=1501
- suspectscore=0 clxscore=1011 bulkscore=0 adultscore=0 impostorscore=0
- spamscore=0 phishscore=0 mlxlogscore=999 mlxscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
- definitions=main-2105110024
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=acD6l7Clo6pyBaUt7sS01WEekU1Bglzidk/ngX6QxGI=;
+        b=M5QR0SKcbDMD255xd1CxCn86RgwAYlnO5J+KB6vgjY8jWpGPxfYtCNzl73yqoDgBq8
+         XjK/qg1ru6lUph6w4UAvR+9lDAH1dkzOkMrx8zA0Vs5zoaQAYM6WEutIGQu1AJqrG03s
+         J9/jdqR4QbVQsruyDbA48qMOOUO2nK8BN9iQTaGTLwnuCUmb9Nrewi7kLvqqyE/L45PJ
+         6p2JNnWW/2pbcVo3PrNhrH9KAbLpgdDYKfWZeZECfFHVkkp0hy0M6YK+A3/oDxEXNXse
+         htRWodD5ACRbsj4wTNWKAe0QlFNIFSa9PUFzmKkViq6IpAtDQUqh88GAHuXJoffMbCay
+         AMnw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=acD6l7Clo6pyBaUt7sS01WEekU1Bglzidk/ngX6QxGI=;
+        b=hU9ykC7yMgNiYObuUCINU9lsxF59i2ruALoWEzwK4sQj/BI3ajfhLle9l0UXh2mCA/
+         RfWQsCNFRSJepn0JyE88lAIBBq8WX80tZ58No/7xGicP/evVS2nJBuNZcBAowP6VJ2E0
+         VkltwKUb69wI6L8MJMgn/MrsuJ/JexIFC58FAJv2Oi42EFPpnm2xKmJriLCZl3g5Ec3K
+         3HrMvxbvKKhc7lW/fuVug9Tyz+t3/wFh9+WLqqCFu51OGyB9/dVhDgMjmttyxVSAVDwn
+         WHSk/tcLoqYpWETIMAIDwyc5qB+PsZMz8gFe5c/iMhK9jeJIVBLqwolzGl7eONIFt92f
+         FVgw==
+X-Gm-Message-State: AOAM533keKC9mePSircCWWxgWng0heeeyXRj9UiWU47H60stVLZ6QHpt
+        XCQ+umBJEaN4iaxtruDrGRDX1hJLEXM=
+X-Google-Smtp-Source: ABdhPJxkMMIABwkYU19noMhgAki5RaDriqpsnuCX36OwaftuMgcPCHpkLjv9nYcN7nXzhaVN5rBy4g==
+X-Received: by 2002:a17:906:4d11:: with SMTP id r17mr32521246eju.217.1620749683247;
+        Tue, 11 May 2021 09:14:43 -0700 (PDT)
+Received: from localhost (ipbcc11466.dynamic.kabel-deutschland.de. [188.193.20.102])
+        by smtp.gmail.com with ESMTPSA id hz15sm3380578ejc.57.2021.05.11.09.14.42
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 11 May 2021 09:14:42 -0700 (PDT)
+From:   Bodo Stroesser <bostroesser@gmail.com>
+To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     Bodo Stroesser <bostroesser@gmail.com>
+Subject: [PATCH] scsi: target: tcmu: Add new feature KEEP_BUF
+Date:   Tue, 11 May 2021 18:14:24 +0200
+Message-Id: <20210511161424.7247-1-bostroesser@gmail.com>
+X-Mailer: git-send-email 2.12.3
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Fri, 2 Apr 2021 17:25:17 +0800, Yang Yingliang wrote:
+When running command pipelining for WRITE direction commands,
+(e.g. tape device write) userspace sends cmd completion to cmd
+ring before processing write data. In that case userspace has to
+copy data before sending completion, because cmd completion also
+implicitly releases the data buffer in data area.
 
-> Use kmemdup_nul() helper instead of open-coding to
-> simplify the code.
+The new feature KEEP_BUF allows userspace to optionally keep the
+buffer after completion by setting new bit TCMU_UFLAG_KEEP_BUF in
+tcmu_cmd_entry_hdr->uflags. In that case buffer has to be released
+explicitly by writing the cmd_id to new action item free_kept_buf.
 
-Applied to 5.14/scsi-queue, thanks!
+All kept buffers are released during reset_ring and if userspace
+closes uio device (tcmu_release).
 
-[1/1] scsi: target: iscsi: Switch to kmemdup_nul()
-      https://git.kernel.org/mkp/scsi/c/6235bef6f990
+Signed-off-by: Bodo Stroesser <bostroesser@gmail.com>
+---
+ drivers/target/target_core_user.c     | 145 +++++++++++++++++++++++++++++++---
+ include/uapi/linux/target_core_user.h |   2 +
+ 2 files changed, 137 insertions(+), 10 deletions(-)
 
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 198d25ae482a..98fc2d19bb20 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -191,6 +191,7 @@ struct tcmu_cmd {
+ 	unsigned long deadline;
+ 
+ #define TCMU_CMD_BIT_EXPIRED 0
++#define TCMU_CMD_BIT_KEEP_BUF 1
+ 	unsigned long flags;
+ };
+ 
+@@ -1313,11 +1314,13 @@ tcmu_tmr_notify(struct se_device *se_dev, enum tcm_tmreq_table tmf,
+ 	mutex_unlock(&udev->cmdr_lock);
+ }
+ 
+-static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *entry)
++static bool tcmu_handle_completion(struct tcmu_cmd *cmd,
++				   struct tcmu_cmd_entry *entry, bool keep_buf)
+ {
+ 	struct se_cmd *se_cmd = cmd->se_cmd;
+ 	struct tcmu_dev *udev = cmd->tcmu_dev;
+ 	bool read_len_valid = false;
++	bool ret = true;
+ 	uint32_t read_len;
+ 
+ 	/*
+@@ -1328,6 +1331,13 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 		WARN_ON_ONCE(se_cmd);
+ 		goto out;
+ 	}
++	if (test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags)) {
++		pr_err("cmd_id %u already completed with KEEP_BUF, ring is broken\n",
++		       entry->hdr.cmd_id);
++		set_bit(TCMU_DEV_BIT_BROKEN, &udev->flags);
++		ret = false;
++		goto out;
++	}
+ 
+ 	list_del_init(&cmd->queue_entry);
+ 
+@@ -1377,8 +1387,22 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
+ 		target_complete_cmd(cmd->se_cmd, entry->rsp.scsi_status);
+ 
+ out:
+-	tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
+-	tcmu_free_cmd(cmd);
++	if (!keep_buf) {
++		tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
++		tcmu_free_cmd(cmd);
++	} else {
++		/*
++		 * Keep this command after completion, since userspace still
++		 * needs the data buffer. Mark it with TCMU_CMD_BIT_KEEP_BUF
++		 * and reset potential TCMU_CMD_BIT_EXPIRED, so we don't accept
++		 * a second completion later.
++		 * Userspace can free the buffer later by writing the cmd_id
++		 * to new action attribute free_kept_buf.
++		 */
++		clear_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
++		set_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags);
++	}
++	return ret;
+ }
+ 
+ static int tcmu_run_tmr_queue(struct tcmu_dev *udev)
+@@ -1430,6 +1454,7 @@ static bool tcmu_handle_completions(struct tcmu_dev *udev)
+ 	while (udev->cmdr_last_cleaned != READ_ONCE(mb->cmd_tail)) {
+ 
+ 		struct tcmu_cmd_entry *entry = udev->cmdr + udev->cmdr_last_cleaned;
++		bool keep_buf;
+ 
+ 		/*
+ 		 * Flush max. up to end of cmd ring since current entry might
+@@ -1451,7 +1476,11 @@ static bool tcmu_handle_completions(struct tcmu_dev *udev)
+ 		}
+ 		WARN_ON(tcmu_hdr_get_op(entry->hdr.len_op) != TCMU_OP_CMD);
+ 
+-		cmd = xa_erase(&udev->commands, entry->hdr.cmd_id);
++		keep_buf = !!(entry->hdr.uflags & TCMU_UFLAG_KEEP_BUF);
++		if (keep_buf)
++			cmd = xa_load(&udev->commands, entry->hdr.cmd_id);
++		else
++			cmd = xa_erase(&udev->commands, entry->hdr.cmd_id);
+ 		if (!cmd) {
+ 			pr_err("cmd_id %u not found, ring is broken\n",
+ 			       entry->hdr.cmd_id);
+@@ -1459,7 +1488,8 @@ static bool tcmu_handle_completions(struct tcmu_dev *udev)
+ 			return false;
+ 		}
+ 
+-		tcmu_handle_completion(cmd, entry);
++		if (!tcmu_handle_completion(cmd, entry, keep_buf))
++			break;
+ 
+ 		UPDATE_HEAD(udev->cmdr_last_cleaned,
+ 			    tcmu_hdr_get_len(entry->hdr.len_op),
+@@ -1901,6 +1931,38 @@ static int tcmu_open(struct uio_info *info, struct inode *inode)
+ static int tcmu_release(struct uio_info *info, struct inode *inode)
+ {
+ 	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
++	struct tcmu_cmd *cmd;
++	unsigned long i;
++	bool freed = false;
++
++	mutex_lock(&udev->cmdr_lock);
++
++	xa_for_each(&udev->commands, i, cmd) {
++		/* Cmds with KEEP_BUF set are no longer on the ring, but
++		 * userspace still holds the data buffer. If userspace closes
++		 * we implicitly free these cmds and buffers, since after new
++		 * open the (new ?) userspace cannot find the cmd in the ring
++		 * and thus never will release the buffer by writing cmd_id to
++		 * free_kept_buf action attribute.
++		 */
++		if (!test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags))
++			continue;
++		pr_debug("removing KEEP_BUF cmd %u on dev %s from ring\n",
++			 cmd->cmd_id, udev->name);
++		freed = true;
++
++		xa_erase(&udev->commands, i);
++		tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
++		tcmu_free_cmd(cmd);
++	}
++	/*
++	 * We only freed data space, not ring space. Therefore we dont call
++	 * run_tmr_queue, but call run_qfull_queue if tmr_list is empty.
++	 */
++	if (freed && list_empty(&udev->tmr_queue))
++		run_qfull_queue(udev, false);
++
++	mutex_unlock(&udev->cmdr_lock);
+ 
+ 	clear_bit(TCMU_DEV_BIT_OPEN, &udev->flags);
+ 
+@@ -2145,7 +2207,8 @@ static int tcmu_configure_device(struct se_device *dev)
+ 	mb->version = TCMU_MAILBOX_VERSION;
+ 	mb->flags = TCMU_MAILBOX_FLAG_CAP_OOOC |
+ 		    TCMU_MAILBOX_FLAG_CAP_READ_LEN |
+-		    TCMU_MAILBOX_FLAG_CAP_TMR;
++		    TCMU_MAILBOX_FLAG_CAP_TMR |
++		    TCMU_MAILBOX_FLAG_CAP_KEEP_BUF;
+ 	mb->cmdr_off = CMDR_OFF;
+ 	mb->cmdr_size = udev->cmdr_size;
+ 
+@@ -2277,12 +2340,16 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+ 	mutex_lock(&udev->cmdr_lock);
+ 
+ 	xa_for_each(&udev->commands, i, cmd) {
+-		pr_debug("removing cmd %u on dev %s from ring (is expired %d)\n",
+-			  cmd->cmd_id, udev->name,
+-			  test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags));
++		pr_debug("removing cmd %u on dev %s from ring %s\n",
++			 cmd->cmd_id, udev->name,
++			 test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags) ?
++			 "(is expired)" :
++			 (test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags) ?
++			 "(is keep buffer)" : ""));
+ 
+ 		xa_erase(&udev->commands, i);
+-		if (!test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
++		if (!test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags) &&
++		    !test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags)) {
+ 			WARN_ON(!cmd->se_cmd);
+ 			list_del_init(&cmd->queue_entry);
+ 			cmd->se_cmd->priv = NULL;
+@@ -2931,6 +2998,63 @@ static ssize_t tcmu_reset_ring_store(struct config_item *item, const char *page,
+ }
+ CONFIGFS_ATTR_WO(tcmu_, reset_ring);
+ 
++static ssize_t tcmu_free_kept_buf_store(struct config_item *item, const char *page,
++				     size_t count)
++{
++	struct se_device *se_dev = container_of(to_config_group(item),
++						struct se_device,
++						dev_action_group);
++	struct tcmu_dev *udev = TCMU_DEV(se_dev);
++	struct tcmu_cmd *cmd;
++	u16 cmd_id;
++	int ret;
++
++	if (!target_dev_configured(&udev->se_dev)) {
++		pr_err("Device is not configured.\n");
++		return -EINVAL;
++	}
++
++	ret = kstrtou16(page, 0, &cmd_id);
++	if (ret < 0)
++		return ret;
++
++	mutex_lock(&udev->cmdr_lock);
++
++	{
++		XA_STATE(xas, &udev->commands, cmd_id);
++
++		cmd = xas_load(&xas);
++		if (!cmd) {
++			pr_err("free_kept_buf: cmd_id %d not found\n", cmd_id);
++			count = -EINVAL;
++			goto out_unlock;
++		}
++		if (!test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags)) {
++			pr_err("free_kept_buf: cmd_id %d was not completed with KEEP_BUF\n",
++			       cmd_id);
++			count = -EINVAL;
++			goto out_unlock;
++		}
++		xas_lock(&xas);
++		xas_store(&xas, NULL);
++		xas_unlock(&xas);
++	}
++
++	tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
++	tcmu_free_cmd(cmd);
++	/*
++	 * We only freed data space, not ring space. Therefore we dont call
++	 * run_tmr_queue, but call run_qfull_queue if tmr_list is empty.
++	 */
++	if (list_empty(&udev->tmr_queue))
++		run_qfull_queue(udev, false);
++
++out_unlock:
++	mutex_unlock(&udev->cmdr_lock);
++	return count;
++}
++CONFIGFS_ATTR_WO(tcmu_, free_kept_buf);
++
+ static struct configfs_attribute *tcmu_attrib_attrs[] = {
+ 	&tcmu_attr_cmd_time_out,
+ 	&tcmu_attr_qfull_time_out,
+@@ -2949,6 +3073,7 @@ static struct configfs_attribute **tcmu_attrs;
+ static struct configfs_attribute *tcmu_action_attrs[] = {
+ 	&tcmu_attr_block_dev,
+ 	&tcmu_attr_reset_ring,
++	&tcmu_attr_free_kept_buf,
+ 	NULL,
+ };
+ 
+diff --git a/include/uapi/linux/target_core_user.h b/include/uapi/linux/target_core_user.h
+index 95b1597f16ae..27ace512babd 100644
+--- a/include/uapi/linux/target_core_user.h
++++ b/include/uapi/linux/target_core_user.h
+@@ -46,6 +46,7 @@
+ #define TCMU_MAILBOX_FLAG_CAP_OOOC (1 << 0) /* Out-of-order completions */
+ #define TCMU_MAILBOX_FLAG_CAP_READ_LEN (1 << 1) /* Read data length */
+ #define TCMU_MAILBOX_FLAG_CAP_TMR (1 << 2) /* TMR notifications */
++#define TCMU_MAILBOX_FLAG_CAP_KEEP_BUF (1<<3) /* Keep buf after cmd completion */
+ 
+ struct tcmu_mailbox {
+ 	__u16 version;
+@@ -75,6 +76,7 @@ struct tcmu_cmd_entry_hdr {
+ 	__u8 kflags;
+ #define TCMU_UFLAG_UNKNOWN_OP 0x1
+ #define TCMU_UFLAG_READ_LEN   0x2
++#define TCMU_UFLAG_KEEP_BUF   0x4
+ 	__u8 uflags;
+ 
+ } __packed;
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.12.3
+
