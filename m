@@ -2,120 +2,98 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56395C433B4
-	for <target-devel@archiver.kernel.org>; Wed, 12 May 2021 14:07:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B31D7C43619
+	for <target-devel@archiver.kernel.org>; Wed, 12 May 2021 20:21:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 135F0613E9
-	for <target-devel@archiver.kernel.org>; Wed, 12 May 2021 14:07:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 990F96144F
+	for <target-devel@archiver.kernel.org>; Wed, 12 May 2021 20:21:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230503AbhELOIi (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 12 May 2021 10:08:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57314 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230292AbhELOIh (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Wed, 12 May 2021 10:08:37 -0400
-Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C815C061574;
-        Wed, 12 May 2021 07:07:28 -0700 (PDT)
-Received: by mail-ed1-x52b.google.com with SMTP id f1so5007124edt.4;
-        Wed, 12 May 2021 07:07:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=xkX4RuB/NiZK6BTfiPwydeiPPCc7ucc6NYoKB5Y8RXM=;
-        b=PFKqRkTY6twIzciHACYubY4QrEg28sGdBPnGiecpz1n+teGjKcqzzk33KBBQ58Ulx5
-         4u7YhDF4pQiFa/4kjw8pyo9D2aMGeJEslgzm2lc64CWTrZzLdLChJOqDgjVAGoEeuh3z
-         JghvZKDo/kyaJFCRiK8j8cuRRInpmqvGwwK1n2rn9XZpyOYthCawCp/Pnd1RRpaJnxNV
-         L2u2VQXQe5jEpWHtQsLny3vlYT7xiwJbS2lAYeVWx0XoncS2g0TBmLSQsYIXSiBls0D6
-         WkDqyHoidE6TWVCGI2DcD6pipPJ4wsZTfXUF1fiOEZ36ZjfsnTnG/C+1eIiQOAl/i7j+
-         KtOQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=xkX4RuB/NiZK6BTfiPwydeiPPCc7ucc6NYoKB5Y8RXM=;
-        b=NWnFTTmEn4yOEijJNNYOi1HZPQ2gQ9hLwSR+Y3JtKiXLtj4b12C3UXLabkhbSTq3jH
-         HT6P2PRK+Y4bKvmwNniv5XRR809G6JOQoNG5aw7lMR6us3d0YVoRIrYlhAyRK6jj3EKT
-         74DmbqySyog4mJkoRfO9ZQDpSsDrnWhipajvv95IlReo+/8zrVB9Ew/S7M0H3QCuJtmz
-         RPTfZEDGEvknYc+hRmSm4/EOOAUQTHIE8epJtTOeA8pksBcZdyCucGh3VbzOVC3P+5qu
-         29/G/No4EK2KB9A3uZN+6tbUKem2BBvMZ7mdYgb/ASIoJ+76JdHcibzN/9iqQ8nEHPIq
-         LXXA==
-X-Gm-Message-State: AOAM532jveVqfd2ekOazcQ5HihU99o9u9PLL7dU/+Vkay3+Lf1homJYZ
-        qq8uFYP5Sh575qWqDTjUoaoWqgn3T6Y=
-X-Google-Smtp-Source: ABdhPJwWzIAXg0sj+A3tzXLdDkzzC/S90ihYT040VwrgaLGcisWN1cidbJP5+CAHQFdiH8qyGGwBVQ==
-X-Received: by 2002:a05:6402:3546:: with SMTP id f6mr43825548edd.267.1620828447459;
-        Wed, 12 May 2021 07:07:27 -0700 (PDT)
-Received: from localhost (ipbcc11466.dynamic.kabel-deutschland.de. [188.193.20.102])
-        by smtp.gmail.com with ESMTPSA id t9sm18710289edf.70.2021.05.12.07.07.26
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 12 May 2021 07:07:27 -0700 (PDT)
-From:   Bodo Stroesser <bostroesser@gmail.com>
-To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc:     Bodo Stroesser <bostroesser@gmail.com>
-Subject: [PATCH] scsi: target: tcmu: Rename TCM_DEV_BIT_PLUGGED to TCMU_DEV_BIT_PLUGGED
-Date:   Wed, 12 May 2021 16:06:54 +0200
-Message-Id: <20210512140654.31249-1-bostroesser@gmail.com>
-X-Mailer: git-send-email 2.12.3
+        id S241649AbhELUOA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 12 May 2021 16:14:00 -0400
+Received: from mail.kernel.org ([198.145.29.99]:50702 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1352237AbhELSCv (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Wed, 12 May 2021 14:02:51 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 1A7BF610F7;
+        Wed, 12 May 2021 18:01:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1620842503;
+        bh=H43xm+WMtNrfk1LdR8lVNuVsxTgEYIhPWq3vTxV73Jk=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=qNoLwXSNF8Vfay2dNT6Y3+cATDMwTOCN7TSBOudtRZEYw3Pf51updA07DGiqAjVVg
+         yZTI6h16EairRGIBjZfdxgeET9+BJF5eI0jrhYp1i5gwZ059iXBoMwKNuqi/Td08eZ
+         ZHgxdyR2BvPEsWN+ZhWB3TW1K2TOFH519W3aMz08ai/2X2QxcwAZRHG3cGFc/aJRkr
+         EseTqonQtA159cXnkGxEQsQHP0hDT0DkSyYoNS/veW6Luw81h2vMAGXNXT9srTXsAD
+         aXPhJSh5uSW0TUEifKjUm5lWGC3RiS2SA6M7LJqM5yrlWZQrC4nITpqaUWCIj6EIoj
+         GlNK+eUSkZKTQ==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Bodo Stroesser <bostroesser@gmail.com>,
+        "Martin K . Petersen" <martin.petersen@oracle.com>,
+        Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.12 26/37] scsi: target: tcmu: Return from tcmu_handle_completions() if cmd_id not found
+Date:   Wed, 12 May 2021 14:00:53 -0400
+Message-Id: <20210512180104.664121-26-sashal@kernel.org>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210512180104.664121-1-sashal@kernel.org>
+References: <20210512180104.664121-1-sashal@kernel.org>
+MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-The bit definition TCM_DEV_BIT_PLUGGED should correctly be named
-TCMU_DEV_BIT_PLUGGED, since all other bits in the same bitfield
-have prefix TCMU_
+From: Bodo Stroesser <bostroesser@gmail.com>
 
+[ Upstream commit 9814b55cde0588b6d9bc496cee43f87316cbc6f1 ]
+
+If tcmu_handle_completions() finds an invalid cmd_id while looping over cmd
+responses from userspace it sets TCMU_DEV_BIT_BROKEN and breaks the
+loop. This means that it does further handling for the tcmu device.
+
+Skip that handling by replacing 'break' with 'return'.
+
+Additionally change tcmu_handle_completions() from unsigned int to bool,
+since the value used in return already is bool.
+
+Link: https://lore.kernel.org/r/20210423150123.24468-1-bostroesser@gmail.com
 Signed-off-by: Bodo Stroesser <bostroesser@gmail.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_user.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/target/target_core_user.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index bb3b997849e5..18a4742569cd 100644
+index bf73cd5f4b04..6809c970be03 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -121,7 +121,7 @@ struct tcmu_dev {
- #define TCMU_DEV_BIT_BROKEN 1
- #define TCMU_DEV_BIT_BLOCKED 2
- #define TCMU_DEV_BIT_TMR_NOTIFY 3
--#define TCM_DEV_BIT_PLUGGED 4
-+#define TCMU_DEV_BIT_PLUGGED 4
- 	unsigned long flags;
- 
- 	struct uio_info uio_info;
-@@ -981,7 +981,7 @@ static void tcmu_unplug_device(struct se_dev_plug *se_plug)
- 	struct se_device *se_dev = se_plug->se_dev;
- 	struct tcmu_dev *udev = TCMU_DEV(se_dev);
- 
--	clear_bit(TCM_DEV_BIT_PLUGGED, &udev->flags);
-+	clear_bit(TCMU_DEV_BIT_PLUGGED, &udev->flags);
- 	uio_event_notify(&udev->uio_info);
+@@ -1377,7 +1377,7 @@ static int tcmu_run_tmr_queue(struct tcmu_dev *udev)
+ 	return 1;
  }
  
-@@ -989,7 +989,7 @@ static struct se_dev_plug *tcmu_plug_device(struct se_device *se_dev)
+-static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
++static bool tcmu_handle_completions(struct tcmu_dev *udev)
  {
- 	struct tcmu_dev *udev = TCMU_DEV(se_dev);
+ 	struct tcmu_mailbox *mb;
+ 	struct tcmu_cmd *cmd;
+@@ -1420,7 +1420,7 @@ static unsigned int tcmu_handle_completions(struct tcmu_dev *udev)
+ 			pr_err("cmd_id %u not found, ring is broken\n",
+ 			       entry->hdr.cmd_id);
+ 			set_bit(TCMU_DEV_BIT_BROKEN, &udev->flags);
+-			break;
++			return false;
+ 		}
  
--	if (!test_and_set_bit(TCM_DEV_BIT_PLUGGED, &udev->flags))
-+	if (!test_and_set_bit(TCMU_DEV_BIT_PLUGGED, &udev->flags))
- 		return &udev->se_plug;
- 
- 	return NULL;
-@@ -1123,7 +1123,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 
- 	list_add_tail(&tcmu_cmd->queue_entry, &udev->inflight_queue);
- 
--	if (!test_bit(TCM_DEV_BIT_PLUGGED, &udev->flags))
-+	if (!test_bit(TCMU_DEV_BIT_PLUGGED, &udev->flags))
- 		uio_event_notify(&udev->uio_info);
- 
- 	return 0;
+ 		tcmu_handle_completion(cmd, entry);
 -- 
-2.12.3
+2.30.2
 
