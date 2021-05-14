@@ -2,375 +2,174 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	PDS_BAD_THREAD_QP_64,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EFEAC433B4
-	for <target-devel@archiver.kernel.org>; Fri, 14 May 2021 11:18:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC274C433ED
+	for <target-devel@archiver.kernel.org>; Fri, 14 May 2021 11:55:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E448961355
-	for <target-devel@archiver.kernel.org>; Fri, 14 May 2021 11:18:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C980C61205
+	for <target-devel@archiver.kernel.org>; Fri, 14 May 2021 11:55:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229554AbhENLUD (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 14 May 2021 07:20:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37742 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229445AbhENLUC (ORCPT
+        id S233000AbhENL4h (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 14 May 2021 07:56:37 -0400
+Received: from esa5.hgst.iphmx.com ([216.71.153.144]:19787 "EHLO
+        esa5.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232975AbhENL4c (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 14 May 2021 07:20:02 -0400
-Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72912C061574;
-        Fri, 14 May 2021 04:18:51 -0700 (PDT)
-Received: by mail-ed1-x530.google.com with SMTP id n25so34303649edr.5;
-        Fri, 14 May 2021 04:18:51 -0700 (PDT)
+        Fri, 14 May 2021 07:56:32 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+  t=1620993319; x=1652529319;
+  h=from:to:cc:subject:date:message-id:references:
+   in-reply-to:content-id:content-transfer-encoding:
+   mime-version;
+  bh=BskdVDjvLXeTslc9w3pfTAJQaVOXxcQMT3me9y7gpf4=;
+  b=XcLQfimpn8GyiUxUwQjYuvQT4zn9xWLpMKDNp8MKAMT6TfUqbUM7cFGG
+   rg6uAfLFWz8arUL48tDblVMPSa88CdHN1KtllaqpUl7KWQYD9BzteWrcg
+   uYW++QlkziX6hIni7OoFW7nCd2Ym7FrybtorIWEmr92Bc06LY9+SXEQ5n
+   yLh3wTChu54dvgLtd2+lXTqVveJmkdmZV1bmG0d0quhydsbBj0bdg+ZoK
+   PG9dbxCI9MtOnuBRyD4r86dPlP/Ws80cbuoa8osVt0OBtQDi86A3R+ycW
+   ve+G5au51dXMrYGVO4kec9cyqtLF1VAU0M6kn/0FiGXGk8eRQRnor22qh
+   A==;
+IronPort-SDR: oyUAlZCm+4Es0iucdm+smwVhxztWokfPXZM1qcceQVg2pB8Lupv8YGTzrL5XEhFx63I/3i/hMK
+ 6dRLLkFKSBXYcVmYpeGnDwEDpwARQDnj3j7I5cNc9KtjwB7l9yWEKS9mWiNQ+2N80yjmTlzFK4
+ d6Z0BPvLKyikchm2hYhQCmYnWCLjAspOfjHDJ0K0MnE8IGAkMUg0Y17W0OPbmlSmYHWqBEDOGY
+ /lVL4E2byBpgcQx6R2jqfi3Wo5xb7sKuOwATZrnisFjy2ddH9xyTIW7eHp/SvektkZguOxK9Ps
+ Joo=
+X-IronPort-AV: E=Sophos;i="5.82,299,1613404800"; 
+   d="scan'208";a="168198891"
+Received: from mail-mw2nam10lp2106.outbound.protection.outlook.com (HELO NAM10-MW2-obe.outbound.protection.outlook.com) ([104.47.55.106])
+  by ob1.hgst.iphmx.com with ESMTP; 14 May 2021 19:55:18 +0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=HHRjkA1rogz//xBA3wRuBafwMl01t2Bkxb5M5lEE9sJRMCcYwkalt5OP/bjsuK+olsRKnbLpKeJxZ4VBz0IRU5JOVy7RZJj6TWphzNTtnV3SRImFMiEtwOLXXZZXQFkdNfbHzt1sulLvwbRwXWXWjU7oZ2QeQxqhs1701tqCV9RMpPT34bMkZJZaV3fkU/EN0cxb8AbHqmFTXqfAytUdEM+iZtzCeH2jWeHp99t9iQ1yP9O7zGhiYayyVReB4x2DPSU0A9hQASbgQGu3u3CatNbbMNH1p7V4l+khVmS0DFkFawn/UoXIgPJrPGgaqIoBz/s1sfAMfeiOvcKgbmgUWQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=BskdVDjvLXeTslc9w3pfTAJQaVOXxcQMT3me9y7gpf4=;
+ b=Aq89K7pHEFmT40H/n30MH2zNK41GcBuIILnMyJj8bUWfrwqKktBlsa82BDnr2JdX5ZEG4tuO0lXsF4ti9Izj7Mm/jlIe19In/oGCpnI4fYHQoxsFy8DwXgmKXm4GmOzT3yAOiavPVrGCPgHmMREM7FOL8cDRv3jPKREJBIHE61+hfvQr/BoVeWD6+ao7r/KQ35HaFK944ZUxuKek6EYRDyhAm6byMXO10BLi7Y0wQrA12EaDMJ3x1vxPJKBW67rI/Hxd/T/vsd5+AQEguNiHEpDFFTx01lUx0eH7INls++0LGeNu95xtDUkJrA7cTDiVEAykNlpkmPJ7nseQnSFFQA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=wdc.com; dmarc=pass action=none header.from=wdc.com; dkim=pass
+ header.d=wdc.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=NAmvbClEY+mrStLUW/u8Ax+hJj9P6K93jHMPCPzSQiY=;
-        b=HKLbKcnZkXjPpZjGQVHRP5QTP/Yh5Cir45Yfgyc72ZxJGzEg4nDHuZUrlUJg79CXuM
-         /VvnT2+/PSliUzKqDAjUtydNNGeb1HjpjIhWyBsRXMSZPDLD2RCoYUevobWGdUOJ/jbb
-         zAny4CSlUMCogD1w6GLGxb+IO3mbKdDlB+7n4Ka5Xb0Nl7xlohKy0fucCbGkVxo9/YGr
-         PTzox9goQhwkykwNCNzVMR8oMN+3w/bew/Jj4SVImzhs3gbBh+ekvwAcXAVnY9D2iLOY
-         wcVzw63nGYFS6MPQZl8ZW2tnQhKNpnRl4rdE5H8MBt5H6AluGF/CA3jkEFwYUWDx7zRG
-         75mw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=NAmvbClEY+mrStLUW/u8Ax+hJj9P6K93jHMPCPzSQiY=;
-        b=TlMXH4eY01664wXiZfZkrBE/dQ6E9tYftFdJfkpRaJ8UTV37ayA3Z7ro8EpZ3ef2og
-         CeIz32KiSilFK7O+n9J79TZ6+UECBKzcZtB++9vUrzfRa6Y8RB1VI7CZxAP3sjTv63X6
-         kN/Gc+8ht9ySPvO5SKky6GCeNmRIKIjBzdKwUCZoOeGsj4UrKAipVytWtZ6Z40wGBt5B
-         IajMtQ78pQdhkxXlhmuf2FuBnzvW7OvB/dwcL5WHCEFWSKRScMWYkjZ69dzzhQLdf+IV
-         jJ6+W/u1KUerENl1WpJNPBjtllPVBoMSBGVUuBmTOazDicbsNI95V1RMGpiBfBQd2nRN
-         Ygnw==
-X-Gm-Message-State: AOAM532XZPYKR8o5a6UaG+EQ4GvHmfzCIuaxXBnR/g+Gl0xG+kjRctoc
-        4JtXx+ksK1R/Z7ezvz/E3bCFgpiiwDc=
-X-Google-Smtp-Source: ABdhPJxIdni7v2RNLJSK4SpshN7gu8XtYIaezZ5r32e/aQIfKw7BYtfBibGHJWgvjVAjiAXZErT+Qg==
-X-Received: by 2002:a50:ff0a:: with SMTP id a10mr10110986edu.273.1620991130150;
-        Fri, 14 May 2021 04:18:50 -0700 (PDT)
-Received: from localhost (ipbcc11466.dynamic.kabel-deutschland.de. [188.193.20.102])
-        by smtp.gmail.com with ESMTPSA id v18sm3219601ejg.63.2021.05.14.04.18.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 14 May 2021 04:18:49 -0700 (PDT)
-From:   Bodo Stroesser <bostroesser@gmail.com>
-To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc:     Bodo Stroesser <bostroesser@gmail.com>
-Subject: [PATCH v4] scsi: target: tcmu: Add new feature KEEP_BUF
-Date:   Fri, 14 May 2021 13:18:40 +0200
-Message-Id: <20210514111840.26297-1-bostroesser@gmail.com>
-X-Mailer: git-send-email 2.12.3
+ d=sharedspace.onmicrosoft.com; s=selector2-sharedspace-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=BskdVDjvLXeTslc9w3pfTAJQaVOXxcQMT3me9y7gpf4=;
+ b=dashYTL6h5ESyRx6z+BFPM+b4c7NecQqI6TWIfVNV6dWg0VwJe53ZxkW0s8dxYPjn5nJEuSzWc3VN6IvYPc9gmvKdBKo/zmPyh2+0gpMlfvgabvSMkUG2lS/7YEtXv4UXA305tFkSKuzD2cjJTZouze1M63imm+p89YRopFR4zI=
+Received: from SJ0PR04MB7184.namprd04.prod.outlook.com (2603:10b6:a03:291::7)
+ by BY5PR04MB6993.namprd04.prod.outlook.com (2603:10b6:a03:226::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4129.26; Fri, 14 May
+ 2021 11:55:20 +0000
+Received: from SJ0PR04MB7184.namprd04.prod.outlook.com
+ ([fe80::304c:d92b:8501:93cd]) by SJ0PR04MB7184.namprd04.prod.outlook.com
+ ([fe80::304c:d92b:8501:93cd%5]) with mapi id 15.20.4129.028; Fri, 14 May 2021
+ 11:55:19 +0000
+From:   Shinichiro Kawasaki <shinichiro.kawasaki@wdc.com>
+To:     Mike Christie <michael.christie@oracle.com>
+CC:     Bart Van Assche <bvanassche@acm.org>,
+        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
+        "Martin K . Petersen" <martin.petersen@oracle.com>,
+        Himanshu Madhani <himanshu.madhani@oracle.com>,
+        Damien Le Moal <Damien.LeMoal@wdc.com>
+Subject: Re: [PATCH] scsi: target: Avoid smp_processor_id() in preemptible
+ code
+Thread-Topic: [PATCH] scsi: target: Avoid smp_processor_id() in preemptible
+ code
+Thread-Index: AQHXR7NmegEaAD9crUuzdjwbzEsc+KrhjAAAgAAHv4CAABoCAIABMtwA
+Date:   Fri, 14 May 2021 11:55:19 +0000
+Message-ID: <20210514115518.ekvegnbsymczezzp@shindev.dhcp.fujisawa.hgst.com>
+References: <20210513044944.1572404-1-shinichiro.kawasaki@wdc.com>
+ <d25b35e2-5ed6-4a00-56f4-71f31463ba1a@oracle.com>
+ <58bd8a10-a3a1-3d87-0342-f6d49f5fe808@acm.org>
+ <8b78d77c-2d27-8a5b-7b98-95302fbe9ebc@oracle.com>
+In-Reply-To: <8b78d77c-2d27-8a5b-7b98-95302fbe9ebc@oracle.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: oracle.com; dkim=none (message not signed)
+ header.d=none;oracle.com; dmarc=none action=none header.from=wdc.com;
+x-originating-ip: [129.253.182.60]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 01789f08-c0e1-4828-adbd-08d916cf25db
+x-ms-traffictypediagnostic: BY5PR04MB6993:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <BY5PR04MB6993785258F2CC7F6F2DFE26ED509@BY5PR04MB6993.namprd04.prod.outlook.com>
+wdcipoutbound: EOP-TRUE
+x-ms-oob-tlc-oobclassifiers: OLM:1923;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: Y57mtqeug0MbQRquiSzDdFnXaY4XWvscKAjkN/q1sbbUoxHfvkF7Qr+Gjc2ikQoVRcg0vnL7Y8bGPluWcNcRqwfWibRsN9vZjiY1oPPiyNS8JHPL/pGpgyV20AZs/CQJTOTiKoNYbRS/p3e0fpcHEp7uyaKU9gailzRty5+1Cqf5RlqsBBibbf7VPzx09bA2h6h2eIxplJlTxvolhrFxDg85263ctFdudVWAfFyAJsI+86Sz/CsF9/1q2tZpn/JYtJwqveJ2Q3EXVq4qjsBItVU5PpGSoYWYlmGn0SrC+XkW7WTqLdZyURpzEDLmv7qXSqGs+8+514QZHoXrF+JHhhZTlMyJUBD5lHI+9qyd9HShEZU+GPsjx6PLtkRS5jsoDE8ctd9WpJnUT/vbdyeYVrAd3diJJRTZpTRk0eWOrDtY6qHTJMpzPOf7b8xL+hOLMXGDbgT6MIZ92w6+nbSgdNlWn3WDzJeyaan3dNeDWnbLxhfSRo8FAe25IJ3wEx/k4drw4uDsRsAiLwC9YkFwT3s3KdAL/7cX8m3B3pYkczzkgDFmVNotTxCVDQpyDYB08u9gcEfXP9gIHVQTJPS07wJ1x7pRpZbHZROWUMMF2aM=
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR04MB7184.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(136003)(346002)(396003)(39850400004)(376002)(366004)(122000001)(91956017)(83380400001)(53546011)(6506007)(4326008)(1076003)(38100700002)(76116006)(54906003)(26005)(44832011)(6916009)(4744005)(66446008)(478600001)(66556008)(64756008)(66946007)(2906002)(66476007)(186003)(316002)(71200400001)(6512007)(9686003)(3716004)(8676002)(86362001)(6486002)(8936002)(5660300002);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata: =?us-ascii?Q?mZWEPC9PJxqb3PL/6DuxOs5v3sXnTP+D4sKegrprnUuTHT5a+lSS0juU3iq1?=
+ =?us-ascii?Q?Ke/jWXCRGBlrIMrP/KDiW7jh2qVbSrm27cCZNJ1NPMv0dV/cPCmkm3qJOz62?=
+ =?us-ascii?Q?cBcu3To99vjoL/ZWv1XFyzM8QTt5EIG1ZwaEUy8AwLe+4lrWUlnKm6WaJQZa?=
+ =?us-ascii?Q?Dmgm7vavF8st/TOl0JZscetvkhSCC1WGHUxKrQ3JxrqgvO4ERYupBaTEo+al?=
+ =?us-ascii?Q?70Cs2kyf/ZMd2brszN6G0AOY1VZ0Ai9eYcpVsEp1g552nMhQIVajnQWLrFY/?=
+ =?us-ascii?Q?mKNK8m3is8qig5MnW4/Ja1R+vghzlSddPhdRCZhW4/0Q+wxZ3BfcAsbJzx6n?=
+ =?us-ascii?Q?rPv4vGi3QVI9wYoaILR7yXD0lBoupvRBK3DfY0sc8bPwf68DyabfVD3azal1?=
+ =?us-ascii?Q?eOplZGk6oy3ScaH7siHuXyBKquxUQBE5czDhMmlFmH+Rv3stJhaoWKhsHK0I?=
+ =?us-ascii?Q?A1jcHAXmE83+0LnI2w4M6YaKvgQD2gXR7mDqhMahAEPdvG9A0ARS9210R8NM?=
+ =?us-ascii?Q?LHUqsWaomPIcasx3NYYBCsjI1WnnaG9F0/t9H5P+bCobkaDacykEtVe4RleB?=
+ =?us-ascii?Q?j1DjE0dR1lo+kzjcrPzMYGywPhiPATXxUHfpoMODhTtjSIFvKT81oKRc87vb?=
+ =?us-ascii?Q?/nrG4X8LW7CfnkBtJ+0PlSq3cwa2BAxmpvuhJj4Z0RWp9hziyRgMR+3InuEK?=
+ =?us-ascii?Q?2YRB5kSj7hJuVT2/vwXJ6HNgV0YRgBKqDK1bfy2gaje4FuiWW/yrqncVZLug?=
+ =?us-ascii?Q?e6XfKoR7NVVdQmm3SySDTJFvFWf2u55TCskCWOB5mCb7DZPQtSoZE1aKZKG0?=
+ =?us-ascii?Q?E4kCcsWYsqJrkMzILZJGRbgChJx4qk2thXmPxkYpG4BPeTxdprUd3iUOVcMQ?=
+ =?us-ascii?Q?fTy1EsDlQd6gL+xk9RmnRFHO0CyrDcZK/HWverW9jLjdlFXCbbukVjYqUrVS?=
+ =?us-ascii?Q?lKunXgaKMr0oA/K2rOZZx6vPXadY7iV3xtiX2fScexdMMjyPQof3CTnOpFTV?=
+ =?us-ascii?Q?8cPnAWbjMGrHIk/IVWUIuoiJJxGvHP5k3F98pzoFms1VesloawejBrkhxRv2?=
+ =?us-ascii?Q?cEc0z6gpFzy+5hU8YSaI798ST9GfH1E2CEvfOnumcX2aN0U6P702lMeCn8L1?=
+ =?us-ascii?Q?xV53i5QP8bqS/gRXLpsupF6GUFnolsntiKFdPf4j42V9eJtMD1mYakFxPkEn?=
+ =?us-ascii?Q?9fGAppfJEusc8SdBGG5gnFL73NOnJQDkBjVG8cll42eG2cfPtCPEQmdea0DM?=
+ =?us-ascii?Q?C4HU8IOK5YSjobk8ntqb/+EENX0n21KepXCoZiGVhzcpKRLTJJjZfRnp6yWG?=
+ =?us-ascii?Q?LT+ExL5MVxQoHNVNYTu6IteU3JkZXo+0m3l+6yPMEdcFHQ=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <DF3F0A8B6A83A9499FC89538F13DA196@namprd04.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: wdc.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SJ0PR04MB7184.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 01789f08-c0e1-4828-adbd-08d916cf25db
+X-MS-Exchange-CrossTenant-originalarrivaltime: 14 May 2021 11:55:19.6381
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: b61c8803-16f3-4c35-9b17-6f65f441df86
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: tooLKnO6bMPbTB9Tv9eDftg3hbLquigon8Jjhdb94YArUidnY8YQvNa+uvnL+ujzmkNJfHXyzC67Xcval/SPREwpfrXzxwhMgAHQmZGd3fM=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR04MB6993
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-When running command pipelining for WRITE direction commands,
-(e.g. tape device write) userspace sends cmd completion to cmd
-ring before processing write data. In that case userspace has to
-copy data before sending completion, because cmd completion also
-implicitly releases the data buffer in data area.
+On May 13, 2021 / 12:37, Mike Christie wrote:
+> On 5/13/21 11:03 AM, Bart Van Assche wrote:
+> > On 5/13/21 8:36 AM, Mike Christie wrote:
+> >> Is there something else that's used normally? raw_smp_processor_id?
+> >=20
+> > +1 for raw_smp_processor_id() since my understanding is that
+> > SCF_USE_CPUID is a performance optimization only and correctness of the
+> > target code is not affected if the running thread is moved to another
+> > CPU core by the scheduler.
+> >=20
+>=20
+> Ok.
+>=20
+> Shin'ichiro if we all are in agreement then I made the same mistake in
+> iblock_plug_device. I can send a patch for that, or if you want to get
+> your patch commit count up, feel free to when you resend this patch.
 
-The new feature KEEP_BUF allows userspace to optionally keep the
-buffer after completion by setting new bit TCMU_UFLAG_KEEP_BUF in
-tcmu_cmd_entry_hdr->uflags. In that case buffer has to be released
-explicitly by writing the cmd_id to new action item free_kept_buf.
+Thank you for the discussion. I also agree to use raw_smp_processor_id()
+instead of get_cpu()/put_cpu(). Will post v2.
 
-All kept buffers are released during reset_ring and if userspace
-closes uio device (tcmu_release).
+Regarding iblock_plug_device, may I ask Mike to send a patch? I'm a bit
+caught up in other tasks.
 
-Signed-off-by: Bodo Stroesser <bostroesser@gmail.com>
----
-
-v4: Fix wrong condition in tcmu_free_kept_buf_store, which was
-    introduced in v3.
-
-v3: Changed xarray lock handling in tcmu_free_kept_buf_store to
-    avoid RCU lock warnings.
-    
-v2: During tcmu_dev_kref_release not only kill timed out commands,
-    but also completed commands waiting for explicit buffer free
-    (change in tcmu_check_and_free_pending_cmd).
-    The change is necessary due to tcmu_release not being called
-    during tcmu device removal if userspace holds uio dev open.
-
- drivers/target/target_core_user.c     | 150 +++++++++++++++++++++++++++++++---
- include/uapi/linux/target_core_user.h |   2 +
- 2 files changed, 141 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index ee391c62f6e1..eb469c1c27c5 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -191,6 +191,7 @@ struct tcmu_cmd {
- 	unsigned long deadline;
- 
- #define TCMU_CMD_BIT_EXPIRED 0
-+#define TCMU_CMD_BIT_KEEP_BUF 1
- 	unsigned long flags;
- };
- 
-@@ -1317,11 +1318,13 @@ tcmu_tmr_notify(struct se_device *se_dev, enum tcm_tmreq_table tmf,
- 	mutex_unlock(&udev->cmdr_lock);
- }
- 
--static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *entry)
-+static bool tcmu_handle_completion(struct tcmu_cmd *cmd,
-+				   struct tcmu_cmd_entry *entry, bool keep_buf)
- {
- 	struct se_cmd *se_cmd = cmd->se_cmd;
- 	struct tcmu_dev *udev = cmd->tcmu_dev;
- 	bool read_len_valid = false;
-+	bool ret = true;
- 	uint32_t read_len;
- 
- 	/*
-@@ -1332,6 +1335,13 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
- 		WARN_ON_ONCE(se_cmd);
- 		goto out;
- 	}
-+	if (test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags)) {
-+		pr_err("cmd_id %u already completed with KEEP_BUF, ring is broken\n",
-+		       entry->hdr.cmd_id);
-+		set_bit(TCMU_DEV_BIT_BROKEN, &udev->flags);
-+		ret = false;
-+		goto out;
-+	}
- 
- 	list_del_init(&cmd->queue_entry);
- 
-@@ -1381,8 +1391,22 @@ static void tcmu_handle_completion(struct tcmu_cmd *cmd, struct tcmu_cmd_entry *
- 		target_complete_cmd(cmd->se_cmd, entry->rsp.scsi_status);
- 
- out:
--	tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
--	tcmu_free_cmd(cmd);
-+	if (!keep_buf) {
-+		tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
-+		tcmu_free_cmd(cmd);
-+	} else {
-+		/*
-+		 * Keep this command after completion, since userspace still
-+		 * needs the data buffer. Mark it with TCMU_CMD_BIT_KEEP_BUF
-+		 * and reset potential TCMU_CMD_BIT_EXPIRED, so we don't accept
-+		 * a second completion later.
-+		 * Userspace can free the buffer later by writing the cmd_id
-+		 * to new action attribute free_kept_buf.
-+		 */
-+		clear_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
-+		set_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags);
-+	}
-+	return ret;
- }
- 
- static int tcmu_run_tmr_queue(struct tcmu_dev *udev)
-@@ -1434,6 +1458,7 @@ static bool tcmu_handle_completions(struct tcmu_dev *udev)
- 	while (udev->cmdr_last_cleaned != READ_ONCE(mb->cmd_tail)) {
- 
- 		struct tcmu_cmd_entry *entry = udev->cmdr + udev->cmdr_last_cleaned;
-+		bool keep_buf;
- 
- 		/*
- 		 * Flush max. up to end of cmd ring since current entry might
-@@ -1455,7 +1480,11 @@ static bool tcmu_handle_completions(struct tcmu_dev *udev)
- 		}
- 		WARN_ON(tcmu_hdr_get_op(entry->hdr.len_op) != TCMU_OP_CMD);
- 
--		cmd = xa_erase(&udev->commands, entry->hdr.cmd_id);
-+		keep_buf = !!(entry->hdr.uflags & TCMU_UFLAG_KEEP_BUF);
-+		if (keep_buf)
-+			cmd = xa_load(&udev->commands, entry->hdr.cmd_id);
-+		else
-+			cmd = xa_erase(&udev->commands, entry->hdr.cmd_id);
- 		if (!cmd) {
- 			pr_err("cmd_id %u not found, ring is broken\n",
- 			       entry->hdr.cmd_id);
-@@ -1463,7 +1492,8 @@ static bool tcmu_handle_completions(struct tcmu_dev *udev)
- 			return false;
- 		}
- 
--		tcmu_handle_completion(cmd, entry);
-+		if (!tcmu_handle_completion(cmd, entry, keep_buf))
-+			break;
- 
- 		UPDATE_HEAD(udev->cmdr_last_cleaned,
- 			    tcmu_hdr_get_len(entry->hdr.len_op),
-@@ -1621,7 +1651,8 @@ static void tcmu_dev_call_rcu(struct rcu_head *p)
- 
- static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
- {
--	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
-+	if (test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags) ||
-+	    test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags)) {
- 		kmem_cache_free(tcmu_cmd_cache, cmd);
- 		return 0;
- 	}
-@@ -1905,6 +1936,38 @@ static int tcmu_open(struct uio_info *info, struct inode *inode)
- static int tcmu_release(struct uio_info *info, struct inode *inode)
- {
- 	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
-+	struct tcmu_cmd *cmd;
-+	unsigned long i;
-+	bool freed = false;
-+
-+	mutex_lock(&udev->cmdr_lock);
-+
-+	xa_for_each(&udev->commands, i, cmd) {
-+		/* Cmds with KEEP_BUF set are no longer on the ring, but
-+		 * userspace still holds the data buffer. If userspace closes
-+		 * we implicitly free these cmds and buffers, since after new
-+		 * open the (new ?) userspace cannot find the cmd in the ring
-+		 * and thus never will release the buffer by writing cmd_id to
-+		 * free_kept_buf action attribute.
-+		 */
-+		if (!test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags))
-+			continue;
-+		pr_debug("removing KEEP_BUF cmd %u on dev %s from ring\n",
-+			 cmd->cmd_id, udev->name);
-+		freed = true;
-+
-+		xa_erase(&udev->commands, i);
-+		tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
-+		tcmu_free_cmd(cmd);
-+	}
-+	/*
-+	 * We only freed data space, not ring space. Therefore we dont call
-+	 * run_tmr_queue, but call run_qfull_queue if tmr_list is empty.
-+	 */
-+	if (freed && list_empty(&udev->tmr_queue))
-+		run_qfull_queue(udev, false);
-+
-+	mutex_unlock(&udev->cmdr_lock);
- 
- 	clear_bit(TCMU_DEV_BIT_OPEN, &udev->flags);
- 
-@@ -2149,7 +2212,8 @@ static int tcmu_configure_device(struct se_device *dev)
- 	mb->version = TCMU_MAILBOX_VERSION;
- 	mb->flags = TCMU_MAILBOX_FLAG_CAP_OOOC |
- 		    TCMU_MAILBOX_FLAG_CAP_READ_LEN |
--		    TCMU_MAILBOX_FLAG_CAP_TMR;
-+		    TCMU_MAILBOX_FLAG_CAP_TMR |
-+		    TCMU_MAILBOX_FLAG_CAP_KEEP_BUF;
- 	mb->cmdr_off = CMDR_OFF;
- 	mb->cmdr_size = udev->cmdr_size;
- 
-@@ -2281,12 +2345,16 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
- 	mutex_lock(&udev->cmdr_lock);
- 
- 	xa_for_each(&udev->commands, i, cmd) {
--		pr_debug("removing cmd %u on dev %s from ring (is expired %d)\n",
--			  cmd->cmd_id, udev->name,
--			  test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags));
-+		pr_debug("removing cmd %u on dev %s from ring %s\n",
-+			 cmd->cmd_id, udev->name,
-+			 test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags) ?
-+			 "(is expired)" :
-+			 (test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags) ?
-+			 "(is keep buffer)" : ""));
- 
- 		xa_erase(&udev->commands, i);
--		if (!test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags)) {
-+		if (!test_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags) &&
-+		    !test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags)) {
- 			WARN_ON(!cmd->se_cmd);
- 			list_del_init(&cmd->queue_entry);
- 			cmd->se_cmd->priv = NULL;
-@@ -2935,6 +3003,65 @@ static ssize_t tcmu_reset_ring_store(struct config_item *item, const char *page,
- }
- CONFIGFS_ATTR_WO(tcmu_, reset_ring);
- 
-+static ssize_t tcmu_free_kept_buf_store(struct config_item *item, const char *page,
-+					size_t count)
-+{
-+	struct se_device *se_dev = container_of(to_config_group(item),
-+						struct se_device,
-+						dev_action_group);
-+	struct tcmu_dev *udev = TCMU_DEV(se_dev);
-+	struct tcmu_cmd *cmd;
-+	u16 cmd_id;
-+	int ret;
-+
-+	if (!target_dev_configured(&udev->se_dev)) {
-+		pr_err("Device is not configured.\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = kstrtou16(page, 0, &cmd_id);
-+	if (ret < 0)
-+		return ret;
-+
-+	mutex_lock(&udev->cmdr_lock);
-+
-+	{
-+		XA_STATE(xas, &udev->commands, cmd_id);
-+
-+		xas_lock(&xas);
-+		cmd = xas_load(&xas);
-+		if (!cmd) {
-+			pr_err("free_kept_buf: cmd_id %d not found\n", cmd_id);
-+			count = -EINVAL;
-+			xas_unlock(&xas);
-+			goto out_unlock;
-+		}
-+		if (!test_bit(TCMU_CMD_BIT_KEEP_BUF, &cmd->flags)) {
-+			pr_err("free_kept_buf: cmd_id %d was not completed with KEEP_BUF\n",
-+			       cmd_id);
-+			count = -EINVAL;
-+			xas_unlock(&xas);
-+			goto out_unlock;
-+		}
-+		xas_store(&xas, NULL);
-+		xas_unlock(&xas);
-+	}
-+
-+	tcmu_cmd_free_data(cmd, cmd->dbi_cnt);
-+	tcmu_free_cmd(cmd);
-+	/*
-+	 * We only freed data space, not ring space. Therefore we dont call
-+	 * run_tmr_queue, but call run_qfull_queue if tmr_list is empty.
-+	 */
-+	if (list_empty(&udev->tmr_queue))
-+		run_qfull_queue(udev, false);
-+
-+out_unlock:
-+	mutex_unlock(&udev->cmdr_lock);
-+	return count;
-+}
-+CONFIGFS_ATTR_WO(tcmu_, free_kept_buf);
-+
- static struct configfs_attribute *tcmu_attrib_attrs[] = {
- 	&tcmu_attr_cmd_time_out,
- 	&tcmu_attr_qfull_time_out,
-@@ -2953,6 +3080,7 @@ static struct configfs_attribute **tcmu_attrs;
- static struct configfs_attribute *tcmu_action_attrs[] = {
- 	&tcmu_attr_block_dev,
- 	&tcmu_attr_reset_ring,
-+	&tcmu_attr_free_kept_buf,
- 	NULL,
- };
- 
-diff --git a/include/uapi/linux/target_core_user.h b/include/uapi/linux/target_core_user.h
-index 95b1597f16ae..27ace512babd 100644
---- a/include/uapi/linux/target_core_user.h
-+++ b/include/uapi/linux/target_core_user.h
-@@ -46,6 +46,7 @@
- #define TCMU_MAILBOX_FLAG_CAP_OOOC (1 << 0) /* Out-of-order completions */
- #define TCMU_MAILBOX_FLAG_CAP_READ_LEN (1 << 1) /* Read data length */
- #define TCMU_MAILBOX_FLAG_CAP_TMR (1 << 2) /* TMR notifications */
-+#define TCMU_MAILBOX_FLAG_CAP_KEEP_BUF (1<<3) /* Keep buf after cmd completion */
- 
- struct tcmu_mailbox {
- 	__u16 version;
-@@ -75,6 +76,7 @@ struct tcmu_cmd_entry_hdr {
- 	__u8 kflags;
- #define TCMU_UFLAG_UNKNOWN_OP 0x1
- #define TCMU_UFLAG_READ_LEN   0x2
-+#define TCMU_UFLAG_KEEP_BUF   0x4
- 	__u8 uflags;
- 
- } __packed;
--- 
-2.12.3
-
+--=20
+Best Regards,
+Shin'ichiro Kawasaki=
