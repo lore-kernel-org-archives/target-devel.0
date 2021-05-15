@@ -2,164 +2,167 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC9BDC433ED
-	for <target-devel@archiver.kernel.org>; Sat, 15 May 2021 03:10:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F439C433ED
+	for <target-devel@archiver.kernel.org>; Sat, 15 May 2021 06:50:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A0E4F61428
-	for <target-devel@archiver.kernel.org>; Sat, 15 May 2021 03:10:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 761E961406
+	for <target-devel@archiver.kernel.org>; Sat, 15 May 2021 06:50:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234186AbhEODLd (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 14 May 2021 23:11:33 -0400
-Received: from aserp2130.oracle.com ([141.146.126.79]:60078 "EHLO
-        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230316AbhEODLd (ORCPT
+        id S232300AbhEOGvW (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 15 May 2021 02:51:22 -0400
+Received: from esa1.hgst.iphmx.com ([68.232.141.245]:41655 "EHLO
+        esa1.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231481AbhEOGvV (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 14 May 2021 23:11:33 -0400
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
-        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 14F30vHH140354;
-        Sat, 15 May 2021 03:09:43 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
- from : message-id : references : date : in-reply-to : content-type :
- mime-version; s=corp-2020-01-29;
- bh=u4c2gFZtGFjL5m3FohriqLRo4Cx1wxKdO1e4xS7KowA=;
- b=qqAt32EVdAuzTi97bEOfS37bxs6wgjIBZthCxmK3v4vj3V06HjXx/SWolc14A5sQTMM3
- FUq2DvPdg7l1/HES/UqI64PldPEc+EmjTfr4zFebnwX6XgnJCtSkE0+7BIgBhcYN6+2s
- Ax8323+qyzH2H1ZS/pxnlPguEWimbGbuwzXamkFFW0T0N7Gs/LwDr18hoHYGMXGfClkZ
- 3tXJJnGUzSj6s714OCaDaqqvNiHYDQqQ2mYJb8n4NmnM64KWm9T+EF1ITOl/H7Ad6I4H
- LDqrmtcJe2adN+d8dxnU8DlU+4WSs1ONXn5L0KkdjAT/HI0sztp19Pqlc3eLeWr+hHuU 3Q== 
-Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
-        by aserp2130.oracle.com with ESMTP id 38j3tb830m-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Sat, 15 May 2021 03:09:43 +0000
-Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
-        by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 14F36CVL028961;
-        Sat, 15 May 2021 03:09:42 GMT
-Received: from nam02-dm3-obe.outbound.protection.outlook.com (mail-dm3nam07lp2047.outbound.protection.outlook.com [104.47.56.47])
-        by aserp3030.oracle.com with ESMTP id 38j4b9hkes-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Sat, 15 May 2021 03:09:42 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=FyyBKqnUyeDqkXsas1VKClP/rRfaVmr/R8n6Ber7LeiylcT9Z4XeKbDm0Ji82x+MGSJAaZlltmBDDUDh1ZZWvLPrKv7Ei97zQuEnF8vckJts4gxWfBYPbOLvP5HJo5v/4llTYShw4MI/XGUM1pNL3Er8I/ah3tcb8xzeu/ijRQgPM/N9yPwliJeUxuwX5s1cTUyOqvDItfC1+E0dC1isHju5P8ZJaUukcSCR/hH443IpHS4eArlDtgP7RWbJuxXZfJFVMQrUgrmOUc1vH8ox2QG72NTX5N+6ZVLMTlq7FQBDZ+srR1b0R48JP8DSan14sMq9HkFf+dpPcqgjkQp1tA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=u4c2gFZtGFjL5m3FohriqLRo4Cx1wxKdO1e4xS7KowA=;
- b=am5M2pIl80H9jiPQ0nSZ3jVnB9ExwUeedSpT+YLPSMwYUhQpg2RLw/bJn6mnuTvpp1u5XrbxCZk5W/7Xln1CXLZahReBt9qrdkT9mfiIfs56YxJ8djwMVztUYO1/bBb5e2cXMHpAz85z0ESD6lLgB76LNk35XZQVJcc7NiHDhm8UMTs3JtsuTnpMju2zyjO3vfRbVvlzq3P4E8kZNvYFxaRnMAO1jxH3kkA8qGrQSfSQq9sMEINBJGbvtc8OQpQvcEoiZwti3VL0r5xUvCV0FGjPgb6XiT7rIXuVJ0dx0OY1mYFhSnlyRAiSkKwJhRjMVYD4CkSALMKs0ilbnRgDtQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=u4c2gFZtGFjL5m3FohriqLRo4Cx1wxKdO1e4xS7KowA=;
- b=BYsKQmnEM1LcNWjUb5F3QOxxTzjo8exomuPwR0yZYP4jXQzTEihqvvLhIka6J5LZ+DLi5TOmnrXTcQSgMtWeO7knHhfIAp4hvTaOqIhjWjnNzzUQ58ym6ppOZnG5xrMsUNtAAvqZfRadbhcXlruNR7SQ4/ug9U64zwOBB8raDog=
-Authentication-Results: linux.alibaba.com; dkim=none (message not signed)
- header.d=none;linux.alibaba.com; dmarc=none action=none
- header.from=oracle.com;
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com (2603:10b6:510:3d::12)
- by PH0PR10MB4501.namprd10.prod.outlook.com (2603:10b6:510:43::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4129.28; Sat, 15 May
- 2021 03:09:41 +0000
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::4c61:9532:4af0:8796]) by PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::4c61:9532:4af0:8796%7]) with mapi id 15.20.4129.028; Sat, 15 May 2021
- 03:09:41 +0000
-To:     Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
-Cc:     bootc@bootc.net, martin.petersen@oracle.com,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: target: sbp_target: Remove redundant assignment
- to pg_size
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle Corporation
-Message-ID: <yq135uoae1h.fsf@ca-mkp.ca.oracle.com>
-References: <1620902977-57076-1-git-send-email-jiapeng.chong@linux.alibaba.com>
-Date:   Fri, 14 May 2021 23:09:37 -0400
-In-Reply-To: <1620902977-57076-1-git-send-email-jiapeng.chong@linux.alibaba.com>
-        (Jiapeng Chong's message of "Thu, 13 May 2021 18:49:37 +0800")
-Content-Type: text/plain
-X-Originating-IP: [138.3.200.58]
-X-ClientProxiedBy: SN7P220CA0019.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:806:123::24) To PH0PR10MB4759.namprd10.prod.outlook.com
- (2603:10b6:510:3d::12)
+        Sat, 15 May 2021 02:51:21 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+  t=1621061409; x=1652597409;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=G115ED+d704BCp60dpowxTlv7ZZmS8X6WASF0DZ+X+w=;
+  b=YsYVTfIcTtiOIpfbbntozd0jvs8taNkEF/08zNX9VAgUepg8o/7gS0nX
+   1kk+vIS8WtdB728tkQcPkYChbmLUXGao695KkU07gt+1afjnHl1YgQ7L4
+   3OFVRGX6EaSYAeOWeobEReNsQdPkKvQ6eFHk0ZLKT5j2k+D26xWZFaOdx
+   Qqkm6N4wwsND/ytTwkM88TsOcjLvIJ3GWrOJppBy0i8fn1f0QCVb7Z69z
+   fsdByBxFx5PMU6fY1iChbkGLukUH58Fw6kZJQ3hjPAzUqPIra50Y6Lu5Z
+   YEZwr3kU8CjBmvc2TkVOiAnHO+22EcZwn2Y2qFLZi5MTmPxTYVi8XABXT
+   Q==;
+IronPort-SDR: j82kRRuHZocKQYiPZneYYGoOIPVoETukJbPWkOtHI+ywP2RDrEBfJZXs96Lr6RplGa3RZAdtvL
+ x76siOOI0bAyx3Nv4ctPMHGQr5GmWJqylS1N6Q4Wbnj7vz8TkdOuuHiE1IzwvSAXWwQtlKk8lb
+ CNV6+/+pvlOKE5PGuLDf3CJ39kpH0CfvGYHSwwMMZsnxK5PhSj9TnlRVDyQaVRHl9W/TcmwHZ5
+ JlS9o0yJEqnxY2c0eQgeJ9a+NEzpW2Ey7T9qzwCCQS0s45kZn4lp0fjZNgepiVC+A5wEOrqpMC
+ 6Go=
+X-IronPort-AV: E=Sophos;i="5.82,301,1613404800"; 
+   d="scan'208";a="279484628"
+Received: from uls-op-cesaip02.wdc.com (HELO uls-op-cesaep02.wdc.com) ([199.255.45.15])
+  by ob1.hgst.iphmx.com with ESMTP; 15 May 2021 14:50:08 +0800
+IronPort-SDR: XnEkvGVv4xIp5jPPI48vx8mo3ijo9UwOaUNq2cjXJAiIHTa2Acc4QSMd2hYcATcmzljybkSo6u
+ PWpqK3Q7NpG+b/gMLTlEd0B/+yHNR9mS3m/dz8wCSnYdsN+KbKsundh9HgaOuBxhMv3hMFIOEk
+ oplk4OB6qts6gbBWIT75Qz0pT1ODq6A7L2iDp3qokzZBLHc1u1gFbk6K8zywM7KYsZ2FrTbFzA
+ nOr+6UbyuDF/hopYk+YW85OT8FIst6/VfeouZ35fOp8d4J3Nd61ezn83SRfFFjrVtpmKcFQL1I
+ P5+cunt/mH4mxvJQLMx5RvlN
+Received: from uls-op-cesaip01.wdc.com ([10.248.3.36])
+  by uls-op-cesaep02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 May 2021 23:28:38 -0700
+IronPort-SDR: yKprFtRKzOTKk5xIU9MBwSL51m3n5/vqAlZOeL9e67Y85hmhn03MMj4Q56NRwlMHxHOjtiHunw
+ oLYAbG1tFmnEDfcwJU/DGYkl+D3p2uahjgdIStloEgYOmdrifw5Fb6stRR7FlBe+plrtbw389q
+ VI94IfLyU/XZpiI0n3nJFbPq+G9/9DyS+8CZ89T/RhnTCwYd5klNMUQZ83PbLG9hBYKjqtkl0r
+ ZcafSD9JmM8rbTTQ6RrDldYu52UmKAFX5vGlZCsSniW2t+swxHAlpA0DKb34zRHs3cva+28oJx
+ 7nk=
+WDCIronportException: Internal
+Received: from shindev.dhcp.fujisawa.hgst.com (HELO shindev.fujisawa.hgst.com) ([10.149.52.173])
+  by uls-op-cesaip01.wdc.com with ESMTP; 14 May 2021 23:50:08 -0700
+From:   Shin'ichiro Kawasaki <shinichiro.kawasaki@wdc.com>
+To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        Bodo Stroesser <bostroesser@gmail.com>
+Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
+        Damien Le Moal <Damien.LeMoal@wdc.com>,
+        Shinichiro Kawasaki <shinichiro.kawasaki@wdc.com>
+Subject: [PATCH v2] scsi: target: tcmu: Fix xarray RCU warning
+Date:   Sat, 15 May 2021 15:50:06 +0900
+Message-Id: <20210515065006.210238-1-shinichiro.kawasaki@wdc.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from ca-mkp.ca.oracle.com (138.3.200.58) by SN7P220CA0019.NAMP220.PROD.OUTLOOK.COM (2603:10b6:806:123::24) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4108.25 via Frontend Transport; Sat, 15 May 2021 03:09:40 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 6b225dd7-9a0d-48c7-ce31-08d9174ee18b
-X-MS-TrafficTypeDiagnostic: PH0PR10MB4501:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <PH0PR10MB4501F91914FC431043A03C3A8E2F9@PH0PR10MB4501.namprd10.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:6108;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: iBz0+P6M1NziRGf479TODEtQqcVxsocyQ5skXNKLG8l6O4h2aNoY8WVXrjW2Dy7A/x0a9mlB+dHQ/uXTK2elC92NY8/22y8T7BJD8B4Mzo7fUVGpttdEclUOQ6xSoyihzEjUn0wlwEtJYOzJGKwhEfol5IDz8WtszYrPzAK0TedNndPf82oINbYxmOhCSzjCZK0V7Kg4IckgFwzLkXwFqhSjVDuBjh57/tAm22ZenbixzQx+WKCrRcjuPzG3zMkhewxm15JhONr64t62ZnNsnVE9qAFS1Yfh43oqMLHiu16MU2S31z7splmjFsSizA7nDZ5KJBEwWRw8M0zEotzpmNRL/m/x2iWzkye2Ar4XHyU6x1VHaLBkczogobyeEzqdXWMW5fN011R2Un5W2fyUpytZdsukEHYNU5JSMzJcP3kC0zysB7E/lAH9htuMBSVwR/h6VqdsCVmZyBZdZZ60qpZ7omj1Bp4lEcu/ngQe6Gr4iiZvMNtJpG82VjceBEAvDCp2eOgaeTXSIST9avK80om8PU+E1qe2R9i9lDsW3JcFEiJxgiftsFu6cxIli7b4JYrp7o2cfXwQ7EAYRSRza5odGUAjAlaXCCRH4/JVcnOTp3FdZ1M6L10hCfBaRbsY/Xx2vhFxy+3kSavmfxQBaNV0NBa4wDYIGQafYV00rtY=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB4759.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(39860400002)(366004)(136003)(346002)(376002)(396003)(38350700002)(316002)(55016002)(38100700002)(558084003)(66946007)(5660300002)(36916002)(16526019)(86362001)(6666004)(186003)(478600001)(66476007)(8676002)(8936002)(2906002)(52116002)(66556008)(956004)(6916009)(4326008)(26005)(7696005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?7e8NC6o+oo5IlVRJ2mC0/0GsohL6ARnaw43hDRESzcVZAhwYb1RSz39WqrK6?=
- =?us-ascii?Q?x9fbLUpyvozWHRspfh+EuDzkP4bvLK+udD5lCmFVwoxeWObmeJKXZeMSxuP+?=
- =?us-ascii?Q?qtVbhzvutWirb949AUiIvOGXuWBBmyZkvRsDc54EFpMWkOSSmD1mFAWff2hO?=
- =?us-ascii?Q?GPcAehY2G8+dfiaMD74Wy1SAem2NcADlYxk33t7pUmmDw9dkBHwNyqT9yo7V?=
- =?us-ascii?Q?KI1HiAzhywzexDlSipKXxG3b2Vf5T7VsXgMp41Noz2IBd3WMy5KIc7N9A9Xt?=
- =?us-ascii?Q?WCXxJA6TZzKXZq7oSF/xuONoNA0aP0X+pCimfSfBFakBsWQrTSgOPJ+I5bGX?=
- =?us-ascii?Q?HXhmPhzFf2TLj5HjTVeXM21Ou3GI1Kiuyr+E/xiRnUNVpz0M9PM9W9oxyQk/?=
- =?us-ascii?Q?t7tlkyxTvItJiophho4DLrN+jY9xLFF2LHAslk7HKaBENiw7n1bITlCZCG1X?=
- =?us-ascii?Q?gkhVquIpWcritvirkwFhcI5Hl8rRHSB0Tih9kYEdLme5XTL/guMnZpkcIqhF?=
- =?us-ascii?Q?S2hckMV1C6gBm4LkJcGjLVZauwYRG9+rfrJfoMp3HgU8goBbczUtE+ukasUl?=
- =?us-ascii?Q?N9Nk5aAOR2YXI4cSQ6l5Up5e0sySfh43rm4eQTQ3/E0a4DNy/bydVT4iWkR9?=
- =?us-ascii?Q?nJdEv7QwdMUIfx8uBG4sm0FpvXvpT0He1Wt283uTwR14/7mzMLjjwkpGxV5E?=
- =?us-ascii?Q?OeS624k2dRMjdyM2Le9OifNKDYGLFnL4kZiuuFBf1hF6T0GVaMQ1Kgavt4s4?=
- =?us-ascii?Q?RN/iub6wk4VfFt4W40jjigItFy0lgYKCqy/Z7B3SsAFqGMteA3MHj6HwNzJ1?=
- =?us-ascii?Q?Golsfxz4AUTgNhJ9WiykFvT7bePQkEYLzcoY8OYe5G/9KrBARc9Gw6HaimiK?=
- =?us-ascii?Q?k3Hd1NTGBFFYNwzdwaAgIB9puksA8vVAXgrYMo+GUM/Ni9PsRNTwzEFKy3Wj?=
- =?us-ascii?Q?SfRNj0SaOJjpttsaqVsKBNcIDQZ+zLnPerYnjXF/MfbdSqdsPKSZh7pRFdxF?=
- =?us-ascii?Q?w4inW4KqbiFHj1idag7DFNKynAkUeRr0n2PrEH/Ejsk99NzrlSnKM7frruvh?=
- =?us-ascii?Q?flebCCr54NY1j0IGCkUIjc7YBQP5ojh4wvR/Cyauj+lrDZXeyOZlVfuDZpwd?=
- =?us-ascii?Q?9VqHfeUnKHI7YzTWGvq1sngyZvj7WUTc40e9wUTwSdC2BprR9mM803zD5IGU?=
- =?us-ascii?Q?BpAIyiWZbbQdxtg17WLIKUxRb8gzsaPBn0DcrA4+lLnJaYEeUgYqEnAWtI+/?=
- =?us-ascii?Q?Mc1SwxEWkM9ElF4qiMT9HyifFYCcbSX/CeN8VCXiPyWSOlL6wknKlzP8uFC1?=
- =?us-ascii?Q?tOr0iMg8u2gTXn7cVKas6DmF?=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6b225dd7-9a0d-48c7-ce31-08d9174ee18b
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB4759.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 May 2021 03:09:41.1845
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: LaJ/7mdoSBzCYvCb0WroZElqfcF6/m4NdijUqgFmmSXEPMTdyx02uhC4flp2gtxrG+q9uoLAEUKWXO4OBqbB3gKYlar9b/5cyb70cboTSRM=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR10MB4501
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9984 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 malwarescore=0 spamscore=0
- phishscore=0 bulkscore=0 suspectscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
- definitions=main-2105150021
-X-Proofpoint-ORIG-GUID: 8K9J-MH7DVez6ifjK4lH5Jesvf5_0til
-X-Proofpoint-GUID: 8K9J-MH7DVez6ifjK4lH5Jesvf5_0til
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9984 signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 lowpriorityscore=0 malwarescore=0
- spamscore=0 priorityscore=1501 suspectscore=0 mlxlogscore=999 mlxscore=0
- impostorscore=0 adultscore=0 clxscore=1011 phishscore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2104190000
- definitions=main-2105150020
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+Commit f5ce815f34bc ("scsi: target: tcmu: Support DATA_BLOCK_SIZE = N *
+PAGE_SIZE") introduced xas_next() calls to iterate xarray elements.
+These calls triggered the WARNING "suspicious RCU usage" at tcmu device
+set up [1]. In the call stack of xas_next(), xas_load() was called.
+According to its comment, this function requires "the xa_lock or the RCU
+lock".
 
-Jiapeng,
+To avoid the warning, guard xas_next() calls. For the small loop of
+xas_next(), guard with the RCU lock. For the large loop of xas_next(),
+guard with the xa_lock using xas_lock().
 
-> Variable pg_size is set to '0x100 << pg_size', but this value is never
-> read as it is not used later on, hence it is a redundant assignment
-> and can be removed.
+[1]
 
-Applied to 5.14/scsi-staging, thanks!
+[ 1899.867091] =============================
+[ 1899.871199] WARNING: suspicious RCU usage
+[ 1899.875310] 5.13.0-rc1+ #41 Not tainted
+[ 1899.879222] -----------------------------
+[ 1899.883299] include/linux/xarray.h:1182 suspicious rcu_dereference_check() usage!
+[ 1899.890940] other info that might help us debug this:
+[ 1899.899082] rcu_scheduler_active = 2, debug_locks = 1
+[ 1899.905719] 3 locks held by kworker/0:1/1368:
+[ 1899.910161]  #0: ffffa1f8c8b98738 ((wq_completion)target_submission){+.+.}-{0:0}, at: process_one_work+0x1ee/0x580
+[ 1899.920732]  #1: ffffbd7040cd7e78 ((work_completion)(&q->sq.work)){+.+.}-{0:0}, at: process_one_work+0x1ee/0x580
+[ 1899.931146]  #2: ffffa1f8d1c99768 (&udev->cmdr_lock){+.+.}-{3:3}, at: tcmu_queue_cmd+0xea/0x160 [target_core_user]
+[ 1899.941678] stack backtrace:
+[ 1899.946093] CPU: 0 PID: 1368 Comm: kworker/0:1 Not tainted 5.13.0-rc1+ #41
+[ 1899.953070] Hardware name: System manufacturer System Product Name/PRIME Z270-A, BIOS 1302 03/15/2018
+[ 1899.962459] Workqueue: target_submission target_queued_submit_work [target_core_mod]
+[ 1899.970337] Call Trace:
+[ 1899.972839]  dump_stack+0x6d/0x89
+[ 1899.976222]  xas_descend+0x10e/0x120
+[ 1899.979875]  xas_load+0x39/0x50
+[ 1899.983077]  tcmu_get_empty_blocks+0x115/0x1c0 [target_core_user]
+[ 1899.989318]  queue_cmd_ring+0x1da/0x630 [target_core_user]
+[ 1899.994897]  ? rcu_read_lock_sched_held+0x3f/0x70
+[ 1899.999695]  ? trace_kmalloc+0xa6/0xd0
+[ 1900.003501]  ? __kmalloc+0x205/0x380
+[ 1900.007167]  tcmu_queue_cmd+0x12f/0x160 [target_core_user]
+[ 1900.012746]  __target_execute_cmd+0x23/0xa0 [target_core_mod]
+[ 1900.018589]  transport_generic_new_cmd+0x1f3/0x370 [target_core_mod]
+[ 1900.025046]  transport_handle_cdb_direct+0x34/0x50 [target_core_mod]
+[ 1900.031517]  target_queued_submit_work+0x43/0xe0 [target_core_mod]
+[ 1900.037837]  process_one_work+0x268/0x580
+[ 1900.041952]  ? process_one_work+0x580/0x580
+[ 1900.046195]  worker_thread+0x55/0x3b0
+[ 1900.049921]  ? process_one_work+0x580/0x580
+[ 1900.054192]  kthread+0x143/0x160
+[ 1900.057499]  ? kthread_create_worker_on_cpu+0x40/0x40
+[ 1900.062661]  ret_from_fork+0x1f/0x30
 
+Fixes: f5ce815f34bc ("scsi: target: tcmu: Support DATA_BLOCK_SIZE = N * PAGE_SIZE")
+Signed-off-by: Shin'ichiro Kawasaki <shinichiro.kawasaki@wdc.com>
+---
+Changes from v1:
+* Used xas_(un)lock() instead of rcu_read_(un)lock() for the large loop
+
+ drivers/target/target_core_user.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 198d25ae482a..834bd3910de8 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -516,8 +516,10 @@ static inline int tcmu_get_empty_block(struct tcmu_dev *udev,
+ 	dpi = dbi * udev->data_pages_per_blk;
+ 	/* Count the number of already allocated pages */
+ 	xas_set(&xas, dpi);
++	rcu_read_lock();
+ 	for (cnt = 0; xas_next(&xas) && cnt < page_cnt;)
+ 		cnt++;
++	rcu_read_unlock();
+ 
+ 	for (i = cnt; i < page_cnt; i++) {
+ 		/* try to get new page from the mm */
+@@ -727,6 +729,7 @@ static inline void tcmu_copy_data(struct tcmu_dev *udev,
+ 			page_cnt = udev->data_pages_per_blk;
+ 
+ 		xas_set(&xas, dbi * udev->data_pages_per_blk);
++		xas_lock(&xas);
+ 		for (page_inx = 0; page_inx < page_cnt && data_len; page_inx++) {
+ 			page = xas_next(&xas);
+ 
+@@ -763,6 +766,7 @@ static inline void tcmu_copy_data(struct tcmu_dev *udev,
+ 			if (direction == TCMU_SG_TO_DATA_AREA)
+ 				flush_dcache_page(page);
+ 		}
++		xas_unlock(&xas);
+ 	}
+ }
+ 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.31.1
+
