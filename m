@@ -2,168 +2,458 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	PDS_BAD_THREAD_QP_64,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96C2FC4707F
-	for <target-devel@archiver.kernel.org>; Thu, 27 May 2021 17:43:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24769C47082
+	for <target-devel@archiver.kernel.org>; Mon, 31 May 2021 12:03:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 77595610A0
-	for <target-devel@archiver.kernel.org>; Thu, 27 May 2021 17:43:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ECAC5611CB
+	for <target-devel@archiver.kernel.org>; Mon, 31 May 2021 12:03:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229827AbhE0Ros (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 27 May 2021 13:44:48 -0400
-Received: from esa4.hgst.iphmx.com ([216.71.154.42]:36542 "EHLO
-        esa4.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229609AbhE0Roq (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Thu, 27 May 2021 13:44:46 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1622137393; x=1653673393;
-  h=from:to:cc:subject:date:message-id:references:
-   content-transfer-encoding:mime-version;
-  bh=nIkdRTIa/GFQeW8v3pTCfFaAU5hitmN2LLo6VykFkJk=;
-  b=Hq00N7K+qtXQR3X+EyLnYm1Tb0M4L1HH7sYi+fAsLp+aFH5rqXMNvcjM
-   0AoptSUhd94GTIVO8rZVN9Cb7JciLFUDisyCd23+zIkkUp1DX48Es9sMF
-   RoR2c92XYsrWwbpKKi4/cYSG1nesFMRThBzdpijqpTKPozymwVtjMcZq0
-   qyY2kusdGuUS17ckBdiv5A/ImZxOFidtEqecIGmLd84kvkD4YWJwvNjlO
-   dXExu4KNB14g5fTONbh+d2oO6OBZU0VGidq2vPX9V0CHgsabKQnGTnbB/
-   DBJqDdZuJjnCsEm84k+hPTZw6XX8LsTJlFSd1PPfw5npYpmqrGIkWnTBh
-   g==;
-IronPort-SDR: 7yzndZtGIprOtyX1/jw6z6clVrDFeqiKgr390c8NtRvNuRllgQxlxbmDHWvJD7oFyAYkKrDYMO
- QG0lJrwi6mL7/bssP0wMhAsKSID+kJUvltyymd6U/uUIvjIwE6vccE+qRXNGdSsJLIGY1gu9fU
- jcZpAhgBoYBdrcjaffunrBBLQpZVqVc2+eLgSJBsNrQqooIqipEfvn4j6YEDcX+LHMBro8zXf+
- FGjTwhyxGzEmAFdNoODoISWZxEEM30ggs4ptyE91hPO9mlkGSxbMPFH9ID6T59yz2Nsxgsw+FB
- xdM=
-X-IronPort-AV: E=Sophos;i="5.83,228,1616428800"; 
-   d="scan'208";a="168985607"
-Received: from mail-dm6nam12lp2168.outbound.protection.outlook.com (HELO NAM12-DM6-obe.outbound.protection.outlook.com) ([104.47.59.168])
-  by ob1.hgst.iphmx.com with ESMTP; 28 May 2021 01:43:11 +0800
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=YVsD8luSZa2OJCNwfTsv+vbkLC2vIVXZ5plIDT6jfGfZZxWOZeNtwHSbBehYj0n94IdjANsOYJex4SFExKTbY79aiF9gjxk6uNqpyduYuai0D5mr5DqNbuvNhFHdTZLJymHIch6q7p0zumzc4dP+HFyJem/H3Gc5fG5O8s6fLqJoA9Z2zLS3C0Bo2nnJtIxFSqA9fP42Uf4bRWViR4oWqtK0Do77JeOLDJQIP3DdAbvrV0m+BgufOyx1tzOtSD4inVlk7IjhbJcr2LOAAva0AmPmfTrXh/8p5Mmap48o4ccsRnlmSTc3JTXDiNo8Xb7qUEHQdhnLxfSMaohSqif+DA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nIkdRTIa/GFQeW8v3pTCfFaAU5hitmN2LLo6VykFkJk=;
- b=KxIUlYhZQ7wNSldTgB7UOYO0gnB+wZNUQDMO1WZzkwEMOgzCbOGg0yJCqmgcXG1fe6IWepNwSHOOYPIQ9jGS0cjJVTEMYo3gP2+CD6+sfZPJal/HAJUCq9enHtemM4J2tPfJy9N0SGAUThBgT16pv3CoyhzNhHekL9+8ogCO+7cybbKMdEAzoGO0KCbonJ4GHtBssIwwxWrpFgHG0PrF6DZSvN8pv7C7tpr/ABJjejIHp28zu/kUo57uZAOq7TMtjq2uLU5lO+0dfq+Md/SG9Hjh9pgQbTbWJtlqQ1szDoqJWJa0UEmkdNJcs1Al1jKSVLG6MgyIa0xGbIaBTqY/sw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=wdc.com; dmarc=pass action=none header.from=wdc.com; dkim=pass
- header.d=wdc.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=sharedspace.onmicrosoft.com; s=selector2-sharedspace-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nIkdRTIa/GFQeW8v3pTCfFaAU5hitmN2LLo6VykFkJk=;
- b=JF831C9DJpItQ6HNsnDAE0b0nULMQXTlYvZpAXPsr98ySLF3lg4WQXpRRVEPZOQloK9ElPPneIlPfZOCZgN9gRkL9DR6Pa8vqT/zMT6YAdIUJULk24587NsmEqSydAgIcAL96zeFZyP2bU5S3fD/YA8dXkl91MgH56CnRlfeTY0=
-Received: from BYAPR04MB4965.namprd04.prod.outlook.com (2603:10b6:a03:4d::25)
- by BYAPR04MB4134.namprd04.prod.outlook.com (2603:10b6:a02:fa::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4150.23; Thu, 27 May
- 2021 17:43:10 +0000
-Received: from BYAPR04MB4965.namprd04.prod.outlook.com
- ([fe80::6873:3d64:8f9f:faf0]) by BYAPR04MB4965.namprd04.prod.outlook.com
- ([fe80::6873:3d64:8f9f:faf0%7]) with mapi id 15.20.4150.027; Thu, 27 May 2021
- 17:43:10 +0000
-From:   Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-To:     Christoph Hellwig <hch@lst.de>
-CC:     Matthew Wilcox <willy@infradead.org>,
-        "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-        "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>,
-        "axboe@kernel.dk" <axboe@kernel.dk>,
-        "mb@lightnvm.io" <mb@lightnvm.io>,
-        "martin.petersen@oracle.com" <martin.petersen@oracle.com>,
-        "clm@fb.com" <clm@fb.com>,
-        "josef@toxicpanda.com" <josef@toxicpanda.com>,
-        "dsterba@suse.com" <dsterba@suse.com>,
-        Johannes Thumshirn <Johannes.Thumshirn@wdc.com>,
-        "ming.lei@redhat.com" <ming.lei@redhat.com>,
-        "osandov@fb.com" <osandov@fb.com>,
-        "jefflexu@linux.alibaba.com" <jefflexu@linux.alibaba.com>
-Subject: Re: [RFC PATCH 0/8] block: fix bio_add_XXX_page() return type
-Thread-Topic: [RFC PATCH 0/8] block: fix bio_add_XXX_page() return type
-Thread-Index: AQHXTUCZbkdV5W8mbU+6O2TFfy2HFA==
-Date:   Thu, 27 May 2021 17:43:10 +0000
-Message-ID: <BYAPR04MB4965B509EDB1A69B29E9BB6686239@BYAPR04MB4965.namprd04.prod.outlook.com>
-References: <20210520062255.4908-1-chaitanya.kulkarni@wdc.com>
- <YKeZ5dtxt3gsImsd@casper.infradead.org> <20210524073527.GA24302@lst.de>
- <BYAPR04MB49650508F2C5A4EA3B576D5286249@BYAPR04MB4965.namprd04.prod.outlook.com>
- <20210527114347.GA18214@lst.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: lst.de; dkim=none (message not signed)
- header.d=none;lst.de; dmarc=none action=none header.from=wdc.com;
-x-originating-ip: [199.255.45.62]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: e2ce1c22-0467-4130-12f7-08d92136e4f9
-x-ms-traffictypediagnostic: BYAPR04MB4134:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <BYAPR04MB4134934471CAED3E2136862D86239@BYAPR04MB4134.namprd04.prod.outlook.com>
-wdcipoutbound: EOP-TRUE
-x-ms-oob-tlc-oobclassifiers: OLM:7691;
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: kT62lp+D1rZ1GkXPgAfgetygM5c+EJK4kkxwqjK4MiaPfCXrZlT7HsFgflU48iqcp8+8/w0WW+g6q4EzPGQlRXgxay2drePQJe0h5FkY23YHWJOmuPWwoF9pw8tW7wllZcB75Ysj1cz0tABVOk+kDB29QVOE3shQLXyGMm6lXymZDFJxtQYZdmE2O7Ycmxz73G85JJCusVpt1vGTj8+wvoVpS3ZqkpnIuSH7QwDA/I5FNqnP8HTI4kaWU0gMYDzTh39VhLrVjD+xrBH27BKPkhU4fYfvw9C8qa7vVrX+YYAAAgP1TlStBWyD5lYbMtzE68cGTg9P4sQF8xCpG4fRk4iOtAa4LblDBmxWDfCdUQBaQqyYhM+GpS73JEbNmkbbeRuRoRUtHGpG8z+yxRLYsm/Rjz574a4R/dwuf87quDTxc0MPlTQS97wMpkwMQFcbfa49oYRMqDdenJZHrgukneV4ZvW+dl/MrWFy0iemMcLicDqKur/heZFO0QMOxRU6P/Z0EMENsmaFIhmFyr3VuVVUp5Svt9OVfw+Jj2Tkr5qqO46745RVCsfZNgpSEuBGkJg1hPcPX7A9+zloOOlHyhu661aRoZahH38itmPYxJs=
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR04MB4965.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(39860400002)(396003)(376002)(136003)(346002)(316002)(6916009)(86362001)(8936002)(478600001)(76116006)(7416002)(9686003)(66946007)(66476007)(33656002)(71200400001)(64756008)(66556008)(8676002)(66446008)(26005)(7696005)(4744005)(4326008)(52536014)(186003)(5660300002)(55016002)(54906003)(6506007)(122000001)(38100700002)(2906002)(53546011);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata: =?us-ascii?Q?A9j9JbnYnw7et0g0ww3feg1j4Fdfimm6PGSqYs5o2tXoX79cl5Oe836bIUw+?=
- =?us-ascii?Q?iPQGWo85Q7LD6z0VXMP3KH5dcWCauBuwZ1EQRt+DrbnsCMiMe7tr4mUoXE8n?=
- =?us-ascii?Q?fT4dIbMKEWt4kHYe6dNYQvq1AKF7U6bxABW/u3grltGFSlmSgF432iPeP27G?=
- =?us-ascii?Q?qmJNirbM1a/Bsi/P8aq77A+EF3w26aFZVw3ep8Zk7SWgUsDIsbgNjQV9mtl5?=
- =?us-ascii?Q?UgSAfThyM7WwnWpqTu9lietM9gb7al4iOvqx617hDlEMCPQJ2fPi4ueDoSTV?=
- =?us-ascii?Q?irVB6A534RZPcvfqYYlVjTmD25C4dtJFTSfLeHHGN6BrHwEsshBbNbF4sYJo?=
- =?us-ascii?Q?LgVIuFZbpGrv3iIr+Lw6gTjMfrsd94Zvuv3Pbe3ruSHUxMPv9HNK3eLboHRm?=
- =?us-ascii?Q?Sa551BcUDCDlsUP/jOSRlY1LlXqCAVp17r3wzwSrU+dlFYFDLFQwemWdwOVR?=
- =?us-ascii?Q?ikJO9/ZEnewJIaUhfBOL2B4r/ll/7y+IrTtSMue8rViz2ZDtZYOSNYOJT+5O?=
- =?us-ascii?Q?R0VQesnlF7TOLpKI69XyMw8DdawZACm62Wj/BN0TOMKdgx9bxIXsjkBc9EUB?=
- =?us-ascii?Q?jDyzfq5Oq9CMDrb5+Wlv3pkkso5ByJ80pU0eCfXb9tkOp7OkI4VVVwhv8VGz?=
- =?us-ascii?Q?jAptEd7at1UJSH17QGItQvREnLmESUnZT1S3+uZNLk9uuFd6XBj+H7vZSDWG?=
- =?us-ascii?Q?ALfObhAoYvOuIVa4mEKpO84NPUW+UjolZy9L4+pwNlVl67e4T185T1NDRnd9?=
- =?us-ascii?Q?W5nMOwM7m+7N0p1Rj3VCRQcoMHtojVye/Wwe7K+M/47MlvwiFmVSpFuywoUe?=
- =?us-ascii?Q?CaAjXP3wg4gBqKTP76iyFJIO7aRKPw/dKs40sJUrfAJnDLa5zWl7niiNV95P?=
- =?us-ascii?Q?GynoHdPFvuCApUSczTSFy53cmgQKTi++Qh1sEq/0ssbfWorksi1QW2BfDX7a?=
- =?us-ascii?Q?YgFIY1k7P2zrA9Iw93so133eUM5OhsHY9w9HoigIlJLx9Ezx7ItJpVAlZuKL?=
- =?us-ascii?Q?FH6ezfAGOML5ZVLxQaa3gBAEYbsP4JxWbykIZuO608VclWZqTDygX6X+GivA?=
- =?us-ascii?Q?jZGiO7eD2AAICyjo43phYtaC2x/FjOQUZsXeRaJxhYwYYKWVv3GjOHGjB/jR?=
- =?us-ascii?Q?PscmsqVOFDzcwqJ9Ap32FWzuqazb4ZKfPGo7cExSAg9OKVYooeZb0doYZAxU?=
- =?us-ascii?Q?SI3N9sd2LN3EA9c5a9fqjWZtZG2mWVcMxBhWIHzWqs9IHIY+v8hhsvU/MP5B?=
- =?us-ascii?Q?9pwQaT5TXfwMpvDLox0f5G+kNimtaJ1MB5DVjqL+IBWqaaU1R+n+Bme45yY9?=
- =?us-ascii?Q?sZNDVPybwBLZgW6zw5PQkAZrQfs2OWL1Mzkpcxxyh+ohZg=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+        id S231289AbhEaMFU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 31 May 2021 08:05:20 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33698 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231245AbhEaMFN (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 31 May 2021 08:05:13 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 4BA25611CA;
+        Mon, 31 May 2021 12:03:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1622462614;
+        bh=rNmjDiEt2T+esVQl72hVB/EAYYOLT25HuKZDoae+HRg=;
+        h=From:To:Cc:Subject:Date:From;
+        b=u5LyaDq235HLLynB/hcoLLvz3SCgVdtSEQLrV/DphDxpcXs5WkEHrN82tsQfPPcyK
+         1kEQ0Vm84n+8cZszPFeWevLPAmwIcVi/kMChVbec/at+zn/bkupHUzrg0gkDuCt0mj
+         vZ3R16YmEl/12OeHSTIFu6fN2gZ2CmhTJNsU5uHr2myPPTVkHtAkiEpWhvC+KuZ78R
+         GvCc/RFNJ8ithvFCeUiEPROvIQE5CcjCmnOLWAMKgw7IWcmg1aEve4OrDmAjYWUDbf
+         2KUhKMX+4DsdXkQPYQboGwofXj9EnVQ55cMVNLLmTUFR+2HE5l0L2/Zyh+uzjule/I
+         38gGyM/bWRsZw==
+From:   Leon Romanovsky <leon@kernel.org>
+To:     Doug Ledford <dledford@redhat.com>,
+        Jason Gunthorpe <jgg@nvidia.com>
+Cc:     Leon Romanovsky <leonro@nvidia.com>,
+        Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+        Faisal Latif <faisal.latif@intel.com>,
+        Jack Wang <jinpu.wang@ionos.com>, linux-kernel@vger.kernel.org,
+        linux-rdma@vger.kernel.org, Max Gurtovoy <mgurtovoy@nvidia.com>,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>,
+        Sagi Grimberg <sagi@grimberg.me>,
+        Shiraz Saleem <shiraz.saleem@intel.com>,
+        target-devel@vger.kernel.org
+Subject: [PATCH rdma-next] RDMA: Fix kernel-doc warnings about wrong comment
+Date:   Mon, 31 May 2021 15:03:26 +0300
+Message-Id: <635def71048cbffe76e2dd324cf420d8a465ee9d.1622460676.git.leonro@nvidia.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-X-OriginatorOrg: wdc.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR04MB4965.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e2ce1c22-0467-4130-12f7-08d92136e4f9
-X-MS-Exchange-CrossTenant-originalarrivaltime: 27 May 2021 17:43:10.1965
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: b61c8803-16f3-4c35-9b17-6f65f441df86
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: MTG9tugbl+p51Y21oPYbRGsuSxPIgeARkIgHevTScf9J+mC4jDVQj65Td36cn6DCPdaBLYpCmpUD56SFLaWN8GbIVK2pdMOtik1IxXi3xOA=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR04MB4134
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 5/27/21 04:43, Christoph Hellwig wrote:=0A=
-> On Wed, May 26, 2021 at 02:55:57AM +0000, Chaitanya Kulkarni wrote:=0A=
->> Is above comment is on this series or on the API present in the folio=0A=
->> patches [1] ?=0A=
-> All of the above.=0A=
->=0A=
->> Since if we change the return type to bool for the functions in=0A=
->> question [2] in this series we also need to modify the callers, I'm not =
-sure=0A=
->> that is worth it though.=0A=
-> Yes, all the caller would need to change as well.=0A=
->=0A=
-=0A=
-I see, thanks, I'll work on V1 with this approach.=0A=
-=0A=
-=0A=
+From: Leon Romanovsky <leonro@nvidia.com>
+
+Compilation with W=1 produces warnings similar to the below.
+
+  drivers/infiniband/ulp/ipoib/ipoib_main.c:320: warning: This comment
+	starts with '/**', but isn't a kernel-doc comment. Refer
+	Documentation/doc-guide/kernel-doc.rst
+
+All such occurrences were found with the following one line
+ git grep -A 1 "\/\*\*" drivers/infiniband/
+
+Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+---
+ * Straightforward change to make our CI happy.
+---
+ drivers/infiniband/core/iwpm_util.h       |  2 +-
+ drivers/infiniband/core/roce_gid_mgmt.c   |  5 +++--
+ drivers/infiniband/hw/hfi1/chip.c         |  4 ++--
+ drivers/infiniband/hw/hfi1/file_ops.c     |  6 +++---
+ drivers/infiniband/hw/hfi1/hfi.h          |  2 +-
+ drivers/infiniband/hw/hfi1/init.c         |  4 ++--
+ drivers/infiniband/hw/hfi1/pio.c          |  2 +-
+ drivers/infiniband/hw/i40iw/i40iw.h       |  3 ---
+ drivers/infiniband/hw/i40iw/i40iw_cm.c    | 10 +++++-----
+ drivers/infiniband/hw/i40iw/i40iw_hmc.c   |  2 +-
+ drivers/infiniband/hw/i40iw/i40iw_utils.c |  2 +-
+ drivers/infiniband/sw/rdmavt/mr.c         |  4 ++--
+ drivers/infiniband/sw/rdmavt/qp.c         |  3 ++-
+ drivers/infiniband/sw/rdmavt/vt.c         |  4 ++--
+ drivers/infiniband/ulp/ipoib/ipoib_main.c |  7 ++++---
+ drivers/infiniband/ulp/iser/iser_verbs.c  |  2 +-
+ drivers/infiniband/ulp/isert/ib_isert.c   |  4 ++--
+ drivers/infiniband/ulp/rtrs/rtrs-clt.c    |  4 ++--
+ drivers/infiniband/ulp/rtrs/rtrs-srv.c    |  2 +-
+ 19 files changed, 36 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/infiniband/core/iwpm_util.h b/drivers/infiniband/core/iwpm_util.h
+index eeb8e6010907..61380583d2a6 100644
+--- a/drivers/infiniband/core/iwpm_util.h
++++ b/drivers/infiniband/core/iwpm_util.h
+@@ -183,7 +183,7 @@ u32 iwpm_check_registration(u8 nl_client, u32 reg);
+ void iwpm_set_registration(u8 nl_client, u32 reg);
+ 
+ /**
+- * iwpm_get_registration
++ * iwpm_get_registration - Get the client registration
+  * @nl_client: The index of the netlink client
+  *
+  * Returns the client registration type
+diff --git a/drivers/infiniband/core/roce_gid_mgmt.c b/drivers/infiniband/core/roce_gid_mgmt.c
+index 7b638d91a4ec..68197e576433 100644
+--- a/drivers/infiniband/core/roce_gid_mgmt.c
++++ b/drivers/infiniband/core/roce_gid_mgmt.c
+@@ -186,12 +186,13 @@ is_eth_port_inactive_slave_filter(struct ib_device *ib_dev, u32 port,
+ 	return res;
+ }
+ 
+-/** is_ndev_for_default_gid_filter - Check if a given netdevice
++/**
++ * is_ndev_for_default_gid_filter - Check if a given netdevice
+  * can be considered for default GIDs or not.
+  * @ib_dev:		IB device to check
+  * @port:		Port to consider for adding default GID
+  * @rdma_ndev:		rdma netdevice pointer
+- * @cookie_ndev:	Netdevice to consider to form a default GID
++ * @cookie:             Netdevice to consider to form a default GID
+  *
+  * is_ndev_for_default_gid_filter() returns true if a given netdevice can be
+  * considered for deriving default RoCE GID, returns false otherwise.
+diff --git a/drivers/infiniband/hw/hfi1/chip.c b/drivers/infiniband/hw/hfi1/chip.c
+index 5eeae8df415b..c97544638367 100644
+--- a/drivers/infiniband/hw/hfi1/chip.c
++++ b/drivers/infiniband/hw/hfi1/chip.c
+@@ -14186,7 +14186,7 @@ static void init_kdeth_qp(struct hfi1_devdata *dd)
+ }
+ 
+ /**
+- * hfi1_get_qp_map
++ * hfi1_get_qp_map - get qp map
+  * @dd: device data
+  * @idx: index to read
+  */
+@@ -14199,7 +14199,7 @@ u8 hfi1_get_qp_map(struct hfi1_devdata *dd, u8 idx)
+ }
+ 
+ /**
+- * init_qpmap_table
++ * init_qpmap_table - init qp map
+  * @dd: device data
+  * @first_ctxt: first context
+  * @last_ctxt: first context
+diff --git a/drivers/infiniband/hw/hfi1/file_ops.c b/drivers/infiniband/hw/hfi1/file_ops.c
+index 3b7bbc7b9d10..955c3637980e 100644
+--- a/drivers/infiniband/hw/hfi1/file_ops.c
++++ b/drivers/infiniband/hw/hfi1/file_ops.c
+@@ -736,7 +736,7 @@ static u64 kvirt_to_phys(void *addr)
+ }
+ 
+ /**
+- * complete_subctxt
++ * complete_subctxt - complete sub-context info
+  * @fd: valid filedata pointer
+  *
+  * Sub-context info can only be set up after the base context
+@@ -841,7 +841,7 @@ static int assign_ctxt(struct hfi1_filedata *fd, unsigned long arg, u32 len)
+ }
+ 
+ /**
+- * match_ctxt
++ * match_ctxt - match context
+  * @fd: valid filedata pointer
+  * @uinfo: user info to compare base context with
+  * @uctxt: context to compare uinfo to.
+@@ -898,7 +898,7 @@ static int match_ctxt(struct hfi1_filedata *fd,
+ }
+ 
+ /**
+- * find_sub_ctxt
++ * find_sub_ctxt - fund sub-context
+  * @fd: valid filedata pointer
+  * @uinfo: matching info to use to find a possible context to share.
+  *
+diff --git a/drivers/infiniband/hw/hfi1/hfi.h b/drivers/infiniband/hw/hfi1/hfi.h
+index 867ae0b1aa95..9e020bb6f405 100644
+--- a/drivers/infiniband/hw/hfi1/hfi.h
++++ b/drivers/infiniband/hw/hfi1/hfi.h
+@@ -1764,7 +1764,7 @@ static inline void pause_for_credit_return(struct hfi1_devdata *dd)
+ }
+ 
+ /**
+- * sc_to_vlt() reverse lookup sc to vl
++ * sc_to_vlt() - reverse lookup sc to vl
+  * @dd - devdata
+  * @sc5 - 5 bit sc
+  */
+diff --git a/drivers/infiniband/hw/hfi1/init.c b/drivers/infiniband/hw/hfi1/init.c
+index e3a8a420c045..0986aa065418 100644
+--- a/drivers/infiniband/hw/hfi1/init.c
++++ b/drivers/infiniband/hw/hfi1/init.c
+@@ -312,7 +312,7 @@ struct hfi1_ctxtdata *hfi1_rcd_get_by_index_safe(struct hfi1_devdata *dd,
+ }
+ 
+ /**
+- * hfi1_rcd_get_by_index
++ * hfi1_rcd_get_by_index - get by index
+  * @dd: pointer to a valid devdata structure
+  * @ctxt: the index of an possilbe rcd
+  *
+@@ -499,7 +499,7 @@ int hfi1_create_ctxtdata(struct hfi1_pportdata *ppd, int numa,
+ }
+ 
+ /**
+- * hfi1_free_ctxt
++ * hfi1_free_ctxt - free context
+  * @rcd: pointer to an initialized rcd data structure
+  *
+  * This wrapper is the free function that matches hfi1_create_ctxtdata().
+diff --git a/drivers/infiniband/hw/hfi1/pio.c b/drivers/infiniband/hw/hfi1/pio.c
+index ff864f6f0266..e276522104c6 100644
+--- a/drivers/infiniband/hw/hfi1/pio.c
++++ b/drivers/infiniband/hw/hfi1/pio.c
+@@ -993,7 +993,7 @@ static bool is_sc_halted(struct hfi1_devdata *dd, u32 hw_context)
+ }
+ 
+ /**
+- * sc_wait_for_packet_egress
++ * sc_wait_for_packet_egress - wait for packet
+  * @sc: valid send context
+  * @pause: wait for credit return
+  *
+diff --git a/drivers/infiniband/hw/i40iw/i40iw.h b/drivers/infiniband/hw/i40iw/i40iw.h
+index be4094ac4fac..a27c3d1ad4f8 100644
+--- a/drivers/infiniband/hw/i40iw/i40iw.h
++++ b/drivers/infiniband/hw/i40iw/i40iw.h
+@@ -506,9 +506,6 @@ static inline void i40iw_free_resource(struct i40iw_device *iwdev,
+ 
+ struct i40iw_handler *i40iw_find_netdev(struct net_device *netdev);
+ 
+-/**
+- * iw_init_resources -
+- */
+ u32 i40iw_initialize_hw_resources(struct i40iw_device *iwdev);
+ 
+ int i40iw_register_rdma_device(struct i40iw_device *iwdev);
+diff --git a/drivers/infiniband/hw/i40iw/i40iw_cm.c b/drivers/infiniband/hw/i40iw/i40iw_cm.c
+index 2450b7dd51f6..d27d52b7c922 100644
+--- a/drivers/infiniband/hw/i40iw/i40iw_cm.c
++++ b/drivers/infiniband/hw/i40iw/i40iw_cm.c
+@@ -207,7 +207,7 @@ static inline void i40iw_fill_sockaddr6(struct i40iw_cm_node *cm_node,
+ }
+ 
+ /**
+- * i40iw_get_addr_info
++ * i40iw_get_addr_info - get addr info
+  * @cm_node: contains ip/tcp info
+  * @cm_info: to get a copy of the cm_node ip/tcp info
+ */
+@@ -628,7 +628,7 @@ static void i40iw_event_connect_error(struct i40iw_cm_event *event)
+ }
+ 
+ /**
+- * i40iw_process_options
++ * i40iw_process_options - process options
+  * @cm_node: connection's node
+  * @optionsloc: point to start of options
+  * @optionsize: size of all options
+@@ -687,7 +687,7 @@ static int i40iw_process_options(struct i40iw_cm_node *cm_node,
+ }
+ 
+ /**
+- * i40iw_handle_tcp_options -
++ * i40iw_handle_tcp_options - handle TCP options
+  * @cm_node: connection's node
+  * @tcph: pointer tcp header
+  * @optionsize: size of options rcvd
+@@ -870,7 +870,7 @@ static int i40iw_send_mpa_request(struct i40iw_cm_node *cm_node)
+ }
+ 
+ /**
+- * i40iw_send_mpa_reject -
++ * i40iw_send_mpa_reject - send MPA reject
+  * @cm_node: connection's node
+  * @pdata: reject data for connection
+  * @plen: length of reject data
+@@ -1040,7 +1040,7 @@ static int i40iw_parse_mpa(struct i40iw_cm_node *cm_node, u8 *buffer, u32 *type,
+ }
+ 
+ /**
+- * i40iw_schedule_cm_timer
++ * i40iw_schedule_cm_timer - schedule CM timer
+  * @cm_node: connection's node
+  * @sqbuf: buffer to send
+  * @type: if it is send or close
+diff --git a/drivers/infiniband/hw/i40iw/i40iw_hmc.c b/drivers/infiniband/hw/i40iw/i40iw_hmc.c
+index b44bfc1d239b..4cdd763ab6f9 100644
+--- a/drivers/infiniband/hw/i40iw/i40iw_hmc.c
++++ b/drivers/infiniband/hw/i40iw/i40iw_hmc.c
+@@ -781,7 +781,7 @@ enum i40iw_status_code i40iw_prep_remove_pd_page(struct i40iw_hmc_info *hmc_info
+ }
+ 
+ /**
+- * i40iw_pf_init_vfhmc -
++ * i40iw_pf_init_vfhmc - init vfhmc
+  * @vf_cnt_array: array of cnt values of iwarp hmc objects
+  * @vf_hmc_fn_id: hmc function id ofr vf driver
+  * @dev: pointer to i40iw_dev struct
+diff --git a/drivers/infiniband/hw/i40iw/i40iw_utils.c b/drivers/infiniband/hw/i40iw/i40iw_utils.c
+index 9ff825f7860b..a1efabc1ad0a 100644
+--- a/drivers/infiniband/hw/i40iw/i40iw_utils.c
++++ b/drivers/infiniband/hw/i40iw/i40iw_utils.c
+@@ -963,7 +963,7 @@ void i40iw_cqp_spawn_worker(struct i40iw_sc_dev *dev,
+ }
+ 
+ /**
+- * i40iw_cqp_manage_hmc_fcn_worker -
++ * i40iw_cqp_manage_hmc_fcn_worker - manage hmc
+  * @work: work pointer for hmc info
+  */
+ static void i40iw_cqp_manage_hmc_fcn_worker(struct work_struct *work)
+diff --git a/drivers/infiniband/sw/rdmavt/mr.c b/drivers/infiniband/sw/rdmavt/mr.c
+index 601d18dda1f5..34b7af6ab9c2 100644
+--- a/drivers/infiniband/sw/rdmavt/mr.c
++++ b/drivers/infiniband/sw/rdmavt/mr.c
+@@ -101,8 +101,8 @@ int rvt_driver_mr_init(struct rvt_dev_info *rdi)
+ }
+ 
+ /**
+- *rvt_mr_exit: clean up MR
+- *@rdi: rvt dev structure
++ * rvt_mr_exit - clean up MR
++ * @rdi: rvt dev structure
+  *
+  * called when drivers have unregistered or perhaps failed to register with us
+  */
+diff --git a/drivers/infiniband/sw/rdmavt/qp.c b/drivers/infiniband/sw/rdmavt/qp.c
+index 4522071fc220..1111eee8d05a 100644
+--- a/drivers/infiniband/sw/rdmavt/qp.c
++++ b/drivers/infiniband/sw/rdmavt/qp.c
+@@ -984,7 +984,8 @@ static void rvt_reset_qp(struct rvt_dev_info *rdi, struct rvt_qp *qp,
+ 	spin_unlock_irq(&qp->r_lock);
+ }
+ 
+-/** rvt_free_qpn - Free a qpn from the bit map
++/**
++ * rvt_free_qpn - Free a qpn from the bit map
+  * @qpt: QP table
+  * @qpn: queue pair number to free
+  */
+diff --git a/drivers/infiniband/sw/rdmavt/vt.c b/drivers/infiniband/sw/rdmavt/vt.c
+index 12ebe041a5da..3749380ff193 100644
+--- a/drivers/infiniband/sw/rdmavt/vt.c
++++ b/drivers/infiniband/sw/rdmavt/vt.c
+@@ -144,7 +144,7 @@ static int rvt_modify_device(struct ib_device *device,
+ }
+ 
+ /**
+- * rvt_query_port: Passes the query port call to the driver
++ * rvt_query_port - Passes the query port call to the driver
+  * @ibdev: Verbs IB dev
+  * @port_num: port number, 1 based from ib core
+  * @props: structure to hold returned properties
+@@ -175,7 +175,7 @@ static int rvt_query_port(struct ib_device *ibdev, u32 port_num,
+ }
+ 
+ /**
+- * rvt_modify_port
++ * rvt_modify_port - modify port
+  * @ibdev: Verbs IB dev
+  * @port_num: Port number, 1 based from ib core
+  * @port_modify_mask: How to change the port
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
+index a4f9220161ad..b3dfa973b377 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
++++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
+@@ -316,7 +316,7 @@ static bool ipoib_is_dev_match_addr_rcu(const struct sockaddr *addr,
+ 	return false;
+ }
+ 
+-/**
++/*
+  * Find the master net_device on top of the given net_device.
+  * @dev: base IPoIB net_device
+  *
+@@ -361,8 +361,9 @@ static int ipoib_upper_walk(struct net_device *upper,
+ }
+ 
+ /**
+- * Find a net_device matching the given address, which is an upper device of
+- * the given net_device.
++ * ipoib_get_net_dev_match_addr - Find a net_device matching
++ * the given address, which is an upper device of the given net_device.
++ *
+  * @addr: IP address to look for.
+  * @dev: base IPoIB net_device
+  *
+diff --git a/drivers/infiniband/ulp/iser/iser_verbs.c b/drivers/infiniband/ulp/iser/iser_verbs.c
+index 136f6c4492e0..b44cbb8e84eb 100644
+--- a/drivers/infiniband/ulp/iser/iser_verbs.c
++++ b/drivers/infiniband/ulp/iser/iser_verbs.c
+@@ -761,7 +761,7 @@ void iser_conn_init(struct iser_conn *iser_conn)
+ 	ib_conn->reg_cqe.done = iser_reg_comp;
+ }
+ 
+- /**
++/*
+  * starts the process of connecting to the target
+  * sleeps until the connection is established or rejected
+  */
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index 160efef66031..8634c83067da 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -2397,10 +2397,10 @@ isert_accept_np(struct iscsi_np *np, struct iscsi_conn *conn)
+ 		spin_unlock_bh(&np->np_thread_lock);
+ 		isert_dbg("np_thread_state %d\n",
+ 			 np->np_thread_state);
+-		/**
++		/*
+ 		 * No point in stalling here when np_thread
+ 		 * is in state RESET/SHUTDOWN/EXIT - bail
+-		 **/
++		 */
+ 		return -ENODEV;
+ 	}
+ 	spin_unlock_bh(&np->np_thread_lock);
+diff --git a/drivers/infiniband/ulp/rtrs/rtrs-clt.c b/drivers/infiniband/ulp/rtrs/rtrs-clt.c
+index 0a794d748a7a..62807321be89 100644
+--- a/drivers/infiniband/ulp/rtrs/rtrs-clt.c
++++ b/drivers/infiniband/ulp/rtrs/rtrs-clt.c
+@@ -913,7 +913,7 @@ static inline void path_it_deinit(struct path_it *it)
+ }
+ 
+ /**
+- * rtrs_clt_init_req() Initialize an rtrs_clt_io_req holding information
++ * rtrs_clt_init_req() - Initialize an rtrs_clt_io_req holding information
+  * about an inflight IO.
+  * The user buffer holding user control message (not data) is copied into
+  * the corresponding buffer of rtrs_iu (req->iu->buf), which later on will
+@@ -1219,7 +1219,7 @@ static int rtrs_clt_read_req(struct rtrs_clt_io_req *req)
+ }
+ 
+ /**
+- * rtrs_clt_failover_req() Try to find an active path for a failed request
++ * rtrs_clt_failover_req() - Try to find an active path for a failed request
+  * @clt: clt context
+  * @fail_req: a failed io request.
+  */
+diff --git a/drivers/infiniband/ulp/rtrs/rtrs-srv.c b/drivers/infiniband/ulp/rtrs/rtrs-srv.c
+index 0fa116cabc44..8d1a19df30bf 100644
+--- a/drivers/infiniband/ulp/rtrs/rtrs-srv.c
++++ b/drivers/infiniband/ulp/rtrs/rtrs-srv.c
+@@ -1288,7 +1288,7 @@ int rtrs_srv_get_sess_name(struct rtrs_srv *srv, char *sessname, size_t len)
+ EXPORT_SYMBOL(rtrs_srv_get_sess_name);
+ 
+ /**
+- * rtrs_srv_get_sess_qdepth() - Get rtrs_srv qdepth.
++ * rtrs_srv_get_queue_depth() - Get rtrs_srv qdepth.
+  * @srv:	Session
+  */
+ int rtrs_srv_get_queue_depth(struct rtrs_srv *srv)
+-- 
+2.31.1
+
