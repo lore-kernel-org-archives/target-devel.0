@@ -2,112 +2,152 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0626BC47082
-	for <target-devel@archiver.kernel.org>; Thu,  3 Jun 2021 14:38:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B1B2C47096
+	for <target-devel@archiver.kernel.org>; Thu,  3 Jun 2021 15:15:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E1C50613F1
-	for <target-devel@archiver.kernel.org>; Thu,  3 Jun 2021 14:38:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F1A90613F1
+	for <target-devel@archiver.kernel.org>; Thu,  3 Jun 2021 15:15:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230454AbhFCOjv (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 3 Jun 2021 10:39:51 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:60635 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S229744AbhFCOju (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Thu, 3 Jun 2021 10:39:50 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1622731085;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=awF3rK7dRpOei0bYGNfeYmW5cxqhvdc1qb6GqP+cefk=;
-        b=PXKnqfI/4ujD6siNMZ3VJh2YGaKZfTXjygeWaKASDt89A/Vx/6sxypGsS+IS4olYwAxgWX
-        +s62vM/x3uq6IHME8i5liWxfieB2b/xhsPKufOXAtFMKr6u1dbBRXi/2je5/9u9QVoEETv
-        2gEL93S15iV0a7AFZne857mAZ19RSq0=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-515-fr8FIAB6M32CRVDe3Mhacw-1; Thu, 03 Jun 2021 10:37:43 -0400
-X-MC-Unique: fr8FIAB6M32CRVDe3Mhacw-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 06865805EF2;
-        Thu,  3 Jun 2021 14:37:42 +0000 (UTC)
-Received: from localhost (ovpn-114-228.ams2.redhat.com [10.36.114.228])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 924535D705;
-        Thu,  3 Jun 2021 14:37:38 +0000 (UTC)
-Date:   Thu, 3 Jun 2021 15:37:37 +0100
-From:   Stefan Hajnoczi <stefanha@redhat.com>
-To:     Mike Christie <michael.christie@oracle.com>
-Cc:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        pbonzini@redhat.com, jasowang@redhat.com, mst@redhat.com,
-        sgarzare@redhat.com, virtualization@lists.linux-foundation.org
-Subject: Re: vhost: multiple worker support
-Message-ID: <YLjpMXbfJsaLrgF5@stefanha-x1.localdomain>
-References: <20210525180600.6349-1-michael.christie@oracle.com>
+        id S232112AbhFCPRi (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 3 Jun 2021 11:17:38 -0400
+Received: from mail-dm6nam10on2131.outbound.protection.outlook.com ([40.107.93.131]:51361
+        "EHLO NAM10-DM6-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S231558AbhFCPRh (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Thu, 3 Jun 2021 11:17:37 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=iC/FRYStfBtZOZXIGjtM06atQWhtG8Erhu4eZfIBL0Stb/QnSNqK70QJiqg1MUbBbhCJ/klWsHAE3CcWr2YVubQdS+VTY/sEXIwvT8lwazycx1tp4/kyzGI5dwL2xt0Ejgq+k1nxDiYXR9uKp12lY121jkQ6BjuuVZGTIMTgE3zyNTI5aRSKuNi5fIiWA0cVWv/Ng/48EH53K+FakSRNGQ2DW220dfISoravCoUs1t9Ya0TJq+Im7x+lDlK7IVRf6zo6S8jqFQgyVr0bklDj0CZWYhcRlXzEtJILfbLyVL9YiFPxVId+DLpN0j70dMXyNkxnQMTemCbX0kscp/HysA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=1XxxuzkwZNnwDHFACwb+r2dLayp0qq2je0jFZAc0vCA=;
+ b=ZM/NibYHPGqwV2oQzToEqJPefgc0AuhEIwQbZk0tsIue39lHYR6v5N2XIB4R5yG4qUAh1cJlUFJ1/hlVYH+n2uu2nx2AoJRAvg+62YlbyPQaexh8JFYseI8vLIGsOescT9vaBLAPMqGSC9BbTGhj3FUj0EeUqeA5fJoVnvfaJ8lSAJ4/Vn97ayrrKftjvK0ZrvvzdP8DTo4SNVLsioWeRpd7nPMSMbDp2s26KNLLxz7eFPSSzEXhl5pNjJTtH0QwGPtFMVS85WARJ2xoa23/uFTMY5Ha/Vk2QbgdQg147pl41IgFXInf0bR4vyfa4XPWDzDRqfsesHsGopI46J9Gzw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=cornelisnetworks.com; dmarc=pass action=none
+ header.from=cornelisnetworks.com; dkim=pass header.d=cornelisnetworks.com;
+ arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cornelisnetworks.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=1XxxuzkwZNnwDHFACwb+r2dLayp0qq2je0jFZAc0vCA=;
+ b=I3KA4wTmOky35evLDT1CLhRdjdcicYeGW8kLplprEG8BtMUqyVxJ8UpDxLkjee8qhgUGdJhu/RZxdwQxmahYd/pouEvSaDKxbvbjEbSCx3DnMN961rDPwglpWUT2/3/4S8kGsNYFjuIt1gRaYcklZjT7fTDQjGgo0zFtb3Q5xsR3DPrmw16S11os2Xw3djGcyRakxS0PbFI1lniDfxociPZ1MApJJN+jeWu7nwZ+DME2cKJr6SgMW2KyA0RUwFbHbtQnuRIP2ZzJiwrwZIDg0GZhobZuCPMGK0/FOIbyRmZnK+N2rirtDLmqCN7LplQNWMmNGGM0/UCoe0t10KGM3A==
+Authentication-Results: vger.kernel.org; dkim=none (message not signed)
+ header.d=none;vger.kernel.org; dmarc=none action=none
+ header.from=cornelisnetworks.com;
+Received: from PH0PR01MB6439.prod.exchangelabs.com (2603:10b6:510:d::22) by
+ PH0PR01MB6486.prod.exchangelabs.com (2603:10b6:510:8::19) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.4195.20; Thu, 3 Jun 2021 15:15:49 +0000
+Received: from PH0PR01MB6439.prod.exchangelabs.com
+ ([fe80::b43d:7749:62fa:2488]) by PH0PR01MB6439.prod.exchangelabs.com
+ ([fe80::b43d:7749:62fa:2488%7]) with mapi id 15.20.4173.030; Thu, 3 Jun 2021
+ 15:15:49 +0000
+Subject: Re: [PATCH rdma-next v1] RDMA: Fix kernel-doc warnings about wrong
+ comment
+To:     Leon Romanovsky <leon@kernel.org>,
+        Doug Ledford <dledford@redhat.com>,
+        Jason Gunthorpe <jgg@nvidia.com>
+Cc:     Leon Romanovsky <leonro@nvidia.com>,
+        Jack Wang <jinpu.wang@ionos.com>, linux-kernel@vger.kernel.org,
+        linux-rdma@vger.kernel.org, Max Gurtovoy <mgurtovoy@nvidia.com>,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>,
+        Sagi Grimberg <sagi@grimberg.me>, target-devel@vger.kernel.org
+References: <8b40bbff098247962af5a7b35d47b2e964daa523.1622726066.git.leonro@nvidia.com>
+From:   Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>
+Message-ID: <bf541aa7-db6a-e553-5a9d-a95d19440520@cornelisnetworks.com>
+Date:   Thu, 3 Jun 2021 11:15:45 -0400
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.10.2
+In-Reply-To: <8b40bbff098247962af5a7b35d47b2e964daa523.1622726066.git.leonro@nvidia.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [24.154.216.5]
+X-ClientProxiedBy: BLAPR03CA0046.namprd03.prod.outlook.com
+ (2603:10b6:208:32d::21) To PH0PR01MB6439.prod.exchangelabs.com
+ (2603:10b6:510:d::22)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="H4b3lFVzSqimIVsY"
-Content-Disposition: inline
-In-Reply-To: <20210525180600.6349-1-michael.christie@oracle.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from Denniss-MacBook-Pro.local (24.154.216.5) by BLAPR03CA0046.namprd03.prod.outlook.com (2603:10b6:208:32d::21) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4195.22 via Frontend Transport; Thu, 3 Jun 2021 15:15:47 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 7eafd12e-e1ff-4076-c759-08d926a27823
+X-MS-TrafficTypeDiagnostic: PH0PR01MB6486:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <PH0PR01MB6486AC904AAED2EADCD06306F43C9@PH0PR01MB6486.prod.exchangelabs.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:3968;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: WMrYCF5hYANIcCbGTq3EXBTzpi9UmuGxnqbZr9KOmvAFxNbi71GIkY0MVtONvjj0JNq3QHkmeILuVmAyvijWgn4/4Yu1SpbmDUXaxDm8NbZ/Yc3OXTJ5GQ4v4OfGshQqgb5lnFND7troZzdimqh0yc7b0UB3ojFPdVn+2rRmaRyjA0d5p4TtnCk3RwZCHzRDbADlA2Jzvz12fVQhOgMr8rjCBm30VcL6LnngVwflOSgjo1+zPnko5OVQ0gHL9mWf0pz4W6uCJGhxdDJ1lFK3ePo/ZTRYF58D9a2RBQJJHypZACE+BdPXbqeXat+PBfcCS3osDK30YI4JVE3acZkaIQqBfTDrPbFwe1BP+3zzmFNmDskJRuqVhWDhleDwZQtHyS5l+Xy5b55DOiALxPATuEdD9rmI/d8gY+9qsf3ZsxyoUeRomJKhd3e3uBrGb465QcPod3HpfBoHXvdHArAonitlGp/0NU43IyTAqxAZNeawjw5tM/8JQMwCQ/d9qPayJfMbU5ts9YkN0dCTtIzUOCtF9jOwbEOh9NcmPv/O7Y6P9nQdeBQ1S38WOy3fTxvQwTssgYfE/FANxh67eWRUpxmmwRc+KdIjcT1ubQBrhjAi4DquPWBPfG9aPxesOwEzLGab+Z9pt178AlFAz71qb8+7heXgB2qti1Ri/HwBpMQaJeat3Q3IT/7XTKzRtf5h9wvTR4it9lKLqD5ujgYtTCsDFoak3Wbm3PKqD2e9gwk=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR01MB6439.prod.exchangelabs.com;PTR:;CAT:NONE;SFS:(4636009)(136003)(366004)(376002)(396003)(346002)(39830400003)(186003)(16526019)(7416002)(86362001)(6486002)(6506007)(8676002)(44832011)(53546011)(4326008)(478600001)(2616005)(956004)(38350700002)(38100700002)(31696002)(8936002)(26005)(316002)(66476007)(5660300002)(36756003)(2906002)(83380400001)(110136005)(54906003)(4744005)(52116002)(66946007)(6512007)(66556008)(31686004)(43740500002)(45980500001);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData: =?utf-8?B?bnpnY3hSb2k2S2RKcytkVVFlUmk4T3dHQ2pOSmRJbGswSzh4VG5sVzJ5eFZQ?=
+ =?utf-8?B?RVZ4ekhuYk5IUEJGTUR0ZS91RjBCQ2dMYXVEYmllb0lVNzZsRWhxemloVjFE?=
+ =?utf-8?B?NC9EQnlTZkJwckV1RHhhODdGcmE0WEJOSnJqOVpMTEd2cTU1Mnp1WStIOUJD?=
+ =?utf-8?B?ZnRHOTZBNVoyekdwUWtZeU10T1d0djRuZTdxL1k3S2tYanNRRDd4ZE16bkpo?=
+ =?utf-8?B?cXhpcTFPVWNTRDB6alRTTE1jWExVT2JOLzZHTVd0SVREV0hlbGcweTYzLzJt?=
+ =?utf-8?B?eU83UXhCK1dvRGdQYlRlcFdqekhLS2cxRWhyd0tNMklIQXF4OXNrQ1huN2x4?=
+ =?utf-8?B?ZGFNQ3RLUHprTk1KTEJyRldZVEdOR3AzREllcE03RFZvNFJpQVdhTkxqaStN?=
+ =?utf-8?B?QTJMYUxNN0Q1bnBsOXZ0TVdMNDVUZ2lzQThpVDY3QlJuT2l6WHRyOXR0V2Rx?=
+ =?utf-8?B?bFRPVkZ6N2J2T0RTYnBoWUZoeVg4UUVDbkhLdE92bk04Z3NtdFZWMThyUGdo?=
+ =?utf-8?B?V0J2RDFuK3o4WXBKTythYXZlTy9xdEVMdFhnSWVUTk8zSldkODduVDFxaVFz?=
+ =?utf-8?B?R0x0eldNY2U3N21jeEd3bE9NRW9ySmgyMUMrUFFjOW5CVG85WnprZ3ZMQUdX?=
+ =?utf-8?B?Rms1anRsOCt3RjhQRVVUemI1eFVKdXBXSjcvWEhhM2taSHBORUs4WURxNVp1?=
+ =?utf-8?B?a3c3Rk9naHBudi9iZWprdXJDYWxHRFZyb3FGQ0hrbDZraTl6dTRxeGhhQ25w?=
+ =?utf-8?B?dWd1cGpPQU8vL0MzQWJIbGt0UzI0d2RhNzJwV3NuWHFKZFc1NWNmYmRmemxq?=
+ =?utf-8?B?b1kvTXpPbU9wNWlRcDRpSG9lSVR2Y2xaSXd6bms0K0ZyMHFkOGhDTk1WOHhE?=
+ =?utf-8?B?S040R05SRXdqWjFsbWlTTlkvTHRNMUhlUXY0em1XRW1YN0tFRkU5a2lLOXVx?=
+ =?utf-8?B?NmJnVGlXQ1FRaUpicy8zTGRLb1NuOXNNQ3NHcngyUnV4aEVycHFhUGJ0RGJQ?=
+ =?utf-8?B?aStlb1MvODZsV3RsTnE1ZnM1M2N0TmlWalJaUjQvWGkrcjBKRFZSZUlGcEo2?=
+ =?utf-8?B?VVdhazFJQVFWTzNMc1FLNlM2UjhiMW52UGdPbEVGbnE3ajZUVXY1SXBvaG5F?=
+ =?utf-8?B?NmhjZm4vem53U2NtbnE0dldXNHArVk1WNjNHWERDdXZPT2NoOWZ6ZUNPOHk0?=
+ =?utf-8?B?K3h4Y0JlekRNWVFDTndjRUhEVnQ3d0p6Nm15Tis2bkJXYzgyKzEyK0ExVzF2?=
+ =?utf-8?B?bVFUeWdqRG9PV0ZTOW40S3BtYzJGMUE5N1ZNbmxrYlBYMFVmK21JaDNzT2h4?=
+ =?utf-8?B?Ymgxa0p4Q1JMdnhoSklEbXRIdit2KzN5UmpCWGxpVU4rZ3p2MXFZWWM1dktH?=
+ =?utf-8?B?VWNyRjh2ZHlBTWRnRldLRmJ3Mk5IcnV3ZnlONlE2dFpmVnFtL203RHREVi8r?=
+ =?utf-8?B?MGhramhoQmt4Q2IwWWJ5Ui9iKzZxcENxdEZ6NTB1ZmdTcVJ1ZVdqanZMU1RM?=
+ =?utf-8?B?ZE1vQnZZUFBHaVVBRC9jTnFKemJVMnRuL1F4Wmw3K2ljeXFpcVkzNGt1aXlr?=
+ =?utf-8?B?dWxuSHZsdDBNaWd6QjVJMTEzSWdKZDNPZ0c0RVlvckJLZkYxME5NbURxWUFN?=
+ =?utf-8?B?VEF1SzZmZDlYRkVFZWUyUVNTVkoxOTgzUmk0MDdzWjV0eTRSaE80WEVKMDZr?=
+ =?utf-8?B?YW83Vzd1cllFY3BlOStSSVhzeFhzWUNZaU0wRlhqWVR3azJFalp0dWE4UFlq?=
+ =?utf-8?Q?f0Lahz3RK48gzq40Cha0NvqPNt2p8OI5qR/mbhw?=
+X-OriginatorOrg: cornelisnetworks.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7eafd12e-e1ff-4076-c759-08d926a27823
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR01MB6439.prod.exchangelabs.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Jun 2021 15:15:49.3028
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4dbdb7da-74ee-4b45-8747-ef5ce5ebe68a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ud3wsw/WmV2je5BZsGSM9i7Mr/nOx7T35CVRpj6EnO+9eVI8bCNdS/Z4UFwp+r7druK1RU2yTd9iMvrEcXAGWLW4Xct43ZGZwQsLzEDYCe7KmPOMmwBPKVBufgH6MAzw
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR01MB6486
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+On 6/3/21 9:16 AM, Leon Romanovsky wrote:
+> From: Leon Romanovsky <leonro@nvidia.com>
+> 
+> Compilation with W=1 produces warnings similar to the below.
+> 
+>   drivers/infiniband/ulp/ipoib/ipoib_main.c:320: warning: This comment
+> 	starts with '/**', but isn't a kernel-doc comment. Refer
+> 	Documentation/doc-guide/kernel-doc.rst
+> 
+> All such occurrences were found with the following one line
+>  git grep -A 1 "\/\*\*" drivers/infiniband/
+> 
+> Reviewed-by: Jack Wang <jinpu.wang@ionos.com> #rtrs
+> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 
---H4b3lFVzSqimIVsY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks for doing this.
 
-On Tue, May 25, 2021 at 01:05:51PM -0500, Mike Christie wrote:
-> The following patches apply over linus's tree or mst's vhost branch
-> and my cleanup patchset:
->=20
-> https://lists.linuxfoundation.org/pipermail/virtualization/2021-May/05435=
-4.html
->=20
-> These patches allow us to support multiple vhost workers per device. I
-> ended up just doing Stefan's original idea where userspace has the
-> kernel create a worker and we pass back the pid. This has the benefit
-> over the workqueue and userspace thread approach where we only have
-> one'ish code path in the kernel during setup to detect old tools. The
-> main IO paths and device/vq setup/teardown paths all use common code.
->=20
-> The kernel patches here allow us to then do N workers device and also
-> share workers across devices.
->=20
-> I've also included a patch for qemu so you can get an idea of how it
-> works. If we are ok with the kernel code then I'll break that up into
-> a patchset and send to qemu-devel.
+Reviewed-by: Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>
 
-It seems risky to allow userspace process A to "share" a vhost worker
-thread with userspace process B based on a matching pid alone. Should
-they have ptrace_may_access() or similar?
 
-For example, two competing users could sabotague each other by running
-lots of work items on their competitor's vhost worker thread.
-
---H4b3lFVzSqimIVsY
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmC46TEACgkQnKSrs4Gr
-c8haPggAr/8lGql69lIQrCD9sUNPvVDvTO3r+S7svNqfhMUpvJ+df1CrE/hWLnzc
-H++l75ZD8kBFbsem2XbZ4S7wkcOU2iF21BKNhSUu+Mw6S0kzE0Q1XXG1xDRWzmJs
-rN5VguzigMJ1J/+/FqhKEjvWOgFQgQIpWWQ29qP+m91DMLZ3zB/boDfTMCYtBSGk
-l0pW6WWfss5a9kie1YEkQ90I6BvIoDKUF5uDwoJvD3MweslUGDqjduJsBNlTWN1Y
-ywvTkEiHAo+YJlNrQAuJkv1MR62wSoddxERu/3MGvuD/GRzYf2vSxsMFEbNL2P+O
-iMKCMek0JfRa1u921sgglNbHQ9z1Wg==
-=UByy
------END PGP SIGNATURE-----
-
---H4b3lFVzSqimIVsY--
 
