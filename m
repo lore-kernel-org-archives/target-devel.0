@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-19.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D7B3C48BCF
-	for <target-devel@archiver.kernel.org>; Mon,  7 Jun 2021 16:21:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 636F3C47094
+	for <target-devel@archiver.kernel.org>; Mon,  7 Jun 2021 16:26:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4BFFB61442
-	for <target-devel@archiver.kernel.org>; Mon,  7 Jun 2021 16:21:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B261261001
+	for <target-devel@archiver.kernel.org>; Mon,  7 Jun 2021 16:26:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233353AbhFGQXH (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 7 Jun 2021 12:23:07 -0400
-Received: from mail.kernel.org ([198.145.29.99]:32772 "EHLO mail.kernel.org"
+        id S234638AbhFGQ2h (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 7 Jun 2021 12:28:37 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33388 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232345AbhFGQVG (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 7 Jun 2021 12:21:06 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 4AB2761864;
-        Mon,  7 Jun 2021 16:15:02 +0000 (UTC)
+        id S232048AbhFGQXd (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 7 Jun 2021 12:23:33 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id C058461934;
+        Mon,  7 Jun 2021 16:15:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1623082503;
-        bh=1zf+BQx7t+SeimfFA/onkUY3pcops3a+BVK9iv4zMWw=;
+        s=k20201202; t=1623082530;
+        bh=aAI/46Ras21Co2Ll9FAuQ+ltWSKOi10RTPNrJe5ufAo=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Le+cFJurCBPC2vOpCf8hX/KaafsL7P2Dyv4PemWq+Z0x7TSL13xDZnYFxvg6ZkTHM
-         W21u5hQ9niCqXDlXfMmo3F2aG3TrdiwBnsMTxpX98EQAGxkevOK+lCNdzJzIA0qi76
-         AMM7FAvqS5xGc6filuhFFK6VH3eRMWvGyOOK01rqL6G/Cn1CJ8LFaL1I66SgRwWqPX
-         hBVNFMJyYgPD+pNUinue4A/Ue6TPtUlGGGPAbNWRze4dSKh28B5UlorZP/8i6oAzEU
-         XwotH992OfEQ+qBBysIiRoTFEa9hzqR9/aGWZYgxb/aDO9jTjQAFmTy/UvLB0PSMOM
-         EzJYIEOxQeQIQ==
+        b=RBGQh5PFBFbHGkRQ7Q66FuWXKaG1URRyrbbfne8r3LNG9PzDCCFJ9OHdlFyMZpUzL
+         Em4z4oG/UndgyY640sE+rgOnSZ4gNZfgpCXTmKPPCBF87nCGOFho3mXJ5Wgc/tLyD4
+         Qx/mIVndY4bpAD2L5PaSmUaAuYna2BvhuM/ozGmTdPhnrUd4/E3X80+y6VSV101neW
+         7cTiviq1L0QbTPdWpZn155e6zeBuHh5BMTXWqYfGyoT8qhBezR1+y8mz5+68Fh1s1+
+         DtgBd3Cm35zz2zBtRWmNDnwrtDREO2ZZTzEsNGWnNZHeH7ijTH29KXNOj/9qhhvLEn
+         xSEImb4DaW5yw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Maurizio Lombardi <mlombard@redhat.com>,
@@ -38,12 +38,12 @@ Cc:     Maurizio Lombardi <mlombard@redhat.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 11/21] scsi: target: core: Fix warning on realtime kernels
-Date:   Mon,  7 Jun 2021 12:14:38 -0400
-Message-Id: <20210607161448.3584332-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 09/18] scsi: target: core: Fix warning on realtime kernels
+Date:   Mon,  7 Jun 2021 12:15:07 -0400
+Message-Id: <20210607161517.3584577-9-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210607161448.3584332-1-sashal@kernel.org>
-References: <20210607161448.3584332-1-sashal@kernel.org>
+In-Reply-To: <20210607161517.3584577-1-sashal@kernel.org>
+References: <20210607161517.3584577-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -73,10 +73,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index bdada97cd4fe..9c60a090cfd1 100644
+index 0d0be7d8b9d6..852680e85921 100644
 --- a/drivers/target/target_core_transport.c
 +++ b/drivers/target/target_core_transport.c
-@@ -2982,9 +2982,7 @@ __transport_wait_for_tasks(struct se_cmd *cmd, bool fabric_stop,
+@@ -2966,9 +2966,7 @@ __transport_wait_for_tasks(struct se_cmd *cmd, bool fabric_stop,
  	__releases(&cmd->t_state_lock)
  	__acquires(&cmd->t_state_lock)
  {
