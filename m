@@ -2,106 +2,174 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-6.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABF65C4743F
-	for <target-devel@archiver.kernel.org>; Mon,  7 Jun 2021 02:18:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 368F0C47082
+	for <target-devel@archiver.kernel.org>; Mon,  7 Jun 2021 15:19:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 87804611AE
-	for <target-devel@archiver.kernel.org>; Mon,  7 Jun 2021 02:18:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1815460C3D
+	for <target-devel@archiver.kernel.org>; Mon,  7 Jun 2021 15:19:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230147AbhFGCUc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 6 Jun 2021 22:20:32 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:40844 "EHLO
+        id S230398AbhFGPVi (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 7 Jun 2021 11:21:38 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:48308 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S230130AbhFGCUc (ORCPT
+        by vger.kernel.org with ESMTP id S230316AbhFGPVi (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 6 Jun 2021 22:20:32 -0400
+        Mon, 7 Jun 2021 11:21:38 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1623032321;
+        s=mimecast20190719; t=1623079186;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=/YSBBQ9cGooM1hAnJfrax+C1tCPnWfT7V7/0+qUaI/k=;
-        b=gURlGpmiCbruSt9zHlH/oxgHf1vfyxsO4eO1YPBSU5krQdcHYYL+tHZQlwRXLaNIEvB+cW
-        3A1ZJKWWfpjvK72xCxYPsfZwaRbLkqoJ2BhJdBg4Qgn5B6ej84najAFUV+r4gsC8hummoT
-        IGcG20HHMO4I6zGumjA2R8c3C8Kzwu0=
-Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com
- [209.85.214.199]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-393-CK8XnOlsN8KLj9A4iE7dCQ-1; Sun, 06 Jun 2021 22:18:38 -0400
-X-MC-Unique: CK8XnOlsN8KLj9A4iE7dCQ-1
-Received: by mail-pl1-f199.google.com with SMTP id a6-20020a1709027d86b02901019f88b046so7015995plm.21
-        for <target-devel@vger.kernel.org>; Sun, 06 Jun 2021 19:18:38 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding
-         :content-language;
-        bh=/YSBBQ9cGooM1hAnJfrax+C1tCPnWfT7V7/0+qUaI/k=;
-        b=RpRbCysYVD6SH+cDPLhptLva40qKl00JySy4adi6+9PvrFYosOF3CMbsoodJrPpfNS
-         rAMUR/4Q+hAYVsjNmVj7ge2vXitP8n5Bj3M13bOfONrny9U3ypURmZz1DorAY3GopEFp
-         SO/HgVU+d7e0lJurrg5vW/iRdEq8PZsy/YL4lqi+ynlIr6tfreiHAjpC4XJR3RembcW0
-         KSjUfXBy5OggJmAEPQuj4pilaKOwIzlHu4CrrgK7KCVW79JuL2EmemmXIp0vMKLrZ0MX
-         jZy95Q+uPKrewcRlHsLmXvCK3fNINtVccu3Vsr6w5HEY7Pfgfu4IcCLI+gclnexTjpnu
-         NtjQ==
-X-Gm-Message-State: AOAM533Ca+pVJolfqgtv0qmNTgeOlNAu8rXRl6owj0ZRSu5ObGoJ7Ghz
-        zXkp11eMBy+6yJfGiOjkRGFxhp0STwYjAVnW5D4ZhDEJcchFV+1QzlPceqJgAS0GUXnLDw+cnuR
-        NrN+SQFSBBcxCC9+3gt5xMBkS
-X-Received: by 2002:a17:902:c403:b029:106:7793:3fcc with SMTP id k3-20020a170902c403b029010677933fccmr15707467plk.81.1623032317077;
-        Sun, 06 Jun 2021 19:18:37 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJz1Mz9rWZDNywIxinqZddVbgfmBbg3wbcfPQEw6zpB+wsjqIzZBnXaVdGeLRKGzInGbXtwyVA==
-X-Received: by 2002:a17:902:c403:b029:106:7793:3fcc with SMTP id k3-20020a170902c403b029010677933fccmr15707445plk.81.1623032316810;
-        Sun, 06 Jun 2021 19:18:36 -0700 (PDT)
-Received: from wangxiaodeMacBook-Air.local ([209.132.188.80])
-        by smtp.gmail.com with ESMTPSA id w21sm2048729pfq.143.2021.06.06.19.18.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 06 Jun 2021 19:18:36 -0700 (PDT)
-Subject: Re: [PATCH 9/9] vhost: support sharing workers across devs
-To:     Stefan Hajnoczi <stefanha@redhat.com>,
-        Mike Christie <michael.christie@oracle.com>
+        bh=Ee0C+UNOPDRctMcNZqaiSmKMV76vZN+u/YStt4S+fzM=;
+        b=QWTOQ31dD9HKLUuTKYDXIfMhq1yw01bdYL30npA0b8Ut8XSxfcd0jhvPsO4BOEi1RQB5kN
+        n7zuCYTp9DC/l3GgQg9YQWooHT9hgiwOU69p3XmSpu5R1zks8rL2ftE2tTNVo5dzU+WpK6
+        c1q0FVD2X4l+z7C1fxCeGWSVtafKQ8c=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-502-fDFTTr-xOoytP0Y72mBL3g-1; Mon, 07 Jun 2021 11:19:44 -0400
+X-MC-Unique: fDFTTr-xOoytP0Y72mBL3g-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com [10.5.11.12])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 3C29C107ACCA;
+        Mon,  7 Jun 2021 15:19:43 +0000 (UTC)
+Received: from localhost (ovpn-114-44.ams2.redhat.com [10.36.114.44])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id BA0D460CC6;
+        Mon,  7 Jun 2021 15:19:38 +0000 (UTC)
+Date:   Mon, 7 Jun 2021 16:19:37 +0100
+From:   Stefan Hajnoczi <stefanha@redhat.com>
+To:     michael.christie@oracle.com
 Cc:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        pbonzini@redhat.com, mst@redhat.com, sgarzare@redhat.com,
-        virtualization@lists.linux-foundation.org
+        pbonzini@redhat.com, jasowang@redhat.com, mst@redhat.com,
+        sgarzare@redhat.com, virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 7/9] vhost: allow userspace to create workers
+Message-ID: <YL45CfpHyzSEcAJv@stefanha-x1.localdomain>
 References: <20210525180600.6349-1-michael.christie@oracle.com>
- <20210525180600.6349-10-michael.christie@oracle.com>
- <YLjoDjas6ga3Ovad@stefanha-x1.localdomain>
-From:   Jason Wang <jasowang@redhat.com>
-Message-ID: <f475f7fe-75ec-02fe-34a3-df8c863e8a73@redhat.com>
-Date:   Mon, 7 Jun 2021 10:18:28 +0800
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
- Gecko/20100101 Thunderbird/78.11.0
+ <20210525180600.6349-8-michael.christie@oracle.com>
+ <YLjnk5GpFaCCOqCU@stefanha-x1.localdomain>
+ <0c1aef53-4850-8c46-0706-9b7276716e68@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <YLjoDjas6ga3Ovad@stefanha-x1.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="z3oFrrR1O3xUIuMU"
+Content-Disposition: inline
+In-Reply-To: <0c1aef53-4850-8c46-0706-9b7276716e68@oracle.com>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
 
-在 2021/6/3 下午10:32, Stefan Hajnoczi 写道:
-> On Tue, May 25, 2021 at 01:06:00PM -0500, Mike Christie wrote:
->> This allows a worker to handle multiple device's vqs.
->>
->> TODO:
->> - The worker is attached to the cgroup of the device that created it. In
->> this patch you can share workers with devices with different owners which
->> could be in different cgroups. Do we want to restict sharing workers with
->> devices that have the same owner (dev->mm value)?
-> Question for Michael or Jason.
+--z3oFrrR1O3xUIuMU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Sat, Jun 05, 2021 at 06:53:58PM -0500, michael.christie@oracle.com wrote:
+> On 6/3/21 9:30 AM, Stefan Hajnoczi wrote:
+> >> +	if (info->pid =3D=3D VHOST_VRING_NEW_WORKER) {
+> >> +		worker =3D vhost_worker_create(dev);
+> >=20
+> > The maximum number of kthreads created is limited by
+> > vhost_dev_init(nvqs)? For example VHOST_SCSI_MAX_VQ 128.
+> >=20
+> > IIUC kthread_create is not limited by or accounted against the current
+> > task, so I'm a little worried that a process can create a lot of
+> > kthreads.
+> >=20
+> > I haven't investigated other kthread_create() users reachable from
+> > userspace applications to see how they bound the number of threads
+> > effectively.
+>=20
+> Do we want something like io_uring's copy_process use? It's what fork use=
+s,
+> so we get checks like RLIMIT_NPROC and max_threads.
+>=20
+> I know I didn't look at everything, but it looks like for some software
+> drivers we just allow the user to run wild. For example for nbd, when we
+> create the device to do alloc_workqueue and use the default max_active
+> value (256). We then don't have a limit on connections, so we could end
+> up with 256 workqueue threads per device. And then there is no limit on
+> devices a user can make.
+>=20
+>=20
+> >=20
+> > Any thoughts?
+> >
+>=20
+> Is the concern a bad VM could create N devs each with 128 vqs/threads
+> and it would slow down other VMs? How do we handle the case where
+> some VM makes M * N devs and that is equal to N * 128 so we would end
+> up with the same number of threads either way? Is there a limit to the
+> number of vhost devices a VM can make and can I just stick in a similar
+> check for workers?
+>=20
+> For vhost-scsi specifically, the 128 limit does not make a lot of sense.
+> I think we want the max to be the number of vCPUs the VM has so we can
+> add checks for that. Then we would assume someone making a VM with lots of
+> CPUs is going to have the resources to support them.
+>=20
+> Note: It does make sense from the point of view that we don't know the
+> number of vCPUs when vhost-scsi calls vhost_dev_init, so I get we had to
+> select an initial limit.
 
-I thing sharing workers within a cgroup should be fine.
+My concern is that threads should probably accounted against
+RLIMIT_NPROC and max_threads rather than something indirect like 128 *
+RLIMIT_NOFILE (a userspace process can only have RLIMIT_NOFILE
+vhost-user file descriptors open).
 
-The differences is that if we restrict the works with the same owner, it 
-may only work in the case where an VM have multiple vhost devices.
+> >> +		if (!dev->workers) {
+> >> +			vhost_worker_put(worker);
+> >> +			return -ENOMEM;
+> >> +		}
+> >> +	}
+> >> +
+> >> +	vq->worker =3D worker;
+> >> +
+> >> +	dev->workers[dev->num_workers] =3D worker;
+> >> +	dev->num_workers++;
+> >=20
+> > Hmm...should we really append to workers[] in the vhost_worker_find()
+> > case?
+>=20
+>=20
+> As it's coded now, yes. Every successful vhost_worker_find call does a
+> get on the worker's refcount. Later when we delete the device, we loop
+> over the workers array and for every entry we do a put.
+>=20
+> I can add in some code to first check if the worker is already in the
+> dev's worker list. If so then skip the refcount and skip adding to the
+> workers array. If not in the dev's worker list then do a vhost_worker_fin=
+d.
+>=20
+> I thought it might be nicer how it is now with the single path. It's less
+> code at least. Later if we add support to change a vq's worker then we al=
+so
+> don't have to worry about refcounts as much. We just always drop the count
+> taken from when it was added.
 
-Thanks
+Thanks for explaining.
 
+Stefan
 
+--z3oFrrR1O3xUIuMU
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmC+OQkACgkQnKSrs4Gr
+c8jI/Af8DY74A2QxdTyBWRC66PcwvJSrAriaqp2KnYDCD+1vfKMLSQGqkhay/S9e
+616yTR++4cVc3AcalzSHt/BRrkwTyBHtg28d2DnB1ldJganBRItTnpQeT1h57bJ9
+0B5Qldud6BEJFYobEGPxdQ5vrCBPdGqyVeL6ydR9r/eihg2QtTY+Vurh1ZZ86tqn
+r0VlGes79sP6m6Tg0n7kgIsvmDq3Yg5m0/8iLc/p9Sh1vFkdD23Ncydxpec/EeGd
+ehiX3HFlYAn2XYxb82U5uDLD0LB2ODnx+YX2gAn99aBdR1ovh0COMH5Q7ujJhQVD
+1ihEXRZuN+5vVGpC9DD/wIEtd+E44A==
+=ynTO
+-----END PGP SIGNATURE-----
+
+--z3oFrrR1O3xUIuMU--
 
