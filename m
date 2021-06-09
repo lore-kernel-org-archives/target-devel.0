@@ -2,115 +2,142 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D74CC47082
-	for <target-devel@archiver.kernel.org>; Tue,  8 Jun 2021 23:14:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7A6BC48BCD
+	for <target-devel@archiver.kernel.org>; Wed,  9 Jun 2021 10:22:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EF20A61178
-	for <target-devel@archiver.kernel.org>; Tue,  8 Jun 2021 23:14:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9E7F761181
+	for <target-devel@archiver.kernel.org>; Wed,  9 Jun 2021 10:22:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234389AbhFHXQZ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 8 Jun 2021 19:16:25 -0400
-Received: from mta-02.yadro.com ([89.207.88.252]:40932 "EHLO mta-01.yadro.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S235400AbhFHXQY (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 8 Jun 2021 19:16:24 -0400
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id D9A6741360;
-        Tue,  8 Jun 2021 23:14:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        in-reply-to:content-disposition:content-type:content-type
-        :mime-version:references:message-id:subject:subject:from:from
-        :date:date:received:received:received; s=mta-01; t=1623194068;
-         x=1625008469; bh=n01q+mNrfDRJxkY1SJ5JEkJECX2vyEKsO8S4GXWxhxY=; b=
-        nSjlk2jaZ4nYppc9oVfKBMD8s3TZ2RYPE7gFjwbfuU47ExhQxWJAjYawY1vSGd2s
-        vdBG7232uT/3w9s7WJDNRzepuEnyrCpIZ7hWNwNzE46ZyMQOH9E1kGa8WIJglO9g
-        sx/PwtoqhLOux8H+yR4zDXZNjW57ZxkYGwq1eoAKhXk=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id xp2A8ZqTn6qk; Wed,  9 Jun 2021 02:14:28 +0300 (MSK)
-Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id 593F24135F;
-        Wed,  9 Jun 2021 02:14:28 +0300 (MSK)
-Received: from localhost (172.22.1.233) by T-EXCH-03.corp.yadro.com
- (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Wed, 9 Jun
- 2021 02:14:28 +0300
-Date:   Wed, 9 Jun 2021 02:14:27 +0300
-From:   Roman Bolshakov <r.bolshakov@yadro.com>
-To:     Maurizio Lombardi <mlombard@redhat.com>
-CC:     <martin.petersen@oracle.com>, <target-devel@vger.kernel.org>
-Subject: Re: [PATCH] target: remove the auth_type field from iscsi_session
-Message-ID: <YL/5074knGDS2Ska@SPB-NB-133.local>
-References: <20210608164047.128763-1-mlombard@redhat.com>
+        id S238726AbhFIKYo (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 9 Jun 2021 06:24:44 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:20759 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S235969AbhFIKYo (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Wed, 9 Jun 2021 06:24:44 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1623234169;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=PAlpcwXxfMSgkhywa6PEh6W4QsyHwiWPznIrBqXf590=;
+        b=bsPdjZiE5f1MhpyH+ysu0QA+szksOPPX9Bg4cahUw4dm7ZYl/mzN6YJfSSqyhBGaNL3uw4
+        xUjwMBy2ZXD8wuLQuSn4jR8WxCvelJqgAyY9F41FwPViG2lgkUxnlU0xRCOXy8VGs29cV+
+        GMWkT1CY9RiMMZta3ZU6hdUdvKF06MA=
+Received: from mail-il1-f199.google.com (mail-il1-f199.google.com
+ [209.85.166.199]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-147-cHfbgBPXN4yFXlF93y7FkA-1; Wed, 09 Jun 2021 06:22:48 -0400
+X-MC-Unique: cHfbgBPXN4yFXlF93y7FkA-1
+Received: by mail-il1-f199.google.com with SMTP id g12-20020a056e021a2cb02901dfc46878d8so18444617ile.4
+        for <target-devel@vger.kernel.org>; Wed, 09 Jun 2021 03:22:48 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=PAlpcwXxfMSgkhywa6PEh6W4QsyHwiWPznIrBqXf590=;
+        b=RsRM7Bn3eUEWBZ74qI1UpdufvGTevieLbGnx17aZ3EvPvizymbaC1lpe0I6Z7G0woB
+         VizDZbQ5HfTGgbMfUA4b08xZ5F9ST6L8dQ2Isyfv3PP3dq1AAtkkEm2j7IOkGa3FQwFl
+         dMABPqIojlqPZvyGBej5hFLvhyTHv5049dItWmWoQWEFgHjrVhmro3l8eGM7A9eNZbW6
+         gmeV2wZG7FsEoGvKY53YmSmrFDHIhwod3y4JAvoBSFPem9hBXomsp0B4vMLoFLfhqyas
+         kzOqoBSv39AR1XkhF4d0oGKt8488aoJzPEPNfmYQ/uqh2hEpDprd/ii5g6jcLZUox9Dl
+         c7cg==
+X-Gm-Message-State: AOAM532ptE2XdAd7IEPndTJcYJin3n4bgyP/29F529XoQPvi8Tgu9Mi0
+        D/jT4rH48QO81hDD5W6thXyUbnlw0lQXurVNN9nFucQvs7XAu5XMRAD9NX9AjD68AEZ2LrWG6vc
+        gCxcO58aC0s7PTym1A/TNnwDQvoBG8nr8uzmbxMYB
+X-Received: by 2002:a05:6e02:1a4a:: with SMTP id u10mr12562588ilv.226.1623234167726;
+        Wed, 09 Jun 2021 03:22:47 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJyQggx4ywFSEQ/DXU0sAUCaE6WuawiBJRstfZYeh0e2ljeuqT7Sez92ISwAZN5UKTeFGlUPLvYdJyp8Kbftn/s=
+X-Received: by 2002:a05:6e02:1a4a:: with SMTP id u10mr12562579ilv.226.1623234167516;
+ Wed, 09 Jun 2021 03:22:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20210608164047.128763-1-mlombard@redhat.com>
-X-Originating-IP: [172.22.1.233]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-03.corp.yadro.com (172.17.100.103)
+References: <20210608164047.128763-1-mlombard@redhat.com> <YL/5074knGDS2Ska@SPB-NB-133.local>
+In-Reply-To: <YL/5074knGDS2Ska@SPB-NB-133.local>
+From:   Maurizio Lombardi <mlombard@redhat.com>
+Date:   Wed, 9 Jun 2021 12:22:36 +0200
+Message-ID: <CAFL455=Bi5aAfJtjpM0xzWdb4xoKW+JfnNO_2NJ2tvBQGfM6-g@mail.gmail.com>
+Subject: Re: [PATCH] target: remove the auth_type field from iscsi_session
+To:     Roman Bolshakov <r.bolshakov@yadro.com>
+Cc:     martin.petersen@oracle.com, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Jun 08, 2021 at 06:40:47PM +0200, Maurizio Lombardi wrote:
-> This field is not used anymore so we can remove it.
-> 
-> Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
-> ---
->  drivers/target/iscsi/iscsi_target_nego.c | 5 -----
->  include/target/iscsi/iscsi_target_core.h | 1 -
->  2 files changed, 6 deletions(-)
-> 
-> diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-> index 151e2949bb75..36341ffaffbf 100644
-> --- a/drivers/target/iscsi/iscsi_target_nego.c
-> +++ b/drivers/target/iscsi/iscsi_target_nego.c
-> @@ -144,11 +144,6 @@ static u32 iscsi_handle_authentication(
->  		auth = &iscsit_global->discovery_acl.node_auth;
->  	}
->  
-> -	if (strstr("CHAP", authtype))
-> -		strcpy(conn->sess->auth_type, "CHAP");
-> -	else
-> -		strcpy(conn->sess->auth_type, NONE);
-> -
+st 9. 6. 2021 v 1:14 odes=C3=ADlatel Roman Bolshakov <r.bolshakov@yadro.com=
+> napsal:
+>
+> Hi Maurizio,
+>
+> It might still be useful to carry the meaning of "effective auth_type"
+> in case of complex auth configuration. Otherwise there's no way to check
+> what auth settings took effect for a particular session/I_T nexus.
+>
+> I think we should rather print auth_type value someplace in configfs
+> than delete the field altogether.
 
-Hi Maurizio,
+Ok I see what you mean.
 
-It might still be useful to carry the meaning of "effective auth_type"
-in case of complex auth configuration. Otherwise there's no way to check
-what auth settings took effect for a particular session/I_T nexus.
+If acls are used, identifying the CHAP-protected sessions is
+trivial... you just have
+to look under configfs /tptg_1/acls/.../auth and tptg_1/acls/.../info
 
-I think we should rather print auth_type value someplace in configfs
-than delete the field altogether.
+If dynamic sessions are allowed and the tgt parameter AuthMethod  is
+"CHAP,None",
+you could end up having some initiators using CHAP and some not...
+AFAIK, in this case, there is currently no way to find out if a
+particular session used CHAP or not.
 
-Regards,
-Roman
+If it could really be useful to know that, then one possible solution
+is to add this
+information to the "dynamic_sessions" list in configfs,
+but I'm not really sure this is acceptable because it could break the
+user applications
+that rely on this list.
 
->  	if (strstr("None", authtype))
->  		return 1;
->  	else if (strstr("CHAP", authtype))
-> diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-> index 1eccb2ac7d02..f0495515ca6a 100644
-> --- a/include/target/iscsi/iscsi_target_core.h
-> +++ b/include/target/iscsi/iscsi_target_core.h
-> @@ -647,7 +647,6 @@ struct iscsi_session {
->  
->  	/* LIO specific session ID */
->  	u32			sid;
-> -	char			auth_type[8];
->  	/* unique within the target */
->  	int			session_index;
->  	/* Used for session reference counting */
-> -- 
-> Maurizio Lombardi
-> 
+Another solution that comes to my mind is to create a new configfs
+node "sessions_info"
+that contains a list of all connected initiators, their iqns,
+authentication method etc.
+but if the list is too long it could be truncated (attribute's max
+size is PAGE_SIZE).
+
+Or we could create a new configfs directory "sessions" and each
+session would have it's own
+entry there.
+
+Maurizio
+
+
+
+>
+> Regards,
+> Roman
+>
+> >       if (strstr("None", authtype))
+> >               return 1;
+> >       else if (strstr("CHAP", authtype))
+> > diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/=
+iscsi/iscsi_target_core.h
+> > index 1eccb2ac7d02..f0495515ca6a 100644
+> > --- a/include/target/iscsi/iscsi_target_core.h
+> > +++ b/include/target/iscsi/iscsi_target_core.h
+> > @@ -647,7 +647,6 @@ struct iscsi_session {
+> >
+> >       /* LIO specific session ID */
+> >       u32                     sid;
+> > -     char                    auth_type[8];
+> >       /* unique within the target */
+> >       int                     session_index;
+> >       /* Used for session reference counting */
+> > --
+> > Maurizio Lombardi
+> >
+>
+
