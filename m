@@ -2,164 +2,144 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10E12C47094
-	for <target-devel@archiver.kernel.org>; Thu, 10 Jun 2021 08:06:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C48EC48BD1
+	for <target-devel@archiver.kernel.org>; Fri, 11 Jun 2021 17:04:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E847E613D9
-	for <target-devel@archiver.kernel.org>; Thu, 10 Jun 2021 08:06:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 221F6613AD
+	for <target-devel@archiver.kernel.org>; Fri, 11 Jun 2021 17:04:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230186AbhFJIIc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 10 Jun 2021 04:08:32 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:22759 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S229770AbhFJIIc (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Thu, 10 Jun 2021 04:08:32 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1623312395;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=IPnBtwHVsxTEGxlAHkETtzkbihoyU00inj0Cc3YSw0Y=;
-        b=a8dlYw6OW2+y7S1ZYK+y4lmK12kH8nW3ckoD7Mx7IUHUmIpkhbNSSqeizi/XJmzNdmgnhu
-        CAiRlWTDTwuJgrxiXuSo7RMRvbi5Zo5k4rwLsff5g4mVabPh8IFobTy5OwrmgwRxiJs+3i
-        I9FWE9ibDMkRYrM95I06L5AnG5Iff3k=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-282-DZJ-woXwOAiu5yg1c0Zz4g-1; Thu, 10 Jun 2021 04:06:23 -0400
-X-MC-Unique: DZJ-woXwOAiu5yg1c0Zz4g-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        id S230406AbhFKRGy (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 11 Jun 2021 13:06:54 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:36004 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S230322AbhFKRGx (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Fri, 11 Jun 2021 13:06:53 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 1F6BF4136F;
+        Fri, 11 Jun 2021 17:04:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        in-reply-to:content-transfer-encoding:content-disposition
+        :content-type:content-type:mime-version:references:message-id
+        :subject:subject:from:from:date:date:received:received:received;
+         s=mta-01; t=1623431092; x=1625245493; bh=3b3fqeQjkjgrRm10AMwiXf
+        0+w6b8A53o3opzcvFjTCs=; b=kBc1ueelNDDG19WDOGFIenSsG7GupSe8k2WOaw
+        p9t1ZMgAMW58N2Wi7qivIP9NLFQnb9MUx7xRtHBIaGC8oBO86EUY6wfEUx1Hi+bG
+        YFebFFoUoHT4zDP8LBrQT9nZIEeg7v5mepsjxV9E9H2wnnbg4JT0yCQM5IdgfKxr
+        z/8Y8=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id I3W7xZB-Oonb; Fri, 11 Jun 2021 20:04:52 +0300 (MSK)
+Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id C3685803622;
-        Thu, 10 Jun 2021 08:06:22 +0000 (UTC)
-Received: from localhost (ovpn-114-58.ams2.redhat.com [10.36.114.58])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 0B4F15D6AD;
-        Thu, 10 Jun 2021 08:06:18 +0000 (UTC)
-Date:   Thu, 10 Jun 2021 09:06:17 +0100
-From:   Stefan Hajnoczi <stefanha@redhat.com>
-To:     Mike Christie <michael.christie@oracle.com>
-Cc:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        pbonzini@redhat.com, jasowang@redhat.com, mst@redhat.com,
-        sgarzare@redhat.com, virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 7/9] vhost: allow userspace to create workers
-Message-ID: <YMHH+das0nmMBbt5@stefanha-x1.localdomain>
-References: <20210525180600.6349-1-michael.christie@oracle.com>
- <20210525180600.6349-8-michael.christie@oracle.com>
- <YLjnk5GpFaCCOqCU@stefanha-x1.localdomain>
- <0c1aef53-4850-8c46-0706-9b7276716e68@oracle.com>
- <YL45CfpHyzSEcAJv@stefanha-x1.localdomain>
- <6882ef4d-8382-5b0d-272e-779e6fa9e7da@oracle.com>
+        by mta-01.yadro.com (Postfix) with ESMTPS id 698E84131C;
+        Fri, 11 Jun 2021 20:04:52 +0300 (MSK)
+Received: from localhost (172.22.1.233) by T-EXCH-03.corp.yadro.com
+ (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Fri, 11
+ Jun 2021 20:04:52 +0300
+Date:   Fri, 11 Jun 2021 20:04:51 +0300
+From:   Roman Bolshakov <r.bolshakov@yadro.com>
+To:     Maurizio Lombardi <mlombard@redhat.com>
+CC:     <martin.petersen@oracle.com>, <target-devel@vger.kernel.org>
+Subject: Re: [PATCH] target: remove the auth_type field from iscsi_session
+Message-ID: <YMOXs11TpYSHz88I@SPB-NB-133.local>
+References: <20210608164047.128763-1-mlombard@redhat.com>
+ <YL/5074knGDS2Ska@SPB-NB-133.local>
+ <CAFL455=Bi5aAfJtjpM0xzWdb4xoKW+JfnNO_2NJ2tvBQGfM6-g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="WkdUzt4415XdCfLw"
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <6882ef4d-8382-5b0d-272e-779e6fa9e7da@oracle.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAFL455=Bi5aAfJtjpM0xzWdb4xoKW+JfnNO_2NJ2tvBQGfM6-g@mail.gmail.com>
+X-Originating-IP: [172.22.1.233]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+On Wed, Jun 09, 2021 at 12:22:36PM +0200, Maurizio Lombardi wrote:
+> st 9. 6. 2021 v 1:14 odesílatel Roman Bolshakov <r.bolshakov@yadro.com> napsal:
+> >
+> > It might still be useful to carry the meaning of "effective auth_type"
+> > in case of complex auth configuration. Otherwise there's no way to check
+> > what auth settings took effect for a particular session/I_T nexus.
+> >
+> > I think we should rather print auth_type value someplace in configfs
+> > than delete the field altogether.
+> 
+> Ok I see what you mean.
+> 
+> If acls are used, identifying the CHAP-protected sessions is
+> trivial... you just have
+> to look under configfs /tptg_1/acls/.../auth and tptg_1/acls/.../info
+> 
+> If dynamic sessions are allowed and the tgt parameter AuthMethod  is
+> "CHAP,None",
+> you could end up having some initiators using CHAP and some not...
+> AFAIK, in this case, there is currently no way to find out if a
+> particular session used CHAP or not.
+> 
+> If it could really be useful to know that, then one possible solution
+> is to add this
+> information to the "dynamic_sessions" list in configfs,
+> but I'm not really sure this is acceptable because it could break the
+> user applications
+> that rely on this list.
+> 
+> Another solution that comes to my mind is to create a new configfs
+> node "sessions_info"
+> that contains a list of all connected initiators, their iqns,
+> authentication method etc.
+> but if the list is too long it could be truncated (attribute's max
+> size is PAGE_SIZE).
+> 
+> Or we could create a new configfs directory "sessions" and each
+> session would have it's own
+> entry there.
+> 
 
---WkdUzt4415XdCfLw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Maurizio,
 
-On Wed, Jun 09, 2021 at 04:03:55PM -0500, Mike Christie wrote:
-> On 6/7/21 10:19 AM, Stefan Hajnoczi wrote:
-> > My concern is that threads should probably accounted against
-> > RLIMIT_NPROC and max_threads rather than something indirect like 128 *
-> > RLIMIT_NOFILE (a userspace process can only have RLIMIT_NOFILE
-> > vhost-user file descriptors open).
-> >=20
->=20
-> Ah ok, I see what you want I think.
->=20
-> Ok, I think the options are:
->=20
-> 0. Nothing. Just use existing indirect/RLIMIT_NOFILE.
->=20
-> 1. Do something like io_uring's create_io_thread/copy_process. If we call
-> copy_process from the vhost ioctl context, then the userspace process that
-> did the ioctl will have it's processes count incremented and checked agai=
-nst
-> its rlimit.
->=20
-> The drawbacks:
-> - This gets a little more complicated than just calling copy_process thou=
-gh.
-> We end up duplicating a lot of the kthread API.
-> - We have to deal with new error cases like the parent exiting early.
-> - I think all devs sharing a worker have to have the same owner. kthread_=
-use_mm
-> and kthread_unuse_mm to switch between mm's for differrent owner's devs s=
-eem to
-> be causing lots of errors. I'm still looking into this one though.
->=20
-> 2.  It's not really what you want, but for unbound work io_uring has a ch=
-eck for
-> RLIMIT_NPROC in the io_uring code. It does:
->=20
-> wqe->acct[IO_WQ_ACCT_UNBOUND].max_workers =3D
-> 					task_rlimit(current, RLIMIT_NPROC);
->=20
-> then does:
->=20
-> if (!ret && acct->nr_workers < acct->max_workers) {
->=20
-> Drawbacks:
-> In vhost.c, we could do something similar. It would make sure that vhost.=
-c does
-> not create more worker threads than the rlimit value, but we wouldn't be
-> incrementing the userspace process's process count. The userspace process=
- could
-> then create RLIMIT_NPROC threads and vhost.c could also create RLIMIT_NPR=
-OC
-> threads, so we end up with 2 * RLIMIT_NPROC threads.
+Yes per-session file would work. I think about sessions directory in
+debugfs (/sys/kernel/debug/target/sessions/<session-name>) with the
+following contents:
 
-Yes, in that case we might as well go with Option 0, so I think this
-option can be eliminated.
+  * "info" file that contains aggregated information about a
+    session
 
-> 3. Change the kthread and copy_process code so we can pass in the thread
-> (or it's creds or some struct that has the values that need to be check) =
-that
-> needs to be checked and updated.
->=20
-> Drawback:
-> This might be considered too ugly for how special case vhost is. For exam=
-ple, we
-> need checks/code like the io_thread/PF_IO_WORKER code in copy_process for=
- io_uring.
-> I can see how added that for io_uring because it affects so many users, b=
-ut I can
-> see how vhost is not special enough.
+  * per-command directories named after command tag where we can inspect
+    every command in se_sess_map of the session
 
-This seems like the most general solution. If you try it and get
-negative feedback then maybe the maintainers can help suggest how to
-solve this problem :).
+    * "info" file for the command that would allow to read exact command
+      state including transport-specific details and probably command
+      addresses.
 
-Stefan
+The reason why debugfs is preferred over configfs is the following.
+There could be cases where configfs entries couldn't be destroyed due to
+a command stuck in the session. In the case we can't read configfs and
+have no fallback way to figure out the reason of the TCM lock-up. All
+commands to access the session might hang.
 
---WkdUzt4415XdCfLw
-Content-Type: application/pgp-signature; name="signature.asc"
+If we create debugfs sessions entry right after session init and destroy
+it just before session is freed. Then we can read it while the session
+as long as it's alive.
 
------BEGIN PGP SIGNATURE-----
+Reading from "<session>/<tag>/info" needs to be consistent but shouldn't
+have an impact on the hot path. We might need to introduce tag/se_cmd
+generation for each command in the session. The generation is increased
+on every get_tag()/command allocation. That'd allow printing routine to
+detect that content of the debugfs is stale and read should be
+retried/EAGAIN or aborted.
 
-iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmDBx/kACgkQnKSrs4Gr
-c8hLZAgAjb6u+fG0CjpUwqxso7DnJpytbBfDy4wzRVp0110EZ7wdQ96FXcWGzgiq
-TNdFfZMLHLzV6EmCZxdLGe6hmDvgO3Xmm+SV998QGty0mXDAu7VMqkuRHfw4+Jp2
-4NbR9yxhNwtH/R9ZV6E4fXLcbWaBXtkjmZNXpBgYtcFGEcILKf6zUpzilb5gNQT4
-zRWd5YWNkubtsCM6mETxD7bJR8V4xTNrM7ct3ESxNyA+B1svPAvqqinURb01GbQ/
-L4Fjkh+0wAj1y/QJzmej+6atPVZ0MdiMRiq4JnZLbpHCVpsFGxnyPD5gPj6UeFKQ
-Ap5rFMZOnLQZkvWLVGvSK01LkqpSYg==
-=oEH5
------END PGP SIGNATURE-----
+It's very raw thoughts but hopefully I'll come up with something that
+assists in session debugging.
 
---WkdUzt4415XdCfLw--
-
+Regards,
+Roman
