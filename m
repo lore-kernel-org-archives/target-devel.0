@@ -2,104 +2,102 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60F5CC2B9F4
-	for <target-devel@archiver.kernel.org>; Sat, 19 Jun 2021 15:46:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90A8FC48BE5
+	for <target-devel@archiver.kernel.org>; Mon, 21 Jun 2021 13:41:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B89D6113E
-	for <target-devel@archiver.kernel.org>; Sat, 19 Jun 2021 15:46:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 73EF46120D
+	for <target-devel@archiver.kernel.org>; Mon, 21 Jun 2021 13:41:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231972AbhFSPsk (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sat, 19 Jun 2021 11:48:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41036 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231680AbhFSPsk (ORCPT
+        id S230087AbhFUNnb (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 21 Jun 2021 09:43:31 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:51420 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S229708AbhFUNnb (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sat, 19 Jun 2021 11:48:40 -0400
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 377C7C061574;
-        Sat, 19 Jun 2021 08:46:29 -0700 (PDT)
-Received: by mail-pl1-x634.google.com with SMTP id 69so6224360plc.5;
-        Sat, 19 Jun 2021 08:46:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=b0K8HSAqOAgzoJk09xtqO95f4D/akP/DcQsZH563JKY=;
-        b=TuPm5T2vE34LrYNmzepdpUqwjK8MpRQNmhFeOP1xqMp3pWWca74FHaAqMtguYvHEQg
-         JrIgH23kfRh+u0D/IH6qg/iro6Jtco4SxOLVYNj6rwp/lQSsRbY9N72/I8vKod0gMvTI
-         nXvYEpqvrTxa1gojdnZggVOsp+lmxUmGHoQjhqMjmSxXkkWGxK31UTluRS9KNKyaRZoV
-         x6y5QOWbyzzCxqleVYDHD064+ShUXjvqs1b+AaqWMwvcTyHS7/4WhX/Jl8PkBEklViSY
-         YRrcf58Oeq5oz5YHbsq16DIdCaFpJ+SbLZbq62DrXDcsXxomgA+zYTzBpeWXaYEPCbUk
-         zgOA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=b0K8HSAqOAgzoJk09xtqO95f4D/akP/DcQsZH563JKY=;
-        b=cXKctdnBZqfkb0opkURmNXx4XCQGmP0f/CqdyYCuAG840sXwl6Gj2xPo6kmAI4VAwO
-         e6P3QXODFx0iQMctsz3nM1kq1EC2WOJJyu49HaBpcmP7wc/qIsJBB0XcYui63OH48Rmj
-         DymAv3ZlT6dHd8JSNXQyG8w1LWXLxdmAqxI9GJmaevEyfz0Vw2r2lSaELwyk6RdCM6fS
-         cEVkgr5gqx95Kwf4Jc2DzRG9UHnXWMYS0TYXX1xLUBUu94zEl2vRHv221z7tUuani4hE
-         h2JlgK/qIa+DAKPu/QEbdc7PlArD0Vh3Oyu4AD9ldcjV9Im2bb6xFrYK+WY9sBQ00Ah7
-         SgnQ==
-X-Gm-Message-State: AOAM532NuDzqc0WSCR/HBT2kJ7SwJnaKIhsKEPK563gTo6ilwlkNK8O2
-        w7RVaNSgz4KYBYi1f3rI3z2B/BfxBpU=
-X-Google-Smtp-Source: ABdhPJxeLCgKu43N6SH9B2StFApUiyVm5/CK27TIBXxf4z5tJHFNJLJxXY1cXXtSzV2v7pJJ2uOBEg==
-X-Received: by 2002:a17:902:ab88:b029:11d:20fa:8ca6 with SMTP id f8-20020a170902ab88b029011d20fa8ca6mr9737530plr.67.1624117588705;
-        Sat, 19 Jun 2021 08:46:28 -0700 (PDT)
-Received: from [10.230.185.151] ([192.19.223.252])
-        by smtp.gmail.com with ESMTPSA id e24sm11926205pgi.17.2021.06.19.08.46.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 19 Jun 2021 08:46:28 -0700 (PDT)
-Subject: Re: [PATCH][next] scsi: elx: libefc: Fix less than zero comparison of
- a unsigned int
-To:     Colin King <colin.king@canonical.com>,
-        James Smart <james.smart@broadcom.com>,
-        Ram Vegesna <ram.vegesna@broadcom.com>,
-        "James E . J . Bottomley" <jejb@linux.ibm.com>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Hannes Reinecke <hare@suse.de>, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20210616170401.15831-1-colin.king@canonical.com>
-From:   James Smart <jsmart2021@gmail.com>
-Message-ID: <b1fbaad3-972b-53f5-817c-9b6ee14a02ce@gmail.com>
-Date:   Sat, 19 Jun 2021 08:46:22 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.2
+        Mon, 21 Jun 2021 09:43:31 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1624282876;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=9QPtVyM3DHK6LzpFdTxuxCdYlW2bJr3j+UgwCyDNveA=;
+        b=PRFxKC00sM6e+RiysKl+N+EvqCL8Qn51s1DdVv3QYRX8tIyxhZXUEiGyDt1zyjYCZFcud4
+        Q04nJJi5nY7AzicNz5wPGmvWARzx4t7FaZZXUgA3dgZWhpdB6ElI1MwR7LW6pEPQgDIa80
+        Az/+W4eVnt0N9HIu5ucmYClrM4gllAk=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-480-41FiQ0ZPM726h4u7NBFUJQ-1; Mon, 21 Jun 2021 09:41:12 -0400
+X-MC-Unique: 41FiQ0ZPM726h4u7NBFUJQ-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 9F72B100C662;
+        Mon, 21 Jun 2021 13:41:11 +0000 (UTC)
+Received: from localhost (ovpn-114-233.ams2.redhat.com [10.36.114.233])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id BCE1717B4C;
+        Mon, 21 Jun 2021 13:41:07 +0000 (UTC)
+Date:   Mon, 21 Jun 2021 14:41:06 +0100
+From:   Stefan Hajnoczi <stefanha@redhat.com>
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        pbonzini@redhat.com, jasowang@redhat.com, mst@redhat.com,
+        sgarzare@redhat.com, virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 7/9] vhost: allow userspace to create workers
+Message-ID: <YNCW8ipev/vjfZHW@stefanha-x1.localdomain>
+References: <20210525180600.6349-1-michael.christie@oracle.com>
+ <20210525180600.6349-8-michael.christie@oracle.com>
+ <YLjnk5GpFaCCOqCU@stefanha-x1.localdomain>
+ <0c1aef53-4850-8c46-0706-9b7276716e68@oracle.com>
+ <YL45CfpHyzSEcAJv@stefanha-x1.localdomain>
+ <6882ef4d-8382-5b0d-272e-779e6fa9e7da@oracle.com>
+ <YMHH+das0nmMBbt5@stefanha-x1.localdomain>
+ <c98dd627-f330-b49c-6716-1caf737c73da@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <20210616170401.15831-1-colin.king@canonical.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="I0LHcjb+o7BPR6nT"
+Content-Disposition: inline
+In-Reply-To: <c98dd627-f330-b49c-6716-1caf737c73da@oracle.com>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 6/16/2021 10:04 AM, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> The comparison of the u32 variable rc to less than zero always
-> false because it is unsigned. Fix this by making it an int.
-> 
-> Addresses-Coverity: ("Unsigned compared against 0")
-> Fixes: 202bfdffae27 ("scsi: elx: libefc: FC node ELS and state handling")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->   drivers/scsi/elx/libefc/efc_device.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks!
+--I0LHcjb+o7BPR6nT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Reviewed-by: James Smart <jsmart2021@gmail.com>
+On Thu, Jun 17, 2021 at 09:49:07PM -0500, Mike Christie wrote:
+> Again it's io_uring. Check out fs/io_uring.c:__io_account_mem(). For RLIMIT_MEMLOCK
+> it just does the check and increments the user's counter itself. It's simple like
+> option 2, and it handles the issue where the process doing the ioctl wasn't having
+> its RLIMIT_NPROC checked/updated.
 
--- james
+This can work too. It doesn't cover cases where code called indirectly
+acquires resources, but that's probably fine for the vhost worker thread
+case.
 
+Stefan
+
+--I0LHcjb+o7BPR6nT
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmDQlvIACgkQnKSrs4Gr
+c8hrMQgApIZoel70cxrnsWve344wJ86e71dzAJ7IgIyQPXMxS1dQKBLDwe3PDUzX
+S/F+YpRfuVRpzpjN0ZrLWDR/ybvbpfx5sC71AyQtPbpBeeKEG+6VfeARWOdCL7PW
+S+unE6FGodF7zc2hL4RBslnMJtJvo0hUcD8GVr71geGvkldImDzviMFuielMK5RA
+5oZuvRh2Sh/NGqioFShB/8+2WHMPKYiiz+W0oa9up+sWZMRV70x59iUw/KMV7ArS
+vQAQU7yRHkG8M8zqQSnfT4aTmCCO0+jzYhD3VShjeqz4vlOk5OI0Cubc3gdNcKN8
+LRCc6Al6ZM2aCvam/XHVzWQJgLvaZg==
+=ZFlv
+-----END PGP SIGNATURE-----
+
+--I0LHcjb+o7BPR6nT--
 
