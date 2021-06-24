@@ -2,102 +2,87 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90A8FC48BE5
-	for <target-devel@archiver.kernel.org>; Mon, 21 Jun 2021 13:41:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45432C48BDF
+	for <target-devel@archiver.kernel.org>; Thu, 24 Jun 2021 11:20:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 73EF46120D
-	for <target-devel@archiver.kernel.org>; Mon, 21 Jun 2021 13:41:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2752A613CE
+	for <target-devel@archiver.kernel.org>; Thu, 24 Jun 2021 11:20:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230087AbhFUNnb (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 21 Jun 2021 09:43:31 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:51420 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S229708AbhFUNnb (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Mon, 21 Jun 2021 09:43:31 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1624282876;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=9QPtVyM3DHK6LzpFdTxuxCdYlW2bJr3j+UgwCyDNveA=;
-        b=PRFxKC00sM6e+RiysKl+N+EvqCL8Qn51s1DdVv3QYRX8tIyxhZXUEiGyDt1zyjYCZFcud4
-        Q04nJJi5nY7AzicNz5wPGmvWARzx4t7FaZZXUgA3dgZWhpdB6ElI1MwR7LW6pEPQgDIa80
-        Az/+W4eVnt0N9HIu5ucmYClrM4gllAk=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-480-41FiQ0ZPM726h4u7NBFUJQ-1; Mon, 21 Jun 2021 09:41:12 -0400
-X-MC-Unique: 41FiQ0ZPM726h4u7NBFUJQ-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        id S232399AbhFXLWs (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 24 Jun 2021 07:22:48 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:42262 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S232313AbhFXLWr (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Thu, 24 Jun 2021 07:22:47 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id A77AC42C03;
+        Thu, 24 Jun 2021 11:20:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1624533625; x=
+        1626348026; bh=rT4QfqzpJTO57Ycb+gh1lMUeYHUIKC6bJPVUHUTTyEM=; b=Y
+        TsxhqfyyeDzEshlPRLNkp45xhmn96HEWBVARbDJRcOGYmj1M2DxsLCWu93Q2EW7m
+        tIm553CWVydfN4KrUdJlKXYqkN5a9ECZCZ4k08WFSjrw+8zSovnVrLXF9gsv4Xww
+        3zAhmh9dhEqKyJhfHfnvAnyWS1Fh8tlIayNdr201nI=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id tKFuRvEQ0fZj; Thu, 24 Jun 2021 14:20:25 +0300 (MSK)
+Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 9F72B100C662;
-        Mon, 21 Jun 2021 13:41:11 +0000 (UTC)
-Received: from localhost (ovpn-114-233.ams2.redhat.com [10.36.114.233])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id BCE1717B4C;
-        Mon, 21 Jun 2021 13:41:07 +0000 (UTC)
-Date:   Mon, 21 Jun 2021 14:41:06 +0100
-From:   Stefan Hajnoczi <stefanha@redhat.com>
-To:     Mike Christie <michael.christie@oracle.com>
-Cc:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        pbonzini@redhat.com, jasowang@redhat.com, mst@redhat.com,
-        sgarzare@redhat.com, virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 7/9] vhost: allow userspace to create workers
-Message-ID: <YNCW8ipev/vjfZHW@stefanha-x1.localdomain>
-References: <20210525180600.6349-1-michael.christie@oracle.com>
- <20210525180600.6349-8-michael.christie@oracle.com>
- <YLjnk5GpFaCCOqCU@stefanha-x1.localdomain>
- <0c1aef53-4850-8c46-0706-9b7276716e68@oracle.com>
- <YL45CfpHyzSEcAJv@stefanha-x1.localdomain>
- <6882ef4d-8382-5b0d-272e-779e6fa9e7da@oracle.com>
- <YMHH+das0nmMBbt5@stefanha-x1.localdomain>
- <c98dd627-f330-b49c-6716-1caf737c73da@oracle.com>
+        by mta-01.yadro.com (Postfix) with ESMTPS id A7AC542A83;
+        Thu, 24 Jun 2021 14:20:25 +0300 (MSK)
+Received: from yadro.com (10.199.0.253) by T-EXCH-03.corp.yadro.com
+ (172.17.100.103) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 24
+ Jun 2021 14:20:24 +0300
+From:   Sergey Samoylenko <s.samoylenko@yadro.com>
+To:     <martin.petersen@oracle.com>, <michael.christie@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Sergey Samoylenko <s.samoylenko@yadro.com>
+Subject: [PATCH 0/1] scsi: target: core: Fix sense key for invalid XCOPY request
+Date:   Thu, 24 Jun 2021 14:19:25 +0300
+Message-ID: <20210624111926.63176-1-s.samoylenko@yadro.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="I0LHcjb+o7BPR6nT"
-Content-Disposition: inline
-In-Reply-To: <c98dd627-f330-b49c-6716-1caf737c73da@oracle.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.0.253]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-03.corp.yadro.com (172.17.100.103)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+EXTENDED COPY tests in libiscsi [1] show that TCM doesn't
+follow SPC4 when detects invalid parameters in a XCOPY
+command or IO errors. The replies from TCM contain wrong sense
+key or ASCQ for incorrect request.
 
---I0LHcjb+o7BPR6nT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The series fixes the following tests from libiscsi:
 
-On Thu, Jun 17, 2021 at 09:49:07PM -0500, Mike Christie wrote:
-> Again it's io_uring. Check out fs/io_uring.c:__io_account_mem(). For RLIMIT_MEMLOCK
-> it just does the check and increments the user's counter itself. It's simple like
-> option 2, and it handles the issue where the process doing the ioctl wasn't having
-> its RLIMIT_NPROC checked/updated.
+  SCSI.ExtendedCopy.DescrType
+  SCSI.ExtendedCopy.DescrLimits
+  SCSI.ExtendedCopy.ParamHdr
+  SCSI.ExtendedCopy.ValidSegDescr
+  SCSI.ExtendedCopy.ValidTgtDescr
 
-This can work too. It doesn't cover cases where code called indirectly
-acquires resources, but that's probably fine for the vhost worker thread
-case.
+1. https://github.com/sahlberg/libiscsi
 
-Stefan
+Sergey Samoylenko (1):
+  scsi: target: core: Fix sense key for invalid XCOPY request
 
---I0LHcjb+o7BPR6nT
-Content-Type: application/pgp-signature; name="signature.asc"
+ drivers/target/target_core_xcopy.c | 26 +++++++++++++++-----------
+ 1 file changed, 15 insertions(+), 11 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmDQlvIACgkQnKSrs4Gr
-c8hrMQgApIZoel70cxrnsWve344wJ86e71dzAJ7IgIyQPXMxS1dQKBLDwe3PDUzX
-S/F+YpRfuVRpzpjN0ZrLWDR/ybvbpfx5sC71AyQtPbpBeeKEG+6VfeARWOdCL7PW
-S+unE6FGodF7zc2hL4RBslnMJtJvo0hUcD8GVr71geGvkldImDzviMFuielMK5RA
-5oZuvRh2Sh/NGqioFShB/8+2WHMPKYiiz+W0oa9up+sWZMRV70x59iUw/KMV7ArS
-vQAQU7yRHkG8M8zqQSnfT4aTmCCO0+jzYhD3VShjeqz4vlOk5OI0Cubc3gdNcKN8
-LRCc6Al6ZM2aCvam/XHVzWQJgLvaZg==
-=ZFlv
------END PGP SIGNATURE-----
-
---I0LHcjb+o7BPR6nT--
+-- 
+2.25.1
 
