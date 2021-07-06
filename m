@@ -2,35 +2,35 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88DE2C07E96
-	for <target-devel@archiver.kernel.org>; Tue,  6 Jul 2021 11:35:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6165AC11F68
+	for <target-devel@archiver.kernel.org>; Tue,  6 Jul 2021 12:29:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 73D7661D87
-	for <target-devel@archiver.kernel.org>; Tue,  6 Jul 2021 11:35:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4B17E6199E
+	for <target-devel@archiver.kernel.org>; Tue,  6 Jul 2021 12:29:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235474AbhGFLhs (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 6 Jul 2021 07:37:48 -0400
-Received: from mail.kernel.org ([198.145.29.99]:42406 "EHLO mail.kernel.org"
+        id S237404AbhGFMcg (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 6 Jul 2021 08:32:36 -0400
+Received: from mail.kernel.org ([198.145.29.99]:47548 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235660AbhGFLaS (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 6 Jul 2021 07:30:18 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6D60A61DC4;
-        Tue,  6 Jul 2021 11:21:30 +0000 (UTC)
+        id S236879AbhGFLfp (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 6 Jul 2021 07:35:45 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 44C2761C38;
+        Tue,  6 Jul 2021 11:24:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1625570491;
-        bh=OLYz9Fhx4UCce3belqp6thG8WF8rjYVJA9ABbB28Ka4=;
+        s=k20201202; t=1625570675;
+        bh=umTpPidblLEoLIcldFS+oYQrpZPqv5PsjC7OHkD8deQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=L7r8Bnv3xe34Hz8B07AGbS5Sd2/1aDAwuux7D1/xFTn1t/kVTjmaRom0/WOMUfk32
-         w7tLBRwUcdWxzSffT9mKLewsmXozl3lCVAUJnC0dWrsUAB2hiBD5lwJ6vXs/XQ4q6f
-         OWASOdj+/fcf67W2zBXsJfOgN45A/YgQRWlZuM/uyMz7JKf6GtH3Fc9hYWYa9Gt2sH
-         LCUdO0U8Ykf9uSAhA/A9nf4AYZkqfvtcKn+DOC+YHiTfT7fbjOutbLKBB1wFsMhSSG
-         IYatJCvNKd6RhV9OnrF8AP1Q/INk99wA+mmh2sjabNpQGVuU8YZlQYflHd5SFOHYex
-         V9oClwIqKCCDA==
+        b=AR9e0RmPvjDhPw6/jh9YOk+PT+lLAzQYR6elQgeZBVo9WyBsCMAM3J72mNKoQTwti
+         ioVAHESxtVOnn8Lj3E8CGGdfnx3yH2c8JLCeoNuRjQE3tiYD2xJRxJnAt6+eQuE0oM
+         6uxK0B2uesssMXFn5/o6NtkQjyZoIvSStEGreJUb7E0bACj7utd6TBsA72qWC7jLZr
+         LPiXD2WcWRr75HFgHm7TtVq1j6ZXA0il5sZvD+lfVS7+k9977UoJ93AD2ap+0YfEkj
+         Lg/Lf59H69GI6v4oun+3mKgZ2vlZyHZUJS4eha307Qzfy9EJKR9A+aSyEHRRyYwu5D
+         VCP7jrbXg/6vQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Max Gurtovoy <mgurtovoy@nvidia.com>,
@@ -40,12 +40,12 @@ Cc:     Max Gurtovoy <mgurtovoy@nvidia.com>,
         Jason Gunthorpe <jgg@nvidia.com>,
         Sasha Levin <sashal@kernel.org>, linux-rdma@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.12 137/160] IB/isert: Align target max I/O size to initiator size
-Date:   Tue,  6 Jul 2021 07:18:03 -0400
-Message-Id: <20210706111827.2060499-137-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 117/137] IB/isert: Align target max I/O size to initiator size
+Date:   Tue,  6 Jul 2021 07:21:43 -0400
+Message-Id: <20210706112203.2062605-117-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210706111827.2060499-1-sashal@kernel.org>
-References: <20210706111827.2060499-1-sashal@kernel.org>
+In-Reply-To: <20210706112203.2062605-1-sashal@kernel.org>
+References: <20210706112203.2062605-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -78,7 +78,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index 18266f07c58d..de3fc05fd2e8 100644
+index e653c83f8a35..edea37da8a5b 100644
 --- a/drivers/infiniband/ulp/isert/ib_isert.c
 +++ b/drivers/infiniband/ulp/isert/ib_isert.c
 @@ -35,10 +35,10 @@ static const struct kernel_param_ops sg_tablesize_ops = {
