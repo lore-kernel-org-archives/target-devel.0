@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-20.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_NONE,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A7EDC11F69
-	for <target-devel@archiver.kernel.org>; Tue,  6 Jul 2021 11:25:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88DE2C07E96
+	for <target-devel@archiver.kernel.org>; Tue,  6 Jul 2021 11:35:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 073ED61EB8
-	for <target-devel@archiver.kernel.org>; Tue,  6 Jul 2021 11:25:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 73D7661D87
+	for <target-devel@archiver.kernel.org>; Tue,  6 Jul 2021 11:35:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233992AbhGFL15 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 6 Jul 2021 07:27:57 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55924 "EHLO mail.kernel.org"
+        id S235474AbhGFLhs (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 6 Jul 2021 07:37:48 -0400
+Received: from mail.kernel.org ([198.145.29.99]:42406 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233719AbhGFLWO (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 6 Jul 2021 07:22:14 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6399261C82;
-        Tue,  6 Jul 2021 11:17:50 +0000 (UTC)
+        id S235660AbhGFLaS (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 6 Jul 2021 07:30:18 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 6D60A61DC4;
+        Tue,  6 Jul 2021 11:21:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1625570271;
+        s=k20201202; t=1625570491;
         bh=OLYz9Fhx4UCce3belqp6thG8WF8rjYVJA9ABbB28Ka4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=PgBViOdj5lkNm7oNONIoO+Gr04jsevzXGQraQ/bgLCDJ57rwj26RBo1LKZCVJX8CJ
-         0OyjYNBFz6hozNB3LeHiyI8KhMOAsFZtrm39nVu022OmfiA7ZP797OmgTaW7aZMQwj
-         h0il4yBajuftoYT1asfAgUWH25atXXft1GiTXFabazrPd5D7yQK8HhtGIvalDuY0PD
-         lHCaK85vRmQNZDrQFguS5qNkKBxyUXltrVqxyH3cnsdEqzjvsA362XluAQSmXIrOLx
-         WiFXd/3EY2PnhJu4rlObWdKPDil6AfLk+D/SmtCH3dhfH2edbQdoPOQgKZb/ktOw/O
-         intfkRMOZQLlg==
+        b=L7r8Bnv3xe34Hz8B07AGbS5Sd2/1aDAwuux7D1/xFTn1t/kVTjmaRom0/WOMUfk32
+         w7tLBRwUcdWxzSffT9mKLewsmXozl3lCVAUJnC0dWrsUAB2hiBD5lwJ6vXs/XQ4q6f
+         OWASOdj+/fcf67W2zBXsJfOgN45A/YgQRWlZuM/uyMz7JKf6GtH3Fc9hYWYa9Gt2sH
+         LCUdO0U8Ykf9uSAhA/A9nf4AYZkqfvtcKn+DOC+YHiTfT7fbjOutbLKBB1wFsMhSSG
+         IYatJCvNKd6RhV9OnrF8AP1Q/INk99wA+mmh2sjabNpQGVuU8YZlQYflHd5SFOHYex
+         V9oClwIqKCCDA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Max Gurtovoy <mgurtovoy@nvidia.com>,
@@ -40,12 +40,12 @@ Cc:     Max Gurtovoy <mgurtovoy@nvidia.com>,
         Jason Gunthorpe <jgg@nvidia.com>,
         Sasha Levin <sashal@kernel.org>, linux-rdma@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.13 165/189] IB/isert: Align target max I/O size to initiator size
-Date:   Tue,  6 Jul 2021 07:13:45 -0400
-Message-Id: <20210706111409.2058071-165-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.12 137/160] IB/isert: Align target max I/O size to initiator size
+Date:   Tue,  6 Jul 2021 07:18:03 -0400
+Message-Id: <20210706111827.2060499-137-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210706111409.2058071-1-sashal@kernel.org>
-References: <20210706111409.2058071-1-sashal@kernel.org>
+In-Reply-To: <20210706111827.2060499-1-sashal@kernel.org>
+References: <20210706111827.2060499-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
