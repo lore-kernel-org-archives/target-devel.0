@@ -7,49 +7,29 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7099EC07E9A
-	for <target-devel@archiver.kernel.org>; Wed, 14 Jul 2021 08:44:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8538C11F6B
+	for <target-devel@archiver.kernel.org>; Wed, 14 Jul 2021 10:27:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 58DD1613B6
-	for <target-devel@archiver.kernel.org>; Wed, 14 Jul 2021 08:44:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AD4B6613B5
+	for <target-devel@archiver.kernel.org>; Wed, 14 Jul 2021 10:27:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238674AbhGNIrK convert rfc822-to-8bit (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 14 Jul 2021 04:47:10 -0400
-Received: from mail-ua1-f43.google.com ([209.85.222.43]:46615 "EHLO
-        mail-ua1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238582AbhGNIrJ (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Wed, 14 Jul 2021 04:47:09 -0400
-Received: by mail-ua1-f43.google.com with SMTP id v22so336881uaj.13;
-        Wed, 14 Jul 2021 01:44:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=r5k/nzvm++7I0kjlsxJbLPoLxldn2GkCJzAXrc4Q3tE=;
-        b=JBvcGhsoob9ZO47Up/SyEbSzZ8aBg3aZm4F2Axg+oLfC8SRzccmoIUKq05T1mrUduG
-         by/1YA6cEPQFwJwz0hVtMrUaq6O0gTvaif2ix+EcGcbS5VpNsbcRyuz+xc5UxFjCICjY
-         47sI6xlJI5ml7veGGagFEk1XvmQWQUCJrT1DofasEHJmscs111ubJuNBVKpthOWAgbSU
-         CRBPdWznCMy4ZQo+aXEe1X8eMo0YdqlD82hiB0QVLSwz4fxCRir7GEeH49k1xNhfP8pb
-         sHeIRvtNzcKKDu80NL8VNSsh88UHzz9IqGnCWX7pzH3ujUMUT40zwyiZH0qcgeFq9/Ht
-         /qXw==
-X-Gm-Message-State: AOAM530jGtbibEeBBuqky+H3CNrVfHZvonJ/8JifbpEJ0nlIrRpl1H6n
-        2WOBbsE2LlIHn+9WzQWOBxggQBTW9PeCWHKW4Ps=
-X-Google-Smtp-Source: ABdhPJw+Y3tnjfY/zI+Y1qOhR0PNRzn2MQD3PHuwf/AzIRJfXjUIjP825Ll9FtnbmVsf04QAqWLG0Tq2dErAW2+m0rM=
-X-Received: by 2002:a9f:3f0d:: with SMTP id h13mr12412958uaj.100.1626252258156;
- Wed, 14 Jul 2021 01:44:18 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210713193522.1770306-1-u.kleine-koenig@pengutronix.de> <20210713193522.1770306-6-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20210713193522.1770306-6-u.kleine-koenig@pengutronix.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 14 Jul 2021 10:44:06 +0200
-Message-ID: <CAMuHMdW8r6u4O5zv2ee-3=jPP6qwnOSHdSzf8pPE_y=jY3Bn5A@mail.gmail.com>
-Subject: Re: [PATCH v4 5/5] bus: Make remove callback return void
-To:     =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
+        id S239112AbhGNKaA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 14 Jul 2021 06:30:00 -0400
+Received: from foss.arm.com ([217.140.110.172]:32922 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230270AbhGNK3w (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Wed, 14 Jul 2021 06:29:52 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 354A311D4;
+        Wed, 14 Jul 2021 03:27:00 -0700 (PDT)
+Received: from bogus (unknown [10.57.79.213])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2FF633F774;
+        Wed, 14 Jul 2021 03:26:27 -0700 (PDT)
+Date:   Wed, 14 Jul 2021 11:25:29 +0100
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Sascha Hauer <kernel@pengutronix.de>,
+        kernel@pengutronix.de, Sudeep Holla <sudeep.holla@arm.com>,
         Alexander Shishkin <alexander.shishkin@linux.intel.com>,
         Alexandre Belloni <alexandre.belloni@bootlin.com>,
         Alexandre Bounine <alex.bou9@gmail.com>,
@@ -80,6 +60,7 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Finn Thain <fthain@linux-m68k.org>,
         Florian Fainelli <f.fainelli@gmail.com>,
         Frank Li <lznuaa@gmail.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         Geoff Levand <geoff@infradead.org>,
         Haiyang Zhang <haiyangz@microsoft.com>,
         Hannes Reinecke <hare@suse.de>,
@@ -89,7 +70,7 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Heiko Carstens <hca@linux.ibm.com>,
         Helge Deller <deller@gmx.de>, Ira Weiny <ira.weiny@intel.com>,
         Jakub Kicinski <kuba@kernel.org>,
-        "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
         Jaroslav Kysela <perex@perex.cz>,
         Jason Wang <jasowang@redhat.com>,
         Jens Taprogge <jens.taprogge@taprogge.org>,
@@ -105,7 +86,7 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Kai-Heng Feng <kai.heng.feng@canonical.com>,
         Kirti Wankhede <kwankhede@nvidia.com>,
         Kishon Vijay Abraham I <kishon@ti.com>,
-        =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>,
+        Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
         "K. Y. Srinivasan" <kys@microsoft.com>,
         Lee Jones <lee.jones@linaro.org>, Len Brown <lenb@kernel.org>,
         Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
@@ -128,11 +109,11 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Mike Christie <michael.christie@oracle.com>,
         Moritz Fischer <mdf@kernel.org>,
         Ohad Ben-Cohen <ohad@wizery.com>,
-        =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
+        Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>,
         Paul Mackerras <paulus@samba.org>,
         Peter Oberparleiter <oberpar@linux.ibm.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+        =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
         Rich Felker <dalias@libc.org>,
         Rikard Falkeborn <rikard.falkeborn@gmail.com>,
         Rob Herring <robh@kernel.org>,
@@ -147,7 +128,6 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Stefan Richter <stefanr@s5r6.in-berlin.de>,
         Stephen Boyd <sboyd@kernel.org>,
         Stephen Hemminger <sthemmin@microsoft.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
         Sven Van Asbroeck <TheSven73@gmail.com>,
         Takashi Iwai <tiwai@suse.com>,
         Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
@@ -191,38 +171,60 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         xen-devel@lists.xenproject.org,
         Johannes Thumshirn <jth@kernel.org>,
         "Rafael J . Wysocki" <rafael@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [PATCH v4 5/5] bus: Make remove callback return void
+Message-ID: <20210714102529.ehwquc2s2qlbccyg@bogus>
+References: <20210713193522.1770306-1-u.kleine-koenig@pengutronix.de>
+ <20210713193522.1770306-6-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210713193522.1770306-6-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Jul 13, 2021 at 9:35 PM Uwe Kleine-KÃ¶nig
-<u.kleine-koenig@pengutronix.de> wrote:
+On Tue, Jul 13, 2021 at 09:35:22PM +0200, Uwe Kleine-König wrote:
 > The driver core ignores the return value of this callback because there
 > is only little it can do when a device disappears.
->
+> 
 > This is the final bit of a long lasting cleanup quest where several
 > buses were converted to also return void from their remove callback.
 > Additionally some resource leaks were fixed that were caused by drivers
 > returning an error code in the expectation that the driver won't go
 > away.
->
+> 
 > With struct bus_type::remove returning void it's prevented that newly
 > implemented buses return an ignored error code and so don't anticipate
 > wrong expectations for driver authors.
+> 
 
->  drivers/zorro/zorro-driver.c              | 3 +--
+[...]
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> diff --git a/drivers/firmware/arm_scmi/bus.c b/drivers/firmware/arm_scmi/bus.c
+> index 784cf0027da3..2682c3df651c 100644
+> --- a/drivers/firmware/arm_scmi/bus.c
+> +++ b/drivers/firmware/arm_scmi/bus.c
+> @@ -116,15 +116,13 @@ static int scmi_dev_probe(struct device *dev)
+>  	return scmi_drv->probe(scmi_dev);
+>  }
+>  
+> -static int scmi_dev_remove(struct device *dev)
+> +static void scmi_dev_remove(struct device *dev)
+>  {
+>  	struct scmi_driver *scmi_drv = to_scmi_driver(dev->driver);
+>  	struct scmi_device *scmi_dev = to_scmi_dev(dev);
+>  
+>  	if (scmi_drv->remove)
+>  		scmi_drv->remove(scmi_dev);
+> -
+> -	return 0;
+>  }
+>  
+>  static struct bus_type scmi_bus_type = {
 
-Gr{oetje,eeting}s,
+Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--
+Regards,
+Sudeep
