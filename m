@@ -2,118 +2,89 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84C4DC636CE
-	for <target-devel@archiver.kernel.org>; Wed, 21 Jul 2021 11:24:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3B03C6377B
+	for <target-devel@archiver.kernel.org>; Wed, 21 Jul 2021 21:45:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6142A61019
-	for <target-devel@archiver.kernel.org>; Wed, 21 Jul 2021 11:24:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AA50F61208
+	for <target-devel@archiver.kernel.org>; Wed, 21 Jul 2021 21:45:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236465AbhGUKne (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 21 Jul 2021 06:43:34 -0400
-Received: from smtp-relay-canonical-1.canonical.com ([185.125.188.121]:59384
-        "EHLO smtp-relay-canonical-1.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S238792AbhGUJep (ORCPT
+        id S229990AbhGUVEc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 21 Jul 2021 17:04:32 -0400
+Received: from smtp-out2.suse.de ([195.135.220.29]:50058 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229850AbhGUVEc (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 21 Jul 2021 05:34:45 -0400
-Received: from localhost (1.general.cking.uk.vpn [10.172.193.212])
+        Wed, 21 Jul 2021 17:04:32 -0400
+Received: from imap1.suse-dmz.suse.de (imap1.suse-dmz.suse.de [192.168.254.73])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id CB2333F243;
-        Wed, 21 Jul 2021 10:15:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1626862521;
-        bh=SjoWjrqwnItTOh5zDKu4Dx2Q1flNerPBza5NTZJ0c4o=;
-        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type;
-        b=A0ZhYv4iW0I+Z2k/Ro32erSR/secBJ8GyhpKr2JJSa15MBEbZ1MnqSlPwwxaWlhW/
-         UMZnLhgaHe8Th/kdWSL7Q0ZMZPYAzYYDkyVL08TpT3Td2wLegXsLmsNxQm3f5SSsMX
-         bElzX+GVl93BYfXLWQbyAN5KfMnxBhS1rp++q2i26x/ddkUbcwtHb80NxmdgLCUkMO
-         PCzBPk22zj5ocdWaY1QKVEG1lpD94tpY+5aWlSijC6fzdACGCYki3cyxS20FHtZCus
-         RycbsTED2KJ0nxkyyT1Y3xL2yQshXG54AIeveRRqoLolaB4iPHQC7VfSlfJq+IQYFC
-         V7qCObWbSqs5g==
-From:   Colin King <colin.king@canonical.com>
-To:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Varun Prakash <varun@chelsio.com>,
-        Mike Christie <michael.christie@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: target: remove redundant assignment to variable ret
-Date:   Wed, 21 Jul 2021 11:15:19 +0100
-Message-Id: <20210721101519.42299-1-colin.king@canonical.com>
-X-Mailer: git-send-email 2.31.1
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 733E01FD4E;
+        Wed, 21 Jul 2021 21:45:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1626903907; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=bOiHP9mMLpMPpcqhfQcN2pq2TnPamSrqtIA8gsEBOYQ=;
+        b=yjQ/OX7q5JDfMlxcDe0quHTh21u5ukvqED4/6SWrAbQZIqqWFEQDZkD873mU8m3fznO1Mt
+        GHrUowDZFlPRjquy6Z3PMmAymMkA9q3lZ7UYybl1wU6fR59nC1aQS74vGyDWbYkCiHrMjb
+        SW2oeRtp8aiIP92LbVrkytiwrdG2Whc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1626903907;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=bOiHP9mMLpMPpcqhfQcN2pq2TnPamSrqtIA8gsEBOYQ=;
+        b=rchz6kRVkuKR7qjYp8QnpJxHIIOtS8lsguzaaIDT0PXtXKY3cNtOSs6EsvgOgIWG4b9vBu
+        AlECh6BS3CI/G5Bw==
+Received: from imap1.suse-dmz.suse.de (imap1.suse-dmz.suse.de [192.168.254.73])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap1.suse-dmz.suse.de (Postfix) with ESMTPS id 2BAF613C19;
+        Wed, 21 Jul 2021 21:45:07 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap1.suse-dmz.suse.de with ESMTPSA
+        id LeaQCGOV+GBVCwAAGKfGzw
+        (envelope-from <ddiss@suse.de>); Wed, 21 Jul 2021 21:45:07 +0000
+Date:   Wed, 21 Jul 2021 23:45:05 +0200
+From:   David Disseldorp <ddiss@suse.de>
+To:     Sergey Samoylenko <s.samoylenko@yadro.com>
+Cc:     <martin.petersen@oracle.com>, <michael.christie@oracle.com>,
+        <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+        <linux@yadro.com>
+Subject: Re: [PATCH 0/1] scsi: target: core: Fix sense key for invalid XCOPY
+ request
+Message-ID: <20210721234505.45c93a48@suse.de>
+In-Reply-To: <20210624111926.63176-1-s.samoylenko@yadro.com>
+References: <20210624111926.63176-1-s.samoylenko@yadro.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+Hi Sergey,
 
-The variable ret is being initialized with a value that is never
-read, the assignment is redundant and can be removed.
+On Thu, 24 Jun 2021 14:19:25 +0300, Sergey Samoylenko wrote:
 
-Addresses-Coverity: ("Unused value")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/target/iscsi/cxgbit/cxgbit_ddp.c | 2 +-
- drivers/target/loopback/tcm_loop.c       | 4 ++--
- drivers/target/target_core_iblock.c      | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+> EXTENDED COPY tests in libiscsi [1] show that TCM doesn't
+> follow SPC4 when detects invalid parameters in a XCOPY
+> command or IO errors. The replies from TCM contain wrong sense
+> key or ASCQ for incorrect request.
+> 
+> The series fixes the following tests from libiscsi:
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-index b044999ad002..072afd070f3e 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-@@ -234,7 +234,7 @@ cxgbit_get_r2t_ttt(struct iscsi_conn *conn, struct iscsi_cmd *cmd,
- 	struct cxgbit_device *cdev = csk->com.cdev;
- 	struct cxgbit_cmd *ccmd = iscsit_priv_cmd(cmd);
- 	struct cxgbi_task_tag_info *ttinfo = &ccmd->ttinfo;
--	int ret = -EINVAL;
-+	int ret;
- 
- 	if ((!ccmd->setup_ddp) ||
- 	    (!test_bit(CSK_DDP_ENABLE, &csk->com.flags)))
-diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-index 6d0b0e67e79e..fdc36274cb39 100644
---- a/drivers/target/loopback/tcm_loop.c
-+++ b/drivers/target/loopback/tcm_loop.c
-@@ -241,7 +241,7 @@ static int tcm_loop_abort_task(struct scsi_cmnd *sc)
- {
- 	struct tcm_loop_hba *tl_hba;
- 	struct tcm_loop_tpg *tl_tpg;
--	int ret = FAILED;
-+	int ret;
- 
- 	/*
- 	 * Locate the tcm_loop_hba_t pointer
-@@ -261,7 +261,7 @@ static int tcm_loop_device_reset(struct scsi_cmnd *sc)
- {
- 	struct tcm_loop_hba *tl_hba;
- 	struct tcm_loop_tpg *tl_tpg;
--	int ret = FAILED;
-+	int ret;
- 
- 	/*
- 	 * Locate the tcm_loop_hba_t pointer
-diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index 44d9d028f716..4069a1edcfa3 100644
---- a/drivers/target/target_core_iblock.c
-+++ b/drivers/target/target_core_iblock.c
-@@ -83,7 +83,7 @@ static int iblock_configure_device(struct se_device *dev)
- 	struct blk_integrity *bi;
- 	fmode_t mode;
- 	unsigned int max_write_zeroes_sectors;
--	int ret = -ENOMEM;
-+	int ret;
- 
- 	if (!(ib_dev->ibd_flags & IBDF_HAS_UDEV_PATH)) {
- 		pr_err("Missing udev_path= parameters for IBLOCK\n");
--- 
-2.31.1
+We've hit this too. The incorrect sense reporting appears to also affect
+VMware XCOPY fallback to initiator driven READ/WRITE. I'm pretty sure
+this is a regression from d877d7275be34ad70ce92bcbb4bb36cec77ed004, so
+should probably be marked as such via a Fixes tag.
 
+Cheers, David
