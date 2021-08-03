@@ -2,92 +2,92 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE2F5C4338F
-	for <target-devel@archiver.kernel.org>; Tue,  3 Aug 2021 12:33:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57755C4320E
+	for <target-devel@archiver.kernel.org>; Tue,  3 Aug 2021 14:55:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B3D8060EB9
-	for <target-devel@archiver.kernel.org>; Tue,  3 Aug 2021 12:33:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3F7A760F01
+	for <target-devel@archiver.kernel.org>; Tue,  3 Aug 2021 14:55:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235858AbhHCMeJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 3 Aug 2021 08:34:09 -0400
-Received: from smtp-out1.suse.de ([195.135.220.28]:59642 "EHLO
-        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234524AbhHCMeI (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Tue, 3 Aug 2021 08:34:08 -0400
-Received: from imap1.suse-dmz.suse.de (imap1.suse-dmz.suse.de [192.168.254.73])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        id S236022AbhHCOzT (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 3 Aug 2021 10:55:19 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:36166 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S235959AbhHCOzS (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 3 Aug 2021 10:55:18 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id B2F93412DF;
+        Tue,  3 Aug 2021 14:55:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1628002505; x=
+        1629816906; bh=d4UVhkoP1DhIlC8IAOpL1S9rIaabNfNpPbWhDGd5UBM=; b=G
+        I6XVYhhtMfEfT3uxwnRdgDM252M0E9fPFt9l/eRHknYXdr/3pMvMBO0Or++fXmWx
+        SfgnOl9NrTFyjpWy8db98BroACNQ+RCLSei+v8D9BVrK3fUS78iF6XR5RUpaEGyE
+        4QEYQMCvlfOkOwJx5TMU0FTN16wjnDEOuH992OF3g4=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id mX7xoaQCLpUP; Tue,  3 Aug 2021 17:55:05 +0300 (MSK)
+Received: from T-EXCH-04.corp.yadro.com (t-exch-04.corp.yadro.com [172.17.100.104])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 4359321F4A;
-        Tue,  3 Aug 2021 12:33:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1627994036; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=7ILvRLSGrZOEoPnmyG64iMyrfxj5roTegANRYKOleDQ=;
-        b=bjMrHhXjFDBars3W0vs/v4FgzplucByR1y/CmdWGVLJrJjIdkJMGxtynPPYfvOqmpcBDeC
-        XsNGijr2hq/2xgisag3uBrylIAWRG3Pb8pElTzlIsHfYNPKiBoBfNSL3XSHJyRhpgYrEUJ
-        kCH4aeVEWAwtFbNerYe7wzsnvtsiqbQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1627994036;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=7ILvRLSGrZOEoPnmyG64iMyrfxj5roTegANRYKOleDQ=;
-        b=w/hecoom9PjVEZjriQUREuc7QzXZTChUogjaxdhlmgPdRZVrBdfc+2udobdEDbM2u+GV0S
-        YAQ+W2XJn/9kc3CQ==
-Received: from imap1.suse-dmz.suse.de (imap1.suse-dmz.suse.de [192.168.254.73])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap1.suse-dmz.suse.de (Postfix) with ESMTPS id F1858137B8;
-        Tue,  3 Aug 2021 12:33:55 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap1.suse-dmz.suse.de with ESMTPSA
-        id GzWIObM3CWF5QAAAGKfGzw
-        (envelope-from <ddiss@suse.de>); Tue, 03 Aug 2021 12:33:55 +0000
-Date:   Tue, 3 Aug 2021 14:33:54 +0200
-From:   David Disseldorp <ddiss@suse.de>
-To:     Sergey Samoylenko <s.samoylenko@yadro.com>
-Cc:     "martin.petersen@oracle.com" <martin.petersen@oracle.com>,
-        "michael.christie@oracle.com" <michael.christie@oracle.com>,
-        "bvanassche@acm.org" <bvanassche@acm.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "linux@yadro.com" <linux@yadro.com>
-Subject: Re: [v2 1/2] target: allows backend drivers to fail with specific
- sense codes
-Message-ID: <20210803143354.29604db8@suse.de>
-In-Reply-To: <54db7e6756e945b7abd3b368d52600db@yadro.com>
-References: <20210726151646.32631-1-s.samoylenko@yadro.com>
-        <20210726151646.32631-2-s.samoylenko@yadro.com>
-        <20210730183758.6efb3f95@suse.de>
-        <54db7e6756e945b7abd3b368d52600db@yadro.com>
+        by mta-01.yadro.com (Postfix) with ESMTPS id 1350D49451;
+        Tue,  3 Aug 2021 17:55:04 +0300 (MSK)
+Received: from yadro.com (10.199.0.12) by T-EXCH-04.corp.yadro.com
+ (172.17.100.104) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Tue, 3 Aug
+ 2021 17:55:03 +0300
+From:   Sergey Samoylenko <s.samoylenko@yadro.com>
+To:     <martin.petersen@oracle.com>, <michael.christie@oracle.com>,
+        <ddiss@suse.de>, <bvanassche@acm.org>,
+        <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Sergey Samoylenko <s.samoylenko@yadro.com>
+Subject: [v3 0/2] scsi: target: fix sense key for invalid XCOPY request
+Date:   Tue, 3 Aug 2021 17:54:08 +0300
+Message-ID: <20210803145410.80147-1-s.samoylenko@yadro.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.0.12]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-04.corp.yadro.com (172.17.100.104)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Sergey,
+EXTENDED COPY tests in libiscsi [1] show that TCM doesn't
+follow SPC4 when detects invalid parameters in a XCOPY
+command or IO errors. The replies from TCM contain wrong sense
+key or ASCQ for incorrect request.
 
-On Mon, 2 Aug 2021 18:31:06 +0000, Sergey Samoylenko wrote:
+The series fixes the following tests from libiscsi:
 
-> David, am I getting the idea right?
-> 
-> We want to get something like this:
-[trimmed]
+  SCSI.ExtendedCopy.DescrType
+  SCSI.ExtendedCopy.DescrLimits
+  SCSI.ExtendedCopy.ParamHdr
+  SCSI.ExtendedCopy.ValidSegDescr
+  SCSI.ExtendedCopy.ValidTgtDescr
 
-Yes, this is my preference (with the corresponding .h changes).
-Please send it as a git-send-email patchset and feel free to add my
-reviewed-by tag.
+1. https://github.com/sahlberg/libiscsi
 
-Cheers, David
+Sergey Samoylenko (2):
+  scsi: target: allows backend drivers to fail with specific sense codes
+  scsi: target: fix sense key for invalid XCOPY request
+
+ drivers/target/target_core_transport.c | 15 ++++++++++++---
+ drivers/target/target_core_xcopy.c     | 26 +++++++++++++++-----------
+ include/target/target_core_backend.h   |  1 +
+ include/target/target_core_base.h      |  2 ++
+ 4 files changed, 30 insertions(+), 14 deletions(-)
+
+-- 
+2.25.1
+
