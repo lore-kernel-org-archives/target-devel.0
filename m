@@ -2,82 +2,125 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4769DC4338F
-	for <target-devel@archiver.kernel.org>; Wed,  4 Aug 2021 13:24:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E437DC4338F
+	for <target-devel@archiver.kernel.org>; Sat,  7 Aug 2021 13:47:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2ADD760F43
-	for <target-devel@archiver.kernel.org>; Wed,  4 Aug 2021 13:24:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A3C7160F42
+	for <target-devel@archiver.kernel.org>; Sat,  7 Aug 2021 13:47:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238399AbhHDNZH (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 4 Aug 2021 09:25:07 -0400
-Received: from smtp-relay-canonical-0.canonical.com ([185.125.188.120]:53642
-        "EHLO smtp-relay-canonical-0.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S238061AbhHDNZG (ORCPT
+        id S232265AbhHGNrn (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 7 Aug 2021 09:47:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55360 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232210AbhHGNrm (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 4 Aug 2021 09:25:06 -0400
-Received: from localhost (1.general.cking.uk.vpn [10.172.193.212])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPSA id 1B9AD3F048;
-        Wed,  4 Aug 2021 13:24:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1628083492;
-        bh=mNny2UeZ7EC33QeUY4d+BcD45KNxvsJvrlo9CuSGuJM=;
-        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type;
-        b=M2+wnNjXXnjEIRbvy795fDakdp+JGEWk6fyhvs5o9o8DBiR90N4VJo01gzPSNH6H4
-         cu7CHCLaAog7vGmAG5Cp6cxUzt6rvwCt9qYv15MBCzZb5Dx7kwnFOBrh8UBqJveBER
-         htSLE7slj2JhnAiKj+vRfTa9OGDhpjot3ZZj+nWDFuyoVCBX3FKvtAW/r0JWf40e7b
-         zk2lqLke6WzX3KFmAkLl/12bb/umDuuT7RfEZfoLEsmH4E0nekGBxVQ6sk5LNa41py
-         HDdyyVIkjK6hIIBMjNsKUNwfyhGS/KCgRP74yisUzYU2qtOYlSMelhqHD+Y0XxSUda
-         pwaSmZZAyQGcQ==
-From:   Colin King <colin.king@canonical.com>
-To:     James Smart <james.smart@broadcom.com>,
-        Ram Vegesna <ram.vegesna@broadcom.com>,
-        "James E . J . Bottomley" <jejb@linux.ibm.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: elx: efct: Remove redundant initialization of variable ret
-Date:   Wed,  4 Aug 2021 14:24:51 +0100
-Message-Id: <20210804132451.113086-1-colin.king@canonical.com>
-X-Mailer: git-send-email 2.31.1
+        Sat, 7 Aug 2021 09:47:42 -0400
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 766BAC0613CF;
+        Sat,  7 Aug 2021 06:47:24 -0700 (PDT)
+Received: by mail-pj1-x102d.google.com with SMTP id a8so20890285pjk.4;
+        Sat, 07 Aug 2021 06:47:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ZMFTuQL4XCv0rc6vS643hPfckJse4ED4dcB9MFxryLI=;
+        b=HSSjpVcOrBSkXxvrGMNszf1jTujgdJsnJypdiKYbb45gl3/tFrtk0oL+9RUiC3RZ8q
+         m4StoJLry5Q043GaW7MMiZCfujNN6jwoFLLN3NT/yykYh0kM7kNsNb/85NBpy++xpfQ6
+         62k3kL1029qP8Ftx4tWDe12kMEwBdnJN/zJSHfWTvt39MZ3DrFdLIeLh+OuvnKHmh/Gz
+         b9OE+rsTmPNk/icz/UKMWm1/cB0bnx7OaGVyjOnZ1emLdLRbJ5MntCctBIizFYkgNs29
+         AtIGl6kFgYACRh3+/j1kQaqgUWItnWLOviMz1eEHWOMLHuT2OQcSJPwoCqMfeE/l+gr4
+         w82A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ZMFTuQL4XCv0rc6vS643hPfckJse4ED4dcB9MFxryLI=;
+        b=GTe78ELVdXrlPF//QJJW72mg8zQhXaYqnwDU6LB+hWedcML6MxPHhyb9wX1buZEDk7
+         3GeKO5YARmtyrkZV+3a34O6H53hDGGrIWoJYalBUF6LC62VHmCcAd7TJANF1C3lva1VB
+         ZmLf0qUM+ymvR8yJ55NZBSJgelPCQBDH7ZNL3Hsjwmj4qVXSmAs849qtC/OwEzArjPkL
+         gJ1lVWfgEyMeynU2k5S4IdinJwgd8euGVoaXWsunzkomnQmIiyZXdgqPP30B4uIw4J9q
+         GCGL5xXPz4LL2BIqN1Sq7w5dQqqv4OZUrcwzPVCE0BFFXnLCsZL8YUHVdsfAQgo2pNK6
+         fBVw==
+X-Gm-Message-State: AOAM533tNbVsxWdy42kAM/EiOeveXMwushiflZyNij0WwYiNtucfQm2n
+        O+1AQW/Zo6fZFocwgs/mWYI=
+X-Google-Smtp-Source: ABdhPJwKf7wveW3mv3Hsx+FRzuBF07e9vF3DKGLpwloGVQheIxNqEXH+yvWW5sAOI/DbjgNJvFnMpw==
+X-Received: by 2002:a62:e50c:0:b029:2f9:b9b1:d44f with SMTP id n12-20020a62e50c0000b02902f9b9b1d44fmr15981967pff.42.1628344043999;
+        Sat, 07 Aug 2021 06:47:23 -0700 (PDT)
+Received: from localhost.localdomain ([45.135.186.87])
+        by smtp.gmail.com with ESMTPSA id bj6sm15849521pjb.53.2021.08.07.06.47.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 07 Aug 2021 06:47:23 -0700 (PDT)
+From:   Tuo Li <islituo@gmail.com>
+To:     martin.petersen@oracle.com
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, baijiaju1990@gmail.com,
+        Tuo Li <islituo@gmail.com>, TOTE Robot <oslab@tsinghua.edu.cn>
+Subject: [PATCH] scsi: target: pscsi: Fix possible null-pointer dereference in pscsi_complete_cmd()
+Date:   Sat,  7 Aug 2021 06:46:51 -0700
+Message-Id: <20210807134651.245436-1-islituo@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+The return value of transport_kmap_data_sg() is assigned to the variable
+buf:
+  buf = transport_kmap_data_sg(cmd);
 
-The variable ret is being initialized with a value that is never
-read, it is being updated later on. The assignment is redundant and
-can be removed.
+And then it is checked:
+  if (!buf) {
 
-Addresses-Coverity: ("Unused value")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+This indicates that buf can be NULL. However, it is dereferenced in the
+following statements:
+  if (!(buf[3] & 0x80))
+    buf[3] |= 0x80;
+  if (!(buf[2] & 0x80))
+	buf[2] |= 0x80;
+
+To fix these possible null-pointer dereferences, dereference buf only when
+it is not NULL.
+
+Reported-by: TOTE Robot <oslab@tsinghua.edu.cn>
+Signed-off-by: Tuo Li <islituo@gmail.com>
 ---
- drivers/scsi/elx/efct/efct_lio.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_pscsi.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/scsi/elx/efct/efct_lio.c b/drivers/scsi/elx/efct/efct_lio.c
-index e0d798d6baee..bb3b460dc0bc 100644
---- a/drivers/scsi/elx/efct/efct_lio.c
-+++ b/drivers/scsi/elx/efct/efct_lio.c
-@@ -780,7 +780,7 @@ efct_lio_npiv_make_nport(struct target_fabric_configfs *tf,
- {
- 	struct efct_lio_vport *lio_vport;
- 	struct efct *efct;
--	int ret = -1;
-+	int ret;
- 	u64 p_wwpn, npiv_wwpn, npiv_wwnn;
- 	char *p, *pbuf, tmp[128];
- 	struct efct_lio_vport_list_t *vport_list;
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+index 2629d2ef3970..560815729182 100644
+--- a/drivers/target/target_core_pscsi.c
++++ b/drivers/target/target_core_pscsi.c
+@@ -620,14 +620,14 @@ static void pscsi_complete_cmd(struct se_cmd *cmd, u8 scsi_status,
+ 			buf = transport_kmap_data_sg(cmd);
+ 			if (!buf) {
+ 				; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
+-			}
+-
+-			if (cdb[0] == MODE_SENSE_10) {
+-				if (!(buf[3] & 0x80))
+-					buf[3] |= 0x80;
+ 			} else {
+-				if (!(buf[2] & 0x80))
+-					buf[2] |= 0x80;
++				if (cdb[0] == MODE_SENSE_10) {
++					if (!(buf[3] & 0x80))
++						buf[3] |= 0x80;
++				} else {
++					if (!(buf[2] & 0x80))
++						buf[2] |= 0x80;
++				}
+ 			}
+ 
+ 			transport_kunmap_data_sg(cmd);
 -- 
-2.31.1
+2.25.1
 
