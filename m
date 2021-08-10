@@ -2,145 +2,97 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09C6DC4338F
-	for <target-devel@archiver.kernel.org>; Tue, 10 Aug 2021 07:18:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E766C4338F
+	for <target-devel@archiver.kernel.org>; Tue, 10 Aug 2021 13:48:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DE7A461019
-	for <target-devel@archiver.kernel.org>; Tue, 10 Aug 2021 07:18:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1AD5D61008
+	for <target-devel@archiver.kernel.org>; Tue, 10 Aug 2021 13:48:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231346AbhHJHTG (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 10 Aug 2021 03:19:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47194 "EHLO
+        id S240182AbhHJNs3 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 10 Aug 2021 09:48:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229484AbhHJHTG (ORCPT
+        with ESMTP id S240131AbhHJNs3 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 10 Aug 2021 03:19:06 -0400
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23BD9C0613D3;
-        Tue, 10 Aug 2021 00:18:44 -0700 (PDT)
-Received: by mail-wr1-x436.google.com with SMTP id r6so2626157wrt.4;
-        Tue, 10 Aug 2021 00:18:44 -0700 (PDT)
+        Tue, 10 Aug 2021 09:48:29 -0400
+Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 333BEC0613D3;
+        Tue, 10 Aug 2021 06:48:07 -0700 (PDT)
+Received: by mail-pl1-x633.google.com with SMTP id d1so21071872pll.1;
+        Tue, 10 Aug 2021 06:48:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=gWww76GCF5bdJ3wwOyrVrOe81eD6ccbw3CbNhzGl6sA=;
-        b=NZkGabqAvmYmZUO16jJsqhjL/CVU0Sj7skB8PuJhN/s7osQ3QymAZOFTma81Cnb1gT
-         gyTR2VraTsCp515ookPa3CDbMKBwIZF6CDbBRp9+yA9YQm6QJ8VhaAzGEBv+tRZKt6J+
-         bMdoQyA0GtZ87GGhT2cO8yvSXHBpjWqax6Sdl4mGfTpyV0O8LSqbRK9FHeC9J24mCXsk
-         uXti+uGGUSHGAAJPfwbtGGszxhLiNkkaHLBLXnYidNI+9GnrH/qH08ouH5pgtoWwxT02
-         +dCFV7bh6Cq6DDvneOO5EEhh6zzjUwc2/wWY3isQD2YQSL/HO/sBie9U48PTfn2w5+x7
-         cIig==
+        h=to:cc:from:subject:message-id:date:user-agent:mime-version
+         :content-transfer-encoding:content-language;
+        bh=CNbvPsnGAfa3fu8fS5mw3q/ySea1UUbi6hadd0bmWeo=;
+        b=hoINABunSBYQ2JkYYVpHWvnqfcKfMeuLsEs5RBPS9/roCQMZMiD8Wxk9YzMTPbAdEd
+         YzUET3flnDrEnas2moHTKPj3eqswt2kl5ojHJntcAq8jcq2IuxIMYACvccw+Lm85ZX7M
+         aTNYTHMibdUa38vFxAe5MBByd9PxmMuhpsXSTHF0c8hmGdN2V/LQfCSpHOUcMdE2n7MT
+         jtyOHqPjjBavBY4g4/yMQVtRbmLKampGH4MPxTklXrluLEYLLNczihZlhKO8zIvnnvZ9
+         iz+y5QDYlyCqWxuviWQBmvC1EeSkgtS6YU61oTcz6Rxw4sxi0GTJYiBp2PZZj+q1mwqw
+         fBNQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=gWww76GCF5bdJ3wwOyrVrOe81eD6ccbw3CbNhzGl6sA=;
-        b=eweDzgqKh4sUcNpEuLEJZ47OM4weXu0FeIwDkMQTo4HEe7DDM+iyt4Q0u0xOsU3niJ
-         RmY3zG4vD0hmcu4DvLEsY0gd8x1bcq8jzt9UobtopVdezTEi/HXJnyOofCAmYnSxS+6b
-         aD2fasKahjubd+6Wry6nbvFUq8d2Gldu2uv1+VOdGOTa5Ir42eqtRLmiLn2NN0/Q6pKw
-         6qAVVEYEWlqmbOGb1EQvOUEjapH1cPUhfDhZmI7AKnuSJnwaDsFPaOYwuT1zXj/XoIqo
-         J+rIg1rx3E3XF8ChYdAZHTf4ycT3QzbVAxFhs3FJ/ZgIoha8poOPKg4VDui4IVPcNzK5
-         mRPg==
-X-Gm-Message-State: AOAM532bKvVYDJG/6yikB5GhKIMUvA8+yliMs2tBwOZfQGqURTsCfJMv
-        GhEIibpfUZBWosgQsNspu/k=
-X-Google-Smtp-Source: ABdhPJzeEI+6Wv48bLWllrtYVIG0GxMW7kOVFVZN/f/T4Pmfr25NEsZMy6wo5bmChExdxlHB+PCWKA==
-X-Received: by 2002:a05:6000:18c2:: with SMTP id w2mr29071731wrq.282.1628579922602;
-        Tue, 10 Aug 2021 00:18:42 -0700 (PDT)
-Received: from [192.168.178.40] (ipbcc187b7.dynamic.kabel-deutschland.de. [188.193.135.183])
-        by smtp.gmail.com with ESMTPSA id d8sm22313152wrv.20.2021.08.10.00.18.41
+        h=x-gm-message-state:to:cc:from:subject:message-id:date:user-agent
+         :mime-version:content-transfer-encoding:content-language;
+        bh=CNbvPsnGAfa3fu8fS5mw3q/ySea1UUbi6hadd0bmWeo=;
+        b=N3+0KnM+5IZ4US73trrCGcKJutOc9pjhRFK8mV46n+9gBCxlTzLg/y3VMTA94OqpU2
+         tYJZmWkIv/v1HUmPrjHgcQ6WKPX9b0li+9BwN5vjZBn2gsG95lmRJGunc96Gi2RNxHHu
+         sTdUzvOg5WDKoeduk6+yrskxNvFjxL/y0Tb9GzDPjmnr4iNjmQdBtW5QmmvhUM8f8PwP
+         NuTb1Za89AWjSmPqi8zmXLDYi7k0e3CGMx9C3Qi5ScxSlr0hWW2scn3qzJkZxkWiEwjR
+         DGf3hhdDxi1sMl9vP1jOawtHczFu/bKB0nSQj5TOqGkAUEC3wGuSb8I+WC63QXidTssK
+         XaZg==
+X-Gm-Message-State: AOAM5311Z8iG3aSKOMGDCSYMp1Er7bX38o4ih4+lnpie/E4T7YMsh6G7
+        TxFMyF6mnhV6A+eCVKFKf164oR5K0SB46FZG
+X-Google-Smtp-Source: ABdhPJxDb2+ly1WlR776U/zcEbiEs6orYG1yRVBz/Bbo75OnSuxjbvfHOT0X/0rejyW2zB2iDRDzYQ==
+X-Received: by 2002:a17:902:d890:b029:12d:f2:e8d6 with SMTP id b16-20020a170902d890b029012d00f2e8d6mr7240709plz.42.1628603286547;
+        Tue, 10 Aug 2021 06:48:06 -0700 (PDT)
+Received: from [10.178.0.62] ([85.203.23.37])
+        by smtp.gmail.com with ESMTPSA id x13sm22637326pjh.30.2021.08.10.06.48.04
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 Aug 2021 00:18:42 -0700 (PDT)
-Subject: Re: [PATCH v2] scsi: target: pscsi: Fix possible null-pointer
- dereference in pscsi_complete_cmd()
-To:     Tuo Li <islituo@gmail.com>, martin.petersen@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, baijiaju1990@gmail.com,
-        TOTE Robot <oslab@tsinghua.edu.cn>
-References: <20210810040414.248167-1-islituo@gmail.com>
-From:   Bodo Stroesser <bostroesser@gmail.com>
-Message-ID: <e45b6019-0ccd-cb8a-20cd-80f8f26146d9@gmail.com>
-Date:   Tue, 10 Aug 2021 09:18:41 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        Tue, 10 Aug 2021 06:48:06 -0700 (PDT)
+To:     martin.petersen@oracle.com
+Cc:     baijiaju1990@gmail.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org,
+        Linux Kernel <linux-kernel@vger.kernel.org>
+From:   Tuo Li <islituo@gmail.com>
+Subject: [BUG] scsi: iscsi: possible null-pointer dereference in
+ iscsit_tpg_add_network_portal()
+Message-ID: <89aaa039-2f03-f657-a555-a6a99f38db6d@gmail.com>
+Date:   Tue, 10 Aug 2021 21:48:03 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.12.0
 MIME-Version: 1.0
-In-Reply-To: <20210810040414.248167-1-islituo@gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 10.08.21 06:04, Tuo Li wrote:
-> The return value of transport_kmap_data_sg() is assigned to the variable
-> buf:
->    buf = transport_kmap_data_sg(cmd);
-> 
-> And then it is checked:
->    if (!buf) {
-> 
-> This indicates that buf can be NULL. However, it is dereferenced in the
-> following statements:
->    if (!(buf[3] & 0x80))
->      buf[3] |= 0x80;
->    if (!(buf[2] & 0x80))
->      buf[2] |= 0x80;
-> 
-> To fix these possible null-pointer dereferences, dereference buf and call
-> transport_kunmap_data_sg() only when buf is not NULL.
-> 
-> Reported-by: TOTE Robot <oslab@tsinghua.edu.cn>
-> Signed-off-by: Tuo Li <islituo@gmail.com>
-> ---
-> v2:
-> * Put transport_kunmap_data_sg() into the else-branch of the if (!bug).
->    Thank Bodo Stroesser for helpful advice.
-> ---
->   drivers/target/target_core_pscsi.c | 18 +++++++++---------
->   1 file changed, 9 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-> index 2629d2ef3970..75ef52f008ff 100644
-> --- a/drivers/target/target_core_pscsi.c
-> +++ b/drivers/target/target_core_pscsi.c
-> @@ -620,17 +620,17 @@ static void pscsi_complete_cmd(struct se_cmd *cmd, u8 scsi_status,
->   			buf = transport_kmap_data_sg(cmd);
->   			if (!buf) {
->   				; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
-> -			}
-> -
-> -			if (cdb[0] == MODE_SENSE_10) {
-> -				if (!(buf[3] & 0x80))
-> -					buf[3] |= 0x80;
->   			} else {
-> -				if (!(buf[2] & 0x80))
-> -					buf[2] |= 0x80;
-> -			}
-> +				if (cdb[0] == MODE_SENSE_10) {
-> +					if (!(buf[3] & 0x80))
-> +						buf[3] |= 0x80;
-> +				} else {
-> +					if (!(buf[2] & 0x80))
-> +						buf[2] |= 0x80;
-> +				}
->   
-> -			transport_kunmap_data_sg(cmd);
-> +				transport_kunmap_data_sg(cmd);
-> +			}
->   		}
->   	}
->   after_mode_sense:
-> 
+Hello,
 
-Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
+Our static analysis tool finds a possible null-pointer dereference in 
+the iscsi driver in Linux 5.14.0-rc3:
 
-Regards,
-Bodo
+The variable tpg->tpg_tiqn is checked in:
+496:    if (tpg->tpg_tiqn)
+
+This indicates that it can be NULL. If so, a null-pointer dereference 
+will occur:
+508:    pr_debug("CORE[%s] - Added Network Portal: %pISpc,%hu on %s\n", 
+tpg->tpg_tiqn->tiqn, ...)
+
+I am not quite sure whether this possible null-pointer dereference is 
+real and how to fix it if it is real.
+Any feedback would be appreciated, thanks!
+
+Reported-by: TOTE Robot <oslab@tsinghua.edu.cn>
+
+Best wishes,
+Tuo Li
