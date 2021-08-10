@@ -2,150 +2,169 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42779C4338F
-	for <target-devel@archiver.kernel.org>; Mon,  9 Aug 2021 11:50:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F11C4C4338F
+	for <target-devel@archiver.kernel.org>; Tue, 10 Aug 2021 03:41:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1B7B560EFF
-	for <target-devel@archiver.kernel.org>; Mon,  9 Aug 2021 11:50:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C172A60C3E
+	for <target-devel@archiver.kernel.org>; Tue, 10 Aug 2021 03:41:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234402AbhHILvC (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 9 Aug 2021 07:51:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37068 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234295AbhHILvC (ORCPT
+        id S236701AbhHJDmD (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 9 Aug 2021 23:42:03 -0400
+Received: from mx0a-00069f02.pphosted.com ([205.220.165.32]:19882 "EHLO
+        mx0a-00069f02.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S236700AbhHJDmC (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 9 Aug 2021 07:51:02 -0400
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CBC24C0613D3;
-        Mon,  9 Aug 2021 04:50:41 -0700 (PDT)
-Received: by mail-pj1-x1031.google.com with SMTP id s22-20020a17090a1c16b0290177caeba067so34110367pjs.0;
-        Mon, 09 Aug 2021 04:50:41 -0700 (PDT)
+        Mon, 9 Aug 2021 23:42:02 -0400
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 17A3awmp028163;
+        Tue, 10 Aug 2021 03:41:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
+ from : message-id : references : date : in-reply-to : content-type :
+ mime-version; s=corp-2021-07-09;
+ bh=fWCP/Q5vMjOW8+eqC1DtmHdTRYrCpgTINdMU5puINjM=;
+ b=a9Gk/vK32fldVpT4HOn3d9lnm+zN6o1O9ZXFhyRzILZW27xZGA/Ziyt8GuGVQ7880tc4
+ XkbH6X/NGLPq8/zW4MQRzcOk+WtkF5W5Sf5yFJ3lSp87AbVFazLmpLaJgwMZkLYcTsUZ
+ Ycg/w6U87lkXUWrKoJJVlH8s+i7WAysCQCYZl66NOiFhC4LmwoLiNgI+T8kCBAaEwMdm
+ fSAhhZzr0mvkLlFQpf+q673E8I2SKrrRLy1culrw8aU5/BymFSE5IUe066Bq4tTuyf03
+ gJEoJz1z87SWkXk0ehrF8cfoVztWVio9r1HzIftJVjeUjC1x5UnqKb8xxZdduoXCt8l2 rg== 
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
+ from : message-id : references : date : in-reply-to : content-type :
+ mime-version; s=corp-2020-01-29;
+ bh=fWCP/Q5vMjOW8+eqC1DtmHdTRYrCpgTINdMU5puINjM=;
+ b=iZI4eJXDgFi3DvLwniN9o+5GhyIiJ/UrDY2ZmerjFHlEbog2sUNMVKqtF2Q2ot9HInCk
+ RsLkd5Zcy24KWtbudpHvxyLI8aoKyh+O1gtkmrQLXLCgqiSHQfM63yAo+1+UoqNKzakx
+ VXDK/AJpU+AIaZs4e1AEbF90JGNkuEUmTHluMBft4DlUZL5y41f95W+o86/xYXImxIcX
+ SHGfbLPo6Hj5zs47irjd+Qt0YJ8WI1JnS71Hllp0Clfrbw8T5kCKcWF0Tn+73+WitzsM
+ lYHNAzcw24tcTydHD9ZDcXEW/Qx0g0SgaXxOU6hXL+rhZNy/xs8VebxYDAYnSvJwCUxH pg== 
+Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
+        by mx0b-00069f02.pphosted.com with ESMTP id 3ab01racdj-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 10 Aug 2021 03:41:37 +0000
+Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
+        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 17A3eLFw084948;
+        Tue, 10 Aug 2021 03:41:36 GMT
+Received: from nam11-dm6-obe.outbound.protection.outlook.com (mail-dm6nam11lp2170.outbound.protection.outlook.com [104.47.57.170])
+        by aserp3020.oracle.com with ESMTP id 3a9vv3yn15-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 10 Aug 2021 03:41:36 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=EW506ngmGj4vaFjJ/4Y43YL+XO4oyODosfui9X+UJ2f4xU4zuHm86e1YoQXrq7YKtHxFwj8xqxYa+TQiZUHgSe+tQBjhSpRtj+o+X+tqXW/8EOU1dCUwMjBUvEpZoQV9JYbf5YDHX5VsQFqHq76FsIEtITvJsfJD0vD9wr5rBZWGhqCHcw/AgvFiFH+ofS5XFbkdKcoF0dPSdSPmfQhgcKXHRlfL2CYqXgilqSLq1F5fmmw9wdvgW6bOuEuJ4F4Rj9fUe8sPte465prIQOYqjeDvJ+rVoeSf7quRm49s5myg5GvPd0LfZPV+yse6VzNpwqth9KG55yq/f175onLvXQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=fWCP/Q5vMjOW8+eqC1DtmHdTRYrCpgTINdMU5puINjM=;
+ b=fJEH9mykHpPvSq27/ATEFUq8yshKr07ZKLqmBF8D/UhtPPoZu8Rhx3cCehMZ461O/eJe7o1rP/oNP+UJhrSLmyNHYRlxBIxE30QGQFsESkrBygct+w/RDsJnAjRx1GduymeNFf4teIt7d4AS2Jpk5um0mhAvb7i4JertAb+1DWzaC0FsO2c82RSVGx+drd8XCly+7Fjumfs4JtZcZ2/0dcrwFgBPfdkmX38lI0pKTDLPoUbYNp1hpwQvNFQeuGMbBE5fXFUwO7E9oF3LJgF0ihJPwW0Obil+lSFx0aQHb05aK2/u17VddZjOk3bmV1cVqJrqRIY/whCQSz1M5G02Ow==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-transfer-encoding:content-language;
-        bh=lEzRqawbCO3Oz7zqhJzZDzxmM9xxyvbKbGJKK51n77s=;
-        b=CGGbHiQxQHOtVwEfubzZ9ceQPWqmETo95FQMcSqJ0TCV2NzJ9F0fuC3wm/RCnSVZRG
-         Z5wfMX20T4zAnugcvmObELxDMvAfiA9i05R3D86KdMluIyMeW7LNQ7qDLkiZGME09a+n
-         /qspJvkO+BTbNWqmzQqscmIVX799p/dhOPaHU9sg4Ev+7YK54vf4byFGi7Idl0ioojXN
-         +c3GokUwZvjCMXT4CFAFbtPnB6Hak/lmGqHob1fNDdTCHPN1n6Y9rAcDfX4xy3k+eV1J
-         tkXE1oibwbxSXIyroWAAjsNdKB0kvGXA4l2ghjQisC/7svtWGQSnq7O97HsqM+P3aNba
-         ovxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding
-         :content-language;
-        bh=lEzRqawbCO3Oz7zqhJzZDzxmM9xxyvbKbGJKK51n77s=;
-        b=A97jSCOkVTzJB3GNNsADe4xz+yuX/nmKbigmMzHf909KxQdnuJus0AHSzM3/61bWmv
-         O5Aa0wxCQuOF7r2m1gVMWs4xDIHtP3jTOLfepLZs+NG4N+ssB5f7Gi1iy1r/vVqAXc69
-         uKn+/hSHni0nqKaI5QjE1VPa9OdPujhmyHdnrYeumO8D5K8pVIwdusbjglapT2VDBDvq
-         K/2cQSqPabn/gOrX8/2Wg80YJHuO8Ilw4jYuOVTz/BcckCXT0Eh+jglPfWHZhPtI1gYX
-         ZSJaRDy4Q9zvE0X9qw779Cqzi6EjVjnv3xi0N6sV9Kt7zXhk+jdKVVYmm6Av95QoIf7H
-         iMMQ==
-X-Gm-Message-State: AOAM533/mHWAHH0uRzB90rbjosJ8cDt51kYcTbGBv+7yzAgISvvn0qbh
-        Alyr0G1zB8AWkamDI17hMiY=
-X-Google-Smtp-Source: ABdhPJxJrRwYquMEhsP80YPY2COvRlMDmLJN3BmTl+5y3TJFofzDG7vEJ3GquXp8SItJi85ZD/nmGw==
-X-Received: by 2002:a17:902:c641:b029:12c:ef04:fa86 with SMTP id s1-20020a170902c641b029012cef04fa86mr9762891pls.40.1628509841418;
-        Mon, 09 Aug 2021 04:50:41 -0700 (PDT)
-Received: from [10.177.0.134] ([85.203.23.214])
-        by smtp.gmail.com with ESMTPSA id z16sm22469492pgu.21.2021.08.09.04.50.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 09 Aug 2021 04:50:41 -0700 (PDT)
-Subject: Re: [PATCH] scsi: target: pscsi: Fix possible null-pointer
- dereference in pscsi_complete_cmd()
-To:     Bodo Stroesser <bostroesser@gmail.com>
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, baijiaju1990@gmail.com,
-        TOTE Robot <oslab@tsinghua.edu.cn>, martin.petersen@oracle.com
-References: <20210807134651.245436-1-islituo@gmail.com>
- <dea07ecc-7700-5ee7-aa40-2d4455dc6c3f@gmail.com>
-From:   Tuo Li <islituo@gmail.com>
-Message-ID: <7c6622d0-2f28-27a7-250e-9a8fd79691a8@gmail.com>
-Date:   Mon, 9 Aug 2021 19:50:37 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=fWCP/Q5vMjOW8+eqC1DtmHdTRYrCpgTINdMU5puINjM=;
+ b=J/pjfwVutHQIaTzDGtuyQqgS4jSNZlQEtY872qV92EacWPavZfwGNgGl77xqr/UIjcy8AtwFkIEN6o0Z8i65wxESIozJ9dnI9N+VudZV5Q9L3d3M0wQ+XsgHYzCLJiuZhAThpMwE9VNjFzP6l91RayRNyZLuYaGGVWBXFraP7fg=
+Authentication-Results: canonical.com; dkim=none (message not signed)
+ header.d=none;canonical.com; dmarc=none action=none header.from=oracle.com;
+Received: from PH0PR10MB4759.namprd10.prod.outlook.com (2603:10b6:510:3d::12)
+ by PH0PR10MB5641.namprd10.prod.outlook.com (2603:10b6:510:f8::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4394.16; Tue, 10 Aug
+ 2021 03:41:34 +0000
+Received: from PH0PR10MB4759.namprd10.prod.outlook.com
+ ([fe80::c0ed:36a0:7bc8:f2dc]) by PH0PR10MB4759.namprd10.prod.outlook.com
+ ([fe80::c0ed:36a0:7bc8:f2dc%6]) with mapi id 15.20.4394.023; Tue, 10 Aug 2021
+ 03:41:34 +0000
+To:     Colin King <colin.king@canonical.com>
+Cc:     James Smart <james.smart@broadcom.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        "James E . J . Bottomley" <jejb@linux.ibm.com>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: elx: efct: Remove redundant initialization of
+ variable ret
+From:   "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle Corporation
+Message-ID: <yq135rivue5.fsf@ca-mkp.ca.oracle.com>
+References: <20210804132451.113086-1-colin.king@canonical.com>
+Date:   Mon, 09 Aug 2021 23:41:30 -0400
+In-Reply-To: <20210804132451.113086-1-colin.king@canonical.com> (Colin King's
+        message of "Wed, 4 Aug 2021 14:24:51 +0100")
+Content-Type: text/plain
+X-ClientProxiedBy: SA9PR13CA0028.namprd13.prod.outlook.com
+ (2603:10b6:806:21::33) To PH0PR10MB4759.namprd10.prod.outlook.com
+ (2603:10b6:510:3d::12)
 MIME-Version: 1.0
-In-Reply-To: <dea07ecc-7700-5ee7-aa40-2d4455dc6c3f@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from ca-mkp.ca.oracle.com (138.3.200.58) by SA9PR13CA0028.namprd13.prod.outlook.com (2603:10b6:806:21::33) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4415.6 via Frontend Transport; Tue, 10 Aug 2021 03:41:33 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 2908a7a0-8162-467c-8d1b-08d95bb0c02e
+X-MS-TrafficTypeDiagnostic: PH0PR10MB5641:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <PH0PR10MB56417D2948607F282B3598A68EF79@PH0PR10MB5641.namprd10.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:3968;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: LD2Mv6EAGBRAf2lkRM/8h0RFE3D+CAhesv0UxKn2jh5PBH9Te6bBryThnMRCmBCQhZG60hSZ7qOCUh5kAiIeDLYCEo3TgVc7G2E2Vm91I1qKc4agal3oMFJUEcxDLEwv/wsSRp4Y2ktdfyFqgtUvLUzxbibK8wZ5P1LGo2EXopq8X1hS5I02Z59WYOWTU57eVdK8sQ8j9+PWt1t97e4wHNdK+EHp9/1tDoDRyQzJvVm6ryDBtpfBd8PduiZsw3CHgU/MpDx1pfcQUKGT/89/pqv99YH+a4x9rWP3Y3bw1NeAIM0yz2gXtgkC+DTSxpME+d1OhIcRTDZ5UC65vSlBur83CRFlxhOHbdcx3wBvC+Ysgg1EtYMwXoRhaDPIPxr5sQ1btwVkLloENpPwDus/0MOjiC+Lb1n3KjzEMInSRVhuclPQ2qcuiwH18rM9A/0THJqrkcTJuj41nKpHSP0hW3aEeFiJhiJZx+Fzq1eMcu/Cs/IF+dMvBUbTOcQn6RsIxf4vQONbztNWjQrb5F1tJo92kDvM5v4r5FI5PL9TC3ITqRvTXw04bYh3kgv93e1GWnRoChYoFR1Y2aBw/i4QIZOJSk4CSrGDGgstGWo5z/lmK/U1Pfsu1YP6VOMxpZO/n6RcIdvcJ5kUkbo5MhduseyREUfJMfojvkDijrZyBOnwMVAnSDe9NVtjN4fV97XKdjosWMaV5vtWEGMc08QD4A==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB4759.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(136003)(366004)(376002)(346002)(396003)(39860400002)(83380400001)(6916009)(956004)(5660300002)(38100700002)(316002)(86362001)(55016002)(8936002)(38350700002)(186003)(8676002)(36916002)(2906002)(66556008)(558084003)(66946007)(478600001)(4326008)(66476007)(7696005)(52116002)(54906003)(26005);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?9kW3nVAVsuVIADBkIrAKQwXxh82PW8n19eOUvZJR/Uo68guPzSD9m0bgBUtb?=
+ =?us-ascii?Q?ywi8Le5AQR/ZLKtDGXazN0GK0NdKGGRzToWdc9xoOowaKIZG7fG/5sTQVx3i?=
+ =?us-ascii?Q?TR48MGpwVjGVXs0iMvouRduhnQMjMahgd52T3CcMGEfKufnDfwpbtZIVczh0?=
+ =?us-ascii?Q?KQHcjALb/0iRNIe1CjpCIObT2aLq32B/qUvvaIg952qMtkwFy4gY3TyECYfv?=
+ =?us-ascii?Q?MALuNSIVgYiL2At+SnfL+ZIRRi0AjvLGttOilOWLw38j0eMwhZ80gbGUlJNm?=
+ =?us-ascii?Q?VuAhUofqKkasc4bgIRZHlF86O31836oEoFiIf5tQRBBTAWpmyMzCEj7a4xga?=
+ =?us-ascii?Q?p1FaXxlbxMiiS/37UKLbgj+kR5rYPUYDVRrd6xVo5Wem3BCqK/fZuwLVnwvn?=
+ =?us-ascii?Q?Heb3+RSGiXMJSImK5hE/K/fCJYFxl9243mfZyjAjNN1UxEhMAV0Fc2al1JAj?=
+ =?us-ascii?Q?Vw6ZWD8aeSlCtKnXUhnyfoWChrEgNgGla9Hfd2qd3WMpODuJwq7XQsMCcQeE?=
+ =?us-ascii?Q?MAnX2z7qih7XeEKpQzHCSuOSsUJjS6P0a37uY+tZJI7rG9hKp60txhlMvB44?=
+ =?us-ascii?Q?EDaVYS07Pb35DhE5kcUUUksdqBjf7DDRSiyPQUwkZQD7IwC/za2zxShW4OgD?=
+ =?us-ascii?Q?iQog0k81hHbQXqxWg/khuexU2EepYUuEi6y6rt1hx81xC9mrFqeVu2m1GvyR?=
+ =?us-ascii?Q?6rpqZvN6wkRlyF8riPOC5fCCgtYKBvSgczEa3rJEkCTGRjrSqpLY+oGoShD6?=
+ =?us-ascii?Q?5XCMcrATywE2IkbNp/k5lthF6YPpu3xrC5kQ6wvqR0TMhf3sSiDYpxYVasUU?=
+ =?us-ascii?Q?0RmnJPBPP11SyeFCGOjfFxxg930Bkce+2/dsQNHFHnND5PE4OYvWsT1+CW2T?=
+ =?us-ascii?Q?rWTGYitqW5Fu8whu1ycGkoTRLpLoywkzVJJC0/4slHR3Jgq7nWR60PTYt65p?=
+ =?us-ascii?Q?XwbVAtVMeI0cvSgaMZcv6uOkCWpujNxEGijJCGyzbO5PNGlBrUIoU7v2iCuO?=
+ =?us-ascii?Q?+qcuUkyrcyayBm85YKrvTzigXNjTYltFpy0DhXHjX4v9aO3Bb7hNNURJDg4M?=
+ =?us-ascii?Q?/PG4IzL4p7P5b5QaXWwTY673hM7juHC61BKS7T/SP3fzcjFAkZh8EOW+TpeW?=
+ =?us-ascii?Q?oZzKY5zi7zfl/SYsF0Qo6QZEEM5HfmVqn8uq2+1lLknKjK0sDl6ZKU3Vbhbp?=
+ =?us-ascii?Q?28fgPEQNOgMdvYcBadv0/SQRMGoZnpw12FI7Hs4Wku6Z4IkM3h46xQ9w0lY7?=
+ =?us-ascii?Q?DgjYnzps3JGbjKVCY4RpOg/1fKdQqk/KclKzxrER9YqVeA5QLlcfqi4Gv45M?=
+ =?us-ascii?Q?jvPDp2sy2k4qdEld/WSdgdda?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2908a7a0-8162-467c-8d1b-08d95bb0c02e
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB4759.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Aug 2021 03:41:34.7110
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: I/RpJ41Zkfk6+GkkcwT8NY5nqbtd0qrhYWP3+curcAiZjKbLeiV9SlsRZoC8sjeC6Ae0yEBzJ0cL5tztumkWQmnO0msYFNOXBINFn9nCpys=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR10MB5641
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=10071 signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 suspectscore=0 mlxscore=0
+ phishscore=0 spamscore=0 mlxlogscore=999 malwarescore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2107140000
+ definitions=main-2108100022
+X-Proofpoint-ORIG-GUID: YYhSem357j-o4-RXLIkhS8_6XKXPa_IX
+X-Proofpoint-GUID: YYhSem357j-o4-RXLIkhS8_6XKXPa_IX
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Thanks for your feedback. We will prepare a V2 patch and put the 
-transport_kunmap_data_sg()
-into the else-branch of the if (!buf).
 
-Best wishes,
-Tuo Li
+Colin,
 
-On 2021/8/9 18:36, Bodo Stroesser wrote:
-> On 07.08.21 15:46, Tuo Li wrote:
->> The return value of transport_kmap_data_sg() is assigned to the variable
->> buf:
->>    buf = transport_kmap_data_sg(cmd);
->>
->> And then it is checked:
->>    if (!buf) {
->>
->> This indicates that buf can be NULL. However, it is dereferenced in the
->> following statements:
->>    if (!(buf[3] & 0x80))
->>      buf[3] |= 0x80;
->>    if (!(buf[2] & 0x80))
->>     buf[2] |= 0x80;
->>
->> To fix these possible null-pointer dereferences, dereference buf only 
->> when
->> it is not NULL.
->>
->> Reported-by: TOTE Robot <oslab@tsinghua.edu.cn>
->> Signed-off-by: Tuo Li <islituo@gmail.com>
->> ---
->>   drivers/target/target_core_pscsi.c | 14 +++++++-------
->>   1 file changed, 7 insertions(+), 7 deletions(-)
->>
->> diff --git a/drivers/target/target_core_pscsi.c 
->> b/drivers/target/target_core_pscsi.c
->> index 2629d2ef3970..560815729182 100644
->> --- a/drivers/target/target_core_pscsi.c
->> +++ b/drivers/target/target_core_pscsi.c
->> @@ -620,14 +620,14 @@ static void pscsi_complete_cmd(struct se_cmd 
->> *cmd, u8 scsi_status,
->>               buf = transport_kmap_data_sg(cmd);
->>               if (!buf) {
->>                   ; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
->> -            }
->> -
->> -            if (cdb[0] == MODE_SENSE_10) {
->> -                if (!(buf[3] & 0x80))
->> -                    buf[3] |= 0x80;
->>               } else {
->> -                if (!(buf[2] & 0x80))
->> -                    buf[2] |= 0x80;
->> +                if (cdb[0] == MODE_SENSE_10) {
->> +                    if (!(buf[3] & 0x80))
->> +                        buf[3] |= 0x80;
->> +                } else {
->> +                    if (!(buf[2] & 0x80))
->> +                        buf[2] |= 0x80;
->> +                }
->>               }
->>                 transport_kunmap_data_sg(cmd);
->>
->
-> I'm wondering whether we should better put the
-> transport_kunmap_data_sg into the else-branch of the if (!buf)?
-> AFAICS, calling it after transport_kmap_data_sg failed does not
-> cause problems, but I feel it would be cleaner.
->
-> Otherwise it looks good to me.
+> The variable ret is being initialized with a value that is never read,
+> it is being updated later on. The assignment is redundant and can be
+> removed.
 
+Applied to 5.15/scsi-staging, thanks!
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
