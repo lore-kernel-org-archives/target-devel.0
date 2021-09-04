@@ -2,159 +2,110 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5860C433F5
-	for <target-devel@archiver.kernel.org>; Fri,  3 Sep 2021 12:48:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40E0DC433FE
+	for <target-devel@archiver.kernel.org>; Sat,  4 Sep 2021 17:43:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C9B1F61058
-	for <target-devel@archiver.kernel.org>; Fri,  3 Sep 2021 12:48:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2267060F56
+	for <target-devel@archiver.kernel.org>; Sat,  4 Sep 2021 17:43:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348912AbhICMtT (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 3 Sep 2021 08:49:19 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:33667 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S234262AbhICMtH (ORCPT
+        id S237261AbhIDRoG (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 4 Sep 2021 13:44:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34418 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S237260AbhIDRoG (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 3 Sep 2021 08:49:07 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1630673286;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=44qV1t1dNjoY+ogDzQhPAlZXPZTbBgSbSE3UNWUYIN0=;
-        b=fCs0Y+B1v6Lax8tpDrFFiZgmcLEyyF27MBOThPvo1yEHmjHPvWC+RbGYladJBm+e09CTs5
-        3KQ1LymuBsUB4o99gu4aC+pnl0WezpB9pwPnDJ/8snEunPms9QlNSRdFR2uKgQ2roEiefJ
-        XijwDWDXjevzXakCF/QEG2jyWUtSUmU=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-486-XcyneTKqPHSfKk1ieHJX0g-1; Fri, 03 Sep 2021 08:48:04 -0400
-X-MC-Unique: XcyneTKqPHSfKk1ieHJX0g-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 1DC18801AC3;
-        Fri,  3 Sep 2021 12:48:03 +0000 (UTC)
-Received: from raketa.redhat.com (unknown [10.40.193.171])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id C6A4C6B543;
-        Fri,  3 Sep 2021 12:48:01 +0000 (UTC)
-From:   Maurizio Lombardi <mlombard@redhat.com>
-To:     martin.petersen@oracle.com
-Cc:     bostroesser@gmail.com, michael.christie@oracle.com,
-        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [PATCH] target: fix the pgr/alua_support_store functions
-Date:   Fri,  3 Sep 2021 14:48:00 +0200
-Message-Id: <20210903124800.30525-1-mlombard@redhat.com>
+        Sat, 4 Sep 2021 13:44:06 -0400
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50718C061575;
+        Sat,  4 Sep 2021 10:43:04 -0700 (PDT)
+Received: by mail-wm1-x330.google.com with SMTP id e26so1538014wmk.2;
+        Sat, 04 Sep 2021 10:43:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=GOezhxZvybL03SR42UwYD0Y+5sUIX9feUoEYWm7GRr8=;
+        b=JkwzcThnF4K7EPycjYmDC68035fBTCz16gSYwSMY9rC2JYT3OZzTL9C71+/HdTt1x9
+         eRbDLv4pdv/6wO9CVDEF2a9kJ7GD+RL/VAYgb9DQXM/25BuKPFQUHWGSANRZAaky3zWD
+         +w/kKLX1q2iiWN+vNiZ4BXMRVEnIDS3uySOsYVoOBAJYu2zddPEOOKoiOXEY77F0l+TV
+         nwVK3K2lnlqYJTXwYN1wgcuNxcQsnhS+hEYFMgQchgvBoTKr7Y/LcIShbzXCf7adar6j
+         OP4Ft8OCNaiEANzko33Lu8BT2VLgtQfpgI5zfNbx5Ek/OUrqmL3G7wxbzgrJyQwIvBnc
+         w+0w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=GOezhxZvybL03SR42UwYD0Y+5sUIX9feUoEYWm7GRr8=;
+        b=cCi860mkpNFyA7wkCn/qVBmqH9K5ZztI2sWxFV1f9WSpjjLSc3w6s1RfICpTbPB2Xg
+         SX4Gv10mmyQJ2PtOWxQkyPS/gVFOCpb1dc60FU77k8GM8MDulENDAMRyPbfgFArx+t40
+         cFWSu1pdCeVCz+frUPXTuLvNF4DU2EBjMsfabf8ogpmUBNWBJjRb2JVEkM/QpgTxff3e
+         3oS1lvVIKyFMeV9UZc5ARW+BDHianSb7pum4sAdLmOuT+J5cGnCC2enCxLw5dS6L76+e
+         mhEm7bhEMQCIyCGwYHOWibVoAjtpRj0WJZVXIjdTKfdyw7W12cUoPfqj99QaO8GiIQ+N
+         MzbA==
+X-Gm-Message-State: AOAM530OdtWKNDVs8kAVAn+cpJtcndGU3HjHjk78P9OyOgG1Gm4NBpox
+        +92oDtiwFKXWm3mb1uj4kch/ILcUqdw=
+X-Google-Smtp-Source: ABdhPJzthRe236dlreNRUfoLCVBGsDyIa5XxHytIU1QqlhKQBW+8A7ymAhrG0kLOWW5y0GUYkVy7JA==
+X-Received: by 2002:a7b:c0c7:: with SMTP id s7mr4030670wmh.66.1630777382990;
+        Sat, 04 Sep 2021 10:43:02 -0700 (PDT)
+Received: from [192.168.178.40] (ipbcc061e7.dynamic.kabel-deutschland.de. [188.192.97.231])
+        by smtp.gmail.com with ESMTPSA id c9sm2676111wrf.77.2021.09.04.10.43.02
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 04 Sep 2021 10:43:02 -0700 (PDT)
+Subject: Re: [PATCH] target: fix the pgr/alua_support_store functions
+To:     Maurizio Lombardi <mlombard@redhat.com>, martin.petersen@oracle.com
+Cc:     michael.christie@oracle.com, target-devel@vger.kernel.org,
+        linux-scsi@vger.kernel.org
+References: <20210903124800.30525-1-mlombard@redhat.com>
+From:   Bodo Stroesser <bostroesser@gmail.com>
+Message-ID: <2390a75b-676e-9ca2-068c-707d30278040@gmail.com>
+Date:   Sat, 4 Sep 2021 19:43:01 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+In-Reply-To: <20210903124800.30525-1-mlombard@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Commit 356ba2a8bc8d ("scsi: target: tcmu: Make pgr_support and
-alua_support attributes writable")
-introduced support for changeable alua_support and pgr_support
-target attributes. They can only be changed
-if the backstore is user-backed, otherwise the kernel returns -EINVAL.
-
-This caused a regression in targetcli/rtslib because now a warning
-is triggered when performing a target restore that includes
-non-userbacked backstores, even if rtslib is not trying to change
-the attributes' values:
-
-$ targetctl restore
-Storage Object block/storage1: Cannot set attribute alua_support:
-[Errno 22] Invalid argument, skipped
-Storage Object block/storage1: Cannot set attribute pgr_support:
-[Errno 22] Invalid argument, skipped
-
-Fix this warning by returning an error only if we are really
-going to flip the PGR/ALUA bit in the transport_flags field,
-otherwise we'll do nothing and return success.
-
-Return EOPNOTSUPP instead of EINVAL if the pgr/alua attributes
-can't be changed, this way it'll be possible for userspace to understand
-if the operation failed because an invalid value has been passed
-to strtobool() or because the attributes are fixed.
-
-Fixes: 356ba2a8bc8d ("scsi: target: tcmu: Make pgr_support and alua_support attributes writable")
-
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
----
- drivers/target/target_core_configfs.c | 32 +++++++++++++++++----------
- 1 file changed, 20 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 102ec644bc8a..72d750f753bf 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -1110,20 +1110,24 @@ static ssize_t alua_support_store(struct config_item *item,
- {
- 	struct se_dev_attrib *da = to_attrib(item);
- 	struct se_device *dev = da->da_dev;
--	bool flag;
-+	bool flag, oldflag;
- 	int ret;
- 
-+	ret = strtobool(page, &flag);
-+	if (ret < 0)
-+		return ret;
-+
-+	oldflag = !(dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA);
-+	if (flag == oldflag)
-+		return count;
-+
- 	if (!(dev->transport->transport_flags_changeable &
- 	      TRANSPORT_FLAG_PASSTHROUGH_ALUA)) {
- 		pr_err("dev[%p]: Unable to change SE Device alua_support:"
- 			" alua_support has fixed value\n", dev);
--		return -EINVAL;
-+		return -EOPNOTSUPP;
- 	}
- 
--	ret = strtobool(page, &flag);
--	if (ret < 0)
--		return ret;
--
- 	if (flag)
- 		dev->transport_flags &= ~TRANSPORT_FLAG_PASSTHROUGH_ALUA;
- 	else
-@@ -1145,20 +1149,24 @@ static ssize_t pgr_support_store(struct config_item *item,
- {
- 	struct se_dev_attrib *da = to_attrib(item);
- 	struct se_device *dev = da->da_dev;
--	bool flag;
-+	bool flag, oldflag;
- 	int ret;
- 
-+	ret = strtobool(page, &flag);
-+	if (ret < 0)
-+		return ret;
-+
-+	oldflag = !(dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_PGR);
-+	if (flag == oldflag)
-+		return count;
-+
- 	if (!(dev->transport->transport_flags_changeable &
- 	      TRANSPORT_FLAG_PASSTHROUGH_PGR)) {
- 		pr_err("dev[%p]: Unable to change SE Device pgr_support:"
- 			" pgr_support has fixed value\n", dev);
--		return -EINVAL;
-+		return -EOPNOTSUPP;
- 	}
- 
--	ret = strtobool(page, &flag);
--	if (ret < 0)
--		return ret;
--
- 	if (flag)
- 		dev->transport_flags &= ~TRANSPORT_FLAG_PASSTHROUGH_PGR;
- 	else
--- 
-2.27.0
-
+On 03.09.21 14:48, Maurizio Lombardi wrote:
+> Commit 356ba2a8bc8d ("scsi: target: tcmu: Make pgr_support and
+> alua_support attributes writable")
+> introduced support for changeable alua_support and pgr_support
+> target attributes. They can only be changed
+> if the backstore is user-backed, otherwise the kernel returns -EINVAL.
+> 
+> This caused a regression in targetcli/rtslib because now a warning
+> is triggered when performing a target restore that includes
+> non-userbacked backstores, even if rtslib is not trying to change
+> the attributes' values:
+> 
+> $ targetctl restore
+> Storage Object block/storage1: Cannot set attribute alua_support:
+> [Errno 22] Invalid argument, skipped
+> Storage Object block/storage1: Cannot set attribute pgr_support:
+> [Errno 22] Invalid argument, skipped
+> 
+> Fix this warning by returning an error only if we are really
+> going to flip the PGR/ALUA bit in the transport_flags field,
+> otherwise we'll do nothing and return success.
+> 
+> Return EOPNOTSUPP instead of EINVAL if the pgr/alua attributes
+> can't be changed, this way it'll be possible for userspace to understand
+> if the operation failed because an invalid value has been passed
+> to strtobool() or because the attributes are fixed.
+> 
+> Fixes: 356ba2a8bc8d ("scsi: target: tcmu: Make pgr_support and alua_support attributes writable")
+> 
+> Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+> ---
+Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
