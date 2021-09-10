@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 920BEC433F5
-	for <target-devel@archiver.kernel.org>; Fri, 10 Sep 2021 00:45:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 109CEC4332F
+	for <target-devel@archiver.kernel.org>; Fri, 10 Sep 2021 00:45:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7818E60C40
+	by mail.kernel.org (Postfix) with ESMTP id EF10861108
 	for <target-devel@archiver.kernel.org>; Fri, 10 Sep 2021 00:45:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232424AbhIJAqV (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 9 Sep 2021 20:46:21 -0400
-Received: from mail.kernel.org ([198.145.29.99]:49290 "EHLO mail.kernel.org"
+        id S240485AbhIJAqY (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 9 Sep 2021 20:46:24 -0400
+Received: from mail.kernel.org ([198.145.29.99]:50000 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230281AbhIJAX7 (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Thu, 9 Sep 2021 20:23:59 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 4662E611BF;
-        Fri, 10 Sep 2021 00:22:48 +0000 (UTC)
+        id S234873AbhIJAY6 (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Thu, 9 Sep 2021 20:24:58 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id AEBBB611BD;
+        Fri, 10 Sep 2021 00:23:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1631233369;
-        bh=iyiWDqkGT+mpmIOdYTzF8FXnSBTE57Zj9vaOfTGcxV8=;
+        s=k20201202; t=1631233428;
+        bh=wgtteItbgVKmHslZMv8LiZ9CuPo7kmoAhXEiSvAgCJ4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GWcJm664OAH1l+jR5fuEgde8miWDeq1xM3tKEClr48GJMC0JB2WLCmvVxNWLn+RAh
-         kkUH8lB8AUKCNFhmqlZ0hlYoa7kvAxPR3dczPR8iWkFZYBW4PSvsk2716YKkfaERmy
-         U3J3nVo/6inRjsAwNnVKC1NNv6eI4NUGCxpG6Yhg3cjNuvNkuRrfbRqFMrwb+vX83B
-         l2hjbZwdX3U7RwEoRGfgch9XqOY8VkTszrYrM+WsQN3OYN4DXeULKHTnpVnP78mxfe
-         UqOsUXt9t8YtkLRfR2PixlBskbyvohbiOTBGbJ00pe6BMOoZ6/Sd1nvn5JYOf7gQVa
-         zltCgHFGjd6dQ==
+        b=mYiH/TGIn0eLGMqoBdyVNvSM0IuzmBqPLbqnRelxTHv/6Gmdjx+5/lIW2ufKu6l4r
+         MgY/TYdXEXNcFp/vlIJDKOGAWLnx9N2SUsvzcVSzCy6HExn7XIypwYhGUc83UL5+9z
+         CRxuia0vLTbn8gkV27dw3xRMW9FRAfQsnmP/pQ6fJCtoy7dLcgP8JTnZWgtelxUnue
+         3Uhp6f/3XoVcW6x3CBAzpyKNGEBVUm8xaEYtcpD5rsevx4/bOrK01DVztL6OnJU6CH
+         y+HbiAMaTMqFYuy0C/zN1ZwGC2T/c1w2yQCpEn3wsnAhRwVRmx6zmnEgQh5ToaTqN3
+         ShtAHKZGE+QVg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Tuo Li <islituo@gmail.com>, TOTE Robot <oslab@tsinghua.edu.cn>,
@@ -38,12 +38,12 @@ Cc:     Tuo Li <islituo@gmail.com>, TOTE Robot <oslab@tsinghua.edu.cn>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 11/25] scsi: target: pscsi: Fix possible null-pointer dereference in pscsi_complete_cmd()
-Date:   Thu,  9 Sep 2021 20:22:19 -0400
-Message-Id: <20210910002234.176125-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 07/17] scsi: target: pscsi: Fix possible null-pointer dereference in pscsi_complete_cmd()
+Date:   Thu,  9 Sep 2021 20:23:28 -0400
+Message-Id: <20210910002338.176677-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210910002234.176125-1-sashal@kernel.org>
-References: <20210910002234.176125-1-sashal@kernel.org>
+In-Reply-To: <20210910002338.176677-1-sashal@kernel.org>
+References: <20210910002338.176677-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -87,10 +87,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index 1b52cd4d793f..a3617829107d 100644
+index 089ba39f76a2..c7b934f601af 100644
 --- a/drivers/target/target_core_pscsi.c
 +++ b/drivers/target/target_core_pscsi.c
-@@ -635,17 +635,17 @@ static void pscsi_complete_cmd(struct se_cmd *cmd, u8 scsi_status,
+@@ -631,17 +631,17 @@ static void pscsi_transport_complete(struct se_cmd *cmd, struct scatterlist *sg,
  			buf = transport_kmap_data_sg(cmd);
  			if (!buf) {
  				; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
