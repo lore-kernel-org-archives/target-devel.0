@@ -2,121 +2,114 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E68A8C433FE
-	for <target-devel@archiver.kernel.org>; Fri, 10 Sep 2021 00:46:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CC1AC433F5
+	for <target-devel@archiver.kernel.org>; Fri, 10 Sep 2021 08:41:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D2998611C3
-	for <target-devel@archiver.kernel.org>; Fri, 10 Sep 2021 00:46:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3A25D611AD
+	for <target-devel@archiver.kernel.org>; Fri, 10 Sep 2021 08:41:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233141AbhIJAqZ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 9 Sep 2021 20:46:25 -0400
-Received: from mail.kernel.org ([198.145.29.99]:50292 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234917AbhIJAZW (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Thu, 9 Sep 2021 20:25:22 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 386886103E;
-        Fri, 10 Sep 2021 00:24:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1631233452;
-        bh=HQcsxpOhfILNKX5K14Lx+eaIpDq6SrN8K7iz295SsA8=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=K4VUCuMPsKRRPidtR/qRuTW9iynRMMp+MkNp5FXY9v5S7vQ0qV/V0LzA1WsAVHdY9
-         AV/UaWukbIdaxB1Z77FogzZkRzOqBkiqRIBUPUh+DiYE84wrg1WgYgrdra1GLrSjWS
-         xx1FWzCuKS4APnrUtSHAlurAtlxWyM21Ick2ljEeswuwiG8qgQupYmca3F1cuyln94
-         XCRQfE79wfYwKBWdnXQmriKGNDszgJDXOEGECUlZEZVS5HTHZk8g2Hofkkvi5uTeBt
-         PzxzL7mPAOXZPPOvG8MikY9qg58yvXNZSHT3DHf1dD2Kt5kuYBCTLWH7XH7WFYSNy3
-         +/KDmnw2o9x4w==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Tuo Li <islituo@gmail.com>, TOTE Robot <oslab@tsinghua.edu.cn>,
-        Bodo Stroesser <bostroesser@gmail.com>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 06/14] scsi: target: pscsi: Fix possible null-pointer dereference in pscsi_complete_cmd()
-Date:   Thu,  9 Sep 2021 20:23:55 -0400
-Message-Id: <20210910002403.176887-6-sashal@kernel.org>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210910002403.176887-1-sashal@kernel.org>
-References: <20210910002403.176887-1-sashal@kernel.org>
+        id S231774AbhIJIm4 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 10 Sep 2021 04:42:56 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:53566 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S231731AbhIJImz (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Fri, 10 Sep 2021 04:42:55 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 51E304CF5C;
+        Fri, 10 Sep 2021 08:41:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1631263302; x=
+        1633077703; bh=sEqhaX9n4ptRZwQ08tVj41Rn6rCSDvytm6JwP1gdvQs=; b=T
+        4ZWz5sWjVjI0jTdLsMcnC1DKtocvRP/wLxvR+VoEVPJPYqyQ+1CRyXIlXghxg6Z0
+        qW0XaPWd/nESYzZhD6p9Y3l5yOXsPH0aSc6MThgBZNsRohER6HesYhw1C4hYWaJU
+        ebnaWtAsg4R85aNFrc/P1jOWvwtnnpNHKYRGjbIpEk=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id 0owPTN5rMMBw; Fri, 10 Sep 2021 11:41:42 +0300 (MSK)
+Received: from T-EXCH-04.corp.yadro.com (t-exch-04.corp.yadro.com [172.17.100.104])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 2944B4B951;
+        Fri, 10 Sep 2021 11:41:40 +0300 (MSK)
+Received: from NB-591.corp.yadro.com (10.199.0.141) by
+ T-EXCH-04.corp.yadro.com (172.17.100.104) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Fri, 10 Sep 2021 11:41:40 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Nilesh Javali <njavali@marvell.com>,
+        Chris Boot <bootc@bootc.net>,
+        Bart Van Assche <bvanassche@acm.org>,
+        Michael Cyr <mikecyr@linux.ibm.com>,
+        Felipe Balbi <balbi@kernel.org>,
+        Dmitriy Bogdanov <d.bogdanov@yadro.com>,
+        Roman Bolshakov <r.bolshakov@yadro.com>
+Subject: [PATCH v5 0/7] target: make tpg/enable attribute
+Date:   Fri, 10 Sep 2021 11:41:26 +0300
+Message-ID: <20210910084133.17956-1-d.bogdanov@yadro.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.0.141]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-04.corp.yadro.com (172.17.100.104)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Tuo Li <islituo@gmail.com>
+Many fabric modules provide their own implementation of enable
+attribute in tpg.
+The change set removes the code duplication and automatically adds
+"enable" attribute for fabric modules that has an implementation of
+fabric_enable_tpg() ops.
 
-[ Upstream commit 0f99792c01d1d6d35b86e850e9ccadd98d6f3e0c ]
+This patchset is intended for scsi-queue.
 
-The return value of transport_kmap_data_sg() is assigned to the variable
-buf:
+v5:
+ rebase on 5.15/scsi-queue
+v4:
+ fix compilation error and warning
+v3:
+ refactor tfc_tpg_base_attrs creation
+ avoid alloc of attrs if there are no attributes
+ fix newlines
+ move enable attribute to target_core_fabric_configfs.c
+v2:
+ create enable atribute only for modules with enable_tpg ops
+ add patches for srpt, usb and ibmvscsi
 
-  buf = transport_kmap_data_sg(cmd);
+Dmitry Bogdanov (7):
+  target: core: add common tpg/enable attribute
+  target: iscsi: replace enable attr to ops.enable
+  target: qla2xx: replace enable attr to ops.enable
+  target: sbp: replace enable attr to ops.enable
+  target: srpt replace enable attr to ops.enable
+  target: ibm_vscsi: replace enable attr to ops.enable
+  target: usb: replace enable attr to ops.enable
 
-And then it is checked:
+ drivers/infiniband/ulp/srpt/ib_srpt.c        | 38 +-------
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c     | 42 +--------
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c           | 73 +++-------------
+ drivers/target/iscsi/iscsi_target_configfs.c | 91 +++++++-------------
+ drivers/target/sbp/sbp_target.c              | 30 ++-----
+ drivers/target/target_core_configfs.c        |  1 +
+ drivers/target/target_core_fabric_configfs.c | 78 ++++++++++++++++-
+ drivers/usb/gadget/function/f_tcm.c          | 31 ++-----
+ include/target/target_core_base.h            |  1 +
+ include/target/target_core_fabric.h          |  1 +
+ 10 files changed, 142 insertions(+), 244 deletions(-)
 
-  if (!buf) {
-
-This indicates that buf can be NULL. However, it is dereferenced in the
-following statements:
-
-  if (!(buf[3] & 0x80))
-    buf[3] |= 0x80;
-  if (!(buf[2] & 0x80))
-    buf[2] |= 0x80;
-
-To fix these possible null-pointer dereferences, dereference buf and call
-transport_kunmap_data_sg() only when buf is not NULL.
-
-Link: https://lore.kernel.org/r/20210810040414.248167-1-islituo@gmail.com
-Reported-by: TOTE Robot <oslab@tsinghua.edu.cn>
-Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
-Signed-off-by: Tuo Li <islituo@gmail.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/target_core_pscsi.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index 0ce3697ecbd7..cca8404648ba 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -631,17 +631,17 @@ static void pscsi_transport_complete(struct se_cmd *cmd, struct scatterlist *sg,
- 			buf = transport_kmap_data_sg(cmd);
- 			if (!buf) {
- 				; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
--			}
--
--			if (cdb[0] == MODE_SENSE_10) {
--				if (!(buf[3] & 0x80))
--					buf[3] |= 0x80;
- 			} else {
--				if (!(buf[2] & 0x80))
--					buf[2] |= 0x80;
-+				if (cdb[0] == MODE_SENSE_10) {
-+					if (!(buf[3] & 0x80))
-+						buf[3] |= 0x80;
-+				} else {
-+					if (!(buf[2] & 0x80))
-+						buf[2] |= 0x80;
-+				}
-+
-+				transport_kunmap_data_sg(cmd);
- 			}
--
--			transport_kunmap_data_sg(cmd);
- 		}
- 	}
- after_mode_sense:
 -- 
-2.30.2
+2.25.1
 
