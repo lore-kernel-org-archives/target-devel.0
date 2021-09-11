@@ -2,162 +2,80 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E006C4332F
-	for <target-devel@archiver.kernel.org>; Fri, 10 Sep 2021 08:41:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53E4AC433EF
+	for <target-devel@archiver.kernel.org>; Sat, 11 Sep 2021 02:40:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8114360FC0
-	for <target-devel@archiver.kernel.org>; Fri, 10 Sep 2021 08:41:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 32CE560FE3
+	for <target-devel@archiver.kernel.org>; Sat, 11 Sep 2021 02:40:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231771AbhIJInA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 10 Sep 2021 04:43:00 -0400
-Received: from mta-02.yadro.com ([89.207.88.252]:53658 "EHLO mta-01.yadro.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S231797AbhIJIm6 (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Fri, 10 Sep 2021 04:42:58 -0400
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id A4BA14CF65;
-        Fri, 10 Sep 2021 08:41:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        content-type:content-type:content-transfer-encoding:mime-version
-        :references:in-reply-to:x-mailer:message-id:date:date:subject
-        :subject:from:from:received:received:received; s=mta-01; t=
-        1631263305; x=1633077706; bh=TYNuQ7nxf7K7Nj/aaSvj7ASXSLW5AFW3yGG
-        OBewTCPA=; b=LJUaWW4w6mDV6DQyTxRyHpTWU7tK94Df0rVlNXneP4ehlmX+UKM
-        8gCMHhzm1Qxbwo7XU+eFuDsDJ5sQLyCK6jIVY7OnBHOv7NSpwzls/XHcAJ0xk4V6
-        6z+TfEuXHSXDlVoRRXqrAsJqcnAgcyEHNbSNRy/zqlmU7JqsaLNkiK2Y=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id NHUlKl7XUdyw; Fri, 10 Sep 2021 11:41:45 +0300 (MSK)
-Received: from T-EXCH-04.corp.yadro.com (t-exch-04.corp.yadro.com [172.17.100.104])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id EBFF14CF63;
-        Fri, 10 Sep 2021 11:41:43 +0300 (MSK)
-Received: from NB-591.corp.yadro.com (10.199.0.141) by
- T-EXCH-04.corp.yadro.com (172.17.100.104) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Fri, 10 Sep 2021 11:41:43 +0300
-From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
-To:     Martin Petersen <martin.petersen@oracle.com>,
-        <target-devel@vger.kernel.org>
-CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        id S235202AbhIKCl4 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 10 Sep 2021 22:41:56 -0400
+Received: from mail-pj1-f50.google.com ([209.85.216.50]:40545 "EHLO
+        mail-pj1-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235061AbhIKClz (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Fri, 10 Sep 2021 22:41:55 -0400
+Received: by mail-pj1-f50.google.com with SMTP id n13-20020a17090a4e0d00b0017946980d8dso2779333pjh.5;
+        Fri, 10 Sep 2021 19:40:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=RTvYc9+M+PdlY46IoqNCtxrsILmR+QcmKElAcHgC4Mc=;
+        b=iKZfp6/oJO2ClXIhjT6ntJWd693wGO3sPnQhO/vjp2grlHvRIBVarin8vZqqgPqB3c
+         D/PerRsWPQpBKbGOFffJiAAkAguPGItSEo0CR/YzIxKF8jepv/iNFxAmv4mW1Vf8/Hpm
+         PsnI7AjbUr2OWGZVYymWPQ48pJhihDgl12YAMbbx4Hd7fSZEISoGQVKYLMmjZx1FP2yz
+         gae1ACD2LDRRou1R+hRnM6G9dopFg3bFNVzo49D6CExUnRPoohKURa+hTykJn1w13TDx
+         xS/LwGpeLGmMhxIel9HxmCFH3CVtW98b+8/kHAx44PBut8Jh6Zi2UnHm+dJfmLxaQvU8
+         rmWg==
+X-Gm-Message-State: AOAM531ZlZ6erNA/k7OpFP5qW0JR6684r54/5unHXeteLHNRecoL0Vr0
+        oHtMDAliNKMIe8Xfm09nNxM=
+X-Google-Smtp-Source: ABdhPJwepuPWS8nWwZsOQFiFl60q/zyg9/RnPy2lRRlKNzKXKQGzOnwHt3gTf4F4VC8cHu/iM61P1w==
+X-Received: by 2002:a17:90b:314c:: with SMTP id ip12mr855880pjb.32.1631328043574;
+        Fri, 10 Sep 2021 19:40:43 -0700 (PDT)
+Received: from ?IPV6:2601:647:4000:d7:2c24:10db:f5a3:3a53? ([2601:647:4000:d7:2c24:10db:f5a3:3a53])
+        by smtp.gmail.com with UTF8SMTPSA id b7sm198471pfl.195.2021.09.10.19.40.41
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 10 Sep 2021 19:40:42 -0700 (PDT)
+Message-ID: <c58785a4-b6f6-76eb-2104-0b87753a2180@acm.org>
+Date:   Fri, 10 Sep 2021 19:40:41 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.0.1
+Subject: Re: [PATCH v5 5/7] target: srpt replace enable attr to ops.enable
+Content-Language: en-US
+To:     Dmitry Bogdanov <d.bogdanov@yadro.com>,
+        Martin Petersen <martin.petersen@oracle.com>,
+        target-devel@vger.kernel.org
+Cc:     linux-scsi@vger.kernel.org, linux@yadro.com,
         Nilesh Javali <njavali@marvell.com>,
         Chris Boot <bootc@bootc.net>,
-        Bart Van Assche <bvanassche@acm.org>,
         Michael Cyr <mikecyr@linux.ibm.com>,
         Felipe Balbi <balbi@kernel.org>,
-        Dmitriy Bogdanov <d.bogdanov@yadro.com>,
         Roman Bolshakov <r.bolshakov@yadro.com>
-Subject: [PATCH v5 6/7] target: ibm_vscsi: replace enable attr to ops.enable
-Date:   Fri, 10 Sep 2021 11:41:32 +0300
-Message-ID: <20210910084133.17956-7-d.bogdanov@yadro.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210910084133.17956-1-d.bogdanov@yadro.com>
 References: <20210910084133.17956-1-d.bogdanov@yadro.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.199.0.141]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-04.corp.yadro.com (172.17.100.104)
+ <20210910084133.17956-6-d.bogdanov@yadro.com>
+From:   Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <20210910084133.17956-6-d.bogdanov@yadro.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Remove tpg/enable attribute.
-Add fabric ops enable_tpg implementation instead.
+On 9/10/21 01:41, Dmitry Bogdanov wrote:
+> Remove tpg/enable attribute.
+> Add fabric ops enable_tpg implementation instead.
 
-Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
-Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
----
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 42 +++---------------------
- 1 file changed, 4 insertions(+), 38 deletions(-)
+How about changing the prefix from "target: srpt" into "RDMA/srpt:"
+since that is the prefix that is used for other ib_srpt patches?
 
-diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-index 10b6c6daaacd..61f06f6885a5 100644
---- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-+++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-@@ -3948,41 +3948,16 @@ static struct configfs_attribute *ibmvscsis_wwn_attrs[] = {
- 	NULL,
- };
- 
--static ssize_t ibmvscsis_tpg_enable_show(struct config_item *item,
--					 char *page)
--{
--	struct se_portal_group *se_tpg = to_tpg(item);
--	struct ibmvscsis_tport *tport = container_of(se_tpg,
--						     struct ibmvscsis_tport,
--						     se_tpg);
- 
--	return snprintf(page, PAGE_SIZE, "%d\n", (tport->enabled) ? 1 : 0);
--}
--
--static ssize_t ibmvscsis_tpg_enable_store(struct config_item *item,
--					  const char *page, size_t count)
-+static int ibmvscsis_enable_tpg(struct se_portal_group *se_tpg, bool enable)
- {
--	struct se_portal_group *se_tpg = to_tpg(item);
- 	struct ibmvscsis_tport *tport = container_of(se_tpg,
- 						     struct ibmvscsis_tport,
- 						     se_tpg);
- 	struct scsi_info *vscsi = container_of(tport, struct scsi_info, tport);
--	unsigned long tmp;
--	int rc;
- 	long lrc;
- 
--	rc = kstrtoul(page, 0, &tmp);
--	if (rc < 0) {
--		dev_err(&vscsi->dev, "Unable to extract srpt_tpg_store_enable\n");
--		return -EINVAL;
--	}
--
--	if ((tmp != 0) && (tmp != 1)) {
--		dev_err(&vscsi->dev, "Illegal value for srpt_tpg_store_enable\n");
--		return -EINVAL;
--	}
--
--	if (tmp) {
-+	if (enable) {
- 		spin_lock_bh(&vscsi->intr_lock);
- 		tport->enabled = true;
- 		lrc = ibmvscsis_enable_change_state(vscsi);
-@@ -3998,17 +3973,8 @@ static ssize_t ibmvscsis_tpg_enable_store(struct config_item *item,
- 		spin_unlock_bh(&vscsi->intr_lock);
- 	}
- 
--	dev_dbg(&vscsi->dev, "tpg_enable_store, tmp %ld, state %d\n", tmp,
--		vscsi->state);
--
--	return count;
-+	return 0;
- }
--CONFIGFS_ATTR(ibmvscsis_tpg_, enable);
--
--static struct configfs_attribute *ibmvscsis_tpg_attrs[] = {
--	&ibmvscsis_tpg_attr_enable,
--	NULL,
--};
- 
- static const struct target_core_fabric_ops ibmvscsis_ops = {
- 	.module				= THIS_MODULE,
-@@ -4038,10 +4004,10 @@ static const struct target_core_fabric_ops ibmvscsis_ops = {
- 	.fabric_make_wwn		= ibmvscsis_make_tport,
- 	.fabric_drop_wwn		= ibmvscsis_drop_tport,
- 	.fabric_make_tpg		= ibmvscsis_make_tpg,
-+	.fabric_enable_tpg		= ibmvscsis_enable_tpg,
- 	.fabric_drop_tpg		= ibmvscsis_drop_tpg,
- 
- 	.tfc_wwn_attrs			= ibmvscsis_wwn_attrs,
--	.tfc_tpg_base_attrs		= ibmvscsis_tpg_attrs,
- };
- 
- static void ibmvscsis_dev_release(struct device *dev) {};
--- 
-2.25.1
+Anyway:
 
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
