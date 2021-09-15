@@ -2,162 +2,459 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3912C433EF
-	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 18:00:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71937C433F5
+	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 23:10:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 972D361130
-	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 18:00:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 583EF600D4
+	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 23:10:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231232AbhIOSBh (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 15 Sep 2021 14:01:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52754 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231467AbhIOSB1 (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Wed, 15 Sep 2021 14:01:27 -0400
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93EB9C061793;
-        Wed, 15 Sep 2021 11:00:06 -0700 (PDT)
-Received: by mail-wm1-x32b.google.com with SMTP id d207-20020a1c1dd8000000b00307e2d1ec1aso2647782wmd.5;
-        Wed, 15 Sep 2021 11:00:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=edZuonNncjeUnTwsHSKjKHYwLFmD/HrFs5tvhk4V4a4=;
-        b=XBkl/47M1CLbqUV3veXEzxntT+w3FS90QYKEFSktpDBPaGTfj4t21XMhVz+VJLLS/d
-         JlqVfeLQ2J57gRu0vsGqg/NvNH7MPUQ5tgxk1IoWtLiO6MYaKuhNIT2bUYw0noCgR3vm
-         BcSukQhLkc20Oxajv4ipfGZO5AS6OZI5p4HyMaJXqnoEaNSdG5pswHvNGmNk0k96Drwq
-         NqI6KSdXs0YBgC/iUk36UFGomTrdcXaCLqgxNhYqcIUw2SF3n4qGLCSIRIqjOXqHKPUF
-         yjYWWngZg1DOgI+nkBnQk1luXISVx/AQdpvBl4Zg3Vds6uucU6keeX8eCZ8o6QNww8fy
-         G01A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=edZuonNncjeUnTwsHSKjKHYwLFmD/HrFs5tvhk4V4a4=;
-        b=RpHFecgS0LTyqkV9peHTrVDH0vbuSREoNBM1pOuteF3uPq8rCa3IKTIDieMxr4VqPQ
-         jDAa4mqDljCzCV+juw286oqMc9cbGUuAjdJJgXg2SQlHXWc0kEkWwS5tiRNGSnyr0zCV
-         jtgg14Pd558Ggt8moRoTzTBWcT23dyeWanVPi44SqTtWbxY/sZcxICR8d565uUq9kwKI
-         nyndLO8uw7jKOdCgJLqRZVh9/OL/H/DfOy3rBOoTbV+qaNDBym4YFmkcKMtVqk5W74mx
-         rPHDFOhaiXLKt9EFjTeJLyvlbNtSf+4HxLtm0SnenaWr/o0bqSkStyk7KTNR76TXabSi
-         2LrA==
-X-Gm-Message-State: AOAM532ffAv0TBgCczvHJkdWyR14oBgLqBUWDPcuVFl/KnCiMFOCrn3/
-        eEqaPSx6xo7ovx21oicjVz4=
-X-Google-Smtp-Source: ABdhPJzoZPUq2AAXcCDIHR7t8gydOaL3wnFf30sEzAWPXgsPw8amZ1d+SzbJbsy6347cQrlcnZ+FeA==
-X-Received: by 2002:a1c:2541:: with SMTP id l62mr1029570wml.1.1631728805195;
-        Wed, 15 Sep 2021 11:00:05 -0700 (PDT)
-Received: from [192.168.178.40] (ipbcc061e7.dynamic.kabel-deutschland.de. [188.192.97.231])
-        by smtp.gmail.com with ESMTPSA id v191sm598726wme.36.2021.09.15.11.00.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 15 Sep 2021 11:00:04 -0700 (PDT)
-Subject: Re: [PATCH v5 1/7] target: core: add common tpg/enable attribute
-To:     Dmitry Bogdanov <d.bogdanov@yadro.com>,
-        Martin Petersen <martin.petersen@oracle.com>,
-        target-devel@vger.kernel.org
-Cc:     linux-scsi@vger.kernel.org, linux@yadro.com,
-        Nilesh Javali <njavali@marvell.com>,
-        Chris Boot <bootc@bootc.net>,
-        Bart Van Assche <bvanassche@acm.org>,
-        Michael Cyr <mikecyr@linux.ibm.com>,
-        Felipe Balbi <balbi@kernel.org>,
-        Roman Bolshakov <r.bolshakov@yadro.com>
-References: <20210910084133.17956-1-d.bogdanov@yadro.com>
- <20210910084133.17956-2-d.bogdanov@yadro.com>
-From:   Bodo Stroesser <bostroesser@gmail.com>
-Message-ID: <39eadb0e-6f25-6a72-e69d-64d55328f6f7@gmail.com>
-Date:   Wed, 15 Sep 2021 20:00:03 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.13.0
+        id S232882AbhIOXMS (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 15 Sep 2021 19:12:18 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:46264 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S232868AbhIOXMR (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Wed, 15 Sep 2021 19:12:17 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id B526E42F36;
+        Wed, 15 Sep 2021 23:10:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        in-reply-to:content-disposition:content-type:content-type
+        :mime-version:references:message-id:subject:subject:from:from
+        :date:date:received:received:received; s=mta-01; t=1631747454;
+         x=1633561855; bh=mZs+t8OMUm89rzRnvWzdV1tmTGUiU4wffee55n02mD8=; b=
+        YBq3gWSKGbNhmOPqzYClUBKiwyBg7aAsmQ07OaapkMolybB3xQHNdKYSJGSkc7E+
+        obfJIUeTgs79zqKqcGi5bWURcPFzKdXrPgpQ3aiAGGEGZj1DVL/RFZEBWXU/zHdt
+        YeeXOnf0VlO0DZzPvL6rp6ZkabAK+ZTLM7YP8nguSTo=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id iuV14iqhNlW1; Thu, 16 Sep 2021 02:10:54 +0300 (MSK)
+Received: from T-EXCH-04.corp.yadro.com (t-exch-04.corp.yadro.com [172.17.100.104])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 394E942CCA;
+        Thu, 16 Sep 2021 02:10:54 +0300 (MSK)
+Received: from localhost (172.22.1.233) by T-EXCH-04.corp.yadro.com
+ (172.17.100.104) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 16
+ Sep 2021 02:10:53 +0300
+Date:   Thu, 16 Sep 2021 02:10:52 +0300
+From:   Roman Bolshakov <r.bolshakov@yadro.com>
+To:     Sergey Samoylenko <s.samoylenko@yadro.com>,
+        David Disseldorp <ddiss@suse.de>
+CC:     <martin.petersen@oracle.com>, <michael.christie@oracle.com>,
+        <bvanassche@acm.org>, <target-devel@vger.kernel.org>,
+        <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Konstantin Shelekhin <k.shelekhin@yadro.com>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>,
+        Anastasia Kovaleva <a.kovaleva@yadro.com>
+Subject: Re: [v2 1/1] scsi: target: Add 8Fh VPD page
+Message-ID: <YUJ9fDiSW6zqw5Jk@SPB-NB-133.local>
+References: <20210906193404.115711-1-s.samoylenko@yadro.com>
+ <20210906193404.115711-2-s.samoylenko@yadro.com>
 MIME-Version: 1.0
-In-Reply-To: <20210910084133.17956-2-d.bogdanov@yadro.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20210906193404.115711-2-s.samoylenko@yadro.com>
+X-Originating-IP: [172.22.1.233]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-04.corp.yadro.com (172.17.100.104)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 10.09.21 10:41, Dmitry Bogdanov wrote:
-> Many fabric modules provide their own implementation of enable
-> attribute in tpg.
-> The change provides a way to remove code duplication in the fabric
-> modules and automatically add "enable" attribute if a fabric module has
-> an implementation of fabric_enable_tpg() ops.
+On Mon, Sep 06, 2021 at 10:34:04PM +0300, Sergey Samoylenko wrote:
+> Third-party Copy VPD page announces capabilities supported
+> by the TCM copy manager.
 > 
-> Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
-> Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
+> Some systems use this page. The ESXi 7.0 requests
+> the page if it sees it in the supported VPD Pages list,
+> Windows detects ODX support using the 8Fh page [1].
+> 
+> 1. https://www.slideshare.net/CalvinChen5/a-joint-effort-of-the-storage-industry
+> 
+> Reviewed-by: Konstantin Shelekhin <k.shelekhin@yadro.com>
+> Reviewed-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
+> Reviewed-by: Anastasia Kovaleva <a.kovaleva@yadro.com>
+> Signed-off-by: Sergey Samoylenko <s.samoylenko@yadro.com>
 > ---
->   drivers/target/target_core_configfs.c        |  1 +
->   drivers/target/target_core_fabric_configfs.c | 78 +++++++++++++++++++-
->   include/target/target_core_base.h            |  1 +
->   include/target/target_core_fabric.h          |  1 +
->   4 files changed, 79 insertions(+), 2 deletions(-)
+>  drivers/target/target_core_spc.c | 264 ++++++++++++++++++++++++++++++-
+>  1 file changed, 260 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-> index 102ec644bc8a..3b9e50c1ccef 100644
-> --- a/drivers/target/target_core_configfs.c
-> +++ b/drivers/target/target_core_configfs.c
-> @@ -490,6 +490,7 @@ void target_unregister_template(const struct target_core_fabric_ops *fo)
->   			 * fabric driver unload of TFO->module to proceed.
->   			 */
->   			rcu_barrier();
-> +			kfree(t->tf_tpg_base_cit.ct_attrs);
->   			kfree(t);
->   			return;
->   		}
-> diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
-> index fc7edc04ee09..0b65de9f2df1 100644
-> --- a/drivers/target/target_core_fabric_configfs.c
-> +++ b/drivers/target/target_core_fabric_configfs.c
-> @@ -815,8 +815,76 @@ static struct configfs_item_operations target_fabric_tpg_base_item_ops = {
->   	.release		= target_fabric_tpg_release,
->   };
->   
-> -TF_CIT_SETUP_DRV(tpg_base, &target_fabric_tpg_base_item_ops, NULL);
-> +static ssize_t target_fabric_tpg_base_enable_show(struct config_item *item,
-> +						  char *page)
+> diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
+> index 22703a0dbd07..a2c914cd9f9d 100644
+> --- a/drivers/target/target_core_spc.c
+> +++ b/drivers/target/target_core_spc.c
+> @@ -506,6 +506,251 @@ spc_emulate_evpd_86(struct se_cmd *cmd, unsigned char *buf)
+>  	return 0;
+>  }
+>  
+> +/* Third-party copy descriptor length is a multiple of four */
+> +static u16 __spc_evpd_8f_desc_calc_padding(u16 len)
 > +{
-> +	return sysfs_emit(page, "%d\n", to_tpg(item)->enabled);
+> +	return (4 - (len & 3)) & 3;
 > +}
 > +
-> +static ssize_t target_fabric_tpg_base_enable_store(struct config_item *item,
-> +						   const char *page,
-> +						   size_t count)
+> +/* Supported Commands third-party copy descriptor, spc4 7.8.17.4 */
+> +static int spc_evpd_8f_encode_supp_cmds(unsigned char *out, int out_len, int out_off)
 > +{
-> +	struct se_portal_group *se_tpg = to_tpg(item);
-> +	int ret;
-> +	bool op;
+> +	unsigned char buf[64] = {0};
+> +	u16 off = 0;
 > +
-> +	ret = strtobool(page, &op);
-> +	if (ret)
-> +		return ret;
+> +	/*
+> +	 * TCM supports only two Third-party copy commands:
+> +	 *   83h/00h - EXTENDED COPY(LID1)
+> +	 *   84h/03h - RECEIVE COPY OPERATING PARAMETERS
+> +	 */
 > +
-> +	if (se_tpg->enabled == op)
-> +		return count;
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR TYPE (0001h) */
+> +	put_unaligned_be16(0x0001, &buf[off]);
+> +	off += 2;
+> +	/* Skip THIRD-PARTY COPY DESCRIPTOR LENGTH */
+> +	off += 2;
+> +	/* Set COMMANDS SUPPORTED LIST LENGTH for two codes */
+> +	buf[off++] = 6;
+> +	/* First command support descriptor (EXTENDED COPY(LID1)) */
+> +	buf[off++] = EXTENDED_COPY; /* operation code */
+> +	buf[off++] = 1; /* action list length */
+> +	buf[off++] = 0; /* service action */
+> +	/* Second descriptor (RECEIVE COPY OPERATING PARAMETERS) */
+> +	buf[off++] = RECEIVE_COPY_RESULTS;
+> +	buf[off++] = 1;
+> +	buf[off++] = RCR_SA_OPERATING_PARAMETERS;
+> +	/* Descriptor pad */
+> +	off += __spc_evpd_8f_desc_calc_padding(off);
+> +
+> +	BUG_ON(off > ARRAY_SIZE(buf));
+> +
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR LENGTH */
+> +	put_unaligned_be16(off - 4, &buf[2]);
+> +
+> +	if (out_off + off <= out_len)
+> +		memcpy(&out[out_off], buf, off);
+> +
 
-Sorry for jumping in lately.
+Hi David, is it something that works for you?
 
-Just one nit:
-In case someone tries to enable or disable the same tpg a second time,
-with the change we always do nothing and return count (--> OK).
+I honestly would prefer v1 of the patch with couple comment typos fixed
+and updated commit message that describes hosts that use the VPD page.
 
-I just checked iscsi and qla2xxx. AFAICS iscsi before the patch rejected
-the second enable or disable with -EINVAL, while qla2xxx accepts the
-second disable and rejects the second enable with -EEXIST.
+I don't think there's a chance of overflow now and the complication of
+the extra buffer on the stack (that may also be overrun) is superfluous.
+v1 fits the style of the existing VPD handlers (e.g page 83h).
 
-Of course it sounds good to unify the behavior of existing enable
-attributes. OTOH: even if enabling/disabling the same tpg twice can be
-seen as suspicious behavior, are we sure to not confuse existing user 
-space tools by changing the result?
+Sergey has added the descriptors into the VPD page:
 
-Bodo
+   0001h - Supported Commands (fixed 4 bytes + two commands with one SA each
+                               (6 bytes) + 2-byte pad (up to 3 bytes))
+   0004h - Parameter Data (fixed 32 bytes)
+   0008h - Supported Descriptors (fixed 4 bytes + 2 bytes for two
+                                  descriptors + two-byte pad (up to 3 bytes))
+   000Ch - Supported CSCD Descriptor IDs (6 bytes + 2-byte pad)
+   8001h - General Copy Operations (fixed 36 bytes)
 
+As can be seen from the above the provided descriptors are not that big
+to overflow response buffer. At least I don't see any chance of it.
+Overall response of the page (v1 of the patch) is 100 bytes long while
+SE_INQUIRY_BUF is 1k (1024 bytes):
 
+  # sg_inq -p 0x8f /dev/sda
+   Only hex output supported. The sg_vpd and sdparm utilies decode more VPD pages.
+  VPD INQUIRY, page code=0x8f:
+  00 8f 00 60 00 01 00 08  06 83 01 00 84 01 03 00
+  00 04 00 1c 00 00 00 00  00 02 00 01 00 00 04 00
+  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
+  00 08 00 04 02 02 e4 00  00 0c 00 04 00 00 00 00
+  80 01 00 20 00 00 00 01  00 00 00 01 10 00 00 00
+  09 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
+  00 00 00 00
+
+  # sg_vpd  -p 0x8f /dev/sda
+  Third party copy VPD page:
+   Supported commands:
+    Extended copy(LID1)
+    Receive copy operating parameters
+   Parameter data:
+    Maximum CSCD descriptor count: 2
+    Maximum segment descriptor count: 1
+    Maximum descriptor list length: 1024
+    Maximum inline data length: 0
+   Supported descriptors:
+    block -> block [0x2]
+    CSCD: Identification Descriptor [0xe4]
+   Supported CSCD IDs (above 0x7ff):
+   General copy operations:
+    Total concurrent copies: 1
+    Maximum identified concurrent copies: 1
+    Maximum segment length: 268435456
+    Data segment granularity: 512
+    Inline data granularity: 1
+
+So, for v1 of the patch (with typos fixed and commit message updated):
+
+Tested-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+
+Regards,
+Roman
+
+> +	return off;
+> +}
+> +
+> +/* Parameter Data third-party copy descriptor, spc4 7.8.17.5 */
+> +static int spc_evpd_8f_encode_param_data(unsigned char *out, int out_len, int out_off)
+> +{
+> +	unsigned char buf[64] = {0};
+> +	u16 off = 0;
+> +
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR TYPE (0004h) */
+> +	put_unaligned_be16(0x0004, &buf[off]);
+> +	off += 2;
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR LENGTH (001Ch) */
+> +	put_unaligned_be16(0x001c, &buf[off]);
+> +	off += 2;
+> +	/* Skip over Reserved */
+> +	off += 4;
+> +	/* Set MAXIMUM CSCD DESCRIPTOR COUNT */
+> +	put_unaligned_be16(RCR_OP_MAX_TARGET_DESC_COUNT, &buf[off]);
+> +	off += 2;
+> +	/* Set MAXIMUM SEGMENT DESCRIPTOR COUNT */
+> +	put_unaligned_be16(RCR_OP_MAX_SG_DESC_COUNT, &buf[off]);
+> +	off += 2;
+> +	/* Set MAXIMUM DESCRIPTOR LIST LENGTH */
+> +	put_unaligned_be32(RCR_OP_MAX_DESC_LIST_LEN, &buf[off]);
+> +	off += 4;
+> +	/*
+> +	 * The MAXIMUM INLINE DATA LENGTH field should be set to ZERO
+> +	 * if the copy manager does not support segment descriptor
+> +	 * type code 04h.
+> +	 */
+> +	off += 4;
+> +	/* Skip over Reserved */
+> +	off += 12;
+> +
+> +	BUG_ON(off > ARRAY_SIZE(buf));
+> +
+> +	if (out_off + off <= out_len)
+> +		memcpy(&out[out_off], buf, off);
+> +
+> +	return off;
+> +}
+> +
+> +/* Supported Descriptors third-party copy descriptor, spc4 7.8.17.6 */
+> +static int spc_evpd_8f_encode_supp_descrs(unsigned char *out, int out_len, int out_off)
+> +{
+> +	unsigned char buf[64] = {0};
+> +	u16 off = 0;
+> +
+> +	/*
+> +	 * List of supported descriptor type codes:
+> +	 *   02h - Copy from block device to block device segment descriptor
+> +	 *   E4h - Identification Descriptor CSCD descriptor
+> +	 */
+> +
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR TYPE (0008h) */
+> +	put_unaligned_be16(0x0008, &buf[off]);
+> +	off += 2;
+> +	/* Skip THIRD-PARTY COPY DESCRIPTOR LENGTH */
+> +	off += 2;
+> +	/* Set SUPPORTED DESCRIPTOR LIST LENGTH */
+> +	buf[off++] = 2;
+> +	/* List of supported descriptor type codes */
+> +	buf[off++] = 0x02;
+> +	buf[off++] = 0xe4;
+> +	/* Descriptor pad */
+> +	off += __spc_evpd_8f_desc_calc_padding(off);
+> +
+> +	BUG_ON(off > ARRAY_SIZE(buf));
+> +
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR LENGTH */
+> +	put_unaligned_be16(off - 4, &buf[2]);
+> +
+> +	if (out_off + off <= out_len)
+> +		memcpy(&out[out_off], buf, off);
+> +
+> +	return off;
+> +}
+> +
+> +/* Supported CSCD Descriptor IDs third-party copy descriptor, spc4 7.8.17.7 */
+> +static int spc_evpd_8f_encode_supp_cscd_descr_id(unsigned char *out, int out_len, int out_off)
+> +{
+> +	unsigned char buf[64] = {0};
+> +	u16 off = 0;
+> +
+> +	/*
+> +	 * The TCM copy manager doesn't support CSCD Descriptod IDs other
+
+Sergey, couple typos...
+
+s/Descriptod/Descriptor/
+
+> +	 * than 0000h and therefore IDs List should be zero length.
+
+Perhaps it was meant: "than between 0000h and 07ffh and therefore ..."
+
+> +	 */
+> +
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR TYPE (000Ch) */
+> +	put_unaligned_be16(0x000c, &buf[off]);
+> +	off += 2;
+> +	/* Skip THIRD-PARTY COPY DESCRIPTOR LENGTH */
+> +	off += 2;
+> +	/* Set SUPPORTED CSCD DESCRIPTOR IDS LIST LENGTH to ZERO */
+> +	off += 2;
+> +	/* Descriptor pad */
+> +	off += __spc_evpd_8f_desc_calc_padding(off);
+> +
+> +	BUG_ON(off > ARRAY_SIZE(buf));
+> +
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR LENGTH */
+> +	put_unaligned_be16(off - 4, &buf[2]);
+> +
+> +	if (out_off + off <= out_len)
+> +		memcpy(&out[out_off], buf, off);
+> +
+> +	return off;
+> +}
+> +
+> +/* General Copy Operations third-party copy descriptor, spc4 7.8.17.10 */
+> +static int spc_evpd_8f_encode_general_copy_ops(unsigned char *out, int out_len, int out_off)
+> +{
+> +	unsigned char buf[64] = {0};
+> +	u16 off = 0;
+> +
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR TYPE (8001h) */
+> +	put_unaligned_be16(0x8001, &buf[off]);
+> +	off += 2;
+> +	/* Set THIRD-PARTY COPY DESCRIPTOR LENGTH (0020h) */
+> +	put_unaligned_be16(0x0020, &buf[off]);
+> +	off += 2;
+> +	/* Set TOTAL CONCURRENT COPIES */
+> +	put_unaligned_be32(RCR_OP_TOTAL_CONCURR_COPIES, &buf[off]);
+> +	off += 4;
+> +	/* Set MAXIMUM IDENTIFIED CONCURRENT COPIES */
+> +	put_unaligned_be32(RCR_OP_MAX_CONCURR_COPIES, &buf[off]);
+> +	off += 4;
+> +	/* Set MAXIMUM SEGMENT LENGTH */
+> +	put_unaligned_be32(RCR_OP_MAX_SEGMENT_LEN, &buf[off]);
+> +	off += 4;
+> +	/* Set DATA SEGMENT GRANULARITY (log 2) */
+> +	buf[off++] = RCR_OP_DATA_SEG_GRAN_LOG2;
+> +	/*
+> +	 * Set INLINE DATA GRANULARITY (log 2) to ZERO.
+> +	 * TCM XCOPY manager does not support 04h (copy
+> +	 * inline data to stream device) descriptor type.
+> +	 */
+> +	off += 1;
+> +	/* Reserved */
+> +	off += 18;
+> +
+> +	BUG_ON(off > ARRAY_SIZE(buf));
+> +
+> +	if (out_off + off <= out_len)
+> +		memcpy(&out[out_off], buf, off);
+> +
+> +	return off;
+> +}
+> +
+> +/* Third-party Copy VPD page */
+> +static sense_reason_t
+> +spc_emulate_evpd_8f(struct se_cmd *cmd, unsigned char *buf)
+> +{
+> +	struct se_device *dev = cmd->se_dev;
+> +	int buf_len = SE_INQUIRY_BUF;
+> +	int off;
+> +	u16 page_len;
+> +
+> +	if (!dev->dev_attrib.emulate_3pc)
+> +		return TCM_INVALID_CDB_FIELD;
+> +
+> +	/*
+> +	 * Since the Third-party copy manager in TCM is quite simple
+> +	 * and supports only two commands, the function sets
+> +	 * many descriptor parameters as constants.
+> +	 *
+> +	 * As the Copy manager supports the EXTENDED COPY(LID1) command,
+> +	 * the Third-party Copy VPD page should include five mandatory
+> +	 * Third-party copy descriptors. Its are:
+> +	 *   0001h - Supported Commands
+> +	 *   0004h - Parameter Data
+> +	 *   0008h - Supported Descriptors
+> +	 *   000Ch - Supported CSCD Descriptor IDs
+> +	 *   8001h - General Copy Operations
+> +	 *
+> +	 * See spc4 section 7.8.17
+> +	 */
+> +
+> +	off = 4;
+> +
+> +	/* Fill descriptors */
+> +	off += spc_evpd_8f_encode_supp_cmds(&buf[0], buf_len, off);
+> +	off += spc_evpd_8f_encode_param_data(&buf[0], buf_len, off);
+> +	off += spc_evpd_8f_encode_supp_descrs(&buf[0], buf_len, off);
+> +	off += spc_evpd_8f_encode_supp_cscd_descr_id(&buf[0], buf_len, off);
+> +	off += spc_evpd_8f_encode_general_copy_ops(&buf[0], buf_len, off);
+> +
+> +	if (WARN_ON(off > buf_len))
+> +		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+> +
+> +	/*
+> +	 * Page Length for VPD 0x8f
+> +	 */
+> +	page_len = &buf[off] - &buf[0] - 4;
+> +	put_unaligned_be16(page_len, &buf[2]);
+> +
+> +	return 0;
+> +}
+> +
+>  /* Block Limits VPD page */
+>  static sense_reason_t
+>  spc_emulate_evpd_b0(struct se_cmd *cmd, unsigned char *buf)
+> @@ -702,6 +947,7 @@ static struct {
+>  	{ .page = 0x80, .emulate = spc_emulate_evpd_80 },
+>  	{ .page = 0x83, .emulate = spc_emulate_evpd_83 },
+>  	{ .page = 0x86, .emulate = spc_emulate_evpd_86 },
+> +	{ .page = 0x8f, .emulate = spc_emulate_evpd_8f },
+>  	{ .page = 0xb0, .emulate = spc_emulate_evpd_b0 },
+>  	{ .page = 0xb1, .emulate = spc_emulate_evpd_b1 },
+>  	{ .page = 0xb2, .emulate = spc_emulate_evpd_b2 },
+> @@ -712,7 +958,9 @@ static struct {
+>  static sense_reason_t
+>  spc_emulate_evpd_00(struct se_cmd *cmd, unsigned char *buf)
+>  {
+> -	int p;
+> +	bool emulate_3pc = cmd->se_dev->dev_attrib.emulate_3pc;
+> +	int i, p;
+> +	uint8_t page;
+>  
+>  	/*
+>  	 * Only report the INQUIRY EVPD=1 pages after a valid NAA
+> @@ -720,9 +968,17 @@ spc_emulate_evpd_00(struct se_cmd *cmd, unsigned char *buf)
+>  	 * during device creation/restart.
+>  	 */
+>  	if (cmd->se_dev->dev_flags & DF_EMULATED_VPD_UNIT_SERIAL) {
+> -		buf[3] = ARRAY_SIZE(evpd_handlers);
+> -		for (p = 0; p < ARRAY_SIZE(evpd_handlers); ++p)
+> -			buf[p + 4] = evpd_handlers[p].page;
+> +		for (i = 0, p = 4; i < ARRAY_SIZE(evpd_handlers); ++i) {
+> +			page = evpd_handlers[i].page;
+> +			/*
+> +			 * The 8Fh VPD page is announced only if the copy
+> +			 * manager is activated.
+> +			 */
+> +			if ((page == 0x8f) && !emulate_3pc)
+> +				continue;
+> +			buf[p++] = page;
+> +		}
+> +		buf[3] = p - 4;
+>  	}
+>  
+>  	return 0;
+> -- 
+> 2.25.1
+> 
