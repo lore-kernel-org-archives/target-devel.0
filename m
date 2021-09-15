@@ -2,212 +2,220 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-23.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17BBCC433EF
-	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 12:52:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94169C433EF
+	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 14:17:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F2A2461186
-	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 12:52:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 76CBC610E9
+	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 14:17:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233815AbhIOMxa (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 15 Sep 2021 08:53:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37106 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234072AbhIOMx1 (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Wed, 15 Sep 2021 08:53:27 -0400
-Received: from mail-ot1-x32a.google.com (mail-ot1-x32a.google.com [IPv6:2607:f8b0:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04E32C0613C1
-        for <target-devel@vger.kernel.org>; Wed, 15 Sep 2021 05:52:09 -0700 (PDT)
-Received: by mail-ot1-x32a.google.com with SMTP id c42-20020a05683034aa00b0051f4b99c40cso3449438otu.0
-        for <target-devel@vger.kernel.org>; Wed, 15 Sep 2021 05:52:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=broadcom.com; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=YwNaLwKA2of+DfbS4aeSMkDxKF6EVrxSWjkKLx+FQew=;
-        b=AjebiobECjpg93+DFIVszP/9YpQLKyHjDCTFBucvyXusePtQDL90KisFIxndE8VC5H
-         2xchnvGsUVSYGz8GKgh/DXQJtJJFL2RQobCERPeJwYleYXtYssetJPGM+dmeus6WtuNM
-         cTb/PGobv0SBYjZBOlgfeMEK+m+hNZmdCOtMw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=YwNaLwKA2of+DfbS4aeSMkDxKF6EVrxSWjkKLx+FQew=;
-        b=ZcSGk6VApXDyUaE07e8Ajadr3pSIIRC2XFj4r27C1Iv4FMolN8WgcMGw5cs6zdkI9/
-         Lfn3BVzzG0XrXhTeZu6yDSkeWruzaS41GqTqDEEu0uLnEzfpYzr9G1f/8JzTyLdMAJrp
-         9fWW2l3Ozrr/HUlSyf/M+4+gjgId7JbZ6PguhArlFvQ+4jj4qVP3Kn6De3Y/PLMPZReM
-         LaNKXAUzv8fjgMshUuneyWHCr0lFxeF2AgS/uinopM+sw6F1Pdwy76t1cs4amnzPxjY1
-         vqgPPzxfKPMzykgc9f8BG/MGwsWOHwGPp1DKyO69R7ADv3ORKauXeli/V+uRRgYSPuJF
-         FYLA==
-X-Gm-Message-State: AOAM533yZrJUcrgyuDxzHS6OX8TnGUPw2miGPboNK3vWEcpk/uYNQNMk
-        +xrJ4t1nKvK6+JaqGrv7/o40exfsrParag4I5GDw4/Lr3sGsrIKmbi65Z3BA5Q7wtyiVlR5BkyI
-        8a1p4aSnUjhLWCA3CbA8quwY4fkS2SdQ=
-X-Google-Smtp-Source: ABdhPJxnnR0QK6qMtREl+SinVJ6xtl8n4XV3T7gatXTeMwM1yJ02AgZhA30JFKYV0D6H8u+XrHDNnnum+EPoBxiIANc=
-X-Received: by 2002:a9d:4e0f:: with SMTP id p15mr19229838otf.328.1631710327498;
- Wed, 15 Sep 2021 05:52:07 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210914105539.6942-1-d.bogdanov@yadro.com> <20210914105539.6942-4-d.bogdanov@yadro.com>
-In-Reply-To: <20210914105539.6942-4-d.bogdanov@yadro.com>
-From:   Ram Kishore Vegesna <ram.vegesna@broadcom.com>
-Date:   Wed, 15 Sep 2021 18:21:56 +0530
-Message-ID: <CAF7aS0q-us5evJUeN4ic-mvur-EnTQD7FFQO4+fFy6=2c2RQPg@mail.gmail.com>
-Subject: Re: [PATCH 3/3] scsi: efct: decrease area under spinlock
-To:     Dmitry Bogdanov <d.bogdanov@yadro.com>
-Cc:     Martin Petersen <martin.petersen@oracle.com>,
-        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux@yadro.com, James Smart <james.smart@broadcom.com>,
+        id S233793AbhIOOSy (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 15 Sep 2021 10:18:54 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:54282 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S233745AbhIOOSy (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Wed, 15 Sep 2021 10:18:54 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 0BBFB42BCC;
+        Wed, 15 Sep 2021 14:17:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1631715452; x=
+        1633529853; bh=HdCsj2c6KqBs5fy8A/SX5DI/OrxZcXjAFA5mTXct77M=; b=q
+        y1rGt8Bpi7g2Cq4BwJo/lJZgYM/Y3RHNqk4OTyR1W088dNwzHnfi54DFE+HKRQvD
+        L4zH+uSD2BBR3rdUU8NdWmQ/t9TmsJrEczHQfbBLimDgaHaG7WhO3igcRppl53LI
+        B+QiK8xqbU+Ikd2cjnK0WtO9jiMk6oNMsVW0bUvnzE=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id Vw_SsP0I9kEw; Wed, 15 Sep 2021 17:17:32 +0300 (MSK)
+Received: from T-EXCH-04.corp.yadro.com (t-exch-04.corp.yadro.com [172.17.100.104])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 8552442AD7;
+        Wed, 15 Sep 2021 17:17:32 +0300 (MSK)
+Received: from NB-591.corp.yadro.com (10.199.0.185) by
+ T-EXCH-04.corp.yadro.com (172.17.100.104) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Wed, 15 Sep 2021 17:17:31 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Konstantin Shelekhin <k.shelekhin@yadro.com>,
+        Mike Christie <michael.christie@oracle.com>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>,
         Roman Bolshakov <r.bolshakov@yadro.com>
-Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256;
-        boundary="00000000000082ff5405cc082a19"
+Subject: [PATCH v3] target: core: remove from tmr_list at lun unlink
+Date:   Wed, 15 Sep 2021 17:17:19 +0300
+Message-ID: <20210915141719.1484-1-d.bogdanov@yadro.com>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.0.185]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-04.corp.yadro.com (172.17.100.104)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
---00000000000082ff5405cc082a19
-Content-Type: text/plain; charset="UTF-8"
+Currently TMF commands are removed from de_device.dev_tmf_list at
+the very end of se_cmd lifecycle. But se_lun unlinks from se_cmd
+up on a command status (response) is queued in transport layer.
+It means that LUN and backend device can be deleted meantime and at
+the moment of repsonse completion a panic is occured:
 
-On Tue, Sep 14, 2021 at 4:25 PM Dmitry Bogdanov <d.bogdanov@yadro.com> wrote:
->
-> Under session level spinlock node->active_ios_lock in
-> efct_scsi_io_alloc() there is a getting other spinlock of port level.
-> That lead to competition between sessions and even between IOs in the
-> same session due too much instructions under spinlock.
->
-> This change reduces spinlock area just to active_ios list for which
-> active_ios_lock is intended.
-> Spinlock CPU usage is decreased from 18% down to 13% in efct driver.
-> IOPS are increased from 220 kIOPS upto 264 kIOPS for one lun on my setup.
->
-> Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
-> Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
-> ---
->  drivers/scsi/elx/efct/efct_scsi.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/drivers/scsi/elx/efct/efct_scsi.c b/drivers/scsi/elx/efct/efct_scsi.c
-> index 40fb3a724c76..8535bb7eabd8 100644
-> --- a/drivers/scsi/elx/efct/efct_scsi.c
-> +++ b/drivers/scsi/elx/efct/efct_scsi.c
-> @@ -38,8 +38,6 @@ efct_scsi_io_alloc(struct efct_node *node)
->
->         xport = efct->xport;
->
-> -       spin_lock_irqsave(&node->active_ios_lock, flags);
-> -
->         io = efct_io_pool_io_alloc(efct->xport->io_pool);
->         if (!io) {
->                 efc_log_err(efct, "IO alloc Failed\n");
-> @@ -66,6 +64,7 @@ efct_scsi_io_alloc(struct efct_node *node)
->
->         /* Add to node's active_ios list */
->         INIT_LIST_HEAD(&io->list_entry);
-> +       spin_lock_irqsave(&node->active_ios_lock, flags);
->         list_add(&io->list_entry, &node->active_ios);
->
->         spin_unlock_irqrestore(&node->active_ios_lock, flags);
-> --
-> 2.25.1
->
-Looks good. Thanks.
+target_tmr_work()
+	cmd->se_tfo->queue_tm_rsp(cmd); // send abort_rsp to a wire
+	transport_lun_remove_cmd(cmd) // unlink se_cmd from se_lun
+- // - // - // -
+<<<--- lun remove
+<<<--- core backend device remove
+- // - // - // -
+qlt_handle_abts_completion()
+  tfo->free_mcmd()
+    transport_generic_free_cmd()
+      target_put_sess_cmd()
+        core_tmr_release_req() {
+          if (dev) { // backend device, can not be null
+            spin_lock_irqsave(&dev->se_tmr_lock, flags); //<<<--- CRASH
 
-Reviewed-by: Ram Vegesna <ram.vegesna@broadcom.com>
+Call Trace:
+NIP [c000000000e1683c] _raw_spin_lock_irqsave+0x2c/0xc0
+LR [c00800000e433338] core_tmr_release_req+0x40/0xa0 [target_core_mod]
+Call Trace:
+(unreliable)
+0x0
+target_put_sess_cmd+0x2a0/0x370 [target_core_mod]
+transport_generic_free_cmd+0x6c/0x1b0 [target_core_mod]
+tcm_qla2xxx_complete_mcmd+0x28/0x50 [tcm_qla2xxx]
+process_one_work+0x2c4/0x5c0
+worker_thread+0x88/0x690
 
+For FC protocol it is a race condition, but for iSCSI protocol it is
+easyly reproduced by manual sending iSCSI commands:
+- Send some SCSI sommand
+- Send Abort of that command over iSCSI
+- Remove LUN on target
+- Send next iSCSI command to acknowledge the Abort_Response
+- target panics
+
+There is no sense to keep the command in tmr_list until response
+completion, so move the removal from tmr_list from the response
+completion to the response queueing when lun is unlinked.
+Move the removal from state list too as it is a subject to the same
+race condition.
+
+Fixes: c66ac9db8d4a ("[SCSI] target: Add LIO target core v4.0.0-rc6")
+Reviewed-by: Roman Bolshakov <r.bolshakov@yadro.com>
+Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
+
+---
+v3:
+ remove iscsi fix as not related to the issue
+ avoid double removal from tmr_list
+v2:
+ fix stuck in tmr list in error case
+
+The issue exists from the very begining.
+I uploaded a scapy script that helps to reproduce the issue at
+https://gist.github.com/logost/cb93df41dd2432454324449b390403c4
+---
+ drivers/target/target_core_tmr.c       | 10 +--------
+ drivers/target/target_core_transport.c | 30 ++++++++++++++++++++------
+ 2 files changed, 24 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+index e7fcbc09f9db..84ae2fe456ec 100644
+--- a/drivers/target/target_core_tmr.c
++++ b/drivers/target/target_core_tmr.c
+@@ -50,15 +50,6 @@ EXPORT_SYMBOL(core_tmr_alloc_req);
+ 
+ void core_tmr_release_req(struct se_tmr_req *tmr)
+ {
+-	struct se_device *dev = tmr->tmr_dev;
+-	unsigned long flags;
+-
+-	if (dev) {
+-		spin_lock_irqsave(&dev->se_tmr_lock, flags);
+-		list_del_init(&tmr->tmr_list);
+-		spin_unlock_irqrestore(&dev->se_tmr_lock, flags);
+-	}
+-
+ 	kfree(tmr);
+ }
+ 
+@@ -234,6 +225,7 @@ static void core_tmr_drain_tmr_list(
+ 		}
+ 
+ 		list_move_tail(&tmr_p->tmr_list, &drain_tmr_list);
++		tmr_p->tmr_dev = NULL;
+ 	}
+ 	spin_unlock_irqrestore(&dev->se_tmr_lock, flags);
+ 
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 14c6f2bb1b01..e60abd230e90 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -676,6 +676,21 @@ static void target_remove_from_state_list(struct se_cmd *cmd)
+ 	spin_unlock_irqrestore(&dev->queues[cmd->cpuid].lock, flags);
+ }
+ 
++static void target_remove_from_tmr_list(struct se_cmd *cmd)
++{
++	struct se_device *dev = NULL;
++	unsigned long flags;
++
++	if (cmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
++		dev = cmd->se_tmr_req->tmr_dev;
++
++	if (dev) {
++		spin_lock_irqsave(&dev->se_tmr_lock, flags);
++		if (cmd->se_tmr_req->tmr_dev)
++			list_del_init(&cmd->se_tmr_req->tmr_list);
++		spin_unlock_irqrestore(&dev->se_tmr_lock, flags);
++	}
++}
+ /*
+  * This function is called by the target core after the target core has
+  * finished processing a SCSI command or SCSI TMF. Both the regular command
+@@ -687,13 +702,6 @@ static int transport_cmd_check_stop_to_fabric(struct se_cmd *cmd)
+ {
+ 	unsigned long flags;
+ 
+-	target_remove_from_state_list(cmd);
+-
+-	/*
+-	 * Clear struct se_cmd->se_lun before the handoff to FE.
+-	 */
+-	cmd->se_lun = NULL;
+-
+ 	spin_lock_irqsave(&cmd->t_state_lock, flags);
+ 	/*
+ 	 * Determine if frontend context caller is requesting the stopping of
+@@ -728,8 +736,16 @@ static void transport_lun_remove_cmd(struct se_cmd *cmd)
+ 	if (!lun)
+ 		return;
+ 
++	target_remove_from_state_list(cmd);
++	target_remove_from_tmr_list(cmd);
++
+ 	if (cmpxchg(&cmd->lun_ref_active, true, false))
+ 		percpu_ref_put(&lun->lun_ref);
++
++	/*
++	 * Clear struct se_cmd->se_lun before the handoff to FE.
++	 */
++	cmd->se_lun = NULL;
+ }
+ 
+ static void target_complete_failure_work(struct work_struct *work)
 -- 
-This electronic communication and the information and any files transmitted 
-with it, or attached to it, are confidential and are intended solely for 
-the use of the individual or entity to whom it is addressed and may contain 
-information that is confidential, legally privileged, protected by privacy 
-laws, or otherwise restricted from disclosure to anyone else. If you are 
-not the intended recipient or the person responsible for delivering the 
-e-mail to the intended recipient, you are hereby notified that any use, 
-copying, distributing, dissemination, forwarding, printing, or copying of 
-this e-mail is strictly prohibited. If you received this e-mail in error, 
-please return the e-mail to the sender, delete it from your computer, and 
-destroy any printed copy of it.
+2.25.1
 
---00000000000082ff5405cc082a19
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
-
-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
-Vxab43fOCbFozIOlzutBV4fhpWlA3FrVNhbPhbwO398TsV3gUkYHkxoS9kLeRXHnNcdOcFMo8Maz
-mQF6P67d881N/0Tt0k0MfXGTHytZvfFdayivzlL9nAnyXTzPFU8CAwEAAaOCAdkwggHVMA4GA1Ud
-DwEB/wQEAwIFoDCBowYIKwYBBQUHAQEEgZYwgZMwTgYIKwYBBQUHMAKGQmh0dHA6Ly9zZWN1cmUu
-Z2xvYmFsc2lnbi5jb20vY2FjZXJ0L2dzZ2NjcjNwZXJzb25hbHNpZ24yY2EyMDIwLmNydDBBBggr
-BgEFBQcwAYY1aHR0cDovL29jc3AuZ2xvYmFsc2lnbi5jb20vZ3NnY2NyM3BlcnNvbmFsc2lnbjJj
-YTIwMjAwTQYDVR0gBEYwRDBCBgorBgEEAaAyASgKMDQwMgYIKwYBBQUHAgEWJmh0dHBzOi8vd3d3
-Lmdsb2JhbHNpZ24uY29tL3JlcG9zaXRvcnkvMAkGA1UdEwQCMAAwSQYDVR0fBEIwQDA+oDygOoY4
-aHR0cDovL2NybC5nbG9iYWxzaWduLmNvbS9nc2djY3IzcGVyc29uYWxzaWduMmNhMjAyMC5jcmww
-IwYDVR0RBBwwGoEYcmFtLnZlZ2VzbmFAYnJvYWRjb20uY29tMBMGA1UdJQQMMAoGCCsGAQUFBwME
-MB8GA1UdIwQYMBaAFJYz0eZYF1s0dYqBVmTVvkjeoY/PMB0GA1UdDgQWBBQt2m9JVe4cejFw9Mog
-spXwL7sKWzANBgkqhkiG9w0BAQsFAAOCAQEAARwXxUTPdWpdSOs12BsNVMRlHdaahp3UNv1LW20i
-ps55UslOtXjHiznNQr5nyhmnkH0TLxn12NGEV0BnOmb70Ml2klfFLXTw73cp/mxM2eOZX5ho+f8v
-TuqwzxbJ+WAoFHzMJfevy9SEdovoE1TeBhc+IgZQR3zCkMt00bsKvKD0SmgNKiSmkHr+WbJCjCq7
-tlkydEDuGjuSfbNzIcS0qLpqIHaSh/3WmF7TWzBJ8Ln1HwrvuMZ3Txksjsmpt34GFSubX+CGrYyW
-ORNGomSiW66FqRvj0iaYYbNTIfnU7/iJy3CN8Z5SvVroNAQbRfoooT/loWsoiUUNmTR9kebvLzGC
-Am0wggJpAgEBMGswWzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExMTAv
-BgNVBAMTKEdsb2JhbFNpZ24gR0NDIFIzIFBlcnNvbmFsU2lnbiAyIENBIDIwMjACDCHWmFjgp1UN
-rBuhLTANBglghkgBZQMEAgEFAKCB1DAvBgkqhkiG9w0BCQQxIgQgdtnCLy/v3dpCnwFFumoUaCE6
-QiF8qp4Bin3htpPI5ycwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcN
-MjEwOTE1MTI1MjA4WjBpBgkqhkiG9w0BCQ8xXDBaMAsGCWCGSAFlAwQBKjALBglghkgBZQMEARYw
-CwYJYIZIAWUDBAECMAoGCCqGSIb3DQMHMAsGCSqGSIb3DQEBCjALBgkqhkiG9w0BAQcwCwYJYIZI
-AWUDBAIBMA0GCSqGSIb3DQEBAQUABIIBAJwDMMnK4/Z/IOFCERn8n6xAqi5TFc3KqJNkGRiK3QH8
-VQpCCe81pYacYaifyaCJbSHJQe13OXxNYH4sCP3UboBiBEv1bNKCG4mNLST10H8u6VEcH5IzGwSd
-TXK7QGAsBJS93eYs6KovvBIaDLaGZanRuRuUIFbfGxTOo0rJ6QykMn4cttU/Dax8AcraxxftTAcQ
-PA1LFX7yIVj7VSnTVwDj8tMDgonv9wf9nxazs5x2AyinBIYr+BFAiv7RM3By6FL7yYEvEq6CNjfq
-pgI4k/yAH8P4FKNIazdp58J96k1edFGNJA21vAmu0ZQyIb9D7By732oaXyqTe6QgU7adGFU=
---00000000000082ff5405cc082a19--
