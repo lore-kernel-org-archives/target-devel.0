@@ -7,98 +7,133 @@ X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9803C433F5
-	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 12:45:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2503C433EF
+	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 12:51:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9337161178
-	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 12:45:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A850060F70
+	for <target-devel@archiver.kernel.org>; Wed, 15 Sep 2021 12:51:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237489AbhIOMqd (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 15 Sep 2021 08:46:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35426 "EHLO
+        id S233460AbhIOMws (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 15 Sep 2021 08:52:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36912 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237872AbhIOMqc (ORCPT
+        with ESMTP id S233222AbhIOMwr (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 15 Sep 2021 08:46:32 -0400
-Received: from mail-oo1-xc34.google.com (mail-oo1-xc34.google.com [IPv6:2607:f8b0:4864:20::c34])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F4A3C061764
-        for <target-devel@vger.kernel.org>; Wed, 15 Sep 2021 05:45:13 -0700 (PDT)
-Received: by mail-oo1-xc34.google.com with SMTP id q26-20020a4adc5a000000b002918a69c8eeso824048oov.13
-        for <target-devel@vger.kernel.org>; Wed, 15 Sep 2021 05:45:13 -0700 (PDT)
+        Wed, 15 Sep 2021 08:52:47 -0400
+Received: from mail-ot1-x32d.google.com (mail-ot1-x32d.google.com [IPv6:2607:f8b0:4864:20::32d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A97BBC061574
+        for <target-devel@vger.kernel.org>; Wed, 15 Sep 2021 05:51:28 -0700 (PDT)
+Received: by mail-ot1-x32d.google.com with SMTP id g66-20020a9d12c8000000b0051aeba607f1so3351090otg.11
+        for <target-devel@vger.kernel.org>; Wed, 15 Sep 2021 05:51:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=broadcom.com; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=euMSQia/T92PsWv3pUiyDC4BQc/p+Jd2DGTrJqde4Hs=;
-        b=I0SXp1H6vuf9o1hw3Tn3Sl6oBPBk1sZEB8ELaDmLVPi6AIHXUmGn2xwIwbi/NdZlLO
-         EltQpWsm8G8ubVkkc4RsVCaKCj200Fvz0nQz/JlMU2FGHz26k5TwixSzI7My5zrtQS6Z
-         0cFszqL8QYz6rLbpmFSCXEJVavlmYgh5D9fJU=
+        bh=/wPhzkGlnpuY/UGckcJundbhFyqD1c1DL4I0lY6uAKE=;
+        b=GBcMS/S5umdEha7mRPgbh7fKb3ig+WenN8RO9yecfqpOBOEi21A0ox64z+MIRqM9kJ
+         Eh/AOyux2rfUJCgWp2E4B52eMfRLKKMnUrCPyiMrp2koH2yskINeLOMAZUGEPpTTDva2
+         jSvQiC9GzsCJqiJfnP32v0kHKw/CCF5/swTIs=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=euMSQia/T92PsWv3pUiyDC4BQc/p+Jd2DGTrJqde4Hs=;
-        b=nF1fQ3/ELormgserTD7kkwpNg6XlgsrSDzjkWwHFlh1pbH6ZgRTwQ9rCO8NLX0ps42
-         l7sRH8+7MDbD6D1M1DO59ko/tKpKjv/zW+aREpfnqMT6IsFfEpAfdBOVvC/Lf3DmG1k7
-         zNdagkIt5noEH5o+Krqap+IEhZEW7cSaM3/whC6w8+BpdfCV4Eyl76ujgCf4MVgVGXGZ
-         uPkzNRzYYxlt5RuCLqkm0EPDaiU8E+18wDiH/wn1UAmh+O/8bB9T1U8UQQzfgp/Vrtih
-         1xaQhOCuaAc9nKAptUgMOuOGP4XdjTgRxu+z0wfQe1IndX/CxvHwQnF80qfidnRGe/PG
-         zKHw==
-X-Gm-Message-State: AOAM533WSdPYsvnLJBbXTEmo1gdkYSjxmaPF76S+YzSIu1QSyVIPXHtj
-        gs/hSI5RokhN6Zx+kqTSqQUVm7QcdbECGEhumkmHDP2DbBxkAk+Jkmh98G4L8MQFyzQNUBKK640
-        HgdJ5/C0dUVdQ4lwW8bCxOTy8bP6dCOw=
-X-Google-Smtp-Source: ABdhPJxTqbCwuH2DjxVRng03R0RDf/toZ1zDZKhR0mJmV6F9XqwgpRQvfBomoGKNSIytHLbreDopEQVvbPEeqAvI1aw=
-X-Received: by 2002:a4a:a8c9:: with SMTP id r9mr18190946oom.49.1631709912155;
- Wed, 15 Sep 2021 05:45:12 -0700 (PDT)
+        bh=/wPhzkGlnpuY/UGckcJundbhFyqD1c1DL4I0lY6uAKE=;
+        b=pBa4l1uNw53ld2X3awDz6G7SbdDnDA/7DmNCpoG8lZzYiHl6R0LwepeHCdsjIFCgdc
+         A/b9PswhqrD6wuSSInQYfB/6BmNzxc0er1yGHOY56hGe9HEmFr+7NCfLF6mpO3vFf+rz
+         bYXPFKCHX4r9786TbrIieNZW+Bk73UDNwSVnkQS7F7zS3LEdz6VqvhYrCgoL8AIFYhBb
+         84kzvf5OP5mOf1AjU2K1yQqez6fCPa6PVtGyVlCK7C0K+om1QdX15Nqa8nMLg5hLIQZu
+         aSMVONRLOQGWLeagpiiAyirjwKZ58ZtPcNQRq/x5ZH+Y+BUAg7EQjX+7iQPL46dTCVIO
+         AI1w==
+X-Gm-Message-State: AOAM532XagwW9nK4OQgZGRexZ2WVu+WEZrgKxGO9/CBv9eqAjZIeQxVt
+        Ghp6cSBWI1na9UDxyAt42wsQGbogI6UY46yg185mponkMYKhxnRf/b9gkn48qQ63WA3J59ZcNHN
+        pbkiEELhuGWqIC0GC3yGof+kWFT7rv+Q=
+X-Google-Smtp-Source: ABdhPJwI3iYGf7rQGXbc5TjTboSuU0oY8Am6GL426ERygGBtwCJgKFqFTIS7lNG7pZax1rz4QZlclu8e5nK9qRPO2Mc=
+X-Received: by 2002:a9d:4e0f:: with SMTP id p15mr19227661otf.328.1631710286949;
+ Wed, 15 Sep 2021 05:51:26 -0700 (PDT)
 MIME-Version: 1.0
-References: <20210914105539.6942-1-d.bogdanov@yadro.com> <20210914105539.6942-2-d.bogdanov@yadro.com>
-In-Reply-To: <20210914105539.6942-2-d.bogdanov@yadro.com>
+References: <20210914105539.6942-1-d.bogdanov@yadro.com> <20210914105539.6942-3-d.bogdanov@yadro.com>
+In-Reply-To: <20210914105539.6942-3-d.bogdanov@yadro.com>
 From:   Ram Kishore Vegesna <ram.vegesna@broadcom.com>
-Date:   Wed, 15 Sep 2021 18:15:01 +0530
-Message-ID: <CAF7aS0qZivtbxJmRmE7zFz1DjgDO5NjcZH1L8gFrw40QRNhCyw@mail.gmail.com>
-Subject: Re: [PATCH 1/3] scsi: efct: add state in nport sm trace printout
+Date:   Wed, 15 Sep 2021 18:21:16 +0530
+Message-ID: <CAF7aS0qtcdu4Z4Jpvgdo8cTOLfecavO53-N5x79ytr+NFHT8vg@mail.gmail.com>
+Subject: Re: [PATCH 2/3] scsi: efct: fix nport free
 To:     Dmitry Bogdanov <d.bogdanov@yadro.com>
 Cc:     Martin Petersen <martin.petersen@oracle.com>,
         target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
         linux@yadro.com, James Smart <james.smart@broadcom.com>
 Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256;
-        boundary="000000000000ba0f5005cc081135"
+        boundary="0000000000001bc00705cc082886"
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
---000000000000ba0f5005cc081135
+--0000000000001bc00705cc082886
 Content-Type: text/plain; charset="UTF-8"
-
-Looks good. Thanks.
-
-Reviewed-by: Ram Vegesna <ram.vegesna@broadcom.com>
 
 On Tue, Sep 14, 2021 at 4:25 PM Dmitry Bogdanov <d.bogdanov@yadro.com> wrote:
 >
-> Similar to other state machine traces and to make debug easier add the
-> state name to nport sm trace printout.
+> nport_free for an empty nport hangs the state machine waiting for mbox
+> completion if nport is not yet attached thinking that it is attaching
+> right now.
+> Add a check for nport attaching state and complete nport free.
 >
 > Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
 > ---
->  drivers/scsi/elx/libefc/efc.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/scsi/elx/libefc/efc_cmds.c | 7 ++++++-
+>  drivers/scsi/elx/libefc/efclib.h   | 1 +
+>  2 files changed, 7 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/scsi/elx/libefc/efc.h b/drivers/scsi/elx/libefc/efc.h
-> index 927016283f41..468ff3cc9c00 100644
-> --- a/drivers/scsi/elx/libefc/efc.h
-> +++ b/drivers/scsi/elx/libefc/efc.h
-> @@ -47,6 +47,6 @@ enum efc_scsi_del_target_reason {
+> diff --git a/drivers/scsi/elx/libefc/efc_cmds.c b/drivers/scsi/elx/libefc/efc_cmds.c
+> index 37e6697d86b8..f8665d48904a 100644
+> --- a/drivers/scsi/elx/libefc/efc_cmds.c
+> +++ b/drivers/scsi/elx/libefc/efc_cmds.c
+> @@ -249,6 +249,7 @@ efc_nport_attach_reg_vpi_cb(struct efc *efc, int status, u8 *mqe,
+>  {
+>         struct efc_nport *nport = arg;
 >
->  #define nport_sm_trace(nport) \
->         efc_log_debug(nport->efc, \
-> -               "[%s] %-20s\n", nport->display_name, efc_sm_event_name(evt)) \
-> +               "[%s]  %-20s %-20s\n", nport->display_name, __func__, efc_sm_event_name(evt)) \
+> +       nport->attaching = false;
+>         if (efc_nport_get_mbox_status(nport, mqe, status)) {
+>                 efc_nport_free_resources(nport, EFC_EVT_NPORT_ATTACH_FAIL, mqe);
+>                 return -EIO;
+> @@ -286,6 +287,8 @@ efc_cmd_nport_attach(struct efc *efc, struct efc_nport *nport, u32 fc_id)
+>         if (rc) {
+>                 efc_log_err(efc, "REG_VPI command failure\n");
+>                 efc_nport_free_resources(nport, EFC_EVT_NPORT_ATTACH_FAIL, buf);
+> +       } else {
+> +               nport->attaching = true;
+>         }
 >
->  #endif /* __EFC_H__ */
+>         return rc;
+> @@ -302,8 +305,10 @@ efc_cmd_nport_free(struct efc *efc, struct efc_nport *nport)
+>         /* Issue the UNREG_VPI command to free the assigned VPI context */
+>         if (nport->attached)
+>                 efc_nport_free_unreg_vpi(nport);
+> -       else
+> +       else if (nport->attaching)
+>                 nport->free_req_pending = true;
+> +       else
+> +               efc_sm_post_event(&nport->sm, EFC_EVT_NPORT_FREE_OK, NULL);
+>
+>         return 0;
+>  }
+> diff --git a/drivers/scsi/elx/libefc/efclib.h b/drivers/scsi/elx/libefc/efclib.h
+> index ee291cabf7e0..dde20891c2dd 100644
+> --- a/drivers/scsi/elx/libefc/efclib.h
+> +++ b/drivers/scsi/elx/libefc/efclib.h
+> @@ -142,6 +142,7 @@ struct efc_nport {
+>         bool                    is_vport;
+>         bool                    free_req_pending;
+>         bool                    attached;
+> +       bool                    attaching;
+>         bool                    p2p_winner;
+>         struct efc_domain       *domain;
+>         u64                     wwpn;
 > --
 > 2.25.1
 >
+Looks good. Thanks.
+
+Reviewed-by: Ram Vegesna <ram.vegesna@broadcom.com>
 
 -- 
 This electronic communication and the information and any files transmitted 
@@ -113,7 +148,7 @@ this e-mail is strictly prohibited. If you received this e-mail in error,
 please return the e-mail to the sender, delete it from your computer, and 
 destroy any printed copy of it.
 
---000000000000ba0f5005cc081135
+--0000000000001bc00705cc082886
 Content-Type: application/pkcs7-signature; name="smime.p7s"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="smime.p7s"
@@ -184,13 +219,13 @@ tlkydEDuGjuSfbNzIcS0qLpqIHaSh/3WmF7TWzBJ8Ln1HwrvuMZ3Txksjsmpt34GFSubX+CGrYyW
 ORNGomSiW66FqRvj0iaYYbNTIfnU7/iJy3CN8Z5SvVroNAQbRfoooT/loWsoiUUNmTR9kebvLzGC
 Am0wggJpAgEBMGswWzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExMTAv
 BgNVBAMTKEdsb2JhbFNpZ24gR0NDIFIzIFBlcnNvbmFsU2lnbiAyIENBIDIwMjACDCHWmFjgp1UN
-rBuhLTANBglghkgBZQMEAgEFAKCB1DAvBgkqhkiG9w0BCQQxIgQg65vPVcu92hmY9jk+rnOYjj7n
-2G9iE18w8wkeCiO2T0MwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcN
-MjEwOTE1MTI0NTEyWjBpBgkqhkiG9w0BCQ8xXDBaMAsGCWCGSAFlAwQBKjALBglghkgBZQMEARYw
+rBuhLTANBglghkgBZQMEAgEFAKCB1DAvBgkqhkiG9w0BCQQxIgQgyxuw7AEj4TdcLl4bx558QEgM
+FwwdDbaK7MQwpoxbDrswGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcN
+MjEwOTE1MTI1MTI4WjBpBgkqhkiG9w0BCQ8xXDBaMAsGCWCGSAFlAwQBKjALBglghkgBZQMEARYw
 CwYJYIZIAWUDBAECMAoGCCqGSIb3DQMHMAsGCSqGSIb3DQEBCjALBgkqhkiG9w0BAQcwCwYJYIZI
-AWUDBAIBMA0GCSqGSIb3DQEBAQUABIIBAGOBCdaIelJ+T88yoCtcPsvKgblOjDWQ7lw6FQzPTLxN
-TXf7h/eg56eAMXwAGUMTSMAExdBohqEHEAItdhpNY4CpweJWzeNLiOjP4cyMiOX5/OpIYc1tzZMC
-uh0hbYbkDC77Y0xOxMpCHoPbW+wBJXFuWDVmrLZG0tSOCJ0VlzutidLzdsBGvYogxMf+H9tTq94d
-i7wW8yAL9jwT1aBGs2yJJR6N2K5VMiOWNFcrsvyN8DqHaKHqmJoWfskjk5oKJfsOVCnnvEF3FqfW
-C+dOJ2xGI580iivuE91VhwhYkhnSwGQ2dBKjckMs/z/z06uRNfuKi3gXZ+a4yhjqmxXYAvw=
---000000000000ba0f5005cc081135--
+AWUDBAIBMA0GCSqGSIb3DQEBAQUABIIBAAo8myEgR4MUl7rCxQV8yhBkVzoms9AQh/oIBgACSC5l
+flC4kAkmzX24RPTc3bZCCNKj5dhLVCcydWGqXsAI/pYD6wq4D0LnD7fyujn1lTIDLogkWkIAK3ve
+ELh8l7Tqk4F6SswbUW/ega1P8hjgJthvOXBaI/Jow4P8v0g5ayTKpJMQjIfPBoMJR8GxJZPnhm/U
+m/Rh1RCao50IEnThItu029PB7jXMwbJB/6HsKf8e2FDWo861+6lOC22dAucE63TjAlMiI4TDh8K9
+FaFbRUqKG36q9sK5w1yydeSDpSv0xk8LwIftcDGScvtnkJltTxngydUQCpmVrt45QLePD1c=
+--0000000000001bc00705cc082886--
