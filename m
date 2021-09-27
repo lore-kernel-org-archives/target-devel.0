@@ -1,96 +1,140 @@
 Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48B2CC433FE
-	for <target-devel@archiver.kernel.org>; Wed, 22 Sep 2021 16:44:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18AE5C433FE
+	for <target-devel@archiver.kernel.org>; Mon, 27 Sep 2021 19:38:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 19D1A611C9
-	for <target-devel@archiver.kernel.org>; Wed, 22 Sep 2021 16:44:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EDF5460F58
+	for <target-devel@archiver.kernel.org>; Mon, 27 Sep 2021 19:38:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236640AbhIVQpa (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 22 Sep 2021 12:45:30 -0400
-Received: from mta-02.yadro.com ([89.207.88.252]:58464 "EHLO mta-01.yadro.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S231925AbhIVQp3 (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Wed, 22 Sep 2021 12:45:29 -0400
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 780B943EDB;
-        Wed, 22 Sep 2021 16:43:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        mime-version:content-transfer-encoding:content-type:content-type
-        :content-language:accept-language:in-reply-to:references
-        :message-id:date:date:subject:subject:from:from:received
-        :received:received:received; s=mta-01; t=1632329033; x=
-        1634143434; bh=jEcF9jrFFknizQXVio793eWQQQtI0Q3SBQaN/X5YYig=; b=Y
-        1Tqz+bzeGPnqWKjIqv/gTg8FxcGL8MxEUQn20KrUANqQ3n9EAxtQ+HUteYA9HdBe
-        mwzlIXE9LYBfK/Oxv5Pjxf1cHY8QscELnaDLFOPf25Hmdj2IbVxU8EsJ583ev94h
-        dUXbuinsvRCJLmMjQD32Js+SJ8o2VJcyfP1PSNLbkQ=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id gwaOAUDTVQMw; Wed, 22 Sep 2021 19:43:53 +0300 (MSK)
-Received: from T-EXCH-03.corp.yadro.com (t-exch-03.corp.yadro.com [172.17.100.103])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        id S236513AbhI0TkA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 27 Sep 2021 15:40:00 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:42500 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S229503AbhI0TkA (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Mon, 27 Sep 2021 15:40:00 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1632771501;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=w8zVEowPpHEw4K+DjtjdHUbsuCY06YRlaczJf98yNn0=;
+        b=Kkrx4noT7A7zk46iXEyrqkGdOz2WSGesv4jyaEwqcazAOj1eG0Yp0JqXqlxGTXkaE4xrdJ
+        VbTS9YNrORR6phmQm/6FIK4kga4fu8hkVUCm6Ww+Q1eVDNsHJHsOPlhdpdyGVZQ0xsBfW9
+        Z5tyyzMV8ExjKfY3wLCA59/0PtY7Eb4=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-310-Gz1bFcK-NzK6xGoEiP2Fcw-1; Mon, 27 Sep 2021 15:38:18 -0400
+X-MC-Unique: Gz1bFcK-NzK6xGoEiP2Fcw-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id 45C6043EB8;
-        Wed, 22 Sep 2021 19:43:52 +0300 (MSK)
-Received: from T-EXCH-04.corp.yadro.com (172.17.100.104) by
- T-EXCH-03.corp.yadro.com (172.17.100.103) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Wed, 22 Sep 2021 19:43:52 +0300
-Received: from T-EXCH-04.corp.yadro.com ([fe80::d8c5:6f0a:3d48:18df]) by
- T-EXCH-04.corp.yadro.com ([fe80::d8c5:6f0a:3d48:18df%15]) with mapi id
- 15.01.0669.032; Wed, 22 Sep 2021 19:43:52 +0300
-From:   Dmitriy Bogdanov <d.bogdanov@yadro.com>
-To:     Mike Christie <michael.christie@oracle.com>,
-        Martin Petersen <martin.petersen@oracle.com>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-CC:     "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "linux@yadro.com" <linux@yadro.com>,
-        Konstantin Shelekhin <k.shelekhin@yadro.com>,
-        Roman Bolshakov <r.bolshakov@yadro.com>
-Subject: RE: [PATCH v3] target: core: remove from tmr_list at lun unlink
-Thread-Topic: [PATCH v3] target: core: remove from tmr_list at lun unlink
-Thread-Index: AQHXqjxsRxjpgHbtYEm89uYUDNcxt6uoQ5KAgATA8DCAAwqxgIAAOdSg
-Date:   Wed, 22 Sep 2021 16:43:51 +0000
-Message-ID: <b56124c7c8b94531bdbd7b8d2fe00633@yadro.com>
-References: <20210915141719.1484-1-d.bogdanov@yadro.com>
- <40b321b4-76bd-8eb4-84bd-c7378ad2bbc7@oracle.com>
- <8f81906545014a768a7f775d1dcf51cf@yadro.com>
- <9ca9ec9f-bc6b-9aea-3b5a-43ce5fd09b5c@oracle.com>
-In-Reply-To: <9ca9ec9f-bc6b-9aea-3b5a-43ce5fd09b5c@oracle.com>
-Accept-Language: ru-RU, en-US
-Content-Language: ru-RU
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [10.199.0.54]
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 3FF3D1084683;
+        Mon, 27 Sep 2021 19:38:17 +0000 (UTC)
+Received: from raketa.redhat.com (unknown [10.40.193.39])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id CD80C3AC0;
+        Mon, 27 Sep 2021 19:38:15 +0000 (UTC)
+From:   Maurizio Lombardi <mlombard@redhat.com>
+To:     martin.petersen@oracle.com
+Cc:     bostroesser@gmail.com, michael.christie@oracle.com,
+        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: [PATCH] target: allow setting dbroot as a module parameter
+Date:   Mon, 27 Sep 2021 21:38:14 +0200
+Message-Id: <20210927193814.79111-1-mlombard@redhat.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-SGkgTWlrZSwNCg0KPiBZZWFoLCBJIHRoaW5rIGl0J3Mgbm90IG5lZWRlZC4gSXQgY2FtZSBpbiB3
-aXRoOg0KPg0KPiBjb21taXQgMmM5ZmE0OWUxMDBmOTYyYWY5ODhmMWMwNTI5MjMxYmYxNDkwNWNk
-YQ0KPiBBdXRob3I6IEJhcnQgVmFuIEFzc2NoZSA8YnZhbmFzc2NoZUBhY20ub3JnPg0KPiBEYXRl
-OiAgIFR1ZSBOb3YgMjcgMTU6NTI6MDMgMjAxOCAtMDgwMA0KPg0KPiAgICAgc2NzaTogdGFyZ2V0
-L2NvcmU6IE1ha2UgQUJPUlQgYW5kIExVTiBSRVNFVCBoYW5kbGluZyBzeW5jaHJvbm91cw0KPiBn
-cmVlLiBJdCBsb29rcyBsaWtlIGl0IHdhcyBhZGRlZCBpbjoNCj4NCj4gYW5kIGluIHRoYXQgcGF0
-Y2ggSSBjYW4ndCBzZWUgaXQgZXZlciBoYXBwZW5pbmcuIFdlIGhhdmUgMiB3YXlzIHRvIHN1Ym1p
-dA0KPiBhbiBhYm9ydCB0bXI6DQo+DQo+IDEuIHRhcmdldF9zdWJtaXRfdG1yIC0gQ2FsbHMgdHJh
-bnNwb3J0X2xvb2t1cF90bXJfbHVuIHRoZW4NCj4gdHJhbnNwb3J0X2dlbmVyaWNfaGFuZGxlX3Rt
-ci4NCj4NCj4gMi4gaXNjc2l0X2hhbmRsZV90YXNrX21ndF9jbWQgLSBXaWxsIGNhbGwgdHJhbnNw
-b3J0X2xvb2t1cF90bXJfbHVuDQo+IGZvciBldmVyeSB0bXIgZXhjZXB0IHRoZSBpc2NzaSBzcGVj
-aWZpYyBUQVNLIFJFQVNTSUdOLiBUQVNLIFJFQVNTSU5HDQo+IGlzIG5vdCBwYXNzZWQgdG8gdHJh
-bnNwb3J0X2dlbmVyaWNfaGFuZGxlX3Rtci4NCj4NCj4gSSBkb24ndCBzZWUgYW55IHBsYWNlcyB3
-aGVyZSB0bXJfZGV2IGlzIE5VTEwgYWZ0ZXIgdHJhbnNwb3J0X2xvb2t1cF90bXJfbHVuDQo+IGhh
-cyBzZXQgaXQgYW5kIGFkZGVkIGl0IHRvIHRoZSBsaXN0Lg0KPg0KPiBTbyBJIHRoaW5rIHlvdSBj
-YW4ganVzdCBraWxsIGl0Lg0KDQpPaywgdGhlbiBpbiB0aGUgbmV4dCByZXZpc2lvbiBvZiB0aGUg
-cGF0Y2ggSSB3aWxsIGp1c3QgcmVtb3ZlIHRoYXQgdHJhbnNwb3J0X2xvb2t1cF90bXJfbHVuIHdp
-dGggV0FSTl9PTi4NCg0KQlIsDQogRG1pdHJ5DQo=
+The target driver prevents the users from changing
+the database root directory if a target module like ib_srpt
+has already been loaded during boot.
+
+Let the users set their preferred root directory
+by passing it as a module parameter. This, combined
+with the modprobe.d's "options" command,
+will mitigate the issue because the parameter will be
+automatically passed every time the target_core_mod module is inserted
+into the kernel; whether directly (using modprobe) or
+because another module being loaded depends on it.
+
+If the directory cannot be opened, the target driver will print
+an error and fall back to its default (/etc/target)
+
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/target/target_core_configfs.c | 29 ++++++++++++++++++---------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 274ffb6b83a1..c0fc6312aa20 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -100,7 +100,10 @@ static ssize_t target_core_item_version_show(struct config_item *item,
+ CONFIGFS_ATTR_RO(target_core_item_, version);
+ 
+ char db_root[DB_ROOT_LEN] = DB_ROOT_DEFAULT;
+-static char db_root_stage[DB_ROOT_LEN];
++static char db_root_stage[DB_ROOT_LEN] = {0};
++
++module_param_string(dbroot, db_root_stage, DB_ROOT_LEN, 0);
++MODULE_PARM_DESC(dbroot, "Target database root directory (def=/etc/target)");
+ 
+ static ssize_t target_core_item_dbroot_show(struct config_item *item,
+ 					    char *page)
+@@ -3507,25 +3510,25 @@ void target_setup_backend_cits(struct target_backend *tb)
+ 	target_core_setup_dev_stat_cit(tb);
+ }
+ 
+-static void target_init_dbroot(void)
++static int target_init_dbroot(char *path)
+ {
+ 	struct file *fp;
+ 
+-	snprintf(db_root_stage, DB_ROOT_LEN, DB_ROOT_PREFERRED);
+-	fp = filp_open(db_root_stage, O_RDONLY, 0);
++	fp = filp_open(path, O_RDONLY, 0);
+ 	if (IS_ERR(fp)) {
+-		pr_err("db_root: cannot open: %s\n", db_root_stage);
+-		return;
++		pr_err("db_root: cannot open: %s\n", path);
++		return -EINVAL;
+ 	}
+ 	if (!S_ISDIR(file_inode(fp)->i_mode)) {
+ 		filp_close(fp, NULL);
+-		pr_err("db_root: not a valid directory: %s\n", db_root_stage);
+-		return;
++		pr_err("db_root: not a valid directory: %s\n", path);
++		return -EINVAL;
+ 	}
+ 	filp_close(fp, NULL);
+ 
+-	strncpy(db_root, db_root_stage, DB_ROOT_LEN);
++	strlcpy(db_root, path, DB_ROOT_LEN);
+ 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
++	return 0;
+ }
+ 
+ static int __init target_core_init_configfs(void)
+@@ -3608,7 +3611,13 @@ static int __init target_core_init_configfs(void)
+ 	if (ret < 0)
+ 		goto out;
+ 
+-	target_init_dbroot();
++	if (db_root_stage[0]) {
++		ret = target_init_dbroot(db_root_stage);
++		if (ret < 0)
++			target_init_dbroot(DB_ROOT_PREFERRED);
++	} else {
++		target_init_dbroot(DB_ROOT_PREFERRED);
++	}
+ 
+ 	return 0;
+ 
+-- 
+2.27.0
+
