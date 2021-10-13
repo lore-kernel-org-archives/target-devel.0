@@ -2,191 +2,137 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB39DC433F5
-	for <target-devel@archiver.kernel.org>; Tue, 12 Oct 2021 23:38:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C76F6C433F5
+	for <target-devel@archiver.kernel.org>; Wed, 13 Oct 2021 05:13:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BF74560ED4
-	for <target-devel@archiver.kernel.org>; Tue, 12 Oct 2021 23:38:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A2A9F60EE9
+	for <target-devel@archiver.kernel.org>; Wed, 13 Oct 2021 05:13:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236114AbhJLXkH (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 12 Oct 2021 19:40:07 -0400
-Received: from wout1-smtp.messagingengine.com ([64.147.123.24]:46697 "EHLO
-        wout1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S236054AbhJLXkG (ORCPT
+        id S235162AbhJMFPa (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 13 Oct 2021 01:15:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33614 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229514AbhJMFP2 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 12 Oct 2021 19:40:06 -0400
-Received: from compute2.internal (compute2.nyi.internal [10.202.2.42])
-        by mailout.west.internal (Postfix) with ESMTP id 32C203200DA8;
-        Tue, 12 Oct 2021 19:38:03 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute2.internal (MEProxy); Tue, 12 Oct 2021 19:38:03 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-type:date:from:in-reply-to
-        :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=q117RS
-        Lv3RobY8UuO/vQ7wnIEv8TSbDfx48RDKhsmIM=; b=Epu0peO6s1ANPAo9FDqcT1
-        XCxAVvX8Xa1kCCaQ1JLq7xhEXCUv0YIGpgBo/pQE3oxY0Cw5pvoVbrcrdU6qxPWr
-        pFhaxHhwkH+PmpfUQIli/lGkMQBCBEzKdioeR5RYtPvjXfubkb22fliufL3VyU+X
-        +0gnHLDFlLUkUSdVlAIMcbIKoJOfRnEAoL5pvywPwyluIFNSwXODC0yfgd7quFgP
-        Yc5hFMCWlKCyXPdj+9Bc6v8SgSUJRQnnXDVoHqZvrGQLN84Rabgn1tZYW1EUj/+h
-        SYvfQx07gUcCwN+N/7idvCgwbSBfcB4flXvhbZua1/ik6osyEGlzwivuY3yJKzeA
-        ==
-X-ME-Sender: <xms:WRxmYbURIpDxhXcdfadfdXn2vpQ2hwy2Zn-aLol2DH8DIs4Ny_KeVw>
-    <xme:WRxmYTlEPItbUSljhmdp4qqroV-tw6DWpdQQwgyDdC5AXmW3jWqhq3v62PPDOy4pF
-    0ns1-zNVdB40kIrcXw>
-X-ME-Received: <xmr:WRxmYXaa4LdeKwFezLsByepnCpOPJ8RcH4wWRwdnJrl9BbS6ItlSR8etwMfLS79EPRbmxePhgYkvcXDtGwjYFLT266U2bM4NcXk>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvtddrvddtledgvddvucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvffujgfkfhggtgesthdtredttddtvdenucfhrhhomhephfhinhhnucfv
-    hhgrihhnuceofhhthhgrihhnsehlihhnuhigqdhmieekkhdrohhrgheqnecuggftrfgrth
-    htvghrnhepffduhfegfedvieetudfgleeugeehkeekfeevfffhieevteelvdfhtdevffet
-    uedunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepfh
-    hthhgrihhnsehlihhnuhigqdhmieekkhdrohhrgh
-X-ME-Proxy: <xmx:WhxmYWU0ExNNWI_v69HfUfiC0kLKxvbPh_hWlFlQNre5Blo25P7G0w>
-    <xmx:WhxmYVnRn38COkdQPK7YY4A71Fa8EREf0eOuPUssQ1IGwqPvHYE3gg>
-    <xmx:WhxmYTe1FJrjpWO_M99hX67wHDkDD0-UK7k8R01RGLHbhILZlbWjDQ>
-    <xmx:WhxmYYuI7siuz1LmNXRyrW4aeiv57gLplZtvadOSbYnIefzoYut_Wg>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 12 Oct 2021 19:38:00 -0400 (EDT)
-Date:   Wed, 13 Oct 2021 10:37:56 +1100 (AEDT)
-From:   Finn Thain <fthain@linux-m68k.org>
-To:     Cai Huoqing <caihuoqing@baidu.com>
-cc:     hch@infradead.org, Michael Cyr <mikecyr@linux.ibm.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Wed, 13 Oct 2021 01:15:28 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0C2BC061570;
+        Tue, 12 Oct 2021 22:13:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+        Content-Description:In-Reply-To:References;
+        bh=ocvXC+DvSauKdmmvS3p+BxJi5u95doUk5KlK23wKtqo=; b=lKRpM4ZXjdzEAs+vZHMan9ZhwK
+        q3qA9dd5QajFA+KsuGdVyTH2p+oZZPEv/z2NSgSxTwIMMwqmktOR+s0Mrd19t1c1Y/TakGT40A9Wj
+        fXHJiNb6NQJwkxlZ/5iLycWCBNdMTLXRP1g8wuFiwK5UhTbY4DE7tpL0AHanppMBRE/m1Ine/XAEK
+        um2dw0LVt4/UjLCyOHoVNjJK0jpXEaLw+w3Q6MwnUfqPKIR8hZ7XIOjLGS/AwhJhnrAzptzhgIYv3
+        k508G2hmAkGrCbErzCtBLkTxM5WVEpuUuduXQQzcasviJArvc73oNwcMB0CSLN98PutjOV+1MzU1W
+        3RwzUyhQ==;
+Received: from 089144212063.atnat0021.highway.a1.net ([89.144.212.63] helo=localhost)
+        by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1maWXM-0075tt-3G; Wed, 13 Oct 2021 05:10:57 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
+        Song Liu <song@kernel.org>, David Sterba <dsterba@suse.com>,
+        Josef Bacik <josef@toxicpanda.com>,
+        "Theodore Ts'o" <tytso@mit.edu>,
+        OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+        Dave Kleikamp <shaggy@kernel.org>,
+        Ryusuke Konishi <konishi.ryusuke@gmail.com>,
+        Anton Altaparmakov <anton@tuxera.com>,
+        Konstantin Komarov <almaz.alexandrovich@paragon-software.com>,
+        Kees Cook <keescook@chromium.org>,
+        Phillip Lougher <phillip@squashfs.org.uk>,
+        Jan Kara <jack@suse.com>, linux-block@vger.kernel.org,
+        dm-devel@redhat.com, drbd-dev@lists.linbit.com,
+        linux-bcache@vger.kernel.org, linux-raid@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] scsi: ibmvscsi_tgt: Use dma_alloc_noncoherent()
- instead of get_zeroed_page/dma_map_single()
-In-Reply-To: <20211012032110.2224-1-caihuoqing@baidu.com>
-Message-ID: <f8c34711-18a5-6c9d-8066-99cf19c2b2@linux-m68k.org>
-References: <20211012032110.2224-1-caihuoqing@baidu.com>
+        linux-fsdevel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-ext4@vger.kernel.org, jfs-discussion@lists.sourceforge.net,
+        linux-nfs@vger.kernel.org, linux-nilfs@vger.kernel.org,
+        linux-ntfs-dev@lists.sourceforge.net, ntfs3@lists.linux.dev,
+        reiserfs-devel@vger.kernel.org
+Subject: don't use ->bd_inode to access the block device size
+Date:   Wed, 13 Oct 2021 07:10:13 +0200
+Message-Id: <20211013051042.1065752-1-hch@lst.de>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, 12 Oct 2021, Cai Huoqing wrote:
+Hi Jens,
 
-> Replacing get_zeroed_page/free_page/dma_map_single/dma_unmap_single()
-> with dma_alloc_noncoherent/dma_free_noncoherent() helps to reduce
-> code size, and simplify the code, and the hardware keep DMA coherent
-> itself.
-> 
-> Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
-> ---
-> v1->v2:
-> 	*Change to dma_alloc/free_noncoherent from dma_alloc/free_coherent.
-> 	*Update changelog.
-> 
->  drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 46 ++++++++----------------
->  1 file changed, 15 insertions(+), 31 deletions(-)
-> 
-> diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-> index 61f06f6885a5..91199b969718 100644
-> --- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-> +++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-> @@ -3007,20 +3007,13 @@ static long ibmvscsis_create_command_q(struct scsi_info *vscsi, int num_cmds)
->  
->  	vscsi->cmd_q.size = pages;
->  
-> -	vscsi->cmd_q.base_addr =
-> -		(struct viosrp_crq *)get_zeroed_page(GFP_KERNEL);
-> -	if (!vscsi->cmd_q.base_addr)
-> -		return -ENOMEM;
-> -
->  	vscsi->cmd_q.mask = ((uint)pages * CRQ_PER_PAGE) - 1;
->  
-> -	vscsi->cmd_q.crq_token = dma_map_single(&vdev->dev,
-> -						vscsi->cmd_q.base_addr,
-> -						PAGE_SIZE, DMA_BIDIRECTIONAL);
-> -	if (dma_mapping_error(&vdev->dev, vscsi->cmd_q.crq_token)) {
-> -		free_page((unsigned long)vscsi->cmd_q.base_addr);
-> +	vscsi->cmd_q.base_addr = dma_alloc_noncoherent(&vdev->dev, PAGE_SIZE,
-> +						       &vscsi->cmd_q.crq_token,
-> +						       DMA_BIDIRECTIONAL, GFP_KERNEL);
-> +	if (!vscsi->cmd_q.base_addr)
->  		return -ENOMEM;
-> -	}
->  
->  	return 0;
->  }
-> @@ -3036,9 +3029,9 @@ static long ibmvscsis_create_command_q(struct scsi_info *vscsi, int num_cmds)
->   */
->  static void ibmvscsis_destroy_command_q(struct scsi_info *vscsi)
->  {
-> -	dma_unmap_single(&vscsi->dma_dev->dev, vscsi->cmd_q.crq_token,
-> -			 PAGE_SIZE, DMA_BIDIRECTIONAL);
-> -	free_page((unsigned long)vscsi->cmd_q.base_addr);
-> +	dma_free_noncoherent(&vscsi->dma_dev->dev,
-> +			     PAGE_SIZE, vscsi->cmd_q.base_addr,
-> +			     vscsi->cmd_q.crq_token, DMA_BIDIRECTIONAL);
->  	vscsi->cmd_q.base_addr = NULL;
->  	vscsi->state = NO_QUEUE;
->  }
-> @@ -3504,18 +3497,12 @@ static int ibmvscsis_probe(struct vio_dev *vdev,
->  		goto free_timer;
->  	}
->  
-> -	vscsi->map_buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
-> +	vscsi->map_buf = dma_alloc_noncoherent(&vdev->dev,
-> +					       PAGE_SIZE, &vscsi->map_ioba,
-> +					       DMA_BIDIRECTIONAL, GFP_KERNEL);
->  	if (!vscsi->map_buf) {
->  		rc = -ENOMEM;
->  		dev_err(&vscsi->dev, "probe: allocating cmd buffer failed\n");
-> -		goto destroy_queue;
-> -	}
-> -
-> -	vscsi->map_ioba = dma_map_single(&vdev->dev, vscsi->map_buf, PAGE_SIZE,
-> -					 DMA_BIDIRECTIONAL);
-> -	if (dma_mapping_error(&vdev->dev, vscsi->map_ioba)) {
-> -		rc = -ENOMEM;
-> -		dev_err(&vscsi->dev, "probe: error mapping command buffer\n");
->  		goto free_buf;
+various drivers currently poke directy at the block device inode, which
+is a bit of a mess.  This series cleans up the places that read the
+block device size to use the proper helpers.  I have separate patches
+for many of the other bd_inode uses, but this series is already big
+enough as-is,
 
-Shouldn't that be goto destroy_queue?
+I wondered about adding a helper for looking at the size in byte units
+to avoid the SECTOR_SHIFT shifts in various places.  But given that
+I could not come up with a good name and block devices fundamentally
+work in sector size granularity I decided against that.
 
->  	}
->  
-> @@ -3544,7 +3531,7 @@ static int ibmvscsis_probe(struct vio_dev *vdev,
->  	if (!vscsi->work_q) {
->  		rc = -ENOMEM;
->  		dev_err(&vscsi->dev, "create_workqueue failed\n");
-> -		goto unmap_buf;
-> +		goto destroy_queue;
-
-And goto free_buf?
-
->  	}
->  
->  	rc = request_irq(vdev->irq, ibmvscsis_interrupt, 0, "ibmvscsis", vscsi);
-> @@ -3562,11 +3549,9 @@ static int ibmvscsis_probe(struct vio_dev *vdev,
->  
->  destroy_WQ:
->  	destroy_workqueue(vscsi->work_q);
-> -unmap_buf:
-> -	dma_unmap_single(&vdev->dev, vscsi->map_ioba, PAGE_SIZE,
-> -			 DMA_BIDIRECTIONAL);
->  free_buf:
-> -	kfree(vscsi->map_buf);
-> +	dma_free_noncoherent(&vdev->dev, PAGE_SIZE, vscsi->map_buf,
-> +			     vscsi->map_ioba, DMA_BIDIRECTIONAL);
->  destroy_queue:
->  	tasklet_kill(&vscsi->work_task);
->  	ibmvscsis_unregister_command_q(vscsi);
-> @@ -3602,9 +3587,8 @@ static void ibmvscsis_remove(struct vio_dev *vdev)
->  	vio_disable_interrupts(vdev);
->  	free_irq(vdev->irq, vscsi);
->  	destroy_workqueue(vscsi->work_q);
-> -	dma_unmap_single(&vdev->dev, vscsi->map_ioba, PAGE_SIZE,
-> -			 DMA_BIDIRECTIONAL);
-> -	kfree(vscsi->map_buf);
-> +	dma_free_noncoherent(&vdev->dev, PAGE_SIZE, vscsi->map_buf,
-> +			     vscsi->map_ioba, DMA_BIDIRECTIONAL);
->  	tasklet_kill(&vscsi->work_task);
->  	ibmvscsis_destroy_command_q(vscsi);
->  	ibmvscsis_freetimer(vscsi);
-> 
+Diffstat:
+ block/fops.c                        |    2 +-
+ drivers/block/drbd/drbd_int.h       |    3 +--
+ drivers/md/bcache/super.c           |    2 +-
+ drivers/md/bcache/util.h            |    4 ----
+ drivers/md/bcache/writeback.c       |    2 +-
+ drivers/md/dm-bufio.c               |    2 +-
+ drivers/md/dm-cache-metadata.c      |    2 +-
+ drivers/md/dm-cache-target.c        |    2 +-
+ drivers/md/dm-clone-target.c        |    2 +-
+ drivers/md/dm-dust.c                |    5 ++---
+ drivers/md/dm-ebs-target.c          |    2 +-
+ drivers/md/dm-era-target.c          |    2 +-
+ drivers/md/dm-exception-store.h     |    2 +-
+ drivers/md/dm-flakey.c              |    3 +--
+ drivers/md/dm-integrity.c           |    6 +++---
+ drivers/md/dm-linear.c              |    3 +--
+ drivers/md/dm-log-writes.c          |    4 ++--
+ drivers/md/dm-log.c                 |    2 +-
+ drivers/md/dm-mpath.c               |    2 +-
+ drivers/md/dm-raid.c                |    6 +++---
+ drivers/md/dm-switch.c              |    2 +-
+ drivers/md/dm-table.c               |    3 +--
+ drivers/md/dm-thin-metadata.c       |    2 +-
+ drivers/md/dm-thin.c                |    2 +-
+ drivers/md/dm-verity-target.c       |    3 +--
+ drivers/md/dm-writecache.c          |    2 +-
+ drivers/md/dm-zoned-target.c        |    2 +-
+ drivers/md/md.c                     |   26 +++++++++++---------------
+ drivers/mtd/devices/block2mtd.c     |    5 +++--
+ drivers/nvme/target/io-cmd-bdev.c   |    4 ++--
+ drivers/target/target_core_iblock.c |    5 +++--
+ fs/affs/super.c                     |    2 +-
+ fs/btrfs/dev-replace.c              |    2 +-
+ fs/btrfs/disk-io.c                  |    3 ++-
+ fs/btrfs/ioctl.c                    |    4 ++--
+ fs/btrfs/volumes.c                  |    7 ++++---
+ fs/buffer.c                         |    4 ++--
+ fs/cramfs/inode.c                   |    2 +-
+ fs/ext4/super.c                     |    2 +-
+ fs/fat/inode.c                      |    5 +----
+ fs/hfs/mdb.c                        |    2 +-
+ fs/hfsplus/wrapper.c                |    2 +-
+ fs/jfs/resize.c                     |    5 ++---
+ fs/jfs/super.c                      |    5 ++---
+ fs/nfs/blocklayout/dev.c            |    4 ++--
+ fs/nilfs2/ioctl.c                   |    2 +-
+ fs/nilfs2/super.c                   |    2 +-
+ fs/nilfs2/the_nilfs.c               |    3 ++-
+ fs/ntfs/super.c                     |    8 +++-----
+ fs/ntfs3/super.c                    |    3 +--
+ fs/pstore/blk.c                     |    4 ++--
+ fs/reiserfs/super.c                 |    7 ++-----
+ fs/squashfs/super.c                 |    5 +++--
+ fs/udf/lowlevel.c                   |    5 ++---
+ fs/udf/super.c                      |    9 +++------
+ include/linux/genhd.h               |    6 ++++++
+ 56 files changed, 100 insertions(+), 117 deletions(-)
