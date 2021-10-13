@@ -2,148 +2,79 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 451C1C433F5
-	for <target-devel@archiver.kernel.org>; Wed, 13 Oct 2021 14:26:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06F7FC433F5
+	for <target-devel@archiver.kernel.org>; Wed, 13 Oct 2021 14:53:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 261596101D
-	for <target-devel@archiver.kernel.org>; Wed, 13 Oct 2021 14:26:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D62A9610E6
+	for <target-devel@archiver.kernel.org>; Wed, 13 Oct 2021 14:53:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231576AbhJMO2Y (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 13 Oct 2021 10:28:24 -0400
-Received: from stargate.chelsio.com ([12.32.117.8]:11075 "EHLO
-        stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230348AbhJMO2Y (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Wed, 13 Oct 2021 10:28:24 -0400
-Received: from fcoe-test11.asicdesigners.com (fcoe-test11.blr.asicdesigners.com [10.193.185.180])
-        by stargate.chelsio.com (8.14.7/8.14.7) with ESMTP id 19DEPEEQ014289;
-        Wed, 13 Oct 2021 07:25:15 -0700
-From:   Varun Prakash <varun@chelsio.com>
-To:     martin.petersen@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        varun@chelsio.com
-Subject: [PATCH] scsi: target: cxgbit: enable Delayed ACK
-Date:   Wed, 13 Oct 2021 19:55:09 +0530
-Message-Id: <1634135109-5044-1-git-send-email-varun@chelsio.com>
-X-Mailer: git-send-email 2.0.2
+        id S233590AbhJMOzS (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 13 Oct 2021 10:55:18 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:36590 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S230015AbhJMOzQ (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Wed, 13 Oct 2021 10:55:16 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id B7B4A43F3F;
+        Wed, 13 Oct 2021 14:53:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        in-reply-to:content-disposition:content-type:content-type
+        :mime-version:references:message-id:subject:subject:from:from
+        :date:date:received:received:received; s=mta-01; t=1634136789;
+         x=1635951190; bh=Ggh/GXC5uPjyZz7uetrppb3iP7gE6G353x+cWaWtFj4=; b=
+        OF9NuEI8o8sSC8+6Hn09w4Zq6wGx3mf+ugpJ0MaOdtXmCZFaEC6qxUWM1RDv1g+7
+        sYMuwmuKS80vT9cJrPWM/klN/H3fLus6IVhYwVooKPREG226LbF8eSpkjv6eld6w
+        HFZAEtNkP2+3WoiV8yrr/M+7XLy2UOyl0g2KPJIE9hc=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id GLPN7l-aUMHd; Wed, 13 Oct 2021 17:53:09 +0300 (MSK)
+Received: from T-EXCH-04.corp.yadro.com (t-exch-04.corp.yadro.com [172.17.100.104])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id A6BE14131C;
+        Wed, 13 Oct 2021 17:53:09 +0300 (MSK)
+Received: from yadro.com (10.199.12.215) by T-EXCH-04.corp.yadro.com
+ (172.17.100.104) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Wed, 13
+ Oct 2021 17:53:09 +0300
+Date:   Wed, 13 Oct 2021 17:53:08 +0300
+From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
+To:     Hannes Reinecke <hare@suse.de>
+CC:     <target-devel@vger.kernel.org>, <linux@yadro.com>
+Subject: Re: iSCSI Abort Task and WRITE PENDING
+Message-ID: <YWby1FD69Sz4W8eX@yadro.com>
+References: <YWbdbh1w1Eiw82Zr@yadro.com>
+ <2a819e5d-c77a-94e8-1fe2-0ba81e7c9fa3@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <2a819e5d-c77a-94e8-1fe2-0ba81e7c9fa3@suse.de>
+X-Originating-IP: [10.199.12.215]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-04.corp.yadro.com (172.17.100.104)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Enable Delayed ACK to reduce the number of TCP ACKs.
+On Wed, Oct 13, 2021 at 04:22:41PM +0200, Hannes Reinecke wrote:
+> On 10/13/21 3:21 PM, Konstantin Shelekhin wrote:
+> Short answer: you can't.
+> 
+> There is no feasible path in the I/O stack to abort running I/O; the
+> only chance you have here is to wait for it to time-out.
+>
+> We have run into similar issues, and found that the only sane solution
+> was to wait for the I/O to come back and then retry.
+> As this would take some time (30 seconds if you are unlucky) most
+> initiators will get unhappy and try to reset.
+> Which won't work, either, as the I/O is still stuck.
+> So we finally delayed relogin until all I/O was cleared.
+> 
+> Not the best solution, but the only thing we can do in the absense of a
+> proper I/O abort mechanism.
 
-Signed-off-by: Varun Prakash <varun@chelsio.com>
----
- drivers/target/iscsi/cxgbit/cxgbit_cm.c     |  8 +++-----
- drivers/target/iscsi/cxgbit/cxgbit_target.c | 28 +++++++++++++++++++++++-----
- 2 files changed, 26 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_cm.c b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-index 518ded2..da31a30 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_cm.c
-@@ -836,11 +836,13 @@ static void cxgbit_set_tcp_window(struct cxgbit_sock *csk, struct port_info *pi)
- 	csk->rcv_win = CXGBIT_10G_RCV_WIN;
- 	if (scale)
- 		csk->rcv_win *= scale;
-+	csk->rcv_win = min(csk->rcv_win, RCV_BUFSIZ_M << 10);
- 
- #define CXGBIT_10G_SND_WIN (256 * 1024)
- 	csk->snd_win = CXGBIT_10G_SND_WIN;
- 	if (scale)
- 		csk->snd_win *= scale;
-+	csk->snd_win = min(csk->snd_win, 512U * 1024);
- 
- 	pr_debug("%s snd_win %d rcv_win %d\n",
- 		 __func__, csk->snd_win, csk->rcv_win);
-@@ -1065,7 +1067,7 @@ int cxgbit_rx_data_ack(struct cxgbit_sock *csk)
- 	if (!skb)
- 		return -1;
- 
--	credit_dack = RX_DACK_CHANGE_F | RX_DACK_MODE_V(1) |
-+	credit_dack = RX_DACK_CHANGE_F | RX_DACK_MODE_V(3) |
- 		      RX_CREDITS_V(csk->rx_credits);
- 
- 	cxgb_mk_rx_data_ack(skb, len, csk->tid, csk->ctrlq_idx,
-@@ -1197,7 +1199,6 @@ cxgbit_pass_accept_rpl(struct cxgbit_sock *csk, struct cpl_pass_accept_req *req)
- 	if (tcph->ece && tcph->cwr)
- 		opt2 |= CCTRL_ECN_V(1);
- 
--	opt2 |= RX_COALESCE_V(3);
- 	opt2 |= CONG_CNTRL_V(CONG_ALG_NEWRENO);
- 
- 	opt2 |= T5_ISS_F;
-@@ -1646,9 +1647,6 @@ cxgbit_pass_establish(struct cxgbit_device *cdev, struct sk_buff *skb)
- 
- 	csk->rcv_nxt = rcv_isn;
- 
--	if (csk->rcv_win > (RCV_BUFSIZ_M << 10))
--		csk->rx_credits = (csk->rcv_win - (RCV_BUFSIZ_M << 10));
--
- 	csk->snd_wscale = TCPOPT_SND_WSCALE_G(tcp_opt);
- 	cxgbit_set_emss(csk, tcp_opt);
- 	dst_confirm(csk->dst);
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_target.c b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-index 282297f..d314ee1 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_target.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-@@ -189,8 +189,8 @@ cxgbit_tx_data_wr(struct cxgbit_sock *csk, struct sk_buff *skb, u32 dlen,
- 	wr_ulp_mode = FW_OFLD_TX_DATA_WR_ULPMODE_V(ULP_MODE_ISCSI) |
- 				FW_OFLD_TX_DATA_WR_ULPSUBMODE_V(submode);
- 
--	req->tunnel_to_proxy = htonl((wr_ulp_mode) | force |
--		 FW_OFLD_TX_DATA_WR_SHOVE_V(skb_peek(&csk->txq) ? 0 : 1));
-+	req->tunnel_to_proxy = htonl(wr_ulp_mode | force |
-+				     FW_OFLD_TX_DATA_WR_SHOVE_F);
- }
- 
- static void cxgbit_arp_failure_skb_discard(void *handle, struct sk_buff *skb)
-@@ -1531,7 +1531,7 @@ static int cxgbit_process_lro_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
- 	return ret;
- }
- 
--static int cxgbit_rx_lro_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
-+static int cxgbit_t5_rx_lro_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
- {
- 	struct cxgbit_lro_cb *lro_cb = cxgbit_skb_lro_cb(skb);
- 	struct cxgbit_lro_pdu_cb *pdu_cb = cxgbit_skb_lro_pdu_cb(skb, 0);
-@@ -1557,6 +1557,24 @@ static int cxgbit_rx_lro_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
- 	return ret;
- }
- 
-+static int cxgbit_rx_lro_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
-+{
-+	struct cxgbit_lro_cb *lro_cb = cxgbit_skb_lro_cb(skb);
-+	int ret;
-+
-+	ret = cxgbit_process_lro_skb(csk, skb);
-+	if (ret)
-+		return ret;
-+
-+	csk->rx_credits += lro_cb->pdu_totallen;
-+	if (csk->rx_credits >= csk->rcv_win) {
-+		csk->rx_credits = 0;
-+		cxgbit_rx_data_ack(csk);
-+	}
-+
-+	return 0;
-+}
-+
- static int cxgbit_rx_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
- {
- 	struct cxgb4_lld_info *lldi = &csk->com.cdev->lldi;
-@@ -1564,9 +1582,9 @@ static int cxgbit_rx_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
- 
- 	if (likely(cxgbit_skcb_flags(skb) & SKCBF_RX_LRO)) {
- 		if (is_t5(lldi->adapter_type))
--			ret = cxgbit_rx_lro_skb(csk, skb);
-+			ret = cxgbit_t5_rx_lro_skb(csk, skb);
- 		else
--			ret = cxgbit_process_lro_skb(csk, skb);
-+			ret = cxgbit_rx_lro_skb(csk, skb);
- 	}
- 
- 	__kfree_skb(skb);
--- 
-2.0.2
-
+I'm not sure we are talking about the same bug. In this case the relogin
+is not possible, because new connections are rejected by the target and
+the existing one is not going anywhere, because it's deadlocked on ABORT
+TASK. The only solution is to reset the server.
