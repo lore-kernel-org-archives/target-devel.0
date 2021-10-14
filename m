@@ -2,65 +2,69 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88B4BC433F5
-	for <target-devel@archiver.kernel.org>; Thu, 14 Oct 2021 07:09:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0D60C433EF
+	for <target-devel@archiver.kernel.org>; Thu, 14 Oct 2021 07:30:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6925B60FE8
-	for <target-devel@archiver.kernel.org>; Thu, 14 Oct 2021 07:09:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 92585610F9
+	for <target-devel@archiver.kernel.org>; Thu, 14 Oct 2021 07:30:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230023AbhJNHLO (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 14 Oct 2021 03:11:14 -0400
-Received: from smtp-out1.suse.de ([195.135.220.28]:41676 "EHLO
-        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230017AbhJNHLN (ORCPT
+        id S230063AbhJNHc5 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 14 Oct 2021 03:32:57 -0400
+Received: from smtp-out2.suse.de ([195.135.220.29]:45564 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229910AbhJNHc5 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 14 Oct 2021 03:11:13 -0400
+        Thu, 14 Oct 2021 03:32:57 -0400
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 570FC21A75;
-        Thu, 14 Oct 2021 07:09:08 +0000 (UTC)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id E529620286;
+        Thu, 14 Oct 2021 07:30:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1634195348; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1634196651; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=2QQ6N/GHCgFQGxhbBlbpB0OlXZShb7rQaF+C7tSzIro=;
-        b=marFmTlGDYClnECH74Vk4IWh/yu9KDniCjCsO2qwNjHdHPvsw39wjz5Yj8uAuhJWi9IVRb
-        mClLYeXzsJS/kKDvsmFDoHM09uuXZKO0lMMQAYeajGUGqjm69L5GcutY3BtJU2DYCuDrwZ
-        7cJaVy+CVjWw4y/jNNMsKjiOLiblS6k=
+        bh=8tPwzw2UB082eBps5aUSU0BEvZMxko9oTtdNob0CmmA=;
+        b=gOPfcUImDNEmHj8zUFdNQtolg7AVOfCcokZrXjQa+yus0f6Nae12ACN1OM+9IuyctEsmtM
+        7iFkc+X8VldHj2RvSoPO7Gv8dQ2X1uzzwaK+7aHnhL1DzGI8+dCq6cc+mJIV8vGJAKWuex
+        1A8yge65clSizbMezID5Wo1d9QGHeso=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1634195348;
+        s=susede2_ed25519; t=1634196651;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=2QQ6N/GHCgFQGxhbBlbpB0OlXZShb7rQaF+C7tSzIro=;
-        b=6cBSCgO5rijBLyF5SkWFWA/f6Pi3GfVOybH4EqJGlHt1FXNsBOd8usH/LBobJMknC1RT74
-        SDV4UWD5riLWQjDg==
+        bh=8tPwzw2UB082eBps5aUSU0BEvZMxko9oTtdNob0CmmA=;
+        b=QU8t4/fFBoy3guAi9UYg1f3RCgfgR0hhn6lmqUXGE71D0O3QU8COzzMLzeZcpULdiM1Nbp
+        6J3oTt0up4AyALCQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1ADEF13D3F;
-        Thu, 14 Oct 2021 07:09:08 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id BDF0813D3F;
+        Thu, 14 Oct 2021 07:30:51 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id y+3eApTXZ2FqEgAAMHmgww
-        (envelope-from <hare@suse.de>); Thu, 14 Oct 2021 07:09:08 +0000
-Subject: Re: iSCSI Abort Task and WRITE PENDING
-To:     Konstantin Shelekhin <k.shelekhin@yadro.com>
-Cc:     target-devel@vger.kernel.org, linux@yadro.com
-References: <YWbdbh1w1Eiw82Zr@yadro.com>
- <2a819e5d-c77a-94e8-1fe2-0ba81e7c9fa3@suse.de> <YWby1FD69Sz4W8eX@yadro.com>
+        id YOeALavcZ2EcHQAAMHmgww
+        (envelope-from <hare@suse.de>); Thu, 14 Oct 2021 07:30:51 +0000
+Subject: Re: [PATCH 2/7] sd: implement ->get_unique_id
+To:     Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     "J. Bruce Fields" <bfields@fieldses.org>,
+        Chuck Lever <chuck.lever@oracle.com>,
+        linux-block@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-nfs@vger.kernel.org
+References: <20211012120445.861860-1-hch@lst.de>
+ <20211012120445.861860-3-hch@lst.de>
 From:   Hannes Reinecke <hare@suse.de>
-Message-ID: <5b7c289a-c2bf-b7d0-9ee3-0692871333b0@suse.de>
-Date:   Thu, 14 Oct 2021 09:09:07 +0200
+Message-ID: <0a7d87ef-fff2-6a63-8edd-604ad8868dbd@suse.de>
+Date:   Thu, 14 Oct 2021 09:30:51 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.12.0
 MIME-Version: 1.0
-In-Reply-To: <YWby1FD69Sz4W8eX@yadro.com>
+In-Reply-To: <20211012120445.861860-3-hch@lst.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -68,38 +72,74 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 10/13/21 4:53 PM, Konstantin Shelekhin wrote:
-> On Wed, Oct 13, 2021 at 04:22:41PM +0200, Hannes Reinecke wrote:
->> On 10/13/21 3:21 PM, Konstantin Shelekhin wrote:
->> Short answer: you can't.
->>
->> There is no feasible path in the I/O stack to abort running I/O; the
->> only chance you have here is to wait for it to time-out.
->>
->> We have run into similar issues, and found that the only sane solution
->> was to wait for the I/O to come back and then retry.
->> As this would take some time (30 seconds if you are unlucky) most
->> initiators will get unhappy and try to reset.
->> Which won't work, either, as the I/O is still stuck.
->> So we finally delayed relogin until all I/O was cleared.
->>
->> Not the best solution, but the only thing we can do in the absense of a
->> proper I/O abort mechanism.
+On 10/12/21 2:04 PM, Christoph Hellwig wrote:
+> Add the method to query for a uniqueue ID of a given type by looking
+> it up in the cached device identification VPD page.
 > 
-> I'm not sure we are talking about the same bug. In this case the relogin
-> is not possible, because new connections are rejected by the target and
-> the existing one is not going anywhere, because it's deadlocked on ABORT
-> TASK. The only solution is to reset the server.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>   drivers/scsi/sd.c | 37 +++++++++++++++++++++++++++++++++++++
+>   1 file changed, 37 insertions(+)
 > 
-Precisely.
+> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+> index d8f6add416c0a..ea1489d3e8497 100644
+> --- a/drivers/scsi/sd.c
+> +++ b/drivers/scsi/sd.c
+> @@ -1757,6 +1757,42 @@ static void sd_rescan(struct device *dev)
+>   	sd_revalidate_disk(sdkp->disk);
+>   }
+>   
+> +static int sd_get_unique_id(struct gendisk *disk, u8 id[16], u8 type)
+> +{
+> +	struct scsi_device *sdev = scsi_disk(disk)->device;
+> +	const struct scsi_vpd *vpd;
+> +	const unsigned char *d;
+> +	int len = -ENXIO;
+> +
+> +	rcu_read_lock();
+> +	vpd = rcu_dereference(sdev->vpd_pg83);
+> +	if (!vpd)
+> +		goto out_unlock;
+> +
+> +	len = -EINVAL;
+> +	for (d = vpd->data + 4; d < vpd->data + vpd->len; d += d[3] + 4) {
+> +		/* we only care about designators with LU association */
+> +		if (((d[1] >> 4) & 0x3) != 0x00)
+> +			continue;
+> +		if ((d[1] & 0xf) != type)
+> +			continue;
+> +
+> +		/*
+> +		 * Only exit early if a 16-byte descriptor was found.  Otherwise
+> +		 * keep looking as one with more entropy might still show up.
+> +		 */
+> +		len = d[3];
+> +		if (len != 8 && len != 12 && len != 16)
+> +			continue;
+> +		memcpy(id, d + 4, len);
+> +		if (len == 16)
+> +			break;
+> +	}
+> +out_unlock:
+> +	rcu_read_unlock();
+> +	return len;
+> +}
+> +
+>   static char sd_pr_type(enum pr_type type)
+>   {
+>   	switch (type) {
+> @@ -1861,6 +1897,7 @@ static const struct block_device_operations sd_fops = {
+>   	.check_events		= sd_check_events,
+>   	.unlock_native_capacity	= sd_unlock_native_capacity,
+>   	.report_zones		= sd_zbc_report_zones,
+> +	.get_unique_id		= sd_get_unique_id,
+>   	.pr_ops			= &sd_pr_ops,
+>   };
+>   
+> 
+Errm.
 
-Relogin fails as there is I/O outstanding on the original session, and 
-you try to relogin into the same session. Which is still busy, hence you 
-cannot login.
-
-And I/O is outstanding as it can't be aborted, as the only transport 
-implementing abort is target_core_user.c; for all the others you are 
-screwed.
+What's wrong with scsi_vpd_lun_id() ?
 
 Cheers,
 
