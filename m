@@ -2,132 +2,152 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EA7DC433FE
-	for <target-devel@archiver.kernel.org>; Mon, 18 Oct 2021 11:49:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DF92C433F5
+	for <target-devel@archiver.kernel.org>; Mon, 18 Oct 2021 11:56:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 189FA60EE5
-	for <target-devel@archiver.kernel.org>; Mon, 18 Oct 2021 11:49:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7F1CB61260
+	for <target-devel@archiver.kernel.org>; Mon, 18 Oct 2021 11:56:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230470AbhJRLvR (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 18 Oct 2021 07:51:17 -0400
-Received: from mta-02.yadro.com ([89.207.88.252]:37064 "EHLO mta-01.yadro.com"
+        id S230048AbhJRL67 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 18 Oct 2021 07:58:59 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:37832 "EHLO mta-01.yadro.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S231570AbhJRLvN (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 18 Oct 2021 07:51:13 -0400
+        id S229519AbhJRL67 (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 18 Oct 2021 07:58:59 -0400
 Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 11870411FB;
-        Mon, 18 Oct 2021 11:48:59 +0000 (UTC)
+        by mta-01.yadro.com (Postfix) with ESMTP id 287524122E;
+        Mon, 18 Oct 2021 11:56:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        mime-version:content-transfer-encoding:content-type:content-type
-        :content-language:accept-language:in-reply-to:references
-        :message-id:date:date:subject:subject:from:from:received
-        :received:received:received; s=mta-01; t=1634557737; x=
-        1636372138; bh=lxZqy3/6n5Hr7rHa30PuIVLMdjOYNRXsXm2Y3Ez4BiU=; b=m
-        CEXgLlisq8qYzcPSoh5t1k2e43Rczs1ww3PpySXmmUW9F445Uve2YU+1TcY+Ol3Y
-        pStwW6BbXfuOrhJreE/Ba/spF77XUkVkF0uqScTCtGFFh2DVkfMZX9QX/FysCAwM
-        dMYgCG2rMIaFhfZHKeVKWydj4vxoUICNW7r/PJDkgQ=
+        in-reply-to:content-disposition:content-type:content-type
+        :mime-version:references:message-id:subject:subject:from:from
+        :date:date:received:received:received; s=mta-01; t=1634558205;
+         x=1636372606; bh=WMTTmHFdoCvJfsxHGM1lPU2azpZOBYCuUU/NIve/zus=; b=
+        Q6b+e1oCXau/xAc/tHI4F35q7i5NJCt/G1W8ogAiqRVMEzxCUKiWtozWFhYeOc3h
+        niXWKRwBtTPbCZbJJiUSQxxzBtWhn0fK1Dn3qX9fqwUHgTCw6sVvl5KivgmGTKhw
+        trS9S6iIj4hlRN7ofJ/dE7jrm97B6230ylMyWyXc8S0=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
         by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id WWG07SQfMDiT; Mon, 18 Oct 2021 14:48:57 +0300 (MSK)
+        with ESMTP id xRdGIauuoh0Y; Mon, 18 Oct 2021 14:56:45 +0300 (MSK)
 Received: from T-EXCH-04.corp.yadro.com (t-exch-04.corp.yadro.com [172.17.100.104])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id CF1D1404CF;
-        Mon, 18 Oct 2021 14:48:57 +0300 (MSK)
-Received: from T-EXCH-04.corp.yadro.com (172.17.100.104) by
- T-EXCH-04.corp.yadro.com (172.17.100.104) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Mon, 18 Oct 2021 14:48:57 +0300
-Received: from T-EXCH-04.corp.yadro.com ([fe80::d8c5:6f0a:3d48:18df]) by
- T-EXCH-04.corp.yadro.com ([fe80::d8c5:6f0a:3d48:18df%15]) with mapi id
- 15.01.0669.032; Mon, 18 Oct 2021 14:48:57 +0300
-From:   Dmitriy Bogdanov <d.bogdanov@yadro.com>
-To:     Mike Christie <michael.christie@oracle.com>,
-        Martin Petersen <martin.petersen@oracle.com>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-CC:     "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "linux@yadro.com" <linux@yadro.com>,
-        Roman Bolshakov <r.bolshakov@yadro.com>,
-        Konstantin Shelekhin <k.shelekhin@yadro.com>
-Subject: RE: [PATCH 3/3] target: iscsi: control authentication per ACL
-Thread-Topic: [PATCH 3/3] target: iscsi: control authentication per ACL
-Thread-Index: AQHXqU/Pfb0jjhKJh0CWot0YJKeYQqu808MAgAXAwGCAAevWAIAUV0Zg
-Date:   Mon, 18 Oct 2021 11:48:57 +0000
-Message-ID: <a41e01efa205400e8dc73274d75e506d@yadro.com>
-References: <20210914100314.492-1-d.bogdanov@yadro.com>
- <20210914100314.492-4-d.bogdanov@yadro.com>
- <2f65a5a4-6296-cd72-b143-1053665fd4b3@oracle.com>
- <380d7926b0b6401fbf6c8e3dac4eb9b3@yadro.com>
- <27949fe2-ef29-adc7-ab77-bed4f14cd783@oracle.com>
-In-Reply-To: <27949fe2-ef29-adc7-ab77-bed4f14cd783@oracle.com>
-Accept-Language: ru-RU, en-US
-Content-Language: ru-RU
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [10.199.10.157]
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+        by mta-01.yadro.com (Postfix) with ESMTPS id DDD0A41209;
+        Mon, 18 Oct 2021 14:56:45 +0300 (MSK)
+Received: from yadro.com (10.178.112.148) by T-EXCH-04.corp.yadro.com
+ (172.17.100.104) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Mon, 18
+ Oct 2021 14:56:44 +0300
+Date:   Mon, 18 Oct 2021 14:56:44 +0300
+From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
+To:     <michael.christie@oracle.com>
+CC:     <target-devel@vger.kernel.org>, <linux@yadro.com>,
+        Maurizio Lombardi <mlombard@redhat.com>
+Subject: Re: iSCSI Abort Task and WRITE PENDING
+Message-ID: <YW1g/OFXMHq44CYo@yadro.com>
+References: <YWbdbh1w1Eiw82Zr@yadro.com>
+ <17647b68-f039-3fc3-808e-0feb652ddf8c@oracle.com>
+ <YWcggfDyrHU1VhKN@yadro.com>
+ <2e83aa6a-2746-8914-f295-30eea8954814@oracle.com>
+ <6059cfab-5cbb-984b-7efc-eb193bddea7a@oracle.com>
+ <YWcsWKIn5RyN+UbD@yadro.com>
+ <YWcs/8CQYn7C7G9T@yadro.com>
+ <e76e1a95-dc88-ac9a-62b0-89533182aafd@oracle.com>
+ <YWi5YumbN/Zzze5h@yadro.com>
+ <d5035453-f35f-0ecf-d830-18c6b3040c97@oracle.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <d5035453-f35f-0ecf-d830-18c6b3040c97@oracle.com>
+X-Originating-IP: [10.178.112.148]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-04.corp.yadro.com (172.17.100.104)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-SGkgTWlrZSwNCg0KPj4+PiBBZGQgYWNscy97QUNMfS9hdHRyaWIvYXV0aGVudGljYXRpb24gYXR0
-cmlidXRlIHRoYXQgY29udHJvbHMgYXV0aGVudGljYXRpb24NCj4+Pj4gZm9yIHRoZSBwYXJ0aWN1
-bGFyIEFDTC4gQnkgZGVmYXVsdCwgdGhpcyBhdHRyaWJ1dGUgaW5oZXJpdHMgYSB2YWx1ZSBvZg0K
-Pj4+PiBhdXRoZW50aWNhdGlvbiBhdHRyaWJ1dGUgb2YgdGhlIHRhcmdldCBwb3J0IGdyb3VwIHRv
-IGtlZXAgYmFja3dhcmQNCj4+Pj4gY29tcGF0aWJpbGl0eS4NCj4+Pj4NCj4+Pj4gYXV0aGVudGlj
-YXRpb24gYXR0cmlidXRlIGhhcyAzIHN0YXRlczoNCj4+Pj4gICIwIiAtIGF1dGhlbnRpY2F0aW9u
-IGlzIHR1cm5lZCBvZmYgZm9yIHRoaXMgQUNMDQo+Pj4+ICAiMSIgLSBhdXRoZW50aWNhdGlvbiBp
-cyByZXF1aXJlZCBmb3IgdGhpcyBBQ0wNCj4+Pj4gICIiIC0gYXV0aGVudGljYXRpb24gaXMgaW5o
-ZXJpdGVkIGZyb20gVFBHDQo+Pj4NCj4+Pg0KPj4+IFdoeSB0aGUgZW1wdHkgc3RyaW5nIGZvciB0
-aGlzIHZhbHVlPyBNYXliZSAyIG9yIC0xPw0KPj4gVGhhdCB3YXMgZGVzaWduIGRlY2lzaW9uIGJ5
-IGxvZ2ljIHRoYXQgc2luY2UgdGhhdCBhdHRyaWJ1dGUgaGFzIGEgcHJlY2VkZW5jZSANCj4+IHRv
-IGNsZWFyIHRoYXQgcHJlY2VkZW5jZSB3ZSBtdXN0IGNsZWFyIHRoZSBhdHRyaWJ1dGUsIGkuZS4g
-c2V0IHRvIHRoZSBlbXB0eSB2YWx1ZS4NCj4+IA0KPj4+Pg0KPj4+PiBSZXZpZXdlZC1ieTogUm9t
-YW4gQm9sc2hha292IDxyLmJvbHNoYWtvdkB5YWRyby5jb20+DQo+Pj4+IFJldmlld2VkLWJ5OiBL
-b25zdGFudGluIFNoZWxla2hpbiA8ay5zaGVsZWtoaW5AeWFkcm8uY29tPg0KPj4+PiBTaWduZWQt
-b2ZmLWJ5OiBEbWl0cnkgQm9nZGFub3YgPGQuYm9nZGFub3ZAeWFkcm8uY29tPg0KPj4+PiAtLS0N
-Cj4+Pj4gIGRyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3RhcmdldF9jb25maWdmcy5jICB8IDQx
-ICsrKysrKysrKysrKysrKysrKysNCj4+Pj4gIGRyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3Rh
-cmdldF9uZWdvLmMgICAgICB8ICA4ICsrKy0NCj4+Pj4gIC4uLi90YXJnZXQvaXNjc2kvaXNjc2lf
-dGFyZ2V0X25vZGVhdHRyaWIuYyAgICB8ICAxICsNCj4+Pj4gIGluY2x1ZGUvdGFyZ2V0L2lzY3Np
-L2lzY3NpX3RhcmdldF9jb3JlLmggICAgICB8ICAyICsNCj4+Pj4gIDQgZmlsZXMgY2hhbmdlZCwg
-NTEgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPj4+Pg0KPj4+PiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy90YXJnZXQvaXNjc2kvaXNjc2lfdGFyZ2V0X2NvbmZpZ2ZzLmMgYi9kcml2ZXJzL3Rh
-cmdldC9pc2NzaS9pc2NzaV90YXJnZXRfY29uZmlnZnMuYw0KPj4+PiBpbmRleCBlMzc1MGI2NGNj
-MGMuLjJkNzBkZTM0MjQwOCAxMDA2NDQNCj4+Pj4gLS0tIGEvZHJpdmVycy90YXJnZXQvaXNjc2kv
-aXNjc2lfdGFyZ2V0X2NvbmZpZ2ZzLmMNCj4+Pj4gKysrIGIvZHJpdmVycy90YXJnZXQvaXNjc2kv
-aXNjc2lfdGFyZ2V0X2NvbmZpZ2ZzLmMNCj4+Pj4gQEAgLTMxNCw2ICszMTQsNDYgQEAgSVNDU0lf
-TkFDTF9BVFRSKHJhbmRvbV9kYXRhaW5fcGR1X29mZnNldHMpOw0KPj4+PiAgSVNDU0lfTkFDTF9B
-VFRSKHJhbmRvbV9kYXRhaW5fc2VxX29mZnNldHMpOw0KPj4+PiAgSVNDU0lfTkFDTF9BVFRSKHJh
-bmRvbV9yMnRfb2Zmc2V0cyk7DQo+Pj4+ICANCj4+Pj4gK3N0YXRpYyBzc2l6ZV90IGlzY3NpX25h
-Y2xfYXR0cmliX2F1dGhlbnRpY2F0aW9uX3Nob3coc3RydWN0IGNvbmZpZ19pdGVtICppdGVtLA0K
-Pj4+PiArCQljaGFyICpwYWdlKQ0KPj4+PiArew0KPj4+PiArCXN0cnVjdCBzZV9ub2RlX2FjbCAq
-c2VfbmFjbCA9IGF0dHJpYl90b19uYWNsKGl0ZW0pOw0KPj4+PiArCXN0cnVjdCBpc2NzaV9ub2Rl
-X2FjbCAqbmFjbCA9IHRvX2lzY3NpX25hY2woc2VfbmFjbCk7DQo+Pj4+ICsNCj4+Pj4gKwlpZiAo
-bmFjbC0+bm9kZV9hdHRyaWIuYXV0aGVudGljYXRpb24gPT0gTkFfQVVUSEVOVElDQVRJT05fSU5I
-RVJJVEVEKSB7DQo+Pj4+ICsJCXN0cnVjdCBpc2NzaV9wb3J0YWxfZ3JvdXAgKnRwZyA9IHRvX2lz
-Y3NpX3RwZyhzZV9uYWNsLT5zZV90cGcpOw0KPj4+PiArDQo+Pj4+ICsJCXJldHVybiBzcHJpbnRm
-KHBhZ2UsICIldSAoaW5oZXJpdGVkKVxuIiwNCj4+Pj4gKwkJCQl0cGctPnRwZ19hdHRyaWIuYXV0
-aGVudGljYXRpb24pOw0KPj4+DQo+Pj4NCj4+PiBJIHRoaW5rIHdlIHdhbnQgYSB2YWx1ZSBvZiAt
-MSBvciAyIGZvciBpbmhlcml0ZWQgdGhlbiBoZXJlIGl0IHNob3VsZCBwcmludA0KPj4+IHRoYXQg
-dmFsdWUuDQo+PiANCj4+IFdlIGRlY2lkZWQgdG8gaGlkZSB0aGUgaW50ZXJuYWwgdmFsdWUgZnJv
-bSB1c2Vyc3BhY2UgYW5kIHJlcHJlc2VudCBpdCBzaW1pbGFyIHRvDQo+PiB0cGcuYXV0aGVudGlj
-YXRpb24gdG8gaGF2ZSB0aGUgc2FtZSBoYW5kbGluZyB0aGVyZS4NCj4NCj4gSSdtIG5vdCBzdXJl
-IHdoYXQgeW91IG1lYW50IGJ5IHJlcHJlc2VudGluZyBpdCBzaW1pbGFyIHRvIHRwZy5hdXRoZW50
-aWNhdGlvbi4gVGhhdA0KPiBhdHRyaWIsIGFuZCBJIHRoaW5rIGV2ZXJ5IGF0dHJpYiwgcHJpbnRz
-IDEgdmFsdWUuDQo+DQo+IFRoZSBwcm9ibGVtIHdpdGggYWJvdmUgaXMgdGhhdCB0aGlzIHdvcmtz
-IGJ5IGFjY2lkZW50IGZvciBydHNsaWIgYmFzZWQgYXBwcyB3aGljaA0KPiByZWFkIGluIHRoZSBh
-dHRyaWJzLCBzdG9yZXMgdGhlbSwgdGhlbiBvbiByZXN0b3JlIHdyaXRlcyB0aGVtIHRvIHRoZSBr
-ZXJuZWwuIE9uIHRoZQ0KPiByZWFkL3NhdmUgc3RhZ2Ugd2UgZ2V0ICIwIChpbmhlcml0ZWQpIi4g
-VGhlbiBvbiB0aGUgcmVzdG9yZSBzdGFnZSB3ZSB0cnkgdG8gd3JpdGUNCj4gdGhhdCBiYWNrIHRv
-IHRoZSBrZXJuZWwgYW5kIGdldCBhbiBlcnJvci4gcnRzbGliL3RhcmdldGNsaSBqdXN0IHNwaXRz
-IG91dCBhbiBlcnJvcg0KPiBhbmQgaWdub3JlcyBpdCwgc28gaXQgc3RpbGwgd29ya3Mgc2luY2Ug
-dGhlIGtlcm5lbCB1c2VkIHRoZSBkZWZhdWx0LiBXZSBkb24ndA0KPiByZWFsbHkgd2FudCB0aGUg
-ZXJyb3Igc3BpdCBvdXQgYW5kIEkgZG9uJ3QgdGhpbmsgd2Ugd2FudCBpdCB0byB3b3JrIGJ5IGFj
-Y2lkZW50IGxpa2UNCj4gdGhpcy4NCg0KSSBtaXNzZWQgdGhhdCBmYWN0IHRoYXQgcnRzbGliIHNh
-dmVzL3Jlc3RvcmVzIGFsbCBhdHRyaWJ1dGVzLiBZb3UgYXJlIHJpZ2h0IHRoZW4sIEkgbmVlZCB0
-bw0KcmVwb3J0IHNvbWUgZWZmZWN0aXZlIHZhbHVlIChJIHRoaW5rICctMScpLiBXaWxsIHNlbmQg
-bmV3IHBhdGNoc2V0IHNvb24uDQoNCkJSLA0KIERtaXRyeQ0K
+On Thu, Oct 14, 2021 at 10:18:13PM -0500, michael.christie@oracle.com wrote:
+> > If I understand this aproach correctly, it fixes the deadlock, but the
+> > connection reinstatement will still happen, because WRITE_10 won't be
+> > aborted and the connection will go down after the timeout.> 
+> > IMO it's not ideal either, since now iSCSI will have a 50% chance to
+> > have the connection (meaning SCSI session) killed on arbitrary ABOR
+> 
+> I wouldn't call this an arbitrary abort. It's indicating a problem.
+> When do you see this? Why do we need to fix it per cmd? Are you hitting
+> the big command short timeout issue? Driver/fw bug?
+
+It was triggered by ESXi. During some heavy IOPS intervals the backend
+device cannot handle the load and some IOs get stuck for more than 30
+seconds. I suspect that ABORT TASKSs are issued by the virtual machines.
+So a series of ABORT TASK will come, and the unlucky one will hit the
+issue.
+ 
+> > TASK. While I'm sure most initiators will be able to recover from this
+> > event, such drastic measures will certanly cause a lot of confusion for
+> > people who are not familiar with TCM internals
+> How will this cause confusion vs the case where the cmd reaches the target
+> and we are waiting for it on the backend? In both cases, the initiator sends
+> an abort, it times out, the initiator or target drop the connection, we
+> relogin. Every initiator handles this.
+
+Because usually (when a WRITE request is past the WRITE PENDING state)
+the ABORT TASK does not trigger relogin. In my experience the initiator
+just waits for the TMR completion and goes on.
+
+And from a blackbox perspective it looks suspicious:
+
+  1. ABORT TASK sent to WRITE_10 tag 0x1; waits for it's completion
+  2. ABORT TASK sent to WRITE_10 tag 0x2; almost immediately the connection is dropped
+
+The only difference between #1 and #2 is that the command 0x1 is past
+the WRITE PENDING state.
+
+> With that said I am in favor of you fixing the code so we can cleanup
+> a partially sent cmd if it can be done sanely.
+> 
+> I personally would just leave the current behavior and fix the deadlock
+> because:
+> 
+> 1. When I see this happening it's normally the network so we have to blow
+> away the group of commands and we end up dropping the connection one way
+> or another. I don't see the big command short timeout case often anymore.
+> 
+> 2. Initiators just did not implement this right. I know this for sure
+> for open-iscsi at least. I started to fix my screw ups the other day but it
+> ends up breaking the targets.
+> 
+> For example,
+> 
+> - If we've sent a R2T and the initiator has sent a LUN RESET, what are
+> you going to have the target do? Send the response right away?
+
+AFAIR the spec says "nuke it, there will be no data after this".
+
+> - If we've sent a R2T and the initiator has sent some of the data
+> PDUs to full fill it but has not sent the final PDU, then it sends the
+> LUN RESET, what do you do?
+
+The same. However, I understand the interoperability concerns. I'll
+check what other targets do.
+ 
+> - You also have the immediate data case and the InitialR2T case.
+
+True.
+ 
+> The updated specs clarify how to handle this, and even have a FastAbort
+> key to specify which behavior we are going to do. But we don't support
+> it and I don't think many people implemented it.
+> 
+> So you are going to get a mix of behavior. Some initiators will send the
+> RESET and still send the data out PDUs and some will just stop sending
+> data outs after the RESET. To be safe do you wait for the initiator to
+> complete the sequence of data out PDUs? If so then you probably just hit
+> the same issue where we don't get the needed PDUs and the one side drops
+> the connection. If we send the ABORT response while the initiator is
+> still sending data outs, then we risk breaking them.
+> 
+> If you want to do it then go for it, but to answer you original email's
+> question the only easy way out is to just let it time out :)
+
+Sounds reasonable. I'll test your solution.
