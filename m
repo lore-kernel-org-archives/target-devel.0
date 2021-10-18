@@ -2,56 +2,89 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67165C4321E
-	for <target-devel@archiver.kernel.org>; Mon, 18 Oct 2021 17:57:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB146C433F5
+	for <target-devel@archiver.kernel.org>; Mon, 18 Oct 2021 18:31:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4678061074
-	for <target-devel@archiver.kernel.org>; Mon, 18 Oct 2021 17:57:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CFCF26115A
+	for <target-devel@archiver.kernel.org>; Mon, 18 Oct 2021 18:31:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232209AbhJRR7L (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 18 Oct 2021 13:59:11 -0400
-Received: from verein.lst.de ([213.95.11.211]:35376 "EHLO verein.lst.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229980AbhJRR7K (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 18 Oct 2021 13:59:10 -0400
-Received: by verein.lst.de (Postfix, from userid 2407)
-        id 8932668AFE; Mon, 18 Oct 2021 19:56:53 +0200 (CEST)
-Date:   Mon, 18 Oct 2021 19:56:53 +0200
-From:   Christoph Hellwig <hch@lst.de>
-To:     Jens Axboe <axboe@kernel.dk>
-Cc:     Christoph Hellwig <hch@lst.de>, Coly Li <colyli@suse.de>,
-        Mike Snitzer <snitzer@redhat.com>, Song Liu <song@kernel.org>,
-        David Sterba <dsterba@suse.com>,
-        Josef Bacik <josef@toxicpanda.com>,
-        Theodore Ts'o <tytso@mit.edu>,
-        OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-        Dave Kleikamp <shaggy@kernel.org>,
-        Ryusuke Konishi <konishi.ryusuke@gmail.com>,
-        Anton Altaparmakov <anton@tuxera.com>,
-        Konstantin Komarov <almaz.alexandrovich@paragon-software.com>,
-        Kees Cook <keescook@chromium.org>,
-        Phillip Lougher <phillip@squashfs.org.uk>,
-        Jan Kara <jack@suse.com>, linux-block@vger.kernel.org,
-        dm-devel@redhat.com, drbd-dev@lists.linbit.com,
-        linux-bcache@vger.kernel.org, linux-raid@vger.kernel.org,
-        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        linux-btrfs@vger.kernel.org, linux-ext4@vger.kernel.org,
-        jfs-discussion@lists.sourceforge.net, linux-nfs@vger.kernel.org,
-        linux-nilfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net,
-        ntfs3@lists.linux.dev, reiserfs-devel@vger.kernel.org
-Subject: Re: don't use ->bd_inode to access the block device size v3
-Message-ID: <20211018175653.GA4194@lst.de>
-References: <20211018101130.1838532-1-hch@lst.de> <4a8c3a39-9cd3-5b2f-6d0f-a16e689755e6@kernel.dk> <20211018171843.GA3338@lst.de> <2f5dcf79-8419-45ff-c27c-68d43242ccfe@kernel.dk> <20211018174901.GA3990@lst.de> <e0784f3e-46c8-c90c-870b-60cc2ed7a2da@kernel.dk>
+        id S232459AbhJRSeI (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 18 Oct 2021 14:34:08 -0400
+Received: from mta-02.yadro.com ([89.207.88.252]:36988 "EHLO mta-01.yadro.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S231590AbhJRSeH (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Mon, 18 Oct 2021 14:34:07 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 4BA8041272;
+        Mon, 18 Oct 2021 18:31:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received; s=mta-01; t=1634581914; x=
+        1636396315; bh=tPVV5xj/l+joOpm0URE0exCTSzeqSTQI3DXQU2W/CWs=; b=D
+        XEwbzLe2Vn3A24Bwhr4ieF1U7dAeMZWko8K7p+3A2HRtHbDXDJ+OlU293qeQ4rop
+        +fuoZyQg696y4YcZq0m+8vL4Ml+IZpz5+Nn2yGrhCYQH70j8V/seLQVz0TTaUhiP
+        09R1m4fCvih+68KoMst3NrE+7N6yrMDfH2yFbXrEQg=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id PxPZPU4YETku; Mon, 18 Oct 2021 21:31:54 +0300 (MSK)
+Received: from T-EXCH-04.corp.yadro.com (t-exch-04.corp.yadro.com [172.17.100.104])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 62B0541263;
+        Mon, 18 Oct 2021 21:31:54 +0300 (MSK)
+Received: from NB-591.corp.yadro.com (10.178.120.180) by
+ T-EXCH-04.corp.yadro.com (172.17.100.104) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Mon, 18 Oct 2021 21:31:53 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     Mike Christie <michael.christie@oracle.com>,
+        <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: [PATCH v2 0/3] target: iscsi: control authentication per ACL
+Date:   Mon, 18 Oct 2021 21:31:41 +0300
+Message-ID: <20211018183144.8428-1-d.bogdanov@yadro.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e0784f3e-46c8-c90c-870b-60cc2ed7a2da@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.178.120.180]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-04.corp.yadro.com (172.17.100.104)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Looks good,
+Add acls/{ACL}/attrib/authentication attribute that controls authentication
+for the particular ACL. By default, this attribute inherits a value of
+authentication attribute of the target port group to keep a backward
+compatibility.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+authentication attribute has 3 states:
+"0" - authentication is turned off for this ACL
+"1" - authentication is required for this ACL
+"-1" - authentication is inherited from TPG
+
+This patchset is intended for scsi-queue.
+
+v2:
+ show effective value (-1) for inherited mode
+
+Dmitry Bogdanov (3):
+  scsi: target: iscsi: Add upcast helpers
+  scsi: target: iscsi: extract auth functions
+  target: iscsi: control authentication per ACL
+
+ drivers/target/iscsi/iscsi_target_configfs.c  | 116 +++++++-------
+ drivers/target/iscsi/iscsi_target_nego.c      | 148 ++++++++++++------
+ .../target/iscsi/iscsi_target_nodeattrib.c    |   1 +
+ drivers/target/iscsi/iscsi_target_tpg.c       |   3 +-
+ include/target/iscsi/iscsi_target_core.h      |  14 ++
+ 5 files changed, 176 insertions(+), 106 deletions(-)
+
+-- 
+2.25.1
+
