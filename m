@@ -2,130 +2,93 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F92EC433EF
-	for <target-devel@archiver.kernel.org>; Tue, 19 Oct 2021 01:05:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CD56C433FE
+	for <target-devel@archiver.kernel.org>; Tue, 19 Oct 2021 03:43:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 666CD61212
-	for <target-devel@archiver.kernel.org>; Tue, 19 Oct 2021 01:05:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 339426128E
+	for <target-devel@archiver.kernel.org>; Tue, 19 Oct 2021 03:43:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233669AbhJSBHM (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 18 Oct 2021 21:07:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51618 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229529AbhJSBHL (ORCPT
+        id S229774AbhJSDqA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 18 Oct 2021 23:46:00 -0400
+Received: from mx0b-00069f02.pphosted.com ([205.220.177.32]:20124 "EHLO
+        mx0b-00069f02.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S229692AbhJSDqA (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 18 Oct 2021 21:07:11 -0400
-Received: from mail-io1-xd32.google.com (mail-io1-xd32.google.com [IPv6:2607:f8b0:4864:20::d32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D67A9C06161C
-        for <target-devel@vger.kernel.org>; Mon, 18 Oct 2021 18:04:59 -0700 (PDT)
-Received: by mail-io1-xd32.google.com with SMTP id h196so18501996iof.2
-        for <target-devel@vger.kernel.org>; Mon, 18 Oct 2021 18:04:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernel-dk.20210112.gappssmtp.com; s=20210112;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=W5z0exFABNpBPX1hRqcH8nqG0V53/7e/1qraB3crDBc=;
-        b=vB+wFpSQtfAUhwdXcfynbmYwp0hdBEQZvbX6X9F6PNzCrR7jlF3UU0FKlXz+m74FXo
-         fYCfnp+UOHId9lQV8O9fyEh4YEI0b538At136V3n0vh4OZ/YzMev/Q7gmlb/eOGGE5cU
-         0c1i9lZ2acvXLmYa878iz+lCi3R78xqn0ZDpYtIVtZNxoFJsKdSEsj9/YVhugl90Ar3H
-         SoUxghi0wJ6VSD6JvL3P+s/JM6f3Wm0mmMYFgaEag1ojhi+wlEeYXumrYWwARkL2eroz
-         Ue9QqS/6wvsrqGxlajrxCGxhjXwobZTI+icumh8oCIQgK1Jfr75Nwh+NZuFxcTfoqOvP
-         WcvQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=W5z0exFABNpBPX1hRqcH8nqG0V53/7e/1qraB3crDBc=;
-        b=XWJ8soJuR2HOn9i1zmv3ia8xUVpaXX1zhV7Y7tuVaJJxsK71vO/U81yV9isw5+A/aG
-         mAudVqzkVOqMmG6VgxQPbIURDBM6AacYsXtrA+5w3V0/AbrpLf3Waxmg2C8sBpNgJRFu
-         SGzS3+gZhhMFCe3qpS6HAhrmOz4iTD/5XrfGNeqnoirRqdteaqozZtUoL9nDXR2EaG7+
-         BbNb/lY6H5H5wy1Rwfxa9Lx9gcfZV/hr8knTWUv+rHSlStpn/7kfSLGwSgWm89kXKLHF
-         qNL64fWGO+3ekd7rijHPNC3C0I8cghTh6FZHOuSLwY9NbW/U3Wo8ge2xaO6WUsQqvxBL
-         BXNA==
-X-Gm-Message-State: AOAM533B7s013X5tOxrMUyRbOr1ah4cG25qU9m5uVA8f/kGeSa6VQcFq
-        vCNRcFLzRsGBFOxwLEVurQd6MA==
-X-Google-Smtp-Source: ABdhPJxThXMAcCMjPpDBYOBzNUVp6z4TAqcvNSoJJDW60phmikuRtzHD4NR4koFPUymcotmxVpLHsA==
-X-Received: by 2002:a6b:102:: with SMTP id 2mr16592131iob.185.1634605499259;
-        Mon, 18 Oct 2021 18:04:59 -0700 (PDT)
-Received: from [192.168.1.116] ([66.219.217.159])
-        by smtp.gmail.com with ESMTPSA id g13sm116963ilf.60.2021.10.18.18.04.57
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 18 Oct 2021 18:04:58 -0700 (PDT)
-Subject: Re: don't use ->bd_inode to access the block device size v3
-To:     Kari Argillander <kari.argillander@gmail.com>
-Cc:     Christoph Hellwig <hch@lst.de>, Coly Li <colyli@suse.de>,
-        Mike Snitzer <snitzer@redhat.com>, Song Liu <song@kernel.org>,
-        David Sterba <dsterba@suse.com>,
-        Josef Bacik <josef@toxicpanda.com>,
-        Theodore Ts'o <tytso@mit.edu>,
-        OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-        Dave Kleikamp <shaggy@kernel.org>,
-        Ryusuke Konishi <konishi.ryusuke@gmail.com>,
-        Anton Altaparmakov <anton@tuxera.com>,
-        Konstantin Komarov <almaz.alexandrovich@paragon-software.com>,
-        Kees Cook <keescook@chromium.org>,
-        Phillip Lougher <phillip@squashfs.org.uk>,
-        Jan Kara <jack@suse.com>, linux-block@vger.kernel.org,
-        dm-devel@redhat.com, drbd-dev@lists.linbit.com,
-        linux-bcache@vger.kernel.org, linux-raid@vger.kernel.org,
-        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        linux-btrfs@vger.kernel.org, linux-ext4@vger.kernel.org,
-        jfs-discussion@lists.sourceforge.net, linux-nfs@vger.kernel.org,
-        linux-nilfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net,
-        ntfs3@lists.linux.dev, reiserfs-devel@vger.kernel.org
-References: <20211018101130.1838532-1-hch@lst.de>
- <4a8c3a39-9cd3-5b2f-6d0f-a16e689755e6@kernel.dk>
- <20211018171843.GA3338@lst.de>
- <2f5dcf79-8419-45ff-c27c-68d43242ccfe@kernel.dk>
- <20211018174901.GA3990@lst.de>
- <e0784f3e-46c8-c90c-870b-60cc2ed7a2da@kernel.dk>
- <20211019010416.vgecxu6wnvwi7fii@kari-VirtualBox>
-From:   Jens Axboe <axboe@kernel.dk>
-Message-ID: <81f9ad59-4c15-b265-1274-62c987ad879b@kernel.dk>
-Date:   Mon, 18 Oct 2021 19:04:57 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        Mon, 18 Oct 2021 23:46:00 -0400
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19J35s9u015253;
+        Tue, 19 Oct 2021 03:43:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type : content-transfer-encoding; s=corp-2021-07-09;
+ bh=Ym0DfS2vstttOqURbtihOgx37e/bdCDgBgJQsbAIPe4=;
+ b=KzOl2ntW60Htu1vwtzscongcySuM5wi/2IE4/E//fX+ClzJ04RvCEhxYBoUyR96ucR4Z
+ WFP/GvoKqMHZyoPpK0e04w+t1AFA0VJb3tBRuY/S7I/PT7O1xFQ7V6WSoJFHo5kRUsXS
+ PM0rHX/zuM8tMROEPTz5dRGPz53RVlfgNlNcFTjuaCZNhDAnLrquWwQoJ6q0JJjjT/Mk
+ 34Hdr1e11AYJcWhnxCvF/ODOm6lEh1VQsUXBD3N+j+9j14Hg2yj87QNpsMyTA9PKlg2u
+ RzZMWj3Qv6ivV0bklNdS4psH7OuERm4yq8pZJS0gzA4x9j2rSFjNC9uWNBtxBw5S6Ynp +g== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+        by mx0b-00069f02.pphosted.com with ESMTP id 3brnfhqskg-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 19 Oct 2021 03:43:45 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+        by userp3020.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 19J3ZTWF076978;
+        Tue, 19 Oct 2021 03:43:44 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by userp3020.oracle.com with ESMTP id 3br8grmmsp-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 19 Oct 2021 03:43:44 +0000
+Received: from userp3020.oracle.com (userp3020.oracle.com [127.0.0.1])
+        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 19J3hhHb101685;
+        Tue, 19 Oct 2021 03:43:44 GMT
+Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
+        by userp3020.oracle.com with ESMTP id 3br8grmmrp-2;
+        Tue, 19 Oct 2021 03:43:44 +0000
+From:   "Martin K. Petersen" <martin.petersen@oracle.com>
+To:     Dmitry Bogdanov <d.bogdanov@yadro.com>,
+        target-devel@vger.kernel.org
+Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
+        linux@yadro.com, Nilesh Javali <njavali@marvell.com>,
+        GR-QLogic-Storage-Upstream@marvell.com, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH RESEND] scsi: qla2xxx: fix unmap already freed sgl
+Date:   Mon, 18 Oct 2021 23:43:38 -0400
+Message-Id: <163461411522.13664.14338939098003090041.b4-ty@oracle.com>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20211018122650.11846-1-d.bogdanov@yadro.com>
+References: <20211018122650.11846-1-d.bogdanov@yadro.com>
 MIME-Version: 1.0
-In-Reply-To: <20211019010416.vgecxu6wnvwi7fii@kari-VirtualBox>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-ORIG-GUID: vIsEl5_Ad23SS1ZLGkEx7U1gKZUGDlND
+X-Proofpoint-GUID: vIsEl5_Ad23SS1ZLGkEx7U1gKZUGDlND
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 10/18/21 7:04 PM, Kari Argillander wrote:
-> On Mon, Oct 18, 2021 at 11:53:08AM -0600, Jens Axboe wrote:
-> 
-> snip..
-> 
->> diff --git a/include/linux/genhd.h b/include/linux/genhd.h
->> index 7b0326661a1e..a967b3fb3c71 100644
->> --- a/include/linux/genhd.h
->> +++ b/include/linux/genhd.h
->> @@ -236,14 +236,14 @@ static inline sector_t get_start_sect(struct block_device *bdev)
->>  	return bdev->bd_start_sect;
->>  }
->>  
->> -static inline loff_t bdev_nr_bytes(struct block_device *bdev)
->> +static inline sector_t bdev_nr_sectors(struct block_device *bdev)
->>  {
->> -	return i_size_read(bdev->bd_inode);
->> +	return bdev->bd_nr_sectors;
->>  }
->>  
->> -static inline sector_t bdev_nr_sectors(struct block_device *bdev)
->> +static inline loff_t bdev_nr_bytes(struct block_device *bdev)
->>  {
->> -	return bdev_nr_bytes(bdev) >> SECTOR_SHIFT;
->> +	return bdev_nr_setors(bdev) << SECTOR_SHIFT;
-> 
-> setors -> sectors
+On Mon, 18 Oct 2021 15:26:50 +0300, Dmitry Bogdanov wrote:
 
-Yep, did catch that prior.
+> sgl is freed in the target stack in target_release_cmd_kref before
+> calling qlt_free_cmd, but there is an unmap of sgl in qlt_free_cmd that
+> causes such a panic if sgl is not yet DMA unmapped:
+> 
+> NIP dma_direct_unmap_sg+0xdc/0x180
+> LR  dma_direct_unmap_sg+0xc8/0x180
+> Call Trace:
+>  ql_dbg_prefix+0x68/0xc0 [qla2xxx] (unreliable)
+>  dma_unmap_sg_attrs+0x54/0xf0
+>  qlt_unmap_sg.part.19+0x54/0x1c0 [qla2xxx]
+>  qlt_free_cmd+0x124/0x1d0 [qla2xxx]
+>  tcm_qla2xxx_release_cmd+0x4c/0xa0 [tcm_qla2xxx]
+>  target_put_sess_cmd+0x198/0x370 [target_core_mod]
+>  transport_generic_free_cmd+0x6c/0x1b0 [target_core_mod]
+>  tcm_qla2xxx_complete_free+0x6c/0x90 [tcm_qla2xxx]
+> 
+> [...]
+
+Applied to 5.15/scsi-fixes, thanks!
+
+[1/1] scsi: qla2xxx: fix unmap already freed sgl
+      https://git.kernel.org/mkp/scsi/c/4a8f71014b4d
 
 -- 
-Jens Axboe
-
+Martin K. Petersen	Oracle Linux Engineering
