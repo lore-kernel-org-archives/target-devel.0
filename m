@@ -2,35 +2,35 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1010AC43217
-	for <target-devel@archiver.kernel.org>; Thu, 21 Oct 2021 06:06:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34200C433EF
+	for <target-devel@archiver.kernel.org>; Thu, 21 Oct 2021 06:06:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EA3626109F
-	for <target-devel@archiver.kernel.org>; Thu, 21 Oct 2021 06:06:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19DE16112D
+	for <target-devel@archiver.kernel.org>; Thu, 21 Oct 2021 06:06:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231228AbhJUGIk (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 21 Oct 2021 02:08:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36236 "EHLO
+        id S231208AbhJUGIn (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 21 Oct 2021 02:08:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36266 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230526AbhJUGIi (ORCPT
+        with ESMTP id S229499AbhJUGIn (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 21 Oct 2021 02:08:38 -0400
+        Thu, 21 Oct 2021 02:08:43 -0400
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1A7AC061749;
-        Wed, 20 Oct 2021 23:06:21 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 249BFC06161C;
+        Wed, 20 Oct 2021 23:06:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
         :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=MSyHR6FiGZcaf20ZeHy8Q9nwAHQHd78BgGyDaD0yOjg=; b=BJdjJAGVJZZSPLmwV96xGpNkLQ
-        I93aojRfRtOBB7FG3MHW8a7wFNvwtf5jFj6O138YmZJxm3nqitaIo6zfmOtEE79yvLSDzHv3dOKIn
-        0WIWQtkDpAmrOFkVSss+4OkCw6aqGuQE0mi2Z+FekAH5aawsxw7+6nY9IK1MmRNUCRxWaRMsFbNi/
-        BDy2lJJypRxEQ1OltCXNU5+Nwkf223LRwqmH8iczD6/1lDM6qwmvFlv3u1RV0OpR/+tSl+KEk+4x1
-        0M0eyDi7V2GqBxXwp/o+8LBF1NiYmUhbxne9iKEjbbFZ6l//UaZSiGdK6zK/gIVg/v0MT1bUUECeL
-        BuB/F5Yw==;
+        bh=MYhyrOVT/0PMY8ztlZmjKrJbNk0ITh4jn9RKYsQe0s8=; b=4beP7VFfaPhsRUQshauVfCOeBE
+        I+XXYzgikGP+53JSxMy1zHBcTPjwxqkQduUTtfQEWFoFaMRvR+oiyGrJJqFplK9LDQn13ZKoD//NF
+        i8fChcVMf3VLy7Ajq3kdiIbm5Nul2V2FAbYGopoUHfBxcZKFk3Ji+aNq8Xgjhc7Wst8pFB627Y1Gg
+        mZeb99Utg0sRHlA0uooUd9bMWIw/NhS1LWcbeuIOEKD9bHZJ/3SYTh1Bzlp2IhIV9Ec0Ty5qQejaI
+        EXzmWOe9goqb2cfNCeIRHQogLgF6KNUF+c35oVvHoqzd8p/Yv84oh2VOv6igZCjQrM3H2sJVwod3U
+        8HpbXgyA==;
 Received: from [2001:4bb8:180:8777:7df0:a8d8:40cc:3310] (helo=localhost)
         by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1mdRDX-006U5C-Hs; Thu, 21 Oct 2021 06:06:20 +0000
+        id 1mdRDd-006U7Q-Mq; Thu, 21 Oct 2021 06:06:26 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>,
         "Martin K. Petersen" <martin.petersen@oracle.com>
@@ -38,11 +38,10 @@ Cc:     "J. Bruce Fields" <bfields@fieldses.org>,
         Chuck Lever <chuck.lever@oracle.com>,
         linux-block@vger.kernel.org, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org, linux-nfs@vger.kernel.org,
-        "J . Bruce Fields" <bfields@redhat.com>,
         Hannes Reinecke <hare@suse.de>
-Subject: [PATCH 3/7] nfsd/blocklayout: use ->get_unique_id instead of sending SCSI commands
-Date:   Thu, 21 Oct 2021 08:06:03 +0200
-Message-Id: <20211021060607.264371-4-hch@lst.de>
+Subject: [PATCH 5/7] scsi: add a scsi_alloc_request helper
+Date:   Thu, 21 Oct 2021 08:06:05 +0200
+Message-Id: <20211021060607.264371-6-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20211021060607.264371-1-hch@lst.de>
 References: <20211021060607.264371-1-hch@lst.de>
@@ -53,262 +52,239 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Call the ->get_unique_id method to query the SCSI identifiers.  This can
-use the cached VPD page in the sd driver instead of sending a command
-on every LAYOUTGET.  It will also allow to support NVMe based volumes
-if the draft for that ever takes off.
+Add a new helper that calls blk_get_request and initializes the
+scsi_request to avoid the indirect call through ->.initialize_rq_fn.
+
+Note that this makes the pktcdvd driver depend on the SCSI core, but
+given that only SCSI devices support SCSI passthrough requests that
+is not a functional change.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: J. Bruce Fields <bfields@redhat.com>
 Reviewed-by: Hannes Reinecke <hare@suse.de>
 ---
- fs/nfsd/Kconfig       |   1 -
- fs/nfsd/blocklayout.c | 158 +++++++++++-------------------------------
- fs/nfsd/nfs4layouts.c |   5 +-
- 3 files changed, 44 insertions(+), 120 deletions(-)
+ drivers/block/Kconfig              |  2 +-
+ drivers/block/pktcdvd.c            |  2 +-
+ drivers/scsi/scsi_bsg.c            |  4 ++--
+ drivers/scsi/scsi_error.c          |  2 +-
+ drivers/scsi/scsi_ioctl.c          |  4 ++--
+ drivers/scsi/scsi_lib.c            | 19 +++++++++++++------
+ drivers/scsi/sg.c                  |  4 ++--
+ drivers/scsi/sr.c                  |  2 +-
+ drivers/scsi/st.c                  |  2 +-
+ drivers/target/target_core_pscsi.c |  3 +--
+ include/scsi/scsi_cmnd.h           |  3 +++
+ 11 files changed, 28 insertions(+), 19 deletions(-)
 
-diff --git a/fs/nfsd/Kconfig b/fs/nfsd/Kconfig
-index 6e9ea4ee0f737..3d1d17256a91c 100644
---- a/fs/nfsd/Kconfig
-+++ b/fs/nfsd/Kconfig
-@@ -109,7 +109,6 @@ config NFSD_SCSILAYOUT
- 	depends on NFSD_V4 && BLOCK
- 	select NFSD_PNFS
- 	select EXPORTFS_BLOCK_OPS
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index ab3e37aa1830c..9151e8ffba1cf 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -304,8 +304,8 @@ config BLK_DEV_RAM_SIZE
+ config CDROM_PKTCDVD
+ 	tristate "Packet writing on CD/DVD media (DEPRECATED)"
+ 	depends on !UML
++	depends on SCSI
+ 	select CDROM
 -	select SCSI_COMMON
  	help
- 	  This option enables support for the exporting pNFS SCSI layouts
- 	  in the kernel's NFS server. The pNFS SCSI layout enables NFS
-diff --git a/fs/nfsd/blocklayout.c b/fs/nfsd/blocklayout.c
-index c99dee99a3c15..e5c0982a381de 100644
---- a/fs/nfsd/blocklayout.c
-+++ b/fs/nfsd/blocklayout.c
-@@ -9,9 +9,6 @@
- #include <linux/pr.h>
+ 	  Note: This driver is deprecated and will be removed from the
+ 	  kernel in the near future!
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index e48d4771d4c1a..d7d37131ab9dd 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -703,7 +703,7 @@ static int pkt_generic_packet(struct pktcdvd_device *pd, struct packet_command *
+ 	struct request *rq;
+ 	int ret = 0;
  
- #include <linux/nfsd/debug.h>
--#include <scsi/scsi_proto.h>
--#include <scsi/scsi_common.h>
--#include <scsi/scsi_request.h>
+-	rq = blk_get_request(q, (cgc->data_direction == CGC_DATA_WRITE) ?
++	rq = scsi_alloc_request(q, (cgc->data_direction == CGC_DATA_WRITE) ?
+ 			     REQ_OP_DRV_OUT : REQ_OP_DRV_IN, 0);
+ 	if (IS_ERR(rq))
+ 		return PTR_ERR(rq);
+diff --git a/drivers/scsi/scsi_bsg.c b/drivers/scsi/scsi_bsg.c
+index 81c3853a2a800..551727a6f6941 100644
+--- a/drivers/scsi/scsi_bsg.c
++++ b/drivers/scsi/scsi_bsg.c
+@@ -25,8 +25,8 @@ static int scsi_bsg_sg_io_fn(struct request_queue *q, struct sg_io_v4 *hdr,
+ 		return -EOPNOTSUPP;
+ 	}
  
- #include "blocklayoutxdr.h"
- #include "pnfs.h"
-@@ -211,109 +208,6 @@ const struct nfsd4_layout_ops bl_layout_ops = {
- #endif /* CONFIG_NFSD_BLOCKLAYOUT */
+-	rq = blk_get_request(q, hdr->dout_xfer_len ?
+-			     REQ_OP_DRV_OUT : REQ_OP_DRV_IN, 0);
++	rq = scsi_alloc_request(q, hdr->dout_xfer_len ?
++				REQ_OP_DRV_OUT : REQ_OP_DRV_IN, 0);
+ 	if (IS_ERR(rq))
+ 		return PTR_ERR(rq);
+ 	rq->timeout = timeout;
+diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
+index b6c86cce57bfa..71d027b94be40 100644
+--- a/drivers/scsi/scsi_error.c
++++ b/drivers/scsi/scsi_error.c
+@@ -1998,7 +1998,7 @@ static void scsi_eh_lock_door(struct scsi_device *sdev)
+ 	struct request *req;
+ 	struct scsi_request *rq;
  
- #ifdef CONFIG_NFSD_SCSILAYOUT
--static int nfsd4_scsi_identify_device(struct block_device *bdev,
--		struct pnfs_block_volume *b)
--{
--	struct request_queue *q = bdev->bd_disk->queue;
--	struct request *rq;
--	struct scsi_request *req;
--	/*
--	 * The allocation length (passed in bytes 3 and 4 of the INQUIRY
--	 * command descriptor block) specifies the number of bytes that have
--	 * been allocated for the data-in buffer.
--	 * 252 is the highest one-byte value that is a multiple of 4.
--	 * 65532 is the highest two-byte value that is a multiple of 4.
--	 */
--	size_t bufflen = 252, maxlen = 65532, len, id_len;
--	u8 *buf, *d, type, assoc;
--	int retries = 1, error;
--
--	if (WARN_ON_ONCE(!blk_queue_scsi_passthrough(q)))
--		return -EINVAL;
--
--again:
--	buf = kzalloc(bufflen, GFP_KERNEL);
--	if (!buf)
--		return -ENOMEM;
--
--	rq = blk_get_request(q, REQ_OP_DRV_IN, 0);
--	if (IS_ERR(rq)) {
--		error = -ENOMEM;
--		goto out_free_buf;
--	}
--	req = scsi_req(rq);
--
--	error = blk_rq_map_kern(q, rq, buf, bufflen, GFP_KERNEL);
--	if (error)
--		goto out_put_request;
--
--	req->cmd[0] = INQUIRY;
--	req->cmd[1] = 1;
--	req->cmd[2] = 0x83;
--	req->cmd[3] = bufflen >> 8;
--	req->cmd[4] = bufflen & 0xff;
--	req->cmd_len = COMMAND_SIZE(INQUIRY);
--
--	blk_execute_rq(NULL, rq, 1);
--	if (req->result) {
--		pr_err("pNFS: INQUIRY 0x83 failed with: %x\n",
--			req->result);
--		error = -EIO;
--		goto out_put_request;
--	}
--
--	len = (buf[2] << 8) + buf[3] + 4;
--	if (len > bufflen) {
--		if (len <= maxlen && retries--) {
--			blk_put_request(rq);
--			kfree(buf);
--			bufflen = len;
--			goto again;
--		}
--		pr_err("pNFS: INQUIRY 0x83 response invalid (len = %zd)\n",
--			len);
--		goto out_put_request;
--	}
--
--	d = buf + 4;
--	for (d = buf + 4; d < buf + len; d += id_len + 4) {
--		id_len = d[3];
--		type = d[1] & 0xf;
--		assoc = (d[1] >> 4) & 0x3;
--
--		/*
--		 * We only care about a EUI-64 and NAA designator types
--		 * with LU association.
--		 */
--		if (assoc != 0x00)
--			continue;
--		if (type != 0x02 && type != 0x03)
--			continue;
--		if (id_len != 8 && id_len != 12 && id_len != 16)
--			continue;
--
--		b->scsi.code_set = PS_CODE_SET_BINARY;
--		b->scsi.designator_type = type == 0x02 ?
--			PS_DESIGNATOR_EUI64 : PS_DESIGNATOR_NAA;
--		b->scsi.designator_len = id_len;
--		memcpy(b->scsi.designator, d + 4, id_len);
--
--		/*
--		 * If we found a 8 or 12 byte descriptor continue on to
--		 * see if a 16 byte one is available.  If we find a
--		 * 16 byte descriptor we're done.
--		 */
--		if (id_len == 16)
--			break;
--	}
--
--out_put_request:
--	blk_put_request(rq);
--out_free_buf:
--	kfree(buf);
--	return error;
--}
--
- #define NFSD_MDS_PR_KEY		0x0100000000000000ULL
+-	req = blk_get_request(sdev->request_queue, REQ_OP_DRV_IN, 0);
++	req = scsi_alloc_request(sdev->request_queue, REQ_OP_DRV_IN, 0);
+ 	if (IS_ERR(req))
+ 		return;
+ 	rq = scsi_req(req);
+diff --git a/drivers/scsi/scsi_ioctl.c b/drivers/scsi/scsi_ioctl.c
+index 6ff2207bd45a0..0078975e3c07c 100644
+--- a/drivers/scsi/scsi_ioctl.c
++++ b/drivers/scsi/scsi_ioctl.c
+@@ -438,7 +438,7 @@ static int sg_io(struct scsi_device *sdev, struct gendisk *disk,
+ 		at_head = 1;
  
- /*
-@@ -325,6 +219,31 @@ static u64 nfsd4_scsi_pr_key(struct nfs4_client *clp)
- 	return ((u64)clp->cl_clientid.cl_boot << 32) | clp->cl_clientid.cl_id;
+ 	ret = -ENOMEM;
+-	rq = blk_get_request(sdev->request_queue, writing ?
++	rq = scsi_alloc_request(sdev->request_queue, writing ?
+ 			     REQ_OP_DRV_OUT : REQ_OP_DRV_IN, 0);
+ 	if (IS_ERR(rq))
+ 		return PTR_ERR(rq);
+@@ -561,7 +561,7 @@ static int sg_scsi_ioctl(struct request_queue *q, struct gendisk *disk,
+ 
+ 	}
+ 
+-	rq = blk_get_request(q, in_len ? REQ_OP_DRV_OUT : REQ_OP_DRV_IN, 0);
++	rq = scsi_alloc_request(q, in_len ? REQ_OP_DRV_OUT : REQ_OP_DRV_IN, 0);
+ 	if (IS_ERR(rq)) {
+ 		err = PTR_ERR(rq);
+ 		goto error_free_buffer;
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 30f7d0b4eb732..a0f801fc8943b 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -216,7 +216,7 @@ int __scsi_execute(struct scsi_device *sdev, const unsigned char *cmd,
+ 	struct scsi_request *rq;
+ 	int ret;
+ 
+-	req = blk_get_request(sdev->request_queue,
++	req = scsi_alloc_request(sdev->request_queue,
+ 			data_direction == DMA_TO_DEVICE ?
+ 			REQ_OP_DRV_OUT : REQ_OP_DRV_IN,
+ 			rq_flags & RQF_PM ? BLK_MQ_REQ_PM : 0);
+@@ -1079,9 +1079,6 @@ EXPORT_SYMBOL(scsi_alloc_sgtables);
+  * This function initializes the members of struct scsi_cmnd that must be
+  * initialized before request processing starts and that won't be
+  * reinitialized if a SCSI command is requeued.
+- *
+- * Called from inside blk_get_request() for pass-through requests and from
+- * inside scsi_init_command() for filesystem requests.
+  */
+ static void scsi_initialize_rq(struct request *rq)
+ {
+@@ -1098,6 +1095,18 @@ static void scsi_initialize_rq(struct request *rq)
+ 	cmd->retries = 0;
  }
  
-+static const u8 designator_types[] = {
-+	PS_DESIGNATOR_EUI64,
-+	PS_DESIGNATOR_NAA,
-+};
-+
-+static int
-+nfsd4_block_get_unique_id(struct gendisk *disk, struct pnfs_block_volume *b)
++struct request *scsi_alloc_request(struct request_queue *q,
++		unsigned int op, blk_mq_req_flags_t flags)
 +{
-+	int ret, i;
++	struct request *rq;
 +
-+	for (i = 0; i < ARRAY_SIZE(designator_types); i++) {
-+		u8 type = designator_types[i];
-+
-+		ret = disk->fops->get_unique_id(disk, b->scsi.designator, type);
-+		if (ret > 0) {
-+			b->scsi.code_set = PS_CODE_SET_BINARY;
-+			b->scsi.designator_type = type;
-+			b->scsi.designator_len = ret;
-+			return 0;
-+		}
-+	}
-+
-+	return -EINVAL;
++	rq = blk_get_request(q, op, flags);
++	if (!IS_ERR(rq))
++		scsi_initialize_rq(rq);
++	return rq;
 +}
++EXPORT_SYMBOL_GPL(scsi_alloc_request);
 +
- static int
- nfsd4_block_get_device_info_scsi(struct super_block *sb,
- 		struct nfs4_client *clp,
-@@ -333,7 +252,7 @@ nfsd4_block_get_device_info_scsi(struct super_block *sb,
- 	struct pnfs_block_deviceaddr *dev;
- 	struct pnfs_block_volume *b;
- 	const struct pr_ops *ops;
--	int error;
-+	int ret;
- 
- 	dev = kzalloc(sizeof(struct pnfs_block_deviceaddr) +
- 		      sizeof(struct pnfs_block_volume), GFP_KERNEL);
-@@ -347,33 +266,38 @@ nfsd4_block_get_device_info_scsi(struct super_block *sb,
- 	b->type = PNFS_BLOCK_VOLUME_SCSI;
- 	b->scsi.pr_key = nfsd4_scsi_pr_key(clp);
- 
--	error = nfsd4_scsi_identify_device(sb->s_bdev, b);
--	if (error)
--		return error;
-+	ret = nfsd4_block_get_unique_id(sb->s_bdev->bd_disk, b);
-+	if (ret < 0)
-+		goto out_free_dev;
- 
-+	ret = -EINVAL;
- 	ops = sb->s_bdev->bd_disk->fops->pr_ops;
- 	if (!ops) {
- 		pr_err("pNFS: device %s does not support PRs.\n",
- 			sb->s_id);
--		return -EINVAL;
-+		goto out_free_dev;
- 	}
- 
--	error = ops->pr_register(sb->s_bdev, 0, NFSD_MDS_PR_KEY, true);
--	if (error) {
-+	ret = ops->pr_register(sb->s_bdev, 0, NFSD_MDS_PR_KEY, true);
-+	if (ret) {
- 		pr_err("pNFS: failed to register key for device %s.\n",
- 			sb->s_id);
--		return -EINVAL;
-+		goto out_free_dev;
- 	}
- 
--	error = ops->pr_reserve(sb->s_bdev, NFSD_MDS_PR_KEY,
-+	ret = ops->pr_reserve(sb->s_bdev, NFSD_MDS_PR_KEY,
- 			PR_EXCLUSIVE_ACCESS_REG_ONLY, 0);
--	if (error) {
-+	if (ret) {
- 		pr_err("pNFS: failed to reserve device %s.\n",
- 			sb->s_id);
--		return -EINVAL;
-+		goto out_free_dev;
- 	}
- 
- 	return 0;
-+
-+out_free_dev:
-+	kfree(dev);
-+	return ret;
- }
- 
- static __be32
-diff --git a/fs/nfsd/nfs4layouts.c b/fs/nfsd/nfs4layouts.c
-index a97873f2d22b0..6d1b5bb051c56 100644
---- a/fs/nfsd/nfs4layouts.c
-+++ b/fs/nfsd/nfs4layouts.c
-@@ -145,8 +145,9 @@ void nfsd4_setup_layout_type(struct svc_export *exp)
- #ifdef CONFIG_NFSD_SCSILAYOUT
- 	if (sb->s_export_op->map_blocks &&
- 	    sb->s_export_op->commit_blocks &&
--	    sb->s_bdev && sb->s_bdev->bd_disk->fops->pr_ops &&
--		blk_queue_scsi_passthrough(sb->s_bdev->bd_disk->queue))
-+	    sb->s_bdev &&
-+	    sb->s_bdev->bd_disk->fops->pr_ops &&
-+	    sb->s_bdev->bd_disk->fops->get_unique_id)
- 		exp->ex_layout_types |= 1 << LAYOUT_SCSI;
+ /*
+  * Only called when the request isn't completed by SCSI, and not freed by
+  * SCSI
+@@ -1864,7 +1873,6 @@ static const struct blk_mq_ops scsi_mq_ops_no_commit = {
  #endif
- }
+ 	.init_request	= scsi_mq_init_request,
+ 	.exit_request	= scsi_mq_exit_request,
+-	.initialize_rq_fn = scsi_initialize_rq,
+ 	.cleanup_rq	= scsi_cleanup_rq,
+ 	.busy		= scsi_mq_lld_busy,
+ 	.map_queues	= scsi_map_queues,
+@@ -1894,7 +1902,6 @@ static const struct blk_mq_ops scsi_mq_ops = {
+ #endif
+ 	.init_request	= scsi_mq_init_request,
+ 	.exit_request	= scsi_mq_exit_request,
+-	.initialize_rq_fn = scsi_initialize_rq,
+ 	.cleanup_rq	= scsi_cleanup_rq,
+ 	.busy		= scsi_mq_lld_busy,
+ 	.map_queues	= scsi_map_queues,
+diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
+index 3c98f08dc25d9..85f57ac0b844e 100644
+--- a/drivers/scsi/sg.c
++++ b/drivers/scsi/sg.c
+@@ -1718,13 +1718,13 @@ sg_start_req(Sg_request *srp, unsigned char *cmd)
+ 	 *
+ 	 * With scsi-mq enabled, there are a fixed number of preallocated
+ 	 * requests equal in number to shost->can_queue.  If all of the
+-	 * preallocated requests are already in use, then blk_get_request()
++	 * preallocated requests are already in use, then scsi_alloc_request()
+ 	 * will sleep until an active command completes, freeing up a request.
+ 	 * Although waiting in an asynchronous interface is less than ideal, we
+ 	 * do not want to use BLK_MQ_REQ_NOWAIT here because userspace might
+ 	 * not expect an EWOULDBLOCK from this condition.
+ 	 */
+-	rq = blk_get_request(q, hp->dxfer_direction == SG_DXFER_TO_DEV ?
++	rq = scsi_alloc_request(q, hp->dxfer_direction == SG_DXFER_TO_DEV ?
+ 			REQ_OP_DRV_OUT : REQ_OP_DRV_IN, 0);
+ 	if (IS_ERR(rq)) {
+ 		kfree(long_cmdp);
+diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
+index 115f7ef7a5def..7c4d9a9647999 100644
+--- a/drivers/scsi/sr.c
++++ b/drivers/scsi/sr.c
+@@ -967,7 +967,7 @@ static int sr_read_cdda_bpc(struct cdrom_device_info *cdi, void __user *ubuf,
+ 	struct bio *bio;
+ 	int ret;
+ 
+-	rq = blk_get_request(disk->queue, REQ_OP_DRV_IN, 0);
++	rq = scsi_alloc_request(disk->queue, REQ_OP_DRV_IN, 0);
+ 	if (IS_ERR(rq))
+ 		return PTR_ERR(rq);
+ 	req = scsi_req(rq);
+diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
+index 9933722acfd96..1275299f61597 100644
+--- a/drivers/scsi/st.c
++++ b/drivers/scsi/st.c
+@@ -543,7 +543,7 @@ static int st_scsi_execute(struct st_request *SRpnt, const unsigned char *cmd,
+ 	int err = 0;
+ 	struct scsi_tape *STp = SRpnt->stp;
+ 
+-	req = blk_get_request(SRpnt->stp->device->request_queue,
++	req = scsi_alloc_request(SRpnt->stp->device->request_queue,
+ 			data_direction == DMA_TO_DEVICE ?
+ 			REQ_OP_DRV_OUT : REQ_OP_DRV_IN, 0);
+ 	if (IS_ERR(req))
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+index 75ef52f008ff6..b5705a2bd7618 100644
+--- a/drivers/target/target_core_pscsi.c
++++ b/drivers/target/target_core_pscsi.c
+@@ -980,11 +980,10 @@ pscsi_execute_cmd(struct se_cmd *cmd)
+ 	memcpy(pt->pscsi_cdb, cmd->t_task_cdb,
+ 		scsi_command_size(cmd->t_task_cdb));
+ 
+-	req = blk_get_request(pdv->pdv_sd->request_queue,
++	req = scsi_alloc_request(pdv->pdv_sd->request_queue,
+ 			cmd->data_direction == DMA_TO_DEVICE ?
+ 			REQ_OP_DRV_OUT : REQ_OP_DRV_IN, 0);
+ 	if (IS_ERR(req)) {
+-		pr_err("PSCSI: blk_get_request() failed\n");
+ 		ret = TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+ 		goto fail;
+ 	}
+diff --git a/include/scsi/scsi_cmnd.h b/include/scsi/scsi_cmnd.h
+index eaf04c9a1dfcb..31078063afac2 100644
+--- a/include/scsi/scsi_cmnd.h
++++ b/include/scsi/scsi_cmnd.h
+@@ -396,4 +396,7 @@ static inline unsigned scsi_transfer_length(struct scsi_cmnd *scmd)
+ extern void scsi_build_sense(struct scsi_cmnd *scmd, int desc,
+ 			     u8 key, u8 asc, u8 ascq);
+ 
++struct request *scsi_alloc_request(struct request_queue *q,
++		unsigned int op, blk_mq_req_flags_t flags);
++
+ #endif /* _SCSI_SCSI_CMND_H */
 -- 
 2.30.2
 
