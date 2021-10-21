@@ -2,93 +2,99 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77B2FC433F5
-	for <target-devel@archiver.kernel.org>; Thu, 21 Oct 2021 08:56:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22B23C43217
+	for <target-devel@archiver.kernel.org>; Thu, 21 Oct 2021 13:34:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 58D47610C8
-	for <target-devel@archiver.kernel.org>; Thu, 21 Oct 2021 08:56:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C1D5611CE
+	for <target-devel@archiver.kernel.org>; Thu, 21 Oct 2021 13:34:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231334AbhJUI6W (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 21 Oct 2021 04:58:22 -0400
-Received: from mta-02.yadro.com ([89.207.88.252]:37718 "EHLO mta-01.yadro.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S230269AbhJUI6V (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Thu, 21 Oct 2021 04:58:21 -0400
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 130CC42F73;
-        Thu, 21 Oct 2021 08:56:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        in-reply-to:content-disposition:content-type:content-type
-        :mime-version:references:message-id:subject:subject:from:from
-        :date:date:received:received:received; s=mta-01; t=1634806564;
-         x=1636620965; bh=eZngF4CFWTReaLuT2g7MGpj+YO4CVMh9/JhILGSLnTg=; b=
-        KCocJb/cP84SlD5JaUPcGQGopidAAYjWyryi496wNPIuKTvA+7hXbOQS0vuslKyy
-        5frdnI9R7A5/tDthu/2NhheatHLIwVzehmN6nqx1Zbk07Pc+Z4gsGvR6lvBWXatA
-        CmPZ0m/nPjX8p3AEbcyNR5k5kTykW3RMUl2VAGAymYI=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id hIPMLCNUCjQH; Thu, 21 Oct 2021 11:56:04 +0300 (MSK)
-Received: from T-EXCH-04.corp.yadro.com (t-exch-04.corp.yadro.com [172.17.100.104])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        id S231408AbhJUNgq (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 21 Oct 2021 09:36:46 -0400
+Received: from smtp-out1.suse.de ([195.135.220.28]:36044 "EHLO
+        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230229AbhJUNgp (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Thu, 21 Oct 2021 09:36:45 -0400
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id EAC2D430BF;
-        Thu, 21 Oct 2021 11:55:54 +0300 (MSK)
-Received: from yadro.com (10.199.9.171) by T-EXCH-04.corp.yadro.com
- (172.17.100.104) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Thu, 21
- Oct 2021 11:55:53 +0300
-Date:   Thu, 21 Oct 2021 11:55:53 +0300
-From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
-To:     "Martin K. Petersen" <martin.petersen@oracle.com>
-CC:     Mike Christie <michael.christie@oracle.com>,
-        <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
-        <linux@yadro.com>, Dmitry Bogdanov <d.bogdanov@yadro.com>
-Subject: Re: [PATCH 1/2] scsi: target: core: Add sense reason for space
- allocation errors
-Message-ID: <YXErGb3f2H4a39cD@yadro.com>
-References: <20211020184319.588002-1-k.shelekhin@yadro.com>
- <20211020184319.588002-2-k.shelekhin@yadro.com>
- <yq1pmrz6pbl.fsf@ca-mkp.ca.oracle.com>
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 597272199D;
+        Thu, 21 Oct 2021 13:34:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1634823268; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=IWF3N189nqk9QfOozLtyL2wMdRZFQPA2LrP487Lut3s=;
+        b=BwjBm5b1r6VpqNvegMrdEUegHzhMAI9RKeLHgh+cHQN34DTUVyd2vFKpDTs0QF2sq5sLY3
+        hfoBK5fJo78y+cql5bGhGZJ3evrIWdOpwv+VH85gDn3b6KH4tYFkK0qYXi9Q7x1XYAErWR
+        7FZ6RJnNLFl/sNjUnTHD7crGEUl0MmQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1634823268;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=IWF3N189nqk9QfOozLtyL2wMdRZFQPA2LrP487Lut3s=;
+        b=esUjDTh4UdlNHPVJNS18Y38yCdgCykCb9qK4+wjgKPmbPHLnGbwAFNYh9tcXyaXkuLW+nX
+        RaLEhy9Q/AEn7oAQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1BC2F13BA5;
+        Thu, 21 Oct 2021 13:34:28 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id ADC7BWRscWFYJgAAMHmgww
+        (envelope-from <hare@suse.de>); Thu, 21 Oct 2021 13:34:28 +0000
+Subject: Re: [PATCH 1/7] block: add a ->get_unique_id method
+To:     Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     "J. Bruce Fields" <bfields@fieldses.org>,
+        Chuck Lever <chuck.lever@oracle.com>,
+        linux-block@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-nfs@vger.kernel.org
+References: <20211021060607.264371-1-hch@lst.de>
+ <20211021060607.264371-2-hch@lst.de>
+From:   Hannes Reinecke <hare@suse.de>
+Message-ID: <0acbd09c-6c31-3413-2fb1-9d15f2ee6201@suse.de>
+Date:   Thu, 21 Oct 2021 15:34:27 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.12.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <yq1pmrz6pbl.fsf@ca-mkp.ca.oracle.com>
-X-Originating-IP: [10.199.9.171]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-04.corp.yadro.com (172.17.100.104)
+In-Reply-To: <20211021060607.264371-2-hch@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, Oct 20, 2021 at 11:21:54PM -0400, Martin K. Petersen wrote:
+On 10/21/21 8:06 AM, Christoph Hellwig wrote:
+> Add a method to query unique IDs from block devices.  It will be used to
+> remove code that deeply pokes into SCSI internals in the NFS server.
+> The implementation in the sd driver itself is also much nicer as it can
+> use the cached VPD page instead of always sending a command as the
+> current NFS code does.
 > 
-> Konstantin,
+> For now the interface is kept very minimal but could be easily
+> extended when other users like a block-layer sysfs interface for
+> uniquue IDs shows up.
 > 
-> > According to SBC-3 4.7.3.6 this sense reason shall be used in situations
-> > where thin provisioned logical unit cannot satisfy the write request due
-> > to the lack of free blocks.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>   include/linux/blkdev.h | 11 +++++++++++
+>   1 file changed, 11 insertions(+)
 > 
-> > +	[TCM_SPACE_ALLOCATION_FAILED] = {
-> > +		.key = DATA_PROTECT,
-> > +		.asc = 0x27,
-> > +		.ascq = 0x07, /* SPACE ALLOCATION FAILED WRITE PROTECT */
-> > +	},
-> 
-> How do we know this is a permanent condition and not a temporary space
-> exhaustion?
+Reviewed-by: Hannes Reinecke <hare@suse.de>
 
-By permanent condition SBC-3 means that an initiator should not resend
-the command immediately as it will fail again. Kernel tries hard not to
-fail with BLK_STS_NOSPC:
+Cheers,
 
-  /*
-   * We're holding onto IO to allow userland time to react.  After the
-   * timeout either the pool will have been resized (and thus back in
-   * PM_WRITE mode), or we degrade to PM_OUT_OF_DATA_SPACE w/ error_if_no_space.
-   */
-  static void do_no_space_timeout(struct work_struct *ws)
-
-So BLK_STS_NOSPC means that we are stuck with this condition and some
-out-of-scope actions (like running fs-trim on the initiator) are
-required.
+Hannes
+-- 
+Dr. Hannes Reinecke                Kernel Storage Architect
+hare@suse.de                              +49 911 74053 688
+SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
+HRB 36809 (AG Nürnberg), Geschäftsführer: Felix Imendörffer
