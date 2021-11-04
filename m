@@ -2,268 +2,208 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3BE9C433F5
-	for <target-devel@archiver.kernel.org>; Thu,  4 Nov 2021 12:33:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24365C433F5
+	for <target-devel@archiver.kernel.org>; Thu,  4 Nov 2021 14:25:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C3FF1611EF
-	for <target-devel@archiver.kernel.org>; Thu,  4 Nov 2021 12:33:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0AC2D610FD
+	for <target-devel@archiver.kernel.org>; Thu,  4 Nov 2021 14:25:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231267AbhKDMfu (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 4 Nov 2021 08:35:50 -0400
-Received: from esa1.hgst.iphmx.com ([68.232.141.245]:39339 "EHLO
-        esa1.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230410AbhKDMfu (ORCPT
+        id S230509AbhKDO2a (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 4 Nov 2021 10:28:30 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:60611 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S230409AbhKDO23 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 4 Nov 2021 08:35:50 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1636029192; x=1667565192;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=LtBy39t5zEVI3x0/1E6ODBKN5DFMdG9pColeMnfbRVk=;
-  b=M5LnKy81W7r3dU+vXvSmBPQ76FaKIZGtpq845vTq2OW0rqCqMb+Q818f
-   kNtVlh4oJa3e07Ge5W8Yz7b/cNugiTDA4rxqiIKU4UjBnCsrDild5Kkc6
-   OhICF+GRrlmvkTwBhxc8iJBRxyi2qsWwTEVUgbuOCuOOuC4qfV+2KN8c0
-   1RS2Cvoqn64Z0it+OCbYbgfXOF0zrNYFc0RWZgnGFza8S+wSthSneZTVX
-   1qAZrqbtwVLUJOBXOJ849CrXij3FiKo8iMTvTP/BF8JQBKDgQiLeM8mg5
-   s8qfdyu1kzda9ltkgWsmKVnBbodwiylzjCNCPt0L4Mfv3n0hz128x2Wjf
-   A==;
-X-IronPort-AV: E=Sophos;i="5.87,208,1631548800"; 
-   d="scan'208";a="296467235"
-Received: from uls-op-cesaip01.wdc.com (HELO uls-op-cesaep01.wdc.com) ([199.255.45.14])
-  by ob1.hgst.iphmx.com with ESMTP; 04 Nov 2021 20:33:12 +0800
-IronPort-SDR: grnUCWIaV7scku0q1ZUAygomd8oCgGgxg6NyPcP8wWtX6YNvfglaElK5VxHry80a94kNZKAyQZ
- nF7xEnWWidE4AY/QAFwJMDPxYgGcHawIZdFBA+WsrO2NW7NJt1aWGOfhMTDFYkbeXfUhcNyPkZ
- v7zq2QVJL+IS342MKtb/cEfyz8fEde6aCPU5bS7Gt7voJUxNhe12g6Lz6Ty5tOzMzz4EoCAMbu
- OUx2r9dGNMOCI9Jn9JsnozAHFBFgqSZ2UTSPqXyet56ucgMqfhd/bNWZaWvFJO0OEYeITJXEmO
- +kWMXxW+MZsGEpLSlXod49dY
-Received: from uls-op-cesaip02.wdc.com ([10.248.3.37])
-  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Nov 2021 05:08:30 -0700
-IronPort-SDR: vOgGG7m5LLPOnmoynol4pFrFJo34duAIeZBpwvn2HcMcAiGSeBQf6G0rngB5UuQzvIu1+sA0vx
- slwTqVjlP8Mw59HoMj8cWxlPsjwpPQSXBEDbLzh7EsnOv9vdMGKefx2Ol24f+MmtcQcdYU5uhI
- U+Nkv4J6TZ+iBRduyIaw1KBOaHHattEpuh/TgxrS/QbAaYDdyH0D17zOH/cWdt4SRkM5ft2W9D
- 0DlHe+wA+m9CeHACEnlYT++MiqVrOkAM1OEIsNU8mQw5l740Bq3IICllucVtGt+BnhEqlsLO9h
- efc=
-WDCIronportException: Internal
-Received: from usg-ed-osssrv.wdc.com ([10.3.10.180])
-  by uls-op-cesaip02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Nov 2021 05:33:12 -0700
-Received: from usg-ed-osssrv.wdc.com (usg-ed-osssrv.wdc.com [127.0.0.1])
-        by usg-ed-osssrv.wdc.com (Postfix) with ESMTP id 4HlNMr0JsFz1RtVv
-        for <target-devel@vger.kernel.org>; Thu,  4 Nov 2021 05:33:12 -0700 (PDT)
-Authentication-Results: usg-ed-osssrv.wdc.com (amavisd-new); dkim=pass
-        reason="pass (just generated, assumed good)"
-        header.d=opensource.wdc.com
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=
-        opensource.wdc.com; h=content-transfer-encoding:content-type
-        :in-reply-to:organization:from:references:to:content-language
-        :subject:user-agent:mime-version:date:message-id; s=dkim; t=
-        1636029190; x=1638621191; bh=LtBy39t5zEVI3x0/1E6ODBKN5DFMdG9pCol
-        eMnfbRVk=; b=PYJx/ynhYQ0pSRH66Zt/7T3hGQtRA5lTyHtB3Jw9N2DdykUCpId
-        yygIBPrPDjQirM9tQXiU4ZTnV+zm+D/3MwjDmScVWaXv4JGpbLVZNpcH2efJpN8e
-        QER8WR8IENoLfBGH1tZSHDAZLTqCUBVsqFzVKdxXhdl9wU1JODTdCf212++reADt
-        Hj7n9lerbhvXeyOlN5c8ABgBMjKB/MuxgC6iYZBoHizhjcvDy7tC+J3clO7npBKG
-        bOwwv1+piy2skYlCMqWeXnhgHNciWAItAfl8bTRyr/HDpttnl+kOxamYpm/9azbt
-        gRf1Zd4ZsPUYK1YrcpzHKQhiJoVOneeMFpA==
-X-Virus-Scanned: amavisd-new at usg-ed-osssrv.wdc.com
-Received: from usg-ed-osssrv.wdc.com ([127.0.0.1])
-        by usg-ed-osssrv.wdc.com (usg-ed-osssrv.wdc.com [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id 9HLm_yA41PvP for <target-devel@vger.kernel.org>;
-        Thu,  4 Nov 2021 05:33:10 -0700 (PDT)
-Received: from [10.225.54.48] (unknown [10.225.54.48])
-        by usg-ed-osssrv.wdc.com (Postfix) with ESMTPSA id 4HlNMd5TBrz1RtVl;
-        Thu,  4 Nov 2021 05:33:01 -0700 (PDT)
-Message-ID: <bd36ee58-8273-cd0a-295e-0c66b0142bcd@opensource.wdc.com>
-Date:   Thu, 4 Nov 2021 21:33:00 +0900
+        Thu, 4 Nov 2021 10:28:29 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1636035951;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=NFsYeY+DZhBBjUyzxzEsLkkJzjVOvCvjl3UiBsdrpm8=;
+        b=OdQKSOacAVSHn4ln6F0PzmSy/MDoLxHypjVjeniXqDYCzb/UQQsFT2cgbdhJH/QDCt8527
+        QPIi9IxJ2VGZZ0GD6ArynOs3HsDpIHR6bC0pieklO23/aCj69nYM3D6UhStmg8JL7a9hCB
+        U4VHfxRDhMQFGlY3qC14QnpzmDTG7B0=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-337-P27Qvx1LN_WcrdbVLOGTOw-1; Thu, 04 Nov 2021 10:25:50 -0400
+X-MC-Unique: P27Qvx1LN_WcrdbVLOGTOw-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com [10.5.11.12])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id A960210168EA;
+        Thu,  4 Nov 2021 14:25:48 +0000 (UTC)
+Received: from raketa.redhat.com (unknown [10.40.193.51])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 1707960FB8;
+        Thu,  4 Nov 2021 14:25:46 +0000 (UTC)
+From:   Maurizio Lombardi <mlombard@redhat.com>
+To:     martin.petersen@oracle.com
+Cc:     bostroesser@gmail.com, michael.christie@oracle.com,
+        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        k.shelekhin@yadro.com
+Subject: [PATCH] target: iscsi: simplify the connection closing mechanism
+Date:   Thu,  4 Nov 2021 15:25:45 +0100
+Message-Id: <20211104142545.40797-1-mlombard@redhat.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.2.1
-Subject: Re: [RFC PATCH 2/8] scsi: add REQ_OP_VERIFY support
-Content-Language: en-US
-To:     Chaitanya Kulkarni <chaitanyak@nvidia.com>,
-        linux-block@vger.kernel.org, linux-raid@vger.kernel.org,
-        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        linux-xfs@vger.kernel.org, dm-devel@redhat.com
-Cc:     axboe@kernel.dk, agk@redhat.com, snitzer@redhat.com,
-        song@kernel.org, djwong@kernel.org, kbusch@kernel.org, hch@lst.de,
-        sagi@grimberg.me, jejb@linux.ibm.com, martin.petersen@oracle.com,
-        viro@zeniv.linux.org.uk, javier@javigon.com,
-        johannes.thumshirn@wdc.com, bvanassche@acm.org,
-        dongli.zhang@oracle.com, ming.lei@redhat.com, osandov@fb.com,
-        willy@infradead.org, jefflexu@linux.alibaba.com,
-        josef@toxicpanda.com, clm@fb.com, dsterba@suse.com, jack@suse.com,
-        tytso@mit.edu, adilger.kernel@dilger.ca, jlayton@kernel.org,
-        idryomov@gmail.com, danil.kipnis@cloud.ionos.com,
-        ebiggers@google.com, jinpu.wang@cloud.ionos.com,
-        Chaitanya Kulkarni <kch@nvidia.com>
-References: <20211104064634.4481-1-chaitanyak@nvidia.com>
- <20211104064634.4481-3-chaitanyak@nvidia.com>
-From:   Damien Le Moal <damien.lemoal@opensource.wdc.com>
-Organization: Western Digital
-In-Reply-To: <20211104064634.4481-3-chaitanyak@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 2021/11/04 15:46, Chaitanya Kulkarni wrote:
-> From: Chaitanya Kulkarni <kch@nvidia.com>
-> 
-> Signed-off-by: Chaitanya Kulkarni <kch@nvidia.com>
-> ---
->  drivers/scsi/sd.c | 52 +++++++++++++++++++++++++++++++++++++++++++++++
->  drivers/scsi/sd.h |  1 +
->  2 files changed, 53 insertions(+)
-> 
-> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-> index a3d2d4bc4a3d..7f2c4eb98cf8 100644
-> --- a/drivers/scsi/sd.c
-> +++ b/drivers/scsi/sd.c
-> @@ -106,6 +106,7 @@ MODULE_ALIAS_SCSI_DEVICE(TYPE_ZBC);
->  
->  static void sd_config_discard(struct scsi_disk *, unsigned int);
->  static void sd_config_write_same(struct scsi_disk *);
-> +static void sd_config_verify(struct scsi_disk *sdkp);
->  static int  sd_revalidate_disk(struct gendisk *);
->  static void sd_unlock_native_capacity(struct gendisk *disk);
->  static int  sd_probe(struct device *);
-> @@ -995,6 +996,41 @@ static blk_status_t sd_setup_write_zeroes_cmnd(struct scsi_cmnd *cmd)
->  	return sd_setup_write_same10_cmnd(cmd, false);
->  }
->  
-> +static void sd_config_verify(struct scsi_disk *sdkp)
-> +{
-> +	struct request_queue *q = sdkp->disk->queue;
-> +
-> +	/* XXX: use same pattern as sd_config_write_same(). */
-> +	blk_queue_max_verify_sectors(q, UINT_MAX >> 9);
+When the connection reinstatement is performed, the target driver
+executes a complex scheme of complete()/wait_for_completion() that is not
+really needed.
 
-VERIFY 10, 12, 16 and 32 commands are optional and may not be implemented by a
-device. So setting this unconditionally is wrong.
-At the very least you must have an "if (sdkp->verify_16)" here, and call
-"blk_queue_max_verify_sectors(q, 0);" if the device does not support verify.
+Considering that:
 
-> +}
-> +
-> +static blk_status_t sd_setup_verify_cmnd(struct scsi_cmnd *cmd)
-> +{
-> +       struct request *rq = cmd->request;
-> +       struct scsi_device *sdp = cmd->device;
-> +       struct scsi_disk *sdkp = scsi_disk(rq->rq_disk);
-> +       u64 lba = sectors_to_logical(sdp, blk_rq_pos(rq));
-> +       u32 nr_blocks = sectors_to_logical(sdp, blk_rq_sectors(rq));
-> +
-> +       if (!sdkp->verify_16)
-> +	       return BLK_STS_NOTSUPP;
+1) The callers of iscsit_connection_reinstatement_rcfr() and
+   iscsit_cause_connection_reinstatement() hold a reference
+   to the conn structure.
 
-I think this should be "return BLK_STS_TARGET;"
+2) iscsit_close_connection() will sleep when calling
+   iscsit_check_conn_usage_count() until the conn structure's refcount
+   reaches zero.
 
-> +
-> +       cmd->cmd_len = 16;
-> +       cmd->cmnd[0] = VERIFY_16;
+we can optimize the driver the following way:
 
-And what if the device supports VERIFY 10 or 12 but not VERIFY 16 ?
+* The threads that must sleep until the connection is closed
+  will all wait for the "conn_wait_comp" completion,
+  iscsit_close_connection() will then call complete_all() to wake them up.
+  No need to have multiple completion structures.
 
-> +       /* skip veprotect / dpo / bytchk */
-> +       cmd->cmnd[1] = 0;
-> +       put_unaligned_be64(lba, &cmd->cmnd[2]);
-> +       put_unaligned_be32(nr_blocks, &cmd->cmnd[10]);
-> +       cmd->cmnd[14] = 0;
-> +       cmd->cmnd[15] = 0;
-> +
-> +       cmd->allowed = SD_MAX_RETRIES;
-> +       cmd->sc_data_direction = DMA_NONE;
-> +       cmd->transfersize = 0;
-> +
-> +       return BLK_STS_OK;
-> +}
-> +
->  static void sd_config_write_same(struct scsi_disk *sdkp)
->  {
->  	struct request_queue *q = sdkp->disk->queue;
-> @@ -1345,6 +1381,8 @@ static blk_status_t sd_init_command(struct scsi_cmnd *cmd)
->  		}
->  	case REQ_OP_WRITE_ZEROES:
->  		return sd_setup_write_zeroes_cmnd(cmd);
-> +	case REQ_OP_VERIFY:
-> +		return sd_setup_verify_cmnd(cmd);
->  	case REQ_OP_WRITE_SAME:
->  		return sd_setup_write_same_cmnd(cmd);
->  	case REQ_OP_FLUSH:
-> @@ -2029,6 +2067,7 @@ static int sd_done(struct scsi_cmnd *SCpnt)
->  	switch (req_op(req)) {
->  	case REQ_OP_DISCARD:
->  	case REQ_OP_WRITE_ZEROES:
-> +	case REQ_OP_VERIFY:
->  	case REQ_OP_WRITE_SAME:
->  	case REQ_OP_ZONE_RESET:
->  	case REQ_OP_ZONE_RESET_ALL:
-> @@ -3096,6 +3135,17 @@ static void sd_read_write_same(struct scsi_disk *sdkp, unsigned char *buffer)
->  		sdkp->ws10 = 1;
->  }
->  
-> +static void sd_read_verify(struct scsi_disk *sdkp, unsigned char *buffer)
-> +{
-> +       struct scsi_device *sdev = sdkp->device;
-> +
-> +       sd_printk(KERN_INFO, sdkp, "VERIFY16 check.\n");
+* The conn_post_wait_comp completion is not necessary and can be removed
+  because iscsit_close_connection() sleeps until all the other threads
+  release the conn structure.
+  (see the iscsit_check_conn_usage_count() function)
 
-Remove this message please.
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/target/iscsi/iscsi_target.c       | 31 +++++------------------
+ drivers/target/iscsi/iscsi_target_erl0.c  |  6 +----
+ drivers/target/iscsi/iscsi_target_login.c |  2 --
+ drivers/target/iscsi/iscsi_target_util.c  |  3 ---
+ include/target/iscsi/iscsi_target_core.h  |  4 ---
+ 5 files changed, 8 insertions(+), 38 deletions(-)
 
-> +       if (scsi_report_opcode(sdev, buffer, SD_BUF_SIZE, VERIFY_16) == 1) {
-> +	       sd_printk(KERN_INFO, sdkp, " VERIFY16 in ON .\n");
-
-And this one too.
-
-> +               sdkp->verify_16 = 1;
-
-Why not checking for VERIFY 10 and 12 if VERIFY 16 is not supported ?
-Also, why don't you call "blk_queue_max_verify_sectors(q, UINT_MAX >> 9);" here
-instead of adding the not so useful sd_config_verify() helper ?
-
-> +       }
-> +}
-> +
->  static void sd_read_security(struct scsi_disk *sdkp, unsigned char *buffer)
->  {
->  	struct scsi_device *sdev = sdkp->device;
-> @@ -3224,6 +3274,7 @@ static int sd_revalidate_disk(struct gendisk *disk)
->  		sd_read_cache_type(sdkp, buffer);
->  		sd_read_app_tag_own(sdkp, buffer);
->  		sd_read_write_same(sdkp, buffer);
-> +		sd_read_verify(sdkp, buffer);
->  		sd_read_security(sdkp, buffer);
->  	}
->  
-> @@ -3265,6 +3316,7 @@ static int sd_revalidate_disk(struct gendisk *disk)
->  
->  	set_capacity_and_notify(disk, logical_to_sectors(sdp, sdkp->capacity));
->  	sd_config_write_same(sdkp);
-> +	sd_config_verify(sdkp);
->  	kfree(buffer);
->  
->  	/*
-> diff --git a/drivers/scsi/sd.h b/drivers/scsi/sd.h
-> index b59136c4125b..94a86bf6dac4 100644
-> --- a/drivers/scsi/sd.h
-> +++ b/drivers/scsi/sd.h
-> @@ -120,6 +120,7 @@ struct scsi_disk {
->  	unsigned	lbpvpd : 1;
->  	unsigned	ws10 : 1;
->  	unsigned	ws16 : 1;
-> +	unsigned        verify_16 : 1;
-
-See right above this line how write same supports the 10 and 16 variants. I
-think you need the same here. And very likely, you also need the 32 version in
-case the device has DIF/DIX (type 2 protection).
-
->  	unsigned	rc_basis: 2;
->  	unsigned	zoned: 2;
->  	unsigned	urswrz : 1;
-> 
-
-
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 2c54c5d8412d..7df10cfcba2a 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4223,34 +4223,17 @@ int iscsit_close_connection(
+ 
+ 	spin_unlock_bh(&sess->conn_lock);
+ 
+-	/*
+-	 * If connection reinstatement is being performed on this connection,
+-	 * up the connection reinstatement semaphore that is being blocked on
+-	 * in iscsit_cause_connection_reinstatement().
+-	 */
+ 	spin_lock_bh(&conn->state_lock);
+-	if (atomic_read(&conn->sleep_on_conn_wait_comp)) {
+-		spin_unlock_bh(&conn->state_lock);
+-		complete(&conn->conn_wait_comp);
+-		wait_for_completion(&conn->conn_post_wait_comp);
+-		spin_lock_bh(&conn->state_lock);
+-	}
+-
+-	/*
+-	 * If connection reinstatement is being performed on this connection
+-	 * by receiving a REMOVECONNFORRECOVERY logout request, up the
+-	 * connection wait rcfr semaphore that is being blocked on
+-	 * an iscsit_connection_reinstatement_rcfr().
+-	 */
+-	if (atomic_read(&conn->connection_wait_rcfr)) {
+-		spin_unlock_bh(&conn->state_lock);
+-		complete(&conn->conn_wait_rcfr_comp);
+-		wait_for_completion(&conn->conn_post_wait_comp);
+-		spin_lock_bh(&conn->state_lock);
+-	}
+ 	atomic_set(&conn->connection_reinstatement, 1);
+ 	spin_unlock_bh(&conn->state_lock);
+ 
++	/*
++	 * If connection reinstatement is being performed on this connection,
++	 * up the connection reinstatement semaphore that is being blocked on
++	 * in iscsit_cause_connection_reinstatement() or
++	 * in iscsit_connection_reinstatement_rcfr()
++	 */
++	complete_all(&conn->conn_wait_comp);
+ 	/*
+ 	 * If any other processes are accessing this connection pointer we
+ 	 * must wait until they have completed.
+diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/iscsi/iscsi_target_erl0.c
+index 102c9cbf59f3..584e0a0b517d 100644
+--- a/drivers/target/iscsi/iscsi_target_erl0.c
++++ b/drivers/target/iscsi/iscsi_target_erl0.c
+@@ -839,8 +839,7 @@ void iscsit_connection_reinstatement_rcfr(struct iscsi_conn *conn)
+ 		send_sig(SIGINT, conn->rx_thread, 1);
+ 
+ sleep:
+-	wait_for_completion(&conn->conn_wait_rcfr_comp);
+-	complete(&conn->conn_post_wait_comp);
++	wait_for_completion(&conn->conn_wait_comp);
+ }
+ 
+ void iscsit_cause_connection_reinstatement(struct iscsi_conn *conn, int sleep)
+@@ -871,12 +870,9 @@ void iscsit_cause_connection_reinstatement(struct iscsi_conn *conn, int sleep)
+ 		spin_unlock_bh(&conn->state_lock);
+ 		return;
+ 	}
+-
+-	atomic_set(&conn->sleep_on_conn_wait_comp, 1);
+ 	spin_unlock_bh(&conn->state_lock);
+ 
+ 	wait_for_completion(&conn->conn_wait_comp);
+-	complete(&conn->conn_post_wait_comp);
+ }
+ EXPORT_SYMBOL(iscsit_cause_connection_reinstatement);
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index 1a9c50401bdb..982c23459272 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -1096,9 +1096,7 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
+ 	INIT_LIST_HEAD(&conn->conn_cmd_list);
+ 	INIT_LIST_HEAD(&conn->immed_queue_list);
+ 	INIT_LIST_HEAD(&conn->response_queue_list);
+-	init_completion(&conn->conn_post_wait_comp);
+ 	init_completion(&conn->conn_wait_comp);
+-	init_completion(&conn->conn_wait_rcfr_comp);
+ 	init_completion(&conn->conn_waiting_on_uc_comp);
+ 	init_completion(&conn->conn_logout_comp);
+ 	init_completion(&conn->rx_half_close_comp);
+diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+index 6dd5810e2af1..d7b1f9110d49 100644
+--- a/drivers/target/iscsi/iscsi_target_util.c
++++ b/drivers/target/iscsi/iscsi_target_util.c
+@@ -824,9 +824,6 @@ struct iscsi_conn *iscsit_get_conn_from_cid_rcfr(struct iscsi_session *sess, u16
+ 	list_for_each_entry(conn, &sess->sess_conn_list, conn_list) {
+ 		if (conn->cid == cid) {
+ 			iscsit_inc_conn_usage_count(conn);
+-			spin_lock(&conn->state_lock);
+-			atomic_set(&conn->connection_wait_rcfr, 1);
+-			spin_unlock(&conn->state_lock);
+ 			spin_unlock_bh(&sess->conn_lock);
+ 			return conn;
+ 		}
+diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+index 1eccb2ac7d02..aeb8932507c2 100644
+--- a/include/target/iscsi/iscsi_target_core.h
++++ b/include/target/iscsi/iscsi_target_core.h
+@@ -542,12 +542,8 @@ struct iscsi_conn {
+ 	atomic_t		connection_exit;
+ 	atomic_t		connection_recovery;
+ 	atomic_t		connection_reinstatement;
+-	atomic_t		connection_wait_rcfr;
+-	atomic_t		sleep_on_conn_wait_comp;
+ 	atomic_t		transport_failed;
+-	struct completion	conn_post_wait_comp;
+ 	struct completion	conn_wait_comp;
+-	struct completion	conn_wait_rcfr_comp;
+ 	struct completion	conn_waiting_on_uc_comp;
+ 	struct completion	conn_logout_comp;
+ 	struct completion	tx_half_close_comp;
 -- 
-Damien Le Moal
-Western Digital Research
+2.27.0
+
