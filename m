@@ -2,31 +2,31 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E598C433FE
-	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:39:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A76AC43217
+	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:42:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2677061054
-	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:39:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E5DB5610D2
+	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:42:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345773AbhKIWmR (ORCPT
+        id S1345907AbhKIWoz (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 9 Nov 2021 17:42:17 -0500
-Received: from mail.kernel.org ([198.145.29.99]:58692 "EHLO mail.kernel.org"
+        Tue, 9 Nov 2021 17:44:55 -0500
+Received: from mail.kernel.org ([198.145.29.99]:59872 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S239684AbhKIWkM (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 9 Nov 2021 17:40:12 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 09099619F5;
-        Tue,  9 Nov 2021 22:23:35 +0000 (UTC)
+        id S1345073AbhKIWlw (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 9 Nov 2021 17:41:52 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 5D6E261B40;
+        Tue,  9 Nov 2021 22:23:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1636496617;
-        bh=1oAp7J/bCObmfo+3iYaqyyj4MJqdk0r6G7ltQzbRWi8=;
+        s=k20201202; t=1636496638;
+        bh=5CBpwH/uIjDrDhJJp8VhF3NGdSNVzhRkvGijOW7cIQ8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=iy7JqtTqViH9AEj04A6X3onODkmP1T3F8gaS6UPcnucNLPnCSjznUJqmdcnmSS1xg
-         oILFx1fWDIYg5JtC6KZgvo1zFuVyNaqp8nGG54rck35O2pm3oCNQF/56DRua2N5sdf
-         bdJVXTuQs9bHvYOv8xLWVeezt7wjjnCHhVKSe3mtaP5yo20Oi2P3JR9Qpp6K2SS7kH
-         EiAuTKnNX1Gpg6BXGZFXM2LZHNwKcyhnyuQxwW+/JgLf8qFFGp0xhqZO68+vqy9ypu
-         X0QZSMXKuuOmJC1sBFQZMylAZOACm6w19+YeM3VyXbDisghUwC7pT9URU7dzf/6/FQ
-         sUFQVSn5cFRNw==
+        b=OyNf6OP0PEYOvp2Qwdc24V+nEA3x8MbFd3dRkoWhlzM6ahYuc9RueAajO99MV2s3g
+         09zKraj0BFslDN76irblHcv7a33lUp6Gco8ZnklhjvsFEqpk0HIA/Uk3EeiNtue32f
+         jc8LvS8pbcT5X1+PI7dT3FAIbEQEa/UscXn/5K8weWnpAn2V9NCqL58e3b5wMiGhDz
+         FH/qRKYSHlbKcZ8ILXPG90KphmtVV6NX3p+0hEXK0KSGaeVcQMyes7TJbAsf5jcPXM
+         38QkZ9i9S1cE67ODdYvxPvK3DEDWYCj0miMuWk1+ko20ER0bx+fUXNmTlDlj/ysbOh
+         cacWDymzO+Zpg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mike Christie <michael.christie@oracle.com>,
@@ -36,12 +36,12 @@ Cc:     Mike Christie <michael.christie@oracle.com>,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         bcm-kernel-feedback-list@broadcom.com
-Subject: [PATCH AUTOSEL 4.19 17/21] scsi: target: Fix ordered tag handling
-Date:   Tue,  9 Nov 2021 17:23:06 -0500
-Message-Id: <20211109222311.1235686-17-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 10/14] scsi: target: Fix ordered tag handling
+Date:   Tue,  9 Nov 2021 17:23:39 -0500
+Message-Id: <20211109222343.1235902-10-sashal@kernel.org>
 X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20211109222311.1235686-1-sashal@kernel.org>
-References: <20211109222311.1235686-1-sashal@kernel.org>
+In-Reply-To: <20211109222343.1235902-1-sashal@kernel.org>
+References: <20211109222343.1235902-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -109,10 +109,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  4 files changed, 61 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 22e97a93728db..1b381519c1649 100644
+index cebef8e5a43d1..68b2fa562201c 100644
 --- a/drivers/target/target_core_device.c
 +++ b/drivers/target/target_core_device.c
-@@ -790,6 +790,8 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
+@@ -791,6 +791,8 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
  	INIT_LIST_HEAD(&dev->t10_alua.lba_map_list);
  	spin_lock_init(&dev->t10_alua.lba_map_lock);
  
@@ -122,10 +122,10 @@ index 22e97a93728db..1b381519c1649 100644
  	dev->t10_alua.t10_dev = dev;
  
 diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index 0c66355879301..c7e1fadcc5cc5 100644
+index 18e3eb16e7567..7060be69dc6a3 100644
 --- a/drivers/target/target_core_internal.h
 +++ b/drivers/target/target_core_internal.h
-@@ -151,6 +151,7 @@ void	transport_clear_lun_ref(struct se_lun *);
+@@ -149,6 +149,7 @@ void	transport_clear_lun_ref(struct se_lun *);
  void	transport_send_task_abort(struct se_cmd *);
  sense_reason_t	target_cmd_size_check(struct se_cmd *cmd, unsigned int size);
  void	target_qf_do_work(struct work_struct *work);
@@ -134,10 +134,10 @@ index 0c66355879301..c7e1fadcc5cc5 100644
  bool	target_check_fua(struct se_device *dev);
  void	__target_execute_cmd(struct se_cmd *, bool);
 diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 9c60a090cfd17..64481a3a34d44 100644
+index 852680e859217..c20997bf314e9 100644
 --- a/drivers/target/target_core_transport.c
 +++ b/drivers/target/target_core_transport.c
-@@ -1990,32 +1990,35 @@ static bool target_handle_task_attr(struct se_cmd *cmd)
+@@ -1914,32 +1914,35 @@ static bool target_handle_task_attr(struct se_cmd *cmd)
  	 */
  	switch (cmd->sam_task_attr) {
  	case TCM_HEAD_TAG:
@@ -184,7 +184,7 @@ index 9c60a090cfd17..64481a3a34d44 100644
  
  	spin_lock(&dev->delayed_cmd_lock);
  	list_add_tail(&cmd->se_delayed_node, &dev->delayed_cmd_list);
-@@ -2023,6 +2026,12 @@ static bool target_handle_task_attr(struct se_cmd *cmd)
+@@ -1947,6 +1950,12 @@ static bool target_handle_task_attr(struct se_cmd *cmd)
  
  	pr_debug("Added CDB: 0x%02x Task Attr: 0x%02x to delayed CMD listn",
  		cmd->t_task_cdb[0], cmd->sam_task_attr);
@@ -197,7 +197,7 @@ index 9c60a090cfd17..64481a3a34d44 100644
  	return true;
  }
  
-@@ -2073,29 +2082,48 @@ EXPORT_SYMBOL(target_execute_cmd);
+@@ -1997,29 +2006,48 @@ EXPORT_SYMBOL(target_execute_cmd);
   * Process all commands up to the last received ORDERED task attribute which
   * requires another blocking boundary
   */
@@ -254,7 +254,7 @@ index 9c60a090cfd17..64481a3a34d44 100644
  }
  
  /*
-@@ -2113,14 +2141,17 @@ static void transport_complete_task_attr(struct se_cmd *cmd)
+@@ -2037,14 +2065,17 @@ static void transport_complete_task_attr(struct se_cmd *cmd)
  		goto restart;
  
  	if (cmd->sam_task_attr == TCM_SIMPLE_TAG) {
@@ -274,7 +274,7 @@ index 9c60a090cfd17..64481a3a34d44 100644
  
  		dev->dev_cur_ordered_id++;
  		pr_debug("Incremented dev_cur_ordered_id: %u for ORDERED\n",
-@@ -2129,7 +2160,8 @@ static void transport_complete_task_attr(struct se_cmd *cmd)
+@@ -2053,7 +2084,8 @@ static void transport_complete_task_attr(struct se_cmd *cmd)
  	cmd->se_cmd_flags &= ~SCF_TASK_ATTR_SET;
  
  restart:
@@ -285,10 +285,10 @@ index 9c60a090cfd17..64481a3a34d44 100644
  
  static void transport_complete_qf(struct se_cmd *cmd)
 diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 2cfd3b4573b06..ac59a03d0d00e 100644
+index 0d924e968c94b..336c9f71b750a 100644
 --- a/include/target/target_core_base.h
 +++ b/include/target/target_core_base.h
-@@ -774,8 +774,9 @@ struct se_device {
+@@ -771,8 +771,9 @@ struct se_device {
  	atomic_long_t		read_bytes;
  	atomic_long_t		write_bytes;
  	/* Active commands on this virtual SE device */
@@ -300,7 +300,7 @@ index 2cfd3b4573b06..ac59a03d0d00e 100644
  	atomic_t		dev_qf_count;
  	u32			export_count;
  	spinlock_t		delayed_cmd_lock;
-@@ -798,6 +799,7 @@ struct se_device {
+@@ -795,6 +796,7 @@ struct se_device {
  	struct list_head	dev_tmr_list;
  	struct workqueue_struct *tmr_wq;
  	struct work_struct	qf_work_queue;
