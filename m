@@ -2,43 +2,43 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72ADCC4332F
-	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:34:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0905C433F5
+	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:37:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5059861101
-	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:34:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AD82F60FA0
+	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:37:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343865AbhKIWhT (ORCPT
+        id S1345034AbhKIWkM (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 9 Nov 2021 17:37:19 -0500
-Received: from mail.kernel.org ([198.145.29.99]:55748 "EHLO mail.kernel.org"
+        Tue, 9 Nov 2021 17:40:12 -0500
+Received: from mail.kernel.org ([198.145.29.99]:58684 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1343881AbhKIWfQ (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 9 Nov 2021 17:35:16 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id B1A4E60F36;
-        Tue,  9 Nov 2021 22:22:10 +0000 (UTC)
+        id S1345393AbhKIWiK (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Tue, 9 Nov 2021 17:38:10 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 4A63261B07;
+        Tue,  9 Nov 2021 22:23:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1636496531;
-        bh=OSnGHfoonZUMR5n0uTW0l0jcpsipm3GfZ/IacPzI8Yk=;
+        s=k20201202; t=1636496584;
+        bh=Ih8lef4ya+QPtcqo86096rCXdlZrEfhQi94MHmziKR0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=iQlCJXDId9nC8XK5ZEmri6HSVM1UNBpPGhhZ2cyO/rWI2vdf03LZaB7l5rxC+Efph
-         ihqtdn/V9+unRJZtGAKQUgo2ds/5kHDbVW6L8Lq3l02fksFU9o0wcI3uUe54j0CXwI
-         WD9TGIb9xrCgAuCTZNOZuaTd6nHsDaa9QSpL55Kr6fjwbg7My6sF2UqQxGefMY5RxA
-         nPzkPZh+yy65Mh5jEMQcpCH2LUE+GDdQp8itjgIbieBpJ9xxUVYVUSdv3EFaBcEs9r
-         d4G6rtOUZCuHNvko0KIBLNZpXEs4h/ow6dchEm5ikws4qDh+n7ObNcVVfyYuvHLUUG
-         ISpWjm6dXp+9Q==
+        b=lB4OR1KC4wmzXmD/3NNZCS+GRTn59FXs6Xekrp5II+Bn9GedpEAMQeQbU5w4Yd4H+
+         kFM4RleTeab0CE4bq96bI2hMN7lTLFBQSyxdwc0sh+3UUAkmD6SHpLRcAtZKM3anNj
+         sp2dX8nDugMhOCgDVXlMEnIGufDytx7CfvSwiD2IgCJU9QEvfHdVz/t11zByxlvdhT
+         xbOvprRhbduQ3GXpqjqyGkGTmBc4HifyTK2zNKoq4VjUTr59FfVZLAa+wWfAN0TXLH
+         QgvpKt4YLcyYLHuk6TvA3me5FDCUkqct7nv42OenJtcPA5e/s9QRW4dx3SGQAzlXE7
+         XZJuvQEUpz+9g==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mike Christie <michael.christie@oracle.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, nab@linux-iscsi.org,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 43/50] scsi: target: Fix alua_tg_pt_gps_count tracking
-Date:   Tue,  9 Nov 2021 17:20:56 -0500
-Message-Id: <20211109222103.1234885-43-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 26/30] scsi: target: Fix alua_tg_pt_gps_count tracking
+Date:   Tue,  9 Nov 2021 17:22:20 -0500
+Message-Id: <20211109222224.1235388-26-sashal@kernel.org>
 X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20211109222103.1234885-1-sashal@kernel.org>
-References: <20211109222103.1234885-1-sashal@kernel.org>
+In-Reply-To: <20211109222224.1235388-1-sashal@kernel.org>
+References: <20211109222224.1235388-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -73,7 +73,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 deletion(-)
 
 diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-index 6b72afee2f8b7..b240bd1ccb71d 100644
+index 385e4cf9cfa63..0fc3135d3e4f6 100644
 --- a/drivers/target/target_core_alua.c
 +++ b/drivers/target/target_core_alua.c
 @@ -1702,7 +1702,6 @@ int core_alua_set_tg_pt_gp_id(
