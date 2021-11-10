@@ -2,88 +2,219 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A21AC43217
-	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:43:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CABDC433F5
+	for <target-devel@archiver.kernel.org>; Wed, 10 Nov 2021 16:55:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 348786105A
-	for <target-devel@archiver.kernel.org>; Tue,  9 Nov 2021 22:43:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1F1BA61107
+	for <target-devel@archiver.kernel.org>; Wed, 10 Nov 2021 16:55:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345811AbhKIWqJ (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 9 Nov 2021 17:46:09 -0500
-Received: from mail.kernel.org ([198.145.29.99]:34962 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1346245AbhKIWoI (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 9 Nov 2021 17:44:08 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id F21EE61B44;
-        Tue,  9 Nov 2021 22:24:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1636496680;
-        bh=XJpxs3LuAxVLllPTjiLK+XplcoO1soIvLmz6KqklFzc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=uA0SWTn8uP113KU3EO8u04GGB4hxgi0D86by5GbFX2RXH+ZEtLeCYUCJM9KgW+nRw
-         M2GmYOY3hBqn0KzSVGgCcY25opJE/+KDA/3kYHwvwMZ+zqUcUbejjF2Ti6SyDKzz4y
-         BDs3jWzNEe8WIqksyb9FEq38FC4/fEJwlNj/LKPdX5PmWuChRu8NlTTnC9G1QlyzIQ
-         i8vEnXMUxU0fL8w3silduIEVBPFwWHzaEHt37FJV/pgTFqgW7OIx8zzd88d8MTai9L
-         SsdGMvU+Y7bcSMrBCH9YXFWXqu8wiarQQrIrSBtwFJreqeK7RNXLKIrcP/j7Xr+ndM
-         MiiS+8zcqb7lw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Mike Christie <michael.christie@oracle.com>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Sasha Levin <sashal@kernel.org>, nab@linux-iscsi.org,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 09/12] scsi: target: Fix alua_tg_pt_gps_count tracking
-Date:   Tue,  9 Nov 2021 17:24:23 -0500
-Message-Id: <20211109222426.1236575-9-sashal@kernel.org>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20211109222426.1236575-1-sashal@kernel.org>
-References: <20211109222426.1236575-1-sashal@kernel.org>
+        id S231844AbhKJQ5w (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 10 Nov 2021 11:57:52 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:32000 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S231577AbhKJQ5w (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Wed, 10 Nov 2021 11:57:52 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1636563304;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=OHStuQNmTt2dyi5ReMIvue4DM4VztagOCriSuHSkAow=;
+        b=Tb+iki3NsBGoMLcSLK1WBm/iMCSbni4BeRNgyQo52uoBdkOkf8Y3/ccXW3XmYlPcL0iMLk
+        QU3kOKRvmYyBk2Rg8++Kgc0Zm/LL2w5WgpfeJbwfdaDnwYeuDsK+eHP+JtYMPBVeWgHgYf
+        xKDpkN4sxlTPJ/6ZGZtG148jI1oBuuM=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-447-0MmU1C44Ntu4qVsQZFYuQQ-1; Wed, 10 Nov 2021 11:54:59 -0500
+X-MC-Unique: 0MmU1C44Ntu4qVsQZFYuQQ-1
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 058D81842164;
+        Wed, 10 Nov 2021 16:54:58 +0000 (UTC)
+Received: from raketa (unknown [10.40.193.75])
+        by smtp.corp.redhat.com (Postfix) with ESMTPS id 68A5B60854;
+        Wed, 10 Nov 2021 16:54:56 +0000 (UTC)
+Date:   Wed, 10 Nov 2021 17:54:53 +0100
+From:   Maurizio Lombardi <mlombard@redhat.com>
+To:     martin.petersen@oracle.com
+Cc:     bostroesser@gmail.com, michael.christie@oracle.com,
+        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        k.shelekhin@yadro.com
+Subject: Re: [PATCH] target: iscsi: simplify the connection closing mechanism
+Message-ID: <20211110165453.GA95679@raketa>
+References: <20211104142545.40797-1-mlombard@redhat.com>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211104142545.40797-1-mlombard@redhat.com>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Mike Christie <michael.christie@oracle.com>
 
-[ Upstream commit 1283c0d1a32bb924324481586b5d6e8e76f676ba ]
+Please ignore this. I realized this could introduce a race condition.
+Will send a V2 when ready.
 
-We can't free the tg_pt_gp in core_alua_set_tg_pt_gp_id() because it's
-still accessed via configfs. Its release must go through the normal
-configfs/refcount process.
+Maurizio
 
-The max alua_tg_pt_gps_count check should probably have been done in
-core_alua_allocate_tg_pt_gp(), but with the current code userspace could
-have created 0x0000ffff + 1 groups, but only set the id for 0x0000ffff.
-Then it could have deleted a group with an ID set, and then set the ID for
-that extra group and it would work ok.
-
-It's unlikely, but just in case this patch continues to allow that type of
-behavior, and just fixes the kfree() while in use bug.
-
-Link: https://lore.kernel.org/r/20210930020422.92578-4-michael.christie@oracle.com
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/target_core_alua.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-index 1fe782f9ee816..f1e09e7704afe 100644
---- a/drivers/target/target_core_alua.c
-+++ b/drivers/target/target_core_alua.c
-@@ -1735,7 +1735,6 @@ int core_alua_set_tg_pt_gp_id(
- 		pr_err("Maximum ALUA alua_tg_pt_gps_count:"
- 			" 0x0000ffff reached\n");
- 		spin_unlock(&dev->t10_alua.tg_pt_gps_lock);
--		kmem_cache_free(t10_alua_tg_pt_gp_cache, tg_pt_gp);
- 		return -ENOSPC;
- 	}
- again:
--- 
-2.33.0
+On Thu, Nov 04, 2021 at 03:25:45PM +0100, Maurizio Lombardi wrote:
+> When the connection reinstatement is performed, the target driver
+> executes a complex scheme of complete()/wait_for_completion() that is not
+> really needed.
+> 
+> Considering that:
+> 
+> 1) The callers of iscsit_connection_reinstatement_rcfr() and
+>    iscsit_cause_connection_reinstatement() hold a reference
+>    to the conn structure.
+> 
+> 2) iscsit_close_connection() will sleep when calling
+>    iscsit_check_conn_usage_count() until the conn structure's refcount
+>    reaches zero.
+> 
+> we can optimize the driver the following way:
+> 
+> * The threads that must sleep until the connection is closed
+>   will all wait for the "conn_wait_comp" completion,
+>   iscsit_close_connection() will then call complete_all() to wake them up.
+>   No need to have multiple completion structures.
+> 
+> * The conn_post_wait_comp completion is not necessary and can be removed
+>   because iscsit_close_connection() sleeps until all the other threads
+>   release the conn structure.
+>   (see the iscsit_check_conn_usage_count() function)
+> 
+> Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+> ---
+>  drivers/target/iscsi/iscsi_target.c       | 31 +++++------------------
+>  drivers/target/iscsi/iscsi_target_erl0.c  |  6 +----
+>  drivers/target/iscsi/iscsi_target_login.c |  2 --
+>  drivers/target/iscsi/iscsi_target_util.c  |  3 ---
+>  include/target/iscsi/iscsi_target_core.h  |  4 ---
+>  5 files changed, 8 insertions(+), 38 deletions(-)
+> 
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+> index 2c54c5d8412d..7df10cfcba2a 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -4223,34 +4223,17 @@ int iscsit_close_connection(
+>  
+>  	spin_unlock_bh(&sess->conn_lock);
+>  
+> -	/*
+> -	 * If connection reinstatement is being performed on this connection,
+> -	 * up the connection reinstatement semaphore that is being blocked on
+> -	 * in iscsit_cause_connection_reinstatement().
+> -	 */
+>  	spin_lock_bh(&conn->state_lock);
+> -	if (atomic_read(&conn->sleep_on_conn_wait_comp)) {
+> -		spin_unlock_bh(&conn->state_lock);
+> -		complete(&conn->conn_wait_comp);
+> -		wait_for_completion(&conn->conn_post_wait_comp);
+> -		spin_lock_bh(&conn->state_lock);
+> -	}
+> -
+> -	/*
+> -	 * If connection reinstatement is being performed on this connection
+> -	 * by receiving a REMOVECONNFORRECOVERY logout request, up the
+> -	 * connection wait rcfr semaphore that is being blocked on
+> -	 * an iscsit_connection_reinstatement_rcfr().
+> -	 */
+> -	if (atomic_read(&conn->connection_wait_rcfr)) {
+> -		spin_unlock_bh(&conn->state_lock);
+> -		complete(&conn->conn_wait_rcfr_comp);
+> -		wait_for_completion(&conn->conn_post_wait_comp);
+> -		spin_lock_bh(&conn->state_lock);
+> -	}
+>  	atomic_set(&conn->connection_reinstatement, 1);
+>  	spin_unlock_bh(&conn->state_lock);
+>  
+> +	/*
+> +	 * If connection reinstatement is being performed on this connection,
+> +	 * up the connection reinstatement semaphore that is being blocked on
+> +	 * in iscsit_cause_connection_reinstatement() or
+> +	 * in iscsit_connection_reinstatement_rcfr()
+> +	 */
+> +	complete_all(&conn->conn_wait_comp);
+>  	/*
+>  	 * If any other processes are accessing this connection pointer we
+>  	 * must wait until they have completed.
+> diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/iscsi/iscsi_target_erl0.c
+> index 102c9cbf59f3..584e0a0b517d 100644
+> --- a/drivers/target/iscsi/iscsi_target_erl0.c
+> +++ b/drivers/target/iscsi/iscsi_target_erl0.c
+> @@ -839,8 +839,7 @@ void iscsit_connection_reinstatement_rcfr(struct iscsi_conn *conn)
+>  		send_sig(SIGINT, conn->rx_thread, 1);
+>  
+>  sleep:
+> -	wait_for_completion(&conn->conn_wait_rcfr_comp);
+> -	complete(&conn->conn_post_wait_comp);
+> +	wait_for_completion(&conn->conn_wait_comp);
+>  }
+>  
+>  void iscsit_cause_connection_reinstatement(struct iscsi_conn *conn, int sleep)
+> @@ -871,12 +870,9 @@ void iscsit_cause_connection_reinstatement(struct iscsi_conn *conn, int sleep)
+>  		spin_unlock_bh(&conn->state_lock);
+>  		return;
+>  	}
+> -
+> -	atomic_set(&conn->sleep_on_conn_wait_comp, 1);
+>  	spin_unlock_bh(&conn->state_lock);
+>  
+>  	wait_for_completion(&conn->conn_wait_comp);
+> -	complete(&conn->conn_post_wait_comp);
+>  }
+>  EXPORT_SYMBOL(iscsit_cause_connection_reinstatement);
+>  
+> diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+> index 1a9c50401bdb..982c23459272 100644
+> --- a/drivers/target/iscsi/iscsi_target_login.c
+> +++ b/drivers/target/iscsi/iscsi_target_login.c
+> @@ -1096,9 +1096,7 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
+>  	INIT_LIST_HEAD(&conn->conn_cmd_list);
+>  	INIT_LIST_HEAD(&conn->immed_queue_list);
+>  	INIT_LIST_HEAD(&conn->response_queue_list);
+> -	init_completion(&conn->conn_post_wait_comp);
+>  	init_completion(&conn->conn_wait_comp);
+> -	init_completion(&conn->conn_wait_rcfr_comp);
+>  	init_completion(&conn->conn_waiting_on_uc_comp);
+>  	init_completion(&conn->conn_logout_comp);
+>  	init_completion(&conn->rx_half_close_comp);
+> diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+> index 6dd5810e2af1..d7b1f9110d49 100644
+> --- a/drivers/target/iscsi/iscsi_target_util.c
+> +++ b/drivers/target/iscsi/iscsi_target_util.c
+> @@ -824,9 +824,6 @@ struct iscsi_conn *iscsit_get_conn_from_cid_rcfr(struct iscsi_session *sess, u16
+>  	list_for_each_entry(conn, &sess->sess_conn_list, conn_list) {
+>  		if (conn->cid == cid) {
+>  			iscsit_inc_conn_usage_count(conn);
+> -			spin_lock(&conn->state_lock);
+> -			atomic_set(&conn->connection_wait_rcfr, 1);
+> -			spin_unlock(&conn->state_lock);
+>  			spin_unlock_bh(&sess->conn_lock);
+>  			return conn;
+>  		}
+> diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+> index 1eccb2ac7d02..aeb8932507c2 100644
+> --- a/include/target/iscsi/iscsi_target_core.h
+> +++ b/include/target/iscsi/iscsi_target_core.h
+> @@ -542,12 +542,8 @@ struct iscsi_conn {
+>  	atomic_t		connection_exit;
+>  	atomic_t		connection_recovery;
+>  	atomic_t		connection_reinstatement;
+> -	atomic_t		connection_wait_rcfr;
+> -	atomic_t		sleep_on_conn_wait_comp;
+>  	atomic_t		transport_failed;
+> -	struct completion	conn_post_wait_comp;
+>  	struct completion	conn_wait_comp;
+> -	struct completion	conn_wait_rcfr_comp;
+>  	struct completion	conn_waiting_on_uc_comp;
+>  	struct completion	conn_logout_comp;
+>  	struct completion	tx_half_close_comp;
+> -- 
+> 2.27.0
+> 
 
