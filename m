@@ -2,219 +2,198 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CABDC433F5
-	for <target-devel@archiver.kernel.org>; Wed, 10 Nov 2021 16:55:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 615FFC433FE
+	for <target-devel@archiver.kernel.org>; Thu, 11 Nov 2021 08:01:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1F1BA61107
-	for <target-devel@archiver.kernel.org>; Wed, 10 Nov 2021 16:55:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 43AB86044F
+	for <target-devel@archiver.kernel.org>; Thu, 11 Nov 2021 08:01:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231844AbhKJQ5w (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 10 Nov 2021 11:57:52 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:32000 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S231577AbhKJQ5w (ORCPT
-        <rfc822;target-devel@vger.kernel.org>);
-        Wed, 10 Nov 2021 11:57:52 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1636563304;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=OHStuQNmTt2dyi5ReMIvue4DM4VztagOCriSuHSkAow=;
-        b=Tb+iki3NsBGoMLcSLK1WBm/iMCSbni4BeRNgyQo52uoBdkOkf8Y3/ccXW3XmYlPcL0iMLk
-        QU3kOKRvmYyBk2Rg8++Kgc0Zm/LL2w5WgpfeJbwfdaDnwYeuDsK+eHP+JtYMPBVeWgHgYf
-        xKDpkN4sxlTPJ/6ZGZtG148jI1oBuuM=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-447-0MmU1C44Ntu4qVsQZFYuQQ-1; Wed, 10 Nov 2021 11:54:59 -0500
-X-MC-Unique: 0MmU1C44Ntu4qVsQZFYuQQ-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 058D81842164;
-        Wed, 10 Nov 2021 16:54:58 +0000 (UTC)
-Received: from raketa (unknown [10.40.193.75])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 68A5B60854;
-        Wed, 10 Nov 2021 16:54:56 +0000 (UTC)
-Date:   Wed, 10 Nov 2021 17:54:53 +0100
-From:   Maurizio Lombardi <mlombard@redhat.com>
-To:     martin.petersen@oracle.com
-Cc:     bostroesser@gmail.com, michael.christie@oracle.com,
-        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        k.shelekhin@yadro.com
-Subject: Re: [PATCH] target: iscsi: simplify the connection closing mechanism
-Message-ID: <20211110165453.GA95679@raketa>
-References: <20211104142545.40797-1-mlombard@redhat.com>
+        id S232105AbhKKIEB (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 11 Nov 2021 03:04:01 -0500
+Received: from mail-bn7nam10on2085.outbound.protection.outlook.com ([40.107.92.85]:47200
+        "EHLO NAM10-BN7-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S231667AbhKKID7 (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Thu, 11 Nov 2021 03:03:59 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=alXWCVAzXzyChtoIOeHQX1/uq/BhXEFFNdg81uDjq4RCdHVN9AbWlCk0yGBauFd539M1niSWm+vuBCjRhfjmsvdk8bqeWAk73MDw2EeGn7vbHKyxURbnVeh8j9QTyKpCnpd41jsIFbhg6exMWCgTM4AXLs3KQhjgewXceOXih22qZQYX2xgy/vmTpDPLOPBEH1x0pb8OZIlPEiQkCt0bLF9rP7LI2uQcfrbrTX/mDMS+RgJEt2a+cxr+IlPkiAs20wHHoxL9m34yYs/vb7RXQMmGDMUf6QAh0GrZjF5e0HZsFTOfOnMQ3kaJWg6+ZVj9WhJe2h3cK1xgaBevm4RBSQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ZLE/iKRASielM2y3jycfrsSvOkFlCYO6wO1KuPqWySI=;
+ b=c9cEX/uUsuisHVgbxH+sZGyCCh6SXn7mIPKhizdYKMumRY2ynE4HD4uJrJT/tC4kuWtEebtszqiuTx3xNf/yatQK5dUr449BwqtW0YzYaqIiC9/FQtuB0uKNx7yED1ng/IT/bcbj27f61TJhgl6xCZyXL2ZrNMM5F63MKjauWZiXn3vx267G4PZGCkFQ20RtnWHrhlujlhdLC2FK3CHBkko/n2YLUQN38o7xNlsIEjzKeC2ABW9YVxrsdz2EqjPWwBKCbWK/Etwvvw2Laq+j+ICoN1E9iDcYBq7uR6cW8cgIuo2i9GU6tYOuLN8Py2F2J1nDIuPOovN6KRVfUct1tw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ZLE/iKRASielM2y3jycfrsSvOkFlCYO6wO1KuPqWySI=;
+ b=FySpAIKoleb73aGvFI8QmyysXWKxP1itGyc55vV3oX7CNLdjOWnJRcUgnqdzu5tka3MzHT9Be7P+/4uo4c9AKwTprpSK2lj1uwmKknZfzIfk3u6+hZEENA+CokGBbDYUNC0yNEXFACEymmO25jWAckOrSNM1URo9bOtg4b0/53ReFqjJCtDOu00V126kMpBpLN1z5JjRH4eVy4GtzKf6XiWmts9uDCpyObSpfqXd+UKfVWg1CXcmn1q9JcI2woGAVYfRPYKNISviFC3u0hcNxEXBIqKgC0I83Fh5BunCGGa/jYSOWzrANGO6eueoYEVs0RVlEXLkh3iHWgwFvu4bRg==
+Received: from MW2PR12MB4667.namprd12.prod.outlook.com (2603:10b6:302:12::28)
+ by MWHPR12MB1472.namprd12.prod.outlook.com (2603:10b6:301:11::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4669.13; Thu, 11 Nov
+ 2021 08:01:07 +0000
+Received: from MW2PR12MB4667.namprd12.prod.outlook.com
+ ([fe80::c961:59f1:3120:1798]) by MW2PR12MB4667.namprd12.prod.outlook.com
+ ([fe80::c961:59f1:3120:1798%4]) with mapi id 15.20.4669.016; Thu, 11 Nov 2021
+ 08:01:07 +0000
+From:   Chaitanya Kulkarni <chaitanyak@nvidia.com>
+To:     "Darrick J. Wong" <djwong@kernel.org>
+CC:     "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+        "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+        "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
+        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
+        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+        "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>,
+        "dm-devel@redhat.com" <dm-devel@redhat.com>
+Subject: Re: [RFC PATCH 1/8] block: add support for REQ_OP_VERIFY
+Thread-Topic: [RFC PATCH 1/8] block: add support for REQ_OP_VERIFY
+Thread-Index: AQHX0UfScAsEJ1qSlk22dasx+1xeTqvzn38AgApiggA=
+Date:   Thu, 11 Nov 2021 08:01:07 +0000
+Message-ID: <3875c1ba-e70e-baf4-bc3e-d0a7e22a7fc4@nvidia.com>
+References: <20211104064634.4481-1-chaitanyak@nvidia.com>
+ <20211104064634.4481-2-chaitanyak@nvidia.com>
+ <20211104172558.GH2237511@magnolia>
+In-Reply-To: <20211104172558.GH2237511@magnolia>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+authentication-results: kernel.org; dkim=none (message not signed)
+ header.d=none;kernel.org; dmarc=none action=none header.from=nvidia.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: d8487657-f9d1-4c7a-f094-08d9a4e96ab3
+x-ms-traffictypediagnostic: MWHPR12MB1472:
+x-microsoft-antispam-prvs: <MWHPR12MB1472D59426598AF8DFA2B686A3949@MWHPR12MB1472.namprd12.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:3631;
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: IwEnRA7+ZNX3jXoMpZF6urOroJjGQEcgv5jK6Eqg1f5w2AJNQ+NJCq4GL9j7gn7B3oRbnBJPqsq1cBF9ucowUqgYLF42nGjhpDRNdhpnlnRDFmOaAId+R8eeLPr++dF8h1Qt7Qsjm52UrseUiEmzvoJlEG/thnGiF05MHIIzeeoS1XH7kJKHO7UT9R9iAWjXYH7VcYNAQbhfT3lBs+/WBDqtNlURoAQOquRQEzVMMejkARbU0PcYQeWkiwFZtx/wODmMUzenLBH8oPEzHyzAHqY1RlAxD01Cm2jm1AF3k5K31ROKnHJvLHw+OaGURGUtsz+xnxwRtkqiT4TlbvZ3injA2B1GV98kM1vUuHTUfM+aGw6d2hVtA9TH1anH6LeV/SP397J6y2ho3cOCT9gexAmiyq7sOliJ4Z1+Q5sABEehZrqSv0kykX4PijJT73byvrZ73pQASyPrMUiK7GTB3yGTdhIyrInXEkCnHR8ND/fCyGqBbpDGq5+j9HtIGTfaoIR0j4rUEc5EI8dW/NPr8FfsmhA0Hr4ejbFKWJB2Hu5jyrHhQctMuexbPZnnDibfAC865mYwMskjo4lSbVCZL5ZaDGVc2O/MadJgHrEFv4T75e1Nr4IEr0NBZzmF14e74/CxFpqPUxT52LwkQjmogyDfzq3gk3hQ2bhibw+7gpDR5b0O/Zm2DSG/U+W4ZuYnfbaWPtTD7tn+60kWqBc0QGUnqAgacL0HWdvU5GeyNULCCGJAAyRFvY7rkTYrDOtElqpuxeqe9jxuJDcRiNOmRA==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MW2PR12MB4667.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(86362001)(316002)(31686004)(5660300002)(66476007)(36756003)(8676002)(6512007)(8936002)(54906003)(2906002)(66556008)(31696002)(64756008)(4326008)(66446008)(76116006)(38070700005)(66946007)(38100700002)(122000001)(6916009)(71200400001)(2616005)(6486002)(6506007)(83380400001)(508600001)(53546011)(186003)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?TXFpeHhYYXByeXIzY2JHbVJJSmRqMTlueTkwWlVOSE5PQkRIakFlVVNPaHhw?=
+ =?utf-8?B?dUVSbm9RRTBwYXhhdVZ3aFBnSnBFQlNFS0NtWjRQUklwbnd2K1Y0a3JsVDZN?=
+ =?utf-8?B?OEZkZVZVcXlpemhsdlgwVGJ1L2llQzVGK1BvWGZMbDJuUDF0OThIdWxUem5E?=
+ =?utf-8?B?eDVNeGlmU0hZbjRQOGp5enN0OU4xSWRFNHd3ZlMrUjB5eWJ3YkMrNFBuSmZ2?=
+ =?utf-8?B?aldyYWg5T2locWNpdVk0TDFicldEZUhnOEZORVB5WVZacGZvTVgwdys5Mndl?=
+ =?utf-8?B?SG9XSzJXb25yTE1qZGRLYU0zdkkzTjVjcHIvakxvdG5hN2Z1Ymo1c2hjOUFT?=
+ =?utf-8?B?OHNLVmFBWVErL3Zoemk5MUZpVkFwN0IrM29uNklVZWtJdmExT0x6amtQUzhP?=
+ =?utf-8?B?SW9Lc0YwbDlTKzE0MXIvNS9ubkVsVEdYWE10N3NBN002TXRDWThQWXROK1Ir?=
+ =?utf-8?B?T1Jlc1FHQU45TGpyNmwvejc4NURJN2RGTjFBODB3Z1dkSlVSeUI5WE1RZ3pK?=
+ =?utf-8?B?MnhkRFJLbVNrRS9pVHZCQ2sySGw3OHFqOHNRdkFDT2ZlbGFkMGlIOW42c1JP?=
+ =?utf-8?B?RGQzM0xJVXhnc0JDWjFYeDBPd3lQaE1xa3VvYWpmTkVLZ1JIcnZkeGpHdFhY?=
+ =?utf-8?B?bWpoVGVRbEdRcWNmdFdMK21xdVNYQ0ZXRmR1VGh1UkNYdWh1U25ZaEJCRnZW?=
+ =?utf-8?B?RU9QcGNnQ1J2ZXRCT0JCc00xbU9OVEpvYm5QcHBqYW53RnhVOWRybW8yZGZs?=
+ =?utf-8?B?MmxkWmRORUcyVTN2WXF6SWhUNXdDUkZVaFpVVUJia3drTno0YVRYQjFQbENp?=
+ =?utf-8?B?U0ZSMDB6ZTYyaGVKWHNOTVZoMUVWL0d6cStDMGMzVmt1L3Ewa1BDUHZScnZq?=
+ =?utf-8?B?QThDbDBOSHlyQXY3d1dOZjUvSDVEcXYwZE9uSzZUeWdhclc3Tk5hMnQwRk1I?=
+ =?utf-8?B?dC9kNEY0MWNNVW16VG5YZHV6VGY2dWdXc1ZUODBjcHdrVVpqOVljRll1WWdl?=
+ =?utf-8?B?cmp0a0dxK2pqR0wzT2oySm04bEN2NThndU9vUDNvWTQ1bFRNRHg4WDg1Y0Ns?=
+ =?utf-8?B?dTN1ZVlhM2RYZnJoMExEZUJwbkc4RjQxNjVsSHVBb0wvUVFlWHNRRVBtT0Y3?=
+ =?utf-8?B?NFVhMkF4eXQ4cUhWcmdwZVQzbGJvRVBHbFFQK3FZeCtVcVN1cWxxSFJjY0Qw?=
+ =?utf-8?B?NTJ0aW1zZ1Rlb0NBb3dWbkdUMnUvWlN3UE5uR1ZDQlRYdmhta3RqOVFaeFhp?=
+ =?utf-8?B?SDRLWDZZU2VjNUlydDdxd1NTT1ZrTXIveWN4S290clNxQjg4TVdHZFVuNm54?=
+ =?utf-8?B?R1EzU2VydnhwN1dNY3JCQVdwR3lRVVVzdVROUis5aFdUUUFOdWlQYTg3bklM?=
+ =?utf-8?B?WnROMTAvUnBudHcwVnpBWnoyUnJkS1VCU0l1b2JvNS84cjF2ZFFmZ1ZmNVhJ?=
+ =?utf-8?B?ZXV3ZlNnK21sZHZpcTZGY256cGM4SVo4VVNPbFE0TGF6RFVhVEwrUEplQytF?=
+ =?utf-8?B?WDhOWjk1TU40S3lNanROcVBDWlpRU1IvQjIySkZUTmZYWXVWZWFMaFR2YTNJ?=
+ =?utf-8?B?L1JiaU5RRWlXU1ZidTVJT0t1Uzk0cm5iL0hNa3BFU0JieXhENTczVVA2Yk4r?=
+ =?utf-8?B?VnBUWit0RlNSSmdtVnVsNFlBOGRpbUQ5ZHg1d0dha2ljRDJHS1d6NXJab3Ur?=
+ =?utf-8?B?aW5yM29MeFB5WXJwOEt2QlFkbjdiMDJqblgrbUdhK3pJSXQyMXNZdEtxaHpD?=
+ =?utf-8?B?a1JKa1d4MEMzWDVkTmNiaXA1ZWZ0WmVZSXhHNkJ6UElhQmdJcVV1SUlQUkdE?=
+ =?utf-8?B?R2RCR2hRQ0czNXRsc2VqbnBnRW9ZdzhENHQ3bXJZbVpBaTJENGIzU1ovODRV?=
+ =?utf-8?B?WFE3YmxsSHE5WkhvZDRJME9FT0JPM0ZZMVhXaFE4ZnAvVXdPazg1T0x2UGYv?=
+ =?utf-8?B?OGpNb2tjNXFiNFdrTTNnbjgvUGp6MUVQNVhHc0RCMGZUeDA5cUE5aVJkZUFq?=
+ =?utf-8?B?S1cxWlUxTGJUbGhVNFR3dWdtdWJ6RGxsUFAvMHRYMlBrMjFEamRFSVZnbGQw?=
+ =?utf-8?B?QW4xMkY5c0Jkd3kxblFMdjJjaWk2amFnZmVaUlp3NEhSNzBhUFAxSWJNWHg0?=
+ =?utf-8?B?ZXJtSFdpUTlxdCtieHRnOXRRNmJkOEZZS1NiV3Bicy9HYnpsRkxVdS95RjlZ?=
+ =?utf-8?B?WmkxbHpoVWMxblJJdERNUlAyWjFoTGNIMG8vd3VGMlZ1NzBIWHkzektQK3V4?=
+ =?utf-8?Q?/pbE97HVhQyB2xVV7OfGtyg6M2imvFGmDE8jrlUqII=3D?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <38916031B5D5694FB0A19625758BC852@namprd12.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211104142545.40797-1-mlombard@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MW2PR12MB4667.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d8487657-f9d1-4c7a-f094-08d9a4e96ab3
+X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Nov 2021 08:01:07.2799
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: kpcaHjr7f2KnubCgqcs7Y28sqPN/EQ4AHrWpXdHzakdHCz9rkSD0zfynxpjiREwVpUPRVwzCu7vYQjo0D18NWw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR12MB1472
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-
-Please ignore this. I realized this could introduce a race condition.
-Will send a V2 when ready.
-
-Maurizio
-
-On Thu, Nov 04, 2021 at 03:25:45PM +0100, Maurizio Lombardi wrote:
-> When the connection reinstatement is performed, the target driver
-> executes a complex scheme of complete()/wait_for_completion() that is not
-> really needed.
-> 
-> Considering that:
-> 
-> 1) The callers of iscsit_connection_reinstatement_rcfr() and
->    iscsit_cause_connection_reinstatement() hold a reference
->    to the conn structure.
-> 
-> 2) iscsit_close_connection() will sleep when calling
->    iscsit_check_conn_usage_count() until the conn structure's refcount
->    reaches zero.
-> 
-> we can optimize the driver the following way:
-> 
-> * The threads that must sleep until the connection is closed
->   will all wait for the "conn_wait_comp" completion,
->   iscsit_close_connection() will then call complete_all() to wake them up.
->   No need to have multiple completion structures.
-> 
-> * The conn_post_wait_comp completion is not necessary and can be removed
->   because iscsit_close_connection() sleeps until all the other threads
->   release the conn structure.
->   (see the iscsit_check_conn_usage_count() function)
-> 
-> Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
-> ---
->  drivers/target/iscsi/iscsi_target.c       | 31 +++++------------------
->  drivers/target/iscsi/iscsi_target_erl0.c  |  6 +----
->  drivers/target/iscsi/iscsi_target_login.c |  2 --
->  drivers/target/iscsi/iscsi_target_util.c  |  3 ---
->  include/target/iscsi/iscsi_target_core.h  |  4 ---
->  5 files changed, 8 insertions(+), 38 deletions(-)
-> 
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-> index 2c54c5d8412d..7df10cfcba2a 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -4223,34 +4223,17 @@ int iscsit_close_connection(
->  
->  	spin_unlock_bh(&sess->conn_lock);
->  
-> -	/*
-> -	 * If connection reinstatement is being performed on this connection,
-> -	 * up the connection reinstatement semaphore that is being blocked on
-> -	 * in iscsit_cause_connection_reinstatement().
-> -	 */
->  	spin_lock_bh(&conn->state_lock);
-> -	if (atomic_read(&conn->sleep_on_conn_wait_comp)) {
-> -		spin_unlock_bh(&conn->state_lock);
-> -		complete(&conn->conn_wait_comp);
-> -		wait_for_completion(&conn->conn_post_wait_comp);
-> -		spin_lock_bh(&conn->state_lock);
-> -	}
-> -
-> -	/*
-> -	 * If connection reinstatement is being performed on this connection
-> -	 * by receiving a REMOVECONNFORRECOVERY logout request, up the
-> -	 * connection wait rcfr semaphore that is being blocked on
-> -	 * an iscsit_connection_reinstatement_rcfr().
-> -	 */
-> -	if (atomic_read(&conn->connection_wait_rcfr)) {
-> -		spin_unlock_bh(&conn->state_lock);
-> -		complete(&conn->conn_wait_rcfr_comp);
-> -		wait_for_completion(&conn->conn_post_wait_comp);
-> -		spin_lock_bh(&conn->state_lock);
-> -	}
->  	atomic_set(&conn->connection_reinstatement, 1);
->  	spin_unlock_bh(&conn->state_lock);
->  
-> +	/*
-> +	 * If connection reinstatement is being performed on this connection,
-> +	 * up the connection reinstatement semaphore that is being blocked on
-> +	 * in iscsit_cause_connection_reinstatement() or
-> +	 * in iscsit_connection_reinstatement_rcfr()
-> +	 */
-> +	complete_all(&conn->conn_wait_comp);
->  	/*
->  	 * If any other processes are accessing this connection pointer we
->  	 * must wait until they have completed.
-> diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/iscsi/iscsi_target_erl0.c
-> index 102c9cbf59f3..584e0a0b517d 100644
-> --- a/drivers/target/iscsi/iscsi_target_erl0.c
-> +++ b/drivers/target/iscsi/iscsi_target_erl0.c
-> @@ -839,8 +839,7 @@ void iscsit_connection_reinstatement_rcfr(struct iscsi_conn *conn)
->  		send_sig(SIGINT, conn->rx_thread, 1);
->  
->  sleep:
-> -	wait_for_completion(&conn->conn_wait_rcfr_comp);
-> -	complete(&conn->conn_post_wait_comp);
-> +	wait_for_completion(&conn->conn_wait_comp);
->  }
->  
->  void iscsit_cause_connection_reinstatement(struct iscsi_conn *conn, int sleep)
-> @@ -871,12 +870,9 @@ void iscsit_cause_connection_reinstatement(struct iscsi_conn *conn, int sleep)
->  		spin_unlock_bh(&conn->state_lock);
->  		return;
->  	}
-> -
-> -	atomic_set(&conn->sleep_on_conn_wait_comp, 1);
->  	spin_unlock_bh(&conn->state_lock);
->  
->  	wait_for_completion(&conn->conn_wait_comp);
-> -	complete(&conn->conn_post_wait_comp);
->  }
->  EXPORT_SYMBOL(iscsit_cause_connection_reinstatement);
->  
-> diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-> index 1a9c50401bdb..982c23459272 100644
-> --- a/drivers/target/iscsi/iscsi_target_login.c
-> +++ b/drivers/target/iscsi/iscsi_target_login.c
-> @@ -1096,9 +1096,7 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
->  	INIT_LIST_HEAD(&conn->conn_cmd_list);
->  	INIT_LIST_HEAD(&conn->immed_queue_list);
->  	INIT_LIST_HEAD(&conn->response_queue_list);
-> -	init_completion(&conn->conn_post_wait_comp);
->  	init_completion(&conn->conn_wait_comp);
-> -	init_completion(&conn->conn_wait_rcfr_comp);
->  	init_completion(&conn->conn_waiting_on_uc_comp);
->  	init_completion(&conn->conn_logout_comp);
->  	init_completion(&conn->rx_half_close_comp);
-> diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-> index 6dd5810e2af1..d7b1f9110d49 100644
-> --- a/drivers/target/iscsi/iscsi_target_util.c
-> +++ b/drivers/target/iscsi/iscsi_target_util.c
-> @@ -824,9 +824,6 @@ struct iscsi_conn *iscsit_get_conn_from_cid_rcfr(struct iscsi_session *sess, u16
->  	list_for_each_entry(conn, &sess->sess_conn_list, conn_list) {
->  		if (conn->cid == cid) {
->  			iscsit_inc_conn_usage_count(conn);
-> -			spin_lock(&conn->state_lock);
-> -			atomic_set(&conn->connection_wait_rcfr, 1);
-> -			spin_unlock(&conn->state_lock);
->  			spin_unlock_bh(&sess->conn_lock);
->  			return conn;
->  		}
-> diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-> index 1eccb2ac7d02..aeb8932507c2 100644
-> --- a/include/target/iscsi/iscsi_target_core.h
-> +++ b/include/target/iscsi/iscsi_target_core.h
-> @@ -542,12 +542,8 @@ struct iscsi_conn {
->  	atomic_t		connection_exit;
->  	atomic_t		connection_recovery;
->  	atomic_t		connection_reinstatement;
-> -	atomic_t		connection_wait_rcfr;
-> -	atomic_t		sleep_on_conn_wait_comp;
->  	atomic_t		transport_failed;
-> -	struct completion	conn_post_wait_comp;
->  	struct completion	conn_wait_comp;
-> -	struct completion	conn_wait_rcfr_comp;
->  	struct completion	conn_waiting_on_uc_comp;
->  	struct completion	conn_logout_comp;
->  	struct completion	tx_half_close_comp;
-> -- 
-> 2.27.0
-> 
-
+T24gMTEvNC8yMDIxIDEwOjI1IEFNLCBEYXJyaWNrIEouIFdvbmcgd3JvdGU6DQo+IEV4dGVybmFs
+IGVtYWlsOiBVc2UgY2F1dGlvbiBvcGVuaW5nIGxpbmtzIG9yIGF0dGFjaG1lbnRzDQo+IA0KPiAN
+Cj4gT24gV2VkLCBOb3YgMDMsIDIwMjEgYXQgMTE6NDY6MjdQTSAtMDcwMCwgQ2hhaXRhbnlhIEt1
+bGthcm5pIHdyb3RlOg0KPj4gRnJvbTogQ2hhaXRhbnlhIEt1bGthcm5pIDxrY2hAbnZpZGlhLmNv
+bT4NCj4+DQo+PiBUaGlzIGFkZHMgYSBuZXcgYmxvY2sgbGF5ZXIgb3BlcmF0aW9uIHRvIG9mZmxv
+YWQgdmVyaWZ5aW5nIGEgcmFuZ2Ugb2YNCj4+IExCQXMuIFRoaXMgc3VwcG9ydCBpcyBuZWVkZWQg
+aW4gb3JkZXIgdG8gcHJvdmlkZSBmaWxlIHN5c3RlbXMgYW5kDQo+PiBmYWJyaWNzLCBrZXJuZWwg
+Y29tcG9uZW50cyB0byBvZmZsb2FkIExCQSB2ZXJpZmljYXRpb24gd2hlbiBpdCBpcw0KPj4gc3Vw
+cG9ydGVkIGJ5IHRoZSBoYXJkd2FyZSBjb250cm9sbGVyLiBJbiBjYXNlIGhhcmR3YXJlIG9mZmxv
+YWRpbmcgaXMNCj4+IG5vdCBzdXBwb3J0ZWQgdGhlbiB3ZSBwcm92aWRlIEFQSXMgdG8gZW11bGF0
+ZSB0aGUgc2FtZS4gVGhlIHByb21pbmVudA0KPj4gZXhhbXBsZSBvZiB0aGF0IGlzIE5WTWUgVmVy
+aWZ5IGNvbW1hbmQuIFdlIGFsc28gcHJvdmlkZSBhbiBlbXVsYXRpb24gb2YNCj4+IHRoZSBzYW1l
+IG9wZXJhdGlvbiB3aGljaCBjYW4gYmUgdXNlZCBpbiBjYXNlIEgvVyBkb2VzIG5vdCBzdXBwb3J0
+DQo+PiB2ZXJpZnkuIFRoaXMgaXMgc3RpbGwgdXNlZnVsIHdoZW4gYmxvY2sgZGV2aWNlIGlzIHJl
+bW90ZWx5IGF0dGFjaGVkIGUuZy4NCj4+IHVzaW5nIE5WTWVPRi4NCj4+DQo+PiBTaWduZWQtb2Zm
+LWJ5OiBDaGFpdGFueWEgS3Vsa2FybmkgPGtjaEBudmlkaWEuY29tPg0KPj4gLS0tDQo+PiAgIERv
+Y3VtZW50YXRpb24vQUJJL3Rlc3Rpbmcvc3lzZnMtYmxvY2sgfCAgMTQgKysNCj4+ICAgYmxvY2sv
+YmxrLWNvcmUuYyAgICAgICAgICAgICAgICAgICAgICB8ICAgNSArDQo+PiAgIGJsb2NrL2Jsay1s
+aWIuYyAgICAgICAgICAgICAgICAgICAgICAgfCAxOTIgKysrKysrKysrKysrKysrKysrKysrKysr
+KysNCj4+ICAgYmxvY2svYmxrLW1lcmdlLmMgICAgICAgICAgICAgICAgICAgICB8ICAxOSArKysN
+Cj4+ICAgYmxvY2svYmxrLXNldHRpbmdzLmMgICAgICAgICAgICAgICAgICB8ICAxNyArKysNCj4+
+ICAgYmxvY2svYmxrLXN5c2ZzLmMgICAgICAgICAgICAgICAgICAgICB8ICAgOCArKw0KPj4gICBi
+bG9jay9ibGstem9uZWQuYyAgICAgICAgICAgICAgICAgICAgIHwgICAxICsNCj4+ICAgYmxvY2sv
+Ym91bmNlLmMgICAgICAgICAgICAgICAgICAgICAgICB8ICAgMSArDQo+PiAgIGJsb2NrL2lvY3Rs
+LmMgICAgICAgICAgICAgICAgICAgICAgICAgfCAgMzUgKysrKysNCj4+ICAgaW5jbHVkZS9saW51
+eC9iaW8uaCAgICAgICAgICAgICAgICAgICB8ICAxMCArLQ0KPj4gICBpbmNsdWRlL2xpbnV4L2Js
+a190eXBlcy5oICAgICAgICAgICAgIHwgICAyICsNCj4+ICAgaW5jbHVkZS9saW51eC9ibGtkZXYu
+aCAgICAgICAgICAgICAgICB8ICAzMSArKysrKw0KPj4gICBpbmNsdWRlL3VhcGkvbGludXgvZnMu
+aCAgICAgICAgICAgICAgIHwgICAxICsNCj4+ICAgMTMgZmlsZXMgY2hhbmdlZCwgMzMyIGluc2Vy
+dGlvbnMoKyksIDQgZGVsZXRpb25zKC0pDQo+Pg0KPiANCj4gKHNraXBwaW5nIHRvIHRoZSBpb2N0
+bCBwYXJ0OyBJIGRpZG4ndCBzZWUgYW55dGhpbmcgb2J2aW91c2x5IHdlaXJkIGluDQo+IHRoZSBi
+bG9jay8gY2hhbmdlcykNCj4gDQoNClllcyBpdCBpcyBwcmV0dHkgc3RyYWlnaHQgZm9yd2FyZC4N
+Cg0KPj4gZGlmZiAtLWdpdCBhL2Jsb2NrL2lvY3RsLmMgYi9ibG9jay9pb2N0bC5jDQo+PiBpbmRl
+eCBkNjFkNjUyMDc4ZjQuLjVlMWIzYzQ2NjBiZiAxMDA2NDQNCj4+IC0tLSBhL2Jsb2NrL2lvY3Rs
+LmMNCj4+ICsrKyBiL2Jsb2NrL2lvY3RsLmMNCj4+IEBAIC0xNjgsNiArMTY4LDM5IEBAIHN0YXRp
+YyBpbnQgYmxrX2lvY3RsX3plcm9vdXQoc3RydWN0IGJsb2NrX2RldmljZSAqYmRldiwgZm1vZGVf
+dCBtb2RlLA0KPj4gICAgICAgICAgICAgICAgICAgICAgICBCTEtERVZfWkVST19OT1VOTUFQKTsN
+Cj4+ICAgfQ0KPj4NCj4+ICtzdGF0aWMgaW50IGJsa19pb2N0bF92ZXJpZnkoc3RydWN0IGJsb2Nr
+X2RldmljZSAqYmRldiwgZm1vZGVfdCBtb2RlLA0KPj4gKyAgICAgICAgICAgICB1bnNpZ25lZCBs
+b25nIGFyZykNCj4+ICt7DQo+PiArICAgICB1aW50NjRfdCByYW5nZVsyXTsNCj4+ICsgICAgIHN0
+cnVjdCBhZGRyZXNzX3NwYWNlICptYXBwaW5nOw0KPj4gKyAgICAgdWludDY0X3Qgc3RhcnQsIGVu
+ZCwgbGVuOw0KPj4gKw0KPj4gKyAgICAgaWYgKCEobW9kZSAmIEZNT0RFX1dSSVRFKSkNCj4+ICsg
+ICAgICAgICAgICAgcmV0dXJuIC1FQkFERjsNCj4gDQo+IFdoeSBkb2VzIHRoZSBmZCBoYXZlIHRv
+IGJlIG9wZW5lZCB3cml0YWJsZT8gIElzbid0IHRoaXMgYSByZWFkIHRlc3Q/DQo+IA0KDQpZZXMg
+dGhpcyBuZWVkcyB0byBiZSByZW1vdmVkLCB3aWxsIGZpeCBpdCBpbiB0aGUgVjEuDQoNCj4+ICsN
+Cj4+ICsgICAgIGlmIChjb3B5X2Zyb21fdXNlcihyYW5nZSwgKHZvaWQgX191c2VyICopYXJnLCBz
+aXplb2YocmFuZ2UpKSkNCj4+ICsgICAgICAgICAgICAgcmV0dXJuIC1FRkFVTFQ7DQo+PiArDQo+
+PiArICAgICBzdGFydCA9IHJhbmdlWzBdOw0KPj4gKyAgICAgbGVuID0gcmFuZ2VbMV07DQo+PiAr
+ICAgICBlbmQgPSBzdGFydCArIGxlbiAtIDE7DQo+PiArDQo+PiArICAgICBpZiAoc3RhcnQgJiA1
+MTEpDQo+PiArICAgICAgICAgICAgIHJldHVybiAtRUlOVkFMOw0KPj4gKyAgICAgaWYgKGxlbiAm
+IDUxMSkNCj4+ICsgICAgICAgICAgICAgcmV0dXJuIC1FSU5WQUw7DQo+PiArICAgICBpZiAoZW5k
+ID49ICh1aW50NjRfdClpX3NpemVfcmVhZChiZGV2LT5iZF9pbm9kZSkpDQo+PiArICAgICAgICAg
+ICAgIHJldHVybiAtRUlOVkFMOw0KPj4gKyAgICAgaWYgKGVuZCA8IHN0YXJ0KQ0KPj4gKyAgICAg
+ICAgICAgICByZXR1cm4gLUVJTlZBTDsNCj4+ICsNCj4+ICsgICAgIC8qIEludmFsaWRhdGUgdGhl
+IHBhZ2UgY2FjaGUsIGluY2x1ZGluZyBkaXJ0eSBwYWdlcyAqLw0KPj4gKyAgICAgbWFwcGluZyA9
+IGJkZXYtPmJkX2lub2RlLT5pX21hcHBpbmc7DQo+PiArICAgICB0cnVuY2F0ZV9pbm9kZV9wYWdl
+c19yYW5nZShtYXBwaW5nLCBzdGFydCwgZW5kKTsNCj4gDQo+IFdoeSBkbyB3ZSBuZWVkIHRvIGlu
+dmFsaWRhdGUgdGhlIHBhZ2UgY2FjaGUgdG8gdmVyaWZ5IG1lZGlhPyAgV29uJ3QgdGhhdA0KPiBj
+YXVzZSBkYXRhIGxvc3MgaWYgdGhvc2UgcGFnZXMgd2VyZSBkaXJ0eSBhbmQgYWJvdXQgdG8gYmUg
+Zmx1c2hlZD8NCj4gDQo+IC0tRA0KPiANCg0KWWVzLCB3aWxsIGZpeCBpdCBpbiB0aGUgdjEuDQoN
+Cj4+ICsNCj4+ICsgICAgIHJldHVybiBibGtkZXZfaXNzdWVfdmVyaWZ5KGJkZXYsIHN0YXJ0ID4+
+IDksIGxlbiA+PiA5LCBHRlBfS0VSTkVMKTsNCj4+ICt9DQo+PiArDQoNClRoYW5rcyBhIGxvdCBE
+ZXJyaWsgZm9yIHlvdXIgY29tbWVudHMsIEknbGwgYWRkIGZpeGVzIHRvIFYxLg0KDQoNCg0KDQo=
