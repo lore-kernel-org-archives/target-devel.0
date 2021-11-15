@@ -2,129 +2,104 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93270C433F5
-	for <target-devel@archiver.kernel.org>; Fri, 12 Nov 2021 15:19:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82107C433EF
+	for <target-devel@archiver.kernel.org>; Mon, 15 Nov 2021 05:57:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7A01161075
-	for <target-devel@archiver.kernel.org>; Fri, 12 Nov 2021 15:19:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5BD62630EF
+	for <target-devel@archiver.kernel.org>; Mon, 15 Nov 2021 05:57:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232458AbhKLPW2 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 12 Nov 2021 10:22:28 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:60153 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S229975AbhKLPW1 (ORCPT
+        id S230107AbhKOGAe (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 15 Nov 2021 01:00:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51838 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229651AbhKOGAa (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 12 Nov 2021 10:22:27 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1636730376;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=VFN3YfKrrN4rviirmH1lG0NY9uufAM6YHK0vPxccEaw=;
-        b=IEmTYYOVu8mnNf8dncwvv63iPXnTzw+SDFVpHEr5SCq5O1ZxbPCmPqq7Wdw97KhFccVCcs
-        PpvF0X6sLfvePo+htyPszZOVP9OPJFw+TC9+/jUt+DHqLVkcJdZ2V8c3AfrjHJX4R0Iaf/
-        vTUFGcudgKajU4OGV7+iJCc739D3CyQ=
-Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
- [209.85.219.72]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-364-4WKBf9p7Nd2MyhIqVyBosw-1; Fri, 12 Nov 2021 10:19:35 -0500
-X-MC-Unique: 4WKBf9p7Nd2MyhIqVyBosw-1
-Received: by mail-qv1-f72.google.com with SMTP id kl17-20020a056214519100b003ba5b03606fso8738727qvb.0
-        for <target-devel@vger.kernel.org>; Fri, 12 Nov 2021 07:19:35 -0800 (PST)
+        Mon, 15 Nov 2021 01:00:30 -0500
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55EFBC061746;
+        Sun, 14 Nov 2021 21:57:34 -0800 (PST)
+Received: by mail-pj1-x1032.google.com with SMTP id gf14-20020a17090ac7ce00b001a7a2a0b5c3so12111455pjb.5;
+        Sun, 14 Nov 2021 21:57:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ogwLJYhRl6mAF5zsE0HWAzRXmuhZqIu9WWvR7F7G9Uw=;
+        b=jiiJ+FypMEHEq0AY7xqmOhTt699d0jkMZE2VzfuZGtmxKj8/xUm5WSG+aTKJvEpDoQ
+         3Sjdyiu0G0Qg/NmsTaT5j9rRR/5Tp5ul28D0wDyT8tfleaFaKISCj7Ktz7pgIU19KeU5
+         hrFnW+1BsLKng43XkZ0JROWjIRaW23J6VdHTC+Gtvjoj10yXSREUESRW4TOfcclCnjhz
+         ARDaB699gRj63j6i71k5/XzH1lUGuG583qilyPiTLFeBtsqjcUE8CzvlY5M25WIAfGhU
+         ZtJZb4/Ps52aeHTckyprnD3BHelRu8/hbHPkn+i5R0u0A5ZCkaBSaJE6vSaHaM7d66tE
+         407g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=VFN3YfKrrN4rviirmH1lG0NY9uufAM6YHK0vPxccEaw=;
-        b=KPMJpWxJr3EwNTZlOLW873V2Rps74Hoo/B7hHAXqAcRjol3U/eDiYHca9eBCRJvI6+
-         qIu41MwC293ILyVRvsFHW1Swji5sAppvKmzOpMXUFOcZXEdnnLddpZ+CWWOSrR6plch5
-         xZ9ba26I2xIA6vJ/mAfdIrW/8NUC9qbgR4Pyb5WRVF8zyXFieVMfX9WQfrnYKYrt9XhV
-         RPyCt7bQkdgMSNDfNqjEQiETRZWOBdTwLWtbJaKVKGT4KGWNdFDwM5w20Q7+YHCIW9FC
-         sxUsnIFl5Turce0aHuqTpqWFmoxlfiVgM/rMcwd+OutmoctUygL8BV5NQ2LGs6cThEvY
-         WG+w==
-X-Gm-Message-State: AOAM530wFLPjxkNzK5bDReSVvhpB+xkR1/t/4z2fcETo6O7Z6CALeulm
-        98/rF5VnOkqvdpLc7unEdKLcXuC8P8laMEdb6jIiwHsV+Ovkz7xAtD9DiyomLDyfDEHtINTclrN
-        H4pZC59P7V2Xe+SkdQPx29xg=
-X-Received: by 2002:a37:2f02:: with SMTP id v2mr13127476qkh.232.1636730375040;
-        Fri, 12 Nov 2021 07:19:35 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxk6sSDPzw7jrkKAxFn/K0PAx9HKUToVCIsJBG7fV34DkkAlHg0N9AMoil4JWoJAqjFdQQ15g==
-X-Received: by 2002:a37:2f02:: with SMTP id v2mr13127438qkh.232.1636730374828;
-        Fri, 12 Nov 2021 07:19:34 -0800 (PST)
-Received: from localhost (pool-68-160-176-52.bstnma.fios.verizon.net. [68.160.176.52])
-        by smtp.gmail.com with ESMTPSA id az14sm2791255qkb.125.2021.11.12.07.19.34
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ogwLJYhRl6mAF5zsE0HWAzRXmuhZqIu9WWvR7F7G9Uw=;
+        b=DbwtgXlDCM/SN4i0VTws56aPHPEwmC6WO/0OWlIc8e1/e67YqUjeDaDIlRlgrXLoDs
+         0ulYXsoHT4LNNR22q+Nk8o6cecsj54E52RFci8/Ba4+tOg1H1NjsARap/qZg/ZVlzwZq
+         UGe9eHAIT8LjRjmJTxv/XCMqBGE5jVJ1V0/oWO+dCq342DTocp6skBg0uwLa3HjXubjB
+         /yIMeJ9MsS1Iindy4Ds7wt+0OfbFWrmeAk1o1Bhn3VmN06qI56U8HeZNzZ6A41etC/wA
+         H54afxCPxbSzR/K4puCmvBvzABu7hTsSVDyW5eY7EY/Tq4Xu9YDhV116on6QlZZvQfGv
+         ENbg==
+X-Gm-Message-State: AOAM531s0gbR4uUgm/uNjQI+gPalIjwd0sZgfE4TNuwtbxGCkkCiELb7
+        YEXtUe27DzbYgWjLaBmcHTw=
+X-Google-Smtp-Source: ABdhPJxOSQpy8Zq0oETPPCXNmdMH4+p+Ien8tZmgYjFwiNnc0We3kHRb7XsrldnWMV8MwoSSiO2Wxg==
+X-Received: by 2002:a17:903:11d0:b0:13f:ecf6:26ce with SMTP id q16-20020a17090311d000b0013fecf626cemr32703258plh.2.1636955853938;
+        Sun, 14 Nov 2021 21:57:33 -0800 (PST)
+Received: from localhost.localdomain ([193.203.214.57])
+        by smtp.gmail.com with ESMTPSA id y184sm14070281pfg.175.2021.11.14.21.57.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Nov 2021 07:19:34 -0800 (PST)
-Date:   Fri, 12 Nov 2021 10:19:33 -0500
-From:   Mike Snitzer <snitzer@redhat.com>
-To:     Chaitanya Kulkarni <chaitanyak@nvidia.com>
-Cc:     "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
-        "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-        "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-        "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>,
-        "dm-devel@redhat.com" <dm-devel@redhat.com>,
-        "axboe@kernel.dk" <axboe@kernel.dk>,
-        "agk@redhat.com" <agk@redhat.com>,
-        "song@kernel.org" <song@kernel.org>,
-        "djwong@kernel.org" <djwong@kernel.org>,
-        "kbusch@kernel.org" <kbusch@kernel.org>, "hch@lst.de" <hch@lst.de>,
-        "sagi@grimberg.me" <sagi@grimberg.me>,
-        "jejb@linux.ibm.com" <jejb@linux.ibm.com>,
-        "martin.petersen@oracle.com" <martin.petersen@oracle.com>,
-        "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-        "javier@javigon.com" <javier@javigon.com>,
-        "johannes.thumshirn@wdc.com" <johannes.thumshirn@wdc.com>,
-        "bvanassche@acm.org" <bvanassche@acm.org>,
-        "dongli.zhang@oracle.com" <dongli.zhang@oracle.com>,
-        "ming.lei@redhat.com" <ming.lei@redhat.com>,
-        "osandov@fb.com" <osandov@fb.com>,
-        "willy@infradead.org" <willy@infradead.org>,
-        "jefflexu@linux.alibaba.com" <jefflexu@linux.alibaba.com>,
-        "josef@toxicpanda.com" <josef@toxicpanda.com>,
-        "clm@fb.com" <clm@fb.com>, "dsterba@suse.com" <dsterba@suse.com>,
-        "jack@suse.com" <jack@suse.com>, "tytso@mit.edu" <tytso@mit.edu>,
-        "adilger.kernel@dilger.ca" <adilger.kernel@dilger.ca>,
-        "jlayton@kernel.org" <jlayton@kernel.org>,
-        "idryomov@gmail.com" <idryomov@gmail.com>,
-        "danil.kipnis@cloud.ionos.com" <danil.kipnis@cloud.ionos.com>,
-        "ebiggers@google.com" <ebiggers@google.com>,
-        "jinpu.wang@cloud.ionos.com" <jinpu.wang@cloud.ionos.com>
-Subject: Re: [RFC PATCH 8/8] md: add support for REQ_OP_VERIFY
-Message-ID: <YY6GBaSypKNPZnBj@redhat.com>
-References: <20211104064634.4481-1-chaitanyak@nvidia.com>
- <20211104064634.4481-9-chaitanyak@nvidia.com>
- <d770a769-7f2c-bb10-a3bd-0aca371a724e@nvidia.com>
+        Sun, 14 Nov 2021 21:57:33 -0800 (PST)
+From:   cgel.zte@gmail.com
+X-Google-Original-From: chi.minghao@zte.com.cn
+To:     james.smart@broadcom.com
+Cc:     ram.vegesna@broadcom.com, jejb@linux.ibm.com,
+        martin.petersen@oracle.com, dwagner@suse.de, hare@suse.de,
+        christophe.jaillet@wanadoo.fr, chi.minghao@zte.com.cn,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Zeal Robot <zealci@zte.com.cm>
+Subject: [PATCH] scsi:elx: fix cond_no_effect.cocci warnings
+Date:   Mon, 15 Nov 2021 05:57:25 +0000
+Message-Id: <20211115055725.85631-1-chi.minghao@zte.com.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d770a769-7f2c-bb10-a3bd-0aca371a724e@nvidia.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, Nov 11 2021 at  3:13P -0500,
-Chaitanya Kulkarni <chaitanyak@nvidia.com> wrote:
+From: chiminghao <chi.minghao@zte.com.cn>
 
-> On 11/3/2021 11:46 PM, Chaitanya Kulkarni wrote:
-> > From: Chaitanya Kulkarni <kch@nvidia.com>
-> > 
-> > Signed-off-by: Chaitanya Kulkarni <kch@nvidia.com>
-> 
-> I want to make sure the new REQ_OP_VERIFY is compatible with the
-> dm side as it is a generic interface.
-> 
-> Any comments on the dm side ? It will help me to respin the series for
-> V1 of this proposal.
+Fix the following coccicheck WARNING:
+./drivers/scsi/elx/libefc_sli/sli4.c, 2320, 2-4, WARNING
+possible condition with no effect (if == else)
 
-I can review, but have you tested your XFS scrub usecase ontop of
-the various DM devices you modified?
+Reported-by: Zeal Robot <zealci@zte.com.cm>
+Signed-off-by: chiminghao <chi.minghao@zte.com.cn>
+---
+ drivers/scsi/elx/libefc_sli/sli4.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-Also, you seem to have missed Keith's suggestion of using io_uring to
-expose this capability.  If you happen to go that route: making sure
-DM has required io_uring capabilities would be needed (IIRC there
-were/are some lingering patches from Ming Lei to facilitate more
-efficient io_uring on DM.. I'll try to find, could be I'm wrong).
-
-Mike
+diff --git a/drivers/scsi/elx/libefc_sli/sli4.c b/drivers/scsi/elx/libefc_sli/sli4.c
+index 907d67aeac23..b74065a4e5c1 100644
+--- a/drivers/scsi/elx/libefc_sli/sli4.c
++++ b/drivers/scsi/elx/libefc_sli/sli4.c
+@@ -2317,12 +2317,8 @@ sli_xmit_bls_rsp64_wqe(struct sli4 *sli, void *buf,
+ 		SLI4_GENERIC_CONTEXT_VPI << SLI4_BLS_RSP_WQE_CT_SHFT;
+ 		bls->context_tag = cpu_to_le16(params->vpi);
+ 
+-		if (params->s_id != U32_MAX)
+-			bls->local_n_port_id_dword |=
+-				cpu_to_le32(params->s_id & 0x00ffffff);
+-		else
+-			bls->local_n_port_id_dword |=
+-				cpu_to_le32(params->s_id & 0x00ffffff);
++		bls->local_n_port_id_dword |=
++			cpu_to_le32(params->s_id & 0x00ffffff);
+ 
+ 		dw_ridflags = (dw_ridflags & ~SLI4_BLS_RSP_RID) |
+ 			       (params->d_id & SLI4_BLS_RSP_RID);
+-- 
+2.25.1
 
