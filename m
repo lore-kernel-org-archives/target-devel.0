@@ -2,29 +2,29 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBD94C433F5
-	for <target-devel@archiver.kernel.org>; Tue, 23 Nov 2021 13:31:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FCF7C433FE
+	for <target-devel@archiver.kernel.org>; Thu, 25 Nov 2021 02:39:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235923AbhKWNeJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 23 Nov 2021 08:34:09 -0500
-Received: from mga02.intel.com ([134.134.136.20]:1616 "EHLO mga02.intel.com"
+        id S238896AbhKYCm3 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 24 Nov 2021 21:42:29 -0500
+Received: from mga14.intel.com ([192.55.52.115]:15149 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234540AbhKWNeI (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 23 Nov 2021 08:34:08 -0500
-X-IronPort-AV: E=McAfee;i="6200,9189,10176"; a="222243266"
-X-IronPort-AV: E=Sophos;i="5.87,257,1631602800"; 
-   d="scan'208";a="222243266"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Nov 2021 05:30:41 -0800
+        id S238167AbhKYCk2 (ORCPT <rfc822;target-devel@vger.kernel.org>);
+        Wed, 24 Nov 2021 21:40:28 -0500
+X-IronPort-AV: E=McAfee;i="6200,9189,10178"; a="235668698"
+X-IronPort-AV: E=Sophos;i="5.87,261,1631602800"; 
+   d="scan'208";a="235668698"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2021 18:37:17 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.87,257,1631602800"; 
-   d="scan'208";a="474762121"
+X-IronPort-AV: E=Sophos;i="5.87,261,1631602800"; 
+   d="scan'208";a="538831671"
 Received: from lkp-server02.sh.intel.com (HELO 9e1e9f9b3bcb) ([10.239.97.151])
-  by orsmga002.jf.intel.com with ESMTP; 23 Nov 2021 05:30:39 -0800
+  by orsmga001.jf.intel.com with ESMTP; 24 Nov 2021 18:37:14 -0800
 Received: from kbuild by 9e1e9f9b3bcb with local (Exim 4.92)
         (envelope-from <lkp@intel.com>)
-        id 1mpVsc-0001tI-DF; Tue, 23 Nov 2021 13:30:38 +0000
-Date:   Tue, 23 Nov 2021 21:29:49 +0800
+        id 1mq4dO-0005dC-2n; Thu, 25 Nov 2021 02:37:14 +0000
+Date:   Thu, 25 Nov 2021 10:36:18 +0800
 From:   kernel test robot <lkp@intel.com>
 To:     Konstantin Shelekhin <k.shelekhin@yadro.com>,
         Martin Petersen <martin.petersen@oracle.com>,
@@ -34,7 +34,7 @@ Cc:     kbuild-all@lists.01.org, linux-scsi@vger.kernel.org,
         linux@yadro.com, Konstantin Shelekhin <k.shelekhin@yadro.com>,
         Dmitry Bogdanov <d.bogdanov@yadro.com>
 Subject: Re: [PATCH 2/2] scsi: target: iblock: Report space allocation errors
-Message-ID: <202111232117.VwHDjjtU-lkp@intel.com>
+Message-ID: <202111251031.jac0fCTW-lkp@intel.com>
 References: <20211020184319.588002-3-k.shelekhin@yadro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -50,14 +50,14 @@ Hi Konstantin,
 Thank you for the patch! Perhaps something to improve:
 
 [auto build test WARNING on mkp-scsi/for-next]
-[also build test WARNING on v5.16-rc2 next-20211123]
+[also build test WARNING on v5.16-rc2 next-20211124]
 [If your patch is applied to the wrong git tree, kindly drop us a note.
 And when submitting patch, we suggest to use '--base' as documented in
 https://git-scm.com/docs/git-format-patch]
 
 url:    https://github.com/0day-ci/linux/commits/Konstantin-Shelekhin/scsi-target-iblock-Report-space-allocation-errors/20211021-024526
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
-config: i386-randconfig-s001-20211021 (https://download.01.org/0day-ci/archive/20211123/202111232117.VwHDjjtU-lkp@intel.com/config.gz)
+config: i386-randconfig-s001-20211021 (https://download.01.org/0day-ci/archive/20211125/202111251031.jac0fCTW-lkp@intel.com/config)
 compiler: gcc-9 (Debian 9.3.0-22) 9.3.0
 reproduce:
         # apt-get install sparse
