@@ -2,73 +2,64 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EA95C433F5
-	for <target-devel@archiver.kernel.org>; Fri, 10 Dec 2021 17:53:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EF1BC43217
+	for <target-devel@archiver.kernel.org>; Fri, 17 Dec 2021 16:47:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244831AbhLJR5Y (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 10 Dec 2021 12:57:24 -0500
-Received: from smtp05.smtpout.orange.fr ([80.12.242.127]:50160 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241202AbhLJR5W (ORCPT
+        id S235989AbhLQQrH (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 17 Dec 2021 11:47:07 -0500
+Received: from mta07.laposta-infra.nl ([80.246.181.76]:38409 "EHLO
+        mta07.laposta-infra.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239306AbhLQQrH (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 10 Dec 2021 12:57:22 -0500
-Received: from ubuntu-CJ.passengers.t19.sncf ([109.190.253.13])
-        by smtp.orange.fr with ESMTPA
-        id vk5Vm4O22OvR0vk5WmaHTK; Fri, 10 Dec 2021 18:53:46 +0100
-X-ME-Helo: ubuntu-CJ.passengers.t19.sncf
-X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
-X-ME-Date: Fri, 10 Dec 2021 18:53:46 +0100
-X-ME-IP: 109.190.253.13
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To:     james.smart@broadcom.com, ram.vegesna@broadcom.com,
-        jejb@linux.ibm.com, martin.petersen@oracle.com, hare@suse.de,
-        dwagner@suse.de
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH v2] scsi: elx: efct: Avoid a useless memset
-Date:   Fri, 10 Dec 2021 18:53:35 +0100
-Message-Id: <9be7d5beb437583f8d975d168ac5c3e32fb6e465.1639158677.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.32.0
+        Fri, 17 Dec 2021 11:47:07 -0500
+X-Greylist: delayed 485 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Dec 2021 11:47:07 EST
+Received: from [127.0.0.1] (brahms [192.168.10.12])
+        by mta07.laposta-infra.nl (Postfix) with ESMTP id D80DB1A759
+        for <target-devel@vger.kernel.org>; Fri, 17 Dec 2021 17:38:59 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha1; c=relaxed/simple; d=erismeerveldhoven.nl;
+        s=eprov-k1; t=1639759139; bh=1ucLIG0uwGOA8uVD24Xj3JwGO4o=;
+        h=Date:Subject:From:Reply-To:To:From;
+        b=OMSZbxwG+0q3/G637U2FtM/1Zozx+dvoqUhuMaBO1Bd/5FJqU0Li4UjnLV5IWZVLa
+         Pcyk51HrVbtMPAWJqFeS9AGiTbpGsPc5EAg1BWi1hI18A5o5fL9+fDrGZZ2EPCNzoK
+         hWK/n+sjE+0/8p90W+8+aInm3hEGDfazYg5qHGQE=
+Message-ID: <1639759139.61bcbd23d6da8@scripts>
+Date:   Fri, 17 Dec 2021 17:38:59 +0100
+Subject: Aanmelden nieuwsbrief "Er is meer..."
+From:   Werkgroep "Er is meer ..." <info@erismeerveldhoven.nl>
+Reply-To: Werkgroep "Er is meer ..." <info@erismeerveldhoven.nl>
+To:     target-devel@vger.kernel.org
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-'io->sgl' is kzalloced just a few lines above. There is no need to memset
-it another time.
+Geachte =E2=9D=A4=EF=B8=8F Jenna is interested in your profile! Click He=
+re: https://bit.ly/3yzIW9R?kxpjg =E2=9D=A4=EF=B8=8F urhq8w 1b9zj=
+r,
 
-While at it change a kzalloc into an equivalent kcalloc to increase the
-semantic and avoid an open coded arithmetic in a memory allocation
-statement.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-v1 --> v2: s/kzalloc/kcalloc/
 
- drivers/scsi/elx/efct/efct_io.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Hartelijk dank voor uw aanmelding!
 
-diff --git a/drivers/scsi/elx/efct/efct_io.c b/drivers/scsi/elx/efct/efct_io.c
-index 71e21655916a..109483f3e3df 100644
---- a/drivers/scsi/elx/efct/efct_io.c
-+++ b/drivers/scsi/elx/efct/efct_io.c
-@@ -56,13 +56,12 @@ efct_io_pool_create(struct efct *efct, u32 num_sgl)
- 		}
- 
- 		/* Allocate SGL */
--		io->sgl = kzalloc(sizeof(*io->sgl) * num_sgl, GFP_KERNEL);
-+		io->sgl = kcalloc(num_sgl, sizeof(*io->sgl), GFP_KERNEL);
- 		if (!io->sgl) {
- 			efct_io_pool_free(io_pool);
- 			return NULL;
- 		}
- 
--		memset(io->sgl, 0, sizeof(*io->sgl) * num_sgl);
- 		io->sgl_allocated = num_sgl;
- 		io->sgl_count = 0;
- 
--- 
-2.32.0
+W=
+e hopen dat onze nieuwsbrief u bevalt.
 
+Mocht u zich in de toekom=
+st willen afmelden, dan kan dat via de afmeldlink in de nieuwsbrief.=
+
+
+
+
+Met vriendelijke groet,
+
+Namens Sticht=
+ing "Er is meer..."
+Dor=C3=A9=C3=A9n Haszing
+
+
+Meer =
+informatie over "Er is meer..." kunt u vinden door op onderstaande link =
+te klikken:
+www.erismeerveldhoven.nl
