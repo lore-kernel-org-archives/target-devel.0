@@ -2,64 +2,78 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EF1BC43217
-	for <target-devel@archiver.kernel.org>; Fri, 17 Dec 2021 16:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42BAFC433F5
+	for <target-devel@archiver.kernel.org>; Tue, 21 Dec 2021 11:31:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235989AbhLQQrH (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 17 Dec 2021 11:47:07 -0500
-Received: from mta07.laposta-infra.nl ([80.246.181.76]:38409 "EHLO
-        mta07.laposta-infra.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239306AbhLQQrH (ORCPT
+        id S231423AbhLULbJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 21 Dec 2021 06:31:09 -0500
+Received: from szxga02-in.huawei.com ([45.249.212.188]:29276 "EHLO
+        szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229735AbhLULbJ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 17 Dec 2021 11:47:07 -0500
-X-Greylist: delayed 485 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Dec 2021 11:47:07 EST
-Received: from [127.0.0.1] (brahms [192.168.10.12])
-        by mta07.laposta-infra.nl (Postfix) with ESMTP id D80DB1A759
-        for <target-devel@vger.kernel.org>; Fri, 17 Dec 2021 17:38:59 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha1; c=relaxed/simple; d=erismeerveldhoven.nl;
-        s=eprov-k1; t=1639759139; bh=1ucLIG0uwGOA8uVD24Xj3JwGO4o=;
-        h=Date:Subject:From:Reply-To:To:From;
-        b=OMSZbxwG+0q3/G637U2FtM/1Zozx+dvoqUhuMaBO1Bd/5FJqU0Li4UjnLV5IWZVLa
-         Pcyk51HrVbtMPAWJqFeS9AGiTbpGsPc5EAg1BWi1hI18A5o5fL9+fDrGZZ2EPCNzoK
-         hWK/n+sjE+0/8p90W+8+aInm3hEGDfazYg5qHGQE=
-Message-ID: <1639759139.61bcbd23d6da8@scripts>
-Date:   Fri, 17 Dec 2021 17:38:59 +0100
-Subject: Aanmelden nieuwsbrief "Er is meer..."
-From:   Werkgroep "Er is meer ..." <info@erismeerveldhoven.nl>
-Reply-To: Werkgroep "Er is meer ..." <info@erismeerveldhoven.nl>
-To:     target-devel@vger.kernel.org
+        Tue, 21 Dec 2021 06:31:09 -0500
+Received: from dggpeml500026.china.huawei.com (unknown [172.30.72.55])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4JJDm503hjzbhrt;
+        Tue, 21 Dec 2021 19:30:45 +0800 (CST)
+Received: from dggpeml500017.china.huawei.com (7.185.36.243) by
+ dggpeml500026.china.huawei.com (7.185.36.106) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.20; Tue, 21 Dec 2021 19:31:07 +0800
+Received: from huawei.com (10.175.103.91) by dggpeml500017.china.huawei.com
+ (7.185.36.243) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Tue, 21 Dec
+ 2021 19:31:07 +0800
+From:   Yang Yingliang <yangyingliang@huawei.com>
+To:     <linux-kernel@vger.kernel.org>, <target-devel@vger.kernel.org>,
+        <linux-scsi@vger.kernel.org>
+CC:     <hch@lst.de>, <james.smart@broadcom.com>,
+        <martin.petersen@oracle.com>
+Subject: [PATCH -next] scsi: efct: Use GFP_ATOMIC under spin lock
+Date:   Tue, 21 Dec 2021 19:37:06 +0800
+Message-ID: <20211221113706.329791-1-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggpeml500017.china.huawei.com (7.185.36.243)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Geachte =E2=9D=A4=EF=B8=8F Jenna is interested in your profile! Click He=
-re: https://bit.ly/3yzIW9R?kxpjg =E2=9D=A4=EF=B8=8F urhq8w 1b9zj=
-r,
+A spin lock is taken here so we should use GFP_ATOMIC.
 
+Fixes: efac162a4e4d ("scsi: efct: Don't pass GFP_DMA to dma_alloc_coherent()")
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+---
+ drivers/scsi/elx/libefc/efc_els.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/scsi/elx/libefc/efc_els.c b/drivers/scsi/elx/libefc/efc_els.c
+index 7bb4f9aad2c8..7043a61d553d 100644
+--- a/drivers/scsi/elx/libefc/efc_els.c
++++ b/drivers/scsi/elx/libefc/efc_els.c
+@@ -71,7 +71,7 @@ efc_els_io_alloc_size(struct efc_node *node, u32 reqlen, u32 rsplen)
+ 	/* now allocate DMA for request and response */
+ 	els->io.req.size = reqlen;
+ 	els->io.req.virt = dma_alloc_coherent(&efc->pci->dev, els->io.req.size,
+-					      &els->io.req.phys, GFP_KERNEL);
++					      &els->io.req.phys, GFP_ATOMIC);
+ 	if (!els->io.req.virt) {
+ 		mempool_free(els, efc->els_io_pool);
+ 		spin_unlock_irqrestore(&node->els_ios_lock, flags);
+@@ -80,7 +80,7 @@ efc_els_io_alloc_size(struct efc_node *node, u32 reqlen, u32 rsplen)
+ 
+ 	els->io.rsp.size = rsplen;
+ 	els->io.rsp.virt = dma_alloc_coherent(&efc->pci->dev, els->io.rsp.size,
+-					      &els->io.rsp.phys, GFP_KERNEL);
++					      &els->io.rsp.phys, GFP_ATOMIC);
+ 	if (!els->io.rsp.virt) {
+ 		dma_free_coherent(&efc->pci->dev, els->io.req.size,
+ 				  els->io.req.virt, els->io.req.phys);
+-- 
+2.25.1
 
-Hartelijk dank voor uw aanmelding!
-
-W=
-e hopen dat onze nieuwsbrief u bevalt.
-
-Mocht u zich in de toekom=
-st willen afmelden, dan kan dat via de afmeldlink in de nieuwsbrief.=
-
-
-
-
-Met vriendelijke groet,
-
-Namens Sticht=
-ing "Er is meer..."
-Dor=C3=A9=C3=A9n Haszing
-
-
-Meer =
-informatie over "Er is meer..." kunt u vinden door op onderstaande link =
-te klikken:
-www.erismeerveldhoven.nl
