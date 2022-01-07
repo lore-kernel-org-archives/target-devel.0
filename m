@@ -2,53 +2,147 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 954D1C433F5
-	for <target-devel@archiver.kernel.org>; Wed, 29 Dec 2021 07:56:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C517CC433F5
+	for <target-devel@archiver.kernel.org>; Fri,  7 Jan 2022 15:11:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239213AbhL2H4X (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 29 Dec 2021 02:56:23 -0500
-Received: from mail.BETTERBIZ.PL ([45.86.209.138]:59912 "EHLO
-        mail.betterbiz.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239205AbhL2H4W (ORCPT
+        id S1348018AbiAGPLE (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 7 Jan 2022 10:11:04 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:50730 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S232227AbiAGPLD (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 29 Dec 2021 02:56:22 -0500
-X-Greylist: delayed 596 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Dec 2021 02:56:22 EST
-Received: by mail.betterbiz.pl (Postfix, from userid 1001)
-        id 16A0382C77; Wed, 29 Dec 2021 02:45:31 -0500 (EST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=betterbiz.pl; s=mail;
-        t=1640763974; bh=07NAgW1e0WiNB9zqagiM2BnwZfWBCpNa2E4+ccxBPgw=;
-        h=Date:From:To:Subject:From;
-        b=LAW4usCd7Ejni8hAdMhevzt55yOnIBoPCfCGe5MD7x4A9WOBBnQTy1TEaxel/532m
-         MWvO+1FLUJBEJrNH77UGhxk5yLzyLHm/e9gBQfGz+CsFcBeuHzxsW3SJ/BXFVJSZLR
-         URaqOhr6ND16O+JwjaHNQZFOM7vPtd/B77QuqEE8mtMoKhwETI2QscFvbzk+7zfGI6
-         uyA6ieZKOwIzeB8VllTPnnR8ZVf2FTeOoukBDFxIAejsq4zgSK7r+M8t0NAIaoe/wz
-         Qz3UAyT6nkzcQDiDqyKxAqMNFNT0vi0KjS3DqnkuD2nvq1iqmDWYJIjPGOqhZ9keI1
-         qxSiKInjtG6pQ==
-Received: by mail.betterbiz.pl for <target-devel@vger.kernel.org>; Wed, 29 Dec 2021 07:45:31 GMT
-Message-ID: <20211229024500-0.1.i.1i28.0.upidhkem5a@betterbiz.pl>
-Date:   Wed, 29 Dec 2021 07:45:31 GMT
-From:   "Jakub Daroch" <jakub.daroch@betterbiz.pl>
-To:     <target-devel@vger.kernel.org>
-Subject: Wycena paneli fotowoltaicznych
-X-Mailer: mail.betterbiz.pl
+        Fri, 7 Jan 2022 10:11:03 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1641568263;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=IexUmlPEyALpq6clKWBupz42YnycD2masBzABJWHgaU=;
+        b=d9HoxI7s5w0cBRaSo+fygAe7eAsUDzuWpDhcdSW6bfQdPnUYHbPjVwVefAT6Ez2uh5J5xu
+        4JNEMS5ZxUZZc0NAQfM8zo6sT2xoOM2i1qQPt12Qq0+r9CRmm5fAfsxFCalrBP+1m2u9MV
+        kUjqr8ykn39+Teu/vp2IoQaDisJPsic=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-113-AQ14s0CxOP-rFjFfcfQeJA-1; Fri, 07 Jan 2022 10:10:57 -0500
+X-MC-Unique: AQ14s0CxOP-rFjFfcfQeJA-1
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id ABEF5100CCC1;
+        Fri,  7 Jan 2022 15:10:56 +0000 (UTC)
+Received: from raketa.redhat.com (unknown [10.40.192.203])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 8522D85F1A;
+        Fri,  7 Jan 2022 15:10:55 +0000 (UTC)
+From:   Maurizio Lombardi <mlombard@redhat.com>
+To:     martin.petersen@oracle.com
+Cc:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        michael.christie@oracle.com
+Subject: [PATCH] target: allow changing dbroot if there are no registered devices
+Date:   Fri,  7 Jan 2022 16:10:54 +0100
+Message-Id: <20220107151054.29734-1-mlombard@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Dzie=C5=84 dobry,
+The target driver prevents the users from changing
+the database root directory if a target module like ib_srpt has
+been registered, this makes it difficult for users to
+set their preferred database directory if the module
+gets loaded during the system boot.
 
-dostrzegam mo=C5=BCliwo=C5=9B=C4=87 wsp=C3=B3=C5=82pracy z Pa=C5=84stwa f=
-irm=C4=85.
+Let the users modify dbroot if there are no registered devices
 
-=C5=9Awiadczymy kompleksow=C4=85 obs=C5=82ug=C4=99 inwestycji w fotowolta=
-ik=C4=99, kt=C3=B3ra obni=C5=BCa koszty energii elektrycznej nawet o 90%.
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/target/target_core_configfs.c | 20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
 
-Czy s=C4=85 Pa=C5=84stwo zainteresowani weryfikacj=C4=85 wst=C4=99pnych p=
-ropozycji?
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 023bd4516a68..cba10829e62f 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -72,6 +72,8 @@ static struct config_group target_core_hbagroup;
+ static struct config_group alua_group;
+ static struct config_group alua_lu_gps_group;
+ 
++static unsigned int target_devices;
++
+ static inline struct se_hba *
+ item_to_hba(struct config_item *item)
+ {
+@@ -106,38 +108,32 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
+ 	ssize_t read_bytes;
+ 	struct file *fp;
+ 
+-	mutex_lock(&g_tf_lock);
+-	if (!list_empty(&g_tf_list)) {
+-		mutex_unlock(&g_tf_lock);
+-		pr_err("db_root: cannot be changed: target drivers registered");
++	if (target_devices) {
++		pr_err("db_root: cannot be changed because it's in use\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	if (count > (DB_ROOT_LEN - 1)) {
+-		mutex_unlock(&g_tf_lock);
+ 		pr_err("db_root: count %d exceeds DB_ROOT_LEN-1: %u\n",
+ 		       (int)count, DB_ROOT_LEN - 1);
+ 		return -EINVAL;
+ 	}
+ 
+ 	read_bytes = snprintf(db_root_stage, DB_ROOT_LEN, "%s", page);
+-	if (!read_bytes) {
+-		mutex_unlock(&g_tf_lock);
++	if (!read_bytes)
+ 		return -EINVAL;
+-	}
++
+ 	if (db_root_stage[read_bytes - 1] == '\n')
+ 		db_root_stage[read_bytes - 1] = '\0';
+ 
+ 	/* validate new db root before accepting it */
+ 	fp = filp_open(db_root_stage, O_RDONLY, 0);
+ 	if (IS_ERR(fp)) {
+-		mutex_unlock(&g_tf_lock);
+ 		pr_err("db_root: cannot open: %s\n", db_root_stage);
+ 		return -EINVAL;
+ 	}
+ 	if (!S_ISDIR(file_inode(fp)->i_mode)) {
+ 		filp_close(fp, NULL);
+-		mutex_unlock(&g_tf_lock);
+ 		pr_err("db_root: not a directory: %s\n", db_root_stage);
+ 		return -EINVAL;
+ 	}
+@@ -145,8 +141,6 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
+ 
+ 	strncpy(db_root, db_root_stage, read_bytes);
+ 
+-	mutex_unlock(&g_tf_lock);
+-
+ 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
+ 
+ 	return read_bytes;
+@@ -3315,6 +3309,7 @@ static struct config_group *target_core_make_subdev(
+ 	 */
+ 	target_stat_setup_dev_default_groups(dev);
+ 
++	target_devices++;
+ 	mutex_unlock(&hba->hba_access_mutex);
+ 	return &dev->dev_group;
+ 
+@@ -3353,6 +3348,7 @@ static void target_core_drop_subdev(
+ 	 * se_dev is released from target_core_dev_item_ops->release()
+ 	 */
+ 	config_item_put(item);
++	target_devices--;
+ 	mutex_unlock(&hba->hba_access_mutex);
+ }
+ 
+-- 
+2.27.0
 
-
-Pozdrawiam,
-Jakub Daroch
