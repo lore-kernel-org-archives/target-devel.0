@@ -2,147 +2,82 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C517CC433F5
-	for <target-devel@archiver.kernel.org>; Fri,  7 Jan 2022 15:11:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA00CC4332F
+	for <target-devel@archiver.kernel.org>; Sun,  9 Jan 2022 18:57:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348018AbiAGPLE (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 7 Jan 2022 10:11:04 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:50730 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S232227AbiAGPLD (ORCPT
+        id S229455AbiAIS5V (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sun, 9 Jan 2022 13:57:21 -0500
+Received: from smtp04.smtpout.orange.fr ([80.12.242.126]:55970 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231809AbiAIS5U (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 7 Jan 2022 10:11:03 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1641568263;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=IexUmlPEyALpq6clKWBupz42YnycD2masBzABJWHgaU=;
-        b=d9HoxI7s5w0cBRaSo+fygAe7eAsUDzuWpDhcdSW6bfQdPnUYHbPjVwVefAT6Ez2uh5J5xu
-        4JNEMS5ZxUZZc0NAQfM8zo6sT2xoOM2i1qQPt12Qq0+r9CRmm5fAfsxFCalrBP+1m2u9MV
-        kUjqr8ykn39+Teu/vp2IoQaDisJPsic=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-113-AQ14s0CxOP-rFjFfcfQeJA-1; Fri, 07 Jan 2022 10:10:57 -0500
-X-MC-Unique: AQ14s0CxOP-rFjFfcfQeJA-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id ABEF5100CCC1;
-        Fri,  7 Jan 2022 15:10:56 +0000 (UTC)
-Received: from raketa.redhat.com (unknown [10.40.192.203])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 8522D85F1A;
-        Fri,  7 Jan 2022 15:10:55 +0000 (UTC)
-From:   Maurizio Lombardi <mlombard@redhat.com>
-To:     martin.petersen@oracle.com
-Cc:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        michael.christie@oracle.com
-Subject: [PATCH] target: allow changing dbroot if there are no registered devices
-Date:   Fri,  7 Jan 2022 16:10:54 +0100
-Message-Id: <20220107151054.29734-1-mlombard@redhat.com>
+        Sun, 9 Jan 2022 13:57:20 -0500
+Received: from pop-os.home ([90.11.185.88])
+        by smtp.orange.fr with ESMTPA
+        id 6dNWnw2VWsoWh6dNWnw5jl; Sun, 09 Jan 2022 19:57:19 +0100
+X-ME-Helo: pop-os.home
+X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
+X-ME-Date: Sun, 09 Jan 2022 19:57:19 +0100
+X-ME-IP: 90.11.185.88
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To:     James Smart <james.smart@broadcom.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Subject: [PATCH] scsi: efct: Remove useless DMA-32 fallback configuration
+Date:   Sun,  9 Jan 2022 19:57:04 +0100
+Message-Id: <958bcb2a6e86344c14f38369e8e7079615a2b0e3.1641754613.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-The target driver prevents the users from changing
-the database root directory if a target module like ib_srpt has
-been registered, this makes it difficult for users to
-set their preferred database directory if the module
-gets loaded during the system boot.
+As stated in [1], dma_set_mask() with a 64-bit mask never fails if
+dev->dma_mask is non-NULL.
+So, if it fails, the 32 bits case will also fail for the same reason.
 
-Let the users modify dbroot if there are no registered devices
+Simplify code and remove some dead code accordingly.
 
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+While at it, return the error code returned by dma_set_mask_and_coherent()
+instead of -1.
+
+[1]: https://lkml.org/lkml/2021/6/7/398
+
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- drivers/target/target_core_configfs.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
+This patch was not part of the 1st serie I've sent. So there is no
+Reviewed-by tag.
+---
+ drivers/scsi/elx/efct/efct_driver.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 023bd4516a68..cba10829e62f 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -72,6 +72,8 @@ static struct config_group target_core_hbagroup;
- static struct config_group alua_group;
- static struct config_group alua_lu_gps_group;
+diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
+index ae62fc3c9ee3..b08fc8839808 100644
+--- a/drivers/scsi/elx/efct/efct_driver.c
++++ b/drivers/scsi/elx/efct/efct_driver.c
+@@ -541,13 +541,10 @@ efct_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  
-+static unsigned int target_devices;
-+
- static inline struct se_hba *
- item_to_hba(struct config_item *item)
- {
-@@ -106,38 +108,32 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
- 	ssize_t read_bytes;
- 	struct file *fp;
+ 	pci_set_drvdata(pdev, efct);
  
--	mutex_lock(&g_tf_lock);
--	if (!list_empty(&g_tf_list)) {
--		mutex_unlock(&g_tf_lock);
--		pr_err("db_root: cannot be changed: target drivers registered");
-+	if (target_devices) {
-+		pr_err("db_root: cannot be changed because it's in use\n");
- 		return -EINVAL;
+-	if (dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64)) != 0) {
+-		dev_warn(&pdev->dev, "trying DMA_BIT_MASK(32)\n");
+-		if (dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32)) != 0) {
+-			dev_err(&pdev->dev, "setting DMA_BIT_MASK failed\n");
+-			rc = -1;
+-			goto dma_mask_out;
+-		}
++	rc = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
++	if (rc) {
++		dev_err(&pdev->dev, "setting DMA_BIT_MASK failed\n");
++		goto dma_mask_out;
  	}
  
- 	if (count > (DB_ROOT_LEN - 1)) {
--		mutex_unlock(&g_tf_lock);
- 		pr_err("db_root: count %d exceeds DB_ROOT_LEN-1: %u\n",
- 		       (int)count, DB_ROOT_LEN - 1);
- 		return -EINVAL;
- 	}
- 
- 	read_bytes = snprintf(db_root_stage, DB_ROOT_LEN, "%s", page);
--	if (!read_bytes) {
--		mutex_unlock(&g_tf_lock);
-+	if (!read_bytes)
- 		return -EINVAL;
--	}
-+
- 	if (db_root_stage[read_bytes - 1] == '\n')
- 		db_root_stage[read_bytes - 1] = '\0';
- 
- 	/* validate new db root before accepting it */
- 	fp = filp_open(db_root_stage, O_RDONLY, 0);
- 	if (IS_ERR(fp)) {
--		mutex_unlock(&g_tf_lock);
- 		pr_err("db_root: cannot open: %s\n", db_root_stage);
- 		return -EINVAL;
- 	}
- 	if (!S_ISDIR(file_inode(fp)->i_mode)) {
- 		filp_close(fp, NULL);
--		mutex_unlock(&g_tf_lock);
- 		pr_err("db_root: not a directory: %s\n", db_root_stage);
- 		return -EINVAL;
- 	}
-@@ -145,8 +141,6 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
- 
- 	strncpy(db_root, db_root_stage, read_bytes);
- 
--	mutex_unlock(&g_tf_lock);
--
- 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
- 
- 	return read_bytes;
-@@ -3315,6 +3309,7 @@ static struct config_group *target_core_make_subdev(
- 	 */
- 	target_stat_setup_dev_default_groups(dev);
- 
-+	target_devices++;
- 	mutex_unlock(&hba->hba_access_mutex);
- 	return &dev->dev_group;
- 
-@@ -3353,6 +3348,7 @@ static void target_core_drop_subdev(
- 	 * se_dev is released from target_core_dev_item_ops->release()
- 	 */
- 	config_item_put(item);
-+	target_devices--;
- 	mutex_unlock(&hba->hba_access_mutex);
- }
- 
+ 	num_interrupts = efct_device_interrupts_required(efct);
 -- 
-2.27.0
+2.32.0
 
