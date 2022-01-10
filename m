@@ -2,82 +2,52 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA00CC4332F
-	for <target-devel@archiver.kernel.org>; Sun,  9 Jan 2022 18:57:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69EE3C433EF
+	for <target-devel@archiver.kernel.org>; Mon, 10 Jan 2022 07:51:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229455AbiAIS5V (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 9 Jan 2022 13:57:21 -0500
-Received: from smtp04.smtpout.orange.fr ([80.12.242.126]:55970 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231809AbiAIS5U (ORCPT
+        id S241847AbiAJHvT (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 10 Jan 2022 02:51:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52772 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S240799AbiAJHr5 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 9 Jan 2022 13:57:20 -0500
-Received: from pop-os.home ([90.11.185.88])
-        by smtp.orange.fr with ESMTPA
-        id 6dNWnw2VWsoWh6dNWnw5jl; Sun, 09 Jan 2022 19:57:19 +0100
-X-ME-Helo: pop-os.home
-X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
-X-ME-Date: Sun, 09 Jan 2022 19:57:19 +0100
-X-ME-IP: 90.11.185.88
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To:     James Smart <james.smart@broadcom.com>,
+        Mon, 10 Jan 2022 02:47:57 -0500
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8168C061763;
+        Sun,  9 Jan 2022 23:41:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
+        :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=l2WBiCb5duYJRA9nKpihqrJOH1Qjg6utSrFiu8qAdtc=; b=kj6fiL329W/gAp0XpvM7fyTCis
+        t47te0E/tG9jMJ+w32Gkchb73gXsjWLQ0rrK7Buyg0MOJiLGuhTLN8zQ5lREW8tJ6UDGwFEtxaGWT
+        ghnBBQ5fpNry5qp4EeAlGF5NN2aWbxEmvNeVHDUNW/BG9oAGkazLfHLyzTorkVFAsA1hgT2kOoiK8
+        4caUHudyQVEC2QAJ9gdwKTI75FA8u6kUzu1Btc7OL6bM88JgrXjksHSAID0cNQrYuGqT3SNQb+Hbg
+        KZIhvfZtF4Ojq3dcSuN9c1hD2Of80wm70vXlf78Kiqsp0J0A/gknhlChLLFdXDYHaflpib1r2EPMv
+        cZ0809yg==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1n6pIf-009gCn-6X; Mon, 10 Jan 2022 07:41:05 +0000
+Date:   Sun, 9 Jan 2022 23:41:05 -0800
+From:   Christoph Hellwig <hch@infradead.org>
+To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc:     James Smart <james.smart@broadcom.com>,
         Ram Vegesna <ram.vegesna@broadcom.com>,
         "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH] scsi: efct: Remove useless DMA-32 fallback configuration
-Date:   Sun,  9 Jan 2022 19:57:04 +0100
-Message-Id: <958bcb2a6e86344c14f38369e8e7079615a2b0e3.1641754613.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.32.0
+Subject: Re: [PATCH] scsi: efct: Remove useless DMA-32 fallback configuration
+Message-ID: <YdvjEU8US+eFR/mi@infradead.org>
+References: <958bcb2a6e86344c14f38369e8e7079615a2b0e3.1641754613.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <958bcb2a6e86344c14f38369e8e7079615a2b0e3.1641754613.git.christophe.jaillet@wanadoo.fr>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-As stated in [1], dma_set_mask() with a 64-bit mask never fails if
-dev->dma_mask is non-NULL.
-So, if it fails, the 32 bits case will also fail for the same reason.
+Looks good,
 
-Simplify code and remove some dead code accordingly.
-
-While at it, return the error code returned by dma_set_mask_and_coherent()
-instead of -1.
-
-[1]: https://lkml.org/lkml/2021/6/7/398
-
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-This patch was not part of the 1st serie I've sent. So there is no
-Reviewed-by tag.
----
- drivers/scsi/elx/efct/efct_driver.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
-index ae62fc3c9ee3..b08fc8839808 100644
---- a/drivers/scsi/elx/efct/efct_driver.c
-+++ b/drivers/scsi/elx/efct/efct_driver.c
-@@ -541,13 +541,10 @@ efct_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	pci_set_drvdata(pdev, efct);
- 
--	if (dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64)) != 0) {
--		dev_warn(&pdev->dev, "trying DMA_BIT_MASK(32)\n");
--		if (dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32)) != 0) {
--			dev_err(&pdev->dev, "setting DMA_BIT_MASK failed\n");
--			rc = -1;
--			goto dma_mask_out;
--		}
-+	rc = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
-+	if (rc) {
-+		dev_err(&pdev->dev, "setting DMA_BIT_MASK failed\n");
-+		goto dma_mask_out;
- 	}
- 
- 	num_interrupts = efct_device_interrupts_required(efct);
--- 
-2.32.0
-
+Reviewed-by: Christoph Hellwig <hch@lst.de>
