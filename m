@@ -2,53 +2,98 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBD06C433FE
-	for <target-devel@archiver.kernel.org>; Mon, 10 Jan 2022 08:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0C89C43217
+	for <target-devel@archiver.kernel.org>; Mon, 10 Jan 2022 11:14:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242129AbiAJIzn (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 10 Jan 2022 03:55:43 -0500
-Received: from verein.lst.de ([213.95.11.211]:37622 "EHLO verein.lst.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S242382AbiAJIyp (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Mon, 10 Jan 2022 03:54:45 -0500
-Received: by verein.lst.de (Postfix, from userid 2407)
-        id EE72968AA6; Mon, 10 Jan 2022 09:54:41 +0100 (CET)
-Date:   Mon, 10 Jan 2022 09:54:41 +0100
-From:   Christoph Hellwig <hch@lst.de>
-To:     Yang Yingliang <yangyingliang@huawei.com>
-Cc:     Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        james.smart@broadcom.com, martin.petersen@oracle.com
-Subject: Re: [PATCH -next] scsi: efct: Use GFP_ATOMIC under spin lock
-Message-ID: <20220110085441.GB6124@lst.de>
-References: <20211221113706.329791-1-yangyingliang@huawei.com> <20211221142859.GA30187@lst.de> <44ff658e-4a00-ee5b-1f84-fa89f9b9291f@huawei.com>
+        id S244488AbiAJLOG (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 10 Jan 2022 06:14:06 -0500
+Received: from szxga01-in.huawei.com ([45.249.212.187]:16698 "EHLO
+        szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S244515AbiAJLNT (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Mon, 10 Jan 2022 06:13:19 -0500
+Received: from dggpeml500025.china.huawei.com (unknown [172.30.72.54])
+        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4JXWLb2MMrzZf6f;
+        Mon, 10 Jan 2022 19:09:43 +0800 (CST)
+Received: from dggpeml500017.china.huawei.com (7.185.36.243) by
+ dggpeml500025.china.huawei.com (7.185.36.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.20; Mon, 10 Jan 2022 19:13:17 +0800
+Received: from huawei.com (10.175.103.91) by dggpeml500017.china.huawei.com
+ (7.185.36.243) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Mon, 10 Jan
+ 2022 19:13:16 +0800
+From:   Yang Yingliang <yangyingliang@huawei.com>
+To:     <linux-kernel@vger.kernel.org>, <target-devel@vger.kernel.org>,
+        <linux-scsi@vger.kernel.org>
+CC:     <hch@lst.de>, <james.smart@broadcom.com>,
+        <martin.petersen@oracle.com>
+Subject: [PATCH -next] scsi: efct: don't use GFP_KERNEL under spin lock
+Date:   Mon, 10 Jan 2022 19:18:38 +0800
+Message-ID: <20220110111838.965480-1-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <44ff658e-4a00-ee5b-1f84-fa89f9b9291f@huawei.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggpeml500017.china.huawei.com (7.185.36.243)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, Dec 23, 2021 at 11:56:08AM +0800, Yang Yingliang wrote:
->
-> On 2021/12/21 22:28, Christoph Hellwig wrote:
->> On Tue, Dec 21, 2021 at 07:37:06PM +0800, Yang Yingliang wrote:
->>> A spin lock is taken here so we should use GFP_ATOMIC.
->>>
->>> Fixes: efac162a4e4d ("scsi: efct: Don't pass GFP_DMA to dma_alloc_coherent()")
->> No, it does not fix that commit.  The driver did sleeping allocations
->> even before the commit.
->>
->> But wher is "here"?  Can we look into not holding that lock over an
->> allocation if it is preferable?  If not we should at least pass down
->> the gfp_flags so that only the caller(s) that can't sleep pass GFP_ATOMIC.
->
-> According the comment of els_ios_lock, it's used to protect els ios list, I 
-> think we
->
-> can move down the spin lock like this:
+GFP_KERNEL/GFP_DMA can't be used under a spin lock, according the
+comment of els_ios_lock, it's used to protect els ios list, so we
+can move down the spin lock to avoid using this flag under the lock.
 
-This looks sensible to me.  Please submit it to the maintainer as a proper
-patch.
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Fixes: 8f406ef72859 ("scsi: elx: libefc: Extended link Service I/O handling")
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+---
+ drivers/scsi/elx/libefc/efc_els.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/scsi/elx/libefc/efc_els.c b/drivers/scsi/elx/libefc/efc_els.c
+index 7bb4f9aad2c8..cec6a2f649b3 100644
+--- a/drivers/scsi/elx/libefc/efc_els.c
++++ b/drivers/scsi/elx/libefc/efc_els.c
+@@ -46,18 +46,14 @@ efc_els_io_alloc_size(struct efc_node *node, u32 reqlen, u32 rsplen)
+ 
+ 	efc = node->efc;
+ 
+-	spin_lock_irqsave(&node->els_ios_lock, flags);
+-
+ 	if (!node->els_io_enabled) {
+ 		efc_log_err(efc, "els io alloc disabled\n");
+-		spin_unlock_irqrestore(&node->els_ios_lock, flags);
+ 		return NULL;
+ 	}
+ 
+ 	els = mempool_alloc(efc->els_io_pool, GFP_ATOMIC);
+ 	if (!els) {
+ 		atomic_add_return(1, &efc->els_io_alloc_failed_count);
+-		spin_unlock_irqrestore(&node->els_ios_lock, flags);
+ 		return NULL;
+ 	}
+ 
+@@ -74,7 +70,6 @@ efc_els_io_alloc_size(struct efc_node *node, u32 reqlen, u32 rsplen)
+ 					      &els->io.req.phys, GFP_KERNEL);
+ 	if (!els->io.req.virt) {
+ 		mempool_free(els, efc->els_io_pool);
+-		spin_unlock_irqrestore(&node->els_ios_lock, flags);
+ 		return NULL;
+ 	}
+ 
+@@ -88,6 +83,8 @@ efc_els_io_alloc_size(struct efc_node *node, u32 reqlen, u32 rsplen)
+ 		els = NULL;
+ 	}
+ 
++	spin_lock_irqsave(&node->els_ios_lock, flags);
++
+ 	if (els) {
+ 		/* initialize fields */
+ 		els->els_retries_remaining = EFC_FC_ELS_DEFAULT_RETRIES;
+-- 
+2.25.1
+
