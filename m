@@ -2,70 +2,72 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7547DC433FE
-	for <target-devel@archiver.kernel.org>; Mon, 10 Jan 2022 11:20:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D624C433EF
+	for <target-devel@archiver.kernel.org>; Mon, 10 Jan 2022 12:10:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244565AbiAJLTc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 10 Jan 2022 06:19:32 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:53230 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S244576AbiAJLTa (ORCPT
+        id S239855AbiAJMKr (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 10 Jan 2022 07:10:47 -0500
+Received: from szxga01-in.huawei.com ([45.249.212.187]:16699 "EHLO
+        szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235772AbiAJMKp (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 10 Jan 2022 06:19:30 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1641813569;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=FV5WIRsqm0pwBXS3k6O6n4ImctAVE3Kzf+EYc9TxZLA=;
-        b=fasGYzbuIKaY0eO25rBseFO+AYfpuvgji5/Do1gyVtmDOZ1d48XkN8r376F0xvsNayHIyl
-        Sjn5Wq14oEjtsRT12ubWnUuLJBbhz1OdKMz/eNtWwH36EglvLTKAx5Kk8Im3tPAwJAMwq0
-        //U58uSD3HMsc6iv8zqYctlFWcChlNk=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-483-6NiW1TebPkG2o6uBcI2SJA-1; Mon, 10 Jan 2022 06:19:28 -0500
-X-MC-Unique: 6NiW1TebPkG2o6uBcI2SJA-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com [10.5.11.16])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id A1A4B1015DA0;
-        Mon, 10 Jan 2022 11:19:26 +0000 (UTC)
-Received: from raketa (unknown [10.40.192.203])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 9B9AB7B6C5;
-        Mon, 10 Jan 2022 11:19:24 +0000 (UTC)
-Date:   Mon, 10 Jan 2022 12:19:21 +0100
-From:   Maurizio Lombardi <mlombard@redhat.com>
-To:     Yang Yingliang <yangyingliang@huawei.com>
-Cc:     linux-kernel@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-scsi@vger.kernel.org, hch@lst.de, james.smart@broadcom.com,
-        martin.petersen@oracle.com
+        Mon, 10 Jan 2022 07:10:45 -0500
+Received: from dggpeml500022.china.huawei.com (unknown [172.30.72.53])
+        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4JXXcr4wndzZf4c;
+        Mon, 10 Jan 2022 20:07:08 +0800 (CST)
+Received: from dggpeml500017.china.huawei.com (7.185.36.243) by
+ dggpeml500022.china.huawei.com (7.185.36.66) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.20; Mon, 10 Jan 2022 20:10:42 +0800
+Received: from [10.174.178.174] (10.174.178.174) by
+ dggpeml500017.china.huawei.com (7.185.36.243) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.20; Mon, 10 Jan 2022 20:10:42 +0800
 Subject: Re: [PATCH -next] scsi: efct: don't use GFP_KERNEL under spin lock
-Message-ID: <20220110111921.GA91632@raketa>
+To:     Maurizio Lombardi <mlombard@redhat.com>
+CC:     <linux-kernel@vger.kernel.org>, <target-devel@vger.kernel.org>,
+        <linux-scsi@vger.kernel.org>, <hch@lst.de>,
+        <james.smart@broadcom.com>, <martin.petersen@oracle.com>
 References: <20220110111838.965480-1-yangyingliang@huawei.com>
+ <20220110111921.GA91632@raketa>
+From:   Yang Yingliang <yangyingliang@huawei.com>
+Message-ID: <ee058886-5bf0-db3e-7d78-8bc34bfd2440@huawei.com>
+Date:   Mon, 10 Jan 2022 20:10:41 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220110111838.965480-1-yangyingliang@huawei.com>
-User-Agent: Mutt/1.14.7 (f34d0909) (2020-08-29)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+In-Reply-To: <20220110111921.GA91632@raketa>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Originating-IP: [10.174.178.174]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ dggpeml500017.china.huawei.com (7.185.36.243)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Mon, Jan 10, 2022 at 07:18:38PM +0800, Yang Yingliang wrote:
-> +	spin_lock_irqsave(&node->els_ios_lock, flags);
-> +
->  	if (els) {
->  		/* initialize fields */
->  		els->els_retries_remaining = EFC_FC_ELS_DEFAULT_RETRIES;
+Hi,
 
-If the els pointer is NULL you will lock the spinlock and disable the interrupts
-for no reason, maybe you can just protect the list_add_tail()?
+On 2022/1/10 19:19, Maurizio Lombardi wrote:
+> On Mon, Jan 10, 2022 at 07:18:38PM +0800, Yang Yingliang wrote:
+>> +	spin_lock_irqsave(&node->els_ios_lock, flags);
+>> +
+>>   	if (els) {
+>>   		/* initialize fields */
+>>   		els->els_retries_remaining = EFC_FC_ELS_DEFAULT_RETRIES;
+> If the els pointer is NULL you will lock the spinlock and disable the interrupts
+> for no reason, maybe you can just protect the list_add_tail()?
+>
+> +spin_lock_irqsave(&node->els_ios_lock, flags);
+>   list_add_tail(&els->list_entry, &node->els_ios_list);
+> +spin_unlock_irqrestore(&node->els_ios_lock, flags);
+Yes, it's better, I will send a v2 later.
 
-+spin_lock_irqsave(&node->els_ios_lock, flags);
- list_add_tail(&els->list_entry, &node->els_ios_list);
-+spin_unlock_irqrestore(&node->els_ios_lock, flags);
-
-Maurizio
-
+Thanks,
+Yang
+>
+> Maurizio
+>
+> .
