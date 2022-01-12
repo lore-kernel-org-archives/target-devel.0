@@ -2,67 +2,91 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6B71C4332F
-	for <target-devel@archiver.kernel.org>; Tue, 11 Jan 2022 05:54:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DF62C433EF
+	for <target-devel@archiver.kernel.org>; Wed, 12 Jan 2022 19:30:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347264AbiAKFyy (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 11 Jan 2022 00:54:54 -0500
-Received: from mail-m2836.qiye.163.com ([103.74.28.36]:23724 "EHLO
-        mail-m2836.qiye.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231807AbiAKFyx (ORCPT
+        id S244289AbiALTak (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 12 Jan 2022 14:30:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60864 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1345485AbiALT3D (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 11 Jan 2022 00:54:53 -0500
-Received: from localhost.localdomain (unknown [218.94.118.90])
-        by mail-m2836.qiye.163.com (Hmail) with ESMTPA id 10C0EC00D6;
-        Tue, 11 Jan 2022 13:45:49 +0800 (CST)
-From:   mingzhe.zou@easystack.cn
-To:     martin.petersen@oracle.com
-Cc:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [PATCH] target: make sure the np under each tpg is unique
-Date:   Tue, 11 Jan 2022 13:45:48 +0800
-Message-Id: <20220111054548.19479-1-mingzhe.zou@easystack.cn>
-X-Mailer: git-send-email 2.17.1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
-        kWDxoPAgseWUFZKDYvK1lXWShZQUlCN1dZLVlBSVdZDwkaFQgSH1lBWUNPHhhWQk9JHRlMSB8ZHk
-        MfVRkRExYaEhckFA4PWVdZFhoPEhUdFFlBWVVLWQY+
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6PEk6TSo4NjIyDT8SMQwPKEw*
-        VjoKFAtVSlVKTU9KQ0xCQk9CT01NVTMWGhIXVRYSFRwBEx5VARQOOx4aCAIIDxoYEFUYFUVZV1kS
-        C1lBWUlKQ1VCT1VKSkNVQktZV1kIAVlBSk5MTTcG
-X-HM-Tid: 0a7e47abcf86841ekuqw10c0ec00d6
+        Wed, 12 Jan 2022 14:29:03 -0500
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8B58C03400E;
+        Wed, 12 Jan 2022 11:28:49 -0800 (PST)
+Received: by mail-pj1-x102c.google.com with SMTP id a1-20020a17090a688100b001b3fd52338eso5910689pjd.1;
+        Wed, 12 Jan 2022 11:28:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=PEnXAX+olmoKfZvXTGdewhEjU5UGuUJE4ReQqDTfiwY=;
+        b=FFi4PcEl+SPmSBJ+fUunrRZ1ZHIfaD/4VyfL+6v0VGpitoALJuhaScmTR3w2uBXa1w
+         m8bfjnRcFwrqwccjoDLb4UO08BYfD3wrb7zH6IgoVmvogt0366Q7MsED5id4jzaHT8jZ
+         ENMFupDO+CpVBqzFDKT93Qa7o3bUBFHZrf9qyBBMjsDWvTdYIimFdD2/gMJzzvZX9NDq
+         rmNw9sCSkRjulQ8xIUUj2nzAFYyj/2Hf2GvFNQ1izeRacZxicgsN4PR4AaLFBH0JG8qr
+         0DZR+z08ecpZx8IhwmhvqB9CAkXlEPIoKEPK/0UfaTXqvjgf/DZu2S/axdDKiAGycInF
+         P0bQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=PEnXAX+olmoKfZvXTGdewhEjU5UGuUJE4ReQqDTfiwY=;
+        b=iyBPyARV2zzhcn2XXWBKyXdKnjIz8VPPpI6ScMz9XtuUvYLKXd9y51Rz0ryWlcRbcq
+         9iS4JY01t9cOG43/ROI4KRMX2SlXslfJ7Wk+D8rddGDoeN3ACVOIUZGdnxSyb2Uxa1J6
+         n6t1wpQqLHp4tH2WtwRbBl3ZdT5uSweDzGAloeRaHJ2E7EOt88gonVYcb7hZ9+BEXFAt
+         9X7dFBNRmPU8j8cDt/8FR4iIRyTn1ODfSid5mYZH8yaj4svLaF5VvwOQwjGwt22eIBOv
+         3DsHKMZc57/qlQrT5eVGKd54abrK4/cfCa28NjxZYcWwH8wFmNSKUk0qOy1yjRbkmweV
+         KWfQ==
+X-Gm-Message-State: AOAM531AuiojyUFyswGQBxrTZoVs19MHLgGG3j4uNNNco9ANXSCSdLv8
+        Z+96pHQO4l2bW4Xt9u+r6rA=
+X-Google-Smtp-Source: ABdhPJzuc2ui2a6aGJRSU/SQqU161Mz8cxRnWt6fy7ED0LeNGlGWZNbBhQ1KsVQDaU5T3N08XL572A==
+X-Received: by 2002:a63:b811:: with SMTP id p17mr968806pge.81.1642015729548;
+        Wed, 12 Jan 2022 11:28:49 -0800 (PST)
+Received: from [10.69.44.239] ([192.19.223.252])
+        by smtp.gmail.com with ESMTPSA id rm4sm454316pjb.4.2022.01.12.11.28.48
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 12 Jan 2022 11:28:49 -0800 (PST)
+Message-ID: <881ba4aa-2dc6-b116-869f-0fa2ecfe326b@gmail.com>
+Date:   Wed, 12 Jan 2022 11:28:48 -0800
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.4.1
+Subject: Re: [PATCH -next v2] scsi: efct: don't use GFP_KERNEL under spin lock
+Content-Language: en-US
+To:     Yang Yingliang <yangyingliang@huawei.com>,
+        linux-kernel@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-scsi@vger.kernel.org
+Cc:     hch@lst.de, james.smart@broadcom.com, martin.petersen@oracle.com
+References: <20220111012441.3232527-1-yangyingliang@huawei.com>
+From:   James Smart <jsmart2021@gmail.com>
+In-Reply-To: <20220111012441.3232527-1-yangyingliang@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: ZouMingzhe <mingzhe.zou@easystack.cn>
+On 1/10/2022 5:24 PM, Yang Yingliang wrote:
+> GFP_KERNEL/GFP_DMA can't be used under a spin lock, according the
+> comment of els_ios_lock, it's used to protect els ios list, so we
+> can move down the spin lock to avoid using this flag under the lock.
+> 
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Fixes: 8f406ef72859 ("scsi: elx: libefc: Extended link Service I/O handling")
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+> ---
+> v2:
+>    move up unlock to just protect list_add_tail()
+> ---
+>   drivers/scsi/elx/libefc/efc_els.c | 8 ++------
+>   1 file changed, 2 insertions(+), 6 deletions(-)
+> 
 
-iscsit_tpg_check_network_portal() has two-layer for loop, and
-should return true When a match is found. Then, the tpg loop
-will still continue after break the tpg_np loop. If this tpg_np
-is not the last, the match value will be changed.
+Looks fine.
 
-This patch break all loops after finding a match, and make sure
-the np under each tpg is unique.
+Reviewed-by: James Smart <jsmart2021@gmail.com>
 
-Signed-off-by: ZouMingzhe <mingzhe.zou@easystack.cn>
----
- drivers/target/iscsi/iscsi_target_tpg.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/target/iscsi/iscsi_target_tpg.c b/drivers/target/iscsi/iscsi_target_tpg.c
-index 8075f60fd02c..2d5cf1714ae0 100644
---- a/drivers/target/iscsi/iscsi_target_tpg.c
-+++ b/drivers/target/iscsi/iscsi_target_tpg.c
-@@ -443,6 +443,9 @@ static bool iscsit_tpg_check_network_portal(
- 				break;
- 		}
- 		spin_unlock(&tpg->tpg_np_lock);
-+
-+		if (match)
-+			break;
- 	}
- 	spin_unlock(&tiqn->tiqn_tpg_lock);
- 
--- 
-2.17.1
-
+-- james
