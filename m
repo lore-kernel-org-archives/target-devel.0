@@ -2,79 +2,78 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DE72C4321E
-	for <target-devel@archiver.kernel.org>; Tue, 25 Jan 2022 05:44:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD462C433F5
+	for <target-devel@archiver.kernel.org>; Tue, 25 Jan 2022 05:44:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235957AbiAYFna (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 25 Jan 2022 00:43:30 -0500
-Received: from mx0a-00069f02.pphosted.com ([205.220.165.32]:45318 "EHLO
+        id S231635AbiAYFoC (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 25 Jan 2022 00:44:02 -0500
+Received: from mx0a-00069f02.pphosted.com ([205.220.165.32]:54778 "EHLO
         mx0a-00069f02.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S235474AbiAYFlH (ORCPT
+        by vger.kernel.org with ESMTP id S235525AbiAYFlT (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 25 Jan 2022 00:41:07 -0500
-Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20P1VRwV019388;
-        Tue, 25 Jan 2022 05:41:04 GMT
+        Tue, 25 Jan 2022 00:41:19 -0500
+Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20P1i5Yh016125;
+        Tue, 25 Jan 2022 05:41:08 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type : content-transfer-encoding; s=corp-2021-07-09;
- bh=2NVdr37+zcx63HS62l8fb5PFSCRtjRBWuNvmVX0Ujxk=;
- b=TAhUWZNBrl2uDZAgPKKzOqn/nz7pno1fj/yGGDyj82ifW9qK8esd1KtZh+ikrHZeJtOX
- u6NZ2NQ3lRnfXQauUi2kXWdAvGOAoTLnYbGPuwWElPKYOudRKECanWNvUqoyTPcVcSW7
- R+V48I4L3zkuNQuAqG154F8PpKW1lCATH6d8zMxinbc6nljpO1WyCoBjp00YQctn3Twk
- Dvj29ZjEruLRAoNGDApT2hUyo3jE7hlgyO4Fd5pICynCqofJsUQ/AA1mY/cLlfuRztBp
- P99nUBUNSPU37V1g/80ZbeH/in22eVWgy9xV6jtgDMt1WkyVkw3seibZvqfMd7uSzYWh nQ== 
+ bh=N2EF81Bf5CfQnrO58+azCItXag2lwc0+0KRtkDVi7cg=;
+ b=kGLJwlyGLP/skLCo53TLQXhRP6dfmhA6Eb0lVKNNOmkw64R9cnd5OLexwDgpf8lA/Can
+ lKJuLCxewXiJ1zd0KkH5MTifhP44Pk8Pu/pYGVOa04KrakTRxa2MNQp3u45F6NGCBpmb
+ vld7e3dLl5ZVWeiiIgAIS1fIwfd8VVQQyAv5nJxczfUR/tXCjdax2DwdlWNVseUU6gEM
+ xFoB0ceY4fH8oy5NZ3J0ABTGqob4Hdk1dSjfd4K894tP/e/90ChtXmjH5e88BT/U7EAX
+ 9XqqqbVTQZd5vnnvRRQvrfhBJrp42FeGX51x9gEUUAYT8389TW7xiOBOiV8hCScFZ5I1 fA== 
 Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
-        by mx0b-00069f02.pphosted.com with ESMTP id 3dsy7asxqj-1
+        by mx0b-00069f02.pphosted.com with ESMTP id 3dsxvfhw4h-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 25 Jan 2022 05:41:04 +0000
+        Tue, 25 Jan 2022 05:41:08 +0000
 Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
-        by userp3030.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 20P5euJw181683;
-        Tue, 25 Jan 2022 05:41:03 GMT
+        by userp3030.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 20P5euTq181698;
+        Tue, 25 Jan 2022 05:41:07 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-        by userp3030.oracle.com with ESMTP id 3dr71x1sry-1
+        by userp3030.oracle.com with ESMTP id 3dr71x1stm-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 25 Jan 2022 05:41:03 +0000
+        Tue, 25 Jan 2022 05:41:07 +0000
 Received: from userp3030.oracle.com (userp3030.oracle.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 20P5evOd181790;
-        Tue, 25 Jan 2022 05:41:03 GMT
+        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 20P5evOj181790;
+        Tue, 25 Jan 2022 05:41:06 GMT
 Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
-        by userp3030.oracle.com with ESMTP id 3dr71x1sgc-7;
-        Tue, 25 Jan 2022 05:41:02 +0000
+        by userp3030.oracle.com with ESMTP id 3dr71x1sgc-10;
+        Tue, 25 Jan 2022 05:41:06 +0000
 From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     mingzhe.zou@easystack.cn
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: Re: [PATCH] target: make sure the np under each tpg is unique
-Date:   Tue, 25 Jan 2022 00:40:43 -0500
-Message-Id: <164308671269.32373.14354011382688338927.b4-ty@oracle.com>
+To:     linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        Yang Yingliang <yangyingliang@huawei.com>,
+        target-devel@vger.kernel.org
+Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>, hch@lst.de,
+        james.smart@broadcom.com
+Subject: Re: [PATCH -next v2] scsi: efct: don't use GFP_KERNEL under spin lock
+Date:   Tue, 25 Jan 2022 00:40:46 -0500
+Message-Id: <164308671269.32373.10524301439896995179.b4-ty@oracle.com>
 X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220111054742.19582-1-mingzhe.zou@easystack.cn>
-References: <20220111054742.19582-1-mingzhe.zou@easystack.cn>
+In-Reply-To: <20220111012441.3232527-1-yangyingliang@huawei.com>
+References: <20220111012441.3232527-1-yangyingliang@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: AMeu2RWt8jbb6uV7MZa_uvvL7e76ivz7
-X-Proofpoint-ORIG-GUID: AMeu2RWt8jbb6uV7MZa_uvvL7e76ivz7
+X-Proofpoint-GUID: CY8ERybcboHaOPIs-nApS0Mb3ADNm0iq
+X-Proofpoint-ORIG-GUID: CY8ERybcboHaOPIs-nApS0Mb3ADNm0iq
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, 11 Jan 2022 13:47:42 +0800, mingzhe.zou@easystack.cn wrote:
+On Tue, 11 Jan 2022 09:24:41 +0800, Yang Yingliang wrote:
 
-> From: ZouMingzhe <mingzhe.zou@easystack.cn>
+> GFP_KERNEL/GFP_DMA can't be used under a spin lock, according the
+> comment of els_ios_lock, it's used to protect els ios list, so we
+> can move down the spin lock to avoid using this flag under the lock.
 > 
-> iscsit_tpg_check_network_portal() has two-layer for loop, and
-> should return true When a match is found. Then, the tpg loop
-> will still continue after break the tpg_np loop. If this tpg_np
-> is not the last, the match value will be changed.
 > 
-> [...]
 
 Applied to 5.17/scsi-fixes, thanks!
 
-[1/1] target: make sure the np under each tpg is unique
-      https://git.kernel.org/mkp/scsi/c/a861790afaa8
+[1/1] scsi: efct: don't use GFP_KERNEL under spin lock
+      https://git.kernel.org/mkp/scsi/c/61263b3a11a2
 
 -- 
 Martin K. Petersen	Oracle Linux Engineering
