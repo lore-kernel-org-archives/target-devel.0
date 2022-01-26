@@ -2,59 +2,68 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D578C4332F
-	for <target-devel@archiver.kernel.org>; Tue, 25 Jan 2022 09:26:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4877C2BA4C
+	for <target-devel@archiver.kernel.org>; Wed, 26 Jan 2022 20:07:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348251AbiAYJ0G (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 25 Jan 2022 04:26:06 -0500
-Received: from mail.24vie.pl ([217.61.120.50]:39146 "EHLO mail.24vie.pl"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1456362AbiAYJK7 (ORCPT <rfc822;target-devel@vger.kernel.org>);
-        Tue, 25 Jan 2022 04:10:59 -0500
-Received: by mail.24vie.pl (Postfix, from userid 1001)
-        id C2515A1FC0; Tue, 25 Jan 2022 09:10:49 +0000 (GMT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=24vie.pl; s=mail;
-        t=1643101850; bh=F7xWRdlpFQ24umbJm+VOTepUBB16dhzzDWjrh2jn0x4=;
-        h=Date:From:To:Subject:From;
-        b=fan4mztX2Fxj3bZe+4XH6rmXHN3lLfC4gRT1NNvfFsZD7iPx3tiqEAV0st+RFgMwc
-         OwxujEHHGMk1Eg5zo5PGHaYy/9VxsWvlEQHfh8hN7eoywKJfwjXdw5xuypx9Lra+mc
-         GBBk/nQ7Yk44Wr27zkI8BBw5T7f9i6oO3itoYEKRmuoEbT8fI9020e3+PiNxKgI/YF
-         R6mLr8BTa0DArDIFmnl+Ig9b3y/QnJnaxm118HBtRrMTSm/f1bYKlbTmcfMw4A3i2Q
-         JcODTXV/eOvb1t23wiwb5HrPWNWGFNSPCkrh/8LtZZ3uO+JsEsiGZek0Sw9peIRGki
-         5ooobbvNYwd6Q==
-Received: by mail.24vie.pl for <target-devel@vger.kernel.org>; Tue, 25 Jan 2022 09:10:48 GMT
-Message-ID: <20220125074500-0.1.45.bzuv.0.q69hcu1rbw@24vie.pl>
-Date:   Tue, 25 Jan 2022 09:10:48 GMT
-From:   =?UTF-8?Q? "Przemys=C5=82aw_Wr=C3=B3blewski" ?= 
-        <przemyslaw.wroblewski@24vie.pl>
-To:     <target-devel@vger.kernel.org>
-Subject: Fotowoltaika- propozycja instalacji
-X-Mailer: mail.24vie.pl
+        id S229862AbiAZUHe (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 26 Jan 2022 15:07:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53386 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229853AbiAZUHd (ORCPT
+        <rfc822;target-devel@vger.kernel.org>);
+        Wed, 26 Jan 2022 15:07:33 -0500
+X-Greylist: delayed 369 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 26 Jan 2022 12:07:33 PST
+Received: from afullo.net (160.16.69.32.v6.sakura.ne.jp [IPv6:2001:e42:102:1510:160:16:69:32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 75729C06161C
+        for <target-devel@vger.kernel.org>; Wed, 26 Jan 2022 12:07:33 -0800 (PST)
+Received: by afullo.net (Postfix, from userid 48)
+        id 45ABC144F7D; Thu, 27 Jan 2022 05:01:22 +0900 (JST)
+To:     "?? You have unread messages from Andrea (2)! Click Here:
+        https://clck.ru/apExp?nwfe2 ??" <target-devel@vger.kernel.org>
+Subject: =?ISO-2022-JP?B?Pz8gWW91IGhhdmUgdW5yZWFkIG1lc3NhZ2VzIGZyb20gQW5kcmVhICgyKSEgQ2xpY2sgSGVyZTogaHR0cHM6Ly9jbGNrLnJ1L2FwRXhwP253ZmUyID8/GyRCJDUkXiE/JSIlSCVqJSgkIiRVJG06Tk1RQWs4fSE/IUo8K0YwSlY/LiFLOk5NUSUoJXMlSCVqITwhJiQqTGQkJDlnJG8kOyQiJGokLCRIJCYkNCQ2JCQkXiQ5GyhC?=
+X-PHP-Originating-Script: 501:class-phpmailer.php
+Date:   Wed, 26 Jan 2022 20:01:22 +0000
+From:   =?ISO-2022-JP?B?GyRCJSIlSCVqJSgkIiRVJG06Tk1RQWs4fRsoQg==?= 
+        <saiyo@afullo.com>
+Message-ID: <1c0ff377bf92118b4742c6d3ef3f94c3@afullo.net>
+X-Mailer: PHPMailer 5.2.14 (https://github.com/PHPMailer/PHPMailer)
+X-WPCF7-Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-2022-JP
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Dzie=C5=84 dobry,
-=20
-Czy rozwa=C5=BCali Pa=C5=84stwo monta=C5=BC systemu fotowoltaicznego?
-=20
-Instalacja fotowoltaiczna jest najlepszym sposobem na obni=C5=BCenie wyso=
-ko=C5=9Bci rachunk=C3=B3w za pr=C4=85d (pozostaj=C4=85 tylko op=C5=82aty =
-sta=C5=82e) i zabezpieczenie si=C4=99 przed rosn=C4=85cymi cenami energii=
- elektrycznej. Jest to w pe=C5=82ni odnawialne i bezemisyjne =C5=BAr=C3=B3=
-d=C5=82o energii, dzi=C4=99ki czemu przyczyniamy si=C4=99 do ochrony =C5=9B=
-rodowiska naturalnego.
-=20
-Dzia=C5=82amy od wielu lat na rynku energetycznym. Przygotujemy projekt, =
-wycen=C4=99 oraz kompleksowo wykonamy i zg=C5=82osimy realizacj=C4=99 do =
-zak=C5=82adu energetycznego.=20
-=20
-Czy chc=C4=85 Pa=C5=84stwo pozna=C4=87 nasz=C4=85 propozycj=C4=99? =20
+?? You have unread messages from Andrea (2)! Click Here: https://clck.ru/apExp?nwfe2 ??さま
 
+このたびはエントリーいただき、ありがとうございます。
+後ほど担当者よりご連絡いたします。
+万が一、1週間以上ご連絡がない場合、
+お手数ですが再度お問い合わせくださいませ。
 
-Pozdrawiam,
-Przemys=C5=82aw Wr=C3=B3blewski
+--------
+以下の内容でエントリーを受け付けました。
+
+お名前：　?? You have unread messages from Andrea (2)! Click Here: https://clck.ru/apExp?nwfe2 ??
+お電話：　778794320712
+メールアドレス：　target-devel@vger.kernel.org
+希望職種：　営業
+備考・ご質問等：　1bzrmq4s
+
+--
+
+￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣
+WEB・出版物・広告の、企画・編集・制作
+株式会社アトリエあふろ
+
+　saiyo@afullo.com
+　www.afullo.co.jp
+
+[TOKYO head office]
+107-0062 東京都港区南青山5-4-35-902
+TEL 03-6419-7399　FAX 03-6419-7395
+[NAGOYA atelier & studio]
+460-0002 名古屋市中区丸の内2-3-25 MIZビル7F
+TEL 052-265-7353　FAX.052-265-7293
+＿＿＿＿＿＿＿＿＿＿＿＿＿Atelier Afullo
+
