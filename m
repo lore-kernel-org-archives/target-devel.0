@@ -2,34 +2,34 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37143C433EF
-	for <target-devel@archiver.kernel.org>; Thu,  3 Feb 2022 20:37:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 200FBC433EF
+	for <target-devel@archiver.kernel.org>; Thu,  3 Feb 2022 20:38:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355137AbiBCUh0 (ORCPT
+        id S1355585AbiBCUiF (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 3 Feb 2022 15:37:26 -0500
-Received: from ams.source.kernel.org ([145.40.68.75]:37776 "EHLO
-        ams.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354659AbiBCUfY (ORCPT
+        Thu, 3 Feb 2022 15:38:05 -0500
+Received: from dfw.source.kernel.org ([139.178.84.217]:42168 "EHLO
+        dfw.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1355588AbiBCUgD (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 3 Feb 2022 15:35:24 -0500
+        Thu, 3 Feb 2022 15:36:03 -0500
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id A2FEEB835AA;
-        Thu,  3 Feb 2022 20:35:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 85551C340EB;
-        Thu,  3 Feb 2022 20:35:19 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 3E3E56009B;
+        Thu,  3 Feb 2022 20:36:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C333DC340E8;
+        Thu,  3 Feb 2022 20:36:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1643920520;
+        s=k20201202; t=1643920562;
         bh=/T57QsHEXzWRyz9ngAgfSuXzq9rnlQ9xNPWF7J/q3zk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=SSXE5apm9X96DQpbtqWe0X08Msft7I1BMFUXfwDSfnvyaEFAU3++JH+wOVq0ood1m
-         FsvIN4R461XtqTWUu5cPChSsY4bAIr/7Xf6SgVB15c+X/3cGmT0itRsIsmzUua0h1S
-         1vdoAXedUrlrhsek0ky33GHKs7JytZxk0g+dlsSuugHX08/dp1YGcilkQ4V/kjBEu6
-         0gjqmXihqYFH0iWo0WbwSZg1EhZZFU+M0jYuuWkiH/Lgl8ySWB6Vffwze9cVISehbg
-         vbifI1QbC+Xn+wpq3JpOHVsb4cJ+Wz2uqEFl2OzFH7rgpWwDhl6k/jA9sZnb/KPhuW
-         61MRLRtPgkYZQ==
+        b=ZVQrQurxo6xkuE5K1R67cYpF93zNBIFeUOuPwb+SO989o/2o/YJOxmYoIhVBC4Vxq
+         OhRWo1PAlkqOE5PTSyeRq/6K+frg9Byvhl2wj4gca+oMpF2i3X3tmoIAL0meDugBXD
+         ZjA1zVf6eD3z3yDjzRdz+5e6QmLqRTdH656/GlAYnMfsnsThRqNQBAy2EAik3NL1DC
+         tOhQZJOrqTYJNrFwmzLG4lsa4JTVUYcqJ0C30ePJVj+39Y6jUwBVX1iXLorjIBTV+S
+         UlfErW60tcBVxVDH9clMCTYAHDt9kZJCfZuRBzK+458uvR1PYk1HVGq1OmqL9jFTfR
+         O+5sovS3936DQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     ZouMingzhe <mingzhe.zou@easystack.cn>,
@@ -37,12 +37,12 @@ Cc:     ZouMingzhe <mingzhe.zou@easystack.cn>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 13/25] scsi: target: iscsi: Make sure the np under each tpg is unique
-Date:   Thu,  3 Feb 2022 15:34:34 -0500
-Message-Id: <20220203203447.3570-13-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 09/15] scsi: target: iscsi: Make sure the np under each tpg is unique
+Date:   Thu,  3 Feb 2022 15:35:39 -0500
+Message-Id: <20220203203545.3879-9-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220203203447.3570-1-sashal@kernel.org>
-References: <20220203203447.3570-1-sashal@kernel.org>
+In-Reply-To: <20220203203545.3879-1-sashal@kernel.org>
+References: <20220203203545.3879-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
