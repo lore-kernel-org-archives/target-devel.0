@@ -2,37 +2,34 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7578C433F5
-	for <target-devel@archiver.kernel.org>; Thu,  3 Feb 2022 20:31:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14458C4332F
+	for <target-devel@archiver.kernel.org>; Thu,  3 Feb 2022 20:35:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354373AbiBCUbt (ORCPT
+        id S1354337AbiBCUfa (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 3 Feb 2022 15:31:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57706 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354203AbiBCUbL (ORCPT
+        Thu, 3 Feb 2022 15:35:30 -0500
+Received: from dfw.source.kernel.org ([139.178.84.217]:39656 "EHLO
+        dfw.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1354466AbiBCUdg (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 3 Feb 2022 15:31:11 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1084C06177D;
-        Thu,  3 Feb 2022 12:30:59 -0800 (PST)
+        Thu, 3 Feb 2022 15:33:36 -0500
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 6D0DCB835A3;
-        Thu,  3 Feb 2022 20:30:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C4E3C340E8;
-        Thu,  3 Feb 2022 20:30:56 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 76C3061A56;
+        Thu,  3 Feb 2022 20:33:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05EE6C340E8;
+        Thu,  3 Feb 2022 20:33:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1643920257;
+        s=k20201202; t=1643920415;
         bh=/T57QsHEXzWRyz9ngAgfSuXzq9rnlQ9xNPWF7J/q3zk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=jrI7CHBdPFVcKKxETuBIvpbNx+f526nfhYSNNuckE7OKpohhvmXKh8KQYBmKVF7w6
-         /gj5J+V2X8Sy5NbY96DRgUE0ED/c1N7+DfAsfq7cdm4hjlDuG8zd90XC0WqZNX9eeh
-         gKO7K+TyPDZEbRsLXTkrtJSsOO8qoKa1e57NArY6vAgHtCND8Ra/Pw4HcDASdEELSY
-         DLVJbZYFjgU3psD9TDcK+3ZT6kY+j9y/3hrv7JQEsle+5yD1hZK5QjaqqO2dUBVCVB
-         PyqkwINmCewFig7HWiGR9+ao476ccNGH/Nau/GtuwORC4c7yMpzvwjgfCnuYBkFXFk
-         PHO2wud5CgDWg==
+        b=KBrtZX0mfbUpDovOGXd6uVvXKLe3P2g8AFZgAPQKqYmuXSrO9Iwutni1GcHIfE/qK
+         DqyZpYRNQbUc9sdX3rc7tibq/I/lEpC0UwKbNRr0DcnHOMlttDQ/6zAh359AwaLRFE
+         RS54UE6eaH5z9YqvzfrCO37CmlF017jbj8Nqow0U7j50fpbjmqjitx3F/nWprsF3pG
+         KxQORtL0qXPY/7T3q7IcT+M8aKRCXSS4sfY7wxY+/ufQKYEzX8Sn4DEwCeOQheI5OH
+         q5+U0j1/NtYmbwfpSLeJuJkkaAF2Oa/538mqt0Xj/OQjiK7UMXuEz9Np5nM+iMpRiE
+         lwHc7xIFTRgCA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     ZouMingzhe <mingzhe.zou@easystack.cn>,
@@ -40,12 +37,12 @@ Cc:     ZouMingzhe <mingzhe.zou@easystack.cn>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.16 26/52] scsi: target: iscsi: Make sure the np under each tpg is unique
-Date:   Thu,  3 Feb 2022 15:29:20 -0500
-Message-Id: <20220203202947.2304-26-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 23/41] scsi: target: iscsi: Make sure the np under each tpg is unique
+Date:   Thu,  3 Feb 2022 15:32:27 -0500
+Message-Id: <20220203203245.3007-23-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220203202947.2304-1-sashal@kernel.org>
-References: <20220203202947.2304-1-sashal@kernel.org>
+In-Reply-To: <20220203203245.3007-1-sashal@kernel.org>
+References: <20220203203245.3007-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
