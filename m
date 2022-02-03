@@ -2,34 +2,37 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C062CC433FE
-	for <target-devel@archiver.kernel.org>; Thu,  3 Feb 2022 20:39:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE006C4321E
+	for <target-devel@archiver.kernel.org>; Thu,  3 Feb 2022 20:42:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355188AbiBCUjV (ORCPT
+        id S1354445AbiBCUmL (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 3 Feb 2022 15:39:21 -0500
-Received: from ams.source.kernel.org ([145.40.68.75]:39050 "EHLO
-        ams.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1355084AbiBCUhG (ORCPT
+        Thu, 3 Feb 2022 15:42:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59000 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1355657AbiBCUkj (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 3 Feb 2022 15:37:06 -0500
+        Thu, 3 Feb 2022 15:40:39 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3183C0619C6;
+        Thu,  3 Feb 2022 12:36:47 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 88526B835BE;
-        Thu,  3 Feb 2022 20:37:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 610A4C340E8;
-        Thu,  3 Feb 2022 20:37:02 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 84CE960C70;
+        Thu,  3 Feb 2022 20:36:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CFA7C36AE2;
+        Thu,  3 Feb 2022 20:36:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1643920623;
-        bh=M+7Y0vn+BxRton0UAEjJx00c6EcBPBpbms0IRen0pFg=;
+        s=k20201202; t=1643920607;
+        bh=sRCeHRUcEVzofXBICCRpX95loDW+YUQQzIAVjutA1HM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=CKtd15nMNuRtXDSVw1TpyJbbjhnUrfU7Gl8R+050vLavekGBEiyGR9SSQ/8Op1IY5
-         VbtW5T86vd9SV85Kprg21aeNZZ5sx9CX5AMhVneZNPRpXspz5C7BaZoIOrUZvj0HsZ
-         1f9A7JUOCeHQO4kaKXfJNodnTF6nu6sFIeTxjimwje384wLYj1qZ+Kd9TrWzZTDlkm
-         SYM5ejlsvGq2iP8YcN84GMmGPSkCqEqVBDzRjFl/BLqVU9tK5THRSyKOTzcB/uEpdy
-         MMQK+FicRhNRMZ41yKy/0s6cTSE+oye0hTRDO0Hlg+NTB3C9CdD2FB/SLemnwUy0zh
-         7a4BtWuvhRw6A==
+        b=hNbjxonrKRAfS/bChs26hwSsC3ttEuAablgJnqP2Q7s0aji3GOLyA9QFG1NJPooqy
+         kVKiNrEJq3rIZTKPBFHvyWHDUYjV8AlS/rMTTEEwKBsMh4xpjm9fNKGNneTK2hJ0Cf
+         omZjRMSJq8mOdFiSzzoB5pMizLaU+aXlEuXvC58Q4fgElCc0fuyTa6AQ3jcWLHpB2w
+         +hMXrNhdAEc9NLwTias6bP4D1G4wwmgbeBTbiFJbD9e/T0jvMydnblmWjniFzScEI8
+         axtTPxPmLT06Hp6PbQgKyifGP1gx2rYbrZ/Tio9AVftN+CjR2FYXbArLf2kP4Hgi46
+         9QYRios9oQb7A==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     ZouMingzhe <mingzhe.zou@easystack.cn>,
@@ -37,12 +40,12 @@ Cc:     ZouMingzhe <mingzhe.zou@easystack.cn>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 6/7] scsi: target: iscsi: Make sure the np under each tpg is unique
-Date:   Thu,  3 Feb 2022 15:36:50 -0500
-Message-Id: <20220203203651.5158-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 7/9] scsi: target: iscsi: Make sure the np under each tpg is unique
+Date:   Thu,  3 Feb 2022 15:36:31 -0500
+Message-Id: <20220203203633.4685-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220203203651.5158-1-sashal@kernel.org>
-References: <20220203203651.5158-1-sashal@kernel.org>
+In-Reply-To: <20220203203633.4685-1-sashal@kernel.org>
+References: <20220203203633.4685-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -73,10 +76,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+)
 
 diff --git a/drivers/target/iscsi/iscsi_target_tpg.c b/drivers/target/iscsi/iscsi_target_tpg.c
-index 761b065a40bb3..b2a76ecb5789c 100644
+index 16e7516052a44..2b78843091a2e 100644
 --- a/drivers/target/iscsi/iscsi_target_tpg.c
 +++ b/drivers/target/iscsi/iscsi_target_tpg.c
-@@ -452,6 +452,9 @@ static bool iscsit_tpg_check_network_portal(
+@@ -448,6 +448,9 @@ static bool iscsit_tpg_check_network_portal(
  				break;
  		}
  		spin_unlock(&tpg->tpg_np_lock);
