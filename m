@@ -2,208 +2,153 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70D29C433F5
-	for <target-devel@archiver.kernel.org>; Tue,  8 Feb 2022 03:46:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28FC2C433EF
+	for <target-devel@archiver.kernel.org>; Tue,  8 Feb 2022 06:12:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238794AbiBHDq0 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 7 Feb 2022 22:46:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59800 "EHLO
+        id S1346969AbiBHGMg (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 8 Feb 2022 01:12:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57070 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230090AbiBHDqX (ORCPT
+        with ESMTP id S1346804AbiBHGMf (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 7 Feb 2022 22:46:23 -0500
-Received: from out30-131.freemail.mail.aliyun.com (out30-131.freemail.mail.aliyun.com [115.124.30.131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1704C0401DC;
-        Mon,  7 Feb 2022 19:46:21 -0800 (PST)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R111e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04423;MF=kanie@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0V3uh.5F_1644291974;
-Received: from localhost(mailfrom:kanie@linux.alibaba.com fp:SMTPD_---0V3uh.5F_1644291974)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Tue, 08 Feb 2022 11:46:19 +0800
-From:   Guixin Liu <kanie@linux.alibaba.com>
-To:     bostroesser@gmail.com, martin.petersen@oracle.com
-Cc:     xiaoguang.wang@linux.alibaba.com, xlpang@linux.alibaba.com,
+        Tue, 8 Feb 2022 01:12:35 -0500
+Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60F96C0401F4
+        for <target-devel@vger.kernel.org>; Mon,  7 Feb 2022 22:12:34 -0800 (PST)
+Received: by mail-pf1-x42b.google.com with SMTP id i30so17115115pfk.8
+        for <target-devel@vger.kernel.org>; Mon, 07 Feb 2022 22:12:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=yWSVf8pbp0RLvS5feKysE3VKtu9J4rvhM+KTpk9qrQU=;
+        b=RWsRxyFyvyBYavICh4sWDRq4hFtsEElxduscRcl85/r8UOE0dw2Nlb0AOk5bEGU3lg
+         DkZflRcmok1YGuVYCzYE45ulO5ZJ698Fb7Gjl8BGpz6voNJ8n+PG8SLaUKoo24urmeC9
+         2rz+93DgZMa0q+9w1e6CvVgGAFHFYrTTnYkSg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=yWSVf8pbp0RLvS5feKysE3VKtu9J4rvhM+KTpk9qrQU=;
+        b=FC/+VT0CA4JkGf7bOWDAKW9cIrmE/2VLJBZqpQ1ZwFvGrWRu4BMmBjCZ00Tog+55MK
+         ZReZlPxXTicaTQ4q5+BbSbQmzRluQ1R+YDIPP9e+AphZ2UNp3xAbl2xwNSG908ItbtFZ
+         DX+LEjFYDXZKsMugIl7ghfdGL+97kWtInjIvOfYY0gh62klGuA+GTn2VDA1v3Q6/iJPI
+         xwCCQgHdzHYEG2P+zHe8yAKsBwcuEjusLTyFFPcIWciEQzJZidfhZF5SoysHooauw6rZ
+         kDgYG0Ru81YZNewFNDUprOgFQv0aUia+6MsHuhysj9Ur9uEMjEEm+TDAaCdcgrewwB3+
+         Tr1g==
+X-Gm-Message-State: AOAM531o18abd1zMJtdOxWYhiVnuKslriCC0p+mFqbj83ImgKJumD4CW
+        0TUuCxnqSEhoZDQ7YjQrc9uXtTEicfKIaA==
+X-Google-Smtp-Source: ABdhPJxMZHBfADJf5rumQgSBE2gS1uUgJUBmaG65f5WBVQCEbETLwB32tdutR63nj4k6vRzs4MCykQ==
+X-Received: by 2002:a63:5226:: with SMTP id g38mr2349009pgb.620.1644300753875;
+        Mon, 07 Feb 2022 22:12:33 -0800 (PST)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+        by smtp.gmail.com with ESMTPSA id a17sm1302594pju.15.2022.02.07.22.12.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Feb 2022 22:12:33 -0800 (PST)
+From:   Kees Cook <keescook@chromium.org>
+To:     Michael Cyr <mikecyr@linux.ibm.com>
+Cc:     Kees Cook <keescook@chromium.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Tyrel Datwyler <tyreld@linux.ibm.com>,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: target: tcmu: Make cmd_ring_size changeable via configfs.
-Date:   Tue,  8 Feb 2022 11:46:14 +0800
-Message-Id: <1644291974-73531-1-git-send-email-kanie@linux.alibaba.com>
-X-Mailer: git-send-email 1.8.3.1
+        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: [PATCH] scsi: ibmvscsis: Silence -Warray-bounds warning
+Date:   Mon,  7 Feb 2022 22:12:31 -0800
+Message-Id: <20220208061231.3429486-1-keescook@chromium.org>
+X-Mailer: git-send-email 2.30.2
+MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3327; h=from:subject; bh=/IFLfs1Idemy5ZGqf/yG83q6j/a9J08ZqJuMOeTGsMc=; b=owEBbQKS/ZANAwAKAYly9N/cbcAmAcsmYgBiAgnPuZwn6owIovK4j5/iRsH/3BYZhyUfQIj6fwJ5 88HlxfyJAjMEAAEKAB0WIQSlw/aPIp3WD3I+bhOJcvTf3G3AJgUCYgIJzwAKCRCJcvTf3G3AJpBFD/ 9fpNqNpzwfTSYBWn11FjpJwFuNAFKT4TKK39GQ0i7wMXrhdsnlmfxGsSVAihkLaBhDuM4U+I6C3IWq SKIf4/3YhmuOY3zpOP5mR89k8A+a75Dxc1ySlhMEDgZp0PqyN/CnAuasvO0RoV5r2PqzOibb5R16Sd 6+ZfpUpagXYYLM9iEfpi9fH6539iQ03hnfedEYcnkW/r4Q6jeyIpjhs6oK4UKrgZj1RxJWDqTTDu63 lu7UBWo4m0OHQocaQxhH63xAhRLM+Zyc6uu3VS08yLprlo8PTEQcZZCa7YZhKhwtrDyfkgyH3K1oKr QPUYVEsKyoGi+UazuVQAp5QNRA9fHRXmyKGAFVNlzRKQkyWrVGAsP8Kd80Z/zMMZTcM5cWYZzBzamw m6AyzSoYBaAmkjyOxOdVurN5YrFJ1Bmrzhl6WEjSduTt41LWAn66BCutY9bJvjKD0lcHZ/mbBxWZam rcTEFdaWxa/pc3Af+dWk50AKGQsr9B5rQcb7+Uz4f7mcor+30QQiBSxfr1/4+dz4VAeA70PRvxP8YR vcdSQSwIQ+xbEeULJ69Zm7S4SNhOtduIy9fUjXneFuBHXyQzN23Nn9rz8vwqKFYm7Kpgnem/l8fOUs 5xUAvVR6eKrYc0rHSMenoo+wfC0fMhbvZ4eIgmi4F9bpcYv4u+YPY6OzYIhA==
+X-Developer-Key: i=keescook@chromium.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Make cmd_ring_size changeable similar to the way it is done for
-max_data_area_mb, the reason is that our tcmu client will create
-thousands of tcmu instances, and this will consume lots of mem with
-default 8Mb cmd ring size for every backstore.
+Instead of doing a cast to storage that is too small, add a union for
+the high 64 bits. Silences the warnings under -Warray-bounds:
 
-One can change the value by typing:
-    echo "cmd_ring_size_mb=N" > control
-The "N" is a integer between 1 to 8, if set 1, the cmd ring can hold
-about 6k cmds(tcmu_cmd_entry about 176 byte) at least.
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c: In function 'ibmvscsis_send_messages':
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:1934:44: error: array subscript 'struct viosrp_crq[0]' is partly outside array bounds of 'u64[1]' {aka 'long long unsigned int[1]'} [-Werror=array-bounds]
+ 1934 |                                         crq->valid = VALID_CMD_RESP_EL;
+      |                                            ^~
+drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:1875:13: note: while referencing 'msg_hi'
+ 1875 |         u64 msg_hi = 0;
+      |             ^~~~~~
 
-The value is printed when doing:
-    cat info
-In addition, a new readonly attribute 'cmd_ring_size_mb' returns the
-value in read.
+There is no change to the resulting binary instructions.
 
-Signed-off-by: Guixin Liu <kanie@linux.alibaba.com>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Link: https://lore.kernel.org/lkml/20220125142430.75c3160e@canb.auug.org.au
+Cc: Michael Cyr <mikecyr@linux.ibm.com>
+Cc: "James E.J. Bottomley" <jejb@linux.ibm.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linux-scsi@vger.kernel.org
+Cc: target-devel@vger.kernel.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- drivers/target/target_core_user.c | 64 ++++++++++++++++++++++++++++++++++++---
- 1 file changed, 59 insertions(+), 5 deletions(-)
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c |  9 +++------
+ include/scsi/viosrp.h                    | 17 +++++++++++------
+ 2 files changed, 14 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 7b2a89a..826c1c0 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -64,7 +64,6 @@
- #define MB_CMDR_SIZE (8 * 1024 * 1024)
- /* Offset of cmd ring is size of mailbox */
- #define CMDR_OFF sizeof(struct tcmu_mailbox)
--#define CMDR_SIZE (MB_CMDR_SIZE - CMDR_OFF)
- 
- /*
-  * For data area, the default block size is PAGE_SIZE and
-@@ -133,6 +132,7 @@ struct tcmu_dev {
- 	struct tcmu_mailbox *mb_addr;
- 	void *cmdr;
- 	u32 cmdr_size;
-+	u32 total_cmdr_size_byte;
- 	u32 cmdr_last_cleaned;
- 	/* Offset of data area from start of mb */
- 	/* Must add data_off and mb_addr to get the address */
-@@ -1617,6 +1617,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 
- 	udev->data_pages_per_blk = DATA_PAGES_PER_BLK_DEF;
- 	udev->max_blocks = DATA_AREA_PAGES_DEF / udev->data_pages_per_blk;
-+	udev->total_cmdr_size_byte = MB_CMDR_SIZE;
- 	udev->data_area_mb = TCMU_PAGES_TO_MBS(DATA_AREA_PAGES_DEF);
- 
- 	mutex_init(&udev->cmdr_lock);
-@@ -2189,7 +2190,7 @@ static int tcmu_configure_device(struct se_device *dev)
- 		goto err_bitmap_alloc;
- 	}
- 
--	mb = vzalloc(MB_CMDR_SIZE);
-+	mb = vzalloc(udev->total_cmdr_size_byte);
- 	if (!mb) {
- 		ret = -ENOMEM;
- 		goto err_vzalloc;
-@@ -2198,8 +2199,8 @@ static int tcmu_configure_device(struct se_device *dev)
- 	/* mailbox fits in first part of CMDR space */
- 	udev->mb_addr = mb;
- 	udev->cmdr = (void *)mb + CMDR_OFF;
--	udev->cmdr_size = CMDR_SIZE;
--	udev->data_off = MB_CMDR_SIZE;
-+	udev->cmdr_size = udev->total_cmdr_size_byte - CMDR_OFF;
-+	udev->data_off = udev->total_cmdr_size_byte;
- 	data_size = TCMU_MBS_TO_PAGES(udev->data_area_mb) << PAGE_SHIFT;
- 	udev->mmap_pages = (data_size + MB_CMDR_SIZE) >> PAGE_SHIFT;
- 	udev->data_blk_size = udev->data_pages_per_blk * PAGE_SIZE;
-@@ -2401,7 +2402,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
- enum {
- 	Opt_dev_config, Opt_dev_size, Opt_hw_block_size, Opt_hw_max_sectors,
- 	Opt_nl_reply_supported, Opt_max_data_area_mb, Opt_data_pages_per_blk,
--	Opt_err,
-+	Opt_cmd_ring_size_mb, Opt_err,
- };
- 
- static match_table_t tokens = {
-@@ -2412,6 +2413,7 @@ enum {
- 	{Opt_nl_reply_supported, "nl_reply_supported=%d"},
- 	{Opt_max_data_area_mb, "max_data_area_mb=%d"},
- 	{Opt_data_pages_per_blk, "data_pages_per_blk=%d"},
-+	{Opt_cmd_ring_size_mb, "cmd_ring_size_mb=%d"},
- 	{Opt_err, NULL}
- };
- 
-@@ -2509,6 +2511,41 @@ static int tcmu_set_data_pages_per_blk(struct tcmu_dev *udev, substring_t *arg)
- 	return ret;
- }
- 
-+static int tcmu_set_cmd_ring_size_param(struct tcmu_dev *udev, substring_t *arg)
-+{
-+	int val, ret;
-+
-+	ret = match_int(arg, &val);
-+	if (ret < 0) {
-+		pr_err("match_int() failed for cmd_ring_size_mb=. Error %d.\n",
-+		       ret);
-+		return ret;
-+	}
-+
-+	if (val <= 0) {
-+		pr_err("Invalid cmd_ring_size_mb %d.\n", val);
-+		return -EINVAL;
-+	}
-+
-+	mutex_lock(&udev->cmdr_lock);
-+	if (udev->data_bitmap) {
-+		pr_err("Cannot set cmd_ring_size_mb after it has been enabled.\n");
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
-+
-+	udev->total_cmdr_size_byte = (val << 20);
-+	if (udev->total_cmdr_size_byte > MB_CMDR_SIZE) {
-+		pr_err("%d is too large. Adjusting cmd_ring_size_mb to global limit of %u\n",
-+		       val, (MB_CMDR_SIZE >> 20));
-+		udev->total_cmdr_size_byte = MB_CMDR_SIZE;
-+	}
-+
-+unlock:
-+	mutex_unlock(&udev->cmdr_lock);
-+	return ret;
-+}
-+
- static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
- 		const char *page, ssize_t count)
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index 61f06f6885a5..80238e6a3c98 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -1872,11 +1872,8 @@ static void srp_snd_msg_failed(struct scsi_info *vscsi, long rc)
+  */
+ static void ibmvscsis_send_messages(struct scsi_info *vscsi)
  {
-@@ -2563,6 +2600,9 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
- 		case Opt_data_pages_per_blk:
- 			ret = tcmu_set_data_pages_per_blk(udev, &args[0]);
- 			break;
-+		case Opt_cmd_ring_size_mb:
-+			ret = tcmu_set_cmd_ring_size_param(udev, &args[0]);
-+			break;
- 		default:
- 			break;
- 		}
-@@ -2585,6 +2625,8 @@ static ssize_t tcmu_show_configfs_dev_params(struct se_device *dev, char *b)
- 	bl += sprintf(b + bl, "Size: %llu ", udev->dev_size);
- 	bl += sprintf(b + bl, "MaxDataAreaMB: %u ", udev->data_area_mb);
- 	bl += sprintf(b + bl, "DataPagesPerBlk: %u\n", udev->data_pages_per_blk);
-+	bl += sprintf(b + bl, "CmdRingSizeMB: %u\n",
-+		      (udev->total_cmdr_size_byte >> 20));
+-	u64 msg_hi = 0;
+-	/* note do not attempt to access the IU_data_ptr with this pointer
+-	 * it is not valid
+-	 */
+-	struct viosrp_crq *crq = (struct viosrp_crq *)&msg_hi;
++	struct viosrp_crq empty_crq = { };
++	struct viosrp_crq *crq = &empty_crq;
+ 	struct ibmvscsis_cmd *cmd, *nxt;
+ 	long rc = ADAPT_SUCCESS;
+ 	bool retry = false;
+@@ -1940,7 +1937,7 @@ static void ibmvscsis_send_messages(struct scsi_info *vscsi)
+ 					crq->IU_length = cpu_to_be16(cmd->rsp.len);
  
- 	return bl;
- }
-@@ -3059,6 +3101,17 @@ static ssize_t tcmu_free_kept_buf_store(struct config_item *item, const char *pa
- }
- CONFIGFS_ATTR_WO(tcmu_, free_kept_buf);
+ 					rc = h_send_crq(vscsi->dma_dev->unit_address,
+-							be64_to_cpu(msg_hi),
++							be64_to_cpu(crq->high),
+ 							be64_to_cpu(cmd->rsp.tag));
  
-+static ssize_t tcmu_cmd_ring_size_mb_show(struct config_item *item, char *page)
-+{
-+	struct se_dev_attrib *da = container_of(to_config_group(item),
-+						struct se_dev_attrib, da_group);
-+	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
-+
-+	return snprintf(page, PAGE_SIZE, "%u\n",
-+			(udev->total_cmdr_size_byte >> 20));
-+}
-+CONFIGFS_ATTR_RO(tcmu_, cmd_ring_size_mb);
-+
- static struct configfs_attribute *tcmu_attrib_attrs[] = {
- 	&tcmu_attr_cmd_time_out,
- 	&tcmu_attr_qfull_time_out,
-@@ -3069,6 +3122,7 @@ static ssize_t tcmu_free_kept_buf_store(struct config_item *item, const char *pa
- 	&tcmu_attr_emulate_write_cache,
- 	&tcmu_attr_tmr_notification,
- 	&tcmu_attr_nl_reply_supported,
-+	&tcmu_attr_cmd_ring_size_mb,
- 	NULL,
+ 					dev_dbg(&vscsi->dev, "send_messages: cmd %p, tag 0x%llx, rc %ld\n",
+diff --git a/include/scsi/viosrp.h b/include/scsi/viosrp.h
+index c978133c83e3..6c5559d2b285 100644
+--- a/include/scsi/viosrp.h
++++ b/include/scsi/viosrp.h
+@@ -70,12 +70,17 @@ enum viosrp_crq_status {
+ };
+ 
+ struct viosrp_crq {
+-	u8 valid;		/* used by RPA */
+-	u8 format;		/* SCSI vs out-of-band */
+-	u8 reserved;
+-	u8 status;		/* non-scsi failure? (e.g. DMA failure) */
+-	__be16 timeout;		/* in seconds */
+-	__be16 IU_length;		/* in bytes */
++	union {
++		__be64 high;			/* High 64 bits */
++		struct {
++			u8 valid;		/* used by RPA */
++			u8 format;		/* SCSI vs out-of-band */
++			u8 reserved;
++			u8 status;		/* non-scsi failure? (e.g. DMA failure) */
++			__be16 timeout;		/* in seconds */
++			__be16 IU_length;	/* in bytes */
++		};
++	};
+ 	__be64 IU_data_ptr;	/* the TCE for transferring data */
  };
  
 -- 
-1.8.3.1
+2.30.2
 
