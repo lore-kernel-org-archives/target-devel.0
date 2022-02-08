@@ -2,125 +2,57 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83A33C433EF
-	for <target-devel@archiver.kernel.org>; Tue,  8 Feb 2022 06:37:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB084C43217
+	for <target-devel@archiver.kernel.org>; Tue,  8 Feb 2022 08:41:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347586AbiBHGhS (ORCPT
+        id S1350938AbiBHIlK (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 8 Feb 2022 01:37:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39330 "EHLO
+        Tue, 8 Feb 2022 03:41:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37642 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347556AbiBHGhQ (ORCPT
+        with ESMTP id S1350706AbiBHIlF (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 8 Feb 2022 01:37:16 -0500
-Received: from out30-43.freemail.mail.aliyun.com (out30-43.freemail.mail.aliyun.com [115.124.30.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D780C0401EF;
-        Mon,  7 Feb 2022 22:37:13 -0800 (PST)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R291e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04394;MF=xiaoguang.wang@linux.alibaba.com;NM=1;PH=DS;RN=5;SR=0;TI=SMTPD_---0V3vFgFf_1644302228;
-Received: from localhost(mailfrom:xiaoguang.wang@linux.alibaba.com fp:SMTPD_---0V3vFgFf_1644302228)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Tue, 08 Feb 2022 14:37:09 +0800
-From:   Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc:     martin.petersen@oracle.com, bostroesser@gmail.com,
-        kanie@linux.alibaba.com
-Subject: [PATCH 2/2] scsi: target: tcm_loop: use scsi_done_direct()
-Date:   Tue,  8 Feb 2022 14:37:07 +0800
-Message-Id: <20220208063707.4781-2-xiaoguang.wang@linux.alibaba.com>
-X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20220208063707.4781-1-xiaoguang.wang@linux.alibaba.com>
-References: <20220208063707.4781-1-xiaoguang.wang@linux.alibaba.com>
+        Tue, 8 Feb 2022 03:41:05 -0500
+X-Greylist: delayed 382 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 08 Feb 2022 00:41:03 PST
+Received: from mail.more-than.pl (mail.more-than.pl [185.18.55.239])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6C14C0401F6
+        for <target-devel@vger.kernel.org>; Tue,  8 Feb 2022 00:41:03 -0800 (PST)
+Received: by mail.more-than.pl (Postfix, from userid 1001)
+        id 81A77470A0; Tue,  8 Feb 2022 11:31:32 +0300 (MSK)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=more-than.pl; s=mail;
+        t=1644309279; bh=6/wx/L/1ZH+3lMSIQq4z5HzhUA3YwVB7rnYeMcWd4gM=;
+        h=Date:From:To:Subject:From;
+        b=IUWye18lcBFj6Jxko6JPYfGvjQNZ+Y1c8678Fg7tn+T6Du1bmSY1A0mRNMtf8C8jD
+         y3Oa/2/oK2NViLX40tUNjkh+xqafRnAJqglzKs7c6RB4Iy6mrgbe9AyvT0ji6ATMvQ
+         /MnjhzKr6zgMqa1K42+tDiXcih1ZmLwcIp54c2iZSMcIk7Bo9KlKlWabFXNqvq63sO
+         OTruFIbqiNnePETu9ehHKqzoQktTgG2DwaQgWYA6jQY/lcTTyVIdEIhZ1pTngNr6Kd
+         UCAbmiM4ZS75mU69iVgYx0VuutPJo5kN2OK+cAtjAqL93kQ4FWiOOolDMk14khA7gc
+         4Cwu/cljcdPyg==
+Received: by mail.more-than.pl for <target-devel@vger.kernel.org>; Tue,  8 Feb 2022 08:31:24 GMT
+Message-ID: <20220208113000-0.1.g.uyv.0.a5gom2cml4@more-than.pl>
+Date:   Tue,  8 Feb 2022 08:31:24 GMT
+From:   "Konrad Wiech" <konrad.wiech@more-than.pl>
+To:     <target-devel@vger.kernel.org>
+Subject: Wycena paneli fotowoltaicznych
+X-Mailer: mail.more-than.pl
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Tcm_loop uses workqueue to end requests, which is non-interrupt context,
-then we can complete request directly instead deferring it to softirq.
-The call graph likes below:
-    blk_mq_complete_request_remote+1
-    blk_mq_complete_request+14
-    target_put_sess_cmd+294
-    transport_generic_free_cmd+93
-    target_complete_ok_work+251
-    process_one_work+482
-    worker_thread+80
-    kthread+361
-    ret_from_fork+31
+Dzie=C5=84 dobry,
 
-Use tcm_loop and tcmu(backstore is file) to evaluate performance, fio
-job:
-  [global]
-  filename=/dev/sdb
-  direct=1
-  runtime=30
-  thread=1
-  norandommap=1
-  time_based
-  numjobs=1
-  rw=randread
-  iodepth=32
-  ioengine=libaio
+dostrzegam mo=C5=BCliwo=C5=9B=C4=87 wsp=C3=B3=C5=82pracy z Pa=C5=84stwa f=
+irm=C4=85.
 
-Without this patch:
-bs 4k
-  READ: bw=319MiB/s (334MB/s), 319MiB/s-319MiB/s (334MB/s-334MB/s),
-io=9563MiB (10.0GB), run=30001-30001msec
+=C5=9Awiadczymy kompleksow=C4=85 obs=C5=82ug=C4=99 inwestycji w fotowolta=
+ik=C4=99, kt=C3=B3ra obni=C5=BCa koszty energii elektrycznej nawet o 90%.
 
-bs 8k:
-   READ: bw=611MiB/s (641MB/s), 611MiB/s-611MiB/s (641MB/s-641MB/s),
-io=17.9GiB (19.2GB), run=30001-30001msec
+Czy s=C4=85 Pa=C5=84stwo zainteresowani weryfikacj=C4=85 wst=C4=99pnych p=
+ropozycji?
 
-bs 16k:
-   READ: bw=1109MiB/s (1163MB/s), 1109MiB/s-1109MiB/s (1163MB/s-1163MB/s),
-io=32.5GiB (34.9GB), run=30001-30001msec
 
-bs 32k:
-   READ: bw=2200MiB/s (2306MB/s), 2200MiB/s-2200MiB/s (2306MB/s-2306MB/s),
-io=64.4GiB (69.2GB), run=30001-30001msec
-
-With this patch:
-bs 4k:
-   READ: bw=344MiB/s (361MB/s), 344MiB/s-344MiB/s (361MB/s-361MB/s),
-io=10.1GiB (10.8GB), run=30001-30001msec
-
-bs 8k:
-   READ: bw=651MiB/s (682MB/s), 651MiB/s-651MiB/s (682MB/s-682MB/s),
-io=19.1GiB (20.5GB), run=30001-30001msec
-
-bs 16k:
-   READ: bw=1248MiB/s (1308MB/s), 1248MiB/s-1248MiB/s (1308MB/s-1308MB/s),
-io=36.6GiB (39.3GB), run=30001-30001msec
-
-bs 32k:
-   READ: bw=2456MiB/s (2576MB/s), 2456MiB/s-2456MiB/s (2576MB/s-2576MB/s),
-io=71.0GiB (77.3GB), run=30001-30001msec
-
-We can get throughput improvement.
-
-Signed-off-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
----
- drivers/target/loopback/tcm_loop.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-index 4407b56aa6d1..ce414fbdbae6 100644
---- a/drivers/target/loopback/tcm_loop.c
-+++ b/drivers/target/loopback/tcm_loop.c
-@@ -70,8 +70,12 @@ static void tcm_loop_release_cmd(struct se_cmd *se_cmd)
- 
- 	if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
- 		kmem_cache_free(tcm_loop_cmd_cache, tl_cmd);
--	else
--		scsi_done(sc);
-+	else {
-+		if (unlikely(in_interrupt()))
-+			scsi_done(sc);
-+		else
-+			scsi_done_direct(sc);
-+	}
- }
- 
- static int tcm_loop_show_info(struct seq_file *m, struct Scsi_Host *host)
--- 
-2.14.4.44.g2045bb6
-
+Pozdrawiam,
+Konrad Wiech
