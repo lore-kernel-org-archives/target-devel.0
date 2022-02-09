@@ -2,528 +2,146 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC408C433EF
-	for <target-devel@archiver.kernel.org>; Wed,  9 Feb 2022 08:29:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91819C433EF
+	for <target-devel@archiver.kernel.org>; Wed,  9 Feb 2022 08:44:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241567AbiBII33 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 9 Feb 2022 03:29:29 -0500
-Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:36728 "EHLO
+        id S232176AbiBIIos (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 9 Feb 2022 03:44:48 -0500
+Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:41148 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240745AbiBII3J (ORCPT
+        with ESMTP id S230085AbiBIIok (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 9 Feb 2022 03:29:09 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E259CC050CD9;
-        Wed,  9 Feb 2022 00:28:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
-        :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=QpI6TxzyLD0VhpyON4GNpHisrhmph+FXrDO9j3YfLGQ=; b=UBklqOmYcspUOr/wfzlQdfCEK4
-        RUywmec4eJRfgow0ROh7C/shmPfjoV9AX6UxEKLQF6DHIoCIFWohTtj/aBZX1myAAiemMpfT3ptVT
-        GOGILeVbvLfX+nAbnf6ZYNuMSsmcot+08dxbCablm+LWn5SUEooHHqipq3oCMGN3sJhY1+UvoZ0Os
-        e7QJW2SJhNwDTSkWrN9H3FtA6k07L/KlV12vDJG/WMAJUhXCAJdZlfOdV84mn9o8tIk9Uo1L8HFpm
-        udbzALPhDlycmvOzBSLRyRvy/ODVEMj+WDMy9Vb6Ul4BwKeC3V04rmtsIHOl2NRCAuOspFKRw9AY2
-        rwVglAvQ==;
-Received: from [2001:4bb8:188:3efc:ea2:7599:7eeb:4b5a] (helo=localhost)
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nHiLQ-00GcLQ-OJ; Wed, 09 Feb 2022 08:28:57 +0000
-From:   Christoph Hellwig <hch@lst.de>
-To:     axboe@kernel.dk, martin.petersen@oracle.com,
-        philipp.reisner@linbit.com, lars.ellenberg@linbit.com,
-        target-devel@vger.kernel.org, haris.iqbal@ionos.com,
-        jinpu.wang@ionos.com, manoj@linux.ibm.com, mrochs@linux.ibm.com,
-        ukrishn@linux.ibm.com
-Cc:     linux-block@vger.kernel.org, linux-scsi@vger.kernel.org,
-        drbd-dev@lists.linbit.com, dm-devel@redhat.com
-Subject: [PATCH 7/7] block: remove REQ_OP_WRITE_SAME support
-Date:   Wed,  9 Feb 2022 09:28:28 +0100
-Message-Id: <20220209082828.2629273-8-hch@lst.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20220209082828.2629273-1-hch@lst.de>
+        Wed, 9 Feb 2022 03:44:40 -0500
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com (mail-sn1anam02on20631.outbound.protection.outlook.com [IPv6:2a01:111:f400:7ea9::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C983C050CCC;
+        Wed,  9 Feb 2022 00:44:34 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=B7vW21u9A+TxQrdNVrVOWmfSRJVx6fpjdLvAU0shORyhv6vl8aJREapAqR1XGHFx57ORK0XPAJWtfbNMgBt4fimjDoDfeC3Ic0gWr+50cHim2FVQ6ITcLYPafgUIWwfb/qm3lD50im5gLvxdjFyY/ai0QI6VSeB4q4rxvO0uEgH4xQ1P4sQe/PXwY8OmW4NybQywu2mlCICKYvgbHmpXjjzVpjo59mMmAlWVRwiRjWxwMPQOm/UwwG2s15XPF1QANokAff64WUEuWbcFr1hHSo00hw9dqfScvsS+zY+XPmNV8qZJvXH8pp4FcwmpTB2SR+WoHjg2WUtiB05rFRGo9g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9Uu2cAzG7N0FZEAGYwDgcmDykXoOyLTwFFxsO67Qla4=;
+ b=T+nJOhKpEpRIdvUpayc0xGW7tpG0N9Yql4jWiiZG1Q70joVlCyQzrGsJ4pHfVXQ9poIOZg2hpiEAFSqyENyiL69bfmeUtvYbzm8r/IAm6E2Q5/aioFzhkQoEdIyIwDM2/3A5x8vSZpUwrLIH0mjVHt2ZkFndfPitzP9g6cZxwsmnUGppbtW1y1CoVxgqVT8OjH8pmAbPE8N/m8Snn512/0MlUgENFNJBY1D7RsBPazoSBHL/sXSMIN29H569JLOHdRCKCxxB3wQP6RE1jflO4AzhDxKu4NAd9tB5g2f3chbZjvTSf0V2WR8YP3hpWBu+lISLB2Tcm92HZPlyKAK64g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9Uu2cAzG7N0FZEAGYwDgcmDykXoOyLTwFFxsO67Qla4=;
+ b=CDsBQXOEUXL+mfSQRCt7XEBccCMWeFZemB/lpcI17cwvMVCtPVZVZgFwzTqxRUh2Tdt1CKHKH6F4Xhu5ricu37v6h/6P/5hwk86Cz+7XaXRVuTEJ9c0MJxp4DVbNXCQ1/sbcC2B1GDy3xw6i+MQGB0eEZDRe0oPQrbAUW+3SznHKEkBpdsj6E6F8DtetLArQx7zSvnWnT3IJSPyJxtW8d+Njo8cXEDUq5pLDzZSW08lhDnu6uUHM3sZL7Nmc28XBY5OjDfLGryQLPbNrdRB5NLQJXyZPgleEfnilhYrkdTapOY03QmTP5E/Ng+c2cpi+jqWkPam4ZWwqDdntxtVdtg==
+Received: from MW2PR12MB4667.namprd12.prod.outlook.com (2603:10b6:302:12::28)
+ by DM6PR12MB4910.namprd12.prod.outlook.com (2603:10b6:5:1bb::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4975.11; Wed, 9 Feb
+ 2022 08:43:31 +0000
+Received: from MW2PR12MB4667.namprd12.prod.outlook.com
+ ([fe80::846c:d3cd:5a30:c35]) by MW2PR12MB4667.namprd12.prod.outlook.com
+ ([fe80::846c:d3cd:5a30:c35%5]) with mapi id 15.20.4951.019; Wed, 9 Feb 2022
+ 08:43:31 +0000
+From:   Chaitanya Kulkarni <chaitanyak@nvidia.com>
+To:     Christoph Hellwig <hch@lst.de>,
+        "axboe@kernel.dk" <axboe@kernel.dk>,
+        "martin.petersen@oracle.com" <martin.petersen@oracle.com>,
+        "philipp.reisner@linbit.com" <philipp.reisner@linbit.com>,
+        "lars.ellenberg@linbit.com" <lars.ellenberg@linbit.com>,
+        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
+        "haris.iqbal@ionos.com" <haris.iqbal@ionos.com>,
+        "jinpu.wang@ionos.com" <jinpu.wang@ionos.com>,
+        "manoj@linux.ibm.com" <manoj@linux.ibm.com>,
+        "mrochs@linux.ibm.com" <mrochs@linux.ibm.com>,
+        "ukrishn@linux.ibm.com" <ukrishn@linux.ibm.com>
+CC:     "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+        "drbd-dev@lists.linbit.com" <drbd-dev@lists.linbit.com>,
+        "dm-devel@redhat.com" <dm-devel@redhat.com>
+Subject: Re: [PATCH 1/7] cxlflash: query write_zeroes limit for zeroing
+Thread-Topic: [PATCH 1/7] cxlflash: query write_zeroes limit for zeroing
+Thread-Index: AQHYHY8QM/uAF/9rJU2uXlr6tMxNBayK5xsA
+Date:   Wed, 9 Feb 2022 08:43:30 +0000
+Message-ID: <eea79469-a9d7-b80f-ef72-da9b4f4ecfff@nvidia.com>
 References: <20220209082828.2629273-1-hch@lst.de>
+ <20220209082828.2629273-2-hch@lst.de>
+In-Reply-To: <20220209082828.2629273-2-hch@lst.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 3c1cefde-e8ec-4a9b-1571-08d9eba84000
+x-ms-traffictypediagnostic: DM6PR12MB4910:EE_
+x-microsoft-antispam-prvs: <DM6PR12MB49106BCACA9EBDEF793950C7A32E9@DM6PR12MB4910.namprd12.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:2733;
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: E3dYK8VHYi/7CR0QybZDDlLnhRy59Co5DeyfByop7w7NtDvauhViYePIEQ24rqH/0S839Av9hwT0nQmghkALWM8NfRAGszDQV5AmIkOIQDiO0rqKn+FKRAjoEDMKvqlZZ0HZlU7Hf/7+wFjBm0mQCyZ1csOinh05f9LpT0BGmE5dyP69KtgWrsQKqraB3Y/Ao3q/rZXcqw9CthCw55l8vTsoSTFlgFkpkTqPCS9zqjqLrOe72Pw4lNzXt7KMay2yJHSp216KwmB2Ms2y6dEm2pMCumPCuDurJemiEUGLS5lZDi7KQRqt2p++f2xzgEEEYfmgp9BPjb7gxVfzyXVIqibd5EOSdCMupSDlv0MbLMB0E8bPr4Zjsk20SZqsr1OVw8NhkQD1MIo3rkuBtW+kXqy2Wez3kSzdRfIGmgTn4/Wh8V9TNvm8NVYhTnrolJKAznIJB5I9C8GEUkdmANLHHqCn1fF5Xrn3L6nPI1G1fygZUFCgwzr9u6RJNUX9IJBj4uFkfIz6e7EA2NEWTZ3kLse8s7C80wW2WHIffEa7AADvg16+fsrhyY97tvBJ6S1i4pv4qBVl+j0YoBfhku2z7A9qZzp+9rrf9B1tGcWvC7ESfkY/5d6ZXzdiOcPrnrQVxzOZ+bltESiRyLUfkTCwUSTBagAujvH+HnBT0XS9kp4I1jROv2Bu+Ae71Li8Cl9gWMC7cXVoJeq7wDp46qWBvFUHDYM/7qIJeRYrosNrsPRx5+FdPG3n8wrwXgQEfv2qk0vG4IJKIPr2HSaohNZsuKqy4S50ESf81/mRZOEoSyg=
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MW2PR12MB4667.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(6486002)(508600001)(53546011)(2616005)(83380400001)(36756003)(31686004)(71200400001)(6506007)(76116006)(316002)(8936002)(4744005)(31696002)(7416002)(38070700005)(5660300002)(186003)(122000001)(921005)(110136005)(54906003)(38100700002)(91956017)(6512007)(8676002)(4326008)(64756008)(86362001)(2906002)(66476007)(66946007)(66446008)(66556008)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?ak1NMjArK085cFJHMHRmL1d4a0RiS3Y0c0ZlNXh2Q3VQZGJwSTYzckdIUGN4?=
+ =?utf-8?B?UFowVDJIVEw4NmRIYkFkcG9TaXpCM0xSZERqM2k5RE0rNVJOWExpandKM0wz?=
+ =?utf-8?B?QWxDYnZKQzRXV2t2bGpYeXEyblZxM25NTVNpQVlOMDJvWFJMNGJNTlJBSHJt?=
+ =?utf-8?B?dktIREUvbEFXTzdtSXJzVW1KZm1DNUduancxOGNsYzRXbTVtcm5nWnljRlF0?=
+ =?utf-8?B?MC9YNVVSZnMyNUhRaStZODNFNDJrZDBaMmsrVXF3WlAxa2MxUStKVWpTWHhK?=
+ =?utf-8?B?MGQ3emJKRURoaHB2YWZKbFlHZElEc0ZaaG1SNXJndXVUSVlMQkpkWnFsQW1p?=
+ =?utf-8?B?dzZOV3ltaFJzL2Y4c2graWF5WUhmVHYvYXg3dXA4eFFFUWdRTXJYVjZ4dkp5?=
+ =?utf-8?B?UEdHNzkwbUdPdzRPN2FOdTdNZDBmMzB2UnFzWXhYRXlpbDE5anZzNDR1V0Rn?=
+ =?utf-8?B?d2pkL3RlZjIvNlJuV3lnMjhUcDlCWFVEdGFUcVlITjdWNURuQmVoUEpEQW5h?=
+ =?utf-8?B?OXJ0ZVhYT2VJbFZtVzlFdkhqV0hTdnRLcm1FbDNpS2VqSEx4dTVuUmZ1Vml1?=
+ =?utf-8?B?NG5NaFpTcDRHbm5Ld1hucHpWVkFTOWtTN2dkelplSjlPQzBOQ1NlSzF2SGht?=
+ =?utf-8?B?cWhGTGlwVkNVRzlrd1FxMmRjd1R4cTZvbkw0VFNCNzFBaTl5VEcwUFFzbHIv?=
+ =?utf-8?B?VmRZZitzWkhkNnRsTE5FSjNpSFVFdllOMkdjNEE0bzN5YjR4d1ZuQSs4KzVp?=
+ =?utf-8?B?UTR4YkRhajFtMU9LSEV6NHR2eGczQmZCRGNKYWpEdWFyU1FZZXlsWTNZbG1S?=
+ =?utf-8?B?T3g0WXdKUzJob0o1c2ErZVdmUUxlRDlWcW9mZjdIeG5pSFhHTWdPYW0wZm5p?=
+ =?utf-8?B?YnFDaGJhOHR3MHR5SFNBYUdtREx2dXVLazFYb2NyVXk3bGlvMVRPSlRpaTNj?=
+ =?utf-8?B?T2R0TTNGQXJWVEZud3JQa0xBaWpLUjEzbUpsTXRSMDl4clNPamtNMVRQNmJl?=
+ =?utf-8?B?cU1YSnQ0dWtEdUR1U2JxMjZTWkd1bzZDMzMwWFgwV25sRUJnY0dpNzlLZExr?=
+ =?utf-8?B?ZG52d1BQZFU0TUtNaS80TkxndElvUTgrYmtsOUQ4U1hIK0tkdnBzL2lqK0xB?=
+ =?utf-8?B?blowWWRsU093N3czeTZpNDRPTGxiSHZCdFJKR2paN0lMNkUzWDhHMGpDSXBO?=
+ =?utf-8?B?NEIyUmVwSTh2eVJTMTZNbG5hQ0plaUw0bjV0Z3VpL1BueWlvZklUd0JLd1Av?=
+ =?utf-8?B?S0MyZ2ZNa1k1ZEJqMGNLUTVZeDYzbWVZT2IrU1lRaU8vMTdiZjVGa1kvQWtU?=
+ =?utf-8?B?bWtqQXlqc2ZWODJ6K2pxUTRHeVYraFptdFJRYnFlOFI1NmsrUmlkYzhBRzV1?=
+ =?utf-8?B?c2RlcXQzdjZieWplSWZqYnphRDVhTGFuYnU3NmlyNkhiMkJHb0EybU1rSzYr?=
+ =?utf-8?B?MjlnNUtMUDFmaGhsL2gyNU11UnRnOWRkQnJYM2F6NU5Ga3ZQRjUxNXV5Nk8w?=
+ =?utf-8?B?VWpJUFZRZVI3UE90SHRTeGVhdjJuUEkyMFFXMlovVHFTcG1tanU5b1IzV2xq?=
+ =?utf-8?B?SGlmbS9zSUhMdCtvV3JCQTZ3c2dJV3lHcnhab2UzT3BMRkFSbGVLRGJzaEVw?=
+ =?utf-8?B?bjFzNTVra3hHaWlaOHJySXVUem0wN080eGh1WC9tQ3lmSWFFK2FmVngyUWhi?=
+ =?utf-8?B?aGJvdFVFRTBlY0VpSzFmYUhhWGEvLzNtMFIxYVMrN0FTQjVoMVhVejVVVkVU?=
+ =?utf-8?B?bFRlcjdZMVRVOFl0U3FZWElDQ2UvZnorR1h0VHY3djV0RjVhY0ZaU0gzQkpK?=
+ =?utf-8?B?VldRY0EzbzdMeXRJOEN6M0VnYWNRclA0UG9EdFNTaHZBSmYvL000S1czTTF4?=
+ =?utf-8?B?MEVIc0ZaKzRBc3IyUmJ0R0lvR3NiVkpQcVRja3lRWlZkb25WaEc2cUFMSU1t?=
+ =?utf-8?B?Wnk3ZmlhWUNXNnZFcGJNWm5yWlYzRHJUWjU4T1U4SktxYUhyMWFtZGtPaGJ6?=
+ =?utf-8?B?ZlhHN3hEbmNHTFpNdmsvTUpJc0R5NHNSeHNnbWxUdzhIYTBiZFRpTDEvQXJX?=
+ =?utf-8?B?NGhKMmlERDVjRUhIY1VWM2FzSGNuWUZSUkRHQnJsYlN3R3RIV21OcitqdjlE?=
+ =?utf-8?B?aUdLanJTV3Vkamg3NG9TRDdLSHh6cDFna1pkWWtzTnNHNGJJRTBnbVduZ2lI?=
+ =?utf-8?Q?HeYpDc0YlfkWQ1PHi2TlLzQ+kCrxXSjjS0iOObPqzxoz?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <CB74BD47A71E634E956120B732D5F90A@namprd12.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MW2PR12MB4667.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3c1cefde-e8ec-4a9b-1571-08d9eba84000
+X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Feb 2022 08:43:30.9635
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: o9XIwn5bPHr5xJ+Vwxg48S/Q77AULe0t2p8dWv22AMoa0tTgiAZcbcL20faZ3nZbIklqTabXJEf23EnTBseOjQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB4910
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-No more users of REQ_OP_WRITE_SAME or drivers implementing it are left,
-so remove the infrastructure.
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- block/blk-core.c          | 13 +-----
- block/blk-lib.c           | 91 ---------------------------------------
- block/blk-merge.c         | 40 -----------------
- block/blk-settings.c      | 16 -------
- block/blk-sysfs.c         |  8 ----
- block/blk-zoned.c         |  1 -
- block/blk.h               |  1 -
- block/bounce.c            |  3 --
- include/linux/bio.h       |  3 --
- include/linux/blk_types.h |  2 -
- include/linux/blkdev.h    | 19 --------
- kernel/trace/blktrace.c   |  1 -
- 12 files changed, 1 insertion(+), 197 deletions(-)
-
-diff --git a/block/blk-core.c b/block/blk-core.c
-index be8812f5489d4..dabc771538db8 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -122,7 +122,6 @@ static const char *const blk_op_name[] = {
- 	REQ_OP_NAME(ZONE_CLOSE),
- 	REQ_OP_NAME(ZONE_FINISH),
- 	REQ_OP_NAME(ZONE_APPEND),
--	REQ_OP_NAME(WRITE_SAME),
- 	REQ_OP_NAME(WRITE_ZEROES),
- 	REQ_OP_NAME(DRV_IN),
- 	REQ_OP_NAME(DRV_OUT),
-@@ -735,10 +734,6 @@ noinline_for_stack bool submit_bio_checks(struct bio *bio)
- 		if (!blk_queue_secure_erase(q))
- 			goto not_supported;
- 		break;
--	case REQ_OP_WRITE_SAME:
--		if (!q->limits.max_write_same_sectors)
--			goto not_supported;
--		break;
- 	case REQ_OP_ZONE_APPEND:
- 		status = blk_check_zone_append(q, bio);
- 		if (status != BLK_STS_OK)
-@@ -934,13 +929,7 @@ void submit_bio(struct bio *bio)
- 	 * go through the normal accounting stuff before submission.
- 	 */
- 	if (bio_has_data(bio)) {
--		unsigned int count;
--
--		if (unlikely(bio_op(bio) == REQ_OP_WRITE_SAME))
--			count = queue_logical_block_size(
--					bdev_get_queue(bio->bi_bdev)) >> 9;
--		else
--			count = bio_sectors(bio);
-+		unsigned int count = bio_sectors(bio);
- 
- 		if (op_is_write(bio_op(bio))) {
- 			count_vm_events(PGPGOUT, count);
-diff --git a/block/blk-lib.c b/block/blk-lib.c
-index 1b8ced45e4e55..05d3dbfe24eaa 100644
---- a/block/blk-lib.c
-+++ b/block/blk-lib.c
-@@ -135,97 +135,6 @@ int blkdev_issue_discard(struct block_device *bdev, sector_t sector,
- }
- EXPORT_SYMBOL(blkdev_issue_discard);
- 
--/**
-- * __blkdev_issue_write_same - generate number of bios with same page
-- * @bdev:	target blockdev
-- * @sector:	start sector
-- * @nr_sects:	number of sectors to write
-- * @gfp_mask:	memory allocation flags (for bio_alloc)
-- * @page:	page containing data to write
-- * @biop:	pointer to anchor bio
-- *
-- * Description:
-- *  Generate and issue number of bios(REQ_OP_WRITE_SAME) with same page.
-- */
--static int __blkdev_issue_write_same(struct block_device *bdev, sector_t sector,
--		sector_t nr_sects, gfp_t gfp_mask, struct page *page,
--		struct bio **biop)
--{
--	struct request_queue *q = bdev_get_queue(bdev);
--	unsigned int max_write_same_sectors;
--	struct bio *bio = *biop;
--	sector_t bs_mask;
--
--	if (!q)
--		return -ENXIO;
--
--	if (bdev_read_only(bdev))
--		return -EPERM;
--
--	bs_mask = (bdev_logical_block_size(bdev) >> 9) - 1;
--	if ((sector | nr_sects) & bs_mask)
--		return -EINVAL;
--
--	if (!bdev_write_same(bdev))
--		return -EOPNOTSUPP;
--
--	/* Ensure that max_write_same_sectors doesn't overflow bi_size */
--	max_write_same_sectors = bio_allowed_max_sectors(q);
--
--	while (nr_sects) {
--		bio = blk_next_bio(bio, bdev, 1, REQ_OP_WRITE_SAME, gfp_mask);
--		bio->bi_iter.bi_sector = sector;
--		bio->bi_vcnt = 1;
--		bio->bi_io_vec->bv_page = page;
--		bio->bi_io_vec->bv_offset = 0;
--		bio->bi_io_vec->bv_len = bdev_logical_block_size(bdev);
--
--		if (nr_sects > max_write_same_sectors) {
--			bio->bi_iter.bi_size = max_write_same_sectors << 9;
--			nr_sects -= max_write_same_sectors;
--			sector += max_write_same_sectors;
--		} else {
--			bio->bi_iter.bi_size = nr_sects << 9;
--			nr_sects = 0;
--		}
--		cond_resched();
--	}
--
--	*biop = bio;
--	return 0;
--}
--
--/**
-- * blkdev_issue_write_same - queue a write same operation
-- * @bdev:	target blockdev
-- * @sector:	start sector
-- * @nr_sects:	number of sectors to write
-- * @gfp_mask:	memory allocation flags (for bio_alloc)
-- * @page:	page containing data
-- *
-- * Description:
-- *    Issue a write same request for the sectors in question.
-- */
--int blkdev_issue_write_same(struct block_device *bdev, sector_t sector,
--				sector_t nr_sects, gfp_t gfp_mask,
--				struct page *page)
--{
--	struct bio *bio = NULL;
--	struct blk_plug plug;
--	int ret;
--
--	blk_start_plug(&plug);
--	ret = __blkdev_issue_write_same(bdev, sector, nr_sects, gfp_mask, page,
--			&bio);
--	if (ret == 0 && bio) {
--		ret = submit_bio_wait(bio);
--		bio_put(bio);
--	}
--	blk_finish_plug(&plug);
--	return ret;
--}
--EXPORT_SYMBOL(blkdev_issue_write_same);
--
- static int __blkdev_issue_write_zeroes(struct block_device *bdev,
- 		sector_t sector, sector_t nr_sects, gfp_t gfp_mask,
- 		struct bio **biop, unsigned flags)
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index 4de34a332c9fd..87cee7e82ae15 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -152,22 +152,6 @@ static struct bio *blk_bio_write_zeroes_split(struct request_queue *q,
- 	return bio_split(bio, q->limits.max_write_zeroes_sectors, GFP_NOIO, bs);
- }
- 
--static struct bio *blk_bio_write_same_split(struct request_queue *q,
--					    struct bio *bio,
--					    struct bio_set *bs,
--					    unsigned *nsegs)
--{
--	*nsegs = 1;
--
--	if (!q->limits.max_write_same_sectors)
--		return NULL;
--
--	if (bio_sectors(bio) <= q->limits.max_write_same_sectors)
--		return NULL;
--
--	return bio_split(bio, q->limits.max_write_same_sectors, GFP_NOIO, bs);
--}
--
- /*
-  * Return the maximum number of sectors from the start of a bio that may be
-  * submitted as a single request to a block device. If enough sectors remain,
-@@ -351,10 +335,6 @@ void __blk_queue_split(struct request_queue *q, struct bio **bio,
- 		split = blk_bio_write_zeroes_split(q, *bio, &q->bio_split,
- 				nr_segs);
- 		break;
--	case REQ_OP_WRITE_SAME:
--		split = blk_bio_write_same_split(q, *bio, &q->bio_split,
--				nr_segs);
--		break;
- 	default:
- 		split = blk_bio_segment_split(q, *bio, &q->bio_split, nr_segs);
- 		break;
-@@ -416,8 +396,6 @@ unsigned int blk_recalc_rq_segments(struct request *rq)
- 		return 1;
- 	case REQ_OP_WRITE_ZEROES:
- 		return 0;
--	case REQ_OP_WRITE_SAME:
--		return 1;
- 	}
- 
- 	rq_for_each_bvec(bv, rq, iter)
-@@ -555,8 +533,6 @@ int __blk_rq_map_sg(struct request_queue *q, struct request *rq,
- 
- 	if (rq->rq_flags & RQF_SPECIAL_PAYLOAD)
- 		nsegs = __blk_bvec_map_sg(rq->special_vec, sglist, last_sg);
--	else if (rq->bio && bio_op(rq->bio) == REQ_OP_WRITE_SAME)
--		nsegs = __blk_bvec_map_sg(bio_iovec(rq->bio), sglist, last_sg);
- 	else if (rq->bio)
- 		nsegs = __blk_bios_map_sg(q, rq->bio, sglist, last_sg);
- 
-@@ -757,13 +733,6 @@ static enum elv_merge blk_try_req_merge(struct request *req,
- 	return ELEVATOR_NO_MERGE;
- }
- 
--static inline bool blk_write_same_mergeable(struct bio *a, struct bio *b)
--{
--	if (bio_page(a) == bio_page(b) && bio_offset(a) == bio_offset(b))
--		return true;
--	return false;
--}
--
- /*
-  * For non-mq, this has to be called with the request spinlock acquired.
-  * For mq with scheduling, the appropriate queue wide lock should be held.
-@@ -780,10 +749,6 @@ static struct request *attempt_merge(struct request_queue *q,
- 	if (rq_data_dir(req) != rq_data_dir(next))
- 		return NULL;
- 
--	if (req_op(req) == REQ_OP_WRITE_SAME &&
--	    !blk_write_same_mergeable(req->bio, next->bio))
--		return NULL;
--
- 	/*
- 	 * Don't allow merge of different write hints, or for a hint with
- 	 * non-hint IO.
-@@ -912,11 +877,6 @@ bool blk_rq_merge_ok(struct request *rq, struct bio *bio)
- 	if (!bio_crypt_rq_ctx_compatible(rq, bio))
- 		return false;
- 
--	/* must be using the same buffer */
--	if (req_op(rq) == REQ_OP_WRITE_SAME &&
--	    !blk_write_same_mergeable(rq->bio, bio))
--		return false;
--
- 	/*
- 	 * Don't allow merge of different write hints, or for a hint with
- 	 * non-hint IO.
-diff --git a/block/blk-settings.c b/block/blk-settings.c
-index b880c70e22e4e..b83df3d2eebca 100644
---- a/block/blk-settings.c
-+++ b/block/blk-settings.c
-@@ -42,7 +42,6 @@ void blk_set_default_limits(struct queue_limits *lim)
- 	lim->max_sectors = lim->max_hw_sectors = BLK_SAFE_MAX_SECTORS;
- 	lim->max_dev_sectors = 0;
- 	lim->chunk_sectors = 0;
--	lim->max_write_same_sectors = 0;
- 	lim->max_write_zeroes_sectors = 0;
- 	lim->max_zone_append_sectors = 0;
- 	lim->max_discard_sectors = 0;
-@@ -79,7 +78,6 @@ void blk_set_stacking_limits(struct queue_limits *lim)
- 	lim->max_segment_size = UINT_MAX;
- 	lim->max_sectors = UINT_MAX;
- 	lim->max_dev_sectors = UINT_MAX;
--	lim->max_write_same_sectors = UINT_MAX;
- 	lim->max_write_zeroes_sectors = UINT_MAX;
- 	lim->max_zone_append_sectors = UINT_MAX;
- }
-@@ -178,18 +176,6 @@ void blk_queue_max_discard_sectors(struct request_queue *q,
- }
- EXPORT_SYMBOL(blk_queue_max_discard_sectors);
- 
--/**
-- * blk_queue_max_write_same_sectors - set max sectors for a single write same
-- * @q:  the request queue for the device
-- * @max_write_same_sectors: maximum number of sectors to write per command
-- **/
--void blk_queue_max_write_same_sectors(struct request_queue *q,
--				      unsigned int max_write_same_sectors)
--{
--	q->limits.max_write_same_sectors = max_write_same_sectors;
--}
--EXPORT_SYMBOL(blk_queue_max_write_same_sectors);
--
- /**
-  * blk_queue_max_write_zeroes_sectors - set max sectors for a single
-  *                                      write zeroes
-@@ -519,8 +505,6 @@ int blk_stack_limits(struct queue_limits *t, struct queue_limits *b,
- 	t->max_sectors = min_not_zero(t->max_sectors, b->max_sectors);
- 	t->max_hw_sectors = min_not_zero(t->max_hw_sectors, b->max_hw_sectors);
- 	t->max_dev_sectors = min_not_zero(t->max_dev_sectors, b->max_dev_sectors);
--	t->max_write_same_sectors = min(t->max_write_same_sectors,
--					b->max_write_same_sectors);
- 	t->max_write_zeroes_sectors = min(t->max_write_zeroes_sectors,
- 					b->max_write_zeroes_sectors);
- 	t->max_zone_append_sectors = min(t->max_zone_append_sectors,
-diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-index 9f32882ceb2f6..4a5bb47bee3ce 100644
---- a/block/blk-sysfs.c
-+++ b/block/blk-sysfs.c
-@@ -212,12 +212,6 @@ static ssize_t queue_discard_zeroes_data_show(struct request_queue *q, char *pag
- 	return queue_var_show(0, page);
- }
- 
--static ssize_t queue_write_same_max_show(struct request_queue *q, char *page)
--{
--	return sprintf(page, "%llu\n",
--		(unsigned long long)q->limits.max_write_same_sectors << 9);
--}
--
- static ssize_t queue_write_zeroes_max_show(struct request_queue *q, char *page)
- {
- 	return sprintf(page, "%llu\n",
-@@ -587,7 +581,6 @@ QUEUE_RO_ENTRY(queue_discard_max_hw, "discard_max_hw_bytes");
- QUEUE_RW_ENTRY(queue_discard_max, "discard_max_bytes");
- QUEUE_RO_ENTRY(queue_discard_zeroes_data, "discard_zeroes_data");
- 
--QUEUE_RO_ENTRY(queue_write_same_max, "write_same_max_bytes");
- QUEUE_RO_ENTRY(queue_write_zeroes_max, "write_zeroes_max_bytes");
- QUEUE_RO_ENTRY(queue_zone_append_max, "zone_append_max_bytes");
- QUEUE_RO_ENTRY(queue_zone_write_granularity, "zone_write_granularity");
-@@ -643,7 +636,6 @@ static struct attribute *queue_attrs[] = {
- 	&queue_discard_max_entry.attr,
- 	&queue_discard_max_hw_entry.attr,
- 	&queue_discard_zeroes_data_entry.attr,
--	&queue_write_same_max_entry.attr,
- 	&queue_write_zeroes_max_entry.attr,
- 	&queue_zone_append_max_entry.attr,
- 	&queue_zone_write_granularity_entry.attr,
-diff --git a/block/blk-zoned.c b/block/blk-zoned.c
-index 602bef54c8134..38cd840d88387 100644
---- a/block/blk-zoned.c
-+++ b/block/blk-zoned.c
-@@ -65,7 +65,6 @@ bool blk_req_needs_zone_write_lock(struct request *rq)
- 
- 	switch (req_op(rq)) {
- 	case REQ_OP_WRITE_ZEROES:
--	case REQ_OP_WRITE_SAME:
- 	case REQ_OP_WRITE:
- 		return blk_rq_zone_is_seq(rq);
- 	default:
-diff --git a/block/blk.h b/block/blk.h
-index abb663a2a147b..2fe483bcc6d38 100644
---- a/block/blk.h
-+++ b/block/blk.h
-@@ -286,7 +286,6 @@ static inline bool blk_may_split(struct request_queue *q, struct bio *bio)
- 	case REQ_OP_DISCARD:
- 	case REQ_OP_SECURE_ERASE:
- 	case REQ_OP_WRITE_ZEROES:
--	case REQ_OP_WRITE_SAME:
- 		return true; /* non-trivial splitting decisions */
- 	default:
- 		break;
-diff --git a/block/bounce.c b/block/bounce.c
-index 3fd3bc6fd5dbb..d9df1788c440c 100644
---- a/block/bounce.c
-+++ b/block/bounce.c
-@@ -178,9 +178,6 @@ static struct bio *bounce_clone_bio(struct bio *bio_src)
- 	case REQ_OP_SECURE_ERASE:
- 	case REQ_OP_WRITE_ZEROES:
- 		break;
--	case REQ_OP_WRITE_SAME:
--		bio->bi_io_vec[bio->bi_vcnt++] = bio_src->bi_io_vec[0];
--		break;
- 	default:
- 		bio_for_each_segment(bv, bio_src, iter)
- 			bio->bi_io_vec[bio->bi_vcnt++] = bv;
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 7523aba4ddf7c..74bf16558ef4b 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -65,7 +65,6 @@ static inline bool bio_no_advance_iter(const struct bio *bio)
- {
- 	return bio_op(bio) == REQ_OP_DISCARD ||
- 	       bio_op(bio) == REQ_OP_SECURE_ERASE ||
--	       bio_op(bio) == REQ_OP_WRITE_SAME ||
- 	       bio_op(bio) == REQ_OP_WRITE_ZEROES;
- }
- 
-@@ -186,8 +185,6 @@ static inline unsigned bio_segments(struct bio *bio)
- 	case REQ_OP_SECURE_ERASE:
- 	case REQ_OP_WRITE_ZEROES:
- 		return 0;
--	case REQ_OP_WRITE_SAME:
--		return 1;
- 	default:
- 		break;
- 	}
-diff --git a/include/linux/blk_types.h b/include/linux/blk_types.h
-index 5561e58d158ac..e72cb45593fbe 100644
---- a/include/linux/blk_types.h
-+++ b/include/linux/blk_types.h
-@@ -361,8 +361,6 @@ enum req_opf {
- 	REQ_OP_DISCARD		= 3,
- 	/* securely erase sectors */
- 	REQ_OP_SECURE_ERASE	= 5,
--	/* write the same sector many times */
--	REQ_OP_WRITE_SAME	= 7,
- 	/* write the zero filled sector many times */
- 	REQ_OP_WRITE_ZEROES	= 9,
- 	/* Open a zone */
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 3bfc75a2a4509..b92345c044991 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -247,7 +247,6 @@ struct queue_limits {
- 	unsigned int		io_opt;
- 	unsigned int		max_discard_sectors;
- 	unsigned int		max_hw_discard_sectors;
--	unsigned int		max_write_same_sectors;
- 	unsigned int		max_write_zeroes_sectors;
- 	unsigned int		max_zone_append_sectors;
- 	unsigned int		discard_granularity;
-@@ -913,9 +912,6 @@ static inline unsigned int blk_queue_get_max_sectors(struct request_queue *q,
- 		return min(q->limits.max_discard_sectors,
- 			   UINT_MAX >> SECTOR_SHIFT);
- 
--	if (unlikely(op == REQ_OP_WRITE_SAME))
--		return q->limits.max_write_same_sectors;
--
- 	if (unlikely(op == REQ_OP_WRITE_ZEROES))
- 		return q->limits.max_write_zeroes_sectors;
- 
-@@ -958,8 +954,6 @@ extern void blk_queue_max_discard_segments(struct request_queue *,
- extern void blk_queue_max_segment_size(struct request_queue *, unsigned int);
- extern void blk_queue_max_discard_sectors(struct request_queue *q,
- 		unsigned int max_discard_sectors);
--extern void blk_queue_max_write_same_sectors(struct request_queue *q,
--		unsigned int max_write_same_sectors);
- extern void blk_queue_max_write_zeroes_sectors(struct request_queue *q,
- 		unsigned int max_write_same_sectors);
- extern void blk_queue_logical_block_size(struct request_queue *, unsigned int);
-@@ -1096,9 +1090,6 @@ static inline long nr_blockdev_pages(void)
- 
- extern void blk_io_schedule(void);
- 
--extern int blkdev_issue_write_same(struct block_device *bdev, sector_t sector,
--		sector_t nr_sects, gfp_t gfp_mask, struct page *page);
--
- #define BLKDEV_DISCARD_SECURE	(1 << 0)	/* issue a secure erase */
- 
- extern int blkdev_issue_discard(struct block_device *bdev, sector_t sector,
-@@ -1325,16 +1316,6 @@ static inline int bdev_discard_alignment(struct block_device *bdev)
- 	return q->limits.discard_alignment;
- }
- 
--static inline unsigned int bdev_write_same(struct block_device *bdev)
--{
--	struct request_queue *q = bdev_get_queue(bdev);
--
--	if (q)
--		return q->limits.max_write_same_sectors;
--
--	return 0;
--}
--
- static inline unsigned int bdev_write_zeroes_sectors(struct block_device *bdev)
- {
- 	struct request_queue *q = bdev_get_queue(bdev);
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index af68a67179b48..19514edc44f71 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -1892,7 +1892,6 @@ void blk_fill_rwbs(char *rwbs, unsigned int op)
- 
- 	switch (op & REQ_OP_MASK) {
- 	case REQ_OP_WRITE:
--	case REQ_OP_WRITE_SAME:
- 		rwbs[i++] = 'W';
- 		break;
- 	case REQ_OP_DISCARD:
--- 
-2.30.2
-
+T24gMi85LzIyIDEyOjI4IEFNLCBDaHJpc3RvcGggSGVsbHdpZyB3cm90ZToNCj4gVGhlIHdyaXRl
+X3NhbWUgYW5kIHdyaXRlX3plcm9lcyBsaW1pdHMgZm9yIFNDU0kgYXJlIGVmZmVjdGl2ZWx5IHRo
+ZQ0KPiBzYW1lLCBzbyB0aGUgY3VycmVudCBjb2RlIHdvcmtzIGp1c3QgZmluZS4gIEJ1dCB3ZSBw
+bGFuIHRvIHJlbW92ZQ0KPiBSRVFfT1BfV1JJVEVfU0FNRSBzdXBwb3J0LCBzbyBzd2l0Y2ggdG8g
+cXVlcmluZyB0aGUgd3JpdGUgemVyb2VzDQo+IGxpbWl0IGZvciBhIHplcm9pbmcgV1JJVEUgU0FN
+RSBvcGVyYXRpb24uDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBDaHJpc3RvcGggSGVsbHdpZyA8aGNo
+QGxzdC5kZT4NCj4gLS0tDQoNCkxvb2tzIGdvb2QuDQoNClJldmlld2VkLWJ5OiBDaGFpdGFueWEg
+S3Vsa2FybmkgPGtjaEBudmlkaWEuY29tPg0KDQo=
