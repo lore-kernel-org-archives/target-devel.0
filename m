@@ -2,200 +2,340 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D83EC433EF
-	for <target-devel@archiver.kernel.org>; Wed,  9 Feb 2022 10:22:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C068C433F5
+	for <target-devel@archiver.kernel.org>; Wed,  9 Feb 2022 12:01:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234620AbiBIKWV (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 9 Feb 2022 05:22:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49406 "EHLO
+        id S231841AbiBIMBZ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 9 Feb 2022 07:01:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39658 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234294AbiBIKWU (ORCPT
+        with ESMTP id S232366AbiBIMBG (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 9 Feb 2022 05:22:20 -0500
-Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EEEDE08F630
-        for <target-devel@vger.kernel.org>; Wed,  9 Feb 2022 02:16:33 -0800 (PST)
-Received: by mail-ed1-x530.google.com with SMTP id f17so4086811edd.2
-        for <target-devel@vger.kernel.org>; Wed, 09 Feb 2022 02:16:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ionos.com; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=rAKZIFdP28Fau+cOOS9z/0N05/8YiKE8+fxfg8uPyQs=;
-        b=YWFqKgZ5ycvsDpd3Js/maaKkL2iEOs7pq1F8qJxkGIxo554G77WEA3/MnBXGdZJ6cn
-         S2zOBOKx2p0k6E6nCOGXvUgDHDjckUkdsO4MClCKJRSd3vUEvBl9BHCq4d2KVMB0z23Z
-         IYoRQl6Lk58wTLjKRX4ZrVQDstZv2FRuv/uE8mIqPKq99yhwX2LqDrlnQeID6q2GFd1t
-         ZgeDSV93cGgQ7/h+xJiGltXLWpkmouQSRZbU1/qqhYmJtIgsKdWYhOA3i7ZoJHPWk4xD
-         2xq5lbDdRmAT1Sll/JVr7RWWPBhG/RiI1a3mymQOP2l96/ar+llCZ8IUt2uMw5fBIecl
-         b0Ig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=rAKZIFdP28Fau+cOOS9z/0N05/8YiKE8+fxfg8uPyQs=;
-        b=nygX8ywws9E7oVNYiZdeVV7mej3mCjmBLxqAesD1R6j5SxKa5HTUkj/odJrhHeQSK1
-         B2zKOVcaK4LdVxC/NrGb0mCSYS6PE3lPiw1HDC9Oa4cBRlltKLCzPE4nWy9OwkbHU7AA
-         2SFRvQQ1uV03PFax3fPxa5EnLoq/wn5pOW0li0QocihcJYa11OfSYnT8RZPYWMZzgWXM
-         IFKaFaqXAMyea5KM6uXLxcwp2VWtKqwqHWU84ii19fs1ALb/xSS7ytZ8EHicqiDtSZ3G
-         EhZf4lwgIwzP7dkThAY6RQUIv0ipbE840PIkbjouoIv8OS1WMwnHw6XOgQmHjDN4AF5+
-         OYsw==
-X-Gm-Message-State: AOAM531qogGuDsDX+QQHQhKATJnxtleDhTb1hqr9KJM5XVO7S1SsiyGA
-        fq3yk2ZNBmKLzyZAvLhFeVyAyjbdDcxtzHfKTd1S3g==
-X-Google-Smtp-Source: ABdhPJyJl1H6BhQtX6vwv0TWGp6atpb+7BMBNRgisc9vY7m9y/rdk2zMRqBceAy/KYQ8UAkhYC65Cf47LU0RO5V0mS4=
-X-Received: by 2002:a05:6402:2916:: with SMTP id ee22mr1661883edb.3.1644401784309;
- Wed, 09 Feb 2022 02:16:24 -0800 (PST)
+        Wed, 9 Feb 2022 07:01:06 -0500
+X-Greylist: delayed 335 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 09 Feb 2022 03:53:54 PST
+Received: from mail-m2836.qiye.163.com (mail-m2836.qiye.163.com [103.74.28.36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9233FDF4989B;
+        Wed,  9 Feb 2022 03:53:54 -0800 (PST)
+Received: from [192.168.0.234] (unknown [218.94.118.90])
+        by mail-m2836.qiye.163.com (Hmail) with ESMTPA id 3D41FC0433;
+        Wed,  9 Feb 2022 19:48:17 +0800 (CST)
+Subject: Re: [PATCH] target: add iscsi/cpus_allowed_list in configfs
+To:     Mike Christie <michael.christie@oracle.com>,
+        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org
+References: <20220125083821.18225-1-mingzhe.zou@easystack.cn>
+ <7234209a-d308-622b-700e-e72907246ff4@oracle.com>
+From:   Zou Mingzhe <mingzhe.zou@easystack.cn>
+Message-ID: <7ff3a449-980e-ab44-42cf-7520a0796483@easystack.cn>
+Date:   Wed, 9 Feb 2022 19:48:16 +0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.14.0
 MIME-Version: 1.0
-References: <20220209082828.2629273-1-hch@lst.de> <20220209082828.2629273-4-hch@lst.de>
-In-Reply-To: <20220209082828.2629273-4-hch@lst.de>
-From:   Jinpu Wang <jinpu.wang@ionos.com>
-Date:   Wed, 9 Feb 2022 11:16:13 +0100
-Message-ID: <CAMGffE=GMYNsw+mDt1h-BDh3JXkdrP9v2AUF7z0xE7jkumM+RQ@mail.gmail.com>
-Subject: Re: [PATCH 3/7] rnbd: drop WRITE_SAME support
-To:     Christoph Hellwig <hch@lst.de>
-Cc:     axboe@kernel.dk, martin.petersen@oracle.com,
-        philipp.reisner@linbit.com, lars.ellenberg@linbit.com,
-        target-devel@vger.kernel.org, haris.iqbal@ionos.com,
-        manoj@linux.ibm.com, mrochs@linux.ibm.com, ukrishn@linux.ibm.com,
-        linux-block@vger.kernel.org, linux-scsi@vger.kernel.org,
-        drbd-dev@lists.linbit.com, dm-devel@redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <7234209a-d308-622b-700e-e72907246ff4@oracle.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
+        kWDxoPAgseWUFZKDYvK1lXWShZQUlCN1dZLVlBSVdZDwkaFQgSH1lBWRlKSUlWQkhDTUwYGkkfQ0
+        lLVRkRExYaEhckFA4PWVdZFhoPEhUdFFlBWVVLWQY+
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6MBQ6Phw6HDI2GRYXMT0dL0o2
+        QxNPC1ZVSlVKTU9PT0tMSUJMTUlMVTMWGhIXVRYSFRwBEx5VARQOOx4aCAIIDxoYEFUYFUVZV1kS
+        C1lBWUlKQ1VCT1VKSkNVQktZV1kIAVlBSkpOS0s3Bg++
+X-HM-Tid: 0a7ede50156d841ekuqw3d41fc0433
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Christoph,
+
+在 2022/2/9 上午1:50, Mike Christie 写道:
+> On 1/25/22 2:38 AM, mingzhe.zou@easystack.cn wrote:
+>> From: Mingzhe Zou <mingzhe.zou@easystack.cn>
+>>
+>> The RX/TX threads for iSCSI connection can be scheduled to
+>> any online cpus, and will not be rescheduled.
+>>
+>> If bind other heavy load threads with iSCSI connection
+>> RX/TX thread to the same cpu, the iSCSI performance will
+>> be worse.
+>>
+>> This patch add iscsi/cpus_allowed_list in configfs. The
+>> available cpus set of iSCSI connection RX/TX threads is
+>> allowed_cpus & online_cpus. If it is modified, all RX/TX
+>> threads will be rescheduled.
+>>
+>> Signed-off-by: Mingzhe Zou <mingzhe.zou@easystack.cn>
+>> ---
+>>   drivers/target/iscsi/iscsi_target.c          | 21 ++++++++++--
+>>   drivers/target/iscsi/iscsi_target.h          | 17 ++++++++++
+>>   drivers/target/iscsi/iscsi_target_configfs.c | 34 ++++++++++++++++++++
+>>   drivers/target/iscsi/iscsi_target_login.c    |  7 ++++
+>>   include/target/iscsi/iscsi_target_core.h     |  1 +
+>>   5 files changed, 78 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+>> index 2c54c5d8412d..a18d3fc3cfd1 100644
+>> --- a/drivers/target/iscsi/iscsi_target.c
+>> +++ b/drivers/target/iscsi/iscsi_target.c
+>> @@ -693,6 +693,11 @@ static int __init iscsi_target_init_module(void)
+>>   	mutex_init(&auth_id_lock);
+>>   	idr_init(&tiqn_idr);
+>>   
+>> +	/*
+>> +	 * allow all cpus run iscsi_ttx and iscsi_trx
+> I would just drop the comment. The "setall" in the function name
+> is pretty clear already.
+I will remove it.
+>
+>
+>> +	 */
+>> +	cpumask_setall(&__iscsi_allowed_cpumask);
+>> +
+>>   	ret = target_register_template(&iscsi_ops);
+>>   	if (ret)
+>>   		goto out;
+>> @@ -3587,6 +3592,15 @@ static int iscsit_send_reject(
+>>   void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+>>   {
+>>   	int ord, cpu;
+>> +	cpumask_t conn_allowed_cpumask;
+>> +
+>> +	/*
+>> +	 * The available cpus set of iSCSI connection's RX/TX threads
+>> +	 */
+> Probably can drop the comment too since the variable names make it
+> known what we are doing.
+I will remove it.
+>
+>
+>> +	cpumask_and(&conn_allowed_cpumask,
+>> +		&__iscsi_allowed_cpumask,
+>> +		cpu_online_mask);
+> The formatting needs some fix ups. I think __iscsi_allowed_cpumask can fit on the
+> line above it and then cpu_online_mask should be moved over a couple spaces to
+> align with the opening "(".
+
+I will reformat.
+
+>
+>
+>> +
+>>   	/*
+>>   	 * bitmap_id is assigned from iscsit_global->ts_bitmap from
+>>   	 * within iscsit_start_kthreads()
+>> @@ -3595,8 +3609,9 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+>>   	 * iSCSI connection's RX/TX threads will be scheduled to
+>>   	 * execute upon.
+>>   	 */
+>> -	ord = conn->bitmap_id % cpumask_weight(cpu_online_mask);
+>> -	for_each_online_cpu(cpu) {
+>> +	cpumask_clear(conn->conn_cpumask);
+>> +	ord = conn->bitmap_id % cpumask_weight(&conn_allowed_cpumask);
+>> +	for_each_cpu(cpu, &conn_allowed_cpumask) {
+>>   		if (ord-- == 0) {
+>>   			cpumask_set_cpu(cpu, conn->conn_cpumask);
+>>   			return;
+>> @@ -3821,6 +3836,7 @@ int iscsi_target_tx_thread(void *arg)
+>>   		 * Ensure that both TX and RX per connection kthreads
+>>   		 * are scheduled to run on the same CPU.
+>>   		 */
+>> +		iscsit_thread_reschedule(conn);
+>
+> If we have multiple sessions to the same portal, could we end up racing
+> where session0's tx/rx threads call iscsit_thread_reschedule and
+> iscsit_thread_check_cpumask at the same time as session1's threads and
+> they end up taking the same cpus. They both could be running
+> iscsit_thread_get_cpumask at the same time, see he same masks values
+> and in the for_each_cpu loop think the same cpu is free.
+
+Simply, this patch just adds a config item to skip some CPUs that are 
+bound to other threads,
+
+not to change the calculation method of cpumask.
+
+When the cpus_allowed_list in sysfs is modified, the tx/rx threads of 
+all sessions will clear current
+
+cpumask and call iscsit_thread_reschedule and 
+iscsit_thread_check_cpumask to get a new value.
+
+Because each session is allocated a unique bitmap_id in advance, then 
+calculate the cpumask
+
+via bitmap_id. So the tx/rx threads of different sessions will be 
+scheduled to different CPUs (when
+
+the number of CPUs is sufficient).
+
+>
+>
+>>   		iscsit_thread_check_cpumask(conn, current, 1);
+>>   
+>>   		wait_event_interruptible(conn->queues_wq,
+>> @@ -3966,6 +3982,7 @@ static void iscsit_get_rx_pdu(struct iscsi_conn *conn)
+>>   		 * Ensure that both TX and RX per connection kthreads
+>>   		 * are scheduled to run on the same CPU.
+>>   		 */
+>> +		iscsit_thread_reschedule(conn);
+>>   		iscsit_thread_check_cpumask(conn, current, 0);
+>>   
+>>   		memset(&iov, 0, sizeof(struct kvec));
+>> diff --git a/drivers/target/iscsi/iscsi_target.h b/drivers/target/iscsi/iscsi_target.h
+>> index b35a96ded9c1..cb97a316d76d 100644
+>> --- a/drivers/target/iscsi/iscsi_target.h
+>> +++ b/drivers/target/iscsi/iscsi_target.h
+>> @@ -57,4 +57,21 @@ extern struct kmem_cache *lio_r2t_cache;
+>>   extern struct ida sess_ida;
+>>   extern struct mutex auth_id_lock;
+>>   
+>> +extern cpumask_t __iscsi_allowed_cpumask;
+> I would rename to:
+>
+> iscsit_allowed_cpumask
+>
+I will rename to iscsit_allowed_cpumas.
+>> +
+>> +static inline void iscsit_thread_reschedule(struct iscsi_conn *conn)
+>> +{
+>> +	/*
+>> +	 * If __iscsi_allowed_cpumask modified, reschedule iSCSI connection's
+>> +	 * RX/TX threads update conn->allowed_cpumask.
+>> +	 */
+>> +	if (!cpumask_equal(&__iscsi_allowed_cpumask, conn->allowed_cpumask)) {
+>> +		iscsit_thread_get_cpumask(conn);
+>> +		conn->conn_tx_reset_cpumask = 1;
+>> +		conn->conn_rx_reset_cpumask = 1;
+>> +		cpumask_copy(conn->allowed_cpumask,
+>> +			&__iscsi_allowed_cpumask);
+> Fix up formatting like above.
+I will reformat.
+>
+>> +	}
+>> +}
+>> +
+>>   #endif   /*** ISCSI_TARGET_H ***/
+>> diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+>> index 2a9de24a8bbe..dc12b1695838 100644
+>> --- a/drivers/target/iscsi/iscsi_target_configfs.c
+>> +++ b/drivers/target/iscsi/iscsi_target_configfs.c
+>> @@ -1127,8 +1127,42 @@ static ssize_t lio_target_wwn_lio_version_show(struct config_item *item,
+>>   
+>>   CONFIGFS_ATTR_RO(lio_target_wwn_, lio_version);
+>>   
+>> +cpumask_t __iscsi_allowed_cpumask;
+> Maybe better to put this in iscsi_target.c with the other vars like
+> it.
+
+Originally I wanted to put it in struct iscsit_global and use it in 
+iscsit_thread_check_cpumask.
+
+However iscsit_thread_check_cpumask is also called in cxgbit_target.c. I 
+don't know if I also
+
+need to modify cxgbit at the same time, and I only modified two calls in 
+iscsi_target.c. I would
+
+like to know how to handle in cxgbit_target.c?
+
+I want to move 'static inline void iscsit_thread_check_cpumask' from 
+iscsi_target_core.h to
+
+iscsi_target.c and EXPORT_SYMBOL(iscsit_thread_check_cpumask). Do you 
+agree it?
+
+>
+>> +
+>> +static ssize_t lio_target_wwn_cpus_allowed_list_show(
+>> +		struct config_item *item, char *page)
+>> +{
+>> +	return sprintf(page, "%*pbl\n",
+>> +		cpumask_pr_args(&__iscsi_allowed_cpumask));
+> Formatting like above.
+I will reformat.
+>
+>> +}
+>> +
+>> +static ssize_t lio_target_wwn_cpus_allowed_list_store(
+>> +		struct config_item *item, const char *page, size_t count)
+>> +{
+>> +	int ret;
+>> +	char *orig;
+>> +	cpumask_t new_allowed_cpumask;
+>> +
+>> +	orig = kstrdup(page, GFP_KERNEL);
+>> +	if (!orig)
+>> +		return -ENOMEM;
+>> +
+>> +	cpumask_clear(&new_allowed_cpumask);
+>> +	ret = cpulist_parse(orig, &new_allowed_cpumask);
+> Are you supposed to do a  before
+> using new_allowed_cpumask? It looks like other callers are doing it.
+
+Other callers used cpumask_var_t, but the new_allowed_cpumask is cpumask_t.
+
+I think just call cpumask_clear(&new_allowed_cpumask).
 
 
-On Wed, Feb 9, 2022 at 9:28 AM Christoph Hellwig <hch@lst.de> wrote:
->
-> REQ_OP_WRITE_SAME was only ever submitted by the legacy Linux zeroing
-> code, which has switched to use REQ_OP_WRITE_ZEROES long before rnbd was
-> even merged.
+typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
 
-Do you think if it makes sense to instead of removing
-REQ_OP_WRITE_SAME, simply convert it to REQ_OP_WRITE_ZEROES?
+typedef struct cpumask cpumask_var_t[1];
 
-Thanks!
 >
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  drivers/block/rnbd/rnbd-clt.c   | 7 ++-----
->  drivers/block/rnbd/rnbd-clt.h   | 1 -
->  drivers/block/rnbd/rnbd-proto.h | 6 ------
->  drivers/block/rnbd/rnbd-srv.c   | 3 +--
->  4 files changed, 3 insertions(+), 14 deletions(-)
+>> +
+>> +	kfree(orig);
+>> +	if (ret != 0)
+>> +		return ret;
+>> +
+>> +	cpumask_copy(&__iscsi_allowed_cpumask, &new_allowed_cpumask);
+>> +	return count;
+>> +}
+>> +
+>> +CONFIGFS_ATTR(lio_target_wwn_, cpus_allowed_list);
+>> +
+>>   static struct configfs_attribute *lio_target_wwn_attrs[] = {
+>>   	&lio_target_wwn_attr_lio_version,
+>> +	&lio_target_wwn_attr_cpus_allowed_list,
+>>   	NULL,
+>>   };
+>>   
+>> diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+>> index 1a9c50401bdb..910f35e4648a 100644
+>> --- a/drivers/target/iscsi/iscsi_target_login.c
+>> +++ b/drivers/target/iscsi/iscsi_target_login.c
+>> @@ -1129,8 +1129,15 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
+>>   		goto free_conn_ops;
+>>   	}
+>>   
+>> +	if (!zalloc_cpumask_var(&conn->allowed_cpumask, GFP_KERNEL)) {
+>> +		pr_err("Unable to allocate conn->allowed_cpumask\n");
+>> +		goto free_conn_cpumask;
+>> +	}
+> I think in iscsit_free_conn you need a:
 >
-> diff --git a/drivers/block/rnbd/rnbd-clt.c b/drivers/block/rnbd/rnbd-clt.=
-c
-> index c08971de369fc..dc192d2738854 100644
-> --- a/drivers/block/rnbd/rnbd-clt.c
-> +++ b/drivers/block/rnbd/rnbd-clt.c
-> @@ -82,7 +82,6 @@ static int rnbd_clt_set_dev_attr(struct rnbd_clt_dev *d=
-ev,
->         dev->nsectors               =3D le64_to_cpu(rsp->nsectors);
->         dev->logical_block_size     =3D le16_to_cpu(rsp->logical_block_si=
-ze);
->         dev->physical_block_size    =3D le16_to_cpu(rsp->physical_block_s=
-ize);
-> -       dev->max_write_same_sectors =3D le32_to_cpu(rsp->max_write_same_s=
-ectors);
->         dev->max_discard_sectors    =3D le32_to_cpu(rsp->max_discard_sect=
-ors);
->         dev->discard_granularity    =3D le32_to_cpu(rsp->discard_granular=
-ity);
->         dev->discard_alignment      =3D le32_to_cpu(rsp->discard_alignmen=
-t);
-> @@ -1359,8 +1358,6 @@ static void setup_request_queue(struct rnbd_clt_dev=
- *dev)
->         blk_queue_logical_block_size(dev->queue, dev->logical_block_size)=
-;
->         blk_queue_physical_block_size(dev->queue, dev->physical_block_siz=
-e);
->         blk_queue_max_hw_sectors(dev->queue, dev->max_hw_sectors);
-> -       blk_queue_max_write_same_sectors(dev->queue,
-> -                                        dev->max_write_same_sectors);
+> free_cpumask_var(conn->allowed_cpumask);
 >
->         /*
->          * we don't support discards to "discontiguous" segments
-> @@ -1610,10 +1607,10 @@ struct rnbd_clt_dev *rnbd_clt_map_device(const ch=
-ar *sessname,
->         }
+> to go with this allocation.
+This is bug. I will fix up in v2.
 >
->         rnbd_clt_info(dev,
-> -                      "map_device: Device mapped as %s (nsectors: %zu, l=
-ogical_block_size: %d, physical_block_size: %d, max_write_same_sectors: %d,=
- max_discard_sectors: %d, discard_granularity: %d, discard_alignment: %d, s=
-ecure_discard: %d, max_segments: %d, max_hw_sectors: %d, rotational: %d, wc=
-: %d, fua: %d)\n",
-> +                      "map_device: Device mapped as %s (nsectors: %zu, l=
-ogical_block_size: %d, physical_block_size: %d, max_discard_sectors: %d, di=
-scard_granularity: %d, discard_alignment: %d, secure_discard: %d, max_segme=
-nts: %d, max_hw_sectors: %d, rotational: %d, wc: %d, fua: %d)\n",
->                        dev->gd->disk_name, dev->nsectors,
->                        dev->logical_block_size, dev->physical_block_size,
-> -                      dev->max_write_same_sectors, dev->max_discard_sect=
-ors,
-> +                      dev->max_discard_sectors,
->                        dev->discard_granularity, dev->discard_alignment,
->                        dev->secure_discard, dev->max_segments,
->                        dev->max_hw_sectors, dev->rotational, dev->wc, dev=
-->fua);
-> diff --git a/drivers/block/rnbd/rnbd-clt.h b/drivers/block/rnbd/rnbd-clt.=
-h
-> index 0c2cae7f39b9f..6946ba23d62e5 100644
-> --- a/drivers/block/rnbd/rnbd-clt.h
-> +++ b/drivers/block/rnbd/rnbd-clt.h
-> @@ -122,7 +122,6 @@ struct rnbd_clt_dev {
->         bool                    wc;
->         bool                    fua;
->         u32                     max_hw_sectors;
-> -       u32                     max_write_same_sectors;
->         u32                     max_discard_sectors;
->         u32                     discard_granularity;
->         u32                     discard_alignment;
-> diff --git a/drivers/block/rnbd/rnbd-proto.h b/drivers/block/rnbd/rnbd-pr=
-oto.h
-> index de5d5a8df81d7..3eb8b34bd1886 100644
-> --- a/drivers/block/rnbd/rnbd-proto.h
-> +++ b/drivers/block/rnbd/rnbd-proto.h
-> @@ -249,9 +249,6 @@ static inline u32 rnbd_to_bio_flags(u32 rnbd_opf)
->         case RNBD_OP_SECURE_ERASE:
->                 bio_opf =3D REQ_OP_SECURE_ERASE;
->                 break;
-> -       case RNBD_OP_WRITE_SAME:
-> -               bio_opf =3D REQ_OP_WRITE_SAME;
-> -               break;
->         default:
->                 WARN(1, "Unknown RNBD type: %d (flags %d)\n",
->                      rnbd_op(rnbd_opf), rnbd_opf);
-> @@ -284,9 +281,6 @@ static inline u32 rq_to_rnbd_flags(struct request *rq=
-)
->         case REQ_OP_SECURE_ERASE:
->                 rnbd_opf =3D RNBD_OP_SECURE_ERASE;
->                 break;
-> -       case REQ_OP_WRITE_SAME:
-> -               rnbd_opf =3D RNBD_OP_WRITE_SAME;
-> -               break;
->         case REQ_OP_FLUSH:
->                 rnbd_opf =3D RNBD_OP_FLUSH;
->                 break;
-> diff --git a/drivers/block/rnbd/rnbd-srv.c b/drivers/block/rnbd/rnbd-srv.=
-c
-> index 132e950685d59..0e6b5687f8321 100644
-> --- a/drivers/block/rnbd/rnbd-srv.c
-> +++ b/drivers/block/rnbd/rnbd-srv.c
-> @@ -548,8 +548,7 @@ static void rnbd_srv_fill_msg_open_rsp(struct rnbd_ms=
-g_open_rsp *rsp,
->                 cpu_to_le16(rnbd_dev_get_max_segs(rnbd_dev));
->         rsp->max_hw_sectors =3D
->                 cpu_to_le32(rnbd_dev_get_max_hw_sects(rnbd_dev));
-> -       rsp->max_write_same_sectors =3D
-> -               cpu_to_le32(bdev_write_same(rnbd_dev->bdev));
-> +       rsp->max_write_same_sectors =3D 0;
->         rsp->max_discard_sectors =3D
->                 cpu_to_le32(rnbd_dev_get_max_discard_sects(rnbd_dev));
->         rsp->discard_granularity =3D
-> --
-> 2.30.2
+>> +
+>>   	return conn;
+>>   
+>> +free_conn_cpumask:
+>> +	free_cpumask_var(conn->allowed_cpumask);
+> I think you wanted conn->conn_cpumask here.
+This is bug. I will fix up in v2.
+>>   free_conn_ops:
+>>   	kfree(conn->conn_ops);
+>>   put_transport:
+>> diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+>> index 1eccb2ac7d02..c5e9cad187cf 100644
+>> --- a/include/target/iscsi/iscsi_target_core.h
+>> +++ b/include/target/iscsi/iscsi_target_core.h
+>> @@ -580,6 +580,7 @@ struct iscsi_conn {
+>>   	struct ahash_request	*conn_tx_hash;
+>>   	/* Used for scheduling TX and RX connection kthreads */
+>>   	cpumask_var_t		conn_cpumask;
+>> +	cpumask_var_t		allowed_cpumask;
+>>   	unsigned int		conn_rx_reset_cpumask:1;
+>>   	unsigned int		conn_tx_reset_cpumask:1;
+>>   	/* list_head of struct iscsi_cmd for this connection */
 >
