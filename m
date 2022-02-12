@@ -2,153 +2,301 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19C58C433FE
-	for <target-devel@archiver.kernel.org>; Fri, 11 Feb 2022 21:49:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CE8CC4332F
+	for <target-devel@archiver.kernel.org>; Sat, 12 Feb 2022 11:25:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230126AbiBKVtd (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 11 Feb 2022 16:49:33 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:59940 "EHLO
+        id S234233AbiBLLZl (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 12 Feb 2022 06:25:41 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:39178 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229663AbiBKVtc (ORCPT
+        with ESMTP id S231990AbiBLLZk (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 11 Feb 2022 16:49:32 -0500
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED0CCBC;
-        Fri, 11 Feb 2022 13:49:29 -0800 (PST)
-Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21BKv0NH006459;
-        Fri, 11 Feb 2022 21:49:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
- from : message-id : references : date : in-reply-to : content-type :
- mime-version; s=corp-2021-07-09;
- bh=0CbIC875hCBWhloeFFM4clWwTYDUjnysywSq3iyGRno=;
- b=iQf/2RzvhriXdXTxeok8h7ri021IA1rvvUeA/eblp5XEdj32S69ADv9iwb4h155WJ30N
- J+gQi1jek+ZzUKvz33iaDOpLma+x0a6644f3QxeZllZcmrk3dWmS7mkrMvCrXCja1kgU
- Bu2GlGNJpzk05DxHjAUr9gFhZK72wnsCpoqKWaks78J3gSmuF2PgBc65fzL0UMgAx4uG
- eUXT5JpboXyJ0QYxm8VF8e+1Ov/5BglITWtN7OXQMXYmN6aQRcIFGGnGgPOY++S+xuJZ
- cFo8x+cJtfP8G4ZBY3iTXLAI+UfAHNbdXIFNZkXR8vppGXFBYch9UzsPgg/hx+MHqRW7 3Q== 
-Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
-        by mx0b-00069f02.pphosted.com with ESMTP id 3e5t7ks04a-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 11 Feb 2022 21:49:25 +0000
-Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
-        by userp3030.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 21BLWIg1172286;
-        Fri, 11 Feb 2022 21:49:24 GMT
-Received: from nam11-co1-obe.outbound.protection.outlook.com (mail-co1nam11lp2172.outbound.protection.outlook.com [104.47.56.172])
-        by userp3030.oracle.com with ESMTP id 3e1ec83k46-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 11 Feb 2022 21:49:24 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=jiwODfF4pylBnQ7uO3gJsa1DZo3maHCnfcrYoD1Lm0/7hnt+ITuIRt59rLe62y5sR5hZPDD1jbnwvaVi6rC8inY3DAUQ+vixLfyjl4ms4SxgeOcIA6G2gadcVshcNkXlikW6ux40vWMJlfWTi9ryX/tBBK7pZ1GbpLlcjw0GAnFrrwM968c2DHM/Mh9W9Xok9n0Tdmi+Rjm0q2c0Z4uOtpaD45ISHiYnYdjMZwF4oxjS5RCUmaRUAaUOoVrSHZFv4jZG9itDB9QL/eYftTfygFkCnKxLaiZ3VU3MsIOTyGB6JVBlLq3rZs7ip4Z32UOcD2h9rTJmiHFT8WQA0JNxTQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=0CbIC875hCBWhloeFFM4clWwTYDUjnysywSq3iyGRno=;
- b=JZ9FNOwqf+LB6UBEPkNIQDbUggTXc5RlC7NKgiAkEUkdL9e71NcfGM2X5xP61IAJoPevKZyeYguhzKS8DNtQPf9PaYcQYkVX5Qd2LCwUlsB8OQSjwT++cSHPcoZryWJoOgaJunhfteQeLbTbGl5eGUpdd3hAMya8CucYLJso+L0gKq+ecZNf7MkfvkEivntNPSj+CtPbHOO/t8FxoanXg8EYBgdF15NlEHGlcypTf2nDVSVBc0koaZHwz4Bv6jn1BqP7BMpct0MxtiZpKpHKiKX+l8HsG9hs0QO7CT4gHC37URmGYzoDpnJGO8Oug/Cih5XH1DMOFKCwL7VIW6FfOg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
+        Sat, 12 Feb 2022 06:25:40 -0500
+Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 14D3126AD6;
+        Sat, 12 Feb 2022 03:25:37 -0800 (PST)
+Received: by mail-ej1-x62e.google.com with SMTP id p15so27757398ejc.7;
+        Sat, 12 Feb 2022 03:25:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0CbIC875hCBWhloeFFM4clWwTYDUjnysywSq3iyGRno=;
- b=x1nBrkBfBezbbwnAqHYz/4YaWPjcfQoi7Bx5//f/ZxQfPEzLZF9zd1fJipzcisBVq6HgWrnNqAMjfyvueyNomfuBVFk5zwx86l6ZV3msh2MCWNkNQLfuz4swXrRsoOWWS0cquKp9V3ynfO91JYs4JJs4SNkdLTroGaznVVQy3cU=
-Received: from CO1PR10MB4754.namprd10.prod.outlook.com (2603:10b6:303:91::24)
- by BN6PR10MB1697.namprd10.prod.outlook.com (2603:10b6:405:9::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4951.18; Fri, 11 Feb
- 2022 21:49:21 +0000
-Received: from CO1PR10MB4754.namprd10.prod.outlook.com
- ([fe80::40f6:dc10:6073:2090]) by CO1PR10MB4754.namprd10.prod.outlook.com
- ([fe80::40f6:dc10:6073:2090%5]) with mapi id 15.20.4975.014; Fri, 11 Feb 2022
- 21:49:21 +0000
-To:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        martin.petersen@oracle.com, bostroesser@gmail.com,
-        kanie@linux.alibaba.com
-Subject: Re: [PATCH 1/2] scsi: add scsi_done_direct() helper
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle Corporation
-Message-ID: <yq11r09qdmn.fsf@ca-mkp.ca.oracle.com>
-References: <20220208063707.4781-1-xiaoguang.wang@linux.alibaba.com>
-Date:   Fri, 11 Feb 2022 16:49:19 -0500
-In-Reply-To: <20220208063707.4781-1-xiaoguang.wang@linux.alibaba.com>
-        (Xiaoguang Wang's message of "Tue, 8 Feb 2022 14:37:06 +0800")
-Content-Type: text/plain
-X-ClientProxiedBy: SN7P220CA0018.NAMP220.PROD.OUTLOOK.COM
- (2603:10b6:806:123::23) To CO1PR10MB4754.namprd10.prod.outlook.com
- (2603:10b6:303:91::24)
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=7SIhUeX2yt0idUDRJKKmAw5gfuLEHOZUKxZ0CAvnkKQ=;
+        b=qzXx3csd9RNDf0yA1DYYLijDmM6LWSt/oPmlFdym5v/OM3V1zPhchWwPa4FyV6QfXZ
+         tFGPnBmObMu62ZBqHpaOCv+h2oia9kLoD/3sBusLQJCueZ79z/JcOCxuwitF6EMjqInY
+         CEgZ2LzNfRsUy9PG2EFccy3NbMcPQ91SxZcheGi+BqXjbho2X651GeAvEaIJjFthHiMJ
+         4xGhc2fg3IcpDPICRzRBUaIZvLlOT2QodI6qSpRNi2Z8qEVy+GweK0PAVYUokpBkLkHA
+         N9zhB5hwVJV9b7G6vNdQgAnn2riQqiWjEjGknz/ya1x98y5XXKTylVzuOUPGBuaf1Jco
+         h8Kg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=7SIhUeX2yt0idUDRJKKmAw5gfuLEHOZUKxZ0CAvnkKQ=;
+        b=5GX3FYDj4yT6ET9ZeytBNMmfrq366HHu61XzKjkEkBY9qg7HgB8UqzFjUEcxU6nHNt
+         8j4DD2rk8Z8xPvFyUkZenFUNtNZIsWX6L43YkJxNjEvTc05QUz0yciwQTvyTVZZBUH98
+         cxlnPhwwS6YctKmnPhTOu5YrgpeflpVYBM0DiBfc2DavQCYZUV7mXpSetYSVbafJu4N4
+         h85WUl02IopHahNmHzL+BY30ORTwc4KBiAJ7KlFkWKxYQFDak++cGfBYpNzar0ZEMYea
+         +igIfGFR0xR5BCMoHkZ5kdhedoVMr3Xtfe9eOCIgJ2J77IFtAXtPBJYBysCxOC6ETgUN
+         bexg==
+X-Gm-Message-State: AOAM530lYpgCBnl/iYoW5GXOROT8uor9UiCz4DUE2AVzdiC2f/dJSEkl
+        czvdTOdecmowtmJm85brL0s=
+X-Google-Smtp-Source: ABdhPJzWitD0hfjXJ8eX/JHLhmT7VkMjcrS0EcKXiLjXUzIVCfyLkx6hDe7qD20rW2rzZQuz4QDvDg==
+X-Received: by 2002:a17:907:970d:: with SMTP id jg13mr4424600ejc.418.1644665135450;
+        Sat, 12 Feb 2022 03:25:35 -0800 (PST)
+Received: from [192.168.178.40] (ipbcc1fa42.dynamic.kabel-deutschland.de. [188.193.250.66])
+        by smtp.gmail.com with ESMTPSA id b15sm500132edd.60.2022.02.12.03.25.34
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 12 Feb 2022 03:25:34 -0800 (PST)
+Message-ID: <0428d955-e9c7-b632-cb19-102e49cef387@gmail.com>
+Date:   Sat, 12 Feb 2022 12:25:33 +0100
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: f14eeddc-2b86-4342-7b42-08d9eda85c93
-X-MS-TrafficTypeDiagnostic: BN6PR10MB1697:EE_
-X-Microsoft-Antispam-PRVS: <BN6PR10MB1697075AFB08471DD22A5B218E309@BN6PR10MB1697.namprd10.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:3631;
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: ZU4v2GGiFtl65rv96sBWotiqdEi7aUrMMf3O8vCgq98GKS2ukqQgSwabGj03goViG9dcjDrTE6csncwrVA7BpdJMY3tDf4vEqvnp2W2tmLaP1vt/63YO/bp7RBUPaoPz+PaAHrDOG1128ZJEEDRyvOsAt1KEMoa/agW2yBO1TyWYYL7/A8YIgU5igmg6aDJcutaMEXJXkjccNfQ5dNK95g3PlznBke2UWWpWkF65W5y9ihtZhyXYWEFOlfTabKRmb8vMYhiteHYF381YwUH4hosPjSigNAgQYooRQ7dSeiSqZ67YwuE0PpBcT+zJgU/JO3Pzw/cDq1mwsCLiAeIpr/zNCRROixoUOoTHLkV0DxRKqcBQCEudf81s6m4FCP8/HhYinLpk85sfitkqUQTOE5OrST3HvYdINCGYzJMAJ1e+fk6xnLsOJ6PMDrPDQO+nAZRXxpnVBpTlgkduwsgnZG6p13/tHjXt5kaiWCpFCbdl3M41ja88gLiZ9IfP1LaEAPgiEc4oK1jlYlrR0Wh7RIeneC+Zak6j9mOwcr1ahFxP4XfKX1X/7853p1afMsDk/wUsbgglJjaMf+aSyRd3uOlX6b/RavTOWYhYv8rURB+YXvZHSJpR1i6phnPk8NdTu6XWkDGBVHDgz33jL0m0JfLP7/BXcv4NXWnhijPHKEzKQ7Nm7bnZTKkiPiusHGfsQ35YbBGAlSNtqW048HVs8ZUKNuccGDTvDiyb+YXSxb/+S1Dc8nkcm/Fthq36ph7EdWWF67tyW1774KnhvIjCltXJqWjS0wa+yHjZahd7lnc=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CO1PR10MB4754.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(366004)(186003)(5660300002)(26005)(38100700002)(2906002)(38350700002)(66946007)(4744005)(66476007)(52116002)(6486002)(8936002)(6512007)(966005)(4326008)(66556008)(86362001)(8676002)(83380400001)(508600001)(36916002)(6506007)(6916009)(316002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?1Xga2H3hzxGFDSgvidsBqtVmvL7cjoFNC5nWgA+dm3Ywi2L99xwFhNoCnjEQ?=
- =?us-ascii?Q?P1fj/5evBgW/YWX1Cl4I2S3NTGQMncylVzpb8couKD37u5RbXQW2YYj75EMw?=
- =?us-ascii?Q?XCGoz/3mEjOH9UO+Gw25V0NIOH/6vrLYUGTjsddG/Kv7wQo/+f5udWClC8xr?=
- =?us-ascii?Q?Ztp1dFrt8jl9hDptDt6LIomGAUWSYNDIZJd28JJtqJDI2fRJYJTHR86JqLSh?=
- =?us-ascii?Q?y4jHztSSNH6mXk10XM/T0wcexXen5s15bzwNGFkNqBdQFEiK3Z71RPhTdPGD?=
- =?us-ascii?Q?3YLdbDvy5sxVI+bvMQ+7PcLPbV+1ZWSP5IraC3PD4CUkqBQq/Akd6L6ITA6G?=
- =?us-ascii?Q?VhkfGHpInAKF+hKBDt0GtHFOOJcudicggwCUAS4hh9uTy0RvM0y+rJHPVEgP?=
- =?us-ascii?Q?WGfbC3fYAzmc9baO0tVq0BzhIH7yS3qCZmCNgJQyDytxc464PPKwjMG64xYc?=
- =?us-ascii?Q?K4W5Yslfjk6eEDTsirI/ZuVcvrXfwLlzJqZV8X5Iv9DCSFAtmWWoOO5k67Yg?=
- =?us-ascii?Q?oY1VA7lVcoHEfZFVj40MikW+v1dRXisjs6kf2hwJSOtdBbGqv7LYFW/xoi9A?=
- =?us-ascii?Q?FtDIaCnAl68leILPhcXsZjyCU93rpsG0m1dEXnDeppjKVkaPHI3xJkZ/06m+?=
- =?us-ascii?Q?KoO2YA1Kx+CHQY0mbvq437GY9JocFJVZMsaWaiExV2Z7Mj6/UdPF++57AE1r?=
- =?us-ascii?Q?aJZEgB0fiOIredBuejRYIEn/KVNmHusaxPLmpbHIMIQrvdj0lRzRJa/SBe+L?=
- =?us-ascii?Q?tk9/midUajKdeBGbojzbG3ChXL41+szbkrCxmRkaZiqPseQzBF49dKtN88dJ?=
- =?us-ascii?Q?9mvE5eY9jxTGdr4cq3eJKLkONwjlSu/tx4hRPf/ck+4EOw0lbm1MEBxrQqnH?=
- =?us-ascii?Q?eEfK0pwW+VZoVvKnlSFnmeeTccBOxmCAHsgUN20oGBCbrA3BzLrC1WG147VC?=
- =?us-ascii?Q?CqdRWKARMLGhK+ntASYAZNA3y3cm6jUXQBPhGBE9aqPl8dilvGLPLa0rGqNe?=
- =?us-ascii?Q?+cnKDcB6GEEB0NHlTNMBHZLYhu7yjnhmyIPgVmo+ykkHOkpRDq2JGHHqdLJE?=
- =?us-ascii?Q?Ggr6Zljk5LBJXketRr4z3uo4Ed/MbwGNn1I8fXNWBquN0bNzN2HrdrAjE/yn?=
- =?us-ascii?Q?d/msk06r6AsVvv4nUs2NM1lK+zmhxFRTJTPoPhis9UbxO5uQ6q8Qys9gclhu?=
- =?us-ascii?Q?lY3GXy35c3zi4DMjVe9+PuOMdfJ6Q8Ni8ugU494M9qT8NvQo/7jTRNHdnYGw?=
- =?us-ascii?Q?czL2yhfZ9QcMGsUGZLF6EaBpcw05sseEIrrCaaWGuneLpsQNCCgpNRue35bu?=
- =?us-ascii?Q?GEJj+8shkoFOIUuuJwrr7g7RqTXlt7esxoeYc0wZ9MrXgjznCJq1RG9WvPUy?=
- =?us-ascii?Q?s3xkxdFwiuLnHCBvxtsiU8r+HS9kcEcjXuLmG9ozY9HeiIG1HbPuEC5owPXK?=
- =?us-ascii?Q?D7FZLB/7Cd24YrCBepJiiXblu1nOOoyweinWLofYlPpACNC5ARZVw7N6wgKE?=
- =?us-ascii?Q?8MdhAAcIfVCLPy9VaMvqExkJHS5+8Rfdf7PspuBm31Pur8eVwDRPurBjOr7+?=
- =?us-ascii?Q?e8lDGDOufK1jlYKvVFfwYlLOecxXAiiDugoB9/Yr5WJZXVXer/v1m98rGh+U?=
- =?us-ascii?Q?z+wiJ9w4/RxDEQj/FjanJRWbEFNnUElA76nuNNG8JCuIcC6TG3g7ppjzlt+f?=
- =?us-ascii?Q?VJKRhg=3D=3D?=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f14eeddc-2b86-4342-7b42-08d9eda85c93
-X-MS-Exchange-CrossTenant-AuthSource: CO1PR10MB4754.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Feb 2022 21:49:21.4187
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: by4z4+muqqCJK+Cwh0Ntexi381rWclVS3ocBzTENBNX5DP3vTWgTffaS58bPyqAG8krCi4crucqVKbNvhO/ro68e9yIkD3NYfBF0979y1g0=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN6PR10MB1697
-X-Proofpoint-Virus-Version: vendor=nai engine=6300 definitions=10255 signatures=673431
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 bulkscore=0 suspectscore=0
- mlxlogscore=954 mlxscore=0 adultscore=0 malwarescore=0 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2201110000
- definitions=main-2202110108
-X-Proofpoint-GUID: RAHp7CZIgH80gU8qLPnW-9qMHa2dfpFU
-X-Proofpoint-ORIG-GUID: RAHp7CZIgH80gU8qLPnW-9qMHa2dfpFU
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH] scsi: target: tcmu: Make cmd_ring_size changeable via
+ configfs.
+Content-Language: en-US
+To:     Guixin Liu <kanie@linux.alibaba.com>, martin.petersen@oracle.com
+Cc:     xiaoguang.wang@linux.alibaba.com, xlpang@linux.alibaba.com,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <1644291974-73531-1-git-send-email-kanie@linux.alibaba.com>
+From:   Bodo Stroesser <bostroesser@gmail.com>
+In-Reply-To: <1644291974-73531-1-git-send-email-kanie@linux.alibaba.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+On 08.02.22 04:46, Guixin Liu wrote:
+> Make cmd_ring_size changeable similar to the way it is done for
+> max_data_area_mb, the reason is that our tcmu client will create
+> thousands of tcmu instances, and this will consume lots of mem with
+> default 8Mb cmd ring size for every backstore.
+> 
+> One can change the value by typing:
+>      echo "cmd_ring_size_mb=N" > control
+> The "N" is a integer between 1 to 8, if set 1, the cmd ring can hold
+> about 6k cmds(tcmu_cmd_entry about 176 byte) at least.
+> 
+> The value is printed when doing:
+>      cat info
+> In addition, a new readonly attribute 'cmd_ring_size_mb' returns the
+> value in read.
 
-Xiaoguang,
+Thank you for the patch. This was on my todo list also.
 
-> For scsi commands that are known to be completed in non-interrupt
-> context, scsi_done_direct() calling blk_mq_complete_request_direct()
-> can be used to completes commands directly instead deferring it
-> to softirq, which can give throughput improvement.
+> 
+> Signed-off-by: Guixin Liu <kanie@linux.alibaba.com>
+> ---
+>   drivers/target/target_core_user.c | 64 ++++++++++++++++++++++++++++++++++++---
+>   1 file changed, 59 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+> index 7b2a89a..826c1c0 100644
+> --- a/drivers/target/target_core_user.c
+> +++ b/drivers/target/target_core_user.c
+> @@ -64,7 +64,6 @@
+>   #define MB_CMDR_SIZE (8 * 1024 * 1024)
 
-https://lore.kernel.org/all/20220201210954.570896-1-sebastian@breakpoint.cc/
+I'd like to change this to MB_CMDR_SIZE_DEF, since it no longer is
+the fixed size of mailbox plus cmd ring, but the default only.
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+>   /* Offset of cmd ring is size of mailbox */
+>   #define CMDR_OFF sizeof(struct tcmu_mailbox)
+> -#define CMDR_SIZE (MB_CMDR_SIZE - CMDR_OFF)
+
+Similarly this could become CMDR_SIZE_DEF
+
+>   
+>   /*
+>    * For data area, the default block size is PAGE_SIZE and
+> @@ -133,6 +132,7 @@ struct tcmu_dev {
+>   	struct tcmu_mailbox *mb_addr;
+>   	void *cmdr;
+>   	u32 cmdr_size;
+> +	u32 total_cmdr_size_byte;
+
+Do we really need a new field in tcmu_dev? I think we should avoid it
+since the field cmdr_size holds the same value, just lowered by CMDR_OFF.
+
+>   	u32 cmdr_last_cleaned;
+>   	/* Offset of data area from start of mb */
+>   	/* Must add data_off and mb_addr to get the address */
+> @@ -1617,6 +1617,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+>   
+>   	udev->data_pages_per_blk = DATA_PAGES_PER_BLK_DEF;
+>   	udev->max_blocks = DATA_AREA_PAGES_DEF / udev->data_pages_per_blk;
+> +	udev->total_cmdr_size_byte = MB_CMDR_SIZE;
+
+We could do
+         udev->cmdr_size = CMDR_SIZE_DEF;
+
+>   	udev->data_area_mb = TCMU_PAGES_TO_MBS(DATA_AREA_PAGES_DEF);
+>   
+>   	mutex_init(&udev->cmdr_lock);
+> @@ -2189,7 +2190,7 @@ static int tcmu_configure_device(struct se_device *dev)
+>   		goto err_bitmap_alloc;
+>   	}
+>   
+> -	mb = vzalloc(MB_CMDR_SIZE);
+> +	mb = vzalloc(udev->total_cmdr_size_byte);
+>   	if (!mb) {
+>   		ret = -ENOMEM;
+>   		goto err_vzalloc;
+> @@ -2198,8 +2199,8 @@ static int tcmu_configure_device(struct se_device *dev)
+>   	/* mailbox fits in first part of CMDR space */
+>   	udev->mb_addr = mb;
+>   	udev->cmdr = (void *)mb + CMDR_OFF;
+> -	udev->cmdr_size = CMDR_SIZE;
+> -	udev->data_off = MB_CMDR_SIZE;
+> +	udev->cmdr_size = udev->total_cmdr_size_byte - CMDR_OFF;
+> +	udev->data_off = udev->total_cmdr_size_byte;
+
+CMDR_SIZE would be already set here, so we only would need:
+         udev->data_off = udev->cmdr_size + CMDR_OFF;
+
+>   	data_size = TCMU_MBS_TO_PAGES(udev->data_area_mb) << PAGE_SHIFT;
+>   	udev->mmap_pages = (data_size + MB_CMDR_SIZE) >> PAGE_SHIFT;
+
+I think we have to replace MB_CMDR_SIZE with udev->cmdr_size + CMDR_OFF here.
+Just a few lines below your patch also does not change the line
+         info->mem[0].size = data_size + MB_CMDR_SIZE;
+where the same replacement is needed.
+
+>   	udev->data_blk_size = udev->data_pages_per_blk * PAGE_SIZE;
+> @@ -2401,7 +2402,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+>   enum {
+>   	Opt_dev_config, Opt_dev_size, Opt_hw_block_size, Opt_hw_max_sectors,
+>   	Opt_nl_reply_supported, Opt_max_data_area_mb, Opt_data_pages_per_blk,
+> -	Opt_err,
+> +	Opt_cmd_ring_size_mb, Opt_err,
+>   };
+>   
+>   static match_table_t tokens = {
+> @@ -2412,6 +2413,7 @@ enum {
+>   	{Opt_nl_reply_supported, "nl_reply_supported=%d"},
+>   	{Opt_max_data_area_mb, "max_data_area_mb=%d"},
+>   	{Opt_data_pages_per_blk, "data_pages_per_blk=%d"},
+> +	{Opt_cmd_ring_size_mb, "cmd_ring_size_mb=%d"},
+>   	{Opt_err, NULL}
+>   };
+>   
+> @@ -2509,6 +2511,41 @@ static int tcmu_set_data_pages_per_blk(struct tcmu_dev *udev, substring_t *arg)
+>   	return ret;
+>   }
+>   
+> +static int tcmu_set_cmd_ring_size_param(struct tcmu_dev *udev, substring_t *arg)
+
+Please remove the "_param" suffix from function name, as the
+other similar set functions don't have it also.
+
+> +{
+> +	int val, ret;
+> +
+> +	ret = match_int(arg, &val);
+> +	if (ret < 0) {
+> +		pr_err("match_int() failed for cmd_ring_size_mb=. Error %d.\n",
+> +		       ret);
+> +		return ret;
+> +	}
+> +
+> +	if (val <= 0) {
+> +		pr_err("Invalid cmd_ring_size_mb %d.\n", val);
+> +		return -EINVAL;
+> +	}
+> +
+> +	mutex_lock(&udev->cmdr_lock);
+> +	if (udev->data_bitmap) {
+> +		pr_err("Cannot set cmd_ring_size_mb after it has been enabled.\n");
+> +		ret = -EINVAL;
+> +		goto unlock;
+> +	}
+> +
+> +	udev->total_cmdr_size_byte = (val << 20);
+> +	if (udev->total_cmdr_size_byte > MB_CMDR_SIZE) {
+
+Would be
+         udev->cmdr_size = (val << 20) - CMDR_OFF;
+         if (val > (MB_CMDR_SIZE_DEF >> 20)) {
+
+Please note: the check you coded is definitely wrong.
+E.g. if someone entered the value 4096, which is 0x1000,
+we would have ended up with udev->total_cmdr_size_byte
+set to 0 ...
+
+> +		pr_err("%d is too large. Adjusting cmd_ring_size_mb to global limit of %u\n",
+> +		       val, (MB_CMDR_SIZE >> 20));
+> +		udev->total_cmdr_size_byte = MB_CMDR_SIZE;
+
+                 udev->cmdr_size = CMDR_SIZE_DEF;
+> +	}
+> +
+> +unlock:
+> +	mutex_unlock(&udev->cmdr_lock);
+> +	return ret;
+> +}
+> +
+>   static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
+>   		const char *page, ssize_t count)
+>   {
+> @@ -2563,6 +2600,9 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
+>   		case Opt_data_pages_per_blk:
+>   			ret = tcmu_set_data_pages_per_blk(udev, &args[0]);
+>   			break;
+> +		case Opt_cmd_ring_size_mb:
+> +			ret = tcmu_set_cmd_ring_size_param(udev, &args[0]);
+> +			break;
+>   		default:
+>   			break;
+>   		}
+> @@ -2585,6 +2625,8 @@ static ssize_t tcmu_show_configfs_dev_params(struct se_device *dev, char *b)
+>   	bl += sprintf(b + bl, "Size: %llu ", udev->dev_size);
+>   	bl += sprintf(b + bl, "MaxDataAreaMB: %u ", udev->data_area_mb);
+>   	bl += sprintf(b + bl, "DataPagesPerBlk: %u\n", udev->data_pages_per_blk);
+
+I think we should print all the config values on one line.
+So I'd like to remove the '\n' after DataPagesPerBlk.
+
+> +	bl += sprintf(b + bl, "CmdRingSizeMB: %u\n",
+> +		      (udev->total_cmdr_size_byte >> 20));
+>   
+>   	return bl;
+>   }
+> @@ -3059,6 +3101,17 @@ static ssize_t tcmu_free_kept_buf_store(struct config_item *item, const char *pa
+>   }
+>   CONFIGFS_ATTR_WO(tcmu_, free_kept_buf);
+>   
+> +static ssize_t tcmu_cmd_ring_size_mb_show(struct config_item *item, char *page)
+> +{
+> +	struct se_dev_attrib *da = container_of(to_config_group(item),
+> +						struct se_dev_attrib, da_group);
+> +	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
+> +
+> +	return snprintf(page, PAGE_SIZE, "%u\n",
+> +			(udev->total_cmdr_size_byte >> 20));
+
+			(udev->cmdr_size + CMDR_OFF) >> 20);
+> +}
+> +CONFIGFS_ATTR_RO(tcmu_, cmd_ring_size_mb);
+> +
+
+The attributes block_dev, reset_ring and free_kept_buf belong
+to the separate action attribute group.
+So shouldn't we shift this new attribute up in the code, e.q.
+behind the line "CONFIGFS_ATTR_RO(tcmu_, data_pages_per_blk);"?
+
+
+>   static struct configfs_attribute *tcmu_attrib_attrs[] = {
+>   	&tcmu_attr_cmd_time_out,
+>   	&tcmu_attr_qfull_time_out,
+> @@ -3069,6 +3122,7 @@ static ssize_t tcmu_free_kept_buf_store(struct config_item *item, const char *pa
+>   	&tcmu_attr_emulate_write_cache,
+>   	&tcmu_attr_tmr_notification,
+>   	&tcmu_attr_nl_reply_supported,
+> +	&tcmu_attr_cmd_ring_size_mb,
+>   	NULL,
+>   };
+>   
