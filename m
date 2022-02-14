@@ -2,221 +2,139 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E12B5C433F5
-	for <target-devel@archiver.kernel.org>; Mon, 14 Feb 2022 03:15:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 753B5C433EF
+	for <target-devel@archiver.kernel.org>; Mon, 14 Feb 2022 09:47:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239941AbiBNDPp (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 13 Feb 2022 22:15:45 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:51136 "EHLO
+        id S245078AbiBNJr4 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 14 Feb 2022 04:47:56 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:44764 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239904AbiBNDPk (ORCPT
+        with ESMTP id S245345AbiBNJpx (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 13 Feb 2022 22:15:40 -0500
-Received: from out30-130.freemail.mail.aliyun.com (out30-130.freemail.mail.aliyun.com [115.124.30.130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23D5350E3B;
-        Sun, 13 Feb 2022 19:15:31 -0800 (PST)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R131e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04407;MF=kanie@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0V4JvugQ_1644808523;
-Received: from localhost(mailfrom:kanie@linux.alibaba.com fp:SMTPD_---0V4JvugQ_1644808523)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Mon, 14 Feb 2022 11:15:29 +0800
-From:   Guixin Liu <kanie@linux.alibaba.com>
-To:     bostroesser@gmail.com, martin.petersen@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, xiaoguang.wang@linux.alibaba.com,
-        xlpang@linux.alibaba.com
-Subject: [PATCH V2] scsi: target: tcmu: Make cmd_ring_size changeable via configfs.
-Date:   Mon, 14 Feb 2022 11:15:23 +0800
-Message-Id: <1644808523-21069-1-git-send-email-kanie@linux.alibaba.com>
-X-Mailer: git-send-email 1.8.3.1
+        Mon, 14 Feb 2022 04:45:53 -0500
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79C1660D9F;
+        Mon, 14 Feb 2022 01:38:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1644831538; x=1676367538;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=0IGPbPVaQO9WmcVVZypsyEn9AxDkiOr4ZxM5KcPK1wc=;
+  b=MVi4kPkioulQr2CO1lP/7xOWSPUzzTsokGKHEhud34EeXYOAiOLJ30LQ
+   y/9BT79qy8PUNiWHJISdv/HMDKoGGKLhkLAncbved2N9/StNILxs5iA0Z
+   L7wqcWxkYvUBZojD6QOwUjGz3MePLkZMFarC/pMx9q4AvmMpodlkbz5YX
+   tuuk7RWf9uFvYw7stYJWJ773eA44roEpDdQzPjwO44duph93rNUhjZ5BH
+   fS5yeyigcYGJg8+65Z28L54tuTFBvu+WKIVip+HrX5M3tc3/hIovrsONY
+   XkCkIWG5QyZfxC8nZdr9wgHXEyYhbgyUo19+Hspka+XoNq8DrDbfLhEsU
+   A==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10257"; a="247647693"
+X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
+   d="scan'208";a="247647693"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 01:38:53 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
+   d="scan'208";a="635052312"
+Received: from lkp-server01.sh.intel.com (HELO d95dc2dabeb1) ([10.239.97.150])
+  by orsmga004.jf.intel.com with ESMTP; 14 Feb 2022 01:38:51 -0800
+Received: from kbuild by d95dc2dabeb1 with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1nJXoo-0008M7-E2; Mon, 14 Feb 2022 09:38:50 +0000
+Date:   Mon, 14 Feb 2022 17:38:30 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Guixin Liu <kanie@linux.alibaba.com>, bostroesser@gmail.com,
+        martin.petersen@oracle.com
+Cc:     kbuild-all@lists.01.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+        xiaoguang.wang@linux.alibaba.com, xlpang@linux.alibaba.com
+Subject: Re: [PATCH V2] scsi: target: tcmu: Make cmd_ring_size changeable via
+ configfs.
+Message-ID: <202202141721.OdtEVrDJ-lkp@intel.com>
+References: <1644808523-21069-1-git-send-email-kanie@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1644808523-21069-1-git-send-email-kanie@linux.alibaba.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Make cmd_ring_size changeable similar to the way it is done for
-max_data_area_mb, the reason is that our tcmu client will create
-thousands of tcmu instances, and this will consume lots of mem with
-default 8Mb cmd ring size for every backstore.
+Hi Guixin,
 
-One can change the value by typing:
-    echo "cmd_ring_size_mb=N" > control
-The "N" is a integer between 1 to 8, if set 1, the cmd ring can hold
-about 6k cmds(tcmu_cmd_entry about 176 byte) at least.
+Thank you for the patch! Perhaps something to improve:
 
-The value is printed when doing:
-    cat info
-In addition, a new readonly attribute 'cmd_ring_size_mb' returns the
-value in read.
+[auto build test WARNING on mkp-scsi/for-next]
+[also build test WARNING on v5.17-rc4 next-20220211]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-Reviewed-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-Signed-off-by: Guixin Liu <kanie@linux.alibaba.com>
+url:    https://github.com/0day-ci/linux/commits/Guixin-Liu/scsi-target-tcmu-Make-cmd_ring_size-changeable-via-configfs/20220214-111810
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
+config: xtensa-allyesconfig (https://download.01.org/0day-ci/archive/20220214/202202141721.OdtEVrDJ-lkp@intel.com/config)
+compiler: xtensa-linux-gcc (GCC) 11.2.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/c972a1533164208e331a5a4d34a7ed0bb44b17ba
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Guixin-Liu/scsi-target-tcmu-Make-cmd_ring_size-changeable-via-configfs/20220214-111810
+        git checkout c972a1533164208e331a5a4d34a7ed0bb44b17ba
+        # save the config file to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=xtensa SHELL=/bin/bash drivers/
+
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+   drivers/target/target_core_user.c: In function 'tcmu_show_configfs_dev_params':
+>> drivers/target/target_core_user.c:2627:49: warning: format '%lu' expects argument of type 'long unsigned int', but argument 3 has type 'u32' {aka 'unsigned int'} [-Wformat=]
+    2627 |         bl += sprintf(b + bl, "CmdRingSizeMB: %lu\n",
+         |                                               ~~^
+         |                                                 |
+         |                                                 long unsigned int
+         |                                               %u
+    2628 |                       (udev->cmdr_size + CMDR_OFF) >> 20);
+         |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         |                                                    |
+         |                                                    u32 {aka unsigned int}
+   drivers/target/target_core_user.c: In function 'tcmu_cmd_ring_size_mb_show':
+   drivers/target/target_core_user.c:2743:45: warning: format '%lu' expects argument of type 'long unsigned int', but argument 4 has type 'u32' {aka 'unsigned int'} [-Wformat=]
+    2743 |         return snprintf(page, PAGE_SIZE, "%lu\n",
+         |                                           ~~^
+         |                                             |
+         |                                             long unsigned int
+         |                                           %u
+    2744 |                         (udev->cmdr_size + CMDR_OFF) >> 20);
+         |                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         |                                                      |
+         |                                                      u32 {aka unsigned int}
+
+
+vim +2627 drivers/target/target_core_user.c
+
+  2616	
+  2617	static ssize_t tcmu_show_configfs_dev_params(struct se_device *dev, char *b)
+  2618	{
+  2619		struct tcmu_dev *udev = TCMU_DEV(dev);
+  2620		ssize_t bl = 0;
+  2621	
+  2622		bl = sprintf(b + bl, "Config: %s ",
+  2623			     udev->dev_config[0] ? udev->dev_config : "NULL");
+  2624		bl += sprintf(b + bl, "Size: %llu ", udev->dev_size);
+  2625		bl += sprintf(b + bl, "MaxDataAreaMB: %u ", udev->data_area_mb);
+  2626		bl += sprintf(b + bl, "DataPagesPerBlk: %u", udev->data_pages_per_blk);
+> 2627		bl += sprintf(b + bl, "CmdRingSizeMB: %lu\n",
+  2628			      (udev->cmdr_size + CMDR_OFF) >> 20);
+  2629	
+  2630		return bl;
+  2631	}
+  2632	
+
 ---
- Change the code according to Bodo Stroesser <bostroesser@gmail.com>`s review.
-
- drivers/target/target_core_user.c | 71 ++++++++++++++++++++++++++++++++++-----
- 1 file changed, 62 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 7b2a89a..4b000f0 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -61,10 +61,10 @@
- #define TCMU_TIME_OUT (30 * MSEC_PER_SEC)
- 
- /* For mailbox plus cmd ring, the size is fixed 8MB */
--#define MB_CMDR_SIZE (8 * 1024 * 1024)
-+#define MB_CMDR_SIZE_DEF (8 * 1024 * 1024)
- /* Offset of cmd ring is size of mailbox */
- #define CMDR_OFF sizeof(struct tcmu_mailbox)
--#define CMDR_SIZE (MB_CMDR_SIZE - CMDR_OFF)
-+#define CMDR_SIZE_DEF (MB_CMDR_SIZE_DEF - CMDR_OFF)
- 
- /*
-  * For data area, the default block size is PAGE_SIZE and
-@@ -1617,6 +1617,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 
- 	udev->data_pages_per_blk = DATA_PAGES_PER_BLK_DEF;
- 	udev->max_blocks = DATA_AREA_PAGES_DEF / udev->data_pages_per_blk;
-+	udev->cmdr_size = CMDR_SIZE_DEF;
- 	udev->data_area_mb = TCMU_PAGES_TO_MBS(DATA_AREA_PAGES_DEF);
- 
- 	mutex_init(&udev->cmdr_lock);
-@@ -2189,7 +2190,7 @@ static int tcmu_configure_device(struct se_device *dev)
- 		goto err_bitmap_alloc;
- 	}
- 
--	mb = vzalloc(MB_CMDR_SIZE);
-+	mb = vzalloc(udev->cmdr_size + CMDR_OFF);
- 	if (!mb) {
- 		ret = -ENOMEM;
- 		goto err_vzalloc;
-@@ -2198,10 +2199,9 @@ static int tcmu_configure_device(struct se_device *dev)
- 	/* mailbox fits in first part of CMDR space */
- 	udev->mb_addr = mb;
- 	udev->cmdr = (void *)mb + CMDR_OFF;
--	udev->cmdr_size = CMDR_SIZE;
--	udev->data_off = MB_CMDR_SIZE;
-+	udev->data_off = udev->cmdr_size + CMDR_OFF;
- 	data_size = TCMU_MBS_TO_PAGES(udev->data_area_mb) << PAGE_SHIFT;
--	udev->mmap_pages = (data_size + MB_CMDR_SIZE) >> PAGE_SHIFT;
-+	udev->mmap_pages = (data_size + udev->cmdr_size + CMDR_OFF) >> PAGE_SHIFT;
- 	udev->data_blk_size = udev->data_pages_per_blk * PAGE_SIZE;
- 	udev->dbi_thresh = 0; /* Default in Idle state */
- 
-@@ -2221,7 +2221,7 @@ static int tcmu_configure_device(struct se_device *dev)
- 
- 	info->mem[0].name = "tcm-user command & data buffer";
- 	info->mem[0].addr = (phys_addr_t)(uintptr_t)udev->mb_addr;
--	info->mem[0].size = data_size + MB_CMDR_SIZE;
-+	info->mem[0].size = data_size + udev->cmdr_size + CMDR_OFF;
- 	info->mem[0].memtype = UIO_MEM_NONE;
- 
- 	info->irqcontrol = tcmu_irqcontrol;
-@@ -2401,7 +2401,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
- enum {
- 	Opt_dev_config, Opt_dev_size, Opt_hw_block_size, Opt_hw_max_sectors,
- 	Opt_nl_reply_supported, Opt_max_data_area_mb, Opt_data_pages_per_blk,
--	Opt_err,
-+	Opt_cmd_ring_size_mb, Opt_err,
- };
- 
- static match_table_t tokens = {
-@@ -2412,6 +2412,7 @@ enum {
- 	{Opt_nl_reply_supported, "nl_reply_supported=%d"},
- 	{Opt_max_data_area_mb, "max_data_area_mb=%d"},
- 	{Opt_data_pages_per_blk, "data_pages_per_blk=%d"},
-+	{Opt_cmd_ring_size_mb, "cmd_ring_size_mb=%d"},
- 	{Opt_err, NULL}
- };
- 
-@@ -2509,6 +2510,41 @@ static int tcmu_set_data_pages_per_blk(struct tcmu_dev *udev, substring_t *arg)
- 	return ret;
- }
- 
-+static int tcmu_set_cmd_ring_size(struct tcmu_dev *udev, substring_t *arg)
-+{
-+	int val, ret;
-+
-+	ret = match_int(arg, &val);
-+	if (ret < 0) {
-+		pr_err("match_int() failed for cmd_ring_size_mb=. Error %d.\n",
-+		       ret);
-+		return ret;
-+	}
-+
-+	if (val <= 0) {
-+		pr_err("Invalid cmd_ring_size_mb %d.\n", val);
-+		return -EINVAL;
-+	}
-+
-+	mutex_lock(&udev->cmdr_lock);
-+	if (udev->data_bitmap) {
-+		pr_err("Cannot set cmd_ring_size_mb after it has been enabled.\n");
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
-+
-+	udev->cmdr_size = (val << 20) - CMDR_OFF;
-+	if (val > (MB_CMDR_SIZE_DEF >> 20)) {
-+		pr_err("%d is too large. Adjusting cmd_ring_size_mb to global limit of %u\n",
-+		       val, (MB_CMDR_SIZE_DEF >> 20));
-+		udev->cmdr_size = CMDR_SIZE_DEF;
-+	}
-+
-+unlock:
-+	mutex_unlock(&udev->cmdr_lock);
-+	return ret;
-+}
-+
- static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
- 		const char *page, ssize_t count)
- {
-@@ -2563,6 +2599,9 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
- 		case Opt_data_pages_per_blk:
- 			ret = tcmu_set_data_pages_per_blk(udev, &args[0]);
- 			break;
-+		case Opt_cmd_ring_size_mb:
-+			ret = tcmu_set_cmd_ring_size(udev, &args[0]);
-+			break;
- 		default:
- 			break;
- 		}
-@@ -2584,7 +2623,9 @@ static ssize_t tcmu_show_configfs_dev_params(struct se_device *dev, char *b)
- 		     udev->dev_config[0] ? udev->dev_config : "NULL");
- 	bl += sprintf(b + bl, "Size: %llu ", udev->dev_size);
- 	bl += sprintf(b + bl, "MaxDataAreaMB: %u ", udev->data_area_mb);
--	bl += sprintf(b + bl, "DataPagesPerBlk: %u\n", udev->data_pages_per_blk);
-+	bl += sprintf(b + bl, "DataPagesPerBlk: %u", udev->data_pages_per_blk);
-+	bl += sprintf(b + bl, "CmdRingSizeMB: %lu\n",
-+		      (udev->cmdr_size + CMDR_OFF) >> 20);
- 
- 	return bl;
- }
-@@ -2693,6 +2734,17 @@ static ssize_t tcmu_data_pages_per_blk_show(struct config_item *item,
- }
- CONFIGFS_ATTR_RO(tcmu_, data_pages_per_blk);
- 
-+static ssize_t tcmu_cmd_ring_size_mb_show(struct config_item *item, char *page)
-+{
-+	struct se_dev_attrib *da = container_of(to_config_group(item),
-+						struct se_dev_attrib, da_group);
-+	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
-+
-+	return snprintf(page, PAGE_SIZE, "%lu\n",
-+			(udev->cmdr_size + CMDR_OFF) >> 20);
-+}
-+CONFIGFS_ATTR_RO(tcmu_, cmd_ring_size_mb);
-+
- static ssize_t tcmu_dev_config_show(struct config_item *item, char *page)
- {
- 	struct se_dev_attrib *da = container_of(to_config_group(item),
-@@ -3064,6 +3116,7 @@ static ssize_t tcmu_free_kept_buf_store(struct config_item *item, const char *pa
- 	&tcmu_attr_qfull_time_out,
- 	&tcmu_attr_max_data_area_mb,
- 	&tcmu_attr_data_pages_per_blk,
-+	&tcmu_attr_cmd_ring_size_mb,
- 	&tcmu_attr_dev_config,
- 	&tcmu_attr_dev_size,
- 	&tcmu_attr_emulate_write_cache,
--- 
-1.8.3.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
