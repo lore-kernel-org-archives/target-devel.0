@@ -2,92 +2,219 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1800BC43219
-	for <target-devel@archiver.kernel.org>; Tue, 15 Feb 2022 03:19:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEFA2C433F5
+	for <target-devel@archiver.kernel.org>; Tue, 15 Feb 2022 08:03:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233836AbiBODT6 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 14 Feb 2022 22:19:58 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:43790 "EHLO
+        id S232779AbiBOIED (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 15 Feb 2022 03:04:03 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:36150 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233811AbiBODTz (ORCPT
+        with ESMTP id S235103AbiBOIEB (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 14 Feb 2022 22:19:55 -0500
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0088520F59;
-        Mon, 14 Feb 2022 19:19:46 -0800 (PST)
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 21F2WvHh022038;
-        Tue, 15 Feb 2022 03:19:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2021-07-09;
- bh=Y457YTdXV5O2I0r5weXh5J18vYtPaowY8zWk4jkV6kU=;
- b=XwaUh/E67LGicq3GJRmDmiTDoXxgqnFK+jYeJuxMTI3wdmOuAEiEISohH76MIJxtorzt
- hp12XbkOIGD5dLeVieWzuFDjSL+s2oWYY0UsRx5+29757SdzcmmPA4/YbMU1RjQWZcoj
- 1QS5tk7RMygnVvlmH8LxXUtW63Yy5lTIAXtWNOIyLhIVnWaBEiuH07kOtMG0wqIh8w/9
- rtzN6izxDGaVg4k3630c4rhYRQrqcOhcJuYHeiB26WL0h1nbcpfWRiP0Pzq3zPArNYDJ
- 2KXY+rv0JRSqB2OWnYgzSpfruGmY0blpW9T2Cx4t0yn4b67spMyqOSQ/4wZztqCwy1Uq ng== 
-Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
-        by mx0b-00069f02.pphosted.com with ESMTP id 3e63ad6bqw-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 15 Feb 2022 03:19:31 +0000
-Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
-        by userp3030.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 21F3GpFC057595;
-        Tue, 15 Feb 2022 03:19:30 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by userp3030.oracle.com with ESMTP id 3e620wpgsh-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 15 Feb 2022 03:19:30 +0000
-Received: from userp3030.oracle.com (userp3030.oracle.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 21F3JMPC064243;
-        Tue, 15 Feb 2022 03:19:30 GMT
-Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
-        by userp3030.oracle.com with ESMTP id 3e620wpgqq-6;
-        Tue, 15 Feb 2022 03:19:29 +0000
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     Kees Cook <keescook@chromium.org>,
-        Michael Cyr <mikecyr@linux.ibm.com>
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        linux-hardening@vger.kernel.org, target-devel@vger.kernel.org,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        Tyrel Datwyler <tyreld@linux.ibm.com>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: ibmvscsis: Silence -Warray-bounds warning
-Date:   Mon, 14 Feb 2022 22:19:18 -0500
-Message-Id: <164489513313.15031.7832986884338779882.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220208061231.3429486-1-keescook@chromium.org>
-References: <20220208061231.3429486-1-keescook@chromium.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: SLlgXN1neJdbvyITMnETiSiq6oqy43In
-X-Proofpoint-ORIG-GUID: SLlgXN1neJdbvyITMnETiSiq6oqy43In
+        Tue, 15 Feb 2022 03:04:01 -0500
+Received: from out30-43.freemail.mail.aliyun.com (out30-43.freemail.mail.aliyun.com [115.124.30.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 151F727160;
+        Tue, 15 Feb 2022 00:03:42 -0800 (PST)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R141e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04357;MF=kanie@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0V4XPkO4_1644912216;
+Received: from localhost(mailfrom:kanie@linux.alibaba.com fp:SMTPD_---0V4XPkO4_1644912216)
+          by smtp.aliyun-inc.com(127.0.0.1);
+          Tue, 15 Feb 2022 16:03:40 +0800
+From:   Guixin Liu <kanie@linux.alibaba.com>
+To:     bostroesser@gmail.com, martin.petersen@oracle.com
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, xiaoguang.wang@linux.alibaba.com,
+        xlpang@linux.alibaba.com
+Subject: [PATCH V3] scsi: target: tcmu: Make cmd_ring_size changeable via configfs.
+Date:   Tue, 15 Feb 2022 16:03:36 +0800
+Message-Id: <1644912216-97633-1-git-send-email-kanie@linux.alibaba.com>
+X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Mon, 7 Feb 2022 22:12:31 -0800, Kees Cook wrote:
+Make cmd_ring_size changeable similar to the way it is done for
+max_data_area_mb, the reason is that our tcmu client will create
+thousands of tcmu instances, and this will consume lots of mem with
+default 8Mb cmd ring size for every backstore.
 
-> Instead of doing a cast to storage that is too small, add a union for
-> the high 64 bits. Silences the warnings under -Warray-bounds:
-> 
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c: In function 'ibmvscsis_send_messages':
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:1934:44: error: array subscript 'struct viosrp_crq[0]' is partly outside array bounds of 'u64[1]' {aka 'long long unsigned int[1]'} [-Werror=array-bounds]
->  1934 |                                         crq->valid = VALID_CMD_RESP_EL;
->       |                                            ^~
-> drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c:1875:13: note: while referencing 'msg_hi'
->  1875 |         u64 msg_hi = 0;
->       |             ^~~~~~
-> 
-> [...]
+One can change the value by typing:
+    echo "cmd_ring_size_mb=N" > control
+The "N" is a integer between 1 to 8, if set 1, the cmd ring can hold
+about 6k cmds(tcmu_cmd_entry about 176 byte) at least.
 
-Applied to 5.18/scsi-queue, thanks!
+The value is printed when doing:
+    cat info
+In addition, a new readonly attribute 'cmd_ring_size_mb' returns the
+value in read.
 
-[1/1] scsi: ibmvscsis: Silence -Warray-bounds warning
-      https://git.kernel.org/mkp/scsi/c/03e4383c7ce3
+Reviewed-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
+Signed-off-by: Guixin Liu <kanie@linux.alibaba.com>
+---
+ drivers/target/target_core_user.c | 71 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 62 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index 7b2a89a..0a546db 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -61,10 +61,10 @@
+ #define TCMU_TIME_OUT (30 * MSEC_PER_SEC)
+ 
+ /* For mailbox plus cmd ring, the size is fixed 8MB */
+-#define MB_CMDR_SIZE (8 * 1024 * 1024)
++#define MB_CMDR_SIZE_DEF (8 * 1024 * 1024)
+ /* Offset of cmd ring is size of mailbox */
+ #define CMDR_OFF sizeof(struct tcmu_mailbox)
+-#define CMDR_SIZE (MB_CMDR_SIZE - CMDR_OFF)
++#define CMDR_SIZE_DEF (MB_CMDR_SIZE_DEF - CMDR_OFF)
+ 
+ /*
+  * For data area, the default block size is PAGE_SIZE and
+@@ -1617,6 +1617,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
+ 
+ 	udev->data_pages_per_blk = DATA_PAGES_PER_BLK_DEF;
+ 	udev->max_blocks = DATA_AREA_PAGES_DEF / udev->data_pages_per_blk;
++	udev->cmdr_size = CMDR_SIZE_DEF;
+ 	udev->data_area_mb = TCMU_PAGES_TO_MBS(DATA_AREA_PAGES_DEF);
+ 
+ 	mutex_init(&udev->cmdr_lock);
+@@ -2189,7 +2190,7 @@ static int tcmu_configure_device(struct se_device *dev)
+ 		goto err_bitmap_alloc;
+ 	}
+ 
+-	mb = vzalloc(MB_CMDR_SIZE);
++	mb = vzalloc(udev->cmdr_size + CMDR_OFF);
+ 	if (!mb) {
+ 		ret = -ENOMEM;
+ 		goto err_vzalloc;
+@@ -2198,10 +2199,9 @@ static int tcmu_configure_device(struct se_device *dev)
+ 	/* mailbox fits in first part of CMDR space */
+ 	udev->mb_addr = mb;
+ 	udev->cmdr = (void *)mb + CMDR_OFF;
+-	udev->cmdr_size = CMDR_SIZE;
+-	udev->data_off = MB_CMDR_SIZE;
++	udev->data_off = udev->cmdr_size + CMDR_OFF;
+ 	data_size = TCMU_MBS_TO_PAGES(udev->data_area_mb) << PAGE_SHIFT;
+-	udev->mmap_pages = (data_size + MB_CMDR_SIZE) >> PAGE_SHIFT;
++	udev->mmap_pages = (data_size + udev->cmdr_size + CMDR_OFF) >> PAGE_SHIFT;
+ 	udev->data_blk_size = udev->data_pages_per_blk * PAGE_SIZE;
+ 	udev->dbi_thresh = 0; /* Default in Idle state */
+ 
+@@ -2221,7 +2221,7 @@ static int tcmu_configure_device(struct se_device *dev)
+ 
+ 	info->mem[0].name = "tcm-user command & data buffer";
+ 	info->mem[0].addr = (phys_addr_t)(uintptr_t)udev->mb_addr;
+-	info->mem[0].size = data_size + MB_CMDR_SIZE;
++	info->mem[0].size = data_size + udev->cmdr_size + CMDR_OFF;
+ 	info->mem[0].memtype = UIO_MEM_NONE;
+ 
+ 	info->irqcontrol = tcmu_irqcontrol;
+@@ -2401,7 +2401,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+ enum {
+ 	Opt_dev_config, Opt_dev_size, Opt_hw_block_size, Opt_hw_max_sectors,
+ 	Opt_nl_reply_supported, Opt_max_data_area_mb, Opt_data_pages_per_blk,
+-	Opt_err,
++	Opt_cmd_ring_size_mb, Opt_err,
+ };
+ 
+ static match_table_t tokens = {
+@@ -2412,6 +2412,7 @@ enum {
+ 	{Opt_nl_reply_supported, "nl_reply_supported=%d"},
+ 	{Opt_max_data_area_mb, "max_data_area_mb=%d"},
+ 	{Opt_data_pages_per_blk, "data_pages_per_blk=%d"},
++	{Opt_cmd_ring_size_mb, "cmd_ring_size_mb=%d"},
+ 	{Opt_err, NULL}
+ };
+ 
+@@ -2509,6 +2510,41 @@ static int tcmu_set_data_pages_per_blk(struct tcmu_dev *udev, substring_t *arg)
+ 	return ret;
+ }
+ 
++static int tcmu_set_cmd_ring_size(struct tcmu_dev *udev, substring_t *arg)
++{
++	int val, ret;
++
++	ret = match_int(arg, &val);
++	if (ret < 0) {
++		pr_err("match_int() failed for cmd_ring_size_mb=. Error %d.\n",
++		       ret);
++		return ret;
++	}
++
++	if (val <= 0) {
++		pr_err("Invalid cmd_ring_size_mb %d.\n", val);
++		return -EINVAL;
++	}
++
++	mutex_lock(&udev->cmdr_lock);
++	if (udev->data_bitmap) {
++		pr_err("Cannot set cmd_ring_size_mb after it has been enabled.\n");
++		ret = -EINVAL;
++		goto unlock;
++	}
++
++	udev->cmdr_size = (val << 20) - CMDR_OFF;
++	if (val > (MB_CMDR_SIZE_DEF >> 20)) {
++		pr_err("%d is too large. Adjusting cmd_ring_size_mb to global limit of %u\n",
++		       val, (MB_CMDR_SIZE_DEF >> 20));
++		udev->cmdr_size = CMDR_SIZE_DEF;
++	}
++
++unlock:
++	mutex_unlock(&udev->cmdr_lock);
++	return ret;
++}
++
+ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
+ 		const char *page, ssize_t count)
+ {
+@@ -2563,6 +2599,9 @@ static ssize_t tcmu_set_configfs_dev_params(struct se_device *dev,
+ 		case Opt_data_pages_per_blk:
+ 			ret = tcmu_set_data_pages_per_blk(udev, &args[0]);
+ 			break;
++		case Opt_cmd_ring_size_mb:
++			ret = tcmu_set_cmd_ring_size(udev, &args[0]);
++			break;
+ 		default:
+ 			break;
+ 		}
+@@ -2584,7 +2623,9 @@ static ssize_t tcmu_show_configfs_dev_params(struct se_device *dev, char *b)
+ 		     udev->dev_config[0] ? udev->dev_config : "NULL");
+ 	bl += sprintf(b + bl, "Size: %llu ", udev->dev_size);
+ 	bl += sprintf(b + bl, "MaxDataAreaMB: %u ", udev->data_area_mb);
+-	bl += sprintf(b + bl, "DataPagesPerBlk: %u\n", udev->data_pages_per_blk);
++	bl += sprintf(b + bl, "DataPagesPerBlk: %u", udev->data_pages_per_blk);
++	bl += sprintf(b + bl, "CmdRingSizeMB: %u\n",
++		      (udev->cmdr_size + CMDR_OFF) >> 20);
+ 
+ 	return bl;
+ }
+@@ -2693,6 +2734,17 @@ static ssize_t tcmu_data_pages_per_blk_show(struct config_item *item,
+ }
+ CONFIGFS_ATTR_RO(tcmu_, data_pages_per_blk);
+ 
++static ssize_t tcmu_cmd_ring_size_mb_show(struct config_item *item, char *page)
++{
++	struct se_dev_attrib *da = container_of(to_config_group(item),
++						struct se_dev_attrib, da_group);
++	struct tcmu_dev *udev = TCMU_DEV(da->da_dev);
++
++	return snprintf(page, PAGE_SIZE, "%u\n",
++			(udev->cmdr_size + CMDR_OFF) >> 20);
++}
++CONFIGFS_ATTR_RO(tcmu_, cmd_ring_size_mb);
++
+ static ssize_t tcmu_dev_config_show(struct config_item *item, char *page)
+ {
+ 	struct se_dev_attrib *da = container_of(to_config_group(item),
+@@ -3064,6 +3116,7 @@ static ssize_t tcmu_free_kept_buf_store(struct config_item *item, const char *pa
+ 	&tcmu_attr_qfull_time_out,
+ 	&tcmu_attr_max_data_area_mb,
+ 	&tcmu_attr_data_pages_per_blk,
++	&tcmu_attr_cmd_ring_size_mb,
+ 	&tcmu_attr_dev_config,
+ 	&tcmu_attr_dev_size,
+ 	&tcmu_attr_emulate_write_cache,
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+1.8.3.1
+
