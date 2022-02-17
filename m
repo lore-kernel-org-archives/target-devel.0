@@ -2,121 +2,310 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCD2FC433EF
-	for <target-devel@archiver.kernel.org>; Thu, 17 Feb 2022 06:56:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 125AEC433EF
+	for <target-devel@archiver.kernel.org>; Thu, 17 Feb 2022 07:45:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234832AbiBQG4U (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 17 Feb 2022 01:56:20 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:50044 "EHLO
+        id S236535AbiBQHqG (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 17 Feb 2022 02:46:06 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:37662 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230014AbiBQG4T (ORCPT
+        with ESMTP id S236527AbiBQHqF (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 17 Feb 2022 01:56:19 -0500
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE66727F298;
-        Wed, 16 Feb 2022 22:56:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1645080965; x=1676616965;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=nbe4Fwiyx8rYqaNPl7hAoUCmlKv54SDhqXwRa/L9Toc=;
-  b=hTdE9UcvGinkNDmcXWf3TcmLw/9RbIRb9Tux8Js3HTMFleG4kwJAHjB1
-   ryD5tnsywx06DLTMp0X1wBnzl2GvRA7Z3qAVoZoQKGM1V8HB4+2agrcxx
-   ZVmlIHaQjBJHOB4crOCkslkyi2Q2CrwuMHhmPMf9Q0uW4X9H/XkVBL2Jy
-   1kax8RMf3bBWzGjQACqBt8tb4wvcKF3OD7GvMVKupmZv9s3NQ5ngx0+NN
-   gEAXxvse09ccffUyP2jyufp4EYmy7nZQtRueIcBIkIovSIDjpv2dSHFO9
-   VMwWXy04ouhCuZMg3VMDgZZjNtKhBTOs1NWYCow0hqKBIFg3etK2k+3le
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10260"; a="231432854"
-X-IronPort-AV: E=Sophos;i="5.88,375,1635231600"; 
-   d="scan'208";a="231432854"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Feb 2022 22:56:05 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.88,375,1635231600"; 
-   d="scan'208";a="625853020"
-Received: from lkp-server01.sh.intel.com (HELO d95dc2dabeb1) ([10.239.97.150])
-  by FMSMGA003.fm.intel.com with ESMTP; 16 Feb 2022 22:56:03 -0800
-Received: from kbuild by d95dc2dabeb1 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1nKahu-000BXe-RS; Thu, 17 Feb 2022 06:56:02 +0000
-Date:   Thu, 17 Feb 2022 14:55:47 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Guixin Liu <kanie@linux.alibaba.com>, gregkh@linuxfoundation.org,
-        bostroesser@gmail.com, martin.petersen@oracle.com
-Cc:     kbuild-all@lists.01.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-        xiaoguang.wang@linux.alibaba.com, xlpang@linux.alibaba.com
-Subject: Re: [PATCH 1/2] uio: add ioctl to uio
-Message-ID: <202202171444.RSO1up2n-lkp@intel.com>
-References: <1645064962-94123-1-git-send-email-kanie@linux.alibaba.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1645064962-94123-1-git-send-email-kanie@linux.alibaba.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+        Thu, 17 Feb 2022 02:46:05 -0500
+Received: from mail-m2836.qiye.163.com (mail-m2836.qiye.163.com [103.74.28.36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3A5623A1A8;
+        Wed, 16 Feb 2022 23:45:50 -0800 (PST)
+Received: from localhost.localdomain (unknown [218.94.118.90])
+        by mail-m2836.qiye.163.com (Hmail) with ESMTPA id 4CCD7C04BC;
+        Thu, 17 Feb 2022 15:45:48 +0800 (CST)
+From:   mingzhe.zou@easystack.cn
+To:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org
+Cc:     zoumingzhe@qq.com, Mingzhe Zou <mingzhe.zou@easystack.cn>
+Subject: [PATCH v2] target: add iscsi/cpus_allowed_list in configfs
+Date:   Thu, 17 Feb 2022 15:45:11 +0800
+Message-Id: <20220217074511.9696-1-mingzhe.zou@easystack.cn>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20220125083821.18225-1-mingzhe.zou@easystack.cn>
+References: <20220125083821.18225-1-mingzhe.zou@easystack.cn>
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
+        kWDxoPAgseWUFZKDYvK1lXWShZQUlCN1dZLVlBSVdZDwkaFQgSH1lBWRpNGEpWTEJJTR0aThlMHx
+        hJVRkRExYaEhckFA4PWVdZFhoPEhUdFFlBWVVLWQY+
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6PTI6DSo4EjI8Iw9MCEseEis*
+        QwgwFDBVSlVKTU9OS0NIQk9DQ0lNVTMWGhIXVRYSFRwBEx5VARQOOx4aCAIIDxoYEFUYFUVZV1kS
+        C1lBWUlKQ1VCT1VKSkNVQktZV1kIAVlBQkxOTjcG
+X-HM-Tid: 0a7f06a4f5c6841ekuqw4ccd7c04bc
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Guixin,
+From: Mingzhe Zou <mingzhe.zou@easystack.cn>
 
-Thank you for the patch! Perhaps something to improve:
+The RX/TX threads for iSCSI connection can be scheduled to
+any online cpus, and will not be rescheduled.
 
-[auto build test WARNING on char-misc/char-misc-testing]
-[also build test WARNING on mkp-scsi/for-next linux/master linus/master v5.17-rc4 next-20220216]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+If bind other heavy load threads with iSCSI connection
+RX/TX thread to the same cpu, the iSCSI performance will
+be worse.
 
-url:    https://github.com/0day-ci/linux/commits/Guixin-Liu/uio-add-ioctl-to-uio/20220217-103120
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git e6cb9c167eeb8f90ab924666c573e69e85e700a0
-config: arc-randconfig-r035-20220217 (https://download.01.org/0day-ci/archive/20220217/202202171444.RSO1up2n-lkp@intel.com/config)
-compiler: arc-elf-gcc (GCC) 11.2.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/0day-ci/linux/commit/8786f129af888d844bc38ed78db7a6788e45655c
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Guixin-Liu/uio-add-ioctl-to-uio/20220217-103120
-        git checkout 8786f129af888d844bc38ed78db7a6788e45655c
-        # save the config file to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=arc SHELL=/bin/bash drivers/uio/
+This patch add iscsi/cpus_allowed_list in configfs. The
+available cpus set of iSCSI connection RX/TX threads is
+allowed_cpus & online_cpus. If it is modified, all RX/TX
+threads will be rescheduled.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All warnings (new ones prefixed by >>):
-
->> drivers/uio/uio.c:818:6: warning: no previous prototype for 'uio_ioctl' [-Wmissing-prototypes]
-     818 | long uio_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
-         |      ^~~~~~~~~
-
-
-vim +/uio_ioctl +818 drivers/uio/uio.c
-
-   817	
- > 818	long uio_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
-   819	{
-   820		struct uio_listener *listener = filep->private_data;
-   821		struct uio_device *idev = listener->dev;
-   822		long retval = 0;
-   823	
-   824		mutex_lock(&idev->info_lock);
-   825		if (!idev->info || !idev->info->ioctl) {
-   826			retval = -EINVAL;
-   827			goto out;
-   828		}
-   829	
-   830		retval = idev->info->ioctl(idev->info, cmd, arg);
-   831	out:
-   832		mutex_unlock(&idev->info_lock);
-   833		return retval;
-   834	}
-   835	
-
+Signed-off-by: Mingzhe Zou <mingzhe.zou@easystack.cn>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ drivers/target/iscsi/iscsi_target.c          | 66 +++++++++++++++++++-
+ drivers/target/iscsi/iscsi_target_configfs.c | 32 ++++++++++
+ drivers/target/iscsi/iscsi_target_login.c    |  8 +++
+ include/target/iscsi/iscsi_target_core.h     | 31 ++-------
+ 4 files changed, 109 insertions(+), 28 deletions(-)
+
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 2c54c5d8412d..82f54b59996d 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -702,13 +702,19 @@ static int __init iscsi_target_init_module(void)
+ 	if (!iscsit_global->ts_bitmap)
+ 		goto configfs_out;
+ 
++	if (!zalloc_cpumask_var(&iscsit_global->allowed_cpumask, GFP_KERNEL)) {
++		pr_err("Unable to allocate iscsit_global->allowed_cpumask\n");
++		goto bitmap_out;
++	}
++	cpumask_setall(iscsit_global->allowed_cpumask);
++
+ 	lio_qr_cache = kmem_cache_create("lio_qr_cache",
+ 			sizeof(struct iscsi_queue_req),
+ 			__alignof__(struct iscsi_queue_req), 0, NULL);
+ 	if (!lio_qr_cache) {
+ 		pr_err("Unable to kmem_cache_create() for"
+ 				" lio_qr_cache\n");
+-		goto bitmap_out;
++		goto cpumask_out;
+ 	}
+ 
+ 	lio_dr_cache = kmem_cache_create("lio_dr_cache",
+@@ -753,6 +759,8 @@ static int __init iscsi_target_init_module(void)
+ 	kmem_cache_destroy(lio_dr_cache);
+ qr_out:
+ 	kmem_cache_destroy(lio_qr_cache);
++cpumask_out:
++	free_cpumask_var(iscsit_global->allowed_cpumask);
+ bitmap_out:
+ 	vfree(iscsit_global->ts_bitmap);
+ configfs_out:
+@@ -782,6 +790,7 @@ static void __exit iscsi_target_cleanup_module(void)
+ 
+ 	target_unregister_template(&iscsi_ops);
+ 
++	free_cpumask_var(iscsit_global->allowed_cpumask);
+ 	vfree(iscsit_global->ts_bitmap);
+ 	kfree(iscsit_global);
+ }
+@@ -3587,6 +3596,11 @@ static int iscsit_send_reject(
+ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+ {
+ 	int ord, cpu;
++	cpumask_t conn_allowed_cpumask;
++
++	cpumask_and(&conn_allowed_cpumask, iscsit_global->allowed_cpumask,
++		    cpu_online_mask);
++
+ 	/*
+ 	 * bitmap_id is assigned from iscsit_global->ts_bitmap from
+ 	 * within iscsit_start_kthreads()
+@@ -3595,8 +3609,9 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+ 	 * iSCSI connection's RX/TX threads will be scheduled to
+ 	 * execute upon.
+ 	 */
+-	ord = conn->bitmap_id % cpumask_weight(cpu_online_mask);
+-	for_each_online_cpu(cpu) {
++	cpumask_clear(conn->conn_cpumask);
++	ord = conn->bitmap_id % cpumask_weight(&conn_allowed_cpumask);
++	for_each_cpu(cpu, &conn_allowed_cpumask) {
+ 		if (ord-- == 0) {
+ 			cpumask_set_cpu(cpu, conn->conn_cpumask);
+ 			return;
+@@ -3609,6 +3624,51 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+ 	cpumask_setall(conn->conn_cpumask);
+ }
+ 
++static void iscsit_thread_reschedule(struct iscsi_conn *conn)
++{
++	/*
++	 * If iscsit_global->allowed_cpumask modified, reschedule iSCSI
++	 * connection's RX/TX threads update conn->allowed_cpumask.
++	 */
++	if (!cpumask_equal(iscsit_global->allowed_cpumask,
++			   conn->allowed_cpumask)) {
++		iscsit_thread_get_cpumask(conn);
++		conn->conn_tx_reset_cpumask = 1;
++		conn->conn_rx_reset_cpumask = 1;
++		cpumask_copy(conn->allowed_cpumask,
++			     iscsit_global->allowed_cpumask);
++	}
++}
++
++void iscsit_thread_check_cpumask(
++	struct iscsi_conn *conn,
++	struct task_struct *p,
++	int mode)
++{
++	iscsit_thread_reschedule(conn);
++
++	/*
++	 * mode == 1 signals iscsi_target_tx_thread() usage.
++	 * mode == 0 signals iscsi_target_rx_thread() usage.
++	 */
++	if (mode == 1) {
++		if (!conn->conn_tx_reset_cpumask)
++			return;
++		conn->conn_tx_reset_cpumask = 0;
++	} else {
++		if (!conn->conn_rx_reset_cpumask)
++			return;
++		conn->conn_rx_reset_cpumask = 0;
++	}
++	/*
++	 * Update the CPU mask for this single kthread so that
++	 * both TX and RX kthreads are scheduled to run on the
++	 * same CPU.
++	 */
++	set_cpus_allowed_ptr(p, conn->conn_cpumask);
++}
++EXPORT_SYMBOL(iscsit_thread_check_cpumask);
++
+ int
+ iscsit_immediate_queue(struct iscsi_conn *conn, struct iscsi_cmd *cmd, int state)
+ {
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 2a9de24a8bbe..0cedcfe207b5 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -1127,8 +1127,40 @@ static ssize_t lio_target_wwn_lio_version_show(struct config_item *item,
+ 
+ CONFIGFS_ATTR_RO(lio_target_wwn_, lio_version);
+ 
++static ssize_t lio_target_wwn_cpus_allowed_list_show(
++		struct config_item *item, char *page)
++{
++	return sprintf(page, "%*pbl\n",
++		       cpumask_pr_args(iscsit_global->allowed_cpumask));
++}
++
++static ssize_t lio_target_wwn_cpus_allowed_list_store(
++		struct config_item *item, const char *page, size_t count)
++{
++	int ret;
++	char *orig;
++	cpumask_t new_allowed_cpumask;
++
++	orig = kstrdup(page, GFP_KERNEL);
++	if (!orig)
++		return -ENOMEM;
++
++	cpumask_clear(&new_allowed_cpumask);
++	ret = cpulist_parse(orig, &new_allowed_cpumask);
++
++	kfree(orig);
++	if (ret != 0)
++		return ret;
++
++	cpumask_copy(iscsit_global->allowed_cpumask, &new_allowed_cpumask);
++	return count;
++}
++
++CONFIGFS_ATTR(lio_target_wwn_, cpus_allowed_list);
++
+ static struct configfs_attribute *lio_target_wwn_attrs[] = {
+ 	&lio_target_wwn_attr_lio_version,
++	&lio_target_wwn_attr_cpus_allowed_list,
+ 	NULL,
+ };
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index 1a9c50401bdb..9c01fb864585 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -1129,8 +1129,15 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
+ 		goto free_conn_ops;
+ 	}
+ 
++	if (!zalloc_cpumask_var(&conn->allowed_cpumask, GFP_KERNEL)) {
++		pr_err("Unable to allocate conn->allowed_cpumask\n");
++		goto free_conn_cpumask;
++	}
++
+ 	return conn;
+ 
++free_conn_cpumask:
++	free_cpumask_var(conn->conn_cpumask);
+ free_conn_ops:
+ 	kfree(conn->conn_ops);
+ put_transport:
+@@ -1142,6 +1149,7 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
+ 
+ void iscsit_free_conn(struct iscsi_conn *conn)
+ {
++	free_cpumask_var(conn->allowed_cpumask);
+ 	free_cpumask_var(conn->conn_cpumask);
+ 	kfree(conn->conn_ops);
+ 	iscsit_put_transport(conn->conn_transport);
+diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+index 1eccb2ac7d02..adc87de0362b 100644
+--- a/include/target/iscsi/iscsi_target_core.h
++++ b/include/target/iscsi/iscsi_target_core.h
+@@ -580,6 +580,7 @@ struct iscsi_conn {
+ 	struct ahash_request	*conn_tx_hash;
+ 	/* Used for scheduling TX and RX connection kthreads */
+ 	cpumask_var_t		conn_cpumask;
++	cpumask_var_t		allowed_cpumask;
+ 	unsigned int		conn_rx_reset_cpumask:1;
+ 	unsigned int		conn_tx_reset_cpumask:1;
+ 	/* list_head of struct iscsi_cmd for this connection */
+@@ -878,6 +879,7 @@ struct iscsit_global {
+ 	/* Thread Set bitmap pointer */
+ 	unsigned long		*ts_bitmap;
+ 	spinlock_t		ts_bitmap_lock;
++	cpumask_var_t		allowed_cpumask;
+ 	/* Used for iSCSI discovery session authentication */
+ 	struct iscsi_node_acl	discovery_acl;
+ 	struct iscsi_portal_group	*discovery_tpg;
+@@ -898,29 +900,8 @@ static inline u32 session_get_next_ttt(struct iscsi_session *session)
+ 
+ extern struct iscsi_cmd *iscsit_find_cmd_from_itt(struct iscsi_conn *, itt_t);
+ 
+-static inline void iscsit_thread_check_cpumask(
+-	struct iscsi_conn *conn,
+-	struct task_struct *p,
+-	int mode)
+-{
+-	/*
+-	 * mode == 1 signals iscsi_target_tx_thread() usage.
+-	 * mode == 0 signals iscsi_target_rx_thread() usage.
+-	 */
+-	if (mode == 1) {
+-		if (!conn->conn_tx_reset_cpumask)
+-			return;
+-		conn->conn_tx_reset_cpumask = 0;
+-	} else {
+-		if (!conn->conn_rx_reset_cpumask)
+-			return;
+-		conn->conn_rx_reset_cpumask = 0;
+-	}
+-	/*
+-	 * Update the CPU mask for this single kthread so that
+-	 * both TX and RX kthreads are scheduled to run on the
+-	 * same CPU.
+-	 */
+-	set_cpus_allowed_ptr(p, conn->conn_cpumask);
+-}
++extern void iscsit_thread_check_cpumask(struct iscsi_conn *conn,
++					struct task_struct *p,
++					int mode);
++
+ #endif /* ISCSI_TARGET_CORE_H */
+-- 
+2.17.1
+
