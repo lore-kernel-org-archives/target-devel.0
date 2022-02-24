@@ -2,71 +2,81 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97EB6C433FE
-	for <target-devel@archiver.kernel.org>; Thu, 24 Feb 2022 16:38:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C259CC433EF
+	for <target-devel@archiver.kernel.org>; Thu, 24 Feb 2022 17:55:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229958AbiBXQjU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 24 Feb 2022 11:39:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58770 "EHLO
+        id S232418AbiBXR40 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 24 Feb 2022 12:56:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52260 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230173AbiBXQjO (ORCPT
+        with ESMTP id S229662AbiBXR40 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 24 Feb 2022 11:39:14 -0500
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F5A5186420;
-        Thu, 24 Feb 2022 08:38:41 -0800 (PST)
-Received: from fraeml738-chm.china.huawei.com (unknown [172.18.147.207])
-        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4K4JPm3SZnz67xMd;
-        Fri, 25 Feb 2022 00:33:48 +0800 (CST)
-Received: from lhreml724-chm.china.huawei.com (10.201.108.75) by
- fraeml738-chm.china.huawei.com (10.206.15.219) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.21; Thu, 24 Feb 2022 17:38:38 +0100
-Received: from [10.47.86.126] (10.47.86.126) by lhreml724-chm.china.huawei.com
- (10.201.108.75) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.21; Thu, 24 Feb
- 2022 16:38:38 +0000
-Message-ID: <3aece7d2-9e9d-8ce5-1873-80f1434f87cc@huawei.com>
-Date:   Thu, 24 Feb 2022 16:38:36 +0000
+        Thu, 24 Feb 2022 12:56:26 -0500
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6BA7279446;
+        Thu, 24 Feb 2022 09:55:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=XZX3UmbaQkDmJFjkktEWq0Jff43NC5jY/7i2VYvYlPc=; b=1kXGefjjv3TDvSDI/65Xj27dcK
+        6UYAjGj1+J6ckx7HV/1Uo0L9WP4bqaxrSriCZGeku1PKL1ndcxkPWX7id4nRSiDaOJM1Hz7w/bCo1
+        fRJJSkNLEd+b47SAUIaSTpbLTYKaHTlQthwXICGe1pPfqlGdnnGrQYGnOoz+uOne5FGcqr4r5XXdA
+        Ubmqbe3J3Ju0dpq6Mudb1RQWFRkBmImi1jv/bEjlJAvtPalXW//Eo7dW5tMLW1vIFbaECKWCXDRGw
+        aJ/y1ydoDILiUeq4j6rK7RvVHSe0+ULz2Z/cWEFCPd4iNMd4KZenkJJJt5PearIite07JkAYQrtkR
+        AH032lbg==;
+Received: from 089144202139.atnat0011.highway.a1.net ([89.144.202.139] helo=localhost)
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nNILL-001uPk-0o; Thu, 24 Feb 2022 17:55:55 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Subject: remove struct scsi_request v2
+Date:   Thu, 24 Feb 2022 18:55:44 +0100
+Message-Id: <20220224175552.988286-1-hch@lst.de>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.1
-Subject: Re: [PATCH 3/8] scsi: don't memset the entire scsi_cmnd in
- scsi_init_command
-To:     Christoph Hellwig <hch@lst.de>
-CC:     "Martin K. Petersen" <martin.petersen@oracle.com>,
-        <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>
-References: <20220222140443.589882-1-hch@lst.de>
- <20220222140443.589882-4-hch@lst.de>
- <d94e5e8a-9793-ab48-88f8-6f6bb878cecd@huawei.com>
- <20220224162713.GA31469@lst.de>
-From:   John Garry <john.garry@huawei.com>
-In-Reply-To: <20220224162713.GA31469@lst.de>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.47.86.126]
-X-ClientProxiedBy: lhreml752-chm.china.huawei.com (10.201.108.202) To
- lhreml724-chm.china.huawei.com (10.201.108.75)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 24/02/2022 16:27, Christoph Hellwig wrote:
-> On Thu, Feb 24, 2022 at 08:28:48AM +0000, John Garry wrote:
->>> +	if (!blk_rq_is_passthrough(rq) && !(cmd->flags & SCMD_INITIALIZED)) {
->>> +		cmd->flags |= SCMD_INITIALIZED;
->> Maybe I'm being dozy, but isn't this being cleared below *
-> with below you mean the
-> 
-> 	cmd->flags &= SCMD_PRESERVED_FLAGS;
-> 
-> ?  No, that doen't clear the flag, but all the others.
+Hi Martin,
 
-Yeah, I was wrong as SCMD_INITIALIZED is included in (actually same as) 
-SCMD_PRESERVED_FLAGS mask.
+with the recent removal of the REQ_OP_SCSI_{IN,OUT} based passthrough
+from non-scsi drivers, the need for the scsi_request structure went
+away as well.  As all submitters of SCSI passthrough requests are using
+the SCSI midlayer now they can just fill out the scsi_cmnd directly.
 
-Sorry for the noise.
+Changes since v1:
+ - fix a few commit message typos
+ - remove an extra clearing of scmd->flags
+ - cleanup sense handling in sg_scsi_ioctl
+ - split the last patch
 
-Cheers,
-John
+Diffstat:
+ b/drivers/ata/libata-scsi.c           |    4 -
+ b/drivers/block/pktcdvd.c             |    8 +-
+ b/drivers/cdrom/cdrom.c               |    1 
+ b/drivers/scsi/scsi_bsg.c             |   42 +++++-------
+ b/drivers/scsi/scsi_debugfs.c         |    6 -
+ b/drivers/scsi/scsi_error.c           |   38 +++++-----
+ b/drivers/scsi/scsi_ioctl.c           |   76 +++++++++------------
+ b/drivers/scsi/scsi_lib.c             |  118 +++++++++++++---------------------
+ b/drivers/scsi/scsi_logging.c         |    5 -
+ b/drivers/scsi/scsi_transport_sas.c   |    1 
+ b/drivers/scsi/sd.c                   |   28 --------
+ b/drivers/scsi/sg.c                   |   44 ++++--------
+ b/drivers/scsi/sr.c                   |   30 ++++----
+ b/drivers/scsi/st.c                   |   30 ++++----
+ b/drivers/scsi/ufs/ufshpb.c           |   22 ++----
+ b/drivers/target/target_core_pscsi.c  |   67 +++++++------------
+ b/drivers/target/target_core_pscsi.h  |    4 -
+ b/drivers/usb/storage/cypress_atacb.c |    1 
+ b/drivers/usb/storage/isd200.c        |    4 -
+ b/include/linux/bsg-lib.h             |    1 
+ b/include/scsi/scsi_cmnd.h            |   16 +---
+ b/include/scsi/scsi_eh.h              |    4 -
+ include/scsi/scsi_request.h           |   31 --------
+ 23 files changed, 224 insertions(+), 357 deletions(-)
