@@ -2,64 +2,62 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB524C433F5
-	for <target-devel@archiver.kernel.org>; Thu, 24 Feb 2022 19:59:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74D38C433EF
+	for <target-devel@archiver.kernel.org>; Fri, 25 Feb 2022 10:48:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233374AbiBXUAA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 24 Feb 2022 15:00:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37688 "EHLO
+        id S239654AbiBYKt2 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 25 Feb 2022 05:49:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56602 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232905AbiBXUAA (ORCPT
+        with ESMTP id S233863AbiBYKt2 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 24 Feb 2022 15:00:00 -0500
-Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F86E2763F7;
-        Thu, 24 Feb 2022 11:59:30 -0800 (PST)
-Received: by mail-pj1-f54.google.com with SMTP id m22so2956265pja.0;
-        Thu, 24 Feb 2022 11:59:30 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=esSTEcxWYlmLPiSWhQ2VfsidNdEYUHFjatWC5lDvwME=;
-        b=JKC3rWXT/VssfEuoTY2bAyZlMx8QEbsF/+agv+oa5zRwUVMnS+oIyOzpAfdxZXBWPS
-         8lqAKGBrjTfOGsrUuAN5uHlRI0SopRKSKD9atTWkA+TSPc5x58yBP5+PQGPAXat/yJUe
-         hB7/HGd19y6iBa2jdPlgT+V/Fm25+IkddhZC2wqMSYFZJ1t+EqdJ9QLYTZquNEjD5pv3
-         QUOKoWX29ol58yXFFoBiXpMN3uU9Oou7UE1Ok+M9b+qGRs/zGFFVWbVnTMK/HbzKaEOP
-         M8vniLbCIqZo6Qzs4aBcuhEy2aWt0os76vJmoWgxaofcP8QFF8eySyXALpoHDB3zKFR5
-         WMyA==
-X-Gm-Message-State: AOAM532aA8Bolz7pfhXpfWsoOeoEeq8zxA09sC43Ai0DDLYnrk+mJuPr
-        Hba7At/NHV3+zUJu8RNQgdYMQGysSepDrQ==
-X-Google-Smtp-Source: ABdhPJzeDm+bjC7Qr7a0yX3vCI+Uk6gyS7nas2k0g65/6PYg4Wro7UcVq9TH6BSOLLkvWZfi7WkqHA==
-X-Received: by 2002:a17:902:70c4:b0:14f:9f56:1228 with SMTP id l4-20020a17090270c400b0014f9f561228mr3988093plt.114.1645732769532;
-        Thu, 24 Feb 2022 11:59:29 -0800 (PST)
-Received: from ?IPV6:2601:647:4000:d7:feaa:14ff:fe9d:6dbd? ([2601:647:4000:d7:feaa:14ff:fe9d:6dbd])
-        by smtp.gmail.com with ESMTPSA id s22-20020a056a0008d600b004f0eaa735f2sm311051pfu.57.2022.02.24.11.59.27
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 24 Feb 2022 11:59:28 -0800 (PST)
-Message-ID: <b9c43f2c-5888-41e6-a78f-355ef76121ac@acm.org>
-Date:   Thu, 24 Feb 2022 11:59:26 -0800
+        Fri, 25 Feb 2022 05:49:28 -0500
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F00C235315;
+        Fri, 25 Feb 2022 02:48:56 -0800 (PST)
+Received: from fraeml703-chm.china.huawei.com (unknown [172.18.147.201])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4K4mhK03hyz67skX;
+        Fri, 25 Feb 2022 18:48:01 +0800 (CST)
+Received: from lhreml724-chm.china.huawei.com (10.201.108.75) by
+ fraeml703-chm.china.huawei.com (10.206.15.52) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
+ 15.1.2308.21; Fri, 25 Feb 2022 11:48:53 +0100
+Received: from [10.47.84.151] (10.47.84.151) by lhreml724-chm.china.huawei.com
+ (10.201.108.75) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.21; Fri, 25 Feb
+ 2022 10:48:53 +0000
+Message-ID: <dbcbc203-184a-599f-cf41-b5ebd50c66b3@huawei.com>
+Date:   Fri, 25 Feb 2022 10:48:52 +0000
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.6.1
-Subject: Re: [PATCH 8/8] scsi: remove <scsi/scsi_request.h>
-Content-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.1
+Subject: Re: [PATCH 5/8] scsi: move the resid_len field from struct
+ scsi_request to struct scsi_cmnd
 To:     Christoph Hellwig <hch@lst.de>,
         "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+CC:     <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>,
+        "Bart Van Assche" <bvanassche@acm.org>
 References: <20220224175552.988286-1-hch@lst.de>
- <20220224175552.988286-9-hch@lst.de>
-From:   Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20220224175552.988286-9-hch@lst.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ <20220224175552.988286-6-hch@lst.de>
+From:   John Garry <john.garry@huawei.com>
+In-Reply-To: <20220224175552.988286-6-hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.47.84.151]
+X-ClientProxiedBy: lhreml737-chm.china.huawei.com (10.201.108.187) To
+ lhreml724-chm.china.huawei.com (10.201.108.75)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 2/24/22 09:55, Christoph Hellwig wrote:
-> This header is empty now except for an include of <linux/blk-mq.h>, so
-> remove it.
+On 24/02/2022 17:55, Christoph Hellwig wrote:
+> Prepare for removing the scsi_request structure by moving the resid_len
+> field to struct scsi_cmnd.
+> 
+> Signed-off-by: Christoph Hellwig<hch@lst.de>
+> Reviewed-by: Bart Van Assche<bvanassche@acm.org>
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+FWIW,
+
+Reviewed-by: John Garry <john.garry@huawei.com>
