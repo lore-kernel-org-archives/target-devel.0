@@ -2,321 +2,149 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A76EFC433F5
-	for <target-devel@archiver.kernel.org>; Tue,  1 Mar 2022 07:55:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9480C4332F
+	for <target-devel@archiver.kernel.org>; Tue,  1 Mar 2022 08:46:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233132AbiCAHzs (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 1 Mar 2022 02:55:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40550 "EHLO
+        id S233498AbiCAIqv (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 1 Mar 2022 03:46:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60724 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232870AbiCAHzs (ORCPT
+        with ESMTP id S233484AbiCAIqt (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 1 Mar 2022 02:55:48 -0500
-Received: from mail-m2835.qiye.163.com (mail-m2835.qiye.163.com [103.74.28.35])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48C837EB2C;
-        Mon, 28 Feb 2022 23:55:06 -0800 (PST)
-Received: from localhost.localdomain (unknown [218.94.118.90])
-        by mail-m2835.qiye.163.com (Hmail) with ESMTPA id B8E9A8A0283;
-        Tue,  1 Mar 2022 15:55:03 +0800 (CST)
-From:   mingzhe.zou@easystack.cn
-To:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Cc:     zoumingzhe@qq.com, Mingzhe Zou <mingzhe.zou@easystack.cn>
-Subject: [PATCH v3] target: add iscsi/cpus_allowed_list in configfs
-Date:   Tue,  1 Mar 2022 15:55:00 +0800
-Message-Id: <20220301075500.14266-1-mingzhe.zou@easystack.cn>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20220125083821.18225-1-mingzhe.zou@easystack.cn>
-References: <20220125083821.18225-1-mingzhe.zou@easystack.cn>
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
-        kWDxoPAgseWUFZKDYvK1lXWShZQUlCN1dZLVlBSVdZDwkaFQgSH1lBWUJDGU5WH04eHR1CHhkeSR
-        oaVRkRExYaEhckFA4PWVdZFhoPEhUdFFlBWU9LSFVKSktISkNVS1kG
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6MQw6Dzo6PjIrN0gCEio#Ajo9
-        NyMwCzBVSlVKTU9NSklKSEtPSUxOVTMWGhIXVRYSFRwBEx5VARQOOx4aCAIIDxoYEFUYFUVZV1kS
-        C1lBWUlKQ1VCT1VKSkNVQktZV1kIAVlBSktKQks3Bg++
-X-HM-Tid: 0a7f4479bfc7841dkuqwb8e9a8a0283
+        Tue, 1 Mar 2022 03:46:49 -0500
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D01FE88B10;
+        Tue,  1 Mar 2022 00:46:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+        :Reply-To:Content-Type:Content-ID:Content-Description;
+        bh=RdSo7ItxpzbwhubLvjEO19q+rtasrdyXQ30J4z5AuZo=; b=hTajS4P+8SLazL66Mp984x7zSc
+        ulYJ41+w3C4E8L9bcduoQ34jKzixRDzB+fAt/3T/V1zA6Sf7m0/jZLi5Y1SSTGcOhO3FwxHFTT9ju
+        ihGtunxirtm6jy8gAFZwrlq4u7pBwvfJyKgkFKwzzSBSstThO9jeNMR+rMNiM5CSZopEX03lSaY94
+        fE/DRQoWHcmke7oceXQ0xmHcWMj2JTxRpaFkMZ/ST49jrV6kqaXuHEsqCpEjaemlFDtbXjJ96Bi8x
+        WYv4Ig0tTHig/xHz0w4NqNEyiYfAUgbE9VPPNJtT7KTfgLuFVU6NwztM8g0UtN7rz3g0dmaVoQmUJ
+        qf3uJrXg==;
+Received: from [2.53.44.23] (helo=localhost)
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nOy8t-00FfP8-60; Tue, 01 Mar 2022 08:45:59 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
+        Song Liu <song@kernel.org>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Josef Bacik <josef@toxicpanda.com>,
+        David Sterba <dsterba@suse.com>,
+        Phillip Lougher <phillip@squashfs.org.uk>,
+        linux-block@vger.kernel.org, dm-devel@redhat.com,
+        linux-kernel@vger.kernel.org, linux-bcache@vger.kernel.org,
+        linux-raid@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-btrfs@vger.kernel.org
+Subject: [PATCH 1/5] btrfs: simplify ->flush_bio handling
+Date:   Tue,  1 Mar 2022 10:45:48 +0200
+Message-Id: <20220301084552.880256-2-hch@lst.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20220301084552.880256-1-hch@lst.de>
+References: <20220301084552.880256-1-hch@lst.de>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Mingzhe Zou <mingzhe.zou@easystack.cn>
+Use and embedded bios that is initialized when used instead of
+bio_kmalloc plus bio_reset.
 
-The RX/TX threads for iSCSI connection can be scheduled to
-any online cpus, and will not be rescheduled.
-
-If bind other heavy load threads with iSCSI connection
-RX/TX thread to the same cpu, the iSCSI performance will
-be worse.
-
-This patch add iscsi/cpus_allowed_list in configfs. The
-available cpus set of iSCSI connection RX/TX threads is
-allowed_cpus & online_cpus. If it is modified, all RX/TX
-threads will be rescheduled.
-
-Signed-off-by: Mingzhe Zou <mingzhe.zou@easystack.cn>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/target/iscsi/iscsi_target.c          | 77 +++++++++++++++++++-
- drivers/target/iscsi/iscsi_target_configfs.c | 32 ++++++++
- drivers/target/iscsi/iscsi_target_login.c    |  8 ++
- include/target/iscsi/iscsi_target_core.h     | 31 ++------
- 4 files changed, 120 insertions(+), 28 deletions(-)
+ fs/btrfs/disk-io.c |  8 +++++---
+ fs/btrfs/volumes.c | 11 -----------
+ fs/btrfs/volumes.h |  2 +-
+ 3 files changed, 6 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 2c54c5d8412d..6fe6a6bab3f4 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -702,13 +702,19 @@ static int __init iscsi_target_init_module(void)
- 	if (!iscsit_global->ts_bitmap)
- 		goto configfs_out;
- 
-+	if (!zalloc_cpumask_var(&iscsit_global->allowed_cpumask, GFP_KERNEL)) {
-+		pr_err("Unable to allocate iscsit_global->allowed_cpumask\n");
-+		goto bitmap_out;
-+	}
-+	cpumask_setall(iscsit_global->allowed_cpumask);
-+
- 	lio_qr_cache = kmem_cache_create("lio_qr_cache",
- 			sizeof(struct iscsi_queue_req),
- 			__alignof__(struct iscsi_queue_req), 0, NULL);
- 	if (!lio_qr_cache) {
- 		pr_err("Unable to kmem_cache_create() for"
- 				" lio_qr_cache\n");
--		goto bitmap_out;
-+		goto cpumask_out;
- 	}
- 
- 	lio_dr_cache = kmem_cache_create("lio_dr_cache",
-@@ -753,6 +759,8 @@ static int __init iscsi_target_init_module(void)
- 	kmem_cache_destroy(lio_dr_cache);
- qr_out:
- 	kmem_cache_destroy(lio_qr_cache);
-+cpumask_out:
-+	free_cpumask_var(iscsit_global->allowed_cpumask);
- bitmap_out:
- 	vfree(iscsit_global->ts_bitmap);
- configfs_out:
-@@ -782,6 +790,7 @@ static void __exit iscsi_target_cleanup_module(void)
- 
- 	target_unregister_template(&iscsi_ops);
- 
-+	free_cpumask_var(iscsit_global->allowed_cpumask);
- 	vfree(iscsit_global->ts_bitmap);
- 	kfree(iscsit_global);
- }
-@@ -3587,6 +3596,11 @@ static int iscsit_send_reject(
- void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 505ba21230b1f..7d4229c769ac6 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -4127,6 +4127,7 @@ static int wait_dev_supers(struct btrfs_device *device, int max_mirrors)
+  */
+ static void btrfs_end_empty_barrier(struct bio *bio)
  {
- 	int ord, cpu;
-+	cpumask_t conn_allowed_cpumask;
-+
-+	cpumask_and(&conn_allowed_cpumask, iscsit_global->allowed_cpumask,
-+		    cpu_online_mask);
-+
++	bio_uninit(bio);
+ 	complete(bio->bi_private);
+ }
+ 
+@@ -4136,7 +4137,7 @@ static void btrfs_end_empty_barrier(struct bio *bio)
+  */
+ static void write_dev_flush(struct btrfs_device *device)
+ {
+-	struct bio *bio = device->flush_bio;
++	struct bio *bio = &device->flush_bio;
+ 
+ #ifndef CONFIG_BTRFS_FS_CHECK_INTEGRITY
  	/*
- 	 * bitmap_id is assigned from iscsit_global->ts_bitmap from
- 	 * within iscsit_start_kthreads()
-@@ -3595,8 +3609,9 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
- 	 * iSCSI connection's RX/TX threads will be scheduled to
- 	 * execute upon.
- 	 */
--	ord = conn->bitmap_id % cpumask_weight(cpu_online_mask);
--	for_each_online_cpu(cpu) {
-+	cpumask_clear(conn->conn_cpumask);
-+	ord = conn->bitmap_id % cpumask_weight(&conn_allowed_cpumask);
-+	for_each_cpu(cpu, &conn_allowed_cpumask) {
- 		if (ord-- == 0) {
- 			cpumask_set_cpu(cpu, conn->conn_cpumask);
- 			return;
-@@ -3609,6 +3624,62 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
- 	cpumask_setall(conn->conn_cpumask);
+@@ -4154,7 +4155,8 @@ static void write_dev_flush(struct btrfs_device *device)
+ 		return;
+ #endif
+ 
+-	bio_reset(bio, device->bdev, REQ_OP_WRITE | REQ_SYNC | REQ_PREFLUSH);
++	bio_init(bio, device->bdev, NULL, 0,
++		 REQ_OP_WRITE | REQ_SYNC | REQ_PREFLUSH);
+ 	bio->bi_end_io = btrfs_end_empty_barrier;
+ 	init_completion(&device->flush_wait);
+ 	bio->bi_private = &device->flush_wait;
+@@ -4168,7 +4170,7 @@ static void write_dev_flush(struct btrfs_device *device)
+  */
+ static blk_status_t wait_dev_flush(struct btrfs_device *device)
+ {
+-	struct bio *bio = device->flush_bio;
++	struct bio *bio = &device->flush_bio;
+ 
+ 	if (!test_bit(BTRFS_DEV_STATE_FLUSH_SENT, &device->dev_state))
+ 		return BLK_STS_OK;
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index b07d382d53a86..7015b3096f724 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -405,7 +405,6 @@ void btrfs_free_device(struct btrfs_device *device)
+ 	WARN_ON(!list_empty(&device->post_commit_list));
+ 	rcu_string_free(device->name);
+ 	extent_io_tree_release(&device->alloc_state);
+-	bio_put(device->flush_bio);
+ 	btrfs_destroy_dev_zone_info(device);
+ 	kfree(device);
  }
+@@ -6962,16 +6961,6 @@ struct btrfs_device *btrfs_alloc_device(struct btrfs_fs_info *fs_info,
+ 	if (!dev)
+ 		return ERR_PTR(-ENOMEM);
  
-+static void iscsit_thread_reschedule(struct iscsi_conn *conn)
-+{
-+	/*
-+	 * If iscsit_global->allowed_cpumask modified, reschedule iSCSI
-+	 * connection's RX/TX threads update conn->allowed_cpumask.
-+	 */
-+	if (!cpumask_equal(iscsit_global->allowed_cpumask,
-+			   conn->allowed_cpumask)) {
-+		iscsit_thread_get_cpumask(conn);
-+		conn->conn_tx_reset_cpumask = 1;
-+		conn->conn_rx_reset_cpumask = 1;
-+		cpumask_copy(conn->allowed_cpumask,
-+			     iscsit_global->allowed_cpumask);
-+	}
-+}
-+
-+void iscsit_thread_check_cpumask(
-+	struct iscsi_conn *conn,
-+	struct task_struct *p,
-+	int mode)
-+{
-+	/*
-+	 * The TX and RX threads maybe call iscsit_thread_check_cpumask()
-+	 * at the same time. The RX thread might be faster and return from
-+	 * iscsit_thread_reschedule() with conn_rx_reset_cpumask set to 0.
-+	 * Then the TX thread sets it back to 1.
-+	 * The next time the RX thread loops, it sees conn_rx_reset_cpumask
-+	 * set to 1 and calls set_cpus_allowed_ptr() again and set it to 0.
-+	 */
-+	iscsit_thread_reschedule(conn);
-+
-+	/*
-+	 * mode == 1 signals iscsi_target_tx_thread() usage.
-+	 * mode == 0 signals iscsi_target_rx_thread() usage.
-+	 */
-+	if (mode == 1) {
-+		if (!conn->conn_tx_reset_cpumask)
-+			return;
-+	} else {
-+		if (!conn->conn_rx_reset_cpumask)
-+			return;
-+	}
-+
-+	/*
-+	 * Update the CPU mask for this single kthread so that
-+	 * both TX and RX kthreads are scheduled to run on the
-+	 * same CPU.
-+	 */
-+	set_cpus_allowed_ptr(p, conn->conn_cpumask);
-+	if (mode == 1)
-+		conn->conn_tx_reset_cpumask = 0;
-+	else
-+		conn->conn_rx_reset_cpumask = 0;
-+}
-+EXPORT_SYMBOL(iscsit_thread_check_cpumask);
-+
- int
- iscsit_immediate_queue(struct iscsi_conn *conn, struct iscsi_cmd *cmd, int state)
- {
-diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
-index 2a9de24a8bbe..0cedcfe207b5 100644
---- a/drivers/target/iscsi/iscsi_target_configfs.c
-+++ b/drivers/target/iscsi/iscsi_target_configfs.c
-@@ -1127,8 +1127,40 @@ static ssize_t lio_target_wwn_lio_version_show(struct config_item *item,
- 
- CONFIGFS_ATTR_RO(lio_target_wwn_, lio_version);
- 
-+static ssize_t lio_target_wwn_cpus_allowed_list_show(
-+		struct config_item *item, char *page)
-+{
-+	return sprintf(page, "%*pbl\n",
-+		       cpumask_pr_args(iscsit_global->allowed_cpumask));
-+}
-+
-+static ssize_t lio_target_wwn_cpus_allowed_list_store(
-+		struct config_item *item, const char *page, size_t count)
-+{
-+	int ret;
-+	char *orig;
-+	cpumask_t new_allowed_cpumask;
-+
-+	orig = kstrdup(page, GFP_KERNEL);
-+	if (!orig)
-+		return -ENOMEM;
-+
-+	cpumask_clear(&new_allowed_cpumask);
-+	ret = cpulist_parse(orig, &new_allowed_cpumask);
-+
-+	kfree(orig);
-+	if (ret != 0)
-+		return ret;
-+
-+	cpumask_copy(iscsit_global->allowed_cpumask, &new_allowed_cpumask);
-+	return count;
-+}
-+
-+CONFIGFS_ATTR(lio_target_wwn_, cpus_allowed_list);
-+
- static struct configfs_attribute *lio_target_wwn_attrs[] = {
- 	&lio_target_wwn_attr_lio_version,
-+	&lio_target_wwn_attr_cpus_allowed_list,
- 	NULL,
- };
- 
-diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index 1a9c50401bdb..9c01fb864585 100644
---- a/drivers/target/iscsi/iscsi_target_login.c
-+++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -1129,8 +1129,15 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
- 		goto free_conn_ops;
- 	}
- 
-+	if (!zalloc_cpumask_var(&conn->allowed_cpumask, GFP_KERNEL)) {
-+		pr_err("Unable to allocate conn->allowed_cpumask\n");
-+		goto free_conn_cpumask;
-+	}
-+
- 	return conn;
- 
-+free_conn_cpumask:
-+	free_cpumask_var(conn->conn_cpumask);
- free_conn_ops:
- 	kfree(conn->conn_ops);
- put_transport:
-@@ -1142,6 +1149,7 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
- 
- void iscsit_free_conn(struct iscsi_conn *conn)
- {
-+	free_cpumask_var(conn->allowed_cpumask);
- 	free_cpumask_var(conn->conn_cpumask);
- 	kfree(conn->conn_ops);
- 	iscsit_put_transport(conn->conn_transport);
-diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-index 1eccb2ac7d02..adc87de0362b 100644
---- a/include/target/iscsi/iscsi_target_core.h
-+++ b/include/target/iscsi/iscsi_target_core.h
-@@ -580,6 +580,7 @@ struct iscsi_conn {
- 	struct ahash_request	*conn_tx_hash;
- 	/* Used for scheduling TX and RX connection kthreads */
- 	cpumask_var_t		conn_cpumask;
-+	cpumask_var_t		allowed_cpumask;
- 	unsigned int		conn_rx_reset_cpumask:1;
- 	unsigned int		conn_tx_reset_cpumask:1;
- 	/* list_head of struct iscsi_cmd for this connection */
-@@ -878,6 +879,7 @@ struct iscsit_global {
- 	/* Thread Set bitmap pointer */
- 	unsigned long		*ts_bitmap;
- 	spinlock_t		ts_bitmap_lock;
-+	cpumask_var_t		allowed_cpumask;
- 	/* Used for iSCSI discovery session authentication */
- 	struct iscsi_node_acl	discovery_acl;
- 	struct iscsi_portal_group	*discovery_tpg;
-@@ -898,29 +900,8 @@ static inline u32 session_get_next_ttt(struct iscsi_session *session)
- 
- extern struct iscsi_cmd *iscsit_find_cmd_from_itt(struct iscsi_conn *, itt_t);
- 
--static inline void iscsit_thread_check_cpumask(
--	struct iscsi_conn *conn,
--	struct task_struct *p,
--	int mode)
--{
 -	/*
--	 * mode == 1 signals iscsi_target_tx_thread() usage.
--	 * mode == 0 signals iscsi_target_rx_thread() usage.
+-	 * Preallocate a bio that's always going to be used for flushing device
+-	 * barriers and matches the device lifespan
 -	 */
--	if (mode == 1) {
--		if (!conn->conn_tx_reset_cpumask)
--			return;
--		conn->conn_tx_reset_cpumask = 0;
--	} else {
--		if (!conn->conn_rx_reset_cpumask)
--			return;
--		conn->conn_rx_reset_cpumask = 0;
+-	dev->flush_bio = bio_kmalloc(GFP_KERNEL, 0);
+-	if (!dev->flush_bio) {
+-		kfree(dev);
+-		return ERR_PTR(-ENOMEM);
 -	}
--	/*
--	 * Update the CPU mask for this single kthread so that
--	 * both TX and RX kthreads are scheduled to run on the
--	 * same CPU.
--	 */
--	set_cpus_allowed_ptr(p, conn->conn_cpumask);
--}
-+extern void iscsit_thread_check_cpumask(struct iscsi_conn *conn,
-+					struct task_struct *p,
-+					int mode);
-+
- #endif /* ISCSI_TARGET_CORE_H */
+-
+ 	INIT_LIST_HEAD(&dev->dev_list);
+ 	INIT_LIST_HEAD(&dev->dev_alloc_list);
+ 	INIT_LIST_HEAD(&dev->post_commit_list);
+diff --git a/fs/btrfs/volumes.h b/fs/btrfs/volumes.h
+index 005c9e2a491a1..9af7b6211920c 100644
+--- a/fs/btrfs/volumes.h
++++ b/fs/btrfs/volumes.h
+@@ -117,7 +117,7 @@ struct btrfs_device {
+ 	u64 commit_bytes_used;
+ 
+ 	/* for sending down flush barriers */
+-	struct bio *flush_bio;
++	struct bio flush_bio;
+ 	struct completion flush_wait;
+ 
+ 	/* per-device scrub information */
 -- 
-2.17.1
+2.30.2
 
