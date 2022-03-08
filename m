@@ -2,157 +2,331 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E046DC433F5
-	for <target-devel@archiver.kernel.org>; Tue,  8 Mar 2022 06:16:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A169C433EF
+	for <target-devel@archiver.kernel.org>; Tue,  8 Mar 2022 08:34:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344432AbiCHGRZ (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 8 Mar 2022 01:17:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45068 "EHLO
+        id S240957AbiCHIfh (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 8 Mar 2022 03:35:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344431AbiCHGRN (ORCPT
+        with ESMTP id S234980AbiCHIfg (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 8 Mar 2022 01:17:13 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 282223BFA2;
-        Mon,  7 Mar 2022 22:16:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
-        :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=8X3c5XDqthuQdXMBmAKyJ50PsF74xYticZhjJF97a3o=; b=uITWO/byir10fw/w7iDmD1tNU+
-        h4Rx6vQ8VwFOEAgn8RGFju0aeGxhCF9oHFGM5lIEQjGKVjufiRS3s7xY6x2DkMGWFx+IMthmluurN
-        1tTw5NXlhIElgCKzH3KIXBwDpqigoQ6Kw1r8+ha1uWMHxm/Pzg7QGBdihic5MlrpUgq8aa/jyxOc1
-        NcYvI8gbU9V5coVyE7Yd+PwoWLz2S2O7K3N0hwG9eUBffZdtKm1yyEH2fGnTJiG8cbasYZ+GwtLc0
-        Y4TAGvAVwtdHCVt4h9qnhFVIeAYiQmS831f2T6Rer+6UXcoHLqyvX/aQUtXbUK5kSJrVYddH18//b
-        roCZpysA==;
-Received: from [2001:4bb8:184:7746:6f50:7a98:3141:c37b] (helo=localhost)
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nRT8h-002lWm-QS; Tue, 08 Mar 2022 06:16:08 +0000
-From:   Christoph Hellwig <hch@lst.de>
-To:     Jens Axboe <axboe@kernel.dk>
-Cc:     Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
-        Song Liu <song@kernel.org>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Josef Bacik <josef@toxicpanda.com>,
-        David Sterba <dsterba@suse.com>,
-        Phillip Lougher <phillip@squashfs.org.uk>,
-        linux-block@vger.kernel.org, dm-devel@redhat.com,
-        linux-kernel@vger.kernel.org, linux-bcache@vger.kernel.org,
-        linux-raid@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-btrfs@vger.kernel.org
-Subject: [PATCH 5/5] pktcdvd: stop using bio_reset
-Date:   Tue,  8 Mar 2022 07:15:51 +0100
-Message-Id: <20220308061551.737853-6-hch@lst.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20220308061551.737853-1-hch@lst.de>
-References: <20220308061551.737853-1-hch@lst.de>
+        Tue, 8 Mar 2022 03:35:36 -0500
+Received: from mail-m2835.qiye.163.com (mail-m2835.qiye.163.com [103.74.28.35])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C67123CFEA;
+        Tue,  8 Mar 2022 00:34:39 -0800 (PST)
+Received: from [192.168.0.234] (unknown [218.94.118.90])
+        by mail-m2835.qiye.163.com (Hmail) with ESMTPA id 13D0D8A0302;
+        Tue,  8 Mar 2022 16:34:37 +0800 (CST)
+Message-ID: <3952debd-cd3d-3d65-635d-985ddbb91b49@easystack.cn>
+Date:   Tue, 8 Mar 2022 16:34:36 +0800
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v3] target: add iscsi/cpus_allowed_list in configfs
+Content-Language: en-US
+To:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org
+Cc:     zoumingzhe@qq.com
+References: <20220125083821.18225-1-mingzhe.zou@easystack.cn>
+ <20220301075500.14266-1-mingzhe.zou@easystack.cn>
+From:   Zou Mingzhe <mingzhe.zou@easystack.cn>
+In-Reply-To: <20220301075500.14266-1-mingzhe.zou@easystack.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
+        kWDxoPAgseWUFZKDYvK1lXWShZQUlCN1dZLVlBSVdZDwkaFQgSH1lBWUMfTBhWSktCTUNCSkJKHk
+        seVRkRExYaEhckFA4PWVdZFhoPEhUdFFlBWU9LSFVKSktITk9VS1kG
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6PAw6Fhw*PjIaFDgzOjUzPjEB
+        NwoaCQ1VSlVKTU9NTElDT0xMTkpIVTMWGhIXVRYSFRwBEx5VARQOOx4aCAIIDxoYEFUYFUVZV1kS
+        C1lBWUlKQ1VCT1VKSkNVQktZV1kIAVlBSkpJQ043Bg++
+X-HM-Tid: 0a7f68aa7a28841dkuqw13d0d8a0302
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Just initialize the bios on-demand.
+Hi, christie
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- drivers/block/pktcdvd.c | 25 +++++++++----------------
- 1 file changed, 9 insertions(+), 16 deletions(-)
+Have you started reviewing this patch?
 
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index 5ab43f9027631..335099c4076ee 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -525,7 +525,6 @@ static struct packet_data *pkt_alloc_packet_data(int frames)
- 	pkt->w_bio = bio_kmalloc(frames, GFP_KERNEL);
- 	if (!pkt->w_bio)
- 		goto no_bio;
--	bio_init(pkt->w_bio, NULL, pkt->w_bio->bi_inline_vecs, frames, 0);
- 
- 	for (i = 0; i < frames / FRAMES_PER_PAGE; i++) {
- 		pkt->pages[i] = alloc_page(GFP_KERNEL|__GFP_ZERO);
-@@ -537,26 +536,20 @@ static struct packet_data *pkt_alloc_packet_data(int frames)
- 	bio_list_init(&pkt->orig_bios);
- 
- 	for (i = 0; i < frames; i++) {
--		struct bio *bio = bio_kmalloc(1, GFP_KERNEL);
--		if (!bio)
-+		pkt->r_bios[i] = bio_kmalloc(1, GFP_KERNEL);
-+		if (!pkt->r_bios[i])
- 			goto no_rd_bio;
--		bio_init(bio, NULL, bio->bi_inline_vecs, 1, 0);
--		pkt->r_bios[i] = bio;
- 	}
- 
- 	return pkt;
- 
- no_rd_bio:
--	for (i = 0; i < frames; i++) {
--		if (pkt->r_bios[i])
--			bio_uninit(pkt->r_bios[i]);
-+	for (i = 0; i < frames; i++)
- 		kfree(pkt->r_bios[i]);
--	}
- no_page:
- 	for (i = 0; i < frames / FRAMES_PER_PAGE; i++)
- 		if (pkt->pages[i])
- 			__free_page(pkt->pages[i]);
--	bio_uninit(pkt->w_bio);
- 	kfree(pkt->w_bio);
- no_bio:
- 	kfree(pkt);
-@@ -571,13 +564,10 @@ static void pkt_free_packet_data(struct packet_data *pkt)
- {
- 	int i;
- 
--	for (i = 0; i < pkt->frames; i++) {
--		bio_uninit(pkt->r_bios[i]);
-+	for (i = 0; i < pkt->frames; i++)
- 		kfree(pkt->r_bios[i]);
--	}
- 	for (i = 0; i < pkt->frames / FRAMES_PER_PAGE; i++)
- 		__free_page(pkt->pages[i]);
--	bio_uninit(pkt->w_bio);
- 	kfree(pkt->w_bio);
- 	kfree(pkt);
- }
-@@ -950,6 +940,7 @@ static void pkt_end_io_read(struct bio *bio)
- 
- 	if (bio->bi_status)
- 		atomic_inc(&pkt->io_errors);
-+	bio_uninit(bio);
- 	if (atomic_dec_and_test(&pkt->io_wait)) {
- 		atomic_inc(&pkt->run_sm);
- 		wake_up(&pd->wqueue);
-@@ -967,6 +958,7 @@ static void pkt_end_io_packet_write(struct bio *bio)
- 
- 	pd->stats.pkt_ended++;
- 
-+	bio_uninit(bio);
- 	pkt_bio_finished(pd);
- 	atomic_dec(&pkt->io_wait);
- 	atomic_inc(&pkt->run_sm);
-@@ -1021,7 +1013,7 @@ static void pkt_gather_data(struct pktcdvd_device *pd, struct packet_data *pkt)
- 			continue;
- 
- 		bio = pkt->r_bios[f];
--		bio_reset(bio, pd->bdev, REQ_OP_READ);
-+		bio_init(bio, pd->bdev, bio->bi_inline_vecs, 1, REQ_OP_READ);
- 		bio->bi_iter.bi_sector = pkt->sector + f * (CD_FRAMESIZE >> 9);
- 		bio->bi_end_io = pkt_end_io_read;
- 		bio->bi_private = pkt;
-@@ -1234,7 +1226,8 @@ static void pkt_start_write(struct pktcdvd_device *pd, struct packet_data *pkt)
- {
- 	int f;
- 
--	bio_reset(pkt->w_bio, pd->bdev, REQ_OP_WRITE);
-+	bio_init(pkt->w_bio, pd->bdev, pkt->w_bio->bi_inline_vecs, pkt->frames,
-+		 REQ_OP_WRITE);
- 	pkt->w_bio->bi_iter.bi_sector = pkt->sector;
- 	pkt->w_bio->bi_end_io = pkt_end_io_packet_write;
- 	pkt->w_bio->bi_private = pkt;
--- 
-2.30.2
+Mingzhe
 
+在 2022/3/1 15:55, mingzhe.zou@easystack.cn 写道:
+> From: Mingzhe Zou <mingzhe.zou@easystack.cn>
+>
+> The RX/TX threads for iSCSI connection can be scheduled to
+> any online cpus, and will not be rescheduled.
+>
+> If bind other heavy load threads with iSCSI connection
+> RX/TX thread to the same cpu, the iSCSI performance will
+> be worse.
+>
+> This patch add iscsi/cpus_allowed_list in configfs. The
+> available cpus set of iSCSI connection RX/TX threads is
+> allowed_cpus & online_cpus. If it is modified, all RX/TX
+> threads will be rescheduled.
+>
+> Signed-off-by: Mingzhe Zou <mingzhe.zou@easystack.cn>
+> ---
+>   drivers/target/iscsi/iscsi_target.c          | 77 +++++++++++++++++++-
+>   drivers/target/iscsi/iscsi_target_configfs.c | 32 ++++++++
+>   drivers/target/iscsi/iscsi_target_login.c    |  8 ++
+>   include/target/iscsi/iscsi_target_core.h     | 31 ++------
+>   4 files changed, 120 insertions(+), 28 deletions(-)
+>
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+> index 2c54c5d8412d..6fe6a6bab3f4 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -702,13 +702,19 @@ static int __init iscsi_target_init_module(void)
+>   	if (!iscsit_global->ts_bitmap)
+>   		goto configfs_out;
+>   
+> +	if (!zalloc_cpumask_var(&iscsit_global->allowed_cpumask, GFP_KERNEL)) {
+> +		pr_err("Unable to allocate iscsit_global->allowed_cpumask\n");
+> +		goto bitmap_out;
+> +	}
+> +	cpumask_setall(iscsit_global->allowed_cpumask);
+> +
+>   	lio_qr_cache = kmem_cache_create("lio_qr_cache",
+>   			sizeof(struct iscsi_queue_req),
+>   			__alignof__(struct iscsi_queue_req), 0, NULL);
+>   	if (!lio_qr_cache) {
+>   		pr_err("Unable to kmem_cache_create() for"
+>   				" lio_qr_cache\n");
+> -		goto bitmap_out;
+> +		goto cpumask_out;
+>   	}
+>   
+>   	lio_dr_cache = kmem_cache_create("lio_dr_cache",
+> @@ -753,6 +759,8 @@ static int __init iscsi_target_init_module(void)
+>   	kmem_cache_destroy(lio_dr_cache);
+>   qr_out:
+>   	kmem_cache_destroy(lio_qr_cache);
+> +cpumask_out:
+> +	free_cpumask_var(iscsit_global->allowed_cpumask);
+>   bitmap_out:
+>   	vfree(iscsit_global->ts_bitmap);
+>   configfs_out:
+> @@ -782,6 +790,7 @@ static void __exit iscsi_target_cleanup_module(void)
+>   
+>   	target_unregister_template(&iscsi_ops);
+>   
+> +	free_cpumask_var(iscsit_global->allowed_cpumask);
+>   	vfree(iscsit_global->ts_bitmap);
+>   	kfree(iscsit_global);
+>   }
+> @@ -3587,6 +3596,11 @@ static int iscsit_send_reject(
+>   void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+>   {
+>   	int ord, cpu;
+> +	cpumask_t conn_allowed_cpumask;
+> +
+> +	cpumask_and(&conn_allowed_cpumask, iscsit_global->allowed_cpumask,
+> +		    cpu_online_mask);
+> +
+>   	/*
+>   	 * bitmap_id is assigned from iscsit_global->ts_bitmap from
+>   	 * within iscsit_start_kthreads()
+> @@ -3595,8 +3609,9 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+>   	 * iSCSI connection's RX/TX threads will be scheduled to
+>   	 * execute upon.
+>   	 */
+> -	ord = conn->bitmap_id % cpumask_weight(cpu_online_mask);
+> -	for_each_online_cpu(cpu) {
+> +	cpumask_clear(conn->conn_cpumask);
+> +	ord = conn->bitmap_id % cpumask_weight(&conn_allowed_cpumask);
+> +	for_each_cpu(cpu, &conn_allowed_cpumask) {
+>   		if (ord-- == 0) {
+>   			cpumask_set_cpu(cpu, conn->conn_cpumask);
+>   			return;
+> @@ -3609,6 +3624,62 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+>   	cpumask_setall(conn->conn_cpumask);
+>   }
+>   
+> +static void iscsit_thread_reschedule(struct iscsi_conn *conn)
+> +{
+> +	/*
+> +	 * If iscsit_global->allowed_cpumask modified, reschedule iSCSI
+> +	 * connection's RX/TX threads update conn->allowed_cpumask.
+> +	 */
+> +	if (!cpumask_equal(iscsit_global->allowed_cpumask,
+> +			   conn->allowed_cpumask)) {
+> +		iscsit_thread_get_cpumask(conn);
+> +		conn->conn_tx_reset_cpumask = 1;
+> +		conn->conn_rx_reset_cpumask = 1;
+> +		cpumask_copy(conn->allowed_cpumask,
+> +			     iscsit_global->allowed_cpumask);
+> +	}
+> +}
+> +
+> +void iscsit_thread_check_cpumask(
+> +	struct iscsi_conn *conn,
+> +	struct task_struct *p,
+> +	int mode)
+> +{
+> +	/*
+> +	 * The TX and RX threads maybe call iscsit_thread_check_cpumask()
+> +	 * at the same time. The RX thread might be faster and return from
+> +	 * iscsit_thread_reschedule() with conn_rx_reset_cpumask set to 0.
+> +	 * Then the TX thread sets it back to 1.
+> +	 * The next time the RX thread loops, it sees conn_rx_reset_cpumask
+> +	 * set to 1 and calls set_cpus_allowed_ptr() again and set it to 0.
+> +	 */
+> +	iscsit_thread_reschedule(conn);
+> +
+> +	/*
+> +	 * mode == 1 signals iscsi_target_tx_thread() usage.
+> +	 * mode == 0 signals iscsi_target_rx_thread() usage.
+> +	 */
+> +	if (mode == 1) {
+> +		if (!conn->conn_tx_reset_cpumask)
+> +			return;
+> +	} else {
+> +		if (!conn->conn_rx_reset_cpumask)
+> +			return;
+> +	}
+> +
+> +	/*
+> +	 * Update the CPU mask for this single kthread so that
+> +	 * both TX and RX kthreads are scheduled to run on the
+> +	 * same CPU.
+> +	 */
+> +	set_cpus_allowed_ptr(p, conn->conn_cpumask);
+> +	if (mode == 1)
+> +		conn->conn_tx_reset_cpumask = 0;
+> +	else
+> +		conn->conn_rx_reset_cpumask = 0;
+> +}
+> +EXPORT_SYMBOL(iscsit_thread_check_cpumask);
+> +
+>   int
+>   iscsit_immediate_queue(struct iscsi_conn *conn, struct iscsi_cmd *cmd, int state)
+>   {
+> diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+> index 2a9de24a8bbe..0cedcfe207b5 100644
+> --- a/drivers/target/iscsi/iscsi_target_configfs.c
+> +++ b/drivers/target/iscsi/iscsi_target_configfs.c
+> @@ -1127,8 +1127,40 @@ static ssize_t lio_target_wwn_lio_version_show(struct config_item *item,
+>   
+>   CONFIGFS_ATTR_RO(lio_target_wwn_, lio_version);
+>   
+> +static ssize_t lio_target_wwn_cpus_allowed_list_show(
+> +		struct config_item *item, char *page)
+> +{
+> +	return sprintf(page, "%*pbl\n",
+> +		       cpumask_pr_args(iscsit_global->allowed_cpumask));
+> +}
+> +
+> +static ssize_t lio_target_wwn_cpus_allowed_list_store(
+> +		struct config_item *item, const char *page, size_t count)
+> +{
+> +	int ret;
+> +	char *orig;
+> +	cpumask_t new_allowed_cpumask;
+> +
+> +	orig = kstrdup(page, GFP_KERNEL);
+> +	if (!orig)
+> +		return -ENOMEM;
+> +
+> +	cpumask_clear(&new_allowed_cpumask);
+> +	ret = cpulist_parse(orig, &new_allowed_cpumask);
+> +
+> +	kfree(orig);
+> +	if (ret != 0)
+> +		return ret;
+> +
+> +	cpumask_copy(iscsit_global->allowed_cpumask, &new_allowed_cpumask);
+> +	return count;
+> +}
+> +
+> +CONFIGFS_ATTR(lio_target_wwn_, cpus_allowed_list);
+> +
+>   static struct configfs_attribute *lio_target_wwn_attrs[] = {
+>   	&lio_target_wwn_attr_lio_version,
+> +	&lio_target_wwn_attr_cpus_allowed_list,
+>   	NULL,
+>   };
+>   
+> diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+> index 1a9c50401bdb..9c01fb864585 100644
+> --- a/drivers/target/iscsi/iscsi_target_login.c
+> +++ b/drivers/target/iscsi/iscsi_target_login.c
+> @@ -1129,8 +1129,15 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
+>   		goto free_conn_ops;
+>   	}
+>   
+> +	if (!zalloc_cpumask_var(&conn->allowed_cpumask, GFP_KERNEL)) {
+> +		pr_err("Unable to allocate conn->allowed_cpumask\n");
+> +		goto free_conn_cpumask;
+> +	}
+> +
+>   	return conn;
+>   
+> +free_conn_cpumask:
+> +	free_cpumask_var(conn->conn_cpumask);
+>   free_conn_ops:
+>   	kfree(conn->conn_ops);
+>   put_transport:
+> @@ -1142,6 +1149,7 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
+>   
+>   void iscsit_free_conn(struct iscsi_conn *conn)
+>   {
+> +	free_cpumask_var(conn->allowed_cpumask);
+>   	free_cpumask_var(conn->conn_cpumask);
+>   	kfree(conn->conn_ops);
+>   	iscsit_put_transport(conn->conn_transport);
+> diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+> index 1eccb2ac7d02..adc87de0362b 100644
+> --- a/include/target/iscsi/iscsi_target_core.h
+> +++ b/include/target/iscsi/iscsi_target_core.h
+> @@ -580,6 +580,7 @@ struct iscsi_conn {
+>   	struct ahash_request	*conn_tx_hash;
+>   	/* Used for scheduling TX and RX connection kthreads */
+>   	cpumask_var_t		conn_cpumask;
+> +	cpumask_var_t		allowed_cpumask;
+>   	unsigned int		conn_rx_reset_cpumask:1;
+>   	unsigned int		conn_tx_reset_cpumask:1;
+>   	/* list_head of struct iscsi_cmd for this connection */
+> @@ -878,6 +879,7 @@ struct iscsit_global {
+>   	/* Thread Set bitmap pointer */
+>   	unsigned long		*ts_bitmap;
+>   	spinlock_t		ts_bitmap_lock;
+> +	cpumask_var_t		allowed_cpumask;
+>   	/* Used for iSCSI discovery session authentication */
+>   	struct iscsi_node_acl	discovery_acl;
+>   	struct iscsi_portal_group	*discovery_tpg;
+> @@ -898,29 +900,8 @@ static inline u32 session_get_next_ttt(struct iscsi_session *session)
+>   
+>   extern struct iscsi_cmd *iscsit_find_cmd_from_itt(struct iscsi_conn *, itt_t);
+>   
+> -static inline void iscsit_thread_check_cpumask(
+> -	struct iscsi_conn *conn,
+> -	struct task_struct *p,
+> -	int mode)
+> -{
+> -	/*
+> -	 * mode == 1 signals iscsi_target_tx_thread() usage.
+> -	 * mode == 0 signals iscsi_target_rx_thread() usage.
+> -	 */
+> -	if (mode == 1) {
+> -		if (!conn->conn_tx_reset_cpumask)
+> -			return;
+> -		conn->conn_tx_reset_cpumask = 0;
+> -	} else {
+> -		if (!conn->conn_rx_reset_cpumask)
+> -			return;
+> -		conn->conn_rx_reset_cpumask = 0;
+> -	}
+> -	/*
+> -	 * Update the CPU mask for this single kthread so that
+> -	 * both TX and RX kthreads are scheduled to run on the
+> -	 * same CPU.
+> -	 */
+> -	set_cpus_allowed_ptr(p, conn->conn_cpumask);
+> -}
+> +extern void iscsit_thread_check_cpumask(struct iscsi_conn *conn,
+> +					struct task_struct *p,
+> +					int mode);
+> +
+>   #endif /* ISCSI_TARGET_CORE_H */
