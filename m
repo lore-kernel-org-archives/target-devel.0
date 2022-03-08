@@ -2,331 +2,145 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A169C433EF
-	for <target-devel@archiver.kernel.org>; Tue,  8 Mar 2022 08:34:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16402C4332F
+	for <target-devel@archiver.kernel.org>; Tue,  8 Mar 2022 22:07:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240957AbiCHIfh (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 8 Mar 2022 03:35:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36472 "EHLO
+        id S1346198AbiCHWIl (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 8 Mar 2022 17:08:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41668 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234980AbiCHIfg (ORCPT
+        with ESMTP id S1344879AbiCHWIk (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 8 Mar 2022 03:35:36 -0500
-Received: from mail-m2835.qiye.163.com (mail-m2835.qiye.163.com [103.74.28.35])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C67123CFEA;
-        Tue,  8 Mar 2022 00:34:39 -0800 (PST)
-Received: from [192.168.0.234] (unknown [218.94.118.90])
-        by mail-m2835.qiye.163.com (Hmail) with ESMTPA id 13D0D8A0302;
-        Tue,  8 Mar 2022 16:34:37 +0800 (CST)
-Message-ID: <3952debd-cd3d-3d65-635d-985ddbb91b49@easystack.cn>
-Date:   Tue, 8 Mar 2022 16:34:36 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v3] target: add iscsi/cpus_allowed_list in configfs
+        Tue, 8 Mar 2022 17:08:40 -0500
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2085.outbound.protection.outlook.com [40.107.237.85])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A10632DF9;
+        Tue,  8 Mar 2022 14:07:41 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=AmVTytU22Vw847gTrwCwUYGx8roS5EJ+39GIsdVOAwayml9Emh21WHhtvTQeAiJzmHZkPQ23nJ1y6/dAVJ5/hF1kMcQ0giwNUh5DR+dUEGDOh+XdE8Ud2CbKpj3LTn2NWfkxSSBbUO5GGWZrCV1QQo1vJXsClRSbDiDizQJXbZjB+tCu/7WRk5pMplLWU/IvHrmK0UBQgbMhXuh/5y4YQlLXX+EdCT6rp/r8N4MxJa6owCZbktaZVhIfifSigpYmGP8bGzZffBpz0SMqK6z9mBo38E/Wv3jyils4ULQRJY7vy10hqn4RFQd/YYNRqQY/3+JKbrLDxGikr2W4S5pDqQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=3+FWP+LlmeUdtCRg3MbmNBaNeOjjxNrjKfavVj02F5c=;
+ b=HuqSSGW6uuXnzG9R0fxM/Y19/L0BlswWlzLHP3FWPbmlRdoY+lDI4ouBkTJQ0pqR+vpnOO9q1Ze7cwhtc/+SEH3Lr30Z4WNE/1qrUd1WRlmORfNrkPyfaDKaBM6xO7yho4aj2x0la8wgwEKM4KD3Dm8K72AP2S8QKxuzmOwA6S0IPD6ahIXA8ThzBB27gv5fc+xV7fHpbKwmLWyXuX9lW+aiLrgIDL8Pq0T+rn2BmN3CyruSw6U96huudQeZq+uadTvKOHm7uRGrCbPFRp2gaSnnnUByarjNQfILS0F7UIpLrOPb7dIaER6k3XFOYNACvULoj2v0yg+OMLXs98lwVA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=3+FWP+LlmeUdtCRg3MbmNBaNeOjjxNrjKfavVj02F5c=;
+ b=M8hDptac4WtTrkkkzcKiQE8/YiP+0b9X3vqQnCVy7TcIRzojs93+xAHvJGpvcSctYyjiunSzscd4qn/olgdBjSUtKq+6DGEOB9VCkSR7wwQDBsyFtZGVkBTdRYXvEvuxHNMPCRez3IbV0ZBOZZgrXj+VvnAKwWdvJZxmD/yKtucXIaS7FpIlrxYYWL8xVHAk1FXrMbPFA1cplS4MQyBq8E5NRbTKSQyHnSn7wOSjLz8Evhygy1JkF9H6DqpZYb8x1bcwhXq6nv8I0FSQkgrUlYkAV8h3sxnI6tPJYoioDsFGUUYKnL7bruIkKYf/1WOQ9ABY13Ufh49fG0J/R+S7eg==
+Received: from MW2PR12MB4667.namprd12.prod.outlook.com (2603:10b6:302:12::28)
+ by CY4PR12MB1446.namprd12.prod.outlook.com (2603:10b6:910:10::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5038.19; Tue, 8 Mar
+ 2022 22:07:38 +0000
+Received: from MW2PR12MB4667.namprd12.prod.outlook.com
+ ([fe80::204b:bbcb:d388:64a2]) by MW2PR12MB4667.namprd12.prod.outlook.com
+ ([fe80::204b:bbcb:d388:64a2%4]) with mapi id 15.20.5038.027; Tue, 8 Mar 2022
+ 22:07:38 +0000
+From:   Chaitanya Kulkarni <chaitanyak@nvidia.com>
+To:     Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
+CC:     Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
+        Song Liu <song@kernel.org>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Josef Bacik <josef@toxicpanda.com>,
+        David Sterba <dsterba@suse.com>,
+        Phillip Lougher <phillip@squashfs.org.uk>,
+        "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+        "dm-devel@redhat.com" <dm-devel@redhat.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-bcache@vger.kernel.org" <linux-bcache@vger.kernel.org>,
+        "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
+        "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>
+Subject: Re: [PATCH 1/5] btrfs: simplify ->flush_bio handling
+Thread-Topic: [PATCH 1/5] btrfs: simplify ->flush_bio handling
+Thread-Index: AQHYMrQJiBMQoCadmk6WQuobhVgjTay2DG6A
+Date:   Tue, 8 Mar 2022 22:07:38 +0000
+Message-ID: <9a62e88b-89dd-2420-2551-6f587afd5db2@nvidia.com>
+References: <20220308061551.737853-1-hch@lst.de>
+ <20220308061551.737853-2-hch@lst.de>
+In-Reply-To: <20220308061551.737853-2-hch@lst.de>
+Accept-Language: en-US
 Content-Language: en-US
-To:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Cc:     zoumingzhe@qq.com
-References: <20220125083821.18225-1-mingzhe.zou@easystack.cn>
- <20220301075500.14266-1-mingzhe.zou@easystack.cn>
-From:   Zou Mingzhe <mingzhe.zou@easystack.cn>
-In-Reply-To: <20220301075500.14266-1-mingzhe.zou@easystack.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
-        kWDxoPAgseWUFZKDYvK1lXWShZQUlCN1dZLVlBSVdZDwkaFQgSH1lBWUMfTBhWSktCTUNCSkJKHk
-        seVRkRExYaEhckFA4PWVdZFhoPEhUdFFlBWU9LSFVKSktITk9VS1kG
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6PAw6Fhw*PjIaFDgzOjUzPjEB
-        NwoaCQ1VSlVKTU9NTElDT0xMTkpIVTMWGhIXVRYSFRwBEx5VARQOOx4aCAIIDxoYEFUYFUVZV1kS
-        C1lBWUlKQ1VCT1VKSkNVQktZV1kIAVlBSkpJQ043Bg++
-X-HM-Tid: 0a7f68aa7a28841dkuqw13d0d8a0302
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 0a364bdd-af96-4363-cd32-08da01500ec7
+x-ms-traffictypediagnostic: CY4PR12MB1446:EE_
+x-microsoft-antispam-prvs: <CY4PR12MB1446E6354A2539FF367E1ADFA3099@CY4PR12MB1446.namprd12.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: 2lKyoMo36d9UhgqgpuVXXX/jUxoDVDAjyAsUq6dxBCgFyU/CrASs90weMJSi8mTkLxEUEStzIjOvY5OR/unUtMNSMUMtE2RM8BuhDyy1QXqlCSv4JBwbdzeL6k7okaHzljj8ZVGrfU70oBh8L0D8IMGUqHsB9vrCQZ9Qu62gcJHQBmvWJ0f7l8WAP7/7QNe3BKysjuc0n6JcT3+mX3mBINzRVkB5IQzXoJGNEp/FPGwhjds9ctUQtqAgwS8bcEIOs0SbuZxGzns8L5ODfvWFXz88Rst771SWrAQIh6Tx64t0Hra9UvVyXn5shfEn0mbjC9fEP1x2sfxyrqMnrmiLkq/CpOjM6e9cHMp1N84AmIrxYwgbZ9bHFyZwkHJRj6rwK+5mgLZ7M+/6RsvmQy2nNRZf6j0v4x5BIR4eIVY94kTkVowWFqAOGHs6TR3zSfFpeoUsVAydMxMx3rAGFX3OytLxYGyHRP5v3CsQpf/4dHG5GlqDWxDueKuHzc5ADQRtAd4r0BEoO7XfKVK64RHsJaRbGW/gCQIGX8MJYV9/OpKAjgSQBnIYgkUmR2V+JfR0mkctr8HDkl0Iq3Di7xYJVPW1qNncT2euNMh7O6ozArBsfjlFaeVYHLOw1tFZv4UirM4ROI8Wk6mW4Q4PLTalvYRRNo15SKi6Yj0/BHcz6c94X3+zz9Q7VMMfSVdIl8qOOmhO9KWaXD8yjbyd4qNNO1Ty77akBd5kCmv5fSKUSyAxnV7pKIk36+AWIn/gqvt7uv1+TKZrSh2zakQ6fTo8jQ==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MW2PR12MB4667.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(186003)(5660300002)(91956017)(8676002)(66446008)(66476007)(66556008)(66946007)(64756008)(76116006)(4326008)(558084003)(316002)(36756003)(2906002)(8936002)(7416002)(110136005)(54906003)(38100700002)(31686004)(122000001)(508600001)(38070700005)(6486002)(86362001)(31696002)(71200400001)(6512007)(53546011)(6506007)(2616005)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?YmdoK0RkVUJWMDk2QnFpSGRHNHJQY29wWDFFakVMZlZiem5WZ0doNStrWmND?=
+ =?utf-8?B?RHFMbENxRTlpV1FxRzV3QTR0R2UvVncwcWtoQ2VucmdxZExoUGdlajNtRkJ0?=
+ =?utf-8?B?bThaaDNWdi92MXNwNVBmaVFIWEtPMDN2K3Y2Z0RESnRkaWIrdHowSjVpdEVy?=
+ =?utf-8?B?YlZTajZrL0U2d1lGNlNOQ2dROUl4c0kzNzJWRythOEpoQ1ErUGF6bjlCRHdr?=
+ =?utf-8?B?K0o3OE1HWlBybUwzKzJHWGZxOXBUelVCVTB6ZmVZbHpSbHJyamZPVFlZNDdq?=
+ =?utf-8?B?VDkxbnRySUpLTUE4K0g0TEI0RzdHTUlpeHlPOUhQQWJVMnlTSnhidzZYMDBH?=
+ =?utf-8?B?Snc5TTk1ZFFSN3dxK1dyWjRNeVBaQ0NFWmpndHU3bVcrV21nM0lPWVByakhW?=
+ =?utf-8?B?T3F5S2tLRUI1ZmZiSWZhdE9OU3NMNHp2STBKeE1UNmpOaUY1QytpNXFUUEVa?=
+ =?utf-8?B?NFk5czlBUE03bXlVMk5OUmxYaXBLZm8zRUp2eWQxZDRmc1RQY0QzLzFWN1hH?=
+ =?utf-8?B?NFFDT2c5eWV5VlV0cGppYTl3c0N6L3BmQWZjOVdvY2ZWRFZlNXorUHhZcXdO?=
+ =?utf-8?B?ZUh5L2lLdWhodm9lTDhFU1lWT2tVL0lDMS9ZRW9ycmJHMW92MmFvNlVMNTVm?=
+ =?utf-8?B?VTYwZlVBY3hXcTdjTnNTd3lMTmhKU2E5aDU0OENub0MyUmFSOXVmSTZJbFdl?=
+ =?utf-8?B?ZGQwQ3VVR2dycGg1Y2pSMkd6NndLMk10c3FIczBxRFpUZ1V4ZG9GYkZHZkoy?=
+ =?utf-8?B?WGhIOXdCSW9DSUIwSVlpVWZNYUN2NE9nckxSWUg4TGgzcDdidTkyV1Bjc1ZI?=
+ =?utf-8?B?TTdzYU04SHR5eVlDdTBhVTlpd3VGbkNUNnJLTkl2aFMydno1UWtWRzIxMFlj?=
+ =?utf-8?B?aXk1MWNiZ0NQSXVZdHk5T1RlZGFiMmNYVnlOZU5xTThIck5MbHVXbXJmOEEz?=
+ =?utf-8?B?MlFndzRSa1hPUTFiY0xYQS8waWZrNVVUL1pFbmh5cXVkV3NCYzIwaUsvb284?=
+ =?utf-8?B?aEJOU3lzY1NNc1NmWmh3dlhoTGk2VnZwcW9PbklDdTZUKzk2ek1adVNaRTg1?=
+ =?utf-8?B?WEZFSUdWU3U5c3JzYVd0YXlvQnZuVTBZYTNQY0dPYnBHQVhtK2N1ZjRoa3pW?=
+ =?utf-8?B?M0FDWENrdWZjV01kSjA4MUpJUVhYZGprcmtPYVorV3FQUnZqb0FiZW8xelFZ?=
+ =?utf-8?B?MW4xODJiZUpkNjZyWk11UTNMMjNITERVdFlKWTc1bmVyOXZha1Zwa1NONGdR?=
+ =?utf-8?B?VnZsWE5INDFyb0NGTmtabWpBNloyaTJmUWM0YUpmZ25scXNwUG9CU0FiZVI0?=
+ =?utf-8?B?ckt5QmNzRy9oMVRHcE93ajhPMmE1VHZwbEVKQWlocGJ5ejg2V1ZyU3h4Skxq?=
+ =?utf-8?B?d0RTSURTVko0Vkgvc1dlV2R6dGxsbEdNQTltSFZSOUpDK2MxMUVERGpKUkdj?=
+ =?utf-8?B?Sm9mK0JmYytjMW0xQS8wYVA5TDJOeHFnVCtTTmo0OXFyQkdld2JuZHVTczdj?=
+ =?utf-8?B?ZEViY0JBVEViZXVucklhQUVFVW56Zjk5TVZmdmRhQjkvbFhpaGIyZW9hSHlU?=
+ =?utf-8?B?UGcrY0RKK1NWa2RVS2hpK3RXK1pEQ0xVQ08vMmlnTUtLaGdSRmg1YllnSTNH?=
+ =?utf-8?B?a0VEV0NaK21wYW4xS0c0Z0ZzNWlkQU5vSUU1YWhjeW81OUhmRWhCalJiWkxi?=
+ =?utf-8?B?OS9LV01EOVZWQWdOQ3BBZnVIakw3cXhkL3hzY1Zka1dOdCtjTi82M3Y0b2M4?=
+ =?utf-8?B?Qk1DTGxKV0lIejdRejArVHBwcDF2VnN3T0ozZlN0RWZKNnU5UytRaGc1QnJL?=
+ =?utf-8?B?OXpyeXROd0IrRXp3WWpTN1kyUmNrU2tvMHRXOGdZbktNY3N1SEZmRy9PbjVh?=
+ =?utf-8?B?blhWWkc5V01PU05Heis2RGd2U2dSVVVKWi81WGMzWnN6N21YY3E5bmxqL2ph?=
+ =?utf-8?B?S2VpWm5OeVJNbUpXdUFST0VxaUpQUzdqWk9WSWpwMmc1cUFSV2Vvd1d6SHMv?=
+ =?utf-8?B?U05LZkxDSHVJS1NJeFQxQU5TbzQ0TGFsNXBBQ0t4SHZxNEkxVHQ0ckw4QjYy?=
+ =?utf-8?B?Q2dRcVRTUVRFZ3F4Z1h3NXZFRG1TQk94NGdiOEZpZEhMei9rM2hrVTBRT2Y3?=
+ =?utf-8?B?MzlWS3JPSndna01SZUNIVDBBUlgybnRYaWFnd3FoS2FKcG0wc25JNmJXR0lM?=
+ =?utf-8?B?NFNuOVRFS1JGeEV5dW9QSlhnRlZWQ1dFbWN5NUNsY1dwNHYyd2Y1L0xBVEhk?=
+ =?utf-8?B?UDdTd0tyWlJWYkpPQ0pUandwOEJBPT0=?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <A1D4ED73BE2BD1418E9C638FB9C1AB95@namprd12.prod.outlook.com>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MW2PR12MB4667.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0a364bdd-af96-4363-cd32-08da01500ec7
+X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Mar 2022 22:07:38.2395
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: HUM0prCgr7LXXJ5ffJ+YbwKYq3VQH+1X7BNC5Sl2UQvZRoVVe8ZuGiXfTl/uGw1tEVrfPGD0gmwjdUGDN19FFg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY4PR12MB1446
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi, christie
-
-Have you started reviewing this patch?
-
-Mingzhe
-
-在 2022/3/1 15:55, mingzhe.zou@easystack.cn 写道:
-> From: Mingzhe Zou <mingzhe.zou@easystack.cn>
->
-> The RX/TX threads for iSCSI connection can be scheduled to
-> any online cpus, and will not be rescheduled.
->
-> If bind other heavy load threads with iSCSI connection
-> RX/TX thread to the same cpu, the iSCSI performance will
-> be worse.
->
-> This patch add iscsi/cpus_allowed_list in configfs. The
-> available cpus set of iSCSI connection RX/TX threads is
-> allowed_cpus & online_cpus. If it is modified, all RX/TX
-> threads will be rescheduled.
->
-> Signed-off-by: Mingzhe Zou <mingzhe.zou@easystack.cn>
-> ---
->   drivers/target/iscsi/iscsi_target.c          | 77 +++++++++++++++++++-
->   drivers/target/iscsi/iscsi_target_configfs.c | 32 ++++++++
->   drivers/target/iscsi/iscsi_target_login.c    |  8 ++
->   include/target/iscsi/iscsi_target_core.h     | 31 ++------
->   4 files changed, 120 insertions(+), 28 deletions(-)
->
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-> index 2c54c5d8412d..6fe6a6bab3f4 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -702,13 +702,19 @@ static int __init iscsi_target_init_module(void)
->   	if (!iscsit_global->ts_bitmap)
->   		goto configfs_out;
->   
-> +	if (!zalloc_cpumask_var(&iscsit_global->allowed_cpumask, GFP_KERNEL)) {
-> +		pr_err("Unable to allocate iscsit_global->allowed_cpumask\n");
-> +		goto bitmap_out;
-> +	}
-> +	cpumask_setall(iscsit_global->allowed_cpumask);
-> +
->   	lio_qr_cache = kmem_cache_create("lio_qr_cache",
->   			sizeof(struct iscsi_queue_req),
->   			__alignof__(struct iscsi_queue_req), 0, NULL);
->   	if (!lio_qr_cache) {
->   		pr_err("Unable to kmem_cache_create() for"
->   				" lio_qr_cache\n");
-> -		goto bitmap_out;
-> +		goto cpumask_out;
->   	}
->   
->   	lio_dr_cache = kmem_cache_create("lio_dr_cache",
-> @@ -753,6 +759,8 @@ static int __init iscsi_target_init_module(void)
->   	kmem_cache_destroy(lio_dr_cache);
->   qr_out:
->   	kmem_cache_destroy(lio_qr_cache);
-> +cpumask_out:
-> +	free_cpumask_var(iscsit_global->allowed_cpumask);
->   bitmap_out:
->   	vfree(iscsit_global->ts_bitmap);
->   configfs_out:
-> @@ -782,6 +790,7 @@ static void __exit iscsi_target_cleanup_module(void)
->   
->   	target_unregister_template(&iscsi_ops);
->   
-> +	free_cpumask_var(iscsit_global->allowed_cpumask);
->   	vfree(iscsit_global->ts_bitmap);
->   	kfree(iscsit_global);
->   }
-> @@ -3587,6 +3596,11 @@ static int iscsit_send_reject(
->   void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
->   {
->   	int ord, cpu;
-> +	cpumask_t conn_allowed_cpumask;
-> +
-> +	cpumask_and(&conn_allowed_cpumask, iscsit_global->allowed_cpumask,
-> +		    cpu_online_mask);
-> +
->   	/*
->   	 * bitmap_id is assigned from iscsit_global->ts_bitmap from
->   	 * within iscsit_start_kthreads()
-> @@ -3595,8 +3609,9 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
->   	 * iSCSI connection's RX/TX threads will be scheduled to
->   	 * execute upon.
->   	 */
-> -	ord = conn->bitmap_id % cpumask_weight(cpu_online_mask);
-> -	for_each_online_cpu(cpu) {
-> +	cpumask_clear(conn->conn_cpumask);
-> +	ord = conn->bitmap_id % cpumask_weight(&conn_allowed_cpumask);
-> +	for_each_cpu(cpu, &conn_allowed_cpumask) {
->   		if (ord-- == 0) {
->   			cpumask_set_cpu(cpu, conn->conn_cpumask);
->   			return;
-> @@ -3609,6 +3624,62 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
->   	cpumask_setall(conn->conn_cpumask);
->   }
->   
-> +static void iscsit_thread_reschedule(struct iscsi_conn *conn)
-> +{
-> +	/*
-> +	 * If iscsit_global->allowed_cpumask modified, reschedule iSCSI
-> +	 * connection's RX/TX threads update conn->allowed_cpumask.
-> +	 */
-> +	if (!cpumask_equal(iscsit_global->allowed_cpumask,
-> +			   conn->allowed_cpumask)) {
-> +		iscsit_thread_get_cpumask(conn);
-> +		conn->conn_tx_reset_cpumask = 1;
-> +		conn->conn_rx_reset_cpumask = 1;
-> +		cpumask_copy(conn->allowed_cpumask,
-> +			     iscsit_global->allowed_cpumask);
-> +	}
-> +}
-> +
-> +void iscsit_thread_check_cpumask(
-> +	struct iscsi_conn *conn,
-> +	struct task_struct *p,
-> +	int mode)
-> +{
-> +	/*
-> +	 * The TX and RX threads maybe call iscsit_thread_check_cpumask()
-> +	 * at the same time. The RX thread might be faster and return from
-> +	 * iscsit_thread_reschedule() with conn_rx_reset_cpumask set to 0.
-> +	 * Then the TX thread sets it back to 1.
-> +	 * The next time the RX thread loops, it sees conn_rx_reset_cpumask
-> +	 * set to 1 and calls set_cpus_allowed_ptr() again and set it to 0.
-> +	 */
-> +	iscsit_thread_reschedule(conn);
-> +
-> +	/*
-> +	 * mode == 1 signals iscsi_target_tx_thread() usage.
-> +	 * mode == 0 signals iscsi_target_rx_thread() usage.
-> +	 */
-> +	if (mode == 1) {
-> +		if (!conn->conn_tx_reset_cpumask)
-> +			return;
-> +	} else {
-> +		if (!conn->conn_rx_reset_cpumask)
-> +			return;
-> +	}
-> +
-> +	/*
-> +	 * Update the CPU mask for this single kthread so that
-> +	 * both TX and RX kthreads are scheduled to run on the
-> +	 * same CPU.
-> +	 */
-> +	set_cpus_allowed_ptr(p, conn->conn_cpumask);
-> +	if (mode == 1)
-> +		conn->conn_tx_reset_cpumask = 0;
-> +	else
-> +		conn->conn_rx_reset_cpumask = 0;
-> +}
-> +EXPORT_SYMBOL(iscsit_thread_check_cpumask);
-> +
->   int
->   iscsit_immediate_queue(struct iscsi_conn *conn, struct iscsi_cmd *cmd, int state)
->   {
-> diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
-> index 2a9de24a8bbe..0cedcfe207b5 100644
-> --- a/drivers/target/iscsi/iscsi_target_configfs.c
-> +++ b/drivers/target/iscsi/iscsi_target_configfs.c
-> @@ -1127,8 +1127,40 @@ static ssize_t lio_target_wwn_lio_version_show(struct config_item *item,
->   
->   CONFIGFS_ATTR_RO(lio_target_wwn_, lio_version);
->   
-> +static ssize_t lio_target_wwn_cpus_allowed_list_show(
-> +		struct config_item *item, char *page)
-> +{
-> +	return sprintf(page, "%*pbl\n",
-> +		       cpumask_pr_args(iscsit_global->allowed_cpumask));
-> +}
-> +
-> +static ssize_t lio_target_wwn_cpus_allowed_list_store(
-> +		struct config_item *item, const char *page, size_t count)
-> +{
-> +	int ret;
-> +	char *orig;
-> +	cpumask_t new_allowed_cpumask;
-> +
-> +	orig = kstrdup(page, GFP_KERNEL);
-> +	if (!orig)
-> +		return -ENOMEM;
-> +
-> +	cpumask_clear(&new_allowed_cpumask);
-> +	ret = cpulist_parse(orig, &new_allowed_cpumask);
-> +
-> +	kfree(orig);
-> +	if (ret != 0)
-> +		return ret;
-> +
-> +	cpumask_copy(iscsit_global->allowed_cpumask, &new_allowed_cpumask);
-> +	return count;
-> +}
-> +
-> +CONFIGFS_ATTR(lio_target_wwn_, cpus_allowed_list);
-> +
->   static struct configfs_attribute *lio_target_wwn_attrs[] = {
->   	&lio_target_wwn_attr_lio_version,
-> +	&lio_target_wwn_attr_cpus_allowed_list,
->   	NULL,
->   };
->   
-> diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-> index 1a9c50401bdb..9c01fb864585 100644
-> --- a/drivers/target/iscsi/iscsi_target_login.c
-> +++ b/drivers/target/iscsi/iscsi_target_login.c
-> @@ -1129,8 +1129,15 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
->   		goto free_conn_ops;
->   	}
->   
-> +	if (!zalloc_cpumask_var(&conn->allowed_cpumask, GFP_KERNEL)) {
-> +		pr_err("Unable to allocate conn->allowed_cpumask\n");
-> +		goto free_conn_cpumask;
-> +	}
-> +
->   	return conn;
->   
-> +free_conn_cpumask:
-> +	free_cpumask_var(conn->conn_cpumask);
->   free_conn_ops:
->   	kfree(conn->conn_ops);
->   put_transport:
-> @@ -1142,6 +1149,7 @@ static struct iscsi_conn *iscsit_alloc_conn(struct iscsi_np *np)
->   
->   void iscsit_free_conn(struct iscsi_conn *conn)
->   {
-> +	free_cpumask_var(conn->allowed_cpumask);
->   	free_cpumask_var(conn->conn_cpumask);
->   	kfree(conn->conn_ops);
->   	iscsit_put_transport(conn->conn_transport);
-> diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-> index 1eccb2ac7d02..adc87de0362b 100644
-> --- a/include/target/iscsi/iscsi_target_core.h
-> +++ b/include/target/iscsi/iscsi_target_core.h
-> @@ -580,6 +580,7 @@ struct iscsi_conn {
->   	struct ahash_request	*conn_tx_hash;
->   	/* Used for scheduling TX and RX connection kthreads */
->   	cpumask_var_t		conn_cpumask;
-> +	cpumask_var_t		allowed_cpumask;
->   	unsigned int		conn_rx_reset_cpumask:1;
->   	unsigned int		conn_tx_reset_cpumask:1;
->   	/* list_head of struct iscsi_cmd for this connection */
-> @@ -878,6 +879,7 @@ struct iscsit_global {
->   	/* Thread Set bitmap pointer */
->   	unsigned long		*ts_bitmap;
->   	spinlock_t		ts_bitmap_lock;
-> +	cpumask_var_t		allowed_cpumask;
->   	/* Used for iSCSI discovery session authentication */
->   	struct iscsi_node_acl	discovery_acl;
->   	struct iscsi_portal_group	*discovery_tpg;
-> @@ -898,29 +900,8 @@ static inline u32 session_get_next_ttt(struct iscsi_session *session)
->   
->   extern struct iscsi_cmd *iscsit_find_cmd_from_itt(struct iscsi_conn *, itt_t);
->   
-> -static inline void iscsit_thread_check_cpumask(
-> -	struct iscsi_conn *conn,
-> -	struct task_struct *p,
-> -	int mode)
-> -{
-> -	/*
-> -	 * mode == 1 signals iscsi_target_tx_thread() usage.
-> -	 * mode == 0 signals iscsi_target_rx_thread() usage.
-> -	 */
-> -	if (mode == 1) {
-> -		if (!conn->conn_tx_reset_cpumask)
-> -			return;
-> -		conn->conn_tx_reset_cpumask = 0;
-> -	} else {
-> -		if (!conn->conn_rx_reset_cpumask)
-> -			return;
-> -		conn->conn_rx_reset_cpumask = 0;
-> -	}
-> -	/*
-> -	 * Update the CPU mask for this single kthread so that
-> -	 * both TX and RX kthreads are scheduled to run on the
-> -	 * same CPU.
-> -	 */
-> -	set_cpus_allowed_ptr(p, conn->conn_cpumask);
-> -}
-> +extern void iscsit_thread_check_cpumask(struct iscsi_conn *conn,
-> +					struct task_struct *p,
-> +					int mode);
-> +
->   #endif /* ISCSI_TARGET_CORE_H */
+T24gMy83LzIyIDIyOjE1LCBDaHJpc3RvcGggSGVsbHdpZyB3cm90ZToNCj4gVXNlIGFuZCBlbWJl
+ZGRlZCBiaW9zIHRoYXQgaXMgaW5pdGlhbGl6ZWQgd2hlbiB1c2VkIGluc3RlYWQgb2YNCj4gYmlv
+X2ttYWxsb2MgcGx1cyBiaW9fcmVzZXQuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBDaHJpc3RvcGgg
+SGVsbHdpZyA8aGNoQGxzdC5kZT4NCj4gUmV2aWV3ZWQtYnk6IERhdmlkIFN0ZXJiYSA8ZHN0ZXJi
+YUBzdXNlLmNvbT4NCj4gLS0tDQoNCg0KDQpMb29rcyBnb29kLg0KDQpSZXZpZXdlZC1ieTogQ2hh
+aXRhbnlhIEt1bGthcm5pIDxrY2hAbnZpZGlhLmNvbT4NCg0KDQoNCg==
