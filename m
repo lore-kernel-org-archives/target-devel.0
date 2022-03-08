@@ -2,100 +2,86 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D795C433F5
-	for <target-devel@archiver.kernel.org>; Wed,  2 Mar 2022 05:13:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DAB8C4321E
+	for <target-devel@archiver.kernel.org>; Tue,  8 Mar 2022 06:16:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239463AbiCBFOg (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 2 Mar 2022 00:14:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42006 "EHLO
+        id S1344417AbiCHGRJ (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 8 Mar 2022 01:17:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44956 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239521AbiCBFO0 (ORCPT
+        with ESMTP id S244567AbiCHGRG (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 2 Mar 2022 00:14:26 -0500
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 57BC4A9A72;
-        Tue,  1 Mar 2022 21:13:43 -0800 (PST)
-Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 2222cXOt016190;
-        Wed, 2 Mar 2022 05:13:40 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2021-07-09;
- bh=FJ/slUmyfVzJZk6jgRLUq//9lqbCFNZrAkRugfbn7XY=;
- b=m2pHnaHw9+VLURCb6pptbRrIZd9ijwuSU9jWcdRUIHuLGQrM0qX47XMbDQOpjldIAg08
- CZH8h7bfFgYwps0/cM7gmhlATA42jVxWnpMnNPgJh1UMgyWlL9JeenwlygReIrjK4RCk
- EjxgUNo47jjv9UIw68V3r2hjaMo+Dp5TAoBuO2e1Qouu0q/O+X/C/UH1s8eBATvfdRtK
- CtPBOcLBX6BKMJCJwx7G4t4tAzqADKjEVRLnMdrxdELjzID7kD6acLj7u5mQRh+xhId7
- X2RZNTqiKOR3cQ7beS/1XUe9URLAH51K3ebia/UpHgyAdGIEJAAPRZBRi8ATE13hnPcQ eg== 
-Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
-        by mx0b-00069f02.pphosted.com with ESMTP id 3ehbk9b9vt-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 02 Mar 2022 05:13:39 +0000
-Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
-        by userp3030.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 2225C1i8175289;
-        Wed, 2 Mar 2022 05:13:38 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by userp3030.oracle.com with ESMTP id 3ef9ayxgnq-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 02 Mar 2022 05:13:38 +0000
-Received: from userp3030.oracle.com (userp3030.oracle.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 2225DVPS178145;
-        Wed, 2 Mar 2022 05:13:38 GMT
-Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
-        by userp3030.oracle.com with ESMTP id 3ef9ayxgcv-7;
-        Wed, 02 Mar 2022 05:13:38 +0000
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     Christoph Hellwig <hch@lst.de>
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: Re: remove struct scsi_request v2
-Date:   Wed,  2 Mar 2022 00:13:25 -0500
-Message-Id: <164619702114.16127.6666650319483152093.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220224175552.988286-1-hch@lst.de>
-References: <20220224175552.988286-1-hch@lst.de>
+        Tue, 8 Mar 2022 01:17:06 -0500
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 790472E6BE;
+        Mon,  7 Mar 2022 22:16:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=9tb4TIpuLITxxgZ/5zuJDTRYiPC0WStlucP3wP8AsAg=; b=kAZwwzrVV8MatkfAj1oNP7pxT4
+        Ffr2eKt6CrpedeoZBJZ4LHavIqKry6c4hMXlUI5GeZkr73kZDW9xJHD+XtpP1r2IeKfTgRr38S6GA
+        uTR9RDbQ7/mTQmmy4+ZxGY898ogr5EgfFsq6/mVPHwGq25IwMe7mrDkxX4rlj51AIcZlzYsSN5pBX
+        6eeuigLJL1a48af6gUUArPm8Hogopt/sA5YhfWjpOe8FmUY5XCHPxouwJwMzkiamlvmhMx3slopdL
+        iMu42zFH8d8gw5QVon9OJHqrt7aFhbsZFRrrt7Gjmv2EG8zUiS/Ij6PJIqkLtIc2EKIXHK3T513PT
+        jdvBNUfg==;
+Received: from [2001:4bb8:184:7746:6f50:7a98:3141:c37b] (helo=localhost)
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nRT8T-002lVK-RU; Tue, 08 Mar 2022 06:15:54 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
+        Song Liu <song@kernel.org>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Josef Bacik <josef@toxicpanda.com>,
+        David Sterba <dsterba@suse.com>,
+        Phillip Lougher <phillip@squashfs.org.uk>,
+        linux-block@vger.kernel.org, dm-devel@redhat.com,
+        linux-kernel@vger.kernel.org, linux-bcache@vger.kernel.org,
+        linux-raid@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-btrfs@vger.kernel.org
+Subject: cleanup bio_kmalloc v2
+Date:   Tue,  8 Mar 2022 07:15:46 +0100
+Message-Id: <20220308061551.737853-1-hch@lst.de>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: IGWqcdbrgUnMcnR65o40HXNYBTSwpqrd
-X-Proofpoint-ORIG-GUID: IGWqcdbrgUnMcnR65o40HXNYBTSwpqrd
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, 24 Feb 2022 18:55:44 +0100, Christoph Hellwig wrote:
+Hi Jens,
 
-> with the recent removal of the REQ_OP_SCSI_{IN,OUT} based passthrough
-> from non-scsi drivers, the need for the scsi_request structure went
-> away as well.  As all submitters of SCSI passthrough requests are using
-> the SCSI midlayer now they can just fill out the scsi_cmnd directly.
-> 
-> Changes since v1:
->  - fix a few commit message typos
->  - remove an extra clearing of scmd->flags
->  - cleanup sense handling in sg_scsi_ioctl
->  - split the last patch
-> 
-> [...]
+this series finishes off the bio allocation interface cleanups by dealing
+with the weirdest member of the famility.  bio_kmalloc combines a kmalloc
+for the bio and bio_vecs with a hidden bio_init call and magic cleanup
+semantics.
 
-Applied to 5.18/scsi-queue, thanks!
+This series moves a few callers away from bio_kmalloc and then turns
+bio_kmalloc into a simple wrapper for a slab allocation of a bio and the
+inline biovecs.  The callers need to manually call bio_init instead with
+all that entails and the magic that turns bio_put into a kfree goes away
+as well, allowing for a proper debug check in bio_put that catches
+accidental use on a bio_init()ed bio.
 
-[1/8] target/pscsi: remove struct pscsi_plugin_task
-      https://git.kernel.org/mkp/scsi/c/c49ff72cff4c
-[2/8] scsi: don't memset the entire scsi_cmnd in scsi_init_command
-      https://git.kernel.org/mkp/scsi/c/71bada345b33
-[3/8] scsi: remove the cmd field from struct scsi_request
-      https://git.kernel.org/mkp/scsi/c/ce70fd9a551a
-[4/8] scsi: remove the sense and sense_len fields from struct scsi_request
-      https://git.kernel.org/mkp/scsi/c/5b794f98074a
-[5/8] scsi: move the resid_len field from struct scsi_request to struct scsi_cmnd
-      https://git.kernel.org/mkp/scsi/c/a9a4ea1166d6
-[6/8] scsi: move the result field from struct scsi_request to struct scsi_cmnd
-      https://git.kernel.org/mkp/scsi/c/dbb4c84d87af
-[7/8] scsi: remove struct scsi_request
-      https://git.kernel.org/mkp/scsi/c/6aded12b10e0
-[8/8] scsi: remove <scsi/scsi_request.h>
-      https://git.kernel.org/mkp/scsi/c/264403033105
+Changes since v1:
+ - update a pre-existing comment per maintainer suggestion
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Diffstat:
+ block/bio.c                        |   47 ++++++++++++++-----------------------
+ block/blk-crypto-fallback.c        |   14 ++++++-----
+ block/blk-map.c                    |   42 +++++++++++++++++++++------------
+ drivers/block/pktcdvd.c            |   34 +++++++++++---------------
+ drivers/md/bcache/debug.c          |   10 ++++---
+ drivers/md/dm-bufio.c              |    9 +++----
+ drivers/md/raid1.c                 |   12 ++++++---
+ drivers/md/raid10.c                |   21 +++++++++++-----
+ drivers/target/target_core_pscsi.c |   36 ++++------------------------
+ fs/btrfs/disk-io.c                 |    8 +++---
+ fs/btrfs/volumes.c                 |   11 --------
+ fs/btrfs/volumes.h                 |    2 -
+ fs/squashfs/block.c                |   14 +++--------
+ include/linux/bio.h                |    2 -
+ 14 files changed, 116 insertions(+), 146 deletions(-)
