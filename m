@@ -2,78 +2,51 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BECF1C433F5
-	for <target-devel@archiver.kernel.org>; Wed,  9 Mar 2022 08:20:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC63BC433F5
+	for <target-devel@archiver.kernel.org>; Wed,  9 Mar 2022 09:12:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229755AbiCIIVv (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 9 Mar 2022 03:21:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49218 "EHLO
+        id S229758AbiCIJNP (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 9 Mar 2022 04:13:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54982 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229684AbiCIIVv (ORCPT
+        with ESMTP id S231879AbiCIJNO (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 9 Mar 2022 03:21:51 -0500
-Received: from out30-132.freemail.mail.aliyun.com (out30-132.freemail.mail.aliyun.com [115.124.30.132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 004CD5C677
-        for <target-devel@vger.kernel.org>; Wed,  9 Mar 2022 00:20:52 -0800 (PST)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R911e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04400;MF=xiaoguang.wang@linux.alibaba.com;NM=1;PH=DS;RN=2;SR=0;TI=SMTPD_---0V6iM1PF_1646814050;
-Received: from 30.225.28.191(mailfrom:xiaoguang.wang@linux.alibaba.com fp:SMTPD_---0V6iM1PF_1646814050)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Wed, 09 Mar 2022 16:20:50 +0800
-Message-ID: <95823aae-28fd-f078-e358-b02e05f40935@linux.alibaba.com>
-Date:   Wed, 9 Mar 2022 16:20:49 +0800
+        Wed, 9 Mar 2022 04:13:14 -0500
+X-Greylist: delayed 393 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 09 Mar 2022 01:12:15 PST
+Received: from mail.lasedrum.pl (mail.lasedrum.pl [151.236.17.159])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6FD4316BFAF
+        for <target-devel@vger.kernel.org>; Wed,  9 Mar 2022 01:12:15 -0800 (PST)
+Received: by mail.lasedrum.pl (Postfix, from userid 1001)
+        id 5BA4640E5B; Wed,  9 Mar 2022 10:05:32 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lasedrum.pl; s=mail;
+        t=1646816740; bh=jqHIBqxs7o8giDgUN2U2QL98LF/31E7JMwKZLkg2F1M=;
+        h=Date:From:To:Subject:From;
+        b=TyfpCBOyrWbhEatphwiaOedRXTmo6R39TOJtC9mefLZlAoAFbemWOFm7BfnVqOotn
+         BN7BqEv1VBY8hHpjYfjHUQUPcHcz+LfHqErCbf1KCmCmLmx10Pdyj4SMZJ5kBchw7e
+         zWR+Zp9Teq8CG44z9H1CzoMtetojUeiFohLDjfvQ0ht4Zkyzk2RAH1xRbEoq/zT+4+
+         bsoA2HyJeZP7GvP6680hqxQIhW1Kx/ucRL56pmF2yIamAEtY8F+uAwypI+Ko3qcKa4
+         8r2FchfITfRDaUwvcqBlJY/8SgohhrKm3h36zleRSZDS11gdvkRbwU5h37FzUjBwhz
+         F8Wch4aQ48fwQ==
+Received: by mail.lasedrum.pl for <target-devel@vger.kernel.org>; Wed,  9 Mar 2022 09:05:28 GMT
+Message-ID: <20220309084500-0.1.1c.3cal.0.g33rh3v7d3@lasedrum.pl>
+Date:   Wed,  9 Mar 2022 09:05:28 GMT
+From:   "Marcin Chruszcz" <marcin.chruszcz@lasedrum.pl>
+To:     <target-devel@vger.kernel.org>
+Subject: =?UTF-8?Q?Pytanie_o_samoch=C3=B3d?=
+X-Mailer: mail.lasedrum.pl
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.6.1
-Content-Language: en-US
-To:     Bodo Stroesser <bostroesser@gmail.com>
-Cc:     target-devel@vger.kernel.org
-From:   Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-Subject: code question about tcmu_try_get_data_page()
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-hi Bodo,
+Dzie=C5=84 dobry,
 
-I have implemented a zero-copy prototype for tcmu(not sent out yet), it 
-reallys
-improves throughput in large io size cases, and I met some code question 
-that
-may need you kind help, thanks in advance. In my prototype, I choose to
-unmap pages in tcmu_irqcontrol():
-==> tcmu_irqcontrol, which holds cmdr_lock.
-====> tcmu_handle_completions
-======> tcmu_handle_completion
-========> zap_page_range, which needs to hold mm related lock.
-
-But in page fault procedure:
-==> tcmu_vma_fault, which I think its caller hold mm related lock.
-====> tcmu_try_get_data_page, which tries to hold cmdr_lock.
-
-Then dead lock may happens. In tcmu_try_get_data_page(),
-it mainly acts like below:
-         mutex_lock(&udev->cmdr_lock);
-         page = xa_load(&udev->data_pages, dpi);
-         if (likely(page)) {
-                 mutex_unlock(&udev->cmdr_lock);
-                 return page;
-         }
-
-         /*
-          * Userspace messed up and passed in a address not in the
-          * data iov passed to it.
-          */
-         pr_err("Invalid addr to data page mapping (dpi %u) on device %s\n",
-                dpi, udev->name);
-         mutex_unlock(&udev->cmdr_lock);
-
-I wonder do we really need to hold cmdr_lock here, seems it doesn't
-protect any real resources. If cmdr_lock here is used to avoid concurrent
-xa_erase(), after releasing cmdr_lock, page still can be removed.
-So my question is that can we safely remove this cmdr_lock here? thanks.
+Czy interesuje Pa=C5=84stwa rozwi=C4=85zanie umo=C5=BCliwiaj=C4=85ce moni=
+torowanie samochod=C3=B3w firmowych oraz optymalizacj=C4=99 koszt=C3=B3w =
+ich utrzymania?=20
 
 
-Regards,
-Xiaoguang Wang
+Pozdrawiam,
+Marcin Chruszcz
