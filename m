@@ -2,111 +2,103 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B601C433EF
-	for <target-devel@archiver.kernel.org>; Fri, 11 Mar 2022 13:22:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C096C433F5
+	for <target-devel@archiver.kernel.org>; Fri, 11 Mar 2022 17:57:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236044AbiCKNXO (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 11 Mar 2022 08:23:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33490 "EHLO
+        id S1350253AbiCKR6n (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 11 Mar 2022 12:58:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47908 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242718AbiCKNXN (ORCPT
+        with ESMTP id S1350461AbiCKR6n (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 11 Mar 2022 08:23:13 -0500
-Received: from out30-130.freemail.mail.aliyun.com (out30-130.freemail.mail.aliyun.com [115.124.30.130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52AE21C3D08;
-        Fri, 11 Mar 2022 05:22:10 -0800 (PST)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R191e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04423;MF=xiaoguang.wang@linux.alibaba.com;NM=1;PH=DS;RN=3;SR=0;TI=SMTPD_---0V6uG0iM_1647004927;
-Received: from localhost(mailfrom:xiaoguang.wang@linux.alibaba.com fp:SMTPD_---0V6uG0iM_1647004927)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Fri, 11 Mar 2022 21:22:07 +0800
-From:   Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc:     bostroesser@gmail.com
-Subject: [PATCH 2/2] scsi: target: tcmu: Use address_space->invalidate_lock
-Date:   Fri, 11 Mar 2022 21:22:06 +0800
-Message-Id: <20220311132206.24515-2-xiaoguang.wang@linux.alibaba.com>
-X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20220311132206.24515-1-xiaoguang.wang@linux.alibaba.com>
-References: <20220311132206.24515-1-xiaoguang.wang@linux.alibaba.com>
+        Fri, 11 Mar 2022 12:58:43 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 15C2C3FDA7
+        for <target-devel@vger.kernel.org>; Fri, 11 Mar 2022 09:57:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1647021458;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=CBCkVn9C4rk/VT3+b4+mUYdTQuzP3cBuRTrOGEiGfng=;
+        b=PdoNONRIdzKUuE2pAKX9HCiHKjHuDrUPBNhBrDPLAsZRAM+3MtmWXP0p58+4iSVbEK7/zV
+        vCBD1GfW+Gyw/su72gwEmfvcjvklSqZRQt/xpzUMAFNwOW6R+5OtyBpAIdYRZmw++GtYjZ
+        3EIAmoAVGg2+GOVALiCO/yUhSFqtPqM=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-641-E0wrlHKIO4qwL3QodW_TYQ-1; Fri, 11 Mar 2022 12:57:35 -0500
+X-MC-Unique: E0wrlHKIO4qwL3QodW_TYQ-1
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com [10.5.11.11])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 0A360801AFE;
+        Fri, 11 Mar 2022 17:57:34 +0000 (UTC)
+Received: from gluttony.redhat.com (unknown [10.22.19.22])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id EDA7580685;
+        Fri, 11 Mar 2022 17:57:18 +0000 (UTC)
+From:   David Jeffery <djeffery@redhat.com>
+To:     linux-rdma@vger.kernel.org
+Cc:     target-devel@vger.kernel.org, Sagi Grimberg <sagi@grimberg.me>,
+        Max Gurtovoy <mgurtovoy@nvidia.com>,
+        Laurence Oberman <loberman@redhat.com>,
+        David Jeffery <djeffery@redhat.com>
+Subject: [Patch 0/2] iscsit/isert deadlock prevention under heavy I/O
+Date:   Fri, 11 Mar 2022 12:57:11 -0500
+Message-Id: <20220311175713.2344960-1-djeffery@redhat.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Currently tcmu_vma_fault() uses udev->cmdr_lock to avoid concurrent
-find_free_blocks(), which unmaps idle pages and truncates them. This
-work is really like many filesystem's truncate operations, but they
-use address_space->invalidate_lock to protect race.
+With fast infiniband networks and rdma through isert, the isert version of
+an iSCSI target can get itself into a deadlock condition from when
+max_cmd_sn updates are pushed to the client versus when commands are fully
+released after rdma completes.
 
-This patch replaces cmdr_lock with address_space->invalidate_lock in
-tcmu fault procedure, which will also make page-fault have concurrency.
+iscsit preallocates a limited number of iscsi_cmd structs used for any
+commands from the initiator. While the iscsi window would normally be
+expected to limit the number used by normal SCSI commands, isert can exceed
+this limit with commands waiting finally completion. max_cmd_sn gets
+incremented and pushed to the client on sending the target's final
+response, but the iscsi_cmd won't be freed for reuse until after all rdma
+is acknowledged as complete.
 
-Signed-off-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
----
- drivers/target/target_core_user.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+This allows more new commands to come in even as older commands are not yet
+released. With enough commands on the initiator wanting to be sent, this can
+result in all iscsi_cmd structs being allocated and used for SCSI commands.
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 06a5c4086551..e0a62623ccd7 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1815,13 +1815,14 @@ static int tcmu_find_mem_index(struct vm_area_struct *vma)
- 
- static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
- {
-+	struct address_space *mapping = udev->inode->i_mapping;
- 	struct page *page;
- 
--	mutex_lock(&udev->cmdr_lock);
-+	filemap_invalidate_lock_shared(mapping);
- 	page = xa_load(&udev->data_pages, dpi);
- 	if (likely(page)) {
- 		get_page(page);
--		mutex_unlock(&udev->cmdr_lock);
-+		filemap_invalidate_unlock_shared(mapping);
- 		return page;
- 	}
- 
-@@ -1831,7 +1832,7 @@ static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
- 	 */
- 	pr_err("Invalid addr to data page mapping (dpi %u) on device %s\n",
- 	       dpi, udev->name);
--	mutex_unlock(&udev->cmdr_lock);
-+	filemap_invalidate_unlock_shared(mapping);
- 
- 	return NULL;
- }
-@@ -3111,6 +3112,7 @@ static void find_free_blocks(void)
- 	loff_t off;
- 	u32 pages_freed, total_pages_freed = 0;
- 	u32 start, end, block, total_blocks_freed = 0;
-+	struct address_space *mapping;
- 
- 	if (atomic_read(&global_page_count) <= tcmu_global_max_pages)
- 		return;
-@@ -3134,6 +3136,7 @@ static void find_free_blocks(void)
- 			continue;
- 		}
- 
-+		mapping = udev->inode->i_mapping;
- 		end = udev->dbi_max + 1;
- 		block = find_last_bit(udev->data_bitmap, end);
- 		if (block == udev->dbi_max) {
-@@ -3152,12 +3155,14 @@ static void find_free_blocks(void)
- 			udev->dbi_max = block;
- 		}
- 
-+		filemap_invalidate_lock(mapping);
- 		/* Here will truncate the data area from off */
- 		off = udev->data_off + (loff_t)start * udev->data_blk_size;
--		unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
-+		unmap_mapping_range(mapping, off, 0, 1);
- 
- 		/* Release the block pages */
- 		pages_freed = tcmu_blocks_release(udev, start, end - 1);
-+		filemap_invalidate_unlock(mapping);
- 		mutex_unlock(&udev->cmdr_lock);
- 
- 		total_pages_freed += pages_freed;
+And once all are allocated, isert can deadlock when another new command is
+received. Its receive processing waits for an iscsi_cmd to become available.
+But this also stalls processing of the completions which would result in
+releasing an iscsi_cmd, resulting in a deadlock.
+
+This small patch series prevents this issue by altering when and how
+max_cmd_sn changes are reported to the initiator for isert. It gets delayed
+until iscsi_cmd release instead of when sending a final response.
+
+To prevent failure or large delays for informing the initiator of changes to
+max_cmd_sn, NOPIN is used as a method to inform the initiator should the
+difference between internal max_cmd_sn and what has been passed to the
+initiator grow too large.
+
+David Jeffery (2):
+  isert: support for unsolicited NOPIN with no response.
+  iscsit: increment max_cmd_sn for isert on command release
+
+ drivers/infiniband/ulp/isert/ib_isert.c    | 11 ++++++-
+ drivers/target/iscsi/iscsi_target.c        | 18 +++++------
+ drivers/target/iscsi/iscsi_target_device.c | 35 +++++++++++++++++++++-
+ drivers/target/iscsi/iscsi_target_login.c  |  1 +
+ drivers/target/iscsi/iscsi_target_util.c   |  5 +++-
+ drivers/target/iscsi/iscsi_target_util.h   |  1 +
+ include/target/iscsi/iscsi_target_core.h   |  8 +++++
+ include/target/iscsi/iscsi_transport.h     |  1 +
+ 8 files changed, 68 insertions(+), 12 deletions(-)
+
 -- 
-2.14.4.44.g2045bb6
+2.31.1
 
