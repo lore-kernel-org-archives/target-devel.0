@@ -2,197 +2,306 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5462EC4332F
-	for <target-devel@archiver.kernel.org>; Thu, 10 Mar 2022 14:54:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5CE9C433EF
+	for <target-devel@archiver.kernel.org>; Fri, 11 Mar 2022 09:15:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244277AbiCJOzp (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 10 Mar 2022 09:55:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53418 "EHLO
+        id S1345981AbiCKJQQ (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 11 Mar 2022 04:16:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60870 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347932AbiCJOvc (ORCPT
+        with ESMTP id S1345705AbiCKJQL (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 10 Mar 2022 09:51:32 -0500
-Received: from out30-42.freemail.mail.aliyun.com (out30-42.freemail.mail.aliyun.com [115.124.30.42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D794263C7
-        for <target-devel@vger.kernel.org>; Thu, 10 Mar 2022 06:50:16 -0800 (PST)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R131e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04394;MF=xiaoguang.wang@linux.alibaba.com;NM=1;PH=DS;RN=2;SR=0;TI=SMTPD_---0V6pOdr6_1646923813;
-Received: from 30.225.28.175(mailfrom:xiaoguang.wang@linux.alibaba.com fp:SMTPD_---0V6pOdr6_1646923813)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Thu, 10 Mar 2022 22:50:14 +0800
-Message-ID: <5c41b6b3-754e-4142-24ba-5ffbe0cd3e2c@linux.alibaba.com>
-Date:   Thu, 10 Mar 2022 22:50:13 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.6.1
-Subject: Re: code question about tcmu_try_get_data_page()
+        Fri, 11 Mar 2022 04:16:11 -0500
+Received: from de-smtp-delivery-102.mimecast.com (de-smtp-delivery-102.mimecast.com [194.104.111.102])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 142041BBF40
+        for <target-devel@vger.kernel.org>; Fri, 11 Mar 2022 01:15:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=mimecast20200619;
+        t=1646990106;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=I9CS46NAEkBLt64mtyyZbvH8XbrCfc4HmofCzdgTn74=;
+        b=Pa8HdlKhG/DhwsSgx0cp/RXj02dnjnIV8KKUvjH0F3zhA05fwTqLmsI8NCfBln0ftj85ZL
+        rzANNXzNY/ruE7vnafzkgwlDMCrk7T7ycoK9zXS756LJjk40YDSMb/+7SiI6Aomgdlf+S1
+        KpNvpsxqaSstR7SQG0esM0YXdh4Zrdw=
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur02lp2057.outbound.protection.outlook.com [104.47.6.57]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ de-mta-38-9HesBFAPMT6G-MR35RlmKQ-1; Fri, 11 Mar 2022 10:15:04 +0100
+X-MC-Unique: 9HesBFAPMT6G-MR35RlmKQ-1
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=QndbvEtY3Drq4zpb1m+JFJmGfrEut/lYMm5EDr8W/FoJrGeVHMJKCG4+tcl1sjiAJWlwc1p0LXb0qrm9/ylzaNWtbAPf+MvOcbggfpzLAtmLC6hoVWYDHEw0zr9A1OkqvOTT7EpdAHK/6adBxsr4Z6/9n+PvXN9IlWVP7rDDRLUN3Nvk3wiufiuCUDK8nh2N7KHTCehiudceGVUSsz7qB+eH/nZVpKBC8T/VcYCwzrB3uMaWuNknr+6hZMt8pjOWTIiHOuaQSXjPmlVYW5NNb3F1wWQNe0MMZi4YEetRxgZr86nS04uQQilpy2QRz0+V2slfWmnaOG1W1YTa/gHkIg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=I9CS46NAEkBLt64mtyyZbvH8XbrCfc4HmofCzdgTn74=;
+ b=aJ6DlLUTZudtf5kcQibPH/KALxgx/ZQoh6sc/C/mO0702HyFG+alhUjFHzwvyKaiMDbxSGJ9emCF2UGQLwEKeNOVhStoT8jcRPqBMM0dT4snG0nCdMrrFK6OdyNaZ8nSqu50L34zbq1aEvAhwbdA0TZU5orFU3/pQ03g/EoGDpItdvEhic+6sQyZn4xs6qD+S14G+ZMNgRiABg6BaHLYoZPlNpIMDdMmNoIF6YtHpvtB4h8PJHjNCD3q42qMT2ApJVy+VOQtqxgDvMs9icXyvEMlZrCMFo5RlNRgSgTe7QAANmK3bgaSGHY7DjDyusYU/ZNoVx2+WeuuxMYmgNTRrw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=suse.com; dmarc=pass action=none header.from=suse.com;
+ dkim=pass header.d=suse.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=suse.com;
+Received: from AM0PR0402MB3395.eurprd04.prod.outlook.com
+ (2603:10a6:208:1a::16) by AM9PR04MB8714.eurprd04.prod.outlook.com
+ (2603:10a6:20b:43d::8) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5061.22; Fri, 11 Mar
+ 2022 09:15:03 +0000
+Received: from AM0PR0402MB3395.eurprd04.prod.outlook.com
+ ([fe80::8c99:1891:1f52:901d]) by AM0PR0402MB3395.eurprd04.prod.outlook.com
+ ([fe80::8c99:1891:1f52:901d%4]) with mapi id 15.20.5061.022; Fri, 11 Mar 2022
+ 09:15:03 +0000
+Subject: Re: [PATCH] target/iscsi: Fix detection of excess number of login
+ exchanges
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Petr Pavlu <ppavlu@suse.cz>,
+        martin.petersen@oracle.com
+References: <20220222124217.21715-1-ppavlu@suse.cz>
+ <a7e1f13e-326f-fdba-5272-9cbc7ba2a3cf@oracle.com>
+From:   Petr Pavlu <petr.pavlu@suse.com>
+Message-ID: <7650feb7-264c-b142-d8f0-23576ffe7d29@suse.com>
+Date:   Fri, 11 Mar 2022 10:15:01 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
+In-Reply-To: <a7e1f13e-326f-fdba-5272-9cbc7ba2a3cf@oracle.com>
+Content-Type: multipart/mixed;
+ boundary="------------D2C1E3D891DD5BDC0E19FBDD"
 Content-Language: en-US
-To:     Bodo Stroesser <bostroesser@gmail.com>
-Cc:     target-devel@vger.kernel.org
-References: <95823aae-28fd-f078-e358-b02e05f40935@linux.alibaba.com>
- <2a393a83-0337-d9ce-2a32-6a7eff533e5d@gmail.com>
-From:   Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-In-Reply-To: <2a393a83-0337-d9ce-2a32-6a7eff533e5d@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: AM6P195CA0093.EURP195.PROD.OUTLOOK.COM
+ (2603:10a6:209:86::34) To AM0PR0402MB3395.eurprd04.prod.outlook.com
+ (2603:10a6:208:1a::16)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 36a1232f-414d-44be-87a8-08da033fa020
+X-MS-TrafficTypeDiagnostic: AM9PR04MB8714:EE_
+X-Microsoft-Antispam-PRVS: <AM9PR04MB871455455CAFB592FB2691BDE60C9@AM9PR04MB8714.eurprd04.prod.outlook.com>
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: BYPuGTF2JquCPVWLCBNBP33El1e82RqIG2JSsFznXZeWhrpUJTrKYgKuxJcp9zwhxc7G8zHo8BK51lL7+oumbBBuQFpaI2hdLqNwjHCYJJ/yvNNPosZFLaB/Na+AZ3Zz5uyd8JMwb/xl450G6ml35gnta5JUL2gCM5itMtnt9zcixQh2e7cVJdSPNx1dPQb9rpWppHpVUOyIaL2fyOtgGWay1Dl4dMSaUWCPJNpy1Cf/crnLdZSzBEx43+qJliELfGUCubjd0ZjJoQfFOnu4IoDW0qrmK5EYGVYtXQwUOwI/GNrv8CmqQnkAeBOlxFgbmF1H7fhLL9AWkHmH93xkPmoj2R1xRf0YEzSjOInudpI49XCc62N/SnMItcGyxM3nloykFSmaIljXqCsmCohNl5qB5b+1x6XYLFPWtgoCZOxOdD4xy60efR301T1RWyMRoHmfV+e0KlC7Wukgz6/CKYigKWUx4fMAXQcXXnW5zAEqyI/5j0bJhoB/oIqCBhHvgMRyVmuSW4pR7BoliRMIeNmYSyJAAEyos7mHLWLzUGS9OuGOqKJmhoE630Sy7TgpzWt+AljCcgyIyh6U1r8oAztt6T7WqvbzPQwZwmq6LgCeMxzFj4RHH96t5T9HZ38+I9nSleH4bpZQL8oR+QOevzmSQAcnPN/rvfoQRxuM345IpLZQSgUAgw8DMlYZnEn2PD2g/P++/PDLleZ9qSRXteegHKjVyLNy4i/7BT0q8To=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR0402MB3395.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(366004)(38100700002)(66476007)(66556008)(2906002)(31696002)(8676002)(2616005)(83380400001)(66946007)(4326008)(6512007)(6486002)(6916009)(44832011)(26005)(186003)(8936002)(53546011)(33964004)(31686004)(235185007)(86362001)(6506007)(5660300002)(36756003)(508600001)(316002)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?dkpOaDJkWFJtelFGY2JkU1BlWlhyTUxRVUxwa0VHWTNKSm5WamZnSS9tWE1x?=
+ =?utf-8?B?a0p0YS83NzdjN1grVGxYelNCaHBobFFERDZGWFVsN1dmV3BWU1R3VXdCMWVW?=
+ =?utf-8?B?eFZ3TWtjd2oyUiswTDR5WFlaWTVyYjBxdW1CWDgxMmFGUHhIdkdvVHIxQmVF?=
+ =?utf-8?B?VDlHTHZHaFJRUG5Ec0tnNlZ4aXB5aXZCeEVPT2d5ek03dGRlQTF3am5PSjRp?=
+ =?utf-8?B?Vjlob241Zk1WMG94SFRoRWZEVitoUGJpajU2SHVMdnB2TDVLR3MrZXJQWGVO?=
+ =?utf-8?B?dmpoUlNtVks0NlV6cHdKN1A3N01mY1EraWdoWGRQcG1sVUMxMjc1dUpWT3Nx?=
+ =?utf-8?B?TUNkVlB4VjVFZFpGb0hlWFc3M2llbTEwQnhhV2tjV1F0cTgvSWxrV2ZoZURk?=
+ =?utf-8?B?M0NvY3lZL0lXZDZTZ3haSjh1ZFVxNUVNRXczV29IejEySmFadnFhZ3RGcXIz?=
+ =?utf-8?B?czhLSVA0VlNtUHV3TTliM3B4TUprMENJZEZTUE53OXBLTHdVSWFCeTVFU2Jz?=
+ =?utf-8?B?U3lRQklUZzlwLytQTHNzV0xwY1RvZVZkbldYMXdZOUVTTnprTGlCZGZtRDBt?=
+ =?utf-8?B?bXJTOXZWS1hWc0hpVDIrWmpKMUFtbG5uTDBOdVVlbUNPNG5PS28zTjNmNWpm?=
+ =?utf-8?B?U0pYZWo1Y0c4VDlScTZGMEllNThIUlkyOXlSTFVULzN0QmN0d2dxRE8rZmtD?=
+ =?utf-8?B?WjFEdFAxWmFXZTVoRG9UZWUrQlRQajY1OWtUZ2wrTmFxd0cxTS9mUWt1cXQ3?=
+ =?utf-8?B?N3h0VjgySkR2MjVaclJNZ05aWWNxTW1NSWV3cHUvWkEvMXBIekhjTzJQa1Zw?=
+ =?utf-8?B?V25JdTJyMEdHT1I2YkJsWjFHMk1CT2RzbFRkWnRTNXFPZ1huZnVtTi90L2lN?=
+ =?utf-8?B?VU9EeDVwa0FRTG9sOWQ0OHVVNWJNWnRnek55K2k5SHBYRUtLWEJ3bWVFTndV?=
+ =?utf-8?B?aE04cXA2K1ljQ2JsNEgrT1FDY2lybkJOQS9nakVVUGE3ZWpnOUs2SnlKZUg1?=
+ =?utf-8?B?TU9OcC8rR1IzNGVpa0gvYWdTd0Y2M0hOZDVaY3lPN0ZZQnBjWFV3S2o5eW5o?=
+ =?utf-8?B?eXJWWFpYUTIzd1p1WmhCcVlseDFYK2pTTlVHNmxkM1RXSFF6MmxnOUkxUVM3?=
+ =?utf-8?B?Wm9UUXV3OXRpNE1hL0ZjR3BWVmpyTDJuQmVsZEdsQkN5TWdzbGJTdlJuRm9N?=
+ =?utf-8?B?M3Q3K0M4RkNmRkMxMXR0WFFST2NtMGRXUm9Qa0JJK01kcmpVUGJPelFCY2tZ?=
+ =?utf-8?B?d2hoOEFlZ0RjVVRhZWE3NEhsQWFDTDhPbmdvR2ZjcjBGQVN0d3ZNWjFlL3hh?=
+ =?utf-8?B?RFlzVlllZTF5R0RpUUxQR1hvNTFJN012MHJzOWZld3RCVVJHTGNKWEJhck9k?=
+ =?utf-8?B?L3VEaytLKzZGSDB3cDR6UjRhZGJrVnpsdDZLWEI1dXR0Qy83UjZ2bzVNRVM2?=
+ =?utf-8?B?ekprVzd5QWl6eUdHNG9rTWtmWEVmQVpVUjlYMmI2a2h4THJTZHg5OFRWbktU?=
+ =?utf-8?B?Z1NmRzFzQnR4MlJzeE1ibTIrRmMzZEpiemQ3T0M4Q0pHN2xWVWJhTXZTUWtq?=
+ =?utf-8?B?M0lHKzdSenU5TklJandBbStnK2hSVE0ya3Q1ckF4Qi9sMFlXYXNibXRhODZn?=
+ =?utf-8?B?NzhaeGF1UzZJTTIydWtLSm9kaS82bDRjK1JVbXVobDBlWUs3bVV4M1hKcFFh?=
+ =?utf-8?B?Z3lxYnd3anVLUFYyMyt1YVdGUStHYkVGZ1NFNW80WHI3dDVyNTc2a3hIeXVU?=
+ =?utf-8?B?T2taVWc5bEUxbzNneGdndkdYRGN1MWN3TW1zeUVKZ3ZLdzkxMnlaNWtHY1pW?=
+ =?utf-8?B?TTQ4bWlFcnMrbElXN2FabHp5WDZIemxhVHIzd2lWUWQzcUt1Tm9oc1ErT3pp?=
+ =?utf-8?B?S0Q2SG9WNTFPS3llTEJQMUZEKzVRZUU1VzJUd1FEVzNNMVE0N3RTTHNtZVpI?=
+ =?utf-8?Q?Qyc3i/c3upjuer3WzoVEGLD/7k7+qX0j?=
+X-OriginatorOrg: suse.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 36a1232f-414d-44be-87a8-08da033fa020
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR0402MB3395.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Mar 2022 09:15:03.2530
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: f7a17af6-1c5c-4a36-aa8b-f5be247aa4ba
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 3XTZyW/3b0vCJmFfmBhq5aMUEU9AMOFzb/aoY3MgF5nKmUee3/brJSumL2oWsg1hAd7qThnWSR+o9CAF7dCQOQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8714
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-hi Bodo,
+--------------D2C1E3D891DD5BDC0E19FBDD
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
-> Hi Wang,
->
-> Yes, we need the cmdr_lock in tcmu_try_get_data_page.
->
-> Reason: if the unmap worker thread gets started and calls
-> find_free_blocks, this function - while holding cmdr_lock - per tcmu
-> device checks for pages we can release.
-> If there are pages to release, it first calls unmap_mapping_range
-> to deny the access from userspace to these pages. After that it loops
-> over the data_pages xarray to remove the pages from the array and
-> free them (tcmu_blocks_release).
->
-> If tcmu_try_get_data_page wouldn't lock the cmdr_lock mutex, it
-> possibly could run between the call to unmap_mapping_range and
-> tcmu_blocks_release removing the page from xarray and freeing it.
-> Then we would end up having a freed page mapped to userspace!
-Oh, I see now, thanks.
-
->
-> Up to now I didn't check, whether we here have the same possible
-> dead lock you described. If so, we probably can solve the problem
-> by first removing the pages from xarray, then unmap and finally
-> free all pages. If we would do so, I think we would no longer need
-> cmdr_lock in tcmu_try_get_data_page.
-Agree, I'll take a deeper look at codes.
-
->
-> But: I'm wondering what exactly you are trying to do.
-> I assume you want to map the sgl-pages into tcmu data_area just while a
-> cmd is in the ring, right?
-Yes, I creates a new zero copy data area whose size is also 1GB, and it
-has similar bitmap management to original data area, then a command that
-is qualified can map this sg pages to this zero copy data area.
-
-> If so, would you do that as a new option, or would you do that
-> generally?
-I'd like to add a size config item, only se_cmd->data_length is greater than
-this size config item, can this command enters zero copy path. Indeed, in
-order to be simple(I don't have well knowledge about scsi yet), I use bellow
-cod logic in queue_cmd_ring():
-     zero_copy = false;
-     if (!(se_cmd->se_cmd_flags & SCF_BIDI) && se_cmd->data_length &&
-             IS_ALIGNED(se_cmd->data_length, PAGE_SIZE)) {
-                 struct scatterlist *data_sg = se_cmd->t_data_sg, *sg;
-                 unsigned int data_nents = se_cmd->t_data_nents;
-                 int i;
-
-                 for_each_sg(data_sg, sg, data_nents, i) {
-                         if (!((!sg->offset || IS_ALIGNED(sg->offset, 
-PAGE_SIZE)) &&
-                             IS_ALIGNED(sg->length, PAGE_SIZE)))
-                                 break;
-                 }
-                 if (i == data_nents)
-                         zero_copy = true;
-         }
-
-> I'm asking because AFAICS there are at least these problems when mapping
-> sgls:
-> - if a command in the cmd ring times out, tcmu sends cmd completion
->   to target core. That means, you have to unmap the sgl pages.
->   But userspace does not know about that. So it still is allowed to
->   access the data space described by cmd's iovecs --> SIGBUS
-Yeah, I know, you explained it to me in previous mail, really thanks for 
-your
-  time: https://www.spinics.net/lists/target-devel/msg21124.html
-
-Current this is the issue I don't know how to handle gracefully, for current
-implementation, I just unmap sgl pages in timeout handler... then userpace
-maybe killed.
-
-> - if the sgl contains not completely filled pages (probably at least
->   at the end), you might map old kernel data into userspace.
->   So you have to check and write zeros.
-Yes, it maybe, so currently I ensure commands whose sgl offset and
-length all aligned to page size.
-
-> - AFAICS, there is no guarantee that fabric driver completely fills
->   all pages of the sgl but the least. When mapping directly, that
->   directly translates into iovecs having a length of not a multiple of
->   PAGE_SIZE, not only in the last iovec.
->   I'm not sure all existing userspace SW can handle that correctly.
-I'll have a check, thanks.
-
-> - KEEP_BUF feature is based on tcmu owning the buffer in dataspace.
->   So it would no longer work.
-Yeah, I have read how KEEP_BUF works, I'd like to disable for KEEP_BUF
-for zero copy command, at least for now.
-
->
-> To be honest I'm not sure your changes would make it into tcmu.
-Really appreciate for your honest. As for why I still tries to implement a
-zero copy for tcmu, there are 2 reasons:
-1) I'd like to see real copy overhead compared to mmap/unmap, just curious.
-
-2) Some of our customer need just a simple block semantics device in 
-user space,
-and in current linux kernel, seems tcmu is the only option.:
-     https://lore.kernel.org/all/87bkyyg4jc.fsf@collabora.com/T/
-The tcmu double copy in data area really impacts performance, so I spent 
-some
-time to do this work, and it really improve io throughput  in large io 
-cases.
-
-Regards,
-Xiaoguang Wang
->
-> Bodo
->
->
-> On 09.03.22 09:20, Xiaoguang Wang wrote:
->> hi Bodo,
+On 3/1/22 2:23 AM, Mike Christie wrote:
+> On 2/22/22 6:42 AM, Petr Pavlu wrote:
+>> From: Petr Pavlu <petr.pavlu@suse.com>
 >>
->> I have implemented a zero-copy prototype for tcmu(not sent out yet), 
->> it reallys
->> improves throughput in large io size cases, and I met some code 
->> question that
->> may need you kind help, thanks in advance. In my prototype, I choose to
->> unmap pages in tcmu_irqcontrol():
->> ==> tcmu_irqcontrol, which holds cmdr_lock.
->> ====> tcmu_handle_completions
->> ======> tcmu_handle_completion
->> ========> zap_page_range, which needs to hold mm related lock.
+>> Function iscsi_target_do_login() attempts to cancel a connection when
+>> a number of login exchanges reaches MAX_LOGIN_PDUS (7). This is done by
+>> having a local counter and incrementing+checking it as the function
+>> processes requests in a loop. A problem is that since the login rework in
+>> back in 2013, the function always processes only a single request and the
+>> loop is terminated at the end of the first iteration. This means the
+>> counter reaches only value 1 and any excess number of login requests is
+>> never rejected.
 >>
->> But in page fault procedure:
->> ==> tcmu_vma_fault, which I think its caller hold mm related lock.
->> ====> tcmu_try_get_data_page, which tries to hold cmdr_lock.
+>> Fix the problem by introducing iscsi_login.negotiation_exchanges counter
+>> and update the logic to count exchanges per each login phase as described
+>> in RFC 7143:
+>>> 6.2. Text Mode Negotiation:
+>>> [...]
+>>> In the Login Phase (see Section 6.3), every stage is a separate
+>>> negotiation. [...]
+>>> [...]
+>>> An iSCSI initiator or target MAY terminate a negotiation that does
+>>> not terminate within an implementation-specific reasonable time or
+>>> number of exchanges but SHOULD allow at least six (6) exchanges.
 >>
->> Then dead lock may happens. In tcmu_try_get_data_page(),
->> it mainly acts like below:
->>          mutex_lock(&udev->cmdr_lock);
->>          page = xa_load(&udev->data_pages, dpi);
->>          if (likely(page)) {
->>                  mutex_unlock(&udev->cmdr_lock);
->>                  return page;
->>          }
->>
->>          /*
->>           * Userspace messed up and passed in a address not in the
->>           * data iov passed to it.
->>           */
->>          pr_err("Invalid addr to data page mapping (dpi %u) on device 
->> %s\n",
->>                 dpi, udev->name);
->>          mutex_unlock(&udev->cmdr_lock);
->>
->> I wonder do we really need to hold cmdr_lock here, seems it doesn't
->> protect any real resources. If cmdr_lock here is used to avoid 
->> concurrent
->> xa_erase(), after releasing cmdr_lock, page still can be removed.
->> So my question is that can we safely remove this cmdr_lock here? thanks.
->>
->>
->> Regards,
->> Xiaoguang Wang
+> 
+> It wasn't clear to me what this fixes. Today, are initiators sending more
+> than 6 exchanges and if so what happens to the target? Is it crashing or
+> annoying to user or cause some sort of endless login so we run out of
+> resources? Or is this more of code cleanup?
+> 
+> When does this happen and with what initiators?
+
+This issue is only something that I noticed while reading through the target
+code because of some different problem. In that sense, the patch is more
+a code cleanup. My tests to verify the patch were also artificial (attached).
+
+I have now additionally tried some simple examples with sending extensive
+number of Login requests in a loop to the target and did not observe any
+immediate problem with running out of resources. A possible alternative might
+be therefore to remove this logic, not sure.
+
+Thanks,
+Petr
+
+--------------D2C1E3D891DD5BDC0E19FBDD
+Content-Type: text/x-python; charset=UTF-8;
+ name="target-test.py"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="target-test.py"
+
+#!/usr/bin/python3
+
+import socket
+
+# Test excess number of exchanges during security negotiation.
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.connect(('192.168.122.30', 3260))
+    send = (
+        b'\x43'                      # 00: -> Immediate marker + Login request
+        b'\x00'                      # 01: -> Continue security negotiation
+        b'\x00'                      # 02: VersionMax
+        b'\x00'                      # 03: VersionMin
+        b'\x00'                      # 04: TotalAHSLength
+        b'\x00\x00\x8c'              # 05: DataSegmentLength
+        b'\x0c\xfd\x37\x00\x00\x01'  # 08: ISID -> OUI, SUSE, Qualifier=1
+        b'\x00\x00'                  # 14: TSIH
+        b'\x00\x00\x00\x00'          # 16: InitiatorTaskTag
+        b'\x00\x00'                  # 20: CID
+        b'\x00\x00'                  # 22: Reserved
+        b'\x00\x00\x00\x00'          # 24: CmdSN
+        b'\x00\x00\x00\x00'          # 28: ExpStatSN
+        b'\x00\x00\x00\x00'          # 32: Reserved
+        b'\x00\x00\x00\x00'          # 36: Reserved
+        b'\x00\x00\x00\x00'          # 40: Reserved
+        b'\x00\x00\x00\x00'          # 44: Reserved
+        # 48: Login parameters
+        b'InitiatorName=iqn.1996-04.de.suse:01:6fd07434abf9\x00'
+        b'SessionType=Normal\x00'
+        b'TargetName=iqn.2003-01.org.linux-iscsi.localhost.x8664:sn.8726b6baa6b9\x00'
+        # 188: Padding to 4 bytes
+        b''
+        # 188:
+    )
+    for i in range(1, 8):
+        print(f"Send #{i}: {send}")
+        s.sendall(send)
+        data = s.recv(1024)
+        print(f"Response: {data}")
+        assert data[0] == 0x23  # Opcode
+        assert data[36] == (0 if i < 7 else 3)  # Status-Class
+        assert data[37] == 0  # Status-Detail
+
+print()
+
+# Test excess number of exchanges during operation parameter negotiation.
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.connect(('192.168.122.30', 3260))
+    send = (
+        b'\x43'                      # 00: -> Immediate marker + Login request
+        b'\x81'                      # 01: -> Transfer to operational parameter negotiation
+        b'\x00'                      # 02: VersionMax
+        b'\x00'                      # 03: VersionMin
+        b'\x00'                      # 04: TotalAHSLength
+        b'\x00\x00\x9c'              # 05: DataSegmentLength
+        b'\x0c\xfd\x37\x00\x00\x01'  # 08: ISID -> OUI, SUSE, Qualifier=1
+        b'\x00\x00'                  # 14: TSIH
+        b'\x00\x00\x00\x00'          # 16: InitiatorTaskTag
+        b'\x00\x00'                  # 20: CID
+        b'\x00\x00'                  # 22: Reserved
+        b'\x00\x00\x00\x00'          # 24: CmdSN
+        b'\x00\x00\x00\x00'          # 28: ExpStatSN
+        b'\x00\x00\x00\x00'          # 32: Reserved
+        b'\x00\x00\x00\x00'          # 36: Reserved
+        b'\x00\x00\x00\x00'          # 40: Reserved
+        b'\x00\x00\x00\x00'          # 44: Reserved
+        # 48: Login parameters
+        b'InitiatorName=iqn.1996-04.de.suse:01:6fd07434abf9\x00'
+        b'SessionType=Normal\x00'
+        b'TargetName=iqn.2003-01.org.linux-iscsi.localhost.x8664:sn.8726b6baa6b9\x00'
+        b'AuthMethod=None\x00'
+        # 204: Padding to 4 bytes
+        b''
+        # 204:
+    )
+    print(f"Send #1: {send}")
+    s.sendall(send)
+    data = s.recv(1024)
+    print(f"Response: {data}")
+    assert data[0] == 0x23  # Opcode
+    assert data[1] == 0x81  # -> Transfer to operational parameter negotiation
+    assert data[36] == 0  # Status-Class
+    assert data[37] == 0  # Status-Detail
+
+    send = (
+        b'\x43'                      # 00: -> Immediate marker + Login request
+        b'\x04'                      # 01: -> Continue operational parameter negotiation
+        b'\x00'                      # 02: VersionMax
+        b'\x00'                      # 03: VersionMin
+        b'\x00'                      # 04: TotalAHSLength
+        b'\x00\x00\x12'              # 05: DataSegmentLength
+        b'\x0c\xfd\x37\x00\x00\x01'  # 08: ISID -> OUI, SUSE, Qualifier=1
+        b'\x00\x00'                  # 14: TSIH
+        b'\x00\x00\x00\x00'          # 16: InitiatorTaskTag
+        b'\x00\x00'                  # 20: CID
+        b'\x00\x00'                  # 22: Reserved
+        b'\x00\x00\x00\x00'          # 24: CmdSN
+        b'\x00\x00\x00\x00'          # 28: ExpStatSN
+        b'\x00\x00\x00\x00'          # 32: Reserved
+        b'\x00\x00\x00\x00'          # 36: Reserved
+        b'\x00\x00\x00\x00'          # 40: Reserved
+        b'\x00\x00\x00\x00'          # 44: Reserved
+        # 48: Login parameters
+        b'HeaderDigest=None\x00'
+        # 66: Padding to 4 bytes
+        b'\x00\x00'
+        # 68:
+    )
+    for i in range(2, 9):
+        print(f"Send #{i}: {send}")
+        s.sendall(send)
+        data = s.recv(1024)
+        print(f"Response: {data}")
+        assert data[0] == 0x23
+        assert data[36] == (0 if i < 8 else 3)  # Status-Class
+        assert data[37] == 0  # Status-Detail
+
+--------------D2C1E3D891DD5BDC0E19FBDD--
 
