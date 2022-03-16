@@ -2,172 +2,253 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D605FC433F5
-	for <target-devel@archiver.kernel.org>; Wed, 16 Mar 2022 13:05:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B3EBC433EF
+	for <target-devel@archiver.kernel.org>; Wed, 16 Mar 2022 13:07:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352117AbiCPNGi (ORCPT
+        id S1355920AbiCPNIs (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 16 Mar 2022 09:06:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52706 "EHLO
+        Wed, 16 Mar 2022 09:08:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241627AbiCPNGh (ORCPT
+        with ESMTP id S1347344AbiCPNIr (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 16 Mar 2022 09:06:37 -0400
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DED2F2CCAB;
-        Wed, 16 Mar 2022 06:05:22 -0700 (PDT)
-Received: by mail-ej1-x633.google.com with SMTP id a8so4016895ejc.8;
-        Wed, 16 Mar 2022 06:05:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :references:from:in-reply-to:content-transfer-encoding;
-        bh=JiViA8ea0Lp5AfKvhVY7UNjzM5vAkCU18t7GAQzHry0=;
-        b=amcSflbpUj6+Rdy5lcquadfSVu2yV37f2D/ICwbGfzBua4z+BHzfuDSw24Ye8csOsv
-         Kcbspd1PJNsx/VGkQvm1gpVLwWDDaRz4Spa9EwMi1fy+8RZC9UDDFikia/5V22okBc2Z
-         hC2sLNRrdDDjVrkvtdn4fQ6/XQJ6rg/CCbCi6QS81z8o5WRjYucLs04gN/ywp4W3dkPL
-         shuzDQLfjK5ybiZBlxHCihoH5nmAW1z3IR9ldJYZ9HXhb8K6dy3m/ZKvvQUcrZLIbh7+
-         vB/fEuiUD0IFchyJvEoZ5pCPnLLA45xaCoX1c0BBR8Fa0Ha+ijMK09msccM+a2GOIsVj
-         tsEQ==
+        Wed, 16 Mar 2022 09:08:47 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id F204F66AC1
+        for <target-devel@vger.kernel.org>; Wed, 16 Mar 2022 06:07:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1647436051;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=6iBEu/qAkyIw2/yF01t6xN6wJ+YnDej9+Q9nI2N1Ny8=;
+        b=PZ2/RlJj9VjnlULNJ4UxYmqWImko5xG92HwCWAGGJFA54WZXnGX4sPzuI2eMXnIJm5YHLe
+        TOgz+LUkm8a+lYanDGVCRY79kiKnxdGmXKJShvCP9cvMZ0ibnEqLfZdWzLseFbIS0hMzfY
+        utDBBMnjoXdecItIseSHhmzOfjIyCg0=
+Received: from mail-ot1-f70.google.com (mail-ot1-f70.google.com
+ [209.85.210.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-465-madt_jQVPzeQSmiNYwsG5w-1; Wed, 16 Mar 2022 09:07:30 -0400
+X-MC-Unique: madt_jQVPzeQSmiNYwsG5w-1
+Received: by mail-ot1-f70.google.com with SMTP id r26-20020a05683001da00b005b236c8eb6cso1097645ota.21
+        for <target-devel@vger.kernel.org>; Wed, 16 Mar 2022 06:07:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=JiViA8ea0Lp5AfKvhVY7UNjzM5vAkCU18t7GAQzHry0=;
-        b=hHiMfRE067MliPVn4rakYXYDK9SetROhC/KqXjBo5kqk2OXaCYugKOlB1mCDjokPqq
-         sL9Vva/3SvhoST7b1IrDEsewU8pld5ZE58pZretFH4UFWJz5CZt+0g944ErAijDDWRSJ
-         3NIoBk/YbFoM7FJhedr69lL0RTYiJj2kRQaaLJ9E2v7doDIOPmAC3WaITq4gMpiFYDVr
-         mvdLrhBRsfn5PERLMmLtcsgxo9FpfqIy2b3dL8GwAQC4/Z38L00Pr0FZV3m9zK0TfjRz
-         XPZrQ3YNE8T/YpudcJCAq2BMhJxHC9haSOd+CEvNCE3zcd9Gj/aDR/grQACMFJalQPyH
-         4oEA==
-X-Gm-Message-State: AOAM530R14fBKtoTK4B4gFSryDbvMpP2HHZIvfREJDasRfiOX3O+LojW
-        TfMffR8wO/PfHCo88DHXrLc=
-X-Google-Smtp-Source: ABdhPJylKku27tk1rhgys1nlVcgWqe9xQy+7R+ESkLqPS47Miu7i69U0m90taHNzAlREnUdQ+5a8Xw==
-X-Received: by 2002:a17:906:544d:b0:6db:3816:c513 with SMTP id d13-20020a170906544d00b006db3816c513mr27543911ejp.664.1647435921377;
-        Wed, 16 Mar 2022 06:05:21 -0700 (PDT)
-Received: from [192.168.178.40] (ipbcc1fa42.dynamic.kabel-deutschland.de. [188.193.250.66])
-        by smtp.gmail.com with ESMTPSA id js23-20020a170906ca9700b006daaa3acc36sm887161ejb.52.2022.03.16.06.05.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 16 Mar 2022 06:05:21 -0700 (PDT)
-Message-ID: <b04319b3-2214-8d9e-46b4-1772dd003240@gmail.com>
-Date:   Wed, 16 Mar 2022 14:05:20 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 2/2] scsi: target: tcmu: Use
- address_space->invalidate_lock
-Content-Language: en-US
-To:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-References: <20220311132206.24515-1-xiaoguang.wang@linux.alibaba.com>
- <20220311132206.24515-2-xiaoguang.wang@linux.alibaba.com>
- <c6a25258-6937-6cdf-0fab-081312c4dee6@linux.alibaba.com>
-From:   Bodo Stroesser <bostroesser@gmail.com>
-In-Reply-To: <c6a25258-6937-6cdf-0fab-081312c4dee6@linux.alibaba.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+        h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=6iBEu/qAkyIw2/yF01t6xN6wJ+YnDej9+Q9nI2N1Ny8=;
+        b=sUjbfjxUcXDm6ZSXKjEbgctfTkhodlFbbs6Uk5PG7H9jLEo6U7dQG677LQsDJNPl+F
+         oLBKEg9o9VRAtQyr5gerTLdMyJo1FggIqydyDKTtgHyDdiWAHbtSMPaT/jzpFOSaxgyW
+         ntyRNeCH+82+yiYoP6jzuYdWTVoYtPgaQ383B7uRQQqtRvL33Ijdwv3rl5hizkkClFrZ
+         Xj/7DbZcwfTefgrvLGGNqSJ71cwnhExMGRGVGHHyx28sqPokogo876F2qGvHzMXv37cS
+         nQUPODNFWsWnVhDkAFTlwETHfG3kzU12hDOF8F5v48b0xM9lhNNarPqiJx+NHifre9bH
+         H06A==
+X-Gm-Message-State: AOAM532MwtWCCR+15x0DvteYeWhFOpRSjMGih5VghW64xRL2BQgpf/eA
+        xo5Qron3aSt72MQcXfeaW6gIpAOurT9T8lFQ6IP/fEK+pY2Vm9hyuOfTccS5kc8AyhUb6DAgcE/
+        WfjCb2Ic1YkH3cySLYemy8IkB
+X-Received: by 2002:a4a:c10c:0:b0:321:1db4:8147 with SMTP id s12-20020a4ac10c000000b003211db48147mr12802325oop.27.1647436048818;
+        Wed, 16 Mar 2022 06:07:28 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJwH9b/xPihaCnSZihQAeyepa6JivHhYLzDi/TKpiF7hAs1VezKyOz1cINS3LJIoyFWZXoSJHg==
+X-Received: by 2002:a4a:c10c:0:b0:321:1db4:8147 with SMTP id s12-20020a4ac10c000000b003211db48147mr12802257oop.27.1647436047061;
+        Wed, 16 Mar 2022 06:07:27 -0700 (PDT)
+Received: from loberhel ([2600:6c64:4e7f:cee0:729d:61b6:700c:6b56])
+        by smtp.gmail.com with ESMTPSA id w22-20020aca3016000000b002ecbddcc67asm867647oiw.29.2022.03.16.06.07.25
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 16 Mar 2022 06:07:26 -0700 (PDT)
+Message-ID: <720ebd1f98ab3c709443176011f51d6e3ed37272.camel@redhat.com>
+Subject: Re: [Patch 0/2] iscsit/isert deadlock prevention under heavy I/O
+From:   Laurence Oberman <loberman@redhat.com>
+To:     Max Gurtovoy <mgurtovoy@nvidia.com>,
+        David Jeffery <djeffery@redhat.com>
+Cc:     linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
+        Sagi Grimberg <sagi@grimberg.me>
+Date:   Wed, 16 Mar 2022 09:07:24 -0400
+In-Reply-To: <a1cc6842-1429-eea5-aa0d-47b3f2bab843@nvidia.com>
+References: <20220311175713.2344960-1-djeffery@redhat.com>
+         <b97dd278-eedd-1324-1334-78addee204f9@nvidia.com>
+         <CA+-xHTFCPXe-vALE1ApWdhNOJOByGSgmn5=fF1A_P57zYQGNcQ@mail.gmail.com>
+         <e39a032f-9e95-a038-c29c-30bb58e45fc0@nvidia.com>
+         <CA+-xHTHK1y7JFAeBN=NVq=vaRBXfRNPbF5ZxmdQ2trhhU+E0tQ@mail.gmail.com>
+         <f18f7a350bf5b0f0651083d9a592d35d0d5a68f4.camel@redhat.com>
+         <a1cc6842-1429-eea5-aa0d-47b3f2bab843@nvidia.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5 (3.28.5-10.el7) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Sorry for the late response. Currently I'm quite busy.
-
-In your earlier mail you described a possible dead lock.
-With this patch applied, are you sure a similar deadlock cannot
-happen?
-
-Additionally, let's assume tcmu_vma_fault/tcmu_try_get_data_page
-- after having found a valid page to map - is interrupted after
-releasing the invalidate_lock. Are there any locks held to prevent
-find_free_blocks from jumping in and possibly remove that page from 
-xarray and try to remove it from the mmapped area?
-If not, we might end up mapping a no longer valid page.
-
-Of course, this would be a long standing problem not caused by your
-change. But if there would be a problem, we should try to fix it
-when touching this code, I think.
-Unfortunately I didn't manage yet to check which locks are involved
-during page fault handling and unmap_mapping_range.
-
-Bodo
-
-On 16.03.22 11:43, Xiaoguang Wang wrote:
-> hello,
+On Wed, 2022-03-16 at 12:38 +0200, Max Gurtovoy wrote:
+> On 3/14/2022 7:40 PM, Laurence Oberman wrote:
+> > On Mon, 2022-03-14 at 11:55 -0400, David Jeffery wrote:
+> > > On Mon, Mar 14, 2022 at 10:52 AM Max Gurtovoy <
+> > > mgurtovoy@nvidia.com>
+> > > wrote:
+> > > > 
+> > > > On 3/14/2022 3:57 PM, David Jeffery wrote:
+> > > > > On Sun, Mar 13, 2022 at 5:59 AM Max Gurtovoy <
+> > > > > mgurtovoy@nvidia.com> wrote:
+> > > > > > Hi David,
+> > > > > > 
+> > > > > > thanks for the report.
+> > > > > > 
+> > > > > > Please check how we fixed that in NVMf in Sagi's commit:
+> > > > > > 
+> > > > > > nvmet-rdma: fix possible bogus dereference under heavy load
+> > > > > > (commit:
+> > > > > > 8407879c4e0d77)
+> > > > > > 
+> > > > > > Maybe this can be done in isert and will solve this problem
+> > > > > > in
+> > > > > > a simpler
+> > > > > > way.
+> > > > > > 
+> > > > > > is it necessary to change max_cmd_sn ?
+> > > > > > 
+> > > > > > 
+> > > > > 
+> > > > > Hello,
+> > > > > 
+> > > > > Sure, there are alternative methods which could fix this
+> > > > > immediate
+> > > > > issue. e.g. We could make the command structs for scsi
+> > > > > commands
+> > > > > get
+> > > > > allocated from a mempool. Is there a particular reason you
+> > > > > don't
+> > > > > want
+> > > > > to do anything to modify max_cmd_sn behavior?
+> > > > 
+> > > > according to the description the command was parsed successful
+> > > > and
+> > > > sent
+> > > > to the initiator.
+> > > > 
+> > > 
+> > > Yes.
+> > > 
+> > > > Why do we need to change the window ? it's just a race of
+> > > > putting
+> > > > the
+> > > > context back to the pool.
+> > > > 
+> > > > And this race is rare.
+> > > > 
+> > > 
+> > > Sure, it's going to be rare. Systems using isert targets with
+> > > infiniband are going to be naturally rare. It's part of why I
+> > > left
+> > > the
+> > > max_cmd_sn behavior untouched for non-isert iscsit since they
+> > > seem to
+> > > be fine as is. But it's easily and regularly triggered by some
+> > > systems
+> > > which use isert, so worth fixing.
+> > > 
+> > > > > I didn't do something like this as it seems to me to go
+> > > > > against
+> > > > > the
+> > > > > intent of the design. It makes the iscsi window mostly
+> > > > > meaningless in
+> > > > > some conditions and complicates any allocation path since it
+> > > > > now
+> > > > > must
+> > > > > gracefully and sanely handle an iscsi_cmd/isert_cmd not
+> > > > > existing.
+> > > > > I
+> > > > > assume special commands like task-management, logouts, and
+> > > > > pings
+> > > > > would
+> > > > > need a separate allocation source to keep from being dropped
+> > > > > under
+> > > > > memory load.
+> > > > 
+> > > > it won't be dropped. It would be allocated dynamically and
+> > > > freed
+> > > > (instead of putting it back to the pool).
+> > > > 
+> > > 
+> > > If it waits indefinitely for an allocation it ends up with a
+> > > variation
+> > > of the original problem under memory pressure. If it waits for
+> > > allocation on isert receive, then receive stalls under memory
+> > > pressure
+> > > and won't process the completions which would have released the
+> > > other
+> > > iscsi_cmd structs just needing final acknowledgement.
 > 
-> Gentle ping.
+> If your system is under such memory pressure can you can't allocate
+> few 
+> bytes for isert response, the silent drop
 > 
-> Regards,
-> Xiaoguang Wang
+> of the command is your smallest problem. You need to keep the system 
+> from crashing. And we do that in my suggestion.
 > 
->> Currently tcmu_vma_fault() uses udev->cmdr_lock to avoid concurrent
->> find_free_blocks(), which unmaps idle pages and truncates them. This
->> work is really like many filesystem's truncate operations, but they
->> use address_space->invalidate_lock to protect race.
->>
->> This patch replaces cmdr_lock with address_space->invalidate_lock in
->> tcmu fault procedure, which will also make page-fault have concurrency.
->>
->> Signed-off-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
->> ---
->>   drivers/target/target_core_user.c | 13 +++++++++----
->>   1 file changed, 9 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/target/target_core_user.c 
->> b/drivers/target/target_core_user.c
->> index 06a5c4086551..e0a62623ccd7 100644
->> --- a/drivers/target/target_core_user.c
->> +++ b/drivers/target/target_core_user.c
->> @@ -1815,13 +1815,14 @@ static int tcmu_find_mem_index(struct 
->> vm_area_struct *vma)
->>   static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, 
->> uint32_t dpi)
->>   {
->> +    struct address_space *mapping = udev->inode->i_mapping;
->>       struct page *page;
->> -    mutex_lock(&udev->cmdr_lock);
->> +    filemap_invalidate_lock_shared(mapping);
->>       page = xa_load(&udev->data_pages, dpi);
->>       if (likely(page)) {
->>           get_page(page);
->> -        mutex_unlock(&udev->cmdr_lock);
->> +        filemap_invalidate_unlock_shared(mapping);
->>           return page;
->>       }
->> @@ -1831,7 +1832,7 @@ static struct page 
->> *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
->>        */
->>       pr_err("Invalid addr to data page mapping (dpi %u) on device %s\n",
->>              dpi, udev->name);
->> -    mutex_unlock(&udev->cmdr_lock);
->> +    filemap_invalidate_unlock_shared(mapping);
->>       return NULL;
->>   }
->> @@ -3111,6 +3112,7 @@ static void find_free_blocks(void)
->>       loff_t off;
->>       u32 pages_freed, total_pages_freed = 0;
->>       u32 start, end, block, total_blocks_freed = 0;
->> +    struct address_space *mapping;
->>       if (atomic_read(&global_page_count) <= tcmu_global_max_pages)
->>           return;
->> @@ -3134,6 +3136,7 @@ static void find_free_blocks(void)
->>               continue;
->>           }
->> +        mapping = udev->inode->i_mapping;
->>           end = udev->dbi_max + 1;
->>           block = find_last_bit(udev->data_bitmap, end);
->>           if (block == udev->dbi_max) {
->> @@ -3152,12 +3155,14 @@ static void find_free_blocks(void)
->>               udev->dbi_max = block;
->>           }
->> +        filemap_invalidate_lock(mapping);
->>           /* Here will truncate the data area from off */
->>           off = udev->data_off + (loff_t)start * udev->data_blk_size;
->> -        unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
->> +        unmap_mapping_range(mapping, off, 0, 1);
->>           /* Release the block pages */
->>           pages_freed = tcmu_blocks_release(udev, start, end - 1);
->> +        filemap_invalidate_unlock(mapping);
->>           mutex_unlock(&udev->cmdr_lock);
->>           total_pages_freed += pages_freed;
+> > > 
+> > > David Jeffery
+> > > 
+> > 
+> > Folks this is a pending issue stopping a customer from making
+> > progress.
+> > They run Oracle and very high workloads on EDR 100 so David fixed
+> > this
+> > fosusing on the needs of the isert target changes etc.
+> > 
+> > Are you able to give us technical reasons why David's patch is not
+> > suitable and why we he would have to start from scratch.
 > 
+> You shouldn't start from scratch. You did all the investigation and
+> the 
+> debugging already.
+> 
+> Coding a solution is the small part after you understand the root
+> cause.
+> 
+> > 
+> > We literally spent weeks on this and built another special lab for
+> > fully testing EDR 100.
+> > This issue was pending in a BZ for some time and Mellnox had eyes
+> > on it
+> > then but this latest suggestion was never put forward in that BZ to
+> > us.
+> 
+> Mellanox maintainers saw this issue few days before you sent it 
+> upstream. I suggested sending it upstream and have a discussion here 
+> since it has nothing to do with Mellanox adapters and Mellanox SW
+> stack 
+> MLNX_OFED.
+> 
+> Our job as maintainers and reviewers in the community is to see the
+> big 
+> picture and suggest solutions that not always same as posted in the 
+> mailing list.
+> 
+> > 
+> > Sincerely
+> > Laurence
+> > 
+> 
+> 
+
+Hi Max 
+
+The issue was reported with the OFED stack at the customer, so its why
+we opened the BZ to get the Mallnox partners engineers engaged.
+We had them then see if it also existed with the inbox stack which it
+did. 
+Sergey worked a little bit on the issue but did not have the same
+suggestion you provivided and asked David for help.
+
+We will be happy to take the fix you propose doing it your way. May I
+that the engineewrs to work on this the most and understand the code
+best propose a fix your way.
+
+I will take on the responsibility to do all the kernel building and
+testing.
+
+Regards
+Laurence
+
+
