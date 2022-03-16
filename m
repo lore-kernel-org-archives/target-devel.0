@@ -2,124 +2,151 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0382FC433EF
-	for <target-devel@archiver.kernel.org>; Wed, 16 Mar 2022 10:43:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B558C433F5
+	for <target-devel@archiver.kernel.org>; Wed, 16 Mar 2022 12:25:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343931AbiCPKod (ORCPT
+        id S1355681AbiCPM1F (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 16 Mar 2022 06:44:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42814 "EHLO
+        Wed, 16 Mar 2022 08:27:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53852 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238075AbiCPKoc (ORCPT
+        with ESMTP id S1355724AbiCPM1B (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 16 Mar 2022 06:44:32 -0400
-Received: from out30-130.freemail.mail.aliyun.com (out30-130.freemail.mail.aliyun.com [115.124.30.130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B43913DF9;
-        Wed, 16 Mar 2022 03:43:18 -0700 (PDT)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R151e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04407;MF=xiaoguang.wang@linux.alibaba.com;NM=1;PH=DS;RN=3;SR=0;TI=SMTPD_---0V7Mc5x4_1647427395;
-Received: from 30.225.28.170(mailfrom:xiaoguang.wang@linux.alibaba.com fp:SMTPD_---0V7Mc5x4_1647427395)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Wed, 16 Mar 2022 18:43:16 +0800
-Message-ID: <c6a25258-6937-6cdf-0fab-081312c4dee6@linux.alibaba.com>
-Date:   Wed, 16 Mar 2022 18:43:15 +0800
+        Wed, 16 Mar 2022 08:27:01 -0400
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C6876623F;
+        Wed, 16 Mar 2022 05:25:33 -0700 (PDT)
+Received: by mail-ej1-x62d.google.com with SMTP id hw13so3751527ejc.9;
+        Wed, 16 Mar 2022 05:25:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=IL+GLk+OUHvkfZNfzFD5nXZpkwjDg38KEStHONm2HfY=;
+        b=bpfq7c2ayOhmebfs4QzVOR+k87zxLgYcOBsl03zn0j2Yu9ppFmOOR3jKSk3zaatFuM
+         ppOt1hcKVekWuvVcYKEfcxw7EcwBOKUjk95tNeajuY/8SqhVB0+liYeqyqfidpQa5YdP
+         SMuEH2alky1xJb1PRbmFzcNTTLbZWuUZTK+PlIg1pEMTTY3hMsyZllq5qPYrT9caZXdF
+         YL4d4pQ6c6Mq3/TmBxCEgCeA+WIu2kHJRFg4QyElBu5dZTbnSjWXjYWD93o2XZk+lLp+
+         jRM2uMh4CkJsvXSwB4ViOKmiDLHLSNZuNO6CEZ15iUqL8CkT3H+SrFUl6Z7dnVcOubY5
+         43DQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=IL+GLk+OUHvkfZNfzFD5nXZpkwjDg38KEStHONm2HfY=;
+        b=NiSqaLXAfxHzAC/Vtcj+/jG3/1YelQ6EYwStT7ZdtZqWyK4AeQmTcd2JQj+SpW4CZ7
+         ySVdO0KdSWEhdcJuWIwLN209fSTqPUGpGVYYRUuePampZ07JcuE9klivPV3O/CZ8AMnl
+         Hzu2u83QmjVzoqWinSzQfAbl8IWaD8uJmrAt8OCGspIqvFEnQIzwHbZowK2AWDPC2BhL
+         +GaHa6vwjj3L0HO1DNh15Cm38nutu/DNh9RYBcsHERWcQyyDYK/6jMAbUGP8gOlloYmW
+         GXD9Ld6s/Bn2MOcPYJ3rhPZA9E/AroxLOCHjS3f26jEX+TkCmkFiNrOYu5HK3Y3sYjyq
+         Zxaw==
+X-Gm-Message-State: AOAM532KvlzqgA6CfBrE8f55856OqqcIPvzhqqj2hUfHFhLIN7kLAkoB
+        yUFRbkURwJNZvbAo40RaI+aKsvfacUw=
+X-Google-Smtp-Source: ABdhPJyEoNPzFlAyrABADipYXBRvhoyYbYZ2LiVPF0/ZJuff4OAltucAaTyqW6AVdUba7ZRGi8qvyg==
+X-Received: by 2002:a17:906:2ad5:b0:6cf:9cca:d9db with SMTP id m21-20020a1709062ad500b006cf9ccad9dbmr26103912eje.252.1647433531881;
+        Wed, 16 Mar 2022 05:25:31 -0700 (PDT)
+Received: from [192.168.178.40] (ipbcc1fa42.dynamic.kabel-deutschland.de. [188.193.250.66])
+        by smtp.gmail.com with ESMTPSA id r29-20020a50c01d000000b00415fb0dc793sm905328edb.47.2022.03.16.05.25.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 16 Mar 2022 05:25:31 -0700 (PDT)
+Message-ID: <85bf5adb-631c-d98b-f2e7-d599ca065640@gmail.com>
+Date:   Wed, 16 Mar 2022 13:25:30 +0100
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.7.0
-Subject: Re: [PATCH 2/2] scsi: target: tcmu: Use
- address_space->invalidate_lock
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH] scsi:target:tcmu: make sure dev blocked before resetting
+ ring
 Content-Language: en-US
-From:   Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc:     bostroesser@gmail.com
-References: <20220311132206.24515-1-xiaoguang.wang@linux.alibaba.com>
- <20220311132206.24515-2-xiaoguang.wang@linux.alibaba.com>
-In-Reply-To: <20220311132206.24515-2-xiaoguang.wang@linux.alibaba.com>
+To:     Guixin Liu <kanie@linux.alibaba.com>, martin.petersen@oracle.com
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+References: <1647417702-129883-1-git-send-email-kanie@linux.alibaba.com>
+From:   Bodo Stroesser <bostroesser@gmail.com>
+In-Reply-To: <1647417702-129883-1-git-send-email-kanie@linux.alibaba.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-hello,
+Hi,
 
-Gentle ping.
+I don't think we need any fix here.
 
-Regards,
-Xiaoguang Wang
+1) Generally userspace can easily violate the ring protocol.
+E.g., if userspace uses a currently not existing cmd_id in a cmd
+response, it forces tcmu into RING_BROKEN state.
+Resetting the ring while processing cmds is just another way to
+probably force tcmu into RING_BROKEN.
+Why should we try to fix just this one single situation?
+If userspace resets the ring, and after that continues to write
+responses to the ring for cmds it has read before the reset, we
+probably have to fix userspace app.
 
-> Currently tcmu_vma_fault() uses udev->cmdr_lock to avoid concurrent
-> find_free_blocks(), which unmaps idle pages and truncates them. This
-> work is really like many filesystem's truncate operations, but they
-> use address_space->invalidate_lock to protect race.
->
-> This patch replaces cmdr_lock with address_space->invalidate_lock in
-> tcmu fault procedure, which will also make page-fault have concurrency.
->
-> Signed-off-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
+2) Resetting the ring without being blocked is _not_ forbidden.
+The situation you describe is more about resetting the ring while
+userspace holds the uio dev open. But even that is not useless, if
+userspace just stops to process cmds, resets the ring and then
+re-starts processing the ring, including to read the new head and
+tail pointers.
+
+Bodo
+
+
+On 16.03.22 09:01, Guixin Liu wrote:
+> If dev is not blocked when resetting ring, then there could be new
+> commands coming in after resetting ring, this will make cmd ring broken,
+> because tcmu can not find tcmu_cmd when tcmu-runner handled these
+> newcome commands.
+> 
+> Signed-off-by: Guixin Liu <kanie@linux.alibaba.com>
 > ---
->   drivers/target/target_core_user.c | 13 +++++++++----
->   1 file changed, 9 insertions(+), 4 deletions(-)
->
+>   drivers/target/target_core_user.c | 14 ++++++++++++--
+>   1 file changed, 12 insertions(+), 2 deletions(-)
+> 
 > diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> index 06a5c4086551..e0a62623ccd7 100644
+> index 7b2a89a..548ad94 100644
 > --- a/drivers/target/target_core_user.c
 > +++ b/drivers/target/target_core_user.c
-> @@ -1815,13 +1815,14 @@ static int tcmu_find_mem_index(struct vm_area_struct *vma)
+> @@ -2333,7 +2333,7 @@ static void tcmu_block_dev(struct tcmu_dev *udev)
+>   	mutex_unlock(&udev->cmdr_lock);
+>   }
 >   
->   static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
+> -static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+> +static int tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
 >   {
-> +	struct address_space *mapping = udev->inode->i_mapping;
->   	struct page *page;
+>   	struct tcmu_mailbox *mb;
+>   	struct tcmu_cmd *cmd;
+> @@ -2341,6 +2341,12 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
 >   
-> -	mutex_lock(&udev->cmdr_lock);
-> +	filemap_invalidate_lock_shared(mapping);
->   	page = xa_load(&udev->data_pages, dpi);
->   	if (likely(page)) {
->   		get_page(page);
-> -		mutex_unlock(&udev->cmdr_lock);
-> +		filemap_invalidate_unlock_shared(mapping);
->   		return page;
+>   	mutex_lock(&udev->cmdr_lock);
+>   
+> +	if (!test_bit(TCMU_DEV_BIT_BLOCKED, &udev->flags)) {
+> +		pr_err("The dev should be blocked before resetting ring.\n");
+> +		mutex_unlock(&udev->cmdr_lock);
+> +		return -EINVAL;
+> +	}
+> +
+>   	xa_for_each(&udev->commands, i, cmd) {
+>   		pr_debug("removing cmd %u on dev %s from ring %s\n",
+>   			 cmd->cmd_id, udev->name,
+> @@ -2396,6 +2402,7 @@ static void tcmu_reset_ring(struct tcmu_dev *udev, u8 err_level)
+>   	run_qfull_queue(udev, false);
+>   
+>   	mutex_unlock(&udev->cmdr_lock);
+> +	return 0;
+>   }
+>   
+>   enum {
+> @@ -2995,7 +3002,10 @@ static ssize_t tcmu_reset_ring_store(struct config_item *item, const char *page,
+>   		return -EINVAL;
 >   	}
 >   
-> @@ -1831,7 +1832,7 @@ static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
->   	 */
->   	pr_err("Invalid addr to data page mapping (dpi %u) on device %s\n",
->   	       dpi, udev->name);
-> -	mutex_unlock(&udev->cmdr_lock);
-> +	filemap_invalidate_unlock_shared(mapping);
->   
->   	return NULL;
+> -	tcmu_reset_ring(udev, val);
+> +	ret = tcmu_reset_ring(udev, val);
+> +	if (ret < 0)
+> +		return ret;
+> +
+>   	return count;
 >   }
-> @@ -3111,6 +3112,7 @@ static void find_free_blocks(void)
->   	loff_t off;
->   	u32 pages_freed, total_pages_freed = 0;
->   	u32 start, end, block, total_blocks_freed = 0;
-> +	struct address_space *mapping;
->   
->   	if (atomic_read(&global_page_count) <= tcmu_global_max_pages)
->   		return;
-> @@ -3134,6 +3136,7 @@ static void find_free_blocks(void)
->   			continue;
->   		}
->   
-> +		mapping = udev->inode->i_mapping;
->   		end = udev->dbi_max + 1;
->   		block = find_last_bit(udev->data_bitmap, end);
->   		if (block == udev->dbi_max) {
-> @@ -3152,12 +3155,14 @@ static void find_free_blocks(void)
->   			udev->dbi_max = block;
->   		}
->   
-> +		filemap_invalidate_lock(mapping);
->   		/* Here will truncate the data area from off */
->   		off = udev->data_off + (loff_t)start * udev->data_blk_size;
-> -		unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
-> +		unmap_mapping_range(mapping, off, 0, 1);
->   
->   		/* Release the block pages */
->   		pages_freed = tcmu_blocks_release(udev, start, end - 1);
-> +		filemap_invalidate_unlock(mapping);
->   		mutex_unlock(&udev->cmdr_lock);
->   
->   		total_pages_freed += pages_freed;
-
+>   CONFIGFS_ATTR_WO(tcmu_, reset_ring);
