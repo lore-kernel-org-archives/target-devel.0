@@ -2,509 +2,132 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC1CEC433EF
-	for <target-devel@archiver.kernel.org>; Fri, 18 Mar 2022 09:55:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0372C433FE
+	for <target-devel@archiver.kernel.org>; Fri, 18 Mar 2022 14:53:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234745AbiCRJ5P (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 18 Mar 2022 05:57:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54864 "EHLO
+        id S237578AbiCROyt (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 18 Mar 2022 10:54:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56698 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229815AbiCRJ5N (ORCPT
+        with ESMTP id S237231AbiCROyo (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 18 Mar 2022 05:57:13 -0400
-Received: from out30-44.freemail.mail.aliyun.com (out30-44.freemail.mail.aliyun.com [115.124.30.44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CA5928F80A;
-        Fri, 18 Mar 2022 02:55:54 -0700 (PDT)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R771e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04407;MF=xiaoguang.wang@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0V7W8jcH_1647597351;
-Received: from localhost(mailfrom:xiaoguang.wang@linux.alibaba.com fp:SMTPD_---0V7W8jcH_1647597351)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Fri, 18 Mar 2022 17:55:52 +0800
-From:   Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-To:     linux-mm@kvack.org, target-devel@vger.kernel.org,
-        linux-scsi@vger.kernel.org
-Cc:     linux-block@vger.kernel.org, xuyu@linux.alibaba.com,
-        bostroesser@gmail.com,
-        Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-Subject: [RFC 3/3] scsi: target: tcmu: Support zero copy
-Date:   Fri, 18 Mar 2022 17:55:31 +0800
-Message-Id: <20220318095531.15479-4-xiaoguang.wang@linux.alibaba.com>
-X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20220318095531.15479-1-xiaoguang.wang@linux.alibaba.com>
-References: <20220318095531.15479-1-xiaoguang.wang@linux.alibaba.com>
+        Fri, 18 Mar 2022 10:54:44 -0400
+Received: from APC01-PSA-obe.outbound.protection.outlook.com (mail-psaapc01on2118.outbound.protection.outlook.com [40.107.255.118])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 417ABF8472;
+        Fri, 18 Mar 2022 07:53:25 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=PSx2cPKGL5cPwM++SHMOB+xp7f/xmEzwMQZtat9ew9xU8wVOfcdos15y8w5H9q2JmApNOLirtfck22wrrLK2Gd6PccfUzsUWJGUhgJIbSqp8nkFheAWUHz4Bb7FBvNthCh3SeAlWaNDIHA5Tp9n3sUoJu0nejpdtu5IkwDDgJMyu01t4gBJbKDMcZ3kvd33DtuGzjJbSL8DBCXme4XxPb3TgYvShIugU4BT+AktZKIgwZOW+vBTUDAr/6jmHA0det/5ww4dtdgU+poYXLTju+kXIoallp6XS81dCbMHucG4vn3jsaWW0wfAJMg/mA1KKzAJGgk+4C6aE3LZTwejZ5w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=kIEyoua8qyU/lxq2P0udYtP2K8pGJqUyWzlOAmWWvkY=;
+ b=JtSWIgArqp2zv9rujeiRfJYOlQ9spgj6Zbdz6E2O17cjXnqbruShmRCkb0Iyz2l0OzH36+OXagjIRCN//u5XqfFMrpZ0jcqqmfIs+V7yLdtZPLfyP2pIf63fz61gAMFa5u1OPqdlDJl57p7CUYtAYVLLNbR4yS6QrR3rQSF6SSdRzHGrHJyhSMUb2svHBt1JBfWvNS0cHY005AMgfJxRH0VwN7ixn0QuDX1mnuQ4G5Kist5UlBX5fgbFuUccLc0Mqt3EUrqN3RvWseXNoZIa8UiIF0mPRnFzOZJvFumvTKnf51sptJB4OMbQe0Nk7gOhGc+e1zLzvKjtsKzdiceNOw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo0.onmicrosoft.com;
+ s=selector2-vivo0-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=kIEyoua8qyU/lxq2P0udYtP2K8pGJqUyWzlOAmWWvkY=;
+ b=oZthGSdSdO8edagatrH0vb4PrTgqbv4wa+XPAZ51BGxH0eAp0pftYezylvXqmShQGSx0FiTUhW/B39z54fBS82GiUB2u/gHrZehSiImGwihQI+VyJUsk4UumgNPZL1+pQSezJhJbv6qxoG6NqYNyNGufg5dtIozE7PBbOxStxaM=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from SG2PR06MB3367.apcprd06.prod.outlook.com (2603:1096:4:78::19) by
+ SI2PR06MB4473.apcprd06.prod.outlook.com (2603:1096:4:156::12) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.5081.15; Fri, 18 Mar 2022 14:53:20 +0000
+Received: from SG2PR06MB3367.apcprd06.prod.outlook.com
+ ([fe80::9d3f:ff3b:1948:d732]) by SG2PR06MB3367.apcprd06.prod.outlook.com
+ ([fe80::9d3f:ff3b:1948:d732%4]) with mapi id 15.20.5081.017; Fri, 18 Mar 2022
+ 14:53:20 +0000
+From:   Wan Jiabing <wanjiabing@vivo.com>
+To:     James Smart <james.smart@broadcom.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Wan Jiabing <wanjiabing@vivo.com>,
+        Daniel Wagner <dwagner@suse.de>, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: elx: efct: remove unnecessary memset in efct_io
+Date:   Fri, 18 Mar 2022 22:52:20 +0800
+Message-Id: <20220318145230.1031-1-wanjiabing@vivo.com>
+X-Mailer: git-send-email 2.35.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: HK2PR02CA0154.apcprd02.prod.outlook.com
+ (2603:1096:201:1f::14) To SG2PR06MB3367.apcprd06.prod.outlook.com
+ (2603:1096:4:78::19)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 5adab59b-bb97-4a1a-5b18-08da08ef0a14
+X-MS-TrafficTypeDiagnostic: SI2PR06MB4473:EE_
+X-Microsoft-Antispam-PRVS: <SI2PR06MB447301CD3C79969F6BF9D6D7AB139@SI2PR06MB4473.apcprd06.prod.outlook.com>
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: LlNUv7bzlFD81ar83x8ETsqVqJXzR0qJGfjKs7cnY32E42e1pGyszaPo1EYw0GSwiWzCbZzPPzZ4JFivYQwz1xpAPTOY2y6fnWtxhKpyG60ijK4rRmGy5SClyNRBCMD+En2e47bCijYRF1+0JfhDW+NbQnTChEcJwLmohDWDaGbCLCiiASVS+YGzguhLM3IHfVcCjxvyfXvapjDteuAc0wy1olEyq+W0XElwlqFfUhokA8SY4bWvInQMXcLXQRyOhbTSPGzQPBVN2dT6vXNLCtSG6UXd/fxVz+d6IadbpafG+LKcLncrVR8x6t9R4wFI+iYQjkpoDsH+nqPmtjWfNJaWBODY1doesRQlRrMH8EN8h1kixMMiLRzBdIUoZnQe4GE/daG7qNqskjmrfOpykLzWV0bJo7yv1TZlCvPpQbIl9sXSIOnKi1OY/0gSHkVf7iP01O8TLWslLhu3wNGQ1Jszo34cnMuRguR62FV/weRmECIDzhUQ/IGEknZWLi2UienKqbGtj5Mzh6XstfSb+TZhow7VYvVrpQ1sjhCXa8oV1YuCEAJuLpW5HsIzD1W0gSEkCp5PnLyTLXPMa0ibKHBmQimMrC9ROI+2a7XrIiWDazhHK3y32mJHJ724ontN+Ovt1mM6lUCsKQsvylEXyMNfOwzOA0/udmXxCB+jui57NQns/H2+R4dbfZH6UkLDBPi3pOwZAh1eB3uT1kE/Dw==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SG2PR06MB3367.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(8936002)(4744005)(38350700002)(38100700002)(2906002)(8676002)(66476007)(66946007)(66556008)(2616005)(6506007)(316002)(83380400001)(6512007)(508600001)(52116002)(86362001)(36756003)(5660300002)(1076003)(186003)(26005)(110136005)(6486002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?7H10e6MrFkWqUAi4NusPGAClIAUnXrd/TNcjgevLkqf24RzTlQKZ6De2etcy?=
+ =?us-ascii?Q?p5vFFal9hRgzXct3KZRpk2jCqnDPIXi8LhPLdYwrSNrEKbLaalD2pc9vcgg5?=
+ =?us-ascii?Q?zj984jHLsqG9IpftcmdnJPtSjOusQeqpb+gN9160wI1EiWTSs9RWOuJL7bhk?=
+ =?us-ascii?Q?gYho0hLNNEVQAYA1elQrHA0iOmXCLGZ0gN+E85l3INM6zNAW+XXzaciX/5V4?=
+ =?us-ascii?Q?EbpSAnhRLMIuPgkXmjJVTa2evphnLdmp0f7UWuItqffPpQEq7gbGH+txHoJd?=
+ =?us-ascii?Q?R0cu7F9XQjeBqGT6Pc1iX6tePfZxCdupkpeOGVpBG7+1+zAX2QflErS4pBg0?=
+ =?us-ascii?Q?jHd1mrvURbj5mmF826whr6vCtmQjsXu1AVmEHqLG1HLVVKfeJt3X0XaAuJ2g?=
+ =?us-ascii?Q?ySNhnlRXtDIdM5PBSNcnZPYrK6WJmHTtfN5F7yMU8UecAyo+rJ+IksF3eSjX?=
+ =?us-ascii?Q?ks3xUHxvD6+v/bdKwnSX6Pf0IWV6J96A8fRf9OpwWrbMq1cnPH9fvni1hyXx?=
+ =?us-ascii?Q?NMwsGh/4BSC9f49QS1HTfXSui4RFKThBgcFHgEwvwWzIeq8ZM9njuFM1c7ic?=
+ =?us-ascii?Q?uLKG1hE7U8Wkyx3O0XrCW1LyXZCy/VmAGecTDU+gvUd+bluw9M9gujbYJalh?=
+ =?us-ascii?Q?9Vls6SqQN6yOhq7zD8o0gpD61e43SnMbiorxbi55DIumbVonH5JHNGSLg0/A?=
+ =?us-ascii?Q?sM/RJ9d+UOzAO+RCq6+D0o/UChsg5btRkygB1c8RifsuL8xFxC4eYIudDqYg?=
+ =?us-ascii?Q?mlrhbVIRjf4h+++Hsj83dbwWUIk6TM/Wiw3h8QXWoF6jl93oQtnlSwEKpDYs?=
+ =?us-ascii?Q?eEV6S7sInXUvUdArbYHmEycHXhbzsNtHhnwCMCijipVrSUEtxrdPINww/Hxl?=
+ =?us-ascii?Q?EPCyICM9VarftFNuW4J8IUWY5pwMgxEVGbcgTdAMhRGYwi8ogdpLe4745uYD?=
+ =?us-ascii?Q?VEmSgorHCZpsMvOPeE1dhqkEb4HxTK03bryx2aJMdLVWBNj6b0ZqRNhg0TCE?=
+ =?us-ascii?Q?vhYevHJt+tt+zas9dhVnGLZdHxMrb3WBFOwbMEZy/vf0m1y3CrNed5dHMnUt?=
+ =?us-ascii?Q?H0rPpmafR7j6l6vnLoSteqVlRsJwMWeMrS6lFzRajI73OVJXZRKKZOG6UQPg?=
+ =?us-ascii?Q?NeAAnAmRXqSfrwEYRQmcVbHy9FUfpA3Uj69JXq2ZU5xHlY+6PYSXXfj67S6Y?=
+ =?us-ascii?Q?HyqE0VMllTxeDd4BmOs73sLFaUvKM/3WYQxdVRdemoqXLJTYDprq0hd7aahF?=
+ =?us-ascii?Q?0y3V8h6QtxhXU4x63WxfHldRQ2+LTW1JylAPDgxWfRXxqkjdUFpbfU7dK/Zt?=
+ =?us-ascii?Q?zU7Fy+67gNeg5ZFWVu8gRSBFGoNd21etTpaPrj9MyxV8ofxue8tNZPj61hal?=
+ =?us-ascii?Q?coIGOE0j+38j9Yl2WoZQkgLjDR5u6IK9KPdtwCzj+NskVFR/i81rOLczsw47?=
+ =?us-ascii?Q?WwBgRaWeeryUoP9tJ1yIRq6HAYVPK1Zq?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5adab59b-bb97-4a1a-5b18-08da08ef0a14
+X-MS-Exchange-CrossTenant-AuthSource: SG2PR06MB3367.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Mar 2022 14:53:18.9408
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 0ZlqbsfBz+GhGICaRu6pvvPMLPpM2muLiY344Z1NIWQl3NqVKRhGrHsrlpedmmPDr4HlK9AC3c8SopGU4JMVLA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PR06MB4473
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Currently in tcmu, for READ commands, it copies user space backstore's
-data buffer to tcmu internal data area, then copies data in data area
-to READ commands sgl pages. For WRITE commands, tcmu copies sgl pages
-to tcmu internal data area, then copies data in data area to user space
-backstore. For both cases, there are obvious copy overhead, which impact
-io throughput, especially for large io size.
+io->sgl is allocated by kzalloc(). The memory is set to zero.
+It is unnecessary to call memset again.
 
-To mitigate this issue, we implement zero copy feature to tcmu, which
-map sgl pages to user space backstore's address space. Currently only
-sgl pages's offset and length are both aligned to page size, can this
-command go into tcmu zero copy path.
-
-Signed-off-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
+Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
 ---
- drivers/target/target_core_user.c | 257 +++++++++++++++++++++++++++++++++-----
- 1 file changed, 229 insertions(+), 28 deletions(-)
+ drivers/scsi/elx/efct/efct_io.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 7b2a89a67cdb..4314e0c00f8e 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -16,6 +16,8 @@
- #include <linux/xarray.h>
- #include <linux/stringify.h>
- #include <linux/bitops.h>
-+#include <linux/sched/mm.h>
-+#include <linux/mm.h>
- #include <linux/highmem.h>
- #include <linux/configfs.h>
- #include <linux/mutex.h>
-@@ -72,6 +74,7 @@
-  */
- #define DATA_PAGES_PER_BLK_DEF 1
- #define DATA_AREA_PAGES_DEF (256 * 1024)
-+#define ZC_DATA_AREA_PAGES_DEF (256 * 1024)
- 
- #define TCMU_MBS_TO_PAGES(_mbs) ((size_t)_mbs << (20 - PAGE_SHIFT))
- #define TCMU_PAGES_TO_MBS(_pages) (_pages >> (20 - PAGE_SHIFT))
-@@ -145,9 +148,20 @@ struct tcmu_dev {
- 	struct list_head qfull_queue;
- 	struct list_head tmr_queue;
- 
-+	/* For zero copy handle */
-+	int zc_data_area_mb;
-+	uint32_t zc_max_blocks;
- 	uint32_t dbi_max;
- 	uint32_t dbi_thresh;
- 	unsigned long *data_bitmap;
-+
-+	struct mm_struct *vma_vm_mm;
-+	struct vm_area_struct *vma;
-+
-+	uint32_t zc_dbi_max;
-+	uint32_t zc_dbi_thresh;
-+	unsigned long *zc_data_bitmap;
-+
- 	struct xarray data_pages;
- 	uint32_t data_pages_per_blk;
- 	uint32_t data_blk_size;
-@@ -177,6 +191,12 @@ struct tcmu_cmd {
- 	struct tcmu_dev *tcmu_dev;
- 	struct list_head queue_entry;
- 
-+	/* For zero_copy handle */
-+	struct mm_struct *vma_vm_mm;
-+	struct vm_area_struct *vma;
-+	struct iovec *iov;
-+	int iov_cnt;
-+
- 	uint16_t cmd_id;
- 
- 	/* Can't use se_cmd when cleaning up expired cmds, because if
-@@ -192,6 +212,7 @@ struct tcmu_cmd {
- 
- #define TCMU_CMD_BIT_EXPIRED 0
- #define TCMU_CMD_BIT_KEEP_BUF 1
-+#define TCMU_CMD_BIT_ZEROCOPY 2
- 	unsigned long flags;
- };
- 
-@@ -495,10 +516,16 @@ static struct genl_family tcmu_genl_family __ro_after_init = {
- static void tcmu_cmd_free_data(struct tcmu_cmd *tcmu_cmd, uint32_t len)
- {
- 	struct tcmu_dev *udev = tcmu_cmd->tcmu_dev;
-+	unsigned long *data_bitmap;
- 	uint32_t i;
- 
-+	if (test_bit(TCMU_CMD_BIT_ZEROCOPY, &tcmu_cmd->flags))
-+		data_bitmap = udev->zc_data_bitmap;
-+	else
-+		data_bitmap = udev->data_bitmap;
-+
- 	for (i = 0; i < len; i++)
--		clear_bit(tcmu_cmd->dbi[i], udev->data_bitmap);
-+		clear_bit(tcmu_cmd->dbi[i], data_bitmap);
- }
- 
- static inline int tcmu_get_empty_block(struct tcmu_dev *udev,
-@@ -549,8 +576,30 @@ static inline int tcmu_get_empty_block(struct tcmu_dev *udev,
- 	return i == page_cnt ? dbi : -1;
- }
- 
-+static inline int tcmu_get_zc_empty_block(struct tcmu_dev *udev,
-+			struct tcmu_cmd *tcmu_cmd, int prev_dbi,
-+			int *iov_cnt)
-+{
-+	int dbi;
-+
-+	dbi = find_first_zero_bit(udev->zc_data_bitmap, udev->zc_dbi_thresh);
-+	if (dbi == udev->zc_dbi_thresh)
-+		return -1;
-+
-+	if (dbi > udev->zc_dbi_max)
-+		udev->zc_dbi_max = dbi;
-+
-+	set_bit(dbi, udev->zc_data_bitmap);
-+	tcmu_cmd_set_dbi(tcmu_cmd, dbi);
-+
-+	if (dbi != prev_dbi + 1)
-+		*iov_cnt += 1;
-+	return dbi;
-+}
-+
- static int tcmu_get_empty_blocks(struct tcmu_dev *udev,
--				 struct tcmu_cmd *tcmu_cmd, int length)
-+				 struct tcmu_cmd *tcmu_cmd, int length,
-+				 bool zero_copy)
- {
- 	/* start value of dbi + 1 must not be a valid dbi */
- 	int dbi = -2;
-@@ -559,16 +608,111 @@ static int tcmu_get_empty_blocks(struct tcmu_dev *udev,
- 
- 	for (; length > 0; length -= blk_size) {
- 		blk_data_len = min_t(uint32_t, length, blk_size);
--		dbi = tcmu_get_empty_block(udev, tcmu_cmd, dbi, blk_data_len,
--					   &iov_cnt);
-+		if (zero_copy) {
-+			dbi = tcmu_get_zc_empty_block(udev, tcmu_cmd, dbi,
-+						      &iov_cnt);
-+		} else {
-+			dbi = tcmu_get_empty_block(udev, tcmu_cmd, dbi,
-+					blk_data_len, &iov_cnt);
-+		}
- 		if (dbi < 0)
- 			return -1;
- 	}
- 	return iov_cnt;
- }
- 
-+#define TCMU_ZEROCOPY_PAGE_BATCH 32
-+
-+static inline void tcmu_zerocopy_one_seg(struct iovec *iov,
-+			struct vm_area_struct *vma,
-+			struct sg_page_iter *sgiter)
-+{
-+	struct page *pages[TCMU_ZEROCOPY_PAGE_BATCH];
-+	unsigned int len = iov->iov_len;
-+	unsigned long address = (unsigned long)iov->iov_base + vma->vm_start;
-+	unsigned long pages_remaining, pg_index = 0;
-+	struct page *page;
-+
-+	while (len > 0) {
-+		__sg_page_iter_next(sgiter);
-+		page = sg_page_iter_page(sgiter);
-+		pages[pg_index++] = page;
-+		len -= PAGE_SIZE;
-+		if (pg_index == TCMU_ZEROCOPY_PAGE_BATCH || !len) {
-+			pages_remaining = pg_index;
-+			vm_insert_pages_mkspecial(vma, address, pages, &pages_remaining);
-+			address = address + pg_index * PAGE_SIZE;
-+			pg_index = 0;
-+		}
-+	}
-+}
-+
-+static long tcmu_cmd_zerocopy_map(struct tcmu_dev *udev,
-+				  struct tcmu_cmd *cmd,
-+				  struct iovec *iov,
-+				  int iov_cnt)
-+{
-+	struct se_cmd *se_cmd = cmd->se_cmd;
-+	struct scatterlist *data_sg;
-+	unsigned int data_nents;
-+	struct iovec *tiov;
-+	struct sg_page_iter sgiter;
-+	struct vm_area_struct *vma = udev->vma;
-+	int i, ret = 0;
-+
-+	mmap_read_lock(udev->vma_vm_mm);
-+	data_sg = se_cmd->t_data_sg;
-+	data_nents = se_cmd->t_data_nents;
-+	__sg_page_iter_start(&sgiter, data_sg, data_nents, 0);
-+	tiov = iov;
-+	for (i = 0; i < iov_cnt; i++) {
-+		tcmu_zerocopy_one_seg(tiov, vma, &sgiter);
-+		tiov++;
-+	}
-+	cmd->iov = iov;
-+	cmd->iov_cnt = iov_cnt;
-+	cmd->vma_vm_mm = vma->vm_mm;
-+	cmd->vma = vma;
-+	mmgrab(cmd->vma_vm_mm);
-+	mmap_read_unlock(udev->vma_vm_mm);
-+	return ret;
-+}
-+
-+static void tcmu_cmd_zerocopy_unmap(struct tcmu_cmd *cmd)
-+{
-+	struct mm_struct *mm;
-+	struct vm_area_struct *vma;
-+	struct iovec *iov;
-+	unsigned long address;
-+	int i;
-+
-+	mm = cmd->vma_vm_mm;
-+	if (!mm)
-+		return;
-+
-+	vma = cmd->vma;
-+	iov = cmd->iov;
-+	if (mmget_not_zero(mm)) {
-+		mmap_read_lock(mm);
-+		for (i = 0; i < cmd->iov_cnt; i++) {
-+			address = (unsigned long)iov->iov_base + vma->vm_start;
-+			zap_page_range(vma, address, iov->iov_len);
-+			iov++;
-+		}
-+		mmap_read_unlock(mm);
-+		mmput(mm);
-+	}
-+
-+	cmd->vma_vm_mm = NULL;
-+	cmd->vma = NULL;
-+	mmdrop(mm);
-+}
-+
- static inline void tcmu_free_cmd(struct tcmu_cmd *tcmu_cmd)
- {
-+	if (test_bit(TCMU_CMD_BIT_ZEROCOPY, &tcmu_cmd->flags))
-+		tcmu_cmd_zerocopy_unmap(tcmu_cmd);
-+
- 	kfree(tcmu_cmd->dbi);
- 	kmem_cache_free(tcmu_cmd_cache, tcmu_cmd);
- }
-@@ -850,37 +994,57 @@ static bool is_ring_space_avail(struct tcmu_dev *udev, size_t cmd_size)
-  * Called with ring lock held.
-  */
- static int tcmu_alloc_data_space(struct tcmu_dev *udev, struct tcmu_cmd *cmd,
--				  int *iov_bidi_cnt)
-+				  int *iov_bidi_cnt, bool zero_copy)
- {
- 	int space, iov_cnt = 0, ret = 0;
- 
- 	if (!cmd->dbi_cnt)
- 		goto wr_iov_cnts;
- 
--	/* try to check and get the data blocks as needed */
--	space = spc_bitmap_free(udev->data_bitmap, udev->dbi_thresh);
--	if (space < cmd->dbi_cnt) {
--		unsigned long blocks_left =
--				(udev->max_blocks - udev->dbi_thresh) + space;
-+	if (!zero_copy) {
-+		/* try to check and get the data blocks as needed */
-+		space = spc_bitmap_free(udev->data_bitmap, udev->dbi_thresh);
-+		if (space < cmd->dbi_cnt) {
-+			unsigned long blocks_left =
-+					(udev->max_blocks - udev->dbi_thresh) + space;
-+
-+			if (blocks_left < cmd->dbi_cnt) {
-+				pr_debug("no data space: only %lu available, but ask for %u\n",
-+						blocks_left * udev->data_blk_size,
-+						cmd->dbi_cnt * udev->data_blk_size);
-+				return -1;
-+			}
- 
--		if (blocks_left < cmd->dbi_cnt) {
--			pr_debug("no data space: only %lu available, but ask for %u\n",
--					blocks_left * udev->data_blk_size,
--					cmd->dbi_cnt * udev->data_blk_size);
--			return -1;
-+			udev->dbi_thresh += cmd->dbi_cnt;
-+			if (udev->dbi_thresh > udev->max_blocks)
-+				udev->dbi_thresh = udev->max_blocks;
+diff --git a/drivers/scsi/elx/efct/efct_io.c b/drivers/scsi/elx/efct/efct_io.c
+index c3247b951a76..c612f0a48839 100644
+--- a/drivers/scsi/elx/efct/efct_io.c
++++ b/drivers/scsi/elx/efct/efct_io.c
+@@ -62,7 +62,6 @@ efct_io_pool_create(struct efct *efct, u32 num_sgl)
+ 			return NULL;
  		}
-+	} else {
-+		/* try to check and get the data blocks as needed */
-+		space = spc_bitmap_free(udev->zc_data_bitmap, udev->zc_dbi_thresh);
-+		if (space < cmd->dbi_cnt) {
-+			unsigned long blocks_left =
-+					(udev->zc_max_blocks - udev->zc_dbi_thresh) + space;
-+
-+			if (blocks_left < cmd->dbi_cnt) {
-+				pr_debug("no data space: only %lu available, but ask for %u\n",
-+						blocks_left * udev->data_blk_size,
-+						cmd->dbi_cnt * udev->data_blk_size);
-+				return -1;
-+			}
  
--		udev->dbi_thresh += cmd->dbi_cnt;
--		if (udev->dbi_thresh > udev->max_blocks)
--			udev->dbi_thresh = udev->max_blocks;
-+			udev->zc_dbi_thresh += cmd->dbi_cnt;
-+			if (udev->zc_dbi_thresh > udev->zc_max_blocks)
-+				udev->zc_dbi_thresh = udev->zc_max_blocks;
-+		}
- 	}
+-		memset(io->sgl, 0, sizeof(*io->sgl) * num_sgl);
+ 		io->sgl_allocated = num_sgl;
+ 		io->sgl_count = 0;
  
--	iov_cnt = tcmu_get_empty_blocks(udev, cmd, cmd->se_cmd->data_length);
-+	iov_cnt = tcmu_get_empty_blocks(udev, cmd, cmd->se_cmd->data_length, zero_copy);
- 	if (iov_cnt < 0)
- 		return -1;
- 
- 	if (cmd->dbi_bidi_cnt) {
--		ret = tcmu_get_empty_blocks(udev, cmd, cmd->data_len_bidi);
-+		ret = tcmu_get_empty_blocks(udev, cmd, cmd->data_len_bidi, zero_copy);
- 		if (ret < 0)
- 			return -1;
- 	}
-@@ -1021,6 +1185,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	uint32_t blk_size = udev->data_blk_size;
- 	/* size of data buffer needed */
- 	size_t data_length = (size_t)tcmu_cmd->dbi_cnt * blk_size;
-+	bool zero_copy = false;
- 
- 	*scsi_err = TCM_NO_SENSE;
- 
-@@ -1044,7 +1209,22 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 		return -1;
- 	}
- 
--	iov_cnt = tcmu_alloc_data_space(udev, tcmu_cmd, &iov_bidi_cnt);
-+	if (!(se_cmd->se_cmd_flags & SCF_BIDI) && se_cmd->data_length &&
-+	    IS_ALIGNED(se_cmd->data_length, PAGE_SIZE)) {
-+		struct scatterlist *data_sg = se_cmd->t_data_sg, *sg;
-+		unsigned int data_nents = se_cmd->t_data_nents;
-+		int i;
-+
-+		for_each_sg(data_sg, sg, data_nents, i) {
-+			if (!((!sg->offset || IS_ALIGNED(sg->offset, PAGE_SIZE)) &&
-+			    IS_ALIGNED(sg->length, PAGE_SIZE)))
-+				break;
-+		}
-+		if (i == data_nents)
-+			zero_copy = true;
-+	}
-+
-+	iov_cnt = tcmu_alloc_data_space(udev, tcmu_cmd, &iov_bidi_cnt, zero_copy);
- 	if (iov_cnt < 0)
- 		goto free_and_queue;
- 
-@@ -1093,7 +1273,7 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	tcmu_cmd_reset_dbi_cur(tcmu_cmd);
- 	iov = &entry->req.iov[0];
- 
--	if (se_cmd->data_direction == DMA_TO_DEVICE ||
-+	if (((se_cmd->data_direction == DMA_TO_DEVICE) && !zero_copy) ||
- 	    se_cmd->se_cmd_flags & SCF_BIDI)
- 		scatter_data_area(udev, tcmu_cmd, &iov);
- 	else
-@@ -1111,6 +1291,11 @@ static int queue_cmd_ring(struct tcmu_cmd *tcmu_cmd, sense_reason_t *scsi_err)
- 	tcmu_setup_cmd_timer(tcmu_cmd, udev->cmd_time_out, &udev->cmd_timer);
- 
- 	entry->hdr.cmd_id = tcmu_cmd->cmd_id;
-+	if (zero_copy) {
-+		iov = &entry->req.iov[0];
-+		tcmu_cmd_zerocopy_map(udev, tcmu_cmd, iov, entry->req.iov_cnt);
-+		set_bit(TCMU_CMD_BIT_ZEROCOPY, &tcmu_cmd->flags);
-+	}
- 
- 	tcmu_hdr_set_len(&entry->hdr.len_op, command_size);
- 
-@@ -1366,7 +1551,10 @@ static bool tcmu_handle_completion(struct tcmu_cmd *cmd,
- 		else
- 			se_cmd->se_cmd_flags |= SCF_TREAT_READ_AS_NORMAL;
- 	}
--	if (se_cmd->se_cmd_flags & SCF_BIDI) {
-+
-+	if (test_bit(TCMU_CMD_BIT_ZEROCOPY, &cmd->flags)) {
-+		tcmu_cmd_zerocopy_unmap(cmd);
-+	} else if (se_cmd->se_cmd_flags & SCF_BIDI) {
- 		/* Get Data-In buffer before clean up */
- 		gather_data_area(udev, cmd, true, read_len);
- 	} else if (se_cmd->data_direction == DMA_FROM_DEVICE) {
-@@ -1520,6 +1708,8 @@ static void tcmu_check_expired_ring_cmd(struct tcmu_cmd *cmd)
- 	if (!time_after_eq(jiffies, cmd->deadline))
- 		return;
- 
-+	if (test_bit(TCMU_CMD_BIT_ZEROCOPY, &cmd->flags))
-+		tcmu_cmd_zerocopy_unmap(cmd);
- 	set_bit(TCMU_CMD_BIT_EXPIRED, &cmd->flags);
- 	list_del_init(&cmd->queue_entry);
- 	se_cmd = cmd->se_cmd;
-@@ -1618,6 +1808,8 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 	udev->data_pages_per_blk = DATA_PAGES_PER_BLK_DEF;
- 	udev->max_blocks = DATA_AREA_PAGES_DEF / udev->data_pages_per_blk;
- 	udev->data_area_mb = TCMU_PAGES_TO_MBS(DATA_AREA_PAGES_DEF);
-+	udev->zc_max_blocks = ZC_DATA_AREA_PAGES_DEF / udev->data_pages_per_blk;
-+	udev->zc_data_area_mb = TCMU_PAGES_TO_MBS(ZC_DATA_AREA_PAGES_DEF);
- 
- 	mutex_init(&udev->cmdr_lock);
- 
-@@ -1841,6 +2033,9 @@ static void tcmu_vma_open(struct vm_area_struct *vma)
- 
- 	pr_debug("vma_open\n");
- 
-+	udev->vma_vm_mm = vma->vm_mm;
-+	udev->vma = vma;
-+	mmgrab(udev->vma_vm_mm);
- 	kref_get(&udev->kref);
- }
- 
-@@ -1850,6 +2045,10 @@ static void tcmu_vma_close(struct vm_area_struct *vma)
- 
- 	pr_debug("vma_close\n");
- 
-+	mmdrop(udev->vma_vm_mm);
-+	udev->vma_vm_mm = NULL;
-+	udev->vma = NULL;
-+
- 	/* release ref from tcmu_vma_open */
- 	kref_put(&udev->kref, tcmu_dev_kref_release);
- }
-@@ -1901,7 +2100,7 @@ static int tcmu_mmap(struct uio_info *info, struct vm_area_struct *vma)
- {
- 	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
- 
--	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
-+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP | VM_MIXEDMAP;
- 	vma->vm_ops = &tcmu_vm_ops;
- 
- 	vma->vm_private_data = udev;
-@@ -2172,7 +2371,7 @@ static int tcmu_configure_device(struct se_device *dev)
- 	struct tcmu_dev *udev = TCMU_DEV(dev);
- 	struct uio_info *info;
- 	struct tcmu_mailbox *mb;
--	size_t data_size;
-+	size_t data_size, zc_data_size;
- 	int ret = 0;
- 
- 	ret = tcmu_update_uio_info(udev);
-@@ -2183,8 +2382,9 @@ static int tcmu_configure_device(struct se_device *dev)
- 
- 	mutex_lock(&udev->cmdr_lock);
- 	udev->data_bitmap = bitmap_zalloc(udev->max_blocks, GFP_KERNEL);
-+	udev->zc_data_bitmap = bitmap_zalloc(udev->zc_max_blocks, GFP_KERNEL);
- 	mutex_unlock(&udev->cmdr_lock);
--	if (!udev->data_bitmap) {
-+	if (!udev->data_bitmap || !udev->zc_data_bitmap) {
- 		ret = -ENOMEM;
- 		goto err_bitmap_alloc;
- 	}
-@@ -2201,7 +2401,8 @@ static int tcmu_configure_device(struct se_device *dev)
- 	udev->cmdr_size = CMDR_SIZE;
- 	udev->data_off = MB_CMDR_SIZE;
- 	data_size = TCMU_MBS_TO_PAGES(udev->data_area_mb) << PAGE_SHIFT;
--	udev->mmap_pages = (data_size + MB_CMDR_SIZE) >> PAGE_SHIFT;
-+	zc_data_size = TCMU_MBS_TO_PAGES(udev->zc_data_area_mb) << PAGE_SHIFT;
-+	udev->mmap_pages = (data_size + zc_data_size + MB_CMDR_SIZE) >> PAGE_SHIFT;
- 	udev->data_blk_size = udev->data_pages_per_blk * PAGE_SIZE;
- 	udev->dbi_thresh = 0; /* Default in Idle state */
- 
-@@ -2221,7 +2422,7 @@ static int tcmu_configure_device(struct se_device *dev)
- 
- 	info->mem[0].name = "tcm-user command & data buffer";
- 	info->mem[0].addr = (phys_addr_t)(uintptr_t)udev->mb_addr;
--	info->mem[0].size = data_size + MB_CMDR_SIZE;
-+	info->mem[0].size = data_size + zc_data_size + MB_CMDR_SIZE;
- 	info->mem[0].memtype = UIO_MEM_NONE;
- 
- 	info->irqcontrol = tcmu_irqcontrol;
 -- 
-2.14.4.44.g2045bb6
+2.35.1
 
