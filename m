@@ -2,191 +2,110 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F700C433EF
-	for <target-devel@archiver.kernel.org>; Tue, 22 Mar 2022 14:06:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C3A4C433F5
+	for <target-devel@archiver.kernel.org>; Tue, 22 Mar 2022 19:45:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233253AbiCVOIV (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 22 Mar 2022 10:08:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34832 "EHLO
+        id S231928AbiCVTq0 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 22 Mar 2022 15:46:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47202 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234885AbiCVOIU (ORCPT
+        with ESMTP id S231824AbiCVTq0 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 22 Mar 2022 10:08:20 -0400
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 839B533E23;
-        Tue, 22 Mar 2022 07:05:42 -0700 (PDT)
-Received: by mail-ed1-x52d.google.com with SMTP id h1so21786294edj.1;
-        Tue, 22 Mar 2022 07:05:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=HMkNdXcc2Lb8L9s/UykqzV2eTirXFa1SSmENhZLljCs=;
-        b=JQq/iovDe+OwIZAr+Ds/Ee/ejbRwf3QTpE77Yh3oZlfqZ9KZUrO+Z+j00ElQP2Uqsh
-         PNH4SnV11IoAD+rNVx17TT0AO3SRsCp9MMqFeeuS/OMHHs3x7LC/5ldxbpDdOgYvq8ch
-         0FMmMwNIU0MCLqUmZvuPHznb+Dq7Z5Ks1MiTEYapbaiGyXqW/nNEJSEO1idS9rVw299u
-         HWjZY1waHbuvz6slibYyGwsLePemCz+t1HMGBWJGbloG3KV/NGoo4NQZcDB0zMb5RaTL
-         TEOzkiMIuT4QHrzEfmOk4WoPe5pM/CygF+IPE0V0OgqzKl3wVwvgwtrERF5cIDxKGAP+
-         1d1w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=HMkNdXcc2Lb8L9s/UykqzV2eTirXFa1SSmENhZLljCs=;
-        b=P+EY8lt4yc1CaR86U/ixORmuwjohHGeBzFs1ujzihBfCVHTneAGCSBQLBp3KUJvRV1
-         gjbZeFUlRbtAedJCfUs+yEJQ0d93P3ZjjdlhVAPThx6yHcizk+U2hl+IyLwHcO6mkrP/
-         SWnnH5R4SLFGO2FC9xVFxU8R96DRjN3jdNErv4o7YV1Ax8/EAnhcvDkFggqakaFDOQp/
-         QkH592jfDDFM7N2tg9jAZ+Oshhah7tJHfUBeszqOgVli4WJxTlj93zga0RCoxqhb2JXr
-         1QhCxKw1C5Gq4IYfDbLAYRkLr/slgzNAIiWN4LD/Db/tWsbYclFqOF3nU1eZO2sGP09w
-         ynUA==
-X-Gm-Message-State: AOAM5307Ng16nl1LZa5II6iWtdWG5N+Ya8Saxi8DGvfDXb6iYlq8azuK
-        d7Ulkmform/mTFLwWXnecLI=
-X-Google-Smtp-Source: ABdhPJz4ZImkLvEfmzp0CwI9TtxvSqsbbfBRxp4A3H3cjClX5wDINCyjuZxD+S7aWsUFsNqxkv6qOw==
-X-Received: by 2002:aa7:cb0f:0:b0:416:201f:c64d with SMTP id s15-20020aa7cb0f000000b00416201fc64dmr28451611edt.48.1647957939430;
-        Tue, 22 Mar 2022 07:05:39 -0700 (PDT)
-Received: from [192.168.178.40] (ipbcc1cfad.dynamic.kabel-deutschland.de. [188.193.207.173])
-        by smtp.gmail.com with ESMTPSA id sa13-20020a1709076d0d00b006ce3ef8e1d4sm8124886ejc.31.2022.03.22.07.05.38
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Mar 2022 07:05:39 -0700 (PDT)
-Message-ID: <a1255a40-b112-918b-6fd7-fffbe56994b9@gmail.com>
-Date:   Tue, 22 Mar 2022 15:05:38 +0100
+        Tue, 22 Mar 2022 15:46:26 -0400
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EED5612746;
+        Tue, 22 Mar 2022 12:44:57 -0700 (PDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 22MIETk4020314;
+        Tue, 22 Mar 2022 19:44:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=D/llYRf7sWNuR1SFQcQBSJ9cnh5+1/bra0uVYjxdJ0U=;
+ b=gdVfwzNEplxra4aAf6ApoEpGEh35fa2KrtJxAnOFLhcDqk3bvo6c+nCK40U4q/fazqOL
+ cRyVS1FHOdh1yrgD1t+h5lcX4gFiiLVu1lSvLvD9L2c8tDDF/WvMTYcd49ocFhOFcgyb
+ +whp6AmrtRdk61rExtmevhWoRpMEpAd8/sZoFuHb5HLKHpZ+zxCv8XKIgnJoYC2fnFmO
+ gRxJxTAxngm60i5G+hQrs4OtYpJP547z7PElaORCZLnw/+HPqSOnDQYq6S2CBTh1KJ5I
+ O2EX2brFkjXkk7//z33+ze5hhFs936Qgch7Ixa50zhNewNkwGmn9BP05bShAnb7A8v9E 6g== 
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com [169.63.121.186])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 3eykjghv4s-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 22 Mar 2022 19:44:50 +0000
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+        by ppma03wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 22MJhaaK004040;
+        Tue, 22 Mar 2022 19:44:49 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+        by ppma03wdc.us.ibm.com with ESMTP id 3ew6t9eak7-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 22 Mar 2022 19:44:49 +0000
+Received: from b03ledav003.gho.boulder.ibm.com (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+        by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 22MJilgB11862288
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 22 Mar 2022 19:44:47 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id C7BBB6A05D;
+        Tue, 22 Mar 2022 19:44:47 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id C4C9D6A05A;
+        Tue, 22 Mar 2022 19:44:45 +0000 (GMT)
+Received: from li-37e927cc-2b02-11b2-a85c-931637a79255.ibm.com.com (unknown [9.160.85.177])
+        by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+        Tue, 22 Mar 2022 19:44:45 +0000 (GMT)
+From:   Tyrel Datwyler <tyreld@linux.ibm.com>
+To:     james.bottomley@hansenpartnership.com
+Cc:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, brking@linux.ibm.com,
+        target-devel@vger.kernel.org, mikecyr@linux.ibm.com,
+        Tyrel Datwyler <tyreld@linux.ibm.com>
+Subject: [PATCH] ibmvscsis: increase INITIAL_SRP_LIMIT to 1024
+Date:   Tue, 22 Mar 2022 12:44:43 -0700
+Message-Id: <20220322194443.678433-1-tyreld@linux.ibm.com>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [RFC 0/3] Add zero copy feature for tcmu
-Content-Language: en-US
-To:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
-        linux-mm@kvack.org, target-devel@vger.kernel.org,
-        linux-scsi@vger.kernel.org
-Cc:     linux-block@vger.kernel.org, xuyu@linux.alibaba.com
-References: <20220318095531.15479-1-xiaoguang.wang@linux.alibaba.com>
- <abbe51c4-873f-e96e-d421-85906689a55a@gmail.com>
- <36b5a8e5-c8e9-6a1f-834c-6bf9bf920f4c@linux.alibaba.com>
-From:   Bodo Stroesser <bostroesser@gmail.com>
-In-Reply-To: <36b5a8e5-c8e9-6a1f-834c-6bf9bf920f4c@linux.alibaba.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: Tt4t7U4EvHrZIUZI_42VShymKeJ0LX91
+X-Proofpoint-ORIG-GUID: Tt4t7U4EvHrZIUZI_42VShymKeJ0LX91
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.850,Hydra:6.0.425,FMLib:17.11.64.514
+ definitions=2022-03-22_07,2022-03-22_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 adultscore=0
+ clxscore=1011 suspectscore=0 mlxlogscore=999 bulkscore=0
+ lowpriorityscore=0 phishscore=0 spamscore=0 mlxscore=0 priorityscore=1501
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2202240000 definitions=main-2203220101
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 22.03.22 14:17, Xiaoguang Wang wrote:
-> hi,
-> 
->> On 18.03.22 10:55, Xiaoguang Wang wrote:
->>> The core idea to implement tcmu zero copy feature is really straight,
->>> which just maps block device io request's sgl pages to tcmu user space
->>> backstore, then we can avoid extra copy overhead between sgl pages and
->>> tcmu internal data area(which really impacts io throughput), please see
->>> https://www.spinics.net/lists/target-devel/msg21121.html for detailed
->>> info.
->>>
->>
->> Can you please tell us, how big the performance improvement is and
->> which configuration you are using for measurenments?
-> Sorry, I should have attached test results here. Initially I tried to use
-> tcmu user:fbo backstore to evaluate performance improvements, but
-> it only shows about 10%~15% io throughput improvement. Fio config
-> is numjobs=1, iodepth=8, bs=256k, which isn't very impressive. The
-> reason is that user:fbo backstore does buffered reads, it consumes most
-> of cpu.
-> 
-> Then I test this zero copy feature for our real workload, whose backstore
-> is a network program visiting distributed file system and it's 
-> multi-threaded.
-> For 4 job, 8 depth, 256 kb io size, the write throughput improves from
-> 3.6GB/s to 10GB/s.
+The adapter request_limit is hardcoded to be INITIAL_SRP_LIMIT which is
+currently an arbitrary value of 800. Increase this value to 1024 which
+better matches the characteristics of the typical IBMi Initiator that
+supports 32 LUNs and a queue depth of 32.
 
-Thank you for the info. Sounds promising.
+This change also has the secondary benefit of being a power of two as
+required by the kfifo API. Since, Commit ab9bb6318b09 ("Partially revert
+"kfifo: fix kfifo_alloc() and kfifo_init()"") the size of IU pool for
+each target has been rounded down to 512 when attempting to kfifo_init()
+those pools with the current request_limit size of 800.
 
-What fabric are you using? iSCSI?
-What HW is your target running on?
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+---
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> 
-> Regards,
-> Xiaoguang Wang
-> 
->>
->>> Initially I use remap_pfn_range or vm_insert_pages to map sgl pages to
->>> user space, but both of them have limits:
->>> 1)  Use vm_insert_pages
->>> which is like tcp getsockopt(TCP_ZEROCOPY_RECEIVE), but there're two
->>> restrictions:
->>>    1. anonymous pages can not be mmaped to user spacea.
->>>      ==> vm_insert_pages
->>>      ====> insert_pages
->>>      ======> insert_page_in_batch_locked
->>>      ========> validate_page_before_insert
->>>      In validate_page_before_insert(), it shows that anonymous page 
->>> can not
->>>      be mapped to use space, we know that if issuing direct io to block
->>>      device, io request's sgl pages mostly comes from anonymous page.
->>>          if (PageAnon(page) || PageSlab(page) || page_has_type(page))
->>>              return -EINVAL;
->>>      I'm not sure why there is such restriction? for safety reasons ?
->>>
->>>    2. warn_on triggered in __folio_mark_dirty
->>>      When calling zap_page_range in tcmu user space backstore when io
->>>      completes, there is a warn_on triggered in __folio_mark_dirty:
->>>         if (folio->mapping) {   /* Race with truncate? */
->>>             WARN_ON_ONCE(warn && !folio_test_uptodate(folio));
->>>
->>>      I'm not familiar with folio yet, but I think the reason is that 
->>> when
->>>      issuing a buffered read to tcmu block device, it's page cache 
->>> mapped
->>>      to user space, backstore write this page and pte will be 
->>> dirtied. but
->>>      initially it's newly allocated, hence page_update flag not set.
->>>      In zap_pte_range(), there is such codes:
->>>         if (!PageAnon(page)) {
->>>             if (pte_dirty(ptent)) {
->>>                 force_flush = 1;
->>>                 set_page_dirty(page);
->>>             }
->>>     So this warn_on is reasonable.
->>>     Indeed what I want is just to map io request sgl pages to tcmu user
->>>     space backstore, then backstore can read or write data to mapped 
->>> area,
->>>     I don't want to care about page or its mapping status, so I 
->>> choose to
->>>     use remap_pfn_range.
->>>
->>> 2) Use remap_pfn_range()
->>>    remap_pfn_range works well, but it has somewhat obvious overhead. 
->>> For a
->>>    512kb io request, it has 128 pages, and usually this 128 page's 
->>> pfn are
->>>    not consecutive, so in worst cases, for a 512kb io request, I'd 
->>> need to
->>>    issue 128 calls to remap_pfn_range, it's horrible. And in 
->>> remap_pfn_range,
->>>    if x86 page attribute table feature is enabled, lookup_memtype 
->>> called by
->>>    track_pfn_remap() also introduces obvious overhead.
->>>
->>> Finally in order to solve these problems, Xu Yu helps to implment a new
->>> helper, which accepts an array of pages as parameter, anonymous pages 
->>> can
->>> be mapped to user space, pages would be treated as special 
->>> pte(pte_special
->>> returns true), so vm_normal_page returns NULL, above folio warn_on won't
->>> trigger.
->>>
->>> Thanks.
->>>
->>> Xiaoguang Wang (2):
->>>    mm: export zap_page_range()
->>>    scsi: target: tcmu: Support zero copy
->>>
->>> Xu Yu (1):
->>>    mm/memory.c: introduce vm_insert_page(s)_mkspecial
->>>
->>>   drivers/target/target_core_user.c | 257 
->>> +++++++++++++++++++++++++++++++++-----
->>>   include/linux/mm.h                |   2 +
->>>   mm/memory.c                       | 183 +++++++++++++++++++++++++++
->>>   3 files changed, 414 insertions(+), 28 deletions(-)
->>>
-> 
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index 61f06f6885a5..89b9fbce7488 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -36,7 +36,7 @@
+ 
+ #define IBMVSCSIS_VERSION	"v0.2"
+ 
+-#define	INITIAL_SRP_LIMIT	800
++#define	INITIAL_SRP_LIMIT	1024
+ #define	DEFAULT_MAX_SECTORS	256
+ #define MAX_TXU			1024 * 1024
+ 
+-- 
+2.35.1
+
