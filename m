@@ -2,57 +2,56 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 550B5C433EF
-	for <target-devel@archiver.kernel.org>; Wed, 23 Mar 2022 16:49:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7625C433EF
+	for <target-devel@archiver.kernel.org>; Thu, 24 Mar 2022 07:27:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245540AbiCWQue (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 23 Mar 2022 12:50:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37550 "EHLO
+        id S1348536AbiCXH2p (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 24 Mar 2022 03:28:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45898 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245626AbiCWQu1 (ORCPT
+        with ESMTP id S232088AbiCXH2o (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 23 Mar 2022 12:50:27 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAD9EDFAF;
-        Wed, 23 Mar 2022 09:48:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
-        :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=W+s1QtlhSjsq/MYdWCk5+G4u/fvPQ1sjexrZPDlle7U=; b=NVmfU9gN6D2xiHnQorCyLErlMs
-        U75m/ZIPXG+GbT5eleEf1PGKH8jyEgCt7hHt6Kj6DDP5mPL4JdRCHzDp4q3WnPUE42lRQwx8wUve8
-        Nc1cqhvX2QMSUAStiGtWIwtscERy7uYA3aWpSMUPG5u2JU6+XIwI9Cn4XMdYRuAcfPRwmHpsNedJj
-        curK+g8VFcoyQi9NnGPBVLuVswoA2p83HqPwDxz7drPWsJb0V0h+YpD1dOS/Avce/hdHq4Nd4EmBb
-        xIFn2kIMDbXUs5oJLcv75XN0lGed7jWLzH4dACczYTEXegoxA7br19xj1b2W+1INkSWlTlK5VpOgt
-        1pUlS8hQ==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nX4A5-00EIc6-EX; Wed, 23 Mar 2022 16:48:41 +0000
-Date:   Wed, 23 Mar 2022 09:48:41 -0700
-From:   Christoph Hellwig <hch@infradead.org>
-To:     David Hildenbrand <david@redhat.com>
-Cc:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
-        linux-mm@kvack.org, target-devel@vger.kernel.org,
+        Thu, 24 Mar 2022 03:28:44 -0400
+Received: from out30-130.freemail.mail.aliyun.com (out30-130.freemail.mail.aliyun.com [115.124.30.130])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6986998F63;
+        Thu, 24 Mar 2022 00:27:12 -0700 (PDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R111e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04423;MF=xiaoguang.wang@linux.alibaba.com;NM=1;PH=DS;RN=7;SR=0;TI=SMTPD_---0V83t.bs_1648106829;
+Received: from 30.225.28.175(mailfrom:xiaoguang.wang@linux.alibaba.com fp:SMTPD_---0V83t.bs_1648106829)
+          by smtp.aliyun-inc.com(127.0.0.1);
+          Thu, 24 Mar 2022 15:27:10 +0800
+Message-ID: <c26b28c1-b9d8-7570-b631-8cdda0f9de73@linux.alibaba.com>
+Date:   Thu, 24 Mar 2022 15:27:08 +0800
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
+ Gecko/20100101 Thunderbird/91.7.0
+Subject: Re: [RFC 1/3] mm/memory.c: introduce vm_insert_page(s)_mkspecial
+Content-Language: en-US
+To:     Christoph Hellwig <hch@infradead.org>
+Cc:     linux-mm@kvack.org, target-devel@vger.kernel.org,
         linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
         xuyu@linux.alibaba.com, bostroesser@gmail.com
-Subject: Re: [RFC 2/3] mm: export zap_page_range()
-Message-ID: <YjtPabOWZrbpSZV2@infradead.org>
 References: <20220318095531.15479-1-xiaoguang.wang@linux.alibaba.com>
- <20220318095531.15479-3-xiaoguang.wang@linux.alibaba.com>
- <a37e9ba2-354b-0b75-cb05-bc730cb30151@redhat.com>
- <37d6b269-dd9d-dbd1-74b1-4191cc3d4bf9@linux.alibaba.com>
- <019a2159-57d6-c330-53c5-38458b6b5ec9@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <019a2159-57d6-c330-53c5-38458b6b5ec9@redhat.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+ <20220318095531.15479-2-xiaoguang.wang@linux.alibaba.com>
+ <YjtOpf1bf0qH87HD@infradead.org>
+From:   Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
+In-Reply-To: <YjtOpf1bf0qH87HD@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Mar 22, 2022 at 02:08:13PM +0100, David Hildenbrand wrote:
-> Reason is that we don't want anybody to blindly zap_page_range() within
-> random VMAs from a kernel module.
+hi,
 
-Not just that, but there is no business for modules doing this at all.
-These kinds of VM hooks for random drivers are not a good idea.
+> I relaly don't think we should add this amount of overhead to the
+> core VM for a (relatively) irrelevant driver.
+OK, but as what I have described in cover letter, both vm_insert_pages and
+remap_pfn_range have performance or usage limits. Do you know any better
+method to map block device io request's sgl pages to user space? I think 
+block
+device backend implemented in use space will benefit from this feature, 
+thanks.
+
+Regards,
+Xiaoguang Wang
