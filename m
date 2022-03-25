@@ -2,88 +2,91 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CAF6C433EF
-	for <target-devel@archiver.kernel.org>; Thu, 24 Mar 2022 09:16:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3943AC433EF
+	for <target-devel@archiver.kernel.org>; Fri, 25 Mar 2022 09:07:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349138AbiCXJSY (ORCPT
+        id S1350483AbiCYJIe (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 24 Mar 2022 05:18:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49646 "EHLO
+        Fri, 25 Mar 2022 05:08:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40468 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229863AbiCXJSX (ORCPT
+        with ESMTP id S229940AbiCYJId (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 24 Mar 2022 05:18:23 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7401E9D4FD
-        for <target-devel@vger.kernel.org>; Thu, 24 Mar 2022 02:16:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1648113411;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=kxIA+CLFwcc8TqwMm37/uOtvk1/QQRU8QzWc86/Fkpw=;
-        b=Pkga9J0yl/+d5KxZyuDfSSUfzF9R1sJJyvXBuQMkKDNFRw7YKj8nqdB3UgmAOFikk3wtYR
-        QPg0OV3HFX2nOSxN1WmEqeEVv7/zOkqE1s8rFbciChBU16kwskpFiExj8Ol/C/Wb/QyMxJ
-        NhyZ3bwCYU/gxhAjlcfl7v9FAuZRJAk=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-286-LUQhrbZgOFe5H5F8ssxHOg-1; Thu, 24 Mar 2022 05:16:50 -0400
-X-MC-Unique: LUQhrbZgOFe5H5F8ssxHOg-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com [10.11.54.3])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id B4B79805A30;
-        Thu, 24 Mar 2022 09:16:49 +0000 (UTC)
-Received: from T590 (ovpn-8-20.pek2.redhat.com [10.72.8.20])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 384BA112132C;
-        Thu, 24 Mar 2022 09:16:41 +0000 (UTC)
-Date:   Thu, 24 Mar 2022 17:16:36 +0800
-From:   Ming Lei <ming.lei@redhat.com>
-To:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-Cc:     linux-mm@kvack.org, target-devel@vger.kernel.org,
-        linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
-        xuyu@linux.alibaba.com, bostroesser@gmail.com
-Subject: Re: [RFC 2/3] mm: export zap_page_range()
-Message-ID: <Yjw29HcA2JL41aA6@T590>
-References: <20220318095531.15479-1-xiaoguang.wang@linux.alibaba.com>
- <20220318095531.15479-3-xiaoguang.wang@linux.alibaba.com>
+        Fri, 25 Mar 2022 05:08:33 -0400
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5310CD33A;
+        Fri, 25 Mar 2022 02:06:59 -0700 (PDT)
+Received: by mail-ed1-x52d.google.com with SMTP id k10so8485236edj.2;
+        Fri, 25 Mar 2022 02:06:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=VhdVUAWHXjzUGq4oP9g7su55g+qs75mizf7QQXpvJEw=;
+        b=euZVYebCE4XJ6h2KVEIZN/sxeNdWBhCLQ41F3VbBi73AFa8s6umon5UZl9YlT8u9vD
+         fp5poY35XXFvreG/fDo9a+X3woO+AKZa38cO0DSYqK+Dg+LmytrvB9q4rUXqVhP0E0qK
+         bWQTPeb835PslboqVCKK8yVwr6+RZXn+Pcj5irL12oEbLAKjT/cPXQAmCp4Uz1Wu1Kjg
+         +tffZ3ZZLqEIRodZ7+iJuewi0Age1X4soOIbsnvEAit3U5iUNsTTEoz4k4QfSfCdqEHh
+         yH+VoYrCj3wY1l5+lrFZJAzocKld8uAYeFiOVipvXPyK+TigtwMG/UQDqaT08hNZyR6C
+         HZIg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=VhdVUAWHXjzUGq4oP9g7su55g+qs75mizf7QQXpvJEw=;
+        b=es+MrmEUR4sGbkxC2OWDgyCL+qq+RKcAA4YuZVLgT4RISul2PO3ataL5PF849JifjP
+         JEeRWdlxw5mIUH1/dvURJn+eSc96T5XDY4/nEzP6w48NvB1WMBXaiqu6wRSuZ1+vqemS
+         g5sbd5QnhydkSOVIci/5sJB50sJuspeICtbmOTHEHNorNOZ7p7hlIFh+b/iUVSb95kiP
+         J9Wsu1tFAMRgHG8o1iI+pAzWwvHR0l0elY8D8F2SXxCBvRTWet+k+dzVm1WWOuQUYhQb
+         EaKTxqcqTvlPVKstERTCVs1F9tNTCUQiCiYEQOYQowwcu79rrmXxYv5ED+2uHy6ffKrW
+         sRQg==
+X-Gm-Message-State: AOAM532NasESIedtkyxqnHrWKwzRKMrEJJzVgkFGnjhufBjUGfJj6s4c
+        eT/xbNSEs3DM4hK3UEpmk98=
+X-Google-Smtp-Source: ABdhPJx01pPWcYHPsWa/D2UX3hyEAgDAM3v69gqG2zc9S5TZfdLa41DCwYMxLs2+YR31sY0zcWOsoQ==
+X-Received: by 2002:a05:6402:4315:b0:419:2e38:ab8f with SMTP id m21-20020a056402431500b004192e38ab8fmr11628871edc.250.1648199218448;
+        Fri, 25 Mar 2022 02:06:58 -0700 (PDT)
+Received: from [192.168.178.40] (ipbcc1cfad.dynamic.kabel-deutschland.de. [188.193.207.173])
+        by smtp.gmail.com with ESMTPSA id e9-20020a170906c00900b006d4a45869basm2087116ejz.199.2022.03.25.02.06.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 25 Mar 2022 02:06:58 -0700 (PDT)
+Message-ID: <d15369a8-7a98-1b1a-b950-40d78ed5e9ec@gmail.com>
+Date:   Fri, 25 Mar 2022 10:06:57 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220318095531.15479-3-xiaoguang.wang@linux.alibaba.com>
-X-Scanned-By: MIMEDefang 2.78 on 10.11.54.3
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [RFC 3/3] scsi: target: tcmu: Support zero copy
+Content-Language: en-US
+To:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
+        linux-mm@kvack.org, target-devel@vger.kernel.org,
+        linux-scsi@vger.kernel.org
+Cc:     linux-block@vger.kernel.org, xuyu@linux.alibaba.com
+References: <20220318095531.15479-1-xiaoguang.wang@linux.alibaba.com>
+ <20220318095531.15479-4-xiaoguang.wang@linux.alibaba.com>
+ <94b00e49-5efb-658f-3142-42e7cc551d19@gmail.com>
+ <57da7e54-f582-3b10-52a9-5166adacf4e6@linux.alibaba.com>
+From:   Bodo Stroesser <bostroesser@gmail.com>
+In-Reply-To: <57da7e54-f582-3b10-52a9-5166adacf4e6@linux.alibaba.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Fri, Mar 18, 2022 at 05:55:30PM +0800, Xiaoguang Wang wrote:
-> Module target_core_user will use it to implement zero copy feature.
+
+
+On 23.03.22 15:33, Xiaoguang Wang wrote:
+
+... snip ...
+
+>> What happens if the tcmu device currently is not open / mapped?
+> I'm not sure how it will happen.
+> But we may check whether udev->vma has a valid value. If yes,
+> it'll enter tcmu_cmd_zerocopy_map().
 > 
-> Signed-off-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-> ---
->  mm/memory.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 1f745e4d11c2..9974d0406dad 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1664,6 +1664,7 @@ void zap_page_range(struct vm_area_struct *vma, unsigned long start,
->  	mmu_notifier_invalidate_range_end(&range);
->  	tlb_finish_mmu(&tlb);
->  }
-> +EXPORT_SYMBOL_GPL(zap_page_range);
 
-BTW, what is the counter part api of remap_pfn_range() for serving the
-unmap? Or does it really need to unmap the vm space for this zero-copy
-case?
+Yeah, but what I also wanted to suggest is, that if userspace maps
+the uio device while zero copy cmds already being in the ring,
+you have to iterate over those cmds and populate the mapping.
 
-If it isn't necessary to unmap, maybe remap_pfn_range() is faster than
-vm_insert_page(s)_mkspecial + zap_page_range() since zap_page_range()
-looks a bit heavy.
-
-
-Thanks,
-Ming
-
+Bodo
