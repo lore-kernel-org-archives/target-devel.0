@@ -2,33 +2,33 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19F86C46467
-	for <target-devel@archiver.kernel.org>; Wed,  6 Apr 2022 09:28:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B868C4332F
+	for <target-devel@archiver.kernel.org>; Wed,  6 Apr 2022 09:28:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1386579AbiDFJ1r (ORCPT
+        id S1389846AbiDFJ1u (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 6 Apr 2022 05:27:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53170 "EHLO
+        Wed, 6 Apr 2022 05:27:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53082 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1377068AbiDFJDb (ORCPT
+        with ESMTP id S1451870AbiDFJEr (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 6 Apr 2022 05:03:31 -0400
+        Wed, 6 Apr 2022 05:04:47 -0400
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78B2748F731;
-        Tue,  5 Apr 2022 23:06:38 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27510214057;
+        Tue,  5 Apr 2022 23:07:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
         :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=d3sJ7l3Ux9SIWrKAiUmyBkG0qOnuM50cLv7WOo5iKv8=; b=U2k/JlDotMbinK7/JDeqSo6/XP
-        Bs6ySJFC9su858GHk30OJaJoPB8rDR3fvqdgMURXO1OQquTgsv4KE+byWZoWhPXIJrPHFRYb57htY
-        5kZ+Tj1EaeX24yHzNVPsnH8vK+56pifogbah/qUjzUOJyGboKhFS3X1qob8eCfNE75hF6DRia35U9
-        qUd69uVjtYbl+AqrDw3m1Y45lEPmXYcMS6cMXqiqEpwL10Cir9JTLmDF/dQj22I6ypwBu1ciZGVg0
-        rsksxrk+RgNjFNzHV8WMNg8RMAo9CfrbuDS6Y2JIjcM3aNVVcHFf8/GoINpy91AK7PBW/D671mulY
-        8/TSMjOw==;
+        bh=eypoqjBCbHteIGJMjEE77faduCfiNIsAQ0ydQeu7OQ0=; b=VptJyLJo1YdsSUby4Fd8E+r4Wf
+        u75rPubQZZ/yn7kcXtNA66cq//o6wORmNO306ozoa8JQt9/98VP+qYdEokdi0gKerj4PE3OuPTu8Q
+        h26M8bnuUyy+YQCYjo1RqpA3/aCzFHGcLsWag2ZHixgBhRcZoEIlcW3opNjmON+bZ+OgC/YI0u6sz
+        aGLKxbaAYtZUWCf6s02YkSBuNI+7SEUA0M0G1MZlz1sCKQq4Roo8U5n9rz4bFVVcw6Xtsem6nRg0D
+        kLp1HHY2R8qfLsl/g0pBVddgXjUpubdbXmsxIgH4DU7KvKflDKEXJplNCCWhXhcgX+rKhGC3+ptTE
+        sV6rOXrg==;
 Received: from 213-225-3-188.nat.highway.a1.net ([213.225.3.188] helo=localhost)
         by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nbyoK-003vcM-Lw; Wed, 06 Apr 2022 06:06:33 +0000
+        id 1nbyow-003w6T-7D; Wed, 06 Apr 2022 06:07:11 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
 Cc:     dm-devel@redhat.com, linux-xfs@vger.kernel.org,
@@ -45,9 +45,9 @@ Cc:     dm-devel@redhat.com, linux-xfs@vger.kernel.org,
         cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
         linux-nilfs@vger.kernel.org, ntfs3@lists.linux.dev,
         ocfs2-devel@oss.oracle.com, linux-mm@kvack.org
-Subject: [PATCH 19/27] block: remove queue_discard_alignment
-Date:   Wed,  6 Apr 2022 08:05:08 +0200
-Message-Id: <20220406060516.409838-20-hch@lst.de>
+Subject: [PATCH 27/27] direct-io: remove random prefetches
+Date:   Wed,  6 Apr 2022 08:05:16 +0200
+Message-Id: <20220406060516.409838-28-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20220406060516.409838-1-hch@lst.de>
 References: <20220406060516.409838-1-hch@lst.de>
@@ -58,48 +58,66 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Just use bdev_alignment_offset in disk_discard_alignment_show instead.
-That helpers is the same except for an always false branch that doesn't
-matter in this slow path.
+Randomly poking into block device internals for manual prefetches isn't
+exactly a very maintainable thing to do.  And none of the performance
+criticil direct I/O implementations still use this library function
+anyway, so just drop it.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- block/genhd.c          | 2 +-
- include/linux/blkdev.h | 8 --------
- 2 files changed, 1 insertion(+), 9 deletions(-)
+ fs/direct-io.c | 32 ++++----------------------------
+ 1 file changed, 4 insertions(+), 28 deletions(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index 712031ce19070..36532b9318419 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -1019,7 +1019,7 @@ static ssize_t disk_discard_alignment_show(struct device *dev,
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index aef06e607b405..840752006f601 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -1115,11 +1115,10 @@ static inline int drop_refcount(struct dio *dio)
+  * individual fields and will generate much worse code. This is important
+  * for the whole file.
+  */
+-static inline ssize_t
+-do_blockdev_direct_IO(struct kiocb *iocb, struct inode *inode,
+-		      struct block_device *bdev, struct iov_iter *iter,
+-		      get_block_t get_block, dio_iodone_t end_io,
+-		      dio_submit_t submit_io, int flags)
++ssize_t __blockdev_direct_IO(struct kiocb *iocb, struct inode *inode,
++		struct block_device *bdev, struct iov_iter *iter,
++		get_block_t get_block, dio_iodone_t end_io,
++		dio_submit_t submit_io, int flags)
  {
- 	struct gendisk *disk = dev_to_disk(dev);
- 
--	return sprintf(buf, "%d\n", queue_discard_alignment(disk->queue));
-+	return sprintf(buf, "%d\n", bdev_alignment_offset(disk->part0));
+ 	unsigned i_blkbits = READ_ONCE(inode->i_blkbits);
+ 	unsigned blkbits = i_blkbits;
+@@ -1334,29 +1333,6 @@ do_blockdev_direct_IO(struct kiocb *iocb, struct inode *inode,
+ 	kmem_cache_free(dio_cache, dio);
+ 	return retval;
  }
- 
- static ssize_t diskseq_show(struct device *dev,
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 0a1795ac26275..5a9b7aeda010b 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -1253,14 +1253,6 @@ bdev_zone_write_granularity(struct block_device *bdev)
- 
- int bdev_alignment_offset(struct block_device *bdev);
- 
--static inline int queue_discard_alignment(const struct request_queue *q)
--{
--	if (q->limits.discard_misaligned)
--		return -1;
 -
--	return q->limits.discard_alignment;
+-ssize_t __blockdev_direct_IO(struct kiocb *iocb, struct inode *inode,
+-			     struct block_device *bdev, struct iov_iter *iter,
+-			     get_block_t get_block,
+-			     dio_iodone_t end_io, dio_submit_t submit_io,
+-			     int flags)
+-{
+-	/*
+-	 * The block device state is needed in the end to finally
+-	 * submit everything.  Since it's likely to be cache cold
+-	 * prefetch it here as first thing to hide some of the
+-	 * latency.
+-	 *
+-	 * Attempt to prefetch the pieces we likely need later.
+-	 */
+-	prefetch(&bdev->bd_disk->part_tbl);
+-	prefetch(bdev->bd_disk->queue);
+-	prefetch((char *)bdev->bd_disk->queue + SMP_CACHE_BYTES);
+-
+-	return do_blockdev_direct_IO(iocb, inode, bdev, iter, get_block,
+-				     end_io, submit_io, flags);
 -}
 -
- static inline int queue_limit_discard_alignment(struct queue_limits *lim, sector_t sector)
- {
- 	unsigned int alignment, granularity, offset;
+ EXPORT_SYMBOL(__blockdev_direct_IO);
+ 
+ static __init int dio_init(void)
 -- 
 2.30.2
 
