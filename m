@@ -2,51 +2,55 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F271C4167E
-	for <target-devel@archiver.kernel.org>; Wed,  6 Apr 2022 09:28:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D126FC433FE
+	for <target-devel@archiver.kernel.org>; Wed,  6 Apr 2022 09:28:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355545AbiDFJ1j (ORCPT
+        id S1357124AbiDFJ1l (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 6 Apr 2022 05:27:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57850 "EHLO
+        Wed, 6 Apr 2022 05:27:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52816 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1580556AbiDFJVA (ORCPT
+        with ESMTP id S1356308AbiDFJDF (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 6 Apr 2022 05:21:00 -0400
+        Wed, 6 Apr 2022 05:03:05 -0400
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F70E4BEF33;
-        Tue,  5 Apr 2022 23:12:59 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C8C948F716;
+        Tue,  5 Apr 2022 23:06:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
         :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=WNO6sTXUX6Lx7qkV5Fa2+br/k0Bo8EgFlPApwDJnToY=; b=xn6wfwtVXlctp/6je7N/z3ay9E
-        vGgbs23+aruJ8Ua5VzorhXNI4nQMolw+5pKtcwBtlsPC54vTW3zS5Q3vVEOmi7hKNAeRnjCP5S2oc
-        MdDvUsYPr0xq+wTKucFCjIxAE2E0ovjCPpwm1eh2GygBnaD4y9og20yZkzsGTMXU5HfLXABk971aR
-        Hdpb4uVi+dtKTlTRcn2LAafiR1urZ/VfKUkW7R7a6J/8GstZI5Jz5EZ5CIp2kNLxmJRI4H15ddcHA
-        0hOoIrQx8+/15ngTv3AMezRv8D04WX+GJCeB5To1CSL5+vtqbrpg3UdV9n/ChPELmDeYtNeQueOc4
-        OCzyTuew==;
+        bh=6QVq+WRTbBiZAGVnN7IJPNcrDbkE5gjblRwCavAMwLY=; b=iYaG9VkUCm4D5TSOODWzio+3DR
+        ytZ5+1QAyty9m+UBWG1IlrNmfBUfcieyEgGbnGvY+TeziydmDWxyUyplf08DqEXPrSA6ogGWlWBdc
+        eN+NdSm2eI+GluAazic6ThRfk6EDWhUlwAFB1sgAiTcA0zTyVy4xoxDN7lNirp1PXWPDjCYKA8P/e
+        a8Slx22YjqPgPpaGfnOLHtBTxMkfAK1Qngg3xOt/ieRRfzMYcYXFMoAX7pejVqOX04vm+E3B6daNl
+        No56Cgl46IA8J2O0CAKFddZqGLAK02p4IZLzzaiPdfWcvculhrlYOGpmXilPV0+0lJWjaiLUMp8xe
+        qYLNQzvg==;
 Received: from 213-225-3-188.nat.highway.a1.net ([213.225.3.188] helo=localhost)
         by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nbyuQ-003zQR-Ag; Wed, 06 Apr 2022 06:12:51 +0000
+        id 1nbynq-003v9s-8N; Wed, 06 Apr 2022 06:06:02 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
-Cc:     Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
-        Song Liu <song@kernel.org>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Josef Bacik <josef@toxicpanda.com>,
-        David Sterba <dsterba@suse.com>,
-        Phillip Lougher <phillip@squashfs.org.uk>,
-        linux-block@vger.kernel.org, dm-devel@redhat.com,
-        linux-kernel@vger.kernel.org, linux-bcache@vger.kernel.org,
-        linux-raid@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-btrfs@vger.kernel.org
-Subject: [PATCH 5/5] pktcdvd: stop using bio_reset
-Date:   Wed,  6 Apr 2022 08:12:28 +0200
-Message-Id: <20220406061228.410163-6-hch@lst.de>
+Cc:     dm-devel@redhat.com, linux-xfs@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, linux-um@lists.infradead.org,
+        linux-block@vger.kernel.org, drbd-dev@lists.linbit.com,
+        nbd@other.debian.org, ceph-devel@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        xen-devel@lists.xenproject.org, linux-bcache@vger.kernel.org,
+        linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-ext4@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
+        cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
+        linux-nilfs@vger.kernel.org, ntfs3@lists.linux.dev,
+        ocfs2-devel@oss.oracle.com, linux-mm@kvack.org
+Subject: [PATCH 11/27] block: add a bdev_write_cache helper
+Date:   Wed,  6 Apr 2022 08:05:00 +0200
+Message-Id: <20220406060516.409838-12-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20220406061228.410163-1-hch@lst.de>
-References: <20220406061228.410163-1-hch@lst.de>
+In-Reply-To: <20220406060516.409838-1-hch@lst.de>
+References: <20220406060516.409838-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
@@ -54,105 +58,100 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Just initialize the bios on-demand.
+Add a helper to check the write cache flag based on the block_device
+instead of having to poke into the block layer internal request_queue.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/block/pktcdvd.c | 25 +++++++++----------------
- 1 file changed, 9 insertions(+), 16 deletions(-)
+ drivers/block/rnbd/rnbd-srv.c       | 2 +-
+ drivers/block/xen-blkback/xenbus.c  | 2 +-
+ drivers/target/target_core_iblock.c | 8 ++------
+ fs/btrfs/disk-io.c                  | 3 +--
+ include/linux/blkdev.h              | 5 +++++
+ 5 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index 4a5b8730133c5..f270080f14786 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -525,7 +525,6 @@ static struct packet_data *pkt_alloc_packet_data(int frames)
- 	pkt->w_bio = bio_kmalloc(frames, GFP_KERNEL);
- 	if (!pkt->w_bio)
- 		goto no_bio;
--	bio_init(pkt->w_bio, NULL, pkt->w_bio->bi_inline_vecs, frames, 0);
+diff --git a/drivers/block/rnbd/rnbd-srv.c b/drivers/block/rnbd/rnbd-srv.c
+index f04df6294650b..f8cc3c5fecb4b 100644
+--- a/drivers/block/rnbd/rnbd-srv.c
++++ b/drivers/block/rnbd/rnbd-srv.c
+@@ -558,7 +558,7 @@ static void rnbd_srv_fill_msg_open_rsp(struct rnbd_msg_open_rsp *rsp,
+ 	rsp->secure_discard =
+ 		cpu_to_le16(rnbd_dev_get_secure_discard(rnbd_dev));
+ 	rsp->cache_policy = 0;
+-	if (test_bit(QUEUE_FLAG_WC, &q->queue_flags))
++	if (bdev_write_cache(rnbd_dev->bdev))
+ 		rsp->cache_policy |= RNBD_WRITEBACK;
+ 	if (blk_queue_fua(q))
+ 		rsp->cache_policy |= RNBD_FUA;
+diff --git a/drivers/block/xen-blkback/xenbus.c b/drivers/block/xen-blkback/xenbus.c
+index f09040435e2e5..8b691fe50475f 100644
+--- a/drivers/block/xen-blkback/xenbus.c
++++ b/drivers/block/xen-blkback/xenbus.c
+@@ -517,7 +517,7 @@ static int xen_vbd_create(struct xen_blkif *blkif, blkif_vdev_t handle,
+ 		vbd->type |= VDISK_REMOVABLE;
  
- 	for (i = 0; i < frames / FRAMES_PER_PAGE; i++) {
- 		pkt->pages[i] = alloc_page(GFP_KERNEL|__GFP_ZERO);
-@@ -537,26 +536,20 @@ static struct packet_data *pkt_alloc_packet_data(int frames)
- 	bio_list_init(&pkt->orig_bios);
+ 	q = bdev_get_queue(bdev);
+-	if (q && test_bit(QUEUE_FLAG_WC, &q->queue_flags))
++	if (bdev_write_cache(bdev))
+ 		vbd->flush_support = true;
  
- 	for (i = 0; i < frames; i++) {
--		struct bio *bio = bio_kmalloc(1, GFP_KERNEL);
--		if (!bio)
-+		pkt->r_bios[i] = bio_kmalloc(1, GFP_KERNEL);
-+		if (!pkt->r_bios[i])
- 			goto no_rd_bio;
--		bio_init(bio, NULL, bio->bi_inline_vecs, 1, 0);
--		pkt->r_bios[i] = bio;
- 	}
+ 	if (q && blk_queue_secure_erase(q))
+diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
+index b41ee5c3b5b82..03013e85ffc03 100644
+--- a/drivers/target/target_core_iblock.c
++++ b/drivers/target/target_core_iblock.c
+@@ -737,7 +737,7 @@ iblock_execute_rw(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 		if (test_bit(QUEUE_FLAG_FUA, &q->queue_flags)) {
+ 			if (cmd->se_cmd_flags & SCF_FUA)
+ 				opf |= REQ_FUA;
+-			else if (!test_bit(QUEUE_FLAG_WC, &q->queue_flags))
++			else if (!bdev_write_cache(ib_dev->ibd_bd))
+ 				opf |= REQ_FUA;
+ 		}
+ 	} else {
+@@ -886,11 +886,7 @@ iblock_parse_cdb(struct se_cmd *cmd)
  
- 	return pkt;
- 
- no_rd_bio:
--	for (i = 0; i < frames; i++) {
--		if (pkt->r_bios[i])
--			bio_uninit(pkt->r_bios[i]);
-+	for (i = 0; i < frames; i++)
- 		kfree(pkt->r_bios[i]);
--	}
- no_page:
- 	for (i = 0; i < frames / FRAMES_PER_PAGE; i++)
- 		if (pkt->pages[i])
- 			__free_page(pkt->pages[i]);
--	bio_uninit(pkt->w_bio);
- 	kfree(pkt->w_bio);
- no_bio:
- 	kfree(pkt);
-@@ -571,13 +564,10 @@ static void pkt_free_packet_data(struct packet_data *pkt)
+ static bool iblock_get_write_cache(struct se_device *dev)
  {
- 	int i;
- 
--	for (i = 0; i < pkt->frames; i++) {
--		bio_uninit(pkt->r_bios[i]);
-+	for (i = 0; i < pkt->frames; i++)
- 		kfree(pkt->r_bios[i]);
--	}
- 	for (i = 0; i < pkt->frames / FRAMES_PER_PAGE; i++)
- 		__free_page(pkt->pages[i]);
--	bio_uninit(pkt->w_bio);
- 	kfree(pkt->w_bio);
- 	kfree(pkt);
+-	struct iblock_dev *ib_dev = IBLOCK_DEV(dev);
+-	struct block_device *bd = ib_dev->ibd_bd;
+-	struct request_queue *q = bdev_get_queue(bd);
+-
+-	return test_bit(QUEUE_FLAG_WC, &q->queue_flags);
++	return bdev_write_cache(IBLOCK_DEV(dev)->ibd_bd);
  }
-@@ -952,6 +942,7 @@ static void pkt_end_io_read(struct bio *bio)
  
- 	if (bio->bi_status)
- 		atomic_inc(&pkt->io_errors);
-+	bio_uninit(bio);
- 	if (atomic_dec_and_test(&pkt->io_wait)) {
- 		atomic_inc(&pkt->run_sm);
- 		wake_up(&pd->wqueue);
-@@ -969,6 +960,7 @@ static void pkt_end_io_packet_write(struct bio *bio)
+ static const struct target_backend_ops iblock_ops = {
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index b30309f187cf0..d80adee32128d 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -4247,8 +4247,7 @@ static void write_dev_flush(struct btrfs_device *device)
+ 	 * of simplicity, since this is a debug tool and not meant for use in
+ 	 * non-debug builds.
+ 	 */
+-	struct request_queue *q = bdev_get_queue(device->bdev);
+-	if (!test_bit(QUEUE_FLAG_WC, &q->queue_flags))
++	if (bdev_write_cache(device->bdev))
+ 		return;
+ #endif
  
- 	pd->stats.pkt_ended++;
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 3a9578e14a6b0..807a49aa5a27a 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -1331,6 +1331,11 @@ static inline bool bdev_nonrot(struct block_device *bdev)
+ 	return blk_queue_nonrot(bdev_get_queue(bdev));
+ }
  
-+	bio_uninit(bio);
- 	pkt_bio_finished(pd);
- 	atomic_dec(&pkt->io_wait);
- 	atomic_inc(&pkt->run_sm);
-@@ -1023,7 +1015,7 @@ static void pkt_gather_data(struct pktcdvd_device *pd, struct packet_data *pkt)
- 			continue;
- 
- 		bio = pkt->r_bios[f];
--		bio_reset(bio, pd->bdev, REQ_OP_READ);
-+		bio_init(bio, pd->bdev, bio->bi_inline_vecs, 1, REQ_OP_READ);
- 		bio->bi_iter.bi_sector = pkt->sector + f * (CD_FRAMESIZE >> 9);
- 		bio->bi_end_io = pkt_end_io_read;
- 		bio->bi_private = pkt;
-@@ -1236,7 +1228,8 @@ static void pkt_start_write(struct pktcdvd_device *pd, struct packet_data *pkt)
++static inline bool bdev_write_cache(struct block_device *bdev)
++{
++	return test_bit(QUEUE_FLAG_WC, &bdev_get_queue(bdev)->queue_flags);
++}
++
+ static inline enum blk_zoned_model bdev_zoned_model(struct block_device *bdev)
  {
- 	int f;
- 
--	bio_reset(pkt->w_bio, pd->bdev, REQ_OP_WRITE);
-+	bio_init(pkt->w_bio, pd->bdev, pkt->w_bio->bi_inline_vecs, pkt->frames,
-+		 REQ_OP_WRITE);
- 	pkt->w_bio->bi_iter.bi_sector = pkt->sector;
- 	pkt->w_bio->bi_end_io = pkt_end_io_packet_write;
- 	pkt->w_bio->bi_private = pkt;
+ 	struct request_queue *q = bdev_get_queue(bdev);
 -- 
 2.30.2
 
