@@ -2,55 +2,50 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DEBCC433EF
-	for <target-devel@archiver.kernel.org>; Wed,  6 Apr 2022 09:24:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7379FC433EF
+	for <target-devel@archiver.kernel.org>; Wed,  6 Apr 2022 09:25:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354380AbiDFJ0y (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 6 Apr 2022 05:26:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52344 "EHLO
+        id S231800AbiDFJ0z (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 6 Apr 2022 05:26:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47022 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1441971AbiDFJEX (ORCPT
+        with ESMTP id S1580078AbiDFJUu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 6 Apr 2022 05:04:23 -0400
+        Wed, 6 Apr 2022 05:20:50 -0400
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 91A5147D58B;
-        Tue,  5 Apr 2022 23:06:54 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B31EF493CFC;
+        Tue,  5 Apr 2022 23:12:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
         :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=QrovNweyJZRj1GFp6iCnhs45fbus+PzPDKXpCmbtDwo=; b=z5LFDFUbPWb3WO37mO8MwjoQU9
-        uS3ZTdwAnf66Lx+zcAQQUC3qALjNiBk8vq/QdAnBrT+kiIx7+bGfq0K3/JsrX94g6GOI1PxnGLDP0
-        TpbSMnVMCM12vlH2ieULysyOQ8eqGhAM7WSZgubyaijH46PkBLtZHwMl/DJ+SL/fL62RhXRHRBZ07
-        gPidH4d0GBhOycIbS6/qs679s/JDzVaH5pxN2YMNY1qvOfu3TMWQ9LeQbRMDybW1HFyANyEbyeoY8
-        bjiiLGRwO/33fN9Ma7LaMPzza6Yu9DF6RQqn94ZGs2knBiL0yIxk5iak06Qk6gWjflRAaNPj9+l6R
-        kccMsInA==;
+        bh=KJplMlY6FbMHXb00APduirYkXbPmkHGLgNPqITMnbRw=; b=FzmvEI8vSyn/6nQja0s8YlHSY0
+        VDIJQLy1X4LI11OTVAkB6p326avuiTOtvq2tK01CFEmRmJZniiUIlrJg/db2cSTeDn3BnK8UtHfjF
+        Hd1hHxoqa6l/bKmvn3BzIE6FjfaXuaMc9OhFqzcPs+adC89RRP4OMsXsbWyNUW2cBrtl5M/scW3ZS
+        Lj8VFF3S7A0P+Y7SFdYmalWsj7RB2JqjV08XsKmJ3qf+aOpT+udOnE8mWIW2gFbPgyfgNH4Aa9T+U
+        aVTywWUtPfgoEjBt9A1bREnQu97JQ8co8hwjDhGO3IKqdOsRHdta/aN9o7O5SYaY592Y3lH6IO3v3
+        O45eCcag==;
 Received: from 213-225-3-188.nat.highway.a1.net ([213.225.3.188] helo=localhost)
         by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nbyoX-003vn4-0d; Wed, 06 Apr 2022 06:06:45 +0000
+        id 1nbyuI-003zMC-Aw; Wed, 06 Apr 2022 06:12:42 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
-Cc:     dm-devel@redhat.com, linux-xfs@vger.kernel.org,
-        linux-fsdevel@vger.kernel.org, linux-um@lists.infradead.org,
-        linux-block@vger.kernel.org, drbd-dev@lists.linbit.com,
-        nbd@other.debian.org, ceph-devel@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        xen-devel@lists.xenproject.org, linux-bcache@vger.kernel.org,
-        linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-btrfs@vger.kernel.org,
-        linux-ext4@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
-        cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
-        linux-nilfs@vger.kernel.org, ntfs3@lists.linux.dev,
-        ocfs2-devel@oss.oracle.com, linux-mm@kvack.org
-Subject: [PATCH 22/27] block: refactor discard bio size limiting
-Date:   Wed,  6 Apr 2022 08:05:11 +0200
-Message-Id: <20220406060516.409838-23-hch@lst.de>
+Cc:     Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
+        Song Liu <song@kernel.org>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Josef Bacik <josef@toxicpanda.com>,
+        David Sterba <dsterba@suse.com>,
+        Phillip Lougher <phillip@squashfs.org.uk>,
+        linux-block@vger.kernel.org, dm-devel@redhat.com,
+        linux-kernel@vger.kernel.org, linux-bcache@vger.kernel.org,
+        linux-raid@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-btrfs@vger.kernel.org
+Subject: [PATCH 3/5] target/pscsi: remove pscsi_get_bio
+Date:   Wed,  6 Apr 2022 08:12:26 +0200
+Message-Id: <20220406061228.410163-4-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20220406060516.409838-1-hch@lst.de>
-References: <20220406060516.409838-1-hch@lst.de>
+In-Reply-To: <20220406061228.410163-1-hch@lst.de>
+References: <20220406061228.410163-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
@@ -58,125 +53,69 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Move all the logic to limit the discard bio size into a common helper
-so that it is better documented.
+Remove pscsi_get_bio and simplify the code flow in the only caller.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Martin K. Petersen <martin.petersen@oracle.com>
 ---
- block/blk-lib.c | 59 ++++++++++++++++++++++++-------------------------
- block/blk.h     | 14 ------------
- 2 files changed, 29 insertions(+), 44 deletions(-)
+ drivers/target/target_core_pscsi.c | 28 ++--------------------------
+ 1 file changed, 2 insertions(+), 26 deletions(-)
 
-diff --git a/block/blk-lib.c b/block/blk-lib.c
-index 237d60d8b5857..2ae32a722851c 100644
---- a/block/blk-lib.c
-+++ b/block/blk-lib.c
-@@ -10,6 +10,32 @@
- 
- #include "blk.h"
- 
-+static sector_t bio_discard_limit(struct block_device *bdev, sector_t sector)
-+{
-+	unsigned int discard_granularity =
-+		bdev_get_queue(bdev)->limits.discard_granularity;
-+	sector_t granularity_aligned_sector;
-+
-+	if (bdev_is_partition(bdev))
-+		sector += bdev->bd_start_sect;
-+
-+	granularity_aligned_sector =
-+		round_up(sector, discard_granularity >> SECTOR_SHIFT);
-+
-+	/*
-+	 * Make sure subsequent bios start aligned to the discard granularity if
-+	 * it needs to be split.
-+	 */
-+	if (granularity_aligned_sector != sector)
-+		return granularity_aligned_sector - sector;
-+
-+	/*
-+	 * Align the bio size to the discard granularity to make splitting the bio
-+	 * at discard granularity boundaries easier in the driver if needed.
-+	 */
-+	return round_down(UINT_MAX, discard_granularity) >> SECTOR_SHIFT;
-+}
-+
- int __blkdev_issue_discard(struct block_device *bdev, sector_t sector,
- 		sector_t nr_sects, gfp_t gfp_mask, int flags,
- 		struct bio **biop)
-@@ -17,7 +43,7 @@ int __blkdev_issue_discard(struct block_device *bdev, sector_t sector,
- 	struct request_queue *q = bdev_get_queue(bdev);
- 	struct bio *bio = *biop;
- 	unsigned int op;
--	sector_t bs_mask, part_offset = 0;
-+	sector_t bs_mask;
- 
- 	if (bdev_read_only(bdev))
- 		return -EPERM;
-@@ -48,36 +74,9 @@ int __blkdev_issue_discard(struct block_device *bdev, sector_t sector,
- 	if (!nr_sects)
- 		return -EINVAL;
- 
--	/* In case the discard request is in a partition */
--	if (bdev_is_partition(bdev))
--		part_offset = bdev->bd_start_sect;
--
- 	while (nr_sects) {
--		sector_t granularity_aligned_lba, req_sects;
--		sector_t sector_mapped = sector + part_offset;
--
--		granularity_aligned_lba = round_up(sector_mapped,
--				q->limits.discard_granularity >> SECTOR_SHIFT);
--
--		/*
--		 * Check whether the discard bio starts at a discard_granularity
--		 * aligned LBA,
--		 * - If no: set (granularity_aligned_lba - sector_mapped) to
--		 *   bi_size of the first split bio, then the second bio will
--		 *   start at a discard_granularity aligned LBA on the device.
--		 * - If yes: use bio_aligned_discard_max_sectors() as the max
--		 *   possible bi_size of the first split bio. Then when this bio
--		 *   is split in device drive, the split ones are very probably
--		 *   to be aligned to discard_granularity of the device's queue.
--		 */
--		if (granularity_aligned_lba == sector_mapped)
--			req_sects = min_t(sector_t, nr_sects,
--					  bio_aligned_discard_max_sectors(q));
--		else
--			req_sects = min_t(sector_t, nr_sects,
--					  granularity_aligned_lba - sector_mapped);
--
--		WARN_ON_ONCE((req_sects << 9) > UINT_MAX);
-+		sector_t req_sects =
-+			min(nr_sects, bio_discard_limit(bdev, sector));
- 
- 		bio = blk_next_bio(bio, bdev, 0, op, gfp_mask);
- 		bio->bi_iter.bi_sector = sector;
-diff --git a/block/blk.h b/block/blk.h
-index 8ccbc6e076369..1fdc1d28e6d60 100644
---- a/block/blk.h
-+++ b/block/blk.h
-@@ -346,20 +346,6 @@ static inline unsigned int bio_allowed_max_sectors(struct request_queue *q)
- 	return round_down(UINT_MAX, queue_logical_block_size(q)) >> 9;
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+index ff292b75e23f9..77bd3af4b2bf8 100644
+--- a/drivers/target/target_core_pscsi.c
++++ b/drivers/target/target_core_pscsi.c
+@@ -821,23 +821,6 @@ static void pscsi_bi_endio(struct bio *bio)
+ 	bio_put(bio);
  }
  
--/*
-- * The max bio size which is aligned to q->limits.discard_granularity. This
-- * is a hint to split large discard bio in generic block layer, then if device
-- * driver needs to split the discard bio into smaller ones, their bi_size can
-- * be very probably and easily aligned to discard_granularity of the device's
-- * queue.
-- */
--static inline unsigned int bio_aligned_discard_max_sectors(
--					struct request_queue *q)
+-static inline struct bio *pscsi_get_bio(int nr_vecs)
 -{
--	return round_down(UINT_MAX, q->limits.discard_granularity) >>
--			SECTOR_SHIFT;
+-	struct bio *bio;
+-	/*
+-	 * Use bio_malloc() following the comment in for bio -> struct request
+-	 * in block/blk-core.c:blk_make_request()
+-	 */
+-	bio = bio_kmalloc(GFP_KERNEL, nr_vecs);
+-	if (!bio) {
+-		pr_err("PSCSI: bio_kmalloc() failed\n");
+-		return NULL;
+-	}
+-	bio->bi_end_io = pscsi_bi_endio;
+-
+-	return bio;
 -}
 -
- /*
-  * Internal io_context interface
-  */
+ static sense_reason_t
+ pscsi_map_sg(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 		struct request *req)
+@@ -878,12 +861,10 @@ pscsi_map_sg(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 			if (!bio) {
+ new_bio:
+ 				nr_vecs = bio_max_segs(nr_pages);
+-				/*
+-				 * Calls bio_kmalloc() and sets bio->bi_end_io()
+-				 */
+-				bio = pscsi_get_bio(nr_vecs);
++				bio = bio_kmalloc(GFP_KERNEL, nr_vecs);
+ 				if (!bio)
+ 					goto fail;
++				bio->bi_end_io = pscsi_bi_endio;
+ 
+ 				if (rw)
+ 					bio_set_op_attrs(bio, REQ_OP_WRITE, 0);
+@@ -912,11 +893,6 @@ pscsi_map_sg(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
+ 					goto fail;
+ 				}
+ 
+-				/*
+-				 * Clear the pointer so that another bio will
+-				 * be allocated with pscsi_get_bio() above.
+-				 */
+-				bio = NULL;
+ 				goto new_bio;
+ 			}
+ 
 -- 
 2.30.2
 
