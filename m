@@ -2,50 +2,55 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4B3CC433FE
-	for <target-devel@archiver.kernel.org>; Wed,  6 Apr 2022 09:28:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23FCDC43219
+	for <target-devel@archiver.kernel.org>; Wed,  6 Apr 2022 09:28:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229496AbiDFJ1V (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 6 Apr 2022 05:27:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57888 "EHLO
+        id S1351678AbiDFJ1b (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 6 Apr 2022 05:27:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52480 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1579875AbiDFJUm (ORCPT
+        with ESMTP id S1354378AbiDFJCu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 6 Apr 2022 05:20:42 -0400
+        Wed, 6 Apr 2022 05:02:50 -0400
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4228F493CF6;
-        Tue,  5 Apr 2022 23:12:48 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4878B45C21D;
+        Tue,  5 Apr 2022 23:05:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
         :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=VAc1SDe4gjp1IeSSzcV0Im0HYJaPZbBGhfAm1TWpBFw=; b=Vx9zBRc9mFA8+LncYvFBjDM/Zb
-        pbcSroZVNHizo8ag1zgWczJkPwKyKrQV0Ddx6EtdqvoGmN3ZLUsdLKTvi8QUvBrGPji55y+TUibqi
-        zyo3CCB6cpnNSwb7pmnPjpZLbfI+B4eUtQGJWZq/5pEMe3rKUBPsxd5x/+cxg3WaQbqwyNjJEdwOv
-        wwzXFbniePin6IMVNBsd2AtdfZYr63VsrGFltkW81NlLLVM1vcyriYiHfwMSFTiiKxwjpPqx/tka1
-        AeQtcSuZloD2zhVzVK5deQgejH67DXoe5LPb6Dlnskg8Cwr4FIv0XDPOAN09vQpBnQ8QmlfUg1UAv
-        3CHBg+qg==;
+        bh=OGJvHxXgCvw9/l2/0Y6T0ivupEa5/VICLVgDi4pj6zk=; b=SGjGHiHxXhTBb30pFVsmtYoofW
+        AXRkPwj9L+IToaoBSWN/RSxSSuBK+pJDBU/ojpwlgCD+rUR4zw9pN8EFDE29pkKOW63auHTvvxwCA
+        PC6e0Da7Eiu1hFS/uIysLLSexy3aaIErbCMYeQH3HFSJ8bABmb6owDVYICpwPc9JKy6Ef8YTyDd/h
+        SpNQxuUWxQhBUfv6Iv5iH1SH6hdeTIk5hPArvSrbVe9a1T+UDbpIkKauh2JPDG7p1MdAcg6ES2qNP
+        pANlA2vT9XhPzqH+DYD3Rh3z9Pdg8L6xQ3HlNdFcmLcX+EpDCJ45aTaIIck6oVGd/w30i6T7ad6VR
+        N9+UdC5Q==;
 Received: from 213-225-3-188.nat.highway.a1.net ([213.225.3.188] helo=localhost)
         by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nbyuE-003zKG-M9; Wed, 06 Apr 2022 06:12:39 +0000
+        id 1nbyni-003v3I-Ik; Wed, 06 Apr 2022 06:05:55 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
-Cc:     Coly Li <colyli@suse.de>, Mike Snitzer <snitzer@redhat.com>,
-        Song Liu <song@kernel.org>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Josef Bacik <josef@toxicpanda.com>,
-        David Sterba <dsterba@suse.com>,
-        Phillip Lougher <phillip@squashfs.org.uk>,
-        linux-block@vger.kernel.org, dm-devel@redhat.com,
-        linux-kernel@vger.kernel.org, linux-bcache@vger.kernel.org,
-        linux-raid@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-btrfs@vger.kernel.org
-Subject: [PATCH 2/5] squashfs: always use bio_kmalloc in squashfs_bio_read
-Date:   Wed,  6 Apr 2022 08:12:25 +0200
-Message-Id: <20220406061228.410163-3-hch@lst.de>
+Cc:     dm-devel@redhat.com, linux-xfs@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, linux-um@lists.infradead.org,
+        linux-block@vger.kernel.org, drbd-dev@lists.linbit.com,
+        nbd@other.debian.org, ceph-devel@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        xen-devel@lists.xenproject.org, linux-bcache@vger.kernel.org,
+        linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-ext4@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
+        cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
+        linux-nilfs@vger.kernel.org, ntfs3@lists.linux.dev,
+        ocfs2-devel@oss.oracle.com, linux-mm@kvack.org
+Subject: [PATCH 09/27] mm: use bdev_is_zoned in claim_swapfile
+Date:   Wed,  6 Apr 2022 08:04:58 +0200
+Message-Id: <20220406060516.409838-10-hch@lst.de>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20220406061228.410163-1-hch@lst.de>
-References: <20220406061228.410163-1-hch@lst.de>
+In-Reply-To: <20220406060516.409838-1-hch@lst.de>
+References: <20220406060516.409838-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
@@ -53,40 +58,26 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-If a plain kmalloc that is not backed by a mempool is safe here for a
-large read (and the actual page allocations), it must also be for a
-small one, so simplify the code a bit.
+Use the bdev based helper instead of poking into the queue.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Phillip Lougher <phillip@squashfs.org.uk>
 ---
- fs/squashfs/block.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ mm/swapfile.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
-index 622c844f6d118..4311a32218928 100644
---- a/fs/squashfs/block.c
-+++ b/fs/squashfs/block.c
-@@ -86,16 +86,11 @@ static int squashfs_bio_read(struct super_block *sb, u64 index, int length,
- 	int error, i;
- 	struct bio *bio;
- 
--	if (page_count <= BIO_MAX_VECS) {
--		bio = bio_alloc(sb->s_bdev, page_count, REQ_OP_READ, GFP_NOIO);
--	} else {
--		bio = bio_kmalloc(GFP_NOIO, page_count);
--		bio_set_dev(bio, sb->s_bdev);
--		bio->bi_opf = REQ_OP_READ;
--	}
--
-+	bio = bio_kmalloc(GFP_NOIO, page_count);
- 	if (!bio)
- 		return -ENOMEM;
-+	bio_set_dev(bio, sb->s_bdev);
-+	bio->bi_opf = REQ_OP_READ;
- 
- 	bio->bi_iter.bi_sector = block * (msblk->devblksize >> SECTOR_SHIFT);
- 
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 63c61f8b26118..4c7537162af5e 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -2761,7 +2761,7 @@ static int claim_swapfile(struct swap_info_struct *p, struct inode *inode)
+ 		 * write only restriction.  Hence zoned block devices are not
+ 		 * suitable for swapping.  Disallow them here.
+ 		 */
+-		if (blk_queue_is_zoned(p->bdev->bd_disk->queue))
++		if (bdev_is_zoned(p->bdev))
+ 			return -EINVAL;
+ 		p->flags |= SWP_BLKDEV;
+ 	} else if (S_ISREG(inode->i_mode)) {
 -- 
 2.30.2
 
