@@ -2,198 +2,165 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 864DBC433FE
-	for <target-devel@archiver.kernel.org>; Fri,  8 Apr 2022 16:46:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E555C433F5
+	for <target-devel@archiver.kernel.org>; Sat,  9 Apr 2022 04:51:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232215AbiDHQsE (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 8 Apr 2022 12:48:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43794 "EHLO
+        id S239562AbiDIExC (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 9 Apr 2022 00:53:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48138 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229668AbiDHQsD (ORCPT
+        with ESMTP id S229604AbiDIEw6 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 8 Apr 2022 12:48:03 -0400
-Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2076.outbound.protection.outlook.com [40.107.93.76])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 439F010E9;
-        Fri,  8 Apr 2022 09:45:58 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=oeAwrP3a+ZqldNERfWZsBgHs5SvTEJf4R3vMe8QUuhkUlX315kAxJDOuygeZlrE61N4IcpIPRKRd8lr1AqY5cr7pyFapV0VZSnnMY/Kl+S2wCmXggQF+TXELLNP71iTDIgcUkzMZVQHWRBqIc1Pp+JVtYy/eAfp0eY4+s37pIrY3zseSWgASgVxtXPPgu4CdcMolQDqQjAigxwQ8+VRGSki4VbKtnqL8HCVzWAguchS1tTneGnkvFZn2IosgsuYKAhPGVPwcXFZb9xuTrpLl27D2rsscxagCIUTHHWecJEgNOuLCVKOWbqwMsdJq4CjLkYLZT89YnJvQ+Li06SYVUg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=qsvgP0R4fYdofrXzMBQP1CyBGLLlYrcmWJbGPS0mv+0=;
- b=NGN6yUhHSFrWClu05LPY9+kzRsEpGHQheauhsd6PJE8aIEYNIbFocH3o2fq7AAupfSS07/zC1mVPZv1E1FW5oQ6QIuQzfd/R5OqXq7DOL+nmkb1lwgukqlOfGJfj4BaQfyR8o0jEgg5ki0btJDLl+3afSoslrHnnYEs1RC0X59UbPCB0Hrwi148Gx89C2qYiqH4I/MiurwXnJenTSNpGDHc2mOw7L8/HZyP/d5ufcWNEdTiGEvHOHOfbKOq9QIFaTLM7IYHWpuzNoSVZ73l/nPuRWsJToCIBxveUPSVZm3ScZZ5fDp0O2bZ+LB5YVDlsiKujbpU8JIrL081NrofMnw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=qsvgP0R4fYdofrXzMBQP1CyBGLLlYrcmWJbGPS0mv+0=;
- b=ghsZiI2xW9Ssy/hJUvLmCBESa6j5f5+gz36SKuySmf1rwqbLF8BlcL5NEIF5y7nvVtP7/TpS4d8hp9JfMfYOJ3Uwxt0y+62mZ7GGMfL+wbdaqDo9VDGGvzuaTW57TlsYSW00uvFnxrawwMfkTlaF1lWaAfXfUeAD+x+UpsvyGYQPv+nE0/a+d4T8yab48gXV3ac3SL28aTAykUV6HKYmQJQIa8evxroW2ydEm9Y9sJfa1ALKhHgXp2O/3KlxObJ+ukl08R30u0fODNZ2NDaWCVsPJFE85c3e98SomJYev/U/VOiudsByysrL++z/TRr7fuFXaEU+Nn37Uo6/T5GQkA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from MN2PR12MB4192.namprd12.prod.outlook.com (2603:10b6:208:1d5::15)
- by BYAPR12MB3192.namprd12.prod.outlook.com (2603:10b6:a03:139::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5144.22; Fri, 8 Apr
- 2022 16:45:56 +0000
-Received: from MN2PR12MB4192.namprd12.prod.outlook.com
- ([fe80::cdfb:f88e:410b:9374]) by MN2PR12MB4192.namprd12.prod.outlook.com
- ([fe80::cdfb:f88e:410b:9374%6]) with mapi id 15.20.5144.026; Fri, 8 Apr 2022
- 16:45:56 +0000
-Date:   Fri, 8 Apr 2022 13:45:54 -0300
-From:   Jason Gunthorpe <jgg@nvidia.com>
-To:     Ariel Elior <aelior@marvell.com>, Anna Schumaker <anna@kernel.org>,
-        Jens Axboe <axboe@fb.com>,
-        Christian Benvenuti <benve@cisco.com>,
-        Potnuri Bharat Teja <bharat@chelsio.com>,
-        Bernard Metzler <bmt@zurich.ibm.com>,
-        Bart Van Assche <bvanassche@acm.org>,
-        Chuck Lever <chuck.lever@oracle.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Keith Busch <kbusch@kernel.org>,
-        Chaitanya Kulkarni <kch@nvidia.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Leon Romanovsky <leon@kernel.org>, linux-cifs@vger.kernel.org,
-        linux-nfs@vger.kernel.org, linux-nvme@lists.infradead.org,
-        linux-rdma@vger.kernel.org, Max Gurtovoy <mgurtovoy@nvidia.com>,
-        Mike Marciniszyn <mike.marciniszyn@cornelisnetworks.com>,
-        Michal Kalderon <mkalderon@marvell.com>,
-        Mustafa Ismail <mustafa.ismail@intel.com>,
-        Nelson Escobar <neescoba@cisco.com>, netdev@vger.kernel.org,
-        Paolo Abeni <pabeni@redhat.com>, rds-devel@oss.oracle.com,
-        Sagi Grimberg <sagi@grimberg.me>,
-        samba-technical@lists.samba.org,
-        Santosh Shilimkar <santosh.shilimkar@oracle.com>,
-        Selvin Xavier <selvin.xavier@broadcom.com>,
-        Steve French <sfrench@samba.org>,
-        Shiraz Saleem <shiraz.saleem@intel.com>,
-        target-devel@vger.kernel.org,
-        Trond Myklebust <trond.myklebust@hammerspace.com>,
-        Yishai Hadas <yishaih@nvidia.com>,
-        Zhu Yanjun <zyjzyj2000@gmail.com>
-Subject: Re: [PATCH v2] RDMA: Split kernel-only global device caps from
- uverbs device caps
-Message-ID: <20220408164554.GA3613777@nvidia.com>
-References: <0-v2-22c19e565eef+139a-kern_caps_jgg@nvidia.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0-v2-22c19e565eef+139a-kern_caps_jgg@nvidia.com>
-X-ClientProxiedBy: MN2PR17CA0009.namprd17.prod.outlook.com
- (2603:10b6:208:15e::22) To MN2PR12MB4192.namprd12.prod.outlook.com
- (2603:10b6:208:1d5::15)
+        Sat, 9 Apr 2022 00:52:58 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A77A3186F5;
+        Fri,  8 Apr 2022 21:50:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=xqCE7mrNhx9Kh54A8pTQxucRKOOrbbHmaHFew3/JwbI=; b=eautlETAmAcOF4Rx+ajcsxqxAt
+        K/gc85CxDlYY+s5RX+TP4qAcopFOJMKyRoUbJGCZqLzThYN44a81gHztvDtTQOXXVmstC/BiZza91
+        +tK8A4YQHg+wud7jKaqcpT5eZw97ewGrhmTU8yf0v/D+yZnMWYW/4nRrMz5fe0RjHIwwo6UCcWnmG
+        q/WhOest1iceY98x52QbO+Ryd19aUS/0aFt0A0VdCFkKu7+7IrcjV/rCpnun6L4B6SbhX7D4hKxqE
+        vkbaC7lWGA+28JjJD9laatsN4l8Gz9BZIOD3BKi8HF53h/Wb9nBnpD0TIdhkMhGAybm9Za6sdmIlK
+        tpLM1eWg==;
+Received: from 213-147-167-116.nat.highway.webapn.at ([213.147.167.116] helo=localhost)
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nd33f-0020RM-19; Sat, 09 Apr 2022 04:50:47 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     dm-devel@redhat.com, linux-xfs@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, linux-um@lists.infradead.org,
+        linux-block@vger.kernel.org, drbd-dev@lists.linbit.com,
+        nbd@other.debian.org, ceph-devel@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        xen-devel@lists.xenproject.org, linux-bcache@vger.kernel.org,
+        linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-ext4@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
+        cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
+        linux-nilfs@vger.kernel.org, ntfs3@lists.linux.dev,
+        ocfs2-devel@oss.oracle.com, linux-mm@kvack.org
+Subject: use block_device based APIs in block layer consumers v2
+Date:   Sat,  9 Apr 2022 06:50:16 +0200
+Message-Id: <20220409045043.23593-1-hch@lst.de>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 9e64985b-a5df-4d06-a5fe-08da197f4075
-X-MS-TrafficTypeDiagnostic: BYAPR12MB3192:EE_
-X-Microsoft-Antispam-PRVS: <BYAPR12MB3192BF8F41ECBF82F0C99837C2E99@BYAPR12MB3192.namprd12.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: UwV6XYtWXA/Z1zLl9Yz52w9ZcFJVkkKKeh+DvKGA5gpwcoXf958LgdoSymA1N47O2Qh1zDyz9CpyZ0jY3rEM2NwAgfiNshNT+82I9Bwt6E3y+Fka+4mN296HElizMrkzXrVKdhoO/n3GAgBBPyRbAKUQxabywUWVW5JwR7/gqc/sc37HgCp4cD+k4Cst7eQBke+HtGupM+wEpvnZSMbDIWMdsYKCbfBvN+nK1ehIUk6UndpTFkN/p0AaFBLR4txMqUxPuZQZCyBaBFUm3rBUsi/QN6Q7TXLuPdOMe2JFhKG3mRKTNT1Hyl6Is4QnNRKyttrye2C3mFl0T3XWebQ1TW54mIwDg5MWpv4fRF75X3XIyThqAPACITf6yWtGk04O7haj8OMAkr1LHd68p4aD/SE2eGdjGY185WhGoXkCJy/09m7OoxIyv3bKRje86qxfoiu45ZAWBoKJ10RHi/dvnaomRw7lFkL4EckAq5/EWvDotMOeMe2JmU5KBHpBXCWLswgVCiiXPAfEJb/IZekG5CIdCUlFiBcTLrXzGdNj5fmfJQXpyfHsnGza++bUku3Tpy6knx+GgQcgN/fHtgBaIjNbP6re7m/5RldcJcKxwtL8GeUtC5Q0zMJVKPIreiDBCVVdykq3F20FXGi0KqDxvr1sPzPvGwNQac+RwmvdKxQAZHZg47tyEGkMJEFEP1Vz
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN2PR12MB4192.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(2906002)(33656002)(83380400001)(186003)(86362001)(508600001)(7406005)(7416002)(921005)(8676002)(38100700002)(66476007)(66946007)(66556008)(8936002)(5660300002)(2616005)(26005)(6506007)(6486002)(1076003)(316002)(6512007)(36756003)(110136005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?b8ny8kQG1JSfpBjCDsT4hVecYB1hwn5bXJvlyiqovQuaX9Gfr9I7rA3yKTLN?=
- =?us-ascii?Q?UCzFjx+ism8xF3r5v7laKJQssBPqlsSut1keZJ7hW7XUj2LstwjkZdfBOoYc?=
- =?us-ascii?Q?4dPqXt+DnU9RcpKihmjKUz20w4ACDWgwiVZMlrHtYsLWGfe8Ww7uvHxNvflz?=
- =?us-ascii?Q?MYrry7Wrb7XfUqmciEye1i8icX7mnpz8iFWRRaF57LlThsHiA3G8BU8h5L0v?=
- =?us-ascii?Q?9D4KDmQOfHQPE877dltW69bHvKnz/l7JxMEUU0duuC/6AxObs0vMEtdjfE3X?=
- =?us-ascii?Q?PbUqd7Z/iF7FlhtSs5iEv1V0Y4NBPLz7RES3E/pDltLxABDUgg9HDrUozixC?=
- =?us-ascii?Q?g/wm34ZmnSaRtC+0er/Fhhi/HEqotgMV628VG0rZS0kstWTin97Kcv97HyH/?=
- =?us-ascii?Q?Vi9d8VPGTc/7vmUvlC9RmsfU4gXAgo2Uwdy+vYn49WhsZOD2weuWJha0Bm9O?=
- =?us-ascii?Q?JO22y/T36HL0KXaMjnHDfettNnuJivN9YfWNlCBMoB/zflpQn/8vvJ9+A1q6?=
- =?us-ascii?Q?EJH5s6HaF+us6+b3JgodY7DOxoK604w7XQKza//BLVnFuDaa9+IIf+N/4mYp?=
- =?us-ascii?Q?wI9hEhcVLpvDh7rQf/x6qMPEbEP3Ww17tTLqdmobKZIvwBALWgwuVqNbCh+8?=
- =?us-ascii?Q?2ZbNxMwgYMT21Lw7lvXGRR+YuBs8V+7q5XJGNi8e7X0fr8a0PuFCDZnKfGeL?=
- =?us-ascii?Q?I3uI45gRzuIRyR1Gm0xTeJHnMvSvsbBIDAtV10qVon75rTgFncoUu/593v5q?=
- =?us-ascii?Q?8l6t6Pe4wpDOHtZLIICqcZ+s9naTCKl4oWOv68cwowaQ2aUli3x4T3Utixsh?=
- =?us-ascii?Q?sMB+MsfgTC9P6EYiVmAdEA+agcpfEcw6uPbfhHpabar9vNCMQEeY4XGqKKet?=
- =?us-ascii?Q?ILXjviKTA/YQSkEmOCShuENGohFTYmMq2M3R8dbSxbyFy0GstklItuIKLG5z?=
- =?us-ascii?Q?lM3Uwa8meOTjnRJ4rWjgqIo/Jr2s4iNfZ9ukmbGUCcgxsZtfLo+7C54CDDdx?=
- =?us-ascii?Q?C8yfQfhth7VrspS//PvdfBDAZ3KHGflqhAhH6b/95BX9Sv4ouF9GbHQaFR5r?=
- =?us-ascii?Q?Gou2iucJJeBbASG/YA7BpPkgaUXpQ0ogXSnwJ55OKKaOnM7O8EnWcqpmwMpZ?=
- =?us-ascii?Q?YCI2Aac9tUp9oxoZEXb5NDA7Oy0TIN3GuQIOUMTEU+dYW+ReIBO5dfyjKMP8?=
- =?us-ascii?Q?+ZjNo/QisS5MdM8Mq1qekjkdC3QXSDp7yQlCRtUDWzLzCqpWyl/3DsmS96Oq?=
- =?us-ascii?Q?Vjpvi54f0WS/zKdTneX6gaHv37Uq/LOBR1mtd4CZ/eVItqz8NwJCTH0dfSP9?=
- =?us-ascii?Q?TZaCvoV/GOrNitSs4puY9HxkqjHdWcr7effGLWM0RzAgX5AuoatV444Swpgo?=
- =?us-ascii?Q?wbQTlPbnU8BOYQjsiOSxp/cYhQHQ9dblFWO+n5dJDy9Y/UkIUoq74T/tNUxo?=
- =?us-ascii?Q?mvUo769XBDw8iS3K3gYARhaB9q0X11cdTLsf9imzr6Pi62Sk2EebWfcBCwme?=
- =?us-ascii?Q?V293/nKRn+L20KgahTF4n2ly7PJOCqfQiSeMVakGVMitJVgT5Y7rbea0ElIA?=
- =?us-ascii?Q?gQ8JlRLjRk8C+mJtVhshaiT0aiSEyauII90eN5BdyDlEgkh67PD9zoZIsc7O?=
- =?us-ascii?Q?ceVOlxgSURaTsJ67tnKeeqIZ/INGU3oNzH5EbfYkj89vjVoa0S1K9DClOd1N?=
- =?us-ascii?Q?E0DjEeqINhD5XOd1blDKwMp+WjbzV9Lq0T1MwQHH+/LgPfdN9JGGW8Ljb3jo?=
- =?us-ascii?Q?9rmT3Diy0w=3D=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9e64985b-a5df-4d06-a5fe-08da197f4075
-X-MS-Exchange-CrossTenant-AuthSource: MN2PR12MB4192.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Apr 2022 16:45:56.3088
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: uPYcX5AMdZH4q/Lc2BVys/6g8LOnEeU/lpmzv0sj+NtQ5otsb5JqUfF84vlyiKlF
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR12MB3192
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, Apr 06, 2022 at 04:27:18PM -0300, Jason Gunthorpe wrote:
-> Split out flags from ib_device::device_cap_flags that are only used
-> internally to the kernel into kernel_cap_flags that is not part of the
-> uapi. This limits the device_cap_flags to being only flags exposed by the
-> driver toward userspace.
-> 
-> This cleanly splits out the uverbs flags from the kernel flags to avoid
-> confusion in the flags bitmap.
-> 
-> Add some short comments describing which each of the kernel flags is
-> connected to. Remove unused kernel flags.
-> 
-> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
->  drivers/infiniband/core/nldev.c              |  2 +-
->  drivers/infiniband/core/uverbs_cmd.c         |  6 +-
->  drivers/infiniband/core/verbs.c              |  8 +-
->  drivers/infiniband/hw/bnxt_re/ib_verbs.c     |  2 +-
->  drivers/infiniband/hw/cxgb4/iw_cxgb4.h       |  1 -
->  drivers/infiniband/hw/cxgb4/provider.c       |  8 +-
->  drivers/infiniband/hw/hfi1/verbs.c           |  4 +-
->  drivers/infiniband/hw/irdma/hw.c             |  4 -
->  drivers/infiniband/hw/irdma/main.h           |  1 -
->  drivers/infiniband/hw/irdma/verbs.c          |  4 +-
->  drivers/infiniband/hw/mlx4/main.c            |  8 +-
->  drivers/infiniband/hw/mlx5/main.c            | 15 ++--
->  drivers/infiniband/hw/ocrdma/ocrdma_verbs.c  |  2 +-
->  drivers/infiniband/hw/qedr/verbs.c           |  3 +-
->  drivers/infiniband/hw/usnic/usnic_ib_verbs.c |  3 +-
->  drivers/infiniband/sw/rxe/rxe.c              |  1 +
->  drivers/infiniband/sw/rxe/rxe_param.h        |  1 -
->  drivers/infiniband/sw/siw/siw_verbs.c        |  4 +-
->  drivers/infiniband/ulp/ipoib/ipoib.h         |  1 +
->  drivers/infiniband/ulp/ipoib/ipoib_main.c    |  5 +-
->  drivers/infiniband/ulp/ipoib/ipoib_verbs.c   |  6 +-
->  drivers/infiniband/ulp/iser/iscsi_iser.c     |  2 +-
->  drivers/infiniband/ulp/iser/iser_verbs.c     |  8 +-
->  drivers/infiniband/ulp/isert/ib_isert.c      |  2 +-
->  drivers/infiniband/ulp/srp/ib_srp.c          |  8 +-
->  drivers/nvme/host/rdma.c                     |  4 +-
->  drivers/nvme/target/rdma.c                   |  4 +-
->  fs/cifs/smbdirect.c                          |  2 +-
->  include/rdma/ib_verbs.h                      | 84 ++++++++------------
->  include/rdma/opa_vnic.h                      |  3 +-
->  include/uapi/rdma/ib_user_verbs.h            |  4 +
->  net/rds/ib.c                                 |  4 +-
->  net/sunrpc/xprtrdma/frwr_ops.c               |  2 +-
->  33 files changed, 100 insertions(+), 116 deletions(-)
-> 
-> v2:
->  - Use IBK_ as the flag prefix for brevity
->  - Remove unneeded ULLs
->  - Spelling
->  - Short documentation for each of the kernel flags
+Hi Jens,
 
-Applied to for-next, thanks everyone
+this series cleanups up the block layer API so that APIs consumed
+by file systems are (almost) only struct block_devic based, so that
+file systems don't have to poke into block layer internals like the
+request_queue.
 
-Jason
+I also found a bunch of existing bugs related to partition offsets
+and discard so these are fixed while going along.
+
+
+Changes since v1:
+ - fix a bisection hazard
+ - minor spelling fixes
+ - reorder hunks between two patches to make the changes more obvious
+ - reorder a patch to be earlier in the series to ease backporting
+
+
+Diffstat:
+ arch/um/drivers/ubd_kern.c           |    2 
+ block/blk-core.c                     |    4 -
+ block/blk-lib.c                      |  124 ++++++++++++++++++++---------------
+ block/blk-mq-debugfs.c               |    2 
+ block/blk-settings.c                 |   74 ++++++++++++++++++++
+ block/blk.h                          |   14 ---
+ block/fops.c                         |    2 
+ block/genhd.c                        |    4 -
+ block/ioctl.c                        |   48 ++++++++++---
+ block/partitions/core.c              |   12 ---
+ drivers/block/drbd/drbd_main.c       |   51 ++++++--------
+ drivers/block/drbd/drbd_nl.c         |   94 +++++++++++---------------
+ drivers/block/drbd/drbd_receiver.c   |   13 +--
+ drivers/block/loop.c                 |   15 +---
+ drivers/block/nbd.c                  |    5 -
+ drivers/block/null_blk/main.c        |    1 
+ drivers/block/rbd.c                  |    1 
+ drivers/block/rnbd/rnbd-clt.c        |    6 -
+ drivers/block/rnbd/rnbd-srv-dev.h    |    8 --
+ drivers/block/rnbd/rnbd-srv.c        |    5 -
+ drivers/block/virtio_blk.c           |    2 
+ drivers/block/xen-blkback/blkback.c  |   15 ++--
+ drivers/block/xen-blkback/xenbus.c   |    9 --
+ drivers/block/xen-blkfront.c         |    7 -
+ drivers/block/zram/zram_drv.c        |    1 
+ drivers/md/bcache/alloc.c            |    2 
+ drivers/md/bcache/request.c          |    4 -
+ drivers/md/bcache/super.c            |    3 
+ drivers/md/bcache/sysfs.c            |    2 
+ drivers/md/dm-cache-target.c         |    9 --
+ drivers/md/dm-clone-target.c         |    9 --
+ drivers/md/dm-io.c                   |    2 
+ drivers/md/dm-log-writes.c           |    3 
+ drivers/md/dm-raid.c                 |    9 --
+ drivers/md/dm-table.c                |   25 +------
+ drivers/md/dm-thin.c                 |   15 ----
+ drivers/md/dm.c                      |    3 
+ drivers/md/md-linear.c               |   11 ---
+ drivers/md/md.c                      |    5 -
+ drivers/md/raid0.c                   |    7 -
+ drivers/md/raid1.c                   |   18 -----
+ drivers/md/raid10.c                  |   20 -----
+ drivers/md/raid5-cache.c             |    8 +-
+ drivers/md/raid5.c                   |   14 +--
+ drivers/mmc/core/queue.c             |    3 
+ drivers/mtd/mtd_blkdevs.c            |    1 
+ drivers/nvme/host/core.c             |    6 -
+ drivers/nvme/target/io-cmd-bdev.c    |    2 
+ drivers/nvme/target/zns.c            |    3 
+ drivers/s390/block/dasd_fba.c        |    1 
+ drivers/scsi/sd.c                    |    2 
+ drivers/target/target_core_device.c  |   20 ++---
+ drivers/target/target_core_file.c    |   10 +-
+ drivers/target/target_core_iblock.c  |   17 +---
+ fs/btrfs/disk-io.c                   |    3 
+ fs/btrfs/extent-tree.c               |    8 +-
+ fs/btrfs/ioctl.c                     |   12 +--
+ fs/btrfs/volumes.c                   |    4 -
+ fs/btrfs/zoned.c                     |    3 
+ fs/direct-io.c                       |   32 +--------
+ fs/exfat/file.c                      |    5 -
+ fs/exfat/super.c                     |   10 --
+ fs/ext4/ioctl.c                      |   10 --
+ fs/ext4/mballoc.c                    |   10 +-
+ fs/ext4/super.c                      |   10 --
+ fs/f2fs/f2fs.h                       |    3 
+ fs/f2fs/file.c                       |   19 ++---
+ fs/f2fs/segment.c                    |    8 --
+ fs/fat/file.c                        |    5 -
+ fs/fat/inode.c                       |   10 --
+ fs/gfs2/rgrp.c                       |    7 -
+ fs/iomap/direct-io.c                 |    3 
+ fs/jbd2/journal.c                    |    9 --
+ fs/jfs/ioctl.c                       |    5 -
+ fs/jfs/super.c                       |    8 --
+ fs/nilfs2/ioctl.c                    |    6 -
+ fs/nilfs2/sufile.c                   |    4 -
+ fs/nilfs2/the_nilfs.c                |    4 -
+ fs/ntfs3/file.c                      |    6 -
+ fs/ntfs3/super.c                     |   10 +-
+ fs/ocfs2/ioctl.c                     |    5 -
+ fs/super.c                           |    2 
+ fs/xfs/xfs_discard.c                 |    8 +-
+ fs/xfs/xfs_log_cil.c                 |    2 
+ fs/xfs/xfs_super.c                   |   12 +--
+ fs/zonefs/super.c                    |    3 
+ include/linux/blkdev.h               |  112 +++++++++++--------------------
+ include/target/target_core_backend.h |    4 -
+ mm/swapfile.c                        |   31 ++------
+ 89 files changed, 493 insertions(+), 653 deletions(-)
