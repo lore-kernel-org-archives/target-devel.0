@@ -2,37 +2,36 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD482C43217
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89E28C35273
 	for <target-devel@archiver.kernel.org>; Tue, 12 Apr 2022 01:02:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345666AbiDLBEx (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 11 Apr 2022 21:04:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33798 "EHLO
+        id S245667AbiDLBEs (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 11 Apr 2022 21:04:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47390 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244237AbiDLA5L (ORCPT
+        with ESMTP id S1345209AbiDLA63 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 11 Apr 2022 20:57:11 -0400
+        Mon, 11 Apr 2022 20:58:29 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CC3F26545;
-        Mon, 11 Apr 2022 17:49:48 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39B9233A35;
+        Mon, 11 Apr 2022 17:51:11 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 98C0F617E7;
-        Tue, 12 Apr 2022 00:49:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E81EC385A3;
-        Tue, 12 Apr 2022 00:49:45 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C7AEA60A66;
+        Tue, 12 Apr 2022 00:51:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C2FFC385AA;
+        Tue, 12 Apr 2022 00:51:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1649724587;
-        bh=s9Rpwm6delKvf/66BvJD66oF5cgx4gOOaaAMGNKINik=;
+        s=k20201202; t=1649724670;
+        bh=pZ9Cg/z8ut/ZxUUywIWgSASIaLci26urQY/3V/R3ssw=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=LHZ1u2Qje9ssV0PHleomovcA/yS7P23cFtrrRLAC3D1VQYrXQwCjYIDJT3ETPv2We
-         lMnRr1c9FaqLrt71atDJ5kTkpF799ZqB3IzS+t07iZoG4GgbPFwIm/qeRyYO6Y2VPf
-         ZwRHlmF5tmIWZV2MW2xy4e1r974OzFz/PBGNdgamzSTKHhBg4PCKUXDbAlCSOjaLhk
-         Rn3LmVfT9kyPWqNtUDrg6a6/UajdWOQe+g+W3gWpYxdLm1o2qk05TjXvi+FgrQjjSx
-         NIHG7qjcghAmJ6cApFGUVXkISrqiyg9n7HwWCm/BQDYySTLS1aWmZ5wUmTn43KJOvJ
-         d6vj9phWa2Tiw==
+        b=BZyHqt2NXEny/zNT/5ObaerYDnJq2C7FYzYfUtqnpASSrSh7ZtEVibZqQsnTERyjK
+         CUR/h04n7Oc1HK5wIvjKnGXBurVyWuEzIX6g+yNgj14ZUz+FK3ool50F5AJXzNdDJn
+         hpBzAIxQjv7ID661EUfKtyDMrcgc+9PK3wj30DfGDszBcpKC3y3dU1b+rHpL+MQb7h
+         /kXkQOXyNdwZ6oI5oit4xj2RxYdJiWMi9LJ3HdVVElQZsi3Rvz/whSd6GO2sY/gwzp
+         ZS1QbmDnPGlXX8DOxDrgtqZiV1yAQkRNa4/wqXXzFvke8Lx00+fFh8iFVbNVLnQRW1
+         BZnPxRlzXs8Ww==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Tyrel Datwyler <tyreld@linux.ibm.com>,
@@ -40,12 +39,12 @@ Cc:     Tyrel Datwyler <tyreld@linux.ibm.com>,
         Sasha Levin <sashal@kernel.org>, mikecyr@linux.ibm.com,
         jejb@linux.ibm.com, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 13/30] scsi: ibmvscsis: Increase INITIAL_SRP_LIMIT to 1024
-Date:   Mon, 11 Apr 2022 20:48:47 -0400
-Message-Id: <20220412004906.350678-13-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 08/21] scsi: ibmvscsis: Increase INITIAL_SRP_LIMIT to 1024
+Date:   Mon, 11 Apr 2022 20:50:27 -0400
+Message-Id: <20220412005042.351105-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220412004906.350678-1-sashal@kernel.org>
-References: <20220412004906.350678-1-sashal@kernel.org>
+In-Reply-To: <20220412005042.351105-1-sashal@kernel.org>
+References: <20220412005042.351105-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -78,7 +77,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-index cc3908c2d2f9..a3431485def8 100644
+index a929fe76102b..d5b2917aea44 100644
 --- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
 +++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
 @@ -35,7 +35,7 @@
