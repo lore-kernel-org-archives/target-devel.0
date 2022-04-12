@@ -2,46 +2,46 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D949C43217
-	for <target-devel@archiver.kernel.org>; Tue, 12 Apr 2022 00:51:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 702DCC4332F
+	for <target-devel@archiver.kernel.org>; Tue, 12 Apr 2022 00:51:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244280AbiDLAxp (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 11 Apr 2022 20:53:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45102 "EHLO
+        id S244084AbiDLAxs (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 11 Apr 2022 20:53:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245212AbiDLAxG (ORCPT
+        with ESMTP id S245254AbiDLAxH (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 11 Apr 2022 20:53:06 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9698E31519;
-        Mon, 11 Apr 2022 17:47:53 -0700 (PDT)
+        Mon, 11 Apr 2022 20:53:07 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 892462F010;
+        Mon, 11 Apr 2022 17:47:54 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 039A6B8186F;
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 1958A6182B;
+        Tue, 12 Apr 2022 00:47:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A10E0C385AB;
         Tue, 12 Apr 2022 00:47:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDE87C385AA;
-        Tue, 12 Apr 2022 00:47:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1649724470;
-        bh=00QZOWtD55fHKQOKnPxpPpVI9oc8eABGIOsh3pHyJwQ=;
+        s=k20201202; t=1649724473;
+        bh=Pdw1cZs7Hj7U8xVNdvVZ73/gHVZZx/AhjKYJR7xZ5Mk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=jlV9QTkHKMc6KyAaS87SKathRKmrryGFR4V+VnVt3LQC3dFhsWeFG5WiM7D6lvXsN
-         IqYOMFQxtjfRr4blJHmF1cv+39oBVm/rvlX8z56T2W1S70cE6STKBojt5nZY4oJdG6
-         o1R2gMvlckVeV5/Rv649a9O72/dh1cnTWh/Hd44uAcie/WntIh3PbbBlozaj2ENW0V
-         NWAb0XDsklHolAZto7qK+Zr8zxTLIAq5x0szkrF16txVm5HnUhJ03ysjcXT/eeiWpT
-         lmbbsYArHsMH+9vHe2u/D/ujk/GfMiNGG4OweWOL8ttcLizi3TY9a75RRvpDXH+c7E
-         GicK8k0bD9QkQ==
+        b=kwEwaEXnnMJbUtU+XZiYhgDdyxe5NT1ix9fwDgAZMeSyTXf9Kt4wQWD9TkaclXbPa
+         H7zf4GuRnI77uiJ7z2M5JC3YEa5TLqjZ23xyOzNQYIa9Xv4UloSuKeAZkg6f8fBzNh
+         fmFMMtLr1M6rs/Jk+XwqZydKZ8pwO5y0MYSbXNzkN7sV+jfpIpnzShUcm4OwXJqr84
+         E+Sd3uQiYZs76ys20cbc1zniIeYiUVXifECbBLka0YJQgeB0ZN7PMGugRPdtxI0UjQ
+         9L4C2zqf5FIxNGRUQfqZyECQ9i/7kM6dliY391McNE/FW9YF2pzGjXpyUOWAE3Zjuc
+         63ipGJZU1CEcw==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
-        Bodo Stroesser <bostroesser@gmail.com>,
+Cc:     Tyrel Datwyler <tyreld@linux.ibm.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
+        Sasha Levin <sashal@kernel.org>, mikecyr@linux.ibm.com,
+        jejb@linux.ibm.com, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 15/41] scsi: target: tcmu: Fix possible page UAF
-Date:   Mon, 11 Apr 2022 20:46:27 -0400
-Message-Id: <20220412004656.350101-15-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 17/41] scsi: ibmvscsis: Increase INITIAL_SRP_LIMIT to 1024
+Date:   Mon, 11 Apr 2022 20:46:29 -0400
+Message-Id: <20220412004656.350101-17-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220412004656.350101-1-sashal@kernel.org>
 References: <20220412004656.350101-1-sashal@kernel.org>
@@ -53,55 +53,42 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
 
-[ Upstream commit a6968f7a367f128d120447360734344d5a3d5336 ]
+[ Upstream commit 0bade8e53279157c7cc9dd95d573b7e82223d78a ]
 
-tcmu_try_get_data_page() looks up pages under cmdr_lock, but it does not
-take refcount properly and just returns page pointer. When
-tcmu_try_get_data_page() returns, the returned page may have been freed by
-tcmu_blocks_release().
+The adapter request_limit is hardcoded to be INITIAL_SRP_LIMIT which is
+currently an arbitrary value of 800. Increase this value to 1024 which
+better matches the characteristics of the typical IBMi Initiator that
+supports 32 LUNs and a queue depth of 32.
 
-We need to get_page() under cmdr_lock to avoid concurrent
-tcmu_blocks_release().
+This change also has the secondary benefit of being a power of two as
+required by the kfifo API. Since, Commit ab9bb6318b09 ("Partially revert
+"kfifo: fix kfifo_alloc() and kfifo_init()"") the size of IU pool for each
+target has been rounded down to 512 when attempting to kfifo_init() those
+pools with the current request_limit size of 800.
 
-Link: https://lore.kernel.org/r/20220311132206.24515-1-xiaoguang.wang@linux.alibaba.com
-Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
-Signed-off-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
+Link: https://lore.kernel.org/r/20220322194443.678433-1-tyreld@linux.ibm.com
+Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
 Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/target/target_core_user.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 9f552f48084c..0ca5ec14d3db 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -1821,6 +1821,7 @@ static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
- 	mutex_lock(&udev->cmdr_lock);
- 	page = xa_load(&udev->data_pages, dpi);
- 	if (likely(page)) {
-+		get_page(page);
- 		mutex_unlock(&udev->cmdr_lock);
- 		return page;
- 	}
-@@ -1877,6 +1878,7 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
- 		/* For the vmalloc()ed cmd area pages */
- 		addr = (void *)(unsigned long)info->mem[mi].addr + offset;
- 		page = vmalloc_to_page(addr);
-+		get_page(page);
- 	} else {
- 		uint32_t dpi;
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index 10b6c6daaacd..d43bb18f58fd 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -36,7 +36,7 @@
  
-@@ -1887,7 +1889,6 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
- 			return VM_FAULT_SIGBUS;
- 	}
+ #define IBMVSCSIS_VERSION	"v0.2"
  
--	get_page(page);
- 	vmf->page = page;
- 	return 0;
- }
+-#define	INITIAL_SRP_LIMIT	800
++#define	INITIAL_SRP_LIMIT	1024
+ #define	DEFAULT_MAX_SECTORS	256
+ #define MAX_TXU			1024 * 1024
+ 
 -- 
 2.35.1
 
