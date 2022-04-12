@@ -2,36 +2,36 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BC1DC4167B
-	for <target-devel@archiver.kernel.org>; Tue, 12 Apr 2022 00:45:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D949C43217
+	for <target-devel@archiver.kernel.org>; Tue, 12 Apr 2022 00:51:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242631AbiDLAsD (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 11 Apr 2022 20:48:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39220 "EHLO
+        id S244280AbiDLAxp (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 11 Apr 2022 20:53:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45102 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242948AbiDLArd (ORCPT
+        with ESMTP id S245212AbiDLAxG (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 11 Apr 2022 20:47:33 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B47613E9F;
-        Mon, 11 Apr 2022 17:45:18 -0700 (PDT)
+        Mon, 11 Apr 2022 20:53:06 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9698E31519;
+        Mon, 11 Apr 2022 17:47:53 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id C2640612A8;
-        Tue, 12 Apr 2022 00:45:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2AA76C385A3;
-        Tue, 12 Apr 2022 00:45:16 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 039A6B8186F;
+        Tue, 12 Apr 2022 00:47:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDE87C385AA;
+        Tue, 12 Apr 2022 00:47:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1649724317;
-        bh=Ac1i+RF0ABR8FrSNXf/01Y/H4o1qgHwU85zwiKBQmvw=;
+        s=k20201202; t=1649724470;
+        bh=00QZOWtD55fHKQOKnPxpPpVI9oc8eABGIOsh3pHyJwQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=vAYdOY5YuH2TIgTSQFtmc45N+NlX0NhGw9E6Bm1po/5KZPOPVVJhjz0iYDotFijZX
-         XvrFu7abNs4ga6MiCUPSg9rJhMVqHgiH0g2yMLp/WfqDPorFMwOYNHgUwxsRGqH4fy
-         3lzaGEEk0TIrQyfNVj6iO9uFE8xb23vqVfL+hhT/XaPC5bblTrn/6zKbB2RjdPxC5V
-         AiB/LcP3UJgl8dJjNSrkAatMeb9kK00Z3BBh39Lj4RCdkfCCJGw3pRPdrUVYeB5x56
-         ztgQz6HRNJLWtTWrioGFV9v0KY7ruJTGqmMExFK7BI+QtBP2SErRfjCgjp93x5ECh4
-         noOeNEsBwebbQ==
+        b=jlV9QTkHKMc6KyAaS87SKathRKmrryGFR4V+VnVt3LQC3dFhsWeFG5WiM7D6lvXsN
+         IqYOMFQxtjfRr4blJHmF1cv+39oBVm/rvlX8z56T2W1S70cE6STKBojt5nZY4oJdG6
+         o1R2gMvlckVeV5/Rv649a9O72/dh1cnTWh/Hd44uAcie/WntIh3PbbBlozaj2ENW0V
+         NWAb0XDsklHolAZto7qK+Zr8zxTLIAq5x0szkrF16txVm5HnUhJ03ysjcXT/eeiWpT
+         lmbbsYArHsMH+9vHe2u/D/ujk/GfMiNGG4OweWOL8ttcLizi3TY9a75RRvpDXH+c7E
+         GicK8k0bD9QkQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
@@ -39,12 +39,12 @@ Cc:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.17 17/49] scsi: target: tcmu: Fix possible page UAF
-Date:   Mon, 11 Apr 2022 20:43:35 -0400
-Message-Id: <20220412004411.349427-17-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 15/41] scsi: target: tcmu: Fix possible page UAF
+Date:   Mon, 11 Apr 2022 20:46:27 -0400
+Message-Id: <20220412004656.350101-15-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220412004411.349427-1-sashal@kernel.org>
-References: <20220412004411.349427-1-sashal@kernel.org>
+In-Reply-To: <20220412004656.350101-1-sashal@kernel.org>
+References: <20220412004656.350101-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -75,10 +75,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 7b2a89a67cdb..06a5c4086551 100644
+index 9f552f48084c..0ca5ec14d3db 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
-@@ -1820,6 +1820,7 @@ static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
+@@ -1821,6 +1821,7 @@ static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
  	mutex_lock(&udev->cmdr_lock);
  	page = xa_load(&udev->data_pages, dpi);
  	if (likely(page)) {
@@ -86,7 +86,7 @@ index 7b2a89a67cdb..06a5c4086551 100644
  		mutex_unlock(&udev->cmdr_lock);
  		return page;
  	}
-@@ -1876,6 +1877,7 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
+@@ -1877,6 +1878,7 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
  		/* For the vmalloc()ed cmd area pages */
  		addr = (void *)(unsigned long)info->mem[mi].addr + offset;
  		page = vmalloc_to_page(addr);
@@ -94,7 +94,7 @@ index 7b2a89a67cdb..06a5c4086551 100644
  	} else {
  		uint32_t dpi;
  
-@@ -1886,7 +1888,6 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
+@@ -1887,7 +1889,6 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
  			return VM_FAULT_SIGBUS;
  	}
  
