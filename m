@@ -2,176 +2,86 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A589DC433EF
-	for <target-devel@archiver.kernel.org>; Wed, 27 Apr 2022 19:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FBF0C433F5
+	for <target-devel@archiver.kernel.org>; Thu, 28 Apr 2022 02:55:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232195AbiD0Tfs (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 27 Apr 2022 15:35:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52516 "EHLO
+        id S241630AbiD1C6l (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 27 Apr 2022 22:58:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38874 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235139AbiD0TeG (ORCPT
+        with ESMTP id S231860AbiD1C6k (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 27 Apr 2022 15:34:06 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 50DCA10FCE
-        for <target-devel@vger.kernel.org>; Wed, 27 Apr 2022 12:30:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1651087849;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=fqkPaeEr0/s/QUyXfa0JdJ2y0zoET3+5u5xX7SykPZs=;
-        b=h6jVD/k4UwVWIbiMxzsqQwtbhk98QFCp58Qf3DqYm6u7sslMQM5dfrdILyVyj4xqHKJHI6
-        5Nng0+oa3paTU2AWdKFe5d9Otiexs7E+otr6LnZ5hJtEYg8YE92/Ux0Yp6uMtC3guXZR/l
-        yHjaMGASy3OKOW+X+T4IzL7bsFQrGvM=
-Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com
- [209.85.219.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-647-HQfSV_e-O6GnfNScGu4V4Q-1; Wed, 27 Apr 2022 15:30:48 -0400
-X-MC-Unique: HQfSV_e-O6GnfNScGu4V4Q-1
-Received: by mail-qv1-f71.google.com with SMTP id g10-20020a0562141cca00b00456332167ffso1993255qvd.13
-        for <target-devel@vger.kernel.org>; Wed, 27 Apr 2022 12:30:48 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=fqkPaeEr0/s/QUyXfa0JdJ2y0zoET3+5u5xX7SykPZs=;
-        b=oierJ+XWRh55lkaQmC8rMzPKKT6NYW/neynXlbF4AtaU5zSxOKAEQ3ChNZV7hDv9C/
-         1Mb4mkh/EtLrQOl9teyVYmN4d7i9+pPv6iJG7O5HLpZGnb4fl17qFvG0+M4nF0RZHg9k
-         0U89X7JtEaH0a4q0fRVskKTxTfCL9vLIrBoq1NE6Ref1ZLpYHNwazU3wIuGRrHrnUdBa
-         3rME7O77kBcuIzkaOoXxthuJ/4khuRbMVhPjLF8b3vW/yKRXK36OA4cILPyG5l7SMfrw
-         CVTokPKA+jbyOg1BlHwCd1PbLxdU+pSR6j635GH+eJ4UTecDMmnr8g4a/k1yYR/ZfwRf
-         LsrQ==
-X-Gm-Message-State: AOAM531GqjoO2ewzpt0h0yjfy8utba+Bk5aOMRu98mC59zDrD5xlFh6T
-        0sdpuFQW6Nrkx8Hmv5b5b+VBV+vLjGaHvLhn7k7JpbHVJvyMr+mX5LfS1wS+lnK55g7OpMxy4h9
-        xpNF0huhBipdo34nIOrlwyEOC
-X-Received: by 2002:a05:622a:1647:b0:2f3:6077:bffb with SMTP id y7-20020a05622a164700b002f36077bffbmr15437557qtj.462.1651087846934;
-        Wed, 27 Apr 2022 12:30:46 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzW9IY37W+gHqFMGfCeWt+DOqQvQGUAtaKClK6ymbFn9j81hV9SBESEIucknLk6jMGnLPTUGQ==
-X-Received: by 2002:a05:622a:1647:b0:2f3:6077:bffb with SMTP id y7-20020a05622a164700b002f36077bffbmr15437536qtj.462.1651087846556;
-        Wed, 27 Apr 2022 12:30:46 -0700 (PDT)
-Received: from loberman.users.ipa.redhat.com ([2600:6c64:4e7f:cee0:729d:61b6:700c:6b56])
-        by smtp.gmail.com with ESMTPSA id t19-20020ac85893000000b002e1afa26591sm11717305qta.52.2022.04.27.12.30.45
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 27 Apr 2022 12:30:46 -0700 (PDT)
-Message-ID: <90ce634faf2484405a51b4628be5b61be5a0f0a6.camel@redhat.com>
-Subject: Re: [PATCH] target: pscsi: set SCF_TREAT_READ_AS_NORMAL flag only
- if there is valid data
-From:   Laurence Oberman <loberman@redhat.com>
+        Wed, 27 Apr 2022 22:58:40 -0400
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ED413701F;
+        Wed, 27 Apr 2022 19:55:25 -0700 (PDT)
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 23S2hZxm015405;
+        Thu, 28 Apr 2022 02:55:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type : content-transfer-encoding; s=corp-2021-07-09;
+ bh=qRh+kCkgOa9dV3TWrbuX8juS99jukR8jTYOkR3GxzOw=;
+ b=uWeEfg9Pk2BpfMhvGMlV3g0LD03f02a0uMumsHasNEMNMLuFCWqHqI9uvX0cVZafQbIk
+ YUz+AL0AqxmoGfcWekcvCqqv5vzqApVsVAKELJoWfvmQL8dFAV1MilJ2mHIHMqkC2YuR
+ jg8JfPkJ2j/OGD2jyCUNTw5zh7OQeieBgKeVPv1K29KxpdRLf22fPMY73/mqzWGt1bv7
+ Q4Pf9ur0HDS9XKPcTNB7V7myxAVNAS11SK/a2anYjppubfHU8XkTqyCmrVsgjm3w6oSl
+ B+lTgVir4iW3Uj+Uk0PrqMqCYs9q4HreJazOTKsCVzdbKk27YK+IHCJZzLYts7vnIn8C XA== 
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3fmb9atpab-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 28 Apr 2022 02:55:22 +0000
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.16.1.2/8.16.1.2) with SMTP id 23S2k8Tg019742;
+        Thu, 28 Apr 2022 02:55:20 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com with ESMTP id 3fm7w5u4yg-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 28 Apr 2022 02:55:20 +0000
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 23S2tKis039391;
+        Thu, 28 Apr 2022 02:55:20 GMT
+Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com with ESMTP id 3fm7w5u4y0-1;
+        Thu, 28 Apr 2022 02:55:20 +0000
+From:   "Martin K. Petersen" <martin.petersen@oracle.com>
 To:     David Jeffery <djeffery@redhat.com>, target-devel@vger.kernel.org
 Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Date:   Wed, 27 Apr 2022 15:30:44 -0400
-In-Reply-To: <ae63bff76f384ad7d28aa0833beba6860171aea9.camel@redhat.com>
+        linux-kernel@vger.kernel.org,
+        Laurence Oberman <loberman@redhat.com>,
+        linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] target: pscsi: set SCF_TREAT_READ_AS_NORMAL flag only if there is valid data
+Date:   Wed, 27 Apr 2022 22:55:19 -0400
+Message-Id: <165111450538.20789.16658928197210500441.b4-ty@oracle.com>
+X-Mailer: git-send-email 2.35.2
+In-Reply-To: <20220427183250.291881-1-djeffery@redhat.com>
 References: <20220427183250.291881-1-djeffery@redhat.com>
-         <ae63bff76f384ad7d28aa0833beba6860171aea9.camel@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5 (3.28.5-10.el7) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-ORIG-GUID: p4tgCAzGMfiIHnyhWKFXOQwwadPaaaM8
+X-Proofpoint-GUID: p4tgCAzGMfiIHnyhWKFXOQwwadPaaaM8
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, 2022-04-27 at 15:26 -0400, Laurence Oberman wrote:
-> On Wed, 2022-04-27 at 14:32 -0400, David Jeffery wrote:
-> > With tape devices, the SCF_TREAT_READ_AS_NORMAL flag is used by the
-> > target
-> > subsystem to mark commands which have both data to return as well
-> > as
-> > sense data. But with pscsi, SCF_TREAT_READ_AS_NORMAL can be set
-> > even
-> > if
-> > there is no data to return. The SCF_TREAT_READ_AS_NORMAL flag
-> > causes
-> > the
-> > target core to call iscsit datain callbacks even if there is no
-> > data,
-> > which
-> > iscsit does not support. This results in iscsit going into an error
-> > state
-> > requiring recovery and being unable to complete the command to the
-> > initiator.
-> > 
-> > This issue can be resolved by fixing pscsi to only set
-> > SCF_TREAT_READ_AS_NORMAL if there is valid data to return along
-> > side
-> > the
-> > sense data.
-> > 
-> > Fixes: bd81372065fa ("scsi: target: transport should handle st
-> > FM/EOM/ILI reads")
-> > Signed-off-by: David Jeffery <djeffery@redhat.com>
-> > Tested-by: Laurence Oberman <loberman@redhat.com>
-> > ---
-> >  drivers/target/target_core_pscsi.c | 10 +++++-----
-> >  1 file changed, 5 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/target/target_core_pscsi.c
-> > b/drivers/target/target_core_pscsi.c
-> > index ff292b75e23f..60dafe4c581b 100644
-> > --- a/drivers/target/target_core_pscsi.c
-> > +++ b/drivers/target/target_core_pscsi.c
-> > @@ -588,7 +588,7 @@ static void pscsi_destroy_device(struct
-> > se_device
-> > *dev)
-> >  }
-> >  
-> >  static void pscsi_complete_cmd(struct se_cmd *cmd, u8 scsi_status,
-> > -			       unsigned char *req_sense)
-> > +			       unsigned char *req_sense, int
-> > valid_data)
-> >  {
-> >  	struct pscsi_dev_virt *pdv = PSCSI_DEV(cmd->se_dev);
-> >  	struct scsi_device *sd = pdv->pdv_sd;
-> > @@ -681,7 +681,7 @@ static void pscsi_complete_cmd(struct se_cmd
-> > *cmd, u8 scsi_status,
-> >  		 * back despite framework assumption that a
-> >  		 * check condition means there is no data
-> >  		 */
-> > -		if (sd->type == TYPE_TAPE &&
-> > +		if (sd->type == TYPE_TAPE && valid_data &&
-> >  		    cmd->data_direction == DMA_FROM_DEVICE) {
-> >  			/*
-> >  			 * is sense data valid, fixed format,
-> > @@ -1032,6 +1032,7 @@ static void pscsi_req_done(struct request
-> > *req,
-> > blk_status_t status)
-> >  	struct se_cmd *cmd = req->end_io_data;
-> >  	struct scsi_cmnd *scmd = blk_mq_rq_to_pdu(req);
-> >  	enum sam_status scsi_status = scmd->result & 0xff;
-> > +	int valid_data = cmd->data_length - scmd->resid_len;
-> >  	u8 *cdb = cmd->priv;
-> >  
-> >  	if (scsi_status != SAM_STAT_GOOD) {
-> > @@ -1039,12 +1040,11 @@ static void pscsi_req_done(struct request
-> > *req, blk_status_t status)
-> >  			" 0x%02x Result: 0x%08x\n", cmd, cdb[0], scmd-
-> > > result);
-> > 
-> >  	}
-> >  
-> > -	pscsi_complete_cmd(cmd, scsi_status, scmd->sense_buffer);
-> > +	pscsi_complete_cmd(cmd, scsi_status, scmd->sense_buffer,
-> > valid_data);
-> >  
-> >  	switch (host_byte(scmd->result)) {
-> >  	case DID_OK:
-> > -		target_complete_cmd_with_length(cmd, scsi_status,
-> > -			cmd->data_length - scmd->resid_len);
-> > +		target_complete_cmd_with_length(cmd, scsi_status,
-> > valid_data);
-> >  		break;
-> >  	default:
-> >  		pr_debug("PSCSI Host Byte exception at cmd: %p CDB:"
-> 
-> We added a bucnh of debug to track this down, and the fix is solid
-> and
-> makes perfect sense.
-> 
-> Reviewed-by: Laurence Oberman <loberman@redhat.com>
+On Wed, 27 Apr 2022 14:32:50 -0400, David Jeffery wrote:
 
-Martin, please add
-Reported-by: Scott Hamilton <scott.hamilton@atos.net>
+> With tape devices, the SCF_TREAT_READ_AS_NORMAL flag is used by the target
+> subsystem to mark commands which have both data to return as well as
+> sense data. But with pscsi, SCF_TREAT_READ_AS_NORMAL can be set even if
+> there is no data to return. The SCF_TREAT_READ_AS_NORMAL flag causes the
+> target core to call iscsit datain callbacks even if there is no data, which
+> iscsit does not support. This results in iscsit going into an error state
+> requiring recovery and being unable to complete the command to the
+> initiator.
+> 
+> [...]
 
+Applied to 5.18/scsi-fixes, thanks!
+
+[1/1] target: pscsi: set SCF_TREAT_READ_AS_NORMAL flag only if there is valid data
+      https://git.kernel.org/mkp/scsi/c/8be70a842f70
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
