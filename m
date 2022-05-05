@@ -2,83 +2,145 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A923C433F5
-	for <target-devel@archiver.kernel.org>; Thu,  5 May 2022 04:35:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FCF4C433F5
+	for <target-devel@archiver.kernel.org>; Thu,  5 May 2022 06:07:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242811AbiEEEjC (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 5 May 2022 00:39:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50362 "EHLO
+        id S244146AbiEEGLa (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 5 May 2022 02:11:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60794 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238391AbiEEEjB (ORCPT
+        with ESMTP id S244119AbiEEGL1 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 5 May 2022 00:39:01 -0400
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 547D4A197;
-        Wed,  4 May 2022 21:35:22 -0700 (PDT)
-Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 242LrpKC032436;
-        Tue, 3 May 2022 00:52:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2021-07-09;
- bh=9xNo423aYGgAB4qTUyVVdnVwr+pI0bOJaK6nPJshNoA=;
- b=nzc8Hy3+L5KAPGE4WtUOvutlKRqzYZ0Gi+OUBr0ZiFlXyPbdYmvA8aHkp/dH4z3TW58n
- MhThLMJsbt922q5LJJj8QkyxdjKU3fi7VMFVNXIRZuTQoVj85Zhn5uedpfbDOdveZ9kh
- BcLD6EdGQvN63W9LebIM9SW/b+K4EuDiUd8SqfmD6szRMSZY/AmvZtqulgZZ/cUUAa3t
- VJQGbXFU+bBra4FcYS+sGMveXCuIor1uZLoo0Q8spOB0Pnfs2TSqQiql0BiCMfJW/58Z
- Ybyq2Kz3/uRGj22bkN06//XlmiKaZ2bJGIjcxuStYwi1TNhYzwExJLl8kKNqHWyY5sE2 OA== 
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3frw0amhjm-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 03 May 2022 00:52:06 +0000
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.16.1.2/8.16.1.2) with SMTP id 2430oqBu009009;
-        Tue, 3 May 2022 00:52:05 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com with ESMTP id 3fruj83xbt-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 03 May 2022 00:52:05 +0000
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 2430plk0010389;
-        Tue, 3 May 2022 00:52:04 GMT
-Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com with ESMTP id 3fruj83x4g-32;
-        Tue, 03 May 2022 00:52:04 +0000
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        Wan Jiabing <wanjiabing@vivo.com>,
-        Ram Vegesna <ram.vegesna@broadcom.com>,
-        linux-kernel@vger.kernel.org,
-        James Smart <james.smart@broadcom.com>,
-        target-devel@vger.kernel.org, Daniel Wagner <dwagner@suse.de>,
-        linux-scsi@vger.kernel.org
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>
-Subject: Re: [PATCH] scsi: elx: efct: remove unnecessary memset in efct_io
-Date:   Mon,  2 May 2022 20:51:42 -0400
-Message-Id: <165153836360.24053.3746670237732598405.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.35.2
-In-Reply-To: <20220318145230.1031-1-wanjiabing@vivo.com>
-References: <20220318145230.1031-1-wanjiabing@vivo.com>
+        Thu, 5 May 2022 02:11:27 -0400
+Received: from www262.sakura.ne.jp (www262.sakura.ne.jp [202.181.97.72])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5094C3ED34;
+        Wed,  4 May 2022 23:07:47 -0700 (PDT)
+Received: from fsav411.sakura.ne.jp (fsav411.sakura.ne.jp [133.242.250.110])
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 24567QCd016807;
+        Thu, 5 May 2022 15:07:26 +0900 (JST)
+        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Received: from www262.sakura.ne.jp (202.181.97.72)
+ by fsav411.sakura.ne.jp (F-Secure/fsigk_smtp/550/fsav411.sakura.ne.jp);
+ Thu, 05 May 2022 15:07:26 +0900 (JST)
+X-Virus-Status: clean(F-Secure/fsigk_smtp/550/fsav411.sakura.ne.jp)
+Received: from [192.168.1.9] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
+        (authenticated bits=0)
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 24567QY4016802
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
+        Thu, 5 May 2022 15:07:26 +0900 (JST)
+        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
+Message-ID: <fbe5e9a8-0110-0c22-b7d6-74d53948d042@I-love.SAKURA.ne.jp>
+Date:   Thu, 5 May 2022 15:07:25 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: Lse0w1_Z39HX8YrFSdYEa8iScjtGN_Rv
-X-Proofpoint-ORIG-GUID: Lse0w1_Z39HX8YrFSdYEa8iScjtGN_Rv
+User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.1
+Content-Language: en-US
+To:     Sagi Grimberg <sagi@grimberg.me>, Jason Gunthorpe <jgg@ziepe.ca>,
+        Leon Romanovsky <leon@kernel.org>
+Cc:     OFED mailing list <linux-rdma@vger.kernel.org>,
+        target-devel@vger.kernel.org
+From:   Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: [PATCH] IB/isert: Avoid flush_scheduled_work() usage
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Fri, 18 Mar 2022 22:52:20 +0800, Wan Jiabing wrote:
+Flushing system-wide workqueues is dangerous and will be forbidden.
+Replace system_wq with local isert_login_wq.
 
-> io->sgl is allocated by kzalloc(). The memory is set to zero.
-> It is unnecessary to call memset again.
-> 
-> 
+Link: https://lkml.kernel.org/r/49925af7-78a8-a3dd-bce6-cfc02e1a9236@I-love.SAKURA.ne.jp
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+Note: This patch is only compile tested.
 
-Applied to 5.19/scsi-queue, thanks!
+ drivers/infiniband/ulp/isert/ib_isert.c | 25 ++++++++++++++++---------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
 
-[1/1] scsi: elx: efct: remove unnecessary memset in efct_io
-      https://git.kernel.org/mkp/scsi/c/507bd398a056
-
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index 181e39e2a673..b9e8afb51f6e 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -42,6 +42,7 @@ MODULE_PARM_DESC(sg_tablesize,
+ 
+ static DEFINE_MUTEX(device_list_mutex);
+ static LIST_HEAD(device_list);
++static struct workqueue_struct *isert_login_wq;
+ static struct workqueue_struct *isert_comp_wq;
+ static struct workqueue_struct *isert_release_wq;
+ 
+@@ -1017,7 +1018,7 @@ isert_rx_login_req(struct isert_conn *isert_conn)
+ 		complete(&isert_conn->login_comp);
+ 		return;
+ 	}
+-	schedule_delayed_work(&conn->login_work, 0);
++	queue_delayed_work(isert_login_wq, &conn->login_work, 0);
+ }
+ 
+ static struct iscsi_cmd
+@@ -2348,9 +2349,9 @@ isert_get_login_rx(struct iscsi_conn *conn, struct iscsi_login *login)
+ 
+ 	/*
+ 	 * For login requests after the first PDU, isert_rx_login_req() will
+-	 * kick schedule_delayed_work(&conn->login_work) as the packet is
+-	 * received, which turns this callback from iscsi_target_do_login_rx()
+-	 * into a NOP.
++	 * kick queue_delayed_work(isert_login_wq, &conn->login_work) as
++	 * the packet is received, which turns this callback from
++	 * iscsi_target_do_login_rx() into a NOP.
+ 	 */
+ 	if (!login->first_request)
+ 		return 0;
+@@ -2606,20 +2607,23 @@ static struct iscsit_transport iser_target_transport = {
+ 
+ static int __init isert_init(void)
+ {
+-	int ret;
++	isert_login_wq = alloc_workqueue("isert_login_wq", 0, 0);
++	if (!isert_login_wq) {
++		isert_err("Unable to allocate isert_login_wq\n");
++		return -ENOMEM;
++	}
+ 
+ 	isert_comp_wq = alloc_workqueue("isert_comp_wq",
+ 					WQ_UNBOUND | WQ_HIGHPRI, 0);
+ 	if (!isert_comp_wq) {
+ 		isert_err("Unable to allocate isert_comp_wq\n");
+-		return -ENOMEM;
++		goto destroy_login_wq;
+ 	}
+ 
+ 	isert_release_wq = alloc_workqueue("isert_release_wq", WQ_UNBOUND,
+ 					WQ_UNBOUND_MAX_ACTIVE);
+ 	if (!isert_release_wq) {
+ 		isert_err("Unable to allocate isert_release_wq\n");
+-		ret = -ENOMEM;
+ 		goto destroy_comp_wq;
+ 	}
+ 
+@@ -2630,17 +2634,20 @@ static int __init isert_init(void)
+ 
+ destroy_comp_wq:
+ 	destroy_workqueue(isert_comp_wq);
++destroy_login_wq:
++	destroy_workqueue(isert_login_wq);
+ 
+-	return ret;
++	return -ENOMEM;
+ }
+ 
+ static void __exit isert_exit(void)
+ {
+-	flush_scheduled_work();
++	flush_workqueue(isert_login_wq);
+ 	destroy_workqueue(isert_release_wq);
+ 	destroy_workqueue(isert_comp_wq);
+ 	iscsit_unregister_transport(&iser_target_transport);
+ 	isert_info("iSER_TARGET[0] - Released iser_target_transport\n");
++	destroy_workqueue(isert_login_wq);
+ }
+ 
+ MODULE_DESCRIPTION("iSER-Target for mainline target infrastructure");
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.18.4
