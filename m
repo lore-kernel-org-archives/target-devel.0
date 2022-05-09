@@ -2,272 +2,137 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E339AC433EF
-	for <target-devel@archiver.kernel.org>; Mon,  9 May 2022 11:37:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D18E0C433FE
+	for <target-devel@archiver.kernel.org>; Mon,  9 May 2022 18:12:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233024AbiEILlr (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 9 May 2022 07:41:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54894 "EHLO
+        id S240034AbiEISQc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 9 May 2022 14:16:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54230 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233042AbiEILlq (ORCPT
+        with ESMTP id S240080AbiEISQJ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 9 May 2022 07:41:46 -0400
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB23017B60E;
-        Mon,  9 May 2022 04:37:51 -0700 (PDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 249BXGK7007757;
-        Mon, 9 May 2022 11:36:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=Hu4B3k0xeUNro813b2+aiUBT771PwRooBJJnDff8yqo=;
- b=Brdurmu0VDJiSNxJx0d9AvWLPlMZWxkJvwZ3MOcWoQqj6OpcVsVukftMCEBd1Qt61jdv
- 8E1gjddiVWwhSd1wdAwJ1MQjdwP81kykLpwXRxgDef3jAgM1BDFlr0IGgp/MSevPcL2s
- E8Tn4HfJu3KO1a7ZfR/z/1nk7pWyrAB8owptbC3bOHcOR6T4rxIlUZDODs4ysx+rrabL
- 821bhDazAJWGrmpv/4jdWDn43LGKxfMk065SuXMGr875PMjrP0J4RMiXe3KrXERucpeU
- TTol0HnOsQzyjW0hvmaKkcA7Tu8q/uFpCTFAst7osZ7Xc6XGK2e/IuE0Aec01pLOwjQA oA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3fy26e828d-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 09 May 2022 11:36:45 +0000
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 249BXqDH009570;
-        Mon, 9 May 2022 11:36:44 GMT
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com [169.47.144.27])
-        by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3fy26e8285-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 09 May 2022 11:36:44 +0000
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
-        by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 249BQwEc031325;
-        Mon, 9 May 2022 11:36:44 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com [9.57.198.25])
-        by ppma05wdc.us.ibm.com with ESMTP id 3fwgd9nr45-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Mon, 09 May 2022 11:36:44 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com [9.57.199.109])
-        by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 249BahAK23200072
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 9 May 2022 11:36:43 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 594F6112064;
-        Mon,  9 May 2022 11:36:43 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 11645112062;
-        Mon,  9 May 2022 11:36:42 +0000 (GMT)
-Received: from [9.65.254.31] (unknown [9.65.254.31])
-        by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
-        Mon,  9 May 2022 11:36:41 +0000 (GMT)
-Message-ID: <3b88c917-debd-ffa8-3cc9-7b9b19f34ddd@linux.ibm.com>
-Date:   Mon, 9 May 2022 07:36:41 -0400
+        Mon, 9 May 2022 14:16:09 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19E0649CBD
+        for <target-devel@vger.kernel.org>; Mon,  9 May 2022 11:12:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=jBAxB3AIHOJ8SifWVHc/VdXX/9KeXtix2H9wycYLQxY=; b=D/B1nEvPlalLOxwzzlrUIPP5od
+        IEpwoKd6QkN0CjwghytaGEsoCsFvZsGCxeVrKU7w2fKlD4Gfoc86RX8JHAFqCYduqSw83dbA+GbR1
+        C5WoupGZ5DAoL9h3tjircg2usBqCqXHeet022oCKASX5mxFuJK6AeMR4RcBtZ24tfqKGYHlWhgSpQ
+        AicD2HSUCE0Vj37jBVZqRX4h+2D4ygCTY4UdFRULFd8OeuNmRNmG0tWoZ23PhxTJFnInmsPyIeSKU
+        wMn2A0q3VWtTLy+ys+nWoylipcz33RXkFAgVkTyU/iKgNChTbeTnmxBGQfSRWNaorohjDmVSbTrsL
+        CSW2ks3A==;
+Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1no7rV-003gVP-RF; Mon, 09 May 2022 18:12:01 +0000
+Date:   Mon, 9 May 2022 19:12:01 +0100
+From:   Matthew Wilcox <willy@infradead.org>
+To:     Dan Carpenter <dan.carpenter@oracle.com>
+Cc:     Bodo Stroesser <bostroesser@gmail.com>,
+        xiaoguang.wang@linux.alibaba.com, target-devel@vger.kernel.org
+Subject: Re: [bug report] scsi: target: tcmu: Fix possible data corruption
+Message-ID: <YnlZcUTU2SzYi5/N@casper.infradead.org>
+References: <YnKX+i4XeOJV1njK@kili>
+ <748a23d4-6036-c62d-8e1f-4856d6c75439@gmail.com>
+ <20220509060545.GI4031@kadam>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.7.0
-Subject: Re: [PATCH] kernel/drivers: Remove redundant driver match function
-Content-Language: en-US
-To:     lizhe <sensor1010@163.com>, lee.jones@linaro.org,
-        fthain@linux-m68k.org, pasic@linux.ibm.com, jjherne@linux.ibm.com,
-        freude@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com,
-        agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
-        svens@linux.ibm.com, jejb@linux.ibm.com,
-        martin.petersen@oracle.com, zbr@ioremap.net, perex@perex.cz,
-        tiwai@suse.com, bvanassche@acm.org, dan.j.williams@intel.com,
-        srinivas.kandagatla@linaro.org, wens@csie.org,
-        colin.king@intel.com, u.kleine-koenig@pengutronix.de, hare@suse.de
-Cc:     linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, alsa-devel@alsa-project.org
-References: <20220506045952.136290-1-sensor1010@163.com>
-From:   Tony Krowiak <akrowiak@linux.ibm.com>
-In-Reply-To: <20220506045952.136290-1-sensor1010@163.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: mLd8JY_V2FXBoVdvKg4D7A0V2tYAZCqR
-X-Proofpoint-GUID: CSqm4z8NZvcz7mC3q7ZEt_umum_5EVtR
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.858,Hydra:6.0.486,FMLib:17.11.64.514
- definitions=2022-05-09_03,2022-05-09_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- impostorscore=0 bulkscore=0 phishscore=0 mlxlogscore=999 malwarescore=0
- adultscore=0 spamscore=0 mlxscore=0 suspectscore=0 lowpriorityscore=0
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2202240000 definitions=main-2205090065
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220509060545.GI4031@kadam>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-For the drivers/s390/crypto/vfio_ap_drv.c device driver:
-Reviewed-by: Tony Krowiak <akrowiak@stny.rr.com>
+On Mon, May 09, 2022 at 09:05:45AM +0300, Dan Carpenter wrote:
+> > If there is no other way to avoid the Smatch warning,
+> 
+> The Smatch warning is not the issue.  If we're holding a spinlock and
+> we call might_sleep() then that generates a stack trace at runtime if
+> you have CONFIG_DEBUG_ATOMIC_SLEEP enabled.  Probably enabling
+> CONFIG_DEBUG_ATOMIC_SLEEP should just be a standard part of the QC
+> process.
+> 
+> Anyway, it sounds you're just doing the locking to silence a warning in
+> xarray.  Let's ask Matthew if he has a hint.
 
-On 5/6/22 12:59 AM, lizhe wrote:
-> If there is no driver match function, the driver core assumes that each
-> candidate pair (driver, device) matches, see driver_match_device().
->
-> Signed-off-by: lizhe <sensor1010@163.com>
-> ---
->   drivers/mfd/mcp-core.c             |  6 ------
->   drivers/nubus/bus.c                |  6 ------
->   drivers/s390/crypto/vfio_ap_drv.c  |  6 ------
->   drivers/scsi/scsi_debug.c          |  7 -------
->   drivers/target/loopback/tcm_loop.c |  7 -------
->   drivers/w1/w1.c                    |  6 ------
->   sound/ac97_bus.c                   | 11 -----------
->   7 files changed, 49 deletions(-)
->
-> diff --git a/drivers/mfd/mcp-core.c b/drivers/mfd/mcp-core.c
-> index 2fa592c37c6f..281a9369f2b3 100644
-> --- a/drivers/mfd/mcp-core.c
-> +++ b/drivers/mfd/mcp-core.c
-> @@ -20,11 +20,6 @@
->   #define to_mcp(d)		container_of(d, struct mcp, attached_device)
->   #define to_mcp_driver(d)	container_of(d, struct mcp_driver, drv)
->   
-> -static int mcp_bus_match(struct device *dev, struct device_driver *drv)
-> -{
-> -	return 1;
-> -}
-> -
->   static int mcp_bus_probe(struct device *dev)
->   {
->   	struct mcp *mcp = to_mcp(dev);
-> @@ -43,7 +38,6 @@ static void mcp_bus_remove(struct device *dev)
->   
->   static struct bus_type mcp_bus_type = {
->   	.name		= "mcp",
-> -	.match		= mcp_bus_match,
->   	.probe		= mcp_bus_probe,
->   	.remove		= mcp_bus_remove,
->   };
-> diff --git a/drivers/nubus/bus.c b/drivers/nubus/bus.c
-> index 17fad660032c..72921e4f35f6 100644
-> --- a/drivers/nubus/bus.c
-> +++ b/drivers/nubus/bus.c
-> @@ -14,11 +14,6 @@
->   #define to_nubus_board(d)       container_of(d, struct nubus_board, dev)
->   #define to_nubus_driver(d)      container_of(d, struct nubus_driver, driver)
->   
-> -static int nubus_bus_match(struct device *dev, struct device_driver *driver)
-> -{
-> -	return 1;
-> -}
-> -
->   static int nubus_device_probe(struct device *dev)
->   {
->   	struct nubus_driver *ndrv = to_nubus_driver(dev->driver);
-> @@ -39,7 +34,6 @@ static void nubus_device_remove(struct device *dev)
->   
->   struct bus_type nubus_bus_type = {
->   	.name		= "nubus",
-> -	.match		= nubus_bus_match,
->   	.probe		= nubus_device_probe,
->   	.remove		= nubus_device_remove,
->   };
-> diff --git a/drivers/s390/crypto/vfio_ap_drv.c b/drivers/s390/crypto/vfio_ap_drv.c
-> index 29ebd54f8919..0a662c451f2a 100644
-> --- a/drivers/s390/crypto/vfio_ap_drv.c
-> +++ b/drivers/s390/crypto/vfio_ap_drv.c
-> @@ -172,14 +172,8 @@ static void vfio_ap_matrix_dev_release(struct device *dev)
->   	kfree(matrix_dev);
->   }
->   
-> -static int matrix_bus_match(struct device *dev, struct device_driver *drv)
-> -{
-> -	return 1;
-> -}
-> -
->   static struct bus_type matrix_bus = {
->   	.name = "matrix",
-> -	.match = &matrix_bus_match,
->   };
->   
->   static struct device_driver matrix_driver = {
-> diff --git a/drivers/scsi/scsi_debug.c b/drivers/scsi/scsi_debug.c
-> index 592a290e6cfa..8107489b36e8 100644
-> --- a/drivers/scsi/scsi_debug.c
-> +++ b/drivers/scsi/scsi_debug.c
-> @@ -7844,15 +7844,8 @@ static void sdebug_driver_remove(struct device *dev)
->   	scsi_host_put(sdbg_host->shost);
->   }
->   
-> -static int pseudo_lld_bus_match(struct device *dev,
-> -				struct device_driver *dev_driver)
-> -{
-> -	return 1;
-> -}
-> -
->   static struct bus_type pseudo_lld_bus = {
->   	.name = "pseudo",
-> -	.match = pseudo_lld_bus_match,
->   	.probe = sdebug_driver_probe,
->   	.remove = sdebug_driver_remove,
->   	.drv_groups = sdebug_drv_groups,
-> diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-> index 4407b56aa6d1..eeb63deff94f 100644
-> --- a/drivers/target/loopback/tcm_loop.c
-> +++ b/drivers/target/loopback/tcm_loop.c
-> @@ -83,15 +83,8 @@ static int tcm_loop_show_info(struct seq_file *m, struct Scsi_Host *host)
->   static int tcm_loop_driver_probe(struct device *);
->   static void tcm_loop_driver_remove(struct device *);
->   
-> -static int pseudo_lld_bus_match(struct device *dev,
-> -				struct device_driver *dev_driver)
-> -{
-> -	return 1;
-> -}
-> -
->   static struct bus_type tcm_loop_lld_bus = {
->   	.name			= "tcm_loop_bus",
-> -	.match			= pseudo_lld_bus_match,
->   	.probe			= tcm_loop_driver_probe,
->   	.remove			= tcm_loop_driver_remove,
->   };
-> diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
-> index f2ae2e563dc5..a6ecfa1b3417 100644
-> --- a/drivers/w1/w1.c
-> +++ b/drivers/w1/w1.c
-> @@ -58,11 +58,6 @@ MODULE_PARM_DESC(slave_ttl,
->   DEFINE_MUTEX(w1_mlock);
->   LIST_HEAD(w1_masters);
->   
-> -static int w1_master_match(struct device *dev, struct device_driver *drv)
-> -{
-> -	return 1;
-> -}
-> -
->   static int w1_master_probe(struct device *dev)
->   {
->   	return -ENODEV;
-> @@ -174,7 +169,6 @@ static int w1_uevent(struct device *dev, struct kobj_uevent_env *env);
->   
->   static struct bus_type w1_bus_type = {
->   	.name = "w1",
-> -	.match = w1_master_match,
->   	.uevent = w1_uevent,
->   };
->   
-> diff --git a/sound/ac97_bus.c b/sound/ac97_bus.c
-> index b4685c53ff11..c7aee8c42c55 100644
-> --- a/sound/ac97_bus.c
-> +++ b/sound/ac97_bus.c
-> @@ -75,19 +75,8 @@ int snd_ac97_reset(struct snd_ac97 *ac97, bool try_warm, unsigned int id,
->   }
->   EXPORT_SYMBOL_GPL(snd_ac97_reset);
->   
-> -/*
-> - * Let drivers decide whether they want to support given codec from their
-> - * probe method. Drivers have direct access to the struct snd_ac97
-> - * structure and may  decide based on the id field amongst other things.
-> - */
-> -static int ac97_bus_match(struct device *dev, struct device_driver *drv)
-> -{
-> -	return 1;
-> -}
-> -
->   struct bus_type ac97_bus_type = {
->   	.name		= "ac97",
-> -	.match		= ac97_bus_match,
->   };
->   
->   static int __init ac97_bus_init(void)
+I suspect that the tcmu code is doing something horrible & wrong again.
+It keeps poking at VM internals without understanding of what's going
+on or why.  Anyway ...
 
+> On Sun, May 08, 2022 at 08:03:14PM +0200, Bodo Stroesser wrote:
+> > I'm quite sure that our code does not cause any problems, because
+> > in tcmu we explicitly or implicitly take the xarray's lock only while
+> > holding the so called cmdr_lock mutex. Also, we take the lock without
+> > disabling irq or bh. So I think there is no problem if lock_page sleeps
+> > while we hold the xarray's lock.
+> > 
+> > Of course, we wouldn't need the xarray lock at all, but xarray code
+> > forces us to take it to avoid warnings.
+
+You mean "The XArray warns us when we break its locking rules".
+
+> > In tcmu_blocks_release we use the advanced xarray API to keep the
+> > overhead small. It allows us to lock/unlock before and after the loop
+> > only. If there is no other way to avoid the Smatch warning, we could
+> > easily put additional xas_unlock() and xas_lock() around the
+> > lock_page/unlock_page block.
+
+... then you'd have to call xas_reset(), and you might as well use
+xa_for_each().
+
+> > >      1661 static u32 tcmu_blocks_release(struct tcmu_dev *udev, unsigned long first,
+> > >      1662                                 unsigned long last)
+> > >      1663 {
+> > >      1664         XA_STATE(xas, &udev->data_pages, first * udev->data_pages_per_blk);
+> > >      1665         struct page *page;
+> > >      1666         u32 pages_freed = 0;
+> > >      1667
+> > >      1668         xas_lock(&xas);
+> > >                   ^^^^^^^^^^^^^^
+> > > We take a spinlock here.
+> > > 
+> > > 
+> > >      1669         xas_for_each(&xas, page, (last + 1) * udev->data_pages_per_blk - 1) {
+> > >      1670                 xas_store(&xas, NULL);
+> > >      1671                 /*
+> > >      1672                  * While reaching here there may be page faults occurring on
+> > >      1673                  * the to-be-released pages. A race condition may occur if
+> > >      1674                  * unmap_mapping_range() is called before page faults on these
+> > >      1675                  * pages have completed; a valid but stale map is created.
+> > >      1676                  *
+> > >      1677                  * If another command subsequently runs and needs to extend
+> > >      1678                  * dbi_thresh, it may reuse the slot corresponding to the
+> > >      1679                  * previous page in data_bitmap. Though we will allocate a new
+> > >      1680                  * page for the slot in data_area, no page fault will happen
+> > >      1681                  * because we have a valid map. Therefore the command's data
+> > >      1682                  * will be lost.
+> > >      1683                  *
+> > >      1684                  * We lock and unlock pages that are to be released to ensure
+> > >      1685                  * all page faults have completed. This way
+> > >      1686                  * unmap_mapping_range() can ensure stale maps are cleanly
+> > >      1687                  * removed.
+> > >      1688                  */
+> > > --> 1689                 lock_page(page);
+> > >                           ^^^^^^^^^^^^^^^
+> > > The lock_page() function calls might_sleep() (inside the declaration
+> > > block).
+> > > 
+> > >      1690                 unlock_page(page);
+> > >      1691                 __free_page(page);
+> > >      1692                 pages_freed++;
+> > >      1693         }
+> > >      1694         xas_unlock(&xas);
+
+There are a number of things you can do.  One is to remove pages into
+a pagevec until it is full, then xas_unlock(); xas_reset(); lock and
+unlock each page and pass the pagevec to __pagevec_release().  Then
+xas_lock() and continue the loop.
+
+Another possibility is to trylock each page; if it fails, put it into
+the pagevec (and do the above dance if the pagevec is now full), but
+if it succeeds, you can now unlock it and __free_page().
+
+The key to going fast is batching.  And that goes for __free_page()
+vs __pagevec_release() as much as for walking the XArray.
