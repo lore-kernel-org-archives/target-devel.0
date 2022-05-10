@@ -2,274 +2,187 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3EBDC433F5
-	for <target-devel@archiver.kernel.org>; Tue, 10 May 2022 06:51:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A94AC433EF
+	for <target-devel@archiver.kernel.org>; Tue, 10 May 2022 12:21:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236478AbiEJGzk (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 10 May 2022 02:55:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57748 "EHLO
+        id S232460AbiEJMZe (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 10 May 2022 08:25:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47058 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236920AbiEJGze (ORCPT
+        with ESMTP id S241255AbiEJMZe (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 10 May 2022 02:55:34 -0400
-Received: from out30-133.freemail.mail.aliyun.com (out30-133.freemail.mail.aliyun.com [115.124.30.133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C66225E9A;
-        Mon,  9 May 2022 23:51:36 -0700 (PDT)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R441e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e01424;MF=kanie@linux.alibaba.com;NM=1;PH=DS;RN=4;SR=0;TI=SMTPD_---0VCpZSOO_1652165414;
-Received: from localhost(mailfrom:kanie@linux.alibaba.com fp:SMTPD_---0VCpZSOO_1652165414)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Tue, 10 May 2022 14:51:34 +0800
-From:   Guixin Liu <kanie@linux.alibaba.com>
-To:     bostroesser@gmail.com, martin.petersen@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH] scsi:tcmu: switch tcmu completion path to work queue context
-Date:   Tue, 10 May 2022 14:50:14 +0800
-Message-Id: <1652165414-15933-1-git-send-email-kanie@linux.alibaba.com>
-X-Mailer: git-send-email 1.8.3.1
+        Tue, 10 May 2022 08:25:34 -0400
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 257908E1BC;
+        Tue, 10 May 2022 05:21:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1652185296; x=1683721296;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=ba7w5672jcor8kZ7HMJwL7dsb7ihHkGiN0qrietfc4o=;
+  b=HOQiJ4B4YLpiZGQXEwkBuIKEb2ddUxf2AAasRcKhcGqOl12bCwfPAb/Y
+   GmgdahX+4vHir5+G4HlwK9W6IkaL+n3C7H9CE7hugPPsyQ3NR9I0WDSfN
+   kG9VvolppNv8Lq6L/vAbiG1dJHtlAuGGQ9V3fMZYMmwOYLfeximR6YDtv
+   Uw3c+OEo4Tw4xiO9cFqKgS80uTRiV/ZMi3ZwF/jwFnId3+6b8ohVtYabI
+   mq5FUUkThERmL0QDqbSq124Qu/x1ID+XC0Wh4HlU9eQZnuRDYGj3CD37h
+   1++6xWL8BK6+IsEIoaNYL8XOcrqF7c8mglsxmG05QXmbegTVo/yn8b9Np
+   w==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10342"; a="269291945"
+X-IronPort-AV: E=Sophos;i="5.91,214,1647327600"; 
+   d="scan'208";a="269291945"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2022 05:21:35 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.91,214,1647327600"; 
+   d="scan'208";a="697059637"
+Received: from lkp-server01.sh.intel.com (HELO 5056e131ad90) ([10.239.97.150])
+  by orsmga004.jf.intel.com with ESMTP; 10 May 2022 05:21:33 -0700
+Received: from kbuild by 5056e131ad90 with local (Exim 4.95)
+        (envelope-from <lkp@intel.com>)
+        id 1noOrt-000Hs2-0t;
+        Tue, 10 May 2022 12:21:33 +0000
+Date:   Tue, 10 May 2022 20:21:26 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Guixin Liu <kanie@linux.alibaba.com>, bostroesser@gmail.com,
+        martin.petersen@oracle.com
+Cc:     llvm@lists.linux.dev, kbuild-all@lists.01.org,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Subject: Re: [PATCH] scsi:tcmu: switch tcmu completion path to work queue
+ context
+Message-ID: <202205102014.hfkv5W49-lkp@intel.com>
+References: <1652165414-15933-1-git-send-email-kanie@linux.alibaba.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1652165414-15933-1-git-send-email-kanie@linux.alibaba.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Currently, tcmu do completion in uio_write context, the userspace
-will wait until tcmu`s done synchronously, switch completion path to
-work queue context for better performance.
+Hi Guixin,
 
-Use tcmu + file to evaluate performance,
-fio job: fio -filename=/dev/sdb  -direct=1 -size=2G -name=1 -thread
--runtime=60 -time_based  -rw=randwrite -numjobs=16 -iodepth=16 -bs=128k
+Thank you for the patch! Perhaps something to improve:
 
-Without this patch:
-	READ: bw=2775MiB/s (2910MB/s), 173MiB/s-174MiB/s
-(181MB/s-183MB/s), io=163GiB (175GB), run=60001-60001msec
+[auto build test WARNING on mkp-scsi/for-next]
+[also build test WARNING on v5.18-rc6 next-20220509]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-With this patch:
-	READ: bw=3333MiB/s (3495MB/s), 208MiB/s-209MiB/s
-(218MB/s-219MB/s), io=195GiB (210GB), run=60001-60001msec
+url:    https://github.com/intel-lab-lkp/linux/commits/Guixin-Liu/scsi-tcmu-switch-tcmu-completion-path-to-work-queue-context/20220510-145227
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
+config: x86_64-randconfig-a003-20220509 (https://download.01.org/0day-ci/archive/20220510/202205102014.hfkv5W49-lkp@intel.com/config)
+compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project 18dd123c56754edf62c7042dcf23185c3727610f)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/08884eca055feed72186261c64dea07df464946e
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Guixin-Liu/scsi-tcmu-switch-tcmu-completion-path-to-work-queue-context/20220510-145227
+        git checkout 08884eca055feed72186261c64dea07df464946e
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash drivers/target/
 
-Signed-off-by: Guixin Liu <kanie@linux.alibaba.com>
----
- drivers/target/target_core_user.c | 151 +++++++++++++++++++++-----------------
- 1 file changed, 84 insertions(+), 67 deletions(-)
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
 
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index fd7267b..0eb3396 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -168,6 +168,8 @@ struct tcmu_dev {
- 	char dev_config[TCMU_CONFIG_LEN];
- 
- 	int nl_reply_supported;
-+
-+	struct work_struct complete_work;
- };
- 
- #define TCMU_DEV(_se_dev) container_of(_se_dev, struct tcmu_dev, se_dev)
-@@ -223,6 +225,7 @@ struct tcmu_tmr {
- 
- static atomic_t global_page_count = ATOMIC_INIT(0);
- static struct delayed_work tcmu_unmap_work;
-+struct workqueue_struct *tcmu_comp_wq;
- static int tcmu_global_max_pages = TCMU_GLOBAL_MAX_PAGES_DEF;
- 
- static int tcmu_set_global_max_data_area(const char *str,
-@@ -1596,6 +1599,76 @@ static void tcmu_detach_hba(struct se_hba *hba)
- 	hba->hba_ptr = NULL;
- }
- 
-+static void run_qfull_queue(struct tcmu_dev *udev, bool fail)
-+{
-+	struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
-+	LIST_HEAD(cmds);
-+	sense_reason_t scsi_ret;
-+	int ret;
-+
-+	if (list_empty(&udev->qfull_queue))
-+		return;
-+
-+	pr_debug("running %s's cmdr queue forcefail %d\n", udev->name, fail);
-+
-+	list_splice_init(&udev->qfull_queue, &cmds);
-+
-+	list_for_each_entry_safe(tcmu_cmd, tmp_cmd, &cmds, queue_entry) {
-+		list_del_init(&tcmu_cmd->queue_entry);
-+
-+		pr_debug("removing cmd %p on dev %s from queue\n",
-+			 tcmu_cmd, udev->name);
-+
-+		if (fail) {
-+			/*
-+			 * We were not able to even start the command, so
-+			 * fail with busy to allow a retry in case runner
-+			 * was only temporarily down. If the device is being
-+			 * removed then LIO core will do the right thing and
-+			 * fail the retry.
-+			 */
-+			tcmu_cmd->se_cmd->priv = NULL;
-+			target_complete_cmd(tcmu_cmd->se_cmd, SAM_STAT_BUSY);
-+			tcmu_free_cmd(tcmu_cmd);
-+			continue;
-+		}
-+
-+		ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
-+		if (ret < 0) {
-+			pr_debug("cmd %p on dev %s failed with %u\n",
-+				 tcmu_cmd, udev->name, scsi_ret);
-+			/*
-+			 * Ignore scsi_ret for now. target_complete_cmd
-+			 * drops it.
-+			 */
-+			tcmu_cmd->se_cmd->priv = NULL;
-+			target_complete_cmd(tcmu_cmd->se_cmd,
-+					    SAM_STAT_CHECK_CONDITION);
-+			tcmu_free_cmd(tcmu_cmd);
-+		} else if (ret > 0) {
-+			pr_debug("ran out of space during cmdr queue run\n");
-+			/*
-+			 * cmd was requeued, so just put all cmds back in
-+			 * the queue
-+			 */
-+			list_splice_tail(&cmds, &udev->qfull_queue);
-+			break;
-+		}
-+	}
-+
-+	tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
-+}
-+
-+static void tcmu_complete_work(struct work_struct *work)
-+{
-+	struct tcmu_dev *udev = container_of(work, struct tcmu_dev, complete_work);
-+
-+	mutex_lock(&udev->cmdr_lock);
-+	if (tcmu_handle_completions(udev))
-+		run_qfull_queue(udev, false);
-+	mutex_unlock(&udev->cmdr_lock);
-+}
-+
- static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- {
- 	struct tcmu_dev *udev;
-@@ -1634,6 +1707,7 @@ static struct se_device *tcmu_alloc_device(struct se_hba *hba, const char *name)
- 
- 	xa_init(&udev->data_pages);
- 
-+	INIT_WORK(&udev->complete_work, tcmu_complete_work);
- 	return &udev->se_dev;
- }
- 
-@@ -1725,75 +1799,10 @@ static void tcmu_dev_kref_release(struct kref *kref)
- 	call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
- }
- 
--static void run_qfull_queue(struct tcmu_dev *udev, bool fail)
--{
--	struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
--	LIST_HEAD(cmds);
--	sense_reason_t scsi_ret;
--	int ret;
--
--	if (list_empty(&udev->qfull_queue))
--		return;
--
--	pr_debug("running %s's cmdr queue forcefail %d\n", udev->name, fail);
--
--	list_splice_init(&udev->qfull_queue, &cmds);
--
--	list_for_each_entry_safe(tcmu_cmd, tmp_cmd, &cmds, queue_entry) {
--		list_del_init(&tcmu_cmd->queue_entry);
--
--		pr_debug("removing cmd %p on dev %s from queue\n",
--			 tcmu_cmd, udev->name);
--
--		if (fail) {
--			/*
--			 * We were not able to even start the command, so
--			 * fail with busy to allow a retry in case runner
--			 * was only temporarily down. If the device is being
--			 * removed then LIO core will do the right thing and
--			 * fail the retry.
--			 */
--			tcmu_cmd->se_cmd->priv = NULL;
--			target_complete_cmd(tcmu_cmd->se_cmd, SAM_STAT_BUSY);
--			tcmu_free_cmd(tcmu_cmd);
--			continue;
--		}
--
--		ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
--		if (ret < 0) {
--			pr_debug("cmd %p on dev %s failed with %u\n",
--				 tcmu_cmd, udev->name, scsi_ret);
--			/*
--			 * Ignore scsi_ret for now. target_complete_cmd
--			 * drops it.
--			 */
--			tcmu_cmd->se_cmd->priv = NULL;
--			target_complete_cmd(tcmu_cmd->se_cmd,
--					    SAM_STAT_CHECK_CONDITION);
--			tcmu_free_cmd(tcmu_cmd);
--		} else if (ret > 0) {
--			pr_debug("ran out of space during cmdr queue run\n");
--			/*
--			 * cmd was requeued, so just put all cmds back in
--			 * the queue
--			 */
--			list_splice_tail(&cmds, &udev->qfull_queue);
--			break;
--		}
--	}
--
--	tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
--}
--
- static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
- {
- 	struct tcmu_dev *udev = container_of(info, struct tcmu_dev, uio_info);
--
--	mutex_lock(&udev->cmdr_lock);
--	if (tcmu_handle_completions(udev))
--		run_qfull_queue(udev, false);
--	mutex_unlock(&udev->cmdr_lock);
--
-+	queue_work(tcmu_comp_wq, &udev->complete_work);
- 	return 0;
- }
- 
-@@ -3281,12 +3290,17 @@ static int __init tcmu_module_init(void)
- 
- 	INIT_DELAYED_WORK(&tcmu_unmap_work, tcmu_unmap_work_fn);
- 
-+	tcmu_comp_wq = alloc_workqueue("tcmu-comp-wq",
-+			WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_SYSFS, 0);
-+	if (!tcmu_comp_wq)
-+		return -ENOMEM;
-+
- 	tcmu_cmd_cache = kmem_cache_create("tcmu_cmd_cache",
- 				sizeof(struct tcmu_cmd),
- 				__alignof__(struct tcmu_cmd),
- 				0, NULL);
- 	if (!tcmu_cmd_cache)
--		return -ENOMEM;
-+		goto out_free_comp_wq;
- 
- 	tcmu_root_device = root_device_register("tcm_user");
- 	if (IS_ERR(tcmu_root_device)) {
-@@ -3335,6 +3349,8 @@ static int __init tcmu_module_init(void)
- 	root_device_unregister(tcmu_root_device);
- out_free_cache:
- 	kmem_cache_destroy(tcmu_cmd_cache);
-+out_free_comp_wq:
-+	destroy_workqueue(tcmu_comp_wq);
- 
- 	return ret;
- }
-@@ -3347,6 +3363,7 @@ static void __exit tcmu_module_exit(void)
- 	genl_unregister_family(&tcmu_genl_family);
- 	root_device_unregister(tcmu_root_device);
- 	kmem_cache_destroy(tcmu_cmd_cache);
-+	destroy_workqueue(tcmu_comp_wq);
- }
- 
- MODULE_DESCRIPTION("TCM USER subsystem plugin");
+All warnings (new ones prefixed by >>):
+
+>> drivers/target/target_core_user.c:3336:6: warning: variable 'ret' is used uninitialized whenever 'if' condition is true [-Wsometimes-uninitialized]
+           if (!tcmu_cmd_cache)
+               ^~~~~~~~~~~~~~~
+   drivers/target/target_core_user.c:3389:9: note: uninitialized use occurs here
+           return ret;
+                  ^~~
+   drivers/target/target_core_user.c:3336:2: note: remove the 'if' if its condition is always false
+           if (!tcmu_cmd_cache)
+           ^~~~~~~~~~~~~~~~~~~~
+   drivers/target/target_core_user.c:3321:9: note: initialize the variable 'ret' to silence this warning
+           int ret, i, k, len = 0;
+                  ^
+                   = 0
+   1 warning generated.
+
+
+vim +3336 drivers/target/target_core_user.c
+
+89ec9cfd3b644f Mike Christie      2017-11-28  3318  
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3319  static int __init tcmu_module_init(void)
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3320  {
+801fc54d5d943e Bryant G. Ly       2017-06-06  3321  	int ret, i, k, len = 0;
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3322  
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3323  	BUILD_BUG_ON((sizeof(struct tcmu_cmd_entry) % TCMU_OP_ALIGN_SIZE) != 0);
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3324  
+af1dd7ff46824a Mike Christie      2017-11-28  3325  	INIT_DELAYED_WORK(&tcmu_unmap_work, tcmu_unmap_work_fn);
+9972cebb59a653 Mike Christie      2017-11-28  3326  
+08884eca055fee Guixin Liu         2022-05-10  3327  	tcmu_comp_wq = alloc_workqueue("tcmu-comp-wq",
+08884eca055fee Guixin Liu         2022-05-10  3328  			WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_SYSFS, 0);
+08884eca055fee Guixin Liu         2022-05-10  3329  	if (!tcmu_comp_wq)
+08884eca055fee Guixin Liu         2022-05-10  3330  		return -ENOMEM;
+08884eca055fee Guixin Liu         2022-05-10  3331  
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3332  	tcmu_cmd_cache = kmem_cache_create("tcmu_cmd_cache",
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3333  				sizeof(struct tcmu_cmd),
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3334  				__alignof__(struct tcmu_cmd),
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3335  				0, NULL);
+7c9e7a6fe11c8d Andy Grover        2014-10-01 @3336  	if (!tcmu_cmd_cache)
+08884eca055fee Guixin Liu         2022-05-10  3337  		goto out_free_comp_wq;
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3338  
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3339  	tcmu_root_device = root_device_register("tcm_user");
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3340  	if (IS_ERR(tcmu_root_device)) {
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3341  		ret = PTR_ERR(tcmu_root_device);
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3342  		goto out_free_cache;
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3343  	}
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3344  
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3345  	ret = genl_register_family(&tcmu_genl_family);
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3346  	if (ret < 0) {
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3347  		goto out_unreg_device;
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3348  	}
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3349  
+4703b6252b338e Bodo Stroesser     2020-04-27  3350  	for (i = 0; passthrough_attrib_attrs[i] != NULL; i++)
+7d7a743543905a Nicholas Bellinger 2017-03-18  3351  		len += sizeof(struct configfs_attribute *);
+4703b6252b338e Bodo Stroesser     2020-04-27  3352  	for (i = 0; passthrough_pr_attrib_attrs[i] != NULL; i++)
+4703b6252b338e Bodo Stroesser     2020-04-27  3353  		len += sizeof(struct configfs_attribute *);
+4703b6252b338e Bodo Stroesser     2020-04-27  3354  	for (i = 0; tcmu_attrib_attrs[i] != NULL; i++)
+801fc54d5d943e Bryant G. Ly       2017-06-06  3355  		len += sizeof(struct configfs_attribute *);
+801fc54d5d943e Bryant G. Ly       2017-06-06  3356  	len += sizeof(struct configfs_attribute *);
+7d7a743543905a Nicholas Bellinger 2017-03-18  3357  
+7d7a743543905a Nicholas Bellinger 2017-03-18  3358  	tcmu_attrs = kzalloc(len, GFP_KERNEL);
+7d7a743543905a Nicholas Bellinger 2017-03-18  3359  	if (!tcmu_attrs) {
+7d7a743543905a Nicholas Bellinger 2017-03-18  3360  		ret = -ENOMEM;
+7d7a743543905a Nicholas Bellinger 2017-03-18  3361  		goto out_unreg_genl;
+7d7a743543905a Nicholas Bellinger 2017-03-18  3362  	}
+7d7a743543905a Nicholas Bellinger 2017-03-18  3363  
+4703b6252b338e Bodo Stroesser     2020-04-27  3364  	for (i = 0; passthrough_attrib_attrs[i] != NULL; i++)
+7d7a743543905a Nicholas Bellinger 2017-03-18  3365  		tcmu_attrs[i] = passthrough_attrib_attrs[i];
+4703b6252b338e Bodo Stroesser     2020-04-27  3366  	for (k = 0; passthrough_pr_attrib_attrs[k] != NULL; k++)
+4703b6252b338e Bodo Stroesser     2020-04-27  3367  		tcmu_attrs[i++] = passthrough_pr_attrib_attrs[k];
+4703b6252b338e Bodo Stroesser     2020-04-27  3368  	for (k = 0; tcmu_attrib_attrs[k] != NULL; k++)
+4703b6252b338e Bodo Stroesser     2020-04-27  3369  		tcmu_attrs[i++] = tcmu_attrib_attrs[k];
+7d7a743543905a Nicholas Bellinger 2017-03-18  3370  	tcmu_ops.tb_dev_attrib_attrs = tcmu_attrs;
+7d7a743543905a Nicholas Bellinger 2017-03-18  3371  
+0a06d4309dc168 Christoph Hellwig  2015-05-10  3372  	ret = transport_backend_register(&tcmu_ops);
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3373  	if (ret)
+7d7a743543905a Nicholas Bellinger 2017-03-18  3374  		goto out_attrs;
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3375  
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3376  	return 0;
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3377  
+7d7a743543905a Nicholas Bellinger 2017-03-18  3378  out_attrs:
+7d7a743543905a Nicholas Bellinger 2017-03-18  3379  	kfree(tcmu_attrs);
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3380  out_unreg_genl:
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3381  	genl_unregister_family(&tcmu_genl_family);
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3382  out_unreg_device:
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3383  	root_device_unregister(tcmu_root_device);
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3384  out_free_cache:
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3385  	kmem_cache_destroy(tcmu_cmd_cache);
+08884eca055fee Guixin Liu         2022-05-10  3386  out_free_comp_wq:
+08884eca055fee Guixin Liu         2022-05-10  3387  	destroy_workqueue(tcmu_comp_wq);
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3388  
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3389  	return ret;
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3390  }
+7c9e7a6fe11c8d Andy Grover        2014-10-01  3391  
+
 -- 
-1.8.3.1
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
