@@ -2,29 +2,29 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06D4FC433F5
-	for <target-devel@archiver.kernel.org>; Wed, 11 May 2022 02:03:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35932C433EF
+	for <target-devel@archiver.kernel.org>; Wed, 11 May 2022 02:09:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238263AbiEKCDk (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 10 May 2022 22:03:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42190 "EHLO
+        id S230163AbiEKCJD (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 10 May 2022 22:09:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34040 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236748AbiEKCDf (ORCPT
+        with ESMTP id S229891AbiEKCJA (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 10 May 2022 22:03:35 -0400
-Received: from out30-43.freemail.mail.aliyun.com (out30-43.freemail.mail.aliyun.com [115.124.30.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1FD0F50041;
-        Tue, 10 May 2022 19:03:32 -0700 (PDT)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R361e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04394;MF=kanie@linux.alibaba.com;NM=1;PH=DS;RN=4;SR=0;TI=SMTPD_---0VCtPYV-_1652234607;
-Received: from localhost(mailfrom:kanie@linux.alibaba.com fp:SMTPD_---0VCtPYV-_1652234607)
+        Tue, 10 May 2022 22:09:00 -0400
+Received: from out30-44.freemail.mail.aliyun.com (out30-44.freemail.mail.aliyun.com [115.124.30.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7F596CAA2;
+        Tue, 10 May 2022 19:08:58 -0700 (PDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R191e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04423;MF=kanie@linux.alibaba.com;NM=1;PH=DS;RN=4;SR=0;TI=SMTPD_---0VCtZn0l_1652234931;
+Received: from localhost(mailfrom:kanie@linux.alibaba.com fp:SMTPD_---0VCtZn0l_1652234931)
           by smtp.aliyun-inc.com(127.0.0.1);
-          Wed, 11 May 2022 10:03:30 +0800
+          Wed, 11 May 2022 10:08:56 +0800
 From:   Guixin Liu <kanie@linux.alibaba.com>
 To:     bostroesser@gmail.com, martin.petersen@oracle.com
 Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH v2] scsi:tcmu: switch tcmu completion path to work queue context
-Date:   Wed, 11 May 2022 10:03:27 +0800
-Message-Id: <1652234607-27359-1-git-send-email-kanie@linux.alibaba.com>
+Subject: [PATCH v3] scsi:tcmu: switch tcmu completion path to work queue context
+Date:   Wed, 11 May 2022 10:08:51 +0800
+Message-Id: <1652234931-33290-1-git-send-email-kanie@linux.alibaba.com>
 X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
@@ -52,7 +52,7 @@ Signed-off-by: Guixin Liu <kanie@linux.alibaba.com>
  1 file changed, 87 insertions(+), 68 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index fd7267b..a0766ee 100644
+index fd7267b..6fd514d99 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
 @@ -168,6 +168,8 @@ struct tcmu_dev {
@@ -68,7 +68,7 @@ index fd7267b..a0766ee 100644
  
  static atomic_t global_page_count = ATOMIC_INIT(0);
  static struct delayed_work tcmu_unmap_work;
-+struct workqueue_struct *tcmu_comp_wq;
++static struct workqueue_struct *tcmu_comp_wq;
  static int tcmu_global_max_pages = TCMU_GLOBAL_MAX_PAGES_DEF;
  
  static int tcmu_set_global_max_data_area(const char *str,
