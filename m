@@ -2,113 +2,173 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE086C433F5
-	for <target-devel@archiver.kernel.org>; Thu, 12 May 2022 19:11:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0A79C43217
+	for <target-devel@archiver.kernel.org>; Fri, 13 May 2022 06:53:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357902AbiELTLR (ORCPT
+        id S1377483AbiEMGx6 (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 12 May 2022 15:11:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43012 "EHLO
+        Fri, 13 May 2022 02:53:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53326 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231944AbiELTLQ (ORCPT
+        with ESMTP id S1377479AbiEMGx5 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 12 May 2022 15:11:16 -0400
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 240D539168
-        for <target-devel@vger.kernel.org>; Thu, 12 May 2022 12:11:15 -0700 (PDT)
-Received: by mail-ej1-x62c.google.com with SMTP id m20so12056432ejj.10
-        for <target-devel@vger.kernel.org>; Thu, 12 May 2022 12:11:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=SLT11SGZSlspM3ztqa+Z4xJFeyllWtbNbH4XI/ki7KQ=;
-        b=Akos8r1uW3mKq93eO2Gh+RThomTvKQVXEIPNJLgU4e/OsWiyliXUyDvXM1KCZowBG5
-         iB8r5GxgdwJONwg8JLTbxiugmdxYSNQ3UZHr+t/+uKRqH4lkyjc4uv95+s+5+nQlfzSG
-         6pdmK4AOO1sJl6dZGjA/eOhr2a7EqbPThcB8Y=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=SLT11SGZSlspM3ztqa+Z4xJFeyllWtbNbH4XI/ki7KQ=;
-        b=kBuF95O6IbVOrmmYCRZAXKKsdtUla4UpSvl+FBDo/kxkp0mlzwy6wosapDdOoQ+uJ0
-         RZR6D5x1YAPgKALNOpt/Lrb3MbvtfB6hP4f8Wcru/p46K5eQXD5HbmmdtkxfKY/uFdgQ
-         GiO3bpZy5Lp5ZD3m1wAVykeHPRMdhvV7BFXyav7xADUmmLEYYP0jvmGwkaqFlYLqhdva
-         Ddi0lJ9+K9dHqoCcT2lddyRskCnwWl8nVotlbRLgSjcU8Uz7E5KZ+/NmTIx0L0O+4/dq
-         y5ZA5Xn5u+vwfznT1dqeFjiXZpg5vSX9ajE+fM8jB5AsmCtlNIv5Yrxcu7YAtppdzYKX
-         uJAw==
-X-Gm-Message-State: AOAM530IpRDG+lRgwlL+m32p1Cdjnzd3jH/uDmrmz3+qdMlvYjwVzs2W
-        RHQ8cH8xeFd6WRJROwpuiw+P0CNQsVnKrtmGX6s=
-X-Google-Smtp-Source: ABdhPJwIYFT84PElxZnx9ya8iYFRVTIlhbLlgPrQkOSWmabr04Wo3TbTUyUQ7yvAmT+61CqibF6dcw==
-X-Received: by 2002:a17:906:730e:b0:6f4:e9e7:4f4 with SMTP id di14-20020a170906730e00b006f4e9e704f4mr1124392ejc.509.1652382673444;
-        Thu, 12 May 2022 12:11:13 -0700 (PDT)
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com. [209.85.128.43])
-        by smtp.gmail.com with ESMTPSA id hy20-20020a1709068a7400b006f3ef214e05sm40937ejc.107.2022.05.12.12.11.12
-        for <target-devel@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 12 May 2022 12:11:12 -0700 (PDT)
-Received: by mail-wm1-f43.google.com with SMTP id r188-20020a1c44c5000000b003946c466c17so3080939wma.4
-        for <target-devel@vger.kernel.org>; Thu, 12 May 2022 12:11:12 -0700 (PDT)
-X-Received: by 2002:a1c:4c06:0:b0:394:65c4:bd03 with SMTP id
- z6-20020a1c4c06000000b0039465c4bd03mr1229662wmf.8.1652382672075; Thu, 12 May
- 2022 12:11:12 -0700 (PDT)
-MIME-Version: 1.0
-References: <CAOFRbGmGr2Z_sbYmE0SZT48CFkNAWVABnC_4V6x9PzZw-LJO4w@mail.gmail.com>
-In-Reply-To: <CAOFRbGmGr2Z_sbYmE0SZT48CFkNAWVABnC_4V6x9PzZw-LJO4w@mail.gmail.com>
-From:   Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Thu, 12 May 2022 12:10:55 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wh5E-xdc5P6SfN-ey6zvVri43rTj0g8kjUBWD3hhE-jiw@mail.gmail.com>
-Message-ID: <CAHk-=wh5E-xdc5P6SfN-ey6zvVri43rTj0g8kjUBWD3hhE-jiw@mail.gmail.com>
-Subject: Re: ERROR: drivers: iscsi: iscsi_target.c
-To:     Test Bot <zgrieee@gmail.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Mike Christie <michael.christie@oracle.com>,
-        Mingzhe Zou <mingzhe.zou@easystack.cn>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-scsi <linux-scsi@vger.kernel.org>,
-        target-devel <target-devel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Fri, 13 May 2022 02:53:57 -0400
+X-Greylist: delayed 1563 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 12 May 2022 23:53:53 PDT
+Received: from mail-m2457.qiye.163.com (mail-m2457.qiye.163.com [220.194.24.57])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41FCB266E23;
+        Thu, 12 May 2022 23:53:50 -0700 (PDT)
+Received: from localhost.localdomain (unknown [218.94.118.90])
+        by mail-m2457.qiye.163.com (Hmail) with ESMTPA id 1B1A8C40904;
+        Fri, 13 May 2022 14:27:46 +0800 (CST)
+From:   mingzhe.zou@easystack.cn
+To:     torvalds@linux-foundation.org, zgrieee@gmail.com,
+        martin.petersen@oracle.com, michael.christie@oracle.com
+Cc:     linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, dongsheng.yang@easystack.cn,
+        zoumingzhe@qq.com
+Subject: [PATCH] scsi: target: fixup incorrect use of 'cpumask_t'
+Date:   Fri, 13 May 2022 14:27:45 +0800
+Message-Id: <20220513062745.3245-1-mingzhe.zou@easystack.cn>
+X-Mailer: git-send-email 2.17.1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
+        kWDxoPAgseWUFZKDYvK1lXWShZQUlCN1dZLVlBSVdZDwkaFQgSH1lBWRlIS0JWSBoYHUkYQ0IYSE
+        hNVRkRExYaEhckFA4PWVdZFhoPEhUdFFlBWU9LSFVKSktITUpVS1kG
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6NQg6Sgw5AzIYGhYiCD9ICDU8
+        EywwCklVSlVKTU5JT0lISU1NTElCVTMWGhIXVRYSFRwBEx5VARQOOx4aCAIIDxoYEFUYFUVZV1kS
+        C1lBWUlKQ1VCT1VKSkNVQktZV1kIAVlBT0NISTcG
+X-HM-Tid: 0a80bc1a109f8c16kuqt1b1a8c40904
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, May 12, 2022 at 11:42 AM Test Bot <zgrieee@gmail.com> wrote:
->
-> void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
-> {
->         int ord, cpu;
->         cpumask_t conn_allowed_cpumask;
+From: mingzhe <mingzhe.zou@easystack.cn>
 
-Yeah, that's not how you are supposed to use 'cpumask_t'
+In commit d72d827f2f26, I used 'cpumask_t' incorrectly.
+```
+void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+{
+        int ord, cpu;
+        cpumask_t conn_allowed_cpumask;
+        ......
+}
 
-This is why we have CONFIG_CPUMASK_OFFSTACK and 'cpumask_var_t', so
-that the pattern is
+static ssize_t lio_target_wwn_cpus_allowed_list_store(
+               struct config_item *item, const char *page, size_t count)
+{
+        int ret;
+        char *orig;
+        cpumask_t new_allowed_cpumask;
+        ......
+}
+```
 
-        cpumask_var_t mask;
+So, that the correct pattern should be as follows:
+```
+cpumask_var_t mask;
 
-        if (!alloc_cpumask_var(&mask, GFP_KERNEL))
-                return -ENOMEM;
-        ... use 'mask' here as a  ...
-        free_cpumask_var(mask);
+if (!alloc_cpumask_var(&mask, GFP_KERNEL))
+return -ENOMEM;
+... use 'mask' here as a  ...
+free_cpumask_var(mask);
+```
 
-and if the cpumask is small, it's allocated on the stack (and that
-'alloc_cpumask_var()' becomes a no-op) and if it's huge, it has a real
-allocation so that the stack frame doesn't grow too big.
+Reported-by: Test Bot <zgrieee@gmail.com>
+Signed-off-by: mingzhe <mingzhe.zou@easystack.cn>
+---
+ drivers/target/iscsi/iscsi_target.c          | 32 ++++++++++++++------
+ drivers/target/iscsi/iscsi_target_configfs.c | 20 ++++++++----
+ 2 files changed, 36 insertions(+), 16 deletions(-)
 
-The problem seems to have been introduced in this merge window by
-commit d72d827f2f26 ("scsi: target: Add iscsi/cpus_allowed_list in
-configfs"), but I didn't really look any closer than a plain "git
-blame", so it might have happened before that too.
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 6fe6a6bab3f4..3f9f5b8879fe 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -3596,10 +3596,7 @@ static int iscsit_send_reject(
+ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+ {
+ 	int ord, cpu;
+-	cpumask_t conn_allowed_cpumask;
+-
+-	cpumask_and(&conn_allowed_cpumask, iscsit_global->allowed_cpumask,
+-		    cpu_online_mask);
++	cpumask_var_t conn_allowed_cpumask;
+ 
+ 	/*
+ 	 * bitmap_id is assigned from iscsit_global->ts_bitmap from
+@@ -3609,13 +3606,28 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+ 	 * iSCSI connection's RX/TX threads will be scheduled to
+ 	 * execute upon.
+ 	 */
+-	cpumask_clear(conn->conn_cpumask);
+-	ord = conn->bitmap_id % cpumask_weight(&conn_allowed_cpumask);
+-	for_each_cpu(cpu, &conn_allowed_cpumask) {
+-		if (ord-- == 0) {
+-			cpumask_set_cpu(cpu, conn->conn_cpumask);
+-			return;
++	if (!alloc_cpumask_var(&conn_allowed_cpumask, GFP_KERNEL)) {
++		ord = conn->bitmap_id % cpumask_weight(cpu_online_mask);
++		for_each_online_cpu(cpu) {
++			if (ord-- == 0) {
++				cpumask_set_cpu(cpu, conn->conn_cpumask);
++				return;
++			}
++		}
++	} else {
++		cpumask_and(conn_allowed_cpumask, iscsit_global->allowed_cpumask,
++			cpu_online_mask);
++
++		cpumask_clear(conn->conn_cpumask);
++		ord = conn->bitmap_id % cpumask_weight(conn_allowed_cpumask);
++		for_each_cpu(cpu, conn_allowed_cpumask) {
++			if (ord-- == 0) {
++				cpumask_set_cpu(cpu, conn->conn_cpumask);
++				free_cpumask_var(conn_allowed_cpumask);
++				return;
++			}
+ 		}
++		free_cpumask_var(conn_allowed_cpumask);
+ 	}
+ 	/*
+ 	 * This should never be reached..
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 0cedcfe207b5..ae9319934cd0 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -1139,20 +1139,28 @@ static ssize_t lio_target_wwn_cpus_allowed_list_store(
+ {
+ 	int ret;
+ 	char *orig;
+-	cpumask_t new_allowed_cpumask;
++	cpumask_var_t new_allowed_cpumask;
++
++	if (!alloc_cpumask_var(&new_allowed_cpumask, GFP_KERNEL))
++		return -ENOMEM;
+ 
+ 	orig = kstrdup(page, GFP_KERNEL);
+-	if (!orig)
++	if (!orig) {
++		free_cpumask_var(new_allowed_cpumask);
+ 		return -ENOMEM;
++	}
+ 
+-	cpumask_clear(&new_allowed_cpumask);
+-	ret = cpulist_parse(orig, &new_allowed_cpumask);
++	cpumask_clear(new_allowed_cpumask);
++	ret = cpulist_parse(orig, new_allowed_cpumask);
+ 
+ 	kfree(orig);
+-	if (ret != 0)
++	if (ret != 0) {
++		free_cpumask_var(new_allowed_cpumask);
+ 		return ret;
++	}
+ 
+-	cpumask_copy(iscsit_global->allowed_cpumask, &new_allowed_cpumask);
++	cpumask_copy(iscsit_global->allowed_cpumask, new_allowed_cpumask);
++	free_cpumask_var(new_allowed_cpumask);
+ 	return count;
+ }
+ 
+-- 
+2.17.1
 
-I also didn't check whether there was some explicit reason why the
-code couldn't allocate the cpumask this way.
-
-Btw, it's worth noting that 'cpumask_t' is always the full static
-compile-time NR_CPUS bits in size, but a dynamically allocated
-'cpumask_var_t' is only nr_cpumask_bits in size (ie the actual maximum
-on that machine, as opposed to the theoretical maximum size). So they
-are *not* exactly the same kind of 'cpumask_t' pointer in the end, but
-no sane code should care (ie you have to do something else wrong for
-the alloc_cpumask_var() pattern to not work).
-
-           Linus
