@@ -2,173 +2,58 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0A79C43217
-	for <target-devel@archiver.kernel.org>; Fri, 13 May 2022 06:53:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36EFCC433EF
+	for <target-devel@archiver.kernel.org>; Fri, 13 May 2022 07:51:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1377483AbiEMGx6 (ORCPT
+        id S1377477AbiEMHv1 (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 13 May 2022 02:53:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53326 "EHLO
+        Fri, 13 May 2022 03:51:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39784 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1377479AbiEMGx5 (ORCPT
+        with ESMTP id S1377912AbiEMHv0 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 13 May 2022 02:53:57 -0400
-X-Greylist: delayed 1563 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 12 May 2022 23:53:53 PDT
-Received: from mail-m2457.qiye.163.com (mail-m2457.qiye.163.com [220.194.24.57])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41FCB266E23;
-        Thu, 12 May 2022 23:53:50 -0700 (PDT)
-Received: from localhost.localdomain (unknown [218.94.118.90])
-        by mail-m2457.qiye.163.com (Hmail) with ESMTPA id 1B1A8C40904;
-        Fri, 13 May 2022 14:27:46 +0800 (CST)
-From:   mingzhe.zou@easystack.cn
-To:     torvalds@linux-foundation.org, zgrieee@gmail.com,
-        martin.petersen@oracle.com, michael.christie@oracle.com
-Cc:     linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, dongsheng.yang@easystack.cn,
-        zoumingzhe@qq.com
-Subject: [PATCH] scsi: target: fixup incorrect use of 'cpumask_t'
-Date:   Fri, 13 May 2022 14:27:45 +0800
-Message-Id: <20220513062745.3245-1-mingzhe.zou@easystack.cn>
-X-Mailer: git-send-email 2.17.1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
-        kWDxoPAgseWUFZKDYvK1lXWShZQUlCN1dZLVlBSVdZDwkaFQgSH1lBWRlIS0JWSBoYHUkYQ0IYSE
-        hNVRkRExYaEhckFA4PWVdZFhoPEhUdFFlBWU9LSFVKSktITUpVS1kG
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6NQg6Sgw5AzIYGhYiCD9ICDU8
-        EywwCklVSlVKTU5JT0lISU1NTElCVTMWGhIXVRYSFRwBEx5VARQOOx4aCAIIDxoYEFUYFUVZV1kS
-        C1lBWUlKQ1VCT1VKSkNVQktZV1kIAVlBT0NISTcG
-X-HM-Tid: 0a80bc1a109f8c16kuqt1b1a8c40904
+        Fri, 13 May 2022 03:51:26 -0400
+X-Greylist: delayed 573 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 13 May 2022 00:51:21 PDT
+Received: from mail.companydia.pl (mail.companydia.pl [162.19.155.128])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE451377CF
+        for <target-devel@vger.kernel.org>; Fri, 13 May 2022 00:51:20 -0700 (PDT)
+Received: by mail.companydia.pl (Postfix, from userid 1002)
+        id F1FBF22E48; Fri, 13 May 2022 07:41:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=companydia.pl;
+        s=mail; t=1652427676;
+        bh=ChRcLNpIfKnVgp03/tSyWuRw1tWSTk/OEiEnuZMWs58=;
+        h=Date:From:To:Subject:From;
+        b=jX3g6eQA/XQrk9xpLdhaCBlVx8qMI4hRDHafGhBKbUCED+kFCirfBUTmG1gaVrOBC
+         3muPmz+nJOEuegk4DMD4a6ZJ7HxhgRwqo3PflKE8hrWa6dNHQoL+Qc8dotutZPJPWH
+         c+1UuX0PfLlCDEprzBK5BYai8dTOVq8wyc6mIgaIF+IfXiQVAHF5dMjupCh3di2DQB
+         eqsasXAII7JPV65V7X4JSqCPuz9nPKTNLSjlJ58OAWiKFwZedok2VtQIZfJowpRi0+
+         UStUxKtT06RjRFRcDfHecz9bbZMv/N2jOYfv9tr8HvyoaHLtTGiGcKbVv/UPWz+Y2Y
+         boz2VhF2fHKxA==
+Received: by mail.companydia.pl for <target-devel@vger.kernel.org>; Fri, 13 May 2022 07:41:10 GMT
+Message-ID: <20220513064500-0.1.q.bops.0.ibdbn3ah7s@companydia.pl>
+Date:   Fri, 13 May 2022 07:41:10 GMT
+From:   "Norbert Karecki" <norbert.karecki@companydia.pl>
+To:     <target-devel@vger.kernel.org>
+Subject: Wycena paneli fotowoltaicznych
+X-Mailer: mail.companydia.pl
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: mingzhe <mingzhe.zou@easystack.cn>
+Dzie=C5=84 dobry,
 
-In commit d72d827f2f26, I used 'cpumask_t' incorrectly.
-```
-void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
-{
-        int ord, cpu;
-        cpumask_t conn_allowed_cpumask;
-        ......
-}
+dostrzegam mo=C5=BCliwo=C5=9B=C4=87 wsp=C3=B3=C5=82pracy z Pa=C5=84stwa f=
+irm=C4=85.
 
-static ssize_t lio_target_wwn_cpus_allowed_list_store(
-               struct config_item *item, const char *page, size_t count)
-{
-        int ret;
-        char *orig;
-        cpumask_t new_allowed_cpumask;
-        ......
-}
-```
+=C5=9Awiadczymy kompleksow=C4=85 obs=C5=82ug=C4=99 inwestycji w fotowolta=
+ik=C4=99, kt=C3=B3ra obni=C5=BCa koszty energii elektrycznej nawet o 90%.
 
-So, that the correct pattern should be as follows:
-```
-cpumask_var_t mask;
+Czy s=C4=85 Pa=C5=84stwo zainteresowani weryfikacj=C4=85 wst=C4=99pnych p=
+ropozycji?
 
-if (!alloc_cpumask_var(&mask, GFP_KERNEL))
-return -ENOMEM;
-... use 'mask' here as a  ...
-free_cpumask_var(mask);
-```
 
-Reported-by: Test Bot <zgrieee@gmail.com>
-Signed-off-by: mingzhe <mingzhe.zou@easystack.cn>
----
- drivers/target/iscsi/iscsi_target.c          | 32 ++++++++++++++------
- drivers/target/iscsi/iscsi_target_configfs.c | 20 ++++++++----
- 2 files changed, 36 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 6fe6a6bab3f4..3f9f5b8879fe 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -3596,10 +3596,7 @@ static int iscsit_send_reject(
- void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
- {
- 	int ord, cpu;
--	cpumask_t conn_allowed_cpumask;
--
--	cpumask_and(&conn_allowed_cpumask, iscsit_global->allowed_cpumask,
--		    cpu_online_mask);
-+	cpumask_var_t conn_allowed_cpumask;
- 
- 	/*
- 	 * bitmap_id is assigned from iscsit_global->ts_bitmap from
-@@ -3609,13 +3606,28 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
- 	 * iSCSI connection's RX/TX threads will be scheduled to
- 	 * execute upon.
- 	 */
--	cpumask_clear(conn->conn_cpumask);
--	ord = conn->bitmap_id % cpumask_weight(&conn_allowed_cpumask);
--	for_each_cpu(cpu, &conn_allowed_cpumask) {
--		if (ord-- == 0) {
--			cpumask_set_cpu(cpu, conn->conn_cpumask);
--			return;
-+	if (!alloc_cpumask_var(&conn_allowed_cpumask, GFP_KERNEL)) {
-+		ord = conn->bitmap_id % cpumask_weight(cpu_online_mask);
-+		for_each_online_cpu(cpu) {
-+			if (ord-- == 0) {
-+				cpumask_set_cpu(cpu, conn->conn_cpumask);
-+				return;
-+			}
-+		}
-+	} else {
-+		cpumask_and(conn_allowed_cpumask, iscsit_global->allowed_cpumask,
-+			cpu_online_mask);
-+
-+		cpumask_clear(conn->conn_cpumask);
-+		ord = conn->bitmap_id % cpumask_weight(conn_allowed_cpumask);
-+		for_each_cpu(cpu, conn_allowed_cpumask) {
-+			if (ord-- == 0) {
-+				cpumask_set_cpu(cpu, conn->conn_cpumask);
-+				free_cpumask_var(conn_allowed_cpumask);
-+				return;
-+			}
- 		}
-+		free_cpumask_var(conn_allowed_cpumask);
- 	}
- 	/*
- 	 * This should never be reached..
-diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
-index 0cedcfe207b5..ae9319934cd0 100644
---- a/drivers/target/iscsi/iscsi_target_configfs.c
-+++ b/drivers/target/iscsi/iscsi_target_configfs.c
-@@ -1139,20 +1139,28 @@ static ssize_t lio_target_wwn_cpus_allowed_list_store(
- {
- 	int ret;
- 	char *orig;
--	cpumask_t new_allowed_cpumask;
-+	cpumask_var_t new_allowed_cpumask;
-+
-+	if (!alloc_cpumask_var(&new_allowed_cpumask, GFP_KERNEL))
-+		return -ENOMEM;
- 
- 	orig = kstrdup(page, GFP_KERNEL);
--	if (!orig)
-+	if (!orig) {
-+		free_cpumask_var(new_allowed_cpumask);
- 		return -ENOMEM;
-+	}
- 
--	cpumask_clear(&new_allowed_cpumask);
--	ret = cpulist_parse(orig, &new_allowed_cpumask);
-+	cpumask_clear(new_allowed_cpumask);
-+	ret = cpulist_parse(orig, new_allowed_cpumask);
- 
- 	kfree(orig);
--	if (ret != 0)
-+	if (ret != 0) {
-+		free_cpumask_var(new_allowed_cpumask);
- 		return ret;
-+	}
- 
--	cpumask_copy(iscsit_global->allowed_cpumask, &new_allowed_cpumask);
-+	cpumask_copy(iscsit_global->allowed_cpumask, new_allowed_cpumask);
-+	free_cpumask_var(new_allowed_cpumask);
- 	return count;
- }
- 
--- 
-2.17.1
-
+Pozdrawiam,
+Norbert Karecki
