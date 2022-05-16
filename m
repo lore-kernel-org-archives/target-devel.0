@@ -2,317 +2,176 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2636C433EF
-	for <target-devel@archiver.kernel.org>; Mon, 16 May 2022 02:30:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 435FCC433F5
+	for <target-devel@archiver.kernel.org>; Mon, 16 May 2022 05:57:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239388AbiEPCa0 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 15 May 2022 22:30:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34506 "EHLO
+        id S239352AbiEPF5K (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 16 May 2022 01:57:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59180 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238523AbiEPCaZ (ORCPT
+        with ESMTP id S237462AbiEPF5J (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 15 May 2022 22:30:25 -0400
-Received: from out30-43.freemail.mail.aliyun.com (out30-43.freemail.mail.aliyun.com [115.124.30.43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B743140BE;
-        Sun, 15 May 2022 19:30:23 -0700 (PDT)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R631e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04426;MF=kanie@linux.alibaba.com;NM=1;PH=DS;RN=4;SR=0;TI=SMTPD_---0VDCfo2F_1652668220;
-Received: from 30.178.83.17(mailfrom:kanie@linux.alibaba.com fp:SMTPD_---0VDCfo2F_1652668220)
-          by smtp.aliyun-inc.com(127.0.0.1);
-          Mon, 16 May 2022 10:30:21 +0800
-Message-ID: <6f6191bc-d088-56ab-cf37-009d9d4a51ab@linux.alibaba.com>
-Date:   Mon, 16 May 2022 10:30:19 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.7.0
-Subject: Re: [PATCH v3] scsi:tcmu: switch tcmu completion path to work queue
- context
-To:     Bodo Stroesser <bostroesser@gmail.com>, martin.petersen@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-References: <1652234931-33290-1-git-send-email-kanie@linux.alibaba.com>
- <fe702260-2aaa-1543-b461-05218683d60e@gmail.com>
-From:   Guixin Liu <kanie@linux.alibaba.com>
-In-Reply-To: <fe702260-2aaa-1543-b461-05218683d60e@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+        Mon, 16 May 2022 01:57:09 -0400
+X-Greylist: delayed 581 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sun, 15 May 2022 22:57:07 PDT
+Received: from mail-m2839.qiye.163.com (mail-m2839.qiye.163.com [103.74.28.39])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 110C9B86D;
+        Sun, 15 May 2022 22:57:06 -0700 (PDT)
+Received: from localhost.localdomain (unknown [218.94.118.90])
+        by mail-m2839.qiye.163.com (Hmail) with ESMTPA id 2F8F5C0463;
+        Mon, 16 May 2022 13:47:22 +0800 (CST)
+From:   mingzhe.zou@easystack.cn
+To:     torvalds@linux-foundation.org, zgrieee@gmail.com,
+        martin.petersen@oracle.com, michael.christie@oracle.com
+Cc:     linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, dongsheng.yang@easystack.cn,
+        zoumingzhe@qq.com
+Subject: [PATCH v2] scsi: target: fixup incorrect use of 'cpumask_t'
+Date:   Mon, 16 May 2022 13:47:21 +0800
+Message-Id: <20220516054721.1548-1-mingzhe.zou@easystack.cn>
+X-Mailer: git-send-email 2.17.1
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZCBgUCR5ZQVlLVUtZV1
+        kWDxoPAgseWUFZKDYvK1lXWShZQUlCN1dZLVlBSVdZDwkaFQgSH1lBWUNDGEtWS00YSUpPGkgdQ0
+        4eVRkRExYaEhckFA4PWVdZFhoPEhUdFFlBWU9LSFVKSktITUpVS1kG
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6PSo6Vio4DzIjCgxWUSIZSDAP
+        Og0aCTFVSlVKTU5JTUNLS09JQ09IVTMWGhIXVRYSFRwBEx5VARQOOx4aCAIIDxoYEFUYFUVZV1kS
+        C1lBWUlKQ1VCT1VKSkNVQktZV1kIAVlBTktOTjcG
+X-HM-Tid: 0a80cb6828168421kuqw2f8f5c0463
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Bodo,
+From: mingzhe <mingzhe.zou@easystack.cn>
 
-在 2022/5/15 02:32, Bodo Stroesser 写道:
-> Hi Liu,
->
-> thank you for the patch.
->
-> To be honest I'm not sure this is the right way to boost performance.
-> Since tcmu still uses the cmdr_lock to serialize all work in kernel,
-> the only effect AFAICS is that userspace returns faster from the
-> uio_write(). This probably just speeds up userspace if it runs as one
-> thread only.
-> Do you also have measurement results for small IOs?
+In commit d72d827f2f26, I used 'cpumask_t' incorrectly.
+```
+void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+{
+        int ord, cpu;
+        cpumask_t conn_allowed_cpumask;
+        ......
+}
 
-Well, you are right, there`s no obvious performance change for small IO.
+static ssize_t lio_target_wwn_cpus_allowed_list_store(
+               struct config_item *item, const char *page, size_t count)
+{
+        int ret;
+        char *orig;
+        cpumask_t new_allowed_cpumask;
+        ......
+}
+```
 
->
-> I'd prefer to first finalize and send my patch series that makes tcmu
-> release cmdr_lock while copying data - in READ direction as well as in
-> WRITE direction. Using LIO core's completion wq allows to do multiple
-> data copies in both direction in parallel, if the fabric allows to
-> handle multiple incoming WRITES in parallel.
->
-> With that series in place it would be good to have another try with
-> your change. I)f it still can boost throughput, I'll be happy to
-> accept it.
+So, that the correct pattern should be as follows:
+```
+cpumask_var_t mask;
 
-Your idea is better, with your patches, this patch wont have much impact,
+if (!zalloc_cpumask_var(&mask, GFP_KERNEL))
+        return -ENOMEM;
+... use 'mask' here as a  ...
+free_cpumask_var(mask);
+```
 
-but I still do some tests.
+Fixes: d72d827f2f26 ("scsi: target: Add iscsi/cpus_allowed_list in configfs")
+Reported-by: Test Bot <zgrieee@gmail.com>
+Signed-off-by: mingzhe <mingzhe.zou@easystack.cn>
+---
+ drivers/target/iscsi/iscsi_target.c          | 32 ++++++++++++++------
+ drivers/target/iscsi/iscsi_target_configfs.c | 24 +++++++++------
+ 2 files changed, 36 insertions(+), 20 deletions(-)
 
-thanks,
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 6fe6a6bab3f4..ddf6c2a7212b 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -3596,10 +3596,7 @@ static int iscsit_send_reject(
+ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+ {
+ 	int ord, cpu;
+-	cpumask_t conn_allowed_cpumask;
+-
+-	cpumask_and(&conn_allowed_cpumask, iscsit_global->allowed_cpumask,
+-		    cpu_online_mask);
++	cpumask_var_t conn_allowed_cpumask;
+ 
+ 	/*
+ 	 * bitmap_id is assigned from iscsit_global->ts_bitmap from
+@@ -3609,13 +3606,28 @@ void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
+ 	 * iSCSI connection's RX/TX threads will be scheduled to
+ 	 * execute upon.
+ 	 */
+-	cpumask_clear(conn->conn_cpumask);
+-	ord = conn->bitmap_id % cpumask_weight(&conn_allowed_cpumask);
+-	for_each_cpu(cpu, &conn_allowed_cpumask) {
+-		if (ord-- == 0) {
+-			cpumask_set_cpu(cpu, conn->conn_cpumask);
+-			return;
++	if (!zalloc_cpumask_var(&conn_allowed_cpumask, GFP_KERNEL)) {
++		ord = conn->bitmap_id % cpumask_weight(cpu_online_mask);
++		for_each_online_cpu(cpu) {
++			if (ord-- == 0) {
++				cpumask_set_cpu(cpu, conn->conn_cpumask);
++				return;
++			}
++		}
++	} else {
++		cpumask_and(conn_allowed_cpumask, iscsit_global->allowed_cpumask,
++			cpu_online_mask);
++
++		cpumask_clear(conn->conn_cpumask);
++		ord = conn->bitmap_id % cpumask_weight(conn_allowed_cpumask);
++		for_each_cpu(cpu, conn_allowed_cpumask) {
++			if (ord-- == 0) {
++				cpumask_set_cpu(cpu, conn->conn_cpumask);
++				free_cpumask_var(conn_allowed_cpumask);
++				return;
++			}
+ 		}
++		free_cpumask_var(conn_allowed_cpumask);
+ 	}
+ 	/*
+ 	 * This should never be reached..
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 0cedcfe207b5..57b4fd56d92a 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -1137,23 +1137,27 @@ static ssize_t lio_target_wwn_cpus_allowed_list_show(
+ static ssize_t lio_target_wwn_cpus_allowed_list_store(
+ 		struct config_item *item, const char *page, size_t count)
+ {
+-	int ret;
++	int ret = -ENOMEM;
+ 	char *orig;
+-	cpumask_t new_allowed_cpumask;
++	cpumask_var_t new_allowed_cpumask;
++
++	if (!zalloc_cpumask_var(&new_allowed_cpumask, GFP_KERNEL))
++		goto out;
+ 
+ 	orig = kstrdup(page, GFP_KERNEL);
+ 	if (!orig)
+-		return -ENOMEM;
++		goto out_free_cpumask;
+ 
+-	cpumask_clear(&new_allowed_cpumask);
+-	ret = cpulist_parse(orig, &new_allowed_cpumask);
++	ret = cpulist_parse(orig, new_allowed_cpumask);
++	if (!ret)
++		cpumask_copy(iscsit_global->allowed_cpumask,
++			     new_allowed_cpumask);
+ 
+ 	kfree(orig);
+-	if (ret != 0)
+-		return ret;
+-
+-	cpumask_copy(iscsit_global->allowed_cpumask, &new_allowed_cpumask);
+-	return count;
++out_free_cpumask:
++	free_cpumask_var(new_allowed_cpumask);
++out:
++	return ret ? ret : count;
+ }
+ 
+ CONFIGFS_ATTR(lio_target_wwn_, cpus_allowed_list);
+-- 
+2.17.1
 
-Guixin Liu
-
->
-> Bodo
->
->
-> On 11.05.22 04:08, Guixin Liu wrote:
->> Currently, tcmu do completion in uio_write context, the userspace
->> will wait tcmu complete synchronously, switch completion path to
->> work queue context for better performance.
->>
->> Use tcmu + file to evaluate performance,
->> fio job: fio -filename=/dev/sdb  -direct=1 -size=2G -name=1 -thread
->> -runtime=60 -time_based  -rw=randwrite -numjobs=16 -iodepth=16 -bs=128k
->>
->> Without this patch:
->>     READ: bw=2775MiB/s (2910MB/s), 173MiB/s-174MiB/s
->> (181MB/s-183MB/s), io=163GiB (175GB), run=60001-60001msec
->>
->> With this patch:
->>     READ: bw=3333MiB/s (3495MB/s), 208MiB/s-209MiB/s
->> (218MB/s-219MB/s), io=195GiB (210GB), run=60001-60001msec
->>
->> Signed-off-by: Guixin Liu <kanie@linux.alibaba.com>
->> ---
->>   drivers/target/target_core_user.c | 155 
->> +++++++++++++++++++++-----------------
->>   1 file changed, 87 insertions(+), 68 deletions(-)
->>
->> diff --git a/drivers/target/target_core_user.c 
->> b/drivers/target/target_core_user.c
->> index fd7267b..6fd514d99 100644
->> --- a/drivers/target/target_core_user.c
->> +++ b/drivers/target/target_core_user.c
->> @@ -168,6 +168,8 @@ struct tcmu_dev {
->>       char dev_config[TCMU_CONFIG_LEN];
->>         int nl_reply_supported;
->> +
->> +    struct work_struct complete_work;
->>   };
->>     #define TCMU_DEV(_se_dev) container_of(_se_dev, struct tcmu_dev, 
->> se_dev)
->> @@ -223,6 +225,7 @@ struct tcmu_tmr {
->>     static atomic_t global_page_count = ATOMIC_INIT(0);
->>   static struct delayed_work tcmu_unmap_work;
->> +static struct workqueue_struct *tcmu_comp_wq;
->>   static int tcmu_global_max_pages = TCMU_GLOBAL_MAX_PAGES_DEF;
->>     static int tcmu_set_global_max_data_area(const char *str,
->> @@ -1596,6 +1599,76 @@ static void tcmu_detach_hba(struct se_hba *hba)
->>       hba->hba_ptr = NULL;
->>   }
->>   +static void run_qfull_queue(struct tcmu_dev *udev, bool fail)
->> +{
->> +    struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
->> +    LIST_HEAD(cmds);
->> +    sense_reason_t scsi_ret;
->> +    int ret;
->> +
->> +    if (list_empty(&udev->qfull_queue))
->> +        return;
->> +
->> +    pr_debug("running %s's cmdr queue forcefail %d\n", udev->name, 
->> fail);
->> +
->> +    list_splice_init(&udev->qfull_queue, &cmds);
->> +
->> +    list_for_each_entry_safe(tcmu_cmd, tmp_cmd, &cmds, queue_entry) {
->> +        list_del_init(&tcmu_cmd->queue_entry);
->> +
->> +        pr_debug("removing cmd %p on dev %s from queue\n",
->> +             tcmu_cmd, udev->name);
->> +
->> +        if (fail) {
->> +            /*
->> +             * We were not able to even start the command, so
->> +             * fail with busy to allow a retry in case runner
->> +             * was only temporarily down. If the device is being
->> +             * removed then LIO core will do the right thing and
->> +             * fail the retry.
->> +             */
->> +            tcmu_cmd->se_cmd->priv = NULL;
->> +            target_complete_cmd(tcmu_cmd->se_cmd, SAM_STAT_BUSY);
->> +            tcmu_free_cmd(tcmu_cmd);
->> +            continue;
->> +        }
->> +
->> +        ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
->> +        if (ret < 0) {
->> +            pr_debug("cmd %p on dev %s failed with %u\n",
->> +                 tcmu_cmd, udev->name, scsi_ret);
->> +            /*
->> +             * Ignore scsi_ret for now. target_complete_cmd
->> +             * drops it.
->> +             */
->> +            tcmu_cmd->se_cmd->priv = NULL;
->> +            target_complete_cmd(tcmu_cmd->se_cmd,
->> +                        SAM_STAT_CHECK_CONDITION);
->> +            tcmu_free_cmd(tcmu_cmd);
->> +        } else if (ret > 0) {
->> +            pr_debug("ran out of space during cmdr queue run\n");
->> +            /*
->> +             * cmd was requeued, so just put all cmds back in
->> +             * the queue
->> +             */
->> +            list_splice_tail(&cmds, &udev->qfull_queue);
->> +            break;
->> +        }
->> +    }
->> +
->> +    tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
->> +}
->> +
->> +static void tcmu_complete_work(struct work_struct *work)
->> +{
->> +    struct tcmu_dev *udev = container_of(work, struct tcmu_dev, 
->> complete_work);
->> +
->> +    mutex_lock(&udev->cmdr_lock);
->> +    if (tcmu_handle_completions(udev))
->> +        run_qfull_queue(udev, false);
->> +    mutex_unlock(&udev->cmdr_lock);
->> +}
->> +
->>   static struct se_device *tcmu_alloc_device(struct se_hba *hba, 
->> const char *name)
->>   {
->>       struct tcmu_dev *udev;
->> @@ -1634,6 +1707,7 @@ static struct se_device 
->> *tcmu_alloc_device(struct se_hba *hba, const char *name)
->>         xa_init(&udev->data_pages);
->>   +    INIT_WORK(&udev->complete_work, tcmu_complete_work);
->>       return &udev->se_dev;
->>   }
->>   @@ -1725,75 +1799,10 @@ static void tcmu_dev_kref_release(struct 
->> kref *kref)
->>       call_rcu(&dev->rcu_head, tcmu_dev_call_rcu);
->>   }
->>   -static void run_qfull_queue(struct tcmu_dev *udev, bool fail)
->> -{
->> -    struct tcmu_cmd *tcmu_cmd, *tmp_cmd;
->> -    LIST_HEAD(cmds);
->> -    sense_reason_t scsi_ret;
->> -    int ret;
->> -
->> -    if (list_empty(&udev->qfull_queue))
->> -        return;
->> -
->> -    pr_debug("running %s's cmdr queue forcefail %d\n", udev->name, 
->> fail);
->> -
->> -    list_splice_init(&udev->qfull_queue, &cmds);
->> -
->> -    list_for_each_entry_safe(tcmu_cmd, tmp_cmd, &cmds, queue_entry) {
->> -        list_del_init(&tcmu_cmd->queue_entry);
->> -
->> -        pr_debug("removing cmd %p on dev %s from queue\n",
->> -             tcmu_cmd, udev->name);
->> -
->> -        if (fail) {
->> -            /*
->> -             * We were not able to even start the command, so
->> -             * fail with busy to allow a retry in case runner
->> -             * was only temporarily down. If the device is being
->> -             * removed then LIO core will do the right thing and
->> -             * fail the retry.
->> -             */
->> -            tcmu_cmd->se_cmd->priv = NULL;
->> -            target_complete_cmd(tcmu_cmd->se_cmd, SAM_STAT_BUSY);
->> -            tcmu_free_cmd(tcmu_cmd);
->> -            continue;
->> -        }
->> -
->> -        ret = queue_cmd_ring(tcmu_cmd, &scsi_ret);
->> -        if (ret < 0) {
->> -            pr_debug("cmd %p on dev %s failed with %u\n",
->> -                 tcmu_cmd, udev->name, scsi_ret);
->> -            /*
->> -             * Ignore scsi_ret for now. target_complete_cmd
->> -             * drops it.
->> -             */
->> -            tcmu_cmd->se_cmd->priv = NULL;
->> -            target_complete_cmd(tcmu_cmd->se_cmd,
->> -                        SAM_STAT_CHECK_CONDITION);
->> -            tcmu_free_cmd(tcmu_cmd);
->> -        } else if (ret > 0) {
->> -            pr_debug("ran out of space during cmdr queue run\n");
->> -            /*
->> -             * cmd was requeued, so just put all cmds back in
->> -             * the queue
->> -             */
->> -            list_splice_tail(&cmds, &udev->qfull_queue);
->> -            break;
->> -        }
->> -    }
->> -
->> -    tcmu_set_next_deadline(&udev->qfull_queue, &udev->qfull_timer);
->> -}
->> -
->>   static int tcmu_irqcontrol(struct uio_info *info, s32 irq_on)
->>   {
->>       struct tcmu_dev *udev = container_of(info, struct tcmu_dev, 
->> uio_info);
->> -
->> -    mutex_lock(&udev->cmdr_lock);
->> -    if (tcmu_handle_completions(udev))
->> -        run_qfull_queue(udev, false);
->> -    mutex_unlock(&udev->cmdr_lock);
->> -
->> +    queue_work(tcmu_comp_wq, &udev->complete_work);
->>       return 0;
->>   }
->>   @@ -3281,12 +3290,19 @@ static int __init tcmu_module_init(void)
->>         INIT_DELAYED_WORK(&tcmu_unmap_work, tcmu_unmap_work_fn);
->>   +    tcmu_comp_wq = alloc_workqueue("tcmu-comp-wq",
->> +            WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_SYSFS, 0);
->> +    if (!tcmu_comp_wq)
->> +        return -ENOMEM;
->> +
->>       tcmu_cmd_cache = kmem_cache_create("tcmu_cmd_cache",
->>                   sizeof(struct tcmu_cmd),
->>                   __alignof__(struct tcmu_cmd),
->>                   0, NULL);
->> -    if (!tcmu_cmd_cache)
->> -        return -ENOMEM;
->> +    if (!tcmu_cmd_cache) {
->> +        ret = -ENOMEM;
->> +        goto out_free_comp_wq;
->> +    }
->>         tcmu_root_device = root_device_register("tcm_user");
->>       if (IS_ERR(tcmu_root_device)) {
->> @@ -3335,6 +3351,8 @@ static int __init tcmu_module_init(void)
->>       root_device_unregister(tcmu_root_device);
->>   out_free_cache:
->>       kmem_cache_destroy(tcmu_cmd_cache);
->> +out_free_comp_wq:
->> +    destroy_workqueue(tcmu_comp_wq);
->>         return ret;
->>   }
->> @@ -3347,6 +3365,7 @@ static void __exit tcmu_module_exit(void)
->>       genl_unregister_family(&tcmu_genl_family);
->>       root_device_unregister(tcmu_root_device);
->>       kmem_cache_destroy(tcmu_cmd_cache);
->> +    destroy_workqueue(tcmu_comp_wq);
->>   }
->>     MODULE_DESCRIPTION("TCM USER subsystem plugin");
