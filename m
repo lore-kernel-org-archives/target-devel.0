@@ -2,83 +2,160 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8552FC433F5
-	for <target-devel@archiver.kernel.org>; Tue, 17 May 2022 02:17:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99ABEC4332F
+	for <target-devel@archiver.kernel.org>; Tue, 17 May 2022 06:50:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238803AbiEQCRG (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 16 May 2022 22:17:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44250 "EHLO
+        id S230201AbiEQGuJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 17 May 2022 02:50:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35744 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236124AbiEQCQ7 (ORCPT
+        with ESMTP id S229655AbiEQGtq (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 16 May 2022 22:16:59 -0400
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 066893CA78;
-        Mon, 16 May 2022 19:16:58 -0700 (PDT)
-Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24GKjIkv009400;
-        Tue, 17 May 2022 02:16:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2021-07-09;
- bh=EDZx3noKrdncNz/1cvortvCCaSiIFzGoHAED5uODYmY=;
- b=ZUgAq9w26MDCIv2e46/lE1LUwy3l0EA2qcxUSLWAUDm6B98RyP3Chog43/1p9CxYQJow
- O2WoGm2FwyZIw+E/CQmjzpWjZZyYQq/lb6dfOVaiiI2wBfuWgXsDBDM0CgQibiugWRgl
- +BwIEJ4sKeMTbQoyyFsfAccZo/CTMaJn1wuKZJw/TO2iHWXuxP/QX70PEu/OpTRKro+G
- yxH34Z75lY0wMQjxGg9181A2gdx+4OQZZQ64AKbbIrPPah7nTKUvTyw6dOsfYlnhEfdF
- LuNjcS06sdtRbf2jApFEB4zAijHyb/JAdTXt9UPHSL/OWQMdC2mplHbCs45F4wx9GXZy Dw== 
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3g24ytmwjy-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 17 May 2022 02:16:47 +0000
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.16.1.2/8.16.1.2) with SMTP id 24H2G8Bp019232;
-        Tue, 17 May 2022 02:16:46 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com with ESMTP id 3g22v83hmf-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 17 May 2022 02:16:46 +0000
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 24H2Ghw3019875;
-        Tue, 17 May 2022 02:16:45 GMT
-Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com with ESMTP id 3g22v83hkf-5;
-        Tue, 17 May 2022 02:16:45 +0000
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     target-devel@vger.kernel.org, Max Gurtovoy <mgurtovoy@nvidia.com>,
-        linux-scsi@vger.kernel.org
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>, hch@lst.de,
-        sagi@grimberg.me, michael.christie@oracle.com
-Subject: Re: [PATCH 1/3] target/iscsi: rename iscsi_cmd to iscsit_cmd
-Date:   Mon, 16 May 2022 22:16:40 -0400
-Message-Id: <165275376861.24722.17710637076786131.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.35.2
-In-Reply-To: <20220428092939.36768-1-mgurtovoy@nvidia.com>
-References: <20220428092939.36768-1-mgurtovoy@nvidia.com>
+        Tue, 17 May 2022 02:49:46 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41EAC45AC0;
+        Mon, 16 May 2022 23:49:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+        :Reply-To:Content-Type:Content-ID:Content-Description;
+        bh=SxE/KGWMU/AOceGYHMSH7kVSHaDmfBJq5Hx3GU6lTjM=; b=GJzUPGeMt9Y8Gn0OXX48Gjo/VX
+        QOF9A0SOF/u82Gb43xSRhTQc0VRHTzbFlAIqmuzl6l3yRNPmlMjdh3Vus1TBd/ZEv8Uc9rdpSo0FX
+        CqIhHni5JtX9JQ+3W3urVRG/IgMB1L9Y8q+/CWFzaNdsVVI/Yj1dp3EeAU8J9AEL/ryG93fOmRGWH
+        VlfWX4FcV1E7qgkV8nPs1BVTc1hg2fx/Zi2o7nbbwRz5iHJI+M2snEnidc0TJDU40V2G+src/urfS
+        UebbV5FQYLlvnM9N7ecemEZcvs1GArCMXV9cLTZkzJ69HFaIchvb09chRv6o4a8itC8AODGTz592V
+        ELlZ6m/g==;
+Received: from [2001:4bb8:19a:7bdf:afb1:9e:37ad:b912] (helo=localhost)
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nqr0z-00Bsdb-Ow; Tue, 17 May 2022 06:49:06 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     Ming Lei <ming.lei@redhat.com>, linux-block@vger.kernel.org,
+        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org
+Subject: [PATCH 1/3] blk-mq: remove __blk_execute_rq_nowait
+Date:   Tue, 17 May 2022 08:48:59 +0200
+Message-Id: <20220517064901.3059255-2-hch@lst.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20220517064901.3059255-1-hch@lst.de>
+References: <20220517064901.3059255-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: ODsEWbcH5sMk7Op0QYBD8ZS5-zVX8QEO
-X-Proofpoint-ORIG-GUID: ODsEWbcH5sMk7Op0QYBD8ZS5-zVX8QEO
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, 28 Apr 2022 12:29:37 +0300, Max Gurtovoy wrote:
+We don't want to plug for synchronous execution that where we immediately
+wait for the request.  Once that is done not a whole lot of code is
+shared, so just remove __blk_execute_rq_nowait.
 
-> The structure iscsi_cmd naming is used by the iscsi initiator driver.
-> Rename the target cmd to iscsit_cmd to have more readable code.
-> 
-> 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ block/blk-mq.c | 70 ++++++++++++++++++++++----------------------------
+ 1 file changed, 31 insertions(+), 39 deletions(-)
 
-Applied to 5.19/scsi-queue, thanks!
-
-[1/3] target/iscsi: rename iscsi_cmd to iscsit_cmd
-      https://git.kernel.org/mkp/scsi/c/66cd9d4ef74a
-[2/3] target/iscsi: rename iscsi_conn to iscsit_conn
-      https://git.kernel.org/mkp/scsi/c/be36d683fc29
-[3/3] target/iscsi: rename iscsi_session to iscsit_session
-      https://git.kernel.org/mkp/scsi/c/0873fe44e780
-
+diff --git a/block/blk-mq.c b/block/blk-mq.c
+index ed1869a305c46..aae0c8a325904 100644
+--- a/block/blk-mq.c
++++ b/block/blk-mq.c
+@@ -1203,28 +1203,6 @@ static void blk_add_rq_to_plug(struct blk_plug *plug, struct request *rq)
+ 	plug->rq_count++;
+ }
+ 
+-static void __blk_execute_rq_nowait(struct request *rq, bool at_head,
+-		rq_end_io_fn *done, bool use_plug)
+-{
+-	WARN_ON(irqs_disabled());
+-	WARN_ON(!blk_rq_is_passthrough(rq));
+-
+-	rq->end_io = done;
+-
+-	blk_account_io_start(rq);
+-
+-	if (use_plug && current->plug) {
+-		blk_add_rq_to_plug(current->plug, rq);
+-		return;
+-	}
+-	/*
+-	 * don't check dying flag for MQ because the request won't
+-	 * be reused after dying flag is set
+-	 */
+-	blk_mq_sched_insert_request(rq, at_head, true, false);
+-}
+-
+-
+ /**
+  * blk_execute_rq_nowait - insert a request to I/O scheduler for execution
+  * @rq:		request to insert
+@@ -1240,8 +1218,16 @@ static void __blk_execute_rq_nowait(struct request *rq, bool at_head,
+  */
+ void blk_execute_rq_nowait(struct request *rq, bool at_head, rq_end_io_fn *done)
+ {
+-	__blk_execute_rq_nowait(rq, at_head, done, true);
++	WARN_ON(irqs_disabled());
++	WARN_ON(!blk_rq_is_passthrough(rq));
+ 
++	rq->end_io = done;
++
++	blk_account_io_start(rq);
++	if (current->plug)
++		blk_add_rq_to_plug(current->plug, rq);
++	else
++		blk_mq_sched_insert_request(rq, at_head, true, false);
+ }
+ EXPORT_SYMBOL_GPL(blk_execute_rq_nowait);
+ 
+@@ -1277,27 +1263,33 @@ static void blk_rq_poll_completion(struct request *rq, struct completion *wait)
+ blk_status_t blk_execute_rq(struct request *rq, bool at_head)
+ {
+ 	DECLARE_COMPLETION_ONSTACK(wait);
+-	unsigned long hang_check;
+ 
+-	/*
+-	 * iopoll requires request to be submitted to driver, so can't
+-	 * use plug
+-	 */
++	WARN_ON(irqs_disabled());
++	WARN_ON(!blk_rq_is_passthrough(rq));
++
+ 	rq->end_io_data = &wait;
+-	__blk_execute_rq_nowait(rq, at_head, blk_end_sync_rq,
+-			!blk_rq_is_poll(rq));
++	rq->end_io = blk_end_sync_rq;
+ 
+-	/* Prevent hang_check timer from firing at us during very long I/O */
+-	hang_check = sysctl_hung_task_timeout_secs;
++	blk_account_io_start(rq);
++	blk_mq_sched_insert_request(rq, at_head, true, false);
+ 
+-	if (blk_rq_is_poll(rq))
++	if (blk_rq_is_poll(rq)) {
+ 		blk_rq_poll_completion(rq, &wait);
+-	else if (hang_check)
+-		while (!wait_for_completion_io_timeout(&wait,
+-				hang_check * (HZ/2)))
+-			;
+-	else
+-		wait_for_completion_io(&wait);
++	} else {
++		/*
++		 * Prevent hang_check timer from firing at us during very long
++		 * I/O
++		 */
++		unsigned long hang_check = 
++			sysctl_hung_task_timeout_secs;
++
++		if (hang_check)
++			while (!wait_for_completion_io_timeout(&wait,
++					hang_check * (HZ/2)))
++				;
++		else
++			wait_for_completion_io(&wait);
++	}
+ 
+ 	return (blk_status_t)(uintptr_t)rq->end_io_data;
+ }
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.30.2
+
