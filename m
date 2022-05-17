@@ -2,148 +2,116 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9E30C43217
-	for <target-devel@archiver.kernel.org>; Tue, 17 May 2022 06:50:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20674C433FE
+	for <target-devel@archiver.kernel.org>; Tue, 17 May 2022 19:29:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237821AbiEQGuR (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 17 May 2022 02:50:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35752 "EHLO
+        id S1351472AbiEQT3V (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 17 May 2022 15:29:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37482 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238573AbiEQGtz (ORCPT
+        with ESMTP id S232553AbiEQT3U (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 17 May 2022 02:49:55 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3EB1D46B0A;
-        Mon, 16 May 2022 23:49:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
-        :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=2qQqsbLS3ydp9csYqg2WjkbU0OZZf5YYAjcs0Mqvi6o=; b=t7cqq+Pk3IDiWlL5NrbaJ33JKs
-        B3D+AopJhKLms4rd50GHrJL+F/CMhncDy7GPWqCuudHgLUB2IGmLOukCfsNeSijM9nkyep42Dcf6b
-        EKHH9hndcjEIoXURzu8IOsuhuj0DkaK1BWaGhDN+y0vLQrwI3NL38TUsejeOSFEVJYiuPIrNyTvgf
-        Wh5xYvE7e3w1JUg8MVfmPxdJPCCgOI2eTaiQ8c92OQZCOIbpZ5nuWxhISs0SABd8aSNPK8wdi1gM/
-        +wJkm48lu5G+lj+kbn4mfaFPErlkb2yEItiGrAbukNgpf1J3Hq/MUQBHuOnY8CCEvFRUk062iw1yR
-        h9zq4NWg==;
-Received: from [2001:4bb8:19a:7bdf:afb1:9e:37ad:b912] (helo=localhost)
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nqr12-00BsfA-HG; Tue, 17 May 2022 06:49:08 +0000
-From:   Christoph Hellwig <hch@lst.de>
-To:     Jens Axboe <axboe@kernel.dk>
-Cc:     Ming Lei <ming.lei@redhat.com>, linux-block@vger.kernel.org,
-        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Subject: [PATCH 2/3] blk-mq: avoid a mess of casts for blk_end_sync_rq
-Date:   Tue, 17 May 2022 08:49:00 +0200
-Message-Id: <20220517064901.3059255-3-hch@lst.de>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20220517064901.3059255-1-hch@lst.de>
-References: <20220517064901.3059255-1-hch@lst.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+        Tue, 17 May 2022 15:29:20 -0400
+Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D810506E0;
+        Tue, 17 May 2022 12:29:19 -0700 (PDT)
+Received: by mail-ej1-x62b.google.com with SMTP id ch13so36513618ejb.12;
+        Tue, 17 May 2022 12:29:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id;
+        bh=B+OmcYoxMJazhFsfhEsPMTADlWYge2PeB2sgM77GQIs=;
+        b=TDqUD0F2+LdOw4vV4ai2pU+/QtEnnn319/DkmwDWVwQywtD1gOwM3JMJllsT/XxabY
+         p6O+OEOLNMkSf2XWtb03tOEKAseuwUz3clZ0+0PA4Rf+jKsIjKIzJF/M0cGrQ+TqjmTP
+         G+DaAKKdm84CbiNZ0cFQTd9mRoBefNe5Sr8lbrnTt3wqxFBqz7kEW01fZqGaDll14lyX
+         loCSTzpwO0m+2ksEDIHX6jHbWtf9kOwj6ev2ERzpzU4ejvhERl0Gm5mBfFaKIOowiSlv
+         2t+nNNS+28BrGFS+3HMSl9bscm8Ii9irJjuxjETx/V4lsj3kt3mlQ2zsy8Mo3upW71C/
+         V5QQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=B+OmcYoxMJazhFsfhEsPMTADlWYge2PeB2sgM77GQIs=;
+        b=NcCSnNsW/WMGgeV8UC0FNVGAfG0qYxjJZko/AqumiTS52+d599asmtJDjtVOFwWUbF
+         uzJJp3th6hzGAgGJApaYc5AI2m3FCwgG9ITXARFEiTDxFkNsPXozc5RUiEqk4l3j3Eg5
+         R6NTOyZRF0qNm5aBX4XuuF/IAq3I+MUJGW9V7prOgDyLyx/0sAAYXUL3HOh4iQkF/yBy
+         UT73GrfOtY9FjEdhHt4kFmlP1siUmnc3pnY66WWZLi0oe6PchhQ60FaUgV7OT1BlX0Dt
+         IiZl9FyJ+n1wuNYThRInRPymwkh0OPuoYA9nW8hFde3G2esr/t+TNjAITPNfWd7F49/n
+         19Lg==
+X-Gm-Message-State: AOAM530hhWcKsVxmfgtD3sG2WWmrnxLGCl+oSuS6Y9ZGajjQVVGaUh3P
+        WpWU0w2TfumFNmWaQiUmzWM=
+X-Google-Smtp-Source: ABdhPJxb1R8AZGj5TtiOCrCwbpxUFNt4vSbBc414syg88KevVDPTJVBav7WdsWUHadySs6Wb3fMMqQ==
+X-Received: by 2002:a17:906:753:b0:6fa:7525:45f7 with SMTP id z19-20020a170906075300b006fa752545f7mr20952520ejb.598.1652815757513;
+        Tue, 17 May 2022 12:29:17 -0700 (PDT)
+Received: from localhost (ipbcc1cfad.dynamic.kabel-deutschland.de. [188.193.207.173])
+        by smtp.gmail.com with ESMTPSA id f3-20020a1709063f4300b006f3ef214e6esm31043ejj.212.2022.05.17.12.29.16
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 17 May 2022 12:29:17 -0700 (PDT)
+From:   Bodo Stroesser <bostroesser@gmail.com>
+To:     "Martin K. Petersen" <martin.petersen@oracle.com>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc:     Bodo Stroesser <bostroesser@gmail.com>,
+        Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
+        Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [PATCH] scsi: target: tcmu: Avoid holding XArray lock when calling lock_page
+Date:   Tue, 17 May 2022 21:29:13 +0200
+Message-Id: <20220517192913.21405-1-bostroesser@gmail.com>
+X-Mailer: git-send-email 2.12.3
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Instead of trying to cast a __bitwise 32-bit integer to a larger integer
-and then a pointer, just allow a struct with the blk_status_t and the
-completion on stack and set the end_io_data to that.  Use the
-opportunity to move the code to where it belongs and drop rather
-confusing comments.
+In tcmu_blocks_release, lock_page() is called to prevent a race causing
+possible data corruption. Since lock_page() might sleep, calling it
+while holding XArray lock is a bug.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+To fix the bug switch to XArray normal API by replacing the xas_for_each
+with xa_for_each_range. Since normal API does its own handling of
+XArray locking, now the xas_lock and xas_unlock around the loop are
+obsolete.
+
+While keeping the code short and simple, the switch to normal API slows
+down the loop slightly, which is acceptable since tcmu_blocks_release is
+not relevant for performance.
+
+Fixes: bb9b9eb0ae2e ("scsi: target: tcmu: Fix possible data corruption")
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Bodo Stroesser <bostroesser@gmail.com>
 ---
- block/blk-mq.c | 43 ++++++++++++++++++++-----------------------
- 1 file changed, 20 insertions(+), 23 deletions(-)
+ drivers/target/target_core_user.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/block/blk-mq.c b/block/blk-mq.c
-index aae0c8a325904..0169b624edda1 100644
---- a/block/blk-mq.c
-+++ b/block/blk-mq.c
-@@ -1151,24 +1151,6 @@ void blk_mq_start_request(struct request *rq)
- }
- EXPORT_SYMBOL(blk_mq_start_request);
- 
--/**
-- * blk_end_sync_rq - executes a completion event on a request
-- * @rq: request to complete
-- * @error: end I/O status of the request
-- */
--static void blk_end_sync_rq(struct request *rq, blk_status_t error)
--{
--	struct completion *waiting = rq->end_io_data;
--
--	rq->end_io_data = (void *)(uintptr_t)error;
--
--	/*
--	 * complete last, if this is a stack request the process (and thus
--	 * the rq pointer) could be invalid right after this complete()
--	 */
--	complete(waiting);
--}
--
- /*
-  * Allow 2x BLK_MAX_REQUEST_COUNT requests on plug queue for multiple
-  * queues. This is important for md arrays to benefit from merging
-@@ -1231,6 +1213,19 @@ void blk_execute_rq_nowait(struct request *rq, bool at_head, rq_end_io_fn *done)
- }
- EXPORT_SYMBOL_GPL(blk_execute_rq_nowait);
- 
-+struct blk_rq_wait {
-+	struct completion done;
-+	blk_status_t ret;
-+};
-+
-+static void blk_end_sync_rq(struct request *rq, blk_status_t ret)
-+{
-+	struct blk_rq_wait *wait = rq->end_io_data;
-+
-+	wait->ret = ret;
-+	complete(&wait->done);
-+}
-+
- static bool blk_rq_is_poll(struct request *rq)
+diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
+index b1fd06edea59..3deaeecb712e 100644
+--- a/drivers/target/target_core_user.c
++++ b/drivers/target/target_core_user.c
+@@ -1661,13 +1661,14 @@ static int tcmu_check_and_free_pending_cmd(struct tcmu_cmd *cmd)
+ static u32 tcmu_blocks_release(struct tcmu_dev *udev, unsigned long first,
+ 				unsigned long last)
  {
- 	if (!rq->mq_hctx)
-@@ -1262,7 +1257,9 @@ static void blk_rq_poll_completion(struct request *rq, struct completion *wait)
-  */
- blk_status_t blk_execute_rq(struct request *rq, bool at_head)
- {
--	DECLARE_COMPLETION_ONSTACK(wait);
-+	struct blk_rq_wait wait = {
-+		.done = COMPLETION_INITIALIZER_ONSTACK(wait.done),
-+	};
+-	XA_STATE(xas, &udev->data_pages, first * udev->data_pages_per_blk);
+ 	struct page *page;
++	unsigned long dpi;
+ 	u32 pages_freed = 0;
  
- 	WARN_ON(irqs_disabled());
- 	WARN_ON(!blk_rq_is_passthrough(rq));
-@@ -1274,7 +1271,7 @@ blk_status_t blk_execute_rq(struct request *rq, bool at_head)
- 	blk_mq_sched_insert_request(rq, at_head, true, false);
- 
- 	if (blk_rq_is_poll(rq)) {
--		blk_rq_poll_completion(rq, &wait);
-+		blk_rq_poll_completion(rq, &wait.done);
- 	} else {
+-	xas_lock(&xas);
+-	xas_for_each(&xas, page, (last + 1) * udev->data_pages_per_blk - 1) {
+-		xas_store(&xas, NULL);
++	first = first * udev->data_pages_per_blk;
++	last = (last + 1) * udev->data_pages_per_blk - 1;
++	xa_for_each_range(&udev->data_pages, dpi, page, first, last) {
++		xa_erase(&udev->data_pages, dpi);
  		/*
- 		 * Prevent hang_check timer from firing at us during very long
-@@ -1284,14 +1281,14 @@ blk_status_t blk_execute_rq(struct request *rq, bool at_head)
- 			sysctl_hung_task_timeout_secs;
- 
- 		if (hang_check)
--			while (!wait_for_completion_io_timeout(&wait,
-+			while (!wait_for_completion_io_timeout(&wait.done,
- 					hang_check * (HZ/2)))
- 				;
- 		else
--			wait_for_completion_io(&wait);
-+			wait_for_completion_io(&wait.done);
+ 		 * While reaching here there may be page faults occurring on
+ 		 * the to-be-released pages. A race condition may occur if
+@@ -1691,7 +1692,6 @@ static u32 tcmu_blocks_release(struct tcmu_dev *udev, unsigned long first,
+ 		__free_page(page);
+ 		pages_freed++;
  	}
+-	xas_unlock(&xas);
  
--	return (blk_status_t)(uintptr_t)rq->end_io_data;
-+	return wait.ret;
- }
- EXPORT_SYMBOL(blk_execute_rq);
+ 	atomic_sub(pages_freed, &global_page_count);
  
 -- 
-2.30.2
+2.12.3
 
