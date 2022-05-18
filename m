@@ -2,89 +2,53 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B30CDC433EF
-	for <target-devel@archiver.kernel.org>; Wed, 18 May 2022 01:56:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 045E7C433EF
+	for <target-devel@archiver.kernel.org>; Wed, 18 May 2022 22:14:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234021AbiERB41 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 17 May 2022 21:56:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51144 "EHLO
+        id S229705AbiERWOq (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 18 May 2022 18:14:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41038 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234054AbiERBzw (ORCPT
+        with ESMTP id S229524AbiERWOp (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 17 May 2022 21:55:52 -0400
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 57D50F07;
-        Tue, 17 May 2022 18:55:50 -0700 (PDT)
-Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24HKgGIQ031659;
-        Wed, 18 May 2022 01:55:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2021-07-09;
- bh=WINoPMnV95p+ub5aBvEYZWMBEM7WAa67hzS2CHcAaio=;
- b=dwHYrkVDO/TpiP0jM/grCR0oLAW2moLDg/VdNtXeW60TeX+Ctc+/q0SsrcRS002PI0Y8
- H6P9hEhtGBhjWg2ZqfCPOP1c0DbnvGE21+SEp12uUVc2ZYGae4NCmRb4iiVKqQsh2GOX
- dsKus5IQNi790E2d8zKfEL+RFYTTUysKFUYIy1I33CcntPDxkDgRyMcS9Rxxuglfnrf0
- BUgTHllwN9rl2J3DWDIYBVIYoaMsHnKZc6l/rouh5LqS1bmvcR1NoObcCr8PNC5om9z5
- RPWGQSwcZfZycYzkE4IwGxptMEBu80n+2+VBLUi1+iN8xEbaYmi79cnZJgXWs2UwCXlU Sw== 
-Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3g24aaftv4-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 18 May 2022 01:55:41 +0000
-Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.16.1.2/8.16.1.2) with SMTP id 24I1j166022553;
-        Wed, 18 May 2022 01:55:40 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com with ESMTP id 3g22v3r69s-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 18 May 2022 01:55:40 +0000
-Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 24I1tdCY004454;
-        Wed, 18 May 2022 01:55:39 GMT
-Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
-        by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com with ESMTP id 3g22v3r69m-1;
-        Wed, 18 May 2022 01:55:39 +0000
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     mingzhe.zou@easystack.cn, michael.christie@oracle.com,
-        torvalds@linux-foundation.org, zgrieee@gmail.com
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dongsheng.yang@easystack.cn, zoumingzhe@qq.com,
-        linux-scsi@vger.kernel.org
-Subject: Re: [PATCH v2] scsi: target: fixup incorrect use of 'cpumask_t'
-Date:   Tue, 17 May 2022 21:55:38 -0400
-Message-Id: <165283883037.1328.16838345221393341169.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.35.2
-In-Reply-To: <20220516054721.1548-1-mingzhe.zou@easystack.cn>
-References: <20220516054721.1548-1-mingzhe.zou@easystack.cn>
+        Wed, 18 May 2022 18:14:45 -0400
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6926B205254;
+        Wed, 18 May 2022 15:14:42 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by sin.source.kernel.org (Postfix) with ESMTPS id A7202CE221A;
+        Wed, 18 May 2022 22:14:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62099C385A9;
+        Wed, 18 May 2022 22:14:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1652912079;
+        bh=u74yg/M4Fxkx9BQwfM3eTdqX2f0fV4spwaVbAhO6bhc=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=dfSXkoFUfztPS2hYCcdSVFN5LcY9J3A6JSb2MUk9rXsB9pPGDp5W5X/5YHpP+jZFC
+         2hbS6vY3ktiRoibpZFRW1S8shUJYYBiJ0c1WI7VHSap5kgIlMWIW/l9vlwTbgSYSyN
+         Wlct7D6l0qJz62W7XK5n8XZ5HLPNLZofDQZG7pbEULy3sh0rI0XmGywcEDwT847NWV
+         1oM5KQwa0JpLHM2QBuvLO4OBT9xprxSdEhiVSsY81RSnuK2XFqnTUwlgTtcShdaeUw
+         ugsdce279EmFkq7qzG8DZb0qexWdwoeP+5485rFGGcR43hoek0KrNsdxzbU0UjBGDu
+         F1wevXVj6+uWw==
+Date:   Wed, 18 May 2022 16:14:34 -0600
+From:   Keith Busch <kbusch@kernel.org>
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Jens Axboe <axboe@kernel.dk>, Ming Lei <ming.lei@redhat.com>,
+        linux-block@vger.kernel.org, linux-nvme@lists.infradead.org,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Subject: Re: cleanup blk_execute_rq*
+Message-ID: <YoVvyviy3eJolJ3+@kbusch-mbp.dhcp.thefacebook.com>
+References: <20220517064901.3059255-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-ORIG-GUID: gep8iAr9P7wUo-80x8z-rdTt17I37yM_
-X-Proofpoint-GUID: gep8iAr9P7wUo-80x8z-rdTt17I37yM_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220517064901.3059255-1-hch@lst.de>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Mon, 16 May 2022 13:47:21 +0800, mingzhe.zou@easystack.cn wrote:
+This series looks good to me.
 
-> From: mingzhe <mingzhe.zou@easystack.cn>
-> 
-> In commit d72d827f2f26, I used 'cpumask_t' incorrectly.
-> ```
-> void iscsit_thread_get_cpumask(struct iscsi_conn *conn)
-> {
->         int ord, cpu;
->         cpumask_t conn_allowed_cpumask;
->         ......
-> }
-> 
-> [...]
-
-Applied to 5.18/scsi-fixes, thanks!
-
-[1/1] scsi: target: fixup incorrect use of 'cpumask_t'
-      https://git.kernel.org/mkp/scsi/c/525f447f88b1
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Reviewed-by: Keith Busch <kbusch@kernel.org>
