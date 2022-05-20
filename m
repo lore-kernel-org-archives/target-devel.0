@@ -2,55 +2,82 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D56D8C433EF
-	for <target-devel@archiver.kernel.org>; Thu, 19 May 2022 09:58:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F838C433F5
+	for <target-devel@archiver.kernel.org>; Fri, 20 May 2022 01:09:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236187AbiESJ62 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 19 May 2022 05:58:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43480 "EHLO
+        id S1344220AbiETBJZ (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 19 May 2022 21:09:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56928 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234774AbiESJ62 (ORCPT
+        with ESMTP id S1344218AbiETBJY (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 19 May 2022 05:58:28 -0400
-Received: from www262.sakura.ne.jp (www262.sakura.ne.jp [202.181.97.72])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CC019B1AA;
-        Thu, 19 May 2022 02:58:27 -0700 (PDT)
-Received: from fsav412.sakura.ne.jp (fsav412.sakura.ne.jp [133.242.250.111])
-        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 24J9wDgD064109;
-        Thu, 19 May 2022 18:58:13 +0900 (JST)
-        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
-Received: from www262.sakura.ne.jp (202.181.97.72)
- by fsav412.sakura.ne.jp (F-Secure/fsigk_smtp/550/fsav412.sakura.ne.jp);
- Thu, 19 May 2022 18:58:13 +0900 (JST)
-X-Virus-Status: clean(F-Secure/fsigk_smtp/550/fsav412.sakura.ne.jp)
-Received: from [192.168.1.9] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
-        (authenticated bits=0)
-        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 24J9wCmB064106
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
-        Thu, 19 May 2022 18:58:12 +0900 (JST)
-        (envelope-from penguin-kernel@I-love.SAKURA.ne.jp)
-Message-ID: <ff6ff201-3cb6-8807-25e2-25f37969041e@I-love.SAKURA.ne.jp>
-Date:   Thu, 19 May 2022 18:58:11 +0900
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH] IB/isert: Avoid flush_scheduled_work() usage
-Content-Language: en-US
-To:     Sagi Grimberg <sagi@grimberg.me>, Jason Gunthorpe <jgg@ziepe.ca>,
-        Leon Romanovsky <leon@kernel.org>
-Cc:     OFED mailing list <linux-rdma@vger.kernel.org>,
+        Thu, 19 May 2022 21:09:24 -0400
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D33BE129EFD;
+        Thu, 19 May 2022 18:09:22 -0700 (PDT)
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24K0Jhhc031924;
+        Fri, 20 May 2022 01:09:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type : content-transfer-encoding; s=corp-2021-07-09;
+ bh=Kj26JZllMxwkQTpx5hspsbsEJ1NdUc3HKhtXUQtVy34=;
+ b=UsLyNjm0qf+nC9A2jVHSNy2WZCYXFdDVQG3V314k1uTkDwazttlfFEA2OZeBNtgMFQLB
+ cdOKQ16cchjCEznX78jdmnaIGai3KJ9QuOEFL+gCEqxtzXYqi8JlGEeS6z+bavJ4Aymh
+ dJ/Yk/iqroUYGUHSCPEeK2nAMCZENLdfay5i0UIQxR44cnyJVH5UK22MjuvBMm6mwPZI
+ ZJpFt9peyVqY7KMJEq4Izpt5lugY4zBI+NGR+SBQ/E3rrZ2cjgEuUgR2tCEcaUrj4Xr7
+ Ou5Rk8IB+9tLP6sHWVgBnwDIJo80ZJu1QREjTqdeiYJGIXXbqog7QjuBZ3r4yHthMjf4 eQ== 
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3g2310wtr1-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 20 May 2022 01:09:18 +0000
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.16.1.2/8.16.1.2) with SMTP id 24K15nUX020179;
+        Fri, 20 May 2022 01:09:18 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com with ESMTP id 3g37crytj8-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 20 May 2022 01:09:18 +0000
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 24K19GK7030710;
+        Fri, 20 May 2022 01:09:17 GMT
+Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com with ESMTP id 3g37crythd-2;
+        Fri, 20 May 2022 01:09:17 +0000
+From:   "Martin K. Petersen" <martin.petersen@oracle.com>
+To:     Haowen Bai <baihaowen@meizu.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        James Smart <james.smart@broadcom.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>
+Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
+        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-References: <fbe5e9a8-0110-0c22-b7d6-74d53948d042@I-love.SAKURA.ne.jp>
- <3cb0c6bc-0c79-77d2-a892-2492d10a7bcc@grimberg.me>
-From:   Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-In-Reply-To: <3cb0c6bc-0c79-77d2-a892-2492d10a7bcc@grimberg.me>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] scsi: elx: efct: remove null check after call container_of()
+Date:   Thu, 19 May 2022 21:09:01 -0400
+Message-Id: <165300891232.11465.7199146004705451866.b4-ty@oracle.com>
+X-Mailer: git-send-email 2.35.2
+In-Reply-To: <1652750737-22673-1-git-send-email-baihaowen@meizu.com>
+References: <1652750737-22673-1-git-send-email-baihaowen@meizu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-ORIG-GUID: -cCNsx-DUyTBDwoOH5JTMOluawsh9FeD
+X-Proofpoint-GUID: -cCNsx-DUyTBDwoOH5JTMOluawsh9FeD
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 2022/05/11 3:28, Sagi Grimberg wrote:
-> Reviewed-by: Sagi Grimberg <sagi@grimberg.me>
+On Tue, 17 May 2022 09:25:36 +0800, Haowen Bai wrote:
 
-Thank you. Which tree should this patch go to?
+> container_of() will never return NULL, so remove useless code.
+> 
+> 
+
+Applied to 5.19/scsi-queue, thanks!
+
+[1/1] scsi: elx: efct: remove null check after call container_of()
+      https://git.kernel.org/mkp/scsi/c/d627660c22b5
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
