@@ -2,87 +2,87 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47A67C433FE
-	for <target-devel@archiver.kernel.org>; Fri, 20 May 2022 01:09:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D77D6C433F5
+	for <target-devel@archiver.kernel.org>; Fri, 20 May 2022 01:09:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344237AbiETBJ2 (ORCPT
+        id S1344318AbiETBJu (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 19 May 2022 21:09:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56956 "EHLO
+        Thu, 19 May 2022 21:09:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344225AbiETBJ0 (ORCPT
+        with ESMTP id S1344316AbiETBJq (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 19 May 2022 21:09:26 -0400
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8188129EF2;
-        Thu, 19 May 2022 18:09:25 -0700 (PDT)
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24K0IsKC005482;
-        Fri, 20 May 2022 01:09:21 GMT
+        Thu, 19 May 2022 21:09:46 -0400
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC3F3129EE2;
+        Thu, 19 May 2022 18:09:39 -0700 (PDT)
+Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 24K0JMNK023992;
+        Fri, 20 May 2022 01:09:29 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type : content-transfer-encoding; s=corp-2021-07-09;
- bh=WqmnPfMrOmzIWVYKWpQlgrLi2FWRYuSK1sSU+Vv2QBs=;
- b=xb2E6scXMyOOYtxFVFCWav3AIcomyHu63T6DDerQbz5Yw6dnIGsDiDUKZdXyR3RQoE4Z
- Cipkz0Xw6mv0raYoz9jhSpzJmkI2ZcJ1Qh9YXhn8x+Fk1MeBsubL/RjZS/zmaf0YHigC
- msX9OZ/EqUPfNm5gJIxpEDIYavpRzD924uS7VS3jDcnxVDyAFda6qjAKrIkDi+TPNxoz
- sojmJnjQ8gWTFx3AJgbxFJkg/CXPBuZ+YWl0pUYb2b9nrK8biVAOKfGF4WisGmBz0tyl
- CPHheKLU/rJFTRTDSr6pboNvUa0wRc3/xUihM5jvd+UzVgKfe/Ieg+RJMoadv9UMYrk2 Dw== 
+ bh=kEFQtJRMEccpxF9OIT3uMAX389Ymhk+oZPYiGQiq0Gg=;
+ b=BpiwDMNKV46h4gbbnkQmuhvOElGbOOOhPe5SBPMyyAZXbwC7ZzpWqMxbo06Pj/i6XfPX
+ konVvHCGjDE5PvQ5d83QRo0+/EZ3q23W0rmwjEOEqZgJqTPF9Y33eG+YlmPOcX15TLtl
+ 7zVJOifGwSW5oZrMpOTtLUVyAUQm4Pfqk0AOALec5JNpYaOSIx9aHoZBrxwYhTU9sWch
+ qjsveboW6V0OTgkLTwHiOltEV30PFh48+uMK99BcHuk1sskhzYI+0VlqVLiVOPPcdw+r
+ wB8BMkFGucdydi+soqiiCc3az4KQLG7irs/BfWTpuSPDm9+aCRDFtTbNyVTfIK/fC9dn pA== 
 Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3g22ucddqx-1
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3g24aanetr-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 20 May 2022 01:09:21 +0000
+        Fri, 20 May 2022 01:09:29 +0000
 Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.16.1.2/8.16.1.2) with SMTP id 24K15nhB020150;
-        Fri, 20 May 2022 01:09:20 GMT
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.16.1.2/8.16.1.2) with SMTP id 24K15nct020193;
+        Fri, 20 May 2022 01:09:28 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com with ESMTP id 3g37crytke-1
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com with ESMTP id 3g37crytqj-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 20 May 2022 01:09:20 +0000
+        Fri, 20 May 2022 01:09:28 +0000
 Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 24K19GKB030710;
-        Fri, 20 May 2022 01:09:20 GMT
+        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 24K19GKK030710;
+        Fri, 20 May 2022 01:09:27 GMT
 Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com with ESMTP id 3g37crythd-4;
-        Fri, 20 May 2022 01:09:19 +0000
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com with ESMTP id 3g37crythd-9;
+        Fri, 20 May 2022 01:09:27 +0000
 From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     linux-scsi@vger.kernel.org, Bodo Stroesser <bostroesser@gmail.com>,
-        target-devel@vger.kernel.org
+To:     Harshit Mogalapalli <harshit.m.mogalapalli@oracle.com>
 Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
-        Dan Carpenter <dan.carpenter@oracle.com>
-Subject: Re: [PATCH] scsi: target: tcmu: Avoid holding XArray lock when calling lock_page
-Date:   Thu, 19 May 2022 21:09:03 -0400
-Message-Id: <165300891233.11465.9872844420692746335.b4-ty@oracle.com>
+        linux-scsi@vger.kernel.org, Daniel Wagner <dwagner@suse.de>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        linux-kernel@vger.kernel.org,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        James Smart <james.smart@broadcom.com>,
+        Hannes Reinecke <hare@suse.de>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Wei Yongjun <weiyongjun1@huawei.com>,
+        target-devel@vger.kernel.org, dan.carpenter@oracle.com
+Subject: Re: [PATCH] scsi: elx: efct: Remove redundant memset statement
+Date:   Thu, 19 May 2022 21:09:08 -0400
+Message-Id: <165300891231.11465.13719817919284255142.b4-ty@oracle.com>
 X-Mailer: git-send-email 2.35.2
-In-Reply-To: <20220517192913.21405-1-bostroesser@gmail.com>
-References: <20220517192913.21405-1-bostroesser@gmail.com>
+In-Reply-To: <20220505143703.45441-1-harshit.m.mogalapalli@oracle.com>
+References: <20220505143703.45441-1-harshit.m.mogalapalli@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: J3AuiTAaLuLJM5VAvSNtHkk1mjE6pSF6
-X-Proofpoint-ORIG-GUID: J3AuiTAaLuLJM5VAvSNtHkk1mjE6pSF6
+X-Proofpoint-ORIG-GUID: KuHCq16Bdj9tTnf2M-7-6mQ0UsMnqqJP
+X-Proofpoint-GUID: KuHCq16Bdj9tTnf2M-7-6mQ0UsMnqqJP
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, 17 May 2022 21:29:13 +0200, Bodo Stroesser wrote:
+On Thu, 5 May 2022 07:36:57 -0700, Harshit Mogalapalli wrote:
 
-> In tcmu_blocks_release, lock_page() is called to prevent a race causing
-> possible data corruption. Since lock_page() might sleep, calling it
-> while holding XArray lock is a bug.
+> As memset of 'bmbx' is immediately followed by a memcpy where 'bmbx'
+> is the destination, memset is redundant.
 > 
-> To fix the bug switch to XArray normal API by replacing the xas_for_each
-> with xa_for_each_range. Since normal API does its own handling of
-> XArray locking, now the xas_lock and xas_unlock around the loop are
-> obsolete.
 > 
-> [...]
 
 Applied to 5.19/scsi-queue, thanks!
 
-[1/1] scsi: target: tcmu: Avoid holding XArray lock when calling lock_page
-      https://git.kernel.org/mkp/scsi/c/325d5c5fb216
+[1/1] scsi: elx: efct: Remove redundant memset statement
+      https://git.kernel.org/mkp/scsi/c/e79aaa9cc02d
 
 -- 
 Martin K. Petersen	Oracle Linux Engineering
