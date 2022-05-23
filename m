@@ -2,67 +2,103 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 760CAC433EF
-	for <target-devel@archiver.kernel.org>; Mon, 23 May 2022 08:06:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98135C433EF
+	for <target-devel@archiver.kernel.org>; Mon, 23 May 2022 09:59:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231605AbiEWIGp (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 23 May 2022 04:06:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55576 "EHLO
+        id S233645AbiEWJ7Z (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 23 May 2022 05:59:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231550AbiEWIGp (ORCPT
+        with ESMTP id S233565AbiEWJ7Y (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 23 May 2022 04:06:45 -0400
-Received: from mail.coredeal.pl (mail.coredeal.pl [51.75.73.133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 99AC75FE9
-        for <target-devel@vger.kernel.org>; Mon, 23 May 2022 01:06:43 -0700 (PDT)
-Received: by mail.coredeal.pl (Postfix, from userid 1002)
-        id 58DCEA2DDE; Mon, 23 May 2022 08:06:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=coredeal.pl; s=mail;
-        t=1653293202; bh=9KGuIG62LgzC9aYmjKxzocuYLRCVghXg6v9Q1q2LHec=;
-        h=Date:From:To:Subject:From;
-        b=OCcrbuLnpPRS43tYOcB536XCD4PfJeCNPTDCcZYKHjGq0FZ0c+BRJPYp0TLf+fabG
-         e3EWfuFrP/ff8mBLf2b5mOy0zp8nxduOEmczryW4tlaQtoRrE97vlx4pAr0nYhd0FP
-         6BA8GMgi/moQBbSq2IVyTUB8ZS2GefJaX+UynuSb14U2OMhM+Z81p0YNJt5gnxSTRb
-         1TqHud+xFYJqPt+Sy7M+Mf+cTpPLrJ1orftTIbDTFpvvZzz2u9ZIAmDZJ6r2haLzv6
-         PQmuQVwYwcApexq5m/KRpmbRqZDZAJfviws43aC3GM5/vSPpPDnDm3EZcb+ck+vRNi
-         uggKZyP043kPA==
-Received: by mail.coredeal.pl for <target-devel@vger.kernel.org>; Mon, 23 May 2022 08:05:29 GMT
-Message-ID: <20220523064500-0.1.39.qjcy.0.q3g19pf59m@coredeal.pl>
-Date:   Mon, 23 May 2022 08:05:29 GMT
-From:   "Krzysztof Maj" <krzysztof.maj@coredeal.pl>
-To:     <target-devel@vger.kernel.org>
-Subject: Biznesowy angielski
-X-Mailer: mail.coredeal.pl
+        Mon, 23 May 2022 05:59:24 -0400
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0BA6B41F88;
+        Mon, 23 May 2022 02:59:20 -0700 (PDT)
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 0D95548300;
+        Mon, 23 May 2022 09:59:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received:received; s=mta-01; t=1653299957; x=
+        1655114358; bh=7rXJ0DDphcGgWOELdgckwE2qKMwTKkFogaA+BTE92mI=; b=h
+        xolevEx/GSz22BXmL7T6vciYFiprSxbO8Ey5EMOiUFMkMSLqzDbTrvd+IEdyfCxA
+        yYT7te83fmwnNM4jTfzdqcKoNxcgoIvr3O2EcT0jdwNDoBH12UR70tj1jKmCxB4B
+        aAzqfDJ8845Yzk97Ge6O1yU2zQSn3tLnwZBnkDUd6U=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id kWs_9dbcLQtN; Mon, 23 May 2022 12:59:17 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com [172.17.10.102])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id BCF6647EBC;
+        Mon, 23 May 2022 12:59:17 +0300 (MSK)
+Received: from T-EXCH-09.corp.yadro.com (172.17.11.59) by
+ T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Mon, 23 May 2022 12:59:17 +0300
+Received: from NB-591.corp.yadro.com (10.199.18.20) by
+ T-EXCH-09.corp.yadro.com (172.17.11.59) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.986.22; Mon, 23 May 2022 12:59:16 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     Mike Christie <michael.christie@oracle.com>,
+        <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: [PATCH v5 0/3] target: iscsi: control authentication per ACL
+Date:   Mon, 23 May 2022 12:59:02 +0300
+Message-ID: <20220523095905.26070-1-d.bogdanov@yadro.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.18.20]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-09.corp.yadro.com (172.17.11.59)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Dzie=C5=84 dobry,=20
+Add acls/{ACL}/attrib/authentication attribute that controls authentication
+for the particular ACL. By default, this attribute inherits a value of
+authentication attribute of the target port group to keep a backward
+compatibility.
 
-czy rozwa=C5=BCali Pa=C5=84stwo rozw=C3=B3j kwalifikacji j=C4=99zykowych =
-swoich pracownik=C3=B3w?
+authentication attribute has 3 states:
+"0" - authentication is turned off for this ACL
+"1" - authentication is required for this ACL
+"-1" - authentication is inherited from TPG
 
-Opracowali=C5=9Bmy kursy j=C4=99zykowe dla r=C3=B3=C5=BCnych bran=C5=BC, =
-w kt=C3=B3rych koncentrujemy si=C4=99 na podniesieniu poziomu s=C5=82owni=
-ctwa i jako=C5=9Bci komunikacji wykorzystuj=C4=85c autorsk=C4=85 metod=C4=
-=99, stworzon=C4=85 specjalnie dla wymagaj=C4=85cego biznesu.=20
+This patchset is intended for scsi-queue.
 
-Niestandardowy kurs on-line, dopasowany do profilu firmy i obszar=C3=B3w =
-=C5=9Bwiadczonych us=C5=82ug, w szybkim czasie przyniesie efekty, kt=C3=B3=
-re zwi=C4=99ksz=C4=85 komfort i jako=C5=9B=C4=87 pracy, rozwijaj=C4=85c m=
-o=C5=BCliwo=C5=9Bci biznesowe.=20
+v5:
+ rebase on latest scsi-staging
 
-Zdalne szkolenie j=C4=99zykowe to m.in. zaj=C4=99cia z native speakerami,=
- kt=C3=B3re w szybkim czasie naucz=C4=85 pracownik=C3=B3w rozmawia=C4=87 =
-za pomoc=C4=85 jasnego i zwi=C4=99z=C5=82ego j=C4=99zyka Business English=
-=2E
+v4:
+ rebase on latest scsi-queue
 
-Czy m=C3=B3g=C5=82bym przedstawi=C4=87 wi=C4=99cej szczeg=C3=B3=C5=82=C3=B3=
-w i opowiedzie=C4=87 jak dzia=C5=82amy?=20
+v3:
+ fix warning: no previous prototype for function 'iscsi_conn_auth_required'
 
+v2:
+ show effective value (-1) for inherited mode
 
-Pozdrawiam
-Krzysztof Maj
+Dmitry Bogdanov (3):
+  scsi: target: iscsi: Add upcast helpers
+  scsi: target: iscsi: extract auth functions
+  target: iscsi: control authentication per ACL
+
+ drivers/target/iscsi/iscsi_target_configfs.c  | 116 +++++++-------
+ drivers/target/iscsi/iscsi_target_nego.c      | 148 ++++++++++++------
+ .../target/iscsi/iscsi_target_nodeattrib.c    |   1 +
+ drivers/target/iscsi/iscsi_target_tpg.c       |   3 +-
+ include/target/iscsi/iscsi_target_core.h      |  14 ++
+ 5 files changed, 176 insertions(+), 106 deletions(-)
+
+-- 
+2.25.1
+
