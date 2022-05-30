@@ -2,36 +2,36 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97089C43219
-	for <target-devel@archiver.kernel.org>; Mon, 30 May 2022 13:32:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB28CC43217
+	for <target-devel@archiver.kernel.org>; Mon, 30 May 2022 13:52:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237292AbiE3Ncu (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 30 May 2022 09:32:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43730 "EHLO
+        id S238549AbiE3Nw1 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 30 May 2022 09:52:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33804 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237101AbiE3Nbd (ORCPT
+        with ESMTP id S238355AbiE3Nt1 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 30 May 2022 09:31:33 -0400
+        Mon, 30 May 2022 09:49:27 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 076218FD56;
-        Mon, 30 May 2022 06:27:42 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E910EA7E17;
+        Mon, 30 May 2022 06:34:47 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 83B4A60EFE;
-        Mon, 30 May 2022 13:27:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16561C36AE7;
-        Mon, 30 May 2022 13:27:40 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 42F1460F24;
+        Mon, 30 May 2022 13:34:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3B89C3411A;
+        Mon, 30 May 2022 13:34:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1653917261;
-        bh=IOZQFxD3Ei8X9FXly0Xd6AHPYzqasxfP4I4dQecQaZA=;
+        s=k20201202; t=1653917685;
+        bh=tgODfi+gRHj0Fd3l9puJo3xP/s51i+HPf2rAmZCL/Kc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=AdfgM1K6PzbNgUHAU5lRC0QcUJdQqlp4Ux18bO+AFa/5DrrRzk8i0skxH+nE4V1DV
-         CKkfagiSvu+/TgqHQ0hXi/dHPUK7bAxm/3UMsksbJ2lshrB6KkIsV2j+j3q+JbcAMR
-         6UfR5VXyHz16wd7rYV+IsW1I0G6g75apDwXe9dYD3Qz3zfqOrFKvVzPVLGSg2/5lj5
-         nwjpcc0EdBiExjv47wUDmRr7Hh5d732CDl69oj+iYgyCwfggfDP1SiY0HzF8K4KptR
-         KLx5VaElfyQTPPcnmDMn2+j6RuE26QcigOI/XJdaTb4heVnMWEHkxhniStr5Z1Ed3R
-         PPCikngsJp1OQ==
+        b=isYJbEXO21/NStSDfypiqUuyTTPFO8fLUXDsSwMKVqRffePNLe+AqRPcL0rMgHijG
+         3PKOOXr1DPlE7T0NcUPCEDJ6jh4OLgS3/nk1y7QfMZcvNhBW/yjOz2fwsb0Aa1EYAa
+         IPSjgGRxOoY1wPnWx+kh/u8vqnqj+HQio51BolXKiid2Ur7p5LBWXqzfG6JuVVGe9N
+         STgCKwMWWwBSxhnwbgy77gfc/W7kcYfYZf5yJU16hLWQN7j8lMYBciEvihVliORszq
+         TDa64I+kQSGdPV57Yk0qceHufmBS/ReUULN6EHi9ck9FQgh8IuO66in4NhgU+Ix8up
+         hiks2lwUI+Hrg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
@@ -39,12 +39,12 @@ Cc:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.18 074/159] scsi: target: tcmu: Fix possible data corruption
-Date:   Mon, 30 May 2022 09:22:59 -0400
-Message-Id: <20220530132425.1929512-74-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.17 062/135] scsi: target: tcmu: Fix possible data corruption
+Date:   Mon, 30 May 2022 09:30:20 -0400
+Message-Id: <20220530133133.1931716-62-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220530132425.1929512-1-sashal@kernel.org>
-References: <20220530132425.1929512-1-sashal@kernel.org>
+In-Reply-To: <20220530133133.1931716-1-sashal@kernel.org>
+References: <20220530133133.1931716-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -99,7 +99,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 37 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index fd7267baa707..b1fd06edea59 100644
+index 06a5c4086551..f26767a55d38 100644
 --- a/drivers/target/target_core_user.c
 +++ b/drivers/target/target_core_user.c
 @@ -20,6 +20,7 @@
@@ -110,7 +110,7 @@ index fd7267baa707..b1fd06edea59 100644
  #include <net/genetlink.h>
  #include <scsi/scsi_common.h>
  #include <scsi/scsi_proto.h>
-@@ -1667,6 +1668,26 @@ static u32 tcmu_blocks_release(struct tcmu_dev *udev, unsigned long first,
+@@ -1666,6 +1667,26 @@ static u32 tcmu_blocks_release(struct tcmu_dev *udev, unsigned long first,
  	xas_lock(&xas);
  	xas_for_each(&xas, page, (last + 1) * udev->data_pages_per_blk - 1) {
  		xas_store(&xas, NULL);
@@ -137,7 +137,7 @@ index fd7267baa707..b1fd06edea59 100644
  		__free_page(page);
  		pages_freed++;
  	}
-@@ -1822,6 +1843,7 @@ static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
+@@ -1821,6 +1842,7 @@ static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
  	page = xa_load(&udev->data_pages, dpi);
  	if (likely(page)) {
  		get_page(page);
@@ -145,7 +145,7 @@ index fd7267baa707..b1fd06edea59 100644
  		mutex_unlock(&udev->cmdr_lock);
  		return page;
  	}
-@@ -1863,6 +1885,7 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
+@@ -1862,6 +1884,7 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
  	struct page *page;
  	unsigned long offset;
  	void *addr;
@@ -153,7 +153,7 @@ index fd7267baa707..b1fd06edea59 100644
  
  	int mi = tcmu_find_mem_index(vmf->vma);
  	if (mi < 0)
-@@ -1887,10 +1910,11 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
+@@ -1886,10 +1909,11 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
  		page = tcmu_try_get_data_page(udev, dpi);
  		if (!page)
  			return VM_FAULT_SIGBUS;
@@ -166,7 +166,7 @@ index fd7267baa707..b1fd06edea59 100644
  }
  
  static const struct vm_operations_struct tcmu_vm_ops = {
-@@ -3205,12 +3229,22 @@ static void find_free_blocks(void)
+@@ -3152,12 +3176,22 @@ static void find_free_blocks(void)
  			udev->dbi_max = block;
  		}
  
