@@ -2,226 +2,131 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72A4EC433FE
-	for <target-devel@archiver.kernel.org>; Mon, 30 May 2022 15:57:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47CF4C433EF
+	for <target-devel@archiver.kernel.org>; Tue, 31 May 2022 09:28:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242354AbiE3P5j (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 30 May 2022 11:57:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51286 "EHLO
+        id S245201AbiEaJ2v (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 31 May 2022 05:28:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46708 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240072AbiE3P51 (ORCPT
+        with ESMTP id S245234AbiEaJ2q (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 30 May 2022 11:57:27 -0400
-Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3FA371DB9;
-        Mon, 30 May 2022 08:47:15 -0700 (PDT)
-Received: by mail-ed1-x530.google.com with SMTP id t5so14085870edc.2;
-        Mon, 30 May 2022 08:47:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=i89MiZL7FoctGZprJstd/24FsFM1pBOpq1jT2psM2/w=;
-        b=Pmm6R7ODryNSQKhU+4ZGAn1mJ5EFoZcivG4zihjy/MrAg0/tKmpyJbEk9n5H+s3SHe
-         rjZjan0NLlitgoPBP7DcHkuYLmJ5Fi7n6Ap9eFuJR/iSkn0nILK10DElcyrV3TwOA3oa
-         16RTsZ3OjxQ79jnEjWo843Qr097RupRvU6dPxgefJzyfRCj9PXAg8REAY2vssjWtfDa4
-         Oj9sjEsGWSsqGCk4cbO8wpgB24FANIFEiQDt4l6eubYueR+MeKadjwvSWoXVVETvqfRG
-         +9+3XKYVka2VGAZS2K85AIb5XqWQWHZHKImY7HGuokWGpi3fS3ljK8IjAR0MoNlqQPi8
-         acRg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=i89MiZL7FoctGZprJstd/24FsFM1pBOpq1jT2psM2/w=;
-        b=F0IiiWYOjTw4KxnmJVSMFJobGI0t+e2O4z3ED9bGR+ImLEDzVYnXW65S7Eac7EMnae
-         Ty+X5ib66ZnUFXaIWyRpqnWNMEyIONp2bc4BjlCb/zL2OQgGhzlD79AJ2Cl9rAAmBeIi
-         IV7J2zSX5+11OAXn03uR0h3EMHucK1wepSraLsesgzmstaW9in6er6ZY6fs8T7LpFHjV
-         5VDwjFd3eABOg8qhhxgf7D1hBxhaAKrNQlfvPj1p7RbKzVDApohZWCJuPnudJN7+wxRG
-         1q+2Wzo0e2V8LOvnE18+vprRbn6dqcUBT9mwIngupofeCyUjRFbOYKrDNd+3Bfnbkiud
-         hgLw==
-X-Gm-Message-State: AOAM533KAsibzjMPU71si6UI/jBvuv22zh3HcUwSCgmblJCO5AInPL1r
-        MGlC14HEovppcz/NKCTMeNLr4JVSGllGVw==
-X-Google-Smtp-Source: ABdhPJxEXlNrQ7YReCEUVjXaOToLbotp+0keekiWM9uAtwUQmOqsR3pScuMyzv0b8iWjSwaCg2e2iw==
-X-Received: by 2002:a05:6402:14c1:b0:42d:d6f1:ac3d with SMTP id f1-20020a05640214c100b0042dd6f1ac3dmr3289957edx.223.1653925634248;
-        Mon, 30 May 2022 08:47:14 -0700 (PDT)
-Received: from [192.168.178.40] (ipbcc1cfad.dynamic.kabel-deutschland.de. [188.193.207.173])
-        by smtp.gmail.com with ESMTPSA id b89-20020a509f62000000b0042dd7e13391sm913080edf.45.2022.05.30.08.47.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 30 May 2022 08:47:13 -0700 (PDT)
-Message-ID: <12bb8139-be66-4e08-47be-909b0042926c@gmail.com>
-Date:   Mon, 30 May 2022 17:47:12 +0200
+        Tue, 31 May 2022 05:28:46 -0400
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF7682C112;
+        Tue, 31 May 2022 02:28:20 -0700 (PDT)
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id A78284D5CE;
+        Tue, 31 May 2022 09:28:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received:received; s=mta-01; t=1653989293; x=
+        1655803694; bh=MOf6TYYpKbHAk8M3h/AxNWkw4vVmQCgU8JSy/LqhUcE=; b=G
+        25u18MGE84a8ZJd7GcWwlGH1HpZWBGlnZSnjVrNiltHkP0LSocppkLRu4gn8fM2z
+        d+zQnWm3rEXEKD7gepC0kf25r1o8Igy3ZfYmVqDy/4FApoK9bniS3uyU6tIA1FQF
+        IEOVnvekkm15EHucLkhFqYfT3+Ghp5f+nETyBg4THA=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id MZKEeI9482Yp; Tue, 31 May 2022 12:28:13 +0300 (MSK)
+Received: from T-EXCH-01.corp.yadro.com (t-exch-01.corp.yadro.com [172.17.10.101])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 83D714D62E;
+        Tue, 31 May 2022 12:28:13 +0300 (MSK)
+Received: from T-EXCH-09.corp.yadro.com (172.17.11.59) by
+ T-EXCH-01.corp.yadro.com (172.17.10.101) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Tue, 31 May 2022 12:28:13 +0300
+Received: from NB-591.corp.yadro.com (10.178.114.42) by
+ T-EXCH-09.corp.yadro.com (172.17.11.59) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.986.22; Tue, 31 May 2022 12:28:12 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: [PATCH] scsi: efct: reject PRLI when no target configured
+Date:   Tue, 31 May 2022 12:28:05 +0300
+Message-ID: <20220531092805.12899-1-d.bogdanov@yadro.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [PATCH AUTOSEL 5.18 074/159] scsi: target: tcmu: Fix possible
- data corruption
-Content-Language: en-US
-To:     Sasha Levin <sashal@kernel.org>, linux-kernel@vger.kernel.org,
-        stable@vger.kernel.org
-Cc:     Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-References: <20220530132425.1929512-1-sashal@kernel.org>
- <20220530132425.1929512-74-sashal@kernel.org>
-From:   Bodo Stroesser <bostroesser@gmail.com>
-In-Reply-To: <20220530132425.1929512-74-sashal@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.178.114.42]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-09.corp.yadro.com (172.17.11.59)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Sasha,
+When target is not yet configured PRLI is ignored and consequent PLOGI
+comes in the wrong state and produces WARN:
+  WARNING: CPU: 25 PID: 2429 at drivers/scsi/elx/libefc/efc_device.c:350 efc_send_ls_acc_after_attach+0x20/0x58 [efct]
 
-the below patch introduces a new bug, which is fixed by commit
-   325d5c5fb216 ("scsi: target: tcmu: Avoid holding XArray lock when calling lock_page")
-Please consider adding this further fix.
+Reject PRLI like in other error cases when session can not be created.
+And fix a memory leak of wq_data in the same place.
 
-For my understanding: commit 325d5c5fb216 contains a "Fixes:"
-tag. So I'd expect it to be added automatically.
-Is there still something missing in the commit?
+Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
+---
+ drivers/scsi/elx/efct/efct_lio.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Thank you,
-Bodo
+diff --git a/drivers/scsi/elx/efct/efct_lio.c b/drivers/scsi/elx/efct/efct_lio.c
+index 9c45a0ca9191..dbe2f1871da3 100644
+--- a/drivers/scsi/elx/efct/efct_lio.c
++++ b/drivers/scsi/elx/efct/efct_lio.c
+@@ -1183,6 +1183,7 @@ static void efct_lio_setup_session(struct work_struct *work)
+ 	struct se_session *se_sess;
+ 	int watermark;
+ 	int ini_count;
++	int ret = 0;
+ 	u64 id;
+ 
+ 	/* Check to see if it's belongs to vport,
+@@ -1196,7 +1197,8 @@ static void efct_lio_setup_session(struct work_struct *work)
+ 		se_tpg = &tpg->tpg;
+ 	} else {
+ 		efc_log_err(efct, "failed to init session\n");
+-		return;
++		ret = -EIO;
++		goto done;
+ 	}
+ 
+ 	/*
+@@ -1210,9 +1212,8 @@ static void efct_lio_setup_session(struct work_struct *work)
+ 				       node, efct_session_cb);
+ 	if (IS_ERR(se_sess)) {
+ 		efc_log_err(efct, "failed to setup session\n");
+-		kfree(wq_data);
+-		efc_scsi_sess_reg_complete(node, -EIO);
+-		return;
++		ret = -EIO;
++		goto done;
+ 	}
+ 
+ 	tgt_node = node->tgt_node;
+@@ -1224,8 +1225,6 @@ static void efct_lio_setup_session(struct work_struct *work)
+ 	if (xa_err(xa_store(&efct->lookup, id, tgt_node, GFP_KERNEL)))
+ 		efc_log_err(efct, "Node lookup store failed\n");
+ 
+-	efc_scsi_sess_reg_complete(node, 0);
+-
+ 	/* update IO watermark: increment initiator count */
+ 	ini_count = atomic_add_return(1, &efct->tgt_efct.initiator_count);
+ 	watermark = efct->tgt_efct.watermark_max -
+@@ -1234,7 +1233,9 @@ static void efct_lio_setup_session(struct work_struct *work)
+ 			efct->tgt_efct.watermark_min : watermark;
+ 	atomic_set(&efct->tgt_efct.io_high_watermark, watermark);
+ 
++done:
+ 	kfree(wq_data);
++	efc_scsi_sess_reg_complete(node, ret);
+ }
+ 
+ int efct_scsi_new_initiator(struct efc *efc, struct efc_node *node)
+-- 
+2.25.1
 
-
-On 30.05.22 15:22, Sasha Levin wrote:
-> From: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-> 
-> [ Upstream commit bb9b9eb0ae2e9d3f6036f0ad907c3a83dcd43485 ]
-> 
-> When tcmu_vma_fault() gets a page successfully, before the current context
-> completes page fault procedure, find_free_blocks() may run and call
-> unmap_mapping_range() to unmap the page. Assume that when
-> find_free_blocks() initially completes and the previous page fault
-> procedure starts to run again and completes, then one truncated page has
-> been mapped to userspace. But note that tcmu_vma_fault() has gotten a
-> refcount for the page so any other subsystem won't be able to use the page
-> unless the userspace address is unmapped later.
-> 
-> If another command subsequently runs and needs to extend dbi_thresh it may
-> reuse the corresponding slot for the previous page in data_bitmap. Then
-> though we'll allocate new page for this slot in data_area, no page fault
-> will happen because we have a valid map and the real request's data will be
-> lost.
-> 
-> Filesystem implementations will also run into this issue but they usually
-> lock the page when vm_operations_struct->fault gets a page and unlock the
-> page after finish_fault() completes. For truncate filesystems lock pages in
-> truncate_inode_pages() to protect against racing wrt. page faults.
-> 
-> To fix this possible data corruption scenario we can apply a method similar
-> to the filesystems.  For pages that are to be freed, tcmu_blocks_release()
-> locks and unlocks. Make tcmu_vma_fault() also lock found page under
-> cmdr_lock. At the same time, since tcmu_vma_fault() gets an extra page
-> refcount, tcmu_blocks_release() won't free pages if pages are in page fault
-> procedure, which means it is safe to call tcmu_blocks_release() before
-> unmap_mapping_range().
-> 
-> With these changes tcmu_blocks_release() will wait for all page faults to
-> be completed before calling unmap_mapping_range(). And later, if
-> unmap_mapping_range() is called, it will ensure stale mappings are removed.
-> 
-> Link: https://lore.kernel.org/r/20220421023735.9018-1-xiaoguang.wang@linux.alibaba.com
-> Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
-> Signed-off-by: Xiaoguang Wang <xiaoguang.wang@linux.alibaba.com>
-> Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-> Signed-off-by: Sasha Levin <sashal@kernel.org>
-> ---
->   drivers/target/target_core_user.c | 40 ++++++++++++++++++++++++++++---
->   1 file changed, 37 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> index fd7267baa707..b1fd06edea59 100644
-> --- a/drivers/target/target_core_user.c
-> +++ b/drivers/target/target_core_user.c
-> @@ -20,6 +20,7 @@
->   #include <linux/configfs.h>
->   #include <linux/mutex.h>
->   #include <linux/workqueue.h>
-> +#include <linux/pagemap.h>
->   #include <net/genetlink.h>
->   #include <scsi/scsi_common.h>
->   #include <scsi/scsi_proto.h>
-> @@ -1667,6 +1668,26 @@ static u32 tcmu_blocks_release(struct tcmu_dev *udev, unsigned long first,
->   	xas_lock(&xas);
->   	xas_for_each(&xas, page, (last + 1) * udev->data_pages_per_blk - 1) {
->   		xas_store(&xas, NULL);
-> +		/*
-> +		 * While reaching here there may be page faults occurring on
-> +		 * the to-be-released pages. A race condition may occur if
-> +		 * unmap_mapping_range() is called before page faults on these
-> +		 * pages have completed; a valid but stale map is created.
-> +		 *
-> +		 * If another command subsequently runs and needs to extend
-> +		 * dbi_thresh, it may reuse the slot corresponding to the
-> +		 * previous page in data_bitmap. Though we will allocate a new
-> +		 * page for the slot in data_area, no page fault will happen
-> +		 * because we have a valid map. Therefore the command's data
-> +		 * will be lost.
-> +		 *
-> +		 * We lock and unlock pages that are to be released to ensure
-> +		 * all page faults have completed. This way
-> +		 * unmap_mapping_range() can ensure stale maps are cleanly
-> +		 * removed.
-> +		 */
-> +		lock_page(page);
-> +		unlock_page(page);
->   		__free_page(page);
->   		pages_freed++;
->   	}
-> @@ -1822,6 +1843,7 @@ static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
->   	page = xa_load(&udev->data_pages, dpi);
->   	if (likely(page)) {
->   		get_page(page);
-> +		lock_page(page);
->   		mutex_unlock(&udev->cmdr_lock);
->   		return page;
->   	}
-> @@ -1863,6 +1885,7 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
->   	struct page *page;
->   	unsigned long offset;
->   	void *addr;
-> +	vm_fault_t ret = 0;
->   
->   	int mi = tcmu_find_mem_index(vmf->vma);
->   	if (mi < 0)
-> @@ -1887,10 +1910,11 @@ static vm_fault_t tcmu_vma_fault(struct vm_fault *vmf)
->   		page = tcmu_try_get_data_page(udev, dpi);
->   		if (!page)
->   			return VM_FAULT_SIGBUS;
-> +		ret = VM_FAULT_LOCKED;
->   	}
->   
->   	vmf->page = page;
-> -	return 0;
-> +	return ret;
->   }
->   
->   static const struct vm_operations_struct tcmu_vm_ops = {
-> @@ -3205,12 +3229,22 @@ static void find_free_blocks(void)
->   			udev->dbi_max = block;
->   		}
->   
-> +		/*
-> +		 * Release the block pages.
-> +		 *
-> +		 * Also note that since tcmu_vma_fault() gets an extra page
-> +		 * refcount, tcmu_blocks_release() won't free pages if pages
-> +		 * are mapped. This means it is safe to call
-> +		 * tcmu_blocks_release() before unmap_mapping_range() which
-> +		 * drops the refcount of any pages it unmaps and thus releases
-> +		 * them.
-> +		 */
-> +		pages_freed = tcmu_blocks_release(udev, start, end - 1);
-> +
->   		/* Here will truncate the data area from off */
->   		off = udev->data_off + (loff_t)start * udev->data_blk_size;
->   		unmap_mapping_range(udev->inode->i_mapping, off, 0, 1);
->   
-> -		/* Release the block pages */
-> -		pages_freed = tcmu_blocks_release(udev, start, end - 1);
->   		mutex_unlock(&udev->cmdr_lock);
->   
->   		total_pages_freed += pages_freed;
