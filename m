@@ -2,69 +2,62 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14E43C43334
-	for <target-devel@archiver.kernel.org>; Mon, 20 Jun 2022 06:45:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B514C43334
+	for <target-devel@archiver.kernel.org>; Mon, 20 Jun 2022 07:12:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238918AbiFTGpY (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 20 Jun 2022 02:45:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35778 "EHLO
+        id S239128AbiFTHMh (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 20 Jun 2022 03:12:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50186 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238318AbiFTGpX (ORCPT
+        with ESMTP id S238956AbiFTHMe (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 20 Jun 2022 02:45:23 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 660DBC72;
-        Sun, 19 Jun 2022 23:45:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
-        :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=VGZXQMA4RswyIvF0+1zx63xq3BMHhvUQ2lzlFp39NoQ=; b=MpiJzwEBNoGmvBFXN7t6HGxQIG
-        PT2tOSqawZtR/raFUG/cM6wL7Jszf8x5ZvIIqY3/hUpBTpxcf8KOEeZcaQw9bM4QdXqyIN0mLLaZj
-        DAonbfse1K5YwvH4Bgms1lv+Sfxpd0WHx1MIbHuuPFovIrpd7yqemPwC11W6rVQQGjse7QeBiZ3AZ
-        ZQTFOoiPnUP0bZmxlSvsA31Hse+191vODKwum4Q0I4Kvekt7+Di3uVRZ0vCoKpTtwS2LsNMZbshRG
-        v/b9nFFdIxBLebNwCacfiN+vOPkioqsf8F+IYomglxVvbfkEumd4kqUj/rEZ/7r4waKgSOzX07r6O
-        nsCSKH6A==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1o3B9p-00GTrD-9r; Mon, 20 Jun 2022 06:45:09 +0000
-Date:   Sun, 19 Jun 2022 23:45:09 -0700
-From:   Christoph Hellwig <hch@infradead.org>
-To:     michael.christie@oracle.com
-Cc:     Christoph Hellwig <hch@infradead.org>, martin.petersen@oracle.com,
-        james.bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Subject: Re: [PATCH 1/4] scsi: target: Fix WRITE_SAME NDOB size check
-Message-ID: <YrAXdTWu4/xsdWgq@infradead.org>
-References: <20220617030440.116427-1-michael.christie@oracle.com>
- <20220617030440.116427-2-michael.christie@oracle.com>
- <Yq7AmRBWtkyqzt0g@infradead.org>
- <b154e89c-6b83-2d8d-0505-06fc3615e8a7@oracle.com>
+        Mon, 20 Jun 2022 03:12:34 -0400
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40751DFFE;
+        Mon, 20 Jun 2022 00:12:33 -0700 (PDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+        id 8F79668AA6; Mon, 20 Jun 2022 09:12:29 +0200 (CEST)
+Date:   Mon, 20 Jun 2022 09:12:29 +0200
+From:   Christoph Hellwig <hch@lst.de>
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org,
+        dm-devel@redhat.com, snitzer@kernel.org, axboe@kernel.dk,
+        martin.petersen@oracle.com, james.bottomley@hansenpartnership.com,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-nvme@lists.infradead.org
+Subject: Re: [PATCH 0/8] Use block pr_ops in LIO
+Message-ID: <20220620071229.GB11418@lst.de>
+References: <20220603065536.5641-1-michael.christie@oracle.com> <20220603114645.GA14309@lst.de> <2634b3ae-f63d-c711-36cd-bf8f56ecc43b@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b154e89c-6b83-2d8d-0505-06fc3615e8a7@oracle.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <2634b3ae-f63d-c711-36cd-bf8f56ecc43b@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Sun, Jun 19, 2022 at 11:25:33AM -0500, michael.christie@oracle.com wrote:
-> sg_write_same allows it. We found the bug because some user just decided
-> to do:
-> 
-> sg_write_same ... -nbod .. /dev/sdb
-> 
-> and it crashed the box.
+On Fri, Jun 03, 2022 at 12:55:33PM -0500, Mike Christie wrote:
+> However, for nvme and for the interface we want to provide to userspace,
+> do we want to implement an interface like READ_FULL_STATUS and report
+> reservations where we report the host/controller/port info? If so, below
+> is a patch I started.
 
-Oh.
+If we wire the ops up to the nvme target we'd need that.  But for now
+I think the more useful case would be to use nvme as the underlying
+devices for the scsi target that already has all the PR infrastructure
+and helps to validate the interface.
 
-> I didn't know about the MI_REPORT_SUPPORTED_OPERATION_CODES part of it.
-> I don't need support for the feature. I just want to fix the crash.
-> I prefer just returning failure since nothing ever has ever used it if
-> other people prefer that as well.
+> Notes:
+> 1. I hit some issues with SCSI targets not reporting the IDs sometimes or
+> sometimes they report it incorrectly. For nvme, it seems easier. SCSI has 
+> to handle a hand full of ways to report the ID where nvme has 2 ways to
+> do the host ID.
 
-I think the feature is generally useful, and I know Martin had patches
-to use it in Linux.  But I think a minimal fix for the remotely
-exploitable crash has the highest priority.  Where does it crash?
-Maybe we just need a better sanity check somewhere if a command
-claims to transfer data but has not payload?
+Yeah.
+
+> 2. I couldn't find a nvme device to test. Qemu and nvmet don't seem to
+> support reservations.
+
+Basically any dual ported PCIe SSD should support them, typically those
+are the U.2 format factor ones found in servers or enclosures.
