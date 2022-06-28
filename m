@@ -2,75 +2,75 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DFAFCCA47E
-	for <target-devel@archiver.kernel.org>; Tue, 28 Jun 2022 20:13:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDBEDC433EF
+	for <target-devel@archiver.kernel.org>; Tue, 28 Jun 2022 20:13:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229679AbiF1UNF (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 28 Jun 2022 16:13:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48868 "EHLO
+        id S229634AbiF1UNE (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 28 Jun 2022 16:13:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49750 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230178AbiF1UMD (ORCPT
+        with ESMTP id S230450AbiF1ULz (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 28 Jun 2022 16:12:03 -0400
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CC8F37AA6;
-        Tue, 28 Jun 2022 13:05:12 -0700 (PDT)
-Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25SJBcSb006374;
-        Tue, 28 Jun 2022 20:03:07 GMT
+        Tue, 28 Jun 2022 16:11:55 -0400
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 719912C66A;
+        Tue, 28 Jun 2022 13:03:12 -0700 (PDT)
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25SJBWTK012398;
+        Tue, 28 Jun 2022 20:03:05 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references :
  content-transfer-encoding : content-type : mime-version;
- s=corp-2021-07-09; bh=/pNmDdT8p9MIDe2fOUZ0ESfMW/fxBIj0JHC1MvAQM/U=;
- b=rNpnLeij3XCAbp+pDO8ThSCp+Kz0NhkPaDNvImzqZqtR5Ftsi2DBl29vpTncvE+CQU/h
- 99/lm1PtA4TUmfTE5dNwgwsuJPA1Pho30gB2U1oJr/ki4Za4lQT5vjnzhz2kwQCmo+FK
- tGmnOFIvN122/rQRe9WWagP8mZ31Z+AOzapHOp9PSzSsGn/0Ak+fhlRwd8hhD4k5ahrO
- 7PVevW1oZoLp1iR6yyCcl4IpOF3h28LGg3t1WT6Hq2yJWR7wRI6aP0yIi5Ea2acAZJAB
- HB6rVtRYlI55RXIGb7fRjUrBIIbmKyzB+LXck9EdKh9Q6BizecjC+VZoNIVP004q+y/J bg== 
+ s=corp-2021-07-09; bh=TFmH33paTvH6YlZKdpHFk+ritk6F7f2maGo7L3AI/7Y=;
+ b=IPc0JTo1vVo8ItA3+pfaXHNHD4eTL21QBCUfKaKCdOVdjWQ+1TYbqlhmBwlaV0vnAvnQ
+ lr6fPBlPHl9l81zQvx6Cqx7wxIV9+Yln4cdsU1yZ0Bf47/mNOpbMdGPlmc2qPSuweOVA
+ GveQROVszpDfPQ2bKlg9+Q+XAzNsinde3iiaGsSXUBkUY7PqswkixHu7CKZq6HpAYugD
+ wETEWE3VgqwLEcOBQbvgLlLguRXy186u6gupVNSYJ84+jZTSEl0BjwyIBlCqhaBUt74y
+ dDRgA7xO1jkakcBWDPrsNjosB/Rj0Vz783jGPQn+I1xerxl89dFkRvlw1SBJYXZrF7Dd Rg== 
 Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.appoci.oracle.com [147.154.114.232])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3gws52f6nf-1
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3gwtwu76ns-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 28 Jun 2022 20:03:07 +0000
+        Tue, 28 Jun 2022 20:03:04 +0000
 Received: from pps.filterd (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-        by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (8.16.1.2/8.16.1.2) with SMTP id 25SJsvOH004522;
-        Tue, 28 Jun 2022 20:03:06 GMT
-Received: from nam11-co1-obe.outbound.protection.outlook.com (mail-co1nam11lp2177.outbound.protection.outlook.com [104.47.56.177])
-        by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com with ESMTP id 3gwrt2v50m-1
+        by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (8.16.1.2/8.16.1.2) with SMTP id 25SJswrC004573;
+        Tue, 28 Jun 2022 20:03:04 GMT
+Received: from nam11-bn8-obe.outbound.protection.outlook.com (mail-bn8nam11lp2169.outbound.protection.outlook.com [104.47.58.169])
+        by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com with ESMTP id 3gwrt2v4yk-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 28 Jun 2022 20:03:06 +0000
+        Tue, 28 Jun 2022 20:03:04 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=FnM9FwEOIL1CI4z/f9UrYav3SpI1baNgE69AdMxSh/FsMiXIooiO0kdtbgUpcIRFo5lAlkQifaaMsQ/bT3uUwzZkL2p9ETZ3ESYMzeb2M8hHoKVZEkvZQsruj8dMtrvDnZXC6aYH1mZcAD7AgqV2F6N2jKieUv1YQpSZfUZFi5VbQr3TXkFBiA5ZJVpb1tJKvesMVypaENL5U4cHi9U8ibPNRUOgSzWEU0czEEmZJvYjSHrcKpbahbMkNGG7WG7xLYFz5N1gaDMNbOT+5SyLlwX1o4rP91qp5tNaiKUM8j4C5cuLSAypS+vjx6An83kGnC1TV6jB3aLX2OMDn09QLA==
+ b=fC2rmiyG3gHJDkacN/PFsJyTKZUbted2sy0QHv876nq9uG9PIaAbN14l5c3L9brAOlhtaSJczJRDF1lD+z7tGVjAQRPEQWKQ25FDYikAaLY62FBb7XuTGU1LxQjI/7hQhIq+5Rp8O7FX6sTN5paoZEkmLh9VMzzk6gy6ozvXH0I3lyowv0TIAbMo3k/dv/EgZvu6Soc+vg6yLmIf27yeBsaIElqJevYxmg9QB0XlYUJbjqqodmFzsbE07F0eScUlYpsD3wqKjZ/qPFZDqKsAqYBqrdWyZG+DlLnejGDOyntqpFuLvybrclfavbkFyYmbRw++xULtP51F34FqPWZwyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/pNmDdT8p9MIDe2fOUZ0ESfMW/fxBIj0JHC1MvAQM/U=;
- b=mlBwTnkoE3fz6aoRC5jrn+cXCuO0YOW7oyk7Pgx+b8jfilVQu53wNgk53y7uuliGMYBw/+W+UuMSN4jlNmvcahKJ04NsyWLf5Xi87bxY+MweUI6hmZgcQ5ACgTAMX4vUSzuNfZHYtza0OvmWIZ9vlGqzEsTZrxRb7vQSb/7R3tTI76gXv5I/bEygK+Ro4IRX32RaJP9Pqul8EgPUlyrhnaKdwU9YRFxkRpVtBBGVUuKkoLZdxIta1NskSlCN4K2NuaujgngHwMplKUSwrmokaWq1zvlLxNT0Ed4MDd5ujs+hJ/AQPzS+cTr7DcNDNBplZsReWqQZ5nLFsOEee4bThg==
+ bh=TFmH33paTvH6YlZKdpHFk+ritk6F7f2maGo7L3AI/7Y=;
+ b=cQneqqr+A80iNrEXFl5eP927rjJXRc52SrJfUIF3WnYXJVt6J+T2esIR02I+5onRChWCt3IHm3rAs2h7baV67VAH1c5PHsculI0jTNW99bCTiXadicDnEkp9Yz39Drhn8JuRC4Pla5s2k6HwBxxcWoolIvUaVgD6irSN+aZfj+uZRWphMWl+z1wcAtEbRiDLKQRFL6PE8MMTZmHzQONoIp6ya2daKofyolLVoePg69+cHO2VVhf6C2tfJE9YdTKYChjNDJwmTM3Zrm46Y8FIsj2CWfop8BcmZjBuL0UhW87uTIauoYJP6SWLbvzC4devMoFzr/EEeF/kE7LU26DCLA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
  dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/pNmDdT8p9MIDe2fOUZ0ESfMW/fxBIj0JHC1MvAQM/U=;
- b=VY30j+l/U1ARO1vbjntqcfU1Z3UCQMuxZfWF+NsW4BlzcQ8GxuKubqRM56U+AF0AQDjp+16TQxrpyCxshymQs5C+p3hH6evNXfSQ0qZ29TrVwUcgXIXHLmzj0EAcxLzgD6nScs1luDEJWuq5hPS+SJPijPVhBuRLJ2R84uQHYXw=
+ bh=TFmH33paTvH6YlZKdpHFk+ritk6F7f2maGo7L3AI/7Y=;
+ b=U+7/Exr8UzI6tEK59dmSdSORnokHItObTkA6QgNTslW4dC9v7lX4Tv5x2R46q3sU0GiFb4SKJlmsfwhZtzXSWSTKP4YCjewSoQ6ExJub50kP/KRi5s4YkuZ6STKqgTXEphX1EfaS72pe8Goxt6T9o1yL9HltwgDVLzLqrB2i7k0=
 Received: from DM5PR10MB1466.namprd10.prod.outlook.com (2603:10b6:3:b::7) by
  CY4PR1001MB2376.namprd10.prod.outlook.com (2603:10b6:910:48::31) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5373.18; Tue, 28 Jun
- 2022 20:02:58 +0000
+ 2022 20:02:57 +0000
 Received: from DM5PR10MB1466.namprd10.prod.outlook.com
  ([fe80::f81d:b8ef:c5a4:9c9b]) by DM5PR10MB1466.namprd10.prod.outlook.com
  ([fe80::f81d:b8ef:c5a4:9c9b%3]) with mapi id 15.20.5373.018; Tue, 28 Jun 2022
- 20:02:58 +0000
+ 20:02:57 +0000
 From:   Mike Christie <michael.christie@oracle.com>
 To:     hch@infradead.org, martin.petersen@oracle.com,
         james.bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
 Cc:     Mike Christie <michael.christie@oracle.com>,
         Christoph Hellwig <hch@lst.de>
-Subject: [PATCH v2 5/5] scsi: target: Detect unmap support post configuration
-Date:   Tue, 28 Jun 2022 15:02:30 -0500
-Message-Id: <20220628200230.15052-6-michael.christie@oracle.com>
+Subject: [PATCH v2 4/5] scsi: target: Add file configure_unmap callout
+Date:   Tue, 28 Jun 2022 15:02:29 -0500
+Message-Id: <20220628200230.15052-5-michael.christie@oracle.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220628200230.15052-1-michael.christie@oracle.com>
 References: <20220628200230.15052-1-michael.christie@oracle.com>
@@ -81,52 +81,52 @@ X-ClientProxiedBy: DM6PR21CA0019.namprd21.prod.outlook.com
  (2603:10b6:3:b::7)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 31c2a702-98d5-42b3-24ba-08da59412884
+X-MS-Office365-Filtering-Correlation-Id: 71594733-7ae8-4c3e-dd1a-08da59412818
 X-MS-TrafficTypeDiagnostic: CY4PR1001MB2376:EE_
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: zyJjEWDrMjj60UKtzsGr1fOwzjTLIVIfVacYmD/llePRP5cVqjKjtsDZARA7bj+pmtfPlnfPNTrbkHbebDeSrVzjk4Wo8/6nXeRFYoZT7GJkoakTnGZXJNIbnZltfh1h0DvtHR4diKbIbAR07tjUDaCSqvYS0vvi3Ry+ZTvWVEU8NHf+FDvXYzqW52IqTJgW4w1xb1nNKwc3zPt/PCJpWWeKFekFaPwd9w1mLi7SvE5rk311u1YiKCnVJxermcU9ZMTVHtQG8mpOJwRYGSKI8FgSpswbwsn+fTI9tS3o/XqWkXYPTUQ75EaAi3+x8Ql0tfKtu2NLmd5hppb0Tz6FBGI6Dvk9i8NRPQRnAaqIBFoCtKKAXjZEIOtjKp5oTrlIkp74jkbvee9s5ZFZpHtaHpK37/GH3yGLMzk4grm4mS7oV+xHi0hKYb2Vt+GeKjRFOwBpw2F8CimSgOiNqZOS0WQCG4JM6V/cajh43aPdCG5eYeqvTFvbelSgYAvWT+Lp8GGKE8oPe+ci4xwSt0nCC2CMI1EXmr8D0P8QY4/+OxmBO6yEHYfKPvEZlgFAVTaNBIv3tl2xOUxrItG7ItcuF8K24ugRWj4uUp6Y5fs6+iDBji+079l5ZBSP0766nyFF+IbSROGpWZAJU+R7k2/DWys8TChZo3FlJmOmcvSxDYItRfQnIVVpZJ9OnIMF88Iz3P2qVjWCfLSIpKuFMkBcliRiyqiBFr6p0G7wYv4LLEMrjH+d06W9Of79TdrJLR86iO48D3v+8R70Wu7xk3hjucgdf4Q3cQwmCTUAblxXKGI=
+X-Microsoft-Antispam-Message-Info: qCNwSFBtL4sYap9+kH/CoUF/eA7gUNljSoLyOckpdWWtPShG6hhxS06CxJtaPi6ORtsft3HPn7Azy68iYdFbCulRCcrAdaanrMegeVhn6u6HAQXhiteXjVXFgiVVhVaUZ7gOdRekSseHAJIzUnxnRhsrUWT83br042WbqQI+8o2pHza8BN+2uvaVo0AEmg1xd2XRg5AdzD1/OVzyn5fph9ArTLr4oNe+M97gQEBhnKHXoN26zktoUwYXp3NJcwGG2kR3/AV3VO6v/6tteRWQNt0eszsFbmXr6vvFezkZoCcSSHNaEF9VAFmZ6ACUmHLQbGtQpiJZcLHI8AfXBbzJGvu1CuQlnOruu0it5dlvDgs4aCQOMZhjmgG8VYGoZgkHiN4w2BckKV6z5e7mOjuNzgEKq5ZB1AR20rYk+yGPfgJobMCx/RrtWvlF7igBljV+A0LBG1oOxMvaHxYeD8ykcU2V1fYD6TJ7cLgt94p8NR0GE+0rgE5gb1qyXRFm0/v6Cua6O5UGgJphHdUfYRyJX5T1W0sx/sj0UQ7PdQxJ4liO61k9+hu7EwKudigADi87KGduA5o/br7eWMeJ+UyKmn1ZOMw5whhUqhOqxS5DTtHjis6Klq27omb3DAa37rOXdgXK3ZkCCIKjf3ZWzFk+ucGPDF0ChCIXUwhrmrcjhx3+ESAmaLLV8rPRTmz+7oouT5nZXxnwW9YAG3yzR0v7R8G0rR+oznJ3quTJ8TQuwGjmZodgxpJu+gKVxKwu2iGGDp1O3VAJ1FjXkSHw2MYG4xQoU7ewUba9FXla1DEFJLY=
 X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR10MB1466.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(346002)(136003)(396003)(39860400002)(366004)(376002)(186003)(83380400001)(8676002)(6666004)(6506007)(2616005)(52116002)(1076003)(54906003)(26005)(41300700001)(6512007)(38350700002)(38100700002)(66946007)(36756003)(4326008)(2906002)(5660300002)(478600001)(86362001)(6486002)(8936002)(66476007)(66556008)(316002);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?MVASGn2l++GcUU5LtURzJL0FkEbVcRoo5Idc6KD0iOE403VCprYYQ0juriBn?=
- =?us-ascii?Q?ZXe4rOY4XnEjpWl4fzKWAKnMy2IYCuDSeBw/UjUGjYjltOg7olVI3Yi4gXpQ?=
- =?us-ascii?Q?np9l8OgxpsuQ629rMRXMSB1Ub4ZkJ56WQrGfY7H3Mcm3GNLDvz+J6hyevCuG?=
- =?us-ascii?Q?mTbmj5TtMirfuA4QpqxRZ/n3g9sUw3EGznSPLzZOMbKrIP1H1YntTC3X7Dzv?=
- =?us-ascii?Q?H37DL+/E3ii8dOrnw9NPair3jO3ph/IBA7CrmYldbjbnz5uyXShbWnrFoIW0?=
- =?us-ascii?Q?thssvj+rCixGEIXC9ighiNiTPFbRG1wTJzeH/EuSOHKmmyGyhWJ4hN25PiJw?=
- =?us-ascii?Q?0wvtx2NobJdqnAyAf2yQHWLjaxMecpRPNUGpWx5ZjACeMSP/uFT71lTEH5Tk?=
- =?us-ascii?Q?jIWQvtPQ2BaZt8yPX1lQ2kO55MQLdMOsZ/3sByJE1mrpgPrDq4KKE2jU2NSR?=
- =?us-ascii?Q?UMEPi9vBR7OLxjzBRrrYfK2Mev22iJwo2p370jh9lfuEaUtnayNRU1d5uB0+?=
- =?us-ascii?Q?JLkW92WLYMCFv+Q1Xm2H7GvPraSlDfLft4WfdnoKYD8xHNf/bMRX2av+tfkA?=
- =?us-ascii?Q?Imiph1imWGtbz69DqD1ggUUH74BoQd3eSJ0PRQ0moJ6KtrTxGf49qzAZz/Sj?=
- =?us-ascii?Q?ggm2HzkmNkwFfPZz3c2AOQWKxPs6GtpkJp+xdmnJyVjorMnzvRjTB4F63GiH?=
- =?us-ascii?Q?YHucAozBwESoi8ePo3FFo8DcWPy5OrPHhR9a913ifrZbOU3skMdbqhjzOJkN?=
- =?us-ascii?Q?4QQeMObnXbx534dHN8k5VrQotBM4IAVqx76CpkM9YyMuN+e2wNNLp3M7b3T7?=
- =?us-ascii?Q?bSE+N887qaOLn/bDMlEF2KNVi2EQEyuEzOQVlUhlyLVk1CUTsEfKL+4DxvjR?=
- =?us-ascii?Q?hHxQI0gT/EtzFcEf8MVICndh3YaAp2U5frGwwz90JUg/WSy/Lu7enZkQixKq?=
- =?us-ascii?Q?E/jLbtdgTR8Ogi7YqYLyXhA+sods3WKU58dLBQhXbGEgSkRdy8ZJTotludp8?=
- =?us-ascii?Q?VUztXQyRK+L6VJOE4CW0Zf2Ux4nbbk2nPuthgLqMgFIr5nQFwqEAV4s7pCl7?=
- =?us-ascii?Q?yHV9iFjvYhmzDlIYzHIiXXsQVqxJ4R/0wnbtCNUxEI2KpknOaVYTadvGFLVi?=
- =?us-ascii?Q?xjpU6Sunrs1+jmvWy0zNXd+1iH4XATFGukCiCg8P4+MQZ/7+KJkJxAfAqD7c?=
- =?us-ascii?Q?Qcg9qkGxvCefVD25rX+Z2N+de4KMLFXF8ya1N3zYBuUwPSEoFTURExIor1ZM?=
- =?us-ascii?Q?C58LvW2swnIltJEGlJ3iRXxDzQojvKnb93J+ogeaPPaJtMzcQoRcndjGyylD?=
- =?us-ascii?Q?70NtTD7kdgux5lzyMFnzLz+s8wgUl2hv2R+5xRwSWNzlOWBAtWM2jtOssae+?=
- =?us-ascii?Q?IbIZSUrwwRDLJ2+Z8AYufE8bSQb89Ysigjrq5gzzUgV0sd+bIDs3vlUSQsJE?=
- =?us-ascii?Q?Dsnd2P7rDb5nsaHsjMCuxIZoXGLGvPWs9poVV70CPa2WVRWxicQSJz32xB3z?=
- =?us-ascii?Q?jS9pqW4lhY6Ryh1kR3QDgGkzowa3v9oG2Fr7WLKZ6zlhuxZ7d4DVZDsGeOcH?=
- =?us-ascii?Q?Gt3IznP1Tq2vszkA/LyuRaP1PV0JSBvoh6/JpvXU2kb/JcbAG+efMTmaIOf6?=
- =?us-ascii?Q?rQ=3D=3D?=
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?rxAKMVUJcbZ5kdZaotK71OikRRFurjAKu+loJuCfxj10soszVO4Kbfwh1140?=
+ =?us-ascii?Q?EqXWv72FUipNka60kfuJ4Alp3SVb9ulRVV++HEQpb1KQax80WKigOo/ldlaW?=
+ =?us-ascii?Q?ihBh1VYmu4QHMbYUj2dOYViaXs80FLUOcpG5///YnX9wZw62vHtjLz2tji8k?=
+ =?us-ascii?Q?/fbBDdeeOQ1WXYFJTXcxJtt5w9RpYOQku3B13b0MbHKgxQkctv2EMyTrYc+R?=
+ =?us-ascii?Q?/5N+9hdvlZ1npP6mgtzEHQ0V/GNgVL+nmcopYL7IV8EMAfwHDihEpk/1OF8o?=
+ =?us-ascii?Q?ba84x0FOhduyHRqqU7sZWYGsByG0l8X5RRge/tC56WGGbRtlNnuo4I6GfJA5?=
+ =?us-ascii?Q?RVzVGEAp/VxKcxkwkNUv1zCp/C7zMBBDOAJqqQZoCNsqUR86wXI2kiDtyVhG?=
+ =?us-ascii?Q?+Ltux330hXrIqm6g5NwOApsoTT+CFavo56DYiBDMrNQv0ofTnJQ6IcZCKlRp?=
+ =?us-ascii?Q?eA+oEoCB0kcYBkqTcwJAKxZE5Np83JWPadXiu1ub36JEoBB6/myuHxKbVCCA?=
+ =?us-ascii?Q?4NshzSmzy/x0bKR6I8AJPx0ygFLW7BqH4u49gym3Y6KlLrBGH8rWeKncJJNp?=
+ =?us-ascii?Q?6d3tbxXIlhAz4kkJstJ/DEc+W20GJIVkRpdpoG0QL/Oy8j0hZOekWKrW7wMq?=
+ =?us-ascii?Q?f/X8oiBjBsZgkkh4WGVpwT9dDpon1i1Q4XqOeS1KMggm0r9pgJWtBNKq0pBv?=
+ =?us-ascii?Q?XS1ep0Qcu1Fvv4hnLXswZajdu23vXPHLD3Zc7kYGqxqHQYo4E65JCgXlZ74q?=
+ =?us-ascii?Q?J8UxbpBBoAW8tb0n3Fv8o9JkKBVtlgOuyCwN8fphkeAjHa/yJkv0ONTy+sTy?=
+ =?us-ascii?Q?90y8y8dQe+p+jhL8ASYsHzxAXDSrKV5GW8Xd+ZZ+FtQIbdlAIQz9+yEPCSTD?=
+ =?us-ascii?Q?hbEAQhe7ZEC3nB6468aFeP0mqL4EII6rbxSKNdrIDdoWizXJJ9mAryXhf4S9?=
+ =?us-ascii?Q?bwAf32hhfxOcnhzKV5kxzDFRR3I8i377ObeUu3Uh+liPCtyJb6ZZ/lsZOwYj?=
+ =?us-ascii?Q?SoN6B8CbTrToQk5kn5Ml5PmzcveqNdgZxvQqqIpuCWt8301QSSTFucKmeToO?=
+ =?us-ascii?Q?2RyMN4aqgyLcZj3Z5B0J7SBpnKc4CUVgEfSsNHkdW11zn29LI7cr+Azt26NJ?=
+ =?us-ascii?Q?CQF7LOZxuiHbeFDJW6Hq5LtxwWDbypx4OxMb43L8542u+5i35aLEIeYAnC4U?=
+ =?us-ascii?Q?TK9QL+tQuPDOeKLmDi/Uj+1/kl3BN4I471vQAYjZtOKWti0DWgGwf0/L8lKN?=
+ =?us-ascii?Q?e7FD0zHfgrp20eN3ishe1LuDODmd1FBQcbBN087zfhS1hIUyByfGCeINEtof?=
+ =?us-ascii?Q?64YoHrO/27GZ4Hn8U5iD05KkE2z+FhXjYNC+wI+/Qm8w5rXdVZdYkZlVS/5S?=
+ =?us-ascii?Q?AVWlWtdu+qjHgFxBu6uZNH0u453k7cU0QYMMrxWpA3pGvQ2RJMajwyqftfxQ?=
+ =?us-ascii?Q?I83PaxN2x9wXDIBU19YNAe/2lOZao5J7TH80pR56dCKk4itGFBVlD0ZDYsWT?=
+ =?us-ascii?Q?wDJH3NHrFk46XGb6G/SRrtVw2BEFr2uPuJK1WPUs/FewWdCW0Kd6v+5/z1Hf?=
+ =?us-ascii?Q?D+XCd7vWsQHWYjDwr4ZbEJEv6Q0xoETURj9w+MAPXK5S8glXjT4eqIyT3EUC?=
+ =?us-ascii?Q?XQ=3D=3D?=
 X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 31c2a702-98d5-42b3-24ba-08da59412884
+X-MS-Exchange-CrossTenant-Network-Message-Id: 71594733-7ae8-4c3e-dd1a-08da59412818
 X-MS-Exchange-CrossTenant-AuthSource: DM5PR10MB1466.namprd10.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Jun 2022 20:02:41.5403
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Jun 2022 20:02:40.8373
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: VwYIZ7ZYb0petBmLPqQeOWAI1KcaUl+rZfB77334Woz/j8kjcbWd+6qajXAGjNi6A6xU6q4NpAzhmuqbgt2eN8ndnF5Jn91O08v0akWaZlg=
+X-MS-Exchange-CrossTenant-UserPrincipalName: xE2/+bKPSNKHLcQo/uMZhoVxjx96eIciXTz1Tw/KGW6nxieeCkQ7eSv6EE2gfrVaXHgY4Tdee1+OWAnGxtk01QrM/q39J2H2HPWTV/en0R0=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY4PR1001MB2376
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.517,18.0.883
  definitions=2022-06-28_11:2022-06-28,2022-06-28 signatures=0
@@ -134,97 +134,85 @@ X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 s
  phishscore=0 adultscore=0 malwarescore=0 bulkscore=0 spamscore=0
  mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2204290000 definitions=main-2206280079
-X-Proofpoint-ORIG-GUID: KHjtdYsBd2EtqCuNHdSEQXsiesvQo1A4
-X-Proofpoint-GUID: KHjtdYsBd2EtqCuNHdSEQXsiesvQo1A4
+X-Proofpoint-ORIG-GUID: hGGk0TnLxrkTDgC3ODwQpu9m5JElxwpX
+X-Proofpoint-GUID: hGGk0TnLxrkTDgC3ODwQpu9m5JElxwpX
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On our backend we can do something similar to LIO where we can enable and
-disable unmap support on the fly. In the scsi/block layer we can detect
-this by just doing a rescan. However, LIO cannot detect this change
-because we only check during the initial configuration. This patch
-allows unmap detection to also happen when the user tries to turn it on.
+Move file's unmap setup code to a configure_unmap callout.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
 Reviewed-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/target/target_core_configfs.c | 27 +++++++++++++++++++--------
- 1 file changed, 19 insertions(+), 8 deletions(-)
+ drivers/target/target_core_file.c | 33 ++++++++++++++++++-------------
+ 1 file changed, 19 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index bbcbbfa72b07..f28d3c6dab98 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -732,6 +732,7 @@ static ssize_t emulate_tpu_store(struct config_item *item,
- 		const char *page, size_t count)
+diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
+index e8440e5dd804..28aa643be5d5 100644
+--- a/drivers/target/target_core_file.c
++++ b/drivers/target/target_core_file.c
+@@ -86,6 +86,24 @@ static struct se_device *fd_alloc_device(struct se_hba *hba, const char *name)
+ 	return &fd_dev->dev;
+ }
+ 
++static bool fd_configure_unmap(struct se_device *dev)
++{
++	struct file *file = FD_DEV(dev)->fd_file;
++	struct inode *inode = file->f_mapping->host;
++
++	if (S_ISBLK(inode->i_mode))
++		return target_configure_unmap_from_queue(&dev->dev_attrib,
++							 I_BDEV(inode));
++
++	/* Limit UNMAP emulation to 8k Number of LBAs (NoLB) */
++	dev->dev_attrib.max_unmap_lba_count = 0x2000;
++	/* Currently hardcoded to 1 in Linux/SCSI code. */
++	dev->dev_attrib.max_unmap_block_desc_count = 1;
++	dev->dev_attrib.unmap_granularity = 1;
++	dev->dev_attrib.unmap_granularity_alignment = 0;
++	return true;
++}
++
+ static int fd_configure_device(struct se_device *dev)
  {
- 	struct se_dev_attrib *da = to_attrib(item);
-+	struct se_device *dev = da->da_dev;
- 	bool flag;
- 	int ret;
+ 	struct fd_dev *fd_dev = FD_DEV(dev);
+@@ -149,10 +167,6 @@ static int fd_configure_device(struct se_device *dev)
+ 			" block_device blocks: %llu logical_block_size: %d\n",
+ 			dev_size, div_u64(dev_size, fd_dev->fd_block_size),
+ 			fd_dev->fd_block_size);
+-
+-		if (target_configure_unmap_from_queue(&dev->dev_attrib, bdev))
+-			pr_debug("IFILE: BLOCK Discard support available,"
+-				 " disabled by default\n");
+ 		/*
+ 		 * Enable write same emulation for IBLOCK and use 0xFFFF as
+ 		 * the smaller WRITE_SAME(10) only has a two-byte block count.
+@@ -170,16 +184,6 @@ static int fd_configure_device(struct se_device *dev)
+ 		}
  
-@@ -744,8 +745,11 @@ static ssize_t emulate_tpu_store(struct config_item *item,
- 	 * Discard supported is detected iblock_create_virtdevice().
- 	 */
- 	if (flag && !da->max_unmap_block_desc_count) {
--		pr_err("Generic Block Discard not supported\n");
--		return -ENOSYS;
-+		if (!dev->transport->configure_unmap ||
-+		    !dev->transport->configure_unmap(dev)) {
-+			pr_err("Generic Block Discard not supported\n");
-+			return -ENOSYS;
-+		}
- 	}
+ 		fd_dev->fd_block_size = FD_BLOCKSIZE;
+-		/*
+-		 * Limit UNMAP emulation to 8k Number of LBAs (NoLB)
+-		 */
+-		dev->dev_attrib.max_unmap_lba_count = 0x2000;
+-		/*
+-		 * Currently hardcoded to 1 in Linux/SCSI code..
+-		 */
+-		dev->dev_attrib.max_unmap_block_desc_count = 1;
+-		dev->dev_attrib.unmap_granularity = 1;
+-		dev->dev_attrib.unmap_granularity_alignment = 0;
  
- 	da->emulate_tpu = flag;
-@@ -758,6 +762,7 @@ static ssize_t emulate_tpws_store(struct config_item *item,
- 		const char *page, size_t count)
- {
- 	struct se_dev_attrib *da = to_attrib(item);
-+	struct se_device *dev = da->da_dev;
- 	bool flag;
- 	int ret;
- 
-@@ -770,8 +775,11 @@ static ssize_t emulate_tpws_store(struct config_item *item,
- 	 * Discard supported is detected iblock_create_virtdevice().
- 	 */
- 	if (flag && !da->max_unmap_block_desc_count) {
--		pr_err("Generic Block Discard not supported\n");
--		return -ENOSYS;
-+		if (!dev->transport->configure_unmap ||
-+		    !dev->transport->configure_unmap(dev)) {
-+			pr_err("Generic Block Discard not supported\n");
-+			return -ENOSYS;
-+		}
- 	}
- 
- 	da->emulate_tpws = flag;
-@@ -964,6 +972,7 @@ static ssize_t unmap_zeroes_data_store(struct config_item *item,
- 		const char *page, size_t count)
- {
- 	struct se_dev_attrib *da = to_attrib(item);
-+	struct se_device *dev = da->da_dev;
- 	bool flag;
- 	int ret;
- 
-@@ -982,10 +991,12 @@ static ssize_t unmap_zeroes_data_store(struct config_item *item,
- 	 * Discard supported is detected iblock_configure_device().
- 	 */
- 	if (flag && !da->max_unmap_block_desc_count) {
--		pr_err("dev[%p]: Thin Provisioning LBPRZ will not be set"
--		       " because max_unmap_block_desc_count is zero\n",
--		       da->da_dev);
--		return -ENOSYS;
-+		if (!dev->transport->configure_unmap ||
-+		    !dev->transport->configure_unmap(dev)) {
-+			pr_err("dev[%p]: Thin Provisioning LBPRZ will not be set because max_unmap_block_desc_count is zero\n",
-+			       da->da_dev);
-+			return -ENOSYS;
-+		}
- 	}
- 	da->unmap_zeroes_data = flag;
- 	pr_debug("dev[%p]: SE Device Thin Provisioning LBPRZ bit: %d\n",
+ 		/*
+ 		 * Limit WRITE_SAME w/ UNMAP=0 emulation to 8k Number of LBAs (NoLB)
+@@ -923,6 +927,7 @@ static const struct target_backend_ops fileio_ops = {
+ 	.configure_device	= fd_configure_device,
+ 	.destroy_device		= fd_destroy_device,
+ 	.free_device		= fd_free_device,
++	.configure_unmap	= fd_configure_unmap,
+ 	.parse_cdb		= fd_parse_cdb,
+ 	.set_configfs_dev_params = fd_set_configfs_dev_params,
+ 	.show_configfs_dev_params = fd_show_configfs_dev_params,
 -- 
 2.25.1
 
