@@ -2,44 +2,44 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82DEEC433EF
-	for <target-devel@archiver.kernel.org>; Sat,  2 Jul 2022 22:26:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42779C433EF
+	for <target-devel@archiver.kernel.org>; Sun,  3 Jul 2022 14:55:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229932AbiGBW0h (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sat, 2 Jul 2022 18:26:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39296 "EHLO
+        id S232625AbiGCOzJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sun, 3 Jul 2022 10:55:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52646 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229486AbiGBW0g (ORCPT
+        with ESMTP id S232144AbiGCOzI (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sat, 2 Jul 2022 18:26:36 -0400
-Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED560BCA0;
-        Sat,  2 Jul 2022 15:26:35 -0700 (PDT)
-Received: by mail-pj1-f52.google.com with SMTP id w24so5924607pjg.5;
-        Sat, 02 Jul 2022 15:26:35 -0700 (PDT)
+        Sun, 3 Jul 2022 10:55:08 -0400
+Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com [209.85.210.178])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED8AF5F5C;
+        Sun,  3 Jul 2022 07:55:07 -0700 (PDT)
+Received: by mail-pf1-f178.google.com with SMTP id x4so6834539pfq.2;
+        Sun, 03 Jul 2022 07:55:07 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=wmKJjE5vKeaf/7hALO5BZs23LpV4XD9oNAnQEbe2c54=;
-        b=QC7Jkj5q2yrsfUOxI+KOzbHijhSvrkaDkGaqsKy7GIghuiRz2YwfpQ2ZJgGjwg5mCT
-         ITBSoMPFAk1r8uH5tPJMEic+rVkHjrqxgZXDjVwNIVviRtmYrhtpu2nNq6D4IoKwTykG
-         Ga5S4JcrVUZpltFfLBm1fd8C/Es/pgQpV1K0OYk2EpOF3ieRmzjs59EOpY0Y/xMKd3u4
-         lAJyBhWGBxxxwbMUP9Mz8Aky1bWqUK6orC7VePhMrF5wNYDNdRMn1W4ktKDbYd33oLV7
-         L/hHcBtlQYQR2ku4xZZ62P6pWJH8eRAMVG4TaqYTur0VipeusFlBQSDU/6hFvuP4i+3s
-         rIbA==
-X-Gm-Message-State: AJIora9665/33BzJbI5kJi067ORqaD8+sn9UH5OlD/fJ8sThs95hlS4w
-        RLRp/LcghrV6XSNfxZAxIvCR1+VJ81Q=
-X-Google-Smtp-Source: AGRyM1uL34QRx1K6TCXvSfB1HsN3blmKOYVLBNVYYcMPGigJiHLyE1L2IYlMOgbfkXL2dAfdvTSo2g==
-X-Received: by 2002:a17:90b:180b:b0:1ed:27d3:988f with SMTP id lw11-20020a17090b180b00b001ed27d3988fmr26679132pjb.170.1656800795309;
-        Sat, 02 Jul 2022 15:26:35 -0700 (PDT)
+        bh=kxKzGfxWGfKBHp9F8W62mmiucykNyoEbmozsyWHPQSM=;
+        b=d1lh/1mBMMLHDmqj2Ij8wIXP/v8XZbqUmBJah63ic+W0++MHJlwnQuVE60Z/wFUhnk
+         WrJUdnscYKAu9R1kA0oSmXjMPgNS2KXQVPH7aIHOsua1iknVwNUP4/6JC/h0MU5/fsJQ
+         P79pTxY1JDxxYfK91J0lbRzxM7r+M8Omsh4BjADFZ9sFOV2GjADbawKvwCSGkb2RjgQT
+         lPhvbrrMCH0gISY1fuUg+BgqnfxeFEjuya7o/18gtcqIY6rIJW1zh8JjqgTVKDzT94/4
+         dIE1WiSmJ1PZrPcWAG/M9pF7Xmb8DS5RK2ByUaCL7O6Ife1/5mWozkG4qzcbRiCOZqsS
+         8OvQ==
+X-Gm-Message-State: AJIora9fo4oFn0xWr2cHbHIaJpxh12MiKu9O2AESLNebSNAeoBttpP0W
+        /U8K4JZtFI0Lrepi3YbY7hI=
+X-Google-Smtp-Source: AGRyM1vNwKItYGfQdO3d4S6lgVRggBMRNaa0YOd45v0UMb597XCV+l8z9rytiJJk8z/SL/YvOR04Ww==
+X-Received: by 2002:a63:4526:0:b0:40d:f426:9f4b with SMTP id s38-20020a634526000000b0040df4269f4bmr22055292pga.595.1656860107288;
+        Sun, 03 Jul 2022 07:55:07 -0700 (PDT)
 Received: from ?IPV6:2601:647:4000:d7:feaa:14ff:fe9d:6dbd? ([2601:647:4000:d7:feaa:14ff:fe9d:6dbd])
-        by smtp.gmail.com with ESMTPSA id cb14-20020a056a00430e00b0051bbe085f16sm18013245pfb.104.2022.07.02.15.26.34
+        by smtp.gmail.com with ESMTPSA id nn12-20020a17090b38cc00b001ef59378951sm654399pjb.13.2022.07.03.07.55.06
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 02 Jul 2022 15:26:34 -0700 (PDT)
-Message-ID: <18afff6f-ce0a-1d98-aeb9-236878692e6b@acm.org>
-Date:   Sat, 2 Jul 2022 15:26:33 -0700
+        Sun, 03 Jul 2022 07:55:06 -0700 (PDT)
+Message-ID: <19f203e5-e965-23bd-401b-0ae8d9a73a5d@acm.org>
+Date:   Sun, 3 Jul 2022 07:55:05 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.10.0
@@ -57,27 +57,57 @@ References: <17649b9c-7e42-1625-8bc9-8ad333ab771c@fujitsu.com>
  <ed7e268e-94c5-38b1-286d-e2cb10412334@acm.org>
  <fbaca135-891c-7ff3-d7ac-bd79609849f5@oracle.com>
  <20220701015934.1105-1-hdanton@sina.com>
+ <20220703021119.1109-1-hdanton@sina.com>
 From:   Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20220701015934.1105-1-hdanton@sina.com>
+In-Reply-To: <20220703021119.1109-1-hdanton@sina.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 6/30/22 18:59, Hillf Danton wrote:
-> That hang can be skipped by removing the wait loop in
-> srpt_release_sport() - in the direction of 9b64f7d0bb0a, sdev will not
-> go home if any sport's refcount does not drop on ground. To do that, add
-> port refcount to sdev in the diff below in bid to resurrect 9b64f7d0bb0a.
+On 7/2/22 19:11, Hillf Danton wrote:
+> On Sat, 2 Jul 2022 15:26:33 -0700 Bart Van Assche wrote:
+>> As long as a session is live the ch->qp pointer may be
+>> dereferenced. The sdev->pd pointer is stored in the pd member of struct
+>> ib_qp and hence may be dereferenced by any function that uses ch->qp.
 > 
-> Then gc work can be added for dying sports to drop tpg after delaying a second.
+> If it is still an issue after ib_dealloc_pd(sdev->pd) then it goes beyond the
+> aperture of my proposal and needs another fix.
+> 
+> Hillf
+> 
+> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+> @@ -3235,6 +3235,8 @@ static void srpt_remove_one(struct ib_de
+>   
+>   	ib_set_client_data(device, &srpt_client, NULL);
+>   
+> +	/* make sdev survive ib_dealloc_pd(sdev->pd); */
+> +	atomic_inc(&sdev->port_refcount);
+>   	/*
+>   	 * Unregistering a target must happen after destroying sdev->cm_id
+>   	 * such that no new SRP_LOGIN_REQ information units can arrive while
+> @@ -3250,6 +3252,9 @@ static void srpt_remove_one(struct ib_de
+>   	srpt_free_srq(sdev);
+>   
+>   	ib_dealloc_pd(sdev->pd);
+> +
+> +	if (0 == atomic_dec_return(&sdev->port_refcount))
+> +		kfree(sdev);
+>   }
+>   
+>   static struct ib_client srpt_client = {
 
-I'm afraid that the patch from your email will lead to a use-after-free 
-of sdev->pd. As long as a session is live the ch->qp pointer may be 
-dereferenced. The sdev->pd pointer is stored in the pd member of struct 
-ib_qp and hence may be dereferenced by any function that uses ch->qp.
-
-Thanks,
+Do you perhaps want to combine the above patch with the previous patch? 
+I don't think that any reference counting scheme can fix all 
+use-after-free issues related to srpt_remove_one(). Immediately after 
+srpt_remove_one() returns the caller of this function calls 
+ib_device_put() and ib_client_put(). These functions free data 
+structures that can be reached from the pointers that are stored in 
+struct ib_qp. Holding a reference on struct ib_device as long as any 
+session is live would allow to remove the while-loop from 
+srpt_release_sport(). However, I'm not sure that would make a 
+significant difference since there is a similar while-loop in one of the 
+callers of srpt_remove_one() (disable_device() in the RDMA core).
 
 Bart.
