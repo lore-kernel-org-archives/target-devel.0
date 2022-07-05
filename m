@@ -2,110 +2,111 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 792DFC433EF
-	for <target-devel@archiver.kernel.org>; Tue,  5 Jul 2022 13:15:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76353C43334
+	for <target-devel@archiver.kernel.org>; Tue,  5 Jul 2022 16:10:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230461AbiGENPn (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 5 Jul 2022 09:15:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35396 "EHLO
+        id S229989AbiGEQKf (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 5 Jul 2022 12:10:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39986 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231152AbiGENPY (ORCPT
+        with ESMTP id S229552AbiGEQKf (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 5 Jul 2022 09:15:24 -0400
-Received: from mail-qt1-x831.google.com (mail-qt1-x831.google.com [IPv6:2607:f8b0:4864:20::831])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC4A335ABD
-        for <target-devel@vger.kernel.org>; Tue,  5 Jul 2022 05:39:35 -0700 (PDT)
-Received: by mail-qt1-x831.google.com with SMTP id q16so13390748qtn.5
-        for <target-devel@vger.kernel.org>; Tue, 05 Jul 2022 05:39:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=MV/9robfJ8dyu1dzaK7LWHNMYMEjsO1EwYVbeXZRAbk=;
-        b=OogdDWH7Cz1tYCj8sXZquslNIbgXiTkWCg6YZwVFVw1Vm9fbVxgkCoLz9+p6UVNYYC
-         oZYiE6gGxNIbLNrcQkQCfLOXCkExR+vFekIHKLdSYAwTS2t00Ln/w5v3R9EccL6pJLSg
-         ZOEjcfm1n0zQgpoBKKOlrAV4r/dJ0NNWLaVW0wLcEMYc1WK7eBOSub1lTOlLEZc7kthD
-         cDbg0cfUe06wq6qh0OSbNGiFcVapWRPEn87VUN4txRHP5R08y0HmjsvWjdId81vBxavT
-         izY0PsCfZ3GKY6EtRr9BnYxhYv6sgp8lm2sEOMtdLEOEvSNlZMgMSFNemUqy2eOoFbXq
-         pqxQ==
+        Tue, 5 Jul 2022 12:10:35 -0400
+Received: from mail-pj1-f54.google.com (mail-pj1-f54.google.com [209.85.216.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 778E513F5B;
+        Tue,  5 Jul 2022 09:10:34 -0700 (PDT)
+Received: by mail-pj1-f54.google.com with SMTP id fz10so6521799pjb.2;
+        Tue, 05 Jul 2022 09:10:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=MV/9robfJ8dyu1dzaK7LWHNMYMEjsO1EwYVbeXZRAbk=;
-        b=AfvXMz8y2h7pBghLBYnjJCn0CmiU/bpWHxDckV44oCcNR0uU7gTKA96Nk4eynUzy4G
-         XRGgYcr3F8xZIlbMHbdytFV9c0uiEmQlVqi1ogFpz3VLJv8NuKXn0uI+9ZO3rZRGpFKQ
-         NDifMz+ZgO7lIqBbaAp/nkmg5dJBM+H9sOdBRcuc2weDK2O+RX01xevgBqRMORT7TY9e
-         NaeSAuYP51ZBtHXCp8DHU4mg8ZwVwxkwIVWnCkbq2qahPN3CFU07MeP6Tx5L1Tp2Aj9W
-         kWYibYAaI4jUZTsLimoQkTMcGkBkMnYpZHAczFl5En1rDjoNlKuhrEL1go5EpfyIPX7Q
-         0lnA==
-X-Gm-Message-State: AJIora9mC3S5Kcu+w4Tjupkci2XhhQpzSk9qLO0Wuy04teU3Os/MwLEV
-        uErisKJLHnwL7WILUqdU2/Bv0Q==
-X-Google-Smtp-Source: AGRyM1vl/UolXvUCaPV0Ugru3PEs2Xxe7Q2FFWkRRZO5sxltcSVvDHIdMgZO4Y9yxM/vpysXbe6i/g==
-X-Received: by 2002:ac8:578a:0:b0:31d:3ca6:d7e0 with SMTP id v10-20020ac8578a000000b0031d3ca6d7e0mr16265174qta.181.1657024774610;
-        Tue, 05 Jul 2022 05:39:34 -0700 (PDT)
-Received: from ziepe.ca (hlfxns017vw-142-162-113-129.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.162.113.129])
-        by smtp.gmail.com with ESMTPSA id bx15-20020a05622a090f00b0031c56d5f7e1sm13508248qtb.92.2022.07.05.05.39.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Jul 2022 05:39:34 -0700 (PDT)
-Received: from jgg by mlx with local (Exim 4.94)
-        (envelope-from <jgg@ziepe.ca>)
-        id 1o8hq1-006TzK-Ez; Tue, 05 Jul 2022 09:39:33 -0300
-Date:   Tue, 5 Jul 2022 09:39:33 -0300
-From:   Jason Gunthorpe <jgg@ziepe.ca>
-To:     Bart Van Assche <bvanassche@acm.org>
-Cc:     Hillf Danton <hdanton@sina.com>,
-        Mike Christie <michael.christie@oracle.com>,
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=ZNTQnk49H2igi0K6Q0jxdfi1a4YgDcy0NhVMvg7bnDQ=;
+        b=ikplLSPOU+RmjOFlWSmZG+ScUZ3Jw1FimpRtDx8st1tuLC7KxEd+VcFqAdhasyuWe/
+         n+E9nrJHpcCMUuWi2zJNmizKYwtQjvP9ySVPfy3RcMq00R5n+FffAzUhTiW2n3V86wvb
+         W7gKXFv1764kcyjj8SXQ1dyfx40HKFUTaLBf3I3psUJAoTDG3nHnKgbC8L4UETsclpXr
+         rr4ELLQ5qh3spVIhPSFA7vrdUX8+xKshl5vBD9yUtKqaptAKyHTvrjdM1uGianpSP8Ji
+         OP0OclP663/RjD2/yPqgsRJVlMPfqag+3CujW4TznbJ7Qup5Db70fPYuuPJWHylHr8GF
+         7dMQ==
+X-Gm-Message-State: AJIora8W6HrmF6K7wkiUMo00bws4xE1jz6dMixd/PSZn3FwB9EZ0BFqd
+        Qupivi1vYQAgdyoY0RvMnCHJU0mhwzc=
+X-Google-Smtp-Source: AGRyM1uDO/Py3wsxe/B9UjRraSQsGptcSXXY6FmxKvltGVVP5jYMSB5UDDBIAoTrgnh++2846CwQCg==
+X-Received: by 2002:a17:90a:6741:b0:1ef:7f62:6cd1 with SMTP id c1-20020a17090a674100b001ef7f626cd1mr17873644pjm.89.1657037433778;
+        Tue, 05 Jul 2022 09:10:33 -0700 (PDT)
+Received: from ?IPV6:2601:647:4000:d7:feaa:14ff:fe9d:6dbd? ([2601:647:4000:d7:feaa:14ff:fe9d:6dbd])
+        by smtp.gmail.com with ESMTPSA id b5-20020a170902bd4500b0016a565f3f34sm23192699plx.168.2022.07.05.09.10.32
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 05 Jul 2022 09:10:32 -0700 (PDT)
+Message-ID: <2e8b080c-cda5-9224-1e46-95fb0b4f7036@acm.org>
+Date:   Tue, 5 Jul 2022 09:10:31 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: use-after-free in srpt_enable_tpg()
+Content-Language: en-US
+To:     Hillf Danton <hdanton@sina.com>
+Cc:     Mike Christie <michael.christie@oracle.com>,
         "lizhijian@fujitsu.com" <lizhijian@fujitsu.com>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
         Leon Romanovsky <leon@kernel.org>,
         "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
         "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
         open list <linux-kernel@vger.kernel.org>
-Subject: Re: use-after-free in srpt_enable_tpg()
-Message-ID: <20220705123933.GD23621@ziepe.ca>
 References: <17649b9c-7e42-1625-8bc9-8ad333ab771c@fujitsu.com>
  <ed7e268e-94c5-38b1-286d-e2cb10412334@acm.org>
  <fbaca135-891c-7ff3-d7ac-bd79609849f5@oracle.com>
  <20220701015934.1105-1-hdanton@sina.com>
  <20220703021119.1109-1-hdanton@sina.com>
  <20220704001157.1644-1-hdanton@sina.com>
- <a671867f-153c-75a4-0f58-8dcb0d4f9c19@acm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a671867f-153c-75a4-0f58-8dcb0d4f9c19@acm.org>
+ <20220705114050.1979-1-hdanton@sina.com>
+From:   Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <20220705114050.1979-1-hdanton@sina.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Mon, Jul 04, 2022 at 09:34:07PM -0700, Bart Van Assche wrote:
-> On 7/3/22 17:11, Hillf Danton wrote:
-> > On Sun, 3 Jul 2022 07:55:05 -0700 Bart Van Assche wrote:
-> > > However, I'm not sure that would make a
-> > > significant difference since there is a similar while-loop in one of the
-> > > callers of srpt_remove_one() (disable_device() in the RDMA core).
-> > 
-> > Hehe... feel free to shed light on how the loop in RDMA core is currently
-> > making the loop in srpt more prone to uaf?
+On 7/5/22 04:40, Hillf Danton wrote:
+> If no compat devices can be added to ib_device with DEVICE_REGISTERED
+> cleared then they can be removed without ib_device's refcount dropping
+> to zero.
+> Even if that is not strictly true, a new flag that marks ib device
+> disabled and prevents new compact devices from being added can be added
+> in bid to cut the wait for completion.
 > 
-> In my email I was referring to the following code in disable_device():
+> Hillf
 > 
->        wait_for_completion(&device->unreg_completion);
-> 
-> I think that code shows that device removal by the RDMA core is synchronous
-> in nature. Even if the ib_srpt source code would be modified such that the
-> objects referred by that code live longer, the wait loop in disable_device()
-> would wait for the ib_device reference counts to drop to zero.
+> +++ b/drivers/infiniband/core/device.c
+> @@ -1265,6 +1265,7 @@ static void disable_device(struct ib_dev
+>   
+>   	down_write(&devices_rwsem);
+>   	xa_clear_mark(&devices, device->index, DEVICE_REGISTERED);
+> +	// device->disabled = true;
+>   	up_write(&devices_rwsem);
+>   
+>   	/*
+> @@ -1282,17 +1283,10 @@ static void disable_device(struct ib_dev
+>   	}
+>   
+>   	ib_cq_pool_cleanup(device);
+> +	remove_compat_devs(device);
+>   
+>   	/* Pairs with refcount_set in enable_device */
+>   	ib_device_put(device);
+> -	wait_for_completion(&device->unreg_completion);
+> -
+> -	/*
+> -	 * compat devices must be removed after device refcount drops to zero.
+> -	 * Otherwise init_net() may add more compatdevs after removing compat
+> -	 * devices and before device is disabled.
+> -	 */
+> -	remove_compat_devs(device);
+>   }
 
-That is not really the "ib_device" reference count it is the
-"registration" reference count.
+I'm not convinced the above patch is a step in the right direction nor 
+that it is correct. Anyway, since the RDMA maintainers know this code 
+better than I do I will let them comment on the above patch.
 
-IB has a system where drivers/ulp can create critical regions where
-the ib device must be registered using the ib_device_try_get()/put
-calls. "Must be registered" is useful in a number of places but should
-not be held for a long period.
-
-This is distinct from the normal struct device refcount that simply
-keeps the ib_device memory alive.
-
-Jason
+Bart.
