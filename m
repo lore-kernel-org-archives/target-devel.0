@@ -2,36 +2,36 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6613EC43334
-	for <target-devel@archiver.kernel.org>; Wed, 20 Jul 2022 01:21:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABC6BCCA486
+	for <target-devel@archiver.kernel.org>; Wed, 20 Jul 2022 01:25:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241486AbiGTBVG (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 19 Jul 2022 21:21:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45644 "EHLO
+        id S238157AbiGTBZN (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 19 Jul 2022 21:25:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57980 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241461AbiGTBT4 (ORCPT
+        with ESMTP id S241977AbiGTBYT (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 19 Jul 2022 21:19:56 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 045876E8BA;
-        Tue, 19 Jul 2022 18:15:59 -0700 (PDT)
+        Tue, 19 Jul 2022 21:24:19 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5A8A735BE;
+        Tue, 19 Jul 2022 18:17:21 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 85DE4B81DE7;
-        Wed, 20 Jul 2022 01:15:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 710C6C341C6;
-        Wed, 20 Jul 2022 01:15:54 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7D55961831;
+        Wed, 20 Jul 2022 01:17:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A216C341D5;
+        Wed, 20 Jul 2022 01:17:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1658279755;
-        bh=126Ofm7CF9n4z2qKqJ/p9uGQH8wKFQ1e6LK6+Ln2y14=;
+        s=k20201202; t=1658279839;
+        bh=EJ42gwPelp1i8y77jY6L1SXXMBbPs+OVvTVdu5paoJ8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=JZfeFRqo27Jym2aEqanCTGoYB+a+uHDVn6zwiHWSATouesKp0p3IFy7bxottkuQ/A
-         fnZGvqUbgrMx+J4PEau7MxeATmDRA1kZh7sV2ed/mXudCedzCdzSYvTmBvWk6dhCvn
-         91XxZECvwTUHRKa6QW8V8LUMGrHCJz2QzLqfv6sIxoPsmL8C79ebnSKt8Yq+vSwv9s
-         uiHqnhra4GrlsTzfrPEQytlSwCwkMg/52dQNI84peKNFRyzMNb9uUgEdts1qs0zchR
-         k5lTg1y+eeSEJwK9SP0gien9w1rcsnmBf8chM93hF9JxTZ53db7GQv7FEDZPkXoJB3
-         GVpOMN7CyAwnQ==
+        b=DhPBu9bHHV+zUHLShgv3u9txjD2fwtmiS7sq1BEoPnMSu3FJFzBClFpxTwfj4BV9I
+         oVJoyvd6wHW1tHyDQc3VMuGEJXZG804m8TldLvbhS3VadgEMNJIRBGaB+/DwG177dM
+         YUFhEKunS41QjqGzRE/8LuN2SmhmoFaGsLYR3khc2bLnLRoHQX7NB2zn1xHiYGF8e7
+         YZwnoFQEDIHBmHfKWLVr4znwm5NRbiR5I1T8EEb9GL+/fdKa/OKuTmaEnRMmaSp658
+         HgcbQEvwmLEW9Q8bSrbNMZ8SFROlc8fRYGpVFvavXyLMH30RSwud6F4qvFj9SsTX95
+         W7oawZX2pYx3g==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mike Christie <michael.christie@oracle.com>,
@@ -39,12 +39,12 @@ Cc:     Mike Christie <michael.christie@oracle.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 34/42] scsi: target: Fix WRITE_SAME No Data Buffer crash
-Date:   Tue, 19 Jul 2022 21:13:42 -0400
-Message-Id: <20220720011350.1024134-34-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 20/25] scsi: target: Fix WRITE_SAME No Data Buffer crash
+Date:   Tue, 19 Jul 2022 21:16:11 -0400
+Message-Id: <20220720011616.1024753-20-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220720011350.1024134-1-sashal@kernel.org>
-References: <20220720011350.1024134-1-sashal@kernel.org>
+In-Reply-To: <20220720011616.1024753-1-sashal@kernel.org>
+References: <20220720011616.1024753-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -80,10 +80,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  3 files changed, 13 insertions(+)
 
 diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
-index ef4a8e189fba..64138b32b5a2 100644
+index 7143d03f0e02..b20f842bcfbc 100644
 --- a/drivers/target/target_core_file.c
 +++ b/drivers/target/target_core_file.c
-@@ -447,6 +447,9 @@ fd_execute_write_same(struct se_cmd *cmd)
+@@ -455,6 +455,9 @@ fd_execute_write_same(struct se_cmd *cmd)
  		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
  	}
  
@@ -94,10 +94,10 @@ index ef4a8e189fba..64138b32b5a2 100644
  	    cmd->t_data_sg[0].length != cmd->se_dev->dev_attrib.block_size) {
  		pr_err("WRITE_SAME: Illegal SGL t_data_nents: %u length: %u"
 diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index 4069a1edcfa3..1555f6cf55a1 100644
+index f2bd2e207e0b..db4f1ae3d6fc 100644
 --- a/drivers/target/target_core_iblock.c
 +++ b/drivers/target/target_core_iblock.c
-@@ -496,6 +496,10 @@ iblock_execute_write_same(struct se_cmd *cmd)
+@@ -458,6 +458,10 @@ iblock_execute_write_same(struct se_cmd *cmd)
  		       " backends not supported\n");
  		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
  	}
@@ -109,7 +109,7 @@ index 4069a1edcfa3..1555f6cf55a1 100644
  
  	if (cmd->t_data_nents > 1 ||
 diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index ca1b2312d6e7..f6132836eb38 100644
+index eaf8551ebc61..c001f14645a4 100644
 --- a/drivers/target/target_core_sbc.c
 +++ b/drivers/target/target_core_sbc.c
 @@ -312,6 +312,12 @@ sbc_setup_write_same(struct se_cmd *cmd, unsigned char flags, struct sbc_ops *op
