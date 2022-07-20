@@ -2,36 +2,36 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D42BDCCA486
-	for <target-devel@archiver.kernel.org>; Wed, 20 Jul 2022 01:15:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6613EC43334
+	for <target-devel@archiver.kernel.org>; Wed, 20 Jul 2022 01:21:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241107AbiGTBPq (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 19 Jul 2022 21:15:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33220 "EHLO
+        id S241486AbiGTBVG (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 19 Jul 2022 21:21:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45644 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241078AbiGTBPX (ORCPT
+        with ESMTP id S241461AbiGTBT4 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 19 Jul 2022 21:15:23 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 845176172F;
-        Tue, 19 Jul 2022 18:13:28 -0700 (PDT)
+        Tue, 19 Jul 2022 21:19:56 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 045876E8BA;
+        Tue, 19 Jul 2022 18:15:59 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 0143461772;
-        Wed, 20 Jul 2022 01:13:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EC7AC341CA;
-        Wed, 20 Jul 2022 01:13:26 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 85DE4B81DE7;
+        Wed, 20 Jul 2022 01:15:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 710C6C341C6;
+        Wed, 20 Jul 2022 01:15:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1658279607;
-        bh=WWaHRw3CvVJmFss32L96g2HcEgu5nZjX7bUIcQU2Z4g=;
+        s=k20201202; t=1658279755;
+        bh=126Ofm7CF9n4z2qKqJ/p9uGQH8wKFQ1e6LK6+Ln2y14=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Qg4LfvTPJJItHSBQV1nSOsL5Qyg5zZZPKFa9oj1RbeHdyL3tAkyC4jmnZRyKtXv0T
-         JdXbDKBKEc3wseUsTJiaOuSr9ET7xZCzzwej/0ftBcqLVaW9sRPQejXp3c6BSG6Wwk
-         KpgCPLsYqadT15i7OGe8GrDYujFIGz3Rj4CByhoEQthr6TPZmd06RVpHbj4cosDPro
-         wPZoTG1OJ7okllLI8HTIPJtoP2s2954W9OmFFomaiX7903dgICKKYpIX5LJH5pfZ8a
-         yoJU5xUmWaGT+uKARLDAL7Y+jPCxAYA4JdsJg41m44uydiAa0zTFGJrn7hip5v9+cQ
-         tQpvyO1iLwJIA==
+        b=JZfeFRqo27Jym2aEqanCTGoYB+a+uHDVn6zwiHWSATouesKp0p3IFy7bxottkuQ/A
+         fnZGvqUbgrMx+J4PEau7MxeATmDRA1kZh7sV2ed/mXudCedzCdzSYvTmBvWk6dhCvn
+         91XxZECvwTUHRKa6QW8V8LUMGrHCJz2QzLqfv6sIxoPsmL8C79ebnSKt8Yq+vSwv9s
+         uiHqnhra4GrlsTzfrPEQytlSwCwkMg/52dQNI84peKNFRyzMNb9uUgEdts1qs0zchR
+         k5lTg1y+eeSEJwK9SP0gien9w1rcsnmBf8chM93hF9JxTZ53db7GQv7FEDZPkXoJB3
+         GVpOMN7CyAwnQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mike Christie <michael.christie@oracle.com>,
@@ -39,12 +39,12 @@ Cc:     Mike Christie <michael.christie@oracle.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.18 45/54] scsi: target: Fix WRITE_SAME No Data Buffer crash
-Date:   Tue, 19 Jul 2022 21:10:22 -0400
-Message-Id: <20220720011031.1023305-45-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 34/42] scsi: target: Fix WRITE_SAME No Data Buffer crash
+Date:   Tue, 19 Jul 2022 21:13:42 -0400
+Message-Id: <20220720011350.1024134-34-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220720011031.1023305-1-sashal@kernel.org>
-References: <20220720011031.1023305-1-sashal@kernel.org>
+In-Reply-To: <20220720011350.1024134-1-sashal@kernel.org>
+References: <20220720011350.1024134-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -80,10 +80,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  3 files changed, 13 insertions(+)
 
 diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
-index 8190b840065f..56b9bfaf769a 100644
+index ef4a8e189fba..64138b32b5a2 100644
 --- a/drivers/target/target_core_file.c
 +++ b/drivers/target/target_core_file.c
-@@ -448,6 +448,9 @@ fd_execute_write_same(struct se_cmd *cmd)
+@@ -447,6 +447,9 @@ fd_execute_write_same(struct se_cmd *cmd)
  		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
  	}
  
@@ -94,10 +94,10 @@ index 8190b840065f..56b9bfaf769a 100644
  	    cmd->t_data_sg[0].length != cmd->se_dev->dev_attrib.block_size) {
  		pr_err("WRITE_SAME: Illegal SGL t_data_nents: %u length: %u"
 diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index 87ede165ddba..9e678ff32b60 100644
+index 4069a1edcfa3..1555f6cf55a1 100644
 --- a/drivers/target/target_core_iblock.c
 +++ b/drivers/target/target_core_iblock.c
-@@ -494,6 +494,10 @@ iblock_execute_write_same(struct se_cmd *cmd)
+@@ -496,6 +496,10 @@ iblock_execute_write_same(struct se_cmd *cmd)
  		       " backends not supported\n");
  		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
  	}
