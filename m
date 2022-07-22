@@ -2,83 +2,70 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 538D8C43334
-	for <target-devel@archiver.kernel.org>; Wed, 20 Jul 2022 15:41:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59993C43334
+	for <target-devel@archiver.kernel.org>; Fri, 22 Jul 2022 05:31:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241268AbiGTPlo (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 20 Jul 2022 11:41:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50564 "EHLO
+        id S229611AbiGVFbi (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 22 Jul 2022 01:31:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60098 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232804AbiGTPlm (ORCPT
+        with ESMTP id S229505AbiGVFbi (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 20 Jul 2022 11:41:42 -0400
-Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EEBFC22BD7;
-        Wed, 20 Jul 2022 08:41:41 -0700 (PDT)
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 34132412D2;
-        Wed, 20 Jul 2022 15:41:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        in-reply-to:content-transfer-encoding:content-disposition
-        :content-type:content-type:mime-version:references:message-id
-        :subject:subject:from:from:date:date:received:received:received
-        :received; s=mta-01; t=1658331699; x=1660146100; bh=BiGYJAeCpEGQ
-        em6DfQ73uEeCnzcf59XOM101tD6+ZC0=; b=l8yWjs2Yw6IK9hmOTT3aBz66aso7
-        XGGVXSVZMNubkjUgQgs6tWOoLDHRrvMjTh7e29NXxO5t0sXCkZfjK0xa3O63aO1D
-        W6M+3hmLmMJjfKJKSj0tip79xpyZvmCNG+tOZxfFzfNuW+rZVi1/eDWI2In/WaH2
-        VNyY1WSnHnmsRdY=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id Kvp7q4TTa0Zl; Wed, 20 Jul 2022 18:41:39 +0300 (MSK)
-Received: from T-EXCH-01.corp.yadro.com (t-exch-01.corp.yadro.com [172.17.10.101])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id C6508412CD;
-        Wed, 20 Jul 2022 18:41:35 +0300 (MSK)
-Received: from T-EXCH-09.corp.yadro.com (172.17.11.59) by
- T-EXCH-01.corp.yadro.com (172.17.10.101) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Wed, 20 Jul 2022 18:41:12 +0300
-Received: from yadro.com (10.178.118.226) by T-EXCH-09.corp.yadro.com
- (172.17.11.59) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Wed, 20 Jul
- 2022 18:41:11 +0300
-Date:   Wed, 20 Jul 2022 18:41:10 +0300
-From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
-To:     Mike Christie <michael.christie@oracle.com>
-CC:     Thinh Nguyen <Thinh.Nguyen@synopsys.com>,
-        <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
-        <target-devel@vger.kernel.org>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        John Youn <John.Youn@synopsys.com>, <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH v2 2/4] target: Implement TMR_ABORT_TASK_SET
-Message-ID: <YtggwBMKgIJqN4mT@yadro.com>
-References: <cover.1658195608.git.Thinh.Nguyen@synopsys.com>
- <7d31722a7e07bc24ea37b5841a17545003eeddb4.1658195608.git.Thinh.Nguyen@synopsys.com>
- <74bf1df3-a466-9d78-1a25-7425c89b9fa3@oracle.com>
+        Fri, 22 Jul 2022 01:31:38 -0400
+Received: from smtp.smtpout.orange.fr (smtp01.smtpout.orange.fr [80.12.242.123])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7A93091CFC
+        for <target-devel@vger.kernel.org>; Thu, 21 Jul 2022 22:31:37 -0700 (PDT)
+Received: from pop-os.home ([90.11.190.129])
+        by smtp.orange.fr with ESMTPA
+        id El8uolwqo9xlAEl8uoA2Wm; Fri, 22 Jul 2022 07:24:05 +0200
+X-ME-Helo: pop-os.home
+X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
+X-ME-Date: Fri, 22 Jul 2022 07:24:05 +0200
+X-ME-IP: 90.11.190.129
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To:     James Smart <james.smart@broadcom.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Subject: [PATCH] scsi: elx: efct: Avoid open coded arithmetic in memory allocation
+Date:   Fri, 22 Jul 2022 07:24:03 +0200
+Message-Id: <09772a4478dae212604459a32b68337f7dc1f902.1658467368.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <74bf1df3-a466-9d78-1a25-7425c89b9fa3@oracle.com>
-X-Originating-IP: [10.178.118.226]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-09.corp.yadro.com (172.17.11.59)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Jul 19, 2022 at 10:56:07AM -0500, Mike Christie wrote:
-> «Внимание! Данное письмо от внешнего адресата!»
-> 
-> On 7/18/22 9:07 PM, Thinh Nguyen wrote:
-> > Task ABORT TASK SET function is required by SCSI transport protocol
-> 
-> What OS is using this and how do they use it? For the latter, does the
-> OS try an abort for each cmd first, then try an abort task set if the
-> aborts fail (does fail mean get a response that indicates failure and
-> also does a timeout count)? Or does it start with the abort task set?
+kmalloc_array()/kcalloc() should be used to avoid potential overflow when
+a multiplication is needed to compute the size of the requested memory.
 
-AIX IIRC. However, this feature also requires valid bits in one of the
-VPD pages.
+So turn a kzalloc()+explicit size computation into an equivalent kcalloc().
+
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+Discussion about it at:
+   https://lore.kernel.org/all/eab847fe-8d17-1a38-b55e-e68a2f6a1829@linux-m68k.org/
+---
+ drivers/scsi/elx/efct/efct_io.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/scsi/elx/efct/efct_io.c b/drivers/scsi/elx/efct/efct_io.c
+index c612f0a48839..1ae2e4e950ef 100644
+--- a/drivers/scsi/elx/efct/efct_io.c
++++ b/drivers/scsi/elx/efct/efct_io.c
+@@ -56,7 +56,7 @@ efct_io_pool_create(struct efct *efct, u32 num_sgl)
+ 		}
+ 
+ 		/* Allocate SGL */
+-		io->sgl = kzalloc(sizeof(*io->sgl) * num_sgl, GFP_KERNEL);
++		io->sgl = kcalloc(num_sgl, sizeof(*io->sgl), GFP_KERNEL);
+ 		if (!io->sgl) {
+ 			efct_io_pool_free(io_pool);
+ 			return NULL;
+-- 
+2.34.1
+
