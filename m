@@ -2,62 +2,62 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDFF9C19F21
-	for <target-devel@archiver.kernel.org>; Wed, 27 Jul 2022 06:59:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4900C04A68
+	for <target-devel@archiver.kernel.org>; Wed, 27 Jul 2022 07:36:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229379AbiG0G71 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 27 Jul 2022 02:59:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39102 "EHLO
+        id S230347AbiG0Hgl (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 27 Jul 2022 03:36:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39854 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230242AbiG0G7B (ORCPT
+        with ESMTP id S229680AbiG0Hgk (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 27 Jul 2022 02:59:01 -0400
+        Wed, 27 Jul 2022 03:36:40 -0400
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2620C25287;
-        Tue, 26 Jul 2022 23:58:52 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E37B521275;
+        Wed, 27 Jul 2022 00:36:38 -0700 (PDT)
 Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 5D60541228;
-        Wed, 27 Jul 2022 06:58:51 +0000 (UTC)
+        by mta-01.yadro.com (Postfix) with ESMTP id 7C92F400F6;
+        Wed, 27 Jul 2022 07:36:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
         in-reply-to:content-disposition:content-type:content-type
         :mime-version:references:message-id:subject:subject:from:from
         :date:date:received:received:received:received; s=mta-01; t=
-        1658905130; x=1660719531; bh=yYG8gOzPXRUjAarXaHNqmAo/jvZP/bY9zF7
-        wQSL8y50=; b=CGtbr7eH+nsnTuQ2EtFKp2rZtvVZDa3d1X6ZJaxm7B2gvxeUuxs
-        baJsylJl/lxzRkLfb4jI2A2sjJu36ihawyVgglki50f3YQ3319v4A/Si3IrzSjHm
-        U1kurCt6adSraGW3zYGvIYcnebMCkeWEUPi+/W9IssR6z61AVwn12Efs=
+        1658907396; x=1660721797; bh=kgUS0xFxV00WTpEvdaLiL6E4GU4f69zp39u
+        YRxTrSU4=; b=P5eWLlLkY+1TYmNHqH/XJlmFKlnj8AaZZ8rd4AVIHblDo8+Ae/D
+        OR6JwmP28xEBQzow41QYXOgv97Gy8nh5RrsK98v65Viuzmy55aMUc0rAJCxlggtI
+        Eg0k7ZT0YIBIJVYGyef65aFzyeRvQfz6QcDIXY+ubVUOMGrRrCGv/g6c=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
         by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id Gvc1RT4x0gUy; Wed, 27 Jul 2022 09:58:50 +0300 (MSK)
+        with ESMTP id tBHjJVJ72TVi; Wed, 27 Jul 2022 10:36:36 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com [172.17.10.102])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id 10ED34124D;
-        Wed, 27 Jul 2022 09:58:42 +0300 (MSK)
+        by mta-01.yadro.com (Postfix) with ESMTPS id A7492412C5;
+        Wed, 27 Jul 2022 10:36:25 +0300 (MSK)
 Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
  T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Wed, 27 Jul 2022 09:58:42 +0300
+ 15.1.669.32; Wed, 27 Jul 2022 10:36:25 +0300
 Received: from yadro.com (10.178.114.42) by T-EXCH-08.corp.yadro.com
  (172.17.11.58) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Wed, 27 Jul
- 2022 09:58:41 +0300
-Date:   Wed, 27 Jul 2022 09:58:42 +0300
+ 2022 10:36:25 +0300
+Date:   Wed, 27 Jul 2022 10:36:25 +0300
 From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
 To:     Mike Christie <michael.christie@oracle.com>
 CC:     Martin Petersen <martin.petersen@oracle.com>,
         <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
         <linux@yadro.com>
-Subject: Re: [PATCH 1/2] target: core: fix race during ACL removal
-Message-ID: <20220727065842.GB31648@yadro.com>
+Subject: Re: [PATCH 2/2] target: core: de-RCU of se_lun and se_lun acl
+Message-ID: <20220727073625.GC31648@yadro.com>
 References: <20220720112852.11440-1-d.bogdanov@yadro.com>
- <20220720112852.11440-2-d.bogdanov@yadro.com>
- <e82ed8ab-8d9d-c815-e134-26929e3350aa@oracle.com>
+ <20220720112852.11440-3-d.bogdanov@yadro.com>
+ <11b8cdf2-a41b-881f-0797-d2bfa4c45b8f@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <e82ed8ab-8d9d-c815-e134-26929e3350aa@oracle.com>
+In-Reply-To: <11b8cdf2-a41b-881f-0797-d2bfa4c45b8f@oracle.com>
 X-Originating-IP: [10.178.114.42]
 X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
  T-EXCH-08.corp.yadro.com (172.17.11.58)
@@ -65,57 +65,94 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Jul 26, 2022 at 04:40:16PM -0500, Mike Christie wrote:
+On Tue, Jul 26, 2022 at 05:38:52PM -0500, Mike Christie wrote:
 > 
 > On 7/20/22 6:28 AM, Dmitry Bogdanov wrote:
-> > Under huge load there is a possibility of race condition in updating
-> > se_dev_entry object in ACL removal procedure.
+> > @@ -1437,34 +1435,26 @@ static void core_scsi3_nodeacl_undepend_item(struct se_node_acl *nacl)
 > >
-> >  NIP [c0080000154093d0] transport_lookup_cmd_lun+0x1f8/0x3d0 [target_core_mod]
-> >  LR [c00800001542ab34] target_submit_cmd_map_sgls+0x11c/0x300 [target_core_mod]
-> >  Call Trace:
-> >    target_submit_cmd_map_sgls+0x11c/0x300 [target_core_mod]
-> >    target_submit_cmd+0x44/0x60 [target_core_mod]
-> >    tcm_qla2xxx_handle_cmd+0x88/0xe0 [tcm_qla2xxx]
-> >    qlt_do_work+0x2e4/0x3d0 [qla2xxx]
-> >    process_one_work+0x298/0x5c
-> >
-> > Despite usage of RCU primitives with deve->se_lun pointer, it has not
-> > became dereference-safe. Because deve->se_lun is updated not
-> > synchronized with a reader. That change might be in a release function
-> > called by synchronize_rcu(). But, in fact, there is no sence to NULL that
-> > pointer for deleting deve. So a better solution is to remove that NULLing.
-> >
-> Hey,
+> >  static int core_scsi3_lunacl_depend_item(struct se_dev_entry *se_deve)
+> >  {
+> > -     struct se_lun_acl *lun_acl;
+> > -
+> >       /*
+> >        * For nacl->dynamic_node_acl=1
+> >        */
+> > -     lun_acl = rcu_dereference_check(se_deve->se_lun_acl,
+> > -                             kref_read(&se_deve->pr_kref) != 0);
+> > -     if (!lun_acl)
+> > +     if (!se_deve->se_lun_acl)
+> >               return 0;
 > 
-> For the line above about there being no reason to NULL the pointer are you
-> saying:
-> 
-> 
-> We should have had a NULL check like:
-> 
-> transport_lookup_cmd_lun:
-> 
-> .....
-> 
-> se_lun = rcu_dereference(deve->se_lun);
-> if (!se_lun) {
->         rcu_read_unlock();
->         return TCM_NON_EXISTENT_LUN;
-> }
-> 
-> and it would have prevented the crash.
-> 
-> But we don't need that or the se_lun RCU use, because the hlist_del_rcu and
-> kfree_rcu calls in core_disable_device_list_for_node will make sure that
-> transport_lookup_cmd_lun either finds a se_dev_entry and while in use will
-> never be freed from under us, or transport_lookup_cmd_lun will never see a
-> se_dev_entry.
-> 
-> 
-> If that's what you meant then I agree.
-Yes, that is exactly how I thought. All access to deve->se_lun is
-already under rcu_read_lock. And either deve->se_lun is always valid or
-deve is not valid itself and will not be found in the list_for_*.
-Will add more details in the commit message.
+> Will se_lun_acl and se_lun ever be NULL now? Should this maybe be a
+> WARN_ON or return a -EXYZ error code like when target_depend_item fails
+> at the bottom of the function?
+After the first patch from the patchset deve->se_lun_acl is always NULL
+for deve on a dynamyc ACL, and always NOT NULL for deve on a configured
+ACL, and deve->se_lun is never NULL.
 
+> 
+> I don't think it's a problem with your patch. I think we had issues
+> before it. If they were NULL then I think we can hit issues like:
+> 
+> 1. __core_scsi3_alloc_registration calls core_scsi3_lunacl_depend_item.
+> If se_lun_acl is NULL and we return 0.
+> 
+> 2. __core_scsi3_alloc_registration and other callers treat 0 as success.
+> 
+> 3. It then does:
+> 
+> dest_lun = deve_tmp->se_lun;
+> 
+> pr_reg_atp = __core_scsi3_do_alloc_registration(dev,
+>                                 nacl_tmp, dest_lun, deve_tmp,
+>  
+> 4. So if se_lun is also NULL then for __core_scsi3_do_alloc_registration's
+> args we have:
+> 
+> dest_deve, as non-NULL
+> lun as NULL
+> 
+> 5. __core_scsi3_do_alloc_registration will then do a
+> 
+>         pr_reg->pr_aptpl_target_lun = lun->unpacked_lun;
+>         pr_reg->tg_pt_sep_rtpi = lun->lun_rtpi;
+> 
+> and since lun is NULL we will crash.
+
+I think it was not possible even before my patches becasue deve->se_lun
+NULLing was after waiting for deve->pr_kref == 0, which is incremented
+in PR OUT handling under spinlock for lun->lun_deve_list. There
+everything is safe.
+
+> 
+> 
+> 
+> >
+> > -     return target_depend_item(&lun_acl->se_lun_group.cg_item);
+> > +     return target_depend_item(&se_deve->se_lun_acl->se_lun_group.cg_item);
+> >  }
+> >
+> >  static void core_scsi3_lunacl_undepend_item(struct se_dev_entry *se_deve)
+> >  {
+> > -     struct se_lun_acl *lun_acl;
+> > -
+> > -     /*
+> > +/*
+> 
+> Just drop the misformatting bit above.
+oops, will drop it.
+
+> >        * For nacl->dynamic_node_acl=1
+> >        */
+> > -     lun_acl = rcu_dereference_check(se_deve->se_lun_acl,
+> > -                             kref_read(&se_deve->pr_kref) != 0);
+> > -     if (!lun_acl) {
+> > +     if (!se_deve->se_lun_acl) {
+> >               kref_put(&se_deve->pr_kref, target_pr_kref_release);
+> >               return;
+> >       }
+> >
+> > -     target_undepend_item(&lun_acl->se_lun_group.cg_item);
+> > +     target_undepend_item(&se_deve->se_lun_acl->se_lun_group.cg_item);
+> >       kref_put(&se_deve->pr_kref, target_pr_kref_release);
+> >  }
