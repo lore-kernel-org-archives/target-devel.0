@@ -2,99 +2,79 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 870E2C25B0E
-	for <target-devel@archiver.kernel.org>; Mon, 15 Aug 2022 10:59:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AF30C19F2C
+	for <target-devel@archiver.kernel.org>; Tue, 16 Aug 2022 05:03:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230503AbiHOK7T (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 15 Aug 2022 06:59:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43506 "EHLO
+        id S232155AbiHPFDE (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 16 Aug 2022 01:03:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40984 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229589AbiHOK7S (ORCPT
+        with ESMTP id S231959AbiHPFCu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 15 Aug 2022 06:59:18 -0400
-Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53A5B1759A;
-        Mon, 15 Aug 2022 03:59:17 -0700 (PDT)
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id F119341239;
-        Mon, 15 Aug 2022 10:59:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        in-reply-to:content-disposition:content-type:content-type
-        :mime-version:references:message-id:subject:subject:from:from
-        :date:date:received:received:received:received; s=mta-01; t=
-        1660561154; x=1662375555; bh=8UncpEyJrRMoN0SPHF9A7V+VtNUI98mOPHq
-        ilYqV9fo=; b=htexahYDvC6z6etne6wzuchYeGSQ68L5MSIFFSej7a0mDHaUBag
-        3boZhCgWY1yZLKBi5lJMYGANcF/FFcmgPtCExXmSCnG+sIwf397RFlYh8VczJ4w1
-        yEHZHQiBonyYiay4AbpM8p6p2dFyASRgc1+DWu079j3LWlYLgvwLBkEc=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id 1nrIWOT05rSp; Mon, 15 Aug 2022 13:59:14 +0300 (MSK)
-Received: from T-EXCH-01.corp.yadro.com (t-exch-01.corp.yadro.com [172.17.10.101])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id EE4EE40889;
-        Mon, 15 Aug 2022 13:59:13 +0300 (MSK)
-Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
- T-EXCH-01.corp.yadro.com (172.17.10.101) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Mon, 15 Aug 2022 13:59:13 +0300
-Received: from yadro.com (10.199.18.20) by T-EXCH-08.corp.yadro.com
- (172.17.11.58) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Mon, 15 Aug
- 2022 13:59:12 +0300
-Date:   Mon, 15 Aug 2022 13:59:11 +0300
-From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
-To:     Christoph Hellwig <hch@infradead.org>
-CC:     Mike Christie <michael.christie@oracle.com>,
-        Martin Petersen <martin.petersen@oracle.com>,
-        <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
-        <linux@yadro.com>, Roman Bolshakov <r.bolshakov@yadro.com>
-Subject: Re: [PATCH 2/6] scsi: target: core: add list of opcodes for RSOC
-Message-ID: <20220815105911.GB17595@yadro.com>
-References: <20220718120117.4435-1-d.bogdanov@yadro.com>
- <20220718120117.4435-3-d.bogdanov@yadro.com>
- <99508f9b-46cb-b696-a5c4-3874b4d08355@oracle.com>
- <20220812080307.GA29582@yadro.com>
- <YvdXl/H1etXxeTqN@infradead.org>
+        Tue, 16 Aug 2022 01:02:50 -0400
+Received: from smtp.smtpout.orange.fr (smtp02.smtpout.orange.fr [80.12.242.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C0E531B6560
+        for <target-devel@vger.kernel.org>; Mon, 15 Aug 2022 13:59:59 -0700 (PDT)
+Received: from pop-os.home ([90.11.190.129])
+        by smtp.orange.fr with ESMTPA
+        id Nh4To0e9HTLjwNh4TowhXt; Mon, 15 Aug 2022 22:52:26 +0200
+X-ME-Helo: pop-os.home
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Mon, 15 Aug 2022 22:52:26 +0200
+X-ME-IP: 90.11.190.129
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To:     michael.christie@oracle.com,
+        "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Subject: [PATCH v2] scsi: target: Save a few cycles in transport_lookup_[cmd|tmr]_lun()
+Date:   Mon, 15 Aug 2022 22:52:24 +0200
+Message-Id: <03705222390bfa3b48ad7658f693fc0fc030b3ae.1660596679.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <YvdXl/H1etXxeTqN@infradead.org>
-X-Originating-IP: [10.199.18.20]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-08.corp.yadro.com (172.17.11.58)
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Sat, Aug 13, 2022 at 12:49:43AM -0700, Christoph Hellwig wrote:
-> 
-> On Fri, Aug 12, 2022 at 11:03:07AM +0300, Dmitry Bogdanov wrote:
-> > > > +     .support = SCSI_SUPPORT_FULL,
-> > > > +     .opcode = XDWRITEREAD_10,
-> > > > +     .cdb_size = 10,
-> > > > +     .usage_bits = {XDWRITEREAD_10, 0x18, 0xff, 0xff,
-> > > > +                    0xff, 0xff, SCSI_GROUP_NUMBER_MASK, 0xff,
-> > > > +                    0xff, SCSI_CONTROL_MASK},
-> > > > +};
-> 
-> > > one of Martin's tree after you made this patch.
-> > Yes, I saw,  Iwill remove XDWRITEREAD_* in the next revision.
-> 
-> What this does point out is that the way the patches are done,
-> we have a fundamental issue with these descriptors being potentially
-> out of sync with the actually supported commands. Once way to fix
-> this would be to add a parse callback to these dscriptors to unwind
-> sbc_parse_cdb.  The big downside would be an extra expensive indirect
-> call per command, though.
-Yes, there is such a risk. I was raising it in our company 2 years ago
-when I did this patchset. We agreed that, until there is somebody who
-can notice about it, it's OK :). It's happened not so often. There was
-just one case when we changed RSOC structs - when I was adding support
-of ACA condition.
+Use percpu_ref_tryget_live_rcu() instead of percpu_ref_tryget_live() to
+save a few cycles when it is known that the rcu lock is already
+taken/released.
 
-Recently someone wants to have some defence against fuzzy-logic attacks,
-may be he (or someone else) will intergate RSOC descriptors into
-sbc_parse_cmd within his task.
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+Change in v2:
+  * sync with -next
+
+v1:
+  * https://lore.kernel.org/all/e4a21bc607c39935cb98d4825cd63ba349820550.1635974637.git.christophe.jaillet@wanadoo.fr/
+---
+ drivers/target/target_core_device.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index b7f16ee8aa0e..76c6613a1da7 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -77,7 +77,7 @@ transport_lookup_cmd_lun(struct se_cmd *se_cmd)
+ 
+ 		se_lun = deve->se_lun;
+ 
+-		if (!percpu_ref_tryget_live(&se_lun->lun_ref)) {
++		if (!percpu_ref_tryget_live_rcu(&se_lun->lun_ref)) {
+ 			se_lun = NULL;
+ 			goto out_unlock;
+ 		}
+@@ -154,7 +154,7 @@ int transport_lookup_tmr_lun(struct se_cmd *se_cmd)
+ 	if (deve) {
+ 		se_lun = deve->se_lun;
+ 
+-		if (!percpu_ref_tryget_live(&se_lun->lun_ref)) {
++		if (!percpu_ref_tryget_live_rcu(&se_lun->lun_ref)) {
+ 			se_lun = NULL;
+ 			goto out_unlock;
+ 		}
+-- 
+2.34.1
 
