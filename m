@@ -2,185 +2,84 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88414C25B0E
-	for <target-devel@archiver.kernel.org>; Thu, 18 Aug 2022 21:07:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1DA0C32771
+	for <target-devel@archiver.kernel.org>; Fri, 19 Aug 2022 08:31:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346532AbiHRVH0 (ORCPT
+        id S1346800AbiHSIbb (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 18 Aug 2022 17:07:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49674 "EHLO
+        Fri, 19 Aug 2022 04:31:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53180 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346244AbiHRVGw (ORCPT
+        with ESMTP id S1346799AbiHSIba (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 18 Aug 2022 17:06:52 -0400
-Received: from mail.zeus03.de (www.zeus03.de [194.117.254.33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE54040E3C
-        for <target-devel@vger.kernel.org>; Thu, 18 Aug 2022 14:03:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=sang-engineering.com; h=
-        from:to:cc:subject:date:message-id:mime-version
-        :content-transfer-encoding; s=k1; bh=tsWKS3d35QyTwcmz7lMsj1/ck+C
-        2gXW06lmGcMlEZCw=; b=wo/ZfRyiN9VVd98YePWKp3gq9ipNRyPLfkDX2yZ1hky
-        vAi/O80zq5hoEVlL5UOoQO+twzqD/ZHTwPcBIjhnQo+/wl93/3APsneulTb+ukY0
-        GMCdkvWXN6FASmY2lykMVcXbhS6leoH/uJnIwCZuIQGChBJllHceif3qSjc6tOYc
-        =
-Received: (qmail 3961549 invoked from network); 18 Aug 2022 23:01:11 +0200
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 18 Aug 2022 23:01:11 +0200
-X-UD-Smtp-Session: l3s3148p1@i5vyR4rm7skucref
-From:   Wolfram Sang <wsa+renesas@sang-engineering.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Wolfram Sang <wsa+renesas@sang-engineering.com>,
+        Fri, 19 Aug 2022 04:31:30 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3CF2E97F0;
+        Fri, 19 Aug 2022 01:31:28 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 655B9B8265F;
+        Fri, 19 Aug 2022 08:31:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D4EDC433D6;
+        Fri, 19 Aug 2022 08:31:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1660897886;
+        bh=Q5Be1+hLtbVanl/3s29/HhIQGdBUTkMhqA84NGRkgPA=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=pbIqDyC5m+19uwKDAmIDnMoi+9l9Zyi6X/Yu4gyTdJ8XcLTGvN9OOGqw82yfsaNdW
+         SF1QgzqJRmBzMOm9h/Emw36LgJCWolwwnoIS2Yh3cAPSjjsaiUa3y3b3EarXjFIaMq
+         FKQ/T6hKuttebtgj3WPxwMo9PEW+GZpxyyUWhpMo=
+Date:   Fri, 19 Aug 2022 10:31:23 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Thinh Nguyen <Thinh.Nguyen@synopsys.com>
+Cc:     Felipe Balbi <balbi@kernel.org>, linux-usb@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>,
+        Nicholas Bellinger <nab@linux-iscsi.org>,
         "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Bodo Stroesser <bostroesser@gmail.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH] scsi: target: move from strlcpy with unused retval to strscpy
-Date:   Thu, 18 Aug 2022 23:01:09 +0200
-Message-Id: <20220818210110.7421-1-wsa+renesas@sang-engineering.com>
-X-Mailer: git-send-email 2.35.1
+        Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+        John Youn <John.Youn@synopsys.com>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Andrzej Pietrasiewicz <andrzej.p@samsung.com>,
+        Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH v2 00/25] usb: gadget: f_tcm: Enhance UASP driver
+Message-ID: <Yv9KWyevXLegwQcK@kroah.com>
+References: <cover.1658192351.git.Thinh.Nguyen@synopsys.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cover.1658192351.git.Thinh.Nguyen@synopsys.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Follow the advice of the below link and prefer 'strscpy' in this
-subsystem. Conversion is 1:1 because the return value is not used.
-Generated by a coccinelle script.
+On Mon, Jul 18, 2022 at 06:26:01PM -0700, Thinh Nguyen wrote:
+> The Linux UASP gadget driver is incomplete and remained broken for a long time.
+> It was not implemented for performance either. This series adds some of the
+> required features for the UASP driver to work. It also makes some changes to
+> the target core.
+> 
+> This is tested against UASP CV and DWC_usb3x controller. It still needs some
+> fixes in the target core, which will be separated from this series.
+> 
+> There are still more room for performance improvement and fixes. However, this
+> series should be sufficient to bring up a working UASP device.
+> 
+> 
+> Changes in v2:
+>  - Remove most target core changes from this series and only keep the must-have
+>    ones
+>  - Split the task-management patch to smaller patches
+>  - Don't send failure Task Management response to target core, reducing
+>    dependency
+>  - Add UASP bringup script example in cover page
+>  - Make various small updates according to feedbacks
 
-Link: https://lore.kernel.org/r/CAHk-=wgfRnXz0W3D37d01q3JFkr_i_uTL=V6A6G1oUZcprmknw@mail.gmail.com/
-Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
- drivers/target/iscsi/iscsi_target_parameters.c |  4 ++--
- drivers/target/iscsi/iscsi_target_util.c       |  4 ++--
- drivers/target/target_core_configfs.c          | 10 +++++-----
- drivers/target/target_core_device.c            |  6 +++---
- drivers/target/target_core_user.c              |  4 ++--
- 5 files changed, 14 insertions(+), 14 deletions(-)
+I would need a review by the target maintainers before being able to
+take any of the USB gadget changes into the USB tree...
 
-diff --git a/drivers/target/iscsi/iscsi_target_parameters.c b/drivers/target/iscsi/iscsi_target_parameters.c
-index 2317fb077db0..990dd2bc2f19 100644
---- a/drivers/target/iscsi/iscsi_target_parameters.c
-+++ b/drivers/target/iscsi/iscsi_target_parameters.c
-@@ -726,8 +726,8 @@ static int iscsi_add_notunderstood_response(
- 	}
- 	INIT_LIST_HEAD(&extra_response->er_list);
- 
--	strlcpy(extra_response->key, key, sizeof(extra_response->key));
--	strlcpy(extra_response->value, NOTUNDERSTOOD,
-+	strscpy(extra_response->key, key, sizeof(extra_response->key));
-+	strscpy(extra_response->value, NOTUNDERSTOOD,
- 		sizeof(extra_response->value));
- 
- 	list_add_tail(&extra_response->er_list,
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 8d9f21372b67..5a166f1a1453 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -1321,7 +1321,7 @@ void iscsit_collect_login_stats(
- 		if (conn->param_list)
- 			intrname = iscsi_find_param_from_key(INITIATORNAME,
- 							     conn->param_list);
--		strlcpy(ls->last_intr_fail_name,
-+		strscpy(ls->last_intr_fail_name,
- 		       (intrname ? intrname->value : "Unknown"),
- 		       sizeof(ls->last_intr_fail_name));
- 
-@@ -1360,7 +1360,7 @@ void iscsit_fill_cxn_timeout_err_stats(struct iscsit_session *sess)
- 		return;
- 
- 	spin_lock_bh(&tiqn->sess_err_stats.lock);
--	strlcpy(tiqn->sess_err_stats.last_sess_fail_rem_name,
-+	strscpy(tiqn->sess_err_stats.last_sess_fail_rem_name,
- 			sess->sess_ops->InitiatorName,
- 			sizeof(tiqn->sess_err_stats.last_sess_fail_rem_name));
- 	tiqn->sess_err_stats.last_sess_failure_type =
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 416514c5c7ac..f6db6677a1b7 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -619,7 +619,7 @@ static void dev_set_t10_wwn_model_alias(struct se_device *dev)
- 	 * here without potentially breaking existing setups, so continue to
- 	 * truncate one byte shorter than what can be carried in INQUIRY.
- 	 */
--	strlcpy(dev->t10_wwn.model, configname, INQUIRY_MODEL_LEN);
-+	strscpy(dev->t10_wwn.model, configname, INQUIRY_MODEL_LEN);
- }
- 
- static ssize_t emulate_model_alias_store(struct config_item *item,
-@@ -645,7 +645,7 @@ static ssize_t emulate_model_alias_store(struct config_item *item,
- 	if (flag) {
- 		dev_set_t10_wwn_model_alias(dev);
- 	} else {
--		strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
-+		strscpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
- 			sizeof(dev->t10_wwn.model));
- 	}
- 	da->emulate_model_alias = flag;
-@@ -1379,7 +1379,7 @@ static ssize_t target_wwn_vendor_id_store(struct config_item *item,
- 	}
- 
- 	BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) != INQUIRY_VENDOR_LEN + 1);
--	strlcpy(dev->t10_wwn.vendor, stripped, sizeof(dev->t10_wwn.vendor));
-+	strscpy(dev->t10_wwn.vendor, stripped, sizeof(dev->t10_wwn.vendor));
- 
- 	pr_debug("Target_Core_ConfigFS: Set emulated T10 Vendor Identification:"
- 		 " %s\n", dev->t10_wwn.vendor);
-@@ -1435,7 +1435,7 @@ static ssize_t target_wwn_product_id_store(struct config_item *item,
- 	}
- 
- 	BUILD_BUG_ON(sizeof(dev->t10_wwn.model) != INQUIRY_MODEL_LEN + 1);
--	strlcpy(dev->t10_wwn.model, stripped, sizeof(dev->t10_wwn.model));
-+	strscpy(dev->t10_wwn.model, stripped, sizeof(dev->t10_wwn.model));
- 
- 	pr_debug("Target_Core_ConfigFS: Set emulated T10 Model Identification: %s\n",
- 		 dev->t10_wwn.model);
-@@ -1491,7 +1491,7 @@ static ssize_t target_wwn_revision_store(struct config_item *item,
- 	}
- 
- 	BUILD_BUG_ON(sizeof(dev->t10_wwn.revision) != INQUIRY_REVISION_LEN + 1);
--	strlcpy(dev->t10_wwn.revision, stripped, sizeof(dev->t10_wwn.revision));
-+	strscpy(dev->t10_wwn.revision, stripped, sizeof(dev->t10_wwn.revision));
- 
- 	pr_debug("Target_Core_ConfigFS: Set emulated T10 Revision: %s\n",
- 		 dev->t10_wwn.revision);
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index b7f16ee8aa0e..0eec5a3217b9 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -809,10 +809,10 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
- 	xcopy_lun->lun_tpg = &xcopy_pt_tpg;
- 
- 	/* Preload the default INQUIRY const values */
--	strlcpy(dev->t10_wwn.vendor, "LIO-ORG", sizeof(dev->t10_wwn.vendor));
--	strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
-+	strscpy(dev->t10_wwn.vendor, "LIO-ORG", sizeof(dev->t10_wwn.vendor));
-+	strscpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
- 		sizeof(dev->t10_wwn.model));
--	strlcpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
-+	strscpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
- 		sizeof(dev->t10_wwn.revision));
- 
- 	return dev;
-diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-index 3deaeecb712e..64ad7d7483b6 100644
---- a/drivers/target/target_core_user.c
-+++ b/drivers/target/target_core_user.c
-@@ -2819,14 +2819,14 @@ static ssize_t tcmu_dev_config_store(struct config_item *item, const char *page,
- 			pr_err("Unable to reconfigure device\n");
- 			return ret;
- 		}
--		strlcpy(udev->dev_config, page, TCMU_CONFIG_LEN);
-+		strscpy(udev->dev_config, page, TCMU_CONFIG_LEN);
- 
- 		ret = tcmu_update_uio_info(udev);
- 		if (ret)
- 			return ret;
- 		return count;
- 	}
--	strlcpy(udev->dev_config, page, TCMU_CONFIG_LEN);
-+	strscpy(udev->dev_config, page, TCMU_CONFIG_LEN);
- 
- 	return count;
- }
--- 
-2.35.1
+thanks,
 
+greg k-h
