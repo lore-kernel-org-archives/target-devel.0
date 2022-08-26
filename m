@@ -2,39 +2,40 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61181ECAAD2
-	for <target-devel@archiver.kernel.org>; Fri, 26 Aug 2022 09:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 907CFECAAD5
+	for <target-devel@archiver.kernel.org>; Fri, 26 Aug 2022 10:46:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245588AbiHZJGk (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 26 Aug 2022 05:06:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51386 "EHLO
+        id S1343876AbiHZKq6 (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 26 Aug 2022 06:46:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43608 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245227AbiHZJGi (ORCPT
+        with ESMTP id S244472AbiHZKq5 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 26 Aug 2022 05:06:38 -0400
+        Fri, 26 Aug 2022 06:46:57 -0400
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED03DD6304;
-        Fri, 26 Aug 2022 02:06:36 -0700 (PDT)
-Date:   Fri, 26 Aug 2022 11:06:32 +0200
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8CAA17A763;
+        Fri, 26 Aug 2022 03:46:56 -0700 (PDT)
+Date:   Fri, 26 Aug 2022 12:46:53 +0200
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1661504795;
+        s=2020; t=1661510814;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=bWmtCR9K7g8WGM5dbPXeabsChqiWPGxtgX1i922KQpo=;
-        b=VnrvzOJWE1hyoW45ywyZ99N/BWqSF9eAuSZuxEMJxti8RImvw7Lt+CD9mNVet84Ip5N0gG
-        C2LadHZuBIaJRh6PULR17EDSLJ1eRFXI6kUfVWma7hVCLDEeVojvIzhxu9z5HHKR/MNXjp
-        eBpQp4riVw1IuKqyC9xLuVSRevAKWvMB3d5ovkVks++Shw3VW4TqsufjjnCJsavI0jFOlK
-        +buAl2R8h995WOW4HGYqGD+fIly0Kt4+zCpmoyxHnqDSE+1TJFAWLMZDfhu1ptBjVMCynL
-        mBBFVgufrJHU+6mrCDPDTIVjkaUftayTEcIVLeUtTss4L8AKuXY4vYQQHOrB9Q==
+        bh=JLKW8+/j05XzobomCTWDjC7GAsM4Tiaeh1yzbn0SKPY=;
+        b=gzamVHIfjCARprpeBnwWFwV8NV7x+ZWKLyNsaIEzWeJwBBPDQ8XnPvE7erQIRyFWMkphZu
+        FBnwv9hzRF/qcSs4HeG43p8xvXWoaA0ZgrcQhw54fD5yBa7hTbjw74/Swqq+b/MqJhD3eG
+        AZWYov5/UJBA9iwshksEWqf+IHkrOYn+Pr5dRo97a0GFd9nkJnu0q6ejlY9/T01u/jyPXw
+        T5rlgvsHF+x98SoiE84wE8CA8dTmjnpwDHjxkrA6FfWXA0pEwfU1uoW/ay4BIalSPcXrGm
+        VkuKKhHAnRaJuiQv1uw+tcuf1H3p4kPo3wNWt+ra82+6rxypPcXVSyIf+oUyVQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1661504795;
+        s=2020e; t=1661510814;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=bWmtCR9K7g8WGM5dbPXeabsChqiWPGxtgX1i922KQpo=;
-        b=DoKhqbgdm7w9bGMz/o276aFnYc4vVcFHzC9Pns3HMgBTlVPB/ajJmpSfvqpcndATAhMEZo
-        +crRx60ffDudEcCw==
+        bh=JLKW8+/j05XzobomCTWDjC7GAsM4Tiaeh1yzbn0SKPY=;
+        b=SECI0838/ZKT7qQsWIPRnpqe8wMBBUBmLIQU13YyL3w29zETQp/fIG9RpmlF2Ff6j3KVeW
+        ThwgW/tQXcSeLyDA==
 From:   Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 To:     Thinh Nguyen <Thinh.Nguyen@synopsys.com>
 Cc:     Felipe Balbi <balbi@kernel.org>,
@@ -42,48 +43,50 @@ Cc:     Felipe Balbi <balbi@kernel.org>,
         linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
         Dmitry Bogdanov <d.bogdanov@yadro.com>,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: Re: [PATCH v2 21/25] usb: gadget: f_tcm: Get stream by tag
-Message-ID: <YwiNGK3ZZeYi2lN7@linutronix.de>
+Subject: Re: [PATCH v2 24/25] usb: gadget: f_tcm: Check overlapped command
+Message-ID: <YwikndRzQM+ToQV5@linutronix.de>
 References: <cover.1658192351.git.Thinh.Nguyen@synopsys.com>
- <3fbae6ecb8e9f31807635152a377b076e86fb12e.1658192351.git.Thinh.Nguyen@synopsys.com>
+ <0150d7b669ad80e94596b371cbce0460a327ce7c.1658192351.git.Thinh.Nguyen@synopsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <3fbae6ecb8e9f31807635152a377b076e86fb12e.1658192351.git.Thinh.Nguyen@synopsys.com>
+In-Reply-To: <0150d7b669ad80e94596b371cbce0460a327ce7c.1658192351.git.Thinh.Nguyen@synopsys.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 2022-07-18 18:28:16 [-0700], Thinh Nguyen wrote:
+On 2022-07-18 18:28:34 [-0700], Thinh Nguyen wrote:
 > diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
-> index 084143213176..a10e74290664 100644
+> index 8b99ee07df87..dfa3e7c043a3 100644
 > --- a/drivers/usb/gadget/function/f_tcm.c
 > +++ b/drivers/usb/gadget/function/f_tcm.c
-> @@ -506,6 +506,22 @@ static void uasp_cleanup_old_alt(struct f_uas *fu)
->  	uasp_free_cmdreq(fu);
->  }
+> @@ -1214,6 +1233,51 @@ static void usbg_cmd_work(struct work_struct *work)
+>  	return;
 >  
-> +static struct uas_stream *uasp_get_stream_by_tag(struct f_uas *fu, u16 tag)
-> +{
-> +	/*
-> +	 * For simplicity, we use mod operation to quickly find an in-progress
-> +	 * matching command tag to check for overlapped command. The assumption
-> +	 * is that the UASP class driver will limit to using tag id from 1 to
-> +	 * USBG_NUM_CMDS. This is based on observation from the Windows and
-> +	 * Linux UASP storage class driver behavior. If an unusual UASP class
-> +	 * driver uses a tag greater than USBG_NUM_CMDS, then this method may no
-> +	 * longer work due to possible stream id collision. In that case, we
-> +	 * need to use a proper algorithm to fetch the stream (or simply walk
-> +	 * through all active streams to check for overlap).
-> +	 */
-> +	return &fu->stream[tag % USBG_NUM_CMDS];
+>  skip:
+> +	if (cmd->tmr_rsp == RC_OVERLAPPED_TAG) {
+> +		struct se_session *se_sess;
+> +		struct uas_stream *stream;
+> +
+> +		se_sess = cmd->fu->tpg->tpg_nexus->tvn_se_sess;
+> +		stream = uasp_get_stream_by_tag(cmd->fu, cmd->tag);
+> +
+> +		/*
+> +		 * There's no guarantee of a matching completion order between
+> +		 * different endpoints. i.e. The device may receive a new (CDB)
+> +		 * command request completion of the command endpoint before it
+> +		 * gets notified of the previous command status completion from
+> +		 * a status endpoint. The driver still needs to detect
+> +		 * misbehaving host and respond with an overlap command tag. To
+> +		 * prevent false overlapped tag failure, give the active and
+> +		 * matching stream id a short time (1ms) to complete before
+> +		 * respond with overlapped command failure.
+> +		 */
+> +		msleep(1);
 
-Could you please avoid the assumption what tag actually is?
-Please take a look at hashtable.h, hash_add(), hash_del(),
-hash_for_each_possible_safe() is probably all you need.
-That % looks efficient but gcc will try and remove the div operation
-which is something the hash implementation (as of hash_min()) avoids. So
-the only additional costs here is the additional hashtable which worth
-the price given that you don't assume what tag can be.
+How likely is it for this to happen? Is there maybe some synchronisation
+missing? If I see this right, in order to get here, you will already
+spill the message "Command tag %d overlapped" which does not look good.
+Why should the host re-use a tag which did not yet complete?
 
 Sebastian
