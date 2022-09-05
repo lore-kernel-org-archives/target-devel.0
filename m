@@ -2,84 +2,73 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58D4EECAAA1
-	for <target-devel@archiver.kernel.org>; Tue, 30 Aug 2022 10:06:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D89ACECAAD5
+	for <target-devel@archiver.kernel.org>; Mon,  5 Sep 2022 06:48:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230030AbiH3KGq (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 30 Aug 2022 06:06:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50162 "EHLO
+        id S234617AbiIEGsG convert rfc822-to-8bit (ORCPT
+        <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 5 Sep 2022 02:48:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42522 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229840AbiH3KGH (ORCPT
+        with ESMTP id S235848AbiIEGsC (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 30 Aug 2022 06:06:07 -0400
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E052CEE68A;
-        Tue, 30 Aug 2022 03:03:26 -0700 (PDT)
-Date:   Tue, 30 Aug 2022 12:03:20 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1661853802;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=5Th0mQ/sNN9c18CVRxErzRPXBEZvcyeYzQkxhouGlyc=;
-        b=qMETC6v6RTxNCE90+XAWi3L/rz6zS3FsKcQe2Uj32rmKr8M0vVUZ0iD6iQ+/6v1YT62AKY
-        UfmzmDieJiYqyLxx1/XJ5g7u9AhVAEnynv1O2TYCk2buD7zFdf7cLeajft8SWRFT/GSImi
-        4yk5pfiCQ/1D6VWuafWjBidWdsrI9K/EhkUxNu9w2f7YxooeGv7Abv3FkWJr20P7zzZGHd
-        fnB4umkby03JJarue+rnpk+Xr1znNtRpX40Nk0OP63an3yDMYbaGJ2xWxsLO0sRjMKy96A
-        2pkLletIezeR4cPRY+qUHHMUYYACxtw2MEa+qqknEV5vGkbB/zXrJLB+x/jiYg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1661853802;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=5Th0mQ/sNN9c18CVRxErzRPXBEZvcyeYzQkxhouGlyc=;
-        b=C3ReCx7C6MDZVd65vQy2DaG87J1pVM2D6Je302ILkOPzKilw0k3yrFc3iUYHAF7iR6GhCu
-        wLEcLJGk6gxrgSBA==
-From:   Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To:     Thinh Nguyen <Thinh.Nguyen@synopsys.com>
-Cc:     Felipe Balbi <balbi@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Dmitry Bogdanov <d.bogdanov@yadro.com>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Subject: Re: [PATCH v2 11/25] usb: gadget: f_tcm: Execute command on write
- completion
-Message-ID: <Yw3gaLk24rPvRsAn@linutronix.de>
-References: <cover.1658192351.git.Thinh.Nguyen@synopsys.com>
- <b030d10834c13aa09bbbba7b33b1957d5ba3664c.1658192351.git.Thinh.Nguyen@synopsys.com>
- <YwhvmpdbG8WXhhZ0@linutronix.de>
- <20220826183732.vxogtdlwqiqbcg2t@synopsys.com>
- <Yw0YP1qUYAw6inMJ@linutronix.de>
- <20220829214738.g4sazbxapgmlyksa@synopsys.com>
+        Mon, 5 Sep 2022 02:48:02 -0400
+Received: from smtp.smtpout.orange.fr (smtp09.smtpout.orange.fr [80.12.242.131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F0AE3845C
+        for <target-devel@vger.kernel.org>; Sun,  4 Sep 2022 23:48:00 -0700 (PDT)
+Received: from opme11oxm20nd1.pom.fr.intraorange ([10.110.57.20])
+        by smtp.orange.fr with ESMTP
+        id V5tmo0wiCu8plV5tmoeeOv; Mon, 05 Sep 2022 08:47:58 +0200
+X-ME-Helo: opme11oxm20nd1.pom.fr.intraorange
+X-ME-Auth: ZnJhbmNpcy5zb3V5cmlAb3JhbmdlLmZy
+X-ME-Date: Mon, 05 Sep 2022 08:47:58 +0200
+X-ME-IP: 77.193.136.141
+Date:   Mon, 5 Sep 2022 08:47:58 +0200 (CEST)
+From:   Francis SOUYRI <francis.souyri@orange.fr>
+Reply-To: Francis SOUYRI <francis.souyri@orange.fr>
+To:     target-devel@vger.kernel.org
+Message-ID: <795111402.4983783.1662360478569.JavaMail.open-xchange@opme11oxm20nd1.pom.fr.intraorange>
+Subject: LIO no memory buffer/cache used.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20220829214738.g4sazbxapgmlyksa@synopsys.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3
+Importance: Medium
+X-Mailer: Open-Xchange Mailer v7.6.3-Rev64
+X-Originating-IP: 77.193.136.141
+X-Originating-Client: open-xchange-appsuite
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 2022-08-29 21:47:41 [+0000], Thinh Nguyen wrote:
-> Ok. Maybe we should make a change in the target_execute_cmd() then. It
-> seems unreasonable to force the caller to workaround this such as the
-> wait+complete construct you did (and I don't recall we have changes in
-> place to know/guarantee that interrupts are enabled before executing
-> target_execute_cmd() previously either).
+Hello,
 
-Sounds reasonable. Back then I wasn't sure if I'm putting all the puzzle
-pieces correctly together so I preferred this over a target change I
-wasn't sure was really needed. Anyway.
+For a test environment with an old server I created a storage bay using CentOS
+7.9 and LIO.
 
-> For the dwc3, we masked the interrupt at this point, so interrupt won't
-> be asserted here.
+I have some RAID5 Logical Volume exported using ISCSI LIO to some VMWare
+servers.
 
-dwc3 has a irqrestore() after calling the routine so that will avoid the
-splat. But lockdep should yell here.
-Anyway, other interrupts on that CPU (timer for instance) could trigger.
+The storage server have 32Go memory but no memory are used for the buffer/cache
+I have more than 30Go free.
 
-> Thanks,
-> Thinh
+On the storage server when I start io's (dd) on a logical volume, I see the use
+of the memory buffer/cache (buffer) increase.
 
-Sebastian
+On a LIO client (VM on a VMWare server) when I do io's, on the storage server no
+memory buffer/cache are used.
+
+This is not a problem with VMWare I have the same issue with a CentOS iSCSI
+client.
+
+This is like LIO bypass the buffer/cache, on the storage server I “loaded” a
+Logical Volume in the buffer/cache (dd if=/dev/vg/lv of=/dev/null) and from the
+LIO client when I read de Logical Volume (dd if=/dev/sdx of=/dev/null) all the
+read io's come from the disk.
+
+PS: I have and OpenMediaVault server with TGT for the iSCSI and Logical Volume
+exported the buffer/cache (vmstat buff) is used.
+
+Best regards.
+
+Francis
