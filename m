@@ -2,47 +2,47 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E8A2C6FA83
-	for <target-devel@archiver.kernel.org>; Mon,  5 Sep 2022 19:13:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B571C54EE9
+	for <target-devel@archiver.kernel.org>; Tue,  6 Sep 2022 07:57:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231747AbiIETNX (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 5 Sep 2022 15:13:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59112 "EHLO
+        id S238739AbiIFH5Y (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 6 Sep 2022 03:57:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34944 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229866AbiIETNW (ORCPT
+        with ESMTP id S238977AbiIFH5U (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 5 Sep 2022 15:13:22 -0400
+        Tue, 6 Sep 2022 03:57:20 -0400
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EEAC43719C;
-        Mon,  5 Sep 2022 12:13:21 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C31F671704;
+        Tue,  6 Sep 2022 00:57:19 -0700 (PDT)
 Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id A245D44B7E;
-        Mon,  5 Sep 2022 19:13:20 +0000 (UTC)
+        by mta-01.yadro.com (Postfix) with ESMTP id 163DD44F8B;
+        Tue,  6 Sep 2022 07:57:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
         content-type:content-type:content-transfer-encoding:mime-version
         :x-mailer:message-id:date:date:subject:subject:from:from
-        :received:received:received:received; s=mta-01; t=1662405199; x=
-        1664219600; bh=XL5F/oXsCoOIFfj/qDCbchJ8n++/oI50YVboIcVfVwA=; b=e
-        x1pCervQlljPeTHbkC6USo9AGqiSuDyGkiPu7PW3bLbA32dpuIjAAMflJDDY7wE/
-        XQZBg3Xfm58AR6KPHgy6n2oCLxqYamKf9TC55ZFEwI0j/fX0znbxkzK2XlWv9dNo
-        wiOng1iUq7lPWo5hPT/WwNN3/nepi6ErbFAiyasTRc=
+        :received:received:received:received; s=mta-01; t=1662451036; x=
+        1664265437; bh=XL5F/oXsCoOIFfj/qDCbchJ8n++/oI50YVboIcVfVwA=; b=l
+        uzIgEbaU34wEsa9CE8jpC8qgCC9wRwG2IIWDOyGZXqckW8UdsQDhYBfGqNph27lQ
+        dHWfiChsNrc8UcVIwCnJkWj8LYA4G92mRC5+4EnAvtbKuSJUBERMgINEBhjdq/T0
+        szOI3qCKm1I1owgD22YGkZ9yi06r6VxTCG79boeV70=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
         by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id ZPEhrgu8W1FC; Mon,  5 Sep 2022 22:13:19 +0300 (MSK)
+        with ESMTP id 0U2t-D0uZS4s; Tue,  6 Sep 2022 10:57:16 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (T-EXCH-02.corp.yadro.com [172.17.10.102])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id 3F28944B1C;
-        Mon,  5 Sep 2022 22:10:03 +0300 (MSK)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 64F1056164;
+        Tue,  6 Sep 2022 10:48:56 +0300 (MSK)
 Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
  T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Mon, 5 Sep 2022 22:10:03 +0300
-Received: from NB-591.corp.yadro.com (10.199.18.20) by
+ 15.1.669.32; Tue, 6 Sep 2022 10:48:56 +0300
+Received: from NB-591.corp.yadro.com (10.178.114.42) by
  T-EXCH-08.corp.yadro.com (172.17.11.58) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.1118.9; Mon, 5 Sep 2022 22:09:54 +0300
+ 15.2.1118.9; Tue, 6 Sep 2022 10:48:55 +0300
 From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
 To:     Martin Petersen <martin.petersen@oracle.com>,
         <target-devel@vger.kernel.org>
@@ -50,13 +50,13 @@ CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
         Dmitry Bogdanov <d.bogdanov@yadro.com>,
         Roman Bolshakov <r.bolshakov@yadro.com>
 Subject: [PATCH] scsi: target: core: Set MULTIP bit in INQUIRY
-Date:   Mon, 20 Apr 2020 03:18:45 +0300
-Message-ID: <20220905190947.17349-1-d.bogdanov@yadro.com>
+Date:   Tue, 6 Sep 2022 10:48:20 +0300
+Message-ID: <20220906074820.18685-1-d.bogdanov@yadro.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-Originating-IP: [10.199.18.20]
+X-Originating-IP: [10.178.114.42]
 X-ClientProxiedBy: T-EXCH-02.corp.yadro.com (172.17.10.102) To
  T-EXCH-08.corp.yadro.com (172.17.11.58)
 Precedence: bulk
