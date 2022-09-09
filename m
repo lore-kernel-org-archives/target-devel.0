@@ -2,96 +2,101 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23BA5ECAAA1
-	for <target-devel@archiver.kernel.org>; Fri,  9 Sep 2022 09:40:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8DD3ECAAD3
+	for <target-devel@archiver.kernel.org>; Fri,  9 Sep 2022 11:22:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231712AbiIIJkg (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 9 Sep 2022 05:40:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43672 "EHLO
+        id S229601AbiIILWm (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 9 Sep 2022 07:22:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36344 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230402AbiIIJka (ORCPT
+        with ESMTP id S229534AbiIILWm (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 9 Sep 2022 05:40:30 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 108E39C525;
-        Fri,  9 Sep 2022 02:40:26 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        Fri, 9 Sep 2022 07:22:42 -0400
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 861691365CC;
+        Fri,  9 Sep 2022 04:22:41 -0700 (PDT)
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 29FF156C65;
+        Fri,  9 Sep 2022 11:22:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        in-reply-to:content-disposition:content-type:content-type
+        :mime-version:references:message-id:subject:subject:from:from
+        :date:date:received:received:received:received; s=mta-01; t=
+        1662722558; x=1664536959; bh=BhyeHfAPNf2W6us4lzEiGV6NM5zWsAf+1ob
+        4gjpjMZ0=; b=UKUWykX8Af4U3sZXZ5AmKm62f1xSm8B2A+F0Zn/bPdk/eS+CEmp
+        YWMAyd2IvG9/B8H80prZwph/5EPV37tN9JMVvb2GZL84HEeDuTde+PWalnZiEuzi
+        2dQ4Ztr04LQh+dd60xZaRDHJ9Bx2reGAhmLL+WxdGAiCfYKAoUNzWz/Y=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id MdpTYhiSVOBN; Fri,  9 Sep 2022 14:22:38 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (T-EXCH-02.corp.yadro.com [172.17.10.102])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 9845261F6A;
-        Fri,  9 Sep 2022 09:40:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A696C433C1;
-        Fri,  9 Sep 2022 09:40:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1662716425;
-        bh=HsfqPASjnakS+xsqfPpAn2Do0sUbq2U9xY/KUbbjIP4=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Np7qYKPDxkWRV3AzIEX0EEInSZkDu8nyjOKt/thmwV20qBJ/XehbSQ6RAFNU59mRz
-         uIaN745OjFy8eeLD3llQbNIMMzzk93bzsvg8Ls+StIWbB0lsbujcMsfeQW0xO/odEb
-         cVASnbjfzCf/mnDTH+NxBLvJcU0ZCdtWyY2YmnwPRZ8Mypx2gzn2xFFcncu/YIY7X5
-         F5faa52aFffAWRL/lOvU/lbc0yTJY3ZVrocrHLme32ptHBRTzjBfoOrBJYk8SC40mx
-         gTzi+PGBo/WpCGibrG3zzCmh8Al0eTOlddTf3OG55JThKJUSZlkx4pnphVospe5Yhk
-         cwxQVw9xK0u8A==
-Date:   Fri, 9 Sep 2022 10:40:10 +0100
-From:   "Gustavo A. R. Silva" <gustavoars@kernel.org>
-To:     Hangyu Hua <hbh25y@gmail.com>
-Cc:     bvanassche@acm.org, jgg@ziepe.ca, leon@kernel.org,
-        linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] infiniband: ulp: srpt: Use flex array destination for
- memcpy()
-Message-ID: <YxsJ+n8RjpBIpGKo@work>
-References: <20220909022943.8896-1-hbh25y@gmail.com>
+        by mta-01.yadro.com (Postfix) with ESMTPS id CE28F56A88;
+        Fri,  9 Sep 2022 14:22:37 +0300 (MSK)
+Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
+ T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Fri, 9 Sep 2022 14:22:37 +0300
+Received: from yadro.com (172.17.190.47) by T-EXCH-08.corp.yadro.com
+ (172.17.11.58) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Fri, 9 Sep 2022
+ 14:22:36 +0300
+Date:   Fri, 9 Sep 2022 14:22:35 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Mike Christie <michael.christie@oracle.com>
+CC:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+        <linux@yadro.com>, Roman Bolshakov <r.bolshakov@yadro.com>
+Subject: Re: [PATCH] scsi: target: core: Add a way to hide a port group
+Message-ID: <20220909112235.GD9218@yadro.com>
+References: <20220906074903.18755-1-d.bogdanov@yadro.com>
+ <f85ec171-f3c6-cc14-daa1-84ef1b20898a@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20220909022943.8896-1-hbh25y@gmail.com>
+In-Reply-To: <f85ec171-f3c6-cc14-daa1-84ef1b20898a@oracle.com>
+X-Originating-IP: [172.17.190.47]
+X-ClientProxiedBy: T-EXCH-02.corp.yadro.com (172.17.10.102) To
+ T-EXCH-08.corp.yadro.com (172.17.11.58)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Fri, Sep 09, 2022 at 10:29:43AM +0800, Hangyu Hua wrote:
-> In preparation for FORTIFY_SOURCE performing run-time destination buffer
-> bounds checking for memcpy(), specify the destination output buffer
-> explicitly, instead of asking memcpy() to write past the end of what looked
-> like a fixed-size object.
+On Wed, Sep 07, 2022 at 03:01:00PM -0500, Mike Christie wrote:
 > 
-> Notice that srp_rsp[] is a pointer to a structure that contains
-> flexible-array member data[]:
+> On 9/6/22 2:49 AM, Dmitry Bogdanov wrote:
+> > From: Roman Bolshakov <r.bolshakov@yadro.com>
+> >
+> > Default target port group is always returned in the list of port groups,
+> > even if the behaviour is unwanted, i.e. it has no members and
+> > non-default port groups are primary port groups.
+> >
+> > A new port group attribute - "hidden" can be used to hide empty port
+> > groups with no ports in REPORT TARGET PORT GROUPS, including default
+> > target port group:
+> >
+> >   echo 1 > $DEVICE/alua/default_tg_pt_gp/hidden
+> >
 > 
-> struct srp_rsp {
-> 	...
-> 	__be32	sense_data_len;
-> 	__be32	resp_data_len;
-> 	u8	data[];
-> };
-> 
-> link: https://github.com/KSPP/linux/issues/201
-> Signed-off-by: Hangyu Hua <hbh25y@gmail.com>
+> How about "enable"? I think that fits how we handle other objects like
+> targets that are setup automatically but are not yet usable (can't login
+> or reported in discovery commands) and devices we have setup but are not
+> reported in commands like REPORT_LUNs (technically you need to enable and
+> map them but you get the idea I'm going for).
+There is already an enable semantic. It is pg_pt_gp_id field. Until it
+(id) is not set the port group is treated as disabled and it is not
+reported in RTPG. But the default_tg_pt_gp is enabled by default and can
+not be deleted.
 
-Reviewed-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+The patch solves the presence of non-deletable empty default_tg_pt_gp
+in RTPG.
+May be, a global attribute like target/core/alua/hide_emtpy_tpg would
+fit better than an attribute per each port group?
 
-Thanks
---
-Gustavo
+I would always hide the empty default_lu_gp (not configurable) but I am
+afraid that it will be considered as not backward compatible change. :(
 
-> ---
->  drivers/infiniband/ulp/srpt/ib_srpt.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> index 21cbe30d526f..8c29e14150d3 100644
-> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> @@ -1421,7 +1421,7 @@ static int srpt_build_cmd_rsp(struct srpt_rdma_ch *ch,
->  
->  		srp_rsp->flags |= SRP_RSP_FLAG_SNSVALID;
->  		srp_rsp->sense_data_len = cpu_to_be32(sense_data_len);
-> -		memcpy(srp_rsp + 1, sense_data, sense_data_len);
-> +		memcpy(srp_rsp->data, sense_data, sense_data_len);
->  	}
->  
->  	return sizeof(*srp_rsp) + sense_data_len;
-> -- 
-> 2.34.1
-> 
+BR,
+ Dmitry 
