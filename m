@@ -2,101 +2,103 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19605ECAAD5
-	for <target-devel@archiver.kernel.org>; Fri,  9 Sep 2022 02:30:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D375FECAAA1
+	for <target-devel@archiver.kernel.org>; Fri,  9 Sep 2022 08:30:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229567AbiIICaC (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 8 Sep 2022 22:30:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40490 "EHLO
+        id S230271AbiIIIa5 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 9 Sep 2022 04:30:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35566 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229507AbiIICaB (ORCPT
+        with ESMTP id S230178AbiIIIa5 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 8 Sep 2022 22:30:01 -0400
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com [IPv6:2607:f8b0:4864:20::642])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB34D3135A;
-        Thu,  8 Sep 2022 19:30:00 -0700 (PDT)
-Received: by mail-pl1-x642.google.com with SMTP id x1so503857plv.5;
-        Thu, 08 Sep 2022 19:30:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date;
-        bh=moNG8kswXbdKQJB3vW/4tDOWs8Xhj1MAbDe3Hb6PlTY=;
-        b=DXfPCBdcW1G/kjAPKtaOom2rR+NU837/Q4ySM7Kwk4rarWQP1Lwxis95jlGQ4u4mwa
-         FXWFvomxoPyQaEHueUMKTSRN1WQ7j8+Q8/LB2VaAFnUSUOZ47oXoSo/KIZ1OURcpl2tk
-         D2F7vxWAe1u6gbY936Jehb8u/2u0w/KQourXuRu9gSFh810fw97MmLHUZClW3laqLhI0
-         ei1YJewmQiG9lKHUtyXMUnOLz/2YfrGqGC/OK7IRgZkLNSa/khVoy4gAsxzGmbHEri6N
-         CMKivFF9Fd5GWsASf1DX1Pl6XmybzYjXFWNZiJqR+yj1EwE4sGJre5a0UCyqIdIDgETm
-         Cvlg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date;
-        bh=moNG8kswXbdKQJB3vW/4tDOWs8Xhj1MAbDe3Hb6PlTY=;
-        b=SnbrDzBMCkDOPYCYXPnuqhOqampAifVWHS6blEqnWXbBgYX+h+YibGzm8jlWlLwDKN
-         seCjL8uQcQCm/H/X+cENLuvAFWqyi5VJOVQCq2G1bQz12rQQgHSFHsMidGRKJRW5pwjI
-         4roFWPBZh5xEQHz0Hp6hghHtzm3JNEoVz3v+tCVtvZGXrHPNKfCO2HokfOskXPctTXz3
-         FsjUf/aPl2eNyCmitOX8D8g9DIeSOa8WUK7Y0cy/JZUJ5M920cg1WEChbDlvh8dSZGLM
-         6bA74uYSp9PDgIySgZWjgH3E9U8A5RAlJZPr7DaXSgkFLVBWh+JOsGcECa2EuuFI5DOs
-         qPyw==
-X-Gm-Message-State: ACgBeo2pieyXL8X7PRPxH0k7EeciLxVpeefRSqt9VcGusHx31+ii6FVE
-        2hyshL9/0tDMX7JRzCbGLdn8bXJ7tRK8rz83p1g=
-X-Google-Smtp-Source: AA6agR4yHdfyXzeoQEJ8k4CJWkE7zOLRliuw6BpjSaaL//I5Jn5qHDH7A+UBNKOsqCF45CQ4pLbwKw==
-X-Received: by 2002:a17:90b:1b08:b0:1f5:b65:9654 with SMTP id nu8-20020a17090b1b0800b001f50b659654mr7295690pjb.77.1662690600174;
-        Thu, 08 Sep 2022 19:30:00 -0700 (PDT)
-Received: from hbh25y.. ([129.227.150.140])
-        by smtp.gmail.com with ESMTPSA id 190-20020a6204c7000000b0053e2b61b714sm325383pfe.114.2022.09.08.19.29.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Sep 2022 19:29:59 -0700 (PDT)
-From:   Hangyu Hua <hbh25y@gmail.com>
-To:     bvanassche@acm.org, jgg@ziepe.ca, leon@kernel.org,
-        gustavoars@kernel.org
-Cc:     linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Hangyu Hua <hbh25y@gmail.com>
-Subject: [PATCH] infiniband: ulp: srpt: Use flex array destination for memcpy()
-Date:   Fri,  9 Sep 2022 10:29:43 +0800
-Message-Id: <20220909022943.8896-1-hbh25y@gmail.com>
-X-Mailer: git-send-email 2.34.1
+        Fri, 9 Sep 2022 04:30:57 -0400
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EF0EEA412;
+        Fri,  9 Sep 2022 01:30:56 -0700 (PDT)
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 9B3A8568DC;
+        Fri,  9 Sep 2022 08:30:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        in-reply-to:content-disposition:content-type:content-type
+        :mime-version:references:message-id:subject:subject:from:from
+        :date:date:received:received:received:received; s=mta-01; t=
+        1662712253; x=1664526654; bh=v3844l841qywn+iFxh4j+yEguTEn6zAL1GU
+        dmHL+FOQ=; b=PAckU0Ph6thM4nUdBV/1V44CQAQYsrVVBAgs6bSqNGf03xuobYw
+        LziqZOBm6NpVL5RIvLm+mELRE4ituPVMhewBkf8hsRp5D4ikyNig3vycEXghZrdR
+        h6+xXPJZrt00Sw2vg3zLTUoHYumyTLYm9iSZ6ciixOXcfba67nzPSbRQ=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id 9XfaM-cqh4Fk; Fri,  9 Sep 2022 11:30:53 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (T-EXCH-02.corp.yadro.com [172.17.10.102])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id B06CA568F2;
+        Fri,  9 Sep 2022 11:30:42 +0300 (MSK)
+Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
+ T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Fri, 9 Sep 2022 11:30:42 +0300
+Received: from yadro.com (10.199.18.20) by T-EXCH-08.corp.yadro.com
+ (172.17.11.58) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Fri, 9 Sep 2022
+ 11:30:42 +0300
+Date:   Fri, 9 Sep 2022 11:30:42 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Mike Christie <michael.christie@oracle.com>
+CC:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+        <linux@yadro.com>, Roman Bolshakov <r.bolshakov@yadro.com>
+Subject: Re: [PATCH] scsi: target: core: Set MULTIP bit in INQUIRY
+Message-ID: <20220909083042.GC9218@yadro.com>
+References: <20220906074820.18685-1-d.bogdanov@yadro.com>
+ <8b2da710-f878-7b80-a75a-6f7e95df3452@oracle.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <8b2da710-f878-7b80-a75a-6f7e95df3452@oracle.com>
+X-Originating-IP: [10.199.18.20]
+X-ClientProxiedBy: T-EXCH-02.corp.yadro.com (172.17.10.102) To
+ T-EXCH-08.corp.yadro.com (172.17.11.58)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-In preparation for FORTIFY_SOURCE performing run-time destination buffer
-bounds checking for memcpy(), specify the destination output buffer
-explicitly, instead of asking memcpy() to write past the end of what looked
-like a fixed-size object.
+On Wed, Sep 07, 2022 at 03:06:04PM -0500, Mike Christie wrote:
+> 
+> On 9/6/22 2:48 AM, Dmitry Bogdanov wrote:
+> >
+> > diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
+> > index c14441c89bed..32fb38ce98f4 100644
+> > --- a/drivers/target/target_core_spc.c
+> > +++ b/drivers/target/target_core_spc.c
+> > @@ -75,6 +75,8 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
+> >       struct se_portal_group *tpg = lun->lun_tpg;
+> >       struct se_device *dev = cmd->se_dev;
+> >       struct se_session *sess = cmd->se_sess;
+> > +     struct se_lun *tmp_lun;
+> > +     size_t dev_ports = 0;
+> >
+> >       /* Set RMB (removable media) for tape devices */
+> >       if (dev->transport->get_device_type(dev) == TYPE_TAPE)
+> > @@ -115,6 +117,20 @@ spc_emulate_inquiry_std(struct se_cmd *cmd, unsigned char *buf)
+> >                       buf[5] |= 0x1;
+> >       }
+> >
+> > +     spin_lock(&dev->se_port_lock);
+> > +     list_for_each_entry(tmp_lun, &dev->dev_sep_list, lun_dev_link) {
+> > +             dev_ports++;
+> > +             /* Exact number of ports does not matter for MULTIP bit */
+> > +             if (dev_ports > 1)
+> > +                     break;
+> 
+> Can you just check se_deice->export_count instead of looping?
+Yes, of course, dev->export_count exactly fits here.
+> 
+> Also, setting the bit seems fine. I was just wondering what uses it?
+There is no way to find it out. At least just to conform to the
+standard. May be for some archaic users like AIX.
+Btw, SCST reports MULTIP=1 always.
 
-Notice that srp_rsp[] is a pointer to a structure that contains
-flexible-array member data[]:
-
-struct srp_rsp {
-	...
-	__be32	sense_data_len;
-	__be32	resp_data_len;
-	u8	data[];
-};
-
-link: https://github.com/KSPP/linux/issues/201
-Signed-off-by: Hangyu Hua <hbh25y@gmail.com>
----
- drivers/infiniband/ulp/srpt/ib_srpt.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index 21cbe30d526f..8c29e14150d3 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -1421,7 +1421,7 @@ static int srpt_build_cmd_rsp(struct srpt_rdma_ch *ch,
- 
- 		srp_rsp->flags |= SRP_RSP_FLAG_SNSVALID;
- 		srp_rsp->sense_data_len = cpu_to_be32(sense_data_len);
--		memcpy(srp_rsp + 1, sense_data, sense_data_len);
-+		memcpy(srp_rsp->data, sense_data, sense_data_len);
- 	}
- 
- 	return sizeof(*srp_rsp) + sense_data_len;
--- 
-2.34.1
-
+BR,
+ Dmitry
