@@ -2,146 +2,134 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F7FCC6FA82
-	for <target-devel@archiver.kernel.org>; Tue, 13 Sep 2022 02:37:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D471C54EE9
+	for <target-devel@archiver.kernel.org>; Tue, 13 Sep 2022 17:43:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229692AbiIMChc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 12 Sep 2022 22:37:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50272 "EHLO
+        id S233205AbiIMRnM (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 13 Sep 2022 13:43:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37196 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229681AbiIMCh3 (ORCPT
+        with ESMTP id S233210AbiIMRmj (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 12 Sep 2022 22:37:29 -0400
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EEE75E014;
-        Mon, 12 Sep 2022 19:37:26 -0700 (PDT)
-Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.54])
-        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4MRSGr2xhXznVFV;
-        Tue, 13 Sep 2022 10:34:44 +0800 (CST)
-Received: from cgs.huawei.com (10.244.148.83) by
- kwepemi500012.china.huawei.com (7.221.188.12) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Tue, 13 Sep 2022 10:37:23 +0800
-From:   Gaosheng Cui <cuigaosheng1@huawei.com>
-To:     <njavali@marvell.com>, <GR-QLogic-Storage-Upstream@marvell.com>,
-        <jejb@linux.ibm.com>, <martin.petersen@oracle.com>,
-        <andrew.vasquez@qlogic.com>, <James.Bottomley@SteelEye.com>,
-        <giridhar.malavali@qlogic.com>, <James.Bottomley@suse.de>,
-        <James.Bottomley@HansenPartnership.com>, <quinn.tran@cavium.com>,
-        <himanshu.madhani@cavium.com>, <bart.vanassche@sandisk.com>,
-        <nab@linux-iscsi.org>, <cuigaosheng1@huawei.com>
-CC:     <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>
-Subject: [PATCH 1/2] scsi: qla2xxx: remove unused declarations for qla2xxx
-Date:   Tue, 13 Sep 2022 10:37:21 +0800
-Message-ID: <20220913023722.547249-2-cuigaosheng1@huawei.com>
+        Tue, 13 Sep 2022 13:42:39 -0400
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDDF9B864;
+        Tue, 13 Sep 2022 09:36:25 -0700 (PDT)
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 0B372452C0;
+        Tue, 13 Sep 2022 16:36:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received:received; s=mta-01; t=1663086982; x=
+        1664901383; bh=r0CwdQ0aYnZ3almcA+1OnRUGEpZIizTOz5cKY7PpPfg=; b=Z
+        aU2vX7qltX1PfLn5owQR7TKvUvfsBqMzeG8TkPFCljAmPbJMDYZsgSp4hCSmiDu6
+        Tx/Gjw09x1EdDCo/+zbLln3g+VEpmZ2ey1qda10OgS7qWavXz9LhXx9kEPPtgnse
+        AjkpC3+75+L28wVySFfPTg9Xy9S382/Cwpi+/a6teI=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id hzlHwMt33NPP; Tue, 13 Sep 2022 19:36:22 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (T-EXCH-02.corp.yadro.com [172.17.10.102])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id AB5CA452CB;
+        Tue, 13 Sep 2022 19:36:21 +0300 (MSK)
+Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
+ T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Tue, 13 Sep 2022 19:36:21 +0300
+Received: from NB-591.corp.yadro.com (10.199.18.20) by
+ T-EXCH-08.corp.yadro.com (172.17.11.58) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.1118.9; Tue, 13 Sep 2022 19:36:20 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: [PATCH] target: core: UA on all luns after reset
+Date:   Tue, 13 Sep 2022 19:36:02 +0300
+Message-ID: <20220913163602.20597-1-d.bogdanov@yadro.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220913023722.547249-1-cuigaosheng1@huawei.com>
-References: <20220913023722.547249-1-cuigaosheng1@huawei.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.244.148.83]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- kwepemi500012.china.huawei.com (7.221.188.12)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.18.20]
+X-ClientProxiedBy: T-EXCH-02.corp.yadro.com (172.17.10.102) To
+ T-EXCH-08.corp.yadro.com (172.17.11.58)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-qla2x00_get_fw_version_str() has been removed since
-commit abbd8870b9cb ("[SCSI] qla2xxx: Factor-out ISP specific
-functions to method-based call tables.").
+Allocate UA "BUS DEVICE RESET OCCURRED" on all LUNs on all
+target ports of the device upon reception of TMF LUN RESET.
 
-qla2x00_release_nvram_protection() has been removed since
-commit 459c537807bd ("[SCSI] qla2xxx: Add ISP24xx
-flash-manipulation routines.").
+The patch passes a libiscsi test SCSI.MultipathIO.Reset.
 
-qla82xx_rdmem() and qla82xx_wrmem() have been removed since
-commit 3711333dfbee ("[SCSI] qla2xxx: Updates for ISP82xx.").
-
-qla25xx_rd_req_reg(), qla24xx_rd_req_reg(), qla25xx_wrt_rsp_reg(),
-qla24xx_wrt_rsp_reg(), qla25xx_wrt_req_reg() and qla24xx_wrt_req_reg()
-have been removed since commit 08029990b25b ("[SCSI] qla2xxx: Refactor
-request/response-queue register handling.").
-
-qla2x00_async_login_done() has been removed since
-commit 726b85487067 ("qla2xxx: Add framework for async fabric discovery").
-
-qlt_24xx_process_response_error() has been removed since
-commit c5419e2618b9 ("scsi: qla2xxx: Combine Active command arrays.").
-
-So remove the declarations for them from header file.
-
-Signed-off-by: Gaosheng Cui <cuigaosheng1@huawei.com>
+Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
 ---
- drivers/scsi/qla2xxx/qla_gbl.h    | 12 ------------
- drivers/scsi/qla2xxx/qla_target.h |  2 --
- 2 files changed, 14 deletions(-)
+ drivers/target/target_core_device.c    | 19 +++++++++++++++++++
+ drivers/target/target_core_internal.h  |  1 +
+ drivers/target/target_core_transport.c |  3 +--
+ 3 files changed, 21 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/qla2xxx/qla_gbl.h b/drivers/scsi/qla2xxx/qla_gbl.h
-index 2fc280e61306..e3256e721be1 100644
---- a/drivers/scsi/qla2xxx/qla_gbl.h
-+++ b/drivers/scsi/qla2xxx/qla_gbl.h
-@@ -70,8 +70,6 @@ extern int qla2x00_async_prlo(struct scsi_qla_host *, fc_port_t *);
- extern int qla2x00_async_adisc(struct scsi_qla_host *, fc_port_t *,
-     uint16_t *);
- extern int qla2x00_async_tm_cmd(fc_port_t *, uint32_t, uint32_t, uint32_t);
--extern void qla2x00_async_login_done(struct scsi_qla_host *, fc_port_t *,
--    uint16_t *);
- struct qla_work_evt *qla2x00_alloc_work(struct scsi_qla_host *,
-     enum qla_work_type);
- extern int qla24xx_async_gnl(struct scsi_qla_host *, fc_port_t *);
-@@ -278,7 +276,6 @@ extern int qla24xx_vport_create_req_sanity_check(struct fc_vport *);
- extern scsi_qla_host_t *qla24xx_create_vhost(struct fc_vport *);
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index 2209660261d0..b8ab744783ed 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -284,6 +284,25 @@ void target_pr_kref_release(struct kref *kref)
+ 	complete(&deve->pr_comp);
+ }
  
- extern void qla2x00_sp_free_dma(srb_t *sp);
--extern char *qla2x00_get_fw_version_str(struct scsi_qla_host *, char *);
++/*
++ * Establish UA condition on SCSI device - all LUNs
++ */
++void target_dev_ua_allocate(struct se_device *dev, u8 asc, u8 ascq)
++{
++	struct se_dev_entry *se_deve;
++	struct se_lun *lun;
++
++	spin_lock(&dev->se_port_lock);
++	list_for_each_entry(lun, &dev->dev_sep_list, lun_dev_link) {
++
++		spin_lock(&lun->lun_deve_lock);
++		list_for_each_entry(se_deve, &lun->lun_deve_list, lun_link)
++			core_scsi3_ua_allocate(se_deve, asc, ascq);
++		spin_unlock(&lun->lun_deve_lock);
++	}
++	spin_unlock(&dev->se_port_lock);
++}
++
+ static void
+ target_luns_data_has_changed(struct se_node_acl *nacl, struct se_dev_entry *new,
+ 			     bool skip_new)
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index d4ace697edb0..4b608a282579 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -88,6 +88,7 @@ int	target_configure_device(struct se_device *dev);
+ void	target_free_device(struct se_device *);
+ int	target_for_each_device(int (*fn)(struct se_device *dev, void *data),
+ 			       void *data);
++void	target_dev_ua_allocate(struct se_device *dev, u8 asc, u8 ascq);
  
- extern void qla2x00_mark_device_lost(scsi_qla_host_t *, fc_port_t *, int);
- extern void qla2x00_mark_all_devices_lost(scsi_qla_host_t *);
-@@ -615,7 +612,6 @@ void __qla_consume_iocb(struct scsi_qla_host *vha, void **pkt, struct rsp_que **
- /*
-  * Global Function Prototypes in qla_sup.c source file.
-  */
--extern void qla2x00_release_nvram_protection(scsi_qla_host_t *);
- extern int qla24xx_read_flash_data(scsi_qla_host_t *, uint32_t *,
-     uint32_t, uint32_t);
- extern uint8_t *qla2x00_read_nvram_data(scsi_qla_host_t *, void *, uint32_t,
-@@ -787,12 +783,6 @@ extern void qla2x00_init_response_q_entries(struct rsp_que *);
- extern int qla25xx_delete_req_que(struct scsi_qla_host *, struct req_que *);
- extern int qla25xx_delete_rsp_que(struct scsi_qla_host *, struct rsp_que *);
- extern int qla25xx_delete_queues(struct scsi_qla_host *);
--extern uint16_t qla24xx_rd_req_reg(struct qla_hw_data *, uint16_t);
--extern uint16_t qla25xx_rd_req_reg(struct qla_hw_data *, uint16_t);
--extern void qla24xx_wrt_req_reg(struct qla_hw_data *, uint16_t, uint16_t);
--extern void qla25xx_wrt_req_reg(struct qla_hw_data *, uint16_t, uint16_t);
--extern void qla25xx_wrt_rsp_reg(struct qla_hw_data *, uint16_t, uint16_t);
--extern void qla24xx_wrt_rsp_reg(struct qla_hw_data *, uint16_t, uint16_t);
- 
- /* qlafx00 related functions */
- extern int qlafx00_pci_config(struct scsi_qla_host *);
-@@ -877,8 +867,6 @@ extern void qla82xx_init_flags(struct qla_hw_data *);
- extern void qla82xx_set_drv_active(scsi_qla_host_t *);
- extern int qla82xx_wr_32(struct qla_hw_data *, ulong, u32);
- extern int qla82xx_rd_32(struct qla_hw_data *, ulong);
--extern int qla82xx_rdmem(struct qla_hw_data *, u64, void *, int);
--extern int qla82xx_wrmem(struct qla_hw_data *, u64, void *, int);
- 
- /* ISP 8021 IDC */
- extern void qla82xx_clear_drv_active(struct qla_hw_data *);
-diff --git a/drivers/scsi/qla2xxx/qla_target.h b/drivers/scsi/qla2xxx/qla_target.h
-index 080c46eb8245..7df86578214f 100644
---- a/drivers/scsi/qla2xxx/qla_target.h
-+++ b/drivers/scsi/qla2xxx/qla_target.h
-@@ -1075,8 +1075,6 @@ extern void qlt_81xx_config_nvram_stage2(struct scsi_qla_host *,
- 	struct init_cb_81xx *);
- extern void qlt_81xx_config_nvram_stage1(struct scsi_qla_host *,
- 	struct nvram_81xx *);
--extern int qlt_24xx_process_response_error(struct scsi_qla_host *,
--	struct sts_entry_24xx *);
- extern void qlt_modify_vp_config(struct scsi_qla_host *,
- 	struct vp_config_entry_24xx *);
- extern void qlt_probe_one_stage1(struct scsi_qla_host *, struct qla_hw_data *);
+ /* target_core_configfs.c */
+ extern struct configfs_item_operations target_core_dev_item_ops;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index 7838dc20f713..5926316252eb 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -3531,8 +3531,7 @@ static void target_tmr_work(struct work_struct *work)
+ 		tmr->response = (!ret) ? TMR_FUNCTION_COMPLETE :
+ 					 TMR_FUNCTION_REJECTED;
+ 		if (tmr->response == TMR_FUNCTION_COMPLETE) {
+-			target_ua_allocate_lun(cmd->se_sess->se_node_acl,
+-					       cmd->orig_fe_lun, 0x29,
++			target_dev_ua_allocate(dev, 0x29,
+ 					       ASCQ_29H_BUS_DEVICE_RESET_FUNCTION_OCCURRED);
+ 		}
+ 		break;
 -- 
 2.25.1
 
