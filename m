@@ -2,134 +2,109 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D471C54EE9
-	for <target-devel@archiver.kernel.org>; Tue, 13 Sep 2022 17:43:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8024FC6FA82
+	for <target-devel@archiver.kernel.org>; Wed, 14 Sep 2022 18:00:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233205AbiIMRnM (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 13 Sep 2022 13:43:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37196 "EHLO
+        id S229953AbiINSAq (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 14 Sep 2022 14:00:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60672 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233210AbiIMRmj (ORCPT
+        with ESMTP id S229941AbiINSAi (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 13 Sep 2022 13:42:39 -0400
-Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDDF9B864;
-        Tue, 13 Sep 2022 09:36:25 -0700 (PDT)
-Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 0B372452C0;
-        Tue, 13 Sep 2022 16:36:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
-        content-type:content-type:content-transfer-encoding:mime-version
-        :x-mailer:message-id:date:date:subject:subject:from:from
-        :received:received:received:received; s=mta-01; t=1663086982; x=
-        1664901383; bh=r0CwdQ0aYnZ3almcA+1OnRUGEpZIizTOz5cKY7PpPfg=; b=Z
-        aU2vX7qltX1PfLn5owQR7TKvUvfsBqMzeG8TkPFCljAmPbJMDYZsgSp4hCSmiDu6
-        Tx/Gjw09x1EdDCo/+zbLln3g+VEpmZ2ey1qda10OgS7qWavXz9LhXx9kEPPtgnse
-        AjkpC3+75+L28wVySFfPTg9Xy9S382/Cwpi+/a6teI=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
-        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id hzlHwMt33NPP; Tue, 13 Sep 2022 19:36:22 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (T-EXCH-02.corp.yadro.com [172.17.10.102])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id AB5CA452CB;
-        Tue, 13 Sep 2022 19:36:21 +0300 (MSK)
-Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
- T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Tue, 13 Sep 2022 19:36:21 +0300
-Received: from NB-591.corp.yadro.com (10.199.18.20) by
- T-EXCH-08.corp.yadro.com (172.17.11.58) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.1118.9; Tue, 13 Sep 2022 19:36:20 +0300
-From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
-To:     Martin Petersen <martin.petersen@oracle.com>,
-        <target-devel@vger.kernel.org>
-CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
-        Dmitry Bogdanov <d.bogdanov@yadro.com>
-Subject: [PATCH] target: core: UA on all luns after reset
-Date:   Tue, 13 Sep 2022 19:36:02 +0300
-Message-ID: <20220913163602.20597-1-d.bogdanov@yadro.com>
-X-Mailer: git-send-email 2.25.1
+        Wed, 14 Sep 2022 14:00:38 -0400
+Received: from mail-io1-xd2d.google.com (mail-io1-xd2d.google.com [IPv6:2607:f8b0:4864:20::d2d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AFFAE481C1
+        for <target-devel@vger.kernel.org>; Wed, 14 Sep 2022 11:00:36 -0700 (PDT)
+Received: by mail-io1-xd2d.google.com with SMTP id b23so12823546iof.2
+        for <target-devel@vger.kernel.org>; Wed, 14 Sep 2022 11:00:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=delphix.com; s=google;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :mime-version:from:to:cc:subject:date;
+        bh=VFUdzmJIixtci3FBm2HFEi2rzmbDhqDr3flHCiO2ODI=;
+        b=Y7tZdSeImLIqYc9pcvqJoHx8ufLm1yqJP7AV3wa+o/MSGFmwr3axTFPhJk14SQoCdi
+         hP7+08h/ORxUiYIDPUB88CzgYYZISPLUWu/sT1j9tbO7QZ+AQtR6EqzlvPwLCokyfQIy
+         YFqb0D/HFfviqKAHFIQ2fGalixHEA8w7oKDmE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :mime-version:x-gm-message-state:from:to:cc:subject:date;
+        bh=VFUdzmJIixtci3FBm2HFEi2rzmbDhqDr3flHCiO2ODI=;
+        b=OfGO1oezkOwacSJkQkkZfoaChrUnw80DmD0W1Qh32Dy18ZVQzbX8m5t3h6Z6aAypV3
+         aMTwmQtIjRxAlx2XWs171minU/Rko6Pht+MO0bzTgduISNvkKJI3xP92+O21GcHtSgR2
+         Fuc6NNa5S9DrGmHSDLdG8e4AkGGylNInsEjugH4XvNsridOWHVHTDsVQXsowFqaKZNUr
+         BzV42Ev/5nUhrX1G63bnhBkEy4OeDHMKYl/Gx/F4p6fjRk2LznbZK5PwT7i3XeiTW88+
+         rnoZ2B4pL+xWbp4SPvq3O8xXyvnLBFEmoo8bnb4jIZOE3D8FE4YWZm9chLp9hvLF0SdV
+         eJoQ==
+X-Gm-Message-State: ACgBeo3A+dWyjl9TbnMWpebbjL44Ju/SaSBjQHIxIqCljMqCSdnVETUu
+        qz0krotjmdZMLv7ipqEWb962xo/ZfZ3kb+TIa00MswAwbcbcsg==
+X-Google-Smtp-Source: AA6agR40Ni/cj1DUDI7MpY/DZyQ4E3ofwXYYno4L/dr1MpRMQcgvk8yWbR8hmWkwFwJv2/zuRasIW1SKJlIuT08yNus=
+X-Received: by 2002:a5d:8a13:0:b0:69e:2133:4b38 with SMTP id
+ w19-20020a5d8a13000000b0069e21334b38mr12937388iod.106.1663178435753; Wed, 14
+ Sep 2022 11:00:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.199.18.20]
-X-ClientProxiedBy: T-EXCH-02.corp.yadro.com (172.17.10.102) To
- T-EXCH-08.corp.yadro.com (172.17.11.58)
+From:   Paul Dagnelie <pcd@delphix.com>
+Date:   Wed, 14 Sep 2022 11:00:10 -0700
+Message-ID: <CAJ-UWOeis8L26X1rSa0t+h3rzmQCFLSxPKBS7YiP=hArgnjPSA@mail.gmail.com>
+Subject: [BUG] iscsi hangs during login attempt
+To:     target-devel@vger.kernel.org
+Cc:     Sumedh Bala <sbala@delphix.com>,
+        Sebastien Roy <sebastien.roy@delphix.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Allocate UA "BUS DEVICE RESET OCCURRED" on all LUNs on all
-target ports of the device upon reception of TMF LUN RESET.
+Hi all,
 
-The patch passes a libiscsi test SCSI.MultipathIO.Reset.
+We've encountered an issue a few times now that results in a hung
+iscsi session that cannot be recovered, and ultimately leads to the
+system being wedged. I've done some initial analysis on what the issue
+might be, but I would appreciate some more experienced eyes on it and
+suggestions about the right course of action.
 
-Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
----
- drivers/target/target_core_device.c    | 19 +++++++++++++++++++
- drivers/target/target_core_internal.h  |  1 +
- drivers/target/target_core_transport.c |  3 +--
- 3 files changed, 21 insertions(+), 2 deletions(-)
+The machines in question are running Linux 5.4 (plus some other
+changes; it's a custom kernel built on top of Ubuntu 20.04, but I
+don't see any relevant patches anywhere in the stack, so I decided to
+come straight here). The issue presents with iscsi login attempts
+timing out repeatedly. We took a core dump of the machine, and
+analysis of the stack traces showed that the iscsi_target_login_thread
+is waiting for another thread to finish with the np_login_sem. That
+semaphore is being held by a thread in iscsi_target_do_login_rx, which
+is currently waiting for a session to be reinstated.
+iscsit_cause_connection_reinstatement signals the rx and tx threads,
+and then waits for the conn_wait_comp completion, which is signalled
+in iscsit_close_connection. That appears to be called by the tx and rx
+threads when they exit.  After puzzling through the core for a bit, I
+found the kernel threads in question, and they appear to be calmly
+waiting in the normal blocking path waiting for IOs to come in for
+them to respond to. I would think that if they were in that state when
+the SIGINT came in they would have exited properly.
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 2209660261d0..b8ab744783ed 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -284,6 +284,25 @@ void target_pr_kref_release(struct kref *kref)
- 	complete(&deve->pr_comp);
- }
- 
-+/*
-+ * Establish UA condition on SCSI device - all LUNs
-+ */
-+void target_dev_ua_allocate(struct se_device *dev, u8 asc, u8 ascq)
-+{
-+	struct se_dev_entry *se_deve;
-+	struct se_lun *lun;
-+
-+	spin_lock(&dev->se_port_lock);
-+	list_for_each_entry(lun, &dev->dev_sep_list, lun_dev_link) {
-+
-+		spin_lock(&lun->lun_deve_lock);
-+		list_for_each_entry(se_deve, &lun->lun_deve_list, lun_link)
-+			core_scsi3_ua_allocate(se_deve, asc, ascq);
-+		spin_unlock(&lun->lun_deve_lock);
-+	}
-+	spin_unlock(&dev->se_port_lock);
-+}
-+
- static void
- target_luns_data_has_changed(struct se_node_acl *nacl, struct se_dev_entry *new,
- 			     bool skip_new)
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index d4ace697edb0..4b608a282579 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -88,6 +88,7 @@ int	target_configure_device(struct se_device *dev);
- void	target_free_device(struct se_device *);
- int	target_for_each_device(int (*fn)(struct se_device *dev, void *data),
- 			       void *data);
-+void	target_dev_ua_allocate(struct se_device *dev, u8 asc, u8 ascq);
- 
- /* target_core_configfs.c */
- extern struct configfs_item_operations target_core_dev_item_ops;
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 7838dc20f713..5926316252eb 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -3531,8 +3531,7 @@ static void target_tmr_work(struct work_struct *work)
- 		tmr->response = (!ret) ? TMR_FUNCTION_COMPLETE :
- 					 TMR_FUNCTION_REJECTED;
- 		if (tmr->response == TMR_FUNCTION_COMPLETE) {
--			target_ua_allocate_lun(cmd->se_sess->se_node_acl,
--					       cmd->orig_fe_lun, 0x29,
-+			target_dev_ua_allocate(dev, 0x29,
- 					       ASCQ_29H_BUS_DEVICE_RESET_FUNCTION_OCCURRED);
- 		}
- 		break;
--- 
-2.25.1
+My theory, after examining the code, is if two connection requests
+were received from one initiator in rapid succession, it seems like
+the second one would use the connection reinstatement logic. It may be
+possible that if a reinstatement happens fast enough after the initial
+login, the rx and tx threads would not yet have marked themselves as
+able to receive the SIGINT that the connection reinstatement logic
+uses to prompt them to close the connection so a new one can be
+created. As I understand how signals are processed for kernel threads,
+this would result in the signal being dropped. After that happens, the
+kernel threads would never exit. If that is possible, then this could
+explain the issue we=E2=80=99re seeing.
 
+We've enabled some of the pr_debug statements on the systems in
+question, but the issue hasn't recurred on any system yet. In
+addition, it's worth noting that this issue did present itself shortly
+after patching the initiating windows systems, which would presumably
+result in one or more connection reinstatements. Does this theory seem
+plausible? We haven't managed to reproduce it in-house or with
+debugging statements enabled yet, but if it is the root cause it seems
+to me the best fix would be to add or use an existing flag that is set
+during reconnection (before the signal is sent), and have the rx and
+tx threads check it after enabling signals to close the window for the
+race.
+
+--=20
+Paul Dagnelie
