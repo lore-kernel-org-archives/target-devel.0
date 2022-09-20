@@ -2,70 +2,87 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F951C54EE9
-	for <target-devel@archiver.kernel.org>; Tue, 20 Sep 2022 12:11:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 388A0C6FA82
+	for <target-devel@archiver.kernel.org>; Tue, 20 Sep 2022 15:50:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230133AbiITMLU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 20 Sep 2022 08:11:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46734 "EHLO
+        id S231236AbiITPuN (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 20 Sep 2022 11:50:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229905AbiITMLT (ORCPT
+        with ESMTP id S231263AbiITPuK (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 20 Sep 2022 08:11:19 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A469B66A7D;
-        Tue, 20 Sep 2022 05:11:18 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 30CD561E51;
-        Tue, 20 Sep 2022 12:11:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 134E5C433C1;
-        Tue, 20 Sep 2022 12:11:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1663675877;
-        bh=jrxJEEjsToQxBRhXTlVo2g/gA/1JhFAV1VSOHZsNC5I=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=jQFSqEEd0vVeNH9i4MEgpkb4v2Qfl5l5g0bduZioWnNZshm40/Lqh0iAlXHovgNkj
-         omHPVbKEzlwiW704e2D11AomYn/70JfxjXQEDbRmOI//+GBjYZGgpfid9oRY7gWykP
-         92osqCEmzPlZ/fdT2Kt1soPsYq+sqLZJCC3c6ONDjDI3xezkAXBOzV81Z1fK70VlBH
-         stTAUTuBj4mwySNo5/dgCPUo29mDeL6Tl19AjQz6YIVxUZ1xVIvcLD2Iiga4QN4kYz
-         4Qx3bo3uqo1tvohHnvp7ReJ9Zt5KXAQCXk3OnYmK/DWg+3OFjBmjKAJg90XAd9lK+x
-         3mLdjKe5ITlEQ==
-From:   Leon Romanovsky <leon@kernel.org>
-To:     Hangyu Hua <hbh25y@gmail.com>, gustavoars@kernel.org, jgg@ziepe.ca,
-        bvanassche@acm.org
-Cc:     target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-rdma@vger.kernel.org
-Subject: Re: [PATCH] infiniband: ulp: srpt: Use flex array destination for memcpy()
-Date:   Tue, 20 Sep 2022 15:11:12 +0300
-Message-Id: <166367586716.282710.5174043716059240470.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.37.3
-In-Reply-To: <20220909022943.8896-1-hbh25y@gmail.com>
-References: <20220909022943.8896-1-hbh25y@gmail.com>
+        Tue, 20 Sep 2022 11:50:10 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5BBB93E76C
+        for <target-devel@vger.kernel.org>; Tue, 20 Sep 2022 08:50:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1663689000;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=iJq226dZzCVcjOWtb4HRrrXUB8OWStcKtmr9uT4l8Ks=;
+        b=IQ6Lw29+gM34b7uvRfzqB36HL9x8Qz8q0cJgmjp8aZ48Vqn+LwN0PFZBT45PucbDIuxyQF
+        DOaAtiXKNvrFUOPs2RbYQcXOGv6bCQe6eGXmGH7/eQqv6wK+K61sYBKFUr4WcqdpoAG/hh
+        5vkK7NKSlTlpNAqlBh17r/hwLVr1USk=
+Received: from mail-vk1-f197.google.com (mail-vk1-f197.google.com
+ [209.85.221.197]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-182-IL25Mu2XN2WeLRkojCO7zw-1; Tue, 20 Sep 2022 11:49:59 -0400
+X-MC-Unique: IL25Mu2XN2WeLRkojCO7zw-1
+Received: by mail-vk1-f197.google.com with SMTP id x3-20020a1f3103000000b003a285826de2so913418vkx.2
+        for <target-devel@vger.kernel.org>; Tue, 20 Sep 2022 08:49:59 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date;
+        bh=iJq226dZzCVcjOWtb4HRrrXUB8OWStcKtmr9uT4l8Ks=;
+        b=hxRBi6G2J7zN8jtwPc4AUZbSjL4qK+3rI5EqPHdWGSZu3HClC5IMzqfqfven3LtiO+
+         Y9x4Uft2nlyTyk0G7GLEvBXuuKpIEeBcspTNwt14iaHFKrvwsBTdqr6ppPn93N2cDhIh
+         ZYAjYg/uPh2lmkxGgu96VnFGCgjcfgjFw2g/r1nuGlENg6wOMr+D6GwRTICl1kAhWBk9
+         a8N+KkTE1LvtBZXQWvsJK/m59OJYVAB/JGhLyDV2JaShVii2wlxNzOYHkXesP5I9dxRz
+         elq/NIZMiWdM9+9U4l9boHUo88brhDyt6bMg91JexhOc317wfwQQ078bjrpsAmCbh1xW
+         2bQg==
+X-Gm-Message-State: ACrzQf2b6SbwX0oQF8w1OVyp2rNgcp7gaactHy+LbYk3f68qWg0/Rk54
+        GwqAH1nfo5maobM4rQj2FbI6UB7U6LoCFddRMU+CC21Wrt9BYlr06Tr9PTXBS4a4C4frS2+M6tq
+        X9nXSUO2CW8QmaCBbQp3EwhTaGw3ULy684CuwKl3u
+X-Received: by 2002:ac5:cdd9:0:b0:39e:8fbf:dad4 with SMTP id u25-20020ac5cdd9000000b0039e8fbfdad4mr8979788vkn.0.1663688998391;
+        Tue, 20 Sep 2022 08:49:58 -0700 (PDT)
+X-Google-Smtp-Source: AMsMyM4srpKvR98AIDDGoFeTxPmjoOa7Kbe2bwWt+Huzcpj+zjEm9Rja9JiDbz+MGnfCGzrg3h/4GXOTSr1Hv7EieEY=
+X-Received: by 2002:ac5:cdd9:0:b0:39e:8fbf:dad4 with SMTP id
+ u25-20020ac5cdd9000000b0039e8fbfdad4mr8979779vkn.0.1663688998200; Tue, 20 Sep
+ 2022 08:49:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+References: <CAJ-UWOeis8L26X1rSa0t+h3rzmQCFLSxPKBS7YiP=hArgnjPSA@mail.gmail.com>
+In-Reply-To: <CAJ-UWOeis8L26X1rSa0t+h3rzmQCFLSxPKBS7YiP=hArgnjPSA@mail.gmail.com>
+From:   Maurizio Lombardi <mlombard@redhat.com>
+Date:   Tue, 20 Sep 2022 17:49:47 +0200
+Message-ID: <CAFL455=Yn6JWY8=7AjXkqH4Yf1_k=PsHDLANeQ5WdJtZO1Dg1Q@mail.gmail.com>
+Subject: Re: [BUG] iscsi hangs during login attempt
+To:     Paul Dagnelie <pcd@delphix.com>
+Cc:     target-devel@vger.kernel.org, Sumedh Bala <sbala@delphix.com>,
+        Sebastien Roy <sebastien.roy@delphix.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Fri, 9 Sep 2022 10:29:43 +0800, Hangyu Hua wrote:
-> In preparation for FORTIFY_SOURCE performing run-time destination buffer
-> bounds checking for memcpy(), specify the destination output buffer
-> explicitly, instead of asking memcpy() to write past the end of what looked
-> like a fixed-size object.
-> 
-> Notice that srp_rsp[] is a pointer to a structure that contains
-> flexible-array member data[]:
-> 
-> [...]
+st 14. 9. 2022 v 20:00 odes=C3=ADlatel Paul Dagnelie <pcd@delphix.com> naps=
+al:
+> We haven't managed to reproduce it in-house or with
+> debugging statements enabled yet, but if it is the root cause it seems
+> to me the best fix would be to add or use an existing flag that is set
+> during reconnection (before the signal is sent), and have the rx and
+> tx threads check it after enabling signals to close the window for the
+> race.
 
-Applied, thanks!
+FYI,
 
-[1/1] infiniband: ulp: srpt: Use flex array destination for memcpy()
-      https://git.kernel.org/rdma/rdma/c/4b46a6079d2f8a
+we are going to test this patch:
+http://bsdbackstore.eu/misc/0001-target-login-should-wait-until-tx-rx-threa=
+ds-have-pr.patch
 
-Best regards,
--- 
-Leon Romanovsky <leon@kernel.org>
+Maurizio
+
