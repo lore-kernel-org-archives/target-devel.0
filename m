@@ -2,93 +2,70 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34D35ECAAD3
-	for <target-devel@archiver.kernel.org>; Mon, 19 Sep 2022 17:03:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F951C54EE9
+	for <target-devel@archiver.kernel.org>; Tue, 20 Sep 2022 12:11:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230086AbiISRDs (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 19 Sep 2022 13:03:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44588 "EHLO
+        id S230133AbiITMLU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 20 Sep 2022 08:11:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46734 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230492AbiISRDS (ORCPT
+        with ESMTP id S229905AbiITMLT (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 19 Sep 2022 13:03:18 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8C2E40E3D
-        for <target-devel@vger.kernel.org>; Mon, 19 Sep 2022 10:01:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1663606916;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=sn7FAhO5xUQ/F1h2KqD0bESfO2xuD9cWK+cf0cktMFc=;
-        b=eO+5C3eyQvZWwa5e4Dyln1WYy1fbTWdyEvA+CprOxhk8KZXq+bI5b3UOXeAhQ/t1XjQrv3
-        o1Ag0owZ60HYZgKexbezgwCUlMSDn1IB2TvDexBOnMAgxhztCrJ9LKN9FdlmQbc/xauNS5
-        CeeDZ5T/kR7F4DwgG7F5ECI+RGLC5FA=
-Received: from mail-vk1-f200.google.com (mail-vk1-f200.google.com
- [209.85.221.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-37-EgDj-OpPNS6fYPsPz1_GXg-1; Mon, 19 Sep 2022 13:01:54 -0400
-X-MC-Unique: EgDj-OpPNS6fYPsPz1_GXg-1
-Received: by mail-vk1-f200.google.com with SMTP id d21-20020a1f9b15000000b003790f223621so11816vke.14
-        for <target-devel@vger.kernel.org>; Mon, 19 Sep 2022 10:01:54 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date;
-        bh=sn7FAhO5xUQ/F1h2KqD0bESfO2xuD9cWK+cf0cktMFc=;
-        b=IEdNPS7zmhkcS0K/57jE9fZWPYLUETP5m1nLU/e6ljnjk1LOywDUnEzB99x9BRjI1v
-         A7pOH3D9CiBfz6aDr98Xqy1YMG8rlih46h6ZMjNVzwWEMXs+QdwNxD1RiFukEse5KVzl
-         wur9gmSW0xLFOlzIvXg8JkJJCVLVNKaqUoPAgHaYk7JgojxtA1fz08Xf6y94xCZIE3zf
-         UkO9eDGLJR8NEfpr75HMQslaYqn8xkuZaiANFb+WV5HYxG8mmfn8jZMO8iF142kHC9mR
-         kovqomUIni39//QT8Ir1Obj+dNyqVCFiZos2EuLgwFUza1k9Yf/wNBMwaSFlVxRCGVXJ
-         77Jg==
-X-Gm-Message-State: ACrzQf2+XR5KeaLRZNN5VneMKFRt36KqR6TXPRMo5/s+Gm/0hok7Mk8d
-        9jVHEpugCYy4DawChgxBnn1/W/9reMvJNzaOoRyUlCB7CkutMfOfS+Rm6frKj5OjccYz3k5lxL6
-        MmdzbTQC2YmzfBbjUdPYXnpGrMzhsoKIP7mefuoOU
-X-Received: by 2002:a67:fd69:0:b0:398:79a3:db6e with SMTP id h9-20020a67fd69000000b0039879a3db6emr6915886vsa.68.1663606913723;
-        Mon, 19 Sep 2022 10:01:53 -0700 (PDT)
-X-Google-Smtp-Source: AMsMyM4gJi53wNc6el9V6r/XoGBsH0opIr8QwZrTRIgxMm6eYiGhwGG//s/tFDsvQ+rUtGU2FYUDGp8nyXOM3XQhZew=
-X-Received: by 2002:a67:fd69:0:b0:398:79a3:db6e with SMTP id
- h9-20020a67fd69000000b0039879a3db6emr6915855vsa.68.1663606913437; Mon, 19 Sep
- 2022 10:01:53 -0700 (PDT)
+        Tue, 20 Sep 2022 08:11:19 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A469B66A7D;
+        Tue, 20 Sep 2022 05:11:18 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 30CD561E51;
+        Tue, 20 Sep 2022 12:11:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 134E5C433C1;
+        Tue, 20 Sep 2022 12:11:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1663675877;
+        bh=jrxJEEjsToQxBRhXTlVo2g/gA/1JhFAV1VSOHZsNC5I=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=jQFSqEEd0vVeNH9i4MEgpkb4v2Qfl5l5g0bduZioWnNZshm40/Lqh0iAlXHovgNkj
+         omHPVbKEzlwiW704e2D11AomYn/70JfxjXQEDbRmOI//+GBjYZGgpfid9oRY7gWykP
+         92osqCEmzPlZ/fdT2Kt1soPsYq+sqLZJCC3c6ONDjDI3xezkAXBOzV81Z1fK70VlBH
+         stTAUTuBj4mwySNo5/dgCPUo29mDeL6Tl19AjQz6YIVxUZ1xVIvcLD2Iiga4QN4kYz
+         4Qx3bo3uqo1tvohHnvp7ReJ9Zt5KXAQCXk3OnYmK/DWg+3OFjBmjKAJg90XAd9lK+x
+         3mLdjKe5ITlEQ==
+From:   Leon Romanovsky <leon@kernel.org>
+To:     Hangyu Hua <hbh25y@gmail.com>, gustavoars@kernel.org, jgg@ziepe.ca,
+        bvanassche@acm.org
+Cc:     target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-rdma@vger.kernel.org
+Subject: Re: [PATCH] infiniband: ulp: srpt: Use flex array destination for memcpy()
+Date:   Tue, 20 Sep 2022 15:11:12 +0300
+Message-Id: <166367586716.282710.5174043716059240470.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <20220909022943.8896-1-hbh25y@gmail.com>
+References: <20220909022943.8896-1-hbh25y@gmail.com>
 MIME-Version: 1.0
-References: <CAJ-UWOeis8L26X1rSa0t+h3rzmQCFLSxPKBS7YiP=hArgnjPSA@mail.gmail.com>
-In-Reply-To: <CAJ-UWOeis8L26X1rSa0t+h3rzmQCFLSxPKBS7YiP=hArgnjPSA@mail.gmail.com>
-From:   Maurizio Lombardi <mlombard@redhat.com>
-Date:   Mon, 19 Sep 2022 19:01:42 +0200
-Message-ID: <CAFL455nJWMV31xVzpnZ4PCdmnWZ11fnKwnzegW_sNfuqoZDjJw@mail.gmail.com>
-Subject: Re: [BUG] iscsi hangs during login attempt
-To:     Paul Dagnelie <pcd@delphix.com>
-Cc:     target-devel@vger.kernel.org, Sumedh Bala <sbala@delphix.com>,
-        Sebastien Roy <sebastien.roy@delphix.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hello,
+On Fri, 9 Sep 2022 10:29:43 +0800, Hangyu Hua wrote:
+> In preparation for FORTIFY_SOURCE performing run-time destination buffer
+> bounds checking for memcpy(), specify the destination output buffer
+> explicitly, instead of asking memcpy() to write past the end of what looked
+> like a fixed-size object.
+> 
+> Notice that srp_rsp[] is a pointer to a structure that contains
+> flexible-array member data[]:
+> 
+> [...]
 
-st 14. 9. 2022 v 20:00 odes=C3=ADlatel Paul Dagnelie <pcd@delphix.com> naps=
-al:
->
-> iscsit_cause_connection_reinstatement signals the rx and tx threads,
-> and then waits for the conn_wait_comp completion, which is signalled
-> in iscsit_close_connection. That appears to be called by the tx and rx
-> threads when they exit.  After puzzling through the core for a bit, I
-> found the kernel threads in question, and they appear to be calmly
-> waiting in the normal blocking path waiting for IOs to come in for
-> them to respond to. I would think that if they were in that state when
-> the SIGINT came in they would have exited properly.
+Applied, thanks!
 
-I received a few bug reports and crash dumps during the past months that
-appear to be about  the same problem.
-Our QA is able to reproduce it so I will test if it's really the same issue
-and if your hypothesis is correct, I am going to try to come up with a patc=
-h.
+[1/1] infiniband: ulp: srpt: Use flex array destination for memcpy()
+      https://git.kernel.org/rdma/rdma/c/4b46a6079d2f8a
 
-Thanks,
-Maurizio
-
+Best regards,
+-- 
+Leon Romanovsky <leon@kernel.org>
