@@ -2,485 +2,162 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9935C54EE9
-	for <target-devel@archiver.kernel.org>; Tue, 27 Sep 2022 11:34:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61C51C04A95
+	for <target-devel@archiver.kernel.org>; Wed, 28 Sep 2022 19:14:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231513AbiI0Ler (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 27 Sep 2022 07:34:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34626 "EHLO
+        id S233751AbiI1TO2 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 28 Sep 2022 15:14:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47140 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231559AbiI0Leq (ORCPT
+        with ESMTP id S233748AbiI1TOY (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 27 Sep 2022 07:34:46 -0400
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com [IPv6:2607:f8b0:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93BE64C629;
-        Tue, 27 Sep 2022 04:34:44 -0700 (PDT)
-Received: by mail-pf1-x443.google.com with SMTP id i6so5238797pfb.2;
-        Tue, 27 Sep 2022 04:34:44 -0700 (PDT)
+        Wed, 28 Sep 2022 15:14:24 -0400
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7522B6D66;
+        Wed, 28 Sep 2022 12:14:22 -0700 (PDT)
+Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28SGxBdA010154;
+        Wed, 28 Sep 2022 19:14:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=corp-2022-7-12;
+ bh=ydGWIkLBzL07/XU6KbOqrvPb1dDiJlW3CCbn1DQFz3Q=;
+ b=Qsgh111/hBtlgp3Juc95G4gQOioHGeDpfqBaQKNIO5MNj/pSDhnJueHR62wSRumztrDv
+ od0RxvzljG6FY6n5+/a0qOpnBjlBu+/pTtKF2snasZJo9e/USHnawA4kd3hW3uuqotwQ
+ vCZ6jv7MT3dpLTnO3aNcJYUj6gZfrWUnAxjLGlCxxvVVrWnVUPjXY37/Y6ykv4+nHG1f
+ 6T06YMyAOOxuVW8OyM01uI8itMNd1KK3SF7ZKQ3QombRtobblU6pQKN5TWZwVB3sKV38
+ y3YH5DmEjMG9pDYGrzvSEbN+l3NNuyIwQtQvoPAAqhgsS9rV/hcl1w4uudLYvmlQ92vW 1g== 
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3jst0ktmqa-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 28 Sep 2022 19:14:19 +0000
+Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 28SIh1D9037126;
+        Wed, 28 Sep 2022 19:14:18 GMT
+Received: from nam12-mw2-obe.outbound.protection.outlook.com (mail-mw2nam12lp2047.outbound.protection.outlook.com [104.47.66.47])
+        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3jtpvfktvs-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 28 Sep 2022 19:14:18 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=g5M6mvUG2s3YHmwuLy2VrrnLBpwFOVuQR2xn+XbopAhqBQLtHkEr2MgzQiUx/hQ9ZOTnkh4/HjtSgSF3E8qXcw2Z6MDvgBHDTMeIPM70aJUw8qF7wd1x/WHtDb3lAzf7JJdnJdWjOgYSOYHICQK9XklGUh1WdxJzw1t24C/XHGl9it6U7/ryvIiIcmb/goM2o07Yk6ijyPfAg7B4g/jOfpV8xoiKpYb1phhw6KXQAMox/X8R2iYCUtQA/tyT3/ymIeZiHoJXORQt3XzIs2g7AghkFEiU5Mnx891fuzymnZz56RZUjR+eZU4YEy1EXlLGNmLKQLbno+QIqoZC+M+JgQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ydGWIkLBzL07/XU6KbOqrvPb1dDiJlW3CCbn1DQFz3Q=;
+ b=VVTfBso5M4a6jy60xxwur0FngCvgaJtBddokEd04nNXj1chaP04ooFq+CApmg/lJthY79sAfeuB/FR3tNTL7+BwdB2g0VUjF/u63jWZqMnJPfyYoHMiLStkQnCk5hRun+8lNsDrnRW6G5Ur6cJ0+vo1rarO7GJEFbeL5o0wyOp8M/uc8BrJqZH8HwD7HGzdoNhB9gHoYiHyn7y3n/PZcgz+rTl25eOLDtM7tQDBb3kU5jbUjk3nsv4DkQ0M2ycIcjljcGQgrgyyaNXC5TdJYyB+o0FGx9/PnsKEACTXbzvbSXQXH3TBQRiJkObON5CdkLQtJn+/YV6I/C1b7gB7BfQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date;
-        bh=hKVtQAwnVa1yA0DBDx9GBM794IiTF2YgOfvvntIUx3w=;
-        b=Vd4Z2d1dCQxHn7Pk8xckvV36IVZ2fCTCrRg02KCj4v7ZZSDVJ1PAxV61zoxTupP6xY
-         BpVQYhxYlL5F0Ky/5VASsyZT/oZl/VWFgC51p25NyQWsmFDYLpgbUJboYwyO9uRgP9KQ
-         sR//aFkhhXGDLPtoX4Fz8SYnNgKG4UVbjOrk8ghY0/fkT5X93XW2uEZAOs81XEXOerUv
-         cvpUTHuPG71idEtLLc+7A9WhmyosPCSi0tu/ilC+h4S5FJyitr5ijK5wXWkPpftqhr8x
-         qznys6X0MKvpzGZ5C4MLa8IWCDiF3KWEMlBUHIRhQmH28NUeRzU57A1JukUCh0NxB2sw
-         lirg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date;
-        bh=hKVtQAwnVa1yA0DBDx9GBM794IiTF2YgOfvvntIUx3w=;
-        b=omGw8uduQ/TjwU6vBPFLbD9UXqf/gcyk8XMQhXNkWXATFBK+HHKqI3NVAd+YoUFlRC
-         jMtErK08Hi/tOOzecvFin6bWz/v3ATt4vZIb2eho/Vgh87ZGFbgsitlCTPUrV1P/1pko
-         POvrEZqZR8XO+FH4pqiqqlvay+R0yOjcJX8Yi7CL9f2tYDvCdXHFNYX/r54tgaXHZJrv
-         rxhaFzUqQ3CBl5vPKp972SBD+QeZXtmlDeEsHCG6Cbd4z9egFiJTUwgig8FgtDCH2NnE
-         qm+1fHyeNTagLW74NYQu3l+Ncm/eufpiQp4cOQuxTMtyOQP/zGICWo3AlZ0KOfavrszL
-         8chw==
-X-Gm-Message-State: ACrzQf12fKhsFAi9RhjMaA3HKrHC3D5Lv+g39J85E9FZEdeWWODw8tQ8
-        mUtYBG2yCpeXqIxfB5GU45oEaqPBpJMCsmtl
-X-Google-Smtp-Source: AMsMyM5MqrQBuzBRzbjNmVYD71uT2kvnFr0CcCXu66EDrPs1+u5tJgTFD/WiUysKJuFcZ40b/TYOvA==
-X-Received: by 2002:a63:da02:0:b0:439:cc64:27fd with SMTP id c2-20020a63da02000000b00439cc6427fdmr24694374pgh.313.1664278483788;
-        Tue, 27 Sep 2022 04:34:43 -0700 (PDT)
-Received: from localhost.localdomain ([193.203.214.57])
-        by smtp.gmail.com with ESMTPSA id ix9-20020a170902f80900b0017837d30a8csm1262870plb.254.2022.09.27.04.34.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Sep 2022 04:34:43 -0700 (PDT)
-From:   zhangsongyi.cgel@gmail.com
-X-Google-Original-From: zhang.songyi@zte.com.cn
-To:     martin.petersen@oracle.com
-Cc:     zhang.songyi@zte.com.cn, mgurtovoy@nvidia.com,
-        michael.christie@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Zeal Robot <zealci@zte.com.cn>
-Subject: [PATCH linux-next] scsi: target: use sysfs_emit() to instead of snprintf()
-Date:   Tue, 27 Sep 2022 11:34:37 +0000
-Message-Id: <20220927113437.259529-1-zhang.songyi@zte.com.cn>
-X-Mailer: git-send-email 2.25.1
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ydGWIkLBzL07/XU6KbOqrvPb1dDiJlW3CCbn1DQFz3Q=;
+ b=L5ixu+Yq81giPbdXgYKJjB86mgHWgyrsn73WqP+pGlZiceJ11FuzrZyW75r5J5b7KDWZAI/DN1m5kFRQnrW4HS+FYdfL1O+6ZwGtJbcWJEXsNrinhZETUQsTUhSOWHyduiuT8GlZNfgLnRXKc42fdYQjCJLkt5UoGQyb2qaHpLQ=
+Received: from DM5PR10MB1466.namprd10.prod.outlook.com (2603:10b6:3:b::7) by
+ IA0PR10MB6746.namprd10.prod.outlook.com (2603:10b6:208:43e::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5654.24; Wed, 28 Sep
+ 2022 19:14:15 +0000
+Received: from DM5PR10MB1466.namprd10.prod.outlook.com
+ ([fe80::5503:f2f0:f101:9a22]) by DM5PR10MB1466.namprd10.prod.outlook.com
+ ([fe80::5503:f2f0:f101:9a22%8]) with mapi id 15.20.5654.025; Wed, 28 Sep 2022
+ 19:14:15 +0000
+Message-ID: <5ef92950-1ab0-73c1-edf2-6f16edb5e079@oracle.com>
+Date:   Wed, 28 Sep 2022 14:14:14 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.3.0
+Subject: Re: [PATCH] target/iblock: fold
+ iblock_emulate_read_cap_with_block_size into iblock_get_blocks
+To:     Christoph Hellwig <hch@lst.de>, martin.petersen@oracle.com
+Cc:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+References: <20220927082225.271975-1-hch@lst.de>
+Content-Language: en-US
+From:   Mike Christie <michael.christie@oracle.com>
+In-Reply-To: <20220927082225.271975-1-hch@lst.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: CH0PR07CA0010.namprd07.prod.outlook.com
+ (2603:10b6:610:32::15) To DM5PR10MB1466.namprd10.prod.outlook.com
+ (2603:10b6:3:b::7)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM5PR10MB1466:EE_|IA0PR10MB6746:EE_
+X-MS-Office365-Filtering-Correlation-Id: a9545fbd-f01b-42f2-c5ee-08daa185a278
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 322/M+gw4hbaGEEm0SOd68znRGlOCvYCEWZ2xrvJqapqMl//abCTWBiZ6x3WNxlA3Bnuw4t75mUHjGuf0omUOd8UQzhSnoq9PJ3V7HJ+d11NVEFQC6P+sbchLCN9/jFXWPn+kFmlP3F69ykCJ3nfDGW3Ik/sFjo4a3P1PRZQ1TsApioDi9EtIa2K5ki1upvr7ENRXxhZJhwrqN8tCTKcg0lu9oDoMP1/pu11n/U4S4XqGP6IloRXzE9EjZxFR82WfBAxk7jl60IwKmY0pw7N042i7R2ff50Nqfwm28ZO0ZC1OFaYWOAfGxcKEUQiKwsRa1HQeALsYWk03nfiiUSQRxI5kje4ThNoAkFSKD03YSO4onzDXQcU8dCq4uvp44TzADFupB7JwbyGNvJnAPA3X2doSbNWV+2zbVwdQVbsfVrHWGeNMk8UYizAxzdx0bKXk0CY/xU/oHeWQJGeDvC06j9igrUPnZihwP44VSGITMX/86gsLuhYVKgIgmxXeYEJI5jNkcoS2CcelMwtDmIlrEobkVnJgAk/TTCK+WplFzOH0duVBVqDt5syu06gAEjeRMlFKvGe2FWcxGu5IkGVu4oaezw9V0KvXhoT0QZMq+kP1d1wCCzgcF/o9du2PDMi8DGTg6GzODp0GwMggW0kJ7bA0pT4XfdSYU/0o7b0kvZd7tMIIBpkv5Bz3PdWMv6HkBzDdD6XaWJmKocRC8DpQrtBBZ2HFe60PNBbDp52ieEYMG9aubJ7j4ZMcvQDEVKqu+mOZIBW9KJ4zOy4IQxjeIi/VzufVhsmN+qgWcVPdCE=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR10MB1466.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(366004)(396003)(136003)(376002)(346002)(39860400002)(451199015)(186003)(2616005)(6512007)(38100700002)(86362001)(31696002)(83380400001)(66476007)(8936002)(5660300002)(2906002)(66556008)(41300700001)(4744005)(316002)(478600001)(66946007)(8676002)(6506007)(36756003)(26005)(4326008)(6636002)(31686004)(53546011)(6486002)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?cC9XQ0U2clNQVFoweEhkcUQvWWQ5SHNPQ0Z2dlo2Y3djVlRTVTRnNmYwL21J?=
+ =?utf-8?B?KzZORVhNQlpaQjhST3htc3lTRGEyNm1Gb0RIQlFjUTR4Rks2eUZ5c1BDYTQy?=
+ =?utf-8?B?WHFneStyZERNVUVhSkVkQk1aMGw0WTRUV2EwQUlzaS9DQ1VGMEtJb3dIcHNZ?=
+ =?utf-8?B?VHRmMGdrbUUyenluR3drSlhybDRpb3ZPb0k1ZGVPenFXT25yWXR6UUQ3VDZ2?=
+ =?utf-8?B?OGtUMzNJRjZnTkx3U1VWZUR2REMxOHQ4d1NnRC81WFJrTHBiTFEyaTZZUm9F?=
+ =?utf-8?B?NWgvaWdIb0V2M1AyZzhUWENQeWV3K0Z3YktzdDZKRmtmWmlwUzJqaTR4M0Ey?=
+ =?utf-8?B?VW04OGptVnZuTHVyQWJ3TllKOUVIUldUWCsxbXljY3dVczh6RWdwVFI5dFJY?=
+ =?utf-8?B?YTk0MzkwT0tGUUdTVCtLYnNjOHFPdGVsMW5adHNBb3JiY1VKRVNhaVkzd3pG?=
+ =?utf-8?B?QVhLcUwrckxLdjRreWNJTUlqT1JRdmJoc0hnQjRQRXlCVkdXci9jVVN5clZu?=
+ =?utf-8?B?UG00c21FVmp1NlE4dWdyK2NuMzlkQmJKZmt2aS9iM2VnWGUrbnVzTkZMbHdX?=
+ =?utf-8?B?a0Z0TVVHdW9ZTWlSV3RyN0M5RXp4WFA2NTc5ZWJPaVg3QVEzQmlaazM2OVA4?=
+ =?utf-8?B?ZGNTVEh6Z001VVlvWkY3RE1kaFhEMXB2emdqaUJDVU5uOFJwaEpFVkVoRUFF?=
+ =?utf-8?B?T0Q5bndVM3dPaXIvdk0yYUpNK3hQWkRyZEttMWxlT1BxeDF4eHVIVGZTMHZx?=
+ =?utf-8?B?KzlpcEJ6NHM1VFQ5OFVyUGJNbldHRitWVTZXYWRWeU5kNHhZcWlhUkdOUTgv?=
+ =?utf-8?B?YWRNbmN1YkN1VTBmNWMveVFaTGNPNEEvbVJBWFhGQ0F2TlVMMktwaFdYSFlY?=
+ =?utf-8?B?aklOS0hWSENiY2FzbUlHRVZrckJvVHRxTjVIeHdWbHFoaCtmU3hxUm03NnJL?=
+ =?utf-8?B?ck81bFdHcktXVFdLenlLbU5DQzVMVmhBVUpxVG9tQUdBWTdSSnFRUUFyTGpr?=
+ =?utf-8?B?ZWlCZUZxWGQyNk9iYjFVNG14Mjd0ODFDU0lzOC83QVg0VWdsZERGVVJmMEVU?=
+ =?utf-8?B?TkdFUCsweVBVQ0NTZ2tPRFh5dmRCbm1ZOGt1RjFxRm9PeHBRcmJUSXA1WGpG?=
+ =?utf-8?B?TCtqZi9nUGYvazVCMWFBQ1lFd0F0bXU5d014QkJrRHh0U2NrOCtiU2g3c1FZ?=
+ =?utf-8?B?OVJiZlpEaEVxZm9pZkN3Qjk0L1Y1SUpQczdaZjJ0dEIybGtyc0lBcU1yRTc2?=
+ =?utf-8?B?amNPTDJ3M3hTV1Z4ci8xcFpCeVN0RTlYYlQ0UGZqNEtPL0RtZ2R6MTJSTVk4?=
+ =?utf-8?B?V0ZXZldoTHBnRnBiWGdKMDFWU0FoakhNMXc0d1ZTWVdxQnQxUVhOSVhoUERR?=
+ =?utf-8?B?Wm1iNnY0STg1cTBOaFIwcFJjSVRabUpudXpxanVIeStBMU5TdkZEK2o5UTR3?=
+ =?utf-8?B?OHhwRHlMN3VBQ1lzQXRFWUNRenUzVFdmN2hsdVVKWWlZUER0UHBQZU1Dc3dJ?=
+ =?utf-8?B?dDFtY09sV040SUwxclZWZTVBckFNMEF1bGE1bHVtZ0hQSGtXUm1DNkwxN0sy?=
+ =?utf-8?B?TjJsdVdpTllRTGdTcE5CUzl1NW5Va1pUTkordURWWDFNem5OV00zU0lzMUFT?=
+ =?utf-8?B?bTVKakhXT0tpWW1FbzRJZ20xWjg0SVAwTHBTS0g4akorV3hNWk5LeFJaT2c3?=
+ =?utf-8?B?THp2alZMY3RyZGNUbVVXR095L2xjcVJyUkp0M2N3Y2xUcTZHanh5ZWJrNEg3?=
+ =?utf-8?B?eitxT2M5Nm9ZZlU0bGxhT2ZZMUJCR3U0NzBVSWt3R2hoOXU5bWdrZ3RqMWVK?=
+ =?utf-8?B?Q2lVcXZpUDNva0VScmdiSFBNTlI5MXlmZy9RQTIrTmQzODQ5elpZTVdCdjYx?=
+ =?utf-8?B?cllWSjVzT2VFSUJCQmltMHQxdmE5UmtyOXhpY3BUMTRHVkJ5blBQdDQxNnV6?=
+ =?utf-8?B?aWxjMndRKzVUdTMzZDI1amtXVzczMloya29PZkgyY005WkNyVjU2YUhaUVl4?=
+ =?utf-8?B?UFBsU0JlNzFjN0ZPdjVMcFduMHpDbTVEdkp1VVZrdFcvdEczRkFuZEtjOFVv?=
+ =?utf-8?B?alhQazBNR3R4dStyb0U4R0Z3bmRXZHVzUjZ1T0k5TTk0bC9idUNiY2tQYUJl?=
+ =?utf-8?B?WTNmQzg0NGNlWkJPQW81akZZTm5vSkhJL2NHMkF6U3lRVGorcW1zeXNTcmI2?=
+ =?utf-8?B?RUE9PQ==?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a9545fbd-f01b-42f2-c5ee-08daa185a278
+X-MS-Exchange-CrossTenant-AuthSource: DM5PR10MB1466.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Sep 2022 19:14:15.7080
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: n65Ki25wKBLiXmnloy3qHVr8jLq7DHU/lv336NtfLJbcW0uGDqIt3ImEBPOReCnRRaYUJIOAcwa51TRqanPyPGx+07ckQUprXzlgxeMZS2U=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR10MB6746
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-09-28_09,2022-09-28_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 malwarescore=0
+ suspectscore=0 adultscore=0 mlxscore=0 spamscore=0 bulkscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2209130000 definitions=main-2209280115
+X-Proofpoint-GUID: h1nNklXQb0mvicBvsvA1tfXACWPeodCf
+X-Proofpoint-ORIG-GUID: h1nNklXQb0mvicBvsvA1tfXACWPeodCf
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: zhang songyi <zhang.songyi@zte.com.cn>
+On 9/27/22 3:22 AM, Christoph Hellwig wrote:
+> Fold iblock_emulate_read_cap_with_block_size into its only caller.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  drivers/target/target_core_iblock.c | 19 ++++---------------
+>  1 file changed, 4 insertions(+), 15 deletions(-)
+>
 
-Follow the advice of the Documentation/filesystems/sysfs.rst and show()
-should only use sysfs_emit() or sysfs_emit_at() when formatting the value
-to be returned to user space.
-
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: zhang songyi <zhang.songyi@zte.com.cn>
----
- drivers/target/iscsi/iscsi_target_stat.c | 94 ++++++++++++------------
- 1 file changed, 47 insertions(+), 47 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target_stat.c b/drivers/target/iscsi/iscsi_target_stat.c
-index 367c6468b8e1..64a3fa7965a6 100644
---- a/drivers/target/iscsi/iscsi_target_stat.c
-+++ b/drivers/target/iscsi/iscsi_target_stat.c
-@@ -50,39 +50,39 @@ static struct iscsi_tiqn *iscsi_instance_tiqn(struct config_item *item)
- static ssize_t iscsi_stat_instance_inst_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(page, "%u\n",
- 			iscsi_instance_tiqn(item)->tiqn_index);
- }
- 
- static ssize_t iscsi_stat_instance_min_ver_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n", ISCSI_DRAFT20_VERSION);
-+	return sysfs_emit(page, "%u\n", ISCSI_DRAFT20_VERSION);
- }
- 
- static ssize_t iscsi_stat_instance_max_ver_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n", ISCSI_DRAFT20_VERSION);
-+	return sysfs_emit(page, "%u\n", ISCSI_DRAFT20_VERSION);
- }
- 
- static ssize_t iscsi_stat_instance_portals_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(page, "%u\n",
- 			iscsi_instance_tiqn(item)->tiqn_num_tpg_nps);
- }
- 
- static ssize_t iscsi_stat_instance_nodes_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n", ISCSI_INST_NUM_NODES);
-+	return sysfs_emit(page, "%u\n", ISCSI_INST_NUM_NODES);
- }
- 
- static ssize_t iscsi_stat_instance_sessions_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(page, "%u\n",
- 		iscsi_instance_tiqn(item)->tiqn_nsessions);
- }
- 
-@@ -99,7 +99,7 @@ static ssize_t iscsi_stat_instance_fail_sess_show(struct config_item *item,
- 			  sess_err->pdu_format_errors);
- 	spin_unlock_bh(&sess_err->lock);
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", sess_err_count);
-+	return sysfs_emit(page, "%u\n", sess_err_count);
- }
- 
- static ssize_t iscsi_stat_instance_fail_type_show(struct config_item *item,
-@@ -108,7 +108,7 @@ static ssize_t iscsi_stat_instance_fail_type_show(struct config_item *item,
- 	struct iscsi_tiqn *tiqn = iscsi_instance_tiqn(item);
- 	struct iscsi_sess_err_stats *sess_err = &tiqn->sess_err_stats;
- 
--	return snprintf(page, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(page, "%u\n",
- 			sess_err->last_sess_failure_type);
- }
- 
-@@ -118,7 +118,7 @@ static ssize_t iscsi_stat_instance_fail_rem_name_show(struct config_item *item,
- 	struct iscsi_tiqn *tiqn = iscsi_instance_tiqn(item);
- 	struct iscsi_sess_err_stats *sess_err = &tiqn->sess_err_stats;
- 
--	return snprintf(page, PAGE_SIZE, "%s\n",
-+	return sysfs_emit(page, "%s\n",
- 			sess_err->last_sess_fail_rem_name[0] ?
- 			sess_err->last_sess_fail_rem_name : NONE);
- }
-@@ -126,25 +126,25 @@ static ssize_t iscsi_stat_instance_fail_rem_name_show(struct config_item *item,
- static ssize_t iscsi_stat_instance_disc_time_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n", ISCSI_DISCONTINUITY_TIME);
-+	return sysfs_emit(page, "%u\n", ISCSI_DISCONTINUITY_TIME);
- }
- 
- static ssize_t iscsi_stat_instance_description_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%s\n", ISCSI_INST_DESCR);
-+	return sysfs_emit(page, "%s\n", ISCSI_INST_DESCR);
- }
- 
- static ssize_t iscsi_stat_instance_vendor_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "Datera, Inc. iSCSI-Target\n");
-+	return sysfs_emit(page, "Datera, Inc. iSCSI-Target\n");
- }
- 
- static ssize_t iscsi_stat_instance_version_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%s\n", ISCSIT_VERSION);
-+	return sysfs_emit(page, "%s\n", ISCSIT_VERSION);
- }
- 
- CONFIGFS_ATTR_RO(iscsi_stat_instance_, inst);
-@@ -196,7 +196,7 @@ static struct iscsi_tiqn *iscsi_sess_err_tiqn(struct config_item *item)
- static ssize_t iscsi_stat_sess_err_inst_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(page, "%u\n",
- 		iscsi_sess_err_tiqn(item)->tiqn_index);
- }
- 
-@@ -206,7 +206,7 @@ static ssize_t iscsi_stat_sess_err_digest_errors_show(struct config_item *item,
- 	struct iscsi_tiqn *tiqn = iscsi_sess_err_tiqn(item);
- 	struct iscsi_sess_err_stats *sess_err = &tiqn->sess_err_stats;
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", sess_err->digest_errors);
-+	return sysfs_emit(page, "%u\n", sess_err->digest_errors);
- }
- 
- static ssize_t iscsi_stat_sess_err_cxn_errors_show(struct config_item *item,
-@@ -215,7 +215,7 @@ static ssize_t iscsi_stat_sess_err_cxn_errors_show(struct config_item *item,
- 	struct iscsi_tiqn *tiqn = iscsi_sess_err_tiqn(item);
- 	struct iscsi_sess_err_stats *sess_err = &tiqn->sess_err_stats;
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", sess_err->cxn_timeout_errors);
-+	return sysfs_emit(page, "%u\n", sess_err->cxn_timeout_errors);
- }
- 
- static ssize_t iscsi_stat_sess_err_format_errors_show(struct config_item *item,
-@@ -224,7 +224,7 @@ static ssize_t iscsi_stat_sess_err_format_errors_show(struct config_item *item,
- 	struct iscsi_tiqn *tiqn = iscsi_sess_err_tiqn(item);
- 	struct iscsi_sess_err_stats *sess_err = &tiqn->sess_err_stats;
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", sess_err->pdu_format_errors);
-+	return sysfs_emit(page, "%u\n", sess_err->pdu_format_errors);
- }
- 
- CONFIGFS_ATTR_RO(iscsi_stat_sess_err_, inst);
-@@ -258,14 +258,14 @@ static struct iscsi_tiqn *iscsi_tgt_attr_tiqn(struct config_item *item)
- static ssize_t iscsi_stat_tgt_attr_inst_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(page, "%u\n",
- 			iscsi_tgt_attr_tiqn(item)->tiqn_index);
- }
- 
- static ssize_t iscsi_stat_tgt_attr_indx_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n", ISCSI_NODE_INDEX);
-+	return sysfs_emit(page, "%u\n", ISCSI_NODE_INDEX);
- }
- 
- static ssize_t iscsi_stat_tgt_attr_login_fails_show(struct config_item *item,
-@@ -281,7 +281,7 @@ static ssize_t iscsi_stat_tgt_attr_login_fails_show(struct config_item *item,
- 			lstat->other_fails);
- 	spin_unlock(&lstat->lock);
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", fail_count);
-+	return sysfs_emit(page, "%u\n", fail_count);
- }
- 
- static ssize_t iscsi_stat_tgt_attr_last_fail_time_show(struct config_item *item,
-@@ -297,7 +297,7 @@ static ssize_t iscsi_stat_tgt_attr_last_fail_time_show(struct config_item *item,
- 				INITIAL_JIFFIES) * 100 / HZ) : 0;
- 	spin_unlock(&lstat->lock);
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", last_fail_time);
-+	return sysfs_emit(page, "%u\n", last_fail_time);
- }
- 
- static ssize_t iscsi_stat_tgt_attr_last_fail_type_show(struct config_item *item,
-@@ -311,7 +311,7 @@ static ssize_t iscsi_stat_tgt_attr_last_fail_type_show(struct config_item *item,
- 	last_fail_type = lstat->last_fail_type;
- 	spin_unlock(&lstat->lock);
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", last_fail_type);
-+	return sysfs_emit(page, "%u\n", last_fail_type);
- }
- 
- static ssize_t iscsi_stat_tgt_attr_fail_intr_name_show(struct config_item *item,
-@@ -326,7 +326,7 @@ static ssize_t iscsi_stat_tgt_attr_fail_intr_name_show(struct config_item *item,
- 				lstat->last_intr_fail_name : NONE);
- 	spin_unlock(&lstat->lock);
- 
--	return snprintf(page, PAGE_SIZE, "%s\n", buf);
-+	return sysfs_emit(page, "%s\n", buf);
- }
- 
- static ssize_t iscsi_stat_tgt_attr_fail_intr_addr_type_show(struct config_item *item,
-@@ -338,9 +338,9 @@ static ssize_t iscsi_stat_tgt_attr_fail_intr_addr_type_show(struct config_item *
- 
- 	spin_lock(&lstat->lock);
- 	if (lstat->last_intr_fail_ip_family == AF_INET6)
--		ret = snprintf(page, PAGE_SIZE, "ipv6\n");
-+		ret = sysfs_emit(page, "ipv6\n");
- 	else
--		ret = snprintf(page, PAGE_SIZE, "ipv4\n");
-+		ret = sysfs_emit(page, "ipv4\n");
- 	spin_unlock(&lstat->lock);
- 
- 	return ret;
-@@ -354,7 +354,7 @@ static ssize_t iscsi_stat_tgt_attr_fail_intr_addr_show(struct config_item *item,
- 	int ret;
- 
- 	spin_lock(&lstat->lock);
--	ret = snprintf(page, PAGE_SIZE, "%pISc\n", &lstat->last_intr_fail_sockaddr);
-+	ret = sysfs_emit(page, "%pISc\n", &lstat->last_intr_fail_sockaddr);
- 	spin_unlock(&lstat->lock);
- 
- 	return ret;
-@@ -398,14 +398,14 @@ static struct iscsi_tiqn *iscsi_login_stat_tiqn(struct config_item *item)
- 
- static ssize_t iscsi_stat_login_inst_show(struct config_item *item, char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(page, "%u\n",
- 		iscsi_login_stat_tiqn(item)->tiqn_index);
- }
- 
- static ssize_t iscsi_stat_login_indx_show(struct config_item *item,
- 		char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n", ISCSI_NODE_INDEX);
-+	return sysfs_emit(page, "%u\n", ISCSI_NODE_INDEX);
- }
- 
- static ssize_t iscsi_stat_login_accepts_show(struct config_item *item,
-@@ -416,7 +416,7 @@ static ssize_t iscsi_stat_login_accepts_show(struct config_item *item,
- 	ssize_t ret;
- 
- 	spin_lock(&lstat->lock);
--	ret = snprintf(page, PAGE_SIZE, "%u\n", lstat->accepts);
-+	ret = sysfs_emit(page, "%u\n", lstat->accepts);
- 	spin_unlock(&lstat->lock);
- 
- 	return ret;
-@@ -430,7 +430,7 @@ static ssize_t iscsi_stat_login_other_fails_show(struct config_item *item,
- 	ssize_t ret;
- 
- 	spin_lock(&lstat->lock);
--	ret = snprintf(page, PAGE_SIZE, "%u\n", lstat->other_fails);
-+	ret = sysfs_emit(page, "%u\n", lstat->other_fails);
- 	spin_unlock(&lstat->lock);
- 
- 	return ret;
-@@ -444,7 +444,7 @@ static ssize_t iscsi_stat_login_redirects_show(struct config_item *item,
- 	ssize_t ret;
- 
- 	spin_lock(&lstat->lock);
--	ret = snprintf(page, PAGE_SIZE, "%u\n", lstat->redirects);
-+	ret = sysfs_emit(page, "%u\n", lstat->redirects);
- 	spin_unlock(&lstat->lock);
- 
- 	return ret;
-@@ -458,7 +458,7 @@ static ssize_t iscsi_stat_login_authorize_fails_show(struct config_item *item,
- 	ssize_t ret;
- 
- 	spin_lock(&lstat->lock);
--	ret = snprintf(page, PAGE_SIZE, "%u\n", lstat->authorize_fails);
-+	ret = sysfs_emit(page, "%u\n", lstat->authorize_fails);
- 	spin_unlock(&lstat->lock);
- 
- 	return ret;
-@@ -472,7 +472,7 @@ static ssize_t iscsi_stat_login_authenticate_fails_show(
- 	ssize_t ret;
- 
- 	spin_lock(&lstat->lock);
--	ret = snprintf(page, PAGE_SIZE, "%u\n", lstat->authenticate_fails);
-+	ret = sysfs_emit(page, "%u\n", lstat->authenticate_fails);
- 	spin_unlock(&lstat->lock);
- 
- 	return ret;
-@@ -486,7 +486,7 @@ static ssize_t iscsi_stat_login_negotiate_fails_show(struct config_item *item,
- 	ssize_t ret;
- 
- 	spin_lock(&lstat->lock);
--	ret = snprintf(page, PAGE_SIZE, "%u\n", lstat->negotiate_fails);
-+	ret = sysfs_emit(page, "%u\n", lstat->negotiate_fails);
- 	spin_unlock(&lstat->lock);
- 
- 	return ret;
-@@ -530,13 +530,13 @@ static struct iscsi_tiqn *iscsi_logout_stat_tiqn(struct config_item *item)
- 
- static ssize_t iscsi_stat_logout_inst_show(struct config_item *item, char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(page, "%u\n",
- 		iscsi_logout_stat_tiqn(item)->tiqn_index);
- }
- 
- static ssize_t iscsi_stat_logout_indx_show(struct config_item *item, char *page)
- {
--	return snprintf(page, PAGE_SIZE, "%u\n", ISCSI_NODE_INDEX);
-+	return sysfs_emit(page, "%u\n", ISCSI_NODE_INDEX);
- }
- 
- static ssize_t iscsi_stat_logout_normal_logouts_show(struct config_item *item,
-@@ -545,7 +545,7 @@ static ssize_t iscsi_stat_logout_normal_logouts_show(struct config_item *item,
- 	struct iscsi_tiqn *tiqn = iscsi_logout_stat_tiqn(item);
- 	struct iscsi_logout_stats *lstats = &tiqn->logout_stats;
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", lstats->normal_logouts);
-+	return sysfs_emit(page, "%u\n", lstats->normal_logouts);
- }
- 
- static ssize_t iscsi_stat_logout_abnormal_logouts_show(struct config_item *item,
-@@ -554,7 +554,7 @@ static ssize_t iscsi_stat_logout_abnormal_logouts_show(struct config_item *item,
- 	struct iscsi_tiqn *tiqn = iscsi_logout_stat_tiqn(item);
- 	struct iscsi_logout_stats *lstats = &tiqn->logout_stats;
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", lstats->abnormal_logouts);
-+	return sysfs_emit(page, "%u\n", lstats->abnormal_logouts);
- }
- 
- CONFIGFS_ATTR_RO(iscsi_stat_logout_, inst);
-@@ -592,7 +592,7 @@ static ssize_t iscsi_stat_sess_inst_show(struct config_item *item, char *page)
- 	struct iscsi_tiqn *tiqn = container_of(wwn,
- 			struct iscsi_tiqn, tiqn_wwn);
- 
--	return snprintf(page, PAGE_SIZE, "%u\n", tiqn->tiqn_index);
-+	return sysfs_emit(page, "%u\n", tiqn->tiqn_index);
- }
- 
- static ssize_t iscsi_stat_sess_node_show(struct config_item *item, char *page)
-@@ -608,7 +608,7 @@ static ssize_t iscsi_stat_sess_node_show(struct config_item *item, char *page)
- 	if (se_sess) {
- 		sess = se_sess->fabric_sess_ptr;
- 		if (sess)
--			ret = snprintf(page, PAGE_SIZE, "%u\n",
-+			ret = sysfs_emit(page, "%u\n",
- 				sess->sess_ops->SessionType ? 0 : ISCSI_NODE_INDEX);
- 	}
- 	spin_unlock_bh(&se_nacl->nacl_sess_lock);
-@@ -629,7 +629,7 @@ static ssize_t iscsi_stat_sess_indx_show(struct config_item *item, char *page)
- 	if (se_sess) {
- 		sess = se_sess->fabric_sess_ptr;
- 		if (sess)
--			ret = snprintf(page, PAGE_SIZE, "%u\n",
-+			ret = sysfs_emit(page, "%u\n",
- 					sess->session_index);
- 	}
- 	spin_unlock_bh(&se_nacl->nacl_sess_lock);
-@@ -651,7 +651,7 @@ static ssize_t iscsi_stat_sess_cmd_pdus_show(struct config_item *item,
- 	if (se_sess) {
- 		sess = se_sess->fabric_sess_ptr;
- 		if (sess)
--			ret = snprintf(page, PAGE_SIZE, "%lu\n",
-+			ret = sysfs_emit(page, "%lu\n",
- 				       atomic_long_read(&sess->cmd_pdus));
- 	}
- 	spin_unlock_bh(&se_nacl->nacl_sess_lock);
-@@ -673,7 +673,7 @@ static ssize_t iscsi_stat_sess_rsp_pdus_show(struct config_item *item,
- 	if (se_sess) {
- 		sess = se_sess->fabric_sess_ptr;
- 		if (sess)
--			ret = snprintf(page, PAGE_SIZE, "%lu\n",
-+			ret = sysfs_emit(page, "%lu\n",
- 				       atomic_long_read(&sess->rsp_pdus));
- 	}
- 	spin_unlock_bh(&se_nacl->nacl_sess_lock);
-@@ -695,7 +695,7 @@ static ssize_t iscsi_stat_sess_txdata_octs_show(struct config_item *item,
- 	if (se_sess) {
- 		sess = se_sess->fabric_sess_ptr;
- 		if (sess)
--			ret = snprintf(page, PAGE_SIZE, "%lu\n",
-+			ret = sysfs_emit(page, "%lu\n",
- 				       atomic_long_read(&sess->tx_data_octets));
- 	}
- 	spin_unlock_bh(&se_nacl->nacl_sess_lock);
-@@ -717,7 +717,7 @@ static ssize_t iscsi_stat_sess_rxdata_octs_show(struct config_item *item,
- 	if (se_sess) {
- 		sess = se_sess->fabric_sess_ptr;
- 		if (sess)
--			ret = snprintf(page, PAGE_SIZE, "%lu\n",
-+			ret = sysfs_emit(page, "%lu\n",
- 				       atomic_long_read(&sess->rx_data_octets));
- 	}
- 	spin_unlock_bh(&se_nacl->nacl_sess_lock);
-@@ -739,7 +739,7 @@ static ssize_t iscsi_stat_sess_conn_digest_errors_show(struct config_item *item,
- 	if (se_sess) {
- 		sess = se_sess->fabric_sess_ptr;
- 		if (sess)
--			ret = snprintf(page, PAGE_SIZE, "%lu\n",
-+			ret = sysfs_emit(page, "%lu\n",
- 				       atomic_long_read(&sess->conn_digest_errors));
- 	}
- 	spin_unlock_bh(&se_nacl->nacl_sess_lock);
-@@ -761,7 +761,7 @@ static ssize_t iscsi_stat_sess_conn_timeout_errors_show(
- 	if (se_sess) {
- 		sess = se_sess->fabric_sess_ptr;
- 		if (sess)
--			ret = snprintf(page, PAGE_SIZE, "%lu\n",
-+			ret = sysfs_emit(page, "%lu\n",
- 				       atomic_long_read(&sess->conn_timeout_errors));
- 	}
- 	spin_unlock_bh(&se_nacl->nacl_sess_lock);
--- 
-2.25.1
-
+Reviewed-by: Mike Christie <michael.christie@oracle.com>
 
