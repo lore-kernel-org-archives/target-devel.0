@@ -2,58 +2,58 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28B5CC433F5
-	for <target-devel@archiver.kernel.org>; Thu,  6 Oct 2022 10:51:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CF79C4167D
+	for <target-devel@archiver.kernel.org>; Thu,  6 Oct 2022 10:51:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231329AbiJFKvR (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 6 Oct 2022 06:51:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37586 "EHLO
+        id S231338AbiJFKvT (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 6 Oct 2022 06:51:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37604 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231269AbiJFKvO (ORCPT
+        with ESMTP id S231238AbiJFKvQ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 6 Oct 2022 06:51:14 -0400
+        Thu, 6 Oct 2022 06:51:16 -0400
 Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FCFE98CA9;
-        Thu,  6 Oct 2022 03:51:11 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 855B198C81;
+        Thu,  6 Oct 2022 03:51:15 -0700 (PDT)
 Received: from localhost (unknown [127.0.0.1])
-        by mta-01.yadro.com (Postfix) with ESMTP id 1937941237;
-        Thu,  6 Oct 2022 10:51:10 +0000 (UTC)
+        by mta-01.yadro.com (Postfix) with ESMTP id 6B87041222;
+        Thu,  6 Oct 2022 10:51:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
         content-type:content-type:content-transfer-encoding:mime-version
         :references:in-reply-to:x-mailer:message-id:date:date:subject
         :subject:from:from:received:received:received:received; s=
-        mta-01; t=1665053468; x=1666867869; bh=QtcoxKrK5iSu+Hf1MH92sUx0z
-        upEuw1wgzabF0cMO24=; b=KPdW0kvuKzY66jgpXj42FyQay735nRaxlpWPmB36+
-        LfKojqDzKf9cJ4WOHJAvg4OHnDh2VIQZaF5t9n10kt32FrJ4jEoRZLPWD3y2VrcK
-        e0cCgoYirBVJI1quGZF/x7OmxrmCOYkML5Jis/Jc9K9Ckr4Z6t+oe41lVUq+60i3
-        OM=
+        mta-01; t=1665053470; x=1666867871; bh=2QTWlWStPcwbY+qgYn3MWziHr
+        of/mUNKm7V1yyvsgfw=; b=anz80Z0EQTjB16Satk+oCWWsntCTNqozrlIui2nJ2
+        ZCVcNm495BmGchmY5SqxnJZU069Gu5E7bsPjYhOXpCU2cKWrN4SgYDsk4ZBcqRLr
+        Nme/9YUOap2ZU2DPYAHpGgDOgaGbZSJ2CL1iQ+r8HzQ766kOAkf8BOUyuH0gAHkt
+        rk=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
         by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id QAarznRfCTsU; Thu,  6 Oct 2022 13:51:08 +0300 (MSK)
+        with ESMTP id Aej8xHrkgIBA; Thu,  6 Oct 2022 13:51:10 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (T-EXCH-02.corp.yadro.com [172.17.10.102])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Postfix) with ESMTPS id B4D7841228;
-        Thu,  6 Oct 2022 13:51:08 +0300 (MSK)
+        by mta-01.yadro.com (Postfix) with ESMTPS id 52CDE41223;
+        Thu,  6 Oct 2022 13:51:10 +0300 (MSK)
 Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
  T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
- 15.1.669.32; Thu, 6 Oct 2022 13:51:08 +0300
+ 15.1.669.32; Thu, 6 Oct 2022 13:51:10 +0300
 Received: from NB-591.corp.yadro.com (10.199.18.20) by
  T-EXCH-08.corp.yadro.com (172.17.11.58) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.1118.9; Thu, 6 Oct 2022 13:51:07 +0300
+ 15.2.1118.9; Thu, 6 Oct 2022 13:51:09 +0300
 From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
 To:     Martin Petersen <martin.petersen@oracle.com>,
         <target-devel@vger.kernel.org>
 CC:     Mike Christie <michael.christie@oracle.com>,
         <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
-        Roman Bolshakov <r.bolshakov@yadro.com>,
-        Dmitry Bogdanov <d.bogdanov@yadro.com>
-Subject: [PATCH v2 3/5] scsi: target: core: Drop device-based RTPI
-Date:   Thu, 6 Oct 2022 13:50:55 +0300
-Message-ID: <20221006105057.30184-4-d.bogdanov@yadro.com>
+        Dmitry Bogdanov <d.bogdanov@yadro.com>,
+        Roman Bolshakov <r.bolshakov@yadro.com>
+Subject: [PATCH v2 5/5] scsi: target: core: Add RTPI attribute for target port
+Date:   Thu, 6 Oct 2022 13:50:57 +0300
+Message-ID: <20221006105057.30184-6-d.bogdanov@yadro.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20221006105057.30184-1-d.bogdanov@yadro.com>
 References: <20221006105057.30184-1-d.bogdanov@yadro.com>
@@ -67,130 +67,105 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Roman Bolshakov <r.bolshakov@yadro.com>
+RELATIVE TARGET PORT IDENTIFIER can be read and configured via configfs:
+$ echo 0x10 > $TARGET/tpgt_N/attrib/rtpi
 
-The code is not needed since target port-based RTPI allocation replaced
-it.
+RTPI can be changed only on disabled target ports.
 
 Signed-off-by: Roman Bolshakov <r.bolshakov@yadro.com>
 Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
 ---
- drivers/target/target_core_device.c   | 41 ---------------------------
- drivers/target/target_core_internal.h |  1 -
- drivers/target/target_core_tpg.c      |  6 ----
- include/target/target_core_base.h     |  4 ---
- 4 files changed, 52 deletions(-)
+ v2:
+   do not allow to change RTPI on enabled target port
+---
+ drivers/target/target_core_tpg.c  | 53 ++++++++++++++++++++++++++++++-
+ include/target/target_core_base.h |  1 +
+ 2 files changed, 53 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index ad83338d6140..2209660261d0 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -460,47 +460,6 @@ void core_clear_lun_from_tpg(struct se_lun *lun, struct se_portal_group *tpg)
- 	mutex_unlock(&tpg->acl_node_mutex);
- }
- 
--int core_alloc_rtpi(struct se_lun *lun, struct se_device *dev)
--{
--	struct se_lun *tmp;
--
--	spin_lock(&dev->se_port_lock);
--	if (dev->export_count == 0x0000ffff) {
--		pr_warn("Reached dev->dev_port_count =="
--				" 0x0000ffff\n");
--		spin_unlock(&dev->se_port_lock);
--		return -ENOSPC;
--	}
--again:
--	/*
--	 * Allocate the next RELATIVE TARGET PORT IDENTIFIER for this struct se_device
--	 * Here is the table from spc4r17 section 7.7.3.8.
--	 *
--	 *    Table 473 -- RELATIVE TARGET PORT IDENTIFIER field
--	 *
--	 * Code      Description
--	 * 0h        Reserved
--	 * 1h        Relative port 1, historically known as port A
--	 * 2h        Relative port 2, historically known as port B
--	 * 3h to FFFFh    Relative port 3 through 65 535
--	 */
--	lun->lun_rtpi = dev->dev_rpti_counter++;
--	if (!lun->lun_rtpi)
--		goto again;
--
--	list_for_each_entry(tmp, &dev->dev_sep_list, lun_dev_link) {
--		/*
--		 * Make sure RELATIVE TARGET PORT IDENTIFIER is unique
--		 * for 16-bit wrap..
--		 */
--		if (lun->lun_rtpi == tmp->lun_rtpi)
--			goto again;
--	}
--	spin_unlock(&dev->se_port_lock);
--
--	return 0;
--}
--
- static void se_release_vpd_for_dev(struct se_device *dev)
- {
- 	struct t10_vpd *vpd, *vpd_tmp;
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index fb699f336736..4699c078f6f4 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -59,7 +59,6 @@ struct target_fabric_configfs {
- extern struct t10_alua_lu_gp *default_lu_gp;
- 
- /* target_core_device.c */
--int	core_alloc_rtpi(struct se_lun *lun, struct se_device *dev);
- struct se_dev_entry *core_get_se_deve_from_rtpi(struct se_node_acl *, u16);
- void	target_pr_kref_release(struct kref *);
- void	core_free_device_list_for_node(struct se_node_acl *,
 diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index 572241eca564..5838cd2d8a96 100644
+index 25ffc3d7a741..09b37ba005ff 100644
 --- a/drivers/target/target_core_tpg.c
 +++ b/drivers/target/target_core_tpg.c
-@@ -615,10 +615,6 @@ int core_tpg_add_lun(
- 	if (ret < 0)
- 		goto out;
+@@ -442,8 +442,23 @@ static void core_tpg_lun_ref_release(struct percpu_ref *ref)
  
--	ret = core_alloc_rtpi(lun, dev);
--	if (ret)
--		goto out_kill_ref;
--
- 	if (!(dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA) &&
- 	    !(dev->se_hba->hba_flags & HBA_FLAGS_INTERNAL_USE))
- 		target_attach_tg_pt_gp(lun, dev->t10_alua.default_tg_pt_gp);
-@@ -642,8 +638,6 @@ int core_tpg_add_lun(
- 
- 	return 0;
- 
--out_kill_ref:
--	percpu_ref_exit(&lun->lun_ref);
- out:
- 	return ret;
+ static int core_tpg_register_rtpi(struct se_portal_group *se_tpg)
+ {
+-	return xa_alloc(&tpg_xa, &se_tpg->tpg_rtpi, se_tpg,
++	int ret;
++
++	if (se_tpg->rtpi_manual) {
++		ret = xa_insert(&tpg_xa, se_tpg->tpg_rtpi, se_tpg, GFP_KERNEL);
++		if (ret) {
++			pr_info("%s_TPG[%hu] - Can not set RTPI %#x, it is already busy",
++				se_tpg->se_tpg_tfo->fabric_name,
++				se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg),
++				se_tpg->tpg_rtpi);
++			return -EINVAL;
++		}
++	} else {
++		ret = xa_alloc(&tpg_xa, &se_tpg->tpg_rtpi, se_tpg,
+ 			       XA_LIMIT(1, USHRT_MAX), GFP_KERNEL);
++	}
++
++	return ret;
  }
+ 
+ static void core_tpg_deregister_rtpi(struct se_portal_group *se_tpg)
+@@ -682,6 +697,42 @@ void core_tpg_remove_lun(
+ 	percpu_ref_exit(&lun->lun_ref);
+ }
+ 
++static ssize_t core_tpg_rtpi_show(struct config_item *item, char *page)
++{
++	struct se_portal_group *se_tpg = attrib_to_tpg(item);
++
++	return sysfs_emit(page, "%#x\n", se_tpg->tpg_rtpi);
++}
++
++static ssize_t core_tpg_rtpi_store(struct config_item *item,
++				   const char *page, size_t count)
++{
++	struct se_portal_group *se_tpg = attrib_to_tpg(item);
++	u16 val;
++	int ret;
++
++	ret = kstrtou16(page, 0, &val);
++	if (ret < 0)
++		return ret;
++	if (val == 0)
++		return -EINVAL;
++
++	if (se_tpg->enabled) {
++		pr_info("%s_TPG[%hu] - Can not change RTPI on enabled TPG",
++			se_tpg->se_tpg_tfo->fabric_name,
++			se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg));
++		return -EINVAL;
++	}
++
++	se_tpg->tpg_rtpi = val;
++	se_tpg->rtpi_manual = true;
++
++	return count;
++}
++
++CONFIGFS_ATTR(core_tpg_, rtpi);
++
+ struct configfs_attribute *core_tpg_attrib_attrs[] = {
++	&core_tpg_attr_rtpi,
+ 	NULL,
+ };
 diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 261c5f5228de..83b396457ed1 100644
+index 83b396457ed1..f2375280d6a4 100644
 --- a/include/target/target_core_base.h
 +++ b/include/target/target_core_base.h
-@@ -733,8 +733,6 @@ struct se_lun {
- 	bool			lun_access_ro;
- 	u32			lun_index;
- 
--	/* RELATIVE TARGET PORT IDENTIFER */
--	u16			lun_rtpi;
- 	atomic_t		lun_acl_count;
- 	struct se_device __rcu	*lun_se_dev;
- 
-@@ -786,8 +784,6 @@ struct se_device_queue {
- };
- 
- struct se_device {
--	/* RELATIVE TARGET PORT IDENTIFER Counter */
--	u16			dev_rpti_counter;
- 	/* Used for SAM Task Attribute ordering */
- 	u32			dev_cur_ordered_id;
- 	u32			dev_flags;
+@@ -901,6 +901,7 @@ struct se_portal_group {
+ 	bool			enabled;
+ 	/* RELATIVE TARGET PORT IDENTIFIER */
+ 	u32			tpg_rtpi;
++	bool			rtpi_manual;
+ 	/* Used for PR SPEC_I_PT=1 and REGISTER_AND_MOVE */
+ 	atomic_t		tpg_pr_ref_count;
+ 	/* Spinlock for adding/removing ACLed Nodes */
 -- 
 2.25.1
 
