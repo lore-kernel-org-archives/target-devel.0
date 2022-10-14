@@ -2,148 +2,126 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EDB6C07E9D
-	for <target-devel@archiver.kernel.org>; Thu, 13 Oct 2022 01:43:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88E85C4332F
+	for <target-devel@archiver.kernel.org>; Fri, 14 Oct 2022 11:46:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229626AbiJMBn3 convert rfc822-to-8bit (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 12 Oct 2022 21:43:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52382 "EHLO
+        id S229914AbiJNLqP (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 14 Oct 2022 07:46:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43004 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229459AbiJMBnV (ORCPT
+        with ESMTP id S229918AbiJNLqL (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 12 Oct 2022 21:43:21 -0400
-Received: from relay.hostedemail.com (smtprelay0011.hostedemail.com [216.40.44.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7678936DEB;
-        Wed, 12 Oct 2022 18:43:19 -0700 (PDT)
-Received: from omf20.hostedemail.com (a10.router.float.18 [10.200.18.1])
-        by unirelay02.hostedemail.com (Postfix) with ESMTP id 640C9120237;
-        Thu, 13 Oct 2022 01:37:28 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by omf20.hostedemail.com (Postfix) with ESMTPA id 56EDD20026;
-        Thu, 13 Oct 2022 01:37:01 +0000 (UTC)
-Message-ID: <3f527ec95a12135eb40f5f2d156a2954feb7fbfe.camel@perches.com>
-Subject: Re: [PATCH v1 3/5] treewide: use get_random_u32() when possible
-From:   Joe Perches <joe@perches.com>
-To:     David Laight <David.Laight@ACULAB.COM>,
-        "Jason A. Donenfeld" <Jason@zx2c4.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc:     "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
-        "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-mm@kvack.org" <linux-mm@kvack.org>,
-        "linux-sctp@vger.kernel.org" <linux-sctp@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-        "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-        "linux-stm32@st-md-mailman.stormreply.com" 
-        <linux-stm32@st-md-mailman.stormreply.com>,
-        "drbd-dev@lists.linbit.com" <drbd-dev@lists.linbit.com>,
-        "dev@openvswitch.org" <dev@openvswitch.org>,
-        "rds-devel@oss.oracle.com" <rds-devel@oss.oracle.com>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "dccp@vger.kernel.org" <dccp@vger.kernel.org>,
-        "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
-        "kasan-dev@googlegroups.com" <kasan-dev@googlegroups.com>,
-        "lvs-devel@vger.kernel.org" <lvs-devel@vger.kernel.org>,
-        "SHA-cyfmac-dev-list@infineon.com" <SHA-cyfmac-dev-list@infineon.com>,
-        "coreteam@netfilter.org" <coreteam@netfilter.org>,
-        "tipc-discussion@lists.sourceforge.net" 
-        <tipc-discussion@lists.sourceforge.net>,
-        "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-        "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-        "linux-actions@lists.infradead.org" 
-        <linux-actions@lists.infradead.org>,
-        "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-        "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
-        "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
-        "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
-        "linux-hams@vger.kernel.org" <linux-hams@vger.kernel.org>,
-        "ceph-devel@vger.kernel.org" <ceph-devel@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "cake@lists.bufferbloat.net" <cake@lists.bufferbloat.net>,
-        "brcm80211-dev-list.pdl@broadcom.com" 
-        <brcm80211-dev-list.pdl@broadcom.com>,
-        "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-        "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
-        "linux-f2fs-devel@lists.sourceforge.net" 
-        <linux-f2fs-devel@lists.sourceforge.net>,
-        "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>,
-        "netfilter-devel@vger.kernel.org" <netfilter-devel@vger.kernel.org>,
-        "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date:   Wed, 12 Oct 2022 18:37:11 -0700
-In-Reply-To: <d45bd258e033453b85a137112e7694e1@AcuMS.aculab.com>
-References: <20221005214844.2699-1-Jason@zx2c4.com>
-         <20221005214844.2699-4-Jason@zx2c4.com>
-         <f8ad3ba44d28dec1a5f7626b82c5e9c2aeefa729.camel@perches.com>
-         <d45bd258e033453b85a137112e7694e1@AcuMS.aculab.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
-User-Agent: Evolution 3.44.4 (3.44.4-2.fc36) 
+        Fri, 14 Oct 2022 07:46:11 -0400
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2FE239B9A;
+        Fri, 14 Oct 2022 04:46:07 -0700 (PDT)
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id D003A41221;
+        Fri, 14 Oct 2022 11:46:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-transfer-encoding:content-type:content-type:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received:received; s=mta-01; t=1665747962; x=
+        1667562363; bh=ahlSnG95Xtsu+0T2AjOccxYoUBX+Q73S3C5lgCqaICU=; b=a
+        cuhxxWRehjMclmVi2Av7mh+gzr/HaN2cnYO4Vn1AZznBtkBaWQu5hYLDqgoAqWaL
+        oww5xwUH9stA1F7E+LVc09JaUEvlrSnUPoUVESabC9cPnv4TfMCpg1qetPGrXhKJ
+        Q3fP3s+KBT4gYShSq4bA/3EWtRm5zb5bJ7gq0Cspv0=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id cNp73C1AD4fI; Fri, 14 Oct 2022 14:46:02 +0300 (MSK)
+Received: from T-EXCH-01.corp.yadro.com (T-EXCH-01.corp.yadro.com [172.17.10.101])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id DD8DD4120D;
+        Fri, 14 Oct 2022 14:46:02 +0300 (MSK)
+Received: from T-EXCH-09.corp.yadro.com (172.17.11.59) by
+ T-EXCH-01.corp.yadro.com (172.17.10.101) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Fri, 14 Oct 2022 14:46:02 +0300
+Received: from localhost (10.199.23.220) by T-EXCH-09.corp.yadro.com
+ (172.17.11.59) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Fri, 14 Oct
+ 2022 14:46:02 +0300
+From:   Anastasia Kovaleva <a.kovaleva@yadro.com>
+To:     <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>
+Subject: [v2,PATCH 0/3] Make target send correct io limits
+Date:   Fri, 14 Oct 2022 14:45:46 +0300
+Message-ID: <20221014114549.32888-1-a.kovaleva@yadro.com>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-X-Stat-Signature: jmxt1u5agdpi9w76hr4tp6uotie3p373
-X-Rspamd-Server: rspamout03
-X-Rspamd-Queue-Id: 56EDD20026
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-Session-ID: U2FsdGVkX18KEIRmyyr9pSEavQqF5X0dTzAEITyiJq4=
-X-HE-Tag: 1665625021-540494
+Content-Type: text/plain; charset="y"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.199.23.220]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-09.corp.yadro.com (172.17.11.59)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, 2022-10-12 at 21:29 +0000, David Laight wrote:
-> From: Joe Perches
-> > Sent: 12 October 2022 20:17
-> > 
-> > On Wed, 2022-10-05 at 23:48 +0200, Jason A. Donenfeld wrote:
-> > > The prandom_u32() function has been a deprecated inline wrapper around
-> > > get_random_u32() for several releases now, and compiles down to the
-> > > exact same code. Replace the deprecated wrapper with a direct call to
-> > > the real function.
-> > []
-> > > diff --git a/drivers/infiniband/hw/cxgb4/cm.c b/drivers/infiniband/hw/cxgb4/cm.c
-> > []
-> > > @@ -734,7 +734,7 @@ static int send_connect(struct c4iw_ep *ep)
-> > >  				   &ep->com.remote_addr;
-> > >  	int ret;
-> > >  	enum chip_type adapter_type = ep->com.dev->rdev.lldi.adapter_type;
-> > > -	u32 isn = (prandom_u32() & ~7UL) - 1;
-> > > +	u32 isn = (get_random_u32() & ~7UL) - 1;
-> > 
-> > trivia:
-> > 
-> > There are somewhat odd size mismatches here.
-> > 
-> > I had to think a tiny bit if random() returned a value from 0 to 7
-> > and was promoted to a 64 bit value then truncated to 32 bit.
-> > 
-> > Perhaps these would be clearer as ~7U and not ~7UL
-> 
-> That makes no difference - the compiler will generate the same code.
+Currently iblock always reports MAXIMUM TRANSFER LENGTH in 512b units
+regardless of the LU block size.
 
-True, more or less.  It's more a question for the reader.
+Target block size:
+  target:~ # fdisk -l /dev/nullb0
+  Disk /dev/nullb0: 250 GiB, 268435456000 bytes, 65536000 sectors
+  Units: sectors of 1 * 4096 = 4096 bytes
+  Sector size (logical/physical): 4096 bytes / 4096 bytes
+  I/O size (minimum/optimal): 4096 bytes / 4096 bytes
 
-> The real question is WTF is the code doing?
+Initiator block size:
+  initiator:~ # fdisk -l /dev/sdc
+  Disk /dev/sdc: 250 GiB, 268435456000 bytes, 65536000 sectors
+  Disk model: nullb0
+  Units: sectors of 1 * 4096 = 4096 bytes
+  Sector size (logical/physical): 4096 bytes / 4096 bytes
+  I/O size (minimum/optimal): 4096 bytes / 131072 bytes
 
-True.
+target max transfer length limit:
+  target:~ # cat /sys/block/nullb0/queue/max_hw_sectors_kb
+  128
 
-> The '& ~7u' clears the bottom 3 bits.
-> The '- 1' then sets the bottom 3 bits and decrements the
-> (random) high bits.
+So the maximum transfer length should be 128 * 1024 / 4096 = 32 blocks
+But the target sends MTL in 512b units, so the initiators see 256 blocks
+instead.
 
-Right.
+  initiator:~ # sg_inq -p 0xb0 /dev/sdc
+  VPD INQUIRY: Block limits page (SBC)
+    Maximum compare and write length: 1 blocks
+    Optimal transfer length granularity: 1 blocks
+    Maximum transfer length: 256 blocks
+    Optimal transfer length: 32 blocks
+    Maximum prefetch transfer length: 0 blocks [ignored]
 
-> So is the same as get_random_u32() | 7.
+This happens because MAXIMUM TRANSFER LENGTH field in VPD Block Limits
+page is derived from dev->dev_attrib.hw_max_sectors which happens to be
+in 512b units for iblock. This patch series fixes this issue and removes
+some special-casing for other backstores.
 
-True, it's effectively the same as the upper 29 bits are random
-anyway and the bottom 3 bits are always set.
+The last time this patch set was sent, a kernel bot found some issues
+with building a kernel for i586 and m68k using a cross-compiler. I tried
+to reproduce this issues locally but didn't succeed. Even with given
+configs all things are built correctly without errors. For m68k I used
+m68k-linux-gnu-gcc version 11.2.0, for i586 I used
+i586-unknown-linux-gnu-gcc version 8.3.0. It would be great if you could
+share the kernel bot’s cross-compilers.
 
-> But I bet the coder had something else in mind.
+Anastasia Kovaleva (3):
+  target: core: Send mtl in blocks
+  target: core: make hw_max_sectors store the sectors amount in blocks
+  target: core: Change the way target_xcopy_do_work sets restiction on
+    max io
 
-Likely.
+ drivers/target/target_core_configfs.c |  2 -
+ drivers/target/target_core_file.c     |  1 -
+ drivers/target/target_core_iblock.c   |  4 +-
+ drivers/target/target_core_spc.c      |  6 +-
+ drivers/target/target_core_xcopy.c    | 96 ++++++++++++++-------------
+ drivers/target/target_core_xcopy.h    |  2 +-
+ include/target/target_core_base.h     |  1 -
+ 7 files changed, 59 insertions(+), 53 deletions(-)
 
-And it was also likely copy/pasted a few times.
+-- 
+2.30.2
+
