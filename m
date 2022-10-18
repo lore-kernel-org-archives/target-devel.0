@@ -2,58 +2,70 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CBD0C433FE
-	for <target-devel@archiver.kernel.org>; Mon, 17 Oct 2022 08:18:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC334C43217
+	for <target-devel@archiver.kernel.org>; Tue, 18 Oct 2022 08:13:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229866AbiJQISX (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 17 Oct 2022 04:18:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35320 "EHLO
+        id S230164AbiJRINc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 18 Oct 2022 04:13:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48252 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229996AbiJQISV (ORCPT
+        with ESMTP id S230377AbiJRIN3 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 17 Oct 2022 04:18:21 -0400
-X-Greylist: delayed 451 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 17 Oct 2022 01:18:21 PDT
-Received: from mail.flyingprice.pl (mail.flyingprice.pl [193.142.59.204])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B942101F8
-        for <target-devel@vger.kernel.org>; Mon, 17 Oct 2022 01:18:20 -0700 (PDT)
-Received: by mail.flyingprice.pl (Postfix, from userid 1001)
-        id E037523D64; Mon, 17 Oct 2022 10:10:45 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=flyingprice.pl;
-        s=mail; t=1665994247;
-        bh=kECt9x2dzkW1QJ5sNZ9CqfHxrNzLdZ2r55b5WGK2SS0=;
-        h=Date:From:To:Subject:From;
-        b=z/n5EgRzb5E9pGdVz0rYYPqcG+JroeHQQz8SVvgGJgoNBYuJqFacBlZy0CKk4BrKR
-         xZ+3+2X5e99QsU0nn/CLk7RGPh9UIVEdzo0k2ruO3qvnuVNm91m5y11kxoq8LKHo0G
-         9MD0gYlH0LYs3hGEkAAWx1gnvl5mgo92M4c6lDS2f11MmFt8BinxfBgbUJS8SIGM8D
-         Om97/rstAgweLzlik0irBESrsocN94PYqJrVkGGohQLEz4zZfJoqtlgK6g/ZcRTq7Z
-         AdiA9OQLLFn50qkdTBdmxIhAXnBNRfQ0UZjcYakdaY5ADaj4gRk5FOQNI5Ly1Mswm/
-         X02fT4PC4x/bA==
-Received: by mail.flyingprice.pl for <target-devel@vger.kernel.org>; Mon, 17 Oct 2022 08:10:41 GMT
-Message-ID: <20221017084500-0.1.1f.2djs.0.6canm3ejsw@flyingprice.pl>
-Date:   Mon, 17 Oct 2022 08:10:41 GMT
-From:   "Patryk Zawada" <patryk.zawada@flyingprice.pl>
-To:     <target-devel@vger.kernel.org>
-Subject: =?UTF-8?Q?W_sprawie_zam=C3=B3wie=C5=84?=
-X-Mailer: mail.flyingprice.pl
+        Tue, 18 Oct 2022 04:13:29 -0400
+Received: from out30-43.freemail.mail.aliyun.com (out30-43.freemail.mail.aliyun.com [115.124.30.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88F8B8FD74;
+        Tue, 18 Oct 2022 01:13:27 -0700 (PDT)
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R971e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046051;MF=jiapeng.chong@linux.alibaba.com;NM=1;PH=DS;RN=6;SR=0;TI=SMTPD_---0VSTkibi_1666080759;
+Received: from localhost(mailfrom:jiapeng.chong@linux.alibaba.com fp:SMTPD_---0VSTkibi_1666080759)
+          by smtp.aliyun-inc.com;
+          Tue, 18 Oct 2022 16:13:24 +0800
+From:   Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+To:     martin.petersen@oracle.com
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Jiapeng Chong <jiapeng.chong@linux.alibaba.com>,
+        Abaci Robot <abaci@linux.alibaba.com>
+Subject: [PATCH] target: Remove the unused function transport_lba_64_ext()
+Date:   Tue, 18 Oct 2022 16:12:35 +0800
+Message-Id: <20221018081235.124662-1-jiapeng.chong@linux.alibaba.com>
+X-Mailer: git-send-email 2.20.1.7.g153144c
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Dzie=C5=84 dobry,
+The function transport_lba_64_ext() is defined in the target_core_sbc.c
+file, but not called elsewhere, so remove this unused function.
 
-mo=C5=BCemy zap=C5=82aci=C4=87 u dostawcy za zakupione przez Pa=C5=84stwa=
- towary, a Pa=C5=84stwo ureguluj=C4=85 faktur=C4=99 w p=C3=B3=C5=BAniejsz=
-ym terminie (30-90 dni).
+drivers/target/target_core_sbc.c:276:34: warning: unused function 'transport_lba_64_ext'.
 
-Takie rozwi=C4=85zanie wielokrotnie sprawdza si=C4=99 u naszych Klient=C3=
-=B3w, wi=C4=99c je=C5=9Bli chcieliby Pa=C5=84stwo zobaczy=C4=87, jak to w=
-ygl=C4=85da w praktyce-prosz=C4=99 o wiadomo=C5=9B=C4=87.
+Link: https://bugzilla.openanolis.cn/show_bug.cgi?id=2427
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+---
+ drivers/target/target_core_sbc.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-Ch=C4=99tnie zadzwoni=C4=99 i przedstawi=C4=99 szczeg=C3=B3=C5=82y.=20
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 1e3216de1e04..1cd41e3834bb 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -270,14 +270,6 @@ static inline unsigned long long transport_lba_64(unsigned char *cdb)
+ 	return get_unaligned_be64(&cdb[2]);
+ }
+ 
+-/*
+- * For VARIABLE_LENGTH_CDB w/ 32 byte extended CDBs
+- */
+-static inline unsigned long long transport_lba_64_ext(unsigned char *cdb)
+-{
+-	return get_unaligned_be64(&cdb[12]);
+-}
+-
+ static sense_reason_t
+ sbc_setup_write_same(struct se_cmd *cmd, unsigned char flags, struct sbc_ops *ops)
+ {
+-- 
+2.20.1.7.g153144c
 
-
-Pozdrawiam
-Patryk Zawada
