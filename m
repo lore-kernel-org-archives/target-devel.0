@@ -2,75 +2,67 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC599FA3741
-	for <target-devel@archiver.kernel.org>; Thu, 27 Oct 2022 17:16:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13B0FC38A02
+	for <target-devel@archiver.kernel.org>; Fri, 28 Oct 2022 13:36:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236039AbiJ0RQu (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 27 Oct 2022 13:16:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35668 "EHLO
+        id S230510AbiJ1NgX (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 28 Oct 2022 09:36:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38714 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235768AbiJ0RQc (ORCPT
+        with ESMTP id S231139AbiJ1NgS (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 27 Oct 2022 13:16:32 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E804D14BB7E;
-        Thu, 27 Oct 2022 10:16:31 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id A0E47B826F9;
-        Thu, 27 Oct 2022 17:16:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51187C433D6;
-        Thu, 27 Oct 2022 17:16:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1666890989;
-        bh=Zv1urG2jYQaq1bwAIZsRNHzXXofeTcjsquQZ1JK/QeA=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=JGJsYnEuWS+K6DSZJyqGk9h7+UlxzI7TXzj+qO22QI7ToXiO1fVWN+j76gB8sX7Cz
-         ojM/f3uvD0/0q3cMHCrXNwuHAo34g3e5Kf4BPaNDJDFaE0ddx2xdihE+jErpS2Q0pw
-         TTflV6I2WpUCJlR3OTvSSAsfXcnW6nCASi9kpvA5yGYF2Jdvfqv37dBALCjlnKpPoK
-         Fv6Iv3G58jhDYxSiv7ItE1rsTg1yExOqftvAJ3uBAQF80p/aqpnas8l6CD9jK+IIlb
-         1m5EZNGdZIQMM1Qz5dPM0UrTRxUT2uqsGvV9pr5YKSZc+RP2yxYLxCctGqrKlCWoV3
-         LIHunXvjG0suw==
-Date:   Thu, 27 Oct 2022 11:16:25 -0600
-From:   Keith Busch <kbusch@kernel.org>
-To:     michael.christie@oracle.com
-Cc:     bvanassche@acm.org, hch@lst.de, martin.petersen@oracle.com,
-        linux-scsi@vger.kernel.org, james.bottomley@hansenpartnership.com,
-        linux-block@vger.kernel.org, dm-devel@redhat.com,
-        snitzer@kernel.org, axboe@kernel.dk,
-        linux-nvme@lists.infradead.org, chaitanyak@nvidia.com,
-        target-devel@vger.kernel.org
-Subject: Re: [PATCH v3 10/19] nvme: Move NVMe and Block PR types to an array
-Message-ID: <Y1q86YvRtZPBJDck@kbusch-mbp.dhcp.thefacebook.com>
-References: <20221026231945.6609-1-michael.christie@oracle.com>
- <20221026231945.6609-11-michael.christie@oracle.com>
- <Y1qhXQYOpEUk2uqF@kbusch-mbp.dhcp.thefacebook.com>
- <a74266ce-3839-5d2f-abc4-cb30045d811c@oracle.com>
- <75564e1d-3169-cd50-ea17-53ef96a3a35e@oracle.com>
+        Fri, 28 Oct 2022 09:36:18 -0400
+Received: from bg4.exmail.qq.com (bg4.exmail.qq.com [43.155.67.158])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C35319344A;
+        Fri, 28 Oct 2022 06:36:16 -0700 (PDT)
+X-QQ-mid: bizesmtp66t1666964164t80buwid
+Received: from localhost.localdomain ( [182.148.13.81])
+        by bizesmtp.qq.com (ESMTP) with 
+        id ; Fri, 28 Oct 2022 21:36:03 +0800 (CST)
+X-QQ-SSF: 01000000000000F0J000000A0000000
+X-QQ-FEAT: pMHwdq3i9JPnWxA22ktMbjJAiyte6UBvavODk2uV7YwViADse3ZclSYpeF/jF
+        QuAN4ux+zmRPSaxYGPwDTLeDmmjLaCk0cl/7OXT33jfjreoJWqS0jHceVH4lxU2/fWzKFFy
+        /ULBV/mxqYA2dGhITpDc2rJmr7XyW+ymg/A6wxvp6CKVqf5lqwQ2vUVxZ277lwMPEy1uivK
+        /CsEkmfJ19j2ksk7FnpPSGH+IHUdvo1XLDf0m2S90A6YoynEatc6lbGSDZveKEscHD3hAt3
+        U1y+W5fyB44riE7m7J3UK/EpGBMWcPxR6Y2pPH+U+qd9mpZSGVMoF0hQI47EB8PgQsjZD86
+        +8TDjdNGbptYEl1vuMShpD8SQWf+JSFQtOLoJdSCaWj3OJT3rVD6YNmWdY3CHzny4kayKxh
+X-QQ-GoodBg: 0
+From:   Jilin Yuan <yuanjilin@cdjrlc.com>
+To:     jejb@linux.ibm.com, martin.petersen@oracle.com
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Jilin Yuan <yuanjilin@cdjrlc.com>
+Subject: [PATCH] scsi: ibmvscsi_tgt: fix repeated words in comments
+Date:   Fri, 28 Oct 2022 21:35:57 +0800
+Message-Id: <20221028133557.59056-1-yuanjilin@cdjrlc.com>
+X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <75564e1d-3169-cd50-ea17-53ef96a3a35e@oracle.com>
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr4
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, Oct 27, 2022 at 12:13:06PM -0500, michael.christie@oracle.com wrote:
-> Oh wait there was also a
-> 
-> 3. The pr_types come from userspace so if it passes us 10
-> and we just do:
-> 
-> types[pr_type]
-> 
-> then we would crash due an out of bounds error.
-> 
-> Similarly I thought there could be a bad target that does the
-> same thing.
+Delete the redundant word 'the'.
 
-Well, you'd of course have to check the boundaries before accessing if
-you were to implement this scheme. :)
+Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
+---
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-But considering this isn't a performance path, perhaps these kinds of
-optimizations are not worth it.
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index e8770310a64b..0e253f961c6c 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -401,7 +401,7 @@ static long ibmvscsis_check_init_msg(struct scsi_info *vscsi, uint *format)
+  * and the driver is requesting that the command queue be de-registered
+  * in a safe manner. If there is no outstanding I/O then we can stop the
+  * queue. If we are restarting the queue it will be reflected in the
+- * the state of the adapter.
++ * state of the adapter.
+  *
+  * EXECUTION ENVIRONMENT:
+  *	Process environment
+-- 
+2.36.1
+
