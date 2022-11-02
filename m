@@ -2,157 +2,125 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46523C433FE
-	for <target-devel@archiver.kernel.org>; Wed,  2 Nov 2022 05:54:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C31CC4332F
+	for <target-devel@archiver.kernel.org>; Wed,  2 Nov 2022 16:24:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229827AbiKBFyY (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 2 Nov 2022 01:54:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49428 "EHLO
+        id S231500AbiKBQYe (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 2 Nov 2022 12:24:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44604 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229547AbiKBFyX (ORCPT
+        with ESMTP id S231754AbiKBQYJ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 2 Nov 2022 01:54:23 -0400
-Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2042.outbound.protection.outlook.com [40.107.93.42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F33AC2626;
-        Tue,  1 Nov 2022 22:54:21 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=mZxkK00xP/kLwAkqcQ6kLJDXPmgRsiB6dunOtGkxjGk5tM6s1kmpBLCi9Ys6P3V49d956wqBTYj5JPybClnIJsC271aYz4w+ZpE8y98Tl666Xoj7H+AnqrRnXvLbxFRla5V28pnsAOQzyb5ynueP17EM/UZjWIfCYd3WUQ+a26MIfeErmou9ITNSo/+rGeDo85PrmRmhpOC417tbILw3G6nztGzv+/R1I+U+S2c4AIBIrehfynmXsS9Mz3ML4A9Gdjj/awMJ/rVY4HQpqVutV/s07z0fOi7NQYLbhiyQ6JlGDtOtV4sncyGF6bY48wB8pByAJ0Of7wP8yMwpS1gO1Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1E/kP71JXOK5+yCN8iEbSv3+5AxEYlcPeZfn8erpxkw=;
- b=KrpM7ILV4f7uJ595gfd8SpSDbWxu6SqZ1et+QxT9cnvskVROEEvg4csDTa99DXhZCVjKRJEiFrTLoPzLYTk6qUJPRiGIuWONGAE7ehjYlkUv13SEvAqCoz32fHPbCh4TIA228y97r+zCU4qgo/e+NYo0PPd8pF6zhUN2a2U4/KLjhouWc176A9g+y3FcLfjo5kxnUY0TLWm/x1D6obihHCSSNusYKIrYO/6tgqc3ykbRSB7vXPv7Yp1phq+2FMsUD8Qm4TMph4hP8SJucgzERz95GW/EbSmBhO/Zqw39ghLZagC0/kcWd046w+WsZhcHkCHAwZAmyRa5h7b+aC0rXw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1E/kP71JXOK5+yCN8iEbSv3+5AxEYlcPeZfn8erpxkw=;
- b=o/Hd0IqmI/MRKqpTPadRALMRIyPsySl0Wq+LY3OVV0o1fz416ahW4REcgkcuvvP9B+DcBgktntNzFe1QH3p+tYEPNo/JUcPkDW8h6omuzaLb6+WG4I1EgyV11sz1nC0EqLQ+xvMKd76daaMUGxdmyLoV7ambMEtr6VeI+L5tRb07uV+nuLhBQWsQ72qn5uJVbRkjLMcHKhiX2rdpB0jowkTAyqZMnt6HIHf2FB0fVNhxXM9sw9/76vK6dIQG0hes4DUySGvcTiSFqQpWSSczLk7uJUk/M/1KV/1sWGoXm+GpvQ5Dqizv+oabl0NMwOhPkzDRUZLgM6rrbCD8V95+XA==
-Received: from MW2PR12MB4667.namprd12.prod.outlook.com (2603:10b6:302:12::28)
- by DS0PR12MB7947.namprd12.prod.outlook.com (2603:10b6:8:150::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5769.21; Wed, 2 Nov
- 2022 05:54:20 +0000
-Received: from MW2PR12MB4667.namprd12.prod.outlook.com
- ([fe80::eaf1:9be8:d472:ea57]) by MW2PR12MB4667.namprd12.prod.outlook.com
- ([fe80::eaf1:9be8:d472:ea57%7]) with mapi id 15.20.5769.021; Wed, 2 Nov 2022
- 05:54:20 +0000
-From:   Chaitanya Kulkarni <chaitanyak@nvidia.com>
-To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        Wed, 2 Nov 2022 12:24:09 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 65238FD6;
+        Wed,  2 Nov 2022 09:19:18 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id AA2A7B8236B;
+        Wed,  2 Nov 2022 16:19:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 94C2BC433D6;
+        Wed,  2 Nov 2022 16:19:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1667405955;
+        bh=fzJ4CnsGQWbTXfboP1sPJL+W4uTxIl+/qSJ9/kCCSe0=;
+        h=From:To:Cc:Subject:Date:From;
+        b=aDP0qW4zK1VPnYvuwnPkhvje0RhOPlsbsorxPBBAYSqcHAtE2fKCrfx3/P8IKjC4c
+         WpMQLDhKwXirS0C4xaTtKwcnHJOYcNt0iv9kODbB7ERWC6hH9lwSXg7/dfMZiKqa5o
+         8WKYgFbvKozUfEKWYH7qJBFkBCK38KJW+UaYV/DnataywfWNlJZ9a+8HGjM57H1agJ
+         hgPw1sR1WwrJoCEKkRSp2ZIvh6mCQB+iIDXbRaVHIihg2Bz8PnpytnQqt1EaCCRFXV
+         4ogoixf+jS6G6z9/X7eZ0VHXiC6NZHaGhXJImCqpQFKvbIdW6it0QPx4ZuWql1xaaV
+         U5CStX3Vbm9fQ==
+From:   Nathan Chancellor <nathan@kernel.org>
+To:     James Smart <james.smart@broadcom.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
         "Martin K. Petersen" <martin.petersen@oracle.com>
-CC:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
-Subject: Re: [PATCH 04/30] scsi: target: Use kstrtobool() instead of
- strtobool()
-Thread-Topic: [PATCH 04/30] scsi: target: Use kstrtobool() instead of
- strtobool()
-Thread-Index: AQHY7jgbr7eByiXbhUmTK+NFixFMIq4rIqkA
-Date:   Wed, 2 Nov 2022 05:54:20 +0000
-Message-ID: <2326193c-d522-afa3-2e68-c88bf2a6483f@nvidia.com>
-References: <cover.1667336095.git.christophe.jaillet@wanadoo.fr>
- <fcddc0a53b4fc6e3c2e93592d3f61c5c63121855.1667336095.git.christophe.jaillet@wanadoo.fr>
-In-Reply-To: <fcddc0a53b4fc6e3c2e93592d3f61c5c63121855.1667336095.git.christophe.jaillet@wanadoo.fr>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: MW2PR12MB4667:EE_|DS0PR12MB7947:EE_
-x-ms-office365-filtering-correlation-id: 3f648dd2-fe45-4864-a0d9-08dabc96afa2
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: taEZKfU7kQ8I8XP9mJY8UDcw1iNbsiYrXgM4GsGBLzFSA5K15dOsEttCiGFaXBVvIRLnQelwPVXjaP/0TdDhJGFWnS2EAzyBe+fFrfgB8T4wY4bsUTlrncHwd2igwq6HpaUwr8SdBSFkX1iXeRrQppHSsYkLFOjN8mk5nUym8VrUm9ljvNQiaZhev6EjMzeGR4hinnDbVXtNKMVjDwO+aXyl2vTdOpOyk/t6acM4tIqXJkrZyjB25b0oMtvEeYsd6xBoZdjk/iVnDbN6QTG4CdzZ6xnHCr2ooDcOFQMHk7Zo4vJBlzRsT8H7aJHA27q+c7aVLenReNn9fqBx4nYbYvPXtWwf3/nGNtV+EF0rstlLOnAhwUrYoiHZ3vgyWAdDCTJ64EIQyEnl4nXu1iMtEAvhtEUoy75H2+JHC/wNFOkkU6mIWGOrkQPJy2We+ovzZQJbx0xlpntkkUYbatMQ3858HCGHPzthiCz6QlI1SL36+O0/zma/mrStTuz2Qoy9FBXFxOm7Byc/PRtLWb9ONTC2O42P+94/jJ3VUw/fa+Otumba/XA6rRGXqDaBpwC1SKOoItf8bI4+IJjCg/BURv2weBycnvPqtgPA2QXKOoIiDcYEX6ej8ti7LkOjxcAkonJKG1oHBWBAa/LDMwHcHztD0+QsVE9ETGuIi8jNBHNdFb0DhB99ypTmIS/VArJeiYJfT2jIC8RtdyUmMs7H/3zPNqBwNDO6zQqQmBzW67kyDxhzxbqUKN8ZxPKmrQOkyNGWwmtlE4FIr1gOS9x5vd9laHkZ4pCEiUSKt2tOpeJt7akAUVO+p2sx/SZ+GPuJGHHkal/JB2eppmXu0pFNTj6FjXHAdxkFmoDXoWfCneT67O1IPhp6U7TZUjgo1O/sVi69P02SZpALsMU6EXXRc1oM8BgdOJDz18PGzjZU54Y=
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MW2PR12MB4667.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(376002)(346002)(136003)(396003)(39860400002)(366004)(451199015)(86362001)(31696002)(83380400001)(38070700005)(122000001)(38100700002)(2906002)(5660300002)(8676002)(66946007)(41300700001)(76116006)(66556008)(8936002)(66476007)(66446008)(64756008)(4326008)(6506007)(6486002)(186003)(6512007)(478600001)(54906003)(110136005)(2616005)(53546011)(966005)(316002)(91956017)(31686004)(36756003)(71200400001)(43740500002)(45980500001);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?eGZML3VkMkRrN0lCWXdvdUpud2l1UStxVFowYTRoVVdZditJWTcyeldhandk?=
- =?utf-8?B?L3ZneWR0QnFsSExvcFY5K2RVVlJ6S3MrM0pmU29jcjIydW1YSFM4VjdOWXNF?=
- =?utf-8?B?ejVRVHBIdlNlcEhuK3pFUmFjcC8yZXhuYlVwalpGUEZLWXMyMlFGWVFFME94?=
- =?utf-8?B?SzVLT2o1M0FrZFppdG90TzRjL1dIclNWNTdteDl3ME4zT2haaDAxbjFIYzRI?=
- =?utf-8?B?NTdpaTFlbmx1alg1alRBNkFSeExiaHdwU3lmTWxYMEJUZERFY3J1U3VMa3lG?=
- =?utf-8?B?Y0Evbm5BRkIzRlJZNEZsWldnZzl6Q1E4cTBKREpFaEw2dndDVk40S1hOaG5a?=
- =?utf-8?B?UFdlN0lWY2ozYVAxNnhSdGg2TWhYazVtQU00OWw1NVdMeU40MU1UUU5qYTFY?=
- =?utf-8?B?ZW9PMnJHY2s2MWhxbG9ScnBOb1k1RXJGM0FRUkpvSGVSVW1SZDk1UnJrbmFS?=
- =?utf-8?B?eW9RWUxiWURIMjJXeXNhQ0o2VFhBYVo4M0hYK0J1VEhWaEkrV2F3Q1ozbVgr?=
- =?utf-8?B?SEZGdEFTQUdQTThyMU5QdERrRjU0cGNtYkVRYXRacFJzTVlCZlpvdFpseVho?=
- =?utf-8?B?bk5ScStlRHoyOHhmTUVYRzZ6QzhvT3UwSXJySkFKTUFheGw0Q3FGTmNFTk5O?=
- =?utf-8?B?WEhWSWxlRmZPay9lUUJiMy92TXUyblJUOWtvMVE1TWpmRnNGa2kzdFNGK1Av?=
- =?utf-8?B?KzY2bEs1dU1WdnhVNG9xTUhxMkFuc2gvb1R0dVZvQVZoMlF5MXVOVC9ndERO?=
- =?utf-8?B?czJDVG1VeGRjdzFYRTRJRStESjBmZExvTGdmaDg1RXV4MGJIRzF0Y1d0NUx2?=
- =?utf-8?B?MHJOMVB5cExZQUtJWXREWWVWczI4by9LOTF6RTBOWnhDdW1ocFBPeFRnZ0VP?=
- =?utf-8?B?TXgxWk54WEtQVi9tNDQrRHRCa0tHcjB1bDhmTWhqZUlzYUNhNWZTblduRUNP?=
- =?utf-8?B?cXRqR3g4ZXIxQXA1SFltclhiRHlXbTJIbUFOVVd2Yk9PdlJRbDVEQmN4YUhZ?=
- =?utf-8?B?RGNielVtODBncXVLY2drVnFVSWRYVXdyeDRuZVAyYmllZC9kWkQrSlFwM3Ar?=
- =?utf-8?B?SEpYcFBpUFd2eldTbUR5bzJ6STV0QmZzdFNhREUrMSt6OVRpUTk0OG42bXdo?=
- =?utf-8?B?RkV6eldEcmxlNWJGdldwL3M2dE45dWpRYmRsVER3KzJQUTNwb3E0TzlzYXNr?=
- =?utf-8?B?dG9TWkpNclZYNFVtK0NjZ0FHQmRId3lVL1k5eGZGRTlnTU9FM2JMcnYzaytX?=
- =?utf-8?B?dEt1WjlaeG5kL2crZWNhVlcwWHEzVms4WGtqcGcxSTVnT3VZQVdPRGxWenlD?=
- =?utf-8?B?ekNOUGhWcksrcTlnM0pVN1hLaVlWaGozSnA2OVhpRFhlM2o2WnUzdy9EVzdD?=
- =?utf-8?B?K2VuVTVCc0ZTVHJpV29KWXBpWWU2ZXgzamJ2YWtiNDlKckgxWCtFQmdESXdx?=
- =?utf-8?B?YUFhbzZhRWhnUEx3ZFFwRjFaVDJjTDlPSlE2aW9pa0t0V2dmcDVleFBDcEli?=
- =?utf-8?B?NjE0WDhoNzFoZDRlVVJqblh5NFN2S2hPejlSbG4yL3VBNHR2WFV3RkxvL3py?=
- =?utf-8?B?dldvTHZKell2RGlLWmlGNWViOFpwTlBqY0VOODJnNkxwc1Z4NHJ6Z0pPa01u?=
- =?utf-8?B?UC9JTjFqSjhWN3p1czQ1OFJoRmFwUkltSWt5VDZ5a0xEZ1h6OHZSRGZIR25W?=
- =?utf-8?B?MENMTHlma2trYmVpYXFuS0kyeWNZU2xhWG1peVlXb1UxNytUUk1jb2R4ZHZi?=
- =?utf-8?B?Zzc3QTB5ZnZOKzhqUm1HRjk0d2U2ampSMVJWSHlZNndsWFJUOXdORWFFQmNS?=
- =?utf-8?B?YXlWN0RiTWlZWmlpbWl2K0lQY0paYWZsQ0NMbjBZTWZPd3h3V21yR2c1QlpW?=
- =?utf-8?B?Ly9lZ21Wa3gvTGxpdm1qdy9qc0JoQkVlVUhWVjlnRVBnMVdFb2lpdUlZaHZu?=
- =?utf-8?B?UWhoQm5ZTldJZHZPYzhIYWtHTUdRK1hFYTdZUVdKYlpXZDA2cVYyaU5wcmNI?=
- =?utf-8?B?T01lVE9wR2dYcnRlUEI0ZzU2bnZqaXdRQk1tVzhUNWsramNESFhTWUFuMTlq?=
- =?utf-8?B?WkMzNnErdHBQbXdSNGEyY21TcmQ1QjZNYjVabWZBVlh1b0hyVDNNL2h4UDRL?=
- =?utf-8?B?VUs1aE5tYlpiTzg4dkFISjMwYzIwUUhYUWNYU2d3S1k1OVUrdVRDdXBQTSs0?=
- =?utf-8?B?ekE9PQ==?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <4BA62C73ABC83448AE84D57F7A76F09F@namprd12.prod.outlook.com>
-Content-Transfer-Encoding: base64
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Tom Rix <trix@redhat.com>, Kees Cook <keescook@chromium.org>,
+        Sami Tolvanen <samitolvanen@google.com>, llvm@lists.linux.dev,
+        linux-kernel@vger.kernel.org, patches@lists.linux.dev,
+        Nathan Chancellor <nathan@kernel.org>
+Subject: [PATCH] scsi: elx: libefc: Fix second parameter type in state callbacks
+Date:   Wed,  2 Nov 2022 09:19:06 -0700
+Message-Id: <20221102161906.2781508-1-nathan@kernel.org>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MW2PR12MB4667.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3f648dd2-fe45-4864-a0d9-08dabc96afa2
-X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Nov 2022 05:54:20.3977
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: dFOPpmHQ44C7ISZ5tOZXAAOoIEwnmlgDFfT5JKUbwKWHaoA2ofq5hxYFQNCg6hs/M+PJ1rM6Oo2FcF+iGWJtEQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB7947
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-T24gMTEvMS8yMiAxNDoxMywgQ2hyaXN0b3BoZSBKQUlMTEVUIHdyb3RlOg0KPiBzdHJ0b2Jvb2wo
-KSBpcyB0aGUgc2FtZSBhcyBrc3RydG9ib29sKCkuDQo+IEhvd2V2ZXIsIHRoZSBsYXR0ZXIgaXMg
-bW9yZSB1c2VkIHdpdGhpbiB0aGUga2VybmVsLg0KPiANCj4gSW4gb3JkZXIgdG8gcmVtb3ZlIHN0
-cnRvYm9vbCgpIGFuZCBzbGlnaHRseSBzaW1wbGlmeSBrc3RydG94LmgsIHN3aXRjaCB0bw0KPiB0
-aGUgb3RoZXIgZnVuY3Rpb24gbmFtZS4NCj4gDQo+IFdoaWxlIGF0IGl0LCBpbmNsdWRlIHRoZSBj
-b3JyZXNwb25kaW5nIGhlYWRlciBmaWxlICg8bGludXgva3N0cnRveC5oPikNCj4gDQo+IFNpZ25l
-ZC1vZmYtYnk6IENocmlzdG9waGUgSkFJTExFVCA8Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28u
-ZnI+DQo+IC0tLQ0KPiBUaGlzIHBhdGNoIGlzIHBhcnQgb2YgYSBzZXJpZSB0aGF0IGF4ZXMgYWxs
-IHVzYWdlcyBvZiBzdHJ0b2Jvb2woKS4NCj4gRWFjaCBwYXRjaCBjYW4gYmUgYXBwbGllZCBpbmRl
-cGVuZGVudGx5IGZyb20gdGhlIG90aGVyIG9uZXMuDQo+IA0KPiBUaGUgbGFzdCBwYXRjaCBvZiB0
-aGUgc2VyaWUgcmVtb3ZlcyB0aGUgZGVmaW5pdGlvbiBvZiBzdHJ0b2Jvb2woKS4NCj4gDQo+IFlv
-dSBtYXkgbm90IGJlIGluIGNvcHkgb2YgdGhlIGNvdmVyIGxldHRlci4gU28sIGlmIG5lZWRlZCwg
-aXQgaXMgYXZhaWxhYmxlDQo+IGF0IFsxXS4NCj4gDQo+IFsxXTogaHR0cHM6Ly9sb3JlLmtlcm5l
-bC5vcmcvYWxsL2NvdmVyLjE2NjczMzYwOTUuZ2l0LmNocmlzdG9waGUuamFpbGxldEB3YW5hZG9v
-LmZyLw0KPiAtLS0NCj4gICBkcml2ZXJzL3RhcmdldC90YXJnZXRfY29yZV9jb25maWdmcy5jICAg
-ICAgICB8IDI5ICsrKysrKysrKystLS0tLS0tLS0tDQo+ICAgZHJpdmVycy90YXJnZXQvdGFyZ2V0
-X2NvcmVfZmFicmljX2NvbmZpZ2ZzLmMgfCAgMyArLQ0KPiAgIDIgZmlsZXMgY2hhbmdlZCwgMTcg
-aW5zZXJ0aW9ucygrKSwgMTUgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy90YXJnZXQvdGFyZ2V0X2NvcmVfY29uZmlnZnMuYyBiL2RyaXZlcnMvdGFyZ2V0L3RhcmdldF9j
-b3JlX2NvbmZpZ2ZzLmMNCj4gaW5kZXggNTMzNTI0Mjk5ZWQ2Li5iOGE1YzhkNmNmZGUgMTAwNjQ0
-DQo+IC0tLSBhL2RyaXZlcnMvdGFyZ2V0L3RhcmdldF9jb3JlX2NvbmZpZ2ZzLmMNCj4gKysrIGIv
-ZHJpdmVycy90YXJnZXQvdGFyZ2V0X2NvcmVfY29uZmlnZnMuYw0KPiBAQCAtMTIsNiArMTIsNyBA
-QA0KPiAgICAqDQo+ICAgICoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovDQo+ICAgDQoNCg0KDQpJIGJlbGll
-dmUgeW91IGhhdmUgdGVzdGVkIHRoaXMgcGF0Y2ggdGhvcm91Z2hseSwgd2l0aCB0aGF0LA0KDQpS
-ZXZpZXdlZC1ieTogQ2hhaXRhbnlhIEt1bGthcm5pIDxrY2hAbnZpZGlhLmNvbT4NCg0KLWNrDQoN
-Cg==
+With clang's kernel control flow integrity (kCFI, CONFIG_CFI_CLANG),
+indirect call targets are validated against the expected function
+pointer prototype to make sure the call target is valid to help mitigate
+ROP attacks. If they are not identical, there is a failure at run time,
+which manifests as either a kernel panic or thread getting killed. A
+proposed warning in clang aims to catch these at compile time, which
+reveals:
+
+  drivers/scsi/elx/libefc/efc_node.c:811:22: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') from 'void (*)(struct efc_sm_ctx *, enum efc_sm_event, void *)' [-Werror,-Wincompatible-function-pointer-types-strict]
+                  ctx->current_state = state;
+                                    ^ ~~~~~
+  drivers/scsi/elx/libefc/efc_node.c:878:21: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') from 'void (*)(struct efc_sm_ctx *, enum efc_sm_event, void *)' [-Werror,-Wincompatible-function-pointer-types-strict]
+          node->nodedb_state = state;
+                            ^ ~~~~~
+  drivers/scsi/elx/libefc/efc_node.c:905:6: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, enum efc_sm_event, void *)' from 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') [-Werror,-Wincompatible-function-pointer-types-strict]
+                  pf = node->nodedb_state;
+                    ^ ~~~~~~~~~~~~~~~~~~
+
+  drivers/scsi/elx/libefc/efc_device.c:455:22: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') from 'void (struct efc_sm_ctx *, enum efc_sm_event, void *)' [-Werror,-Wincompatible-function-pointer-types-strict]
+                  node->nodedb_state = __efc_d_init;
+                                    ^ ~~~~~~~~~~~~
+
+  drivers/scsi/elx/libefc/efc_sm.c:41:22: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') from 'void (*)(struct efc_sm_ctx *, enum efc_sm_event, void *)' [-Werror,-Wincompatible-function-pointer-types-strict]
+                  ctx->current_state = state;
+                                    ^ ~~~~~
+
+The type of the second parameter in the prototypes of ->current_state()
+and ->nodedb_state() ('u32') does not match the implementations, which
+have a second parameter type of 'enum efc_sm_event'. Update the
+prototypes to have the correct second parameter type, clearing up all
+the warnings and CFI failures.
+
+Link: https://github.com/ClangBuiltLinux/linux/issues/1750
+Reported-by: Sami Tolvanen <samitolvanen@google.com>
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+---
+ drivers/scsi/elx/libefc/efclib.h | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/scsi/elx/libefc/efclib.h b/drivers/scsi/elx/libefc/efclib.h
+index dde20891c2dd..57e338612812 100644
+--- a/drivers/scsi/elx/libefc/efclib.h
++++ b/drivers/scsi/elx/libefc/efclib.h
+@@ -58,10 +58,12 @@ enum efc_node_send_ls_acc {
+ #define EFC_LINK_STATUS_UP		0
+ #define EFC_LINK_STATUS_DOWN		1
+ 
++enum efc_sm_event;
++
+ /* State machine context header  */
+ struct efc_sm_ctx {
+ 	void (*current_state)(struct efc_sm_ctx *ctx,
+-			      u32 evt, void *arg);
++			      enum efc_sm_event evt, void *arg);
+ 
+ 	const char	*description;
+ 	void		*app;
+@@ -365,7 +367,7 @@ struct efc_node {
+ 	int			prev_evt;
+ 
+ 	void (*nodedb_state)(struct efc_sm_ctx *ctx,
+-			     u32 evt, void *arg);
++			     enum efc_sm_event evt, void *arg);
+ 	struct timer_list	gidpt_delay_timer;
+ 	u64			time_last_gidpt_msec;
+ 
+
+base-commit: 9abf2313adc1ca1b6180c508c25f22f9395cc780
+-- 
+2.38.1
+
