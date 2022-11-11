@@ -2,84 +2,129 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCF89C4332F
-	for <target-devel@archiver.kernel.org>; Fri, 11 Nov 2022 07:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A625FC4332F
+	for <target-devel@archiver.kernel.org>; Fri, 11 Nov 2022 15:45:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233051AbiKKHoC (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 11 Nov 2022 02:44:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60150 "EHLO
+        id S234012AbiKKPpw (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 11 Nov 2022 10:45:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57636 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232809AbiKKHoC (ORCPT
+        with ESMTP id S233923AbiKKPpv (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 11 Nov 2022 02:44:02 -0500
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 031EA6B22E;
-        Thu, 10 Nov 2022 23:44:00 -0800 (PST)
-Received: from dggpemm500022.china.huawei.com (unknown [172.30.72.54])
-        by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4N7rL737r7z15MXT;
-        Fri, 11 Nov 2022 15:43:43 +0800 (CST)
-Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500022.china.huawei.com (7.185.36.162) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Fri, 11 Nov 2022 15:43:58 +0800
-Received: from ubuntu1804.huawei.com (10.67.175.36) by
- dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Fri, 11 Nov 2022 15:43:58 +0800
-From:   Chen Zhongjin <chenzhongjin@huawei.com>
-To:     <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
-        <target-devel@vger.kernel.org>
-CC:     <james.smart@broadcom.com>, <ram.vegesna@broadcom.com>,
-        <jejb@linux.ibm.com>, <martin.petersen@oracle.com>,
-        <christophe.jaillet@wanadoo.fr>, <hare@suse.de>, <dwagner@suse.de>,
-        <chenzhongjin@huawei.com>
-Subject: [PATCH] scsi: efct: Fix possible memleak in efct_device_init()
-Date:   Fri, 11 Nov 2022 15:40:46 +0800
-Message-ID: <20221111074046.57061-1-chenzhongjin@huawei.com>
-X-Mailer: git-send-email 2.17.1
+        Fri, 11 Nov 2022 10:45:51 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 518D8DE93
+        for <target-devel@vger.kernel.org>; Fri, 11 Nov 2022 07:44:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1668181494;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=MRk0335o56bHnqrxPpY5i4Mdn1amVYs9mQ0y2QBMw8U=;
+        b=izLNf3xiYRn6bMeYsImZ9qMQaTmWDagDNmzsOHQxj7tCL3oKPJ3G+b66zLBy8DWGflGoFx
+        enVpLoVP5ynJBkwR1zm+NwKXDhKcg95oGa5Ynvd3BchgutVUjx9MTziyUUHtT/Th4QrFJS
+        FUgAb9dYwNHS04ihaR9lfyny6eapbc8=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-93-9K5Qu2DvOxiWCnfUz_HBpQ-1; Fri, 11 Nov 2022 10:44:50 -0500
+X-MC-Unique: 9K5Qu2DvOxiWCnfUz_HBpQ-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.rdu2.redhat.com [10.11.54.2])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1CD15802528;
+        Fri, 11 Nov 2022 15:44:50 +0000 (UTC)
+Received: from raketa.redhat.com (ovpn-192-41.brq.redhat.com [10.40.192.41])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 0D88940C958D;
+        Fri, 11 Nov 2022 15:44:48 +0000 (UTC)
+From:   Maurizio Lombardi <mlombard@redhat.com>
+To:     martin.petersen@oracle.com
+Cc:     michael.christie@oracle.com, target-devel@vger.kernel.org,
+        linux@yadro.com
+Subject: [PATCH V2] target: fix a race condition between login_work and the login thread
+Date:   Fri, 11 Nov 2022 16:44:48 +0100
+Message-Id: <20221111154448.629862-1-mlombard@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.67.175.36]
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- dggpemm500013.china.huawei.com (7.185.36.172)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.2
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-In efct_device_init(), when efct_scsi_reg_fc_transport() fails,
-efct_scsi_tgt_driver_exit() is not called to release memory for
-efct_scsi_tgt_driver_init() and causes memleak:
+In case a malicious initiator sends some random data immediately after a
+login PDU; the iscsi_target_sk_data_ready() callback will
+schedule the login_work and, at the same time,
+the negotiation may end without clearing the LOGIN_FLAGS_INITIAL_PDU flag
+(because no additional PDU exchanges are required to complete the login).
 
-unreferenced object 0xffff8881020ce000 (size 2048):
-  comm "modprobe", pid 465, jiffies 4294928222 (age 55.872s)
-  backtrace:
-    [<0000000021a1ef1b>] kmalloc_trace+0x27/0x110
-    [<000000004c3ed51c>] target_register_template+0x4fd/0x7b0 [target_core_mod]
-    [<00000000f3393296>] efct_scsi_tgt_driver_init+0x18/0x50 [efct]
-    [<00000000115de533>] 0xffffffffc0d90011
-    [<00000000d608f646>] do_one_initcall+0xd0/0x4e0
-    [<0000000067828cf1>] do_init_module+0x1cc/0x6a0
-    ...
+The login has been completed but the login_work function
+will find the LOGIN_FLAGS_INITIAL_PDU flag set and will
+never stop from rescheduling itself;
+at this point, if the initiator drops the connection, the iscsit_conn
+structure will be freed, login_work will dereference a released
+socket structure and the kernel crashes.
 
-Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
-Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+BUG: kernel NULL pointer dereference, address: 0000000000000230
+PF: supervisor write access in kernel mode
+PF: error_code(0x0002) - not-present page
+Workqueue: events iscsi_target_do_login_rx [iscsi_target_mod]
+RIP: 0010:_raw_read_lock_bh+0x15/0x30
+Call trace:
+ iscsi_target_do_login_rx+0x75/0x3f0 [iscsi_target_mod]
+ process_one_work+0x1e8/0x3c0
+
+Fix this bug by forcing login_work to stop after the login has been
+completed and the socket callbacks have been restored.
+Also fix other potential race conditions in the error paths.
+
+V2: remove an unnecessary call to cancel_delayed_work();
+    fix a potential race condition in iscsi_start_negotiation() and
+    in iscsi_target_do_login_rx()'s error paths
+
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
 ---
- drivers/scsi/elx/efct/efct_driver.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/target/iscsi/iscsi_target_nego.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
-index b08fc8839808..49fd2cfed70c 100644
---- a/drivers/scsi/elx/efct/efct_driver.c
-+++ b/drivers/scsi/elx/efct/efct_driver.c
-@@ -42,6 +42,7 @@ efct_device_init(void)
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index f2919319ad38..465c53b9ddb3 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -645,7 +645,6 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
+ 						    LOGIN_FLAGS_WRITE_ACTIVE))
+ 			goto err;
+ 	} else if (rc == 1) {
+-		cancel_delayed_work(&conn->login_work);
+ 		iscsi_target_nego_release(conn);
+ 		iscsi_post_login_handler(np, conn, zero_tsih);
+ 		iscsit_deaccess_np(np, tpg, tpg_np);
+@@ -654,7 +653,7 @@ static void iscsi_target_do_login_rx(struct work_struct *work)
  
- 	rc = efct_scsi_reg_fc_transport();
- 	if (rc) {
-+		efct_scsi_tgt_driver_exit();
- 		pr_err("failed to register to FC host\n");
- 		return rc;
+ err:
+ 	iscsi_target_restore_sock_callbacks(conn);
+-	cancel_delayed_work(&conn->login_work);
++	cancel_delayed_work_sync(&conn->login_work);
+ 	iscsi_target_login_drop(conn, login);
+ 	iscsit_deaccess_np(np, tpg, tpg_np);
+ }
+@@ -1058,6 +1057,7 @@ static int iscsi_target_do_login(struct iscsit_conn *conn, struct iscsi_login *l
+ 				login->tsih = conn->sess->tsih;
+ 				login->login_complete = 1;
+ 				iscsi_target_restore_sock_callbacks(conn);
++				cancel_delayed_work_sync(&conn->login_work);
+ 				if (iscsi_target_do_tx_login_io(conn,
+ 						login) < 0)
+ 					return -1;
+@@ -1363,8 +1363,8 @@ int iscsi_target_start_negotiation(
+ 		ret = -1;
+ 
+ 	if (ret < 0) {
+-		cancel_delayed_work_sync(&conn->login_work);
+ 		iscsi_target_restore_sock_callbacks(conn);
++		cancel_delayed_work_sync(&conn->login_work);
+ 		iscsi_remove_failed_auth_entry(conn);
  	}
+ 	if (ret != 0)
 -- 
-2.17.1
+2.31.1
 
