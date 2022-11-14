@@ -2,108 +2,93 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8A2AC4332F
-	for <target-devel@archiver.kernel.org>; Mon, 14 Nov 2022 03:40:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9A0AC4332F
+	for <target-devel@archiver.kernel.org>; Mon, 14 Nov 2022 10:25:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235431AbiKNDkl (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 13 Nov 2022 22:40:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59598 "EHLO
+        id S235815AbiKNKZM (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 14 Nov 2022 05:25:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56082 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235249AbiKNDkl (ORCPT
+        with ESMTP id S235786AbiKNKZJ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 13 Nov 2022 22:40:41 -0500
-Received: from mxct.zte.com.cn (mxct.zte.com.cn [58.251.27.85])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47BC36559;
-        Sun, 13 Nov 2022 19:40:40 -0800 (PST)
-Received: from mxde.zte.com.cn (unknown [10.35.20.165])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        Mon, 14 Nov 2022 05:25:09 -0500
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38CE3B7EF;
+        Mon, 14 Nov 2022 02:25:09 -0800 (PST)
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id E3D6640889;
+        Mon, 14 Nov 2022 10:25:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :references:in-reply-to:x-mailer:message-id:date:date:subject
+        :subject:from:from:received:received:received:received; s=
+        mta-01; t=1668421506; x=1670235907; bh=oBXSKPrAEddyNP6mxLk7QxhIK
+        0aaE1RFoQdDZFheWJM=; b=tbTiKhcIU51cY8t3TSmOJhdtwUWrYvtV816Omxzuh
+        xDKzD0iuhgru2BTs5f2dbVeDpup41Bjw9uAs+pQ+ZDRvegqZb5KNjQFakfjtxLNa
+        HuBBtnOkj12Ab7i22RvwiATT/J6l29VMPIJtn3I50d7ArDujhGqZUImw+52FHY6s
+        FQ=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id FN-yZy9okIC8; Mon, 14 Nov 2022 13:25:06 +0300 (MSK)
+Received: from T-EXCH-01.corp.yadro.com (T-EXCH-01.corp.yadro.com [172.17.10.101])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mxct.zte.com.cn (FangMail) with ESMTPS id 4N9ZpG44z7zjn8;
-        Mon, 14 Nov 2022 11:40:38 +0800 (CST)
-Received: from mxus.zte.com.cn (unknown [10.207.168.7])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mxde.zte.com.cn (FangMail) with ESMTPS id 4N9ZpB72rKz4xD31;
-        Mon, 14 Nov 2022 11:40:34 +0800 (CST)
-Received: from mxhk.zte.com.cn (unknown [192.168.250.138])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mxus.zte.com.cn (FangMail) with ESMTPS id 4N9Zp74zSvz9tyD6;
-        Mon, 14 Nov 2022 11:40:31 +0800 (CST)
-Received: from mxct.zte.com.cn (unknown [192.168.251.13])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mxhk.zte.com.cn (FangMail) with ESMTPS id 4N9Zp42p3gz4xVnD;
-        Mon, 14 Nov 2022 11:40:28 +0800 (CST)
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mxct.zte.com.cn (FangMail) with ESMTPS id 4N9Zp20fR1z4y0tt;
-        Mon, 14 Nov 2022 11:40:26 +0800 (CST)
-Received: from szxlzmapp06.zte.com.cn ([10.5.230.252])
-        by mse-fl1.zte.com.cn with SMTP id 2AE3eC1t022476;
-        Mon, 14 Nov 2022 11:40:12 +0800 (+08)
-        (envelope-from yang.yang29@zte.com.cn)
-Received: from mapi (szxlzmapp04[null])
-        by mapi (Zmail) with MAPI id mid14;
-        Mon, 14 Nov 2022 11:40:13 +0800 (CST)
-Date:   Mon, 14 Nov 2022 11:40:13 +0800 (CST)
-X-Zmail-TransId: 2b066371b89d59d038a6
-X-Mailer: Zmail v1.0
-Message-ID: <202211141140133437292@zte.com.cn>
-Mime-Version: 1.0
-From:   <yang.yang29@zte.com.cn>
-To:     <martin.petersen@oracle.com>
-Cc:     <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <xu.panda@zte.com.cn>,
-        <yang.yang29@zte.com.cn>
-Subject: =?UTF-8?B?W1BBVENIIGxpbnV4LW5leHRdIHNjc2k6IHRhcmdldDogVXNlIHN5c2ZzX3N0cmVxKCkgaW5zdGVhZCBvZiBzdHJuY21wKCk=?=
-Content-Type: text/plain;
-        charset="UTF-8"
-X-MAIL: mse-fl1.zte.com.cn 2AE3eC1t022476
-X-Fangmail-Gw-Spam-Type: 0
-X-FangMail-Miltered: at cgslv5.04-192.168.251.14.novalocal with ID 6371B8B5.000 by FangMail milter!
-X-FangMail-Envelope: 1668397238/4N9ZpG44z7zjn8/6371B8B5.000/10.35.20.165/[10.35.20.165]/mxde.zte.com.cn/<yang.yang29@zte.com.cn>
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 6371B8B5.000/4N9ZpG44z7zjn8
+        by mta-01.yadro.com (Postfix) with ESMTPS id B619F403CB;
+        Mon, 14 Nov 2022 13:25:06 +0300 (MSK)
+Received: from T-EXCH-09.corp.yadro.com (172.17.11.59) by
+ T-EXCH-01.corp.yadro.com (172.17.10.101) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Mon, 14 Nov 2022 13:25:06 +0300
+Received: from localhost (10.178.120.161) by T-EXCH-09.corp.yadro.com
+ (172.17.11.59) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Mon, 14 Nov
+ 2022 13:25:05 +0300
+From:   Anastasia Kovaleva <a.kovaleva@yadro.com>
+To:     <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>
+Subject: [PATCH v3 2/3] target: core: make hw_max_sectors store the sectors amount in blocks
+Date:   Mon, 14 Nov 2022 13:24:59 +0300
+Message-ID: <20221114102500.88892-3-a.kovaleva@yadro.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20221114102500.88892-1-a.kovaleva@yadro.com>
+References: <20221114102500.88892-1-a.kovaleva@yadro.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.178.120.161]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-09.corp.yadro.com (172.17.11.59)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Xu Panda <xu.panda@zte.com.cn>
+By default, hw_max_sectors stores its value in 512 blocks in iblock,
+despite the fact that the block size can be 4096 bytes. Change
+hw_max_sectors to store the number of sectors in hw_block_size blocks.
 
-There is a ready-to-use method to compare a retrieved from a sysfs node
-string with another string. It treats both NUL and newline-then-NUL as
-equivalent string terminations. So use it instead of manually truncating
-the line length in the strncmp() method.
-
-Signed-off-by: Xu Panda <xu.panda@zte.com.cn>
-Signed-off-by: Yang Yang <yang.yang29@zte.com>
+Reviewed-by: Konstantin Shelekhin <k.shelekhin@yadro.com>
+Reviewed-by: Dmitriy Bogdanov <d.bogdanov@yadro.com>
+Signed-off-by: Anastasia Kovaleva <a.kovaleva@yadro.com>
 ---
- drivers/target/target_core_configfs.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/target/target_core_iblock.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index b8a5c8d6cfde..119711c2bc08 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -208,7 +208,7 @@ static struct config_group *target_core_register_fabric(
- 		 * mkdir(2) system calls with known TCM fabric modules.
- 		 */
-
--		if (!strncmp(name, "iscsi", 5)) {
-+		if (!sysfs_streq(name, "iscsi")) {
- 			/*
- 			 * Automatically load the LIO Target fabric module when the
- 			 * following is called:
-@@ -221,7 +221,7 @@ static struct config_group *target_core_register_fabric(
- 				         " iscsi_target_mod.ko: %d\n", ret);
- 				return ERR_PTR(-EINVAL);
- 			}
--		} else if (!strncmp(name, "loopback", 8)) {
-+		} else if (!sysfs_streq(name, "loopback")) {
- 			/*
- 			 * Automatically load the tcm_loop fabric module when the
- 			 * following is called:
+diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
+index 8351c974cee3..2a704926edb9 100644
+--- a/drivers/target/target_core_iblock.c
++++ b/drivers/target/target_core_iblock.c
+@@ -124,7 +124,9 @@ static int iblock_configure_device(struct se_device *dev)
+ 	q = bdev_get_queue(bd);
+ 
+ 	dev->dev_attrib.hw_block_size = bdev_logical_block_size(bd);
+-	dev->dev_attrib.hw_max_sectors = queue_max_hw_sectors(q);
++	dev->dev_attrib.hw_max_sectors = mult_frac(queue_max_hw_sectors(q),
++			SECTOR_SIZE,
++			dev->dev_attrib.hw_block_size);
+ 	dev->dev_attrib.hw_queue_depth = q->nr_requests;
+ 
+ 	/*
 -- 
-2.15.2
+2.38.1
+
