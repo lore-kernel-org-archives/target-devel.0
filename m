@@ -2,137 +2,296 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0A57C4332F
-	for <target-devel@archiver.kernel.org>; Mon, 28 Nov 2022 19:30:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0594C4321E
+	for <target-devel@archiver.kernel.org>; Tue, 29 Nov 2022 12:51:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232198AbiK1Tam (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 28 Nov 2022 14:30:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57168 "EHLO
+        id S234557AbiK2MvQ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 29 Nov 2022 07:51:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39176 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231645AbiK1Tak (ORCPT
+        with ESMTP id S234542AbiK2MvN (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 28 Nov 2022 14:30:40 -0500
-Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2042.outbound.protection.outlook.com [40.107.244.42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA3152CC92;
-        Mon, 28 Nov 2022 11:30:39 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=kenSg4xtynATy+7nCx48nrR3BtTPCRaTLcsFsbmPOCtWIvzTOf/KS/KxCT/8K4Wz5FiHplHXBSPlXigAC2nKKDJsO82O0TJyrfx4GDiwm532t09RrD6NnkUio5VrwTHmcCggtL7gowBI0p5Un2uVDdKdOY3xcmi0hAMJorU1dAF3XVm5FJzfziwZu3wQOAsNwBDn4xB6PSYb2rrs0YQaFNxx0SYLnISC0Okv0MNQ8I08EQAYFRFayCPR41qb116w/1aKWmV9PmWy+NVJuC5KeLq2RFWgLstzqNioqfZ/iH0ttjfPpq2MkFJsK8LBRjM+zbF9r8rL0nzihsqOXpcPvg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=F7xTwR+tLudXnOyCnur7jkqhiUlGqKKlfwpmGxWoUBo=;
- b=miIYfxKT2YNZVD9QNvdCh5nECsVRrBho+Umz00UtA/cj05PJepEGGkrtH6h1wIzhccX6gPv6iC1iSg+/oG3VCXTAEOZoo9Jr+pcBepBzdIfWlXMe1w3cAJ9qlKNubqTptCjc8oqO1HHGtOn8NljSmJr2V7VweQJtBYqU/EiXWkx54+adqMAfoo2kzQlabiJU9Gwl2GnirmllrU0EyRFrNr6BAN8VmsCPHXl9bTKTru//JWdASW+WIgyuqCBAWs1OdGFCMY56bJNf2ZHdb5oTwZtoFxoRDZTdHGHikg7DUmpzuRn0eukClBJek2kYGG6SUWeXR9fRoy0urojoWwBhCQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=F7xTwR+tLudXnOyCnur7jkqhiUlGqKKlfwpmGxWoUBo=;
- b=LFU1YJKQfN8NXmwLT0aChCstQd1F8/rU2/MPhqd6OejA1rBQ1fWj95AZFIfVumcTVGEKaHxVaiWxLSXsZqHzXv85qnkN1cZP6pvehuER/2mze9Od/iicQfjPnJXsuncZFpsH6gfS14/Cdc2+zjN+oNjwmkhDO/5Y3eo6VubUC+x6HB3A4T6k2WklkjMUYZBTLYZPJOzkkJWEX0s71K26CynLSyrfZUU57JS3EaWrABYqmrWyhzlphDRHn9cKUGODwTHvJUH8ZhdrMF3M+YDQtHJwJ/SGhO0AXCsSZbVpQvgfEiuk0ZYNzyxKIg99asqRHj/dZi0uuX9aE9brqEBn1w==
-Received: from MW2PR12MB4667.namprd12.prod.outlook.com (2603:10b6:302:12::28)
- by PH0PR12MB7960.namprd12.prod.outlook.com (2603:10b6:510:287::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5857.23; Mon, 28 Nov
- 2022 19:30:38 +0000
-Received: from MW2PR12MB4667.namprd12.prod.outlook.com
- ([fe80::f02:bf13:2f64:43bc]) by MW2PR12MB4667.namprd12.prod.outlook.com
- ([fe80::f02:bf13:2f64:43bc%7]) with mapi id 15.20.5834.015; Mon, 28 Nov 2022
- 19:30:38 +0000
-From:   Chaitanya Kulkarni <chaitanyak@nvidia.com>
-To:     KaiLong Wang <wangkailong@jari.cn>,
-        "mikecyr@linux.ibm.com" <mikecyr@linux.ibm.com>,
-        "jejb@linux.ibm.com" <jejb@linux.ibm.com>,
-        "martin.petersen@oracle.com" <martin.petersen@oracle.com>
-CC:     "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] scsi: ibmvscsi_tgt: convert sysfs snprintf to sysfs_emit
-Thread-Topic: [PATCH] scsi: ibmvscsi_tgt: convert sysfs snprintf to sysfs_emit
-Thread-Index: AQHZAl3+3bbnBGp/Bkic3dxZb6o/sq5UuwyA
-Date:   Mon, 28 Nov 2022 19:30:38 +0000
-Message-ID: <b32f761f-9fb8-40ec-174e-011ee5f69625@nvidia.com>
-References: <483482fb.1d3.184b91dde72.Coremail.wangkailong@jari.cn>
-In-Reply-To: <483482fb.1d3.184b91dde72.Coremail.wangkailong@jari.cn>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: MW2PR12MB4667:EE_|PH0PR12MB7960:EE_
-x-ms-office365-filtering-correlation-id: d8519d75-9b9b-43aa-4f42-08dad1770771
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: tzWlqGzWT6gHILXvlsdvHTHgzU/Y4LqTVVXLEOFRR3PXqN+rS45Sn9vNB/Fj8V7OH39MfiphzLh9N6jRYEEnSofODO/j4U7+lheqXJkb9BwbfyhRVpgPQZcqzOUdIKxpPLXqYACWPogdpYpx8ksRfaof6nGyFmRs7ynmzdSq+sU7AEJu8WvwXXNCdkQwaxVMixK72S5v0Wm0zq2xN5go6vjKtcO1rXaW+azJ+oQ/6HdtwGIY0RyRgT1V6Qk1vjsklJj6yVF9IamsgtiicCCSiiPGYrFR8mJz1oV55S8RBwPftN8JU76TxRbyxW/Sx2zPxBu5lq1m9PUpnZugq9E6SGFhepu1p3R3yAKQ8jZCR1p2s9DjgKc6vcb7MrglRe5rhf6B91Ang0mh86ld6vr7C02zlwArksGM4LzCj+c97ilTs5uNxSNQWRmlArevvcMO7YUeBlxXYs3Gy3HTveX8UJ4lNl1cISrEy0OUGrxD5if+3Xz+OOPARY9NauChXAi6Sjv7Piqd0BzAav9FIu5IqzuCPaFJyoc7THv0NbPN4r8v9mKMTubgzJbe/m5wJF+OyDL9uo5tEUWWNtZYynoZu2XOnoiD+5YCw8LwZSOmlojrcOGYYf8xr9l0qfPRTd7qKMoZmLUb9+FVIzQP5HaRYQswZuyHmFLxH5U4SUFzFMKw3Lj1faP0I1XhLjOFyfGBu1WpPU+j+uVUlkDB5xPTapy9L1l1K3XipUFGlDKqNzOmtl62yJOQWA/Tla9P385gSWw/HHmTEkzlnKy/1ylNaQ==
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MW2PR12MB4667.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(39860400002)(136003)(396003)(346002)(366004)(376002)(451199015)(31686004)(2906002)(4744005)(91956017)(316002)(41300700001)(36756003)(5660300002)(66476007)(66556008)(66946007)(76116006)(54906003)(71200400001)(66446008)(8676002)(8936002)(4326008)(64756008)(110136005)(6512007)(86362001)(478600001)(6486002)(31696002)(6506007)(2616005)(53546011)(186003)(38100700002)(83380400001)(122000001)(38070700005)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?OTlQdjhMUk9mK1R1NWV6ZTNPWkExWkpEbzFNdUpxZ3REaC9XRmNMNXpYK05w?=
- =?utf-8?B?c2JYbHlFU296eXJhK21wc1pHKzE3MWZTUlFRNG9SNGEvQVRpUTFMakl5azg1?=
- =?utf-8?B?ZlVVeFpwelhIQk1oN0Zhc3VRWi9VNWZWK1pMM3RranZYTG5QaFFKUitkYm9U?=
- =?utf-8?B?TEw3dUU2c0JaZU9GemdCR0dpTm9aZWYxS0xDNGVYU3JybkZqempzVXNjVEtv?=
- =?utf-8?B?anl4WUd4WHhHSXZQV1d5Y2g3NUlVa0FJdEJFR0NlRDM1ajdId0ZZZ1p4WTVJ?=
- =?utf-8?B?SmRpYUMrdjJnVm1UREVvVHBpRkZDYmxoMXM3TlJselp1bWRHaDdDZmtwSis2?=
- =?utf-8?B?cjlaVkJ2NDgwdG9KOXJDU2lWbUpOSmFxZnZQTkhXWHhoZ3lKc1M4UHRLaUxJ?=
- =?utf-8?B?MXJBSUU1Wm84SXV5Z3BIaFNrcjlIMXg1ajNmMDlmZ3VEM3M3UmhvbkJ5VFl1?=
- =?utf-8?B?aldsVlRpVTZkNEFQQjJSakRoUDNPU2JCQUY2SW93Wmh5TnpGYjlYTFhvYW9E?=
- =?utf-8?B?S2hhaldiTU5XMFd4eGdzSEZnVFBtTUZFWG5iZG9UMUpWYnhqcEltTkt6ZEZX?=
- =?utf-8?B?M2RiQ3B2bmtnUWNySDE1VTVSQjRFTGlSRCtLVmNTNmRWMGNtZXBjNHMva1Q3?=
- =?utf-8?B?dGdWYjljS1lXVEhwZmlsUUR2cVJBM0NXTXltOFNTK0dqL2dZOGZrMHAyZmFY?=
- =?utf-8?B?TnFCUkVVMjRGZHVadHV0NFpERUFlQXU3V2R3TXRFcmRDbUJZY3FiSGdVcFlX?=
- =?utf-8?B?YmhBb0hFZWEzUUlHK295ZXQvaFdhOENQYSthQ2R5RXpGK01FN1RzV0M2bU1a?=
- =?utf-8?B?M0Q3UTVNYW1aN1MzQS82Z0M2S2ZrOWZwbFc2OStMaU9kMzljWTFPbkpGRmdy?=
- =?utf-8?B?MFhBZlQxNWlsLzhXd3phOUN0eXhWMjBNWHpOUDZQK0V1Qy9PcFJuT2x1MDlY?=
- =?utf-8?B?TFFmaHl2cjRERzRGYW5RaE1YeWNFeWdNS0JMeVJzV2xTRUp3N1FCV2EwRDhG?=
- =?utf-8?B?QnZRaStRbU1LRXUyMkN6cWdRRVE5d0c1MEFOT2oweExuUXN4WTBhSm1sQ3VZ?=
- =?utf-8?B?ZDJJLzd1cGFkdmNBSVNzRUx0ejBWMXVzNmN5RVkyT2VqSS9XU1hEYjMzaUlT?=
- =?utf-8?B?UTZYbkt3djltVGNvOHlmZkN1dUhnRGVWV3Vsa1JFNGJUcmRRSkJsS1hPU2hj?=
- =?utf-8?B?VzNkcGUzRVZxQUlUNmhYZ2wwdnlBUkF4dHZQcUVkZ3pDUUcxT1E0T080Tkxl?=
- =?utf-8?B?QWVsSnMxbTljSUdOOCtHM3RzR2l6dTljYjJSNnN1V2kyYk4xcXZjSGsvNFpP?=
- =?utf-8?B?dlNXUUcxR1o0SjlncU5RcGF3Qko1YlpoSW96UStpdFhjWk1qOU44S294R1Bu?=
- =?utf-8?B?R0dIMWt5N1FPempGMWdqSnVleTdaTHFpYnFNd3Z1bzQzVVQvMnhmVFFLUDBW?=
- =?utf-8?B?aVR3NVRpdVlYTlIyd29ZZkpRVGdBOEkyUE8za214Mit0cU1KOWlqRy9IYlE0?=
- =?utf-8?B?YkNwRjVBOEUycmZJMnQ3SFdFeVFyQ3RYdEQrYWg5R0doRkNMREw2RjhNdXlr?=
- =?utf-8?B?L2wyL1k2bDBmSlJlOW9WYlFKMXVVbDZMVGVwRFI4NkJMMkFpeVVsa1hNVEY0?=
- =?utf-8?B?TUdoVXF6clp5WTdOdEN6QjA1V0pobWIxenRmdXUxbFRYTncrVTArTldGY2sx?=
- =?utf-8?B?dEkvYVcxaTBFSk1TbSs2OG5COTc4NHgxTFZuaGdpRlNZTmUvM3BSN1FXczJu?=
- =?utf-8?B?YVpsZjMzcFBFK1grUmhHdFVPWjZjV3Awbi9ZMGx3SmY4a0oxbzEwTDUxWjRv?=
- =?utf-8?B?N29vdjJGNUNsVnpad25CT2xmTW9lT3FkR3JvbCt4R1NpTnFkb1NramQySlhj?=
- =?utf-8?B?Sk5TQmF1TVgreGc5MUVDd2tHY3hjU2dOQ1RvaUFSZkxCQUFBNVJyejRsVXhO?=
- =?utf-8?B?OTNuOFZiTnJyWTZlRFZhb0ZrUWxUZmFWR3MxS3dzOWh2NGlORTBKdUJlUnQx?=
- =?utf-8?B?eCtrMUpYTXdpdzNKaHplckh6YW5VL3RwU2lrRlBCQjVFckZ6K0NLNHV2K2h0?=
- =?utf-8?B?SWh4S2JCa3g1MEFlMnprSUNPMDlmMTNYNDZSRVVWcCtCTGM2TmMrcDFJYkZ2?=
- =?utf-8?B?cjBmK0JNOTd6K0R3NlAzeVNOS0VIUmUvRDYva2ZNVHdmRWU2VU44ZjFxUjVs?=
- =?utf-8?Q?pMceEcabChIYI44Ss6aEZOz42TmVXOXHj4eFoMLAewOB?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <32F812B3A35C984CBF59086028501C7D@namprd12.prod.outlook.com>
-Content-Transfer-Encoding: base64
+        Tue, 29 Nov 2022 07:51:13 -0500
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0CBEF6036B;
+        Tue, 29 Nov 2022 04:51:10 -0800 (PST)
+Received: from localhost (unknown [127.0.0.1])
+        by mta-01.yadro.com (Postfix) with ESMTP id 8CDFF4124D;
+        Tue, 29 Nov 2022 12:51:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+        content-type:content-type:content-transfer-encoding:mime-version
+        :x-mailer:message-id:date:date:subject:subject:from:from
+        :received:received:received:received; s=mta-01; t=1669726267; x=
+        1671540668; bh=SJFf+aS4qTxWp7OCMlPfNN/dHm+8/RHEhLGlq20u3JY=; b=P
+        GCzpe0F6hVrtBfVPkM7rHW8ba34iq0K4sDyAj47em6MX5KgXOsQIkICljpdNHSpv
+        JXA4YiYMQtGqc6PR25e4N5gYJqj+HKLV17O4WG9mnTQo4mXZrarld3EE88JRuTLY
+        WFBeO9p9fY/9jWi8vDECQRGWFlj7WmsmuQL7Mychu8=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+        by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id xIFNRC0MKNEU; Tue, 29 Nov 2022 15:51:07 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (T-EXCH-02.corp.yadro.com [172.17.10.102])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Postfix) with ESMTPS id AEE754124C;
+        Tue, 29 Nov 2022 15:51:04 +0300 (MSK)
+Received: from T-EXCH-08.corp.yadro.com (172.17.11.58) by
+ T-EXCH-02.corp.yadro.com (172.17.10.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id
+ 15.1.669.32; Tue, 29 Nov 2022 15:51:04 +0300
+Received: from NB-591.corp.yadro.com (10.199.18.20) by
+ T-EXCH-08.corp.yadro.com (172.17.11.58) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.1118.9; Tue, 29 Nov 2022 15:51:03 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
+        Nilesh Javali <njavali@marvell.com>,
+        <GR-QLogic-Storage-Upstream@marvell.com>,
+        "Mike Christie" <michael.christie@oracle.com>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: [PATCH] scsi: qla2xxx: abort TMR commands
+Date:   Tue, 29 Nov 2022 15:42:04 +0300
+Message-ID: <20221129124204.3049-1-d.bogdanov@yadro.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MW2PR12MB4667.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d8519d75-9b9b-43aa-4f42-08dad1770771
-X-MS-Exchange-CrossTenant-originalarrivaltime: 28 Nov 2022 19:30:38.2057
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 21EJySiKokdBUC7o6ohoXYyn1Nbu9CFlzZDMGeyG0tKdJZ1sBMe8snIzRoQQzT3R+BJDzW+/h7YlFFqqs+GM6w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR12MB7960
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.199.18.20]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-08.corp.yadro.com (172.17.11.58)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-T24gMTEvMjcvMjIgMDQ6NDQsIEthaUxvbmcgV2FuZyB3cm90ZToNCj4gRml4IHRoZSBmb2xsb3dp
-bmcgY29jY2ljaGVjayB3YXJuaW5nOg0KPiANCj4gZHJpdmVycy9zY3NpL2libXZzY3NpX3RndC9p
-Ym12c2NzaV90Z3QuYzozNjI1OjgtMTY6IFdBUk5JTkc6IHVzZQ0KPiBzY25wcmludGYgb3Igc3By
-aW50Zg0KPiBkcml2ZXJzL3Njc2kvaWJtdnNjc2lfdGd0L2libXZzY3NpX3RndC5jOjM2MTk6OC0x
-NjogV0FSTklORzogdXNlDQo+IHNjbnByaW50ZiBvciBzcHJpbnRmDQo+IGRyaXZlcnMvc2NzaS9p
-Ym12c2NzaV90Z3QvaWJtdnNjc2lfdGd0LmM6MzYzMzo4LTE2OiBXQVJOSU5HOiB1c2UNCj4gc2Nu
-cHJpbnRmIG9yIHNwcmludGYNCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEthaUxvbmcgV2FuZyA8d2Fu
-Z2thaWxvbmdAamFyaS5jbj4NCg0KDQpMb29rcyBnb29kLg0KDQpSZXZpZXdlZC1ieTogQ2hhaXRh
-bnlhIEt1bGthcm5pIDxrY2hAbnZpZGlhLmNvbT4NCg0KLWNrDQoNCg0K
+TCM calls aborted_task callback for TMR too and then releases the
+command. But qla2xx ignores that callback for TMR and leaks an FC
+exchange.
+Add terminating the exchange of task management IOCBs to free its
+FW resources.
+
+Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
+---
+ drivers/scsi/qla2xxx/qla_target.c  | 121 ++++++++++++++++++++++++-----
+ drivers/scsi/qla2xxx/qla_target.h  |   1 +
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c |   8 +-
+ 3 files changed, 111 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index bb754a950802..494506ae99d4 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -1857,6 +1857,72 @@ static int qlt_build_abts_resp_iocb(struct qla_tgt_mgmt_cmd *mcmd)
+ 	return rc;
+ }
+ 
++static int __qlt_send_term_abts_exchange(struct qla_qpair *qpair,
++					 struct scsi_qla_host *vha,
++					 struct abts_recv_from_24xx *abts)
++{
++	struct qla_hw_data *ha = vha->hw;
++	struct abts_resp_to_24xx *resp;
++	__le32 f_ctl;
++	uint8_t *p;
++	int rc;
++
++	ql_dbg(ql_dbg_tgt, vha, 0xe006,
++	    "Sending terminate exchange of ABTS (ha=%p)\n",
++	    ha);
++
++	rc = qlt_check_reserve_free_req(qpair, 1);
++	if (rc) {
++		ql_dbg(ql_dbg_tgt, vha, 0xe04a,
++		    "qla_target(%d): %s failed: unable to allocate request packet\n",
++		    vha->vp_idx, __func__);
++		return -EAGAIN;
++	}
++
++	resp = (struct abts_resp_to_24xx *)qpair->req->ring_ptr;
++	memset(resp, 0, sizeof(*resp));
++
++	resp->entry_type = ABTS_RESP_24XX;
++	resp->entry_count = 1;
++	resp->handle = QLA_TGT_SKIP_HANDLE;
++	resp->nport_handle = abts->nport_handle;
++	resp->control_flags = ABTS_CONTR_FLG_TERM_EXCHG;
++	resp->vp_index = vha->vp_idx;
++	resp->sof_type = abts->sof_type;
++	resp->exchange_address = abts->exchange_address;
++	/*
++	 * Although no basic accept/reject frame is sent to the wire, the basic
++	 * accept/reject frame (from IOCB offsets 14h-37h) must be filled by the
++	 * driver, because the QLogic ASIC firmware performs a cross-check
++	 * before terminating the ABTS exchange.
++	 */
++	resp->fcp_hdr_le = abts->fcp_hdr_le;
++	f_ctl = cpu_to_le32(F_CTL_EXCH_CONTEXT_RESP |
++	    F_CTL_LAST_SEQ | F_CTL_END_SEQ |
++	    F_CTL_SEQ_INITIATIVE);
++	p = (uint8_t *)&f_ctl;
++	resp->fcp_hdr_le.f_ctl[0] = *p++;
++	resp->fcp_hdr_le.f_ctl[1] = *p++;
++	resp->fcp_hdr_le.f_ctl[2] = *p;
++
++	resp->fcp_hdr_le.d_id = abts->fcp_hdr_le.s_id;
++	resp->fcp_hdr_le.s_id = abts->fcp_hdr_le.d_id;
++	resp->fcp_hdr_le.r_ctl = R_CTL_BASIC_LINK_SERV | R_CTL_B_RJT;
++	resp->payload.ba_rjt.reason_code =
++		BA_RJT_REASON_CODE_UNABLE_TO_PERFORM;
++	resp->exchange_addr_to_abort = abts->exchange_addr_to_abort;
++
++	vha->vha_tgt.qla_tgt->abts_resp_expected++;
++
++	/* Memory Barrier */
++	wmb();
++	if (qpair->reqq_start_iocbs)
++		qpair->reqq_start_iocbs(qpair);
++	else
++		qla2x00_start_iocbs(vha, qpair->req);
++
++	return rc;
++}
+ /*
+  * ha->hardware_lock supposed to be held on entry. Might drop it, then reaquire
+  */
+@@ -3666,10 +3732,9 @@ static void qlt_send_term_imm_notif(struct scsi_qla_host *vha,
+  * This function sends the appropriate CTIO to ISP 2xxx or 24xx
+  */
+ static int __qlt_send_term_exchange(struct qla_qpair *qpair,
+-	struct qla_tgt_cmd *cmd,
++	struct scsi_qla_host *vha,
+ 	struct atio_from_isp *atio)
+ {
+-	struct scsi_qla_host *vha = qpair->vha;
+ 	struct ctio7_to_24xx *ctio24;
+ 	struct qla_hw_data *ha = vha->hw;
+ 	request_t *pkt;
+@@ -3678,9 +3743,6 @@ static int __qlt_send_term_exchange(struct qla_qpair *qpair,
+ 
+ 	ql_dbg(ql_dbg_tgt, vha, 0xe009, "Sending TERM EXCH CTIO (ha=%p)\n", ha);
+ 
+-	if (cmd)
+-		vha = cmd->vha;
+-
+ 	pkt = (request_t *)qla2x00_alloc_iocbs_ready(qpair, NULL);
+ 	if (pkt == NULL) {
+ 		ql_dbg(ql_dbg_tgt, vha, 0xe050,
+@@ -3689,16 +3751,6 @@ static int __qlt_send_term_exchange(struct qla_qpair *qpair,
+ 		return -ENOMEM;
+ 	}
+ 
+-	if (cmd != NULL) {
+-		if (cmd->state < QLA_TGT_STATE_PROCESSED) {
+-			ql_dbg(ql_dbg_tgt, vha, 0xe051,
+-			    "qla_target(%d): Terminating cmd %p with "
+-			    "incorrect state %d\n", vha->vp_idx, cmd,
+-			    cmd->state);
+-		} else
+-			ret = 1;
+-	}
+-
+ 	qpair->tgt_counters.num_term_xchg_sent++;
+ 	pkt->entry_count = 1;
+ 	pkt->handle = QLA_TGT_SKIP_HANDLE | CTIO_COMPLETION_HANDLE_MARK;
+@@ -3739,14 +3791,23 @@ static void qlt_send_term_exchange(struct qla_qpair *qpair,
+ 	else
+ 		vha = qpair->vha;
+ 
++	if (cmd != NULL) {
++		if (cmd->state < QLA_TGT_STATE_PROCESSED) {
++			ql_dbg(ql_dbg_tgt, vha, 0xe051,
++			    "qla_target(%d): Terminating cmd %p with "
++			    "incorrect state %d\n", vha->vp_idx, cmd,
++			    cmd->state);
++		}
++	}
++
+ 	if (ha_locked) {
+-		rc = __qlt_send_term_exchange(qpair, cmd, atio);
++		rc = __qlt_send_term_exchange(qpair, vha, atio);
+ 		if (rc == -ENOMEM)
+ 			qlt_alloc_qfull_cmd(vha, atio, 0, 0);
+ 		goto done;
+ 	}
+ 	spin_lock_irqsave(qpair->qp_lock_ptr, flags);
+-	rc = __qlt_send_term_exchange(qpair, cmd, atio);
++	rc = __qlt_send_term_exchange(qpair, vha, atio);
+ 	if (rc == -ENOMEM)
+ 		qlt_alloc_qfull_cmd(vha, atio, 0, 0);
+ 
+@@ -3810,6 +3871,30 @@ static void qlt_chk_exch_leak_thresh_hold(struct scsi_qla_host *vha)
+ 
+ }
+ 
++int qlt_abort_mcmd(struct qla_tgt_mgmt_cmd *mcmd)
++{
++	struct scsi_qla_host *vha = mcmd->vha;
++	struct se_cmd *se_cmd = &mcmd->se_cmd;
++	unsigned long flags;
++	int rc = 0;
++
++	ql_dbg(ql_dbg_tgt_mgt, vha, 0xf022,
++	    "qla_target(%d): terminating exchange for aborted mcmd=%p (se_cmd=%p, tag=%llu)",
++	    vha->vp_idx, mcmd, se_cmd, se_cmd->tag);
++
++	spin_lock_irqsave(mcmd->qpair->qp_lock_ptr, flags);
++	if (mcmd->orig_iocb.atio.u.raw.entry_type == ABTS_RECV_24XX)
++		rc = __qlt_send_term_abts_exchange(mcmd->qpair, vha,
++						   &mcmd->orig_iocb.abts);
++	else
++		rc = __qlt_send_term_exchange(mcmd->qpair, vha,
++					      &mcmd->orig_iocb.atio);
++	spin_unlock_irqrestore(mcmd->qpair->qp_lock_ptr, flags);
++
++	return rc;
++}
++EXPORT_SYMBOL(qlt_abort_mcmd);
++
+ int qlt_abort_cmd(struct qla_tgt_cmd *cmd)
+ {
+ 	struct qla_tgt *tgt = cmd->tgt;
+@@ -5578,7 +5663,7 @@ qlt_free_qfull_cmds(struct qla_qpair *qpair)
+ 			/* cmd->state is a borrowed field to hold status */
+ 			rc = __qlt_send_busy(qpair, &cmd->atio, cmd->state);
+ 		else if (cmd->term_exchg)
+-			rc = __qlt_send_term_exchange(qpair, NULL, &cmd->atio);
++			rc = __qlt_send_term_exchange(qpair, vha, &cmd->atio);
+ 
+ 		if (rc == -ENOMEM)
+ 			break;
+diff --git a/drivers/scsi/qla2xxx/qla_target.h b/drivers/scsi/qla2xxx/qla_target.h
+index 7df86578214f..7902f5b5f4aa 100644
+--- a/drivers/scsi/qla2xxx/qla_target.h
++++ b/drivers/scsi/qla2xxx/qla_target.h
+@@ -1057,6 +1057,7 @@ extern void qlt_response_pkt_all_vps(struct scsi_qla_host *, struct rsp_que *,
+ extern int qlt_rdy_to_xfer(struct qla_tgt_cmd *);
+ extern int qlt_xmit_response(struct qla_tgt_cmd *, int, uint8_t);
+ extern int qlt_abort_cmd(struct qla_tgt_cmd *);
++extern int qlt_abort_mcmd(struct qla_tgt_mgmt_cmd *mcmd);
+ extern void qlt_xmit_tm_rsp(struct qla_tgt_mgmt_cmd *);
+ extern void qlt_free_mcmd(struct qla_tgt_mgmt_cmd *);
+ extern void qlt_free_cmd(struct qla_tgt_cmd *cmd);
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index 8fa0056b56dd..0ef09b43e0f7 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -773,8 +773,14 @@ static void tcm_qla2xxx_aborted_task(struct se_cmd *se_cmd)
+ 	struct qla_tgt_cmd *cmd;
+ 	unsigned long flags;
+ 
+-	if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB)
++	if (se_cmd->se_cmd_flags & SCF_SCSI_TMR_CDB) {
++		struct qla_tgt_mgmt_cmd *mcmd = container_of(se_cmd,
++				struct qla_tgt_mgmt_cmd, se_cmd);
++
++		qlt_abort_mcmd(mcmd);
++
+ 		return;
++	}
+ 
+ 	cmd  = container_of(se_cmd, struct qla_tgt_cmd, se_cmd);
+ 
+-- 
+2.25.1
+
