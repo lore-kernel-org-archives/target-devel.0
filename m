@@ -2,48 +2,48 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 269ECC4321E
-	for <target-devel@archiver.kernel.org>; Fri,  2 Dec 2022 15:15:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA22CC4321E
+	for <target-devel@archiver.kernel.org>; Fri,  2 Dec 2022 17:06:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233527AbiLBPPk (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 2 Dec 2022 10:15:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48694 "EHLO
+        id S233676AbiLBRGd (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 2 Dec 2022 12:06:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40804 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233707AbiLBPPd (ORCPT
+        with ESMTP id S233643AbiLBRGc (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 2 Dec 2022 10:15:33 -0500
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B713D3A28;
-        Fri,  2 Dec 2022 07:15:27 -0800 (PST)
+        Fri, 2 Dec 2022 12:06:32 -0500
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 344E2E3468;
+        Fri,  2 Dec 2022 09:06:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1669994127; x=1701530127;
+  t=1670000788; x=1701536788;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=B0pl721aInysKn4T3rSpjte8yCft6Dz0jf2FSbCHPe4=;
-  b=kBSuNJ6P1xdEVRM1AL4ne4iZwZEAR1CQs3rlwgIZNUlNQcWsuTxnEPU+
-   LrLOQOGJ2RupMv24t9wCubsuhCPP8Nz+ipNLaNLOcugzcRfe57QM2ud4Q
-   e48b4ATkrhckJYTQEsLWBpOkUu9wXzYI7LImLUmk7jrTXVIV8gEnUbg+t
-   oG/B8R0cJuFww8DmI3qbPwIY0HQFTwd4Tl/YrfzGEu9AWNlSOkGvx9hGu
-   sklsOWDGdqRrP5WK/uEd3Y1RA0uYnUmw3EA/oq+d5JmEofO/ZjgmUR6s2
-   MPON4Demfpk2fmQ58BEN5/NIQISJLlCNGn5btpEmX8F88j5/jDMgir0tq
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10548"; a="314674716"
-X-IronPort-AV: E=Sophos;i="5.96,212,1665471600"; 
-   d="scan'208";a="314674716"
+  bh=c3v0+ObBM/Wbg/NwxyRyw5s7rBi1TFvzK+6xbl1UPv0=;
+  b=jmotW0JfFqwFG8AfEyOLJEv+WKU3JaZEMRMWxShb14QETk+j4WXVNlRy
+   j9FLG6cnx/1NWRZjv572ayMhnXIZFChkdzEAc/nIc1L7Cpc1k07EUmDd2
+   85tctpk0Wjxpv68vrmpivI+tdhoyL2ddsAeVJ+yc1Y4+lsoKoczEnzrFd
+   Xiq01XduYe+rs96UNOp6Va7nRsQ8T6TgH423WM2AfyFHJY51udwPbDQOX
+   VOcGnIyNurnLYgze1SZQMqUy/JSf8nPGn79Voxm7Xu79dPUFbkq1kWj+N
+   sJ9t52McyBXGUu2J1h48399pJfnSuatkSGe4AWtcDGjSZ/13+4hL8wXCu
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10548"; a="380284875"
+X-IronPort-AV: E=Sophos;i="5.96,213,1665471600"; 
+   d="scan'208";a="380284875"
 Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Dec 2022 07:15:21 -0800
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Dec 2022 09:06:26 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10548"; a="645055095"
-X-IronPort-AV: E=Sophos;i="5.96,212,1665471600"; 
-   d="scan'208";a="645055095"
+X-IronPort-AV: E=McAfee;i="6500,9779,10548"; a="645089359"
+X-IronPort-AV: E=Sophos;i="5.96,213,1665471600"; 
+   d="scan'208";a="645089359"
 Received: from lkp-server01.sh.intel.com (HELO 64a2d449c951) ([10.239.97.150])
-  by orsmga002.jf.intel.com with ESMTP; 02 Dec 2022 07:15:18 -0800
+  by orsmga002.jf.intel.com with ESMTP; 02 Dec 2022 09:06:22 -0800
 Received: from kbuild by 64a2d449c951 with local (Exim 4.96)
         (envelope-from <lkp@intel.com>)
-        id 1p17kz-000DmR-1I;
-        Fri, 02 Dec 2022 15:15:17 +0000
-Date:   Fri, 2 Dec 2022 23:14:49 +0800
+        id 1p19UT-000Dr9-2c;
+        Fri, 02 Dec 2022 17:06:21 +0000
+Date:   Sat, 3 Dec 2022 01:05:55 +0800
 From:   kernel test robot <lkp@intel.com>
 To:     Dmitry Bogdanov <d.bogdanov@yadro.com>,
         Martin Petersen <martin.petersen@oracle.com>,
@@ -51,20 +51,22 @@ To:     Dmitry Bogdanov <d.bogdanov@yadro.com>,
 Cc:     oe-kbuild-all@lists.linux.dev,
         Christoph Hellwig <hch@infradead.org>,
         linux-scsi@vger.kernel.org, linux@yadro.com,
-        Dmitry Bogdanov <d.bogdanov@yadro.com>
-Subject: Re: [PATCH v3 1/5] scsi: target: core: Add RTPI field to target port
-Message-ID: <202212022242.0mCcEusV-lkp@intel.com>
-References: <20221202121139.28180-2-d.bogdanov@yadro.com>
+        Dmitry Bogdanov <d.bogdanov@yadro.com>,
+        Roman Bolshakov <r.bolshakov@yadro.com>
+Subject: Re: [PATCH v3 5/5] scsi: target: core: Add RTPI attribute for target
+ port
+Message-ID: <202212030037.RY4wt1EV-lkp@intel.com>
+References: <20221202121139.28180-6-d.bogdanov@yadro.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="KnXa9wwcmdq4wPgM"
+Content-Type: multipart/mixed; boundary="OkUH2Kq+DlOxNKA/"
 Content-Disposition: inline
-In-Reply-To: <20221202121139.28180-2-d.bogdanov@yadro.com>
+In-Reply-To: <20221202121139.28180-6-d.bogdanov@yadro.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
 
---KnXa9wwcmdq4wPgM
+--OkUH2Kq+DlOxNKA/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -80,20 +82,20 @@ https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
 url:    https://github.com/intel-lab-lkp/linux/commits/Dmitry-Bogdanov/scsi-target-make-RTPI-an-TPG-identifier/20221202-201253
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
-patch link:    https://lore.kernel.org/r/20221202121139.28180-2-d.bogdanov%40yadro.com
-patch subject: [PATCH v3 1/5] scsi: target: core: Add RTPI field to target port
+patch link:    https://lore.kernel.org/r/20221202121139.28180-6-d.bogdanov%40yadro.com
+patch subject: [PATCH v3 5/5] scsi: target: core: Add RTPI attribute for target port
 config: m68k-allyesconfig
 compiler: m68k-linux-gcc (GCC) 12.1.0
 reproduce (this is a W=1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/cbe7c410e7cd52a4041a308fcfc75fbb75f48221
+        # https://github.com/intel-lab-lkp/linux/commit/723c027e6e5ae5c1455eaae52815c696cc7cc38b
         git remote add linux-review https://github.com/intel-lab-lkp/linux
         git fetch --no-tags linux-review Dmitry-Bogdanov/scsi-target-make-RTPI-an-TPG-identifier/20221202-201253
-        git checkout cbe7c410e7cd52a4041a308fcfc75fbb75f48221
+        git checkout 723c027e6e5ae5c1455eaae52815c696cc7cc38b
         # save the config file
         mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=m68k SHELL=/bin/bash drivers/target/
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=m68k SHELL=/bin/bash drivers/
 
 If you fix the issue, kindly add following tag where applicable
 | Reported-by: kernel test robot <lkp@intel.com>
@@ -101,33 +103,64 @@ If you fix the issue, kindly add following tag where applicable
 All warnings (new ones prefixed by >>):
 
    drivers/target/target_core_tpg.c: In function 'target_tpg_disable':
->> drivers/target/target_core_tpg.c:476:13: warning: variable 'ret' set but not used [-Wunused-but-set-variable]
-     476 |         int ret;
+   drivers/target/target_core_tpg.c:491:13: warning: variable 'ret' set but not used [-Wunused-but-set-variable]
+     491 |         int ret;
          |             ^~~
+   drivers/target/target_core_tpg.c: At top level:
+>> drivers/target/target_core_tpg.c:670:6: warning: no previous prototype for 'target_tpg_remove_lun' [-Wmissing-prototypes]
+     670 | void target_tpg_remove_lun(
+         |      ^~~~~~~~~~~~~~~~~~~~~
 
 
-vim +/ret +476 drivers/target/target_core_tpg.c
+vim +/target_tpg_remove_lun +670 drivers/target/target_core_tpg.c
 
-   473	
-   474	int target_tpg_disable(struct se_portal_group *se_tpg)
-   475	{
- > 476		int ret;
-   477	
-   478		target_tpg_deregister_rtpi(se_tpg);
-   479	
-   480		ret = se_tpg->se_tpg_tfo->fabric_enable_tpg(se_tpg, false);
-   481	
-   482		se_tpg->enabled = false;
-   483	
-   484		return 0;
-   485	}
-   486	
+   669	
+ > 670	void target_tpg_remove_lun(
+   671		struct se_portal_group *tpg,
+   672		struct se_lun *lun)
+   673	{
+   674		/*
+   675		 * rcu_dereference_raw protected by se_lun->lun_group symlink
+   676		 * reference to se_device->dev_group.
+   677		 */
+   678		struct se_device *dev = rcu_dereference_raw(lun->lun_se_dev);
+   679	
+   680		lun->lun_shutdown = true;
+   681	
+   682		core_clear_lun_from_tpg(lun, tpg);
+   683		/*
+   684		 * Wait for any active I/O references to percpu se_lun->lun_ref to
+   685		 * be released.  Also, se_lun->lun_ref is now used by PR and ALUA
+   686		 * logic when referencing a remote target port during ALL_TGT_PT=1
+   687		 * and generating UNIT_ATTENTIONs for ALUA access state transition.
+   688		 */
+   689		transport_clear_lun_ref(lun);
+   690	
+   691		mutex_lock(&tpg->tpg_lun_mutex);
+   692		if (lun->lun_se_dev) {
+   693			target_detach_tg_pt_gp(lun);
+   694	
+   695			spin_lock(&dev->se_port_lock);
+   696			list_del(&lun->lun_dev_link);
+   697			dev->export_count--;
+   698			rcu_assign_pointer(lun->lun_se_dev, NULL);
+   699			spin_unlock(&dev->se_port_lock);
+   700		}
+   701		if (!(dev->se_hba->hba_flags & HBA_FLAGS_INTERNAL_USE))
+   702			hlist_del_rcu(&lun->link);
+   703	
+   704		lun->lun_shutdown = false;
+   705		mutex_unlock(&tpg->tpg_lun_mutex);
+   706	
+   707		percpu_ref_exit(&lun->lun_ref);
+   708	}
+   709	
 
 -- 
 0-DAY CI Kernel Test Service
 https://01.org/lkp
 
---KnXa9wwcmdq4wPgM
+--OkUH2Kq+DlOxNKA/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: attachment; filename=config
 
@@ -12617,4 +12650,4 @@ CONFIG_WARN_MISSING_DOCUMENTS=y
 CONFIG_WARN_ABI_ERRORS=y
 # end of Kernel hacking
 
---KnXa9wwcmdq4wPgM--
+--OkUH2Kq+DlOxNKA/--
