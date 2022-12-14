@@ -2,38 +2,37 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9582FC04FDE
-	for <target-devel@archiver.kernel.org>; Mon, 12 Dec 2022 09:13:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F495C4332F
+	for <target-devel@archiver.kernel.org>; Wed, 14 Dec 2022 08:53:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231202AbiLLJNa (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 12 Dec 2022 04:13:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44284 "EHLO
+        id S237375AbiLNIx1 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 14 Dec 2022 03:53:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56586 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229496AbiLLJN3 (ORCPT
+        with ESMTP id S229695AbiLNIxZ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 12 Dec 2022 04:13:29 -0500
-X-Greylist: delayed 422 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 12 Dec 2022 01:13:26 PST
-Received: from mail.alsdel.com (mail.alsdel.com [192.121.17.36])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E241FB65
-        for <target-devel@vger.kernel.org>; Mon, 12 Dec 2022 01:13:26 -0800 (PST)
-Received: by mail.alsdel.com (Postfix, from userid 1001)
-        id 9E47F22BBF; Mon, 12 Dec 2022 09:06:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=alsdel.com; s=mail;
-        t=1670835981; bh=EaccI34atZDi3zI4z+dro7EdezTMN10KG2X0nSBpSo8=;
+        Wed, 14 Dec 2022 03:53:25 -0500
+Received: from mail.groupteam.pl (mail.groupteam.pl [51.75.73.133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 689925FC8
+        for <target-devel@vger.kernel.org>; Wed, 14 Dec 2022 00:53:24 -0800 (PST)
+Received: by mail.groupteam.pl (Postfix, from userid 1002)
+        id B3028A742A; Wed, 14 Dec 2022 08:51:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=groupteam.pl; s=mail;
+        t=1671007953; bh=9KGuIG62LgzC9aYmjKxzocuYLRCVghXg6v9Q1q2LHec=;
         h=Date:From:To:Subject:From;
-        b=IxrsEs7RKbgEGlX8iEFk168Cl6LKIdjO/jVfC/IHsJho7zOZ2xx9bf9aI8QlRKI8u
-         8jK3j1NTWs7mnbmXxFgs9lCM8Afej5co2O9VEJAkZG2MunnU1yg7dOlDwWIbzwwVDj
-         K+O6RyKRajx36UP9qyHmSLwVdS9jANBYWugAWrns/GAm9i39t+nfO7O0oylG6jETgs
-         gBbAio78JMIEEE63N97yRlruR3I4bGcJRVRDYJD0ryMta5LjnuEluyRpJll3il4Sas
-         iQNgkChCCyRDQLGBgegsXIub3GpXfltfMfRd4aMbw8O5Z0UkZJ70B+h6Yj4nAr/RA/
-         21RVsNb48c/UA==
-Received: by mail.alsdel.com for <target-devel@vger.kernel.org>; Mon, 12 Dec 2022 09:06:04 GMT
-Message-ID: <20221212074500-0.1.t.21fe.0.n8j2domcco@alsdel.com>
-Date:   Mon, 12 Dec 2022 09:06:04 GMT
-From:   =?UTF-8?Q? "Vil=C3=A9m_Du=C5=A1ek" ?= <vilem.dusek@alsdel.com>
+        b=gN338bpQgbSNpnxI1MdODqLFBoEq+Fqeqia0etv3+uiJ9hnPYVY0FxBNcP2f7XgPC
+         Wflsby4YTm/EOyJBz/NZE33MWR9HSHT0QoJdzDvettv3E1UnK/XeVgz/C3U9fcGTCd
+         6NJ8XfO+5lxtwdGL3WfUafArtfF9VFyNdFa+GB7mvLsuNGQ6OEfpOqWTK+HZjjeNua
+         rL4GkGRVK41GYKROD3jxH773bceMvxwo3pX1w/KVGM37+8vowNSHlqa5BDJybMQFd0
+         Q0Wb0YvtmwKQUbOceC0VqO15exbabfwo2umF25C04OWnufuY6wN7TX0kzWItZ28e3U
+         Uj8xyOb2vfKlg==
+Received: by mail.groupteam.pl for <target-devel@vger.kernel.org>; Wed, 14 Dec 2022 08:50:41 GMT
+Message-ID: <20221214074500-0.1.78.2qbsi.0.5j06pf291a@groupteam.pl>
+Date:   Wed, 14 Dec 2022 08:50:41 GMT
+From:   "Krzysztof Maj" <krzysztof.maj@groupteam.pl>
 To:     <target-devel@vger.kernel.org>
-Subject: =?UTF-8?Q?Tepeln=C3=A9_obr=C3=A1b=C4=9Bn=C3=AD_=E2=80=93_objedn=C3=A1vka?=
-X-Mailer: mail.alsdel.com
+Subject: Biznesowy angielski
+X-Mailer: mail.groupteam.pl
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
@@ -41,34 +40,29 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Dobr=C3=BD den,
+Dzie=C5=84 dobry,=20
 
-m=C3=A1te z=C3=A1jem o vyu=C5=BEit=C3=AD velmi kvalitn=C3=AD slu=C5=BEby =
-tepeln=C3=A9ho obr=C3=A1b=C4=9Bn=C3=AD kov=C5=AF?
+czy rozwa=C5=BCali Pa=C5=84stwo rozw=C3=B3j kwalifikacji j=C4=99zykowych =
+swoich pracownik=C3=B3w?
 
-M=C5=AF=C5=BEeme v=C3=A1m nab=C3=ADdnout velmi v=C3=BDhodn=C3=A9 podm=C3=AD=
-nky spolupr=C3=A1ce, technick=C3=A9 poradenstv=C3=AD,
-s=C3=A9riovou v=C3=BDrobu a testov=C3=A1n=C3=AD prototyp=C5=AF.
+Opracowali=C5=9Bmy kursy j=C4=99zykowe dla r=C3=B3=C5=BCnych bran=C5=BC, =
+w kt=C3=B3rych koncentrujemy si=C4=99 na podniesieniu poziomu s=C5=82owni=
+ctwa i jako=C5=9Bci komunikacji wykorzystuj=C4=85c autorsk=C4=85 metod=C4=
+=99, stworzon=C4=85 specjalnie dla wymagaj=C4=85cego biznesu.=20
 
-Specializujeme se na tradi=C4=8Dn=C3=AD a vakuov=C3=A9 technologie: cemen=
-tov=C3=A1n=C3=AD,
-nitrocementov=C3=A1n=C3=AD, kalen=C3=AD v plynu, zu=C5=A1lecht=C4=9Bn=C3=AD=
-, =C5=BE=C3=ADh=C3=A1n=C3=AD, p=C3=A1jen=C3=AD, normaliza=C4=8Dn=C3=AD =C5=
-=BE=C3=ADh=C3=A1n=C3=AD (s p=C5=99ekrystalizac=C3=AD).
+Niestandardowy kurs on-line, dopasowany do profilu firmy i obszar=C3=B3w =
+=C5=9Bwiadczonych us=C5=82ug, w szybkim czasie przyniesie efekty, kt=C3=B3=
+re zwi=C4=99ksz=C4=85 komfort i jako=C5=9B=C4=87 pracy, rozwijaj=C4=85c m=
+o=C5=BCliwo=C5=9Bci biznesowe.=20
 
-M=C3=A1me k dispozici rozs=C3=A1hl=C3=A9 strojn=C3=AD vybaven=C3=AD, velk=
-=C3=BD t=C3=BDm odborn=C3=ADk=C5=AF, a proto jsme schopni se p=C5=99izp=C5=
-=AFsobit va=C5=A1im po=C5=BEadavk=C5=AFm.
+Zdalne szkolenie j=C4=99zykowe to m.in. zaj=C4=99cia z native speakerami,=
+ kt=C3=B3re w szybkim czasie naucz=C4=85 pracownik=C3=B3w rozmawia=C4=87 =
+za pomoc=C4=85 jasnego i zwi=C4=99z=C5=82ego j=C4=99zyka Business English=
+=2E
 
-Pracujeme v souladu s na=C5=A1imi certifik=C3=A1ty v rozsahu norem platn=C3=
-=BDch v oblasti automobilov=C3=A9ho pr=C5=AFmyslu (IATF 16949; CQI 9) a t=
-ak=C3=A9 letectv=C3=AD (akreditace NADCAP).
-
-Pokud m=C3=A1te po=C5=BEadavky v t=C3=A9to oblasti, r=C3=A1d v=C3=A1m p=C5=
-=99edstav=C3=ADm na=C5=A1e mo=C5=BEnosti.
-
-Mohl bych v=C3=A1m zatelefonovat?
+Czy m=C3=B3g=C5=82bym przedstawi=C4=87 wi=C4=99cej szczeg=C3=B3=C5=82=C3=B3=
+w i opowiedzie=C4=87 jak dzia=C5=82amy?=20
 
 
-S pozdravem,
-Vil=C3=A9m Du=C5=A1ek
+Pozdrawiam
+Krzysztof Maj
