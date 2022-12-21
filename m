@@ -2,133 +2,163 @@ Return-Path: <target-devel-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FFA2C3DA7B
-	for <target-devel@archiver.kernel.org>; Tue, 20 Dec 2022 01:25:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84A28C4332F
+	for <target-devel@archiver.kernel.org>; Wed, 21 Dec 2022 00:17:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233130AbiLTBZX (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 19 Dec 2022 20:25:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52406 "EHLO
+        id S233899AbiLUARJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 20 Dec 2022 19:17:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51770 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233184AbiLTBX2 (ORCPT
+        with ESMTP id S233996AbiLUAQ3 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 19 Dec 2022 20:23:28 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93404101F4;
-        Mon, 19 Dec 2022 17:22:13 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 45421B80FA6;
-        Tue, 20 Dec 2022 01:22:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 859A2C433EF;
-        Tue, 20 Dec 2022 01:22:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1671499330;
-        bh=iZwilCZPwFxW4zw6txHPVtYalv07cIEoOcj980Lb6Wk=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=XhT0oc7mW6YOA79ho94ibeOdebfc/uK6doSlfD84HXgK/e/rCjjsBq9JI8XQznFxJ
-         MpkYuDEYcwQ5RDnKF77xWpIWj9sJ443HiXlRjxJ82Hsjh5xEMLhEFpch5zDrjX9IEX
-         DgD4Fz3k/79Kk1silpU+EqekaIjKWuz2VhfnyfsrOf0HzXRg7z4OYyboTkGd/enxeW
-         MR6g43id23CSOiZm2IL07yk+vaV5AO9yHjS7ukKLg0T8M/YH8Bsohpgu/I3N1IB4jx
-         9S1FKeZvnvzmhXvNxlxdGUDajT5ZYv/kK1z+CN3bzaoxqmA7oXPIpDsToY384ArgUq
-         OzWqS3N2uqf9w==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Nathan Chancellor <nathan@kernel.org>,
-        Sami Tolvanen <samitolvanen@google.com>,
-        Kees Cook <keescook@chromium.org>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Sasha Levin <sashal@kernel.org>, james.smart@broadcom.com,
-        ram.vegesna@broadcom.com, jejb@linux.ibm.com,
-        ndesaulniers@google.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, llvm@lists.linux.dev
-Subject: [PATCH AUTOSEL 5.15 4/9] scsi: elx: libefc: Fix second parameter type in state callbacks
-Date:   Mon, 19 Dec 2022 20:21:54 -0500
-Message-Id: <20221220012159.1222517-4-sashal@kernel.org>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221220012159.1222517-1-sashal@kernel.org>
-References: <20221220012159.1222517-1-sashal@kernel.org>
+        Tue, 20 Dec 2022 19:16:29 -0500
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1095F1F62D;
+        Tue, 20 Dec 2022 16:16:08 -0800 (PST)
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2BL0Eb5h013939;
+        Wed, 21 Dec 2022 00:15:58 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=corp-2022-7-12;
+ bh=WXHto1kJPwqN9kmczl41Ru7ehDtNkvH8m4KI67goLW8=;
+ b=HUCEWxFTzNC3DgEy7/lNu3ROzuBPwY6coVt0P7QcfcIKhGZn7jkVOOpgJ10jVxZEjUeL
+ r/fuWahcwpo0uJKcFLh4ILu1xxhE2pI8CRy3Qbtc+RBmypPXWQ0C65UyHQKeJTiL9nzF
+ 0tJhowg+6lMtH+3p28ESOg3jxs0nglKY/3PB7B6dzPUslXmqmz9/0/FeRXHy0qLm6FC2
+ WZJRuhvRocxCqXrTMIFAJl2lCboIiNlR0vfGuLG8gyyu2+r52ZN1prBD/aj01CPKy6Zp
+ tqiCidKBvYK1kPt1h+3hOi8s19HwnBWJeOcq3pcyAxJrB9DKxW/KFk5pEFgrShC57Lih ug== 
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3mh6tmydmd-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 21 Dec 2022 00:15:58 +0000
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 2BL00H6p027654;
+        Wed, 21 Dec 2022 00:15:57 GMT
+Received: from nam04-mw2-obe.outbound.protection.outlook.com (mail-mw2nam04lp2177.outbound.protection.outlook.com [104.47.73.177])
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3mh475uf3r-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 21 Dec 2022 00:15:57 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=IrTSXqOxzD9outOVVIG6THpB9LwiR6nNX5CnZ+9/d/Pg6UEeVTUCkiKSDMr81LnDOHUtfCcDjSuQeB15yAOtzUraI5Nz+++zl44RARgMN8poEYRAsqgF6Syc44bpIS3NvyaJ0GcTmhNuPxXFkV/eXHs+SdCcyxZqEVOyAsUBAgJlbGP67xXmLSzefVk9Mjdx73ThRItMgRL1GxUFxrilfiv1j+B5G5CGvompiS68P3789OYC2HILFQ0VN4ufd0Lw7Yqg12Z81SIiyQm6aSZkdEjUmIWW+0NtGicPmv52NbPGmWZ7yyyI8KO1nfZgidH+TozPdR0mnX5LW15Q4/89lA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=WXHto1kJPwqN9kmczl41Ru7ehDtNkvH8m4KI67goLW8=;
+ b=YSLhGLr09xn0yC9wWWWi5IoOzNbxZO+Thzu2t1eJAqXmZQ+W+FvSMIK0HySoiDLxNm5tioFvxdBw6UMV3M+Kgky410kXqWCmgKsocFYV0hE/8k1TyB+ls+pkAU9IRqFxaihOoRR4sr0+M2Sr0U7bObmIBqq8YOZ/cuzKOgsp8ojhp/q4IU+CO2SsqQsLD4fIlNG2H8hRfgTue8KbknQhaUOJ6bZWsEHiWBBZA6iwy2X0NgqCiJJiYCMZ+gbXg25lzcXXOwTswQDZuFDjzEGaWaSNgMgwEUh98AxdO4ccpe4W2M4ybrwUssnRi+FZvod/swU6xQQ9R/LBUgnm8OTIrA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=WXHto1kJPwqN9kmczl41Ru7ehDtNkvH8m4KI67goLW8=;
+ b=oPniXoooRSINRa9c9Z3LUuNFfVfrBrJrcowbLj7KwqOdvTd9OEulSN7dD+1X3CSxX1g2cqcV2UpELWD9DjgzRSBwC32LxPDv9TniSW0WXF6egRHxpd4kNiozmznYtBzRGOTPSSpQOUclRVNF1k/PqTFrtuHjoyV49YB0R09co4k=
+Received: from DM5PR10MB1466.namprd10.prod.outlook.com (2603:10b6:3:b::7) by
+ IA0PR10MB7274.namprd10.prod.outlook.com (2603:10b6:208:40f::7) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.5924.16; Wed, 21 Dec 2022 00:15:55 +0000
+Received: from DM5PR10MB1466.namprd10.prod.outlook.com
+ ([fe80::c888:aca:1eb9:ca4f]) by DM5PR10MB1466.namprd10.prod.outlook.com
+ ([fe80::c888:aca:1eb9:ca4f%5]) with mapi id 15.20.5924.016; Wed, 21 Dec 2022
+ 00:15:55 +0000
+Message-ID: <8e97531d-da78-6599-26c2-631d7a73c48e@oracle.com>
+Date:   Tue, 20 Dec 2022 18:15:53 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: [PATCH v3 5/5] scsi: target: core: Add RTPI attribute for target
+ port
+Content-Language: en-US
+To:     Dmitry Bogdanov <d.bogdanov@yadro.com>,
+        Martin Petersen <martin.petersen@oracle.com>,
+        target-devel@vger.kernel.org
+Cc:     Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org,
+        linux@yadro.com, Roman Bolshakov <r.bolshakov@yadro.com>
+References: <20221202121139.28180-1-d.bogdanov@yadro.com>
+ <20221202121139.28180-6-d.bogdanov@yadro.com>
+From:   Mike Christie <michael.christie@oracle.com>
+In-Reply-To: <20221202121139.28180-6-d.bogdanov@yadro.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: CH0PR08CA0016.namprd08.prod.outlook.com
+ (2603:10b6:610:33::21) To DM5PR10MB1466.namprd10.prod.outlook.com
+ (2603:10b6:3:b::7)
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM5PR10MB1466:EE_|IA0PR10MB7274:EE_
+X-MS-Office365-Filtering-Correlation-Id: 82013e2d-b1d8-4b10-8e2a-08dae2e886ed
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 8++9eAxyu/f/0HoNT5X4C2xZXqwP/NFrFfCmcgiZ+lB8v5QlwzY7RqQuL2Mf2R5BhzfG7pgd82oTFBEcp7517E2zOLVxPcX9bHfKHIalqsGrgkIT8eBMlJwE60HQB8tYwkiuxTvroJbaLN2sDr6IDtnII8OFPR2lXaBcwn1fNNrwj4NFXZLPDqWlrkKWfCrxsRQBFOwtLbqEe+0Nm1oPiMOA5TcS/Tab/7TULh+lylIzqQiPLNJJDtoTaoy2f8cW/SUh6Ww+J6EYGfCtUOV0eLwjKb3pkCM7MarmQ3vVeoVTPx3vnB4P4eYh6x744QdB+j9gzptK2kcV7Ruw4/n+boZJwSXNWTQpzis/Cmz/1vr9L8C5aj3mfUdIeaMvyrp9cDnixCC6EE0Cc0/OpouVvNKDKnYTlBg+t1OlBJ+UIebB/qgO6WE7yhi04Lb2ALnBBsyvDXT48FouRwE8ei94JIA6bys2YQyCI8+xjTZ6aQ1YmPa0BrAWQlKsXBIHJ/h3QTS2cBJzl++v/8Atw12PMbD5x/+Q1DjswrFdyyW/6X+fhJIsgeIrb/ntm544AyudN2USxEsFIdQNFtrGumCcfXHQMoNTOgSeZ3xOwU7bxA/09zX22Vm2E41T1emWhAu3G43bcZE+SlTSN3M6pw6ZFldkn2W1mGTajMPrXV184KGfTaL0yPJB4g+2Bzo1mBE3D+9Rm9pEsANuJ0k446erTuXPCCiQ8Jc1wMF4YomsDak=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR10MB1466.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(136003)(39860400002)(346002)(396003)(366004)(376002)(451199015)(54906003)(53546011)(6506007)(316002)(6486002)(478600001)(38100700002)(4326008)(8676002)(110136005)(36756003)(2616005)(66476007)(86362001)(31696002)(66946007)(66556008)(4744005)(83380400001)(5660300002)(8936002)(2906002)(26005)(31686004)(41300700001)(186003)(6512007)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?WFZRbW5nUEhXc01QVDVnbnIrallXMWc1MTlpdGN6ODZuUVJXeUZyVkxydVVq?=
+ =?utf-8?B?S1RiKzROVDlzelYrNWtBMU5WM0N5anhJTFp5TUlRUmxHMEhKaFZ2Y2FLRWUy?=
+ =?utf-8?B?TGJXYUhzOVd4eENhTFhvVmhuNTRvQk9vQ2RmdzJOYlZHWWszU3c3eFhhZ0ww?=
+ =?utf-8?B?dGcvQW5OakR4Z3UyRzVobktkN2h4RnROa2F5SUhNb3ZYMGJmUkw5MXhFQnBp?=
+ =?utf-8?B?cTArYWFBb1B4U0JNUVBqb0xrb2dVOUorT3cxUDVJU1lBL1ptVHR1MUNvZndt?=
+ =?utf-8?B?QkxhRW1zMkVpOXZQMlF0UVdCeEhrbVNNM3B4eE9nZHZCR0FjbnJsSVdMK1Z2?=
+ =?utf-8?B?L1hTSitWZVVHSVE3VEI5QUNIaUtReXRWTm93WXZnM05tdGR4VU9RN2x3WW81?=
+ =?utf-8?B?Ly9wdTZaSjZ0aVRCZUJabm9BZy93b1pYWC9wdC9xcjE4UTk5Mk1TQy9RaVpM?=
+ =?utf-8?B?NHQ4SUJJcTVTU2ZPSWMvRWM0Q1E4Rko1Y241bEE5TnY3YnNLVm8xaHJTM0Qv?=
+ =?utf-8?B?bCt5ZHZkTEhYQkhaYnN6cmVvcHhzb0p1MmV6eEhpcDRNaFBHM3BsUGczbUpS?=
+ =?utf-8?B?b1VVL3RsRVc2RDdnMTllaFNWQWRKM1pYNlZWUUZIeDk2blZRemVod0Z1U21F?=
+ =?utf-8?B?TzZzNmN5cWhNa0tOSE5RYmVNOUVGbnNIV3NpNzNubDlWZW5rNmlLL0RTZWhv?=
+ =?utf-8?B?eTBZRWlFNVR1Zml5aVgvcWREaGJLSTNGUmRUQTY3WERFbzdhOS9nVjVLNVNy?=
+ =?utf-8?B?MnY5VkJKYXR1U2JpcWlJd2UvY1NqdUtXdmc3emtEZEkxZmU5b2licnhnSmNT?=
+ =?utf-8?B?YzA1VVR2cDdSKzlQNkVyK3VGOHZidGM2VjNIWUMxM0hDanNQYWZ3TWZoMitM?=
+ =?utf-8?B?S2VzMUtHN0pNMmtKamsxNjA4VS9BMDhWUWxCYkVlM25rUGpkQ1FXT1Excm1n?=
+ =?utf-8?B?N2c3UDBiYW1FOVl4aW5IV1VaZUxGR3pwYzhqOUtSM1dOV1d4bFlNdzFyUUdE?=
+ =?utf-8?B?ZTFtYmxNczlONXlYV09hOFFidEtZNmpvQis5cVc3R0VydFhweXh5Vll3SVBx?=
+ =?utf-8?B?cGxJUHVqMmdpUHBPbXZiRURQNzU0eE5CWEh3T3RTWnNvdUxNemtvdjhVdER4?=
+ =?utf-8?B?ajA4U0ZWblFMYTJUYUhIYzlobWwraXFvc0ZsRndrZ0NUWEU4OEpVR0ZDV0Qy?=
+ =?utf-8?B?RWp1R0VWY01EUzl6MUxHb3RjNDl2NG96NDBQYWc5RE9jbUdrOWFNRVZkUVZa?=
+ =?utf-8?B?dUNSRDNiQVpHQjd0YmYrMVZkWkRvSTlCWC90UnhHaFRSSEtyREdiQUg3cVoy?=
+ =?utf-8?B?Y0ljZk1FcEt0bGwvSWdnUmE4Yi8rWitDdmxCUnZSSGJMS016bkRCZFoyVVVH?=
+ =?utf-8?B?TVpkZHVBV2hZYnIxRFN5ZlZuUE9CUE9lYWJzV09CNmx6enlQbTU0Tjk0c2lu?=
+ =?utf-8?B?RnpKWXpmOXM2dEJhQzhzeWFCRDVWV0VZZzREdUY0ck1lUjNLcmFpY1ZLak5D?=
+ =?utf-8?B?dkp4bWp2dVZOVTlyS2JpaDJCWjRjbTRaamw1WE5JT0JJSEkzeGtVMlRoUWo0?=
+ =?utf-8?B?bEdlRmNmL2RiUEpYR1FuUldBcStVMGRuZUlNOVZRbHVkNEM3cyt5S1dLRVI1?=
+ =?utf-8?B?ZGk2d1lRVVZSN1dsTGswZGVvWUI0MUxhdkRGNVQrSmxndGZxSlpuTlhxOVJy?=
+ =?utf-8?B?THJwSkxiOFpFR3UyVzkwNG1VbHlHSXRleHllSC8vMzdyVkNHUzBqRFo0aDNN?=
+ =?utf-8?B?Q0w0eDVJakNoZUhEcTIzQTRhbmlxaURjRStxbVA2a25xd1ltSW5taE5JVHNI?=
+ =?utf-8?B?d05TeUpzYVQxZjRPSjNSRzE1cVUrSWgvRzFwbU1QMkJDOXd6MnQyWDNSY25x?=
+ =?utf-8?B?WEFNejZxWDhEc013TUxiRGZ1ekkwb3NsWXpPVmJDS1RVaTJheVRYVW96dUtH?=
+ =?utf-8?B?S0hWeVBlSVdlb0M3cU15TFhWVzJvMG9rTkpFV0plNUVrakxKS2RrRnBSUVNB?=
+ =?utf-8?B?WHNzaE03em5CUFZGRFp1QXQzdzJSRFR0dno4ejhrakw1OFpKV0t1aGJ3eHFp?=
+ =?utf-8?B?T1ZqTDJ3ZEZ6VjJEMFdsOUtnRkdEQWFYN3V5UDE2TlhzMXV3SzJkdTRQWEZQ?=
+ =?utf-8?B?VjM2NW1laFJIRWtSTUJMbkZrakl3WkJuNW1KU0tOQVdYcVVXa28vSUphS25S?=
+ =?utf-8?B?WVE9PQ==?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 82013e2d-b1d8-4b10-8e2a-08dae2e886ed
+X-MS-Exchange-CrossTenant-AuthSource: DM5PR10MB1466.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Dec 2022 00:15:55.2695
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: qZNcOHTz5965SDWfZ8+m44hLr/M0F6vmkjgkjxkkO1+66IXEjBUUm4pjdDuDXWRoJTnLSpbPUd0hoXoRBUKWL5pg8ggNLCl1+xbUilLZURU=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR10MB7274
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-12-20_06,2022-12-20_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 mlxlogscore=999
+ spamscore=0 phishscore=0 adultscore=0 bulkscore=0 mlxscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2212200200
+X-Proofpoint-ORIG-GUID: pvZuth-HmrQwQTZCQZ0Tofxie_4GW2Ho
+X-Proofpoint-GUID: pvZuth-HmrQwQTZCQZ0Tofxie_4GW2Ho
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Nathan Chancellor <nathan@kernel.org>
+On 12/2/22 6:11 AM, Dmitry Bogdanov wrote:
+> RELATIVE TARGET PORT IDENTIFIER can be read and configured via configfs:
+> $ echo 0x10 > $TARGET/tpgt_N/attrib/rtpi
+> 
 
-[ Upstream commit 3d75e766b58a7410d4e835c534e1b4664a8f62d0 ]
-
-With clang's kernel control flow integrity (kCFI, CONFIG_CFI_CLANG),
-indirect call targets are validated against the expected function pointer
-prototype to make sure the call target is valid to help mitigate ROP
-attacks. If they are not identical, there is a failure at run time, which
-manifests as either a kernel panic or thread getting killed. A proposed
-warning in clang aims to catch these at compile time, which reveals:
-
-  drivers/scsi/elx/libefc/efc_node.c:811:22: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') from 'void (*)(struct efc_sm_ctx *, enum efc_sm_event, void *)' [-Werror,-Wincompatible-function-pointer-types-strict]
-                  ctx->current_state = state;
-                                    ^ ~~~~~
-  drivers/scsi/elx/libefc/efc_node.c:878:21: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') from 'void (*)(struct efc_sm_ctx *, enum efc_sm_event, void *)' [-Werror,-Wincompatible-function-pointer-types-strict]
-          node->nodedb_state = state;
-                            ^ ~~~~~
-  drivers/scsi/elx/libefc/efc_node.c:905:6: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, enum efc_sm_event, void *)' from 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') [-Werror,-Wincompatible-function-pointer-types-strict]
-                  pf = node->nodedb_state;
-                    ^ ~~~~~~~~~~~~~~~~~~
-
-  drivers/scsi/elx/libefc/efc_device.c:455:22: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') from 'void (struct efc_sm_ctx *, enum efc_sm_event, void *)' [-Werror,-Wincompatible-function-pointer-types-strict]
-                  node->nodedb_state = __efc_d_init;
-                                    ^ ~~~~~~~~~~~~
-
-  drivers/scsi/elx/libefc/efc_sm.c:41:22: error: incompatible function pointer types assigning to 'void (*)(struct efc_sm_ctx *, u32, void *)' (aka 'void (*)(struct efc_sm_ctx *, unsigned int, void *)') from 'void (*)(struct efc_sm_ctx *, enum efc_sm_event, void *)' [-Werror,-Wincompatible-function-pointer-types-strict]
-                  ctx->current_state = state;
-                                    ^ ~~~~~
-
-The type of the second parameter in the prototypes of ->current_state() and
-->nodedb_state() ('u32') does not match the implementations, which have a
-second parameter type of 'enum efc_sm_event'. Update the prototypes to have
-the correct second parameter type, clearing up all the warnings and CFI
-failures.
-
-Link: https://github.com/ClangBuiltLinux/linux/issues/1750
-Reported-by: Sami Tolvanen <samitolvanen@google.com>
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
-Link: https://lore.kernel.org/r/20221102161906.2781508-1-nathan@kernel.org
-Reviewed-by: Kees Cook <keescook@chromium.org>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/scsi/elx/libefc/efclib.h | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/scsi/elx/libefc/efclib.h b/drivers/scsi/elx/libefc/efclib.h
-index ee291cabf7e0..b14e516be7d5 100644
---- a/drivers/scsi/elx/libefc/efclib.h
-+++ b/drivers/scsi/elx/libefc/efclib.h
-@@ -58,10 +58,12 @@ enum efc_node_send_ls_acc {
- #define EFC_LINK_STATUS_UP		0
- #define EFC_LINK_STATUS_DOWN		1
- 
-+enum efc_sm_event;
-+
- /* State machine context header  */
- struct efc_sm_ctx {
- 	void (*current_state)(struct efc_sm_ctx *ctx,
--			      u32 evt, void *arg);
-+			      enum efc_sm_event evt, void *arg);
- 
- 	const char	*description;
- 	void		*app;
-@@ -364,7 +366,7 @@ struct efc_node {
- 	int			prev_evt;
- 
- 	void (*nodedb_state)(struct efc_sm_ctx *ctx,
--			     u32 evt, void *arg);
-+			     enum efc_sm_event evt, void *arg);
- 	struct timer_list	gidpt_delay_timer;
- 	u64			time_last_gidpt_msec;
- 
--- 
-2.35.1
+Hey Dimitry, I think your idea to place this on the tpgt_n is nicer
+because you can more easily set it and there is already code for
+that type of thing.
 
