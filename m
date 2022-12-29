@@ -2,37 +2,61 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44998C4708D
-	for <target-devel@archiver.kernel.org>; Mon, 26 Dec 2022 09:08:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EE79C4332F
+	for <target-devel@archiver.kernel.org>; Thu, 29 Dec 2022 13:53:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231828AbiLZJIj (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 26 Dec 2022 04:08:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54946 "EHLO
+        id S233450AbiL2Nxo (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 29 Dec 2022 08:53:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37244 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231723AbiLZJIh (ORCPT
+        with ESMTP id S229487AbiL2Nxn (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 26 Dec 2022 04:08:37 -0500
-X-Greylist: delayed 134 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 26 Dec 2022 01:08:36 PST
-Received: from forwardcorp1b.mail.yandex.net (forwardcorp1b.mail.yandex.net [178.154.239.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8281CD8;
-        Mon, 26 Dec 2022 01:08:35 -0800 (PST)
-Received: from myt5-8800bd68420f.qloud-c.yandex.net (myt5-8800bd68420f.qloud-c.yandex.net [IPv6:2a02:6b8:c12:4615:0:640:8800:bd68])
-        by forwardcorp1b.mail.yandex.net (Yandex) with ESMTP id 5EA9D5FCEF;
-        Mon, 26 Dec 2022 12:06:19 +0300 (MSK)
-Received: from d-tatianin-nix.yandex-team.ru (unknown [2a02:6b8:b081:1::1:f])
-        by myt5-8800bd68420f.qloud-c.yandex.net (smtpcorp/Yandex) with ESMTPSA id D6KfxX0ReqM1-CeqjHN3x;
-        Mon, 26 Dec 2022 12:06:17 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex-team.ru; s=default;
-        t=1672045577; bh=hreEt9oBsbG7JpAJajQXCkDGpKyNaPQ4PR/13o4Hum8=;
-        h=Message-Id:Date:Cc:Subject:To:From;
-        b=FDPwZddpeGNhoWfyPPtFZMHB8HDH6VkJWYc2dDIUr23c1K915T5eyXVE7ctFDtZvl
-         cHc4rsIx/fFm8YDlKfgGca2HbJvhvuTjxA36oLUbCfvH8zRO7D/lF7ve4mBYncQLYx
-         l9HLYED7E/FdQWDj3R/VlG52FptdR4IFeEHBNrS0=
-Authentication-Results: myt5-8800bd68420f.qloud-c.yandex.net; dkim=pass header.i=@yandex-team.ru
-From:   Daniil Tatianin <d-tatianin@yandex-team.ru>
-To:     "David S. Miller" <davem@davemloft.net>
-Cc:     Daniil Tatianin <d-tatianin@yandex-team.ru>,
+        Thu, 29 Dec 2022 08:53:43 -0500
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2FFDAFE4;
+        Thu, 29 Dec 2022 05:53:42 -0800 (PST)
+Received: by mail-wm1-x333.google.com with SMTP id i17-20020a05600c355100b003d99434b1cfso2995756wmq.1;
+        Thu, 29 Dec 2022 05:53:42 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
+         :to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=LJwf80EtLvb2UBH2ZbyBI17EFsPIf4lOqD8gl4LKhZ4=;
+        b=FAQoOzlDpeLo72ZAMKMhu/gWJ/TOowgO42psGVEXAECWu0thXQ8zW7/ro67wufADaB
+         CMRz6D2798qdSuF2hfYStRrOfzlGaQSgK6UHhbqmE4EwnUXmPmhQMYxfSubtZcKC8qWH
+         0xm3j8dd9+pxu7pU74T+sl4FQjMRzt8GsQVYtlHXDfXAqaTYpaKhetj+DPgOomD1Qjl3
+         idm/Eg7GCJlV7D4AQ+rexbkfxZ542bh+yHMS4gx355iUNPHnPxfJsnT7IdOUCI6FQEtE
+         PFXxzndFsFHNXGr5Tj3ytXeBzR8vE1hr2wd0Q0S4KRo4uUCV1rliHAehvQB56ZnHFEKt
+         FJOA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:message-id:subject:cc
+         :to:from:date:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=LJwf80EtLvb2UBH2ZbyBI17EFsPIf4lOqD8gl4LKhZ4=;
+        b=49b4cXTb98GKLKuUlm7M4NYPP6JodNKT02D/fMExSXGsU2KXYKAKBrH3BJB4pChpnP
+         yFovGn0uEy+EidJqJsq/ttN9IjwYXhEI0talY7xQn85fRJY5i+zjJ+zVol+7hljLr61c
+         KYMqaQbA2zLSV8Em6YVvU7/khTglogVdXkndMHYyd3CsrcX1Wc3tdy9X4nexOFuX/1hN
+         j3kP5tZUwPIunhb2P0BytsCXqW6NsdTioRLyPGF1wvtZMiiVzMn2+/SO0VeG8ULzv0x9
+         zIx6f70nWr/OjPCTDx6iXSvQC2krfcYHd1BFuSd0Py/24pT/jRpeIy7cnGiu0y+qCuYZ
+         Zn1A==
+X-Gm-Message-State: AFqh2kqgeC7XAkuNPF8mzpP4I8u4tW8m7MNKdGRV8hBRvnkNU9em8CFA
+        8eJyRG0SWv0x4MgnsnCD23w=
+X-Google-Smtp-Source: AMrXdXvXXSL9Llf5GsFViQn7QP2VpfEFeUnppQNVMgE75yUbgFtJK6ImFMvp4JGI/YnX7lduojdcVw==
+X-Received: by 2002:a05:600c:2112:b0:3d3:396e:5e36 with SMTP id u18-20020a05600c211200b003d3396e5e36mr19927055wml.0.1672322020730;
+        Thu, 29 Dec 2022 05:53:40 -0800 (PST)
+Received: from localhost ([102.36.222.112])
+        by smtp.gmail.com with ESMTPSA id m185-20020a1c26c2000000b003c6f1732f65sm28855687wmm.38.2022.12.29.05.53.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 29 Dec 2022 05:53:40 -0800 (PST)
+Date:   Thu, 29 Dec 2022 16:53:37 +0300
+From:   Dan Carpenter <error27@gmail.com>
+To:     oe-kbuild@lists.linux.dev,
+        Daniil Tatianin <d-tatianin@yandex-team.ru>,
+        "David S. Miller" <davem@davemloft.net>
+Cc:     lkp@intel.com, oe-kbuild-all@lists.linux.dev,
+        netdev@vger.kernel.org,
+        Daniil Tatianin <d-tatianin@yandex-team.ru>,
         Eric Dumazet <edumazet@google.com>,
         Jakub Kicinski <kuba@kernel.org>,
         Paolo Abeni <pabeni@redhat.com>,
@@ -42,303 +66,102 @@ Cc:     Daniil Tatianin <d-tatianin@yandex-team.ru>,
         Mike Christie <michael.christie@oracle.com>,
         Lee Duncan <lduncan@suse.com>, Wu Bo <wubo40@huawei.com>,
         Nilesh Javali <njavali@marvell.com>,
-        Max Gurtovoy <mgurtovoy@nvidia.com>, netdev@vger.kernel.org,
+        Max Gurtovoy <mgurtovoy@nvidia.com>,
         linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [RESEND PATCH v2] cxgbi: move cxgbi_ddp_set_one_ppod to cxgb_ppm and remove its duplicate
-Date:   Mon, 26 Dec 2022 12:06:09 +0300
-Message-Id: <20221226090609.1917788-1-d-tatianin@yandex-team.ru>
-X-Mailer: git-send-email 2.25.1
+Subject: Re: [RESEND PATCH v2] cxgbi: move cxgbi_ddp_set_one_ppod to cxgb_ppm
+ and remove its duplicate
+Message-ID: <202212291705.id5qvdk7-lkp@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221226090609.1917788-1-d-tatianin@yandex-team.ru>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-cxgbit and libcxgbi both used the exact same function but with slightly
-different names, and a missing NULL check in one case. Move the function
-to libcxgb/libcxgb_ppm.c and nuke the duplicate.
+Hi Daniil,
 
-This also renames the function to cxgbi_ppm_set_one_ppod so that it
-matches the rest of the functions in cxgb_ppm.
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Found by Linux Verification Center (linuxtesting.org) with the SVACE
-static analysis tool.
+url:    https://github.com/intel-lab-lkp/linux/commits/Daniil-Tatianin/cxgbi-move-cxgbi_ddp_set_one_ppod-to-cxgb_ppm-and-remove-its-duplicate/20221226-171028
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
+patch link:    https://lore.kernel.org/r/20221226090609.1917788-1-d-tatianin%40yandex-team.ru
+patch subject: [RESEND PATCH v2] cxgbi: move cxgbi_ddp_set_one_ppod to cxgb_ppm and remove its duplicate
+config: powerpc-randconfig-m031-20221226
+compiler: powerpc-linux-gcc (GCC) 12.1.0
 
-Signed-off-by: Daniil Tatianin <d-tatianin@yandex-team.ru>
-Acked-by: Varun Prakash <varun@chelsio.com>
----
- .../ethernet/chelsio/libcxgb/libcxgb_ppm.c    | 56 ++++++++++++++++++
- .../ethernet/chelsio/libcxgb/libcxgb_ppm.h    |  5 ++
- drivers/scsi/cxgbi/cxgb3i/cxgb3i.c            |  2 +-
- drivers/scsi/cxgbi/cxgb4i/cxgb4i.c            |  2 +-
- drivers/scsi/cxgbi/libcxgbi.c                 | 55 ------------------
- drivers/scsi/cxgbi/libcxgbi.h                 |  3 -
- drivers/target/iscsi/cxgbit/cxgbit_ddp.c      | 57 +------------------
- 7 files changed, 64 insertions(+), 116 deletions(-)
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Reported-by: Dan Carpenter <error27@gmail.com>
 
-diff --git a/drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.c b/drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.c
-index 854d87e1125c..9103826b0d27 100644
---- a/drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.c
-+++ b/drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.c
-@@ -527,6 +527,62 @@ unsigned int cxgbi_tagmask_set(unsigned int ppmax)
- }
- EXPORT_SYMBOL(cxgbi_tagmask_set);
- 
-+void
-+cxgbi_ppm_set_one_ppod(struct cxgbi_pagepod *ppod,
-+		       struct cxgbi_task_tag_info *ttinfo,
-+		       struct scatterlist **sg_pp, unsigned int *sg_off)
-+{
-+	struct scatterlist *sg = sg_pp ? *sg_pp : NULL;
-+	unsigned int offset = sg_off ? *sg_off : 0;
-+	dma_addr_t addr = 0UL;
-+	unsigned int len = 0;
-+	int i;
-+
-+	memcpy(ppod, &ttinfo->hdr, sizeof(struct cxgbi_pagepod_hdr));
-+
-+	if (sg) {
-+		addr = sg_dma_address(sg);
-+		len = sg_dma_len(sg);
-+	}
-+
-+	for (i = 0; i < PPOD_PAGES_MAX; i++) {
-+		if (sg) {
-+			ppod->addr[i] = cpu_to_be64(addr + offset);
-+			offset += PAGE_SIZE;
-+			if (offset == (len + sg->offset)) {
-+				offset = 0;
-+				sg = sg_next(sg);
-+				if (sg) {
-+					addr = sg_dma_address(sg);
-+					len = sg_dma_len(sg);
-+				}
-+			}
-+		} else {
-+			ppod->addr[i] = 0ULL;
-+		}
-+	}
-+
-+	/*
-+	 * the fifth address needs to be repeated in the next ppod, so do
-+	 * not move sg
-+	 */
-+	if (sg_pp) {
-+		*sg_pp = sg;
-+		*sg_off = offset;
-+	}
-+
-+	if (offset == len) {
-+		offset = 0;
-+		if (sg) {
-+			sg = sg_next(sg);
-+			if (sg)
-+				addr = sg_dma_address(sg);
-+		}
-+	}
-+	ppod->addr[i] = sg ? cpu_to_be64(addr + offset) : 0ULL;
-+}
-+EXPORT_SYMBOL(cxgbi_ppm_set_one_ppod);
-+
- MODULE_AUTHOR("Chelsio Communications");
- MODULE_DESCRIPTION("Chelsio common library");
- MODULE_LICENSE("Dual BSD/GPL");
-diff --git a/drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.h b/drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.h
-index 1b4156461ba1..f2178ee0b18a 100644
---- a/drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.h
-+++ b/drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.h
-@@ -332,4 +332,9 @@ int cxgbi_ppm_release(struct cxgbi_ppm *ppm);
- void cxgbi_tagmask_check(unsigned int tagmask, struct cxgbi_tag_format *);
- unsigned int cxgbi_tagmask_set(unsigned int ppmax);
- 
-+void
-+cxgbi_ppm_set_one_ppod(struct cxgbi_pagepod *ppod,
-+		       struct cxgbi_task_tag_info *ttinfo,
-+		       struct scatterlist **sg_pp, unsigned int *sg_off);
-+
- #endif	/*__LIBCXGB_PPM_H__*/
-diff --git a/drivers/scsi/cxgbi/cxgb3i/cxgb3i.c b/drivers/scsi/cxgbi/cxgb3i/cxgb3i.c
-index ff9d4287937a..0399e82362b7 100644
---- a/drivers/scsi/cxgbi/cxgb3i/cxgb3i.c
-+++ b/drivers/scsi/cxgbi/cxgb3i/cxgb3i.c
-@@ -1115,7 +1115,7 @@ static int ddp_set_map(struct cxgbi_ppm *ppm, struct cxgbi_sock *csk,
- 		req = (struct ulp_mem_io *)skb->head;
- 		ppod = (struct cxgbi_pagepod *)(req + 1);
- 		sg_off = i * PPOD_PAGES_MAX;
--		cxgbi_ddp_set_one_ppod(ppod, ttinfo, &sg,
-+		cxgbi_ppm_set_one_ppod(ppod, ttinfo, &sg,
- 				       &sg_off);
- 		skb->priority = CPL_PRIORITY_CONTROL;
- 		cxgb3_ofld_send(ppm->lldev, skb);
-diff --git a/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c b/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c
-index c07d2e3b4bcf..1f768cc3fbfb 100644
---- a/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c
-+++ b/drivers/scsi/cxgbi/cxgb4i/cxgb4i.c
-@@ -2035,7 +2035,7 @@ static int ddp_ppod_write_idata(struct cxgbi_ppm *ppm, struct cxgbi_sock *csk,
- 	ppod = (struct cxgbi_pagepod *)(idata + 1);
- 
- 	for (i = 0; i < npods; i++, ppod++)
--		cxgbi_ddp_set_one_ppod(ppod, ttinfo, sg_pp, sg_off);
-+		cxgbi_ppm_set_one_ppod(ppod, ttinfo, sg_pp, sg_off);
- 
- 	cxgbi_skcb_set_flag(skb, SKCBF_TX_MEM_WRITE);
- 	cxgbi_skcb_set_flag(skb, SKCBF_TX_FLAG_COMPL);
-diff --git a/drivers/scsi/cxgbi/libcxgbi.c b/drivers/scsi/cxgbi/libcxgbi.c
-index af281e271f88..6a2627a73f26 100644
---- a/drivers/scsi/cxgbi/libcxgbi.c
-+++ b/drivers/scsi/cxgbi/libcxgbi.c
-@@ -1151,61 +1151,6 @@ scmd_get_params(struct scsi_cmnd *sc, struct scatterlist **sgl,
- 	/* Caution: for protection sdb, sdb->length is invalid */
- }
- 
--void cxgbi_ddp_set_one_ppod(struct cxgbi_pagepod *ppod,
--			    struct cxgbi_task_tag_info *ttinfo,
--			    struct scatterlist **sg_pp, unsigned int *sg_off)
--{
--	struct scatterlist *sg = sg_pp ? *sg_pp : NULL;
--	unsigned int offset = sg_off ? *sg_off : 0;
--	dma_addr_t addr = 0UL;
--	unsigned int len = 0;
--	int i;
--
--	memcpy(ppod, &ttinfo->hdr, sizeof(struct cxgbi_pagepod_hdr));
--
--	if (sg) {
--		addr = sg_dma_address(sg);
--		len = sg_dma_len(sg);
--	}
--
--	for (i = 0; i < PPOD_PAGES_MAX; i++) {
--		if (sg) {
--			ppod->addr[i] = cpu_to_be64(addr + offset);
--			offset += PAGE_SIZE;
--			if (offset == (len + sg->offset)) {
--				offset = 0;
--				sg = sg_next(sg);
--				if (sg) {
--					addr = sg_dma_address(sg);
--					len = sg_dma_len(sg);
--				}
--			}
--		} else {
--			ppod->addr[i] = 0ULL;
--		}
--	}
--
--	/*
--	 * the fifth address needs to be repeated in the next ppod, so do
--	 * not move sg
--	 */
--	if (sg_pp) {
--		*sg_pp = sg;
--		*sg_off = offset;
--	}
--
--	if (offset == len) {
--		offset = 0;
--		sg = sg_next(sg);
--		if (sg) {
--			addr = sg_dma_address(sg);
--			len = sg_dma_len(sg);
--		}
--	}
--	ppod->addr[i] = sg ? cpu_to_be64(addr + offset) : 0ULL;
--}
--EXPORT_SYMBOL_GPL(cxgbi_ddp_set_one_ppod);
--
- /*
-  * APIs interacting with open-iscsi libraries
-  */
-diff --git a/drivers/scsi/cxgbi/libcxgbi.h b/drivers/scsi/cxgbi/libcxgbi.h
-index 3687b5c0cf90..f90e747bcb4f 100644
---- a/drivers/scsi/cxgbi/libcxgbi.h
-+++ b/drivers/scsi/cxgbi/libcxgbi.h
-@@ -636,9 +636,6 @@ int cxgbi_ddp_init(struct cxgbi_device *, unsigned int, unsigned int,
- 			unsigned int, unsigned int);
- int cxgbi_ddp_cleanup(struct cxgbi_device *);
- void cxgbi_ddp_page_size_factor(int *);
--void cxgbi_ddp_set_one_ppod(struct cxgbi_pagepod *,
--			    struct cxgbi_task_tag_info *,
--			    struct scatterlist **sg_pp, unsigned int *sg_off);
- int cxgbi_ddp_ppm_setup(void **ppm_pp, struct cxgbi_device *cdev,
- 			struct cxgbi_tag_format *tformat,
- 			unsigned int iscsi_size, unsigned int llimit,
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-index 17fd0d8cc490..fe29f4962058 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_ddp.c
-@@ -5,61 +5,6 @@
- 
- #include "cxgbit.h"
- 
--static void
--cxgbit_set_one_ppod(struct cxgbi_pagepod *ppod,
--		    struct cxgbi_task_tag_info *ttinfo,
--		    struct scatterlist **sg_pp, unsigned int *sg_off)
--{
--	struct scatterlist *sg = sg_pp ? *sg_pp : NULL;
--	unsigned int offset = sg_off ? *sg_off : 0;
--	dma_addr_t addr = 0UL;
--	unsigned int len = 0;
--	int i;
--
--	memcpy(ppod, &ttinfo->hdr, sizeof(struct cxgbi_pagepod_hdr));
--
--	if (sg) {
--		addr = sg_dma_address(sg);
--		len = sg_dma_len(sg);
--	}
--
--	for (i = 0; i < PPOD_PAGES_MAX; i++) {
--		if (sg) {
--			ppod->addr[i] = cpu_to_be64(addr + offset);
--			offset += PAGE_SIZE;
--			if (offset == (len + sg->offset)) {
--				offset = 0;
--				sg = sg_next(sg);
--				if (sg) {
--					addr = sg_dma_address(sg);
--					len = sg_dma_len(sg);
--				}
--			}
--		} else {
--			ppod->addr[i] = 0ULL;
--		}
--	}
--
--	/*
--	 * the fifth address needs to be repeated in the next ppod, so do
--	 * not move sg
--	 */
--	if (sg_pp) {
--		*sg_pp = sg;
--		*sg_off = offset;
--	}
--
--	if (offset == len) {
--		offset = 0;
--		if (sg) {
--			sg = sg_next(sg);
--			if (sg)
--				addr = sg_dma_address(sg);
--		}
--	}
--	ppod->addr[i] = sg ? cpu_to_be64(addr + offset) : 0ULL;
--}
--
- static struct sk_buff *
- cxgbit_ppod_init_idata(struct cxgbit_device *cdev, struct cxgbi_ppm *ppm,
- 		       unsigned int idx, unsigned int npods, unsigned int tid)
-@@ -116,7 +61,7 @@ cxgbit_ppod_write_idata(struct cxgbi_ppm *ppm, struct cxgbit_sock *csk,
- 	ppod = (struct cxgbi_pagepod *)(idata + 1);
- 
- 	for (i = 0; i < npods; i++, ppod++)
--		cxgbit_set_one_ppod(ppod, ttinfo, sg_pp, sg_off);
-+		cxgbi_ppm_set_one_ppod(ppod, ttinfo, sg_pp, sg_off);
- 
- 	__skb_queue_tail(&csk->ppodq, skb);
- 
+smatch warnings:
+drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.c:571 cxgbi_ppm_set_one_ppod() error: we previously assumed 'sg_off' could be null (see line 536)
+
+vim +/sg_off +571 drivers/net/ethernet/chelsio/libcxgb/libcxgb_ppm.c
+
+e775e542c914b4 Daniil Tatianin 2022-12-26  530  void
+e775e542c914b4 Daniil Tatianin 2022-12-26  531  cxgbi_ppm_set_one_ppod(struct cxgbi_pagepod *ppod,
+e775e542c914b4 Daniil Tatianin 2022-12-26  532  		       struct cxgbi_task_tag_info *ttinfo,
+e775e542c914b4 Daniil Tatianin 2022-12-26  533  		       struct scatterlist **sg_pp, unsigned int *sg_off)
+e775e542c914b4 Daniil Tatianin 2022-12-26  534  {
+e775e542c914b4 Daniil Tatianin 2022-12-26  535  	struct scatterlist *sg = sg_pp ? *sg_pp : NULL;
+e775e542c914b4 Daniil Tatianin 2022-12-26 @536  	unsigned int offset = sg_off ? *sg_off : 0;
+                                                                              ^^^^^^
+Check for NULL
+
+e775e542c914b4 Daniil Tatianin 2022-12-26  537  	dma_addr_t addr = 0UL;
+e775e542c914b4 Daniil Tatianin 2022-12-26  538  	unsigned int len = 0;
+e775e542c914b4 Daniil Tatianin 2022-12-26  539  	int i;
+e775e542c914b4 Daniil Tatianin 2022-12-26  540  
+e775e542c914b4 Daniil Tatianin 2022-12-26  541  	memcpy(ppod, &ttinfo->hdr, sizeof(struct cxgbi_pagepod_hdr));
+e775e542c914b4 Daniil Tatianin 2022-12-26  542  
+e775e542c914b4 Daniil Tatianin 2022-12-26  543  	if (sg) {
+e775e542c914b4 Daniil Tatianin 2022-12-26  544  		addr = sg_dma_address(sg);
+e775e542c914b4 Daniil Tatianin 2022-12-26  545  		len = sg_dma_len(sg);
+e775e542c914b4 Daniil Tatianin 2022-12-26  546  	}
+e775e542c914b4 Daniil Tatianin 2022-12-26  547  
+e775e542c914b4 Daniil Tatianin 2022-12-26  548  	for (i = 0; i < PPOD_PAGES_MAX; i++) {
+e775e542c914b4 Daniil Tatianin 2022-12-26  549  		if (sg) {
+e775e542c914b4 Daniil Tatianin 2022-12-26  550  			ppod->addr[i] = cpu_to_be64(addr + offset);
+e775e542c914b4 Daniil Tatianin 2022-12-26  551  			offset += PAGE_SIZE;
+e775e542c914b4 Daniil Tatianin 2022-12-26  552  			if (offset == (len + sg->offset)) {
+e775e542c914b4 Daniil Tatianin 2022-12-26  553  				offset = 0;
+e775e542c914b4 Daniil Tatianin 2022-12-26  554  				sg = sg_next(sg);
+e775e542c914b4 Daniil Tatianin 2022-12-26  555  				if (sg) {
+e775e542c914b4 Daniil Tatianin 2022-12-26  556  					addr = sg_dma_address(sg);
+e775e542c914b4 Daniil Tatianin 2022-12-26  557  					len = sg_dma_len(sg);
+e775e542c914b4 Daniil Tatianin 2022-12-26  558  				}
+e775e542c914b4 Daniil Tatianin 2022-12-26  559  			}
+e775e542c914b4 Daniil Tatianin 2022-12-26  560  		} else {
+e775e542c914b4 Daniil Tatianin 2022-12-26  561  			ppod->addr[i] = 0ULL;
+e775e542c914b4 Daniil Tatianin 2022-12-26  562  		}
+e775e542c914b4 Daniil Tatianin 2022-12-26  563  	}
+e775e542c914b4 Daniil Tatianin 2022-12-26  564  
+e775e542c914b4 Daniil Tatianin 2022-12-26  565  	/*
+e775e542c914b4 Daniil Tatianin 2022-12-26  566  	 * the fifth address needs to be repeated in the next ppod, so do
+e775e542c914b4 Daniil Tatianin 2022-12-26  567  	 * not move sg
+e775e542c914b4 Daniil Tatianin 2022-12-26  568  	 */
+e775e542c914b4 Daniil Tatianin 2022-12-26  569  	if (sg_pp) {
+e775e542c914b4 Daniil Tatianin 2022-12-26  570  		*sg_pp = sg;
+e775e542c914b4 Daniil Tatianin 2022-12-26 @571  		*sg_off = offset;
+                                                                ^^^^^^^
+Unchecked dereference.
+
+e775e542c914b4 Daniil Tatianin 2022-12-26  572  	}
+e775e542c914b4 Daniil Tatianin 2022-12-26  573  
+e775e542c914b4 Daniil Tatianin 2022-12-26  574  	if (offset == len) {
+e775e542c914b4 Daniil Tatianin 2022-12-26  575  		offset = 0;
+e775e542c914b4 Daniil Tatianin 2022-12-26  576  		if (sg) {
+e775e542c914b4 Daniil Tatianin 2022-12-26  577  			sg = sg_next(sg);
+e775e542c914b4 Daniil Tatianin 2022-12-26  578  			if (sg)
+e775e542c914b4 Daniil Tatianin 2022-12-26  579  				addr = sg_dma_address(sg);
+e775e542c914b4 Daniil Tatianin 2022-12-26  580  		}
+e775e542c914b4 Daniil Tatianin 2022-12-26  581  	}
+e775e542c914b4 Daniil Tatianin 2022-12-26  582  	ppod->addr[i] = sg ? cpu_to_be64(addr + offset) : 0ULL;
+e775e542c914b4 Daniil Tatianin 2022-12-26  583  }
+
 -- 
-2.25.1
+0-DAY CI Kernel Test Service
+https://01.org/lkp
 
