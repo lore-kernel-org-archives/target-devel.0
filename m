@@ -2,127 +2,165 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F154BC54E94
-	for <target-devel@archiver.kernel.org>; Tue, 24 Jan 2023 20:37:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1802FC54E94
+	for <target-devel@archiver.kernel.org>; Tue, 24 Jan 2023 23:58:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229633AbjAXUhM convert rfc822-to-8bit (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 24 Jan 2023 15:37:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47898 "EHLO
+        id S229754AbjAXX6u (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 24 Jan 2023 18:58:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54164 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229592AbjAXUhL (ORCPT
+        with ESMTP id S232483AbjAXX6n (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 24 Jan 2023 15:37:11 -0500
-X-Greylist: delayed 499 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 24 Jan 2023 12:37:08 PST
-Received: from ste-pvt-msa1.bahnhof.se (ste-pvt-msa1.bahnhof.se [213.80.101.70])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B4A01BC6
-        for <target-devel@vger.kernel.org>; Tue, 24 Jan 2023 12:37:08 -0800 (PST)
-Received: from localhost (localhost [127.0.0.1])
-        by ste-pvt-msa1.bahnhof.se (Postfix) with ESMTP id 49DFA4046B
-        for <target-devel@vger.kernel.org>; Tue, 24 Jan 2023 21:28:47 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at bahnhof.se
-Received: from ste-pvt-msa1.bahnhof.se ([127.0.0.1])
-        by localhost (ste-pvt-msa1.bahnhof.se [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id mHKnFXOtk5Ek for <target-devel@vger.kernel.org>;
-        Tue, 24 Jan 2023 21:28:46 +0100 (CET)
-Received: by ste-pvt-msa1.bahnhof.se (Postfix) with ESMTPA id 0733C40463
-        for <target-devel@vger.kernel.org>; Tue, 24 Jan 2023 21:28:45 +0100 (CET)
-Received: from [104.28.193.223] (port=41107 helo=[192.168.1.6])
-        by tnonline.net with esmtpsa  (TLS1.3) tls TLS_AES_128_GCM_SHA256
-        (Exim 4.94.2)
-        (envelope-from <forza@tnonline.net>)
-        id 1pKPuO-000Fy2-Dz
-        for target-devel@vger.kernel.org; Tue, 24 Jan 2023 21:28:45 +0100
-Date:   Tue, 24 Jan 2023 21:28:42 +0100 (GMT+01:00)
-From:   Forza <forza@tnonline.net>
-To:     target-devel@vger.kernel.org
-Message-ID: <cd1ab2c.ace55083.185e577f69d@tnonline.net>
-Subject: iSCSI target: kernel: NULL pointer dereference
+        Tue, 24 Jan 2023 18:58:43 -0500
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5E1446D6F
+        for <target-devel@vger.kernel.org>; Tue, 24 Jan 2023 15:58:38 -0800 (PST)
+Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30OKtQDt022131;
+        Tue, 24 Jan 2023 23:58:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
+ subject : to : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=corp-2022-7-12;
+ bh=VkmYIV0Q4yrxVbXB4qmDofgFz+ia3JNaaabG177NY5U=;
+ b=gQNcTWuAuxu1xnED3qJXViiEWWUsxfIQrkz1NLQm30GLU/3F45L3BkeY5d5onf85jVhX
+ 4dh84+4v2KnYvbklT8yhNRp3ICmvA7fH1NAxo1P2N88U2IW8jWyrar6swY13z29HPXWv
+ QiY4Ma/wLh0QqKi/zjKG6IBsCzqQWJjX5mTbRqFNvcjHFZvZ7QaoQNl7Pgu6YupSj3mo
+ cWOperSOa92g2Mq7/Rr6zjBx6JNU1/l+WxvLzAC0XD1Jy2ilQ4cQ5Bve3UFcLPGTsP8U
+ VHwl8R/zLcDucB0HIeqvkKpGGhFlAxkLAVo3SyHDqbbGkDBGaugqyl4ADTQee/npDa29 Zg== 
+Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.appoci.oracle.com [147.154.114.232])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3n87xa6ren-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 24 Jan 2023 23:58:35 +0000
+Received: from pps.filterd (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+        by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 30OMOxAC021287;
+        Tue, 24 Jan 2023 23:58:34 GMT
+Received: from nam10-mw2-obe.outbound.protection.outlook.com (mail-mw2nam10lp2108.outbound.protection.outlook.com [104.47.55.108])
+        by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3n86g5pv6n-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 24 Jan 2023 23:58:34 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=DdaqQkd9Vs+8PpYHo5Zjpr8vs7gD2Ngo24NZg1hVm9Rq26+vjJ+dyaPPmWHnoVnh13K3/Z2Au5CHILULS3ILNXolQFGaWeLlOGWnPOJBPNSXFJ9k9rAGC0GvTBcyvE0LxGBsSfI3fbOgtr+jJt+4Y8Xuth1KqV1HR1vs/OO3Xq7ovB4Y6vInsZGWg/CAF+jUZ5r9H0R/Ml7TSszBjGd5r+b/dq/t5S61G1TLejx1Or/z3aCd7OOyD7R0q0ItQyf+5KVN4GLmxuV7SAy6+oY18Q0S6pUeOJE4qLZwma4a5N5zlqxCJgNty8WK5J99yaMrqTlovwY0vd7j16+24HSlTg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=VkmYIV0Q4yrxVbXB4qmDofgFz+ia3JNaaabG177NY5U=;
+ b=hP80zwoqDVFUvgHt5GbgVZQtgKBHnKAYr7WdTi3dc07h2gc8/wz5FgB39djjmZeRllaV0n9zOP1cyQw8kjcorSQAmsusH/pCLkH8BgBT0zdo90j0HLn7apNrkHMZl75bpyGAwY4mDppxlq8l6QgiExOcgl2MJsPsjQnk763VHPR4R4xbuhoEsMcfD8wVwFjIv94YxlQS+jvJFHDVU1xa9spvafeMhXD50T+ernQ8uBBoPd4NYIiqlrUejH0pnjDZXcJ4C7rgvpXNvvwTD/0D2KkPsxtiuMlxX7H4IAfKWMnF+aYvQhidJyemty/7ZT7HWYl/ptx300PzwR2ddZn7Cw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=VkmYIV0Q4yrxVbXB4qmDofgFz+ia3JNaaabG177NY5U=;
+ b=k1c80ML+nnvqD071bQON/SO5VZaiTA+Ry5PZYU/hXTlcQkrfLjO4j+l1y/R41+Lwz4tX12ETp/EvauoSwLxXKEtWe1DleWwXj8QJGPmOuInHFzi6jvsC8y9k7kX0P9xfhecOWjoB76+Dm5jAMVDoVv0Yl9lt5X9BknCVVLphmqs=
+Received: from DM5PR10MB1466.namprd10.prod.outlook.com (2603:10b6:3:b::7) by
+ MW4PR10MB6463.namprd10.prod.outlook.com (2603:10b6:303:220::8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6043.17; Tue, 24 Jan 2023 23:58:32 +0000
+Received: from DM5PR10MB1466.namprd10.prod.outlook.com
+ ([fe80::c888:aca:1eb9:ca4f]) by DM5PR10MB1466.namprd10.prod.outlook.com
+ ([fe80::c888:aca:1eb9:ca4f%5]) with mapi id 15.20.6043.017; Tue, 24 Jan 2023
+ 23:58:32 +0000
+Message-ID: <0d52151e-f3cc-f1a3-0e6f-2144ab588189@oracle.com>
+Date:   Tue, 24 Jan 2023 17:58:30 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: iSCSI target: kernel: NULL pointer dereference
+To:     Forza <forza@tnonline.net>, target-devel@vger.kernel.org
+References: <cd1ab2c.ace55083.185e577f69d@tnonline.net>
+Content-Language: en-US
+From:   Mike Christie <michael.christie@oracle.com>
+In-Reply-To: <cd1ab2c.ace55083.185e577f69d@tnonline.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: DM6PR21CA0021.namprd21.prod.outlook.com
+ (2603:10b6:5:174::31) To DM5PR10MB1466.namprd10.prod.outlook.com
+ (2603:10b6:3:b::7)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-X-Mailer: R2Mail2
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM5PR10MB1466:EE_|MW4PR10MB6463:EE_
+X-MS-Office365-Filtering-Correlation-Id: 97fe536a-62ba-4171-574b-08dafe66e5ce
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: c9g6CQTHQ+WCqbIp1feK2lAMe/FNpjNf/7YttsL6dqA4dyHKpwjgCqAPBn/YUrmpYCGA/BeNmhSk+ANqkXzKvsc1RGDSiVCCh6NIPJgtERrlV0TPyP24DpEEFa9RlQBLYzZ77neTB9mFI9VYIddvdlB2koI2H7kaxx2jbvBqjD+BdAuJRxrPvCpwPvbC/zbHWkwNMSm8qgH9WZUuXmr2qmqBqEuRWN7lQXo9j7nUS/ysK7QuiqmfHQJOG71nAEWoVLmJTYFJHUaQJAPsVSEN8CgSRvNW+/ybmfRZSE4Oq20ZtXHz0Xhl1lFurooGpHmMF9kuxkwYjY5S0Dx41Uf2a1XYIOoSjSGg+CT/rWURQXJXWXy1t8FM+FANSJHOTGtc9dgcRFfYLBuXevKfnjAceFTWaRfJX2joAw2Uvdp3j9yPXoafKKW8JksRkXY31UvVSGKNakqKNDvYxVTWMT+tMpeh1du1wW01ywFoDrGmeowwX1JLFcIEfkaegu0dBj81ddH0CgqpZr3vveuTW0EntpnoMqClRaZjBqtkJDA4p+LdX2e4929AfoMHAIRB9yLGIKJ/ABOSUBEnWnY+mjm2hWl4cmZRZsB5u4viGBOeYcYo/rVTg7sigZ6NIJ5CYWopSC/r3Atcq3h0F3lDrDrj59+GFwhoaipEt3iaHBFMA6ADF/6qJH0QtH+rEAUF4M5fCyOigw6Fp9/PQXC9y6gavVM5KFG4+nBmoNUcEpfDTDr3rrigkKOVaE5z+IWyvMxBsiTVQmceWIntG+shuDEKmQ==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR10MB1466.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(346002)(136003)(376002)(366004)(39860400002)(396003)(451199018)(8936002)(2906002)(5660300002)(478600001)(26005)(6486002)(966005)(186003)(83380400001)(6512007)(53546011)(66556008)(66946007)(66476007)(8676002)(6506007)(2616005)(31696002)(41300700001)(86362001)(38100700002)(36756003)(316002)(31686004)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?SEdyZkRmQlVqRmlJaEpHSVQyRU5Ybit5ZWgzL3JZMDMzREFQNjYwRUR2VnJr?=
+ =?utf-8?B?VGsva0ZXelZGSUFYeEpRMG4rdmRyN2NwWWdOY1VIZjU5dkRHbEdOUDlVZUhm?=
+ =?utf-8?B?MEJCRmlydEpiSGYwMk5JZnJIRkZJdWdheVFUMWpmcWdIa0RvNDZNVmIyam4v?=
+ =?utf-8?B?L2d4bkhhTDFPaGlPUXNkT1hLcTByRmF2ak8yUVFicEpIaU5GMGVHakI4R0Mz?=
+ =?utf-8?B?STlPRndqZldKMi9hZFYzSTh4QjFmL08wNDFYK2lVMFcvUG8zaUlXditMbWQw?=
+ =?utf-8?B?aDBCRFdrdTk5c3ZqT0k2ME8rNWNHTmozekNkZnRsUnpKdGtucDc2N3UyR2RN?=
+ =?utf-8?B?b05yZ1BDWXNUR0tGSUtxSFRwbkd3bkJJb1NGMDdFaEtDajdUdFNBdzJPUWpX?=
+ =?utf-8?B?ckZFa2RzRVNaM3M1Wm1ZQXBSS3FFbk9rM0NkQnpEMkhHMXdFWnlMVTN0cG8z?=
+ =?utf-8?B?LzdONHBYY3BXMlhtMWpmdEdJeDNuSXpzUXhaRmVwRFJxTm9SdWJyelM1V2lw?=
+ =?utf-8?B?cEdOemFwUTRGZW9NeVZmdWZTb2RkNzkrdDdackh3SzI5UjdkaUZYNVpXN0Fh?=
+ =?utf-8?B?UXByZjhQb0RWTHM3d1hNd2V1UzJaSklwNkJ3SlF4MHFPNy9VeUYwZDRlNVA1?=
+ =?utf-8?B?ZEdqMmxEMktHeW1JTWZwYmhoUWV0RmdzQ3B3d0MwOWNMZGNSVUFFOTVmOWVw?=
+ =?utf-8?B?Uml4K0dTS1hxSkZKM2lPeTZoVXAxaXB5ZVZoWnhvVTJZMmNjL2FVZWFqMDgx?=
+ =?utf-8?B?K2VzOUVNaWpSOVpTelhTa0t6NHowRHRYQ0VFeldjd2FJeVI1Nk9zNGhzTWkx?=
+ =?utf-8?B?RGRtQ29NdjY4NnVyNC8yRU9MTzZnOFF1NDhPcDZ6M2p6UnNnUEFLRlZ1bmtL?=
+ =?utf-8?B?Q2FKMVJKRUxKRVUycUJEWTdxL2E3RzVidnBkV2tJaFQvdUpkbjJIUFpyMGZt?=
+ =?utf-8?B?NG1BSEJpZzhaNTE5MnNLbXJNM0ZDUExNTllRSzN4cmwwM1lEMmluVVJhWC9a?=
+ =?utf-8?B?V0diVm5EN2VWeEVET3hVNy9ST0c5aEpaQWc5Y25PSnlrZjJNT1NPNUo5UzJx?=
+ =?utf-8?B?elM3UGZVUW5BQ2VJYllXZDhrMWdqeUxKMCtkOENFeXdlbDFyQ2FlbUJrVlhW?=
+ =?utf-8?B?Uk9sRDBBYzd0L0VkcUM2dXJRTFNnck0wOVV0THlDR3U3VG00bU5YK2NFSEtl?=
+ =?utf-8?B?K2ZPbURUaTVLN1R4MEVyaEVlRkNldkxZVnpHMlFVUkg2LzRmdlljejVFbktz?=
+ =?utf-8?B?RW9XQkhzOGtHcHhQbTdZVEw3TGs1MURrbmlWV1pySWtkalhEcU85cHlKMkx4?=
+ =?utf-8?B?b0xzbDJCdmFnbG42cXdIN3lNdjJ6b3B3a05uL1VqRXo2ckx3TkFHRU1SOEwz?=
+ =?utf-8?B?MWUxd20ramdjL3llckM0dXg4NHB5NS9GM05MZXRHUFppTnUrVDVDK0FhQ1Q0?=
+ =?utf-8?B?c2lIK29oSHFidmNTcTFxa0wxTmplb0QyMlc1NnV1VG5aOUwvUEw3czV4NWlz?=
+ =?utf-8?B?RFlWZTBXR2RKcjRyY0ViSkNYUFI0N25uWWpqUGppSTA1VHBIeG81RlhaTWZC?=
+ =?utf-8?B?UnozTVIvZHhkcDk4ZnNTS3JUbHhsdGZOMnBkbkZJNm4xcEkxSEU5Nk5uWWxl?=
+ =?utf-8?B?WlF3ZTN5WmlENkthNHJtODA1Y24zTEJQRUkya1lqR0Rldmt4amZzTHFlNlU4?=
+ =?utf-8?B?ZzJrZk1YUEw4VjNHOGx0MHNaSkVGd1VweUVRRkFXYlpobzk5QW05Tkt0OWZN?=
+ =?utf-8?B?VE5nN3hyQmpiYUxqaDV1NHdBZmZtZGdweURTYUExNExkKzJTN2pqd1ptRTZJ?=
+ =?utf-8?B?NlJBQVIzNkpRSWlDeHYrWForc2x2Nlpwekh1TnJrNE1ESnNBOU5lekVhcEhk?=
+ =?utf-8?B?azFhVzNiZ21iKzh1TmdTQU4yZ0lmMzByalhtQWM0dHZYcmd2VlNoc0JRK0Za?=
+ =?utf-8?B?d3Z4Rk9qeW9pcm1ZdVRqOU0vT2syWnRtcVM2eVRIYlJyZEdJZEFZRzNwYThD?=
+ =?utf-8?B?aXVWMFRoNmFoNDlXa0UrcEFVdDF3K0dMSG0rejdiUWNlK1BOZUN2M3dxcEY1?=
+ =?utf-8?B?YXNlU3VXKzFMb29yRWk5aFdja3FDZjEwMzNaWHdaalBhVjlSREFrUmhMUGI3?=
+ =?utf-8?B?VkEzbDNBV0FtMXFHK0trQUVKZXk4Tk9TejdVeFdZVFZNdlhzcEhhdUpPQytD?=
+ =?utf-8?B?eUE9PQ==?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 7StVg/AgyXAL301H/DLUAEp7Ry07EcIq6mMB7O1/t/Kzw91pC6R2P3au9EkyYQ9awZtylT9tv1OpQ/iZWn5EaPRkZfG7dHzjXfMW0MtsLh5LLXmNuUdea3BSQV+olJuOLcw8nWvP0iqyetnikFVfjhnaVa1U06KTDObXqSWSXQxSRZQmb2DRvNov/OVAVsfXih6kkwP73mSqn4Fw/BwjSKHUq7JYt3tINs1dX1LrrMwFwwGiPZqYzdxVCWJq11Tqu19Ja5DdTWpUXIsQAtKLzDYscoLEi4SqAg0VBe2gyVoHYOrLonpgI20t18zG4pA39I+84Q/j3nRxJ35+X1wPZvTjRC+q+c+NnFmvYr+FLR8ElYmRVHJG/12RnTU8Lm2qYdSq41nr1rqX1rVBKFwKm8C8gsqFu9qDAS1275jyUkrlceRzIVlFu+P7dKsw7BcwkhZN59b3yQxZjyCKsqBu6vGmw/zjkzTwlh0zjbaHu5xAvElQvdyVN3ugiv39nYECErJcKVoE8LBr8H33r0k2FZAZPQZcpAQ1B/p7SZN7sOaER9J8rK9LrnG7LhSpDSArcxZrZcYCY8xjFA/oufGZmDlRChC5jQKnB1gwjCyL9CJPrwTm8E4llvfsXKtCkWsBxd73rnDB8HKS1YuybdGUmFdTLaz/cQNUvgcFvq2K792EdPcBPS/FLoT3hRaPBlLP+z8W41g6sFW993ogv2elwHxS1e6XPN9eoJeAHdutvvAfvGYw0eZJfOxpUsWhZP/nKAjSeE+qqNtR/v62O1BB/1QD4LH9m+Ct3Kp8y+rjIy8=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 97fe536a-62ba-4171-574b-08dafe66e5ce
+X-MS-Exchange-CrossTenant-AuthSource: DM5PR10MB1466.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Jan 2023 23:58:32.4158
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 6hK/de7+xVUkXrBypX+MPHuGl4Pz3NDIRE2+J/9J3bjUqX0SFO/7wc+0ZaMWrYt1md8QtOremK9Jg6qJBaKR6+KtbkJEw7zI/YROwaPXTXM=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR10MB6463
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
+ definitions=2023-01-24_17,2023-01-24_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 suspectscore=0
+ malwarescore=0 phishscore=0 mlxlogscore=999 adultscore=0 mlxscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2301240221
+X-Proofpoint-GUID: zXkdH_moXuyYpcA1DRpf07132o9hpgXj
+X-Proofpoint-ORIG-GUID: zXkdH_moXuyYpcA1DRpf07132o9hpgXj
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-For the past year I have been experiencing spontaneous reboots with days or weeks between each time. So eventually I got a tip to enable pstore and was able to capture several traces, and all are the same. See below. 
+On 1/24/23 14:28, Forza wrote:
+> For the past year I have been experiencing spontaneous reboots with days or weeks between each time. So eventually I got a tip to enable pstore and was able to capture several traces, and all are the same. See below. 
+> 
+> I am using Alpine Linux with kernels 5.15.x all the way up to 6.1.6, but the issue is the same. The issue seems to be mostly triggered when Windows 2016 servers that have some attached storage are rebooting during maintenance. They do not boot over iscsi, it's just extra storage for some apps on those servers.
+> 
+> The target backingstore is using FILEIO ontop of a Btrfs filesystem (i.e. no pass-through to sas controller, etc). There is write caching enabled, but it happens even without it. I opened a report on bugzilla, earlier. There is a saveconfig.json from targetcli attached there: 
+> https://bugzilla.kernel.org/show_bug.cgi?id=216959
+> 
+> The issue seems pretty reproducible, but I am not sure how to debug further. Please advice. 
+> 
 
-I am using Alpine Linux with kernels 5.15.x all the way up to 6.1.6, but the issue is the same. The issue seems to be mostly triggered when Windows 2016 servers that have some attached storage are rebooting during maintenance. They do not boot over iscsi, it's just extra storage for some apps on those servers.
+Are you using iscsi's multiple connections per session (MC/s) feature?
 
-The target backingstore is using FILEIO ontop of a Btrfs filesystem (i.e. no pass-through to sas controller, etc). There is write caching enabled, but it happens even without it. I opened a report on bugzilla, earlier. There is a saveconfig.json from targetcli attached there: 
-https://bugzilla.kernel.org/show_bug.cgi?id=216959
-
-The issue seems pretty reproducible, but I am not sure how to debug further. Please advice. 
-
-
-Stack trace:
-
-
-<6>[ 8364.650898] ice 0000:01:00.0 ice0: NIC Link is up 25 Gbps Full Duplex, Requested FEC: RS-FEC, Negotiated FEC: RS-FEC, Autoneg Advertised: Off, Autoneg Negotiated: False, Flow Control: None
-<6>[ 8364.651003] IPv6: ADDRCONF(NETDEV_CHANGE): ice0: link becomes ready
-<6>[11218.918482] wireguard: WireGuard 1.0.0 loaded. See www.wireguard.com for information.
-<6>[11218.918484] wireguard: Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
-<3>[154888.236235] Did not receive response to NOPIN on CID: 1, failing connection for I_T Nexus iqn.1991-05.com.microsoft:srv,i,0x400001370001,iqn.2022-02.com.example.srv04:srv,t,0x01
-<3>[154908.716136] Time2Retain timer expired for SID: 1, cleaning up iSCSI session.
-<1>[154908.716177] BUG: kernel NULL pointer dereference, address: 0000000000000140
-<1>[154908.717023] #PF: supervisor write access in kernel mode
-<1>[154908.717842] #PF: error_code(0x0002) - not-present page
-<6>[154908.718667] PGD 0 P4D 0 
-<4>[154908.719486] Oops: 0002 [#1] PREEMPT SMP PTI
-<4>[154908.720289] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 6.1.3-0-lts #1-Alpine
-<4>[154908.721089] Hardware name: Supermicro Super Server/X11SCL-F, BIOS 1.9 09/21/2022
-<4>[154908.721888] RIP: 0010:sbitmap_queue_clear+0x3a/0xa0
-<4>[154908.722667] Code: 65 48 8b 04 25 28 00 00 00 48 89 44 24 08 31 c0 8b 4f 04 ba ff ff ff ff 89 f0 d3 e2 d3 e8 f7 d2 48 c1 e0 07 48 03 47 10 21 f2 <f0> 48 0f ab 50 40 c7 44 24 04 01 00 00 00 48 8d 74 24 04 48 89 df
-<4>[154908.724376] RSP: 0018:ffffa6e400003d48 EFLAGS: 00010202
-<4>[154908.725249] RAX: 0000000000000100 RBX: ffff8ddc43039428 RCX: 0000000000000005
-<4>[154908.726137] RDX: 000000000000000b RSI: 000000000000004b RDI: ffff8ddc43039428
-<4>[154908.727030] RBP: 000000000000004b R08: 0000000000000000 R09: 0000000000000000
-<4>[154908.727921] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
-<4>[154908.728812] R13: ffff8ddc43039380 R14: ffff8ddc49015370 R15: ffff8ddc490157e0
-<4>[154908.729715] FS:  0000000000000000(0000) GS:ffff8df9aec00000(0000) knlGS:0000000000000000
-<4>[154908.730638] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-<4>[154908.731569] CR2: 0000000000000140 CR3: 00000002dc20a005 CR4: 00000000003706f0
-<4>[154908.732526] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-<4>[154908.733487] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-<4>[154908.734453] Call Trace:
-<4>[154908.735411]  <IRQ>
-<4>[154908.736371]  target_release_cmd_kref+0xd1/0x1f0 [target_core_mod]
-<4>[154908.737425]  transport_generic_free_cmd+0xd1/0x180 [target_core_mod]
-<4>[154908.738485]  iscsit_free_cmd+0x53/0xd0 [iscsi_target_mod]
-<4>[154908.739536]  iscsit_free_connection_recovery_entries+0x29d/0x320 [iscsi_target_mod]
-<4>[154908.740595]  ? iscsit_check_post_dataout+0x440/0x440 [iscsi_target_mod]
-<4>[154908.741662]  iscsit_close_session+0x13a/0x140 [iscsi_target_mod]
-<4>[154908.742749]  ? iscsit_check_post_dataout+0x440/0x440 [iscsi_target_mod]
-<4>[154908.743848]  call_timer_fn+0x24/0x140
-<4>[154908.744923]  __run_timers+0x231/0x2c0
-<4>[154908.746007]  run_timer_softirq+0x3b/0x80
-<4>[154908.746891]  __do_softirq+0xfa/0x32e
-<4>[154908.747607]  __irq_exit_rcu+0xf0/0x150
-<4>[154908.748320]  sysvec_apic_timer_interrupt+0x9e/0xc0
-<4>[154908.749037]  </IRQ>
-<4>[154908.749747]  <TASK>
-<4>[154908.750457]  asm_sysvec_apic_timer_interrupt+0x16/0x20
-<4>[154908.751189] RIP: 0010:cpuidle_enter_state+0xde/0x430
-<4>[154908.751811] Code: 00 00 31 ff e8 f3 8e 9b ff 45 84 ff 74 16 9c 58 0f 1f 40 00 f6 c4 02 0f 85 33 03 00 00 31 ff e8 98 6a a2 ff fb 0f 1f 44 00 00 <45> 85 f6 0f 88 93 01 00 00 49 63 d6 48 8d 04 52 48 8d 04 82 49 8d
-<4>[154908.752966] RSP: 0018:ffffffff94203e38 EFLAGS: 00000246
-<4>[154908.753560] RAX: 0000000000000000 RBX: ffff8df9aec36738 RCX: 0000000000000000
-<4>[154908.754162] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-<4>[154908.754765] RBP: 0000000000000002 R08: 0000000000000000 R09: 0000000000000000
-<4>[154908.755365] R10: 0000000000000000 R11: 0000000000000000 R12: ffffffff942e1660
-<4>[154908.755962] R13: 00008ce37eff2c4e R14: 0000000000000002 R15: 0000000000000000
-<4>[154908.756545]  ? cpuidle_enter_state+0xbd/0x430
-<4>[154908.757011]  cpuidle_enter+0x29/0x40
-<4>[154908.757474]  do_idle+0x216/0x2c0
-<4>[154908.757935]  cpu_startup_entry+0x19/0x20
-<4>[154908.758393]  rest_init+0xcb/0xd0
-<4>[154908.758848]  arch_call_rest_init+0xa/0x47
-<4>[154908.759299]  start_kernel+0xacd/0xb25
-<4>[154908.759744]  secondary_startup_64_no_verify+0xce/0xdb
-<4>[154908.760181]  </TASK>
-<4>[154908.760591] Modules linked in: wireguard curve25519_x86_64 libchacha20poly1305 chacha_x86_64 poly1305_x86_64 ip6_udp_tunnel udp_tunnel libcurve25519_generic libchacha nf_conntrack_netlink nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 nfnetlink_acct nfnetlink rpcsec_gss_krb5 sch_fq_codel target_core_user uio target_core_pscsi target_core_file target_core_iblock iscsi_target_mod target_core_mod configfs nfsd auth_rpcgss lockd grace sunrpc xxhash_generic nls_utf8 nls_cp437 vfat fat bonding irdma coretemp intel_rapl_msr intel_rapl_common i40e ib_uverbs ib_core ipv6 intel_tcc_cooling x86_pkg_temp_thermal iTCO_wdt intel_powerclamp intel_pmc_bxt i2c_designware_platform iTCO_vendor_support i2c_designware_core kvm_intel kvm irqbypass crct10dif_pclmul ghash_clmulni_intel sha512_ssse3 aesni_intel crypto_simd cryptd rapl ast drm_vram_helper intel_cstate nvme pcspkr efi_pstore wmi_bmof drm_ttm_helper nvme_core i2c_i801 igb ttm i2c_smbus nvme_common hwmon i2c_algo_bit dca mei_me intel_lpss_pci
-<4>[154908.760674]  intel_lpss idma64 mei virt_dma joydev mousedev input_leds intel_pch_thermal mfd_core ipmi_ssif ice ie31200_edac thermal fan hed evdev acpi_ipmi ipmi_si ipmi_devintf ipmi_msghandler pinctrl_cannonlake acpi_tad button efivarfs hid_generic usbhid hid ses enclosure video crc32_pclmul xhci_pci xhci_pci_renesas xhci_hcd mpt3sas raid_class scsi_transport_sas ahci libahci libata wmi simpledrm drm_shmem_helper drm_kms_helper cfbfillrect syscopyarea cfbimgblt sysfillrect sysimgblt fb_sys_fops cfbcopyarea drm i2c_core drm_panel_orientation_quirks agpgart loop btrfs libcrc32c crc32c_generic crc32c_intel xor raid6_pq usb_storage usbcore usb_common sd_mod t10_pi crc64_rocksoft crc64 scsi_mod scsi_common
-<4>[154908.766444] CR2: 0000000000000140
-<4>[154908.766821] ---[ end trace 0000000000000000 ]---
-
-
+If you just use a single connection session or multiple sessions with each
+session having one connection with MPIO does it work ok?
