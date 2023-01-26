@@ -2,167 +2,209 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB041C54E94
-	for <target-devel@archiver.kernel.org>; Wed, 25 Jan 2023 20:51:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A304DC6379F
+	for <target-devel@archiver.kernel.org>; Thu, 26 Jan 2023 09:18:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236436AbjAYUvD (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 25 Jan 2023 15:51:03 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53508 "EHLO
+        id S236725AbjAZJSO (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 26 Jan 2023 04:18:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235174AbjAYUvC (ORCPT
+        with ESMTP id S236703AbjAZJSG (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 25 Jan 2023 15:51:02 -0500
-Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5A60E40C1;
-        Wed, 25 Jan 2023 12:50:59 -0800 (PST)
-Received: from mta-01.yadro.com (localhost.localdomain [127.0.0.1])
-        by mta-01.yadro.com (Proxmox) with ESMTP id 93319341CB9;
-        Wed, 25 Jan 2023 23:50:57 +0300 (MSK)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; h=cc
-        :cc:content-type:content-type:date:from:from:in-reply-to
-        :message-id:mime-version:references:reply-to:subject:subject:to
-        :to; s=mta-01; bh=GIyOvFMNyA3fCJNpJNPOa+C37WuGFiuD6d3HgX8tf9o=; b=
-        gVVtzkbk+7O/fpFWCAHKw8/tdRCHJYmzkLDdKzsQ5YRgE8vCf9xowRPN+R1nyv6X
-        XchEEwQnkgC8xZW+95Uo6qZSENsgI2Ynk4yetTAcEHQn99ZoE9dsArBEvNR0LPgm
-        WyfBQhvvCDucaOANmBLmipODWDucWQR14k8PYfLMqSE=
-Received: from T-EXCH-08.corp.yadro.com (unknown [172.17.10.14])
+        Thu, 26 Jan 2023 04:18:06 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C30C13534;
+        Thu, 26 Jan 2023 01:18:05 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mta-01.yadro.com (Proxmox) with ESMTPS id 89113341C77;
-        Wed, 25 Jan 2023 23:50:57 +0300 (MSK)
-Received: from yadro.com (10.199.18.20) by T-EXCH-08.corp.yadro.com
- (172.17.11.58) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Wed, 25 Jan
- 2023 23:50:57 +0300
-Date:   Wed, 25 Jan 2023 23:50:56 +0300
-From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
-To:     <michael.christie@oracle.com>
-CC:     Martin Petersen <martin.petersen@oracle.com>,
-        <target-devel@vger.kernel.org>, Forza <forza@tnonline.net>,
-        <linux-scsi@vger.kernel.org>, <linux@yadro.com>
-Subject: Re: [PATCH 1/2] target: iscs: reject cmd in closed session
-Message-ID: <20230125205056.GI31614@yadro.com>
-References: <20230125083309.24678-1-d.bogdanov@yadro.com>
- <20230125083309.24678-2-d.bogdanov@yadro.com>
- <825571ca-4687-4b5c-971f-b9e13efb152d@oracle.com>
- <478beda7-df98-d925-bfac-2856984c12d7@oracle.com>
+        by ams.source.kernel.org (Postfix) with ESMTPS id CD93FB81D09;
+        Thu, 26 Jan 2023 09:18:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B686C433EF;
+        Thu, 26 Jan 2023 09:17:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1674724682;
+        bh=A3jqgSV9WUxdb3ZkujtLcqAQwnfqkoU5ybDSQdNw5cg=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=sky5enLFwJr3DfJ9b2ymbv/d7rE2oypuJvDM2cNeWmTa68+LJkoJeMjxMVF911xjR
+         /p46Fe2/pbyCsXipax42/Hou3ZWrY6fA7yy3y0E4tly4hSn7A+WSEbwQZyXAjmF/fy
+         t3crMkotzOdGBKQN+I5JbdstqSnsQJbVUv4CaD/JnI/YsWTl+N0fRV5BPO+OqFre41
+         7ERJV1xNKFLVanuVeJ94drHEBHBdP99mIJAbLamNbCF2r05esRYyfEqSbQFmRXAtIl
+         xm2AXIIoDKu6q2SCf9/o5Ej3L+rCFY/nYnTN8yhQCyREfEIhRdSCFxGuw7sIOiHW7k
+         L6KyLx8xuXeew==
+Date:   Thu, 26 Jan 2023 11:17:09 +0200
+From:   Mike Rapoport <rppt@kernel.org>
+To:     Suren Baghdasaryan <surenb@google.com>
+Cc:     akpm@linux-foundation.org, michel@lespinasse.org,
+        jglisse@google.com, mhocko@suse.com, vbabka@suse.cz,
+        hannes@cmpxchg.org, mgorman@techsingularity.net, dave@stgolabs.net,
+        willy@infradead.org, liam.howlett@oracle.com, peterz@infradead.org,
+        ldufour@linux.ibm.com, paulmck@kernel.org, luto@kernel.org,
+        songliubraving@fb.com, peterx@redhat.com, david@redhat.com,
+        dhowells@redhat.com, hughd@google.com, bigeasy@linutronix.de,
+        kent.overstreet@linux.dev, punit.agrawal@bytedance.com,
+        lstoakes@gmail.com, peterjung1337@gmail.com, rientjes@google.com,
+        axelrasmussen@google.com, joelaf@google.com, minchan@google.com,
+        jannh@google.com, shakeelb@google.com, tatashin@google.com,
+        edumazet@google.com, gthelen@google.com, gurua@google.com,
+        arjunroy@google.com, soheil@google.com, hughlynch@google.com,
+        leewalsh@google.com, posk@google.com, will@kernel.org,
+        aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
+        chenhuacai@kernel.org, tglx@linutronix.de, mingo@redhat.com,
+        bp@alien8.de, dave.hansen@linux.intel.com, richard@nod.at,
+        anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
+        qianweili@huawei.com, wangzhou1@hisilicon.com,
+        herbert@gondor.apana.org.au, davem@davemloft.net, vkoul@kernel.org,
+        airlied@gmail.com, daniel@ffwll.ch,
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        tzimmermann@suse.de, l.stach@pengutronix.de,
+        krzysztof.kozlowski@linaro.org, patrik.r.jakobsson@gmail.com,
+        matthias.bgg@gmail.com, robdclark@gmail.com,
+        quic_abhinavk@quicinc.com, dmitry.baryshkov@linaro.org,
+        tomba@kernel.org, hjc@rock-chips.com, heiko@sntech.de,
+        ray.huang@amd.com, kraxel@redhat.com, sre@kernel.org,
+        mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com,
+        tfiga@chromium.org, m.szyprowski@samsung.com, mchehab@kernel.org,
+        dimitri.sivanich@hpe.com, zhangfei.gao@linaro.org,
+        jejb@linux.ibm.com, martin.petersen@oracle.com,
+        dgilbert@interlog.com, hdegoede@redhat.com, mst@redhat.com,
+        jasowang@redhat.com, alex.williamson@redhat.com, deller@gmx.de,
+        jayalk@intworks.biz, viro@zeniv.linux.org.uk, nico@fluxnic.net,
+        xiang@kernel.org, chao@kernel.org, tytso@mit.edu,
+        adilger.kernel@dilger.ca, miklos@szeredi.hu,
+        mike.kravetz@oracle.com, muchun.song@linux.dev, bhe@redhat.com,
+        andrii@kernel.org, yoshfuji@linux-ipv6.org, dsahern@kernel.org,
+        kuba@kernel.org, pabeni@redhat.com, perex@perex.cz, tiwai@suse.com,
+        haojian.zhuang@gmail.com, robert.jarzmik@free.fr,
+        linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org,
+        linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
+        linux-kernel@vger.kernel.org, linux-graphics-maintainer@vmware.com,
+        linux-ia64@vger.kernel.org, linux-arch@vger.kernel.org,
+        loongarch@lists.linux.dev, kvm@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-sgx@vger.kernel.org,
+        linux-um@lists.infradead.org, linux-acpi@vger.kernel.org,
+        linux-crypto@vger.kernel.org, nvdimm@lists.linux.dev,
+        dmaengine@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+        dri-devel@lists.freedesktop.org, etnaviv@lists.freedesktop.org,
+        linux-samsung-soc@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+        freedreno@lists.freedesktop.org,
+        linux-rockchip@lists.infradead.org, linux-tegra@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        xen-devel@lists.xenproject.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-rdma@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-accelerators@lists.ozlabs.org, sparclinux@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-staging@lists.linux.dev,
+        target-devel@vger.kernel.org, linux-usb@vger.kernel.org,
+        netdev@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-aio@kvack.org, linux-fsdevel@vger.kernel.org,
+        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
+        devel@lists.orangefs.org, kexec@lists.infradead.org,
+        linux-xfs@vger.kernel.org, bpf@vger.kernel.org,
+        linux-perf-users@vger.kernel.org, kasan-dev@googlegroups.com,
+        selinux@vger.kernel.org, alsa-devel@alsa-project.org,
+        kernel-team@android.com
+Subject: Re: [PATCH v2 1/6] mm: introduce vma->vm_flags modifier functions
+Message-ID: <Y9JFFYjfJf9uDijE@kernel.org>
+References: <20230125083851.27759-1-surenb@google.com>
+ <20230125083851.27759-2-surenb@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <478beda7-df98-d925-bfac-2856984c12d7@oracle.com>
-X-Originating-IP: [10.199.18.20]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-08.corp.yadro.com (172.17.11.58)
+In-Reply-To: <20230125083851.27759-2-surenb@google.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Mike,
+On Wed, Jan 25, 2023 at 12:38:46AM -0800, Suren Baghdasaryan wrote:
+> vm_flags are among VMA attributes which affect decisions like VMA merging
+> and splitting. Therefore all vm_flags modifications are performed after
+> taking exclusive mmap_lock to prevent vm_flags updates racing with such
+> operations. Introduce modifier functions for vm_flags to be used whenever
+> flags are updated. This way we can better check and control correct
+> locking behavior during these updates.
+> 
+> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+> ---
+>  include/linux/mm.h       | 37 +++++++++++++++++++++++++++++++++++++
+>  include/linux/mm_types.h |  8 +++++++-
+>  2 files changed, 44 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index c2f62bdce134..b71f2809caac 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -627,6 +627,43 @@ static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
+>  	INIT_LIST_HEAD(&vma->anon_vma_chain);
+>  }
+>  
+> +/* Use when VMA is not part of the VMA tree and needs no locking */
+> +static inline void init_vm_flags(struct vm_area_struct *vma,
+> +				 unsigned long flags)
 
-On Wed, Jan 25, 2023 at 11:18:32AM -0600, michael.christie@oracle.com wrote:
-> On 1/25/23 11:03 AM, Mike Christie wrote:
-> > On 1/25/23 02:33, Dmitry Bogdanov wrote:
-> >> Do not handle incoming commands if the session is already closed.
-> >>
-> >> That patch fixes the following stacktrace:
-> >>
-> >>  Decremented iSCSI connection count to 0 from node: iqn.1996-04.com.local:3
-> >>  TARGET_CORE[iSCSI]: Deregistered fabric_sess
-> >>  Moving to TARG_SESS_STATE_FREE.
-> >>  Released iSCSI session from node: iqn.1996-04.com.local:3
-> >>  Decremented number of active iSCSI Sessions on iSCSI TPG: 0 to 1
-> >>  rx_loop: 48, total_rx: 48, data: 48
-> >>  Got SCSI Command, ITT: 0x2000005d, CmdSN: 0x4a020000, ExpXferLen: 0, Length: 0, CID: 0
-> >> BUG: Kernel NULL pointer dereference on read at 0x00000000
-> >>   Faulting instruction address: 0xc008000000a9b574
-> >>   Oops: Kernel access of bad area, sig: 11 [#1]
-> >>   NIP [c008000000a9b574] transport_lookup_cmd_lun+0x37c/0x470 [target_core_mod]
-> >>   LR [c008000001017318] iscsit_setup_scsi_cmd+0x520/0x780 [iscsi_target_mod]
-> >> Call Trace:
-> >>  [c000000059e4fae0] [c000000059e4fb70] 0xc000000059e4fb70 (unreliable)
-> >>  [c000000059e4fb70] [c008000001017318] iscsit_setup_scsi_cmd+0x520/0x780 [iscsi_target_mod]
-> >>  [c000000059e4fc30] [c00800000101c448] iscsit_get_rx_pdu+0x720/0x11d0 [iscsi_target_mod]
-> >>  [c000000059e4fd60] [c00800000101ebc8] iscsi_target_rx_thread+0xb0/0x190 [iscsi_target_mod]
-> >>  [c000000059e4fdb0] [c00000000018c50c] kthread+0x19c/0x1b0
-> >>
-> >> Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
-> >> ---
-> >>  drivers/target/iscsi/iscsi_target.c | 8 ++++++--
-> >>  include/scsi/iscsi_proto.h          | 1 +
-> >>  2 files changed, 7 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-> >> index baf4da7bb3b4..f6008675dd3f 100644
-> >> --- a/drivers/target/iscsi/iscsi_target.c
-> >> +++ b/drivers/target/iscsi/iscsi_target.c
-> >> @@ -1199,7 +1199,9 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
-> >>              hdr->cmdsn, be32_to_cpu(hdr->data_length), payload_length,
-> >>              conn->cid);
-> >>
-> >> -    target_get_sess_cmd(&cmd->se_cmd, true);
-> >> +    if (target_get_sess_cmd(&cmd->se_cmd, true) < 0)
-> >> +            return iscsit_add_reject_cmd(cmd,
-> >> +                            ISCSI_REASON_WAITING_FOR_LOGOUT, buf);
-> >>
-> > Did this require target_stop_session somewhere? I think this is a possible
+I'd suggest to make it vm_flags_init() etc.
+Except that
 
-In my private patchset there the third patch was with
-target_stop_session/target_wait_for_sess_cmds right after
-scsit_free_connection_recovery_entries(sess) from the second patch.
-I did not post it because you are preparing a patchset with
-target_wait_for_sess_cmds in iscsi.
+Acked-by: Mike Rapoport (IBM) <rppt@kernel.org>
 
-Please, take my second patch to your patchset (if Martin will not take
-it separately), it is definitely a bugfix.
-But, please, take care that after
-iscsit_free_connection_recovery_entries iscsi should wait for commands
-complete too to fix that use-after-free completely.
-
-> Oh wait, if there is a use after free like below then iscsit_stop_session
-> won't help since we are trying to stop incoming commands from referencing
-> the se_session/iscsit_session. We would need to check something on the
-> iscsit_conn.
-
-Looking at the log snippet now I see that the call trace is not about
-new command in the dead session. Because iscsi session is closed only
-after both RX and TX threads have been stopped. It was a command in an
-alive session.
-Most likely, that call trace was due to the problem that I fixed in
-dd0a66ada0bd ("scsi: target: core: Fix race during ACL removal") that
-was catched on FC. And this one was on iSCSI. They are about the same
-age.
-
-I am dropping this (1st) patch as it is for an unreal case and actually does
-not solve use-after-free session: iscsit_add_reject_cmd in the end calls
-target_put_sess_cmd(se_cmd);
-	target_free_tag(sess->se_sess, cmd);
-    percpu_ref_put(&se_sess->cmd_count);
-
-
-> > use after free.
-> >
-> > It seems like if we have logged the message:
-> >
-> >>  Moving to TARG_SESS_STATE_FREE.
-> >
-> > then we called:
-> >
-> > transport_deregister_session -> transport_free_session
-> >
-> > and freed the se_session.
-> >
-> > So above if target_get_sess_cmd returns failure then we have run:
-> >
-> > transport_free_session ->transport_uninit_session -> percpu_ref_exit
-> >
-> > and transport_free_session could have done:
-> >
-> > kmem_cache_free(se_sess_cache, se_sess)
-> >
-> > by the time we run the code above and we are now accessing a freed
-> > se_session and iscsit_session.
-
- 
-BR,
- Dmitry
-
+> +{
+> +	vma->vm_flags = flags;
+> +}
+> +
+> +/* Use when VMA is part of the VMA tree and modifications need coordination */
+> +static inline void reset_vm_flags(struct vm_area_struct *vma,
+> +				  unsigned long flags)
+> +{
+> +	mmap_assert_write_locked(vma->vm_mm);
+> +	init_vm_flags(vma, flags);
+> +}
+> +
+> +static inline void set_vm_flags(struct vm_area_struct *vma,
+> +				unsigned long flags)
+> +{
+> +	mmap_assert_write_locked(vma->vm_mm);
+> +	vma->vm_flags |= flags;
+> +}
+> +
+> +static inline void clear_vm_flags(struct vm_area_struct *vma,
+> +				  unsigned long flags)
+> +{
+> +	mmap_assert_write_locked(vma->vm_mm);
+> +	vma->vm_flags &= ~flags;
+> +}
+> +
+> +static inline void mod_vm_flags(struct vm_area_struct *vma,
+> +				unsigned long set, unsigned long clear)
+> +{
+> +	mmap_assert_write_locked(vma->vm_mm);
+> +	vma->vm_flags |= set;
+> +	vma->vm_flags &= ~clear;
+> +}
+> +
+>  static inline void vma_set_anonymous(struct vm_area_struct *vma)
+>  {
+>  	vma->vm_ops = NULL;
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index 2d6d790d9bed..6c7c70bf50dd 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -491,7 +491,13 @@ struct vm_area_struct {
+>  	 * See vmf_insert_mixed_prot() for discussion.
+>  	 */
+>  	pgprot_t vm_page_prot;
+> -	unsigned long vm_flags;		/* Flags, see mm.h. */
+> +
+> +	/*
+> +	 * Flags, see mm.h.
+> +	 * WARNING! Do not modify directly.
+> +	 * Use {init|reset|set|clear|mod}_vm_flags() functions instead.
+> +	 */
+> +	unsigned long vm_flags;
+>  
+>  	/*
+>  	 * For areas with an address space and backing store,
+> -- 
+> 2.39.1
+> 
+> 
