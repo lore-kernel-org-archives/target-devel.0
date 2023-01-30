@@ -2,103 +2,75 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92BD1C636CC
-	for <target-devel@archiver.kernel.org>; Mon, 30 Jan 2023 09:42:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 065A4C54EED
+	for <target-devel@archiver.kernel.org>; Mon, 30 Jan 2023 10:32:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235678AbjA3JmU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 30 Jan 2023 04:42:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48686 "EHLO
+        id S236079AbjA3Kcb (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 30 Jan 2023 05:32:31 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57838 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235421AbjA3JmS (ORCPT
+        with ESMTP id S235854AbjA3Kc3 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 30 Jan 2023 04:42:18 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F82759FA
-        for <target-devel@vger.kernel.org>; Mon, 30 Jan 2023 01:41:22 -0800 (PST)
+        Mon, 30 Jan 2023 05:32:29 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9575B30E93
+        for <target-devel@vger.kernel.org>; Mon, 30 Jan 2023 02:31:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1675071681;
+        s=mimecast20190719; t=1675074697;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
+         to:to:cc:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=oZB3ppRWoE2VbNlBDORO+tXo0Zd7ms2jJgTuI65/l/4=;
-        b=abi6XcNibZlJRfMuJ7WfuDwfBdwiayjnYNMuKR8dDJyJSWCSf0KuTpbib6ytIXWG66ms6B
-        GeN6ep0Eala0Cpt3mEEODHhX7tEtLFhMX/HsqNw95XNFbRamsnpJDTSIS9Uz9Hf4AVsigB
-        9WWSUAja0vlHC1FUUIEzen+k1ifXTW0=
-Received: from mail-vs1-f69.google.com (mail-vs1-f69.google.com
- [209.85.217.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-670-byk7aji1P7yKfo2goIpl0w-1; Mon, 30 Jan 2023 04:41:19 -0500
-X-MC-Unique: byk7aji1P7yKfo2goIpl0w-1
-Received: by mail-vs1-f69.google.com with SMTP id b65-20020a676744000000b003cedad0ea4bso2038573vsc.9
-        for <target-devel@vger.kernel.org>; Mon, 30 Jan 2023 01:41:19 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=oZB3ppRWoE2VbNlBDORO+tXo0Zd7ms2jJgTuI65/l/4=;
-        b=Wt5rwZtg11qtbM8kEJqgGcpT1rTcKWEyHiuNp/Url/cYpOvejJGmB5Czgrv+LxMbKa
-         YSDAgmXnWY4sR4xDG492Dqf6uNp5YJKlFW1eh9RkzKqR3wYUSRkARBq/7GF2SCZIhXeF
-         U+ZWZyVRYKOvsL+CiuW3y5bE/av6ejUifxcpbih+d5opKIaFRyifC23HtyAHKZ/CkbJa
-         aS1LW3FYzgYjIoo9dkwcETCuS6DrqSOluyNhZ/zTN2V/pQQdGzqIx/QQYfVqmjIhIbUi
-         112Guc5MrZnVTFhpV6YQhuu2jpn1kSPnTquKFIk43nKXuLWJ+T5NmQd7YVjduJKDeI+z
-         KgXQ==
-X-Gm-Message-State: AFqh2kpYb7fChLSq5PxQTlf1+J14s7BuOOHaELlgBiw0CK8HJFNPmZKK
-        NCxDaS8dUA8/4StC4ssOZuDzBxA4jjeusA8t45oD7pT23OmEzFNE3sBsVkDC05eRqxZUq0wf2ql
-        u85UZ30z9165NF4Y32KC1BB0z2qdgSGMRw9i67vZM
-X-Received: by 2002:a67:17c7:0:b0:3d3:ef73:b726 with SMTP id 190-20020a6717c7000000b003d3ef73b726mr8030092vsx.22.1675071678742;
-        Mon, 30 Jan 2023 01:41:18 -0800 (PST)
-X-Google-Smtp-Source: AMrXdXsZPbGIkKZ3JkyE4PPSEtdATs4cyeWI2bHYwKj1pHG9Xv5GR1TFcLYB7oDPze+TpK8lg+/5MkDt7dN9K44BisI=
-X-Received: by 2002:a67:17c7:0:b0:3d3:ef73:b726 with SMTP id
- 190-20020a6717c7000000b003d3ef73b726mr8030087vsx.22.1675071678470; Mon, 30
- Jan 2023 01:41:18 -0800 (PST)
+        bh=CICRFAbCzChYD1znyWS61qGZqh3HfSsIj8zLg6AqEXc=;
+        b=RuntM1FN6pqA8+gfq1WjAtr9JOUePdbLUKVO/nmx+EJ7xT6JHNiugOiENZqtLuw8CtHtxM
+        Us/PVqcqigdeXDG4Dmw7L9wEG8O4ZpYLEk+Yj5uYxvNDSOOpjV6s7iRrX0jryi0fbGvKPD
+        R91bzmNSQuHd0CRNuTREJW+z0pFHmUQ=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-107-m7rZ0bd0PKa4hu7tOJYsfA-1; Mon, 30 Jan 2023 05:31:27 -0500
+X-MC-Unique: m7rZ0bd0PKa4hu7tOJYsfA-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com [10.11.54.8])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 408462999B26;
+        Mon, 30 Jan 2023 10:31:26 +0000 (UTC)
+Received: from warthog.procyon.org.uk (unknown [10.33.36.97])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 4AA28C15BAD;
+        Mon, 30 Jan 2023 10:31:24 +0000 (UTC)
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+        Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+        Kingdom.
+        Registered in England and Wales under Company Registration No. 3798903
+From:   David Howells <dhowells@redhat.com>
+In-Reply-To: <20230130092157.1759539-21-hch@lst.de>
+References: <20230130092157.1759539-21-hch@lst.de> <20230130092157.1759539-1-hch@lst.de>
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     dhowells@redhat.com
+Cc:     linux-block@vger.kernel.org, ceph-devel@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, kvm@vger.kernel.org,
+        netdev@vger.kernel.org, linux-afs@lists.infradead.org,
+        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
+        linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
+        devel@lists.orangefs.org, io-uring@vger.kernel.org,
+        linux-mm@kvack.org
+Subject: Re: [PATCH 20/23] rxrpc: use bvec_set_page to initialize a bvec
 MIME-Version: 1.0
-References: <CAFL455m0amBULArG5dNHrrGKJ8Jg4n3SdnvzOavz4=i2FUR5Sg@mail.gmail.com>
- <f9f4057b-5711-e83d-aea1-20f79737f27c@oracle.com>
-In-Reply-To: <f9f4057b-5711-e83d-aea1-20f79737f27c@oracle.com>
-From:   Maurizio Lombardi <mlombard@redhat.com>
-Date:   Mon, 30 Jan 2023 10:41:07 +0100
-Message-ID: <CAFL455=hk+9NN9HjyjVQQAkKtqhBFDp9iG=7WOuL57G98-QdYQ@mail.gmail.com>
-Subject: Re: deadlocks when the target server runs as initiator to itself
-To:     Mike Christie <michael.christie@oracle.com>
-Cc:     d.bogdanov@yadro.com, target-devel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <3347458.1675074683.1@warthog.procyon.org.uk>
+Date:   Mon, 30 Jan 2023 10:31:23 +0000
+Message-ID: <3347459.1675074683@warthog.procyon.org.uk>
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.8
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-po 30. 1. 2023 v 1:09 odes=C3=ADlatel Mike Christie
-<michael.christie@oracle.com> napsal:
->
-> > Sounds correct to you?
->
-> Yeah, I think nbd and rbd have similar issues. I think they just say don'=
-t
-> do that.
+Christoph Hellwig <hch@lst.de> wrote:
 
-Ok. So iscsi initiator and target on the same host must be considered
-unsupported.
+> +		bvec_set_page(&bv, ZERO_PAGE(0), len, 0);
 
->
-> >
-> > What do you think about using memalloc_noio_*() in the iscsi_rx thread
-> > to prevent the memory reclaim code from starting I/O operations? Any
-> > alternative ideas?
->
-> I don't think that's the best option because it's a rare use case and it
-> will affect other users.
+Maybe bvec_set_zero_page()?
 
-Yeah, too overkill for such a corner case.
-
->Why can't the user just use tcm loop for the local
-> use case?
-
-This is indeed what we are going to suggest to them, to reconfigure
-their target setup to
-avoid using iscsi in loop and use tcm_loop instead.
-
-Thanks,
-Maurizio
+David
 
