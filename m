@@ -2,174 +2,103 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7E4DC54EAA
-	for <target-devel@archiver.kernel.org>; Mon, 30 Jan 2023 09:28:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92BD1C636CC
+	for <target-devel@archiver.kernel.org>; Mon, 30 Jan 2023 09:42:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236318AbjA3J2y (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 30 Jan 2023 04:28:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56464 "EHLO
+        id S235678AbjA3JmU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 30 Jan 2023 04:42:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48686 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235793AbjA3J2Y (ORCPT
+        with ESMTP id S235421AbjA3JmS (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 30 Jan 2023 04:28:24 -0500
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C84F30EA0;
-        Mon, 30 Jan 2023 01:25:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
-        :Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=H1w/sob2deIb9pxt4pAEZWp01So4kETnigr7yzrrzGg=; b=ykPzBC64zt0+24f/idcoY5rPHl
-        IsFgekhQQBB15Wh2AupkIyS/+sF/MEgiCkwkAzgtsu3rOUsznVfVUdBr0/uyOlhk5rx+h6DR0d9Oq
-        gLrt+9Bh4LcQxj8juVhz0PYX3bpL3oDqD7A7afZtVPoATxq+y4I8dtDm7Fx4FySiMWhyJMVEXE5S5
-        IeDwhKFrXApv9OFQJhn1/to8z+gpYIhjxn4yvN9X71cbtbfi5fbILaUAJrrmpPdUhZHmWkHIRSHQb
-        LJjeyTDO81kNei1tQOu95oSLdNf1G2DlmwqbKXJcHxLcuUQRAtvvSjB9dI7ZC0svAqSMARkOGYONl
-        UAzlVl5Q==;
-Received: from [2001:4bb8:19a:272a:732e:e417:47d7:2f4a] (helo=localhost)
-        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1pMQNy-002oTE-C6; Mon, 30 Jan 2023 09:23:34 +0000
-From:   Christoph Hellwig <hch@lst.de>
-To:     Jens Axboe <axboe@kernel.dk>
-Cc:     Ilya Dryomov <idryomov@gmail.com>,
-        "Michael S. Tsirkin" <mst@redhat.com>,
-        Jason Wang <jasowang@redhat.com>,
-        Minchan Kim <minchan@kernel.org>,
-        Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Keith Busch <kbusch@kernel.org>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        Chaitanya Kulkarni <kch@nvidia.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        David Howells <dhowells@redhat.com>,
-        Marc Dionne <marc.dionne@auristor.com>,
-        Xiubo Li <xiubli@redhat.com>, Steve French <sfrench@samba.org>,
-        Trond Myklebust <trond.myklebust@hammerspace.com>,
-        Anna Schumaker <anna@kernel.org>,
-        Mike Marshall <hubcap@omnibond.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Chuck Lever <chuck.lever@oracle.com>,
-        linux-block@vger.kernel.org, ceph-devel@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, kvm@vger.kernel.org,
-        netdev@vger.kernel.org, linux-afs@lists.infradead.org,
-        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
-        linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
-        devel@lists.orangefs.org, io-uring@vger.kernel.org,
-        linux-mm@kvack.org
-Subject: [PATCH 23/23] net-ceph: use bvec_set_page to initialize bvecs
-Date:   Mon, 30 Jan 2023 10:21:57 +0100
-Message-Id: <20230130092157.1759539-24-hch@lst.de>
-X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230130092157.1759539-1-hch@lst.de>
-References: <20230130092157.1759539-1-hch@lst.de>
+        Mon, 30 Jan 2023 04:42:18 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F82759FA
+        for <target-devel@vger.kernel.org>; Mon, 30 Jan 2023 01:41:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1675071681;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=oZB3ppRWoE2VbNlBDORO+tXo0Zd7ms2jJgTuI65/l/4=;
+        b=abi6XcNibZlJRfMuJ7WfuDwfBdwiayjnYNMuKR8dDJyJSWCSf0KuTpbib6ytIXWG66ms6B
+        GeN6ep0Eala0Cpt3mEEODHhX7tEtLFhMX/HsqNw95XNFbRamsnpJDTSIS9Uz9Hf4AVsigB
+        9WWSUAja0vlHC1FUUIEzen+k1ifXTW0=
+Received: from mail-vs1-f69.google.com (mail-vs1-f69.google.com
+ [209.85.217.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-670-byk7aji1P7yKfo2goIpl0w-1; Mon, 30 Jan 2023 04:41:19 -0500
+X-MC-Unique: byk7aji1P7yKfo2goIpl0w-1
+Received: by mail-vs1-f69.google.com with SMTP id b65-20020a676744000000b003cedad0ea4bso2038573vsc.9
+        for <target-devel@vger.kernel.org>; Mon, 30 Jan 2023 01:41:19 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=oZB3ppRWoE2VbNlBDORO+tXo0Zd7ms2jJgTuI65/l/4=;
+        b=Wt5rwZtg11qtbM8kEJqgGcpT1rTcKWEyHiuNp/Url/cYpOvejJGmB5Czgrv+LxMbKa
+         YSDAgmXnWY4sR4xDG492Dqf6uNp5YJKlFW1eh9RkzKqR3wYUSRkARBq/7GF2SCZIhXeF
+         U+ZWZyVRYKOvsL+CiuW3y5bE/av6ejUifxcpbih+d5opKIaFRyifC23HtyAHKZ/CkbJa
+         aS1LW3FYzgYjIoo9dkwcETCuS6DrqSOluyNhZ/zTN2V/pQQdGzqIx/QQYfVqmjIhIbUi
+         112Guc5MrZnVTFhpV6YQhuu2jpn1kSPnTquKFIk43nKXuLWJ+T5NmQd7YVjduJKDeI+z
+         KgXQ==
+X-Gm-Message-State: AFqh2kpYb7fChLSq5PxQTlf1+J14s7BuOOHaELlgBiw0CK8HJFNPmZKK
+        NCxDaS8dUA8/4StC4ssOZuDzBxA4jjeusA8t45oD7pT23OmEzFNE3sBsVkDC05eRqxZUq0wf2ql
+        u85UZ30z9165NF4Y32KC1BB0z2qdgSGMRw9i67vZM
+X-Received: by 2002:a67:17c7:0:b0:3d3:ef73:b726 with SMTP id 190-20020a6717c7000000b003d3ef73b726mr8030092vsx.22.1675071678742;
+        Mon, 30 Jan 2023 01:41:18 -0800 (PST)
+X-Google-Smtp-Source: AMrXdXsZPbGIkKZ3JkyE4PPSEtdATs4cyeWI2bHYwKj1pHG9Xv5GR1TFcLYB7oDPze+TpK8lg+/5MkDt7dN9K44BisI=
+X-Received: by 2002:a67:17c7:0:b0:3d3:ef73:b726 with SMTP id
+ 190-20020a6717c7000000b003d3ef73b726mr8030087vsx.22.1675071678470; Mon, 30
+ Jan 2023 01:41:18 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+References: <CAFL455m0amBULArG5dNHrrGKJ8Jg4n3SdnvzOavz4=i2FUR5Sg@mail.gmail.com>
+ <f9f4057b-5711-e83d-aea1-20f79737f27c@oracle.com>
+In-Reply-To: <f9f4057b-5711-e83d-aea1-20f79737f27c@oracle.com>
+From:   Maurizio Lombardi <mlombard@redhat.com>
+Date:   Mon, 30 Jan 2023 10:41:07 +0100
+Message-ID: <CAFL455=hk+9NN9HjyjVQQAkKtqhBFDp9iG=7WOuL57G98-QdYQ@mail.gmail.com>
+Subject: Re: deadlocks when the target server runs as initiator to itself
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     d.bogdanov@yadro.com, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Use the bvec_set_page helper to initialize bvecs.
+po 30. 1. 2023 v 1:09 odes=C3=ADlatel Mike Christie
+<michael.christie@oracle.com> napsal:
+>
+> > Sounds correct to you?
+>
+> Yeah, I think nbd and rbd have similar issues. I think they just say don'=
+t
+> do that.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- net/ceph/messenger_v1.c |  7 ++-----
- net/ceph/messenger_v2.c | 28 +++++++++++-----------------
- 2 files changed, 13 insertions(+), 22 deletions(-)
+Ok. So iscsi initiator and target on the same host must be considered
+unsupported.
 
-diff --git a/net/ceph/messenger_v1.c b/net/ceph/messenger_v1.c
-index d1787d7d33ef9a..d664cb1593a777 100644
---- a/net/ceph/messenger_v1.c
-+++ b/net/ceph/messenger_v1.c
-@@ -40,15 +40,12 @@ static int ceph_tcp_recvmsg(struct socket *sock, void *buf, size_t len)
- static int ceph_tcp_recvpage(struct socket *sock, struct page *page,
- 		     int page_offset, size_t length)
- {
--	struct bio_vec bvec = {
--		.bv_page = page,
--		.bv_offset = page_offset,
--		.bv_len = length
--	};
-+	struct bio_vec bvec;
- 	struct msghdr msg = { .msg_flags = MSG_DONTWAIT | MSG_NOSIGNAL };
- 	int r;
- 
- 	BUG_ON(page_offset + length > PAGE_SIZE);
-+	bvec_set_page(&bvec, page, length, page_offset);
- 	iov_iter_bvec(&msg.msg_iter, ITER_DEST, &bvec, 1, length);
- 	r = sock_recvmsg(sock, &msg, msg.msg_flags);
- 	if (r == -EAGAIN)
-diff --git a/net/ceph/messenger_v2.c b/net/ceph/messenger_v2.c
-index 3009028c4fa28f..301a991dc6a68e 100644
---- a/net/ceph/messenger_v2.c
-+++ b/net/ceph/messenger_v2.c
-@@ -149,10 +149,10 @@ static int do_try_sendpage(struct socket *sock, struct iov_iter *it)
- 
- 	while (iov_iter_count(it)) {
- 		/* iov_iter_iovec() for ITER_BVEC */
--		bv.bv_page = it->bvec->bv_page;
--		bv.bv_offset = it->bvec->bv_offset + it->iov_offset;
--		bv.bv_len = min(iov_iter_count(it),
--				it->bvec->bv_len - it->iov_offset);
-+		bvec_set_page(&bv, it->bvec->bv_page,
-+			      min(iov_iter_count(it),
-+				  it->bvec->bv_len - it->iov_offset),
-+			      it->bvec->bv_offset + it->iov_offset);
- 
- 		/*
- 		 * sendpage cannot properly handle pages with
-@@ -286,9 +286,8 @@ static void set_out_bvec_zero(struct ceph_connection *con)
- 	WARN_ON(iov_iter_count(&con->v2.out_iter));
- 	WARN_ON(!con->v2.out_zero);
- 
--	con->v2.out_bvec.bv_page = ceph_zero_page;
--	con->v2.out_bvec.bv_offset = 0;
--	con->v2.out_bvec.bv_len = min(con->v2.out_zero, (int)PAGE_SIZE);
-+	bvec_set_page(&con->v2.out_bvec, ceph_zero_page,
-+		      min(con->v2.out_zero, (int)PAGE_SIZE), 0);
- 	con->v2.out_iter_sendpage = true;
- 	iov_iter_bvec(&con->v2.out_iter, ITER_SOURCE, &con->v2.out_bvec, 1,
- 		      con->v2.out_bvec.bv_len);
-@@ -863,10 +862,7 @@ static void get_bvec_at(struct ceph_msg_data_cursor *cursor,
- 
- 	/* get a piece of data, cursor isn't advanced */
- 	page = ceph_msg_data_next(cursor, &off, &len);
--
--	bv->bv_page = page;
--	bv->bv_offset = off;
--	bv->bv_len = len;
-+	bvec_set_page(bv, page, len, off);
- }
- 
- static int calc_sg_cnt(void *buf, int buf_len)
-@@ -1855,9 +1851,8 @@ static void prepare_read_enc_page(struct ceph_connection *con)
- 	     con->v2.in_enc_resid);
- 	WARN_ON(!con->v2.in_enc_resid);
- 
--	bv.bv_page = con->v2.in_enc_pages[con->v2.in_enc_i];
--	bv.bv_offset = 0;
--	bv.bv_len = min(con->v2.in_enc_resid, (int)PAGE_SIZE);
-+	bvec_set_page(&bv, con->v2.in_enc_pages[con->v2.in_enc_i],
-+		      min(con->v2.in_enc_resid, (int)PAGE_SIZE), 0);
- 
- 	set_in_bvec(con, &bv);
- 	con->v2.in_enc_i++;
-@@ -2998,9 +2993,8 @@ static void queue_enc_page(struct ceph_connection *con)
- 	     con->v2.out_enc_resid);
- 	WARN_ON(!con->v2.out_enc_resid);
- 
--	bv.bv_page = con->v2.out_enc_pages[con->v2.out_enc_i];
--	bv.bv_offset = 0;
--	bv.bv_len = min(con->v2.out_enc_resid, (int)PAGE_SIZE);
-+	bvec_set_page(&bv, con->v2.out_enc_pages[con->v2.out_enc_i],
-+		      min(con->v2.out_enc_resid, (int)PAGE_SIZE), 0);
- 
- 	set_out_bvec(con, &bv, false);
- 	con->v2.out_enc_i++;
--- 
-2.39.0
+>
+> >
+> > What do you think about using memalloc_noio_*() in the iscsi_rx thread
+> > to prevent the memory reclaim code from starting I/O operations? Any
+> > alternative ideas?
+>
+> I don't think that's the best option because it's a rare use case and it
+> will affect other users.
+
+Yeah, too overkill for such a corner case.
+
+>Why can't the user just use tcm loop for the local
+> use case?
+
+This is indeed what we are going to suggest to them, to reconfigure
+their target setup to
+avoid using iscsi in loop and use tcm_loop instead.
+
+Thanks,
+Maurizio
 
