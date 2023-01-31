@@ -2,62 +2,73 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7AC0C636CC
-	for <target-devel@archiver.kernel.org>; Tue, 31 Jan 2023 09:24:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AD96C64EC5
+	for <target-devel@archiver.kernel.org>; Tue, 31 Jan 2023 13:45:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231878AbjAaJYn (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 31 Jan 2023 04:24:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52726 "EHLO
+        id S232362AbjAaNpf (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 31 Jan 2023 08:45:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56310 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230320AbjAaJYm (ORCPT
+        with ESMTP id S229680AbjAaNpd (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 31 Jan 2023 04:24:42 -0500
-X-Greylist: delayed 510 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Tue, 31 Jan 2023 01:24:39 PST
-Received: from mail.paretdee.com (mail.paretdee.com [141.95.17.174])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4751D3C27
-        for <target-devel@vger.kernel.org>; Tue, 31 Jan 2023 01:24:39 -0800 (PST)
-Received: by mail.paretdee.com (Postfix, from userid 1002)
-        id 78E1DA2B2E; Tue, 31 Jan 2023 09:15:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=paretdee.com; s=mail;
-        t=1675156529; bh=81y7GKW1qfpmZraEf77YtkUdBRVrEXx1Dfams4657E8=;
-        h=Date:From:To:Subject:From;
-        b=nKVa0ukpGAM8MMCIK3hRHG8LmYpMOUAeuMSWvDbeC5H7NdqNXmeXP+Rs2JJt32j9A
-         2zffFUG+GpCmwWJLlqtjABLwBVwlDr4auiUxrA/scg7l3b6HXqgOu/OilFKwZtEnLl
-         gsnTTgo9RLOBB9eNi9LD/AJzIutTzUD1wW/fTIPK5ZAihj+i2UDo3l4DxZADyS2Fnf
-         ViIzuO3Ks/mHaqvYsDK6lB5+mTy3FBWd7qZPJLqdHBooW6C2QfVIKt5DNvkxdxYak9
-         uZkknmGLEIVo4l7AwvK7VW9jzYwDgGQtDfpr6lU/lK47NsfAvJsuqPUjoN3p6yJzsv
-         eP81C2rwJhGHA==
-Received: by mail.paretdee.com for <target-devel@vger.kernel.org>; Tue, 31 Jan 2023 09:15:22 GMT
-Message-ID: <20230131074500-0.1.4k.9fps.0.ptq49gujgn@paretdee.com>
-Date:   Tue, 31 Jan 2023 09:15:22 GMT
-From:   "Zbynek Spacek" <zbynek.spacek@paretdee.com>
-To:     <target-devel@vger.kernel.org>
-Subject: Silicone rubber - vulcanization
-X-Mailer: mail.paretdee.com
+        Tue, 31 Jan 2023 08:45:33 -0500
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A7084269F;
+        Tue, 31 Jan 2023 05:45:31 -0800 (PST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+        id A7B4968B05; Tue, 31 Jan 2023 14:45:22 +0100 (CET)
+Date:   Tue, 31 Jan 2023 14:45:21 +0100
+From:   Christoph Hellwig <hch@lst.de>
+To:     Bart Van Assche <bvanassche@acm.org>
+Cc:     Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
+        Ilya Dryomov <idryomov@gmail.com>,
+        "Michael S. Tsirkin" <mst@redhat.com>,
+        Jason Wang <jasowang@redhat.com>,
+        Minchan Kim <minchan@kernel.org>,
+        Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Keith Busch <kbusch@kernel.org>,
+        Sagi Grimberg <sagi@grimberg.me>,
+        Chaitanya Kulkarni <kch@nvidia.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        David Howells <dhowells@redhat.com>,
+        Marc Dionne <marc.dionne@auristor.com>,
+        Xiubo Li <xiubli@redhat.com>, Steve French <sfrench@samba.org>,
+        Trond Myklebust <trond.myklebust@hammerspace.com>,
+        Anna Schumaker <anna@kernel.org>,
+        Mike Marshall <hubcap@omnibond.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Chuck Lever <chuck.lever@oracle.com>,
+        linux-block@vger.kernel.org, ceph-devel@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, kvm@vger.kernel.org,
+        netdev@vger.kernel.org, linux-afs@lists.infradead.org,
+        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
+        linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
+        devel@lists.orangefs.org, io-uring@vger.kernel.org,
+        linux-mm@kvack.org
+Subject: Re: [PATCH 01/23] block: factor out a bvec_set_page helper
+Message-ID: <20230131134521.GA24165@lst.de>
+References: <20230130092157.1759539-1-hch@lst.de> <20230130092157.1759539-2-hch@lst.de> <2bab7050-dec7-3af8-b643-31b414b8c4b4@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2bab7050-dec7-3af8-b643-31b414b8c4b4@acm.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Good morning,
+On Mon, Jan 30, 2023 at 09:09:23AM -0800, Bart Van Assche wrote:
+> Has it been considered to use structure assignment instead of introducing 
+> bvec_set_page(), e.g. as follows?
+>
+> bip->bip_vec[bip->bip_vcnt] = (struct bio_vec) {
+>       .bv_page = page, .bv_len = len, .bv_offset = offset };
 
-a few months ago, we were contacted by a company from your industry, wher=
-e too high costs were generated by the purchase of silicone rubbers and s=
-ilicone mixtures with specific properties.
-
-We offered them a wide range of HTV silicone rubbers with technical prope=
-rties and liquid silicone rubber (LSR), as well as dyes and stabilizers. =
-Competitive conditions made it possible to flexibly adjust to their needs=
- and type of production.
-
-Now the purchase and delivery of rubber runs smoothly, the client has gai=
-ned a significant increase in savings in relation to the planned budget a=
-t the level of several percent per year.
-
-Would you like to check what solutions we can provide you?
-
-
-Best regards
-Zbynek Spacek
+Unless it's hidden behind a macro it doesn't solve the problem of
+abstraction away the layout.  I'm also find it less readable.
