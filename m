@@ -2,36 +2,36 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DD26C636CC
-	for <target-devel@archiver.kernel.org>; Tue, 31 Jan 2023 15:00:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFA1FC636D3
+	for <target-devel@archiver.kernel.org>; Tue, 31 Jan 2023 15:02:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232425AbjAaPAJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 31 Jan 2023 10:00:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59330 "EHLO
+        id S232702AbjAaPCM (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 31 Jan 2023 10:02:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59340 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232590AbjAaO76 (ORCPT
+        with ESMTP id S232705AbjAaPBd (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 31 Jan 2023 09:59:58 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E31522A24;
-        Tue, 31 Jan 2023 06:59:56 -0800 (PST)
+        Tue, 31 Jan 2023 10:01:33 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96CCD8A72;
+        Tue, 31 Jan 2023 07:00:38 -0800 (PST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 248E86153C;
-        Tue, 31 Jan 2023 14:59:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA06BC433A0;
-        Tue, 31 Jan 2023 14:59:54 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7F8CB61562;
+        Tue, 31 Jan 2023 15:00:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26DF8C433A0;
+        Tue, 31 Jan 2023 15:00:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1675177195;
+        s=k20201202; t=1675177237;
         bh=DWj+O7moT18+ZTe+Ogcv2iDKxrxaudaFhD+wXevmfXU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=rvVZV4CsZfK42/WiFpPcX+FwJHGtAXdFc+qlbd7phnWOZuxPPdlKXAFvNa5PRtcf5
-         j2pAtxrLJ2HTdy/IqjNnnF6FBh6myKkPROucc1fyeG0ZIOneWhdtvt9d262zXUGf4r
-         lv3flXp+LbV1hteiPE86uU9B3AhQTUb7UilI5FEq8kZIr6MoUy4YNq2e15HCY2emn7
-         klbXO8S5UYIkuHHFhEB4Z+pPTHf4x2+Fk8MKyU/Md3NL0u6iXEMSaYQrVKabGB+wha
-         iW3YyaSj296ABon56VU1s/AxRbhRsI/0YWfWqZ5+Bt2Q87TZvkgtzrjZ4XQjUJmrYV
-         dZgDAakSmx2GQ==
+        b=cEEMwZApbIqhlUvB3D6XKChGhwBFgW5uduXWukUh5Q3oVxNGrrR8Ckie++ROUDhR4
+         qh4pTterhgXlnQQCZuzDmvFuvqLK2Q+Ije4A6K1636q+STgiRpD5XaAzZ1r0CShPiV
+         iiLd7G4AjSqNQfpATeI0n0YGAD62G3rhfW9FUUzCDq+qCuapRyCAPN7Wkpdpj7agk4
+         zhLJdUNvZJhDisMJRH9G23mdwdCvEif+LA4qWjeSTt3GtuTPIxMwldei+ffWXxynAH
+         ssXRuvUGlbqAymSnxDfoBYR7Xu3q4TRrDTiloiofzkZrFumwgRCneIw9Y93oARD2Z0
+         4HcfnqOQotu5Q==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Maurizio Lombardi <mlombard@redhat.com>,
@@ -39,12 +39,12 @@ Cc:     Maurizio Lombardi <mlombard@redhat.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, linux-scsi@vger.kernel.org,
         target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 03/20] scsi: target: core: Fix warning on RT kernels
-Date:   Tue, 31 Jan 2023 09:59:29 -0500
-Message-Id: <20230131145946.1249850-3-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 03/12] scsi: target: core: Fix warning on RT kernels
+Date:   Tue, 31 Jan 2023 10:00:21 -0500
+Message-Id: <20230131150030.1250104-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230131145946.1249850-1-sashal@kernel.org>
-References: <20230131145946.1249850-1-sashal@kernel.org>
+In-Reply-To: <20230131150030.1250104-1-sashal@kernel.org>
+References: <20230131150030.1250104-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
