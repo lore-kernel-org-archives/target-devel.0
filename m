@@ -2,71 +2,66 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCFDBC61DA4
-	for <target-devel@archiver.kernel.org>; Tue, 31 Jan 2023 01:52:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 371A8C61DA4
+	for <target-devel@archiver.kernel.org>; Tue, 31 Jan 2023 02:32:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230502AbjAaBwU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 30 Jan 2023 20:52:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58136 "EHLO
+        id S229680AbjAaCc1 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 30 Jan 2023 21:32:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49292 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229708AbjAaBwO (ORCPT
+        with ESMTP id S229505AbjAaCcV (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 30 Jan 2023 20:52:14 -0500
+        Mon, 30 Jan 2023 21:32:21 -0500
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C41ED29175
-        for <target-devel@vger.kernel.org>; Mon, 30 Jan 2023 17:51:18 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1310727D68
+        for <target-devel@vger.kernel.org>; Mon, 30 Jan 2023 18:31:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1675129877;
+        s=mimecast20190719; t=1675132292;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=mBv8DJNmeWTzhqoixUePfk7DvfX/r91Bih49ZwlSTgg=;
-        b=DC/74vslTzwnAVEO02wzUzKZO9FsmJQQvVyLu1aOUQQoIFRxiJB2pM3C6SSQ8ZwwTMh653
-        0dTn7zVksefp4LEZoq7HcTjcJ7Sgzcq3kwcZ1KyfZXMAdhSzPv2ZX+XPOqVvutfVgE/Fwd
-        C6ReLcsooHyYBc0JuMNS1RmenAaSZwE=
-Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com
- [209.85.210.198]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=utT+RE/MkgWVBG/iNzPiYM+H0kp8FILH2HeviGKceUM=;
+        b=iIdtkuaYs/BbKRcsDyPG4Mg1BhleizrqjVxD6N8jBFBJKZKa+V2jcEeS+3JNbPSeNvLCet
+        yGh12u5zvC4SuQCq19HlLglg5OMYNSII0ZXAeUIjkN5J3tH2Ke7MmqIrLuCL3AhPLL1fWm
+        E2CYPaFkiXa2KYKOOQa3iHQY2fjUXek=
+Received: from mail-ot1-f70.google.com (mail-ot1-f70.google.com
+ [209.85.210.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-522-aLfVjjlwNbenUsljCsAF6Q-1; Mon, 30 Jan 2023 20:51:16 -0500
-X-MC-Unique: aLfVjjlwNbenUsljCsAF6Q-1
-Received: by mail-pf1-f198.google.com with SMTP id f15-20020a62380f000000b0058db55a8d7aso6421127pfa.21
-        for <target-devel@vger.kernel.org>; Mon, 30 Jan 2023 17:51:16 -0800 (PST)
+ us-mta-460-5xmg9KFmMJuqEcbfaZG8cw-1; Mon, 30 Jan 2023 21:31:29 -0500
+X-MC-Unique: 5xmg9KFmMJuqEcbfaZG8cw-1
+Received: by mail-ot1-f70.google.com with SMTP id w9-20020a9d5a89000000b0068bc6c8621eso3162846oth.9
+        for <target-devel@vger.kernel.org>; Mon, 30 Jan 2023 18:31:29 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=mBv8DJNmeWTzhqoixUePfk7DvfX/r91Bih49ZwlSTgg=;
-        b=Mv+3e/dZRTF+CRY3S5JAC+0eErIQfTpugxO2ZbWx50RLqNbo512AKOiPqF/F3QyZje
-         nWICNEYCUsDUqrbwX5xxsbJpeLq2hxiyiqzjgx5xfZpF2dIbDjTgG+DjeIh0l8HUg8yA
-         z1M6+t9vRHbZyYGZTEoMPQ2fLBr2K+0jnEbyD/cgV9pmrjM2oTeqX0gkaK+Hsfgf8HJZ
-         EcBQWoccGqalYjlgaUqMqxsmrQzfrD3XAhOGL+JL8aPWRpqIcC6yujfbXQkEahQ3vb8Q
-         +ToKRGc27+d9lUkjhyXUWJU6b++2R5Y1UqWMdEouT8XFQ9OCduWhRN/FHgBDYAtHUCqE
-         1Y5g==
-X-Gm-Message-State: AO0yUKW0rd0NF+kATdP53sGztDtiyx8RQnKeUFEo59/IL3LCAsr10GPi
-        2K7Aqt90s9LoTe5Uf4Rvy0sFezCg2MtWc65voIK2ighLcblkcsYjcl49oVv7q9FYBc50YWXp+hV
-        CtLRCTc2HdOGWalDLU/ECm5+i
-X-Received: by 2002:a17:902:d487:b0:196:15af:e6de with SMTP id c7-20020a170902d48700b0019615afe6demr29574984plg.68.1675129875394;
-        Mon, 30 Jan 2023 17:51:15 -0800 (PST)
-X-Google-Smtp-Source: AK7set8JSjJ+sRvtPcXP6fVdufCYZ8fk74MG4aecVDj2Iej+5W2CdxzxrzRUj04G/QWJkYRImmyA4Q==
-X-Received: by 2002:a17:902:d487:b0:196:15af:e6de with SMTP id c7-20020a170902d48700b0019615afe6demr29574939plg.68.1675129875072;
-        Mon, 30 Jan 2023 17:51:15 -0800 (PST)
-Received: from [10.72.13.217] ([43.228.180.230])
-        by smtp.gmail.com with ESMTPSA id o17-20020a170902d4d100b00196077ba463sm8430985plg.123.2023.01.30.17.51.02
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 30 Jan 2023 17:51:14 -0800 (PST)
-Message-ID: <ba3adefd-f2d8-d074-4dfc-5677c3cd71a3@redhat.com>
-Date:   Tue, 31 Jan 2023 09:51:00 +0800
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=utT+RE/MkgWVBG/iNzPiYM+H0kp8FILH2HeviGKceUM=;
+        b=ct0g0FyuRa+yzdi9O+Y+gFdDVTslM6PM2QVmqaoIlyy1yE3bUIRk14Qh6L/myKMrrE
+         a4CDDHbKaa5RY1jQzfquRRiY/aoL2yLFkUAY4PWt4qUuvHJDDL54Cd4NydjguRFgcOjF
+         drR/nnNp1AgqmN27g45BYzUBDNyD074ukxdByIYYg9YGsGPUAwpwxQXLyQcu2UIKb17N
+         xVmL/d3TTv0p5Icnf1N4U158npgY3gbjKKwhx8/7Wk99L0WNinsudJHZw2sW9i+0UkDP
+         aJhdFI1UAqKIA2r9RN2YdPRRFUwnsmkHScMX0GSzDFODeRa3E+5tkvB4oCFcyJDSOTUB
+         cm+Q==
+X-Gm-Message-State: AFqh2kr6cWtAAoEMf43rP6osFUX0Gv1tg6CKPTcnRjdBf2nJL8KH2pAj
+        XwS8ezhltDi6S0sDiHVMIFvzyhsF2IVYMOE5IoJYzPZHdQ9zt9t+qb3jMmwsrpBGCWHC8TqZKHF
+        ImUAVX9Fuvs5Fb4mdHA3JXsnK23hdZxU34Krbxwnu
+X-Received: by 2002:aca:3f84:0:b0:36e:f5f8:cce1 with SMTP id m126-20020aca3f84000000b0036ef5f8cce1mr1057780oia.35.1675132289138;
+        Mon, 30 Jan 2023 18:31:29 -0800 (PST)
+X-Google-Smtp-Source: AMrXdXssco6mBUOhDTHWFT4/t2hB47krC6OsHE12Ww1f+hysvA2CpNEADdT3xvxh0DzmLnnFuHE/ftXAK22WOSTVfWk=
+X-Received: by 2002:aca:3f84:0:b0:36e:f5f8:cce1 with SMTP id
+ m126-20020aca3f84000000b0036ef5f8cce1mr1057763oia.35.1675132288910; Mon, 30
+ Jan 2023 18:31:28 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [PATCH 12/23] ceph: use bvec_set_page to initialize a bvec
-Content-Language: en-US
-To:     Ilya Dryomov <idryomov@gmail.com>, Christoph Hellwig <hch@lst.de>
-Cc:     Jens Axboe <axboe@kernel.dk>,
+References: <20230130092157.1759539-1-hch@lst.de> <20230130092157.1759539-23-hch@lst.de>
+In-Reply-To: <20230130092157.1759539-23-hch@lst.de>
+From:   Jason Wang <jasowang@redhat.com>
+Date:   Tue, 31 Jan 2023 10:31:18 +0800
+Message-ID: <CACGkMEsPvy5jVWA7AHJkyRKa8-xr9oi4DUAzBcU0pQ_n4rqCFA@mail.gmail.com>
+Subject: Re: [PATCH 22/23] vring: use bvec_set_page to initialize a bvec
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Jens Axboe <axboe@kernel.dk>, Ilya Dryomov <idryomov@gmail.com>,
         "Michael S. Tsirkin" <mst@redhat.com>,
-        Jason Wang <jasowang@redhat.com>,
         Minchan Kim <minchan@kernel.org>,
         Sergey Senozhatsky <senozhatsky@chromium.org>,
         Keith Busch <kbusch@kernel.org>,
@@ -75,7 +70,7 @@ Cc:     Jens Axboe <axboe@kernel.dk>,
         "Martin K. Petersen" <martin.petersen@oracle.com>,
         David Howells <dhowells@redhat.com>,
         Marc Dionne <marc.dionne@auristor.com>,
-        Steve French <sfrench@samba.org>,
+        Xiubo Li <xiubli@redhat.com>, Steve French <sfrench@samba.org>,
         Trond Myklebust <trond.myklebust@hammerspace.com>,
         Anna Schumaker <anna@kernel.org>,
         Mike Marshall <hubcap@omnibond.com>,
@@ -94,58 +89,46 @@ Cc:     Jens Axboe <axboe@kernel.dk>,
         linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
         devel@lists.orangefs.org, io-uring@vger.kernel.org,
         linux-mm@kvack.org
-References: <20230130092157.1759539-1-hch@lst.de>
- <20230130092157.1759539-13-hch@lst.de>
- <CAOi1vP_b77Pq=hYmFMi1zGGRMee2uNjbAbHz_gCCoByOdbRqLw@mail.gmail.com>
-From:   Xiubo Li <xiubli@redhat.com>
-In-Reply-To: <CAOi1vP_b77Pq=hYmFMi1zGGRMee2uNjbAbHz_gCCoByOdbRqLw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+On Mon, Jan 30, 2023 at 5:23 PM Christoph Hellwig <hch@lst.de> wrote:
+>
+> Use the bvec_set_page helper to initialize a bvec.
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-On 31/01/2023 02:02, Ilya Dryomov wrote:
-> On Mon, Jan 30, 2023 at 10:22 AM Christoph Hellwig <hch@lst.de> wrote:
->> Use the bvec_set_page helper to initialize a bvec.
->>
->> Signed-off-by: Christoph Hellwig <hch@lst.de>
->> ---
->>   fs/ceph/file.c | 10 +++++-----
->>   1 file changed, 5 insertions(+), 5 deletions(-)
->>
->> diff --git a/fs/ceph/file.c b/fs/ceph/file.c
->> index 764598e1efd91f..6419dce7c57987 100644
->> --- a/fs/ceph/file.c
->> +++ b/fs/ceph/file.c
->> @@ -103,11 +103,11 @@ static ssize_t __iter_get_bvecs(struct iov_iter *iter, size_t maxsize,
->>                  size += bytes;
->>
->>                  for ( ; bytes; idx++, bvec_idx++) {
->> -                       struct bio_vec bv = {
->> -                               .bv_page = pages[idx],
->> -                               .bv_len = min_t(int, bytes, PAGE_SIZE - start),
->> -                               .bv_offset = start,
->> -                       };
->> +                       struct bio_vec bv;
->> +
->> +                       bvec_set_page(&bv, pages[idx],
-> Hi Christoph,
->
-> There is trailing whitespace on this line which git complains about
-> and it made me take a second look.  I think bvec_set_page() allows to
-> make this more compact:
->
->          for ( ; bytes; idx++, bvec_idx++) {
->                  int len = min_t(int, bytes, PAGE_SIZE - start);
->
->                  bvec_set_page(&bvecs[bvec_idx], pages[idx], len, start);
->                  bytes -= len;
->                  start = 0;
->          }
->
-This looks better.
+A typo in the subject, should be "vringh".
+
+Other than this
+
+Acked-by: Jason Wang <jasowang@redhat.com>
 
 Thanks
+
+> ---
+>  drivers/vhost/vringh.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/vhost/vringh.c b/drivers/vhost/vringh.c
+> index 33eb941fcf1546..a1e27da544814a 100644
+> --- a/drivers/vhost/vringh.c
+> +++ b/drivers/vhost/vringh.c
+> @@ -1126,9 +1126,8 @@ static int iotlb_translate(const struct vringh *vrh,
+>                 size = map->size - addr + map->start;
+>                 pa = map->addr + addr - map->start;
+>                 pfn = pa >> PAGE_SHIFT;
+> -               iov[ret].bv_page = pfn_to_page(pfn);
+> -               iov[ret].bv_len = min(len - s, size);
+> -               iov[ret].bv_offset = pa & (PAGE_SIZE - 1);
+> +               bvec_set_page(&iov[ret], pfn_to_page(pfn), min(len - s, size),
+> +                             pa & (PAGE_SIZE - 1));
+>                 s += size;
+>                 addr += size;
+>                 ++ret;
+> --
+> 2.39.0
+>
 
