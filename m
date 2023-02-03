@@ -2,112 +2,164 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E95EC05027
-	for <target-devel@archiver.kernel.org>; Fri,  3 Feb 2023 17:16:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2C3CC64EC7
+	for <target-devel@archiver.kernel.org>; Fri,  3 Feb 2023 17:18:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233519AbjBCRQ2 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 3 Feb 2023 12:16:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59904 "EHLO
+        id S233022AbjBCRSR (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 3 Feb 2023 12:18:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60734 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231495AbjBCRQ2 (ORCPT
+        with ESMTP id S233722AbjBCRSP (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 3 Feb 2023 12:16:28 -0500
-Received: from mail-oa1-x2b.google.com (mail-oa1-x2b.google.com [IPv6:2001:4860:4864:20::2b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32A028C439
-        for <target-devel@vger.kernel.org>; Fri,  3 Feb 2023 09:16:27 -0800 (PST)
-Received: by mail-oa1-x2b.google.com with SMTP id 586e51a60fabf-169b190e1fdso7413289fac.4
-        for <target-devel@vger.kernel.org>; Fri, 03 Feb 2023 09:16:27 -0800 (PST)
+        Fri, 3 Feb 2023 12:18:15 -0500
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 716002310D
+        for <target-devel@vger.kernel.org>; Fri,  3 Feb 2023 09:18:12 -0800 (PST)
+Received: by mail-pj1-x1031.google.com with SMTP id mi9so5647321pjb.4
+        for <target-devel@vger.kernel.org>; Fri, 03 Feb 2023 09:18:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=delphix.com; s=google;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=fkZDqZHqG9mxt+n7zRTPrbvm43sT9U0t9cZMa9wAMjM=;
-        b=OGE1Jtx8PeJVkU+CaaVARx8P3Udw/ZLIPzzlknAgskHhJs/z47VZvfBdh5y5i5RNml
-         V7/LN1qKI3t+9bqHJ2balRz1cyihrNrrKRaeFxA+COMAXlI/QsuxAXUJPrENIDWO0SV6
-         kLPFq/hfbLxXAE+djzZMIb2nm7pvY+MhuRiu8=
+        d=kernel-dk.20210112.gappssmtp.com; s=20210112;
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=K70GwBbxm76u0ZHh9QualBnSNVhMmwCaA4xLAgTOsU4=;
+        b=R00Jv7r0nGI0Ztnp5TNHhM+FfJ5zmFRR/yKaJPFf48QgjKh7tXSwGMmQnOoqu8Xid4
+         wge7CmaLgfoEKprgizb7/sm8rwZ8EQ9OCoyJKMGvTA4kiktJCR4NV/cva7qvSGWATdmE
+         /2uT8roACaKsn4YLwQl6hQkgbKX7IYcNLKQL5KVRHggoW1I8XImpl9s6MfEiMUSpHo9Y
+         S5fkZix1iQi2f9FmnThOmhtEMaBrJr9ePfucBJOf0enZnaK+aBn2RScZgWLk6sLYtLKJ
+         6yN94xDkDiQ62CShnA6PepLuiQAIJ+UkyAdk860JzMBR19PnaXvBFKHmerQBvkix95On
+         9+yQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=fkZDqZHqG9mxt+n7zRTPrbvm43sT9U0t9cZMa9wAMjM=;
-        b=F79m5mhSURa2VJfd+2wAfBo2cftom3tKwq5EnbcPOBBOegxZHBkAz9j/FfeZTydns3
-         oWHLIIIeGTVkNAp2Pc45wg0c4fdADWqgrKTDWnkJekAA6B4BGhaVnJ5blYX4iq2C0E+S
-         rB4mABi4ox7Ml4qWZ9Ue1MNgS/FI1Zqyo/x1Eup/2aUf8RmSbxAtzQffI/RiXXumrzln
-         JF+JyG/UHoF3kkCqXW6VozdvVkj5HEgiCAectv8VJgy4s3xYG9NdM6zmjwt+nfaOo65i
-         93t7KBqpcAbmdpEDmgPP1gSGr8TVLhWzDzNs4uIcSxqUpdUFZPk3DkOMYcqV1w3YHbA4
-         Eftw==
-X-Gm-Message-State: AO0yUKWQF2N5YNbmRxARPqor2KyIUq2o/6WcOtxJfpt6VqWyYOrEMFFf
-        9YqSPFtexUiFgnK5EsGi0mp6oEqiLI1It8sr4r1Co/8FN58GuJrlR98=
-X-Google-Smtp-Source: AK7set+V8kMtdoQJTPqm/+gHAjE+jICTevYYERlk19Ch/kCkwcx1myoLih5xKZe4SYp0ITfOsLHST/qq1YMGOtewep4=
-X-Received: by 2002:a05:6870:1219:b0:169:e281:7f82 with SMTP id
- 25-20020a056870121900b00169e2817f82mr489846oan.198.1675444586354; Fri, 03 Feb
- 2023 09:16:26 -0800 (PST)
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=K70GwBbxm76u0ZHh9QualBnSNVhMmwCaA4xLAgTOsU4=;
+        b=XelkZD5mvTNnQLm7NU2/05zwNJQT/4ySGZHVeVQpwTH4qrZmmMC2o6dOzCLlOozAn6
+         LD61vrbYNa3cajXInLJ93bLz4Ngdm1JAOLN6mE6eDDA5E71iingHUP2qkHHPJVnkOSWb
+         dMClCcZzE0Ph/wS5d7VeYrs3OgWvf8r9pzIwhcbk7gFAloq1j1CecctoizGQ0gte2B9P
+         zFb8lvzW/k3z5WSQGJcpTyClL/V8q12mS7i06GpvbslcZy3vITpYM6RQCP0DxD9qmFq4
+         zn8nUq84ReQ76hmuQQ9G2czcg4vJPrLm45n96oBYnl6lDQYjmHnd9mIt/aPwSxQWwcbU
+         3FLA==
+X-Gm-Message-State: AO0yUKWmN6IzX4kKmgELah3cIhHbihl3Veoj2RyBRcMt2X/DIaCsqf9B
+        jxdt7itY15HgDvlF1mdEJiRslw==
+X-Google-Smtp-Source: AK7set/8QyEeOBS5HCdwVVv3pX8pLqYaYDC09KN7ZX0YiSUh3tCWtH5sa+Lu+Eay2bGB3phfSCaeYw==
+X-Received: by 2002:a17:90a:3c83:b0:22b:afef:9228 with SMTP id g3-20020a17090a3c8300b0022bafef9228mr8980675pjc.4.1675444691816;
+        Fri, 03 Feb 2023 09:18:11 -0800 (PST)
+Received: from [127.0.0.1] ([198.8.77.157])
+        by smtp.gmail.com with ESMTPSA id s1-20020a17090a6e4100b0021900ba8eeesm5189271pjm.2.2023.02.03.09.18.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 03 Feb 2023 09:18:11 -0800 (PST)
+From:   Jens Axboe <axboe@kernel.dk>
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Ilya Dryomov <idryomov@gmail.com>,
+        "Michael S. Tsirkin" <mst@redhat.com>,
+        Jason Wang <jasowang@redhat.com>,
+        Minchan Kim <minchan@kernel.org>,
+        Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Keith Busch <kbusch@kernel.org>,
+        Sagi Grimberg <sagi@grimberg.me>,
+        Chaitanya Kulkarni <kch@nvidia.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        David Howells <dhowells@redhat.com>,
+        Marc Dionne <marc.dionne@auristor.com>,
+        Xiubo Li <xiubli@redhat.com>, Steve French <sfrench@samba.org>,
+        Trond Myklebust <trond.myklebust@hammerspace.com>,
+        Anna Schumaker <anna@kernel.org>,
+        Mike Marshall <hubcap@omnibond.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Chuck Lever <chuck.lever@oracle.com>,
+        linux-block@vger.kernel.org, ceph-devel@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, kvm@vger.kernel.org,
+        netdev@vger.kernel.org, linux-afs@lists.infradead.org,
+        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
+        linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
+        devel@lists.orangefs.org, io-uring@vger.kernel.org,
+        linux-mm@kvack.org
+In-Reply-To: <20230203150634.3199647-1-hch@lst.de>
+References: <20230203150634.3199647-1-hch@lst.de>
+Subject: Re: add bvec initialization helpers v2
+Message-Id: <167544468926.66559.8388961280734694655.b4-ty@kernel.dk>
+Date:   Fri, 03 Feb 2023 10:18:09 -0700
 MIME-Version: 1.0
-From:   Serapheim Dimitropoulos <serapheim.dimitro@delphix.com>
-Date:   Fri, 3 Feb 2023 09:16:15 -0800
-Message-ID: <CAMbhmBwe7KU8sHPLRgjGOrKPt44HMytaTbavBeFk1+uVvGzVmQ@mail.gmail.com>
-Subject: Hang in iscsit_access_np() related to tpg->np_login_sem
-To:     martin.petersen@oracle.com, michael.christie@oracle.com,
-        mlombard@redhat.com
-Cc:     target-devel@vger.kernel.org, Paul Dagnelie <pcd@delphix.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.12.0
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi folks,
 
-I'd like to inquire some info related to the following patch:
-https://www.spinics.net/lists/target-devel/msg18875.html
+On Fri, 03 Feb 2023 16:06:11 +0100, Christoph Hellwig wrote:
+> this series adds the helpers to initalize a bvec.  These remove open coding of
+> bvec internals and help with experimenting with other representations like
+> a phys_addr_t instead of page + offset.
+> 
+> Changes since v1:
+>  - fix a typo
+>  - simplify the code in ceph's __iter_get_bvecs a little bit further
+>  - fix two subject prefixes
+> 
+> [...]
 
-We've been hitting a similar issue in the production environments
-of our customers leading to the same symptoms. We get constant
-"iSCSI Login timeout on Network Portal 0.0.0.0:3260" messages
-because the iSCSI Target login thread will wait on the np_login_sem
-semaphore until it gets interrupted by the timer timeout. Here is our
-stack trace of the thread waiting:
+Applied, thanks!
 
-0xffff8bdf62f2ac80 INTERRUPTIBLE         1
-                  __schedule+0x2c1
-                  schedule+0x33
-                  schedule_timeout+0x205
-                  __down_interruptible+0xbb
-                  down_interruptible+0x4b
-                  iscsit_access_np+0x5a
-                  iscsi_target_locate_portal+0x429
-                  __iscsi_target_login_thread+0x332
-                  iscsi_target_login_thread+0x6f3
-                  kthread+0x120
-                  ret_from_fork+0x1f
+[01/23] block: factor out a bvec_set_page helper
+        commit: d58cdfae6a22e5079656c487aad669597a0635c8
+[02/23] block: add a bvec_set_folio helper
+        commit: 26db5ee158510108c819aa7be6eb8c75accf85d7
+[03/23] block: add a bvec_set_virt helper
+        commit: 666e6550cb74e3a7206b5699409c9f31e123887e
+[04/23] sd: factor out a sd_set_special_bvec helper
+        commit: f1e117cbb01a38f764db2f292174b93eab7c2db2
+[05/23] target: use bvec_set_page to initialize bvecs
+        commit: 3c7ebe952fefb646c56b60f1c3e3388f3b938cc7
+[06/23] nvmet: use bvec_set_page to initialize bvecs
+        commit: fc41c97a3a7b08131e6998bc7692f95729f9d359
+[07/23] nvme: use bvec_set_virt to initialize special_vec
+        commit: 4bee16daf13225d6b109bb95d613fd691b04a757
+[08/23] rbd: use bvec_set_page to initialize the copy up bvec
+        commit: 7df2af0bb4912cf360045d065f88fe4ed2f702ca
+[09/23] virtio_blk: use bvec_set_virt to initialize special_vec
+        commit: b831f3a1031664ae2443bab63d35c416ed30c91d
+[10/23] zram: use bvec_set_page to initialize bvecs
+        commit: 13ae4db0c05107814db4e774856aa83e72e8bf04
+[11/23] afs: use bvec_set_folio to initialize a bvec
+        commit: a8173be1863e57393edb5c158860ec43a1f21ed7
+[12/23] ceph: use bvec_set_page to initialize a bvec
+        commit: 5c6542b6612f635eaa001c54af22018f1e996418
+[13/23] cifs: use bvec_set_page to initialize bvecs
+        commit: 220ae4a5c2ba10333b3b01fbf3dea0d759e77a76
+[14/23] coredump: use bvec_set_page to initialize a bvec
+        commit: cd598003206839ed1354902805b52c3a4f6ead2e
+[15/23] nfs: use bvec_set_page to initialize bvecs
+        commit: 8bb7cd842c44b299586bfed6aadde8863c48b415
+[16/23] orangefs: use bvec_set_{page,folio} to initialize bvecs
+        commit: 8ead80b2c5f8c59d6ca18cd7fb582a3ffc7ea5b7
+[17/23] splice: use bvec_set_page to initialize a bvec
+        commit: 664e40789abaad892737a696102052dae199a029
+[18/23] io_uring: use bvec_set_page to initialize a bvec
+        commit: cc342a21930f0e3862c5fd0871cd5a65c5b59e27
+[19/23] swap: use bvec_set_page to initialize bvecs
+        commit: 8976fa6d79d70502181fa16b5e023645c0f44ec4
+[20/23] rxrpc: use bvec_set_page to initialize a bvec
+        commit: efde918ac66958c568926120841e7692b1e9bd9d
+[21/23] sunrpc: use bvec_set_page to initialize bvecs
+        commit: 9088151f1bfe670ae9e28b77095f974196bb2343
+[22/23] vringh: use bvec_set_page to initialize a bvec
+        commit: 58dfe14073846e416d5b3595314a4f37e1a89c50
+[23/23] libceph: use bvec_set_page to initialize bvecs
+        commit: 1eb9cd15004fa91b6d1911af9fbaff299d8e9e45
 
-During that time there is no other login or login-related thread which
-leads us to believe that another thread probably got the semaphore
-but never actually released it.
+Best regards,
+-- 
+Jens Axboe
 
-Looking through the login code it seems like there are two functions that
-are expected to call up() on that semaphore by calling iscsit_deaccess_np():
 
-A] __iscsi_target_login_thread(): This is the same thread that acquired
-    the semaphore (by calling iscsit_access_np()).
-B] iscsi_target_do_login_rx(): This is a delayed worker thread spawned
-    by the thread in [A]
 
-Looking at both of those codepaths it seems like there is one case for each
-path that we never call iscsit_deaccess_np() to release the semaphore.
-
-For [A] that is if iscsi_target_start_negotiation() returns 0 towards the
-end of that function.
-
-For [B] that is if iscsi_target_do_login() returns 0 AND
-iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_WRITE_ACTIVE)
-returns 0.
-
-Since we have no expertise in this part of the kernel I wanted to ask you
-all, are the two above scenarios expected to not release the semaphore
-on purpose or is any of them a bug? If they are not bugs, where is the
-semaphore expected to be released?
-
-Any explanation or insight will be very appreciated.
-
-Regards,
-Serapheim
