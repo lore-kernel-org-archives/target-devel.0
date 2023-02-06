@@ -2,164 +2,131 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2C3CC64EC7
-	for <target-devel@archiver.kernel.org>; Fri,  3 Feb 2023 17:18:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 494F8C636D3
+	for <target-devel@archiver.kernel.org>; Mon,  6 Feb 2023 15:19:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233022AbjBCRSR (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 3 Feb 2023 12:18:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60734 "EHLO
+        id S229550AbjBFPTN (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 6 Feb 2023 10:19:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233722AbjBCRSP (ORCPT
+        with ESMTP id S229447AbjBFPTM (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 3 Feb 2023 12:18:15 -0500
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 716002310D
-        for <target-devel@vger.kernel.org>; Fri,  3 Feb 2023 09:18:12 -0800 (PST)
-Received: by mail-pj1-x1031.google.com with SMTP id mi9so5647321pjb.4
-        for <target-devel@vger.kernel.org>; Fri, 03 Feb 2023 09:18:12 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernel-dk.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:mime-version:date:message-id:subject
-         :references:in-reply-to:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=K70GwBbxm76u0ZHh9QualBnSNVhMmwCaA4xLAgTOsU4=;
-        b=R00Jv7r0nGI0Ztnp5TNHhM+FfJ5zmFRR/yKaJPFf48QgjKh7tXSwGMmQnOoqu8Xid4
-         wge7CmaLgfoEKprgizb7/sm8rwZ8EQ9OCoyJKMGvTA4kiktJCR4NV/cva7qvSGWATdmE
-         /2uT8roACaKsn4YLwQl6hQkgbKX7IYcNLKQL5KVRHggoW1I8XImpl9s6MfEiMUSpHo9Y
-         S5fkZix1iQi2f9FmnThOmhtEMaBrJr9ePfucBJOf0enZnaK+aBn2RScZgWLk6sLYtLKJ
-         6yN94xDkDiQ62CShnA6PepLuiQAIJ+UkyAdk860JzMBR19PnaXvBFKHmerQBvkix95On
-         9+yQ==
+        Mon, 6 Feb 2023 10:19:12 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8FF1510EF
+        for <target-devel@vger.kernel.org>; Mon,  6 Feb 2023 07:18:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1675696708;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=JFvsw7pkW2w5/fLVU0BcZIRVvokdsMd3OEavZ5Dv8o0=;
+        b=DlPPvLtGDYozPcko8g9G+wEK0UUptKatI739eAUYbxXuSo0eVm/bzKxpYtIIhy+r329hAi
+        nqQo9ND1hHoM9n3b15xaUs/MiVu77JPHl9dZrHOwN7mi7BT7C1qPFn4C9cZ25aeJt79UWH
+        bKqgYWipG13qo5sMdYLxCl8jWN+xDso=
+Received: from mail-vs1-f72.google.com (mail-vs1-f72.google.com
+ [209.85.217.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-180-3jMzTX7NNka8Ki6zbfBF6w-1; Mon, 06 Feb 2023 10:18:24 -0500
+X-MC-Unique: 3jMzTX7NNka8Ki6zbfBF6w-1
+Received: by mail-vs1-f72.google.com with SMTP id dc27-20020a056102559b00b0040d6aba02cfso421416vsb.11
+        for <target-devel@vger.kernel.org>; Mon, 06 Feb 2023 07:18:24 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:date:message-id:subject
-         :references:in-reply-to:cc:to:from:x-gm-message-state:from:to:cc
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=K70GwBbxm76u0ZHh9QualBnSNVhMmwCaA4xLAgTOsU4=;
-        b=XelkZD5mvTNnQLm7NU2/05zwNJQT/4ySGZHVeVQpwTH4qrZmmMC2o6dOzCLlOozAn6
-         LD61vrbYNa3cajXInLJ93bLz4Ngdm1JAOLN6mE6eDDA5E71iingHUP2qkHHPJVnkOSWb
-         dMClCcZzE0Ph/wS5d7VeYrs3OgWvf8r9pzIwhcbk7gFAloq1j1CecctoizGQ0gte2B9P
-         zFb8lvzW/k3z5WSQGJcpTyClL/V8q12mS7i06GpvbslcZy3vITpYM6RQCP0DxD9qmFq4
-         zn8nUq84ReQ76hmuQQ9G2czcg4vJPrLm45n96oBYnl6lDQYjmHnd9mIt/aPwSxQWwcbU
-         3FLA==
-X-Gm-Message-State: AO0yUKWmN6IzX4kKmgELah3cIhHbihl3Veoj2RyBRcMt2X/DIaCsqf9B
-        jxdt7itY15HgDvlF1mdEJiRslw==
-X-Google-Smtp-Source: AK7set/8QyEeOBS5HCdwVVv3pX8pLqYaYDC09KN7ZX0YiSUh3tCWtH5sa+Lu+Eay2bGB3phfSCaeYw==
-X-Received: by 2002:a17:90a:3c83:b0:22b:afef:9228 with SMTP id g3-20020a17090a3c8300b0022bafef9228mr8980675pjc.4.1675444691816;
-        Fri, 03 Feb 2023 09:18:11 -0800 (PST)
-Received: from [127.0.0.1] ([198.8.77.157])
-        by smtp.gmail.com with ESMTPSA id s1-20020a17090a6e4100b0021900ba8eeesm5189271pjm.2.2023.02.03.09.18.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Feb 2023 09:18:11 -0800 (PST)
-From:   Jens Axboe <axboe@kernel.dk>
-To:     Christoph Hellwig <hch@lst.de>
-Cc:     Ilya Dryomov <idryomov@gmail.com>,
-        "Michael S. Tsirkin" <mst@redhat.com>,
-        Jason Wang <jasowang@redhat.com>,
-        Minchan Kim <minchan@kernel.org>,
-        Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Keith Busch <kbusch@kernel.org>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        Chaitanya Kulkarni <kch@nvidia.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        David Howells <dhowells@redhat.com>,
-        Marc Dionne <marc.dionne@auristor.com>,
-        Xiubo Li <xiubli@redhat.com>, Steve French <sfrench@samba.org>,
-        Trond Myklebust <trond.myklebust@hammerspace.com>,
-        Anna Schumaker <anna@kernel.org>,
-        Mike Marshall <hubcap@omnibond.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Chuck Lever <chuck.lever@oracle.com>,
-        linux-block@vger.kernel.org, ceph-devel@vger.kernel.org,
-        virtualization@lists.linux-foundation.org,
-        linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, kvm@vger.kernel.org,
-        netdev@vger.kernel.org, linux-afs@lists.infradead.org,
-        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
-        linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
-        devel@lists.orangefs.org, io-uring@vger.kernel.org,
-        linux-mm@kvack.org
-In-Reply-To: <20230203150634.3199647-1-hch@lst.de>
-References: <20230203150634.3199647-1-hch@lst.de>
-Subject: Re: add bvec initialization helpers v2
-Message-Id: <167544468926.66559.8388961280734694655.b4-ty@kernel.dk>
-Date:   Fri, 03 Feb 2023 10:18:09 -0700
+        bh=JFvsw7pkW2w5/fLVU0BcZIRVvokdsMd3OEavZ5Dv8o0=;
+        b=ooUf/wWTLg8ZrUd8R5VN6ivgC89C6nz5MAOXP9VX/pr8x7tgaqBbuAb7V0oYuszVYm
+         l6icWkGBr1KiVpQlROzNjcCGp1Gac/Dkn/Aw7KGBugas8olG0pibaue9JU6cfGYZiMuC
+         s37mideFiqQrJb2BWLs/GVVs76npTtAaoYMPVp4pH1WVMJ4Qb9XBlWRKv7SJ1asGNM30
+         krGKOxADTLG8OUuJLRtbEMiapHlMyOlM9PQGbqcQnZckznXIZyC74ntNqHD+X57bHJn3
+         upbSnJMZxBQzjyn50JQorlisJE652+jSHie74lMuVEyZNUc0pgMRqofNvqjsNis+mYdj
+         Ey0w==
+X-Gm-Message-State: AO0yUKXSHD8ed0OktBymPqYqgKKOpSbfLOPYbssdWsWYBn+NvwaRLPCk
+        en2jfDm0dlLvpOj3kdsvU41e9LsGvheWR5HGHWUOboa9nhP6LdwK2OrbvX5SvzphjpesX0A3ALe
+        psPl1AVrebDdPwHTmVfGOH2uUUjms9jH+70N91Q6T
+X-Received: by 2002:ab0:739a:0:b0:683:9d1b:e950 with SMTP id l26-20020ab0739a000000b006839d1be950mr955555uap.37.1675696703921;
+        Mon, 06 Feb 2023 07:18:23 -0800 (PST)
+X-Google-Smtp-Source: AK7set/uskG63CugZTG3unQRDkXHF78edndfDvNgRmJ8RzJ/6XON5a/Hv6+IqRsSFRRiWZTwfyXqOvdoeqpd/K33FuM=
+X-Received: by 2002:ab0:739a:0:b0:683:9d1b:e950 with SMTP id
+ l26-20020ab0739a000000b006839d1be950mr955549uap.37.1675696703687; Mon, 06 Feb
+ 2023 07:18:23 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.12.0
+References: <CAFL455m0amBULArG5dNHrrGKJ8Jg4n3SdnvzOavz4=i2FUR5Sg@mail.gmail.com>
+ <f9f4057b-5711-e83d-aea1-20f79737f27c@oracle.com>
+In-Reply-To: <f9f4057b-5711-e83d-aea1-20f79737f27c@oracle.com>
+From:   Maurizio Lombardi <mlombard@redhat.com>
+Date:   Mon, 6 Feb 2023 16:18:12 +0100
+Message-ID: <CAFL455k8m70cZHEOJML8HgeKotM=PsnswUtMJkLjocXxWY6_7w@mail.gmail.com>
+Subject: Re: deadlocks when the target server runs as initiator to itself
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     d.bogdanov@yadro.com, target-devel@vger.kernel.org,
+        David Jeffery <djeffery@redhat.com>,
+        Laurence Oberman <loberman@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+po 30. 1. 2023 v 1:09 odes=C3=ADlatel Mike Christie
+<michael.christie@oracle.com> napsal:
+>
+> I don't think that's the best option because it's a rare use case and it
+> will affect other users. Why can't the user just use tcm loop for the loc=
+al
+> use case?
+>
 
-On Fri, 03 Feb 2023 16:06:11 +0100, Christoph Hellwig wrote:
-> this series adds the helpers to initalize a bvec.  These remove open coding of
-> bvec internals and help with experimenting with other representations like
-> a phys_addr_t instead of page + offset.
-> 
-> Changes since v1:
->  - fix a typo
->  - simplify the code in ceph's __iter_get_bvecs a little bit further
->  - fix two subject prefixes
-> 
-> [...]
+Hi Mike,
+our customer is still interested in getting iscsi in loopback work and I ha=
+ve
+also been informed that  this use case isn't rare among our users.
+One of my colleagues suggested using the IFF_LOOPBACK flag to restrict
+the memalloc_noio_*()
+usage to only those connections that are in loopback, so other use
+cases would be left unaffected.
 
-Applied, thanks!
+I copy-paste his patch here, our customer confirmed that it works.
 
-[01/23] block: factor out a bvec_set_page helper
-        commit: d58cdfae6a22e5079656c487aad669597a0635c8
-[02/23] block: add a bvec_set_folio helper
-        commit: 26db5ee158510108c819aa7be6eb8c75accf85d7
-[03/23] block: add a bvec_set_virt helper
-        commit: 666e6550cb74e3a7206b5699409c9f31e123887e
-[04/23] sd: factor out a sd_set_special_bvec helper
-        commit: f1e117cbb01a38f764db2f292174b93eab7c2db2
-[05/23] target: use bvec_set_page to initialize bvecs
-        commit: 3c7ebe952fefb646c56b60f1c3e3388f3b938cc7
-[06/23] nvmet: use bvec_set_page to initialize bvecs
-        commit: fc41c97a3a7b08131e6998bc7692f95729f9d359
-[07/23] nvme: use bvec_set_virt to initialize special_vec
-        commit: 4bee16daf13225d6b109bb95d613fd691b04a757
-[08/23] rbd: use bvec_set_page to initialize the copy up bvec
-        commit: 7df2af0bb4912cf360045d065f88fe4ed2f702ca
-[09/23] virtio_blk: use bvec_set_virt to initialize special_vec
-        commit: b831f3a1031664ae2443bab63d35c416ed30c91d
-[10/23] zram: use bvec_set_page to initialize bvecs
-        commit: 13ae4db0c05107814db4e774856aa83e72e8bf04
-[11/23] afs: use bvec_set_folio to initialize a bvec
-        commit: a8173be1863e57393edb5c158860ec43a1f21ed7
-[12/23] ceph: use bvec_set_page to initialize a bvec
-        commit: 5c6542b6612f635eaa001c54af22018f1e996418
-[13/23] cifs: use bvec_set_page to initialize bvecs
-        commit: 220ae4a5c2ba10333b3b01fbf3dea0d759e77a76
-[14/23] coredump: use bvec_set_page to initialize a bvec
-        commit: cd598003206839ed1354902805b52c3a4f6ead2e
-[15/23] nfs: use bvec_set_page to initialize bvecs
-        commit: 8bb7cd842c44b299586bfed6aadde8863c48b415
-[16/23] orangefs: use bvec_set_{page,folio} to initialize bvecs
-        commit: 8ead80b2c5f8c59d6ca18cd7fb582a3ffc7ea5b7
-[17/23] splice: use bvec_set_page to initialize a bvec
-        commit: 664e40789abaad892737a696102052dae199a029
-[18/23] io_uring: use bvec_set_page to initialize a bvec
-        commit: cc342a21930f0e3862c5fd0871cd5a65c5b59e27
-[19/23] swap: use bvec_set_page to initialize bvecs
-        commit: 8976fa6d79d70502181fa16b5e023645c0f44ec4
-[20/23] rxrpc: use bvec_set_page to initialize a bvec
-        commit: efde918ac66958c568926120841e7692b1e9bd9d
-[21/23] sunrpc: use bvec_set_page to initialize bvecs
-        commit: 9088151f1bfe670ae9e28b77095f974196bb2343
-[22/23] vringh: use bvec_set_page to initialize a bvec
-        commit: 58dfe14073846e416d5b3595314a4f37e1a89c50
-[23/23] libceph: use bvec_set_page to initialize bvecs
-        commit: 1eb9cd15004fa91b6d1911af9fbaff299d8e9e45
+--- a/drivers/target/iscsi/iscsi_target.c 2023-01-30 13:48:43.310455860 -05=
+00
++++ b/drivers/target/iscsi/iscsi_target.c 2023-01-30 17:10:08.171410784 -05=
+00
+@@ -24,6 +24,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/idr.h>
+ #include <linux/delay.h>
++#include <linux/sched/mm.h>
+ #include <linux/sched/signal.h>
+ #include <asm/unaligned.h>
+ #include <linux/inet.h>
+@@ -4043,7 +4044,10 @@ int iscsi_target_rx_thread(void *arg)
+ {
+  int rc;
+  struct iscsi_conn *conn =3D arg;
++ struct dst_entry *dst;
+  bool conn_freed =3D false;
++ bool local =3D false;
++ unsigned int flags;
 
-Best regards,
--- 
-Jens Axboe
+  /*
+  * Allow ourselves to be interrupted by SIGINT so that a
+@@ -4061,7 +4065,17 @@ int iscsi_target_rx_thread(void *arg)
+  if (!conn->conn_transport->iscsit_get_rx_pdu)
+  return 0;
 
-
++ rcu_read_lock();
++ dst =3D rcu_dereference(conn->sock->sk->sk_dst_cache);
++ if (dst && dst->dev && dst->dev->flags & IFF_LOOPBACK)
++         local =3D true;
++ rcu_read_unlock();
++
++ if (local)
++         flags =3D memalloc_noio_save();
+  conn->conn_transport->iscsit_get_rx_pdu(conn);
++ if (local)
++         memalloc_noio_restore(flags);
 
