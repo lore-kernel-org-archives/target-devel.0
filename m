@@ -2,217 +2,142 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08B53C7EE31
-	for <target-devel@archiver.kernel.org>; Wed,  1 Mar 2023 08:45:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76F0FC64ED6
+	for <target-devel@archiver.kernel.org>; Wed,  1 Mar 2023 11:58:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229803AbjCAIpg (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 1 Mar 2023 03:45:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40420 "EHLO
+        id S229813AbjCAL63 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 1 Mar 2023 06:58:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229781AbjCAIpX (ORCPT
+        with ESMTP id S229819AbjCAL60 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 1 Mar 2023 03:45:23 -0500
-Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B0FEEC72;
-        Wed,  1 Mar 2023 00:45:22 -0800 (PST)
-Received: from mta-01.yadro.com (localhost.localdomain [127.0.0.1])
-        by mta-01.yadro.com (Proxmox) with ESMTP id A75C6341C34;
-        Wed,  1 Mar 2023 11:45:19 +0300 (MSK)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; h=cc
-        :cc:content-transfer-encoding:content-type:content-type:date
-        :from:from:in-reply-to:message-id:mime-version:references
-        :reply-to:subject:subject:to:to; s=mta-01; bh=ofCmB0LA+TgBas53ua
-        9VwKa+Nu1ZBpccy+1UTM5kUbc=; b=g93qlhlpfQ2t1WiWcmizVrJh1rrBTt33W4
-        5g7Sf8YA/3vl7B2pcxrLSxXeARF5uI7zbpffiHoiF/Z4+TxBQvuW9WVg68CNam0N
-        iheLaHYnhNYkcNJFhlcNvw1HHOl9aogVjFEmGrE3+Ip9eDZdTCdMhMFgmAPFmTDS
-        sGdcMleC4=
-Received: from T-EXCH-08.corp.yadro.com (unknown [172.17.10.14])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Proxmox) with ESMTPS id 9A86C341BA2;
-        Wed,  1 Mar 2023 11:45:19 +0300 (MSK)
-Received: from NB-591.corp.yadro.com (10.199.20.11) by
- T-EXCH-08.corp.yadro.com (172.17.11.58) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.1118.9; Wed, 1 Mar 2023 11:45:19 +0300
-From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
-To:     Martin Petersen <martin.petersen@oracle.com>,
-        <target-devel@vger.kernel.org>
-CC:     Christoph Hellwig <hch@infradead.org>,
-        Mike Christie <michael.christie@oracle.com>,
-        <linux-scsi@vger.kernel.org>, <linux@yadro.com>,
-        Dmitry Bogdanov <d.bogdanov@yadro.com>
-Subject: [PATCH v5 1/4] scsi: target: core: Add RTPI field to target port
-Date:   Wed, 1 Mar 2023 11:45:09 +0300
-Message-ID: <20230301084512.21956-2-d.bogdanov@yadro.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230301084512.21956-1-d.bogdanov@yadro.com>
-References: <20230301084512.21956-1-d.bogdanov@yadro.com>
+        Wed, 1 Mar 2023 06:58:26 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 800062F7B7
+        for <target-devel@vger.kernel.org>; Wed,  1 Mar 2023 03:57:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1677671855;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=mHl5KQjEc4/d6SgEY0TdUVaYr+bU97RLVBw2BBUuA38=;
+        b=IzK5Tj+b9zVUvuXav6xbVx3HcaHafSD8i/DCv+uVd1UyPER/PlKnjHST2RupKkXCh4lPrq
+        Igimw2KVaWUlXsV8DC/cLGO3WdRsR79iWomj6BcTFctoSRZWDtoF+Qkoqzi6beDOR3rhKU
+        nHp7xkoaplu2eLPpW/bKvPGj6Zk1ncM=
+Received: from mail-ua1-f72.google.com (mail-ua1-f72.google.com
+ [209.85.222.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-483-dGb70gUMMQOHU4pmlWpYfQ-1; Wed, 01 Mar 2023 06:57:34 -0500
+X-MC-Unique: dGb70gUMMQOHU4pmlWpYfQ-1
+Received: by mail-ua1-f72.google.com with SMTP id j21-20020a9f3095000000b006901584fb3aso2201342uab.7
+        for <target-devel@vger.kernel.org>; Wed, 01 Mar 2023 03:57:34 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1677671853;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=mHl5KQjEc4/d6SgEY0TdUVaYr+bU97RLVBw2BBUuA38=;
+        b=aLJ0rjj6LBpm6SoPvOGxWOG1XEyoqM2zSa6bRSCKBssLwQEkkAwf6Jt1l6SS+o+krW
+         FC2wEgBz/6rAVLe9AL9ALkDkQasXHKgocgdBJGmomRo6sQ8h5EsP1H4xoyMGeeWrPjtF
+         jIxzjDMv5KCc/JxK/j4tBUSmbSYcWFvd6abBAh+R4bQWTKtMtiRGIAKtsel4DdjusRkF
+         w/vFwitWp/QpMpssZP43U2dxQkoKLF9danHPkhy2iamnwjdExY21szYROCfUY5pKXQUS
+         W73vuhoPWFIzCJwQXgY7xt+gBsZF9+Nh71NgCc1c/ZbwmZ4qsrSDf/uefLQgFnDqI84W
+         s5/w==
+X-Gm-Message-State: AO0yUKUpmTmprDmUyM0EQSZyz3huxx4lCwLelVAesgjSRIjXCFDTssp1
+        xwMU8SSH1hkPENbP2O0zA7OyVNAXbELRavLKgrFlDSK06C4kueF5nVkO33ygiDGJxFiyZ4ZMpp6
+        QHqQ2hI+fSFv/afJDAh0zsWyjMSnRlRlG/WfXWUQZ58xsuQ==
+X-Received: by 2002:a05:6122:656:b0:401:8898:ea44 with SMTP id h22-20020a056122065600b004018898ea44mr3351179vkp.3.1677671853359;
+        Wed, 01 Mar 2023 03:57:33 -0800 (PST)
+X-Google-Smtp-Source: AK7set9l846Pjlw2nULxarUi1PRFBt3nBG6v0YrgnYC4ddQ7sWQ5MmNP5msaiDYvAL+l07xHgrEbEXqOCSsuiMJsbhs=
+X-Received: by 2002:a05:6122:656:b0:401:8898:ea44 with SMTP id
+ h22-20020a056122065600b004018898ea44mr3351172vkp.3.1677671853105; Wed, 01 Mar
+ 2023 03:57:33 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.199.20.11]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-08.corp.yadro.com (172.17.11.58)
+References: <20230129234441.116310-1-michael.christie@oracle.com> <20230129234441.116310-6-michael.christie@oracle.com>
+In-Reply-To: <20230129234441.116310-6-michael.christie@oracle.com>
+From:   Maurizio Lombardi <mlombard@redhat.com>
+Date:   Wed, 1 Mar 2023 12:57:21 +0100
+Message-ID: <CAFL455=QjP9TutSh0e5KS0R07PK3Pvcv+6xNkP6i6ExGv+gCpg@mail.gmail.com>
+Subject: Re: [PATCH v3 05/14] scsi: target: iscsit: stop/wait on cmds during
+ conn close
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     martin.petersen@oracle.com, mgurtovoy@nvidia.com, sagi@grimberg.me,
+        d.bogdanov@yadro.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-SAM-5 4.6.5.2 (Relative Port Identifier attribute) defines the attribute
-as unique across SCSI target ports.
+po 30. 1. 2023 v 0:45 odes=C3=ADlatel Mike Christie
+<michael.christie@oracle.com> napsal:
+>
+> This fixes a bug added in:
+>
+> commit f36199355c64 ("scsi: target: iscsi: Fix cmd abort fabric stop
+> race")
+>
+> If we have multiple sessions to the same se_device we can hit a race wher=
+e
+> a LUN_RESET on one session cleans up the se_cmds from under another
+> session which is being closed. This results in the closing session freein=
+g
+> its conn/session structs while they are still in use.
+>
+> The bug is:
+>
+> 1. Session1 has IO se_cmd1.
+> 2. Session2 can also have se_cmds for IO and optionally TMRs for ABORTS
+> but then gets a LUN_RESET.
+> 3. The LUN_RESET on session2 sees the se_cmds on session1 and during
+> the drain stages marks them all with CMD_T_ABORTED.
+> 4. session1 is now closed so iscsit_release_commands_from_conn only sees
+> se_cmds with the CMD_T_ABORTED bit set and returns immediately even
+> though we have outstanding commands.
+> 5. session1's connection and session are freed.
+> 6. The backend request for se_cmd1 completes and it accesses the freed
+> connection/session.
+>
+> This hooks the iscsit layer into the cmd counter code, so we can wait for
+> all outstanding se_cmds before freeing the connection.
+>
+> Fixes: f36199355c64 ("scsi: target: iscsi: Fix cmd abort fabric stop race=
+")
+> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+> ---
+>  drivers/target/iscsi/iscsi_target.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+>
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
+scsi_target.c
+> index 11115c207844..83b007141229 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -4245,6 +4245,16 @@ static void iscsit_release_commands_from_conn(stru=
+ct iscsit_conn *conn)
+>                 iscsit_free_cmd(cmd, true);
+>
+>         }
+> +
+> +       /*
+> +        * Wait on commands that were cleaned up via the aborted_task pat=
+h.
+> +        * LLDs that implement iscsit_wait_conn will already have waited =
+for
+> +        * commands.
+> +        */
+> +       if (!conn->conn_transport->iscsit_wait_conn) {
+> +               target_stop_cmd_counter(conn->cmd_cnt);
+> +               target_wait_for_cmds(conn->cmd_cnt);
+> +       }
+>  }
+>
+>  static void iscsit_stop_timers_for_cmds(
+> --
+> 2.25.1
+>
 
-The change introduces RTPI attribute to se_portal group. The value is
-unique across all enabled SCSI target ports. It also limits number of
-SCSI target ports to 65535.
-
-Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
----
-  v4:
-    use unused variable in target_tpg_disable
-    make tpg_rtpi variable u16 again
-
-  v3:
-    make variable static
-    change core_ prefix to target_
-    split to tpg_enable/tpg_disable functions
-
- v2:
-   rewrite using XArray to track usage of RTPI
----
- drivers/target/target_core_fabric_configfs.c |  9 ++--
- drivers/target/target_core_internal.h        |  2 +
- drivers/target/target_core_tpg.c             | 54 ++++++++++++++++++++
- include/target/target_core_base.h            |  2 +
- 4 files changed, 62 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
-index 67b18a67317a..873da49ab704 100644
---- a/drivers/target/target_core_fabric_configfs.c
-+++ b/drivers/target/target_core_fabric_configfs.c
-@@ -836,13 +836,12 @@ static ssize_t target_fabric_tpg_base_enable_store(struct config_item *item,
- 
- 	if (se_tpg->enabled == op)
- 		return count;
--
--	ret = se_tpg->se_tpg_tfo->fabric_enable_tpg(se_tpg, op);
-+	if (op)
-+		ret = target_tpg_enable(se_tpg);
-+	else
-+		ret = target_tpg_disable(se_tpg);
- 	if (ret)
- 		return ret;
--
--	se_tpg->enabled = op;
--
- 	return count;
- }
- 
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index 38a6d08f75b3..82fd5768a662 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -132,6 +132,8 @@ void core_tpg_remove_lun(struct se_portal_group *, struct se_lun *);
- struct se_node_acl *core_tpg_add_initiator_node_acl(struct se_portal_group *tpg,
- 		const char *initiatorname);
- void core_tpg_del_initiator_node_acl(struct se_node_acl *acl);
-+int target_tpg_enable(struct se_portal_group *se_tpg);
-+int target_tpg_disable(struct se_portal_group *se_tpg);
- 
- /* target_core_transport.c */
- int	init_se_kmem_caches(void);
-diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index 736847c933e5..0de3385b94c5 100644
---- a/drivers/target/target_core_tpg.c
-+++ b/drivers/target/target_core_tpg.c
-@@ -31,6 +31,7 @@
- #include "target_core_ua.h"
- 
- extern struct se_device *g_lun0_dev;
-+static DEFINE_XARRAY_ALLOC(tpg_xa);
- 
- /*	__core_tpg_get_initiator_node_acl():
-  *
-@@ -439,6 +440,57 @@ static void core_tpg_lun_ref_release(struct percpu_ref *ref)
- 	complete(&lun->lun_shutdown_comp);
- }
- 
-+static int target_tpg_register_rtpi(struct se_portal_group *se_tpg)
-+{
-+	u32 val;
-+	int ret;
-+
-+	ret = xa_alloc(&tpg_xa, &val, se_tpg,
-+		       XA_LIMIT(1, USHRT_MAX), GFP_KERNEL);
-+	if (!ret)
-+		se_tpg->tpg_rtpi = val;
-+
-+	return ret;
-+}
-+
-+static void target_tpg_deregister_rtpi(struct se_portal_group *se_tpg)
-+{
-+	if (se_tpg->tpg_rtpi && se_tpg->enabled)
-+		xa_erase(&tpg_xa, se_tpg->tpg_rtpi);
-+}
-+
-+int target_tpg_enable(struct se_portal_group *se_tpg)
-+{
-+	int ret;
-+
-+	ret = target_tpg_register_rtpi(se_tpg);
-+	if (ret)
-+		return ret;
-+
-+	ret = se_tpg->se_tpg_tfo->fabric_enable_tpg(se_tpg, true);
-+	if (ret) {
-+		target_tpg_deregister_rtpi(se_tpg);
-+		return ret;
-+	}
-+
-+	se_tpg->enabled = true;
-+
-+	return 0;
-+}
-+
-+int target_tpg_disable(struct se_portal_group *se_tpg)
-+{
-+	int ret;
-+
-+	target_tpg_deregister_rtpi(se_tpg);
-+
-+	ret = se_tpg->se_tpg_tfo->fabric_enable_tpg(se_tpg, false);
-+	if (!ret)
-+		se_tpg->enabled = false;
-+
-+	return ret;
-+}
-+
- /* Does not change se_wwn->priv. */
- int core_tpg_register(
- 	struct se_wwn *se_wwn,
-@@ -535,6 +587,8 @@ int core_tpg_deregister(struct se_portal_group *se_tpg)
- 		kfree_rcu(se_tpg->tpg_virt_lun0, rcu_head);
- 	}
- 
-+	target_tpg_deregister_rtpi(se_tpg);
-+
- 	return 0;
- }
- EXPORT_SYMBOL(core_tpg_deregister);
-diff --git a/include/target/target_core_base.h b/include/target/target_core_base.h
-index 12c9ba16217e..814edf746395 100644
---- a/include/target/target_core_base.h
-+++ b/include/target/target_core_base.h
-@@ -920,6 +920,8 @@ struct se_portal_group {
- 	 */
- 	int			proto_id;
- 	bool			enabled;
-+	/* RELATIVE TARGET PORT IDENTIFIER */
-+	u16			tpg_rtpi;
- 	/* Used for PR SPEC_I_PT=1 and REGISTER_AND_MOVE */
- 	atomic_t		tpg_pr_ref_count;
- 	/* Spinlock for adding/removing ACLed Nodes */
--- 
-2.25.1
-
+Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
 
