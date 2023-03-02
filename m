@@ -2,142 +2,135 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76F0FC64ED6
-	for <target-devel@archiver.kernel.org>; Wed,  1 Mar 2023 11:58:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7945FC6FA8E
+	for <target-devel@archiver.kernel.org>; Thu,  2 Mar 2023 09:43:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229813AbjCAL63 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 1 Mar 2023 06:58:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37578 "EHLO
+        id S230039AbjCBJne (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 2 Mar 2023 04:43:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49636 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229819AbjCAL60 (ORCPT
+        with ESMTP id S230090AbjCBJn0 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 1 Mar 2023 06:58:26 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 800062F7B7
-        for <target-devel@vger.kernel.org>; Wed,  1 Mar 2023 03:57:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1677671855;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=mHl5KQjEc4/d6SgEY0TdUVaYr+bU97RLVBw2BBUuA38=;
-        b=IzK5Tj+b9zVUvuXav6xbVx3HcaHafSD8i/DCv+uVd1UyPER/PlKnjHST2RupKkXCh4lPrq
-        Igimw2KVaWUlXsV8DC/cLGO3WdRsR79iWomj6BcTFctoSRZWDtoF+Qkoqzi6beDOR3rhKU
-        nHp7xkoaplu2eLPpW/bKvPGj6Zk1ncM=
-Received: from mail-ua1-f72.google.com (mail-ua1-f72.google.com
- [209.85.222.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-483-dGb70gUMMQOHU4pmlWpYfQ-1; Wed, 01 Mar 2023 06:57:34 -0500
-X-MC-Unique: dGb70gUMMQOHU4pmlWpYfQ-1
-Received: by mail-ua1-f72.google.com with SMTP id j21-20020a9f3095000000b006901584fb3aso2201342uab.7
-        for <target-devel@vger.kernel.org>; Wed, 01 Mar 2023 03:57:34 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677671853;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=mHl5KQjEc4/d6SgEY0TdUVaYr+bU97RLVBw2BBUuA38=;
-        b=aLJ0rjj6LBpm6SoPvOGxWOG1XEyoqM2zSa6bRSCKBssLwQEkkAwf6Jt1l6SS+o+krW
-         FC2wEgBz/6rAVLe9AL9ALkDkQasXHKgocgdBJGmomRo6sQ8h5EsP1H4xoyMGeeWrPjtF
-         jIxzjDMv5KCc/JxK/j4tBUSmbSYcWFvd6abBAh+R4bQWTKtMtiRGIAKtsel4DdjusRkF
-         w/vFwitWp/QpMpssZP43U2dxQkoKLF9danHPkhy2iamnwjdExY21szYROCfUY5pKXQUS
-         W73vuhoPWFIzCJwQXgY7xt+gBsZF9+Nh71NgCc1c/ZbwmZ4qsrSDf/uefLQgFnDqI84W
-         s5/w==
-X-Gm-Message-State: AO0yUKUpmTmprDmUyM0EQSZyz3huxx4lCwLelVAesgjSRIjXCFDTssp1
-        xwMU8SSH1hkPENbP2O0zA7OyVNAXbELRavLKgrFlDSK06C4kueF5nVkO33ygiDGJxFiyZ4ZMpp6
-        QHqQ2hI+fSFv/afJDAh0zsWyjMSnRlRlG/WfXWUQZ58xsuQ==
-X-Received: by 2002:a05:6122:656:b0:401:8898:ea44 with SMTP id h22-20020a056122065600b004018898ea44mr3351179vkp.3.1677671853359;
-        Wed, 01 Mar 2023 03:57:33 -0800 (PST)
-X-Google-Smtp-Source: AK7set9l846Pjlw2nULxarUi1PRFBt3nBG6v0YrgnYC4ddQ7sWQ5MmNP5msaiDYvAL+l07xHgrEbEXqOCSsuiMJsbhs=
-X-Received: by 2002:a05:6122:656:b0:401:8898:ea44 with SMTP id
- h22-20020a056122065600b004018898ea44mr3351172vkp.3.1677671853105; Wed, 01 Mar
- 2023 03:57:33 -0800 (PST)
-MIME-Version: 1.0
-References: <20230129234441.116310-1-michael.christie@oracle.com> <20230129234441.116310-6-michael.christie@oracle.com>
-In-Reply-To: <20230129234441.116310-6-michael.christie@oracle.com>
-From:   Maurizio Lombardi <mlombard@redhat.com>
-Date:   Wed, 1 Mar 2023 12:57:21 +0100
-Message-ID: <CAFL455=QjP9TutSh0e5KS0R07PK3Pvcv+6xNkP6i6ExGv+gCpg@mail.gmail.com>
-Subject: Re: [PATCH v3 05/14] scsi: target: iscsit: stop/wait on cmds during
- conn close
+        Thu, 2 Mar 2023 04:43:26 -0500
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2927D659B;
+        Thu,  2 Mar 2023 01:43:20 -0800 (PST)
+Received: from mta-01.yadro.com (localhost.localdomain [127.0.0.1])
+        by mta-01.yadro.com (Proxmox) with ESMTP id 3A679341E41;
+        Thu,  2 Mar 2023 12:43:18 +0300 (MSK)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; h=cc
+        :cc:content-type:content-type:date:from:from:in-reply-to
+        :message-id:mime-version:references:reply-to:subject:subject:to
+        :to; s=mta-01; bh=+C8zYPsyQMChni6wkDNM/fkmkRZQye9VE9GuESYHVBQ=; b=
+        ZurdOvdLmmIO83fLNScnXtkpVbPVGo/hiJD+ygRGtBcPB3X21+ihrW+rzcns+aGN
+        KR9xcuJ/pj60YyLLf6sNjMtobZZryeIOy2QGwHP5CBSxls/zdpmqOgMZXCwcf/MH
+        0JYexJwxRLohesJKXmrLBsPjC7NOHls+6PHQwfR4rko=
+Received: from T-EXCH-08.corp.yadro.com (unknown [172.17.10.14])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Proxmox) with ESMTPS id 30C8A341ACD;
+        Thu,  2 Mar 2023 12:43:18 +0300 (MSK)
+Received: from yadro.com (10.178.114.42) by T-EXCH-08.corp.yadro.com
+ (172.17.11.58) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Thu, 2 Mar 2023
+ 12:43:17 +0300
+Date:   Thu, 2 Mar 2023 12:43:17 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
 To:     Mike Christie <michael.christie@oracle.com>
-Cc:     martin.petersen@oracle.com, mgurtovoy@nvidia.com, sagi@grimberg.me,
-        d.bogdanov@yadro.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+CC:     <mlombard@redhat.com>, <martin.petersen@oracle.com>,
+        <mgurtovoy@nvidia.com>, <sagi@grimberg.me>,
+        <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>
+Subject: Re: [PATCH v3 07/14] scsi: target: Fix multiple LUN_RESET handling
+Message-ID: <20230302094317.GB1340@yadro.com>
+References: <20230129234441.116310-1-michael.christie@oracle.com>
+ <20230129234441.116310-8-michael.christie@oracle.com>
+ <20230211085922.GA5419@yadro.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20230211085922.GA5419@yadro.com>
+X-Originating-IP: [10.178.114.42]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-08.corp.yadro.com (172.17.11.58)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-po 30. 1. 2023 v 0:45 odes=C3=ADlatel Mike Christie
-<michael.christie@oracle.com> napsal:
->
-> This fixes a bug added in:
->
-> commit f36199355c64 ("scsi: target: iscsi: Fix cmd abort fabric stop
-> race")
->
-> If we have multiple sessions to the same se_device we can hit a race wher=
-e
-> a LUN_RESET on one session cleans up the se_cmds from under another
-> session which is being closed. This results in the closing session freein=
-g
-> its conn/session structs while they are still in use.
->
-> The bug is:
->
-> 1. Session1 has IO se_cmd1.
-> 2. Session2 can also have se_cmds for IO and optionally TMRs for ABORTS
-> but then gets a LUN_RESET.
-> 3. The LUN_RESET on session2 sees the se_cmds on session1 and during
-> the drain stages marks them all with CMD_T_ABORTED.
-> 4. session1 is now closed so iscsit_release_commands_from_conn only sees
-> se_cmds with the CMD_T_ABORTED bit set and returns immediately even
-> though we have outstanding commands.
-> 5. session1's connection and session are freed.
-> 6. The backend request for se_cmd1 completes and it accesses the freed
-> connection/session.
->
-> This hooks the iscsit layer into the cmd counter code, so we can wait for
-> all outstanding se_cmds before freeing the connection.
->
-> Fixes: f36199355c64 ("scsi: target: iscsi: Fix cmd abort fabric stop race=
-")
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+On Sat, Feb 11, 2023 at 11:59:22AM +0300, Dmitry Bogdanov wrote:
+> On Sun, Jan 29, 2023 at 05:44:34PM -0600, Mike Christie wrote:
+> > 
+> > This fixes a bug where an initiator thinks a LUN_RESET has cleaned
+> > up running commands when it hasn't. The bug was added in:
+> > 
+> > commit 51ec502a3266 ("target: Delete tmr from list before processing")
+> > 
+> > The problem occurs when:
+> > 
+> > 1. We have N IO cmds running in the target layer spread over 2 sessions.
+> > 2. The initiator sends a LUN_RESET for each session.
+> > 3. session1's LUN_RESET loops over all the running commands from both
+> > sessions and moves them to its local drain_task_list.
+> > 4. session2's LUN_RESET does not see the LUN_RESET from session1 because
+> > the commit above has it remove itself. session2 also does not see any
+> > commands since the other reset moved them off the state lists.
+> > 5. sessions2's LUN_RESET will then complete with a successful response.
+> > 6. sessions2's inititor believes the running commands on its session are
+> > now cleaned up due to the successful response and cleans up the running
+> > commands from its side. It then restarts them.
+> > 7. The commands do eventually complete on the backend and the target
+> > starts to return aborted task statuses for them. The initiator will
+> > either throw a invalid ITT error or might accidentally lookup a new task
+> > if the ITT has been reallocated already.
+> > 
+> > This fixes the bug by reverting the patch.
+> > 
+> > Fixes: 51ec502a3266 ("target: Delete tmr from list before processing")
+> > Signed-off-by: Mike Christie <michael.christie@oracle.com>
+> > Reviewed-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
+> 
+> Actually, this patch even fixes a crash that we've just faced.
+> The second LUN_RESET moves the first LUN_RESET from tmr_list to its
+> drain_tmr_list, then the first LUN_RESET removes itself from second`s
+> drain_tmr_list, then the second LUN_RESET tries to remove the first from
+> the list and crashes because it was deleted already.
+> So,
+> 
+> Tested-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
+
+Unfortunately, I am revoking my tags. This patch leads to deadlock of two
+LUN_RESETs waiting for each other in its drain_tmr_list.
+
+To keep LUN_RESETs ignoring each other something like that is needed:
 > ---
->  drivers/target/iscsi/iscsi_target.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
-scsi_target.c
-> index 11115c207844..83b007141229 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -4245,6 +4245,16 @@ static void iscsit_release_commands_from_conn(stru=
-ct iscsit_conn *conn)
->                 iscsit_free_cmd(cmd, true);
->
->         }
-> +
-> +       /*
-> +        * Wait on commands that were cleaned up via the aborted_task pat=
-h.
-> +        * LLDs that implement iscsit_wait_conn will already have waited =
-for
-> +        * commands.
-> +        */
-> +       if (!conn->conn_transport->iscsit_wait_conn) {
-> +               target_stop_cmd_counter(conn->cmd_cnt);
-> +               target_wait_for_cmds(conn->cmd_cnt);
-> +       }
->  }
->
->  static void iscsit_stop_timers_for_cmds(
+>  drivers/target/target_core_tmr.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/target/target_core_tmr.c b/drivers/target/target_core_tmr.c
+> index 2b95b4550a63..a60802b4c5a3 100644
+> --- a/drivers/target/target_core_tmr.c
+> +++ b/drivers/target/target_core_tmr.c
+> @@ -188,9 +188,10 @@ static void core_tmr_drain_tmr_list(
+>          * LUN_RESET tmr..
+>          */
+>         spin_lock_irqsave(&dev->se_tmr_lock, flags);
+> -       if (tmr)
+> -               list_del_init(&tmr->tmr_list);
+>         list_for_each_entry_safe(tmr_p, tmr_pp, &dev->dev_tmr_list, tmr_list) {
+- > +               if (tmr_p == tmr)
+- > +                       continue;
+- > +
+
++		/* Ignore LUN_RESETs to avoid deadlocks */
++		if (tmr_p->function == TMR_LUN_RESET)
++			continue;
++ 
+
+
+>                 cmd = tmr_p->task_cmd;
+>                 if (!cmd) {
+>                         pr_err("Unable to locate struct se_cmd for TMR\n");
 > --
 > 2.25.1
->
 
-Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
+
 
