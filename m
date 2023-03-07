@@ -2,87 +2,131 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85FFFC64EC4
-	for <target-devel@archiver.kernel.org>; Tue,  7 Mar 2023 02:57:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 020F8C6FD1E
+	for <target-devel@archiver.kernel.org>; Tue,  7 Mar 2023 08:08:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230140AbjCGC5r (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 6 Mar 2023 21:57:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33564 "EHLO
+        id S229955AbjCGIIb (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 7 Mar 2023 03:08:31 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39632 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230134AbjCGC5o (ORCPT
+        with ESMTP id S229776AbjCGII1 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 6 Mar 2023 21:57:44 -0500
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5815665057
-        for <target-devel@vger.kernel.org>; Mon,  6 Mar 2023 18:57:43 -0800 (PST)
-Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 326Nwrgq024446;
-        Tue, 7 Mar 2023 02:57:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2022-7-12;
- bh=kROnrCaRTMEwpkf2c8lOvZoWzG0G7FbXztSnHoJ976Q=;
- b=BQY2Wj1W9R1ZNUGsF16N8BSy/yjbzjk/bnG4kYImFa1aH59lXqSnrJAN8sWo2qn/FgCG
- TE7R2jmg3XHbSRIyJ3gZ9Dgy1l7JT4WyU55Kv4gC0LgpoKi/BhvGOrVjRh4q8uggB3yw
- j/74qUiWMzGZcTGE8AM4q46IeEzjXghVzw9oLyRl5+zDDp60NL3uxDFYPoURcY1+5hjP
- dwVcmT1HXxz3RUsBCPwn/FQzGoDYjSUjqIinWC/gYBl5VWkhoy674UwWAvzQp1Ed2wM4
- pEglCohLOJYHGAqEjPVKyp9GRHgA+NDt4TPSw5JA3IIeEnax9yJgs4J+1lO003ZZ0AP8 Vw== 
-Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3p416wmgr8-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 07 Mar 2023 02:57:41 +0000
-Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 3271Sx3D037521;
-        Tue, 7 Mar 2023 02:57:40 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3p4txdvjkg-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 07 Mar 2023 02:57:39 +0000
-Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3272vY2M009567;
-        Tue, 7 Mar 2023 02:57:39 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTP id 3p4txdvjhj-7;
-        Tue, 07 Mar 2023 02:57:39 +0000
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     Maurizio Lombardi <mlombard@redhat.com>
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        target-devel@vger.kernel.org, michael.christie@oracle.com
-Subject: Re: [PATCH] target: iscsi: fix an error message in iscsi_check_key()
-Date:   Mon,  6 Mar 2023 21:57:24 -0500
-Message-Id: <167815780194.2075334.1565439378309097994.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230214141556.762047-1-mlombard@redhat.com>
-References: <20230214141556.762047-1-mlombard@redhat.com>
+        Tue, 7 Mar 2023 03:08:27 -0500
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76B14524F;
+        Tue,  7 Mar 2023 00:07:55 -0800 (PST)
+Received: from mta-01.yadro.com (localhost.localdomain [127.0.0.1])
+        by mta-01.yadro.com (Proxmox) with ESMTP id 49FA2341EAE;
+        Tue,  7 Mar 2023 11:07:50 +0300 (MSK)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; h=cc
+        :cc:content-transfer-encoding:content-type:content-type:date
+        :from:from:message-id:mime-version:reply-to:subject:subject:to
+        :to; s=mta-01; bh=JIuX80TJ3cWahE7O+WvKSbuwyfuO2YRNQ6GyRVCndts=; b=
+        FDVdVpf4dWq1ZCUnvV0YfMlzEEc56mzrrbu1fwqMEMG9K9+wiH3B9z1j/othAT7n
+        RWWdr5BNB6ZyDUuN5Ef6w8YISieY3bUTmQThS//5tWXHXyvW5Bzk/VvNhg6iXi/a
+        szln6hL77jdbYOQjuTqxU/E1waEedJGK9ZexSh/BGuA=
+Received: from T-EXCH-08.corp.yadro.com (unknown [172.17.10.14])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Proxmox) with ESMTPS id 3E1EF341E00;
+        Tue,  7 Mar 2023 11:07:50 +0300 (MSK)
+Received: from NB-591.corp.yadro.com (10.199.20.11) by
+ T-EXCH-08.corp.yadro.com (172.17.11.58) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.1118.9; Tue, 7 Mar 2023 11:07:49 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Martin Petersen <martin.petersen@oracle.com>,
+        <target-devel@vger.kernel.org>
+CC:     Bart Van Assche <bvanassche@acm.org>,
+        Jason Gunthorpe <jgg@ziepe.ca>,
+        Leon Romanovsky <leon@kernel.org>,
+        James Smart <james.smart@broadcom.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        Michael Cyr <mikecyr@linux.ibm.com>,
+        Nilesh Javali <njavali@marvell.com>,
+        <GR-QLogic-Storage-Upstream@marvell.com>,
+        Chris Boot <bootc@bootc.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Michael S . Tsirkin" <mst@redhat.com>,
+        Jason Wang <jasowang@redhat.com>,
+        Juergen Gross <jgross@suse.com>, <linux-scsi@vger.kernel.org>,
+        <linux@yadro.com>, Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: [PATCH v2 00/12] add virtual remote fabric
+Date:   Tue, 7 Mar 2023 11:07:30 +0300
+Message-ID: <20230307080742.24631-1-d.bogdanov@yadro.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-06_14,2023-03-06_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 mlxscore=0 adultscore=0
- spamscore=0 suspectscore=0 mlxlogscore=656 phishscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2303070025
-X-Proofpoint-GUID: kIVhr8sG5hJjhy2TWgtr3ffJp4kSMza-
-X-Proofpoint-ORIG-GUID: kIVhr8sG5hJjhy2TWgtr3ffJp4kSMza-
+Content-Type: text/plain
+X-Originating-IP: [10.199.20.11]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-08.corp.yadro.com (172.17.11.58)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, 14 Feb 2023 15:15:56 +0100, Maurizio Lombardi wrote:
+The patchset is based on 6.3/scsi-queue branch.
 
-> The first half of the error message is printed by pr_err(), the second
-> half is printed by pr_debug().
-> The user will therefore see only the first part of the message
-> and will miss some useful information.
-> 
-> 
+The first 11 patches are just a refactoring to reduce code duplication
+in fabric drivers.
+They make several callouts be optional in fabric ops.
+Make a default implementation of the optional ops and remove such
+implementations in the fabric drivers.
 
-Applied to 6.3/scsi-fixes, thanks!
+The last patch is a new virtual remote fabric driver.
+It have a valueble sence with patchset "scsi: target: make RTPI an TPG identifier"
+to configure RPTI on remote/tpgt_x same as on tpgt_y on other nodes in
+a storage cluster. That allows to report the same ports in RTPG from
+each node and to have a clusterwide tpg/acl/lun view in kernel.
 
-[1/1] target: iscsi: fix an error message in iscsi_check_key()
-      https://git.kernel.org/mkp/scsi/c/6cc55c969b7c
+On its own it can be used as a dummy fabric driver for test purposes
+or whatever.
+
+Changelog:
+ v2:
+    add default implementation for optional fabric ops
+    code style cleanup
+
+Dmitry Bogdanov (12):
+  scsi: target: add default fabric ops callaouts
+  infiniband: srpt: remove default fabric ops callouts
+  scsi: ibmvscsit: remove default fabric ops callouts
+  scsi: target: loop: remove default fabric ops callouts
+  scsi: target: sbp: remove default fabric ops callouts
+  scsi: target: fcoe: remove default fabric ops callouts
+  usb: gadjet: f_tcm: remove default fabric ops callouts
+  vhost-scsi: remove default fabric ops callouts
+  xen-scsiback: remove default fabric ops callouts
+  scsi: qla2xxx: remove default fabric ops callouts
+  scsi: efct: remove default fabric ops callouts
+  target: add virtual remote target
+
+ drivers/infiniband/ulp/srpt/ib_srpt.c    |  33 ---
+ drivers/scsi/elx/efct/efct_lio.c         |  20 --
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c |  30 ---
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c       |  14 --
+ drivers/target/Kconfig                   |   1 +
+ drivers/target/Makefile                  |   1 +
+ drivers/target/loopback/tcm_loop.c       |  41 ----
+ drivers/target/sbp/sbp_target.c          |  31 ---
+ drivers/target/target_core_configfs.c    |  96 +++++---
+ drivers/target/tcm_fc/tcm_fc.h           |   1 -
+ drivers/target/tcm_fc/tfc_cmd.c          |   5 -
+ drivers/target/tcm_fc/tfc_conf.c         |  15 --
+ drivers/target/tcm_remote/Kconfig        |   8 +
+ drivers/target/tcm_remote/Makefile       |   2 +
+ drivers/target/tcm_remote/tcm_remote.c   | 277 +++++++++++++++++++++++
+ drivers/target/tcm_remote/tcm_remote.h   |  20 ++
+ drivers/usb/gadget/function/f_tcm.c      |  31 ---
+ drivers/vhost/scsi.c                     |  31 ---
+ drivers/xen/xen-scsiback.c               |  30 ---
+ 19 files changed, 389 insertions(+), 316 deletions(-)
+ create mode 100644 drivers/target/tcm_remote/Kconfig
+ create mode 100644 drivers/target/tcm_remote/Makefile
+ create mode 100644 drivers/target/tcm_remote/tcm_remote.c
+ create mode 100644 drivers/target/tcm_remote/tcm_remote.h
 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.25.1
+
+
