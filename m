@@ -2,348 +2,241 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79416C6FD1F
-	for <target-devel@archiver.kernel.org>; Tue, 14 Mar 2023 21:23:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A8A7C6FD1D
+	for <target-devel@archiver.kernel.org>; Tue, 14 Mar 2023 22:24:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229742AbjCNVXQ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 14 Mar 2023 17:23:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35868 "EHLO
+        id S230045AbjCNWYj (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 14 Mar 2023 18:24:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39924 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229707AbjCNVXP (ORCPT
+        with ESMTP id S229816AbjCNWYi (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 14 Mar 2023 17:23:15 -0400
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C667F29430
-        for <target-devel@vger.kernel.org>; Tue, 14 Mar 2023 14:23:11 -0700 (PDT)
-Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32EKIn1j011621;
-        Tue, 14 Mar 2023 21:23:09 GMT
+        Tue, 14 Mar 2023 18:24:38 -0400
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A5C91BADB;
+        Tue, 14 Mar 2023 15:24:05 -0700 (PDT)
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32EJJScJ017278;
+        Tue, 14 Mar 2023 22:23:21 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
  subject : to : cc : references : from : in-reply-to : content-type :
  content-transfer-encoding : mime-version; s=corp-2022-7-12;
- bh=RRPLKbIHc4gfdhJ5RrnRwRodGCWYlleljhULyXC/wbw=;
- b=XJ+W/qWkLGLFbpS01/L8P4H+xaB/nqT5/CGgYAh2YBGmyOsZRJ0h82BMcbssxpJZmMrk
- KC1ihFYUqe8y71bBsyCdBgJKRZ/aq3FQIWhJ7mYZLE4z0QYHpWi8463I6dEkB9wbqgrz
- lqX4uwVUHDS6k9nRZvfFvLYjQgiUg225kTVigslG0jpkcFHPm/FwnNbhQL3/kcEiEXcw
- Nqgy83Yra6S9MPZ+QBPxcshD1+O5BhhHfVR0EfjOP2rHAycAkoggumrTrdS0iD6qxS2L
- JEMIezIMzePbqkkBt0RlEH0tXngI8u8ZT1xKW3A53mitS9Skq0Oyd+PYGI2EhUfrLbxP ig== 
-Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3p8ge2yg73-1
+ bh=07rw9rHI5ExIfJE8nrXhmlrneiQr9VmWKUXAUVsNNF4=;
+ b=at0AWDDbtGvlF9Gh+Sors2FeEI7VEhubVJei1cQfUK636XPCvKK1YJXXc1gNffr8Qvvn
+ ppq5O8bRIskR9iH820vByS7SwgwxDF0G8ByA32ddEEnSmlNdhk2cFy50HFoaOv0bbmZa
+ nqR9PZj1Xf08+x/XpKwBW4Rlw14lBjmCHjupJQ2ZCNVkti2gflc4ab/h3niIFBJLmCmS
+ eF4q6prp1yk+p6wcH7WvEugAv/iWvGtZgMzbnG1DSdDgArqBq17YruJP+OsuRrSvu+s4
+ AgkFe85B+v/b+thPu7d3ecOCjn/YswLxgPUsR+jso2P2Js7GYkmvEtMQKv8iVVM5wWRv aQ== 
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3p8j6u7u5f-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 14 Mar 2023 21:23:09 +0000
-Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-        by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 32EL2mWm010624;
-        Tue, 14 Mar 2023 21:23:08 GMT
-Received: from nam10-dm6-obe.outbound.protection.outlook.com (mail-dm6nam10lp2100.outbound.protection.outlook.com [104.47.58.100])
-        by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3p8g36faqn-1
+        Tue, 14 Mar 2023 22:23:21 +0000
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 32EL3mP5033479;
+        Tue, 14 Mar 2023 22:23:20 GMT
+Received: from nam04-dm6-obe.outbound.protection.outlook.com (mail-dm6nam04lp2042.outbound.protection.outlook.com [104.47.73.42])
+        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3p8g36rqyr-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 14 Mar 2023 21:23:08 +0000
+        Tue, 14 Mar 2023 22:23:20 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=lIeBHuTnfd3hF8jPwFdTXoOecGsu9K2myxLRKtkJ96rloeSXd2GzFvqkwKVUaSl2b7W+upszw5gye3Y3oieX4Sq/J5gkpi6bFSgFnoLhSOviuAriyUtVxel+FBIwn1zLodV3rWdTNR3ssDlAjppODCc/UtPDayns3a2V6CBFb30KldrNJpIK1lQcIOsKkVVoH/Av6ccuuZsQ3fb6euTedqoBokx6nVtJP+j2yz89btUweFUwuc8QEgRQJJhl0xpXDSRPBcX0z6H9Pa+McjOZyGhlR4FFJHwg2uvqfMvtdqPvqR0cjNtYjei0a5EOKiCdnACMhyXO4I3s8m2DEpU34A==
+ b=UeOpNv0fZT6ixBANzhdBca2uwzqpMm/4ZJuCikHp1OLL0ItSvl/WMLbbePbm/zz/SFxiDZIbkKkym1YABJk7u7Wd0jl4zQoZ3BRF8qL4N7lNcTD55CLrA3D1iC6xe5A8QwJp5qIIiC1vG+V2/Af9VeMiliJmc61ezbxQYn4e154w390luNH9DiIRgzQr2tot3LmAbclDois1gUPxb5p/gdiXIfm4y2xyRHyJiYh+bYH2vzn3RRTP8VYoyf2GMoectu5QvKL/NgiiaI0BaK3jlA/CI3UXrZ2On8GIg2H1p7BASpG/zpumcW1f0Sg4xDI37fP4EPv/ImaNGKDmYsxlRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RRPLKbIHc4gfdhJ5RrnRwRodGCWYlleljhULyXC/wbw=;
- b=YJddVtnUv6s8FZbvTcwHVDW1ZIFhtEDtYwPK0kotZQ7HrmNQBinncxygXhRpDwVLSJBTOjwPrFE3DBJCkDSJf7YZBbUQKQceparBxpFE0Xqm+KnzVD1CvX2oUi3uMEiWcNYeRWMNrZRJltTpYa10yhkJOJamQ9II6kf4zHiJcXfrD23Y2JtCRpneOhpdBBkBTGuxVLbJLz1IWtvjEMm16pgo9zlZQiHMkQsR1x+V/5PBby8tgIpcpVi7sfombfFsce0HgoNClcyedqjW3P0upY7CCCFJIloPAnbpka9ubxucG8prUpESW8Hu4KGo28LPhAQF6O1ndLypFwmwrphjnA==
+ bh=07rw9rHI5ExIfJE8nrXhmlrneiQr9VmWKUXAUVsNNF4=;
+ b=YXUF/jw8BO10/jPO+Y6qKvG3XS7j/NaUt0X+BP0v1N9jUJEFp0737Q5LR40vr62o2kYbU+WNAGJmtKIdL7nueikpwmGioptWhSBCufik0xBo6PsRoDXD66fiXJguhuihVet1SvGFWCVpREYgiRyCfD1idiDA8bmWOO8DhTrK91VqDcqetI6H7LOuAtKRfJzgXUEI8nA0CBe/xv0PcriDoU7rKxFcngEqPku5c96WP6cFowefPovHZ/ePThwqnvWzf84Zw7M2ch3z1iFYA8URsS0SqjW4KfzFqu51GWa6dgVBQmkRW0Ni4CHeNxpnknBcvkcgvHB264HlgQ/r7h22ww==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
  dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RRPLKbIHc4gfdhJ5RrnRwRodGCWYlleljhULyXC/wbw=;
- b=c2uHwLYCF0NvSwe6Mjdxc7A9AuZqRjO6fE3CMbr4gvwDh1IrgdFQb2XmmafjyukbyENwmYUTbortPk/ckEGp9okhvvy0Lk/c6aI5ocFo+Cqsk3MTuHKFed2w72qsDYuAh2HH9QjzCmLCEgOpeV8iwSbqYpq13zFU0388AGU1AQ0=
+ bh=07rw9rHI5ExIfJE8nrXhmlrneiQr9VmWKUXAUVsNNF4=;
+ b=rUInmUZgGgNeRuH/Pp4fW+EAt2ZBM4rFteKZNgU325Jm4K2/ydkaHprW094re8JoDLUPg+OnOvYkNNlZhABhYeawABV9mYXlkWt3BaYh7m3pLWdfzBJqTNzRCUKC0w+GaMqf/zoT+BGak8YmgV/3xz7KtYPqqaah9rf4XKQOhdc=
 Received: from DM5PR10MB1466.namprd10.prod.outlook.com (2603:10b6:3:b::7) by
- IA1PR10MB7286.namprd10.prod.outlook.com (2603:10b6:208:3ff::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.24; Tue, 14 Mar
- 2023 21:23:06 +0000
+ DS0PR10MB7407.namprd10.prod.outlook.com (2603:10b6:8:15c::18) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6178.24; Tue, 14 Mar 2023 22:23:18 +0000
 Received: from DM5PR10MB1466.namprd10.prod.outlook.com
  ([fe80::7dd7:8d22:104:8d64]) by DM5PR10MB1466.namprd10.prod.outlook.com
  ([fe80::7dd7:8d22:104:8d64%7]) with mapi id 15.20.6178.026; Tue, 14 Mar 2023
- 21:23:06 +0000
-Message-ID: <afb25e86-3b1a-3b19-f257-e748d0900005@oracle.com>
-Date:   Tue, 14 Mar 2023 16:23:04 -0500
+ 22:23:18 +0000
+Message-ID: <c9082d55-7009-279a-fde1-7f774fb7e6e8@oracle.com>
+Date:   Tue, 14 Mar 2023 17:23:16 -0500
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.8.0
-Subject: Re: [PATCH 1/3] target: iscsi: fix hang in the iSCSI login code
-To:     Maurizio Lombardi <mlombard@redhat.com>
-Cc:     martin.petersen@oracle.com, serapheim.dimitro@delphix.com,
-        target-devel@vger.kernel.org
-References: <20230310100423.1258256-1-mlombard@redhat.com>
- <20230310100423.1258256-2-mlombard@redhat.com>
- <f492ed26-58fd-0f4d-b1f2-b4cbd2cca233@oracle.com>
- <CAFL455=HQ9-juB5fCqRJYmLK-jH3RuLCQM1Rk6bzG4QA-yWq4Q@mail.gmail.com>
+Subject: Re: [PATCH v4 07/18] nvme: Fix reservation status related structs
 Content-Language: en-US
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     bvanassche@acm.org, martin.petersen@oracle.com,
+        linux-scsi@vger.kernel.org, james.bottomley@hansenpartnership.com,
+        linux-block@vger.kernel.org, dm-devel@redhat.com,
+        snitzer@kernel.org, axboe@kernel.dk,
+        linux-nvme@lists.infradead.org, chaitanyak@nvidia.com,
+        kbusch@kernel.org, target-devel@vger.kernel.org
+References: <20230224174502.321490-1-michael.christie@oracle.com>
+ <20230224174502.321490-8-michael.christie@oracle.com>
+ <20230314171538.GG6780@lst.de>
 From:   Mike Christie <michael.christie@oracle.com>
-In-Reply-To: <CAFL455=HQ9-juB5fCqRJYmLK-jH3RuLCQM1Rk6bzG4QA-yWq4Q@mail.gmail.com>
+In-Reply-To: <20230314171538.GG6780@lst.de>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: DM6PR07CA0108.namprd07.prod.outlook.com
- (2603:10b6:5:330::14) To DM5PR10MB1466.namprd10.prod.outlook.com
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: DM5PR08CA0039.namprd08.prod.outlook.com
+ (2603:10b6:4:60::28) To DM5PR10MB1466.namprd10.prod.outlook.com
  (2603:10b6:3:b::7)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM5PR10MB1466:EE_|IA1PR10MB7286:EE_
-X-MS-Office365-Filtering-Correlation-Id: f571d2ab-7e21-40aa-c64e-08db24d24d0b
+X-MS-TrafficTypeDiagnostic: DM5PR10MB1466:EE_|DS0PR10MB7407:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4df83549-e6dc-4188-41cb-08db24dab64a
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: vy8fNOOV1tjzVdf7S2YCU7RvEcvCi68ThF4z9o894kqSjcNHGpWmDOzVn0pGMd37nCpFfCkC2l8kFhtRD+0VgVDrRzcgQq1rT4lU1tN8svNo+spvwZQEtXJU4n0nyJKJUW09CuYKzPKLvmblWJ92JpDEYQlVPKbS5MdvcSJiHtdYZIrB40p/YC0Y7jXzA4LSFFtgxNvhkQFMYYH70R1jW9A9ulqr8624N0Swjiu1hOjV//HD5IuSbrwPvK8byugfQw/zyFlabQvwGtwx9IVXFxHCAVtqHgc8aW1yuHbBMN1pmDiCM26Xp5sA3KJLdJ3Mftxi/wPr+AzlbkddMwyOZD/E6GHtpZUFTDffYwIJzp5NFhRF9Cr/YMVUc8Hs/voDsO62xuZcOqqG82bqVVt86UTx42hy3p8NLGSJFbGVmjM9NHQ/xWEaMA3zTQlU9boUWnOi6C659YEpCkpOQ4zwn9v15pm9iz4m5KY/RWx28AzyiMNpeySwNfzHK/pgXN29x99lT/xfnUx9bpDUYNALiIDz3au8QuNp1ErWR5MrLwrbUxkuzwrliJ1R0JW/MH7NOtp89WWMYLwFe9+0Lhg0N1w1CdFYvyomvQe/Aoy31GdlcktoQD8pPRnHaLM3JnkXhV13Eku+bZyhsnd6Hv1dmgQujKBCrkcEx48f+/ZoluFhXiku6R4vR8eNGqsVst5BSTsU2k3SC92jSoSxr7vIVEbpqV2b8HR/G2EzuOKc0NA=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR10MB1466.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(366004)(396003)(346002)(39860400002)(376002)(136003)(451199018)(31686004)(2906002)(83380400001)(36756003)(5660300002)(66946007)(316002)(6916009)(8936002)(66476007)(41300700001)(66556008)(8676002)(4326008)(38100700002)(31696002)(86362001)(478600001)(66574015)(186003)(53546011)(6512007)(6486002)(26005)(6506007)(2616005)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: dtFHGAZD1GhQxeBS+diuj5hpDgo0DyT5h7doV5igLUtyBUChn4Fp94rwqFuWJE437NjRHQy7yMKOs5ShPs6QqNOF/ITAZi54FYKovFAAP4IzqZEvN+7/PpbWY+RZx/rQUlWiNCGC3RHPw8fV04hYEweq4brVcCY0dq7ElXYJN5yPLjj5ew3ddgeJtGRujob+sQdfU93agCKBdtJGN5fV2pR11tnj1wLCd2MuGL4Tev+uwQ/oqFFKF7n7B1YZQ25NkgMGsxZXqsdxuSPAyLLmaaVQtdy3JcrOvrpAsrVpsvADq30VjcDFX1p7tnDrAXtm2nN/21VkH3ILw7YkeXUIY3/XxAYvaFzhT2Pk7TM1vU5L9cgyDrrie+mNq0CgxhRx4a6hGUdvJYLKdHGqh693D7r3V1skHLogryHmORCOcd9xWZqX/Czx8EkTCyVqPmmkN/rTu6S8rqmcvImDH0BfEmsyj+GLcdxS/sBgeBPhKf8Q+Wc116Gp+aZeo535vM6zyJFR8l9qfekmRtiyfIdhqab6qhP3zNwzwny9IQ+QZgrLp0e9noJ4T9gl32FHtPePvNXjpOsrP/XsjmhxWgFKmayr/zgeC4/D2gEWj5jYy3Qvm2TwGUeOqRcA1V3Ku62QssSFIt7oZDBDl9ioqOIgHhakyBVPf5AvkoYIWzg10G/n8evFAoFssoRNlz+uSxcmVhV8TlKhNASSVGRGpdNXs16qoOgvPZe41VrY0hQ9nlc=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR10MB1466.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(346002)(396003)(366004)(376002)(39860400002)(136003)(451199018)(316002)(5660300002)(36756003)(38100700002)(8676002)(478600001)(66946007)(6916009)(41300700001)(66476007)(66556008)(86362001)(4326008)(31696002)(8936002)(2616005)(186003)(53546011)(26005)(6506007)(6512007)(31686004)(7416002)(2906002)(6486002)(43740500002)(45980500001);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?ZE1vdkwxY1ZQZWgxVVJnMHFJNjFmaHdNVGFYSldWa1NCdG9zcEtraVRPVnhF?=
- =?utf-8?B?VFpRcDgzS1gwSWd6cFZCUUw3NVRjUHdCQTA4ZE1VMUt6L2tBcE1GTjg0ak8z?=
- =?utf-8?B?aXo3bE1BeWt6Q1IzNWREMm1OUmp2ZDZtcWZnVjFaZHhiVkVKZ05Zb0lFTG9q?=
- =?utf-8?B?TmVDZWZwSEFjZzZXSnVqc051NTMvaDMybXpadFpuNGhZK2k3QVU3bmYzV1hl?=
- =?utf-8?B?SE1ya2N2MWlHSVU2d1pEdUQxWmJkeGdUUGFsdXZKR3M2T1FTZVJESXVFMm9o?=
- =?utf-8?B?T1Rkb3FhbVBVWnRVUTdsM3A5RW11cGRBV0VxNm4wVW4wNFpGTytLejlQQSs5?=
- =?utf-8?B?VlBKVjZjLzhwbm1RODRNRkNjMy8rTVlGcjIrNlN4Tkh2aFh1eG5UMTRiNnhW?=
- =?utf-8?B?V2E5eDFJYUVncDVKM3ZGakY5Y0tUYmcvU2JwQWNPOTdNRVViWndkUGpuMHpU?=
- =?utf-8?B?RHdFQlFaeTR2UkpHQnJZK0FvOEN3WDVaVElSbnZhYTYxRDBNREloRnh1MGo5?=
- =?utf-8?B?L21NcFhaSS9ERTl1c0V3Qno0dUZ0WXQ4cXFJdllNNVFBNjlEVGQwUzh2dkxo?=
- =?utf-8?B?Y0FKSFhWKzV0ZkxYMUVSWGRpTG5Jb2lkdG4yNEkxWStTOWJLZ3AyYWcwMi9t?=
- =?utf-8?B?d0FTWFpxSm4vRWVmV1VKemtYSXpNbEdGVHVmckRCQnI0clFxZnJiY2k5Wi8y?=
- =?utf-8?B?RkdrY2NxOUx3U3l2OWdxa3NDcERFWmVqdHRyNndjSFIwNzhRWXhtM0RoaytZ?=
- =?utf-8?B?NnFmemRMUWgyT0hZRGxzbFh6SDFqM0taaWFLMCtDb0lhUnpKQmhwa0NRU0l1?=
- =?utf-8?B?Mlpld0RBWjB0aXIwRm03bnJyeU9PVmc3RU1UWmZUeXZTZDh6NlRFVjVWRXVw?=
- =?utf-8?B?bXdmZTc2eFVJNXFMUDcrRCtUclRsMmZCOXdLNEJETFFJWUsxRmliemNHaHZx?=
- =?utf-8?B?S0hVUFRTUFdqcDhOYzVJMWo4MVNOdC9iaml4YmJNbTI1OThSdEZPRExYS0Js?=
- =?utf-8?B?TlB2MGVjRTVTTDZMVGhtdnVZMDBFR0pEelFKMUFoRkFwdkVmNWFSeFZRcDVQ?=
- =?utf-8?B?WFdWL1FnRWl2bkVSTXJTdDJZSnk2RkFuNTJoMlh1Um1EZ0tJQjUxcEYzZEV6?=
- =?utf-8?B?VWFGWFhUZVd2NytvOWxTVEZUeVZGRUVqb0VxeGw5RHNxOHpLRjFWbytkLzVa?=
- =?utf-8?B?cTV2WFJicE5NV1AwN3R5WXBjcVd0QUhTbytaZVlQbWRZTE11MHNNd2dNOXJn?=
- =?utf-8?B?dEVsWXhWT1pONnZIUlU4MXJTempTdDRoaC8va1pQYWFTU1ZBdWJzVHFWcE1p?=
- =?utf-8?B?ZWIyR05EL3U2TFVEZ1BxRGJCb2xGQ2FsSng2N2dlbm1CUHN5bWc1VXBncXh3?=
- =?utf-8?B?dDVmRVc2OWNTVzNaUVZoTUU2eFpqWXJQc1o0WTEvLzh4UDNNMnIybFVtVmpv?=
- =?utf-8?B?bnJkbW1hbytHWG9KVjI0T3VzamZYcDBEV2VmcG91WVpaNXVWSHhsTkJNZ1lP?=
- =?utf-8?B?UlM1Zm5Ib3VYMXd3ZXQwMHRZVTY3UzArWWZvd0FKRHJQdmRsWmJQWFdnTjN4?=
- =?utf-8?B?RWorS1lWQ2FRNGRIaXh5YWpIbURPakdMaGltOTRBckM4dkw4N0lJMVhrb2ZT?=
- =?utf-8?B?RXdIRHJJUnBqVmE2Y2Ixekt6REZZRDFLSUZ5ekxJWjhjS0dnc2FxTUVvOWNO?=
- =?utf-8?B?U0Y4bnV0NWdUNkwrYlQxcmRNWDJqQWVpQUNuemJLRWJlVmlacE9td0JMNDg1?=
- =?utf-8?B?VGtGZDl6Mk5FejROT1MzelJtWjc4ckpIRGJjYTRhbjdiNGI1MVJ3cjRnU213?=
- =?utf-8?B?UERkWHpETThCZ292eURxcUNsTUxUZzJGeCtqbmMwVVpPQURqNXgydzI4aWNt?=
- =?utf-8?B?aFJCZCtzc2FGNjNZSzJNSzN3SWRycDAxbEpWRmVHMjdoTXhFYUNDamQxUU5Y?=
- =?utf-8?B?Q2kyR1JLU2F6RGxVT21MWkVvYmdnQUt5elJqTlRGdzN1QWhZNVhqdlNYVXJp?=
- =?utf-8?B?OFljRjFvVFRRMHlFU1ZqanZub2h3ZjNVZG0yY1R1K3BTc3psVWYyVEVtWkIv?=
- =?utf-8?B?VzhIZTBZWllZbGQ3YUlJVUROZGRIQzhWeFp4RVZvTmN4SHMxTmZOYmZUOXlp?=
- =?utf-8?B?NGxlazdoMmxGTmRPTW1Bc25RZjZjU0psMUVnTVdwVGhzY0hUVStIckk5STh0?=
- =?utf-8?B?MXc9PQ==?=
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?WUpLeDVjTldTZ0VBUjlXSnB5dFg4WU5Qd3B1U2svdmdhUkNhOXlNa3B6SWdn?=
+ =?utf-8?B?aGdkbmVNcEx5ZDhsRXpnZzV0MFVZQUFjSDFhNVlqZFY3b2FEbEZhOW9nZWlS?=
+ =?utf-8?B?MFJBRmdjOVlyVzZlTy9GaDZqQkxNTTlxSDVBNmhtZXlIYW1yRy9FWU1kSlFi?=
+ =?utf-8?B?VkhvTXVWNkhoMGJGeENFNUtnc0hZOVpXL2ZIN0xtaUVOeEZxMXlJU3hiUWps?=
+ =?utf-8?B?aUcvWVVVOEZ2UW9OcHgrUUhwbEV5NkZ6eEVIMnZFR3p1QzRmSzlQeGJGL0k3?=
+ =?utf-8?B?YzdESFQ1SDBkSjZWYmJKeHNvRUNQTkw3MFhkZ2JxUCtQZVNsUkl6MElnY1Z0?=
+ =?utf-8?B?N1p4Rk5RYXVjK1hzZEhBZjFHQUd3anp3YzAvNzZSeExPOW5pM2U4Z0NWcWpr?=
+ =?utf-8?B?K0JFZ0tPbGZwMVBWU0RvWkwvallmYlZwZmlQSyttSHk0NldPcklkejhTbzA3?=
+ =?utf-8?B?a0E3R1lXTG1NRENhcVhBU3hmQlMrSkZFc1dmTWNabkRJNlAwQVUwQmxUWlJ6?=
+ =?utf-8?B?QUZxcGkzMk9XUzJPUkFwOHlNeEw1TVhHakJzQnQ1Tm1pNFlEVGc1VlAwSUFB?=
+ =?utf-8?B?TzdpNERPYUUwUWtFY2NldXRUWDJkVDBmbzFVQkkrMVI1SnF4L2dsQ1Q4N1FK?=
+ =?utf-8?B?Q2FTZnFHY2VESnJ0QzZxL1d2SGRZb2lCOXc4ckdtNG84TjRwd3puTU8yZ1RF?=
+ =?utf-8?B?clBQRTdVNVVHMWVPYTBvbEp1bUJYWUkzSnNSN1VRS0Z4THcyNFhXUExWREhh?=
+ =?utf-8?B?NU9hQU9Ec2s1dDBlUHFFMlFzTHgxUVJhWloxa3hlUklOYk9zNFZWbGNHM0tW?=
+ =?utf-8?B?dUdOVlhGQzh2djIvVHRKSmZwSHkrZEFyY3doN1VPRTNHUG9FTS84UnNQbzVB?=
+ =?utf-8?B?dkZQOXhUYm9KUVM1VlppNzV4czlEUlZHaVNLQ1hWY1kyQUdYNlllUHdrV2xr?=
+ =?utf-8?B?aUdVaURLTkNUZ2hxOTJ2bWNOV3RUV2Z4ZUh2QUd4MXBJRXZKKzRQdHFBSjJj?=
+ =?utf-8?B?ODAwU1pNY2g1Q0M3SG9CNVh6akdWOFhHb2dtTjZoVi9hUXNURFpGOUx5V3cy?=
+ =?utf-8?B?WFRwQnFTcDZTNzliL1FjMnVvLy9adWRROWZvUnhLazd1TWVaczBLcmdDbHdn?=
+ =?utf-8?B?SUpURDFaRDVQdFpRK21NY2tOYTFRYkc1WEh1R1J6ZW1EYjlpTjl4ejVmNkUz?=
+ =?utf-8?B?TytTK3B2SDh3VTNxanJyRW1WMTJDY2R0Y1ByUHlML01FYWgxVlQ5QzdEY0hV?=
+ =?utf-8?B?anh1Ym9SQmZGYUdGRCsrdXpWVEc3VG1ERjQ5VERpUHBRU1ZKdWQzMkZMTXps?=
+ =?utf-8?B?aUo2bGh3TCtQRjQxeTFFNDVFeGNvQUloWmwzbnVyMFBtRENYNVZ6RWxGTnBt?=
+ =?utf-8?B?N2dBUTBsTHowNURyVVVDOG94czBuK1VUR1NPc3BONFg0L3RqOFNsSmJGckph?=
+ =?utf-8?B?OU5GOXpJeVMvaUVMMFhFaTR2OE1JWHRZQjVEQVNwdVk0ZjluQzYxM1NWUGlX?=
+ =?utf-8?B?QUZYckRXb1c2VW1aT2lSb3hqaTVueEhZSzRvSTlLTUZBTktKa0hiRUc0Z1FX?=
+ =?utf-8?B?WWtrd1BPSDI4dTliaFZXSmNuekRwNzVLTjZZWDZzZmtBRlVZeDlZTXo2Rm5U?=
+ =?utf-8?B?djUzM0duQnFFQTdxV0Yyb01FNkk4MHZwdmlLdmUwS0RlSVQ3bXhzV3RoR0s1?=
+ =?utf-8?B?akpTeVJCZzM4TkdKcUZJREF4ZUtteHlMZWVvV1NqcDZ3SnI0cFpjOUNZeE5m?=
+ =?utf-8?B?eXl4Ulp2VHdSMVNSR0ZsbnR1WmYwTkM4MlRiSEhIOUZ3QVZ5T3ZjTEdUc2lo?=
+ =?utf-8?B?Q3gzb1B3OHVZY1ZmSFNmUDEyL1ZpME9QQjRqc2lraFZ0TzlWaHk4R0pmTWV6?=
+ =?utf-8?B?Sm1sR3d4SUtCTXk1TDlrR1BOc3pJMzFGNkFXN05NUXorR2c3dnZQaXJEZU44?=
+ =?utf-8?B?bnA5UGZIa2VQREl5cHdLOHNuRldjbThZWms2WEplVm1aYjd2TGdsWkV4YUp3?=
+ =?utf-8?B?NXJSNWJzNkErcStqdGVFRGhKY29kZnk5ZlJWbzFNSkx3djVOY1Y3Ym04R0tF?=
+ =?utf-8?B?SitURER0MWNqNVlhOTNTaXpnOElmRkdTN0lwcEozdkdiYkJpL3dtWEl3dHpw?=
+ =?utf-8?B?WEtOVlE1UWZtNng5NFZ2d2dvTnJVcXY0SGpqLzFnc2pqRVhzUkUrMFhRbEIv?=
+ =?utf-8?B?dGc9PQ==?=
 X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 5RzzjZxFfH+EknlzbyDcwFzKDX/w7CXK5gcd55kxHlg6ShT7HrTJQ52sW3Ae2ubCpmAEXhR5zfkQqb8EswJNxj+u7U1tPmUM7OA30BMGf8nuVBJHzv30NdhOJkYCQAU265sY5Mp6NAbmxIei+5iViI0yHbuOuzs6htrmWHOyJVjU+j4aioSID7Kg7ynGgRIS3kw5GUs9IWUjb8FP6dgi9tFwe3gjySF2rxlMWWsDq2vZAqMRn3KaHagLonD2a0m1iwUi7Qv6Ty54A7+1mkZlA3P+RTqobnZ2deNZu1m8PwRZzTM2nxBWTh/9DtXiVRYl1OxneXM6tgfoDcBDCwBoHaZA2EqZQk4CGC/PUAtf2YcV/+h5k1OEOp9C/d5BvtUGU7hvXfsuxeAoLxJMSSk0K5gd0UlUk4xNOZfMIqC6ZwM3xDExU/dzCUtc0m48dfK+8xh+Bb9BUNO9HuX5qDKZepLTDG4HqGrxGsVKeIvFllA04mW9yQgByzGQaosGyHcJ0G88p5VcrzeHQ3mgLI3+MlgEs9gem0msmlYjFvVZD5lhMFvEegPbTfkGlhtv/2Ox4vF/zMapo2aJvza//mVdQ+Qp8ifs6+gNpMMLjjdx7OirVhTcLZ0IDfmnRhtZ3SjzyFp4BRzzvp1OVFYY9IUJNc2lIgTCLqs5afjPFcz6F0NyDs046Trc05crUhv6wQ7jcKMYA+Al20Yt0wTwcYsP8UiS0TiA0us4oCm1JyOA3/tHbjVEg2XxS30ISoSFW0TmxsJlEwTxgYxXCzLYTDTJUwt/cGa/dB2QajiVl0A3NBUe5W3pF1bcj+KEkTczMx3j
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: =?utf-8?B?SGlYcERtb3RJSVZiSUhUUHhTSWE3QlBXUDBPZjU0bHFaWmhZZWh5N3JBUVg0?=
+ =?utf-8?B?MnhMa3B3ODFoOHRvdnZWNG1FRlZ2M0NYWE4xK2xuYTdpQW9NYjhLVkl5UzJo?=
+ =?utf-8?B?WUFiYS8vZm5RQ1o3Ym9ZekdZV05nbkdmR1Y5ajVTOXZoa3BSc1E0YU1qZjVF?=
+ =?utf-8?B?a2l3blRmN1FzVU9NUU9WOVBBcnh3TGk5SFFkcUlXQU9wekFpdGxkOUVvUEQw?=
+ =?utf-8?B?Q0QrRGdPZS9NMGJ2UFdvZmNsOFpWVGxiRHJ3aWgwM2xtOGhHY0w2ay85aEhC?=
+ =?utf-8?B?SFJ2c0J0OVkyeGh0bmVzTkVjQnE0QWZNdG1QZXNTRWtKeEUzRkg5a1dZcmxq?=
+ =?utf-8?B?N3ZtcTVLWTF1TzltSjg2V1dhV3BUVjZiejRuZ1NqOCtFdTFzQWdnZWhReEV5?=
+ =?utf-8?B?M0Jib1EvWFRPVTA2cUNDSFFiNnBaZzJkUG9wZWlDRFcva3lzSDFidDFyY3BZ?=
+ =?utf-8?B?bnlLQm9GT1NrajZ2TFZtR0Zoc3hWMis2L2QrVVc4TGplUVB5S3RkQWxoblNq?=
+ =?utf-8?B?OWc0RUVQWis1SjBFaDVhdHcrMVJtUWhoamhMSkEzendNYkFIRXQyZ3l5M1Na?=
+ =?utf-8?B?bjk0dzVZeUgzams2R1Y5R0VCbThYU0d0NGhXQS8zSzI0OEFHUGtmWDEzWEh1?=
+ =?utf-8?B?VjF0VnZ2TTg4QTgycVZDcFNOeUlpYjUrOGRNY0xqb29ic1d5aU1lRkZodXlq?=
+ =?utf-8?B?dTB5Z1VnbXRpeERSUXZFdERuTllVTUVjbmV2NFNmZU1JV0RBSDBFVlpkTkRV?=
+ =?utf-8?B?VTU4SFFIOEFxVGQzM2d6VFc4YzlzdlMySGZmSitZNm05VUN0S0J1TVVqZVFz?=
+ =?utf-8?B?ZERDZndKNGhUdEIvcDViSmhHQlJsdjM0dnk2QTlWTVVrdEllN2tHNks4dnBw?=
+ =?utf-8?B?Vi9taytDVGpYSVhNb2xoWVNMMXdtYWR4a05Ua09nUUlGY2ZOUnJINzlHc3M4?=
+ =?utf-8?B?b2FCMVcrRnpZME1RUjQybGZHTzJOYXBoS09XajA1dUhHSTlUM3hjVHRuVm9H?=
+ =?utf-8?B?eTYvQk83YWVHQ2FvdlNsWEgwRi9vSmVtMXJvSjFBMnk5MzdhTEZ2SnI5Tm5u?=
+ =?utf-8?B?TW9aSndUOWVOSFExTkNyN0Vma3VZb2JkTmJRWnJIUHNHNG1Ga1JoNWF3RGZT?=
+ =?utf-8?B?Zit3a3I4WUZuV3Q3ZTlCMStVd1pqNnBVK1BvakNPVk43T3NkYy9wRzRORFdM?=
+ =?utf-8?B?Q2c4NG5QK2xHOXkvWExjZEV4VmZITC93ZkRORTN1R20xRWpQblp4cTZ6UTM2?=
+ =?utf-8?B?S0F5TFRTTU9WczlIMmxpenV6cUh3UEFnNGk2MnZGUzc1Y05iLys2T045aVNP?=
+ =?utf-8?B?clgxbVo3QStDZDhXb3o5dVA2K3FRaEdVdm9lbDZUUW9BVnQ5M1NnT0R2dndi?=
+ =?utf-8?B?dDdUUnVtTSt2N2c9PQ==?=
 X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f571d2ab-7e21-40aa-c64e-08db24d24d0b
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4df83549-e6dc-4188-41cb-08db24dab64a
 X-MS-Exchange-CrossTenant-AuthSource: DM5PR10MB1466.namprd10.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Mar 2023 21:23:05.9906
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Mar 2023 22:23:18.4878
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 0Jbq8Z45k46lFPLYc0+bHP7rc9GjDhhrCvc07zmACim32S4GR5J9DcR4b6q/0TqI3zaAwFmSOovVTxkOJyWN7PVd6+1+9SX/6R2N7E+p+do=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR10MB7286
+X-MS-Exchange-CrossTenant-UserPrincipalName: CtMzbknd1Zvqlr38oX3qZltgADrdt+phe5PZdj1Bs9lRAJ8w5tr59K8v9S4MFeS8Uqt7ihcgZkMhWrXe62kRxAjRBX3R1TNaPNBhIolTB6A=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR10MB7407
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-03-14_14,2023-03-14_02,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 malwarescore=0 mlxscore=0
- phishscore=0 suspectscore=0 adultscore=0 mlxlogscore=999 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2303140170
-X-Proofpoint-GUID: YYkc8eQ7PkzgTBSr6FnhqpoQsMdtEoEV
-X-Proofpoint-ORIG-GUID: YYkc8eQ7PkzgTBSr6FnhqpoQsMdtEoEV
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 phishscore=0
+ suspectscore=0 spamscore=0 malwarescore=0 adultscore=0 mlxscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2303140178
+X-Proofpoint-GUID: gqnGOfWimCYZz7-3gyjy8awA2Wvecjkd
+X-Proofpoint-ORIG-GUID: gqnGOfWimCYZz7-3gyjy8awA2Wvecjkd
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 3/14/23 6:09 AM, Maurizio Lombardi wrote:
-> út 14. 3. 2023 v 0:52 odesílatel Mike Christie
-> <michael.christie@oracle.com> napsal:
->>
->>> +     case TCP_CLOSE:
->>> +             pr_debug("__iscsi_target_sk_check_close: socket closing,"
->>>                       "returning TRUE\n");
->>
->> Don't need to break up a string. We do it a lot in the lio code, but we've
->> been trying not to in new code.
->>
->>> +             /*
->>> +              * Restart the login timer to prevent the
->>> +              * login process from getting stuck if the initiator
->>
->> I would fix up the formatting so the first line is longer.
+On 3/14/23 12:15 PM, Christoph Hellwig wrote:
+> On Fri, Feb 24, 2023 at 11:44:51AM -0600, Mike Christie wrote:
+>> +	__u8	resv10[14];
+>> +	union {
+>> +		struct {
+>> +			__u8	rsvd24[40];
+>> +			struct nvme_registered_ctrl_ext regctl_eds[0];
+>> +		};
+>> +		struct nvme_registered_ctrl regctl_ds[0];
+>> +	};
 > 
-> Ok
-> 
->>> @@ -1358,6 +1348,9 @@ int iscsi_target_start_negotiation(
->>>               set_bit(LOGIN_FLAGS_INITIAL_PDU, &conn->login_flags);
->>>               write_unlock_bh(&sk->sk_callback_lock);
->>>       }
->>> +
->>> +     iscsit_start_login_timer(conn);
->>
->> At this time, we have the np->np_login_timer running right?
-> 
-> Yes.
-> 
->>
->> Don't we only need to start this new timer when we know there are
->> more PDUs and the connection is good (iscsi_target_do_login returns
->> 0 and iscsi_target_sk_check_and_clear returns 0)?
-> 
-> The moment iscsi_target_sk_check_and_clear() clears the
-> LOGIN_FLAGS_INITIAL_PDU flag
-> and returns 0, the login worker may be already running.
-> If we start the timer after the call to
-> iscsi_target_sk_check_and_clear(), we could have a race condition:
-> 
-> 1) login_work runs and reschedules itself non-stop because
-> LOGIN_FLAGS_INITIAL_PDU is set
-> 2) login kthread calls  iscsi_target_sk_check_and_clear() and clears
-> LOGIN_FLAGS_INITIAL_PDU
-> 3) login work runs and completes the login
-> 4) login kthread starts the timer
-> 5) No one stops the timer, it fires and kills the connection despite
-> the fact the login was successful.
-> 
-> I could however replace this code:
->
-> ret = iscsi_target_do_login(conn, login);
->  if (!ret && iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_INITIAL_PDU))
->            ret = -1;
-> 
-> with the following, if you like it more:
-> 
-> ret = iscsi_target_do_login(conn, login);
-> if (!ret) {
->       iscsit_start_login_timer(conn);
->       if (iscsi_target_sk_check_and_clear(conn, LOGIN_FLAGS_INITIAL_PDU)) {
->            iscsit_stop_login_timer(conn);
->            ret = -1;
->       }
-> }
+> ... actually - I think both these zero sized arrays should
+> be the modern [] notation.
 
-Ah yeah, I wasn't thinking specifically about this race when I wrote the
-above comment. With the combined timer below, I was thinking this is handled
-when you set/check the login_kworker thread.
+gcc at least doesn't let you use [] on a member in a union. You get:
 
-> 
->>
->> I think you can just kill np timer and only use the login_timer for
->> both cases. So I mean set the thread to kill as the login one and start
->> this login_timer in __iscsi_target_login_thread where we used to call
->> iscsi_start_login_thread_timer. You would then mod the timer when we
->> transition from iscsi_target_start_negotiation to waiting for the next
->> PDU.
->>
-> 
-> Yes, maybe, but I would need to find a way to detect if conn->login_kworker
-> is pointing to the login thread or to the login_work's thread, because
-> the np_login_timer is supposed to clear the ISCSI_TF_RUNNING flag.
-> 
-> maybe something like this:
-> 
-> if (conn->login_kworker == conn->tpg_np->tpg_np->np_thread) {
->      spin_lock_bh(&np->np_thread_lock);
->      if (!(np->np_login_timer_flags & ISCSI_TF_STOP))
->            np->np_login_timer_flags &= ~ISCSI_TF_RUNNING;
->      spin_unlock_bh(&np->np_thread_lock);
-> }
+./include/linux/nvme.h:804:31: error: flexible array member in union
+  804 |   struct nvme_registered_ctrl regctl_ds[];
 
-We don't need any of the np_login_timer_flags code if we are using your per
-conn login_timer do we?
 
-For the new timer:
-- We are adding one per conn timer.
-- We use that for both the initial pdu and later ones.
-- The timeout function, sends a signal if there is a thread set or does whatever
-we figure out below for the case where there is no thread (we don't do any
-np_login_timer_flags stuff).
-- We probably don't need to do both the signal and whatever we decide below.
-Or, we need to check some of the LOGIN_FLAGS since for example we don't
-need to queue the login_work and set LOGIN_FLAGS_CLOSED if LOGIN_FLAGS_INITIAL_PDU
-is set.
-- The iscsi_start_login_timer function handles setting the login_kworker thread.
+We could do separate structs though:
 
-So we do:
-1. Replace iscsi_start_login_thread_timer/iscsi_stop_login_thread_timer with
-iscsit_start_login_timer/iscsit_stop_login_timer
 
-__iscsi_target_login_thread only calls iscsit_stop_login_timer on failure.
-On success it will either timeout waiting for the next PDU or
-iscsi_target_do_login_rx will called and reset the timer.
+struct nvme_registered_ctrl {
+	__le16	cntlid;
+	__u8	rcsts;
+	__u8	rsvd3[5];
+	__le64	hostid;
+	__le64	rkey;
+};
 
-2. You also have a iscsit_mod_login_timer depending on how you want to handle
-the race you described above.
-3. iscsi_target_start_negotiation only mods the timer if iscsi_target_do_login/
-iscsi_target_sk_check_and_clear is successful and if iscsi_target_do_login_rx
-has not already run.
+struct nvme_reservation_status {
+	__le32	gen;
+	__u8	rtype;
+	__u8	regctl[2];
+	__u8	resv5[2];
+	__u8	ptpls;
+	__u8	resv10[14];
+	struct nvme_registered_ctrl regctl_ds[];
+};
 
-For the latter, in iscsi_start/mod_login_timer you could add a check like your
-np_thread above where if the login_work has already reset login_kworker then
-we just return. Or we can add a new LOGIN_FLAGS flag, or add a bool arg to
-iscsi_start/mod_login_timer where if set to true and if the login_kworker thread
-does not equal current, then you know iscsi_target_do_login_rx already took over
-the timer and do nothing.
+struct nvme_registered_ctrl_ext {
+	__le16	cntlid;
+	__u8	rcsts;
+	__u8	rsvd3[5];
+	__le64	rkey;
+	__u8	hostid[16];
+	__u8	rsvd32[32];
+};
 
-4. You call iscsit_start_login_timer/iscsit_stop_login_timer like you are in
-iscsi_target_do_login_rx.
-
-> 
->> For isert and cxgbit we won't have conn->sock set so I think you need some
->> sort of callout for those drivers, or maybe set LOGIN_FLAGS_CLOSED and queue
->> the login_work. Maybe the latter will work for all drivers as well. You probably
->> need some extra locking and LOGIN_FLAGS checks to handle an issue similar to
->> below.
-> 
-> Hmm, that would need to be tested, because LOGIN_FLAGS_CLOSED is supposed> to be set when the socket is already in the process of getting closed
-> (it's state is TCP_CLOSE_WAIT or TCP_FIN_WAIT* or whatever)
-> So If I set LOGIN_FLAGS_CLOSED in the timer and the socket is
-> TCP_ESTABLISHED it means that I am trying to
-> do the opposite, will the socket be properly closed
-> by isert/cxgbit in this case?
-
-I'm open to suggestions. I don't really care how we fix it, but it should
-work for all the drivers.
-
-If we go the login_work route, ignore LOGIN_FLAGS_CLOSED for a second. I'm
-just talking about the code path we use for error handling in this type of
-case. We can easily just add a new bit.
-
-- For iscsit tcp, if we are reading in data in iscsit_get_login_rx, and the
-timer fires and we get a signal, iscsit_get_login_rx will return a failure
-and we do the goto err path. So in this case we, the connection is not closed
-and we go through iscsi_target_login_drop, so we know it works.
-
-isert/cxgbit doesn't use sockets. We don't hit any of the LOGIN_FLAGS or
-sk_state checks for them. The tcp connection might or might not be closed
-for both drivers when the timer fires.
-
-- For cxgbit, we can be waiting in iscsit_get_login_rx. It seems to kick this off
-after we send a login PDU. The connection might be open or closed, then we timeout
-and get a signal and break from our wait in iscsit_get_login_rx. We then do the
-goto err path like iscsit tcp.
-
-- For isert, after the first PDU we queue login_work when we get a login PDU.
-So, I don't think we do anything right now if after the first PDU nothing is
-sent like in your bug. iscsi_target_login_sess_out works for the initial PDU
-timing out though, so we know we can call it when the conn is open.
-
-Note: The isert_disconnected_handler is sort of like tcp's sk_state_change callout,
-but isert just calls to iscsit_cause_connection_reinstatement which doesn't do
-anything (it doesn't set LOGIN_FLAGS and iscsi_target_nego.c doesn't have any
-checks for what isert is doing).
-
-My suggestion to set LOGIN_FLAGS_CLOSED and then to queue the login work would
-work like the iscsit tcp case above. When the work runs, it sees the bit and we
-go down the goto err path and run iscsi_target_login_drop.
-
-- If your concern is that we would abuse LOGIN_FLAGS_CLOSED, then we can add a
-new bit.
-- I didn't write out everything. Like the ordering of cancel_delayed_work and
-iscsit_stop_login_timer would need to be reversed. We probably can add some
-more LOGIN_FLAGS checks like in iscsi_target_sk_state_change so we don't always
-queue the login_work like is done when the ACTIVE bits are set (or we could
-kill that and just always queue the login_work).
-
-If your concern was that we have no idea about all the code paths then yeah
-it needs testing.
+struct nvme_reservation_status_ext {
+	__le32	gen;
+	__u8	rtype;
+	__u8	regctl[2];
+	__u8	resv5[2];
+	__u8	ptpls;
+	__u8	resv10[14];
+	__u8	rsvd24[40];
+	struct nvme_registered_ctrl_ext regctl_eds[];
+};
