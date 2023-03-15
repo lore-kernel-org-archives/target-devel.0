@@ -2,94 +2,126 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CF74C6FD1D
-	for <target-devel@archiver.kernel.org>; Wed, 15 Mar 2023 07:59:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD966C61DA4
+	for <target-devel@archiver.kernel.org>; Wed, 15 Mar 2023 10:06:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231623AbjCOH7K (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 15 Mar 2023 03:59:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39094 "EHLO
+        id S232216AbjCOKGI (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 15 Mar 2023 06:06:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36562 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230451AbjCOH7J (ORCPT
+        with ESMTP id S231936AbjCOKFk (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 15 Mar 2023 03:59:09 -0400
-Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B24D834038;
-        Wed, 15 Mar 2023 00:59:06 -0700 (PDT)
-Received: from mta-01.yadro.com (localhost.localdomain [127.0.0.1])
-        by mta-01.yadro.com (Proxmox) with ESMTP id 967CB341DF9;
-        Wed, 15 Mar 2023 10:59:04 +0300 (MSK)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; h=cc
-        :cc:content-type:content-type:date:from:from:in-reply-to
-        :message-id:mime-version:references:reply-to:subject:subject:to
-        :to; s=mta-01; bh=SYHt2RiwOOFnYnUtSK+XR/+XEjQbm1wWqqHi1WdGY6Y=; b=
-        ZQ2z0b28wPTqU6m0t41eUGs0My+Rn1WplUG1edq6kWZYx1XDmPy5lMrZcmwz7yJE
-        EuTn+H78Ax8PsrBc+2U7/0DOkpWfrGDIqsUTUpy8TT00xSPBEYdH/X/e6gIt7uH+
-        S4wycmUq3VOxTidRqi487IW9CnmewbrZjDspN6pUC48=
-Received: from T-EXCH-08.corp.yadro.com (unknown [172.17.10.14])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mta-01.yadro.com (Proxmox) with ESMTPS id 886AE341CBA;
-        Wed, 15 Mar 2023 10:59:04 +0300 (MSK)
-Received: from yadro.com (10.199.20.11) by T-EXCH-08.corp.yadro.com
- (172.17.11.58) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Wed, 15 Mar
- 2023 10:59:03 +0300
-Date:   Wed, 15 Mar 2023 10:59:04 +0300
-From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
-To:     Mike Christie <michael.christie@oracle.com>
-CC:     Martin Petersen <martin.petersen@oracle.com>,
-        <target-devel@vger.kernel.org>,
-        Bart Van Assche <bvanassche@acm.org>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        Leon Romanovsky <leon@kernel.org>,
-        James Smart <james.smart@broadcom.com>,
-        Ram Vegesna <ram.vegesna@broadcom.com>,
-        Michael Cyr <mikecyr@linux.ibm.com>,
-        Nilesh Javali <njavali@marvell.com>,
-        <GR-QLogic-Storage-Upstream@marvell.com>,
-        Chris Boot <bootc@bootc.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Michael S . Tsirkin" <mst@redhat.com>,
-        Jason Wang <jasowang@redhat.com>,
-        Juergen Gross <jgross@suse.com>, <linux-scsi@vger.kernel.org>,
-        <linux@yadro.com>, Konstantin Shelekhin <k.shelekhin@yadro.com>
-Subject: Re: [PATCH v3 12/12] target: add virtual remote target
-Message-ID: <20230315075904.GC1031@yadro.com>
-References: <20230313181110.20566-1-d.bogdanov@yadro.com>
- <20230313181110.20566-13-d.bogdanov@yadro.com>
- <c004e7a8-8478-cc75-e174-5c0bbd22f4fc@oracle.com>
+        Wed, 15 Mar 2023 06:05:40 -0400
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B7C259E47;
+        Wed, 15 Mar 2023 03:04:56 -0700 (PDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32F9Cefn029844;
+        Wed, 15 Mar 2023 10:04:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : to : cc : references : from : subject : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=wm6XrG90RA3+jZ6n23uggt2rMBObnN4VNBwJHfOpGTE=;
+ b=M44Xqnl31paXV/L6fzU/kv1+TckR4GM33EjTNJwlLwfFKkPYY+mhuqwHgWlcvE+sPOyR
+ uMcz05rEHIjqfgFlf5oE0i1hM48skicjimHl4MGGS+wNx66Dildwo7lOEewbdDJ20ttN
+ XoSsGW5VGFgizJ4uFYswHwPQc8PVAprz4Z/uHtc98zecjF28B8l2pNkHYXbt8o0uG5qi
+ b1wEWmjLRIdFeIM6cCksZSrjuMht4XcNfuv40NZDNZSeMBupQu7POG3bd8lilsuACAfC
+ cjuI3CEyqRc2REIdtJzpVKTCzdeApEFpUJKBD3aAaGk4wKSczmcCZxbCpRPcKEadlO99 Ew== 
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pbb67hbx8-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 15 Mar 2023 10:04:29 +0000
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32F9VHqX017522;
+        Wed, 15 Mar 2023 10:04:28 GMT
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+        by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pbb67hbw0-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 15 Mar 2023 10:04:28 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+        by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32F3UQXO008910;
+        Wed, 15 Mar 2023 10:04:26 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+        by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3pb29t0gh0-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 15 Mar 2023 10:04:25 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+        by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32FA4Nsf46596788
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 15 Mar 2023 10:04:23 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 845BF2006B;
+        Wed, 15 Mar 2023 10:04:23 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 24C1220063;
+        Wed, 15 Mar 2023 10:04:23 +0000 (GMT)
+Received: from [9.152.212.230] (unknown [9.152.212.230])
+        by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+        Wed, 15 Mar 2023 10:04:23 +0000 (GMT)
+Message-ID: <33ed9615-b570-03c7-9a7a-d07f020d3222@linux.ibm.com>
+Date:   Wed, 15 Mar 2023 11:04:22 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <c004e7a8-8478-cc75-e174-5c0bbd22f4fc@oracle.com>
-X-Originating-IP: [10.199.20.11]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-08.corp.yadro.com (172.17.11.58)
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+To:     Christoph Hellwig <hch@lst.de>,
+        Mike Christie <michael.christie@oracle.com>
+Cc:     bvanassche@acm.org, martin.petersen@oracle.com,
+        linux-scsi@vger.kernel.org, james.bottomley@hansenpartnership.com,
+        linux-block@vger.kernel.org, dm-devel@redhat.com,
+        snitzer@kernel.org, axboe@kernel.dk,
+        linux-nvme@lists.infradead.org, chaitanyak@nvidia.com,
+        kbusch@kernel.org, target-devel@vger.kernel.org,
+        Jan Hoeppner <hoeppner@linux.ibm.com>
+References: <20230224174502.321490-1-michael.christie@oracle.com>
+ <20230224174502.321490-3-michael.christie@oracle.com>
+ <20230314171119.GB6780@lst.de>
+Content-Language: en-US
+From:   Stefan Haberland <sth@linux.ibm.com>
+Subject: Re: [PATCH v4 02/18] block: Rename BLK_STS_NEXUS to
+ BLK_STS_RESV_CONFLICT
+In-Reply-To: <20230314171119.GB6780@lst.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Gm8knda4ABLDpRDHcHrrp25yIqxkZsPd
+X-Proofpoint-GUID: mK6UREPnREctSNluacMB5DE7veYDb5Ae
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-03-15_04,2023-03-15_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 bulkscore=0
+ priorityscore=1501 mlxscore=0 adultscore=0 spamscore=0 impostorscore=0
+ mlxlogscore=999 phishscore=0 lowpriorityscore=0 suspectscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2302240000 definitions=main-2303150086
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Mar 14, 2023 at 12:09:31PM -0500, Mike Christie wrote:
-> 
-> On 3/13/23 1:11 PM, Dmitry Bogdanov wrote:
-> > +
-> > +static int tcm_remote_port_link(
-> > +     struct se_portal_group *se_tpg,
-> > +     struct se_lun *lun)
-> > +{
-i> 
-> Oh no, what happened. Something probably got messed up in your patch
-> management because I saw the 0/12 patch said the coding style was
-> fixed up.
-> 
-> If Martin will take a follow up patch or it's not a big deal to him,
-> I'm ok.
-> 
-> Reviewed-by: Mike Christie <michael.christie@oracle.com>
-> 
+Am 14.03.23 um 18:11 schrieb Christoph Hellwig:
+> On Fri, Feb 24, 2023 at 11:44:46AM -0600, Mike Christie wrote:
+>> BLK_STS_NEXUS is used for NVMe/SCSI reservation conflicts or in dasd's
+>> case something similar. This renames BLK_STS_NEXUS so it better reflects
+>> this.
+> I like this rename a lot.
+>
+>> diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
+>> index a9c2a8d76c45..a2899d9690d4 100644
+>> --- a/drivers/s390/block/dasd.c
+>> +++ b/drivers/s390/block/dasd.c
+>> @@ -2723,7 +2723,7 @@ static void __dasd_cleanup_cqr(struct dasd_ccw_req *cqr)
+>>   	else if (status == 0) {
+>>   		switch (cqr->intrc) {
+>>   		case -EPERM:
+>> -			error = BLK_STS_NEXUS;
+>> +			error = BLK_STS_RESV_CONFLICT;
+>>   			break;
+> But is this really a reservation conflict?  Or should the DASD code
+> maybe use a different error code here?
+>
 
-Mike, the code style is the same as in v2. AFAIR you said not to mix
-the first function argument in the same line with the first argument in
-the next line. In my patch there is no such mix anymore. Either all
-arguments are inline or all arguments in the next lines.
+This also fits for the DASD case. We use this error code for a
+reservation/locking conflict of the DASD device when the lock we
+previously held was stolen.
+
+Acked-by: Stefan Haberland <sth@linux.ibm.com>
 
