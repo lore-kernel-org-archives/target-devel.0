@@ -2,136 +2,200 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87DF3C6FD1F
-	for <target-devel@archiver.kernel.org>; Thu, 16 Mar 2023 10:17:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0543C6FD1F
+	for <target-devel@archiver.kernel.org>; Thu, 16 Mar 2023 10:39:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229832AbjCPKRh (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 16 Mar 2023 06:17:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43928 "EHLO
+        id S229659AbjCPKjf (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 16 Mar 2023 06:39:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53674 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229608AbjCPKRg (ORCPT
+        with ESMTP id S229488AbjCPKje (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 16 Mar 2023 06:17:36 -0400
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62EE5B5FDC;
-        Thu, 16 Mar 2023 03:17:34 -0700 (PDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32GA3MOu036254;
-        Thu, 16 Mar 2023 10:17:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : to : cc : references : from : subject : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=ZACa85eTwIwEbxbh2jnmGok+PA4RgqK2zsPjWVAbaO0=;
- b=VQBVVa0hVeaAMk/VLdWbaFLmkZr79x2Qaj5JxbSj2bsBMF9E47wbJYb+QgX0DYA8IQke
- kAnRYwBqVrdDsGZt/TDhcyIFTAp4eHS7mCljB+RhKUi3WtkmPKfSWaHpdmzk6rA+N8Ln
- KJp6Ia2PDBMv646TzkudQeAM2i12YE/67nGslrFbqG78+hD+xBSNy/AWeR4MdmU2WfJ0
- yyICMCVsQeA7RYNnNkd86Sqxy42lusaGUAUqumCohL6zzJCWNb3TkbjV6E0ZUBGf6evo
- XxpLlSY5TyUVEf+S7noPXRc08Ch7mVBXNm9NSw0nciTpoOhRNu7agdbyT/uUrKzy1SeL rw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pbpx4x9bq-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 16 Mar 2023 10:17:12 +0000
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32G9uM4w036034;
-        Thu, 16 Mar 2023 10:17:12 GMT
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
-        by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pbpx4x9b6-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 16 Mar 2023 10:17:11 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
-        by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32G230aA028037;
-        Thu, 16 Mar 2023 10:17:10 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-        by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3pbsyxrd8s-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 16 Mar 2023 10:17:09 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-        by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32GAH7cl21561864
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 16 Mar 2023 10:17:07 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 8422F20040;
-        Thu, 16 Mar 2023 10:17:07 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 224D820065;
-        Thu, 16 Mar 2023 10:17:07 +0000 (GMT)
-Received: from [9.152.212.230] (unknown [9.152.212.230])
-        by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-        Thu, 16 Mar 2023 10:17:07 +0000 (GMT)
-Message-ID: <4484f553-84c1-5402-4f52-c2972ad3e496@linux.ibm.com>
-Date:   Thu, 16 Mar 2023 11:17:06 +0100
+        Thu, 16 Mar 2023 06:39:34 -0400
+Received: from mta-01.yadro.com (mta-02.yadro.com [89.207.88.252])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27A8EB1ED0;
+        Thu, 16 Mar 2023 03:39:32 -0700 (PDT)
+Received: from mta-01.yadro.com (localhost.localdomain [127.0.0.1])
+        by mta-01.yadro.com (Proxmox) with ESMTP id EE3E7341AFC;
+        Thu, 16 Mar 2023 13:39:29 +0300 (MSK)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; h=cc
+        :cc:content-type:content-type:date:from:from:in-reply-to
+        :message-id:mime-version:references:reply-to:subject:subject:to
+        :to; s=mta-01; bh=uoPXoxgv7pdfluieV38/oH1Yaljzc/bpox2WJrZFOpE=; b=
+        M4CbqN1+z8ejh1WOfbaGn8D5KyJ58MfjENRX/QVkYrNyjxZF7O850CqnNLy3p0GC
+        as/IKzJx7Q1eZfLGWbPCmvQdUVkRHSYcfh+lgQJmgLOOqVkhb+Uwv6jjBfCoNfie
+        eb962oCZu7Gm2hMYoU9cONHF2HOt3lKl+/ug2zuWaTo=
+Received: from T-EXCH-08.corp.yadro.com (unknown [172.17.10.14])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mta-01.yadro.com (Proxmox) with ESMTPS id E2A4C341ACF;
+        Thu, 16 Mar 2023 13:39:29 +0300 (MSK)
+Received: from yadro.com (10.199.20.11) by T-EXCH-08.corp.yadro.com
+ (172.17.11.58) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.2.1118.9; Thu, 16 Mar
+ 2023 13:39:29 +0300
+Date:   Thu, 16 Mar 2023 13:39:29 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     Mike Christie <michael.christie@oracle.com>
+CC:     <mlombard@redhat.com>, <martin.petersen@oracle.com>,
+        <mgurtovoy@nvidia.com>, <sagi@grimberg.me>,
+        <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>
+Subject: Re: [PATCH 13/18] scsi: target: Fix multiple LUN_RESET handling
+Message-ID: <20230316103929.GG1031@yadro.com>
+References: <20230309223312.94595-1-michael.christie@oracle.com>
+ <20230309223312.94595-14-michael.christie@oracle.com>
+ <20230315161301.GE1031@yadro.com>
+ <50afe378-c0e8-7914-377e-ae8c91f82455@oracle.com>
+ <20230315191141.GF1031@yadro.com>
+ <5a1c2ac4-d7cd-b7fe-cc74-7e58e8fca968@oracle.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-To:     Christoph Hellwig <hch@lst.de>
-Cc:     Mike Christie <michael.christie@oracle.com>, bvanassche@acm.org,
-        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        james.bottomley@hansenpartnership.com, linux-block@vger.kernel.org,
-        dm-devel@redhat.com, snitzer@kernel.org, axboe@kernel.dk,
-        linux-nvme@lists.infradead.org, chaitanyak@nvidia.com,
-        kbusch@kernel.org, target-devel@vger.kernel.org,
-        Jan Hoeppner <hoeppner@linux.ibm.com>
-References: <20230224174502.321490-1-michael.christie@oracle.com>
- <20230224174502.321490-3-michael.christie@oracle.com>
- <20230314171119.GB6780@lst.de>
- <33ed9615-b570-03c7-9a7a-d07f020d3222@linux.ibm.com>
- <20230315133039.GA24533@lst.de>
-Content-Language: en-US
-From:   Stefan Haberland <sth@linux.ibm.com>
-Subject: Re: [PATCH v4 02/18] block: Rename BLK_STS_NEXUS to
- BLK_STS_RESV_CONFLICT
-In-Reply-To: <20230315133039.GA24533@lst.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 7Lu1Tb2Scs24OFho49SszeZQEQtjCy3_
-X-Proofpoint-ORIG-GUID: e5UmNwL8IYAtm8F-8DT0dsS5_CITZfXA
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-16_06,2023-03-15_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 suspectscore=0
- spamscore=0 adultscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0
- phishscore=0 priorityscore=1501 mlxscore=0 mlxlogscore=999 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303150002
- definitions=main-2303160081
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <5a1c2ac4-d7cd-b7fe-cc74-7e58e8fca968@oracle.com>
+X-Originating-IP: [10.199.20.11]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-08.corp.yadro.com (172.17.11.58)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Am 15.03.23 um 14:30 schrieb Christoph Hellwig:
-> On Wed, Mar 15, 2023 at 11:04:22AM +0100, Stefan Haberland wrote:
->> This also fits for the DASD case. We use this error code for a
->> reservation/locking conflict of the DASD device when the lock we
->> previously held was stolen.
-> But that's not really a reservation conflict in the sense
-> of the reservation API.  Given that DASD doesn't support it it
-> might not matter.  Do you have applications that checks for
-> the translated errno value?  We'll probably at least want
-> a comment documenting this status code.
+On Wed, Mar 15, 2023 at 04:42:19PM -0500, Mike Christie wrote:
+> 
+> On 3/15/23 2:11 PM, Dmitry Bogdanov wrote:
+> > On Wed, Mar 15, 2023 at 11:44:48AM -0500, Mike Christie wrote:
+> >>
+> >> On 3/15/23 11:13 AM, Dmitry Bogdanov wrote:
+> >>> On Thu, Mar 09, 2023 at 04:33:07PM -0600, Mike Christie wrote:
+> >>>>
+> >>>> This fixes a bug where an initiator thinks a LUN_RESET has cleaned
+> >>>> up running commands when it hasn't. The bug was added in:
+> >>>>
+> >>>> commit 51ec502a3266 ("target: Delete tmr from list before processing")
+> >>>>
+> >>>> The problem occurs when:
+> >>>>
+> >>>> 1. We have N IO cmds running in the target layer spread over 2 sessions.
+> >>>> 2. The initiator sends a LUN_RESET for each session.
+> >>>> 3. session1's LUN_RESET loops over all the running commands from both
+> >>>> sessions and moves them to its local drain_task_list.
+> >>>> 4. session2's LUN_RESET does not see the LUN_RESET from session1 because
+> >>>> the commit above has it remove itself. session2 also does not see any
+> >>>> commands since the other reset moved them off the state lists.
+> >>>> 5. sessions2's LUN_RESET will then complete with a successful response.
+> >>>> 6. sessions2's inititor believes the running commands on its session are
+> >>>> now cleaned up due to the successful response and cleans up the running
+> >>>> commands from its side. It then restarts them.
+> >>>> 7. The commands do eventually complete on the backend and the target
+> >>>> starts to return aborted task statuses for them. The initiator will
+> >>>> either throw a invalid ITT error or might accidentally lookup a new task
+> >>>> if the ITT has been reallocated already.
+> >>>>
+> >>>> This fixes the bug by reverting the patch, and also serializes the
+> >>>> execution of LUN_RESETs and Preempt and Aborts. The latter is necessary
+> >>>> because it turns out the commit accidentally fixed a bug where if there
+> >>>> are 2 LUN RESETs executing they can see each other on the dev_tmr_list,
+> >>>> put the other one on their local drain list, then end up waiting on each
+> >>>> other resulting in a deadlock.
+> >>>
+> >>> If LUN_RESET is not in TMR list anymore there is no need to serialize
+> >>> core_tmr_drain_tmr_list.
+> >>
+> >> Ah shoot yeah I miswrote that. I meant I needed the serialization for my
+> >> bug not yours.
+> >
+> > I still did not get why you wrapping core_tmr_drain_*_list by mutex.
+> > general_tmr_list have only aborts now and they do not wait for other aborts.
+> 
+> Do you mean I don't need the mutex for the bug I originally hit that's described
+> at the beginning? If your saying I don't need it for 2 resets running at the same
+> time, I agree. I thought I needed it if we have a RESET and Preempt and Abort:
+> 
+> 1. You have 2 sessions. There are no TMRs initially.
+> 2. session1 gets Preempt and Abort. It calls core_tmr_drain_state_list
+> and takes all the cmds from both sessions and puts them on the local
+> drain_task_list list.
+> 3. session1 or 2 gets a LUN_RESET, it sees no cmds on the device's
+> state_lists, and returns success.
+> 4. The initiator thinks the commands were cleaned up by the LUN_RESET.
+> 
+> - It could end up re-using the ITT while the original task being cleaned up is
+> still running. Then depending on which session got what and if TAS was set, if
+> the original command completes first then the initiator would think the second
+> command failed with SAM_STAT_TASK_ABORTED.
+> 
+> - If there was no TAS or the RESET and Preempt and Abort were on the same session
+> then when we could still hit a bug. We get the RESET response, the initiator might
+> retry the cmds or fail and the app might retry. The retry might go down a completely
+> different path on the target (like if hw queue1 was blocked and had the original
+> command, but this retry goes down hw queue2 due to being received on a different
+> CPU, so it completes right away). We do some new IO. Then hw queue1 unblocks and
+> overwrites the new IO.
+> 
+> With the mutex, the LUN_RESET will wait for the Preempt and Abort
+> which is waiting on the running commands. I could have had Preempt
+> and Abort create a tmr, and queue a work and go through that path
+> but I thought it looked uglier faking it.
 
-Well, I might completely misunderstand the use case for this error code.
-Sorry if that is the case.
+Thank you for explanation. But I think you a not right here.
+Preempt And Abort is used to change the reservation holder and abort
+preempted session's commands. A preempted session is not allowed to send
+any new messages, they will be failed anyway.
+So we are safe here. Or did I miss something?
 
-Beside that I thought that the return codes are generic blocklayer 
-return codes
-and not bound to a specific API. I am not familiar with the reservation 
-API you
-are talking about.
+> >>
+> >>>>
+> >>>>         if (cmd->transport_state & CMD_T_ABORTED)
+> >>>> @@ -3596,6 +3597,22 @@ static void target_tmr_work(struct work_struct *work)
+> >>>>                         target_dev_ua_allocate(dev, 0x29,
+> >>>>                                                ASCQ_29H_BUS_DEVICE_RESET_FUNCTION_OCCURRED);
+> >>>>                 }
+> >>>> +
+> >>>> +               /*
+> >>>> +                * If this is the last reset the device can be freed after we
+> >>>> +                * run transport_cmd_check_stop_to_fabric. Figure out if there
+> >>>> +                * are other resets that need to be scheduled while we know we
+> >>>> +                * have a refcount on the device.
+> >>>> +                */
+> >>>> +               spin_lock_irq(&dev->se_tmr_lock);
+> >>>
+> >>> tmr->tmr_list is removed from the list in the very end of se_cmd lifecycle
+> >>> so any number of LUN_RESETs can be in lun_reset_tmr_list. And all of them
+> >>> can be finished but not yet removed from the list.
+> >>
+> >> Don't we remove it from the list a little later in this function when
+> >> we call transport_lun_remove_cmd?
+> >
+> > OMG, yes, of course, you a right. I messed up something.
+> >
+> > But I have concerns still:
+> > transport_lookup_tmr_lun (where LUN_RESET is added to the list) and
+> > transport_generic_handle_tmr(where LUN_RESET is scheduled to handle)
+> > are not serialized. And below you can start the second LUN_RESET while
+> > transport_generic_handle_tmr is not yet called for it. The _handle_tmr
+> > could be delayed for a such time that is enough to handle that second
+> > LUN_RESET and to clear the flag. _handle_tmr will then start the work
+> > again.
+> 
+> Ah yeah, nice catch.
+> 
+> >
+> > Is it worth doing that list management? Is it not enough just wrap
+> > calling core_tmr_lun_reset() in target_tmr_work by a mutex?
+> 
+> I can just do the mutex.
+> 
+> Was trying to reduce how many threads we use, but the big win is for aborts.
+> Will work on that type of thing in a separate patchset.
 
-What I understood from the reservation in NVMe context is that a namespace
-might be reserved to a host. If there is a conflict with this reservation
-this error code is provided for the IO request.
+Considering that (if) I am right with PreemptAndAbort,
+to address multiple LUN_RESET issue it's enough to wrap
+core_tmr_lun_reset and skip all LUN_RESETs in target_drain_tmr_list.
+Without any new lists. That would be as simple patch as possible. 
 
-For DASDs we have the possibility to reserve a disk for a host. If there 
-is a
-conflict with this platform specific reservation we would present this 
-error
-for an IO request.
-
-This sounded quite similar for me.
-
-I am completely open to using another return code and I am not aware of an
-application checking for this specific return code.
-
-Is there any that would fit better from your point of view?
+> 
+> > Better to have a separarte variable used only under lock.
+> >
+> Will fix.
+> 
+> 
 
