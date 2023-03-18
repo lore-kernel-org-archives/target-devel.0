@@ -2,94 +2,116 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 647FAC6FD1D
-	for <target-devel@archiver.kernel.org>; Fri, 17 Mar 2023 16:59:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C68FC76195
+	for <target-devel@archiver.kernel.org>; Sat, 18 Mar 2023 13:01:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230025AbjCQQ71 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 17 Mar 2023 12:59:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36032 "EHLO
+        id S229654AbjCRNBC (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 18 Mar 2023 09:01:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48952 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229988AbjCQQ7Y (ORCPT
+        with ESMTP id S229640AbjCRNBB (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 17 Mar 2023 12:59:24 -0400
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4418A20D25;
-        Fri, 17 Mar 2023 09:59:22 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id 0FBE7CE20FF;
-        Fri, 17 Mar 2023 16:59:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B00E0C433EF;
-        Fri, 17 Mar 2023 16:59:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1679072358;
-        bh=Yr+loVbWv0qK18b3WpWr9ZR4G6QuOAV94eNluGFAb18=;
-        h=Date:From:To:Cc:Subject:From;
-        b=XniyUM26LziXHrexP/d/DUVLjnjl4qsrffDi+ERWh6SmXsGgmg7VJxMQtVgwshxny
-         dFvp0OpJhh/vfqa/cGeur5SEtghfBr9J8PS6x8rdr83Z7Jg2vnxLMEeyE9TQQsK9k7
-         7EyZpAMUKl0mpKAA3yBGWpDbAHZ/lKDCvl9dgxS3rljmW+AJt7BkR1YjB4s6tSDzHl
-         sk9WX3evD6kjhJWmuXcjEuXv0dg0BRT/rZhwCXMgMMRhznb5ZkmA2GgzdfCJPufpnS
-         /+KkNz7UZCe78TZKjBmBuqymn9RqBm3tnfT5q/gONOSHXhhcKMvGHhTCTTBOeDycaQ
-         bAouUTD5ks0FQ==
-Date:   Fri, 17 Mar 2023 10:59:48 -0600
-From:   "Gustavo A. R. Silva" <gustavoars@kernel.org>
-To:     Bodo Stroesser <bostroesser@gmail.com>
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        linux-hardening@vger.kernel.org
-Subject: [PATCH][next] uapi: target: Replace fake flex-array with
- flexible-array member
-Message-ID: <ZBSchMvTdl7VObKI@work>
+        Sat, 18 Mar 2023 09:01:01 -0400
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF7512C66F;
+        Sat, 18 Mar 2023 06:00:58 -0700 (PDT)
+Received: by mail-ed1-x536.google.com with SMTP id z21so30303526edb.4;
+        Sat, 18 Mar 2023 06:00:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112; t=1679144457;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=6vdkOe9PDpkNSQ/x0t7vPqLMcU3kTL7t8MTur54JSuE=;
+        b=DQk+rU8btnnaErKEz5K1gVJ9Hw7fP07Vmbro03HZD+a2YFbGWV/cCLBOogDECPwgS4
+         pboT0zq1vQvbLROmaE3sA10QyXJkPBn9ZK4mk6fukaA37ITBxvCtGG9rJIVZ8T7d7Xj1
+         WSdRtNsEip0n1dKqQhOUA8OoiIFYPKjVUlFPLjIxNSwMqQAkims2SGix0r/r7a640P26
+         Xi1kcHBQtAE+dTeXnEkow/eEP356zUobRSIclGwCO2mYKE8ZpzZCHrXWLr3C7yIhU/Pf
+         3+NsZEtTUXdrAc/MZBCWCEtOdC5Nv9WcQHQFuNQRFuUhDCci1DX13Wzq+P4Vhfnauy2d
+         Lrlg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1679144457;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=6vdkOe9PDpkNSQ/x0t7vPqLMcU3kTL7t8MTur54JSuE=;
+        b=B365gAnxwRvePfUXVwOkp7EIAFnfoN5lXOracH95hwAExz9tyBJ0cMgamEvNa6k3XM
+         89rw74WHD6FKVBZXsWT8h2AELzzSPsabu8MW9khV55mv2giO64nTdi1K5DXZ44JZ9lms
+         KaA34qGwuUkEnyrz7wrHCAr63W+2P7zhIGJPfxEZOeiXcmXt9NEXcmvjE55+M2W1qj2F
+         iJV7+xDk6FB3ygGEpL6TLkFwvRv2Pn4+jesfXbEDnz0qg2xMTmXH9jMJTWtnYveK1z8n
+         7QDDzKUZiP54WU5pDCc7LFSmJKHzVXIxTBIWN5swt4++H7wQkOdUinWWA6QW7123Ccwr
+         4s7Q==
+X-Gm-Message-State: AO0yUKVCDUQKTneuag7U7jpzV7Pn6/9HtVOwBNl6J9Cm8VyER0vJgV1F
+        KpcfI8c/XfV3QoIaei5OIyS2VEWAbPg=
+X-Google-Smtp-Source: AK7set81wi7yHnNaHILHOCoa40of7SYjOnHmyp851kgJqe2pbcV2r3HjIQrkjTNlowzS4caq80rCfg==
+X-Received: by 2002:a17:907:a066:b0:92a:7178:ab56 with SMTP id ia6-20020a170907a06600b0092a7178ab56mr2664232ejc.39.1679144456993;
+        Sat, 18 Mar 2023 06:00:56 -0700 (PDT)
+Received: from [192.168.178.40] (ip5f5b4297.dynamic.kabel-deutschland.de. [95.91.66.151])
+        by smtp.gmail.com with ESMTPSA id 22-20020a170906309600b0092f289b6fdbsm2149277ejv.181.2023.03.18.06.00.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 18 Mar 2023 06:00:56 -0700 (PDT)
+Message-ID: <d563cca7-57c6-289a-f551-a378f219aed4@gmail.com>
+Date:   Sat, 18 Mar 2023 14:00:55 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH][next] uapi: target: Replace fake flex-array with
+ flexible-array member
+To:     "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+References: <ZBSchMvTdl7VObKI@work>
+Content-Language: en-US
+From:   Bodo Stroesser <bostroesser@gmail.com>
+In-Reply-To: <ZBSchMvTdl7VObKI@work>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Zero-length arrays as fake flexible arrays are deprecated and we are
-moving towards adopting C99 flexible-array members instead.
+On 17.03.23 17:59, Gustavo A. R. Silva wrote:
+> Zero-length arrays as fake flexible arrays are deprecated and we are
+> moving towards adopting C99 flexible-array members instead.
+> 
+> Address the following warning found with GCC-13 and
+> -fstrict-flex-arrays=3 enabled:
+>    CC      drivers/target/target_core_user.o
+> drivers/target/target_core_user.c: In function ‘queue_cmd_ring’:
+> drivers/target/target_core_user.c:1096:15: warning: array subscript 0 is outside array bounds of ‘struct iovec[0]’ [-Warray-bounds=]
+>   1096 |         iov = &entry->req.iov[0];
+>        |               ^~~~~~~~~~~~~~~~~~
+> In file included from drivers/target/target_core_user.c:31:
+> ./include/uapi/linux/target_core_user.h:122:38: note: while referencing ‘iov’
+>    122 |                         struct iovec iov[0];
+>        |                                      ^~~
+> 
+> This helps with the ongoing efforts to tighten the FORTIFY_SOURCE
+> routines on memcpy() and help us make progress towards globally
+> enabling -fstrict-flex-arrays=3 [1].
+> 
+> Link: https://github.com/KSPP/linux/issues/21
+> Link: https://github.com/KSPP/linux/issues/270
+> Link: https://gcc.gnu.org/pipermail/gcc-patches/2022-October/602902.html [1]
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> ---
+>   include/uapi/linux/target_core_user.h | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/uapi/linux/target_core_user.h b/include/uapi/linux/target_core_user.h
+> index fbd8ca67e107..f925a77f19ed 100644
+> --- a/include/uapi/linux/target_core_user.h
+> +++ b/include/uapi/linux/target_core_user.h
+> @@ -119,7 +119,7 @@ struct tcmu_cmd_entry {
+>   			__u64 cdb_off;
+>   			__u64 __pad1;
+>   			__u64 __pad2;
+> -			struct iovec iov[0];
+> +			__DECLARE_FLEX_ARRAY(struct iovec, iov);
+>   		} req;
+>   		struct {
+>   			__u8 scsi_status;
 
-Address the following warning found with GCC-13 and
--fstrict-flex-arrays=3 enabled:
-  CC      drivers/target/target_core_user.o
-drivers/target/target_core_user.c: In function ‘queue_cmd_ring’:
-drivers/target/target_core_user.c:1096:15: warning: array subscript 0 is outside array bounds of ‘struct iovec[0]’ [-Warray-bounds=]
- 1096 |         iov = &entry->req.iov[0];
-      |               ^~~~~~~~~~~~~~~~~~
-In file included from drivers/target/target_core_user.c:31:
-./include/uapi/linux/target_core_user.h:122:38: note: while referencing ‘iov’
-  122 |                         struct iovec iov[0];
-      |                                      ^~~
+Looks good. Thank you.
 
-This helps with the ongoing efforts to tighten the FORTIFY_SOURCE
-routines on memcpy() and help us make progress towards globally
-enabling -fstrict-flex-arrays=3 [1].
-
-Link: https://github.com/KSPP/linux/issues/21
-Link: https://github.com/KSPP/linux/issues/270
-Link: https://gcc.gnu.org/pipermail/gcc-patches/2022-October/602902.html [1]
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
----
- include/uapi/linux/target_core_user.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/include/uapi/linux/target_core_user.h b/include/uapi/linux/target_core_user.h
-index fbd8ca67e107..f925a77f19ed 100644
---- a/include/uapi/linux/target_core_user.h
-+++ b/include/uapi/linux/target_core_user.h
-@@ -119,7 +119,7 @@ struct tcmu_cmd_entry {
- 			__u64 cdb_off;
- 			__u64 __pad1;
- 			__u64 __pad2;
--			struct iovec iov[0];
-+			__DECLARE_FLEX_ARRAY(struct iovec, iov);
- 		} req;
- 		struct {
- 			__u8 scsi_status;
--- 
-2.34.1
-
+Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
