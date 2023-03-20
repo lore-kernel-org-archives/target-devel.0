@@ -2,104 +2,59 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC10AC6FD1F
-	for <target-devel@archiver.kernel.org>; Mon, 20 Mar 2023 01:32:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2FD4C7618D
+	for <target-devel@archiver.kernel.org>; Mon, 20 Mar 2023 13:06:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230287AbjCTBcc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 19 Mar 2023 21:32:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46912 "EHLO
+        id S231415AbjCTNGc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 20 Mar 2023 09:06:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55850 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230290AbjCTBcG (ORCPT
+        with ESMTP id S231429AbjCTNGb (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 19 Mar 2023 21:32:06 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9ABE71C7F5;
-        Sun, 19 Mar 2023 18:24:52 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id AA9E9B80D4E;
-        Mon, 20 Mar 2023 00:57:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9043DC433D2;
-        Mon, 20 Mar 2023 00:57:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1679273865;
-        bh=RxUOKQnkZ51m0C4w7P7Mc8ot7XLDQpDTuCM0VAoHUxw=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=QpCNVph5UHEgjAgLtUF3Ez0Qh10lsjyDCtL4F8qLjb6nVf4BL/peKsNE7zHTIwRzj
-         B+bsBemwjEuvpjcOoKDALFpQj0kDP0uWlbiskAFlqr7OIpICUsIGdPtJ2KcOz0OJbq
-         iZpxbsCiNbzq2e+eJOAhS9NRqDOZoV/LQitgHI6xE5a0aOlqliFqQCl1/dUscnoIbW
-         dtxqMIb/ylr11LFSpXFL/U3MC/2Xl6U8QF1nbJCRjhj9eDHVPtRuIm2BiOOkjX/HPF
-         Fc8g6LagZtOWxJ89qQ8OnX+aT8k5qGCM6/ZIbMY3++gJR5S7lvJEYssHglbUtvbY5B
-         p2MHdv7CR0cqg==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Maurizio Lombardi <mlombard@redhat.com>,
-        Mike Christie <michael.christie@oracle.com>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Sasha Levin <sashal@kernel.org>, mgurtovoy@nvidia.com,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 5/9] scsi: target: iscsi: Fix an error message in iscsi_check_key()
-Date:   Sun, 19 Mar 2023 20:57:28 -0400
-Message-Id: <20230320005732.1429533-5-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230320005732.1429533-1-sashal@kernel.org>
-References: <20230320005732.1429533-1-sashal@kernel.org>
+        Mon, 20 Mar 2023 09:06:31 -0400
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CBAD1C7D9;
+        Mon, 20 Mar 2023 06:06:30 -0700 (PDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+        id BA35E68AFE; Mon, 20 Mar 2023 14:06:25 +0100 (CET)
+Date:   Mon, 20 Mar 2023 14:06:25 +0100
+From:   Christoph Hellwig <hch@lst.de>
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     Stefan Haberland <sth@linux.ibm.com>,
+        Christoph Hellwig <hch@lst.de>, bvanassche@acm.org,
+        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        james.bottomley@hansenpartnership.com, linux-block@vger.kernel.org,
+        dm-devel@redhat.com, snitzer@kernel.org, axboe@kernel.dk,
+        linux-nvme@lists.infradead.org, chaitanyak@nvidia.com,
+        kbusch@kernel.org, target-devel@vger.kernel.org,
+        Jan Hoeppner <hoeppner@linux.ibm.com>
+Subject: Re: [PATCH v4 02/18] block: Rename BLK_STS_NEXUS to
+ BLK_STS_RESV_CONFLICT
+Message-ID: <20230320130625.GA11908@lst.de>
+References: <20230224174502.321490-1-michael.christie@oracle.com> <20230224174502.321490-3-michael.christie@oracle.com> <20230314171119.GB6780@lst.de> <33ed9615-b570-03c7-9a7a-d07f020d3222@linux.ibm.com> <20230315133039.GA24533@lst.de> <4484f553-84c1-5402-4f52-c2972ad3e496@linux.ibm.com> <6da0ec0a-d465-fec4-0ca5-96b2ffb7be7a@oracle.com>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6da0ec0a-d465-fec4-0ca5-96b2ffb7be7a@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Maurizio Lombardi <mlombard@redhat.com>
+On Thu, Mar 16, 2023 at 11:36:12AM -0500, Mike Christie wrote:
+> I think we are ok for dasd using BLK_STS_RESV_CONFLICT.
+> 
+> It thought it sounded similar to SCSI/NVMe and userspace will still
+> see -EBADE because the blk_status_to_errno/errno_to_blk_status will
+> handle this.
+> 
+> There was no internal dasd code checking for BLK_STS_NEXUS.
+> 
+> There is a pr_ops API, but dasd is not hooked into it so we don't
+> have to worry about behavior changes.
 
-[ Upstream commit 6cc55c969b7ce8d85e09a636693d4126c3676c11 ]
+Yes, we don't have to worry about it.  I just find a bit confusing
+to have a PR-related error in a driver that doesn't use PRs.
 
-The first half of the error message is printed by pr_err(), the second half
-is printed by pr_debug(). The user will therefore see only the first part
-of the message and will miss some useful information.
-
-Link: https://lore.kernel.org/r/20230214141556.762047-1-mlombard@redhat.com
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
-Reviewed-by: Mike Christie <michael.christie@oracle.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/iscsi/iscsi_target_parameters.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target_parameters.c b/drivers/target/iscsi/iscsi_target_parameters.c
-index caab1045742df..d2c8c4929f93a 100644
---- a/drivers/target/iscsi/iscsi_target_parameters.c
-+++ b/drivers/target/iscsi/iscsi_target_parameters.c
-@@ -1270,18 +1270,20 @@ static struct iscsi_param *iscsi_check_key(
- 		return param;
- 
- 	if (!(param->phase & phase)) {
--		pr_err("Key \"%s\" may not be negotiated during ",
--				param->name);
-+		char *phase_name;
-+
- 		switch (phase) {
- 		case PHASE_SECURITY:
--			pr_debug("Security phase.\n");
-+			phase_name = "Security";
- 			break;
- 		case PHASE_OPERATIONAL:
--			pr_debug("Operational phase.\n");
-+			phase_name = "Operational";
- 			break;
- 		default:
--			pr_debug("Unknown phase.\n");
-+			phase_name = "Unknown";
- 		}
-+		pr_err("Key \"%s\" may not be negotiated during %s phase.\n",
-+				param->name, phase_name);
- 		return NULL;
- 	}
- 
--- 
-2.39.2
-
+Maybe add a little comment that it is used for some s390 or DASD
+specific locking instead.
