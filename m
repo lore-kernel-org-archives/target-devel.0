@@ -2,97 +2,105 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 512D7C7618E
-	for <target-devel@archiver.kernel.org>; Mon, 20 Mar 2023 18:41:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0914DC761AF
+	for <target-devel@archiver.kernel.org>; Tue, 21 Mar 2023 02:06:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231164AbjCTSll (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 20 Mar 2023 14:41:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43188 "EHLO
+        id S229670AbjCUCGh (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 20 Mar 2023 22:06:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49888 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231207AbjCTSlT (ORCPT
+        with ESMTP id S229648AbjCUCGf (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 20 Mar 2023 14:41:19 -0400
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE94A3C799
-        for <target-devel@vger.kernel.org>; Mon, 20 Mar 2023 11:33:20 -0700 (PDT)
-Received: by mail-pl1-x62a.google.com with SMTP id o2so6070461plg.4
-        for <target-devel@vger.kernel.org>; Mon, 20 Mar 2023 11:33:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1679337196;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:subject:cc:to:from:date:message-id:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=K4mu+bNehauaTgSBwCnPiSfzrVvCzsepaH3d15QbbN4=;
-        b=ClQrVslAhJvgqbe8M3xHOKxNgniQIh/uBsT0fWFpMbXdu6MFA1Jpv9xYHkM3UDdd9u
-         Q1KcpFDNhByvRzXb6AIGsWNhSajaD0ZFJIvDdVjfFDmky2eS8jQfTixhQBQg+aZpR/E6
-         veAKsW9HkLBeX9ZAaVtQ1F3vihHnlFAw3UXa4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679337196;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:subject:cc:to:from:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=K4mu+bNehauaTgSBwCnPiSfzrVvCzsepaH3d15QbbN4=;
-        b=BW5Ka+novHx2+WrhRvPPIiEozjYZgL5ctwQmgDdMzxTan2z9f0FjCdNuTn8nHrAW6U
-         MEELrUmF05MlTE5D69N+g4x+bBePzioWgQRZ1WpSfmOP6aV49LmyJVHt6SJIUY0t4sgi
-         A2ZgYZ7qnv9CQzRdtYR4Xfat9BfOcXOIYaLN3RFiKFpXs1OdWgtDHzS4zXhH6d+im3LI
-         /b118WZsfQtw09nbujxVEy++HGm4T2Ais5XVEe5Sp0woCg8QY5yy7cv9gBLVQtFekMbo
-         hdIlWU4nS2qCh9jbCMcjjx17ItMMtHWMigkvCB3VuEjJwk8OuRS0/H5W06j+Czn/OVN7
-         8ZxQ==
-X-Gm-Message-State: AO0yUKUo8H1CCcgdFIkG8kEZcYkzakHZW2AVd4ZSQcl4Po9m4yetX+1C
-        sYo2vOZ3KR/toXrWKP3chO3ewYfJZ6JU3gGpUu8=
-X-Google-Smtp-Source: AK7set/pnmLIeD8BRH/9kRDtin7NNNPBnPbucuL8sJUzMrogrV26aMT63BiNpaTx4nZIFu8i2QAeRw==
-X-Received: by 2002:a05:6a20:4c84:b0:cd:ed5c:513 with SMTP id fq4-20020a056a204c8400b000cded5c0513mr303189pzb.31.1679337196653;
-        Mon, 20 Mar 2023 11:33:16 -0700 (PDT)
-Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
-        by smtp.gmail.com with ESMTPSA id k2-20020aa792c2000000b006089fb79f1asm6608990pfa.208.2023.03.20.11.33.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Mar 2023 11:33:16 -0700 (PDT)
-Message-ID: <6418a6ec.a70a0220.1f3d7.afc4@mx.google.com>
-X-Google-Original-Message-ID: <202303201133.@keescook>
-Date:   Mon, 20 Mar 2023 11:33:15 -0700
-From:   Kees Cook <keescook@chromium.org>
-To:     "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc:     Bodo Stroesser <bostroesser@gmail.com>, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-hardening@vger.kernel.org
-Subject: Re: [PATCH][next] uapi: target: Replace fake flex-array with
- flexible-array member
-References: <ZBSchMvTdl7VObKI@work>
+        Mon, 20 Mar 2023 22:06:35 -0400
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4FF5C305E8;
+        Mon, 20 Mar 2023 19:06:34 -0700 (PDT)
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32KM4RGV014750;
+        Tue, 21 Mar 2023 02:06:30 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=corp-2022-7-12;
+ bh=mPrQHdQOaZkxh1Qbo5znE9BUO57yBo10h6YULnR6O6U=;
+ b=zwAtqapJBwB7C6k+3d0iHV2zXLFR5pgt+1R5FGGQGIIGpq68fz5FvZEsOeTCM7RYVdHu
+ 2ivinXjo7PiG1FyN1iqzqp2NHi1sWhvmsdPOv0CUf+eBJ5Dv/PhrilO4uwA4WnO1JWWw
+ LLttVyrnu7nucludSh9S2o/ZR3+OFQVS72cqw0KwuOHdlVAsCDD2vgEbZt9TyNrUeDa/
+ 3HZgT4cNuirlazu5MOpZm5Wp3SCpWE3rOqBFV3E/ic/jlJmZytvPn0ElnTXvNWPBJxv6
+ s6VQUX/tQDbe1J/zeiwrCvDOxZjZQKYtsoJ5FMSO+CK665UnN+frUgkejcvfX8hEdVwT 8Q== 
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3pd4wt4yrj-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 21 Mar 2023 02:06:30 +0000
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 32KNRDJI010339;
+        Tue, 21 Mar 2023 02:06:29 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3peqjn4c2c-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 21 Mar 2023 02:06:29 +0000
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32L26T9S007440;
+        Tue, 21 Mar 2023 02:06:29 GMT
+Received: from mnchrist-mac.us.oracle.com (dhcp-10-154-165-250.vpn.oracle.com [10.154.165.250])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3peqjn4c0v-2;
+        Tue, 21 Mar 2023 02:06:29 +0000
+From:   Mike Christie <michael.christie@oracle.com>
+To:     target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        stefanha@redhat.com, jasowang@redhat.com, mst@redhat.com,
+        sgarzare@redhat.com, virtualization@lists.linux-foundation.org
+Cc:     Mike Christie <michael.christie@oracle.com>
+Subject: [PATCH v2 1/7] vhost-scsi: Fix vhost_scsi struct use after free
+Date:   Mon, 20 Mar 2023 21:06:18 -0500
+Message-Id: <20230321020624.13323-2-michael.christie@oracle.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230321020624.13323-1-michael.christie@oracle.com>
+References: <20230321020624.13323-1-michael.christie@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <ZBSchMvTdl7VObKI@work>
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-03-20_18,2023-03-20_02,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 mlxlogscore=999
+ phishscore=0 suspectscore=0 malwarescore=0 mlxscore=0 spamscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2303150002 definitions=main-2303210017
+X-Proofpoint-GUID: v6_BLPy3Y6golBYeEqYuoEtDWuHmh-zT
+X-Proofpoint-ORIG-GUID: v6_BLPy3Y6golBYeEqYuoEtDWuHmh-zT
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Fri, Mar 17, 2023 at 10:59:48AM -0600, Gustavo A. R. Silva wrote:
-> Zero-length arrays as fake flexible arrays are deprecated and we are
-> moving towards adopting C99 flexible-array members instead.
-> 
-> Address the following warning found with GCC-13 and
-> -fstrict-flex-arrays=3 enabled:
->   CC      drivers/target/target_core_user.o
-> drivers/target/target_core_user.c: In function ‘queue_cmd_ring’:
-> drivers/target/target_core_user.c:1096:15: warning: array subscript 0 is outside array bounds of ‘struct iovec[0]’ [-Warray-bounds=]
->  1096 |         iov = &entry->req.iov[0];
->       |               ^~~~~~~~~~~~~~~~~~
-> In file included from drivers/target/target_core_user.c:31:
-> ./include/uapi/linux/target_core_user.h:122:38: note: while referencing ‘iov’
->   122 |                         struct iovec iov[0];
->       |                                      ^~~
-> 
-> This helps with the ongoing efforts to tighten the FORTIFY_SOURCE
-> routines on memcpy() and help us make progress towards globally
-> enabling -fstrict-flex-arrays=3 [1].
-> 
-> Link: https://github.com/KSPP/linux/issues/21
-> Link: https://github.com/KSPP/linux/issues/270
-> Link: https://gcc.gnu.org/pipermail/gcc-patches/2022-October/602902.html [1]
-> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+If vhost_scsi_setup_vq_cmds fails we leave the tpg->vhost_scsi pointer
+set. If the device is freed and then the user unmaps the LUN, the call to
+vhost_scsi_port_unlink -> vhost_scsi_hotunplug will see the that
+tpg->vhost_scsi is still set and try to use it.
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+This has us clear the vhost_scsi pointer in the failure path. It also
+has us take tv_tpg_mutex in this failure path, because tv_tpg_vhost_count
+is accessed under this mutex in vhost_scsi_drop_nexus and in the future
+we will want to serialize access to tpg->vhost_scsi with that mutex
+instead of the vhost_scsi_mutex.
 
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+---
+ drivers/vhost/scsi.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+index b244e7c0f514..5875241e1654 100644
+--- a/drivers/vhost/scsi.c
++++ b/drivers/vhost/scsi.c
+@@ -1658,7 +1658,10 @@ vhost_scsi_set_endpoint(struct vhost_scsi *vs,
+ 	for (i = 0; i < VHOST_SCSI_MAX_TARGET; i++) {
+ 		tpg = vs_tpg[i];
+ 		if (tpg) {
++			mutex_lock(&tpg->tv_tpg_mutex);
++			tpg->vhost_scsi = NULL;
+ 			tpg->tv_tpg_vhost_count--;
++			mutex_unlock(&tpg->tv_tpg_mutex);
+ 			target_undepend_item(&tpg->se_tpg.tpg_group.cg_item);
+ 		}
+ 	}
 -- 
-Kees Cook
+2.25.1
+
