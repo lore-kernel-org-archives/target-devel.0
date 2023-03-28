@@ -2,182 +2,136 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0BB9C7619A
-	for <target-devel@archiver.kernel.org>; Mon, 27 Mar 2023 10:46:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1C13C76196
+	for <target-devel@archiver.kernel.org>; Tue, 28 Mar 2023 07:12:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232655AbjC0Kqc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 27 Mar 2023 06:46:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58116 "EHLO
+        id S229983AbjC1HMA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 28 Mar 2023 03:12:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52836 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233529AbjC0Kqb (ORCPT
+        with ESMTP id S229497AbjC1HMA (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 27 Mar 2023 06:46:31 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DB3730E6
-        for <target-devel@vger.kernel.org>; Mon, 27 Mar 2023 03:45:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1679913939;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=0HareB3g+a7+5sdQuI3iZGhUXGcGabHRtELJZ6DX2A0=;
-        b=IVCjhVIL1dRUx1Kqhw6l+9C2d29n2YygmDES3a9YxjsfZUkPPmxVvhvCW30NjeOOmrRZ71
-        PRCA/WtOuXpj6E+qgvN7YKa7OVaV1lIwrFEfdQHQiymRn9SxbH5PH379YQs3cppEFT6Pru
-        P1Akfj+mSsPAAjVrNrOTkbTafnGQWeU=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-641-NIsmKM1lMe-j7Ga2o8oCdw-1; Mon, 27 Mar 2023 06:45:38 -0400
-X-MC-Unique: NIsmKM1lMe-j7Ga2o8oCdw-1
-Received: from smtp.corp.redhat.com (int-mx09.intmail.prod.int.rdu2.redhat.com [10.11.54.9])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id D77CB3801F53;
-        Mon, 27 Mar 2023 10:45:37 +0000 (UTC)
-Received: from kalibr.redhat.com (unknown [10.35.206.108])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id A5155492C3E;
-        Mon, 27 Mar 2023 10:45:36 +0000 (UTC)
-From:   Maurizio Lombardi <mlombard@redhat.com>
-To:     martin.petersen@oracle.com
-Cc:     michael.christie@oracle.com, target-devel@vger.kernel.org
-Subject: [PATCH V2] target: iscsi: use GFP_NOIO with loopback connections
-Date:   Mon, 27 Mar 2023 12:45:35 +0200
-Message-Id: <20230327104535.20984-1-mlombard@redhat.com>
+        Tue, 28 Mar 2023 03:12:00 -0400
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 190E22D71;
+        Tue, 28 Mar 2023 00:11:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679987518; x=1711523518;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=6EMwksUcgneeDJrIel2ml+6289XzTvwVeWFaCidCXvM=;
+  b=M2Dn91QvSPXvtZD8daBUQGAa6+jA0la1S2oOYZ/ywtTlt0l5mopJrLrT
+   b0QfsCbgzpEWuCvZ02NnjfMUzGi+9OpwoQwQ1YgsnA4hO2dmq8gQ32AAq
+   U9WugtfOcNK8i0DBYA3Qwv1EmQ1Nx5/tQWbSYtWXlvEmEuS6xh7s5Z3z2
+   RUtde2KQJowdNLop7kBJ6eZaMLBx7lBsoILyh+SL5Q2OP7QpEkoZaVQYJ
+   DfVEFZlKnmvVn8A1VoCyBaSCi9ZJ2JZ7WOjK8+d+FQnEeuXYESdBmE8tu
+   rXLiUBWcCrCbcccaKkdzDmbv9wF70Yz7oas2Wlb7RgMSKP4iUhtUjX+1P
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10662"; a="426754941"
+X-IronPort-AV: E=Sophos;i="5.98,296,1673942400"; 
+   d="scan'208";a="426754941"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Mar 2023 00:11:57 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10662"; a="773033858"
+X-IronPort-AV: E=Sophos;i="5.98,296,1673942400"; 
+   d="scan'208";a="773033858"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by FMSMGA003.fm.intel.com with ESMTP; 28 Mar 2023 00:11:54 -0700
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+        (envelope-from <lkp@intel.com>)
+        id 1ph3Un-000IMh-1x;
+        Tue, 28 Mar 2023 07:11:53 +0000
+Date:   Tue, 28 Mar 2023 15:11:05 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Mike Christie <michael.christie@oracle.com>, bvanassche@acm.org,
+        hch@lst.de, martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        james.bottomley@hansenpartnership.com, linux-block@vger.kernel.org,
+        dm-devel@redhat.com, snitzer@kernel.org, axboe@kernel.dk,
+        linux-nvme@lists.infradead.org, chaitanyak@nvidia.com,
+        kbusch@kernel.org, target-devel@vger.kernel.org
+Cc:     oe-kbuild-all@lists.linux.dev,
+        Mike Christie <michael.christie@oracle.com>
+Subject: Re: [PATCH v5 11/18] nvme: Add pr_ops read_keys support
+Message-ID: <202303281502.U47uzous-lkp@intel.com>
+References: <20230324181741.13908-12-michael.christie@oracle.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230324181741.13908-12-michael.christie@oracle.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-When an iscsi initiator is connected to a target running on the
-same machine, the system may trigger a deadlock when working
-under memory pressure.
-This may happen, for example, when the iscsi rx thread tries to
-allocate memory and a memory reclaim is performed, the rx thread may
-therefore end up waiting for the initiator to complete I/O operations,
-causing a deadlock.
+Hi Mike,
 
-Fix the issue by using memalloc_noio_*() to enable implicit GFP_NOIO
-in the vulnerable code paths, when the connection is in loopback.
+I love your patch! Perhaps something to improve:
 
+[auto build test WARNING on mkp-scsi/for-next]
+[also build test WARNING on jejb-scsi/for-next axboe-block/for-next linus/master v6.3-rc4 next-20230328]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-v2: Check the IFF_LOOPBACK flag in the iscsit_accept_np() callback,
-    where the conn->sock pointer is initialized.
+url:    https://github.com/intel-lab-lkp/linux/commits/Mike-Christie/block-Add-PR-callouts-for-read-keys-and-reservation/20230325-022314
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
+patch link:    https://lore.kernel.org/r/20230324181741.13908-12-michael.christie%40oracle.com
+patch subject: [PATCH v5 11/18] nvme: Add pr_ops read_keys support
+config: i386-randconfig-s002 (https://download.01.org/0day-ci/archive/20230328/202303281502.U47uzous-lkp@intel.com/config)
+compiler: gcc-11 (Debian 11.3.0-8) 11.3.0
+reproduce:
+        # apt-get install sparse
+        # sparse version: v0.6.4-39-gce1a6720-dirty
+        # https://github.com/intel-lab-lkp/linux/commit/fcd2233cf643c550ab3cea2b6102077b1d05b389
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Mike-Christie/block-Add-PR-callouts-for-read-keys-and-reservation/20230325-022314
+        git checkout fcd2233cf643c550ab3cea2b6102077b1d05b389
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        make W=1 C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' O=build_dir ARCH=i386 olddefconfig
+        make W=1 C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' O=build_dir ARCH=i386 SHELL=/bin/bash drivers/nvme/host/
 
-Suggested-by: David Jeffery <djeffery@redhat.com>
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
----
- drivers/target/iscsi/iscsi_target.c       | 19 ++++++++++++++++---
- drivers/target/iscsi/iscsi_target_login.c |  7 +++++++
- include/target/iscsi/iscsi_target_core.h  |  1 +
- 3 files changed, 24 insertions(+), 3 deletions(-)
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202303281502.U47uzous-lkp@intel.com/
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index baf4da7bb3b4..4d997a049bf7 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -3918,9 +3918,9 @@ static int iscsit_handle_response_queue(struct iscsit_conn *conn)
- 
- int iscsi_target_tx_thread(void *arg)
- {
--	int ret = 0;
-+	int ret = 0, flags;
- 	struct iscsit_conn *conn = arg;
--	bool conn_freed = false;
-+	bool conn_freed = false, loopback;
- 
- 	/*
- 	 * Allow ourselves to be interrupted by SIGINT so that a
-@@ -3928,6 +3928,10 @@ int iscsi_target_tx_thread(void *arg)
- 	 */
- 	allow_signal(SIGINT);
- 
-+	loopback = conn->loopback;
-+	if (loopback)
-+		flags = memalloc_noio_save();
-+
- 	while (!kthread_should_stop()) {
- 		/*
- 		 * Ensure that both TX and RX per connection kthreads
-@@ -3966,6 +3970,9 @@ int iscsi_target_tx_thread(void *arg)
- 	if (conn->conn_state != TARG_CONN_STATE_IN_LOGIN)
- 		iscsit_take_action_for_connection_exit(conn, &conn_freed);
- out:
-+	if (loopback)
-+		memalloc_noio_restore(flags);
-+
- 	if (!conn_freed) {
- 		while (!kthread_should_stop()) {
- 			msleep(100);
-@@ -4166,7 +4173,7 @@ static void iscsit_get_rx_pdu(struct iscsit_conn *conn)
- 
- int iscsi_target_rx_thread(void *arg)
- {
--	int rc;
-+	int rc, flags;
- 	struct iscsit_conn *conn = arg;
- 	bool conn_freed = false;
- 
-@@ -4186,8 +4193,14 @@ int iscsi_target_rx_thread(void *arg)
- 	if (!conn->conn_transport->iscsit_get_rx_pdu)
- 		return 0;
- 
-+	if (conn->loopback)
-+		flags = memalloc_noio_save();
-+
- 	conn->conn_transport->iscsit_get_rx_pdu(conn);
- 
-+	if (conn->loopback)
-+		memalloc_noio_restore(flags);
-+
- 	if (!signal_pending(current))
- 		atomic_set(&conn->transport_failed, 1);
- 	iscsit_take_action_for_connection_exit(conn, &conn_freed);
-diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
-index 27e448c2d066..4a195e9e623e 100644
---- a/drivers/target/iscsi/iscsi_target_login.c
-+++ b/drivers/target/iscsi/iscsi_target_login.c
-@@ -17,6 +17,7 @@
- #include <linux/tcp.h>        /* TCP_NODELAY */
- #include <net/ip.h>
- #include <net/ipv6.h>         /* ipv6_addr_v4mapped() */
-+#include <net/sock.h>
- #include <scsi/iscsi_proto.h>
- #include <target/target_core_base.h>
- #include <target/target_core_fabric.h>
-@@ -960,6 +961,7 @@ int iscsi_target_setup_login_socket(
- int iscsit_accept_np(struct iscsi_np *np, struct iscsit_conn *conn)
- {
- 	struct socket *new_sock, *sock = np->np_socket;
-+	struct dst_entry *dst;
- 	struct sockaddr_in sock_in;
- 	struct sockaddr_in6 sock_in6;
- 	int rc;
-@@ -971,6 +973,11 @@ int iscsit_accept_np(struct iscsi_np *np, struct iscsit_conn *conn)
- 	conn->sock = new_sock;
- 	conn->login_family = np->np_sockaddr.ss_family;
- 
-+	dst = sk_dst_get(conn->sock->sk);
-+	if (dst && dst->dev && dst->dev->flags & IFF_LOOPBACK)
-+		conn->loopback = true;
-+	dst_release(dst);
-+
- 	if (np->np_sockaddr.ss_family == AF_INET6) {
- 		memset(&sock_in6, 0, sizeof(struct sockaddr_in6));
- 
-diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-index 94d06ddfd80a..aa8d4026e32e 100644
---- a/include/target/iscsi/iscsi_target_core.h
-+++ b/include/target/iscsi/iscsi_target_core.h
-@@ -538,6 +538,7 @@ struct iscsit_conn {
- 	struct sockaddr_storage local_sockaddr;
- 	int			conn_usage_count;
- 	int			conn_waiting_on_uc;
-+	bool			loopback;
- 	atomic_t		check_immediate_queue;
- 	atomic_t		conn_logout_remove;
- 	atomic_t		connection_exit;
+sparse warnings: (new ones prefixed by >>)
+>> drivers/nvme/host/pr.c:165:24: sparse: sparse: incorrect type in assignment (different base types) @@     expected restricted __le32 [assigned] [usertype] cdw11 @@     got int @@
+   drivers/nvme/host/pr.c:165:24: sparse:     expected restricted __le32 [assigned] [usertype] cdw11
+   drivers/nvme/host/pr.c:165:24: sparse:     got int
+>> drivers/nvme/host/pr.c:171:21: sparse: sparse: restricted __le32 degrades to integer
+
+vim +165 drivers/nvme/host/pr.c
+
+   156	
+   157	static int nvme_pr_resv_report(struct block_device *bdev, void *data,
+   158			u32 data_len, bool *eds)
+   159	{
+   160		struct nvme_command c = { };
+   161		int ret;
+   162	
+   163		c.common.opcode = nvme_cmd_resv_report;
+   164		c.common.cdw10 = cpu_to_le32(nvme_bytes_to_numd(data_len));
+ > 165		c.common.cdw11 = NVME_EXTENDED_DATA_STRUCT;
+   166		*eds = true;
+   167	
+   168	retry:
+   169		ret = nvme_send_pr_command(bdev, &c, data, data_len);
+   170		if (ret == NVME_SC_HOST_ID_INCONSIST &&
+ > 171		    c.common.cdw11 == NVME_EXTENDED_DATA_STRUCT) {
+   172			c.common.cdw11 = 0;
+   173			*eds = false;
+   174			goto retry;
+   175		}
+   176	
+   177		if (ret < 0)
+   178			return ret;
+   179	
+   180		return nvme_sc_to_pr_err(ret);
+   181	}
+   182	
+
 -- 
-2.31.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
