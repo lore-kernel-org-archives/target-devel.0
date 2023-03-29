@@ -2,110 +2,114 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26829C6FD18
-	for <target-devel@archiver.kernel.org>; Wed, 29 Mar 2023 13:26:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C1D2C74A5B
+	for <target-devel@archiver.kernel.org>; Wed, 29 Mar 2023 14:20:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230164AbjC2N0H (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 29 Mar 2023 09:26:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54298 "EHLO
+        id S231300AbjC2OUc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 29 Mar 2023 10:20:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55152 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229955AbjC2N0C (ORCPT
+        with ESMTP id S229771AbjC2OSu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 29 Mar 2023 09:26:02 -0400
+        Wed, 29 Mar 2023 10:18:50 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C99F5261
-        for <target-devel@vger.kernel.org>; Wed, 29 Mar 2023 06:24:53 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CBFFF5FF6
+        for <target-devel@vger.kernel.org>; Wed, 29 Mar 2023 07:16:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1680096292;
+        s=mimecast20190719; t=1680099337;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=rtS7QVAtuYQjDEY7nXHnoqbfop6chvBfZPGcSLcnwDU=;
-        b=BZ2HeOdetYVgtQlWV8jAyAzrH2FMfLjDpeQZbEecREaI4p83apGU8aTXlfgKPhWux9JZuv
-        2ip3yYlFoSC+UOkJs9zYP4jThHoTwfg1RA9gqJ2Hj0MS0NEmxlZMqrxMxlyMm6th03khd1
-        PUXwN6FdefM5TYHCUlG3p0KwuTsRuWs=
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
- [209.85.160.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-225-2Wd3enLKPOK9bfSYiODo6w-1; Wed, 29 Mar 2023 09:24:50 -0400
-X-MC-Unique: 2Wd3enLKPOK9bfSYiODo6w-1
-Received: by mail-qt1-f197.google.com with SMTP id s4-20020a05622a1a8400b003dbc6fc558aso10112028qtc.3
-        for <target-devel@vger.kernel.org>; Wed, 29 Mar 2023 06:24:50 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680096290;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=rtS7QVAtuYQjDEY7nXHnoqbfop6chvBfZPGcSLcnwDU=;
-        b=DZ9eXJ3T4hrsC0poouk/tc/04skvOWqaPndAtlaX9sSBvoO+HZ87ZzXFpQpci1nJPB
-         yHuEQvEvHA7OfKRgQSliBnMT/gMGBopg91SavlbcMj4wMQTJM7XvCpYXUuY4el4Yvt8j
-         HigtP4TUoYiPQ+HESeumBVB/8aWHcH9b5ty7aXsRljE37YeUTt0nBpJBvf+wGQtdyhNz
-         eQPf8WClmpzw6Ma+sMujNS7A7smvmdg5/Bfwc7MKl4NCF0KIuAfqTimImKWT1PU1py9U
-         u2Q30AZsfkDV/nVnsSl3sRlx0DVI628MlBtBpyihFCC90O4y+xcFCH3FbSTnoaU65Wct
-         tauw==
-X-Gm-Message-State: AO0yUKVhZmc/0hPz7EioGfd2VPCtbDzD1pED1m4TZDaW6sexSeiwDVrN
-        t1Xz8bSLKRyn+giij0OdovyBnfqSSS9Hi3d2qyXvlrzrUlXGS/JTwCtORlnLTeh1BPZZVy37O9i
-        WZ6AovY/n25W5o8whdP911aGE
-X-Received: by 2002:a05:622a:1903:b0:3e3:982b:f535 with SMTP id w3-20020a05622a190300b003e3982bf535mr35038324qtc.33.1680096290101;
-        Wed, 29 Mar 2023 06:24:50 -0700 (PDT)
-X-Google-Smtp-Source: AK7set/pxHT+zYmnDLN7+oI3EGOeAUDzDtVHPAhTMokbOjOy3WQMS3mqH9rtro9CtstXRdGMpp050g==
-X-Received: by 2002:a05:622a:1903:b0:3e3:982b:f535 with SMTP id w3-20020a05622a190300b003e3982bf535mr35038289qtc.33.1680096289729;
-        Wed, 29 Mar 2023 06:24:49 -0700 (PDT)
-Received: from dell-per740-01.7a2m.lab.eng.bos.redhat.com (nat-pool-bos-t.redhat.com. [66.187.233.206])
-        by smtp.gmail.com with ESMTPSA id l6-20020ac848c6000000b003bfb0ea8094sm9803279qtr.83.2023.03.29.06.24.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 06:24:49 -0700 (PDT)
-From:   Tom Rix <trix@redhat.com>
-To:     martin.petersen@oracle.com, nathan@kernel.org,
-        ndesaulniers@google.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, llvm@lists.linux.dev,
-        Tom Rix <trix@redhat.com>
-Subject: [PATCH] scsi: target: core: remove unused prod_len variable
-Date:   Wed, 29 Mar 2023 09:24:21 -0400
-Message-Id: <20230329132421.1809362-1-trix@redhat.com>
-X-Mailer: git-send-email 2.27.0
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=0V0VYuNRGUsctVySLnEH8GinGQ4l5nQcc0Sx6Q5aq0A=;
+        b=c78w6wncXK2A7qKBNp/fqp/QLdog2d7a7+Y5riDnZFpKgCuQJ2A3HhS6otgSGW1eMfIgI1
+        uVeWcEMz3sZgfa5fdgtpVM1MHiGRO7STJ6WiN2FnnpiqYwwV0G2ocWgMLnXfKEPV8GrZBr
+        oW+sF5ijcJT9WBVx6yfv7g/mFiq7EpM=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-167-kCehxZq9PD6SIf6owZvSow-1; Wed, 29 Mar 2023 10:15:33 -0400
+X-MC-Unique: kCehxZq9PD6SIf6owZvSow-1
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com [10.11.54.3])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C7FF3185A790;
+        Wed, 29 Mar 2023 14:15:29 +0000 (UTC)
+Received: from warthog.procyon.org.uk (unknown [10.33.36.18])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 9BD4C1121330;
+        Wed, 29 Mar 2023 14:15:27 +0000 (UTC)
+From:   David Howells <dhowells@redhat.com>
+To:     Matthew Wilcox <willy@infradead.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>
+Cc:     David Howells <dhowells@redhat.com>,
+        Al Viro <viro@zeniv.linux.org.uk>,
+        Christoph Hellwig <hch@infradead.org>,
+        Jens Axboe <axboe@kernel.dk>, Jeff Layton <jlayton@kernel.org>,
+        Christian Brauner <brauner@kernel.org>,
+        Chuck Lever III <chuck.lever@oracle.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Subject: [RFC PATCH v2 33/48] iscsi: Assume "sendpage" is okay in iscsi_tcp_segment_map()
+Date:   Wed, 29 Mar 2023 15:13:39 +0100
+Message-Id: <20230329141354.516864-34-dhowells@redhat.com>
+In-Reply-To: <20230329141354.516864-1-dhowells@redhat.com>
+References: <20230329141354.516864-1-dhowells@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.3
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-clang with W=1 reports
-drivers/target/target_core_spc.c:229:6: error: variable
-  'prod_len' set but not used [-Werror,-Wunused-but-set-variable]
-        u32 prod_len;
-            ^
-This variable is not used so remove it.
+As iscsi is now using sendmsg() with MSG_SPLICE_PAGES rather than sendpage,
+assume that sendpage_ok() will return true in iscsi_tcp_segment_map() and
+leave it to TCP to copy the data if not.
 
-Signed-off-by: Tom Rix <trix@redhat.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
+cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+cc: "David S. Miller" <davem@davemloft.net>
+cc: Eric Dumazet <edumazet@google.com>
+cc: Jakub Kicinski <kuba@kernel.org>
+cc: Paolo Abeni <pabeni@redhat.com>
+cc: Jens Axboe <axboe@kernel.dk>
+cc: Matthew Wilcox <willy@infradead.org>
+cc: linux-scsi@vger.kernel.org
+cc: target-devel@vger.kernel.org
+cc: netdev@vger.kernel.org
 ---
- drivers/target/target_core_spc.c | 5 -----
- 1 file changed, 5 deletions(-)
+ drivers/scsi/libiscsi_tcp.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index 5bae45c3fb65..89c0d56294cc 100644
---- a/drivers/target/target_core_spc.c
-+++ b/drivers/target/target_core_spc.c
-@@ -226,7 +226,6 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
- 	struct t10_alua_lu_gp_member *lu_gp_mem;
- 	struct t10_alua_tg_pt_gp *tg_pt_gp;
- 	unsigned char *prod = &dev->t10_wwn.model[0];
--	u32 prod_len;
- 	u32 off = 0;
- 	u16 len = 0, id_len;
- 
-@@ -267,10 +266,6 @@ spc_emulate_evpd_83(struct se_cmd *cmd, unsigned char *buf)
- 	 * T10 Vendor Identifier Page, see spc4r17 section 7.7.3.4
+diff --git a/drivers/scsi/libiscsi_tcp.c b/drivers/scsi/libiscsi_tcp.c
+index c182aa83f2c9..07ba0d864820 100644
+--- a/drivers/scsi/libiscsi_tcp.c
++++ b/drivers/scsi/libiscsi_tcp.c
+@@ -128,18 +128,11 @@ static void iscsi_tcp_segment_map(struct iscsi_segment *segment, int recv)
+ 	 * coalescing neighboring slab objects into a single frag which
+ 	 * triggers one of hardened usercopy checks.
  	 */
- 	id_len = 8; /* For Vendor field */
--	prod_len = 4; /* For VPD Header */
--	prod_len += 8; /* For Vendor field */
--	prod_len += strlen(prod);
--	prod_len++; /* For : */
+-	if (!recv && sendpage_ok(sg_page(sg)))
++	if (!recv)
+ 		return;
  
- 	if (dev->dev_flags & DF_EMULATED_VPD_UNIT_SERIAL)
- 		id_len += sprintf(&buf[off+12], "%s:%s", prod,
--- 
-2.27.0
+-	if (recv) {
+-		segment->atomic_mapped = true;
+-		segment->sg_mapped = kmap_atomic(sg_page(sg));
+-	} else {
+-		segment->atomic_mapped = false;
+-		/* the xmit path can sleep with the page mapped so use kmap */
+-		segment->sg_mapped = kmap(sg_page(sg));
+-	}
+-
++	segment->atomic_mapped = true;
++	segment->sg_mapped = kmap_atomic(sg_page(sg));
+ 	segment->data = segment->sg_mapped + sg->offset + segment->sg_offset;
+ }
+ 
 
