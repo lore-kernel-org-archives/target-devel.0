@@ -2,216 +2,136 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24C2AC77B6D
-	for <target-devel@archiver.kernel.org>; Wed, 29 Mar 2023 14:22:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E252C6FD18
+	for <target-devel@archiver.kernel.org>; Wed, 29 Mar 2023 21:07:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231316AbjC2OWn (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 29 Mar 2023 10:22:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54602 "EHLO
+        id S229489AbjC2VHm (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 29 Mar 2023 17:07:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41196 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231318AbjC2OUm (ORCPT
+        with ESMTP id S229462AbjC2VHl (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 29 Mar 2023 10:20:42 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 556845BB0
-        for <target-devel@vger.kernel.org>; Wed, 29 Mar 2023 07:16:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1680099332;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=gZm+OH3nuU2w5lgBIDJ5zMpRPGFGHnStb+oddo8E9cs=;
-        b=B1w1ZF3SQs4MDgmV4lwaw3FWVXtS6Y/9MnGgEPsIsOHEBzPYfhMsofVK88/qj8oLlBUw1+
-        /FDWk2yr8YKB8103wGfVQRcCLRac0YGAo0nENfkWwGWL2ozmIuxowh3g6uQN6y1fiNUf/t
-        UqDB+mUJsR4d3Baj6sDGIm0IpXDzX5s=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-427-ZeMxTUzWPHqK1lFKrZJGyg-1; Wed, 29 Mar 2023 10:15:27 -0400
-X-MC-Unique: ZeMxTUzWPHqK1lFKrZJGyg-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id DB5A61C0758C;
-        Wed, 29 Mar 2023 14:15:26 +0000 (UTC)
-Received: from warthog.procyon.org.uk (unknown [10.33.36.18])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id B2C022166B33;
-        Wed, 29 Mar 2023 14:15:24 +0000 (UTC)
-From:   David Howells <dhowells@redhat.com>
-To:     Matthew Wilcox <willy@infradead.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>
-Cc:     David Howells <dhowells@redhat.com>,
-        Al Viro <viro@zeniv.linux.org.uk>,
-        Christoph Hellwig <hch@infradead.org>,
-        Jens Axboe <axboe@kernel.dk>, Jeff Layton <jlayton@kernel.org>,
-        Christian Brauner <brauner@kernel.org>,
-        Chuck Lever III <chuck.lever@oracle.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [RFC PATCH v2 32/48] iscsi: Use sendmsg(MSG_SPLICE_PAGES) rather than sendpage
-Date:   Wed, 29 Mar 2023 15:13:38 +0100
-Message-Id: <20230329141354.516864-33-dhowells@redhat.com>
-In-Reply-To: <20230329141354.516864-1-dhowells@redhat.com>
-References: <20230329141354.516864-1-dhowells@redhat.com>
+        Wed, 29 Mar 2023 17:07:41 -0400
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on2084.outbound.protection.outlook.com [40.107.243.84])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21B3F9F;
+        Wed, 29 Mar 2023 14:07:39 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=GT9UQ5wy4f7n6fSw2HZcvdpw86VS8/SN5WJyukfO72Iyi1vyT9iMZiiuQPjBYTuCnRDMRnBkGjTlomgJ3XrWj+sm2bkES6eEDcZVx1m3ntVGdApEWsZiBIUOoW7pWXtcwra8RRsmjKy1zLJ0NsDBABsapDMm7DSaWzVTZ9muwjd63CoJkHF86gyySsQh1CEb5Lhijlfmm6C4gxiBBN8EbMIK37jDpPu/urR+056rSG21kbUX1XW308b5TMje8i4NT/DY1IEALDZpoqJ5cfzz5f4rgUyweniEXFkGv+pNjdXyf1wvBZXLKj/SkYgbOCJOfKh3Yyb/0ciEUvxRGkSGKg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FUm7tQIct+DU5YVyc9mv2izgRjEEakdvE6LhrRuf6/I=;
+ b=NQ1GJprGbebdPzF6Q55GztOH9Wbkj8s9CHONFlA2fx6nYKQO2CAXGZzLdpb02o7w7nBa785mem/gBoGtJ7ke7PMw42PicybEB0fp+SMWn342ELFH2cKbs0uohzYuazYh6W/7Fg+iZTtcJ436hbcyedkPg6o2lRaBlVZMywwV/ytbOlhwQypnBPEE09IvXqYgEKSszlJcc2rg7YDjz1IrJtViqUITa25S0UxM4xDjulENJUmmeLCbU1eez66REReeLqcvkPAolFqnwewUz8RERrce91pYAiOuBmryETKBIGIHMvLlepV++aAL0HwKLDSnYC6aVqF7UbmeZMLI4KAGvg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FUm7tQIct+DU5YVyc9mv2izgRjEEakdvE6LhrRuf6/I=;
+ b=dkbgToCrEDyGvoaJEKu06O68DbSriSPVeQHtBP/eMGpzma5mkbZSZ3kqmRMgXxsh/FkpHlJIuiwkJC3E1q1T8RpZuilxM8DneZFLwtPzbdItvyhycU6U9JJeUR9ghuAVFvwnglonzHuHGb/l4PmH2DSRl3YU6yHGIWsV9MxZd2npRKeep3APqGa5289CFcyc9qOx95Vu+l7xXjcLZ8qUcbRP4ZLv2xG+LhLDJSPY7T5Ne7SXfpBPX6MHkoonGrG5/0XctOKIqleR2KXr6Z+NnUx4SfagJVIY/yhjMu3kpsfUnZuPjAbWFf1UDuPYw4YAirldzYJB5vhtVxCbletsJw==
+Received: from MW2PR12MB4667.namprd12.prod.outlook.com (2603:10b6:302:12::28)
+ by DS0PR12MB8198.namprd12.prod.outlook.com (2603:10b6:8:f2::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6222.32; Wed, 29 Mar
+ 2023 21:07:37 +0000
+Received: from MW2PR12MB4667.namprd12.prod.outlook.com
+ ([fe80::9f90:cf3d:d640:a90b]) by MW2PR12MB4667.namprd12.prod.outlook.com
+ ([fe80::9f90:cf3d:d640:a90b%4]) with mapi id 15.20.6222.035; Wed, 29 Mar 2023
+ 21:07:37 +0000
+From:   Chaitanya Kulkarni <chaitanyak@nvidia.com>
+To:     Tom Rix <trix@redhat.com>,
+        "martin.petersen@oracle.com" <martin.petersen@oracle.com>,
+        "nathan@kernel.org" <nathan@kernel.org>,
+        "ndesaulniers@google.com" <ndesaulniers@google.com>
+CC:     "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "llvm@lists.linux.dev" <llvm@lists.linux.dev>
+Subject: Re: [PATCH] scsi: target: core: remove unused prod_len variable
+Thread-Topic: [PATCH] scsi: target: core: remove unused prod_len variable
+Thread-Index: AQHZYkIGbUtUzcLmAE2kpRi25oy/tq8SQHUA
+Date:   Wed, 29 Mar 2023 21:07:36 +0000
+Message-ID: <6b50e660-f10d-82ae-4a15-86fb575dcab5@nvidia.com>
+References: <20230329132421.1809362-1-trix@redhat.com>
+In-Reply-To: <20230329132421.1809362-1-trix@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MW2PR12MB4667:EE_|DS0PR12MB8198:EE_
+x-ms-office365-filtering-correlation-id: b4dc0347-a899-4ea0-ef5f-08db30999fa4
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: lTDm+wF555bhEgiZTFnmrFndQvx5lfHuvdCUXgzi8BsKh8Kk9yAnBfNBJ8gUAF2E+EaaRbbZ8dTNGlzHKNYaaztD4evMi/0W44ie24jnAq6bP/LX3sYNfMs+nKcxKn93TkCLyJdRdlm0jlk4c5I4ueCdERvmq6BLOIMirbAi6DW0D62NhfERhKRE/xMufhAaaNJzWK6LLfwurVc4Pfdjqa+FZQu14rITDkQFdlZYWwKuiaDQblLksDCx5MUJGtENQqp23xp2r42cLO/3u2hawoqxmCyeFTjijgoSwkErcSrxpV+pMKYXaJUaL8So/zuMZobDziqYwEKPkOiOQ1HSizbanYK0hTfw4rOPWWp/Ek6DhK9uL0BqXkN6KkLWpnaAi9PYv/y5oxLJcwCTsydbJuNz4IVDAUtyVMpArBZ1xQZlct0Ujx/VuGX10947OwWenUY9us8svG/aNa5NKx3/4s9Tx/GgayVTwx9TwFOpAEWrn80UfSJlFzGxDhEo7sr/OPmQQmnU9qzwDCnw6Hx+ithDuFQQfB6+o8CXY7+SWdVxFG9d0eXa5TGmjj2Gpcr5y0ocEKCF0UJ7GvMCnuhHKC/fQC5Th81pTGq3LO9nnvt0fGWGq9rpJc9Q0EH7TKI9c79FzHQ7CGhvC16L4Z7IEyMK3oCL1tiHGzOh40stHTGtockfucSRn+mO5QZ9mUOQ
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MW2PR12MB4667.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(346002)(376002)(396003)(366004)(136003)(39860400002)(451199021)(66446008)(71200400001)(6506007)(478600001)(2616005)(6486002)(26005)(316002)(110136005)(91956017)(31686004)(6512007)(53546011)(186003)(54906003)(76116006)(4326008)(66476007)(64756008)(8676002)(8936002)(5660300002)(122000001)(2906002)(4744005)(41300700001)(38100700002)(36756003)(38070700005)(66556008)(66946007)(31696002)(86362001)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?cXdDOGQ2TGpadFlhM3RJWGh3Uk9wbnBFY0Y3ZDFzQnNwK3JhWVlyU3FQQkdN?=
+ =?utf-8?B?RWxLNnk3VmhpQ1ZkK0cvU1FEK013alQ3d1RQV2FhMjdtdkFPbm1UUTgycFZn?=
+ =?utf-8?B?cVNyeVN1eHlaeTFydlVSSk9UcjdEODBIV1hCYXp2cDQ0L3hsazdmdmVXYWZ1?=
+ =?utf-8?B?T0IxRGM2SmNSYU9tYWZrTFhjNzZReStHdVFqVm5pak9Xdml2Ui9VeXUrU1BV?=
+ =?utf-8?B?c1hmZklrZjdWUVdqZUJieEFXdGMveWt3emgxaG1ZVXE1NTY1SGl6S1pnaEgr?=
+ =?utf-8?B?Z0NRZ1NHYXNvbkZ2WVpmbll6N0tjZUtPZnlEK2JCMmJRZlNQc2dvUGk1OXFM?=
+ =?utf-8?B?NXhjYWZGN0xXUnZzbWFDOHBkczNucmowVURram80OFA2bHNkUWs1dnVrYVpY?=
+ =?utf-8?B?OTFIU3YwS1ZwWHFPQlhRa3ljcFJhUHpUZFNoWFhmWk85L1EvTE5XbmZteWMr?=
+ =?utf-8?B?bnlmY3VnNEdaeWZxMC9NaEJydSsyZ1VST1p5dE80ZGZvc2lFZXNocGs3V1pJ?=
+ =?utf-8?B?cnpBTDl5YU5hQ2tTZW41U3NybmFMd0xCV2NtczBmOU9TSDhjWmlIb3ZCbEJw?=
+ =?utf-8?B?UG10dEwxeDhkUFgrNmlwc2Q1MEdFcEhlQTNlaGErYjdPeGJPS0FvcmJtUGcv?=
+ =?utf-8?B?cHlwT3lPZ0lKU3hMNzl5Y01iTU1EQm9Mc1Frb0tDS3JhSDNiNTlKbVNGUmI0?=
+ =?utf-8?B?RDIzMksvc0lUMXFyTWJxdmoraTVOU3Z0Rk9yZmVtR05HckZ0SWVFYVI0MlMy?=
+ =?utf-8?B?L3hwMlMxQXluZXR3OTQ3OTVvM0Y3eFlybWR2R0ZVM3FRNVVvRHRDZVI5QWJJ?=
+ =?utf-8?B?RHZqWjB5ZGw5US9tbm5zK2tjV040WFVlT2FnTWdBWEFtb3F2aHpyWHlPc1VZ?=
+ =?utf-8?B?TEdYY2dnMUx4d3BZbEYrOFR1WXAzVmRJeklsYnozRmIrZ052Z2FDOThKSVdp?=
+ =?utf-8?B?SEJieHZBM2NScjVubHpnRkRUdytRRGxORW1YRVRLaGFnY1BiUHZkUmhUY2xn?=
+ =?utf-8?B?L1JxOS90aUFGcjd6Wk1QQ3pCcHRvb3l3QXJrS1ZTWEgxS1lJbmJkeFFFYmlZ?=
+ =?utf-8?B?S1cwWFhzNm1wTWlNR1Zrc0RFekRHSmZpaGw5RTVnSHlLSnl5c1dJZGlZd0dV?=
+ =?utf-8?B?YytKWThhMWRRaWptQk5OQ09tWEJ2WkZod2psb2syVGN1TEpOaTlwcldGOHhz?=
+ =?utf-8?B?VjlIM0pqdEhHUUlvNzB1OEQyVDFQdmNFS0NZOWNTNFNRdFowaVdBK1J5RGNx?=
+ =?utf-8?B?WTVTdkhtaGhMek9venluZUhBTjYxd2dKUW5kSXNCMEpnaEtMZlhTRDRmZ0Jy?=
+ =?utf-8?B?VUNOZGNZTllSdGhZU2ZTelZXNmZyK3psQ1BhS29uazAwWUhIRUM2NXlIMmVL?=
+ =?utf-8?B?U2pRWkE4SE81cGFHVWRuYTd2MExTUE00bXVwTUx6dm1yMjFIUStIYVE0NkZh?=
+ =?utf-8?B?MjIrSW5ieHMyU3lSdEh2eWxHaFVXSVlYWGJTMHNLNStzQ0J6MDhuMDc2MVkx?=
+ =?utf-8?B?ZHAwSmVYS1I5M2ZNbUhQVDVzK25YTFVmY28rVnRvVVh3OVNKNklEeTBaMEFa?=
+ =?utf-8?B?emdEcXBuLzhoRjFVSXk0RVd5V0lwMkFvbUNMS2VHNlZxNHBVMTBOVmREank3?=
+ =?utf-8?B?c2ExNUNqaEZmdlRLa0lWV1JKQ1FtLyszN0JZM2Y2WHhoRXhoKzVzc0VUVkZL?=
+ =?utf-8?B?Y09QY3dDTlRucllUTTJlVHZrczBoRkJkN0Y2NGJOdGNnUzZsVzl0UHdXNVBV?=
+ =?utf-8?B?SlhTdmltdGF5OEhOZis4b21JTHEwbExKY3hlanZVSmJLTDF4a1VJMmc3NklX?=
+ =?utf-8?B?T0lyaVJ4TWxZczFRMFZtYThKQm9YeFZwektVSVpZSmJteGFxNTNiaDJ5THdh?=
+ =?utf-8?B?NVc0bmRyQklRb2hTTjBHRGpZaHlqS0VLYjVrUGFjb3Rab054L3A4RTk1N0Zr?=
+ =?utf-8?B?bG04TGIwVThqMWNxcWJ4SGJnQWlldDNUUEM2K3llZ05UdGh1UmJHRDl0N2l4?=
+ =?utf-8?B?SW5PaVZYdVJZd2p4dWgySVo0ckVuY3BUSzZSTDRtK0JoZ2JTVlZwRGlIK1RI?=
+ =?utf-8?B?bjhDZGoyUE8xVkdoQ2g1bng5M1NQa3VINUdsMGh1ZzhFa3JlOUJ4UitZU29D?=
+ =?utf-8?Q?6rgyh2AfBixu0CovoA9ZXVedA?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <3995C671BF96A841B1439F034CA2B23B@namprd12.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MW2PR12MB4667.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b4dc0347-a899-4ea0-ef5f-08db30999fa4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Mar 2023 21:07:36.9465
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: usK+fzMkJwGYIRLFu/yVO3A2hSxyMzwQPzxfrpVg1sLrBI3WnEVzNvK2+La5BiDKfLdHMSCQfuEaq74z4GE1Ew==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8198
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Use sendmsg() with MSG_SPLICE_PAGES rather than sendpage.  This allows
-multiple pages and multipage folios to be passed through.
-
-TODO: iscsit_fe_sendpage_sg() should perhaps set up a bio_vec array for the
-entire set of pages it's going to transfer plus two for the header and
-trailer and page fragments to hold the header and trailer - and then call
-sendmsg once for the entire message.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
-cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-cc: "David S. Miller" <davem@davemloft.net>
-cc: Eric Dumazet <edumazet@google.com>
-cc: Jakub Kicinski <kuba@kernel.org>
-cc: Paolo Abeni <pabeni@redhat.com>
-cc: Jens Axboe <axboe@kernel.dk>
-cc: Matthew Wilcox <willy@infradead.org>
-cc: linux-scsi@vger.kernel.org
-cc: target-devel@vger.kernel.org
-cc: netdev@vger.kernel.org
----
- drivers/scsi/iscsi_tcp.c                 | 31 ++++++++++++------------
- drivers/scsi/iscsi_tcp.h                 |  2 +-
- drivers/target/iscsi/iscsi_target_util.c | 14 ++++++-----
- 3 files changed, 24 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/scsi/iscsi_tcp.c b/drivers/scsi/iscsi_tcp.c
-index c76f82fb8b63..cf3eb55d2a76 100644
---- a/drivers/scsi/iscsi_tcp.c
-+++ b/drivers/scsi/iscsi_tcp.c
-@@ -301,35 +301,37 @@ static int iscsi_sw_tcp_xmit_segment(struct iscsi_tcp_conn *tcp_conn,
- 
- 	while (!iscsi_tcp_segment_done(tcp_conn, segment, 0, r)) {
- 		struct scatterlist *sg;
-+		struct msghdr msg = {};
-+		union {
-+			struct kvec kv;
-+			struct bio_vec bv;
-+		} vec;
- 		unsigned int offset, copy;
--		int flags = 0;
- 
- 		r = 0;
- 		offset = segment->copied;
- 		copy = segment->size - offset;
- 
- 		if (segment->total_copied + segment->size < segment->total_size)
--			flags |= MSG_MORE | MSG_SENDPAGE_NOTLAST;
-+			msg.msg_flags |= MSG_MORE | MSG_SENDPAGE_NOTLAST;
- 
- 		if (tcp_sw_conn->queue_recv)
--			flags |= MSG_DONTWAIT;
-+			msg.msg_flags |= MSG_DONTWAIT;
- 
--		/* Use sendpage if we can; else fall back to sendmsg */
- 		if (!segment->data) {
-+			if (tcp_conn->iscsi_conn->datadgst_en)
-+				msg.msg_flags |= MSG_SPLICE_PAGES;
- 			sg = segment->sg;
- 			offset += segment->sg_offset + sg->offset;
--			r = tcp_sw_conn->sendpage(sk, sg_page(sg), offset,
--						  copy, flags);
-+			bvec_set_page(&vec.bv, sg_page(sg), copy, offset);
-+			iov_iter_bvec(&msg.msg_iter, ITER_SOURCE, &vec.bv, 1, copy);
- 		} else {
--			struct msghdr msg = { .msg_flags = flags };
--			struct kvec iov = {
--				.iov_base = segment->data + offset,
--				.iov_len = copy
--			};
--
--			r = kernel_sendmsg(sk, &msg, &iov, 1, copy);
-+			vec.kv.iov_base = segment->data + offset;
-+			vec.kv.iov_len  = copy;
-+			iov_iter_kvec(&msg.msg_iter, ITER_SOURCE, &vec.kv, 1, copy);
- 		}
- 
-+		r = sock_sendmsg(sk, &msg);
- 		if (r < 0) {
- 			iscsi_tcp_segment_unmap(segment);
- 			return r;
-@@ -746,7 +748,6 @@ iscsi_sw_tcp_conn_bind(struct iscsi_cls_session *cls_session,
- 	sock_no_linger(sk);
- 
- 	iscsi_sw_tcp_conn_set_callbacks(conn);
--	tcp_sw_conn->sendpage = tcp_sw_conn->sock->ops->sendpage;
- 	/*
- 	 * set receive state machine into initial state
- 	 */
-@@ -778,8 +779,6 @@ static int iscsi_sw_tcp_conn_set_param(struct iscsi_cls_conn *cls_conn,
- 			mutex_unlock(&tcp_sw_conn->sock_lock);
- 			return -ENOTCONN;
- 		}
--		tcp_sw_conn->sendpage = conn->datadgst_en ?
--			sock_no_sendpage : tcp_sw_conn->sock->ops->sendpage;
- 		mutex_unlock(&tcp_sw_conn->sock_lock);
- 		break;
- 	case ISCSI_PARAM_MAX_R2T:
-diff --git a/drivers/scsi/iscsi_tcp.h b/drivers/scsi/iscsi_tcp.h
-index 68e14a344904..d6ec08d7eb63 100644
---- a/drivers/scsi/iscsi_tcp.h
-+++ b/drivers/scsi/iscsi_tcp.h
-@@ -48,7 +48,7 @@ struct iscsi_sw_tcp_conn {
- 	uint32_t		sendpage_failures_cnt;
- 	uint32_t		discontiguous_hdr_cnt;
- 
--	ssize_t (*sendpage)(struct socket *, struct page *, int, size_t, int);
-+	bool			can_splice_to_tcp;
- };
- 
- struct iscsi_sw_tcp_host {
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index 26dc8ed3045b..c7d58e41ac3b 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -1078,6 +1078,8 @@ int iscsit_fe_sendpage_sg(
- 	struct iscsit_conn *conn)
- {
- 	struct scatterlist *sg = cmd->first_data_sg;
-+	struct bio_vec bvec;
-+	struct msghdr msghdr = { .msg_flags = MSG_SPLICE_PAGES,	};
- 	struct kvec iov;
- 	u32 tx_hdr_size, data_len;
- 	u32 offset = cmd->first_data_sg_off;
-@@ -1121,17 +1123,17 @@ int iscsit_fe_sendpage_sg(
- 		u32 space = (sg->length - offset);
- 		u32 sub_len = min_t(u32, data_len, space);
- send_pg:
--		tx_sent = conn->sock->ops->sendpage(conn->sock,
--					sg_page(sg), sg->offset + offset, sub_len, 0);
-+		bvec_set_page(&bvec, sg_page(sg), sub_len, sg->offset + offset);
-+		iov_iter_bvec(&msghdr.msg_iter, ITER_SOURCE, &bvec, 1, sub_len);
-+
-+		tx_sent = conn->sock->ops->sendmsg(conn->sock, &msghdr, sub_len);
- 		if (tx_sent != sub_len) {
- 			if (tx_sent == -EAGAIN) {
--				pr_err("tcp_sendpage() returned"
--						" -EAGAIN\n");
-+				pr_err("sendmsg/splice returned -EAGAIN\n");
- 				goto send_pg;
- 			}
- 
--			pr_err("tcp_sendpage() failure: %d\n",
--					tx_sent);
-+			pr_err("sendmsg/splice failure: %d\n", tx_sent);
- 			return -1;
- 		}
- 
-
+T24gMy8yOS8yMyAwNjoyNCwgVG9tIFJpeCB3cm90ZToNCj4gY2xhbmcgd2l0aCBXPTEgcmVwb3J0
+cw0KPiBkcml2ZXJzL3RhcmdldC90YXJnZXRfY29yZV9zcGMuYzoyMjk6NjogZXJyb3I6IHZhcmlh
+YmxlDQo+ICAgICdwcm9kX2xlbicgc2V0IGJ1dCBub3QgdXNlZCBbLVdlcnJvciwtV3VudXNlZC1i
+dXQtc2V0LXZhcmlhYmxlXQ0KPiAgICAgICAgICB1MzIgcHJvZF9sZW47DQo+ICAgICAgICAgICAg
+ICBeDQo+IFRoaXMgdmFyaWFibGUgaXMgbm90IHVzZWQgc28gcmVtb3ZlIGl0Lg0KPg0KPiBTaWdu
+ZWQtb2ZmLWJ5OiBUb20gUml4IDx0cml4QHJlZGhhdC5jb20+DQo+IC0tLQ0KPg0KDQoNCkxvb2tz
+IGdvb2QuDQoNClJldmlld2VkLWJ5OiBDaGFpdGFueWEgS3Vsa2FybmkgPGtjaEBudmlkaWEuY29t
+Pg0KDQotY2sNCg0KDQo=
