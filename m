@@ -2,71 +2,142 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2304C77B71
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E71E3C77B77
 	for <target-devel@archiver.kernel.org>; Fri,  7 Apr 2023 20:08:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229848AbjDGUIn (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 7 Apr 2023 16:08:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59716 "EHLO
+        id S230063AbjDGUIr (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 7 Apr 2023 16:08:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59742 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230242AbjDGUIf (ORCPT
+        with ESMTP id S230255AbjDGUIf (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
         Fri, 7 Apr 2023 16:08:35 -0400
-Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79D67BBA1;
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E77E3BBB5;
         Fri,  7 Apr 2023 13:08:34 -0700 (PDT)
-Received: by mail-pj1-f49.google.com with SMTP id nh20-20020a17090b365400b0024496d637e1so5091429pjb.5;
-        Fri, 07 Apr 2023 13:08:34 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680898114; x=1683490114;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=CkZ9epVN8TkdRsJcbdQlduPOctGu1N9KX0JTrq0nz1g=;
-        b=OgRf+qISMweawhphd8MFRNmo5JOJPw44VchvqAxLmBe2CLvB8o8FT1vImOEYv6697R
-         Vab9MDpN6hhWE3q9baD8cmxAJmcPz1ldrQDeJluyATZOW7LoCDS/Bp1i9Y28OWiHRLsp
-         b1TZUoKHPDtaiXfEoM+l0UbJe2cP2ojfzewxmC043mrzONzj8wxZgsbEhVsrn7UFcGsb
-         jvfeJaCjLiD4NDOmq/KnyKUEwxo1k0nIejDyO6x4emtwmc0a7c/E3o0bp+r6Gg7RKoFn
-         ZqSkPD+Ho/YMjFxdh4MzK8OOo24hqyGwS2Vmtvj70PSkwqCBidCdxxwg6Hf1yyLhmBRD
-         Hz6A==
-X-Gm-Message-State: AAQBX9cjD3li3rR7frGhmbKUVsUwoDzMT9FWdlAeZJYC4+xoDqQza/D+
-        OkAzWgKl6rz5RmDKLWG7F3o=
-X-Google-Smtp-Source: AKy350bkZ/dbg++B75vxCCybX1JJjWE1bjDcXVcXGtkaYO/su68D56optz/DjfTQFNhiuhs1ZBvehA==
-X-Received: by 2002:a17:903:2309:b0:1a2:55c9:1808 with SMTP id d9-20020a170903230900b001a255c91808mr4182456plh.17.1680898113889;
-        Fri, 07 Apr 2023 13:08:33 -0700 (PDT)
-Received: from ?IPV6:2620:15c:211:201:f2c:4ac2:6000:5900? ([2620:15c:211:201:f2c:4ac2:6000:5900])
-        by smtp.gmail.com with ESMTPSA id ju20-20020a170903429400b0019aafc422fcsm3272871plb.240.2023.04.07.13.08.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 07 Apr 2023 13:08:33 -0700 (PDT)
-Message-ID: <0d7d40a3-bd58-03f2-5bf2-706ed2e6155f@acm.org>
-Date:   Fri, 7 Apr 2023 13:08:31 -0700
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: [PATCH v6 04/18] scsi: Move sd_pr_type to scsi_common
-Content-Language: en-US
-To:     Mike Christie <michael.christie@oracle.com>, hch@lst.de,
-        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        james.bottomley@hansenpartnership.com, linux-block@vger.kernel.org,
-        dm-devel@redhat.com, snitzer@kernel.org, axboe@kernel.dk,
+Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 337Fx2D5018342;
+        Fri, 7 Apr 2023 20:06:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=corp-2022-7-12;
+ bh=9pmVPD6b3P7+1yxXPt0GWm3eG9nQG6vdgffOi8t1hbk=;
+ b=LFCm08eEVZzeEComXaCAQKvmATGWaE6c9BmgeRjhSU4v0O1s3w8EGjsZJ/oArLkusBF9
+ F9P6Ql3cul3XyB9xxfsOaOuzzxAA7EUyxC+2qSqVbwamebh0YNtnAWFSLDRCwz4n/9SD
+ 6yK9vKNcOtsFr9OjHKrTX8Fy9ASQC5g+6oDf1laflZasUv2+Z6d4B4o2oaAK6qSyUzX6
+ 5fpn9IrvX7hqFJMux+ZwBHLfzzNdb9vsgSIDDJWYDlHpN491ZB3wJfvEozx9DqXy9t9t
+ 5iOCHC7xzbK+spTX8tiVfNNssEF4h9UCNkOBnquZJP7h4jVVgYy0TI+4OLm7BhJ7N0I2 zA== 
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3ppb1dws08-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 07 Apr 2023 20:06:22 +0000
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 337J0SXs034263;
+        Fri, 7 Apr 2023 20:06:22 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3pptjxeey5-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 07 Apr 2023 20:06:22 +0000
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 337K5trC010228;
+        Fri, 7 Apr 2023 20:06:21 GMT
+Received: from mnchrist-mac.us.oracle.com (dhcp-10-154-128-1.vpn.oracle.com [10.154.128.1])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3pptjxeeam-11;
+        Fri, 07 Apr 2023 20:06:21 +0000
+From:   Mike Christie <michael.christie@oracle.com>
+To:     bvanassche@acm.org, hch@lst.de, martin.petersen@oracle.com,
+        linux-scsi@vger.kernel.org, james.bottomley@hansenpartnership.com,
+        linux-block@vger.kernel.org, dm-devel@redhat.com,
+        snitzer@kernel.org, axboe@kernel.dk,
         linux-nvme@lists.infradead.org, chaitanyak@nvidia.com,
         kbusch@kernel.org, target-devel@vger.kernel.org
-Cc:     Chaitanya Kulkarni <kch@nvidia.com>
+Cc:     Mike Christie <michael.christie@oracle.com>
+Subject: [PATCH v6 10/18] nvme: Add helper to send pr command
+Date:   Fri,  7 Apr 2023 15:05:43 -0500
+Message-Id: <20230407200551.12660-11-michael.christie@oracle.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230407200551.12660-1-michael.christie@oracle.com>
 References: <20230407200551.12660-1-michael.christie@oracle.com>
- <20230407200551.12660-5-michael.christie@oracle.com>
-From:   Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20230407200551.12660-5-michael.christie@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-04-07_12,2023-04-06_03,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 adultscore=0
+ phishscore=0 bulkscore=0 mlxscore=0 suspectscore=0 spamscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2303200000 definitions=main-2304070180
+X-Proofpoint-GUID: dQ6TViI8gL_Ro_6O9DMW_rTxKHmTPDpB
+X-Proofpoint-ORIG-GUID: dQ6TViI8gL_Ro_6O9DMW_rTxKHmTPDpB
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 4/7/23 13:05, Mike Christie wrote:
-> LIO is going to want to do the same block to/from SCSI pr types as sd.c
-> so this moves the sd_pr_type helper to scsi_common and renames it. The
-> next patch will then also add a helper to go from the SCSI value to the
-> block one for use with PERSISTENT_RESERVE_IN commands.
+Move the code that checks for multipath support and sends the pr command
+to a new helper so it can be used by the reservation report support added
+in the next patches.
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: Mike Christie <michael.christie@oracle.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/nvme/host/pr.c | 23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/nvme/host/pr.c b/drivers/nvme/host/pr.c
+index ca7a8d531a23..cd93d2e5b340 100644
+--- a/drivers/nvme/host/pr.c
++++ b/drivers/nvme/host/pr.c
+@@ -30,7 +30,7 @@ static char nvme_pr_type(enum pr_type type)
+ }
+ 
+ static int nvme_send_ns_head_pr_command(struct block_device *bdev,
+-		struct nvme_command *c, u8 *data, unsigned int data_len)
++		struct nvme_command *c, void *data, unsigned int data_len)
+ {
+ 	struct nvme_ns_head *head = bdev->bd_disk->private_data;
+ 	int srcu_idx = srcu_read_lock(&head->srcu);
+@@ -46,7 +46,7 @@ static int nvme_send_ns_head_pr_command(struct block_device *bdev,
+ }
+ 
+ static int nvme_send_ns_pr_command(struct nvme_ns *ns, struct nvme_command *c,
+-		u8 *data, unsigned int data_len)
++		void *data, unsigned int data_len)
+ {
+ 	c->common.nsid = cpu_to_le32(ns->head->ns_id);
+ 	return nvme_submit_sync_cmd(ns->queue, c, data, data_len);
+@@ -74,6 +74,17 @@ static int nvme_sc_to_pr_err(int nvme_sc)
+ 	}
+ }
+ 
++static int nvme_send_pr_command(struct block_device *bdev,
++		struct nvme_command *c, void *data, unsigned int data_len)
++{
++	if (IS_ENABLED(CONFIG_NVME_MULTIPATH) &&
++	    bdev->bd_disk->fops == &nvme_ns_head_ops)
++		return nvme_send_ns_head_pr_command(bdev, c, data, data_len);
++
++	return nvme_send_ns_pr_command(bdev->bd_disk->private_data, c, data,
++				       data_len);
++}
++
+ static int nvme_pr_command(struct block_device *bdev, u32 cdw10,
+ 				u64 key, u64 sa_key, u8 op)
+ {
+@@ -87,13 +98,7 @@ static int nvme_pr_command(struct block_device *bdev, u32 cdw10,
+ 	c.common.opcode = op;
+ 	c.common.cdw10 = cpu_to_le32(cdw10);
+ 
+-	if (IS_ENABLED(CONFIG_NVME_MULTIPATH) &&
+-	    bdev->bd_disk->fops == &nvme_ns_head_ops)
+-		ret = nvme_send_ns_head_pr_command(bdev, &c, data,
+-						   sizeof(data));
+-	else
+-		ret = nvme_send_ns_pr_command(bdev->bd_disk->private_data, &c,
+-					      data, sizeof(data));
++	ret = nvme_send_pr_command(bdev, &c, data, sizeof(data));
+ 	if (ret < 0)
+ 		return ret;
+ 
+-- 
+2.25.1
 
