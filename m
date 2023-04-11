@@ -2,64 +2,44 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA66EC77B61
-	for <target-devel@archiver.kernel.org>; Mon, 10 Apr 2023 13:04:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0923CC7619A
+	for <target-devel@archiver.kernel.org>; Tue, 11 Apr 2023 05:33:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229624AbjDJNEi (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 10 Apr 2023 09:04:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39254 "EHLO
+        id S229931AbjDKFdd (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 11 Apr 2023 01:33:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44492 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229614AbjDJNEh (ORCPT
+        with ESMTP id S229536AbjDKFdc (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 10 Apr 2023 09:04:37 -0400
-X-Greylist: delayed 19716 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 10 Apr 2023 06:04:36 PDT
-Received: from forwardcorp1b.mail.yandex.net (forwardcorp1b.mail.yandex.net [178.154.239.136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE12A359A;
-        Mon, 10 Apr 2023 06:04:35 -0700 (PDT)
-Received: from mail-nwsmtp-smtp-corp-main-44.iva.yp-c.yandex.net (mail-nwsmtp-smtp-corp-main-44.iva.yp-c.yandex.net [IPv6:2a02:6b8:c0c:7f29:0:640:9a2b:0])
-        by forwardcorp1b.mail.yandex.net (Yandex) with ESMTP id E43246001C;
-        Mon, 10 Apr 2023 16:04:33 +0300 (MSK)
-Received: from [IPV6:2a02:6b8:b081:8004::1:3b] (unknown [2a02:6b8:b081:8004::1:3b])
-        by mail-nwsmtp-smtp-corp-main-44.iva.yp-c.yandex.net (smtpcorp/Yandex) with ESMTPSA id V4Uktq0OceA0-nyYXNgLu;
-        Mon, 10 Apr 2023 16:04:33 +0300
-X-Yandex-Fwd: 1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex-team.ru; s=default;
-        t=1681131873; bh=Md66GosOjmPPUlltIz4jzWfy7InuFYqLQrcP3JVKSWI=;
-        h=From:In-Reply-To:Cc:Date:References:To:Subject:Message-ID;
-        b=Z592sOU4N+WDMoVQCQR/E3vrBzPS5OQpzLhXAFUDGCdcUBmE5OomXRZl0ySgzVCrA
-         BLXeUcZwq+CA3BK30llw8pGPvY9LgdDud5A7IOPIrUTh+tX3evuX6L7Pbx6O4a1m+j
-         rRz3XhCut/a5CzOt1evW9Ms7CCPW/B2FX+xWqg1w=
-Authentication-Results: mail-nwsmtp-smtp-corp-main-44.iva.yp-c.yandex.net; dkim=pass header.i=@yandex-team.ru
-Message-ID: <0b5cfdc4-817e-30b5-7295-5bca9c31a0b7@yandex-team.ru>
-Date:   Mon, 10 Apr 2023 16:04:31 +0300
+        Tue, 11 Apr 2023 01:33:32 -0400
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1671726AE;
+        Mon, 10 Apr 2023 22:33:32 -0700 (PDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+        id 009B768BFE; Tue, 11 Apr 2023 07:33:27 +0200 (CEST)
+Date:   Tue, 11 Apr 2023 07:33:27 +0200
+From:   Christoph Hellwig <hch@lst.de>
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     bvanassche@acm.org, hch@lst.de, martin.petersen@oracle.com,
+        linux-scsi@vger.kernel.org, james.bottomley@hansenpartnership.com,
+        linux-block@vger.kernel.org, dm-devel@redhat.com,
+        snitzer@kernel.org, axboe@kernel.dk,
+        linux-nvme@lists.infradead.org, chaitanyak@nvidia.com,
+        kbusch@kernel.org, target-devel@vger.kernel.org,
+        Stefan Haberland <sth@linux.ibm.com>
+Subject: Re: [PATCH v6 02/18] block: Rename BLK_STS_NEXUS to
+ BLK_STS_RESV_CONFLICT
+Message-ID: <20230411053327.GA17645@lst.de>
+References: <20230407200551.12660-1-michael.christie@oracle.com> <20230407200551.12660-3-michael.christie@oracle.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Subject: Re: [PATCH] scsi: target: cxgbit: check skb dequeue result
-Content-Language: en-US
-To:     Varun Prakash <varun@chelsio.com>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Cc:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-        "nab@linux-iscsi.org" <nab@linux-iscsi.org>,
-        "martin.petersen@oracle.com" <martin.petersen@oracle.com>
-References: <20230406150405.300909-1-den-plotnikov@yandex-team.ru>
- <BN9PR12MB532475CDE58B1E570B37DC60BC959@BN9PR12MB5324.namprd12.prod.outlook.com>
-From:   Denis Plotnikov <den-plotnikov@yandex-team.ru>
-In-Reply-To: <BN9PR12MB532475CDE58B1E570B37DC60BC959@BN9PR12MB5324.namprd12.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230407200551.12660-3-michael.christie@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+Looks good:
 
-On 10.04.2023 14:45, Varun Prakash wrote:
->> On a couple of abort packet paths skb dequeuing may end up with
->> returning NULL, which, in turn, may end up with further null
->> pointer dereference.
->>
->> Fix it by checking the return value of skb dequeuing.
-> skbs in csk->skbq are preallocated for critical events in cxgbit_alloc_csk_skb(),
-> so there is no need to check for NULL.
-Ok, thanks for the reply
+Reviewed-by: Christoph Hellwig <hch@lst.de>
