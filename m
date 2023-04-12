@@ -2,91 +2,56 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68331C77B70
-	for <target-devel@archiver.kernel.org>; Wed, 12 Apr 2023 02:05:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31362C77B6E
+	for <target-devel@archiver.kernel.org>; Wed, 12 Apr 2023 07:36:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229761AbjDLCFY (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 11 Apr 2023 22:05:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60822 "EHLO
+        id S229638AbjDLHgk (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 12 Apr 2023 03:36:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56674 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229755AbjDLCFX (ORCPT
+        with ESMTP id S229450AbjDLHgj (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 11 Apr 2023 22:05:23 -0400
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 198835246;
-        Tue, 11 Apr 2023 19:05:19 -0700 (PDT)
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33BLLCUE005453;
-        Wed, 12 Apr 2023 02:05:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2023-03-30;
- bh=SUluKX6kMH5F8rxXKuyyOiRlFa+0Og0Y3g87pm6MptE=;
- b=qsM3YOUamIssOk2UP6D3lQRzRBqpA1m8HZqhxaCU6NlhlreYAIPOYwMGXuM6418qNsSf
- vc8Sn8mJ8o3PtQyw00zpM0vB2rWFRY9IQ7qbsf0taq4d/DSuWhH3/GxovK1omCMvWJ72
- ZOsQJnrAvetelvXW+6qaCOXiT8GMC/MCf50CqlE5SelWuXA/uZi8mmAkGjjcsLulDDni
- 10e9f1QNFPJ3g7RpTzlIdlRA0/qofDPh6wJjCDPmDCJayvhomcxcOP8ws5+tWYrixcZi
- 8AyE4CpUhfqMDlzcS+rDhqKiyrBt9vQYvaHx23yDGis9172mk14CPU7SlGnVYpq8PomD +A== 
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3pu0e7evcq-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 12 Apr 2023 02:05:03 +0000
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 33BNhQ2G008117;
-        Wed, 12 Apr 2023 02:05:03 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3puwc54tvv-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 12 Apr 2023 02:05:03 +0000
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 33C24xec031283;
-        Wed, 12 Apr 2023 02:05:02 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3puwc54tqc-9;
-        Wed, 12 Apr 2023 02:05:02 +0000
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     nathan@kernel.org, ndesaulniers@google.com,
-        Tom Rix <trix@redhat.com>
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH] scsi: target: core: remove unused prod_len variable
-Date:   Tue, 11 Apr 2023 22:04:49 -0400
-Message-Id: <168126077050.185856.6929741169277283722.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.40.0
-In-Reply-To: <20230329132421.1809362-1-trix@redhat.com>
-References: <20230329132421.1809362-1-trix@redhat.com>
+        Wed, 12 Apr 2023 03:36:39 -0400
+Received: from mail.penmade.pl (mail.penmade.pl [94.177.230.163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93D3D19AB
+        for <target-devel@vger.kernel.org>; Wed, 12 Apr 2023 00:36:37 -0700 (PDT)
+Received: by mail.penmade.pl (Postfix, from userid 1001)
+        id 820328316C; Wed, 12 Apr 2023 08:35:52 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=penmade.pl; s=mail;
+        t=1681284994; bh=CSKXLMgcdpWkXuTgJn5+jsCVobtU9JEF4vCnS5z6McM=;
+        h=Date:From:To:Subject:From;
+        b=X7qcymms0RgMwUPW4KwN83AlkEeLmv27RNqZw6sAARAB9OZ/p3Nd/l/C6qFd7B5/K
+         lifZQZhzh1snGnT7rHikUxgVdieP5UwVCIDyTxMWK32GzhXJj1ISODi5TMm4NSy6tX
+         gxnwO1IlM8tbFiZS/A2oWtR4j3ca2yxoVZox+HF8H5hqI8eXlSaluoRZCvl/vNXK/8
+         gLMYSy1+UuCzMWDAGYfIlVrTZFxrcLdXom9F6BQXJqyl5yBtlsSdfmum4uqtkH/nGh
+         Dd6bbfFwX9kdjov8MI4Gg6XlUO7G/QSBMIVQUuW7iMcyumDNHLKIqdkg2FQ+I1bbOw
+         hx62r9tRz5AcA==
+Received: by mail.penmade.pl for <target-devel@vger.kernel.org>; Wed, 12 Apr 2023 07:35:31 GMT
+Message-ID: <20230412074501-0.1.3j.eoxn.0.5d9fayfhgm@penmade.pl>
+Date:   Wed, 12 Apr 2023 07:35:31 GMT
+From:   "Wiktor Nurek" <wiktor.nurek@penmade.pl>
+To:     <target-devel@vger.kernel.org>
+Subject: =?UTF-8?Q?Nap=C5=82yw_Klient=C3=B3w_ze_strony?=
+X-Mailer: mail.penmade.pl
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-04-11_16,2023-04-11_02,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 malwarescore=0 adultscore=0
- suspectscore=0 phishscore=0 mlxlogscore=816 mlxscore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303200000
- definitions=main-2304120016
-X-Proofpoint-ORIG-GUID: Bzr9rLvJ9Uc6Adx10VyXJuCcXBuhzbJA
-X-Proofpoint-GUID: Bzr9rLvJ9Uc6Adx10VyXJuCcXBuhzbJA
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, 29 Mar 2023 09:24:21 -0400, Tom Rix wrote:
+Dzie=C5=84 dobry,
 
-> clang with W=1 reports
-> drivers/target/target_core_spc.c:229:6: error: variable
->   'prod_len' set but not used [-Werror,-Wunused-but-set-variable]
->         u32 prod_len;
->             ^
-> This variable is not used so remove it.
-> 
-> [...]
+chcia=C5=82bym poinformowa=C4=87 Pa=C5=84stwa o mo=C5=BCliwo=C5=9Bci pozy=
+skania nowych zlece=C5=84 ze strony www.
 
-Applied to 6.4/scsi-queue, thanks!
+Widzimy zainteresowanie potencjalnych Klient=C3=B3w Pa=C5=84stwa firm=C4=85=
+, dlatego ch=C4=99tnie pomo=C5=BCemy Pa=C5=84stwu dotrze=C4=87 z ofert=C4=
+=85 do wi=C4=99kszego grona odbiorc=C3=B3w poprzez efektywne metody pozyc=
+jonowania strony w Google.
 
-[1/1] scsi: target: core: remove unused prod_len variable
-      https://git.kernel.org/mkp/scsi/c/aa4d7812cf2c
+Czy m=C3=B3g=C5=82bym liczy=C4=87 na kontakt zwrotny?
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+
+Pozdrawiam serdecznie,
+Wiktor Nurek
