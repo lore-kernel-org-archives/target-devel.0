@@ -2,178 +2,241 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8584DC7619A
-	for <target-devel@archiver.kernel.org>; Wed, 12 Apr 2023 10:57:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFB4BC77B6F
+	for <target-devel@archiver.kernel.org>; Wed, 12 Apr 2023 18:29:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229678AbjDLK5q (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 12 Apr 2023 06:57:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54648 "EHLO
+        id S229564AbjDLS3j (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 12 Apr 2023 14:29:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44558 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229580AbjDLK5q (ORCPT
+        with ESMTP id S229482AbjDLS3i (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 12 Apr 2023 06:57:46 -0400
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 867C36A68
-        for <target-devel@vger.kernel.org>; Wed, 12 Apr 2023 03:57:44 -0700 (PDT)
-Received: by mail-pj1-x102f.google.com with SMTP id c3so11999681pjg.1
-        for <target-devel@vger.kernel.org>; Wed, 12 Apr 2023 03:57:44 -0700 (PDT)
+        Wed, 12 Apr 2023 14:29:38 -0400
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B23B319F;
+        Wed, 12 Apr 2023 11:29:37 -0700 (PDT)
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33CHDrQX012022;
+        Wed, 12 Apr 2023 18:28:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=corp-2023-03-30;
+ bh=dfLbzVkX4DEX/xi/gA8qYNInRmV2hGIsflqS33WBiLs=;
+ b=a4VIDeUzIiHieUeb6alcU5nAqiyerD/xUO7KL68IJl9f4ruK1gCF93U8gphslZFlpUZ7
+ 9maS+rGMItBbKW+C77kdfvQMAcHknAE7uH/t6S6LFsGXVtWm/13/4n/G2EqdGTHMz0R0
+ Nm56PgtVWk3Xx8pcBmuQudPsqul8LpF/jYDKGPrD5yO+/JGCiDZXdpmFzH8WQlzEMx50
+ Cezrk5HHU17NGjM3G6XDazNEawcOMzDa4aBLElortymPjHdG0DORSlzAgPf21wMqQkPK
+ dJ9TAI//T56IXCMFaLwvd1ja1hIBk1nBnHhNAizWg5rJLwhOsh2rwoRjwuG5/tDbWs1j ew== 
+Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.appoci.oracle.com [147.154.114.232])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3pu0hc91ky-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 12 Apr 2023 18:28:42 +0000
+Received: from pps.filterd (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+        by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 33CHBSdL017471;
+        Wed, 12 Apr 2023 18:28:42 GMT
+Received: from nam12-mw2-obe.outbound.protection.outlook.com (mail-mw2nam12lp2041.outbound.protection.outlook.com [104.47.66.41])
+        by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3puw897kvh-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 12 Apr 2023 18:28:42 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=VNQme/GQLukypl75qNi0n/p9FlPlPKjVM76/BD5cHVNDuC+OGFnHlUbbUCuPBmn5+PBB3cnsuFOvqTKhd6BOrKkT36EUx5v381GbjYEXvOQiv1qtycjndl1dEWDjf+aEn76TuIgQ3rvisws7Ivl4kHDLJrbK9QSKIhcaoumkt7N5s+CcR/AwHl1Di7nZ4LAA7VuAYhB32wSrJ9X+yMZSQX/bHKp0uQ9tQcG7FKBy4CRrlrM1MNDO9QokwBsBuThxPxOPxAW0J8QxPB16IIaHFZ4L+xsV+TI857iCmQcmlL1yVRP5hAH1RfMejg4pZuQ7cNC66lqw0kuAEC/FeLt8Fg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=dfLbzVkX4DEX/xi/gA8qYNInRmV2hGIsflqS33WBiLs=;
+ b=eyYEhheb/zCTUCZZanq7DZSTwjXN2r37S8IgZWC8zkI9vxv3oAsSEVxqAq68msqfnyOPp5U7fJCgYFplj50G6XVORCt4/vh7x5IB0Ox+3kGBcdUh9ZHfvBhFhbGJepmdCebNYjq4Ex7Mxm2sUfqla3adXQ1Hmr9uKwivSL6SP+nGauEDBeGyrJou93kxFf28/YUrWWBtFxbe1rmd/VhYLxANN/0Fs0MsldVOt4HHc+t/1zUOj0/8ThAz/ULRE+xpcg/1fHr3Lvqzu7OkeD7pXtHQby2tKUI93iZRXGG4Xirbaomks5qkcYzFJi7kSilHs6P5jiA6vmOB2Oa3xPSieQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1681297064; x=1683889064;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=CcYYNtaDxHlH75DVzktS520/qEGVSpcAU/4xvgOpO10=;
-        b=i7rneX3b+KZfC/JY42g2UXg/jZCIZugN68wJy4Z1KJD193cGw8Hvs83yWHdvOw/+UL
-         aG/7ZWotaY8dLOMOpf4a0a686XIq39aTHAcIHh/CvI3HFIdbAyhOn4xStHo4rWx6Ggvi
-         vK6C/I8B5vgGMw3Srm4uHGrhYlUjPiG8Pu6IV6iFjHT3wsHHnNiNlXkSGus7uNW0HoyM
-         ZG+cxWGWtAbKYuYEACTajY+7NMa97FLZFNImMvXsGAi6DRdiD2F1VDBCRy9Vt8YZCVtc
-         mUik5AMV9ASbCmU8NuTKGrfP7mhSeQZC3OTuCvQ8s3Kf2iXdAVN49BBRoNCmYRvgDaB/
-         T2zw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681297064; x=1683889064;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=CcYYNtaDxHlH75DVzktS520/qEGVSpcAU/4xvgOpO10=;
-        b=w3f0DGHrobCpj2S3RM7KuV/0hpuqAXwl5nMZqdDWxFDRkwjKD0pwpUh1veZeMo7zyd
-         Br4bDqEuPREX+4IG73q+xHccKgHVAptQwlldYRcQkzbhUHuMt781EY1E1pbvQHutNz2a
-         4bkrHJvQNGnQQzvkNr0O+jWNkxTjQZl0VwFnTwzHGiopY/xBCXnSJhDdi9GuEBBBcV6+
-         4w1NfK5MRXIOIPe23AAgoK2pse/fnufuuprqH/l2hXw0MZlmUkOYvjVp5/fhztoQY2GJ
-         CHA4zLxAKL3VBnzjawcsuwWJm86xppb3+LBrN17Sr0HbyR0pFjyF8S1vXWbCZJD+S8Lq
-         QloA==
-X-Gm-Message-State: AAQBX9eInUmC+adMo/QFmEDf8ALQTIX6MH0e7RkWfkPEFTa7fn7oX9tu
-        9OE5DzXWlADs6nI7QAXfxRPYL9WL46+ayO5cuYo=
-X-Google-Smtp-Source: AKy350b6VhmArfjtfG5hPTUB1cljJ9QaEx7TyP53/04DDnKkbVZXFIF0jKcWKxQnKxuBsS2tM1Ls6A==
-X-Received: by 2002:a17:902:fa05:b0:1a6:3af1:9c3a with SMTP id la5-20020a170902fa0500b001a63af19c3amr9987792plb.22.1681297063711;
-        Wed, 12 Apr 2023 03:57:43 -0700 (PDT)
-Received: from localhost.localdomain ([124.123.191.81])
-        by smtp.gmail.com with ESMTPSA id p10-20020a1709026b8a00b001a6467cfbeasm4942246plk.53.2023.04.12.03.57.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Apr 2023 03:57:43 -0700 (PDT)
-From:   Naresh Kamboju <naresh.kamboju@linaro.org>
-To:     michael.christie@oracle.com
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=dfLbzVkX4DEX/xi/gA8qYNInRmV2hGIsflqS33WBiLs=;
+ b=rmsnYg9QdF116qICJWCqxJ7Ruwu3vUPKe9HKLx9cpatCVoO2cAzrO7P5AGprmufUtwZc4WpnG+3dukSvslBbSug2xtB6wKs2yy7fwQSp3Rb+dYUFMbbo6Jf3MXoTLDn6xbGH/vMVCYMrH1VOzE4mlEfc6E1ojIt6L7Nxmk7+boI=
+Received: from DM5PR10MB1466.namprd10.prod.outlook.com (2603:10b6:3:b::7) by
+ IA1PR10MB7513.namprd10.prod.outlook.com (2603:10b6:208:451::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.35; Wed, 12 Apr
+ 2023 18:28:39 +0000
+Received: from DM5PR10MB1466.namprd10.prod.outlook.com
+ ([fe80::a870:411d:9426:21b3]) by DM5PR10MB1466.namprd10.prod.outlook.com
+ ([fe80::a870:411d:9426:21b3%10]) with mapi id 15.20.6298.030; Wed, 12 Apr
+ 2023 18:28:39 +0000
+Message-ID: <e85746b2-9736-9041-9327-1ad1299aa155@oracle.com>
+Date:   Wed, 12 Apr 2023 13:28:37 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Subject: Re: [PATCH v6 00/18] Use block pr_ops in LIO
+To:     Naresh Kamboju <naresh.kamboju@linaro.org>
 Cc:     axboe@kernel.dk, bvanassche@acm.org, chaitanyak@nvidia.com,
         dm-devel@redhat.com, hch@lst.de,
         james.bottomley@hansenpartnership.com, kbusch@kernel.org,
         linux-block@vger.kernel.org, linux-nvme@lists.infradead.org,
         linux-scsi@vger.kernel.org, martin.petersen@oracle.com,
-        snitzer@kernel.org, target-devel@vger.kernel.org,
-        linux-mm@kvack.org, akpm@linux-foundation.org,
+        snitzer@kernel.org, target-devel@vger.kernel.org, vbabka@suse.cz,
+        mgorman@techsingularity.net, halbuer@sra.uni-hannover.de,
+        keescook@chromium.org, akpm@linux-foundation.org,
         kirill.shutemov@linux.intel.com, willy@infradead.org,
         mkoutny@suse.com, roman.gushchin@linux.dev, ryan.roberts@arm.com,
-        shy828301@gmail.com, yuzhao@google.com, zokeefe@google.com,
-        lkft-triage@lists.linaro.org
-Subject: [PATCH v6 00/18] Use block pr_ops in LIO
-Date:   Wed, 12 Apr 2023 16:27:34 +0530
-Message-Id: <20230412105734.293024-1-naresh.kamboju@linaro.org>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20230407200551.12660-1-michael.christie@oracle.com>
+        shy828301@gmail.com, yuzhao@google.com, zokeefe@google.com
 References: <20230407200551.12660-1-michael.christie@oracle.com>
+ <20230412093617.285177-1-naresh.kamboju@linaro.org>
+ <CA+G9fYv2nEBe=kJK4veunkvXD9GvqyaPFQ7rUbMD1S4+0nUS3Q@mail.gmail.com>
+Content-Language: en-US
+From:   Mike Christie <michael.christie@oracle.com>
+In-Reply-To: <CA+G9fYv2nEBe=kJK4veunkvXD9GvqyaPFQ7rUbMD1S4+0nUS3Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: DS7PR03CA0164.namprd03.prod.outlook.com
+ (2603:10b6:5:3b2::19) To DM5PR10MB1466.namprd10.prod.outlook.com
+ (2603:10b6:3:b::7)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM5PR10MB1466:EE_|IA1PR10MB7513:EE_
+X-MS-Office365-Filtering-Correlation-Id: f118d117-1ea1-4028-9440-08db3b83bc66
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 4Q4P+PPvhAPRe3fGn+8B5irB2ovxt4aIfkm2n4qUuHdh9ZBM7UQygl2v7ehun2DdHXhiCnSz6sSVMptqf20BJ1jugUo0DJmzza/arhDGNlm6PVi+NMz1drAQ3Vl7LVHPEV4mzVU7jL84+p9ZaHP6qtpQxt/7jI5NAyA9SBkaNF/vM+oXrqlB73JV3KDdtJdo0r//Tp2/jvnPVMQNGqLCRlhfg5UWPX26Xa7sOlEMwZTLWLvR4H72Q7em5kyft2VIjerIP2eWDfflsqJJ9EEBU+Xt/PIJSMRIZJXJWSCgSi5kkBA/HNvUfhI43F+N9plyvEhSAucBsN69QScwld7AMbZahsf0kNTlY46kFh5zSifpqaPaTEL71oZabb6ziWtfjhgCD2gvUMKhmhmUaAbXZ/xSkSMlK2JYTh8B4TdY5Gzq/8J1PlJu+w4p6D1rM0m9aFxKZkjeilh3wePUe9NaBnuMIyrkyqrR4vWTiapNx5M8bFj/YEPbguzRixR+HZjLBymBs1ftYj6vYHRP/lQNqdTiyO0wzsRu69QpEo28U8Ssg1hHuZ/dllHIMGvBxIcP707gmZeQgQo2v+M1T9FEMjtx/BYBmRqY8yoObE7Btxd9w1xfD9wbjlzHHo1U9stl
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR10MB1466.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(39860400002)(376002)(346002)(366004)(136003)(396003)(451199021)(31696002)(478600001)(53546011)(26005)(6512007)(6506007)(5660300002)(186003)(316002)(6486002)(966005)(2906002)(66476007)(66556008)(66946007)(8676002)(4326008)(7416002)(8936002)(41300700001)(6916009)(86362001)(38100700002)(83380400001)(36756003)(2616005)(31686004)(84970400001)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?T1dsUTlxWURMRmN3eXllUVZieUorQWxlZ2gxYWl2aXJiNll5d2FGTmdoNkx6?=
+ =?utf-8?B?RURoN1I1YU9mNFhOWU54QnF5M3cxcmJaRmthTjh5bmRpT2ZIVStpNzUrem5j?=
+ =?utf-8?B?TmUxRWxDRU5GVW9VMm5pU0lkaUpDR1BPNHZiNHJXWGI5eXQ2a3orVzVFL3FV?=
+ =?utf-8?B?bVJ1SmxneExYV3o0YzZtZ1BjQmtUUlBmVmI1T09TQUFkRys1di9GR29KdFFo?=
+ =?utf-8?B?aklBZnBxcFV1ckpaUS8zVUs0WWhhanhYL2drVWxKM1ByeXBaaWlUS0ZZOEY3?=
+ =?utf-8?B?ZmtIc3pPcXJNZ001UXRRT0p1dTJ4cG9Pa2xCTnFldWtzYUpKQlJTMElmRlFx?=
+ =?utf-8?B?eFhKVTFIRGsxT2RTMS8xUDFQSUJvdHdPUGt3dXNBcUtEU05yOUd2SFRERTEy?=
+ =?utf-8?B?aWlUK1ZjMFVSdUVuL01MaVQzemZDc0JJRXptalpDTExNUWE2TmdEOXA1S1Nm?=
+ =?utf-8?B?aHRpelZNV2FJTVpvZVV2cDJUOVl4djJjSFZNbmwweldSUkRCblVXdVRtZnFh?=
+ =?utf-8?B?czVMaFdXWHlrRHFONmRoaTZudDlSd0I1cDFxSFZHODMreExSMmRYOVRzS042?=
+ =?utf-8?B?aHBFc0tpTWNTZnZRcmxwemo0NE95YmNhVTVLNG1KaUZ5d1V0eS9rdXFjVEJW?=
+ =?utf-8?B?MDI0U0piSUtwTlVlNDRhdVIwZGlLZnVzKytnWDhjQk9SelNGcUIyU0pRdW5t?=
+ =?utf-8?B?QjcwQUVOZ3ByRDNHSGhhY1ZSRE1kQ3FpTjBTd0VOR2NEb3d2T2xGR25tazZ6?=
+ =?utf-8?B?LzBXSFA4SWRjbC8wd0pLdlJ5WHNQVGJDUjhUTk9JSXA4MUY3czcwWnJLanVL?=
+ =?utf-8?B?L1ZFS2VlaU1zWTJvYUowM1RXQkdoS2lheEJac05wZ21iRGcxSUlCZHdPWGtG?=
+ =?utf-8?B?UXVTZUgxNTUrVFdYdUxXS3lsSE1JSjNJY3R2aHYxRWV0WGFGQ1VkS2hQOGt4?=
+ =?utf-8?B?aEowSzlhUm8yL1B1MmtXSCtMWjNxTWlFbUhVKzBpaGJlUC8yOVZmaitBbXpS?=
+ =?utf-8?B?aXRpZDFQdHFZbHd3aFhIeW95OXliYWM5aE1WRWlHYkJMendkZFBkNkVMaHQ0?=
+ =?utf-8?B?QUw2ZnQzMUM5UnVaSEw2VlFjSE1mSjhkdzc0bXhOcEY0cnlzWnhEbUxXNHF3?=
+ =?utf-8?B?MHZLMG1NdUZ4aENoWTBPZzRKZTVjZDBYaTQrMitrSDRiUVRlelN1L2pZR1Vu?=
+ =?utf-8?B?SXF2WHpXWG1MQXQ0QkxjSzBlTkdoMVFBcGN3WEc2Yy92R1dyblBoN0N4dFA0?=
+ =?utf-8?B?aHhUMElOYnMzQ05PVEV5Sk5lUWZ1OTBQUDVSYjAweHg0TEhUbXVYdmlDTUg4?=
+ =?utf-8?B?cDM1UG9zMDVXVk5xRWdwRkFKRUhrNmVDMjFiN0VsWWpLT2NCNUhFS0g4SWRY?=
+ =?utf-8?B?bGVzQWtOazlGSEFSUWxJSnBKUHR6UzMvUnVPUWd0Ui9OU1NXZmNpMU9iNTVs?=
+ =?utf-8?B?bng5ZHZQd2NZRFhDQ3ZaUnNKTjBPZ1padzJrei9jRjJKbzAzL21yUnZlRFN3?=
+ =?utf-8?B?RFZwcTZRbDkraC8vQU15emhxZzd6S3ZmWC9iRG45aWJ6QTdGdlFUMTRYMHJp?=
+ =?utf-8?B?M3d2R29PNkVhUHAyVk9EaDlnM2pYVEZKM3hMa204aFRBODM2QUNpbk9tcjVj?=
+ =?utf-8?B?RUFsZGtxa1YveU9LNVBnaEt3RkY4S3NzVitaZWZYanZJYWJFYVdwVW1xcmlq?=
+ =?utf-8?B?YjRyZURkKyt5NTlyNFM4QlpURDVTb3JzSDk2OFpRUkcvVGpEYTN1blFlRG1C?=
+ =?utf-8?B?aSt0V0UwZ0x3WUd3ZHluR3lwSjBDRWFudFd2Q0d3WkVVV3dWQ2dvNWFXLzQ5?=
+ =?utf-8?B?Q3VRaWx4QWxQenROUkJOVEYrdGFONWROYzAyUHNJT1NsSElxMGlSOUsvWjZ1?=
+ =?utf-8?B?S3dWeXNEMHpVeHdLeTBURU1Eb2xleHowVUhXcVRLZWY1TXFDN1NuNXZyWFlq?=
+ =?utf-8?B?STJtOFlBQ1Y5VHgvUGJ0NU53YTlzZXJRbmNoZ2tkNUUwUUsrTGRWUDhVNHda?=
+ =?utf-8?B?K3FJTnBTaHlBYklaVHdjSmJhTjZibnFqUXJYbE5Oem96ZXc1U2JIQ1lYOFEy?=
+ =?utf-8?B?QVBTeGtINllhekhlM1FOeHhzQnFvQTNxNVBEUXdlcnp2bVFtMkNROXJ6czFi?=
+ =?utf-8?B?V2FvTFJIckpSQktaV0w4aXhFWEZDYVViRks1R0x4L0dWcHROWmFFS2F2c0Uv?=
+ =?utf-8?B?RFE9PQ==?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: =?utf-8?B?dzc1b1JzV3dEK21oSXlHYVpuQlB2R09ZM2FLRDhibWFTMWRQYnprT211WG80?=
+ =?utf-8?B?ZForTG41cmVyQ3lqUDE3ZnBleDJ1WFhpOXZwaHBGbDJ6K2NQQXFhakw1WWNw?=
+ =?utf-8?B?U2RlRUVYZStjbFM5ZklmL1lKVSt4Yy90Ky9haUdvdTV2cTNYM0JnZWVQdlow?=
+ =?utf-8?B?MlB6STl6MlJiUDJqRzk5UXQyOGlwVVNSV0dsL0laTVVNY3VzT0ZTWjdKKzAy?=
+ =?utf-8?B?dS9FTjBEZGlHQTA3Um0reWFXNW0wNHVmU3o1MlFlSVBYZWhXcDRGa3ZDRUtI?=
+ =?utf-8?B?eVh2NDZVRG4vaDREQzRPVlFiOXd5ZlR6dG94Z0hGQ044c0hQTWdRaVVQRTBm?=
+ =?utf-8?B?dlplSElIeWFTMmtKS0FtWitOQk5GVnpCeFJMNnZLQWJrUjZaczVKTXhoclUr?=
+ =?utf-8?B?N3BsWFYzRTIzY0pMbzdpMVlOTmQzU1hsbzhCM21Lb1BVZXZUamZYbSt5REFj?=
+ =?utf-8?B?Skd4eWhWOHpuTnp1MmNva29Ed2tEV1FxdG5DL29CVmdRYzNoVXhxN0U2RHYx?=
+ =?utf-8?B?blpvR3FKV1dzc2FxNkh4TXZvRXVpdGMwQXJVT3RXTUJRM3FNclRlT25TLy92?=
+ =?utf-8?B?Ti9GR0FwN05GKytJbm9TT0ZFc2VrRlo3c1d3c2x1WUh1Wmo4KzlkRmRIVTAr?=
+ =?utf-8?B?djIrWHVnOVZ2ZGVnMVh5Ym1xYkRKdDR2Tk0zRnhsRERtOWhFb21LQUQrbnVw?=
+ =?utf-8?B?SFJZYTRIWWluYnZVbTFuOXJYK09mUUZmWjJvWHBhWE93Ui9ucFZDaTRPZzk5?=
+ =?utf-8?B?YUFudzJDYlZIbzlveCtpOFc2cmtCSWJkcVlTTzNWU2M5WkUzRnorK1pvcXVt?=
+ =?utf-8?B?T0E5Q2hzZzdlaE1mRkEzRjQxL3JhREtUUzlzM2hPc1NBbHFPaEF0Y201RGIv?=
+ =?utf-8?B?RXVZL0hsTlNqRVhuQmZVb1Y4WXdCTnhoNS81SzdEQ2pWMXE3Z2owTWxOSXhZ?=
+ =?utf-8?B?Rm9oSGNWMlNTV25Zb3ppT1dPSFdtYmlZaWJMWTJsSE9Fa2dtNE5CdkppT1Fj?=
+ =?utf-8?B?Q0ZwcEF4Q3dnNTVscklVWEpyVjFseGs2czM2ZXZUc285VnhROEhoWTRSd0NX?=
+ =?utf-8?B?YUhkSWVkbEprbGxkOU9mY0pyRXZkblR3M1BNY2dYRU5hbVI5YWw4SG40RHZ2?=
+ =?utf-8?B?Rm5BeVBOQjQvWTAyL2VqbmlCcmIwU1Q5Q0N0VkVETkdsUmpKcGh2LzdPdXBO?=
+ =?utf-8?B?S3gwa0FLR3lIRHByemFPQ3ZnaHkwTGttdEYzcTZETGY2T0dQVHlyYXB1Q3BS?=
+ =?utf-8?B?bkNESXM2YzJabkdFdGluY21RWWN3a3dkWTk5NXo4dzh3Z0ZNWnJBTzd4Y0tT?=
+ =?utf-8?B?bG1Vb3pPbElEWlJxWUZjNWpoRm15ZnNOUnErOU1RUW1weHlMa3V3bk56TXZC?=
+ =?utf-8?B?ckl6YTZmci9KcG1jbDJlTXVPS1g4czVDWlJueHdqbVBFc0lqZlBlUTBQVFhB?=
+ =?utf-8?B?L2FaMS9OQmtOdlVYMEN4bUJUYk1XVThob3BjTVdtZmdXNWpNeTZ0bUVReEQ3?=
+ =?utf-8?B?SDNnVm1KSktvWWJZcWFUZmZrVUdRdWZhZGpsSDMyVjBLbDNERzhGaXZXSUZ5?=
+ =?utf-8?B?elJFQytyaUl1NUF5ZmZYa2NxZjE0eDluak5jUVNWV0x2S2VWakhDQ3RXcWV1?=
+ =?utf-8?B?S0lSbS93U3VhcHUzYkVvWTcyenJZWTNGelNQdXFmbjRCcGRyR3RmaUhjaWNW?=
+ =?utf-8?B?ZzI1aURod2ZqQm9JOHBVWmxYenF3MEdJaTgrZWhHL0o1SUcyMkJWaGk5VThh?=
+ =?utf-8?B?WGdRejMyMU1iOG9xUlRVdFZ4M1oxc01vRkIxNU1XNis3WTREVVpjeDhxOUVE?=
+ =?utf-8?B?bVFVUTNqQWtQUURHNDM1Z3hDYmh0SGlrQ0xUL1JwSktkZnlXUzlPYWpUYktX?=
+ =?utf-8?B?aGJpbVBReStmM1dRVXdTTWNCMWZDblVhQTl1T2lTMis3QzJpM1BVR1o0MTJC?=
+ =?utf-8?B?RHlpNGl1cjZEbnd5NExjWkF4aXZTWjlvRlFJZk0vcytjOXZYWlhLV3ZIYmdB?=
+ =?utf-8?Q?X2KEcJaeZyqj9Y74FmRLFp65KTMho0=3D?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f118d117-1ea1-4028-9440-08db3b83bc66
+X-MS-Exchange-CrossTenant-AuthSource: DM5PR10MB1466.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Apr 2023 18:28:39.3084
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 7WpTzkd+cxY4yXMXC/WH/InJsuMC+gdOVtBJd8gO33YKtXM2AqX6mWPD8Jjo+HW5U/4dk7GVCSwry1uvAPx3+GIPnzfACzdpMEiR3zxq30U=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR10MB7513
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-04-12_10,2023-04-12_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 mlxlogscore=999
+ phishscore=0 mlxscore=0 malwarescore=0 suspectscore=0 bulkscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2303200000 definitions=main-2304120159
+X-Proofpoint-GUID: 5Dl-6VgABmBOq0Wq6CGqfzDriG7RAiET
+X-Proofpoint-ORIG-GUID: 5Dl-6VgABmBOq0Wq6CGqfzDriG7RAiET
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-[sorry for the adding you in CC]
+On 4/12/23 5:25 AM, Naresh Kamboju wrote:
+> On Wed, 12 Apr 2023 at 15:06, Naresh Kamboju <naresh.kamboju@linaro.org> wrote:
+>>
+>> [sorry for the adding you in CC]
+>>
+>> While running LTP controllers test suite on this patch set applied on top of
+>> the next-20230406 and the following kernel panic noticed on qemu-i386.
+> 
+> Also noticed on qemu-x86_64.
+> 
+> Crash log link,
+> ------------------
+> - https://qa-reports.linaro.org/~anders.roxell/linux-mainline-patches/build/lore_kernel_org_linux-block_20230404140835_25166-1-sergei_shtepa_veeam_com/testrun/16171908/suite/log-parser-test/test/check-kernel-panic/log
+> - https://qa-reports.linaro.org/~anders.roxell/linux-mainline-patches/build/lore_kernel_org_linux-block_20230404140835_25166-1-sergei_shtepa_veeam_com/testrun/16171908/suite/log-parser-test/tests/
 
-While running LTP controllers test suite on this patch set applied on top of
-the next-20230406 and the following kernel panic noticed on qemu-x86_64.
+Can you point me to the original report? I don't think my patches are the cause of
+the failure, or if they are there is a crazy bug.
 
+Above, I think you pointed me to the wrong link above because it looks like that's
+for a different patchset. Or did I misunderstand the testing and that link has my
+patches included?
 
-Lore link: https://lore.kernel.org/linux-block/20230407200551.12660-1-michael.christie@oracle.com/
+I did see my patches tested:
 
+https://qa-reports.linaro.org/~anders.roxell/linux-mainline-patches/
 
-cpuset_inherit 31 TPASS: mem_exclusive: Inherited information is right!
-cpuset_inherit 33 TPASS: mem_hardwall: Inherited information is right!
-<4>[ 1234.875309] int3: 0000 [#1] PREEMPT SMP PTI
-<4>[ 1234.875748] CPU: 1 PID: 32990 Comm: umount Not tainted 6.3.0-rc5-next-20230406 #1
-<4>[ 1234.875946] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.14.0-2 04/01/2014
-<4>[ 1234.876062] RIP: 0010:__alloc_pages+0xdf/0x310
-<4>[ 1234.876666] Code: 4c 89 45 b0 83 3d b8 1c cb 01 00 0f 85 a2 01 00 00 44 89 f0 c1 e8 03 83 e0 03 89 75 a0 89 45 c0 be 01 00 00 00 4c 89 45 98 0f <1f> 44 00 00 4d 89 c5 44 89 f0 44 89 75 a4 41 f7 c6 00 04 00 00 74
-<4>[ 1234.876885] RSP: 0000:ffff8b9305f47c10 EFLAGS: 00000202
-<4>[ 1234.877418] RAX: 0000000000000001 RBX: 0000000000000000 RCX: 0000000000000000
-<4>[ 1234.877433] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000140cca
-<4>[ 1234.877446] RBP: ffff8b9305f47c78 R08: 0000000000000000 R09: 0000000000000000
-<4>[ 1234.877460] R10: 0000000000100cca R11: 0000000000000000 R12: 0000000000000003
-<4>[ 1234.877472] R13: ffff88d28b753b00 R14: 0000000000140cca R15: ffff88d2ffffb300
-<4>[ 1234.877518] FS:  0000000000000000(0000) GS:ffff88d2fbd00000(0000) knlGS:0000000000000000
-<4>[ 1234.877547] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-<4>[ 1234.877568] CR2: 0000000000408ee0 CR3: 0000000111432000 CR4: 00000000000006e0
-<4>[ 1234.877662] Call Trace:
-<4>[ 1234.877828]  <TASK>
-<4>[ 1234.877954]  __folio_alloc+0x1e/0x50
-<4>[ 1234.878051]  vma_alloc_folio+0x4af/0x520
-<4>[ 1234.878066]  ? _raw_spin_unlock+0x1a/0x40
-<4>[ 1234.878079]  ? do_wp_page+0x164/0xdd0
-<4>[ 1234.878093]  ? trace_preempt_on+0x1e/0x80
-<4>[ 1234.878105]  ? preempt_count_sub+0x63/0x80
-<4>[ 1234.878118]  do_wp_page+0x3cb/0xdd0
-<4>[ 1234.878129]  ? handle_mm_fault+0x739/0x19e0
-<4>[ 1234.878142]  ? _raw_spin_lock+0x23/0x50
-<4>[ 1234.878159]  handle_mm_fault+0x770/0x19e0
-<4>[ 1234.878170]  ? up_write+0x52/0xe0
-<4>[ 1234.878196]  do_user_addr_fault+0x4d4/0x6c0
-<4>[ 1234.878210]  ? trace_hardirqs_off_finish+0x38/0x90
-<4>[ 1234.878222]  exc_page_fault+0x80/0x1d0
-<4>[ 1234.878234]  asm_exc_page_fault+0x2b/0x30
-<4>[ 1234.878291] RIP: 0033:0x7f3f910e65f6
-<4>[ 1234.878542] Code: 2f 0a 00 00 e8 5b 23 ff ff 48 89 85 60 fd ff ff 48 8b 85 88 fd ff ff 48 8b 80 e8 00 00 00 48 85 c0 74 0b 48 8b 9d 68 fd ff ff <48> 89 58 08 48 8b 85 68 fd ff ff c7 40 18 01 00 00 00 e8 43 2b fe
-<4>[ 1234.878552] RSP: 002b:00007fff6f8dce50 EFLAGS: 00000206
-<4>[ 1234.878563] RAX: 0000000000408ed8 RBX: 00007f3f910fe0d8 RCX: 00007f3f910c6270
-<4>[ 1234.878569] RDX: 0000000000000000 RSI: 00007f3f910fe2a0 RDI: 00007fff6f8dcf10
-<4>[ 1234.878575] RBP: 00007fff6f8dd110 R08: 0000000000000000 R09: 0000000000000007
-<4>[ 1234.878581] R10: 0000000000000000 R11: 0000000000000008 R12: 0000000000000000
-<4>[ 1234.878585] R13: 00007f3f910fe2a0 R14: 00007fff6f8dced0 R15: 0000000000000000
-<4>[ 1234.878636]  </TASK>
-<4>[ 1234.878693] Modules linked in:
-<4>[ 1234.894886] ---[ end trace 0000000000000000 ]---
-<4>[ 1234.895879] RIP: 0010:__alloc_pages+0xdf/0x310
-<4>[ 1234.895921] Code: 4c 89 45 b0 83 3d b8 1c cb 01 00 0f 85 a2 01 00 00 44 89 f0 c1 e8 03 83 e0 03 89 75 a0 89 45 c0 be 01 00 00 00 4c 89 45 98 0f <1f> 44 00 00 4d 89 c5 44 89 f0 44 89 75 a4 41 f7 c6 00 04 00 00 74
-<4>[ 1234.895936] RSP: 0000:ffff8b9305f47c10 EFLAGS: 00000202
-<4>[ 1234.895956] RAX: 0000000000000001 RBX: 0000000000000000 RCX: 0000000000000000
-<4>[ 1234.895966] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000140cca
-<4>[ 1234.895977] RBP: ffff8b9305f47c78 R08: 0000000000000000 R09: 0000000000000000
-<4>[ 1234.895985] R10: 0000000000100cca R11: 0000000000000000 R12: 0000000000000003
-<4>[ 1234.895993] R13: ffff88d28b753b00 R14: 0000000000140cca R15: ffff88d2ffffb300
-<4>[ 1234.896003] FS:  0000000000000000(0000) GS:ffff88d2fbd00000(0000) knlGS:0000000000000000
-<4>[ 1234.896016] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-<4>[ 1234.896026] CR2: 0000000000408ee0 CR3: 0000000111432000 CR4: 00000000000006e0
-<0>[ 1234.896379] Kernel panic - not syncing: Fatal exception in interrupt
-<0>[ 1234.900046] Kernel Offset: 0x8800000 from 0xffffffff81000000 (relocation range: 0xffffffff80000000-0xffffffffbfffffff)
-
-Links:
-https://qa-reports.linaro.org/~anders.roxell/linux-mainline-patches/build/lore_kernel_org_linux-block_20230407200551_12660-1-michael_christie_oracle_com/testrun/16172098/suite/log-parser-test/test/check-kernel-panic/log
-https://qa-reports.linaro.org/~anders.roxell/linux-mainline-patches/build/lore_kernel_org_linux-block_20230407200551_12660-1-michael_christie_oracle_com/testrun/16172061/suite/log-parser-test/test/check-kernel-panic/log
-
-https://qa-reports.linaro.org/~anders.roxell/linux-mainline-patches/build/lore_kernel_org_linux-block_20230407200551_12660-1-michael_christie_oracle_com/testrun/16172098/suite/log-parser-test/tests/
-https://qa-reports.linaro.org/~anders.roxell/linux-mainline-patches/build/lore_kernel_org_linux-block_20230407200551_12660-1-michael_christie_oracle_com/testrun/16172061/suite/log-parser-test/tests/
-
-
-Steps to reproduce:
--------------------
-
-# To install tuxrun on your system globally:
-# sudo pip3 install -U tuxrun==0.41.0
-#
-# See https://tuxrun.org/ for complete documentation.
-
-tuxrun   \
- --runtime podman   \
- --device qemu-x86_64   \
- --kernel https://storage.tuxsuite.com/public/linaro/anders/builds/2OGpdVeBBG4Gj6aACnSdSGva2LN/bzImage   \
- --modules https://storage.tuxsuite.com/public/linaro/anders/builds/2OGpdVeBBG4Gj6aACnSdSGva2LN/modules.tar.xz   \
- --rootfs https://storage.tuxsuite.com/public/linaro/lkft/oebuilds/2OFRZUnV2Q9jOFdE3gH3Gq2v692/images/intel-corei7-64/lkft-tux-image-intel-corei7-64-20230410193144.rootfs.ext4.gz   \
- --parameters SKIPFILE=skipfile-lkft.yaml   \
- --parameters SHARD_NUMBER=10   \
- --parameters SHARD_INDEX=10   \
- --image docker.io/lavasoftware/lava-dispatcher:2023.01.0020.gc1598238f   \
- --tests ltp-controllers   \
- --timeouts boot=15 ltp-controllers=80
+but they seem to fail in similar places as other failures that day, and the
+failures don't seem related to my patches. It doesn't look like you are doing
+anything nvme or block pr ioctl related and just failing on forks and OOM.
+It looks like you are booting from a scsi device but I only touched the scsi
+layer's code for persistent reservations and the tests don't seem to be
+using that code.
 
 
 
---
-Linaro LKFT
-https://lkft.linaro.org
+> 
+> lore link,
+> https://lore.kernel.org/linux-block/20230407200551.12660-1-michael.christie@oracle.com/
+> 
+> 
+> --
+> Linaro LKFT
+> https://lkft.linaro.org
 
