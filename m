@@ -2,61 +2,146 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35A7DC77B61
-	for <target-devel@archiver.kernel.org>; Tue, 25 Apr 2023 07:37:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CD5EC77B71
+	for <target-devel@archiver.kernel.org>; Tue, 25 Apr 2023 08:41:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233469AbjDYHhT (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 25 Apr 2023 03:37:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44526 "EHLO
+        id S233900AbjDYIlP (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 25 Apr 2023 04:41:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57728 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233589AbjDYHgh (ORCPT
+        with ESMTP id S233699AbjDYIkn (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 25 Apr 2023 03:36:37 -0400
-Received: from mail.socialglobal.pl (mail.socialglobal.pl [51.195.90.253])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35AC5CC0F
-        for <target-devel@vger.kernel.org>; Tue, 25 Apr 2023 00:36:26 -0700 (PDT)
-Received: by mail.socialglobal.pl (Postfix, from userid 1002)
-        id E1EF1225D9; Tue, 25 Apr 2023 07:35:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=socialglobal.pl;
-        s=mail; t=1682408183;
-        bh=XwhyqI/moZPDJ7KCfcA6Gip8fA7ZKcg5SWsKuF/26zk=;
-        h=Date:From:To:Subject:From;
-        b=S1ng9UfdllTS7wAvp9BoCXp3lW0TfwoF5Fr/NGfomhunIAkWr8eSa0Y8CwI12SqGn
-         vbHf4p8N6EIaS3RycukYYwShWg6bwIb2b+2RCYAQ+1be14jsyenzhQlLVyNz88DsCS
-         4n61QLrVhJ9m3kY/tRcM8Kj5xdqpCaUclJ0nUjEJiv6BYnlevr+iWOZmUXgcWXKEvp
-         3PS1J03spdnhuA1KbybDRP84IM/HsNesnJmkRnTBe9vbu6ij2da0755//n0o3l6dua
-         /safd3lACk/y8mz69tKijs96P7je1aEybC51WFyGT6tJJBVnvs8x2Yj4ZUPwIlJib2
-         RMjwQTvYEB+pw==
-Received: by mail.socialglobal.pl for <target-devel@vger.kernel.org>; Tue, 25 Apr 2023 07:35:23 GMT
-Message-ID: <20230425064500-0.1.5m.1m5u3.0.e0samnnu3n@socialglobal.pl>
-Date:   Tue, 25 Apr 2023 07:35:23 GMT
-From:   "Dominik Perkowski" <dominik.perkowski@socialglobal.pl>
-To:     <target-devel@vger.kernel.org>
-Subject: Pozycjonowanie- informacja
-X-Mailer: mail.socialglobal.pl
+        Tue, 25 Apr 2023 04:40:43 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F7D2146E6
+        for <target-devel@vger.kernel.org>; Tue, 25 Apr 2023 01:38:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1682411841;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=ZJYULa21bRSiosmoi3/4DldsRTvT4wpxgitPcs2X3GU=;
+        b=DqRJEAL7I4KGj8u7OddPiwYZCldhgZnJsl9fHFanPio1kru56FHk/b6ne9JiEuT4sfshST
+        sdxvUFxS74vDx+U8K0VQmmZclh+uvq5AJXQ8Yg5FEDpzlwB8c6ids3fDyTC2H/mkCQQafD
+        ev+i3KIoyCzGA4DO28pfPaJJ+Di6w9M=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-396-fxzR9FbANCSO0wONI3r1UA-1; Tue, 25 Apr 2023 04:30:36 -0400
+X-MC-Unique: fxzR9FbANCSO0wONI3r1UA-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 61D97887402;
+        Tue, 25 Apr 2023 08:30:35 +0000 (UTC)
+Received: from warthog.procyon.org.uk (unknown [10.42.28.62])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 185AC44007;
+        Tue, 25 Apr 2023 08:30:30 +0000 (UTC)
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+        Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+        Kingdom.
+        Registered in England and Wales under Company Registration No. 3798903
+From:   David Howells <dhowells@redhat.com>
+In-Reply-To: <1957131.PYKUYFuaPT@suse>
+References: <1957131.PYKUYFuaPT@suse> <20230331160914.1608208-1-dhowells@redhat.com> <20230331160914.1608208-42-dhowells@redhat.com>
+To:     "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+Cc:     dhowells@redhat.com, Matthew Wilcox <willy@infradead.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@google.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>,
+        Al Viro <viro@zeniv.linux.org.uk>,
+        Christoph Hellwig <hch@infradead.org>,
+        Jens Axboe <axboe@kernel.dk>, Jeff Layton <jlayton@kernel.org>,
+        Christian Brauner <brauner@kernel.org>,
+        Chuck Lever III <chuck.lever@oracle.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Subject: Re: [PATCH v3 41/55] iscsi: Assume "sendpage" is okay in iscsi_tcp_segment_map()
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <494036.1682411430.1@warthog.procyon.org.uk>
 Content-Transfer-Encoding: quoted-printable
+Date:   Tue, 25 Apr 2023 09:30:30 +0100
+Message-ID: <494037.1682411430@warthog.procyon.org.uk>
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Dzie=C5=84 dobry,=20
+Fabio M. De Francesco <fmdefrancesco@gmail.com> wrote:
 
-jaki=C5=9B czas temu zg=C5=82osi=C5=82a si=C4=99 do nas firma, kt=C3=B3re=
-j strona internetowa nie pozycjonowa=C5=82a si=C4=99 wysoko w wyszukiwarc=
-e Google.=20
+> > -	if (recv) {
+> > -		segment->atomic_mapped =3D true;
+> > -		segment->sg_mapped =3D kmap_atomic(sg_page(sg));
+> > -	} else {
+> > -		segment->atomic_mapped =3D false;
+> > -		/* the xmit path can sleep with the page mapped so use =
 
-Na podstawie wykonanego przez nas audytu SEO zoptymalizowali=C5=9Bmy tre=C5=
-=9Bci na stronie pod k=C4=85tem wcze=C5=9Bniej opracowanych s=C5=82=C3=B3=
-w kluczowych. Nasz wewn=C4=99trzny system codziennie analizuje prawid=C5=82=
-owe dzia=C5=82anie witryny.  Dzi=C4=99ki indywidualnej strategii, firma z=
-dobywa coraz wi=C4=99cej Klient=C3=B3w. =20
+> kmap */
+> > -		segment->sg_mapped =3D kmap(sg_page(sg));
+> > -	}
+> > -
+> > +	segment->atomic_mapped =3D true;
+> > +	segment->sg_mapped =3D kmap_atomic(sg_page(sg));
+> =
 
-Czy chcieliby Pa=C5=84stwo zwi=C4=99kszy=C4=87 liczb=C4=99 os=C3=B3b odwi=
-edzaj=C4=85cych stron=C4=99 internetow=C4=85 firmy? M=C3=B3g=C5=82bym prz=
-edstawi=C4=87 ofert=C4=99?=20
+> As you probably know, kmap_atomic() is deprecated.
+> =
+
+> I must admit that I'm not an expert of this code, however, it looks like=
+ the =
+
+> mapping has no need to rely on the side effects of kmap_atomic() (i.e., =
+
+> pagefault_disable() and preempt_disable() - but I'm not entirely sure ab=
+out =
+
+> the possibility that preemption should be explicitly disabled along with=
+ the =
+
+> replacement with kmap_local_page()). =
+
+> =
+
+> Last year I've been working on several conversions from kmap{,_atomic}()=
+ to =
+
+> kmap_local_page(), however I'm still not sure to understand what's happe=
+ning =
+
+> here...
+> =
+
+> Am I missing any important details? Can you please explain why we still =
+need =
+
+> that kmap_atomic() instead of kmap_local_page()? =
 
 
-Pozdrawiam serdecznie,
-Dominik Perkowski
+Actually, it might be worth dropping segment->sg_mapped and segment->data =
+and
+only doing the kmap_local when necessary.
+
+And this:
+
+			struct msghdr msg =3D { .msg_flags =3D flags };
+			struct kvec iov =3D {
+				.iov_base =3D segment->data + offset,
+				.iov_len =3D copy
+			};
+
+			r =3D kernel_sendmsg(sk, &msg, &iov, 1, copy);
+
+should really be using struct bvec, not struct kvec - then the mapping isn=
+'t
+necessary.  It looks like this might be the only place the mapping is used=
+,
+but I'm not 100% certain.
+
+David
+
