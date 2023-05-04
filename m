@@ -2,36 +2,36 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78DD4C7EE21
-	for <target-devel@archiver.kernel.org>; Thu,  4 May 2023 19:53:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4D21C7EE22
+	for <target-devel@archiver.kernel.org>; Thu,  4 May 2023 19:56:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231484AbjEDTxM (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 4 May 2023 15:53:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58272 "EHLO
+        id S231962AbjEDT4n (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 4 May 2023 15:56:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42878 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231745AbjEDTwO (ORCPT
+        with ESMTP id S232279AbjEDTzi (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 4 May 2023 15:52:14 -0400
+        Thu, 4 May 2023 15:55:38 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B0622359C;
-        Thu,  4 May 2023 12:47:13 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8617E11DAE;
+        Thu,  4 May 2023 12:48:59 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id A8C7F637BC;
-        Thu,  4 May 2023 19:47:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D05D2C433D2;
-        Thu,  4 May 2023 19:47:04 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 83AA2637F4;
+        Thu,  4 May 2023 19:48:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B01A0C4339C;
+        Thu,  4 May 2023 19:48:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1683229626;
-        bh=hUoPHgkgFeSmgpT+GyBiuCiIZCGJ4a49BAhUVhMi/lQ=;
+        s=k20201202; t=1683229734;
+        bh=WS58CYiJ3a3L3SSRv26u1PXDWf5YPu1FiWNg+9WF2sw=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=tFN7+5ACfqbmugx8FY0fF6NlihphzprwmSA9spddOUgWsmnOBNbGPfeicjnBMGPzz
-         gjXb03RcrKKfx/tq+rJ6uTlZYNfi5jRn/AW7K5mf55xHL3j8KweoWZfm13sa2NkHnG
-         LNLoS8pGnT7VKWGub6JqwxpSPM+/PjJcvhERRI5QB95WYu8P6bZcUMahJh/5Q7Y7p/
-         5XZRy/GWgYU93WtWHhg9M+KRjisCJnvxU8zT/bpOqq/6eKYTmpnWZrwg7GC7zQ5sah
-         VpAdf7HCndIzmnjlTckHnGPdvTO3zKu2/c6u6H9+pDV+vvHuh9UQ1QJxNqtN1B49VO
-         t/T2MZGb90A0Q==
+        b=pC3mvl6yJIG2BSo3vCUmZ6HJcu8WGPlBxvNrVvEiYvXfSzGBfOFlKwbTr5480hm/k
+         UpdR9pdyLad2rW1dHs7h5OLwuuFNlli/4Edgrkqxi/3MJE1MmrNaXPik6XwxySk8qa
+         oKiUCwLlnZ+BHsu+lg/L24fwuSaBPeaGdkIfDi/zB8Jki727rI3vl6+65ajd5AfX7m
+         ROZn52ALIzDj8bAjPJVQrDiYjTH1egSl+0wUtazS+3+vlGWhF31vM2qfT8NK7x/H0f
+         DmLANSXy5NUJhyl+tt6Do0l7PT35jT5SPYdXAKRh0a4TrifcQuruTfnL4T50F3YNHV
+         2mJgyz2F1qufA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Dmitry Bogdanov <d.bogdanov@yadro.com>, Forza <forza@tnonline.net>,
@@ -39,14 +39,14 @@ Cc:     Dmitry Bogdanov <d.bogdanov@yadro.com>, Forza <forza@tnonline.net>,
         Maurizio Lombardi <mlombard@redhat.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, mgurtovoy@nvidia.com,
-        justinstitt@google.com, mingzhe.zou@easystack.cn,
+        mingzhe.zou@easystack.cn, justinstitt@google.com,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.1 14/49] scsi: target: iscsit: Free cmds before session free
-Date:   Thu,  4 May 2023 15:45:51 -0400
-Message-Id: <20230504194626.3807438-14-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 10/30] scsi: target: iscsit: Free cmds before session free
+Date:   Thu,  4 May 2023 15:48:03 -0400
+Message-Id: <20230504194824.3808028-10-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230504194626.3807438-1-sashal@kernel.org>
-References: <20230504194626.3807438-1-sashal@kernel.org>
+In-Reply-To: <20230504194824.3808028-1-sashal@kernel.org>
+References: <20230504194824.3808028-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -88,10 +88,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index baf4da7bb3b4e..412efb576f785 100644
+index 2c54c5d8412d8..2142ee8c49978 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4517,6 +4517,9 @@ int iscsit_close_session(struct iscsit_session *sess, bool can_sleep)
+@@ -4385,6 +4385,9 @@ int iscsit_close_session(struct iscsi_session *sess, bool can_sleep)
  	iscsit_stop_time2retain_timer(sess);
  	spin_unlock_bh(&se_tpg->session_lock);
  
@@ -101,7 +101,7 @@ index baf4da7bb3b4e..412efb576f785 100644
  	/*
  	 * transport_deregister_session_configfs() will clear the
  	 * struct se_node_acl->nacl_sess pointer now as a iscsi_np process context
-@@ -4540,9 +4543,6 @@ int iscsit_close_session(struct iscsit_session *sess, bool can_sleep)
+@@ -4408,9 +4411,6 @@ int iscsit_close_session(struct iscsi_session *sess, bool can_sleep)
  
  	transport_deregister_session(sess->se_sess);
  
