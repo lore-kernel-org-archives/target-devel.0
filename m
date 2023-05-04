@@ -2,36 +2,36 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43D09C77B78
-	for <target-devel@archiver.kernel.org>; Thu,  4 May 2023 19:43:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DAF9C77B78
+	for <target-devel@archiver.kernel.org>; Thu,  4 May 2023 19:48:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229983AbjEDTnQ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 4 May 2023 15:43:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48348 "EHLO
+        id S231261AbjEDTsA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 4 May 2023 15:48:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229683AbjEDTnF (ORCPT
+        with ESMTP id S230002AbjEDTrI (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 4 May 2023 15:43:05 -0400
+        Thu, 4 May 2023 15:47:08 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E20C7D99;
-        Thu,  4 May 2023 12:42:44 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA88E17DEA;
+        Thu,  4 May 2023 12:45:05 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 1D0196370D;
-        Thu,  4 May 2023 19:42:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 45FE2C43443;
-        Thu,  4 May 2023 19:42:40 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 5132763774;
+        Thu,  4 May 2023 19:45:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63897C4339C;
+        Thu,  4 May 2023 19:45:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1683229361;
+        s=k20201202; t=1683229503;
         bh=hUoPHgkgFeSmgpT+GyBiuCiIZCGJ4a49BAhUVhMi/lQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=CWrKOQLPqp0zmwDnQ28ZWEQONIzn2PqRkTfx7gLZAwodYBy0MJ3llb9vSd4MJHp32
-         jtc2ZmNrX34ZyO1ZshX72biRc3e1Wmr4q/r043cl0GDqghDBXj91z0h0J0DvsHIMef
-         DuF3uGBHIc0NN09DMA8USeqI7C2H3gYPptf/FOYxQ0v+tVXbOWd3R/5Pp4D5mnqyD9
-         UysCNXOqvviRvf+Ow3EnNh12JvSdJch38S3mnu1ZtcrDez84bMapSzHPVRk0JtrYQA
-         K80fv/gntqtMDr16/yffBEPGFQD/HvascheqqEWYcNp2JCpnS2TmXaBOboNlDBwlch
-         ois20cyNtvVQg==
+        b=YFytZjnvKQkPGTSsh7R+4zSe2NDYlSkSJ+9VflNUB8MSDJcitoxujDjDOjDogrQRF
+         w/hSnBBvr/qd9/YdnA0l94p9+Eg/bUGsbVVnTwBAh/oYp90K5nEu+RbSjv/FPAQR/y
+         N/1CuO+qD84QH7rEBMJm0Zd+NNc4QJlW+E+moGoPTpA9ErNVCLK09AWD2ne9w2FjGl
+         JFCl1h2FUkYC3jfaoGiJKQryAogw26TKVIUM9j94UHpVkgzTcTzgyBzGxItYnhSeJs
+         tBHnN/lptIAbRyVBXRoxsbshgIKJwJcTSOncZ58g9qrgm9oQDdLPBNSq8zWC2UJOVL
+         8XP4Cml1nFBkA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Dmitry Bogdanov <d.bogdanov@yadro.com>, Forza <forza@tnonline.net>,
@@ -39,14 +39,14 @@ Cc:     Dmitry Bogdanov <d.bogdanov@yadro.com>, Forza <forza@tnonline.net>,
         Maurizio Lombardi <mlombard@redhat.com>,
         "Martin K . Petersen" <martin.petersen@oracle.com>,
         Sasha Levin <sashal@kernel.org>, mgurtovoy@nvidia.com,
-        mingzhe.zou@easystack.cn, justinstitt@google.com,
+        justinstitt@google.com, mingzhe.zou@easystack.cn,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.3 19/59] scsi: target: iscsit: Free cmds before session free
-Date:   Thu,  4 May 2023 15:41:02 -0400
-Message-Id: <20230504194142.3805425-19-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.2 16/53] scsi: target: iscsit: Free cmds before session free
+Date:   Thu,  4 May 2023 15:43:36 -0400
+Message-Id: <20230504194413.3806354-16-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230504194142.3805425-1-sashal@kernel.org>
-References: <20230504194142.3805425-1-sashal@kernel.org>
+In-Reply-To: <20230504194413.3806354-1-sashal@kernel.org>
+References: <20230504194413.3806354-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
