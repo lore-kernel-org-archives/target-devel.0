@@ -2,97 +2,193 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74D14C77B7F
-	for <target-devel@archiver.kernel.org>; Mon, 15 May 2023 01:43:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FEE5C7EE23
+	for <target-devel@archiver.kernel.org>; Tue, 16 May 2023 02:53:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238132AbjEOBnc (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 14 May 2023 21:43:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45676 "EHLO
+        id S229878AbjEPCxv (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 15 May 2023 22:53:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60514 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229708AbjEOBnb (ORCPT
+        with ESMTP id S229774AbjEPCxu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 14 May 2023 21:43:31 -0400
-Received: from dggsgout12.his.huawei.com (dggsgout12.his.huawei.com [45.249.212.56])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EABA10E9;
-        Sun, 14 May 2023 18:43:30 -0700 (PDT)
-Received: from mail02.huawei.com (unknown [172.30.67.169])
-        by dggsgout12.his.huawei.com (SkyGuard) with ESMTP id 4QKMb13jWdz4f3mJ8;
-        Mon, 15 May 2023 09:43:25 +0800 (CST)
-Received: from [10.174.176.73] (unknown [10.174.176.73])
-        by APP3 (Coremail) with SMTP id _Ch0CgBH9CE9jmFkXtnYIg--.28848S3;
-        Mon, 15 May 2023 09:43:27 +0800 (CST)
-Subject: Re: [RFC PATCH] block: add meaningful macro for flush op flags
-To:     Chaitanya Kulkarni <chaitanyak@nvidia.com>,
-        Christoph Hellwig <hch@lst.de>
-Cc:     "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
-        "linux-bcache@vger.kernel.org" <linux-bcache@vger.kernel.org>,
-        "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-        "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-        "axboe@kernel.dk" <axboe@kernel.dk>,
-        "colyli@suse.de" <colyli@suse.de>,
-        "kent.overstreet@gmail.com" <kent.overstreet@gmail.com>,
-        "agk@redhat.com" <agk@redhat.com>,
-        "snitzer@kernel.org" <snitzer@kernel.org>,
-        "dm-devel@redhat.com" <dm-devel@redhat.com>,
-        "song@kernel.org" <song@kernel.org>,
-        "sagi@grimberg.me" <sagi@grimberg.me>,
-        "martin.petersen@oracle.com" <martin.petersen@oracle.com>,
-        "yukuai (C)" <yukuai3@huawei.com>
-References: <20230512080757.387523-1-kch@nvidia.com>
- <20230512130042.GA29078@lst.de>
- <67376534-ac4a-3cd9-fab6-fd3a062f5e48@nvidia.com>
-From:   Yu Kuai <yukuai1@huaweicloud.com>
-Message-ID: <2ca38f24-6c6f-4975-fcc8-e700c67029ee@huaweicloud.com>
-Date:   Mon, 15 May 2023 09:43:25 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+        Mon, 15 May 2023 22:53:50 -0400
+Received: from mail-il1-x135.google.com (mail-il1-x135.google.com [IPv6:2607:f8b0:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CECDB4C17;
+        Mon, 15 May 2023 19:53:48 -0700 (PDT)
+Received: by mail-il1-x135.google.com with SMTP id e9e14a558f8ab-334f64c91aeso24588595ab.2;
+        Mon, 15 May 2023 19:53:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1684205628; x=1686797628;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=PPK335sb4Cf31lJbZCxsHRj3PEm/5gZa6oNqr83Lzyw=;
+        b=JogALCqy2cPwzHHhxfINXnYvM4vYAoJddwJgLf7BB5tI/43dNo45SpNpjzuoOne7rA
+         5P9WaVe3v9bEj/hdij4ez3dLu4Ro40GcKi/tOuvs4I87vp/eVD+MFYijwH7vFM4S+aw4
+         WQGgTE/W+Uj+1+gXjw1jbbcuzQx5htG0WeVuCxBebWfdVEj+L/KWsT7BPvNXniAf9aYK
+         E7FuKddBuyGgfniD2Towkix3Wqds9yjeIx+d0lQhQTpfDK8Ek45h/BzN+hUILZwoeNHs
+         dGVsmtPMfsBS5ef32//ggs74w/HQC+qGXxinu7a/NWnE7PUkD6CVxmXvHILVLGFYFwo3
+         6+mw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1684205628; x=1686797628;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=PPK335sb4Cf31lJbZCxsHRj3PEm/5gZa6oNqr83Lzyw=;
+        b=jE8gEf0nAR14FyEXCVzRrQRyBL5MiCP/yDt9Xk0dFVkzO8HNKM+7aRav6qHPLhLnGT
+         /BR0cYd0FSq/kNOMndGT8tmvfBsimaX4kDEgvO2ZohXy8Ls94eC3nCvHgHQELlive+TE
+         gOO5KJ7eY94csRV7GcgrxiRxcBc2S1Ss+KYuvh4yXqcxR9Pxx2f00IH/UWxiAPBevmen
+         KYo+mCrU22XFntQBUHs1jgfyXMa3DDPXvB2rdcYqU4GeRtGdGLi6/bw9BhqwJm3NKuMO
+         GADTy8Fppq4ApTGfxYrH1P7nIt+utEU2ahF7PB6FE3mu1vvxQVeacw56oycAtdxcoeoE
+         oCNA==
+X-Gm-Message-State: AC+VfDxhvGGHJ+J4+BKbJjSMT2AWAROS7wmQnc1aQ+tCumuqeG6jxQdD
+        KjQTsA90nqd0cMNXfszE/fo=
+X-Google-Smtp-Source: ACHHUZ4ct61Y0xN8dW0ABXsS/m04wf32vXiZfpsDBTi3wLsxXM5N+wUkrOluqNG14nrVsixQMV1Jlw==
+X-Received: by 2002:a92:d8cb:0:b0:331:2e7b:9efa with SMTP id l11-20020a92d8cb000000b003312e7b9efamr22051000ilo.19.1684205627983;
+        Mon, 15 May 2023 19:53:47 -0700 (PDT)
+Received: from azeems-kspp.c.googlers.com.com (54.70.188.35.bc.googleusercontent.com. [35.188.70.54])
+        by smtp.gmail.com with ESMTPSA id u1-20020a02aa81000000b00418849c2ea7sm2784139jai.122.2023.05.15.19.53.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 15 May 2023 19:53:47 -0700 (PDT)
+From:   Azeem Shaikh <azeemshaikh38@gmail.com>
+To:     "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     linux-hardening@vger.kernel.org,
+        Azeem Shaikh <azeemshaikh38@gmail.com>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Mike Christie <michael.christie@oracle.com>,
+        Maurizio Lombardi <mlombard@redhat.com>,
+        Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH] scsi: target: Replace all non-returning strlcpy with strscpy
+Date:   Tue, 16 May 2023 02:53:22 +0000
+Message-ID: <20230516025322.2804923-1-azeemshaikh38@gmail.com>
+X-Mailer: git-send-email 2.40.1.606.ga4b1b128d6-goog
 MIME-Version: 1.0
-In-Reply-To: <67376534-ac4a-3cd9-fab6-fd3a062f5e48@nvidia.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: _Ch0CgBH9CE9jmFkXtnYIg--.28848S3
-X-Coremail-Antispam: 1UD129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
-        VFW2AGmfu7bjvjm3AaLaJ3UjIYCTnIWjp_UUUYI7kC6x804xWl14x267AKxVW5JVWrJwAF
-        c2x0x2IEx4CE42xK8VAvwI8IcIk0rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII
-        0Yj41l84x0c7CEw4AK67xGY2AK021l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xv
-        wVC0I7IYx2IY6xkF7I0E14v26r4UJVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4
-        x0Y4vEx4A2jsIEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG
-        64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r
-        1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvEwIxGrwACI402YVCY1x02628vn2kI
-        c2xKxwCYjI0SjxkI62AI1cAE67vIY487MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4
-        AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE
-        17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMI
-        IF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_WFyUJVCq
-        3wCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCT
-        nIWIevJa73UjIFyTuYvjxUFDGOUUUUU
-X-CM-SenderInfo: 51xn3trlr6x35dzhxuhorxvhhfrp/
-X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi,
+strlcpy() reads the entire source buffer first.
+This read may exceed the destination size limit.
+This is both inefficient and can lead to linear read
+overflows if a source string is not NUL-terminated [1].
+In an effort to remove strlcpy() completely [2], replace
+strlcpy() here with strscpy().
+No return values were used, so direct replacement is safe.
 
-在 2023/05/13 9:09, Chaitanya Kulkarni 写道:
-> On 5/12/23 06:00, Christoph Hellwig wrote:
->> Hell no.  This is just obsfucation.  We can look into actually exposing
->> REQ_OP_FLUSH at the bio level, but not something like this.
->>
-> 
-> and that's why I made it RFC, thanks for the can you please elaborate
-> on "exposing REQ_OP_FLUSH at the bio level" ?
+[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#strlcpy
+[2] https://github.com/KSPP/linux/issues/89
 
-I think Christoph means that use this flag directly for bio, it's only
-used for reqeust for now.
+Signed-off-by: Azeem Shaikh <azeemshaikh38@gmail.com>
+---
+ drivers/target/iscsi/iscsi_target_parameters.c |    4 ++--
+ drivers/target/iscsi/iscsi_target_util.c       |    4 ++--
+ drivers/target/target_core_configfs.c          |   10 +++++-----
+ drivers/target/target_core_device.c            |    6 +++---
+ 4 files changed, 12 insertions(+), 12 deletions(-)
 
-Thanks,
-Kuai
-> 
-> I'd really like work that ...
-> 
-> -ck
-> 
-> 
+diff --git a/drivers/target/iscsi/iscsi_target_parameters.c b/drivers/target/iscsi/iscsi_target_parameters.c
+index 557516c642c3..5b90c22ee3dc 100644
+--- a/drivers/target/iscsi/iscsi_target_parameters.c
++++ b/drivers/target/iscsi/iscsi_target_parameters.c
+@@ -726,8 +726,8 @@ static int iscsi_add_notunderstood_response(
+ 	}
+ 	INIT_LIST_HEAD(&extra_response->er_list);
+ 
+-	strlcpy(extra_response->key, key, sizeof(extra_response->key));
+-	strlcpy(extra_response->value, NOTUNDERSTOOD,
++	strscpy(extra_response->key, key, sizeof(extra_response->key));
++	strscpy(extra_response->value, NOTUNDERSTOOD,
+ 		sizeof(extra_response->value));
+ 
+ 	list_add_tail(&extra_response->er_list,
+diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+index 26dc8ed3045b..dc1ac5a0f806 100644
+--- a/drivers/target/iscsi/iscsi_target_util.c
++++ b/drivers/target/iscsi/iscsi_target_util.c
+@@ -1321,7 +1321,7 @@ void iscsit_collect_login_stats(
+ 		if (conn->param_list)
+ 			intrname = iscsi_find_param_from_key(INITIATORNAME,
+ 							     conn->param_list);
+-		strlcpy(ls->last_intr_fail_name,
++		strscpy(ls->last_intr_fail_name,
+ 		       (intrname ? intrname->value : "Unknown"),
+ 		       sizeof(ls->last_intr_fail_name));
+ 
+@@ -1360,7 +1360,7 @@ void iscsit_fill_cxn_timeout_err_stats(struct iscsit_session *sess)
+ 		return;
+ 
+ 	spin_lock_bh(&tiqn->sess_err_stats.lock);
+-	strlcpy(tiqn->sess_err_stats.last_sess_fail_rem_name,
++	strscpy(tiqn->sess_err_stats.last_sess_fail_rem_name,
+ 			sess->sess_ops->InitiatorName,
+ 			sizeof(tiqn->sess_err_stats.last_sess_fail_rem_name));
+ 	tiqn->sess_err_stats.last_sess_failure_type =
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 74b67c346dfe..936e5ff1b209 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -649,7 +649,7 @@ static void dev_set_t10_wwn_model_alias(struct se_device *dev)
+ 	 * here without potentially breaking existing setups, so continue to
+ 	 * truncate one byte shorter than what can be carried in INQUIRY.
+ 	 */
+-	strlcpy(dev->t10_wwn.model, configname, INQUIRY_MODEL_LEN);
++	strscpy(dev->t10_wwn.model, configname, INQUIRY_MODEL_LEN);
+ }
+ 
+ static ssize_t emulate_model_alias_store(struct config_item *item,
+@@ -675,7 +675,7 @@ static ssize_t emulate_model_alias_store(struct config_item *item,
+ 	if (flag) {
+ 		dev_set_t10_wwn_model_alias(dev);
+ 	} else {
+-		strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
++		strscpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
+ 			sizeof(dev->t10_wwn.model));
+ 	}
+ 	da->emulate_model_alias = flag;
+@@ -1426,7 +1426,7 @@ static ssize_t target_wwn_vendor_id_store(struct config_item *item,
+ 	}
+ 
+ 	BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) != INQUIRY_VENDOR_LEN + 1);
+-	strlcpy(dev->t10_wwn.vendor, stripped, sizeof(dev->t10_wwn.vendor));
++	strscpy(dev->t10_wwn.vendor, stripped, sizeof(dev->t10_wwn.vendor));
+ 
+ 	pr_debug("Target_Core_ConfigFS: Set emulated T10 Vendor Identification:"
+ 		 " %s\n", dev->t10_wwn.vendor);
+@@ -1482,7 +1482,7 @@ static ssize_t target_wwn_product_id_store(struct config_item *item,
+ 	}
+ 
+ 	BUILD_BUG_ON(sizeof(dev->t10_wwn.model) != INQUIRY_MODEL_LEN + 1);
+-	strlcpy(dev->t10_wwn.model, stripped, sizeof(dev->t10_wwn.model));
++	strscpy(dev->t10_wwn.model, stripped, sizeof(dev->t10_wwn.model));
+ 
+ 	pr_debug("Target_Core_ConfigFS: Set emulated T10 Model Identification: %s\n",
+ 		 dev->t10_wwn.model);
+@@ -1538,7 +1538,7 @@ static ssize_t target_wwn_revision_store(struct config_item *item,
+ 	}
+ 
+ 	BUILD_BUG_ON(sizeof(dev->t10_wwn.revision) != INQUIRY_REVISION_LEN + 1);
+-	strlcpy(dev->t10_wwn.revision, stripped, sizeof(dev->t10_wwn.revision));
++	strscpy(dev->t10_wwn.revision, stripped, sizeof(dev->t10_wwn.revision));
+ 
+ 	pr_debug("Target_Core_ConfigFS: Set emulated T10 Revision: %s\n",
+ 		 dev->t10_wwn.revision);
+diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+index 90f3f4926172..b7ac60f4a219 100644
+--- a/drivers/target/target_core_device.c
++++ b/drivers/target/target_core_device.c
+@@ -789,10 +789,10 @@ struct se_device *target_alloc_device(struct se_hba *hba, const char *name)
+ 	xcopy_lun->lun_tpg = &xcopy_pt_tpg;
+ 
+ 	/* Preload the default INQUIRY const values */
+-	strlcpy(dev->t10_wwn.vendor, "LIO-ORG", sizeof(dev->t10_wwn.vendor));
+-	strlcpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
++	strscpy(dev->t10_wwn.vendor, "LIO-ORG", sizeof(dev->t10_wwn.vendor));
++	strscpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
+ 		sizeof(dev->t10_wwn.model));
+-	strlcpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
++	strscpy(dev->t10_wwn.revision, dev->transport->inquiry_rev,
+ 		sizeof(dev->t10_wwn.revision));
+ 
+ 	return dev;
 
