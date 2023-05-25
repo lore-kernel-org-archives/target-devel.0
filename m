@@ -2,192 +2,389 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04C66C77B7A
-	for <target-devel@archiver.kernel.org>; Wed, 24 May 2023 23:34:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EF67C77B7A
+	for <target-devel@archiver.kernel.org>; Thu, 25 May 2023 07:59:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237331AbjEXXe0 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 24 May 2023 19:34:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56296 "EHLO
+        id S233064AbjEYH66 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 25 May 2023 03:58:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236857AbjEXXeX (ORCPT
+        with ESMTP id S229543AbjEYH65 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 24 May 2023 19:34:23 -0400
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8867699;
-        Wed, 24 May 2023 16:34:22 -0700 (PDT)
-Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 34ONQe5K028334;
-        Wed, 24 May 2023 23:34:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references :
- content-transfer-encoding : content-type : mime-version;
- s=corp-2023-03-30; bh=lVtMzFf5PydljQdYfKbIak22kteV7ToFIumrNsqqCyY=;
- b=BmgklH5pWbLuX671hxV9D6kI1fabsyR5fMpjqvQsaXk7nttmseFIP4O7VcnoKkCzAVJ9
- KqrTVip1As3ndO5q0dq7jsEBEBSEP8FayFJfn1rHK94a94DvIImGw/UA1FbK/ugXyxhs
- 19eVs4nst/2XybBATOVQJJpkM53RK6sm7j99a77Hqs2Tt28nqTX7vDjKxncMwraXL2El
- wT/DhmfwhcdxbMMeRMQkqNa8/VYrZlpsINPXBaxTO7DNlntQj28YBnePwa+no9IBhqUx
- VpUU4J6lG5o1a8n1NKvrmXIbhpnx3Ba7G1j1UMY01R3sYedsBdD1Gfx4mq3HGOFoqeZX 0w== 
-Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3qsux680u8-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 24 May 2023 23:34:19 +0000
-Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 34OLBX9d028577;
-        Wed, 24 May 2023 23:34:18 GMT
-Received: from nam10-bn7-obe.outbound.protection.outlook.com (mail-bn7nam10lp2102.outbound.protection.outlook.com [104.47.70.102])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3qqk2t52jn-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 24 May 2023 23:34:18 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=nGYTCpy1Q2lPtY+7Q6qP/CDfUlzq/h/1LKXnygczS1Fxs5nzvTqMzo+jCRTG2TxUV2UGrwhyWeYrZcq9WgjMUp49Mhu0KcAwlyXWHsn7Ju92IPtLHfU97Il5dRgDLNjNYo3kNSQiMMlmpe2OJI1fiRtGklRDWVJVh0vCwBPcNg+D58QcLy1ga0S/BHrizCTAcTAEMUN1+ANwQY2c1ITuG9gzlnEJVj1Q3QkGakNrYWAMmKxBwsKMFpWdJCNHjbvXXb55pQ+Kf0uKo6zjvYN63vdCMUACzr+zGbH+SysXVOV8WDIvZSkiNrK6xWRlcUm2cjYGD3SbxYvOjf+Z0pXKqw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=lVtMzFf5PydljQdYfKbIak22kteV7ToFIumrNsqqCyY=;
- b=itgHSoxlOjOZG9gAyJG+MM00e6OpVliX1Hm/TOBFHyW82hLLx8NAxgalw0dFhjqHNCB62kpiWsO1N2/rQU5YQWHo06UPi3WuseJeT1GbdPMHLzZ+0z8paKRvyYp/gyZ7CruFHuAC7YCetb0hN0mYMY7Pb2LDIETQBeGOrNnkHQQhWDyqraGZw89Ox1loGbupMnIEJxA2D68emIdJQJ6QqREyLoYHRczDk9RJM75NfuX5HKlHkXcdVJutINMeOfLeRhNebshdsCRCpX/HnYLKbsPJroMmKBUwHcEA0Un4WXp7N+2ZMwmN4ovERb0uOtnPf44RPJSkENvMt8peV8NDIA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lVtMzFf5PydljQdYfKbIak22kteV7ToFIumrNsqqCyY=;
- b=AeIM6dxi+Qz+XUIgpl0zSptKcavbXuqqv6KeUQOtB3wekJ9mUdvNNWJlXBouV0OdkfeTG/v2/qqedXYw+/nBMClY1g9H8y6gzJ7+f7y95jRwchbAuBh3dQpWzv9fOR1E0Ho3PMm4lz8CMwuEGJRcUcXvqvvo2ZnLk4TFYi7IB18=
-Received: from CY8PR10MB7243.namprd10.prod.outlook.com (2603:10b6:930:7c::10)
- by BL3PR10MB6114.namprd10.prod.outlook.com (2603:10b6:208:3b9::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6433.14; Wed, 24 May
- 2023 23:34:16 +0000
-Received: from CY8PR10MB7243.namprd10.prod.outlook.com
- ([fe80::13d6:c3f3:2447:6559]) by CY8PR10MB7243.namprd10.prod.outlook.com
- ([fe80::13d6:c3f3:2447:6559%5]) with mapi id 15.20.6433.015; Wed, 24 May 2023
- 23:34:15 +0000
-From:   Mike Christie <michael.christie@oracle.com>
-To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        stefanha@redhat.com, jasowang@redhat.com, mst@redhat.com,
-        sgarzare@redhat.com, virtualization@lists.linux-foundation.org
-Cc:     Mike Christie <michael.christie@oracle.com>
-Subject: [PATCH 3/3] vhost-scsi: Rename vhost_scsi_iov_to_sgl
-Date:   Wed, 24 May 2023 18:34:07 -0500
-Message-Id: <20230524233407.41432-4-michael.christie@oracle.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230524233407.41432-1-michael.christie@oracle.com>
+        Thu, 25 May 2023 03:58:57 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 96502E6
+        for <target-devel@vger.kernel.org>; Thu, 25 May 2023 00:58:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1685001488;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=MhuDpYug9nQtTBkx3yBfGEnCnjBO/H2Ca4eqWqXaFzc=;
+        b=CvHEFNAmxkV6dXMcE0zlJE9SVIJ4O19mtrLZJr5RtlPag4JsgUrIk1cxDfMuQihJZfyAje
+        NDu/vNzJqWEUjajQfNnjs9vK7+myDG82rGP6Ko7WIAVXCNKCQO7Ezo5my2PD1f9pAm7vS0
+        99XUQIL80BxsuOcH5AmVmg/wMR4vRo8=
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
+ [209.85.160.197]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-214-pVcsQ27ZNeGCGfvSw5rbGQ-1; Thu, 25 May 2023 03:58:07 -0400
+X-MC-Unique: pVcsQ27ZNeGCGfvSw5rbGQ-1
+Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-3f6a856ae6aso14282371cf.0
+        for <target-devel@vger.kernel.org>; Thu, 25 May 2023 00:58:07 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1685001487; x=1687593487;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=MhuDpYug9nQtTBkx3yBfGEnCnjBO/H2Ca4eqWqXaFzc=;
+        b=SvfwL9YJKXa3ozvw6TEvOGpv+v2sYquwJCFKwCIR3AKh6il5/HaDFDaDRRQJYjCqQv
+         k6ROxnXtXUQv2bCiqDVTi8MIvUuzH70GGprJtA0eHKsMee/MZm4Awp6eujRCu5HUNnWZ
+         1aCDS4ROw1RbeDMbYQOEmSXjEw6oW4Sog1MLn9U5BCICsNv+svUrfYuVci3BA9vhiHxg
+         eMXISc6hnR4L0ryetqwpQU64But3Rtubh+sz9Kbv/b4dDJYmRllwofUj64GV4i58J+Lf
+         50wHdfWY7mW1Hj37Fju5JYmQOC1+sb/APwY/GKI1thtV9JGNZTFFra7aq0KUkSl/g4K3
+         jvYw==
+X-Gm-Message-State: AC+VfDyfWYAYYz5tRInHoDddnGE/wDzZzp9T2jRMI9BRWdxLZoBXItRN
+        t0ESylN0mienOh2rbZtYkVyExSearMcHlqOoYjJGVNQJmtNLOQ74n1sgPRmiTUzwXTUfj6ndi4G
+        gj0HbUdByrA06kNzOoAbc7ZEV
+X-Received: by 2002:ac8:57d6:0:b0:3f6:a92e:7f47 with SMTP id w22-20020ac857d6000000b003f6a92e7f47mr18728608qta.13.1685001486830;
+        Thu, 25 May 2023 00:58:06 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ7sqMrQXIubKqyzU0f/l+R+wvCBJOZr6nSDlFejOgZrhHWOZ8NGIH0gF+Ve/tXV2hUc1CN18w==
+X-Received: by 2002:ac8:57d6:0:b0:3f6:a92e:7f47 with SMTP id w22-20020ac857d6000000b003f6a92e7f47mr18728596qta.13.1685001486469;
+        Thu, 25 May 2023 00:58:06 -0700 (PDT)
+Received: from redhat.com ([191.101.160.247])
+        by smtp.gmail.com with ESMTPSA id h12-20020ac8138c000000b003f0a79e6a8bsm218174qtj.28.2023.05.25.00.58.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 25 May 2023 00:58:05 -0700 (PDT)
+Date:   Thu, 25 May 2023 03:57:59 -0400
+From:   "Michael S. Tsirkin" <mst@redhat.com>
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        stefanha@redhat.com, jasowang@redhat.com, sgarzare@redhat.com,
+        virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 1/3] vhost-scsi: Fix alignment handling with windows
+Message-ID: <20230525034741-mutt-send-email-mst@kernel.org>
 References: <20230524233407.41432-1-michael.christie@oracle.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: DM6PR02CA0126.namprd02.prod.outlook.com
- (2603:10b6:5:1b4::28) To CY8PR10MB7243.namprd10.prod.outlook.com
- (2603:10b6:930:7c::10)
+ <20230524233407.41432-2-michael.christie@oracle.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY8PR10MB7243:EE_|BL3PR10MB6114:EE_
-X-MS-Office365-Filtering-Correlation-Id: cfebc05e-62d2-44f8-3a24-08db5caf6347
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: D0zCIRIIwMi9V/CA+imqjZzfM0EY4mlhpE+iY5bGXbOJP7WLGF4MZsQOl1BTakBfmIiXZR/Xn+fmEAHMm5I/RQgT9QsofOHwB7g/YHgpsfwDq6RkjfFb2gqOZ7T18iqV0OcLpY3tY+P2YR/3SENQQBMxb3+Jz4/aqTz6ztNY31fGepBE1bfd2unLbi5XgMGAf5nmtqZfOLjm+x/MnRlfAfOQtoJJ6otAK9FiCCPzZ4rItzLpDG5rJeoo3C1J9+LUTBXX2KOqDXhg7ajf/NpHr0jdxYn7ObS5SWQ0EnhQMhZVrzckodtg+0OnqHvmnJ6A+CLYICt/ey6gPJo2Wu6DgeXKR4CdqKDz9lXXEkmRlYzazKe21duySyHTcPVHHHTQ/r+2uw03oFZZLA+uMXznWNrF1t1OK004W8YFa2b0GpRYHxB8wvAlbFiDLgHcwOVo25lC7AXZqXnzv+/8KfAwfIyTHg53jbzknkPC+gYg0UxYZUpFmLZpFCAiX0z3BL9JFWUeyc3IFha5STN0A4RKaJybR+WC5AQgX/YAb2XM7bvwt2XtemAmwudKcaD++CFe
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY8PR10MB7243.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(366004)(376002)(396003)(346002)(136003)(39860400002)(451199021)(2906002)(5660300002)(8936002)(8676002)(316002)(41300700001)(66556008)(4326008)(66476007)(478600001)(66946007)(6486002)(36756003)(6666004)(6512007)(6506007)(26005)(2616005)(1076003)(86362001)(38100700002)(186003)(107886003)(83380400001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?Dox5ZzTfSJh/kU4t06QMSO8XScY3FSYXl4BAOm9lb+XNIJAsLKTSU6q5BsQC?=
- =?us-ascii?Q?wb86nlVtY5o/X9j7rjTZQ4pK7GlWP1ChJuJhxz4/4Ro0BUkpJ2G68IVoZKAy?=
- =?us-ascii?Q?7wU0+RCT5zph0HCfKB+hn75i4UDc6oYB4CenIxBsd1BJgM40sJOI/gkVsJDg?=
- =?us-ascii?Q?w/2Br90gUu0MuoRY8kPbQn0cnLm8Wt2rWzeEj1ImtlpdJpCQfWba7sQaYtLt?=
- =?us-ascii?Q?pd6XIJzkAu1DbgQPfHsWRZ3BWCHEXYbuvJ4rRp+6okpRH4FnwW7yhAnXVcMB?=
- =?us-ascii?Q?4DFkP5NjbJ1WZGLdJV3qviw6+eQvP6SN4pRL+wOKn30i6eZKdCOyXZftlp2t?=
- =?us-ascii?Q?3UR8X1I2loYFg6E5OBiizB/V0lb+I9ef29XoLiuYrMkVi3nqETPk/7xjNnOC?=
- =?us-ascii?Q?qEh/XiGDrOl//zBb9orYXrQM9GbEaKXMrvt9w0B4mFiiBUSTv9/zA8WbG3V8?=
- =?us-ascii?Q?/1nlYTUEj8ASkmnoqVG1FzJY2ZSVMY1ronjVbu2P+jMHqCQAmuIh2ehOz+q/?=
- =?us-ascii?Q?zYmq719xxzZId847ZfEA+li+a5fScuo/xQYWmE2Hoildi7yskEdd306Mtqua?=
- =?us-ascii?Q?D6rp5V8Ma6DwabKk6GDW82Ma2V1O1hXkb/0nTLQwQ1R/x7x8iuN7QPoTgOlM?=
- =?us-ascii?Q?3X094Hb2PxtSmGCG+og5Ty7wlPrfvWlMJBHuI6KXILQTCQHWM+RQYK+2hkzw?=
- =?us-ascii?Q?dxGpC1nXVVhFNQ5hTw82ijJRhyof1COiEnHgMIMO+y/6Jhppkqx9BKSfl+19?=
- =?us-ascii?Q?4U81m7IBli8zOdJovYUv5eMv4kgtR9pkVViML45IOxX/3zUytqhnEmDR8tTU?=
- =?us-ascii?Q?2ii2bjwbIglgUuPqFZCwsN/NcKVgOdRaTOCjsuhXUD5A0g6Ep7DbEca6DvVZ?=
- =?us-ascii?Q?CceiuKqwor5dRZ9jr8Z1VZ5qwKHwYk8ZfSZ6hTbHbPkbO8u/rTwxpfRsIYxM?=
- =?us-ascii?Q?9rW9/XvFIY0A98zDiV3AqsckynsDOfLjQKGKu4kcPfzv4HuYFx+7bMgox/Vv?=
- =?us-ascii?Q?qokR1Ggh4n8NJ9MFO/ReD2b92CiPZNhftPHN+79QmLDcDmv7fNXmFLwmULom?=
- =?us-ascii?Q?j6IowNGm2HYV7/dE8he5BQKHq/yPE81AR7pzY5yvrCX45UvCfvM0aMxUIE8B?=
- =?us-ascii?Q?0o2VeXh6CrG2P76h4nb/djQVF1T8K9BD2iDXeis3RnH9hh69nNEA0dZ3Zq/9?=
- =?us-ascii?Q?yhbm+Vanh/SpDIaEkRwocvahlnNxu20nC/xIob0cc1qtTZAQIGIFMH7Yde43?=
- =?us-ascii?Q?DT5gODqtwROSW6YkEPqdnRsby7ewYf77j1/Ag66U9BhSIGjynocboV2WCYmE?=
- =?us-ascii?Q?VONB5XE4VZDZir1y9f86pgzGUJ79sqO5FNysvF+61BMRboGqSPxLaqT97YWi?=
- =?us-ascii?Q?teVbpL6qRau3jWvqEHP/CK+7YD5sWEC7BTRBKM3ktInGp/nuG1hrhVl87Gpk?=
- =?us-ascii?Q?vO3TgSHsHAPdVSktb1fOzdOVA8P47KvpHFQeBMqzAfaY2n1p9S0W6C/pJUpC?=
- =?us-ascii?Q?9h0vySm1qzP/nxhwEzFR4an9PY/bXve4CJMwvw0SdZRawyo1C4C22xaH6eep?=
- =?us-ascii?Q?+mgXzNwyfCxM/MKrFdO37HbI6PwECeTyA0lQlamRlNuuNRkMrd5IUbLVKr1Z?=
- =?us-ascii?Q?pg=3D=3D?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: FxLOzyuWwLYoDqNRZkr30OnnOyKMPdWmG+BFgRTjuOtZmprY7LccryKER9o55dpPaVZ0xonNHqqvSAW/NzBIaa+I3Auq2L4Fau81X+VjUrjxZH0HpjzybKJsOcQLOpESkF5ExRO+XqBkmCHwshl69W48v75BE/vnu5uk8QrZ5+nkatKLPyusTBPqfimSHizHO4S2xM1DVdscmxPqL4byEXVgDVMbeJYfrvopJg+yBVL0XxkaZb7ISCGrdwNteabTPLXLOw7Ynlbxo6oGfJOwBPf6AXPKJCoCtD+nVozWws/60x6T7giHFRKZTOEjONRS7HMNR7SIY82pgbOCUs3cNloXClGogT9VNPT1NHhnYzB8vPPXLkg+Mo2BS9/Pfm64iACwBu05H0YEWvktPSgpvNXWaOlRGjKvc3Zd1ShXfqaDhcuGhjcucy1Ye1gK6Yk6zl4zfCGFGPk47j3fqA43d/IiD2bIllcTCQ0U+oETpoFvY69XramPObIo8sieALSewp7wNM9MSlNpfEzA/jT16uD5zNFq1a7WM578PStCpxr6b5HP5pBNd6Bu5syGYtLO+Bs1i71WRX0YGZYTG3FAT9imZ9lUMiSpVgmxvlUgKZgPTx6V7KstzoWOdJdoQHp03jJmQumriLDZN7DJ3PBvfMnFhbUhYbSFkpdh3l9w6MymZSnPJsPsx8HWlxlGu4BN54QC/w0CY6641A+N/l85qWnjo5LOPKsDo5V4QtDOf+lH3VP/bn6O5TuD6IpZSJXyk795sSZId+A0sNL5Stin9fMpwBLn40coxsQI72MHaK8nMzpBryV4NrZELl9ICQjR5TOkyN7mM5x2ViXj76M8jhvb5HWoSc30HG3Ek4o4WKo=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cfebc05e-62d2-44f8-3a24-08db5caf6347
-X-MS-Exchange-CrossTenant-AuthSource: CY8PR10MB7243.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 May 2023 23:34:15.8944
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 5xHKD/bigCMjfT+NYz0QY/SbeU2oRLiUQuidavG0S2VKJ0vGh0Uer8Nd+8wgfbuY/Ke0iJ3ox12qSqDmrEBTE4ZhIkL0rRGhldGaOBQDeBc=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR10MB6114
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.573,FMLib:17.11.176.26
- definitions=2023-05-24_16,2023-05-24_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 malwarescore=0 adultscore=0
- mlxscore=0 bulkscore=0 suspectscore=0 mlxlogscore=999 phishscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2304280000
- definitions=main-2305240197
-X-Proofpoint-GUID: sm_2AP8jjv4HQ69Bs9R53lN-Q-_Z_3xy
-X-Proofpoint-ORIG-GUID: sm_2AP8jjv4HQ69Bs9R53lN-Q-_Z_3xy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230524233407.41432-2-michael.christie@oracle.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Rename vhost_scsi_iov_to_sgl to vhost_scsi_map_iov_to_sgl so it matches
-matches the naming style used for vhost_scsi_copy_iov_to_sgl.
+On Wed, May 24, 2023 at 06:34:05PM -0500, Mike Christie wrote:
+> The linux block layer requires bios/requests to have lengths with a 512
+> byte alignment. Some drivers/layers like dm-crypt and the directi IO code
+> will test for it and just fail. Other drivers like SCSI just assume the
+> requirement is met and will end up in infinte retry loops. The problem
+> for drivers like SCSI is that it uses functions like blk_rq_cur_sectors
+> and blk_rq_sectors which divide the request's length by 512. If there's
+> lefovers then it just gets dropped. But other code in the block/scsi
+> layer may use blk_rq_bytes/blk_rq_cur_bytes and end up thinking there is
+> still data left and try to retry the cmd. We can then end up getting
+> stuck in retry loops where part of the block/scsi thinks there is data
+> left, but other parts think we want to do IOs of zero length.
+> 
+> Linux will always check for alignment, but windows will not. When
+> vhost-scsi then translates the iovec it gets from a windows guest to a
+> scatterlist, we can end up with sg items where the sg->length is not
+> divisible by 512 due to the misaligned offset:
+> 
+> sg[0].offset = 255;
+> sg[0].length = 3841;
+> sg...
+> sg[N].offset = 0;
+> sg[N].length = 255;
+> 
+> When the lio backends then convert the SG to bios or other iovecs, we
+> end up sending them with the same misaligned values and can hit the
+> issues above.
+> 
+> This just has us drop down to allocating a temp page and copying the data
+> when this happens. Because this adds a check that needs to loop over the
+> iovec in the main IO path, this patch adds an attribute that can be turned
+> on for just windows.
+> 
+> Signed-off-by: Mike Christie <michael.christie@oracle.com>
 
-Signed-off-by: Mike Christie <michael.christie@oracle.com>
----
- drivers/vhost/scsi.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+I am assuming this triggers rarely, yes?
 
-diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 382158b39740..a4d32b96e66a 100644
---- a/drivers/vhost/scsi.c
-+++ b/drivers/vhost/scsi.c
-@@ -694,8 +694,8 @@ vhost_scsi_calc_sgls(struct iov_iter *iter, size_t bytes, int max_sgls)
- }
- 
- static int
--vhost_scsi_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
--		      struct scatterlist *sg, int sg_count)
-+vhost_scsi_map_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
-+			  struct scatterlist *sg, int sg_count)
- {
- 	struct scatterlist *p = sg;
- 	int ret;
-@@ -778,8 +778,9 @@ vhost_scsi_mapal(struct vhost_scsi_tpg *tpg, struct vhost_scsi_cmd *cmd,
- 		pr_debug("%s prot_sg %p prot_sgl_count %u\n", __func__,
- 			 cmd->tvc_prot_sgl, cmd->tvc_prot_sgl_count);
- 
--		ret = vhost_scsi_iov_to_sgl(cmd, prot_iter, cmd->tvc_prot_sgl,
--					    cmd->tvc_prot_sgl_count);
-+		ret = vhost_scsi_map_iov_to_sgl(cmd, prot_iter,
-+						cmd->tvc_prot_sgl,
-+						cmd->tvc_prot_sgl_count);
- 		if (ret < 0)
- 			goto map_fail;
- 	}
-@@ -808,8 +809,8 @@ vhost_scsi_mapal(struct vhost_scsi_tpg *tpg, struct vhost_scsi_cmd *cmd,
- 		ret = vhost_scsi_copy_iov_to_sgl(cmd, data_iter, cmd->tvc_sgl,
- 						 cmd->tvc_sgl_count);
- 	else
--		ret = vhost_scsi_iov_to_sgl(cmd, data_iter, cmd->tvc_sgl,
--					    cmd->tvc_sgl_count);
-+		ret = vhost_scsi_map_iov_to_sgl(cmd, data_iter, cmd->tvc_sgl,
-+						cmd->tvc_sgl_count);
- 	if (ret)
- 		goto map_fail;
- 
--- 
-2.25.1
+If so I would like to find a way to avoid setting an attribute.
+
+I am guessing the main cost is an extra scan of iov.
+vhost_scsi_iov_to_sgl already does a scan, how about changing
+it to fail if misaligned?
+We can then detect the relevant error code and try with a copy.
+
+WDYT?
+
+> ---
+>  drivers/vhost/scsi.c | 174 +++++++++++++++++++++++++++++++++++++------
+>  1 file changed, 151 insertions(+), 23 deletions(-)
+> 
+> diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
+> index bb10fa4bb4f6..dbad8fb579eb 100644
+> --- a/drivers/vhost/scsi.c
+> +++ b/drivers/vhost/scsi.c
+> @@ -25,6 +25,8 @@
+>  #include <linux/fs.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/miscdevice.h>
+> +#include <linux/blk_types.h>
+> +#include <linux/bio.h>
+>  #include <asm/unaligned.h>
+>  #include <scsi/scsi_common.h>
+>  #include <scsi/scsi_proto.h>
+> @@ -75,6 +77,9 @@ struct vhost_scsi_cmd {
+>  	u32 tvc_prot_sgl_count;
+>  	/* Saved unpacked SCSI LUN for vhost_scsi_target_queue_cmd() */
+>  	u32 tvc_lun;
+> +	u32 copied_iov:1;
+> +	const void *saved_iter_addr;
+> +	struct iov_iter saved_iter;
+>  	/* Pointer to the SGL formatted memory from virtio-scsi */
+>  	struct scatterlist *tvc_sgl;
+>  	struct scatterlist *tvc_prot_sgl;
+> @@ -107,6 +112,7 @@ struct vhost_scsi_nexus {
+>  struct vhost_scsi_tpg {
+>  	/* Vhost port target portal group tag for TCM */
+>  	u16 tport_tpgt;
+> +	bool check_io_alignment;
+>  	/* Used to track number of TPG Port/Lun Links wrt to explict I_T Nexus shutdown */
+>  	int tv_tpg_port_count;
+>  	/* Used for vhost_scsi device reference to tpg_nexus, protected by tv_tpg_mutex */
+> @@ -328,8 +334,13 @@ static void vhost_scsi_release_cmd_res(struct se_cmd *se_cmd)
+>  	int i;
+>  
+>  	if (tv_cmd->tvc_sgl_count) {
+> -		for (i = 0; i < tv_cmd->tvc_sgl_count; i++)
+> -			put_page(sg_page(&tv_cmd->tvc_sgl[i]));
+> +		for (i = 0; i < tv_cmd->tvc_sgl_count; i++) {
+> +			if (tv_cmd->copied_iov)
+> +				__free_page(sg_page(&tv_cmd->tvc_sgl[i]));
+> +			else
+> +				put_page(sg_page(&tv_cmd->tvc_sgl[i]));
+> +		}
+> +		kfree(tv_cmd->saved_iter_addr);
+>  	}
+>  	if (tv_cmd->tvc_prot_sgl_count) {
+>  		for (i = 0; i < tv_cmd->tvc_prot_sgl_count; i++)
+> @@ -502,6 +513,27 @@ static void vhost_scsi_evt_work(struct vhost_work *work)
+>  	mutex_unlock(&vq->mutex);
+>  }
+>  
+> +static int vhost_scsi_copy_sgl_to_iov(struct vhost_scsi_cmd *cmd)
+> +{
+> +	struct iov_iter *iter = &cmd->saved_iter;
+> +	struct scatterlist *sg = cmd->tvc_sgl;
+> +	struct page *page;
+> +	size_t len;
+> +	int i;
+> +
+> +	for (i = 0; i < cmd->tvc_sgl_count; i++) {
+> +		page = sg_page(&sg[i]);
+> +		len = sg[i].length;
+> +
+> +		if (copy_page_to_iter(page, 0, len, iter) != len) {
+> +			pr_err("Could not copy data. Error %lu\n", len);
+> +			return -1;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  /* Fill in status and signal that we are done processing this command
+>   *
+>   * This is scheduled in the vhost work queue so we are called with the owner
+> @@ -525,15 +557,20 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+>  
+>  		pr_debug("%s tv_cmd %p resid %u status %#02x\n", __func__,
+>  			cmd, se_cmd->residual_count, se_cmd->scsi_status);
+> -
+>  		memset(&v_rsp, 0, sizeof(v_rsp));
+> -		v_rsp.resid = cpu_to_vhost32(cmd->tvc_vq, se_cmd->residual_count);
+> -		/* TODO is status_qualifier field needed? */
+> -		v_rsp.status = se_cmd->scsi_status;
+> -		v_rsp.sense_len = cpu_to_vhost32(cmd->tvc_vq,
+> -						 se_cmd->scsi_sense_length);
+> -		memcpy(v_rsp.sense, cmd->tvc_sense_buf,
+> -		       se_cmd->scsi_sense_length);
+> +
+> +		if (cmd->saved_iter_addr && vhost_scsi_copy_sgl_to_iov(cmd)) {
+> +			v_rsp.response = VIRTIO_SCSI_S_BAD_TARGET;
+> +		} else {
+> +			v_rsp.resid = cpu_to_vhost32(cmd->tvc_vq,
+> +						     se_cmd->residual_count);
+> +			/* TODO is status_qualifier field needed? */
+> +			v_rsp.status = se_cmd->scsi_status;
+> +			v_rsp.sense_len = cpu_to_vhost32(cmd->tvc_vq,
+> +							 se_cmd->scsi_sense_length);
+> +			memcpy(v_rsp.sense, cmd->tvc_sense_buf,
+> +			       se_cmd->scsi_sense_length);
+> +		}
+>  
+>  		iov_iter_init(&iov_iter, ITER_DEST, cmd->tvc_resp_iov,
+>  			      cmd->tvc_in_iovs, sizeof(v_rsp));
+> @@ -682,7 +719,52 @@ vhost_scsi_iov_to_sgl(struct vhost_scsi_cmd *cmd, bool write,
+>  }
+>  
+>  static int
+> -vhost_scsi_mapal(struct vhost_scsi_cmd *cmd,
+> +vhost_scsi_copy_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
+> +			   struct scatterlist *sg, int sg_count)
+> +{
+> +	size_t len = iov_iter_count(iter);
+> +	unsigned int nbytes = 0;
+> +	struct page *page;
+> +	int i;
+> +
+> +	if (cmd->tvc_data_direction == DMA_FROM_DEVICE) {
+> +		cmd->saved_iter_addr = dup_iter(&cmd->saved_iter, iter,
+> +						GFP_KERNEL);
+> +		if (!cmd->saved_iter_addr)
+> +			return -ENOMEM;
+> +	}
+> +
+> +	for (i = 0; i < sg_count; i++) {
+> +		page = alloc_page(GFP_KERNEL);
+> +		if (!page) {
+> +			i--;
+> +			goto err;
+> +		}
+> +
+> +		nbytes = min_t(unsigned int, PAGE_SIZE, len);
+> +		sg_set_page(&sg[i], page, nbytes, 0);
+> +
+> +		if (cmd->tvc_data_direction == DMA_TO_DEVICE &&
+> +		    copy_page_from_iter(page, 0, nbytes, iter) != nbytes)
+> +			goto err;
+> +
+> +		len -= nbytes;
+> +	}
+> +
+> +	cmd->copied_iov = 1;
+> +	return 0;
+> +
+> +err:
+> +	pr_err("Could not read %u bytes\n", nbytes);
+> +
+> +	for (; i >= 0; i--)
+> +		__free_page(sg_page(&sg[i]));
+> +	kfree(cmd->saved_iter_addr);
+> +	return -ENOMEM;
+> +}
+> +
+> +static int
+> +vhost_scsi_mapal(struct vhost_scsi_tpg *tpg, struct vhost_scsi_cmd *cmd,
+>  		 size_t prot_bytes, struct iov_iter *prot_iter,
+>  		 size_t data_bytes, struct iov_iter *data_iter)
+>  {
+> @@ -703,10 +785,8 @@ vhost_scsi_mapal(struct vhost_scsi_cmd *cmd,
+>  		ret = vhost_scsi_iov_to_sgl(cmd, write, prot_iter,
+>  					    cmd->tvc_prot_sgl,
+>  					    cmd->tvc_prot_sgl_count);
+> -		if (ret < 0) {
+> -			cmd->tvc_prot_sgl_count = 0;
+> -			return ret;
+> -		}
+> +		if (ret < 0)
+> +			goto map_fail;
+>  	}
+>  	sgl_count = vhost_scsi_calc_sgls(data_iter, data_bytes,
+>  					 VHOST_SCSI_PREALLOC_SGLS);
+> @@ -717,14 +797,32 @@ vhost_scsi_mapal(struct vhost_scsi_cmd *cmd,
+>  	cmd->tvc_sgl_count = sgl_count;
+>  	pr_debug("%s data_sg %p data_sgl_count %u\n", __func__,
+>  		  cmd->tvc_sgl, cmd->tvc_sgl_count);
+> +	/*
+> +	 * The block layer requires bios/requests to be a multiple of 512 bytes,
+> +	 * but Windows can send us vecs that are misaligned. This can result
+> +	 * in bios and later requests with misaligned sizes if we have to break
+> +	 * up a cmd into multiple bios.
+> +	 *
+> +	 * We currently only break up a command into multiple bios if we hit
+> +	 * the vec/seg limit, so check if our sgl_count is greater than the max
+> +	 * and if a vec in the cmd has a misaligned size.
+> +	 */
+> +	if (tpg->check_io_alignment &&
+> +	    (!iov_iter_is_aligned(data_iter, 0, SECTOR_SIZE - 1) &&
+> +	     bio_max_segs(sgl_count) != sgl_count))
+> +		ret = vhost_scsi_copy_iov_to_sgl(cmd, data_iter, cmd->tvc_sgl,
+> +						 cmd->tvc_sgl_count);
+> +	else
+> +		ret = vhost_scsi_iov_to_sgl(cmd, write, data_iter,
+> +					    cmd->tvc_sgl, cmd->tvc_sgl_count);
+> +	if (ret)
+> +		goto map_fail;
+>  
+> -	ret = vhost_scsi_iov_to_sgl(cmd, write, data_iter,
+> -				    cmd->tvc_sgl, cmd->tvc_sgl_count);
+> -	if (ret < 0) {
+> -		cmd->tvc_sgl_count = 0;
+> -		return ret;
+> -	}
+>  	return 0;
+> +
+> +map_fail:
+> +	cmd->tvc_sgl_count = 0;
+> +	return ret;
+>  }
+>  
+>  static int vhost_scsi_to_tcm_attr(int attr)
+> @@ -1077,7 +1175,7 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
+>  			 " %d\n", cmd, exp_data_len, prot_bytes, data_direction);
+>  
+>  		if (data_direction != DMA_NONE) {
+> -			if (unlikely(vhost_scsi_mapal(cmd, prot_bytes,
+> +			if (unlikely(vhost_scsi_mapal(tpg, cmd, prot_bytes,
+>  						      &prot_iter, exp_data_len,
+>  						      &data_iter))) {
+>  				vq_err(vq, "Failed to map iov to sgl\n");
+> @@ -2068,11 +2166,41 @@ static ssize_t vhost_scsi_tpg_attrib_fabric_prot_type_show(
+>  
+>  	return sysfs_emit(page, "%d\n", tpg->tv_fabric_prot_type);
+>  }
+> -
+>  CONFIGFS_ATTR(vhost_scsi_tpg_attrib_, fabric_prot_type);
+>  
+> +static ssize_t
+> +vhost_scsi_tpg_attrib_check_io_alignment_store(struct config_item *item,
+> +					       const char *page, size_t count)
+> +{
+> +	struct se_portal_group *se_tpg = attrib_to_tpg(item);
+> +	struct vhost_scsi_tpg *tpg = container_of(se_tpg, struct vhost_scsi_tpg,
+> +						  se_tpg);
+> +	bool val;
+> +	int ret;
+> +
+> +	ret = kstrtobool(page, &val);
+> +	if (ret)
+> +		return ret;
+> +
+> +	tpg->check_io_alignment = val;
+> +	return count;
+> +}
+> +
+> +static ssize_t
+> +vhost_scsi_tpg_attrib_check_io_alignment_show(struct config_item *item,
+> +					      char *page)
+> +{
+> +	struct se_portal_group *se_tpg = attrib_to_tpg(item);
+> +	struct vhost_scsi_tpg *tpg = container_of(se_tpg, struct vhost_scsi_tpg,
+> +						  se_tpg);
+> +
+> +	return sysfs_emit(page, "%d\n", tpg->check_io_alignment);
+> +}
+> +CONFIGFS_ATTR(vhost_scsi_tpg_attrib_, check_io_alignment);
+> +
+>  static struct configfs_attribute *vhost_scsi_tpg_attrib_attrs[] = {
+>  	&vhost_scsi_tpg_attrib_attr_fabric_prot_type,
+> +	&vhost_scsi_tpg_attrib_attr_check_io_alignment,
+>  	NULL,
+>  };
+>  
+> -- 
+> 2.25.1
 
