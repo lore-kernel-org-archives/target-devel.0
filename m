@@ -2,152 +2,97 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2D53C77B73
-	for <target-devel@archiver.kernel.org>; Sat, 27 May 2023 19:51:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D08EC77B7A
+	for <target-devel@archiver.kernel.org>; Wed,  7 Jun 2023 09:51:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231210AbjE0TvS (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sat, 27 May 2023 15:51:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49966 "EHLO
+        id S238859AbjFGJvn (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 7 Jun 2023 05:51:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35508 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229706AbjE0TvR (ORCPT
+        with ESMTP id S234384AbjFGJvm (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sat, 27 May 2023 15:51:17 -0400
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 002FABE;
-        Sat, 27 May 2023 12:51:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1685217076; x=1716753076;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=B5NMMKtpsLcHWp/IzYoY/4V62wxH/BnLO/v+P9sc2lk=;
-  b=e+owQbZDIDdUY2xpQnnpJwkhXXv3LivGWLHRGAj8fdd8rJTzPhR3xN/6
-   RvTpTj1aN9OWg6N1F/v6EYBI9SfnXQN9mzUfDJq9/l0FRs4qnTzCGR+sg
-   JgkRdDoBfnbhfd//WYS/Q8g+pUU6b+8kxRow740563Csr+nNEyssfqfCS
-   q+3tKLQvG/KNGb/BXzIx/h3ptXbJoa3nMbGc1gZ17vIpEFWMBw5VnKPUw
-   qW8g7+8o4y59E0bO6k68Ya575jcgVXV2oub0K9qFKaQueo40vsIRD2R40
-   YH9QXSBslz1m5GwAR2WdS8osPo3gEICadAqxfGX5p2XFI4ICBbsaP5hsD
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10723"; a="356818100"
-X-IronPort-AV: E=Sophos;i="6.00,197,1681196400"; 
-   d="scan'208";a="356818100"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 May 2023 12:51:15 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10723"; a="1035713233"
-X-IronPort-AV: E=Sophos;i="6.00,197,1681196400"; 
-   d="scan'208";a="1035713233"
-Received: from lkp-server01.sh.intel.com (HELO dea6d5a4f140) ([10.239.97.150])
-  by fmsmga005.fm.intel.com with ESMTP; 27 May 2023 12:51:13 -0700
-Received: from kbuild by dea6d5a4f140 with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1q2zwW-000KA2-32;
-        Sat, 27 May 2023 19:51:12 +0000
-Date:   Sun, 28 May 2023 03:50:53 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Konstantin Shelekhin <k.shelekhin@yadro.com>,
-        Martin Petersen <martin.petersen@oracle.com>
-Cc:     oe-kbuild-all@lists.linux.dev, target-devel@vger.kernel.org,
-        linux-scsi@vger.kernel.org, linux@yadro.com,
-        Konstantin Shelekhin <k.shelekhin@yadro.com>,
-        Dmitry Bogdanov <d.bogdanov@yadro.com>
-Subject: Re: [PATCH 2/2] scsi: target: iblock: Report space allocation errors
-Message-ID: <202305280314.CoHoeIlx-lkp@intel.com>
-References: <20230517141537.80936-3-k.shelekhin@yadro.com>
+        Wed, 7 Jun 2023 05:51:42 -0400
+X-Greylist: delayed 403 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 07 Jun 2023 02:51:39 PDT
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B55A7E49;
+        Wed,  7 Jun 2023 02:51:39 -0700 (PDT)
+Received: from ed3e173716be.home.arpa (unknown [124.16.138.125])
+        by APP-03 (Coremail) with SMTP id rQCowACniR4dU4BkidqzDA--.1731S2;
+        Wed, 07 Jun 2023 17:51:25 +0800 (CST)
+From:   Jiasheng Jiang <jiasheng@iscas.ac.cn>
+To:     james.smart@broadcom.com, ram.vegesna@broadcom.com,
+        jejb@linux.ibm.com, martin.petersen@oracle.com,
+        chenzhongjin@huawei.com, dwagner@suse.de, hare@suse.de
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Jiasheng Jiang <jiasheng@iscas.ac.cn>
+Subject: [PATCH v2] scsi: efct: Add missing check for ioremap
+Date:   Wed,  7 Jun 2023 17:51:24 +0800
+Message-Id: <20230607095124.38414-1-jiasheng@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230517141537.80936-3-k.shelekhin@yadro.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: rQCowACniR4dU4BkidqzDA--.1731S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7Xw4Utry8AF4fJF48ZFWDurg_yoW8JrW7pF
+        WSvay5uF4rtF45Kr1UAF1UCF1Fva40v3yDurWjg343uay0qFyrtFWfJFyakr15A3yktw17
+        tw15JFy8Xa4DJaUanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+        9KBjDU0xBIdaVrnRJUUUvC14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+        rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+        1l84ACjcxK6xIIjxv20xvE14v26r1I6r4UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+        6r4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
+        CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+        2Ix0cI8IcVAFwI0_JrI_JrylYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJV
+        W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
+        Y2ka0xkIwI1lc2xSY4AK67AK6r4fMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r
+        1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CE
+        b7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0x
+        vE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAI
+        cVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2Kf
+        nxnUUI43ZEXa7VUjC385UUUUU==
+X-Originating-IP: [124.16.138.125]
+X-CM-SenderInfo: pmld2xxhqjqxpvfd2hldfou0/
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Konstantin,
+Add check for ioremap() and return the error if it fails in order to
+guarantee the success of ioremap().
 
-kernel test robot noticed the following build warnings:
+Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
+Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+---
+Changelog:
 
-[auto build test WARNING on mkp-scsi/for-next]
-[also build test WARNING on linus/master v6.4-rc3]
-[cannot apply to next-20230525]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+v1 -> v2:
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Konstantin-Shelekhin/scsi-target-core-Add-sense-reason-for-space-allocation-errors/20230517-221755
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
-patch link:    https://lore.kernel.org/r/20230517141537.80936-3-k.shelekhin%40yadro.com
-patch subject: [PATCH 2/2] scsi: target: iblock: Report space allocation errors
-config: sparc-randconfig-s043-20230517 (https://download.01.org/0day-ci/archive/20230528/202305280314.CoHoeIlx-lkp@intel.com/config)
-compiler: sparc-linux-gcc (GCC) 12.1.0
-reproduce:
-        mkdir -p ~/bin
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # apt-get install sparse
-        # sparse version: v0.6.4-39-gce1a6720-dirty
-        # https://github.com/intel-lab-lkp/linux/commit/a1c912b7cd68155b131113eae148f7f79ef93676
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Konstantin-Shelekhin/scsi-target-core-Add-sense-reason-for-space-allocation-errors/20230517-221755
-        git checkout a1c912b7cd68155b131113eae148f7f79ef93676
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 ~/bin/make.cross C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' O=build_dir ARCH=sparc olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 ~/bin/make.cross C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__' O=build_dir ARCH=sparc SHELL=/bin/bash drivers/target/
+1. Add "rc = -EINVAL;" in the error handling.
+---
+ drivers/scsi/elx/efct/efct_driver.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202305280314.CoHoeIlx-lkp@intel.com/
-
-sparse warnings: (new ones prefixed by >>)
->> drivers/target/target_core_iblock.c:333:57: sparse: sparse: incorrect type in argument 1 (different base types) @@     expected restricted blk_status_t [usertype] status @@     got int @@
-   drivers/target/target_core_iblock.c:333:57: sparse:     expected restricted blk_status_t [usertype] status
-   drivers/target/target_core_iblock.c:333:57: sparse:     got int
->> drivers/target/target_core_iblock.c:354:61: sparse: sparse: incorrect type in argument 3 (different base types) @@     expected int new @@     got restricted blk_status_t [usertype] bi_status @@
-   drivers/target/target_core_iblock.c:354:61: sparse:     expected int new
-   drivers/target/target_core_iblock.c:354:61: sparse:     got restricted blk_status_t [usertype] bi_status
-
-vim +333 drivers/target/target_core_iblock.c
-
-   324	
-   325	static void iblock_complete_cmd(struct se_cmd *cmd)
-   326	{
-   327		struct iblock_req *ibr = cmd->priv;
-   328		sense_reason_t reason;
-   329	
-   330		if (!refcount_dec_and_test(&ibr->pending))
-   331			return;
-   332	
- > 333		reason = iblock_blk_status_to_reason(atomic_read(&ibr->status));
-   334	
-   335		if (reason == TCM_NO_SENSE)
-   336			target_complete_cmd(cmd, SAM_STAT_GOOD);
-   337		else
-   338			target_complete_cmd_with_sense(cmd, SAM_STAT_CHECK_CONDITION, reason);
-   339	
-   340		kfree(ibr);
-   341	}
-   342	
-   343	static void iblock_bio_done(struct bio *bio)
-   344	{
-   345		struct se_cmd *cmd = bio->bi_private;
-   346		struct iblock_req *ibr = cmd->priv;
-   347	
-   348		if (bio->bi_status) {
-   349			pr_err("bio error: %p,  err: %d\n", bio, bio->bi_status);
-   350			/*
-   351			 * Set the error status of the iblock request to the error
-   352			 * status of the first failed bio.
-   353			 */
- > 354			atomic_cmpxchg(&ibr->status, BLK_STS_OK, bio->bi_status);
-   355			smp_mb__after_atomic();
-   356		}
-   357	
-   358		bio_put(bio);
-   359	
-   360		iblock_complete_cmd(cmd);
-   361	}
-   362	
-
+diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
+index 49fd2cfed70c..8cb6d42b7432 100644
+--- a/drivers/scsi/elx/efct/efct_driver.c
++++ b/drivers/scsi/elx/efct/efct_driver.c
+@@ -528,6 +528,10 @@ efct_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		if (pci_resource_flags(pdev, i) & IORESOURCE_MEM) {
+ 			efct->reg[r] = ioremap(pci_resource_start(pdev, i),
+ 					       pci_resource_len(pdev, i));
++			if (!efct->reg[r]) {
++				rc = -EINVAL;
++				goto ioremap_out;
++			}
+ 			r++;
+ 		}
+ 
+@@ -580,7 +584,7 @@ efct_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	efct_teardown_msix(efct);
+ dma_mask_out:
+ 	pci_set_drvdata(pdev, NULL);
+-
++ioremap_out:
+ 	for (i = 0; i < EFCT_PCI_MAX_REGS; i++) {
+ 		if (efct->reg[i])
+ 			iounmap(efct->reg[i]);
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.25.1
+
