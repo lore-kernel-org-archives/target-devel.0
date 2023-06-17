@@ -2,43 +2,42 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32C62EB64DA
-	for <target-devel@archiver.kernel.org>; Fri, 16 Jun 2023 16:15:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 569AAEB64DB
+	for <target-devel@archiver.kernel.org>; Sat, 17 Jun 2023 12:14:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343695AbjFPQPT (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 16 Jun 2023 12:15:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41248 "EHLO
+        id S235815AbjFQMOM (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 17 Jun 2023 08:14:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345372AbjFPQOu (ORCPT
+        with ESMTP id S235893AbjFQMOF (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 16 Jun 2023 12:14:50 -0400
+        Sat, 17 Jun 2023 08:14:05 -0400
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F90335AC
-        for <target-devel@vger.kernel.org>; Fri, 16 Jun 2023 09:13:59 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A75526BE
+        for <target-devel@vger.kernel.org>; Sat, 17 Jun 2023 05:12:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1686932038;
+        s=mimecast20190719; t=1687003978;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=1mlTQ7sLbMYrLbD7sQOL6EL8ri/fJk9iL2N/GT0ngis=;
-        b=cIdFqwlPazg4w9N2SIx53mauhrlDbOhE3QXHKXhR8ZlQH1Tw6poN28Jj45y4uwjIXMHN2T
-        yHfCKepOtHXVH4UWffw71LRZHkfGmgF6WayXMFR29ZMPbRJ88kNbrq5vxJ48e5DpUIor+P
-        ZzrPw/x8D/m08dujVi2YRPqtGEnNtTE=
+        bh=bszGYXAPCfyFrCrKXBgf4DyEzlv1vS1+csO6wWtbX4c=;
+        b=ZH3uQ90QaWYZ91CERbG+c63lDgnvZVv5e3+xwOWM3lR06+s5upuNOWRO+fpv9AndENqu93
+        fL/YV2dhBpzftUiBB4NDJh8OLH3ValjIivB4g1YQygx8PXktcCWRt/l0EPCQl8ktgcWLoj
+        TYIF1qqXbbGfQQqIsZ+kwE1DeEmnr/M=
 Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
  [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-80--ZJjLFLpNDyvwEUeqVNoyg-1; Fri, 16 Jun 2023 12:13:56 -0400
-X-MC-Unique: -ZJjLFLpNDyvwEUeqVNoyg-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com [10.11.54.3])
+ us-mta-436-185vvMv5PdOOlfFYb8ORMQ-1; Sat, 17 Jun 2023 08:12:55 -0400
+X-MC-Unique: 185vvMv5PdOOlfFYb8ORMQ-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C768A38041C6;
-        Fri, 16 Jun 2023 16:13:55 +0000 (UTC)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 192423C11C6A;
+        Sat, 17 Jun 2023 12:12:54 +0000 (UTC)
 Received: from warthog.procyon.org.com (unknown [10.42.28.51])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id C88111121314;
-        Fri, 16 Jun 2023 16:13:53 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 903F92026D49;
+        Sat, 17 Jun 2023 12:12:51 +0000 (UTC)
 From:   David Howells <dhowells@redhat.com>
 To:     netdev@vger.kernel.org
 Cc:     David Howells <dhowells@redhat.com>,
@@ -51,17 +50,22 @@ Cc:     David Howells <dhowells@redhat.com>,
         David Ahern <dsahern@kernel.org>,
         Matthew Wilcox <willy@infradead.org>,
         Jens Axboe <axboe@kernel.dk>, linux-mm@kvack.org,
-        linux-kernel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Lee Duncan <lduncan@suse.com>,
+        Chris Leech <cleech@redhat.com>,
+        Mike Christie <michael.christie@oracle.com>,
+        Maurizio Lombardi <mlombard@redhat.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
         "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Al Viro <viro@zeniv.linux.org.uk>, open-iscsi@googlegroups.com,
         linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH net-next 15/17] iscsi: Use sendmsg(MSG_SPLICE_PAGES) rather than sendpage
-Date:   Fri, 16 Jun 2023 17:12:58 +0100
-Message-ID: <20230616161301.622169-16-dhowells@redhat.com>
-In-Reply-To: <20230616161301.622169-1-dhowells@redhat.com>
-References: <20230616161301.622169-1-dhowells@redhat.com>
+Subject: [PATCH net-next v2 15/17] iscsi: Use sendmsg(MSG_SPLICE_PAGES) rather than sendpage
+Date:   Sat, 17 Jun 2023 13:11:44 +0100
+Message-ID: <20230617121146.716077-16-dhowells@redhat.com>
+In-Reply-To: <20230617121146.716077-1-dhowells@redhat.com>
+References: <20230617121146.716077-1-dhowells@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.3
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.4
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
@@ -75,6 +79,11 @@ trailer and page fragments to hold the header and trailer - and then call
 sendmsg once for the entire message.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
+cc: Lee Duncan <lduncan@suse.com>
+cc: Chris Leech <cleech@redhat.com>
+cc: Mike Christie <michael.christie@oracle.com>
+cc: Maurizio Lombardi <mlombard@redhat.com>
+cc: "James E.J. Bottomley" <jejb@linux.ibm.com>
 cc: "Martin K. Petersen" <martin.petersen@oracle.com>
 cc: "David S. Miller" <davem@davemloft.net>
 cc: Eric Dumazet <edumazet@google.com>
@@ -82,14 +91,21 @@ cc: Jakub Kicinski <kuba@kernel.org>
 cc: Paolo Abeni <pabeni@redhat.com>
 cc: Jens Axboe <axboe@kernel.dk>
 cc: Matthew Wilcox <willy@infradead.org>
+cc: Al Viro <viro@zeniv.linux.org.uk>
+cc: open-iscsi@googlegroups.com
 cc: linux-scsi@vger.kernel.org
 cc: target-devel@vger.kernel.org
 cc: netdev@vger.kernel.org
 ---
+
+Notes:
+    ver #2)
+     - Wrap lines at 80.
+
  drivers/scsi/iscsi_tcp.c                 | 26 +++++++++---------------
  drivers/scsi/iscsi_tcp.h                 |  2 +-
- drivers/target/iscsi/iscsi_target_util.c | 14 +++++++------
- 3 files changed, 19 insertions(+), 23 deletions(-)
+ drivers/target/iscsi/iscsi_target_util.c | 15 ++++++++------
+ 3 files changed, 20 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/scsi/iscsi_tcp.c b/drivers/scsi/iscsi_tcp.c
 index 9637d4bc2bc9..9ab8555180a3 100644
@@ -172,7 +188,7 @@ index 68e14a344904..d6ec08d7eb63 100644
  
  struct iscsi_sw_tcp_host {
 diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index b14835fcb033..8bab1898f1d0 100644
+index b14835fcb033..6231fa4ef5c6 100644
 --- a/drivers/target/iscsi/iscsi_target_util.c
 +++ b/drivers/target/iscsi/iscsi_target_util.c
 @@ -1129,6 +1129,8 @@ int iscsit_fe_sendpage_sg(
@@ -184,7 +200,7 @@ index b14835fcb033..8bab1898f1d0 100644
  	struct kvec iov;
  	u32 tx_hdr_size, data_len;
  	u32 offset = cmd->first_data_sg_off;
-@@ -1172,17 +1174,17 @@ int iscsit_fe_sendpage_sg(
+@@ -1172,17 +1174,18 @@ int iscsit_fe_sendpage_sg(
  		u32 space = (sg->length - offset);
  		u32 sub_len = min_t(u32, data_len, space);
  send_pg:
@@ -193,7 +209,8 @@ index b14835fcb033..8bab1898f1d0 100644
 +		bvec_set_page(&bvec, sg_page(sg), sub_len, sg->offset + offset);
 +		iov_iter_bvec(&msghdr.msg_iter, ITER_SOURCE, &bvec, 1, sub_len);
 +
-+		tx_sent = conn->sock->ops->sendmsg(conn->sock, &msghdr, sub_len);
++		tx_sent = conn->sock->ops->sendmsg(conn->sock, &msghdr,
++						   sub_len);
  		if (tx_sent != sub_len) {
  			if (tx_sent == -EAGAIN) {
 -				pr_err("tcp_sendpage() returned"
