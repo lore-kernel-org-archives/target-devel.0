@@ -2,227 +2,239 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06779EB64DC
-	for <target-devel@archiver.kernel.org>; Tue, 20 Jun 2023 14:58:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5084FEB64D8
+	for <target-devel@archiver.kernel.org>; Wed, 21 Jun 2023 07:40:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233444AbjFTO6a (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 20 Jun 2023 10:58:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60446 "EHLO
+        id S231679AbjFUHkq (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 21 Jun 2023 03:40:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35066 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233446AbjFTO6X (ORCPT
+        with ESMTP id S231386AbjFUHkK (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 20 Jun 2023 10:58:23 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 968B9199E
-        for <target-devel@vger.kernel.org>; Tue, 20 Jun 2023 07:57:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1687273035;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=bszGYXAPCfyFrCrKXBgf4DyEzlv1vS1+csO6wWtbX4c=;
-        b=f919fnlfwRTXavVMtnEakZZ8PtCpziZZ0NdLPF60em/ZHKC9eNrcfsH7qxt1bQqdP1A7xL
-        QMQ9rIYlDUg5ZSs8mZHZKJY1KVgEFs2P0rx5E4Ivrs+a4g1+EHRqP4EuYDH4p9fRpavAdS
-        8XcvE7i/wODG17ibeekuUh8YSNvAuf8=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-180-5iBq3k2zOLaeVvGBHbh90g-1; Tue, 20 Jun 2023 10:57:13 -0400
-X-MC-Unique: 5iBq3k2zOLaeVvGBHbh90g-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 176203C1BFD2;
-        Tue, 20 Jun 2023 14:54:42 +0000 (UTC)
-Received: from warthog.procyon.org.com (unknown [10.42.28.4])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 9E84B422B0;
-        Tue, 20 Jun 2023 14:54:39 +0000 (UTC)
-From:   David Howells <dhowells@redhat.com>
-To:     netdev@vger.kernel.org
-Cc:     David Howells <dhowells@redhat.com>,
-        Alexander Duyck <alexander.duyck@gmail.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
-        David Ahern <dsahern@kernel.org>,
-        Matthew Wilcox <willy@infradead.org>,
-        Jens Axboe <axboe@kernel.dk>, linux-mm@kvack.org,
-        linux-kernel@vger.kernel.org, Lee Duncan <lduncan@suse.com>,
-        Chris Leech <cleech@redhat.com>,
-        Mike Christie <michael.christie@oracle.com>,
-        Maurizio Lombardi <mlombard@redhat.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Al Viro <viro@zeniv.linux.org.uk>, open-iscsi@googlegroups.com,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH net-next v3 16/18] iscsi: Use sendmsg(MSG_SPLICE_PAGES) rather than sendpage
-Date:   Tue, 20 Jun 2023 15:53:35 +0100
-Message-ID: <20230620145338.1300897-17-dhowells@redhat.com>
-In-Reply-To: <20230620145338.1300897-1-dhowells@redhat.com>
-References: <20230620145338.1300897-1-dhowells@redhat.com>
+        Wed, 21 Jun 2023 03:40:10 -0400
+Received: from out203-205-221-192.mail.qq.com (out203-205-221-192.mail.qq.com [203.205.221.192])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 442B1210B;
+        Wed, 21 Jun 2023 00:39:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
+        s=s201512; t=1687333181;
+        bh=UqApaAasoEBoMc0dxYV4OnhSyfSEoo7sl5sXBYzYfds=;
+        h=From:To:Cc:Subject:Date;
+        b=WCV6uW5r4UcO67rokvNvBOtVGkznnBl2vKOKD9816+y1dwNO3igJQAVEdGBlMlbKF
+         l53y1EK3mIeXTpQ1slXy9NczFBlxBw75rn1KGTmbGZaFCLNz9ZGQG9yeA77Q1rvYUm
+         9QMkudbFYgWKpqqUm4PvWPo4LJxs6JrFT+OhCs3s=
+Received: from localhost.localdomain ([39.156.73.12])
+        by newxmesmtplogicsvrszc2-1.qq.com (NewEsmtp) with SMTP
+        id 8603282D; Wed, 21 Jun 2023 15:33:32 +0800
+X-QQ-mid: xmsmtpt1687332812t2jwfvdiw
+Message-ID: <tencent_F3895D0EA868BCCE8C56221619BC093D660A@qq.com>
+X-QQ-XMAILINFO: MQ+wLuVvI2LQjtOqTDlIV94yDrHmkwsY56bVPolYhQ89M8b1VZfbz8XhMultN9
+         2xBjYkXEzUFu76fKZNAsQOlL8OhtaDzw/sK9uvnSIVwTtg7Dx8NUosziNzoyaOw8gYYaOlIqX/HB
+         tSmmvm6MTN8NPtbcvZjVPFcU92BQhq7snXgooRbpUTtFy/9JrV9bBMjb/dehvF0b1fY1sQ2Mgp9b
+         Uoza7fQFr4kIVOgrXEJbl65uLjvZLSf1jtisvIeuNw18mt1Pbxj1OdU0hUSRh0JRwN5z5x1ISnAU
+         mjQTNrLTl+kaWF0v+Oev4SmZM8m+0A1pMVAK3TuaL3AfVfRT/XE0eHyiqChpkaUNji0I7u7wsF4T
+         GCGOsQ4C5Dhvl2bM3Troc+JHMoVNfhZNxM4tS5RkUgS/6jAy9p3xiSuEG5QMTvsSIeC3pSCgL3pL
+         RRDjpJrjfcx4/KXow7luA4Kz3QOIjTDw8GGanLwNP9t3oDYD+MynjOO/JAMX5QqTiBPpK8o6InZO
+         vkgrqv/i44HBKJ3Z03sPIk40UDLpV2kgEI4zII1343ldpMK7N4nYM9J1PMVxnxqeUnF2l/ZraqE1
+         FfjUUrk/fz3vXOnj1LR4tSIQ6pv3kedIh701tWYZxf4dKygkL9ecnUjBKmrPccHJQS19K52AYdnF
+         4lubXf+EvnSV6dGyMSp22EYwYrij7lrDPTHbfAbSuECnyf3HBOFiMyvBFvK1cDPWXzFFnsz1a2UR
+         rMh511MudjQlHnMu28jI1Cpt/OYCh+iPRMR1Erpl81OYcJtT7ip7oKPJ3ABvf6zyhkovuFi+KcCb
+         xNXEre3wX+paOww/KokfN1XlNf+8Jl+xXvWCDnNhxzno6xIYTQnU16GdTN2385vWCkmXbKf7LX6/
+         viViVS3f1ergI3BwpSx6vvyoWw5JengErO1EG+GnZTwaC7TvNTwtIWuaSvlt1/WOwTktiLE6TGMR
+         oOwBY5rQc8eJ8Z6EXc/bk0uJ/AA3S/NcbwKdI6mq16FaXsKBdvtw==
+X-QQ-XMRINFO: NjIWXnpjOUTzjNa+72IgnqZv1lPwKoxBEg==
+From:   Rong Tao <rtoax@foxmail.com>
+To:     martin.petersen@oracle.com
+Cc:     rongtao@cestc.cn, Jonathan Corbet <corbet@lwn.net>,
+        linux-scsi@vger.kernel.org (open list:SCSI TARGET SUBSYSTEM),
+        target-devel@vger.kernel.org (open list:SCSI TARGET SUBSYSTEM),
+        linux-doc@vger.kernel.org (open list:DOCUMENTATION),
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] docs: target: Convert tcm_mod_builder.py print syntax to python3
+Date:   Wed, 21 Jun 2023 15:33:30 +0800
+X-OQ-MSGID: <20230621073331.85873-1-rtoax@foxmail.com>
+X-Mailer: git-send-email 2.39.3
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Use sendmsg() with MSG_SPLICE_PAGES rather than sendpage.  This allows
-multiple pages and multipage folios to be passed through.
+From: Rong Tao <rongtao@cestc.cn>
 
-TODO: iscsit_fe_sendpage_sg() should perhaps set up a bio_vec array for the
-entire set of pages it's going to transfer plus two for the header and
-trailer and page fragments to hold the header and trailer - and then call
-sendmsg once for the entire message.
+Convert the tcm_mod_builder.py file to python3 and fix indentation.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-cc: Lee Duncan <lduncan@suse.com>
-cc: Chris Leech <cleech@redhat.com>
-cc: Mike Christie <michael.christie@oracle.com>
-cc: Maurizio Lombardi <mlombard@redhat.com>
-cc: "James E.J. Bottomley" <jejb@linux.ibm.com>
-cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-cc: "David S. Miller" <davem@davemloft.net>
-cc: Eric Dumazet <edumazet@google.com>
-cc: Jakub Kicinski <kuba@kernel.org>
-cc: Paolo Abeni <pabeni@redhat.com>
-cc: Jens Axboe <axboe@kernel.dk>
-cc: Matthew Wilcox <willy@infradead.org>
-cc: Al Viro <viro@zeniv.linux.org.uk>
-cc: open-iscsi@googlegroups.com
-cc: linux-scsi@vger.kernel.org
-cc: target-devel@vger.kernel.org
-cc: netdev@vger.kernel.org
+Error:
+
+    $ ./tcm_mod_builder.py
+    File "/home/sda/git-repos/linux/Documentation/target/./tcm_mod_builder.py", line 23
+        print msg
+            ^
+    SyntaxError: Missing parentheses in call to 'print'. Did you mean print(msg)?
+
+    $ ./tcm_mod_builder.py
+    File "/home/sda/git-repos/linux/Documentation/target/./tcm_mod_builder.py", line 186
+        p = open(f, 'w');
+    TabError: inconsistent use of tabs and spaces in indentation
+
+Signed-off-by: Rong Tao <rongtao@cestc.cn>
 ---
+ Documentation/target/tcm_mod_builder.py | 44 ++++++++++++-------------
+ 1 file changed, 22 insertions(+), 22 deletions(-)
 
-Notes:
-    ver #2)
-     - Wrap lines at 80.
-
- drivers/scsi/iscsi_tcp.c                 | 26 +++++++++---------------
- drivers/scsi/iscsi_tcp.h                 |  2 +-
- drivers/target/iscsi/iscsi_target_util.c | 15 ++++++++------
- 3 files changed, 20 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/scsi/iscsi_tcp.c b/drivers/scsi/iscsi_tcp.c
-index 9637d4bc2bc9..9ab8555180a3 100644
---- a/drivers/scsi/iscsi_tcp.c
-+++ b/drivers/scsi/iscsi_tcp.c
-@@ -301,35 +301,32 @@ static int iscsi_sw_tcp_xmit_segment(struct iscsi_tcp_conn *tcp_conn,
+diff --git a/Documentation/target/tcm_mod_builder.py b/Documentation/target/tcm_mod_builder.py
+index 54492aa813b9..e2ef72925de3 100755
+--- a/Documentation/target/tcm_mod_builder.py
++++ b/Documentation/target/tcm_mod_builder.py
+@@ -20,7 +20,7 @@ fabric_mod_port = ""
+ fabric_mod_init_port = ""
  
- 	while (!iscsi_tcp_segment_done(tcp_conn, segment, 0, r)) {
- 		struct scatterlist *sg;
-+		struct msghdr msg = {};
-+		struct bio_vec bv;
- 		unsigned int offset, copy;
--		int flags = 0;
+ def tcm_mod_err(msg):
+-	print msg
++	print(msg)
+ 	sys.exit(1)
  
- 		r = 0;
- 		offset = segment->copied;
- 		copy = segment->size - offset;
+ def tcm_mod_create_module_subdir(fabric_mod_dir_var):
+@@ -28,7 +28,7 @@ def tcm_mod_create_module_subdir(fabric_mod_dir_var):
+ 	if os.path.isdir(fabric_mod_dir_var) == True:
+ 		return 1
  
- 		if (segment->total_copied + segment->size < segment->total_size)
--			flags |= MSG_MORE | MSG_SENDPAGE_NOTLAST;
-+			msg.msg_flags |= MSG_MORE;
+-	print "Creating fabric_mod_dir: " + fabric_mod_dir_var
++	print("Creating fabric_mod_dir: " + fabric_mod_dir_var)
+ 	ret = os.mkdir(fabric_mod_dir_var)
+ 	if ret:
+ 		tcm_mod_err("Unable to mkdir " + fabric_mod_dir_var)
+@@ -41,7 +41,7 @@ def tcm_mod_build_FC_include(fabric_mod_dir_var, fabric_mod_name):
+ 	buf = ""
  
- 		if (tcp_sw_conn->queue_recv)
--			flags |= MSG_DONTWAIT;
-+			msg.msg_flags |= MSG_DONTWAIT;
+ 	f = fabric_mod_dir_var + "/" + fabric_mod_name + "_base.h"
+-	print "Writing file: " + f
++	print("Writing file: " + f)
  
--		/* Use sendpage if we can; else fall back to sendmsg */
- 		if (!segment->data) {
-+			if (!tcp_conn->iscsi_conn->datadgst_en)
-+				msg.msg_flags |= MSG_SPLICE_PAGES;
- 			sg = segment->sg;
- 			offset += segment->sg_offset + sg->offset;
--			r = tcp_sw_conn->sendpage(sk, sg_page(sg), offset,
--						  copy, flags);
-+			bvec_set_page(&bv, sg_page(sg), copy, offset);
- 		} else {
--			struct msghdr msg = { .msg_flags = flags };
--			struct kvec iov = {
--				.iov_base = segment->data + offset,
--				.iov_len = copy
--			};
--
--			r = kernel_sendmsg(sk, &msg, &iov, 1, copy);
-+			bvec_set_virt(&bv, segment->data + offset, copy);
- 		}
-+		iov_iter_bvec(&msg.msg_iter, ITER_SOURCE, &bv, 1, copy);
+ 	p = open(f, 'w');
+ 	if not p:
+@@ -85,7 +85,7 @@ def tcm_mod_build_SAS_include(fabric_mod_dir_var, fabric_mod_name):
+ 	buf = ""
  
-+		r = sock_sendmsg(sk, &msg);
- 		if (r < 0) {
- 			iscsi_tcp_segment_unmap(segment);
- 			return r;
-@@ -746,7 +743,6 @@ iscsi_sw_tcp_conn_bind(struct iscsi_cls_session *cls_session,
- 	sock_no_linger(sk);
+ 	f = fabric_mod_dir_var + "/" + fabric_mod_name + "_base.h"
+-	print "Writing file: " + f
++	print("Writing file: " + f)
  
- 	iscsi_sw_tcp_conn_set_callbacks(conn);
--	tcp_sw_conn->sendpage = tcp_sw_conn->sock->ops->sendpage;
- 	/*
- 	 * set receive state machine into initial state
- 	 */
-@@ -777,8 +773,6 @@ static int iscsi_sw_tcp_conn_set_param(struct iscsi_cls_conn *cls_conn,
- 			return -ENOTCONN;
- 		}
- 		iscsi_set_param(cls_conn, param, buf, buflen);
--		tcp_sw_conn->sendpage = conn->datadgst_en ?
--			sock_no_sendpage : tcp_sw_conn->sock->ops->sendpage;
- 		mutex_unlock(&tcp_sw_conn->sock_lock);
- 		break;
- 	case ISCSI_PARAM_MAX_R2T:
-diff --git a/drivers/scsi/iscsi_tcp.h b/drivers/scsi/iscsi_tcp.h
-index 68e14a344904..d6ec08d7eb63 100644
---- a/drivers/scsi/iscsi_tcp.h
-+++ b/drivers/scsi/iscsi_tcp.h
-@@ -48,7 +48,7 @@ struct iscsi_sw_tcp_conn {
- 	uint32_t		sendpage_failures_cnt;
- 	uint32_t		discontiguous_hdr_cnt;
+ 	p = open(f, 'w');
+ 	if not p:
+@@ -128,7 +128,7 @@ def tcm_mod_build_iSCSI_include(fabric_mod_dir_var, fabric_mod_name):
+ 	buf = ""
  
--	ssize_t (*sendpage)(struct socket *, struct page *, int, size_t, int);
-+	bool			can_splice_to_tcp;
- };
+ 	f = fabric_mod_dir_var + "/" + fabric_mod_name + "_base.h"
+-	print "Writing file: " + f
++	print("Writing file: " + f)
  
- struct iscsi_sw_tcp_host {
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index b14835fcb033..6231fa4ef5c6 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -1129,6 +1129,8 @@ int iscsit_fe_sendpage_sg(
- 	struct iscsit_conn *conn)
- {
- 	struct scatterlist *sg = cmd->first_data_sg;
-+	struct bio_vec bvec;
-+	struct msghdr msghdr = { .msg_flags = MSG_SPLICE_PAGES,	};
- 	struct kvec iov;
- 	u32 tx_hdr_size, data_len;
- 	u32 offset = cmd->first_data_sg_off;
-@@ -1172,17 +1174,18 @@ int iscsit_fe_sendpage_sg(
- 		u32 space = (sg->length - offset);
- 		u32 sub_len = min_t(u32, data_len, space);
- send_pg:
--		tx_sent = conn->sock->ops->sendpage(conn->sock,
--					sg_page(sg), sg->offset + offset, sub_len, 0);
-+		bvec_set_page(&bvec, sg_page(sg), sub_len, sg->offset + offset);
-+		iov_iter_bvec(&msghdr.msg_iter, ITER_SOURCE, &bvec, 1, sub_len);
-+
-+		tx_sent = conn->sock->ops->sendmsg(conn->sock, &msghdr,
-+						   sub_len);
- 		if (tx_sent != sub_len) {
- 			if (tx_sent == -EAGAIN) {
--				pr_err("tcp_sendpage() returned"
--						" -EAGAIN\n");
-+				pr_err("sendmsg/splice returned -EAGAIN\n");
- 				goto send_pg;
- 			}
+ 	p = open(f, 'w');
+ 	if not p:
+@@ -172,7 +172,7 @@ def tcm_mod_build_base_includes(proto_ident, fabric_mod_dir_val, fabric_mod_name
+ 	elif proto_ident == "iSCSI":
+ 		tcm_mod_build_iSCSI_include(fabric_mod_dir_val, fabric_mod_name)
+ 	else:
+-		print "Unsupported proto_ident: " + proto_ident
++		print("Unsupported proto_ident: " + proto_ident)
+ 		sys.exit(1)
  
--			pr_err("tcp_sendpage() failure: %d\n",
--					tx_sent);
-+			pr_err("sendmsg/splice failure: %d\n", tx_sent);
- 			return -1;
- 		}
+ 	return
+@@ -181,11 +181,11 @@ def tcm_mod_build_configfs(proto_ident, fabric_mod_dir_var, fabric_mod_name):
+ 	buf = ""
  
+ 	f = fabric_mod_dir_var + "/" + fabric_mod_name + "_configfs.c"
+-	print "Writing file: " + f
++	print("Writing file: " + f)
+ 
+-        p = open(f, 'w');
+-        if not p:
+-                tcm_mod_err("Unable to open file: " + f)
++	p = open(f, 'w');
++	if not p:
++		tcm_mod_err("Unable to open file: " + f)
+ 
+ 	buf = "#include <linux/module.h>\n"
+ 	buf += "#include <linux/moduleparam.h>\n"
+@@ -339,7 +339,7 @@ def tcm_mod_scan_fabric_ops(tcm_dir):
+ 
+ 	fabric_ops_api = tcm_dir + "include/target/target_core_fabric.h"
+ 
+-	print "Using tcm_mod_scan_fabric_ops: " + fabric_ops_api
++	print("Using tcm_mod_scan_fabric_ops: " + fabric_ops_api)
+ 	process_fo = 0;
+ 
+ 	p = open(fabric_ops_api, 'r')
+@@ -375,14 +375,14 @@ def tcm_mod_dump_fabric_ops(proto_ident, fabric_mod_dir_var, fabric_mod_name):
+ 	bufi = ""
+ 
+ 	f = fabric_mod_dir_var + "/" + fabric_mod_name + "_fabric.c"
+-	print "Writing file: " + f
++	print("Writing file: " + f)
+ 
+ 	p = open(f, 'w')
+ 	if not p:
+ 		tcm_mod_err("Unable to open file: " + f)
+ 
+ 	fi = fabric_mod_dir_var + "/" + fabric_mod_name + "_fabric.h"
+-	print "Writing file: " + fi
++	print("Writing file: " + fi)
+ 
+ 	pi = open(fi, 'w')
+ 	if not pi:
+@@ -537,7 +537,7 @@ def tcm_mod_build_kbuild(fabric_mod_dir_var, fabric_mod_name):
+ 
+ 	buf = ""
+ 	f = fabric_mod_dir_var + "/Makefile"
+-	print "Writing file: " + f
++	print("Writing file: " + f)
+ 
+ 	p = open(f, 'w')
+ 	if not p:
+@@ -558,7 +558,7 @@ def tcm_mod_build_kconfig(fabric_mod_dir_var, fabric_mod_name):
+ 
+ 	buf = ""
+ 	f = fabric_mod_dir_var + "/Kconfig"
+-	print "Writing file: " + f
++	print("Writing file: " + f)
+ 
+ 	p = open(f, 'w')
+ 	if not p:
+@@ -603,20 +603,20 @@ def main(modname, proto_ident):
+ 
+ 	tcm_dir = os.getcwd();
+ 	tcm_dir += "/../../"
+-	print "tcm_dir: " + tcm_dir
++	print("tcm_dir: " + tcm_dir)
+ 	fabric_mod_name = modname
+ 	fabric_mod_dir = tcm_dir + "drivers/target/" + fabric_mod_name
+-	print "Set fabric_mod_name: " + fabric_mod_name
+-	print "Set fabric_mod_dir: " + fabric_mod_dir
+-	print "Using proto_ident: " + proto_ident
++	print("Set fabric_mod_name: " + fabric_mod_name)
++	print("Set fabric_mod_dir: " + fabric_mod_dir)
++	print("Using proto_ident: " + proto_ident)
+ 
+ 	if proto_ident != "FC" and proto_ident != "SAS" and proto_ident != "iSCSI":
+-		print "Unsupported proto_ident: " + proto_ident
++		print("Unsupported proto_ident: " + proto_ident)
+ 		sys.exit(1)
+ 
+ 	ret = tcm_mod_create_module_subdir(fabric_mod_dir)
+ 	if ret:
+-		print "tcm_mod_create_module_subdir() failed because module already exists!"
++		print("tcm_mod_create_module_subdir() failed because module already exists!")
+ 		sys.exit(1)
+ 
+ 	tcm_mod_build_base_includes(proto_ident, fabric_mod_dir, fabric_mod_name)
+@@ -647,7 +647,7 @@ parser.add_option('-p', '--protoident', help='Protocol Ident', dest='protoident'
+ mandatories = ['modname', 'protoident']
+ for m in mandatories:
+ 	if not opts.__dict__[m]:
+-		print "mandatory option is missing\n"
++		print("mandatory option is missing\n")
+ 		parser.print_help()
+ 		exit(-1)
+ 
+-- 
+2.39.3
 
