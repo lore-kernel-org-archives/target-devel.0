@@ -2,84 +2,71 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0309EB64D8
-	for <target-devel@archiver.kernel.org>; Wed, 21 Jun 2023 15:43:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0DD0EB64DD
+	for <target-devel@archiver.kernel.org>; Fri, 23 Jun 2023 08:50:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233738AbjFUPnA (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 21 Jun 2023 11:43:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50496 "EHLO
+        id S231614AbjFWIun (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 23 Jun 2023 04:50:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40174 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233705AbjFUPmq (ORCPT
+        with ESMTP id S231572AbjFWIum (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 21 Jun 2023 11:42:46 -0400
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32116E68;
-        Wed, 21 Jun 2023 08:42:24 -0700 (PDT)
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-1b50e309602so47944165ad.0;
-        Wed, 21 Jun 2023 08:42:24 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687362122; x=1689954122;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:subject:from:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=FTJzUZXq823ZXnmLS5AS4rZZIfTqatFrJY6YpC4QzpE=;
-        b=BoocG/dCUaNbOvH580ePfIw424DALlxJpTkKvSEKXH7mR7tpaLzPk1+JLpVttUy2t6
-         LM7wGbHTwWpJLJRExnC9fMrO2Kcx23CnQ2ZTOykU+vllB8pjhJdgDJtVFrSf/oa6TYaL
-         /EKD/HrhztwjLJ+vbpeHyVyMnUh6aoRKFROsTiWzgrutzI2LVG+SvRHl5qTBV5RwqO7X
-         Qbf8M0DTwmKwxImUsRx7JEnkCxYmuiJF3P5kgCw7IOhZkhe+RYoEU5pLYKkqpTZtK3bH
-         E7ORuuNs7H8PTdXFer2Mn1C3ck7GM7NWr2yuGw73zqLcFskL2FsYpPwsgNna4VbZFJqI
-         ClXQ==
-X-Gm-Message-State: AC+VfDzFoYTRdPW6EntrmsGNkyaAm2o3t77CHtexfASIQZXua5coZ+xG
-        W0lYKL6cf4+DR+HVNSXCQAc=
-X-Google-Smtp-Source: ACHHUZ75AgZuplMcSb1kEuUFuGEsTg5FBp+Eusurp/PRz9+EQrBqDaV+XQmO0a4stt8z/TTWglepIQ==
-X-Received: by 2002:a17:903:1108:b0:1b0:2d08:eb51 with SMTP id n8-20020a170903110800b001b02d08eb51mr19783283plh.12.1687362122342;
-        Wed, 21 Jun 2023 08:42:02 -0700 (PDT)
-Received: from ?IPV6:2620:15c:211:201:9bb2:be1e:34e3:7c45? ([2620:15c:211:201:9bb2:be1e:34e3:7c45])
-        by smtp.gmail.com with ESMTPSA id u9-20020a17090341c900b001ac741dfd29sm3637788ple.295.2023.06.21.08.42.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 21 Jun 2023 08:42:01 -0700 (PDT)
-Message-ID: <debdc47a-c377-e457-5643-415d93ced54a@acm.org>
-Date:   Wed, 21 Jun 2023 08:41:58 -0700
+        Fri, 23 Jun 2023 04:50:42 -0400
+X-Greylist: delayed 564 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 23 Jun 2023 01:50:38 PDT
+Received: from mail.paretdee.com (mail.paretdee.com [141.95.17.174])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8FE4170B
+        for <target-devel@vger.kernel.org>; Fri, 23 Jun 2023 01:50:38 -0700 (PDT)
+Received: by mail.paretdee.com (Postfix, from userid 1002)
+        id 3075BA2FF9; Fri, 23 Jun 2023 08:40:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=paretdee.com; s=mail;
+        t=1687509672; bh=YtPWhpqttWkror/OXW+RT7d5qvBhyF8jxaFrqRhKfz8=;
+        h=Date:From:To:Subject:From;
+        b=sbs2KGS17k8snBkXdoBzJ1KALoxi64yy1UdIJu5pUPxW8aOvoTuAU3mRCrwWLPPYN
+         PShxvk+++6Sq8iUy2FB4bj1d7Aoth/f6hNL0gqa55nspL2BlWR8wW5XtEWaWehr8vF
+         onjh3/lV/l8E+rSIliXzh8fjG6i0m0dZU3zJhP+MOb3OsPygRJpHZFmpF8zQKylkOX
+         QqqlxbuO40Q8dpyigExXw2xM2pdTg1osdX8pjsCQfDS7n2MQuTIvRnwcvYT31Yi2wb
+         aqqm7rWmYNyxq7bPHU66iscgjH4WRzQhnS9Hr1k4C0KseTvEcyi5uxrj9KjNsdrXT6
+         yNowGlh3yRCUQ==
+Received: by paretdee.com for <target-devel@vger.kernel.org>; Fri, 23 Jun 2023 08:40:50 GMT
+Message-ID: <20230623082632-0.1.6w.gm0y.0.dma84565bw@paretdee.com>
+Date:   Fri, 23 Jun 2023 08:40:50 GMT
+From:   "Leos Sladek" <leos.sladek@paretdee.com>
+To:     <target-devel@vger.kernel.org>
+Subject: =?UTF-8?Q?Fotovoltaick=C3=A9_rozvodnice?=
+X-Mailer: mail.paretdee.com
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-From:   Bart Van Assche <bvanassche@acm.org>
-Subject: Re: [PATCH] docs: target: Convert tcm_mod_builder.py print syntax to
- python3
-To:     Rong Tao <rtoax@foxmail.com>, martin.petersen@oracle.com
-Cc:     rongtao@cestc.cn, Jonathan Corbet <corbet@lwn.net>,
-        "open list:SCSI TARGET SUBSYSTEM" <linux-scsi@vger.kernel.org>,
-        "open list:SCSI TARGET SUBSYSTEM" <target-devel@vger.kernel.org>,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-        open list <linux-kernel@vger.kernel.org>,
-        Mike Christie <michael.christie@oracle.com>
-References: <tencent_F3895D0EA868BCCE8C56221619BC093D660A@qq.com>
-Content-Language: en-US
-In-Reply-To: <tencent_F3895D0EA868BCCE8C56221619BC093D660A@qq.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 6/21/23 00:33, Rong Tao wrote:
-> diff --git a/Documentation/target/tcm_mod_builder.py b/Documentation/target/tcm_mod_builder.py
-> index 54492aa813b9..e2ef72925de3 100755
-> --- a/Documentation/target/tcm_mod_builder.py
-> +++ b/Documentation/target/tcm_mod_builder.py
-> @@ -20,7 +20,7 @@ fabric_mod_port = ""
->   fabric_mod_init_port = ""
->   
->   def tcm_mod_err(msg):
-> -	print msg
-> +	print(msg)
->   	sys.exit(1)
+Dobr=C3=BD den,
 
-How about deleting the file Documentation/target/tcm_mod_builder.py? I
-don't think anyone is using this script. Additionally, it takes effort
-to keep this script in sync with the rest of the SCSI target code. I'm
-not sure anyone is interested in maintaining this script.
+obrac=C3=ADm se na V=C3=A1s jm=C3=A9nem dlouholet=C3=A9ho v=C3=BDrobce fo=
+tovoltaick=C3=BDch rozvodnic ur=C4=8Den=C3=BDch pro
+soukrom=C3=A9 i pr=C5=AFmyslov=C3=A9 pou=C5=BEit=C3=AD.
 
-Thanks,
+Dod=C3=A1v=C3=A1me fotovoltaick=C3=A9 rozvodnice na zak=C3=A1zku a jsme s=
+chopni realizovat i ty nejn=C3=A1ro=C4=8Dn=C4=9Bj=C5=A1=C3=AD
+po=C5=BEadavky instala=C4=8Dn=C3=ADch firem, velkoobchod=C5=AF a distribu=
+tor=C5=AF.
 
-Bart.
+Vyu=C5=BE=C3=ADv=C3=A1me nejkvalitn=C4=9Bj=C5=A1=C3=AD komponenty a mater=
+i=C3=A1ly, =C4=8D=C3=ADm=C5=BE dosahujeme vy=C5=A1=C5=A1=C3=AD odolnost, =
+stabilitu
+provozu a ochranu proti vod=C4=9B, vlku, prachu a n=C3=A1raz=C5=AFm.
+
+V na=C5=A1em sortimentu jsou tak=C3=A9 omezova=C4=8De p=C5=99ep=C4=9Bt=C3=
+=AD AC/DC, kter=C3=A9 zaji=C5=A1=C5=A5uj=C3=AD ochranu
+fotovoltaick=C3=BDch nap=C3=A1jec=C3=ADch instalac=C3=AD p=C5=99ed negati=
+vn=C3=ADmi efekty p=C5=99ep=C4=9Bt=C3=AD a chr=C3=A1n=C3=AD za=C5=99=C3=AD=
+zen=C3=AD p=C5=99ed
+efekty p=C5=AFsoben=C3=AD p=C5=99ep=C4=9Bt=C3=AD a bleskov=C3=BDch proud=C5=
+=AF.
+
+Chcete si vyzkou=C5=A1et na=C5=A1e =C5=99e=C5=A1en=C3=AD?
+
+
+S pozdravem
+Leos Sladek
