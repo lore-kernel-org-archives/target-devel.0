@@ -2,145 +2,72 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C12B7C001DF
-	for <target-devel@archiver.kernel.org>; Fri, 23 Jun 2023 22:57:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B8F1EB64DA
+	for <target-devel@archiver.kernel.org>; Sun, 25 Jun 2023 00:53:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231132AbjFWW5e (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 23 Jun 2023 18:57:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38030 "EHLO
+        id S229774AbjFYAxM (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sat, 24 Jun 2023 20:53:12 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58830 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232440AbjFWW5R (ORCPT
+        with ESMTP id S229449AbjFYAxL (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 23 Jun 2023 18:57:17 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58EFF294E
-        for <target-devel@vger.kernel.org>; Fri, 23 Jun 2023 15:55:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1687560955;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=aZHrq272u78M4jQRc62xjzOjs56TE9G5qctmKlgdkdo=;
-        b=VX7jgF8DuIsW845vzo3g87Z9nxrIUL6ik2KQptJCxtFXGhKpVWC5kvIXTNS0muFZNQhJoY
-        9J7knIeGaBAz/irAO0ZJehhNojq2fsJJp4TMBHTQDMJTmNObbUa3pW0HVPCVJmUgHVgzbP
-        ngthUl8w1M3pqV9iiwWAX+Shj9aBQtY=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-90-ADNZXf0mNHmnFJ3WbtgVaQ-1; Fri, 23 Jun 2023 18:55:52 -0400
-X-MC-Unique: ADNZXf0mNHmnFJ3WbtgVaQ-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com [10.11.54.1])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id EA1AE2A2AD56;
-        Fri, 23 Jun 2023 22:55:50 +0000 (UTC)
-Received: from warthog.procyon.org.com (unknown [10.42.28.4])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id B6FB340C2063;
-        Fri, 23 Jun 2023 22:55:48 +0000 (UTC)
-From:   David Howells <dhowells@redhat.com>
-To:     netdev@vger.kernel.org
-Cc:     David Howells <dhowells@redhat.com>,
-        Alexander Duyck <alexander.duyck@gmail.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>,
-        Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
-        David Ahern <dsahern@kernel.org>,
-        Matthew Wilcox <willy@infradead.org>,
-        Jens Axboe <axboe@kernel.dk>, linux-mm@kvack.org,
-        linux-kernel@vger.kernel.org,
-        Mike Christie <michael.christie@oracle.com>,
-        Maurizio Lombardi <mlombard@redhat.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Al Viro <viro@zeniv.linux.org.uk>, open-iscsi@googlegroups.com,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH net-next v5 12/16] scsi: target: iscsi: Use sendmsg(MSG_SPLICE_PAGES) rather than sendpage
-Date:   Fri, 23 Jun 2023 23:55:09 +0100
-Message-ID: <20230623225513.2732256-13-dhowells@redhat.com>
-In-Reply-To: <20230623225513.2732256-1-dhowells@redhat.com>
-References: <20230623225513.2732256-1-dhowells@redhat.com>
+        Sat, 24 Jun 2023 20:53:11 -0400
+X-Greylist: delayed 138 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sat, 24 Jun 2023 17:53:09 PDT
+Received: from out203-205-221-240.mail.qq.com (out203-205-221-240.mail.qq.com [203.205.221.240])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 99BFB10D8;
+        Sat, 24 Jun 2023 17:53:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
+        s=s201512; t=1687654387;
+        bh=gQH4VaAwMjpN/17+66P6tp7c9VnLsslmB8qz1LllLJk=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References;
+        b=zYlfl6mEXm2bGrHLswgty64ZXiywBYn0psiAYhkPVD3iKbtiYJ0mEtCS7xAjjvSFE
+         i4G/H+so735Ap19ytImuFErGlSMVCGYXznV9nz4SihkJ4zVMWooai4QcUhulBiVS6m
+         6N6qcjUzYLmjYve0l93qbEgDpoUZRpunfw2csV5M=
+Received: from localhost.localdomain ([39.156.73.12])
+        by newxmesmtplogicsvrsza12-0.qq.com (NewEsmtp) with SMTP
+        id D441B6B7; Sun, 25 Jun 2023 08:53:04 +0800
+X-QQ-mid: xmsmtpt1687654384tphqfewpw
+Message-ID: <tencent_DE0C5A84DAB2B62E1B543C5F4B4727118F09@qq.com>
+X-QQ-XMAILINFO: NMGzQWUSIfvTPAq7WF7g3gVA8xXBb7bkZIy6xeiCUzUlrR3syishj+Ur2X7kxZ
+         rdECZFBxwRu3ZMZgI+gN3I0jCGDY9rhfqcH+aNfsULkSB57pAsnpkNC2VVfOwNqxEtwQwyoqn1lX
+         HCdP9MOLb3SLeFezh97/bibNxfNw86EUXUAJYBBR3TS8GUjQeuZwc+3n62ZMD6x6q/p8b/7wFzWe
+         BghXoSde/DmyXvQSoyGTXTxdKq6+cSVTvU2jxTRTQ+uyKl3bCjjYFv2CZJFsz/pWNDBlh3OKPmkj
+         8vc0rZ+tRWikjCzuL5koghXfPU0vFo0QdPR72CmfLpbP0E8jI6UBDFLayS+f0VGq/3NSC3xF6IIs
+         1mdNDvj/N/PqlaP01ExYkL/+RsL1ZtZuvgwr8c2Jh1F8WFQpKa5lEDzkrOUu8xmfyPmNDAXiyXoN
+         llkIZQrIDABF0zfv/BEOg31qyqYELkmRpvE/3xiqU1mlYnUaJ9XDt8K6es2c0PlObrqfwgNmgQ5u
+         45N6vJpMclLLg/bU6ggarvEKAhv8I+FvsSbQgmYe4N3ke8tMLecF7jDjPeP2nhFgatFhV8/thOdz
+         fPvh1DlBJUuF+nAVMl30u7OYN0HOYzdquZuNBn04cyETPiNrS4G+LmvenPOm5/ShmE6ssmWf3g6r
+         xHxof6qzW2yThrFZtsd5/Bmes2FRMf4vXbgjbeOx+HP7HyjVkHxQiHMp6jM4I5+J+z9nKRv7PFej
+         o1hL4Da02/BZMZvoXHj1yVHFR7lHpO9Yqz7KG1HOUp2pn3pSziWK8LqEXYh7ZzRGZEbCtckCXN9T
+         xWBUJkvU5j+MuQ+puIEFPFjBNUNgEkr7u6XZD9bvocIkE+oONZECeqSWfO3FII1bJDhQnTXwxfYH
+         GjZlcB2g+R02V0LvoKHGOU9Ier/L3j1aB2SPi4+rCOR4Fe6i6EsQ3eWURSiMJVfkqYUfL5FXQ/J1
+         OJADEcZXH8Af0p2vzGOJIF7Q0hBHktGLzDCXG34hBm5YC26LeE4DeG3SS8N6l4
+X-QQ-XMRINFO: MMd9k4KOWfk4EI9u9DiMAPPHFKKkl9Wo5w==
+From:   Rong Tao <rtoax@foxmail.com>
+To:     bvanassche@acm.org
+Cc:     corbet@lwn.net, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        martin.petersen@oracle.com, michael.christie@oracle.com,
+        rongtao@cestc.cn, rtoax@foxmail.com, target-devel@vger.kernel.org
+Subject: Re: Re: [PATCH] docs: target: Convert tcm_mod_builder.py print syntax to python3
+Date:   Sun, 25 Jun 2023 08:53:03 +0800
+X-OQ-MSGID: <20230625005303.5464-1-rtoax@foxmail.com>
+X-Mailer: git-send-email 2.39.3
+In-Reply-To: <debdc47a-c377-e457-5643-415d93ced54a@acm.org>
+References: <debdc47a-c377-e457-5643-415d93ced54a@acm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.1
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Use sendmsg() with MSG_SPLICE_PAGES rather than sendpage.  This allows
-multiple pages and multipage folios to be passed through.
+Sorry for the late reply, I just submit v2[0], remove tcm_mod_builder.py
+totally. Please review.
 
-TODO: iscsit_fe_sendpage_sg() should perhaps set up a bio_vec array for the
-entire set of pages it's going to transfer plus two for the header and
-trailer and page fragments to hold the header and trailer - and then call
-sendmsg once for the entire message.
+Thanks,
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-cc: Mike Christie <michael.christie@oracle.com>
-cc: Maurizio Lombardi <mlombard@redhat.com>
-cc: "James E.J. Bottomley" <jejb@linux.ibm.com>
-cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-cc: "David S. Miller" <davem@davemloft.net>
-cc: Eric Dumazet <edumazet@google.com>
-cc: Jakub Kicinski <kuba@kernel.org>
-cc: Paolo Abeni <pabeni@redhat.com>
-cc: Jens Axboe <axboe@kernel.dk>
-cc: Matthew Wilcox <willy@infradead.org>
-cc: Al Viro <viro@zeniv.linux.org.uk>
-cc: open-iscsi@googlegroups.com
-cc: linux-scsi@vger.kernel.org
-cc: target-devel@vger.kernel.org
-cc: netdev@vger.kernel.org
----
+Rong Tao.
 
-Notes:
-    ver #5)
-     - Split iscsi changes into client and target patches
-    
-    ver #2)
-     - Wrap lines at 80.
 
- drivers/target/iscsi/iscsi_target_util.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
-index b14835fcb033..6231fa4ef5c6 100644
---- a/drivers/target/iscsi/iscsi_target_util.c
-+++ b/drivers/target/iscsi/iscsi_target_util.c
-@@ -1129,6 +1129,8 @@ int iscsit_fe_sendpage_sg(
- 	struct iscsit_conn *conn)
- {
- 	struct scatterlist *sg = cmd->first_data_sg;
-+	struct bio_vec bvec;
-+	struct msghdr msghdr = { .msg_flags = MSG_SPLICE_PAGES,	};
- 	struct kvec iov;
- 	u32 tx_hdr_size, data_len;
- 	u32 offset = cmd->first_data_sg_off;
-@@ -1172,17 +1174,18 @@ int iscsit_fe_sendpage_sg(
- 		u32 space = (sg->length - offset);
- 		u32 sub_len = min_t(u32, data_len, space);
- send_pg:
--		tx_sent = conn->sock->ops->sendpage(conn->sock,
--					sg_page(sg), sg->offset + offset, sub_len, 0);
-+		bvec_set_page(&bvec, sg_page(sg), sub_len, sg->offset + offset);
-+		iov_iter_bvec(&msghdr.msg_iter, ITER_SOURCE, &bvec, 1, sub_len);
-+
-+		tx_sent = conn->sock->ops->sendmsg(conn->sock, &msghdr,
-+						   sub_len);
- 		if (tx_sent != sub_len) {
- 			if (tx_sent == -EAGAIN) {
--				pr_err("tcp_sendpage() returned"
--						" -EAGAIN\n");
-+				pr_err("sendmsg/splice returned -EAGAIN\n");
- 				goto send_pg;
- 			}
- 
--			pr_err("tcp_sendpage() failure: %d\n",
--					tx_sent);
-+			pr_err("sendmsg/splice failure: %d\n", tx_sent);
- 			return -1;
- 		}
- 
+[0] https://lore.kernel.org/lkml/tencent_E3643D5F0AA8CCBEF28C6A233A18B808CD0A@qq.com/
 
