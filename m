@@ -2,97 +2,73 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBE41EB64DC
-	for <target-devel@archiver.kernel.org>; Sun, 25 Jun 2023 11:22:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 048D4EB64DC
+	for <target-devel@archiver.kernel.org>; Sun, 25 Jun 2023 20:37:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230362AbjFYLWo (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 25 Jun 2023 07:22:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37180 "EHLO
+        id S229753AbjFYUhU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Sun, 25 Jun 2023 16:37:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36062 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230058AbjFYLWn (ORCPT
+        with ESMTP id S229714AbjFYUhU (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 25 Jun 2023 07:22:43 -0400
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56BE2133;
-        Sun, 25 Jun 2023 04:22:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1687692162; x=1719228162;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=P5wq7VRknPIaKF+xK/Zcd6WKbaEpZYPaK3pHNCT0o2g=;
-  b=DtUpB2o62GQ5tyaYHMw8hwovgaCx5hbpQBIc9tZlGHHEO8mTLh19PEGH
-   CCLybsmiTCzY1ze8ahvNP+yNxEBgqRyeb8UAeOi0FqrgDCtcxL+sQjWCe
-   w9OO6IHQmdo0QehXpgiA/cgWJQkmz5KaZg2P2ymnXMaXm6dr1EM+tuH18
-   mvJrl9udBSCbjgr+RvfK4XOLwmG2hB3TIV+WMoHXQn1mUTLKeHf/pWds6
-   NIWtYbnxjCJ0Xsw5b8rIS0lVEELlPcS7Gt8xm0gmc7BcfxrKr9fE2Sd9z
-   b3OKyPUL3ILSGrTaZvo3/WQ81Hv6G1JFO87evZTb8AALFoUicgqPygzFx
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10751"; a="350822445"
-X-IronPort-AV: E=Sophos;i="6.01,157,1684825200"; 
-   d="scan'208";a="350822445"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jun 2023 04:22:41 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10751"; a="839964891"
-X-IronPort-AV: E=Sophos;i="6.01,157,1684825200"; 
-   d="scan'208";a="839964891"
-Received: from lkp-server01.sh.intel.com (HELO 783282924a45) ([10.239.97.150])
-  by orsmga004.jf.intel.com with ESMTP; 25 Jun 2023 04:22:39 -0700
-Received: from kbuild by 783282924a45 with local (Exim 4.96)
-        (envelope-from <lkp@intel.com>)
-        id 1qDNpG-0009zN-2p;
-        Sun, 25 Jun 2023 11:22:38 +0000
-Date:   Sun, 25 Jun 2023 19:22:22 +0800
-From:   kernel test robot <lkp@intel.com>
+        Sun, 25 Jun 2023 16:37:20 -0400
+Received: from ms.lwn.net (ms.lwn.net [IPv6:2600:3c01:e000:3a1::42])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49E68194;
+        Sun, 25 Jun 2023 13:37:19 -0700 (PDT)
+Received: from localhost (unknown [IPv6:2601:281:8300:73::5f6])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ms.lwn.net (Postfix) with ESMTPSA id D206C6E3;
+        Sun, 25 Jun 2023 20:37:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net D206C6E3
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
+        t=1687725437; bh=NL7nc1PJA4tL/xVP/nH63eimT7DX249LpQmzMai1+T4=;
+        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+        b=FD/0mnca/xdbEiuoHoPe4iIjjQeUf79moc6KH9AVFpbwOGW+/j3GHWLrAoaLUG0kN
+         L5XJMLETu5LQ82VwrKm6xUbRhrw9f9pouqfgfw5QnsI557DbYkyOFMUjW3av2zglfG
+         IzDbt3SIq1D928ZqJw1acDo2y3bmDVa22VAd0mxPF4+d5OHV0HVEHMlyLmoltONVC/
+         eZ2KONrtgvg10Z/k++zzxiMr5xi71+cZrGamjRdcZtLWoLKAYH+LV9X2amZtOyggYF
+         LVA3oPaK/YKOc7QwOJeYoMj3nCEcY4hd6OtX0n5dxETsoneUV3OkrtzDrtLfW5xPtR
+         faxGQd+HjeyTA==
+From:   Jonathan Corbet <corbet@lwn.net>
 To:     Rong Tao <rtoax@foxmail.com>, martin.petersen@oracle.com
-Cc:     oe-kbuild-all@lists.linux.dev, rongtao@cestc.cn,
-        Jonathan Corbet <corbet@lwn.net>, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org
+Cc:     rongtao@cestc.cn,
+        "open list:SCSI TARGET SUBSYSTEM" <linux-scsi@vger.kernel.org>,
+        "open list:SCSI TARGET SUBSYSTEM" <target-devel@vger.kernel.org>,
+        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH v2] docs: target: Remove useless tcm_mod_builder.py
-Message-ID: <202306251958.viSgFQIV-lkp@intel.com>
-References: <tencent_E3643D5F0AA8CCBEF28C6A233A18B808CD0A@qq.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <tencent_E3643D5F0AA8CCBEF28C6A233A18B808CD0A@qq.com>
+References: <tencent_E3643D5F0AA8CCBEF28C6A233A18B808CD0A@qq.com>
+Date:   Sun, 25 Jun 2023 14:37:16 -0600
+Message-ID: <87bkh3l1mr.fsf@meer.lwn.net>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Rong,
+Rong Tao <rtoax@foxmail.com> writes:
 
-kernel test robot noticed the following build warnings:
+> From: Rong Tao <rongtao@cestc.cn>
+>
+> This script is not used and requires additional development to sync with
+> the SCSI target code.
+>
+> Signed-off-by: Rong Tao <rongtao@cestc.cn>
+> ---
+> v2: Remove useless tcm_mod_builder.py
+> v1: docs: target: Convert tcm_mod_builder.py print syntax to python3
+>     https://lore.kernel.org/lkml/tencent_F3895D0EA868BCCE8C56221619BC093D660A@qq.com/
+> ---
+>  Documentation/target/tcm_mod_builder.py | 656 ------------------------
+>  1 file changed, 656 deletions(-)
+>  delete mode 100755 Documentation/target/tcm_mod_builder.py
 
-[auto build test WARNING on mkp-scsi/for-next]
-[also build test WARNING on linus/master v6.4-rc7 next-20230623]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+As can be seen in the note from the test robot, you'll need to remove
+the reference in Documentation/target/scripts.rst as well.  I suspect
+that file, too, could benefit from a closer look in general.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Rong-Tao/docs-target-Remove-useless-tcm_mod_builder-py/20230625-085229
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
-patch link:    https://lore.kernel.org/r/tencent_E3643D5F0AA8CCBEF28C6A233A18B808CD0A%40qq.com
-patch subject: [PATCH v2] docs: target: Remove useless tcm_mod_builder.py
-reproduce: (https://download.01.org/0day-ci/archive/20230625/202306251958.viSgFQIV-lkp@intel.com/reproduce)
+Thanks,
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202306251958.viSgFQIV-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> Documentation/target/scripts.rst:4: WARNING: Include file 'Documentation/target/tcm_mod_builder.py' not found or reading it failed
-
-vim +4 Documentation/target/scripts.rst
-
-4ca9bc225e46eb Mauro Carvalho Chehab 2019-06-12  3  
-4ca9bc225e46eb Mauro Carvalho Chehab 2019-06-12 @4  .. literalinclude:: tcm_mod_builder.py
-4ca9bc225e46eb Mauro Carvalho Chehab 2019-06-12  5      :language: perl
-4ca9bc225e46eb Mauro Carvalho Chehab 2019-06-12  6  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+jon
