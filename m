@@ -2,67 +2,108 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95487EB64D7
-	for <target-devel@archiver.kernel.org>; Mon, 26 Jun 2023 22:07:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F6D4EB64D9
+	for <target-devel@archiver.kernel.org>; Tue, 27 Jun 2023 08:19:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231974AbjFZWHZ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 26 Jun 2023 18:07:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53402 "EHLO
+        id S231180AbjF0ITB (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 27 Jun 2023 04:19:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57376 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232051AbjFZWHE (ORCPT
+        with ESMTP id S231298AbjF0ITA (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 26 Jun 2023 18:07:04 -0400
-Received: from mail-pf1-f170.google.com (mail-pf1-f170.google.com [209.85.210.170])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA23D2120;
-        Mon, 26 Jun 2023 15:03:26 -0700 (PDT)
-Received: by mail-pf1-f170.google.com with SMTP id d2e1a72fcca58-6682909acadso1810878b3a.3;
-        Mon, 26 Jun 2023 15:03:26 -0700 (PDT)
+        Tue, 27 Jun 2023 04:19:00 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23CC819BA
+        for <target-devel@vger.kernel.org>; Tue, 27 Jun 2023 01:18:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1687853895;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=nYcUtRkjKABtT5PU3mxAKBDSxEwKFf/d8voooDnS1zM=;
+        b=JKyQmCNLnR/mpthBqgWJmkhbFvQQgLBfxayWOb00gctc1m+ZOB815JuJU3FPFdzEEVu1an
+        97uM/1H0lS8fKWeCu8QPowLIneDn8aIRb+n4I4CmNU/IRV51L05pRYIH457bcwYMJDeg//
+        xudMQMDpjydUdz3j+EGpvnkQSMd2ilk=
+Received: from mail-vk1-f200.google.com (mail-vk1-f200.google.com
+ [209.85.221.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-510-9_aW-Ww1MaO7eEEWVBFCmg-1; Tue, 27 Jun 2023 04:18:13 -0400
+X-MC-Unique: 9_aW-Ww1MaO7eEEWVBFCmg-1
+Received: by mail-vk1-f200.google.com with SMTP id 71dfb90a1353d-47193e208d4so752296e0c.3
+        for <target-devel@vger.kernel.org>; Tue, 27 Jun 2023 01:18:13 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1687816975; x=1690408975;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=PCoCOYjDLNke2rP949BWReOPXfmEB68n0cAwCJbJEkg=;
-        b=KpOAlT4H6P0NesfVSPb/pCXK3FQHBu8fe4XyiHR3qBx4Mqdl1e7XRi4Juy3C3LNxeR
-         Fi2FebYHqCU7X4BCxfXyifsrQGjP2fipd2DyPJZw6z0xkczGIZCJ/h8YXZDbqQH+z9rW
-         bR6ajyT077kQ5NLSP2heONC8XEr8mZX6naQIqnDcfVv6EAj3N+iZyuuGqiwwZ3YhWYnw
-         nAz+Wy7WiNuRbqHM7vxfORRICCN6CbZXiIwFxB+2Mlf3Xg+8QeoWsWvyQG1zErJZUdJT
-         igRNz3S3pGggNt7tUFFnGFtg89T2pHrdSp0nQ9/GuhUwIxnn5O8D/PMKcKah61rPQqh+
-         mkWw==
-X-Gm-Message-State: AC+VfDxFoYB5o5vT2zrk9yt4MFbfZnmLofaEixcQcBV1rBWbq2YSQEsF
-        QBaOjusIzHR/QTGLvULrUbE=
-X-Google-Smtp-Source: ACHHUZ6wh2CqCVGxZ1aIa20hYMpt2E7HkVeKdNjheVjuSlz5ylPO+mTQOT+GjYxkmu3HBge04PxP0Q==
-X-Received: by 2002:a05:6a00:2294:b0:66a:359f:6f6e with SMTP id f20-20020a056a00229400b0066a359f6f6emr15809560pfe.19.1687816975000;
-        Mon, 26 Jun 2023 15:02:55 -0700 (PDT)
-Received: from [192.168.3.219] ([98.51.102.78])
-        by smtp.gmail.com with ESMTPSA id g26-20020a62e31a000000b0065016fffc81sm4191122pfh.216.2023.06.26.15.02.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 26 Jun 2023 15:02:54 -0700 (PDT)
-Message-ID: <3a330a82-6101-72af-197f-4ac0e5d2136f@acm.org>
-Date:   Mon, 26 Jun 2023 15:02:52 -0700
+        d=1e100.net; s=20221208; t=1687853893; x=1690445893;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=nYcUtRkjKABtT5PU3mxAKBDSxEwKFf/d8voooDnS1zM=;
+        b=QfbOEsZ9mvP7JUdigsRyB3zb4IVGCjcyd70CXRk9ZqMdjQxWuZqVC73q5NNf99bSSE
+         exqL5KxdQA6hTaD1grSTDemH5Dm6KLcYe+QfjKffz8tPwrHQqBs8a3Ni+hh8SUrGGe3i
+         KPBFowlO/CHLjdc8zFYhCVXW1Qj3C09tK1KlcGRZCkWkQ4BizdAAvk/61UxWaUGI4LK8
+         4f+An89zRiQidXckg6wIZddyOQSPMGqQ5tCD8ntX/uhaRkeO/MXz6Exuad6oKO1GBj6M
+         wyiXgwJgX5WzshRBnDDOFTfBWgimYxuZ2ftRefdG2XuU2j5J7oA/WVLXD97kE3tP5MpM
+         yMcA==
+X-Gm-Message-State: AC+VfDxtVPl8TfLmz633JuJGCYxuas+R0/HhsMshm3K1vSxwy/Hr3Sbh
+        dHf0Lc7OeM79NjZxquEdZLuB/2NBlun4TjAcUJl+amuB4F7RTcmLjfhOAtqSpaUTFpqtSiTExkP
+        bsn9uFlkTV5fgg4OyxkfT7FWIZ43JwcN9aJ3OSwFg
+X-Received: by 2002:a1f:c843:0:b0:463:12f:d38e with SMTP id y64-20020a1fc843000000b00463012fd38emr14945013vkf.1.1687853892997;
+        Tue, 27 Jun 2023 01:18:12 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ5JCsXkFdXsohKWGcYGlMRJ3lWcD9SmwA2HTltke5r0xofEExL2YsUM8RfwnV6/24CiTUfaR1a/bRIRt89283s=
+X-Received: by 2002:a1f:c843:0:b0:463:12f:d38e with SMTP id
+ y64-20020a1fc843000000b00463012fd38emr14945008vkf.1.1687853892742; Tue, 27
+ Jun 2023 01:18:12 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [PATCH v3] docs: target: Remove useless tcm_mod_builder.py
-Content-Language: en-US
-To:     Rong Tao <rtoax@foxmail.com>, martin.petersen@oracle.com,
-        corbet@lwn.net
-Cc:     rongtao@cestc.cn,
-        "open list:SCSI TARGET SUBSYSTEM" <linux-scsi@vger.kernel.org>,
-        "open list:SCSI TARGET SUBSYSTEM" <target-devel@vger.kernel.org>,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-        open list <linux-kernel@vger.kernel.org>
-References: <tencent_58D7935159C421036421B42CD04B0A959207@qq.com>
-From:   Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <tencent_58D7935159C421036421B42CD04B0A959207@qq.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20230623161136.6270-1-michael.christie@oracle.com>
+In-Reply-To: <20230623161136.6270-1-michael.christie@oracle.com>
+From:   Maurizio Lombardi <mlombard@redhat.com>
+Date:   Tue, 27 Jun 2023 10:18:00 +0200
+Message-ID: <CAFL455mj8f_D_uv1fcwuDRMX-HwBhagwe9kpvJS1fdQhR2cM0w@mail.gmail.com>
+Subject: Re: [PATCH 1/1] scsi: target: Quiet bool conversion warning with
+ pr_preempt use
+To:     Mike Christie <michael.christie@oracle.com>
+Cc:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, kernel test robot <lkp@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 6/25/23 17:51, Rong Tao wrote:
-> This script is not used and requires additional development to sync with
-> the SCSI target code.
+p=C3=A1 23. 6. 2023 v 18:13 odes=C3=ADlatel Mike Christie
+<michael.christie@oracle.com> napsal:
+>
+> We want to pass in true for pr_preempt's argument if we are doing a
+> PRO_PREEMPT_AND_ABORT, so just test sa against PRO_PREEMPT_AND_ABORT, and
+> pass the result directly to pr_preempt.
+>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202306221655.Kwtqi1gI-lkp@i=
+ntel.com/
+> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+> ---
+>  drivers/target/target_core_iblock.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_=
+core_iblock.c
+> index a3c5f3558a33..3d1b511ea284 100644
+> --- a/drivers/target/target_core_iblock.c
+> +++ b/drivers/target/target_core_iblock.c
+> @@ -888,7 +888,7 @@ static sense_reason_t iblock_execute_pr_out(struct se=
+_cmd *cmd, u8 sa, u64 key,
+>
+>                 ret =3D ops->pr_preempt(bdev, key, sa_key,
+>                                       scsi_pr_type_to_block(type),
+> -                                     sa =3D=3D PRO_PREEMPT ? false : tru=
+e);
+> +                                     sa =3D=3D PRO_PREEMPT_AND_ABORT);
+>                 break;
+>         case PRO_RELEASE:
+>                 if (!ops->pr_clear) {
+> --
+> 2.25.1
+>
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
+
