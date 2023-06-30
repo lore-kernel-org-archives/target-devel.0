@@ -2,155 +2,162 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD26AEB64DA
-	for <target-devel@archiver.kernel.org>; Thu, 29 Jun 2023 02:02:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0D02EB64DC
+	for <target-devel@archiver.kernel.org>; Fri, 30 Jun 2023 15:54:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230326AbjF2CCJ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 28 Jun 2023 22:02:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47594 "EHLO
+        id S230125AbjF3PyN (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Fri, 30 Jun 2023 11:54:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56802 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230060AbjF2CCJ (ORCPT
+        with ESMTP id S232840AbjF3PyJ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 28 Jun 2023 22:02:09 -0400
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F607132;
-        Wed, 28 Jun 2023 19:02:08 -0700 (PDT)
-Received: from pps.filterd (m0333521.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 35T1qv6e011062;
-        Thu, 29 Jun 2023 02:01:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
- from : message-id : references : date : in-reply-to : content-type :
- mime-version; s=corp-2023-03-30;
- bh=jpDE7j7pilxY76JYIN4qCae3gDnlVece4K64qrJOirw=;
- b=uWjcAhjffjjj91prUaC7pLhyHgZaEaVJT9QjmweGpk0gRaGX+7N7YyN5ybcjfaV77E3p
- 2e/GP1xXRsy5v2Ekh7cAY97Iy5K0zor+tqh+PXxjskoE09lnJ0Z/rpWjMP3wQ4l6rJaQ
- S9yyG4MjmUlJ15Sua9zhXarqYj5vDp6IYsRrruSYtSwqFdin4ZsIRPGDrzM+Vbf4WFY2
- bJei1k4J/eabiUIR9WUM6/q7jw5zA+YIq5viH6J3u5+CyA3KTvFZ3iM2lfdSOOTABn03
- 6ojROpBD45tEndqPNC6S5zWZkLp/7dDCCnYseuYAOwgMja98Nrvjw33Qn8zMFxluL7Ik GQ== 
-Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3rdqdtt17h-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 29 Jun 2023 02:01:57 +0000
-Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 35SNPbxR013249;
-        Thu, 29 Jun 2023 02:01:56 GMT
-Received: from nam10-mw2-obe.outbound.protection.outlook.com (mail-mw2nam10lp2106.outbound.protection.outlook.com [104.47.55.106])
-        by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3rdpx727pj-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 29 Jun 2023 02:01:56 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Xmxd3iG/O6V/jXYz7xgHQuIdCbTDQmahlwVDN7Yo/BI2BoSa4TZaOX6gCIl/QMU1SnvPqyIr6cD+BTw8rxsXuyaYMfkV8eg2jPdFX2raL9nCljfc0ltSHWb2CknV5KvMaR1PGAvee5RYrAplHiBcN2zu7l7XpYM/1x7Qu8oMWMKfIcgzm9buTDWQhS5w0cHvRfe9vrAHaRs3Svp/Yx12gbXtTogpz93DdqAiuYBxZ9Rs+GP5iGIkVpfbGk/6+sGmViBkCYHSypgfiR5t28HYMAC8pKJ01Jgy6RCW9E7NqdZiivVg5nGJ63uIKKQR0hkwIeJNYZ8DPsyW+B6PdHha6w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=jpDE7j7pilxY76JYIN4qCae3gDnlVece4K64qrJOirw=;
- b=g2+4PPR7m2i57SVmfcKyHW7lPqYIU8g8dUYabAgjZBk0gP/7NEtLat2ewLnBVNB75V3xlhkUj+guTxLcUn9r4ZcbW3fRMAe0TMTVMQX9iMokJduLNVV0MVh8S1UBiltTJdUAYBHFDfn//DZB4j8yqKnhVcV8fY6A1pfpwzzMOCLxqJO/0jGGsFyX1lKRAPJ+XKYS1ZdX7bQ6Yzxf4IsDQVnWJ7i5hbAshUhOOF7/lwgn/JCXxmcdToFft0bdABKWZJV+C3dlAKIM+SJFZZUoxshI/NfRb3xQDngtbbj9XNHnOSocBz32g5m4op9Qy0P2BgJqDexP/BXpRVnKbYsntg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=jpDE7j7pilxY76JYIN4qCae3gDnlVece4K64qrJOirw=;
- b=XC2TSvZ8zhey8i6mNHAZGWwBCnyBaRDSw8rG2TOCF4DVG0RY52LIRtkfPc9bim/YlDXEMLuViGMNHUjFTPaHYOu4BP7eiJ6+A1+KrnxpqqRruwwNwsR5anZDlGttOGXNAea2LVoTEdPr+7hPQIRd0AVKuUkCo8uTFDAl0Jro6mM=
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com (2603:10b6:510:3d::12)
- by SA1PR10MB5736.namprd10.prod.outlook.com (2603:10b6:806:232::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6521.23; Thu, 29 Jun
- 2023 02:01:54 +0000
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::b77c:5f48:7b34:39c0]) by PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::b77c:5f48:7b34:39c0%7]) with mapi id 15.20.6521.026; Thu, 29 Jun 2023
- 02:01:54 +0000
-To:     Rong Tao <rtoax@foxmail.com>
-Cc:     martin.petersen@oracle.com, corbet@lwn.net, rongtao@cestc.cn,
-        linux-scsi@vger.kernel.org (open list:SCSI TARGET SUBSYSTEM),
-        target-devel@vger.kernel.org (open list:SCSI TARGET SUBSYSTEM),
-        linux-doc@vger.kernel.org (open list:DOCUMENTATION),
-        linux-kernel@vger.kernel.org (open list)
-Subject: Re: [PATCH v3] docs: target: Remove useless tcm_mod_builder.py
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle Corporation
-Message-ID: <yq1y1k3ni0s.fsf@ca-mkp.ca.oracle.com>
-References: <tencent_58D7935159C421036421B42CD04B0A959207@qq.com>
-Date:   Wed, 28 Jun 2023 22:01:52 -0400
-In-Reply-To: <tencent_58D7935159C421036421B42CD04B0A959207@qq.com> (Rong Tao's
-        message of "Mon, 26 Jun 2023 08:51:47 +0800")
-Content-Type: text/plain
-X-ClientProxiedBy: SJ0PR13CA0132.namprd13.prod.outlook.com
- (2603:10b6:a03:2c6::17) To PH0PR10MB4759.namprd10.prod.outlook.com
- (2603:10b6:510:3d::12)
+        Fri, 30 Jun 2023 11:54:09 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3878C3ABE
+        for <target-devel@vger.kernel.org>; Fri, 30 Jun 2023 08:53:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1688140397;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=dt8/TNwwjEp7T+q1FJfhndbuDgfaevnHhS8riY/vCsU=;
+        b=Qz8lUFe2H8dRVuXGUoshQJ86q814A0yazgJKcjF/Mg8cCt5MWGrNXk084j2Wy4Z+yCf4Mz
+        9Hauad73jBJ2bopDr1PBJSH27ZJHSsWJ8majNVRNzRoOQKhwBb73AVV7koOYvIOhtbADUB
+        lfWY3L0eEcUNcVELU5/6ouhcFdL5AM8=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-228-aGSmEoumMvSZ_YWq-gsTLQ-1; Fri, 30 Jun 2023 11:53:13 -0400
+X-MC-Unique: aGSmEoumMvSZ_YWq-gsTLQ-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1E7B08D138B;
+        Fri, 30 Jun 2023 15:53:12 +0000 (UTC)
+Received: from kalibr.redhat.com (unknown [10.35.206.38])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id DEACFF5CEC;
+        Fri, 30 Jun 2023 15:53:10 +0000 (UTC)
+From:   Maurizio Lombardi <mlombard@redhat.com>
+To:     martin.petersen@oracle.com
+Cc:     target-devel@vger.kernel.org, michael.christie@oracle.com
+Subject: [PATCH] target: iscsi: remove the unused netif_timeout attribute
+Date:   Fri, 30 Jun 2023 17:53:09 +0200
+Message-Id: <20230630155309.46061-1-mlombard@redhat.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR10MB4759:EE_|SA1PR10MB5736:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2e86edf7-64ee-4071-a483-08db7844cff8
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: ziMc1APU6A+fPvJoG5+d/liydrOqmeJagQTwtKXQaBswUpKYwkjyshq5u79b6J8HTqjr+poyyswSgvsro9s7qhDEXDQWMzcoIMa56X4Ylop5oYWwch3s3VprV8M5RgP5nckpXy2IQjGBAWrZiw/4TnG3ODkIeH3qx5VSQylWgqwsAWC16s3HUiqEgQveu38TZpwt14Do4eaJ9hIrAptf9vTz1n/kFc516bt6xuRMTILxeCT+tn2v96uwir9mVa/JuaY2vG/xro0h82kDeaGoUsw1kzqF9zPDm8epM0imu9F4n1o+dxTlJsn0bcZPyBCeXSTbsAW1DdVubRMZK1gyT6DTLDryCj4e9yiJxLC8A325Thm/4oalZVCXiVADi3kNCJYN6avODomXrW43OLlfhk02z5d6Yyha0lqHQUKLGDSwDd8G+RV3fFo7Y4xh8MIW5Kcb115HDpgtNySZQyiXmHMq59sW1N9K2V3F1TcDGrkBs6wsDVRJAq+GYVaLQhPwrcKa2JCiTNDsKuBz6m+mWUzN9/V503JumZvWblFBJRPZ8ZzWDNr6/BqTfC9Tvqmr
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB4759.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(346002)(136003)(366004)(396003)(39860400002)(376002)(451199021)(66476007)(8676002)(41300700001)(66556008)(316002)(8936002)(66946007)(6506007)(6916009)(26005)(186003)(6512007)(478600001)(36916002)(6486002)(2906002)(5660300002)(38100700002)(558084003)(86362001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?hWuEC784BUxhlgk3wTCOBpP6nEdzf4WpExu0ElaDCrcvaoX7N90qEyZRuR3w?=
- =?us-ascii?Q?gwHa+aiQ1Uyf6Xi9+RJ6cDxJaKy8EaCnag4NTltD5Ux5j0V7iYDblu+ovIrR?=
- =?us-ascii?Q?I9dPD0ElMIQDWXhW81e7Lyz72Sy7P6qi6XmHMvVw5XPUg3WZFwsjowL6tkq9?=
- =?us-ascii?Q?u24PJypyykSLzYTQp64TIekD4/ff572y/qohvsR9hlucFQvo8meBnXv8gyvr?=
- =?us-ascii?Q?fNoQPTq7LBGplh5EaX6vqQsroPCHcv1NMh0D6ZyQxS7pZNiPSqNw9KVaxF7q?=
- =?us-ascii?Q?ykQBA/tZ3rls1pszDh54B6/nRlwZ+Aj91n30HJ67HDr++347w5knlnZtx7Uo?=
- =?us-ascii?Q?XyKbjHwWVPT1tNytVOlN15Z+nktKQChC9Ug8XXX6MOTCeKnwvHJ8XO4eCoCw?=
- =?us-ascii?Q?eSINJcbEMzb6AINRzJ264BFCqmRVa5x2I72a5BM6pFzQL/Xwphf8POeFCTeB?=
- =?us-ascii?Q?v4eMKHrAjxornIyIfbA5ykWjqrQG2M66PnrQ6amT2U2nhse8RbNASp1uoKeF?=
- =?us-ascii?Q?V1CDlYN6cIDLQEcoOGcjDt87JY5EOPQFXIavWVumtyrZq2Z0oLeHP1/Xojjb?=
- =?us-ascii?Q?5EWTJ5JokucYtyaiXX+lDTlVrjw+ixhQctia79IAyFyEWCv974yxiNHLmAUt?=
- =?us-ascii?Q?W+ODb16rC/0pn9+slJqDxVWIgbu9T+1Lic6cblXHa/8zTWu0CyicLDu5aHDJ?=
- =?us-ascii?Q?/WZBYyUftkj0fHsLDMLly0U7aHczHyvCoPoss6wufzCpPv4rdp0O576q6QyU?=
- =?us-ascii?Q?xGzPrdPAX5I/4o08Q3iF4qtVQVYzzENwbWV2L+at4m3/Od9DOmYloYkb8vxx?=
- =?us-ascii?Q?RAmV7VMMs/Q5dbaQQoSGVoQyih2hk8hEF36LGl1H8OrFmskCRhdW+9G7ORJD?=
- =?us-ascii?Q?+oVKb3PPL71dQUxN4mSoTqmsu8tQeviYXLwZxDFdKwhZOnJ5iF+ftLhKlGLn?=
- =?us-ascii?Q?NRLls8nq/j3kN/Fh6st8UUp0/VrqmM1n6ZiZbB7TeB5DzBloC11yktVl2Lta?=
- =?us-ascii?Q?s+Wx2jjUZKhP7fcG7Ko8K17TFehjvD2+9J/VTM2oUSiP/Gq8Vlu12tHZZXQl?=
- =?us-ascii?Q?L/1itihtd5+KT5CWOmJDsgZ0XilKOZB5iFrINxRJ6JhRq6eS+YtLlJCJhuSn?=
- =?us-ascii?Q?OD4kec1GdGUeE2B251tCRjTGnpy+9VQrJeCWpKojTUjPmhmuFHpt+OYMsaU3?=
- =?us-ascii?Q?bPT9DNkgtQGXa3aA6qkJOKW8MBlJPeNUdJPdeKbwtcxuGOjOv5nk3aykVFI3?=
- =?us-ascii?Q?OT+3NXAp+fMLhhV17X4M1MkIxSP8CHoHYE+w4PAwzj3nKBhjM/L20QvO4RBx?=
- =?us-ascii?Q?oTQWCibnZhovWFO+44lSmbDUjljM1cT0VxkJhe9wGRRRCP1l47aQY6kmJY7k?=
- =?us-ascii?Q?4PkT+kNIO5SBkJdIM/JpvdSfoq+RPPSViVpgojYvPDBCbmLQnIRu/TGOVnYb?=
- =?us-ascii?Q?u9CaZR9JH4INeEROqCWt5p8dKvBOMw59e/iO+jh2GOqfqXc6mlHv2hb+7+Ii?=
- =?us-ascii?Q?lYUUWJQ6AFbfGxhFleAGpgSlgjEwTuRZUxPvdVjXS1BFDhbpxgq+AsDvs4VE?=
- =?us-ascii?Q?kPGl1pNGvMhYiH2U/sg3wwZhhqSDyZPGlre9SwlWt8lD5s7KmI6lJtCI95zv?=
- =?us-ascii?Q?RQ=3D=3D?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: e+CezlmgP/UCvHz5U1lO8Cgi0Z0w8Oh9N0knjG6Fy/8cIh986v1KFht+LDJUDmXUBSbazGaZ8N9yWdqdt89h2bn1aW3AU/kBzsJ5wqpHpdlkHWnFMoBBiNY0wSaGNgkdo1haM8XDCQyZMX8/WZRmkDK/q/EAp2eiolm7lp6QjD3tXMPvXT2pwn0fhHflUw+2ek4HzQ9QCLJSTMjFkDwCpGJAM7/FmauUw4+X81713d4ucPqMI1IqAcFwj6ECnAjyN1bA13s4k1qb4eEEheGiMHwCjGxTcnm1IrXE1st0aBo9bIiKkbxnrS03iSOQJ7jVpQh+ewnuDLRBH2UAB7CZSwaxU/JWS53Ypfnzbr9TLBERx/QhlOewsUllvtZmkGa7U6TS4GIjYBtQLav3EO99tCPBTHG1SYz1RpIHp98lMFu685+Ivwi3YP2sEXkblUSP10T3EuBUHvS7jxrKj7qIBsxMiWHIrk4Cn0ddQ90hOtdhDA0IZSZT8CN1Ul37LsHv/07zXD2J+jEiVdXZ7kVXYAAsquligHp79Cepk41z7IwUEE5ivedWKwcl5GombPeWAxpOzwBFfdOhf3tfL7djcNcCM63mH/r1excm/U5jRZMF2jwu4kM6HDhfMc9GlkhSRvNRIi+WkyVr0dAZZNq0Y9cchhdyqKjsDEOXLl/A/yEgopxFL72hJ4BQ+EdxQINbIeAd+oVGtEYSRaxi2taXy3QEVIY//TrJo6qfIgMZO432XHRfswKeWWEg64L/MsGwJ3Gz6fPtc9ENGKQELGhTh7Qq2Ngcvw+7e8NW8eFxqHCnP3emOpuH2XxtIYxLUO0+Igx7ldjLQptBQLP5UEZndw==
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2e86edf7-64ee-4071-a483-08db7844cff8
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB4759.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jun 2023 02:01:54.6248
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: /5r3h3cu8B+iwJprzexpKV5dHxCzbo5yEgpJEQQvdjhaKnjUy+melgpvM5RnR6++hE+e4/F1R5sJA1y0k/YE7rR4KANXw9Bnj+cuOz2HU1o=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR10MB5736
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-06-28_14,2023-06-27_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 adultscore=0 bulkscore=0
- suspectscore=0 mlxscore=0 phishscore=0 malwarescore=0 mlxlogscore=618
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2305260000
- definitions=main-2306290017
-X-Proofpoint-GUID: vlTWXUi9VfhKVMcdCrgJopCN--Euslxi
-X-Proofpoint-ORIG-GUID: vlTWXUi9VfhKVMcdCrgJopCN--Euslxi
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+This attribute has never been used, remove it.
 
-Rong,
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+---
+ drivers/target/iscsi/iscsi_target_configfs.c |  2 --
+ drivers/target/iscsi/iscsi_target_tpg.c      | 26 --------------------
+ drivers/target/iscsi/iscsi_target_tpg.h      |  1 -
+ include/target/iscsi/iscsi_target_core.h     |  4 ---
+ 4 files changed, 33 deletions(-)
 
-> This script is not used and requires additional development to sync
-> with the SCSI target code.
-
-Applied to 6.5/scsi-staging, thanks!
-
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 5d0f51822414..6ce967f5af14 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -783,7 +783,6 @@ CONFIGFS_ATTR(iscsi_tpg_attrib_, name)
+ 
+ DEF_TPG_ATTRIB(authentication);
+ DEF_TPG_ATTRIB(login_timeout);
+-DEF_TPG_ATTRIB(netif_timeout);
+ DEF_TPG_ATTRIB(generate_node_acls);
+ DEF_TPG_ATTRIB(default_cmdsn_depth);
+ DEF_TPG_ATTRIB(cache_dynamic_acls);
+@@ -799,7 +798,6 @@ DEF_TPG_ATTRIB(login_keys_workaround);
+ static struct configfs_attribute *lio_target_tpg_attrib_attrs[] = {
+ 	&iscsi_tpg_attrib_attr_authentication,
+ 	&iscsi_tpg_attrib_attr_login_timeout,
+-	&iscsi_tpg_attrib_attr_netif_timeout,
+ 	&iscsi_tpg_attrib_attr_generate_node_acls,
+ 	&iscsi_tpg_attrib_attr_default_cmdsn_depth,
+ 	&iscsi_tpg_attrib_attr_cache_dynamic_acls,
+diff --git a/drivers/target/iscsi/iscsi_target_tpg.c b/drivers/target/iscsi/iscsi_target_tpg.c
+index 3cac1aafef68..f7bac98fd4fe 100644
+--- a/drivers/target/iscsi/iscsi_target_tpg.c
++++ b/drivers/target/iscsi/iscsi_target_tpg.c
+@@ -211,7 +211,6 @@ static void iscsit_set_default_tpg_attribs(struct iscsi_portal_group *tpg)
+ 
+ 	a->authentication = TA_AUTHENTICATION;
+ 	a->login_timeout = TA_LOGIN_TIMEOUT;
+-	a->netif_timeout = TA_NETIF_TIMEOUT;
+ 	a->default_cmdsn_depth = TA_DEFAULT_CMDSN_DEPTH;
+ 	a->generate_node_acls = TA_GENERATE_NODE_ACLS;
+ 	a->cache_dynamic_acls = TA_CACHE_DYNAMIC_ACLS;
+@@ -666,31 +665,6 @@ int iscsit_ta_login_timeout(
+ 	return 0;
+ }
+ 
+-int iscsit_ta_netif_timeout(
+-	struct iscsi_portal_group *tpg,
+-	u32 netif_timeout)
+-{
+-	struct iscsi_tpg_attrib *a = &tpg->tpg_attrib;
+-
+-	if (netif_timeout > TA_NETIF_TIMEOUT_MAX) {
+-		pr_err("Requested Network Interface Timeout %u larger"
+-			" than maximum %u\n", netif_timeout,
+-				TA_NETIF_TIMEOUT_MAX);
+-		return -EINVAL;
+-	} else if (netif_timeout < TA_NETIF_TIMEOUT_MIN) {
+-		pr_err("Requested Network Interface Timeout %u smaller"
+-			" than minimum %u\n", netif_timeout,
+-				TA_NETIF_TIMEOUT_MIN);
+-		return -EINVAL;
+-	}
+-
+-	a->netif_timeout = netif_timeout;
+-	pr_debug("Set Network Interface Timeout to %u for"
+-		" Target Portal Group %hu\n", a->netif_timeout, tpg->tpgt);
+-
+-	return 0;
+-}
+-
+ int iscsit_ta_generate_node_acls(
+ 	struct iscsi_portal_group *tpg,
+ 	u32 flag)
+diff --git a/drivers/target/iscsi/iscsi_target_tpg.h b/drivers/target/iscsi/iscsi_target_tpg.h
+index 839e45362776..71d067f62177 100644
+--- a/drivers/target/iscsi/iscsi_target_tpg.h
++++ b/drivers/target/iscsi/iscsi_target_tpg.h
+@@ -38,7 +38,6 @@ extern int iscsit_tpg_del_network_portal(struct iscsi_portal_group *,
+ 			struct iscsi_tpg_np *);
+ extern int iscsit_ta_authentication(struct iscsi_portal_group *, u32);
+ extern int iscsit_ta_login_timeout(struct iscsi_portal_group *, u32);
+-extern int iscsit_ta_netif_timeout(struct iscsi_portal_group *, u32);
+ extern int iscsit_ta_generate_node_acls(struct iscsi_portal_group *, u32);
+ extern int iscsit_ta_default_cmdsn_depth(struct iscsi_portal_group *, u32);
+ extern int iscsit_ta_cache_dynamic_acls(struct iscsi_portal_group *, u32);
+diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
+index 4c15420e8965..60af7c63b34e 100644
+--- a/include/target/iscsi/iscsi_target_core.h
++++ b/include/target/iscsi/iscsi_target_core.h
+@@ -50,9 +50,6 @@ struct sock;
+ #define TA_LOGIN_TIMEOUT		15
+ #define TA_LOGIN_TIMEOUT_MAX		30
+ #define TA_LOGIN_TIMEOUT_MIN		5
+-#define TA_NETIF_TIMEOUT		2
+-#define TA_NETIF_TIMEOUT_MAX		15
+-#define TA_NETIF_TIMEOUT_MIN		2
+ #define TA_GENERATE_NODE_ACLS		0
+ #define TA_DEFAULT_CMDSN_DEPTH		64
+ #define TA_DEFAULT_CMDSN_DEPTH_MAX	512
+@@ -773,7 +770,6 @@ to_iscsi_nacl(struct se_node_acl *se_nacl)
+ struct iscsi_tpg_attrib {
+ 	u32			authentication;
+ 	u32			login_timeout;
+-	u32			netif_timeout;
+ 	u32			generate_node_acls;
+ 	u32			cache_dynamic_acls;
+ 	u32			default_cmdsn_depth;
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.39.3
+
