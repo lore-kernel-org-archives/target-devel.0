@@ -2,162 +2,160 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0D02EB64DC
-	for <target-devel@archiver.kernel.org>; Fri, 30 Jun 2023 15:54:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18048EB64DD
+	for <target-devel@archiver.kernel.org>; Tue,  4 Jul 2023 12:22:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230125AbjF3PyN (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Fri, 30 Jun 2023 11:54:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56802 "EHLO
+        id S231627AbjGDMWl (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 4 Jul 2023 08:22:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232840AbjF3PyJ (ORCPT
+        with ESMTP id S231540AbjGDMWf (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Fri, 30 Jun 2023 11:54:09 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3878C3ABE
-        for <target-devel@vger.kernel.org>; Fri, 30 Jun 2023 08:53:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1688140397;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=dt8/TNwwjEp7T+q1FJfhndbuDgfaevnHhS8riY/vCsU=;
-        b=Qz8lUFe2H8dRVuXGUoshQJ86q814A0yazgJKcjF/Mg8cCt5MWGrNXk084j2Wy4Z+yCf4Mz
-        9Hauad73jBJ2bopDr1PBJSH27ZJHSsWJ8majNVRNzRoOQKhwBb73AVV7koOYvIOhtbADUB
-        lfWY3L0eEcUNcVELU5/6ouhcFdL5AM8=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-228-aGSmEoumMvSZ_YWq-gsTLQ-1; Fri, 30 Jun 2023 11:53:13 -0400
-X-MC-Unique: aGSmEoumMvSZ_YWq-gsTLQ-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        Tue, 4 Jul 2023 08:22:35 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA55810E2;
+        Tue,  4 Jul 2023 05:22:26 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1E7B08D138B;
-        Fri, 30 Jun 2023 15:53:12 +0000 (UTC)
-Received: from kalibr.redhat.com (unknown [10.35.206.38])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id DEACFF5CEC;
-        Fri, 30 Jun 2023 15:53:10 +0000 (UTC)
-From:   Maurizio Lombardi <mlombard@redhat.com>
-To:     martin.petersen@oracle.com
-Cc:     target-devel@vger.kernel.org, michael.christie@oracle.com
-Subject: [PATCH] target: iscsi: remove the unused netif_timeout attribute
-Date:   Fri, 30 Jun 2023 17:53:09 +0200
-Message-Id: <20230630155309.46061-1-mlombard@redhat.com>
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 37C1422864;
+        Tue,  4 Jul 2023 12:22:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+        t=1688473345; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=fmLTdco5SVuopuSHDbZ7fgiCJT9fmPtnstwBD5O0cVs=;
+        b=LYS1cAt6t7JDeaXCZA2GfkFsvePsCKrBv683wLJKbeQdnB0RB5kex3lpjPlaO0WNrRIj/p
+        OKov+tjGtn08tmzrJU88unG7OZdlwokmKgdGkl+OG4epxE3GA77hqhJZhG3Z0dN3YI1cPw
+        0UrvrW8qrgzkAVKwdQJPDUFGAz/meEU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+        s=susede2_ed25519; t=1688473345;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=fmLTdco5SVuopuSHDbZ7fgiCJT9fmPtnstwBD5O0cVs=;
+        b=Dse69eRRr1j+O/QtQVzrTyIAnqxKgXzcDp3QAv4KDKTfaZG4HjcsXtXKNaEGDfzmeYyIxx
+        WQrcOQN123NhV6Dg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1D4941346D;
+        Tue,  4 Jul 2023 12:22:25 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id j8gfBwEPpGQFMAAAMHmgww
+        (envelope-from <jack@suse.cz>); Tue, 04 Jul 2023 12:22:25 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+        id 915DAA0722; Tue,  4 Jul 2023 14:22:24 +0200 (CEST)
+From:   Jan Kara <jack@suse.cz>
+To:     <linux-block@vger.kernel.org>
+Cc:     <linux-fsdevel@vger.kernel.org>, Jens Axboe <axboe@kernel.dk>,
+        Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
+        Alasdair Kergon <agk@redhat.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        "Darrick J. Wong" <djwong@kernel.org>,
+        Dave Kleikamp <shaggy@kernel.org>,
+        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
+        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
+        Jack Wang <jinpu.wang@ionos.com>,
+        Jaegeuk Kim <jaegeuk@kernel.org>,
+        jfs-discussion@lists.sourceforge.net,
+        Joern Engel <joern@lazybastard.org>,
+        Joseph Qi <joseph.qi@linux.alibaba.com>,
+        Kent Overstreet <kent.overstreet@gmail.com>,
+        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
+        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
+        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
+        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linux-xfs@vger.kernel.org,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Mike Snitzer <snitzer@kernel.org>,
+        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
+        reiserfs-devel@vger.kernel.org,
+        Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Song Liu <song@kernel.org>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
+        Trond Myklebust <trond.myklebust@hammerspace.com>,
+        xen-devel@lists.xenproject.org
+Subject: [PATCH RFC 0/32] block: Make blkdev_get_by_*() return handle
+Date:   Tue,  4 Jul 2023 14:21:27 +0200
+Message-Id: <20230629165206.383-1-jack@suse.cz>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2471; i=jack@suse.cz; h=from:subject:message-id; bh=ceZQTtdZjpsFiBb9Fva7YX0lOa2i6Zx53n9hl/3+KQM=; b=owEBbQGS/pANAwAIAZydqgc/ZEDZAcsmYgBkpA7DYrlV/5vfqjK0juEsCaKDoUZ39z4YDWexB9PO aQyP7ZaJATMEAAEIAB0WIQSrWdEr1p4yirVVKBycnaoHP2RA2QUCZKQOwwAKCRCcnaoHP2RA2S48B/ 476l3pggtn8igKmRoHswxXv63Ks68g/08HDzIZqCtDPA84BSKd93Nq0m/Wn76G+ubHQpfg8PMw5+DG uV+DOTR+NEYKAToQQ8YzmS6RAGasKKWUg3k1pr7jK23l+wcq16ImmBXmWM3nr2j85QcDZeB+vpUKHh bdQJQsBOqKsA+qlImgVwvMS+V4UTLQcIYQo2bDBl0TIbJB0UiXYMYHcvrEkwNZWybXBs+wfERrXuF1 XlXO6rWvLyW94kkpvaZTvPY+yZd7tOLd+W8gsz2uBFG9QJg57aDkZxf6NA+Qxf2O8uwfWiyb1XXBN8 I1wYA/sSduibCw4tF4sYb/wERvIAO+
+X-Developer-Key: i=jack@suse.cz; a=openpgp; fpr=93C6099A142276A28BBE35D815BC833443038D8C
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-This attribute has never been used, remove it.
+Hello,
 
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
----
- drivers/target/iscsi/iscsi_target_configfs.c |  2 --
- drivers/target/iscsi/iscsi_target_tpg.c      | 26 --------------------
- drivers/target/iscsi/iscsi_target_tpg.h      |  1 -
- include/target/iscsi/iscsi_target_core.h     |  4 ---
- 4 files changed, 33 deletions(-)
+this patch series implements the idea of blkdev_get_by_*() calls returning
+bdev_handle which is then passed to blkdev_put() [1]. This makes the get
+and put calls for bdevs more obviously matching and allows us to propagate
+context from get to put without having to modify all the users (again!).
+In particular I need to propagate used open flags to blkdev_put() to be able
+count writeable opens and add support for blocking writes to mounted block
+devices. I'll send that series separately.
 
-diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
-index 5d0f51822414..6ce967f5af14 100644
---- a/drivers/target/iscsi/iscsi_target_configfs.c
-+++ b/drivers/target/iscsi/iscsi_target_configfs.c
-@@ -783,7 +783,6 @@ CONFIGFS_ATTR(iscsi_tpg_attrib_, name)
- 
- DEF_TPG_ATTRIB(authentication);
- DEF_TPG_ATTRIB(login_timeout);
--DEF_TPG_ATTRIB(netif_timeout);
- DEF_TPG_ATTRIB(generate_node_acls);
- DEF_TPG_ATTRIB(default_cmdsn_depth);
- DEF_TPG_ATTRIB(cache_dynamic_acls);
-@@ -799,7 +798,6 @@ DEF_TPG_ATTRIB(login_keys_workaround);
- static struct configfs_attribute *lio_target_tpg_attrib_attrs[] = {
- 	&iscsi_tpg_attrib_attr_authentication,
- 	&iscsi_tpg_attrib_attr_login_timeout,
--	&iscsi_tpg_attrib_attr_netif_timeout,
- 	&iscsi_tpg_attrib_attr_generate_node_acls,
- 	&iscsi_tpg_attrib_attr_default_cmdsn_depth,
- 	&iscsi_tpg_attrib_attr_cache_dynamic_acls,
-diff --git a/drivers/target/iscsi/iscsi_target_tpg.c b/drivers/target/iscsi/iscsi_target_tpg.c
-index 3cac1aafef68..f7bac98fd4fe 100644
---- a/drivers/target/iscsi/iscsi_target_tpg.c
-+++ b/drivers/target/iscsi/iscsi_target_tpg.c
-@@ -211,7 +211,6 @@ static void iscsit_set_default_tpg_attribs(struct iscsi_portal_group *tpg)
- 
- 	a->authentication = TA_AUTHENTICATION;
- 	a->login_timeout = TA_LOGIN_TIMEOUT;
--	a->netif_timeout = TA_NETIF_TIMEOUT;
- 	a->default_cmdsn_depth = TA_DEFAULT_CMDSN_DEPTH;
- 	a->generate_node_acls = TA_GENERATE_NODE_ACLS;
- 	a->cache_dynamic_acls = TA_CACHE_DYNAMIC_ACLS;
-@@ -666,31 +665,6 @@ int iscsit_ta_login_timeout(
- 	return 0;
- }
- 
--int iscsit_ta_netif_timeout(
--	struct iscsi_portal_group *tpg,
--	u32 netif_timeout)
--{
--	struct iscsi_tpg_attrib *a = &tpg->tpg_attrib;
--
--	if (netif_timeout > TA_NETIF_TIMEOUT_MAX) {
--		pr_err("Requested Network Interface Timeout %u larger"
--			" than maximum %u\n", netif_timeout,
--				TA_NETIF_TIMEOUT_MAX);
--		return -EINVAL;
--	} else if (netif_timeout < TA_NETIF_TIMEOUT_MIN) {
--		pr_err("Requested Network Interface Timeout %u smaller"
--			" than minimum %u\n", netif_timeout,
--				TA_NETIF_TIMEOUT_MIN);
--		return -EINVAL;
--	}
--
--	a->netif_timeout = netif_timeout;
--	pr_debug("Set Network Interface Timeout to %u for"
--		" Target Portal Group %hu\n", a->netif_timeout, tpg->tpgt);
--
--	return 0;
--}
--
- int iscsit_ta_generate_node_acls(
- 	struct iscsi_portal_group *tpg,
- 	u32 flag)
-diff --git a/drivers/target/iscsi/iscsi_target_tpg.h b/drivers/target/iscsi/iscsi_target_tpg.h
-index 839e45362776..71d067f62177 100644
---- a/drivers/target/iscsi/iscsi_target_tpg.h
-+++ b/drivers/target/iscsi/iscsi_target_tpg.h
-@@ -38,7 +38,6 @@ extern int iscsit_tpg_del_network_portal(struct iscsi_portal_group *,
- 			struct iscsi_tpg_np *);
- extern int iscsit_ta_authentication(struct iscsi_portal_group *, u32);
- extern int iscsit_ta_login_timeout(struct iscsi_portal_group *, u32);
--extern int iscsit_ta_netif_timeout(struct iscsi_portal_group *, u32);
- extern int iscsit_ta_generate_node_acls(struct iscsi_portal_group *, u32);
- extern int iscsit_ta_default_cmdsn_depth(struct iscsi_portal_group *, u32);
- extern int iscsit_ta_cache_dynamic_acls(struct iscsi_portal_group *, u32);
-diff --git a/include/target/iscsi/iscsi_target_core.h b/include/target/iscsi/iscsi_target_core.h
-index 4c15420e8965..60af7c63b34e 100644
---- a/include/target/iscsi/iscsi_target_core.h
-+++ b/include/target/iscsi/iscsi_target_core.h
-@@ -50,9 +50,6 @@ struct sock;
- #define TA_LOGIN_TIMEOUT		15
- #define TA_LOGIN_TIMEOUT_MAX		30
- #define TA_LOGIN_TIMEOUT_MIN		5
--#define TA_NETIF_TIMEOUT		2
--#define TA_NETIF_TIMEOUT_MAX		15
--#define TA_NETIF_TIMEOUT_MIN		2
- #define TA_GENERATE_NODE_ACLS		0
- #define TA_DEFAULT_CMDSN_DEPTH		64
- #define TA_DEFAULT_CMDSN_DEPTH_MAX	512
-@@ -773,7 +770,6 @@ to_iscsi_nacl(struct se_node_acl *se_nacl)
- struct iscsi_tpg_attrib {
- 	u32			authentication;
- 	u32			login_timeout;
--	u32			netif_timeout;
- 	u32			generate_node_acls;
- 	u32			cache_dynamic_acls;
- 	u32			default_cmdsn_depth;
--- 
-2.39.3
+The series is based on Linus' tree as of yesterday + two bcache fixes which are
+in the block tree. Patches have passed some basic testing, I plan to test more
+users once we agree this is the right way to go.
+
+								Honza
+
+[1] https://lore.kernel.org/all/ZJGNsVDhZx0Xgs2H@infradead.org
+
+CC: Alasdair Kergon <agk@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Anna Schumaker <anna@kernel.org>
+CC: Chao Yu <chao@kernel.org>
+CC: Christian Borntraeger <borntraeger@linux.ibm.com>
+CC: Coly Li <colyli@suse.de
+CC: "Darrick J. Wong" <djwong@kernel.org>
+CC: Dave Kleikamp <shaggy@kernel.org>
+CC: David Sterba <dsterba@suse.com>
+CC: dm-devel@redhat.com
+CC: drbd-dev@lists.linbit.com
+CC: Gao Xiang <xiang@kernel.org>
+CC: Jack Wang <jinpu.wang@ionos.com>
+CC: Jaegeuk Kim <jaegeuk@kernel.org>
+CC: jfs-discussion@lists.sourceforge.net
+CC: Joern Engel <joern@lazybastard.org>
+CC: Joseph Qi <joseph.qi@linux.alibaba.com>
+CC: Kent Overstreet <kent.overstreet@gmail.com>
+CC: linux-bcache@vger.kernel.org
+CC: linux-btrfs@vger.kernel.org
+CC: linux-erofs@lists.ozlabs.org
+CC: <linux-ext4@vger.kernel.org>
+CC: linux-f2fs-devel@lists.sourceforge.net
+CC: linux-mm@kvack.org
+CC: linux-mtd@lists.infradead.org
+CC: linux-nfs@vger.kernel.org
+CC: linux-nilfs@vger.kernel.org
+CC: linux-nvme@lists.infradead.org
+CC: linux-pm@vger.kernel.org
+CC: linux-raid@vger.kernel.org
+CC: linux-s390@vger.kernel.org
+CC: linux-scsi@vger.kernel.org
+CC: linux-xfs@vger.kernel.org
+CC: "Md. Haris Iqbal" <haris.iqbal@ionos.com>
+CC: Mike Snitzer <snitzer@kernel.org>
+CC: Minchan Kim <minchan@kernel.org>
+CC: ocfs2-devel@oss.oracle.com
+CC: reiserfs-devel@vger.kernel.org
+CC: Sergey Senozhatsky <senozhatsky@chromium.org>
+CC: Song Liu <song@kernel.org>
+CC: Sven Schnelle <svens@linux.ibm.com>
+CC: target-devel@vger.kernel.org
+CC: Ted Tso <tytso@mit.edu>
+CC: Trond Myklebust <trond.myklebust@hammerspace.com>
+CC: xen-devel@lists.xenproject.org
 
