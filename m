@@ -2,42 +2,58 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA3F0EB64DD
-	for <target-devel@archiver.kernel.org>; Tue,  4 Jul 2023 16:28:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6A06C04FE1
+	for <target-devel@archiver.kernel.org>; Wed,  5 Jul 2023 10:21:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231653AbjGDQ2s (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 4 Jul 2023 12:28:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39582 "EHLO
+        id S231989AbjGEKVe (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 5 Jul 2023 06:21:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45760 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230489AbjGDQ2o (ORCPT
+        with ESMTP id S231213AbjGEKVb (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 4 Jul 2023 12:28:44 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1C05E7B;
-        Tue,  4 Jul 2023 09:28:43 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        Wed, 5 Jul 2023 06:21:31 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A246B122;
+        Wed,  5 Jul 2023 03:21:30 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 20F4061302;
-        Tue,  4 Jul 2023 16:28:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7A8C9C433C7;
-        Tue,  4 Jul 2023 16:28:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1688488122;
-        bh=ZbfFFniWhSahnp7jSJ3oIaV9POCcbiLvynkhKSgpXe4=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=rYhrvsNpwqCJwn41eekT5X8PaPVwBQ6ub8Netmz5zCPt/qzVPnkLxH2Kjiq9nv1Cm
-         yUeZjhUrBrMq2ThgKqf6VqdUdYp1P2/zpT5yvYD7siJiybpmyKwoPpaa5gXpr6CMMv
-         akxinQnPPwXHrxodKNqiTb/6JTMYG4lY9mmxI0dhS9y7wawVJYcWdRHa64BuE/8weJ
-         eX7co1v82fmGWp5kKAm9BaeWX8/tRjFqKX1EDWvGtKd5aZ5LCCXaAY86lmuE5eezEu
-         Ix6OVXIAm9Wp1Cia2H4ClFO9rKC6nhjukt+dwjQnGXu6F26u0+VUNsprhPIs/s+nRo
-         qHwq5/jxHTM8Q==
-Date:   Tue, 4 Jul 2023 10:28:36 -0600
-From:   Keith Busch <kbusch@kernel.org>
-To:     Jan Kara <jack@suse.cz>
-Cc:     linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        Jens Axboe <axboe@kernel.dk>,
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 58F0C1F6E6;
+        Wed,  5 Jul 2023 10:21:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+        t=1688552489; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=qqER76PXnxWxMVZH46uY+IP0A7ISNxa4dFOpqm8Npig=;
+        b=rK+eFTza2+XXgbRvOv5tQtV93F/4zZpu7norREAepZy5yow7baD/dvvqWhpeeItBt0IPcu
+        Y5rwLWutv/on4mwv5EJraqTeqhb05mRkTW0yYXikGz/UA9AQcATVDIgxrBuvXRHMAszN6R
+        RSIAN/j2D8s9RJrt3/Umhb+lT3pvazU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+        s=susede2_ed25519; t=1688552489;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=qqER76PXnxWxMVZH46uY+IP0A7ISNxa4dFOpqm8Npig=;
+        b=0Ik5A3faiNr6MKUo0ZlFf0SVDy0zGGeX4x6PTOEnPlUJVjHk96v3tsbq/TGqKcufwhGJGx
+        3sf2EXg0rHzUTICQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 44C0D13460;
+        Wed,  5 Jul 2023 10:21:29 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id Xem5EClEpWRSCwAAMHmgww
+        (envelope-from <jack@suse.cz>); Wed, 05 Jul 2023 10:21:29 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+        id C5467A0707; Wed,  5 Jul 2023 12:21:28 +0200 (CEST)
+Date:   Wed, 5 Jul 2023 12:21:28 +0200
+From:   Jan Kara <jack@suse.cz>
+To:     Keith Busch <kbusch@kernel.org>
+Cc:     Jan Kara <jack@suse.cz>, linux-block@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
         Christoph Hellwig <hch@infradead.org>,
         Alasdair Kergon <agk@redhat.com>,
         Andrew Morton <akpm@linux-foundation.org>,
@@ -72,69 +88,47 @@ Cc:     linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org,
         Trond Myklebust <trond.myklebust@hammerspace.com>,
         xen-devel@lists.xenproject.org
 Subject: Re: [PATCH 01/32] block: Provide blkdev_get_handle_* functions
-Message-ID: <ZKRItBRhm8f5Vba/@kbusch-mbp>
+Message-ID: <20230705102128.vquve4qencbbn2br@quack3>
 References: <20230629165206.383-1-jack@suse.cz>
  <20230704122224.16257-1-jack@suse.cz>
+ <ZKRItBRhm8f5Vba/@kbusch-mbp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230704122224.16257-1-jack@suse.cz>
+In-Reply-To: <ZKRItBRhm8f5Vba/@kbusch-mbp>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Tue, Jul 04, 2023 at 02:21:28PM +0200, Jan Kara wrote:
-> +struct bdev_handle *blkdev_get_handle_by_dev(dev_t dev, blk_mode_t mode,
-> +		void *holder, const struct blk_holder_ops *hops)
-> +{
-> +	struct bdev_handle *handle = kmalloc(sizeof(struct bdev_handle),
-> +					     GFP_KERNEL);
+On Tue 04-07-23 10:28:36, Keith Busch wrote:
+> On Tue, Jul 04, 2023 at 02:21:28PM +0200, Jan Kara wrote:
+> > +struct bdev_handle *blkdev_get_handle_by_dev(dev_t dev, blk_mode_t mode,
+> > +		void *holder, const struct blk_holder_ops *hops)
+> > +{
+> > +	struct bdev_handle *handle = kmalloc(sizeof(struct bdev_handle),
+> > +					     GFP_KERNEL);
+> 
+> I believe 'sizeof(*handle)' is the preferred style.
 
-I believe 'sizeof(*handle)' is the preferred style.
+OK.
 
-> +	struct block_device *bdev;
-> +
-> +	if (!handle)
-> +		return ERR_PTR(-ENOMEM);
-> +	bdev = blkdev_get_by_dev(dev, mode, holder, hops);
-> +	if (IS_ERR(bdev))
-> +		return ERR_CAST(bdev);
+> > +	struct block_device *bdev;
+> > +
+> > +	if (!handle)
+> > +		return ERR_PTR(-ENOMEM);
+> > +	bdev = blkdev_get_by_dev(dev, mode, holder, hops);
+> > +	if (IS_ERR(bdev))
+> > +		return ERR_CAST(bdev);
+> 
+> Need a 'kfree(handle)' before the error return. Or would it be simpler
+> to get the bdev first so you can check the mode settings against a
+> read-only bdev prior to the kmalloc?
 
-Need a 'kfree(handle)' before the error return. Or would it be simpler
-to get the bdev first so you can check the mode settings against a
-read-only bdev prior to the kmalloc?
-
-> +	handle->bdev = bdev;
-> +	handle->holder = holder;
-> +	return handle;
-> +}
-> +EXPORT_SYMBOL(blkdev_get_handle_by_dev);
-> +
->  /**
->   * blkdev_get_by_path - open a block device by name
->   * @path: path to the block device to open
-> @@ -884,6 +902,28 @@ struct block_device *blkdev_get_by_path(const char *path, blk_mode_t mode,
->  }
->  EXPORT_SYMBOL(blkdev_get_by_path);
->  
-> +struct bdev_handle *blkdev_get_handle_by_path(const char *path, blk_mode_t mode,
-> +		void *holder, const struct blk_holder_ops *hops)
-> +{
-> +	struct bdev_handle *handle;
-> +	dev_t dev;
-> +	int error;
-> +
-> +	error = lookup_bdev(path, &dev);
-> +	if (error)
-> +		return ERR_PTR(error);
-> +
-> +	handle = blkdev_get_handle_by_dev(dev, mode, holder, hops);
-> +	if (!IS_ERR(handle) && (mode & BLK_OPEN_WRITE) &&
-> +	    bdev_read_only(handle->bdev)) {
-> +		blkdev_handle_put(handle);
-> +		return ERR_PTR(-EACCES);
-> +	}
-> +
-> +	return handle;
-> +}
-> +EXPORT_SYMBOL(blkdev_get_handle_by_path);
+Yeah. Good point with kfree(). I'm not sure calling blkdev_get_by_dev()
+first will be "simpler" - then we need blkdev_put() in case of kmalloc()
+failure. Thanks for review!
+ 
+								Honza
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
