@@ -2,103 +2,77 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60C77C001B0
-	for <target-devel@archiver.kernel.org>; Thu, 13 Jul 2023 07:04:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C21ECEB64DD
+	for <target-devel@archiver.kernel.org>; Thu, 13 Jul 2023 13:08:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229890AbjGMHEv (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 13 Jul 2023 03:04:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33116 "EHLO
+        id S234205AbjGMNIb (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 13 Jul 2023 09:08:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44354 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230369AbjGMHEu (ORCPT
+        with ESMTP id S234133AbjGMNIa (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 13 Jul 2023 03:04:50 -0400
-Received: from mail.208.org (unknown [183.242.55.162])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62C15E5F
-        for <target-devel@vger.kernel.org>; Thu, 13 Jul 2023 00:04:49 -0700 (PDT)
-Received: from mail.208.org (email.208.org [127.0.0.1])
-        by mail.208.org (Postfix) with ESMTP id 4R1lwb2CDxzBR7bq
-        for <target-devel@vger.kernel.org>; Thu, 13 Jul 2023 15:04:47 +0800 (CST)
-Authentication-Results: mail.208.org (amavisd-new); dkim=pass
-        reason="pass (just generated, assumed good)" header.d=208.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=208.org; h=
-        content-transfer-encoding:content-type:message-id:user-agent
-        :references:in-reply-to:subject:to:from:date:mime-version; s=
-        dkim; t=1689231887; x=1691823888; bh=hOv6olFChRQtE64fY6wHJgjor0+
-        nEFlIexqOHv6IHq0=; b=POJi/Bs/j4j78irF1yptP0eaf3Yr1RmAcOnF9ZTcwr2
-        CpD8QMugKELPSoaFAHYn7QtIjsBUq81+Uk6aEZojZ4f06VmUsIFXRYfr18EwZnIR
-        ybhp5VxInvKqcIFu+ELpHJSPEWML71RqFpOTszqAlI0SJ26X/WIOyRd8m6XOXQtY
-        YE+VryewE8zDCl56pO/D0KeyX9EjJKBK5HP9T7gfVdJW7lz2wF1faY1TfSEwRqLN
-        HY0SiFA48iHofy5Cm2CXQaMhM/xNOOOaWMcuII1A3mefSliuFrJiWl2W4AatFBxg
-        aVMrjoCHmkaoNjlVbnzDd1uPT4jPAAIBbKITUm60wpQ==
-X-Virus-Scanned: amavisd-new at mail.208.org
-Received: from mail.208.org ([127.0.0.1])
-        by mail.208.org (mail.208.org [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id llohDFZh8XDe for <target-devel@vger.kernel.org>;
-        Thu, 13 Jul 2023 15:04:47 +0800 (CST)
-Received: from localhost (email.208.org [127.0.0.1])
-        by mail.208.org (Postfix) with ESMTPSA id 4R1lwZ6zCvzBJDhy;
-        Thu, 13 Jul 2023 15:04:46 +0800 (CST)
+        Thu, 13 Jul 2023 09:08:30 -0400
+Received: from mta-04.yadro.com (mta-04.yadro.com [89.207.88.248])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 97649272A;
+        Thu, 13 Jul 2023 06:08:08 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-04.yadro.com 0D2C2C0002
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-04;
+        t=1689253607; bh=UuftEBn/Rh4qaYKGVD8HlBWfUCp6eVO6XdUiiClGjn0=;
+        h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+        b=bnf6afroALiuenpVfZqHDqnzUxw25emenIGEjBsZdN7s1NNi8yhvnzRPlC87T4WlO
+         bMbAVsquliPxpLjCyuqDwo/tR6PyzY5R3ilEQf05OqpcRzj+SGIS/HgEKa8S9Pt0ZH
+         QJ+TenzfrRdDjXwIYD4EOikTvGl1okxUGpRyLXOKdRgAC6pm3adFHDPYDwuDb+n2PF
+         1JNNot6tUghK9toaC4CREyEM+x2bVJC0uqySo4TRTTgOI6epQpI45FrGmWPPUw8iLx
+         GpYlUb/+fPvEEqV+NaZZ84lYZ669Kw1HZMlu23put06j5K+Zg0wF0AHdg5dez6LjTp
+         sX6uBfkjF6Whg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
+        t=1689253607; bh=UuftEBn/Rh4qaYKGVD8HlBWfUCp6eVO6XdUiiClGjn0=;
+        h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+        b=rxzYKUVDteQGbka73O8+TR0g/otnUWaSznNHOVsuaL8scZ2ibDoyzoQL/uQFVTbvs
+         HtyUuC/VQY8Qt9RTjjVvpbKBFKxdwljuzs7xWZySguGVN+2I0D2PKLDX5opw1ys8ai
+         Ht6V7anTIfijmg3uDuSITKUASho9tgDNgEhLhqqRPR18XcQoDKbrqoELVhbuwAqhpJ
+         KCueAbtC/S0HA4zQyHVIrRpj6L2gnfIxAm3Apu7vf2d7DQoi/sPfhSxoBEE5CfCDdv
+         Ju7H6EnFA6OuKuwi60FB3UOPai6QbwX3aIrC6iDdpD3frZiPtsgXj2zjlvVBJiPlM+
+         ReZMQocQjikQA==
+Date:   Thu, 13 Jul 2023 16:06:44 +0300
+From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
+To:     Mike Christie <michael.christie@oracle.com>
+CC:     <martin.petersen@oracle.com>, <linux-scsi@vger.kernel.org>,
+        <target-devel@vger.kernel.org>
+Subject: Re: [PATCH 5/5] scsi: target: Export fabric driver direct submit
+ settings
+Message-ID: <ZK_25KIJw-CudIXw@yadro.com>
+References: <20230710214442.6718-1-michael.christie@oracle.com>
+ <20230710214442.6718-6-michael.christie@oracle.com>
 MIME-Version: 1.0
-Date:   Thu, 13 Jul 2023 15:04:46 +0800
-From:   hanyu001@208suo.com
-To:     jejb@linux.ibm.com, martin.petersen@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Fwd: [PATCH] scsi: ibmvscsi_tgt: Convert snprintf() to sysfs_emit()
-In-Reply-To: <tencent_9B65D1CAD7CE9FE3086C542B55428F8B110A@qq.com>
-References: <tencent_9B65D1CAD7CE9FE3086C542B55428F8B110A@qq.com>
-User-Agent: Roundcube Webmail
-Message-ID: <0969a39dca88032a93ce9c619e707d7d@208suo.com>
-X-Sender: hanyu001@208suo.com
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20230710214442.6718-6-michael.christie@oracle.com>
+X-ClientProxiedBy: T-Exch-05.corp.yadro.com (172.17.10.109) To
+ T-EXCH-09.corp.yadro.com (172.17.11.59)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Coccinnelle reports a warning
-Warning: Use scnprintf or sprintf
+On Mon, Jul 10, 2023 at 04:44:42PM -0500, Mike Christie wrote:
+> +static ssize_t
+> +target_fabric_wwn_default_to_direct_submit_show(struct config_item *item,
+> +                                               char *page)
+> +{
+> +       struct se_wwn *wwn = container_of(to_config_group(item), struct se_wwn,
+> +                                         param_group);
+> +       return sprintf(page, "%u\n", wwn->wwn_tf->tf_ops->default_direct_submit);
 
-WARNING: use scnprintf or sprintf
-WARNING: use scnprintf or sprintf
-WARNING: use scnprintf or sprintf
-Signed-off-by: ztt <1549089851@qq.com>
----
-  drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 6 +++---
-  1 file changed, 3 insertions(+), 3 deletions(-)
+I belive we should do the right thing and use sysfs_emit() here. We
+already have a bunch of issues with bad sprintf() usage and I think it
+would be wise to promote safer interfaces.
 
-diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c 
-b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-index 385f812b8793..f9dad598380d 100644
---- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-+++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
-@@ -3616,13 +3616,13 @@ static void ibmvscsis_remove(struct vio_dev 
-*vdev)
-  static ssize_t system_id_show(struct device *dev,
-                    struct device_attribute *attr, char *buf)
-  {
--    return snprintf(buf, PAGE_SIZE, "%s\n", system_id);
-+    return scnprintf(buf, PAGE_SIZE, "%s\n", system_id);
-  }
+> +static ssize_t
+> +target_fabric_wwn_direct_submit_supported_show(struct config_item *item,
+> +                                              char *page)
+> +{
+> +       struct se_wwn *wwn = container_of(to_config_group(item), struct se_wwn,
+> +                                         param_group);
+> +       return sprintf(page, "%u\n", wwn->wwn_tf->tf_ops->direct_submit_supp);
 
-  static ssize_t partition_number_show(struct device *dev,
-                       struct device_attribute *attr, char *buf)
-  {
--    return snprintf(buf, PAGE_SIZE, "%x\n", partition_number);
-+    return scnprintf(buf, PAGE_SIZE, "%x\n", partition_number);
-  }
-
-  static ssize_t unit_address_show(struct device *dev,
-@@ -3630,7 +3630,7 @@ static ssize_t unit_address_show(struct device 
-*dev,
-  {
-      struct scsi_info *vscsi = container_of(dev, struct scsi_info, dev);
-
--    return snprintf(buf, PAGE_SIZE, "%x\n", 
-vscsi->dma_dev->unit_address);
-+    return scnprintf(buf, PAGE_SIZE, "%x\n", 
-vscsi->dma_dev->unit_address);
-  }
-
-  static int ibmvscsis_get_system_info(void)
+Same.
