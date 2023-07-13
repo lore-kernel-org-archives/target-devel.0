@@ -2,127 +2,103 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D321C001E0
-	for <target-devel@archiver.kernel.org>; Wed, 12 Jul 2023 16:06:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60C77C001B0
+	for <target-devel@archiver.kernel.org>; Thu, 13 Jul 2023 07:04:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233340AbjGLQGw (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 12 Jul 2023 12:06:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43558 "EHLO
+        id S229890AbjGMHEv (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 13 Jul 2023 03:04:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33116 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233122AbjGLQGu (ORCPT
+        with ESMTP id S230369AbjGMHEu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 12 Jul 2023 12:06:50 -0400
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC9E01BE8
-        for <target-devel@vger.kernel.org>; Wed, 12 Jul 2023 09:06:47 -0700 (PDT)
-Received: by mail-lf1-x133.google.com with SMTP id 2adb3069b0e04-4fb96e2b573so11506606e87.3
-        for <target-devel@vger.kernel.org>; Wed, 12 Jul 2023 09:06:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ionos.com; s=google; t=1689178006; x=1691770006;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8X6ArMXh62A5UxRR3ZN+q1CvObhoeb8ltfmXU1xj+zw=;
-        b=V0Mwyzpfv5NHo344FebMkemb4OkDhqesSJzk3oLJrC1sXingJzi/DqoHJPX3cM7/kU
-         /daZbGumusx7p3ETz9bL+dV7+a249DzrdJ5ucaxUqFs1cH4q4UNK1aBbCP0kRMVezgvK
-         Gb0u18D1omT5qk875/bvJSIuyWWXlLKu5WnA0OT929rTcOY7rHqZVsWOvIcdQTq+Q4TI
-         Xty8IQiQ2uEFjkBqRHhjaYUeIIjdk3TlKuW6ZBNL29/kZI8LKdOXvAAi+FiRNxSMUXsG
-         92h/diWQ5jGfG/Pc/9JTOLcLZ2bS8Hyd3sIfxIs/rFITeR6YjIQmonhcUevYE5m/zN7s
-         SmPw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1689178006; x=1691770006;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8X6ArMXh62A5UxRR3ZN+q1CvObhoeb8ltfmXU1xj+zw=;
-        b=Pb4OYIyQTPxLNnZe919Q5UneMxY4B6jGKeVuBmXqRmpor3ygPNvHxKmM3TNzsZ+0rT
-         kmHIV5gbflz6jb3AF+e98aXj62EMuD605CxyPKSLplg1hVqI5ierXuDNoFv/R5Po3+wY
-         R3KgWUQLt1ymEOqRDuE0fByicT8GyU1NI4O9Ge9Mf+O+2o/Lm1MVZomUhUM0MUsLIIXG
-         AXV4WM3GVB/VCOsV039ODHonnb4FBTTCV4K2Jl0JSJESWvyFKlmHD6YeentzgJgcYUZi
-         shEotpuW7uoOJoMV61kGHMrTxKB9FYimhMqK+qvBvkPMNdjazsCHfWLJ7ESqkootuJf8
-         sEfw==
-X-Gm-Message-State: ABy/qLZadkIBs6U3PoDk5xUEuOdEsGfzI6G63/kP6ivGVqn1HTtccRVp
-        wEhbYeNDVo82+iI0mNQ17VHG6yBBfXhuF/KFCBsY7A==
-X-Google-Smtp-Source: APBJJlHjPtNIqZNhhKZT3JSG1orBAozCwd3+TwwvFjulJuToD7D5iIrA7grwKZQU8Z67qc0UJ0oDxWof6WbkdfMRi3A=
-X-Received: by 2002:ac2:5b1d:0:b0:4fb:7a90:1abe with SMTP id
- v29-20020ac25b1d000000b004fb7a901abemr15797051lfn.49.1689178006211; Wed, 12
- Jul 2023 09:06:46 -0700 (PDT)
+        Thu, 13 Jul 2023 03:04:50 -0400
+Received: from mail.208.org (unknown [183.242.55.162])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62C15E5F
+        for <target-devel@vger.kernel.org>; Thu, 13 Jul 2023 00:04:49 -0700 (PDT)
+Received: from mail.208.org (email.208.org [127.0.0.1])
+        by mail.208.org (Postfix) with ESMTP id 4R1lwb2CDxzBR7bq
+        for <target-devel@vger.kernel.org>; Thu, 13 Jul 2023 15:04:47 +0800 (CST)
+Authentication-Results: mail.208.org (amavisd-new); dkim=pass
+        reason="pass (just generated, assumed good)" header.d=208.org
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=208.org; h=
+        content-transfer-encoding:content-type:message-id:user-agent
+        :references:in-reply-to:subject:to:from:date:mime-version; s=
+        dkim; t=1689231887; x=1691823888; bh=hOv6olFChRQtE64fY6wHJgjor0+
+        nEFlIexqOHv6IHq0=; b=POJi/Bs/j4j78irF1yptP0eaf3Yr1RmAcOnF9ZTcwr2
+        CpD8QMugKELPSoaFAHYn7QtIjsBUq81+Uk6aEZojZ4f06VmUsIFXRYfr18EwZnIR
+        ybhp5VxInvKqcIFu+ELpHJSPEWML71RqFpOTszqAlI0SJ26X/WIOyRd8m6XOXQtY
+        YE+VryewE8zDCl56pO/D0KeyX9EjJKBK5HP9T7gfVdJW7lz2wF1faY1TfSEwRqLN
+        HY0SiFA48iHofy5Cm2CXQaMhM/xNOOOaWMcuII1A3mefSliuFrJiWl2W4AatFBxg
+        aVMrjoCHmkaoNjlVbnzDd1uPT4jPAAIBbKITUm60wpQ==
+X-Virus-Scanned: amavisd-new at mail.208.org
+Received: from mail.208.org ([127.0.0.1])
+        by mail.208.org (mail.208.org [127.0.0.1]) (amavisd-new, port 10026)
+        with ESMTP id llohDFZh8XDe for <target-devel@vger.kernel.org>;
+        Thu, 13 Jul 2023 15:04:47 +0800 (CST)
+Received: from localhost (email.208.org [127.0.0.1])
+        by mail.208.org (Postfix) with ESMTPSA id 4R1lwZ6zCvzBJDhy;
+        Thu, 13 Jul 2023 15:04:46 +0800 (CST)
 MIME-Version: 1.0
-References: <20230629165206.383-1-jack@suse.cz> <20230704122224.16257-1-jack@suse.cz>
- <ZKbgAG5OoHVyUKOG@infradead.org>
-In-Reply-To: <ZKbgAG5OoHVyUKOG@infradead.org>
-From:   Haris Iqbal <haris.iqbal@ionos.com>
-Date:   Wed, 12 Jul 2023 18:06:35 +0200
-Message-ID: <CAJpMwyiUcw+mH0sZa8f8UJsaSZ7NSE65s2gZDEia+pASyP_gJQ@mail.gmail.com>
-Subject: Re: [PATCH 01/32] block: Provide blkdev_get_handle_* functions
-To:     Christoph Hellwig <hch@infradead.org>
-Cc:     Jan Kara <jack@suse.cz>, linux-block@vger.kernel.org,
-        linux-fsdevel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
-        Alasdair Kergon <agk@redhat.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        "Darrick J. Wong" <djwong@kernel.org>,
-        Dave Kleikamp <shaggy@kernel.org>,
-        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
-        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
-        Jack Wang <jinpu.wang@ionos.com>,
-        Jaegeuk Kim <jaegeuk@kernel.org>,
-        jfs-discussion@lists.sourceforge.net,
-        Joern Engel <joern@lazybastard.org>,
-        Joseph Qi <joseph.qi@linux.alibaba.com>,
-        Kent Overstreet <kent.overstreet@gmail.com>,
-        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
-        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
-        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
-        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
-        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-xfs@vger.kernel.org, Mike Snitzer <snitzer@kernel.org>,
-        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
-        reiserfs-devel@vger.kernel.org,
-        Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Song Liu <song@kernel.org>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
-        Trond Myklebust <trond.myklebust@hammerspace.com>,
-        xen-devel@lists.xenproject.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Date:   Thu, 13 Jul 2023 15:04:46 +0800
+From:   hanyu001@208suo.com
+To:     jejb@linux.ibm.com, martin.petersen@oracle.com
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Fwd: [PATCH] scsi: ibmvscsi_tgt: Convert snprintf() to sysfs_emit()
+In-Reply-To: <tencent_9B65D1CAD7CE9FE3086C542B55428F8B110A@qq.com>
+References: <tencent_9B65D1CAD7CE9FE3086C542B55428F8B110A@qq.com>
+User-Agent: Roundcube Webmail
+Message-ID: <0969a39dca88032a93ce9c619e707d7d@208suo.com>
+X-Sender: hanyu001@208suo.com
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, Jul 6, 2023 at 5:38=E2=80=AFPM Christoph Hellwig <hch@infradead.org=
-> wrote:
->
-> On Tue, Jul 04, 2023 at 02:21:28PM +0200, Jan Kara wrote:
-> > Create struct bdev_handle that contains all parameters that need to be
-> > passed to blkdev_put() and provide blkdev_get_handle_* functions that
-> > return this structure instead of plain bdev pointer. This will
-> > eventually allow us to pass one more argument to blkdev_put() without
-> > too much hassle.
->
-> Can we use the opportunity to come up with better names?  blkdev_get_*
-> was always a rather horrible naming convention for something that
-> ends up calling into ->open.
->
-> What about:
->
-> struct bdev_handle *bdev_open_by_dev(dev_t dev, blk_mode_t mode, void *ho=
-lder,
->                 const struct blk_holder_ops *hops);
-> struct bdev_handle *bdev_open_by_path(dev_t dev, blk_mode_t mode,
->                 void *holder, const struct blk_holder_ops *hops);
-> void bdev_release(struct bdev_handle *handle);
+Coccinnelle reports a warning
+Warning: Use scnprintf or sprintf
 
-+1 to this.
-Also, if we are removing "handle" from the function, should the name
-of the structure it returns also change? Would something like bdev_ctx
-be better?
+WARNING: use scnprintf or sprintf
+WARNING: use scnprintf or sprintf
+WARNING: use scnprintf or sprintf
+Signed-off-by: ztt <1549089851@qq.com>
+---
+  drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 6 +++---
+  1 file changed, 3 insertions(+), 3 deletions(-)
 
-(Apologies for the previous non-plaintext email)
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c 
+b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index 385f812b8793..f9dad598380d 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -3616,13 +3616,13 @@ static void ibmvscsis_remove(struct vio_dev 
+*vdev)
+  static ssize_t system_id_show(struct device *dev,
+                    struct device_attribute *attr, char *buf)
+  {
+-    return snprintf(buf, PAGE_SIZE, "%s\n", system_id);
++    return scnprintf(buf, PAGE_SIZE, "%s\n", system_id);
+  }
 
->
-> ?
+  static ssize_t partition_number_show(struct device *dev,
+                       struct device_attribute *attr, char *buf)
+  {
+-    return snprintf(buf, PAGE_SIZE, "%x\n", partition_number);
++    return scnprintf(buf, PAGE_SIZE, "%x\n", partition_number);
+  }
+
+  static ssize_t unit_address_show(struct device *dev,
+@@ -3630,7 +3630,7 @@ static ssize_t unit_address_show(struct device 
+*dev,
+  {
+      struct scsi_info *vscsi = container_of(dev, struct scsi_info, dev);
+
+-    return snprintf(buf, PAGE_SIZE, "%x\n", 
+vscsi->dma_dev->unit_address);
++    return scnprintf(buf, PAGE_SIZE, "%x\n", 
+vscsi->dma_dev->unit_address);
+  }
+
+  static int ibmvscsis_get_system_info(void)
