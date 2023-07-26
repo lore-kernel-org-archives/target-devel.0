@@ -2,71 +2,77 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFE50C001DC
-	for <target-devel@archiver.kernel.org>; Wed, 26 Jul 2023 15:16:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9004FC0015E
+	for <target-devel@archiver.kernel.org>; Wed, 26 Jul 2023 16:18:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234848AbjGZPQ4 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 26 Jul 2023 11:16:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55750 "EHLO
+        id S232030AbjGZQSX (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 26 Jul 2023 12:18:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42638 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234861AbjGZPQS (ORCPT
+        with ESMTP id S229963AbjGZQSX (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 26 Jul 2023 11:16:18 -0400
-Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73A7F2689;
-        Wed, 26 Jul 2023 08:15:55 -0700 (PDT)
-Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-686d8c8fc65so551269b3a.0;
-        Wed, 26 Jul 2023 08:15:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1690384550; x=1690989350;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=40AQ+XJtyU4wwLajz5n0xznNpRCm8LEwpMPI/0Nzfig=;
-        b=AJwOrH390Mi9kvrxa1Hj1NDZQ5qk6N0vQDzyi2KXzBaEAJ1KDvLxoV3JUojPiysORP
-         v19GdO3NPU/eq2qNqSY3lt0bURJMFgcaj+QDLtrgWcoNcHkSHc+9QOxVeVhemcPqxl0e
-         USfksh+8nQ94JF0B0AIMsJ2lQPQPWp5/6tu24NpuqcOT75ZB3jD/9H+Vo9QiKyDYCWlk
-         Wz8rWAn1ZJzbNKmE5w680qKX0idYITmnKVyWALs/nnX74Ti9t7E0hh84ukW+DbnTSOgS
-         q2bFUTP2zVQo1e9CO1tyHIKz9qV9ypjejj+OGPja3KBevsW/ff6E8tTUyKRjkoJlPJXN
-         Qn4g==
-X-Gm-Message-State: ABy/qLYH3wlZKaJSySX5aO3rgGEr4hqGGdU1/g9cqAL8UjyYefNXElHP
-        Oa2CS+nMI+MWNwDZmbYonsyBoC0VYq8=
-X-Google-Smtp-Source: APBJJlHqGQPyqEqeCryi2vnEVxVRhMDF2EtGYa5yBPkqQu3AdMGWF42HPtc7d/xyEzyuiSl2fFULMA==
-X-Received: by 2002:a05:6a21:78a3:b0:12e:ae87:45d2 with SMTP id bf35-20020a056a2178a300b0012eae8745d2mr2151952pzc.51.1690384549821;
-        Wed, 26 Jul 2023 08:15:49 -0700 (PDT)
-Received: from ?IPV6:2620:15c:211:201:7ecb:b0e6:dc38:b05f? ([2620:15c:211:201:7ecb:b0e6:dc38:b05f])
-        by smtp.gmail.com with ESMTPSA id x9-20020a056a00270900b00654228f9e93sm11585586pfv.120.2023.07.26.08.15.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 26 Jul 2023 08:15:49 -0700 (PDT)
-Message-ID: <f3a58522-3957-bd70-df87-9df7e4547195@acm.org>
-Date:   Wed, 26 Jul 2023 08:15:47 -0700
+        Wed, 26 Jul 2023 12:18:23 -0400
+Received: from mta-04.yadro.com (mta-04.yadro.com [89.207.88.248])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C9421BE8;
+        Wed, 26 Jul 2023 09:18:21 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-04.yadro.com 87495C0004
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-04;
+        t=1690388299; bh=P1tYjsYpvaWM0Kp4oS8LddO1u5/c7/5r3F2xBGS+4bQ=;
+        h=MIME-Version:Content-Type:Date:Message-ID:Subject:To:From:From;
+        b=cX4v3iWXxygpb2w5QhgdSNX7OavK1/RsS6AtQIleAgIDfmBBgxk6WbDNH4jThSStC
+         RKSzG3eQS4XZ8ZsI3OPOORDANQYbBBZEOjGZq4mRGw8S3DZap0XOB54o5qmeuzy43M
+         GPkRkFLLNbyM3J7qxz1KBuOP/MZuEeJ2B36+ugKuH6IJvQ5fRlfpcj1zxf2tundvK+
+         AgN3TQErZ58Cup9BAGy4EIdXGRHWqv9gacXTYZTsExA7tTHBPdvOpZj8RL9GYtNw2F
+         jifHpa2G595PFzLdTW767VrkbzOwRnIu7Rr+M2ZwvWPxDw+hHmmWBnaOsbYgfUkgr2
+         bKmmWuTocKMEg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
+        t=1690388299; bh=P1tYjsYpvaWM0Kp4oS8LddO1u5/c7/5r3F2xBGS+4bQ=;
+        h=MIME-Version:Content-Type:Date:Message-ID:Subject:To:From:From;
+        b=LHSDrnzLj91Dv+fy2E8WZ1lF7YtJce1uMWqIpvhsNThC3cqq4FtpLNWGMz6aYckop
+         6k920BlBGQHQ0tefM/XLmMPknqmw2lrcdAHgKwJfQ9hYCwx5i1UVSBxml0EiGu20AJ
+         fG/DMhIKgrf2cEiFHGcD2rpngk6nswFglmo2qHtIXWlFx1L+IVHivreXf0yCEF7jjd
+         Sq04AZccHVoQZaA6yxx9NiizLmh0pGVYP47FoRrp1hDB9fuldmlqSswwjy6nplyVZF
+         Yvhbvdasj0RBQBTFMcFFDFBlrSmpSLfihsvQfk5hvGf+kG5PyEXnU/U6puBS7MNY8M
+         JDqWHFzHPVifA==
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Subject: Re: [RFC PATCH 2/3] target: core: apply the new wrapper to spc
-Content-Language: en-US
-To:     Anastasia Kovaleva <a.kovaleva@yadro.com>,
-        martin.petersen@oracle.com, michael.christie@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux@yadro.com
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
+Date:   Wed, 26 Jul 2023 19:18:14 +0300
+Message-ID: <CUC8N20VEZVD.2FX0OUJJLSI68@pogg>
+Subject: Re: [DMARC Error]Re: [RFC PATCH 2/3] target: core: apply the new
+ wrapper to spc
+CC:     <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>,
+        <linux@yadro.com>
+To:     Bart Van Assche <bvanassche@acm.org>,
+        Anastasia Kovaleva <a.kovaleva@yadro.com>,
+        <martin.petersen@oracle.com>, <michael.christie@oracle.com>
+From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
+X-Mailer: aerc 0.15.2.r104.g81f5237
 References: <20230726115509.357-1-a.kovaleva@yadro.com>
  <20230726115509.357-3-a.kovaleva@yadro.com>
-From:   Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20230726115509.357-3-a.kovaleva@yadro.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+ <f3a58522-3957-bd70-df87-9df7e4547195@acm.org>
+In-Reply-To: <f3a58522-3957-bd70-df87-9df7e4547195@acm.org>
+X-ClientProxiedBy: T-Exch-05.corp.yadro.com (172.17.10.109) To
+ T-EXCH-09.corp.yadro.com (172.17.11.59)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 7/26/23 04:55, Anastasia Kovaleva wrote:
-> +#define TARGET_PREFIX "core"
+On Wed Jul 26, 2023 at 6:15 PM MSK, Bart Van Assche wrote:
+> =C2=AB=D0=92=D0=BD=D0=B8=D0=BC=D0=B0=D0=BD=D0=B8=D0=B5! =D0=94=D0=B0=D0=
+=BD=D0=BD=D0=BE=D0=B5 =D0=BF=D0=B8=D1=81=D1=8C=D0=BC=D0=BE =D0=BE=D1=82 =D0=
+=B2=D0=BD=D0=B5=D1=88=D0=BD=D0=B5=D0=B3=D0=BE =D0=B0=D0=B4=D1=80=D0=B5=D1=
+=81=D0=B0=D1=82=D0=B0!=C2=BB
+>
+> On 7/26/23 04:55, Anastasia Kovaleva wrote:
+> > +#define TARGET_PREFIX "core"
+>
+> I'm not sure this is a good choice for a logging prefix since this name
+> does not make it clear that log lines come from the SCSI target core.
+> How about "scsi_tgt" as prefix? "stgt" is probably not a good choice
+> since this is the former name of a user-space SCSI target project
+> (https://github.com/fujita/tgt).
+>
+> Bart.
 
-I'm not sure this is a good choice for a logging prefix since this name 
-does not make it clear that log lines come from the SCSI target core. 
-How about "scsi_tgt" as prefix? "stgt" is probably not a good choice 
-since this is the former name of a user-space SCSI target project 
-(https://github.com/fujita/tgt).
-
-Bart.
-
+I think scsit is a good choice, like nvmet we already have.
