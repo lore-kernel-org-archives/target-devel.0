@@ -2,77 +2,137 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9004FC0015E
-	for <target-devel@archiver.kernel.org>; Wed, 26 Jul 2023 16:18:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDC50C05051
+	for <target-devel@archiver.kernel.org>; Mon, 31 Jul 2023 10:52:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232030AbjGZQSX (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 26 Jul 2023 12:18:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42638 "EHLO
+        id S232330AbjGaKwd (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 31 Jul 2023 06:52:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40198 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229963AbjGZQSX (ORCPT
+        with ESMTP id S231432AbjGaKwL (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 26 Jul 2023 12:18:23 -0400
-Received: from mta-04.yadro.com (mta-04.yadro.com [89.207.88.248])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C9421BE8;
-        Wed, 26 Jul 2023 09:18:21 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mta-04.yadro.com 87495C0004
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-04;
-        t=1690388299; bh=P1tYjsYpvaWM0Kp4oS8LddO1u5/c7/5r3F2xBGS+4bQ=;
-        h=MIME-Version:Content-Type:Date:Message-ID:Subject:To:From:From;
-        b=cX4v3iWXxygpb2w5QhgdSNX7OavK1/RsS6AtQIleAgIDfmBBgxk6WbDNH4jThSStC
-         RKSzG3eQS4XZ8ZsI3OPOORDANQYbBBZEOjGZq4mRGw8S3DZap0XOB54o5qmeuzy43M
-         GPkRkFLLNbyM3J7qxz1KBuOP/MZuEeJ2B36+ugKuH6IJvQ5fRlfpcj1zxf2tundvK+
-         AgN3TQErZ58Cup9BAGy4EIdXGRHWqv9gacXTYZTsExA7tTHBPdvOpZj8RL9GYtNw2F
-         jifHpa2G595PFzLdTW767VrkbzOwRnIu7Rr+M2ZwvWPxDw+hHmmWBnaOsbYgfUkgr2
-         bKmmWuTocKMEg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
-        t=1690388299; bh=P1tYjsYpvaWM0Kp4oS8LddO1u5/c7/5r3F2xBGS+4bQ=;
-        h=MIME-Version:Content-Type:Date:Message-ID:Subject:To:From:From;
-        b=LHSDrnzLj91Dv+fy2E8WZ1lF7YtJce1uMWqIpvhsNThC3cqq4FtpLNWGMz6aYckop
-         6k920BlBGQHQ0tefM/XLmMPknqmw2lrcdAHgKwJfQ9hYCwx5i1UVSBxml0EiGu20AJ
-         fG/DMhIKgrf2cEiFHGcD2rpngk6nswFglmo2qHtIXWlFx1L+IVHivreXf0yCEF7jjd
-         Sq04AZccHVoQZaA6yxx9NiizLmh0pGVYP47FoRrp1hDB9fuldmlqSswwjy6nplyVZF
-         Yvhbvdasj0RBQBTFMcFFDFBlrSmpSLfihsvQfk5hvGf+kG5PyEXnU/U6puBS7MNY8M
-         JDqWHFzHPVifA==
+        Mon, 31 Jul 2023 06:52:11 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CBE41BFD;
+        Mon, 31 Jul 2023 03:51:17 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id ED50E22197;
+        Mon, 31 Jul 2023 10:50:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+        t=1690800635; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=PJDu3H9G0xjlLFp1Wxvq9yQHkB2Q9jBIbPsGkP5jLhY=;
+        b=LfsIvVgX25rf01P6sVcmZRL3nPMT3sPJRPMrpOspwMqpMg9mmQx6AkDi/eF6WU32a2Vp6x
+        /7YLD1OJK0u+bqfGa4P87gaOpA6/QZlHA1eZkenSQs1V9CjuRPICqxTQ9KdHYFZ84hOqsV
+        4L46K3Rf4+bEtg2brIa/aboXrQrqviE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+        s=susede2_ed25519; t=1690800635;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=PJDu3H9G0xjlLFp1Wxvq9yQHkB2Q9jBIbPsGkP5jLhY=;
+        b=X5g/KyOpcE2CiMGegP9N6Ypxz5sWUyAuayNnMILk5q3XabEg0BuGZ7c8jHqKycooaqKD7s
+        Ajq9KEorZZBfWcDQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D6932133F7;
+        Mon, 31 Jul 2023 10:50:34 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id ovhUNPqRx2R2ZgAAMHmgww
+        (envelope-from <jack@suse.cz>); Mon, 31 Jul 2023 10:50:34 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+        id 457F5A0767; Mon, 31 Jul 2023 12:50:34 +0200 (CEST)
+Date:   Mon, 31 Jul 2023 12:50:34 +0200
+From:   Jan Kara <jack@suse.cz>
+To:     Haris Iqbal <haris.iqbal@ionos.com>
+Cc:     Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
+        linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        Jens Axboe <axboe@kernel.dk>, Alasdair Kergon <agk@redhat.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        "Darrick J. Wong" <djwong@kernel.org>,
+        Dave Kleikamp <shaggy@kernel.org>,
+        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
+        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
+        Jack Wang <jinpu.wang@ionos.com>,
+        Jaegeuk Kim <jaegeuk@kernel.org>,
+        jfs-discussion@lists.sourceforge.net,
+        Joern Engel <joern@lazybastard.org>,
+        Joseph Qi <joseph.qi@linux.alibaba.com>,
+        Kent Overstreet <kent.overstreet@gmail.com>,
+        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
+        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
+        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
+        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linux-xfs@vger.kernel.org, Mike Snitzer <snitzer@kernel.org>,
+        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
+        reiserfs-devel@vger.kernel.org,
+        Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Song Liu <song@kernel.org>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
+        Trond Myklebust <trond.myklebust@hammerspace.com>,
+        xen-devel@lists.xenproject.org
+Subject: Re: [PATCH 01/32] block: Provide blkdev_get_handle_* functions
+Message-ID: <20230731105034.43skhi5ubze563c3@quack3>
+References: <20230629165206.383-1-jack@suse.cz>
+ <20230704122224.16257-1-jack@suse.cz>
+ <ZKbgAG5OoHVyUKOG@infradead.org>
+ <CAJpMwyiUcw+mH0sZa8f8UJsaSZ7NSE65s2gZDEia+pASyP_gJQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
-Date:   Wed, 26 Jul 2023 19:18:14 +0300
-Message-ID: <CUC8N20VEZVD.2FX0OUJJLSI68@pogg>
-Subject: Re: [DMARC Error]Re: [RFC PATCH 2/3] target: core: apply the new
- wrapper to spc
-CC:     <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>,
-        <linux@yadro.com>
-To:     Bart Van Assche <bvanassche@acm.org>,
-        Anastasia Kovaleva <a.kovaleva@yadro.com>,
-        <martin.petersen@oracle.com>, <michael.christie@oracle.com>
-From:   Konstantin Shelekhin <k.shelekhin@yadro.com>
-X-Mailer: aerc 0.15.2.r104.g81f5237
-References: <20230726115509.357-1-a.kovaleva@yadro.com>
- <20230726115509.357-3-a.kovaleva@yadro.com>
- <f3a58522-3957-bd70-df87-9df7e4547195@acm.org>
-In-Reply-To: <f3a58522-3957-bd70-df87-9df7e4547195@acm.org>
-X-ClientProxiedBy: T-Exch-05.corp.yadro.com (172.17.10.109) To
- T-EXCH-09.corp.yadro.com (172.17.11.59)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJpMwyiUcw+mH0sZa8f8UJsaSZ7NSE65s2gZDEia+pASyP_gJQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed Jul 26, 2023 at 6:15 PM MSK, Bart Van Assche wrote:
-> =C2=AB=D0=92=D0=BD=D0=B8=D0=BC=D0=B0=D0=BD=D0=B8=D0=B5! =D0=94=D0=B0=D0=
-=BD=D0=BD=D0=BE=D0=B5 =D0=BF=D0=B8=D1=81=D1=8C=D0=BC=D0=BE =D0=BE=D1=82 =D0=
-=B2=D0=BD=D0=B5=D1=88=D0=BD=D0=B5=D0=B3=D0=BE =D0=B0=D0=B4=D1=80=D0=B5=D1=
-=81=D0=B0=D1=82=D0=B0!=C2=BB
->
-> On 7/26/23 04:55, Anastasia Kovaleva wrote:
-> > +#define TARGET_PREFIX "core"
->
-> I'm not sure this is a good choice for a logging prefix since this name
-> does not make it clear that log lines come from the SCSI target core.
-> How about "scsi_tgt" as prefix? "stgt" is probably not a good choice
-> since this is the former name of a user-space SCSI target project
-> (https://github.com/fujita/tgt).
->
-> Bart.
+On Wed 12-07-23 18:06:35, Haris Iqbal wrote:
+> On Thu, Jul 6, 2023 at 5:38 PM Christoph Hellwig <hch@infradead.org> wrote:
+> >
+> > On Tue, Jul 04, 2023 at 02:21:28PM +0200, Jan Kara wrote:
+> > > Create struct bdev_handle that contains all parameters that need to be
+> > > passed to blkdev_put() and provide blkdev_get_handle_* functions that
+> > > return this structure instead of plain bdev pointer. This will
+> > > eventually allow us to pass one more argument to blkdev_put() without
+> > > too much hassle.
+> >
+> > Can we use the opportunity to come up with better names?  blkdev_get_*
+> > was always a rather horrible naming convention for something that
+> > ends up calling into ->open.
+> >
+> > What about:
+> >
+> > struct bdev_handle *bdev_open_by_dev(dev_t dev, blk_mode_t mode, void *holder,
+> >                 const struct blk_holder_ops *hops);
+> > struct bdev_handle *bdev_open_by_path(dev_t dev, blk_mode_t mode,
+> >                 void *holder, const struct blk_holder_ops *hops);
+> > void bdev_release(struct bdev_handle *handle);
+> 
+> +1 to this.
+> Also, if we are removing "handle" from the function, should the name
+> of the structure it returns also change? Would something like bdev_ctx
+> be better?
 
-I think scsit is a good choice, like nvmet we already have.
+I think the bdev_handle name is fine for the struct. After all it is
+equivalent of an open handle for the block device so IMHO bdev_handle
+captures that better than bdev_ctx.
+
+								Honza
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
