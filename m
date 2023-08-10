@@ -2,92 +2,61 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93D63EB64DD
-	for <target-devel@archiver.kernel.org>; Tue,  8 Aug 2023 02:50:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4183BC001B0
+	for <target-devel@archiver.kernel.org>; Thu, 10 Aug 2023 08:15:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230038AbjHHCuk (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 7 Aug 2023 22:50:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35146 "EHLO
+        id S234099AbjHJIPy (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 10 Aug 2023 04:15:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55002 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229767AbjHHCuj (ORCPT
+        with ESMTP id S234078AbjHJIPu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 7 Aug 2023 22:50:39 -0400
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A1F619F;
-        Mon,  7 Aug 2023 19:50:39 -0700 (PDT)
-Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3781iQsx030975;
-        Tue, 8 Aug 2023 02:50:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2023-03-30;
- bh=WVgIlNqXBWHsezbX4KfLFGIvBpSxXRn+qWiS+I1CSeo=;
- b=hpJMmbp6I7Nsy+kCGC3cAt7NAoxShtAniXm71vSIUhvuHF6z0GEoB9koXlybRJGAwwnF
- 7L/I3zTdUdTy354FzbUyF+y7fQyIiqcK3QvXW7DuyhjPx7ZvryvwsFWRgwsjYvaMlg1K
- wUAn89eGqS1P1zHPGLz2+yG5KPTEzxDywHHUdcfOeI2N19/BsMkNzVQSdlAH0nzwQ+sj
- snY7q/DQ9iRzsGgQzTjSxA/B71X6N/9tTuzvPpOOQtiMdxsFsbVBnubvtBxpblQKclnO
- u8oOp97Z58BBLmIJulut1jrj586H8Vyl+xIs/XVDSiLxX7DUCb6vkfV3s95H0N0nRxaV 8w== 
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3s9d12c5wp-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 08 Aug 2023 02:50:38 +0000
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 3782dITX027678;
-        Tue, 8 Aug 2023 02:50:37 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3s9cv561n7-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 08 Aug 2023 02:50:36 +0000
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3782oadc010815;
-        Tue, 8 Aug 2023 02:50:36 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3s9cv561mp-2;
-        Tue, 08 Aug 2023 02:50:36 +0000
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     Konstantin Shelekhin <k.shelekhin@yadro.com>
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux@yadro.com
-Subject: Re: [PATCH 0/2] scsi: target: iscsi: Get rid of sprintf in iscsi_target_configfs.c
-Date:   Mon,  7 Aug 2023 22:50:27 -0400
-Message-Id: <169146270849.4040832.10944640625308030970.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230722152657.168859-1-k.shelekhin@yadro.com>
-References: <20230722152657.168859-1-k.shelekhin@yadro.com>
+        Thu, 10 Aug 2023 04:15:50 -0400
+Received: from mail.socialglobal.pl (mail.socialglobal.pl [51.195.90.253])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A581FE7E
+        for <target-devel@vger.kernel.org>; Thu, 10 Aug 2023 01:15:49 -0700 (PDT)
+Received: by mail.socialglobal.pl (Postfix, from userid 1002)
+        id 55CD422FB7; Thu, 10 Aug 2023 08:15:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=socialglobal.pl;
+        s=mail; t=1691655348;
+        bh=XwhyqI/moZPDJ7KCfcA6Gip8fA7ZKcg5SWsKuF/26zk=;
+        h=Date:From:To:Subject:From;
+        b=Gw2Wza7Om7ibccR/gTgfCapx/XBa77kIzTNGnEYKpFCiGFsiSVFUVK+GkT2LujSI/
+         UVM2S4UzuaQmZkXxAInA182glXModcq49fv9V4iy8WtYJreVHy/gEPrhF1+AFZczba
+         uo69DEErQOAb8VGF2+hFEoXKEcngrswXJn/g459OKtGGlr+nuAX2SUaukOfLS7lXyg
+         XsacSIWszsYjIEYNvcqfcdINTIL93BYfi7gJ1YdgRjEFi+N+x/3YqPPV6OvASeOA6M
+         ZXS8wesh1qB+4+deydwMuCTX94sQHM+nDk5Y9PJ21j66Dp8HOolsBHyUQd0rdS0EqD
+         ezYGQZn8w6jJg==
+Received: by mail.socialglobal.pl for <target-devel@vger.kernel.org>; Thu, 10 Aug 2023 08:15:46 GMT
+Message-ID: <20230810064501-0.1.7p.2jp84.0.04j8k61h16@socialglobal.pl>
+Date:   Thu, 10 Aug 2023 08:15:46 GMT
+From:   "Dominik Perkowski" <dominik.perkowski@socialglobal.pl>
+To:     <target-devel@vger.kernel.org>
+Subject: Pozycjonowanie- informacja
+X-Mailer: mail.socialglobal.pl
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-08-07_28,2023-08-03_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=336 bulkscore=0
- adultscore=0 mlxscore=0 spamscore=0 suspectscore=0 malwarescore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2306200000 definitions=main-2308080023
-X-Proofpoint-GUID: Oj2feA8MACF-3Iml3joqVcP7Z8_GVNtb
-X-Proofpoint-ORIG-GUID: Oj2feA8MACF-3Iml3joqVcP7Z8_GVNtb
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Sat, 22 Jul 2023 18:26:36 +0300, Konstantin Shelekhin wrote:
+Dzie=C5=84 dobry,=20
 
-> This patch series cleanses iscsi_target_configfs.c of sprintf usage. The
-> first patch fixes the real problem, the second just makes sure we are on
-> the safe side from now on.
-> 
-> I've reproduced the issue fixed in the first patch by utilizing this
-> cool thing:
-> 
-> [...]
+jaki=C5=9B czas temu zg=C5=82osi=C5=82a si=C4=99 do nas firma, kt=C3=B3re=
+j strona internetowa nie pozycjonowa=C5=82a si=C4=99 wysoko w wyszukiwarc=
+e Google.=20
 
-Applied to 6.6/scsi-queue, thanks!
+Na podstawie wykonanego przez nas audytu SEO zoptymalizowali=C5=9Bmy tre=C5=
+=9Bci na stronie pod k=C4=85tem wcze=C5=9Bniej opracowanych s=C5=82=C3=B3=
+w kluczowych. Nasz wewn=C4=99trzny system codziennie analizuje prawid=C5=82=
+owe dzia=C5=82anie witryny.  Dzi=C4=99ki indywidualnej strategii, firma z=
+dobywa coraz wi=C4=99cej Klient=C3=B3w. =20
 
-[1/2] scsi: target: iscsi: Fix buffer overflow in lio_target_nacl_info_show
-      https://git.kernel.org/mkp/scsi/c/801f287c93ff
-[2/2] scsi: target: iscsi: Stop using sprintf in iscsi_target_configfs.c
-      https://git.kernel.org/mkp/scsi/c/c0431feb0a75
+Czy chcieliby Pa=C5=84stwo zwi=C4=99kszy=C4=87 liczb=C4=99 os=C3=B3b odwi=
+edzaj=C4=85cych stron=C4=99 internetow=C4=85 firmy? M=C3=B3g=C5=82bym prz=
+edstawi=C4=87 ofert=C4=99?=20
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+
+Pozdrawiam serdecznie,
+Dominik Perkowski
