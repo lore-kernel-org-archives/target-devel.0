@@ -2,107 +2,111 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2902CC2FC18
-	for <target-devel@archiver.kernel.org>; Thu, 17 Aug 2023 11:01:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE0C0EB64DD
+	for <target-devel@archiver.kernel.org>; Thu, 17 Aug 2023 11:44:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350102AbjHQLBA (ORCPT
+        id S1350412AbjHQLnj (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 17 Aug 2023 07:01:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59028 "EHLO
+        Thu, 17 Aug 2023 07:43:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48404 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350157AbjHQLAr (ORCPT
+        with ESMTP id S1350410AbjHQLnK (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 17 Aug 2023 07:00:47 -0400
-X-Greylist: delayed 467 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 17 Aug 2023 04:00:43 PDT
-Received: from mta-04.yadro.com (mta-04.yadro.com [89.207.88.248])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E8AF30C0;
-        Thu, 17 Aug 2023 04:00:43 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mta-04.yadro.com 4E341C0009
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-04;
-        t=1692269574; bh=AehP888etUrm7amHfFcvQ6JX0HnlZBk7UUTpgRujN1s=;
-        h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-        b=Fmv5SawTv711CAVIx9xFXRxB7Ue6mmxK0aBMfy333sVwh1EjxK7fdxHwdN/OSsH4l
-         EF17JKgSJpqoC+ASrZTUrGUoHhoJVTldV/jwD0sncSuHbiHCDpejBHH6eGudDmNdxo
-         dzZRsjCMeTQaIaOqwmak/cgHg+UUMWyEOzz8uDyvcv2cehgDAvlxKC/DveHpSLLE+T
-         XuQHBuwBIUBBxCdHfN89ZdboWUaJ54ry2pzaKSLKtuvFJwOucX+S1feKRF/puwCHiT
-         g4Cmu3OsabcDdW7iZhzUYVYPllbH7Xl/UgCuXZ7l450qls/H6nB9neRoMED/gexM2Q
-         gGA2RQOeQoQeA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
-        t=1692269574; bh=AehP888etUrm7amHfFcvQ6JX0HnlZBk7UUTpgRujN1s=;
-        h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-        b=L9Pss4wafQgF4+j4US+bbq98ahyzt05LdL8ktiIdf3ZsrhLTD6BQRqciiBqnrO88Y
-         0oDJlyNAmioKau5c6jB7sae9gc7xH6XsU7V5lol+QG1ESSh/kdoV86Z7mEY9TQv/8S
-         5YFHTCnjrH79S4j3Kf02DuXIY9CmVF4c80nLnqrrKlfaropWlRxn+b17R6b/+6eyTJ
-         WcMBI/91LbNyMF9RgfB4nsLrCH8IK1/U/sO1dv0F/pPG9eiAE34csMnlVMNk/4oKa4
-         V80yzQad7zvJZch2B6gBTY8F13Dbht7BQo+DxdjB8sXH4urEq28sKmGw5gPkO0UKJe
-         jOQtNqk2elE2g==
-Date:   Thu, 17 Aug 2023 13:52:52 +0300
-From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
-To:     <coolrrsh@gmail.com>
-CC:     <james.smart@broadcom.com>, <ram.vegesna@broadcom.com>,
-        <jejb@linux.ibm.com>, <martin.petersen@oracle.com>,
-        <rdunlap@infradead.org>, <linux-scsi@vger.kernel.org>,
-        <target-devel@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-kernel-mentees@lists.linuxfoundation.org>
-Subject: Re: [PATCH v2] scsi: sli4: Remove the buggy code
-Message-ID: <20230817105252.GA14370@yadro.com>
-References: <20230817103751.16350-1-coolrrsh@gmail.com>
+        Thu, 17 Aug 2023 07:43:10 -0400
+Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC0C2198C;
+        Thu, 17 Aug 2023 04:43:08 -0700 (PDT)
+Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-1bb84194bf3so49161895ad.3;
+        Thu, 17 Aug 2023 04:43:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1692272588; x=1692877388;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=45rLKFe/XGdWEKHKL/OvhqCh4xyXYRWTSCuP5teWtaA=;
+        b=PsO2n5E3s0Nq8bo5r7Wbpoo97Bw4xVKOmW9g+n/5j1f96rtp8ah+m0dGMPO0tzt3d8
+         WlyrW7jIxqqObwuKgO3Dy4mkQD+I4n091NzGIMmRqvRzewT1XDngW+7abAvyjbI0yKdu
+         amyTa9kr/u50Vi8Zsiw6FnqmHZ1Uc6AEAzAZvsjqE/Qr9FU/7HMbWQS1Jj6TOck4/VD/
+         BgZBIN4KI0VYY0m38b6WnMi6mbODbZ5tmdcV+3DfUswxbDIo2kDiTWrBK14IPCI9HmEO
+         Am+L6pX/vxkCL0Gri+6eB2jFJYAUlhJQz9hQhqkmY+0qqJnZ4TRUVErPuQ4n21cahIZx
+         aniQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1692272588; x=1692877388;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=45rLKFe/XGdWEKHKL/OvhqCh4xyXYRWTSCuP5teWtaA=;
+        b=WouLOEQ55XMkTbT+V6XfB1LIcA6flFO5E1YqqvijEuton3bgqNVzfVETe5dhIT8E7O
+         wLUb5gEWKxiajCK5Bum6sdtjP4DCHt3TCRAmlgGZDVELNLj7jHaPcAjmXrqGVIrlGSbl
+         9TIt+YkOeU81QKjmBJHmXtkjCHPsLS3Us/3h1gwvnrWG/zg+lRwKfy2lnEIw3RSFR/WA
+         KfuLbwbJ4geCEg0prcq6qj6DBOQjDH3UlJ6xWYvI11jRQzj5nv/pZPuO7nYK6VfwZdRS
+         sFmSWkRfzmm1pguIVkGq9+iGUIt6BSGK+Tz2yZSdRA6pAL6nfTv1FlMmrDFNjkmT1X7I
+         dyYA==
+X-Gm-Message-State: AOJu0Yz37c8tWZPKeNb2LrvhfRxfyjS/Sh2alZc1ib4/KgCjmh/D+/Sn
+        eVmr7XKnHl5ULVnEfTWaaF4=
+X-Google-Smtp-Source: AGHT+IEW0RBHUjzorOFWrjg2otfzDibWdKDDtxIBhh0+8BxwA+o0wRWvCn53MdbaZnI7SyLeOBTsAg==
+X-Received: by 2002:a17:902:db0e:b0:1bb:25bd:d091 with SMTP id m14-20020a170902db0e00b001bb25bdd091mr4862224plx.30.1692272588373;
+        Thu, 17 Aug 2023 04:43:08 -0700 (PDT)
+Received: from localhost.localdomain ([2409:40c2:1016:aeca:454:68e4:51c8:d1cf])
+        by smtp.gmail.com with ESMTPSA id iw12-20020a170903044c00b001bb9d6b1baasm14951767plb.198.2023.08.17.04.43.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 17 Aug 2023 04:43:07 -0700 (PDT)
+From:   coolrrsh@gmail.com
+To:     james.smart@broadcom.com, ram.vegesna@broadcom.com,
+        jejb@linux.ibm.com, martin.petersen@oracle.com,
+        rdunlap@infradead.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     linux-kernel-mentees@lists.linuxfoundation.org,
+        Rajeshwar R Shinde <coolrrsh@gmail.com>
+Subject: [PATCH v3] scsi: sli4: Remove code duplication
+Date:   Thu, 17 Aug 2023 17:13:01 +0530
+Message-Id: <20230817114301.17601-1-coolrrsh@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20230817103751.16350-1-coolrrsh@gmail.com>
-X-ClientProxiedBy: T-EXCH-08.corp.yadro.com (172.17.11.58) To
- T-EXCH-08.corp.yadro.com (172.17.11.58)
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, Aug 17, 2023 at 04:07:51PM +0530, coolrrsh@gmail.com wrote:
-> 
-> From: Rajeshwar R Shinde <coolrrsh@gmail.com>
-> 
-> In the function sli_xmit_bls_rsp64_wqe, the 'if' and 'else' conditions
-> evaluates the same expression and gives same output. Also the variable
-> bls->local_n_port_id_dword is not used anywhere. Therefore removing the
-> redundant code.
-> 
-> This fixes coccinelle warning such as:
-> drivers/scsi/elx/libefc_sli/sli4.c:2320:2-4: WARNING: possible
-> condition with no effect (if == else)
-> 
-> Signed-off-by: Rajeshwar R Shinde <coolrrsh@gmail.com>
-> ---
-> v1->v2
-> Modified patch and verified with checkpatch.pl.
-> 
-> ---
->  drivers/scsi/elx/libefc_sli/sli4.c | 7 -------
->  1 file changed, 7 deletions(-)
-> 
-> diff --git a/drivers/scsi/elx/libefc_sli/sli4.c b/drivers/scsi/elx/libefc_sli/sli4.c
-> index 8f96049f62dd..af661b769464 100644
-> --- a/drivers/scsi/elx/libefc_sli/sli4.c
-> +++ b/drivers/scsi/elx/libefc_sli/sli4.c
-> @@ -2317,13 +2317,6 @@ sli_xmit_bls_rsp64_wqe(struct sli4 *sli, void *buf,
->                 SLI4_GENERIC_CONTEXT_VPI << SLI4_BLS_RSP_WQE_CT_SHFT;
->                 bls->context_tag = cpu_to_le16(params->vpi);
-> 
-> -               if (params->s_id != U32_MAX)
-> -                       bls->local_n_port_id_dword |=
-> -                               cpu_to_le32(params->s_id & 0x00ffffff);
-> -               else
-> -                       bls->local_n_port_id_dword |=
-> -                               cpu_to_le32(params->s_id & 0x00ffffff);
-> -
+From: Rajeshwar R Shinde <coolrrsh@gmail.com>
 
-omg, it is not an unused variable. Whole bls is a HW descriptor, all of
-its variables are used by HW. You should keep v1 version of the patch.
-According to the comment at the beginning of the funciton s_id here shall
-be != U32_MAX. That is an explanation for your v1 patch.
+In the function sli_xmit_bls_rsp64_wqe, the 'if' and 'else' conditions
+evaluates the same expression and gives same output. Also, params->s_id
+shall not be equal to U32_MAX. Therefore removing the unused code.
 
->                 dw_ridflags = (dw_ridflags & ~SLI4_BLS_RSP_RID) |
->                                (params->d_id & SLI4_BLS_RSP_RID);
-> 
-> --
-> 2.25.1
-> 
+This fixes coccinelle warning such as:
+drivers/scsi/elx/libefc_sli/sli4.c:2320:2-4: WARNING: possible
+condition with no effect (if == else)
+
+Signed-off-by: Rajeshwar R Shinde <coolrrsh@gmail.com>
+---
+v1->v2
+Modified patch and the corrected the warnings using checkpatch.
+v2->v3
+Modified patch details keeping HW descriptor variable.
+
+---
+ drivers/scsi/elx/libefc_sli/sli4.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/scsi/elx/libefc_sli/sli4.c b/drivers/scsi/elx/libefc_sli/sli4.c
+index 8f96049f62dd..5e7fb110bc3f 100644
+--- a/drivers/scsi/elx/libefc_sli/sli4.c
++++ b/drivers/scsi/elx/libefc_sli/sli4.c
+@@ -2317,12 +2317,8 @@ sli_xmit_bls_rsp64_wqe(struct sli4 *sli, void *buf,
+ 		SLI4_GENERIC_CONTEXT_VPI << SLI4_BLS_RSP_WQE_CT_SHFT;
+ 		bls->context_tag = cpu_to_le16(params->vpi);
+ 
+-		if (params->s_id != U32_MAX)
+-			bls->local_n_port_id_dword |=
+-				cpu_to_le32(params->s_id & 0x00ffffff);
+-		else
+-			bls->local_n_port_id_dword |=
+-				cpu_to_le32(params->s_id & 0x00ffffff);
++		bls->local_n_port_id_dword |=
++			cpu_to_le32(params->s_id & 0x00ffffff);
+ 
+ 		dw_ridflags = (dw_ridflags & ~SLI4_BLS_RSP_RID) |
+ 			       (params->d_id & SLI4_BLS_RSP_RID);
+-- 
+2.25.1
+
