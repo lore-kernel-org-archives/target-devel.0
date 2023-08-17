@@ -2,100 +2,85 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 073F2C41513
-	for <target-devel@archiver.kernel.org>; Wed, 16 Aug 2023 19:37:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB76CC41513
+	for <target-devel@archiver.kernel.org>; Thu, 17 Aug 2023 01:51:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345824AbjHPTg1 (ORCPT
+        id S1347477AbjHQBu3 (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 16 Aug 2023 15:36:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39168 "EHLO
+        Wed, 16 Aug 2023 21:50:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34614 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345823AbjHPTf6 (ORCPT
+        with ESMTP id S1347599AbjHQBuS (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 16 Aug 2023 15:35:58 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E439270C;
-        Wed, 16 Aug 2023 12:35:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-        bh=2EGYLJQaPR1NXrPNObCs2DqcDBIJjR1YHbvOU+64Xqo=; b=XC9AV8RD/fx9oQa7BAGuxKKIcd
-        IWwTZgE7qo35FOZjk3/7if+FSrSlAwg63eYLK/XRutn6wKDgFYCD8zx46cLpchLSplKyqAOGo++c5
-        rY74GUGM27gtGK7Cj0/JlcMYjSZ176v04akHCjQUKpOU+/t98Q8sonS2Fg+Ipbot4zFfzK31OXYR8
-        tSA6hsblTzXflhaKRxClOzmO+NctLN6PXh7MF3xFbSWX9WPmmX2MTO7VvhZQpDvcIq/gecfuh0LeY
-        jRyNeeSa/RUv7QshGULIoQItpSmyt7YCAxkW3ytVuTEkXlqCLvPgOFwTyvPs5wGrHFk3to4TXID1M
-        n4lpsTaA==;
-Received: from [2601:1c2:980:9ec0::2764]
-        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qWMJ7-004tWe-1P;
-        Wed, 16 Aug 2023 19:35:53 +0000
-Message-ID: <38158855-5738-16a9-2237-34980917566b@infradead.org>
-Date:   Wed, 16 Aug 2023 12:35:52 -0700
+        Wed, 16 Aug 2023 21:50:18 -0400
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3692BF;
+        Wed, 16 Aug 2023 18:50:16 -0700 (PDT)
+Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.54])
+        by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RR7CR0Gy9zNmhd;
+        Thu, 17 Aug 2023 09:46:43 +0800 (CST)
+Received: from huawei.com (10.90.53.73) by kwepemi500012.china.huawei.com
+ (7.221.188.12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.31; Thu, 17 Aug
+ 2023 09:50:14 +0800
+From:   Li Zetao <lizetao1@huawei.com>
+To:     <martin.petersen@oracle.com>
+CC:     <lizetao1@huawei.com>, <linux-scsi@vger.kernel.org>,
+        <target-devel@vger.kernel.org>
+Subject: [PATCH -next] scsi: target: core: Use helper function IS_ERR_OR_NULL()
+Date:   Thu, 17 Aug 2023 09:49:58 +0800
+Message-ID: <20230817014958.3094614-1-lizetao1@huawei.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.14.0
-Subject: Re: [PATCH] scsi: sli4: Remove code duplication
-Content-Language: en-US
-To:     coolrrsh@gmail.com, james.smart@broadcom.com,
-        ram.vegesna@broadcom.com, jejb@linux.ibm.com,
-        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     linux-kernel-mentees@lists.linuxfoundation.org
-References: <20230816085007.10591-1-coolrrsh@gmail.com>
-From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20230816085007.10591-1-coolrrsh@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.90.53.73]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ kwepemi500012.china.huawei.com (7.221.188.12)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi--
+Use IS_ERR_OR_NULL() to detect an error pointer or a null pointer
+open-coding to simplify the code.
 
-On 8/16/23 01:50, coolrrsh@gmail.com wrote:
-> From: Rajeshwar R Shinde <coolrrsh@gmail.com>
-> 
-> In the function sli_xmit_bls_rsp64_wqe, the 'if' and 'else' conditions 
-> evaluates the same expression and gives same output. So removing the redundant 
-> code duplication to optimise the code.
-> 
-> This fixes warning such as:
-> drivers/scsi/elx/libefc_sli/sli4.c:2320:2-4: WARNING: possible condition with no effect (if == else)
+Signed-off-by: Li Zetao <lizetao1@huawei.com>
+---
+ drivers/target/target_core_fabric_configfs.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-What tool produces this message?
-
-> Signed-off-by: Rajeshwar R Shinde <coolrrsh@gmail.com>
-> ---
->  drivers/scsi/elx/libefc_sli/sli4.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/scsi/elx/libefc_sli/sli4.c b/drivers/scsi/elx/libefc_sli/sli4.c
-> index 8f96049f62dd..5e7fb110bc3f 100644
-> --- a/drivers/scsi/elx/libefc_sli/sli4.c
-> +++ b/drivers/scsi/elx/libefc_sli/sli4.c
-> @@ -2317,12 +2317,8 @@ sli_xmit_bls_rsp64_wqe(struct sli4 *sli, void *buf,
->  		SLI4_GENERIC_CONTEXT_VPI << SLI4_BLS_RSP_WQE_CT_SHFT;
->  		bls->context_tag = cpu_to_le16(params->vpi);
->  
-> -		if (params->s_id != U32_MAX)
-> -			bls->local_n_port_id_dword |=
-> -				cpu_to_le32(params->s_id & 0x00ffffff);
-> -		else
-> -			bls->local_n_port_id_dword |=
-> -				cpu_to_le32(params->s_id & 0x00ffffff);
-> +		bls->local_n_port_id_dword |=
-> +			cpu_to_le32(params->s_id & 0x00ffffff);
-
-That could be correct. Or there could be a bug there.
-Who knows? I don't.
-
-But maybe it doesn't matter since AFAICT that field isn't used
-anywhere after it is set.
-
->  
->  		dw_ridflags = (dw_ridflags & ~SLI4_BLS_RSP_RID) |
->  			       (params->d_id & SLI4_BLS_RSP_RID);
-
+diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
+index b7c637644cd4..4b93f9b619b8 100644
+--- a/drivers/target/target_core_fabric_configfs.c
++++ b/drivers/target/target_core_fabric_configfs.c
+@@ -479,7 +479,7 @@ static struct config_group *target_fabric_make_np(
+ 	}
+ 
+ 	se_tpg_np = tf->tf_ops->fabric_make_np(se_tpg, group, name);
+-	if (!se_tpg_np || IS_ERR(se_tpg_np))
++	if (IS_ERR_OR_NULL(se_tpg_np))
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	se_tpg_np->tpg_np_parent = se_tpg;
+@@ -937,7 +937,7 @@ static struct config_group *target_fabric_make_tpg(
+ 	}
+ 
+ 	se_tpg = tf->tf_ops->fabric_make_tpg(wwn, name);
+-	if (!se_tpg || IS_ERR(se_tpg))
++	if (IS_ERR_OR_NULL(se_tpg))
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	config_group_init_type_name(&se_tpg->tpg_group, name,
+@@ -1088,7 +1088,7 @@ static struct config_group *target_fabric_make_wwn(
+ 	}
+ 
+ 	wwn = tf->tf_ops->fabric_make_wwn(tf, group, name);
+-	if (!wwn || IS_ERR(wwn))
++	if (IS_ERR_OR_NULL(wwn))
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	wwn->cmd_compl_affinity = SE_COMPL_AFFINITY_CPUID;
 -- 
-~Randy
+2.34.1
+
