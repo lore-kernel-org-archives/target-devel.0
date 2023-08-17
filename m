@@ -2,109 +2,107 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FEB1C2FC14
-	for <target-devel@archiver.kernel.org>; Thu, 17 Aug 2023 10:38:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2902CC2FC18
+	for <target-devel@archiver.kernel.org>; Thu, 17 Aug 2023 11:01:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349933AbjHQKiN (ORCPT
+        id S1350102AbjHQLBA (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 17 Aug 2023 06:38:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51508 "EHLO
+        Thu, 17 Aug 2023 07:01:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59028 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349920AbjHQKiA (ORCPT
+        with ESMTP id S1350157AbjHQLAr (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 17 Aug 2023 06:38:00 -0400
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F15DE2D5A;
-        Thu, 17 Aug 2023 03:37:58 -0700 (PDT)
-Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-1bb84194bf3so48761105ad.3;
-        Thu, 17 Aug 2023 03:37:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1692268678; x=1692873478;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=e8u6STTTo0IQbi3lQd+vgtiTbyFEHsVCA7HA0UeiZdw=;
-        b=OMZXTeKwtW1HkrTRzX9/ceRnBHtM5YJ6w2M3N4KNUttvLDqZJeNUGjKnRFHkkkjJ7a
-         4mWnKqvrd+W8U3GtAzJWdvpVjc/jxwVLPvnM2UjiYMXRfWk9T8va3JaUAvl1Cu/VJ6QH
-         Qfgvuvrp7iWpEcCodll03rjut+S44okzhw/avRSBxNp2naDF46FNu6cXCLbD/XiJgFpl
-         B+j4q4HhduNEz8/DyvzfsFD6xe8rM8WPhAH5j5djuIRt9J5E2dkDp8K9dK86MLjBmiN+
-         E5/e2s0eeHTRVn4RrM5TKSp0YwTLkdYtZS7lJS0RDHSuJo52Gfp2IhpqjilIfrdpQfUK
-         KVVg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1692268678; x=1692873478;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=e8u6STTTo0IQbi3lQd+vgtiTbyFEHsVCA7HA0UeiZdw=;
-        b=P4v5gRWdX61ihvTrMHqNcbIWGoWmUaQc9EQu28zXfu2GX353l55EH0zqqQE7Dp7fBn
-         O7BEGD2SQo3+4gWlasl7X6UssiWiWv8Q/qvnxu5dYnVkrIdxy/yNwtJI1FhTq6vYhG18
-         9wmhKagx2SmebapCi8SHFH845AkNhqkoPAoTpNAX7KX9FLfI35/p70bMh2uiKJsjpDIS
-         q5+bq8xz3Gjcm0EXP5p7qOPdB4Emmhhc+VGj9JRiJL41S7UXFBW5KOXidQt/5qlkU/zR
-         QMXZQgvewIHx7aF1TOQqDof9i0TBD4f0fo56VVcFd+OTx7VFUaQFzbCDbWoPKVFbH1D6
-         ptfA==
-X-Gm-Message-State: AOJu0Yz1fdDQdSsjdc1AH33bPGhmZDy85+XmXTVwlK8oevTX5t6NkUCp
-        U3qra+4BzQx/jrEhE8nHs/I=
-X-Google-Smtp-Source: AGHT+IFpAGL5N3vaudEA7MH3XwrMMJeUBz6yL0NjKOczZnqyaaL5xXtsNl/eXPB/emWKCmX2nsxYvQ==
-X-Received: by 2002:a17:902:cec5:b0:1bc:81f2:ddf0 with SMTP id d5-20020a170902cec500b001bc81f2ddf0mr5157403plg.67.1692268678398;
-        Thu, 17 Aug 2023 03:37:58 -0700 (PDT)
-Received: from localhost.localdomain ([2409:40c2:1016:aeca:454:68e4:51c8:d1cf])
-        by smtp.gmail.com with ESMTPSA id h17-20020a170902f7d100b001b87d3e845bsm14963467plw.149.2023.08.17.03.37.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Aug 2023 03:37:58 -0700 (PDT)
-From:   coolrrsh@gmail.com
-To:     james.smart@broadcom.com, ram.vegesna@broadcom.com,
-        jejb@linux.ibm.com, martin.petersen@oracle.com,
-        rdunlap@infradead.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     linux-kernel-mentees@lists.linuxfoundation.org,
-        Rajeshwar R Shinde <coolrrsh@gmail.com>
-Subject: [PATCH v2] scsi: sli4: Remove the buggy code
-Date:   Thu, 17 Aug 2023 16:07:51 +0530
-Message-Id: <20230817103751.16350-1-coolrrsh@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        Thu, 17 Aug 2023 07:00:47 -0400
+X-Greylist: delayed 467 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 17 Aug 2023 04:00:43 PDT
+Received: from mta-04.yadro.com (mta-04.yadro.com [89.207.88.248])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E8AF30C0;
+        Thu, 17 Aug 2023 04:00:43 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-04.yadro.com 4E341C0009
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-04;
+        t=1692269574; bh=AehP888etUrm7amHfFcvQ6JX0HnlZBk7UUTpgRujN1s=;
+        h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+        b=Fmv5SawTv711CAVIx9xFXRxB7Ue6mmxK0aBMfy333sVwh1EjxK7fdxHwdN/OSsH4l
+         EF17JKgSJpqoC+ASrZTUrGUoHhoJVTldV/jwD0sncSuHbiHCDpejBHH6eGudDmNdxo
+         dzZRsjCMeTQaIaOqwmak/cgHg+UUMWyEOzz8uDyvcv2cehgDAvlxKC/DveHpSLLE+T
+         XuQHBuwBIUBBxCdHfN89ZdboWUaJ54ry2pzaKSLKtuvFJwOucX+S1feKRF/puwCHiT
+         g4Cmu3OsabcDdW7iZhzUYVYPllbH7Xl/UgCuXZ7l450qls/H6nB9neRoMED/gexM2Q
+         gGA2RQOeQoQeA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
+        t=1692269574; bh=AehP888etUrm7amHfFcvQ6JX0HnlZBk7UUTpgRujN1s=;
+        h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+        b=L9Pss4wafQgF4+j4US+bbq98ahyzt05LdL8ktiIdf3ZsrhLTD6BQRqciiBqnrO88Y
+         0oDJlyNAmioKau5c6jB7sae9gc7xH6XsU7V5lol+QG1ESSh/kdoV86Z7mEY9TQv/8S
+         5YFHTCnjrH79S4j3Kf02DuXIY9CmVF4c80nLnqrrKlfaropWlRxn+b17R6b/+6eyTJ
+         WcMBI/91LbNyMF9RgfB4nsLrCH8IK1/U/sO1dv0F/pPG9eiAE34csMnlVMNk/4oKa4
+         V80yzQad7zvJZch2B6gBTY8F13Dbht7BQo+DxdjB8sXH4urEq28sKmGw5gPkO0UKJe
+         jOQtNqk2elE2g==
+Date:   Thu, 17 Aug 2023 13:52:52 +0300
+From:   Dmitry Bogdanov <d.bogdanov@yadro.com>
+To:     <coolrrsh@gmail.com>
+CC:     <james.smart@broadcom.com>, <ram.vegesna@broadcom.com>,
+        <jejb@linux.ibm.com>, <martin.petersen@oracle.com>,
+        <rdunlap@infradead.org>, <linux-scsi@vger.kernel.org>,
+        <target-devel@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-kernel-mentees@lists.linuxfoundation.org>
+Subject: Re: [PATCH v2] scsi: sli4: Remove the buggy code
+Message-ID: <20230817105252.GA14370@yadro.com>
+References: <20230817103751.16350-1-coolrrsh@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20230817103751.16350-1-coolrrsh@gmail.com>
+X-ClientProxiedBy: T-EXCH-08.corp.yadro.com (172.17.11.58) To
+ T-EXCH-08.corp.yadro.com (172.17.11.58)
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-From: Rajeshwar R Shinde <coolrrsh@gmail.com>
+On Thu, Aug 17, 2023 at 04:07:51PM +0530, coolrrsh@gmail.com wrote:
+> 
+> From: Rajeshwar R Shinde <coolrrsh@gmail.com>
+> 
+> In the function sli_xmit_bls_rsp64_wqe, the 'if' and 'else' conditions
+> evaluates the same expression and gives same output. Also the variable
+> bls->local_n_port_id_dword is not used anywhere. Therefore removing the
+> redundant code.
+> 
+> This fixes coccinelle warning such as:
+> drivers/scsi/elx/libefc_sli/sli4.c:2320:2-4: WARNING: possible
+> condition with no effect (if == else)
+> 
+> Signed-off-by: Rajeshwar R Shinde <coolrrsh@gmail.com>
+> ---
+> v1->v2
+> Modified patch and verified with checkpatch.pl.
+> 
+> ---
+>  drivers/scsi/elx/libefc_sli/sli4.c | 7 -------
+>  1 file changed, 7 deletions(-)
+> 
+> diff --git a/drivers/scsi/elx/libefc_sli/sli4.c b/drivers/scsi/elx/libefc_sli/sli4.c
+> index 8f96049f62dd..af661b769464 100644
+> --- a/drivers/scsi/elx/libefc_sli/sli4.c
+> +++ b/drivers/scsi/elx/libefc_sli/sli4.c
+> @@ -2317,13 +2317,6 @@ sli_xmit_bls_rsp64_wqe(struct sli4 *sli, void *buf,
+>                 SLI4_GENERIC_CONTEXT_VPI << SLI4_BLS_RSP_WQE_CT_SHFT;
+>                 bls->context_tag = cpu_to_le16(params->vpi);
+> 
+> -               if (params->s_id != U32_MAX)
+> -                       bls->local_n_port_id_dword |=
+> -                               cpu_to_le32(params->s_id & 0x00ffffff);
+> -               else
+> -                       bls->local_n_port_id_dword |=
+> -                               cpu_to_le32(params->s_id & 0x00ffffff);
+> -
 
-In the function sli_xmit_bls_rsp64_wqe, the 'if' and 'else' conditions
-evaluates the same expression and gives same output. Also the variable
-bls->local_n_port_id_dword is not used anywhere. Therefore removing the 
-redundant code.
+omg, it is not an unused variable. Whole bls is a HW descriptor, all of
+its variables are used by HW. You should keep v1 version of the patch.
+According to the comment at the beginning of the funciton s_id here shall
+be != U32_MAX. That is an explanation for your v1 patch.
 
-This fixes coccinelle warning such as:
-drivers/scsi/elx/libefc_sli/sli4.c:2320:2-4: WARNING: possible
-condition with no effect (if == else)
-
-Signed-off-by: Rajeshwar R Shinde <coolrrsh@gmail.com>
----
-v1->v2
-Modified patch and verified with checkpatch.pl.
-
----
- drivers/scsi/elx/libefc_sli/sli4.c | 7 -------
- 1 file changed, 7 deletions(-)
-
-diff --git a/drivers/scsi/elx/libefc_sli/sli4.c b/drivers/scsi/elx/libefc_sli/sli4.c
-index 8f96049f62dd..af661b769464 100644
---- a/drivers/scsi/elx/libefc_sli/sli4.c
-+++ b/drivers/scsi/elx/libefc_sli/sli4.c
-@@ -2317,13 +2317,6 @@ sli_xmit_bls_rsp64_wqe(struct sli4 *sli, void *buf,
- 		SLI4_GENERIC_CONTEXT_VPI << SLI4_BLS_RSP_WQE_CT_SHFT;
- 		bls->context_tag = cpu_to_le16(params->vpi);
- 
--		if (params->s_id != U32_MAX)
--			bls->local_n_port_id_dword |=
--				cpu_to_le32(params->s_id & 0x00ffffff);
--		else
--			bls->local_n_port_id_dword |=
--				cpu_to_le32(params->s_id & 0x00ffffff);
--
- 		dw_ridflags = (dw_ridflags & ~SLI4_BLS_RSP_RID) |
- 			       (params->d_id & SLI4_BLS_RSP_RID);
- 
--- 
-2.25.1
-
+>                 dw_ridflags = (dw_ridflags & ~SLI4_BLS_RSP_RID) |
+>                                (params->d_id & SLI4_BLS_RSP_RID);
+> 
+> --
+> 2.25.1
+> 
