@@ -2,51 +2,49 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A3C9C41513
-	for <target-devel@archiver.kernel.org>; Thu, 17 Aug 2023 14:53:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72654C2FC0F
+	for <target-devel@archiver.kernel.org>; Thu, 17 Aug 2023 17:24:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352303AbjHQOwg (ORCPT
+        id S1347552AbjHQRY0 (ORCPT
         <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 17 Aug 2023 10:52:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43076 "EHLO
+        Thu, 17 Aug 2023 13:24:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60918 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1352295AbjHQOwF (ORCPT
+        with ESMTP id S1353970AbjHQRYN (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 17 Aug 2023 10:52:05 -0400
+        Thu, 17 Aug 2023 13:24:13 -0400
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA12FBF;
-        Thu, 17 Aug 2023 07:52:03 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68EFFBF;
+        Thu, 17 Aug 2023 10:24:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
         Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
         Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-        bh=wYEcyK46K6KN9IIi0RnZeATO9I6pLm4XjX5dQ7B0Nws=; b=3D1BJw0TbO+uh99t4IPtzRJYVV
-        PkVR5R8XjKuFSvfoUrZxbUfdehUeELlZHQOG6lN1uJMfLngnfLswZ0n144vNIWwCfppUd6Bn1wBna
-        ufjHuFM3vU/FkHA/3skCuXnzUFNjXpZsPJvN+V75G1k3fAkMIQvjm/Rc5HGiEcidZkrOSrPRYm1ke
-        crOexaePXayA81TG+qVn4g+ocK4vqGp5Pr3OBkyz1YZniI0Ajuyo5KsQk9Awrt5g0fJV5pQyjCUqj
-        ErKBzSV6W15nnIPEL6YPA/ieDeTp41UmOEiRfP2CRTioeWXO6sbhpS3yy27cX+OZo5NhA5k66zmuj
-        a1bicnfA==;
+        bh=98fxoirN/Zj64QlVogFrB6MtraBkkeO+8jNX/wKR4lk=; b=UxZbWIN6QcKSi5/fZfyfAq/rss
+        iICZBGvgGctNr3gWm225M02ZqixctF3bQ06Of0YuvvHt3W4JgONL/aqYsOEVZxZLaL7D9BK4N3Hxb
+        jpKQDpquTsu4Qcbtij1IOq6nWFjpI/CfBHZv94tH2SGOFDM7klb1Lh3rwvpKNIVo5kaiStDFkTL9l
+        t+t09+gBSaKLXy2O+skNYHIxX5fpD80+IwILLfLvl8C0mxfwfY7P3Cswgsc+Bc5nAIB5FCRn1PGNl
+        0hJbmDkwVQVYxvEBaI4BKb4mzV3lDgK8l+pDVXvK9oB0KotiZc44o02FRit9PGf9zn9PTf1vbjxW1
+        XLxAtZrA==;
 Received: from [2601:1c2:980:9ec0::2764]
         by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qWeLs-006bSc-2I;
-        Thu, 17 Aug 2023 14:51:56 +0000
-Message-ID: <79ac6ee9-247a-c3da-c0f7-8c26bd0b1ad0@infradead.org>
-Date:   Thu, 17 Aug 2023 07:51:56 -0700
+        id 1qWgjB-006saa-1M;
+        Thu, 17 Aug 2023 17:24:09 +0000
+Message-ID: <f33e4fad-6ee0-4892-6eae-0d1308f1166e@infradead.org>
+Date:   Thu, 17 Aug 2023 10:24:08 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.14.0
-Subject: Re: [PATCH v2] scsi: sli4: Remove the buggy code
+Subject: Re: [PATCH v3] scsi: sli4: Remove code duplication
 Content-Language: en-US
-To:     Dmitry Bogdanov <d.bogdanov@yadro.com>, coolrrsh@gmail.com
-Cc:     james.smart@broadcom.com, ram.vegesna@broadcom.com,
-        jejb@linux.ibm.com, martin.petersen@oracle.com,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        linux-kernel-mentees@lists.linuxfoundation.org
-References: <20230817103751.16350-1-coolrrsh@gmail.com>
- <20230817105252.GA14370@yadro.com>
+To:     coolrrsh@gmail.com, james.smart@broadcom.com,
+        ram.vegesna@broadcom.com, jejb@linux.ibm.com,
+        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     linux-kernel-mentees@lists.linuxfoundation.org
+References: <20230817114301.17601-1-coolrrsh@gmail.com>
 From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20230817105252.GA14370@yadro.com>
+In-Reply-To: <20230817114301.17601-1-coolrrsh@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -55,59 +53,56 @@ X-Mailing-List: target-devel@vger.kernel.org
 
 
 
-On 8/17/23 03:52, Dmitry Bogdanov wrote:
-> On Thu, Aug 17, 2023 at 04:07:51PM +0530, coolrrsh@gmail.com wrote:
->>
->> From: Rajeshwar R Shinde <coolrrsh@gmail.com>
->>
->> In the function sli_xmit_bls_rsp64_wqe, the 'if' and 'else' conditions
->> evaluates the same expression and gives same output. Also the variable
->> bls->local_n_port_id_dword is not used anywhere. Therefore removing the
->> redundant code.
->>
->> This fixes coccinelle warning such as:
->> drivers/scsi/elx/libefc_sli/sli4.c:2320:2-4: WARNING: possible
->> condition with no effect (if == else)
->>
->> Signed-off-by: Rajeshwar R Shinde <coolrrsh@gmail.com>
->> ---
->> v1->v2
->> Modified patch and verified with checkpatch.pl.
->>
->> ---
->>  drivers/scsi/elx/libefc_sli/sli4.c | 7 -------
->>  1 file changed, 7 deletions(-)
->>
->> diff --git a/drivers/scsi/elx/libefc_sli/sli4.c b/drivers/scsi/elx/libefc_sli/sli4.c
->> index 8f96049f62dd..af661b769464 100644
->> --- a/drivers/scsi/elx/libefc_sli/sli4.c
->> +++ b/drivers/scsi/elx/libefc_sli/sli4.c
->> @@ -2317,13 +2317,6 @@ sli_xmit_bls_rsp64_wqe(struct sli4 *sli, void *buf,
->>                 SLI4_GENERIC_CONTEXT_VPI << SLI4_BLS_RSP_WQE_CT_SHFT;
->>                 bls->context_tag = cpu_to_le16(params->vpi);
->>
->> -               if (params->s_id != U32_MAX)
->> -                       bls->local_n_port_id_dword |=
->> -                               cpu_to_le32(params->s_id & 0x00ffffff);
->> -               else
->> -                       bls->local_n_port_id_dword |=
->> -                               cpu_to_le32(params->s_id & 0x00ffffff);
->> -
+On 8/17/23 04:43, coolrrsh@gmail.com wrote:
+> From: Rajeshwar R Shinde <coolrrsh@gmail.com>
 > 
-> omg, it is not an unused variable. Whole bls is a HW descriptor, all of
-> its variables are used by HW. You should keep v1 version of the patch.
-> According to the comment at the beginning of the funciton s_id here shall
-> be != U32_MAX. That is an explanation for your v1 patch.
+> In the function sli_xmit_bls_rsp64_wqe, the 'if' and 'else' conditions
+> evaluates the same expression and gives same output. Also, params->s_id
+> shall not be equal to U32_MAX. Therefore removing the unused code.
 > 
+> This fixes coccinelle warning such as:
 
-Thanks for your comments.
+Thanks for that. ^^^^^
 
->>                 dw_ridflags = (dw_ridflags & ~SLI4_BLS_RSP_RID) |
->>                                (params->d_id & SLI4_BLS_RSP_RID);
->>
->> --
->> 2.25.1
->>
+> drivers/scsi/elx/libefc_sli/sli4.c:2320:2-4: WARNING: possible
+> condition with no effect (if == else)
+> 
+> Signed-off-by: Rajeshwar R Shinde <coolrrsh@gmail.com>
+
+Based on feedback from Broadcom people,
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
+
+Thanks.
+
+> ---
+> v1->v2
+> Modified patch and the corrected the warnings using checkpatch.
+> v2->v3
+> Modified patch details keeping HW descriptor variable.
+> 
+> ---
+>  drivers/scsi/elx/libefc_sli/sli4.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/scsi/elx/libefc_sli/sli4.c b/drivers/scsi/elx/libefc_sli/sli4.c
+> index 8f96049f62dd..5e7fb110bc3f 100644
+> --- a/drivers/scsi/elx/libefc_sli/sli4.c
+> +++ b/drivers/scsi/elx/libefc_sli/sli4.c
+> @@ -2317,12 +2317,8 @@ sli_xmit_bls_rsp64_wqe(struct sli4 *sli, void *buf,
+>  		SLI4_GENERIC_CONTEXT_VPI << SLI4_BLS_RSP_WQE_CT_SHFT;
+>  		bls->context_tag = cpu_to_le16(params->vpi);
+>  
+> -		if (params->s_id != U32_MAX)
+> -			bls->local_n_port_id_dword |=
+> -				cpu_to_le32(params->s_id & 0x00ffffff);
+> -		else
+> -			bls->local_n_port_id_dword |=
+> -				cpu_to_le32(params->s_id & 0x00ffffff);
+> +		bls->local_n_port_id_dword |=
+> +			cpu_to_le32(params->s_id & 0x00ffffff);
+>  
+>  		dw_ridflags = (dw_ridflags & ~SLI4_BLS_RSP_RID) |
+>  			       (params->d_id & SLI4_BLS_RSP_RID);
 
 -- 
 ~Randy
