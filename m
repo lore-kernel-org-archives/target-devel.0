@@ -2,71 +2,166 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9D06C5479A
-	for <target-devel@archiver.kernel.org>; Thu, 17 Aug 2023 20:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F198EE4993
+	for <target-devel@archiver.kernel.org>; Mon, 21 Aug 2023 07:57:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355076AbjHQU5x (ORCPT
-        <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 17 Aug 2023 16:57:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33420 "EHLO
+        id S232276AbjHUH5X (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 21 Aug 2023 03:57:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40970 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1355075AbjHQU5Z (ORCPT
+        with ESMTP id S232010AbjHUH5X (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 17 Aug 2023 16:57:25 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9583830F6;
-        Thu, 17 Aug 2023 13:57:24 -0700 (PDT)
+        Mon, 21 Aug 2023 03:57:23 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4EE53B1;
+        Mon, 21 Aug 2023 00:57:21 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 3358D61F4A;
-        Thu, 17 Aug 2023 20:57:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41FB8C433C7;
-        Thu, 17 Aug 2023 20:57:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1692305843;
-        bh=Cz0bpZIHuJ97+/eXABSNnd6abp7icCo53irEIi6xom8=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=spITFcVVlHEtmVsTgC3Q31Ykp2iku/xtv5XwL1pBcBZOIbV6UX0oi4KQqbLDl11bL
-         GFiayMB2cNx8kAXVwgTaO85j3Ipesr1hy0pLVSjc3oxfXy7Y0KznBwx8HToLd808JR
-         jTFpzG8LG1703IDEWF3JL1eEqiKrErC93xyMwbOo=
-Date:   Thu, 17 Aug 2023 22:57:21 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Ram Kishore Vegesna <ram.vegesna@broadcom.com>
-Cc:     Dmitry Bogdanov <d.bogdanov@yadro.com>, martin.petersen@oracle.com,
-        linux-scsi@vger.kernel.org, jejb@linux.ibm.com,
-        rdunlap@infradead.org, james.smart@broadcom.com,
-        linux-kernel@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel-mentees@lists.linuxfoundation.org
-Subject: Re: [PATCH v2] scsi: sli4: Remove the buggy code
-Message-ID: <2023081755-virus-showman-f3b2@gregkh>
-References: <20230817103751.16350-1-coolrrsh@gmail.com>
- <20230817105252.GA14370@yadro.com>
- <CAF7aS0rrZvZK_bE21Umrr+RAGgQB6-qDdoqSPnKh6f7HcX8Ovw@mail.gmail.com>
+        by dfw.source.kernel.org (Postfix) with ESMTPS id C34A26108E;
+        Mon, 21 Aug 2023 07:57:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9BD53C433C8;
+        Mon, 21 Aug 2023 07:57:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1692604640;
+        bh=kGKk9tJE4HLA0PmISa93OSYu7UY7tnCtc/usdjpbLOg=;
+        h=From:To:Cc:Subject:Date:From;
+        b=i5MaFgYDHmaLgIIm4ZxfZHqlOZVGKrbl679eY1BFkoy4loz9EuCyhzD/K7BP6VSBo
+         MIf6w6qJbPZWlVfEPGCV+Sn0hY1+WgIbTFLNObX8a5ukmEiKE5xubHH2d/LcvBl+41
+         SAkFg5F6c8HMwkj51cUBy5c2LTdlBWy/OxYxTOaNEg9OvpLiBJym2wRk4CgpUjdrA/
+         mHwjqFqP34qNFGKRtlziQcyJ3coCbotIg096N1+35RHOMTb88zUeR9KMjxMODCHKSb
+         JF57HzDqPIrIMMoFPAiZsDxQ+iw2m90ysuDyMAfPTW6a421Su3QHGgHXtrldnhx1C7
+         lZNJK75KIXKCg==
+From:   Leon Romanovsky <leon@kernel.org>
+To:     Jason Gunthorpe <jgg@nvidia.com>
+Cc:     Leon Romanovsky <leonro@nvidia.com>,
+        Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+        linux-rdma@vger.kernel.org, Sagi Grimberg <sagi@grimberg.me>,
+        Saravanan Vajravel <saravanan.vajravel@broadcom.com>,
+        Selvin Xavier <selvin.xavier@broadcom.com>,
+        target-devel@vger.kernel.org
+Subject: [PATCH rdma-next] Revert "IB/isert: Fix incorrect release of isert connection"
+Date:   Mon, 21 Aug 2023 10:57:14 +0300
+Message-ID: <a27982d3235005c58f6d321f3fad5eb6e1beaf9e.1692604607.git.leonro@nvidia.com>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAF7aS0rrZvZK_bE21Umrr+RAGgQB6-qDdoqSPnKh6f7HcX8Ovw@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, Aug 17, 2023 at 06:03:32PM +0530, Ram Kishore Vegesna via Linux-kernel-mentees wrote:
-> -- 
-> This electronic communication and the information and any files transmitted 
-> with it, or attached to it, are confidential and are intended solely for 
-> the use of the individual or entity to whom it is addressed and may contain 
-> information that is confidential, legally privileged, protected by privacy 
-> laws, or otherwise restricted from disclosure to anyone else. If you are 
-> not the intended recipient or the person responsible for delivering the 
-> e-mail to the intended recipient, you are hereby notified that any use, 
-> copying, distributing, dissemination, forwarding, printing, or copying of 
-> this e-mail is strictly prohibited. If you received this e-mail in error, 
-> please return the e-mail to the sender, delete it from your computer, and 
-> destroy any printed copy of it.
+From: Leon Romanovsky <leonro@nvidia.com>
 
-Now deleted.
+Commit: 699826f4e30a ("IB/isert: Fix incorrect release of isert connection") is
+causing problems on OPA when DEVICE_REMOVAL is happening.
 
-(hint, this footer is not compatible with kernel development, please fix
-your email system...)
+ ------------[ cut here ]------------
+ WARNING: CPU: 52 PID: 2117247 at drivers/infiniband/core/cq.c:359
+ib_cq_pool_cleanup+0xac/0xb0 [ib_core]
+ Modules linked in: nfsd nfs_acl target_core_user uio tcm_fc libfc
+scsi_transport_fc tcm_loop target_core_pscsi target_core_iblock target_core_file
+rpcsec_gss_krb5 auth_rpcgss nfsv4 dns_resolver nfs lockd grace fscache netfs
+rfkill rpcrdma rdma_ucm ib_srpt sunrpc ib_isert iscsi_target_mod target_core_mod
+opa_vnic ib_iser libiscsi ib_umad scsi_transport_iscsi rdma_cm ib_ipoib iw_cm
+ib_cm hfi1(-) rdmavt ib_uverbs intel_rapl_msr intel_rapl_common sb_edac ib_core
+x86_pkg_temp_thermal intel_powerclamp coretemp i2c_i801 mxm_wmi rapl iTCO_wdt
+ipmi_si iTCO_vendor_support mei_me ipmi_devintf mei intel_cstate ioatdma
+intel_uncore i2c_smbus joydev pcspkr lpc_ich ipmi_msghandler acpi_power_meter
+acpi_pad xfs libcrc32c sr_mod sd_mod cdrom t10_pi sg crct10dif_pclmul
+crc32_pclmul crc32c_intel drm_kms_helper drm_shmem_helper ahci libahci
+ghash_clmulni_intel igb drm libata dca i2c_algo_bit wmi fuse
+ CPU: 52 PID: 2117247 Comm: modprobe Not tainted 6.5.0-rc1+ #1
+ Hardware name: Intel Corporation S2600CWR/S2600CW, BIOS
+SE5C610.86B.01.01.0014.121820151719 12/18/2015
+ RIP: 0010:ib_cq_pool_cleanup+0xac/0xb0 [ib_core]
+ Code: ff 48 8b 43 40 48 8d 7b 40 48 83 e8 40 4c 39 e7 75 b3 49 83
+c4 10 4d 39 fc 75 94 5b 5d 41 5c 41 5d 41 5e 41 5f c3 cc cc cc cc <0f> 0b eb a1
+90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 0f 1f
+ RSP: 0018:ffffc10bea13fc80 EFLAGS: 00010206
+ RAX: 000000000000010c RBX: ffff9bf5c7e66c00 RCX: 000000008020001d
+ RDX: 000000008020001e RSI: fffff175221f9900 RDI: ffff9bf5c7e67640
+ RBP: ffff9bf5c7e67600 R08: ffff9bf5c7e64400 R09: 000000008020001d
+ R10: 0000000040000000 R11: 0000000000000000 R12: ffff9bee4b1e8a18
+ R13: dead000000000122 R14: dead000000000100 R15: ffff9bee4b1e8a38
+ FS:  00007ff1e6d38740(0000) GS:ffff9bfd9fb00000(0000) knlGS:0000000000000000
+ CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+ CR2: 00005652044ecc68 CR3: 0000000889b5c005 CR4: 00000000001706e0
+ Call Trace:
+  <TASK>
+  ? __warn+0x80/0x130
+  ? ib_cq_pool_cleanup+0xac/0xb0 [ib_core]
+  ? report_bug+0x195/0x1a0
+  ? handle_bug+0x3c/0x70
+  ? exc_invalid_op+0x14/0x70
+  ? asm_exc_invalid_op+0x16/0x20
+  ? ib_cq_pool_cleanup+0xac/0xb0 [ib_core]
+  disable_device+0x9d/0x160 [ib_core]
+  __ib_unregister_device+0x42/0xb0 [ib_core]
+  ib_unregister_device+0x22/0x30 [ib_core]
+  rvt_unregister_device+0x20/0x90 [rdmavt]
+  hfi1_unregister_ib_device+0x16/0xf0 [hfi1]
+  remove_one+0x55/0x1a0 [hfi1]
+  pci_device_remove+0x36/0xa0
+  device_release_driver_internal+0x193/0x200
+  driver_detach+0x44/0x90
+  bus_remove_driver+0x69/0xf0
+  pci_unregister_driver+0x2a/0xb0
+  hfi1_mod_cleanup+0xc/0x3c [hfi1]
+  __do_sys_delete_module.constprop.0+0x17a/0x2f0
+  ? exit_to_user_mode_prepare+0xc4/0xd0
+  ? syscall_trace_enter.constprop.0+0x126/0x1a0
+  do_syscall_64+0x5c/0x90
+  ? syscall_exit_to_user_mode+0x12/0x30
+  ? do_syscall_64+0x69/0x90
+  ? syscall_exit_work+0x103/0x130
+  ? syscall_exit_to_user_mode+0x12/0x30
+  ? do_syscall_64+0x69/0x90
+  ? exc_page_fault+0x65/0x150
+  entry_SYSCALL_64_after_hwframe+0x6e/0xd8
+ RIP: 0033:0x7ff1e643f5ab
+ Code: 73 01 c3 48 8b 0d 75 a8 1b 00 f7 d8 64 89 01 48 83 c8 ff c3
+66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa b8 b0 00 00 00 0f 05 <48> 3d 01 f0
+ff ff 73 01 c3 48 8b 0d 45 a8 1b 00 f7 d8 64 89 01 48
+ RSP: 002b:00007ffec9103cc8 EFLAGS: 00000206 ORIG_RAX: 00000000000000b0
+ RAX: ffffffffffffffda RBX: 00005615267fdc50 RCX: 00007ff1e643f5ab
+ RDX: 0000000000000000 RSI: 0000000000000800 RDI: 00005615267fdcb8
+ RBP: 00005615267fdc50 R08: 0000000000000000 R09: 0000000000000000
+ R10: 00007ff1e659eac0 R11: 0000000000000206 R12: 00005615267fdcb8
+ R13: 0000000000000000 R14: 00005615267fdcb8 R15: 00007ffec9105ff8
+  </TASK>
+ ---[ end trace 0000000000000000 ]---
+
+And...
+
+ restrack: ------------[ cut here ]------------
+ infiniband hfi1_0: BUG: RESTRACK detected leak of resources
+ restrack: Kernel PD object allocated by ib_isert is not freed
+ restrack: Kernel CQ object allocated by ib_core is not freed
+ restrack: Kernel QP object allocated by rdma_cm is not freed
+ restrack: ------------[ cut here ]------------
+
+Fixes: 699826f4e30a ("IB/isert: Fix incorrect release of isert connection")
+Reported-by: Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>
+Closes: https://lore.kernel.org/all/921cd1d9-2879-f455-1f50-0053fe6a6655@cornelisnetworks.com
+Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+---
+ drivers/infiniband/ulp/isert/ib_isert.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index 92e1e7587af8..00a7303c8cc6 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -2570,6 +2570,8 @@ static void isert_wait_conn(struct iscsit_conn *conn)
+ 	isert_put_unsol_pending_cmds(conn);
+ 	isert_wait4cmds(conn);
+ 	isert_wait4logout(isert_conn);
++
++	queue_work(isert_release_wq, &isert_conn->release_work);
+ }
+ 
+ static void isert_free_conn(struct iscsit_conn *conn)
+-- 
+2.41.0
+
