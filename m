@@ -2,65 +2,188 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D512AEE4993
-	for <target-devel@archiver.kernel.org>; Wed, 23 Aug 2023 07:53:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7139BEE49BE
+	for <target-devel@archiver.kernel.org>; Wed, 23 Aug 2023 10:49:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230486AbjHWHxC (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 23 Aug 2023 03:53:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34732 "EHLO
+        id S230245AbjHWKtj (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 23 Aug 2023 06:49:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34026 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229886AbjHWHxB (ORCPT
+        with ESMTP id S233987AbjHWKt1 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 23 Aug 2023 03:53:01 -0400
-X-Greylist: delayed 444 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Wed, 23 Aug 2023 00:52:57 PDT
-Received: from mail.lienne.pl (mail.lienne.pl [57.128.173.16])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC417E40
-        for <target-devel@vger.kernel.org>; Wed, 23 Aug 2023 00:52:57 -0700 (PDT)
-Received: by mail.lienne.pl (Postfix, from userid 1002)
-        id 8DEE046BB0; Wed, 23 Aug 2023 07:45:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=lienne.pl; s=mail;
-        t=1692776730; bh=FriJ6is0x/ksbEZLTW+WQX/zUBSUP7NoxkT6cy24Qa4=;
-        h=Date:From:To:Subject:From;
-        b=jYipddVDN35RoV41hd7cjSt/gcSLKjMve9eCe6YXEhgqnhHmcjQu62T9ZQLx83ynv
-         /HU0aI8q0SjVlxJKppbp4DAvu3vNkT0rFm25cK6yjpbDWBrGQzFVeGOfrg1kJovy5T
-         Jnkk8qzNzZvPom8Lg0Zzc8W6FoS1cQ0mf0uss1NlfIh08uE0XCbVOXBGa3x/9xLQWX
-         MO+N0TM/PJtzK0b2MJRBtbY98JWuKiR/g8STIeQHhsfyyAlYQobUPNsfuDJxsGNlrT
-         tE5x29A10auQyOYydBWiBTOXnSCEhjgQPgFiComkNj4XTfZRtcZVsQXF1zzCkVKDbR
-         6DXOcH2LbuxoA==
-Received: by mail.lienne.pl for <target-devel@vger.kernel.org>; Wed, 23 Aug 2023 07:45:16 GMT
-Message-ID: <20230823064500-0.1.3c.d3o1.0.5o0mqco1d8@lienne.pl>
-Date:   Wed, 23 Aug 2023 07:45:16 GMT
-From:   "Dominika Grajko" <dominika.grajko@lienne.pl>
-To:     <target-devel@vger.kernel.org>
-Subject: =?UTF-8?Q?W_sprawie_ksi=C4=99gowo=C5=9Bci?=
-X-Mailer: mail.lienne.pl
+        Wed, 23 Aug 2023 06:49:27 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D141810CC;
+        Wed, 23 Aug 2023 03:49:01 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 1F89B21EDA;
+        Wed, 23 Aug 2023 10:48:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+        t=1692787738; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=czbolVCNdiRIhtzRMydBVuDGtNoMVf0uK7rI8VUw4Wg=;
+        b=cea+STFByaV36NWMjg8zifEKP9bUJaVFrhrdsQ1BHrDjc+6YKTyOk0XUYe/aGcn7z1GdBW
+        Sp5Xg8/PcrR30C9G8GkmtNgleVHgoFT9VpO4HmYAD81nOJQ/2ts6Z2GJ97FCPouubZqTfM
+        7Ki5cRwEgj/8O3iByHVAhCDVhrdgZS0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+        s=susede2_ed25519; t=1692787738;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=czbolVCNdiRIhtzRMydBVuDGtNoMVf0uK7rI8VUw4Wg=;
+        b=ccloVX/Tox8MPvEstSnU1swyihs7KV2puBqol0j3M4wpbT7Z67JF74RuKmYp8i9zsSQ2aK
+        Q/J06H24OiSZjOBw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0486813592;
+        Wed, 23 Aug 2023 10:48:58 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id hdjcABrk5WQsIAAAMHmgww
+        (envelope-from <jack@suse.cz>); Wed, 23 Aug 2023 10:48:58 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+        id 0E216A0774; Wed, 23 Aug 2023 12:48:57 +0200 (CEST)
+From:   Jan Kara <jack@suse.cz>
+To:     Christian Brauner <brauner@kernel.org>
+Cc:     Jens Axboe <axboe@kernel.dk>, <linux-fsdevel@vger.kernel.org>,
+        <linux-block@vger.kernel.org>,
+        Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
+        Alasdair Kergon <agk@redhat.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        "Darrick J. Wong" <djwong@kernel.org>,
+        Dave Kleikamp <shaggy@kernel.org>,
+        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
+        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
+        Jack Wang <jinpu.wang@ionos.com>,
+        Jaegeuk Kim <jaegeuk@kernel.org>,
+        jfs-discussion@lists.sourceforge.net,
+        Joern Engel <joern@lazybastard.org>,
+        Joseph Qi <joseph.qi@linux.alibaba.com>,
+        Kent Overstreet <kent.overstreet@gmail.com>,
+        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
+        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
+        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
+        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linux-xfs@vger.kernel.org,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Mike Snitzer <snitzer@kernel.org>,
+        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
+        reiserfs-devel@vger.kernel.org,
+        Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Song Liu <song@kernel.org>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
+        Trond Myklebust <trond.myklebust@hammerspace.com>,
+        xen-devel@lists.xenproject.org
+Subject: [PATCH v3 0/29] block: Make blkdev_get_by_*() return handle
+Date:   Wed, 23 Aug 2023 12:48:11 +0200
+Message-Id: <20230818123232.2269-1-jack@suse.cz>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3781; i=jack@suse.cz; h=from:subject:message-id; bh=cMBb8bZk7tVGWo+BW5D78pH+ebOvNFFLsxdd3Uvzd/w=; b=owEBbQGS/pANAwAIAZydqgc/ZEDZAcsmYgBk5ePhrEMij+4xGF6e8K//xuADex0OXIFxlpO0VT6g 42vu5BeJATMEAAEIAB0WIQSrWdEr1p4yirVVKBycnaoHP2RA2QUCZOXj4QAKCRCcnaoHP2RA2RqoB/ 91nt6Qs4NSStbt9M1WXY1akBbAqu+Bv3ZXdZ6WMy9kKyYwY7zCnyQziikP60M2MjCrud4NP9os4YAr 4uXdyOyVcdJ9TjbciDgTyoYdfkFl7g+rZhj1pyPeep1xmvDMn3QtNJ28EbhLegdC+nkmL6+bxPGEwd IdsuBKGrdIIEryWwhBq0+BWowL3nzmQjs5GoDtXLoHADfHYhgC8RKYK/4FaML1/SsAZRvGJ/C8wFB4 JUGsDGFE4CJx9XgiRx407CSIGNSoCciqBpMaMA7x/dbq9Tu76xcqN4/DZrtT2qyG4I7GZYetndEl3F vWMZMQFPauZmB2S1r30HY+nn2IOCrM
+X-Developer-Key: i=jack@suse.cz; a=openpgp; fpr=93C6099A142276A28BBE35D815BC833443038D8C
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Szanowni Pa=C5=84stwo,=20
+Hello,
 
-nawi=C4=85zuj=C4=99 kontakt w temacie zwi=C4=85zanym z obs=C5=82ug=C4=85 =
-ksi=C4=99gow=C4=85.=20
+this is a v3 of the patch series which implements the idea of blkdev_get_by_*()
+calls returning bdev_handle which is then passed to blkdev_put() [1]. This
+makes the get and put calls for bdevs more obviously matching and allows us to
+propagate context from get to put without having to modify all the users
+(again!). In particular I need to propagate used open flags to blkdev_put() to
+be able count writeable opens and add support for blocking writes to mounted
+block devices. I'll send that series separately.
 
-Zawsze jest odpowiedni moment, aby przyjrze=C4=87 si=C4=99 ofertom na obs=
-=C5=82ug=C4=99 ksi=C4=99gow=C4=85 i kadrowo-p=C5=82acow=C4=85.=20
+The series is based on Christian's vfs tree as of today as there is quite
+some overlap. Patches have passed some reasonable testing - I've tested block
+changes, md, dm, bcache, xfs, btrfs, ext4, swap. More testing or review is
+always welcome. Thanks! I've pushed out the full branch to:
 
-Jestem w stanie przygotowa=C4=87 dla Pa=C5=84stwa firmy propozycj=C4=99 w=
-sp=C3=B3=C5=82pracy, w oparciu o realne potrzeby Pa=C5=84stwa firmy.=20
+git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs.git bdev_handle
 
-Naszym celem jest zapewnienie firmom wszelkich korzy=C5=9Bci z prowadzone=
-j zewn=C4=99trznie obs=C5=82ugi ksi=C4=99gowo-podatkowej.=20
+to ease review / testing. Since there were not many comments for v2 and
+Christoph has acked the series I think we should start discussing how to merge
+the series. Most collisions with this series seem to happen in the filesystems
+area so VFS tree would seem as the least painful way to merge this. Jens,
+are you OK with that?
 
-Od lat obs=C5=82ugujemy firmy, wi=C4=99c my=C5=9Bl=C4=99, =C5=BCe warto r=
-ozwa=C5=BCy=C4=87 nasz=C4=85 propozycj=C4=99.=20
+Changes since v2:
+* Rebased on top of current vfs tree
+* Added some acks
+* Reflected minor nits from Christoph
+* Added missing conversion of blkdev_put() calls in cramfs and erofs
+* Fixed possible leak of bdev handle in xfs if logdev is the same as fs dev
 
-Czy s=C4=85 Pa=C5=84stwo zainteresowani?=20
+Changes since v1:
+* Rebased on top of current vfs tree
+* Renamed final functions to bdev_open_by_*() and bdev_release()
+* Fixed detection of exclusive open in blkdev_ioctl() and blkdev_fallocate()
+* Fixed swap conversion to properly reinitialize swap_info->bdev_handle
+* Fixed xfs conversion to not oops with rtdev without logdev
+* Couple other minor fixups
 
+								Honza
 
-Z pozdrowieniami
-Dominika Grajko
+[1] https://lore.kernel.org/all/ZJGNsVDhZx0Xgs2H@infradead.org
 
+CC: Alasdair Kergon <agk@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Anna Schumaker <anna@kernel.org>
+CC: Chao Yu <chao@kernel.org>
+CC: Christian Borntraeger <borntraeger@linux.ibm.com>
+CC: Coly Li <colyli@suse.de
+CC: "Darrick J. Wong" <djwong@kernel.org>
+CC: Dave Kleikamp <shaggy@kernel.org>
+CC: David Sterba <dsterba@suse.com>
+CC: dm-devel@redhat.com
+CC: drbd-dev@lists.linbit.com
+CC: Gao Xiang <xiang@kernel.org>
+CC: Jack Wang <jinpu.wang@ionos.com>
+CC: Jaegeuk Kim <jaegeuk@kernel.org>
+CC: jfs-discussion@lists.sourceforge.net
+CC: Joern Engel <joern@lazybastard.org>
+CC: Joseph Qi <joseph.qi@linux.alibaba.com>
+CC: Kent Overstreet <kent.overstreet@gmail.com>
+CC: linux-bcache@vger.kernel.org
+CC: linux-btrfs@vger.kernel.org
+CC: linux-erofs@lists.ozlabs.org
+CC: <linux-ext4@vger.kernel.org>
+CC: linux-f2fs-devel@lists.sourceforge.net
+CC: linux-mm@kvack.org
+CC: linux-mtd@lists.infradead.org
+CC: linux-nfs@vger.kernel.org
+CC: linux-nilfs@vger.kernel.org
+CC: linux-nvme@lists.infradead.org
+CC: linux-pm@vger.kernel.org
+CC: linux-raid@vger.kernel.org
+CC: linux-s390@vger.kernel.org
+CC: linux-scsi@vger.kernel.org
+CC: linux-xfs@vger.kernel.org
+CC: "Md. Haris Iqbal" <haris.iqbal@ionos.com>
+CC: Mike Snitzer <snitzer@kernel.org>
+CC: Minchan Kim <minchan@kernel.org>
+CC: ocfs2-devel@oss.oracle.com
+CC: reiserfs-devel@vger.kernel.org
+CC: Sergey Senozhatsky <senozhatsky@chromium.org>
+CC: Song Liu <song@kernel.org>
+CC: Sven Schnelle <svens@linux.ibm.com>
+CC: target-devel@vger.kernel.org
+CC: Ted Tso <tytso@mit.edu>
+CC: Trond Myklebust <trond.myklebust@hammerspace.com>
+CC: xen-devel@lists.xenproject.org
+
+Previous versions:
+Link: http://lore.kernel.org/r/20230629165206.383-1-jack@suse.cz # v1
+Link: http://lore.kernel.org/r/20230810171429.31759-1-jack@suse.cz # v2
