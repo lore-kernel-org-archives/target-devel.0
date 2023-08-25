@@ -2,231 +2,93 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77CEBEE49B6
-	for <target-devel@archiver.kernel.org>; Wed, 23 Aug 2023 10:50:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A3C3C88CB9
+	for <target-devel@archiver.kernel.org>; Fri, 25 Aug 2023 01:14:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234205AbjHWKuZ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Wed, 23 Aug 2023 06:50:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34038 "EHLO
+        id S238204AbjHYBN6 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 24 Aug 2023 21:13:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50776 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232494AbjHWKuG (ORCPT
+        with ESMTP id S237616AbjHYBNu (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Wed, 23 Aug 2023 06:50:06 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3519E5A;
-        Wed, 23 Aug 2023 03:49:25 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id DD73121F46;
-        Wed, 23 Aug 2023 10:48:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-        t=1692787738; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=xLp8wxdpKpq8KTQotrZDbbnw1nZi05RZ0xIeaAOP2x4=;
-        b=i4MLB5+BZGRlAVIOnQNWV2KtbDqP1LLiqJk8XnLozBQIqF4hGi7oPeFBJH2l60Ho8NJGSa
-        38FppjxGs16pCwGz/xlaVDAcpkTn7I/iorICvcjpqttBqIEKG5T561IX5lFk2wHLktBgIt
-        aw+PKxy0GOtQ4H23RIQ7UOWko3SI/PM=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-        s=susede2_ed25519; t=1692787738;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=xLp8wxdpKpq8KTQotrZDbbnw1nZi05RZ0xIeaAOP2x4=;
-        b=kUSs9Z3bn6eUI+XIoAhTpobeuWWFRDqiEp52dbKNrSXgOuxDaXisMSpHLNC6FJnimgg8cv
-        /UadFtIImI/NKUCg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C35EA13592;
-        Wed, 23 Aug 2023 10:48:58 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id eyenLxrk5WRTIAAAMHmgww
-        (envelope-from <jack@suse.cz>); Wed, 23 Aug 2023 10:48:58 +0000
-Received: by quack3.suse.cz (Postfix, from userid 1000)
-        id 60F96A078F; Wed, 23 Aug 2023 12:48:57 +0200 (CEST)
-From:   Jan Kara <jack@suse.cz>
-To:     Christian Brauner <brauner@kernel.org>
-Cc:     Jens Axboe <axboe@kernel.dk>, <linux-fsdevel@vger.kernel.org>,
-        <linux-block@vger.kernel.org>,
-        Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
-        target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-        Christoph Hellwig <hch@lst.de>
-Subject: [PATCH 15/29] scsi: target: Convert to bdev_open_by_path()
-Date:   Wed, 23 Aug 2023 12:48:26 +0200
-Message-Id: <20230823104857.11437-15-jack@suse.cz>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <20230818123232.2269-1-jack@suse.cz>
-References: <20230818123232.2269-1-jack@suse.cz>
+        Thu, 24 Aug 2023 21:13:50 -0400
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4791F1BFE;
+        Thu, 24 Aug 2023 18:13:49 -0700 (PDT)
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37OJEKpx016614;
+        Fri, 25 Aug 2023 01:13:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-type : content-transfer-encoding; s=corp-2023-03-30;
+ bh=IRM7clTLJsFv7y8+IXvQPcdHCoU8AJwOLyxoShZ6Z7Q=;
+ b=2nvWZmJzWLP4ad6agOlfDpmembyGqDsNBfdMJ8rmifIf8Nzp56/VQG41L2zHuxpfHqeD
+ 7Q3uxkSE94VO6mSYU8uLg2uweTqblG9jkmD7CXrYYdhD6Ay7Pc46GrS1VngqSBlURf4X
+ 4TESlvWlMqTaYj0saW2CquDc4LClBasTAxV5Z2gAPous6nTGX9KhxLe3WUMAPU+ZP9TP
+ 5R0GitDq1zAPZ3DGdKVeg/ZnOBljLrZUbpy4iAjbZJYmWVlCH9zDogofCFLJ3guuf2Uf
+ IK/7CuTeRxL7hgwPE3idFOAulq3QJXHr39nGpOva9B3llkZs8omBX0nQ7p5Vzr5L6o8Y Hg== 
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3sn1yvwfua-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 25 Aug 2023 01:13:39 +0000
+Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 37OMuKkl036170;
+        Fri, 25 Aug 2023 01:13:38 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3sn1ywqfjv-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 25 Aug 2023 01:13:38 +0000
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 37P1DVE4019787;
+        Fri, 25 Aug 2023 01:13:38 GMT
+Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
+        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3sn1ywqf8n-6;
+        Fri, 25 Aug 2023 01:13:37 +0000
+From:   "Martin K. Petersen" <martin.petersen@oracle.com>
+To:     james.smart@broadcom.com, ram.vegesna@broadcom.com,
+        jejb@linux.ibm.com, rdunlap@infradead.org,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, coolrrsh@gmail.com
+Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
+        linux-kernel-mentees@lists.linuxfoundation.org
+Subject: Re: [PATCH v3] scsi: sli4: Remove code duplication
+Date:   Thu, 24 Aug 2023 21:12:52 -0400
+Message-Id: <169292577168.789945.14600068133090244401.b4-ty@oracle.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230817114301.17601-1-coolrrsh@gmail.com>
+References: <20230817114301.17601-1-coolrrsh@gmail.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5419; i=jack@suse.cz; h=from:subject; bh=6kZvIq8BZizDHY8AGnmJ3i/dK8lV3iBpu+CtF7nME7M=; b=owEBbQGS/pANAwAIAZydqgc/ZEDZAcsmYgBk5eP7oIFf66pcHWOaFjbkKBeqFiapoWsAciZgdrSG K/m0GauJATMEAAEIAB0WIQSrWdEr1p4yirVVKBycnaoHP2RA2QUCZOXj+wAKCRCcnaoHP2RA2f9CCA CDmUs+SH0RqU6uC1VVkYLvqWDeQV/uOmRnoGAWfEvQ98+vHWaRygHr9PXLFYuCT+I4H/caIfK6Chma wQAvV1jLDwita3AK8vwlMF1/7pioa1XLFQQErVXXUUW3gtIxERfB0+ew2qJEs1TGFc+nqWNEKZtUKo NyCeyCR8ViEFw9XP8kR0bi3rJ9stipaMNRm4oH2C8HZEitR09hdGB5S26BeNgZNB6C+p1W7bs340// OX9+ivxqM65EbX4frfp75G+jrdY7aOfpDaD9HTOs6G9xgkBoq/pWOMDNci9AiriBXOnJkk5dWolPcG gWBu8s0+jJkIspiGCW2u3LDKCZE4mA
-X-Developer-Key: i=jack@suse.cz; a=openpgp; fpr=93C6099A142276A28BBE35D815BC833443038D8C
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
+ definitions=2023-08-25_01,2023-08-24_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 suspectscore=0
+ malwarescore=0 spamscore=0 phishscore=0 mlxlogscore=636 adultscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2308100000 definitions=main-2308250009
+X-Proofpoint-GUID: 0QsdpT99nTfZs8tZTKnjNxT1geXAbs2_
+X-Proofpoint-ORIG-GUID: 0QsdpT99nTfZs8tZTKnjNxT1geXAbs2_
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Convert iblock and pscsi drivers to use bdev_open_by_path() and pass the
-handle around.
+On Thu, 17 Aug 2023 17:13:01 +0530, coolrrsh@gmail.com wrote:
 
-CC: target-devel@vger.kernel.org
-CC: linux-scsi@vger.kernel.org
-Acked-by: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- drivers/target/target_core_iblock.c | 19 +++++++++++--------
- drivers/target/target_core_iblock.h |  1 +
- drivers/target/target_core_pscsi.c  | 26 +++++++++++++-------------
- drivers/target/target_core_pscsi.h  |  2 +-
- 4 files changed, 26 insertions(+), 22 deletions(-)
+> In the function sli_xmit_bls_rsp64_wqe, the 'if' and 'else' conditions
+> evaluates the same expression and gives same output. Also, params->s_id
+> shall not be equal to U32_MAX. Therefore removing the unused code.
+> 
+> This fixes coccinelle warning such as:
+> drivers/scsi/elx/libefc_sli/sli4.c:2320:2-4: WARNING: possible
+> condition with no effect (if == else)
+> 
+> [...]
 
-diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index 3d1b511ea284..3695a9f8d8a5 100644
---- a/drivers/target/target_core_iblock.c
-+++ b/drivers/target/target_core_iblock.c
-@@ -91,7 +91,8 @@ static int iblock_configure_device(struct se_device *dev)
- {
- 	struct iblock_dev *ib_dev = IBLOCK_DEV(dev);
- 	struct request_queue *q;
--	struct block_device *bd = NULL;
-+	struct bdev_handle *bdev_handle;
-+	struct block_device *bd;
- 	struct blk_integrity *bi;
- 	blk_mode_t mode = BLK_OPEN_READ;
- 	unsigned int max_write_zeroes_sectors;
-@@ -116,12 +117,14 @@ static int iblock_configure_device(struct se_device *dev)
- 	else
- 		dev->dev_flags |= DF_READ_ONLY;
- 
--	bd = blkdev_get_by_path(ib_dev->ibd_udev_path, mode, ib_dev, NULL);
--	if (IS_ERR(bd)) {
--		ret = PTR_ERR(bd);
-+	bdev_handle = bdev_open_by_path(ib_dev->ibd_udev_path, mode, ib_dev,
-+					NULL);
-+	if (IS_ERR(bdev_handle)) {
-+		ret = PTR_ERR(bdev_handle);
- 		goto out_free_bioset;
- 	}
--	ib_dev->ibd_bd = bd;
-+	ib_dev->ibd_bdev_handle = bdev_handle;
-+	ib_dev->ibd_bd = bd = bdev_handle->bdev;
- 
- 	q = bdev_get_queue(bd);
- 
-@@ -177,7 +180,7 @@ static int iblock_configure_device(struct se_device *dev)
- 	return 0;
- 
- out_blkdev_put:
--	blkdev_put(ib_dev->ibd_bd, ib_dev);
-+	bdev_release(ib_dev->ibd_bdev_handle);
- out_free_bioset:
- 	bioset_exit(&ib_dev->ibd_bio_set);
- out:
-@@ -202,8 +205,8 @@ static void iblock_destroy_device(struct se_device *dev)
- {
- 	struct iblock_dev *ib_dev = IBLOCK_DEV(dev);
- 
--	if (ib_dev->ibd_bd != NULL)
--		blkdev_put(ib_dev->ibd_bd, ib_dev);
-+	if (ib_dev->ibd_bdev_handle)
-+		bdev_release(ib_dev->ibd_bdev_handle);
- 	bioset_exit(&ib_dev->ibd_bio_set);
- }
- 
-diff --git a/drivers/target/target_core_iblock.h b/drivers/target/target_core_iblock.h
-index 8c55375d2f75..683f9a55945b 100644
---- a/drivers/target/target_core_iblock.h
-+++ b/drivers/target/target_core_iblock.h
-@@ -32,6 +32,7 @@ struct iblock_dev {
- 	u32	ibd_flags;
- 	struct bio_set	ibd_bio_set;
- 	struct block_device *ibd_bd;
-+	struct bdev_handle *ibd_bdev_handle;
- 	bool ibd_readonly;
- 	struct iblock_dev_plug *ibd_plug;
- } ____cacheline_aligned;
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index 0d4f09693ef4..41b7489d37ce 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -352,7 +352,7 @@ static int pscsi_create_type_disk(struct se_device *dev, struct scsi_device *sd)
- 	struct pscsi_hba_virt *phv = dev->se_hba->hba_ptr;
- 	struct pscsi_dev_virt *pdv = PSCSI_DEV(dev);
- 	struct Scsi_Host *sh = sd->host;
--	struct block_device *bd;
-+	struct bdev_handle *bdev_handle;
- 	int ret;
- 
- 	if (scsi_device_get(sd)) {
-@@ -366,18 +366,18 @@ static int pscsi_create_type_disk(struct se_device *dev, struct scsi_device *sd)
- 	 * Claim exclusive struct block_device access to struct scsi_device
- 	 * for TYPE_DISK and TYPE_ZBC using supplied udev_path
- 	 */
--	bd = blkdev_get_by_path(dev->udev_path, BLK_OPEN_WRITE | BLK_OPEN_READ,
--				pdv, NULL);
--	if (IS_ERR(bd)) {
--		pr_err("pSCSI: blkdev_get_by_path() failed\n");
-+	bdev_handle = bdev_open_by_path(dev->udev_path,
-+				BLK_OPEN_WRITE | BLK_OPEN_READ, pdv, NULL);
-+	if (IS_ERR(bdev_handle)) {
-+		pr_err("pSCSI: bdev_open_by_path() failed\n");
- 		scsi_device_put(sd);
--		return PTR_ERR(bd);
-+		return PTR_ERR(bdev_handle);
- 	}
--	pdv->pdv_bd = bd;
-+	pdv->pdv_bdev_handle = bdev_handle;
- 
- 	ret = pscsi_add_device_to_list(dev, sd);
- 	if (ret) {
--		blkdev_put(pdv->pdv_bd, pdv);
-+		bdev_release(bdev_handle);
- 		scsi_device_put(sd);
- 		return ret;
- 	}
-@@ -564,9 +564,9 @@ static void pscsi_destroy_device(struct se_device *dev)
- 		 * from pscsi_create_type_disk()
- 		 */
- 		if ((sd->type == TYPE_DISK || sd->type == TYPE_ZBC) &&
--		    pdv->pdv_bd) {
--			blkdev_put(pdv->pdv_bd, pdv);
--			pdv->pdv_bd = NULL;
-+		    pdv->pdv_bdev_handle) {
-+			bdev_release(pdv->pdv_bdev_handle);
-+			pdv->pdv_bdev_handle = NULL;
- 		}
- 		/*
- 		 * For HBA mode PHV_LLD_SCSI_HOST_NO, release the reference
-@@ -994,8 +994,8 @@ static sector_t pscsi_get_blocks(struct se_device *dev)
- {
- 	struct pscsi_dev_virt *pdv = PSCSI_DEV(dev);
- 
--	if (pdv->pdv_bd)
--		return bdev_nr_sectors(pdv->pdv_bd);
-+	if (pdv->pdv_bdev_handle)
-+		return bdev_nr_sectors(pdv->pdv_bdev_handle->bdev);
- 	return 0;
- }
- 
-diff --git a/drivers/target/target_core_pscsi.h b/drivers/target/target_core_pscsi.h
-index 23d9a6e340d4..b0a3ef136592 100644
---- a/drivers/target/target_core_pscsi.h
-+++ b/drivers/target/target_core_pscsi.h
-@@ -37,7 +37,7 @@ struct pscsi_dev_virt {
- 	int	pdv_channel_id;
- 	int	pdv_target_id;
- 	int	pdv_lun_id;
--	struct block_device *pdv_bd;
-+	struct bdev_handle *pdv_bdev_handle;
- 	struct scsi_device *pdv_sd;
- 	struct Scsi_Host *pdv_lld_host;
- } ____cacheline_aligned;
+Applied to 6.6/scsi-queue, thanks!
+
+[1/1] scsi: sli4: Remove code duplication
+      https://git.kernel.org/mkp/scsi/c/2d6f70fe175e
+
 -- 
-2.35.3
-
+Martin K. Petersen	Oracle Linux Engineering
