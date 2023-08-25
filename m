@@ -2,61 +2,58 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A3C3C88CB9
-	for <target-devel@archiver.kernel.org>; Fri, 25 Aug 2023 01:14:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59584C727AA
+	for <target-devel@archiver.kernel.org>; Fri, 25 Aug 2023 01:14:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238204AbjHYBN6 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 24 Aug 2023 21:13:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50776 "EHLO
+        id S238404AbjHYBN7 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 24 Aug 2023 21:13:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51752 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237616AbjHYBNu (ORCPT
+        with ESMTP id S235618AbjHYBNn (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 24 Aug 2023 21:13:50 -0400
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4791F1BFE;
-        Thu, 24 Aug 2023 18:13:49 -0700 (PDT)
-Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37OJEKpx016614;
-        Fri, 25 Aug 2023 01:13:39 GMT
+        Thu, 24 Aug 2023 21:13:43 -0400
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 153A01BFE;
+        Thu, 24 Aug 2023 18:13:42 -0700 (PDT)
+Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 37OJEUSZ007510;
+        Fri, 25 Aug 2023 01:13:41 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-type : content-transfer-encoding; s=corp-2023-03-30;
- bh=IRM7clTLJsFv7y8+IXvQPcdHCoU8AJwOLyxoShZ6Z7Q=;
- b=2nvWZmJzWLP4ad6agOlfDpmembyGqDsNBfdMJ8rmifIf8Nzp56/VQG41L2zHuxpfHqeD
- 7Q3uxkSE94VO6mSYU8uLg2uweTqblG9jkmD7CXrYYdhD6Ay7Pc46GrS1VngqSBlURf4X
- 4TESlvWlMqTaYj0saW2CquDc4LClBasTAxV5Z2gAPous6nTGX9KhxLe3WUMAPU+ZP9TP
- 5R0GitDq1zAPZ3DGdKVeg/ZnOBljLrZUbpy4iAjbZJYmWVlCH9zDogofCFLJ3guuf2Uf
- IK/7CuTeRxL7hgwPE3idFOAulq3QJXHr39nGpOva9B3llkZs8omBX0nQ7p5Vzr5L6o8Y Hg== 
+ bh=rjsC85RENWknezGj7Kf3T7z4R6Yd3yLs1XWNWLKCQas=;
+ b=TVSX/wzd3/3MUDy7p5R4O9BqDLCVs8trNJx4ja2bDQO1BGPOXFn603vemlg5yQKgSICZ
+ 9TS5U+dfbN3h7QqgT8qmu6w4ecUj/V6CLwIdhOfbo62wgmTPusRwBoH5keZz2LYdMyfo
+ Rxx3A8mn7K/fns9CFil2tvVvxev+guXbfqAk9Jo63WuQ2+UySHWcfe4QXttJR99puuGE
+ IyLQaeNzDYlO0hcB8bkR/dJ0/U0plt02QniEDVBnTa3QcrA+FAe1K1CNIjgkubVQx22C
+ rfQ+rK+w+Yje50fBo5z+JpRvSqHa4CeTcko1aJGZpU8/6Hka4FQJlk4hHFc8a/MafXpo aQ== 
 Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3sn1yvwfua-1
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3sn1yvwcp1-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 25 Aug 2023 01:13:39 +0000
+        Fri, 25 Aug 2023 01:13:41 +0000
 Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 37OMuKkl036170;
-        Fri, 25 Aug 2023 01:13:38 GMT
+        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 37P0FWG9036019;
+        Fri, 25 Aug 2023 01:13:40 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3sn1ywqfjv-1
+        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3sn1ywqfm5-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 25 Aug 2023 01:13:38 +0000
+        Fri, 25 Aug 2023 01:13:40 +0000
 Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 37P1DVE4019787;
-        Fri, 25 Aug 2023 01:13:38 GMT
+        by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 37P1DVEE019787;
+        Fri, 25 Aug 2023 01:13:39 GMT
 Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3sn1ywqf8n-6;
-        Fri, 25 Aug 2023 01:13:37 +0000
+        by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3sn1ywqf8n-11;
+        Fri, 25 Aug 2023 01:13:39 +0000
 From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-To:     james.smart@broadcom.com, ram.vegesna@broadcom.com,
-        jejb@linux.ibm.com, rdunlap@infradead.org,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, coolrrsh@gmail.com
-Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-kernel-mentees@lists.linuxfoundation.org
-Subject: Re: [PATCH v3] scsi: sli4: Remove code duplication
-Date:   Thu, 24 Aug 2023 21:12:52 -0400
-Message-Id: <169292577168.789945.14600068133090244401.b4-ty@oracle.com>
+To:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        Mike Christie <michael.christie@oracle.com>
+Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>
+Subject: Re: [PATCH 1/1] scsi: target: Fix write perf due to unneeded throttling
+Date:   Thu, 24 Aug 2023 21:12:57 -0400
+Message-Id: <169292577178.789945.10446294207547632721.b4-ty@oracle.com>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230817114301.17601-1-coolrrsh@gmail.com>
-References: <20230817114301.17601-1-coolrrsh@gmail.com>
+In-Reply-To: <20230817192902.346791-1-michael.christie@oracle.com>
+References: <20230817192902.346791-1-michael.christie@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -64,31 +61,34 @@ X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.267,Aquarius:18.0.957,Hydra:6.0.601,FMLib:17.11.176.26
  definitions=2023-08-25_01,2023-08-24_01,2023-05-22_02
 X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 suspectscore=0
- malwarescore=0 spamscore=0 phishscore=0 mlxlogscore=636 adultscore=0
+ malwarescore=0 spamscore=0 phishscore=0 mlxlogscore=800 adultscore=0
  mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2308100000 definitions=main-2308250009
-X-Proofpoint-GUID: 0QsdpT99nTfZs8tZTKnjNxT1geXAbs2_
-X-Proofpoint-ORIG-GUID: 0QsdpT99nTfZs8tZTKnjNxT1geXAbs2_
+X-Proofpoint-ORIG-GUID: f9ubiCuTutcZ0SG6rZgkNUq1al92ziWu
+X-Proofpoint-GUID: f9ubiCuTutcZ0SG6rZgkNUq1al92ziWu
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Thu, 17 Aug 2023 17:13:01 +0530, coolrrsh@gmail.com wrote:
+On Thu, 17 Aug 2023 14:29:02 -0500, Mike Christie wrote:
 
-> In the function sli_xmit_bls_rsp64_wqe, the 'if' and 'else' conditions
-> evaluates the same expression and gives same output. Also, params->s_id
-> shall not be equal to U32_MAX. Therefore removing the unused code.
+> The write back throttling (WBT) code checks if REQ_SYNC | REQ_IDLE is set
+> to determine if a write is O_DIRECT vs buffered. If the bits are not set
+> then it assumes it's a buffered write and will throttle LIO if we hit
+> certain metrics. LIO itself is not using the buffer cache and is doing
+> direct IO, so this has us set the direct bits so we are not throttled.
 > 
-> This fixes coccinelle warning such as:
-> drivers/scsi/elx/libefc_sli/sli4.c:2320:2-4: WARNING: possible
-> condition with no effect (if == else)
+> When the initiator application is doing direct IO this can greatly
+> improve performance. It depends on the backend device but we have seen
+> where the WBT code is throttling writes to only 20K IOPs with 4K IOs when
+> the device can support 100K+.
 > 
 > [...]
 
 Applied to 6.6/scsi-queue, thanks!
 
-[1/1] scsi: sli4: Remove code duplication
-      https://git.kernel.org/mkp/scsi/c/2d6f70fe175e
+[1/1] scsi: target: Fix write perf due to unneeded throttling
+      https://git.kernel.org/mkp/scsi/c/84c073fd89de
 
 -- 
 Martin K. Petersen	Oracle Linux Engineering
