@@ -2,90 +2,113 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50F34C83F22
-	for <target-devel@archiver.kernel.org>; Tue, 29 Aug 2023 11:04:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EB39C83F01
+	for <target-devel@archiver.kernel.org>; Wed, 30 Aug 2023 20:27:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235312AbjH2LDj (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 29 Aug 2023 07:03:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36964 "EHLO
+        id S236857AbjH3U1A (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 30 Aug 2023 16:27:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235370AbjH2LDP (ORCPT
+        with ESMTP id S239566AbjH3U0o (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 29 Aug 2023 07:03:15 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 07E8DCDA;
-        Tue, 29 Aug 2023 04:03:00 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 54FF9654FA;
-        Tue, 29 Aug 2023 11:03:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A91DC433C8;
-        Tue, 29 Aug 2023 11:02:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1693306979;
-        bh=U8tO0dLFljDnktuq80r4afitP93wv2ZaRihVU0Qyu2I=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Zpf44oWH5Z2L6QhPNIGp7PeBhJpnP4KfVurKgcL9DEj/BIRmEq8ijJzbb6q5k8Ovs
-         9bWmbNzBkJw5MyDAxRy27lwjHGda6NbScABpEWJtXeah3765gQ9TUqIkk0ScRRsr4B
-         pgJc/+HtIStX4e0zZcs6Mgm/y0cAQCiR+vX0i9HUCQ2jW21Dvj1m5KvDe2xJG8sZD9
-         7J/ySnM4IatjDikdEeiDLegDHPGVAKFz5CZJOY4FIoLRlouJhKb12RDwuxVPSp/21Q
-         Im6ZTKLVuSh6T0hvwNEhJP5WmzsfCpgy49EfIICESoo8yOH/FPp5HVYEAtlfB2KJ19
-         jLNduaFs+ry8A==
-Date:   Tue, 29 Aug 2023 13:02:47 +0200
-From:   Christian Brauner <brauner@kernel.org>
-To:     Jan Kara <jack@suse.cz>
-Cc:     Jens Axboe <axboe@kernel.dk>, linux-fsdevel@vger.kernel.org,
-        linux-block@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-        Alasdair Kergon <agk@redhat.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        "Darrick J. Wong" <djwong@kernel.org>,
-        Dave Kleikamp <shaggy@kernel.org>,
-        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
-        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
-        Jack Wang <jinpu.wang@ionos.com>,
-        Jaegeuk Kim <jaegeuk@kernel.org>,
-        jfs-discussion@lists.sourceforge.net,
-        Joern Engel <joern@lazybastard.org>,
-        Joseph Qi <joseph.qi@linux.alibaba.com>,
-        Kent Overstreet <kent.overstreet@gmail.com>,
-        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
-        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
-        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
-        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
-        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
-        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        linux-xfs@vger.kernel.org,
-        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
-        Mike Snitzer <snitzer@kernel.org>,
-        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
-        reiserfs-devel@vger.kernel.org,
-        Sergey Senozhatsky <senozhatsky@chromium.org>,
-        Song Liu <song@kernel.org>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
-        Trond Myklebust <trond.myklebust@hammerspace.com>,
-        xen-devel@lists.xenproject.org
-Subject: Re: [PATCH v3 0/29] block: Make blkdev_get_by_*() return handle
-Message-ID: <20230829-stark-trapez-2251bf78c6a9@brauner>
-References: <20230818123232.2269-1-jack@suse.cz>
- <20230825-hubraum-gedreht-8c5c4db9330a@brauner>
- <20230828170744.iifdmaw732cfiauf@quack3>
+        Wed, 30 Aug 2023 16:26:44 -0400
+Received: from mail-il1-f181.google.com (mail-il1-f181.google.com [209.85.166.181])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F2640659C;
+        Wed, 30 Aug 2023 13:13:55 -0700 (PDT)
+Received: by mail-il1-f181.google.com with SMTP id e9e14a558f8ab-34dea77cbe6so484295ab.2;
+        Wed, 30 Aug 2023 13:13:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1693426044; x=1694030844; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=BiuRhg6iucS3MVlpnxrmBmRRAVlZ0cE39FLIWdCqRaU=;
+        b=RBKlX/EuKRC4xdJVhzqeY8LerJb35For/TT76Vfw6IadArw92CnRHihOVaOlHTMfEE
+         JVlQJe7gFjhxm5dFlBsFrkKY/Zl2DZE2IIGqbwkhaudD4MWmF9SzjXONPr6FxyywzN+s
+         t2yB8fsZE+B3bunhuwSZ7cRLLns9zmWCNrtsobvxeO8663lRwWEpWyLgXb7k7ooBh50m
+         0avf80+LeVY+//+KsHzz6+GKlHl97hsuIZaU9LFRPKD601IG24SkftlonOzW3PSM6qy5
+         C/0Kiqf4lBYpF6Ah6WR4WGRm4wM20xnKw5npyGxZBTwnZjdfoS1xZ7nJusDxxD+wJx8T
+         cFrg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693426044; x=1694030844;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=BiuRhg6iucS3MVlpnxrmBmRRAVlZ0cE39FLIWdCqRaU=;
+        b=T6A/NmWPkVZRgCbxm+pjH20T4oM4SMQX1roAuWvMjrFX7w9/KUMCVKfTZfU96ynx7c
+         p+IBtCs9d5Lqb8xrGZ+HZ+I+ikaExjDMwtzGoSvF8qUzadDiPXtjr14VtsnMOui5fy30
+         sLkrlmzGbQ+ikLDXkM4e9MGWbUjH8Sk/jLf0DZkD2bnViRHoOAYn266S8yoSRB1ywHlo
+         Q5olRIWq9CYGxJpAsdH3UUN8BUh/Y/hTPLCRrCc6OA5rzOoRV3FGBY/ujFn1irlLNVas
+         NA3tZ8d8GM8zVI+7IXebgU0qjY+L6ps0C2q8jt/d9UBRPF923lWm1J67F0W161tlUVAf
+         5nfQ==
+X-Gm-Message-State: AOJu0YyHA4ORlJ7pFsfArhJn0sP+S3krLtnLx/udxPZ0uCVbGpW8L4Bn
+        TP3WN5vI7Fmhe1mDvWNEMHLjlksJBfD6TVLd
+X-Google-Smtp-Source: AGHT+IGP53fksQFYKcMY7KGCfJfTN9Gs860Mx6hqvQHlSyYZDePZfzqa1ZUpVzj8rOeZCn08ZsMcTA==
+X-Received: by 2002:a05:6e02:928:b0:34d:ee65:a8ce with SMTP id o8-20020a056e02092800b0034dee65a8cemr3499162ilt.19.1693426044046;
+        Wed, 30 Aug 2023 13:07:24 -0700 (PDT)
+Received: from azeems-kspp.c.googlers.com.com (161.74.123.34.bc.googleusercontent.com. [34.123.74.161])
+        by smtp.gmail.com with ESMTPSA id em13-20020a0566384dad00b004302760aa6bsm4084994jab.4.2023.08.30.13.07.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 30 Aug 2023 13:07:23 -0700 (PDT)
+From:   Azeem Shaikh <azeemshaikh38@gmail.com>
+To:     "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     linux-hardening@vger.kernel.org,
+        Azeem Shaikh <azeemshaikh38@gmail.com>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: target: Replace strlcpy with strscpy
+Date:   Wed, 30 Aug 2023 20:07:17 +0000
+Message-ID: <20230830200717.4129442-1-azeemshaikh38@gmail.com>
+X-Mailer: git-send-email 2.42.0.283.g2d96d420d3-goog
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20230828170744.iifdmaw732cfiauf@quack3>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-> replacement) I think we can go ahead with the series as is. As you said
-> there will be some conflicts in btrfs and I've learned about f2fs conflicts
-> as well so I can rebase & repost the series on top of rc1 to make life
-> easier for you.
+strlcpy() reads the entire source buffer first.
+This read may exceed the destination size limit.
+This is both inefficient and can lead to linear read
+overflows if a source string is not NUL-terminated [1].
+In an effort to remove strlcpy() completely [2], replace
+strlcpy() here with strscpy().
 
-That is be much appreciated. Thank you!
+Direct replacement is safe here since return value of -errno
+is used to check for truncation instead of sizeof(dest).
+
+[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#strlcpy
+[2] https://github.com/KSPP/linux/issues/89
+
+Signed-off-by: Azeem Shaikh <azeemshaikh38@gmail.com>
+---
+ drivers/target/target_core_configfs.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 936e5ff1b209..b3d2c14e2ea9 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1392,16 +1392,15 @@ static ssize_t target_wwn_vendor_id_store(struct config_item *item,
+ 	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
+ 	unsigned char buf[INQUIRY_VENDOR_LEN + 2];
+ 	char *stripped = NULL;
+-	size_t len;
++	ssize_t len;
+ 	ssize_t ret;
+
+-	len = strlcpy(buf, page, sizeof(buf));
+-	if (len < sizeof(buf)) {
++	len = strscpy(buf, page, sizeof(buf));
++	if (len > 0) {
+ 		/* Strip any newline added from userspace. */
+ 		stripped = strstrip(buf);
+-		len = strlen(stripped);
+ 	}
+-	if (len > INQUIRY_VENDOR_LEN) {
++	if (len < 0 || strlen(stripped) > INQUIRY_VENDOR_LEN) {
+ 		pr_err("Emulated T10 Vendor Identification exceeds"
+ 			" INQUIRY_VENDOR_LEN: " __stringify(INQUIRY_VENDOR_LEN)
+ 			"\n");
+--
+2.42.0.283.g2d96d420d3-goog
+
+
