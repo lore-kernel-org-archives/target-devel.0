@@ -2,103 +2,125 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D15E5C83F2F
-	for <target-devel@archiver.kernel.org>; Thu, 31 Aug 2023 18:35:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46F4FC83F2F
+	for <target-devel@archiver.kernel.org>; Thu, 31 Aug 2023 18:42:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234765AbjHaSfO (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 31 Aug 2023 14:35:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47286 "EHLO
+        id S239788AbjHaSm1 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 31 Aug 2023 14:42:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37348 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234565AbjHaSfM (ORCPT
+        with ESMTP id S232093AbjHaSmZ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 31 Aug 2023 14:35:12 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77B46E5F
-        for <target-devel@vger.kernel.org>; Thu, 31 Aug 2023 11:35:09 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id DC4411F45F;
-        Thu, 31 Aug 2023 18:35:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1693506907; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=dPb86ZrazVKix28kU/q+MBexjFVuoHs169RJWmp67YA=;
-        b=fL5LLTKBCOxOHprvUULM+0IGoXbNZPEM535STECUvhKMHzgDYw0Lwa9gxIjOU7zxQoC2AM
-        HATFtu/EJfZOfC8V01PRyzEGybn4PjBgDCau71XhYLbeo2BfpDytGzlZyVSXJ7LFSn7LXu
-        oWMG6WY3GEkMSg6EidnbQ5V6iztCdTg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1693506907;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-        bh=dPb86ZrazVKix28kU/q+MBexjFVuoHs169RJWmp67YA=;
-        b=Os3OZXUR2h/mMA3EW/inI18ic2lu9Je5szvys3q0rlxQ8sDl3HxGfDCt8WI/Cvt3QVFLem
-        gmb9qTuUMHvRrdAQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B425513583;
-        Thu, 31 Aug 2023 18:35:07 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 4PiCKlvd8GROPAAAMHmgww
-        (envelope-from <ddiss@suse.de>); Thu, 31 Aug 2023 18:35:07 +0000
-From:   David Disseldorp <ddiss@suse.de>
-To:     target-devel@vger.kernel.org
-Cc:     Mike Christie <michael.christie@oracle.com>,
-        martin.petersen@oracle.com, David Disseldorp <ddiss@suse.de>
-Subject: [PATCH] scsi: target: fix target_cmd_counter leak
-Date:   Thu, 31 Aug 2023 20:34:59 +0200
-Message-Id: <20230831183459.6938-1-ddiss@suse.de>
-X-Mailer: git-send-email 2.35.3
+        Thu, 31 Aug 2023 14:42:25 -0400
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1811210C7
+        for <target-devel@vger.kernel.org>; Thu, 31 Aug 2023 11:42:17 -0700 (PDT)
+Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-68a402c1fcdso958925b3a.1
+        for <target-devel@vger.kernel.org>; Thu, 31 Aug 2023 11:42:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1693507336; x=1694112136; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Tz4a2x19zbfNUm77S91HyO3WUpP/Tfo2YEu/Zh4ddEg=;
+        b=WXjYVGlH0bDciHH8xzHjB9eVOAkttQguc8MMRsSScYw+J4N/8KaJHTfSp1MWmWWnUd
+         GHrUyzZwJw/UvN/xePqvWpS5c5mmD29Zumq2aWGlFBkde+9RBNEt6yFBd+7Uiuz+2PAp
+         tNwaf/iv1Q47LHUllFNc7NeXiKzxyrQdsaK1w=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1693507336; x=1694112136;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Tz4a2x19zbfNUm77S91HyO3WUpP/Tfo2YEu/Zh4ddEg=;
+        b=fZQ/+1DxLKeNI1D7WoQ0GIWZMoLFinNmlRBct5zqE8+x8735zQFz7IZhXW1qyPWFCl
+         zz4OC0n7m9fE8dl1w9siz3iPssAkd9El08rVkMxhnCG0/r7fAqDuffSfizPZSYkAG6XD
+         +7Pm4IT7z9+9RotgwrX4KnkKOuqqQExmE331XZ5DW8pMd3pGzKkPuIRqRAwWG/xkqN+q
+         /R53INsgNczWVScJrSN4FZ4w/tEeUlKTEfYXXBxyItBQavQkLoH9YRmOr+5VM/OKjpQm
+         P6l71NYvTjTm5g1GgrRRPrhLyJ2kQaskNYCFomS5vPioDVg+ht2bCzLklEQIwaB7/mnF
+         hD1g==
+X-Gm-Message-State: AOJu0YxHWm7kbfQ6fsqwxIqH0uvJb+ZTeCIgP6INZRPalk52hOmVQj1X
+        JuCix2KcKRwjcrF3ZbjKPpLi6g==
+X-Google-Smtp-Source: AGHT+IGMmkdigA5BBQO6iDcRuVwj0b/wtfySuh+4OgLVGbZtxIXHhrSkmvb+qgLuaThXCX4M+JQBeg==
+X-Received: by 2002:a05:6a20:914f:b0:14c:de3:95e8 with SMTP id x15-20020a056a20914f00b0014c0de395e8mr611901pzc.52.1693507336493;
+        Thu, 31 Aug 2023 11:42:16 -0700 (PDT)
+Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
+        by smtp.gmail.com with ESMTPSA id v25-20020aa78099000000b0068b1149ea4dsm1590960pff.69.2023.08.31.11.42.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 31 Aug 2023 11:42:15 -0700 (PDT)
+Date:   Thu, 31 Aug 2023 11:42:15 -0700
+From:   Kees Cook <keescook@chromium.org>
+To:     Azeem Shaikh <azeemshaikh38@gmail.com>
+Cc:     "Martin K. Petersen" <martin.petersen@oracle.com>,
+        linux-hardening@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] scsi: target: Replace strlcpy with strscpy
+Message-ID: <202308311141.612BF8D@keescook>
+References: <20230831143638.232596-1-azeemshaikh38@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230831143638.232596-1-azeemshaikh38@gmail.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-The target_cmd_counter struct allocated via target_alloc_cmd_counter()
-is never free'd, resulting in leaks across various transport types,
-e.g.:
+On Thu, Aug 31, 2023 at 02:36:38PM +0000, Azeem Shaikh wrote:
+> strlcpy() reads the entire source buffer first.
+> This read may exceed the destination size limit.
+> This is both inefficient and can lead to linear read
+> overflows if a source string is not NUL-terminated [1].
+> In an effort to remove strlcpy() completely [2], replace
+> strlcpy() here with strscpy().
+> 
+> Direct replacement is safe here since return value of -errno
+> is used to check for truncation instead of sizeof(dest).
+> 
+> [1] https://www.kernel.org/doc/html/latest/process/deprecated.html#strlcpy
+> [2] https://github.com/KSPP/linux/issues/89
+> 
+> Signed-off-by: Azeem Shaikh <azeemshaikh38@gmail.com>
+> ---
+> v3:
+>  * Address readability comment.
+> 
+> v2:
+>  * Replace all instances of strlcpy in this file instead of just 1.
+>  * https://lore.kernel.org/all/20230830210724.4156575-1-azeemshaikh38@gmail.com/
+> 
+> v1:
+>  * https://lore.kernel.org/all/20230830200717.4129442-1-azeemshaikh38@gmail.com/
+> 
+>  drivers/target/target_core_configfs.c |   24 ++++++++++++------------
+>  1 file changed, 12 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+> index 936e5ff1b209..d5860c1c1f46 100644
+> --- a/drivers/target/target_core_configfs.c
+> +++ b/drivers/target/target_core_configfs.c
+> @@ -1392,16 +1392,16 @@ static ssize_t target_wwn_vendor_id_store(struct config_item *item,
+>  	/* +2 to allow for a trailing (stripped) '\n' and null-terminator */
+>  	unsigned char buf[INQUIRY_VENDOR_LEN + 2];
+>  	char *stripped = NULL;
+> -	size_t len;
+> +	ssize_t len;
+>  	ssize_t ret;
+> 
+> -	len = strlcpy(buf, page, sizeof(buf));
+> -	if (len < sizeof(buf)) {
+> +	len = strscpy(buf, page, sizeof(buf));
+> +	if (len > 0) {
+>  		/* Strip any newline added from userspace. */
+>  		stripped = strstrip(buf);
+>  		len = strlen(stripped);
+>  	}
+> -	if (len > INQUIRY_VENDOR_LEN) {
+> +	if (len < 0 || len > INQUIRY_VENDOR_LEN) {
 
- unreferenced object 0xffff88801f920120 (size 96):
-  comm "sh", pid 102, jiffies 4294892535 (age 713.412s)
-  hex dump (first 32 bytes):
-    07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-    00 00 00 00 00 00 00 00 38 01 92 1f 80 88 ff ff  ........8.......
-  backtrace:
-    [<00000000e58a6252>] kmalloc_trace+0x11/0x20
-    [<0000000043af4b2f>] target_alloc_cmd_counter+0x17/0x90 [target_core_mod]
-    [<000000007da2dfa7>] target_setup_session+0x2d/0x140 [target_core_mod]
-    [<0000000068feef86>] tcm_loop_tpg_nexus_store+0x19b/0x350 [tcm_loop]
-    [<000000006a80e021>] configfs_write_iter+0xb1/0x120
-    [<00000000e9f4d860>] vfs_write+0x2e4/0x3c0
-    [<000000008143433b>] ksys_write+0x80/0xb0
-    [<00000000a7df29b2>] do_syscall_64+0x42/0x90
-    [<0000000053f45fb8>] entry_SYSCALL_64_after_hwframe+0x6e/0xd8
+Agh, sorry I missed this before: the first "if" needs to be "len >= 0"
+otherwise this:
 
-Free the structure alongside the corresponding iscsit_conn / se_sess
-parent.
+        ret = target_check_inquiry_data(stripped);
 
-Signed-off-by: David Disseldorp <ddiss@suse.de>
----
- drivers/target/target_core_transport.c | 1 +
- 1 file changed, 1 insertion(+)
+will be passing a NULL pointer...
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 687adc9e086c..0686882bcbda 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -264,6 +264,7 @@ void target_free_cmd_counter(struct target_cmd_counter *cmd_cnt)
- 		percpu_ref_put(&cmd_cnt->refcnt);
- 
- 	percpu_ref_exit(&cmd_cnt->refcnt);
-+	kfree(cmd_cnt);
- }
- EXPORT_SYMBOL_GPL(target_free_cmd_counter);
- 
 -- 
-2.35.3
-
+Kees Cook
