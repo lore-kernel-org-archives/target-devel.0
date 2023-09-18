@@ -2,50 +2,50 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC80ACD13D2
-	for <target-devel@archiver.kernel.org>; Mon, 18 Sep 2023 22:00:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 931FFC46CA1
+	for <target-devel@archiver.kernel.org>; Mon, 18 Sep 2023 22:00:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229554AbjIRWAV (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 18 Sep 2023 18:00:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56734 "EHLO
+        id S229678AbjIRWAY (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 18 Sep 2023 18:00:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60670 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229447AbjIRWAV (ORCPT
+        with ESMTP id S229447AbjIRWAX (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Mon, 18 Sep 2023 18:00:21 -0400
+        Mon, 18 Sep 2023 18:00:23 -0400
 Received: from mail-pf1-f175.google.com (mail-pf1-f175.google.com [209.85.210.175])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C57FE83
-        for <target-devel@vger.kernel.org>; Mon, 18 Sep 2023 15:00:15 -0700 (PDT)
-Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-690bccb0d8aso402622b3a.0
-        for <target-devel@vger.kernel.org>; Mon, 18 Sep 2023 15:00:15 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1990883
+        for <target-devel@vger.kernel.org>; Mon, 18 Sep 2023 15:00:17 -0700 (PDT)
+Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-690bc3f8326so529121b3a.0
+        for <target-devel@vger.kernel.org>; Mon, 18 Sep 2023 15:00:17 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695074415; x=1695679215;
+        d=1e100.net; s=20230601; t=1695074416; x=1695679216;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=z90JPBUWGoZxkbMl+fIwchc9k0z1WvfExKiTDsySHxU=;
-        b=hiADQrXOwVhsqL5uyaTYV4vHUys2aJrWZAiEwf9mAvyPgl+dUsEQ+pJr5UP301n+Xb
-         EzgIXKnkNH2cnG+OzT+MXK1pZzMrqXoNxS0hup0PAShXuv8enBiVuDvOlZ0In7hv3VA9
-         IlFEQgUE5FNVZQvMgi3R5OKhzHyFZnPn930NK8uyitufIqy9BDxl5q+O+IlvdSIwM8lI
-         s54Sewd6Vk+hIyNd2RpEk6yiFxyEdPf5M8JAmAqkLyMewjtaDCZLbS81P00jDOjq0TF8
-         rbb5giSPwJlTXRzOKkMHDUhCiiIikDS/9WckcU4/ilOWT2Mws2AULA2Mcyql7d4FuuZ7
-         BC5Q==
-X-Gm-Message-State: AOJu0Yy2JLKMPfMs2c/dXcP+yX5ffOMzJgL81WSWaCmnJH57SVupXcGU
-        4GB+IKkRJXkRyxW7RSIkPwQ=
-X-Google-Smtp-Source: AGHT+IHibteeNpdU5x3R+CyL3LbEnBcJ5A/Z2yl29fUetN0hJKf9X0qJ7oh2o2fWfUm1sImryFSMjg==
-X-Received: by 2002:a05:6a21:47c6:b0:14d:8dbd:482 with SMTP id as6-20020a056a2147c600b0014d8dbd0482mr7685499pzc.35.1695074415130;
-        Mon, 18 Sep 2023 15:00:15 -0700 (PDT)
+        bh=vfVMEla/vmL0W/z3LqC/ExeIcOU2efg1V9YV8seDXCU=;
+        b=mJeoedBjhLAj/kcKUscFIhn5jY3JzGyGE8qYjJiHg2xWmEnk/6ItaQDGVmhFX28bzt
+         jcthAp5JQ0d8zs6f7ztRrvITE2XsujcdDL11YTdmYagv9YHuMWisla0JHWikA54B3UA+
+         +YaHqGUU5S/7MRUE0enkZz1o4X7/zDsCvfmw6sVjq/GA4lrPRjxRY5Tu/fmoKGpNmN3g
+         8m28ZU30rdTTdymlG+9l4mmwrX465j0KOPC0natELMoJXLydBjk+QvKF6e5mVDvtxoUk
+         i5/fqC1k782+/Akrju8opU2EG7kN/m9YzFwOp7/CebPnk2iC+PRJs77PvBtgaUX8t1rn
+         cnfQ==
+X-Gm-Message-State: AOJu0YykpTuSx/lNsYVuQ5nGZTMSu3anK0sMi2b0SzL06aaEYj1iI/U0
+        bsqejBu4y6tpYG7KrHV2YZ4=
+X-Google-Smtp-Source: AGHT+IHllZTNcwcW4sXcredQcMEWd6KcWDTpKJdmO54EEw81VeyuXVpcPF0wPAruCTs++pLCSS1g0g==
+X-Received: by 2002:aa7:88cd:0:b0:68e:3838:a2dc with SMTP id k13-20020aa788cd000000b0068e3838a2dcmr10117882pff.24.1695074416306;
+        Mon, 18 Sep 2023 15:00:16 -0700 (PDT)
 Received: from bvanassche-linux.mtv.corp.google.com ([2620:15c:211:201:33e7:1437:5d00:8e3b])
-        by smtp.gmail.com with ESMTPSA id fe20-20020a056a002f1400b00687dde8ae5dsm7514850pfb.154.2023.09.18.15.00.13
+        by smtp.gmail.com with ESMTPSA id fe20-20020a056a002f1400b00687dde8ae5dsm7514850pfb.154.2023.09.18.15.00.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Sep 2023 15:00:14 -0700 (PDT)
+        Mon, 18 Sep 2023 15:00:15 -0700 (PDT)
 From:   Bart Van Assche <bvanassche@acm.org>
 To:     "Martin K . Petersen" <martin.petersen@oracle.com>
 Cc:     Mike Christie <mchristi@redhat.com>,
         Christoph Hellwig <hch@lst.de>, target-devel@vger.kernel.org,
         Bart Van Assche <bvanassche@acm.org>
-Subject: [PATCH 2/3] scsi: target: Remove linux-iscsi.org copyright statements
-Date:   Mon, 18 Sep 2023 14:59:40 -0700
-Message-ID: <20230918215941.2053109-3-bvanassche@acm.org>
+Subject: [PATCH 3/3] scsi: target: Change nab@linux-iscsi.org into nab@kernel.org
+Date:   Mon, 18 Sep 2023 14:59:41 -0700
+Message-ID: <20230918215941.2053109-4-bvanassche@acm.org>
 X-Mailer: git-send-email 2.42.0.459.ge4e396fd5e-goog
 In-Reply-To: <20230918215941.2053109-1-bvanassche@acm.org>
 References: <20230918215941.2053109-1-bvanassche@acm.org>
@@ -55,39 +55,429 @@ Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-According to https://www.copyright.gov/what-is-copyright/, copyright can
-be owned by companies, organizations or people. A website cannot own
-copyright. Remove the linux-iscsi.org copyright statements since these
-duplicate the Rising Tide copyright statements.
+Nicholas A. Bellinger owns both email addresses. Perform this
+replacement because the linux-iscsi.org domain name no longer has any MX
+records associated. This patch has been generated by running the
+following shell commands:
+
+    git grep -li 'nab@linux-iscsi.org' |
+        xargs sed -i 's/nab@linux-iscsi.org/nab@kernel.org/i'
+
+Note: I received the following reply after having sent an email to
+nab@kernel.org: "I'm sorry to have to inform you that your message
+could not be delivered to one or more recipients. It's attached below.
+For further assistance, please send mail to postmaster. If you do so,
+please include this problem report. You can delete your own text from
+the attached returned message. The mail system."
 
 Signed-off-by: Bart Van Assche <bvanassche@acm.org>
 ---
- drivers/target/tcm_fc/tfc_conf.c | 2 --
- drivers/target/tcm_fc/tfc_io.c   | 1 -
- 2 files changed, 3 deletions(-)
+ Documentation/target/tcm_mod_builder.rst          | 2 +-
+ drivers/infiniband/ulp/isert/ib_isert.c           | 4 ++--
+ drivers/target/iscsi/iscsi_target.c               | 4 ++--
+ drivers/target/iscsi/iscsi_target_auth.c          | 2 +-
+ drivers/target/iscsi/iscsi_target_configfs.c      | 2 +-
+ drivers/target/iscsi/iscsi_target_datain_values.c | 2 +-
+ drivers/target/iscsi/iscsi_target_device.c        | 2 +-
+ drivers/target/iscsi/iscsi_target_erl0.c          | 2 +-
+ drivers/target/iscsi/iscsi_target_erl1.c          | 2 +-
+ drivers/target/iscsi/iscsi_target_erl2.c          | 2 +-
+ drivers/target/iscsi/iscsi_target_login.c         | 2 +-
+ drivers/target/iscsi/iscsi_target_nego.c          | 2 +-
+ drivers/target/iscsi/iscsi_target_nodeattrib.c    | 2 +-
+ drivers/target/iscsi/iscsi_target_parameters.c    | 2 +-
+ drivers/target/iscsi/iscsi_target_seq_pdu_list.c  | 2 +-
+ drivers/target/iscsi/iscsi_target_stat.c          | 2 +-
+ drivers/target/iscsi/iscsi_target_tmr.c           | 2 +-
+ drivers/target/iscsi/iscsi_target_tpg.c           | 2 +-
+ drivers/target/iscsi/iscsi_target_util.c          | 2 +-
+ drivers/target/target_core_configfs.c             | 2 +-
+ drivers/target/target_core_fabric_configfs.c      | 2 +-
+ drivers/target/target_core_fabric_lib.c           | 2 +-
+ drivers/target/target_core_file.c                 | 2 +-
+ drivers/target/target_core_iblock.c               | 2 +-
+ drivers/target/target_core_pscsi.c                | 2 +-
+ drivers/target/target_core_stat.c                 | 2 +-
+ drivers/target/tcm_fc/tfc_conf.c                  | 2 +-
+ drivers/target/tcm_fc/tfc_io.c                    | 2 +-
+ 28 files changed, 30 insertions(+), 30 deletions(-)
 
+diff --git a/Documentation/target/tcm_mod_builder.rst b/Documentation/target/tcm_mod_builder.rst
+index 9bfc9822e2bd..3e3e15d36a19 100644
+--- a/Documentation/target/tcm_mod_builder.rst
++++ b/Documentation/target/tcm_mod_builder.rst
+@@ -146,4 +146,4 @@ Future TODO items
+ 
+ October 5th, 2010
+ 
+-Nicholas A. Bellinger <nab@linux-iscsi.org>
++Nicholas A. Bellinger <nab@kernel.org>
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index 00a7303c8cc6..3abd958c6f20 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2013 Datera, Inc.
+  *
+- * Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ****************************************************************************/
+ 
+@@ -2660,7 +2660,7 @@ static void __exit isert_exit(void)
+ }
+ 
+ MODULE_DESCRIPTION("iSER-Target for mainline target infrastructure");
+-MODULE_AUTHOR("nab@Linux-iSCSI.org");
++MODULE_AUTHOR("nab@kernel.org");
+ MODULE_LICENSE("GPL");
+ 
+ module_init(isert_init);
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index b516c2893420..5b2138ff3c09 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+@@ -4846,7 +4846,7 @@ int iscsit_release_sessions_for_tpg(struct iscsi_portal_group *tpg, int force)
+ 
+ MODULE_DESCRIPTION("iSCSI-Target Driver for mainline target infrastructure");
+ MODULE_VERSION("4.1.x");
+-MODULE_AUTHOR("nab@Linux-iSCSI.org");
++MODULE_AUTHOR("nab@kernel.org");
+ MODULE_LICENSE("GPL");
+ 
+ module_init(iscsi_target_init_module);
+diff --git a/drivers/target/iscsi/iscsi_target_auth.c b/drivers/target/iscsi/iscsi_target_auth.c
+index c8a248bd11be..5363e3621ef7 100644
+--- a/drivers/target/iscsi/iscsi_target_auth.c
++++ b/drivers/target/iscsi/iscsi_target_auth.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 1cff6052e820..e98b896e5a11 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -5,7 +5,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ****************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_datain_values.c b/drivers/target/iscsi/iscsi_target_datain_values.c
+index 2d44781be3c6..7e81afa50144 100644
+--- a/drivers/target/iscsi/iscsi_target_datain_values.c
++++ b/drivers/target/iscsi/iscsi_target_datain_values.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_device.c b/drivers/target/iscsi/iscsi_target_device.c
+index b565ce3b2677..613d86c48a7e 100644
+--- a/drivers/target/iscsi/iscsi_target_device.c
++++ b/drivers/target/iscsi/iscsi_target_device.c
+@@ -5,7 +5,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_erl0.c b/drivers/target/iscsi/iscsi_target_erl0.c
+index 07e9cf431edd..97f366fea0f2 100644
+--- a/drivers/target/iscsi/iscsi_target_erl0.c
++++ b/drivers/target/iscsi/iscsi_target_erl0.c
+@@ -5,7 +5,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_erl1.c b/drivers/target/iscsi/iscsi_target_erl1.c
+index f460a66c0e7c..49acae57279c 100644
+--- a/drivers/target/iscsi/iscsi_target_erl1.c
++++ b/drivers/target/iscsi/iscsi_target_erl1.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_erl2.c b/drivers/target/iscsi/iscsi_target_erl2.c
+index 18e88d2ea5fd..6bee1eaa8012 100644
+--- a/drivers/target/iscsi/iscsi_target_erl2.c
++++ b/drivers/target/iscsi/iscsi_target_erl2.c
+@@ -5,7 +5,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_login.c b/drivers/target/iscsi/iscsi_target_login.c
+index 90b870f234f0..ff9a75868c12 100644
+--- a/drivers/target/iscsi/iscsi_target_login.c
++++ b/drivers/target/iscsi/iscsi_target_login.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
+index fa3fb5f4e6bc..fbcaccefe4a9 100644
+--- a/drivers/target/iscsi/iscsi_target_nego.c
++++ b/drivers/target/iscsi/iscsi_target_nego.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_nodeattrib.c b/drivers/target/iscsi/iscsi_target_nodeattrib.c
+index d63efdefb18e..60d50da7acf1 100644
+--- a/drivers/target/iscsi/iscsi_target_nodeattrib.c
++++ b/drivers/target/iscsi/iscsi_target_nodeattrib.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_parameters.c b/drivers/target/iscsi/iscsi_target_parameters.c
+index 5b90c22ee3dc..458ea27dd62d 100644
+--- a/drivers/target/iscsi/iscsi_target_parameters.c
++++ b/drivers/target/iscsi/iscsi_target_parameters.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_seq_pdu_list.c b/drivers/target/iscsi/iscsi_target_seq_pdu_list.c
+index 66de2b8de463..496d46c7adc6 100644
+--- a/drivers/target/iscsi/iscsi_target_seq_pdu_list.c
++++ b/drivers/target/iscsi/iscsi_target_seq_pdu_list.c
+@@ -5,7 +5,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_stat.c b/drivers/target/iscsi/iscsi_target_stat.c
+index 367c6468b8e1..a7dddb09ee66 100644
+--- a/drivers/target/iscsi/iscsi_target_stat.c
++++ b/drivers/target/iscsi/iscsi_target_stat.c
+@@ -5,7 +5,7 @@
+  *
+  * Copyright (c) 2011-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_tmr.c b/drivers/target/iscsi/iscsi_target_tmr.c
+index afc801f255f5..7999fceec62e 100644
+--- a/drivers/target/iscsi/iscsi_target_tmr.c
++++ b/drivers/target/iscsi/iscsi_target_tmr.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_tpg.c b/drivers/target/iscsi/iscsi_target_tpg.c
+index f7bac98fd4fe..0c1763d99675 100644
+--- a/drivers/target/iscsi/iscsi_target_tpg.c
++++ b/drivers/target/iscsi/iscsi_target_tpg.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/iscsi/iscsi_target_util.c b/drivers/target/iscsi/iscsi_target_util.c
+index 91a75a4a7cc1..81f5f898dde3 100644
+--- a/drivers/target/iscsi/iscsi_target_util.c
++++ b/drivers/target/iscsi/iscsi_target_util.c
+@@ -4,7 +4,7 @@
+  *
+  * (c) Copyright 2007-2013 Datera, Inc.
+  *
+- * Author: Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Author: Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 936e5ff1b209..bcbf2573d203 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -3752,7 +3752,7 @@ static void __exit target_core_exit_configfs(void)
+ }
+ 
+ MODULE_DESCRIPTION("Target_Core_Mod/ConfigFS");
+-MODULE_AUTHOR("nab@Linux-iSCSI.org");
++MODULE_AUTHOR("nab@kernel.org");
+ MODULE_LICENSE("GPL");
+ 
+ module_init(target_core_init_configfs);
+diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
+index b7c637644cd4..8867f3d53665 100644
+--- a/drivers/target/target_core_fabric_configfs.c
++++ b/drivers/target/target_core_fabric_configfs.c
+@@ -7,7 +7,7 @@
+  *
+  * (c) Copyright 2010-2013 Datera, Inc.
+  *
+- * Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Nicholas A. Bellinger <nab@kernel.org>
+ *
+  ****************************************************************************/
+ 
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index 6600ae44f29d..b33e7412c4b6 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -7,7 +7,7 @@
+  *
+  * (c) Copyright 2010-2013 Datera, Inc.
+  *
+- * Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
+diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
+index 4d447520bab8..c95962e0feac 100644
+--- a/drivers/target/target_core_file.c
++++ b/drivers/target/target_core_file.c
+@@ -943,7 +943,7 @@ static void __exit fileio_module_exit(void)
+ }
+ 
+ MODULE_DESCRIPTION("TCM FILEIO subsystem plugin");
+-MODULE_AUTHOR("nab@Linux-iSCSI.org");
++MODULE_AUTHOR("nab@kernel.org");
+ MODULE_LICENSE("GPL");
+ 
+ module_init(fileio_module_init);
+diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
+index a6a06a5f7483..08cac93640ce 100644
+--- a/drivers/target/target_core_iblock.c
++++ b/drivers/target/target_core_iblock.c
+@@ -1189,7 +1189,7 @@ static void __exit iblock_module_exit(void)
+ }
+ 
+ MODULE_DESCRIPTION("TCM IBLOCK subsystem plugin");
+-MODULE_AUTHOR("nab@Linux-iSCSI.org");
++MODULE_AUTHOR("nab@kernel.org");
+ MODULE_LICENSE("GPL");
+ 
+ module_init(iblock_module_init);
+diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
+index 0d4f09693ef4..fe9a4253c5b9 100644
+--- a/drivers/target/target_core_pscsi.c
++++ b/drivers/target/target_core_pscsi.c
+@@ -1062,7 +1062,7 @@ static void __exit pscsi_module_exit(void)
+ }
+ 
+ MODULE_DESCRIPTION("TCM PSCSI subsystem plugin");
+-MODULE_AUTHOR("nab@Linux-iSCSI.org");
++MODULE_AUTHOR("nab@kernel.org");
+ MODULE_LICENSE("GPL");
+ 
+ module_init(pscsi_module_init);
+diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_core_stat.c
+index c42cbde8a31b..60e485753d29 100644
+--- a/drivers/target/target_core_stat.c
++++ b/drivers/target/target_core_stat.c
+@@ -7,7 +7,7 @@
+  *
+  * (c) Copyright 2006-2013 Datera, Inc.
+  *
+- * Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Nicholas A. Bellinger <nab@kernel.org>
+  *
+  ******************************************************************************/
+ 
 diff --git a/drivers/target/tcm_fc/tfc_conf.c b/drivers/target/tcm_fc/tfc_conf.c
-index 6ac3fc1a7d39..a7cb98d8eaa1 100644
+index a7cb98d8eaa1..03b282b5611a 100644
 --- a/drivers/target/tcm_fc/tfc_conf.c
 +++ b/drivers/target/tcm_fc/tfc_conf.c
-@@ -7,8 +7,6 @@
+@@ -7,7 +7,7 @@
   *
   * Copyright (c) 2010 Cisco Systems, Inc.
   * Copyright (c) 2009,2010 Rising Tide, Inc.
-- * Copyright (c) 2009,2010 Linux-iSCSI.org
-- *
-  * Copyright (c) 2009,2010 Nicholas A. Bellinger <nab@linux-iscsi.org>
+- * Copyright (c) 2009,2010 Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Copyright (c) 2009,2010 Nicholas A. Bellinger <nab@kernel.org>
   *
   ****************************************************************************/
+ 
 diff --git a/drivers/target/tcm_fc/tfc_io.c b/drivers/target/tcm_fc/tfc_io.c
-index bbe2e29612fa..153bb0194c87 100644
+index 153bb0194c87..078a5c6400fc 100644
 --- a/drivers/target/tcm_fc/tfc_io.c
 +++ b/drivers/target/tcm_fc/tfc_io.c
-@@ -8,7 +8,6 @@
+@@ -8,7 +8,7 @@
   * Copyright (c) 2008 Red Hat, Inc.  All rights reserved.
   * Copyright (c) 2008 Mike Christie
   * Copyright (c) 2009 Rising Tide, Inc.
-- * Copyright (c) 2009 Linux-iSCSI.org
-  * Copyright (c) 2009 Nicholas A. Bellinger <nab@linux-iscsi.org>
+- * Copyright (c) 2009 Nicholas A. Bellinger <nab@linux-iscsi.org>
++ * Copyright (c) 2009 Nicholas A. Bellinger <nab@kernel.org>
   */
  
+ /* XXX TBD some includes may be extraneous */
