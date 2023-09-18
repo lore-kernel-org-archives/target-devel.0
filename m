@@ -2,101 +2,113 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85739CD37B0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6560C46CA1
 	for <target-devel@archiver.kernel.org>; Mon, 18 Sep 2023 22:00:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229472AbjIRWAT (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Mon, 18 Sep 2023 18:00:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56704 "EHLO
+        id S229476AbjIRWAU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Mon, 18 Sep 2023 18:00:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56720 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
         with ESMTP id S229447AbjIRWAT (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
         Mon, 18 Sep 2023 18:00:19 -0400
 Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C37D83
-        for <target-devel@vger.kernel.org>; Mon, 18 Sep 2023 15:00:13 -0700 (PDT)
-Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-68fbd5cd0ceso4441732b3a.1
-        for <target-devel@vger.kernel.org>; Mon, 18 Sep 2023 15:00:13 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C06F8E
+        for <target-devel@vger.kernel.org>; Mon, 18 Sep 2023 15:00:14 -0700 (PDT)
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-68fb85afef4so4617904b3a.1
+        for <target-devel@vger.kernel.org>; Mon, 18 Sep 2023 15:00:14 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695074412; x=1695679212;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=xILTodmrczk5oPVX1p5OmsXkgrdSItgtnECJsiyzxbk=;
-        b=VTYgZej9pEloCDa6oHfa0c9nhT208Tsb+5TbOuPdU/BDkyTvxK6ybFBzaIcVOfG6HN
-         dLBCk9A/sZWXPSf9w43FKMzwk9UWGatyyCYll3VuwRik8naPAVdH9qKaK3CQaeRkFZNJ
-         k3WHl97ga/NUfDb0LvvRJg3vaVuXDpjhlDrS2SnMDEhke5iuNFwQnd6YC9nnP3Qozi9j
-         kYDFJd8MjAjKGTpkkiFMYoydefwiYKd73TOVhVydt6lYFOecQXwNMdiVy+0W581ecySh
-         sorh78fk9u4pjy0B8U0wSjG4F6UzEh91izEaOf0TF9tG1FHPwHJRZmlBDJgnbTc2GIM8
-         wxmQ==
-X-Gm-Message-State: AOJu0YzZ7nvHKJE8q3DIDMq3ulK0L65mgVmJ9psMmC4kD+b1BViGMC5t
-        LsPUezjcXAJt8VcoOs+rJnM=
-X-Google-Smtp-Source: AGHT+IGlIHfLDbJpBdwtxFPKT8HrqYvc085jG5EBmLdOLB0O8DqggvxnrJJTqdkZluPxKa9jIkJQPA==
-X-Received: by 2002:a05:6a00:39a5:b0:682:4c1c:a0fc with SMTP id fi37-20020a056a0039a500b006824c1ca0fcmr12521194pfb.19.1695074412307;
-        Mon, 18 Sep 2023 15:00:12 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1695074413; x=1695679213;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=WQifIvgUX0RxtJhdkzDQnfxGVU/5lZO6sAISIZ7OW70=;
+        b=ZHwTAGcLjxKGikiwFzMVbXH6oj5e0TTwFFKePJ76TN+v2zgzW63oFy8CLQ3kpk+EE0
+         QqzW06BZPxIJXFz3GrMQItj2/Ai4Ryj9IJoHqJ2tFoUbPino3bWlQi++evwxKhDWo8ev
+         qZexkgnvXenFsvcDIR3v/xL71dDvy+hlQ7m/0/f1EE7OLyFeKCdSaicMUKs4+dhdnxDZ
+         V1fmio6Tb94llk8hxNR6sI5Y9HwHWEvwxzliBz1xpA9t9HfUJztErUqL91JwtVq38mHx
+         QkWZfZzEeCNW0cQC36Awi9bXdTvbad1z2oT+bfnXK6UbKhQ+IjPlXZP4VzJ5ZrfoMLJh
+         couw==
+X-Gm-Message-State: AOJu0Ywh0t4f9Ooso6wIWnYP/bZ0YUpHqT55UjI1aSAgKHusDDo/pDnj
+        SbzfHyuXWgonetsGtW8EnKQ=
+X-Google-Smtp-Source: AGHT+IHDkjIYF6oCo5oNeaFahCE5peme8c2mdtkuRnkKAVxRTt9HKHNtY/lJ/F/Rg/VzYxaDKLC41Q==
+X-Received: by 2002:a05:6a20:1584:b0:14d:29f6:18c3 with SMTP id h4-20020a056a20158400b0014d29f618c3mr10411992pzj.20.1695074413508;
+        Mon, 18 Sep 2023 15:00:13 -0700 (PDT)
 Received: from bvanassche-linux.mtv.corp.google.com ([2620:15c:211:201:33e7:1437:5d00:8e3b])
-        by smtp.gmail.com with ESMTPSA id fe20-20020a056a002f1400b00687dde8ae5dsm7514850pfb.154.2023.09.18.15.00.11
+        by smtp.gmail.com with ESMTPSA id fe20-20020a056a002f1400b00687dde8ae5dsm7514850pfb.154.2023.09.18.15.00.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Sep 2023 15:00:11 -0700 (PDT)
+        Mon, 18 Sep 2023 15:00:12 -0700 (PDT)
 From:   Bart Van Assche <bvanassche@acm.org>
 To:     "Martin K . Petersen" <martin.petersen@oracle.com>
 Cc:     Mike Christie <mchristi@redhat.com>,
         Christoph Hellwig <hch@lst.de>, target-devel@vger.kernel.org,
         Bart Van Assche <bvanassche@acm.org>
-Subject: [PATCH 0/3] Replace references to linux-iscsi.org
-Date:   Mon, 18 Sep 2023 14:59:38 -0700
-Message-ID: <20230918215941.2053109-1-bvanassche@acm.org>
+Subject: [PATCH 1/3] scsi: target: Remove the references to http://www.linux-iscsi.org/
+Date:   Mon, 18 Sep 2023 14:59:39 -0700
+Message-ID: <20230918215941.2053109-2-bvanassche@acm.org>
 X-Mailer: git-send-email 2.42.0.459.ge4e396fd5e-goog
+In-Reply-To: <20230918215941.2053109-1-bvanassche@acm.org>
+References: <20230918215941.2053109-1-bvanassche@acm.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi Martin,
+The website http://www.linux-iscsi.org/ disappeared more than a year ago.
+DNS records have been removed for linux-iscsi.org. The company that
+sponsored this website (Datera; formerly called Rising Tide) has been
+liquidated in early 2021 according to
+https://blocksandfiles.com/2021/03/19/datera-is-being-liquidated/.
+Since it is unlikely that the website http://www.linux-iscsi.org/ will be
+restored, remove the references to that website.
 
-Since the website www.linux-iscsi.org no longer exists, this patch series
-removes the references to that website. Please consider this patch series
-for the next merge window.
+Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+---
+ MAINTAINERS                  | 2 --
+ drivers/target/iscsi/Kconfig | 9 ++++++---
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-Thanks,
-
-Bart.
-
-Bart Van Assche (3):
-  scsi: target: Remove the references to http://www.linux-iscsi.org/
-  scsi: target: Remove linux-iscsi.org copyright statements
-  scsi: target: Change nab@linux-iscsi.org into nab@kernel.org
-
- Documentation/target/tcm_mod_builder.rst          | 2 +-
- MAINTAINERS                                       | 2 --
- drivers/infiniband/ulp/isert/ib_isert.c           | 4 ++--
- drivers/target/iscsi/Kconfig                      | 9 ++++++---
- drivers/target/iscsi/iscsi_target.c               | 4 ++--
- drivers/target/iscsi/iscsi_target_auth.c          | 2 +-
- drivers/target/iscsi/iscsi_target_configfs.c      | 2 +-
- drivers/target/iscsi/iscsi_target_datain_values.c | 2 +-
- drivers/target/iscsi/iscsi_target_device.c        | 2 +-
- drivers/target/iscsi/iscsi_target_erl0.c          | 2 +-
- drivers/target/iscsi/iscsi_target_erl1.c          | 2 +-
- drivers/target/iscsi/iscsi_target_erl2.c          | 2 +-
- drivers/target/iscsi/iscsi_target_login.c         | 2 +-
- drivers/target/iscsi/iscsi_target_nego.c          | 2 +-
- drivers/target/iscsi/iscsi_target_nodeattrib.c    | 2 +-
- drivers/target/iscsi/iscsi_target_parameters.c    | 2 +-
- drivers/target/iscsi/iscsi_target_seq_pdu_list.c  | 2 +-
- drivers/target/iscsi/iscsi_target_stat.c          | 2 +-
- drivers/target/iscsi/iscsi_target_tmr.c           | 2 +-
- drivers/target/iscsi/iscsi_target_tpg.c           | 2 +-
- drivers/target/iscsi/iscsi_target_util.c          | 2 +-
- drivers/target/target_core_configfs.c             | 2 +-
- drivers/target/target_core_fabric_configfs.c      | 2 +-
- drivers/target/target_core_fabric_lib.c           | 2 +-
- drivers/target/target_core_file.c                 | 2 +-
- drivers/target/target_core_iblock.c               | 2 +-
- drivers/target/target_core_pscsi.c                | 2 +-
- drivers/target/target_core_stat.c                 | 2 +-
- drivers/target/tcm_fc/tfc_conf.c                  | 4 +---
- drivers/target/tcm_fc/tfc_io.c                    | 3 +--
- 30 files changed, 36 insertions(+), 38 deletions(-)
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 90f13281d297..10a2d6af910b 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -11144,7 +11144,6 @@ M:	Sagi Grimberg <sagi@grimberg.me>
+ L:	linux-rdma@vger.kernel.org
+ L:	target-devel@vger.kernel.org
+ S:	Supported
+-W:	http://www.linux-iscsi.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/nab/target-pending.git master
+ F:	drivers/infiniband/ulp/isert
+ 
+@@ -19162,7 +19161,6 @@ M:	"Martin K. Petersen" <martin.petersen@oracle.com>
+ L:	linux-scsi@vger.kernel.org
+ L:	target-devel@vger.kernel.org
+ S:	Supported
+-W:	http://www.linux-iscsi.org
+ Q:	https://patchwork.kernel.org/project/target-devel/list/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git
+ F:	Documentation/target/
+diff --git a/drivers/target/iscsi/Kconfig b/drivers/target/iscsi/Kconfig
+index 922484ea4e30..922b207bc69d 100644
+--- a/drivers/target/iscsi/Kconfig
++++ b/drivers/target/iscsi/Kconfig
+@@ -1,12 +1,15 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ config ISCSI_TARGET
+-	tristate "Linux-iSCSI.org iSCSI Target Mode Stack"
++	tristate "SCSI Target Mode Stack"
+ 	depends on INET
+ 	select CRYPTO
+ 	select CRYPTO_CRC32C
+ 	select CRYPTO_CRC32C_INTEL if X86
+ 	help
+-	Say M here to enable the ConfigFS enabled Linux-iSCSI.org iSCSI
+-	Target Mode Stack.
++	Say M to enable the SCSI target mode stack. A SCSI target mode stack
++	is software that makes local storage available over a storage network
++	to a SCSI initiator system. The supported storage network technologies
++	include iSCSI, Fibre Channel and the SCSI RDMA Protocol (SRP).
++	Configuration of the SCSI target mode stack happens through configfs.
+ 
+ source	"drivers/target/iscsi/cxgbit/Kconfig"
