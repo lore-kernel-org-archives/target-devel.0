@@ -2,138 +2,97 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1F2DCD54A8
-	for <target-devel@archiver.kernel.org>; Tue, 19 Sep 2023 08:11:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3A80CD5BCD
+	for <target-devel@archiver.kernel.org>; Tue, 19 Sep 2023 15:09:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229772AbjISILU (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 19 Sep 2023 04:11:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37304 "EHLO
+        id S232384AbjISPJN (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 19 Sep 2023 11:09:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33376 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230354AbjISILS (ORCPT
+        with ESMTP id S231866AbjISPJN (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 19 Sep 2023 04:11:18 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC973115
-        for <target-devel@vger.kernel.org>; Tue, 19 Sep 2023 01:11:11 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 703E01FE7F;
-        Tue, 19 Sep 2023 08:11:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1695111070; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=+U0HOLV9A11PPJHD+lYf7A5TvsFuKAbMcTfidm5jRqQ=;
-        b=tYovH8M1Li9fuckYd/k77PxMvOoTGjlF+ojmINhika0XtRo/hYa4TZay7DTSQC485GDKik
-        EF1Oxukq7n2fkhMYSO4b/z0OXQ26jl801sQ00+j8B4lSZcBNlvqovSRcooFClusJumNqq5
-        aUXGDtoWSCusC5XbFfrKTeOc+RdgNXE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1695111070;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=+U0HOLV9A11PPJHD+lYf7A5TvsFuKAbMcTfidm5jRqQ=;
-        b=f/Mk08/gfi732NSGZJC/dPKc1YObBgiDtqB97DqOa6B8kOa6K2q8PVlB22CNW1/7wNbffo
-        oqcgYVwM5Af4r4Aw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 214EA13458;
-        Tue, 19 Sep 2023 08:11:10 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id nWr8BJ5XCWWlBQAAMHmgww
-        (envelope-from <hare@suse.de>); Tue, 19 Sep 2023 08:11:10 +0000
-Message-ID: <98ca06fa-229b-460f-96bb-2d8b50dfc45e@suse.de>
-Date:   Tue, 19 Sep 2023 10:11:09 +0200
+        Tue, 19 Sep 2023 11:09:13 -0400
+Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E17F94
+        for <target-devel@vger.kernel.org>; Tue, 19 Sep 2023 08:09:08 -0700 (PDT)
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-68fdd6011f2so4341454b3a.3
+        for <target-devel@vger.kernel.org>; Tue, 19 Sep 2023 08:09:08 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695136147; x=1695740947;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=qeMhCO4JsXnZTfyI+bhQS9VGdGKXDNmVPOA10FwHwXg=;
+        b=nz6F+BAHpzQRvyNULJxWV8V7YysvwlFXra3zTQ0ROZ/RtcDVfAy1onsIFGTLWf8/wo
+         gkJ+koa1QzjyF5UmIwetT/pJpwpFOD6IrHSrJUE2KZHn3hC1mzjQ35ROmbfQA4oB2oTo
+         IgOOUNa7/IH4gOXC3y2B6Sboq8yWOkA6bxGVr3zj/cfNi+pnln2E3qYTpKNboePMt+lP
+         ch00NGol2RvZ6vScvlLNJyR1FqbHqh4qADxNZ2BPR5gP5WJzucSAeAkPU0f77JG0EIDY
+         HxNJyzLsf8E9xY91/3gxYnRWzbAAzh8Y4qcYr9Cm5Nz2q2HSYv3H03SGmxVGPrP0YJRy
+         K9Pg==
+X-Gm-Message-State: AOJu0YzkhmEg1Ui9VXEoVgDc0U/ei8PRt2uksJRbiv63JTAwoDqcaO1e
+        VtHunsvalUsuWnfhYoWoNhA=
+X-Google-Smtp-Source: AGHT+IHemPJiPhyKNXwsJ6tSGbgMWG48Tl9Tk8R54Aa58GGjokbxoqZOGQs7tPfTogALzv5M+CFQ1Q==
+X-Received: by 2002:a05:6a00:148c:b0:68e:2c3a:8775 with SMTP id v12-20020a056a00148c00b0068e2c3a8775mr12313134pfu.33.1695136147341;
+        Tue, 19 Sep 2023 08:09:07 -0700 (PDT)
+Received: from ?IPV6:2620:15c:211:201:dc54:7e62:ea3c:d7a8? ([2620:15c:211:201:dc54:7e62:ea3c:d7a8])
+        by smtp.gmail.com with ESMTPSA id ey4-20020a056a0038c400b0064d74808738sm8787285pfb.214.2023.09.19.08.09.06
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 19 Sep 2023 08:09:06 -0700 (PDT)
+Message-ID: <3cf27172-6fda-469a-be30-69916b35ee79@acm.org>
+Date:   Tue, 19 Sep 2023 08:09:05 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 3/3] scsi: target: Change nab@linux-iscsi.org into
  nab@kernel.org
 Content-Language: en-US
-To:     Bart Van Assche <bvanassche@acm.org>,
+To:     Hannes Reinecke <hare@suse.de>,
         "Martin K . Petersen" <martin.petersen@oracle.com>
 Cc:     Mike Christie <mchristi@redhat.com>,
         Christoph Hellwig <hch@lst.de>, target-devel@vger.kernel.org
 References: <20230918215941.2053109-1-bvanassche@acm.org>
  <20230918215941.2053109-4-bvanassche@acm.org>
-From:   Hannes Reinecke <hare@suse.de>
-In-Reply-To: <20230918215941.2053109-4-bvanassche@acm.org>
+ <98ca06fa-229b-460f-96bb-2d8b50dfc45e@suse.de>
+From:   Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <98ca06fa-229b-460f-96bb-2d8b50dfc45e@suse.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 9/18/23 23:59, Bart Van Assche wrote:
-> Nicholas A. Bellinger owns both email addresses. Perform this
-> replacement because the linux-iscsi.org domain name no longer has any MX
-> records associated. This patch has been generated by running the
-> following shell commands:
+On 9/19/23 01:11, Hannes Reinecke wrote:
+> Hmm. I'm not sure if replacing the original e-mail addresses in the 
+> copyright portions of the source file is the way to go. For figuring
+> out which e-mail address one should consult the MAINTAINERS file; I
+> would treat the e-mail addresses in the copyright primarily as a
+> reference to the original author and the company he worked for at
+> that time. So I'd rather not change that.
 > 
->      git grep -li 'nab@linux-iscsi.org' |
->          xargs sed -i 's/nab@linux-iscsi.org/nab@kernel.org/i'
-> 
-> Note: I received the following reply after having sent an email to
-> nab@kernel.org: "I'm sorry to have to inform you that your message
-> could not be delivered to one or more recipients. It's attached below.
-> For further assistance, please send mail to postmaster. If you do so,
-> please include this problem report. You can delete your own text from
-> the attached returned message. The mail system."
-> 
-> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
-> ---
->   Documentation/target/tcm_mod_builder.rst          | 2 +-
->   drivers/infiniband/ulp/isert/ib_isert.c           | 4 ++--
->   drivers/target/iscsi/iscsi_target.c               | 4 ++--
->   drivers/target/iscsi/iscsi_target_auth.c          | 2 +-
->   drivers/target/iscsi/iscsi_target_configfs.c      | 2 +-
->   drivers/target/iscsi/iscsi_target_datain_values.c | 2 +-
->   drivers/target/iscsi/iscsi_target_device.c        | 2 +-
->   drivers/target/iscsi/iscsi_target_erl0.c          | 2 +-
->   drivers/target/iscsi/iscsi_target_erl1.c          | 2 +-
->   drivers/target/iscsi/iscsi_target_erl2.c          | 2 +-
->   drivers/target/iscsi/iscsi_target_login.c         | 2 +-
->   drivers/target/iscsi/iscsi_target_nego.c          | 2 +-
->   drivers/target/iscsi/iscsi_target_nodeattrib.c    | 2 +-
->   drivers/target/iscsi/iscsi_target_parameters.c    | 2 +-
->   drivers/target/iscsi/iscsi_target_seq_pdu_list.c  | 2 +-
->   drivers/target/iscsi/iscsi_target_stat.c          | 2 +-
->   drivers/target/iscsi/iscsi_target_tmr.c           | 2 +-
->   drivers/target/iscsi/iscsi_target_tpg.c           | 2 +-
->   drivers/target/iscsi/iscsi_target_util.c          | 2 +-
->   drivers/target/target_core_configfs.c             | 2 +-
->   drivers/target/target_core_fabric_configfs.c      | 2 +-
->   drivers/target/target_core_fabric_lib.c           | 2 +-
->   drivers/target/target_core_file.c                 | 2 +-
->   drivers/target/target_core_iblock.c               | 2 +-
->   drivers/target/target_core_pscsi.c                | 2 +-
->   drivers/target/target_core_stat.c                 | 2 +-
->   drivers/target/tcm_fc/tfc_conf.c                  | 2 +-
->   drivers/target/tcm_fc/tfc_io.c                    | 2 +-
->   28 files changed, 30 insertions(+), 30 deletions(-)
-> 
-Hmm. I'm not sure if replacing the original e-mail addresses in the 
-copyright portions of the source file is the way to go.
-For figuring out which e-mail address one should consult the MAINTAINERS 
-file; I would treat the e-mail addresses in the copyright primarily
-as a reference to the original authoer and the company he worked for
-at that time. So I'd rather not change that.
+> But that's personal opinion, of course. I'm not a lawyer.
 
-But that's personal opinion, of course. I'm not a lawyer.
+Thanks Hannes for having taken a look. I'm not a lawyer either. This is
+what I found by searching on the web for "How to write a copyright
+notice?":
+* The standard format for a copyright notice is (1) a copyright symbol
+followed by (2) a date, (3) the name of the author and (4) a statement
+of rights.
+* None of the guides that were written by a lawyer mentioned the
+inclusion of an email address in the copyright notice.
 
-Cheers,
+The Bard software told me the following: "Legally speaking, the email
+address is not required for a copyright notice to be valid. Copyright
+protection is automatic in most countries, and a copyright notice is
+simply a way of notifying others of your ownership rights. However,
+there are some potential benefits to including an email address in your
+copyright statement.
 
-Hannes
--- 
-Dr. Hannes Reinecke                Kernel Storage Architect
-hare@suse.de                              +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Ivo Totev, Andrew
-Myers, Andrew McDonald, Martje Boudien Moerman
+For example, if someone infringes on your copyright, you can use your
+email address to contact them and ask them to stop. You can also use
+your email address to file a DMCA takedown notice with a hosting
+provider or search engine."
 
+Anyway, unless someone has another opinion, I will revert the email 
+address changes in the copyright statements when I repost this patch
+series.
+
+Bart.
