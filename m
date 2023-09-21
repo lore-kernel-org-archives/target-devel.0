@@ -2,68 +2,40 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62D0FE7109A
-	for <target-devel@archiver.kernel.org>; Thu, 21 Sep 2023 17:02:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C82FE7D0A2
+	for <target-devel@archiver.kernel.org>; Thu, 21 Sep 2023 19:02:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229942AbjIURCY (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 21 Sep 2023 13:02:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45266 "EHLO
+        id S229498AbjIUTCS (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 21 Sep 2023 15:02:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42566 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229944AbjIURCH (ORCPT
+        with ESMTP id S229716AbjIUTCC (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 21 Sep 2023 13:02:07 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAAF8198C
-        for <target-devel@vger.kernel.org>; Thu, 21 Sep 2023 09:59:44 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 8CF9D1FDC0;
-        Thu, 21 Sep 2023 07:31:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1695281491; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=OruL5nIIluFkb6XPtYcdPGQdg7ifDBI4/nhrPj1d9Yk=;
-        b=fdaKAL5QC6CARYrERyEx3TYjuJCBUQzPucyU5c3+39rHF6EUBk1ou48NR6bHCtc4DtPODz
-        GItyvlhnSsHRZsK/mtR9Gef+VNhKA/GdKmy5rUTUzTM0Zz/NRPH4EVjPJ+6X2qXEXIeIyj
-        5uFI0z9dQh0hCKI3iNeKZvUpDjRh6J0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1695281491;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=OruL5nIIluFkb6XPtYcdPGQdg7ifDBI4/nhrPj1d9Yk=;
-        b=fqijiDP/kQF7Z1yHfVhaWNc3Fb8FoxD/XjI1ILwWVXW6YudD98hfZgPOrirRhsCAJeeQta
-        YtZxArZEzm361PDA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D9F2313513;
-        Thu, 21 Sep 2023 07:31:29 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id GWIuL1HxC2V6eQAAMHmgww
-        (envelope-from <hare@suse.de>); Thu, 21 Sep 2023 07:31:29 +0000
-Message-ID: <ca46b0f2-779e-46fe-8653-03654e5188ea@suse.de>
-Date:   Thu, 21 Sep 2023 09:31:28 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/3] scsi: target: Change nab@linux-iscsi.org into
- nab@kernel.org
-Content-Language: en-US
-To:     Bart Van Assche <bvanassche@acm.org>,
-        "Martin K . Petersen" <martin.petersen@oracle.com>
-Cc:     Mike Christie <mchristi@redhat.com>,
+        Thu, 21 Sep 2023 15:02:02 -0400
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3816C6636E
+        for <target-devel@vger.kernel.org>; Thu, 21 Sep 2023 10:34:17 -0700 (PDT)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AADF0C4339A;
+        Thu, 21 Sep 2023 06:49:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1695278988;
+        bh=f1fXTbOtgxTMxiD8WLQqRDaPy5hhu3+ivo7gsTQCiQM=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=mWPBzAyp0rofElCyoD9NvCIHSP5YGzxYVaIQZwynDMvXF3XhsaligG0bNQbBfTj4y
+         x9AnXLF7OzQNYfrMxY/GWjRpxb8EPgp1TyKAf9oGRMQN87yhOR10kth5rfoaXby8FQ
+         r1pPyx3aQ5HVdhP8fXgUk/y+aD9JcFQCw39o3VqICqkWlPwq95HzusbQ2SXLe/RkB3
+         vdTyTJ4doTztahFaJ45RCQ5FbtZC+nheZVeUpjYQLHyLb0USkDpkNWktw1N59GUKD0
+         7cxjmS6BaXLdvVaiNDrj1UWtuJyQnSDvjeqCGEj8+z3yyPVacHePtkWV7UjrEYJ/re
+         XBKIzx8bnSROA==
+Date:   Thu, 21 Sep 2023 09:49:43 +0300
+From:   Leon Romanovsky <leon@kernel.org>
+To:     Bart Van Assche <bvanassche@acm.org>
+Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
+        Mike Christie <mchristi@redhat.com>,
         Christoph Hellwig <hch@lst.de>, target-devel@vger.kernel.org,
         Jonathan Corbet <corbet@lwn.net>,
         Sagi Grimberg <sagi@grimberg.me>,
         Jason Gunthorpe <jgg@ziepe.ca>,
-        Leon Romanovsky <leon@kernel.org>,
         Mike Christie <michael.christie@oracle.com>,
         Maurizio Lombardi <mlombard@redhat.com>,
         Dmitry Bogdanov <d.bogdanov@yadro.com>,
@@ -74,47 +46,84 @@ Cc:     Mike Christie <mchristi@redhat.com>,
         Jakub Kicinski <kuba@kernel.org>,
         David Howells <dhowells@redhat.com>,
         Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH v2 3/3] scsi: target: Change nab@linux-iscsi.org into
+ nab@kernel.org
+Message-ID: <20230921064943.GB1642130@unreal>
 References: <20230920200232.3721784-1-bvanassche@acm.org>
  <20230920200232.3721784-4-bvanassche@acm.org>
-From:   Hannes Reinecke <hare@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20230920200232.3721784-4-bvanassche@acm.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On 9/20/23 22:00, Bart Van Assche wrote:
+On Wed, Sep 20, 2023 at 01:00:21PM -0700, Bart Van Assche wrote:
 > Nicholas A. Bellinger owns both email addresses. Perform this
 > replacement because the linux-iscsi.org domain name no longer has any MX
 > records associated. This patch has been generated by running the
 > following shell command:
 > 
->      git grep -li 'nab@linux-iscsi.org' |
->          while read f; do
+>     git grep -li 'nab@linux-iscsi.org' |
+>         while read f; do
 > 	    awk '{ if (match($0, "Copyright") == 0) gsub("nab@[lL]inux-i[sS][cC][sS][iI].org", "nab@kernel.org"); print $0 }' <$f >/tmp/awk.tmp &&
 > 	        mv /tmp/awk.tmp $f
 > 	done
 > 
 > Note: I received the following reply after having sent an email to
 > nab@kernel.org: "I'm sorry to have to inform you that your message
+
+Shouldn't it be nab@linux-iscsi.org?
+
 > could not be delivered to one or more recipients. It's attached below.
 > For further assistance, please send mail to postmaster. If you do so,
 > please include this problem report. You can delete your own text from
 > the attached returned message. The mail system."
 > 
-Didn't you want to drop this patch?
-The 'Author' line is a historic reference; Nic Bellinger wrote this code
-using that e-mail address. This fact will not change, even if Nic is 
-using a different e-mail address now.
+> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+> ---
+>  Documentation/target/tcm_mod_builder.rst          | 2 +-
+>  drivers/infiniband/ulp/isert/ib_isert.c           | 4 ++--
+>  drivers/target/iscsi/iscsi_target.c               | 4 ++--
+>  drivers/target/iscsi/iscsi_target_auth.c          | 2 +-
+>  drivers/target/iscsi/iscsi_target_configfs.c      | 2 +-
+>  drivers/target/iscsi/iscsi_target_datain_values.c | 2 +-
+>  drivers/target/iscsi/iscsi_target_device.c        | 2 +-
+>  drivers/target/iscsi/iscsi_target_erl0.c          | 2 +-
+>  drivers/target/iscsi/iscsi_target_erl1.c          | 2 +-
+>  drivers/target/iscsi/iscsi_target_erl2.c          | 2 +-
+>  drivers/target/iscsi/iscsi_target_login.c         | 2 +-
+>  drivers/target/iscsi/iscsi_target_nego.c          | 2 +-
+>  drivers/target/iscsi/iscsi_target_nodeattrib.c    | 2 +-
+>  drivers/target/iscsi/iscsi_target_parameters.c    | 2 +-
+>  drivers/target/iscsi/iscsi_target_seq_pdu_list.c  | 2 +-
+>  drivers/target/iscsi/iscsi_target_stat.c          | 2 +-
+>  drivers/target/iscsi/iscsi_target_tmr.c           | 2 +-
+>  drivers/target/iscsi/iscsi_target_tpg.c           | 2 +-
+>  drivers/target/iscsi/iscsi_target_util.c          | 2 +-
+>  drivers/target/target_core_configfs.c             | 2 +-
+>  drivers/target/target_core_fabric_configfs.c      | 2 +-
+>  drivers/target/target_core_fabric_lib.c           | 2 +-
+>  drivers/target/target_core_file.c                 | 2 +-
+>  drivers/target/target_core_iblock.c               | 2 +-
+>  drivers/target/target_core_pscsi.c                | 2 +-
+>  drivers/target/target_core_stat.c                 | 2 +-
+>  26 files changed, 28 insertions(+), 28 deletions(-)
 
-Cheers,
+IMHO you don't need all these changes and this patch will do the trick.
 
-Hannes
--- 
-Dr. Hannes Reinecke                Kernel Storage Architect
-hare@suse.de                              +49 911 74053 688
-SUSE Software Solutions GmbH, Maxfeldstr. 5, 90409 Nürnberg
-HRB 36809 (AG Nürnberg), Geschäftsführer: Ivo Totev, Andrew
-Myers, Andrew McDonald, Martje Boudien Moerman
+diff --git a/.mailmap b/.mailmap
+index a0a6efe87186..f5b531b1507a 100644
+--- a/.mailmap
++++ b/.mailmap
+@@ -428,6 +428,7 @@ Nathan Chancellor <nathan@kernel.org> <natechancellor@gmail.com>
+ Neeraj Upadhyay <quic_neeraju@quicinc.com> <neeraju@codeaurora.org>
+ Neil Armstrong <neil.armstrong@linaro.org> <narmstrong@baylibre.com>
+ Nguyen Anh Quynh <aquynh@gmail.com>
++Nicholas A. Bellinger <nab@kernel.org> <nab@linux-iscsi.org>
+ Nicholas Piggin <npiggin@gmail.com> <npiggen@suse.de>
+ Nicholas Piggin <npiggin@gmail.com> <npiggin@kernel.dk>
+ Nicholas Piggin <npiggin@gmail.com> <npiggin@suse.de>
 
+Thanks
