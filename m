@@ -2,34 +2,50 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C82FE7D0A2
-	for <target-devel@archiver.kernel.org>; Thu, 21 Sep 2023 19:02:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C905EE7D0AB
+	for <target-devel@archiver.kernel.org>; Thu, 21 Sep 2023 20:20:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229498AbjIUTCS (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 21 Sep 2023 15:02:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42566 "EHLO
+        id S230290AbjIUUUT (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 21 Sep 2023 16:20:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34490 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229716AbjIUTCC (ORCPT
+        with ESMTP id S231474AbjIUUTf (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 21 Sep 2023 15:02:02 -0400
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3816C6636E
-        for <target-devel@vger.kernel.org>; Thu, 21 Sep 2023 10:34:17 -0700 (PDT)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AADF0C4339A;
-        Thu, 21 Sep 2023 06:49:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1695278988;
-        bh=f1fXTbOtgxTMxiD8WLQqRDaPy5hhu3+ivo7gsTQCiQM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=mWPBzAyp0rofElCyoD9NvCIHSP5YGzxYVaIQZwynDMvXF3XhsaligG0bNQbBfTj4y
-         x9AnXLF7OzQNYfrMxY/GWjRpxb8EPgp1TyKAf9oGRMQN87yhOR10kth5rfoaXby8FQ
-         r1pPyx3aQ5HVdhP8fXgUk/y+aD9JcFQCw39o3VqICqkWlPwq95HzusbQ2SXLe/RkB3
-         vdTyTJ4doTztahFaJ45RCQ5FbtZC+nheZVeUpjYQLHyLb0USkDpkNWktw1N59GUKD0
-         7cxjmS6BaXLdvVaiNDrj1UWtuJyQnSDvjeqCGEj8+z3yyPVacHePtkWV7UjrEYJ/re
-         XBKIzx8bnSROA==
-Date:   Thu, 21 Sep 2023 09:49:43 +0300
-From:   Leon Romanovsky <leon@kernel.org>
-To:     Bart Van Assche <bvanassche@acm.org>
+        Thu, 21 Sep 2023 16:19:35 -0400
+Received: from mail-vs1-f46.google.com (mail-vs1-f46.google.com [209.85.217.46])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AD3A255AEA
+        for <target-devel@vger.kernel.org>; Thu, 21 Sep 2023 10:26:56 -0700 (PDT)
+Received: by mail-vs1-f46.google.com with SMTP id ada2fe7eead31-4528cba7892so656424137.0
+        for <target-devel@vger.kernel.org>; Thu, 21 Sep 2023 10:26:56 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1695317185; x=1695921985;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=7G8FOlAozWU1O5VNvmu34J54VfdzOT/Sa8oZkdcq61k=;
+        b=RTs0MsvgOKLjq5Ry6H7ZhZwZ2z4nPzH0IF4owkjQzMMBl+qpTzSPZAuN6bgSPzOPDN
+         hPZuy6vpAb+KvCGUxaS2gG2qVrHY+6Rq96I33VjbeAQX/iPGyOuE77fcNP4CKlURozXz
+         4EqsUzw1zFhe58MMvRHLksKLy40PDjquZMnuVrcj59MvjluwBjcorlaXYtVyABHmtlOB
+         8PIC+SHKnopnYidfo+VmrEGsLFs2zw1P5rBYsiD++OksqWai9XKunXiIO7egGXqD50HP
+         7SO0AiHvlGA6klQRhdTR9jqyBjZnXCf73U+HpelUoEpHKbZ0v24zQJtHAvGTkIYbwpsY
+         VK5Q==
+X-Gm-Message-State: AOJu0Yxmcom58P456WSEo+z/NEZOA8WrK22uMegJQTAwadvnTKNXLj8Y
+        fYuP6IbmFjhrvO9XSf2FoPLLQ/u1IR4=
+X-Google-Smtp-Source: AGHT+IFjKP19y0jNsLeURqhIHTxEUQH1fIiHPWTbh+SSPWCBIOTu3geKaLggBgl10jMcxhWrVS50EQ==
+X-Received: by 2002:a17:902:d4c4:b0:1c3:c687:4793 with SMTP id o4-20020a170902d4c400b001c3c6874793mr6464445plg.63.1695306675253;
+        Thu, 21 Sep 2023 07:31:15 -0700 (PDT)
+Received: from ?IPV6:2620:15c:211:201:6903:9a1f:51f3:593e? ([2620:15c:211:201:6903:9a1f:51f3:593e])
+        by smtp.gmail.com with ESMTPSA id a12-20020a170902ee8c00b001c5c370d4desm1543169pld.246.2023.09.21.07.31.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 21 Sep 2023 07:31:14 -0700 (PDT)
+Message-ID: <e7b16e4e-123d-47a3-ba9a-e0602a6e2fd5@acm.org>
+Date:   Thu, 21 Sep 2023 07:31:11 -0700
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 3/3] scsi: target: Change nab@linux-iscsi.org into
+ nab@kernel.org
+Content-Language: en-US
+To:     Leon Romanovsky <leon@kernel.org>
 Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
         Mike Christie <mchristi@redhat.com>,
         Christoph Hellwig <hch@lst.de>, target-devel@vger.kernel.org,
@@ -46,84 +62,59 @@ Cc:     "Martin K . Petersen" <martin.petersen@oracle.com>,
         Jakub Kicinski <kuba@kernel.org>,
         David Howells <dhowells@redhat.com>,
         Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH v2 3/3] scsi: target: Change nab@linux-iscsi.org into
- nab@kernel.org
-Message-ID: <20230921064943.GB1642130@unreal>
 References: <20230920200232.3721784-1-bvanassche@acm.org>
  <20230920200232.3721784-4-bvanassche@acm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230920200232.3721784-4-bvanassche@acm.org>
+ <20230921064943.GB1642130@unreal>
+From:   Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <20230921064943.GB1642130@unreal>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Wed, Sep 20, 2023 at 01:00:21PM -0700, Bart Van Assche wrote:
-> Nicholas A. Bellinger owns both email addresses. Perform this
-> replacement because the linux-iscsi.org domain name no longer has any MX
-> records associated. This patch has been generated by running the
-> following shell command:
+On 9/20/23 23:49, Leon Romanovsky wrote:
+> On Wed, Sep 20, 2023 at 01:00:21PM -0700, Bart Van Assche wrote:
+>> Nicholas A. Bellinger owns both email addresses. Perform this
+>> replacement because the linux-iscsi.org domain name no longer has any MX
+>> records associated. This patch has been generated by running the
+>> following shell command:
+>>
+>>      git grep -li 'nab@linux-iscsi.org' |
+>>          while read f; do
+>> 	    awk '{ if (match($0, "Copyright") == 0) gsub("nab@[lL]inux-i[sS][cC][sS][iI].org", "nab@kernel.org"); print $0 }' <$f >/tmp/awk.tmp &&
+>> 	        mv /tmp/awk.tmp $f
+>> 	done
+>>
+>> Note: I received the following reply after having sent an email to
+>> nab@kernel.org: "I'm sorry to have to inform you that your message
 > 
->     git grep -li 'nab@linux-iscsi.org' |
->         while read f; do
-> 	    awk '{ if (match($0, "Copyright") == 0) gsub("nab@[lL]inux-i[sS][cC][sS][iI].org", "nab@kernel.org"); print $0 }' <$f >/tmp/awk.tmp &&
-> 	        mv /tmp/awk.tmp $f
-> 	done
+> Shouldn't it be nab@linux-iscsi.org?
+
+Both e-mail addresses are non-operational. The following message 
+appeared in my inbox after I tried to send an email to 
+nab@linux-iscsi.org: "The recipient server did not accept our requests 
+to connect. [mail.linux-iscsi.org. 67.23.28.174: timed out]". The reply 
+shown above was received after I tried to send an email to nab@kernel.org.
+
+> IMHO you don't need all these changes and this patch will do the trick.
 > 
-> Note: I received the following reply after having sent an email to
-> nab@kernel.org: "I'm sorry to have to inform you that your message
+> diff --git a/.mailmap b/.mailmap
+> index a0a6efe87186..f5b531b1507a 100644
+> --- a/.mailmap
+> +++ b/.mailmap
+> @@ -428,6 +428,7 @@ Nathan Chancellor <nathan@kernel.org> <natechancellor@gmail.com>
+>   Neeraj Upadhyay <quic_neeraju@quicinc.com> <neeraju@codeaurora.org>
+>   Neil Armstrong <neil.armstrong@linaro.org> <narmstrong@baylibre.com>
+>   Nguyen Anh Quynh <aquynh@gmail.com>
+> +Nicholas A. Bellinger <nab@kernel.org> <nab@linux-iscsi.org>
+>   Nicholas Piggin <npiggin@gmail.com> <npiggen@suse.de>
+>   Nicholas Piggin <npiggin@gmail.com> <npiggin@kernel.dk>
+>   Nicholas Piggin <npiggin@gmail.com> <npiggin@suse.de>
 
-Shouldn't it be nab@linux-iscsi.org?
+Does anyone else prefer this approach?
 
-> could not be delivered to one or more recipients. It's attached below.
-> For further assistance, please send mail to postmaster. If you do so,
-> please include this problem report. You can delete your own text from
-> the attached returned message. The mail system."
-> 
-> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
-> ---
->  Documentation/target/tcm_mod_builder.rst          | 2 +-
->  drivers/infiniband/ulp/isert/ib_isert.c           | 4 ++--
->  drivers/target/iscsi/iscsi_target.c               | 4 ++--
->  drivers/target/iscsi/iscsi_target_auth.c          | 2 +-
->  drivers/target/iscsi/iscsi_target_configfs.c      | 2 +-
->  drivers/target/iscsi/iscsi_target_datain_values.c | 2 +-
->  drivers/target/iscsi/iscsi_target_device.c        | 2 +-
->  drivers/target/iscsi/iscsi_target_erl0.c          | 2 +-
->  drivers/target/iscsi/iscsi_target_erl1.c          | 2 +-
->  drivers/target/iscsi/iscsi_target_erl2.c          | 2 +-
->  drivers/target/iscsi/iscsi_target_login.c         | 2 +-
->  drivers/target/iscsi/iscsi_target_nego.c          | 2 +-
->  drivers/target/iscsi/iscsi_target_nodeattrib.c    | 2 +-
->  drivers/target/iscsi/iscsi_target_parameters.c    | 2 +-
->  drivers/target/iscsi/iscsi_target_seq_pdu_list.c  | 2 +-
->  drivers/target/iscsi/iscsi_target_stat.c          | 2 +-
->  drivers/target/iscsi/iscsi_target_tmr.c           | 2 +-
->  drivers/target/iscsi/iscsi_target_tpg.c           | 2 +-
->  drivers/target/iscsi/iscsi_target_util.c          | 2 +-
->  drivers/target/target_core_configfs.c             | 2 +-
->  drivers/target/target_core_fabric_configfs.c      | 2 +-
->  drivers/target/target_core_fabric_lib.c           | 2 +-
->  drivers/target/target_core_file.c                 | 2 +-
->  drivers/target/target_core_iblock.c               | 2 +-
->  drivers/target/target_core_pscsi.c                | 2 +-
->  drivers/target/target_core_stat.c                 | 2 +-
->  26 files changed, 28 insertions(+), 28 deletions(-)
+Thanks,
 
-IMHO you don't need all these changes and this patch will do the trick.
+Bart.
 
-diff --git a/.mailmap b/.mailmap
-index a0a6efe87186..f5b531b1507a 100644
---- a/.mailmap
-+++ b/.mailmap
-@@ -428,6 +428,7 @@ Nathan Chancellor <nathan@kernel.org> <natechancellor@gmail.com>
- Neeraj Upadhyay <quic_neeraju@quicinc.com> <neeraju@codeaurora.org>
- Neil Armstrong <neil.armstrong@linaro.org> <narmstrong@baylibre.com>
- Nguyen Anh Quynh <aquynh@gmail.com>
-+Nicholas A. Bellinger <nab@kernel.org> <nab@linux-iscsi.org>
- Nicholas Piggin <npiggin@gmail.com> <npiggen@suse.de>
- Nicholas Piggin <npiggin@gmail.com> <npiggin@kernel.dk>
- Nicholas Piggin <npiggin@gmail.com> <npiggin@suse.de>
-
-Thanks
