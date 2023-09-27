@@ -2,113 +2,190 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86FE6CE7A88
-	for <target-devel@archiver.kernel.org>; Sun, 24 Sep 2023 17:06:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FBF1E810C9
+	for <target-devel@archiver.kernel.org>; Wed, 27 Sep 2023 09:34:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229710AbjIXRGf (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Sun, 24 Sep 2023 13:06:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57532 "EHLO
+        id S231146AbjI0Je5 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 27 Sep 2023 05:34:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32896 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229437AbjIXRGf (ORCPT
+        with ESMTP id S230448AbjI0Jes (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Sun, 24 Sep 2023 13:06:35 -0400
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A6B3CF;
-        Sun, 24 Sep 2023 10:06:29 -0700 (PDT)
-Received: by mail-lf1-x12f.google.com with SMTP id 2adb3069b0e04-5043a01ee20so5583305e87.0;
-        Sun, 24 Sep 2023 10:06:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1695575187; x=1696179987; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=gG8vnWQHvQhRnrvCqdEqT6JTTQ016xPNLohZ4GJlrMs=;
-        b=izTK4OoNLhWkjZEtI25JEFgNhwssqHSu4NJitCOmmkBopTZ/AvX2Hv/t0MFffFQS2+
-         EMTAR2XMXfA+HhSX1qJHPIkJtOx54KGFw0IFEYae0FA1JZNdepFIwZACH+sDVFHZSPCA
-         iPCBL2tyawmSUNrsQPKnz5BEaTwR0q3yuwozJKMtRXDUl0MPCPyjWF5G7QAWOhgM01D2
-         C0q7SGgZJ3CO8QM9j270aLDxfQHYGoUUru9PkQW63JIgBA2MhJdyNUbVa392dVFaigSA
-         DVP2CwujcuM7gDtuIYA+hLxOYMD1xF60K9cJaF0K/8DXZcTZxTZN74MIsGgscuUjXlBt
-         HR6Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1695575187; x=1696179987;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=gG8vnWQHvQhRnrvCqdEqT6JTTQ016xPNLohZ4GJlrMs=;
-        b=ck3Gs++ZjBbt8UsGj563EK9/ZTuw930UjJYfo45xzrmvTCMYNE/bSd6ESZdSlwxU06
-         YiXh5GGhxlCLZJYS3p3Xz6kPok3wuxMGPSRjoV6gZcv6jqxs4wmKadh0ITi2c7qyN+d2
-         QR6RC1+Nqv+6eYdb5+aE9yhJ5S/9XIeq46NpkDKWguCV8Y+PVqbqhkJ4xn+vSS0X0dgr
-         yJtD4cnozHmp0k02Pewq6VmBoW6Bv285uAuEwXFYyz1UMnDCaWRF8L2kyMIZPz764I9p
-         sJhEyavlVnj6gl3edpl4XB5A1YhzB2yMIQsYH7gkAvNZJ6sQwcbclL2wn0ZMDYav7YKB
-         9nDA==
-X-Gm-Message-State: AOJu0YyFqgAxUen6rPdQGykJUjWrxNd1koKpfbN92+iWHxYKxg3WB1Ti
-        cMveJzvq/Dr5ck7rEQmnu5s=
-X-Google-Smtp-Source: AGHT+IEtoFr2Pbg8fZweBJMsD1JXTiezgzBgcOIx0X/hI7Iqh7usEJ41J/mea3D1UezDz38TmVOXRg==
-X-Received: by 2002:a19:2d01:0:b0:503:36cb:5438 with SMTP id k1-20020a192d01000000b0050336cb5438mr4050615lfj.21.1695575186869;
-        Sun, 24 Sep 2023 10:06:26 -0700 (PDT)
-Received: from [192.168.178.40] ([146.52.231.36])
-        by smtp.gmail.com with ESMTPSA id y19-20020a056402135300b0052fdfd8870bsm4476566edw.89.2023.09.24.10.06.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 24 Sep 2023 10:06:26 -0700 (PDT)
-Message-ID: <bc42418d-117e-8d69-2630-0f072b9e196b@gmail.com>
-Date:   Sun, 24 Sep 2023 19:06:25 +0200
+        Wed, 27 Sep 2023 05:34:48 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9157A193;
+        Wed, 27 Sep 2023 02:34:45 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 967601FD5E;
+        Wed, 27 Sep 2023 09:34:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+        t=1695807283; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=8yq/EWr5xgyIq2expGTOm/a8E50tdoL6jyUvlCURtkA=;
+        b=AFBlD5DhZEt1NESHiYyz8SkegLzofp7eJ1WULrYqvNawr6FwYRs8YvfnxMMuueLH4oaPAr
+        4/E8CfUtgD9JCSYdgqDNPTGf3WDqWggCkDqswdM4bg88sfMPDeWHH5NIlB2Bfj+JpMt9FG
+        ZcOWlzLEUXG/bpJ8Kbaqy4vRi+qRmpA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+        s=susede2_ed25519; t=1695807283;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=8yq/EWr5xgyIq2expGTOm/a8E50tdoL6jyUvlCURtkA=;
+        b=mg4W9cwL1b35dhDAXFy+IpXoqDtwwHWZKy46oqV5YDeY2A866tqG4ZHrqCDezVtTxVLjRN
+        B2SqzI+xFxiJavDw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 779CF13A74;
+        Wed, 27 Sep 2023 09:34:43 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id YqW3HDP3E2X+EgAAMHmgww
+        (envelope-from <jack@suse.cz>); Wed, 27 Sep 2023 09:34:43 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+        id DAA33A07C9; Wed, 27 Sep 2023 11:34:42 +0200 (CEST)
+From:   Jan Kara <jack@suse.cz>
+To:     Christian Brauner <brauner@kernel.org>
+Cc:     <linux-fsdevel@vger.kernel.org>, <linux-block@vger.kernel.org>,
+        Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
+        Alasdair Kergon <agk@redhat.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Anna Schumaker <anna@kernel.org>, Chao Yu <chao@kernel.org>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        "Darrick J. Wong" <djwong@kernel.org>,
+        Dave Kleikamp <shaggy@kernel.org>,
+        David Sterba <dsterba@suse.com>, dm-devel@redhat.com,
+        drbd-dev@lists.linbit.com, Gao Xiang <xiang@kernel.org>,
+        Jack Wang <jinpu.wang@ionos.com>,
+        Jaegeuk Kim <jaegeuk@kernel.org>,
+        jfs-discussion@lists.sourceforge.net,
+        Joern Engel <joern@lazybastard.org>,
+        Joseph Qi <joseph.qi@linux.alibaba.com>,
+        Kent Overstreet <kent.overstreet@gmail.com>,
+        linux-bcache@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org,
+        linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
+        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
+        linux-nilfs@vger.kernel.org, linux-nvme@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-raid@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linux-xfs@vger.kernel.org,
+        "Md. Haris Iqbal" <haris.iqbal@ionos.com>,
+        Mike Snitzer <snitzer@kernel.org>,
+        Minchan Kim <minchan@kernel.org>, ocfs2-devel@oss.oracle.com,
+        reiserfs-devel@vger.kernel.org,
+        Sergey Senozhatsky <senozhatsky@chromium.org>,
+        Song Liu <song@kernel.org>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        target-devel@vger.kernel.org, Ted Tso <tytso@mit.edu>,
+        Trond Myklebust <trond.myklebust@hammerspace.com>,
+        xen-devel@lists.xenproject.org
+Subject: [PATCH v4 0/29] block: Make blkdev_get_by_*() return handle
+Date:   Wed, 27 Sep 2023 11:34:06 +0200
+Message-ID: <20230818123232.2269-1-jack@suse.cz>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Subject: Re: [PATCH] scsi: target: tcmu: Annotate struct tcmu_tmr with
- __counted_by
-To:     Kees Cook <keescook@chromium.org>
-Cc:     "Martin K. Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        Nathan Chancellor <nathan@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Tom Rix <trix@redhat.com>, linux-kernel@vger.kernel.org,
-        llvm@lists.linux.dev, linux-hardening@vger.kernel.org
-References: <20230922175300.work.148-kees@kernel.org>
-Content-Language: en-US
-From:   Bodo Stroesser <bostroesser@gmail.com>
-In-Reply-To: <20230922175300.work.148-kees@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3761; i=jack@suse.cz; h=from:subject:message-id; bh=szriGynEGZ/XhMNms+k06ASpRGig2ulDzrbrydRWx/Q=; b=owEBbQGS/pANAwAIAZydqgc/ZEDZAcsmYgBlE/cIrHCVKGuvNFZzgT9xiRfuRKr6Es2Qs4om7G7p jp8k2rmJATMEAAEIAB0WIQSrWdEr1p4yirVVKBycnaoHP2RA2QUCZRP3CAAKCRCcnaoHP2RA2XGWB/ 4+O+K19fPnUyIouL+A+izJvDBxQbTCWLdn5TEMu5YdIMbi0dvnwAfknt+NWIhJaTQX2oqlgt3Z+UIT peMYb+jQZabj8X4xHMMy3Sfq64tRwodJHlZby5Ux9AfTZe49zDp4M4B3yxQqarEhmz6e4FJUGDaSej vcJmLz6AuSnYuAh4QK/3jCXQrEElZRTjarZjfbunWocM/2dQ7CB+rOSwKJcRMoDpqntU8QyArxca4l q6I2pBMNjnYMgjtG+ABGSBtTrj87TuJSTB3V8qtI38sfCYjMVVEoQiJKuUm1GMh2sPOFelwVMXMCJH mKs8UbSjcFd3wsbJXc8EOKLxzYparl
+X-Developer-Key: i=jack@suse.cz; a=openpgp; fpr=93C6099A142276A28BBE35D815BC833443038D8C
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
+Message-ID: <20230927093406.OpxCgq9aOTZTaMZLd-xlD1VuUh07MB4-v308nbLCgxo@z>
 
-On 22.09.23 19:53, Kees Cook wrote:
-> Prepare for the coming implementation by GCC and Clang of the __counted_by
-> attribute. Flexible array members annotated with __counted_by can have
-> their accesses bounds-checked at run-time checking via CONFIG_UBSAN_BOUNDS
-> (for array indexing) and CONFIG_FORTIFY_SOURCE (for strcpy/memcpy-family
-> functions).
-> 
-> As found with Coccinelle[1], add __counted_by for struct tcmu_tmr.
-> 
-> [1] https://github.com/kees/kernel-tools/blob/trunk/coccinelle/examples/counted_by.cocci
-> 
-> Cc: Bodo Stroesser <bostroesser@gmail.com>
-> Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-> Cc: linux-scsi@vger.kernel.org
-> Cc: target-devel@vger.kernel.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->   drivers/target/target_core_user.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> index 22cc6cac0ba2..7eb94894bd68 100644
-> --- a/drivers/target/target_core_user.c
-> +++ b/drivers/target/target_core_user.c
-> @@ -201,7 +201,7 @@ struct tcmu_tmr {
->   
->   	uint8_t tmr_type;
->   	uint32_t tmr_cmd_cnt;
-> -	int16_t tmr_cmd_ids[];
-> +	int16_t tmr_cmd_ids[] __counted_by(tmr_cmd_cnt);
->   };
->   
->   /*
+Hello,
 
-Reviewed-by: Bodo Stroesser <bostroesser@gmail.com>
+this is a v3 of the patch series which implements the idea of blkdev_get_by_*()
+calls returning bdev_handle which is then passed to blkdev_put() [1]. This
+makes the get and put calls for bdevs more obviously matching and allows us to
+propagate context from get to put without having to modify all the users
+(again!). In particular I need to propagate used open flags to blkdev_put() to
+be able count writeable opens and add support for blocking writes to mounted
+block devices. I'll send that series separately.
 
-Thank you,
-Bodo
+The series is based on Btrfs tree's for-next branch [2] as of today as the
+series depends on Christoph's changes to btrfs device handling.  Patches have
+passed some reasonable testing - I've tested block changes, md, dm, bcache,
+xfs, btrfs, ext4, swap. More testing or review is always welcome. Thanks! I've
+pushed out the full branch to:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs.git bdev_handle
+
+to ease review / testing. Christian, can you pull the patches to your tree
+to get some exposure in linux-next as well? Thanks!
+
+Changes since v3:
+* Rebased on top on btrfs tree
+
+Changes since v2:
+* Rebased on top of current vfs tree
+* Added some acks
+* Reflected minor nits from Christoph
+* Added missing conversion of blkdev_put() calls in cramfs and erofs
+* Fixed possible leak of bdev handle in xfs if logdev is the same as fs dev
+
+Changes since v1:
+* Rebased on top of current vfs tree
+* Renamed final functions to bdev_open_by_*() and bdev_release()
+* Fixed detection of exclusive open in blkdev_ioctl() and blkdev_fallocate()
+* Fixed swap conversion to properly reinitialize swap_info->bdev_handle
+* Fixed xfs conversion to not oops with rtdev without logdev
+* Couple other minor fixups
+
+								Honza
+
+[1] https://lore.kernel.org/all/ZJGNsVDhZx0Xgs2H@infradead.org
+[2] git://git.kernel.org/pub/scm/linux/kernel/git/kdave/linux.git for-next
+
+CC: Alasdair Kergon <agk@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Anna Schumaker <anna@kernel.org>
+CC: Chao Yu <chao@kernel.org>
+CC: Christian Borntraeger <borntraeger@linux.ibm.com>
+CC: Coly Li <colyli@suse.de
+CC: "Darrick J. Wong" <djwong@kernel.org>
+CC: Dave Kleikamp <shaggy@kernel.org>
+CC: David Sterba <dsterba@suse.com>
+CC: dm-devel@redhat.com
+CC: drbd-dev@lists.linbit.com
+CC: Gao Xiang <xiang@kernel.org>
+CC: Jack Wang <jinpu.wang@ionos.com>
+CC: Jaegeuk Kim <jaegeuk@kernel.org>
+CC: jfs-discussion@lists.sourceforge.net
+CC: Joern Engel <joern@lazybastard.org>
+CC: Joseph Qi <joseph.qi@linux.alibaba.com>
+CC: Kent Overstreet <kent.overstreet@gmail.com>
+CC: linux-bcache@vger.kernel.org
+CC: linux-btrfs@vger.kernel.org
+CC: linux-erofs@lists.ozlabs.org
+CC: <linux-ext4@vger.kernel.org>
+CC: linux-f2fs-devel@lists.sourceforge.net
+CC: linux-mm@kvack.org
+CC: linux-mtd@lists.infradead.org
+CC: linux-nfs@vger.kernel.org
+CC: linux-nilfs@vger.kernel.org
+CC: linux-nvme@lists.infradead.org
+CC: linux-pm@vger.kernel.org
+CC: linux-raid@vger.kernel.org
+CC: linux-s390@vger.kernel.org
+CC: linux-scsi@vger.kernel.org
+CC: linux-xfs@vger.kernel.org
+CC: "Md. Haris Iqbal" <haris.iqbal@ionos.com>
+CC: Mike Snitzer <snitzer@kernel.org>
+CC: Minchan Kim <minchan@kernel.org>
+CC: ocfs2-devel@oss.oracle.com
+CC: reiserfs-devel@vger.kernel.org
+CC: Sergey Senozhatsky <senozhatsky@chromium.org>
+CC: Song Liu <song@kernel.org>
+CC: Sven Schnelle <svens@linux.ibm.com>
+CC: target-devel@vger.kernel.org
+CC: Ted Tso <tytso@mit.edu>
+CC: Trond Myklebust <trond.myklebust@hammerspace.com>
+CC: xen-devel@lists.xenproject.org
+
+Previous versions:
+Link: http://lore.kernel.org/r/20230629165206.383-1-jack@suse.cz # v1
+Link: http://lore.kernel.org/r/20230810171429.31759-1-jack@suse.cz # v2
