@@ -2,154 +2,156 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE7D3C25B48
-	for <target-devel@archiver.kernel.org>; Wed, 25 Oct 2023 00:42:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C2C8C25B6D
+	for <target-devel@archiver.kernel.org>; Wed, 25 Oct 2023 02:23:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231263AbjJYAmQ (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 24 Oct 2023 20:42:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52170 "EHLO
+        id S231521AbjJYCX0 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Tue, 24 Oct 2023 22:23:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60402 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229548AbjJYAmP (ORCPT
+        with ESMTP id S229548AbjJYCX0 (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 24 Oct 2023 20:42:15 -0400
-Received: from mail-oo1-xc34.google.com (mail-oo1-xc34.google.com [IPv6:2607:f8b0:4864:20::c34])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18A46E5
-        for <target-devel@vger.kernel.org>; Tue, 24 Oct 2023 17:42:13 -0700 (PDT)
-Received: by mail-oo1-xc34.google.com with SMTP id 006d021491bc7-5845213c583so1827473eaf.0
-        for <target-devel@vger.kernel.org>; Tue, 24 Oct 2023 17:42:13 -0700 (PDT)
+        Tue, 24 Oct 2023 22:23:26 -0400
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B74710DB;
+        Tue, 24 Oct 2023 19:23:24 -0700 (PDT)
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39OLUOtl004163;
+        Wed, 25 Oct 2023 02:23:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
+ from : message-id : references : date : in-reply-to : content-type :
+ mime-version; s=corp-2023-03-30;
+ bh=TIqylN3wvAgYRKjfYdoRqFBiqfjsaaZThevou/pUHZs=;
+ b=NBFsFwew+CMfIIKRhbX0y7SmAwL8bLkbAyWxlwDfg2O3pytB67n/uFIEG9f/MGkBgl6n
+ w0rSzAZDQ/baJ1wm+911VuYAC0Pvm/vfSwOkYlu3+1O4Y8bHomrC1Hz3d8j3Yeq+B8LW
+ 4Fj5iDsQ3cFXxdeOGjQSXntpEp3zN40lvWyyhXkPOW4OgAe483unHo/PI6kXdXcFa+lB
+ 9BElKS92upQR4ze6q2MFvRGEYJ17Vz8VmDYGAM1z6EeF8+qC1Bz0p+FBSbreyszBCSiu
+ RTLAKgIEkkDoYZwvAtCG7ZXqwT5u/+ACuVTSNMhsSaPS6PkmV/shpXZDOiCaJ9ZsrSOH VQ== 
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3tv581prd1-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 25 Oct 2023 02:23:21 +0000
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 39P0XThG019157;
+        Wed, 25 Oct 2023 02:23:20 GMT
+Received: from nam04-bn8-obe.outbound.protection.outlook.com (mail-bn8nam04lp2040.outbound.protection.outlook.com [104.47.74.40])
+        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3tv5369ve8-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 25 Oct 2023 02:23:20 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=lf6H+es4vX5pCpRfL97Y1Wq9DEgSZaMPq5oHlrOAv/Lb+ZcM1yqCBBmnQESjNUdsS43ULZDHn0fkNatyEQ+dG9xLMeOsay2Otu/+973orKQSRWpKu9RX6dFH5rltnbcf3WvYG087zrYUhbnRItu787+TtVR+Ah7Q0O0gPrv/vrh3yiIcQz6xJR913LfaP5b1HBaNgEZTixY/gB03wiE3XIgl7V/cGtq0/KEx8UQZOPSjFvzrchWbnk5vMQ/QHqGB3ZlhVMjjiuN+R5Uey5Oltu1QQ0BlloHKi4p9bSsGxJ/mJ/wLukP7OKu70w4L3vZr3VGnWUQXhOzmQbqvLyx5Gg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=TIqylN3wvAgYRKjfYdoRqFBiqfjsaaZThevou/pUHZs=;
+ b=KfK63UMslI8ipMOoJHYsn/nc0CUwlyZ3s/dNmru71ANSRgLD8bdOuk8isiE689hcYp69+dmFGHKot/JuPCV3m+QJ44ZgDtM8u5wW3yvTevRpToqgtRZXFDUTyP5mNlN30ifPOyo8iVxw6gqQs7RP9RL6GLfCqGQT02y2SjTnxJf0ZMsn5gx8kw/AVIWCxyapLU2tLgO345GDPo4FUxNCSSIeebh6cEgsk1VxV2dOm51IHTim+jjkR+nnLOTvNQn5wPSXXkFzotYiEtcnNBwMlb+zPPH/EWpShkO1iFSvOl4oveeI1whIU/2/dDcCyshAVFK1UXL6PoJ4hifdBNmq1A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1698194532; x=1698799332; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=2FnAEcz0Pm6rwXLiqbg9EQq+SejnOHmDm7vB765x6ZI=;
-        b=AMCwj95qtRLVPgrnexb179RQhCdCz2o0cpZGwf6rcclMjCYntjUf6Fw9UsDUmMo6jJ
-         bMdxVfrtPCPKTSLovlrDgYfjBJf7BkUe7E/B9O4RkqvcklIlmPUxkFHLNbum+YBzyvG4
-         eO7T7K6k9Oyzw0+PKxYqngKtJTzlbuLWU/zCE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1698194532; x=1698799332;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=2FnAEcz0Pm6rwXLiqbg9EQq+SejnOHmDm7vB765x6ZI=;
-        b=n0YOdEuzHd2KBJxK/Wkg0MsnbUe+e7pgVToRvzqpvU7B+Vsao9VNZV1gFUwt6jMNfq
-         TbwZTPV8jJ09JuvN4cr+sE9bHaCi73TAmCw1vTDbCL6qXdnVJ65g39Oxc6Sm9JbPr2dH
-         Cynjz3TU4PG9a/XBusGj8fjlCHjW8ho8xlMuq1+pCKHsk6IOYmymajOwpKVd2Uhj9e+2
-         5rUTZpvgzBwSE5mbJTIFYAs1wrNeGQOPMPkLgAImCFXfDnCpQn8rGWsnrzsDZslec7Bg
-         2WvAl6EIbzxP+d0wUlhPraihtIMgTs4G9alZ72d/TmgMxo5oLsxYhEjJ67e9PUxtc+vU
-         qNSw==
-X-Gm-Message-State: AOJu0Yw9DWkxV4dDtpoDb8+p5s5dPXZM8jYQOVAm4Q2EPAWBGxKskUkq
-        IZhnDK6SrfNu80BzqtcGk9Jufg==
-X-Google-Smtp-Source: AGHT+IGH5gFCLNw5hepkhxKvaGvJWtvDDKqCFVy++lU1SJUYvicyfPYz5myLthfyacybbSPx7R9KDg==
-X-Received: by 2002:a05:6358:c323:b0:168:d382:1446 with SMTP id fk35-20020a056358c32300b00168d3821446mr7219249rwb.11.1698194532346;
-        Tue, 24 Oct 2023 17:42:12 -0700 (PDT)
-Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
-        by smtp.gmail.com with ESMTPSA id by2-20020a056a02058200b0058c1383fa8bsm6750257pgb.0.2023.10.24.17.42.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Oct 2023 17:42:11 -0700 (PDT)
-Date:   Tue, 24 Oct 2023 17:42:10 -0700
-From:   Kees Cook <keescook@chromium.org>
-To:     Justin Stitt <justinstitt@google.com>
-Cc:     James Smart <james.smart@broadcom.com>,
-        Ram Vegesna <ram.vegesna@broadcom.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH] scsi: elx: libefc: replace deprecated strncpy with
- strscpy
-Message-ID: <202310241733.9CBC2251@keescook>
-References: <20231023-strncpy-drivers-scsi-elx-libefc-efc_node-h-v1-1-8b66878b6796@google.com>
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=TIqylN3wvAgYRKjfYdoRqFBiqfjsaaZThevou/pUHZs=;
+ b=aClZzzYdH0NEqzVlTB+AnD5UsVNej+TdGSBS/rCsLSv91wUFna642/44Sa9hJRG3FYpaKN+DErSHqPByYe9UZZ+sRV/jxHwG6bh4hoqq3iGo9wkdO7FU4913A9sC4iflaK1Kz0eOso7q4gud8EkN5NrXf/F7RbOV2Z64xHitgzw=
+Received: from PH0PR10MB4759.namprd10.prod.outlook.com (2603:10b6:510:3d::12)
+ by BL3PR10MB6233.namprd10.prod.outlook.com (2603:10b6:208:38c::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6907.33; Wed, 25 Oct
+ 2023 02:23:18 +0000
+Received: from PH0PR10MB4759.namprd10.prod.outlook.com
+ ([fe80::7afa:f0a6:e2d6:8e20]) by PH0PR10MB4759.namprd10.prod.outlook.com
+ ([fe80::7afa:f0a6:e2d6:8e20%3]) with mapi id 15.20.6907.025; Wed, 25 Oct 2023
+ 02:23:18 +0000
+To:     Yang Li <yang.lee@linux.alibaba.com>
+Cc:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Abaci Robot <abaci@linux.alibaba.com>
+Subject: Re: [PATCH -next] scsi: target: core: Fix one kernel-doc comment
+From:   "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle Corporation
+Message-ID: <yq17cnbfnjl.fsf@ca-mkp.ca.oracle.com>
+References: <20231017030913.89973-1-yang.lee@linux.alibaba.com>
+Date:   Tue, 24 Oct 2023 22:23:16 -0400
+In-Reply-To: <20231017030913.89973-1-yang.lee@linux.alibaba.com> (Yang Li's
+        message of "Tue, 17 Oct 2023 11:09:13 +0800")
+Content-Type: text/plain
+X-ClientProxiedBy: BYAPR21CA0008.namprd21.prod.outlook.com
+ (2603:10b6:a03:114::18) To PH0PR10MB4759.namprd10.prod.outlook.com
+ (2603:10b6:510:3d::12)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20231023-strncpy-drivers-scsi-elx-libefc-efc_node-h-v1-1-8b66878b6796@google.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH0PR10MB4759:EE_|BL3PR10MB6233:EE_
+X-MS-Office365-Filtering-Correlation-Id: fc5b51bb-7ffa-4a78-96eb-08dbd50159d8
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: /HUbi3J5Y/sz5ePooSW3a7o8fDi+MKGMgttsqtFmlAZcmPmgMatWWVgduY8e8ndeozOqy9GX13KogcLE1ggzxyhmHWaNap3iBKq1AUMYHvAiDHKD4/VpyOsb+cWglIyL3dB2qZjEEUTzskotkCElLBOzbVfH7ZEHJk7Di32wEBOHrP6/jSTHpFC5KXYMqDv62MQjfJA8jRlLG6BrNkKfStFYJMzYTKSba+iLRYT0PRQtYXDSpnk5USGtXpAUV6fj9J6BJdeEJhFOEn+eNSbEsIhTmr3sgYtWC5yLywOyfg6P5CmpWbdNtADgmQf+VEmnm8s6VWQj6ulDdf2xbCiLEVooYj6UFX0L0U/RYwv6KNu1tDIWJFgtHWt++sp6roXAp9MwJHlGhpyr3TWbFEPNV76ON7MkFl3H/9pfMQVIkAJSxwx9KaKVxmqlG4v9cym/6U7w1o6WS0Pt0uZhxStg70cTDMtqSzYJ53qPWW4TDZbm1AKYTpWz8BNlEqP5m0GwxOPSR6LtuTESkPHy3MOSCWV6CUlno7QVZ2GdB1mWGwW7M8g/j6Kj6/EZ2b/m/dRE
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB4759.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(396003)(366004)(136003)(346002)(39860400002)(376002)(230922051799003)(1800799009)(64100799003)(451199024)(186009)(83380400001)(5660300002)(66556008)(41300700001)(86362001)(66946007)(66476007)(478600001)(316002)(6916009)(6506007)(6512007)(6486002)(36916002)(4326008)(2906002)(38100700002)(8936002)(8676002)(4744005)(26005);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?+PLzWbkowZIHTOnLM6ix8+RA/rlkoZ0pJ/9WApDlZIvFlipvVp/LvuIARlBe?=
+ =?us-ascii?Q?AgT9x5lX0FZYljmTRlq43hqFUXm83kOklrjf05J7TlcqWZkx8cdTwoUHz6Fx?=
+ =?us-ascii?Q?Lpd0q0z49VwQpoJrcPB+BImm8KlQH5VK2wMpAWb3/1FMdOO5Z+kw4RFlchQX?=
+ =?us-ascii?Q?BLYVGZccqaSEZG8fEC+u8X9ZoR1+jbE1BzrRa6G32gjc2r3ebLkdjCpOrpyf?=
+ =?us-ascii?Q?MH/wcaxLnMVpzTPXMGJ8ux/kpdGXhz1k7HTEYTQY3xbUBk4yZUzKHCHSZN/M?=
+ =?us-ascii?Q?HNsBSR4yqvFkR3S85tjn47KiXy4skN4Y2ygoT6AVcYu1XrfnwVeZV+O0mDjZ?=
+ =?us-ascii?Q?cqZCF18wtCR4SwdTo1X1kuZa+WM6uKXuRu4fU4B6yZf92eVZaBbB0axMDA4H?=
+ =?us-ascii?Q?QZcZmk86dMNA70Xq6pC9TBRzksmlc9pnSyR5/AEPRbIXk5xy0X2NkwX9caQs?=
+ =?us-ascii?Q?h7Q2mzHrmtD4+hcuCXD738tn7DCMZQJEqphh9nBqARexqkTAkNpqO6jGeY7z?=
+ =?us-ascii?Q?E9EAExyeilVa8GH9RaCXkDvQSIKcrHhejqyIBmwjqSv6Ex9TDSo8cSLHLUFW?=
+ =?us-ascii?Q?tccuCowZbjSujjoU7ff2fXV8Y9/z2M8rlULa/He9PwjQUEAnGxIZkkR0E4hs?=
+ =?us-ascii?Q?g9SmEqXe/sKXYKtUXdhpSKPAfYhQDdOagwGtJVM6MoJQTXU93RPYkwkvItO/?=
+ =?us-ascii?Q?3h9okcWxVJa6T6jA0fBhzI8PI1Ebu0ZIs1BMWwzTBQ3lJmKWxY8LamARXogP?=
+ =?us-ascii?Q?IOgLHzaO62IPMbVG3CHQbsBAFXrMgMION8qOdJ+sw2nhHEY+j+sGrCDOqONC?=
+ =?us-ascii?Q?/tcbQ8opD3FjFM41ICLd0cuGt1Esk2fXXFYTPL5vtBfAr3EDfYaqGhNEmouA?=
+ =?us-ascii?Q?/Fy/nWrSKmO+4NRlVCR0l6O3kpa1ljeIrwSOFbhvPDwRkTuAmU1xP9qi05Zs?=
+ =?us-ascii?Q?dvMTRTolFw4ySghkxY/nBnE8KhgcBN/7X/oiO48XoEYwmnPAHoDbpgNykCI9?=
+ =?us-ascii?Q?jkmXJ8VMIJLr8kPWA8DDR8PZXoEIc+tlK4PGZ3FXgfY2Oazfzfn7oO1cFJk2?=
+ =?us-ascii?Q?cHsCQ4aPmUcbxgEL42kEnAUHxaeZmxX+IAfXEbyFEZ/sAcu2jtbmZOsTamrP?=
+ =?us-ascii?Q?KajtIfe0HLx3fWvNmBvYOlHVfye0vDMefAPsAFn2h1/Ou1IHTA+LUP2Rv1lF?=
+ =?us-ascii?Q?4zcQPOf9bGlDivMDV84umiDckDp+eh+a1WBTVFSeFAcJ+homS106SVrJHvY8?=
+ =?us-ascii?Q?H/h8g2AsEjIS30N21YTW6/niF2JFpCMDr5h3pUXYzNLsBXhzaSVtrmyJzcjU?=
+ =?us-ascii?Q?bDOqcF4qif4YsY/aofkBkQMewk48ZH/yRv3E5HJvxRpWhQmuGbSy4xGd6ohU?=
+ =?us-ascii?Q?PbTUm1dBgCgPcl3myBY6PaNRI2NLfWy7lxWEv7AQAPsZb8loz89kPfs/Ghug?=
+ =?us-ascii?Q?HoH2sZdDCDKt4wPjPKg3YyKwEcb6i5iysrrGVDizCT96zDRzYDKn60d6zWVD?=
+ =?us-ascii?Q?bY1xDLK3Y29L9kip2togBqa/Mw3Bz9OZRkJOiQFi9jhBSBiQPHCWaDpgAN4p?=
+ =?us-ascii?Q?DfVo0qetToV2DsCQ6ecCqET/iNiqW+vNWF0ADaKdkJ0cbfGnM2LbGMBuZkK7?=
+ =?us-ascii?Q?fg=3D=3D?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: VaPRN5sE4MLyb+pK3V4O6UI2O6V26+DUUM4k1YFHAgRHS2bJUiwQy/rzENZ6X6g/nlDL8TwLIAk8m/tmLjJeA3NYTnRWBD7fqEl2T8mEY5FO90+l0n8DARyqruC4/YDsGXgVrY0TmXjs6jfWyIUUNfFzTCki5LFBNHESAVMeN7Ggb+6qhlE9/D9sbSHpr9yQcGolmkzFCJ15GfarA8cUVi3aEStRjnpm8do3JdksE4rRlm+6qtoCl3B57EG5zB/b3pBzHEyDvP9SE7qRme8q6V3T3O9lMLVqGU8dXGh3VY765H2VQZ3NumvxnaHg1njQmJTXr4phYHQmgU1n0wfsqs73VE2N57nrHkSZCAVzwdsiIvMTidIR82oJtz5wXWDWncWgrC+FIN0a2cUSwfpRZzvrHwoddYmBagZqyeRGCK6BIgDKxZcHxbzoUn9GM67hK6Qjip9d4MvQnWKIsGlApIz09NGbdFw9CvIHr0Dalg0EzTn0uW/6OyOcO6Bels+V4pQblniAQWjWXm5udmzmLlk1OIbly3CS/bUJH2G2Tw1p9P/JOexg5/x1YBLXbgUDefcAnWnZFjV+Fr3lgfsM9w1QilT2MyeeLlTY2pl1HnJps+edsqvSkhNEGfk2jbj6X/At/GhpNE68uw8+ciCYWzY5iezD1ZpiNwYKm9Z3qYDaR5pA8jD07Ubga7h/TsZARhKnth/UI6n3ohmgDOYChhoXNLU4yldm9GVx8FryjVtbzwx3PZjRZVS0J5RahAxy+38XbXVkXJh0fBicm3WkdxRNL0/DlJiDqTXlPiwo3z8vd0lIXLQYBHtVuDJOHDhu
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: fc5b51bb-7ffa-4a78-96eb-08dbd50159d8
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB4759.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Oct 2023 02:23:18.3604
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 9zfR2FxELviGoXLayyAWwlIl6pNUEQMWSaQmCU/3Q01BC0NMIPeSN1w0AgwwPVSH1mIBAOdRn2pq6xdAMADNYL1zp5cwEbZNcw3Lq+DQ9+M=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR10MB6233
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2023-10-25_01,2023-10-24_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 malwarescore=0 bulkscore=0
+ mlxscore=0 suspectscore=0 phishscore=0 adultscore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2310170001
+ definitions=main-2310250019
+X-Proofpoint-GUID: PVnmxnskQmgAK2jWgWvJrZFz-L1EIwPw
+X-Proofpoint-ORIG-GUID: PVnmxnskQmgAK2jWgWvJrZFz-L1EIwPw
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-On Mon, Oct 23, 2023 at 09:58:32PM +0000, Justin Stitt wrote:
-> strncpy() is deprecated for use on NUL-terminated destination strings
-> [1] and as such we should prefer more robust and less ambiguous string
-> interfaces.
-> 
-> A suitable replacement is `strscpy` [2] due to the fact that it
-> guarantees NUL-termination on the destination buffer without
-> unnecessarily NUL-padding.
-> 
-> There seems to not be any uses of `current_state_name` other than in
-> these assignments. Judging from context surrounding these assignments,
-> especially considering the string literal "invalid" being assigned, we
-> want both current_state_name and prev_state_name to be NUL-terminated
-> strings.
 
-I'm nervous that "node" may be either passed over the link or in
-IO memory, so the behavior change of not %NUL-padding these may trip
-something at run-time. Unless someone says otherwise, let's stay on the
-safe side and use strscpy_pad() for "invalid" and handler, and memcpy()
-for the swap.
+Yang,
 
-Looking at "handler", it's always less than 64, so we don't need to
-worry about early truncation -- it's always __func__, and none of them
-are very long:
+> Fix one kernel-doc comment to silence the warnings:
+> drivers/target/target_core_transport.c:1930: warning: Excess function
+> parameter 'cmd' description in 'target_submit'
+> drivers/target/target_core_transport.c:1930: warning: Function
+> parameter or member 'se_cmd' not described in 'target_submit'
 
-$ git grep efc_node_evt_set | grep -v __func__
-drivers/scsi/elx/libefc/efc_node.h:efc_node_evt_set(struct efc_sm_ctx *ctx, enum efc_sm_event evt,
-
-$ git grep efc_node_evt_set | grep __func__ | cut -d: -f1 | sort -u
-drivers/scsi/elx/libefc/efc_device.c
-drivers/scsi/elx/libefc/efc_fabric.c
-drivers/scsi/elx/libefc/efc_node.c
-
-$ grep -E '^_?_?efc' drivers/scsi/elx/libefc/efc_{fabric,device,node}.c \
-  | cut -d'(' -f1 | cut -d: -f2 | wc -L
-37
-
--Kees
-
-> 
-> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
-> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
-> Link: https://github.com/KSPP/linux/issues/90
-> Cc: linux-hardening@vger.kernel.org
-> Signed-off-by: Justin Stitt <justinstitt@google.com>
-> ---
-> Note: build-tested only.
-> 
-> Found with: $ rg "strncpy\("
-> ---
->  drivers/scsi/elx/libefc/efc_node.h | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/scsi/elx/libefc/efc_node.h b/drivers/scsi/elx/libefc/efc_node.h
-> index e9c600ac45d5..3a16703d0f97 100644
-> --- a/drivers/scsi/elx/libefc/efc_node.h
-> +++ b/drivers/scsi/elx/libefc/efc_node.h
-> @@ -26,12 +26,12 @@ efc_node_evt_set(struct efc_sm_ctx *ctx, enum efc_sm_event evt,
->  	struct efc_node *node = ctx->app;
->  
->  	if (evt == EFC_EVT_ENTER) {
-> -		strncpy(node->current_state_name, handler,
-> +		strscpy(node->current_state_name, handler,
->  			sizeof(node->current_state_name));
->  	} else if (evt == EFC_EVT_EXIT) {
-> -		strncpy(node->prev_state_name, node->current_state_name,
-> +		strscpy(node->prev_state_name, node->current_state_name,
->  			sizeof(node->prev_state_name));
-> -		strncpy(node->current_state_name, "invalid",
-> +		strscpy(node->current_state_name, "invalid",
->  			sizeof(node->current_state_name));
->  	}
->  	node->prev_evt = node->current_evt;
-> 
-> ---
-> base-commit: 9c5d00cb7b6bbc5a7965d9ab7d223b5402d1f02c
-> change-id: 20231023-strncpy-drivers-scsi-elx-libefc-efc_node-h-cbbf753197b7
-> 
-> Best regards,
-> --
-> Justin Stitt <justinstitt@google.com>
-> 
-> 
+Applied to 6.7/scsi-staging, thanks!
 
 -- 
-Kees Cook
+Martin K. Petersen	Oracle Linux Engineering
