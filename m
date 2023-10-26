@@ -2,164 +2,91 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD5CAC25B67
-	for <target-devel@archiver.kernel.org>; Thu, 26 Oct 2023 05:01:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8296CC25B48
+	for <target-devel@archiver.kernel.org>; Thu, 26 Oct 2023 17:45:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233199AbjJZFBp (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Thu, 26 Oct 2023 01:01:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48854 "EHLO
+        id S231875AbjJZRpd (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Thu, 26 Oct 2023 13:45:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38832 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229554AbjJZFBi (ORCPT
+        with ESMTP id S231276AbjJZRpc (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Thu, 26 Oct 2023 01:01:38 -0400
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DAC4193;
-        Wed, 25 Oct 2023 22:01:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-        Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-        Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-        bh=6xQyLzjRUd68pV8W/MBPmvs8ZsQ3s0uEEMwA3Kysizs=; b=WH7H+t7tFlGIDxMvTJ3/uleA8P
-        HHte3sWDM2riHkIFI0FIC5QyoTwQj2vKYLx6n/42PQV9i4xoc7Z2GKsmLbrpbm7s6ZPw4gxEO7h4P
-        qvaAkTm4VOSq608vSaiG2eFBgkcVoSfADYAQsmGqVALhJNS3DfCMDbDiGuMqWZZbcgLLkDOjuyEqQ
-        dHniSgYa8JaZI65loqce1iZIxncY0tF4w6hqT3DQMTTf/H4YMBVa5P5QQAmBDokOBKI/nWfcCfioV
-        jwkvLwyx4RF7jLcu2DqP31G/A3MVK7NIc0+EBRQ+wapqseWvVPtb/NGVF1a0lqid6P/+1ZcFX+LZj
-        Qbfxkj3g==;
-Received: from [50.53.46.231] (helo=[192.168.254.15])
-        by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-        id 1qvsUw-00DfLp-2c;
-        Thu, 26 Oct 2023 05:01:34 +0000
-Message-ID: <e4904bdf-2f7e-4727-9e27-5e131ae79798@infradead.org>
-Date:   Wed, 25 Oct 2023 22:01:31 -0700
+        Thu, 26 Oct 2023 13:45:32 -0400
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D268194
+        for <target-devel@vger.kernel.org>; Thu, 26 Oct 2023 10:45:30 -0700 (PDT)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-6bd96cfb99cso1129140b3a.2
+        for <target-devel@vger.kernel.org>; Thu, 26 Oct 2023 10:45:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1698342329; x=1698947129; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=lAfQHwAPGilY5JFUvY07Iu65/aCmQBkbdIAGwWe4Mw4=;
+        b=OOokzr/xpQa586UCRy1xcsAo2JXtjXKK1A4AH0Mi0GigDWK5n5q4u1PR/MPf7y4mZx
+         6lfsYsgMkX3AgdzCDUoaVBEAyZ6mKBXXMfIbGM7AQzKUgVkEUaMNlphLER8SP3XX3QRD
+         RJOB3ss9gxH8pBplRtLEDGjf1MqM7kQSLI8uA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698342329; x=1698947129;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lAfQHwAPGilY5JFUvY07Iu65/aCmQBkbdIAGwWe4Mw4=;
+        b=FBcf2awePqxZ6yuP2AofguPqhiMnSuwkXHKOqLvsB6oGQOF6dTuTggGHH8eQc5pXSx
+         CDlQ5w2uTX7gONDBeMfgFE+Ecu+xX+vi0HFKkuBmNrOioUn0dfR5wXgPd/xIrJJKRlC0
+         +s32U3OKDOJBRrcSy7WYScnThFLukzkiUpJo2zcMGA8SbxVFkPIZ/nwPVBqsngqTEcRd
+         /Dg5jdnJGKpXyyIAYVa/5Aq368umLgjrX7TcaAF0yRFaFZx5PGFubWmt2p/NmPh89eFp
+         qyvHpQRUcfaNNMI66mYrfN1vO/GUlh2AWFFWC4SUOl5MJFuUR4xDX6H5PgknjWYisnT9
+         saSA==
+X-Gm-Message-State: AOJu0YzKvIJDnLlS2TZfvLg3uMaHrEtPxd6VvTbpu7cEtH/vRfOQsDlD
+        FluKTCX6xLyOoUaX3n/rII6tEw==
+X-Google-Smtp-Source: AGHT+IFBdjZbnbEQ859p1Brndxt1jXVT1XtY8KlXeTsIfFnjlV9Z2Y1YMFdXHByJlyYQdj3BFcCO5w==
+X-Received: by 2002:a05:6a00:114c:b0:6bd:b7c5:f777 with SMTP id b12-20020a056a00114c00b006bdb7c5f777mr188412pfm.16.1698342329654;
+        Thu, 26 Oct 2023 10:45:29 -0700 (PDT)
+Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
+        by smtp.gmail.com with ESMTPSA id i3-20020aa787c3000000b006be047268d5sm11822297pfo.174.2023.10.26.10.45.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Oct 2023 10:45:29 -0700 (PDT)
+Date:   Thu, 26 Oct 2023 10:45:28 -0700
+From:   Kees Cook <keescook@chromium.org>
+To:     Justin Stitt <justinstitt@google.com>
+Cc:     James Smart <james.smart@broadcom.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v2] scsi: elx: libefc: replace deprecated strncpy with
+ strscpy_pad/memcpy
+Message-ID: <202310261045.5D815BE@keescook>
+References: <20231026-strncpy-drivers-scsi-elx-libefc-efc_node-h-v2-1-5c083d0c13f4@google.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] drivers: target: Fixed multiple typos in multiple files
-Content-Language: en-US
-To:     Muhammad Muzammil <m.muzzammilashraf@gmail.com>,
-        martin.petersen@oracle.com, bostroesser@gmail.com,
-        michael.christie@oracle.com
-Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20231023105915.29482-1-m.muzzammilashraf@gmail.com>
- <CAJHePoaNc6tJodB+vRM67Ac9NcAQ5x9gTC+g9P7-N3jWm5AfNA@mail.gmail.com>
-From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <CAJHePoaNc6tJodB+vRM67Ac9NcAQ5x9gTC+g9P7-N3jWm5AfNA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20231026-strncpy-drivers-scsi-elx-libefc-efc_node-h-v2-1-5c083d0c13f4@google.com>
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
-Hi--
-
-On 10/25/23 21:56, Muhammad Muzammil wrote:
-> Hi,
+On Thu, Oct 26, 2023 at 01:53:13AM +0000, Justin Stitt wrote:
+> strncpy() is deprecated for use on NUL-terminated destination strings
+> [1] and as such we should prefer more robust and less ambiguous string
+> interfaces.
 > 
-> Can anyone approve this patch?
-
-I can review it. Please see below.
-
+> To keep node->current_state_name and node->prev_state_name NUL-padded
+> and NUL-terminated let's use strscpy_pad() as this implicitly provides
+> both.
 > 
-> On Mon, Oct 23, 2023 at 3:59 PM Muhammad Muzammil
-> <m.muzzammilashraf@gmail.com> wrote:
->>
->> iscsi: iscsi_target.c: Fixed typo
->> iscsi: iscsi_target_login.c: Fixed typo
->> iscsi: iscsi_target_nego.c: Fixed typo
->> iscsi: iscsi_target_parameters.h: Fixed typo
->> iscsi: iscsi_target_tpg.c: Fixed typo
->> target_core_sbc.c: Fixed typo
->> target_core_transport.c: Fixed typo
->> target_core_user.c: Fixed typo
->> target_core_xcopy.h: Fixed typo
->> tcm_fc: tfc_conf.c: Fixed typo
->> tcm_fc: tfc_sess.c: Fixed typo
->>
->> Signed-off-by: Muhammad Muzammil <m.muzzammilashraf@gmail.com>
->> ---
->>  drivers/target/iscsi/iscsi_target.c            | 2 +-
->>  drivers/target/iscsi/iscsi_target_login.c      | 2 +-
->>  drivers/target/iscsi/iscsi_target_nego.c       | 4 ++--
->>  drivers/target/iscsi/iscsi_target_parameters.h | 2 +-
->>  drivers/target/iscsi/iscsi_target_tpg.c        | 2 +-
->>  drivers/target/target_core_sbc.c               | 2 +-
->>  drivers/target/target_core_transport.c         | 4 ++--
->>  drivers/target/target_core_user.c              | 4 ++--
->>  drivers/target/target_core_xcopy.h             | 2 +-
->>  drivers/target/tcm_fc/tfc_conf.c               | 2 +-
->>  drivers/target/tcm_fc/tfc_sess.c               | 4 ++--
->>  11 files changed, 15 insertions(+), 15 deletions(-)
->>
+> For the swap between the two, a simple memcpy will suffice.
+> 
+> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
+> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
+> Link: https://github.com/KSPP/linux/issues/90
+> Cc: linux-hardening@vger.kernel.org
+> Signed-off-by: Justin Stitt <justinstitt@google.com>
 
->> diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
->> index c81def3c96df..665eb2d9bc19 100644
->> --- a/drivers/target/target_core_transport.c
->> +++ b/drivers/target/target_core_transport.c
->> @@ -3447,7 +3447,7 @@ static const struct sense_detail sense_detail_table[] = {
->>                  * REGISTER AND MOVE service actionis attempted,
->>                  * but there are insufficient device server resources to complete the
->>                  * operation, then the command shall be terminated with CHECK CONDITION
->> -                * status, with the sense key set to ILLEGAL REQUEST,and the additonal
->> +                * status, with the sense key set to ILLEGAL REQUEST,and the additional
+Thanks! I think this looks good now.
 
-That could use a space after "REQUEST,".
-
->>                  * sense code set to INSUFFICIENT REGISTRATION RESOURCES.
->>                  */
->>                 .key = ILLEGAL_REQUEST,
-
->> diff --git a/drivers/target/tcm_fc/tfc_conf.c b/drivers/target/tcm_fc/tfc_conf.c
->> index 5ee03d1cba2b..4b066e14f885 100644
->> --- a/drivers/target/tcm_fc/tfc_conf.c
->> +++ b/drivers/target/tcm_fc/tfc_conf.c
->> @@ -281,7 +281,7 @@ static void ft_del_tpg(struct se_portal_group *se_tpg)
->>
->>         destroy_workqueue(tpg->workqueue);
->>
->> -       /* Wait for sessions to be freed thru RCU, for BUG_ON below */
->> +       /* Wait for sessions to be freed through RCU, for BUG_ON below */
-
-Correct but doesn't matter much. "thru" is very common.
-
->>         synchronize_rcu();
->>
->>         mutex_lock(&ft_lport_lock);
->> diff --git a/drivers/target/tcm_fc/tfc_sess.c b/drivers/target/tcm_fc/tfc_sess.c
->> index 593540da9346..e2ff506ca68d 100644
->> --- a/drivers/target/tcm_fc/tfc_sess.c
->> +++ b/drivers/target/tcm_fc/tfc_sess.c
->> @@ -98,7 +98,7 @@ static void ft_tport_delete(struct ft_tport *tport)
->>
->>  /*
->>   * Add local port.
->> - * Called thru fc_lport_iterate().
->> + * Called through fc_lport_iterate().
-
-ditto.
-
->>   */
->>  void ft_lport_add(struct fc_lport *lport, void *arg)
->>  {
->> @@ -110,7 +110,7 @@ void ft_lport_add(struct fc_lport *lport, void *arg)
->>
->>  /*
->>   * Delete local port.
->> - * Called thru fc_lport_iterate().
->> + * Called through fc_lport_iterate().
-
-ditto.
-
->>   */
->>  void ft_lport_del(struct fc_lport *lport, void *arg)
->>  {
->> --
->> 2.27.0
-
-All of the other changes look good to me.  Thanks.
-
-Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
-
-I.e., it can be merged as is -- up to the maintainer(s).
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
 -- 
-~Randy
+Kees Cook
