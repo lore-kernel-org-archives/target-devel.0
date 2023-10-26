@@ -2,156 +2,133 @@ Return-Path: <target-devel-owner@vger.kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C2C8C25B6D
-	for <target-devel@archiver.kernel.org>; Wed, 25 Oct 2023 02:23:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 192C4C0032E
+	for <target-devel@archiver.kernel.org>; Thu, 26 Oct 2023 01:53:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231521AbjJYCX0 (ORCPT <rfc822;target-devel@archiver.kernel.org>);
-        Tue, 24 Oct 2023 22:23:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60402 "EHLO
+        id S229954AbjJZBxR (ORCPT <rfc822;target-devel@archiver.kernel.org>);
+        Wed, 25 Oct 2023 21:53:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49124 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229548AbjJYCX0 (ORCPT
+        with ESMTP id S229518AbjJZBxQ (ORCPT
         <rfc822;target-devel@vger.kernel.org>);
-        Tue, 24 Oct 2023 22:23:26 -0400
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B74710DB;
-        Tue, 24 Oct 2023 19:23:24 -0700 (PDT)
-Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
-        by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 39OLUOtl004163;
-        Wed, 25 Oct 2023 02:23:21 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
- from : message-id : references : date : in-reply-to : content-type :
- mime-version; s=corp-2023-03-30;
- bh=TIqylN3wvAgYRKjfYdoRqFBiqfjsaaZThevou/pUHZs=;
- b=NBFsFwew+CMfIIKRhbX0y7SmAwL8bLkbAyWxlwDfg2O3pytB67n/uFIEG9f/MGkBgl6n
- w0rSzAZDQ/baJ1wm+911VuYAC0Pvm/vfSwOkYlu3+1O4Y8bHomrC1Hz3d8j3Yeq+B8LW
- 4Fj5iDsQ3cFXxdeOGjQSXntpEp3zN40lvWyyhXkPOW4OgAe483unHo/PI6kXdXcFa+lB
- 9BElKS92upQR4ze6q2MFvRGEYJ17Vz8VmDYGAM1z6EeF8+qC1Bz0p+FBSbreyszBCSiu
- RTLAKgIEkkDoYZwvAtCG7ZXqwT5u/+ACuVTSNMhsSaPS6PkmV/shpXZDOiCaJ9ZsrSOH VQ== 
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-        by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3tv581prd1-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 25 Oct 2023 02:23:21 +0000
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 39P0XThG019157;
-        Wed, 25 Oct 2023 02:23:20 GMT
-Received: from nam04-bn8-obe.outbound.protection.outlook.com (mail-bn8nam04lp2040.outbound.protection.outlook.com [104.47.74.40])
-        by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3tv5369ve8-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 25 Oct 2023 02:23:20 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=lf6H+es4vX5pCpRfL97Y1Wq9DEgSZaMPq5oHlrOAv/Lb+ZcM1yqCBBmnQESjNUdsS43ULZDHn0fkNatyEQ+dG9xLMeOsay2Otu/+973orKQSRWpKu9RX6dFH5rltnbcf3WvYG087zrYUhbnRItu787+TtVR+Ah7Q0O0gPrv/vrh3yiIcQz6xJR913LfaP5b1HBaNgEZTixY/gB03wiE3XIgl7V/cGtq0/KEx8UQZOPSjFvzrchWbnk5vMQ/QHqGB3ZlhVMjjiuN+R5Uey5Oltu1QQ0BlloHKi4p9bSsGxJ/mJ/wLukP7OKu70w4L3vZr3VGnWUQXhOzmQbqvLyx5Gg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=TIqylN3wvAgYRKjfYdoRqFBiqfjsaaZThevou/pUHZs=;
- b=KfK63UMslI8ipMOoJHYsn/nc0CUwlyZ3s/dNmru71ANSRgLD8bdOuk8isiE689hcYp69+dmFGHKot/JuPCV3m+QJ44ZgDtM8u5wW3yvTevRpToqgtRZXFDUTyP5mNlN30ifPOyo8iVxw6gqQs7RP9RL6GLfCqGQT02y2SjTnxJf0ZMsn5gx8kw/AVIWCxyapLU2tLgO345GDPo4FUxNCSSIeebh6cEgsk1VxV2dOm51IHTim+jjkR+nnLOTvNQn5wPSXXkFzotYiEtcnNBwMlb+zPPH/EWpShkO1iFSvOl4oveeI1whIU/2/dDcCyshAVFK1UXL6PoJ4hifdBNmq1A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
+        Wed, 25 Oct 2023 21:53:16 -0400
+Received: from mail-oi1-x249.google.com (mail-oi1-x249.google.com [IPv6:2607:f8b0:4864:20::249])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8582DCE
+        for <target-devel@vger.kernel.org>; Wed, 25 Oct 2023 18:53:14 -0700 (PDT)
+Received: by mail-oi1-x249.google.com with SMTP id 5614622812f47-3b3ebbbdbf9so535030b6e.0
+        for <target-devel@vger.kernel.org>; Wed, 25 Oct 2023 18:53:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TIqylN3wvAgYRKjfYdoRqFBiqfjsaaZThevou/pUHZs=;
- b=aClZzzYdH0NEqzVlTB+AnD5UsVNej+TdGSBS/rCsLSv91wUFna642/44Sa9hJRG3FYpaKN+DErSHqPByYe9UZZ+sRV/jxHwG6bh4hoqq3iGo9wkdO7FU4913A9sC4iflaK1Kz0eOso7q4gud8EkN5NrXf/F7RbOV2Z64xHitgzw=
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com (2603:10b6:510:3d::12)
- by BL3PR10MB6233.namprd10.prod.outlook.com (2603:10b6:208:38c::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6907.33; Wed, 25 Oct
- 2023 02:23:18 +0000
-Received: from PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::7afa:f0a6:e2d6:8e20]) by PH0PR10MB4759.namprd10.prod.outlook.com
- ([fe80::7afa:f0a6:e2d6:8e20%3]) with mapi id 15.20.6907.025; Wed, 25 Oct 2023
- 02:23:18 +0000
-To:     Yang Li <yang.lee@linux.alibaba.com>
-Cc:     martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Abaci Robot <abaci@linux.alibaba.com>
-Subject: Re: [PATCH -next] scsi: target: core: Fix one kernel-doc comment
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle Corporation
-Message-ID: <yq17cnbfnjl.fsf@ca-mkp.ca.oracle.com>
-References: <20231017030913.89973-1-yang.lee@linux.alibaba.com>
-Date:   Tue, 24 Oct 2023 22:23:16 -0400
-In-Reply-To: <20231017030913.89973-1-yang.lee@linux.alibaba.com> (Yang Li's
-        message of "Tue, 17 Oct 2023 11:09:13 +0800")
-Content-Type: text/plain
-X-ClientProxiedBy: BYAPR21CA0008.namprd21.prod.outlook.com
- (2603:10b6:a03:114::18) To PH0PR10MB4759.namprd10.prod.outlook.com
- (2603:10b6:510:3d::12)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR10MB4759:EE_|BL3PR10MB6233:EE_
-X-MS-Office365-Filtering-Correlation-Id: fc5b51bb-7ffa-4a78-96eb-08dbd50159d8
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: /HUbi3J5Y/sz5ePooSW3a7o8fDi+MKGMgttsqtFmlAZcmPmgMatWWVgduY8e8ndeozOqy9GX13KogcLE1ggzxyhmHWaNap3iBKq1AUMYHvAiDHKD4/VpyOsb+cWglIyL3dB2qZjEEUTzskotkCElLBOzbVfH7ZEHJk7Di32wEBOHrP6/jSTHpFC5KXYMqDv62MQjfJA8jRlLG6BrNkKfStFYJMzYTKSba+iLRYT0PRQtYXDSpnk5USGtXpAUV6fj9J6BJdeEJhFOEn+eNSbEsIhTmr3sgYtWC5yLywOyfg6P5CmpWbdNtADgmQf+VEmnm8s6VWQj6ulDdf2xbCiLEVooYj6UFX0L0U/RYwv6KNu1tDIWJFgtHWt++sp6roXAp9MwJHlGhpyr3TWbFEPNV76ON7MkFl3H/9pfMQVIkAJSxwx9KaKVxmqlG4v9cym/6U7w1o6WS0Pt0uZhxStg70cTDMtqSzYJ53qPWW4TDZbm1AKYTpWz8BNlEqP5m0GwxOPSR6LtuTESkPHy3MOSCWV6CUlno7QVZ2GdB1mWGwW7M8g/j6Kj6/EZ2b/m/dRE
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB4759.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(396003)(366004)(136003)(346002)(39860400002)(376002)(230922051799003)(1800799009)(64100799003)(451199024)(186009)(83380400001)(5660300002)(66556008)(41300700001)(86362001)(66946007)(66476007)(478600001)(316002)(6916009)(6506007)(6512007)(6486002)(36916002)(4326008)(2906002)(38100700002)(8936002)(8676002)(4744005)(26005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?+PLzWbkowZIHTOnLM6ix8+RA/rlkoZ0pJ/9WApDlZIvFlipvVp/LvuIARlBe?=
- =?us-ascii?Q?AgT9x5lX0FZYljmTRlq43hqFUXm83kOklrjf05J7TlcqWZkx8cdTwoUHz6Fx?=
- =?us-ascii?Q?Lpd0q0z49VwQpoJrcPB+BImm8KlQH5VK2wMpAWb3/1FMdOO5Z+kw4RFlchQX?=
- =?us-ascii?Q?BLYVGZccqaSEZG8fEC+u8X9ZoR1+jbE1BzrRa6G32gjc2r3ebLkdjCpOrpyf?=
- =?us-ascii?Q?MH/wcaxLnMVpzTPXMGJ8ux/kpdGXhz1k7HTEYTQY3xbUBk4yZUzKHCHSZN/M?=
- =?us-ascii?Q?HNsBSR4yqvFkR3S85tjn47KiXy4skN4Y2ygoT6AVcYu1XrfnwVeZV+O0mDjZ?=
- =?us-ascii?Q?cqZCF18wtCR4SwdTo1X1kuZa+WM6uKXuRu4fU4B6yZf92eVZaBbB0axMDA4H?=
- =?us-ascii?Q?QZcZmk86dMNA70Xq6pC9TBRzksmlc9pnSyR5/AEPRbIXk5xy0X2NkwX9caQs?=
- =?us-ascii?Q?h7Q2mzHrmtD4+hcuCXD738tn7DCMZQJEqphh9nBqARexqkTAkNpqO6jGeY7z?=
- =?us-ascii?Q?E9EAExyeilVa8GH9RaCXkDvQSIKcrHhejqyIBmwjqSv6Ex9TDSo8cSLHLUFW?=
- =?us-ascii?Q?tccuCowZbjSujjoU7ff2fXV8Y9/z2M8rlULa/He9PwjQUEAnGxIZkkR0E4hs?=
- =?us-ascii?Q?g9SmEqXe/sKXYKtUXdhpSKPAfYhQDdOagwGtJVM6MoJQTXU93RPYkwkvItO/?=
- =?us-ascii?Q?3h9okcWxVJa6T6jA0fBhzI8PI1Ebu0ZIs1BMWwzTBQ3lJmKWxY8LamARXogP?=
- =?us-ascii?Q?IOgLHzaO62IPMbVG3CHQbsBAFXrMgMION8qOdJ+sw2nhHEY+j+sGrCDOqONC?=
- =?us-ascii?Q?/tcbQ8opD3FjFM41ICLd0cuGt1Esk2fXXFYTPL5vtBfAr3EDfYaqGhNEmouA?=
- =?us-ascii?Q?/Fy/nWrSKmO+4NRlVCR0l6O3kpa1ljeIrwSOFbhvPDwRkTuAmU1xP9qi05Zs?=
- =?us-ascii?Q?dvMTRTolFw4ySghkxY/nBnE8KhgcBN/7X/oiO48XoEYwmnPAHoDbpgNykCI9?=
- =?us-ascii?Q?jkmXJ8VMIJLr8kPWA8DDR8PZXoEIc+tlK4PGZ3FXgfY2Oazfzfn7oO1cFJk2?=
- =?us-ascii?Q?cHsCQ4aPmUcbxgEL42kEnAUHxaeZmxX+IAfXEbyFEZ/sAcu2jtbmZOsTamrP?=
- =?us-ascii?Q?KajtIfe0HLx3fWvNmBvYOlHVfye0vDMefAPsAFn2h1/Ou1IHTA+LUP2Rv1lF?=
- =?us-ascii?Q?4zcQPOf9bGlDivMDV84umiDckDp+eh+a1WBTVFSeFAcJ+homS106SVrJHvY8?=
- =?us-ascii?Q?H/h8g2AsEjIS30N21YTW6/niF2JFpCMDr5h3pUXYzNLsBXhzaSVtrmyJzcjU?=
- =?us-ascii?Q?bDOqcF4qif4YsY/aofkBkQMewk48ZH/yRv3E5HJvxRpWhQmuGbSy4xGd6ohU?=
- =?us-ascii?Q?PbTUm1dBgCgPcl3myBY6PaNRI2NLfWy7lxWEv7AQAPsZb8loz89kPfs/Ghug?=
- =?us-ascii?Q?HoH2sZdDCDKt4wPjPKg3YyKwEcb6i5iysrrGVDizCT96zDRzYDKn60d6zWVD?=
- =?us-ascii?Q?bY1xDLK3Y29L9kip2togBqa/Mw3Bz9OZRkJOiQFi9jhBSBiQPHCWaDpgAN4p?=
- =?us-ascii?Q?DfVo0qetToV2DsCQ6ecCqET/iNiqW+vNWF0ADaKdkJ0cbfGnM2LbGMBuZkK7?=
- =?us-ascii?Q?fg=3D=3D?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: VaPRN5sE4MLyb+pK3V4O6UI2O6V26+DUUM4k1YFHAgRHS2bJUiwQy/rzENZ6X6g/nlDL8TwLIAk8m/tmLjJeA3NYTnRWBD7fqEl2T8mEY5FO90+l0n8DARyqruC4/YDsGXgVrY0TmXjs6jfWyIUUNfFzTCki5LFBNHESAVMeN7Ggb+6qhlE9/D9sbSHpr9yQcGolmkzFCJ15GfarA8cUVi3aEStRjnpm8do3JdksE4rRlm+6qtoCl3B57EG5zB/b3pBzHEyDvP9SE7qRme8q6V3T3O9lMLVqGU8dXGh3VY765H2VQZ3NumvxnaHg1njQmJTXr4phYHQmgU1n0wfsqs73VE2N57nrHkSZCAVzwdsiIvMTidIR82oJtz5wXWDWncWgrC+FIN0a2cUSwfpRZzvrHwoddYmBagZqyeRGCK6BIgDKxZcHxbzoUn9GM67hK6Qjip9d4MvQnWKIsGlApIz09NGbdFw9CvIHr0Dalg0EzTn0uW/6OyOcO6Bels+V4pQblniAQWjWXm5udmzmLlk1OIbly3CS/bUJH2G2Tw1p9P/JOexg5/x1YBLXbgUDefcAnWnZFjV+Fr3lgfsM9w1QilT2MyeeLlTY2pl1HnJps+edsqvSkhNEGfk2jbj6X/At/GhpNE68uw8+ciCYWzY5iezD1ZpiNwYKm9Z3qYDaR5pA8jD07Ubga7h/TsZARhKnth/UI6n3ohmgDOYChhoXNLU4yldm9GVx8FryjVtbzwx3PZjRZVS0J5RahAxy+38XbXVkXJh0fBicm3WkdxRNL0/DlJiDqTXlPiwo3z8vd0lIXLQYBHtVuDJOHDhu
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: fc5b51bb-7ffa-4a78-96eb-08dbd50159d8
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB4759.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Oct 2023 02:23:18.3604
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 9zfR2FxELviGoXLayyAWwlIl6pNUEQMWSaQmCU/3Q01BC0NMIPeSN1w0AgwwPVSH1mIBAOdRn2pq6xdAMADNYL1zp5cwEbZNcw3Lq+DQ9+M=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR10MB6233
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.980,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2023-10-25_01,2023-10-24_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 malwarescore=0 bulkscore=0
- mlxscore=0 suspectscore=0 phishscore=0 adultscore=0 mlxlogscore=999
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2310170001
- definitions=main-2310250019
-X-Proofpoint-GUID: PVnmxnskQmgAK2jWgWvJrZFz-L1EIwPw
-X-Proofpoint-ORIG-GUID: PVnmxnskQmgAK2jWgWvJrZFz-L1EIwPw
+        d=google.com; s=20230601; t=1698285194; x=1698889994; darn=vger.kernel.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=Pjp8stIHwO7L4r2Xgqzk9PeiKrAFnh4U0H3mDy43hbM=;
+        b=FU7kMCetNBRUX2ViP60iRRv7EMg/QKvhCXlqlcSGbZQwahaxG7jXoOPTjLDdB9MlV1
+         gHghRUCtdqcKVTHlOUCPZFg0sFGk4HIWwxuydgvkDVept8v6vm99PolMiJnqdzA6dSkh
+         /hT2c3tBtEuxMyAcBtyYnLe5TjuJZpe9+/uBDbQA44StYMgq9HvhS+lmJhnngbEr/igT
+         AOIh/f8k6Kcl+0jCpSYqHTTe48NN9C69KVM5iqD3N16zbN0CFK4nLU/RBBfCD91PrFbt
+         KRmidBf+P4K9hEJC6aS8HB5aSdOxDUMlBWT24SOvI/vH8K6DYE6wfUQZHxh1I6OHjyOJ
+         8+Lg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1698285194; x=1698889994;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Pjp8stIHwO7L4r2Xgqzk9PeiKrAFnh4U0H3mDy43hbM=;
+        b=ki6MSOy7jYmFtypnkBZ5jEFJwkN4z1QsXMcP45Zga4XDtPoQIfXzTp9GZvRgIAHbP6
+         zkMSXXA5QEmk3b6+ZZLfRULIK7UFKQMnZqfyzIWhuY+Lg56mlbLHQj9+UgUSRjm/55WV
+         evTzRB+CyPs66g8R1padjtipHEUwl3sZT5s3XbG/YrE6PkzoKX9KxBlywKGHH3fXFhMC
+         3rh5d70lDqmOkZTg/MtGtIXfwjN7irzxhuNfIFQ/XJAUiWpKhDL8OHnICJKWc5FpKlTQ
+         Gb6nbX/d4TN+HjdM6yepL5QSCzOdD/pCS8b0uhH54tPiQfnZY3cQQ48kq6LEvoNOvFu4
+         MmEw==
+X-Gm-Message-State: AOJu0Yyf++UHVPnshPp2q7BE+dZkyiWAQWr13N9v+5D7F/PHj8Gy+qPG
+        9P43gulgMXLib3dAxNGuGPtep6+LrjBMoE66gQ==
+X-Google-Smtp-Source: AGHT+IFR8bdTL15YcnhEGV4KArX2GQqck0DFHJVoxlAoubcCaDkQCxdYWrb57IiYGlWJBc9htP5vldakHxwGrWPN5Q==
+X-Received: from jstitt-linux1.c.googlers.com ([fda3:e722:ac3:cc00:2b:ff92:c0a8:23b5])
+ (user=justinstitt job=sendgmr) by 2002:a05:6808:182a:b0:3ae:1691:c59f with
+ SMTP id bh42-20020a056808182a00b003ae1691c59fmr7079317oib.1.1698285193848;
+ Wed, 25 Oct 2023 18:53:13 -0700 (PDT)
+Date:   Thu, 26 Oct 2023 01:53:13 +0000
+Mime-Version: 1.0
+X-B4-Tracking: v=1; b=H4sIAIjGOWUC/52NQQqDMBBFryKz7pRGqdGuvEeR0sRRB2wiGQmKe
+ PemHqGL/+H9xX87CAUmgUe2Q6DIwt4lyC8Z2PHtBkLuEkN+ywuVgrIEZ+cNu8CRgqBYYaRpxYk
+ N9RZTXs53hCNaY3p9L1StjYZ0OAfqeT1lzzbxyLL4sJ3uqH7rX5qoUGFlyrLSqXVdNoP3w0RX6 z/QHsfxBYPjGdzlAAAA
+X-Developer-Key: i=justinstitt@google.com; a=ed25519; pk=tC3hNkJQTpNX/gLKxTNQKDmiQl6QjBNCGKJINqAdJsE=
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1698285193; l=2296;
+ i=justinstitt@google.com; s=20230717; h=from:subject:message-id;
+ bh=WD63y2GNp2EK1VTsmPzRbEGCPxluZOXKFCe7l0K3vCw=; b=/x030tgpsz2o7BLKx2T1XvytucXzMZiEPEPMDSyVAqw/VZ8hj5twcwH9avRjfmp3Bb6jWTx/j
+ o6vcxZN394aBBS+mMtBem2lDMBgTTeqfzkGfYlPyS5SzrfDpS+TFexB
+X-Mailer: b4 0.12.3
+Message-ID: <20231026-strncpy-drivers-scsi-elx-libefc-efc_node-h-v2-1-5c083d0c13f4@google.com>
+Subject: [PATCH v2] scsi: elx: libefc: replace deprecated strncpy with strscpy_pad/memcpy
+From:   Justin Stitt <justinstitt@google.com>
+To:     James Smart <james.smart@broadcom.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org,
+        Justin Stitt <justinstitt@google.com>
+Content-Type: text/plain; charset="utf-8"
 Precedence: bulk
 List-ID: <target-devel.vger.kernel.org>
 X-Mailing-List: target-devel@vger.kernel.org
 
+strncpy() is deprecated for use on NUL-terminated destination strings
+[1] and as such we should prefer more robust and less ambiguous string
+interfaces.
 
-Yang,
+To keep node->current_state_name and node->prev_state_name NUL-padded
+and NUL-terminated let's use strscpy_pad() as this implicitly provides
+both.
 
-> Fix one kernel-doc comment to silence the warnings:
-> drivers/target/target_core_transport.c:1930: warning: Excess function
-> parameter 'cmd' description in 'target_submit'
-> drivers/target/target_core_transport.c:1930: warning: Function
-> parameter or member 'se_cmd' not described in 'target_submit'
+For the swap between the two, a simple memcpy will suffice.
 
-Applied to 6.7/scsi-staging, thanks!
+Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
+Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
+Link: https://github.com/KSPP/linux/issues/90
+Cc: linux-hardening@vger.kernel.org
+Signed-off-by: Justin Stitt <justinstitt@google.com>
+---
+Changes in v2:
+- use strscpy_pad (thanks Kees)
+- Link to v1: https://lore.kernel.org/r/20231023-strncpy-drivers-scsi-elx-libefc-efc_node-h-v1-1-8b66878b6796@google.com
+---
+Note: build-tested only.
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Found with: $ rg "strncpy\("
+---
+ drivers/scsi/elx/libefc/efc_node.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/scsi/elx/libefc/efc_node.h b/drivers/scsi/elx/libefc/efc_node.h
+index e9c600ac45d5..e57579988ba4 100644
+--- a/drivers/scsi/elx/libefc/efc_node.h
++++ b/drivers/scsi/elx/libefc/efc_node.h
+@@ -26,13 +26,13 @@ efc_node_evt_set(struct efc_sm_ctx *ctx, enum efc_sm_event evt,
+ 	struct efc_node *node = ctx->app;
+ 
+ 	if (evt == EFC_EVT_ENTER) {
+-		strncpy(node->current_state_name, handler,
+-			sizeof(node->current_state_name));
++		strscpy_pad(node->current_state_name, handler,
++			    sizeof(node->current_state_name));
+ 	} else if (evt == EFC_EVT_EXIT) {
+-		strncpy(node->prev_state_name, node->current_state_name,
+-			sizeof(node->prev_state_name));
+-		strncpy(node->current_state_name, "invalid",
+-			sizeof(node->current_state_name));
++		memcpy(node->prev_state_name, node->current_state_name,
++		       sizeof(node->prev_state_name));
++		strscpy_pad(node->current_state_name, "invalid",
++			    sizeof(node->current_state_name));
+ 	}
+ 	node->prev_evt = node->current_evt;
+ 	node->current_evt = evt;
+
+---
+base-commit: 9c5d00cb7b6bbc5a7965d9ab7d223b5402d1f02c
+change-id: 20231023-strncpy-drivers-scsi-elx-libefc-efc_node-h-cbbf753197b7
+
+Best regards,
+--
+Justin Stitt <justinstitt@google.com>
+
