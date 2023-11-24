@@ -1,90 +1,79 @@
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A9A079464;
+	Fri, 24 Nov 2023 08:23:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WpwpC3HI"
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2974AD4E;
-	Thu, 23 Nov 2023 23:55:04 -0800 (PST)
-Received: by mail-lf1-x12b.google.com with SMTP id 2adb3069b0e04-507ad511315so2230489e87.0;
-        Thu, 23 Nov 2023 23:55:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1700812502; x=1701417302; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=b4jORUPKlG5Lg5RiyFdtM4lta/tN53OQFgxLh8ewmug=;
-        b=WpwpC3HItRN00GSnFFertDy3eMD7mQpfiPGGfl87+MF1O8qw8IwlzsD2bVE8I6vw/u
-         U6O68xwAA6LOWoMidEPg08UWkq2+jDV2PVjTGf+E9flmSfvbC95jxcatkososQeRysx6
-         +rgGZX0gTOKqC5ccVSPVVLPDIxbhBi+VOY0ZcnntICjZ5vPixzDbcGuqyDiInvFq3JEZ
-         qC8xqVCQBDwqyxP88UQJHhLNZMyV6CoQdyFnMkZXr/6ijB7WdY84AY5rHDQFnmJh1Iqy
-         X7T+aHbkal8TXIhgJVo8tE6o/4znNqllTD/6GLexf1zTuN7alR8yMad67ZlzauVrc7X9
-         2QYw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1700812502; x=1701417302;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=b4jORUPKlG5Lg5RiyFdtM4lta/tN53OQFgxLh8ewmug=;
-        b=qF3CPMRM0UAm2TtyUEwVehKpiNytZQkouDIwkP5yTIslsQIeWm7sSbXNyL22VUpGJ+
-         odwKqi3elOmf7K1bejGVO8yycsIJe5onFkJv8gRyT9M7sRSGZKa0qMcb1fWWLOxEEAFz
-         OI23AdbO0lsrUa59GQSCDPbn5oTYcQP5v5FjcXVhDhwbUoTToF07ZsbRC6s+CL5h19I+
-         w4HSLDktoQXPdBEMptLrGDV3jigtbkNF7J0R2S8YJyCMMk9YAw6BRPTzs0RfR56FX1jz
-         dU88pY+M0YH4DzSlb0QisWWOA00Y7l/5uROnyowZHE9/0p1YjB35Ir+0i1H+A+r5v2Xp
-         eONQ==
-X-Gm-Message-State: AOJu0YywlRVBNSWieGkuCIPA368uxw1TdPOaJxlTWjAMwb1qc3fu1wfZ
-	0RmXxpk+ReO0xyet57F/R++7U0eD+LzQdmF0PIQ=
-X-Google-Smtp-Source: AGHT+IFASJjXHvRnqICP3Bh8n3rkz4PXrvXjjTh8KwOhFDznlaHld1JNwaQhFcG0m+NV7YV5i6N6b0Cdfn9sKb1NY4k=
-X-Received: by 2002:a19:7514:0:b0:4fb:9168:1fce with SMTP id
- y20-20020a197514000000b004fb91681fcemr1017725lfe.59.1700812502095; Thu, 23
- Nov 2023 23:55:02 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Sh9eqW08"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BBF3DC433C7;
+	Fri, 24 Nov 2023 08:23:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1700814228;
+	bh=LrRVKQE2XcERqmhniulq0tphZlP+sJeXmy4fmrLo8uc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Sh9eqW08agl90O9uwi4juCSwfkd+cwWzHLVUECTyJkmVVHK3IRdozH1c2fJVL1Htd
+	 tx6pljZPU7egTdFsIxvaxvfHeRFgxxe9ceV/DRRHqvsITdJ5Y/hzcFfivArUlo0KCf
+	 lEvSccqFMTGX6g8XtYBF1/tyBiz4Kwv+wdjFPTyBgrwz3wCGS/N2yK7V0N2+evxToJ
+	 rYbN0crbznVGC9c4cX3R98kD0XVtDTRM4PTDCyHxnaslLJ9EU9s2XSTtVKeEGeV0zF
+	 8JvTb3ybpfwftlFDfX6pJHFNJVTTuN962k26KE056qNyj3iqlbNC6d000CmByDtvM3
+	 V01JKKa009O0Q==
+From: Christian Brauner <brauner@kernel.org>
+To: "Martin K . Petersen" <martin.petersen@oracle.com>,
+	Amir Goldstein <amir73il@gmail.com>
+Cc: Christian Brauner <brauner@kernel.org>,
+	Christoph Hellwig <hch@lst.de>,
+	Jan Kara <jack@suse.cz>,
+	Josef Bacik <josef@toxicpanda.com>,
+	David Howells <dhowells@redhat.com>,
+	Jens Axboe <axboe@kernel.dk>,
+	Miklos Szeredi <miklos@szeredi.hu>,
+	Al Viro <viro@zeniv.linux.org.uk>,
+	linux-fsdevel@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] scsi: target: core: add missing file_{start,end}_write()
+Date: Fri, 24 Nov 2023 09:23:31 +0100
+Message-ID: <20231124-entsolidarisierung-belag-48fb5c033128@brauner>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20231123092000.2665902-1-amir73il@gmail.com>
+References: <20231123092000.2665902-1-amir73il@gmail.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20231123092000.2665902-1-amir73il@gmail.com> <2f3bf38b-a803-43e5-a9b9-54a88f837125@kernel.dk>
-In-Reply-To: <2f3bf38b-a803-43e5-a9b9-54a88f837125@kernel.dk>
-From: Amir Goldstein <amir73il@gmail.com>
-Date: Fri, 24 Nov 2023 09:54:49 +0200
-Message-ID: <CAOQ4uxj6BBSgGKWQn=2ocsL_rd-PbjPAiK2w9rsqnxpNamxr9g@mail.gmail.com>
-Subject: Re: [PATCH] scsi: target: core: add missing file_{start,end}_write()
-To: Christian Brauner <brauner@kernel.org>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, Christoph Hellwig <hch@lst.de>, Jan Kara <jack@suse.cz>, 
-	Josef Bacik <josef@toxicpanda.com>, David Howells <dhowells@redhat.com>, 
-	Miklos Szeredi <miklos@szeredi.hu>, Al Viro <viro@zeniv.linux.org.uk>, 
-	linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	target-devel@vger.kernel.org, stable@vger.kernel.org, 
-	Jens Axboe <axboe@kernel.dk>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1203; i=brauner@kernel.org; h=from:subject:message-id; bh=LrRVKQE2XcERqmhniulq0tphZlP+sJeXmy4fmrLo8uc=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMaQmxDZZv33Kue2N/ZnKoOrivAUfVjYzcS+9NEfgU1Tsh +R5Fz597ChlYRDjYpAVU2RxaDcJl1vOU7HZKFMDZg4rE8gQBi5OAZiI0QOGfxYnp32Zfv/hh+lr KkNvehxy2z/ZwnCJxjp/TU2ZCtMqoS2MDGdu7g9bXrZE/9aaNJn8dc8WaJROfZA++VL/E9vi6bv 0D7MCAA==
+X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
+Content-Transfer-Encoding: 8bit
 
-On Thu, Nov 23, 2023 at 10:04=E2=80=AFPM Jens Axboe <axboe@kernel.dk> wrote=
-:
->
-> On 11/23/23 2:20 AM, Amir Goldstein wrote:
-> > The callers of vfs_iter_write() are required to hold file_start_write()=
-.
-> > file_start_write() is a no-op for the S_ISBLK() case, but it is really
-> > needed when the backing file is a regular file.
-> >
-> > We are going to move file_{start,end}_write() into vfs_iter_write(), bu=
-t
-> > we need to fix this first, so that the fix could be backported to stabl=
-e
-> > kernels.
->
-> Reviewed-by: Jens Axboe <axboe@kernel.dk>
->
+On Thu, 23 Nov 2023 11:20:00 +0200, Amir Goldstein wrote:
+> The callers of vfs_iter_write() are required to hold file_start_write().
+> file_start_write() is a no-op for the S_ISBLK() case, but it is really
+> needed when the backing file is a regular file.
+> 
+> We are going to move file_{start,end}_write() into vfs_iter_write(), but
+> we need to fix this first, so that the fix could be backported to stable
+> kernels.
+> 
+> [...]
 
-Christian,
+Applied to the vfs.rw branch of the vfs/vfs.git tree.
+Patches in the vfs.rw branch should appear in linux-next soon.
 
-Shall we just stash this at the bottom of vfs.rw and fixup
-"move file_{start,end}_write() into vfs_iter_write()" patch?
+Please report any outstanding bugs that were missed during review in a
+new review to the original patch series allowing us to drop it.
 
-I see no strong reason to expedite a fix for something rare
-that has been broken for a long time.
+It's encouraged to provide Acked-bys and Reviewed-bys even though the
+patch has now been applied. If possible patch trailers will be updated.
 
-If Martin decides to expedite it, we can alway rebase vfs.rw
-once the fix is merged to master.
+Note that commit hashes shown below are subject to change due to rebase,
+trailer updates or similar. If in doubt, please check the listed branch.
 
-Thanks,
-Amir.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs.git
+branch: vfs.rw
+
+[1/1] scsi: target: core: add missing file_{start,end}_write()
+      https://git.kernel.org/vfs/vfs/c/c85ff53e59e8
