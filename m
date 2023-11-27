@@ -1,163 +1,206 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="P9qeZx1/"
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50EA5D4D
-	for <target-devel@vger.kernel.org>; Mon, 27 Nov 2023 11:01:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1701111702;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gO0T4YIb/aiZyC/La5KMLP70bNSf/D+FzfSC/oD3+pQ=;
-	b=P9qeZx1/Q8PaWFMqvOL6wZHnPqD8VOlLSJ8DXM1dHKcn0D2amV/eJEF+t+MYHp3zt1i2g5
-	b1P2AH/ryBtmYhPUD7b8IOtxZUtL6MRkpl5z6W+X0uy7/jJr6ET7J3Ljjt7JaPlyqziLAj
-	gvc5/mG3su0r4VubWCOJfCY3mH/ExaU=
-Received: from mail-qv1-f69.google.com (mail-qv1-f69.google.com
- [209.85.219.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-190-oPNDh7B1NNGY2yHT_qR-mQ-1; Mon, 27 Nov 2023 14:01:41 -0500
-X-MC-Unique: oPNDh7B1NNGY2yHT_qR-mQ-1
-Received: by mail-qv1-f69.google.com with SMTP id 6a1803df08f44-67804869762so54984256d6.0
-        for <target-devel@vger.kernel.org>; Mon, 27 Nov 2023 11:01:41 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1701111700; x=1701716500;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=gO0T4YIb/aiZyC/La5KMLP70bNSf/D+FzfSC/oD3+pQ=;
-        b=mq++NDucL+L5Te2RPhDiAc2nS7a+HWy21DVJ78JcVciVJ57QWpJOnOP00nctnhBRrb
-         wQrtgjWi/WCw17dac4PFPwdehRtkQ81PO/9AMb6mXBQ/hMogvqgxYc5vgWIc2Ftj+ChG
-         hMM6v69g/8c4oP+n1+Gua3iqIWX6yON13t6jf6Jnl0LbXSLDuR4nc/aQnYATnjJIL6f5
-         mlRAiO9ZqHE4Rlpjok7JCHDNrZGqbFc+WbbrgKM5DODlRUiSQC7Jzxxc82TOPcGHnnZk
-         y+h+TcqOKJvDSlYP5Kstf3I4JxqusXkNLFwZKRV69H5uPcDupdoZhDihR+ImEmjKogv4
-         EWpw==
-X-Gm-Message-State: AOJu0YzkJzcE603UBS7uuscnSW4HDQcMzzKhMGl+xRlgAIXU1aiY3yN0
-	82RADhhuLH1LqHj91w6PMdV+wya3HmPQbLkkVsTUhgRig5rzJDeg/g/juas8IfWHGuEPh+dHb3x
-	DQspYaHOH4WUpIqyAroVP/cIbK3bgERJb
-X-Received: by 2002:a05:6214:892:b0:67a:3efb:df5f with SMTP id cz18-20020a056214089200b0067a3efbdf5fmr5563791qvb.0.1701111700197;
-        Mon, 27 Nov 2023 11:01:40 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IGHLH4rgLgsmN5tGO2pWmQzu52awRS6bcFCJWOeTNESTpDcYEl0kKZtZ7+GtPWGiFENKGDLkA==
-X-Received: by 2002:a05:6214:892:b0:67a:3efb:df5f with SMTP id cz18-20020a056214089200b0067a3efbdf5fmr5563756qvb.0.1701111699880;
-        Mon, 27 Nov 2023 11:01:39 -0800 (PST)
-Received: from ?IPv6:2600:6c64:4e7f:603b:7f10:16a0:5672:9abf? ([2600:6c64:4e7f:603b:7f10:16a0:5672:9abf])
-        by smtp.gmail.com with ESMTPSA id 10-20020ad45baa000000b0067a21a7397bsm2997914qvq.12.2023.11.27.11.01.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Nov 2023 11:01:39 -0800 (PST)
-Message-ID: <c15d1412826033922009a4475587b028a67f9abc.camel@redhat.com>
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="ib/69eGa"
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com (mail-he1eur04on2055.outbound.protection.outlook.com [40.107.7.55])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33FB8BD;
+	Mon, 27 Nov 2023 12:23:40 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=RayQxzhjSNWbPQ99nk00zgVxPnizArfIXe1LqbwVcDU/0kRY127WSCB6LeEfp8BWpBcMKZxc/3XTEODbMQPvUa5YVelEZCh0czQhQ9GqdcpzbOp0wo766iadI+dkP5BlSl/a9tDtiEMfeasBwsCBc23EUhNvAPETPoPoxdxxuqajuoOBCqHBKAof3LBXe9t6ezfoR3ava75Lf3gYZZmV0lW3GFVgxUZge5Tultc8NII6buaGkRM9jGiWrwzv42I6x/80Svi+EHz75SoEiIkDlbw16X4+JKiPtd6PsT5mvfdoXFJXGXPgZ17TKB7Qx3EMEiFTBHaB2DHjcTqFdX4wdA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=req+AudgninvIhaIGjTPR9Dp7ACwIcEvxWnDimpDxOI=;
+ b=DO0DF5BoDyK0DmIP6sKT+5E3rlZXkF74BW0za6MBZMskixiHsRnZUdsb3l14bx2F3G+8DMNTuui9N3oBy/bUDpmyO53pAn8XTVV+711Vuw17znwKOGJKAZ35oH7UZj1SLlQoXaZQ57WzBePQkxfWCYRJEyvwEpQrqPjVVLYocsvGsc2uZGO+KpfAzXPjS594IeGL1ZAZKQ4y1qc9Bq1nGE9Kt0KQ9HwEtwlKRerzpgLjaIW2Mwmw0POSCI2UXftnpTH8chNcnoUIZPfJ6QCjZFr14ICnsEfKSdZQRqYR3FpQP1wRWp8glyXqiwAkhjw5YP7SE0idRGCRnOtwLjjxTg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=suse.com; dmarc=pass action=none header.from=suse.com;
+ dkim=pass header.d=suse.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=req+AudgninvIhaIGjTPR9Dp7ACwIcEvxWnDimpDxOI=;
+ b=ib/69eGa+tw+ucu+DqGExRJDfgQ5aMX9YuciGQ0uk569Yp7f83zbumW11inW2lmn8uZOMszpY+pEUwGfeNAuZHnmyRROnXy0F9hvlAUg/XwZ7RYKaim3BQ1ycboCuModhDi/cT6b5Zuuh5l4zNs5wv9soXgK7372I4GR3wZE3SIuO1ooE5vhKg970/tpwVSpfaV3ZvwmSVPiYuiQEn+ujkxNpP4544CwwgoCMm+TCEOJq3Qv/O/0OmvM/h9S0iFZOUI8hVdTw2B/d9H2G08K9Ckq8JF23fSuVvr5ArBK5Rbecxsi9wPg+/HC6w5uvbkVJzFu64rpSDVw6sJORgnLzg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=suse.com;
+Received: from AM5PR04MB3089.eurprd04.prod.outlook.com (2603:10a6:206:b::28)
+ by DB9PR04MB8124.eurprd04.prod.outlook.com (2603:10a6:10:246::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7046.21; Mon, 27 Nov
+ 2023 20:23:37 +0000
+Received: from AM5PR04MB3089.eurprd04.prod.outlook.com
+ ([fe80::3378:bd8c:6ef3:8ee]) by AM5PR04MB3089.eurprd04.prod.outlook.com
+ ([fe80::3378:bd8c:6ef3:8ee%4]) with mapi id 15.20.7046.015; Mon, 27 Nov 2023
+ 20:23:37 +0000
+Message-ID: <8eaf4277-04cf-4c01-a96b-760c8fedd5e5@suse.com>
+Date: Mon, 27 Nov 2023 12:23:31 -0800
+User-Agent: Mozilla Thunderbird
 Subject: Re: Possible Bug? LIO does not support SCSI commands with Immediate
  Bit Set?
-From: Laurence Oberman <loberman@redhat.com>
-To: Mike Christie <michael.christie@oracle.com>, Hannes Reinecke
- <hare@suse.de>,  Lee Duncan <lduncan@suse.com>, target-devel
- <target-devel@vger.kernel.org>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi
-	 <linux-scsi@vger.kernel.org>, Chris Leech <cleech@redhat.com>
-Date: Mon, 27 Nov 2023 14:01:38 -0500
-In-Reply-To: <5301e42d-7fad-49e1-8ebd-7db569416974@oracle.com>
+Content-Language: en-US
+To: Mike Christie <michael.christie@oracle.com>,
+ Hannes Reinecke <hare@suse.de>, target-devel <target-devel@vger.kernel.org>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linux-scsi <linux-scsi@vger.kernel.org>, Chris Leech <cleech@redhat.com>
 References: <31851279-0884-48ba-8c4b-7d6147e59508@suse.com>
-	 <00eb0928-5691-4e85-a923-de9c4934856c@suse.de>
-	 <5301e42d-7fad-49e1-8ebd-7db569416974@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
-User-Agent: Evolution 3.46.4 (3.46.4-1.fc37) 
+ <00eb0928-5691-4e85-a923-de9c4934856c@suse.de>
+ <5301e42d-7fad-49e1-8ebd-7db569416974@oracle.com>
+From: Lee Duncan <lduncan@suse.com>
+In-Reply-To: <5301e42d-7fad-49e1-8ebd-7db569416974@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: FR4P281CA0224.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:e4::14) To AM5PR04MB3089.eurprd04.prod.outlook.com
+ (2603:10a6:206:b::28)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM5PR04MB3089:EE_|DB9PR04MB8124:EE_
+X-MS-Office365-Filtering-Correlation-Id: f7c269c3-5931-493a-d0f6-08dbef86bc84
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+	3m85shM06/xKcL/O5nnmM/Q1cDuJrA/E3Ut9GtFg2xivc4Hmz2fVU5u9JsVQOiKT6U8/pK95OAfXluSLDRkOTTIuWEtwuxOqb2YcOrs+Y3tvBkEHd1+d3usFDCwRGCQs02igBABiUFkDcJFyY/tQQPRc1ARRqhLXjLojP5hrYl6Jxjscg+JqjKfXoalMHI9y3cD3jihw+Reduk+lgL2PYDx7gbRaF7jXDcECPVxIOIHmRItLgeTy6+ansBr//7b+bQwPijxeNO6Sys+ldQN+FjICcmjNvnlU6n5NmqMAknFrwi0b+jukfKsOKr93cQW2RL1lJ2gbLJwpbeIdrds02ZlJxduT2tXq8Cb4OKYk9wBIgAhodNoaTPsEQP3UByIqztsCYGPnTHBhwXkcv6xHjDVhdCsJwsIihczKmI82L38OyVzg7ktBW0LNtkUl8AJibw55zFanT4doPaw5VL032uB2VVBEwkkyOL8WzyzHMAXFP9N7jkxpZ5e0mjU+FA5HlO20+clJEB2aS2mbQko9a7YzCQLMjAgsxureFL4MB76Mf2QDAQNGbDrno+9A+4y2xvJTKY7Y5kwrw/bv4QRDm3mTU9uM4vO2v+5W7h2EBy//zfTNR4PSNu13ygh2m0/ZD7sbVAIL9dWMje+4brzXuBYP7xRdHXq4L1JHfQHHjHI=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM5PR04MB3089.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(366004)(39860400002)(376002)(396003)(346002)(136003)(230922051799003)(186009)(1800799012)(64100799003)(451199024)(2906002)(31686004)(41300700001)(66946007)(110136005)(53546011)(6512007)(8676002)(54906003)(316002)(8936002)(66476007)(66556008)(6486002)(4326008)(6506007)(6666004)(478600001)(5660300002)(2616005)(26005)(83380400001)(38100700002)(86362001)(31696002)(14773004)(36756003)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?OFBkYVdjd0YxTVhRaTljTU95cE9Ja1ovSGFmbExwTEdHajlxTy9FL3IrZkZF?=
+ =?utf-8?B?bEViMkswdDFoQ29sUzBOZUx1cFVLN3Ftd2diU3dpUUd0eWFXS01nSHNrYzhS?=
+ =?utf-8?B?TlZtTk5na3g5Y0RORklmVEJtMkdlYUhyL25TNTdSQVp1dkhnb3JxcHA5V2NJ?=
+ =?utf-8?B?ckc0dG9vQ3ZnN3VETDRnWFhkVjU0eVAwWnNEK2FvSkZEa0pEeFloNUdCY0hn?=
+ =?utf-8?B?QmZrYitZakpxZHN4aWVpdXRDalhIZWV4V2pUTFJjdm84Zmd0Uk5OVHVXOFRj?=
+ =?utf-8?B?QjNOakkzSzJFVjFHaDRrQlNicmdOeldNMkoyNEdDeDFDWmg0V0duMGtqdDN6?=
+ =?utf-8?B?T0VBaEJRaWZjcGVYY1M3ajR2QkNWVE9XeE9hNllCcmYyTkF4RWMxTHhqN2Rj?=
+ =?utf-8?B?MW1LM0VJV0c4eGpDWjNJNTFaNi8xTEYveGdVU2RHV1RMczFkSFlvYkd5WEtB?=
+ =?utf-8?B?eG9BZ1grK1NzOERGR2tmMkprUlJydXJ2RGJHY25yTGFzWXhHTHl6eWQvZEw1?=
+ =?utf-8?B?eER1eUhGTUg3MGxpSlBwc3pNQk9aOStEdDdMWFhaT3gxTld2YlJWWkxoSjBz?=
+ =?utf-8?B?TmJBR1pvNUVUVWovaExBZWk0a1pjVzhyemdYTDgvQVJpYU9uK2lmYmV0TUZ4?=
+ =?utf-8?B?dS8rNjE2UjdwbVAzckJwbEh5RHByR1Y3YTQ0U3A0TitsamRWT0h6TGxJK09E?=
+ =?utf-8?B?a3BGY2Ewd3RpaWhJKzhwa3RCNGcxNGNsMFNsN3ZKcTZWaWc4bC8rY2lkam1m?=
+ =?utf-8?B?c1BZK3NPMHlsdVc4eFRmTjFCZjEyRGpsWTI1NDdXbjNwM0cwbFJBYml6WVg4?=
+ =?utf-8?B?cVg5bzNrVlhkdVRhMlVLR2RpaGxDOG5kQU5lMDZkN0VLZ1RKMml3Z0o0THRk?=
+ =?utf-8?B?ZHoxSTdpTGhvTUZyU0JjK2FpdDJoNVFhaHVWTC9iMzZRNU50TW14ZUtDdWlX?=
+ =?utf-8?B?WUg1MHozVGJYNnFGRlNPZ1lsTHVVZEFrUmR6c25Qd09SQVp5SllTMHVYV2pl?=
+ =?utf-8?B?MERrQkNneG5xeDJZVXdxTUNLcTJLalJlcmc2SjN4YitoaXlWb2I5ZkpYS2xl?=
+ =?utf-8?B?K0RmY1lvdnNnVHgwRUgzQ25sUDl6enUxd1MvZ3hRTm1HYTJNZjdiMjlrWmNG?=
+ =?utf-8?B?bWU5dW51dFRTZHUvSno0NUdKVFBhMWFUL091V0pRSkcyNW51MWFDS1pxM3VT?=
+ =?utf-8?B?VUVFSEtvUmRsdmJFdlNQbWVwYk5WNktTSFFKZjdWMDJVaHlQVHJpc0hVS2pt?=
+ =?utf-8?B?a3JqaGpEbmxaNXMzNFRqMk52bWk4ZTltdTJhV2ZrWmJTbUVrcjZDRjJLc2FR?=
+ =?utf-8?B?UkNBVnArTVpaU2JlYWN3eFlkY2RGM0xEWlB5ay9rM0xzeTN6N3h4Q1h5UXF2?=
+ =?utf-8?B?SklQYUNhZ1QxUEFlbDA4a0NnRndPU3d0N05sSHRMSDlYREZzMnRkYWFiSDQ0?=
+ =?utf-8?B?SEl6SGVmUXZtRkwwcHBDNjdoQWF5M3FRQ1ZRb0hYWU5PRFZ4TzFwWVMzZXZT?=
+ =?utf-8?B?ZUZXaVNTSjlhbWVham5GTVh5TUpacjVNYy92N0R4Wms5NWk2YXpLQUJKNkFP?=
+ =?utf-8?B?N1Vka3J2aVp5VUU3Um9QVGZSNkorbG96RitJaTZMWmhtM09MRFpqNVFzSmNm?=
+ =?utf-8?B?WU1OTkVpZDZNcnB0Vy9GblRSU0xOT2VOK0ovbFRpQ3RtemE3bE5PTVZpTHN4?=
+ =?utf-8?B?bmYvY0tWa05xRzlrdnk0VWp2OFAxejhLNnFVNWVHM29sbXh0ODBBSXppakFV?=
+ =?utf-8?B?NXF1UGs5c0lOT0VvU2t1clNwMmJUVXhyd2VTaUkrczlsRFVEbEQ2bVpYVk9B?=
+ =?utf-8?B?UmtEWkROOHJNTU1udG9heUdoeS9uOEp0YUQxakpuMHJVS2I0UVlFaG1qV3hJ?=
+ =?utf-8?B?UU5Gb0Q0RGR5eWZhcmhmVGE2dE1TVUlySzhzbWkrRzRlL2N4V0dDZ2F0a0dN?=
+ =?utf-8?B?YWNrMEpHanZSdGo2K3lWOGY1a3h4Lys4QmU3UlRkVnFkUk9EMkQ4NFkzbG1Q?=
+ =?utf-8?B?WnB5VGRBbUJnYXF4SVB5RXhULzJKWk1Mbk4rcFlOako0SHVtTVVQajZFSnNM?=
+ =?utf-8?B?U0VDMVRTa3hhV1ZWamZPUS9ZRUdKYW52YXkwd05JeHBnbkRSL1Jaa0xyZnpy?=
+ =?utf-8?Q?xJDKcGThFoQfocg7cQtZulLBL?=
+X-OriginatorOrg: suse.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f7c269c3-5931-493a-d0f6-08dbef86bc84
+X-MS-Exchange-CrossTenant-AuthSource: AM5PR04MB3089.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Nov 2023 20:23:37.1550
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: f7a17af6-1c5c-4a36-aa8b-f5be247aa4ba
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Zx3T5uYVuCGj3R4wDUswO4bFbe0Nnf9rRCyUKKvsSO2reyPl8haku0pLFjOyWDEllZqDabr8mnkEaxine/q/ww==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR04MB8124
 
-T24gU3VuLCAyMDIzLTExLTI2IGF0IDE4OjM5IC0wNjAwLCBNaWtlIENocmlzdGllIHdyb3RlOgo+
-IE9uIDExLzI2LzIzIDY6MDEgQU0sIEhhbm5lcyBSZWluZWNrZSB3cm90ZToKPiA+IE9uIDExLzI1
-LzIzIDE5OjI4LCBMZWUgRHVuY2FuIHdyb3RlOgo+ID4gPiBIaSBNYXJ0aW4vbGlzdDoKPiA+ID4g
-Cj4gPiA+IEkgYW0gdHJ5aW5nIHRvIHRyYWNrIGRvd24gYW4gaXNzdWUgSSBhbSBzZWVpbmcgd2hl
-biB0cnlpbmcgdG8KPiA+ID4gYm9vdCB1c2luZyBpU0NTSSByb290IHVzaW5nIHRoZSBmYXN0bGlu
-cSBxZWRpIGNvbnZlcmdlZCBuZXR3b3JrCj4gPiA+IGFkYXB0ZXIgaW5pdGlhdG9yIGFuZCBhbiBM
-SU8gdGFyZ2V0Lgo+ID4gPiAKPiA+ID4gSW4gdGhpcyBjb25maWd1cmF0aW9uLCBidXQgdXNpbmcg
-YSBub24tTElPIChoYXJkd2FyZSkgaVNDU0kKPiA+ID4gdGFyZ2V0LCBldmVyeXRoaW5nICJqdXN0
-IHdvcmtzIi4gQnV0IHdoZW4gSSBzd2l0Y2ggdG8gdXNpbmcgYW4KPiA+ID4gTElPIHNvZnR3YXJl
-IHRhcmdldCwgSSBnZXQgdGhpcyBlcnJvciB3aGVuIGJvb3Rpbmc6Cj4gPiA+IAo+ID4gPiA+IDIw
-MjMtMDktMjBUMTQ6MTA6MzIuODM1MzU4LTA1MDAgd29ya2VyNSBrZXJuZWw6IElsbGVnYWxseSBz
-ZXQKPiA+ID4gPiBJbW1lZGlhdGUgQml0IGluIGlTQ1NJIEluaXRpYXRvciBTY3NpIENvbW1hbmQg
-UERVLgo+ID4gPiA+IC4uLiA+IDIwMjMtMDktMjBUMTQ6MTA6MzIuODM1NDIyLTA1MDAgd29ya2Vy
-NSBrZXJuZWw6IEdvdAo+ID4gPiA+IHVua25vd24gaVNDU0kgCj4gPiA+IE9wQ29kZTogMHg1Mgo+
-ID4gPiAKPiA+ID4gSXQgbG9va3MgbGlrZSB0aGUgZmFzdGxpbnEgYWRhcHRlciBpcyBzZW5kaW5n
-IGEgU0NTSSB3cml0ZSAoMHgxMikKPiA+ID4gd2l0aCB0aGUgSW1tZWRpYXRlIGJpdCBzZXQgKDB4
-NDApLgo+ID4gPiAKPiA+ID4gVGhlIGNvZGUgaW4gaXNjc2lfdGFyZ2V0LmM6aXNjc2l0X3NldHVw
-X3Njc2lfY21kKCk6IGxvb2tzIGxpa2UKPiA+ID4gdGhpczoKPiA+ID4gCj4gPiA+ID4gwqDCoMKg
-wqBpZiAoaGRyLT5vcGNvZGUgJiBJU0NTSV9PUF9JTU1FRElBVEUpIHsKPiA+ID4gPiDCoMKgwqDC
-oMKgwqDCoCBwcl9lcnIoIklsbGVnYWxseSBzZXQgSW1tZWRpYXRlIEJpdCBpbiBpU0NTSSBJbml0
-aWF0b3IiCj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgICIgU2NzaSBDb21t
-YW5kIFBEVS5cbiIpOwo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgIHJldHVybiBpc2NzaXRfYWRkX3Jl
-amVjdF9jbWQoY21kLAo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoCBJU0NTSV9SRUFTT05fQk9PS01BUktfSU5WQUxJRCwgYnVmKTsKPiA+ID4g
-PiDCoMKgwqDCoH0KPiA+ID4gPiAKPiA+ID4gCj4gPiA+IEJ1dCBJIGxvb2tlZCBhdCByZmMzNzIw
-LCBhbmQgaXQgbG9va3MgbGlrZSBTQ1NJIFBEVXMgY2FuIGhhdmUgdGhlCj4gPiA+IEltbWVkaWF0
-ZSBCaXQgc2V0Ogo+ID4gPiAKPiA+ID4gPiAxMC4zLsKgIFNDU0kgQ29tbWFuZAo+ID4gPiA+IMKg
-wqAgVGhlIGZvcm1hdCBvZiB0aGUgU0NTSSBDb21tYW5kIFBEVSBpczoKPiA+ID4gPiDCoMKgIEJ5
-dGUvwqDCoMKgwqAgMMKgwqDCoMKgwqDCoCB8wqDCoMKgwqDCoMKgIDHCoMKgwqDCoMKgwqAgfMKg
-wqDCoMKgwqDCoCAywqDCoMKgwqDCoMKgIHzCoMKgwqDCoMKgwqAKPiA+ID4gPiAzwqDCoMKgwqDC
-oMKgIHwKPiA+ID4gPiDCoMKgwqDCoMKgIC/CoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB8wqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB8wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoAo+
-ID4gPiA+IHzCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHwKPiA+ID4gPiDCoMKgwqDCoCB8
-MCAxIDIgMyA0IDUgNiA3fDAgMSAyIDMgNCA1IDYgN3wwIDEgMiAzIDQgNSA2IDd8MCAxIDIgMyA0
-Cj4gPiA+ID4gNSA2IDd8Cj4gPiA+ID4gwqDCoMKgwqAgKy0tLS0tLS0tLS0tLS0tLSstLS0tLS0t
-LS0tLS0tLS0rLS0tLS0tLS0tLS0tLS0tKy0tLS0tLS0tLQo+ID4gPiA+IC0tLS0tLSsKPiA+ID4g
-PiDCoMKgwqAgMHwufEl8IDB4MDHCoMKgwqDCoMKgIHxGfFJ8V3wuIC58QVRUUiB8Cj4gPiA+ID4g
-UmVzZXJ2ZWTCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfAo+ID4g
-PiA+IMKgwqDCoMKgICstLS0tLS0tLS0tLS0tLS0rLS0tLS0tLS0tLS0tLS0tKy0tLS0tLS0tLS0t
-LS0tLSstLS0tLS0tLS0KPiA+ID4gPiAtLS0tLS0rCj4gPiA+ID4gwqDCoMKgIDR8VG90YWxBSFNM
-ZW5ndGggfAo+ID4gPiA+IERhdGFTZWdtZW50TGVuZ3RowqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfAo+ID4gPiA+IMKgwqDCoMKgICstLS0t
-LS0tLS0tLS0tLS0rLS0tLS0tLS0tLS0tLS0tKy0tLS0tLS0tLS0tLS0tLSstLS0tLS0tLS0KPiA+
-ID4gPiAtLS0tLS0rCj4gPiA+ID4gwqDCoMKgIDh8IExvZ2ljYWwgVW5pdCBOdW1iZXIKPiA+ID4g
-PiAoTFVOKcKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB8Cj4gPiA+ID4gwqDCoMKgwqAKPiA+ID4gPiArwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoAo+ID4gPiA+ICsKPiA+ID4gPiDCoMKgCj4gPiA+ID4gMTJ8wqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgCj4gPiA+ID4gwqDC
-oCB8Cj4gPiA+ID4gwqDCoMKgwqAgKy0tLS0tLS0tLS0tLS0tLSstLS0tLS0tLS0tLS0tLS0rLS0t
-LS0tLS0tLS0tLS0tKy0tLS0tLS0tLQo+ID4gPiA+IC0tLS0tLSsKPiA+ID4gPiAuLi4KPiA+ID4g
-Cj4gPiA+IFdoZXJlICJJIiBpcyB0aGUgaW1tZWRpYXRlIGJpdC4KPiA+ID4gCj4gPiA+IEZyYW5r
-bHksIEknbSBuZXZlciBzdXJlIEkgcmVhZCB0aGUgU1BFQyBjb3JyZWN0bHksIHNvIEknbSBub3QK
-PiA+ID4gc3VyZSBpZiBJJ20gbWlzdGFrZW4gaGVyZSwgYnV0IGl0IGxvb2tzIGxpa2UgTElPIGRv
-ZXMgbm90IGFsbG93Cj4gPiA+IHRoZSBJbW1lZGlhdGUgYml0IChhbmQgaGVuY2UgSW1tZWRpYXRl
-IGRhdGEpLCBldmVuIHRob3VnaCB0aGUKPiA+ID4gU1BFQyBkb2VzIGFsbG93IGl0LiBCdXQgaXQg
-YWxzbyBsb29rcyBsaWtlLCBkdXJpbmcgbmVnb3RpYXRpb24KPiA+ID4gcGhhc2UsIExJTyBuZWdv
-dGlhdGVzIEltbWVkaWF0ZURhdGEgbGlrZSBhbnkgb3RoZXIgcGFyYW1ldGVyLAo+ID4gPiBhbGxv
-d2luZyAiWUVTIi4KPiA+ID4gCj4gPiA+IEluIG91ciB0ZXN0aW5nLCBpZiB3ZSBzZXQgSW1tZWRp
-YXRlRGF0YT1ObyBpbiB0aGUgdGFyZ2V0LCB0aGVuCj4gPiA+IG91ciBwcm9ibGVtIGdvZXMgYXdh
-eSwgaS5lLiB3ZSBjYW4gbm93IGJvb3QgZnJvbSBhbiBMSU8gdGFyZ2V0Lgo+ID4gPiBUaGlzIGlz
-IGJlY2F1c2UgSW1tZWRpYXRlIERhdGEgaXMgbmVnb3RpYXRlZCBvZmYsIG9mIGNvdXJzZS4KPiA+
-ID4gCj4gPiA+IElzIHRoaXMgYSBidWcsIG9yIGlzIHRoaXMgYWRhcHRlciBkb2luZyBzb21ldGhp
-bmcgd3Jvbmc/IEkgd291bGQKPiA+ID4gYXBwcmVjaWF0ZSBvdGhlciB2aWV3cG9pbnRzLgo+ID4g
-PiAKPiA+ID4gVGhhbmsgeW91Lgo+ID4gCj4gPiBTb3VuZHMgbGlrZSBhIGJ1Zy4KPiA+IENhbiB5
-b3UgY2hlY2sgaWYgdGhpcyBoZWxwcz8KPiA+IAo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGFy
-Z2V0L2lzY3NpL2lzY3NpX3RhcmdldC5jCj4gPiBiL2RyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3Np
-X3RhcmdldC5jCj4gPiBpbmRleCBiNTE2YzI4OTM0MjAuLmFkNjg3MDZhZDlmNyAxMDA2NDQKPiA+
-IC0tLSBhL2RyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3RhcmdldC5jCj4gPiArKysgYi9kcml2
-ZXJzL3RhcmdldC9pc2NzaS9pc2NzaV90YXJnZXQuYwo+ID4gQEAgLTEwNjAsNyArMTA2MCw4IEBA
-IGludCBpc2NzaXRfc2V0dXBfc2NzaV9jbWQoc3RydWN0IGlzY3NpdF9jb25uCj4gPiAqY29ubiwg
-c3RydWN0IGlzY3NpdF9jbWQgKmNtZCwKPiA+IAo+ID4gSVNDU0lfUkVBU09OX0JPT0tNQVJLX0lO
-VkFMSUQsIGJ1Zik7Cj4gPiDCoMKgwqDCoMKgwqDCoCB9Cj4gPiAKPiA+IC3CoMKgwqDCoMKgwqAg
-aWYgKGhkci0+b3Bjb2RlICYgSVNDU0lfT1BfSU1NRURJQVRFKSB7Cj4gPiArwqDCoMKgwqDCoMKg
-IGlmICgoaGRyLT5vcGNvZGUgJiBJU0NTSV9PUF9JTU1FRElBVEUpICYmCj4gPiArwqDCoMKgwqDC
-oMKgwqDCoMKgwqAgIWNvbm4tPnNlc3MtPnNlc3Nfb3BzLT5JbW1lZGlhdGVEYXRhKSB7Cj4gPiDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgcHJfZXJyKCJJbGxlZ2FsbHkgc2V0IEltbWVk
-aWF0ZSBCaXQgaW4gaVNDU0kKPiA+IEluaXRpYXRvciIKPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgICIgU2NzaSBDb21tYW5k
-IFBEVS5cbiIpOwo+ID4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHJldHVybiBpc2Nz
-aXRfYWRkX3JlamVjdF9jbWQoY21kLAo+ID4gCj4gCj4gCj4gVGhlc2UgYXJlIGRpZmZlcmVudCB0
-aGluZ3MuCj4gCj4gSW1tZWRpYXRlIGRhdGEgbWVhbnMgeW91IGNhbiBoYXZlIGRhdGEgYWZ0ZXIg
-dGhlIGhlYWRlciBpbiB0aGUgUERVLgo+IAo+IFRoZSBpbW1lZGlhdGUgYml0IG9uIHRoZSBoZWFk
-ZXIgaGFzIENtZFNOIHJ1bGVzIHdoaWNoIGFsbG93cyB5b3UgdG8KPiBzZW5kIGNvbW1hbmRzIHdp
-dGhvdXQgaGF2aW5nIHRvIGluY3JlbWVudCB0aGUgQ21kU04uIEl0J3MgdXNlZCBmb3IKPiB0aGlu
-Z3MgbGlrZSBUTUZzIGJlY2F1c2UgYXQgdGhhdCB0aW1lLCB0aGUgd2luZG93IG1pZ2h0IGJlIGNs
-b3NlZCBkdWUKPiB0byBTQ1NJIGNvbW1hbmRzIGhhdmluZyBmaWxsZWQgaXQuCj4gCj4gCgpJIGhh
-dmUgaXNjc2kgYm9vdGVkIGZvciB5ZWFycyB3aXRoIExJTyBhcyB0aGUgdGFyZ2V0IGJ1dCBuZXZl
-ciB3aXRoCnFlZGkgYXMgdGhlIGJhc2UgSVNDU0kgZHJpdmVyLiBJIHdpbGwgc2VlIGlmIEkgc2Vl
-IHRoZSBzYW1lIGJlaGF2aW9yIGFzCkxlZSB3aXRoIHRoZSBxZWRpIGludm9sdmVkLgoKCgo=
+On 11/26/23 16:39, Mike Christie wrote:
+> On 11/26/23 6:01 AM, Hannes Reinecke wrote:
+>> On 11/25/23 19:28, Lee Duncan wrote:
+>>> Hi Martin/list:
+>>>
+>>> I am trying to track down an issue I am seeing when trying to boot using iSCSI root using the fastlinq qedi converged network adapter initiator and an LIO target.
+>>>
+>>> In this configuration, but using a non-LIO (hardware) iSCSI target, everything "just works". But when I switch to using an LIO software target, I get this error when booting:
+>>>
+>>>> 2023-09-20T14:10:32.835358-0500 worker5 kernel: Illegally set Immediate Bit in iSCSI Initiator Scsi Command PDU.
+>>>> ... > 2023-09-20T14:10:32.835422-0500 worker5 kernel: Got unknown iSCSI
+>>> OpCode: 0x52
+>>>
+>>> It looks like the fastlinq adapter is sending a SCSI write (0x12) with the Immediate bit set (0x40).
+>>>
+>>> The code in iscsi_target.c:iscsit_setup_scsi_cmd(): looks like this:
+>>>
+>>>>      if (hdr->opcode & ISCSI_OP_IMMEDIATE) {
+>>>>          pr_err("Illegally set Immediate Bit in iSCSI Initiator"
+>>>>                  " Scsi Command PDU.\n");
+>>>>          return iscsit_add_reject_cmd(cmd,
+>>>>                           ISCSI_REASON_BOOKMARK_INVALID, buf);
+>>>>      }
+>>>>
+>>>
+>>> But I looked at rfc3720, and it looks like SCSI PDUs can have the Immediate Bit set:
+>>>
+>>>> 10.3.  SCSI Command
+>>>>     The format of the SCSI Command PDU is:
+>>>>     Byte/     0       |       1       |       2       |       3       |
+>>>>        /              |               |               |               |
+>>>>       |0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
+>>>>       +---------------+---------------+---------------+---------------+
+>>>>      0|.|I| 0x01      |F|R|W|. .|ATTR | Reserved                      |
+>>>>       +---------------+---------------+---------------+---------------+
+>>>>      4|TotalAHSLength | DataSegmentLength                             |
+>>>>       +---------------+---------------+---------------+---------------+
+>>>>      8| Logical Unit Number (LUN)                                     |
+>>>>       +                                                               +
+>>>>     12|                                                               |
+>>>>       +---------------+---------------+---------------+---------------+
+>>>> ...
+>>>
+>>> Where "I" is the immediate bit.
+>>>
+>>> Frankly, I'm never sure I read the SPEC correctly, so I'm not sure if I'm mistaken here, but it looks like LIO does not allow the Immediate bit (and hence Immediate data), even though the SPEC does allow it. But it also looks like, during negotiation phase, LIO negotiates ImmediateData like any other parameter, allowing "YES".
+>>>
+>>> In our testing, if we set ImmediateData=No in the target, then our problem goes away, i.e. we can now boot from an LIO target. This is because Immediate Data is negotiated off, of course.
+>>>
+>>> Is this a bug, or is this adapter doing something wrong? I would appreciate other viewpoints.
+>>>
+>>> Thank you.
+>>
+>> Sounds like a bug.
+>> Can you check if this helps?
+>>
+>> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+>> index b516c2893420..ad68706ad9f7 100644
+>> --- a/drivers/target/iscsi/iscsi_target.c
+>> +++ b/drivers/target/iscsi/iscsi_target.c
+>> @@ -1060,7 +1060,8 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
+>>
+>> ISCSI_REASON_BOOKMARK_INVALID, buf);
+>>          }
+>>
+>> -       if (hdr->opcode & ISCSI_OP_IMMEDIATE) {
+>> +       if ((hdr->opcode & ISCSI_OP_IMMEDIATE) &&
+>> +           !conn->sess->sess_ops->ImmediateData) {
+>>                  pr_err("Illegally set Immediate Bit in iSCSI Initiator"
+>>                                  " Scsi Command PDU.\n");
+>>                  return iscsit_add_reject_cmd(cmd,
+>>
+> 
+> 
+> These are different things.
+> 
+> Immediate data means you can have data after the header in the PDU.
+> 
+> The immediate bit on the header has CmdSN rules which allows you to
+> send commands without having to increment the CmdSN. It's used for
+> things like TMFs because at that time, the window might be closed due
+> to SCSI commands having filled it.
+> 
 
+Mike: it sounds like that implies that setting the immediate bit in the 
+header is actually not allowed for regular SCSI PDUs (like Read, Write), 
+correct?
+
+-- 
+Lee
