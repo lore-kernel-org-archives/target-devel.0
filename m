@@ -1,51 +1,41 @@
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="mxWuZrxJ"
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC506CD
-	for <target-devel@vger.kernel.org>; Tue, 12 Dec 2023 13:23:02 -0800 (PST)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-6ce9e897aeaso5466384b3a.2
-        for <target-devel@vger.kernel.org>; Tue, 12 Dec 2023 13:23:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1702416182; x=1703020982; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=wxuP6rH0bpJQdehhJhYTsKOeIoxa8S/XV7TnZO98Xd8=;
-        b=mxWuZrxJdj5bxzeN0YMXVqGpbHbz1nYi4FUG1QpdzI4N9XYOcPH5rnNxNxdtm+ZNLp
-         kXqAL6axnAXTby/KaAJBMQcsQ1uvrrBoWNQwTwvMrU9F7k51SMf00lMl2+us5tV0Rhyd
-         Hl8fW5++UU5chmaZ2SuFlgp+dwjPkj/9od8c8=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1702416182; x=1703020982;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wxuP6rH0bpJQdehhJhYTsKOeIoxa8S/XV7TnZO98Xd8=;
-        b=TVrPgx2YyX2qlbaEg31X0FrSRIwqZ7XPIFiO5Yk5VBqegPCFgO3VdsXg0nYDM/hmPP
-         PipMicdhoE5OhOxTtTDfrDAqQH0dOP3pVAkVsDPUqWB3/HnEj+dwnI2Fp8mW4gXwE1uD
-         08ioARu5jArppFRNP0jG8G8Pxq20BtC5uqIxP7H5CAdTzwAP+lemFdKEFiQe8Tz/58Ig
-         zYUAbChcUnsoFrRrhiDrjoxLqrZHgushOL9MpqZoQWdyFDCnXmI624vn+Kh52MdNk6D3
-         n+bYanCRsG83STs0cxe/VPkRpFCxqcdU2lHNh8/dJocgZ2KoIES5jScG9Bx/zvvyUjkO
-         QyBQ==
-X-Gm-Message-State: AOJu0YxtesyxXwDbNGrx9la3Xi38sxowwx6dxcPl2F26+8YorpvZKZIU
-	14DfhqPGYGdc9XSr701pKP6HxA==
-X-Google-Smtp-Source: AGHT+IGIhzGATDu3oBFvEwndykUJEdWlX+8RRQcdHx5e6X9Trh/t8PqWSN3lz74zp+LOsTuYbP5pCA==
-X-Received: by 2002:a05:6a00:b53:b0:6ce:6c54:24a7 with SMTP id p19-20020a056a000b5300b006ce6c5424a7mr7792476pfo.1.1702416182255;
-        Tue, 12 Dec 2023 13:23:02 -0800 (PST)
-Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net. [198.0.35.241])
-        by smtp.gmail.com with ESMTPSA id x20-20020aa793b4000000b006ce4c7ba448sm8592223pff.25.2023.12.12.13.23.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Dec 2023 13:23:01 -0800 (PST)
-Date: Tue, 12 Dec 2023 13:23:01 -0800
-From: Kees Cook <keescook@chromium.org>
-To: Justin Stitt <justinstitt@google.com>
-Cc: Michael Cyr <mikecyr@linux.ibm.com>,
-	"James E.J. Bottomley" <jejb@linux.ibm.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
-Subject: Re: [PATCH v2] scsi: ibmvscsi_tgt: replace deprecated strncpy with
- strscpy
-Message-ID: <202312121321.E15E09BF@keescook>
-References: <20231212-strncpy-drivers-scsi-ibmvscsi_tgt-ibmvscsi_tgt-c-v2-1-bdb9a7cd96c8@google.com>
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="b1ZPrJXk"
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69EE4F3
+	for <target-devel@vger.kernel.org>; Wed, 13 Dec 2023 12:06:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1702497981;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Wamy6ZLjsCqbPaUGOHqCPQWdjqfo0kYV5q8insG9vzg=;
+	b=b1ZPrJXkxczM1eX1uoJgCGOBaYF4chQ1K6ZRq6Qe8xs620eHxTXrXV5yY8TJmA1QA5iuz7
+	KFlkUFozNy7uzet0PfJd+xH7/AaiBGk4+jWGqefs2vuLYkAURGwe+G4LF0aWAS6EcFCfGR
+	GtacPyLX1bQQszeacGCXP9Pat6wdaZY=
+Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
+ by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-169-eViGQ28KPNWBegcPkOC9Fw-1; Wed,
+ 13 Dec 2023 15:06:18 -0500
+X-MC-Unique: eViGQ28KPNWBegcPkOC9Fw-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id A06481C294A1;
+	Wed, 13 Dec 2023 20:06:17 +0000 (UTC)
+Received: from rhel-developer-toolbox-latest (unknown [10.2.17.21])
+	by smtp.corp.redhat.com (Postfix) with ESMTPS id B86B251E3;
+	Wed, 13 Dec 2023 20:06:16 +0000 (UTC)
+Date: Wed, 13 Dec 2023 12:06:14 -0800
+From: Chris Leech <cleech@redhat.com>
+To: lduncan@suse.com
+Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org, dbond@suse.com, hare@suse.de,
+	michael.christie@oracle.com
+Subject: Re: [PATCH 1/2] scsi: target: iscsi: handle SCSI immediate commands
+Message-ID: <ZXoOtgVZW_QpkU11@rhel-developer-toolbox-latest>
+References: <cover.1701540918.git.lduncan@suse.com>
+ <dc0006176e90cf3fb90e5b1c1917b54fe07c91cd.1701540918.git.lduncan@suse.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -54,50 +44,93 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20231212-strncpy-drivers-scsi-ibmvscsi_tgt-ibmvscsi_tgt-c-v2-1-bdb9a7cd96c8@google.com>
+In-Reply-To: <dc0006176e90cf3fb90e5b1c1917b54fe07c91cd.1701540918.git.lduncan@suse.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.5
 
-On Tue, Dec 12, 2023 at 01:20:20AM +0000, Justin Stitt wrote:
-> strncpy() is deprecated for use on NUL-terminated destination strings
-> [1] and as such we should prefer more robust and less ambiguous string
-> interfaces.
+On Thu, Dec 07, 2023 at 09:42:34AM -0800, lduncan@suse.com wrote:
+> From: Lee Duncan <lduncan@suse.com>
 > 
-> We don't need the NUL-padding behavior that strncpy() provides as vscsi
-> is NUL-allocated in ibmvscsis_probe() which proceeds to call
-> ibmvscsis_adapter_info():
-> |       vscsi = kzalloc(sizeof(*vscsi), GFP_KERNEL);
+> Some iSCSI initiators send SCSI PDUs with the "immediate" bit
+> set, and this is allowed according to RFC 3720. Commands with
+> the "Immediate" bit set are called "immediate commands". From
+> section 3.2.2.1. "Command Numbering and Acknowledging":
 > 
-> ibmvscsis_probe() -> ibmvscsis_handle_crq() -> ibmvscsis_parse_command()
-> -> ibmvscsis_mad() -> ibmvscsis_process_mad() -> ibmvscsis_adapter_info()
+>    The target MUST NOT transmit a MaxCmdSN that is less than
+>    ExpCmdSN-1.  For non-immediate commands, the CmdSN field can take any
+>    value from ExpCmdSN to MaxCmdSN inclusive.  The target MUST silently
+>    ignore any non-immediate command outside of this range or non-
+>    immediate duplicates within the range.  The CmdSN carried by
+>    immediate commands may lie outside the ExpCmdSN to MaxCmdSN range.
+>    For example, if the initiator has previously sent a non-immediate
+>    command carrying the CmdSN equal to MaxCmdSN, the target window is
+>    closed.  For group task management commands issued as immediate
+>    commands, CmdSN indicates the scope of the group action (e.g., on
+>    ABORT TASK SET indicates which commands are aborted).
 > 
-> Following the same idea, `partition_name` is defiend as:
-> |       static char partition_name[PARTITION_NAMELEN] = "UNKNOWN";
-> ... which is NUL-padded already, meaning strscpy() is the best option.
+> This fixed an issue with fastlinq qedi Converged Network Adapter
+> initiator firmware, trying to use an LIO target for booting. These
+> changes made booting possible, with or without ImmediateData enabled.
 > 
-> Considering the above, a suitable replacement is `strscpy` [2] due to
-> the fact that it guarantees NUL-termination on the destination buffer
-> without unnecessarily NUL-padding.
+> Signed-off-by: Lee Duncan <lduncan@suse.com>
+> Reviewed-by: David Bond <dbond@suse.com>
+> ---
+>  drivers/target/iscsi/iscsi_target.c      | 12 +++---------
+>  drivers/target/iscsi/iscsi_target_util.c | 10 ++++++++--
+>  2 files changed, 11 insertions(+), 11 deletions(-)
 > 
-> However, for cap->name and info let's use strscpy_pad as they are
-> allocated via dma_alloc_coherent():
-> |       cap = dma_alloc_coherent(&vscsi->dma_dev->dev, olen, &token,
-> |                                GFP_ATOMIC);
-> &
-> |       info = dma_alloc_coherent(&vscsi->dma_dev->dev, sizeof(*info), &token,
-> |                                 GFP_ATOMIC);
-> 
-> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
-> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
-> Link: https://github.com/KSPP/linux/issues/90
-> Cc: linux-hardening@vger.kernel.org
-> Signed-off-by: Justin Stitt <justinstitt@google.com>
+> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+> index 1d25e64b068a..f246e5015868 100644
+> --- a/drivers/target/iscsi/iscsi_target.c
+> +++ b/drivers/target/iscsi/iscsi_target.c
+> @@ -1060,13 +1060,6 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
+>  					     ISCSI_REASON_BOOKMARK_INVALID, buf);
+>  	}
+>  
+> -	if (hdr->opcode & ISCSI_OP_IMMEDIATE) {
+> -		pr_err("Illegally set Immediate Bit in iSCSI Initiator"
+> -				" Scsi Command PDU.\n");
+> -		return iscsit_add_reject_cmd(cmd,
+> -					     ISCSI_REASON_BOOKMARK_INVALID, buf);
+> -	}
+> -
+>  	if (payload_length && !conn->sess->sess_ops->ImmediateData) {
+>  		pr_err("ImmediateData=No but DataSegmentLength=%u,"
+>  			" protocol error.\n", payload_length);
 
-This looks good to me. The only question that I haven't seen an answer
-to from the maintainers is whether this is a __nonstring or not. It
-really looks like it should be a C String, so with that assumption:
+This seems right, as the flag is checked again later in the same
+function.
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+> @@ -1255,14 +1248,15 @@ int iscsit_process_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
+>  	/*
+>  	 * Check the CmdSN against ExpCmdSN/MaxCmdSN here if
+>  	 * the Immediate Bit is not set, and no Immediate
+> -	 * Data is attached.
+> +	 * Data is attached. Also skip the check if this is
+> +	 * an immediate command.
 
--Kees
+This comment addition seems redundant, isn't that what the "Immediate
+Bit is not set" already means?
 
--- 
-Kees Cook
+>  	 *
+>  	 * A PDU/CmdSN carrying Immediate Data can only
+>  	 * be processed after the DataCRC has passed.
+>  	 * If the DataCRC fails, the CmdSN MUST NOT
+>  	 * be acknowledged. (See below)
+>  	 */
+> -	if (!cmd->immediate_data) {
+> +	if (!cmd->immediate_data && !cmd->immediate_cmd) {
+>  		cmdsn_ret = iscsit_sequence_cmd(conn, cmd,
+>  					(unsigned char *)hdr, hdr->cmdsn);
+>  		if (cmdsn_ret == CMDSN_ERROR_CANNOT_RECOVER)
+
+Are you sure this needs to be checking both conditions here?  I'm
+struggling to understand why CmdSN checking would be bypassed for
+immediate data.  Is this a longstanding bug where the condition should
+have been on immediate_cmd (and only immediate_cmd) instead?
+
+Or is this because of the handling the immediate data with DataCRC case
+mentioned?  I do see iscsit_sequence_cmd also being called in
+iscsit_get_immediate_data.
+
+- Chris Leech
+
