@@ -1,47 +1,99 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 794E46ABA2
-	for <target-devel@vger.kernel.org>; Thu, 14 Dec 2023 20:30:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63F42168B3;
+	Wed, 20 Dec 2023 07:15:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Mko5chAn"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1702585807;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QXuga73/c/MA5mQD7NNrVlnCLK003+KYeVkn9fwBS0Q=;
-	b=Mko5chAnO2UCG07VQXmSeyDrlr8Yv3xu/DG9Fswisbau5cw6yskuyw8vAGkoz7wbXzj5M5
-	5Rl7RaHl85ZFjRjz3enpVYMwDGKvz8ZVHeYYEqchpgawFVtZyf0XdAl1f7rGpFXAtWbW0d
-	4R4oy9IC4qURTFBbrqDb7F54FxoaERc=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-26-5RDRj6REPkG2aO5zjCKD4Q-1; Thu, 14 Dec 2023 15:30:02 -0500
-X-MC-Unique: 5RDRj6REPkG2aO5zjCKD4Q-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 0A11888FBA3;
-	Thu, 14 Dec 2023 20:30:02 +0000 (UTC)
-Received: from rhel-developer-toolbox-latest (unknown [10.2.17.21])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id 3CD052166B31;
-	Thu, 14 Dec 2023 20:30:01 +0000 (UTC)
-Date: Thu, 14 Dec 2023 12:29:59 -0800
-From: Chris Leech <cleech@redhat.com>
-To: Lee Duncan <lduncan@suse.com>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, dbond@suse.com, hare@suse.de,
-	michael.christie@oracle.com
-Subject: Re: [PATCH 1/2] scsi: target: iscsi: handle SCSI immediate commands
-Message-ID: <ZXtlxzVtY3M_WrQ2@rhel-developer-toolbox-latest>
-References: <cover.1701540918.git.lduncan@suse.com>
- <dc0006176e90cf3fb90e5b1c1917b54fe07c91cd.1701540918.git.lduncan@suse.com>
- <ZXoOtgVZW_QpkU11@rhel-developer-toolbox-latest>
- <CAPj3X_W5kOEOapG3F8NETBRzBmrQ1Lfudy7QGmCLXPT3UwUrkw@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mmUBG276"
+Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-6d87eadc43fso1766766b3a.1;
+        Tue, 19 Dec 2023 23:15:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1703056501; x=1703661301; darn=vger.kernel.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=eJqWdKRl0UBq0Wj+r8chL9QmhrnrulM60eoe1tH98KY=;
+        b=mmUBG2766MCmU+ZcjSOo09fxvnBdIO3MIOuTtci1nkkT8LxOHncXez4Ddt2Ybxdp9F
+         VOXnc0QO6lfJmFZy+lgxY8IkIpUzz85V3vyXBkqRb2rM4+S9jJ/1XsfluIW4Kuxl3vxV
+         LO4C8p/Qxwh4+u6ndBgXS8Ub6lT0oRe/B2494ZKcr1Vmnhu4KlhLYI8y7SSt2i8G4jwb
+         zji1dsJpTurejRGJBE0mIMPkjE+yS3pl+4FhmzbVZgYE+JZyHf7lfF2MI+HpqZpkvSBP
+         sDP3BJ88wpFLryfburFd9Kt+BDgmIDIM8L7ARISnHT64cdWMI0wM8Fztno3PesligHF1
+         iYxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1703056501; x=1703661301;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=eJqWdKRl0UBq0Wj+r8chL9QmhrnrulM60eoe1tH98KY=;
+        b=Y0VfGsBaSUb6OF3CR5nOWmwhOSq9UWl17XjBwJdB3DSvBsIZSiWvQMzWV5Elnno4RO
+         Qr1Y98+M/gYrn/zUSyDx2cvXJP1fihLrkjfT7AYXx85kmEutHs2J3E0tgcOukTCl+Ih/
+         oC+u/69z3tHtOPqWJEWwoU9k8vGWX2C2PNmWfWZPus1/vOb0VbhDogFQrh1H5zXk++pa
+         /SPqJ8c7Q/L5Bl+/aIQvQ4x32eCBlsnMElqfrjgkC2+lNRX3o733/rbkV9emRp+uSire
+         0KRly20DLDMMmIZ4Ekm98hJKLXIPtdfuuEVCF3geq+oMP/b64SvU/rxToOmkGu6gz68q
+         Rxow==
+X-Gm-Message-State: AOJu0YylOLcE94PYjz62ebvXs089LFxlxJv/Fzc8T1MxgZkGIGWAn9Uv
+	1JKfVH7W08hO7BJdfznKuXc=
+X-Google-Smtp-Source: AGHT+IH2/KQGWsEEIk+CfQb//I/X1FN9i9PYn0R8hU2YQDfX0MobECujamcRsnvnV4o1L8WIa9T7SQ==
+X-Received: by 2002:a17:903:947:b0:1d3:be34:7862 with SMTP id ma7-20020a170903094700b001d3be347862mr3583611plb.9.1703056501427;
+        Tue, 19 Dec 2023 23:15:01 -0800 (PST)
+Received: from localhost (dhcp-72-253-202-210.hawaiiantel.net. [72.253.202.210])
+        by smtp.gmail.com with ESMTPSA id m2-20020a170902bb8200b001cfd2cb1907sm22210314pls.206.2023.12.19.23.15.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 19 Dec 2023 23:15:00 -0800 (PST)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Tue, 19 Dec 2023 21:14:59 -1000
+From: Tejun Heo <tj@kernel.org>
+To: Naohiro Aota <Naohiro.Aota@wdc.com>
+Cc: Lai Jiangshan <jiangshanlai@gmail.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>,
+	"ceph-devel@vger.kernel.org" <ceph-devel@vger.kernel.org>,
+	"cgroups@vger.kernel.org" <cgroups@vger.kernel.org>,
+	"coreteam@netfilter.org" <coreteam@netfilter.org>,
+	"dm-devel@lists.linux.dev" <dm-devel@lists.linux.dev>,
+	"dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+	"gfs2@lists.linux.dev" <gfs2@lists.linux.dev>,
+	"intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
+	"iommu@lists.linux.dev" <iommu@lists.linux.dev>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-bcachefs@vger.kernel.org" <linux-bcachefs@vger.kernel.org>,
+	"linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+	"linux-cachefs@redhat.com" <linux-cachefs@redhat.com>,
+	"linux-cifs@vger.kernel.org" <linux-cifs@vger.kernel.org>,
+	"linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+	"linux-erofs@lists.ozlabs.org" <linux-erofs@lists.ozlabs.org>,
+	"linux-f2fs-devel@lists.sourceforge.net" <linux-f2fs-devel@lists.sourceforge.net>,
+	"linux-fscrypt@vger.kernel.org" <linux-fscrypt@vger.kernel.org>,
+	"linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
+	"linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>,
+	"linux-mm@kvack.org" <linux-mm@kvack.org>,
+	"linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+	"linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+	"linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
+	"linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+	"linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
+	"linux-remoteproc@vger.kernel.org" <linux-remoteproc@vger.kernel.org>,
+	"linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+	"linux-trace-kernel@vger.kernel.org" <linux-trace-kernel@vger.kernel.org>,
+	"linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+	"linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+	"linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>,
+	"nbd@other.debian.org" <nbd@other.debian.org>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"ntb@lists.linux.dev" <ntb@lists.linux.dev>,
+	"open-iscsi@googlegroups.com" <open-iscsi@googlegroups.com>,
+	"oss-drivers@corigine.com" <oss-drivers@corigine.com>,
+	"platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>,
+	"samba-technical@lists.samba.org" <samba-technical@lists.samba.org>,
+	"target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
+	"virtualization@lists.linux.dev" <virtualization@lists.linux.dev>,
+	"wireguard@lists.zx2c4.com" <wireguard@lists.zx2c4.com>
+Subject: Re: Performance drop due to alloc_workqueue() misuse and recent
+ change
+Message-ID: <ZYKUc7MUGvre2lGQ@slm.duckdns.org>
+References: <dbu6wiwu3sdhmhikb2w6lns7b27gbobfavhjj57kwi2quafgwl@htjcc5oikcr3>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -50,79 +102,22 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAPj3X_W5kOEOapG3F8NETBRzBmrQ1Lfudy7QGmCLXPT3UwUrkw@mail.gmail.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.6
+In-Reply-To: <dbu6wiwu3sdhmhikb2w6lns7b27gbobfavhjj57kwi2quafgwl@htjcc5oikcr3>
 
-On Wed, Dec 13, 2023 at 05:24:54PM -0800, Lee Duncan wrote:
-> >
-> > > @@ -1255,14 +1248,15 @@ int iscsit_process_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
-> > >       /*
-> > >        * Check the CmdSN against ExpCmdSN/MaxCmdSN here if
-> > >        * the Immediate Bit is not set, and no Immediate
-> > > -      * Data is attached.
-> > > +      * Data is attached. Also skip the check if this is
-> > > +      * an immediate command.
-> >
-> > This comment addition seems redundant, isn't that what the
-> > "Immediate Bit is not set" already means?
-> 
-> The spec is confusing with respect to this. The "Immediate Bit" means
-> an immediate command. These commands are done "now", not queued, and
-> they do not increment the expected sequence number.
-> 
-> Immediate data is different, and unfortunately named IMHO. It's when a
-> PDU supplies the data for the SCSI command in the current PDU instead
-> of the next PDU.
+Hello, again.
 
-I understand the protocol, just trying to make sense of the
-implementation and what the existing comment meant. And the existing
-comment already has two conditions in it, even if the code doesn't.
+On Mon, Dec 04, 2023 at 04:03:47PM +0000, Naohiro Aota wrote:
+...
+> In summary, we misuse max_active, considering it is a global limit. And,
+> the recent commit introduced a huge performance drop in some cases.  We
+> need to review alloc_workqueue() usage to check if its max_active setting
+> is proper or not.
 
-I think I understand now why this is delaying CmdSN validation when
-there is immediate data, until after the DataCRC can be checked.
+Can you please test the following branch?
 
-This comment in iscsit_get_immediate_data, where the delayed processing
-occurs, also seems to read that "Immediate Bit" is in reference to an
-immediate command.
+ https://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git unbound-system-wide-max_active
 
-  * A PDU/CmdSN carrying Immediate Data passed
-  * DataCRC, check against ExpCmdSN/MaxCmdSN if
-  * Immediate Bit is not set.
+Thanks.
 
-but neither of these locations (before these changes) that mention the
-"Immediate Bit" in the comments actually check for cmd->immediate_cmd.
-
-> > >        *
-> > >        * A PDU/CmdSN carrying Immediate Data can only
-> > >        * be processed after the DataCRC has passed.
-> > >        * If the DataCRC fails, the CmdSN MUST NOT
-> > >        * be acknowledged. (See below)
-> > >        */
-> > > -     if (!cmd->immediate_data) {
-> > > +     if (!cmd->immediate_data && !cmd->immediate_cmd) {
-> > >               cmdsn_ret = iscsit_sequence_cmd(conn, cmd,
-> > >                                       (unsigned char *)hdr, hdr->cmdsn);
-> > >               if (cmdsn_ret == CMDSN_ERROR_CANNOT_RECOVER)
-> >
-> > Are you sure this needs to be checking both conditions here?  I'm
-> > struggling to understand why CmdSN checking would be bypassed for
-> > immediate data.  Is this a longstanding bug where the condition should
-> > have been on immediate_cmd (and only immediate_cmd) instead?
-> 
-> The immediate data check was there already, and there haven't been any
-> bugs I know of, so I assumed that part of the code was ok.
-> 
-> >
-> > Or is this because of the handling the immediate data with DataCRC case
-> > mentioned?  I do see iscsit_sequence_cmd also being called in
-> > iscsit_get_immediate_data.
-> 
-> I will check that but I suspect you are correct.
-
-Is it correct to skip all of iscsit_sequence_cmd for an immediate
-command here? You are already skipping iscsit_check_received_cmdsn
-inside iscsit_sequence_cmd in this patch. If cmd->immediate_cmd is set,
-where does iscsit_execute_cmd now get called from?
-
-- Chris Leech
-
+-- 
+tejun
