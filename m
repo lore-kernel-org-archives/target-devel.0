@@ -1,69 +1,36 @@
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 226DB3FE31;
-	Tue, 16 Jan 2024 21:55:19 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=148.163.156.1
+Received: from sgoci-sdnproxy-4.icoremail.net (sgoci-sdnproxy-4.icoremail.net [129.150.39.64])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 8B8AACA47;
+	Wed, 17 Jan 2024 08:18:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=129.150.39.64
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705442122; cv=none; b=OF+0yADKVWLf/lX7/sSqJIaguUIdeTQJiIpS0z2uQnne/d0+8knSEH+V4ni+NLQ3RP3Gpj8PctUegEW1D7/9/6hboVIKC7PaCjHXy8wMAxFO0ydgIcQhyAgJEZsdtTiHA4O5iFdanB669vSly2pJBfSytE/Vq8ax5mQ8Uy2OLWo=
+	t=1705479540; cv=none; b=er5tm1wUjO8S69L3D94y8XxJCiRK6srMAk3yZWdENbhqOpRhq6uyuzwmbnVpxLtp4ZjSFqQVjjSbkj9prURULbQ8poc776m86xiYCAttMXXRD7jnUAdf4uqviFXYHiufOfKZuHGE78kJegl4xLyx19VxHDRABZfQkdeUI9ugXqM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705442122; c=relaxed/simple;
-	bh=2kMngdY8XxaVbjjDWUSvjo23NQ0hWKVAhB8Afjw9Z2Y=;
-	h=Received:DKIM-Signature:Received:Received:Received:Received:
-	 Received:Received:Received:From:To:Cc:Subject:Date:Message-ID:
-	 X-Mailer:MIME-Version:Content-Transfer-Encoding:X-TM-AS-GCONF:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:
-	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details; b=Xw5Luq9ilb+c/J1o2eMbm2Qu9OK2oUP35U072S5BR8zgoGdIqBKV434FtnqvsLCf6WpFLbD+b/I4R3ACXJXIu/lGkDyMpZPCheU+cpg4dVlUA47BMHP+ZxDO605CgETUcm/naF7W2f8mRwCo2S2p/oku0W8g4QSudwkCKDavBSk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; spf=pass smtp.mailfrom=linux.ibm.com; dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b=Duh6G9At; arc=none smtp.client-ip=148.163.156.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.ibm.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Duh6G9At"
-Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40GLqGaM014432;
-	Tue, 16 Jan 2024 21:55:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=yvYg34V1aSxXXxCa9jhpXGi7MKL9Geldai0x1AhQ2Pc=;
- b=Duh6G9Atwwj8hlDB0t5/XhQirIxKuRowJc5tc6zpjRlla7w/pInI2tPr0vezvtAr3KUQ
- 5phhypEzWwCY+WEFTUH7CDNWPTAzbECFqouXQjbfckfU6PLLcjCXqWjVhT7Qhc/oJXeS
- ePkGHEfVeM8M1UPyQUDqpNZEsgu9zZzy0EQmhR5cVIxjlnY1a3ZEVpOYEnNUZqGhHt/W
- v8D7Hj5klK9iXd9ZAW6q2IK2gof1HWLI8+UEWUrGBlm6Hl0ryrM6ruOrzme4MLXChG8x
- 4yCO5YRg9OOXVQR5YXBD0u7k5NK22H9CAPWAacqCl3bYl0mfccc+hJt6DQntgE9J/+vp LA== 
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3vp0uk2f4m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 16 Jan 2024 21:55:16 +0000
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 40GJ6uTr008536;
-	Tue, 16 Jan 2024 21:55:14 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3vm5unhbnu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 16 Jan 2024 21:55:14 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 40GLtEjX20120134
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 16 Jan 2024 21:55:14 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EC9C95804B;
-	Tue, 16 Jan 2024 21:55:13 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DB38258055;
-	Tue, 16 Jan 2024 21:55:12 +0000 (GMT)
-Received: from li-894d004c-2c43-11b2-a85c-d8bfeb5f0009.ibm.com.com (unknown [9.61.126.152])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 16 Jan 2024 21:55:12 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: brking@linux.ibm.com, linux-scsi@vger.kernel.org,
-        james.bottomley@hansenpartnership.com, martin.petersen@oracle.com,
-        mikecyr@linux.ibm.com, target-devel@vger.kernel.org,
-        Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: [PATCH] MAINTAINERS: update ibmvscsi_tgt maintainer
-Date: Tue, 16 Jan 2024 13:55:09 -0800
-Message-ID: <20240116215509.1155787-1-tyreld@linux.ibm.com>
-X-Mailer: git-send-email 2.43.0
+	s=arc-20240116; t=1705479540; c=relaxed/simple;
+	bh=+NIbRHWYXe1ipquEi/0se7ILPiOmX9vF5XVA/zzn78A=;
+	h=Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:MIME-Version:
+	 Content-Transfer-Encoding:X-CM-TRANSID:X-Coremail-Antispam:
+	 X-CM-SenderInfo; b=VG/L6qE8tUX+wmD8Dg+RW6McHDcyQD8cAZMMeqn+ONdsCNi/8i7LBvsD6oG15IyWffWYH98potl2jucak9XwTeg9lDOIJUbZsS8YwwV5OoKYFcD9D0FnwzEo9Ex1DTSpxDTULbk84ZpUZq8T0zgjmKWqGjEKJKcs67Vh/lt5vI0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=129.150.39.64
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
+Received: from luzhipeng.223.5.5.5 (unknown [183.159.170.227])
+	by mail-app4 (Coremail) with SMTP id cS_KCgDHBIXmi6dla0suAA--.42587S2;
+	Wed, 17 Jan 2024 16:12:23 +0800 (CST)
+From: Zhipeng Lu <alexious@zju.edu.cn>
+To: alexious@zju.edu.cn
+Cc: James Smart <james.smart@broadcom.com>,
+	Ram Vegesna <ram.vegesna@broadcom.com>,
+	"James E.J. Bottomley" <jejb@linux.ibm.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Daniel Wagner <dwagner@suse.de>,
+	Hannes Reinecke <hare@suse.de>,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: elx: efec: Fix a memleak in efct_hw_setup_io
+Date: Wed, 17 Jan 2024 16:03:42 +0800
+Message-Id: <20240117080344.3817969-1-alexious@zju.edu.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -71,40 +38,136 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: vUXZxRlK2EjNgxk-lNMKbHmU3_INNj88
-X-Proofpoint-GUID: vUXZxRlK2EjNgxk-lNMKbHmU3_INNj88
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.997,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-01-16_13,2024-01-16_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 bulkscore=0
- spamscore=0 lowpriorityscore=0 phishscore=0 suspectscore=0
- priorityscore=1501 malwarescore=0 mlxscore=0 mlxlogscore=797 adultscore=0
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2401160172
+X-CM-TRANSID:cS_KCgDHBIXmi6dla0suAA--.42587S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxGF4rAFyrKry8WF1kGr47twb_yoW5Zr1fpF
+	4xW34ruFW0qr4xCw17Ar40kr1YvanaqryDGay7Xa9ru3s5Kw4rtrs7AryavFn0kr97Wr13
+	WFWDKF1fWF4UZaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9014x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4U
+	JVW0owA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r
+	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628v
+	n2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7x
+	kEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E
+	67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCw
+	CI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1x
+	MIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIda
+	VFxhVjvjDU0xZFpf9x0JUd-B_UUUUU=
+X-CM-SenderInfo: qrsrjiarszq6lmxovvfxof0/
 
-Michael has not been responsible for this code as an IBMer for quite
-sometime. Seeing as the rest of the IBM Virtual SCSI related drivers
-already fall under my purview replace Michael with myself as maintainer.
+In the error-handling path of hw->wqe_buffs, not only hw->io, but also
+hw->io[i] should be freed. They should also be freed in the following
+error-hanlding paths. So as the first dma->virt, which needs to be freed
+when efct_hw_reqtag_alloc, sli_resource_alloc and the second
+dma_alloc_coherent fails.
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
+Signed-off-by: Zhipeng Lu <alexious@zju.edu.cn>
 ---
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/elx/efct/efct_hw.c | 32 +++++++++++++++++++++++---------
+ 1 file changed, 23 insertions(+), 9 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 391bbb855cbe..1ed1aa7b21eb 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10226,7 +10226,7 @@ F:	drivers/scsi/ibmvscsi/ibmvscsi*
- F:	include/scsi/viosrp.h
+diff --git a/drivers/scsi/elx/efct/efct_hw.c b/drivers/scsi/elx/efct/efct_hw.c
+index 5a5525054d71..62ef741a3ccf 100644
+--- a/drivers/scsi/elx/efct/efct_hw.c
++++ b/drivers/scsi/elx/efct/efct_hw.c
+@@ -485,6 +485,7 @@ efct_hw_setup_io(struct efct_hw *hw)
+ 	bool new_alloc = true;
+ 	struct efc_dma *dma;
+ 	struct efct *efct = hw->os;
++	int ret;
  
- IBM Power Virtual SCSI Device Target Driver
--M:	Michael Cyr <mikecyr@linux.ibm.com>
-+M:	Tyrel Datwyler <tyreld@linux.ibm.com>
- L:	linux-scsi@vger.kernel.org
- L:	target-devel@vger.kernel.org
- S:	Supported
+ 	if (!hw->io) {
+ 		hw->io = kmalloc_array(hw->config.n_io, sizeof(io), GFP_KERNEL);
+@@ -495,16 +496,18 @@ efct_hw_setup_io(struct efct_hw *hw)
+ 
+ 		for (i = 0; i < hw->config.n_io; i++) {
+ 			hw->io[i] = kzalloc(sizeof(*io), GFP_KERNEL);
+-			if (!hw->io[i])
++			if (!hw->io[i]) {
++				ret = -ENOMEM;
+ 				goto error;
++			}
+ 		}
+ 
+ 		/* Create WQE buffs for IO */
+ 		hw->wqe_buffs = kzalloc((hw->config.n_io * hw->sli.wqe_size),
+ 					GFP_KERNEL);
+ 		if (!hw->wqe_buffs) {
+-			kfree(hw->io);
+-			return -ENOMEM;
++			ret = -ENOMEM;
++			goto error;
+ 		}
+ 
+ 	} else {
+@@ -517,8 +520,10 @@ efct_hw_setup_io(struct efct_hw *hw)
+ 		dma->size = sizeof(struct fcp_txrdy) * hw->config.n_io;
+ 		dma->virt = dma_alloc_coherent(&efct->pci->dev,
+ 					       dma->size, &dma->phys, GFP_KERNEL);
+-		if (!dma->virt)
+-			return -ENOMEM;
++		if (!dma->virt) {
++			ret = -ENOMEM;
++			goto free_wqe_buffs;
++		}
+ 	}
+ 	xfer_virt = (uintptr_t)hw->xfer_rdy.virt;
+ 	xfer_phys = hw->xfer_rdy.phys;
+@@ -539,7 +544,8 @@ efct_hw_setup_io(struct efct_hw *hw)
+ 		wqcb = efct_hw_reqtag_alloc(hw, efct_hw_wq_process_io, io);
+ 		if (!wqcb) {
+ 			efc_log_err(hw->os, "can't allocate request tag\n");
+-			return -ENOSPC;
++			ret = -ENOSPC;
++			goto free_dma_virt;
+ 		}
+ 		io->reqtag = wqcb->instance_index;
+ 
+@@ -553,7 +559,8 @@ efct_hw_setup_io(struct efct_hw *hw)
+ 				       &io->indicator, &index)) {
+ 			efc_log_err(hw->os,
+ 				    "sli_resource_alloc failed @ %d\n", i);
+-			return -ENOMEM;
++			ret = -ENOMEM;
++			goto free_dma_virt;
+ 		}
+ 
+ 		if (new_alloc) {
+@@ -567,7 +574,8 @@ efct_hw_setup_io(struct efct_hw *hw)
+ 				efc_log_err(hw->os, "dma_alloc fail %d\n", i);
+ 				memset(&io->def_sgl, 0,
+ 				       sizeof(struct efc_dma));
+-				return -ENOMEM;
++				ret = -ENOMEM;
++				goto free_dma_virt;
+ 			}
+ 		}
+ 		io->def_sgl_count = hw->config.n_sgl;
+@@ -585,6 +593,12 @@ efct_hw_setup_io(struct efct_hw *hw)
+ 	}
+ 
+ 	return 0;
++free_dma_virt:
++	dma = &hw->xfer_rdy;
++	dma_free_coherent(&efct->pci->dev, dma->size, dma->virt, dma->phys);
++	memset(dma, 0, sizeof(struct efc_dma));
++free_wqe_buffs:
++	kfree(hw->wqe_buffs);
+ error:
+ 	for (i = 0; i < hw->config.n_io && hw->io[i]; i++) {
+ 		kfree(hw->io[i]);
+@@ -594,7 +608,7 @@ efct_hw_setup_io(struct efct_hw *hw)
+ 	kfree(hw->io);
+ 	hw->io = NULL;
+ 
+-	return -ENOMEM;
++	return ret;
+ }
+ 
+ static int
 -- 
-2.43.0
+2.34.1
 
