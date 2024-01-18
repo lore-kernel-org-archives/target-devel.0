@@ -1,194 +1,168 @@
-Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from NAM04-DM6-obe.outbound.protection.outlook.com (mail-dm6nam04olkn2023.outbound.protection.outlook.com [40.92.45.23])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D1922554F
-	for <target-devel@vger.kernel.org>; Wed, 17 Jan 2024 21:09:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.50
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705525758; cv=none; b=iBos8AE6iXL9HfkQQG2RWqaHysVUDgTl58wRm/MJkCZd7eGd1s3nd6F5IUos2VqF54nmgbMxSu5+65GRFFZ6ROzjm1PFFb6uyRCKPh3GCTEQ6OXe0vq4lWhCbQGqTxvbLuscdsOvND1s4bOw035L88DMxsToyxUFmeY5tDQEf5o=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705525758; c=relaxed/simple;
-	bh=yiczJz5xo+gXi22FZY/cUNQzQjX9NFJDBZPspOkYXH0=;
-	h=Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Google-Smtp-Source:X-Received:MIME-Version:
-	 References:In-Reply-To:From:Date:Message-ID:Subject:To:Cc:
-	 Content-Type:Content-Transfer-Encoding; b=X8KtbNLRpJPbXDY0q0T8gUlMdQE5JNOHaYYt3a7GpUMtZgSr6wpEYt+vYV+r4LApiYuvGPC7Tu85eMT05FrME77ZlAjRNzvosvX1yAb+yI5W9bm83+0BET0uY2s7bMe94VSJY4Ghdwb4dTAwuS4UyswD24ljc8HWb0Y+JK4LAcg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=Sc+t+Qz+; arc=none smtp.client-ip=209.85.218.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58CF88F40;
+	Thu, 18 Jan 2024 03:20:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.45.23
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1705548026; cv=fail; b=oLL1GBerM8imdnYIRxvhnVh87j63Y9vsuyElxGz/Pwn76ydwHqUK2Duq5NjoWnUi7ZU/IF9jtGXm3LeNQeZrmJwBXfrLIZ4CpTrT7O4CAwtCxK3ydTyV28oR+qgyO31yhhabl6plt2wA/EYmRe6mrX+vBFOC1J0JfzcQJLWYrlg=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1705548026; c=relaxed/simple;
+	bh=Ka6armkSN2Vftom6ci/ifYOQq0xOWlxvL3E2bGJKSiw=;
+	h=ARC-Message-Signature:ARC-Authentication-Results:DKIM-Signature:
+	 Received:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
+	 Content-Transfer-Encoding:Content-Type:X-TMN:X-ClientProxiedBy:
+	 X-Microsoft-Original-Message-ID:MIME-Version:
+	 X-MS-Exchange-MessageSentRepresentingType:X-MS-PublicTrafficType:
+	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
+	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
+	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
+	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-AuthSource:
+	 X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
+	 X-MS-Exchange-CrossTenant-FromEntityHeader:
+	 X-MS-Exchange-CrossTenant-Id:
+	 X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
+	 X-MS-Exchange-Transport-CrossTenantHeadersStamped; b=eRsizJ24z5il7Jna1tLqxDVCuFQa65Kbf0HkpKFzXGOpidcS6xfaU5QcA+sqySyD/disUPcw/2JYFfw00N2a+20ewjE80QAJgOQ7V+EFLFjT5EUYlCGE5SPDqGCD0RRvo4onWGpWNlYoAt7YYq3md4PYLqTDTpPAjEwR0zDgxH4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=Zw/tFz2w; arc=fail smtp.client-ip=40.92.45.23
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="Sc+t+Qz+"
-Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-a28fb463a28so1237588266b.3
-        for <target-devel@vger.kernel.org>; Wed, 17 Jan 2024 13:09:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1705525755; x=1706130555; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=p6IFwG5b0R45jQy9tX/g5mkmRxt1SXH4oxO4wTmDPoQ=;
-        b=Sc+t+Qz+TuqYbt6vDTDQ4WVXw4hs8FbVn9CuVICDAeSDg328oE0R/AozIyAUUxwUM/
-         w4j3tJ9Y17RhUWaw6mEnS9mNDmYVrH4w4hQTPWkx1JtrBtvOFbahyvvsSuhsAnd9SJvU
-         6UsR6B6cdOtrog9o9Us1VMa30xLQjd6ExQMneEeMqZRh1r0trVGTkzjcJdadT+sg4Ch6
-         fHE2wqa5uQ5dDBcN5F7h1UDfYnrT7kZswpy8YSohq7ZH2WB7B6sIl3k493kyarfaeunk
-         J+i1efIhSClniv89gMCu+x7ZbECkVczqZs54dTdWSBoQATPNh1qUkMJUv7Jw6jwyDQ1+
-         clSA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1705525755; x=1706130555;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=p6IFwG5b0R45jQy9tX/g5mkmRxt1SXH4oxO4wTmDPoQ=;
-        b=uzpstg+XCVFe6ttOgCgF/zWEBgxrLZk4mMpvYyV5ESK8Tx3wxaCXMEybRcNqvU51VD
-         mDbKYyzo3+vP7jR9v9qkhGOakw/RVDrO5TCvuC7xoVwTuUqt6yq3oKCGC7QObNuAqtkW
-         M6CbW4zU5pWpHcOwb+ycBiBzr8x2dEQ7MwiA/cjKzEtulNUsx4HYRL7xHsu98XaSOIb9
-         CqEHvXX32G/S2WUULyMbWnvcWy1YhwNJ/3W4haxQI2vBCHOFnVlC1E33OEjQ7qCVOy46
-         NUuAx1V7P9MtjXM0R+1IvTIF2MukPRc7tz4UcAs4bw/OWBQP/8qWJFpsYHCLcdqNmMnD
-         BBnw==
-X-Gm-Message-State: AOJu0YxCs080IMTm7MpNjedMBqF4r/Pss0JydvU0mPXpP1oHpe4ySR5p
-	kylH4LLhZ3ddPB//mLev/ojLv0vWYE7DdP5lxusuEsBgYaa4GQ==
-X-Google-Smtp-Source: AGHT+IGDPHBPAM4q/KJXQev8stoy4X4hPad/fntquzFLGj7qrXFzP1rQLoWdZ+dumTkd2iS1oMJ/YxSLaGiJrXMhNdc=
-X-Received: by 2002:a17:906:4744:b0:a2b:6db2:b8da with SMTP id
- j4-20020a170906474400b00a2b6db2b8damr4809932ejs.32.1705525754821; Wed, 17 Jan
- 2024 13:09:14 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="Zw/tFz2w"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=UkM9b/xROQD/saMLP/7qaH3QGd5bfRD5FRRGoB5LFO8RDggLxibArsv4yVb7L8qOHnffsX15l6c+8Ct85um0IdfDLhsLSfqJtrtpp/guY/Klub9XNlMT9u8Z2w5PQkCKDxN0dovngRtJr+lAHXwfdMHWImO3PMXbNMyUr/Z7e6SNaK2WQRmHCmNyfvqlvVbe6tLzu87DtLOXQUDxhPVfwqkwfcKKqoTpQKoLCiJXVs5iu/KMWr+ErHpkoTDVYM6vnIYJeG/WvhtVj8O9+/Yw5ZKCxhsAYWB8EEqwGxljDI1rUh20qewjo9+NZyh/zUCAdnm8yqCLSfvZMZZWsFFUmw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=VPgx4Fxl3xnyDneE2sVD7T2pI258zNYPp7fBsUT3RcM=;
+ b=HtAUiDee0kix2/BoSj8cnKcg0l5tnzoeWUnlukwrj8MR4HvM5Qh6kJXuoPJ09VOdVQ3JZBfBdi3tfCpkiikXdE6lTyb6yWvTuZjy5anmwPZZYVvGUd2+kwBJanL0Q/H7wenq0TF+WMzcf+CbYjYavMTMAEy/euHOaEmj2q9vNYnli6FVw/YEBv0oy+676St0cnX0TJK2Vg754wA4iAL3XQY/vRz1TbM7crWvhpnHBF+ZdVGx6Ut1N37rKXzkOQ1JZ71u6VzjkbkDFOLScmAzI5uXQ1RF5++yxavyJyXGPnSTHJaORRBo30Q/YefleSq3tcOW6O/TZXBqjzFD0gxqzQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=VPgx4Fxl3xnyDneE2sVD7T2pI258zNYPp7fBsUT3RcM=;
+ b=Zw/tFz2wYU+3HctFLfCNq2rBqI7JHUzOwMGyYnzGqjHlIJe1xSJcGGJ1YBhjFgk0cMbXpOwUB1CMt5Rw1g/B+GHk+5YOxCo++mB94dAGmQvAkmCbGK9PXbgAC+Du1s6luYr6rgPe1jO2m1dHVQJMD5qIyQVBPJ8Uy15cFi9JI4uvX0+Od5YQNoslaq+xZ/8dnJLJrytQwTzvozMcC2pnMzO3vCaOM5c7h2Bo36R5qgprnUO5sc3PZ1MA2HBh3tmzF87rMKcPTxnXZcy9BMkyTGhQi00sZIniqSz3z7kLPszwqSzFHPtVhhTCCSxcS28HIPaRvJju6jnpVhFO3/8c3Q==
+Received: from PH7PR20MB5925.namprd20.prod.outlook.com (2603:10b6:510:27f::21)
+ by LV8PR20MB7289.namprd20.prod.outlook.com (2603:10b6:408:222::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7202.24; Thu, 18 Jan
+ 2024 03:20:22 +0000
+Received: from PH7PR20MB5925.namprd20.prod.outlook.com
+ ([fe80::e1de:29a8:e090:5b7b]) by PH7PR20MB5925.namprd20.prod.outlook.com
+ ([fe80::e1de:29a8:e090:5b7b%4]) with mapi id 15.20.7202.020; Thu, 18 Jan 2024
+ 03:20:22 +0000
+From: Fullway Wang <fullwaywang@outlook.com>
+To: bootc@bootc.net,
+	martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	fullwaywang@tencent.com,
+	Fullway Wang <fullwaywang@outlook.com>
+Subject: [PATCH] target: sbp: integer overflow and potential memory corruption
+Date: Thu, 18 Jan 2024 11:19:59 +0800
+Message-ID:
+ <PH7PR20MB59258C767EF853A54273B3A7BF712@PH7PR20MB5925.namprd20.prod.outlook.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-145)
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TMN: [NAB0d/mhuhnROt/NMMxu0JpLVw2WwJos]
+X-ClientProxiedBy: SI2P153CA0035.APCP153.PROD.OUTLOOK.COM
+ (2603:1096:4:190::14) To PH7PR20MB5925.namprd20.prod.outlook.com
+ (2603:10b6:510:27f::21)
+X-Microsoft-Original-Message-ID:
+ <20240118031959.10718-1-fullwaywang@outlook.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1701540918.git.lduncan@suse.com> <dc0006176e90cf3fb90e5b1c1917b54fe07c91cd.1701540918.git.lduncan@suse.com>
- <ZXoOtgVZW_QpkU11@rhel-developer-toolbox-latest> <CAPj3X_W5kOEOapG3F8NETBRzBmrQ1Lfudy7QGmCLXPT3UwUrkw@mail.gmail.com>
- <ZXtlxzVtY3M_WrQ2@rhel-developer-toolbox-latest>
-In-Reply-To: <ZXtlxzVtY3M_WrQ2@rhel-developer-toolbox-latest>
-From: Lee Duncan <lduncan@suse.com>
-Date: Wed, 17 Jan 2024 13:09:03 -0800
-Message-ID: <CAPj3X_VvpuDQGHt2xtBOJB2RNGvFfxQiX0GH0My19G3OP+76QQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] scsi: target: iscsi: handle SCSI immediate commands
-To: Chris Leech <cleech@redhat.com>
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, dbond@suse.com, hare@suse.de, 
-	michael.christie@oracle.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH7PR20MB5925:EE_|LV8PR20MB7289:EE_
+X-MS-Office365-Filtering-Correlation-Id: ffaa856a-3910-43e8-b0f4-08dc17d4675f
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info:
+	VSi8w5XzqJSI3lBVZEUriD5yxt4qJ97CJyEQOzjG6daxQcHd7bKRf5aEdqg6ty5N3El8mMH0P6p0tqRfhbRoz1nfjNRLWlC9jqLjVEhVzAja5Tw3s9TL4qFCwSmjG0X9qI2iIR7rqwfdjUG62P2UG2cggul1heJ2K4UKgIOtXkMrnY72GYH7x0W26rEP1aRIvi0aJriuOVuMKy6At2Mnzw3ihnUVrEBMAEbpZLQyjXcXqMkg7lrF+ZZhA8cpQ7cuEm0xEJe97+jVPDLEJZuPiZI/o+isx0WDZU1ZEj8g2H+4Y8Rf3V4nK82ZgiuxcRu/UOhI5FtGgykSoM0aG8fC3wVRR8TyaBPbFtdeGflnRg2Bx8TQK32x1QEXkB19ATUJrPxqwKj/JMFVAce93nu5DYUnuZLVIAMhAEQB/MfugpvK019fPfiPWx36RX5sEenSLWWqhgMzyYUcytFZw+RaQDFh8nGQfz7obIa9Io7uYsQj9g6NriEjkDBfSvHPsGub+ZpOArtw1lsmncTkwyV5Mv8PdiTe11//Wde53zg4W+slHhOMJ/Vqm4b6mLxZHpwl5EeZqiKxd0V8GUYFgut/vVqbKz9PjXkQYBrV5OHqizUlzImjC5iDs8EcDpoSjokm
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?w+f9LaEoNzlSxqBaziwnjKQpwq9Hns69ZQXppwzrIF3qp4IAlHPMVELj9D93?=
+ =?us-ascii?Q?ZkB6dQH/xH1WBH95KhHqGGvW55EN4iCHS5k1F2EVWRASYs8N577VjWfVBGBG?=
+ =?us-ascii?Q?xecnV9u7Df8OHaIItjBZl2+DVrnQRs1gV1TPYvvxWlYjBXyONN7GCUCPOH7/?=
+ =?us-ascii?Q?z9k4MH/nOzTAXErVVvrtpv+SJ61j8rFlMNfQkRyccf6XnjVE74ViOYDJkg5m?=
+ =?us-ascii?Q?NUyFUcoliALyNuRLOwu950LBVvwdFQvZILkqJC4+CQ9aMSEj3i05/gxt9GXr?=
+ =?us-ascii?Q?0SJGTymh3CvahQEgGdDSHHs5V2AS/aDfk1tgUPw0+Eky+LE9l0R+3i4enzqo?=
+ =?us-ascii?Q?vsY3DjB7NUvt5MPQtQE+uHDSNfUoRc6lnyugdPhHfZqRqwpo7GlaFkMWosj3?=
+ =?us-ascii?Q?q8cDwflHdmPc/GAhp+Je30818zkXOV1daAUEv1HjVErwHgtX1TQ2JIw9/p5C?=
+ =?us-ascii?Q?PibtUxMc7nNVdELpQvion5wnXYz9oemeHOJJ2MfoffCpXw9GugnrrRINJHlU?=
+ =?us-ascii?Q?VSckGRxMJtn04oMbZ/s+XzxP9tD2hxhIg0cWRUYKdbACOH3tzAk0Uuezj8N4?=
+ =?us-ascii?Q?3VTiKCpls6ZyhuPmkqddRvBYy+pYX4T3Fv9Z+cMzuKyRAlku3cLT+2UhVetT?=
+ =?us-ascii?Q?ZLa1ksyEBgya2R9Na3i528l+CUul3ax2ijhiDCSLRreNj9fqgSXww/Qzu6LU?=
+ =?us-ascii?Q?OXwOlnEsJEBL9B2F2UWRhRfZvY5EVQFf1I/Ovwa/3QldABMJwLQ1zlatNv9Y?=
+ =?us-ascii?Q?XadT++b2FVwmPLs0aR6REshMJpMY/U+bh6WH+Vh2Y6XFFow5RA5zZednXxb0?=
+ =?us-ascii?Q?bzS1o3J4V1bRZn5JG7fqkQTvljVGtQxgIk8IgauZD5ho3SiM6WL/9jfpPwKy?=
+ =?us-ascii?Q?t9QbxWPf7svlcvkQGBZiI6NDdh//bbXWrRU4tqqnQ7wk/k/uZBB+gz5kOuX3?=
+ =?us-ascii?Q?xj9wvCSDCO9IF8Ic0IPYKSGgywGK4gZ89eLWfONVNZsZ9tFTgWVdev/d6pHG?=
+ =?us-ascii?Q?T+SL3Sakqq9jnPlu9QTcWDQwe3wj9jfTwtfCtZ12+l42SCTRFaoPtsxZtsjU?=
+ =?us-ascii?Q?HcD11DvZkgZ8SMChJJeqg9I9VD4eyjGW6CTBXELHI3/9Rx5r0XLvXqoqjPY8?=
+ =?us-ascii?Q?a+wif4NPOQpXz+S7Bf0l42pK7YDOce+dlQ5vZtk9LCWPQsV5yA5W4eGD/O5l?=
+ =?us-ascii?Q?LKiE0Q4db2AUXD2st3FXhoEnRMD45pX2f3RWBn0YRkFWPt4o+yVLCsIM30k?=
+ =?us-ascii?Q?=3D?=
+X-OriginatorOrg: outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ffaa856a-3910-43e8-b0f4-08dc17d4675f
+X-MS-Exchange-CrossTenant-AuthSource: PH7PR20MB5925.namprd20.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jan 2024 03:20:21.8274
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
+	00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR20MB7289
 
-Apologies for the delay in the reply, but over the
-time to address Chris' two questions about this patch set. See below.
+The code in sbp_make_tpg() is confusing because tpgt was limited
+to UINT_MAX but the datatype of tpg->tport_tpgt is actually u16.
+Correctly fix the data type problem to avoid integer overflow.
 
-On Thu, Dec 14, 2023 at 12:30=E2=80=AFPM Chris Leech <cleech@redhat.com> wr=
-ote:
->
-> On Wed, Dec 13, 2023 at 05:24:54PM -0800, Lee Duncan wrote:
-> > >
-> > > > @@ -1255,14 +1248,15 @@ int iscsit_process_scsi_cmd(struct iscsit_c=
-onn *conn, struct iscsit_cmd *cmd,
-> > > >       /*
-> > > >        * Check the CmdSN against ExpCmdSN/MaxCmdSN here if
-> > > >        * the Immediate Bit is not set, and no Immediate
-> > > > -      * Data is attached.
-> > > > +      * Data is attached. Also skip the check if this is
-> > > > +      * an immediate command.
-> > >
-> > > This comment addition seems redundant, isn't that what the
-> > > "Immediate Bit is not set" already means?
-> >
-> > The spec is confusing with respect to this. The "Immediate Bit" means
-> > an immediate command. These commands are done "now", not queued, and
-> > they do not increment the expected sequence number.
-> >
-> > Immediate data is different, and unfortunately named IMHO. It's when a
-> > PDU supplies the data for the SCSI command in the current PDU instead
-> > of the next PDU.
->
-> I understand the protocol, just trying to make sense of the
-> implementation and what the existing comment meant. And the existing
-> comment already has two conditions in it, even if the code doesn't.
->
-> I think I understand now why this is delaying CmdSN validation when
-> there is immediate data, until after the DataCRC can be checked.
->
-> This comment in iscsit_get_immediate_data, where the delayed processing
-> occurs, also seems to read that "Immediate Bit" is in reference to an
-> immediate command.
->
->   * A PDU/CmdSN carrying Immediate Data passed
->   * DataCRC, check against ExpCmdSN/MaxCmdSN if
->   * Immediate Bit is not set.
->
-> but neither of these locations (before these changes) that mention the
-> "Immediate Bit" in the comments actually check for cmd->immediate_cmd.
->
+This is similar to CVE-2015-4036 in the sense that sbp is a clone
+of vhost/scsi, and the bug was inherited but never fixed.
 
-I talked to Chris a bit about this offline, for clarification. I believe I
-understand his concern, and rather than try to assert the patch is
-ok by inspection, I decided to just test it.
+Signed-off-by: Fullway Wang <fullwaywang@outlook.com>
+---
+ drivers/target/sbp/sbp_target.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Turns out that normal PDU traffic for lots of writes generally
-includes "immediate data", and so it was easy to test this.
+diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
+index b604fcae21e1..1ba742ee48b0 100644
+--- a/drivers/target/sbp/sbp_target.c
++++ b/drivers/target/sbp/sbp_target.c
+@@ -43,6 +43,7 @@ static const u32 sbp_unit_directory_template[] = {
+ };
+ 
+ #define SESSION_MAINTENANCE_INTERVAL HZ
++#define SBP_MAX_TARGET	256
+ 
+ static atomic_t login_id = ATOMIC_INIT(0);
+ 
+@@ -1961,12 +1962,12 @@ static struct se_portal_group *sbp_make_tpg(struct se_wwn *wwn,
+ 		container_of(wwn, struct sbp_tport, tport_wwn);
+ 
+ 	struct sbp_tpg *tpg;
+-	unsigned long tpgt;
++	u16 tpgt;
+ 	int ret;
+ 
+ 	if (strstr(name, "tpgt_") != name)
+ 		return ERR_PTR(-EINVAL);
+-	if (kstrtoul(name + 5, 10, &tpgt) || tpgt > UINT_MAX)
++	if (kstrtou16(name + 5, 10, &tpgt) || tpgt >= SBP_MAX_TARGET)
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	if (tport->tpg) {
+-- 
+2.39.3 (Apple Git-145)
 
-Testing showed that Immediate Data still works correctly,
-in SCSI Write PDUs. Test was:
-* connect to an iSCSI target
-* Write a bunch of data
-* read back the data
-* disconnect from target and compare data
-
-In addition, I captured and analyzed the SCSI/iSCSI tcpdump trace,
-and immediate data was present, as expected.
-
-One co-worker ran a similar test (just the SCSI/iSCSI trace part),
-and found the same results.
-
-> > > >        *
-> > > >        * A PDU/CmdSN carrying Immediate Data can only
-> > > >        * be processed after the DataCRC has passed.
-> > > >        * If the DataCRC fails, the CmdSN MUST NOT
-> > > >        * be acknowledged. (See below)
-> > > >        */
-> > > > -     if (!cmd->immediate_data) {
-> > > > +     if (!cmd->immediate_data && !cmd->immediate_cmd) {
-> > > >               cmdsn_ret =3D iscsit_sequence_cmd(conn, cmd,
-> > > >                                       (unsigned char *)hdr, hdr->cm=
-dsn);
-> > > >               if (cmdsn_ret =3D=3D CMDSN_ERROR_CANNOT_RECOVER)
-> > >
-> > > Are you sure this needs to be checking both conditions here?  I'm
-> > > struggling to understand why CmdSN checking would be bypassed for
-> > > immediate data.  Is this a longstanding bug where the condition shoul=
-d
-> > > have been on immediate_cmd (and only immediate_cmd) instead?
-> >
-> > The immediate data check was there already, and there haven't been any
-> > bugs I know of, so I assumed that part of the code was ok.
-> >
-> > >
-> > > Or is this because of the handling the immediate data with DataCRC ca=
-se
-> > > mentioned?  I do see iscsit_sequence_cmd also being called in
-> > > iscsit_get_immediate_data.
-> >
-> > I will check that but I suspect you are correct.
->
-> Is it correct to skip all of iscsit_sequence_cmd for an immediate
-> command here? You are already skipping iscsit_check_received_cmdsn
-> inside iscsit_sequence_cmd in this patch. If cmd->immediate_cmd is set,
-> where does iscsit_execute_cmd now get called from?
-
-I looked at the code and the SPEC in more detail, and I believe the answer
-is "yes", it is correct.
-
-That function checks the current PDU's sequence number with
-the following tests (and side effects), but not in this order:
-* check that seq# is not larger than maximum
-* check that seq# is not larger than expected
-* check that seq# is not smaller than expected
-* else the seq# is correct, so *SIDE* *EFFECT* increment the
-                                               expected seq# for next PDU
-
-It turns out that the SPEC allow the sequence number to be
-out of range for immediate commands! So none of the checks
-in iscsit_sequence_check_received_cmndsn() are valid for
-immediate commands, as far as I can see.
-
->
-> - Chris Leech
->
