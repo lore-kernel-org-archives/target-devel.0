@@ -1,168 +1,192 @@
-Received: from NAM04-DM6-obe.outbound.protection.outlook.com (mail-dm6nam04olkn2023.outbound.protection.outlook.com [40.92.45.23])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f177.google.com (mail-pg1-f177.google.com [209.85.215.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58CF88F40;
-	Thu, 18 Jan 2024 03:20:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=40.92.45.23
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1705548026; cv=fail; b=oLL1GBerM8imdnYIRxvhnVh87j63Y9vsuyElxGz/Pwn76ydwHqUK2Duq5NjoWnUi7ZU/IF9jtGXm3LeNQeZrmJwBXfrLIZ4CpTrT7O4CAwtCxK3ydTyV28oR+qgyO31yhhabl6plt2wA/EYmRe6mrX+vBFOC1J0JfzcQJLWYrlg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1705548026; c=relaxed/simple;
-	bh=Ka6armkSN2Vftom6ci/ifYOQq0xOWlxvL3E2bGJKSiw=;
-	h=ARC-Message-Signature:ARC-Authentication-Results:DKIM-Signature:
-	 Received:Received:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
-	 Content-Transfer-Encoding:Content-Type:X-TMN:X-ClientProxiedBy:
-	 X-Microsoft-Original-Message-ID:MIME-Version:
-	 X-MS-Exchange-MessageSentRepresentingType:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:
-	 X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:
-	 X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	 X-MS-Exchange-Transport-CrossTenantHeadersStamped; b=eRsizJ24z5il7Jna1tLqxDVCuFQa65Kbf0HkpKFzXGOpidcS6xfaU5QcA+sqySyD/disUPcw/2JYFfw00N2a+20ewjE80QAJgOQ7V+EFLFjT5EUYlCGE5SPDqGCD0RRvo4onWGpWNlYoAt7YYq3md4PYLqTDTpPAjEwR0zDgxH4=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com; spf=pass smtp.mailfrom=outlook.com; dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b=Zw/tFz2w; arc=fail smtp.client-ip=40.92.45.23
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=outlook.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=outlook.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31AE029CED;
+	Thu, 18 Jan 2024 20:19:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.177
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1705609152; cv=none; b=dH1owG3JFep/MWHuyetPTiMyDsk0Z9KLi9DrOBUpUxUrka1KSfVXI/x1SVw+5AgzpzVtMBaAG5N4g+ms5DaFp03IWY5ySrCSGzRfrNSsc/Ly2vKeHb39R+4gBqT1O/90gAoZPYGRabxE+EeuazenxszL9mD6DAqI2HBfoShy3u4=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1705609152; c=relaxed/simple;
+	bh=qOyfcY8+N2GbqPmNyR8KCsqKlMiz/33m0/NfqqMf8fE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=oSKZYhodqmkapHE5LfMbJw4MbEDqwF/RPOQZwPY7cyJAJmm1Ji+vYE5bVX+2YRpucPa8RuITRHvAAoGqPwClFOvnfxpS5sxP/OLo2rf36urAaet+MiTra9xcwfjMsYEbv0gdcEkY6ZzIaL+FE4KuleZMe7PUIcZmWOQPWw0PRNU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=GPVojCRK; arc=none smtp.client-ip=209.85.215.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=outlook.com header.i=@outlook.com header.b="Zw/tFz2w"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=UkM9b/xROQD/saMLP/7qaH3QGd5bfRD5FRRGoB5LFO8RDggLxibArsv4yVb7L8qOHnffsX15l6c+8Ct85um0IdfDLhsLSfqJtrtpp/guY/Klub9XNlMT9u8Z2w5PQkCKDxN0dovngRtJr+lAHXwfdMHWImO3PMXbNMyUr/Z7e6SNaK2WQRmHCmNyfvqlvVbe6tLzu87DtLOXQUDxhPVfwqkwfcKKqoTpQKoLCiJXVs5iu/KMWr+ErHpkoTDVYM6vnIYJeG/WvhtVj8O9+/Yw5ZKCxhsAYWB8EEqwGxljDI1rUh20qewjo9+NZyh/zUCAdnm8yqCLSfvZMZZWsFFUmw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=VPgx4Fxl3xnyDneE2sVD7T2pI258zNYPp7fBsUT3RcM=;
- b=HtAUiDee0kix2/BoSj8cnKcg0l5tnzoeWUnlukwrj8MR4HvM5Qh6kJXuoPJ09VOdVQ3JZBfBdi3tfCpkiikXdE6lTyb6yWvTuZjy5anmwPZZYVvGUd2+kwBJanL0Q/H7wenq0TF+WMzcf+CbYjYavMTMAEy/euHOaEmj2q9vNYnli6FVw/YEBv0oy+676St0cnX0TJK2Vg754wA4iAL3XQY/vRz1TbM7crWvhpnHBF+ZdVGx6Ut1N37rKXzkOQ1JZ71u6VzjkbkDFOLScmAzI5uXQ1RF5++yxavyJyXGPnSTHJaORRBo30Q/YefleSq3tcOW6O/TZXBqjzFD0gxqzQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VPgx4Fxl3xnyDneE2sVD7T2pI258zNYPp7fBsUT3RcM=;
- b=Zw/tFz2wYU+3HctFLfCNq2rBqI7JHUzOwMGyYnzGqjHlIJe1xSJcGGJ1YBhjFgk0cMbXpOwUB1CMt5Rw1g/B+GHk+5YOxCo++mB94dAGmQvAkmCbGK9PXbgAC+Du1s6luYr6rgPe1jO2m1dHVQJMD5qIyQVBPJ8Uy15cFi9JI4uvX0+Od5YQNoslaq+xZ/8dnJLJrytQwTzvozMcC2pnMzO3vCaOM5c7h2Bo36R5qgprnUO5sc3PZ1MA2HBh3tmzF87rMKcPTxnXZcy9BMkyTGhQi00sZIniqSz3z7kLPszwqSzFHPtVhhTCCSxcS28HIPaRvJju6jnpVhFO3/8c3Q==
-Received: from PH7PR20MB5925.namprd20.prod.outlook.com (2603:10b6:510:27f::21)
- by LV8PR20MB7289.namprd20.prod.outlook.com (2603:10b6:408:222::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7202.24; Thu, 18 Jan
- 2024 03:20:22 +0000
-Received: from PH7PR20MB5925.namprd20.prod.outlook.com
- ([fe80::e1de:29a8:e090:5b7b]) by PH7PR20MB5925.namprd20.prod.outlook.com
- ([fe80::e1de:29a8:e090:5b7b%4]) with mapi id 15.20.7202.020; Thu, 18 Jan 2024
- 03:20:22 +0000
-From: Fullway Wang <fullwaywang@outlook.com>
-To: bootc@bootc.net,
-	martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	fullwaywang@tencent.com,
-	Fullway Wang <fullwaywang@outlook.com>
-Subject: [PATCH] target: sbp: integer overflow and potential memory corruption
-Date: Thu, 18 Jan 2024 11:19:59 +0800
-Message-ID:
- <PH7PR20MB59258C767EF853A54273B3A7BF712@PH7PR20MB5925.namprd20.prod.outlook.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-145)
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-TMN: [NAB0d/mhuhnROt/NMMxu0JpLVw2WwJos]
-X-ClientProxiedBy: SI2P153CA0035.APCP153.PROD.OUTLOOK.COM
- (2603:1096:4:190::14) To PH7PR20MB5925.namprd20.prod.outlook.com
- (2603:10b6:510:27f::21)
-X-Microsoft-Original-Message-ID:
- <20240118031959.10718-1-fullwaywang@outlook.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GPVojCRK"
+Received: by mail-pg1-f177.google.com with SMTP id 41be03b00d2f7-5cf6d5117f9so49320a12.2;
+        Thu, 18 Jan 2024 12:19:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1705609150; x=1706213950; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=SSp4LijXK8czV2YlnwfwApZRO+PHOzGdXK5fdCdR75M=;
+        b=GPVojCRKfV+AyAg6rdPud8dgVJ+JhkCHmnTJNHjSr8lutfvgBbBSkOT2MPHhG4l06a
+         cIkwm+OxOnaHSNvHDRYWw4aWXNNn4GMvCLFC4OB70JaqQw7zovccyAiqOhf3aib/HQKq
+         LyRMcXnOFX0bY2QCDB2pH4VYrYlfCIR23SGwCUxA7U+zKR7COqiIO5qLybWMJ8ZZkMxI
+         9RuQK2TklGOqEP5wreZKbcL8mUchkdR+JaW8QyI94tSChcMu0QUVPgyOZfkronX/PABP
+         91ZcQulNYClQUqLTXIXatSSWcIgI/LkUvyZdYE7xd/8+xc+Nk3SdV6CfkqifW4Sel1ZW
+         +32A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1705609150; x=1706213950;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=SSp4LijXK8czV2YlnwfwApZRO+PHOzGdXK5fdCdR75M=;
+        b=oLxK3Zl0248yhwn4GNPw6aL5q6cc14EknYmT66xBYTOIDZLKhteCUtJph+dy3anHtP
+         RCtc+ClbC0GXqden+yL9TdO8zoGE2kuzzE9TT7NMIswX+nWEzcIdNcu0IfVeZpqqiqBG
+         VN3KwjMzCKoR7naWM5cDADllUlBcpRvBJ8JBo8c0+G7xKO4ihCiiN8BSbq2FzLRcftNp
+         NTVhTKFiEyGRm933GK+zBmQvsUJv5X107J/VetGSxbdjr9qlxHPtrsxrWBuLBWFeAc2m
+         EJkODzSWEd47F5XJVqXf/qY5CKpC3meh6UXOs2wM9WqA9ifBzXNKGdnfSWffoCxJKABH
+         5+hA==
+X-Gm-Message-State: AOJu0YzZaIheOyaizrOipKRUsbPR7zEarn3qncITKQ4cX9FJKhzWSwyo
+	qxn+lMTgufodqJVbc3QAy8hCAzt4+MyRBEvE/4uB6M/WwLENEE7j
+X-Google-Smtp-Source: AGHT+IEUSO3kM4FvQZ01TNYzRtRpIG/nW46bdm3gKsc1P9hpMcQbQplOiA9zvr2duZoex7h0eWTw3g==
+X-Received: by 2002:a17:902:cecb:b0:1d4:53cf:fb99 with SMTP id d11-20020a170902cecb00b001d453cffb99mr1789461plg.24.1705609150521;
+        Thu, 18 Jan 2024 12:19:10 -0800 (PST)
+Received: from [192.168.0.228] (c-24-20-51-242.hsd1.or.comcast.net. [24.20.51.242])
+        by smtp.gmail.com with ESMTPSA id mi7-20020a170902fcc700b001d5f387aa6esm1768633plb.240.2024.01.18.12.19.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 18 Jan 2024 12:19:10 -0800 (PST)
+Message-ID: <40483b3e-d820-4a9c-823d-76d6f24edfd6@gmail.com>
+Date: Thu, 18 Jan 2024 12:19:09 -0800
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR20MB5925:EE_|LV8PR20MB7289:EE_
-X-MS-Office365-Filtering-Correlation-Id: ffaa856a-3910-43e8-b0f4-08dc17d4675f
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info:
-	VSi8w5XzqJSI3lBVZEUriD5yxt4qJ97CJyEQOzjG6daxQcHd7bKRf5aEdqg6ty5N3El8mMH0P6p0tqRfhbRoz1nfjNRLWlC9jqLjVEhVzAja5Tw3s9TL4qFCwSmjG0X9qI2iIR7rqwfdjUG62P2UG2cggul1heJ2K4UKgIOtXkMrnY72GYH7x0W26rEP1aRIvi0aJriuOVuMKy6At2Mnzw3ihnUVrEBMAEbpZLQyjXcXqMkg7lrF+ZZhA8cpQ7cuEm0xEJe97+jVPDLEJZuPiZI/o+isx0WDZU1ZEj8g2H+4Y8Rf3V4nK82ZgiuxcRu/UOhI5FtGgykSoM0aG8fC3wVRR8TyaBPbFtdeGflnRg2Bx8TQK32x1QEXkB19ATUJrPxqwKj/JMFVAce93nu5DYUnuZLVIAMhAEQB/MfugpvK019fPfiPWx36RX5sEenSLWWqhgMzyYUcytFZw+RaQDFh8nGQfz7obIa9Io7uYsQj9g6NriEjkDBfSvHPsGub+ZpOArtw1lsmncTkwyV5Mv8PdiTe11//Wde53zg4W+slHhOMJ/Vqm4b6mLxZHpwl5EeZqiKxd0V8GUYFgut/vVqbKz9PjXkQYBrV5OHqizUlzImjC5iDs8EcDpoSjokm
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?w+f9LaEoNzlSxqBaziwnjKQpwq9Hns69ZQXppwzrIF3qp4IAlHPMVELj9D93?=
- =?us-ascii?Q?ZkB6dQH/xH1WBH95KhHqGGvW55EN4iCHS5k1F2EVWRASYs8N577VjWfVBGBG?=
- =?us-ascii?Q?xecnV9u7Df8OHaIItjBZl2+DVrnQRs1gV1TPYvvxWlYjBXyONN7GCUCPOH7/?=
- =?us-ascii?Q?z9k4MH/nOzTAXErVVvrtpv+SJ61j8rFlMNfQkRyccf6XnjVE74ViOYDJkg5m?=
- =?us-ascii?Q?NUyFUcoliALyNuRLOwu950LBVvwdFQvZILkqJC4+CQ9aMSEj3i05/gxt9GXr?=
- =?us-ascii?Q?0SJGTymh3CvahQEgGdDSHHs5V2AS/aDfk1tgUPw0+Eky+LE9l0R+3i4enzqo?=
- =?us-ascii?Q?vsY3DjB7NUvt5MPQtQE+uHDSNfUoRc6lnyugdPhHfZqRqwpo7GlaFkMWosj3?=
- =?us-ascii?Q?q8cDwflHdmPc/GAhp+Je30818zkXOV1daAUEv1HjVErwHgtX1TQ2JIw9/p5C?=
- =?us-ascii?Q?PibtUxMc7nNVdELpQvion5wnXYz9oemeHOJJ2MfoffCpXw9GugnrrRINJHlU?=
- =?us-ascii?Q?VSckGRxMJtn04oMbZ/s+XzxP9tD2hxhIg0cWRUYKdbACOH3tzAk0Uuezj8N4?=
- =?us-ascii?Q?3VTiKCpls6ZyhuPmkqddRvBYy+pYX4T3Fv9Z+cMzuKyRAlku3cLT+2UhVetT?=
- =?us-ascii?Q?ZLa1ksyEBgya2R9Na3i528l+CUul3ax2ijhiDCSLRreNj9fqgSXww/Qzu6LU?=
- =?us-ascii?Q?OXwOlnEsJEBL9B2F2UWRhRfZvY5EVQFf1I/Ovwa/3QldABMJwLQ1zlatNv9Y?=
- =?us-ascii?Q?XadT++b2FVwmPLs0aR6REshMJpMY/U+bh6WH+Vh2Y6XFFow5RA5zZednXxb0?=
- =?us-ascii?Q?bzS1o3J4V1bRZn5JG7fqkQTvljVGtQxgIk8IgauZD5ho3SiM6WL/9jfpPwKy?=
- =?us-ascii?Q?t9QbxWPf7svlcvkQGBZiI6NDdh//bbXWrRU4tqqnQ7wk/k/uZBB+gz5kOuX3?=
- =?us-ascii?Q?xj9wvCSDCO9IF8Ic0IPYKSGgywGK4gZ89eLWfONVNZsZ9tFTgWVdev/d6pHG?=
- =?us-ascii?Q?T+SL3Sakqq9jnPlu9QTcWDQwe3wj9jfTwtfCtZ12+l42SCTRFaoPtsxZtsjU?=
- =?us-ascii?Q?HcD11DvZkgZ8SMChJJeqg9I9VD4eyjGW6CTBXELHI3/9Rx5r0XLvXqoqjPY8?=
- =?us-ascii?Q?a+wif4NPOQpXz+S7Bf0l42pK7YDOce+dlQ5vZtk9LCWPQsV5yA5W4eGD/O5l?=
- =?us-ascii?Q?LKiE0Q4db2AUXD2st3FXhoEnRMD45pX2f3RWBn0YRkFWPt4o+yVLCsIM30k?=
- =?us-ascii?Q?=3D?=
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ffaa856a-3910-43e8-b0f4-08dc17d4675f
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR20MB5925.namprd20.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jan 2024 03:20:21.8274
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg:
-	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR20MB7289
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] scsi: ibmvscsi_tgt: replace deprecated strncpy with
+ strscpy
+Content-Language: en-US
+To: Kees Cook <keescook@chromium.org>, Justin Stitt <justinstitt@google.com>
+Cc: Michael Cyr <mikecyr@linux.ibm.com>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+References: <20231030-strncpy-drivers-scsi-ibmvscsi_tgt-ibmvscsi_tgt-c-v1-1-859b5ce257fd@google.com>
+ <202311301315.BAB096926@keescook>
+From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+In-Reply-To: <202311301315.BAB096926@keescook>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-The code in sbp_make_tpg() is confusing because tpgt was limited
-to UINT_MAX but the datatype of tpg->tport_tpgt is actually u16.
-Correctly fix the data type problem to avoid integer overflow.
+On 11/30/23 13:25, Kees Cook wrote:
+> On Mon, Oct 30, 2023 at 09:43:20PM +0000, Justin Stitt wrote:
+>> strncpy() is deprecated for use on NUL-terminated destination strings
+>> [1] and as such we should prefer more robust and less ambiguous string
+>> interfaces.
+>>
+>> We don't need the NUL-padding behavior that strncpy() provides as vscsi
+>> is NUL-allocated in ibmvscsis_probe() which proceeds to call
+>> ibmvscsis_adapter_info():
+>> |       vscsi = kzalloc(sizeof(*vscsi), GFP_KERNEL);
+>>
+>> ibmvscsis_probe() -> ibmvscsis_handle_crq() -> ibmvscsis_parse_command()
+>> -> ibmvscsis_mad() -> ibmvscsis_process_mad() -> ibmvscsis_adapter_info()
+>>
+>> Following the same idea, `partition_name` is defiend as:
+>> |       static char partition_name[PARTITION_NAMELEN] = "UNKNOWN";
+>>
+>> ... which is NUL-padded already, meaning strscpy() is the best option.
+>>
+>> Considering the above, a suitable replacement is `strscpy` [2] due to
+>> the fact that it guarantees NUL-termination on the destination buffer
+>> without unnecessarily NUL-padding.
+> 
+> My only worry here is that I don't see if %NUL termination is _required_
+> for these variables. (i.e. do we run the risk of truncating these by 1
+> byte if they're right at the limit?) Are they __nonstring?
+> 
+> I *think* they're %NUL terminated since they follow the same sizing as
+> the global "partition_name", but I'm not sure.
+> 
+> Can any of the SCSI authors comment on this?
 
-This is similar to CVE-2015-4036 in the sense that sbp is a clone
-of vhost/scsi, and the bug was inherited but never fixed.
+Sorry, for a delayed response. I've just taken over the maintainer role as it
+had been left unaccounted for sometime.
 
-Signed-off-by: Fullway Wang <fullwaywang@outlook.com>
----
- drivers/target/sbp/sbp_target.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+These are meant to be handled as C strings and nul termination is expected.
 
-diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
-index b604fcae21e1..1ba742ee48b0 100644
---- a/drivers/target/sbp/sbp_target.c
-+++ b/drivers/target/sbp/sbp_target.c
-@@ -43,6 +43,7 @@ static const u32 sbp_unit_directory_template[] = {
- };
- 
- #define SESSION_MAINTENANCE_INTERVAL HZ
-+#define SBP_MAX_TARGET	256
- 
- static atomic_t login_id = ATOMIC_INIT(0);
- 
-@@ -1961,12 +1962,12 @@ static struct se_portal_group *sbp_make_tpg(struct se_wwn *wwn,
- 		container_of(wwn, struct sbp_tport, tport_wwn);
- 
- 	struct sbp_tpg *tpg;
--	unsigned long tpgt;
-+	u16 tpgt;
- 	int ret;
- 
- 	if (strstr(name, "tpgt_") != name)
- 		return ERR_PTR(-EINVAL);
--	if (kstrtoul(name + 5, 10, &tpgt) || tpgt > UINT_MAX)
-+	if (kstrtou16(name + 5, 10, &tpgt) || tpgt >= SBP_MAX_TARGET)
- 		return ERR_PTR(-EINVAL);
- 
- 	if (tport->tpg) {
--- 
-2.39.3 (Apple Git-145)
+-Tyrel
+
+> 
+>>
+>> However, for cap->name let's use strscpy_pad as cap is allocated via
+>> dma_alloc_coherent():
+>> |       cap = dma_alloc_coherent(&vscsi->dma_dev->dev, olen, &token,
+>> |                                GFP_ATOMIC);
+> 
+> This is also true for the "info" allocation (it comes out of DMA).
+> 
+>>
+>> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
+>> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
+>> Link: https://github.com/KSPP/linux/issues/90
+>> Cc: linux-hardening@vger.kernel.org
+>> Signed-off-by: Justin Stitt <justinstitt@google.com>
+>> ---
+>> Note: build-tested only.
+>>
+>> Found with: $ rg "strncpy\("
+>> ---
+>>  drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 14 +++++++-------
+>>  1 file changed, 7 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+>> index 385f812b8793..cd223ef696e5 100644
+>> --- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+>> +++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+>> @@ -1551,17 +1551,17 @@ static long ibmvscsis_adapter_info(struct scsi_info *vscsi,
+>>  	if (vscsi->client_data.partition_number == 0)
+>>  		vscsi->client_data.partition_number =
+>>  			be32_to_cpu(info->partition_number);
+>> -	strncpy(vscsi->client_data.srp_version, info->srp_version,
+>> +	strscpy(vscsi->client_data.srp_version, info->srp_version,
+>>  		sizeof(vscsi->client_data.srp_version));
+>> -	strncpy(vscsi->client_data.partition_name, info->partition_name,
+>> +	strscpy(vscsi->client_data.partition_name, info->partition_name,
+>>  		sizeof(vscsi->client_data.partition_name));
+>>  	vscsi->client_data.mad_version = be32_to_cpu(info->mad_version);
+>>  	vscsi->client_data.os_type = be32_to_cpu(info->os_type);
+>>  
+>>  	/* Copy our info */
+>> -	strncpy(info->srp_version, SRP_VERSION,
+>> +	strscpy(info->srp_version, SRP_VERSION,
+>>  		sizeof(info->srp_version));
+>> -	strncpy(info->partition_name, vscsi->dds.partition_name,
+>> +	strscpy(info->partition_name, vscsi->dds.partition_name,
+>>  		sizeof(info->partition_name));
+> 
+> Since "info" is from DMA, let's use the _pad variant here just to be
+> safe.
+> 
+>>  	info->partition_number = cpu_to_be32(vscsi->dds.partition_num);
+>>  	info->mad_version = cpu_to_be32(MAD_VERSION_1);
+>> @@ -1645,8 +1645,8 @@ static int ibmvscsis_cap_mad(struct scsi_info *vscsi, struct iu_entry *iue)
+>>  			 be64_to_cpu(mad->buffer),
+>>  			 vscsi->dds.window[LOCAL].liobn, token);
+>>  	if (rc == H_SUCCESS) {
+>> -		strncpy(cap->name, dev_name(&vscsi->dma_dev->dev),
+>> -			SRP_MAX_LOC_LEN);
+>> +		strscpy_pad(cap->name, dev_name(&vscsi->dma_dev->dev),
+>> +			sizeof(cap->name));
+> 
+> And this is a safe conversion to sizeof():
+> 
+> struct capabilities {
+> 	...
+>         char name[SRP_MAX_LOC_LEN];
+> 
+> 
+> If we can convince ourselves that non of these are __nonstring types,
+> then I think with the "info" change above, this should be good.
+> 
+> -Kees
+> 
 
