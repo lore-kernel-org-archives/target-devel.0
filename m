@@ -1,121 +1,77 @@
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-f176.google.com (mail-pg1-f176.google.com [209.85.215.176])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 536863E494;
-	Wed, 31 Jan 2024 06:25:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A1B85F467;
+	Thu,  1 Feb 2024 14:48:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.176
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706682308; cv=none; b=CN1PCShOgdBhLol+3otFjLx8xBA4rm0GYf3kX733gKIX9gptDlDvPLmRoI66/C08GXrS4oEDOTSZvPNwHPi8kP9PAwzrIrd8MIfJpc77uf/xY5EIMFnVweq4DlZx73v9jbuXqaO9C4yQIsskh+Vm/+A2V9pE+mCDgAXcCCkA6X0=
+	t=1706798918; cv=none; b=nSDXSR30CpeYFapxcWrihb91mcYk8AbH/NDLVbeBdBRKJgB90o6bY1SlwmiflKmmvmiXh4+/bmQCK/SP3mF5VTXDmelO7nSxD48pgZ/Y3PqltCeYSjT4aBMLMc47ZaVEKULLyxlz0AL1GvIHNUUaR9LTwCLy5236Tvm8ASyfmZQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706682308; c=relaxed/simple;
-	bh=9UCuv+WNcckFk26p4BzpAmSuHoaQiHqhm7xYfqg+g9Q=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=AABDydTE0M6rMilyVPnG90hq2jSGa4CZQoLVm87js7HeetSUHgfhRwtsvJumTfOGwHwvqpTXwypkJAnioKxY7YAtQrZaW02gZfNqf1bB8L0ew9JEKxCz411CKHECKPD3mUO1zeCthJiylVgWpeg+y+YrH/Hyn/lcD1uwX1tDwv0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=UYLLxr4y; arc=none smtp.client-ip=205.220.177.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="UYLLxr4y"
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 40UKwxjE003144;
-	Wed, 31 Jan 2024 06:25:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=corp-2023-11-20;
- bh=X8ixD3wpxtd7hiQ6h8HvIlzOgcT9/qe49cse5sVeDEI=;
- b=UYLLxr4ya9bUDREOKS5uy/LcOn96y+/araC7Ot5GTXHxE2rbuYpvzgv4QlvlvbJumpmG
- BQaexU469MlMDCqWp4n6+ca7uhOgk/Nm1EhYZVLQtdP41oKmtUqvzzEE4nXdRhMml4yM
- oYDBy77A4PUpl1iCBYjKdhMzDLr+S31AcaghIGpGHgmTekKm3UEkBYYqH4KExDC0zclX
- 8MV6v60IOZKyPllxknQo3gzjgw60vSegemzk0iVQeecrX5YSrg1ckAGl2pbwuRD8cx/6
- eM4c7V9H6wEhSqj8wBl4NACvnMmyxPnUzJqduXvpUBFqICZey3bapm/zm1n2NJuqMryb LA== 
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3vvr8egtm8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 31 Jan 2024 06:25:01 +0000
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 40V51qdr035288;
-	Wed, 31 Jan 2024 06:25:00 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3vvr9ebs3y-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 31 Jan 2024 06:25:00 +0000
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 40V6MZN2010633;
-	Wed, 31 Jan 2024 06:25:00 GMT
-Received: from brm-x62-14.us.oracle.com (brm-x62-14.us.oracle.com [10.80.150.231])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3vvr9ebs27-2;
-	Wed, 31 Jan 2024 06:24:59 +0000
-From: William Kucharski <william.kucharski@oracle.com>
-To: Bart Van Assche <bvanassche@acm.org>, Jason Gunthorpe <jgg@ziepe.ca>,
-        Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: William Kucharski <william.kucharski@oracle.com>
-Subject: [PATCH 1/1] RDMA/srpt: Do not register event handler until srpt device is fully setup
-Date: Tue, 30 Jan 2024 23:24:38 -0700
-Message-Id: <20240131062438.869370-2-william.kucharski@oracle.com>
-X-Mailer: git-send-email 2.39.3
-In-Reply-To: <20240131062438.869370-1-william.kucharski@oracle.com>
-References: <20240131062438.869370-1-william.kucharski@oracle.com>
+	s=arc-20240116; t=1706798918; c=relaxed/simple;
+	bh=kgzPQEYyZvtgptsyAcimKMFdgkPe5hWQr95Fm9WJLqc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=VpvZ+Pw8zNJ1bu7FRnze3IkaEt90CcPcEiqTkXbAe3CyHA5xCmzbrmDT0X5KKJ8rNHaAZqbVSI/MOCNHzE9Z4vLvW5JH5SQd0Yru2o91bMTVdl7XUq+HBE0v79HGUgSGBx0bleWMOsrfoab2uBa+Mklm4RutdisZJ2jP1DG/qgM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=acm.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.215.176
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=acm.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Received: by mail-pg1-f176.google.com with SMTP id 41be03b00d2f7-5ce2aada130so882335a12.1;
+        Thu, 01 Feb 2024 06:48:36 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1706798916; x=1707403716;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=YZLfNNOA3fPwT/lACRUCWcunwYFYKzsJvZnIb6KlJOQ=;
+        b=OWWmtzt/3eewEiv0AE8XJRPm5CsMJGwtQikJZ2soMHf3XIN+GGt3kfeFN5593qECnD
+         NitNkv7woSFfEPaJuZTkLPfUUUcvjE09719T9K/IsqE6eAhEH96u94TbxOeYtClQvKOt
+         fflHMzG/8BOnDK/9yxDDgReLxbiXmRll7J8SoYsIpfwjqgE6SmDObN1/gQLR9jVe01zE
+         UV3M57IWkdEx2BD6cU09IooK8e78KCc8eUEKKL2jPebXOofYjukOycrJGQb59L4poQDT
+         l19rzsuxObkf5UuuL7HNr8ijWjD4Zdw84mTomSUdb+e4KHx/HiJQireA4SNOYtO1nrC3
+         hCYQ==
+X-Gm-Message-State: AOJu0Yw8/IUxNoLOxz3Y3ksf4Fo6URzrDRyQXa7FIRL1zy7ShxitjaHY
+	6HNILn0ZCoyTGP1AZ2+JVgg4ZgvNmzOoHH76L4IEvdW+xa4z+slo8RUrk3sL
+X-Google-Smtp-Source: AGHT+IHoazbl4mQQ5JGphXQxeDJXPZMugdFyz2WvWnZ5ZmUmWofiwtqkgnur7TqmRPt0yDYYM1GTIg==
+X-Received: by 2002:a05:6a20:1806:b0:19c:7c49:4e6 with SMTP id bk6-20020a056a20180600b0019c7c4904e6mr4181309pzb.51.1706798916373;
+        Thu, 01 Feb 2024 06:48:36 -0800 (PST)
+X-Forwarded-Encrypted: i=0; AJvYcCX2iMVs77hndj2YXUNkEHyliv8W6tg6f5u+doDL5txl1MIYC567kmm1fHMos076AH97tK/xHMOLaL9kMZ1GYFw96oGD0Zw1Kpi10sRHzlXX5xx71I6jQ8ydpFymPC+Za0ffjJXy6qk9QVXJEVMGFXHdoADnxw0NdGJosImOXYLpjigt9rnr4LUaXBe8tybjBTmBWJaKKWqOEdIjPeVl3lU3b8llhUk=
+Received: from [192.168.51.14] (c-73-231-117-72.hsd1.ca.comcast.net. [73.231.117.72])
+        by smtp.gmail.com with ESMTPSA id y12-20020aa7854c000000b006ddc7ed6edfsm11914573pfn.51.2024.02.01.06.48.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 01 Feb 2024 06:48:36 -0800 (PST)
+Message-ID: <894db19d-5287-4ed8-a0d9-0211b365eafa@acm.org>
+Date: Thu, 1 Feb 2024 06:48:34 -0800
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-01-31_02,2024-01-30_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 bulkscore=0 spamscore=0
- phishscore=0 adultscore=0 mlxlogscore=999 suspectscore=0 mlxscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311290000
- definitions=main-2401310047
-X-Proofpoint-ORIG-GUID: KVGysevwWfL3EimAfKh48RbAqKKmX0zi
-X-Proofpoint-GUID: KVGysevwWfL3EimAfKh48RbAqKKmX0zi
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/1] RDMA/srpt: Do not register event handler until srpt
+ device is fully setup
+Content-Language: en-US
+To: William Kucharski <william.kucharski@oracle.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
+ linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20240131062438.869370-1-william.kucharski@oracle.com>
+ <20240131062438.869370-2-william.kucharski@oracle.com>
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <20240131062438.869370-2-william.kucharski@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Upon rare occasions, KASAN reports a use-after-free Write
-in srpt_refresh_port().
+On 1/30/24 22:24, William Kucharski wrote:
+> Upon rare occasions, KASAN reports a use-after-free Write
+> in srpt_refresh_port().
+> 
+> This seems to be because an event handler is registered before the
+> srpt device is fully setup and a race condition upon error may leave a
+> partially setup event handler in place.
+> 
+> Instead, only register the event handler after srpt device initialization
+> is complete.
 
-This seems to be because an event handler is registered before the
-srpt device is fully setup and a race condition upon error may leave a
-partially setup event handler in place.
+A Fixes: tag is missing. Otherwise this patch looks good to me. Hence:
 
-Instead, only register the event handler after srpt device initialization
-is complete.
-
-Signed-off-by: William Kucharski <william.kucharski@oracle.com>
----
- drivers/infiniband/ulp/srpt/ib_srpt.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index 58f70cfec45a..d35f021f154b 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -3204,7 +3204,6 @@ static int srpt_add_one(struct ib_device *device)
- 
- 	INIT_IB_EVENT_HANDLER(&sdev->event_handler, sdev->device,
- 			      srpt_event_handler);
--	ib_register_event_handler(&sdev->event_handler);
- 
- 	for (i = 1; i <= sdev->device->phys_port_cnt; i++) {
- 		sport = &sdev->port[i - 1];
-@@ -3227,6 +3226,7 @@ static int srpt_add_one(struct ib_device *device)
- 		}
- 	}
- 
-+	ib_register_event_handler(&sdev->event_handler);
- 	spin_lock(&srpt_dev_lock);
- 	list_add_tail(&sdev->list, &srpt_dev_list);
- 	spin_unlock(&srpt_dev_lock);
-@@ -3237,7 +3237,6 @@ static int srpt_add_one(struct ib_device *device)
- 
- err_port:
- 	srpt_unregister_mad_agent(sdev, i);
--	ib_unregister_event_handler(&sdev->event_handler);
- err_cm:
- 	if (sdev->cm_id)
- 		ib_destroy_cm_id(sdev->cm_id);
--- 
-2.43.0
-
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
