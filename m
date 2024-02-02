@@ -1,77 +1,132 @@
-Received: from mail-pg1-f176.google.com (mail-pg1-f176.google.com [209.85.215.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A1B85F467;
-	Thu,  1 Feb 2024 14:48:37 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB78260DEC;
+	Fri,  2 Feb 2024 09:16:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.165.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1706798918; cv=none; b=nSDXSR30CpeYFapxcWrihb91mcYk8AbH/NDLVbeBdBRKJgB90o6bY1SlwmiflKmmvmiXh4+/bmQCK/SP3mF5VTXDmelO7nSxD48pgZ/Y3PqltCeYSjT4aBMLMc47ZaVEKULLyxlz0AL1GvIHNUUaR9LTwCLy5236Tvm8ASyfmZQ=
+	t=1706865371; cv=none; b=TrDtq7wCChvlvpJR0OiatltOp0DgDUaCZP337woHIQU2bHvO7GXs3q65VfeDtY7G6A+MXmn/9dyKudpRfIsIscDMQOsD1/jBNoDGiQPgAEhnYpnAhCWyj35MmNsO+DXacfccKLpqKc3j4K8PQ+Sz8Yx2IGxfbuQCD2dSN+dY3OY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1706798918; c=relaxed/simple;
-	bh=kgzPQEYyZvtgptsyAcimKMFdgkPe5hWQr95Fm9WJLqc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=VpvZ+Pw8zNJ1bu7FRnze3IkaEt90CcPcEiqTkXbAe3CyHA5xCmzbrmDT0X5KKJ8rNHaAZqbVSI/MOCNHzE9Z4vLvW5JH5SQd0Yru2o91bMTVdl7XUq+HBE0v79HGUgSGBx0bleWMOsrfoab2uBa+Mklm4RutdisZJ2jP1DG/qgM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=acm.org; spf=pass smtp.mailfrom=gmail.com; arc=none smtp.client-ip=209.85.215.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=acm.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Received: by mail-pg1-f176.google.com with SMTP id 41be03b00d2f7-5ce2aada130so882335a12.1;
-        Thu, 01 Feb 2024 06:48:36 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1706798916; x=1707403716;
-        h=content-transfer-encoding:in-reply-to:from:references:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=YZLfNNOA3fPwT/lACRUCWcunwYFYKzsJvZnIb6KlJOQ=;
-        b=OWWmtzt/3eewEiv0AE8XJRPm5CsMJGwtQikJZ2soMHf3XIN+GGt3kfeFN5593qECnD
-         NitNkv7woSFfEPaJuZTkLPfUUUcvjE09719T9K/IsqE6eAhEH96u94TbxOeYtClQvKOt
-         fflHMzG/8BOnDK/9yxDDgReLxbiXmRll7J8SoYsIpfwjqgE6SmDObN1/gQLR9jVe01zE
-         UV3M57IWkdEx2BD6cU09IooK8e78KCc8eUEKKL2jPebXOofYjukOycrJGQb59L4poQDT
-         l19rzsuxObkf5UuuL7HNr8ijWjD4Zdw84mTomSUdb+e4KHx/HiJQireA4SNOYtO1nrC3
-         hCYQ==
-X-Gm-Message-State: AOJu0Yw8/IUxNoLOxz3Y3ksf4Fo6URzrDRyQXa7FIRL1zy7ShxitjaHY
-	6HNILn0ZCoyTGP1AZ2+JVgg4ZgvNmzOoHH76L4IEvdW+xa4z+slo8RUrk3sL
-X-Google-Smtp-Source: AGHT+IHoazbl4mQQ5JGphXQxeDJXPZMugdFyz2WvWnZ5ZmUmWofiwtqkgnur7TqmRPt0yDYYM1GTIg==
-X-Received: by 2002:a05:6a20:1806:b0:19c:7c49:4e6 with SMTP id bk6-20020a056a20180600b0019c7c4904e6mr4181309pzb.51.1706798916373;
-        Thu, 01 Feb 2024 06:48:36 -0800 (PST)
-X-Forwarded-Encrypted: i=0; AJvYcCX2iMVs77hndj2YXUNkEHyliv8W6tg6f5u+doDL5txl1MIYC567kmm1fHMos076AH97tK/xHMOLaL9kMZ1GYFw96oGD0Zw1Kpi10sRHzlXX5xx71I6jQ8ydpFymPC+Za0ffjJXy6qk9QVXJEVMGFXHdoADnxw0NdGJosImOXYLpjigt9rnr4LUaXBe8tybjBTmBWJaKKWqOEdIjPeVl3lU3b8llhUk=
-Received: from [192.168.51.14] (c-73-231-117-72.hsd1.ca.comcast.net. [73.231.117.72])
-        by smtp.gmail.com with ESMTPSA id y12-20020aa7854c000000b006ddc7ed6edfsm11914573pfn.51.2024.02.01.06.48.35
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 01 Feb 2024 06:48:36 -0800 (PST)
-Message-ID: <894db19d-5287-4ed8-a0d9-0211b365eafa@acm.org>
-Date: Thu, 1 Feb 2024 06:48:34 -0800
+	s=arc-20240116; t=1706865371; c=relaxed/simple;
+	bh=+utyHnnx9mcGZ5J4PzIt8PfsL+g+nYZNc6Byd7gtxHQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=aVLCiXjdADWR+i7l5D6Tk3Y7PEn7fqy0xLaisMKGwYwFpH8nYPPjqem9oHEEGa6BgdsgYCrUwM9RhLEvXuUkH8IGrdbWAClx9gInCW4V7/dEqYvr0c8KXazGdC3nxQLuvfnUmTT7vknOozEL0SoAUcyrhdaJ4peTgDnJIkIOnc4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=BCRR712n; arc=none smtp.client-ip=205.220.165.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="BCRR712n"
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 4128TnWD029241;
+	Fri, 2 Feb 2024 09:16:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id : mime-version : content-transfer-encoding;
+ s=corp-2023-11-20; bh=nabJQnqAUmVC+1+SxWOFnpj8FY4yKxXdJKuu8QKdFzE=;
+ b=BCRR712nAjPMqSNTleQD+pSd7CZGfQD5tg0LPFo7Ro3BuyFGhUSqEdh2t8cotfQ8wP9d
+ qp0uB5zh728wMpBCCmI6e/9lpaGmcBtDO/YwHCDIjZusP4fx8WCfMrMWmD2X1TA5Pdeq
+ hjHE6vxq+Ub6cHb+9R4XnDmFIYx/8IiSAAlH8Stss/UK/n53XixEqbOq/jIPla6XvjbB
+ zB+cearnXbmRa1NfTr/KqjhlRCDoBFDp/boZfxtX+hHliwcWhb6tybSa/TaNFxRlv/tv
+ 7CrL11QAa0fKbhbvrghk8ZXUVZMdPzjHOMjLRJ1o+q256InkG55tUI+3DQrx/v29QJA/ DA== 
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3vvtcv73vk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 02 Feb 2024 09:16:04 +0000
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 4127aox4005321;
+	Fri, 2 Feb 2024 09:16:02 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3vvr9hnqha-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 02 Feb 2024 09:16:02 +0000
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4129G2Gb000955;
+	Fri, 2 Feb 2024 09:16:02 GMT
+Received: from brm-x62-14.us.oracle.com (brm-x62-14.us.oracle.com [10.80.150.231])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3vvr9hnqd6-1;
+	Fri, 02 Feb 2024 09:16:02 +0000
+From: William Kucharski <william.kucharski@oracle.com>
+To: Bart Van Assche <bvanassche@acm.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+        Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: William Kucharski <william.kucharski@oracle.com>
+Subject: [PATCH v2 0/1] RDMA/srpt: Do not register event handler until srpt device is fully setup
+Date: Fri,  2 Feb 2024 02:15:48 -0700
+Message-Id: <20240202091549.991784-1-william.kucharski@oracle.com>
+X-Mailer: git-send-email 2.39.3
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/1] RDMA/srpt: Do not register event handler until srpt
- device is fully setup
-Content-Language: en-US
-To: William Kucharski <william.kucharski@oracle.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
- linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20240131062438.869370-1-william.kucharski@oracle.com>
- <20240131062438.869370-2-william.kucharski@oracle.com>
-From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20240131062438.869370-2-william.kucharski@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-02_03,2024-01-31_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 bulkscore=1 spamscore=0
+ phishscore=0 adultscore=0 mlxlogscore=999 suspectscore=0 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311290000
+ definitions=main-2402020067
+X-Proofpoint-ORIG-GUID: 77geklJuJGoCb6RxvUP-NTfhO4GpkeB9
+X-Proofpoint-GUID: 77geklJuJGoCb6RxvUP-NTfhO4GpkeB9
 
-On 1/30/24 22:24, William Kucharski wrote:
-> Upon rare occasions, KASAN reports a use-after-free Write
-> in srpt_refresh_port().
-> 
-> This seems to be because an event handler is registered before the
-> srpt device is fully setup and a race condition upon error may leave a
-> partially setup event handler in place.
-> 
-> Instead, only register the event handler after srpt device initialization
-> is complete.
+Upon occasion, KASAN testing would report a use-after-free Write in
+srpt_refresh_port().
 
-A Fixes: tag is missing. Otherwise this patch looks good to me. Hence:
+In the course of trying to diagnose this, I noticed that the code in
+srpt_add_one() registers an event handler for the srpt device and then
+initializes the ports on the device. If any portion of the
+device port initialization fails, it removes the registration for the
+event handler in the error leg.
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+This felt like a race condition, where an event handler was registered
+before the device ports were fully initialized.
+
+While I can't definitively say this was the issue - this change may just
+modify timing to mask the real issue - when modified to not register
+the event handler until all of the device ports are intialized,
+the issue no longer reproduces in KASAN.
+
+Changelog:
+v2:
+  * Added Fixes tag
+
+William Kucharski (1):
+  RDMA/srpt: Do not register event handler until srpt device is fully setup
+
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+-- 
+2.39.3
+
+
+Upon occasion, KASAN testing would report a use-after-free Write in
+srpt_refresh_port().
+
+In the course of trying to diagnose this, I noticed that the code in
+srpt_add_one() registers an event handler for the srpt device and then
+initializes the ports on the device. If any portion of the
+device port initialization fails, it removes the registration for the
+event handler in the error leg.
+
+This felt like a race condition, where an event handler was registered
+before the device ports were fully initialized.
+
+While I can't definitively say this was the issue - this change may just
+modify timing to mask the real issue - when modified to not register
+the event handler until all of the device ports are intialized,
+the issue no longer reproduces in KASAN.
+
+I'm submitting  this patch if only so those better acquainted with
+the details of this procedure can analyze whether this was an actual
+issue or just intellectual uncomfortableness with the code.
+
+William Kucharski (1):
+  Upon rare occasions, KASAN reports a use-after-free Write in srpt_refresh_port().
+
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+-- 
+2.43.0
+
