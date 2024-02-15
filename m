@@ -1,100 +1,63 @@
-Received: from esa4.hgst.iphmx.com (esa4.hgst.iphmx.com [216.71.154.42])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CE0A5577F;
-	Wed, 14 Feb 2024 14:50:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=216.71.154.42
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5CF08F4E;
+	Thu, 15 Feb 2024 05:24:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1707922250; cv=none; b=OrwSATxPyQuVMuDy8Q+VdIIpjXR6fyNVnf8LBe/uUbOOCJS2lM3wuXAxI06OnBtR9qdZ7X0I8hCMxZjVfe5ZNFERuK6WGPhgh7Wq8Na6noWkWl9Kz1Ozp6ByESl8smkb2n8BEi0LWcu6TBiu++yUgkx0uvapUOBnR8IhJcIfBig=
+	t=1707974703; cv=none; b=FFevb7bjTgh5qN9QNBh74Jn5j3iR6Y/s/mycr+x6rmP8No4j/NMXToWba9qn/0EF6C0qf273bY2HAXOwwheNHqv8XE7pMQdBWCZz1IP2wgonG2R0VX1ivvmpcQWHG2EzgRc+v8cVJJu+/IhOajDAeKKNA0AUmbX+zY0qUc4+E84=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1707922250; c=relaxed/simple;
-	bh=gpEl7I8AQ9ZRN7Yrn9GliYr/re58hUppDZDkku6MdKA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=O0gDkh/tdGMWxrkkDjbpSWCSDg/txVyPs3WryxjNoJMGhVWk+2r+Pt8cPTu9H0MiRjiZDDkjqjZjEISaHp7hfv17RksFhkGeJ6KuloHW3fFyLkU9QSPwGaj6YBcjeFSFDuFd90H2keHgEUwadGdBvGmS1RalDmr16ubeSBWNTH0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wdc.com; spf=pass smtp.mailfrom=wdc.com; dkim=pass (2048-bit key) header.d=wdc.com header.i=@wdc.com header.b=bkr0AjtU; arc=none smtp.client-ip=216.71.154.42
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wdc.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wdc.com
+	s=arc-20240116; t=1707974703; c=relaxed/simple;
+	bh=nXZ8dhhN6vNnqxncAQ33On4azS2ISMYdWmxcmT15kSk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=K0/RD62K2qSgo5T21bxLX9pTFGRXTGnHNHjqyKG9ZVeNlST3BiK1uq7S5TlMf55tkEVTwm8jizysnQ8eDmbguTtgu52J+iveenifri+5rEx6Fnx8Jg7x1sAJNTIAVTHKmQSHXhUiF3TbUDAOtPIMHQS7IXam7fmgY0v2FwimMQU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=iQSPeeaA; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wdc.com header.i=@wdc.com header.b="bkr0AjtU"
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
-  t=1707922248; x=1739458248;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=gpEl7I8AQ9ZRN7Yrn9GliYr/re58hUppDZDkku6MdKA=;
-  b=bkr0AjtU4PJ4/gsmbGrFnxvIzXaULq+xDJ8V8pkU3GqQuK1fjyjxJ8GT
-   ag56X712j1RE/G4EWxZ9vVkFSNi+Td5sdZ6jVNvVyIRwXCH1kbqlkqBbj
-   9nbq0kVgKYFgPZKiCqcxf3axP/ZNUeYvLxMX+sRgH3qc3J/kJL9L+sDRx
-   bF/KZwhKSvyWdO094wPO3JOSIHfd/VWfDm25k8bkizGC2bTalXqTeJAcC
-   q/xAy/Wju5lGSYxq0WfXNQAYVnjwRfahVcC+CccdPuU7fJM02SHx39FEz
-   bO9XUiT6WBmqXbkPAPStkun9QfxbLufs0vh9cShaC44f29SU7bLaoFZzN
-   Q==;
-X-CSE-ConnectionGUID: Xxj5jJdfR/aEoAqtajZ7EQ==
-X-CSE-MsgGUID: E5HDPQ/rQ5KYOb1E/uJcAQ==
-X-IronPort-AV: E=Sophos;i="6.06,159,1705334400"; 
-   d="scan'208";a="8888883"
-Received: from h199-255-45-14.hgst.com (HELO uls-op-cesaep01.wdc.com) ([199.255.45.14])
-  by ob1.hgst.iphmx.com with ESMTP; 14 Feb 2024 22:50:42 +0800
-IronPort-SDR: qE74NCWKFVjFJSAZvCA9whuKuNx1rJ1+NqQUMJsqTDDif7BS+OXE4Z4NrLxFvM0AMvO6jw9df7
- OZ1b7hbP5Gzg==
-Received: from uls-op-cesaip01.wdc.com ([10.248.3.36])
-  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 14 Feb 2024 06:00:17 -0800
-IronPort-SDR: XuMcabTrVQD/NRMgSXTz0UMkLoU8Z542x45fUwtqqslVgIWnHOodR64Dka0zBBBYxy1veX/QCM
- wt5nkUd7GXXw==
-WDCIronportException: Internal
-Received: from unknown (HELO naota-xeon.wdc.com) ([10.225.163.55])
-  by uls-op-cesaip01.wdc.com with ESMTP; 14 Feb 2024 06:50:40 -0800
-From: Naohiro Aota <naohiro.aota@wdc.com>
-To: linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org
-Cc: martin.petersen@oracle.com,
-	Naohiro Aota <naohiro.aota@wdc.com>
-Subject: [PATCH] scsi: target: pscsi: fix bio_put for error case
-Date: Wed, 14 Feb 2024 23:43:56 +0900
-Message-ID: <20240214144356.101814-1-naohiro.aota@wdc.com>
-X-Mailer: git-send-email 2.43.1
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="iQSPeeaA"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
+	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=AJd6EEm5AeyrSlx8/jk3HAiyYxH1ZBFPwHgSBySyS4w=; b=iQSPeeaA6A/M/NKgrMO7gWumOx
+	S4hijDekdQxzHRGxU/ry3GYs46ZrXtC9+12v6J6aB5OacrIc/c4GibxZMltwunNU7mfRYbcflg2O9
+	NgBJQG6Em5rvyRhElGdXYJIIqIGwBSApHc9uHlevYJLUyzEY8bxfqItIQWrBdv8Y/YqdHV74Flkqs
+	KHi4RzvJsD+JIcrywoa3V7thuLprf4VTGVCWBljOJjuCkFKDYroAN20kWwFAFE1XUcio8Dnso4r+X
+	dlp/hsT+5RpdG5yNVJq12Oc3vGuVFSa1KLraTQfBfTIrMYnNtRp74dXaQd052TZkFGoXEfHHXjjL9
+	sqFN0zow==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.97.1 #2 (Red Hat Linux))
+	id 1raUEz-0000000F1Id-2ZRS;
+	Thu, 15 Feb 2024 05:24:57 +0000
+Date: Wed, 14 Feb 2024 21:24:57 -0800
+From: Christoph Hellwig <hch@infradead.org>
+To: Naohiro Aota <naohiro.aota@wdc.com>
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+	martin.petersen@oracle.com
+Subject: Re: [PATCH] scsi: target: pscsi: fix bio_put for error case
+Message-ID: <Zc2gKZmCSYsFpi7f@infradead.org>
+References: <20240214144356.101814-1-naohiro.aota@wdc.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240214144356.101814-1-naohiro.aota@wdc.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-As of commit 066ff571011d ("block: turn bio_kmalloc into a simple kmalloc
-wrapper"), a bio allocated by bio_kmalloc() must be freed by bio_uninit()
-and kfree(). That is not done properly for the error case, hitting WARN and
-NULL pointer dereference in bio_free().
+On Wed, Feb 14, 2024 at 11:43:56PM +0900, Naohiro Aota wrote:
+> As of commit 066ff571011d ("block: turn bio_kmalloc into a simple kmalloc
+> wrapper"), a bio allocated by bio_kmalloc() must be freed by bio_uninit()
+> and kfree(). That is not done properly for the error case, hitting WARN and
+> NULL pointer dereference in bio_free().
+> 
+> Fixes: 066ff571011d ("block: turn bio_kmalloc into a simple kmalloc wrapper")
+> CC: stable@vger.kernel.org # 6.1+
+> Signed-off-by: Naohiro Aota <naohiro.aota@wdc.com>
 
-Fixes: 066ff571011d ("block: turn bio_kmalloc into a simple kmalloc wrapper")
-CC: stable@vger.kernel.org # 6.1+
-Signed-off-by: Naohiro Aota <naohiro.aota@wdc.com>
----
- drivers/target/target_core_pscsi.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Looks good:
 
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index 41b7489d37ce..ed4fd22eac6e 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -907,12 +907,15 @@ pscsi_map_sg(struct se_cmd *cmd, struct scatterlist *sgl, u32 sgl_nents,
- 
- 	return 0;
- fail:
--	if (bio)
--		bio_put(bio);
-+	if (bio) {
-+		bio_uninit(bio);
-+		kfree(bio);
-+	}
- 	while (req->bio) {
- 		bio = req->bio;
- 		req->bio = bio->bi_next;
--		bio_put(bio);
-+		bio_uninit(bio);
-+		kfree(bio);
- 	}
- 	req->biotail = NULL;
- 	return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
--- 
-2.43.1
-
+Reviewed-by: Christoph Hellwig <hch@lst.de>
