@@ -1,194 +1,284 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+Received: from mail.ltx.eu (mail.ltx.eu [95.169.169.99])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1A7C13A88D;
-	Thu, 15 Feb 2024 21:07:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1708031230; cv=fail; b=GblRwYNBnieESlWCcf0cvIw219RvkxlfR/5itnMBKYcqwcla/vzY9s4PMGDRYVaCUmB+h+KRmhGypy75TuGeiDqJE5zFk6BW4E7IR3JLyotBenD4Mi0hUlcQ3LDiP2+cL8xrrCWbGdl5tKGmknIb55YluYGs3p7cFfMMcEOFd5s=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1708031230; c=relaxed/simple;
-	bh=zklGzhA8ML/J6H6kqqDuA6nlPfCE2cwD9W9J0IAZvAY=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=owfNSXcvG8LFEOf7KFubIatR+kzwGcVVaH9K53lZ3f5tffPXIce3+RKEbCIV+dlORjgxoQL8FdTY2FhHwHZJLzrVI85DFAlQChV9J5ZCv/GJtn9l1FIbTyo8zVs520+xqrdLsdB9SF5vTj1rjJ63zFNh1TRtjBUXmm51h/rqv30=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=X3FEhUCj; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=CzT9Nidb; arc=fail smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 825725B670
+	for <target-devel@vger.kernel.org>; Tue,  5 Mar 2024 10:42:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.169.169.99
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1709635355; cv=none; b=S+wfemvNhtze197jW7GLvvKJzyb2IkQr/GJE5+WwEpfieL7450XSWBmuFntO5TKLJ2x/svoSUYFAHoOGotPiieSq5UGX8clRHSxnAkhP6h4Qzla5+RJaZRIcVaKAG9HtUcKB5kmgCsLAxNatpu1AI5V0Bqjx6sZhbLPe+j+v0SM=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1709635355; c=relaxed/simple;
+	bh=QlyPnw59Q55yEQsZVzhkDGrPkH2Lr78uVSdq3C2tn6k=;
+	h=From:Content-Type:Mime-Version:Subject:Message-Id:Date:To; b=uANhZ9S631t6HByGIBtYTmxbxmzmpnCi+PEh8hnNcQWL7MhxMV9C+RFUYYiGbQhAd3Qo8YKdLU/PIOUqoGTuXMt1M87kAnPB2DUdVUKavyFztWSUJHbeyS1qAkTZ97l5ZrnJ2SomrROV3S25xHmGO48nRrRc60d527zKdnNr0Vg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ltx.cc; spf=pass smtp.mailfrom=ltx.cc; dkim=pass (2048-bit key) header.d=ltx.cc header.i=@ltx.cc header.b=s6xURRAp; arc=none smtp.client-ip=95.169.169.99
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=ltx.cc
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ltx.cc
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="X3FEhUCj";
-	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="CzT9Nidb"
-Received: from pps.filterd (m0333521.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 41FFTPfL002858;
-	Thu, 15 Feb 2024 21:07:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
- subject : to : cc : references : from : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=corp-2023-11-20;
- bh=NPm6/RLpiMgUYWrv8Y7E0BiwkqHj9yNxGAUftT6Ttpw=;
- b=X3FEhUCjUVZQww9EX/yruEKTNU2xwQNHpT/X3hhMEu9iNKAgiy8r1fj2xIgn/StVTcPO
- Z6F9+Do8FT+jA6MX3ExUn9iaFPC/3M6gK/AXf9mL13HvnHlFhVZr0c1Ctb5XHbCxwg6+
- s4x5HaGAniJ+Es+9OMTChp7ZrJ5gIK7X/bs9lVG18dB1PgaZROlg4rghEOOQt4F2yCgH
- 7oGXBCvoKoAsFTzEVAfbZVk5Ye+ttIMKF7d66XSByRXEulKW4S0DOHuzp4TovjTxH7Nd
- nj8Jx4cij3co6bGCxugLL9zXkgMIf6VkPEFsSZTHNJbIRwvOGVOIKcCgUQzAJZZc1878 0Q== 
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3w91w6ufwx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 15 Feb 2024 21:07:04 +0000
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 41FJYkSe024563;
-	Thu, 15 Feb 2024 21:07:02 GMT
-Received: from nam12-bn8-obe.outbound.protection.outlook.com (mail-bn8nam12lp2168.outbound.protection.outlook.com [104.47.55.168])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3w5ykhec2c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 15 Feb 2024 21:07:02 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=nB0kCilVzvBdhwdnmthIYFBoCFNeuVHz4EuaqQMOxZ7LVtt2vPl/equNbDAA1ITT4Ccv+CBpaSjHdeejeHArfH+LpAdbl36Rr3TVl60rifXkTXckfguBYxoGBXeNb8z4vFrzhB00EkyiZcxGfwrzsj0ruOVhGbZuW+yE+IgyP8y/BZDvuSlEyg1pwL6zqS0dB6yknhscZK/ZGuTnKLmr+wuZmK1sK6SsuSLmGKqB8JXyGWfqjUns3R5ikXJ7SZ7AqPAuL+0NZoECkAUKi52bALfmL7/qHJtNwdqmMleK0MT2d/Jw14cdBRTAUHz/O66H7ScDtOLRCudbi5KK9yYkfg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NPm6/RLpiMgUYWrv8Y7E0BiwkqHj9yNxGAUftT6Ttpw=;
- b=JDJULKjZ07bekl3Mq8/Pz5jZSyucjexol8l9mCLhZjgf5STB2mLZyrI0ARcQ7DaHYMWpsxJBlmq8sWfmZZ4vsElbi5artD9g7hqDre2iDmMv8czYx2/cXxmH5hmd5ogmrB9tEWTp6AJC4sQ7FecxetWySuAOhdq0kqN10yS/xXvi5+F2DBVwBibeNGuTV1V61bm+votiD6FbFvMQz5+rq4wlWCtOrXOUxFNFOLKY4RNvOGrLncCir0zQnisDT1WnVMXiqW1Lpb/JZHoDVF/h1PdP5jwElm2pOfG29/aB1CzT5Td2gLPhgOKgmA17P3mytka73FgPeI0GTar3MfjjHw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NPm6/RLpiMgUYWrv8Y7E0BiwkqHj9yNxGAUftT6Ttpw=;
- b=CzT9Nidbu+f97kniwwESjaG1eATGQpAl/52VTTfpKB8F+XhMr7RDItcpCIQY3ZL7wE1jQnlkSZ2IG6sZv9ajO25ETeRrHSloiFY4jKbG6z/geI6mQDUddVtnF5r/OZ2iJ1bOcvoS9E2xaXqOM5Ye9Bu73aObdV3lsF9hC0jIvyE=
-Received: from CY8PR10MB7243.namprd10.prod.outlook.com (2603:10b6:930:7c::10)
- by BLAPR10MB4929.namprd10.prod.outlook.com (2603:10b6:208:324::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7292.31; Thu, 15 Feb
- 2024 21:07:01 +0000
-Received: from CY8PR10MB7243.namprd10.prod.outlook.com
- ([fe80::45f0:7588:e47c:a1ac]) by CY8PR10MB7243.namprd10.prod.outlook.com
- ([fe80::45f0:7588:e47c:a1ac%7]) with mapi id 15.20.7292.029; Thu, 15 Feb 2024
- 21:07:00 +0000
-Message-ID: <8c629861-2046-4471-bc51-96f5b446a46a@oracle.com>
-Date: Thu, 15 Feb 2024 15:06:59 -0600
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V2 1/2] target: fix selinux error when systemd-modules
- loads the target module
-Content-Language: en-US
-To: Maurizio Lombardi <mlombard@redhat.com>
-Cc: d.bogdanov@yadro.com, target-devel@vger.kernel.org,
-        martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-        james.bottomley@hansenpartnership.com
-References: <20240215143944.847184-1-mlombard@redhat.com>
- <20240215143944.847184-2-mlombard@redhat.com>
- <094cd372-eb90-4738-acce-a3725dd2c0fb@oracle.com>
- <CAFL455mD1XEYqRb80K1REHVeyWVmD2yKEViMY-AYqxhJ8bpQBw@mail.gmail.com>
-From: Mike Christie <michael.christie@oracle.com>
-In-Reply-To: <CAFL455mD1XEYqRb80K1REHVeyWVmD2yKEViMY-AYqxhJ8bpQBw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: DM6PR18CA0027.namprd18.prod.outlook.com
- (2603:10b6:5:15b::40) To CY8PR10MB7243.namprd10.prod.outlook.com
- (2603:10b6:930:7c::10)
+	dkim=pass (2048-bit key) header.d=ltx.cc header.i=@ltx.cc header.b="s6xURRAp"
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 5B7EF6A0115
+	for <target-devel@vger.kernel.org>; Tue,  5 Mar 2024 11:36:24 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ltx.cc; s=dkim;
+	t=1709634989; h=from:subject:date:message-id:to:mime-version:content-type:
+	 content-transfer-encoding; bh=ucJc7nqaoVbxU8iTI3dEUCrS65cctmm/nds6jCgsgPA=;
+	b=s6xURRApzt+yebEazrJ/GOqYS0rDevFWXYjqdTQrziyNbiseavCky4owwaIdfy59bi5wv5
+	6cSMg12KwUhOiiGFkrcgFXY4JvPrVdwK9fgaS/0kVeuQCWGx+xdKWpZWZ9NjmY+/tKr1lH
+	xejnrWCiszgmB+JqwMGgUYvzrFka/Zm/iaN1Mg7lHWkcEvRsvCMA7MmXoAv3f6kKW+ivzO
+	4dXTwox4MapVbffeahYKcFykTgSkA5eekdKOAehCXuM/v63AIdWE9U97XuoPaBKd/oOpBc
+	ZawsGVMq48Jyeha4gIJiI4cBH0miM/7astZ7Z3oybRahJXM+77zAMAJkFnsO8Q==
+From: Holger Amberg <ha@ltx.cc>
+Content-Type: text/plain;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY8PR10MB7243:EE_|BLAPR10MB4929:EE_
-X-MS-Office365-Filtering-Correlation-Id: 551975d8-4b40-4292-a105-08dc2e6a0d78
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 
-	fAS27ud1xgurBmSjle9v791/zt9PGs6KeY7vpvlYobk72fs1CbDfo0ip9Jj90gQdgwxip5vKKKro6JHdVI7r8C3hLz6EXOEPfwsGrYHrHUMoY/DaqCzEYUNbDsgTPdtn0bocCdKvd/MbhAB4AddOLfvu4g2vhTyY4waXNu5h42B+wBhkcwb6JJTKPCpNfhIkjnDpeYsP36A15geEgN22wXY8g1LVmHny/cDmFSnSjZAuXV1V6fVstlwqsuCME26uK58ajo9hTXCg0Okouk9Q0J5ogyhIQKpF8oI9v33LzmVaerzXebDiiMb9TFgblCkPCuqK0D7860HdLBTgmJ9EEK4xJGyX0Q8XiQt8yLRV5pt5hNdUKG+71PeZVXXivIwuhjSGJEnuB23p/m+IiC6Zzwi9f+ZeHcE76rwlpffF/yrn0fc2Dv9hqA50wED4Y/2RZR2S7cbt2yaAT84vhZyg+xGg4KFQBBm8hcmTVdKulA9CqjmjOTenihu4pD39j5eV/2G4dWS5aEzegpNUiUeTfGX6ummxvalPbMIm48ZNFwS9jnAvh3XVVydbK/TgLcnC
-X-Forefront-Antispam-Report: 
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY8PR10MB7243.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(136003)(376002)(346002)(39860400002)(366004)(396003)(230922051799003)(451199024)(64100799003)(1800799012)(186009)(5660300002)(38100700002)(2906002)(4744005)(86362001)(6486002)(6512007)(6506007)(478600001)(53546011)(66574015)(41300700001)(36756003)(2616005)(31696002)(26005)(4326008)(6916009)(66476007)(8676002)(8936002)(66946007)(316002)(66556008)(31686004);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 
-	=?utf-8?B?R3ZxUE91YVVnaG9ieUtBQm9MQXlOQXkxVFpqVnFmQVBJaDc2dVRTdmFzRXZ6?=
- =?utf-8?B?S0RmQmRWTFJ3bWpXaUZlWGsybStmT3NhWk9mbkZhU2duWm9nUCtER0dLbldZ?=
- =?utf-8?B?S0NwYlJPbG5uN1pFMkRsSzhNTGJhMXR0bUFVQ3dlc1F1RG9hc0RhTnQrZHp1?=
- =?utf-8?B?U0MxR3RmaXZ1V0s3cmtLRXpHOWhaVUIzZEFsMnhYNU4zY2J5UFFCZmIyWkdj?=
- =?utf-8?B?WXFyeitmQXRZVVF0eVRsWExxc1Z1UDgxVU5BUlpwdE9oZ2RycDdtc1JRZWlu?=
- =?utf-8?B?QVJmZzltWVFvdzUyQ0dvaFlHZ2xqY3JmUEY0Ym1GYVpobkFmRjFGQ2V3eUgy?=
- =?utf-8?B?c2huQWxMTG4zUlg0TmM1V04wRFJBUXk0cWtnMk9nWTVoQUticG96aDY0cUZY?=
- =?utf-8?B?dkFGaytrYzlMUmZhNURHdGRxbmRNZ3BROUZvUUc2Z2podkFsaEFwbEhodUxV?=
- =?utf-8?B?amRORGZ5QWRRUTREYVNLKzU3Q0JSV1hGcStjYnlPd2FHQXRqREhoUXhvREdy?=
- =?utf-8?B?anlvV2hCU2N2TU5RWVdwcUdhL2VnZzdmQURQWUtoelZNVC9SckxCUmExS3hF?=
- =?utf-8?B?Z2RJM2wwN3pKSzI2UHp4WmE0RDlZcUE4aWFDMDQrYy9aVGdWNDF4QjNnV2d6?=
- =?utf-8?B?VERKZE53c1orV1k4VmdNSWtmTjJpb2ptSlZoT092amdXRHRJU3ZMZGMrNk9q?=
- =?utf-8?B?WXVvRTNUYngwdnlZK2lWa2dCTFNMSGdNbklPYjF1aWFOdWxBVWp1ajliSENh?=
- =?utf-8?B?RCtYWCtJaU1LcEttTHZMc0NpaFkrVTN5Wm9iL0djRXF2aEN5YVZocS9lWEUy?=
- =?utf-8?B?SklCRHlpbGVtOFE0UEhvUk5UOENGRFJnZy9FaDZSdFU5dnIwWndJZnNWTzh6?=
- =?utf-8?B?dlpzK0JWOFBiekNFU2VCY2xzcElPT2s2b25OVWpNbWZPSXYzWTFkTGRScDBE?=
- =?utf-8?B?Y3lOemFPanZkaFBnUGRRODNMWlBqSndsQ2pmU0JVMG05Znlmc0VKdVdRcWtz?=
- =?utf-8?B?SU9VY2hEcitwVEZRTnhrVzEyYlN0dEIvRkxMbk45UFZENXBGNUNzNEdITlpD?=
- =?utf-8?B?UnEzNzVnMFdWa21lV25uT2JEQjkzSy83YVVRejRXeWFFWGszcndiMWQzTkRJ?=
- =?utf-8?B?Z0k0ZDlGRTY3aWRuRk8zWEpWVWl5cVI1Skd0ajR0bDYra2tBSXJSOEJpSE1y?=
- =?utf-8?B?N0dscHFKZG5rcFdicXF2bGhmYXdzMXYzbGV2ZXlmTlhGRStXaVdzSFJpWFdy?=
- =?utf-8?B?VWx5TTUzblhjdzZYTG16VnFMWGp4SmZQQk9RU0RHeldhdXhWbzZBVUZjVk54?=
- =?utf-8?B?REQxSTR0N1RKb3JUbkpwd0tGZTBVNURkRWhabTdYTG02SUFxZHhCdmxVQ2c4?=
- =?utf-8?B?VXJnSnUwTlEza2VlVU1aZEZUUzlsTGlNTlltL0JrVVc5cjd0MStGMjhJZVV6?=
- =?utf-8?B?Q3diLzk0R0NOSU16T3NVYW9YQWJTS2YvNDRsR2pYZFlVMm5ZcDlpNWE5dUFw?=
- =?utf-8?B?Rk5oQ0ZIaG1qU2FRT1AyWWJtZ0ZIV0lBWGd2N0hxQXNSNVZ0NFZiWHRYdmU1?=
- =?utf-8?B?SEZHbW5DNVZZWC9xQTZlTGs5bFBLTW5EZ3FHdEdMV0tiVlAyU0YyNlZzaWxx?=
- =?utf-8?B?WE1ON1FwbW1nNkc2bEhmbXJmbGkyQzNBUFZtWStyWlRkY3BHNTQrUkpOaXRG?=
- =?utf-8?B?VFN5NDEzRjhwTVU4Uis5clJvN2dKNDFQeTd5c2x0c0VFYlpsekRXRlA5N21v?=
- =?utf-8?B?M253amM2WUI0UnZ5aUV0NE5kcFU4L0dOL3UvMDY3US83RHhGcU4rNUxBOVNL?=
- =?utf-8?B?MEd2NVRzRk4xUWVSbS93TXV1ZVJNN0s1VUlaSHgrUlo4Y1JGblc4L0JQSTQ0?=
- =?utf-8?B?QnVHK0JZY25nUXc5bjlBU1VVSU9aeUZrVCtGVjMwbFdJWS84T2ppRFpSdUN1?=
- =?utf-8?B?TDJFeVpTMmFzOWJKcXdQeXorSW1YYUFXaGloeWQ0cmp4ajhNMjZ5dWRnMFEz?=
- =?utf-8?B?ays5Rks3cExxSEhzcnhyMWxlL1pEUDlRRXJUbVZ6Z2ZnbHdCS281NFdnMTFO?=
- =?utf-8?B?eTQ2S0VCR0g4ay81MDYrY0d0N1RWcE9JZkh0b1BIODQycmw1aVZSeGZYZHV0?=
- =?utf-8?B?cS9VVDBtY0xyR2JONStvbExNL3MwQllaL21BTExpbHRaNGRtc0hFZm9vMEFF?=
- =?utf-8?B?TWc9PQ==?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 
-	ct24NK/JvudxSjsGNeQ6ItJ37AwJQ9b2HEJ5S9OW6a0O00G8UxRmPoEgBBalSWlnTPVRUp1cFjqt4i8wCb/snsGr9MUXbp2PV2XLFJp1FSReN4MYGewaT9VbBNr2gO5M3Jwyb1sZkfBdGb43D7UfdQF2G+T90MwEDmBQ+UeU4GkLqTEdnL/I4mTZ2R1MVjzeowaIp8oV6RtCZ1bodCIgDtQQhSJcqM8pwMBi/XMGEV5cAnJKmI3mGkNAWg8euhjDeq8z5Qp5VQplUtI3h5CTYNaHa4oJmr5s07FclY7U0KIxN+WqPCKTTMqw9zsPQfu3+Ldc1Yd/7cq1X8XobPVMNrPfsIlJG9EV7wgUoqApxCJn2hiv3ys1lrlzflRylaIGlEIxBZl73H5878a50wBj58zYrp+n3mC1CUcV6lU8tjhYvYtrMM4zfhL5y1/Z+3pndq8gPZkpY4Z4571hZU5Y3F3gsn0ULpXj/YghnVB76kgMqVq6rHSgq/3X28f88hygWkRxE4jtfmX9Yv3twL7ucFdwySHTnHkjh/pskR9b0ETtnkvsyM0uNZUI/FepO888eMEcl6o1c71Mb+rbgkbsNeo0k3PcXBzeiAcr1q+VNIQ=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 551975d8-4b40-4292-a105-08dc2e6a0d78
-X-MS-Exchange-CrossTenant-AuthSource: CY8PR10MB7243.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Feb 2024 21:07:00.8722
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 5LvkStLnR0lz8IZE+3VcYWD4BUD6KgcQl8nx4K/svEljgAxC6D2f/spSxjx39IaVgQW8oRB0yBCSTAPPFKfqbCVAo1YU+nqoqkaXLWteYKI=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BLAPR10MB4929
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-02-15_20,2024-02-14_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 bulkscore=0
- mlxlogscore=999 malwarescore=0 mlxscore=0 spamscore=0 suspectscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2402150167
-X-Proofpoint-ORIG-GUID: qv8Kv-IzLj0mmfZMucyu4UrkGNl5vcyb
-X-Proofpoint-GUID: qv8Kv-IzLj0mmfZMucyu4UrkGNl5vcyb
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3774.400.31\))
+Subject: Unable to recover from DataOut timeout while in ERL=0
+Message-Id: <EA1BF689-4BEB-487B-AB99-D4D2275D0F0E@ltx.cc>
+Date: Tue, 5 Mar 2024 11:36:06 +0100
+To: target-devel@vger.kernel.org
+X-Last-TLS-Session-Version: TLSv1.2
 
-On 2/15/24 11:07 AM, Maurizio Lombardi wrote:
-> čt 15. 2. 2024 v 17:44 odesílatel <michael.christie@oracle.com> napsal:
->> Do you need something similar for the pr related dirs/files or how does
->> that work but not this?
->>
-> 
-> I think that in that case it won't be necessary because the pr code is executed
-> by a kernel thread that calls the execute_cmd() callback, not by a
-> user process in kernel context,
-> but I will try and eventually I will report back the findings
-> 
+Hello, everyone,=20
 
-Ignore my comment. I was thinking of something completely different and
-figured out I was wrong when I looked into it.
+i am using a pair of Ubuntu 22.04 AMD EPYC 9124 servers with DRBD =
+Primary/Secondary and iscsi target configuration to serve VMWare ESXi =
+hosts. Everything was working a few month, but i have had two complete =
+freezes recently within 24hrs caused by stuck iscsi targets. Only a =
+complete reboot or failover to the other node can fix this issue. The =
+problem is starting with =E2=80=9EUnable to recover from DataOut =
+timeout=E2=80=9C and then causing a set of many other issues errors, =
+hung_task_timeouts, kernel stack traces at the end. Any idea what might =
+cause this problem?=20
 
-The target parts look ok:
+Environment:
+* Ubuntu 22.04
+* Kernel: 5.15.0-94-generic x86_64
+* DRBD: 9.2.7
+* 1 CPU EPYC 9124, 32GB of RAM
+* Asus RS500A-E12-RS12U/K14PA-U24
+* 4 targets with 5 TB each backend by DRBD and LVM
 
-Reviewed-by: Mike Christie <michael.christie@oracle.com>
+Mar  4 18:23:08 km38033 kernel: [32853.081205] Unable to recover from =
+DataOut timeout while in ERL=3D0, closing iSCSI connection for I_T Nexus =
+iqn.1998-01.com.vmware:km38112-6f3c301b,i,0x00023d000001,iqn.2001-09.com.c=
+ustomer:target2,t,0x01
 
-I have no idea about the creds part. If the patch:
+Mar  4 18:23:13 km38033 kernel: [32857.897105] ABORT_TASK: Found =
+referenced iSCSI task_tag: 756708339
+Mar  4 18:23:13 km38033 kernel: [32857.897144] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 756708339
+Mar  4 18:23:14 km38033 kernel: [32859.382095] Detected MISCOMPARE at =
+offset 20
+Mar  4 18:23:21 km38033 kernel: [32866.464749] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:23:22 km38033 kernel: [32867.481244] Detected MISCOMPARE at =
+offset 13
+Mar  4 18:23:23 km38033 kernel: [32868.000291] Detected MISCOMPARE at =
+offset 13
+Mar  4 18:23:23 km38033 kernel: [32868.335822] Detected MISCOMPARE at =
+offset 13
+Mar  4 18:23:24 km38033 kernel: [32869.176568] Detected MISCOMPARE at =
+offset 13
+Mar  4 18:23:28 km38033 kernel: [32873.047201] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 157801725
+Mar  4 18:23:29 km38033 kernel: [32873.901843] Detected MISCOMPARE at =
+offset 13
+Mar  4 18:23:35 km38033 kernel: [32880.495731] Detected MISCOMPARE at =
+offset 28
+Mar  4 18:23:36 km38033 kernel: [32881.012692] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:23:36 km38033 kernel: [32881.013909] Detected MISCOMPARE at =
+offset 14
+Mar  4 18:23:38 km38033 kernel: [32882.886672] Detected MISCOMPARE at =
+offset 14
+Mar  4 18:27:46 km38033 kernel: [33130.878094] ABORT_TASK: Found =
+referenced iSCSI task_tag: 263906787
+Mar  4 18:27:46 km38033 kernel: [33130.878118] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 263906787
+Mar  4 18:27:47 km38033 kernel: [33131.879914] ABORT_TASK: Found =
+referenced iSCSI task_tag: 756717268
+Mar  4 18:27:47 km38033 kernel: [33131.879943] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 756717268
+Mar  4 18:27:47 km38033 kernel: [33131.880389] ABORT_TASK: Found =
+referenced iSCSI task_tag: 756717269
+Mar  4 18:27:47 km38033 kernel: [33132.179400] ABORT_TASK: Sending =
+TMR_FUNCTION_COMPLETE for ref_tag: 756717269
+Mar  4 18:27:47 km38033 kernel: [33132.180525] ABORT_TASK: Found =
+referenced iSCSI task_tag: 756717304
+Mar  4 18:27:47 km38033 kernel: [33132.180748] ABORT_TASK: Found =
+referenced iSCSI task_tag: 209408054
+Mar  4 18:27:47 km38033 kernel: [33132.180783] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 209408054
+Mar  4 18:27:47 km38033 kernel: [33132.181353] ABORT_TASK: Found =
+referenced iSCSI task_tag: 209408082
+Mar  4 18:27:48 km38033 kernel: [33133.234828] ABORT_TASK: Sending =
+TMR_FUNCTION_COMPLETE for ref_tag: 756717304
+Mar  4 18:27:48 km38033 kernel: [33133.234932] Detected MISCOMPARE at =
+offset 20
+Mar  4 18:27:49 km38033 kernel: [33133.568484] ABORT_TASK: Found =
+referenced iSCSI task_tag: 18127
+Mar  4 18:27:49 km38033 kernel: [33133.568507] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 18127
+Mar  4 18:27:49 km38033 kernel: [33133.575026] ABORT_TASK: Sending =
+TMR_FUNCTION_COMPLETE for ref_tag: 209408082
+Mar  4 18:27:49 km38033 kernel: [33133.845133] ABORT_TASK: Found =
+referenced iSCSI task_tag: 1434712138
+Mar  4 18:27:49 km38033 kernel: [33133.845159] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 1434712138
+Mar  4 18:27:49 km38033 kernel: [33133.845273] ABORT_TASK: Found =
+referenced iSCSI task_tag: 157803718
+Mar  4 18:27:49 km38033 kernel: [33133.845307] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 157803718
+Mar  4 18:27:49 km38033 kernel: [33133.845344] ABORT_TASK: Found =
+referenced iSCSI task_tag: 286437689
+Mar  4 18:27:49 km38033 kernel: [33133.845522] ABORT_TASK: Found =
+referenced iSCSI task_tag: 157803719
+Mar  4 18:27:49 km38033 kernel: [33133.845531] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 286437689
+Mar  4 18:27:49 km38033 kernel: [33133.845967] ABORT_TASK: Found =
+referenced iSCSI task_tag: 286437691
+Mar  4 18:27:51 km38033 kernel: [33135.654498] ABORT_TASK: Sending =
+TMR_FUNCTION_COMPLETE for ref_tag: 286437691
+Mar  4 18:27:51 km38033 kernel: [33135.654987] ABORT_TASK: Sending =
+TMR_FUNCTION_COMPLETE for ref_tag: 157803719
+Mar  4 18:27:51 km38033 kernel: [33135.655087] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 286437697
+Mar  4 18:27:52 km38033 kernel: [33137.235524] ABORT_TASK: Found =
+referenced iSCSI task_tag: 263906810
+Mar  4 18:27:52 km38033 kernel: [33137.408856] ABORT_TASK: Sending =
+TMR_FUNCTION_COMPLETE for ref_tag: 263906810
+Mar  4 18:27:52 km38033 kernel: [33137.409000] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:52 km38033 kernel: [33137.409320] ABORT_TASK: Found =
+referenced iSCSI task_tag: 263906811
+Mar  4 18:27:52 km38033 kernel: [33137.409522] ABORT_TASK: Sending =
+TMR_FUNCTION_COMPLETE for ref_tag: 263906811
+Mar  4 18:27:53 km38033 kernel: [33137.584808] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:53 km38033 kernel: [33137.584843] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:53 km38033 kernel: [33137.584877] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:53 km38033 kernel: [33138.289566] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:53 km38033 kernel: [33138.289721] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:53 km38033 kernel: [33138.289903] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:57 km38033 kernel: [33141.720127] ABORT_TASK: Sending =
+TMR_TASK_DOES_NOT_EXIST for ref_tag: 1434712401
+Mar  4 18:27:58 km38033 kernel: [33142.940133] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:59 km38033 kernel: [33144.323760] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:59 km38033 kernel: [33144.323965] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:27:59 km38033 kernel: [33144.498569] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:28:01 km38033 kernel: [33146.244787] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:28:01 km38033 kernel: [33146.246893] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:28:01 km38033 kernel: [33146.246931] Detected MISCOMPARE at =
+offset 56
+Mar  4 18:28:02 km38033 kernel: [33147.476180] Unable to recover from =
+DataOut timeout while in ERL=3D0, closing iSCSI connection for I_T Nexus =
+iqn.1998-01.com.vmware:km38116-369efe55,i,0x00023d000001,iqn.2001-09.com.c=
+ustomer:target1,t,0x01
+Mar  4 18:39:28 km38033 kernel: [33833.544517] INFO: task iscsi_np:27427 =
+blocked for more than 241 seconds.
+Mar  4 18:39:28 km38033 kernel: [33833.544952]       Tainted: G          =
+ OE     5.15.0-94-generic #104-Ubuntu
+Mar  4 18:39:28 km38033 kernel: [33833.545254] "echo 0 > =
+/proc/sys/kernel/hung_task_timeout_secs" disables this message.
+Mar  4 18:39:28 km38033 kernel: [33833.545547] task:iscsi_np        =
+state:D stack:    0 pid:27427 ppid:     2 flags:0x00004004
+Mar  4 18:39:28 km38033 kernel: [33833.545550] Call Trace:
+Mar  4 18:39:28 km38033 kernel: [33833.545552]  <TASK>
+Mar  4 18:39:28 km38033 kernel: [33833.545554]  __schedule+0x24e/0x590
+Mar  4 18:39:28 km38033 kernel: [33833.545560]  schedule+0x69/0x110
+Mar  4 18:39:28 km38033 kernel: [33833.545562]  =
+schedule_timeout+0x105/0x140
+Mar  4 18:39:28 km38033 kernel: [33833.545564]  ? =
+__kmalloc_track_caller+0x181/0x340
+Mar  4 18:39:28 km38033 kernel: [33833.545569]  ? =
+iscsi_update_param_value+0x28/0x70 [iscsi_target_mod]
+Mar  4 18:39:28 km38033 kernel: [33833.545578]  =
+__wait_for_common+0xae/0x150
+Mar  4 18:39:28 km38033 kernel: [33833.545579]  ? =
+usleep_range_state+0x90/0x90
+Mar  4 18:39:28 km38033 kernel: [33833.545581]  =
+wait_for_completion+0x24/0x30
+Mar  4 18:39:28 km38033 kernel: [33833.545582]  =
+iscsit_stop_session+0x18f/0x1b0 [iscsi_target_mod]
+Mar  4 18:39:28 km38033 kernel: [33833.545589]  =
+iscsi_check_for_session_reinstatement+0x1df/0x280 [iscsi_target_mod]
+Mar  4 18:39:28 km38033 kernel: [33833.545596]  =
+iscsi_target_handle_csg_one+0x128/0x150 [iscsi_target_mod]
+Mar  4 18:39:28 km38033 kernel: [33833.545603]  =
+iscsi_target_do_login+0x71/0xd0 [iscsi_target_mod]
+Mar  4 18:39:28 km38033 kernel: [33833.545609]  =
+iscsi_target_start_negotiation+0x56/0x100 [iscsi_target_mod]
+Mar  4 18:39:28 km38033 kernel: [33833.545615]  =
+__iscsi_target_login_thread+0x2f0/0x620 [iscsi_target_mod]
+Mar  4 18:39:28 km38033 kernel: [33833.545621]  =
+iscsi_target_login_thread+0x24/0x60 [iscsi_target_mod]
+Mar  4 18:39:28 km38033 kernel: [33833.545627]  ? =
+__iscsi_target_login_thread+0x620/0x620 [iscsi_target_mod]
+Mar  4 18:39:28 km38033 kernel: [33833.545633]  kthread+0x12a/0x150
+Mar  4 18:39:28 km38033 kernel: [33833.545636]  ? =
+set_kthread_struct+0x50/0x50
+Mar  4 18:39:28 km38033 kernel: [33833.545638]  ret_from_fork+0x22/0x30
+Mar  4 18:39:28 km38033 kernel: [33833.545641]  </TASK>
+Mar  4 18:41:29 km38033 kernel: [33954.376305] INFO: task =
+iscsi_trx:588744 blocked for more than 120 seconds.
+Mar  4 18:41:29 km38033 kernel: [33954.376560]       Tainted: G          =
+ OE     5.15.0-94-generic #104-Ubuntu
+Mar  4 18:41:29 km38033 kernel: [33954.376811] "echo 0 > =
+/proc/sys/kernel/hung_task_timeout_secs" disables this message.
+Mar  4 18:41:29 km38033 kernel: [33954.377065] task:iscsi_trx       =
+state:D stack:    0 pid:588744 ppid:     2 flags:0x00004004
+Mar  4 18:41:29 km38033 kernel: [33954.377067] Call Trace:
+Mar  4 18:41:29 km38033 kernel: [33954.377067]  <TASK>
+Mar  4 18:41:29 km38033 kernel: [33954.377068]  __schedule+0x24e/0x590
+Mar  4 18:41:29 km38033 kernel: [33954.377070]  schedule+0x69/0x110
+Mar  4 18:41:29 km38033 kernel: [33954.377071]  =
+schedule_timeout+0x87/0x140
+Mar  4 18:41:29 km38033 kernel: [33954.377072]  ? =
+__bpf_trace_tick_stop+0x20/0x20
+Mar  4 18:41:29 km38033 kernel: [33954.377075]  =
+__wait_for_common+0xae/0x150
+Mar  4 18:41:29 km38033 kernel: [33954.377076]  ? =
+usleep_range_state+0x90/0x90
+Mar  4 18:41:29 km38033 kernel: [33954.377078]  =
+wait_for_completion_timeout+0x1d/0x30
+Mar  4 18:41:29 km38033 kernel: [33954.377079]  =
+__transport_wait_for_tasks+0xd3/0x140 [target_core_mod]
+Mar  4 18:41:29 km38033 kernel: [33954.377088]  =
+transport_generic_free_cmd+0x14c/0x190 [target_core_mod]
+Mar  4 18:41:29 km38033 kernel: [33954.377096]  =
+iscsit_free_cmd+0x58/0xd0 [iscsi_target_mod]
+Mar  4 18:41:29 km38033 kernel: [33954.377103]  =
+iscsit_release_commands_from_conn+0x1cd/0x210 [iscsi_target_mod]
+Mar  4 18:41:29 km38033 kernel: [33954.377109]  =
+iscsit_close_connection+0x3bf/0x720 [iscsi_target_mod]
+Mar  4 18:41:29 km38033 kernel: [33954.377115]  =
+iscsit_take_action_for_connection_exit+0x86/0x110 [iscsi_target_mod]
+Mar  4 18:41:29 km38033 kernel: [33954.377122]  =
+iscsi_target_rx_thread+0xba/0x110 [iscsi_target_mod]
+Mar  4 18:41:29 km38033 kernel: [33954.377128]  ? =
+iscsi_target_tx_thread+0x220/0x220 [iscsi_target_mod]
+Mar  4 18:41:29 km38033 kernel: [33954.377134]  kthread+0x12a/0x150
+Mar  4 18:41:29 km38033 kernel: [33954.377135]  ? =
+set_kthread_struct+0x50/0x50
+Mar  4 18:41:29 km38033 kernel: [33954.377137]  ret_from_fork+0x22/0x30
+Mar  4 18:41:29 km38033 kernel: [33954.377139]  </TASK>
 
-commit 581dd69830341d299b0c097fc366097ab497d679
-Author: Thiébaud Weksteen <tweek@google.com>
-Date:   Mon May 2 10:49:52 2022 +1000
+Many thanks in advance.
 
-    firmware_loader: use kernel credentials when reading firmware
+Best regards,
+Holger Amberg
 
-you referenced is the correct way to do it, then it looks ok.
