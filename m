@@ -1,118 +1,116 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC94C6AA7;
-	Fri, 12 Apr 2024 02:06:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.165.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E419D47F51;
+	Mon, 22 Apr 2024 23:54:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1712887570; cv=none; b=lfzVe5HPytpNO1+jfQBnew+nWPzwWLV0ja4xR8QEaUVpwWV97/oyV0tbsz0yhfsWNSqpxmNEEgLAvHuB4xw9UzTwU8l5lW3Tvhf1PWoDMRlHm6WiZWDsCeGFwt9S3iL45yvojpG8z5+SJFKkLZ6CvoYH7+70knn0GVzdlwuAEGo=
+	t=1713830072; cv=none; b=h9A1QudGRAQG5IBwHbOU4ZBEyXsI1gzlq4Bj2eEeGaNAke4r+/iKLGH+rPx7LF4FqE7RmSTOfdPRcIVTu+/+AvMRrEJ50ruOYp+qWteyy5Bavsr0/Zty5F49vdMWvAp2bk9WGfzLDzJiHSA+ONS2v3MRZSPeKnqZRdhUFNNmlDQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1712887570; c=relaxed/simple;
-	bh=aEoL6rKKCvTLMxooTa5IZCl3dhZS8a58XFdV9z0DRDk=;
+	s=arc-20240116; t=1713830072; c=relaxed/simple;
+	bh=KlMbEl0NNUiSxTwSRNqwjjsGlwj+BgTY5HNovbG8Vo0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mMrB3BpoRUU5Vk34oyrX8vEipAsBRp+6wNPhQfIcSoIPuvgQd7WHeDY7sapes01uc7YfaPdVYxH6Vnz4vlocDMXkWveBHid+Cj80EG9tvsoFToRwkBv0SUHONA63eZ8mZEwuhs30KndqL0eW13HDyDADbwPVdvu7a1Kvhbwl1t8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=WM+TyW4r; arc=none smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	 MIME-Version; b=D0zMZ2nRBv52PTb+ysb6Ak98fuyXcemAEmiFfipYZHcNLvNsnGDQ+Rnu7/FgDUP9ZhluCz1oiTwXQ+ntwlrewutnKn0i2GsxZaUkHpRtO0egiY4Eub7kuX8pjdoFBL3Z84DqKK8TfPBF44J5y1wt7gJ/+LTvLLcn6eEDKlEGfe0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lCXYPCdJ; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="WM+TyW4r"
-Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 43C1U0UE014810;
-	Fri, 12 Apr 2024 02:05:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2023-11-20;
- bh=xwYRaxiFWquBhWbskhSYaTqpZAhykH/cmH/6Jc6WzHQ=;
- b=WM+TyW4raQ4ya05K8XioeGRjSwNLzM5SPPG5vRPDFIIq+Y7e5b1/uDFw1uDb5yonfTJB
- hRbcW99ZiLAHZRtDZw01OCuDeIfyqV+00NDqVtOk+sEpRiuom/j65WHj9PCcICjECoHm
- EPa1rXY/2bycPOpse3Uv4oY9EDRe3VM3jgy61jty7GW5/BnXrbu2lCZHT+HNjPXz2RrE
- UAMeSZh0/XsZl3fnCMgPZv6jrCbtFeIKRju9cZChQXIneKbXu2piSp4aQ6KvGc2Z+Kg/
- YYspAeRaHJCR3NtaF5mKXMeiXmYBR2GQcv4eYYnQkJAOHK3f5kesD3Fy069SwqrY2SYl OA== 
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3xax9baq80-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 12 Apr 2024 02:05:35 +0000
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 43C01jPY040068;
-	Fri, 12 Apr 2024 02:05:33 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3xavugmd3k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 12 Apr 2024 02:05:33 +0000
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43C25UFs013100;
-	Fri, 12 Apr 2024 02:05:33 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3xavugmd1x-7;
-	Fri, 12 Apr 2024 02:05:33 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: linux-scsi@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        Doug Gilbert <dgilbert@interlog.com>, Sagi Grimberg <sagi@grimberg.me>,
-        Max Gurtovoy <mgurtovoy@nvidia.com>, linux-rdma@vger.kernel.org,
-        target-devel@vger.kernel.org, Hannes Reinecke <hare@suse.de>,
-        Bart Van Assche <bvanassche@acm.org>, Jonathan Corbet <corbet@lwn.net>,
-        linux-doc@vger.kernel.org
-Subject: Re: [PATCH 0/8] scsi: documentation: clean up docs and fix kernel-doc
-Date: Thu, 11 Apr 2024 22:05:14 -0400
-Message-ID: <171288602656.3729249.13953839600529757224.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240408025425.18778-1-rdunlap@infradead.org>
-References: <20240408025425.18778-1-rdunlap@infradead.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lCXYPCdJ"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBAF6C3277B;
+	Mon, 22 Apr 2024 23:54:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1713830071;
+	bh=KlMbEl0NNUiSxTwSRNqwjjsGlwj+BgTY5HNovbG8Vo0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=lCXYPCdJD1CEdgtszxDR3vgpJBDalYVsCbDBVVtdM/7gbc/vjFDoy5WnPvBoMnJlx
+	 8NQrSol5lXBShwQ/JyVvKm43Srp2LME8rkHDRR2QZnk86IPOih5oG7WCmlS5LvLxtc
+	 kRvYDzUHK6NuDiOC+eu71jX3CyHxdoV6ZajAnq7GknY2/y1RbBvW0YTok4xVvPRihD
+	 tpnystuygoPNjr8Jf01Ql2oPSv9+ZAPfAroRn7O05/2UMFxbZWEuHfawRSHy+0vIVO
+	 JfHcZ9x0Svj5M0TGUkMioU9fpN39SBxNthkjwUQ9Ft5M9kadLK41nUWE6lTaOwk/P7
+	 kKoZEHOGFAkew==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Maurizio Lombardi <mlombard@redhat.com>,
+	Mike Christie <michael.christie@oracle.com>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>,
+	Sasha Levin <sashal@kernel.org>,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.8 14/43] scsi: target: Fix SELinux error when systemd-modules loads the target module
+Date: Mon, 22 Apr 2024 19:14:00 -0400
+Message-ID: <20240422231521.1592991-14-sashal@kernel.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240422231521.1592991-1-sashal@kernel.org>
+References: <20240422231521.1592991-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.8.7
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-04-11_14,2024-04-09_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 mlxscore=0 mlxlogscore=999
- bulkscore=0 suspectscore=0 adultscore=0 spamscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2404010000
- definitions=main-2404120014
-X-Proofpoint-GUID: L0F8yIw-Iyir1sXCL4c_lfKYTx4PnGg0
-X-Proofpoint-ORIG-GUID: L0F8yIw-Iyir1sXCL4c_lfKYTx4PnGg0
 
-On Sun, 07 Apr 2024 19:54:17 -0700, Randy Dunlap wrote:
+From: Maurizio Lombardi <mlombard@redhat.com>
 
-> Clean up some SCSI doc files and fix kernel-doc in 6 header files in
-> include/scsi/.
-> 
-> 
->  [PATCH 1/8] scsi: documentation: clean up overview
->  [PATCH 2/8] scsi: documentation: clean up scsi_mid_low_api.rst
->  [PATCH 3/8] scsi: core: add kernel-doc for scsi_msg_to_host_byte()
->  [PATCH 4/8] scsi: iser: fix @read_stag kernel-doc warning
->  [PATCH 5/8] scsi: libfcoe: fix a slew of kernel-doc warnings
->  [PATCH 6/8] scsi: core: add function return kernel-doc for 2 functions
->  [PATCH 7/8] scsi: scsi_transport_fc: add kernel-doc for function return
->  [PATCH 8/8] scsi: scsi_transport_srp: fix a couple of kernel-doc warnings
-> 
-> [...]
+[ Upstream commit 97a54ef596c3fd24ec2b227ba8aaf2cf5415e779 ]
 
-Applied to 6.10/scsi-queue, thanks!
+If the systemd-modules service loads the target module, the credentials of
+that userspace process will be used to validate the access to the target db
+directory.  SELinux will prevent it, reporting an error like the following:
 
-[1/8] scsi: documentation: clean up scsi_mid_low_api.rst
-      https://git.kernel.org/mkp/scsi/c/c3bf7774fa24
-[2/8] scsi: documentation: clean up overview
-      https://git.kernel.org/mkp/scsi/c/293fcea539b5
-[3/8] scsi: core: add kernel-doc for scsi_msg_to_host_byte()
-      https://git.kernel.org/mkp/scsi/c/fcf8829fd993
-[4/8] scsi: iser: fix @read_stag kernel-doc warning
-      https://git.kernel.org/mkp/scsi/c/11d99e91846a
-[5/8] scsi: libfcoe: fix a slew of kernel-doc warnings
-      https://git.kernel.org/mkp/scsi/c/d9c911824145
-[6/8] scsi: core: add function return kernel-doc for 2 functions
-      https://git.kernel.org/mkp/scsi/c/8d523f0f5383
-[7/8] scsi: scsi_transport_fc: add kernel-doc for function return
-      https://git.kernel.org/mkp/scsi/c/007c04e53526
-[8/8] scsi: scsi_transport_srp: fix a couple of kernel-doc warnings
-      https://git.kernel.org/mkp/scsi/c/a2530eb748ff
+kernel: audit: type=1400 audit(1676301082.205:4): avc: denied  { read }
+for  pid=1020 comm="systemd-modules" name="target" dev="dm-3"
+ino=4657583 scontext=system_u:system_r:systemd_modules_load_t:s0
+tcontext=system_u:object_r:targetd_etc_rw_t:s0 tclass=dir permissive=0
 
+Fix the error by using the kernel credentials to access the db directory
+
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+Link: https://lore.kernel.org/r/20240215143944.847184-2-mlombard@redhat.com
+Reviewed-by: Mike Christie <michael.christie@oracle.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/target/target_core_configfs.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index c1fbcdd161826..c40217f44b1bc 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -3672,6 +3672,8 @@ static int __init target_core_init_configfs(void)
+ {
+ 	struct configfs_subsystem *subsys = &target_core_fabrics;
+ 	struct t10_alua_lu_gp *lu_gp;
++	struct cred *kern_cred;
++	const struct cred *old_cred;
+ 	int ret;
+ 
+ 	pr_debug("TARGET_CORE[0]: Loading Generic Kernel Storage"
+@@ -3748,11 +3750,21 @@ static int __init target_core_init_configfs(void)
+ 	if (ret < 0)
+ 		goto out;
+ 
++	/* We use the kernel credentials to access the target directory */
++	kern_cred = prepare_kernel_cred(&init_task);
++	if (!kern_cred) {
++		ret = -ENOMEM;
++		goto out;
++	}
++	old_cred = override_creds(kern_cred);
+ 	target_init_dbroot();
++	revert_creds(old_cred);
++	put_cred(kern_cred);
+ 
+ 	return 0;
+ 
+ out:
++	target_xcopy_release_pt();
+ 	configfs_unregister_subsystem(subsys);
+ 	core_dev_release_virtual_lun0();
+ 	rd_module_exit();
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.43.0
+
