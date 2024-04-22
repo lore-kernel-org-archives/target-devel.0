@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E419D47F51;
-	Mon, 22 Apr 2024 23:54:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CFC416ABC1;
+	Mon, 22 Apr 2024 23:56:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713830072; cv=none; b=h9A1QudGRAQG5IBwHbOU4ZBEyXsI1gzlq4Bj2eEeGaNAke4r+/iKLGH+rPx7LF4FqE7RmSTOfdPRcIVTu+/+AvMRrEJ50ruOYp+qWteyy5Bavsr0/Zty5F49vdMWvAp2bk9WGfzLDzJiHSA+ONS2v3MRZSPeKnqZRdhUFNNmlDQ=
+	t=1713830190; cv=none; b=hQwko+bE7VLizKeJGQ592d9TwQik8VrXzlTnzeYOG7eUgE87VGDrCOdph8BwOD9Xjb9201lHtNR4zyQshmDr+dq2xDGiezkdOQwDzWn/MycVFPwIDebmRKMmTnMBePok0vSHGm1XKfr0yHLrF5sqLnn+L4Kz4QtvNVLeT5n3V10=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713830072; c=relaxed/simple;
-	bh=KlMbEl0NNUiSxTwSRNqwjjsGlwj+BgTY5HNovbG8Vo0=;
+	s=arc-20240116; t=1713830190; c=relaxed/simple;
+	bh=ORskC7QabFrXJTepVrSUHDaq0bxupimv57Ilt7IRBYY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=D0zMZ2nRBv52PTb+ysb6Ak98fuyXcemAEmiFfipYZHcNLvNsnGDQ+Rnu7/FgDUP9ZhluCz1oiTwXQ+ntwlrewutnKn0i2GsxZaUkHpRtO0egiY4Eub7kuX8pjdoFBL3Z84DqKK8TfPBF44J5y1wt7gJ/+LTvLLcn6eEDKlEGfe0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lCXYPCdJ; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=baZfFBr4HkmnoNbrHuqfwc2KvpxUUea6mzfm+YiU6b9qb2Rab0auJ9yqS6ixS/AdMcEy0+OKAneMFyOzHPIR+kDSImiDEwY/2/RvBoDAkiii/qHxuPY0hgNZS96ZCukAf/dHcskXL1h/5KKmYgNem68GoJD+hCYDkX69KNZn+F8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NC2SVpG0; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lCXYPCdJ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBAF6C3277B;
-	Mon, 22 Apr 2024 23:54:30 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NC2SVpG0"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DAA3CC113CC;
+	Mon, 22 Apr 2024 23:56:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713830071;
-	bh=KlMbEl0NNUiSxTwSRNqwjjsGlwj+BgTY5HNovbG8Vo0=;
+	s=k20201202; t=1713830190;
+	bh=ORskC7QabFrXJTepVrSUHDaq0bxupimv57Ilt7IRBYY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=lCXYPCdJD1CEdgtszxDR3vgpJBDalYVsCbDBVVtdM/7gbc/vjFDoy5WnPvBoMnJlx
-	 8NQrSol5lXBShwQ/JyVvKm43Srp2LME8rkHDRR2QZnk86IPOih5oG7WCmlS5LvLxtc
-	 kRvYDzUHK6NuDiOC+eu71jX3CyHxdoV6ZajAnq7GknY2/y1RbBvW0YTok4xVvPRihD
-	 tpnystuygoPNjr8Jf01Ql2oPSv9+ZAPfAroRn7O05/2UMFxbZWEuHfawRSHy+0vIVO
-	 JfHcZ9x0Svj5M0TGUkMioU9fpN39SBxNthkjwUQ9Ft5M9kadLK41nUWE6lTaOwk/P7
-	 kKoZEHOGFAkew==
+	b=NC2SVpG0HACxoKLptMS6fxBJHb1NUyTbho1aY7FMYyME4TEeYeVVrbbfDrEheO2Sc
+	 NMqtkED8bbv2+Irye+nVisE/WVngqhe4HmxUBZCg2UGwKUj+Jv/ntcteFxRgoHctX0
+	 xDsTm8aT5vQzWRvgkLk5bzh1qf9jTEdX3EgxoQfEnRs0CsQ0KHE6nPxhqAEWAxfCRA
+	 2VOpY8tbrdatbZTdWtwk8yhxvAm2+iyWz1Qe3EoXykhNCBs5nFmBaJneCb9s0BmKvl
+	 Gb7xzR80WLfzFXP1NVOGbQWo6hyeh7IChB1G0lUsv8h8ZvV8YkJfFON2LcImDokVff
+	 We2Saa3DX6OkQ==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -35,12 +35,12 @@ Cc: Maurizio Lombardi <mlombard@redhat.com>,
 	Sasha Levin <sashal@kernel.org>,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.8 14/43] scsi: target: Fix SELinux error when systemd-modules loads the target module
-Date: Mon, 22 Apr 2024 19:14:00 -0400
-Message-ID: <20240422231521.1592991-14-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.6 11/29] scsi: target: Fix SELinux error when systemd-modules loads the target module
+Date: Mon, 22 Apr 2024 19:16:52 -0400
+Message-ID: <20240422231730.1601976-11-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240422231521.1592991-1-sashal@kernel.org>
-References: <20240422231521.1592991-1-sashal@kernel.org>
+In-Reply-To: <20240422231730.1601976-1-sashal@kernel.org>
+References: <20240422231730.1601976-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -49,7 +49,7 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.8.7
+X-stable-base: Linux 6.6.28
 Content-Transfer-Encoding: 8bit
 
 From: Maurizio Lombardi <mlombard@redhat.com>
@@ -77,10 +77,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 12 insertions(+)
 
 diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index c1fbcdd161826..c40217f44b1bc 100644
+index d5860c1c1f469..9a88774836c9d 100644
 --- a/drivers/target/target_core_configfs.c
 +++ b/drivers/target/target_core_configfs.c
-@@ -3672,6 +3672,8 @@ static int __init target_core_init_configfs(void)
+@@ -3634,6 +3634,8 @@ static int __init target_core_init_configfs(void)
  {
  	struct configfs_subsystem *subsys = &target_core_fabrics;
  	struct t10_alua_lu_gp *lu_gp;
@@ -89,7 +89,7 @@ index c1fbcdd161826..c40217f44b1bc 100644
  	int ret;
  
  	pr_debug("TARGET_CORE[0]: Loading Generic Kernel Storage"
-@@ -3748,11 +3750,21 @@ static int __init target_core_init_configfs(void)
+@@ -3710,11 +3712,21 @@ static int __init target_core_init_configfs(void)
  	if (ret < 0)
  		goto out;
  
