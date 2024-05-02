@@ -1,116 +1,173 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2422E200106;
-	Mon, 22 Apr 2024 23:59:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 0906C25753;
+	Thu,  2 May 2024 20:34:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1713830369; cv=none; b=nFQT5k2CbU3PBPqBvczgTJwapQTBswGfh/PcILaXAzzMwKLv5r5+ACvcjtC9LYZmpwa+XtrvHwoQa5XEeC4oJZjrFHKp64zBzUN7KiHHQDhjZ37du4aWALphCbYhkdkuWTpj1mzBfhcRFUhUksmLUwGrw4aTaptSEUWKOVARW2I=
+	t=1714682081; cv=none; b=Vzvk7O6L0tnqSp1qxBljXH2P23K+Hm4TDsu0SgExcN+E7tmnwXvFHq//ASfhX8MFM1D7Nnb3ufSepl4JkHhejP2f02G2vXhm8EgJnChfM5BE0m4HpakQwEIW4DBrQqrsv9MQskmpihglarb+A0PYViIfOFaqKmBfOHtWIywFkGo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1713830369; c=relaxed/simple;
-	bh=IXYU0oV9HyFUX2KPKaztr5WrKO/mFdj3zWK9i50s2Eo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PEQnX354qdmTiCXURbUa2Phkm9yVUxNL8KUKzRdvg3ZXclktnqr6EL7ZeL8AdYDXFtvEk5TJzDY2G9IOPqwBCrYmSETLa4r25GnCJji15o/z99rVQSqs+QLNyfKG9vVKTEBiofBr7YCoXQW+/eiO47drq7vmPdVZQ7dauwQV8/w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=nkZkQzZ4; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1714682081; c=relaxed/simple;
+	bh=ttXSEqgNaGYlbpHkS2ay2w+BGg6nbkrWQ/iPHovZYb8=;
+	h=From:To:Cc:Subject:Date:Message-Id; b=Nf8UYrVA/6K6uQGmSg3rgyOh0Mlm/IfaXNdIoYR1gkFRIfy6Hg+ZFcCvFCuL173igQFQKxhdrio/cJqA2vXtke/rUr+tR2otAYPj/GUuQVDLSLlfKGEFRPMkvyDrs8T/le7PQT30lXZeOR/5MakFOGCdI++MXaxcAK7aaQZLUV4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=R1Az1bhb; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="nkZkQzZ4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B2BCC2BD11;
-	Mon, 22 Apr 2024 23:59:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713830369;
-	bh=IXYU0oV9HyFUX2KPKaztr5WrKO/mFdj3zWK9i50s2Eo=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=nkZkQzZ4rz60OY1j0X8+PRInHoJ2KKVkLFDmyxwGWepwPDQML1PRSv/oSYoNZGBdf
-	 BlOB68MtstglAW9fwDgJL0PwxA4ADebXfxuNmlfUbq9ugdU/vwIrslynU2oxevL7q/
-	 f+PprwADx/AJ7vdjGtdD+MzP3c//x5Nclhsw4GRC4bcJomliEeZEYr1Cxy2Ymt4nFR
-	 UX0fPJF45OLWdgizEufhrvdFBghjEu7IIbSzD5g4ZX6ezCYyTcXOoH250/sMrG0a8v
-	 WhcTlnKFvs58XDB25UcWfeGJkfBLKwjuWTx+idpm2E581SLluPgR2pB74rOy3/dNaP
-	 vRk+5JNoRp4MQ==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Maurizio Lombardi <mlombard@redhat.com>,
-	Mike Christie <michael.christie@oracle.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	Sasha Levin <sashal@kernel.org>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 5/7] scsi: target: Fix SELinux error when systemd-modules loads the target module
-Date: Mon, 22 Apr 2024 19:20:37 -0400
-Message-ID: <20240422232040.1616527-5-sashal@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240422232040.1616527-1-sashal@kernel.org>
-References: <20240422232040.1616527-1-sashal@kernel.org>
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="R1Az1bhb"
+Received: from apais-vm1.0synte4vioeebbvidf5q0vz2ua.xx.internal.cloudapp.net (unknown [52.183.86.224])
+	by linux.microsoft.com (Postfix) with ESMTPSA id 74FF9206B4F6;
+	Thu,  2 May 2024 13:34:38 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 74FF9206B4F6
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1714682078;
+	bh=+lQIkPk/QRwGLvJaABVHpfk2bsKn+OK5GGtbW+NWBq4=;
+	h=From:To:Cc:Subject:Date:From;
+	b=R1Az1bhbZ1U2kukMUltUxFXqjNQs5oqcLebOvX2J+TwfYcx8ex6Pa/3lD1SFfvyzF
+	 gMPhr48V7XMiAp50rN6k+ip0/k71dY1VVjcNEUNkC1FzobY1A7jEdLnBmFC0t3EHrl
+	 3ClkqKrgfg1QAvwKmn1v7IZ3aVQJFD6N2lqMO0zs=
+From: Allen Pais <apais@linux.microsoft.com>
+To: linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	target-devel@vger.kernel.org,
+	megaraidlinux.pdl@broadcom.com,
+	jejb@linux.ibm.com,
+	hare@suse.com,
+	martin.petersen@oracle.com,
+	linuxdrivers@attotech.com,
+	tyreld@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	aneesh.kumar@kernel.org,
+	naveen.n.rao@linux.ibm.com,
+	artur.paszkiewicz@intel.co,
+	kashyap.desai@broadcom.com,
+	sumit.saxena@broadcom.com,
+	shivasharan.srikanteshwara@broadcom.com,
+	chandrakanth.patil@broadcom.com,
+	jinpu.wang@cloud.ionos.com
+Subject: [PATCH 0/1] Convert tasklets to bottom half workqueues
+Date: Thu,  2 May 2024 20:34:32 +0000
+Message-Id: <20240502203433.15811-1-apais@linux.microsoft.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 4.19.312
-Content-Transfer-Encoding: 8bit
 
-From: Maurizio Lombardi <mlombard@redhat.com>
+I am submitting this patch which converts instances of tasklets
+in drivers/scsi/* to bottom half workqueues. I appreciate your
+feedback and suggestion on the changes.
 
-[ Upstream commit 97a54ef596c3fd24ec2b227ba8aaf2cf5415e779 ]
+Note: The patch is only compile tested.
 
-If the systemd-modules service loads the target module, the credentials of
-that userspace process will be used to validate the access to the target db
-directory.  SELinux will prevent it, reporting an error like the following:
+In the patcheset, you will notice *FIXME* in two places:
+1. pm8001/pm8001_init.c @ pm8001_work(struct work_struct *t)
+2. pmcraid.c @ pmcraid_work_function(struct work_struct *t)
 
-kernel: audit: type=1400 audit(1676301082.205:4): avc: denied  { read }
-for  pid=1020 comm="systemd-modules" name="target" dev="dm-3"
-ino=4657583 scontext=system_u:system_r:systemd_modules_load_t:s0
-tcontext=system_u:object_r:targetd_etc_rw_t:s0 tclass=dir permissive=0
+The current implementation limits context-aware processing
+within work functions due to the lack of a mechanism to identify
+the source work_struct in the array. The proposed solution wraps
+each work_struct with a struct work_wrapper, adding crucial context
+like the array index and a reference to the parent data structure.
 
-Fix the error by using the kernel credentials to access the db directory
+Ex:
 
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
-Link: https://lore.kernel.org/r/20240215143944.847184-2-mlombard@redhat.com
-Reviewed-by: Mike Christie <michael.christie@oracle.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/target/target_core_configfs.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+#define SOME_CONSTANT 10
+struct xxx_data {
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index f6b1549f41422..10fbfa7df46ab 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -3240,6 +3240,8 @@ static int __init target_core_init_configfs(void)
- {
- 	struct configfs_subsystem *subsys = &target_core_fabrics;
- 	struct t10_alua_lu_gp *lu_gp;
-+	struct cred *kern_cred;
-+	const struct cred *old_cred;
- 	int ret;
- 
- 	pr_debug("TARGET_CORE[0]: Loading Generic Kernel Storage"
-@@ -3316,11 +3318,21 @@ static int __init target_core_init_configfs(void)
- 	if (ret < 0)
- 		goto out;
- 
-+	/* We use the kernel credentials to access the target directory */
-+	kern_cred = prepare_kernel_cred(&init_task);
-+	if (!kern_cred) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+	old_cred = override_creds(kern_cred);
- 	target_init_dbroot();
-+	revert_creds(old_cred);
-+	put_cred(kern_cred);
- 
- 	return 0;
- 
- out:
-+	target_xcopy_release_pt();
- 	configfs_unregister_subsystem(subsys);
- 	core_dev_release_virtual_lun0();
- 	rd_module_exit();
+.....
+struct work_struct work[SOME_CONSTANT]:
+.....
+};
+
+The xxx_data module currently uses an array of work_structs
+for scheduling work, but it lacks the ability to identify which
+array element is associated with a specific invocation of the work
+function. This limitation prevents the execution of context-specific
+actions based on the source of the work request.
+
+The proposed solution is to introduce a struct work_wrapper that
+encapsulates each work_struct along with additional metadata,
+including an index and a pointer to the parent xxx_data structure.
+This enhancement allows the work function to access necessary
+context information.
+
+Changes:
+
+1. Definition of struct work_wrapper:
+
+struct work_wrapper {
+    struct work_struct work;
+    struct xxx_data *data;
+    int index;
+};
+
+struct xxx_data {
+    struct work_wrapper work[SOME_CONSTANT];
+};
+
+During initialization:
+
+for (int i = 0; i < SOME_CONSTANT; i++) {
+    p->work[i].data = p;
+    p->work[i].index = i;
+    INIT_WORK(&p->work[i].work, work_func);
+}
+
+And it's usage in the handler:
+
+void work_func(struct work_struct *t)
+{
+    struct work_wrapper *wrapper = from_work(wrapper, t, work);
+    struct xxx_data *a = wrapper->data;
+    int index = wrapper->index;
+
+    ....
+}
+
+If the above is solution is acceptable, I can have the same
+incorporated in version 2.
+
+Thanks.
+
+Allen Pais (1):
+  [RFC] scsi: Convert from tasklet to BH workqueue
+
+ drivers/scsi/aic7xxx/aic7xxx_osm.c          |  2 +-
+ drivers/scsi/aic94xx/aic94xx_hwi.c          | 14 ++--
+ drivers/scsi/aic94xx/aic94xx_hwi.h          |  5 +-
+ drivers/scsi/aic94xx/aic94xx_scb.c          | 36 +++++-----
+ drivers/scsi/aic94xx/aic94xx_task.c         | 14 ++--
+ drivers/scsi/aic94xx/aic94xx_tmf.c          | 34 +++++-----
+ drivers/scsi/esas2r/esas2r.h                | 12 ++--
+ drivers/scsi/esas2r/esas2r_init.c           | 14 ++--
+ drivers/scsi/esas2r/esas2r_int.c            | 18 ++---
+ drivers/scsi/esas2r/esas2r_io.c             |  2 +-
+ drivers/scsi/esas2r/esas2r_main.c           | 16 ++---
+ drivers/scsi/ibmvscsi/ibmvfc.c              | 16 ++---
+ drivers/scsi/ibmvscsi/ibmvfc.h              |  3 +-
+ drivers/scsi/ibmvscsi/ibmvscsi.c            | 16 ++---
+ drivers/scsi/ibmvscsi/ibmvscsi.h            |  3 +-
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c    | 15 ++---
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.h    |  3 +-
+ drivers/scsi/isci/host.c                    | 12 ++--
+ drivers/scsi/isci/host.h                    |  8 +--
+ drivers/scsi/isci/init.c                    |  4 +-
+ drivers/scsi/megaraid/mega_common.h         |  5 +-
+ drivers/scsi/megaraid/megaraid_mbox.c       | 21 +++---
+ drivers/scsi/megaraid/megaraid_sas.h        |  4 +-
+ drivers/scsi/megaraid/megaraid_sas_base.c   | 32 +++++----
+ drivers/scsi/megaraid/megaraid_sas_fusion.c | 16 ++---
+ drivers/scsi/mvsas/mv_init.c                | 27 ++++----
+ drivers/scsi/mvsas/mv_sas.h                 |  9 +--
+ drivers/scsi/pm8001/pm8001_init.c           | 57 ++++++++--------
+ drivers/scsi/pm8001/pm8001_sas.h            |  2 +-
+ drivers/scsi/pmcraid.c                      | 75 ++++++++++-----------
+ drivers/scsi/pmcraid.h                      |  5 +-
+ 31 files changed, 249 insertions(+), 251 deletions(-)
+
 -- 
-2.43.0
+2.17.1
 
