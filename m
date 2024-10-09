@@ -1,59 +1,59 @@
-Received: from mail-lj1-f181.google.com (mail-lj1-f181.google.com [209.85.208.181])
+Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com [209.85.208.41])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4F4C55E53
-	for <target-devel@vger.kernel.org>; Wed,  9 Oct 2024 06:30:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0820884E18
+	for <target-devel@vger.kernel.org>; Wed,  9 Oct 2024 06:32:09 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.41
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728455435; cv=none; b=F9/cEOVTCzEMlLPGoTdQHj1u3Rnfcud/2EwMxdReARyPc7zRw84dHiAZSltQX3bI6bul1oODgDlg1d2NrPBTKhvjggK9aXhYcdmviZqsPJbE21SD/U1/KR6zBEk1aaxJp0zMSxryULHOG4mxVx00iZ7nrlWyH0RSt3Co0B8ogvM=
+	t=1728455532; cv=none; b=mfyXZm2SUAx/JFo/E68kroec+Eb2IiGymSsStVF4agmzEJwsoCQbxIOKCyaQCNnDQNJzlKnmMyJdeg13XsSTnMOM6EVurktEArWoREKG9kjAvGQJBLA+qopDm0h17TI45NjFwJ620AZ/DXjq13kq72CXnCB+G62QVP5BuX6sj+I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728455435; c=relaxed/simple;
-	bh=UA+nhOKrvPaVSedr02lSqCKSfRhowcU0PUDZ58k9fRs=;
+	s=arc-20240116; t=1728455532; c=relaxed/simple;
+	bh=R0gUvxwSv1A4XoB1T5evhfuqxPVo1TkeJSTpTi9sPuY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kYrSnh2xtioDhStmKjYeew6QKWXJEHIB/0g0HtUDeocBqbcblB1KAMD9B5M/mBYCnRyRu3oW3I++S3n+DxJStmKEMqlyf6RND9O5BTqE5bZwgyA8HjOC/wlJXdv0ytzXXZsZN0IenMDJjd0d/rziCJ6W/SzR5jtasRd73F/6/4U=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=SGdKnp6+; arc=none smtp.client-ip=209.85.208.181
+	 In-Reply-To:Content-Type; b=Kz1SP75h3K/85bpxWbik0eKsxyqppE+/e9LAyO6XA2IRDQeBO+h4nRGBQVfUHrR/Tz4TMoNzuBtqGMS0zTvIFdr4tAEtTWEtOI0+siXBv7h16T8e8PBM4Kbwdoec2AnOmu+b3cgkd/l7HzeMXnrsE1SfPy5ExIFA80CXU86w1/I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=OctRa8PT; arc=none smtp.client-ip=209.85.208.41
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="SGdKnp6+"
-Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-2fb18f14242so4030631fa.3
-        for <target-devel@vger.kernel.org>; Tue, 08 Oct 2024 23:30:32 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="OctRa8PT"
+Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-5c9150f9ed4so1300589a12.0
+        for <target-devel@vger.kernel.org>; Tue, 08 Oct 2024 23:32:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1728455431; x=1729060231; darn=vger.kernel.org;
+        d=suse.com; s=google; t=1728455528; x=1729060328; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=BT61mqzWa/Vplik9tb6XjJgFQUw+Q5nF5lXcNmSEzsU=;
-        b=SGdKnp6+W8ukGKnJ2epD459rmAP7VqP5mXBy18ZF/wadxzv76zaxSNX3cxHR/eAcsk
-         4lzOHeXm1fOV8rVstv/fd49hxqFCmwGhtXDf1yfmrERmLjcNKehHlxTbXC3IiygMQKUn
-         3S4a0IZswKwciZuJHcc2gd9Dl32ifwl2e5/etCIIRJOykrBFtZQWA9in0U5/5CczYS9M
-         skKxKNgj0usG1PukLyw5SLoxGGs4lm3hIZRp9bkPvPjLUVoT5Jp4RZj32cslaNlGQrfe
-         syW97ZPmz2NdsMxBMazahAbPQBd9snxzWCJw7xOKBLPc0EirBuQiphGDuxlJprTJi77L
-         +xlQ==
+        bh=xrlBK00E06m+Xyn4M4YQ83K424bss7id65740TmKjwY=;
+        b=OctRa8PTv+N5PrEGsbmRkCoqe/HGQMGRuAWDLrLN/PDHX1dQhgKwSZedLFutRo6Uu0
+         STUiqEcy+UVTtKIK0AGn42OUp4ewtPrWnZt8Z78BSSUZvWeRaWwEGf53Mr8AslnwFgp0
+         kJyU8j9kafVX/uzdMXhkgES25ZCMFM6yXPa1+qlXkfiXFctNQ1IKNT63qyiuZFORI8rp
+         xDNZsAgTXSrRK5UkECmp/38y7QxuBaaAciFtDxtYjyKVnT7Vw+Qgev+Pu2uYTnC8yXwQ
+         JxXf6PIEd6siJ9hvzDv+Nnm5SdVJMDkMOO8NpqZLQS0idhCgZUzZsQdCMdg+yZP9/GfV
+         /r2A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1728455431; x=1729060231;
+        d=1e100.net; s=20230601; t=1728455528; x=1729060328;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=BT61mqzWa/Vplik9tb6XjJgFQUw+Q5nF5lXcNmSEzsU=;
-        b=lIirqe9L9+IlpJHS8+p16ua/mZ106Tq17fzzrocxMe4tBZ5aC5ctm3lzjVMe1uxpC6
-         PJ7Mc8BrJ7TLKdYCDC3deqebzRBqsXx0ePcL272nDMKTFI1NWjJwxwqAS4HW4TiIcV7f
-         zJROZ9obtdLwFkxtNf3sAS3JSDpx7XG5XokEh+WiIvBaLO6Y+RO2yGdKlqAnYkWKKCA+
-         wOP9oBh1hfugBuuPiq2OTkjNX0RacwQTnK1mbLps+JpAVjt7AX3Smj6kEe+3qpI02KcS
-         qGkafrMhBX65LYWKJ8s35Z8Vd2/FeQfwdBlgb/VF6+oYbce9Ryb12oxoSSrb/0cLnIvH
-         2Zog==
-X-Forwarded-Encrypted: i=1; AJvYcCXiBMvWlLN/UCHXejxN0sw2QOFdDq/nuKyAxLWPdEgwe8xvAFXVtva8VQTTIGYRzwcDAZCn8E2cxN4kTo8=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzWdSyqvRdeDgKxk9Mj/hn6kvS1qX+TZsk81Fid5oER/XoLsJxX
-	AjVgLYK/KnI94ftTzeeiyADd5zbjQBn9f4iCA+GiUtV7M0nQ+8N0y9QZmYhjrlA=
-X-Google-Smtp-Source: AGHT+IFnss7Rt8sKnZ+AYU3P80OInifkc1mksDwCq/WzXeOIAU7NW2wbqD0zcKMnC0fsN6+zzj4rmg==
-X-Received: by 2002:a05:6512:1090:b0:533:455c:8a49 with SMTP id 2adb3069b0e04-539c4948d61mr642592e87.38.1728455430661;
-        Tue, 08 Oct 2024 23:30:30 -0700 (PDT)
+        bh=xrlBK00E06m+Xyn4M4YQ83K424bss7id65740TmKjwY=;
+        b=gJBlkzVHDNbDKDHGgb1DeMj8Ws3ctu5pXj8tFrnKYBNmrFVMsf8A1jP4kyAlDSH0Mw
+         Ddkc/ijrsUpI2uMC7HS44bXCOpVthDR9G/fynz5pqIw2Kxs0WsCmGUnAyvd7aaXBaazh
+         02w9svjEI6331eZSmFrn01zP35nLBA2/8rmytAzJcA6K4cwmFhhNUZb1YUtnyyW6tnj7
+         eQwWyg/8JOiskau+Q5+GkdD8CVy9XkauVwEOE4Q5Kvx32VgEHSKBKV1m12K35jFTm9Xk
+         OKqwS6MW4Ja24NLwk20v2rFiC6mFatrLGQEpY0BZQOtf79MwfCeKeD4k6JOGOS+1amHr
+         2Xdw==
+X-Forwarded-Encrypted: i=1; AJvYcCUJemdlZq9wLTbY2vyDbWQKwgUk/lh/kiwEMNysunkGMCBCPSzl1RB6PsDVTCvPwUIEPi3WxgwKjZhnvtk=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxEuq/LslpbGR5Kg6pxaC2K+0kl6UaTcf7LLHe2TQCj9y/7+D91
+	f+Jy7o7LrbE66/az2Mm2eln1DkvksPexTp7+aElWWPQuvQD0hYltPOHRhxQdjxU=
+X-Google-Smtp-Source: AGHT+IF1ch/zlHLFvZnA537gd6NerYD1w+UTbuG6UhIr+ue/n1LS9w7GlBYhfU0kWo9/NodgFhvh3g==
+X-Received: by 2002:a17:907:e20c:b0:a99:49b0:e5b2 with SMTP id a640c23a62f3a-a998d117e39mr117766366b.3.1728455528147;
+        Tue, 08 Oct 2024 23:32:08 -0700 (PDT)
 Received: from ?IPV6:2001:a61:2a51:d701:2d49:fdc9:7cfb:5cc8? ([2001:a61:2a51:d701:2d49:fdc9:7cfb:5cc8])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5c8e05bd4dcsm5072933a12.49.2024.10.08.23.30.29
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a9936bc91f4sm578785466b.56.2024.10.08.23.32.07
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 08 Oct 2024 23:30:30 -0700 (PDT)
-Message-ID: <ee878956-852b-4be6-b7f9-94cdea5e94dd@suse.com>
-Date: Wed, 9 Oct 2024 08:30:29 +0200
+        Tue, 08 Oct 2024 23:32:07 -0700 (PDT)
+Message-ID: <3b57fcc4-919f-4e50-80a4-04da24f61857@suse.com>
+Date: Wed, 9 Oct 2024 08:32:06 +0200
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -61,7 +61,7 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] scsi: qla2xxx: Drop starvation counter on success
+Subject: Re: [PATCH 2/3] scsi: qla2xxx: make target send correct LOGO
 To: Anastasia Kovaleva <a.kovaleva@yadro.com>, target-devel@vger.kernel.org
 Cc: njavali@marvell.com, GR-QLogic-Storage-Upstream@marvell.com,
  James.Bottomley@HansenPartnership.com, martin.petersen@oracle.com,
@@ -69,76 +69,72 @@ Cc: njavali@marvell.com, GR-QLogic-Storage-Upstream@marvell.com,
  himanshu.madhani@cavium.com, linux-scsi@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux@yadro.com
 References: <20241008132402.26164-1-a.kovaleva@yadro.com>
- <20241008132402.26164-2-a.kovaleva@yadro.com>
+ <20241008132402.26164-3-a.kovaleva@yadro.com>
 Content-Language: en-US
 From: Hannes Reinecke <hare@suse.com>
-In-Reply-To: <20241008132402.26164-2-a.kovaleva@yadro.com>
+In-Reply-To: <20241008132402.26164-3-a.kovaleva@yadro.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 On 10/8/24 15:24, Anastasia Kovaleva wrote:
-> Long-lived sessions under high load can accumulate a starvation counter,
-> and the current implementation does not allow this counter to be reset
-> during an active session.
+> Upon removing the ACL from the target, it sends a LOGO command to the
+> initiator to break the connection. But HBA fills port_name and port_id
+> of the LOGO command with all zeroes, which is not valid. The initiator
+> sends a reject for this command, but it is not being processed on the
+> target, since it assumes LOGO can never fail. This leaves a system in a
+> state where the initiator thinks it is still logged in to the target and
+> can send commands to it, but the target ignores all incoming commands
+> from this initiator.
 > 
-> If HBA sends correct ATIO IOCB, then it has enough resources to process
-> commands and we should not call ISP recovery.
+> If, in such a situation, the initiator sends some command (e.g. during a
+> scan), after not receiving a response for a timeout duration, it sends
+> ABORT for the command. After a timeout on receiving an ABORT response,
+> the initiator sends LOGO to the target. Only after that, the initiator
+> can successfully relogin to the target and restore the connection. In
+> the end, this whole situation hangs the system for approximately a
+> minute.
 > 
-> Cc: stable@vger.kernel.org
-> Fixes: ead038556f64 ("qla2xxx: Add Dual mode support in the driver")
+> By default, the driver sends a LOGO command to HBA filling only port_id,
+> expecting HBA to match port_id with the correct port_name from it's
+> internal table. HBA doesn't do that, instead filling these fields with
+> all zeroes.
+> 
+> This patch makes the driver send a LOGO command to HBA with port_name
+> and port_id in the I/O PARMETER fields. HBA then copies these values to
+> corresponding fields in the LOGO command frame.
+> 
 > Signed-off-by: Anastasia Kovaleva <a.kovaleva@yadro.com>
 > Reviewed-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
 > ---
->   drivers/scsi/qla2xxx/qla_isr.c    |  4 ++++
->   drivers/scsi/qla2xxx/qla_target.c | 11 +++++++++++
->   2 files changed, 15 insertions(+)
+>   drivers/scsi/qla2xxx/qla_iocb.c | 11 +++++++++++
+>   1 file changed, 11 insertions(+)
 > 
-> diff --git a/drivers/scsi/qla2xxx/qla_isr.c b/drivers/scsi/qla2xxx/qla_isr.c
-> index fe98c76e9be3..5234ce0985e0 100644
-> --- a/drivers/scsi/qla2xxx/qla_isr.c
-> +++ b/drivers/scsi/qla2xxx/qla_isr.c
-> @@ -1959,6 +1959,10 @@ qla2x00_async_event(scsi_qla_host_t *vha, struct rsp_que *rsp, uint16_t *mb)
->   		ql_dbg(ql_dbg_async, vha, 0x5091, "Transceiver Removal\n");
->   		break;
+> diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c
+> index 0b41e8a06602..90026fca14dc 100644
+> --- a/drivers/scsi/qla2xxx/qla_iocb.c
+> +++ b/drivers/scsi/qla2xxx/qla_iocb.c
+> @@ -2486,6 +2486,17 @@ qla24xx_logout_iocb(srb_t *sp, struct logio_entry_24xx *logio)
+>   	logio->port_id[1] = sp->fcport->d_id.b.area;
+>   	logio->port_id[2] = sp->fcport->d_id.b.domain;
+>   	logio->vp_index = sp->vha->vp_idx;
+> +	logio->io_parameter[0] = cpu_to_le32(sp->vha->d_id.b.al_pa |
+> +				 sp->vha->d_id.b.area << 8 |
+> +				 sp->vha->d_id.b.domain << 16);
+> +	logio->io_parameter[1] = cpu_to_le32(sp->vha->port_name[3] |
+> +				 sp->vha->port_name[2] << 8 |
+> +				 sp->vha->port_name[1] << 16 |
+> +				 sp->vha->port_name[0] << 24);
+> +	logio->io_parameter[2] = cpu_to_le32(sp->vha->port_name[7] |
+> +				 sp->vha->port_name[6] << 8 |
+> +				 sp->vha->port_name[5] << 16 |
+> +				 sp->vha->port_name[4] << 24);
+>   }
 >   
-> +	case MBA_REJECTED_FCP_CMD:
-> +		ql_dbg(ql_dbg_async, vha, 0x5092, "LS_RJT was sent. No resources to process the ELS request.\n");
-> +		break;
-> +
->   	default:
->   		ql_dbg(ql_dbg_async, vha, 0x5057,
->   		    "Unknown AEN:%04x %04x %04x %04x\n",
-> diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
-> index d7551b1443e4..bc7feef6ee79 100644
-> --- a/drivers/scsi/qla2xxx/qla_target.c
-> +++ b/drivers/scsi/qla2xxx/qla_target.c
-> @@ -6801,6 +6801,7 @@ qlt_24xx_process_atio_queue(struct scsi_qla_host *vha, uint8_t ha_locked)
->   	struct qla_hw_data *ha = vha->hw;
->   	struct atio_from_isp *pkt;
->   	int cnt, i;
-> +	unsigned long flags = 0;
->   
->   	if (!ha->flags.fw_started)
->   		return;
-> @@ -6826,6 +6827,16 @@ qlt_24xx_process_atio_queue(struct scsi_qla_host *vha, uint8_t ha_locked)
->   			qlt_send_term_exchange(ha->base_qpair, NULL, pkt,
->   			    ha_locked, 0);
->   		} else {
-> +			/*
-> +			 * If we get correct ATIO, then HBA had enough memory
-> +			 * to proceed without reset.
-> +			 */
-> +			if (!ha_locked)
-> +				spin_lock_irqsave(&ha->hardware_lock, flags);
-> +			vha->hw->exch_starvation = 0;
-> +			if (!ha_locked)
-> +				spin_unlock_irqrestore(&ha->hardware_lock, flags);
-> +
->   			qlt_24xx_atio_pkt_all_vps(vha,
->   			    (struct atio_from_isp *)pkt, ha_locked);
->   		}
+>   static void
 
-Why not just 'WRITE_ONCE()' and drop the spinlock?
+Now that looks like serious debugging. Well done.
+
+Reviewed-by: Hannes Reinecke <hare@suse.de>
 
 Cheers,
 
