@@ -1,59 +1,59 @@
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCFB62B2D7
-	for <target-devel@vger.kernel.org>; Wed,  9 Oct 2024 01:38:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B275383A5
+	for <target-devel@vger.kernel.org>; Wed,  9 Oct 2024 01:38:59 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.165.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1728437939; cv=none; b=Vhjo6yqNyNzDZS8ryxo9n+gQB8NsSsKMjWhQPlTKwdumT/vrcao+ib/eI/jfQ4P3aSo6D+BoIyDpjiFy5U+M3ZvnKwGeRn9ffqamved81Rat5HAbHcnRpHLTXpUsziNvjt7nw2wjM+QRg/HHojGttZUs2HwdD77zv2021Glbn9U=
+	t=1728437940; cv=none; b=C2Oejuh6e3de3ic1pOB4TSzOq+D0c25bVTc/eivXki+jSJmLugRzYuTL1S/wNQOEWJuH98mOSodx5JZOzcEe6/5L75YEoSbo8vyhw9KLktJQIkDKKZaXIQV3by4LcFQsk2PWp3cLIFxPIWFiF95UzydYPJnjjVSPL3oytyYqoso=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1728437939; c=relaxed/simple;
-	bh=d1/xKNriGjTBf7mIAvSWBijBhmpMHrDzj+x/ckTvCbM=;
+	s=arc-20240116; t=1728437940; c=relaxed/simple;
+	bh=hjDkiw6KPqcrmXGWy+/Z9/loY454CPzA1AkMoFUvK7Y=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ak53Nm+z6GMGTC6+sde+x94IR9afQietDRZpk/e8VRvydw55DqANnfLRdkT4ikGVDxaTkv1BnmPH7z2ulBDhTaMT4ZsX2ZOl3/s2TG9yExLtjtNKnZy3/DZvYolbZRhBThmphca2xDHMP3wpxqqxsBXuTV3QqYFZda9FAenmtD0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=jloili5P; arc=none smtp.client-ip=205.220.177.32
+	 MIME-Version; b=PBGoVT6Kfww6SsEQo6MINc/O55Ufcebx0SHHOqmWHGq9I70NaUsCIbRU9VETrbEYvAjBQ0xSBGw/7bBodoLxWP7FUnbznhHhv5QHIKmm3tET8B22Q0LY2SFGimDtE+mSnFc91hVR3LgrhEoatbhr6rgm7GHqRqxwsmswpahULEQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=NoGQHpsr; arc=none smtp.client-ip=205.220.165.32
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="jloili5P"
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 498JtcSp003606;
-	Wed, 9 Oct 2024 01:38:52 GMT
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="NoGQHpsr"
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 498Jtcj4017769;
+	Wed, 9 Oct 2024 01:38:55 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=corp-2023-11-20; bh=7EER9
-	ZjVxn0cYFy9tOPR1omcZzmu3ecSnUZeNJIWdLc=; b=jloili5PJfUChZ5aEx50F
-	3yPFvbE57fh1A2vwbrlu6RTY95W3nBIQJfyDZKhSQdRayclY9RSzug8fnMCECJuh
-	RMquQC95seQafJkVTFg3zQaQTQOfyt9k1+5pheKpxeditV2faxtr88Ea9+4V5RGF
-	j706Ov5RSOMpCZSsb0U/ptFgD/9GpnU8p7XCitAx3Tb5Thbx0MeK8UfmvU+o0nXc
-	tGtXPefDcOFjPbTNQEggTZk/yjbjQ8uBHT8o4biZcK0N5x5/dmVseuEB0Gjywl6N
-	ty9vkGWS7t0VxcX9xCOBAN2jJg6BUOjPVhqyFen0W52cMYDDsJj9zYJih+OOKhbv
-	A==
+	:mime-version:references:subject:to; s=corp-2023-11-20; bh=sayu8
+	FLGBDLuJqlhBup4DpHN8ZXT0Vx3U02bGsz7N7I=; b=NoGQHpsrUJo6z1Pd0LH2N
+	MRcso0MfpHDQGJn8BRC1V5m90GsRW7QGfB5fWYerFmRl7IV/L96FwjDUxALEOYF+
+	hwnYvykGeET+rp+Uun29izaMk+8TNGkNDdN/auyJm/eKqKu+2KPbibcAwf9N/ez5
+	l+0kPN6T2Un1kDpndyM+8aWavJDEsd2OJilQT3rfInH/gMZmeg9mfwpBhf6mX7tq
+	wrCASJWmkZhBUDTPkJ4xd8uHY3DCYvUY17t1kz0fo3gfpAEN8qs8oRaBdf+/GuId
+	WC6y1eX5zCNnYsKPN3rY9oBzv5QBQv/AeEtUfXy12dGu/TbpbT6EGP8IkTqu5YSL
+	w==
 Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 423063q421-1
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 42306ef5g2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 09 Oct 2024 01:38:51 +0000 (GMT)
+	Wed, 09 Oct 2024 01:38:54 +0000 (GMT)
 Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 498NKn8J011158;
-	Wed, 9 Oct 2024 01:38:51 GMT
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 498N7Biq011858;
+	Wed, 9 Oct 2024 01:38:52 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 422uwe89aj-1
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 422uwe89b9-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 09 Oct 2024 01:38:51 +0000
+	Wed, 09 Oct 2024 01:38:52 +0000
 Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4991chjG024787;
-	Wed, 9 Oct 2024 01:38:50 GMT
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4991chjK024787;
+	Wed, 9 Oct 2024 01:38:52 GMT
 Received: from mnc-mac.us.oracle.com (dhcp-10-65-182-164.vpn.oracle.com [10.65.182.164])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 422uwe897c-6;
-	Wed, 09 Oct 2024 01:38:50 +0000
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 422uwe897c-8;
+	Wed, 09 Oct 2024 01:38:52 +0000
 From: Mike Christie <michael.christie@oracle.com>
 To: stefanha@redhat.com, jasowang@redhat.com, mst@redhat.com,
         sgarzare@redhat.com, pbonzini@redhat.com, target-devel@vger.kernel.org,
         virtualization@lists.linux-foundation.org
 Cc: Mike Christie <michael.christie@oracle.com>
-Subject: [PATCH 6/8] vhost-scsi: Stop duplicating se_cmd fields
-Date: Tue,  8 Oct 2024 20:38:36 -0500
-Message-ID: <20241009013839.88593-6-michael.christie@oracle.com>
+Subject: [PATCH 8/8] vhost-scsi: Reduce response iov mem use
+Date: Tue,  8 Oct 2024 20:38:38 -0500
+Message-ID: <20241009013839.88593-8-michael.christie@oracle.com>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20241009013839.88593-1-michael.christie@oracle.com>
 References: <20241009013839.88593-1-michael.christie@oracle.com>
@@ -71,277 +71,222 @@ X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 ml
  spamscore=0 adultscore=0 phishscore=0 suspectscore=0 mlxscore=0
  bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2409260000 definitions=main-2410090009
-X-Proofpoint-ORIG-GUID: 7vCJ3Uu5_KOlCk8sRpFy0GttsUSdoYw_
-X-Proofpoint-GUID: 7vCJ3Uu5_KOlCk8sRpFy0GttsUSdoYw_
+X-Proofpoint-GUID: m1KhysPob_f_CVq0Vy44GUMJvNwp9CpX
+X-Proofpoint-ORIG-GUID: m1KhysPob_f_CVq0Vy44GUMJvNwp9CpX
 
-When setting up the command we will initially set values like lun and
-data direction on the vhost scsi command. We then pass them to LIO which
-stores them again on the LIO se_cmd. The se_cmd is actually stored in
-the vhost scsi command so we are storing these values twice on the same
-struct. So this patch has stop duplicating the storing of SCSI values
-like lun, data dir, data len, cdb, etc on the vhost scsi command and
-just pass them to LIO which will store them on the se_cmd.
+We have to save N iov entries to copy the virtio_scsi_cmd_resp struct
+back to the guest's buffer. The difficulty is that we can't assume the
+virtio_scsi_cmd_resp will be in 1 iov because older virtio specs allowed
+you to break it up.
+
+The worst case is that the guest was doing something like breaking up
+the virtio_scsi_cmd_resp struct into 108 (the struct is 108 bytes)
+byte sized vecs like:
+
+iov[0].iov_base = ((unsigned char *)virtio_scsi_cmd_resp)[0]
+iov[0].iov_len = 1
+iov[1].iov_base =  ((unsigned char *)virtio_scsi_cmd_resp)[1]
+iov[1].iov_len = 1
+....
+iov[107].iov_base = ((unsigned char *)virtio_scsi_cmd_resp)[107]
+iov[1].iov_len = 1
+
+Right now we allocate UIO_MAXIOV vecs which is 1024 and so for a small
+device with just 1 queue and 128 commands per queue, we are wasting
+
+1.8 MB = (1024 current entries - 108) * 16 bytes per entry * 128 cmds
+
+The most common case is going to be where the initiator puts the entire
+virtio_scsi_cmd_resp in the first iov and does not split it. We've
+always done it this way for Linux and the windows driver looks like
+it's always done the same. It's highly unlikely anyone has ever split
+the response and if they did it might just be where they have the
+sense in a second iov but that doesn't seem likely as well.
+
+So to optimize for the common implementation, this has us only
+pre-allocate the single iovec. If we do hit the split up response case
+this has us allocate the needed iovec when needed.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/vhost/scsi.c | 95 +++++++++++++++++---------------------------
- 1 file changed, 36 insertions(+), 59 deletions(-)
+ drivers/vhost/scsi.c | 82 ++++++++++++++++++++++++++++++++------------
+ 1 file changed, 60 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 635ca372f874..cb317bfada20 100644
+index 25d59d4ee149..9d49d1577d2a 100644
 --- a/drivers/vhost/scsi.c
 +++ b/drivers/vhost/scsi.c
-@@ -106,21 +106,11 @@ struct vhost_scsi_inflight {
+@@ -45,6 +45,11 @@
+ #define VHOST_SCSI_PREALLOC_SGLS 2048
+ #define VHOST_SCSI_PREALLOC_UPAGES 2048
+ #define VHOST_SCSI_PREALLOC_PROT_SGLS 2048
++/*
++ * For the legacy descriptor case we allocate an iov per byte in the
++ * virtio_scsi_cmd_resp struct.
++ */
++#define VHOST_SCSI_MAX_RESP_IOVS sizeof(struct virtio_scsi_cmd_resp)
+ 
+ static unsigned int vhost_scsi_inline_sg_cnt = VHOST_SCSI_PREALLOC_SGLS;
+ 
+@@ -106,8 +111,6 @@ struct vhost_scsi_inflight {
  struct vhost_scsi_cmd {
  	/* Descriptor from vhost_get_vq_desc() for virt_queue segment */
  	int tvc_vq_desc;
--	/* virtio-scsi initiator task attribute */
--	int tvc_task_attr;
- 	/* virtio-scsi response incoming iovecs */
- 	int tvc_in_iovs;
--	/* virtio-scsi initiator data direction */
--	enum dma_data_direction tvc_data_direction;
--	/* Expected data transfer length from virtio-scsi header */
--	u32 tvc_exp_data_len;
--	/* The Tag from include/linux/virtio_scsi.h:struct virtio_scsi_cmd_req */
--	u64 tvc_tag;
+-	/* virtio-scsi response incoming iovecs */
+-	int tvc_in_iovs;
  	/* The number of scatterlists associated with this cmd */
  	u32 tvc_sgl_count;
  	u32 tvc_prot_sgl_count;
--	/* Saved unpacked SCSI LUN for vhost_scsi_target_queue_cmd() */
--	u32 tvc_lun;
- 	u32 copied_iov:1;
- 	const void *saved_iter_addr;
- 	struct iov_iter saved_iter;
-@@ -130,16 +120,10 @@ struct vhost_scsi_cmd {
+@@ -118,8 +121,12 @@ struct vhost_scsi_cmd {
+ 	struct sg_table table;
+ 	struct scatterlist *prot_sgl;
  	struct sg_table prot_table;
- 	/* Pointer to response header iovec */
- 	struct iovec *tvc_resp_iov;
--	/* Pointer to vhost_scsi for our device */
--	struct vhost_scsi *tvc_vhost;
+-	/* Pointer to response header iovec */
+-	struct iovec *tvc_resp_iov;
++	/* Fast path response header iovec used when only one vec is needed */
++	struct iovec tvc_resp_iov;
++	/* Number of iovs for response */
++	unsigned int tvc_resp_iovs_cnt;
++	/* Pointer to response header iovecs if more than one is needed */
++	struct iovec *tvc_resp_iovs;
  	/* Pointer to vhost_virtqueue for the cmd */
  	struct vhost_virtqueue *tvc_vq;
--	/* Pointer to vhost nexus memory */
--	struct vhost_scsi_nexus *tvc_nexus;
  	/* The TCM I/O descriptor that is accessed via container_of() */
- 	struct se_cmd tvc_se_cmd;
--	/* Copy of the incoming SCSI command descriptor block (CDB) */
--	unsigned char tvc_cdb[VHOST_SCSI_MAX_CDB_SIZE];
- 	/* Sense buffer that will be mapped into outgoing status */
- 	unsigned char tvc_sense_buf[TRANSPORT_SENSE_BUFFER];
- 	/* Completed commands list, serviced from vhost worker thread */
-@@ -375,9 +359,9 @@ static void vhost_scsi_release_cmd_res(struct se_cmd *se_cmd)
- {
- 	struct vhost_scsi_cmd *tv_cmd = container_of(se_cmd,
- 				struct vhost_scsi_cmd, tvc_se_cmd);
--	struct vhost_scsi *vs = tv_cmd->tvc_vhost;
- 	struct vhost_scsi_virtqueue *svq = container_of(tv_cmd->tvc_vq,
- 				struct vhost_scsi_virtqueue, vq);
-+	struct vhost_scsi *vs = svq->vs;
- 	struct vhost_scsi_inflight *inflight = tv_cmd->inflight;
- 	struct scatterlist *sg;
- 	struct page *page;
-@@ -671,24 +655,15 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
- }
+@@ -391,6 +398,8 @@ static void vhost_scsi_release_cmd_res(struct se_cmd *se_cmd)
+ 		sg_free_table_chained(&tv_cmd->prot_table, vs->inline_sg_cnt);
+ 	}
  
- static struct vhost_scsi_cmd *
--vhost_scsi_get_cmd(struct vhost_virtqueue *vq, struct vhost_scsi_tpg *tpg,
--		   unsigned char *cdb, u64 scsi_tag, u16 lun, u8 task_attr,
--		   u32 exp_data_len, int data_direction)
-+vhost_scsi_get_cmd(struct vhost_virtqueue *vq, u64 scsi_tag)
- {
- 	struct vhost_scsi_virtqueue *svq = container_of(vq,
++	if (tv_cmd->tvc_resp_iovs != &tv_cmd->tvc_resp_iov)
++		kfree(tv_cmd->tvc_resp_iovs);
+ 	sbitmap_clear_bit(&svq->scsi_tags, se_cmd->map_tag);
+ 	vhost_scsi_put_inflight(inflight);
+ }
+@@ -638,8 +647,8 @@ static void vhost_scsi_complete_cmd_work(struct vhost_work *work)
+ 			       se_cmd->scsi_sense_length);
+ 		}
+ 
+-		iov_iter_init(&iov_iter, ITER_DEST, cmd->tvc_resp_iov,
+-			      cmd->tvc_in_iovs, sizeof(v_rsp));
++		iov_iter_init(&iov_iter, ITER_DEST, cmd->tvc_resp_iovs,
++			      cmd->tvc_resp_iovs_cnt, sizeof(v_rsp));
+ 		ret = copy_to_iter(&v_rsp, sizeof(v_rsp), &iov_iter);
+ 		if (likely(ret == sizeof(v_rsp))) {
+ 			signal = true;
+@@ -662,7 +671,6 @@ vhost_scsi_get_cmd(struct vhost_virtqueue *vq, u64 scsi_tag)
  					struct vhost_scsi_virtqueue, vq);
  	struct vhost_scsi_cmd *cmd;
--	struct vhost_scsi_nexus *tv_nexus;
  	struct scatterlist *sgl, *prot_sgl;
- 	struct iovec *tvc_resp_iov;
+-	struct iovec *tvc_resp_iov;
  	int tag;
  
--	tv_nexus = tpg->tpg_nexus;
--	if (!tv_nexus) {
--		pr_err("Unable to locate active struct vhost_scsi_nexus\n");
--		return ERR_PTR(-EIO);
--	}
--
  	tag = sbitmap_get(&svq->scsi_tags);
- 	if (tag < 0) {
- 		pr_warn_once("Guest sent too many cmds. Returning TASK_SET_FULL.\n");
-@@ -703,17 +678,9 @@ vhost_scsi_get_cmd(struct vhost_virtqueue *vq, struct vhost_scsi_tpg *tpg,
+@@ -674,13 +682,11 @@ vhost_scsi_get_cmd(struct vhost_virtqueue *vq, u64 scsi_tag)
+ 	cmd = &svq->scsi_cmds[tag];
+ 	sgl = cmd->sgl;
+ 	prot_sgl = cmd->prot_sgl;
+-	tvc_resp_iov = cmd->tvc_resp_iov;
+ 	memset(cmd, 0, sizeof(*cmd));
  	cmd->sgl = sgl;
  	cmd->prot_sgl = prot_sgl;
  	cmd->tvc_se_cmd.map_tag = tag;
--	cmd->tvc_tag = scsi_tag;
--	cmd->tvc_lun = lun;
--	cmd->tvc_task_attr = task_attr;
--	cmd->tvc_exp_data_len = exp_data_len;
--	cmd->tvc_data_direction = data_direction;
--	cmd->tvc_nexus = tv_nexus;
  	cmd->inflight = vhost_scsi_get_inflight(vq);
- 	cmd->tvc_resp_iov = tvc_resp_iov;
+-	cmd->tvc_resp_iov = tvc_resp_iov;
  
--	memcpy(cmd->tvc_cdb, cdb, VHOST_SCSI_MAX_CDB_SIZE);
--
  	return cmd;
  }
- 
-@@ -831,7 +798,8 @@ vhost_scsi_calc_sgls(struct iov_iter *iter, size_t bytes, int max_sgls)
- 
- static int
- vhost_scsi_copy_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
--			   struct sg_table *sg_table, int sg_count)
-+			   struct sg_table *sg_table, int sg_count,
-+			   int data_dir)
- {
- 	size_t len = iov_iter_count(iter);
- 	unsigned int nbytes = 0;
-@@ -839,7 +807,7 @@ vhost_scsi_copy_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
- 	struct page *page;
- 	int i, ret;
- 
--	if (cmd->tvc_data_direction == DMA_FROM_DEVICE) {
-+	if (data_dir == DMA_FROM_DEVICE) {
- 		cmd->saved_iter_addr = dup_iter(&cmd->saved_iter, iter,
- 						GFP_KERNEL);
- 		if (!cmd->saved_iter_addr)
-@@ -856,7 +824,7 @@ vhost_scsi_copy_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
- 		nbytes = min_t(unsigned int, PAGE_SIZE, len);
- 		sg_set_page(sg, page, nbytes, 0);
- 
--		if (cmd->tvc_data_direction == DMA_TO_DEVICE &&
-+		if (data_dir == DMA_TO_DEVICE &&
- 		    copy_page_from_iter(page, 0, nbytes, iter) != nbytes) {
- 			ret = -EFAULT;
- 			goto err;
-@@ -901,11 +869,10 @@ vhost_scsi_map_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
+@@ -1121,6 +1127,43 @@ vhost_scsi_get_req(struct vhost_virtqueue *vq, struct vhost_scsi_ctx *vc,
+ 	return ret;
  }
  
- static int
--vhost_scsi_mapal(struct vhost_scsi_cmd *cmd,
-+vhost_scsi_mapal(struct vhost_scsi *vs, struct vhost_scsi_cmd *cmd,
- 		 size_t prot_bytes, struct iov_iter *prot_iter,
--		 size_t data_bytes, struct iov_iter *data_iter)
-+		 size_t data_bytes, struct iov_iter *data_iter, int data_dir)
++static int
++vhost_scsi_setup_resp_iovs(struct vhost_scsi_cmd *cmd, struct iovec *in_iovs,
++			   unsigned int in_iovs_cnt)
++{
++	int i, cnt;
++
++	if (!in_iovs_cnt)
++		return 0;
++	/*
++	 * Initiator's normally just put the virtio_scsi_cmd_resp in the first
++	 * iov, but just in case they wedged in some data with it we check for
++	 * greater than or equal to the response struct.
++	 */
++	if (in_iovs[0].iov_len >= sizeof(struct virtio_scsi_cmd_resp)) {
++		cmd->tvc_resp_iovs = &cmd->tvc_resp_iov;
++		cmd->tvc_resp_iovs_cnt = 1;
++	} else {
++		/*
++		 * Legacy descriptor layouts didn't specify that we must put
++		 * the entire response in one iov. Worst case we have a
++		 * iov per byte.
++		 */
++		cnt = min(VHOST_SCSI_MAX_RESP_IOVS, in_iovs_cnt);
++		cmd->tvc_resp_iovs = kcalloc(cnt, sizeof(struct iovec),
++					     GFP_KERNEL);
++		if (!cmd->tvc_resp_iovs)
++			return -ENOMEM;
++
++		cmd->tvc_resp_iovs_cnt = cnt;
++	}
++
++	for (i = 0; i < cmd->tvc_resp_iovs_cnt; i++)
++		cmd->tvc_resp_iovs[i] = in_iovs[i];
++
++	return 0;
++}
++
+ static u16 vhost_buf_to_lun(u8 *lun_buf)
  {
--	struct vhost_scsi *vs = cmd->tvc_vhost;
- 	int sgl_count, ret;
- 
- 	if (prot_bytes) {
-@@ -951,7 +918,7 @@ vhost_scsi_mapal(struct vhost_scsi_cmd *cmd,
- 					cmd->tvc_sgl_count, false);
- 	if (ret == -EINVAL)
- 		ret = vhost_scsi_copy_iov_to_sgl(cmd, data_iter, &cmd->table,
--						 cmd->tvc_sgl_count);
-+						 cmd->tvc_sgl_count, data_dir);
- 	if (ret < 0) {
- 		sg_free_table_chained(&cmd->table, vs->inline_sg_cnt);
- 		cmd->tvc_sgl_count = 0;
-@@ -977,10 +944,13 @@ static int vhost_scsi_to_tcm_attr(int attr)
- 	return TCM_SIMPLE_TAG;
- }
- 
--static void vhost_scsi_target_queue_cmd(struct vhost_scsi_cmd *cmd)
-+static void vhost_scsi_target_queue_cmd(struct vhost_scsi_nexus *nexus,
-+					struct vhost_scsi_cmd *cmd,
-+					unsigned char *cdb, u16 lun,
-+					int task_attr, int data_dir,
-+					u32 exp_data_len)
- {
- 	struct se_cmd *se_cmd = &cmd->tvc_se_cmd;
--	struct vhost_scsi_nexus *tv_nexus;
- 	struct scatterlist *sg_ptr, *sg_prot_ptr = NULL;
- 
- 	/* FIXME: BIDI operation */
-@@ -994,15 +964,13 @@ static void vhost_scsi_target_queue_cmd(struct vhost_scsi_cmd *cmd)
- 	} else {
- 		sg_ptr = NULL;
- 	}
--	tv_nexus = cmd->tvc_nexus;
- 
- 	se_cmd->tag = 0;
--	target_init_cmd(se_cmd, tv_nexus->tvn_se_sess, &cmd->tvc_sense_buf[0],
--			cmd->tvc_lun, cmd->tvc_exp_data_len,
--			vhost_scsi_to_tcm_attr(cmd->tvc_task_attr),
--			cmd->tvc_data_direction, TARGET_SCF_ACK_KREF);
-+	target_init_cmd(se_cmd, nexus->tvn_se_sess, &cmd->tvc_sense_buf[0],
-+			lun, exp_data_len, vhost_scsi_to_tcm_attr(task_attr),
-+			data_dir, TARGET_SCF_ACK_KREF);
- 
--	if (target_submit_prep(se_cmd, cmd->tvc_cdb, sg_ptr,
-+	if (target_submit_prep(se_cmd, cdb, sg_ptr,
- 			       cmd->tvc_sgl_count, NULL, 0, sg_prot_ptr,
- 			       cmd->tvc_prot_sgl_count, GFP_KERNEL))
- 		return;
-@@ -1156,6 +1124,7 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
- 	struct vhost_scsi_tpg **vs_tpg, *tpg;
- 	struct virtio_scsi_cmd_req v_req;
- 	struct virtio_scsi_cmd_req_pi v_req_pi;
-+	struct vhost_scsi_nexus *nexus;
- 	struct vhost_scsi_ctx vc;
- 	struct vhost_scsi_cmd *cmd;
+ 	return ((lun_buf[2] << 8) | lun_buf[3]) & 0x3FFF;
+@@ -1138,7 +1181,7 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
  	struct iov_iter in_iter, prot_iter, data_iter;
-@@ -1165,7 +1134,7 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
+ 	u64 tag;
+ 	u32 exp_data_len, data_direction;
+-	int ret, prot_bytes, i, c = 0;
++	int ret, prot_bytes, c = 0;
  	u16 lun;
  	u8 task_attr;
  	bool t10_pi = vhost_has_feature(vq, VIRTIO_SCSI_F_T10_PI);
--	void *cdb;
-+	u8 *cdb;
- 
- 	mutex_lock(&vq->mutex);
- 	/*
-@@ -1308,28 +1277,34 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
- 				scsi_command_size(cdb), VHOST_SCSI_MAX_CDB_SIZE);
- 				goto err;
- 		}
--		cmd = vhost_scsi_get_cmd(vq, tpg, cdb, tag, lun, task_attr,
--					 exp_data_len + prot_bytes,
--					 data_direction);
-+
-+		nexus = tpg->tpg_nexus;
-+		if (!nexus) {
-+			vq_err(vq, "Unable to locate active struct vhost_scsi_nexus\n");
-+			ret = -EIO;
-+			goto err;
-+		}
-+
-+		cmd = vhost_scsi_get_cmd(vq, tag);
- 		if (IS_ERR(cmd)) {
- 			ret = PTR_ERR(cmd);
- 			vq_err(vq, "vhost_scsi_get_tag failed %dd\n", ret);
+@@ -1300,9 +1343,13 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
  			goto err;
  		}
--		cmd->tvc_vhost = vs;
  		cmd->tvc_vq = vq;
- 		for (i = 0; i < vc.in ; i++)
- 			cmd->tvc_resp_iov[i] = vq->iov[vc.out + i];
- 		cmd->tvc_in_iovs = vc.in;
+-		for (i = 0; i < vc.in ; i++)
+-			cmd->tvc_resp_iov[i] = vq->iov[vc.out + i];
+-		cmd->tvc_in_iovs = vc.in;
++
++		ret = vhost_scsi_setup_resp_iovs(cmd, &vq->iov[vc.out], vc.in);
++		if (ret) {
++			vq_err(vq, "Failed to alloc recv iovs\n");
++			vhost_scsi_release_cmd_res(&cmd->tvc_se_cmd);
++			goto err;
++		}
  
  		pr_debug("vhost_scsi got command opcode: %#02x, lun: %d\n",
--			 cmd->tvc_cdb[0], cmd->tvc_lun);
-+			 cdb[0], lun);
- 		pr_debug("cmd: %p exp_data_len: %d, prot_bytes: %d data_direction:"
- 			 " %d\n", cmd, exp_data_len, prot_bytes, data_direction);
+ 			 cdb[0], lun);
+@@ -1683,7 +1730,6 @@ static void vhost_scsi_destroy_vq_cmds(struct vhost_virtqueue *vq)
  
- 		if (data_direction != DMA_NONE) {
--			ret = vhost_scsi_mapal(cmd, prot_bytes, &prot_iter,
--					       exp_data_len, &data_iter);
-+			ret = vhost_scsi_mapal(vs, cmd, prot_bytes, &prot_iter,
-+					       exp_data_len, &data_iter,
-+					       data_direction);
- 			if (unlikely(ret)) {
- 				vq_err(vq, "Failed to map iov to sgl\n");
- 				vhost_scsi_release_cmd_res(&cmd->tvc_se_cmd);
-@@ -1342,7 +1317,9 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
- 		 * vhost_scsi_queue_data_in() and vhost_scsi_queue_status()
- 		 */
- 		cmd->tvc_vq_desc = vc.head;
--		vhost_scsi_target_queue_cmd(cmd);
-+		vhost_scsi_target_queue_cmd(nexus, cmd, cdb, lun, task_attr,
-+					    data_direction,
-+					    exp_data_len + prot_bytes);
- 		ret = 0;
- err:
- 		/*
+ 		kfree(tv_cmd->sgl);
+ 		kfree(tv_cmd->prot_sgl);
+-		kfree(tv_cmd->tvc_resp_iov);
+ 	}
+ 
+ 	sbitmap_free(&svq->scsi_tags);
+@@ -1732,14 +1778,6 @@ static int vhost_scsi_setup_vq_cmds(struct vhost_virtqueue *vq, int max_cmds)
+ 			}
+ 		}
+ 
+-		tv_cmd->tvc_resp_iov = kcalloc(UIO_MAXIOV,
+-					       sizeof(struct iovec),
+-					       GFP_KERNEL);
+-		if (!tv_cmd->tvc_resp_iov) {
+-			pr_err("Unable to allocate tv_cmd->tvc_resp_iov\n");
+-			goto out;
+-		}
+-
+ 		if (vhost_has_feature(vq, VIRTIO_SCSI_F_T10_PI) &&
+ 		    vs->inline_sg_cnt) {
+ 			tv_cmd->prot_sgl = kcalloc(vs->inline_sg_cnt,
 -- 
 2.34.1
 
