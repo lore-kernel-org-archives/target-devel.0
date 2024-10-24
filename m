@@ -1,114 +1,106 @@
-Received: from mail-yw1-f194.google.com (mail-yw1-f194.google.com [209.85.128.194])
+Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B785173;
-	Mon, 21 Oct 2024 05:17:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.194
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC90E4C66;
+	Thu, 24 Oct 2024 01:02:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.181
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1729487875; cv=none; b=KwDSRbJQZMoh+L0ggKF6ww9KQOai1ynfNbyXFLLrSr4X8k5A/rAU88Ua2bisEQcMu2T61SDlUrAPnUbV1CetIVdo0XjNJTXpocVPSwxh4qrRKso39TOpuQQlMxrHD9avTVo5NwB4S0bGBEIwwshnDNDNAw2DWf2MjLynC6mR/Do=
+	t=1729731727; cv=none; b=eQOSBD3Ulftth1aZz6GGpLwJm+0KE4sg5+cXofLBsVa+rZPW9X5gGF1OSZDP/UnCHbeeKwncsdXb1vEO+UfwdYFNhwaqQUHmFM5MDLwFm5FsldPDb4TbcvDm5kJCPNyHN9NwsiRD4JFA2uP9g/jsW7nGKICfaT/REmsFRzvrP4o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1729487875; c=relaxed/simple;
-	bh=0XwMeNMJ5ODPtkbESnU3FltvFhNY7bbCcFY+I+hg+mk=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=HQHPn949v5hQptD6i6Gay9o6diuPsHrSj7KB4F00UW7Tv+1qrRI6qJBayuXFbK4qeOKjcgR8n7T1DeNML9Y8Bqu2OYjoadMsxqjzutHxQpZ9bcgr2AQMyal+W+ThfGvnL+IGODMEjoLMqv3O258CIY7/8d9NQj75J78O5NxnEh4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=b74Blz9G; arc=none smtp.client-ip=209.85.128.194
+	s=arc-20240116; t=1729731727; c=relaxed/simple;
+	bh=N9E3dQrK2oNBJbnVuj4SmkpyBa1i3K9UH1L9aIExYrU=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:Content-Type; b=pzTlZ2VSF1CWOL1n4lovV+OpRlb97dC9qoUha87C1UFH5odtfTUMJRX5+LOZLeZb6KfeS95jPDmEJd1Hmn9pacDGXizDTIe7rvGh0pXm9YehKRpzJW5f41Qlc8J/+vIsfin2OOOMITcryZuMqNnP3D2/cMeZPaLtPq25a/nSDSY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=koOjW7ki; arc=none smtp.client-ip=209.85.210.181
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="b74Blz9G"
-Received: by mail-yw1-f194.google.com with SMTP id 00721157ae682-6e5cec98cceso18215257b3.2;
-        Sun, 20 Oct 2024 22:17:53 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="koOjW7ki"
+Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-71e93d551a3so294114b3a.1;
+        Wed, 23 Oct 2024 18:02:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1729487873; x=1730092673; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=w2mbf2/3v5HCvkk0Y3A4O4H8UPw7wHC2/3QXIZ4AZiM=;
-        b=b74Blz9GupJb/XHi/p42jswVdewl8uH96GxK0eyyZ5N2QFiejXjhGjzfr/p+V9a8wW
-         uHMj34WlLM1BDLJgrB0fNJtzn4+FoCqDKuex6hfCIqauEUB0YTRKPaji2rVTmD4u66LS
-         SHY3OTrmzb7zbT2eDCt+STQMlDLfSWHNtpvQQGzBXyeVACe1X8zZWcmeRwySrZD+orXH
-         l2XLrZzmVLiSsen/mcXaHf4S/MndIuNyqVNnVcAFdCWj9MUl2HSJkwKiPgPUzksq79ZC
-         J4JD0kaCWewmakY5kMx7QOB0eKJia1V5CsD1lwk1ssq6d7cYH8MJWNsDgP0TA0d+YSge
-         DCPQ==
+        d=gmail.com; s=20230601; t=1729731725; x=1730336525; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:content-language:to:subject:from
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=moRdslhIcfQFZ6VJ3Ktj0BaLtFKEuFkVkJRmlDTgxhE=;
+        b=koOjW7ki1WQl6F2S8uR/ik8o/G7vD+mLcn7WtQJS/FFq9gEhOsfWeYHYQcC7oYFqLv
+         vX1mN0a9wDJdX5bdmGGEWUif2/sDjap1qrF7YWl+ceCWI5TudS2Dgu4AjA0rcmxEocFm
+         hT0WPwXl/eq4xwEcqoq0HzYTRHzRw124xOO/hO5sbjakF108v6LrGYIsHeL3ckshAar9
+         gZcVLrc7uXhiu+ob7NYAoKyV3qRS8ZbCSyZkdTzDyunxIYCwxC9R/6jPwnq/yxhu2VNl
+         bst5u+uXAo88oyOlqVSJOqnXH65wixtXiWd17OiI7SEMzRS4K0mlajdtWYASfhzh24a6
+         +LnA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729487873; x=1730092673;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=w2mbf2/3v5HCvkk0Y3A4O4H8UPw7wHC2/3QXIZ4AZiM=;
-        b=Ec7Di4CM+olKjPYHGyjCAA8wDJJiEpnst8BoQ5ewnfagjlMm3hl/okWG/YMqDAy/Ps
-         bgr845gdEU/Mx10elAD72UE5+5t7D4l1c7hI+RQlJCNStV/ui1S4pWXBCRMRhttcVeiI
-         amEsU1hlZG5aQoZe1LkhHYpNwsECKnEYFbfvz4hNUW7YrGgs12+xYSGftsg6id279j5w
-         uyQHEFOKIaMZ/Xu2u/7Ygy7qBVUSIg3C9I08TSA+I0gbQJo9csE8ZQz7/nreCHiQ4QFl
-         48o2ju8PoIDpBIygWfn//gWIVY3c6foUy++herauPkPgxJZKKl7KrYd+D6UdPxRLeSse
-         NFvQ==
-X-Forwarded-Encrypted: i=1; AJvYcCV8Hx+LUYCyUYOVw+pu7KRzUFn3BShCjjLXbtGvDlbQJCyrsOBdCVyxv8HDZ3D071CdmZoeWtfTvao5PKI=@vger.kernel.org
-X-Gm-Message-State: AOJu0YyunM5IoEyN21p+obHjzQPCPzEB3hvjhoYTC2FzETzlkfJKr4EO
-	cjbz7rj1GO7rspV10wMJSk/2oYPRlY18B32W0FJrqJs6oQv7oKIX
-X-Google-Smtp-Source: AGHT+IFhB+2BMCRwmpZuXSYzYXPtRXRCzq1BvxkBqoJvQ5usuZV8BHo1l6lEyRMaJ+Zddgllue0B8A==
-X-Received: by 2002:a05:690c:dc4:b0:6e5:e714:3be0 with SMTP id 00721157ae682-6e5e7143bf9mr40581647b3.1.1729487872798;
-        Sun, 20 Oct 2024 22:17:52 -0700 (PDT)
-Received: from localhost.localdomain (host-36-27.ilcul54.champaign.il.us.clients.pavlovmedia.net. [68.180.36.27])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-6e5f5d6f9dbsm5510267b3.141.2024.10.20.22.17.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 20 Oct 2024 22:17:51 -0700 (PDT)
-From: Gax-c <zichenxie0106@gmail.com>
-To: james.smart@broadcom.com,
-	ram.vegesna@broadcom.com,
-	James.Bottomley@HansenPartnership.com,
-	martin.petersen@oracle.com,
-	fthain@linux-m68k.org,
-	quic_jjohnson@quicinc.com,
-	hare@suse.de,
-	dwagner@suse.de
-Cc: linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	zzjas98@gmail.com,
-	chenyuan0y@gmail.com,
-	Zichen Xie <zichenxie0106@gmail.com>
-Subject: [PATCH v2] scsi: elx: efct: Cast an operand to u64 to prevent potential u32 overflow in efct_efclib_config()
-Date: Mon, 21 Oct 2024 00:17:39 -0500
-Message-Id: <20241021051738.17667-1-zichenxie0106@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        d=1e100.net; s=20230601; t=1729731725; x=1730336525;
+        h=content-transfer-encoding:cc:content-language:to:subject:from
+         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=moRdslhIcfQFZ6VJ3Ktj0BaLtFKEuFkVkJRmlDTgxhE=;
+        b=dGeUPpKkzwmUOU5fLitBjJHqUK97QDUfeCSss4kowsZBCenaA7Jivx/DdNxZB1VWdk
+         R+jN1ZWU8j0LsiSiJDPa/TwhxBBL+Pg8vlIGdVkc9l7EwN2mFgvSRwHxXQuKKUi80xEU
+         9L2pQqo8lhFu+vZkOd+ogobwmbVKDRCeLyc1Bf6eExAatmkFLegM0bIAXiJMnp7jhsWY
+         bfK/osyKrjp/lRaPxu5H9t02cnoyRLt65qwUQImz0DhoEoLbgChYzqg6juXMznnQVa0k
+         Y5C6syQhHedTpO8m62MQMfPYnKsrdVy/KCu9DxJLuqOcx+CiGPqaMy+uZtldgFs/tE1h
+         yMeQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWjdGmkR5LQN7WM4cpRSwJlKm7wwGazPh2nIGDHieE5sYi0z3qK64Zogo/Tg7Be3rvbaDwjDR8+FWpe0mo=@vger.kernel.org, AJvYcCX37QgDbjiFwvgwA3LbkZsSZnz/QQ6xXTi2lr/Dot+s+v/i5z0CZlfTP2mzLgWGS41Ma6D5SHG55prWSsab@vger.kernel.org
+X-Gm-Message-State: AOJu0YwKxU2askyzN1qRErRLohSONJ7iG7S5PW7eevwPcZ8Ml6OWTpxK
+	17vei+tZgk2Ftrop5Yy0B4o0apUoDKes0J8XW+05sFAqy/8kBDxm
+X-Google-Smtp-Source: AGHT+IGJqfilXWarx/ZGLExIGO0dz7Zhrtmh314lBbFCPtvirF6mBhnuLMrv5oztkVLBKOLtYTDQzQ==
+X-Received: by 2002:a62:e416:0:b0:720:36c5:b548 with SMTP id d2e1a72fcca58-72036c5b8c4mr3837076b3a.16.1729731724798;
+        Wed, 23 Oct 2024 18:02:04 -0700 (PDT)
+Received: from [10.4.153.125] ([129.94.128.29])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-71ec1312d53sm6932499b3a.2.2024.10.23.18.02.01
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 23 Oct 2024 18:02:04 -0700 (PDT)
+Message-ID: <57cb0385-209e-4cb0-b34c-281e5f99a3d9@gmail.com>
+Date: Thu, 24 Oct 2024 09:02:00 +0800
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+From: Tuo Li <islituo@gmail.com>
+Subject: [BUG] IB/isert: Possible null-pointer dereference related
+To: sagi@grimberg.me, jgg@ziepe.ca, leon@kernel.org
+Content-Language: en-US
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
+ linux-kernel@vger.kernel.org, baijiaju1990@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-From: Zichen Xie <zichenxie0106@gmail.com>
+Hello,
 
-This was found by a static analyzer.
-There may be a potential integer overflow issue in
-efct_efclib_config(). efc->max_xfer_size is defined
-as "u64" while sli->sge_supported_length and
-sli_get_max_sgl(&efct->hw.sli) are all "u32".
-The result of the calculation will be limited to
-"u32" without correct casting.
-We recommend adding an extra cast to prevent
-potential integer overflow.
+Our static analysis tool has identified a potential null-pointer
+dereference related to the wait-completion synchronization mechanism in
+ibsert.c.
 
-Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
-Signed-off-by: Zichen Xie <zichenxie0106@gmail.com>
----
-v2: adjust subject title.
----
- drivers/scsi/elx/efct/efct_driver.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Consider the following execution scenario:
 
-diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
-index 55d2301bfd7d..7fe180037c2d 100644
---- a/drivers/scsi/elx/efct/efct_driver.c
-+++ b/drivers/scsi/elx/efct/efct_driver.c
-@@ -109,7 +109,7 @@ efct_efclib_config(struct efct *efct, struct libefc_function_template *tt)
- 	efc->log_level = EFC_LOG_LIB;
- 
- 	sli = &efct->hw.sli;
--	efc->max_xfer_size = sli->sge_supported_length *
-+	efc->max_xfer_size = (u64)sli->sge_supported_length *
- 			     sli_get_max_sgl(&efct->hw.sli);
- 	efc->sli = sli;
- 	efc->fcfi = efct->hw.fcf_indicator;
--- 
-2.25.1
+  isert_login_recv_done()  //1375
+    if (isert_conn->conn)  //1390
+    complete(&isert_conn->login_req_comp);  //1398
 
+The variable isert_conn->conn is checked by an if statement at Line 1390,
+which indicates that isert_conn->conn can be NULL. Then, complete() is
+called at Line 1398 which will wake up the wait_for_completion_xxx().
+
+Consider the following wait_for_completion_interruptible().
+
+  isert_get_login_rx()  //2336
+    wait_for_completion_interruptible(&isert_conn->login_req_comp); //2342
+    isert_rx_login_req(isert_conn);  //2359
+      conn = isert_conn->conn;       //981
+      login = conn->conn_login;      //982
+
+The value of isert_conn->conn is assigned to conn at Line 981, and then
+dereferenced through conn->conn_login at Line 982. However, the variable
+isert_conn->conn is checked at Line 1390, which means it can be NULL. If
+so, a null-pointer dereference can occur at Line 982.
+
+I am not quite sure whether this possible null-pointer dereference is real
+and how to fix it if it is real.
+Any feedback would be appreciated, thanks!
+
+Best wishes,
+Tuo Li
