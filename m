@@ -1,77 +1,87 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 59DE42E419;
-	Wed, 30 Oct 2024 02:18:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
+Received: from mta-03.yadro.com (mta-03.yadro.com [89.207.88.253])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E017115AAB6;
+	Fri,  1 Nov 2024 09:38:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.207.88.253
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1730254695; cv=none; b=NMDuvmWTX22WbtVT/RB9u3afTfKz3/fwfDcFbcOqT2zxMnDxkSbCR/qI+L2rn/zu/R0mijTkbHJyXwlcqf1pL3rnbZWgSU3kM4z+1fd8nmyalqQLkXpiCeuwo1tzW7qgGzjWKE6Apd3AH2z/vem7FYXp5AFx6HiRyIKm0ef5ZeY=
+	t=1730453917; cv=none; b=Euz30xZ1AQNV2JLw5Ms4HMEKiAHiFEZIcoIwnbSBOPyK29CwrIyxeVlGuDk2PhGPkk8e8ngJJm4AW/nxrwvZd7NChJVH+QcpayokvKIawjT+AFCbQbTCNSBhtKAQcrwyqI7Th41xGpx5yJCT+44+QgJnH8P/haPQnPyC/8NmtGA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1730254695; c=relaxed/simple;
-	bh=9eqQfdscBEjLtcrWq8qKVNz4RDrbIrtOF0WQ6IAd98E=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=GQI0MRfSLF30T7lbUlgpa7UrcoCDPdiyePBKf2MxldF6arqAlT76usYkbFdIWMvG44yY5ItBQHcQ/rBkIlRKcKqq85CfOqvX+DNd+IGpTufCbm7/XDTv0pz77RKPKWg1Hw4Hc/E/JOwKkzx4VDVBtVqBmiGjU0lWW59w+bNSSkI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=P/hSRdOe; arc=none smtp.client-ip=117.135.210.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1730453917; c=relaxed/simple;
+	bh=5UH5ZYO1q7g1Z8k4/mlpRUHrS+F7qL+lbeCgu/TgPZk=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=jQmVBLzs3eE3AKBvoCK2gAVOBFa7Pnbd+yxFaMveGJnb9VH5koZ1T9Om7IKAYMSgXYicSuZE096U2uyMiTKke0ahE6+QTKT0BERLUekP2QujbKUmCf0ZkhBnT9DTyQYY/kLiNmT1TkkVcPQnDbTyM+tOxnaKyTOwy3eJsF0VYDc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=yadro.com; spf=pass smtp.mailfrom=yadro.com; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=WYKhduho; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=IpSDNkeo; arc=none smtp.client-ip=89.207.88.253
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=yadro.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yadro.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="P/hSRdOe"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=+LaK4
-	I9+wihg0+jMQhuM6fhmJK0Ypaq2No83nxa1oWg=; b=P/hSRdOe3bu+dRTXrH/+a
-	iEIpgRMP7wXLjYl5ltIepFWr4OSDxM7VE7GL94S2HW+7l+7FIXB8wI2T2L+bJdJb
-	Ry9lsDMHg8yu7SgBAh8V/dwfdU9iaHs11s1+hr+j+tYQ/M/gIlIlFwAgHTPow/FO
-	l7l7B4uXITSdYwdLP4lvII=
-Received: from liubaolin-VMware-Virtual-Platform.localdomain (unknown [223.70.160.239])
-	by gzsmtp1 (Coremail) with SMTP id PCgvCgD3n_BZlyFngsUABw--.64607S2;
-	Wed, 30 Oct 2024 10:18:02 +0800 (CST)
-From: Baolin Liu <liubaolin12138@163.com>
-To: martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	liubaolin12138@163.com,
-	Baolin Liu <liubaolin@kylinos.cn>
-Subject: [PATCH v1 v1] target: fix incorrect function name in pr_err
-Date: Wed, 30 Oct 2024 10:18:00 +0800
-Message-Id: <20241030021800.234980-1-liubaolin12138@163.com>
-X-Mailer: git-send-email 2.39.2
+	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="WYKhduho";
+	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="IpSDNkeo"
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-03.yadro.com 6DD92E0002
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-04;
+	t=1730453901; bh=5UH5ZYO1q7g1Z8k4/mlpRUHrS+F7qL+lbeCgu/TgPZk=;
+	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version:From;
+	b=WYKhduho3ag/SWd4IKqjFmP5Xen8eB8RGepp0pcrL7H+utEIRZQ74ly2LF5KeJ+sW
+	 880P9mLuBRoSI9ztW4JmJMYf+fR4lB/BgdAVpHJig2Ta3ud2lZSnnuBWRhS/+0YCWg
+	 c83/hlB2gpUtYuUdZe/LWQKs52G2nlavKo1YlCV/zBMpH7gzXvc7yqqAei++YW3CzM
+	 pQLVSLXS5Bf6r+ZiB7PleOmPsYunG008VBbcVVd0+DBd+tcF7uR/qUnzQMbaGmRKfN
+	 f8QkePiesdZt3MSRWJanzrrDMAkrzxS3jJ69yMfNQpGN0zXnJR6TdysjyqVdSAqT+u
+	 M6ho4E5NdmBHA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
+	t=1730453901; bh=5UH5ZYO1q7g1Z8k4/mlpRUHrS+F7qL+lbeCgu/TgPZk=;
+	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version:From;
+	b=IpSDNkeoeYK2uEMJgfoSj8SIdfXHu5fi4gZP/j5YGdb1JNVTWj6zD2WmnJJu2Py6x
+	 tRnENn7aFHf2is4k5DYD501J74gtXaM1ktiTKYsEYbKUw4DYWrl9dMfJpxA7nrOfIx
+	 86+GnH8Eg5Y+EatVExHqYdUYC9H2vlog02D6LiThtZKgVZNvU4b26nAv1tYSyULSJ+
+	 RLWShKWl7ZKkwes1hZEgkM/nri9rJ40EXCKljvbVhNsA5dTWwMwMAgjjHE8LMJIXpu
+	 YRWBJ691MipvR80kgcpyeaO7le7VhRM/A6ytjBkH67qQk0OSrzrRD9ELLHWSTSeYdH
+	 pB52pYI+dHhkA==
+From: Anastasia Kovaleva <a.kovaleva@yadro.com>
+To: "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>
+CC: "njavali@marvell.com" <njavali@marvell.com>,
+	"GR-QLogic-Storage-Upstream@marvell.com"
+	<GR-QLogic-Storage-Upstream@marvell.com>,
+	"James.Bottomley@HansenPartnership.com"
+	<James.Bottomley@HansenPartnership.com>, "martin.petersen@oracle.com"
+	<martin.petersen@oracle.com>, "bvanassche@acm.org" <bvanassche@acm.org>,
+	"quinn.tran@cavium.com" <quinn.tran@cavium.com>,
+	"himanshu.madhani@oracle.com" <himanshu.madhani@oracle.com>,
+	"linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux@yadro.com" <linux@yadro.com>, "hare@suse.de" <hare@suse.de>,
+	"stable@vger.kernel.org" <stable@vger.kernel.org>
+Subject: Re: [PATCH v3 0/3] Fix bugs in qla2xxx driver
+Thread-Topic: [PATCH v3 0/3] Fix bugs in qla2xxx driver
+Thread-Index: AQHbGzIvZMV/oTAyUkWQTinjaU2zibKiTS4A
+Date: Fri, 1 Nov 2024 09:38:20 +0000
+Message-ID: <93FA6AD1-9959-4E4C-A447-9CF694A6A024@yadro.com>
+References: <20241010163236.27969-1-a.kovaleva@yadro.com>
+In-Reply-To: <20241010163236.27969-1-a.kovaleva@yadro.com>
+Accept-Language: ru-RU, en-US
+Content-Language: en-GB
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <90F19368F5ECAC4B88EE53A71DD7A831@yadro.com>
+Content-Transfer-Encoding: base64
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:PCgvCgD3n_BZlyFngsUABw--.64607S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWrtF17ZryruF1DZF4rWw4kJFb_yoWDWrc_u3
-	4UArnrWr18ur1kW34fC3s7Zr90yrn7ZF4Iva1Fy39xta45W34Yy3sYgFn5ArWq9r40q3W5
-	C3saqF4DGFWfKjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7sRtkucJUUUUU==
-X-CM-SenderInfo: xolxutxrol0iasrtmqqrwthudrp/1tbiMRmIymchlCVYDAAAsJ
 
-From: Baolin Liu <liubaolin@kylinos.cn>
-
-in pr_err(),bdev_open_by_path() should be renamed to
-bdev_file_open_by_path()
-
-Fixes: 034f0cf8fdf9 ("target: port block device access to file")
-
-Signed-off-by: Baolin Liu <liubaolin@kylinos.cn>
----
- drivers/target/target_core_pscsi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index 440e07b1d5cd..287ac5b0495f 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -369,7 +369,7 @@ static int pscsi_create_type_disk(struct se_device *dev, struct scsi_device *sd)
- 	bdev_file = bdev_file_open_by_path(dev->udev_path,
- 				BLK_OPEN_WRITE | BLK_OPEN_READ, pdv, NULL);
- 	if (IS_ERR(bdev_file)) {
--		pr_err("pSCSI: bdev_open_by_path() failed\n");
-+		pr_err("pSCSI: bdev_file_open_by_path() failed\n");
- 		scsi_device_put(sd);
- 		return PTR_ERR(bdev_file);
- 	}
--- 
-2.39.2
-
+T24gVGh1LCAxMCBPY3QgMjAyNCAxOTozMjozMyArMDMwMCwgQW5hc3Rhc2lhIEtvdmFsZXZhIHdy
+b3RlOg0KPiBUaGlzIHNlcmllcyBvZiBwYXRjaGVzIGNvbnRhaW5zIDMgc2VwYXJhdGUgY2hhbmdl
+cyB0aGF0IGZpeCBzb21lIGJ1Z3MgaW4NCj4gdGhlIHFsYTJ4eHggZHJpdmVyLg0KPiAtLS0NCj4g
+djM6DQo+IC0gRml4IGJ1aWxkIGlzc3VlIGluIHBhdGNoIDENCj4gdjI6DQo+IC0gQ2hhbmdlIGEg
+c3BpbmxvY2sgd3JhcCB0byBhIFdSSVRFX09OQ0UoKSBpbiBwYXRjaCAxDQo+IC0gQWRkIFJldmll
+d2VkLWJ5IHRhZ3Mgb24gcGF0Y2hlcyAyIGFuZCAzDQo+IC0tLQ0KPiBBbmFzdGFzaWEgS292YWxl
+dmEgKDMpOg0KPiAgICBzY3NpOiBxbGEyeHh4OiBEcm9wIHN0YXJ2YXRpb24gY291bnRlciBvbiBz
+dWNjZXNzDQo+ICAgIHNjc2k6IHFsYTJ4eHg6IE1ha2UgdGFyZ2V0IHNlbmQgY29ycmVjdCBMT0dP
+DQo+ICAgIHNjc2k6IHFsYTJ4eHg6IFJlbW92ZSBpbmNvcnJlY3QgdHJhcA0KPg0KPiAgIGRyaXZl
+cnMvc2NzaS9xbGEyeHh4L3FsYV9pb2NiLmMgICB8IDExICsrKysrKysrKysrDQo+ICAgZHJpdmVy
+cy9zY3NpL3FsYTJ4eHgvcWxhX2lzci5jICAgIHwgIDQgKysrKw0KPiAgIGRyaXZlcnMvc2NzaS9x
+bGEyeHh4L3FsYV90YXJnZXQuYyB8IDE2ICsrKysrKystLS0tLS0tLS0NCj4gICAzIGZpbGVzIGNo
+YW5nZWQsIDIyIGluc2VydGlvbnMoKyksIDkgZGVsZXRpb25zKC0pDQo+DQoNCkdlbnRsZSBwaW5n
+DQoNCg==
