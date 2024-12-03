@@ -1,59 +1,59 @@
 Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BFD431FC7F0
-	for <target-devel@vger.kernel.org>; Tue,  3 Dec 2024 19:17:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42CF713B2B8
+	for <target-devel@vger.kernel.org>; Tue,  3 Dec 2024 19:17:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733253440; cv=none; b=Z42uu/xoHZjKp13anxRXC9cQZQ2HHVqUd+eFXXy5Ec3+4lnn00ap4m4+MUV8rrzH0rPYSq6xIRVXiEGCKJZIyTEWpWzEPoD45zUiNKDZtKqJ7wCAY+QLOpAnFzpoMX1P88Gfbk6Ge2dP0NoNYPRmUyQdjuNeVnS0opEchK9tf0A=
+	t=1733253442; cv=none; b=uApO6m31cmddHLFq+Nsuupkj+QbBzlKqv1GU+HH1uFmf4joJpf/aYQ6bijpu/QurFSBu52P0j8lzzobPbdNGEv0eCRlenJap0ea4mIsxEytrFEc0DHzBMBH4Q9GPLPCQl22gCEDNL4zRzkryqtB+v69lfcB+KSfjt7p61krnhjw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733253440; c=relaxed/simple;
-	bh=zpLyMeqw+tfBFC4EwfdSli1uN+ElNLiJtRsWOc27860=;
+	s=arc-20240116; t=1733253442; c=relaxed/simple;
+	bh=3RGa6wIPJJmj3YmaneX0bkjHsobhHzGW/4IZcnd4vm8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lE+qarVwQEemkRCBULiW/QIWmpwZ6AjoxGmcgOWGwJJWHHFiEu0d+WuWGyogJcOb0zT6s3FbputfPkI8sMrX/+KRjQUFcBlSAzdMULSUrMyiasMjjq9Kmu5KT9sA1Dm+WYZD3OINLT2/SBVtT0Dg+Paa+JlsQbC/SchkRNfkO50=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=PZFVKCGO; arc=none smtp.client-ip=205.220.177.32
+	 MIME-Version; b=rhdIhOsGHFEAeRYeMdxhlkv21FkpOCxFnKZvfosSXjPV/cXQf9mCbbRSJ0uwRk8I39kim+2iiwLGw2VAy626fUfjsz1pCLlB/noIl2ZSgbKyMHqhHf6JNAGi+E2zUvx83LgCVdSoNxW/ziLrhSc1mJwA6PQj3eMrVYX+yI8h1bQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=elwL5Kn/; arc=none smtp.client-ip=205.220.177.32
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="PZFVKCGO"
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B3HtaP6012461;
-	Tue, 3 Dec 2024 19:17:14 GMT
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="elwL5Kn/"
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B3HtY9K030152;
+	Tue, 3 Dec 2024 19:17:15 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=corp-2023-11-20; bh=P2BAh
-	ZdACeXaj+1Ef20ces3JOwurWxqNdeMM2D5u+yg=; b=PZFVKCGO5Ey6sMuOPzrlR
-	RIW3Gg2BSXY3GaRqAlhvxerVj2pE7LTlpUV4r9Xn37qfdd+gAOGo6KPsacuRQC0b
-	pffJXSzUApQhMwac6cqb0hPKILhDlEbMlOQG9UQZ2gfadcUAbdLhgGvx+QVdgZ2Z
-	UNYJDYgbNcCR78Y6AQu7APVfL5Bf6bW9W9p7GufXVhGMcCr6MCqKcYCUcw2u5wwr
-	gCVy79RZea8k9U+nacOKsgZ4UGfUdBCTd8w9HSs2aQ6cG9SoW4vGhqRTRVw8NkHU
-	uJIfJMNsZ+oXQySSEsjweM7enOQVKwoZklAHPrcC6WcjJNoL8ZSVolgIS9Rm4Nms
-	A==
+	:mime-version:references:subject:to; s=corp-2023-11-20; bh=oxszk
+	vREAoyIb2xNXkcmdUi1mmT1kf5hOHPlhPkFOK4=; b=elwL5Kn/qt/e78wAI1yP7
+	OIbEXoygr7Kdi/7QV5QFh8h+OydPp9X5TGgSUzZXfRJzoW8DHuQXp2T2GZ1dqPtp
+	YKqBKHngVNCc80arBkPDqyaOU1WaDfCRbNUw9FdLEPcNUdn33cY6sEHTmzeaRQ2y
+	j5STqmJlEqD3aMPMmg9BQdylyeS2MNJ27a29jM+BcEIaoaXmq75ZuTqRf1eehFSm
+	SmJHK7KJnTdRGuJxAIqNSsQRjHDTv76y9j9XdKWmPMvDcJonpZ1dfRLX44vuwwrw
+	vMl04VnX8r9mvCHOqRFZMBLCvWtKn9VOx+ycdd/FGqwXMvVBIupr3v/N5XaL4AeI
+	w==
 Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 437s4c6sxn-1
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 437tas6sbf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 03 Dec 2024 19:17:14 +0000 (GMT)
+	Tue, 03 Dec 2024 19:17:15 +0000 (GMT)
 Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 4B3J65mF001214;
-	Tue, 3 Dec 2024 19:17:13 GMT
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 4B3JAiOe001877;
+	Tue, 3 Dec 2024 19:17:14 GMT
 Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 437s58akdh-1
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 437s58akem-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 03 Dec 2024 19:17:13 +0000
+	Tue, 03 Dec 2024 19:17:14 +0000
 Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4B3JH9ME021603;
-	Tue, 3 Dec 2024 19:17:12 GMT
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4B3JH9MG021603;
+	Tue, 3 Dec 2024 19:17:14 GMT
 Received: from mnc-mac.us.oracle.com (dhcp-10-65-163-31.vpn.oracle.com [10.65.163.31])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 437s58ak94-4;
-	Tue, 03 Dec 2024 19:17:12 +0000
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 437s58ak94-5;
+	Tue, 03 Dec 2024 19:17:14 +0000
 From: Mike Christie <michael.christie@oracle.com>
 To: stefanha@redhat.com, jasowang@redhat.com, mst@redhat.com,
         sgarzare@redhat.com, pbonzini@redhat.com, target-devel@vger.kernel.org,
         virtualization@lists.linux-foundation.org
 Cc: Mike Christie <michael.christie@oracle.com>
-Subject: [PATCH v2 3/8] vhost-scsi: Add better resource allocation failure handling
-Date: Tue,  3 Dec 2024 13:15:10 -0600
-Message-ID: <20241203191705.19431-4-michael.christie@oracle.com>
+Subject: [PATCH v2 4/8] vhost-scsi: Return queue full for page alloc failures during copy
+Date: Tue,  3 Dec 2024 13:15:11 -0600
+Message-ID: <20241203191705.19431-5-michael.christie@oracle.com>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20241203191705.19431-1-michael.christie@oracle.com>
 References: <20241203191705.19431-1-michael.christie@oracle.com>
@@ -71,86 +71,72 @@ X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 mlxlo
  adultscore=0 mlxscore=0 spamscore=0 suspectscore=0 malwarescore=0
  phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2411120000 definitions=main-2412030159
-X-Proofpoint-ORIG-GUID: 9fbUM6AojZCIvsmJ0Ou9sFzj1ueXOVj0
-X-Proofpoint-GUID: 9fbUM6AojZCIvsmJ0Ou9sFzj1ueXOVj0
+X-Proofpoint-GUID: 4yjL3-oGSeacVxwg97DjwtNwE6snCSJA
+X-Proofpoint-ORIG-GUID: 4yjL3-oGSeacVxwg97DjwtNwE6snCSJA
 
-If we can't allocate mem to map in data for a request or can't find
-a tag for a command, we currently drop the command. This leads to the
-error handler running to clean it up. Instead of dropping the command
-this has us return an error telling the initiator that it queued more
-commands than we can handle. The initiator will then reduce how many
-commands it will send us and retry later.
+This has us return queue full if we can't allocate a page during the
+copy operation so the initiator can retry.
 
 Signed-off-by: Mike Christie <michael.christie@oracle.com>
 ---
- drivers/vhost/scsi.c | 28 +++++++++++++++++++++++++---
- 1 file changed, 25 insertions(+), 3 deletions(-)
+ drivers/vhost/scsi.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/vhost/scsi.c b/drivers/vhost/scsi.c
-index 99e008219e6c..ad7c778632f9 100644
+index ad7c778632f9..0559ba01ae27 100644
 --- a/drivers/vhost/scsi.c
 +++ b/drivers/vhost/scsi.c
-@@ -629,7 +629,7 @@ vhost_scsi_get_cmd(struct vhost_virtqueue *vq, struct vhost_scsi_tpg *tpg,
+@@ -756,7 +756,7 @@ vhost_scsi_copy_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
+ 	size_t len = iov_iter_count(iter);
+ 	unsigned int nbytes = 0;
+ 	struct page *page;
+-	int i;
++	int i, ret;
  
- 	tag = sbitmap_get(&svq->scsi_tags);
- 	if (tag < 0) {
--		pr_err("Unable to obtain tag for vhost_scsi_cmd\n");
-+		pr_warn_once("Guest sent too many cmds. Returning TASK_SET_FULL.\n");
- 		return ERR_PTR(-ENOMEM);
- 	}
- 
-@@ -928,6 +928,24 @@ static void vhost_scsi_target_queue_cmd(struct vhost_scsi_cmd *cmd)
- 	target_submit(se_cmd);
- }
- 
-+static void
-+vhost_scsi_send_status(struct vhost_scsi *vs, struct vhost_virtqueue *vq,
-+		       int head, unsigned int out, u8 status)
-+{
-+	struct virtio_scsi_cmd_resp __user *resp;
-+	struct virtio_scsi_cmd_resp rsp;
-+	int ret;
-+
-+	memset(&rsp, 0, sizeof(rsp));
-+	rsp.status = status;
-+	resp = vq->iov[out].iov_base;
-+	ret = __copy_to_user(resp, &rsp, sizeof(rsp));
-+	if (!ret)
-+		vhost_add_used_and_signal(&vs->dev, vq, head, 0);
-+	else
-+		pr_err("Faulted on virtio_scsi_cmd_resp\n");
-+}
-+
- static void
- vhost_scsi_send_bad_target(struct vhost_scsi *vs,
- 			   struct vhost_virtqueue *vq,
-@@ -1215,8 +1233,8 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
- 					 exp_data_len + prot_bytes,
- 					 data_direction);
- 		if (IS_ERR(cmd)) {
--			vq_err(vq, "vhost_scsi_get_cmd failed %ld\n",
--			       PTR_ERR(cmd));
-+			ret = PTR_ERR(cmd);
-+			vq_err(vq, "vhost_scsi_get_tag failed %dd\n", ret);
+ 	if (cmd->tvc_data_direction == DMA_FROM_DEVICE) {
+ 		cmd->saved_iter_addr = dup_iter(&cmd->saved_iter, iter,
+@@ -769,6 +769,7 @@ vhost_scsi_copy_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
+ 		page = alloc_page(GFP_KERNEL);
+ 		if (!page) {
+ 			i--;
++			ret = -ENOMEM;
  			goto err;
  		}
- 		cmd->tvc_vhost = vs;
-@@ -1253,11 +1271,15 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
- 		 * EINVAL: Invalid response buffer, drop the request
- 		 * EIO:    Respond with bad target
- 		 * EAGAIN: Pending request
-+		 * ENOMEM: Could not allocate resources for request
- 		 */
- 		if (ret == -ENXIO)
- 			break;
- 		else if (ret == -EIO)
- 			vhost_scsi_send_bad_target(vs, vq, vc.head, vc.out);
-+		else if (ret == -ENOMEM)
-+			vhost_scsi_send_status(vs, vq, vc.head, vc.out,
-+					       SAM_STAT_TASK_SET_FULL);
- 	} while (likely(!vhost_exceeds_weight(vq, ++c, 0)));
- out:
- 	mutex_unlock(&vq->mutex);
+ 
+@@ -776,8 +777,10 @@ vhost_scsi_copy_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
+ 		sg_set_page(&sg[i], page, nbytes, 0);
+ 
+ 		if (cmd->tvc_data_direction == DMA_TO_DEVICE &&
+-		    copy_page_from_iter(page, 0, nbytes, iter) != nbytes)
++		    copy_page_from_iter(page, 0, nbytes, iter) != nbytes) {
++			ret = -EFAULT;
+ 			goto err;
++		}
+ 
+ 		len -= nbytes;
+ 	}
+@@ -792,7 +795,7 @@ vhost_scsi_copy_iov_to_sgl(struct vhost_scsi_cmd *cmd, struct iov_iter *iter,
+ 	for (; i >= 0; i--)
+ 		__free_page(sg_page(&sg[i]));
+ 	kfree(cmd->saved_iter_addr);
+-	return -ENOMEM;
++	return ret;
+ }
+ 
+ static int
+@@ -1249,9 +1252,9 @@ vhost_scsi_handle_vq(struct vhost_scsi *vs, struct vhost_virtqueue *vq)
+ 			 " %d\n", cmd, exp_data_len, prot_bytes, data_direction);
+ 
+ 		if (data_direction != DMA_NONE) {
+-			if (unlikely(vhost_scsi_mapal(cmd, prot_bytes,
+-						      &prot_iter, exp_data_len,
+-						      &data_iter))) {
++			ret = vhost_scsi_mapal(cmd, prot_bytes, &prot_iter,
++					       exp_data_len, &data_iter);
++			if (unlikely(ret)) {
+ 				vq_err(vq, "Failed to map iov to sgl\n");
+ 				vhost_scsi_release_cmd_res(&cmd->tvc_se_cmd);
+ 				goto err;
 -- 
 2.34.1
 
