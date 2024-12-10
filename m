@@ -1,557 +1,226 @@
-Received: from smtp.smtpout.orange.fr (smtp-13.smtpout.orange.fr [80.12.242.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 470CC286A9;
-	Sat,  7 Dec 2024 16:49:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.13
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1733590160; cv=none; b=EVxR4V7F0ZoUtYLoMr4dBc14KgROvdp3sIheZau9yY4VVdFE8CrRFPv4hO9UM0YI/qXkI6IOGqbOdyIaynIzcb8VGC5aQF6/yIoB8aLQ1e54fT2OImosoWNlGePeZrpfgGAboLmSOYexCDMsqkIywMwpmq/b6zPOj9+r3+EDRbY=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1733590160; c=relaxed/simple;
-	bh=n1GrpVCuxc4bWANuFeEUE/L+tNU+VyuPErzeLiiXcls=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=FlcTn2O++Q//UaYIjUkg2TzpwCkG88UKJLLs/YMjYNiwwkijMZayt8U1pr6KQqvqifkbV/WZVlGJ3LORhRj6Bj92fjrXQYQJcW4wDJkPXp7K2nz1UjspkiadQuCq8C3g0AvNXe3gbZ99aMOFj1XMx1qe/lzfav614mY2HbdqTuM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=OBx4Tzn6; arc=none smtp.client-ip=80.12.242.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EB0D8F6D;
+	Tue, 10 Dec 2024 03:01:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.177.32
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1733799703; cv=fail; b=bSRQtB/F+SC1zJMyoKEF9/oFJNJNj1YDhio+8rGEaBH5K97R/GZyZke2GTkYPPnXYyKIVYbUu9l+H6dsdvJnHuCTSxJGnTeWObEpfNtokwBXNVI24fHTmWdDQvdXMPENtm39qK6zG2ufluYb6p8iQusLfI6QDRA0qSEGB/F6q7Q=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1733799703; c=relaxed/simple;
+	bh=NmngPX7ySfORIkUgMDjlMpp9MBPfqcDFw/HN+tLlYm0=;
+	h=To:Cc:Subject:From:In-Reply-To:Message-ID:References:Date:
+	 Content-Type:MIME-Version; b=BEFf0hMWyxx1HpQVazCNhBAtU9ALu4KtY/WU4Z4BrOXaJ5i8hTEO4CfoBCgHT3Bey5RzgDJRJgLp8NHRPeEoXjnVLQ5pAdm5aXm7sgtuwNWkd6/X9K2Q++28nrbPwk07s+kq0RlQSFXkNTA8pJQWO2T1Z2dywZ7HOvb6/ZSeaPY=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=TXHZmwBD; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=Mm6b50kb; arc=fail smtp.client-ip=205.220.177.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="OBx4Tzn6"
-Received: from localhost.localdomain ([90.11.132.44])
-	by smtp.orange.fr with ESMTPA
-	id JxzFtz6sylGpZJxzFtaBI8; Sat, 07 Dec 2024 17:49:07 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1733590147;
-	bh=iO6Lj3tjFBVS0+oDW8iUX7h6GGQlAfcn1BNrliJn1Kk=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=OBx4Tzn6s8y4L6aNrZNVwTMLBe9T1iCuMiP4wcX2mXxc/ef5J9uZxM0fXii277BHl
-	 eL1wqctdSo0o4hQh4mQm1Ppbs0PfWOU3b5TwJYuAV/D+iZ6xdhhbKRKmuAeS/SCC2/
-	 HFgl5DAOZBrN3S7BBjUZur2aymmPJqAqI6023heztVdcMPcYpQqG2uH1/+GakSj8Rd
-	 hdzMSd8KA5yyUJHBQ0ogeTOzMgve/H4r/HyHdBDcMAdfA+VgS4kenBPuVLbndLhUOI
-	 asrjXYwsPEkWiLGKUlo6hhlavTvgi6XcXo822HH21JRTx2MJFRb6oYuveW/sQ2B53R
-	 uimh24wJ40hCw==
-X-ME-Helo: localhost.localdomain
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sat, 07 Dec 2024 17:49:07 +0100
-X-ME-IP: 90.11.132.44
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: Adam Radford <aradford@gmail.com>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Khalid Aziz <khalid@gonehiking.org>,
-	Matthew Wilcox <willy@infradead.org>,
-	Hannes Reinecke <hare@suse.com>,
-	"Manoj N. Kumar" <manoj@linux.ibm.com>,
-	Uma Krishnan <ukrishn@linux.ibm.com>,
-	Oliver Neukum <oliver@neukum.org>,
-	Ali Akcaagac <aliakc@web.de>,
-	Jamie Lenehan <lenehan@twibble.org>,
-	Finn Thain <fthain@linux-m68k.org>,
-	Michael Schmitz <schmitzmic@gmail.com>,
-	James Smart <james.smart@broadcom.com>,
-	Ram Vegesna <ram.vegesna@broadcom.com>,
-	Satish Kharat <satishkh@cisco.com>,
-	Sesidhar Baddela <sebaddel@cisco.com>,
-	Karan Tilak Kumar <kartilak@cisco.com>,
-	HighPoint Linux Team <linux@highpoint-tech.com>,
-	Brian King <brking@us.ibm.com>,
-	Kashyap Desai <kashyap.desai@broadcom.com>,
-	Sumit Saxena <sumit.saxena@broadcom.com>,
-	Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
-	Chandrakanth patil <chandrakanth.patil@broadcom.com>,
-	GOTO Masanori <gotom@debian.or.jp>,
-	YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
-	Jack Wang <jinpu.wang@cloud.ionos.com>,
-	Nilesh Javali <njavali@marvell.com>,
-	Manish Rangankar <mrangankar@marvell.com>,
-	GR-QLogic-Storage-Upstream@marvell.com,
-	Michael Reed <mdr@sgi.com>
-Cc: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	megaraidlinux.pdl@broadcom.com
-Subject: [PATCH] scsi: Constify struct pci_device_id
-Date: Sat,  7 Dec 2024 17:48:28 +0100
-Message-ID: <fc61b1946488c1ea8f7a17a06cf40fbd05dcc6de.1733590049.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.47.1
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="TXHZmwBD";
+	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="Mm6b50kb"
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4BA1BvQh005043;
+	Tue, 10 Dec 2024 03:00:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=corp-2023-11-20; bh=DFnN3//pDIcFv5T5F+
+	qit1z5bgh5rVnTug0rGbIoDLw=; b=TXHZmwBDSvqst0flfZmDqnSCqJi2pdJSDd
+	CobGWdD6Ere0tmH1EZJ+F7TSsjj+FgT0CgHo6K/Y0sEFFsoZRB90zJfk0ERwd/y5
+	3tVh2II/9ulhqHzgzqegOBm4CSKpSb6cxrtdZD+ivMqWVYEaIvnmtfIIO+9bCsWq
+	RsYgMyCrwNZjDuq2PWNTq+uYvznYXTGw0iRUAkdzpqMZI+6zlYhO5G4PnNLzeBNM
+	yX9IwRAoriT9qIZ9URSN/jClZljz0+hSNbk0+HVDBT+xrm4/QOYeVNgrAhBd9Sgu
+	50QcvYWysO4jKq9/OODrRa5yvD2ObNs3eWFXON1aE2WCqC/MZXzg==
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 43cdysvpm9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Dec 2024 03:00:55 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 4BA1NWxK019340;
+	Tue, 10 Dec 2024 03:00:54 GMT
+Received: from nam12-bn8-obe.outbound.protection.outlook.com (mail-bn8nam12lp2175.outbound.protection.outlook.com [104.47.55.175])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 43cct82scf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Dec 2024 03:00:54 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Krs5SXKhwo/qLqyHd9SOchYjCRAt52z62PdgiMYvE6x1UGmcUf4yFO53VhmQDH2eJq5Dgb4y2SVIN1GIJXG1yoeET9iNtKei421yGzq4JZvku6DbHfYnEYq+2qbPZJe8NOr53mniQ0H4BUxaKfcadT+KPviRWKaG6WkdVSNbMJ+CseX1bB4fB4RbtXqYAiOlnT/H/8ui+j4eob2+075wIyDtKrIgAwFBv1Y9WoE/YhZd9tIZZyz1/tsxMqeBLhyCmxShrV8xzPDwgTOW4NQ8HOPSiMJg2WyziJuYsMKTuH4Wfo4pHTMGJwWlNr6dmQy06HY2C9gsoLGF+R8y4hWTIg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=DFnN3//pDIcFv5T5F+qit1z5bgh5rVnTug0rGbIoDLw=;
+ b=fRj6DtxXbIxxoUachmfM8t2daJaxFuA7W4j7QEbVmz9IS6TvoK/y2zrSELg0+00dFuyexwPtCdz+RDYbwyqs1TszBTWo1EkAUHbo9ro+EnZsITuN0Si50xljNEaa/7cCkpJNfbgHF5KM+59cMB/UujW0SF93Tvih21DnSEjhMYFMynScjlJ6ZPYy0CNoDgjZy9hsXQN4j9qb9rTXxeulg6+ccsl7yUBB/Cy8exjeX+T411kN6AooGL1DzL3w3FZ/ubahrW5tkihPOEPbwejPd+vARF2beFOiRuZ3mpF+ot/JoQGcF9sKnXpNXiFYaNwRGY4tBd4nNbAzOQ6IerOj4Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=DFnN3//pDIcFv5T5F+qit1z5bgh5rVnTug0rGbIoDLw=;
+ b=Mm6b50kbXDABpBaCXWfof6nt8DEhdgq/Nu/WavfB98/vHps+0kfSCcy3X65ZuwXJEQ9YQAW4Wg5g10I0VcL7t6nY36vrojLSC+KWi5pTvyqfrYaDLBuAk1NWTtORPzylab45Gp5dxIBDQnr6lr++SzNOCegf3hTrYdtT1FHxGoY=
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com (2603:10b6:610:cb::8)
+ by SJ0PR10MB5566.namprd10.prod.outlook.com (2603:10b6:a03:3d0::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8230.18; Tue, 10 Dec
+ 2024 03:00:50 +0000
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::5cca:2bcc:cedb:d9bf]) by CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::5cca:2bcc:cedb:d9bf%5]) with mapi id 15.20.8230.016; Tue, 10 Dec 2024
+ 03:00:50 +0000
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc: Adam Radford <aradford@gmail.com>,
+        "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>,
+        "Martin K. Petersen"
+ <martin.petersen@oracle.com>,
+        Khalid Aziz <khalid@gonehiking.org>,
+        Matthew Wilcox <willy@infradead.org>, Hannes Reinecke <hare@suse.com>,
+        "Manoj N. Kumar" <manoj@linux.ibm.com>,
+        Uma Krishnan
+ <ukrishn@linux.ibm.com>,
+        Oliver Neukum <oliver@neukum.org>, Ali Akcaagac
+ <aliakc@web.de>,
+        Jamie Lenehan <lenehan@twibble.org>,
+        Finn Thain
+ <fthain@linux-m68k.org>,
+        Michael Schmitz <schmitzmic@gmail.com>,
+        James
+ Smart <james.smart@broadcom.com>,
+        Ram Vegesna <ram.vegesna@broadcom.com>,
+        Satish Kharat <satishkh@cisco.com>,
+        Sesidhar Baddela
+ <sebaddel@cisco.com>,
+        Karan Tilak Kumar <kartilak@cisco.com>,
+        HighPoint
+ Linux Team <linux@highpoint-tech.com>,
+        Brian King <brking@us.ibm.com>,
+        Kashyap Desai <kashyap.desai@broadcom.com>,
+        Sumit Saxena
+ <sumit.saxena@broadcom.com>,
+        Shivasharan S
+ <shivasharan.srikanteshwara@broadcom.com>,
+        Chandrakanth patil
+ <chandrakanth.patil@broadcom.com>,
+        GOTO Masanori <gotom@debian.or.jp>,
+        YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
+        Jack Wang
+ <jinpu.wang@cloud.ionos.com>,
+        Nilesh Javali <njavali@marvell.com>,
+        Manish Rangankar <mrangankar@marvell.com>,
+        GR-QLogic-Storage-Upstream@marvell.com, Michael Reed <mdr@sgi.com>,
+        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        megaraidlinux.pdl@broadcom.com
+Subject: Re: [PATCH] scsi: Constify struct pci_device_id
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+In-Reply-To: <fc61b1946488c1ea8f7a17a06cf40fbd05dcc6de.1733590049.git.christophe.jaillet@wanadoo.fr>
+	(Christophe JAILLET's message of "Sat, 7 Dec 2024 17:48:28 +0100")
+Organization: Oracle Corporation
+Message-ID: <yq1zfl4i6nk.fsf@ca-mkp.ca.oracle.com>
+References: <fc61b1946488c1ea8f7a17a06cf40fbd05dcc6de.1733590049.git.christophe.jaillet@wanadoo.fr>
+Date: Mon, 09 Dec 2024 22:00:48 -0500
+Content-Type: text/plain
+X-ClientProxiedBy: BN9PR03CA0381.namprd03.prod.outlook.com
+ (2603:10b6:408:f7::26) To CH0PR10MB5338.namprd10.prod.outlook.com
+ (2603:10b6:610:cb::8)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH0PR10MB5338:EE_|SJ0PR10MB5566:EE_
+X-MS-Office365-Filtering-Correlation-Id: 062956b0-9734-4d08-0efa-08dd18c6da5e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?5Z5dfz9F6rCG8UZ2di6AhhTiY8ku1iIvuWFY8f00BAyzA8Ofpnj50ntu+rjw?=
+ =?us-ascii?Q?Aka2abx1eeTgfghtJ3pAdD3zZcXWsJd29FQ3nn40qGdZU/SL22xuv904Ssex?=
+ =?us-ascii?Q?JqOCtyJk+kisi3XGxt6fpM/O5b1fz4ifY6gk6DGOUmOFU0HaA2zSXLrFqOOL?=
+ =?us-ascii?Q?GSrv6I4WjLJGKGk1BrGybMocyLwvkS00xYHEwVE6IX+VgGnxPwPTa0K9tTfJ?=
+ =?us-ascii?Q?bSJ6rYTOWiRRLg0ZdwoDIx5TCVlFczABqWl74YSc4B4AJ17QJ6z6tTpqSQT6?=
+ =?us-ascii?Q?vwGyiqFLEzhlAySjr23oonNb7wpu64pf6eOAIhv5d1XIG7v4Dhc/bedAmwIU?=
+ =?us-ascii?Q?X1S/V1Y2VIWbf+snJ0oHkaPks55IjbX47wW0dtUZQgBinXBB8goZIZ6lE1RY?=
+ =?us-ascii?Q?2J0AyP+pM0kokmamwbKz2uX2vgMG73DeEqybCzVyQJEKQH9fW68KDIhfePUk?=
+ =?us-ascii?Q?rdX/Q244qtF+wdjzsuODoaf/Qgj5QCTWiffbplbaNUtR1n31i3ljE8XH3EzZ?=
+ =?us-ascii?Q?O8ZlisBo+r9JCvQanfWjrr/EfGjoRmfGrINWG9XVlNiTVynt1/RD+sSh3Nyi?=
+ =?us-ascii?Q?uHP6lmXIqm85EMLwLJ0QTVkI4y9osVyeA2CS0rkhZz6dkX44vD0wQjvFwdQe?=
+ =?us-ascii?Q?SP8c7ZmXHlzwDvZFMTXm9JJ7+F7la/T7TD99fH3MiPWNh/2qkrn05ctvjE3X?=
+ =?us-ascii?Q?toj6Saf0Wb0xSdV8SZjboKhbFmJiyyw4k8VUsdDwjo1rzQaBTMUWZGjISLHD?=
+ =?us-ascii?Q?Jvj5MMjUZF2i8PUoTNOGnAgR8QZglHJ7GkU7gzaf1EO7StrfRmwYeCVFvUar?=
+ =?us-ascii?Q?el903uXnNvY53CAveeq42E+LecCDFFhoWYkHOhwGjwafv/dTAY/ctY9P4Y+p?=
+ =?us-ascii?Q?SYiJkAwh9lGhmLo8V+jM8qzkjvx3xVbFtcrjorHHJW6+8ibyrlnsR7/BhMW3?=
+ =?us-ascii?Q?9AQIg/HZ5T2E2wdoZ4zFcCZRpBIt6xFCvxfamV6yistn4As2bLQXf/SKJi2/?=
+ =?us-ascii?Q?c4uDjvHbJ9bkTyjVO9Tsf23Wq7nUV9S1tqmPGPKlEpjPxFjAPCpL4zSDcck8?=
+ =?us-ascii?Q?qvFFhhEtXxOf3w4XfITHoLfoe2wYWy7pVja0/oRzojk/C+Zk3/Qosf1fX/B7?=
+ =?us-ascii?Q?xRbomrDPsfb71CvrwqMRgvyg/6z2hgTYYYLO8dimY/sCtvrXExkwE1kpZbT4?=
+ =?us-ascii?Q?pMGNPQsRheQ3PQOTWXKobYWnLV2MCFRfq4K0ggtl4rEd17Anm+V3khUGy5Rt?=
+ =?us-ascii?Q?mO3lBZ/TVtRGPMfImo15/zn/Nc4kMX+EwCYBmjcuGVz54RCyYu379c8XuV1V?=
+ =?us-ascii?Q?89hWnbA+m1CO63udpGbFjuLLyqOmN6cvOulvsY81MKSBsg=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH0PR10MB5338.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?NAxMaE3wFOAeMbGFK65k68ktsoP2GGCbdW5h990niGZhI8TL4ZDcwkOOW4ZQ?=
+ =?us-ascii?Q?o87DwYOJ7RBAYTl5ICuMnLhvQUhxgz9ZgYx+n4dNXBSfIP/gc2EnNHpDDH0F?=
+ =?us-ascii?Q?OIYWTCEmT12VONTdsxQ67qAGQU+vg33xsHVBty1UpysUA7Y66lAm5jMkfHvl?=
+ =?us-ascii?Q?cPcF1/MOsuddyrdWBYfd0nqojQjTUXQbhfI+YASKXyfn6Vs2CT6VN0jOHZAK?=
+ =?us-ascii?Q?QrMB3PS/fF1ygQYV5brzNK/ieVz9CAl3uIMCB2aq4JnVufA9XhIUNFrbhxfL?=
+ =?us-ascii?Q?z7dF0XfwUDnMwdw0XRznj/J53WgjLzkns6RRaMMXQAnmW/GjRo2f7xZH7gkV?=
+ =?us-ascii?Q?0LWRkshLx7x93oH046UQSyHuo1DLNkeyCLsED1bK/YyUcoM70/vUSHdqv4Pr?=
+ =?us-ascii?Q?mj/x6uKea3Ygzq5QYHzpPFjoGPRE1gLQ5V3JSOXAkWcSNEoDY7ad/RKFwppJ?=
+ =?us-ascii?Q?ZMct9aYpUhKES8Zmev06QbEw3Ul3zk5Z+4/zr/wm7OW/rDbXQUcofdhcrzMs?=
+ =?us-ascii?Q?gLWiyP/ih19PHX3y0HfYIjKuRkaseDF++AtvRiZLt2qvZH4jGe3b99bLrQNT?=
+ =?us-ascii?Q?Im19DdPFpMrmtB7giM/tgUfSv5gM0RutYR44eB4hFV06uS7ccDlrWrhA4caY?=
+ =?us-ascii?Q?C/m2m+P9yG43GSp9TcBGUK3+EqfJmy0z3kKsz8pDRRsfbkjbu6xA01XrzqjZ?=
+ =?us-ascii?Q?KaACVGhF4kxK4H+PphSaNN5fesgo0f6At9lPdy5nWVY2dg24m/RrmgUJg8N0?=
+ =?us-ascii?Q?O2Y4zVdgXxt8/qxGTFOYT3JxSTzE71Q8M7pFXfe35uQ4mkpZdrA2SvyE91tR?=
+ =?us-ascii?Q?oicagPh6O9gLqfvqwJF9giyPl+8MeNHUmgWgaykoLrk+ewEanrxByzV8vqfM?=
+ =?us-ascii?Q?HBkpbky4Bof6cmYhbaHgDp9HvYhNRc60qg6OqRkq7Yl30R1JOKYAqeH2MTiq?=
+ =?us-ascii?Q?7bCGOZ+KWEdIv0JUWUW41WmU5QwkJq+9FPF3/MiltBoE0STWV2Fm1MVg4LkK?=
+ =?us-ascii?Q?AiGjSCJtLzPaw7kPWCUbklFlkg2rELx5TvjfMEr5wWABEpSFUTeiQ+8brFGw?=
+ =?us-ascii?Q?OBk2soBPBT8PEjZ58lQH9jl44z1b7t4mk905dcggyJSDUqYnk/Lln6jwk+KI?=
+ =?us-ascii?Q?u2Dh6utqo6bZKgORqXy9hnEpHJmNSeSb5QDbFB0qZbyr5XPsBG4h2cjKASsx?=
+ =?us-ascii?Q?8GiTdmmAVomlal5Ba/ovvRJklKQMckGOPQcGIzqWuEYFXFjKyoJZsNoPsb23?=
+ =?us-ascii?Q?4rzuAJ9bGEfaoBcz3gF7NHQvpfLPykDiOrtPCXpXAO5o1zPKQCqm1CnU8GL1?=
+ =?us-ascii?Q?KEc9kq7eSbl8sCY7/cjRCVpFeJoj5M5CHA5gYiOu/O6GXO2ziV1U1EZtkGci?=
+ =?us-ascii?Q?A0Z03o/t3zRPAdF9I4e6SNDdVNW/agDi6wzOACJMxTJIe7LN+RYU9zpf3GvZ?=
+ =?us-ascii?Q?YoHxnuqU2SW6228an84ZNGkdiGJN1q/n8np8XaGP1IBsV6uD67ZLJa66VZmk?=
+ =?us-ascii?Q?T5zl/5ORO0fOv0PdKJfGkxjzHz6o50CY3em27MDCYxc/w/VGNlaxFofRD4xW?=
+ =?us-ascii?Q?/Q01NlrrAH2ucxSEguk7RVcERmDsJH7KJrlBCH7zOjNx0jMqGUlfbW13+mBE?=
+ =?us-ascii?Q?bg=3D=3D?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	3SfVJw93FnzxIDNZT2GhdhBnQkLGpIVNk/RxbJyz2Mu+07o7JirbeKXJkYV5UGB9bxJDnuSJodnyDG47L+1syMNdOKHaV4Wioa+lZ/PwY2sDiToGldPreXxbOPJVBEOlMsa1eYhsuybJmghjtCaJnq0V6VVFd7J688ALzHC+AzE+4r1vsX1Po966nTyS9ThQK5Noc0BTZBO0kqs+5ptlm7GGpIcJma7zoq8zYRM27oNRHfyyfRMb2xfkn032BH+O6mlWizQi1DjBmACr8+AFJV7GDRkPAuLbCbrh4f6onhZHz5YSun4quO0KgAwjMssi8PkDMjBoG8gQbUVRvw41S5Xw8k1BNeGB7KGYUrN0LtxFJSPSKnlWy2c7ysrTqPB0v3DNNPSHGsv7+drwD3f16xTYNlP1V/BGiy6V0963+VUrXATN8JpNSpU+zmDjBGzMcyJxvE8LUUIItwppx//wcLmLJsl5rxV4Yi7vLiMWy9z5qTU4ETHLG5BBsg0PXllX2QryRvFMGxYa4UrIpxZcunsij+Fs3IyYdbJMDGmdndrI6pWXZxYDXw8aBXYq0JeX7cPYc2WZqPynXV2rwIhPHZYAZIdk3fKiqx9+xHmRsME=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 062956b0-9734-4d08-0efa-08dd18c6da5e
+X-MS-Exchange-CrossTenant-AuthSource: CH0PR10MB5338.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Dec 2024 03:00:50.4988
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Ka7sLvseODG3NCD7K1t6rnmWze1BvHwjCFH2PaAsP3AzXOqH1vAQgKNZa+/YoB2BgsMCFzUH3I+8N78ZgsR6UHsC+KFx3QXY7p2XFhDCfq8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR10MB5566
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2024-12-09_22,2024-12-09_05,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 malwarescore=0
+ adultscore=0 spamscore=0 suspectscore=0 mlxlogscore=999 bulkscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2411120000 definitions=main-2412100020
+X-Proofpoint-ORIG-GUID: ggBOL2UYQ8sjlB7sVNiILFMtjb-FVPbj
+X-Proofpoint-GUID: ggBOL2UYQ8sjlB7sVNiILFMtjb-FVPbj
 
-'struct pci_device_id' is not modified in these drivers.
 
-Constifying this structure moves some data to a read-only section, so
-increase overall security.
+Christophe,
 
-On a x86_64, with allmodconfig, as an example:
-Before:
-======
-   text	   data	    bss	    dec	    hex	filename
-  70237	   9137	    320	  79694	  1374e	drivers/scsi/3w-9xxx.o
+> 'struct pci_device_id' is not modified in these drivers.
+>
+> Constifying this structure moves some data to a read-only section, so
+> increase overall security.
 
-After:
-=====
-   text	   data	    bss	    dec	    hex	filename
-  70461	   8913	    320	  79694	  1374e	drivers/scsi/3w-9xxx.o
+Applied to 6.14/scsi-staging, thanks!
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-Each file has been compile tested only
----
- drivers/scsi/3w-9xxx.c                    | 2 +-
- drivers/scsi/3w-sas.c                     | 2 +-
- drivers/scsi/3w-xxxx.c                    | 2 +-
- drivers/scsi/BusLogic.c                   | 2 +-
- drivers/scsi/a100u2w.c                    | 2 +-
- drivers/scsi/advansys.c                   | 2 +-
- drivers/scsi/am53c974.c                   | 2 +-
- drivers/scsi/arcmsr/arcmsr_hba.c          | 2 +-
- drivers/scsi/atp870u.c                    | 2 +-
- drivers/scsi/cxlflash/main.c              | 2 +-
- drivers/scsi/dc395x.c                     | 2 +-
- drivers/scsi/dmx3191d.c                   | 2 +-
- drivers/scsi/elx/efct/efct_driver.c       | 2 +-
- drivers/scsi/fdomain_pci.c                | 2 +-
- drivers/scsi/fnic/fnic_main.c             | 2 +-
- drivers/scsi/hptiop.c                     | 2 +-
- drivers/scsi/initio.c                     | 2 +-
- drivers/scsi/ipr.c                        | 2 +-
- drivers/scsi/megaraid.c                   | 2 +-
- drivers/scsi/megaraid/megaraid_mbox.c     | 2 +-
- drivers/scsi/megaraid/megaraid_sas_base.c | 2 +-
- drivers/scsi/mvsas/mv_init.c              | 2 +-
- drivers/scsi/nsp32.c                      | 2 +-
- drivers/scsi/pm8001/pm8001_init.c         | 2 +-
- drivers/scsi/pmcraid.c                    | 2 +-
- drivers/scsi/qedi/qedi_main.c             | 2 +-
- drivers/scsi/qla1280.c                    | 2 +-
- drivers/scsi/qla2xxx/qla_os.c             | 2 +-
- drivers/scsi/qla4xxx/ql4_os.c             | 2 +-
- drivers/scsi/snic/snic_main.c             | 2 +-
- drivers/scsi/stex.c                       | 2 +-
- drivers/scsi/sym53c8xx_2/sym_glue.c       | 2 +-
- 32 files changed, 32 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
-index 6fb61c88ea11..060a2444f0be 100644
---- a/drivers/scsi/3w-9xxx.c
-+++ b/drivers/scsi/3w-9xxx.c
-@@ -2260,7 +2260,7 @@ static int __maybe_unused twa_resume(struct device *dev)
- } /* End twa_resume() */
- 
- /* PCI Devices supported by this driver */
--static struct pci_device_id twa_pci_tbl[] = {
-+static const struct pci_device_id twa_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9000,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9550SX,
-diff --git a/drivers/scsi/3w-sas.c b/drivers/scsi/3w-sas.c
-index caa6713a62a4..a32223b28d07 100644
---- a/drivers/scsi/3w-sas.c
-+++ b/drivers/scsi/3w-sas.c
-@@ -1821,7 +1821,7 @@ static int __maybe_unused twl_resume(struct device *dev)
- } /* End twl_resume() */
- 
- /* PCI Devices supported by this driver */
--static struct pci_device_id twl_pci_tbl[] = {
-+static const struct pci_device_id twl_pci_tbl[] = {
- 	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9750) },
- 	{ }
- };
-diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
-index 2c0fb6da0e60..0cbca5a99f99 100644
---- a/drivers/scsi/3w-xxxx.c
-+++ b/drivers/scsi/3w-xxxx.c
-@@ -2393,7 +2393,7 @@ static void tw_remove(struct pci_dev *pdev)
- } /* End tw_remove() */
- 
- /* PCI Devices supported by this driver */
--static struct pci_device_id tw_pci_tbl[] = {
-+static const struct pci_device_id tw_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_1000,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_7000,
-diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
-index 2135a2b3e2d0..26936854514a 100644
---- a/drivers/scsi/BusLogic.c
-+++ b/drivers/scsi/BusLogic.c
-@@ -3715,7 +3715,7 @@ static void __exit blogic_exit(void)
- __setup("BusLogic=", blogic_setup);
- 
- #ifdef MODULE
--/*static struct pci_device_id blogic_pci_tbl[] = {
-+/*static const struct pci_device_id blogic_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{ PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER_NC,
-diff --git a/drivers/scsi/a100u2w.c b/drivers/scsi/a100u2w.c
-index b95147fb18b0..a8979f9e30ff 100644
---- a/drivers/scsi/a100u2w.c
-+++ b/drivers/scsi/a100u2w.c
-@@ -1206,7 +1206,7 @@ static void inia100_remove_one(struct pci_dev *pdev)
- 	scsi_host_put(shost);
- } 
- 
--static struct pci_device_id inia100_pci_tbl[] = {
-+static const struct pci_device_id inia100_pci_tbl[] = {
- 	{PCI_VENDOR_ID_INIT, 0x1060, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{0,}
- };
-diff --git a/drivers/scsi/advansys.c b/drivers/scsi/advansys.c
-index fd4fcb37863d..f153c96f7f2c 100644
---- a/drivers/scsi/advansys.c
-+++ b/drivers/scsi/advansys.c
-@@ -11408,7 +11408,7 @@ static struct eisa_driver advansys_eisa_driver = {
- };
- 
- /* PCI Devices supported by this driver */
--static struct pci_device_id advansys_pci_tbl[] = {
-+static const struct pci_device_id advansys_pci_tbl[] = {
- 	{PCI_VENDOR_ID_ASP, PCI_DEVICE_ID_ASP_1200A,
- 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_ASP, PCI_DEVICE_ID_ASP_ABP940,
-diff --git a/drivers/scsi/am53c974.c b/drivers/scsi/am53c974.c
-index fbb29dbb1e50..003e61831e33 100644
---- a/drivers/scsi/am53c974.c
-+++ b/drivers/scsi/am53c974.c
-@@ -513,7 +513,7 @@ static void pci_esp_remove_one(struct pci_dev *pdev)
- 	scsi_host_put(esp->host);
- }
- 
--static struct pci_device_id am53c974_pci_tbl[] = {
-+static const struct pci_device_id am53c974_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_SCSI,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
- 	{ }
-diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c b/drivers/scsi/arcmsr/arcmsr_hba.c
-index 35860c61468b..1ae81acfbaab 100644
---- a/drivers/scsi/arcmsr/arcmsr_hba.c
-+++ b/drivers/scsi/arcmsr/arcmsr_hba.c
-@@ -171,7 +171,7 @@ static const struct scsi_host_template arcmsr_scsi_host_template = {
- 	.no_write_same		= 1,
- };
- 
--static struct pci_device_id arcmsr_device_id_table[] = {
-+static const struct pci_device_id arcmsr_device_id_table[] = {
- 	{PCI_DEVICE(PCI_VENDOR_ID_ARECA, PCI_DEVICE_ID_ARECA_1110),
- 		.driver_data = ACB_ADAPTER_TYPE_A},
- 	{PCI_DEVICE(PCI_VENDOR_ID_ARECA, PCI_DEVICE_ID_ARECA_1120),
-diff --git a/drivers/scsi/atp870u.c b/drivers/scsi/atp870u.c
-index 928151ec927a..401242912855 100644
---- a/drivers/scsi/atp870u.c
-+++ b/drivers/scsi/atp870u.c
-@@ -1743,7 +1743,7 @@ static const struct scsi_host_template atp870u_template = {
-      .max_sectors		= ATP870U_MAX_SECTORS,
- };
- 
--static struct pci_device_id atp870u_id_table[] = {
-+static const struct pci_device_id atp870u_id_table[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_ARTOP, ATP885_DEVID)			  },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_ARTOP, ATP880_DEVID1)		  },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_ARTOP, ATP880_DEVID2)		  },
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 60d62b93d624..76073a71c028 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -3177,7 +3177,7 @@ static struct dev_dependent_vals dev_briard_vals = { CXLFLASH_MAX_SECTORS,
- /*
-  * PCI device binding table
-  */
--static struct pci_device_id cxlflash_pci_table[] = {
-+static const struct pci_device_id cxlflash_pci_table[] = {
- 	{PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_CORSA,
- 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, (kernel_ulong_t)&dev_corsa_vals},
- 	{PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_FLASH_GT,
-diff --git a/drivers/scsi/dc395x.c b/drivers/scsi/dc395x.c
-index d108a86e196e..a3b0e143e3bd 100644
---- a/drivers/scsi/dc395x.c
-+++ b/drivers/scsi/dc395x.c
-@@ -4668,7 +4668,7 @@ static void dc395x_remove_one(struct pci_dev *dev)
- }
- 
- 
--static struct pci_device_id dc395x_pci_table[] = {
-+static const struct pci_device_id dc395x_pci_table[] = {
- 	{
- 		.vendor		= PCI_VENDOR_ID_TEKRAM,
- 		.device		= PCI_DEVICE_ID_TEKRAM_TRMS1040,
-diff --git a/drivers/scsi/dmx3191d.c b/drivers/scsi/dmx3191d.c
-index dfb091d34363..d6d091b2f3c7 100644
---- a/drivers/scsi/dmx3191d.c
-+++ b/drivers/scsi/dmx3191d.c
-@@ -127,7 +127,7 @@ static void dmx3191d_remove_one(struct pci_dev *pdev)
- 	pci_disable_device(pdev);
- }
- 
--static struct pci_device_id dmx3191d_pci_tbl[] = {
-+static const struct pci_device_id dmx3191d_pci_tbl[] = {
- 	{PCI_VENDOR_ID_DOMEX, PCI_DEVICE_ID_DOMEX_DMX3191D,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4},
- 	{ }
-diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
-index 55d2301bfd7d..8469c156ab33 100644
---- a/drivers/scsi/elx/efct/efct_driver.c
-+++ b/drivers/scsi/elx/efct/efct_driver.c
-@@ -470,7 +470,7 @@ efct_setup_msix(struct efct *efct, u32 num_intrs)
- 	return rc;
- }
- 
--static struct pci_device_id efct_pci_table[] = {
-+static const struct pci_device_id efct_pci_table[] = {
- 	{PCI_DEVICE(EFCT_VENDOR_ID, EFCT_DEVICE_LANCER_G6), 0},
- 	{PCI_DEVICE(EFCT_VENDOR_ID, EFCT_DEVICE_LANCER_G7), 0},
- 	{}	/* terminate list */
-diff --git a/drivers/scsi/fdomain_pci.c b/drivers/scsi/fdomain_pci.c
-index 3e05ce7b89e5..c15b2ce76e9f 100644
---- a/drivers/scsi/fdomain_pci.c
-+++ b/drivers/scsi/fdomain_pci.c
-@@ -47,7 +47,7 @@ static void fdomain_pci_remove(struct pci_dev *pdev)
- 	pci_disable_device(pdev);
- }
- 
--static struct pci_device_id fdomain_pci_table[] = {
-+static const struct pci_device_id fdomain_pci_table[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_FD, PCI_DEVICE_ID_FD_36C70) },
- 	{}
- };
-diff --git a/drivers/scsi/fnic/fnic_main.c b/drivers/scsi/fnic/fnic_main.c
-index adec0df24bc4..0b0075e2b49b 100644
---- a/drivers/scsi/fnic/fnic_main.c
-+++ b/drivers/scsi/fnic/fnic_main.c
-@@ -44,7 +44,7 @@ static DEFINE_SPINLOCK(fnic_list_lock);
- static DEFINE_IDA(fnic_ida);
- 
- /* Supported devices by fnic module */
--static struct pci_device_id fnic_id_table[] = {
-+static const struct pci_device_id fnic_id_table[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_CISCO, PCI_DEVICE_ID_CISCO_FNIC) },
- 	{ 0, }
- };
-diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
-index e889f268601b..2d9e584e7c55 100644
---- a/drivers/scsi/hptiop.c
-+++ b/drivers/scsi/hptiop.c
-@@ -1634,7 +1634,7 @@ static struct hptiop_adapter_ops hptiop_mvfrey_ops = {
- 	.host_phy_flag     = cpu_to_le64(1),
- };
- 
--static struct pci_device_id hptiop_id_table[] = {
-+static const struct pci_device_id hptiop_id_table[] = {
- 	{ PCI_VDEVICE(TTI, 0x3220), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3320), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3410), (kernel_ulong_t)&hptiop_itl_ops },
-diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
-index 625fd547ee60..8648bd965287 100644
---- a/drivers/scsi/initio.c
-+++ b/drivers/scsi/initio.c
-@@ -2941,7 +2941,7 @@ static void initio_remove_one(struct pci_dev *pdev)
- 
- MODULE_LICENSE("GPL");
- 
--static struct pci_device_id initio_pci_tbl[] = {
-+static const struct pci_device_id initio_pci_tbl[] = {
- 	{PCI_VENDOR_ID_INIT, 0x9500, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_INIT, 0x9400, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_INIT, 0x9401, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
-index 31cf2d31cceb..eab6b47a0495 100644
---- a/drivers/scsi/ipr.c
-+++ b/drivers/scsi/ipr.c
-@@ -9844,7 +9844,7 @@ static void ipr_shutdown(struct pci_dev *pdev)
- 	}
- }
- 
--static struct pci_device_id ipr_pci_table[] = {
-+static const struct pci_device_id ipr_pci_table[] = {
- 	{ PCI_VENDOR_ID_MYLEX, PCI_DEVICE_ID_IBM_GEMSTONE,
- 		PCI_VENDOR_ID_IBM, IPR_SUBS_DEV_ID_5702, 0, 0, 0 },
- 	{ PCI_VENDOR_ID_MYLEX, PCI_DEVICE_ID_IBM_GEMSTONE,
-diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
-index 38976f94453e..adab151663dd 100644
---- a/drivers/scsi/megaraid.c
-+++ b/drivers/scsi/megaraid.c
-@@ -4551,7 +4551,7 @@ megaraid_shutdown(struct pci_dev *pdev)
- 	__megaraid_shutdown(adapter);
- }
- 
--static struct pci_device_id megaraid_pci_tbl[] = {
-+static const struct pci_device_id megaraid_pci_tbl[] = {
- 	{PCI_VENDOR_ID_AMI, PCI_DEVICE_ID_AMI_MEGARAID,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_AMI, PCI_DEVICE_ID_AMI_MEGARAID2,
-diff --git a/drivers/scsi/megaraid/megaraid_mbox.c b/drivers/scsi/megaraid/megaraid_mbox.c
-index bc867da650b6..35d2e48bed64 100644
---- a/drivers/scsi/megaraid/megaraid_mbox.c
-+++ b/drivers/scsi/megaraid/megaraid_mbox.c
-@@ -199,7 +199,7 @@ MODULE_PARM_DESC(debug_level, "Debug level for driver (default=0)");
- /*
-  * PCI table for all supported controllers.
-  */
--static struct pci_device_id pci_id_table_g[] =  {
-+static const struct pci_device_id pci_id_table_g[] =  {
- 	{
- 		PCI_VENDOR_ID_DELL,
- 		PCI_DEVICE_ID_PERC4_DI_DISCOVERY,
-diff --git a/drivers/scsi/megaraid/megaraid_sas_base.c b/drivers/scsi/megaraid/megaraid_sas_base.c
-index 50f1dcb6d584..d21587659342 100644
---- a/drivers/scsi/megaraid/megaraid_sas_base.c
-+++ b/drivers/scsi/megaraid/megaraid_sas_base.c
-@@ -147,7 +147,7 @@ megasas_set_ld_removed_by_fw(struct megasas_instance *instance);
- /*
-  * PCI ID table for all supported controllers
-  */
--static struct pci_device_id megasas_pci_table[] = {
-+static const struct pci_device_id megasas_pci_table[] = {
- 
- 	{PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS1064R)},
- 	/* xscale IOP */
-diff --git a/drivers/scsi/mvsas/mv_init.c b/drivers/scsi/mvsas/mv_init.c
-index 020037cbf0d9..2c72da6b8cf0 100644
---- a/drivers/scsi/mvsas/mv_init.c
-+++ b/drivers/scsi/mvsas/mv_init.c
-@@ -609,7 +609,7 @@ static void mvs_pci_remove(struct pci_dev *pdev)
- 	return;
- }
- 
--static struct pci_device_id mvs_pci_table[] = {
-+static const struct pci_device_id mvs_pci_table[] = {
- 	{ PCI_VDEVICE(MARVELL, 0x6320), chip_6320 },
- 	{ PCI_VDEVICE(MARVELL, 0x6340), chip_6440 },
- 	{
-diff --git a/drivers/scsi/nsp32.c b/drivers/scsi/nsp32.c
-index b7987019686e..abc4ce9eae74 100644
---- a/drivers/scsi/nsp32.c
-+++ b/drivers/scsi/nsp32.c
-@@ -66,7 +66,7 @@ static const char *nsp32_release_version = "1.2";
- /****************************************************************************
-  * Supported hardware
-  */
--static struct pci_device_id nsp32_pci_table[] = {
-+static const struct pci_device_id nsp32_pci_table[] = {
- 	{
- 		.vendor      = PCI_VENDOR_ID_IODATA,
- 		.device      = PCI_DEVICE_ID_NINJASCSI_32BI_CBSC_II,
-diff --git a/drivers/scsi/pm8001/pm8001_init.c b/drivers/scsi/pm8001/pm8001_init.c
-index f8c81e53e93f..c32ceeba7ccb 100644
---- a/drivers/scsi/pm8001/pm8001_init.c
-+++ b/drivers/scsi/pm8001/pm8001_init.c
-@@ -1435,7 +1435,7 @@ static int __maybe_unused pm8001_pci_resume(struct device *dev)
- /* update of pci device, vendor id and driver data with
-  * unique value for each of the controller
-  */
--static struct pci_device_id pm8001_pci_table[] = {
-+static const struct pci_device_id pm8001_pci_table[] = {
- 	{ PCI_VDEVICE(PMC_Sierra, 0x8001), chip_8001 },
- 	{ PCI_VDEVICE(PMC_Sierra, 0x8006), chip_8006 },
- 	{ PCI_VDEVICE(ADAPTEC2, 0x8006), chip_8006 },
-diff --git a/drivers/scsi/pmcraid.c b/drivers/scsi/pmcraid.c
-index 4c5881917d76..83a7708aab80 100644
---- a/drivers/scsi/pmcraid.c
-+++ b/drivers/scsi/pmcraid.c
-@@ -113,7 +113,7 @@ static struct pmcraid_chip_details pmcraid_chip_cfg[] = {
- /*
-  * PCI device ids supported by pmcraid driver
-  */
--static struct pci_device_id pmcraid_pci_table[] = {
-+static const struct pci_device_id pmcraid_pci_table[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_PMC, PCI_DEVICE_ID_PMC_MAXRAID),
- 	  0, 0, (kernel_ulong_t)&pmcraid_chip_cfg[0]
- 	},
-diff --git a/drivers/scsi/qedi/qedi_main.c b/drivers/scsi/qedi/qedi_main.c
-index 628d59dda20c..1cab66a1f4f6 100644
---- a/drivers/scsi/qedi/qedi_main.c
-+++ b/drivers/scsi/qedi/qedi_main.c
-@@ -2869,7 +2869,7 @@ static void qedi_remove(struct pci_dev *pdev)
- 	__qedi_remove(pdev, QEDI_MODE_NORMAL);
- }
- 
--static struct pci_device_id qedi_pci_tbl[] = {
-+static const struct pci_device_id qedi_pci_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_QLOGIC, 0x165E) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_QLOGIC, 0x8084) },
- 	{ 0 },
-diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-index 8958547ac111..606a4b890f6b 100644
---- a/drivers/scsi/qla1280.c
-+++ b/drivers/scsi/qla1280.c
-@@ -501,7 +501,7 @@ struct qla_boards {
- };
- 
- /* NOTE: the last argument in each entry is used to index ql1280_board_tbl */
--static struct pci_device_id qla1280_pci_tbl[] = {
-+static const struct pci_device_id qla1280_pci_tbl[] = {
- 	{PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP12160,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP1020,
-diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
-index 7f980e6141c2..21ddf6d2b4b6 100644
---- a/drivers/scsi/qla2xxx/qla_os.c
-+++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -8115,7 +8115,7 @@ static const struct pci_error_handlers qla2xxx_err_handler = {
- 	.reset_done = qla_pci_reset_done,
- };
- 
--static struct pci_device_id qla2xxx_pci_tbl[] = {
-+static const struct pci_device_id qla2xxx_pci_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP2100) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP2200) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP2300) },
-diff --git a/drivers/scsi/qla4xxx/ql4_os.c b/drivers/scsi/qla4xxx/ql4_os.c
-index d91f54a6e752..e4aefb44b3a3 100644
---- a/drivers/scsi/qla4xxx/ql4_os.c
-+++ b/drivers/scsi/qla4xxx/ql4_os.c
-@@ -9846,7 +9846,7 @@ static const struct pci_error_handlers qla4xxx_err_handler = {
- 	.resume = qla4xxx_pci_resume,
- };
- 
--static struct pci_device_id qla4xxx_pci_tbl[] = {
-+static const struct pci_device_id qla4xxx_pci_tbl[] = {
- 	{
- 		.vendor		= PCI_VENDOR_ID_QLOGIC,
- 		.device		= PCI_DEVICE_ID_QLOGIC_ISP4010,
-diff --git a/drivers/scsi/snic/snic_main.c b/drivers/scsi/snic/snic_main.c
-index 9be3f0193145..d35914383b3e 100644
---- a/drivers/scsi/snic/snic_main.c
-+++ b/drivers/scsi/snic/snic_main.c
-@@ -21,7 +21,7 @@
- #define PCI_DEVICE_ID_CISCO_SNIC	0x0046
- 
- /* Supported devices by snic module */
--static struct pci_device_id snic_id_table[] = {
-+static const struct pci_device_id snic_id_table[] = {
- 	{PCI_DEVICE(0x1137, PCI_DEVICE_ID_CISCO_SNIC) },
- 	{ 0, }	/* end of table */
- };
-diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
-index 0e81125df8c7..0a7bfaeacf26 100644
---- a/drivers/scsi/stex.c
-+++ b/drivers/scsi/stex.c
-@@ -1488,7 +1488,7 @@ static const struct scsi_host_template driver_template = {
- 	.dma_boundary			= PAGE_SIZE - 1,
- };
- 
--static struct pci_device_id stex_pci_tbl[] = {
-+static const struct pci_device_id stex_pci_tbl[] = {
- 	/* st_shasta */
- 	{ 0x105a, 0x8350, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		st_shasta }, /* SuperTrak EX8350/8300/16350/16300 */
-diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
-index a2560cc807d3..a4fab57764eb 100644
---- a/drivers/scsi/sym53c8xx_2/sym_glue.c
-+++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
-@@ -2030,7 +2030,7 @@ static struct spi_function_template sym2_transport_functions = {
- 	.get_signalling	= sym2_get_signalling,
- };
- 
--static struct pci_device_id sym2_id_table[] = {
-+static const struct pci_device_id sym2_id_table[] = {
- 	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C810,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
- 	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C820,
 -- 
-2.47.1
-
+Martin K. Petersen	Oracle Linux Engineering
