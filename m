@@ -1,127 +1,69 @@
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3AB31B4F3E;
-	Thu,  2 Jan 2025 22:48:01 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89B001C36;
+	Fri,  3 Jan 2025 07:34:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1735858083; cv=none; b=GP2fj96fbK8IvmC2H8VBjWe0IwXg8Y/QEmtrrWE/FkTbnd3M9jBm0rf3+J48IZD7NsFFjbVUfCN2YZ6K4ZPZwzmwvFaa/byFdXPn5YrldA5GUZ+RlZ70CsFVUOb8K5+5e24qYy+NYwfwDfA7Yx//ZVNQmx7MXRfdw3JHlF8Uvb4=
+	t=1735889664; cv=none; b=eMEuMx+jdW4lI0Eq/lTG7Y03hBRstRkYH3xv2F+ePh0TdlMVrkNXHSZ6wUdLzEM0oYxP2XgGwkiuhnEPtFTM86Zpk0957qtU+Monpv4ulwtoOOPXhXrHGpqpvLcuRFe7pcQmJVoK8m98LZzmzrVsGvGfRghZNfa9WTdVcalCuuU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1735858083; c=relaxed/simple;
-	bh=2kzmRvD5qw3jmfwvLZ4YVkOdWdS0aP1sZxrxIPjJ+dg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=WU8yyIxdbCnLiSxonFcq0XsAm6KeCctbboVDOmcwU3Ev55PKRwQN+nYx3xL65YixE3x/Fx5LHVdk/nyfQLG/5vhigkqWEjrEXIIvH30hxeoUrUZ8Mtv+njFEycLPrkcbbJ7KmXGfW5ard3FexTiCf/tmWHp+ZuOT1uignyozaEU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=c4nAUbIR; arc=none smtp.client-ip=205.220.177.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	s=arc-20240116; t=1735889664; c=relaxed/simple;
+	bh=oj0BNvd07UZUPrtMHOvLjYx0oGDSmv382N2KH5QMnqQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EFXJmeVgzNZRTqabag8unOmVJjwWxSN/WXSu5kLxE5x6KZXq7fiy9c8bixxjP4q0TNRqqysjQc4/rk1YBjCu8nkUDcfNi+gnIdLKvUi4sec0tVaDj1UVODkKBGOPI186NX7N5NwOBVGGBvTaRQ1CgIfrbh1roV88vySa30OjY0E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=vrFJwQXV; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="c4nAUbIR"
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 502Kfs4d016471;
-	Thu, 2 Jan 2025 22:47:13 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2023-11-20; bh=ZaHX6TR0TlpZqGO8pyVAtKGFFYO4dO1eC2fFm+tWQ68=; b=
-	c4nAUbIRvHl/ewdy82GMawolkRdZzPrXyo/6mwBFPzgzmZgGhKu+xF6KBpLQgn8I
-	I0D6T5df9TgJvtEP4JXDSxh7d1tDQnF7HVTkaYKv/yb8iVVN3ewtF/B31C51KjJ8
-	FcwDccPPzbRMciL7ztsUEeZh9C0xAg2o2OTEKWgx1JypW7hHtQrPBxd2Rz1J9kiu
-	1hyvLnAmehhThU6pvj545dZkEZ8iN3TnV209Tkxni1qshnL4pdJn7bnZ/L72JSId
-	NJA5dRJmVBAchNT2RpVI92UfuCxGvLeqUgFpg/M7qFiXosDJWeWigiiXTZL56jdu
-	Gax2CvgEuHtHbGHpAAg3FA==
-Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.appoci.oracle.com [147.154.114.232])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 43t7rbybp2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 02 Jan 2025 22:47:12 +0000 (GMT)
-Received: from pps.filterd (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 502KF3Ke009525;
-	Thu, 2 Jan 2025 22:47:11 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 43t7s93nvv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 02 Jan 2025 22:47:11 +0000
-Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 502MlAtd004461;
-	Thu, 2 Jan 2025 22:47:10 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTP id 43t7s93nuq-1;
-	Thu, 02 Jan 2025 22:47:10 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: Adam Radford <aradford@gmail.com>,
-        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-        Khalid Aziz <khalid@gonehiking.org>,
-        Matthew Wilcox <willy@infradead.org>, Hannes Reinecke <hare@suse.com>,
-        "Manoj N. Kumar" <manoj@linux.ibm.com>,
-        Uma Krishnan <ukrishn@linux.ibm.com>,
-        Oliver Neukum <oliver@neukum.org>, Ali Akcaagac <aliakc@web.de>,
-        Jamie Lenehan <lenehan@twibble.org>,
-        Finn Thain <fthain@linux-m68k.org>,
-        Michael Schmitz <schmitzmic@gmail.com>,
-        James Smart <james.smart@broadcom.com>,
-        Ram Vegesna <ram.vegesna@broadcom.com>,
-        Satish Kharat <satishkh@cisco.com>,
-        Sesidhar Baddela <sebaddel@cisco.com>,
-        Karan Tilak Kumar <kartilak@cisco.com>,
-        HighPoint Linux Team <linux@highpoint-tech.com>,
-        Brian King <brking@us.ibm.com>,
-        Kashyap Desai <kashyap.desai@broadcom.com>,
-        Sumit Saxena <sumit.saxena@broadcom.com>,
-        Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
-        Chandrakanth patil <chandrakanth.patil@broadcom.com>,
-        GOTO Masanori <gotom@debian.or.jp>,
-        YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
-        Jack Wang <jinpu.wang@cloud.ionos.com>,
-        Nilesh Javali <njavali@marvell.com>,
-        Manish Rangankar <mrangankar@marvell.com>,
-        GR-QLogic-Storage-Upstream@marvell.com, Michael Reed <mdr@sgi.com>,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        megaraidlinux.pdl@broadcom.com
-Subject: Re: [PATCH] scsi: Constify struct pci_device_id
-Date: Thu,  2 Jan 2025 17:46:37 -0500
-Message-ID: <173583977810.171606.912728304121517929.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.46.2
-In-Reply-To: <fc61b1946488c1ea8f7a17a06cf40fbd05dcc6de.1733590049.git.christophe.jaillet@wanadoo.fr>
-References: <fc61b1946488c1ea8f7a17a06cf40fbd05dcc6de.1733590049.git.christophe.jaillet@wanadoo.fr>
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="vrFJwQXV"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=YMdPlpNXgCMaksxcreVbW0oQ3YoG3YbUI3RMdbhf/xY=; b=vrFJwQXViQsUmDbxz+ngtQExai
+	qXZoYdpJ/3ljhMFQGhIIyiTUR5HZLtVlHU9suWtBKR14FBnWYk2d9/BDsUMlC29nwjIP0kXduZDtY
+	LTBnRRuy8K0GJtBmX7YtqnY+s0Ql/sRdGQ4/vG2OabNw6vGkS9FdPmKW5nbpIjsEi3NLgshApBU/2
+	JZEr6TrfKttUXTjeyqbUzpVFa7TadWpk/E/QK71cZ4LqqKYxsstLVrgsHpYX6Wlz3FgoSSdUyjLXp
+	wYP/vWZD4d3Pgyv5D4KJlnYdZr9v2kerMq3+uN1qt1EVIlHAEsYMxHHS8ooQ2eEFjkxPnU3Nq+In8
+	g3ovb4/w==;
+Received: from [2001:4bb8:2dc:484c:63c3:48c7:ceee:8370] (helo=localhost)
+	by bombadil.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
+	id 1tTcCK-0000000CM56-162F;
+	Fri, 03 Jan 2025 07:34:20 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: linux-block@vger.kernel.org,
+	linux-nvme@lists.infradead.org,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org
+Subject: simplify passthrough bio handling
+Date: Fri,  3 Jan 2025 08:33:56 +0100
+Message-ID: <20250103073417.459715-1-hch@lst.de>
+X-Mailer: git-send-email 2.45.2
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-02_03,2025-01-02_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 bulkscore=0 mlxscore=0
- suspectscore=0 phishscore=0 mlxlogscore=999 adultscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2411120000
- definitions=main-2501020199
-X-Proofpoint-ORIG-GUID: uybmMUaempwqyv9zyA6h-YkFUKUm0TNh
-X-Proofpoint-GUID: uybmMUaempwqyv9zyA6h-YkFUKUm0TNh
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-On Sat, 07 Dec 2024 17:48:28 +0100, Christophe JAILLET wrote:
+Hi Jens,
 
-> 'struct pci_device_id' is not modified in these drivers.
-> 
-> Constifying this structure moves some data to a read-only section, so
-> increase overall security.
-> 
-> On a x86_64, with allmodconfig, as an example:
-> Before:
-> ======
->    text	   data	    bss	    dec	    hex	filename
->   70237	   9137	    320	  79694	  1374e	drivers/scsi/3w-9xxx.o
-> 
-> [...]
+this series removes the special casing when adding pages to passthrough
+bios in favor of simply checking that they match the queue limits once
+before submissions.  This mirrors where the zone append users have been
+moving and a recent doing the same for a single optimizes passthrough
+user.
 
-Applied to 6.14/scsi-queue, thanks!
-
-[1/1] scsi: Constify struct pci_device_id
-      https://git.kernel.org/mkp/scsi/c/c9a71ca13f71
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Diffstat:
+ block/bio.c                        |  107 +-----------------------------
+ block/blk-map.c                    |  128 ++++++++++---------------------------
+ block/blk-mq.c                     |    4 -
+ block/blk.h                        |    8 --
+ drivers/nvme/target/passthru.c     |   18 +++--
+ drivers/nvme/target/zns.c          |    3 
+ drivers/target/target_core_pscsi.c |    6 -
+ include/linux/bio.h                |    2 
+ include/linux/blk-mq.h             |    8 --
+ 9 files changed, 57 insertions(+), 227 deletions(-)
