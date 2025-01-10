@@ -1,112 +1,95 @@
-Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABEFD15DBAE
-	for <target-devel@vger.kernel.org>; Sat,  4 Jan 2025 22:27:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A14B207A15
+	for <target-devel@vger.kernel.org>; Fri, 10 Jan 2025 08:55:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736029676; cv=none; b=kc4GS/8OBxg37FgBjjkw84cCNVFHPDre2adzYzDJHJLi9Zc2Y3GXAi4kOFqJ/b9xBtGX1cJ2LYUqA7Tx8JxYMmX6u9VItMTCWHxjk2D05IcxPCQpHDip1v1GqVyOYkLasLVuNY51MwmpTh/A6A7MsOd2H8qCqCQqEy4aHMsoniw=
+	t=1736499320; cv=none; b=oXdIPgkRK2WRPSDgWJuEBU8hJYPf9d74H1jYxhM8DdVyFJpPNCapd40me+OqN+ycx9mCSP/U6FKNvNJoBgkTRq6KbDcWFv0g9k1K8uRt1s21mfhmPcE/4ll3ELaX4g4ZQa6vYqGGT4Fldmb6vUgNSoutScbaXS7E+O3+w6S3vMA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736029676; c=relaxed/simple;
-	bh=dbW9sZ4K4CVni2WzfS5PIhq9YPepuP+wgQlHyfd4Js0=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=EOhU1g1k++mVjH1XGZy4jPFKq2QxFUobQIjeOZUPdSx/VW2AYJX5Cqb6nd35tUV1u3yxcaHkcRBQaU8MTs85zsvRooXT+Npf/6G+xzqRA8xQAAkauZ0jp5yWcj/Vztb8u9mRXzaRME6VXlFF6EbW9BZ+XE3MK+M+rxfbnZde5fY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk; spf=pass smtp.mailfrom=kernel.dk; dkim=pass (2048-bit key) header.d=kernel-dk.20230601.gappssmtp.com header.i=@kernel-dk.20230601.gappssmtp.com header.b=xoYooiqn; arc=none smtp.client-ip=209.85.214.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kernel.dk
+	s=arc-20240116; t=1736499320; c=relaxed/simple;
+	bh=cbmAgBIFGegMw9/n64PG7MiCf/X/4twOdx1csl9BLho=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Zjba5FRTa504WguqNyk/7O8vAtS3gjbu/6I2eKfsIXuNEhmVrnbH7sc3DMbZbSHFdnvB4cTleq7GPftz/cAjH6sj9WYP9tpfHvHzZHH2Xsn4RlkQQqNee7J0FXR5xmatIm5tBAikBhfrpd4zFRAJBk3YM9Cm4zj5dnIGYcFXnrc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=KJnTQJ2A; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel-dk.20230601.gappssmtp.com header.i=@kernel-dk.20230601.gappssmtp.com header.b="xoYooiqn"
-Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-2166360285dso188588005ad.1
-        for <target-devel@vger.kernel.org>; Sat, 04 Jan 2025 14:27:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernel-dk.20230601.gappssmtp.com; s=20230601; t=1736029674; x=1736634474; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:date:message-id:subject
-         :references:in-reply-to:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ydW0TG4z7XBo7HBBH7ij90+wnNI4JxxB1fs88STRyos=;
-        b=xoYooiqnsEbhRX7oNLMe+4zSKtiFsQwy8/aciLwR5MW3a6ReCHKk8eZipkbBAx9V5X
-         mHYHz7rcg1tUUyQ6Yqf8fi4GmvZcQbh2o/byeXJiT0EvxL88mAJvZ4zYPx1HaVPufL7z
-         572+GXzuEpX+yVbDLRp7jRi3O7IR9AIjcCmnmNqZfHWp63qdaBqFhhGUDljGkfj03OLr
-         DqFHc7rwsLT3E2pTPGVxrCl6xKYiB53u2lFSVi1L84K1Cnl0XM6YKWhHZ3wy1+h7Y6mQ
-         /+5vIRZlags29GTRIJ+fRIdig73iwZHSd2gEIkrp7K+yhrt6woslPZ5YYeER5UNv6UHS
-         aOdg==
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="KJnTQJ2A"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1736499317;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cbmAgBIFGegMw9/n64PG7MiCf/X/4twOdx1csl9BLho=;
+	b=KJnTQJ2AbuZlWrRSzKRUbap/mYS19Aimces8KaEVmfdMyUPIf9gIPbPRc6DN89fkCeTYVX
+	daxD1Eeqp+EsB6+Ipr1I1k1R/2IYggZq2YXIoiuL45fpyrtb2BiRck/Q6LEGgJj2BGjKgQ
+	h0oYK2e8cPtFEySSF5WOElNEqk9nnC0=
+Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com
+ [209.85.219.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-465-nwICduqYP5euJUQsV90JFw-1; Fri, 10 Jan 2025 03:55:16 -0500
+X-MC-Unique: nwICduqYP5euJUQsV90JFw-1
+X-Mimecast-MFC-AGG-ID: nwICduqYP5euJUQsV90JFw
+Received: by mail-qv1-f71.google.com with SMTP id 6a1803df08f44-6dd43b16631so23555026d6.2
+        for <target-devel@vger.kernel.org>; Fri, 10 Jan 2025 00:55:15 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736029674; x=1736634474;
-        h=content-transfer-encoding:mime-version:date:message-id:subject
-         :references:in-reply-to:cc:to:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1736499314; x=1737104114;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=ydW0TG4z7XBo7HBBH7ij90+wnNI4JxxB1fs88STRyos=;
-        b=ruC2b7ghY3bkF3HIFuL+N2UbMLooGZMIKt2cMIYuhYHe5PuIVF+tTLgVRi4nyXKNgx
-         EmcQbUMW4dXhYhCMb12EFBRwzZpyEkcViYCa6updXiNr7xcdT42iLR5LMLpMBODY/VNX
-         kWAfFrq6tMWC+s9VEo8mP9iS9zss6ZccSdljDhrFWipl3zUq5BJ2AlygdnU9IDCsQgRM
-         9Zxlz/r2Faceb8PmudusnytxcfEXEctvO7kR0fWnvDF/rp1Fkl96B1+uHJ1J5ArLBkHs
-         qldB8oWxF79lLJS4LFHSEZNfQ1Cof+lWdfxfEBGEkm287YzardfsWbugMgYDgFzkGHQT
-         Vywg==
-X-Forwarded-Encrypted: i=1; AJvYcCWNhGm1m6B21A3MdEEMoV0zKwoqRJALaSyg6DI/tiHR+LovLHjdXrzYRTO6iySwR8zXaUFA9w154snZ7d0=@vger.kernel.org
-X-Gm-Message-State: AOJu0YyNPI+Mxaoi1wBlXxmL38GuyE4gcPksgqnPjmt3bc6nWniO6NY4
-	Sy1CeRTqK3JGeS2Fa2TbRqi85vK7bXc7P9QU4MNogrncx4ULyX71dfN6IOiAUUk=
-X-Gm-Gg: ASbGncvuzjsSOsLvRLe/f36HletrBz/jVXgBMXxDCwebX4h3yN0GK/++z0L87YvLP/8
-	XvtLF/z5eL9R+kBor4vufP4bNJ8Fg/NcpPmK+WJgCpFEAEZA23rbSAL3CIje0H9G5Eq5oGpaZxK
-	U0AbrWVHl2123B5GpolCkNFg+fYD6b5eiRrGF4abi6D5U5Ify81JKrXSWflEa5WSx94Q82YYyir
-	OWfFxtB/oOPn5matC3Qme9Wc7KHy/tUrvONkWv7YLW1xZeL
-X-Google-Smtp-Source: AGHT+IF+L+86xLxNKDCy3NJpJ1Whra//RstFOL/I1FY0ppQLvIlzdnb8Hv8hv/Dxi+bSvhcBNsb4Ww==
-X-Received: by 2002:a05:6a20:6f06:b0:1e1:b014:aec9 with SMTP id adf61e73a8af0-1e5e080c77fmr83798682637.29.1736029674019;
-        Sat, 04 Jan 2025 14:27:54 -0800 (PST)
-Received: from [127.0.0.1] ([198.8.77.157])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72aad81641esm28451472b3a.3.2025.01.04.14.27.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 04 Jan 2025 14:27:53 -0800 (PST)
-From: Jens Axboe <axboe@kernel.dk>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-block@vger.kernel.org, linux-nvme@lists.infradead.org, 
- linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-In-Reply-To: <20250103073417.459715-1-hch@lst.de>
-References: <20250103073417.459715-1-hch@lst.de>
-Subject: Re: simplify passthrough bio handling
-Message-Id: <173602967287.135972.1134077263108813311.b4-ty@kernel.dk>
-Date: Sat, 04 Jan 2025 15:27:52 -0700
+        bh=cbmAgBIFGegMw9/n64PG7MiCf/X/4twOdx1csl9BLho=;
+        b=KECZDxpOvjPq0q4Kky1banUpIxXDFgrNjwUuayRL1aGBEfrytvw0I7g1UheV2o09/n
+         DkWurVqadH3FzSE/mm73lPaBZu9rhPZV97xIg8xxIFEsudham3TnZCFSlKfgT5KD8vUV
+         eZCOD+XYbDSdRKwlSxAJl2Z6QMKJG0tOiNjKdhCnzARTc0IrHAefCWXTOPFFaAjhlVq/
+         q8m/N0lQtgOvdOdCBnT3Hn3lrzBBY+pC7JVD5KVngEBLaamsZ1wmeYRnLCOLLr9bYUNk
+         bWAg5WfDWYRgY2nTBTy+t9zng4xL/VxIne8AyAML/e6403EgQIPQRQBfkeWMgrnbiCvS
+         vXRQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVyfaAohMFokDT3bQ2X46yZI71cI33lklxYIq3dgqEn0xZoRuMIx6MvM0fHny9BIOUQ+BxwJBMYqbwcoLc=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxKmFZ1ZgSHgxhpbpldTA1K0hJIINtHvW2oQcSyvGDEBly4Mm9F
+	lYso8pBjhvOhggHfTe2tK/MjE3gTJugiz8ZtwDIGCzn/Hr76/DORE7BYOIRksh1CW17WsksGrck
+	eTNvOEvc+S23xHt61tgjE5PUk+ABrN31bpGsDAeOWkPVpuRVHaIYSNH2FuwNTwVLagoRE/kamt6
+	IV8Jje/cqW1g4kjp5VAQvgEBmW+JKYQW5/tvpa
+X-Gm-Gg: ASbGncsKOgxdoJyDwSVaLdqov+RL2pOEcecmIQqyWWxhamLY8wANC3QFvZtQ/mOqAFh
+	9XcJJlAm8SGq0oAUw+BWznkdXf7fCaY+J7O3Tsw==
+X-Received: by 2002:a05:6214:5087:b0:6d4:2131:563c with SMTP id 6a1803df08f44-6df9b262054mr165554706d6.27.1736499314557;
+        Fri, 10 Jan 2025 00:55:14 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IFlFJ0HS11+WfG0bEtJnjkEwNkOKy8oKZOjFbOo4kwZMQuiwkXmEgjDB8+21fXJ6QpeTexzK3Pg9H5Pxdc7LOM=
+X-Received: by 2002:a05:6214:5087:b0:6d4:2131:563c with SMTP id
+ 6a1803df08f44-6df9b262054mr165554486d6.27.1736499314213; Fri, 10 Jan 2025
+ 00:55:14 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.3-dev-14bd6
+References: <20241224101757.32300-1-d.bogdanov@yadro.com>
+In-Reply-To: <20241224101757.32300-1-d.bogdanov@yadro.com>
+From: Maurizio Lombardi <mlombard@redhat.com>
+Date: Fri, 10 Jan 2025 09:55:02 +0100
+X-Gm-Features: AbW1kvYnXJkhbPEqu4IpXNoV5UnRXMqrTZBLlHDj0sIcttE3Bl45IJFK-3u3QEM
+Message-ID: <CAFL455nr=4V9ObetZaoECTTvm8wEREkQDfbFN_9_dqjqgJQ_Vg@mail.gmail.com>
+Subject: Re: [PATCH] scsi: target: iscsi: fix timeout on deleted connection
+To: Dmitry Bogdanov <d.bogdanov@yadro.com>
+Cc: Martin Petersen <martin.petersen@oracle.com>, target-devel@vger.kernel.org, 
+	linux-scsi@vger.kernel.org, linux@yadro.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+=C3=BAt 24. 12. 2024 v 11:37 odes=C3=ADlatel Dmitry Bogdanov
+<d.bogdanov@yadro.com> napsal:
+>
+> NOPIN response timer may expire on a deleted connection and crash with
+> such logs:
+> That is because nopin response timer may be re-started on nopin timer exp=
+iration.
+>
+> Stop nopin timer before stopping the nopin response timer to be sure
+> that no one of them will be re-started.
 
-On Fri, 03 Jan 2025 08:33:56 +0100, Christoph Hellwig wrote:
-> this series removes the special casing when adding pages to passthrough
-> bios in favor of simply checking that they match the queue limits once
-> before submissions.  This mirrors where the zone append users have been
-> moving and a recent doing the same for a single optimizes passthrough
-> user.
-> 
-> Diffstat:
->  block/bio.c                        |  107 +-----------------------------
->  block/blk-map.c                    |  128 ++++++++++---------------------------
->  block/blk-mq.c                     |    4 -
->  block/blk.h                        |    8 --
->  drivers/nvme/target/passthru.c     |   18 +++--
->  drivers/nvme/target/zns.c          |    3
->  drivers/target/target_core_pscsi.c |    6 -
->  include/linux/bio.h                |    2
->  include/linux/blk-mq.h             |    8 --
->  9 files changed, 57 insertions(+), 227 deletions(-)
-> 
-> [...]
+Looks ok to me,
 
-Applied, thanks!
-
-[1/2] block: remove bio_add_pc_page
-      commit: 6aeb4f836480617be472de767c4cb09c1060a067
-[2/2] block: remove blk_rq_bio_prep
-      commit: 02ee5d69e3baf2796ba75b928fcbc9cf7884c5e9
-
-Best regards,
--- 
-Jens Axboe
-
-
+Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
 
