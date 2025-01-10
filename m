@@ -1,95 +1,96 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A14B207A15
-	for <target-devel@vger.kernel.org>; Fri, 10 Jan 2025 08:55:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AA2C20A5C0;
+	Fri, 10 Jan 2025 21:17:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.165.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1736499320; cv=none; b=oXdIPgkRK2WRPSDgWJuEBU8hJYPf9d74H1jYxhM8DdVyFJpPNCapd40me+OqN+ycx9mCSP/U6FKNvNJoBgkTRq6KbDcWFv0g9k1K8uRt1s21mfhmPcE/4ll3ELaX4g4ZQa6vYqGGT4Fldmb6vUgNSoutScbaXS7E+O3+w6S3vMA=
+	t=1736543860; cv=none; b=k8wS2RKLtg7Cl8GrZHSEuT0wX5YobodAlgBh5Sq/sm75grArb3qFN4Z8b6YcS5br/oNjpFcFHX0G4tUIE90Eq39AYYVcCrpzNJC0tnh5brFXUomgo3CDPrRfc8FtgzGOjJL9t+He3Y0OBC8ZwtEUzqWj0r6Y6btAVUT83e6Vjjg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1736499320; c=relaxed/simple;
-	bh=cbmAgBIFGegMw9/n64PG7MiCf/X/4twOdx1csl9BLho=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Zjba5FRTa504WguqNyk/7O8vAtS3gjbu/6I2eKfsIXuNEhmVrnbH7sc3DMbZbSHFdnvB4cTleq7GPftz/cAjH6sj9WYP9tpfHvHzZHH2Xsn4RlkQQqNee7J0FXR5xmatIm5tBAikBhfrpd4zFRAJBk3YM9Cm4zj5dnIGYcFXnrc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=KJnTQJ2A; arc=none smtp.client-ip=170.10.129.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1736543860; c=relaxed/simple;
+	bh=kaJRI4DDyMDj3gAaTVrP8xilYfVAS4A7RfnPPrSq4dA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=mE+F412via6MUWznOfK3wo+F86apwShYMWsUaMBGSy2R9sEBmdgIci3hpddB69w/aRKQwpgKgtMfi1O3eiUd3C6FqZpW1GlmD0L4WEQr83icnRaGtl10jwpIaY2FGaFsxpvY22xJqr4C+wJ5Cjs8bnJlHXVcdT3QjnZQoXg9Xe4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=Evetu7Q1; arc=none smtp.client-ip=205.220.165.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="KJnTQJ2A"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1736499317;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cbmAgBIFGegMw9/n64PG7MiCf/X/4twOdx1csl9BLho=;
-	b=KJnTQJ2AbuZlWrRSzKRUbap/mYS19Aimces8KaEVmfdMyUPIf9gIPbPRc6DN89fkCeTYVX
-	daxD1Eeqp+EsB6+Ipr1I1k1R/2IYggZq2YXIoiuL45fpyrtb2BiRck/Q6LEGgJj2BGjKgQ
-	h0oYK2e8cPtFEySSF5WOElNEqk9nnC0=
-Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com
- [209.85.219.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-465-nwICduqYP5euJUQsV90JFw-1; Fri, 10 Jan 2025 03:55:16 -0500
-X-MC-Unique: nwICduqYP5euJUQsV90JFw-1
-X-Mimecast-MFC-AGG-ID: nwICduqYP5euJUQsV90JFw
-Received: by mail-qv1-f71.google.com with SMTP id 6a1803df08f44-6dd43b16631so23555026d6.2
-        for <target-devel@vger.kernel.org>; Fri, 10 Jan 2025 00:55:15 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736499314; x=1737104114;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=cbmAgBIFGegMw9/n64PG7MiCf/X/4twOdx1csl9BLho=;
-        b=KECZDxpOvjPq0q4Kky1banUpIxXDFgrNjwUuayRL1aGBEfrytvw0I7g1UheV2o09/n
-         DkWurVqadH3FzSE/mm73lPaBZu9rhPZV97xIg8xxIFEsudham3TnZCFSlKfgT5KD8vUV
-         eZCOD+XYbDSdRKwlSxAJl2Z6QMKJG0tOiNjKdhCnzARTc0IrHAefCWXTOPFFaAjhlVq/
-         q8m/N0lQtgOvdOdCBnT3Hn3lrzBBY+pC7JVD5KVngEBLaamsZ1wmeYRnLCOLLr9bYUNk
-         bWAg5WfDWYRgY2nTBTy+t9zng4xL/VxIne8AyAML/e6403EgQIPQRQBfkeWMgrnbiCvS
-         vXRQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVyfaAohMFokDT3bQ2X46yZI71cI33lklxYIq3dgqEn0xZoRuMIx6MvM0fHny9BIOUQ+BxwJBMYqbwcoLc=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxKmFZ1ZgSHgxhpbpldTA1K0hJIINtHvW2oQcSyvGDEBly4Mm9F
-	lYso8pBjhvOhggHfTe2tK/MjE3gTJugiz8ZtwDIGCzn/Hr76/DORE7BYOIRksh1CW17WsksGrck
-	eTNvOEvc+S23xHt61tgjE5PUk+ABrN31bpGsDAeOWkPVpuRVHaIYSNH2FuwNTwVLagoRE/kamt6
-	IV8Jje/cqW1g4kjp5VAQvgEBmW+JKYQW5/tvpa
-X-Gm-Gg: ASbGncsKOgxdoJyDwSVaLdqov+RL2pOEcecmIQqyWWxhamLY8wANC3QFvZtQ/mOqAFh
-	9XcJJlAm8SGq0oAUw+BWznkdXf7fCaY+J7O3Tsw==
-X-Received: by 2002:a05:6214:5087:b0:6d4:2131:563c with SMTP id 6a1803df08f44-6df9b262054mr165554706d6.27.1736499314557;
-        Fri, 10 Jan 2025 00:55:14 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IFlFJ0HS11+WfG0bEtJnjkEwNkOKy8oKZOjFbOo4kwZMQuiwkXmEgjDB8+21fXJ6QpeTexzK3Pg9H5Pxdc7LOM=
-X-Received: by 2002:a05:6214:5087:b0:6d4:2131:563c with SMTP id
- 6a1803df08f44-6df9b262054mr165554486d6.27.1736499314213; Fri, 10 Jan 2025
- 00:55:14 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="Evetu7Q1"
+Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50ALBqgV014729;
+	Fri, 10 Jan 2025 21:17:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2023-11-20; bh=EG3ScjH7dj0J5I7+YQqqmnOi7jFfSesOfuS/ZXu0L68=; b=
+	Evetu7Q1dJeG64/i/e4iuI93QIDqSBvcaF902Gl6SB1atRAxP247s1UvGv/tOkzt
+	hUOBHdgi3e4LdT9+PkWLAHPQ6i2E9PBVIWmGWk69WI/iKfgO2wqHZjqoTv39FDw7
+	v5quroPQvDzWfmRF4YWSBNAiqiHYt4TcUd4B/ENdtNzm6o3inew/xVmqm8+J4dc3
+	815QnHJ/4QHhOtRglsR1TYSboz6c52D2WYZpDLqcL3YN2NqGTxn7hIQL8KMw1EZn
+	aL9eMi8LifbatbEfxWxYoC4gykCHd/BAG/gfcuYB4vbp98gnTpgMmC3m2ixx0U9Z
+	Kd41CeXVwfR+LzLqUFJMxg==
+Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 442b8uka26-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 10 Jan 2025 21:17:36 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 50AJaviq027615;
+	Fri, 10 Jan 2025 21:17:36 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 43xued5r80-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 10 Jan 2025 21:17:36 +0000
+Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 50ALHQ24034137;
+	Fri, 10 Jan 2025 21:17:35 GMT
+Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTP id 43xued5r3k-8;
+	Fri, 10 Jan 2025 21:17:35 +0000
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+        linux@treblig.org
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, a.kovaleva@yadro.com,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: target: Remove unused functions
+Date: Fri, 10 Jan 2025 16:16:50 -0500
+Message-ID: <173654330165.638636.13956963717713262964.b4-ty@oracle.com>
+X-Mailer: git-send-email 2.46.2
+In-Reply-To: <20241222213524.270735-1-linux@treblig.org>
+References: <20241222213524.270735-1-linux@treblig.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20241224101757.32300-1-d.bogdanov@yadro.com>
-In-Reply-To: <20241224101757.32300-1-d.bogdanov@yadro.com>
-From: Maurizio Lombardi <mlombard@redhat.com>
-Date: Fri, 10 Jan 2025 09:55:02 +0100
-X-Gm-Features: AbW1kvYnXJkhbPEqu4IpXNoV5UnRXMqrTZBLlHDj0sIcttE3Bl45IJFK-3u3QEM
-Message-ID: <CAFL455nr=4V9ObetZaoECTTvm8wEREkQDfbFN_9_dqjqgJQ_Vg@mail.gmail.com>
-Subject: Re: [PATCH] scsi: target: iscsi: fix timeout on deleted connection
-To: Dmitry Bogdanov <d.bogdanov@yadro.com>
-Cc: Martin Petersen <martin.petersen@oracle.com>, target-devel@vger.kernel.org, 
-	linux-scsi@vger.kernel.org, linux@yadro.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-01-10_09,2025-01-10_03,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 spamscore=0 adultscore=0
+ malwarescore=0 phishscore=0 bulkscore=0 mlxlogscore=745 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2411120000
+ definitions=main-2501100164
+X-Proofpoint-ORIG-GUID: 5aAKljG-y5A0Z_RvCAUn9awmwLz-2kS9
+X-Proofpoint-GUID: 5aAKljG-y5A0Z_RvCAUn9awmwLz-2kS9
 
-=C3=BAt 24. 12. 2024 v 11:37 odes=C3=ADlatel Dmitry Bogdanov
-<d.bogdanov@yadro.com> napsal:
->
-> NOPIN response timer may expire on a deleted connection and crash with
-> such logs:
-> That is because nopin response timer may be re-started on nopin timer exp=
-iration.
->
-> Stop nopin timer before stopping the nopin response timer to be sure
-> that no one of them will be re-started.
+On Sun, 22 Dec 2024 21:35:24 +0000, linux@treblig.org wrote:
 
-Looks ok to me,
+> The functions:
+>   iscsit_check_unsolicited_dataout()
+>   iscsit_fail_session()
+>   iscsit_create_conn_recovery_datain_values()
+>   iscsit_create_conn_recovery_dataout_values()
+>   iscsit_tpg_dump_params()
+>   iscsit_print_session_params()
+> 
+> [...]
 
-Reviewed-by: Maurizio Lombardi <mlombard@redhat.com>
+Applied to 6.14/scsi-queue, thanks!
 
+[1/1] scsi: target: Remove unused functions
+      https://git.kernel.org/mkp/scsi/c/4d43d350a4b0
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
