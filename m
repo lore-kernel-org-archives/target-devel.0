@@ -1,80 +1,90 @@
-Received: from 008.lax.mailroute.net (008.lax.mailroute.net [199.89.1.11])
+Received: from smtp-fw-52005.amazon.com (smtp-fw-52005.amazon.com [52.119.213.156])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9349313213E;
-	Fri, 31 Jan 2025 16:54:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.1.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB4C32F3B;
+	Sun,  2 Feb 2025 09:02:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.119.213.156
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1738342477; cv=none; b=JlFdf/AOVHBjTEU/nPhCI/Na4tqK7BbUVJ8N9v/+cN8bJXABEQsOtEVslujKZSLiChq+Ajy0leANl+ZC1/U8sjYS/k8abtIoZigNOMW3vkCuwzmW0pfW1pNJgx+d3H6Uvye6kqoWmvTpN8JZGMEFSCeQ3gT7+GtzbSkwr7ys2KE=
+	t=1738486947; cv=none; b=qUcdOHdIFuTEfPHQEOuZNGESoaL4UxsG9x/j9CMm8uCcyUNXYTW5sgxUYLIioLDoTxpMBMVzX+qTy2hr1+34Rb8iO27WvHkgrPlLH5Kb54p7w6LwHHJlg3YHf9F1OstmMYZK1iUOl3e7XgVFjEqBYj4dmVO6+97eaFLQn/s39aY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1738342477; c=relaxed/simple;
-	bh=T4w4l/ML8sG/6PL1ZLUlQtOeG//l3YrKy+fXjPA3kgg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=rHIe/CoP8E+WznGIu4325weS06/diky9YPW3ieCGLLT60EGy1b+Z7ZPqcSBpPWCBCxqlA22bsPhemqyX6ewMkG2hNfR8eQUnyXNQzkEsIPO0rugbp2C5+bd13gLmLVlcuf+LTj2dquavcMXEL0EHzmOxgCd5GsWJIH5mMVvDpCw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=vWKEvn6v; arc=none smtp.client-ip=199.89.1.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
+	s=arc-20240116; t=1738486947; c=relaxed/simple;
+	bh=nD4kaYdBysHGMqyO+DYxF+ZInYqK5Sv6MZqCmZ5KplI=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Zy2gdc/3ARezf8TS5XpdxQSUKNKIPP82MYD4nLVwXlRcrgdl4Dq8GWFAxmfCuZwtHGkbioIyAFy1OU4HnR10KSbn2anXdnPBKFSioalEVVfx++GtTvEf3aF9HaNmxwzMIt3vzOLjD3H1aSlzAQ8jtg32cyY6PSV1k3uZOBNVWGA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com; spf=pass smtp.mailfrom=amazon.co.jp; dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b=nDHDDswp; arc=none smtp.client-ip=52.119.213.156
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=amazon.co.jp
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="vWKEvn6v"
-Received: from localhost (localhost [127.0.0.1])
-	by 008.lax.mailroute.net (Postfix) with ESMTP id 4Yl26x6LbZz6ClY99;
-	Fri, 31 Jan 2025 16:54:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
-	content-transfer-encoding:content-type:content-type:in-reply-to
-	:from:from:content-language:references:subject:subject
-	:user-agent:mime-version:date:date:message-id:received:received;
-	 s=mr01; t=1738342466; x=1740934467; bh=H5OxaIOFfU0Kvkdx0QEkv/B1
-	Xo6nZgwqF8qHcl2XHts=; b=vWKEvn6veUFMlK4Keshv1At+q+I6MZqhbjU5cSNL
-	YCgRV5p3q2l1o3zFSExt17y6OQ7b37Ru++SM1yCmXCBrmrUjLZ+tEGN0h4d/CJ/D
-	NpfyS7qIwJyjCxZI7umt1HvmQI4vlozmQ1M6hfvTAMeaVU/7z3PMkT8ZFuOqS2YI
-	Mfl+sEPuYSQaVkginaobADpNnz5aBfVKTydLybWrpBMciKfth9+YtQK3GbPPv2AZ
-	3xNINyPsLte7/PsOwkcdx5F4oqh4USohEKTBaE0bGpU1uOSsVWvzFmlhu9W1RD7n
-	8mFvlVOHPdpxiBNrutiENNhJFhGsvWQoKGgMEbgUcze26g==
-X-Virus-Scanned: by MailRoute
-Received: from 008.lax.mailroute.net ([127.0.0.1])
- by localhost (008.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
- id TQKAQK4UugGM; Fri, 31 Jan 2025 16:54:26 +0000 (UTC)
-Received: from [100.66.154.22] (unknown [104.135.204.82])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: bvanassche@acm.org)
-	by 008.lax.mailroute.net (Postfix) with ESMTPSA id 4Yl26k6bm9z6ClY95;
-	Fri, 31 Jan 2025 16:54:22 +0000 (UTC)
-Message-ID: <89bc6dd3-4015-409f-bb1c-2a957171cfd0@acm.org>
-Date: Fri, 31 Jan 2025 08:54:21 -0800
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="nDHDDswp"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1738486946; x=1770022946;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=j7BC454znfGK+YxC1sObQa0ZrTdrnrk7q5MLNC7JmeM=;
+  b=nDHDDswpD9cKWteiSFrFKgNzdeMeCCq9ofEh0ImsKlsCLTIvRS1OTBLM
+   GUkOHcLkgHPilrVYUIJdXecxOkuQzx3I7AkObkveGsCEynabEDRic79c+
+   WVFGmQKSULRzp22cv4zzc62OiVrPD4zEnOMuRj35ADNMcjYhtPlwP5D3L
+   E=;
+X-IronPort-AV: E=Sophos;i="6.13,253,1732579200"; 
+   d="scan'208";a="715364577"
+Received: from iad12-co-svc-p1-lb1-vlan3.amazon.com (HELO smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.43.8.6])
+  by smtp-border-fw-52005.iad7.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Feb 2025 09:02:23 +0000
+Received: from EX19MTAUWB002.ant.amazon.com [10.0.7.35:26257]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.5.183:2525] with esmtp (Farcaster)
+ id de94db05-fdca-43eb-9475-bc8a3af49cee; Sun, 2 Feb 2025 09:02:21 +0000 (UTC)
+X-Farcaster-Flow-ID: de94db05-fdca-43eb-9475-bc8a3af49cee
+Received: from EX19D003ANC003.ant.amazon.com (10.37.240.197) by
+ EX19MTAUWB002.ant.amazon.com (10.250.64.231) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.39;
+ Sun, 2 Feb 2025 09:02:21 +0000
+Received: from b0be8375a521.amazon.com (10.37.244.8) by
+ EX19D003ANC003.ant.amazon.com (10.37.240.197) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.39;
+ Sun, 2 Feb 2025 09:02:18 +0000
+From: Kohei Enju <enjuk@amazon.com>
+To: <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+CC: "Martin K . Petersen" <martin.petersen@oracle.com>, Kohei Enju
+	<kohei.enju@gmail.com>, Kohei Enju <enjuk@amazon.com>
+Subject: [PATCH v1] scsi: target: remove unnecessary null checking for bio allocation
+Date: Sun, 2 Feb 2025 18:02:08 +0900
+Message-ID: <20250202090208.26890-1-enjuk@amazon.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] block: mark bounce buffering as incompatible with
- integrity
-To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
-Cc: Mike Snitzer <snitzer@kernel.org>, Mikulas Patocka <mpatocka@redhat.com>,
- Song Liu <song@kernel.org>, Yu Kuai <yukuai3@huawei.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Kanchan Joshi <joshi.k@samsung.com>, linux-block@vger.kernel.org,
- dm-devel@lists.linux.dev, linux-raid@vger.kernel.org,
- target-devel@vger.kernel.org
-References: <20250131122436.1317268-1-hch@lst.de>
- <20250131122436.1317268-2-hch@lst.de>
-Content-Language: en-US
-From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20250131122436.1317268-2-hch@lst.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: EX19D045UWA002.ant.amazon.com (10.13.139.12) To
+ EX19D003ANC003.ant.amazon.com (10.37.240.197)
 
-On 1/31/25 4:24 AM, Christoph Hellwig wrote:
-> +	if (lim->features & BLK_FEAT_BOUNCE_HIGH) {
-> +		pr_warn("no bounce buffer support for integruty metadata\n");
-> +		return -EINVAL;
-> +	}
+When __GFP_DIRECT_RECLAIM (included in GFP_NOIO) is specified,
+bio_alloc_bioset() never fails to allocate a bio. For more details, see
+the comment in bio_alloc_bioset() in block/bio.c
 
-integruty -> integrity
+Signed-off-by: Kohei Enju <enjuk@amazon.com>
+---
+ drivers/target/target_core_iblock.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Thanks,
+diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
+index c8dc92a7d63e..9ef23eea55e7 100644
+--- a/drivers/target/target_core_iblock.c
++++ b/drivers/target/target_core_iblock.c
+@@ -369,10 +369,6 @@ static struct bio *iblock_get_bio(struct se_cmd *cmd, sector_t lba, u32 sg_num,
+ 	 */
+ 	bio = bio_alloc_bioset(ib_dev->ibd_bd, bio_max_segs(sg_num), opf,
+ 			       GFP_NOIO, &ib_dev->ibd_bio_set);
+-	if (!bio) {
+-		pr_err("Unable to allocate memory for bio\n");
+-		return NULL;
+-	}
+ 
+ 	bio->bi_private = cmd;
+ 	bio->bi_end_io = &iblock_bio_done;
+-- 
+2.39.5 (Apple Git-154)
 
-Bart.
