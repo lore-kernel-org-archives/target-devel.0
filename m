@@ -1,74 +1,81 @@
-Received: from out-184.mta1.migadu.com (out-184.mta1.migadu.com [95.215.58.184])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72E07221DA1
-	for <target-devel@vger.kernel.org>; Wed, 26 Feb 2025 12:10:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.184
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F15A221D9E;
+	Wed, 26 Feb 2025 12:10:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740571829; cv=none; b=DHe/I/hcRmgsjJQBuLouuHNIfapZYFIF8Z8wTFdLfzJPrN6eF0gddBY27ChFdMd15sTjlgMEQZ3hnih2YpQrg8XUoJg3KuxVzKx6i9HO6ccnpowS43yUTvXwGAP/g1gfUuXwBeCPv4sGnbNNeQWe1dhc21c91xK9q7ekmSMb49I=
+	t=1740571848; cv=none; b=FzDmQK6Hc7am74BjNy+uRJ7+y6ZxUl+6C8LLUh1DOFgM4hubWVbIio8Ne6Ky+5J+N4zADrqamFoVCvo8aett6pHDGVyXDA3HI05ueYbDVV4AXpsAPS9pgC5fhYbJDcJJTkte+PPkGeexESRJw7yi6guSz8X7PD+u5dZQdmgdQI0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740571829; c=relaxed/simple;
-	bh=NDQLjOPiRU48JFwf9tbOAqkkM206hTnuNHycxmdmLjI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=idCJ0ZicqaoLuCZXnt+YoD7fqbT2JDK/iJoEMXe3DTy3IaKnoYekyctdJzq1IPacJmyHzIS93SDRqYQFCtPjiQQ8T1x0S55J4x7J/tSw3c6iPB4Qzd6mxZASsWzUnUAJA0HRZGkXHBkVcnBa0H89wF6xrigD/+RX6ObRHhC36O4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=mGTdLCAZ; arc=none smtp.client-ip=95.215.58.184
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1740571848; c=relaxed/simple;
+	bh=1hsY1mzdKYsDcAX5t0fakckOi/QFoEJVBbyh7+t2eEw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=lAh6jeIMsWFdhZlA+6Ewi/tHPV2fAPOjO+Zn1UEiMoRzjqQmHNL/1tQ4zmt115Ef3lpAj9y78s5mZXAZWQq2GdpvBktkTdJ9Wq0vOnSnKbUnjXJBEMS4fnO80ViYsvUpLA2mEulYzcREItSxDyUWS8F9fbO+iNYj/Lr7Jv9BT7c=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UGKtJ7fN; arc=none smtp.client-ip=209.85.208.42
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="mGTdLCAZ"
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1740571815;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=+i6UfT5KyDRrgh8kYOD+6Aqz438J4G3HLbqw7xmE2yY=;
-	b=mGTdLCAZDtzVp/Uo0ar2swpaAsTqoP15oWrtR6IiRyLQyeRGr6tT4k0PgodS2mmOqG7pT/
-	5xQwEUPqi6tu5DJ7G3OKlTKKinEurFpoymNL3DPjbxlHJ0BW1ynYW30l/18zgns30n+6gf
-	bg+85t1xcXbNWmfYZXGQaU/RACeTS3Y=
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	linux-hardening@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: target: Replace deprecated strncpy() with strscpy()
-Date: Wed, 26 Feb 2025 13:10:03 +0100
-Message-ID: <20250226121003.359876-1-thorsten.blum@linux.dev>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UGKtJ7fN"
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-5ded46f323fso9313256a12.1;
+        Wed, 26 Feb 2025 04:10:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1740571845; x=1741176645; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=1hsY1mzdKYsDcAX5t0fakckOi/QFoEJVBbyh7+t2eEw=;
+        b=UGKtJ7fNNefnBrFXBPqyHK3vq2v3xhNKkMw4yCnCKr6bEuNudbDQWpHWMyrUagWlAH
+         CFrFRZtgEI00Ou1dnEo+hd/yCMhmHiYqfRnMz3Ag6qvHUp8EAqrElWrjNGPb9h8d9/+l
+         IS6/5hzgMfdjn7xohBPLw0eS4x4NT7f2QOyxQ3pNsPDdLSjSb10ZHzSKinyPcSSCw7qV
+         3RphqlBJU+/EiwWwwJBoAPB4IimR3JSdtATV5iJef+ygGTqvsVpMmPietGIpf4d2VuS7
+         KDgjFZ6AUE4JK4W0B23dMARJCir8mIDfll1CCTHVthef9MiKT3REyJMq3rjDxrNpnV0h
+         PtgQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740571845; x=1741176645;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1hsY1mzdKYsDcAX5t0fakckOi/QFoEJVBbyh7+t2eEw=;
+        b=mwSMZ8lXDJAJ7SrO2VOXuR3mxaPKXFvIVtyJCkQS+uFhoYi+E6B1u24suWWNJwxdmE
+         ZxM985DzO4JmLay+cbrD1H3HcNxCYjG89sM8fXPFvB67llP0QsZdwQAjdaWSRselgIxd
+         ZzATjfr82WavxnwUbBYxIHN2aq++9+WxADYq45VBmbnmX8MxskrU2nxP0QFoP/lhqZUF
+         DgVSOhFvnUbZwV0hfIDji/N98Lde+FKrolCT7a/9yAr8vquPTE5qV2SI9AD4lDa9m8rB
+         2oWEFne9QibOEit8Tkt8I2NoM/F6FSSp2RlyAHEFV8cGX49GWZziALHQt5kj8FDPOzhe
+         i0RQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUeS4EauPF93AkvRf6i5YRgQ4Ogi3c95a1uKxhCSxliA7lASLnSiVi9WNFGIZCYMiSIIaLtJFO+dIWBE94O@vger.kernel.org, AJvYcCWKwKsASYNP1dZcgDB6K6oDAkPfc3bJ5Uv2d3zx1fyGTQh9p3q0Garb5oJPnHImColinyI3fYPtxiPABg==@vger.kernel.org, AJvYcCWVsIRTjJsuYpUdMme7tEiFpoQ4DT9HQ1KqIdlBXdj4SBvVCSWVWN0mwA9j1aNFpBSJWcNuoCDm09uFDg==@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw6YCvbADcfu+2fYi1Rpww8f5U85cQAsMhk4/TDFkBDnKYeHM6f
+	thfS4KhIHrEXc06ML6lmJWtQwJTEnOaFmiRc2c0JyNnLjE6zd8KucTkurtQM8i90QK9uwOz6Zbx
+	XnsTW7k5CPifuvJvewbrKCT/eYA==
+X-Gm-Gg: ASbGncv4w15f6LeYCgOzlh1FsX/hFjcRmCIti6BdthUpjR8VqvC4uKliyI7qjDIngfs
+	Hkbmyowro7/VtsDNUrvS+iisabjdB7niwOKv9HUs3khHYzAc5XiErkaCLt9JhhNtJLCq1LZdudP
+	n7Bm4AMZw=
+X-Google-Smtp-Source: AGHT+IHS9F8DlHa7K4yiHRckEu2zP4JjVIGRYLXSIkjDC4JMBWupeCSjJPkj7sbydkOYnkvniICQtsy9U0hKiLbYKCw=
+X-Received: by 2002:a05:6402:248c:b0:5da:d76:7b2e with SMTP id
+ 4fb4d7f45d1cf-5e4a0bf28cemr4160664a12.0.1740571845232; Wed, 26 Feb 2025
+ 04:10:45 -0800 (PST)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+References: <20250225154449.422989-1-hch@lst.de> <20250225154449.422989-4-hch@lst.de>
+In-Reply-To: <20250225154449.422989-4-hch@lst.de>
+From: Anuj gupta <anuj1072538@gmail.com>
+Date: Wed, 26 Feb 2025 17:40:06 +0530
+X-Gm-Features: AQ5f1JrUAunE97qcBFzsGJ8UeHsmDYeNRHuc2DNDRpHEkUPXoJiDcNi2r1VbuQI
+Message-ID: <CACzX3AtVtC11+DWuxQf97p8hDAJw_f_LxgBDSydfE0enr-KaFA@mail.gmail.com>
+Subject: Re: [PATCH 3/3] block: split struct bio_integrity_payload
+To: Christoph Hellwig <hch@lst.de>
+Cc: Jens Axboe <axboe@kernel.dk>, Mike Snitzer <snitzer@kernel.org>, 
+	Mikulas Patocka <mpatocka@redhat.com>, Song Liu <song@kernel.org>, Yu Kuai <yukuai3@huawei.com>, 
+	"Martin K. Petersen" <martin.petersen@oracle.com>, Kanchan Joshi <joshi.k@samsung.com>, 
+	linux-block@vger.kernel.org, dm-devel@lists.linux.dev, 
+	linux-raid@vger.kernel.org, target-devel@vger.kernel.org, 
+	Hannes Reinecke <hare@suse.de>
+Content-Type: text/plain; charset="UTF-8"
 
-Since strncpy() is deprecated for NUL-terminated destination buffers,
-use strscpy() instead.
+Tested in-kernel block integrity path and io_uring PI interface path
+using fio workloads with this new in-kernel plumbing.
 
-Compile-tested only.
-
-Link: https://github.com/KSPP/linux/issues/90
-Cc: linux-hardening@vger.kernel.org
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
----
- drivers/target/target_core_configfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index c40217f44b1b..446682f900e4 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -143,7 +143,7 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
- 	}
- 	filp_close(fp, NULL);
- 
--	strncpy(db_root, db_root_stage, read_bytes);
-+	strscpy(db_root, db_root_stage, read_bytes);
- 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
- 
- 	r = read_bytes;
--- 
-2.48.1
-
+Tested-by: Anuj Gupta <anuj20.g@samsung.com>
+Reviewed-by: Anuj Gupta <anuj20.g@samsung.com>
