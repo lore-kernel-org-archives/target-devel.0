@@ -1,641 +1,132 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB76313C9A3;
-	Tue, 25 Feb 2025 15:44:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EEDD26E62D
+	for <target-devel@vger.kernel.org>; Wed, 26 Feb 2025 09:53:19 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=203.254.224.25
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740498297; cv=none; b=KagzJLSGEUSrBJYWxsMt2D/wwEOl/ktEyeiMrICDTZVJiHyiN6J8R9D++x010Rws9o9nrMvIXkFXiTCtMaahCUs0v7A1LFnU1pBMB9mriUM3vfTuwugNiD9qPoPQL2C8t0mYFxnwvdUivu7kzve+xkKFfUvAbRCSSKkI9sdCByw=
+	t=1740563601; cv=none; b=R0mQkZIwY1I/ESau6d5hNt+hAXC3UUq630YiIXsaSDRKv+ZqcVLlP6V3HD6ykjYxfWMaX3/rTrmP5Zh227vqT0toippFOkkKjZQMLQhVPVlotcZ9k+o83FliRV4c4Wc3DYVrY6/n7ZAWC1xsG1WogspN7sVA2QchsxtYlV6SfGY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740498297; c=relaxed/simple;
-	bh=vv0dV1wTV1d78wFvric0Fry38Zsk/F8YuTxPSwOjjF8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ojpLW3gmNP8IZ+aRe7FU4vQKCcvlcauxkLDFB9pS8a5ZGEe1CsbhVmquAY9fqFtSn5QVwS326nWq0JUek+40C2hO3i2ikeZG0JZXSEwxmsfVwWgKpLi8ymWG3h3MNNouDjNXCvFGPSnGQo8pHlVQnOWMY5y04pKhlGUaC10cxmU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=4Xv89GJz; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
+	s=arc-20240116; t=1740563601; c=relaxed/simple;
+	bh=B8wxZcnCCEDroaQcsE3lsq746/Ba2NysP5sa1hgyYgM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=tYhJfE3qwhvwTJ1v11NNBasqTkFdXEeh8ed54ihoNTjWmw7NTe+DsOzJXlEuETrnx2ouvOvMMPefgz6hexYgnonrJzYn6+0PP6h3cPRQzoiI5O5Vs6NyHNuTy55dH7LkcXzcRfC4ih0oh5qFosK5q5LdYiwilMwMeU3wwhdhKDY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com; spf=pass smtp.mailfrom=samsung.com; dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b=E+Jan8SC; arc=none smtp.client-ip=203.254.224.25
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samsung.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="4Xv89GJz"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
-	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=dSJFmFDxsPLD41VRgdTvxLGQ+952xnnO1pJV1bg2Pzc=; b=4Xv89GJzv/cr8a1lf5Z/NnBUg7
-	KNBVAqQ2bhalhnSJw5JR0okOs6Xr4PfiZaD7NnkHy867VBqobpxhwJ3DXkUffDtjs4NqPVR5nYT6H
-	bIn82l3mCKDAUBV8WStr4Cjqs2TAlvsHoU4eQJQDtYLKNpR3RNrRUwPgg2w0JJfjqWJbxJOUScVba
-	diVUiOetRg07zTzZRRYdPZtu13CKT80E5qJsteBF8QBFDlM6iZ40tbBpeCBemNbFwcKbBCwebhfbc
-	SLQVzrPljALuOMFZlqfj3ZCCUSubNmPMd+LyWgGfyJoIR31mVrvrK9PU2xslr6HqibJOmkEN45gyR
-	VPfS/s2g==;
-Received: from [4.28.11.157] (helo=localhost)
-	by bombadil.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
-	id 1tmx74-000000006i0-0nbB;
-	Tue, 25 Feb 2025 15:44:50 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: Mike Snitzer <snitzer@kernel.org>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	Song Liu <song@kernel.org>,
-	Yu Kuai <yukuai3@huawei.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Kanchan Joshi <joshi.k@samsung.com>,
-	linux-block@vger.kernel.org,
-	dm-devel@lists.linux.dev,
-	linux-raid@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	Hannes Reinecke <hare@suse.de>
-Subject: [PATCH 3/3] block: split struct bio_integrity_payload
-Date: Tue, 25 Feb 2025 07:44:33 -0800
-Message-ID: <20250225154449.422989-4-hch@lst.de>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20250225154449.422989-1-hch@lst.de>
-References: <20250225154449.422989-1-hch@lst.de>
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="E+Jan8SC"
+Received: from epcas5p2.samsung.com (unknown [182.195.41.40])
+	by mailout2.samsung.com (KnoxPortal) with ESMTP id 20250226095317epoutp02e6987227876dc462cdea904ba7a7d012~nuV6qiU8P2872028720epoutp02-
+	for <target-devel@vger.kernel.org>; Wed, 26 Feb 2025 09:53:17 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20250226095317epoutp02e6987227876dc462cdea904ba7a7d012~nuV6qiU8P2872028720epoutp02-
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1740563597;
+	bh=B8wxZcnCCEDroaQcsE3lsq746/Ba2NysP5sa1hgyYgM=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=E+Jan8SCUAlvJBlPZZabV+Go4YvWz6wAKMPFUPrZhcW2a5hqXbkwoI8bbMy9O7ePn
+	 2Co+vz0THe+UUuxy0Q4OSzLPPU35I/O8b3bB8WuUbXjpdN7nKTUTBjqIV6efGSti9t
+	 gEupLrmPutQHY8OcmSZfTc+b1ytKub+0LC3YBMSA=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+	epcas5p4.samsung.com (KnoxPortal) with ESMTP id
+	20250226095316epcas5p4be8b859f4c3462d5a74067e6a5613a49~nuV6R0fw91661416614epcas5p4O;
+	Wed, 26 Feb 2025 09:53:16 +0000 (GMT)
+Received: from epsmgec5p1-new.samsung.com (unknown [182.195.38.174]) by
+	epsnrtp1.localdomain (Postfix) with ESMTP id 4Z2qXp75hmz4x9Pp; Wed, 26 Feb
+	2025 09:53:14 +0000 (GMT)
+Received: from epcas5p1.samsung.com ( [182.195.41.39]) by
+	epsmgec5p1-new.samsung.com (Symantec Messaging Gateway) with SMTP id
+	0C.92.29212.A84EEB76; Wed, 26 Feb 2025 18:53:14 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+	epcas5p2.samsung.com (KnoxPortal) with ESMTPA id
+	20250226095314epcas5p2b43c3651fa03ce7abfd65a1aa022b544~nuV4G0kGN1405814058epcas5p2F;
+	Wed, 26 Feb 2025 09:53:14 +0000 (GMT)
+Received: from epsmgmc1p1new.samsung.com (unknown [182.195.42.40]) by
+	epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+	20250226095314epsmtrp209ac66cd585af21b2d42d64b4180df26~nuV4FpsDv1836818368epsmtrp2s;
+	Wed, 26 Feb 2025 09:53:14 +0000 (GMT)
+X-AuditID: b6c32a50-7ebff7000000721c-c5-67bee48a4a65
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+	epsmgmc1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+	0D.92.23488.A84EEB76; Wed, 26 Feb 2025 18:53:14 +0900 (KST)
+Received: from [107.122.11.51] (unknown [107.122.11.51]) by
+	epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20250226095312epsmtip2f97d947ce49eada1562a0e3fcaab0197~nuV2bHJPM1916819168epsmtip2f;
+	Wed, 26 Feb 2025 09:53:12 +0000 (GMT)
+Message-ID: <5ac8aa8d-e1de-44e6-831f-c25f2d7791ab@samsung.com>
+Date: Wed, 26 Feb 2025 15:23:11 +0530
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/3] block: split struct bio_integrity_payload
+To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
+Cc: Mike Snitzer <snitzer@kernel.org>, Mikulas Patocka
+	<mpatocka@redhat.com>, Song Liu <song@kernel.org>, Yu Kuai
+	<yukuai3@huawei.com>, "Martin K. Petersen" <martin.petersen@oracle.com>,
+	linux-block@vger.kernel.org, dm-devel@lists.linux.dev,
+	linux-raid@vger.kernel.org, target-devel@vger.kernel.org, Hannes Reinecke
+	<hare@suse.de>
+Content-Language: en-US
+From: Kanchan Joshi <joshi.k@samsung.com>
+In-Reply-To: <20250225154449.422989-4-hch@lst.de>
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrMJsWRmVeSWpSXmKPExsWy7bCmum7Xk33pBptmmVqsvtvPZrFg0VwW
+	iz2LJjFZrFx9lMli7y1ti/b5uxgtlh//x2QxseMqk8WJW9IWx5f/ZbNoXfqWyWLOQjYHHo+W
+	I29ZPS6fLfXYtKqTzePF5pmMHrtvNrB5fHx6i8Xj/b6rbB6bT1d7fN4kF8AZlW2TkZqYklqk
+	kJqXnJ+SmZduq+QdHO8cb2pmYKhraGlhrqSQl5ibaqvk4hOg65aZA3SukkJZYk4pUCggsbhY
+	Sd/Opii/tCRVISO/uMRWKbUgJafApECvODG3uDQvXS8vtcTK0MDAyBSoMCE7Y++vNqaCRpaK
+	7ZPuMzUwrmPuYuTkkBAwkVg47RsjiC0ksIdRomeyaBcjF5D9iVHi0bJv7BDON0aJTxPWwHVs
+	n7aTCSKxl1Hi87TNjBDOW0aJBe+a2UCqeAXsJG6cnAvWwSKgKvF+1yJmiLigxMmZT1hAbFEB
+	eYn7t2YAreDgEBZwklg6uwIkLCLgIDF7w1I2kJnMAleYJKZ8WgQ2k1lAXOLWk/lMIPVsApoS
+	FyaXgoQ5BQwlZmxdwAxRIi+x/e0cZpBeCYEzHBJHvlxjgrjaReLm2l/sELawxKvjW6BsKYnP
+	7/ayQdjZEg8ePWCBsGskdmzuY4Ww7SUa/txgBdnLDLR3/S59iF18Er2/n4CdIyHAK9HRJgRR
+	rShxb9JTqE5xiYczlkDZHhKXnvyHBtVqRolJv/6xTmBUmIUUKrOQfDkLyTuzEDYvYGRZxSiV
+	WlCcm56abFpgqJuXWg6P8OT83E2M4NSsFbCDcfWGv3qHGJk4GA8xSnAwK4nwcmbuSRfiTUms
+	rEotyo8vKs1JLT7EaAqMn4nMUqLJ+cDskFcSb2hiaWBiZmZmYmlsZqgkztu8syVdSCA9sSQ1
+	OzW1ILUIpo+Jg1OqgUklj9/GmGn99kf7Vc/dL7yxY1H88piqOc+WCS2dn3PI4mXqFL2jvTov
+	b3tfZdp6aCkj162XfGKiLyx6X7O/mzbj9MdNLWstku7NFs87VFYgzLeC7cCxDOFNwR73pnIc
+	CJxbasJSVfrs08SLpR7e3ItkWjd3nfp/ssNOdAfv4ZwD9SFSf7fsYfsvV+bIFdK3RVZrm9W3
+	vqNrHA+e0jA05DfsEfHdfGZ76qWkDe/vB/QF8HU0cKv3WErkHb/LO9O8s3z2HFbes6l1Cn0p
+	in//7Ciqzrv+4uxTb5tgF9f9Nvxhbxxi+OaUW2/eVLKbb/VxL/nqXb3vYnwXHHNaXMxVo1Pf
+	/LfeukFBZf1213oxISWW4oxEQy3mouJEAKUB9PhWBAAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprPIsWRmVeSWpSXmKPExsWy7bCSvG7Xk33pBou7JCxW3+1ns1iwaC6L
+	xZ5Fk5gsVq4+ymSx95a2Rfv8XYwWy4//Y7KY2HGVyeLELWmL48v/slm0Ln3LZDFnIZsDj0fL
+	kbesHpfPlnpsWtXJ5vFi80xGj903G9g8Pj69xeLxft9VNo/Np6s9Pm+SC+CM4rJJSc3JLEst
+	0rdL4MrY+6uNqaCRpWL7pPtMDYzrmLsYOTkkBEwktk/bydTFyMUhJLCbUWLKkyNMEAlxieZr
+	P9ghbGGJlf+es0MUvWaUePTpNRtIglfATuLGyblgk1gEVCXe71rEDBEXlDg58wkLiC0qIC9x
+	/9YMoGYODmEBJ4mlsytAwiICDhKzNyxlA5nJLHCFSeJz100WiAWrGSWO/TnKCFLFDHTFrSfz
+	mUCa2QQ0JS5MLgUJcwoYSszYuoAZosRMomtrF1S5vMT2t3OYJzAKzUJyxiwkk2YhaZmFpGUB
+	I8sqRsnUguLc9NxkwwLDvNRyveLE3OLSvHS95PzcTYzgONTS2MH47luT/iFGJg7GQ4wSHMxK
+	IrycmXvShXhTEiurUovy44tKc1KLDzFKc7AoifOuNIxIFxJITyxJzU5NLUgtgskycXBKNTA5
+	d0aufLEobK+iaMKzvSxMTTfULj3qdPp6PvqEfganVcfUgkbXkwtY8m6+Elbw3lwkuT83ZVdl
+	yAUP03drLrxSF9R1LD/fcnRTXK6XTsJJFdaupfo9jz6ovg5O3T5ne+x5yWnMeX2LrDJ3il95
+	u2DNgXtKpk2vMqyqpyx680pbvdjzTWGI82mL2TU719+YsDlv1+/zEpOvuD6/llYi9Emq/cyf
+	1ZdWMZZ2f5/Od+R0Qf6LKde46j7OX7tAQEZq9t+Vt/Ucy39N9Phb+PdF45x1UYnltbnz2Dkj
+	NZia3p///ftd0M+1Nel1gY1esS2PjN9t7tc68Mw90emu5NFWr4iXmscW7ph2JKwyl4+z5nqU
+	EktxRqKhFnNRcSIAvEktFjIDAAA=
+X-CMS-MailID: 20250226095314epcas5p2b43c3651fa03ce7abfd65a1aa022b544
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+CMS-TYPE: 105P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20250225154543epcas5p3c8c901d6069ea33bef42c2d2e78cf53c
+References: <20250225154449.422989-1-hch@lst.de>
+	<CGME20250225154543epcas5p3c8c901d6069ea33bef42c2d2e78cf53c@epcas5p3.samsung.com>
+	<20250225154449.422989-4-hch@lst.de>
 
-Many of the fields in struct bio_integrity_payload are only needed for
-the default integrity buffer in the block layer, and the variable
-sized array at the end of the structure makes it very hard to embed
-into caller allocated structures.
+On 2/25/2025 9:14 PM, Christoph Hellwig wrote:
+> Reduce struct bio_integrity_payload to the minimal structure needed in
+> common code and create two separate containing structures for the
+> automatically generated payload and the caller allocated payload.
+> The latter is a simple wrapper for struct bio_integrity_payload and
+> the bvecs, while the former contains the additional fields moved out
+> of strut bio_integrity_payload.
 
-Reduce struct bio_integrity_payload to the minimal structure needed in
-common code and create two separate containing structures for the
-automatically generated payload and the caller allocated payload.
-The latter is a simple wrapper for struct bio_integrity_payload and
-the bvecs, while the former contains the additional fields moved out
-of strut bio_integrity_payload.
+nit: s/strut/struct
 
-Always use a dedicated mempool for automatic integrity metadata
-instead of depending on bio_set that is submitter controlled and thus
-often doesn't have the mempool initialized and stop using mempools for
-the submitter buffers as they aren't in the NOIO I/O submission path
-where we need to guarantee forward progress.
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
-Reviewed-by: Hannes Reinecke <hare@suse.de>
----
- block/bio-integrity-auto.c          |  75 +++++++++++++------
- block/bio-integrity.c               | 107 ++++++----------------------
- block/bio.c                         |   6 --
- block/blk.h                         |   2 +-
- block/t10-pi.c                      |   6 +-
- drivers/md/dm-integrity.c           |  12 ----
- drivers/md/dm-table.c               |   6 --
- drivers/md/md.c                     |  13 ----
- drivers/target/target_core_iblock.c |  12 ----
- include/linux/bio-integrity.h       |  25 +------
- include/linux/bio.h                 |   4 --
- 11 files changed, 80 insertions(+), 188 deletions(-)
-
-diff --git a/block/bio-integrity-auto.c b/block/bio-integrity-auto.c
-index 357241fa0f20..e524c609be50 100644
---- a/block/bio-integrity-auto.c
-+++ b/block/bio-integrity-auto.c
-@@ -12,18 +12,34 @@
- #include <linux/workqueue.h>
- #include "blk.h"
- 
-+struct bio_integrity_data {
-+	struct bio			*bio;
-+	struct bvec_iter		saved_bio_iter;
-+	struct work_struct		work;
-+	struct bio_integrity_payload	bip;
-+	struct bio_vec			bvec;
-+};
-+
-+static struct kmem_cache *bid_slab;
-+static mempool_t bid_pool;
- static struct workqueue_struct *kintegrityd_wq;
- 
--static void bio_integrity_verify_fn(struct work_struct *work)
-+static void bio_integrity_finish(struct bio_integrity_data *bid)
- {
--	struct bio_integrity_payload *bip =
--		container_of(work, struct bio_integrity_payload, bip_work);
--	struct bio *bio = bip->bip_bio;
-+	bid->bio->bi_integrity = NULL;
-+	bid->bio->bi_opf &= ~REQ_INTEGRITY;
-+	kfree(bvec_virt(bid->bip.bip_vec));
-+	mempool_free(bid, &bid_pool);
-+}
- 
--	blk_integrity_verify(bio);
-+static void bio_integrity_verify_fn(struct work_struct *work)
-+{
-+	struct bio_integrity_data *bid =
-+		container_of(work, struct bio_integrity_data, work);
-+	struct bio *bio = bid->bio;
- 
--	kfree(bvec_virt(bip->bip_vec));
--	bio_integrity_free(bio);
-+	blk_integrity_verify_iter(bio, &bid->saved_bio_iter);
-+	bio_integrity_finish(bid);
- 	bio_endio(bio);
- }
- 
-@@ -40,15 +56,16 @@ bool __bio_integrity_endio(struct bio *bio)
- {
- 	struct blk_integrity *bi = blk_get_integrity(bio->bi_bdev->bd_disk);
- 	struct bio_integrity_payload *bip = bio_integrity(bio);
-+	struct bio_integrity_data *bid =
-+		container_of(bip, struct bio_integrity_data, bip);
- 
- 	if (bio_op(bio) == REQ_OP_READ && !bio->bi_status && bi->csum_type) {
--		INIT_WORK(&bip->bip_work, bio_integrity_verify_fn);
--		queue_work(kintegrityd_wq, &bip->bip_work);
-+		INIT_WORK(&bid->work, bio_integrity_verify_fn);
-+		queue_work(kintegrityd_wq, &bid->work);
- 		return false;
- 	}
- 
--	kfree(bvec_virt(bip->bip_vec));
--	bio_integrity_free(bio);
-+	bio_integrity_finish(bid);
- 	return true;
- }
- 
-@@ -65,8 +82,8 @@ bool __bio_integrity_endio(struct bio *bio)
-  */
- bool bio_integrity_prep(struct bio *bio)
- {
--	struct bio_integrity_payload *bip;
- 	struct blk_integrity *bi = blk_get_integrity(bio->bi_bdev->bd_disk);
-+	struct bio_integrity_data *bid;
- 	gfp_t gfp = GFP_NOIO;
- 	unsigned int len;
- 	void *buf;
-@@ -102,27 +119,30 @@ bool bio_integrity_prep(struct bio *bio)
- 		return true;
- 	}
- 
-+	if (WARN_ON_ONCE(bio_has_crypt_ctx(bio)))
-+		return true;
-+
- 	/* Allocate kernel buffer for protection data */
- 	len = bio_integrity_bytes(bi, bio_sectors(bio));
- 	buf = kmalloc(len, gfp);
- 	if (!buf)
- 		goto err_end_io;
-+	bid = mempool_alloc(&bid_pool, GFP_NOIO);
-+	if (!bid)
-+		goto err_free_buf;
-+	bio_integrity_init(bio, &bid->bip, &bid->bvec, 1);
- 
--	bip = bio_integrity_alloc(bio, GFP_NOIO, 1);
--	if (IS_ERR(bip)) {
--		kfree(buf);
--		goto err_end_io;
--	}
-+	bid->bio = bio;
- 
--	bip->bip_flags |= BIP_BLOCK_INTEGRITY;
--	bip_set_seed(bip, bio->bi_iter.bi_sector);
-+	bid->bip.bip_flags |= BIP_BLOCK_INTEGRITY;
-+	bip_set_seed(&bid->bip, bio->bi_iter.bi_sector);
- 
- 	if (bi->csum_type == BLK_INTEGRITY_CSUM_IP)
--		bip->bip_flags |= BIP_IP_CHECKSUM;
-+		bid->bip.bip_flags |= BIP_IP_CHECKSUM;
- 	if (bi->csum_type)
--		bip->bip_flags |= BIP_CHECK_GUARD;
-+		bid->bip.bip_flags |= BIP_CHECK_GUARD;
- 	if (bi->flags & BLK_INTEGRITY_REF_TAG)
--		bip->bip_flags |= BIP_CHECK_REFTAG;
-+		bid->bip.bip_flags |= BIP_CHECK_REFTAG;
- 
- 	if (bio_integrity_add_page(bio, virt_to_page(buf), len,
- 			offset_in_page(buf)) < len)
-@@ -132,9 +152,11 @@ bool bio_integrity_prep(struct bio *bio)
- 	if (bio_data_dir(bio) == WRITE)
- 		blk_integrity_generate(bio);
- 	else
--		bip->bio_iter = bio->bi_iter;
-+		bid->saved_bio_iter = bio->bi_iter;
- 	return true;
- 
-+err_free_buf:
-+	kfree(buf);
- err_end_io:
- 	bio->bi_status = BLK_STS_RESOURCE;
- 	bio_endio(bio);
-@@ -149,6 +171,13 @@ void blk_flush_integrity(void)
- 
- static int __init blk_integrity_auto_init(void)
- {
-+	bid_slab = kmem_cache_create("bio_integrity_data",
-+			sizeof(struct bio_integrity_data), 0,
-+			SLAB_HWCACHE_ALIGN | SLAB_PANIC, NULL);
-+
-+	if (mempool_init_slab_pool(&bid_pool, BIO_POOL_SIZE, bid_slab))
-+		panic("bio: can't create integrity pool\n");
-+
- 	/*
- 	 * kintegrityd won't block much but may burn a lot of CPU cycles.
- 	 * Make it highpri CPU intensive wq with max concurrency of 1.
-diff --git a/block/bio-integrity.c b/block/bio-integrity.c
-index aa9f96612319..608594a154a5 100644
---- a/block/bio-integrity.c
-+++ b/block/bio-integrity.c
-@@ -7,13 +7,12 @@
-  */
- 
- #include <linux/blk-integrity.h>
--#include <linux/mempool.h>
--#include <linux/export.h>
--#include <linux/bio.h>
--#include <linux/slab.h>
- #include "blk.h"
- 
--static struct kmem_cache *bip_slab;
-+struct bio_integrity_alloc {
-+	struct bio_integrity_payload	bip;
-+	struct bio_vec			bvecs[];
-+};
- 
- /**
-  * bio_integrity_free - Free bio integrity payload
-@@ -23,21 +22,23 @@ static struct kmem_cache *bip_slab;
-  */
- void bio_integrity_free(struct bio *bio)
- {
--	struct bio_integrity_payload *bip = bio_integrity(bio);
--	struct bio_set *bs = bio->bi_pool;
--
--	if (bs && mempool_initialized(&bs->bio_integrity_pool)) {
--		if (bip->bip_vec)
--			bvec_free(&bs->bvec_integrity_pool, bip->bip_vec,
--				  bip->bip_max_vcnt);
--		mempool_free(bip, &bs->bio_integrity_pool);
--	} else {
--		kfree(bip);
--	}
-+	kfree(bio_integrity(bio));
- 	bio->bi_integrity = NULL;
- 	bio->bi_opf &= ~REQ_INTEGRITY;
- }
- 
-+void bio_integrity_init(struct bio *bio, struct bio_integrity_payload *bip,
-+		struct bio_vec *bvecs, unsigned int nr_vecs)
-+{
-+	memset(bip, 0, sizeof(*bip));
-+	bip->bip_max_vcnt = nr_vecs;
-+	if (nr_vecs)
-+		bip->bip_vec = bvecs;
-+
-+	bio->bi_integrity = bip;
-+	bio->bi_opf |= REQ_INTEGRITY;
-+}
-+
- /**
-  * bio_integrity_alloc - Allocate integrity payload and attach it to bio
-  * @bio:	bio to attach integrity metadata to
-@@ -52,48 +53,16 @@ struct bio_integrity_payload *bio_integrity_alloc(struct bio *bio,
- 						  gfp_t gfp_mask,
- 						  unsigned int nr_vecs)
- {
--	struct bio_integrity_payload *bip;
--	struct bio_set *bs = bio->bi_pool;
--	unsigned inline_vecs;
-+	struct bio_integrity_alloc *bia;
- 
- 	if (WARN_ON_ONCE(bio_has_crypt_ctx(bio)))
- 		return ERR_PTR(-EOPNOTSUPP);
- 
--	if (!bs || !mempool_initialized(&bs->bio_integrity_pool)) {
--		bip = kmalloc(struct_size(bip, bip_inline_vecs, nr_vecs), gfp_mask);
--		inline_vecs = nr_vecs;
--	} else {
--		bip = mempool_alloc(&bs->bio_integrity_pool, gfp_mask);
--		inline_vecs = BIO_INLINE_VECS;
--	}
--
--	if (unlikely(!bip))
-+	bia = kmalloc(struct_size(bia, bvecs, nr_vecs), gfp_mask);
-+	if (unlikely(!bia))
- 		return ERR_PTR(-ENOMEM);
--
--	memset(bip, 0, sizeof(*bip));
--
--	/* always report as many vecs as asked explicitly, not inline vecs */
--	bip->bip_max_vcnt = nr_vecs;
--	if (nr_vecs > inline_vecs) {
--		bip->bip_vec = bvec_alloc(&bs->bvec_integrity_pool,
--					  &bip->bip_max_vcnt, gfp_mask);
--		if (!bip->bip_vec)
--			goto err;
--	} else if (nr_vecs) {
--		bip->bip_vec = bip->bip_inline_vecs;
--	}
--
--	bip->bip_bio = bio;
--	bio->bi_integrity = bip;
--	bio->bi_opf |= REQ_INTEGRITY;
--
--	return bip;
--err:
--	if (bs && mempool_initialized(&bs->bio_integrity_pool))
--		mempool_free(bip, &bs->bio_integrity_pool);
--	else
--		kfree(bip);
--	return ERR_PTR(-ENOMEM);
-+	bio_integrity_init(bio, &bia->bip, bia->bvecs, nr_vecs);
-+	return &bia->bip;
- }
- EXPORT_SYMBOL(bio_integrity_alloc);
- 
-@@ -467,35 +436,3 @@ int bio_integrity_clone(struct bio *bio, struct bio *bio_src,
- 
- 	return 0;
- }
--
--int bioset_integrity_create(struct bio_set *bs, int pool_size)
--{
--	if (mempool_initialized(&bs->bio_integrity_pool))
--		return 0;
--
--	if (mempool_init_slab_pool(&bs->bio_integrity_pool,
--				   pool_size, bip_slab))
--		return -1;
--
--	if (biovec_init_pool(&bs->bvec_integrity_pool, pool_size)) {
--		mempool_exit(&bs->bio_integrity_pool);
--		return -1;
--	}
--
--	return 0;
--}
--EXPORT_SYMBOL(bioset_integrity_create);
--
--void bioset_integrity_free(struct bio_set *bs)
--{
--	mempool_exit(&bs->bio_integrity_pool);
--	mempool_exit(&bs->bvec_integrity_pool);
--}
--
--void __init bio_integrity_init(void)
--{
--	bip_slab = kmem_cache_create("bio_integrity_payload",
--				     sizeof(struct bio_integrity_payload) +
--				     sizeof(struct bio_vec) * BIO_INLINE_VECS,
--				     0, SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
--}
-diff --git a/block/bio.c b/block/bio.c
-index f0c416e5931d..dabc1a6c41b1 100644
---- a/block/bio.c
-+++ b/block/bio.c
-@@ -1657,7 +1657,6 @@ void bioset_exit(struct bio_set *bs)
- 	mempool_exit(&bs->bio_pool);
- 	mempool_exit(&bs->bvec_pool);
- 
--	bioset_integrity_free(bs);
- 	if (bs->bio_slab)
- 		bio_put_slab(bs);
- 	bs->bio_slab = NULL;
-@@ -1737,8 +1736,6 @@ static int __init init_bio(void)
- 
- 	BUILD_BUG_ON(BIO_FLAG_LAST > 8 * sizeof_field(struct bio, bi_flags));
- 
--	bio_integrity_init();
--
- 	for (i = 0; i < ARRAY_SIZE(bvec_slabs); i++) {
- 		struct biovec_slab *bvs = bvec_slabs + i;
- 
-@@ -1754,9 +1751,6 @@ static int __init init_bio(void)
- 			BIOSET_NEED_BVECS | BIOSET_PERCPU_CACHE))
- 		panic("bio: can't allocate bios\n");
- 
--	if (bioset_integrity_create(&fs_bio_set, BIO_POOL_SIZE))
--		panic("bio: can't create integrity pool\n");
--
- 	return 0;
- }
- subsys_initcall(init_bio);
-diff --git a/block/blk.h b/block/blk.h
-index 90fa5f28ccab..8f5554a6989e 100644
---- a/block/blk.h
-+++ b/block/blk.h
-@@ -710,7 +710,7 @@ int bdev_open(struct block_device *bdev, blk_mode_t mode, void *holder,
- int bdev_permission(dev_t dev, blk_mode_t mode, void *holder);
- 
- void blk_integrity_generate(struct bio *bio);
--void blk_integrity_verify(struct bio *bio);
-+void blk_integrity_verify_iter(struct bio *bio, struct bvec_iter *saved_iter);
- void blk_integrity_prepare(struct request *rq);
- void blk_integrity_complete(struct request *rq, unsigned int nr_bytes);
- 
-diff --git a/block/t10-pi.c b/block/t10-pi.c
-index 2d05421f0fa5..de172d56b1f3 100644
---- a/block/t10-pi.c
-+++ b/block/t10-pi.c
-@@ -404,7 +404,7 @@ void blk_integrity_generate(struct bio *bio)
- 	}
- }
- 
--void blk_integrity_verify(struct bio *bio)
-+void blk_integrity_verify_iter(struct bio *bio, struct bvec_iter *saved_iter)
- {
- 	struct blk_integrity *bi = blk_get_integrity(bio->bi_bdev->bd_disk);
- 	struct bio_integrity_payload *bip = bio_integrity(bio);
-@@ -418,9 +418,9 @@ void blk_integrity_verify(struct bio *bio)
- 	 */
- 	iter.disk_name = bio->bi_bdev->bd_disk->disk_name;
- 	iter.interval = 1 << bi->interval_exp;
--	iter.seed = bip->bio_iter.bi_sector;
-+	iter.seed = saved_iter->bi_sector;
- 	iter.prot_buf = bvec_virt(bip->bip_vec);
--	__bio_for_each_segment(bv, bio, bviter, bip->bio_iter) {
-+	__bio_for_each_segment(bv, bio, bviter, *saved_iter) {
- 		void *kaddr = bvec_kmap_local(&bv);
- 		blk_status_t ret = BLK_STS_OK;
- 
-diff --git a/drivers/md/dm-integrity.c b/drivers/md/dm-integrity.c
-index ee9f7cecd78e..e743657379f7 100644
---- a/drivers/md/dm-integrity.c
-+++ b/drivers/md/dm-integrity.c
-@@ -4808,23 +4808,11 @@ static int dm_integrity_ctr(struct dm_target *ti, unsigned int argc, char **argv
- 			ti->error = "Cannot allocate bio set";
- 			goto bad;
- 		}
--		r = bioset_integrity_create(&ic->recheck_bios, RECHECK_POOL_SIZE);
--		if (r) {
--			ti->error = "Cannot allocate bio integrity set";
--			r = -ENOMEM;
--			goto bad;
--		}
- 		r = bioset_init(&ic->recalc_bios, 1, 0, BIOSET_NEED_BVECS);
- 		if (r) {
- 			ti->error = "Cannot allocate bio set";
- 			goto bad;
- 		}
--		r = bioset_integrity_create(&ic->recalc_bios, 1);
--		if (r) {
--			ti->error = "Cannot allocate bio integrity set";
--			r = -ENOMEM;
--			goto bad;
--		}
- 	}
- 
- 	ic->metadata_wq = alloc_workqueue("dm-integrity-metadata",
-diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
-index bf9a61191e9a..453803f1edf5 100644
---- a/drivers/md/dm-table.c
-+++ b/drivers/md/dm-table.c
-@@ -1081,15 +1081,9 @@ static int dm_table_alloc_md_mempools(struct dm_table *t, struct mapped_device *
- 		__alignof__(struct dm_io)) + DM_IO_BIO_OFFSET;
- 	if (bioset_init(&pools->io_bs, pool_size, io_front_pad, bioset_flags))
- 		goto out_free_pools;
--	if (mempool_needs_integrity &&
--	    bioset_integrity_create(&pools->io_bs, pool_size))
--		goto out_free_pools;
- init_bs:
- 	if (bioset_init(&pools->bs, pool_size, front_pad, 0))
- 		goto out_free_pools;
--	if (mempool_needs_integrity &&
--	    bioset_integrity_create(&pools->bs, pool_size))
--		goto out_free_pools;
- 
- 	t->mempools = pools;
- 	return 0;
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 30b3dbbce2d2..79cabe4be77d 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -2359,19 +2359,6 @@ int md_integrity_register(struct mddev *mddev)
- 		return 0; /* shouldn't register */
- 
- 	pr_debug("md: data integrity enabled on %s\n", mdname(mddev));
--	if (bioset_integrity_create(&mddev->bio_set, BIO_POOL_SIZE) ||
--	    (mddev->level != 1 && mddev->level != 10 &&
--	     bioset_integrity_create(&mddev->io_clone_set, BIO_POOL_SIZE))) {
--		/*
--		 * No need to handle the failure of bioset_integrity_create,
--		 * because the function is called by md_run() -> pers->run(),
--		 * md_run calls bioset_exit -> bioset_integrity_free in case
--		 * of failure case.
--		 */
--		pr_err("md: failed to create integrity pool for %s\n",
--		       mdname(mddev));
--		return -EINVAL;
--	}
- 	return 0;
- }
- EXPORT_SYMBOL(md_integrity_register);
-diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-index c8dc92a7d63e..73564efd11d2 100644
---- a/drivers/target/target_core_iblock.c
-+++ b/drivers/target/target_core_iblock.c
-@@ -167,18 +167,6 @@ static int iblock_configure_device(struct se_device *dev)
- 		break;
- 	}
- 
--	if (dev->dev_attrib.pi_prot_type) {
--		struct bio_set *bs = &ib_dev->ibd_bio_set;
--
--		if (bioset_integrity_create(bs, IBLOCK_BIO_POOL_SIZE) < 0) {
--			pr_err("Unable to allocate bioset for PI\n");
--			ret = -ENOMEM;
--			goto out_blkdev_put;
--		}
--		pr_debug("IBLOCK setup BIP bs->bio_integrity_pool: %p\n",
--			 &bs->bio_integrity_pool);
--	}
--
- 	dev->dev_attrib.hw_pi_prot_type = dev->dev_attrib.pi_prot_type;
- 	return 0;
- 
-diff --git a/include/linux/bio-integrity.h b/include/linux/bio-integrity.h
-index 802f52e38efd..0a25716820fe 100644
---- a/include/linux/bio-integrity.h
-+++ b/include/linux/bio-integrity.h
-@@ -16,8 +16,6 @@ enum bip_flags {
- };
- 
- struct bio_integrity_payload {
--	struct bio		*bip_bio;	/* parent bio */
--
- 	struct bvec_iter	bip_iter;
- 
- 	unsigned short		bip_vcnt;	/* # of integrity bio_vecs */
-@@ -25,12 +23,7 @@ struct bio_integrity_payload {
- 	unsigned short		bip_flags;	/* control flags */
- 	u16			app_tag;	/* application tag value */
- 
--	struct bvec_iter	bio_iter;	/* for rewinding parent bio */
--
--	struct work_struct	bip_work;	/* I/O completion */
--
- 	struct bio_vec		*bip_vec;
--	struct bio_vec		bip_inline_vecs[];/* embedded bvec array */
- };
- 
- #define BIP_CLONE_FLAGS (BIP_MAPPED_INTEGRITY | BIP_IP_CHECKSUM | \
-@@ -74,6 +67,8 @@ static inline void bip_set_seed(struct bio_integrity_payload *bip,
- 	bip->bip_iter.bi_sector = seed;
- }
- 
-+void bio_integrity_init(struct bio *bio, struct bio_integrity_payload *bip,
-+		struct bio_vec *bvecs, unsigned int nr_vecs);
- struct bio_integrity_payload *bio_integrity_alloc(struct bio *bio, gfp_t gfp,
- 		unsigned int nr);
- int bio_integrity_add_page(struct bio *bio, struct page *page, unsigned int len,
-@@ -85,9 +80,6 @@ bool bio_integrity_prep(struct bio *bio);
- void bio_integrity_advance(struct bio *bio, unsigned int bytes_done);
- void bio_integrity_trim(struct bio *bio);
- int bio_integrity_clone(struct bio *bio, struct bio *bio_src, gfp_t gfp_mask);
--int bioset_integrity_create(struct bio_set *bs, int pool_size);
--void bioset_integrity_free(struct bio_set *bs);
--void bio_integrity_init(void);
- 
- #else /* CONFIG_BLK_DEV_INTEGRITY */
- 
-@@ -96,15 +88,6 @@ static inline struct bio_integrity_payload *bio_integrity(struct bio *bio)
- 	return NULL;
- }
- 
--static inline int bioset_integrity_create(struct bio_set *bs, int pool_size)
--{
--	return 0;
--}
--
--static inline void bioset_integrity_free(struct bio_set *bs)
--{
--}
--
- static inline int bio_integrity_map_user(struct bio *bio, struct iov_iter *iter)
- {
- 	return -EINVAL;
-@@ -139,10 +122,6 @@ static inline void bio_integrity_trim(struct bio *bio)
- {
- }
- 
--static inline void bio_integrity_init(void)
--{
--}
--
- static inline bool bio_integrity_flagged(struct bio *bio, enum bip_flags flag)
- {
- 	return false;
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 4b79bf50f4f0..cafc7c215de8 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -625,10 +625,6 @@ struct bio_set {
- 
- 	mempool_t bio_pool;
- 	mempool_t bvec_pool;
--#if defined(CONFIG_BLK_DEV_INTEGRITY)
--	mempool_t bio_integrity_pool;
--	mempool_t bvec_integrity_pool;
--#endif
- 
- 	unsigned int back_pad;
- 	/*
--- 
-2.45.2
-
+Reviewed-by: Kanchan Joshi <joshi.k@samsung.com>
