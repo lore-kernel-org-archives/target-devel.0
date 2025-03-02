@@ -1,99 +1,82 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from out-186.mta0.migadu.com (out-186.mta0.migadu.com [91.218.175.186])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA5D9251791;
-	Fri, 28 Feb 2025 20:10:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D71D01DED5A
+	for <target-devel@vger.kernel.org>; Sun,  2 Mar 2025 11:41:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.186
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740773447; cv=none; b=KtxOd+OJDnKdQmX919a3hq8Qf44YqtB3QqzCkh6IbGSbENCOGBxe83cPdQOcY0Ib/FY865cuGDutkdgY8hUqqiKScT5xMWjrysG/SSekqZqvU6gFLyVmTFEbqhOlyspwEI+xA3teT2O7pSrZnCl3nhzv5cvRWOk31puAHS0GGno=
+	t=1740915680; cv=none; b=sF7a6m/rqc6Zx9AouD1Yb8Jf0R7ucHYgEDw+8gqk/kdqYTu043dTBNFXPIWQHbfIZCSk66WrqQXPF+1cncb3JtklbuD7K1Rwz6HEcxd6Rp+bJE/oQA57nfVS3PRPH+0JiQUTgWEXJFgIvfQUvlx9Kzqi5+tXzV+AQ+Fa8li8Wdw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740773447; c=relaxed/simple;
-	bh=u1o2k0KyDpnY3J5fmKctnRTEq8YkFZnm9gmNrKfBZI8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VNBj8qhY7aPji+TSmkpqwVkW+aAYC0FP/Oxw3qpAxR+KYyPD1ovntcKDxZ+VapsC4eyDqimtF3qhCijVbZ8ZpsAcZN+iSxnEK8bRxznlFP2AxUF6BHeLGbFOkmnKDjQ5g/wNhFenJVzSOnOJNoGxEmoFWmr4+lP68CYIVvQnIF8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CeJwB4Qr; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1740915680; c=relaxed/simple;
+	bh=wSUAd1s5N/iBgL7Y88NB1XG8kmSc3Kb2oAAksWO4TZc=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=ojUTziQjy4JbJ3NoCFv8amWJwnQp5Xxw1wqHVDGN7Yq/g2hdV+aCCueDE9V0hMWrwn9xGfQYIN1waBm27sij3e7eelt3w9Dy6YIWTrzsuioBMY8xRLlS0QEPLQQRqjudq7uOCHWpd2OgByHcQK89binxMl/Z6as7z6wUQipCCos=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=vEtO+1eV; arc=none smtp.client-ip=91.218.175.186
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CeJwB4Qr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B1F58C4CED6;
-	Fri, 28 Feb 2025 20:10:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740773446;
-	bh=u1o2k0KyDpnY3J5fmKctnRTEq8YkFZnm9gmNrKfBZI8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CeJwB4QrObCemiMdp0wAypHUn/FzoYrvKRijMa4WYunzEHVac1fyNegGOHZ85a2vO
-	 eF9OXljGFTeHBNSsxDCJOzXDmDtD4o8/0qSVfQaQe0QpSs5vJUg1jTvcgvzinjX6nq
-	 Ovy9FVk7einGFzHi+gc804nCNbISUWHWW3GAQEIZNVmLch+F7fGzdzSaBd9+K6gHny
-	 S3+8TaQyHsJQkCdwoYfIktRIgp9B040YErUA9M+nWhFewHi/g4gbE0HsjPI3MnhgjJ
-	 KHB5ksQ7a8Ss3lF53+c3fqLee1FnitCZew6vl5q5iPCwOhPqepzixkGGu8sf5gaBp2
-	 gGLvqNQqfyjHw==
-Date: Fri, 28 Feb 2025 12:10:43 -0800
-From: Kees Cook <kees@kernel.org>
-To: Thorsten Blum <thorsten.blum@linux.dev>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-	linux-hardening@vger.kernel.org, linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: target: Replace deprecated strncpy() with strscpy()
-Message-ID: <202502281204.CE15A6BA35@keescook>
-References: <20250226121003.359876-1-thorsten.blum@linux.dev>
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="vEtO+1eV"
+Content-Type: text/plain;
+	charset=us-ascii
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1740915675;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BbvANEeq16huInpU2rpT53ULjM49+1Zj7aN8rbxK8DQ=;
+	b=vEtO+1eVBJHoNfFGPyDf7AdTJfX2FBOD41jzdE8k4CudOHfjx6BSoy49uR22NAZfWmvBTR
+	V2GRkHcGcEdbKp4DTLxNK93vIfGev3cL6TPeqJY6ZUN2HfO7ocWPDCSFZGwv/0feA7/zm5
+	fkGMkGlCtkomki3WghLohFR2su8eoo0=
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250226121003.359876-1-thorsten.blum@linux.dev>
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3776.700.51.11.1\))
+Subject: Re: [PATCH] scsi: target: Replace deprecated strncpy() with strscpy()
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Thorsten Blum <thorsten.blum@linux.dev>
+In-Reply-To: <202502281204.CE15A6BA35@keescook>
+Date: Sun, 2 Mar 2025 12:41:04 +0100
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linux-hardening@vger.kernel.org,
+ linux-scsi@vger.kernel.org,
+ target-devel@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Message-Id: <FB0D4471-9413-4E7D-BFC0-246AD3F54C60@linux.dev>
+References: <20250226121003.359876-1-thorsten.blum@linux.dev>
+ <202502281204.CE15A6BA35@keescook>
+To: Kees Cook <kees@kernel.org>
+X-Migadu-Flow: FLOW_OUT
 
-On Wed, Feb 26, 2025 at 01:10:03PM +0100, Thorsten Blum wrote:
-> Since strncpy() is deprecated for NUL-terminated destination buffers,
-> use strscpy() instead.
+On 28. Feb 2025, at 21:10, Kees Cook wrote:
+> On Wed, Feb 26, 2025 at 01:10:03PM +0100, Thorsten Blum wrote:
+>> Since strncpy() is deprecated for NUL-terminated destination buffers,
+>> use strscpy() instead.
+>> 
+>> Compile-tested only.
+>> 
+>> Link: https://github.com/KSPP/linux/issues/90
+>> Cc: linux-hardening@vger.kernel.org
+>> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+>> ---
 > 
-> Compile-tested only.
+> When doing strncpy() to strscpy() conversions, please include details
+> of your analysis for several things:
 > 
-> Link: https://github.com/KSPP/linux/issues/90
-> Cc: linux-hardening@vger.kernel.org
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
-> ---
->  drivers/target/target_core_configfs.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-> index c40217f44b1b..446682f900e4 100644
-> --- a/drivers/target/target_core_configfs.c
-> +++ b/drivers/target/target_core_configfs.c
-> @@ -143,7 +143,7 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
->  	}
->  	filp_close(fp, NULL);
->  
-> -	strncpy(db_root, db_root_stage, read_bytes);
-> +	strscpy(db_root, db_root_stage, read_bytes);
->  	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
->  
->  	r = read_bytes;
+> - why is it safe to be NUL-terminated?
+> - why is NUL padding needed/not needed?
+> - why is the maximum length argument correct?
 
-When doing strncpy() to strscpy() conversions, please include details
-of your analysis for several things:
+Yes, I'll try to describe it better.
 
-- why is it safe to be NUL-terminated?
-- why is NUL padding needed/not needed?
-- why is the maximum length argument correct?
+> While you're in this file, though, can you replace the other strncpy
+> that is used in target_init_dbroot() also?
 
-In this case, db_root is used with "%s" format strings, so we know it is
-expected to be NUL-terminated. Additionally, it is _only_ ever used with
-"5s" format strings, so padding is not needed.
+Ah, I missed this one and will submit a v2 soon.
 
-As for length, read_bytes will always be less than DB_ROOT_LEN because
-it is explicitly tested for against "count" which, enforced by the
-SETATTR API, will always be the number of valid bytes in "page", and
-snprintf() will be limited to DB_ROOT_LEN. (snprintf may return more
-than its length argument, but because of the "count" check, this should
-be impossible.)
+Thanks,
+Thorsten
 
-While you're in this file, though, can you replace the other strncpy
-that is used in target_init_dbroot() also?
-
--Kees
-
--- 
-Kees Cook
