@@ -1,82 +1,111 @@
-Received: from out-186.mta0.migadu.com (out-186.mta0.migadu.com [91.218.175.186])
+Received: from out-184.mta0.migadu.com (out-184.mta0.migadu.com [91.218.175.184])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D71D01DED5A
-	for <target-devel@vger.kernel.org>; Sun,  2 Mar 2025 11:41:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.186
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78E4A13AF2
+	for <target-devel@vger.kernel.org>; Sun,  2 Mar 2025 22:58:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.184
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1740915680; cv=none; b=sF7a6m/rqc6Zx9AouD1Yb8Jf0R7ucHYgEDw+8gqk/kdqYTu043dTBNFXPIWQHbfIZCSk66WrqQXPF+1cncb3JtklbuD7K1Rwz6HEcxd6Rp+bJE/oQA57nfVS3PRPH+0JiQUTgWEXJFgIvfQUvlx9Kzqi5+tXzV+AQ+Fa8li8Wdw=
+	t=1740956308; cv=none; b=SO0herEGeMlNNTkOy696HmjrhMUC98ryDF+vdnMXnn7v9fU5aB5obJDa6hNYnKTAHtSnzRvDA8ogEi7XoDiuRZ5dlr+oc20q/4ErQH6YURep3tnzWT5327PHFNyPT2pwQc2T8dH0CmAkxoX5psQ/8tY6eblnOGQAfuQcnsXPT0A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1740915680; c=relaxed/simple;
-	bh=wSUAd1s5N/iBgL7Y88NB1XG8kmSc3Kb2oAAksWO4TZc=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=ojUTziQjy4JbJ3NoCFv8amWJwnQp5Xxw1wqHVDGN7Yq/g2hdV+aCCueDE9V0hMWrwn9xGfQYIN1waBm27sij3e7eelt3w9Dy6YIWTrzsuioBMY8xRLlS0QEPLQQRqjudq7uOCHWpd2OgByHcQK89binxMl/Z6as7z6wUQipCCos=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=vEtO+1eV; arc=none smtp.client-ip=91.218.175.186
+	s=arc-20240116; t=1740956308; c=relaxed/simple;
+	bh=tYFixfIY3u81D/Jr0PjpNV7f2Q8NfNfO3Pr54h2gbS8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=t0jsa6HASEolPNOldBqb0DaYvVu2Xd8NztdqYSX6pqGpo5cvbnsC/dl7JvyPWb83TH7hCUYW481rNPXPdStLDEIzMo27v7/lEZSng/BiAn6Hp2FD5xwzbdyR5fOwZwXkjp0U/2aH7WIGKqARRYL72TtxiGhpobFACZtuSxjjwfM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=q3ju93UX; arc=none smtp.client-ip=91.218.175.184
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="vEtO+1eV"
-Content-Type: text/plain;
-	charset=us-ascii
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="q3ju93UX"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1740915675;
+	t=1740956293;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=BbvANEeq16huInpU2rpT53ULjM49+1Zj7aN8rbxK8DQ=;
-	b=vEtO+1eVBJHoNfFGPyDf7AdTJfX2FBOD41jzdE8k4CudOHfjx6BSoy49uR22NAZfWmvBTR
-	V2GRkHcGcEdbKp4DTLxNK93vIfGev3cL6TPeqJY6ZUN2HfO7ocWPDCSFZGwv/0feA7/zm5
-	fkGMkGlCtkomki3WghLohFR2su8eoo0=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=jtykvtmmT4SBJVkNfvIH1V/KR8RNUn2kl39LnxHTA7o=;
+	b=q3ju93UXezxv/lLOF7wlqHfY97Ijzc1rKEmJ+cmwRSouAAZmrtJyrWTBCaOmHHxtpo6Vlc
+	OtYeTYBnFaV6K9fwttSa9jbF6WvWG3cCYUJnl70CIOxHkn1TpC9Ko2aisHjOx4nJbhR8Pl
+	RDdRFouZ5t5CrIgxz6DHxBpwyzbivtQ=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linux-hardening@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] scsi: target: Replace deprecated strncpy() with strscpy()
+Date: Sun,  2 Mar 2025 23:56:41 +0100
+Message-ID: <20250302225641.245127-2-thorsten.blum@linux.dev>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3776.700.51.11.1\))
-Subject: Re: [PATCH] scsi: target: Replace deprecated strncpy() with strscpy()
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Thorsten Blum <thorsten.blum@linux.dev>
-In-Reply-To: <202502281204.CE15A6BA35@keescook>
-Date: Sun, 2 Mar 2025 12:41:04 +0100
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
- linux-hardening@vger.kernel.org,
- linux-scsi@vger.kernel.org,
- target-devel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-Message-Id: <FB0D4471-9413-4E7D-BFC0-246AD3F54C60@linux.dev>
-References: <20250226121003.359876-1-thorsten.blum@linux.dev>
- <202502281204.CE15A6BA35@keescook>
-To: Kees Cook <kees@kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-On 28. Feb 2025, at 21:10, Kees Cook wrote:
-> On Wed, Feb 26, 2025 at 01:10:03PM +0100, Thorsten Blum wrote:
->> Since strncpy() is deprecated for NUL-terminated destination buffers,
->> use strscpy() instead.
->> 
->> Compile-tested only.
->> 
->> Link: https://github.com/KSPP/linux/issues/90
->> Cc: linux-hardening@vger.kernel.org
->> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
->> ---
-> 
-> When doing strncpy() to strscpy() conversions, please include details
-> of your analysis for several things:
-> 
-> - why is it safe to be NUL-terminated?
-> - why is NUL padding needed/not needed?
-> - why is the maximum length argument correct?
+strncpy() is deprecated for NUL-terminated destination buffers; use
+strscpy() instead. The destination buffer db_root is only used with "%s"
+format strings and must therefore be NUL-terminated, but not NUL-padded.
 
-Yes, I'll try to describe it better.
+Use scnprintf() because snprintf() could return a value >= DB_ROOT_LEN
+and lead to an out-of-bounds access. This doesn't happen because count
+is explicitly checked against DB_ROOT_LEN before. However, scnprintf()
+always returns the number of characters actually written to the string
+buffer, which is always within the bounds of db_root_stage, and should
+be preferred over snprintf().
 
-> While you're in this file, though, can you replace the other strncpy
-> that is used in target_init_dbroot() also?
+The size parameter of strscpy() is optional and since DB_ROOT_LEN is the
+size of the destination buffer, it can be removed. Remove it to simplify
+the code.
 
-Ah, I missed this one and will submit a v2 soon.
+Compile-tested only.
 
-Thanks,
-Thorsten
+Link: https://github.com/KSPP/linux/issues/90
+Link: https://github.com/KSPP/linux/issues/105
+Cc: linux-hardening@vger.kernel.org
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+Changes in v2:
+- Improve the commit message and replace another strncpy() as suggested
+  by Kees Cook
+- Replace snprintf() with scnprintf()
+- Link to v1: https://lore.kernel.org/r/20250226121003.359876-1-thorsten.blum@linux.dev/
+---
+ drivers/target/target_core_configfs.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index c40217f44b1b..66804bf1ee32 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -123,7 +123,7 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
+ 		goto unlock;
+ 	}
+ 
+-	read_bytes = snprintf(db_root_stage, DB_ROOT_LEN, "%s", page);
++	read_bytes = scnprintf(db_root_stage, DB_ROOT_LEN, "%s", page);
+ 	if (!read_bytes)
+ 		goto unlock;
+ 
+@@ -143,7 +143,7 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
+ 	}
+ 	filp_close(fp, NULL);
+ 
+-	strncpy(db_root, db_root_stage, read_bytes);
++	strscpy(db_root, db_root_stage);
+ 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
+ 
+ 	r = read_bytes;
+@@ -3664,7 +3664,7 @@ static void target_init_dbroot(void)
+ 	}
+ 	filp_close(fp, NULL);
+ 
+-	strncpy(db_root, db_root_stage, DB_ROOT_LEN);
++	strscpy(db_root, db_root_stage);
+ 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
+ }
+ 
+-- 
+2.48.1
 
