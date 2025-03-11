@@ -1,135 +1,99 @@
-Received: from out-185.mta1.migadu.com (out-185.mta1.migadu.com [95.215.58.185])
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 070512780F2
-	for <target-devel@vger.kernel.org>; Tue,  4 Mar 2025 18:14:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=95.215.58.185
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE92B1E0DE8;
+	Tue, 11 Mar 2025 01:19:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1741112076; cv=none; b=c/fd53TWzl2vZkHX5jlsoQh8R4RGeXKyfgf7zZHUC+nhYhQRIzESH2nw2BXmK301VU/No+bl+nEBUOWt/rVJUna0GdLx0CMitmx3Ne3Zyou0QFikZkY914zxyaCH4lAHYZI2smM0da68mHZgFUyhqYvvHXX+N0fTdhVjPAWOzF0=
+	t=1741655992; cv=none; b=EeDxVvJXQvQtgkZYNslQ+y9QIjKJhsnjHqEJuid07ZEhQdFEIQg3HDlK1x8PvSnHuSo+vEvPXQi2IEYLni5n99XJR3i5LE2qMQlR5ib8JBx4Lm7RwYgWcsVRLMbfs3sTHR7xmyluTcXWXB24NwZ+vdv010Osx7fFAQrP7e7ckJ8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1741112076; c=relaxed/simple;
-	bh=0BxNCArQS6YXz9VsmCXNHkqDx3pRc8E0K6P//18NTM0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pfMH1lSg+jissL73xULcNzprZYcNGpmo/q52Mj1d6ANW29z4ANOCs1iT8RIfWXPdg2MZ1+LvpMoMAZ3IpzEY3pZ4RmfyYGJiSl6VO85bpq55PSoAth4yua9lSfjdXlxhI7m8eWqWHZhYYAOLb50bT37lhNHT3C7PJzaAPNWRKWs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=w8pwDljw; arc=none smtp.client-ip=95.215.58.185
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+	s=arc-20240116; t=1741655992; c=relaxed/simple;
+	bh=cRysWTu/ZgnC0ySgI+aRJu91jCLYtgyYkA8YrYHMMQI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=qEAaSSmJV+Pqlls66SgHyTJs3ft3V+sw93Nbv5VffKNjyA31U6su3zXV+bBu1W4tecNzb9/wfwRYbb+Bapmw5xm6e7YHbsyG8GISz5VhYXYlf1ktIZfU4C4FNvNQL7bpRSmL9ToRBbi9nDN5my3ZK0aupkzl25Jiw07fK3aK1fk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=U18SOVj7; arc=none smtp.client-ip=205.220.177.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="w8pwDljw"
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1741112062;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=CI5XJci0mb8S2pl5ASbOYBG4+fIERNXYTJQdDedonSU=;
-	b=w8pwDljwAzV2pA5mnEYEewwTLP5iJd/yjKxuoF7il3mxTJCXEqWO1nf6296TYy81jBzdJP
-	0USIKCvph+hrYrlCvz9U7at8SlbglWY84XHhIaj32adQ17PJqJI8p3ANInemnxxnrt/uvl
-	1HB+Sa8ASDf6T11MhS4oMkz/XW7s9ME=
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: target: Remove size arguments when calling strscpy()
-Date: Tue,  4 Mar 2025 19:14:00 +0100
-Message-ID: <20250304181400.78325-1-thorsten.blum@linux.dev>
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="U18SOVj7"
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52ALgTxX009907;
+	Tue, 11 Mar 2025 01:19:48 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2023-11-20; bh=BPOX8QjtM4ikjrrtiAcfOMpTH31E248pB9JcFq7Mgjg=; b=
+	U18SOVj7WWMpPW8gHhJ5SuiqBC7Rmwx2267yT6oH0dkY0SetXv7KoE2dGdMt+oiu
+	l8Cypm+2UcdY3LZpXQrTrEehmvp4I727Lbb2nUHJikgMRAnKrInQl1DRmULnEd5Q
+	70MQXZ9/vcbFLWmBSwGVfy4a8RY53ERmbWaz2R6x2kHXlJWo31AOpM9aYWHtt9Iv
+	AKcNkgUIS6/NZmhAngKCWmid6eWJzNMJhuMSJ5qP7SnfgMNcZ1+xNJeHKdRnXNWR
+	4nVY7lotnhuTwI7bkD43zegKbEEg7KoWv1FH/IrtI2FyFNysD9GIef120xBeWB8i
+	e3XQF2JTm+N/snJn8qlAfw==
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 458dgt3u5w-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 11 Mar 2025 01:19:47 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 52ANtQkq017073;
+	Tue, 11 Mar 2025 01:19:47 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 458cbencns-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 11 Mar 2025 01:19:47 +0000
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 52B1JfrN014960;
+	Tue, 11 Mar 2025 01:19:46 GMT
+Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 458cbencm8-9;
+	Tue, 11 Mar 2025 01:19:46 +0000
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+To: Thorsten Blum <thorsten.blum@linux.dev>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+        linux-hardening@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] scsi: target: Replace deprecated strncpy() with strscpy()
+Date: Mon, 10 Mar 2025 21:19:08 -0400
+Message-ID: <174165505011.528513.5802380818483016300.b4-ty@oracle.com>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250302225641.245127-2-thorsten.blum@linux.dev>
+References: <20250302225641.245127-2-thorsten.blum@linux.dev>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-03-11_01,2025-03-07_03,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 adultscore=0 spamscore=0
+ mlxlogscore=820 malwarescore=0 suspectscore=0 mlxscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2502100000
+ definitions=main-2503110007
+X-Proofpoint-GUID: Spes4Umjs7KcsA6g-EEMvnBpsvrUUmi3
+X-Proofpoint-ORIG-GUID: Spes4Umjs7KcsA6g-EEMvnBpsvrUUmi3
 
-The size parameter of strscpy() is optional because strscpy() uses
-sizeof() to determine the length of the destination buffer if it is not
-provided as an argument. Remove it to simplify the code.
+On Sun, 02 Mar 2025 23:56:41 +0100, Thorsten Blum wrote:
 
-Remove some unnecessary curly braces.
+> strncpy() is deprecated for NUL-terminated destination buffers; use
+> strscpy() instead. The destination buffer db_root is only used with "%s"
+> format strings and must therefore be NUL-terminated, but not NUL-padded.
+> 
+> Use scnprintf() because snprintf() could return a value >= DB_ROOT_LEN
+> and lead to an out-of-bounds access. This doesn't happen because count
+> is explicitly checked against DB_ROOT_LEN before. However, scnprintf()
+> always returns the number of characters actually written to the string
+> buffer, which is always within the bounds of db_root_stage, and should
+> be preferred over snprintf().
+> 
+> [...]
 
-No functional changes intended.
+Applied to 6.15/scsi-queue, thanks!
 
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
----
- drivers/target/target_core_configfs.c | 20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
+[1/1] scsi: target: Replace deprecated strncpy() with strscpy()
+      https://git.kernel.org/mkp/scsi/c/dfb7df1ddb29
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index c40217f44b1b..9b2b9786ce2f 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -673,12 +673,10 @@ static ssize_t emulate_model_alias_store(struct config_item *item,
- 		return ret;
- 
- 	BUILD_BUG_ON(sizeof(dev->t10_wwn.model) != INQUIRY_MODEL_LEN + 1);
--	if (flag) {
-+	if (flag)
- 		dev_set_t10_wwn_model_alias(dev);
--	} else {
--		strscpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
--			sizeof(dev->t10_wwn.model));
--	}
-+	else
-+		strscpy(dev->t10_wwn.model, dev->transport->inquiry_prod);
- 	da->emulate_model_alias = flag;
- 	return count;
- }
-@@ -1433,7 +1431,7 @@ static ssize_t target_wwn_vendor_id_store(struct config_item *item,
- 	ssize_t len;
- 	ssize_t ret;
- 
--	len = strscpy(buf, page, sizeof(buf));
-+	len = strscpy(buf, page);
- 	if (len > 0) {
- 		/* Strip any newline added from userspace. */
- 		stripped = strstrip(buf);
-@@ -1464,7 +1462,7 @@ static ssize_t target_wwn_vendor_id_store(struct config_item *item,
- 	}
- 
- 	BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) != INQUIRY_VENDOR_LEN + 1);
--	strscpy(dev->t10_wwn.vendor, stripped, sizeof(dev->t10_wwn.vendor));
-+	strscpy(dev->t10_wwn.vendor, stripped);
- 
- 	pr_debug("Target_Core_ConfigFS: Set emulated T10 Vendor Identification:"
- 		 " %s\n", dev->t10_wwn.vendor);
-@@ -1489,7 +1487,7 @@ static ssize_t target_wwn_product_id_store(struct config_item *item,
- 	ssize_t len;
- 	ssize_t ret;
- 
--	len = strscpy(buf, page, sizeof(buf));
-+	len = strscpy(buf, page);
- 	if (len > 0) {
- 		/* Strip any newline added from userspace. */
- 		stripped = strstrip(buf);
-@@ -1520,7 +1518,7 @@ static ssize_t target_wwn_product_id_store(struct config_item *item,
- 	}
- 
- 	BUILD_BUG_ON(sizeof(dev->t10_wwn.model) != INQUIRY_MODEL_LEN + 1);
--	strscpy(dev->t10_wwn.model, stripped, sizeof(dev->t10_wwn.model));
-+	strscpy(dev->t10_wwn.model, stripped);
- 
- 	pr_debug("Target_Core_ConfigFS: Set emulated T10 Model Identification: %s\n",
- 		 dev->t10_wwn.model);
-@@ -1545,7 +1543,7 @@ static ssize_t target_wwn_revision_store(struct config_item *item,
- 	ssize_t len;
- 	ssize_t ret;
- 
--	len = strscpy(buf, page, sizeof(buf));
-+	len = strscpy(buf, page);
- 	if (len > 0) {
- 		/* Strip any newline added from userspace. */
- 		stripped = strstrip(buf);
-@@ -1576,7 +1574,7 @@ static ssize_t target_wwn_revision_store(struct config_item *item,
- 	}
- 
- 	BUILD_BUG_ON(sizeof(dev->t10_wwn.revision) != INQUIRY_REVISION_LEN + 1);
--	strscpy(dev->t10_wwn.revision, stripped, sizeof(dev->t10_wwn.revision));
-+	strscpy(dev->t10_wwn.revision, stripped);
- 
- 	pr_debug("Target_Core_ConfigFS: Set emulated T10 Revision: %s\n",
- 		 dev->t10_wwn.revision);
 -- 
-2.48.1
-
+Martin K. Petersen	Oracle Linux Engineering
