@@ -1,110 +1,106 @@
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com [209.85.221.47])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from fout-b2-smtp.messagingengine.com (fout-b2-smtp.messagingengine.com [202.12.124.145])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AAF82205ABA;
-	Wed,  2 Apr 2025 17:43:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEB0D1ACED1;
+	Wed,  2 Apr 2025 19:16:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=202.12.124.145
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743615804; cv=none; b=Bf7fxA+2qADiu23aKVT2LLr2JpwsgvG1undL7i84aCxF1LMqf4P74gN3zAbI8VQxY2rLnlS2gWhrNrt49ASxFICTr1cUAEAcHF8bCsJwPOkArc0TvDLzidG2/Db2ijJoi/QuvT4fe6yNLDMfVVfau4s5WZ/Vk5jMi7OgbmxUQjg=
+	t=1743621374; cv=none; b=mfpy+VLPZOEZhEX//PQeO/xHfhcJ70+xM84DcKgYJaoLLBACOYIlVtr38bzJr2H3I6JfVgd899TlEHiyrcrCW4BB9UW2L3cpXqHu7pD30pYLO/3DQ6R90On9afXtK/hi2OYDQsBSQdjgfjFKD1o//cjtxztvZLn2//hqPeznbD4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743615804; c=relaxed/simple;
-	bh=EdEVmmkX+S4GMM0uG7YW19UqaiTt/5KBZ0AUymRBHvo=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=IPPIecklp6BNWSu9OKf7p5Q9rcnWdi125Vz02FXYvZxcaQiGpIZb3skGcsJWz4LyBnnPFbcV5T4PSItkGApORDsttWHTPZE53qM0JxmjkQ8PcjMj+Oj+xR+wMIS1qnGhfhgzHbgpI675vDerRqDuXhEu5JPgJByK1rW78Gf8aVU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=RN14Bfu8; arc=none smtp.client-ip=209.85.221.47
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1743621374; c=relaxed/simple;
+	bh=0WH1sGWtFYZtIVHWq6dERmJQ3aaewZqD4RXfkPSUVwU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JM2awkidhYdpL0LK69f6JNMgg1AKU35kU9HV8dPmodPYp7OdangyNC+5Q8B69o0juUzGwIrdVx8051NL5eLbLBtMa22IFmQfu1/nJ/LRSiIbh6F3yxDixNYQbJ38ujSJlg9I2fiFymxRfjP/SJDAtB9Jj8cmlAMSsai/WBzgYwk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com; spf=pass smtp.mailfrom=kroah.com; dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b=e5B4MHAJ; dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b=JzTYmOoZ; arc=none smtp.client-ip=202.12.124.145
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=kroah.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kroah.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RN14Bfu8"
-Received: by mail-wr1-f47.google.com with SMTP id ffacd0b85a97d-39c1efc4577so49134f8f.0;
-        Wed, 02 Apr 2025 10:43:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1743615801; x=1744220601; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=85BXoAka61PsKzqS2du3Xktdbs8BPrJV0lx84vuPwX0=;
-        b=RN14Bfu8q8sCldYFZok/gsGQiybnsymLWZ8xe8bms1OQwUPcUbuWjz3uV8ouhf/f8T
-         hM1MQ5vEXgsba0seob5UsqRKRrP/axdlyyBfkui6gGN7W0GpDQyyGqmoJzA/qmR/vgZV
-         vRuUNgQrkyJs28x4tVN5OOUeGIRFLsxuVjCXv9+sxubrk5NO2/LaF1e8iA3Pwq35UjEM
-         a2sDkkZi76l0R5cGJ+v0HezrQ0TtPpGOGwQsAPDyPgQeeA2YOxFjNGYL6KBfhLS/6Ua1
-         JcSF9Yi62lDgkC8ML6MVBBkfUNyVjO4qigwqN9YqkX1IjlNPpAw5Bi7by7wjIDQRXWeD
-         UBaA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1743615801; x=1744220601;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=85BXoAka61PsKzqS2du3Xktdbs8BPrJV0lx84vuPwX0=;
-        b=onyaYkabyD+MkheRKOc+ELO0Bh6r1GdE4AOIwXVneBoVkIeCSnMpExyVOxIifQwG2J
-         6+qBcVwxBpOo3mdd0jdgpa4h/f/y1vqoKsFeAD1+guWCHlmwgqTXejSoj1cvpMK1/DoX
-         xv7dPx3uOXQ2P6cgc9VHAUks5GRivKxohT7z7ZjwlgA/qvn0rpJj4Rpn4Ej8jm2tsAXA
-         C/W5CuSADENfZLcCrZnZFAV3NctK3ODSGPqiMDoPGmatbrWMD3J/pCsScxgJJBnKLcKH
-         aMa6JBWLsanHdEUrvJSgPoWqUuKvT3S7DcXGujosLzMNYG1AwbeACgduNmlLLy0U35qK
-         UPVA==
-X-Forwarded-Encrypted: i=1; AJvYcCVYtMLcXhF/xNBuN1jvVgT371aEp84VTGmc7pqAFRj/0XOHqxodDbuvOwFaJkXh9WnHgMw6JXY8RaXpCo9d@vger.kernel.org, AJvYcCWbs+9ZBLrzBXTN/QGiZKUaqTz9I6i0Tt3BHQWuoV2bDQsU8Z0Dy0d2jnFE09YqjXP/BFWF82wefg4HIU4=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwP78kANpVavePOwDD3FSf2Xqaw39iWoLTHY7TRJl074VN5F8tc
-	2kTqGSeXnJOB5zT4xFGLKhJR8sV1DsZarOEmNzX0RvYJummLWX+y
-X-Gm-Gg: ASbGncvTwO/doLm20dIW2lEUQ3hgbviQ7K1d9bvyynVMLrZl+lvi+Uh58nnGpKKLlJ8
-	IQn2uNK5lUgnuNvXd4D6mx85NVPF5iaj5WwtppidSaEwYqYEg8+VRW18aeUFku9CauBeN5AiPHD
-	C2bb8mTVaguIigV2Gcg+ZX9FJtjGjyfklfS66NqibuZZkFeR9pNShkZYg70zHHPvtU1ER3/92gE
-	lMdvE7Vnc8QMq0SZ6lglL8jplzzYCMvCrTd77/VeKHxebXzmHgS3vNm1aCq+4x6hWq9yunmQHyL
-	ClxpuHpISCz9orOTIx7yIZ8F45JBicehYIyMGWk6wx67oei6qUY4aZFokqo=
-X-Google-Smtp-Source: AGHT+IG9DUifRlG9+hsS76jvaP6M4UBq35TMncCzYo6w9ipzl12h0GydswQHYbtTi42HbfpSVPpG/Q==
-X-Received: by 2002:a05:6000:4387:b0:394:d0c3:da5e with SMTP id ffacd0b85a97d-39c2366aeaemr6560810f8f.47.1743615800796;
-        Wed, 02 Apr 2025 10:43:20 -0700 (PDT)
-Received: from localhost.localdomain ([78.170.183.130])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-39c266c132fsm4819700f8f.13.2025.04.02.10.43.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 02 Apr 2025 10:43:20 -0700 (PDT)
-From: goralbaris <goralbaris@gmail.com>
-To: martin.petersen@oracle.com
-Cc: linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	skhan@linuxfoundation.org,
-	linux-kernel-mentees@lists.linux.dev,
-	goralbaris <goralbaris@gmail.com>
-Subject: [PATCH] change strncpy to strscpy strncpy is now depricated. It may not NUL-terminate the destination string, resulting in potential memory content exposures, unbounded reads, or crashes. Link: https://github.com/KSPP/linux/issues/90
-Date: Wed,  2 Apr 2025 20:33:09 +0300
-Message-Id: <20250402173308.102487-1-goralbaris@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b="e5B4MHAJ";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="JzTYmOoZ"
+Received: from phl-compute-05.internal (phl-compute-05.phl.internal [10.202.2.45])
+	by mailfout.stl.internal (Postfix) with ESMTP id BBB5611400F4;
+	Wed,  2 Apr 2025 15:15:37 -0400 (EDT)
+Received: from phl-mailfrontend-02 ([10.202.2.163])
+  by phl-compute-05.internal (MEProxy); Wed, 02 Apr 2025 15:15:38 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:subject
+	:subject:to:to; s=fm2; t=1743621337; x=1743707737; bh=0WH1sGWtFY
+	ZtIVHWq6dERmJQ3aaewZqD4RXfkPSUVwU=; b=e5B4MHAJgYkrv1yYQXHRdsq0K5
+	dIj2GWoH6v4eZP9M3wJES3FQWLIvg6nNfxgmCzNe/fyWm0LVFWwGr93gJ3MWAqO0
+	6y0j0v4Lzz01a8FfAk7LGx5OX65JoaPTp5InvOgpVmcllduUQQRc12URTj7rWjIj
+	qKlAf6kSaJKqjo6IAqZ9CS0JCuERM+hOtl12qGXCGuU6QI4JDq4R1pt19JmWRoGK
+	V9R5sKhY9BZftQ3Kmp6ADQVa/6gowrOAX672B3CirrB8errvvUxJONCPimihEKJW
+	Erl46D4aAhM2d6mWg8VGYv8O6ALAl0fYhJPet8n2CKQoJ702P3YGUeQ5XKug==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
+	1743621337; x=1743707737; bh=0WH1sGWtFYZtIVHWq6dERmJQ3aaewZqD4RX
+	fkPSUVwU=; b=JzTYmOoZkUbUc/j5PQNdimyZWySdNdwHs38pwBAz+I2lKneGCfr
+	/s9HCta1QtmKbunM/NSoXYcLqLch33En7AKXdpVpGsM07PN/WC6vTbXdY8bAD8b6
+	xW/7pkorsaxUyz8D3Vt3fXXOWtMS3DGbcSXPGvhHOj57GklOhtF41SdYGIBh+C1p
+	wD2VNtroczLlKdqzyFG4a7yfZb17I+YFow54u8ANRoGRjbEbf+5oxzevOBXVM/pa
+	Qw7ksSQ9lt52IvdlE8OpF6FBvGzdoIQTFTYTrwAYr/S1G1jNUjxG4Tdnw6vgGF1S
+	g/g8vVoKX21gwR3fexWdrRLLYWpn/+hmmyA==
+X-ME-Sender: <xms:2YztZwsHUXGev0I_oUl9ZJi9QAiuz3jI4bVkuqCgBtakPXSohgUanA>
+    <xme:2YztZ9f97Vte9PZfY4Fc0xOupKaTGCVQEm141WRL86rgDYVucJz4X6YTEzTGjsXBL
+    yuxI3vH5uUxCg>
+X-ME-Received: <xmr:2YztZ7yW-GG4UfGEacZq97iZwnafYnbOhT2jZIyGFyFmVWpDmQW1ZACHutSd>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddukeeigeejucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggv
+    pdfurfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucenucfjughrpeffhf
+    fvvefukfhfgggtuggjsehttdertddttddvnecuhfhrohhmpefirhgvghcumffjuceoghhr
+    vghgsehkrhhorghhrdgtohhmqeenucggtffrrghtthgvrhhnpedvjefhvefhjeejfeefle
+    ejteegtedvgeeghfeuveevgfffueelhffhhedugffhkeenucffohhmrghinhepghhithhh
+    uhgsrdgtohhmnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrh
+    homhepghhrvghgsehkrhhorghhrdgtohhmpdhnsggprhgtphhtthhopedugedpmhhouggv
+    pehsmhhtphhouhhtpdhrtghpthhtohepghhorhgrlhgsrghrihhssehgmhgrihhlrdgtoh
+    hmpdhrtghpthhtohepmhgrrhhtihhnrdhpvghtvghrshgvnhesohhrrggtlhgvrdgtohhm
+    pdhrtghpthhtoheplhhinhhugidqshgtshhisehvghgvrhdrkhgvrhhnvghlrdhorhhgpd
+    hrtghpthhtohepthgrrhhgvghtqdguvghvvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhg
+    pdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorh
+    hgpdhrtghpthhtohepshhkhhgrnheslhhinhhugihfohhunhgurghtihhonhdrohhrghdp
+    rhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhdqmhgvnhhtvggvsheslhhishhtshdrlh
+    hinhhugidruggvvh
+X-ME-Proxy: <xmx:2YztZzOCeFAxSuIaiWb8IMCWa8x9PaM54bFkCOSgSZr2oG8iLOA_Hg>
+    <xmx:2YztZw8GkQWjFBFWcwv8Oi_suR38H1AquawY4UicLI8YB9q2gKmRcg>
+    <xmx:2YztZ7Wq68LGcHt_f3fpVmrvT3uw8FlGQmSQ3M8YzoW28anqlOkuBw>
+    <xmx:2YztZ5feL4HPdDJV7uoQp1sI9714JCRw3SnqtW5sgYXw7JPIGMmv8Q>
+    <xmx:2YztZ0HM9n_NvRHVTqIif6dinptlCwb5zQ2akYWAmLcdWdahze89sehz>
+Feedback-ID: i787e41f1:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 2 Apr 2025 15:15:36 -0400 (EDT)
+Date: Wed, 2 Apr 2025 20:14:10 +0100
+From: Greg KH <greg@kroah.com>
+To: goralbaris <goralbaris@gmail.com>
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	skhan@linuxfoundation.org, linux-kernel-mentees@lists.linux.dev
+Subject: Re: [PATCH] change strncpy to strscpy strncpy is now depricated. It
+ may not NUL-terminate the destination string, resulting in potential memory
+ content exposures, unbounded reads, or crashes. Link:
+ https://github.com/KSPP/linux/issues/90
+Message-ID: <2025040244-onward-attain-8e91@gregkh>
+References: <20250402172504.101576-1-goralbaris@gmail.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250402172504.101576-1-goralbaris@gmail.com>
 
-The strncpy is depricated. 
-It may not NUL-terminate the destination string, resulting in potential memory
-content exposures, unbounded reads, or crashes. Link: https://github.com/KSPP/linux/issues/90
-Signed-off-by: goralbaris <goralbaris@gmail.com>
----
- drivers/target/target_core_configfs.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Wed, Apr 02, 2025 at 08:25:04PM +0300, goralbaris wrote:
+> Signed-off-by: goralbaris <goralbaris@gmail.com>
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index c40217f44b1b..5c0b74e76be2 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -143,7 +143,7 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
- 	}
- 	filp_close(fp, NULL);
- 
--	strncpy(db_root, db_root_stage, read_bytes);
-+	strscpy(db_root, db_root_stage, read_bytes);
- 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
- 
- 	r = read_bytes;
-@@ -3664,7 +3664,7 @@ static void target_init_dbroot(void)
- 	}
- 	filp_close(fp, NULL);
- 
--	strncpy(db_root, db_root_stage, DB_ROOT_LEN);
-+	strscpy(db_root, db_root_stage, DB_ROOT_LEN);
- 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
- }
- 
--- 
-2.34.1
+I think something went wrong with your subject line :(
 
+Also, don't use your email alias for signed-off-by please.
+
+thanks,
+
+greg k-h
