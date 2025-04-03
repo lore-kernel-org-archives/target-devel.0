@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A37C626A1CB;
-	Thu,  3 Apr 2025 19:06:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9977227D77F;
+	Thu,  3 Apr 2025 19:07:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1743707182; cv=none; b=fTBkns/mizKdNwrCvpJUH3cD55XFQg26v4BxaY1MVS9YMre/BZ74+EVbvBkO0AhGMRjtaVoxRNLiA+hyGpd4qObZEJ/HUlp66UgfkkiSRODQOk5W7rgHRQgptVV9+LWQVokkCMUghsoNfVKozvDP0eof/KGQg0yr98nuq9Ab/9E=
+	t=1743707273; cv=none; b=PiZ7Fn3LXHaveHsb8+O1svGPI0xP2wC2VC76OaUFGcUWTUVGa5QK2wIIxbCcgOAq/8tw6hAcZIc7LUj9+OW9q/VCvucgdihZsdYHiN8xzKow42cLaK7dh7jFrtsW+oW2rYl4NTyxw0S1nAKov8f7n52oYRE0NQQ51CdhG4hyj0Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1743707182; c=relaxed/simple;
-	bh=g0zBLxavqYSYO0LoA1sa/2C1ksx9MMtJvA8PF7M0r7c=;
+	s=arc-20240116; t=1743707273; c=relaxed/simple;
+	bh=G0h4UFeQC29x4Ftgnub9inmXYtnCE0F0FEY/LS3V9Ps=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=RCuW6eF6k8IK6pmOn+16Cl4LU7+YjxPcHurAxe0icjexK7CdpQUYHUzqq1VvjL2Aog4e2duXrO+FZk3zphrFoE40nEsoXtfMLdrv+Ro1s5ksW2ddaR1jpQfxZGN/lZXM94F+6PLmQ4VDZFetWazkfgNIdFeRl7lIA08oPAHw2dQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g/f8KWj4; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=QOYQ87Af+I7wGBxeGbqHK5JF0hJr0ScA7YrEiOgI1orW3YPNXVdVBNqzk6nRbL9mAZpH4yq9gtr1gpxpl7xVZC91pYink1hInHOUOTU051S6juNaBYp2Q3wzT80sgre3opbRtr5ijyblxizXkwG3r4YW+pOBgdZckq/BJKM1EM8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=g0s6qoIw; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g/f8KWj4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9678AC4CEE8;
-	Thu,  3 Apr 2025 19:06:21 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="g0s6qoIw"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CDDCC4CEE3;
+	Thu,  3 Apr 2025 19:07:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1743707182;
-	bh=g0zBLxavqYSYO0LoA1sa/2C1ksx9MMtJvA8PF7M0r7c=;
+	s=k20201202; t=1743707273;
+	bh=G0h4UFeQC29x4Ftgnub9inmXYtnCE0F0FEY/LS3V9Ps=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=g/f8KWj4WoRt2ql9cVEUKkbIc3WG0OozuYnJPD6vlkGk+VGp3OpZWhgqEL3Vk3JH0
-	 YdlGIA2zNfZVXclf3UHv/9xaNV299Vo6gyurKmt/DZNmapHQFXWtyZS0afpI+dFXlm
-	 wRDhcO4TMd2YcODgszC01GRoozZeoLL9ADsQEK2Qj19tmfQnPcRbUcrzDoFZvef0dS
-	 7ZceGqfdvwsePZTBYdfhaqppcagWdgLp2XLi/Dti7u2pgAW3nVQ/pB+Sai1iuJQZim
-	 xN7f8OJSHcwqAZHElsFUxXYcnKcYpWHAYDtQCR0SSk/lU6F3HKH1rZaGYIf1GRFNBY
-	 ZeYB+l26ztA6w==
+	b=g0s6qoIwOuRqS0I302Vi/t0mvZooZbDgnu4aBF6BDo1gt+KYpfTVhitJzQeadi24i
+	 Mx2zVuOBbMrbnsT8b8ZD3EEpKCCgF3ZqQ0Xxqc20I0U5m7WSJCQcO69Xdbfz1PbHAx
+	 kzWvwyQ24JIHySOdRmLYtrlq9G5dNpnM75fKp9qVPrkXMxaZvaFSiWOrJdH5BLUXZN
+	 QJewMrMiri9G6BTz++yqjs2ONEk+VtaOzRUsC4JvLbP3btMBmwefTR8bDMIrEWYHu/
+	 +cQLLc8S9stt9dz9ute7J2EVrYX4lHOZFQspTEKynjHslAJzj73yFJeBhGXXTxWHpm
+	 Z1XlO4FLAE07Q==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -35,12 +35,12 @@ Cc: Chaohai Chen <wdhh66@163.com>,
 	Sasha Levin <sashal@kernel.org>,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.12 12/47] scsi: target: spc: Fix RSOC parameter data header size
-Date: Thu,  3 Apr 2025 15:05:20 -0400
-Message-Id: <20250403190555.2677001-12-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.6 03/26] scsi: target: spc: Fix RSOC parameter data header size
+Date: Thu,  3 Apr 2025 15:07:22 -0400
+Message-Id: <20250403190745.2677620-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250403190555.2677001-1-sashal@kernel.org>
-References: <20250403190555.2677001-1-sashal@kernel.org>
+In-Reply-To: <20250403190745.2677620-1-sashal@kernel.org>
+References: <20250403190745.2677620-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -49,7 +49,7 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.12.21
+X-stable-base: Linux 6.6.85
 Content-Transfer-Encoding: 8bit
 
 From: Chaohai Chen <wdhh66@163.com>
@@ -72,7 +72,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/target/target_core_spc.c b/drivers/target/target_core_spc.c
-index ea14a38356814..61c065702350e 100644
+index 50290abc07bc2..f110f932ba054 100644
 --- a/drivers/target/target_core_spc.c
 +++ b/drivers/target/target_core_spc.c
 @@ -2243,7 +2243,7 @@ spc_emulate_report_supp_op_codes(struct se_cmd *cmd)
