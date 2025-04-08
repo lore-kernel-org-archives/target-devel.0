@@ -1,52 +1,111 @@
-Received: from bsdbackstore.eu (128-116-240-228.dyn.eolo.it [128.116.240.228])
+Received: from out-180.mta0.migadu.com (out-180.mta0.migadu.com [91.218.175.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FA8C2620DE;
-	Tue,  8 Apr 2025 07:18:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=128.116.240.228
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A06B1267F6A
+	for <target-devel@vger.kernel.org>; Tue,  8 Apr 2025 10:30:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.218.175.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1744096697; cv=none; b=JEq+HE39l6+ATxN1sKsqTvVvCzLp+lpoxvyPMlgM/kyXBohd3kFa4AxkA/DPFATFHuWBO5WDiFABnaJHNTYybwJD53FHidXBGPS4+iyrLaDD/KXkgLbHvHWwf+MvDI/Ja20STJDn2VkERb04o97CCckh56W6Myx0J/JjJR2xZJw=
+	t=1744108222; cv=none; b=kViaK2POWXu5Wp1594iCRAmsnWZmQAXMUzN5pbCM37WnTSp8H3KKfAoeTmVhkCaZXSGXi2MZSo23guHl2+DuolvdfOHoAuryEmGk49bx1NtukhtdDCIG4bq78O9r3RrzsGnAdqLS/zoP5OaVvXZlFnRFEBtOiDzvqybtlv6mjwY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1744096697; c=relaxed/simple;
-	bh=0HQJ0uhZipCImvUnh7JNZ32jeyceM6KExmIUVlHZQsQ=;
-	h=Mime-Version:Content-Type:Date:Message-Id:To:Cc:Subject:From:
-	 References:In-Reply-To; b=ePpYW1CZVMN25ojAm9FuZAr7kvMmL1gRm1I0FVMgfIVw2LtdFzcSh2zWaocQ33j1yIbzWMgiNhCvoRwur5sDkoRYqYO6fFm0AecEkomijUWQW1lHGgulifjv6PSbgJJVrmGytwSc0a3EyDQhjiSWs/adTpPdEe5/EiTC2xfJUFo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bsdbackstore.eu; spf=pass smtp.mailfrom=bsdbackstore.eu; arc=none smtp.client-ip=128.116.240.228
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bsdbackstore.eu
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bsdbackstore.eu
-Received: from localhost (<unknown> [193.207.154.230])
-	by bsdbackstore.eu (OpenSMTPD) with ESMTPSA id 3acd0c3a (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Tue, 8 Apr 2025 09:18:10 +0200 (CEST)
+	s=arc-20240116; t=1744108222; c=relaxed/simple;
+	bh=aRMWSg8X0oBFHmCqDJWVHgqDLlV+JdZbwSNHQo6deEk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kGnLUyAGkZX8kTaEmpOPVXJAh7mn7G1aRKjPO0s2T+nVaUG5C/ZPQiYpW0ZHVhTXjaCZQs9WNJaa8jW6tSvZImuRU2iL03b4dFs/69aMaq79MbfIxKtoc5ZDgNxvSHO3looAKr1REF/D4xZQbv2nyV0JNEUxCMzDbUXU3TdUG/A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass smtp.mailfrom=linux.dev; dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b=o/rCN22r; arc=none smtp.client-ip=91.218.175.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.dev
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key) header.d=linux.dev header.i=@linux.dev header.b="o/rCN22r"
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1744108212;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=FLHb/ouI/NPQuiKkjHhPMowLOAqffxplBiQcA/sQ2k0=;
+	b=o/rCN22rmT7HcLQgjjPzVar7cA/2eXphkm9XO2KwmYVIrnOOAtBHaaj+tfC6s31D3QSCAB
+	n5T2v59c9bu467J+nsT3bJIPkJzJeZKmbpL0Axh7yRpjKJGAmDJimmTWhpb3fDP/Bv3IvG
+	1M2I9ojKHe2Axx4qUfbk8G9PUwAKDtI=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: James Smart <james.smart@broadcom.com>,
+	Ram Vegesna <ram.vegesna@broadcom.com>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Kees Cook <kees@kernel.org>,
+	Thorsten Blum <thorsten.blum@linux.dev>,
+	linux-hardening@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] scsi: elx: sli4: Replace deprecated strncpy() with strscpy()
+Date: Tue,  8 Apr 2025 12:28:40 +0200
+Message-ID: <20250408102843.804083-2-thorsten.blum@linux.dev>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 08 Apr 2025 09:18:07 +0200
-Message-Id: <D912OCZ7ENI8.1WB0CJRYL7LRN@bsdbackstore.eu>
-To: "Baris Can Goral" <goralbaris@gmail.com>, <martin.petersen@oracle.com>
-Cc: <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <skhan@linuxfoundation.org>,
- <linux-kernel-mentees@lists.linux.dev>
-Subject: Re: [PATCH v4] scsi: target: transform strncpy into strscpy
-From: "Maurizio Lombardi" <mlombard@bsdbackstore.eu>
-X-Mailer: aerc 0.20.1
-References: <D908SSFL0E9D.24WXC0I3O6AQB@bsdbackstore.eu>
- <20250407174854.10132-1-goralbaris@gmail.com>
-In-Reply-To: <20250407174854.10132-1-goralbaris@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Mon Apr 7, 2025 at 7:48 PM CEST, Baris Can Goral wrote:
-> Hi Maurizio,
->
-> Unfourtunately, in version 6.14-rc2 (and also v6.14) strncpy is still the=
-re.
+strncpy() is deprecated for NUL-terminated destination buffers; use
+strscpy() instead.
 
-Sorry, my mistake.
+Since sli_config_cmd_init() already zeroes out the destination buffers,
+the potential NUL-padding by strncpy() is unnecessary. strscpy() copies
+only the required characters and guarantees NUL-termination.
 
-commit dfb7df1ddb29c89662e84b2c82c1ff7943358ae0 that replaces
-strncpy() with strscpy() has been merged in kernel version 6.15-rc1
+And since all three destination buffers have a fixed length, strscpy()
+automatically determines their size using sizeof() when the argument is
+omitted. This makes any explicit sizeof() calls unnecessary.
 
-Maurizio
+The source strings are also NUL-terminated and meet the __must_be_cstr()
+requirement of strscpy().
+
+No functional changes intended.
+
+Link: https://github.com/KSPP/linux/issues/90
+Cc: linux-hardening@vger.kernel.org
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+Changes in v2:
+- Update patch description as suggested by Kees
+- Link to v1: https://lore.kernel.org/lkml/20250226185531.1092-2-thorsten.blum@linux.dev/
+---
+ drivers/scsi/elx/libefc_sli/sli4.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/scsi/elx/libefc_sli/sli4.c b/drivers/scsi/elx/libefc_sli/sli4.c
+index 5e7fb110bc3f..d9a231fc0e0d 100644
+--- a/drivers/scsi/elx/libefc_sli/sli4.c
++++ b/drivers/scsi/elx/libefc_sli/sli4.c
+@@ -3804,7 +3804,7 @@ sli_cmd_common_write_object(struct sli4 *sli4, void *buf, u16 noc,
+ 	wr_obj->desired_write_len_dword = cpu_to_le32(dwflags);
+ 
+ 	wr_obj->write_offset = cpu_to_le32(offset);
+-	strncpy(wr_obj->object_name, obj_name, sizeof(wr_obj->object_name) - 1);
++	strscpy(wr_obj->object_name, obj_name);
+ 	wr_obj->host_buffer_descriptor_count = cpu_to_le32(1);
+ 
+ 	bde = (struct sli4_bde *)wr_obj->host_buffer_descriptor;
+@@ -3833,7 +3833,7 @@ sli_cmd_common_delete_object(struct sli4 *sli4, void *buf, char *obj_name)
+ 			 SLI4_SUBSYSTEM_COMMON, CMD_V0,
+ 			 SLI4_RQST_PYLD_LEN(cmn_delete_object));
+ 
+-	strncpy(req->object_name, obj_name, sizeof(req->object_name) - 1);
++	strscpy(req->object_name, obj_name);
+ 	return 0;
+ }
+ 
+@@ -3856,7 +3856,7 @@ sli_cmd_common_read_object(struct sli4 *sli4, void *buf, u32 desired_read_len,
+ 		cpu_to_le32(desired_read_len & SLI4_REQ_DESIRE_READLEN);
+ 
+ 	rd_obj->read_offset = cpu_to_le32(offset);
+-	strncpy(rd_obj->object_name, obj_name, sizeof(rd_obj->object_name) - 1);
++	strscpy(rd_obj->object_name, obj_name);
+ 	rd_obj->host_buffer_descriptor_count = cpu_to_le32(1);
+ 
+ 	bde = (struct sli4_bde *)rd_obj->host_buffer_descriptor;
+-- 
+2.49.0
+
