@@ -1,66 +1,65 @@
-Received: from mail-ej1-f52.google.com (mail-ej1-f52.google.com [209.85.218.52])
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4240E19D07E
-	for <target-devel@vger.kernel.org>; Thu, 24 Apr 2025 06:14:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.218.52
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47DE9149E17
+	for <target-devel@vger.kernel.org>; Thu, 24 Apr 2025 06:17:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745475288; cv=none; b=O4utbzKwFYcGiDcnvrtQrvSOE5rQ/E8u3WWAlM2kFonDm4XQ3T4pQ4ayS4ad7hqAbjePDvqbIwCUz+Z5L76kJp7oLFYffE0rAyXlp/qap6ihPJoKz6J6HEKYE3G7/Hy1yn4TpcKVxll2oyUmWQve8LbaAcCB+0Z4XjqOowUgaiI=
+	t=1745475435; cv=none; b=QjIYfUVUdeipKtG0et+q4tRLE5UjLm4NGsiN8+NbQusUhNuYDsPsZJ3DhT24WO7TfQCtqsNhKWHUh5MXaqejZjFHu2s6AYwsTlJpMKVmPMVQKwB/IYBKUjIw5HOHOAlD6IQXaHXncS99uMw8LlGWMMrPa2KX8+fkhJi4ANzXpTk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745475288; c=relaxed/simple;
-	bh=ikZlhbwKTHjaNDw4vZfG0SZokKJ4sUFvzcUkdejt9Ok=;
+	s=arc-20240116; t=1745475435; c=relaxed/simple;
+	bh=fyGmp8mGzUbcqCq/5J3RhxcTRbewBgpZEWixJJFfYjA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=p971iMQBql02xZkDcvR+1rO4vML0NmCwGimuKkOV67dvDf45S1fJiMWJlQgQd21KQp9MP/vGYjt5t+2M488Fo6ubUr6gfs9Vylk/3kEIuUDjNiZ4KPtPQfn1QYYJ1Pxe2i4doC73Z98vSZUOuDPRN2fqRbDTpUR3g2uN6nujI2g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=dN2c56vw; arc=none smtp.client-ip=209.85.218.52
+	 In-Reply-To:Content-Type; b=Q3m3p1wCnUmfHbHoar6aEMV3vaiPuUHxQXT62N0yuwWQRPBTQ4nmJx5LcxGZXjck/lHIZe7TvcyUEkvcNhJo/IH/hbSxDWXmKnDnu49xAYdkYyLe8ts4xWCerpcNkJRPRHxSJAFcqj4l/P4YIqNQau4jhLwcezkHipSK1oFcnIk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=gE066K8T; arc=none smtp.client-ip=209.85.128.54
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="dN2c56vw"
-Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-ac28e66c0e1so87000266b.0
-        for <target-devel@vger.kernel.org>; Wed, 23 Apr 2025 23:14:44 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="gE066K8T"
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-43690d4605dso3897655e9.0
+        for <target-devel@vger.kernel.org>; Wed, 23 Apr 2025 23:17:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1745475283; x=1746080083; darn=vger.kernel.org;
+        d=suse.com; s=google; t=1745475431; x=1746080231; darn=vger.kernel.org;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:to:subject:user-agent:mime-version:date:message-id:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=FC7LE0QO/t68hv5Jq9QCAxCamjYGyd/GLyn/JiI3/KQ=;
-        b=dN2c56vw4ZTOVKERBGurF+zV3b6VlahhZc0ONj3f/X/1X0I5m2rijFgQjKpyXQoFoj
-         sg5B41XB0d2fwGfeYvNrs7C5C023kviOxxp8DSJ/IEPJijKwzc/gvsKGHGp5SdjpxsOw
-         m4aUhNVFy4lJLsqDnGa0thZqbsrYiR6ZBYYbikwuGobDDyxFEXYrcvH5mg+Ed8khErUp
-         oQcBDp7HcFEb9bmmv6qsoKFhIGFA0mOvbIyvyTu9wRppeDV8Y7q5nacvCcy2UieMD+q8
-         35pLNwZKKUbjpqI1jc3vk+MJWCbz/oBsUa4VUxN4lIYU2+hOsT8HuU1Q9TgSQjGE2opF
-         jiWw==
+        bh=KsAAZRuX/xSl4WRwZczRb8M+rDuVwpPHg90UTTqeBKk=;
+        b=gE066K8TMw6JmVyUyGvZGgO5u5PhVQD6dZ4WNqkJVwx3fVfY5QN8n24ZrTfw38K2dh
+         EsIhDXWMxpS6iOtnUad4V8cYDflYSgpgw0BAWG4RU1bw3CYCCo6Lua15PH2Z7hQeci20
+         rgSnhRKO/zVyMuQH/cPc3dS8zXL4ubQFr8cTU+g5R0CymUoCX+y2zZxGBiN1ccSerhOU
+         PrXRAMjFP/8efV6lU4rdBeAS+xCGhPUQfTSCTx0JJxu8FdzyaBY/mcuG28PpxfWLAvgu
+         HI9IdGnudY//Evna/aa43FtIBc3ar0LiZMpWnMmlIajKYDruPUjxSLFJVlq7pzzpSTUJ
+         l3GQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745475283; x=1746080083;
+        d=1e100.net; s=20230601; t=1745475431; x=1746080231;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:to:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=FC7LE0QO/t68hv5Jq9QCAxCamjYGyd/GLyn/JiI3/KQ=;
-        b=F7V/KkjvLfwPALOtvA+apPaU4ua29TtMVwjrd07anKZpAIKjOjn/I+pxdpc6hvjCa3
-         PE4kVx2q2qRyHjNr8IFANcqdZSdEgxAoiDQVYU+lKSGjjY/ZZqMpQ/lF12+EnWFwA99I
-         epUPFL6xOeh5jW9tejg/rRlQ5SKKc7a9I3LaR3NojhJght3B/wE3yG58YCgw++kw/EKr
-         IbfEet2hKjBRGYQxLJ5K8NjbU7uouNAD2jxMUtKRSMAzpVrjaDwf4j7PLKatLkc71nOz
-         F+L+z54raSLmYCXC5PIhrQmqQJg7IbaduOs1d1m9T3b4oe4TeK3wfliWeHtovy583nS+
-         VgxQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUd0dSt7kZsLs4EClYTtll4uMaVGPoBBu4eup7FQQ7KI6KS3ZJWa25gr/UhFWHrruYcwGoko7P1XfQlrv8=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwBcyme5MO9bqNNBLWz12iLjWEMcpxo3qjixwobMXIAXVwEljZ1
-	aavxBBg/PBSWs6g8wVtBHRfOtjjpNYre/wc/OldInYyKvF0WzMwHTTy/Ap4GS3DwXTf2NS4b+oy
-	RvyM=
-X-Gm-Gg: ASbGnctrdInhQ15ZikwSeB2gGzsyjahFmvomSeR+PAypseEryrBVj6AvZJimiXun/lX
-	awUPzsMu0UuywHJ4m12Qi4iooDhTf7wfJnI3pkLn1AWIifdBEd5Nq0EJHxQv8OD19Y1SNAIyEjX
-	mznsSiFPRqg7GMGlrw4LZWKHlzcr8j7YltlKyanRyg4nr15svs5Wg1R95UXcVuY0aGW94ShmedJ
-	RQhEJHBZeu0M2/q6xCEBu9VCMzQKoiIuk6a/6tTkqBkyDAczoxfqFi/NQUnLCFMUgnz+5UJQa+N
-	hN40saCUWJ4XQIFdxctSK1hrjlsYCsZIb8SoEswdFftdV1mY9hDneuujxKDAPvQZo7IhkxJNSH0
-	v
-X-Google-Smtp-Source: AGHT+IEBYlBl1CDzg+KOpWOrCm6Q7eogybzfxFRvlWGQ3CGxlUHRr5ImO3LVC7md8m90Q9SDovihig==
-X-Received: by 2002:a17:907:9801:b0:aca:d6fd:39a with SMTP id a640c23a62f3a-ace5744ffcemr125020366b.51.1745475283411;
-        Wed, 23 Apr 2025 23:14:43 -0700 (PDT)
+        bh=KsAAZRuX/xSl4WRwZczRb8M+rDuVwpPHg90UTTqeBKk=;
+        b=YqhE3k9SC8e36wNGA3/q1ol61D1H78SKHjlJfJO+Oz+xC2KgtSLZQ0yddpvMe751Vy
+         DS5z7YigLgZe2mDsSjomdl0Vp9cc1/6EbRlB+XtlbFj3sezPBhf9/GOBPBKfABZ3QPdR
+         +i1Sqg1Fs95iF6WpMnY5Ckat2I58hH//NNInTg7k0q+k6ZYftEZvwEaaT+91YueZW68S
+         rRTSuWbdKq1BnDsNl5osemU3nUVx9NmtyigGg2RVA06eKIxamgfhOvsgxQMltM4ea5KL
+         R7s/+qHIvtm5co6xCrFfCPQPAaQCK5FPFz6fpR/wZU3OTXqpsIdWit81d88y3jvlufjB
+         wm7A==
+X-Forwarded-Encrypted: i=1; AJvYcCWk9S8qaRHg69TiodgZMPNrQn+l9d9wsQ9Fxn34eIUuqbPX0VfIqZXU9kB5wqTld4Cg3a/TGIPRKxEPXCE=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw6ku8/qCE+4pFcutE+SVJ78bvH4Kd4chP2gv3+LZ/iSMgFDjTN
+	5CLWYYEaahjs4VY4IZeXY7y057pBsfdIKt+y5v8T3myHY2ZiVCpJ0+JsB8Oj2cc=
+X-Gm-Gg: ASbGncs6PDz+xaj/feQbAf1pHYDgNa8+n9pHKCsv644rdrhlSqz2njBxxNi3iIrfYeH
+	IDjeW5RAEipwtiBLz5HqqupMGVL1P+HoKKBl1rbdGNFAuHNohkX3YeBqH5B5fHIge3ek5TQAqsW
+	HfajkPbuGflbKoq7MfP/X+LZnPeaMzV4mM1/BOFPUbet2fenLtZd1HMxTX72sLONVJxzdLVT0qo
+	lR66QuW3jrVD3YU7i6WMd0CBvrtTe0iRbN1/Y4TfKGm/Me5GDUNscgHn/LCXw+pBVsvzBqN6klQ
+	WTVRIX/fhfqMm6JsPXQUFfgqOMl2j1kPu6dNO0OtoBFEfA+EZTallemVxc9MnfrMhKMligo1PjO
+	t
+X-Google-Smtp-Source: AGHT+IEQiIx1mu/Fp9b3blvKEGL/FHgnqvfDL6p9gG6QA8S0KeIMIYqZ4U9XW8AVEmjlFfJH8oZB7A==
+X-Received: by 2002:a05:600c:5009:b0:43c:efed:732c with SMTP id 5b1f17b1804b1-4409bda8768mr5916465e9.28.1745475431527;
+        Wed, 23 Apr 2025 23:17:11 -0700 (PDT)
 Received: from ?IPV6:2001:a61:2b7f:8f01:ed13:8888:df70:a3b? ([2001:a61:2b7f:8f01:ed13:8888:df70:a3b])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ace59830f51sm51667466b.5.2025.04.23.23.14.42
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4409d2a35f0sm7119535e9.15.2025.04.23.23.17.10
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 23 Apr 2025 23:14:43 -0700 (PDT)
-Message-ID: <801f48a0-53ec-4ef6-a507-3c73ba8acaaf@suse.com>
-Date: Thu, 24 Apr 2025 08:14:42 +0200
+        Wed, 23 Apr 2025 23:17:11 -0700 (PDT)
+Message-ID: <c8a5f40f-9c8e-430f-ad86-291a8af39b46@suse.com>
+Date: Thu, 24 Apr 2025 08:17:10 +0200
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -68,30 +67,30 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] target: Move IO path stats to per cpu
+Subject: Re: [PATCH v2 2/2] target: Move delayed/ordered tracking to per cpu
 To: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com,
  linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
 References: <20250424032741.16216-1-michael.christie@oracle.com>
- <20250424032741.16216-2-michael.christie@oracle.com>
+ <20250424032741.16216-3-michael.christie@oracle.com>
 Content-Language: en-US
 From: Hannes Reinecke <hare@suse.com>
-In-Reply-To: <20250424032741.16216-2-michael.christie@oracle.com>
+In-Reply-To: <20250424032741.16216-3-michael.christie@oracle.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 On 4/24/25 05:26, Mike Christie wrote:
-> The atomic use in the main IO path is causing perf issues when using
-> higher performance backend devices and multiple queues. This moves the
-> stats to per cpu. Combined with the next patch that moves the
-> non_ordered/delayed_cmd_count to per cpu, IOPS by up to 33% for 8K
-> IOS when using 4 or more queues.
+> The atomic use from the delayed/ordered tracking is causing perf
+> issues when using higher perf backend devices and multiple queues.
+> This moves the values to a per cpu counter. Combined with the per cpu
+> stats patch, this improves IOPS by up to 33% for 8K IOS when using 4
+> or more queues from the initiator.
 > 
 > Signed-off-by: Mike Christie <michael.christie@oracle.com>
 > ---
->   drivers/target/target_core_device.c | 69 +++++++++++++++++++++--------
->   drivers/target/target_core_stat.c   | 69 ++++++++++++++++++++++++-----
->   include/target/target_core_base.h   | 20 ++++++---
->   3 files changed, 121 insertions(+), 37 deletions(-)
+>   drivers/target/target_core_device.c    |  20 +++++
+>   drivers/target/target_core_transport.c | 119 +++++++++++++------------
+>   include/target/target_core_base.h      |   4 +-
+>   3 files changed, 83 insertions(+), 60 deletions(-)
 > 
 Reviewed-by: Hannes Reinecke <hare@suse.de>
 
