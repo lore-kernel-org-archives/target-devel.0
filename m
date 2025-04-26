@@ -1,104 +1,188 @@
-Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
+Received: from mail-lj1-f177.google.com (mail-lj1-f177.google.com [209.85.208.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47DE9149E17
-	for <target-devel@vger.kernel.org>; Thu, 24 Apr 2025 06:17:13 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2F69318C01D
+	for <target-devel@vger.kernel.org>; Sat, 26 Apr 2025 21:24:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745475435; cv=none; b=QjIYfUVUdeipKtG0et+q4tRLE5UjLm4NGsiN8+NbQusUhNuYDsPsZJ3DhT24WO7TfQCtqsNhKWHUh5MXaqejZjFHu2s6AYwsTlJpMKVmPMVQKwB/IYBKUjIw5HOHOAlD6IQXaHXncS99uMw8LlGWMMrPa2KX8+fkhJi4ANzXpTk=
+	t=1745702688; cv=none; b=OHioQRJBummX9rUFhSf6ivbnp9pKebmHyWwYOUGMdOTwDn/Zbmqkinj+ZE8jVi4q3X9vc/0N56H6UBkZVogzNAYNQLtQNvhlvGHFvNijesl+x0ymhAYnmBCrw5ze9qt4FcwuRkYaxxD1tjSeydPaX9OIxoYF5a19HWmXdLeWm/E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745475435; c=relaxed/simple;
-	bh=fyGmp8mGzUbcqCq/5J3RhxcTRbewBgpZEWixJJFfYjA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=Q3m3p1wCnUmfHbHoar6aEMV3vaiPuUHxQXT62N0yuwWQRPBTQ4nmJx5LcxGZXjck/lHIZe7TvcyUEkvcNhJo/IH/hbSxDWXmKnDnu49xAYdkYyLe8ts4xWCerpcNkJRPRHxSJAFcqj4l/P4YIqNQau4jhLwcezkHipSK1oFcnIk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=gE066K8T; arc=none smtp.client-ip=209.85.128.54
+	s=arc-20240116; t=1745702688; c=relaxed/simple;
+	bh=Dg3fCarQHR/JTqvGhOBfZR+xsGq8DTqd0lvEpfJG5Ks=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nkPz699UZyi+az+ChFbmbHqObEC0uqbP1K0fDaL/yGdVIOnr99lfBiYNifhd6oFzt3M4mcHx0s+r39nwf0/NPq8knkpRwXR8tZihWkM/mUyCOOCEX9vS+pzeJbYvlCTB9nm2jMLU08KxTPk+SHy01rPHyMLp/ojDdFwbV7kGnEo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=g83zWtzu; arc=none smtp.client-ip=209.85.208.177
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="gE066K8T"
-Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-43690d4605dso3897655e9.0
-        for <target-devel@vger.kernel.org>; Wed, 23 Apr 2025 23:17:12 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="g83zWtzu"
+Received: by mail-lj1-f177.google.com with SMTP id 38308e7fff4ca-30bf3f3539dso35825931fa.1
+        for <target-devel@vger.kernel.org>; Sat, 26 Apr 2025 14:24:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1745475431; x=1746080231; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:to:subject:user-agent:mime-version:date:message-id:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=KsAAZRuX/xSl4WRwZczRb8M+rDuVwpPHg90UTTqeBKk=;
-        b=gE066K8TMw6JmVyUyGvZGgO5u5PhVQD6dZ4WNqkJVwx3fVfY5QN8n24ZrTfw38K2dh
-         EsIhDXWMxpS6iOtnUad4V8cYDflYSgpgw0BAWG4RU1bw3CYCCo6Lua15PH2Z7hQeci20
-         rgSnhRKO/zVyMuQH/cPc3dS8zXL4ubQFr8cTU+g5R0CymUoCX+y2zZxGBiN1ccSerhOU
-         PrXRAMjFP/8efV6lU4rdBeAS+xCGhPUQfTSCTx0JJxu8FdzyaBY/mcuG28PpxfWLAvgu
-         HI9IdGnudY//Evna/aa43FtIBc3ar0LiZMpWnMmlIajKYDruPUjxSLFJVlq7pzzpSTUJ
-         l3GQ==
+        d=suse.com; s=google; t=1745702683; x=1746307483; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=K1mqAIBnp7KMTnNYtwdmaVxEXl0tUjHzIuN2rlUSfs8=;
+        b=g83zWtzuFZFO+Vqj29C01+uQQf515igBwWI/IV3sCGAgUyki5q20OgFlJhio7tTuuK
+         k4TqMJKLQcKcciKqJtytQF52SCqGO2wb6XDeYXBZEDIgBoPPGYl7ZehnVaFSjuqK3ZnR
+         +Y9u7A5nwkZfKjmXmROG2h0lZUQr4/0Y9JhgCeJOJks0lQrEIBMch4XdS10QPSy0J/bp
+         DOvCxeaTL/br3NuP/1pHZJkseo/1z19VaNPltTvSHrhgg3N8bUCZtc1MmL6JGN4oiIn+
+         2bS6I2sOmJQWR7rMt4AkebVr2GJG3+vjR16/dOU1cmJhcDQ+h80YKJZ+clyC+2zG9Wz4
+         2N0w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745475431; x=1746080231;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=KsAAZRuX/xSl4WRwZczRb8M+rDuVwpPHg90UTTqeBKk=;
-        b=YqhE3k9SC8e36wNGA3/q1ol61D1H78SKHjlJfJO+Oz+xC2KgtSLZQ0yddpvMe751Vy
-         DS5z7YigLgZe2mDsSjomdl0Vp9cc1/6EbRlB+XtlbFj3sezPBhf9/GOBPBKfABZ3QPdR
-         +i1Sqg1Fs95iF6WpMnY5Ckat2I58hH//NNInTg7k0q+k6ZYftEZvwEaaT+91YueZW68S
-         rRTSuWbdKq1BnDsNl5osemU3nUVx9NmtyigGg2RVA06eKIxamgfhOvsgxQMltM4ea5KL
-         R7s/+qHIvtm5co6xCrFfCPQPAaQCK5FPFz6fpR/wZU3OTXqpsIdWit81d88y3jvlufjB
-         wm7A==
-X-Forwarded-Encrypted: i=1; AJvYcCWk9S8qaRHg69TiodgZMPNrQn+l9d9wsQ9Fxn34eIUuqbPX0VfIqZXU9kB5wqTld4Cg3a/TGIPRKxEPXCE=@vger.kernel.org
-X-Gm-Message-State: AOJu0Yw6ku8/qCE+4pFcutE+SVJ78bvH4Kd4chP2gv3+LZ/iSMgFDjTN
-	5CLWYYEaahjs4VY4IZeXY7y057pBsfdIKt+y5v8T3myHY2ZiVCpJ0+JsB8Oj2cc=
-X-Gm-Gg: ASbGncs6PDz+xaj/feQbAf1pHYDgNa8+n9pHKCsv644rdrhlSqz2njBxxNi3iIrfYeH
-	IDjeW5RAEipwtiBLz5HqqupMGVL1P+HoKKBl1rbdGNFAuHNohkX3YeBqH5B5fHIge3ek5TQAqsW
-	HfajkPbuGflbKoq7MfP/X+LZnPeaMzV4mM1/BOFPUbet2fenLtZd1HMxTX72sLONVJxzdLVT0qo
-	lR66QuW3jrVD3YU7i6WMd0CBvrtTe0iRbN1/Y4TfKGm/Me5GDUNscgHn/LCXw+pBVsvzBqN6klQ
-	WTVRIX/fhfqMm6JsPXQUFfgqOMl2j1kPu6dNO0OtoBFEfA+EZTallemVxc9MnfrMhKMligo1PjO
-	t
-X-Google-Smtp-Source: AGHT+IEQiIx1mu/Fp9b3blvKEGL/FHgnqvfDL6p9gG6QA8S0KeIMIYqZ4U9XW8AVEmjlFfJH8oZB7A==
-X-Received: by 2002:a05:600c:5009:b0:43c:efed:732c with SMTP id 5b1f17b1804b1-4409bda8768mr5916465e9.28.1745475431527;
-        Wed, 23 Apr 2025 23:17:11 -0700 (PDT)
-Received: from ?IPV6:2001:a61:2b7f:8f01:ed13:8888:df70:a3b? ([2001:a61:2b7f:8f01:ed13:8888:df70:a3b])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4409d2a35f0sm7119535e9.15.2025.04.23.23.17.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 23 Apr 2025 23:17:11 -0700 (PDT)
-Message-ID: <c8a5f40f-9c8e-430f-ad86-291a8af39b46@suse.com>
-Date: Thu, 24 Apr 2025 08:17:10 +0200
+        d=1e100.net; s=20230601; t=1745702683; x=1746307483;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=K1mqAIBnp7KMTnNYtwdmaVxEXl0tUjHzIuN2rlUSfs8=;
+        b=XSkJNFuVHlTgTBlnyEzER9ZeOMlrGAeJsJPvWWiH6vqem1BQCxehwX5+AMerHox7lV
+         2fOiVX6Dr7s8S0fdzD46Z7Uku0L4D6Ycwh+EU2CzL5QUJ2b0oxyn6ph5DkvxSmzSGAcA
+         8vDFZ9uEdvgRlPOMw6Z4iNytz0qpoHQ7Yluhc3h834L2tpZmagYBtwQjQ+X7ZlL9e1oX
+         J2nzdJ0rrCPPn5hwInEI2fHDvxfzo6MfvQK35OPIQPEriTUkOTyX1kL5X1Q5t8ybfjo2
+         Uqr6lEtt0jA3rXfLA17nV8utgirjo3zgOm262nQDBQ59d1FB3fmYiqpGQDt2OzaaQiE6
+         01nw==
+X-Forwarded-Encrypted: i=1; AJvYcCU0bdxWhh4jcmEtJl561xah0yEwE+TdEOMJnUiRhd1SsMzDnKyGPchoJTBys9DUJRA/2Dj+dSQEn5poGSc=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yy2oGTl5p+IDzBLtlWLWiMRAANlmdqOB3doBJia5vaqfQxN/j1J
+	Ot0kL0SCNFi2NsWZ9RggWD7aKCzWos63u7hdIi6qthdfxTeQ40jOYcoY9fSbnY6gol50E3uN6Vm
+	fVld2NQumeTY5Y1Mkwn7uiWtbn4vJxnVgVyAA5w==
+X-Gm-Gg: ASbGncvT1r169jjCoRKyMESD/+5S+PB/JT30celjyl3Bp6BltHASNgDVTGbAtMvWlVB
+	5/iYU/k79saH1b2aaHtpp+x3dhOxaZjoI4b81+hD6qSXenB7uEIdo2dnr1Jpuyh8VPGi+lqpoLn
+	MTDTw43PE1hNvf/n932V7Vy7zKSHUaoQiMYw==
+X-Google-Smtp-Source: AGHT+IFJMmStyVBuIyxQECB5iELQPgDUnywD2WJ46nDL9IgJLHD7iPOWbRPUoe3umTLlnkE5eoleE6r364MYg9Jxl1Q=
+X-Received: by 2002:a05:651c:222a:b0:30b:9f7b:c186 with SMTP id
+ 38308e7fff4ca-317cc3b4c3dmr33874231fa.1.1745702683231; Sat, 26 Apr 2025
+ 14:24:43 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] target: Move delayed/ordered tracking to per cpu
-To: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-References: <20250424032741.16216-1-michael.christie@oracle.com>
- <20250424032741.16216-3-michael.christie@oracle.com>
-Content-Language: en-US
-From: Hannes Reinecke <hare@suse.com>
-In-Reply-To: <20250424032741.16216-3-michael.christie@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20250304181400.78325-1-thorsten.blum@linux.dev>
+In-Reply-To: <20250304181400.78325-1-thorsten.blum@linux.dev>
+From: Lee Duncan <lduncan@suse.com>
+Date: Sat, 26 Apr 2025 14:24:32 -0700
+X-Gm-Features: ATxdqUFRXwxiD0AZ10vGLZVX25IArlcs-9mCmM5d-L5qj3q4zIK9ecGpSwHodS0
+Message-ID: <CAPj3X_VKZz_8oq0puSuh96_=ozR+t8xL_whb5+UaNYS0MOrpKw@mail.gmail.com>
+Subject: Re: [PATCH] scsi: target: Remove size arguments when calling strscpy()
+To: Thorsten Blum <thorsten.blum@linux.dev>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, 
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 4/24/25 05:26, Mike Christie wrote:
-> The atomic use from the delayed/ordered tracking is causing perf
-> issues when using higher perf backend devices and multiple queues.
-> This moves the values to a per cpu counter. Combined with the per cpu
-> stats patch, this improves IOPS by up to 33% for 8K IOS when using 4
-> or more queues from the initiator.
-> 
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+On Tue, Mar 4, 2025 at 10:30=E2=80=AFAM Thorsten Blum <thorsten.blum@linux.=
+dev> wrote:
+>
+> The size parameter of strscpy() is optional because strscpy() uses
+> sizeof() to determine the length of the destination buffer if it is not
+> provided as an argument. Remove it to simplify the code.
+>
+> Remove some unnecessary curly braces.
+>
+> No functional changes intended.
+>
+> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 > ---
->   drivers/target/target_core_device.c    |  20 +++++
->   drivers/target/target_core_transport.c | 119 +++++++++++++------------
->   include/target/target_core_base.h      |   4 +-
->   3 files changed, 83 insertions(+), 60 deletions(-)
-> 
-Reviewed-by: Hannes Reinecke <hare@suse.de>
+>  drivers/target/target_core_configfs.c | 20 +++++++++-----------
+>  1 file changed, 9 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/target/target_core_configfs.c b/drivers/target/targe=
+t_core_configfs.c
+> index c40217f44b1b..9b2b9786ce2f 100644
+> --- a/drivers/target/target_core_configfs.c
+> +++ b/drivers/target/target_core_configfs.c
+> @@ -673,12 +673,10 @@ static ssize_t emulate_model_alias_store(struct con=
+fig_item *item,
+>                 return ret;
+>
+>         BUILD_BUG_ON(sizeof(dev->t10_wwn.model) !=3D INQUIRY_MODEL_LEN + =
+1);
+> -       if (flag) {
+> +       if (flag)
+>                 dev_set_t10_wwn_model_alias(dev);
+> -       } else {
+> -               strscpy(dev->t10_wwn.model, dev->transport->inquiry_prod,
+> -                       sizeof(dev->t10_wwn.model));
+> -       }
+> +       else
+> +               strscpy(dev->t10_wwn.model, dev->transport->inquiry_prod)=
+;
+>         da->emulate_model_alias =3D flag;
+>         return count;
+>  }
+> @@ -1433,7 +1431,7 @@ static ssize_t target_wwn_vendor_id_store(struct co=
+nfig_item *item,
+>         ssize_t len;
+>         ssize_t ret;
+>
+> -       len =3D strscpy(buf, page, sizeof(buf));
+> +       len =3D strscpy(buf, page);
+>         if (len > 0) {
+>                 /* Strip any newline added from userspace. */
+>                 stripped =3D strstrip(buf);
+> @@ -1464,7 +1462,7 @@ static ssize_t target_wwn_vendor_id_store(struct co=
+nfig_item *item,
+>         }
+>
+>         BUILD_BUG_ON(sizeof(dev->t10_wwn.vendor) !=3D INQUIRY_VENDOR_LEN =
++ 1);
+> -       strscpy(dev->t10_wwn.vendor, stripped, sizeof(dev->t10_wwn.vendor=
+));
+> +       strscpy(dev->t10_wwn.vendor, stripped);
+>
+>         pr_debug("Target_Core_ConfigFS: Set emulated T10 Vendor Identific=
+ation:"
+>                  " %s\n", dev->t10_wwn.vendor);
+> @@ -1489,7 +1487,7 @@ static ssize_t target_wwn_product_id_store(struct c=
+onfig_item *item,
+>         ssize_t len;
+>         ssize_t ret;
+>
+> -       len =3D strscpy(buf, page, sizeof(buf));
+> +       len =3D strscpy(buf, page);
+>         if (len > 0) {
+>                 /* Strip any newline added from userspace. */
+>                 stripped =3D strstrip(buf);
+> @@ -1520,7 +1518,7 @@ static ssize_t target_wwn_product_id_store(struct c=
+onfig_item *item,
+>         }
+>
+>         BUILD_BUG_ON(sizeof(dev->t10_wwn.model) !=3D INQUIRY_MODEL_LEN + =
+1);
+> -       strscpy(dev->t10_wwn.model, stripped, sizeof(dev->t10_wwn.model))=
+;
+> +       strscpy(dev->t10_wwn.model, stripped);
+>
+>         pr_debug("Target_Core_ConfigFS: Set emulated T10 Model Identifica=
+tion: %s\n",
+>                  dev->t10_wwn.model);
+> @@ -1545,7 +1543,7 @@ static ssize_t target_wwn_revision_store(struct con=
+fig_item *item,
+>         ssize_t len;
+>         ssize_t ret;
+>
+> -       len =3D strscpy(buf, page, sizeof(buf));
+> +       len =3D strscpy(buf, page);
+>         if (len > 0) {
+>                 /* Strip any newline added from userspace. */
+>                 stripped =3D strstrip(buf);
+> @@ -1576,7 +1574,7 @@ static ssize_t target_wwn_revision_store(struct con=
+fig_item *item,
+>         }
+>
+>         BUILD_BUG_ON(sizeof(dev->t10_wwn.revision) !=3D INQUIRY_REVISION_=
+LEN + 1);
+> -       strscpy(dev->t10_wwn.revision, stripped, sizeof(dev->t10_wwn.revi=
+sion));
+> +       strscpy(dev->t10_wwn.revision, stripped);
+>
+>         pr_debug("Target_Core_ConfigFS: Set emulated T10 Revision: %s\n",
+>                  dev->t10_wwn.revision);
+> --
+> 2.48.1
+>
+>
 
-Cheers,
-
-Hannes
--- 
-Dr. Hannes Reinecke                  Kernel Storage Architect
-hare@suse.com                               +49 911 74053 688
-SUSE Software Solutions GmbH, Frankenstr. 146, 90461 Nürnberg
-HRB 36809 (AG Nürnberg), GF: I. Totev, A. McDonald, W. Knoblich
+Reviewed-by: Lee Duncan <lduncan@suse.com>
