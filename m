@@ -1,31 +1,31 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25F3228D2EC;
-	Tue, 29 Apr 2025 23:51:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A8B02C2FB2;
+	Tue, 29 Apr 2025 23:52:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1745970701; cv=none; b=J4UEJpRWHcyR7eU8Nz9WmeEL5BAqQVtZ+JgYaZS86zgGJFSZeUjvEeq3eKAVfQgbQb7G1bgKoKIqxRrBxxzOyMHtQuuG0EyK+J7Uezt+L37HEgViRfdsFwzioVdLecYIRPnyYCez7BpgmMdg64jR6VfAgxxvWNORt5jc419/Lm4=
+	t=1745970769; cv=none; b=boQmg5rY8IoQGxKQaCkgEKTWyHPyIt40i0ctHmY/PwMKMMDRQnwgO7GqCLKloSmrTAVyNxaP6CaV/6uDQrkT8PYgOKmM+8A2Cegh48uNbIWz2i8mvkHvBvmbwgCWJ10fUoyp0OwTzqJQ5TTOASr9RpacFRSW7rkfHACF9IYFj8I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1745970701; c=relaxed/simple;
-	bh=ofhStOBBu44WNh/kOYbGD9CXZ7JH5SbkINp/KuxRD70=;
+	s=arc-20240116; t=1745970769; c=relaxed/simple;
+	bh=t0Kz9PtngyrfZ9HJ8s9LrS0iEVto9SIGVhXyHlmHbO0=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=e/VWUuYKMGT8JEPgntbdHL5tXG9Z06Bb/jeG6ILt1pu9XXCW0jd3Zr9yEmPATHKBixhalV37Col0gJXs/cESKHBdLjJ4i/zttTYhjQ+R3fI36GM0t28mlMAqjMboQ5XOI3HiL0HqQupkuXNx+kbnmIBN+AQaevx66nFhR+NBdyI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GQST++pr; arc=none smtp.client-ip=10.30.226.201
+	 MIME-Version; b=i50kIoq+Rm4zb1R+UzwbLEQm2obDzOFN6hIQVH2KFBQ4R9qY9p42CV83c8Iic8xhPvHGbCJK3PGimb15S/k4J8s2EZFhFyMoGLr/l2TmugzBmUJ9BWQUbU+zWPKjtGfMIqLn6bOFsk9LvVcC408YMxLBJ4dwrjjDfi21LkeQ49k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dZVuylmv; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GQST++pr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 110F8C4CEE3;
-	Tue, 29 Apr 2025 23:51:38 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dZVuylmv"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D64AC4CEE3;
+	Tue, 29 Apr 2025 23:52:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745970700;
-	bh=ofhStOBBu44WNh/kOYbGD9CXZ7JH5SbkINp/KuxRD70=;
+	s=k20201202; t=1745970768;
+	bh=t0Kz9PtngyrfZ9HJ8s9LrS0iEVto9SIGVhXyHlmHbO0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=GQST++prxUY9xy6doEN4ANlO+2JtHxnzFJ6HX9CFGFo3UcMx/1xW+l4EQz5/G4SKc
-	 ZFysx/S6kJ/vqEW/KXLirG67ov1Z2Gdq7nm9t3Z/QQaluX5l8c6NstmUcllBTmoS5G
-	 kINsseyeLP5ZMmnChp5hnGJAFWMWCJTeyIKMmfH39yRVx1cb1vjiZHoQNXP0302rGM
-	 KR/baC6J0Bu15PQq0eioZEbbCuAJwbKqL6KSG8YEjfz7R0W2eNGzUzUOSjMl1sqxyi
-	 vJqa7G9QAoxXHkrWHdsLYd8OmegJ9xLA+68CJ9YIEvh1Q1cPZ+qFrqX93axVrJuL1l
-	 dN9Gry+HRc8Rw==
+	b=dZVuylmvIXrZC6nj76bdy44QrMFppPi9aqAxVE7RxFmEzTYvzygylFjuwo1Wi9jUE
+	 fNhjEyf5HXS36/xSexi4Xj+AGy0t6RlxL/zTsXi3bKxACxwP8r/wjqHLUkk6JK8cod
+	 zETGUJcDLYesf0zsBeRJutUdM/uELbMxoz4ybm+cvyxMOVapWc+IJapOQW3o4iWS3V
+	 TQ2Z37hvvdpO002aH4YPQSXpycjFydqyGcxMfg71KdQIMIxNyNgmWnDIRVjEeQu+pm
+	 sjlZMCYujOa7O6ZeAlddvm17Hms0KKkPsX2Atn53U7oZMSi8ueQkHwLgcvwObXGHqC
+	 c13lVKjHy3Iww==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -34,17 +34,17 @@ Cc: Dmitry Bogdanov <d.bogdanov@yadro.com>,
 	"Martin K . Petersen" <martin.petersen@oracle.com>,
 	Sasha Levin <sashal@kernel.org>,
 	linux@treblig.org,
+	ebiggers@google.com,
 	ardb@kernel.org,
 	viro@zeniv.linux.org.uk,
-	ebiggers@google.com,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.12 09/37] scsi: target: iscsi: Fix timeout on deleted connection
-Date: Tue, 29 Apr 2025 19:50:54 -0400
-Message-Id: <20250429235122.537321-9-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.6 07/21] scsi: target: iscsi: Fix timeout on deleted connection
+Date: Tue, 29 Apr 2025 19:52:19 -0400
+Message-Id: <20250429235233.537828-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250429235122.537321-1-sashal@kernel.org>
-References: <20250429235122.537321-1-sashal@kernel.org>
+In-Reply-To: <20250429235233.537828-1-sashal@kernel.org>
+References: <20250429235233.537828-1-sashal@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -53,7 +53,7 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.12.25
+X-stable-base: Linux 6.6.88
 Content-Transfer-Encoding: 8bit
 
 From: Dmitry Bogdanov <d.bogdanov@yadro.com>
@@ -92,10 +92,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 6002283cbebab..68bbdf3ee101d 100644
+index b516c2893420b..b756d4cfecfe9 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4317,8 +4317,8 @@ int iscsit_close_connection(
+@@ -4323,8 +4323,8 @@ int iscsit_close_connection(
  	spin_unlock(&iscsit_global->ts_bitmap_lock);
  
  	iscsit_stop_timers_for_cmds(conn);
