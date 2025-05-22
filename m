@@ -1,55 +1,71 @@
-Received: from omta34.uswest2.a.cloudfilter.net (omta34.uswest2.a.cloudfilter.net [35.89.44.33])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6920E23C509
-	for <target-devel@vger.kernel.org>; Wed, 21 May 2025 23:08:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=35.89.44.33
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 85F3422DA18
+	for <target-devel@vger.kernel.org>; Thu, 22 May 2025 09:11:29 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1747868898; cv=none; b=YSk8mqgtoc50ZZkBTwJ2JY86S7sd/Qa3xXbBR+VU2xw4W3kidwcHu6B2yNRKC3eoB1ghm2mMX66vg9eulTYqHeGdDd/T4ZLK7CIQC1fBbxb1HO7BFVkalPNKsYQyyTm+UFwuPTxGGT2BrB4H8NoZnyV8hC6fddhuyv7sPDUlhow=
+	t=1747905091; cv=none; b=KTYCS1+BojnWpkQP4Z+Vg1M8uAGDcpr5Dk3LWCikZj2bCNtfXXLGr6eVyRBxR4X2Fjoz9yhWub25YqGus2nLYCc6U7r5RJz6dJdWg7CgCnH9NyoWNVO7tISi7aQyjADEGmFDMRc+flCz+hDK2JEHbgcXqAgANNE372529MbF1Sc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1747868898; c=relaxed/simple;
-	bh=a61dKM+sOIM0W5tW48Pob5ugW7t7gLWfNmxKzXb3ZUY=;
+	s=arc-20240116; t=1747905091; c=relaxed/simple;
+	bh=ZDC9x4MYunxqEojxt2QMnAUa/sa1GbM7hsgeW5aenQ0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BfBWrwW+BleyNdC2wvYt4AT/uKAMiwvUaoVlsQNDIslJgyqdcHw2HNVJgUtm+qMzz7odHnMw8/JyI/3bk9dUCCpxR/afzjtcYtNXFRR71dpWiThjMG5uoRFn8A6aCvdbI7m45hmkHEIMNuyG1EZKfUcZMyL7lObHAaiBxvZasx4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com; spf=pass smtp.mailfrom=embeddedor.com; dkim=pass (2048-bit key) header.d=embeddedor.com header.i=@embeddedor.com header.b=bepJksC9; arc=none smtp.client-ip=35.89.44.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=embeddedor.com
+	 In-Reply-To:Content-Type; b=RtO1eicSM/Od79eD2ikX9UKBZ9dqHpx7W26/kS7Mu1S9CC3UwXk1THPd5GaZIibfeKHs5Zj5JqQMNGJVjHRGVadm14B/zvDjVqBBTFtHYqCKOnlD2+mIShd6MD95p3a6qPjCZh+iZDVZDEsOIdi5xfs3QP8oGQVnMgwlyEFo9PY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=d0RkTwnL; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=embeddedor.com header.i=@embeddedor.com header.b="bepJksC9"
-Received: from eig-obgw-6003a.ext.cloudfilter.net ([10.0.30.151])
-	by cmsmtp with ESMTPS
-	id Hqr4uU4kbWuHKHsXiuLWIl; Wed, 21 May 2025 23:08:10 +0000
-Received: from gator4166.hostgator.com ([108.167.133.22])
-	by cmsmtp with ESMTPS
-	id HsXiuSxw6h9ZxHsXiuIxky; Wed, 21 May 2025 23:08:10 +0000
-X-Authority-Analysis: v=2.4 cv=GODDEfNK c=1 sm=1 tr=0 ts=682e5cda
- a=1YbLdUo/zbTtOZ3uB5T3HA==:117 a=efVMuJ2jJG67FGuSm7J3ww==:17
- a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=7T7KSl7uo7wA:10 a=VwQbUJbxAAAA:8
- a=pGLkceISAAAA:8 a=20KFwNOVAAAA:8 a=J1Y8HTJGAAAA:8 a=1XWaLZrsAAAA:8
- a=Ikd4Dj_1AAAA:8 a=8AirrxEcAAAA:8 a=Q-fNiiVtAAAA:8 a=P-IC7800AAAA:8
- a=vggBfdFIAAAA:8 a=kVnt-_iYu5xLd2SthAEA:9 a=QEXdDO2ut3YA:10
- a=y1Q9-5lHfBjTkpIzbSAN:22 a=ST-jHhOKWsTCqRlWije3:22 a=d3PnA9EDa4IxuAV0gXij:22
- a=xYX6OU9JNrHFPr8prv8u:22
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=embeddedor.com; s=default; h=Content-Transfer-Encoding:Content-Type:
-	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
-	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-	List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=OOmlzPBtUod15P9R+5e8Nw5tXEBviOvhwK88h6lKd3o=; b=bepJksC97ML9IvPhF7R0GsUE39
-	iDt8KE0iZROL8TgvVT9PzNwW9sKKBRJIhmxUFgGMA4kRLMqCqmH91zI6xfv4az4R0oAueD2N1pUNA
-	bervFDvFSZHb9jsR3chCY5xthPhQ0Cl/+MKfCN4IxcuwZC/eNjc6eJT48KNq7zmhswlELymKhpwJ9
-	IE+aST75QjzkaqovTJCwxM0OOGiP/qFBJJhUXJj2Q+x9IJWsqcd9FDDhPrBZF1ucKo6mywih6j/rj
-	bOl+lJogaVAvYC+9j/8hT2QnS2oen4Ab7a1MoDN1moAJWQOY79Q+3qkhREtWoNHjvcT3rbLY8DX1O
-	KwaRGQqw==;
-Received: from [177.238.17.151] (port=34848 helo=[192.168.0.27])
-	by gator4166.hostgator.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-	(Exim 4.98.1)
-	(envelope-from <gustavo@embeddedor.com>)
-	id 1uHsXZ-00000000Kdy-1IG9;
-	Wed, 21 May 2025 18:08:01 -0500
-Message-ID: <ebba72b4-9245-4be5-8f0d-87f7b326d468@embeddedor.com>
-Date: Wed, 21 May 2025 17:07:28 -0600
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="d0RkTwnL"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1747905088;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Efw/xOoBR5JtsAGWTbkGb39F5QrJRSJy0Aiy1rPkylA=;
+	b=d0RkTwnLqSfj3Fchi08koiFF1bUS0ZYlIgM/GNhR1Y13qYukU1EOmapWj7fQLJqamI8sRj
+	RvbS366oTj1FIHYXBTkgj+d8E0MEoHGXeUTAyIQoaDilumkmo5HNl0lnXIOCWkCHOkbeJD
+	z8fNqrXBRtlmXpR+IU57searNgtoRvU=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-433-OJgq5ja0MVuGwdAb8aqMdA-1; Thu, 22 May 2025 05:11:24 -0400
+X-MC-Unique: OJgq5ja0MVuGwdAb8aqMdA-1
+X-Mimecast-MFC-AGG-ID: OJgq5ja0MVuGwdAb8aqMdA_1747905084
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-43d0830c3f7so56734125e9.2
+        for <target-devel@vger.kernel.org>; Thu, 22 May 2025 02:11:24 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1747905084; x=1748509884;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Efw/xOoBR5JtsAGWTbkGb39F5QrJRSJy0Aiy1rPkylA=;
+        b=W5WC4dW9cMgyaPIP88TEOXuRz6QfSKzAHeEMLAUlkRckHOe3HxcMEnwTG1bI14nBWO
+         hBgDCe7aVMOtb4XBdGsl2KAybzyMO6b5uzRhKJuJRwn6dmUQ+Cu4TjDP0CYjsdi9C6ba
+         GH0AMGN1VH4ODGID5zspxnlmb0stXTT7Dqw2ylJ+KByLUldvfZ8H/XC+pvkGTjg4dea9
+         FpIObOdREJMeUBsPVLZ9rQBQ7AbGkGvPGmMun7IkfTKeKUgVjSsjJt8b4Hc+SsgseYOb
+         2QyXu1ZbV+nPrS0OxOyKTcF6Xkm+D51z9YO6vSBtln1WCrMfUkfivwXdUEy2/xzAEbmJ
+         sILw==
+X-Forwarded-Encrypted: i=1; AJvYcCUSzCUxczRYAH7zlC2eJRtMhiqO1IEUBhYLwax/SKUq6/BVN+i0vWriWEjEqcrhSG87saQ33A3hrCcLvRc=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz7zB4L6vZo6TLjljtcbm6GxBMgPYjHennavh5KQBEHaCFEKSWS
+	byL5F31OfxQT3piGCEQYaSlwGk0ZijpDQuQti4X4wD3dgU8dSpj8EagX9B8JpQusLWZyt/aMOWC
+	cj/n9sXx1LUZnwmsF+nBi6jfhFb3WzQpqh3U5j4pJbRsl0CnoduxzROUakWLRLIMv+w==
+X-Gm-Gg: ASbGncvm7WPNvUL0msmM8FwesV5Zrir0I/mxa3kEm+QH4A9zTR/rgnghql+AcdGg+fO
+	5IE1SPlHxnztoFq1HHGrfom+tibN/AiMp2HSdGN3O8Y7V4KzrfCDXD6dTLqqpkkRmsPnz36I1sW
+	XWm0z4nxV05DSbFtdUYw2BMEmKTLESgY47lEwTciQV9SXR/TfllGkXqpy9rkIAWHqYbUguKQavx
+	Z4j6iK+4QPS0etnPr1vhkcwsUtroHBK3RnYT47IVeyBiimh7Q3evN2+orO070n60F05oMMbydnj
+	SjaoZz+79HfYmSpykl4=
+X-Received: by 2002:a05:600c:a016:b0:441:d2d8:bd8b with SMTP id 5b1f17b1804b1-442fd622c81mr247895345e9.8.1747905083664;
+        Thu, 22 May 2025 02:11:23 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEciTJ/zcRf4AXElu0pqBhYj5jKqeehae3NT83Gy64LvlkBARBipL5idMvjE3WFf06oe/P65g==
+X-Received: by 2002:a05:600c:a016:b0:441:d2d8:bd8b with SMTP id 5b1f17b1804b1-442fd622c81mr247894945e9.8.1747905083275;
+        Thu, 22 May 2025 02:11:23 -0700 (PDT)
+Received: from ?IPV6:2a0d:3344:247a:1010::f39? ([2a0d:3344:247a:1010::f39])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-447f6f05581sm97329145e9.13.2025.05.22.02.11.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 22 May 2025 02:11:22 -0700 (PDT)
+Message-ID: <f8640da1-c442-4704-8f0a-8d498e1b7e16@redhat.com>
+Date: Thu, 22 May 2025 11:11:20 +0200
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -57,229 +73,44 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next v2 8/8] net: core: Convert
- dev_set_mac_address_user() to use struct sockaddr_storage
-To: Kees Cook <kees@kernel.org>, Kuniyuki Iwashima <kuniyu@amazon.com>
-Cc: Willem de Bruijn <willemdebruijn.kernel@gmail.com>,
- Jason Wang <jasowang@redhat.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+Subject: Re: [PATCH v1 net-next 5/6] socket: Replace most sock_create() calls
+ with sock_create_kern().
+To: Kuniyuki Iwashima <kuniyu@amazon.com>,
  "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>,
- Cosmin Ratiu <cratiu@nvidia.com>, Vladimir Oltean <vladimir.oltean@nxp.com>,
- Florian Fainelli <florian.fainelli@broadcom.com>,
- Kory Maincent <kory.maincent@bootlin.com>, Maxim Georgiev
- <glipus@gmail.com>, netdev@vger.kernel.org,
+ Jakub Kicinski <kuba@kernel.org>, Willem de Bruijn <willemb@google.com>
+Cc: Simon Horman <horms@kernel.org>, Kuniyuki Iwashima <kuni1840@gmail.com>,
+ netdev@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
+ Leon Romanovsky <leon@kernel.org>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
- Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>,
- Chaitanya Kulkarni <kch@nvidia.com>,
- Mike Christie <michael.christie@oracle.com>,
- Max Gurtovoy <mgurtovoy@nvidia.com>, Maurizio Lombardi
- <mlombard@redhat.com>, Dmitry Bogdanov <d.bogdanov@yadro.com>,
- Mingzhe Zou <mingzhe.zou@easystack.cn>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- "Dr. David Alan Gilbert" <linux@treblig.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>, Lei Yang
- <leiyang@redhat.com>, Ido Schimmel <idosch@nvidia.com>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Paul Fertser <fercerpav@gmail.com>, Alexander Aring <alex.aring@gmail.com>,
- Stefan Schmidt <stefan@datenfreihafen.org>,
- Miquel Raynal <miquel.raynal@bootlin.com>, Hayes Wang
- <hayeswang@realtek.com>, Douglas Anderson <dianders@chromium.org>,
- Grant Grundler <grundler@chromium.org>, Jay Vosburgh <jv@jvosburgh.net>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- Dexuan Cui <decui@microsoft.com>, Jiri Pirko <jiri@resnulli.us>,
- Aleksander Jan Bajkowski <olek2@wp.pl>, Philipp Hahn <phahn-oss@avm.de>,
- Eric Biggers <ebiggers@google.com>, Ard Biesheuvel <ardb@kernel.org>,
- Al Viro <viro@zeniv.linux.org.uk>, Ahmed Zaki <ahmed.zaki@intel.com>,
- Alexander Lobakin <aleksander.lobakin@intel.com>,
- Xiao Liang <shaw.leon@gmail.com>, linux-kernel@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
- target-devel@vger.kernel.org, linux-wpan@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-hyperv@vger.kernel.org,
- linux-hardening@vger.kernel.org
-References: <20250521204310.it.500-kees@kernel.org>
- <20250521204619.2301870-8-kees@kernel.org>
+ linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+ Juergen Gross <jgross@suse.com>, Stefano Stabellini
+ <sstabellini@kernel.org>, xen-devel@lists.xenproject.org,
+ Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>,
+ ocfs2-devel@lists.linux.dev
+References: <20250517035120.55560-1-kuniyu@amazon.com>
+ <20250517035120.55560-6-kuniyu@amazon.com>
 Content-Language: en-US
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-In-Reply-To: <20250521204619.2301870-8-kees@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Paolo Abeni <pabeni@redhat.com>
+In-Reply-To: <20250517035120.55560-6-kuniyu@amazon.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 177.238.17.151
-X-Source-L: No
-X-Exim-ID: 1uHsXZ-00000000Kdy-1IG9
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: ([192.168.0.27]) [177.238.17.151]:34848
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 5
-X-Org: HG=hgshared;ORG=hostgator;
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
-X-CMAE-Envelope: MS4xfPhXpd3ImsUPS0/TKNnipUdUR5tJfXaQloxP+Q0J3xrf+6aycnS3TZsxg4RNjid3bPUPJN8CXfHfpKtSvrgSnhIqQl33H3HLMlIILDDlsehZiFJxK0uS
- piaqRkkkIfM5Cm/EEqqRmDnD8bfWDiusGzXcx4h8npKP/KCZ3dpbZtQVbyfJAmdDyN1qlHwS+jpVlIIva7h7+RcSRJ0XaaodobBzWcLqTwy77bzcDuc3wEPw
 
-
-
-On 21/05/25 14:46, Kees Cook wrote:
-> Convert callers of dev_set_mac_address_user() to use struct
-> sockaddr_storage. Add sanity checks on dev->addr_len usage.
+On 5/17/25 5:50 AM, Kuniyuki Iwashima wrote:
+> Except for only one user, sctp_do_peeloff(), all sockets created
+> by drivers and fs are not tied to userspace processes nor exposed
+> via file descriptors.
 > 
-> Signed-off-by: Kees Cook <kees@kernel.org>
-
-Acked-by: Gustavo A. R. Silva <gustavoars@kernel.org>
-
-Thanks!
--Gustavo
-
-> ---
-> Cc: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
-> Cc: Jason Wang <jasowang@redhat.com>
-> Cc: Andrew Lunn <andrew+netdev@lunn.ch>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Eric Dumazet <edumazet@google.com>
-> Cc: Jakub Kicinski <kuba@kernel.org>
-> Cc: Paolo Abeni <pabeni@redhat.com>
-> Cc: Simon Horman <horms@kernel.org>
-> Cc: Stanislav Fomichev <sdf@fomichev.me>
-> Cc: Cosmin Ratiu <cratiu@nvidia.com>
-> Cc: Vladimir Oltean <vladimir.oltean@nxp.com>
-> Cc: Florian Fainelli <florian.fainelli@broadcom.com>
-> Cc: Kory Maincent <kory.maincent@bootlin.com>
-> Cc: Maxim Georgiev <glipus@gmail.com>
-> Cc: Kuniyuki Iwashima <kuniyu@amazon.com>
-> Cc: <netdev@vger.kernel.org>
-> ---
->   include/linux/netdevice.h |  2 +-
->   drivers/net/tap.c         | 14 +++++++++-----
->   drivers/net/tun.c         |  8 +++++++-
->   net/core/dev_api.c        |  5 +++--
->   net/core/dev_ioctl.c      |  6 ++++--
->   5 files changed, 24 insertions(+), 11 deletions(-)
+> Let's use sock_create_kern() for such in-kernel use cases as CIFS
+> client and NFS.
 > 
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index b4242b997373..adb14db25798 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -4216,7 +4216,7 @@ int netif_set_mac_address(struct net_device *dev, struct sockaddr_storage *ss,
->   			  struct netlink_ext_ack *extack);
->   int dev_set_mac_address(struct net_device *dev, struct sockaddr_storage *ss,
->   			struct netlink_ext_ack *extack);
-> -int dev_set_mac_address_user(struct net_device *dev, struct sockaddr *sa,
-> +int dev_set_mac_address_user(struct net_device *dev, struct sockaddr_storage *ss,
->   			     struct netlink_ext_ack *extack);
->   int dev_get_mac_address(struct sockaddr *sa, struct net *net, char *dev_name);
->   int dev_get_port_parent_id(struct net_device *dev,
-> diff --git a/drivers/net/tap.c b/drivers/net/tap.c
-> index d4ece538f1b2..bdf0788d8e66 100644
-> --- a/drivers/net/tap.c
-> +++ b/drivers/net/tap.c
-> @@ -923,7 +923,7 @@ static long tap_ioctl(struct file *file, unsigned int cmd,
->   	unsigned int __user *up = argp;
->   	unsigned short u;
->   	int __user *sp = argp;
-> -	struct sockaddr sa;
-> +	struct sockaddr_storage ss;
->   	int s;
->   	int ret;
->   
-> @@ -1000,16 +1000,17 @@ static long tap_ioctl(struct file *file, unsigned int cmd,
->   			return -ENOLINK;
->   		}
->   		ret = 0;
-> -		dev_get_mac_address(&sa, dev_net(tap->dev), tap->dev->name);
-> +		dev_get_mac_address((struct sockaddr *)&ss, dev_net(tap->dev),
-> +				    tap->dev->name);
->   		if (copy_to_user(&ifr->ifr_name, tap->dev->name, IFNAMSIZ) ||
-> -		    copy_to_user(&ifr->ifr_hwaddr, &sa, sizeof(sa)))
-> +		    copy_to_user(&ifr->ifr_hwaddr, &ss, sizeof(ifr->ifr_hwaddr)))
->   			ret = -EFAULT;
->   		tap_put_tap_dev(tap);
->   		rtnl_unlock();
->   		return ret;
->   
->   	case SIOCSIFHWADDR:
-> -		if (copy_from_user(&sa, &ifr->ifr_hwaddr, sizeof(sa)))
-> +		if (copy_from_user(&ss, &ifr->ifr_hwaddr, sizeof(ifr->ifr_hwaddr)))
->   			return -EFAULT;
->   		rtnl_lock();
->   		tap = tap_get_tap_dev(q);
-> @@ -1017,7 +1018,10 @@ static long tap_ioctl(struct file *file, unsigned int cmd,
->   			rtnl_unlock();
->   			return -ENOLINK;
->   		}
-> -		ret = dev_set_mac_address_user(tap->dev, &sa, NULL);
-> +		if (tap->dev->addr_len > sizeof(ifr->ifr_hwaddr))
-> +			ret = -EINVAL;
-> +		else
-> +			ret = dev_set_mac_address_user(tap->dev, &ss, NULL);
->   		tap_put_tap_dev(tap);
->   		rtnl_unlock();
->   		return ret;
-> diff --git a/drivers/net/tun.c b/drivers/net/tun.c
-> index 7babd1e9a378..1207196cbbed 100644
-> --- a/drivers/net/tun.c
-> +++ b/drivers/net/tun.c
-> @@ -3193,7 +3193,13 @@ static long __tun_chr_ioctl(struct file *file, unsigned int cmd,
->   
->   	case SIOCSIFHWADDR:
->   		/* Set hw address */
-> -		ret = dev_set_mac_address_user(tun->dev, &ifr.ifr_hwaddr, NULL);
-> +		if (tun->dev->addr_len > sizeof(ifr.ifr_hwaddr)) {
-> +			ret = -EINVAL;
-> +			break;
-> +		}
-> +		ret = dev_set_mac_address_user(tun->dev,
-> +					       (struct sockaddr_storage *)&ifr.ifr_hwaddr,
-> +					       NULL);
->   		break;
->   
->   	case TUNGETSNDBUF:
-> diff --git a/net/core/dev_api.c b/net/core/dev_api.c
-> index 6011a5ef649d..1bf0153195f2 100644
-> --- a/net/core/dev_api.c
-> +++ b/net/core/dev_api.c
-> @@ -84,14 +84,15 @@ void dev_set_group(struct net_device *dev, int new_group)
->   	netdev_unlock_ops(dev);
->   }
->   
-> -int dev_set_mac_address_user(struct net_device *dev, struct sockaddr *sa,
-> +int dev_set_mac_address_user(struct net_device *dev,
-> +			     struct sockaddr_storage *ss,
->   			     struct netlink_ext_ack *extack)
->   {
->   	int ret;
->   
->   	down_write(&dev_addr_sem);
->   	netdev_lock_ops(dev);
-> -	ret = netif_set_mac_address(dev, (struct sockaddr_storage *)sa, extack);
-> +	ret = netif_set_mac_address(dev, ss, extack);
->   	netdev_unlock_ops(dev);
->   	up_write(&dev_addr_sem);
->   
-> diff --git a/net/core/dev_ioctl.c b/net/core/dev_ioctl.c
-> index fff13a8b48f1..616479e71466 100644
-> --- a/net/core/dev_ioctl.c
-> +++ b/net/core/dev_ioctl.c
-> @@ -572,9 +572,11 @@ static int dev_ifsioc(struct net *net, struct ifreq *ifr, void __user *data,
->   		return dev_set_mtu(dev, ifr->ifr_mtu);
->   
->   	case SIOCSIFHWADDR:
-> -		if (dev->addr_len > sizeof(struct sockaddr))
-> +		if (dev->addr_len > sizeof(ifr->ifr_hwaddr))
->   			return -EINVAL;
-> -		return dev_set_mac_address_user(dev, &ifr->ifr_hwaddr, NULL);
-> +		return dev_set_mac_address_user(dev,
-> +						(struct sockaddr_storage *)&ifr->ifr_hwaddr,
-> +						NULL);
->   
->   	case SIOCSIFHWBROADCAST:
->   		if (ifr->ifr_hwaddr.sa_family != dev->type)
+> Signed-off-by: Kuniyuki Iwashima <kuniyu@amazon.com>
+
+The change makes sense to me, but it has a semantic change, let's add
+more CCs.
+
+Link to the full series:
+
+https://lore.kernel.org/all/20250517035120.55560-1-kuniyu@amazon.com/
+
+/P
 
