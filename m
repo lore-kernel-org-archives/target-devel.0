@@ -1,125 +1,135 @@
-Received: from ksmg01.maxima.ru (ksmg01.mt-integration.ru [81.200.124.38])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31D7E221DA8;
-	Thu, 12 Jun 2025 16:45:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=81.200.124.38
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96BF42E92D4
+	for <target-devel@vger.kernel.org>; Fri, 13 Jun 2025 07:37:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1749746708; cv=none; b=knuuMJDNZMPjwYYv2xC+M6XY8E26HklYOZxvXH8go2p6XcrgeFq8mFk49UXwD1snuyP1ZrHOrrBylMYldaOUwfgiEG4VJpXyL3nCM8vHFzJ/B/l69rgxN3dTXYu/uerjDQSXg3Yc+baHJmU5gil4MjXIQHKFB05kMhd7WLMS/K8=
+	t=1749800249; cv=none; b=ZGtCbVECzF90bbovOcN170fAiuwOPNrvh+D3EnF7gZZNwZalwQCwEtVB66G/6D4+TvonMUO4QXytTngoJF8Vd97q9tE165hc9gN4U1mCF+i8Z4BJxY8GvSQhorPq0T6DG5o7yC2kVYefHyE79Omq3t//DNe56sNimpHeBH6KRtc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1749746708; c=relaxed/simple;
-	bh=MOZXZ36WD3BqwUhBic6EdETWBxhSyIzABu52Hz2npgw=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Pphi+Xj36tfUtNS6HUUUOw2cgsdIELkpMuOWh4fORo2xNADEhdq0irn1vNds6p7AOg1HaKTOiYigH3JOrkITr8LW4VOA5uPfJHY2nvyGxWG0d8EZrXeWv1KKFlVxagnIMq9CVd5pJtmvY/AjjwOjy1T5AlNV5Bnb1JFdbb4AVRE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mt-integration.ru; spf=pass smtp.mailfrom=mt-integration.ru; dkim=pass (2048-bit key) header.d=mt-integration.ru header.i=@mt-integration.ru header.b=IQxfot/8; arc=none smtp.client-ip=81.200.124.38
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=mt-integration.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mt-integration.ru
+	s=arc-20240116; t=1749800249; c=relaxed/simple;
+	bh=pgNGO5aspI9/4daXfO0wNJ68tx87JU3GHyFL5DAZMKA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZOJMO3XdBmf6q2tpwt1nIRIgZuhvziHFrf5SqctZb+BgCIHfqDgXXtP5qGxUgLic3gD5ubB5W4cTsyFPmqyy63afVSCYgfk63GtPdflM2HhmXK4t/Hsj+fELxgjVCTRQbUMSBSIyJVhMRMbGZAMsKSYkURaaEjqULj/7IojV/PE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=AlIDdBIf; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Vj/7P+Gy; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=AlIDdBIf; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Vj/7P+Gy; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mt-integration.ru header.i=@mt-integration.ru header.b="IQxfot/8"
-Received: from ksmg01.maxima.ru (localhost [127.0.0.1])
-	by ksmg01.maxima.ru (Postfix) with ESMTP id 3AAAEC005A;
-	Thu, 12 Jun 2025 19:38:45 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 ksmg01.maxima.ru 3AAAEC005A
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mt-integration.ru;
-	s=sl; t=1749746325; bh=Idap/fFoG4XkipCO0MFBqKEhwqzYYXaupjHesI4b544=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=IQxfot/8iBGybBLU1W/fqwhwQnToiQ+XSFg7qR04gqL778kdk/a9gPP/U6bWam0sg
-	 GH/ZQgzGvAG/RLhuqPSMs2abAMGEho4uObUprPoqiHEqdkEUuMRVrHegrVtXdUdBWn
-	 tFd9S95dOfcbdQssJjZ9j2G9td8M3IdsJyYdUU/OQceiHujAgys5KXHggWPSbujeEM
-	 pvmrYq2hHYlqjL4yza4pu458MQ/C5mPG57T09iTAfXcFBxUenZZbrJWmkOepzUYEgj
-	 tbjUMm5Xc1IDNVwBoqYny7hv+SYn0PW0yS8At/PC964b4zX4p/KiC6+vx0R3UOHKrN
-	 Sb5MxswM1XXrg==
-Received: from ksmg01.maxima.ru (mail.maxima.ru [81.200.124.61])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(Client CN "*.maxima.ru", Issuer "GlobalSign GCC R3 DV TLS CA 2020" (not verified))
-	by ksmg01.maxima.ru (Postfix) with ESMTPS;
-	Thu, 12 Jun 2025 19:38:45 +0300 (MSK)
-Received: from localhost.maximatelecom.ru (178.236.220.13) by
- mmail-p-exch01.mt.ru (81.200.124.61) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.2.1544.4; Thu, 12 Jun 2025 19:38:43 +0300
-From: Vitaliy Shevtsov <v.shevtsov@mt-integration.ru>
-To: James Smart <james.smart@broadcom.com>
-CC: Vitaliy Shevtsov <v.shevtsov@mt-integration.ru>, Ram Vegesna
-	<ram.vegesna@broadcom.com>, "James E.J. Bottomley"
-	<James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
-	<martin.petersen@oracle.com>, Hannes Reinecke <hare@suse.de>, Daniel Wagner
-	<dwagner@suse.de>, <linux-scsi@vger.kernel.org>,
-	<target-devel@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<lvc-project@linuxtesting.org>
-Subject: [PATCH] scsi: elx: efct: fix memory leak in efct_hw_parse_filter()
-Date: Thu, 12 Jun 2025 21:35:18 +0500
-Message-ID: <20250612163616.24298-1-v.shevtsov@mt-integration.ru>
-X-Mailer: git-send-email 2.49.0
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="AlIDdBIf";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Vj/7P+Gy";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="AlIDdBIf";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Vj/7P+Gy"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id A60B021204;
+	Fri, 13 Jun 2025 07:37:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1749800243; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QMF8B8oxVkvxZPMfNQbn9ATIifEf/04efYrZBy/YYkU=;
+	b=AlIDdBIfjx3FeBnwW4yx4aa7zzed4+0YGEOZQr116CW+3ZJGrw6GOuNH7AYjQXEiYYASk5
+	SBct1i8HasZvxr/qBqPWF62+CQO+SZ8KBqSBZp1VzDUPLwGmcxWHCxiqQElb69CBQbnKFt
+	0LG49P/O0RCkpTKedxcJ9/AUn4niFhA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1749800243;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QMF8B8oxVkvxZPMfNQbn9ATIifEf/04efYrZBy/YYkU=;
+	b=Vj/7P+GyJq4Jb8q/4rfWTCnaFXpq5IDUNOdTYOjVgxvEHVxZ2IbvjHLTGV6UFIONzSHYoh
+	x1of7R8CN5MNqsCg==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=AlIDdBIf;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="Vj/7P+Gy"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1749800243; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QMF8B8oxVkvxZPMfNQbn9ATIifEf/04efYrZBy/YYkU=;
+	b=AlIDdBIfjx3FeBnwW4yx4aa7zzed4+0YGEOZQr116CW+3ZJGrw6GOuNH7AYjQXEiYYASk5
+	SBct1i8HasZvxr/qBqPWF62+CQO+SZ8KBqSBZp1VzDUPLwGmcxWHCxiqQElb69CBQbnKFt
+	0LG49P/O0RCkpTKedxcJ9/AUn4niFhA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1749800243;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=QMF8B8oxVkvxZPMfNQbn9ATIifEf/04efYrZBy/YYkU=;
+	b=Vj/7P+GyJq4Jb8q/4rfWTCnaFXpq5IDUNOdTYOjVgxvEHVxZ2IbvjHLTGV6UFIONzSHYoh
+	x1of7R8CN5MNqsCg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 81D3F13782;
+	Fri, 13 Jun 2025 07:37:23 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id dTAiHTPVS2hgHAAAD6G6ig
+	(envelope-from <dwagner@suse.de>); Fri, 13 Jun 2025 07:37:23 +0000
+Date: Fri, 13 Jun 2025 09:37:22 +0200
+From: Daniel Wagner <dwagner@suse.de>
+To: Vitaliy Shevtsov <v.shevtsov@mt-integration.ru>
+Cc: James Smart <james.smart@broadcom.com>, 
+	Ram Vegesna <ram.vegesna@broadcom.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	"Martin K. Petersen" <martin.petersen@oracle.com>, Hannes Reinecke <hare@suse.de>, linux-scsi@vger.kernel.org, 
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, lvc-project@linuxtesting.org
+Subject: Re: [PATCH] scsi: elx: efct: fix memory leak in
+ efct_hw_parse_filter()
+Message-ID: <0e84f197-169a-471c-b2e7-17de6a79f76d@flourine.local>
+References: <20250612163616.24298-1-v.shevtsov@mt-integration.ru>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: mt-exch-01.mt.ru (91.220.120.210) To mmail-p-exch01.mt.ru
- (81.200.124.61)
-X-KSMG-AntiPhishing: NotDetected
-X-KSMG-AntiSpam-Auth: dmarc=none header.from=mt-integration.ru;spf=none smtp.mailfrom=mt-integration.ru;dkim=none
-X-KSMG-AntiSpam-Envelope-From: v.shevtsov@mt-integration.ru
-X-KSMG-AntiSpam-Info: LuaCore: 62 0.3.62 e2af3448995f5f8a7fe71abf21bb23519d0f38c3, {rep_avail}, {Tracking_uf_ne_domains}, {Tracking_from_domain_doesnt_match_to}, 127.0.0.199:7.1.2;d41d8cd98f00b204e9800998ecf8427e.com:7.1.1;ksmg01.maxima.ru:7.1.1;81.200.124.61:7.1.2;mt-integration.ru:7.1.1, FromAlignment: s, ApMailHostAddress: 81.200.124.61
-X-KSMG-AntiSpam-Interceptor-Info: scan successful
-X-KSMG-AntiSpam-Lua-Profiles: 194027 [Jun 11 2025]
-X-KSMG-AntiSpam-Method: none
-X-KSMG-AntiSpam-Rate: 0
-X-KSMG-AntiSpam-Status: not_detected
-X-KSMG-AntiSpam-Version: 6.1.1.11
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.1.8310, bases: 2025/06/12 14:52:00 #27561045
-X-KSMG-AntiVirus-Status: NotDetected, skipped
-X-KSMG-LinksScanning: NotDetected
-X-KSMG-Message-Action: skipped
-X-KSMG-Rule-ID: 7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250612163616.24298-1-v.shevtsov@mt-integration.ru>
+X-Spamd-Result: default: False [-4.49 / 50.00];
+	BAYES_HAM(-2.98)[99.91%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	MIME_TRACE(0.00)[0:+];
+	MISSING_XM_UA(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Spam-Level: 
+X-Spam-Flag: NO
+X-Rspamd-Queue-Id: A60B021204
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spam-Score: -4.49
 
-strsep() modifies the address of the pointer passed to it so that it no
-longer points to the original address. This means kfree() gets the wrong
-pointer.
+On Thu, Jun 12, 2025 at 09:35:18PM +0500, Vitaliy Shevtsov wrote:
+> strsep() modifies the address of the pointer passed to it so that it no
+> longer points to the original address. This means kfree() gets the wrong
+> pointer.
+> 
+> Fix this by passing unmodified pointer returned from kstrdup() to kfree().
+> 
+> Found by Linux Verification Center (linuxtesting.org) with Svace.
+> 
+> Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
+> Signed-off-by: Vitaliy Shevtsov <v.shevtsov@mt-integration.ru>
 
-Fix this by passing unmodified pointer returned from kstrdup() to kfree().
-
-Found by Linux Verification Center (linuxtesting.org) with Svace.
-
-Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
-Signed-off-by: Vitaliy Shevtsov <v.shevtsov@mt-integration.ru>
----
- drivers/scsi/elx/efct/efct_hw.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/scsi/elx/efct/efct_hw.c b/drivers/scsi/elx/efct/efct_hw.c
-index 5a5525054d71..5b079b8b7a08 100644
---- a/drivers/scsi/elx/efct/efct_hw.c
-+++ b/drivers/scsi/elx/efct/efct_hw.c
-@@ -1120,7 +1120,7 @@ int
- efct_hw_parse_filter(struct efct_hw *hw, void *value)
- {
- 	int rc = 0;
--	char *p = NULL;
-+	char *p = NULL, *pp = NULL;
- 	char *token;
- 	u32 idx = 0;
- 
-@@ -1132,6 +1132,7 @@ efct_hw_parse_filter(struct efct_hw *hw, void *value)
- 		efc_log_err(hw->os, "p is NULL\n");
- 		return -ENOMEM;
- 	}
-+	pp = p;
- 
- 	idx = 0;
- 	while ((token = strsep(&p, ",")) && *token) {
-@@ -1144,7 +1145,7 @@ efct_hw_parse_filter(struct efct_hw *hw, void *value)
- 		if (idx == ARRAY_SIZE(hw->config.filter_def))
- 			break;
- 	}
--	kfree(p);
-+	kfree(pp);
- 
- 	return rc;
- }
--- 
-2.49.0
-
+Reviewed-by: Daniel Wagner <dwagner@suse.de>
