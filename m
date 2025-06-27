@@ -1,79 +1,54 @@
-Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AD2C29E115;
-	Fri, 27 Jun 2025 11:43:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 978522676D9
+	for <target-devel@vger.kernel.org>; Fri, 27 Jun 2025 14:53:10 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751024590; cv=none; b=E8ujlvVl1hv+zb/wUEv3R8rTebs0TxxbpBo8/xYJ0l8mRi86YnTyO1K9AgIt4vTiInKpMwXRHlUkJKGrHlvanb9rq8/I3iCNi0FkodHP3L5WGDV1aauIDF/IXCNKr2Ez7wyTpm0iQ6E/mFSnzO1ULc4SCsB3dWQpeP2Kb9gUEVo=
+	t=1751035993; cv=none; b=j5bdeZIlR/CqdQ2EofMCkULhEw9fuZQnqvU1gaN9KZl+CABjSfR8cOgdtOJs8t3FICQvGAVFImQzf5C2xk+In+JIeBmhYVboLUY9HmxUJKXi8T0QI6COdTM+HSy+pPWDIb66ZNxCJNTmK6KfvbzCBaeghW+pOKrdFXQMzje8dcc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751024590; c=relaxed/simple;
-	bh=01x4DIG/MLfv54ivDmaNIOW309XnOy44DSBxspFOKKI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aeUJCFBEnfZEDYXA81Hapfb6GJj796pUNdfwMeBw0jjf6VdaW3WHY27Bf4HJ6ZpJNPZToCNnQv4ncnZlvmYIfnyCfvbh/yD8wrXk/PztVPdV/0CUkHu/BSKb4Pd3qJyEYRfODcVMNx0h4uGgdvkAR6Ol0aoA5Yytf4GedrEdEKw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CxsWZU26; arc=none smtp.client-ip=209.85.221.43
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1751035993; c=relaxed/simple;
+	bh=YYoUgpXzaUULN3sS3OT8XEVZ8YWy0fRf9VfuxaZv3JQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YRqS6HkvlLAjCaKKzktBhnC0LTFIDZ4R12J5Si1kO0/QzVYJI6uMaRPaq+QioFIMC+2Jm3D2R1cLFo/fgDRf7pHUZtVE+AupE8TR0uoPqt/wlSG5hWHHNKkJLyE+SkOBon88TDQUMsSCTKn3TzTcD7AKKM8kcwwM8b8CKtVE4OE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Nqoh1A9t; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CxsWZU26"
-Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-3a4eed70f24so311381f8f.0;
-        Fri, 27 Jun 2025 04:43:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751024587; x=1751629387; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=6QGBPcCUdbQ9cCGWaoo95uH+3lhdSPiV9mhyp8TNwZo=;
-        b=CxsWZU26z6AG7REZD9gITkGc6lucKG0IoI3m9BzCj5setzl8SHy3hWCdVx7Yeulb7g
-         eplo2bX24mFWhBd+foDiMX1+x1E/5j81TTIRTw5GnAeShl2sU9ICRgaM3rmNTDIpGhcG
-         LRTBXqGBxnsuLKLxiDsayrrEzD+VcwcaKLS3EkvhNzo+bH6QaMK/L6VlCTN03A96NQki
-         L5I70joEU40kjlB8iUlEcvXeeihp8BW0INO9ghbwEMo4AQG8+m7ZPL2GrLKJy8/Zdm+A
-         fy5rGJIxVBbUDButgmxiMfKmzv++MozDplAqOQy5m88wPTXG7AyikNO0aRysNmgoHNi7
-         WQIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751024587; x=1751629387;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=6QGBPcCUdbQ9cCGWaoo95uH+3lhdSPiV9mhyp8TNwZo=;
-        b=L9ozCbDp8HtoLe6c8vKcw/EFNn8yQai2DPjjCk2pWsuN2DpssSfX9rNB69ECKXaSfK
-         7P+sXL/+Xw1cBDeoW0BRTG8ava4N+Or6cgjt2N8AbSeiWwasE5zE32y1b+xnVZ6UGVm+
-         RUDtBmz1tgwf/92jURUabGySERvK9HDGJ2ThJODaXv3dJXjzCsoCLuIeuOr5PhoY+PvP
-         4/3J3AWC0RfaQpw5iSnrSG4DhqbvnRFBCbZloJxfhLYiiWvjKzshQ4NrBWamU44AHVMH
-         ucXPa7te7OX109+EBoc6biMht7UEw4OzlHrM2rGN7E6xwbWZAHv61iyysE+GmEb2t5Ef
-         AVZA==
-X-Forwarded-Encrypted: i=1; AJvYcCUF6T1K5e3bjWLXleUIlbW9dnxNpN1hYyC4F2ABc8dh0OUUqyiwZahvuDOvkfCklQVtONxtOiLPQHotI8ej@vger.kernel.org, AJvYcCVDzCOvpfCI6K3wrDdZVhOdgPq8cMWXNn3mzS0y36qtzl/iheXhRftvfEPDYT8Fy9zfTZfPksV4C8kcmw==@vger.kernel.org, AJvYcCWSeAaKvYKL64ZDES99RxqYafGDIMaomqnLXUGZRuHXjalhli1eY+kMWFe1j6S0L8k4k2vURamQyG2QRGs=@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz1eNI4psUlA07J0ctZxx8QLyNVMXRHvtX4Y/OmgS7kAU8vGJLV
-	EQIuq1YmdRh9F1olsIVsrF8dqhYfpYjXLBqxJWt/ebxPx0heTamePACg
-X-Gm-Gg: ASbGncvFImGKkf7bxPEo06nEU1wvrf1C8fTAtH40wC5BsL9xrz7j3i7y+sph0C8f7FE
-	Zv5dBLnJ/5VqqhElcV7BZ5k+7GG7TY/FSfgoPe0g/NvsRen4xrKQLk/JZ0JmSf9ZlWrvdkgvShq
-	dtaAkUubBUEI+nrXnh5N9EJX/yPqhzfKeWjTWxtc+UgBvt1bvaGgnosYPa+oEd8q3P7WlSGF9Fp
-	DXwRmrweYvFdVl196IGCPIMABC/d5zE16GynmBp+WHGzFIV/sSMaYccA3A0k3UKkuUUdUDUO4Ec
-	yhaqri1Kr0dfm4pTURpsKt3BEfGgtuVxgkzsWkiY/cA3Uj5Yf2iY3yJFdr+1K3iZ2r4GRDVw1Ec
-	4lMpkyX5T0uIdBvA=
-X-Google-Smtp-Source: AGHT+IEzB8OKtz6EI4EG6Z2bI83b9XilioEr7YH0Ayx9iVh8UP+7DpwRKhNGodaDU5udaC4/Pdg57w==
-X-Received: by 2002:a05:600c:3ba4:b0:453:590b:d392 with SMTP id 5b1f17b1804b1-4538eeb77ecmr12554225e9.2.1751024586994;
-        Fri, 27 Jun 2025 04:43:06 -0700 (PDT)
-Received: from thomas-precision3591.imag.fr ([2001:660:5301:24:c222:941f:da95:c9f3])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-4538234be76sm78169655e9.15.2025.06.27.04.43.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Jun 2025 04:43:06 -0700 (PDT)
-From: Thomas Fourier <fourier.thomas@gmail.com>
-To: 
-Cc: Thomas Fourier <fourier.thomas@gmail.com>,
-	James Smart <james.smart@broadcom.com>,
-	Ram Vegesna <ram.vegesna@broadcom.com>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Bart Van Assche <bvanassche@acm.org>,
-	Peter Wang <peter.wang@mediatek.com>,
-	Hannes Reinecke <hare@suse.de>,
-	Daniel Wagner <dwagner@suse.de>,
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Nqoh1A9t"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1751035989;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=cCF2vzC+teQ0yG8OomqHLK5Ta7yt4A8a1wedC5aUzlk=;
+	b=Nqoh1A9tZNcFbWJfUGWUQH9XsGIMyNxpQAH2b5L0b6Da5bVZ399tK/FBSRTOxXKwlvJm7J
+	McVq6FibTx++UFdLwNHgZW3DDWgvDqlfuFz3DOaA+AeW24DGsuBtlreQKcUFQcpeHlIPy5
+	UXD8kZlG4zLz97qZuuF38wIabfZ2xn0=
+Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-421-LrtT_Q8bMyOi8T654aGcnA-1; Fri,
+ 27 Jun 2025 10:53:08 -0400
+X-MC-Unique: LrtT_Q8bMyOi8T654aGcnA-1
+X-Mimecast-MFC-AGG-ID: LrtT_Q8bMyOi8T654aGcnA_1751035987
+Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id D63D518600CC;
+	Fri, 27 Jun 2025 14:52:32 +0000 (UTC)
+Received: from rocky.redhat.com (unknown [10.42.28.215])
+	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 078A11800287;
+	Fri, 27 Jun 2025 14:52:30 +0000 (UTC)
+From: Maurizio Lombardi <mlombard@redhat.com>
+To: martin.petersen@oracle.com
+Cc: michael.christie@oracle.com,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: elx: efct: Fix dma_unmap_sg() nents value
-Date: Fri, 27 Jun 2025 13:41:13 +0200
-Message-ID: <20250627114117.188480-2-fourier.thomas@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	mlombard@bsdbackstore.eu
+Subject: [PATCH] target: generate correct string identifiers for PR OUT transport IDs
+Date: Fri, 27 Jun 2025 16:52:29 +0200
+Message-ID: <20250627145229.286252-1-mlombard@redhat.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -81,29 +56,134 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
 
-The dma_unmap_sg() functions should be called with the same nents as the
-dma_map_sg(), not the value the map function returned.
+Fix target_parse_pr_out_transport_id() to
+return a dynamically allocated string representing the
+transport ID in a standardized, human-readable format
+(e.g., naa.xxxxxxxx...) for various SCSI protocol types
+(SAS, FCP, SRP, SBP).
 
-Fixes: 692e5d73a811 ("scsi: elx: efct: LIO backend interface routines")
-Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
+Previously, the function returned a pointer to the raw binary buffer.
+The caller would then compared it to a human-readable string,
+which obviously always failed.
+
+Now, the function constructs a string using kasprintf()
+based on the protocol's offset and format:
+
+* SAS, FCP, SBP: 64-bit identifier
+* SRP: 128-bit identifier
+* iSCSI: duplicates the iqn string to match the new allocation behavior
+
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
 ---
- drivers/scsi/elx/efct/efct_lio.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/target/target_core_fabric_lib.c | 22 ++++++++++++++++------
+ drivers/target/target_core_pr.c         |  7 ++++++-
+ 2 files changed, 22 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/scsi/elx/efct/efct_lio.c b/drivers/scsi/elx/efct/efct_lio.c
-index 9ac69356b13e..bd3d489e56ae 100644
---- a/drivers/scsi/elx/efct/efct_lio.c
-+++ b/drivers/scsi/elx/efct/efct_lio.c
-@@ -382,7 +382,7 @@ efct_lio_sg_unmap(struct efct_io *io)
- 		return;
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index 43f47e3aa448..a124cf982a4c 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -390,7 +390,10 @@ int target_get_pr_transport_id(struct se_node_acl *nacl,
+ const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
+ 		char *buf, u32 *out_tid_len, char **port_nexus_ptr)
+ {
+-	u32 offset;
++	u32 offset = 8;
++	u32 len = 8;
++	char *prefix;
++	char hex[40];
  
- 	dma_unmap_sg(&io->efct->pci->dev, cmd->t_data_sg,
--		     ocp->seg_map_cnt, cmd->data_direction);
-+		     cmd->t_data_nents, cmd->data_direction);
- 	ocp->seg_map_cnt = 0;
+ 	switch (tpg->proto_id) {
+ 	case SCSI_PROTOCOL_SAS:
+@@ -399,15 +402,21 @@ const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
+ 		 * for initiator ports using SCSI over SAS Serial SCSI Protocol.
+ 		 */
+ 		offset = 4;
++		prefix = "naa";
+ 		break;
+-	case SCSI_PROTOCOL_SBP:
+ 	case SCSI_PROTOCOL_SRP:
++		prefix = "ib";
++		len = 16;
++		break;
+ 	case SCSI_PROTOCOL_FCP:
+-		offset = 8;
++		prefix = "naa";
++		break;
++	case SCSI_PROTOCOL_SBP:
++		prefix = "eui";
+ 		break;
+ 	case SCSI_PROTOCOL_ISCSI:
+-		return iscsi_parse_pr_out_transport_id(tpg, buf, out_tid_len,
+-					port_nexus_ptr);
++		return kstrdup(iscsi_parse_pr_out_transport_id(tpg, buf,
++				out_tid_len, port_nexus_ptr), GFP_KERNEL);
+ 	default:
+ 		pr_err("Unknown proto_id: 0x%02x\n", tpg->proto_id);
+ 		return NULL;
+@@ -415,5 +424,6 @@ const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
+ 
+ 	*port_nexus_ptr = NULL;
+ 	*out_tid_len = 24;
+-	return buf + offset;
++	bin2hex(hex, buf + offset, len);
++	return kasprintf(GFP_KERNEL, "%s.%s", prefix, hex);
+ }
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index 70905805cb17..b9b3adc1657d 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -1571,6 +1571,7 @@ core_scsi3_decode_spec_i_port(
+ 			dest_rtpi = tmp_lun->lun_tpg->tpg_rtpi;
+ 
+ 			iport_ptr = NULL;
++			kfree(i_str);
+ 			i_str = target_parse_pr_out_transport_id(tmp_tpg,
+ 					ptr, &tid_len, &iport_ptr);
+ 			if (!i_str)
+@@ -1808,6 +1809,7 @@ core_scsi3_decode_spec_i_port(
+ 		core_scsi3_tpg_undepend_item(dest_tpg);
+ 	}
+ 
++	kfree(i_str);
+ 	return 0;
+ out_unmap:
+ 	transport_kunmap_data_sg(cmd);
+@@ -1852,6 +1854,7 @@ core_scsi3_decode_spec_i_port(
+ 		core_scsi3_nodeacl_undepend_item(dest_node_acl);
+ 		core_scsi3_tpg_undepend_item(dest_tpg);
+ 	}
++	kfree(i_str);
+ 	return ret;
+ }
+ 
+@@ -3153,7 +3156,7 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
+ 	struct t10_pr_registration *pr_reg, *pr_res_holder, *dest_pr_reg;
+ 	struct t10_reservation *pr_tmpl = &dev->t10_pr;
+ 	unsigned char *buf;
+-	const unsigned char *initiator_str;
++	const unsigned char *initiator_str = NULL;
+ 	char *iport_ptr = NULL, i_buf[PR_REG_ISID_ID_LEN] = { };
+ 	u32 tid_len, tmp_tid_len;
+ 	int new_reg = 0, type, scope, matching_iname;
+@@ -3526,6 +3529,7 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
+ 	core_scsi3_update_and_write_aptpl(cmd->se_dev, aptpl);
+ 
+ 	core_scsi3_put_pr_reg(dest_pr_reg);
++	kfree(initiator_str);
+ 	return 0;
+ out:
+ 	if (buf)
+@@ -3538,6 +3542,7 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
+ 
+ out_put_pr_reg:
+ 	core_scsi3_put_pr_reg(pr_reg);
++	kfree(initiator_str);
+ 	return ret;
  }
  
 -- 
-2.43.0
+2.47.1
 
