@@ -1,166 +1,109 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com [209.85.221.43])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 336B0226D1D;
-	Tue, 24 Jun 2025 04:13:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0AD2C29E115;
+	Fri, 27 Jun 2025 11:43:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.43
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1750738401; cv=none; b=hN1srWoGKeSDsGHEZw+LG13E/LlhFvqHoudbSxkI1U/Aoau9WiNAOwcvanJ12vXUvC9Ms8haoGf27rszQoHvShz2XmT5f687QfiHdWk9fTX+S2i5W8e/IfMelse8PhVO84mEe/ty+KawmCWP4pxxLenOpml/X/OKdmuoPSXHeVk=
+	t=1751024590; cv=none; b=E8ujlvVl1hv+zb/wUEv3R8rTebs0TxxbpBo8/xYJ0l8mRi86YnTyO1K9AgIt4vTiInKpMwXRHlUkJKGrHlvanb9rq8/I3iCNi0FkodHP3L5WGDV1aauIDF/IXCNKr2Ez7wyTpm0iQ6E/mFSnzO1ULc4SCsB3dWQpeP2Kb9gUEVo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1750738401; c=relaxed/simple;
-	bh=ecQyuLhBpmBHb1XD43VJf6smQfc/1veiQMrSiP2Dkfk=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=EqhupBxlLXpVgUmqTbn2+aaFcB6tU1+95beDOgWawGFsglX+eX9+farkSj2QK6/Gg55LdsSZj6bgm1Q7ALFBj93AnVLDKvqj4144RvwCiPUkgmPtQaQJTgvZUYES1lLyVYKzXltWcvRiciymhrogTefLeHY8i8DxXCdM6LQZR6k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MVy749Y4; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1751024590; c=relaxed/simple;
+	bh=01x4DIG/MLfv54ivDmaNIOW309XnOy44DSBxspFOKKI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aeUJCFBEnfZEDYXA81Hapfb6GJj796pUNdfwMeBw0jjf6VdaW3WHY27Bf4HJ6ZpJNPZToCNnQv4ncnZlvmYIfnyCfvbh/yD8wrXk/PztVPdV/0CUkHu/BSKb4Pd3qJyEYRfODcVMNx0h4uGgdvkAR6Ol0aoA5Yytf4GedrEdEKw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=CxsWZU26; arc=none smtp.client-ip=209.85.221.43
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MVy749Y4"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A0347C4CEEF;
-	Tue, 24 Jun 2025 04:13:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750738401;
-	bh=ecQyuLhBpmBHb1XD43VJf6smQfc/1veiQMrSiP2Dkfk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=MVy749Y45Gt+WJHsoonklitOINSdxOEuRIVyzdg9x22s0aNPgUm+JPbZvhCIEwURL
-	 LLRS1dAPC3Xc6159sjoR2zXoxkBnJMdif75/GrEEDgbc3wUnJb9Ax/JrRauP0P+fxv
-	 nQ++UcKkBjptibn/GtNFfCuvarus8XZoCXjiifw7W963HBUfJ2AreAbkk94TbQ0nmi
-	 MJVhaRkIjtCAOuFZhc472gn/0izvhK5P/9HiEb0VkyML1RuyKIX+Zbfn65ZhgSpTJv
-	 fxY5kiFs5ZGF9FyKazTIW2FL8jANU6Rm9Afebt36StaZEZMvduFfJiwZ7Fex3rCDm+
-	 QYrDqu0LFrhTw==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Maurizio Lombardi <mlombard@redhat.com>,
-	Mike Christie <michael.christie@oracle.com>,
-	John Meneghini <jmeneghi@redhat.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	Sasha Levin <sashal@kernel.org>,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CxsWZU26"
+Received: by mail-wr1-f43.google.com with SMTP id ffacd0b85a97d-3a4eed70f24so311381f8f.0;
+        Fri, 27 Jun 2025 04:43:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1751024587; x=1751629387; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=6QGBPcCUdbQ9cCGWaoo95uH+3lhdSPiV9mhyp8TNwZo=;
+        b=CxsWZU26z6AG7REZD9gITkGc6lucKG0IoI3m9BzCj5setzl8SHy3hWCdVx7Yeulb7g
+         eplo2bX24mFWhBd+foDiMX1+x1E/5j81TTIRTw5GnAeShl2sU9ICRgaM3rmNTDIpGhcG
+         LRTBXqGBxnsuLKLxiDsayrrEzD+VcwcaKLS3EkvhNzo+bH6QaMK/L6VlCTN03A96NQki
+         L5I70joEU40kjlB8iUlEcvXeeihp8BW0INO9ghbwEMo4AQG8+m7ZPL2GrLKJy8/Zdm+A
+         fy5rGJIxVBbUDButgmxiMfKmzv++MozDplAqOQy5m88wPTXG7AyikNO0aRysNmgoHNi7
+         WQIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751024587; x=1751629387;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=6QGBPcCUdbQ9cCGWaoo95uH+3lhdSPiV9mhyp8TNwZo=;
+        b=L9ozCbDp8HtoLe6c8vKcw/EFNn8yQai2DPjjCk2pWsuN2DpssSfX9rNB69ECKXaSfK
+         7P+sXL/+Xw1cBDeoW0BRTG8ava4N+Or6cgjt2N8AbSeiWwasE5zE32y1b+xnVZ6UGVm+
+         RUDtBmz1tgwf/92jURUabGySERvK9HDGJ2ThJODaXv3dJXjzCsoCLuIeuOr5PhoY+PvP
+         4/3J3AWC0RfaQpw5iSnrSG4DhqbvnRFBCbZloJxfhLYiiWvjKzshQ4NrBWamU44AHVMH
+         ucXPa7te7OX109+EBoc6biMht7UEw4OzlHrM2rGN7E6xwbWZAHv61iyysE+GmEb2t5Ef
+         AVZA==
+X-Forwarded-Encrypted: i=1; AJvYcCUF6T1K5e3bjWLXleUIlbW9dnxNpN1hYyC4F2ABc8dh0OUUqyiwZahvuDOvkfCklQVtONxtOiLPQHotI8ej@vger.kernel.org, AJvYcCVDzCOvpfCI6K3wrDdZVhOdgPq8cMWXNn3mzS0y36qtzl/iheXhRftvfEPDYT8Fy9zfTZfPksV4C8kcmw==@vger.kernel.org, AJvYcCWSeAaKvYKL64ZDES99RxqYafGDIMaomqnLXUGZRuHXjalhli1eY+kMWFe1j6S0L8k4k2vURamQyG2QRGs=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yz1eNI4psUlA07J0ctZxx8QLyNVMXRHvtX4Y/OmgS7kAU8vGJLV
+	EQIuq1YmdRh9F1olsIVsrF8dqhYfpYjXLBqxJWt/ebxPx0heTamePACg
+X-Gm-Gg: ASbGncvFImGKkf7bxPEo06nEU1wvrf1C8fTAtH40wC5BsL9xrz7j3i7y+sph0C8f7FE
+	Zv5dBLnJ/5VqqhElcV7BZ5k+7GG7TY/FSfgoPe0g/NvsRen4xrKQLk/JZ0JmSf9ZlWrvdkgvShq
+	dtaAkUubBUEI+nrXnh5N9EJX/yPqhzfKeWjTWxtc+UgBvt1bvaGgnosYPa+oEd8q3P7WlSGF9Fp
+	DXwRmrweYvFdVl196IGCPIMABC/d5zE16GynmBp+WHGzFIV/sSMaYccA3A0k3UKkuUUdUDUO4Ec
+	yhaqri1Kr0dfm4pTURpsKt3BEfGgtuVxgkzsWkiY/cA3Uj5Yf2iY3yJFdr+1K3iZ2r4GRDVw1Ec
+	4lMpkyX5T0uIdBvA=
+X-Google-Smtp-Source: AGHT+IEzB8OKtz6EI4EG6Z2bI83b9XilioEr7YH0Ayx9iVh8UP+7DpwRKhNGodaDU5udaC4/Pdg57w==
+X-Received: by 2002:a05:600c:3ba4:b0:453:590b:d392 with SMTP id 5b1f17b1804b1-4538eeb77ecmr12554225e9.2.1751024586994;
+        Fri, 27 Jun 2025 04:43:06 -0700 (PDT)
+Received: from thomas-precision3591.imag.fr ([2001:660:5301:24:c222:941f:da95:c9f3])
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-4538234be76sm78169655e9.15.2025.06.27.04.43.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Jun 2025 04:43:06 -0700 (PDT)
+From: Thomas Fourier <fourier.thomas@gmail.com>
+To: 
+Cc: Thomas Fourier <fourier.thomas@gmail.com>,
+	James Smart <james.smart@broadcom.com>,
+	Ram Vegesna <ram.vegesna@broadcom.com>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Peter Wang <peter.wang@mediatek.com>,
+	Hannes Reinecke <hare@suse.de>,
+	Daniel Wagner <dwagner@suse.de>,
 	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 4/8] scsi: target: Fix NULL pointer dereference in core_scsi3_decode_spec_i_port()
-Date: Tue, 24 Jun 2025 00:13:11 -0400
-Message-Id: <20250624041316.85209-4-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250624041316.85209-1-sashal@kernel.org>
-References: <20250624041316.85209-1-sashal@kernel.org>
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: elx: efct: Fix dma_unmap_sg() nents value
+Date: Fri, 27 Jun 2025 13:41:13 +0200
+Message-ID: <20250627114117.188480-2-fourier.thomas@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.10.238
 Content-Transfer-Encoding: 8bit
 
-From: Maurizio Lombardi <mlombard@redhat.com>
+The dma_unmap_sg() functions should be called with the same nents as the
+dma_map_sg(), not the value the map function returned.
 
-[ Upstream commit d8ab68bdb294b09a761e967dad374f2965e1913f ]
-
-The function core_scsi3_decode_spec_i_port(), in its error code path,
-unconditionally calls core_scsi3_lunacl_undepend_item() passing the
-dest_se_deve pointer, which may be NULL.
-
-This can lead to a NULL pointer dereference if dest_se_deve remains
-unset.
-
-SPC-3 PR SPEC_I_PT: Unable to locate dest_tpg
-Unable to handle kernel paging request at virtual address dfff800000000012
-Call trace:
-  core_scsi3_lunacl_undepend_item+0x2c/0xf0 [target_core_mod] (P)
-  core_scsi3_decode_spec_i_port+0x120c/0x1c30 [target_core_mod]
-  core_scsi3_emulate_pro_register+0x6b8/0xcd8 [target_core_mod]
-  target_scsi3_emulate_pr_out+0x56c/0x840 [target_core_mod]
-
-Fix this by adding a NULL check before calling
-core_scsi3_lunacl_undepend_item()
-
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
-Link: https://lore.kernel.org/r/20250612101556.24829-1-mlombard@redhat.com
-Reviewed-by: Mike Christie <michael.christie@oracle.com>
-Reviewed-by: John Meneghini <jmeneghi@redhat.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Fixes: 692e5d73a811 ("scsi: elx: efct: LIO backend interface routines")
+Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
 ---
+ drivers/scsi/elx/efct/efct_lio.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I see now! If we look at the error path, when
-`core_get_se_deve_from_rtpi()` returns NULL (line 1667), the code jumps
-to `out_unmap` at line 1675. However, there could be existing entries in
-the `tid_dest_list` that were already added before this failure.
-
-The commit shows the stack trace mentions "SPC-3 PR SPEC_I_PT: Unable to
-locate dest_tpg" which actually happens at line 1641, and then jumps to
-`out_unmap` (line 1644).
-
-In this case, any tidh entries in the list would have `dest_se_deve =
-NULL` because the failure happens before `dest_se_deve` is even
-assigned.
-
-**YES**
-
-This commit should be backported to stable kernel trees for the
-following reasons:
-
-1. **It fixes a real NULL pointer dereference bug**: The commit
-   addresses a kernel crash that occurs when
-   `core_scsi3_lunacl_undepend_item()` is called with a NULL
-   `dest_se_deve` pointer. The function dereferences the pointer at line
-   1453 (`if (!se_deve->se_lun_acl)`) without checking for NULL, causing
-   a crash.
-
-2. **The bug affects normal error handling paths**: This crash occurs
-   during error handling in the SCSI target subsystem when processing
-   PERSISTENT RESERVE OUT commands with SPEC_I_PT (Specify Initiator
-   Ports). When certain lookups fail (like "Unable to locate dest_tpg"),
-   the error cleanup path can have NULL `dest_se_deve` values in the
-   tid_dest_list.
-
-3. **The fix is minimal and safe**: The fix simply adds a NULL check
-   before calling `core_scsi3_lunacl_undepend_item()`:
-  ```c
-  if (dest_se_deve)
-  core_scsi3_lunacl_undepend_item(dest_se_deve);
-  ```
-  This is a defensive programming practice that prevents the crash
-  without changing the logic flow.
-
-4. **The fix is confined to error handling**: The change only affects
-   the error cleanup path and doesn't modify the normal operation flow,
-   minimizing the risk of regression.
-
-5. **Similar to other backported fixes**: Looking at the similar
-   commits, commit #3 (qla2xxx NULL pointer fix) and commit #5
-   (rt5514-spi NULL pointer fix) were both backported and had similar
-   characteristics - they were simple NULL pointer checks that prevented
-   crashes.
-
-6. **Production impact**: NULL pointer dereferences in kernel code lead
-   to kernel panics, which can cause system crashes and data loss. This
-   is particularly important for storage-related code where reliability
-   is critical.
-
-The commit follows the stable tree rules by fixing an important bug
-(kernel crash) with minimal risk and without introducing new features or
-architectural changes.
-
- drivers/target/target_core_pr.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index b42193c554fb2..2bc849799739e 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -1858,7 +1858,9 @@ core_scsi3_decode_spec_i_port(
- 		}
+diff --git a/drivers/scsi/elx/efct/efct_lio.c b/drivers/scsi/elx/efct/efct_lio.c
+index 9ac69356b13e..bd3d489e56ae 100644
+--- a/drivers/scsi/elx/efct/efct_lio.c
++++ b/drivers/scsi/elx/efct/efct_lio.c
+@@ -382,7 +382,7 @@ efct_lio_sg_unmap(struct efct_io *io)
+ 		return;
  
- 		kmem_cache_free(t10_pr_reg_cache, dest_pr_reg);
--		core_scsi3_lunacl_undepend_item(dest_se_deve);
-+
-+		if (dest_se_deve)
-+			core_scsi3_lunacl_undepend_item(dest_se_deve);
+ 	dma_unmap_sg(&io->efct->pci->dev, cmd->t_data_sg,
+-		     ocp->seg_map_cnt, cmd->data_direction);
++		     cmd->t_data_nents, cmd->data_direction);
+ 	ocp->seg_map_cnt = 0;
+ }
  
- 		if (is_local)
- 			continue;
 -- 
-2.39.5
+2.43.0
 
