@@ -1,78 +1,55 @@
-Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8DAB1B0435;
-	Mon, 30 Jun 2025 11:18:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.41
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AC7952C08A1
+	for <target-devel@vger.kernel.org>; Thu,  3 Jul 2025 08:12:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.129.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751282321; cv=none; b=hOeByh19ov1unuvfVez17n63AAO5as+0pDQlHO/VHLyTX0rKgdcQeIKh6ZSrPjBTz7IKU4LW9//+2nzioQNcs1qJvwoTN6R9cGwje799HQU3B2B3S2Yf9rTLeyXpXYdTckcXu8uaMZBNMeQm0S7Sesc3HGnlIA5ph8ZUAwKqs+w=
+	t=1751530359; cv=none; b=aBB0aEMucsgUtbEWKP+FXzn4+7zbvaxbxSG/Vmd2Da+GGVgBXcslXHuxrvHxxiwBY2Leh9keRV5rthT1S6ob4ulylT69bvpE+8oFvjGq8fvPPTfp4Llro3oyLNIrLMZz6vTSgx4zP9y4ZIcqDOtwOsLPeKp4mkQOGnxANWIb+vQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751282321; c=relaxed/simple;
-	bh=nKcIly6qaq1Nl910VPmWYltAsx8yIOGi9TwL2l47JKw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rXHA99Snx4byqIkIrTYILBseeGYf+/pIrfKC/LW5Z6qPtvSt2KTaZx6LlcS2t2SHf9lDRp2t6hy5oV3VmbEF84kkFIXQWg34z1KnHyj9xUU2OdvuI0MRTIRX9A7o2obg27FZmef5WMMhKTuy1jJTJz7uAjppQIXXHvnApo9s9uo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=lDS+86l6; arc=none smtp.client-ip=209.85.221.41
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1751530359; c=relaxed/simple;
+	bh=VxuBPVg+eAerudJhediPZnxbHJNhUAGZ3LebUXFy0HA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HT8Tuc5/fr7BvOp3IJZYv6pOFPtekQ12KtFMwBJjBwtj/9r9PYAHjP3DaQtx6K+CXQ0V7DGLckWMlyPh0YjZJGR0Q0L2WmKaZHtL7TCD0ByHAIduLZJiUuDGG4G1NTbhD4AclwLND9PLVNfdojbj+Ggq1lAxD7ucdkqm3bsxawU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=az7VPUhp; arc=none smtp.client-ip=170.10.129.124
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lDS+86l6"
-Received: by mail-wr1-f41.google.com with SMTP id ffacd0b85a97d-3a528e301b0so134901f8f.1;
-        Mon, 30 Jun 2025 04:18:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751282318; x=1751887118; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=4bHSrGkiQpDnv6V2m1S1L8Uez278g9vphJNWWJac9vY=;
-        b=lDS+86l6vfroD9D2y2sVFTiIuxFSSTo0ojDmanHX4VJ6Xph8OHwS3ciflH4ia+QpiY
-         LKx80Zf6yFRKfsTkkN+rm2/3EYCpRYhwFnWnm9aGyUZaAwP3yFej4zCJZ9vUWzjSjn4f
-         E16/f/GEk8ae18QQKQ/mdnVRBzOzK/WL9/gdOYbkMf4UT/mwFqCCB7BwftHN2lZ5nUXC
-         UtyusmtT/iB0QqirS+C69MWhMpJ3k1ILLOJtIlg3zKbyablF4Ijg37L1E1Q7TtfeJVpG
-         JsOZ8AcavdzYXMW9B8UxUPO8WnDxKgEHNcKMLMe4WFBPUwHmtzWjM/sOAOciqY2rMXQm
-         DcKQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751282318; x=1751887118;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=4bHSrGkiQpDnv6V2m1S1L8Uez278g9vphJNWWJac9vY=;
-        b=ZjefrvQqehLwDhj+C4ITZUEnNU8AGbN0/Nx3e9ZkJVHumdkXW3nKyAO5Zr0jNslyIb
-         AMXA7sWM03opxnbiaErcuIXql77uAKFPJlGahdEACYfdFm+gTWXrZAY33y0VMC7LhhFN
-         NCkmJ98b27pht18qRornCC2OQrzeOB/WrNeTqw01Ll322A8uNzIbwkA8E+LbQXf6P273
-         D1GnZPPZn0FPVUKcHmDVsHWinMPTEJFEOUMi0oZXxCroZBZsR6T2eACCb9kSJ0XEOxd6
-         ljLjSlND8fQKHMfX6eXB4YS0TSBrUu/7mPiwLIG7V0sS/iJJT7ljUQbPb2UxD9/COUjK
-         +NKg==
-X-Forwarded-Encrypted: i=1; AJvYcCUiZmBMbGrEil1BKH+Ik2O3/19dMGoj0Fz64S4pz8usP1nrfU/QcpeyBYZJIu2/19ad8RNtTFN6bWStBsqb@vger.kernel.org, AJvYcCVUKcApRQuWvWBuaBGv17pWPJJY54dVSj792AQxYvQn+MHtdc10Dbkm8Pm+Ym3PQtGdVNNk499sRPS3oA==@vger.kernel.org, AJvYcCW9ypGJiekyf7LCzqNOQxZRUmVNTS0VLCxdGL8VzJDPkv97cfaf32D/0DpBzqkoN9cLipRTbH7pGz1eBE0=@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywugza07xj50pt6IhqZXiIK7sIvp6WWqe5rTY4O1rIBKp2sD+sB
-	KEnC/NAGfz6PRiDCFY2ml7MuEQchjQ83QNwLO4cc3W9OsX++j1H5N0lM
-X-Gm-Gg: ASbGncvOn4Omo4yXfGv5U5NuDJfD3WcR/vuN0Dt/N8tLvYG1FgiW8rU+TFc/QnCRG+l
-	TEZkrna/BVMXDaAZay/mV15yxeF/Z/dwb7++4B0HU1+jY3mlAExPGMjhHDS2NFcvsMH3bTy45Qk
-	HbZX7LPvOXexUVHFb2tvSBAG4D91JbO2lemtmwOBo5EcL3/1QCEPdxq61YOUrL/+MeU1BiJ8ZEV
-	Voc/NVbnVK8K9KBBUquboAm6qPbYtJGDR5BmlN9/pVQ14SPrPWfrXsluBGJ5pSqp/Z0OUlXEQIN
-	Kvz1UzwDnxE5iM9YVHm+QkMc8M+BU2gLtlb6X6LmNgxNSZNNZW97MrLysfTZf7FO/fDEQtmpAqX
-	seKUI0rUdHev7ta9akjP8mL6X
-X-Google-Smtp-Source: AGHT+IFdIa5i+fsO4DexCnu4Udg7U+ph+4pACdyaAuy7OOOpwvuoUSrPIyws5b5Rh7q2WXLZTCK1fQ==
-X-Received: by 2002:a5d:5849:0:b0:3a4:e0e1:8dc8 with SMTP id ffacd0b85a97d-3aaf4a75781mr2515514f8f.9.1751282317752;
-        Mon, 30 Jun 2025 04:18:37 -0700 (PDT)
-Received: from thomas-precision3591.imag.fr ([2001:660:5301:24:43e:be8c:f80c:622a])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3a88c7ec6aesm10112826f8f.5.2025.06.30.04.18.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Jun 2025 04:18:37 -0700 (PDT)
-From: Thomas Fourier <fourier.thomas@gmail.com>
-To: 
-Cc: Thomas Fourier <fourier.thomas@gmail.com>,
-	Tyrel Datwyler <tyreld@linux.ibm.com>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Nicholas Bellinger <nab@linux-iscsi.org>,
-	Steven Royer <seroyer@linux.vnet.ibm.com>,
-	"Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
-	Michael Cyr <mikecyr@linux.vnet.ibm.com>,
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="az7VPUhp"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1751530355;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=zKjA0FoLuVW4/CYh3iJP6VSaMFPkjm8yZ7Zjcr1XUu4=;
+	b=az7VPUhpDj8wH1HYGhdIs5oDd2H5uAHgd5FfLxCbadCqMztGF3dOXGnBYFlrwUTdpXmdCR
+	v5KfQgm0tQxOQEq4mLItNYb7tGAqOPqL7BeBtkVgCcxSc/sy9anzWnF3tzkgUL7t+7atu9
+	2IK886uwNAhxp3kA2syKV739ZVvgIz4=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-681-jEwy8r2kPDqejreWllvWrQ-1; Thu,
+ 03 Jul 2025 04:12:32 -0400
+X-MC-Unique: jEwy8r2kPDqejreWllvWrQ-1
+X-Mimecast-MFC-AGG-ID: jEwy8r2kPDqejreWllvWrQ_1751530351
+Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 584911944A83;
+	Thu,  3 Jul 2025 08:12:30 +0000 (UTC)
+Received: from rocky.redhat.com (unknown [10.47.238.33])
+	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 767F018002B5;
+	Thu,  3 Jul 2025 08:12:26 +0000 (UTC)
+From: Maurizio Lombardi <mlombard@redhat.com>
+To: martin.petersen@oracle.com
+Cc: michael.christie@oracle.com,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] ibmvscsis: Fix dma_unmap_sg() nents value
-Date: Mon, 30 Jun 2025 13:18:02 +0200
-Message-ID: <20250630111803.94389-2-fourier.thomas@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	mlombard@bsdbackstore.eu,
+	d.bogdanov@yadro.com
+Subject: [PATCH V2] target: generate correct string identifiers for PR OUT transport IDs
+Date: Thu,  3 Jul 2025 10:12:24 +0200
+Message-ID: <20250703081224.115865-1-mlombard@redhat.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -80,40 +57,236 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
 
-The dma_unmap_sg() functions should be called with the same nents as the
-dma_map_sg(), not the value the map function returned.
+Fix target_parse_pr_out_transport_id() to
+return a string representing the transport ID
+in a human-readable format (e.g., naa.xxxxxxxx...)
+for various SCSI protocol types (SAS, FCP, SRP, SBP).
 
-Fixes: 88a678bbc34c ("ibmvscsis: Initial commit of IBM VSCSI Tgt Driver")
-Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
+Previously, the function returned a pointer to the raw binary buffer,
+which was incorrectly compared against human-readable strings,
+causing comparisons to fail.
+Now, the function writes a properly formatted string into a
+buffer provided by the caller.
+The output format depends on the transport protocol:
+
+* SAS: 64-bit identifier, "naa." prefix.
+* FCP: 64-bit identifier, colon separated values.
+* SBP: 64-bit identifier, no prefix.
+* SRP: 128-bit identifier, "0x" prefix.
+* iSCSI: IQN string.
+
+Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
 ---
- drivers/scsi/ibmvscsi_tgt/libsrp.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/ibmvscsi_tgt/libsrp.c b/drivers/scsi/ibmvscsi_tgt/libsrp.c
-index 8a0e28aec928..0ecad398ed3d 100644
---- a/drivers/scsi/ibmvscsi_tgt/libsrp.c
-+++ b/drivers/scsi/ibmvscsi_tgt/libsrp.c
-@@ -184,7 +184,8 @@ static int srp_direct_data(struct ibmvscsis_cmd *cmd, struct srp_direct_buf *md,
- 	err = rdma_io(cmd, sg, nsg, md, 1, dir, len);
- 
- 	if (dma_map)
--		dma_unmap_sg(iue->target->dev, sg, nsg, DMA_BIDIRECTIONAL);
-+		dma_unmap_sg(iue->target->dev, sg, cmd->se_cmd.t_data_nents,
-+			     DMA_BIDIRECTIONAL);
- 
- 	return err;
+v2: Fix the prefixes, using Dmitry Bogdanov's patch as a reference.
+    target_parse_pr_out_transport_id() runs in atomic context
+    because it's called in a spin_lock() protected section,
+    therefore I rewrote the patch to avoid using kasprintf().
+
+ drivers/target/target_core_fabric_lib.c | 63 +++++++++++++++++++------
+ drivers/target/target_core_internal.h   |  4 +-
+ drivers/target/target_core_pr.c         | 18 +++----
+ 3 files changed, 60 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
+index 43f47e3aa448..cc40f857e21a 100644
+--- a/drivers/target/target_core_fabric_lib.c
++++ b/drivers/target/target_core_fabric_lib.c
+@@ -257,11 +257,41 @@ static int iscsi_get_pr_transport_id_len(
+ 	return len;
  }
-@@ -256,7 +257,8 @@ static int srp_indirect_data(struct ibmvscsis_cmd *cmd, struct srp_cmd *srp_cmd,
- 	err = rdma_io(cmd, sg, nsg, md, nmd, dir, len);
  
- 	if (dma_map)
--		dma_unmap_sg(iue->target->dev, sg, nsg, DMA_BIDIRECTIONAL);
-+		dma_unmap_sg(iue->target->dev, sg, cmd->se_cmd.t_data_nents,
-+			     DMA_BIDIRECTIONAL);
+-static char *iscsi_parse_pr_out_transport_id(
++static void sas_parse_pr_out_transport_id(char *buf, char *i_str)
++{
++	char hex[17] = {0};
++
++	bin2hex(hex, buf + 4, 8);
++	snprintf(i_str, TRANSPORT_IQN_LEN, "naa.%s", hex);
++}
++
++static void srp_parse_pr_out_transport_id(char *buf, char *i_str)
++{
++	char hex[33] = {0};
++
++	bin2hex(hex, buf + 8, 16);
++	snprintf(i_str, TRANSPORT_IQN_LEN, "0x%s", hex);
++}
++
++static void fcp_parse_pr_out_transport_id(char *buf, char *i_str)
++{
++	snprintf(i_str, TRANSPORT_IQN_LEN, "%8phC", buf + 8);
++}
++
++static void sbp_parse_pr_out_transport_id(char *buf, char *i_str)
++{
++	char hex[17] = {0};
++
++	bin2hex(hex, buf + 8, 8);
++	snprintf(i_str, TRANSPORT_IQN_LEN, "%s", hex);
++}
++
++static bool iscsi_parse_pr_out_transport_id(
+ 	struct se_portal_group *se_tpg,
+ 	char *buf,
+ 	u32 *out_tid_len,
+-	char **port_nexus_ptr)
++	char **port_nexus_ptr,
++	char *i_str)
+ {
+ 	char *p;
+ 	int i;
+@@ -282,7 +312,7 @@ static char *iscsi_parse_pr_out_transport_id(
+ 	if ((format_code != 0x00) && (format_code != 0x40)) {
+ 		pr_err("Illegal format code: 0x%02x for iSCSI"
+ 			" Initiator Transport ID\n", format_code);
+-		return NULL;
++		return false;
+ 	}
+ 	/*
+ 	 * If the caller wants the TransportID Length, we set that value for the
+@@ -306,7 +336,7 @@ static char *iscsi_parse_pr_out_transport_id(
+ 			pr_err("Unable to locate \",i,0x\" separator"
+ 				" for Initiator port identifier: %s\n",
+ 				&buf[4]);
+-			return NULL;
++			return false;
+ 		}
+ 		*p = '\0'; /* Terminate iSCSI Name */
+ 		p += 5; /* Skip over ",i,0x" separator */
+@@ -339,7 +369,8 @@ static char *iscsi_parse_pr_out_transport_id(
+ 	} else
+ 		*port_nexus_ptr = NULL;
  
- free_mem:
- 	if (token && dma_map) {
+-	return &buf[4];
++	strncpy(i_str, &buf[4], TRANSPORT_IQN_LEN);
++	return true;
+ }
+ 
+ int target_get_pr_transport_id_len(struct se_node_acl *nacl,
+@@ -387,33 +418,35 @@ int target_get_pr_transport_id(struct se_node_acl *nacl,
+ 	}
+ }
+ 
+-const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
+-		char *buf, u32 *out_tid_len, char **port_nexus_ptr)
++bool target_parse_pr_out_transport_id(struct se_portal_group *tpg,
++		char *buf, u32 *out_tid_len, char **port_nexus_ptr, char *i_str)
+ {
+-	u32 offset;
+-
+ 	switch (tpg->proto_id) {
+ 	case SCSI_PROTOCOL_SAS:
+ 		/*
+ 		 * Assume the FORMAT CODE 00b from spc4r17, 7.5.4.7 TransportID
+ 		 * for initiator ports using SCSI over SAS Serial SCSI Protocol.
+ 		 */
+-		offset = 4;
++		sas_parse_pr_out_transport_id(buf, i_str);
+ 		break;
+-	case SCSI_PROTOCOL_SBP:
+ 	case SCSI_PROTOCOL_SRP:
++		srp_parse_pr_out_transport_id(buf, i_str);
++		break;
+ 	case SCSI_PROTOCOL_FCP:
+-		offset = 8;
++		fcp_parse_pr_out_transport_id(buf, i_str);
++		break;
++	case SCSI_PROTOCOL_SBP:
++		sbp_parse_pr_out_transport_id(buf, i_str);
+ 		break;
+ 	case SCSI_PROTOCOL_ISCSI:
+ 		return iscsi_parse_pr_out_transport_id(tpg, buf, out_tid_len,
+-					port_nexus_ptr);
++					port_nexus_ptr, i_str);
+ 	default:
+ 		pr_err("Unknown proto_id: 0x%02x\n", tpg->proto_id);
+-		return NULL;
++		return false;
+ 	}
+ 
+ 	*port_nexus_ptr = NULL;
+ 	*out_tid_len = 24;
+-	return buf + offset;
++	return true;
+ }
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index 408be26d2e9b..20aab1f50565 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -103,8 +103,8 @@ int	target_get_pr_transport_id_len(struct se_node_acl *nacl,
+ int	target_get_pr_transport_id(struct se_node_acl *nacl,
+ 		struct t10_pr_registration *pr_reg, int *format_code,
+ 		unsigned char *buf);
+-const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
+-		char *buf, u32 *out_tid_len, char **port_nexus_ptr);
++bool target_parse_pr_out_transport_id(struct se_portal_group *tpg,
++		char *buf, u32 *out_tid_len, char **port_nexus_ptr, char *i_str);
+ 
+ /* target_core_hba.c */
+ struct se_hba *core_alloc_hba(const char *, u32, u32);
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index 70905805cb17..83e172c92238 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -1478,11 +1478,12 @@ core_scsi3_decode_spec_i_port(
+ 	LIST_HEAD(tid_dest_list);
+ 	struct pr_transport_id_holder *tidh_new, *tidh, *tidh_tmp;
+ 	unsigned char *buf, *ptr, proto_ident;
+-	const unsigned char *i_str = NULL;
++	unsigned char i_str[TRANSPORT_IQN_LEN];
+ 	char *iport_ptr = NULL, i_buf[PR_REG_ISID_ID_LEN];
+ 	sense_reason_t ret;
+ 	u32 tpdl, tid_len = 0;
+ 	u32 dest_rtpi = 0;
++	bool tid_found;
+ 
+ 	/*
+ 	 * Allocate a struct pr_transport_id_holder and setup the
+@@ -1571,9 +1572,9 @@ core_scsi3_decode_spec_i_port(
+ 			dest_rtpi = tmp_lun->lun_tpg->tpg_rtpi;
+ 
+ 			iport_ptr = NULL;
+-			i_str = target_parse_pr_out_transport_id(tmp_tpg,
+-					ptr, &tid_len, &iport_ptr);
+-			if (!i_str)
++			tid_found = target_parse_pr_out_transport_id(tmp_tpg,
++					ptr, &tid_len, &iport_ptr, i_str);
++			if (!tid_found)
+ 				continue;
+ 			/*
+ 			 * Determine if this SCSI device server requires that
+@@ -3153,13 +3154,14 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
+ 	struct t10_pr_registration *pr_reg, *pr_res_holder, *dest_pr_reg;
+ 	struct t10_reservation *pr_tmpl = &dev->t10_pr;
+ 	unsigned char *buf;
+-	const unsigned char *initiator_str;
++	unsigned char initiator_str[TRANSPORT_IQN_LEN];
+ 	char *iport_ptr = NULL, i_buf[PR_REG_ISID_ID_LEN] = { };
+ 	u32 tid_len, tmp_tid_len;
+ 	int new_reg = 0, type, scope, matching_iname;
+ 	sense_reason_t ret;
+ 	unsigned short rtpi;
+ 	unsigned char proto_ident;
++	bool tid_found;
+ 
+ 	if (!se_sess || !se_lun) {
+ 		pr_err("SPC-3 PR: se_sess || struct se_lun is NULL!\n");
+@@ -3278,9 +3280,9 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
+ 		ret = TCM_INVALID_PARAMETER_LIST;
+ 		goto out;
+ 	}
+-	initiator_str = target_parse_pr_out_transport_id(dest_se_tpg,
+-			&buf[24], &tmp_tid_len, &iport_ptr);
+-	if (!initiator_str) {
++	tid_found = target_parse_pr_out_transport_id(dest_se_tpg,
++			&buf[24], &tmp_tid_len, &iport_ptr, initiator_str);
++	if (!tid_found) {
+ 		pr_err("SPC-3 PR REGISTER_AND_MOVE: Unable to locate"
+ 			" initiator_str from Transport ID\n");
+ 		ret = TCM_INVALID_PARAMETER_LIST;
 -- 
-2.43.0
+2.47.1
 
