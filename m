@@ -1,120 +1,78 @@
-Received: from mta-03.yadro.com (mta-03.yadro.com [89.207.88.253])
+Received: from 003.mia.mailroute.net (003.mia.mailroute.net [199.89.3.6])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABE36261595;
-	Mon,  7 Jul 2025 09:30:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.207.88.253
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D58F0254844;
+	Mon,  7 Jul 2025 17:28:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.3.6
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751880658; cv=none; b=o77szX55WAB9dZYAKMRMaF9Anz/0+d9IelLIwhNMHvIp1rXVtXxdTn8VykhFpAxvmSSlvur6QRyMuGtidcuvoDpkzJcC9l6coIWlF6Ui5h4kTeNf2YrPjqrpuk5ts42TXDmCTEA4W0Jj1mv5rBTQu94h5YXijlKxhi+LXQGh/8E=
+	t=1751909330; cv=none; b=DLw+Rn/Hni4MvFeMtS/7prZwFpPB+TZ+7+kzCPnwJkJ4zEbLWdPaUF73amrebUmXEf4EvUQJxGR6sIEcn7fKH2i6tno15rqY0TTbYfxDk3cmMjS0sAu25BjU42Vv0lgQggFRzuJaga8QRtqcN9s9ul1vjCKDNjY96Elgg5sz/c4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751880658; c=relaxed/simple;
-	bh=K7JrZyeJr0fA5qvgVppFfTlATF6bTQeb6h9RB+P87Gg=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=sZpV388u9AZ9eYXaUbscG2+7t0OZjMFzQGUqRB5hOpN83simWL1uh98m9+qEYYM8Ct2LMH3cNHgFQLRpRULjVlizmj8etiXVeflPF06ypdCWB28KI87PlDExY2NYGAiXBU2g4ITA7gEdD3XS25Odpm4t6UgmjSKEhuozbioKGmM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com; spf=pass smtp.mailfrom=yadro.com; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=IpmlQ/6Y; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=F4yAYkmp; arc=none smtp.client-ip=89.207.88.253
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yadro.com
+	s=arc-20240116; t=1751909330; c=relaxed/simple;
+	bh=1jlknYGz0gkT7zfhsbFovYnZ0C7e5EpXOpZVZUsMyGo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=MNaH5s2DfLiiP/8vU8fRXzbGedN6GIKZikGShfkXZlKBaQx+A1F3Oi1WkCqROoNSKIz77hrgtgWY2W32iJhi/R9HgAYpIs/X//vYMZP5TFdHtzoUrykwdYGPavZWUidE7yBnyb40mQGJJVoz4eNaahEKupU0C1QF+YoaEAFhCC0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=AKQPgYMN; arc=none smtp.client-ip=199.89.3.6
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="IpmlQ/6Y";
-	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="F4yAYkmp"
-Received: from mta-03.yadro.com (localhost [127.0.0.1])
-	by mta-03.yadro.com (Postfix) with ESMTP id 9AD93E000F;
-	Mon,  7 Jul 2025 12:22:59 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mta-03.yadro.com 9AD93E000F
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-04;
-	t=1751880179; bh=mIH/6wS9UXcfc/G5kQA6nEGBfRYFEIAVr3D/v7LsmH0=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-	b=IpmlQ/6Yi7Q87gFnCka2jUtxoCajLjGA5tmwk/jnk0r72oR7bf/fla0GnIbwIwYoP
-	 113nYaZgG/s53XUNFp0Oi8zgxuEUnUqPdnCLMivDdNvxgOT7e83MDWsY2LtG5MRMUN
-	 OLJc9PsgpyZnq/lrrbRgqf/zt/MbUu+WEftLN+hA2DL/KNCQKTlnOTvie/rkcZX+Ty
-	 HsLH4PPcK0Tx9H4sIRPFYhkzt2ta/1LiU0JSyuW4tpEnsvaCw1GnsHLuPToBSxtkDv
-	 Eq+Rco9/RD4/n+zopq5htdbCK+CcdVCXRQcJnFDV4skK9eEsU8FYrHsH/LkvgHdbaq
-	 VkCamXOJcEabA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
-	t=1751880179; bh=mIH/6wS9UXcfc/G5kQA6nEGBfRYFEIAVr3D/v7LsmH0=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-	b=F4yAYkmpGTWsKIcSXy1wE8i22yUpPcRE+rdaQwnNKAvslvgJH8dnPeIDP7WqKLmz+
-	 KXc4vsqurzIdS5Pd3iDG8udZr8utU6/1CS9pMyHfgOr3pMVAJXH5x+3UxiQuObpfHu
-	 z2Qh1j355o6DlZLbZ9PdU/shgFx+dELqRzAJKv7MwKyfs1kYwC3Wl1WHAopX+1ml2k
-	 F1/Iu/MTgCENqMwwgBOkWRuoe5a/dCJ375vu2VPPAE/TVyQt/hAZsIkNphLAssTISI
-	 WWWYNvyrBUTBMFC2iNmxbiVGJQr04IoAcwh3cbZt2sc66eRXLzxD9pHeDjHdNOJtmg
-	 Vt3+3WeGwxVbg==
-Received: from T-EXCH-07.corp.yadro.com (T-EXCH-07.corp.yadro.com [172.17.11.57])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="AKQPgYMN"
+Received: from localhost (localhost [127.0.0.1])
+	by 003.mia.mailroute.net (Postfix) with ESMTP id 4bbWRz6JqNzlgqV0;
+	Mon,  7 Jul 2025 17:28:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:content-type:content-type:in-reply-to
+	:from:from:content-language:references:subject:subject
+	:user-agent:mime-version:date:date:message-id:received:received;
+	 s=mr01; t=1751909326; x=1754501327; bh=md8qy8yxZTzH3LBXV0VJeHIu
+	kMDhKe97sdG22mgsqyE=; b=AKQPgYMNUsjE6CMeo/Qs4KVKzve9Ey2Z4iPAt8Rl
+	nGRbNvf4hljmWPHpZ2o6lmesyl6ZiRVVsNdj9X5GIRtUBRxMHKTObYN60e/mMHT1
+	AjiVay6r9mrpJHujW3ox9AnIMdG8E51b2S+LAAtWvPCgfq/n6EQ5n1gjSQhI/6IV
+	pVKkXQHUzjQboCotgJ4I+Yrwso0p0tsJ1x/827SDju7u16dEd7NPEbEYa1HvUPKG
+	UX/mtQ4iXnVHDkPtZaBUbziUZMmSP1LgqRXNX/hvaIhQvKtdqhskq7cguYuTE13w
+	8GSOiP4USvXOXCGHOwS7n2AtRkMqXiiwNz9lbklY8N6P0g==
+X-Virus-Scanned: by MailRoute
+Received: from 003.mia.mailroute.net ([127.0.0.1])
+ by localhost (003.mia [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id 1GKD9fC3-i1h; Mon,  7 Jul 2025 17:28:46 +0000 (UTC)
+Received: from [100.66.154.22] (unknown [104.135.204.82])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mta-03.yadro.com (Postfix) with ESMTPS;
-	Mon,  7 Jul 2025 12:22:57 +0300 (MSK)
-Received: from T-EXCH-12.corp.yadro.com (172.17.11.143) by
- T-EXCH-07.corp.yadro.com (172.17.11.57) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.1118.9; Mon, 7 Jul 2025 12:22:56 +0300
-Received: from yadro.com (172.17.34.55) by T-EXCH-12.corp.yadro.com
- (172.17.11.143) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Mon, 7 Jul
- 2025 12:22:56 +0300
-Date: Mon, 7 Jul 2025 12:22:59 +0300
-From: Dmitry Bogdanov <d.bogdanov@yadro.com>
-To: Maurizio Lombardi <mlombard@redhat.com>
-CC: <martin.petersen@oracle.com>, <michael.christie@oracle.com>,
-	<linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>,
-	<mlombard@bsdbackstore.eu>
-Subject: Re: [PATCH V2] target: generate correct string identifiers for PR
- OUT transport IDs
-Message-ID: <20250707092259.GA12562@yadro.com>
-References: <20250703081224.115865-1-mlombard@redhat.com>
+	(Authenticated sender: bvanassche@acm.org)
+	by 003.mia.mailroute.net (Postfix) with ESMTPSA id 4bbWRt0sdmzlv76Z;
+	Mon,  7 Jul 2025 17:28:40 +0000 (UTC)
+Message-ID: <ceabaefd-6df5-4d08-9b6c-6ce75611ebef@acm.org>
+Date: Mon, 7 Jul 2025 10:28:39 -0700
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V2] target: generate correct string identifiers for PR OUT
+ transport IDs
+To: Maurizio Lombardi <mlombard@redhat.com>, martin.petersen@oracle.com
+Cc: michael.christie@oracle.com, linux-scsi@vger.kernel.org,
+ target-devel@vger.kernel.org, mlombard@bsdbackstore.eu, d.bogdanov@yadro.com
+References: <20250703081224.115865-1-mlombard@redhat.com>
+Content-Language: en-US
+From: Bart Van Assche <bvanassche@acm.org>
 In-Reply-To: <20250703081224.115865-1-mlombard@redhat.com>
-X-ClientProxiedBy: RTM-EXCH-04.corp.yadro.com (10.34.9.204) To
- T-EXCH-12.corp.yadro.com (172.17.11.143)
-X-KSMG-AntiPhishing: not scanned, disabled by settings
-X-KSMG-AntiSpam-Interceptor-Info: not scanned
-X-KSMG-AntiSpam-Status: not scanned, disabled by settings
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.1.8310, bases: 2025/07/07 01:19:00 #27623336
-X-KSMG-AntiVirus-Status: NotDetected, skipped
-X-KSMG-KATA-Status: Not Scanned
-X-KSMG-LinksScanning: NotDetected
-X-KSMG-Message-Action: skipped
-X-KSMG-Rule-ID: 5
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 03, 2025 at 10:12:24AM +0200, Maurizio Lombardi wrote:
-> 
-> Fix target_parse_pr_out_transport_id() to
-> return a string representing the transport ID
-> in a human-readable format (e.g., naa.xxxxxxxx...)
-> for various SCSI protocol types (SAS, FCP, SRP, SBP).
-> 
-> Previously, the function returned a pointer to the raw binary buffer,
-> which was incorrectly compared against human-readable strings,
-> causing comparisons to fail.
-> Now, the function writes a properly formatted string into a
-> buffer provided by the caller.
-> The output format depends on the transport protocol:
-> 
-> * SAS: 64-bit identifier, "naa." prefix.
-> * FCP: 64-bit identifier, colon separated values.
-> * SBP: 64-bit identifier, no prefix.
-> * SRP: 128-bit identifier, "0x" prefix.
-> * iSCSI: IQN string.
-> 
-> Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
-> ---
-> 
-> v2: Fix the prefixes, using Dmitry Bogdanov's patch as a reference.
->     target_parse_pr_out_transport_id() runs in atomic context
->     because it's called in a spin_lock() protected section,
->     therefore I rewrote the patch to avoid using kasprintf().
-> 
->  drivers/target/target_core_fabric_lib.c | 63 +++++++++++++++++++------
->  drivers/target/target_core_internal.h   |  4 +-
->  drivers/target/target_core_pr.c         | 18 +++----
->  3 files changed, 60 insertions(+), 25 deletions(-)
-> 
+On 7/3/25 1:12 AM, Maurizio Lombardi wrote:
+> -static char *iscsi_parse_pr_out_transport_id(
+> +static void sas_parse_pr_out_transport_id(char *buf, char *i_str)
+> +{
+> +	char hex[17] = {0};
 
-Revived-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
+Isn't "{}" the preferred way to zero-initialize arrays and data
+structures? "{}" has the advantage over "{0}" that it doesn't trigger
+any compiler warnings when initializing a data structure in which the
+first member is a pointer.
+
+Thanks,
+
+Bart.
