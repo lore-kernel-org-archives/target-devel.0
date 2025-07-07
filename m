@@ -1,130 +1,120 @@
-Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mta-03.yadro.com (mta-03.yadro.com [89.207.88.253])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6FA661386B4;
-	Sun,  6 Jul 2025 09:25:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.169
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABE36261595;
+	Mon,  7 Jul 2025 09:30:52 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.207.88.253
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1751793933; cv=none; b=hdF1sRr6u3AiAVNXnw+RDUz5u0EWEyVqGd0/ApurCuNfEicCFKH61nUVrrR7hg/pfq6WfxtRFPNsjiev9Ob9q2s99jUrxZMRVnGuTEq6Bmed/2KaraNlKCHbjjgjOMpc/JQiZSWHaAdYKxyVmc+Fu0K55W35IOEHVbLChrDfn3w=
+	t=1751880658; cv=none; b=o77szX55WAB9dZYAKMRMaF9Anz/0+d9IelLIwhNMHvIp1rXVtXxdTn8VykhFpAxvmSSlvur6QRyMuGtidcuvoDpkzJcC9l6coIWlF6Ui5h4kTeNf2YrPjqrpuk5ts42TXDmCTEA4W0Jj1mv5rBTQu94h5YXijlKxhi+LXQGh/8E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1751793933; c=relaxed/simple;
-	bh=uNRG7Dp9Y5lA1BfsuxAk7MQ5UhU9xjl3Bg3u9K1zj8I=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZD7OxcoiQRvm3GolODJjIGZ+qDQx+mWpJSbFATPzC5zxyBxjM4SZNaLOq//ZoXue+vrbSukcSM0VJTu5pPCVCzp7toVp7FaEbwRWoe0t8Qo9l7CWFUziblAgMdUds02EoiUqJt0UCmoB2j9XluSNu2lol76CUU6kGT0SBnWl49E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=JidYwsZk; arc=none smtp.client-ip=209.85.214.169
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1751880658; c=relaxed/simple;
+	bh=K7JrZyeJr0fA5qvgVppFfTlATF6bTQeb6h9RB+P87Gg=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=sZpV388u9AZ9eYXaUbscG2+7t0OZjMFzQGUqRB5hOpN83simWL1uh98m9+qEYYM8Ct2LMH3cNHgFQLRpRULjVlizmj8etiXVeflPF06ypdCWB28KI87PlDExY2NYGAiXBU2g4ITA7gEdD3XS25Odpm4t6UgmjSKEhuozbioKGmM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com; spf=pass smtp.mailfrom=yadro.com; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=IpmlQ/6Y; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=F4yAYkmp; arc=none smtp.client-ip=89.207.88.253
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yadro.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JidYwsZk"
-Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-236377f00a1so18116275ad.3;
-        Sun, 06 Jul 2025 02:25:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751793932; x=1752398732; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=lA8KNkPs04Haqqyk/LQTF4+bgbkvtNg6lmvOnF3xgBo=;
-        b=JidYwsZkga6QlzVHNsaXlfaNPb7+iusC4Hbkc77FBeBNMzHLzcFRdyDMpSSV6bPmWq
-         ROnpJ4QRfmktw+p6SM6Hdxj6ayKY2JTC/sVsswa+IJ9mMxw0qpm5uq4JhxpK9ObsAkkt
-         cNVDysnsL0nknRg+CTcD6k6BgcxPVg/CBmRg13nES0tcYptk9P46KKIYWXVY2/SIpZKZ
-         ziDAJYDwR0bnWwX8WUChsAsvAdO2GJxeHQXmYWGw+apHhEOsCC+BIo6pT5pWLCPSO3wN
-         42szxgw2XN7IxQaWUTbHhnwAAyYTkThDIm0g8WK3841tq04YMgpgN0Do4NAkoH4znScW
-         W55w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751793932; x=1752398732;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=lA8KNkPs04Haqqyk/LQTF4+bgbkvtNg6lmvOnF3xgBo=;
-        b=VxZfT2B/LlsQXQZd3ko8VvYyKcWUKQ8o7rXGEVFmXZKtcbY0vc5AfzFKOJPIJRU8ya
-         HkoNC+/57m50+H9kb9lnOY2KgM3ERjQ5kzLtO8AVO5/3PdVAn8W3BAJLM78+YamzZniX
-         qMAtVMEQIAtlV4L0ZbUHc9GjaaTAyABOU9qgw1TxDn2/pbG5bAGTz5640pNb9BE+IN9C
-         XhTmq28zEKFe/Tsf5IgjAl0+ZcQy9fw9KFskhCqpN90SB7kFmkyd9Ur1p/GXw3hbFi9F
-         Qm5MAY76BQ4cTJBWgNu2alDQ++hjckKXKXbuaut1QL2NR+pW06OlZS5HXLDtpOuByWnk
-         WDwA==
-X-Forwarded-Encrypted: i=1; AJvYcCVkfgIQRGGAuGoalF4Xps7XIA8mfbbxIVhxvZDmau8v1oyDmjl3FaUR2oPw95mIa3JkPZmAMCWJ6dRVDlY=@vger.kernel.org, AJvYcCVutm2WCdZM9XAaKOoAADWrLcmIpHw50jThHd64IeOEhB4Y9gO1oiFhyLaMDFpCG8yz6srx8StxFCebeewf@vger.kernel.org, AJvYcCXukwA3HgVagyUDHQ3mu6SzMNthwSKJpQzEvjX1AZSGf6k8Boj4MFR8gNzN5gXdtPHmtexsRr2dSXD9Cg==@vger.kernel.org
-X-Gm-Message-State: AOJu0Yz04bQ0af2Vf2XhJ/SvnGCWvHRYPAO3BaNCQy7bYM3iPBCXtjiF
-	IO/XXxQNkFy9fEUU2Pj1+5ecjntdgYou3iCHV0mt2zqxJKiDUzBXx+AC
-X-Gm-Gg: ASbGncvXzltjSK4l1xaAW7Zrb0Pnk71nD26PBfSgcyNfDM9xHMKK43Q6X6gGYLliPYh
-	Ca5VyNkMthoYxf1+T7Q50YYgsYsGVIRoknQlPdkXruGC6EodRtFrOVtHAtEQmFX0Q0TepnCRfky
-	Gv1LInRpq3dXhDs8u/ll13zJcggggK2pnPH/T40mbTK2k7SeKWeBHrpYcL4mTic3UI0jmHIo8HA
-	5gSryzPKMMwxj8gAKmSH6sr3JztmtVuL76WdKTwplDVaU853rldzAVSK98D0IYSjuKAIq6wQA+Y
-	PNon2VgWjK57PWaBHrkMQI1Kdjw9GVu1E7KvagWNEUzXgSj4FwU/FzHvI9iedzhWqzvnEdQuHjB
-	dpnBgOQ==
-X-Google-Smtp-Source: AGHT+IH3vq2oxcWMOz4KCi0buYRStjOlQa2oNevR3gflhsdNi9rysjwR5KZGyuusMR46XX2R/z7LXQ==
-X-Received: by 2002:a17:902:db0c:b0:234:8ec1:4af6 with SMTP id d9443c01a7336-23c91056ecfmr73738155ad.45.1751793931566;
-        Sun, 06 Jul 2025 02:25:31 -0700 (PDT)
-Received: from manjaro.domain.name ([2401:4900:1c30:6f3f:3d1:c4c0:3855:2a18])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-31aaae5393dsm6247089a91.11.2025.07.06.02.25.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 06 Jul 2025 02:25:31 -0700 (PDT)
-From: Pranav Tyagi <pranav.tyagi03@gmail.com>
-To: martin.petersen@oracle.com,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: skhan@linuxfoundation.org,
-	linux-kernel-mentees@lists.linux.dev,
-	Pranav Tyagi <pranav.tyagi03@gmail.com>
-Subject: [PATCH] target/core: replace strncpy with strscpy
-Date: Sun,  6 Jul 2025 14:55:22 +0530
-Message-ID: <20250706092522.9298-1-pranav.tyagi03@gmail.com>
-X-Mailer: git-send-email 2.49.0
+	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="IpmlQ/6Y";
+	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="F4yAYkmp"
+Received: from mta-03.yadro.com (localhost [127.0.0.1])
+	by mta-03.yadro.com (Postfix) with ESMTP id 9AD93E000F;
+	Mon,  7 Jul 2025 12:22:59 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-03.yadro.com 9AD93E000F
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-04;
+	t=1751880179; bh=mIH/6wS9UXcfc/G5kQA6nEGBfRYFEIAVr3D/v7LsmH0=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+	b=IpmlQ/6Yi7Q87gFnCka2jUtxoCajLjGA5tmwk/jnk0r72oR7bf/fla0GnIbwIwYoP
+	 113nYaZgG/s53XUNFp0Oi8zgxuEUnUqPdnCLMivDdNvxgOT7e83MDWsY2LtG5MRMUN
+	 OLJc9PsgpyZnq/lrrbRgqf/zt/MbUu+WEftLN+hA2DL/KNCQKTlnOTvie/rkcZX+Ty
+	 HsLH4PPcK0Tx9H4sIRPFYhkzt2ta/1LiU0JSyuW4tpEnsvaCw1GnsHLuPToBSxtkDv
+	 Eq+Rco9/RD4/n+zopq5htdbCK+CcdVCXRQcJnFDV4skK9eEsU8FYrHsH/LkvgHdbaq
+	 VkCamXOJcEabA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
+	t=1751880179; bh=mIH/6wS9UXcfc/G5kQA6nEGBfRYFEIAVr3D/v7LsmH0=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+	b=F4yAYkmpGTWsKIcSXy1wE8i22yUpPcRE+rdaQwnNKAvslvgJH8dnPeIDP7WqKLmz+
+	 KXc4vsqurzIdS5Pd3iDG8udZr8utU6/1CS9pMyHfgOr3pMVAJXH5x+3UxiQuObpfHu
+	 z2Qh1j355o6DlZLbZ9PdU/shgFx+dELqRzAJKv7MwKyfs1kYwC3Wl1WHAopX+1ml2k
+	 F1/Iu/MTgCENqMwwgBOkWRuoe5a/dCJ375vu2VPPAE/TVyQt/hAZsIkNphLAssTISI
+	 WWWYNvyrBUTBMFC2iNmxbiVGJQr04IoAcwh3cbZt2sc66eRXLzxD9pHeDjHdNOJtmg
+	 Vt3+3WeGwxVbg==
+Received: from T-EXCH-07.corp.yadro.com (T-EXCH-07.corp.yadro.com [172.17.11.57])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mta-03.yadro.com (Postfix) with ESMTPS;
+	Mon,  7 Jul 2025 12:22:57 +0300 (MSK)
+Received: from T-EXCH-12.corp.yadro.com (172.17.11.143) by
+ T-EXCH-07.corp.yadro.com (172.17.11.57) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.1118.9; Mon, 7 Jul 2025 12:22:56 +0300
+Received: from yadro.com (172.17.34.55) by T-EXCH-12.corp.yadro.com
+ (172.17.11.143) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Mon, 7 Jul
+ 2025 12:22:56 +0300
+Date: Mon, 7 Jul 2025 12:22:59 +0300
+From: Dmitry Bogdanov <d.bogdanov@yadro.com>
+To: Maurizio Lombardi <mlombard@redhat.com>
+CC: <martin.petersen@oracle.com>, <michael.christie@oracle.com>,
+	<linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>,
+	<mlombard@bsdbackstore.eu>
+Subject: Re: [PATCH V2] target: generate correct string identifiers for PR
+ OUT transport IDs
+Message-ID: <20250707092259.GA12562@yadro.com>
+References: <20250703081224.115865-1-mlombard@redhat.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20250703081224.115865-1-mlombard@redhat.com>
+X-ClientProxiedBy: RTM-EXCH-04.corp.yadro.com (10.34.9.204) To
+ T-EXCH-12.corp.yadro.com (172.17.11.143)
+X-KSMG-AntiPhishing: not scanned, disabled by settings
+X-KSMG-AntiSpam-Interceptor-Info: not scanned
+X-KSMG-AntiSpam-Status: not scanned, disabled by settings
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.1.8310, bases: 2025/07/07 01:19:00 #27623336
+X-KSMG-AntiVirus-Status: NotDetected, skipped
+X-KSMG-KATA-Status: Not Scanned
+X-KSMG-LinksScanning: NotDetected
+X-KSMG-Message-Action: skipped
+X-KSMG-Rule-ID: 5
 
-strncpy() is deprecated and its use is discouraged. Replace strncpy()
-with safer strscpy() as the p_buf buffer should be NUL-terminated, since
-it holds human readable debug output strings.
+On Thu, Jul 03, 2025 at 10:12:24AM +0200, Maurizio Lombardi wrote:
+> 
+> Fix target_parse_pr_out_transport_id() to
+> return a string representing the transport ID
+> in a human-readable format (e.g., naa.xxxxxxxx...)
+> for various SCSI protocol types (SAS, FCP, SRP, SBP).
+> 
+> Previously, the function returned a pointer to the raw binary buffer,
+> which was incorrectly compared against human-readable strings,
+> causing comparisons to fail.
+> Now, the function writes a properly formatted string into a
+> buffer provided by the caller.
+> The output format depends on the transport protocol:
+> 
+> * SAS: 64-bit identifier, "naa." prefix.
+> * FCP: 64-bit identifier, colon separated values.
+> * SBP: 64-bit identifier, no prefix.
+> * SRP: 128-bit identifier, "0x" prefix.
+> * iSCSI: IQN string.
+> 
+> Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
+> ---
+> 
+> v2: Fix the prefixes, using Dmitry Bogdanov's patch as a reference.
+>     target_parse_pr_out_transport_id() runs in atomic context
+>     because it's called in a spin_lock() protected section,
+>     therefore I rewrote the patch to avoid using kasprintf().
+> 
+>  drivers/target/target_core_fabric_lib.c | 63 +++++++++++++++++++------
+>  drivers/target/target_core_internal.h   |  4 +-
+>  drivers/target/target_core_pr.c         | 18 +++----
+>  3 files changed, 60 insertions(+), 25 deletions(-)
+> 
 
-Signed-off-by: Pranav Tyagi <pranav.tyagi03@gmail.com>
----
- drivers/target/target_core_transport.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 0a76bdfe5528..9c255ed21789 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -1112,7 +1112,7 @@ void transport_dump_vpd_proto_id(
- 	}
- 
- 	if (p_buf)
--		strncpy(p_buf, buf, p_buf_len);
-+		strscpy(p_buf, buf, p_buf_len);
- 	else
- 		pr_debug("%s", buf);
- }
-@@ -1162,7 +1162,7 @@ int transport_dump_vpd_assoc(
- 	}
- 
- 	if (p_buf)
--		strncpy(p_buf, buf, p_buf_len);
-+		strscpy(p_buf, buf, p_buf_len);
- 	else
- 		pr_debug("%s", buf);
- 
-@@ -1222,7 +1222,7 @@ int transport_dump_vpd_ident_type(
- 	if (p_buf) {
- 		if (p_buf_len < strlen(buf)+1)
- 			return -EINVAL;
--		strncpy(p_buf, buf, p_buf_len);
-+		strscpy(p_buf, buf, p_buf_len);
- 	} else {
- 		pr_debug("%s", buf);
- 	}
-@@ -1276,7 +1276,7 @@ int transport_dump_vpd_ident(
- 	}
- 
- 	if (p_buf)
--		strncpy(p_buf, buf, p_buf_len);
-+		strscpy(p_buf, buf, p_buf_len);
- 	else
- 		pr_debug("%s", buf);
- 
--- 
-2.49.0
-
+Revived-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
