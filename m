@@ -1,99 +1,138 @@
-Received: from mail-qv1-f50.google.com (mail-qv1-f50.google.com [209.85.219.50])
+Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 50A24A944;
-	Thu, 10 Jul 2025 02:16:14 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 688D6226CFF;
+	Thu, 10 Jul 2025 13:29:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752113775; cv=none; b=e/VIH/Iwt54kwKYRYWieqQClQxWhoejJUQx4V5SISVAUWQu1XrZac0zd1kSDhATDp9y5FVzND1eiq0RHH/GHsgVtAnXVs2cwRtnh3fFwzdGDzD4L8RMa+bilEhhX/64bApJpanvkQDHhxEm9mYlRv8p7CvLHC9Usf2xJeHdQgXw=
+	t=1752154164; cv=none; b=LmYBRWAkelloN9Is6J/pvzeBWKCYY2eef5ViIe5EOnkK/xKu6aiG0KY+MKt0jdVZew/WfMof1XKiszxEUnSqnZWSgDuKkYorerP5TO9f5aGBkZ8qCO6dmRatsIPK2AP2ztZLh6P43OUpGNM01Vfn4sfDi+xb3z9DVPEjn0OLK+I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752113775; c=relaxed/simple;
-	bh=X4L1nD935TtqtjLGzfH+gCd2GumkvcMnXiT7Ep4Y1tY=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=ZGsJrd58BJ197Ui0AJefEuChB7ty+g9U1kzbaw1HJF824oU4Ul81AfcdOgPaX2nCpE8tmBeUYTNCmme4yQB9CylYtzpuMtlSKvYZZyU+pVPH/vB5QufNL2p0+P8kEYGNaSy/UG0hAeGPY4l7jzmexZSw5Xp7EU1q63Ixvv5Fcg0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=atKnPYqi; arc=none smtp.client-ip=209.85.219.50
+	s=arc-20240116; t=1752154164; c=relaxed/simple;
+	bh=QT4uJs+tWZcw1TbR3zjG7l7Y/uCgIXWvWRNm9KUxxkw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SctvtNQx0lrBd17udV71OXvMPXhDzZcfc9tk7ZNCyV0R6cwilkf+XXPHvsBTKNemw8tfQPapy8SNLp5nrwia2YLSwD8AvFz3eTwwT+U1H8j6KrrcioajZ40b5Jh29BbwxAoCPjJ4GvmzgzKAk/li+ofhL+huAljAQ3HVNFXW7K8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WdhoEKcF; arc=none smtp.client-ip=209.85.167.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="atKnPYqi"
-Received: by mail-qv1-f50.google.com with SMTP id 6a1803df08f44-6ecf99dd567so7946906d6.0;
-        Wed, 09 Jul 2025 19:16:14 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WdhoEKcF"
+Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5561d41fc96so1092813e87.1;
+        Thu, 10 Jul 2025 06:29:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1752113773; x=1752718573; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=ERuvWwAALNRbWeIGzNOKgbzogbmWSGtRZ1bueyDFv/Y=;
-        b=atKnPYqikeszvitJYqWJMCJZZn1to/bDD0g+DNMwaV4dPdiUfPvxMKujTStGFIxVal
-         zb7ksLpBZ9uvXo873KXZkwj+ghSO+NhdqFTa1pmW52c/mewI+wJlFSLc16hPdJemshgy
-         c7zIImMRrW/gapiHiIYZ29BnKMnROWJMTPAht6S+CJytXgdBB68GHmdpGxbvJ7HgPj4p
-         /qFyd3Qh1oZTXZUoU8KXHQyr9Yc2Is7iXfD8tO/9Dwz7y/jZbcf2D0/QYqqq9qrpef3T
-         Je2ml5YdfW2hbBzpyCrwvCzs/auks9Uz4PIAJrGAKuG1v2Y/cSo7FwQS/ifFO5RUE9u4
-         +p6g==
+        d=gmail.com; s=20230601; t=1752154158; x=1752758958; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=piqCxXsuVfG+cbp1axCZg3t9wi+Ugx0SKEh/NShY52o=;
+        b=WdhoEKcF6cEWqdNBB7ML5nwhwjg2uHZ/sUg59aa7exE6jxHrTA4F3aOcjvbxuwfHeH
+         gN8AnyfTfipIhXGXapbD5Rb5cYYKlHUCJsZ1KaEuBssdeLHdlIW6VNoR4FGeGfsbWRPH
+         kJyghXJmzvvSqVLaX1knH/E3VkEr9CMiuSFohQI1D8AAlTSYCmPRfcWkvYB5BkMZr98R
+         XOfxrJ8AOfQkmCRUYQbZ0ZlfXM2TdPmwjnft3kUETDaMUUaddmBQMXfxqagDGvBy/7eT
+         tiVrp5wSNBNAGKcPu4GKuu2sBFumWA+MG4rXoJcMIbPLPt6N0wsPYYHwibFOy/cG+F5w
+         fpvg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1752113773; x=1752718573;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=ERuvWwAALNRbWeIGzNOKgbzogbmWSGtRZ1bueyDFv/Y=;
-        b=t/TPc0R40nAewHZYcisIS4pO8eCgft7U2BZteG/i04ngCRknOJCJsSpDj+R0i36q8t
-         rm/Lw1gTkwKlIcFzgazT0QeYOiC8uYA7RIkMl9+QfOvKV8fWSQoAHaGBU9B0zxNZ8fG1
-         JqLzgGgSuxmcgC3Ew7sSfwNkVIcCOzzlbwU9EDhEWtMaLdjEEj5zO8NhnjqoQjRo9+a+
-         atSUgzSQY6O1L9vOKWoeBsHm6RWTNePSzsICwvhxTeeyYfzZVZv5ZEGpRaFbCUHiQVtw
-         nH0RlYcotOdb3TXf9Ryg+vA/JDWf7AcdN8HYOg9HekVU3t0T7ivfANvxF4gB9zZraHBl
-         U/cQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXXmU6qzuwb4U7HGniWSl0S+r7zbHioPJrIKUlU236aKtVaIrAbUb3Xd/L4vYfcBMqwPOw1HrpqO285LTc=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwGxbwYBXZHVd1yC4BshtTnQjkJUtdSyp4MVAsxPS7hXHyYp32Y
-	pr35hVxHuxszhzqprFUtRfwIziA8O89BfjDXQyvIo4IWKuuLze29mKckwuNjigloB9PZQHYXPC7
-	3/5KmKtr0QLPpaX04QKFnY867rpzOZRjlZGdtFH8dhg==
-X-Gm-Gg: ASbGncv9ebkIRXxAU4RgadsnWseuWTJ8cjajip/sNK0pA7K+9qAH53j/REqx+q7//Ew
-	gLR02pUPn3XZhyWO1XbKOj0emz4RbrGsw98AzHdxh/gfDsBUYbYCesqAbO2nttsaW4l0uDIIdyF
-	ExB2gcsbc3wCY0XIg9febZvNsWFriDCcMSAAjSwHb/YArLBpyf4aHNZEJk7r6wMq+QJdaT4yV6Z
-	GeTgkxVVcy+JZkF
-X-Google-Smtp-Source: AGHT+IFShdSq7Eo8+srNx4XT1FX5k6J8whHP5ca/B4ciURotS/ruYAhZrYUFzNd8FXmzgFwSoT+4lK9RmFXfBIBNJYM=
-X-Received: by 2002:a05:6214:5991:b0:704:7b9a:8515 with SMTP id
- 6a1803df08f44-7049831d59dmr13160486d6.38.1752113772973; Wed, 09 Jul 2025
- 19:16:12 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1752154158; x=1752758958;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=piqCxXsuVfG+cbp1axCZg3t9wi+Ugx0SKEh/NShY52o=;
+        b=AVtPktUheeqOAFL6Cwxo/bqsUQho8aNUF/ubiVYCulQB4P9IiU8oVvnXEoCydR0WfO
+         T5M7kzj6/JlnV5b0xvtsgyAcBBVkLcP8RL9cCMq0kUAwlxZafSwBeNCPUWSrmF96yx7V
+         FO5nBkYCuxc/tsbtQy1Pwlg9TRkILLxJgWh1XbqbFd2Wy8ONno0NeSgwxC6coIHeKg2S
+         HvUJwretPhQGfi9H9S8ESmtbiBwtOqnfqIIp+4CcxMOj58SEJvfu7WVNXts09CVZpox1
+         0WTMwgl1GvSCwSx3b8C+0Qe9puDsnFNRRT2tZB0cadUj5R+ysx9ZR0UfbZp9jExbY3Ax
+         zZJA==
+X-Forwarded-Encrypted: i=1; AJvYcCWBd6KjKU+hyK96zfFamVA8H1ILANABQSdA4tdPXDs6klOiqKNrMUYLaRPO3MFphGzN130HHcmUJWpDFw==@vger.kernel.org, AJvYcCWatKavrGfcaCop5SrKXhkLtxOLpWfDKm9FXs7MPAUT1OXmVeE4zrUwaz9bZG4YAe6SwK7yuLjWlDFNuNot@vger.kernel.org, AJvYcCWf6FFMCYzUZ2nxgYyNeJQX+rB/RBtKuCwEyDBkysobN5KMOllCeFSgOtvRAh/Q8wh9sSCPJ4IaxczUDyk=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxb6CKNLLoa98RWhfdJfSITf/16mjb5sv7Q6uap1QlGbKTadOLh
+	O4v2TNruPfaEnAFNsi7/9ASkDDdIxI1FtesnABLuVUE9ArFdOxspmgdJxYHUio7sXN9dqfShMN+
+	BJZcb2jngo0/1BMnDOI5lSOiV1ZVEMM7iw7wzk/Y=
+X-Gm-Gg: ASbGncsRN6BMu6ZM5aaXRft0wQBI6k9kzeaeT+/K5hsMEyYVfyXyK/+p2ulboNQbWQG
+	MBj3/8NbJ+YXbSPogNuUevquoKUwHuj/S3HD0GdY7rWvp5vTlwN5OBurRi/9Zh9ytvlOxufxQrz
+	Nb8sqMYi6eujKlt2HZSMViNQg+d4daJyPV4ruFFfhnP/WBqibVxFhKeuA2w+bYXzLHZpa60WNqO
+	aZR
+X-Google-Smtp-Source: AGHT+IGjNgUJ/H9riNAilbUH8PcKjpUwWpLd+w7gGSVY7R1BBXUiEdy2K06vfMxch2Md2cDv6Xa8DdeQP24hUJnC9hU=
+X-Received: by 2002:a05:6512:3055:b0:553:2e42:fffb with SMTP id
+ 2adb3069b0e04-5592e3e10c9mr968505e87.33.1752154158148; Thu, 10 Jul 2025
+ 06:29:18 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Wang Haoran <haoranwangsec@gmail.com>
-Date: Thu, 10 Jul 2025 10:16:00 +0800
-X-Gm-Features: Ac12FXw9CaBpu43ZVWqY-zMTHeUosS8BzIEyjcIUCAbwm39wBr-IN4NwIWUlVeY
-Message-ID: <CANZ3JQT825NXA16wequ3YPP-StVGVVQQm0DgHuCk_ZY=aG20kQ@mail.gmail.com>
-Subject: We found a bug in target_core_configfs.c for the latest linux
-To: martin.petersen@oracle.com
-Cc: target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20250706092522.9298-1-pranav.tyagi03@gmail.com>
+In-Reply-To: <20250706092522.9298-1-pranav.tyagi03@gmail.com>
+From: Pranav Tyagi <pranav.tyagi03@gmail.com>
+Date: Thu, 10 Jul 2025 18:59:05 +0530
+X-Gm-Features: Ac12FXwmXCqGKG1PpHjcwsfz2aUtwCdpqzLfV1sJRe4M5S2L69rvhq9nulNa-ME
+Message-ID: <CAH4c4j+XskhzM-Kuv+gTAaBL8o+63kbOPGS6xqQYQ3_Fd0UMCA@mail.gmail.com>
+Subject: Re: [PATCH] target/core: replace strncpy with strscpy
+To: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, 
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: skhan@linuxfoundation.org, linux-kernel-mentees@lists.linux.dev
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi, my name is Wang Haoran. We found a bug in the
-target_lu_gp_members_show function located in
-drivers/target/target_core_configfs.c in the latest Linux kernel
-(version 6.15.5).
-The function uses snprintf to format a device path string into a
-fixed-size buffer buf, which has size LU_GROUP_NAME_BUF (defined as
-256). However, the device name of
-config_item_name(&dev->dev_group.cg_item) can be up to 255 characters.
-When combined with config_item_name(&hba->hba_group.cg_item), '/',
-newline, and null terminator, "%s/%s\n" may exceed 256 bytes.
-Since "snprintf" returns the total number of bytes that would have
-been written, the return value cur_len may exceed length of buf, and a
-buffer overflow would occur when executing memcpy(page+len, buf,
-cur_len);
-Replacing snprintf with scnprintf ensures the return value never
-exceeds the specified buffer size, preventing such issues.
+On Sun, Jul 6, 2025 at 2:55=E2=80=AFPM Pranav Tyagi <pranav.tyagi03@gmail.c=
+om> wrote:
+>
+> strncpy() is deprecated and its use is discouraged. Replace strncpy()
+> with safer strscpy() as the p_buf buffer should be NUL-terminated, since
+> it holds human readable debug output strings.
+>
+> Signed-off-by: Pranav Tyagi <pranav.tyagi03@gmail.com>
+> ---
+>  drivers/target/target_core_transport.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/target/target_core_transport.c b/drivers/target/targ=
+et_core_transport.c
+> index 0a76bdfe5528..9c255ed21789 100644
+> --- a/drivers/target/target_core_transport.c
+> +++ b/drivers/target/target_core_transport.c
+> @@ -1112,7 +1112,7 @@ void transport_dump_vpd_proto_id(
+>         }
+>
+>         if (p_buf)
+> -               strncpy(p_buf, buf, p_buf_len);
+> +               strscpy(p_buf, buf, p_buf_len);
+>         else
+>                 pr_debug("%s", buf);
+>  }
+> @@ -1162,7 +1162,7 @@ int transport_dump_vpd_assoc(
+>         }
+>
+>         if (p_buf)
+> -               strncpy(p_buf, buf, p_buf_len);
+> +               strscpy(p_buf, buf, p_buf_len);
+>         else
+>                 pr_debug("%s", buf);
+>
+> @@ -1222,7 +1222,7 @@ int transport_dump_vpd_ident_type(
+>         if (p_buf) {
+>                 if (p_buf_len < strlen(buf)+1)
+>                         return -EINVAL;
+> -               strncpy(p_buf, buf, p_buf_len);
+> +               strscpy(p_buf, buf, p_buf_len);
+>         } else {
+>                 pr_debug("%s", buf);
+>         }
+> @@ -1276,7 +1276,7 @@ int transport_dump_vpd_ident(
+>         }
+>
+>         if (p_buf)
+> -               strncpy(p_buf, buf, p_buf_len);
+> +               strscpy(p_buf, buf, p_buf_len);
+>         else
+>                 pr_debug("%s", buf);
+>
+> --
+> 2.49.0
+>
+Hi,
 
---- target_core_configfs.c 2025-07-06 17:04:26.000000000 +0800
-+++ target_core_configfs.c 2025-07-09 18:43:05.926386901 +0800
-@@ -2771,7 +2771,7 @@
-  dev = lu_gp_mem->lu_gp_mem_dev;
-  hba = dev->se_hba;
+This is a gentle follow-up on this patch. I would like to
+know if there is any update on its state.
 
-- cur_len = snprintf(buf, LU_GROUP_NAME_BUF, "%s/%s\n",
-+ cur_len = scnprintf(buf, LU_GROUP_NAME_BUF, "%s/%s\n",
-  config_item_name(&hba->hba_group.cg_item),
-  config_item_name(&dev->dev_group.cg_item));
-  cur_len++; /* Extra byte for NULL terminator */
-
-Best regards,
-Wang Haoran
+Regards
+Pranav Tyagi
