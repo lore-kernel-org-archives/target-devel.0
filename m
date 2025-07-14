@@ -1,296 +1,198 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04DFA24DCE6
-	for <target-devel@vger.kernel.org>; Mon, 14 Jul 2025 13:37:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1752500273; cv=none; b=E5NgOsEcRBWUsowPATeLmnheeu4dLGitKWxABeQ+qPhxndbqYc6k3b93BH3fPbWq8dc7cseAj2rtbs03D7QylROJJQC0PD90DOueXs7nit2kHDiZTIklwqjP18tSJGLVqIEij2ASJDXpcayZdWfhXFfdJ2x7qu2JGAKgcZT79v0=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1752500273; c=relaxed/simple;
-	bh=YatwpfxrbEitvFmI9E+PoSe5eko165qICvPcu/DuRZk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EPR+9+vX2AeY3NGTbrnudi/gYNXL5foVajp7SXD7jAiElFQJo0fa8LYgule0UbmIlpdpmXYZp6LjPLK0yBnA50KOVvA3dBng2v1vr8Q1tg1WWJOx5vC1cpr98CyZXURtMaN+CeZYkTz8x57DOe4vU/iZgxuKZvBiu85Y8t23MPc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=J/6taKJv; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BE8DD2AD20;
+	Mon, 14 Jul 2025 17:05:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.165.32
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1752512734; cv=fail; b=Qd3TVqbYyJG4IftltP9XCA2WdC80HC+QihZ31MLcqs6Wno0Wp1okET2gRE2XvSlqnJcHqlPQnnqJRYPLCqntLjqcfzlepFoD+qba780GPXZ+8bNP8r28pNHh4Y0rj3s1I+i8pobyANu+JqFU7QvXRYvjVd0H3QDG5b8uLNS8rpk=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1752512734; c=relaxed/simple;
+	bh=/EioSfzLJVttYX49C4e0AaXbKmnatArGJnuClU9oi18=;
+	h=To:Cc:Subject:From:In-Reply-To:Message-ID:References:Date:
+	 Content-Type:MIME-Version; b=f8ELelK5PjteYwUX5TLmId0EkAkxevacTVlquvuXx1KcAph+zn6gir+ESRT34a3kwvxvI2sEr9acLL+hONodjnzcpoFwUTiQllV44QIU3qA2D2AAMTAq7SQBNfos3ityN8pqE2o2HhLwJefpqwIk3E2GTz0ayXPrzLv11k/Zqh8=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=FtLGWPEK; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=CpF5Fhk1; arc=fail smtp.client-ip=205.220.165.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="J/6taKJv"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1752500270;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=VwKW6rgiDMqpjIQvviXbCo2O5UPkr3UFFlsGe4E5f5Y=;
-	b=J/6taKJv26rs1bV50nNfuZaG41UqwCrri0fhs2KuWaQBWr5xG+PSQ8KjcC1Py3ngO94wTP
-	o6JgRrEnKTqxTf9xXhVWtm1iOX1JKo//bupUNrt8hY7YXQroKvGAM7jSFNSpR+nCbnc7UL
-	LiOtReyeKEt9wvqA3AgoX/rToir4Udk=
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-168-wDLvMxhKNuG-cO_ISWyU4Q-1; Mon,
- 14 Jul 2025 09:37:46 -0400
-X-MC-Unique: wDLvMxhKNuG-cO_ISWyU4Q-1
-X-Mimecast-MFC-AGG-ID: wDLvMxhKNuG-cO_ISWyU4Q_1752500265
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id CAAD819560AD;
-	Mon, 14 Jul 2025 13:37:44 +0000 (UTC)
-Received: from kinzhal.redhat.com (unknown [10.47.238.10])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id CB44819560A3;
-	Mon, 14 Jul 2025 13:37:40 +0000 (UTC)
-From: Maurizio Lombardi <mlombard@redhat.com>
-To: martin.petersen@oracle.com
-Cc: michael.christie@oracle.com,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	mlombard@bsdbackstore.eu,
-	d.bogdanov@yadro.com,
-	bvanassche@acm.org
-Subject: [PATCH V3] target: generate correct string identifiers for PR OUT transport IDs
-Date: Mon, 14 Jul 2025 15:37:38 +0200
-Message-ID: <20250714133738.11054-1-mlombard@redhat.com>
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="FtLGWPEK";
+	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="CpF5Fhk1"
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 56EGwisJ001213;
+	Mon, 14 Jul 2025 17:03:28 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=corp-2025-04-25; bh=TRsAtIvnB2uuEeFWZ2
+	uuWpx9rWmImqhJJbLsIrSoQa8=; b=FtLGWPEKirMg6hy+mtHg+NY3q9OreFssxi
+	a8rbrmIo8G1Swkq1Fi1vrmrnCp7ehylONJN5I3eFhne8Zk5O9pJ1rdxoX3LFswVE
+	+qlTnluKvUsK62osMUDBlTk4aUMIIypmR3eDju2XMjLateaJy7IHt1+vizlLW5Qz
+	90RAQYyL09tYNvu/i7VNA+Jw6HfTSUQ/LZDDDXFvoFlWAjMcO0riPLOB60qkMXbk
+	/bQ4L26bnwbavg+gFFpDOEAHX5S5vJOdbPey0C9F8XOJ430Ckl9evirsYR00C9qX
+	q428OM/Gc+cpc0HYdIV2yJihFsgLJfnGcV6Zgf4t5rOSFiRWB0lg==
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 47uk8fvpwh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 14 Jul 2025 17:03:28 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 56EGtPJl013842;
+	Mon, 14 Jul 2025 17:03:27 GMT
+Received: from nam02-sn1-obe.outbound.protection.outlook.com (mail-sn1nam02on2058.outbound.protection.outlook.com [40.107.96.58])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 47ue58a03t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 14 Jul 2025 17:03:26 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=b7zIKXR5SUZSAk8OYNA1DrfvCeaqZ7a552kBOO978bDpZO0p1EOAf3TlqnwiR1kp3l63xbQdfZH6w/H2gQYkD14wRliUQw61SrRhhgQLFU+PUA5VxXhdATOpAJKApl7XnCo5WmlzCOkUniE1C6ro4tcNKIjIIMqC4zjvld3I83nilLeNRCX/H1RNUPIQE2OaoWfg2VTkuV6Mvv8u2q0xX0ZQKMdpzp/V6Y4pbe47MzzmJdRCEAFUJ74nFPo430EKcMO2eCmhaBt/7rio1B/KqbDze4+6+gI59T2ELaRj56SRNHK+UxHOAhU2nSwEW08KoQz4NDPsoORX16eloSvP5w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=TRsAtIvnB2uuEeFWZ2uuWpx9rWmImqhJJbLsIrSoQa8=;
+ b=LnlhrFHjXKAxPLB+WHKu2EVMCOliGfMKLB6BLqB7P5zOJM6crw7s3SXTJaigKa71S0Q72Q48CMwcgY+s7lXpymEHZb31WtfdSXyxVxJujGMDUQQ8d8eyfq46/fqm1lIM96acDE7UFpN6+/p8RiTXAygbn3O+6vh5CJefdKUZHnOV/iVAa8envv6voT1oWc040cQbaDA4LLIlC4Hi5RVZ2J960p1sCsmAQixhZxfD2pIgx5/cDVc7Hql7xqt4GCp1z8LzdZYk8spE9WPaBosfpFS/y6g7fN+8rv6X03rI+n7xqu5L+qu8n8WANChgnMPgRlAyAwlyBgJ9MHFdc4k+UA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=TRsAtIvnB2uuEeFWZ2uuWpx9rWmImqhJJbLsIrSoQa8=;
+ b=CpF5Fhk1dQgkyMwxZEsM5K2w8wDOMtZSVVx/rRgasNI05eUfn2hTHF2dlhkxpVV7ha6Lr4AA+UyREti/Z87zqEP/AV5gDfv19ct9HwQmGth1+42TeP+42I9ZKGi81xeDyzbbYEv3zRmGZivN34hi5ub6CpOeBVvR7PNF3VQ716Q=
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com (2603:10b6:610:cb::8)
+ by IA1PR10MB6123.namprd10.prod.outlook.com (2603:10b6:208:3a9::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8901.28; Mon, 14 Jul
+ 2025 17:02:59 +0000
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::5cca:2bcc:cedb:d9bf]) by CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::5cca:2bcc:cedb:d9bf%5]) with mapi id 15.20.8922.028; Mon, 14 Jul 2025
+ 17:02:59 +0000
+To: Thomas Fourier <fourier.thomas@gmail.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>,
+        "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>,
+        "Martin K. Petersen"
+ <martin.petersen@oracle.com>,
+        Nicholas Bellinger <nab@linux-iscsi.org>,
+        Steven Royer <seroyer@linux.vnet.ibm.com>,
+        "Bryant G. Ly"
+ <bryantly@linux.vnet.ibm.com>,
+        Michael Cyr <mikecyr@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ibmvscsis: Fix dma_unmap_sg() nents value
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+In-Reply-To: <20250630111803.94389-2-fourier.thomas@gmail.com> (Thomas
+	Fourier's message of "Mon, 30 Jun 2025 13:18:02 +0200")
+Organization: Oracle Corporation
+Message-ID: <yq1cya2aeo5.fsf@ca-mkp.ca.oracle.com>
+References: <20250630111803.94389-2-fourier.thomas@gmail.com>
+Date: Mon, 14 Jul 2025 13:02:56 -0400
+Content-Type: text/plain
+X-ClientProxiedBy: PH7PR17CA0010.namprd17.prod.outlook.com
+ (2603:10b6:510:324::10) To CH0PR10MB5338.namprd10.prod.outlook.com
+ (2603:10b6:610:cb::8)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH0PR10MB5338:EE_|IA1PR10MB6123:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9e1a9031-1b41-4988-1e9c-08ddc2f8496e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?lbT3ftKcHoo94ZCoaPCN5phygVK2bzoUn1Q65GTuPTOnCUTmJxHG2tnzEj8V?=
+ =?us-ascii?Q?R69nngRfJubbFbKTjuoCh0rzwZzuosc6F2lyD5UqalUh2xqGaHwekVeftk/e?=
+ =?us-ascii?Q?H9eNScEsiP3KmvfjgPQrvx9LAPgBhaXvc7smYJagda2ny/geG0LPjm5PiYzm?=
+ =?us-ascii?Q?dycFvHMG/P8ee69bqcdgfZiHS6J3GJODVmdkE0KHQS1vTTfa/8CWlijYcpvJ?=
+ =?us-ascii?Q?WJTGXfPWsKs3oHUnH9TdNlOnVqcu2VuAu326R7pfNcGGAhHU/irodKV3BwUC?=
+ =?us-ascii?Q?iylfnHLli0HexV8QoZTOaDLpiK2tOmABh8UfUpkusU9g2AD4S5i039lBbL7A?=
+ =?us-ascii?Q?F9HgdbzSPEfTXpYux15DtKOrGYUOChbxjgf50xg4YqbDciCk2b+aDfEi+pjE?=
+ =?us-ascii?Q?u09D3PAPcPfN27jUzjbfBIgxQl1WFtp9rgRPUM6wTwud+dMxCdZ5VqXrnwU+?=
+ =?us-ascii?Q?ou6iqFAekqwpwPuLT0rc9XVVdFpx/+iMnfHyCYLbNbxz+g3lgh2TNWSn1d2l?=
+ =?us-ascii?Q?7RqBwghYg2UkD/AqqKbCPKMvetkbPOlPZAz1U3K/mYEmmx3KT0HLEfsBGhU+?=
+ =?us-ascii?Q?0MOrDb6mafW57Vo7kxBh5DsSD8mv4NixSDMQPzUmUzx7wU++6XKV1gsvRo+4?=
+ =?us-ascii?Q?NmT/YpFVKUvVsSdEsRFTJFPTdzhj7RE0BkIjVKk81XnF5QVmItRJ4u0CYntm?=
+ =?us-ascii?Q?GEUPCzu4FvwBMw3O9qiYPbhLRQEZfS9bn2CwCfrhEngUG+AW6m6d/Rs2knxX?=
+ =?us-ascii?Q?HzbVhXTGzi8gUbfgvLgDYANTa5O9Amg4461n84VPeBnMC1+jp9nqOM4XoVg9?=
+ =?us-ascii?Q?+bT2KErp9c+T8GUImC0XUvXYGLikzAQVYv0wJFlrk7MgYjXPV+Edq7ldCJ4p?=
+ =?us-ascii?Q?NSf9bfs22U0WDGJlJXRmMKYwA2HxTSNEL4q+fvtTcEGYp09ZBklz65xb4bjn?=
+ =?us-ascii?Q?ZRufjAZH2AkUQG6BQ9zdxCguKDVsTy80oNWm16NvO3GcA1Ong1q8TjdYAYaJ?=
+ =?us-ascii?Q?uR3SMvFJchBgneGxs1/dgu9tw/Iq0bfyPaR/Tod6zx1U74Xt4LfAti7zNXXp?=
+ =?us-ascii?Q?rbzHxP81OUYhHpUG9gQrhJD69hfI8Yo2wQEhXnVWXtx3m7NTaz+M27kCstiM?=
+ =?us-ascii?Q?JLNuDgpI8sF5EMWq7R8ldorRbSbU9A79HH2dVunTIxTqC8Xk2/Mq8jeUiQWM?=
+ =?us-ascii?Q?jUdmK0VAvnIwR/NYaVq/HMSCebIMAw9euj007LU0hpqa7S9mUXU4m8v5QW0I?=
+ =?us-ascii?Q?SHsFByYvfltq+1l/7ryQ8qLssSon0BoL2jn3VFaayn5DpaGuiOdT3L0PzMdE?=
+ =?us-ascii?Q?GhE6L4STOyK7ktq5Six03KzvLUIPgOVLQkMC3PX5+7bRKFtSU/RTP89unwj1?=
+ =?us-ascii?Q?AQVTa0Iy8IUEZzfZwt4Eb5vOvNe80Oh5sYKbhfYGTMAy2pH5hA=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH0PR10MB5338.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?OMfkT094RW/s1Ou/a31hEtCfpfS6nrnesddmV9worobLR5SOwgndvXV0L5l2?=
+ =?us-ascii?Q?VHAEcVMlaoFd5ORbmnhX7Qhdlv/ps9MHWOvG9DLDm9OLUT6cQplysV9w/sE1?=
+ =?us-ascii?Q?Pfc8R1a1jN3bRKcIjASJWGeHmk1sWvh0kFHRqG0UYNL2BRZBgVojOVe5qQuy?=
+ =?us-ascii?Q?j/yvhk59GEAONcjkVZBzefAR+KU4rG4qMCbyyq1yX1YU2GsfSvoiEvMVL5v1?=
+ =?us-ascii?Q?/4+VWTCOCJzANWpaoWSagAV5Eid0fy+T4O5lzGct1RQFBw2ED+SaJcEjg+54?=
+ =?us-ascii?Q?tBol6hrIUq5ifdLPw98uy0uHe5N6+13NZaNUEdW0o+88BI3K8rTVhlPaCHe2?=
+ =?us-ascii?Q?BhAp4AqpuKuSbvQA7VoZiUYCbCGOa1QyAAB8PETf6TpQ8ZOuhZYo19xuGSOC?=
+ =?us-ascii?Q?SbzuEPzdwGcR4dYE9264aOS3wJVi8rHtspbDP1eJLTm07cVJoPD5LhsdITQs?=
+ =?us-ascii?Q?lGZfor/HAm11/YrQsHFJwuaNOWmeESe184zAPCEM8SVnity0agiQcZKdJCJQ?=
+ =?us-ascii?Q?OuAY2/2JeDMyajod4y9nG8tKBO5jRBpjadOfIptoWW2o3kJdKQqq84jl4T0j?=
+ =?us-ascii?Q?30USTbseRzGnYyLj00UsZ2cm9qXphGZA66qHvVB0gxu+83YdEqIGYB0/7O2M?=
+ =?us-ascii?Q?P0QKOFbVVoG/fLz1PbhJGrCXSanm8iRmiQOa/OIiXdmiFGhsQ7e3Awi5iEes?=
+ =?us-ascii?Q?95Y9DJLSV1SZCVNkX/8M9adUokiEUPhuGh/96LejV6/BuEy9Bz6aJrtecH9i?=
+ =?us-ascii?Q?PLcNsekhgez6voR9RAsaaUBIvYffH3A8WPDS00HQkLETdODLR0fVATPvBqD1?=
+ =?us-ascii?Q?VLVo12OaPLYtGnnc8WZcZFZvCR8YH56CaVwLqyL3pHy7HU7QyFxdfRbs/i/w?=
+ =?us-ascii?Q?unDoHBvohk7Nei3tXZ27GeJFWdeepGJ8C9SPIXgpEaWb/QhxKQwWQ8oZ10DN?=
+ =?us-ascii?Q?vqUAcaBQ/r+E+1gCyyXWMsCunnZXE/OlPqanLz9WpkS52RCe85TGF0RGAv0n?=
+ =?us-ascii?Q?+DKJZaiVuEbCH4cg2Ox0weuHuLr2JPMrfC0smPWyXXgu+2cIRjCki89hjtBs?=
+ =?us-ascii?Q?Dl8eVs9slhOyDU0EaNO1kazB3UyxDlwhYgwMMd42Y93xf6R6lthGG5A4uaHS?=
+ =?us-ascii?Q?J6aEXR5QNBB8Z3Bsn13EhrIsm617zLVozHWwszkcZc66i2lI7JQZ05Z4bVX7?=
+ =?us-ascii?Q?KkMvdeE2GQ3GW3UBcewktYVZ9MJlrR9OmHMBSwi2Oqw0jsMMaf75IVz6TTWY?=
+ =?us-ascii?Q?rwC7qBDOKGayhZ0ePPxJ4/l3kq74H+76mW7AKDSZfvJgNTP+qNyFMYqcQKAb?=
+ =?us-ascii?Q?Jt+DFr1/1DebEB4rA9LX0ehL42escy4Qk07Is22uhzyFQVTcDWyC8aGRlSFg?=
+ =?us-ascii?Q?B013gD+xajEBPz3myU8AOcO/fhKu3X7OBkh+Ot9ounSKH1oHkO1d7wIBO1k3?=
+ =?us-ascii?Q?TkNLolSHCs4+ptqk2OHhhga6d+p4TIvNNyYTeUTpY+uzwT1ltfc8eFCRbMtP?=
+ =?us-ascii?Q?+HJSo0QxWyvgIZFdbNptSUly1jegMfY2szLE614hUG3y6Ph2J9dEBB+Evkjo?=
+ =?us-ascii?Q?AwYaZ033KpBgVRcYRIitppE5oZcIrhqf0P3u7fK8t5lsI54fbRodV+aYNiUZ?=
+ =?us-ascii?Q?Yg=3D=3D?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	POa/33ctivO9G44ROXPaieqmZQVUfeTOqC9vIdXYrpRAczYIib787AzwiItX0eggWeDFVdzcmOzb/ecc4OOmgY9dYDQnUhpjMeqWhotsbEUldXUVz49R0HXknu/zB8g7L4MKpWx3k4axP91n1K7fZ30O/jIJzHEy8b8A5ZVdOLl3h84Nk4p5zUWAgAtb5GqbZPumLlB5IVENZaJ9NsyrL/NpSoE5iit5U1LB2vAB9cxSo24rbTTwujFqrFJi5+zjCrgjdfDVfa1Nc3qy83amGQBihksJJX/yfyS8ul6b7PnNkkuBm53GTbGNVe+W6SdB122EdHCuQS4LxzvxepGM0LBYW9Uvc/KyJy5qPrn1e7BR3tdpYRiM7cApaYyCOuvOQWS1qsoAtqxV/+3lbSsNOlFCctxeB6HFl2HjlhQ4Df/5AG1JpEhpTMR2M6FQsgbWNiTJalvAlbsd5t3vX6iKJ44LrWA1SbEeszPWjJBI/Yv3Y9PIZq5odGD/Msuyv+e+ZaxQhPEd4oJwe9RSqxLFNACTZ/r4S0v1rWx0eU2rhrMoJ9FLauuAV1kok5XLo8TkwpnHuaB3/QenVAIuQH3TpMIhZa7OXQer1WommwfaVeA=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9e1a9031-1b41-4988-1e9c-08ddc2f8496e
+X-MS-Exchange-CrossTenant-AuthSource: CH0PR10MB5338.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Jul 2025 17:02:59.7519
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: BHhfbZc7KfBujxutBOcSDZCJ/lC0VlqFtQzFyHn5nZrDVvQTw230ONF0xDzsXR/+HNK6aF1HPTmPCqo+DdjT4WOvqz/flsrZ4EUhLsgsCAQ=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR10MB6123
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
+ definitions=2025-07-14_01,2025-07-14_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 mlxscore=0 malwarescore=0
+ phishscore=0 spamscore=0 mlxlogscore=663 bulkscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2505160000
+ definitions=main-2507140106
+X-Proofpoint-ORIG-GUID: 7AJBpRRJGUwIEv_Z_yaH0YQpkf8FFwfX
+X-Authority-Analysis: v=2.4 cv=Of+YDgTY c=1 sm=1 tr=0 ts=68753860 b=1 cx=c_pps a=zPCbziy225d3KhSqZt3L1A==:117 a=zPCbziy225d3KhSqZt3L1A==:17 a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19
+ a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=xqWC_Br6kY4A:10 a=Wb1JkmetP80A:10 a=GoEa3M9JfhUA:10 a=cm9y5QnUeDfAKpJ_UQ8A:9 cc=ntf awl=host:12061
+X-Proofpoint-GUID: 7AJBpRRJGUwIEv_Z_yaH0YQpkf8FFwfX
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzE0MDEwNiBTYWx0ZWRfXzaGSmf1Q+U5n Comm3BU5mUBHKoBT2Km9SE9VDoOA4oeVGr6WA9VXfD9uyVsv5iY0jG7Yy50mTpzKEQi3s0H0GtD iO7ZdE7z7AgqF1R7RZiTEYp94yRZInmfhEQT2Xfb0OpiTX8L6yMrU7eA6/5lruxXMDKiTUOkYm8
+ 77MTUS77cAV/muUyZZ1TUXqosxDBp1jJh99iQoCpeNUNSFQ4C31qndOdHbS1M8EuXEtWru/cLvj JuufuyOUIULtAUBqHRdH8TCSMCAihuvQy92tkggCwO5dmlRjCerTbMWmgCYu8VCz9ZU6FM+B9/E 45kYkM7eJtoNcJKckQm6fP5FTfgyknMgECxlbcKz52nezGqTCvUPJ9emv2fLx+lRn+qFnnu06XL
+ Q4Ppb7InXtH7SsgcTCnjHl+Dm4WM1Vqj4dWz7GXIpseOS2HZHwDoFXgv0evah2vlFWsgIk9K
 
-Fix target_parse_pr_out_transport_id() to
-return a string representing the transport ID
-in a human-readable format (e.g., naa.xxxxxxxx...)
-for various SCSI protocol types (SAS, FCP, SRP, SBP).
 
-Previously, the function returned a pointer to the raw binary buffer,
-which was incorrectly compared against human-readable strings,
-causing comparisons to fail.
-Now, the function writes a properly formatted string into a
-buffer provided by the caller.
-The output format depends on the transport protocol:
+Thomas,
 
-* SAS: 64-bit identifier, "naa." prefix.
-* FCP: 64-bit identifier, colon separated values.
-* SBP: 64-bit identifier, no prefix.
-* SRP: 128-bit identifier, "0x" prefix.
-* iSCSI: IQN string.
+> The dma_unmap_sg() functions should be called with the same nents as
+> the dma_map_sg(), not the value the map function returned.
 
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
-Reviewed-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
----
+Applied to 6.17/scsi-staging, thanks!
 
-v3: replaced {0} with {} and strncpy() with strscpy()
-
-v2: Fix the prefixes, using Dmitry Bogdanov's patch as a reference.
-    target_parse_pr_out_transport_id() runs in atomic context
-    because it's called in a spin_lock() protected section,
-    therefore I rewrote the patch to avoid using kasprintf().
-
- drivers/target/target_core_fabric_lib.c | 63 +++++++++++++++++++------
- drivers/target/target_core_internal.h   |  4 +-
- drivers/target/target_core_pr.c         | 18 +++----
- 3 files changed, 60 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index 43f47e3aa448..ec7bc6e30228 100644
---- a/drivers/target/target_core_fabric_lib.c
-+++ b/drivers/target/target_core_fabric_lib.c
-@@ -257,11 +257,41 @@ static int iscsi_get_pr_transport_id_len(
- 	return len;
- }
- 
--static char *iscsi_parse_pr_out_transport_id(
-+static void sas_parse_pr_out_transport_id(char *buf, char *i_str)
-+{
-+	char hex[17] = {};
-+
-+	bin2hex(hex, buf + 4, 8);
-+	snprintf(i_str, TRANSPORT_IQN_LEN, "naa.%s", hex);
-+}
-+
-+static void srp_parse_pr_out_transport_id(char *buf, char *i_str)
-+{
-+	char hex[33] = {};
-+
-+	bin2hex(hex, buf + 8, 16);
-+	snprintf(i_str, TRANSPORT_IQN_LEN, "0x%s", hex);
-+}
-+
-+static void fcp_parse_pr_out_transport_id(char *buf, char *i_str)
-+{
-+	snprintf(i_str, TRANSPORT_IQN_LEN, "%8phC", buf + 8);
-+}
-+
-+static void sbp_parse_pr_out_transport_id(char *buf, char *i_str)
-+{
-+	char hex[17] = {};
-+
-+	bin2hex(hex, buf + 8, 8);
-+	snprintf(i_str, TRANSPORT_IQN_LEN, "%s", hex);
-+}
-+
-+static bool iscsi_parse_pr_out_transport_id(
- 	struct se_portal_group *se_tpg,
- 	char *buf,
- 	u32 *out_tid_len,
--	char **port_nexus_ptr)
-+	char **port_nexus_ptr,
-+	char *i_str)
- {
- 	char *p;
- 	int i;
-@@ -282,7 +312,7 @@ static char *iscsi_parse_pr_out_transport_id(
- 	if ((format_code != 0x00) && (format_code != 0x40)) {
- 		pr_err("Illegal format code: 0x%02x for iSCSI"
- 			" Initiator Transport ID\n", format_code);
--		return NULL;
-+		return false;
- 	}
- 	/*
- 	 * If the caller wants the TransportID Length, we set that value for the
-@@ -306,7 +336,7 @@ static char *iscsi_parse_pr_out_transport_id(
- 			pr_err("Unable to locate \",i,0x\" separator"
- 				" for Initiator port identifier: %s\n",
- 				&buf[4]);
--			return NULL;
-+			return false;
- 		}
- 		*p = '\0'; /* Terminate iSCSI Name */
- 		p += 5; /* Skip over ",i,0x" separator */
-@@ -339,7 +369,8 @@ static char *iscsi_parse_pr_out_transport_id(
- 	} else
- 		*port_nexus_ptr = NULL;
- 
--	return &buf[4];
-+	strscpy(i_str, &buf[4], TRANSPORT_IQN_LEN);
-+	return true;
- }
- 
- int target_get_pr_transport_id_len(struct se_node_acl *nacl,
-@@ -387,33 +418,35 @@ int target_get_pr_transport_id(struct se_node_acl *nacl,
- 	}
- }
- 
--const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
--		char *buf, u32 *out_tid_len, char **port_nexus_ptr)
-+bool target_parse_pr_out_transport_id(struct se_portal_group *tpg,
-+		char *buf, u32 *out_tid_len, char **port_nexus_ptr, char *i_str)
- {
--	u32 offset;
--
- 	switch (tpg->proto_id) {
- 	case SCSI_PROTOCOL_SAS:
- 		/*
- 		 * Assume the FORMAT CODE 00b from spc4r17, 7.5.4.7 TransportID
- 		 * for initiator ports using SCSI over SAS Serial SCSI Protocol.
- 		 */
--		offset = 4;
-+		sas_parse_pr_out_transport_id(buf, i_str);
- 		break;
--	case SCSI_PROTOCOL_SBP:
- 	case SCSI_PROTOCOL_SRP:
-+		srp_parse_pr_out_transport_id(buf, i_str);
-+		break;
- 	case SCSI_PROTOCOL_FCP:
--		offset = 8;
-+		fcp_parse_pr_out_transport_id(buf, i_str);
-+		break;
-+	case SCSI_PROTOCOL_SBP:
-+		sbp_parse_pr_out_transport_id(buf, i_str);
- 		break;
- 	case SCSI_PROTOCOL_ISCSI:
- 		return iscsi_parse_pr_out_transport_id(tpg, buf, out_tid_len,
--					port_nexus_ptr);
-+					port_nexus_ptr, i_str);
- 	default:
- 		pr_err("Unknown proto_id: 0x%02x\n", tpg->proto_id);
--		return NULL;
-+		return false;
- 	}
- 
- 	*port_nexus_ptr = NULL;
- 	*out_tid_len = 24;
--	return buf + offset;
-+	return true;
- }
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index 408be26d2e9b..20aab1f50565 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -103,8 +103,8 @@ int	target_get_pr_transport_id_len(struct se_node_acl *nacl,
- int	target_get_pr_transport_id(struct se_node_acl *nacl,
- 		struct t10_pr_registration *pr_reg, int *format_code,
- 		unsigned char *buf);
--const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
--		char *buf, u32 *out_tid_len, char **port_nexus_ptr);
-+bool target_parse_pr_out_transport_id(struct se_portal_group *tpg,
-+		char *buf, u32 *out_tid_len, char **port_nexus_ptr, char *i_str);
- 
- /* target_core_hba.c */
- struct se_hba *core_alloc_hba(const char *, u32, u32);
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 70905805cb17..83e172c92238 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -1478,11 +1478,12 @@ core_scsi3_decode_spec_i_port(
- 	LIST_HEAD(tid_dest_list);
- 	struct pr_transport_id_holder *tidh_new, *tidh, *tidh_tmp;
- 	unsigned char *buf, *ptr, proto_ident;
--	const unsigned char *i_str = NULL;
-+	unsigned char i_str[TRANSPORT_IQN_LEN];
- 	char *iport_ptr = NULL, i_buf[PR_REG_ISID_ID_LEN];
- 	sense_reason_t ret;
- 	u32 tpdl, tid_len = 0;
- 	u32 dest_rtpi = 0;
-+	bool tid_found;
- 
- 	/*
- 	 * Allocate a struct pr_transport_id_holder and setup the
-@@ -1571,9 +1572,9 @@ core_scsi3_decode_spec_i_port(
- 			dest_rtpi = tmp_lun->lun_tpg->tpg_rtpi;
- 
- 			iport_ptr = NULL;
--			i_str = target_parse_pr_out_transport_id(tmp_tpg,
--					ptr, &tid_len, &iport_ptr);
--			if (!i_str)
-+			tid_found = target_parse_pr_out_transport_id(tmp_tpg,
-+					ptr, &tid_len, &iport_ptr, i_str);
-+			if (!tid_found)
- 				continue;
- 			/*
- 			 * Determine if this SCSI device server requires that
-@@ -3153,13 +3154,14 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
- 	struct t10_pr_registration *pr_reg, *pr_res_holder, *dest_pr_reg;
- 	struct t10_reservation *pr_tmpl = &dev->t10_pr;
- 	unsigned char *buf;
--	const unsigned char *initiator_str;
-+	unsigned char initiator_str[TRANSPORT_IQN_LEN];
- 	char *iport_ptr = NULL, i_buf[PR_REG_ISID_ID_LEN] = { };
- 	u32 tid_len, tmp_tid_len;
- 	int new_reg = 0, type, scope, matching_iname;
- 	sense_reason_t ret;
- 	unsigned short rtpi;
- 	unsigned char proto_ident;
-+	bool tid_found;
- 
- 	if (!se_sess || !se_lun) {
- 		pr_err("SPC-3 PR: se_sess || struct se_lun is NULL!\n");
-@@ -3278,9 +3280,9 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
- 		ret = TCM_INVALID_PARAMETER_LIST;
- 		goto out;
- 	}
--	initiator_str = target_parse_pr_out_transport_id(dest_se_tpg,
--			&buf[24], &tmp_tid_len, &iport_ptr);
--	if (!initiator_str) {
-+	tid_found = target_parse_pr_out_transport_id(dest_se_tpg,
-+			&buf[24], &tmp_tid_len, &iport_ptr, initiator_str);
-+	if (!tid_found) {
- 		pr_err("SPC-3 PR REGISTER_AND_MOVE: Unable to locate"
- 			" initiator_str from Transport ID\n");
- 		ret = TCM_INVALID_PARAMETER_LIST;
 -- 
-2.47.1
-
+Martin K. Petersen
