@@ -1,362 +1,163 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazon11013034.outbound.protection.outlook.com [52.101.127.34])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7482DB640;
-	Sun, 10 Aug 2025 00:21:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1754785281; cv=none; b=IRZY/+A4Uo0jrh6PEO9sr9X75hRsyRivp6cvdUifJTDIl5Gi3fFNVChb4YnJkD1FuaLo9iss4MuRDN+3xGlw48/4V2kx7nd2aW4e4qZY1q1Q0c9iMnZidnwowbT7bXtpe2MGjvsFMKV0YKVyFoI4kOV44jkPUEMXAkbHtcKy8HQ=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1754785281; c=relaxed/simple;
-	bh=b+Wx5qsCI9nVtIdtHwKmoyGGopfCJx5c/5WGFR/T4Ag=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=NGjHFm2dATVzPuGxF46oRCM/GzPuXLOzwcIjU8EouEY1vx1EIDOTOTrbYMIiH10lZvs70356ehkKPwdRAIAC77rb6HFvgMPYeuw6etRIssUZbJPzCJewv/snK0WnjSDF8sDJPomB/h+zxivPtGCxygr7nWwyQ+r7YkrbCnJPF90=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZXNGXP+P; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EB3492FD7CB;
+	Thu, 14 Aug 2025 13:13:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.127.34
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1755177210; cv=fail; b=HL6A2KunG7WAxf9/uieJVAtEgyUGEs40LVxiPy+N4/k2hxxjHXPy73GXi4K1S1dQvlEf8x/IP8IN1TSmvEDvC0hpoeT20J/pnvs1G+A5cXKd6VDX9Ir9QLrlfkuQHezWpAXY3ygbp3ADF5PH5jpbSo19VV9iMK9zCximqzTrSvQ=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1755177210; c=relaxed/simple;
+	bh=PzhXhJYGoiPq0uD9qnx0PysnUpfyQdyGUr6UYr7YfTo=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=QqhLQJq+21Fea0WDhoCLlLiBJJVy3kZHpf2LY8jflZ1uJohZ+Kzhk4tUDiXtEJoOp28kpt98RGhnmgE+/qrxKOwPcXKftbTqu2qMvo+p7SKWsTlVxYawRc1vZBzAzqI+miIslIsri4JmypDJ8zeYAIESThs2JLDjihQWLwmnRtg=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; spf=pass smtp.mailfrom=vivo.com; dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b=j0PdJI2+; arc=fail smtp.client-ip=52.101.127.34
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=vivo.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZXNGXP+P"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07B00C4CEE7;
-	Sun, 10 Aug 2025 00:21:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754785281;
-	bh=b+Wx5qsCI9nVtIdtHwKmoyGGopfCJx5c/5WGFR/T4Ag=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ZXNGXP+PQZyLuXrPGfUttmyYc1/FKQfHZaZiQ9P/tJpDu+dVNLHmy5o5ORC/XfP+Q
-	 2YLjcXy6d/AUBBnvqBsdJQjjiUEyiyFHscfyi/0BXtxjUEJcMrR85C2rJiTpG0XQIm
-	 FGoGcE8GtqClTO2bbioQOoAWN0TsctyhG2oPXBZUw3Mo2EmGFBqD72DncZ37oZxomv
-	 SocwngshKLvTKtIOvluv2SmdR9sd/51G6JrJJC0cFopfBN9fRPZZMEQnmNppLRW1si
-	 iECbZVInsCLFi2BtPqMkZHoV2Rad4xYbR3lb6H7fKd/Ga/q4vIgn8TWDaq4WklhMRc
-	 +AlG7r04SWrQw==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Maurizio Lombardi <mlombard@redhat.com>,
-	Dmitry Bogdanov <d.bogdanov@yadro.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	Sasha Levin <sashal@kernel.org>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.16-5.15] scsi: target: core: Generate correct identifiers for PR OUT transport IDs
-Date: Sat,  9 Aug 2025 20:20:55 -0400
-Message-Id: <20250810002104.1545396-6-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250810002104.1545396-1-sashal@kernel.org>
-References: <20250810002104.1545396-1-sashal@kernel.org>
+	dkim=pass (2048-bit key) header.d=vivo.com header.i=@vivo.com header.b="j0PdJI2+"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=d0uWgwh5DuEa3EHjgQNJQtKoSAHXmCfnWs6eInNQ80iNqPw+21GQdwt/s9fzrha46nhU9pvvyr0HhehxITRoxfTkUCXwgw7Isd0tmBIWKfoOOmjSch3O4A2ou2j5aiYsVcDDO2sd6PeiUjHIUP9kCCXSz86LmkC5W0Y8sc8WGHpDKTWHtpJAtKw07Wv+Qj4/ei06USj53zdf3cQd+3RoRl491XF9r3QQsbxFP8/wwYYUrZCCp3BsZY9PcBVKQTepX7OfSlhw5NffRdd3vj9FiCo7qytRH8pxTiA8N4sTwv8io2YwKJCyhgHX9C2gXTfOlqd5NItOqEwGW6rJGnA+9w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=FLct3Q/BfqrbfUAJADptBc2OzOU4g2/WKkDc8GY3waQ=;
+ b=JIiZyOio7SfxCmx/ldxPwkx82xwQb8LXqnvLTx3GJ8HTMGEEGDymMJshQP1a4F6bDQNiICFSAsNrKWVSss4pwjjkOqrt21sf7T91nSdi9Zp7JmRJ7goQk4LTr+oegpcvyq7Ebfd0bdo7HLYEufiPKnxzvBM/yf0WOZiG1eOxQDxIRiVeLaWDF2jDPduRrJoSskmQWZA5ZEmus7C4r5T4dXdeqO2hFTb+n8BNb8LDydBfbYcAhwEJaOOZMgIWoL5E/N2hxUbHlAi4PQtllinkd9QvBxzJbPeCAB1PvPHwk0QTtg2hY8Uw+sb9rstm1XWcNlRnXYiyXPvorw4F1QlKFw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=FLct3Q/BfqrbfUAJADptBc2OzOU4g2/WKkDc8GY3waQ=;
+ b=j0PdJI2+G0sBi3/q1uu/GZpnyzVN/f/qds83fIs4wjYWrFMTci2lHWt7yDYHhrqt729bO2gSdvaJ5nwIb8c9hMZn/cEV0EVepFUqJOCrsEumDAJW72fx4ezUd7DmdxDTWROSqZhHqiljiWC921tG2dhzjms9UjoYfu5ERBxQcN2PDY0FE1n23XWpYbMzMS0QUHTyUDE+1yRGdkZfhTKRjpykTuRF6ZNOO7G8I0jWXXAuM9kbiMtwnqR+0CP7VhVxCJtVky+u+fnyRUU3g/EKbAaTgOy8jvP8GRSBD2KCqTdHgA4aCVBCX6WYCYnuZ7Zbrz6hWceZ7O54WtUygd2U1A==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from SEZPR06MB5576.apcprd06.prod.outlook.com (2603:1096:101:c9::14)
+ by SE2PPFDCBF4279B.apcprd06.prod.outlook.com (2603:1096:108:1::7f0) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9009.18; Thu, 14 Aug
+ 2025 13:13:23 +0000
+Received: from SEZPR06MB5576.apcprd06.prod.outlook.com
+ ([fe80::5c0a:2748:6a72:99b6]) by SEZPR06MB5576.apcprd06.prod.outlook.com
+ ([fe80::5c0a:2748:6a72:99b6%5]) with mapi id 15.20.9031.014; Thu, 14 Aug 2025
+ 13:13:23 +0000
+From: Liao Yuanhong <liaoyuanhong@vivo.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>,
+	linux-scsi@vger.kernel.org (open list:SCSI TARGET SUBSYSTEM),
+	target-devel@vger.kernel.org (open list:SCSI TARGET SUBSYSTEM),
+	linux-kernel@vger.kernel.org (open list)
+Cc: Liao Yuanhong <liaoyuanhong@vivo.com>
+Subject: [PATCH] scsi: target: core: Use IS_ERR_OR_NULL() to simplify code
+Date: Thu, 14 Aug 2025 21:13:12 +0800
+Message-Id: <20250814131312.231097-1-liaoyuanhong@vivo.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: TY2PR06CA0004.apcprd06.prod.outlook.com
+ (2603:1096:404:42::16) To SEZPR06MB5576.apcprd06.prod.outlook.com
+ (2603:1096:101:c9::14)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.16
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SEZPR06MB5576:EE_|SE2PPFDCBF4279B:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0eb58170-542a-4ca4-867d-08dddb3458ab
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|52116014|376014|366016|38350700014;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?ANcF/ISBRTsvpvtBAV+rqo9XnDjhwrJ7R4975TT1ToJ5t53tJIUzF4q1lsLY?=
+ =?us-ascii?Q?wKEJ4RheWZsiGukrdLq8vz/Yhsz8H+eQVILUM3cAg/C74q1vathjYKkNZm4f?=
+ =?us-ascii?Q?TiLNE+Lou94+vA1a9iIv57zcayB0hxexQu9MOrf0muwB8PCdeDHGyPHnTRRn?=
+ =?us-ascii?Q?JbQXD/DkP9cW/aVkwsZ13w876S48N6hM1d7+R+GW8c5295oFBJDMx7mqO5C3?=
+ =?us-ascii?Q?dkAfCn9WUTJOkH8xNZfyDvoNz0QGaUa8S1evhN9TDXzLHaLks51Djfhz3lNP?=
+ =?us-ascii?Q?Lbj5BqZWDMWHPDqp3xfultF6SwG70ytUuatdyMPlcuZCLq/XGbZPvB0pyytt?=
+ =?us-ascii?Q?eGuALcWbfO+xNFqsV8DBfhMtjvPTR7mSzWhctXqGo4173hYMmu5M9gAm1D1K?=
+ =?us-ascii?Q?84AjaHFUXvy94ynG4ca1TdO9WmV0QHRdZ64/vuCwZG3e2m/V+XJmLqtqFtVJ?=
+ =?us-ascii?Q?IUPjNAudrYZhCjQ/Ie1rznUxRDpIaJjJDSzg+c/ByWoHIu1M+4kM6D5letnU?=
+ =?us-ascii?Q?9DJz+FlXr1d4kZEhUEHPhkd8tBu+O3l6t2il6QqJpNbRAPNPrqcItQ+bScKy?=
+ =?us-ascii?Q?uzDNAh1g8AxpKnPJiz5d4gJxY97tGPbqUj+1Sd7O4h1KNGky6KJTCORyJtiT?=
+ =?us-ascii?Q?5DJBZS1LcfumW0SNh8Uwi4nzPsqsZrd2dOdqJ9sLyH/uAAuQRLA8UHZzouxb?=
+ =?us-ascii?Q?3d6LfXOP/yfmsH75NsAO9GcvV5s0Xhu13apYKllhS0XFUl6oWIZ+cTAzXhHv?=
+ =?us-ascii?Q?GShzbVMO1V7e3Cgb0rijDL0N/PIGdI1/j6xihB5PpuM++PBW6IN77oMUCKCU?=
+ =?us-ascii?Q?ztcVJfnzDYe/ExSvi33KexSgHIsQiR9z1L5TQ9szYSqWSKxbrjLuETRLLMrq?=
+ =?us-ascii?Q?vu72SRmk4hTCgcpviP/qQhydoowZ8R477gtgMxPIw0zYXwZ+WBzKgQCDJCJZ?=
+ =?us-ascii?Q?eqav4PewflQHYp1bF3J7oMrpSMC7/KnjHONSCS9L4IRd0skWpAAcRdQqoe0v?=
+ =?us-ascii?Q?pDZcQBGdr8Dxo6wetlyQI262eCI0KRDHYUOSy9aZz/D5Lbq/JWWZORJHSzhz?=
+ =?us-ascii?Q?TpP1tXBlOUQtv2NEsWwCK02z5OZN5Ld4ZOKhwyME+6ATPYBteCVbyhhpge5H?=
+ =?us-ascii?Q?fh1fU8kBOiP5TiFn/1u0kJisW2GxOHfKy09PIbt3kMcoOX/kYupt4k4k0wJH?=
+ =?us-ascii?Q?BsLavkz+C5t6tY7SAuitaWMu96gKtSPvIbfRbabg3aERI3XpLQjhyW9NGNKz?=
+ =?us-ascii?Q?02vom17uv0+St8LAg+pztaYRRUfblgAe+IJu2dMv/OvKm78EDaetQnwONLnh?=
+ =?us-ascii?Q?W8VvDtrgqY3v8k7TLmHTpOG/hq60yRAEPRj743ZNtgHYlEqHtA90zp27NQDt?=
+ =?us-ascii?Q?6BPBFETXmzTV/6Xuwez9hM7dg0z6yGTSwCVRkFlXBiPEvHAGGbL7qbOWQUvl?=
+ =?us-ascii?Q?ul8CX4G56FQo8hOjfeL1IonCW6sIgCPUJtCzarTUXJ32S8l4vTiXgQ=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5576.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(52116014)(376014)(366016)(38350700014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?hjHPsuDsdRPmWcI7fV7yeGVs24d1dUHmP26DzQLexmQAZS9Xm7J+iSP/f1LC?=
+ =?us-ascii?Q?DIqv8L/hJMOUPzRVUvpUQVS7pTxs6KBHvNPf6VlAzJLZHxfecl0zFji2q6qo?=
+ =?us-ascii?Q?y3u3RBoJYvMOIyC6JZ8WVdt/FQ7msYpA1SDIk2cBsSG8dJqCecCvRnU9Q/fs?=
+ =?us-ascii?Q?MoiU4jJzw8kvdR0ZDbISPZUJq5iiLa8kN7wKHexopCcPN03QrLguOHIVOsY7?=
+ =?us-ascii?Q?u6Dq+L44pxY5K5Xl/kX9NqhZTQ82t2+tnFrpngaxyco9WxRnmkTQb6WEctgF?=
+ =?us-ascii?Q?SFd/pMyA/B8CRF4vCHw8cYNUZPRTttRtQKUtF4+mP8wd+uPdcMvnMoKEIdPl?=
+ =?us-ascii?Q?qmEanWDO2R2jwBmIllD2lob48NXvjoCEzsRgpTLfeeyrxdml0WhrnGXQ+JPo?=
+ =?us-ascii?Q?5RLnCBGSGvj0UnDGyc2IekAYLWPI5lO01nf8dRQkKcBVVhNZnp2+XEAzv6w/?=
+ =?us-ascii?Q?y6Jretw+3zTBPwuyPGafdk4Ly5Ef2QYNky0Uq/TDnsQtgaE+ELInSyILqyCd?=
+ =?us-ascii?Q?ldJ7aTTyypYxDioLpaKudHoRjfZMUvC6AvBqczOGvAyVOm/SVihbd6V+nP3V?=
+ =?us-ascii?Q?TFTUkZDS9CJvN9OGHgd5TFTY01tD9OmG/RsabORsl29DzdDyKJ63nNdMMOtG?=
+ =?us-ascii?Q?iqt7BDWz+as8lJfO35sFtmp6kGRMGGGdpIfKD5AZDUfldfMybvKxlCOcncy3?=
+ =?us-ascii?Q?ftSd0BdEqdczEonlkTGLgEsVpaLB0X0I4iQeqYKpYSzT8pmCM5v4CDfJteo+?=
+ =?us-ascii?Q?Pow8/Gl5Q1KdlSzUxPinv+iNXwMbswVfdCecBbA9Bz34nisHv5+YQgLKmG5E?=
+ =?us-ascii?Q?KeiLhS5RAVtGzDBSNBjZ6njJ58s6SNCRrVQ2G+oa0P6aTa7tur7aMhrlU82R?=
+ =?us-ascii?Q?KvrVJQcO82BcRmx90zfgEubxCNp/YRndPCJTyX3Cx248fGUAu97UT0e666Xf?=
+ =?us-ascii?Q?XqX35VH6gQeysr8DTLYV3U6M6YSMdrbLVkyVsGqmjgwmsbafzSICzWhobqbs?=
+ =?us-ascii?Q?f09HPRPAUVzJAFAjz9JpTMD7qNkAGOoaE0ea2CcJ0g4BZXCNVxHrPBqMP+P/?=
+ =?us-ascii?Q?kFlAIA7zcYTqr/pAkLMY+lhvUtznBDgXcd+/0Auy+c0FXLedJ0QjGoR38RZL?=
+ =?us-ascii?Q?OThfGvuSWiVtNqd40DJj0nac0m37lrwpCsIWvt0fAnT2LJMG3f9BUVYilIQd?=
+ =?us-ascii?Q?OYduaJpNdIeuEBbqv70wuhb+Zr8G9xPuEI/fi6OC0Dp2jBeuEwXjNfgr+lwI?=
+ =?us-ascii?Q?EzWFnvwuNO92IOWcEaQq22FXRRncd6HHslLgawD1xJaDiQMnTawSknqiY7xi?=
+ =?us-ascii?Q?+axRBW+fbcuvKEPJUWY7LUWJOOh3BWRQQSpP+YubJBm9wcT5PU9mbOacKdjs?=
+ =?us-ascii?Q?hXYjHpVSOhcFdAtc5i78NEZQQEW2KcwEj8rVrLw9eBqokMJdWFVBGKO9Q0ZF?=
+ =?us-ascii?Q?532BIuUUaY23iKQqR8fsEzuZOscR9eQ60oGin6fus2mnJ5Yyhqr4cOCTq8p4?=
+ =?us-ascii?Q?KSEzz1SJ1doI1yX6ceCYD8CHtdioMWgeOnXQKjv6fsMLa/32p8IKatjkc5D8?=
+ =?us-ascii?Q?9uMY2HnLqS4eE4siJP5ATZKf7hGB48Aayq0l1dEN?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0eb58170-542a-4ca4-867d-08dddb3458ab
+X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5576.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Aug 2025 13:13:23.1630
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: eiwDUvCWTCHRTjgIABoJDC/vpd4sk9hGdo8oyPiMiN561zZuCEf9DzXM83IAFfBINPSXaXW4bGlSJbsksULaGA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SE2PPFDCBF4279B
 
-From: Maurizio Lombardi <mlombard@redhat.com>
+Use IS_ERR_OR_NULL() instead of the original !xxx || IS_ERR(xxx) logic.
+This will simplify the code and enhance readability.
 
-[ Upstream commit 6e0f6aa44b68335df404a2df955055f416b5f2aa ]
-
-Fix target_parse_pr_out_transport_id() to return a string representing
-the transport ID in a human-readable format (e.g., naa.xxxxxxxx...)  for
-various SCSI protocol types (SAS, FCP, SRP, SBP).
-
-Previously, the function returned a pointer to the raw binary buffer,
-which was incorrectly compared against human-readable strings, causing
-comparisons to fail.  Now, the function writes a properly formatted
-string into a buffer provided by the caller.  The output format depends
-on the transport protocol:
-
-* SAS: 64-bit identifier, "naa." prefix.
-* FCP: 64-bit identifier, colon separated values.
-* SBP: 64-bit identifier, no prefix.
-* SRP: 128-bit identifier, "0x" prefix.
-* iSCSI: IQN string.
-
-Signed-off-by: Maurizio Lombardi <mlombard@redhat.com>
-Link: https://lore.kernel.org/r/20250714133738.11054-1-mlombard@redhat.com
-Reviewed-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Liao Yuanhong <liaoyuanhong@vivo.com>
 ---
+ drivers/target/target_core_fabric_configfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-LLM Generated explanations, may be completely bogus:
-
-**Backport Status: YES**
-
-This commit should be backported to stable kernel trees. Here's my
-extensive analysis:
-
-## Bug Fix Nature
-
-This commit fixes a **critical functional bug** in the SCSI target
-subsystem's Persistent Reservation (PR) handling. The bug causes PR
-operations to fail when comparing transport IDs, which is a core
-functionality for SCSI target implementations.
-
-## Technical Analysis of the Bug
-
-1. **Original Problem**: The function
-   `target_parse_pr_out_transport_id()` was returning a pointer to raw
-   binary data (`buf + offset`) instead of a human-readable string
-   representation. This raw binary data was then incorrectly compared
-   against human-readable string formats in callers.
-
-2. **Impact on Functionality**:
-   - In `core_scsi3_decode_spec_i_port()` at line 1610-1611, the code
-     calls `__core_tpg_get_initiator_node_acl(tmp_tpg, i_str)` where
-     `i_str` was previously pointing to binary data
-   - The function `__core_tpg_get_initiator_node_acl()` expects a human-
-     readable initiator string (like "naa.1234567890abcdef" for SAS)
-   - This mismatch would cause the lookup to fail, breaking PR
-     operations
-
-3. **Protocols Affected**: The bug affects multiple SCSI transport
-   protocols:
-   - SAS (SCSI_PROTOCOL_SAS)
-   - Fibre Channel (SCSI_PROTOCOL_FCP)
-   - SRP (SCSI_PROTOCOL_SRP)
-   - SBP (SCSI_PROTOCOL_SBP)
-   - iSCSI (SCSI_PROTOCOL_ISCSI)
-
-## Fix Implementation
-
-The fix properly converts binary transport IDs to their expected string
-formats:
-- **SAS**: Converts 8 bytes to "naa.XXXXXXXXXXXX" format
-- **FCP**: Converts to colon-separated format using `%8phC`
-- **SRP**: Converts 16 bytes to "0x" prefixed hex string
-- **SBP**: Converts to plain hex string
-- **iSCSI**: Already handled strings correctly, but API updated for
-  consistency
-
-## Stable Backport Criteria
-
-This commit meets several key stable tree criteria:
-
-1. **Fixes a Real Bug**: Yes - PR operations would fail for non-iSCSI
-   transports
-2. **Small and Contained**: The fix is localized to transport ID parsing
-   functions
-3. **No New Features**: Only fixes existing functionality
-4. **Minimal Risk**: Changes are straightforward format conversions
-5. **Important for Users**: PR is a critical feature for enterprise
-   storage environments
-6. **No Architectural Changes**: Simple bug fix without design changes
-
-## Additional Evidence
-
-Looking at the commit history, there have been other PR-related fixes
-recently (e.g., `d8ab68bdb294` fixing a NULL pointer dereference),
-indicating this is an actively maintained critical subsystem where bugs
-need to be fixed in stable kernels.
-
-The fact that this went unnoticed suggests it affects less common code
-paths, but when triggered, it would completely break PR functionality
-for affected transport types - a serious issue for production storage
-systems relying on persistent reservations for cluster coordination.
-
- drivers/target/target_core_fabric_lib.c | 63 +++++++++++++++++++------
- drivers/target/target_core_internal.h   |  4 +-
- drivers/target/target_core_pr.c         | 18 +++----
- 3 files changed, 60 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index 43f47e3aa448..ec7bc6e30228 100644
---- a/drivers/target/target_core_fabric_lib.c
-+++ b/drivers/target/target_core_fabric_lib.c
-@@ -257,11 +257,41 @@ static int iscsi_get_pr_transport_id_len(
- 	return len;
- }
- 
--static char *iscsi_parse_pr_out_transport_id(
-+static void sas_parse_pr_out_transport_id(char *buf, char *i_str)
-+{
-+	char hex[17] = {};
-+
-+	bin2hex(hex, buf + 4, 8);
-+	snprintf(i_str, TRANSPORT_IQN_LEN, "naa.%s", hex);
-+}
-+
-+static void srp_parse_pr_out_transport_id(char *buf, char *i_str)
-+{
-+	char hex[33] = {};
-+
-+	bin2hex(hex, buf + 8, 16);
-+	snprintf(i_str, TRANSPORT_IQN_LEN, "0x%s", hex);
-+}
-+
-+static void fcp_parse_pr_out_transport_id(char *buf, char *i_str)
-+{
-+	snprintf(i_str, TRANSPORT_IQN_LEN, "%8phC", buf + 8);
-+}
-+
-+static void sbp_parse_pr_out_transport_id(char *buf, char *i_str)
-+{
-+	char hex[17] = {};
-+
-+	bin2hex(hex, buf + 8, 8);
-+	snprintf(i_str, TRANSPORT_IQN_LEN, "%s", hex);
-+}
-+
-+static bool iscsi_parse_pr_out_transport_id(
- 	struct se_portal_group *se_tpg,
- 	char *buf,
- 	u32 *out_tid_len,
--	char **port_nexus_ptr)
-+	char **port_nexus_ptr,
-+	char *i_str)
- {
- 	char *p;
- 	int i;
-@@ -282,7 +312,7 @@ static char *iscsi_parse_pr_out_transport_id(
- 	if ((format_code != 0x00) && (format_code != 0x40)) {
- 		pr_err("Illegal format code: 0x%02x for iSCSI"
- 			" Initiator Transport ID\n", format_code);
--		return NULL;
-+		return false;
- 	}
- 	/*
- 	 * If the caller wants the TransportID Length, we set that value for the
-@@ -306,7 +336,7 @@ static char *iscsi_parse_pr_out_transport_id(
- 			pr_err("Unable to locate \",i,0x\" separator"
- 				" for Initiator port identifier: %s\n",
- 				&buf[4]);
--			return NULL;
-+			return false;
- 		}
- 		*p = '\0'; /* Terminate iSCSI Name */
- 		p += 5; /* Skip over ",i,0x" separator */
-@@ -339,7 +369,8 @@ static char *iscsi_parse_pr_out_transport_id(
- 	} else
- 		*port_nexus_ptr = NULL;
- 
--	return &buf[4];
-+	strscpy(i_str, &buf[4], TRANSPORT_IQN_LEN);
-+	return true;
- }
- 
- int target_get_pr_transport_id_len(struct se_node_acl *nacl,
-@@ -387,33 +418,35 @@ int target_get_pr_transport_id(struct se_node_acl *nacl,
- 	}
- }
- 
--const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
--		char *buf, u32 *out_tid_len, char **port_nexus_ptr)
-+bool target_parse_pr_out_transport_id(struct se_portal_group *tpg,
-+		char *buf, u32 *out_tid_len, char **port_nexus_ptr, char *i_str)
- {
--	u32 offset;
--
- 	switch (tpg->proto_id) {
- 	case SCSI_PROTOCOL_SAS:
- 		/*
- 		 * Assume the FORMAT CODE 00b from spc4r17, 7.5.4.7 TransportID
- 		 * for initiator ports using SCSI over SAS Serial SCSI Protocol.
- 		 */
--		offset = 4;
-+		sas_parse_pr_out_transport_id(buf, i_str);
- 		break;
--	case SCSI_PROTOCOL_SBP:
- 	case SCSI_PROTOCOL_SRP:
-+		srp_parse_pr_out_transport_id(buf, i_str);
-+		break;
- 	case SCSI_PROTOCOL_FCP:
--		offset = 8;
-+		fcp_parse_pr_out_transport_id(buf, i_str);
-+		break;
-+	case SCSI_PROTOCOL_SBP:
-+		sbp_parse_pr_out_transport_id(buf, i_str);
- 		break;
- 	case SCSI_PROTOCOL_ISCSI:
- 		return iscsi_parse_pr_out_transport_id(tpg, buf, out_tid_len,
--					port_nexus_ptr);
-+					port_nexus_ptr, i_str);
- 	default:
- 		pr_err("Unknown proto_id: 0x%02x\n", tpg->proto_id);
--		return NULL;
-+		return false;
+diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
+index 7156a4dc1ca7..4b0c71fbe57f 100644
+--- a/drivers/target/target_core_fabric_configfs.c
++++ b/drivers/target/target_core_fabric_configfs.c
+@@ -479,7 +479,7 @@ static struct config_group *target_fabric_make_np(
  	}
  
- 	*port_nexus_ptr = NULL;
- 	*out_tid_len = 24;
--	return buf + offset;
-+	return true;
- }
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index 408be26d2e9b..20aab1f50565 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -103,8 +103,8 @@ int	target_get_pr_transport_id_len(struct se_node_acl *nacl,
- int	target_get_pr_transport_id(struct se_node_acl *nacl,
- 		struct t10_pr_registration *pr_reg, int *format_code,
- 		unsigned char *buf);
--const char *target_parse_pr_out_transport_id(struct se_portal_group *tpg,
--		char *buf, u32 *out_tid_len, char **port_nexus_ptr);
-+bool target_parse_pr_out_transport_id(struct se_portal_group *tpg,
-+		char *buf, u32 *out_tid_len, char **port_nexus_ptr, char *i_str);
+ 	se_tpg_np = tf->tf_ops->fabric_make_np(se_tpg, group, name);
+-	if (!se_tpg_np || IS_ERR(se_tpg_np))
++	if (IS_ERR_OR_NULL(se_tpg_np))
+ 		return ERR_PTR(-EINVAL);
  
- /* target_core_hba.c */
- struct se_hba *core_alloc_hba(const char *, u32, u32);
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 70905805cb17..83e172c92238 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -1478,11 +1478,12 @@ core_scsi3_decode_spec_i_port(
- 	LIST_HEAD(tid_dest_list);
- 	struct pr_transport_id_holder *tidh_new, *tidh, *tidh_tmp;
- 	unsigned char *buf, *ptr, proto_ident;
--	const unsigned char *i_str = NULL;
-+	unsigned char i_str[TRANSPORT_IQN_LEN];
- 	char *iport_ptr = NULL, i_buf[PR_REG_ISID_ID_LEN];
- 	sense_reason_t ret;
- 	u32 tpdl, tid_len = 0;
- 	u32 dest_rtpi = 0;
-+	bool tid_found;
- 
- 	/*
- 	 * Allocate a struct pr_transport_id_holder and setup the
-@@ -1571,9 +1572,9 @@ core_scsi3_decode_spec_i_port(
- 			dest_rtpi = tmp_lun->lun_tpg->tpg_rtpi;
- 
- 			iport_ptr = NULL;
--			i_str = target_parse_pr_out_transport_id(tmp_tpg,
--					ptr, &tid_len, &iport_ptr);
--			if (!i_str)
-+			tid_found = target_parse_pr_out_transport_id(tmp_tpg,
-+					ptr, &tid_len, &iport_ptr, i_str);
-+			if (!tid_found)
- 				continue;
- 			/*
- 			 * Determine if this SCSI device server requires that
-@@ -3153,13 +3154,14 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
- 	struct t10_pr_registration *pr_reg, *pr_res_holder, *dest_pr_reg;
- 	struct t10_reservation *pr_tmpl = &dev->t10_pr;
- 	unsigned char *buf;
--	const unsigned char *initiator_str;
-+	unsigned char initiator_str[TRANSPORT_IQN_LEN];
- 	char *iport_ptr = NULL, i_buf[PR_REG_ISID_ID_LEN] = { };
- 	u32 tid_len, tmp_tid_len;
- 	int new_reg = 0, type, scope, matching_iname;
- 	sense_reason_t ret;
- 	unsigned short rtpi;
- 	unsigned char proto_ident;
-+	bool tid_found;
- 
- 	if (!se_sess || !se_lun) {
- 		pr_err("SPC-3 PR: se_sess || struct se_lun is NULL!\n");
-@@ -3278,9 +3280,9 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
- 		ret = TCM_INVALID_PARAMETER_LIST;
- 		goto out;
- 	}
--	initiator_str = target_parse_pr_out_transport_id(dest_se_tpg,
--			&buf[24], &tmp_tid_len, &iport_ptr);
--	if (!initiator_str) {
-+	tid_found = target_parse_pr_out_transport_id(dest_se_tpg,
-+			&buf[24], &tmp_tid_len, &iport_ptr, initiator_str);
-+	if (!tid_found) {
- 		pr_err("SPC-3 PR REGISTER_AND_MOVE: Unable to locate"
- 			" initiator_str from Transport ID\n");
- 		ret = TCM_INVALID_PARAMETER_LIST;
+ 	se_tpg_np->tpg_np_parent = se_tpg;
 -- 
-2.39.5
+2.34.1
 
