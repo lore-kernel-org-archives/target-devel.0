@@ -1,264 +1,136 @@
-Received: from bsdbackstore.eu (128-116-240-228.dyn.eolo.it [128.116.240.228])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-f173.google.com (mail-yb1-f173.google.com [209.85.219.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 53AFC225A24;
-	Tue,  9 Sep 2025 15:36:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=128.116.240.228
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C7728265CA6
+	for <target-devel@vger.kernel.org>; Tue,  9 Sep 2025 22:09:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757432197; cv=none; b=j5bwoPXFDh264PqMSOSrJUvfTA79P33H99LrhUjjKqQHI2TlagxYKLXrAPS/DfmYCmeAceUufW1Eq4lMkVGMRfVGKr1h+N1a1B2B5Yr3ausmhaEtu/SJ3NiJARf78g+JFnvDK23VsciUUNJq388104Kb3el5dyb8EwbBM471v/Y=
+	t=1757455781; cv=none; b=I7gegTfgJTcZ/iB6NncjcV4LdgHPvvsyvuLenDYu3ThrDUB417d9fDcyOlJzGPbq999/26Y6O9+zGnM8nCRKPBWdR8t3CJ69mAX4wIgwg6XtYrh5d3EjDGj1UhVDbcl/DOUmcILWnIT3FPlyBJALHITDQWxgoWdXeyFuyAIhV9I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757432197; c=relaxed/simple;
-	bh=Us2TImS5n8zsLC57pCSvx8XowpVsgExx6rKofhsxVhw=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:
-	 References:In-Reply-To; b=e+Jno262UnkI2dOrsgJfp9Fq8y9h/dBVmHukQ7lzGbN6kVy8Nr+MmAKlzV1MoAR2jgp3nOELUNtfwZ+Xq0+K/c+PVgrM8qUskk5oQ+2+Mc/vA0k/Oswm4cQCK8Fi0T4HJRCBSLoopjyYwu2qtOh9iOVPmKjqKHAxlu3qHEZNNls=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bsdbackstore.eu; spf=pass smtp.mailfrom=bsdbackstore.eu; arc=none smtp.client-ip=128.116.240.228
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bsdbackstore.eu
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bsdbackstore.eu
-Received: from localhost (128-116-240-228.dyn.eolo.it [128.116.240.228])
-	by bsdbackstore.eu (OpenSMTPD) with ESMTPSA id 54619179 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Tue, 9 Sep 2025 17:36:24 +0200 (CEST)
+	s=arc-20240116; t=1757455781; c=relaxed/simple;
+	bh=Rl85ifHTqqcOljpR5uWWgDGTzWdXobghNEGRkdP76KY=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=j3t/GnfLAn5HfybFldVc4CtsS9NjLpQokJrHDu14vUbLCI4sS4q8lkTSQfaQ13X0S3oD3TIoD9a8e/6cUGxQJyxgTMxjBJ9hwIxOQ1Zx8fl1W6MKRpPh3YqQXDhDQpTbNGbSuBCYcpyZGpq10uBu7MueYJ/iiQwfgEnJxTTWb5Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=TzMswMtw; arc=none smtp.client-ip=209.85.219.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TzMswMtw"
+Received: by mail-yb1-f173.google.com with SMTP id 3f1490d57ef6-e9d6cb1df67so4555056276.1
+        for <target-devel@vger.kernel.org>; Tue, 09 Sep 2025 15:09:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757455779; x=1758060579; darn=vger.kernel.org;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=XmJ5o+jPnqmlOrUzy3HJkAfKFx97iJc4+bwh0bc73yY=;
+        b=TzMswMtwKFYpxuG7MGPp5IWu3C/gPtGaHvjCi3bmfyi1/WoJl5ceBqIAqcoJEpK6q6
+         /R3o+hXqQMYOWSjjsr3oH22HUv5VWIZdMzUFw5Wzu6/jCIM1CRCAd17zYvTqJSXg/Cf6
+         7ZJ7HN5yAoVTi7jU3bC4t3UBEtcEIm5Ve4aYjVHNf+vyJDrGBexhI+H5RhcYxYns/B5W
+         qYv2jYeXRdOZHwU9lYhryqcwVifw5ON6BbduzOH5EkzNqSVYZrErKUSozy69cX1mWlec
+         gfgkRyQBMwEJ5nniYHk5Vlbk+AVZCJTZhdAacMJ140rcDrEaONVHAN1jvLE67Ynzt2ha
+         bEjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757455779; x=1758060579;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=XmJ5o+jPnqmlOrUzy3HJkAfKFx97iJc4+bwh0bc73yY=;
+        b=maGPgS42FT4Hp86yPGwvIB+AC9GGOR8sfOHszkcR/P/POo3Kg8Gi5cCWpqaxV/p7h9
+         NmONpeMbcXbX1pgC1C58ajVqGn40IeMhZQHaKeP3DToqwAATIy76hJ0a4pVqBGfcnQ/g
+         2sypcLC6gwCUKQYT3v+6kyQAjD5+FGCJ6pa4ElzP1cMYm9r2ka5UG9gegviUR7ytNjwS
+         y7s77TocltZ6synDm6s952r+rzFB5lEluVNj8jX6l0vouG1f+DTCpt1kHVVjVnyD6ciJ
+         jcXzUk9VIVYsB5EmL5cKImp2JECLt1NsayuQzab9qEdqaCsdUV1HHzqlvpMbW2D02FRZ
+         +6/g==
+X-Gm-Message-State: AOJu0YzkQbjmHYWhfX4IL4GtBfn2kNTZFhlkWCFclWGmKcQHFlnh7nF9
+	m8A7Rkr78KwyYmXhQhynQyGyjINhqQ6A3r+42uNE2xzuXO03yY7WOEXQogQr1PSuvQVMvE8hVdO
+	wsQLPtVcwcCKDsVrSn5qtsQUkQ4REMFQ=
+X-Gm-Gg: ASbGncuO3Z2xjNPquN8jEULdifS/tPj5YIbGCb9xxVXZGeLSu4Q59K0wM7bQcjRpuae
+	vaNRC8es8Ip4GbSNnzsdpQfkRBAS1QmDac/Dbv76XKjRwyv6xY3ztdBysbH2n1Y68DWmKKj9Zsn
+	AM2OOQTjVq3dkfjxnLib72rydIB1xjypWIRYepVN9Z5a22WtAQ8pb4jsNAq+ljhbg5XKWaTKbHh
+	7fWcuHaRyWQPT6n9VQArbnCOQzI3x50xu2Q5jljfG4tb6+kCla9dBn7QMetzg==
+X-Google-Smtp-Source: AGHT+IFqNLkC+jmXhcN3ReNLmiASziY8GQzbu1BJxMjJ7N26Xo+bVXvGXy5YOxms8UmrenvJkTKUPDHd82QRK/PTE8U=
+X-Received: by 2002:a05:690c:fca:b0:72c:2eaf:1cc0 with SMTP id
+ 00721157ae682-72c2eaf361amr50796687b3.23.1757455778642; Tue, 09 Sep 2025
+ 15:09:38 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 09 Sep 2025 17:36:24 +0200
-Message-Id: <DCODPRWQNASG.2WN8KKSW05R13@bsdbackstore.eu>
-Subject: Re: [PATCH v2 3/3] scsi: target: Move LUN stats to per CPU
-From: "Maurizio Lombardi" <mlombard@bsdbackstore.eu>
-To: "Mike Christie" <michael.christie@oracle.com>, <bvanassche@acm.org>,
- <martin.petersen@oracle.com>, <linux-scsi@vger.kernel.org>,
- <target-devel@vger.kernel.org>
-X-Mailer: aerc
-References: <20250908231000.10777-1-michael.christie@oracle.com>
- <20250908231000.10777-4-michael.christie@oracle.com>
-In-Reply-To: <20250908231000.10777-4-michael.christie@oracle.com>
+MIME-Version: 1.0
+From: Davy Davidse <davydavidse@gmail.com>
+Date: Wed, 10 Sep 2025 00:09:26 +0200
+X-Gm-Features: Ac12FXxpG4DYXH2BN4T5ajRp3bT0waYrA9jzpYOUgyBROKwgeF818Nlj_rCkAcs
+Message-ID: <CADzRqdBCLjA=6nLxUivDm=hA5vkfkMiE+BmC_zKtA2DCUxu2Dg@mail.gmail.com>
+Subject: [RFC] target: Support for CD/DVD device emulation in fileio backstore
+To: martin.petersen@oracle.com
+Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue Sep 9, 2025 at 1:05 AM CEST, Mike Christie wrote:
-> The atomic use in the main I/O path is causing perf issues when using
-> higher performance backend devices and multiple queues (more than
-> 10 when using vhost-scsi) like with this fio workload:
->
-> [global]
-> bs=3D4K
-> iodepth=3D128
-> direct=3D1
-> ioengine=3Dlibaio
-> group_reporting
-> time_based
-> runtime=3D120
-> name=3Dstandard-iops
-> rw=3Drandread
-> numjobs=3D16
-> cpus_allowed=3D0-15
->
-> To fix this issue, this moves the LUN stats to per CPU.
->
-> Note: I forgot to include this patch with the delayed/ordered per CPU
-> tracking and per device/device entry per CPU stats. With this patch you
-> get the full 33% improvements when using fast backends, multiple queues
-> and multiple IO submiters.
->
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> ---
->  drivers/target/target_core_device.c          |  1 +
->  drivers/target/target_core_fabric_configfs.c |  2 +-
->  drivers/target/target_core_internal.h        |  1 +
->  drivers/target/target_core_stat.c            | 67 +++++++-------------
->  drivers/target/target_core_tpg.c             | 25 +++++++-
->  drivers/target/target_core_transport.c       | 22 +++++--
->  include/target/target_core_base.h            |  8 +--
->  7 files changed, 67 insertions(+), 59 deletions(-)
->
-> diff --git a/drivers/target/target_core_device.c b/drivers/target/target_=
-core_device.c
-> index 7bb711b24c0d..2d4a7c0c69ce 100644
-> --- a/drivers/target/target_core_device.c
-> +++ b/drivers/target/target_core_device.c
-> @@ -814,6 +814,7 @@ struct se_device *target_alloc_device(struct se_hba *=
-hba, const char *name)
->  	dev->dev_attrib.max_write_same_len =3D DA_MAX_WRITE_SAME_LEN;
->  	dev->dev_attrib.submit_type =3D TARGET_FABRIC_DEFAULT_SUBMIT;
-> =20
-> +	/* Skip allocating lun_stats since we can't export them. */
->  	xcopy_lun =3D &dev->xcopy_lun;
->  	rcu_assign_pointer(xcopy_lun->lun_se_dev, dev);
->  	init_completion(&xcopy_lun->lun_shutdown_comp);
-> diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/targe=
-t/target_core_fabric_configfs.c
-> index 7156a4dc1ca7..13159928e365 100644
-> --- a/drivers/target/target_core_fabric_configfs.c
-> +++ b/drivers/target/target_core_fabric_configfs.c
-> @@ -697,7 +697,7 @@ static void target_fabric_port_release(struct config_=
-item *item)
->  	struct se_lun *lun =3D container_of(to_config_group(item),
->  					  struct se_lun, lun_group);
-> =20
-> -	kfree_rcu(lun, rcu_head);
-> +	call_rcu(&lun->rcu_head, target_tpg_free_lun);
->  }
-> =20
->  static struct configfs_item_operations target_fabric_port_item_ops =3D {
-> diff --git a/drivers/target/target_core_internal.h b/drivers/target/targe=
-t_core_internal.h
-> index 20aab1f50565..763e6d26e187 100644
-> --- a/drivers/target/target_core_internal.h
-> +++ b/drivers/target/target_core_internal.h
-> @@ -125,6 +125,7 @@ void	core_tpg_add_node_to_devs(struct se_node_acl *, =
-struct se_portal_group *,
->  				  struct se_lun *);
->  void	core_tpg_wait_for_nacl_pr_ref(struct se_node_acl *);
->  struct se_lun *core_tpg_alloc_lun(struct se_portal_group *, u64);
-> +void	target_tpg_free_lun(struct rcu_head *head);
->  int	core_tpg_add_lun(struct se_portal_group *, struct se_lun *,
->  		bool, struct se_device *);
->  void core_tpg_remove_lun(struct se_portal_group *, struct se_lun *);
-> diff --git a/drivers/target/target_core_stat.c b/drivers/target/target_co=
-re_stat.c
-> index e29d43dacaf7..083205052be2 100644
-> --- a/drivers/target/target_core_stat.c
-> +++ b/drivers/target/target_core_stat.c
-> @@ -606,53 +606,30 @@ static ssize_t target_stat_tgt_port_port_index_show=
-(struct config_item *item,
->  	return ret;
->  }
-> =20
-> -static ssize_t target_stat_tgt_port_in_cmds_show(struct config_item *ite=
-m,
-> -		char *page)
-> -{
-> -	struct se_lun *lun =3D to_stat_tgt_port(item);
-> -	struct se_device *dev;
-> -	ssize_t ret =3D -ENODEV;
-> -
-> -	rcu_read_lock();
-> -	dev =3D rcu_dereference(lun->lun_se_dev);
-> -	if (dev)
-> -		ret =3D snprintf(page, PAGE_SIZE, "%lu\n",
-> -			       atomic_long_read(&lun->lun_stats.cmd_pdus));
-> -	rcu_read_unlock();
-> -	return ret;
-> -}
-> -
-> -static ssize_t target_stat_tgt_port_write_mbytes_show(struct config_item=
- *item,
-> -		char *page)
-> -{
-> -	struct se_lun *lun =3D to_stat_tgt_port(item);
-> -	struct se_device *dev;
-> -	ssize_t ret =3D -ENODEV;
-> -
-> -	rcu_read_lock();
-> -	dev =3D rcu_dereference(lun->lun_se_dev);
-> -	if (dev)
-> -		ret =3D snprintf(page, PAGE_SIZE, "%u\n",
-> -			(u32)(atomic_long_read(&lun->lun_stats.rx_data_octets) >> 20));
-> -	rcu_read_unlock();
-> -	return ret;
-> +#define tgt_port_show_per_cpu_stat(prefix, field, shift)		\
-> +per_cpu_stat_snprintf(scsi_port_stats, prefix, field, shift);		\
-> +static ssize_t								\
-> +target_stat_##prefix##_show(struct config_item *item, char *page)	\
-> +{									\
-> +	struct se_lun *lun =3D to_stat_tgt_port(item);			\
-> +	struct se_device *dev;						\
-> +	int ret;							\
-> +									\
-> +	rcu_read_lock();						\
-> +	dev =3D rcu_dereference(lun->lun_se_dev);				\
-> +	if (!dev) {							\
-> +		rcu_read_unlock();					\
-> +		return -ENODEV;						\
-> +	}								\
-> +									\
-> +	ret =3D per_cpu_stat_##prefix##_snprintf(lun->lun_stats, page);	\
-> +	rcu_read_unlock();						\
-> +	return ret;							\
->  }
-> =20
-> -static ssize_t target_stat_tgt_port_read_mbytes_show(struct config_item =
-*item,
-> -		char *page)
-> -{
-> -	struct se_lun *lun =3D to_stat_tgt_port(item);
-> -	struct se_device *dev;
-> -	ssize_t ret =3D -ENODEV;
-> -
-> -	rcu_read_lock();
-> -	dev =3D rcu_dereference(lun->lun_se_dev);
-> -	if (dev)
-> -		ret =3D snprintf(page, PAGE_SIZE, "%u\n",
-> -				(u32)(atomic_long_read(&lun->lun_stats.tx_data_octets) >> 20));
-> -	rcu_read_unlock();
-> -	return ret;
-> -}
-> +tgt_port_show_per_cpu_stat(tgt_port_in_cmds, cmd_pdus, 0);
-> +tgt_port_show_per_cpu_stat(tgt_port_write_mbytes, rx_data_octets, 20);
-> +tgt_port_show_per_cpu_stat(tgt_port_read_mbytes, tx_data_octets, 20);
-> =20
->  static ssize_t target_stat_tgt_port_hs_in_cmds_show(struct config_item *=
-item,
->  		char *page)
-> diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_cor=
-e_tpg.c
-> index c0e429e5ef31..540ff15882c9 100644
-> --- a/drivers/target/target_core_tpg.c
-> +++ b/drivers/target/target_core_tpg.c
-> @@ -548,7 +548,7 @@ int core_tpg_register(
->  		ret =3D core_tpg_add_lun(se_tpg, se_tpg->tpg_virt_lun0,
->  				true, g_lun0_dev);
->  		if (ret < 0) {
-> -			kfree(se_tpg->tpg_virt_lun0);
-> +			target_tpg_free_lun(&se_tpg->tpg_virt_lun0->rcu_head);
->  			return ret;
->  		}
->  	}
-> @@ -595,7 +595,7 @@ int core_tpg_deregister(struct se_portal_group *se_tp=
-g)
-> =20
->  	if (se_tpg->proto_id >=3D 0) {
->  		core_tpg_remove_lun(se_tpg, se_tpg->tpg_virt_lun0);
-> -		kfree_rcu(se_tpg->tpg_virt_lun0, rcu_head);
-> +		call_rcu(&se_tpg->tpg_virt_lun0->rcu_head, target_tpg_free_lun);
->  	}
-> =20
->  	target_tpg_deregister_rtpi(se_tpg);
-> @@ -609,12 +609,21 @@ struct se_lun *core_tpg_alloc_lun(
->  	u64 unpacked_lun)
->  {
->  	struct se_lun *lun;
-> +	int ret;
-> =20
->  	lun =3D kzalloc(sizeof(*lun), GFP_KERNEL);
->  	if (!lun) {
->  		pr_err("Unable to allocate se_lun memory\n");
->  		return ERR_PTR(-ENOMEM);
->  	}
-> +
-> +	lun->lun_stats =3D alloc_percpu(struct scsi_port_stats);
-> +	if (!lun->lun_stats) {
-> +		pr_err("Unable to allocate se_lun stats memory\n");
-> +		ret =3D -ENOMEM;
-> +		goto free_lun;
-> +	}
-> +
->  	lun->unpacked_lun =3D unpacked_lun;
->  	atomic_set(&lun->lun_acl_count, 0);
->  	init_completion(&lun->lun_shutdown_comp);
-> @@ -628,6 +637,18 @@ struct se_lun *core_tpg_alloc_lun(
->  	lun->lun_tpg =3D tpg;
-> =20
->  	return lun;
-> +
-> +free_lun:
-> +	kfree(lun);
-> +	return ERR_PTR(-ENOMEM);
-> +}
+Dear Linux SCSI Target maintainers,
 
-nit: "ret" is set to -ENOMEM but never used, it can be removed.
+I'm writing to discuss a limitation in the Linux Target subsystem regarding
+CD/DVD device emulation and to gauge interest in addressing this gap.
 
-Maurizio
+# Current Situation
 
+When serving ISO files via iSCSI targets, there's a significant behavioral
+difference between TGT (user-space) and Linux Target (kernel-space):
+
+TGT behavior:
+- Supports explicit device type configuration for ISO files
+- Presents ISO as TYPE_ROM (0x05) SCSI device when configured for optical media
+- Windows recognizes the ISO as an optical drive
+- ISO appears in File Explorer as a mounted volume
+- Can be browsed like a regular DVD/CD
+
+Linux Target behavior:
+- No device type configuration available for ISO files
+- Always presents ISO as TYPE_DISK (0x00) SCSI device
+- Windows sees the ISO as a regular disk in "diskpart list disk" but
+not as a volume with the type DVD-ROM
+- The disk cannot be read by Windows
+
+# Technical Root Cause
+
+The issue stems from the hardcoded device type in
+drivers/target/target_core_sbc.c:
+
+```
+u32 sbc_get_device_type(struct se_device *dev)
+{
+    return TYPE_DISK;  /* Always TYPE_DISK (0x00) */
+}
+```
+
+Both fileio and iblock backstores use this function, preventing any form
+of optical media emulation.
+
+# Comparison with Existing Solutions
+
+User-space alternatives like TGT provide this functionality:
+- Explicit device type selection via command-line parameters
+- Full MMC (MultiMedia Commands) implementation
+- Proper SCSI device type presentation
+
+Kernel infrastructure already supports multiple device types:
+- pscsi backend: Returns actual device type from underlying hardware
+- Core SPC module: Contains TYPE_ROM handling code
+- SCSI subsystem: Full support for all standard device types
+
+# Request for Comments
+
+Would the maintainers be interested in accepting a patch to add configurable
+device type support to the fileio backstore? This would:
+
+- Maintain full backward compatibility (default to TYPE_DISK)
+- Enable proper CD/DVD/ROM device emulation
+- Bring kernel-space target capabilities in line with user-space solutions
+- Address real deployment scenarios currently requiring TGT
+
+As someone primarily focused on high level coding languages, rather than kernel
+development, I'm hoping this RFC might inspire a kernel developer who sees
+value in this functionality to take on the implementation.
+
+Thank you for your time and consideration.
+
+Best regards,
+Davy
