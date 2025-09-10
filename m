@@ -1,176 +1,127 @@
-Received: from bsdbackstore.eu (128-116-240-228.dyn.eolo.it [128.116.240.228])
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BE27255F24;
-	Wed, 10 Sep 2025 18:13:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=128.116.240.228
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E96D23C4FD;
+	Wed, 10 Sep 2025 19:07:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.165.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757528014; cv=none; b=YAxrGsvF2bdzLgCwbQGT5mkLcwGrgwt3kPO1RATHrnI6M5hEjKyTMVgo4QbbQagtGFj6t8tVA+IC5MaY/qL5C9n3Gplcw+Qj6i+Na3X2o4pxIM499fSWS+ZNTePCiMlug1GbN6Lu+Tcrj1jIuqjZzvseKIhm+iNxY/wsEusR28A=
+	t=1757531254; cv=none; b=MUiNL0eQ4/3FHnQDT0dUSPrSAs/yoqJq7CwBR3kJmm3fhnHeBmZ0sIxzOoI6YwdDQgx44SQHnc5pwZNkcYb/PxwkuaTuRLWHvwb8D81qyMtAGKDkrVygMHIVP3BYMqBkN33dYvTxBPJMcWSCNZ4R7YAEQoNvz9bdUYDC3f79/7I=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757528014; c=relaxed/simple;
-	bh=66IewO7UFTnc3G2DgscPYMaJ6YaubmawGe4S03S+mVI=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:From:To:Cc:
-	 References:In-Reply-To; b=LBsMF1aCAPEQW+8zIfpcTBsCLv/l2aIuBRLcykMO3icL6HHiZcPWjk7Xj+7wFJxgbozVVHMN8xR21pryNx4+mPNKWU3Sdcdz8DMFwd/Fipchf5idZ255M6kFW/TjkKuEdBnPkSunb+nXDXmSNyk/yJQgUh2j1J0drLegA4iMCYY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bsdbackstore.eu; spf=pass smtp.mailfrom=bsdbackstore.eu; arc=none smtp.client-ip=128.116.240.228
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=bsdbackstore.eu
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=bsdbackstore.eu
-Received: from localhost (128-116-240-228.dyn.eolo.it [128.116.240.228])
-	by bsdbackstore.eu (OpenSMTPD) with ESMTPSA id 37fe6665 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Wed, 10 Sep 2025 20:13:22 +0200 (CEST)
+	s=arc-20240116; t=1757531254; c=relaxed/simple;
+	bh=6aeO4MBjEAXMN7S+fFrX16T9MBul2DIntPn4+t3K6AY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MynogdrVhj2ZgtwNZHR+pIP+wRwZwdOdsnBaD17MPKUFQzAmPakhu5XZLz9VCl9uNAs+0Mxz7El+waPS9/yAXZt2dapGJxIZxS1HmIxfrL7FW2mNTrXnwXbxk7meDx3i/ptk3fpe6r6kQB1ujz/JSygRf//C2tXPF4LMgoObUd8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=Wx8K6I/N; arc=none smtp.client-ip=205.220.165.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="Wx8K6I/N"
+Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58AGfpj9007364;
+	Wed, 10 Sep 2025 19:07:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=corp-2025-04-25; bh=kSzH0FMWoF9ySM2kjUbzscFMAsip6
+	SiLjxWiLldgpEw=; b=Wx8K6I/NJEuefGgkoLiBCQ3tBgjOz0SjoMTOyHMWrBB0j
+	UIf3G9H88hOqJHI6pfh8/7oMU+WxX2Q4lKJl/iJoKuSW6fS1ynjDRnAGJFkQqLYs
+	Pq4i4BD9mgg9KWQiSo9Cy8/f9rkHUcM4ROQndNn+flmGvswkEIEYskbjRZCOfjes
+	DlSxHfLBshCVAsvRb/rwaTlz36ZEvxwAf68CsNflaNeU87JlnQOvXLJx3h2Bzl6v
+	Sh9IPQ23MnUnZY4NxKCNhygkWiOkPJvV1Yy81tpcy3JA++hbz8/a4vmGM2oBJrOq
+	9fz7n9oX085QlQ2qKKLJyWuoUW5drTySzrkP1eSdQ==
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4921pecwdp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 10 Sep 2025 19:07:31 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 58AIErtA013640;
+	Wed, 10 Sep 2025 19:07:31 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 490bdbmn2v-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 10 Sep 2025 19:07:31 +0000
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 58AJ7UFj030945;
+	Wed, 10 Sep 2025 19:07:30 GMT
+Received: from ca-dev112.us.oracle.com (ca-dev112.us.oracle.com [10.129.136.47])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTP id 490bdbmn2p-1;
+	Wed, 10 Sep 2025 19:07:30 +0000
+From: Alok Tiwari <alok.a.tiwari@oracle.com>
+To: michael.christie@oracle.com, martin.petersen@oracle.com,
+        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: alok.a.tiwari@oracle.com
+Subject: [PATCH] scsi: target: iscsi: fix typos and formatting in lio_target messages
+Date: Wed, 10 Sep 2025 12:07:20 -0700
+Message-ID: <20250910190728.3783157-1-alok.a.tiwari@oracle.com>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 10 Sep 2025 20:13:21 +0200
-Message-Id: <DCPBOHQA8AO3.36BA5ELXZJXMY@bsdbackstore.eu>
-Subject: Re: [RFC] target: Support for CD/DVD device emulation in fileio
- backstore
-From: "Maurizio Lombardi" <mlombard@bsdbackstore.eu>
-To: "Davy Davidse" <davydavidse@gmail.com>, <martin.petersen@oracle.com>
-Cc: <target-devel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
-X-Mailer: aerc
-References: <CADzRqdBCLjA=6nLxUivDm=hA5vkfkMiE+BmC_zKtA2DCUxu2Dg@mail.gmail.com>
-In-Reply-To: <CADzRqdBCLjA=6nLxUivDm=hA5vkfkMiE+BmC_zKtA2DCUxu2Dg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-10_03,2025-09-10_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 spamscore=0 mlxscore=0
+ mlxlogscore=999 adultscore=0 phishscore=0 bulkscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2508110000
+ definitions=main-2509100177
+X-Proofpoint-GUID: IVFXu0ekA-dbGXTMvkvK8M0ACyfaQOrh
+X-Proofpoint-ORIG-GUID: IVFXu0ekA-dbGXTMvkvK8M0ACyfaQOrh
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA4MDE1MiBTYWx0ZWRfX3y58blJPgWsO
+ x/8dSal1LhqC78hF5lfW94ScHlg0RQrNxwT4gFrlSlhAVPe9rpIsJtTYFGt5QtcggV1AQrnBygG
+ TShJBttoVE7TKHNEVwBIA4+WHIkHQm/YomNY1D/CJahML+J3rwBZgL9qNFW+GAi35MYQHZI7bn4
+ IyvIloK9DM3Ok1nBEvuG8u46fawCCOhOWnEn/eMPGFFTVAHJ6ZDUraeR8rwzmvoG++9H5hyhPG0
+ TZ8/920ril2cJIFXfB66RiEyVQYsN6oBAvsEO2x32iyfjXfuXVrOoGbWESp52y0we20t30RFW7O
+ K6gTCAe1z8u+A+HP6KotzanE3NR1rtSgq3J9D9wubnL3julHtKblmN/V6QVx7Zt7UwhuUvC7lml
+ HgGeeC1C
+X-Authority-Analysis: v=2.4 cv=b9Oy4sGx c=1 sm=1 tr=0 ts=68c1cc73 b=1 cx=c_pps
+ a=WeWmnZmh0fydH62SvGsd2A==:117 a=WeWmnZmh0fydH62SvGsd2A==:17
+ a=yJojWOMRYYMA:10 a=yPCof4ZbAAAA:8 a=u35TvG4S8WVXa3pOz-gA:9
 
-On Wed Sep 10, 2025 at 12:09 AM CEST, Davy Davidse wrote:
-> # Request for Comments
->
-> Would the maintainers be interested in accepting a patch to add configura=
-ble
-> device type support to the fileio backstore? This would:
->
-> - Maintain full backward compatibility (default to TYPE_DISK)
-> - Enable proper CD/DVD/ROM device emulation
-> - Bring kernel-space target capabilities in line with user-space solution=
-s
-> - Address real deployment scenarios currently requiring TGT
->
-> As someone primarily focused on high level coding languages, rather than =
-kernel
-> development, I'm hoping this RFC might inspire a kernel developer who see=
-s
-> value in this functionality to take on the implementation.
->
-> Thank you for your time and consideration.
->
+Fix several minor issues in lio_target code and messages:
+- Correct typo "locatel" -> "locate" in error log.
+- Add missing space in pr_debug() message for better readability.
+- Fix comment typo: "contig_item" -> "config_item".
 
-This sound like an interesting idea to me.
+These changes improve code clarity and log readability.
 
-Maybe we could modify the file backstore to emulate a CDROM device when
-needed, something like the following:
+Signed-off-by: Alok Tiwari <alok.a.tiwari@oracle.com>
+---
+ drivers/target/iscsi/iscsi_target_configfs.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I didn't really tested it to see if works correctly, I've just verified
-that the initiator's lsblk sees the device like a CDROM.
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 88db94f382bb..efe8cdb20060 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -665,7 +665,7 @@ static ssize_t lio_target_nacl_cmdsn_depth_store(struct config_item *item,
+ 	}
+ 	acl_ci = &se_nacl->acl_group.cg_item;
+ 	if (!acl_ci) {
+-		pr_err("Unable to locatel acl_ci\n");
++		pr_err("Unable to locate acl_ci\n");
+ 		return -EINVAL;
+ 	}
+ 	tpg_ci = &acl_ci->ci_parent->ci_group->cg_item;
+@@ -684,7 +684,7 @@ static ssize_t lio_target_nacl_cmdsn_depth_store(struct config_item *item,
+ 
+ 	ret = core_tpg_set_initiator_node_queue_depth(se_nacl, cmdsn_depth);
+ 
+-	pr_debug("LIO_Target_ConfigFS: %s/%s Set CmdSN Window: %u for"
++	pr_debug("LIO_Target_ConfigFS: %s/%s Set CmdSN Window: %u for "
+ 		"InitiatorName: %s\n", config_item_name(wwn_ci),
+ 		config_item_name(tpg_ci), cmdsn_depth,
+ 		config_item_name(acl_ci));
+@@ -1131,7 +1131,7 @@ static void lio_target_tiqn_deltpg(struct se_portal_group *se_tpg)
+ 
+ /* End items for lio_target_tiqn_cit */
+ 
+-/* Start LIO-Target TIQN struct contig_item lio_target_cit */
++/* Start LIO-Target TIQN struct config_item lio_target_cit */
+ 
+ static ssize_t lio_target_wwn_lio_version_show(struct config_item *item,
+ 		char *page)
+-- 
+2.50.1
 
-diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core=
-_file.c
-index 2d78ef74633c..ab36773d9177 100644
---- a/drivers/target/target_core_file.c
-+++ b/drivers/target/target_core_file.c
-@@ -689,7 +689,7 @@ fd_execute_rw(struct se_cmd *cmd, struct scatterlist *s=
-gl, u32 sgl_nents,
-
- enum {
- 	Opt_fd_dev_name, Opt_fd_dev_size, Opt_fd_buffered_io,
--	Opt_fd_async_io, Opt_err
-+	Opt_fd_async_io, Opt_emulate_cdrom, Opt_err
- };
-
- static match_table_t tokens =3D {
-@@ -697,6 +697,7 @@ static match_table_t tokens =3D {
- 	{Opt_fd_dev_size, "fd_dev_size=3D%s"},
- 	{Opt_fd_buffered_io, "fd_buffered_io=3D%d"},
- 	{Opt_fd_async_io, "fd_async_io=3D%d"},
-+	{Opt_emulate_cdrom, "emulate_cdrom=3D%d"},
- 	{Opt_err, NULL}
- };
-
-@@ -777,6 +778,20 @@ static ssize_t fd_set_configfs_dev_params(struct se_de=
-vice *dev,
-
- 			fd_dev->fbd_flags |=3D FDBD_HAS_ASYNC_IO;
- 			break;
-+		case Opt_emulate_cdrom:
-+			ret =3D match_int(args, &arg);
-+			if (ret)
-+				goto out;
-+			if (arg !=3D 1) {
-+				pr_err("bogus emulate_cdrom=3D%d value\n", arg);
-+				ret =3D -EINVAL;
-+				goto out;
-+			}
-+
-+			pr_debug("FILEIO: Emulating CDROM device type\n");
-+
-+			fd_dev->fbd_flags |=3D FDBD_HAS_EMULATE_CDROM;
-+			break;
- 		default:
- 			break;
- 		}
-@@ -793,11 +808,13 @@ static ssize_t fd_show_configfs_dev_params(struct se_=
-device *dev, char *b)
- 	ssize_t bl =3D 0;
-
- 	bl =3D sprintf(b + bl, "TCM FILEIO ID: %u", fd_dev->fd_dev_id);
--	bl +=3D sprintf(b + bl, "        File: %s  Size: %llu  Mode: %s Async: %d=
-\n",
-+	bl +=3D sprintf(b + bl,
-+		"        File: %s  Size: %llu  Mode: %s Async: %d cdrom: %d\n",
- 		fd_dev->fd_dev_name, fd_dev->fd_dev_size,
- 		(fd_dev->fbd_flags & FDBD_HAS_BUFFERED_IO_WCE) ?
- 		"Buffered-WCE" : "O_DSYNC",
--		!!(fd_dev->fbd_flags & FDBD_HAS_ASYNC_IO));
-+		!!(fd_dev->fbd_flags & FDBD_HAS_ASYNC_IO),
-+		!!(fd_dev->fbd_flags & FDBD_HAS_EMULATE_CDROM));
- 	return bl;
- }
-
-@@ -909,6 +926,14 @@ fd_parse_cdb(struct se_cmd *cmd)
- 	return sbc_parse_cdb(cmd, &fd_exec_cmd_ops);
- }
-
-+static u32 fd_get_device_type(struct se_device *dev)
-+{
-+	if (FD_DEV(dev)->fbd_flags & FDBD_HAS_EMULATE_CDROM)
-+		return TYPE_ROM;
-+
-+	return sbc_get_device_type(dev);
-+}
-+
- static const struct target_backend_ops fileio_ops =3D {
- 	.name			=3D "fileio",
- 	.inquiry_prod		=3D "FILEIO",
-@@ -924,7 +949,7 @@ static const struct target_backend_ops fileio_ops =3D {
- 	.parse_cdb		=3D fd_parse_cdb,
- 	.set_configfs_dev_params =3D fd_set_configfs_dev_params,
- 	.show_configfs_dev_params =3D fd_show_configfs_dev_params,
--	.get_device_type	=3D sbc_get_device_type,
-+	.get_device_type	=3D fd_get_device_type,
- 	.get_blocks		=3D fd_get_blocks,
- 	.init_prot		=3D fd_init_prot,
- 	.format_prot		=3D fd_format_prot,
-diff --git a/drivers/target/target_core_file.h b/drivers/target/target_core=
-_file.h
-index 929b1ecd544e..8e36948cdaba 100644
---- a/drivers/target/target_core_file.h
-+++ b/drivers/target/target_core_file.h
-@@ -23,6 +23,7 @@
- #define FBDF_HAS_SIZE		0x02
- #define FDBD_HAS_BUFFERED_IO_WCE 0x04
- #define FDBD_HAS_ASYNC_IO	 0x08
-+#define FDBD_HAS_EMULATE_CDROM  0x10
- #define FDBD_FORMAT_UNIT_SIZE	2048
-
- struct fd_dev {
---
-2.47.3
-
-
-$ lsblk=20
-NAME                                            MAJ:MIN RM   SIZE RO TYPE  =
-MOUNTPOINTS
-sr0                                              11:0    1     1G  0 rom=20
