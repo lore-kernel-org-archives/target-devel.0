@@ -1,58 +1,58 @@
 Received: from mta-03.yadro.com (mta-03.yadro.com [89.207.88.253])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 334612FD7BB;
-	Fri, 12 Sep 2025 14:36:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 80F7331D751;
+	Mon, 15 Sep 2025 13:47:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.207.88.253
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1757687795; cv=none; b=Nn/jmXC5XAEJPamRRCgNSEuFJIulXCZfWRCzKwIcnbgZYNM2BAStLC2iShyRAkcInyyibfM3q30RjHWG1jq1hOk2Pp1IKtVtNbfAJgVY6n++S9tj/wxFImydL3eRBoYZkOk+CtWWH3Kbyc/4PDn7JHaMdNf9/i7UA1MLUpKbAts=
+	t=1757944061; cv=none; b=Tet3trQiUVyheVClDLVw2oI9DiyJ084cfvadgoYdvNEp7/KLf8BnWqzX38oiLDbZJui3DS27CROnqhmKIrhBrVUPNTvEvoFNT528NXKveiju7m/b/WRmrS8lZvB9unBBgXZD2/Zkk3JToCpKkJ2kDGXnUm2eEisOSRORwDjclNc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1757687795; c=relaxed/simple;
-	bh=dTwijpqxPuJ5/+Cv765kEWi1w2X5GAUQShLGuMoHk5U=;
+	s=arc-20240116; t=1757944061; c=relaxed/simple;
+	bh=f2w5uCDoZFnkYm5uUGJHduCgIY7lNblnEhSehTJXCHA=;
 	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PygQrv1gKm6XLf9piqimqGNKvlqRqKBprOeuNc2zQlYKywX30cZJfeON/k3xOTrahG7vhs2GIOgghXcSfxO5Yfe9CaSHbwo4mdSNeRT2rDUT4b6FxcdacARGm8J0La+a4T/gdYRIid9J4ePjYd9GUOiOhVnJKaUmusLwIiIRGxU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com; spf=pass smtp.mailfrom=yadro.com; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=mbpxPk1l; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=IkcFcszH; arc=none smtp.client-ip=89.207.88.253
+	 Content-Type:Content-Disposition:In-Reply-To; b=PnmxSWpw6Wf3b2tYcMeYWn6ROjrmzZeSCWxBrCXKcS7XVUgRM2iF1zUqW8BIurscPMtD43qE2Z/6RNZ2zXSRQEzTRh1C/wQH+YsEp/SXjFMmOfjPstlBB5t8Zsv7L8cLxWqN/0LgBojSlvdG4XzpVHy1Fc2CMeHGKPluCAVeaVE=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com; spf=pass smtp.mailfrom=yadro.com; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=hyvE6Bwl; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=xdYPNGvE; arc=none smtp.client-ip=89.207.88.253
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yadro.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="mbpxPk1l";
-	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="IkcFcszH"
+	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="hyvE6Bwl";
+	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="xdYPNGvE"
 Received: from mta-03.yadro.com (localhost [127.0.0.1])
-	by mta-03.yadro.com (Postfix) with ESMTP id 79B4CE0016;
-	Fri, 12 Sep 2025 17:36:23 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mta-03.yadro.com 79B4CE0016
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-04;
-	t=1757687783; bh=VaM+fruqw2bqW5awJBxikdRTCIjPIaJ9zrDGbC0YTzs=;
+	by mta-03.yadro.com (Postfix) with ESMTP id C8E83E0005;
+	Mon, 15 Sep 2025 16:47:28 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-03.yadro.com C8E83E0005
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-02;
+	t=1757944048; bh=Bm7kigw2xKXqAF5dsQZDS5ySRPjJs/2aS/vLrLlSJzU=;
 	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-	b=mbpxPk1lhCAq1UNMeVap9rQQ96TKJ7E5+/htaO+EIKVNKrBzPx1R4iV2Yf6p0HpeG
-	 Szv/V2C4W5MGuYMKnUM29uIYoGIEXeqjkA/fTTmpa/BvKopOinl3I/atQNqfQQGhab
-	 kyNRn6Mr0JgYa4GLxnm2/J7jClhKf9+uyheb6tD1RWENvJ2wiic43MsGDNdBtcZqQ1
-	 U/ZAgnT9I8CRxXARrM22OZ0zPO34lE4T4eJ/YmVVBYthEcTFroFetPr7A5yBjtugVk
-	 LjGrlHw6+Wu3XqtEU0lle7gdxNWsYZ4/yEjMnHYdcnAvkpPnk9HeDJTpUmz326pjpw
-	 HAT/sOTyl9iKQ==
+	b=hyvE6BwllkNwVdFU9EKpoof3zfqy3rBvQOq0HAqMo79WY9ffz4xK1Y9Yj5kURgB2d
+	 r18kyP9q3YquFir5hlgOgYOUuDTT6uojv8rRjOivfGAFVLXPxcrCNxT6Aqx6TvsoGY
+	 sXzDEtLN7bIQBM7bXXZViLygfgeT/gqui/M1O1jgFDNI7xWZqfskZus1qfKtHxywIs
+	 EfzpfSFY8BvvgbN7scXWhOkbq5PLRimEpHfbsVktWzyKaHwy0YM44DD74jObjzgayL
+	 wA+4dsnu7iKlK2tW0cfT55gBMQp+jBXD5yd13jZfsRKfib6OKcyirA5EHrg3z8GskY
+	 dHakkWbnEznVA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
-	t=1757687783; bh=VaM+fruqw2bqW5awJBxikdRTCIjPIaJ9zrDGbC0YTzs=;
+	t=1757944048; bh=Bm7kigw2xKXqAF5dsQZDS5ySRPjJs/2aS/vLrLlSJzU=;
 	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-	b=IkcFcszHP5S54ZgosxBwdliHnbFW8FDuLXP1r6WwgJUXO/h22Bnv04M+6J5Om4/+j
-	 1byPQqr25cqdAYY7ZYFf9WCI79AK5r8f2hnt75lJh/21jdeT1ESC13XLPMWa/ANbsq
-	 SBjS+r4WA/mgqNqQQp93QarTLMh+Z1XcpbeDvBRw+lxQV+VM9ASlQJA3QurpRntjOj
-	 Quo2TPYhQYSzROLdd6+Tgu2uQIElwpZ4KLSLPCJverlnwDra9BkTQQkWsvAktVoa0m
-	 zN5L/OZBauJYBiTAsZ+g54sijinlxio9GqAEqHUZxsbPVbLO8UUC3Y7LRn5vlYMbcR
-	 1T6ofL3191RrQ==
+	b=xdYPNGvEd1Q28LFn0yfF++s5yq4M3iTGL7Kw7w+WsxQh2kK5uMCnmkX03NbA87WsB
+	 Gb6I1Z9W7aBQ6Vb920EcSu1oDbrK1ilGdGx5aDp1LTRHp30/30D04IRe0i074VRxEH
+	 LNZqsEtC8u2IlbGTEvsuV8kvZfS1uOhLyFsMOpe972hDD0AICJCk/aMsHo1AWyjBv4
+	 lIQqkDKBsqPKdWdcFDEWEf+YY47dVegHRxGUTC0uPjVtJ3gcjIZA6j3sHDyGZZmRHI
+	 hFb3i4pd2yQ110Ovnz3t7SGBu+0WDr+V7cyBonhcixy180F4u8LGfe2Binx2g5jwJ/
+	 /K75fDR4cvjqw==
 Received: from T-EXCH-10.corp.yadro.com (T-EXCH-10.corp.yadro.com [10.34.9.212])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mta-03.yadro.com (Postfix) with ESMTPS;
-	Fri, 12 Sep 2025 17:36:18 +0300 (MSK)
+	Mon, 15 Sep 2025 16:47:22 +0300 (MSK)
 Received: from T-EXCH-12.corp.yadro.com (10.34.9.214) by
  T-EXCH-10.corp.yadro.com (10.34.9.212) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.9; Fri, 12 Sep 2025 17:36:17 +0300
+ 15.2.1118.9; Mon, 15 Sep 2025 16:47:22 +0300
 Received: from yadro.com (172.17.34.55) by T-EXCH-12.corp.yadro.com
  (10.34.9.214) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Fri, 12 Sep
- 2025 17:36:17 +0300
-Date: Fri, 12 Sep 2025 17:36:15 +0300
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Mon, 15 Sep
+ 2025 16:47:21 +0300
+Date: Mon, 15 Sep 2025 16:47:25 +0300
 From: Dmitry Bogdanov <d.bogdanov@yadro.com>
 To: Tony Battersby <tonyb@cybernetics.com>
 CC: Nilesh Javali <njavali@marvell.com>,
@@ -61,10 +61,10 @@ CC: Nilesh Javali <njavali@marvell.com>,
 	<martin.petersen@oracle.com>, linux-scsi <linux-scsi@vger.kernel.org>,
 	<target-devel@vger.kernel.org>, <scst-devel@lists.sourceforge.net>,
 	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 10/15] scsi: qla2xxx: fix TMR failure handling
-Message-ID: <20250912143615.GB624@yadro.com>
+Subject: Re: [PATCH 12/15] scsi: qla2xxx: add cmd->rsp_sent
+Message-ID: <20250915134725.GC624@yadro.com>
 References: <f8977250-638c-4d7d-ac0c-65f742b8d535@cybernetics.com>
- <f7f93110-bd53-4ebc-9aed-abe5de82028d@cybernetics.com>
+ <366f8fb5-376d-4426-9f27-6bef23a624b2@cybernetics.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -73,112 +73,67 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <f7f93110-bd53-4ebc-9aed-abe5de82028d@cybernetics.com>
-X-ClientProxiedBy: RTM-EXCH-02.corp.yadro.com (10.34.9.202) To
+In-Reply-To: <366f8fb5-376d-4426-9f27-6bef23a624b2@cybernetics.com>
+X-ClientProxiedBy: RTM-EXCH-06.corp.yadro.com (10.34.9.206) To
  T-EXCH-12.corp.yadro.com (10.34.9.214)
 X-KSMG-AntiPhishing: not scanned, disabled by settings
 X-KSMG-AntiSpam-Interceptor-Info: not scanned
 X-KSMG-AntiSpam-Status: not scanned, disabled by settings
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.1.8310, bases: 2025/09/12 13:48:00 #27812074
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.1.8310, bases: 2025/09/15 10:53:00 #27821131
 X-KSMG-AntiVirus-Status: NotDetected, skipped
 X-KSMG-KATA-Status: Not Scanned
 X-KSMG-LinksScanning: NotDetected
 X-KSMG-Message-Action: skipped
 X-KSMG-Rule-ID: 5
 
-On Mon, Sep 08, 2025 at 03:02:49PM -0400, Tony Battersby wrote:
+On Mon, Sep 08, 2025 at 03:07:04PM -0400, Tony Battersby wrote:
 > 
 > (target mode)
 > 
-> If handle_tmr() fails (e.g. -ENOMEM):
-> - qlt_send_busy() makes no sense because it sends a SCSI command
->   response instead of a TMR response.
-
-There is not only -ENOMEM can be returned by handle_tmr.
-
-> - Calling mempool_free() directly can lead to memory-use-after-free.
-
-No, it is a API contract between modules. If handle_tmr returned an error,
-then the caller of handle_tmr is responsible to make a cleanup.
-Otherwise, target module (tcm_qla2xxx) is responsible. The same rule is
-for handle_cmd.
-
-> 
-> Instead just reject the TMR and send the TMR response since that code
-> path is well-tested.  But be sure to set SCF_SCSI_TMR_CDB in case
-> core_tmr_alloc_req() returns -ENOMEM; otherwise the wrong function will
-> be called to free the mcmd.
+> Add cmd->rsp_sent to indicate that the SCSI status has been sent
+> successfully, so that SCST can be informed of any transport errors.
+> This will also be used for logging in later patches.
 > 
 > Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
 > ---
->  drivers/scsi/qla2xxx/qla_target.c | 33 +++++++------------------------
->  1 file changed, 7 insertions(+), 26 deletions(-)
+>  drivers/scsi/qla2xxx/qla_target.c | 4 ++++
+>  drivers/scsi/qla2xxx/qla_target.h | 4 ++++
+>  2 files changed, 8 insertions(+)
 > 
 > diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
-> index da010de9ba8a..7c278f92ff3b 100644
+> index eabb891a5528..0ddbf02ebe79 100644
 > --- a/drivers/scsi/qla2xxx/qla_target.c
 > +++ b/drivers/scsi/qla2xxx/qla_target.c
-> @@ -2005,7 +2005,6 @@ static void qlt_do_tmr_work(struct work_struct *work)
->         struct qla_hw_data *ha = mcmd->vha->hw;
->         int rc;
->         uint32_t tag;
-> -       unsigned long flags;
+> @@ -4067,6 +4067,10 @@ static void qlt_do_ctio_completion(struct scsi_qla_host *vha,
 > 
->         switch (mcmd->tmr_func) {
->         case QLA_TGT_ABTS:
-> @@ -2020,34 +2019,16 @@ static void qlt_do_tmr_work(struct work_struct *work)
->             mcmd->tmr_func, tag);
+>         if (cmd->state == QLA_TGT_STATE_PROCESSED) {
+>                 cmd->trc_flags |= TRC_CTIO_DONE;
+> +
+> +               if (likely(status == CTIO_SUCCESS))
+> +                       cmd->rsp_sent = 1;
+
+Looks like TRC_CTIO_DONE without TRC_DIF_ERR and TRC_CTIO_ERR means
+exactly that CTIO was completed successfully.
+
+> +
+>         } else if (cmd->state == QLA_TGT_STATE_NEED_DATA) {
+>                 cmd->state = QLA_TGT_STATE_DATA_IN;
 > 
->         if (rc != 0) {
-> -               spin_lock_irqsave(mcmd->qpair->qp_lock_ptr, flags);
-> -               switch (mcmd->tmr_func) {
-> -               case QLA_TGT_ABTS:
-> -                       mcmd->fc_tm_rsp = FCP_TMF_REJECTED;
-> -                       qlt_build_abts_resp_iocb(mcmd);
-> -                       break;
-> -               case QLA_TGT_LUN_RESET:
-> -               case QLA_TGT_CLEAR_TS:
-> -               case QLA_TGT_ABORT_TS:
-> -               case QLA_TGT_CLEAR_ACA:
-> -               case QLA_TGT_TARGET_RESET:
-> -                       qlt_send_busy(mcmd->qpair, &mcmd->orig_iocb.atio,
-> -                           qla_sam_status);
-
-Sending SCSI status(other octets in FCP_RSP frame) in response to TMF is
-against the standard. So, that is the real subject to fix.
-
-> -                       break;
-> -
-> -               case QLA_TGT_ABORT_ALL:
-> -               case QLA_TGT_NEXUS_LOSS_SESS:
-> -               case QLA_TGT_NEXUS_LOSS:
-> -                       qlt_send_notify_ack(mcmd->qpair,
-> -                           &mcmd->orig_iocb.imm_ntfy, 0, 0, 0, 0, 0, 0);
-> -                       break;
-> -               }
-> -               spin_unlock_irqrestore(mcmd->qpair->qp_lock_ptr, flags);
-> -
->                 ql_dbg(ql_dbg_tgt_mgt, mcmd->vha, 0xf052,
->                     "qla_target(%d):  tgt_ops->handle_tmr() failed: %d\n",
->                     mcmd->vha->vp_idx, rc);
-> -               mempool_free(mcmd, qla_tgt_mgmt_cmd_mempool);
-> +               /*
-> +                * SCF_SCSI_TMR_CDB might not have been set on error, but it
-> +                * must be set for the mcmd to be freed properly.
-> +                */
-> +               mcmd->se_cmd.se_cmd_flags |= SCF_SCSI_TMR_CDB;
-> +               mcmd->fc_tm_rsp = FCP_TMF_REJECTED;
-
-FCP_TMF_REJECTED means that this TMF is not supported, FCP_TMF_FAILED is
-more appretiate here.
-
-> +               qlt_xmit_tm_rsp(mcmd);
-
-qlt_xmit_tm_rsp does not free mcmd for TMF ABORT. So you introduce a memleak.
-
->         }
->  }
-> 
+> diff --git a/drivers/scsi/qla2xxx/qla_target.h b/drivers/scsi/qla2xxx/qla_target.h
+> index 1931e1dade7a..972a7af1c81c 100644
+> --- a/drivers/scsi/qla2xxx/qla_target.h
+> +++ b/drivers/scsi/qla2xxx/qla_target.h
+> @@ -883,6 +883,10 @@ struct qla_tgt_cmd {
+>         unsigned int conf_compl_supported:1;
+>         unsigned int sg_mapped:1;
+>         unsigned int write_data_transferred:1;
+> +
+> +       /* Set if the SCSI status was sent successfully. */
+> +       unsigned int rsp_sent:1;
+> +
+>         unsigned int q_full:1;
+>         unsigned int term_exchg:1;
+>         unsigned int cmd_sent_to_fw:1;
 > --
 > 2.43.0
 > 
