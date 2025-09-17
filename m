@@ -1,108 +1,184 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+Received: from mta-03.yadro.com (mta-03.yadro.com [89.207.88.253])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 35F272F49E9;
-	Wed, 17 Sep 2025 02:27:20 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.165.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD3F6284888;
+	Wed, 17 Sep 2025 13:06:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=89.207.88.253
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758076042; cv=none; b=b1U0UuBYZW4fqjok55ex+bA6LUjCKd5rAu7DneLPeSbrD+OanPp/eDW1XQmxi3G7EQIzcj5EmqpNlXzctxkoOlOYFI8guj1nhmjdiWhR0C+pIM5FtNo+IBrx0D7ibPBB/2ZBUUwGZEgPD+b9mugdb9Tj9EkHzJtk7hZ41luvOuw=
+	t=1758114419; cv=none; b=cukG5K6pIWra0oaVkDV0qjHOietzzl4UejhoWPS5I81i1rwG7tm2hJPJjXThKUUKE7Cs0l60I+rfZo//pumhuLDcIL5G46Zb/VpBsEaIonfh9Jct5H10Ha4BPZ9HosQy/YuIUi+g2Tnl9MWu0poimFix+FgIIKCMbx6PmgPEdYI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758076042; c=relaxed/simple;
-	bh=0W5cJSxFiyMMIfdxqx/RpU55sjKEaIg0wx2Lmmn5ebk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=OC3P+JPAxrtrAU7oyEHnfTAEunprwQctmv90rY1T1cBF6qlyUIGoCrG0OIH5w1BYOSJmjB/sbn+Ac0omjl0V2b+4HLQHgUCF1r0MWpivUJoHCCHhB6tOoXwGkLualbibqo+c9BlTMf4APK4nTzGYI5XxmH8Zz1gKR872HGJYdFo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=ngpW6i1M; arc=none smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	s=arc-20240116; t=1758114419; c=relaxed/simple;
+	bh=MwBWGa2S0P3kRJgvfUWuRk0Yj0zrZCwIBy9hAoe3f4k=;
+	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=enrrlsZj9dtNpfkaUn6+bmlltm0/9igVIF7v4xKwVwm43MVZLX1IPIutP0znccFoyjq8eWaxNbT9rRPg6/9lAaH5R8Zwii2S89lMDT+KKINZiSPkelDsASm6sbYp6WVvKpUgUlJ+fOIVfAE5LlKge/hqITbT/jOCDNIw2FkxaYs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com; spf=pass smtp.mailfrom=yadro.com; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=tJzO2aJ9; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=vyP0Gn5D; arc=none smtp.client-ip=89.207.88.253
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yadro.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="ngpW6i1M"
-Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58GLZ202020627;
-	Wed, 17 Sep 2025 02:27:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=9uZ+Lh6WqA7JOQU69c1j04bTjdvpdyj+hjesn+/VZao=; b=
-	ngpW6i1MsOagusTMpitpozJX7B+rhyeFgMLOsvDbSNWn6O9RfAJeJsX3rSEORmAC
-	ykTEkBaCs5Z+fb5AxJbD3m3uGGwok/9zW7+PWIbXCjou9OhpXiNmnlUef2BS1TKF
-	DCP50/2pzxlw06wHZjWsHxW8fM+cTJpTASgSGFP4KzCBLluON5vHcdldITpZyNNX
-	xJQ3rEkjvdkgjnY73bMM3BqGTAi3uDoMKyRF2OkV821raie2usgM+EK1GMFaSUzw
-	ketroCRTMBTXcpBbQSNpuMmCwJod+p0hl0ugYlvMNuZfChy6//8pkQmA+blYdU1v
-	kSw37tHWynwdTg7ulIQECg==
-Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.appoci.oracle.com [147.154.114.232])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 497fxbr9ce-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 17 Sep 2025 02:27:20 +0000 (GMT)
-Received: from pps.filterd (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 58H0bvHH028898;
-	Wed, 17 Sep 2025 02:27:19 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 494y2d52g9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 17 Sep 2025 02:27:19 +0000
-Received: from phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 58H2RHY7037520;
-	Wed, 17 Sep 2025 02:27:19 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by phxpaimrmta02.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTP id 494y2d52f0-3;
-	Wed, 17 Sep 2025 02:27:19 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: Al Viro <viro@zeniv.linux.org.uk>, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Qianfeng Rong <rongqianfeng@vivo.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>
-Subject: Re: [PATCH] scsi: target: iscsi: Use int type to store negative value
-Date: Tue, 16 Sep 2025 22:27:11 -0400
-Message-ID: <175798566830.3116853.5922880559006107436.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20250902125017.41371-1-rongqianfeng@vivo.com>
-References: <20250902125017.41371-1-rongqianfeng@vivo.com>
+	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="tJzO2aJ9";
+	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="vyP0Gn5D"
+Received: from mta-03.yadro.com (localhost [127.0.0.1])
+	by mta-03.yadro.com (Postfix) with ESMTP id A7710E0004;
+	Wed, 17 Sep 2025 16:06:47 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-03.yadro.com A7710E0004
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-02;
+	t=1758114407; bh=33oRIV5FYzbMz66ojkQmUacWCbkqDEAECMBSMTov/l4=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+	b=tJzO2aJ9YKjYwFrndumE9AW+urX3Xb7ddZlN/d0ecpsvGSF1c6OWcSwQg0jgHoYqG
+	 wo6MRncl5nHsfh78O/4X3Mm2Fij+rkZVnWHNtddhfxbQ5EMAhlyySbkYpMv1mbyCCH
+	 ycNJSJE3RRZl3wXb9zhocUOUH+pLrdg7+YYU7rN3KPGq9pZtZvcrMVWS/n6ROTyonC
+	 ndkOrCbOWy6X28wZq95ohnKFJqxnKmohjER1RgUxcoBP1BTNjg5VzeA7ZoqmljMBy/
+	 CADIBKZAOPIDWgA3JiX61WueW8NyUG+mfgxes3i9ncm23b6fUqdUUd6e5htyXNjXqS
+	 40VhWsSThTy/A==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
+	t=1758114407; bh=33oRIV5FYzbMz66ojkQmUacWCbkqDEAECMBSMTov/l4=;
+	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
+	b=vyP0Gn5D2itO35kMggc3Vn9XP6iP6KQ11BkLUicXY8SI8Ru3yxnKK7MLn6+V13A9k
+	 IFLusWZw6kpXC0Gs3FUZOFw5v/67nvqDZYIeAmaJA/SlM/lTC19SP9NIg9gusSp5aJ
+	 aH53xk7/bjTdtQ6vjKJiyqnp2Bkn4eCIl/mRU2ydlCq9KcrYNMrmIC98nx2pOrNapM
+	 lApGgUykreJSYJj0RYUkWxoEmBTT/8xEhUKSUkIzwBOoN28H/1jhY1/aNgvddS6XXm
+	 H/TnbTblcuNiwQX4ManHafvwH6KCE7iqXZc6C8EYcyn6g3A31lSHMhMgDkIzX7fyba
+	 DjfIkFf5/kSPg==
+Received: from T-EXCH-07.corp.yadro.com (T-EXCH-07.corp.yadro.com [10.34.9.209])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mta-03.yadro.com (Postfix) with ESMTPS;
+	Wed, 17 Sep 2025 16:06:42 +0300 (MSK)
+Received: from T-EXCH-12.corp.yadro.com (10.34.9.214) by
+ T-EXCH-07.corp.yadro.com (10.34.9.209) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.1118.9; Wed, 17 Sep 2025 16:06:42 +0300
+Received: from yadro.com (172.17.34.51) by T-EXCH-12.corp.yadro.com
+ (10.34.9.214) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Wed, 17 Sep
+ 2025 16:06:41 +0300
+Date: Wed, 17 Sep 2025 16:06:41 +0300
+From: Dmitry Bogdanov <d.bogdanov@yadro.com>
+To: Tony Battersby <tonyb@cybernetics.com>
+CC: Nilesh Javali <njavali@marvell.com>,
+	<GR-QLogic-Storage-Upstream@marvell.com>, "James E.J. Bottomley"
+	<James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
+	<martin.petersen@oracle.com>, linux-scsi <linux-scsi@vger.kernel.org>,
+	<target-devel@vger.kernel.org>, <scst-devel@lists.sourceforge.net>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [DMARC Error]Re: [PATCH 10/15] scsi: qla2xxx: fix TMR failure
+ handling
+Message-ID: <20250917130641.GD624@yadro.com>
+References: <f8977250-638c-4d7d-ac0c-65f742b8d535@cybernetics.com>
+ <f7f93110-bd53-4ebc-9aed-abe5de82028d@cybernetics.com>
+ <20250912143615.GB624@yadro.com>
+ <526d0d1b-79f1-47fd-bc44-6727898f381c@cybernetics.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-16_02,2025-09-16_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 spamscore=0 phishscore=0
- bulkscore=0 mlxscore=0 suspectscore=0 mlxlogscore=890 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2508110000
- definitions=main-2509170022
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTE2MDIwMiBTYWx0ZWRfX45A+DfAiSjxz
- Bk8yz3lkHwYFZ74suRpRwnknGaP8N91qJCmwHwvwU6kH0c0Vgs4p2THjGS6qxndhzTjuFYeVFtW
- xUFT7yBb102XgNezfgjG8oY1wFYcIreusp0bBSLhUoyTVUTzSo+XDVgKxSjzI64+mik0Do5+LLf
- xqBfJucdFVh+3rO3m2bzqtTVNFZxFSLN3nGs7nfbKBX0e2yU7dBwjjXa46y/HfJFKKWoxyr6tAR
- LjgamISGmRPAPX4968JqPLnsWt4BjNckdZm4e4gQ6XGirwmfMtggRQ+xN79z/wik1BHuv/e18Fa
- K1BCfR3DdsXs/uuM1ve7IFDrMv12mLvDnXWTAy3O045e0PJhovDGec+5hdN8EGQX9BGVQz10bCs
- NdOjvLGU
-X-Authority-Analysis: v=2.4 cv=X5RSKHTe c=1 sm=1 tr=0 ts=68ca1c88 cx=c_pps
- a=OOZaFjgC48PWsiFpTAqLcw==:117 a=OOZaFjgC48PWsiFpTAqLcw==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=BUmgLafrPBtdokYnvPQA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: wY5Jkv0ybKQNZE9GxAGFBNgmT_QO9mSN
-X-Proofpoint-ORIG-GUID: wY5Jkv0ybKQNZE9GxAGFBNgmT_QO9mSN
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <526d0d1b-79f1-47fd-bc44-6727898f381c@cybernetics.com>
+X-ClientProxiedBy: RTM-EXCH-04.corp.yadro.com (10.34.9.204) To
+ T-EXCH-12.corp.yadro.com (10.34.9.214)
+X-KSMG-AntiPhishing: not scanned, disabled by settings
+X-KSMG-AntiSpam-Interceptor-Info: not scanned
+X-KSMG-AntiSpam-Status: not scanned, disabled by settings
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.1.8310, bases: 2025/09/17 09:42:00 #27826690
+X-KSMG-AntiVirus-Status: NotDetected, skipped
+X-KSMG-KATA-Status: Not Scanned
+X-KSMG-LinksScanning: NotDetected
+X-KSMG-Message-Action: skipped
+X-KSMG-Rule-ID: 5
 
-On Tue, 02 Sep 2025 20:50:14 +0800, Qianfeng Rong wrote:
-
-> Change the 'ret' variable in iscsit_tmr_task_reassign() from u64 to int,
-> as it needs to store either negative value or zero returned by
-> iscsit_find_cmd_for_recovery().
+On Tue, Sep 16, 2025 at 12:04:11PM -0400, Tony Battersby wrote:
 > 
-> Storing the negative error codes in unsigned type, or performing equality
-> comparisons (e.g., ret == -2), doesn't cause an issue at runtime [1] but
-> can be confusing.  Additionally, assigning negative error codes to unsigned
-> type may trigger a GCC warning when the -Wsign-conversion flag is enabled.
+> On 9/12/25 10:36, Dmitry Bogdanov wrote:
+> > On Mon, Sep 08, 2025 at 03:02:49PM -0400, Tony Battersby wrote:
+> >> If handle_tmr() fails (e.g. -ENOMEM):
+> >> - qlt_send_busy() makes no sense because it sends a SCSI command
+> >>   response instead of a TMR response.
+> > There is not only -ENOMEM can be returned by handle_tmr.
 > 
-> [...]
+> Indeed.  I will remove mention of -ENOMEM since it isn't really relevant.
+> 
+> >> +               mcmd->fc_tm_rsp = FCP_TMF_REJECTED;
+> >>
+> > FCP_TMF_REJECTED means that this TMF is not supported, FCP_TMF_FAILED is
+> > more appretiate here.
+> 
+> I will make that change.
+> 
+> >> - Calling mempool_free() directly can lead to memory-use-after-free.
+> > No, it is a API contract between modules. If handle_tmr returned an error,
+> > then the caller of handle_tmr is responsible to make a cleanup.
+> > Otherwise, target module (tcm_qla2xxx) is responsible. The same rule is
+> > for handle_cmd.
+> >> +               qlt_xmit_tm_rsp(mcmd);
+> > qlt_xmit_tm_rsp does not free mcmd for TMF ABORT. So you introduce a memleak.
+> 
+> I just tested it, and there is no memleak.  qlt_build_abts_resp_iocb()
+> sets req->outstanding_cmds[h] to mcmd, and then
+> qlt_handle_abts_completion() calls ->free_mcmd after getting a response
+> from the ISP.
 
-Applied to 6.18/scsi-queue, thanks!
+ha->tgt.tgt_ops->free_mcmd(mcmd) can be called when mcmd was handled by the
+target core, i.e. handle_tmr() returned 0. LIO's tcm_qla2xxx_free_mcmd calls
+target core function transport_generic_free_cmd to clear core's command
+object. Which in turns calls eventually mempool_free in qla2xxx.
+But when handle_tmr returned an error then there is no that core's
+command object and LIO will not free the mcmd. That is how a memleak
+will happen.
 
-[1/1] scsi: target: iscsi: Use int type to store negative value
-      https://git.kernel.org/mkp/scsi/c/b0aca7ae8285
+> The original code had a memory-use-after-free by calling
+> qlt_build_abts_resp_iocb() and then mempool_free(), and
+> then qlt_handle_abts_completion() used the freed mcmd.  I can reword the
+> commit message to make this clearer.
 
+BTW, the easyest way to just to fix that use-after-free is to use
+qlt_24xx_send_abts_resp instead of qlt_build_abts_resp_iocb like in other
+places, where there is no mcmd and there is no need to wait the
+completion from FW.
+
+We use this patch:
+
+
+From: Dmitry Bogdanov <d.bogdanov@yadro.com>
+Date: Thu, 27 Apr 2023 15:41:55 +0300
+Subject: [PATCH] scsi: qla2xxx: fix use-after-free on ABTS_RESP sending
+
+If an abort was rejected by LIO Core qla2xxx sends ABTS_RESP with rejected
+status. But it does not save mcmd pointer which is freed right after sending
+the response to FW. It leads to use-after-free at the completion from FW.
+
+Use a correct function to send ABTS_RESP when the abort is rejected by LIO Core.
+
+Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
+---
+ drivers/scsi/qla2xxx/qla_target.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index b9d816b8341e..43eafdc765a3 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -2162,7 +2162,9 @@ static void qlt_do_tmr_work(struct work_struct *work)
+ 		switch (mcmd->tmr_func) {
+ 		case QLA_TGT_ABTS:
+ 			mcmd->fc_tm_rsp = FCP_TMF_REJECTED;
+-			qlt_build_abts_resp_iocb(mcmd);
++			qlt_24xx_send_abts_resp(mcmd->qpair,
++						&mcmd->orig_iocb.abts,
++						FCP_TMF_REJECTED, false);
+ 			break;
+ 		case QLA_TGT_LUN_RESET:
+ 		case QLA_TGT_CLEAR_TS:
 -- 
-Martin K. Petersen
+2.25.1
+
+
+
+
+
+BR,
+ Dmitry
+
+
