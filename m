@@ -1,61 +1,52 @@
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D517B2AE99;
-	Sat, 20 Sep 2025 02:25:02 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.165.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4659B13B284;
+	Sun, 21 Sep 2025 11:35:07 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758335104; cv=none; b=nw/7IbuMHwIjDqGGbVH4mxU83xq6hPgh/n5MEZ32Wy72vpGJ7Egvq4zTr8/KU8JEHqByyePhr+8DgeA2sSynBjIefd1eac8tAA2Uv5gSOoAX8Mpa3UMjbRPRxttBoPf4JpNMwouBEGcdB+T7Tkx9uH6b7FiYXufa5U99DuCBxlo=
+	t=1758454507; cv=none; b=Gf2TpD3klhItG94UNUp2HRX/2dvvB1qWYYPphf8le/V3EeXCAJnkDGLNjnXw8IRXNBwLc6otGylcAQhGtuVxKmYWFjg6/FSqew1bh0+7lmjSxQIUonZcEl/otLFsRX0OBsWeuIrJHN8XQzsdCTiz5VS7dBOKzywzoIzvq5/cGvM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758335104; c=relaxed/simple;
-	bh=We9iIzMmfZFbatTSaPpa/03n9fT5X9OYeMV2mNb0VlI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=nEyvxmkcNAaPUqx1szjlbO2S9sY94PBf74DcWBY4EmsbpqVbsbbgXYx/ZJqdWNxmtzcBJQsqGzVIYq3Wr1baSSuEAj0Vn0R3RFcOoMa4nqsdV7rBP5JKoawgk5cp5EILhXYsRlUgCFHlroFoYxYQS4Mt3yZUNBS0YEJzi53RqjU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=QCx8585W; arc=none smtp.client-ip=205.220.165.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	s=arc-20240116; t=1758454507; c=relaxed/simple;
+	bh=9RirVJ+oRinL3Yqw4bpLEbY0lfsulX8n+ssxtmmcVzc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=XlW5wE1/96YN9IVyEUbmHKOmmRuR5jlip8aJynsiwN5FzeGkP5WLPyMiu6L55pavh4ELkGnR6gNWIVdrKH/tpIgIKZZl7rE+7lMEhliMyjgo21LNUFBRpuIwmq8ue6webZocitLDIISl+yfdyL8622HyMSALQh0You/J8aEHrkQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=I6laAfbO; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="QCx8585W"
-Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58JDun93010150;
-	Sat, 20 Sep 2025 02:25:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=LX79n5R/sHZ9aLkopBHTQnNGQD0BoaH4Ti10gl3Lw20=; b=
-	QCx8585WqBCmfucsktqswSoDDsIiok8GgEATutpFiQYkUkdmuP8r7WsTF0tzzc+W
-	UasetrbfbGVaDfns2uklvyAvvJAG6pc/NzYPo5N/wj55m0ctyW+q6X0yvpWZtULP
-	9UYtSbqMvDW+j4YmBtVjBjn+BJVfwm6hQO88ZCuZJXWO0SUjOn8/H3A8wQINlbQ7
-	Xf45HHKVSy2HHWv4Uj/MXvkHBcWZUj93l9Tapmom0g+11yUniGH0eSscmkH22lGM
-	f56Ma56b1Z2S8MLxZg5zCDzI6Qdy6d3jumU8kIAy+aZI59mjdFmemHJ8GWHhjO4u
-	ud+ytNH1vgSftvwtoVpcuQ==
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 497fxb6jfx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 20 Sep 2025 02:25:01 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 58K1Y8wb019773;
-	Sat, 20 Sep 2025 02:25:00 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 499jq50p2k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 20 Sep 2025 02:25:00 +0000
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 58K2Lxga016735;
-	Sat, 20 Sep 2025 02:25:00 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 499jq50p2b-1;
-	Sat, 20 Sep 2025 02:25:00 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: michael.christie@oracle.com, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, Alok Tiwari <alok.a.tiwari@oracle.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>
-Subject: Re: [PATCH] scsi: target: iscsi: fix typos and formatting in lio_target messages
-Date: Fri, 19 Sep 2025 22:24:51 -0400
-Message-ID: <175833431691.3341211.12584013704761747909.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20250910190728.3783157-1-alok.a.tiwari@oracle.com>
-References: <20250910190728.3783157-1-alok.a.tiwari@oracle.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="I6laAfbO"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A913C4CEE7;
+	Sun, 21 Sep 2025 11:35:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758454506;
+	bh=9RirVJ+oRinL3Yqw4bpLEbY0lfsulX8n+ssxtmmcVzc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=I6laAfbOW3d0FfhmJOxLNiOQnSE74AZCo27nOatD3m5G62yC8RoAPvHMjAAn1ddRM
+	 /hD5c0BrfHIJ8BRwTtdgtZ4lwuo5s4Bp1MTxsEJOrzBIpxgIyY8HwxJ5sJ3tnSJBRL
+	 oRsiIkLO5f8GLTERCmGSu7v8KOKcTcI+HgpF2csxRI2NSqsFhJSmZa8YzmPHMT5pU1
+	 EBzAwwp5mg9vh5Nlz9CtlyVUtGMDoEtpq5p1bic0h6/aKNR02hLAUxLihe2XWY+DqY
+	 zVuLAzgF4pwtWvr56C79tZWeZL8EWJkoqMJhsoPPLQlIOvilEOj5hhVn5d3q8zShdn
+	 +5kkhj3a0dE4g==
+From: Leon Romanovsky <leon@kernel.org>
+To: Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>
+Cc: Abhijit Gangurde <abhijit.gangurde@amd.com>, 
+ Allen Hubbe <allen.hubbe@amd.com>, Bart Van Assche <bvanassche@acm.org>, 
+ Chengchang Tang <tangchengchang@huawei.com>, 
+ Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
+ Junxian Huang <huangjunxian6@hisilicon.com>, 
+ Kalesh AP <kalesh-anakkur.purayil@broadcom.com>, 
+ Konstantin Taranov <kotaranov@microsoft.com>, linux-rdma@vger.kernel.org, 
+ Long Li <longli@microsoft.com>, Michael Margolin <mrgolin@amazon.com>, 
+ Mustafa Ismail <mustafa.ismail@intel.com>, 
+ Potnuri Bharat Teja <bharat@chelsio.com>, 
+ Selvin Xavier <selvin.xavier@broadcom.com>, target-devel@vger.kernel.org, 
+ Tatyana Nikolova <tatyana.e.nikolova@intel.com>, 
+ Yishai Hadas <yishaih@nvidia.com>, Leon Romanovsky <leon@kernel.org>
+In-Reply-To: <e81ec02df1e474be20417fb62e779776e3f47a50.1758217936.git.leon@kernel.org>
+References: <e81ec02df1e474be20417fb62e779776e3f47a50.1758217936.git.leon@kernel.org>
+Subject: Re: [PATCH rdma-next] RDMA: Use %pe format specifier for error
+ pointers
+Message-Id: <175845450356.2104816.4462663406652713808.b4-ty@kernel.org>
+Date: Sun, 21 Sep 2025 07:35:03 -0400
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -63,43 +54,23 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-20_01,2025-09-19_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 spamscore=0
- mlxlogscore=999 suspectscore=0 phishscore=0 adultscore=0 mlxscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2508110000 definitions=main-2509200020
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTE2MDIwMiBTYWx0ZWRfX6EqloaLIL/tk
- FtM5j7Aj4w3+PxsWtPKEi4MGuvd86D6a0HnXs/1i384ob4NOzeAV7IJNZsbT3yqLze3YpKkZ9+m
- iCmJAnCpfiHRO2r6R5t39fN4Xe6CK/wFIU8tjBmRVNdRhsf0TWTXfuINSq0f/Q0z5Bn8YdcaSpO
- mmu0KGL0P2qcuh8HsX6hcOhYtq63GW8cJdONZ2h27XgAFnmWCUinY0drxf0lVwDExwuSyFxsGHf
- 7ypFnRWuDDMqzk2QP0xyMZ94PAaAZTby+xii7ueTUju179/s0HhcMWc0I6T2k+trd85ak9hwF2g
- CFt7StkL3ioPBTuucD3Q3aGjPE+ePJVM/0vKxRweMkxNUNRaOERE3d0OJqDlDDEVjeCG3TOEEjf
- 9ferYFMC046iKdAmqxa7j4V+6LDpaw==
-X-Authority-Analysis: v=2.4 cv=KOJaDEFo c=1 sm=1 tr=0 ts=68ce107d b=1 cx=c_pps
- a=e1sVV491RgrpLwSTMOnk8w==:117 a=e1sVV491RgrpLwSTMOnk8w==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=A8grC8wFmQRFXEc_IFkA:9
- a=QEXdDO2ut3YA:10 cc=ntf awl=host:13614
-X-Proofpoint-GUID: cHQZwhgPntMv36ZiuXzDeGOwWDnpzgO6
-X-Proofpoint-ORIG-GUID: cHQZwhgPntMv36ZiuXzDeGOwWDnpzgO6
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-37811
 
-On Wed, 10 Sep 2025 12:07:20 -0700, Alok Tiwari wrote:
 
-> Fix several minor issues in lio_target code and messages:
-> - Correct typo "locatel" -> "locate" in error log.
-> - Add missing space in pr_debug() message for better readability.
-> - Fix comment typo: "contig_item" -> "config_item".
+On Thu, 18 Sep 2025 20:53:41 +0300, Leon Romanovsky wrote:
+> Convert error logging throughout the RDMA subsystem to use
+> the %pe format specifier instead of PTR_ERR() with integer
+> format specifiers.
 > 
-> These changes improve code clarity and log readability.
 > 
-> [...]
 
-Applied to 6.18/scsi-queue, thanks!
+Applied, thanks!
 
-[1/1] scsi: target: iscsi: fix typos and formatting in lio_target messages
-      https://git.kernel.org/mkp/scsi/c/f2d81dd6751a
+[1/1] RDMA: Use %pe format specifier for error pointers
+      https://git.kernel.org/rdma/rdma/c/4b6b6233f50f72
 
+Best regards,
 -- 
-Martin K. Petersen
+Leon Romanovsky <leon@kernel.org>
+
