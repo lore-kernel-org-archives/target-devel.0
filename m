@@ -1,180 +1,179 @@
-Received: from mta-01.yadro.com (mta-01.yadro.com [195.3.219.148])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f53.google.com (mail-wm1-f53.google.com [209.85.128.53])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6308F279335;
-	Thu, 25 Sep 2025 08:52:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.3.219.148
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFDA32AE68
+	for <target-devel@vger.kernel.org>; Thu, 25 Sep 2025 12:49:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.53
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758790384; cv=none; b=Gz+y9fMjPj1ENO5eAPHsmkhe7mfr/sfcPUWZK/UruijKnh9lWa2aADyWbcIFgqhL1zGXLwcyt1Ig15rOZXO4gZcP5J91R2lu1vkFY2vvxBwoeudMJZiNjbOGPKFWIBe9CLoNDD+GN6zvc+Wjw5i1zn/3sHeKxIDoVSF4wkObJ5o=
+	t=1758804598; cv=none; b=j1Ct3cuqi6j71QQRAFF/JlU33buqo7qRCFjnU3UP/eC2dj6i7kKO+dKRXczLm2RN+8oXqvFMX2Fhsw2AQZDgBAl9wmV0CNIxIhomU6A34Nw38J5RGK9Cro13UoHgt2lbFw49xfFJoMhJu9nJwdJchNwlFui9civd24jIKPSs1Do=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758790384; c=relaxed/simple;
-	bh=p3JXLkgAN8M27rkKUlEcf1dzuTbajEVNJrjYoMutG14=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=rU3eaBvcgpT1qgw/55CfKH4yquqWEM9zwqH0I92nQB5aMr9E9MKyhfAtBmNZpIJeQD2C4+M0qCoLVBPHsoAD1R0C+2w9ju6EPu8p7ucVL6WAhX3cNzCmhIZRoNe1ZTQf5gkfWQIEk2Zjxl5mamRniGgHY82DZ33GRCWREJxCSxs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com; spf=pass smtp.mailfrom=yadro.com; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=x3B38m0n; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=FsJy8qza; arc=none smtp.client-ip=195.3.219.148
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yadro.com
+	s=arc-20240116; t=1758804598; c=relaxed/simple;
+	bh=MF54MGCuDfi8gReEhm6Ls7UVrLmOKS7TeRw9elzcLcQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=It3VHH6+ibm0SVl7y6ohFKew+T8Nthk39wFfxZpPJ7katHLeEX+CeHJD1yx7obSvnhYxYmNjSAJCOjW+5Ag+dWQkTRYjy/5FDDwjMiNiul8MxmfiRvZUh8rK1gjmGwEl82RFqBz6/rkcBM9qnNdDUsHaF16FuttA+loQkZbaXBg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=A8CmWYcb; arc=none smtp.client-ip=209.85.128.53
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="x3B38m0n";
-	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="FsJy8qza"
-Received: from mta-01.yadro.com (localhost [127.0.0.1])
-	by mta-01.yadro.com (Postfix) with ESMTP id 1BEE32000A;
-	Thu, 25 Sep 2025 11:43:00 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mta-01.yadro.com 1BEE32000A
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-02;
-	t=1758789780; bh=yGskPw4jc8NcIxvf1AVaZ7YVFk2jPFctLc82/SqLpJs=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-	b=x3B38m0n6dGvT1qRljmv2EeFi8qxPkWmLmk35XsXLLbLvn2KSKTNsXgqdkC+yEsWY
-	 jFR9Vxdi8xWzU8Dxf9p/hQU2FMX/5qZz01FmVyJsC83wJmorMs5taQ8gRdldUav3TE
-	 3vtjJWnOkkIUlgJz5IglSSC2NqQTbcRLB1G0uBLZdbZbMrhJnRf5d0UBZBze26dUQp
-	 ngmavUYirR2K1xw3b7lsqcMwjiJGj0pCiR/wjL+M2SAkcvOM9alp42dvNVUEn9C7s/
-	 GJOmA2lNtCsFlkGF6t4kxtqpjo7lCr4YHj5G/mCRFdz4x8cQX1/82+VoGc+IceqN+x
-	 KnY0GMrz47pbQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
-	t=1758789780; bh=yGskPw4jc8NcIxvf1AVaZ7YVFk2jPFctLc82/SqLpJs=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-	b=FsJy8qza1z1GesN/J/OzlA9uovpDUd+wJHPb5X/RvWhz9Xd6KsgXXm6nGgYp5huCN
-	 9KWLU8DhtqD3TwqG+7Phhsrc+pWa+epVB/29RJeLWxPQb5Ss8l++h3vUFtOnWDso2l
-	 o60hXLPYohV+uWghreymlHqBTouquCdGxkdUp7lPOAwAud1eXhKnuS/KRXvW3qOJk8
-	 BchvDJF8MZvMN91kdpzS1ani/Y3xqcYTSnQm6z+H1d+cjsdFY2CpYHZYKQGNMZii9n
-	 Y9AP0yfylpZu7jWTUqo5Vc6oAXiprkb47c5TT1HWhynPfKTMIBrA6DJYUBKWPuQgOT
-	 LuWN7ov8RE6hg==
-Received: from RTM-EXCH-01.corp.yadro.com (unknown [10.34.9.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mta-01.yadro.com (Postfix) with ESMTPS;
-	Thu, 25 Sep 2025 11:42:53 +0300 (MSK)
-Received: from T-EXCH-12.corp.yadro.com (10.34.9.214) by
- RTM-EXCH-01.corp.yadro.com (10.34.9.201) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.20; Thu, 25 Sep 2025 11:42:53 +0300
-Received: from yadro.com (172.17.34.51) by T-EXCH-12.corp.yadro.com
- (10.34.9.214) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Thu, 25 Sep
- 2025 11:42:53 +0300
-Date: Thu, 25 Sep 2025 11:42:52 +0300
-From: Dmitry Bogdanov <d.bogdanov@yadro.com>
-To: Tony Battersby <tonyb@cybernetics.com>
-CC: Nilesh Javali <njavali@marvell.com>,
-	<GR-QLogic-Storage-Upstream@marvell.com>, "James E.J. Bottomley"
-	<James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
-	<martin.petersen@oracle.com>, linux-scsi <linux-scsi@vger.kernel.org>,
-	<target-devel@vger.kernel.org>, <scst-devel@lists.sourceforge.net>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [DMARC Error]Re: [PATCH 08/15] scsi: qla2xxx: fix oops during
- cmd abort
-Message-ID: <20250925084252.GA821@yadro.com>
-References: <f8977250-638c-4d7d-ac0c-65f742b8d535@cybernetics.com>
- <80974286-f8ac-4eff-9439-c05fe38716b1@cybernetics.com>
- <20250911142135.GA624@yadro.com>
- <e8cc07cf-9bd1-41a4-bd46-44e18179154b@cybernetics.com>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A8CmWYcb"
+Received: by mail-wm1-f53.google.com with SMTP id 5b1f17b1804b1-46e34b0841aso961325e9.0
+        for <target-devel@vger.kernel.org>; Thu, 25 Sep 2025 05:49:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1758804594; x=1759409394; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:mime-version:date:message-id:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uDHkDpnwsvXEtA5926rNuw5z8tqEQhjcHTKI7hITw3g=;
+        b=A8CmWYcbs7J+eaUMRhy/EpGN/Zxtp0fG2sJ5usJeQBUhcph4/piPijJT+AgMs1pjV9
+         iDGJTwRiIEAnIhrJJEXWLfFMuwRG+YQsMHnp5DR4LptAmDyubFZsiuJdcMQueP9FWzKg
+         b9puH6pI4G+R2VP/i+afwnGPTRETsgihqiSzJkS2El5IaNJuxLaixaMN7sXiWKNgyO1f
+         eeJcNs2YdDvghSLUnUrm++t3VLK2Egies46b22P0Ff+EfxzsL/6VptO2sqL3VmECTaDd
+         GCKfZ+LGrnC2fbqdaPqltYch+G5MBg9qXqjqjhJ1Dlk7fk1JUNghnpSuizHZZl6CZ7ip
+         mwEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758804594; x=1759409394;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=uDHkDpnwsvXEtA5926rNuw5z8tqEQhjcHTKI7hITw3g=;
+        b=ldNR2cl4B06qmM5tNsrL4BGy7MMwbl/xyY7j8QHrZjhOi0rdHKiaP7/kNiZyM9bLCl
+         1P2ZYWig7rYw2e2lztWHnaAQBM0jbzgiNfcaZ+iPRywBAJ/gC3YWYLlurjTKR6I4Ud4c
+         QrcMnpHhS3d08EUbFhGuRMA/hG/20hkou27bfAi1SIgIv9CGIi5NtM66+TGSQ4FXPpfG
+         jK6EC1HXVcUbpAPN18G90pfxbckcYb4izSNQK8vhoZpa0dX+22eUNyvpjaedf0pP+xFp
+         mmZOEKTxb3kDwcbzSiwyRI5NNTw0JJJMhzf6T03ev8ORFU4Gv9YDc01BtYgL7nMkH73m
+         fQpg==
+X-Forwarded-Encrypted: i=1; AJvYcCUR9QPoa6tOuVt+iGM8CC3CSi4sJGHrQBBh5UDduD4Kc6OFNn7QOaaGelzXAsQvtGBwrZ0zRrTsm25Tso0=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxIggH41xe6a494HNoZQuL4naTJkFZruVGpAevi9HyNk/0eRLsQ
+	canbGjxxQVwqBbLHgLu8PXKirs4OCYVQJ/U2ZgjF5StZ+SQf/HuRaAI=
+X-Gm-Gg: ASbGncvI96tkmK4d6lhzKur1w3Ux5LcaPb9+QpbSQU68q1jp5W8w55LUNYXAJhcG2OC
+	z2g9ya2A5scAVnG27o8Zg/Djti1UcW4j61DNrueXT+G0Ic4lcVYrIJ9XyXMScZrXNO1WHxnFcJS
+	BgoIS1HwMwN24tUPuVvRadIPzN4vNpFGO/9byXFrtaeN8CEgi4S7Ya+Svns8MH/nt1iguDjOGor
+	0R0de1ZzLDftQqD6sVGgJxkdAfPZOtInJmSHLiaM30KmsfN5K0OnEUlxod9WjVkpb6FTHm1DURl
+	iyLx0yF+0ljPQvgGYuL7s5pvCKD1BrSD+Hwtq5QrqzGLrZUnsWtqmVedGAuMla6a8paMiOHUmb8
+	Dvk4OTSndP3t4LNntxYOAe+hthEVQZvL/ydmbyJWW8J4zBSIzuuPwWXwumOGU
+X-Google-Smtp-Source: AGHT+IGRbKrVkaHhQiDxnGP95SsqRWK4KznirLakvgFxIIq9h6bEbsYldjuEYHWl6BnbYeAb+ou3WQ==
+X-Received: by 2002:a05:6000:2a89:b0:3ec:db87:e8a9 with SMTP id ffacd0b85a97d-40e3ab888bfmr1523246f8f.0.1758804593967;
+        Thu, 25 Sep 2025 05:49:53 -0700 (PDT)
+Received: from localhost (20.red-80-39-32.staticip.rima-tde.net. [80.39.32.20])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-46e32bf61b1sm18914565e9.2.2025.09.25.05.49.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 25 Sep 2025 05:49:53 -0700 (PDT)
+Message-ID: <0669b097-0bf1-4895-9c2a-5e953aebbfab@gmail.com>
+Date: Thu, 25 Sep 2025 14:49:52 +0200
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <e8cc07cf-9bd1-41a4-bd46-44e18179154b@cybernetics.com>
-X-ClientProxiedBy: RTM-EXCH-03.corp.yadro.com (10.34.9.203) To
- T-EXCH-12.corp.yadro.com (10.34.9.214)
-X-KSMG-AntiPhishing: not scanned, disabled by settings
-X-KSMG-AntiSpam-Interceptor-Info: not scanned
-X-KSMG-AntiSpam-Status: not scanned, disabled by settings
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.1.8310, bases: 2025/09/25 06:22:00 #27853652
-X-KSMG-AntiVirus-Status: NotDetected, skipped
-X-KSMG-KATA-Status: Not Scanned
-X-KSMG-LinksScanning: NotDetected
-X-KSMG-Message-Action: skipped
-X-KSMG-Rule-ID: 5
+Subject: Re: [PATCH 14/15] scsi: qla2xxx: add back SRR support
+To: Tony Battersby <tonyb@cybernetics.com>,
+ Nilesh Javali <njavali@marvell.com>, GR-QLogic-Storage-Upstream@marvell.com,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ adadasdasdasasd@adasdasasdasdasdas
+Cc: linux-scsi <linux-scsi@vger.kernel.org>, target-devel@vger.kernel.org,
+ scst-devel@lists.sourceforge.net, KERNEL ML <linux-kernel@vger.kernel.org>
+References: <f8977250-638c-4d7d-ac0c-65f742b8d535@cybernetics.com>
+ <2cc10189-6953-428e-b34e-b1c714fc0eae@cybernetics.com>
+Content-Language: en-US, en-GB, es-ES
+From: Xose Vazquez Perez <xose.vazquez@gmail.com>
+In-Reply-To: <2cc10189-6953-428e-b34e-b1c714fc0eae@cybernetics.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 24, 2025 at 03:41:32PM -0400, Tony Battersby wrote:
+On 9/8/25 9:10 PM, Tony Battersby wrote:
+
+> (target mode)
+
+> [...]
+
+> I ran into some HBA firmware bugs with QLE2694L firmware 9.06.02 -
+> 9.08.02 where a SRR would cause the HBA to misbehave badly.  Since SRRs
+> are rare and therefore difficult to test, I figured it would be worth
+> checking for the buggy firmware and disabling SLER with a warning
+> instead of letting others run into the same problem on the rare
+> occasion that they get a SRR.  This turned out to be difficult because
+> the firmware version isn't known in the normal NVRAM config routine, so
+> I added a second NVRAM config routine that is called after the firmware
+> version is known.  It may be necessary to add checks for additional
+> buggy firmware versions or additional chips that I was not able to
+> test.
 > 
-> On 9/11/25 10:21, Dmitry Bogdanov wrote:
-> > On Mon, Sep 08, 2025 at 02:58:06PM -0400, Tony Battersby wrote:
-> >> (target mode)
-> >>
-> >> There is a race between the following:
-> >>
-> >> CPU 1:
-> >> scst_hw_pending_work_fn() ->
-> >> sqa_on_hw_pending_cmd_timeout() ->
-> >> qlt_abort_cmd() ->
-> >> qlt_unmap_sg()
-> >>
-> >> CPU 2:
-> >> qla_do_work() ->
-> >> qla24xx_process_response_queue() ->
-> >> qlt_do_ctio_completion() ->
-> >> qlt_unmap_sg()
-> >>
-> >> Two CPUs calling qlt_unmap_sg() on the same cmd at the same time
-> >> results in an oops:
-> >>
-> >> dma_unmap_sg_attrs()
-> >>         BUG_ON(!valid_dma_direction(dir));
-> >>
-> >> This race is more likely to happen because qlt_abort_cmd() may cause the
-> >> hardware to send a CTIO.
-> >>
-> >> The solution is to lock cmd->qpair->qp_lock_ptr when aborting a command.
-> >> This makes it possible to check the cmd state and make decisions about
-> >> what to do without racing with the CTIO handler and other code.
-> >>
-> >> - Lock cmd->qpair->qp_lock_ptr when aborting a cmd.
-> >> - Eliminate cmd->cmd_lock and change cmd->aborted back to a bitfield
-> >>   since it is now protected by qp_lock_ptr just like all the other
-> >>   flags.
-> >> - Add another command state QLA_TGT_STATE_DONE to avoid any possible
-> >>   races between qlt_abort_cmd() and tgt_ops->free_cmd().
-> >> - Add the cmd->sent_term_exchg flag to indicate if
-> >>   qlt_send_term_exchange() has already been called.
-> >> - For SCST (scst_hw_pending_work_fn()), export qlt_send_term_exchange()
-> >>   and qlt_unmap_sg() so that they can be called directly instead of
-> >>   trying to make qlt_abort_cmd() work for both HW timeout and TMR abort.
-> >> - Add TRC_CTIO_IGNORED for scst_hw_pending_work_fn().
-> >>
-> >> Fixes: 26f9ce53817a ("scsi: qla2xxx: Fix missed DMA unmap for aborted commands")
-> > You are trying to fix that commit using its approach, but actually that
-> > approach is the root cause itself. It is not ok to unmap dma while that
-> > memory is owned by HW.
-> >
-> > We use this patch 4 years already instead of 26f9ce53817a and never
-> > faced with such crashes.
-> >
-> >
-> > From: Dmitry Bogdanov <d.bogdanov@yadro.com>
-> > Date: Wed, 20 Oct 2021 15:57:31 +0300
-> > Subject: [PATCH] scsi: qla2xxx: clear cmds after chip reset
-> >
-> > Commands sent to FW, after chip reset got stuck and never freed as FW is
-> > not going to response to them anymore.
-> >
-> > This patch partially reverts aefed3e5548f at __qla2x00_abort_all_cmds.
-> >
-> > Fixes: aefed3e5548f ("scsi: qla2xxx: target: Fix offline port handling and host reset handling")
-> > Signed-off-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
-> 
-> Hey Dmitry, I want to pick up your patch and add it to my v2 patchset,
-> but I have made a few changes to it.  Do I have your permission to add
-> your "Co-developed-by" and "Signed-off-by" tags to the patch below?
-> (Never did this before, I think I need to ask permission.)
+> Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
+> ---
+>   drivers/scsi/qla2xxx/qla_dbg.c     |    1 +
+>   drivers/scsi/qla2xxx/qla_init.c    |    1 +
+>   drivers/scsi/qla2xxx/qla_target.c  | 1030 ++++++++++++++++++++++++++++
+>   drivers/scsi/qla2xxx/qla_target.h  |   81 +++
+>   drivers/scsi/qla2xxx/tcm_qla2xxx.c |   15 +
+>   5 files changed, 1128 insertions(+)
 
-Yes, of course, feel free to use it. Signed-off-by is enough I think.
+> [...]
 
- 
-> Compared to your patch, I changed "if (cmd->se_cmd.t_state ==
-> TRANSPORT_WRITE_PENDING)" to "if (cmd->state ==
-> QLA_TGT_STATE_NEED_DATA)" (which is the way it was originally) to work
-> better with SCST and added the revert of 26f9ce53817a.
+> + * Return true if the HBA firmware version is known to have bugs that
+> + * prevent Sequence Level Error Recovery (SLER) / Sequence Retransmission
+> + * Request (SRR) from working.
+> + */
+> +static bool qlt_has_sler_fw_bug(struct qla_hw_data *ha)
+> +{
+> +	bool has_sler_fw_bug = false;
+> +
+> +	if (IS_QLA2071(ha)) {
+> +		/*
+> +		 * QLE2694L known bad firmware:
+> +		 *   9.06.02
+> +		 *   9.07.00
+> +		 *   9.08.02
+> +		 *   SRRs trigger hundreds of bogus entries in the response
+> +		 *   queue and various other problems.
+> +		 *
+> +		 * QLE2694L known good firmware:
+> +		 *   8.08.05
+> +		 *   9.09.00
+> +		 *
+> +		 * QLE2694L unknown firmware:
+> +		 *   9.00.00 - 9.05.xx
+> +		 */
+> +		if (ha->fw_major_version == 9 &&
+> +		    ha->fw_minor_version >= 6 &&
+> +		    ha->fw_minor_version <= 8)
+> +			has_sler_fw_bug = true;
+> +	}
+> +
+> +	return has_sler_fw_bug;
+> +}
 
-Yes, that is more correct.
- 
-> I will reply to this message with the two updated v2 patches that follow
-> your suggestions and remove the dangerous code that you objected to.  If
-> you approve of them, then I will submit the entire v2 patchset, since
-> some of the other patches needed to be rebased.
->
+> [...]
 
+ > +/* Update any settings that depend on ha->fw_*_version. */> +void
+> +qlt_config_nvram_with_fw_version(struct scsi_qla_host *vha)
+> +{
+> +	struct qla_hw_data *ha = vha->hw;
+> +
+> +	if (!QLA_TGT_MODE_ENABLED())
+> +		return;
+> +
+> +	if (ql2xtgt_tape_enable && qlt_has_sler_fw_bug(ha)) {
+> +		ql_log(ql_log_warn, vha, 0x11036,
+> +		    "WARNING: ignoring ql2xtgt_tape_enable due to buggy HBA firmware; please upgrade FW\n");
+> +
+> +		/* Disable FC Tape support */
+> +		if (ha->isp_ops->nvram_config == qla81xx_nvram_config) {
+> +			struct init_cb_81xx *icb =
+> +				(struct init_cb_81xx *)ha->init_cb;
+> +			icb->firmware_options_2 &= cpu_to_le32(~BIT_12);
+> +		} else {
+> +			struct init_cb_24xx *icb =
+> +				(struct init_cb_24xx *)ha->init_cb;
+> +			icb->firmware_options_2 &= cpu_to_le32(~BIT_12);
+> +		}
+> +	}
+> +}
 
+If you want to review the firmware changelog, mainly: FCD-1183 (FCD-371, ER147301), FCD-259, ER146998
+(from 9.00.00 to 9.15.05 [06/10/25]):
+https://www.marvell.com/content/dam/marvell/en/drivers/2025-06-10-release/fw_release_notes/Fibre_Channel_Firmware_Release_Notes.pdf
+
+It's look like all 2{678}xx devices/chips are affected by this bug.
+Perhaps the Marvel crew could provide more information on this.
