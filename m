@@ -1,37 +1,36 @@
-Received: from mail.cybernetics.com (mail.cybernetics.com [72.215.153.18])
+Received: from mail.cybernetics.com (mail.cybernetics.com [173.71.130.66])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34F1D31BCAA
-	for <target-devel@vger.kernel.org>; Thu, 25 Sep 2025 19:49:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=72.215.153.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 11A9D2BE03E
+	for <target-devel@vger.kernel.org>; Mon, 29 Sep 2025 14:28:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=173.71.130.66
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1758829797; cv=none; b=eFHZ6VQs1U9E73kV4YfeSispy1FKVKrOp5j7U6PxROrA5W2sIbhW23817IgmxvjAl8PTmOU2VnvWJtL8e3Gn1I/FQSITSKgWucJhMxRC+gxEBxSCHC9U9YAh7ijJbmLzCTB2XDMn49Ga2Ixdls5ZMGalFCKBV+f+gc9LUPpTnsQ=
+	t=1759156129; cv=none; b=Rm30aag0RcIIk+qOkXIsUE81LOa5nsW4JvAo6XjW4nXmYOeDSa1O0uIj+QMw+DibBKPqx0dvkWRgAtUwU+7vV+0TWmZDUw3meX2tucLtJMODu8FQiVbW4z564AtBeMO6DI2cpXH1UNf00TN2wkz3RomSvRQrVB7ZlZ3Xafx8W8k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1758829797; c=relaxed/simple;
-	bh=fy6Q0ZaKMfLx9uRS5uXQisOpubyAV1GiFDLk4s0TE60=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=MO2Mw/e8gDP1/OBJ/0Hs0bYa4DiQnR7YJ/sSHr4FHfesWQsdxRRRdEg0qDpea4WDhQIHRgSAQbpNFAE+AuMxDSsw12mZ4eteu4ecBVydHv6fMdH3a/hgfI93BhWzoYHDmmEc/QyyVCACZX60PzLKCnpjnTnGqOO+fFkE2Hp7Bmo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cybernetics.com; spf=pass smtp.mailfrom=cybernetics.com; dkim=fail (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b=ioVc8dgl reason="signature verification failed"; arc=none smtp.client-ip=72.215.153.18
+	s=arc-20240116; t=1759156129; c=relaxed/simple;
+	bh=VCd8Ng5IlXg1TxnlxNpOtKHXOEYlE+WNR2guFPUtyAU=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=Pov9w7thdsdjfAwvU3Cs+EW/mQ1VMtYluTZ/y5y+fzzDGgANmu6+Mt+C+eYmOfYKvfNOzFjuzDeWQQWpUI1duckL+PJGfFZBCRID7hbYlKzXuTMur8II2M29HjQlslN2TBwGFT9mLHVVdoMt4aAWtaQMavsWqDbZVvpW2y+YICo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cybernetics.com; spf=pass smtp.mailfrom=cybernetics.com; dkim=fail (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b=OqEfimry reason="signature verification failed"; arc=none smtp.client-ip=173.71.130.66
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cybernetics.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cybernetics.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b="ioVc8dgl"
-Received: from cybernetics.com ([10.10.4.126]) by mail.cybernetics.com with ESMTP id umcxJq9143ylI9Vf; Thu, 25 Sep 2025 15:30:56 -0400 (EDT)
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b="OqEfimry"
+Received: from cybernetics.com ([10.10.4.126]) by mail.cybernetics.com with ESMTP id eIohkw7uXbzikNTi; Mon, 29 Sep 2025 10:28:39 -0400 (EDT)
 X-Barracuda-Envelope-From: tonyb@cybernetics.com
 X-Barracuda-RBL-Trusted-Forwarder: 10.10.4.126
 X-ASG-Whitelist: Client
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=cybernetics.com; s=mail;
-	bh=xudL48fM9Z6IOWDFUL6jSU7YNm2a6NjrHcWQMpNKICk=;
-	h=Content-Transfer-Encoding:Content-Type:In-Reply-To:References:Cc:To:From:
-	Content-Language:Subject:MIME-Version:Date:Message-ID; b=ioVc8dglziMgbe+Pk4Vf
-	bKOPa567RVaCwOpuEAmSRBa7VlFjqYkc3d/qz/Cmi+EhgcLIgL0gUO2hjX3EKjBSLkLw+zaLgfFNB
-	65HEx/3+sxoC36Xh7xzgeyUCf60TLeBft6WLx5LiNaHZHuttsH5S2mtFUmyqhuuEhkSywO0aW4=
+	bh=Tt9DFUfWwVzS3gkHvm8JGhZUNqEyQERUaGi2GOYlJig=;
+	h=Content-Transfer-Encoding:Content-Type:Subject:From:Cc:To:Content-Language:
+	MIME-Version:Date:Message-ID; b=OqEfimryYgGzpd6coRGWgNtdOX+ccWu4C66Sf/naemYgV
+	/yLLGt5HHRdx0lopr19+YTKq+5J3GGi/tHeGYCpWO1uIpDIF2MeWMoRFEz/VievzOVFc9vVdK+h2N
+	GNrf1vMWX/TcY2U3qaQAl+RtQuIEd6aQUIOTwjk+HPZnaZioc=
 Received: from [10.157.2.224] (HELO [192.168.200.1])
   by cybernetics.com (CommuniGate SPEC SMTP 8.0.5)
-  with ESMTPS id 14213338; Thu, 25 Sep 2025 15:30:56 -0400
-Message-ID: <9ef32bd2-1370-4e57-a696-7151c8e46976@cybernetics.com>
+  with ESMTPS id 14216579; Mon, 29 Sep 2025 10:28:39 -0400
+Message-ID: <e95ee7d0-3580-4124-b854-7f73ca3a3a84@cybernetics.com>
 X-Barracuda-RBL-Trusted-Forwarder: 10.157.2.224
-Date: Thu, 25 Sep 2025 15:30:56 -0400
+Date: Mon, 29 Sep 2025 10:28:39 -0400
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -39,139 +38,156 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 14/15] scsi: qla2xxx: add back SRR support
 Content-Language: en-US
-X-ASG-Orig-Subj: Re: [PATCH 14/15] scsi: qla2xxx: add back SRR support
-From: Tony Battersby <tonyb@cybernetics.com>
-To: Xose Vazquez Perez <xose.vazquez@gmail.com>,
- Nilesh Javali <njavali@marvell.com>, GR-QLogic-Storage-Upstream@marvell.com,
+To: Nilesh Javali <njavali@marvell.com>,
+ GR-QLogic-Storage-Upstream@marvell.com,
  "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>
 Cc: linux-scsi <linux-scsi@vger.kernel.org>, target-devel@vger.kernel.org,
- scst-devel@lists.sourceforge.net, KERNEL ML <linux-kernel@vger.kernel.org>
-References: <f8977250-638c-4d7d-ac0c-65f742b8d535@cybernetics.com>
- <2cc10189-6953-428e-b34e-b1c714fc0eae@cybernetics.com>
- <0669b097-0bf1-4895-9c2a-5e953aebbfab@gmail.com>
- <8056aa80-7e5a-4cb3-804c-d9c7f8bd6d55@gmail.com>
- <46422ab9-9088-4d9c-b93d-31083f8b9398@cybernetics.com>
- <ec5bed6f-195f-486c-8905-bf63c663c212@cybernetics.com>
-In-Reply-To: <ec5bed6f-195f-486c-8905-bf63c663c212@cybernetics.com>
+ scst-devel@lists.sourceforge.net,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Dmitry Bogdanov <d.bogdanov@yadro.com>,
+ Xose Vazquez Perez <xose.vazquez@gmail.com>
+From: Tony Battersby <tonyb@cybernetics.com>
+Subject: [PATCH v2 00/16] qla2xxx target mode improvements
 Content-Type: text/plain; charset=UTF-8
+X-ASG-Orig-Subj: [PATCH v2 00/16] qla2xxx target mode improvements
 X-Barracuda-Connect: UNKNOWN[10.10.4.126]
-X-Barracuda-Start-Time: 1758828656
+X-Barracuda-Start-Time: 1759156119
 X-Barracuda-URL: https://10.10.4.122:443/cgi-mod/mark.cgi
 X-Barracuda-BRTS-Status: 1
 X-Virus-Scanned: by bsmtpd at cybernetics.com
-X-Barracuda-Scan-Msg-Size: 3432
+X-Barracuda-Scan-Msg-Size: 5434
 Content-Transfer-Encoding: quoted-printable
-X-ASG-Debug-ID: 1758828656-1cf43947df3a6b30001-W1KF7h
+X-ASG-Debug-ID: 1759156119-1cf43947df3c0010001-W1KF7h
 
-On 9/25/25 13:00, Tony Battersby wrote:
-> On 9/25/25 12:04, Tony Battersby wrote:
->> On 9/25/25 11:30, Xose Vazquez Perez wrote:
->>> On 9/25/25 2:49 PM, Xose Vazquez Perez wrote:
->>>
->>>> If you want to review the firmware changelog, mainly: FCD-1183 (FCD-=
-371, ER147301), FCD-259, ER146998
->>>> (from 9.00.00 to 9.15.05 [06/10/25]):
->>>> https://www.marvell.com/content/dam/marvell/en/drivers/2025-06-10-re=
-lease/fw_release_notes/Fibre_Channel_Firmware_Release_Notes.pdf
->>>>
->>>> It's look like all 2{678}xx devices/chips are affected by this bug.
->>>> Perhaps the Marvel crew could provide more information on this.
->>> 267x, or older, is still on 8.08, so apparently it's free of this bug=
-:
->>> https://www.marvell.com/content/dam/marvell/en/drivers/release-matrix=
-/release-matrix-qlogic-fc-sw-posting-by-release-matrix.pdf
->>>
->>> 2870 / 2770 :        9.15.06 FW
->>> 2740 / 2760 / 269x : 9.15.01 FW
->>> 267x :               8.08.231 FW
->> I am still trying to figure out what macros to use to test for the
->> affected HBAs.=C2=A0 So far I have:
->>
->> if (IS_QLA27XX(ha) || IS_QLA28XX(ha))
->>
->> But all the ISP numbers are pretty confusing.=C2=A0 I have a number of=
- 8, 16,
->> 32, and 64 Gbps HBAs lying around to test, but I am sure I don't have
->> every possible model.
->>
->> There are a number of items under "Changes and Fixes from v9.08.00 to
->> v9.09.00" that might be related to the problem that I was experiencing=
-.=C2=A0
->> For example=C2=A0FCD-1076 sounds similar except that the SRR problem w=
-as with
->> the CTIO queue rather than the ATIO queue.=C2=A0 I could expand the "b=
-ad
->> firmware" versions to include v9.04.00 - v9.08.00, since=C2=A0v9.04.00
->> introduced ER147301 and v9.09.00 fixed FCD-1183.
->>
->> Thanks,
->> Tony
->>
-> This is what I found by checking the PCI IDs on some of my HBAs:
->
-> not affected
-> QLE2672 16 Gbps ISP2031 8.08.231 FW
->
-> affected
-> QLE2694 16 Gpbs ISP2071 (tested)
-> QLE2742 32 Gbps ISP2261 (not tested)
-> QLE2872 64 Gpbs ISP2281 (not tested)
->
-> So the following check should cover them:
->
-> if (IS_QLA27XX(ha) || IS_QLA28XX(ha))
->
-> Tony
->
-Here is the updated version of the function:
+v1 -> v2
+- Add new patch "scsi: qla2xxx: clear cmds after chip reset" suggested
+by Dmitry Bogdanov.
+- Rename "scsi: qla2xxx: fix oops during cmd abort" to "scsi: qla2xxx:
+fix races with aborting commands" and make SCST reset the ISP on a HW
+timeout instead of unmapping DMA that might still be in use.
+- Fix "scsi: qla2xxx: fix TMR failure handling" to free mcmds properly
+for LIO.
+- In "scsi: qla2xxx: add back SRR support", detect more buggy HBA fw
+versions based on the fw release notes.
+- Shorten code comment in "scsi: qla2xxx: improve safety of cmd lookup
+by handle" and improve patch description.
+- Rebase other patches as needed.
 
-/*
- * Return true if the HBA firmware version is known to have bugs that
- * prevent Sequence Level Error Recovery (SLER) / Sequence Retransmission
- * Request (SRR) from working.
- *
- * Some bad versions are based on testing and some are based on "Marvell =
-Fibre
- * Channel Firmware Release Notes".
- */
-static bool qlt_has_sler_fw_bug(struct qla_hw_data *ha)
-{
-	bool has_sler_fw_bug =3D false;
+v1:
+https://lore.kernel.org/r/f8977250-638c-4d7d-ac0c-65f742b8d535@cybernetic=
+s.com/
 
-	if (IS_QLA27XX(ha) || IS_QLA28XX(ha)) {
-		/*
-		 * In the fw release notes:
-		 *   ER147301 was added to v9.05.00 causing SLER regressions
-		 *   FCD-259  was fixed in v9.08.00
-		 *   FCD-371  was fixed in v9.08.00
-		 *   FCD-1183 was fixed in v9.09.00
-		 *
-		 * QLE2694L (ISP2071) known bad firmware (tested):
-		 *   9.06.02
-		 *   9.07.00
-		 *   9.08.02
-		 *   SRRs trigger hundreds of bogus entries in the response
-		 *   queue and various other problems.
-		 *
-		 * QLE2694L known good firmware (tested):
-		 *   8.08.05
-		 *   9.09.00
-		 *
-		 * Suspected bad firmware (not confirmed by testing):
-		 *   v9.05.xx
-		 *
-		 * unknown firmware:
-		 *   9.00.00 - 9.04.xx
-		 */
-		if (ha->fw_major_version =3D=3D 9 &&
-		    ha->fw_minor_version >=3D 5 &&
-		    ha->fw_minor_version <=3D 8)
-			has_sler_fw_bug =3D true;
-	}
+This patch series improves the qla2xxx FC driver in target mode.=C2=A0 I
+developed these patches using the out-of-tree SCST target-mode subsystem
+(https://scst.sourceforge.net/), although most of the improvements will
+also apply to the other target-mode subsystems such as the in-tree LIO.=C2=
+=A0
+Unfortunately qla2xxx+LIO does not pass all of my tests, but my patches
+do not make it any worse (results below).=C2=A0 These patches have been
+well-tested at my employer with qla2xxx+SCST in both initiator mode and
+target mode and with a variety of FC HBAs and initiators.=C2=A0 Since SCS=
+T is
+out-of-tree, some of the patches have parts that apply in-tree and other
+parts that apply out-of-tree to SCST.=C2=A0 I am going to include the
+out-of-tree SCST patches to provide additional context; feel free to
+ignore them if you are not interested.
 
-	return has_sler_fw_bug;
-}
+All patches apply to linux 6.17 and SCST 3.10 master branch.
+
+Summary of patches:
+- bugfixes
+- cleanups
+- improve handling of aborts and task management requests
+- improve log message
+- add back SLER / SRR support (removed in 2017)
+
+Some of these patches improve handling of aborts and task management
+requests.=C2=A0 This is some of the testing that I did:
+
+Test 1: Use /dev/sg to queue random disk I/O with short timeouts; make
+sure cmds are aborted successfully.
+Test 2: Queue lots of disk I/O, then use "sg_reset -N -d /dev/sg" on
+initiator to reset logical unit.
+Test 3: Queue lots of disk I/O, then use "sg_reset -N -t /dev/sg" on
+initiator to reset target.
+Test 4: Queue lots of disk I/O, then use "sg_reset -N -b /dev/sg" on
+initiator to reset bus.
+Test 5: Queue lots of disk I/O, then use "sg_reset -N -H /dev/sg" on
+initiator to reset host.
+Test 6: Use fiber channel attenuator to trigger SRR during
+write/read/compare test; check data integrity.
+
+With my patches, SCST passes all of these tests.
+
+Results with in-tree LIO target-mode subsystem:
+
+Test 1: Seems to abort the same cmd multiple times (both
+qlt_24xx_retry_term_exchange() and __qlt_send_term_exchange()).=C2=A0 But
+cmds get aborted, so give it a pass?
+
+Test 2: Seems to work; cmds are aborted.
+
+Test 3: Target reset doesn't seem to abort cmds, instead, a few seconds
+later:
+qla2xxx [0000:04:00.0]-f058:9: qla_target(0): tag 1314312, op 2a: CTIO
+with TIMEOUT status 0xb received (state 1, port 51:40:2e:c0:18:1d:9f:cc,
+LUN 0)
+
+Tests 4 and 5: The initiator is unable to log back in to the target; the
+following messages are repeated over and over on the target:
+qla2xxx [0000:04:00.0]-e01c:9: Sending TERM ELS CTIO (ha=3D00000000f88113=
+90)
+qla2xxx [0000:04:00.0]-f097:9: Linking sess 000000008df5aba8 [0] wwn
+51:40:2e:c0:18:1d:9f:cc with PLOGI ACK to wwn 51:40:2e:c0:18:1d:9f:cc
+s_id 00:00:01, ref=3D2 pla 00000000835a9271 link 0
+
+Test 6: passes with my patches; SRR not supported previously.
+
+So qla2xxx+LIO seems a bit flaky when handling exceptions, but my
+patches do not make it any worse.=C2=A0 Perhaps someone who is more famil=
+iar
+with LIO can look at the difference between LIO and SCST and figure out
+how to improve it.
+
+Tony Battersby
+https://www.cybernetics.com/
+
+Tony Battersby (16):
+  Revert "scsi: qla2xxx: Perform lockless command completion in abort
+    path"
+  scsi: qla2xxx: fix initiator mode with qlini_mode=3Dexclusive
+  scsi: qla2xxx: fix lost interrupts with qlini_mode=3Ddisabled
+  scsi: qla2xxx: use reinit_completion on mbx_intr_comp
+  scsi: qla2xxx: remove code for unsupported hardware
+  scsi: qla2xxx: improve debug output for term exchange
+  scsi: qla2xxx: fix term exchange when cmd_sent_to_fw =3D=3D 1
+  scsi: qla2xxx: clear cmds after chip reset
+  scsi: qla2xxx: fix races with aborting commands
+  scsi: qla2xxx: improve checks in qlt_xmit_response / qlt_rdy_to_xfer
+  scsi: qla2xxx: fix TMR failure handling
+  scsi: qla2xxx: fix invalid memory access with big CDBs
+  scsi: qla2xxx: add cmd->rsp_sent
+  scsi: qla2xxx: improve cmd logging
+  scsi: qla2xxx: add back SRR support
+  scsi: qla2xxx: improve safety of cmd lookup by handle
+
+ drivers/scsi/qla2xxx/qla_dbg.c     |    3 +-
+ drivers/scsi/qla2xxx/qla_def.h     |    1 -
+ drivers/scsi/qla2xxx/qla_gbl.h     |    2 +-
+ drivers/scsi/qla2xxx/qla_init.c    |    1 +
+ drivers/scsi/qla2xxx/qla_isr.c     |   32 +-
+ drivers/scsi/qla2xxx/qla_mbx.c     |    2 +
+ drivers/scsi/qla2xxx/qla_mid.c     |    4 +-
+ drivers/scsi/qla2xxx/qla_os.c      |   35 +-
+ drivers/scsi/qla2xxx/qla_target.c  | 1775 +++++++++++++++++++++++-----
+ drivers/scsi/qla2xxx/qla_target.h  |  112 +-
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c |   17 +
+ 11 files changed, 1646 insertions(+), 338 deletions(-)
+
+
+base-commit: e5f0a698b34ed76002dc5cff3804a61c80233a7a
+--=20
+2.43.0
 
