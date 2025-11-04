@@ -1,215 +1,152 @@
-Received: from mail.cybernetics.com (mail.cybernetics.com [173.71.130.66])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 99D693164B0
-	for <target-devel@vger.kernel.org>; Mon,  3 Nov 2025 16:20:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=173.71.130.66
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E07F42D7D42
+	for <target-devel@vger.kernel.org>; Tue,  4 Nov 2025 10:45:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762186808; cv=none; b=JZUY+PMwy7CQJttiIo8F1Cc30auEeApy1otq1q/Sw4VJbNaKFiaNlrm6Xl373MHxJBY/iRqAEO15E/hc3pzsHsuhP7QPNY7NxxbtIzPns9Wu3s+63N0YSTJAV3+NgiYDGLu9QNTjWMYp/QxgnkQedmTJgr8KFElYTXJJdtKEmTs=
+	t=1762253132; cv=none; b=dEvNATh3y9btIddFZe2YLWPRlgFFj2L6UECbarFPizT5puT3GSPUyBpyVBx1+eSsHcR4s8zrHfmhKLWOVZlD0ASAAe0y5Fu1R1YDcVvjS+lkXbsOWbLdZNIiQ4yf7q1X0cG7JwX7GaMs4x2lNYdqbVV6G1UPiceNthNBGR1jUCs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762186808; c=relaxed/simple;
-	bh=O90G56kfFPOri4qrEzK7YFsjB71EfKrK9p+F43qIGxo=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=kDqvP1L4cR6/pf+uryfc2uNXRJrHZWU++MBnKbNDoQ8U80yTPOoFadcvmBlzzmHo7VBsgbp3dKPFCSWTDMXEDPf9nBsKzdpf58/RYukz7q89jVO4GbvOJjpwvO3FfioLviLuSgkXi4RuZ+njPSe1jsKdNHLRy61i6f+bVhM9nvs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cybernetics.com; spf=pass smtp.mailfrom=cybernetics.com; dkim=fail (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b=fSK6Uii9 reason="signature verification failed"; arc=none smtp.client-ip=173.71.130.66
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cybernetics.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cybernetics.com
+	s=arc-20240116; t=1762253132; c=relaxed/simple;
+	bh=VX0zLAsPBGlwcqvp/8KD3Z0nfnIEYq4KM2NgJGr5aXk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rO3atncM55OznK3EzbCEbKJuPO4iblgC2mSEuDVA072xTu7Pvho0gox1bKK0PWQr7wmrsIONdFAhOXORzHKBdc4tl9wSJq18Bl3spyGH0XPs5DJWM/dBTlq4iPFadfRpgAoeojnaWaQUHR9d1QYfHg14b+SqB6ghuHrYOAX619k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=PyGwY59m; arc=none smtp.client-ip=209.85.208.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b="fSK6Uii9"
-Received: from cybernetics.com ([10.10.4.126]) by mail.cybernetics.com with ESMTP id lo2q1DQROCs0AcPw; Mon, 03 Nov 2025 10:44:32 -0500 (EST)
-X-Barracuda-Envelope-From: tonyb@cybernetics.com
-X-Barracuda-RBL-Trusted-Forwarder: 10.10.4.126
-X-ASG-Whitelist: Client
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=cybernetics.com; s=mail;
-	bh=LMOi7QMdqqg2dcOiYEuZyKjhgoKOfOH88JRSzJLVSto=;
-	h=Content-Transfer-Encoding:Content-Type:In-Reply-To:References:Cc:To:From:
-	Content-Language:Subject:MIME-Version:Date:Message-ID; b=fSK6Uii94NJBFtwTZXnv
-	WsLzglkByqRc42/NavSOP+sWtiK3JLTYl2AFAGIpfpqANBT8FcRumrdnzzZPdGRGs/uBdp44s203k
-	GsT/NOw7Ncv0cQWrOwd8YOcUcCoUyrws7ndUa6WQvr7JFrmrx1r+TMzdiAKojvM6Ev+rzvSKLk=
-Received: from [10.157.2.224] (HELO [192.168.200.1])
-  by cybernetics.com (CommuniGate SPEC SMTP 8.0.5)
-  with ESMTPS id 14263426; Mon, 03 Nov 2025 10:44:32 -0500
-Message-ID: <a6b8713e-c499-4fce-9964-9f277b24ebe9@cybernetics.com>
-X-Barracuda-RBL-Trusted-Forwarder: 10.157.2.224
-Date: Mon, 3 Nov 2025 10:44:32 -0500
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="PyGwY59m"
+Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-640f627d01dso272373a12.2
+        for <target-devel@vger.kernel.org>; Tue, 04 Nov 2025 02:45:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1762253127; x=1762857927; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=WYj8Ir61bhOOSEvOfRY0NgbszhSvxELkBx7OQsS3cOQ=;
+        b=PyGwY59mWp3utUgAh2CmYtifE3gNPZiSf6GY7GwMAB+DkCf/1JXrIlq9TfMhdxE+YQ
+         2B2ECfWUTtR/K0AeYQ0VVshxBM/SlRnewghaQcoee+U1+NL0w9hzckYfh/5tF/vQGIx1
+         062ayTngKU2E1ojnOXupLDw1C180xE3yYuxJShOygafocJhwZZblIqthF0lj2rpFEBzN
+         J0sPTxm5MpB2atG3SpzlEjttx96zpyJ5sj2eomN1bq9n+C1jmnvAwPmoTZGBC1a0hKIB
+         YNgYP83Ttnih1+3vhaphHbMAx26a+kmIF+ABLmzJPtg7GM/omOBMqGeu+4l67r7l3oV0
+         whpg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762253127; x=1762857927;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=WYj8Ir61bhOOSEvOfRY0NgbszhSvxELkBx7OQsS3cOQ=;
+        b=egohs3pryOPWku++IcXSFcTivWkrAaIr/2oDkZAWzY/lkly7xC2LyrmDHv7+pVHwU7
+         4c/p9MPzpRSBPr6aWnUMhDi6ekegEHTUQsVf6PrbK80eziIGo61RV7v2tuohZjZDf37/
+         58olJ98IPjzuKv/v3B4BDUYLPjx12DBksWcz1trV/HADhm9T9QRI+zPa5Nb706qXc7/R
+         qo2loJ2cbszUeWx8NmmiKG0AW2yBBfWqtSdh2CjwkyQDZryj5sxR2KxRITvksRw9oNOu
+         dAzwOzECNkRylQHYmr9I1yb3TOo3a+xxBKnJ2aGQ6Xr90FKsu/YRkvv+2roPAejKRkMK
+         I4/w==
+X-Forwarded-Encrypted: i=1; AJvYcCWi7R8jyaXo8mZb3vxL4plV21k7TSMJOVBq6Ob4wemy2ZWIsK4i1onmxTVvnl5zEJYpLse9QDEn0mZZkVk=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwkDsAv1dU8riilzDY6ACmxcoyG/8/+LMvPOMPoaeyUykctB9oD
+	5paGwTQ0xYOZl6k3846X77Kvk4jMMfubr1WtH/WJLmyeVYvrgaUAXAbUdGBYq+fR5Yk=
+X-Gm-Gg: ASbGncvCVaY0nMvd6GYgLNgrvX8k8gNa2h0NDfMzaYNWoy64xoVZrspCBhGpom+WXYd
+	eJoxe75ZMYH1c3RozQF8+xdTxfYtM9cNQ2My3ueTeweypGg1v2g2qvpTJA3+8tWZwnB3S9+0KYV
+	HPBc1HydsOrlqWdFUazeIAR+XxUFdbjN9Uo0SABydvN+Sp4Xn2QHB1v0ae4g/v98U49ndymyDsl
+	VqmuwOoqVFOjSkBOS0ZTgpI0ix05BAfipyP0HXUeM4gV4jz+01/5px0ifkXldFMbHQmMr2vRhtD
+	zvLuQ3BzwCmBM7HyOFsWR7ViIUh5Oj7L4iW2Jtc414ftGtdwBh7KgxcKy/WPYconlGI6yXri2Km
+	54+GWLs2s9lnN//quRZNrvyV1BD7NYH+dfOI3dtZABDqOEYU1uqxt3b59H6jK7ixNt+fvmYmsYL
+	5SpEMhD96DV1BPgw==
+X-Google-Smtp-Source: AGHT+IEMA8UdWF6f+LHriDUDE/NjxHUOw+zfGpPihm2oIRRAOwA1BfGgSkWC9f9a8GPJW8x10c9pUQ==
+X-Received: by 2002:a17:906:e0d6:b0:b70:7d5a:2111 with SMTP id a640c23a62f3a-b707d5a6021mr1065888366b.64.1762253127163;
+        Tue, 04 Nov 2025 02:45:27 -0800 (PST)
+Received: from linux ([2a00:6d43:105:c401:e307:1a37:2e76:ce91])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b723d3a3082sm177827666b.11.2025.11.04.02.45.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 04 Nov 2025 02:45:26 -0800 (PST)
+From: Marco Crivellari <marco.crivellari@suse.com>
+To: linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux1394-devel@lists.sourceforge.net
+Cc: Tejun Heo <tj@kernel.org>,
+	Lai Jiangshan <jiangshanlai@gmail.com>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Marco Crivellari <marco.crivellari@suse.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Chris Boot <bootc@bootc.net>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>
+Subject: [PATCH] sbp-target: replace use of system_unbound_wq with system_dfl_wq
+Date: Tue,  4 Nov 2025 11:45:18 +0100
+Message-ID: <20251104104518.102130-1-marco.crivellari@suse.com>
+X-Mailer: git-send-email 2.51.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 00/16] qla2xxx target mode improvements
-Content-Language: en-US
-X-ASG-Orig-Subj: Re: [PATCH v2 00/16] qla2xxx target mode improvements
-From: Tony Battersby <tonyb@cybernetics.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>, target-devel@vger.kernel.org,
- scst-devel@lists.sourceforge.net,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Dmitry Bogdanov <d.bogdanov@yadro.com>,
- Xose Vazquez Perez <xose.vazquez@gmail.com>,
- GR-QLogic-Storage-Upstream@marvell.com, Nilesh Javali <njavali@marvell.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-References: <e95ee7d0-3580-4124-b854-7f73ca3a3a84@cybernetics.com>
-In-Reply-To: <e95ee7d0-3580-4124-b854-7f73ca3a3a84@cybernetics.com>
-Content-Type: text/plain; charset=UTF-8
-X-Barracuda-Connect: UNKNOWN[10.10.4.126]
-X-Barracuda-Start-Time: 1762184672
-X-Barracuda-URL: https://10.10.4.122:443/cgi-mod/mark.cgi
-X-Barracuda-BRTS-Status: 1
-X-Virus-Scanned: by bsmtpd at cybernetics.com
-X-Barracuda-Scan-Msg-Size: 6032
-Content-Transfer-Encoding: quoted-printable
-X-ASG-Debug-ID: 1762184672-1cf4391391a8580001-W1KF7h
+Content-Transfer-Encoding: 8bit
 
-On 9/29/25 10:28, Tony Battersby wrote:
-> v1 -> v2
-> - Add new patch "scsi: qla2xxx: clear cmds after chip reset" suggested
-> by Dmitry Bogdanov.
-> - Rename "scsi: qla2xxx: fix oops during cmd abort" to "scsi: qla2xxx:
-> fix races with aborting commands" and make SCST reset the ISP on a HW
-> timeout instead of unmapping DMA that might still be in use.
-> - Fix "scsi: qla2xxx: fix TMR failure handling" to free mcmds properly
-> for LIO.
-> - In "scsi: qla2xxx: add back SRR support", detect more buggy HBA fw
-> versions based on the fw release notes.
-> - Shorten code comment in "scsi: qla2xxx: improve safety of cmd lookup
-> by handle" and improve patch description.
-> - Rebase other patches as needed.
->
-> v1:
-> https://lore.kernel.org/r/f8977250-638c-4d7d-ac0c-65f742b8d535@cybernet=
-ics.com/
->
-> This patch series improves the qla2xxx FC driver in target mode.=C2=A0 =
-I
-> developed these patches using the out-of-tree SCST target-mode subsyste=
-m
-> (https://scst.sourceforge.net/), although most of the improvements will
-> also apply to the other target-mode subsystems such as the in-tree LIO.=
-=C2=A0
-> Unfortunately qla2xxx+LIO does not pass all of my tests, but my patches
-> do not make it any worse (results below).=C2=A0 These patches have been
-> well-tested at my employer with qla2xxx+SCST in both initiator mode and
-> target mode and with a variety of FC HBAs and initiators.=C2=A0 Since S=
-CST is
-> out-of-tree, some of the patches have parts that apply in-tree and othe=
-r
-> parts that apply out-of-tree to SCST.=C2=A0 I am going to include the
-> out-of-tree SCST patches to provide additional context; feel free to
-> ignore them if you are not interested.
->
-> All patches apply to linux 6.17 and SCST 3.10 master branch.
->
-> Summary of patches:
-> - bugfixes
-> - cleanups
-> - improve handling of aborts and task management requests
-> - improve log message
-> - add back SLER / SRR support (removed in 2017)
->
-> Some of these patches improve handling of aborts and task management
-> requests.=C2=A0 This is some of the testing that I did:
->
-> Test 1: Use /dev/sg to queue random disk I/O with short timeouts; make
-> sure cmds are aborted successfully.
-> Test 2: Queue lots of disk I/O, then use "sg_reset -N -d /dev/sg" on
-> initiator to reset logical unit.
-> Test 3: Queue lots of disk I/O, then use "sg_reset -N -t /dev/sg" on
-> initiator to reset target.
-> Test 4: Queue lots of disk I/O, then use "sg_reset -N -b /dev/sg" on
-> initiator to reset bus.
-> Test 5: Queue lots of disk I/O, then use "sg_reset -N -H /dev/sg" on
-> initiator to reset host.
-> Test 6: Use fiber channel attenuator to trigger SRR during
-> write/read/compare test; check data integrity.
->
-> With my patches, SCST passes all of these tests.
->
-> Results with in-tree LIO target-mode subsystem:
->
-> Test 1: Seems to abort the same cmd multiple times (both
-> qlt_24xx_retry_term_exchange() and __qlt_send_term_exchange()).=C2=A0 B=
-ut
-> cmds get aborted, so give it a pass?
->
-> Test 2: Seems to work; cmds are aborted.
->
-> Test 3: Target reset doesn't seem to abort cmds, instead, a few seconds
-> later:
-> qla2xxx [0000:04:00.0]-f058:9: qla_target(0): tag 1314312, op 2a: CTIO
-> with TIMEOUT status 0xb received (state 1, port 51:40:2e:c0:18:1d:9f:cc=
-,
-> LUN 0)
->
-> Tests 4 and 5: The initiator is unable to log back in to the target; th=
-e
-> following messages are repeated over and over on the target:
-> qla2xxx [0000:04:00.0]-e01c:9: Sending TERM ELS CTIO (ha=3D00000000f881=
-1390)
-> qla2xxx [0000:04:00.0]-f097:9: Linking sess 000000008df5aba8 [0] wwn
-> 51:40:2e:c0:18:1d:9f:cc with PLOGI ACK to wwn 51:40:2e:c0:18:1d:9f:cc
-> s_id 00:00:01, ref=3D2 pla 00000000835a9271 link 0
->
-> Test 6: passes with my patches; SRR not supported previously.
->
-> So qla2xxx+LIO seems a bit flaky when handling exceptions, but my
-> patches do not make it any worse.=C2=A0 Perhaps someone who is more fam=
-iliar
-> with LIO can look at the difference between LIO and SCST and figure out
-> how to improve it.
->
-> Tony Battersby
-> https://www.cybernetics.com/
->
-> Tony Battersby (16):
->   Revert "scsi: qla2xxx: Perform lockless command completion in abort
->     path"
->   scsi: qla2xxx: fix initiator mode with qlini_mode=3Dexclusive
->   scsi: qla2xxx: fix lost interrupts with qlini_mode=3Ddisabled
->   scsi: qla2xxx: use reinit_completion on mbx_intr_comp
->   scsi: qla2xxx: remove code for unsupported hardware
->   scsi: qla2xxx: improve debug output for term exchange
->   scsi: qla2xxx: fix term exchange when cmd_sent_to_fw =3D=3D 1
->   scsi: qla2xxx: clear cmds after chip reset
->   scsi: qla2xxx: fix races with aborting commands
->   scsi: qla2xxx: improve checks in qlt_xmit_response / qlt_rdy_to_xfer
->   scsi: qla2xxx: fix TMR failure handling
->   scsi: qla2xxx: fix invalid memory access with big CDBs
->   scsi: qla2xxx: add cmd->rsp_sent
->   scsi: qla2xxx: improve cmd logging
->   scsi: qla2xxx: add back SRR support
->   scsi: qla2xxx: improve safety of cmd lookup by handle
->
->  drivers/scsi/qla2xxx/qla_dbg.c     |    3 +-
->  drivers/scsi/qla2xxx/qla_def.h     |    1 -
->  drivers/scsi/qla2xxx/qla_gbl.h     |    2 +-
->  drivers/scsi/qla2xxx/qla_init.c    |    1 +
->  drivers/scsi/qla2xxx/qla_isr.c     |   32 +-
->  drivers/scsi/qla2xxx/qla_mbx.c     |    2 +
->  drivers/scsi/qla2xxx/qla_mid.c     |    4 +-
->  drivers/scsi/qla2xxx/qla_os.c      |   35 +-
->  drivers/scsi/qla2xxx/qla_target.c  | 1775 +++++++++++++++++++++++-----
->  drivers/scsi/qla2xxx/qla_target.h  |  112 +-
->  drivers/scsi/qla2xxx/tcm_qla2xxx.c |   17 +
->  11 files changed, 1646 insertions(+), 338 deletions(-)
->
->
-> base-commit: e5f0a698b34ed76002dc5cff3804a61c80233a7a
+Currently if a user enqueue a work item using schedule_delayed_work() the
+used wq is "system_wq" (per-cpu wq) while queue_delayed_work() use
+WORK_CPU_UNBOUND (used when a cpu is not specified). The same applies to
+schedule_work() that is using system_wq and queue_work(), that makes use
+again of WORK_CPU_UNBOUND.
 
-Martin,
+This lack of consistentcy cannot be addressed without refactoring the API.
 
-Could you apply this patch series for 6.19?=C2=A0 I have addressed all re=
-view
-comments and no one has given me any objections.=C2=A0 All patches are on=
- v2
-except patch #11 which is on v3.
+This patch continues the effort to refactor worqueue APIs, which has begun
+with the change introducing new workqueues and a new alloc_workqueue flag:
 
-https://lore.kernel.org/linux-scsi/e95ee7d0-3580-4124-b854-7f73ca3a3a84@c=
-ybernetics.com/
+commit 128ea9f6ccfb ("workqueue: Add system_percpu_wq and system_dfl_wq")
+commit 930c2ea566af ("workqueue: Add new WQ_PERCPU flag")
 
-Thanks,
-Tony Battersby
-https://www.cybernetics.com/
+system_dfl_wq should be the default workqueue so as not to enforce
+locality constraints for random work whenever it's not required.
+
+The old system_unbound_wq will be kept for a few release cycles.
+
+Suggested-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
+---
+ drivers/target/sbp/sbp_target.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
+index 3b89b5a70331..b8457477cee9 100644
+--- a/drivers/target/sbp/sbp_target.c
++++ b/drivers/target/sbp/sbp_target.c
+@@ -730,7 +730,7 @@ static int tgt_agent_rw_orb_pointer(struct fw_card *card, int tcode, void *data,
+ 		pr_debug("tgt_agent ORB_POINTER write: 0x%llx\n",
+ 				agent->orb_pointer);
+ 
+-		queue_work(system_unbound_wq, &agent->work);
++		queue_work(system_dfl_wq, &agent->work);
+ 
+ 		return RCODE_COMPLETE;
+ 
+@@ -764,7 +764,7 @@ static int tgt_agent_rw_doorbell(struct fw_card *card, int tcode, void *data,
+ 
+ 		pr_debug("tgt_agent DOORBELL\n");
+ 
+-		queue_work(system_unbound_wq, &agent->work);
++		queue_work(system_dfl_wq, &agent->work);
+ 
+ 		return RCODE_COMPLETE;
+ 
+@@ -990,7 +990,7 @@ static void tgt_agent_fetch_work(struct work_struct *work)
+ 
+ 		if (tgt_agent_check_active(agent) && !doorbell) {
+ 			INIT_WORK(&req->work, tgt_agent_process_work);
+-			queue_work(system_unbound_wq, &req->work);
++			queue_work(system_dfl_wq, &req->work);
+ 		} else {
+ 			/* don't process this request, just check next_ORB */
+ 			sbp_free_request(req);
+@@ -1618,7 +1618,7 @@ static void sbp_mgt_agent_rw(struct fw_card *card,
+ 		agent->orb_offset = sbp2_pointer_to_addr(ptr);
+ 		agent->request = req;
+ 
+-		queue_work(system_unbound_wq, &agent->work);
++		queue_work(system_dfl_wq, &agent->work);
+ 		rcode = RCODE_COMPLETE;
+ 	} else if (tcode == TCODE_READ_BLOCK_REQUEST) {
+ 		addr_to_sbp2_pointer(agent->orb_offset, ptr);
+-- 
+2.51.1
 
