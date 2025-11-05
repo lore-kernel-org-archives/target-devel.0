@@ -1,152 +1,121 @@
-Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E07F42D7D42
-	for <target-devel@vger.kernel.org>; Tue,  4 Nov 2025 10:45:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.208.54
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EAD71BD9CE;
+	Wed,  5 Nov 2025 04:02:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762253132; cv=none; b=dEvNATh3y9btIddFZe2YLWPRlgFFj2L6UECbarFPizT5puT3GSPUyBpyVBx1+eSsHcR4s8zrHfmhKLWOVZlD0ASAAe0y5Fu1R1YDcVvjS+lkXbsOWbLdZNIiQ4yf7q1X0cG7JwX7GaMs4x2lNYdqbVV6G1UPiceNthNBGR1jUCs=
+	t=1762315350; cv=none; b=jvroBZoy/gUmIfgOXfx2Py1oQYWIaZb1OdJIc78Mu80aOiip2yY73dcdJq1bFNNVazQhzP7RF/OemBpAOcOP/nmQdqb1YGWS47aI0kWOS9/B8beZv+H8J8E8csP5UqoXEli5HE97PcJxHBxNeKo18r9A+ZCv/jUOGikV1BfyD4M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762253132; c=relaxed/simple;
-	bh=VX0zLAsPBGlwcqvp/8KD3Z0nfnIEYq4KM2NgJGr5aXk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=rO3atncM55OznK3EzbCEbKJuPO4iblgC2mSEuDVA072xTu7Pvho0gox1bKK0PWQr7wmrsIONdFAhOXORzHKBdc4tl9wSJq18Bl3spyGH0XPs5DJWM/dBTlq4iPFadfRpgAoeojnaWaQUHR9d1QYfHg14b+SqB6ghuHrYOAX619k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=PyGwY59m; arc=none smtp.client-ip=209.85.208.54
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1762315350; c=relaxed/simple;
+	bh=yQXSY/WrQVDYfWdO0SbyUMhuGmS/rYRQpjuHxFCtNFI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=VDSD2Dz1i2qd3Z8uiDk0E94mNjcJrkhV9kuoxKRvZSv3WLBclpYJsLC2FftNHZ9xK4INr6fNiX2k+zyNT4wxgw/bv2GRqCdG/VqPFGAr6GL02iySiUdn/CF/GBPiXXQgKarnPBd5lKUkgV3Q0px4KxWnwkNv8+6QdZV5/eDCuqs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=DOVKNPI6; arc=none smtp.client-ip=205.220.177.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="PyGwY59m"
-Received: by mail-ed1-f54.google.com with SMTP id 4fb4d7f45d1cf-640f627d01dso272373a12.2
-        for <target-devel@vger.kernel.org>; Tue, 04 Nov 2025 02:45:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1762253127; x=1762857927; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=WYj8Ir61bhOOSEvOfRY0NgbszhSvxELkBx7OQsS3cOQ=;
-        b=PyGwY59mWp3utUgAh2CmYtifE3gNPZiSf6GY7GwMAB+DkCf/1JXrIlq9TfMhdxE+YQ
-         2B2ECfWUTtR/K0AeYQ0VVshxBM/SlRnewghaQcoee+U1+NL0w9hzckYfh/5tF/vQGIx1
-         062ayTngKU2E1ojnOXupLDw1C180xE3yYuxJShOygafocJhwZZblIqthF0lj2rpFEBzN
-         J0sPTxm5MpB2atG3SpzlEjttx96zpyJ5sj2eomN1bq9n+C1jmnvAwPmoTZGBC1a0hKIB
-         YNgYP83Ttnih1+3vhaphHbMAx26a+kmIF+ABLmzJPtg7GM/omOBMqGeu+4l67r7l3oV0
-         whpg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762253127; x=1762857927;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=WYj8Ir61bhOOSEvOfRY0NgbszhSvxELkBx7OQsS3cOQ=;
-        b=egohs3pryOPWku++IcXSFcTivWkrAaIr/2oDkZAWzY/lkly7xC2LyrmDHv7+pVHwU7
-         4c/p9MPzpRSBPr6aWnUMhDi6ekegEHTUQsVf6PrbK80eziIGo61RV7v2tuohZjZDf37/
-         58olJ98IPjzuKv/v3B4BDUYLPjx12DBksWcz1trV/HADhm9T9QRI+zPa5Nb706qXc7/R
-         qo2loJ2cbszUeWx8NmmiKG0AW2yBBfWqtSdh2CjwkyQDZryj5sxR2KxRITvksRw9oNOu
-         dAzwOzECNkRylQHYmr9I1yb3TOo3a+xxBKnJ2aGQ6Xr90FKsu/YRkvv+2roPAejKRkMK
-         I4/w==
-X-Forwarded-Encrypted: i=1; AJvYcCWi7R8jyaXo8mZb3vxL4plV21k7TSMJOVBq6Ob4wemy2ZWIsK4i1onmxTVvnl5zEJYpLse9QDEn0mZZkVk=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwkDsAv1dU8riilzDY6ACmxcoyG/8/+LMvPOMPoaeyUykctB9oD
-	5paGwTQ0xYOZl6k3846X77Kvk4jMMfubr1WtH/WJLmyeVYvrgaUAXAbUdGBYq+fR5Yk=
-X-Gm-Gg: ASbGncvCVaY0nMvd6GYgLNgrvX8k8gNa2h0NDfMzaYNWoy64xoVZrspCBhGpom+WXYd
-	eJoxe75ZMYH1c3RozQF8+xdTxfYtM9cNQ2My3ueTeweypGg1v2g2qvpTJA3+8tWZwnB3S9+0KYV
-	HPBc1HydsOrlqWdFUazeIAR+XxUFdbjN9Uo0SABydvN+Sp4Xn2QHB1v0ae4g/v98U49ndymyDsl
-	VqmuwOoqVFOjSkBOS0ZTgpI0ix05BAfipyP0HXUeM4gV4jz+01/5px0ifkXldFMbHQmMr2vRhtD
-	zvLuQ3BzwCmBM7HyOFsWR7ViIUh5Oj7L4iW2Jtc414ftGtdwBh7KgxcKy/WPYconlGI6yXri2Km
-	54+GWLs2s9lnN//quRZNrvyV1BD7NYH+dfOI3dtZABDqOEYU1uqxt3b59H6jK7ixNt+fvmYmsYL
-	5SpEMhD96DV1BPgw==
-X-Google-Smtp-Source: AGHT+IEMA8UdWF6f+LHriDUDE/NjxHUOw+zfGpPihm2oIRRAOwA1BfGgSkWC9f9a8GPJW8x10c9pUQ==
-X-Received: by 2002:a17:906:e0d6:b0:b70:7d5a:2111 with SMTP id a640c23a62f3a-b707d5a6021mr1065888366b.64.1762253127163;
-        Tue, 04 Nov 2025 02:45:27 -0800 (PST)
-Received: from linux ([2a00:6d43:105:c401:e307:1a37:2e76:ce91])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b723d3a3082sm177827666b.11.2025.11.04.02.45.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Nov 2025 02:45:26 -0800 (PST)
-From: Marco Crivellari <marco.crivellari@suse.com>
-To: linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux1394-devel@lists.sourceforge.net
-Cc: Tejun Heo <tj@kernel.org>,
-	Lai Jiangshan <jiangshanlai@gmail.com>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Marco Crivellari <marco.crivellari@suse.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Chris Boot <bootc@bootc.net>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>
-Subject: [PATCH] sbp-target: replace use of system_unbound_wq with system_dfl_wq
-Date: Tue,  4 Nov 2025 11:45:18 +0100
-Message-ID: <20251104104518.102130-1-marco.crivellari@suse.com>
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="DOVKNPI6"
+Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5A53ivCW028361;
+	Wed, 5 Nov 2025 04:02:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=lyooww/8Fnw1zaMTJvQpvCmFyUNEz2aBTccHlIHYh5E=; b=
+	DOVKNPI6jBE+UqXCDl/KEJNlSewD8o9L7O0OYKEwRufuTDh8Isgf4sYF8VxQXVFc
+	zh72H9FYMaEZrKFwlmP4LoaZEJUHAlci5BFeBv21PTImeI59BTXpfDgGM80p3FH7
+	i9cTf/S1Ch3KSpducNVAJ4gRv97H+6olZKnqlB+Ez078l67JC3z/puPW0XS4zyh2
+	dUQBgbkW4OiGf/cG2o9gQnf0Sq530QR7qLRFybO3lW+M8xuNWdhkhnd98E+UPfs1
+	v3mAzmjuYZr9UAfH2gzrwsu+g+KLheaCJJQlAdzy46p8L8UVlxWW5KdAozBiEBwb
+	OiMpO9/1Vy5p6j/79vuxmA==
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4a7xxk00t3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 05 Nov 2025 04:02:27 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 5A51hgIE024836;
+	Wed, 5 Nov 2025 04:02:26 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4a58ne15hn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 05 Nov 2025 04:02:26 +0000
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 5A542Prj005395;
+	Wed, 5 Nov 2025 04:02:26 GMT
+Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 4a58ne15gy-4;
+	Wed, 05 Nov 2025 04:02:26 +0000
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+To: John Garry <john.g.garry@oracle.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+        target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-scsi@vger.kernel.org, michael.christie@oracle.com
+Subject: Re: [PATCH v3 0/7] scsi: target: Add WRITE_ATOMIC_16 support
+Date: Tue,  4 Nov 2025 23:02:18 -0500
+Message-ID: <176231440746.2306382.5588735953059411316.b4-ty@oracle.com>
 X-Mailer: git-send-email 2.51.1
+In-Reply-To: <20251020103820.2917593-1-john.g.garry@oracle.com>
+References: <20251020103820.2917593-1-john.g.garry@oracle.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-05_02,2025-11-03_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 mlxscore=0 bulkscore=0
+ malwarescore=0 adultscore=0 spamscore=0 mlxlogscore=999 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2510240000
+ definitions=main-2511050024
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTA1MDAyMyBTYWx0ZWRfX2pUx9P+mFv9A
+ 1sTLj19nPCOmqEN30R5wHhaXMuht4tg1zqOPkXCOV6Z/ej00aL6TqFYkow1GLzrQ4Oa5eTXsCnt
+ Y2KxsdkXHjOWyYYdzO4NMpFvsGSB1d5XcqVewd95MArKPnDh2tvyFXm+yXKQxoZu6Yu4I/Uq+1C
+ viRqRzg5wI1c7s5q5QWw6lFtJL4ytg9ignJRd7Mi1OCukuAcw7OEBHRZqHnW/pHeUmUvdVyYdD7
+ fMCvzR0MVKUpVVADBZVdBmbWHiUZd6xNGcpEgToyUhRwkvcOuPk3zSqvN3do/0HVlRQVtFvv158
+ 8f5tIbAfepHCSB7FYBW2ilvu429vlAHv4uZk/QoZwY82sRkZegDwxjjABjfq8ACD9lWepALH9Z/
+ G2NGDzCqP2AieBC5fQ8dlGP8T7MGShyW0oRUGOPofnyc69n0WI8=
+X-Proofpoint-GUID: PpZaBKnNKcMWaG7cfPMX3ta8d36SOTxo
+X-Authority-Analysis: v=2.4 cv=PIgCOPqC c=1 sm=1 tr=0 ts=690acc53 b=1 cx=c_pps
+ a=e1sVV491RgrpLwSTMOnk8w==:117 a=e1sVV491RgrpLwSTMOnk8w==:17
+ a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=YyQzooh1NaLyuLBRQGEA:9 a=QEXdDO2ut3YA:10 cc=ntf
+ awl=host:13657
+X-Proofpoint-ORIG-GUID: PpZaBKnNKcMWaG7cfPMX3ta8d36SOTxo
 
-Currently if a user enqueue a work item using schedule_delayed_work() the
-used wq is "system_wq" (per-cpu wq) while queue_delayed_work() use
-WORK_CPU_UNBOUND (used when a cpu is not specified). The same applies to
-schedule_work() that is using system_wq and queue_work(), that makes use
-again of WORK_CPU_UNBOUND.
+On Mon, 20 Oct 2025 10:38:13 +0000, John Garry wrote:
 
-This lack of consistentcy cannot be addressed without refactoring the API.
+> This is a reposting of Mike's atomic writes support for the SCSI target.
+> 
+> Again, we are now only supporting target_core_iblock. It's implemented
+> similar to UNMAP where we do not do any emulation and instead pass the
+> operation to the block layer.
+> 
+> Changes since v2:
+> - Fix 32b build error
+> 
+> [...]
 
-This patch continues the effort to refactor worqueue APIs, which has begun
-with the change introducing new workqueues and a new alloc_workqueue flag:
+Applied to 6.19/scsi-queue, thanks!
 
-commit 128ea9f6ccfb ("workqueue: Add system_percpu_wq and system_dfl_wq")
-commit 930c2ea566af ("workqueue: Add new WQ_PERCPU flag")
+[1/7] scsi: target: Rename target_configure_unmap_from_queue
+      https://git.kernel.org/mkp/scsi/c/3434be392051
+[2/7] scsi: target: Add atomic se_device fields
+      https://git.kernel.org/mkp/scsi/c/d505447b8d78
+[3/7] scsi: target: Add helper to setup atomic values from block_device
+      https://git.kernel.org/mkp/scsi/c/c486634fe2b1
+[4/7] scsi: target: Add WRITE_ATOMIC_16 handler
+      https://git.kernel.org/mkp/scsi/c/526145725106
+[5/7] scsi: target: Report atomic values in INQUIRY
+      https://git.kernel.org/mkp/scsi/c/710ad826e300
+[6/7] scsi: target: Add WRITE_ATOMIC_16 support to RSOC
+      https://git.kernel.org/mkp/scsi/c/2d9668883bba
+[7/7] scsi: target: Add atomic support to target_core_iblock
+      https://git.kernel.org/mkp/scsi/c/8e62d8f4b159
 
-system_dfl_wq should be the default workqueue so as not to enforce
-locality constraints for random work whenever it's not required.
-
-The old system_unbound_wq will be kept for a few release cycles.
-
-Suggested-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
----
- drivers/target/sbp/sbp_target.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
-index 3b89b5a70331..b8457477cee9 100644
---- a/drivers/target/sbp/sbp_target.c
-+++ b/drivers/target/sbp/sbp_target.c
-@@ -730,7 +730,7 @@ static int tgt_agent_rw_orb_pointer(struct fw_card *card, int tcode, void *data,
- 		pr_debug("tgt_agent ORB_POINTER write: 0x%llx\n",
- 				agent->orb_pointer);
- 
--		queue_work(system_unbound_wq, &agent->work);
-+		queue_work(system_dfl_wq, &agent->work);
- 
- 		return RCODE_COMPLETE;
- 
-@@ -764,7 +764,7 @@ static int tgt_agent_rw_doorbell(struct fw_card *card, int tcode, void *data,
- 
- 		pr_debug("tgt_agent DOORBELL\n");
- 
--		queue_work(system_unbound_wq, &agent->work);
-+		queue_work(system_dfl_wq, &agent->work);
- 
- 		return RCODE_COMPLETE;
- 
-@@ -990,7 +990,7 @@ static void tgt_agent_fetch_work(struct work_struct *work)
- 
- 		if (tgt_agent_check_active(agent) && !doorbell) {
- 			INIT_WORK(&req->work, tgt_agent_process_work);
--			queue_work(system_unbound_wq, &req->work);
-+			queue_work(system_dfl_wq, &req->work);
- 		} else {
- 			/* don't process this request, just check next_ORB */
- 			sbp_free_request(req);
-@@ -1618,7 +1618,7 @@ static void sbp_mgt_agent_rw(struct fw_card *card,
- 		agent->orb_offset = sbp2_pointer_to_addr(ptr);
- 		agent->request = req;
- 
--		queue_work(system_unbound_wq, &agent->work);
-+		queue_work(system_dfl_wq, &agent->work);
- 		rcode = RCODE_COMPLETE;
- 	} else if (tcode == TCODE_READ_BLOCK_REQUEST) {
- 		addr_to_sbp2_pointer(agent->orb_offset, ptr);
 -- 
-2.51.1
-
+Martin K. Petersen
