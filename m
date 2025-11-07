@@ -1,65 +1,65 @@
-Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DAF92E6CD8
-	for <target-devel@vger.kernel.org>; Fri,  7 Nov 2025 13:36:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE1292DAFBE
+	for <target-devel@vger.kernel.org>; Fri,  7 Nov 2025 15:06:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762522610; cv=none; b=qKuYdbvFqhQX0uokvgjitN/c8/clv9cKPE8BPovITqnIQ/BOE7ClKJBLapA1c7GHgkpIlz/Zwe9fnf0jp6wc12xmx8HW98MZwPy3rMGvEj3q5BMcSqrb34r2YVp6JGUtNUEsklwpdle0vcavMIe9rmPHriI4PHwcT7sAnQHxWn0=
+	t=1762527979; cv=none; b=PBr5Ut9Z3hQqrO9eusHvVLhc6Cs0CjBbaxR51tms2RyQYO5RoHu1Ve2VfbMJxj8U0LiOq1kxI1QGMNYRKDciPrjQI/AjdIImXjiYeiTXQRw/kYFDa5sm7G8F2IIpW9dxJjV5CuskZ78enHRglp+b+iwYrghKV+JF21ho7ol4nl8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762522610; c=relaxed/simple;
-	bh=UZwswUwbvM3wAsUrhwZiZhYIMvbdcwWe0ZDflLX2Vw8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=FF48nC0J//oF1s0zUzVf51CbghOfclHGiCkVWeqSFPumgI20DUegs/MlaZSiQPl/mt8zxodYZKx1GMC7NTrEhzYdqj2eu1kh2Ns8vwNrH0dCkbjcjgz1KtTHIxmIjE1sZ34vIdJ7cDE6Vcf2QoUbzQyBS/9IfFNIcsEKJxLgQpI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=OyMIxDJ+; arc=none smtp.client-ip=209.85.128.51
+	s=arc-20240116; t=1762527979; c=relaxed/simple;
+	bh=I1uyF94YPCgRaFvl8OfqcySKhRO4bX53+vRKo3KnpXs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=FJVGCEOe6AYgQPJyeE2WGAVtWeBzQkux3iJdljX+PSR7FLLFQGzqiH4NBEgnQCN8eITMhzOymgML5Oo3C9janTcbe9jUybHx1e7BAbV+V5B5FjqAOd75GZ/HtCmuOYhO+D/ct+Lk0byM7f5HIkqE/phn1J/sW1Z4e2O/KG8s9AU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=gt2nUuvM; arc=none smtp.client-ip=209.85.128.49
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="OyMIxDJ+"
-Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-471191ac79dso8505195e9.3
-        for <target-devel@vger.kernel.org>; Fri, 07 Nov 2025 05:36:48 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="gt2nUuvM"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-471191ac79dso9559725e9.3
+        for <target-devel@vger.kernel.org>; Fri, 07 Nov 2025 07:06:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1762522607; x=1763127407; darn=vger.kernel.org;
+        d=suse.com; s=google; t=1762527976; x=1763132776; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=JobActy8Q1tKHJAQkXK8C2eUozNLqX92f26Y3cDZo6s=;
-        b=OyMIxDJ+4EyK/M9wQWycM/4cg3QY0YOWqYQIOr5kNlwN+MdSL/p9nPUCcLqDvS0/f5
-         HhIiXg6DPyCCZzEn6mX+WP3BYpYhnoSJSFcuVEpNd26g2qQuU7tpr8XjQDp9kqIc7Tkd
-         EsmN/obX9YoB0AdgrLpbQYgAyDEmH0Xl+qZDvExcw7aSnZlN1Sa6y4nyxcqJFI5aJbzS
-         BfTMwTar4p6cu3RlSvaAsUrsp4PgdzA2wM0vDbQqtP/K/Va/2SfLPtfo9DxgeGsvjbcG
-         v1MWgx8x+KrVI+aXTHr4GbzpdPCuurOBXBUJYlTEf0KyztNLnTI5lNMxvmpb71TXgUIt
-         U3iA==
+        bh=py75GPFijQsPUx0jpTbres5/IKDk4ZsE3rbUHQbz/Yc=;
+        b=gt2nUuvM5rjYgTZZJBN5l2FbDqDK3nccnSq7jgvNxILnZU1egU2dqqhBon1hVv53sn
+         SVY5SC9brsdMEG2ESLfsVyh9ak1dYlJhsQORGe5446FIHOsmBqQKUdXSAXkLyqLmHi6/
+         MfeDgN3f660kyJ2fPtpXn4M4kBG5s8N/FXX0xBZdbwOFNOmD/YR4eAYj5VxCyDVkb3Ez
+         kCCexMNXuyfTtg8kEo/AXBFQoRQTL08pjR+6iT+QmCTeL27/uSPAG1Gcwh3foS2AlQSh
+         23Wx2+H24P/lN/lfW+i2332bD4FsEAQ3inBXdVZJuH4jpbHnjIXhQaXRYca8xKCKSLvz
+         90Bw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762522607; x=1763127407;
+        d=1e100.net; s=20230601; t=1762527976; x=1763132776;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=JobActy8Q1tKHJAQkXK8C2eUozNLqX92f26Y3cDZo6s=;
-        b=ohKWgUf+q3MzLAfqJfQdzTH0uPOSyDgGDkT5Pn9N7+ZrgiAfNvMJErxqj3cl7Z1n4E
-         nO2TypNlg8Q5he+WqIWSeySTFygRuzFIejOq1TIdnocbhtPB5R+rp0sq5IPNH/4v4hCS
-         fu54dRKR7rs7VGng9fObYKpMYfDniIBVnaWIMUWLqIV+kUl65bu3VwfeE7T9AMObUXO5
-         nVjOGbkogNSvccg6bAxbaP1U3okSu1x51VdGStlPoTUl6Mm5cfxLja6kKOphnypVW4it
-         Q42gWEwpS1Ka0Dvmt+9jcuqjt/PIwpzQDUw5+cTJh5lAOM9NLzdhGd7EZsq7w7gu/1Oj
-         cg3Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUuWI9xHfwu3icRBgp94+cq595GlnWTxkxkpoLFDe8LUbCkmghuDb4MY42v+dh9YuDbpVnkmynJRry96EE=@vger.kernel.org
-X-Gm-Message-State: AOJu0YywA2BayU4L5OdR5aEa1Iu83zk/k4k7R+hIUokCa6c8japUUKzZ
-	cuGxhZAn/GLRowpUTHQAs1PTQees9ggDplZ0/6L/i56hhNMw619m4+pz+4ilXXib0Lo=
-X-Gm-Gg: ASbGncsq296YaWwC7K+td4noDKaslpl6RHXbmdw+3/415xDBz9zR50Sejp8zULBaQPh
-	Bv7CTHPXPLCTjXutIecIqnw0rB8Ol9xZN5BxaEq52BtYXZAxReoqNk1KRFik6Wu0OTnbh6PPURx
-	e0Mhu36gPTy5j7yJtJJU6hWG12iqwnZiHftj6I/ZOsrGZSz6ZHgWaqrpZkMYkMm9G8V78Ux2240
-	efg8cDf8Jt0H3VMs/GQIHeqlrES9vgauePVQJLZR8sgKI/QLjvTRDqG4rxAof8uVC1/ViEENBoR
-	ptbAy01STOls81enz3tt91lLJPJijNRewxH+oF1cloHVDyDeH1G4cbK4rZJzlVWqyLc75FotGtt
-	vx/6rWPxIpe/gltY58XXnrIzoVYJ3IzVgyfpxU0dW/ib2yOocT/ggNDDD0QJ+sku7oIE+G01zBY
-	az7GgXZ2/bQG7ryYS2WJYmpr90
-X-Google-Smtp-Source: AGHT+IHigxOt7e+EuY57cRMkA4R3lmI1I5oqR9eg08rBEkmbJ647xE77iJ/O9h1VcgnOpYFGx9jYAQ==
-X-Received: by 2002:a05:600c:4fcb:b0:477:59e8:507d with SMTP id 5b1f17b1804b1-4776bcc537amr26494345e9.31.1762522606742;
-        Fri, 07 Nov 2025 05:36:46 -0800 (PST)
+        bh=py75GPFijQsPUx0jpTbres5/IKDk4ZsE3rbUHQbz/Yc=;
+        b=SR4sLElVjZaQnKb2pbS1YJDDXD+9DoScPWG9RvykE7ugOLnfxluOS84MEKpKf+tAcT
+         0yBRd3DPgskgfIY/8R+w6ZySV3doqrfdSUtvdqN6qyzl4VNq6dGLAsfUoHFcevA8N590
+         1ZqaAjL/fH8aO8lvWmKV2d+bcjnnqV5gDZF8uXYZwLg5CxkZ3hVuSnnC37DHikd/HW7J
+         IhRWr2gOh89AsaVSUd4DiUmoqgwumDNUWSQU9NPMn+M1Y8zOuzV6T3XcTqnXMfmKobcm
+         +BKpKSAAP7tI17jT7TV2NQb272N6hlJP0JmnSSQJdy1KmTXYZMcM4bbg9d1nw8jwCnbF
+         6BHA==
+X-Forwarded-Encrypted: i=1; AJvYcCU77KANurawvrwfePtDaiusoJs1Tl1FIU1dSXVBXiudaXpnXfrLyRQY1LQFpD3Q++QgmjnNr779cU459xU=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyTdS1IX16TaXYhgb3fMGU+J11rcbHaS77ltLKbbn+1+ru/A7ZK
+	hnM7FzWua/jsmOv9dyAIVZgUI8cinvN90FLxYp+UU4rzA/ug9gH+TY+0xHZBzrhLVCE=
+X-Gm-Gg: ASbGncsLov5PL2ipjuMPZh3wlU00c3DryYegSjpm5FEiKhpYSIvCZyKz0+7v3zys9oW
+	dfzcVuohImRMFdOZ5hbTjZSH9nXbjhTWyyICobndxhrNWt7IFgqG2tC8tuvFJvZqgdXvON1Hvg1
+	HZgevH/PQLJV4n1kv9xlFpy7z1kpcfZEiyPYDn0RKmtcpdBXtSAToxDq/ZqJe5ohJSE6i1P0Y2c
+	MQMtlxokdQ0uopnaXfOS7XEpurdnUXDyWCLHd41RCKRekk8N2lmJhnkCXjn+PLs/hmhR1imXmym
+	zWyZw1xO3UVwpI17H+N2XZjIVxILa8Uwg1pGP6rOMPNfAooWr5XXD2+GtD49LlNgdHnMPyU3BbE
+	mIrJUk0oIKrJRI1NFowj9VFT6xsq3c7PqeGbJ6T13Eni5K/TvtL3EmCE9c9nck8LTC6uongwLz/
+	CfdZjvrKjBI/nNM3RTi0XXWIUt
+X-Google-Smtp-Source: AGHT+IGz8YM6333JLm588AFc5cKs16RWmjvD1JWcT1yqGgw96JtcAIFnCIm4vEabRZZUth0PEEmaSg==
+X-Received: by 2002:a05:600c:4f53:b0:475:df91:ddf0 with SMTP id 5b1f17b1804b1-4776bcc5494mr28930715e9.33.1762527976212;
+        Fri, 07 Nov 2025 07:06:16 -0800 (PST)
 Received: from localhost.localdomain ([2a00:6d43:105:c401:e307:1a37:2e76:ce91])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-47763e4d7f2sm40627915e9.4.2025.11.07.05.36.45
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-42ac677b41csm5666982f8f.34.2025.11.07.07.06.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Nov 2025 05:36:46 -0800 (PST)
+        Fri, 07 Nov 2025 07:06:15 -0800 (PST)
 From: Marco Crivellari <marco.crivellari@suse.com>
 To: linux-kernel@vger.kernel.org,
-	linux-rdma@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>,
 	Lai Jiangshan <jiangshanlai@gmail.com>,
@@ -67,12 +67,12 @@ Cc: Tejun Heo <tj@kernel.org>,
 	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
 	Marco Crivellari <marco.crivellari@suse.com>,
 	Michal Hocko <mhocko@suse.com>,
-	Sagi Grimberg <sagi@grimberg.me>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Leon Romanovsky <leon@kernel.org>
-Subject: [PATCH] IB/isert: add WQ_PERCPU to alloc_workqueue users
-Date: Fri,  7 Nov 2025 14:36:26 +0100
-Message-ID: <20251107133626.190952-1-marco.crivellari@suse.com>
+	Tyrel Datwyler <tyreld@linux.ibm.com>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>
+Subject: [PATCH] scsi: ibmvscsi_tgt: add WQ_PERCPU to alloc_workqueue users
+Date: Fri,  7 Nov 2025 16:05:42 +0100
+Message-ID: <20251107150542.271229-1-marco.crivellari@suse.com>
 X-Mailer: git-send-email 2.51.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
@@ -116,22 +116,23 @@ become the implicit default.
 Suggested-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
 ---
- drivers/infiniband/ulp/isert/ib_isert.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index 42977a5326ee..af811d060cc8 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -2613,7 +2613,7 @@ static struct iscsit_transport iser_target_transport = {
+diff --git a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+index 5a3787f27369..f259746bc804 100644
+--- a/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
++++ b/drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c
+@@ -3533,7 +3533,8 @@ static int ibmvscsis_probe(struct vio_dev *vdev,
+ 	init_completion(&vscsi->wait_idle);
+ 	init_completion(&vscsi->unconfig);
  
- static int __init isert_init(void)
- {
--	isert_login_wq = alloc_workqueue("isert_login_wq", 0, 0);
-+	isert_login_wq = alloc_workqueue("isert_login_wq", WQ_PERCPU, 0);
- 	if (!isert_login_wq) {
- 		isert_err("Unable to allocate isert_login_wq\n");
- 		return -ENOMEM;
+-	vscsi->work_q = alloc_workqueue("ibmvscsis%s", WQ_MEM_RECLAIM, 1,
++	vscsi->work_q = alloc_workqueue("ibmvscsis%s",
++					WQ_MEM_RECLAIM | WQ_PERCPU, 1,
+ 					dev_name(&vdev->dev));
+ 	if (!vscsi->work_q) {
+ 		rc = -ENOMEM;
 -- 
 2.51.1
 
