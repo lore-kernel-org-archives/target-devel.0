@@ -1,37 +1,37 @@
 Received: from mail.cybernetics.com (mail.cybernetics.com [72.215.153.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3161426461F
-	for <target-devel@vger.kernel.org>; Mon, 10 Nov 2025 15:51:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DBD5927703A
+	for <target-devel@vger.kernel.org>; Mon, 10 Nov 2025 15:52:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=72.215.153.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1762789892; cv=none; b=R8J3OEhMdC09v37zNPCsQRPrtqhzgTCu4Ixh22p/Tc4C3LtP4uV4hDFI6BsqSMmiD+YIwpTPuitnTzs5mIc8BNemBBApiIb0etHOWdyHHUHtKH4PhwC+Kw5GLZtgrnS91uA278ebZec5rCQAfPaCkJaTc35jQbXgNwZs7vlJKWY=
+	t=1762789975; cv=none; b=EB3ZtQHQ0GP1EfN8TnTundKNJaTkszwyKk8A5r3T3OjpBE++GtLl65zMA2CoGlJzXwwPs8M/Yji7DV1a1YhHlLh/a8+6m5+2bI9zbJq1eNoSX1IRyl2PIChGSlaBv5E4mEYSpOrx7k5vwGDN2Yoty4QsqpKV2Ozw0Q+e5vdAGv8=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1762789892; c=relaxed/simple;
-	bh=N8EkkkYOG+9VTOvRDR3mfNL2R7S1EuchnwQteE3ValQ=;
+	s=arc-20240116; t=1762789975; c=relaxed/simple;
+	bh=EacGFIAMHCxTCWrK6DvfS6+8MkMCjXdrGnli80zNq1g=;
 	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=ETCXUG7gPmWH0lpO+Z0Eu2+LQ5SipySFJW6aTWGq55wOUqreSStSaunmO32Kct4VCgsafuEuVJBtVrdyXl8IdPJ1u/xxVa/QsTB0ct6VQekAz2q6wmPBg7U6AZ8YOmLniR24ojFwKkl3uDavsQKgUuVocy6F5pWzGVim7WoP7rA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cybernetics.com; spf=pass smtp.mailfrom=cybernetics.com; dkim=pass (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b=iAxDVFqp; arc=none smtp.client-ip=72.215.153.18
+	 In-Reply-To:Content-Type; b=rTJAU2DV7ZD4VqkUxoJbCdeAo/G7HKLY0q4z5dR2PqF9tE0PzCEGk9WP64oW37LehocciQexOjVJNrWYZJBLG7JE2C7SFSgtXl+sbgpSViq+GkkGBQT1xjTnaEyeSyuNumRbUACy4vQUzod4Y8wBFk66eCwupxAk++hsu1d0S4s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cybernetics.com; spf=pass smtp.mailfrom=cybernetics.com; dkim=pass (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b=A+DHQIJV; arc=none smtp.client-ip=72.215.153.18
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=cybernetics.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cybernetics.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b="iAxDVFqp"
-Received: from cybernetics.com ([10.10.4.126]) by mail.cybernetics.com with ESMTP id Em7NlbKgb7eU4pEm; Mon, 10 Nov 2025 10:51:28 -0500 (EST)
+	dkim=pass (1024-bit key) header.d=cybernetics.com header.i=@cybernetics.com header.b="A+DHQIJV"
+Received: from cybernetics.com ([10.10.4.126]) by mail.cybernetics.com with ESMTP id mnzLNpMLSm3w5soT; Mon, 10 Nov 2025 10:52:49 -0500 (EST)
 X-Barracuda-Envelope-From: tonyb@cybernetics.com
 X-Barracuda-RBL-Trusted-Forwarder: 10.10.4.126
 X-ASG-Whitelist: Client
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=cybernetics.com; s=mail;
-	bh=k8gGVnRtPWt6ynkWbppnOpuzizy1JjP0fzJc1kaLLLM=;
+	bh=yjsCdL8ouw87tHf4qzCFGr3AYXHhR8tAd+jfwFAtwug=;
 	h=Content-Transfer-Encoding:Content-Type:In-Reply-To:References:Cc:To:From:
-	Content-Language:Subject:MIME-Version:Date:Message-ID; b=iAxDVFqpPF1iVd0GMJc5
-	cRA4fGBvjGnKKIypkrelXwka36k186GlFQTH9QYFiJpfc/vDp9RaGfDITx+h5mPHn99f9yAdjBwxJ
-	Qqwedk5TN8+uYz4lE4h3doUevC2YHDPG0cWsEGqLxAHYCcd8w/za748D5kwMF4jpDr+gHRx974=
+	Content-Language:Subject:MIME-Version:Date:Message-ID; b=A+DHQIJV7qil2JN+4b9+
+	OWEo5FjBtiOupVH4nFS3UEzfJ3ZtjTFoR3A9OD20jJ9DXDTXf1EFiBVpthBuIhGtugoK+A5f7h1XF
+	Wa6gW+W7kQpBIebFVxXXz0ZwLfbQzBQekyVe+kZqBkHxZcQ11kjwmbA123ihOyDYOi0+l2K264=
 Received: from [10.157.2.224] (HELO [192.168.200.1])
   by cybernetics.com (CommuniGate SPEC SMTP 8.0.5)
-  with ESMTPS id 14272389; Mon, 10 Nov 2025 10:51:28 -0500
-Message-ID: <11b6485e-0bfd-4784-8f99-c06a196dad94@cybernetics.com>
+  with ESMTPS id 14272391; Mon, 10 Nov 2025 10:52:49 -0500
+Message-ID: <cb006628-e321-4e30-a60b-08b37b8685a5@cybernetics.com>
 X-Barracuda-RBL-Trusted-Forwarder: 10.157.2.224
-Date: Mon, 10 Nov 2025 10:51:28 -0500
+Date: Mon, 10 Nov 2025 10:52:49 -0500
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -39,11 +39,9 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: [PATCH v3 04/16] scsi: qla2xxx: use reinit_completion on
- mbx_intr_comp
+Subject: [PATCH v3 05/16] scsi: qla2xxx: remove code for unsupported hardware
 Content-Language: en-US
-X-ASG-Orig-Subj: [PATCH v3 04/16] scsi: qla2xxx: use reinit_completion on
- mbx_intr_comp
+X-ASG-Orig-Subj: [PATCH v3 05/16] scsi: qla2xxx: remove code for unsupported hardware
 From: Tony Battersby <tonyb@cybernetics.com>
 To: Nilesh Javali <njavali@marvell.com>,
  GR-QLogic-Storage-Upstream@marvell.com,
@@ -59,17 +57,19 @@ In-Reply-To: <aaea0ab0-da8b-4153-9369-60db7507ff7a@cybernetics.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Barracuda-Connect: UNKNOWN[10.10.4.126]
-X-Barracuda-Start-Time: 1762789888
+X-Barracuda-Start-Time: 1762789969
 X-Barracuda-URL: https://10.10.4.122:443/cgi-mod/mark.cgi
 X-Barracuda-BRTS-Status: 1
 X-Virus-Scanned: by bsmtpd at cybernetics.com
-X-Barracuda-Scan-Msg-Size: 1385
-X-ASG-Debug-ID: 1762789888-1cf439139110cc80001-W1KF7h
+X-Barracuda-Scan-Msg-Size: 2743
+X-ASG-Debug-ID: 1762789969-1cf439139110ccc0001-W1KF7h
 
-If a mailbox command completes immediately after
-wait_for_completion_timeout() times out, ha->mbx_intr_comp could be left
-in an inconsistent state, causing the next mailbox command not to wait
-for the hardware.  Fix by reinitializing the completion before use.
+(target mode)
+
+As far as I can tell, CONTINUE_TGT_IO_TYPE and CTIO_A64_TYPE are message
+types from non-FWI2 boards (older than ISP24xx), which are not supported
+by qla_target.c.  Removing them makes it possible to turn a void * into
+the real type and avoid some typecasts.
 
 Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
 ---
@@ -78,29 +78,73 @@ v2 -> v3: no changes
 
 v1 -> v2: no changes
 
- drivers/scsi/qla2xxx/qla_mbx.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/scsi/qla2xxx/qla_target.c | 32 +++++--------------------------
+ 1 file changed, 5 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/scsi/qla2xxx/qla_mbx.c b/drivers/scsi/qla2xxx/qla_mbx.c
-index 32eb0ce8b170..1f01576f044b 100644
---- a/drivers/scsi/qla2xxx/qla_mbx.c
-+++ b/drivers/scsi/qla2xxx/qla_mbx.c
-@@ -253,6 +253,7 @@ qla2x00_mailbox_command(scsi_qla_host_t *vha, mbx_cmd_t *mcp)
- 	/* Issue set host interrupt command to send cmd out. */
- 	ha->flags.mbox_int = 0;
- 	clear_bit(MBX_INTERRUPT, &ha->mbx_cmd_flags);
-+	reinit_completion(&ha->mbx_intr_comp);
+diff --git a/drivers/scsi/qla2xxx/qla_target.c b/drivers/scsi/qla2xxx/qla_target.c
+index 1e81582085e3..df5c9aac5617 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -3913,7 +3913,8 @@ static void *qlt_ctio_to_cmd(struct scsi_qla_host *vha,
+  * ha->hardware_lock supposed to be held on entry. Might drop it, then reaquire
+  */
+ static void qlt_do_ctio_completion(struct scsi_qla_host *vha,
+-    struct rsp_que *rsp, uint32_t handle, uint32_t status, void *ctio)
++	struct rsp_que *rsp, uint32_t handle, uint32_t status,
++	struct ctio7_from_24xx *ctio)
+ {
+ 	struct qla_hw_data *ha = vha->hw;
+ 	struct se_cmd *se_cmd;
+@@ -3934,11 +3935,8 @@ static void qlt_do_ctio_completion(struct scsi_qla_host *vha,
+ 	if (cmd == NULL)
+ 		return;
  
- 	/* Unlock mbx registers and wait for interrupt */
- 	ql_dbg(ql_dbg_mbx, vha, 0x100f,
-@@ -279,6 +280,7 @@ qla2x00_mailbox_command(scsi_qla_host_t *vha, mbx_cmd_t *mcp)
- 			    "cmd=%x Timeout.\n", command);
- 			spin_lock_irqsave(&ha->hardware_lock, flags);
- 			clear_bit(MBX_INTR_WAIT, &ha->mbx_cmd_flags);
-+			reinit_completion(&ha->mbx_intr_comp);
- 			spin_unlock_irqrestore(&ha->hardware_lock, flags);
+-	if ((le16_to_cpu(((struct ctio7_from_24xx *)ctio)->flags) & CTIO7_FLAGS_DATA_OUT) &&
+-	    cmd->sess) {
+-		qlt_chk_edif_rx_sa_delete_pending(vha, cmd->sess,
+-		    (struct ctio7_from_24xx *)ctio);
+-	}
++	if ((le16_to_cpu(ctio->flags) & CTIO7_FLAGS_DATA_OUT) && cmd->sess)
++		qlt_chk_edif_rx_sa_delete_pending(vha, cmd->sess, ctio);
  
- 			if (chip_reset != ha->chip_reset) {
+ 	se_cmd = &cmd->se_cmd;
+ 	cmd->cmd_sent_to_fw = 0;
+@@ -4007,7 +4005,7 @@ static void qlt_do_ctio_completion(struct scsi_qla_host *vha,
+ 			    *((u64 *)&crc->actual_dif[0]),
+ 			    *((u64 *)&crc->expected_dif[0]));
+ 
+-			qlt_handle_dif_error(qpair, cmd, ctio);
++			qlt_handle_dif_error(qpair, cmd, crc);
+ 			return;
+ 		}
+ 
+@@ -5816,26 +5814,6 @@ static void qlt_response_pkt(struct scsi_qla_host *vha,
+ 	}
+ 	break;
+ 
+-	case CONTINUE_TGT_IO_TYPE:
+-	{
+-		struct ctio_to_2xxx *entry = (struct ctio_to_2xxx *)pkt;
+-
+-		qlt_do_ctio_completion(vha, rsp, entry->handle,
+-		    le16_to_cpu(entry->status)|(pkt->entry_status << 16),
+-		    entry);
+-		break;
+-	}
+-
+-	case CTIO_A64_TYPE:
+-	{
+-		struct ctio_to_2xxx *entry = (struct ctio_to_2xxx *)pkt;
+-
+-		qlt_do_ctio_completion(vha, rsp, entry->handle,
+-		    le16_to_cpu(entry->status)|(pkt->entry_status << 16),
+-		    entry);
+-		break;
+-	}
+-
+ 	case IMMED_NOTIFY_TYPE:
+ 		ql_dbg(ql_dbg_tgt, vha, 0xe035, "%s", "IMMED_NOTIFY\n");
+ 		qlt_handle_imm_notify(vha, (struct imm_ntfy_from_isp *)pkt);
 -- 
 2.43.0
 
