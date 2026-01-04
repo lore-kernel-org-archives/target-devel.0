@@ -1,308 +1,203 @@
-Received: from smtp.smtpout.orange.fr (smtp-13.smtpout.orange.fr [80.12.242.13])
-	(using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0AD92D3EF5;
-	Mon, 29 Dec 2025 11:36:27 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=80.12.242.13
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1767008203; cv=none; b=ALERvH02Y/rzSjZMMCKpdZ93T1XyDYlrLd91gXsCuGv1QifYF511QIuEZM7WyA6x+YeuWT86KTgjO95cHK0dk+FO1Slx3p3kJ8K/lJTOjqVrjG3s6yLAITSr2d52iYtJKcBr/aBkssG0deSu+T4YkRGUJnkCIpQsx43CL3USqHM=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1767008203; c=relaxed/simple;
-	bh=RBdAZEunp1oPf9yyi0Rv3FJ0TcUGquT/vLX6hnnCTdw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BE3cy509vvCRBYEIQgh6+boRPqMzTIgepMlDT95kC6AoS4pSiXyBXUK0A7P2//muNp27UgtkpdJFAOZ+oX1RMkmgzTQX1GuJt5TTG1dP75gUfvwi7VPc/UxPLPbi+MX8NpMGfNIgoyRcSNeXTkwrGqchBdTKZFM6ofl1ekAgtJ4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; spf=pass smtp.mailfrom=wanadoo.fr; dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b=XFs0UNkc; arc=none smtp.client-ip=80.12.242.13
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wanadoo.fr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6A002221710;
+	Sun,  4 Jan 2026 20:46:57 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=205.220.177.32
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1767559619; cv=fail; b=vEEcSfZYg9rofM6ge6/bgF7K6Qi6WlKPWdG7a3ymYkCK63ef8njiRsATZ64Be5vatEPq7cskiDctOAOmu++im8wtsk7A5oAqjBrXydGECPeDukttvPLQLpgtUvDlkCGmVyx83bGOx4GuuFUf/dcOIgBF+IaxkbEBh6ZhMgija54=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1767559619; c=relaxed/simple;
+	bh=hlV1lFfAidwDs2QYdKFlY7WHsx9smUuhRmIVVBv7g5U=;
+	h=To:Cc:Subject:From:In-Reply-To:Message-ID:References:Date:
+	 Content-Type:MIME-Version; b=hZOxLs2bgGBWEYQUxuLcqGxWy+nBfJJBgA7J0w8UuOMUhUCILHNJ6VAz/X0Nky+h5ILj7sz0cFKGxtBiPj+rbnW+pxafvbKJXFDMw1NDbtlJVpaYIGlZNcOhMCZBKb297k+zDqTS/zDfTKH6SlxrYW9XpH5L7jX4JeUos2jXMiU=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=QURX9/bn; dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b=yZIaYlOB; arc=fail smtp.client-ip=205.220.177.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr header.b="XFs0UNkc"
-Received: from fedora.home ([IPv6:2a01:cb10:785:b00:8347:f260:7456:7662])
-	by smtp.orange.fr with ESMTPA
-	id aBWovvCxRxWB5aBWpvfsQM; Mon, 29 Dec 2025 12:35:11 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1767008111;
-	bh=PjNDoZ40U7jR9QIDge77NgufPkianXfBgIHV4I6m4pw=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=XFs0UNkcLmMbBZT+r215Chs2mx8qDx5Ejta8ZMXEbOewJipIOGcG3GqudsgTKXFqe
-	 tHSTeWwfvVcGXsKhl3QozxCjqTUs6c6VZWMfS0WNLlPYiM9pZrdQvjP2ShtIEf3X3/
-	 0w1zsJka//uYpnV3nyr5DYLUH69iKvuTyPBz0I22BnvhoDj0rU3CRjvoLl8K/jIhoW
-	 D5pwpO9ZLBeoLB0j2Ld5ScrHHmq2HK6tazfqoU3lPuqjfavdjtAWWfZECsyKZPKXES
-	 jedRKfdFjVJzqmEYPOQnhKFTLYHIeApdhvb9DCfGpWvbG+slBdVeWCE+/beZF6RHnH
-	 0ols5Pv5mSkqw==
-X-ME-Helo: fedora.home
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Mon, 29 Dec 2025 12:35:11 +0100
-X-ME-IP: 2a01:cb10:785:b00:8347:f260:7456:7662
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org
-Subject: [PATCH v2] scsi: target: Constify struct configfs_item_operations and configfs_group_operations
-Date: Mon, 29 Dec 2025 12:35:01 +0100
-Message-ID: <a0f25237ae86b8c4dd7a3876c4ed2dc3de200173.1767008082.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.52.0
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="QURX9/bn";
+	dkim=pass (1024-bit key) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.b="yZIaYlOB"
+Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 604KYDWo4099312;
+	Sun, 4 Jan 2026 20:46:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=corp-2025-04-25; bh=1XgQi0nyT+vMh4C3Zx
+	9dVSWXZZ/8Ld4RZeOpe1LeWmI=; b=QURX9/bnHViC3TnVD5DVq7W6S/pybxfDr1
+	sqmzCrr8VF9KrHS1+gN6ILCPXpukgq2gVvmYmnSpB5157rWe4RgvtLoFgFS8wvPB
+	QnEWKWLPdDu6qrjUFvtBicsOopl+a9vpsTeYdvTKW56bSy0r/ggCFoIdqy3+sXAf
+	Mr1Mz3LCEjcGLc9n4ZhXEjKG+gPnOVHpUdLfNn7Jq44J5aSzOYDIT028plM0F3Zh
+	GF8Uuqrzxb/5WrrQmlwUKjMRxSSABEg9bp9NMRf2CLXDcgrEvUFNtb/an9QsgN7+
+	HjDaXTNgxAZaiCuP0IAc4btILo8mn+X7ogso9r+GPdJWmXkZ6Zxw==
+Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4bev6ngxcx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 04 Jan 2026 20:46:55 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 604GLKkd026309;
+	Sun, 4 Jan 2026 20:46:55 GMT
+Received: from dm5pr21cu001.outbound.protection.outlook.com (mail-centralusazon11011022.outbound.protection.outlook.com [52.101.62.22])
+	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4besjgyv36-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 04 Jan 2026 20:46:55 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=bEZqso5FFB/5YAXh+2U9B4l5kRk9lRf0nfPjJFC8zodBsy157SZaZKoXdNxPNqhzAadl6brzlfFXX3X24WeqlMEUUBCCN24EH618rEoKn+Id/XAGV2iGSdF3X972xuJMG8n78ou27NGVS/mS/Dtw6tS5oLeDSY2iGMY4EI7sMsot9Ifvd2Jeeyq5JRGN3BAHf1x8yrlpie1Gej//EDnGdxPZf6uD40M+TX8P/pgTCdUYwndX0AcNYkBGzccxf7FkwjADHE5pvd0idnbbDiF7tqIa2M3cPNxyAoKn9YpUz6U3wnDfH31Ta+vPHS6Ti51gp8WG1DDlFk/5V8V9jWKAMA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=1XgQi0nyT+vMh4C3Zx9dVSWXZZ/8Ld4RZeOpe1LeWmI=;
+ b=o7LaNTS624Y3uwMF/WvpbxA/u6IByOQDNZTvGRM8dPCqSl2EgbdBvnDTeAIOnSZoLo6sp65cZmnMjE39JnulGhGecrXAATCgbWo+Cs92Ti5NjzZUiwNCpsjwihg4a/aZtop5SjZqPMQOUTvsR77h8NBx3j/eas+9fyLi83uDXrkRxiZ7XK7PSiuYQSsY1XHw909vMrnlhhwdYUrema/24BAK3d0HtaDOGzHE9hpevHTD7L7QvWnjh6bcRz1hN/3hKLmQ9AFrAzRdgoW7/t1vHTfeW8eHXwAsQ9neukHFdBtBY4lE7GGMHr0CuAb8lT5rOhdEeyGTu7QRznQGALwOhg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=1XgQi0nyT+vMh4C3Zx9dVSWXZZ/8Ld4RZeOpe1LeWmI=;
+ b=yZIaYlOB7ahwXSfPIrMcpGzRWVHsAZLNwGvIZOQv3JaMWfRgf49lZwm5BW+IERWYkJnmU7N38gnkF/5II5H6SD6OaOcLSNb2jpgsuFHqm5qBPz+Cb+Qaj0Hb4VBA5C8oJqjLMMUM4nN3GIS7N75FgTDJsd4ynh46Pue5z2L9f+0=
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com (2603:10b6:610:cb::8)
+ by DM3PPFC3D93F6EF.namprd10.prod.outlook.com (2603:10b6:f:fc00::c49) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9478.4; Sun, 4 Jan
+ 2026 20:46:52 +0000
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::5cca:2bcc:cedb:d9bf]) by CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::5cca:2bcc:cedb:d9bf%3]) with mapi id 15.20.9478.004; Sun, 4 Jan 2026
+ 20:46:52 +0000
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+        <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>,
+        <linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>
+Subject: Re: [PATCH v2] scsi: target: Constify struct
+ configfs_item_operations and configfs_group_operations
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+In-Reply-To: <a0f25237ae86b8c4dd7a3876c4ed2dc3de200173.1767008082.git.christophe.jaillet@wanadoo.fr>
+	(Christophe JAILLET's message of "Mon, 29 Dec 2025 12:35:01 +0100")
+Organization: Oracle Corporation
+Message-ID: <yq1ldidt8bp.fsf@ca-mkp.ca.oracle.com>
+References: <a0f25237ae86b8c4dd7a3876c4ed2dc3de200173.1767008082.git.christophe.jaillet@wanadoo.fr>
+Date: Sun, 04 Jan 2026 15:46:50 -0500
+Content-Type: text/plain
+X-ClientProxiedBy: YQBPR0101CA0136.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:c01:e::9) To CH0PR10MB5338.namprd10.prod.outlook.com
+ (2603:10b6:610:cb::8)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH0PR10MB5338:EE_|DM3PPFC3D93F6EF:EE_
+X-MS-Office365-Filtering-Correlation-Id: 309be503-0301-4051-5c04-08de4bd263e6
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|1800799024|366016;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?/vu32htsZkdSwHKGW4o1XFE2a698Lu4nd+se2/CIdXSypU4B0XpjtmPd/HB3?=
+ =?us-ascii?Q?o7HOr2p/OybNqG5UaXddFR+FNIrV/9oNICal+bKpumh0DgSQt+vkVmJOGPXh?=
+ =?us-ascii?Q?iumRyrox+xA8qsjpdGsd6YS69aPz9x5dEZosQMOKfoLvXbdkKZoFBNCoKPR9?=
+ =?us-ascii?Q?dKOHQuxF2q73BwGhbfJ5MNiOYjI+0WrAln0G//mKWCf/wwu8oL7I8TcFJlsA?=
+ =?us-ascii?Q?oh1KR7/ljVrH56xeV/fdsCyrmh9Rq0ujWEqI0dqVVMva2LQ+4SQ6jjlgVxsF?=
+ =?us-ascii?Q?LrYndOMRwjiIf7g42wnUqVpLm+aUDhrBdaqvUDD8GPKBWcgIucRgAKN+EtVU?=
+ =?us-ascii?Q?Lx3H0RZr3gQzahuti1H6K1rCT2jo8Cg/GdwkOyRIMKsobGd+4OrdXSh7R3aW?=
+ =?us-ascii?Q?EJRuMH/uxdCha3aYRMbX+T/aGJNX46iingoh83dehWrLEHZmDvF2PG5xLdSh?=
+ =?us-ascii?Q?3kIrWVsHpoZArRbF0Br+Uxbjb7gZ1ti1Fq+jCsuU/izgZzwQ9IbidE1rkUXp?=
+ =?us-ascii?Q?o/n+Z8msI168sbSIbHE//I3xKT0/JbYR44uyAkb7vVKcS0JD0+62VDMwBr2b?=
+ =?us-ascii?Q?lHRrsMIFa+/Fr9j5WX3nhFnJQGXwEWelIHxb2dlsTbiMlgiRWyziIUrFVEKe?=
+ =?us-ascii?Q?AT0yZy+y4bLM9utpyL3P0m7urJ7yHPfd/ojLAGqcykI9yZqCY/9MKogzGFfx?=
+ =?us-ascii?Q?JEzOm3MrISMswfV8ItK0XNp4+oRn4+wl1l0rR3B+6KGN116dUAyq21IR3AFm?=
+ =?us-ascii?Q?/JpwT0/5aScWiGIwO1U/yqfX1IOUKx+GXD9knlfszzvXY9JptlPkQzATo2RH?=
+ =?us-ascii?Q?YfyZUihR538aS9G042BBX38VXPZJMgdKb3w/Vriy0X+8I01WjYpRpRfl1v7O?=
+ =?us-ascii?Q?uywfqVdTIgfpxMIhoU4SOzd5aYpUHy30G5tu8syqln69l+ETZeSk/xnlx2sC?=
+ =?us-ascii?Q?xOaun+AzWDCOQICgLKX77oPdabgpdqjnfrM52fymB11Z5Yw1tSip2D6QfYBX?=
+ =?us-ascii?Q?eTA1krs3wCgWAkyKidgDHMDLlwqHL3RRqIOkHk4TBVjkq7JMSIcIegY7UOHJ?=
+ =?us-ascii?Q?Eh02Rysp0G3XDaZsEY8o4azyb7Dnap/mm2iwDt0Em6CIN4Q818lRmS6MFNDr?=
+ =?us-ascii?Q?IAGozYfgiQUpGJ8kz//be0dAO1vlW3Bp8Sm5ao9ZXXzOmo+VTXoHzN/qB3hF?=
+ =?us-ascii?Q?DH47ucx8iFkJZc4I56FFO9GqpNPNoxGewNisd9UGUk/gjwKgc6kTYbJjrLJA?=
+ =?us-ascii?Q?C6X1HsdVyjXLCargBz4dqB+Ij71dgWJ2/sD1v49OtMWy82kdTyDdBuopNrVn?=
+ =?us-ascii?Q?jnLMXA+hYSeeGfD7p0irc6tbCpKeMshkqha6OmZegBXaR84C5lKBYAD3OCBK?=
+ =?us-ascii?Q?f5Rpx/Eq6QhXwsgoOh0nnl3BHI0w+/lcS58bLXOXaKC4uu/2lyKEJ4l3aD/I?=
+ =?us-ascii?Q?JwrBG8uwfebNVAA1IFxW8jDc4YMhMsQz?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH0PR10MB5338.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(366016);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?hdbeKKHD6mBRwlhZda7uqTfoxcmKPtrdp2XWJvXiEsdYTNb2bCNhY+Q2NHiT?=
+ =?us-ascii?Q?5s3nxT7gd/mXkbWgg6kiUMu3SIV/GJ8V/+LAOf04mjaiyj0nN5rpN+nhT3Bq?=
+ =?us-ascii?Q?g22YSwCaABwc9FkZ1r3ZMUMAd5Lxv9ke3mZsZcUf4e1HkkqduoiFzXssPNaV?=
+ =?us-ascii?Q?dNPJFNZttAd0pha46bjicHZJyFFfJbeI4ti1AVQNVXvyM75ID07aC7udxIMq?=
+ =?us-ascii?Q?c/fni/zV5+2uRxgLECZMHrvptmr85EU0BhT7+oXQZf6GRYuh8cMVv1MdaJCZ?=
+ =?us-ascii?Q?SHlrwsPpnKR0wR9JCwukE3Kjo8YLGtX6WbDTOOZDzASd/binfzYeDhopQ8yG?=
+ =?us-ascii?Q?/Raw2wQX2asglfaMd3/9RTmyqESLh/lKy7hljkG27KHQ9p8EyEDkP7sjhxuF?=
+ =?us-ascii?Q?z435hOwejLjM3TGYsCatbrm5H33J3te7zL7VnQTLhagvU4ykXM6KTKUUL/GB?=
+ =?us-ascii?Q?EsOW1LUuewGq7BAGwwNKftAdXbFMhsNh2GfM47ZjG8jCzzgV2dvdFELcEjVk?=
+ =?us-ascii?Q?afYAEbNMdDIWwrUsxCwnL15fWucSTcFs7It1BHf68iofyZnKQzz3A6zZAiZY?=
+ =?us-ascii?Q?wugBPyjyf+ztQFlI7UFkaEkfA7LBxgjWpD4s73QJU5dwM1D2d01PbqdJRuWx?=
+ =?us-ascii?Q?iN7oh2xgSnfm9UPaG3nDCi91V3vL8Tzf0sEuYkHdVZ1NCe7FBJp/RKBA50Pj?=
+ =?us-ascii?Q?/CpzfzC4YKLXQVigoEoR1YfL2zZH5oKOia+8u2Wz/M72hrhP1SmaJqubf1pH?=
+ =?us-ascii?Q?RoXZPU6I2y+wWhEfVfRj5Xqtz/A3VTjNY5eGLLZ5A9Sn2cTXgXfNOKptckLJ?=
+ =?us-ascii?Q?X67kmpPAEoa7dBD/QV8okGBFYxsoitNYcFHdmuL1aUfNF+x+yP0ZQs/t8Gbz?=
+ =?us-ascii?Q?UJlW7icAX9r12DDelebGazIMTdiVCNgQ1Fx2Yx8wSTWSUxekQjoyfH9EfjJx?=
+ =?us-ascii?Q?JDd8m65mexoWR5LLDkEVKBKsW4MYRpuBcOY4+CJgMmKrMSDZFvgr7F+0SU0f?=
+ =?us-ascii?Q?FIW95HKg2CC6XhEThPQ2/thst5Qfw/YmkeeAQ2OJskt+izE8KsiLORqP/KBr?=
+ =?us-ascii?Q?CGcXEXKtVSgfLcVR2dv9mz8xda1yBMQvCQlFOhMCKCiGz2edoXyuJhSMhsCG?=
+ =?us-ascii?Q?RGtp2WwWTMuuTtTl7GmgkS8sUqf/NyyFn8VuSsHlvDF+e8IVikL1uZ7eW0d1?=
+ =?us-ascii?Q?dG6jW18drhiiYbEPZv1g7ELW0xtrlamwljuCt420ntR+iso8Y4W/Uq86pslm?=
+ =?us-ascii?Q?PoDGN4Rn7+4eaSMO3NqACM79On5pALHJe0xYHssTxJHOBo7rKKqyNbNGmial?=
+ =?us-ascii?Q?090egJ2+xCVj2GbSYhpWB4mtKIHW6Ofr+EtOB+AeuXc4rdyfMkRWtXisFwx9?=
+ =?us-ascii?Q?jXp7IcZe5QJGyNj2G5VTewsAowvovRYKqECfFEk8LpOUOQg3/nAgmj6WvVlv?=
+ =?us-ascii?Q?de3Gv7JI3Njhm2Yl3m1tQE8a6m+JaLDVhfyzEuQHFe1g5ZYVkSFCKaQiVqCH?=
+ =?us-ascii?Q?bvwnkseYtgF+W+bapJwOJSP9d8g9+LPDgHNKgCnPctDitQwYlZCrFCsy+KS2?=
+ =?us-ascii?Q?IW6UwJz7cTAws+ooY27yaImw6HQCBQJ69C4KoicX5lwPeTB1fKAVlRJFCZ+6?=
+ =?us-ascii?Q?4cJqmOaCIBjG12klsH9fShZhYFPSR7xDpMVLY6DqATUb6yhX6zrh+CK4e4iS?=
+ =?us-ascii?Q?IG5WKiIzXtX0laNlLuzDNRvBvtUQguCp874apl4jBSUQQNYYDnTXp6031lae?=
+ =?us-ascii?Q?z8QwV4/QCu9JlPx2kloFTX0860cKrjE=3D?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	ShCkqYQWa9hS9wK+Y3Wnza81OYxHnRDQF+F4SslUo8FUSZhjNtOyArIV7PheXF4dNMbMIBaNb/iwxdRasEYJmTH/2sk93xlZ440t05/8LuqLdocpOZpMEjaY/BJgJGntt0uKjD1rZZWjGR7huqruuCmJ8PbfOZ1yQeFQTgEUImXL3RfQhfBsEUn8xMRoNbNhkJpPH03s/5fouDfm14AB9kUitgtefjb/spQtWQkZxFK69NdIx+fiJmFSHd4wM/cOHSya2ubP6LqjSSXnlQFvVyjy5Ra7eU68OfVu9qfSlKJmh41qqAOfgHcljrrhLQLyhXLbF22TftNtz4HW61aES2rcTbJY1mMDE54WQPmsn8EjKYzkGzlXr+E6LV6wTiYX2evWWVY5D8QOa98S4DkhgTw3e4BxwQ8TpeHLgDm4JhNa9+KsRMfGrlLVNs4Z/+ExVUhI4CxLlL5Fa7atdfJljLJjCoyD/MVgTOR2+omgtfNJkEHZyblp17pwl6dXNMXAsuUwhxmaa69ePoOwkOIrWE6gtsa917v6Nn6wop7/F5EEi24kx6lMoiAh0LCcp0o8s+fghj3poE4JT478ZEUUmoOaKxCO+JcFLbKKv7HMJjo=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 309be503-0301-4051-5c04-08de4bd263e6
+X-MS-Exchange-CrossTenant-AuthSource: CH0PR10MB5338.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Jan 2026 20:46:52.5323
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 7znyVUgC/oArhtObnaMgMR5khpEWLu/4Hic3L2IfQ1ZSXymc6keFASrT7oJTgQMUtyfeLXOd5x2KaeuEB39jwBvtfD1IxFXSGUZskkPKxQU=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM3PPFC3D93F6EF
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2026-01-04_06,2025-12-31_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 bulkscore=0 malwarescore=0
+ spamscore=0 suspectscore=0 mlxscore=0 mlxlogscore=999 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2512120000
+ definitions=main-2601040191
+X-Proofpoint-ORIG-GUID: PHUJpiW_AUVPBq6syot4_aJoi03gG2Fu
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTA0MDE5MSBTYWx0ZWRfX9vSAcMt40xib
+ J4sa0KHaPKyx7rjrCpScZVC38b9lSOcU/MZjrO4gEwibL8fquNlJBHvw0eazOwH5xU3B7SAhEC6
+ 57eE7r3JhaOuNka3Jo7lirB4z2sJcKUpPJVrdwOwoKMmrG6Ekjhu2bLBT/sg467gUbfEVd8EUKe
+ boU/Rnk72kENTlKw8hlTkIVME51t+u1E65fbikOordZTKu1RTfXvus/Cb9AZJFnryoV83SRNfXU
+ 8CYgEB8n24Bm+2iLutRICYjzsc3yyf1H2ePZuRSstWaXmOpSJpFm/IdacWSVpYuMe2Jb4ScLk+h
+ HJwH++Av284HccG9ELJmUsZzvnwpNNXRRrVD1BANvz1CIq2sCv7BsNWRAJbf500WxoXEIprKChF
+ hzu8eZWzySy4coPqptLf6dLlFvHqcqqD528UOStGGFcNcg+mS4q+gC5uYY3/ODKreElh+Zc8gD2
+ Gp6hRuyjskFSUX8iux3pNykwOvUYSTTMwrCwXQYA=
+X-Proofpoint-GUID: PHUJpiW_AUVPBq6syot4_aJoi03gG2Fu
+X-Authority-Analysis: v=2.4 cv=QtFTHFyd c=1 sm=1 tr=0 ts=695ad1c0 b=1 cx=c_pps
+ a=qoll8+KPOyaMroiJ2sR5sw==:117 a=qoll8+KPOyaMroiJ2sR5sw==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=vUbySO9Y5rIA:10
+ a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22 a=4UmxapGgOvRovlyjj6YA:9 cc=ntf
+ awl=host:12110
 
-'struct configfs_item_operations' and 'configfs_group_operations' are not
-modified in this driver.
 
-Constifying these structures moves some data to a read-only section, so
-increases overall security, especially when the structure holds some
-function pointers.
+Christophe,
 
-On a x86_64, with allmodconfig:
-Before:
-======
-   text	   data	    bss	    dec	    hex	filename
- 151831	  80058	   4832	 236721	  39cb1	drivers/target/target_core_configfs.o
-  45200	  16658	      0	  61858	   f1a2	drivers/target/target_core_fabric_configfs.o
+> 'struct configfs_item_operations' and 'configfs_group_operations' are
+> not modified in this driver.
 
-After:
-=====
-   text	   data	    bss	    dec	    hex	filename
- 152599	  79290	   4832	 236721	  39cb1	drivers/target/target_core_configfs.o
-  46352	  15506	      0	  61858	   f1a2	drivers/target/target_core_fabric_configfs.o
+Applied to 6.20/scsi-staging, thanks!
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-Compile tested only.
-
-This change is possible since commits f2f36500a63b and f7f78098690d.
-
-Changes in v2:
-   - The patch was not the one related to scsi: target:. Only the subject
-     was right.
-
-v1: https://lore.kernel.org/lkml/f1f05f6c1bc0c6f37cd680f012fe08c525364968.1765705512.git.christophe.jaillet@wanadoo.fr/
----
- drivers/target/target_core_configfs.c        | 18 ++++++------
- drivers/target/target_core_fabric_configfs.c | 30 ++++++++++----------
- 2 files changed, 24 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index f7868b41c5e6..c256c7137125 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -288,7 +288,7 @@ static void target_core_deregister_fabric(
- 	config_item_put(item);
- }
- 
--static struct configfs_group_operations target_core_fabric_group_ops = {
-+static const struct configfs_group_operations target_core_fabric_group_ops = {
- 	.make_group	= &target_core_register_fabric,
- 	.drop_item	= &target_core_deregister_fabric,
- };
-@@ -2810,7 +2810,7 @@ static void target_core_alua_lu_gp_release(struct config_item *item)
- 	core_alua_free_lu_gp(lu_gp);
- }
- 
--static struct configfs_item_operations target_core_alua_lu_gp_ops = {
-+static const struct configfs_item_operations target_core_alua_lu_gp_ops = {
- 	.release		= target_core_alua_lu_gp_release,
- };
- 
-@@ -2867,7 +2867,7 @@ static void target_core_alua_drop_lu_gp(
- 	config_item_put(item);
- }
- 
--static struct configfs_group_operations target_core_alua_lu_gps_group_ops = {
-+static const struct configfs_group_operations target_core_alua_lu_gps_group_ops = {
- 	.make_group		= &target_core_alua_create_lu_gp,
- 	.drop_item		= &target_core_alua_drop_lu_gp,
- };
-@@ -3240,7 +3240,7 @@ static void target_core_alua_tg_pt_gp_release(struct config_item *item)
- 	core_alua_free_tg_pt_gp(tg_pt_gp);
- }
- 
--static struct configfs_item_operations target_core_alua_tg_pt_gp_ops = {
-+static const struct configfs_item_operations target_core_alua_tg_pt_gp_ops = {
- 	.release		= target_core_alua_tg_pt_gp_release,
- };
- 
-@@ -3298,7 +3298,7 @@ static void target_core_alua_drop_tg_pt_gp(
- 	config_item_put(item);
- }
- 
--static struct configfs_group_operations target_core_alua_tg_pt_gps_group_ops = {
-+static const struct configfs_group_operations target_core_alua_tg_pt_gps_group_ops = {
- 	.make_group		= &target_core_alua_create_tg_pt_gp,
- 	.drop_item		= &target_core_alua_drop_tg_pt_gp,
- };
-@@ -3339,7 +3339,7 @@ static void target_core_stat_rmdir(
- 	return;
- }
- 
--static struct configfs_group_operations target_core_stat_group_ops = {
-+static const struct configfs_group_operations target_core_stat_group_ops = {
- 	.make_group		= &target_core_stat_mkdir,
- 	.drop_item		= &target_core_stat_rmdir,
- };
-@@ -3466,7 +3466,7 @@ static void target_core_drop_subdev(
- 	mutex_unlock(&hba->hba_access_mutex);
- }
- 
--static struct configfs_group_operations target_core_hba_group_ops = {
-+static const struct configfs_group_operations target_core_hba_group_ops = {
- 	.make_group		= target_core_make_subdev,
- 	.drop_item		= target_core_drop_subdev,
- };
-@@ -3545,7 +3545,7 @@ static struct configfs_attribute *target_core_hba_attrs[] = {
- 	NULL,
- };
- 
--static struct configfs_item_operations target_core_hba_item_ops = {
-+static const struct configfs_item_operations target_core_hba_item_ops = {
- 	.release		= target_core_hba_release,
- };
- 
-@@ -3626,7 +3626,7 @@ static void target_core_call_delhbafromtarget(
- 	config_item_put(item);
- }
- 
--static struct configfs_group_operations target_core_group_ops = {
-+static const struct configfs_group_operations target_core_group_ops = {
- 	.make_group	= target_core_call_addhbatotarget,
- 	.drop_item	= target_core_call_delhbafromtarget,
- };
-diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
-index 13159928e365..59713e9be10a 100644
---- a/drivers/target/target_core_fabric_configfs.c
-+++ b/drivers/target/target_core_fabric_configfs.c
-@@ -59,7 +59,7 @@ static void target_fabric_setup_##_name##_cit(struct target_fabric_configfs *tf)
- 	pr_debug("Setup generic %s\n", __stringify(_name));		\
- }
- 
--static struct configfs_item_operations target_fabric_port_item_ops;
-+static const struct configfs_item_operations target_fabric_port_item_ops;
- 
- /* Start of tfc_tpg_mappedlun_cit */
- 
-@@ -219,7 +219,7 @@ static void target_fabric_mappedlun_release(struct config_item *item)
- 	core_dev_free_initiator_node_lun_acl(se_tpg, lacl);
- }
- 
--static struct configfs_item_operations target_fabric_mappedlun_item_ops = {
-+static const struct configfs_item_operations target_fabric_mappedlun_item_ops = {
- 	.release		= target_fabric_mappedlun_release,
- 	.allow_link		= target_fabric_mappedlun_link,
- 	.drop_link		= target_fabric_mappedlun_unlink,
-@@ -246,7 +246,7 @@ static void target_core_mappedlun_stat_rmdir(
- 	return;
- }
- 
--static struct configfs_group_operations target_fabric_mappedlun_stat_group_ops = {
-+static const struct configfs_group_operations target_fabric_mappedlun_stat_group_ops = {
- 	.make_group		= target_core_mappedlun_stat_mkdir,
- 	.drop_item		= target_core_mappedlun_stat_rmdir,
- };
-@@ -345,11 +345,11 @@ static void target_fabric_nacl_base_release(struct config_item *item)
- 	core_tpg_del_initiator_node_acl(se_nacl);
- }
- 
--static struct configfs_item_operations target_fabric_nacl_base_item_ops = {
-+static const struct configfs_item_operations target_fabric_nacl_base_item_ops = {
- 	.release		= target_fabric_nacl_base_release,
- };
- 
--static struct configfs_group_operations target_fabric_nacl_base_group_ops = {
-+static const struct configfs_group_operations target_fabric_nacl_base_group_ops = {
- 	.make_group		= target_fabric_make_mappedlun,
- 	.drop_item		= target_fabric_drop_mappedlun,
- };
-@@ -433,7 +433,7 @@ static void target_fabric_drop_nodeacl(
- 	config_item_put(item);
- }
- 
--static struct configfs_group_operations target_fabric_nacl_group_ops = {
-+static const struct configfs_group_operations target_fabric_nacl_group_ops = {
- 	.make_group	= target_fabric_make_nodeacl,
- 	.drop_item	= target_fabric_drop_nodeacl,
- };
-@@ -454,7 +454,7 @@ static void target_fabric_np_base_release(struct config_item *item)
- 	tf->tf_ops->fabric_drop_np(se_tpg_np);
- }
- 
--static struct configfs_item_operations target_fabric_np_base_item_ops = {
-+static const struct configfs_item_operations target_fabric_np_base_item_ops = {
- 	.release		= target_fabric_np_base_release,
- };
- 
-@@ -499,7 +499,7 @@ static void target_fabric_drop_np(
- 	config_item_put(item);
- }
- 
--static struct configfs_group_operations target_fabric_np_group_ops = {
-+static const struct configfs_group_operations target_fabric_np_group_ops = {
- 	.make_group	= &target_fabric_make_np,
- 	.drop_item	= &target_fabric_drop_np,
- };
-@@ -700,7 +700,7 @@ static void target_fabric_port_release(struct config_item *item)
- 	call_rcu(&lun->rcu_head, target_tpg_free_lun);
- }
- 
--static struct configfs_item_operations target_fabric_port_item_ops = {
-+static const struct configfs_item_operations target_fabric_port_item_ops = {
- 	.release		= target_fabric_port_release,
- 	.allow_link		= target_fabric_port_link,
- 	.drop_link		= target_fabric_port_unlink,
-@@ -726,7 +726,7 @@ static void target_core_port_stat_rmdir(
- 	return;
- }
- 
--static struct configfs_group_operations target_fabric_port_stat_group_ops = {
-+static const struct configfs_group_operations target_fabric_port_stat_group_ops = {
- 	.make_group		= target_core_port_stat_mkdir,
- 	.drop_item		= target_core_port_stat_rmdir,
- };
-@@ -787,7 +787,7 @@ static void target_fabric_drop_lun(
- 	config_item_put(item);
- }
- 
--static struct configfs_group_operations target_fabric_lun_group_ops = {
-+static const struct configfs_group_operations target_fabric_lun_group_ops = {
- 	.make_group	= &target_fabric_make_lun,
- 	.drop_item	= &target_fabric_drop_lun,
- };
-@@ -812,7 +812,7 @@ static void target_fabric_tpg_release(struct config_item *item)
- 	tf->tf_ops->fabric_drop_tpg(se_tpg);
- }
- 
--static struct configfs_item_operations target_fabric_tpg_base_item_ops = {
-+static const struct configfs_item_operations target_fabric_tpg_base_item_ops = {
- 	.release		= target_fabric_tpg_release,
- };
- 
-@@ -998,11 +998,11 @@ static void target_fabric_release_wwn(struct config_item *item)
- 	tf->tf_ops->fabric_drop_wwn(wwn);
- }
- 
--static struct configfs_item_operations target_fabric_tpg_item_ops = {
-+static const struct configfs_item_operations target_fabric_tpg_item_ops = {
- 	.release	= target_fabric_release_wwn,
- };
- 
--static struct configfs_group_operations target_fabric_tpg_group_ops = {
-+static const struct configfs_group_operations target_fabric_tpg_group_ops = {
- 	.make_group	= target_fabric_make_tpg,
- 	.drop_item	= target_fabric_drop_tpg,
- };
-@@ -1144,7 +1144,7 @@ static void target_fabric_drop_wwn(
- 	config_item_put(item);
- }
- 
--static struct configfs_group_operations target_fabric_wwn_group_ops = {
-+static const struct configfs_group_operations target_fabric_wwn_group_ops = {
- 	.make_group	= target_fabric_make_wwn,
- 	.drop_item	= target_fabric_drop_wwn,
- };
 -- 
-2.52.0
-
+Martin K. Petersen
