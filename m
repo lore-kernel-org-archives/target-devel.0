@@ -1,214 +1,83 @@
-Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46EAD2DB7BF
-	for <target-devel@vger.kernel.org>; Mon, 19 Jan 2026 18:51:00 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A249543634B;
+	Tue, 20 Jan 2026 13:48:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.1.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1768848661; cv=none; b=IzEJgx2kSzOz29P4SijiaPa397crsG98YZ77LAPhSgjNUiuxxi9pnRKHO1nx2PIrJTuYJlI3s+ixIuRzRNbx4CM022FPUBHD8XKiD58e3IrpF0C0FCMHVSbnkoFi0BcGrSsCmic1bh7DPjrAo68Rqb8/GaGcVhMFC81hVwWdRMU=
+	t=1768916907; cv=none; b=EAhEvJaVCXDqrhSgu2h32lBKtSiLKjGFIyGwPbDaaywYvFIvM9aTSw6jggvO+xN216JLUOYB7XIN/xY2M3K1uUqxdy7ProNy+vHp/wEpeWFk3goRyavSTPCijUrxJ1dvmD87SOgjNK6PEtFkUBe1HdkoxbyN/5BVbzPCEpWfukk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1768848661; c=relaxed/simple;
-	bh=GPBh2qWpyCXo1XUshP2C3TdOgUMqV76uDwXWffPXuuQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XNN8bfvr1UgVdE/0cZ/NaE2azhs5ugD2ZRI0Ohz/+UaYFLd91db4M1s+Z66hqpQeDmxvUpnFdW8i5aDsXegaqespkg9RDiMAaFjDMDV3oZOTMcriQl44Y2PWdglnf9sSusLIqeQ88hRp9wvDdMxEfccPld+qRRy7V0lq5ZzxW6A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=WZjKvKup; arc=none smtp.client-ip=209.85.214.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1768916907; c=relaxed/simple;
+	bh=DdCeDquolF/w7F6B01lbUF/rIeGCTbJAYlhr8LWHkJ0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KNI2YjCQxUYqED0XJSTECT7G4YqRxOszl2iv+IdTAnr86H7tGGK1M+v/mbsh9Yqo1yTW03Efr4h1Jycz4WxKK4oQn1VT719u5NGwJDUPTOopUm8gcsqEiyFWIwg8kiNEnIpNMVykMFCwbAxzT7IOEkDMh3q4wgXWU/7uTGw4WJo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=HTe8UjMP; arc=none smtp.client-ip=199.89.1.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WZjKvKup"
-Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2a0c09bb78cso35123585ad.0
-        for <target-devel@vger.kernel.org>; Mon, 19 Jan 2026 10:51:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768848660; x=1769453460; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ELu77MSHMdAJE1MG9u8LT8LbmE4aGm6DlWdwArp/Ogc=;
-        b=WZjKvKup1JTHlU0is7A755AnqUDaFJnuJ7BlYKWTAK6s/3B5/VgzpQtbvuMlioFTEL
-         a7VVI2sd3E7Pk+KxSqCVoRbvKPqZO7ATFU7BMk+nFTEYkF1AhyFprLpTfBjLQp2XyLTB
-         y7CnBjFoJejdcSvQXhxoESKBI62eXIYN4zDM6xqV5eDMfJpVJ2fJkVlO09mmx4ylpru0
-         RZ2Lc7B0NiEkVQgSNv/Fg6WCPmgtMFqpdavO7Y1347mL8/thW/fetKhh01WW3FZFjTtj
-         fTIL+aQiEWp+SqCAJtD7sggHhq8iXPT95gMdsSHPO+XxOxfzNtTpwmdZmgzwcIQ+Dg2f
-         UxoQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768848660; x=1769453460;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ELu77MSHMdAJE1MG9u8LT8LbmE4aGm6DlWdwArp/Ogc=;
-        b=bqs3HHYGPgtByOaSkCsxlosaRraYJ7zpYXJ1khHmOK4K41fjOHRmjQHjnToy7ApeAC
-         HQuuT7nKQ8pPyyvzKLhhq3y/OjuKzlsG5EU7Wb+KFDbF/BUu8a9HEbJMwCM2Jz3Vonzs
-         TvaLeBc+XviWkF1tKkxDyTWOSrLxUL0xrR1IVgrtaB8m1eSJsniPxPeY7gVSkb3IiEDJ
-         gSILl9sXkPWiYn/CS8y+605cxLxw65qGEadLi/TWlCqoE5Mo2Ifc0GWhWVIlF4KuuAoa
-         MLc66lJhewV7f8v4yYoi1woqfSwJ+lCl7zH2G5QxvDaxiHBVB8/q17gIaerHSpuDgY1P
-         /TIA==
-X-Forwarded-Encrypted: i=1; AJvYcCWJKBT6OtaDR2EP2nds56hS2VxBSA9iBbIXhBFbq3W//G2FHlxsUG/n7HKvExqHY/3jub0Q9mE1sQXDshE=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxqlZoHZzGKZSHGkjWl87Rm61h+3l9HkDJjnhi3UbFGgh48CDQg
-	KvBQT1oGuB2d25VEJrG6DBKZhI0rmIiuox6urLdaCLLT3QY+2StkzeY/
-X-Gm-Gg: AZuq6aKRIYQ5UZHcLsHfm+EV9CR5HzvY2Bk+dfruoeLHOJKoDKsCwbkt0PWc81MYao5
-	TTm84hUX1/1YuA8xMpetnd3TSiuMlBeoVzsr/X/NvS9+STh5BRJcCrUME5B5X3194t7laKNTyT6
-	TDbv/DtuYaGdYrMhDSN4d3V+c2iiRgxfzv3u/+amZPTLZXUHdtmnAseiC3nxMjl788ZD/r2RbCd
-	gQqQQ5Pnu9dm0xWhoae0GHWqnIR4Hr3PR4+X9s4aDS814zF1WcxrrkEtCd/KkuSBG4GyItajMzg
-	bdyb2xNZoHgz2MYjOA5fqxr/VIWYOUrbU3LKh0it/1WdC9vvRYFVX3TFKrNE/FZnxK3Pg3r/VVg
-	jLhgKoR06yXgmQT2liG0iWS50/YRHFSsgOGXPhTUe+s6yU0wxH66ybQJR4J/r3eutu5V2bW+9qZ
-	p5K0BU+hsEFpc=
-X-Received: by 2002:a17:902:ebc8:b0:2a0:9238:881d with SMTP id d9443c01a7336-2a700a1c29fmr150358455ad.15.1768848659415;
-        Mon, 19 Jan 2026 10:50:59 -0800 (PST)
-Received: from inspiron ([111.125.231.221])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a71941b915sm102107895ad.90.2026.01.19.10.50.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Jan 2026 10:50:59 -0800 (PST)
-Date: Tue, 20 Jan 2026 00:20:49 +0530
-From: Prithvi <activprithvi@gmail.com>
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	hch@lst.de, jlbec@evilplan.org, linux-fsdevel@vger.kernel.org,
-	linux-kernel-mentees@lists.linux.dev, skhan@linuxfoundation.org,
-	david.hunter.linux@gmail.com, khalid@kernel.org,
-	syzbot+f6e8174215573a84b797@syzkaller.appspotmail.com,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] scsi: target: Fix recursive locking in
- __configfs_open_file()
-Message-ID: <20260119185049.mvcjjntdkmtdk4je@inspiron>
-References: <20260108191523.303114-1-activprithvi@gmail.com>
- <2f88aa9b-b1c2-4b02-81e8-1c43b982db1b@acm.org>
+	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="HTe8UjMP"
+Received: from localhost (localhost [127.0.0.1])
+	by 013.lax.mailroute.net (Postfix) with ESMTP id 4dwTDn1j0Jzlfl8N;
+	Tue, 20 Jan 2026 13:48:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:content-type:content-type:in-reply-to
+	:from:from:content-language:references:subject:subject
+	:user-agent:mime-version:date:date:message-id:received:received;
+	 s=mr01; t=1768916902; x=1771508903; bh=SOAdpbDm0eHpipCEaZSPiJYY
+	fuJseVJynyq5vsxpEV0=; b=HTe8UjMPTjFI9fuDL/EbKshTsyDMz8UC31uq9k1O
+	Cfy33tTlYI5lLEnOH0qyyH1qVdEMv+/PgjXJ8bQKvhgP9DNWjIhegnWrnqd6He9q
+	lGjsPcxa63+y29eQGndXn5GOzJ1Fav8lDjmnjcxuSo/j0FlHmMojrSR1Pn0z4WUx
+	OFvKWP7SRWTB4vZ/j2dsu/aujjuu8Mv4+wtauAAGawlQvAmKtOrrGFfqqltPyxSF
+	yzPSkobUXBU0Jrz5rNnsCRI51UVfEXB116vMtHoaqYO2R2g1YzqveQbNHCX1bBd/
+	e7q5iMjhhmSSpyGE9opMZ/+oJhBRldiPMP+4q64iaxhGQg==
+X-Virus-Scanned: by MailRoute
+Received: from 013.lax.mailroute.net ([127.0.0.1])
+ by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id TM8u1GgFmxyU; Tue, 20 Jan 2026 13:48:22 +0000 (UTC)
+Received: from [192.168.50.14] (c-73-231-117-72.hsd1.ca.comcast.net [73.231.117.72])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: bvanassche@acm.org)
+	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4dwTDf2ftVzlfpMC;
+	Tue, 20 Jan 2026 13:48:18 +0000 (UTC)
+Message-ID: <ac604919-1620-4fea-9401-869fd15f3533@acm.org>
+Date: Tue, 20 Jan 2026 05:48:16 -0800
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2f88aa9b-b1c2-4b02-81e8-1c43b982db1b@acm.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] scsi: target: Fix recursive locking in
+ __configfs_open_file()
+To: Prithvi <activprithvi@gmail.com>
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+ target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, hch@lst.de,
+ jlbec@evilplan.org, linux-fsdevel@vger.kernel.org,
+ linux-kernel-mentees@lists.linux.dev, skhan@linuxfoundation.org,
+ david.hunter.linux@gmail.com, khalid@kernel.org,
+ syzbot+f6e8174215573a84b797@syzkaller.appspotmail.com, stable@vger.kernel.org
+References: <20260108191523.303114-1-activprithvi@gmail.com>
+ <2f88aa9b-b1c2-4b02-81e8-1c43b982db1b@acm.org>
+ <20260119185049.mvcjjntdkmtdk4je@inspiron>
+Content-Language: en-US
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <20260119185049.mvcjjntdkmtdk4je@inspiron>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 15, 2026 at 08:57:28AM -0800, Bart Van Assche wrote:
-> On 1/8/26 12:15 PM, Prithvi Tambewagh wrote:
-> > This poses a possibility of recursive locking,
-> > which triggers the lockdep warning.
+On 1/19/26 10:50 AM, Prithvi wrote:
+>   Possible unsafe locking scenario:
 > 
-> Patches that fix a lockdep complaint should include the full lockdep
-> complaint.
-> 
-> Since the fixed lockdep complaint didn't trigger a deadlock it must be
-> a false positive complaint, isn't it? Such complaints should be fixed
-> but without additional information we can't tell what the best way is to
-> fix the complaint.
-> 
-> Thanks,
-> 
-> Bart.
+>         CPU0
+>         ----
+>    lock(&p->frag_sem);
+>    lock(&p->frag_sem);
+The least intrusive way to suppress this type of lockdep complaints is
+by using lockdep_register_key() and lockdep_unregister_key().
 
-Hello Bart,
+Thanks,
 
-Here is the full lockdep complaint, as per the syzkaller dashboard report
-for the bug:
-
-============================================
-WARNING: possible recursive locking detected
-syzkaller #0 Not tainted
---------------------------------------------
-syz.0.17/5999 is trying to acquire lock:
-ffff888140413f78 (&p->frag_sem){.+.+}-{4:4}, at: __configfs_open_file+0xe8/0x9c0 fs/configfs/file.c:304
-
-but task is already holding lock:
-ffff888140413f78 (&p->frag_sem){.+.+}-{4:4}, at: flush_write_buffer fs/configfs/file.c:205 [inline]
-ffff888140413f78 (&p->frag_sem){.+.+}-{4:4}, at: configfs_write_iter+0x219/0x4e0 fs/configfs/file.c:229
-
-other info that might help us debug this:
- Possible unsafe locking scenario:
-
-       CPU0
-       ----
-  lock(&p->frag_sem);
-  lock(&p->frag_sem);
-
- *** DEADLOCK ***
-
- May be due to missing lock nesting notation
-
-4 locks held by syz.0.17/5999:
- #0: ffff888147ab0420 (sb_writers#12){.+.+}-{0:0}, at: ksys_write+0x12a/0x250 fs/read_write.c:738
- #1: ffff888077d2d688 (&buffer->mutex){+.+.}-{4:4}, at: configfs_write_iter+0x75/0x4e0 fs/configfs/file.c:226
- #2: ffff888140413f78 (&p->frag_sem){.+.+}-{4:4}, at: flush_write_buffer fs/configfs/file.c:205 [inline]
- #2: ffff888140413f78 (&p->frag_sem){.+.+}-{4:4}, at: configfs_write_iter+0x219/0x4e0 fs/configfs/file.c:229
- #3: ffffffff8f4097e8 (target_devices_lock){+.+.}-{4:4}, at: target_core_item_dbroot_store+0x21/0x350 drivers/target/target_core_configfs.c:114
-
-stack backtrace:
-CPU: 0 UID: 0 PID: 5999 Comm: syz.0.17 Not tainted syzkaller #0 PREEMPT(full) 
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 10/02/2025
-Call Trace:
- <TASK>
- __dump_stack lib/dump_stack.c:94 [inline]
- dump_stack_lvl+0x116/0x1f0 lib/dump_stack.c:120
- print_deadlock_bug+0x1e9/0x240 kernel/locking/lockdep.c:3041
- check_deadlock kernel/locking/lockdep.c:3093 [inline]
- validate_chain kernel/locking/lockdep.c:3895 [inline]
- __lock_acquire+0x1106/0x1c90 kernel/locking/lockdep.c:5237
- lock_acquire kernel/locking/lockdep.c:5868 [inline]
- lock_acquire+0x179/0x350 kernel/locking/lockdep.c:5825
- down_read+0x9b/0x480 kernel/locking/rwsem.c:1537
- __configfs_open_file+0xe8/0x9c0 fs/configfs/file.c:304
- do_dentry_open+0x982/0x1530 fs/open.c:965
- vfs_open+0x82/0x3f0 fs/open.c:1097
- do_open fs/namei.c:3975 [inline]
- path_openat+0x1de4/0x2cb0 fs/namei.c:4134
- do_filp_open+0x20b/0x470 fs/namei.c:4161
- file_open_name+0x2a3/0x450 fs/open.c:1381
- filp_open+0x4b/0x80 fs/open.c:1401
- target_core_item_dbroot_store+0x108/0x350 drivers/target/target_core_configfs.c:134
- flush_write_buffer fs/configfs/file.c:207 [inline]
- configfs_write_iter+0x306/0x4e0 fs/configfs/file.c:229
- new_sync_write fs/read_write.c:593 [inline]
- vfs_write+0x7d3/0x11d0 fs/read_write.c:686
- ksys_write+0x12a/0x250 fs/read_write.c:738
- do_syscall_x64 arch/x86/entry/syscall_64.c:63 [inline]
- do_syscall_64+0xcd/0xfa0 arch/x86/entry/syscall_64.c:94
- entry_SYSCALL_64_after_hwframe+0x77/0x7f
-RIP: 0033:0x7fbf49d8eec9
-Code: ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 a8 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007ffd1d0ac1e8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 00007fbf49fe5fa0 RCX: 00007fbf49d8eec9
-RDX: 0000000000000fff RSI: 0000200000000000 RDI: 0000000000000003
-RBP: 00007fbf49e11f91 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
-R13: 00007fbf49fe5fa0 R14: 00007fbf49fe5fa0 R15: 0000000000000003
- </TASK>
-db_root: not a directory: /sys/kernel/config/target/dbroot
-
-
-Sorry, but I didn't get why this might be a false positive lockdep complaint,
-can you please guide? 
-
-From what I understood, in this case, the same rw_semaphore &p->frag_sem is used,
-identified by the same addresses (ffff888140413f78), for both the lock held
-as well as one being tried to be acquired. This occurs since 
-flush_write_buffer() called in configfs_write_iter() first acquires the 
-&p->frag_sem lock and then next flush_write_buffer() calls 
-target_core_item_dbroot_store(), which attempts to open file with path stored
-in db_root_stage using filp_open(). It ultimately calls __configfs_open_file() 
-which again tries to acquire exactly the same lock, &p->frag_sem. 
-
-A deadlock can arise, if a writer tries to acquire this lock after it was first
-acquired by that thread in flush_write_buffer() and before acquiring it again in
-__configfs_open_file(), trying to avoid writer starvation. After checking, I 
-found out that down_write() is called for frag_sem, the rw_semaphore in struct 
-configfs_fragment, at 3 places:
-
-1. configfs_rmdir() - calls down_write_killable(&frag->frag_sem)
-2. configfs_unregister_group() - calls down_write(&frag->frag_sem);
-3. configfs_unregister_subsystem() - calls down_write(&frag->frag_sem);
-
-I think any of these may result in a deadlock due to recursive locking, if
-the lock is acquired by a writer after being acquired by a reader and then
-again being tried to be acquired by a reader.
-
-I attempt to solve this by replaing call to filp_open() in 
-target_core_item_dbroot_store() with kern_path(), which just checks if a file 
-path exists, as required in target_core_item_dbroot_store(), rather than 
-actually opening the file and using the same frag_sem lock, which removes 
-the possiblity of recursive deadlock on this path. What do you think of this 
-approach?
-
-Best Regards,
-Prithvi 
+Bart.
