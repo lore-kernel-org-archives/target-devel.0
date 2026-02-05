@@ -1,188 +1,76 @@
-Received: from mail-pg1-f172.google.com (mail-pg1-f172.google.com [209.85.215.172])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [62.89.141.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0A06642EEDD
-	for <target-devel@vger.kernel.org>; Thu,  5 Feb 2026 16:26:38 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA9172BE629;
+	Thu,  5 Feb 2026 19:24:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.89.141.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1770308799; cv=none; b=jJOrzq705zcIClPqVniGG/bon1ttlIoVy9JMbRWELXBWcTmng0ANIKQX15L9N62DMCK7rKvHau/6Ukn5hvBY3+rJ7H1EWb9QJV3WT09SIDFW49SMYLSCNciYODrseBelVnJVzn/Ixc0GZv7dB3ajqsltinuKuypr4ZMgMLVsg+c=
+	t=1770319485; cv=none; b=qldoDcKFxko+NN4WHvPsj8rHfIJEUaSTDKOGW6a3LQxjK3F2NYxq3D9GFP3CGNtGyz3TXyd1lyOeItlW7AoLUq9pxJRdzvetsRWzdzpC7mUu8GQAZX1fe2ndqBaGmVcX9L7haoE8Dej27M6/t+HwkIl7nD1yXQbd85vBYYjMBLE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1770308799; c=relaxed/simple;
-	bh=9r9EfnqgpePHSmknjj3jV71TCwg0Aj5TNW2hpF8F0ic=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=SKpKLx53EMhwkIPx7RXpxwkkCuekDlckCKu76CNa1F1K0OL+3y/yUXgTheM1Lzk3UboxEJfGjvueGPoZdu1BqiyclTZ8EEoEAXg+5xOiDN6x2GHIILn4Mca5z85o9Xtzbk0c4n75+/a8CGNwZ5xJCsYWuzO1J0D3hmdF60k7+m4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=EbNj22Vv; arc=none smtp.client-ip=209.85.215.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1770319485; c=relaxed/simple;
+	bh=DCqOuOW1zh9oQXmIZrwwP7pi8FgCeO4C23MyGCwMBKc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GPyv+z//iRTi0FDVfa9LejArDXjU7756YU14wa7NLS4O1visSK1ok70Y8XwZCQvNSFdmZl6BAXdsl7FC8T6Hug2BpzwZPxKlraMMIBcbXDdELy5zRhqJ0jebX8jbZ+os+0uUkzIXeEuX/9k93uN8q3ab3JTQVYvRFXwFWOdqcA4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; spf=none smtp.mailfrom=ftp.linux.org.uk; dkim=pass (2048-bit key) header.d=linux.org.uk header.i=@linux.org.uk header.b=fRy9MmnB; arc=none smtp.client-ip=62.89.141.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EbNj22Vv"
-Received: by mail-pg1-f172.google.com with SMTP id 41be03b00d2f7-c613161b489so484492a12.0
-        for <target-devel@vger.kernel.org>; Thu, 05 Feb 2026 08:26:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770308798; x=1770913598; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=JyEXpPncVH2GhAUyxHXUUpWjlgv8nEIxYO25mhp+H1s=;
-        b=EbNj22Vv7QktYbdgH2aSSzrOQAWfDBs4vk65Rhuq+5CZxEp6kDql2lQzAcLMEKiAxb
-         IvF4pZjqFA21TcfAoQdthQU9P6ueM8EeCgKfJx51iaDwuqkQ+TkJKc0C0FRs3hM+5/Q7
-         qlZZ/38Sj0efdTIFY5CYweUFL9hRdwH7vpEEGnvzFTWTuT48DrjpINunAl4Q+db6LQmC
-         u4aqhsBiO7kmbNVsEEdhlV+6oVJBWARyRSGj2SLbuV1ap+lunJgwUfRP7rupMbvYtftd
-         1IJLOrxVBAjbe8ra8c8owzZJmeBrsgAiY6kaMhz67viVJzpgYjJf53RWysA7lA0CM6/W
-         SNiA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770308798; x=1770913598;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=JyEXpPncVH2GhAUyxHXUUpWjlgv8nEIxYO25mhp+H1s=;
-        b=fBJ7nWeA6QuE85k4B1l8zmMOLyFcXaTXdl+bl+CgwLsZKvsvSyo+atEOsDlY0LqgcC
-         p1oWaugxcchy1mq9ayP+jgEA00hA9hjCc3KmLpNOdOdKH1FbDP9xkJEm0moEe/hTrfh7
-         7FRLNjOp7tZiwgh3icw6FCsE8D7bLFIy/z5a08cleUuQE2VfXwCRx8Nt22SJBNodeu9w
-         pGXabmSebPTq86VGikBK+sAlWYdyPMc0jMStJ8NXOzSm5C1UfOqQwC5OmdOfUjXFNEk4
-         22s/X9H3BJmib3TqwOmgGgzJZH4S3v8QyidGyC0MBGaNWHSjC79FOuQpmHFzNxQ3DPn4
-         IJlw==
-X-Forwarded-Encrypted: i=1; AJvYcCWwWwT43Gpv9QIoihAljGc48p7eIIj8tp5ZZ9Pxyh0qVkccQtF59UMB/whreTFBOWJzvA/Z7LkkpYP/eV8=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxcZmGDfsCy08meIR8fcU6kTJsswMm9BNMRrr6yCI7TROX0Nzg0
-	lLUmG+iXBABgz18wDbbcdO+lnJ8pbqq8i/SRkxWnFII8u5AeKWKHFv6f
-X-Gm-Gg: AZuq6aIK0W6j735gYQ4oZwdeVhIad+qgDJKTcCuSb+KK5yQ4A1IoUWzPlDTVNkeC1yP
-	AJhqlp9s6Ii4wguYeWei6JTNyexb+C39pquVi1T3nj15VzSIVL3zN9gguW4JoFAf7PGW+EAU0Rl
-	H8G8D0iks0j2HnPVf+7QYU+X00yVkZ818h2/kdqJ4m/PecKxJ+SnQnTjKOKDKjfRsXHcY+0/zG9
-	3/FZH8AvJl1gxLi8B0qw2azSSEjz4GbshtxExZdr0MJPeoX5cipo6byyZdoSAHTTWBAmb8s+XLB
-	2h/+4g5rDOL9k8v/XnpiS8BPL5sR9ksXG+p0nZd4ppP82zuUoQd60ZpuFHjfvs8sRZ+4Whenq7v
-	IgvG7AVErsp+b50ZOSQSRsD+Jsqiy3zqIKmUSiVP0wenOo18prosx1EraAR7AvicnOcHJaq90DZ
-	PstuLDl6DrTg4PegTlArCe3bVq/uL44Ry1y4iy
-X-Received: by 2002:a17:90b:1b11:b0:340:d578:f2a2 with SMTP id 98e67ed59e1d1-354870db3e3mr6719407a91.6.1770308798217;
-        Thu, 05 Feb 2026 08:26:38 -0800 (PST)
-Received: from localhost.localdomain ([114.79.136.72])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c6c8553e6b1sm5444208a12.32.2026.02.05.08.26.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Feb 2026 08:26:37 -0800 (PST)
-From: Prithvi Tambewagh <activprithvi@gmail.com>
-To: martin.petersen@oracle.com,
-	d.bogdanov@yadro.com,
-	bvanassche@acm.org
-Cc: linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-kernel-mentees@lists.linux.dev,
-	skhan@linuxfoundation.org,
-	david.hunter.linux@gmail.com,
+	dkim=pass (2048-bit key) header.d=linux.org.uk header.i=@linux.org.uk header.b="fRy9MmnB"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=+SYqMu+RR2nCNVh1RNByYxA+l2fsT58P8/htWp+vtkU=; b=fRy9MmnBFf3iSDZ0MNXdHP5eeW
+	zKKErOwGEVWlkdik25Q/zU03k9mvix5CSvPgjuJgZJEJZsDHPoXrra8YB/dWJIo+SglI2JZ5yrMoQ
+	kdp+0FT7ojG+yy/v87cNBkKjmqBXeb3lGjZH/hlRYsDGlSlxOK1For39A0ftGmh2f5fPvEKgBTbgB
+	DjB5GAm5CD+hJZuFOfxP3RNwpI16WKo6GtgbYCJmh9hvpI/Y+bg0WJIDqCcIys22zbYcPJW+v+389
+	2AKCnLYqT/+Mtnj1x3xpMTw7DEZFFtNwTqE1ntSoMSZQxNWv1b/UZl+u3vTlsTwfq7kD1Xauo4JKO
+	8qCB30Fw==;
+Received: from viro by zeniv.linux.org.uk with local (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1vo500-00000003N06-3HaJ;
+	Thu, 05 Feb 2026 19:26:44 +0000
+Date: Thu, 5 Feb 2026 19:26:44 +0000
+From: Al Viro <viro@zeniv.linux.org.uk>
+To: Prithvi Tambewagh <activprithvi@gmail.com>
+Cc: martin.petersen@oracle.com, d.bogdanov@yadro.com, bvanassche@acm.org,
+	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-kernel-mentees@lists.linux.dev,
+	skhan@linuxfoundation.org, david.hunter.linux@gmail.com,
 	khalid@kernel.org,
-	Prithvi Tambewagh <activprithvi@gmail.com>,
 	syzbot+f6e8174215573a84b797@syzkaller.appspotmail.com,
 	stable@vger.kernel.org
-Subject: [PATCH v3] scsi: target: fix recursive locking in __configfs_open_file()
-Date: Thu,  5 Feb 2026 21:56:24 +0530
-Message-Id: <20260205162624.117957-1-activprithvi@gmail.com>
-X-Mailer: git-send-email 2.34.1
+Subject: Re: [PATCH v3] scsi: target: fix recursive locking in
+ __configfs_open_file()
+Message-ID: <20260205192644.GT3183987@ZenIV>
+References: <20260205162624.117957-1-activprithvi@gmail.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260205162624.117957-1-activprithvi@gmail.com>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 
-In flush_write_buffer, &p->frag_sem is acquired and then the loaded store
-function is called, which, here, is target_core_item_dbroot_store().
-This function called filp_open(), following which these functions were
-called (in reverse order), according to the call trace:
+On Thu, Feb 05, 2026 at 09:56:24PM +0530, Prithvi Tambewagh wrote:
 
-down_read
-__configfs_open_file
-do_dentry_open
-vfs_open
-do_open
-path_openat
-do_filp_open
-file_open_name
-filp_open
-target_core_item_dbroot_store
-flush_write_buffer
-configfs_write_iter
+> +	r = kern_path(db_root_stage, LOOKUP_FOLLOW, &path);
+> +	if (r) {
+>  		pr_err("db_root: cannot open: %s\n", db_root_stage);
+>  		goto unlock;
+>  	}
+> -	if (!S_ISDIR(file_inode(fp)->i_mode)) {
+> -		filp_close(fp, NULL);
+> +	if (!d_is_dir(path.dentry)) {
+> +		path_put(&path);
+>  		pr_err("db_root: not a directory: %s\n", db_root_stage);
+> +		r = -ENOTDIR;
+>  		goto unlock;
+>  	}
+> -	filp_close(fp, NULL);
+> +	path_put(&path);
 
-target_core_item_dbroot_store() tries to validate the new file path by
-trying to open the file path provided to it; however, in this case,
-the bug report shows:
-
-db_root: not a directory: /sys/kernel/config/target/dbroot
-
-indicating that the same configfs file was tried to be opened, on which
-it is currently working on. Thus, it is trying to acquire frag_sem
-semaphore of the same file of which it already holds the semaphore obtained
-in flush_write_buffer(), leading to acquiring the semaphore in a nested
-manner and a possibility of recursive locking.
-
-Fix this by modifying target_core_item_dbroot_store() to use kern_path()
-instead of filp_open() to avoid opening the file using filesystem-specific
-function __configfs_open_file(), and further modifying it to make this
-fix compatible.
-
-Reported-by: syzbot+f6e8174215573a84b797@syzkaller.appspotmail.com
-Closes: https://syzkaller.appspot.com/bug?extid=f6e8174215573a84b797
-Tested-by: syzbot+f6e8174215573a84b797@syzkaller.appspotmail.com
-Cc: stable@vger.kernel.org
-Signed-off-by: Prithvi Tambewagh <activprithvi@gmail.com>
-Reviewed-by: Dmitry Bogdanov <d.bogdanov@yadro.com>
----
-Changes since v2:
- - Add Reviewed-by tag received from Dmitry Bogdanov, which was accidentally
-   left to be added in v2 patch.
-
-v2 link: https://lore.kernel.org/linux-scsi/20260122154051.64132-1-activprithvi@gmail.com/T/#u
-Reference for Reviewed-by Tag: https://lore.kernel.org/all/20260108191523.303114-1-activprithvi@gmail.com/T/#mb22d0fc06e747e2b2df8320a15afd2a0670fd0e7
-
-
-Changes since v1:
- - Update commit message to reflect the fact that same file, which code was 
-   currently operating on, was tried to be opened again, leading to 
-   acquiring the same semaphore in nested manner & possibility of recursive
-   locking.
-
-v1 link: https://lore.kernel.org/all/20260108191523.303114-1-activprithvi@gmail.com/T/
-
- drivers/target/target_core_configfs.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index b19acd662726..f29052e6a87d 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -108,8 +108,8 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
- 					const char *page, size_t count)
- {
- 	ssize_t read_bytes;
--	struct file *fp;
- 	ssize_t r = -EINVAL;
-+	struct path path = {};
- 
- 	mutex_lock(&target_devices_lock);
- 	if (target_devices) {
-@@ -131,17 +131,18 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
- 		db_root_stage[read_bytes - 1] = '\0';
- 
- 	/* validate new db root before accepting it */
--	fp = filp_open(db_root_stage, O_RDONLY, 0);
--	if (IS_ERR(fp)) {
-+	r = kern_path(db_root_stage, LOOKUP_FOLLOW, &path);
-+	if (r) {
- 		pr_err("db_root: cannot open: %s\n", db_root_stage);
- 		goto unlock;
- 	}
--	if (!S_ISDIR(file_inode(fp)->i_mode)) {
--		filp_close(fp, NULL);
-+	if (!d_is_dir(path.dentry)) {
-+		path_put(&path);
- 		pr_err("db_root: not a directory: %s\n", db_root_stage);
-+		r = -ENOTDIR;
- 		goto unlock;
- 	}
--	filp_close(fp, NULL);
-+	path_put(&path);
- 
- 	strscpy(db_root, db_root_stage);
- 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
-
-base-commit: 3a8660878839faadb4f1a6dd72c3179c1df56787
--- 
-2.34.1
-
+Just pass it LOOKUP_FOLLOW | LOOKUP_DIRECTORY and be done with the manual
+"is it a directory" tests in any form...
