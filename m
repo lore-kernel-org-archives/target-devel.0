@@ -1,104 +1,106 @@
-Received: from mail-oi1-f172.google.com (mail-oi1-f172.google.com [209.85.167.172])
+Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com [209.85.167.180])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEF691A6819
-	for <target-devel@vger.kernel.org>; Mon,  2 Mar 2026 21:04:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7C9F6391518
+	for <target-devel@vger.kernel.org>; Mon,  2 Mar 2026 21:04:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772485447; cv=none; b=CrsZgPhxVo0upUFgiKy/bRTdRds9G7lhE3M22HEx6lhU8j8oNAlsgLSrgILblelU94yIEWH13tqFfGirNaV/EvGIPZ65oHMEU1CasacrqUraq4odmuPfAtrYUlBgorX5PFq33NxqOv5oL+R+xASsHH9/9SBWvLhoitat+/2FMwA=
+	t=1772485496; cv=none; b=aJyALttC/WSUd0jrJhf5ieMz4odskAsx01OZJhXzelZG7UFQR4xwzmh/edPzofcAIqehoH86CxLOtRxfzpHw6U4dK8XbRVBV5thBUamUaNU5UYu0TtdMktitTJ7mK1OJNqdLRcHJ7zFlHdRwrSErta3051zkNjZj77LHuAOxWMw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772485447; c=relaxed/simple;
-	bh=UwKN828bpYjsATwe/PFNfBBgDEwwJJjZ3GciXwnOP1g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=L4CI/dRwgsGF7x056EeFixNJwbk9oty0C5VE5I1OnlM3vIT0y9FSy96Vbbx12Hci7ggHkUpQf9MdTjgR+smyeQrXcDDY6rV4/20Atvwym0BGYh4p0I5Nm0AW8q/RKADtkVL4dXT4ON8wG0nYeibyZtjPZ3XLkVCRVhdNTPtGCo4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk; spf=pass smtp.mailfrom=kernel.dk; dkim=pass (2048-bit key) header.d=kernel-dk.20230601.gappssmtp.com header.i=@kernel-dk.20230601.gappssmtp.com header.b=Z4Bzo0Wf; arc=none smtp.client-ip=209.85.167.172
+	s=arc-20240116; t=1772485496; c=relaxed/simple;
+	bh=bp8MxfLVfOLDFq0aYZEWtSvDAoA1yKcF7Xeisqp8xdM=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=JnFGwTcCCOjyt7hUS9B5s+eNYDZgwisWz+1h5MW17vdb44SI1d2Gwd2e4chvVLOt6XejwyWZF1Le95of2Phee0+xsXt2NoUtmI/WCLqw2RwpEOPPizFjUa3UXqvGanRnZnBgoamP6cf5ICUTFtfzOBXjbd3QsYm6h3RavrZShyA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk; spf=pass smtp.mailfrom=kernel.dk; dkim=pass (2048-bit key) header.d=kernel-dk.20230601.gappssmtp.com header.i=@kernel-dk.20230601.gappssmtp.com header.b=EwFZJAoF; arc=none smtp.client-ip=209.85.167.180
 Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kernel.dk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel-dk.20230601.gappssmtp.com header.i=@kernel-dk.20230601.gappssmtp.com header.b="Z4Bzo0Wf"
-Received: by mail-oi1-f172.google.com with SMTP id 5614622812f47-46391f4c1f9so3414262b6e.0
-        for <target-devel@vger.kernel.org>; Mon, 02 Mar 2026 13:04:05 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=kernel-dk.20230601.gappssmtp.com header.i=@kernel-dk.20230601.gappssmtp.com header.b="EwFZJAoF"
+Received: by mail-oi1-f180.google.com with SMTP id 5614622812f47-4645dde00a7so6198949b6e.1
+        for <target-devel@vger.kernel.org>; Mon, 02 Mar 2026 13:04:55 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernel-dk.20230601.gappssmtp.com; s=20230601; t=1772485445; x=1773090245; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=UvIDDVWC3amChzTdZaAU+7HRWfu0rMD4zIP/5WJSg4Y=;
-        b=Z4Bzo0Wf3G+d2z5kyswDxW3jW+NPZDiVyYZwCcqN83Y49dvLqgm1fj0D+2nh2e/7HK
-         y8XgjjOFWG50GRCh2srXXbYtnH1gxt5oudR0awiokKqFJBqFV+75vqF0fXZcb9O37PzB
-         ssP/XV05YlZsYh2QLF+rBPyBu9kralV3P1u67TnrC4Gq176kdbtB+q+Yzk7rNrtA2DyL
-         JNxO+m04ssNNgDdJS5SdTjn5rlUQGzbyEPyhUWsMrh4R0eemKB2xMgXYGgCtad/ThjyD
-         pZvO5pkjXBF07tjJWmuzdzaOoLCD/n7CQeuwzhnCm1zeTQbegrjQte7JAmiotc4r7I1y
-         akRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772485445; x=1773090245;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=kernel-dk.20230601.gappssmtp.com; s=20230601; t=1772485494; x=1773090294; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:to:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=UvIDDVWC3amChzTdZaAU+7HRWfu0rMD4zIP/5WJSg4Y=;
-        b=YHSUWkecIztxxmpbngf4LZNdv6ZtRxmDbmOJCJaxhBpPI2yAYRLpNgMTv+DDCbYHIq
-         /iyasEHzq70yiEqwPdKA9rUJm5Qbn15xUeKin0n04HoqCxD7bXaWcx+Px1/L7bFBk5mq
-         2NFgYNCU6nNaBgP6C9oXqMtaMomV2c0AwZD2EoCZuHwpw7txuk+Jc1xqFAatmsw8cWNA
-         zmGkb9fiXdzc3CuABio2+tCr8wMH+lBEm3bmbQyT78OXRnF5+Gmm2Uro6LIHncKzc+I+
-         j/y+d4Uidlh4n6hJQtzbJB6ruHHvHiSF+UqYHaWGCBXdVwLXCWxesxLvX5jVHfXon6mu
-         Kd0g==
-X-Forwarded-Encrypted: i=1; AJvYcCX+tPQjEgqn4ydLWkbCH3h/UaB1b96jEbbm5pmY+HYSvXHnDJJfVj6aMucg2BhjkOJXtikS5UzRzZjZAxk=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzC9jcJh5X/yjhmqyTuJ9g3ffPA+QKNcRM1mEazGSscqy2cz/fw
-	iHu2Qja+sC3I4YrVjjO8qhNdtZoiI4lRACdoO8Huv/nNQrgCHlD7SDdHyS04jlpDkG4=
-X-Gm-Gg: ATEYQzy7FVUsuxmejh+twfXNvmUMUlM6YLKIlXNb814avTM776UV/oPxufTMuwNtyfd
-	9FzMzwkhvVHgT08njy8ZGMXLJBdjq/f/N96kZyRDobOhlzL1Odc6uz1aJA/X6GOxErRTTw3NadY
-	mR6p096aSrPqYMc/KNrjYDF75F+fkcou3YCQerWkRooo0GP4jkkyIn70kA/W4PunZ2nTh0RTq10
-	hzJTNwRupm9gmm1b1y3iF/IESSNEEdIK2xJT2mMPFhDTVb+Lxj/yMjMz3uZiOM7+v0FWPjbJf2n
-	6BUNligrtmywsRuHNVTNczlmJW9peixPfKTB3oBEeeSleZQRhBUj0y1M7OraBtwc/TUTCuBQmRv
-	OYaKjGQDUUfdFiOBeQ54DZm6euGipZuVU7HdiL21HectK12uqEHu/7oFbK7wjXaNEEfh2qviQes
-	RY700Ix+mYrKsBQahaQDcAFflPZGV7h1ayUoryouNIUevHXeQLUlFuG28duucbYtomv+lMGk9qb
-	PklVc0RUiekzCoWivT5
-X-Received: by 2002:a05:6808:8281:b0:463:b4bd:5287 with SMTP id 5614622812f47-464be921973mr6434178b6e.11.1772485444663;
-        Mon, 02 Mar 2026 13:04:04 -0800 (PST)
-Received: from [192.168.1.150] ([198.8.77.157])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-464bb3ab302sm8292175b6e.7.2026.03.02.13.04.02
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 02 Mar 2026 13:04:03 -0800 (PST)
-Message-ID: <40e13629-aa4c-45ba-a2da-b7614961def0@kernel.dk>
-Date: Mon, 2 Mar 2026 14:04:01 -0700
+        bh=A+IPbqMq77bOpkXLRkjJ3UFsST92OHSHvZuEyO94T9Y=;
+        b=EwFZJAoFW1Wa8eTWGw+cVu6ZnPfwxnM84odhTiQ6Duqsm2P5Y1dbp6KxVwShV+vDZs
+         /k3GnrRHNpqFNe5FSIc4HsyqjV4a9R/5eSw5BxQJ6Az7XUEjKJYHT3dG25ySfAT/ao2f
+         wZKRpe0x36T4T9viuR4cwDmZ+YnbgMyaO/2bEtn/DvoRc86skNGgzENgM12YBXESwe0O
+         JVrTdR6zGPV734wQ+/w3Fnta4zMk4M+SfsnQiCV9VXSXMMk94F0AnD90o7wG7ETcm6fU
+         4Z1F0T1FlHPvuGZkuawZgGcN14vh+yZB3Z5g+k/wMS+D+CCh1MqwxOvgk0Mg6UnR3/Wl
+         45Xw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772485494; x=1773090294;
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=A+IPbqMq77bOpkXLRkjJ3UFsST92OHSHvZuEyO94T9Y=;
+        b=Gq/AgfJczt869QZSdz22WgynJBmQH+28euxphbeV7lTWP65Zb8MZ+Bp4ARoxt6zHpu
+         AAFb9/7VzLv2tqjwMphPXXdmVSuKYkC65TB4uMuKn43k4cCGcqiH3Ua12u9URnktNuWQ
+         WjnMu3giGY+Ob3dvXFpTovWbmbDcI3WgydgHec7otE1G0PQ7u50fBjDnCD/KqrTF3umB
+         FCYTHVKgOrOZua98U+tA80VVCIdYvhUzLM5inYqChQbaXUkJZRNUF1R2w6LQBb0hp7jg
+         QFx0j6jZuIWkXmdfMAzNz/jAy17u+TV9qMVYIjo/wCSo/atuFxg2UONZ4ndP69DVQ6Sm
+         h1Rg==
+X-Forwarded-Encrypted: i=1; AJvYcCWm5pHSFYqSb5AkSoKNWhjgJMYHAnXc7lQ5I5QFZDmqiN1J6WA7a1IpSerZ+mOfVifKium/ZuWwyuc5rfg=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yygcmxd45zlKUE1pqVd2HkF/n1pwzVk3iBR7lrizeLvxIoyt+La
+	/goSFHUPhzfZJ57LSL0nvbWV7ATnDUsJlJJBRGxEVeaFJonDl0FlUnux41l8K0oEqR8=
+X-Gm-Gg: ATEYQzzHHnp3ZaTpKKKMw7w7E1qRNjHDaX8XOKkdmY8ugUI0d526mvPhK57ai5vfKfQ
+	IJBMnn5NS3cKP/51zG2w6imMVhK0OIlh3HUw1m2p0e0c99HRe9EvlWcrN3FvCnPEQGBK01jTQRf
+	D0X0Bk8kWUx/eFIvThvBGWUGLHMRkZiTtcIWiawcoUlan8foBHBJtfCnf0Jc3OqayOubOG6+ovm
+	huh8k3+8j5I3zpex+8r7mx5UA/UQXz3/1ozIQfxt5vV/fK70pwmfAH+699NQji0ngFJ+xKZhSqI
+	vhAa3bFlewpepMXXyXk3wKVHVIEhkOgfpw9HtVbfN0BkYQrBv7sWV09Y7fajkxtwV1Z3NogscGY
+	RvRTiRfD7RruorqCgBci+OCXop63pmBPAueJjshUsi9rtqb0dd3YnPSXH/DFsDxhM5RqHjaTifY
+	Zzbka7uco4i9OOFAcOhwojM/tPPVJ/caQXYUA0clf8/JLOUIc8oCpgPA9x/unA5o/JvGnNzpC0v
+	T28
+X-Received: by 2002:a05:6808:16a2:b0:451:4d80:5ab1 with SMTP id 5614622812f47-464a5f0d5e0mr10177242b6e.33.1772485494483;
+        Mon, 02 Mar 2026 13:04:54 -0800 (PST)
+Received: from [127.0.0.1] ([198.8.77.157])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4160cff1aacsm12335332fac.9.2026.03.02.13.04.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 02 Mar 2026 13:04:53 -0800 (PST)
+From: Jens Axboe <axboe@kernel.dk>
+To: linux-block@vger.kernel.org, Song Liu <song@kernel.org>, 
+ Yu Kuai <yukuai@fnnas.com>, linux-raid@vger.kernel.org, 
+ "Martin K . Petersen" <martin.petersen@oracle.com>, 
+ linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, 
+ David Sterba <dsterba@suse.com>, linux-btrfs@vger.kernel.org, 
+ Theodore Ts'o <tytso@mit.edu>, linux-ext4@vger.kernel.org, 
+ Andreas Dilger <adilger.kernel@dilger.ca>, 
+ Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>, 
+ Kairui Song <kasong@tencent.com>, linux-mm@kvack.org, 
+ Damien Le Moal <dlemoal@kernel.org>
+In-Reply-To: <20260226075448.2229655-1-dlemoal@kernel.org>
+References: <20260226075448.2229655-1-dlemoal@kernel.org>
+Subject: Re: [PATCH] block: remove bdev_nonrot()
+Message-Id: <177248549254.151113.14982963467044589269.b4-ty@kernel.dk>
+Date: Mon, 02 Mar 2026 14:04:52 -0700
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] block: remove bdev_nonrot()
-To: Damien Le Moal <dlemoal@kernel.org>, Paul Menzel <pmenzel@molgen.mpg.de>
-Cc: linux-block@vger.kernel.org, Song Liu <song@kernel.org>,
- Yu Kuai <yukuai@fnnas.com>, linux-raid@vger.kernel.org,
- "Martin K . Petersen" <martin.petersen@oracle.com>,
- linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
- David Sterba <dsterba@suse.com>, linux-btrfs@vger.kernel.org,
- Theodore Ts'o <tytso@mit.edu>, linux-ext4@vger.kernel.org,
- Andreas Dilger <adilger.kernel@dilger.ca>,
- Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>,
- Kairui Song <kasong@tencent.com>, linux-mm@kvack.org
-References: <20260226075448.2229655-1-dlemoal@kernel.org>
- <5b8c1811-c9d9-469a-b8d0-992814a11b9a@molgen.mpg.de>
- <a2993605-2cdb-42b2-85fc-b071f07af4c3@kernel.org>
-Content-Language: en-US
-From: Jens Axboe <axboe@kernel.dk>
-In-Reply-To: <a2993605-2cdb-42b2-85fc-b071f07af4c3@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.3
 
-On 2/26/26 5:27 AM, Damien Le Moal wrote:
->   > Is it worth the change, as it looks quite subjective if you prefer the
->> one or the other way?
+
+On Thu, 26 Feb 2026 16:54:48 +0900, Damien Le Moal wrote:
+> bdev_nonrot() is simply the negative return value of bdev_rot().
+> So replace all call sites of bdev_nonrot() with calls to bdev_rot()
+> and remove bdev_nonrot().
 > 
-> I think it is a nice cleanup, but I will let Jens and other
-> maintainers decide on the worth of this patch.
+> 
 
-It's a bit of pointless churn, but I kind of suspected this was coming
-when we added the bdev_rot() helper and now had both of them. So I guess
-we may as well finish it, as we're half-way there anyway.
+Applied, thanks!
 
+[1/1] block: remove bdev_nonrot()
+      commit: d47f7c173262bbeb09645ec72bf91755eed6b1b3
+
+Best regards,
 -- 
 Jens Axboe
+
+
+
