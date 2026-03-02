@@ -1,124 +1,104 @@
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oi1-f172.google.com (mail-oi1-f172.google.com [209.85.167.172])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8DA6E1CEACB;
-	Sun,  1 Mar 2026 02:12:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AEF691A6819
+	for <target-devel@vger.kernel.org>; Mon,  2 Mar 2026 21:04:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1772331136; cv=none; b=G6fq3PR5GolRvJoA/FJrzrN7rhxwlu6gTiEQjh5jPWSg5mN2z39STvi3b3FkghCVHuog5ST/aV3plkbnhfA5wWeH2MF4yG68963sUX1jkjSzUwtS8OUHeXN9ZZFxUqHd67d0Oxv/Fururz4x5dtiXZPm0GeHnpVmaoL1IDyxRSc=
+	t=1772485447; cv=none; b=CrsZgPhxVo0upUFgiKy/bRTdRds9G7lhE3M22HEx6lhU8j8oNAlsgLSrgILblelU94yIEWH13tqFfGirNaV/EvGIPZ65oHMEU1CasacrqUraq4odmuPfAtrYUlBgorX5PFq33NxqOv5oL+R+xASsHH9/9SBWvLhoitat+/2FMwA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1772331136; c=relaxed/simple;
-	bh=lxYc73aonE9SdBtAaEVg8hkcAIJc0/IP2W5COTnTNZU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RSip5CAQz28XpgsQVlBbxCbLjdu/LB+3uORfFy44Dn/yDGESHOtF+xQr72N7hG7DrM+45lLpk9jEpQHTyxGieGe75a6ZpChbwS2oTTB9GIN1ZiQPRPstpGjzkhNSbvCvMNUoEGRIOZ1xvw8e5u2gd7uFLxUmLZiM3Y+3jfSuodI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=BgLQovOb; arc=none smtp.client-ip=205.220.177.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	s=arc-20240116; t=1772485447; c=relaxed/simple;
+	bh=UwKN828bpYjsATwe/PFNfBBgDEwwJJjZ3GciXwnOP1g=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=L4CI/dRwgsGF7x056EeFixNJwbk9oty0C5VE5I1OnlM3vIT0y9FSy96Vbbx12Hci7ggHkUpQf9MdTjgR+smyeQrXcDDY6rV4/20Atvwym0BGYh4p0I5Nm0AW8q/RKADtkVL4dXT4ON8wG0nYeibyZtjPZ3XLkVCRVhdNTPtGCo4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk; spf=pass smtp.mailfrom=kernel.dk; dkim=pass (2048-bit key) header.d=kernel-dk.20230601.gappssmtp.com header.i=@kernel-dk.20230601.gappssmtp.com header.b=Z4Bzo0Wf; arc=none smtp.client-ip=209.85.167.172
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=kernel.dk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="BgLQovOb"
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6211rv5Z2959056;
-	Sun, 1 Mar 2026 02:12:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=OueFgH16wNFp08pfIQZWhtxLRsIcJoum+oFhKIczr7Y=; b=
-	BgLQovObyMRNcMXNGqHak/Ndv6OF2EGBoNNWo0TRnxV0UKi/qyEUXJu29V52+YCD
-	eEUUhP+QhVpTQdcCCqC7nSBiMeWVQGqBQffsN4tc3RQ/OGcFImtFAz4shiIBzo5u
-	Oe9+Rw95hwIjly+Npu67hHWnbHIGPGzr5Msr76qP6dMdnAZTcPFUd4Az4L7Srht3
-	aAaFgkJA5Oe2KJe/U2IVt43t5vU0ce5gHY60Csh9gamm27ZwW+5jhkYGgEXzEC0I
-	XJ4E8dZIN5lvODh6WbKD/TuP+8PY2289LRAs2XT+bGpo5vHKFLdL9/HzIjJvtIFt
-	/ts3AWKrnhmIyUHKks/N/g==
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4cksh8rnr0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 01 Mar 2026 02:12:04 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 621001Sd034818;
-	Sun, 1 Mar 2026 02:12:03 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4ckptbpnr1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 01 Mar 2026 02:12:03 +0000
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 6212C329009031;
-	Sun, 1 Mar 2026 02:12:03 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 4ckptbpnqs-1;
-	Sun, 01 Mar 2026 02:12:03 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: d.bogdanov@yadro.com, bvanassche@acm.org, viro@zeniv.linux.org.uk,
-        Prithvi Tambewagh <activprithvi@gmail.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-kernel-mentees@lists.linux.dev,
-        skhan@linuxfoundation.org, david.hunter.linux@gmail.com,
-        khalid@kernel.org,
-        syzbot+f6e8174215573a84b797@syzkaller.appspotmail.com,
-        stable@vger.kernel.org
-Subject: Re: [PATCH v4] scsi: target: fix recursive locking in __configfs_open_file()
-Date: Sat, 28 Feb 2026 21:11:56 -0500
-Message-ID: <177233109550.1886347.7587466794424670539.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260216062002.61937-1-activprithvi@gmail.com>
-References: <20260216062002.61937-1-activprithvi@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel-dk.20230601.gappssmtp.com header.i=@kernel-dk.20230601.gappssmtp.com header.b="Z4Bzo0Wf"
+Received: by mail-oi1-f172.google.com with SMTP id 5614622812f47-46391f4c1f9so3414262b6e.0
+        for <target-devel@vger.kernel.org>; Mon, 02 Mar 2026 13:04:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernel-dk.20230601.gappssmtp.com; s=20230601; t=1772485445; x=1773090245; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=UvIDDVWC3amChzTdZaAU+7HRWfu0rMD4zIP/5WJSg4Y=;
+        b=Z4Bzo0Wf3G+d2z5kyswDxW3jW+NPZDiVyYZwCcqN83Y49dvLqgm1fj0D+2nh2e/7HK
+         y8XgjjOFWG50GRCh2srXXbYtnH1gxt5oudR0awiokKqFJBqFV+75vqF0fXZcb9O37PzB
+         ssP/XV05YlZsYh2QLF+rBPyBu9kralV3P1u67TnrC4Gq176kdbtB+q+Yzk7rNrtA2DyL
+         JNxO+m04ssNNgDdJS5SdTjn5rlUQGzbyEPyhUWsMrh4R0eemKB2xMgXYGgCtad/ThjyD
+         pZvO5pkjXBF07tjJWmuzdzaOoLCD/n7CQeuwzhnCm1zeTQbegrjQte7JAmiotc4r7I1y
+         akRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772485445; x=1773090245;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=UvIDDVWC3amChzTdZaAU+7HRWfu0rMD4zIP/5WJSg4Y=;
+        b=YHSUWkecIztxxmpbngf4LZNdv6ZtRxmDbmOJCJaxhBpPI2yAYRLpNgMTv+DDCbYHIq
+         /iyasEHzq70yiEqwPdKA9rUJm5Qbn15xUeKin0n04HoqCxD7bXaWcx+Px1/L7bFBk5mq
+         2NFgYNCU6nNaBgP6C9oXqMtaMomV2c0AwZD2EoCZuHwpw7txuk+Jc1xqFAatmsw8cWNA
+         zmGkb9fiXdzc3CuABio2+tCr8wMH+lBEm3bmbQyT78OXRnF5+Gmm2Uro6LIHncKzc+I+
+         j/y+d4Uidlh4n6hJQtzbJB6ruHHvHiSF+UqYHaWGCBXdVwLXCWxesxLvX5jVHfXon6mu
+         Kd0g==
+X-Forwarded-Encrypted: i=1; AJvYcCX+tPQjEgqn4ydLWkbCH3h/UaB1b96jEbbm5pmY+HYSvXHnDJJfVj6aMucg2BhjkOJXtikS5UzRzZjZAxk=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzC9jcJh5X/yjhmqyTuJ9g3ffPA+QKNcRM1mEazGSscqy2cz/fw
+	iHu2Qja+sC3I4YrVjjO8qhNdtZoiI4lRACdoO8Huv/nNQrgCHlD7SDdHyS04jlpDkG4=
+X-Gm-Gg: ATEYQzy7FVUsuxmejh+twfXNvmUMUlM6YLKIlXNb814avTM776UV/oPxufTMuwNtyfd
+	9FzMzwkhvVHgT08njy8ZGMXLJBdjq/f/N96kZyRDobOhlzL1Odc6uz1aJA/X6GOxErRTTw3NadY
+	mR6p096aSrPqYMc/KNrjYDF75F+fkcou3YCQerWkRooo0GP4jkkyIn70kA/W4PunZ2nTh0RTq10
+	hzJTNwRupm9gmm1b1y3iF/IESSNEEdIK2xJT2mMPFhDTVb+Lxj/yMjMz3uZiOM7+v0FWPjbJf2n
+	6BUNligrtmywsRuHNVTNczlmJW9peixPfKTB3oBEeeSleZQRhBUj0y1M7OraBtwc/TUTCuBQmRv
+	OYaKjGQDUUfdFiOBeQ54DZm6euGipZuVU7HdiL21HectK12uqEHu/7oFbK7wjXaNEEfh2qviQes
+	RY700Ix+mYrKsBQahaQDcAFflPZGV7h1ayUoryouNIUevHXeQLUlFuG28duucbYtomv+lMGk9qb
+	PklVc0RUiekzCoWivT5
+X-Received: by 2002:a05:6808:8281:b0:463:b4bd:5287 with SMTP id 5614622812f47-464be921973mr6434178b6e.11.1772485444663;
+        Mon, 02 Mar 2026 13:04:04 -0800 (PST)
+Received: from [192.168.1.150] ([198.8.77.157])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-464bb3ab302sm8292175b6e.7.2026.03.02.13.04.02
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 02 Mar 2026 13:04:03 -0800 (PST)
+Message-ID: <40e13629-aa4c-45ba-a2da-b7614961def0@kernel.dk>
+Date: Mon, 2 Mar 2026 14:04:01 -0700
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-28_07,2026-02-27_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 adultscore=0
- malwarescore=0 mlxscore=0 phishscore=0 mlxlogscore=991 spamscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2602130000 definitions=main-2603010017
-X-Proofpoint-ORIG-GUID: _37AuvKSc9CCrlBW3Q0HX5JOMPjaB9gD
-X-Authority-Analysis: v=2.4 cv=D8VK6/Rj c=1 sm=1 tr=0 ts=69a3a074 b=1 cx=c_pps
- a=zPCbziy225d3KhSqZt3L1A==:117 a=zPCbziy225d3KhSqZt3L1A==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=jiCTI4zE5U7BLdzWsZGv:22 a=x4eqshVgHu-cdnggieHk:22 a=VwQbUJbxAAAA:8
- a=VJyBxvkRRnMTyqRnq1MA:9 a=QEXdDO2ut3YA:10 cc=ntf awl=host:12261
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzAxMDAxNyBTYWx0ZWRfX6HdC04BG1eVm
- sFCEWP223EGQR2PN/gX/kIMlt/vBvuVOzjbLc5vpBFG8xTB6SkHaCAP4qCfER+4BHI+3VG+XaOE
- 0ipyGHuRZPyR6wzbuy+m3lbBIIpX6VoJlwgEaTnYHv541iIOHV70KpgjkOnzqxV8iyTHddtfvtg
- f0KhdssIfXE1KqIQy+de4zQ6FimCp5i+6DndlLSs3N6Cf66Q766vzBD3gejRxc9IRe3IaLK0fnh
- gD3yzqylaMYnbuIoQ5gxZzm1UjfuMbtV5w3IphiT3L3+gSDV017HqTBsGvIVst/Buv7wTjFlIyY
- NYm1lKditaVbqXR1w2HK98Y6ScDDU6rbAtbfoJmdNxTLDBDSuZzxqB1Ueu5Ndt4lq+1X+lNLGdm
- 4QiFNgUXD+W5pbEqT8CCK7/5IENTHrb268bqI3Y47uo8ybT2FqnV1DOA2T9Q1mskEJ0rZxErRun
- C6Ky5yZVTAYwNrCCm15sW8m3TRi6KsfSukcg00oQ=
-X-Proofpoint-GUID: _37AuvKSc9CCrlBW3Q0HX5JOMPjaB9gD
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] block: remove bdev_nonrot()
+To: Damien Le Moal <dlemoal@kernel.org>, Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: linux-block@vger.kernel.org, Song Liu <song@kernel.org>,
+ Yu Kuai <yukuai@fnnas.com>, linux-raid@vger.kernel.org,
+ "Martin K . Petersen" <martin.petersen@oracle.com>,
+ linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+ David Sterba <dsterba@suse.com>, linux-btrfs@vger.kernel.org,
+ Theodore Ts'o <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+ Andreas Dilger <adilger.kernel@dilger.ca>,
+ Andrew Morton <akpm@linux-foundation.org>, Chris Li <chrisl@kernel.org>,
+ Kairui Song <kasong@tencent.com>, linux-mm@kvack.org
+References: <20260226075448.2229655-1-dlemoal@kernel.org>
+ <5b8c1811-c9d9-469a-b8d0-992814a11b9a@molgen.mpg.de>
+ <a2993605-2cdb-42b2-85fc-b071f07af4c3@kernel.org>
+Content-Language: en-US
+From: Jens Axboe <axboe@kernel.dk>
+In-Reply-To: <a2993605-2cdb-42b2-85fc-b071f07af4c3@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, 16 Feb 2026 11:50:02 +0530, Prithvi Tambewagh wrote:
-
-> In flush_write_buffer, &p->frag_sem is acquired and then the loaded store
-> function is called, which, here, is target_core_item_dbroot_store().
-> This function called filp_open(), following which these functions were
-> called (in reverse order), according to the call trace:
+On 2/26/26 5:27 AM, Damien Le Moal wrote:
+>   > Is it worth the change, as it looks quite subjective if you prefer the
+>> one or the other way?
 > 
-> down_read
-> __configfs_open_file
-> do_dentry_open
-> vfs_open
-> do_open
-> path_openat
-> do_filp_open
-> file_open_name
-> filp_open
-> target_core_item_dbroot_store
-> flush_write_buffer
-> configfs_write_iter
-> 
-> [...]
+> I think it is a nice cleanup, but I will let Jens and other
+> maintainers decide on the worth of this patch.
 
-Applied to 7.0/scsi-fixes, thanks!
-
-[1/1] scsi: target: fix recursive locking in __configfs_open_file()
-      https://git.kernel.org/mkp/scsi/c/14d4ac19d189
+It's a bit of pointless churn, but I kind of suspected this was coming
+when we added the bdev_rot() helper and now had both of them. So I guess
+we may as well finish it, as we're half-way there anyway.
 
 -- 
-Martin K. Petersen
+Jens Axboe
