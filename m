@@ -1,38 +1,30 @@
-Received: from mail.avm.de (mail.avm.de [212.42.244.119])
+Received: from mail.avm.de (mail.avm.de [212.42.244.94])
 	(using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B56593DBD67;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7A23B38B7CB;
 	Tue, 10 Mar 2026 11:55:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.119
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.94
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773143734; cv=none; b=bVL7iODVXm5nA7wSyacQARYlYffS/1bmyqAV+QV4Nv1rvie097mxR+/PIKl01xbVBYWdAWS7J1ylp7w7Tufr4MDVciTws7n6qjXeUoAsvlkrRyX7F2ELPMK8QQK+kYxSgwNeB5VkrR0NaO3lI6LI1Pb1LDPhRvA+Kg4ImEQ3ljY=
+	t=1773143736; cv=none; b=m9dicdfWq14Dc9NwbAUqq/Y7TyMlXDreMdWulaxQVTdMIy/wrSRP3f+jMR9c/JX3EXaAfyOaIxSgmNnRGYR4ueCBTzxJXnMIw/Iijp1OhkieAMYBRGZPVaI0ecBiU+Usr7pg+LQz0R8y1joA0MEYCB0+1u82vNf6nUQ8slKqBr0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773143734; c=relaxed/simple;
-	bh=Z5CcgUmxb8TIHuxVENT8+Rdbeolb2IW3uV9KbiLoZl0=;
+	s=arc-20240116; t=1773143736; c=relaxed/simple;
+	bh=DGbCaZBy1FpfvXwgzKpSCwa07WA8CY/Qb4IJHso0Te4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=gS7ohgsI+yhZpZ1JmN3UCCs5ifDZIG5qthRBISDf8QuMPoYOsPMy9gSs61e3dvNMJ0x7vtyViCn/65I3kNV2zbYKfLNC0k4wYp+h6IQoM8knnaa0+rkw7GQGjuxvrssOBXgjnAfvLlGnj1k9THBhYeOLWz0+roK/5BWiVLb7pKY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b=HvCb/8oi; arc=none smtp.client-ip=212.42.244.119
+	 In-Reply-To:To:Cc; b=HQXjYbv0Mil2/t6m8ByvI92uE442QM8Uck7YwSckD0DNNqAFUGPXh+YQ8Hiw8Q5nKM5S+x7sQ+vucs8BlXt9jII10mVwm0gIf+hf+F3RWENB823nSXJ6SXLp9JHKV5L2L5JmzQrE+Vo4HVbTKtnVJ2fDg4rvKOXbXAV26YmqVOI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; arc=none smtp.client-ip=212.42.244.94
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=avm.de
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b="HvCb/8oi"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=avm.de; s=mail;
-	t=1773143724; bh=Z5CcgUmxb8TIHuxVENT8+Rdbeolb2IW3uV9KbiLoZl0=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=HvCb/8oi+QjPTMN2Yg58hVQgISqDho2KSemsYUZ+vy5VD2bnZIm5jRkx5UuokMrry
-	 Cd/bADEMvLj4WpFiDDooSYtHMuljYAEx/RujmrWNzucIvLCjqd0TnsL6u3xLqdwjKn
-	 SoUF7kcbAi1lGgdxzJJB8ERoQMMzj0TR7iF4FK9M=
-Received: from [212.42.244.71] (helo=mail.avm.de)
+Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
 	by mail.avm.de with ESMTP (eXpurgate 4.55.2)
 	(envelope-from <phahn-oss@avm.de>)
-	id 69b006ac-2367-7f0000032729-7f0000019d10-1
-	for <multiple-recipients>; Tue, 10 Mar 2026 12:55:24 +0100
-Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
+	id 69b006ab-e21d-7f0000032729-7f000001d980-1
+	for <multiple-recipients>; Tue, 10 Mar 2026 12:55:23 +0100
+Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [IPv6:2001:bf0:244:244::71])
 	by mail.avm.de (Postfix) with ESMTPS;
-	Tue, 10 Mar 2026 12:55:24 +0100 (CET)
+	Tue, 10 Mar 2026 12:55:23 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:48:34 +0100
-Subject: [PATCH 08/61] fuse: Prefer IS_ERR_OR_NULL over manual NULL check
+Date: Tue, 10 Mar 2026 12:48:28 +0100
+Subject: [PATCH 02/61] btrfs: Prefer IS_ERR_OR_NULL over manual NULL check
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -41,7 +33,7 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-8-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-2-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -71,21 +63,21 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Miklos Szeredi <miklos@szeredi.hu>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=890; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=Z5CcgUmxb8TIHuxVENT8+Rdbeolb2IW3uV9KbiLoZl0=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAXxKvlvqCH0DwJSbq+UNs0LTyfOD3vzlRqtT
- 2TRtqiRMXSJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAF8QAKCRA0LQZT0ays
- 2xgMCACJUN2JSxzamJUFQvwc92wfvAAIT82LlFBC4CNAPLjUwClhfMFmMBmKAZA8HDz81VrcG/p
- fo2P5eS+rFs83E9iVI/bW+OpSphb7hd9/Pa3DNpSkaQcLQUMHw39s5ltgUYmcwhQdUpEa+pWYW+
- gg+34EAVtKnYkmIuH1aWQKSSPRHXFEEIj8Mu1YI3EnTGvDB+NleQt1zN6UaIksTNUf5+3I2W33b
- Z+hxOEmA2AEpaox3bemtlkSQbWv4qtVtcFYcWHKzhKpkUH0i5WAZ0lUSrDgtHsTI7KM+223fQQ9
- V7CmYp8rYAFlP8Yb8uQbtjIbd9Kw5z3oAZRh0mglz23o1NU6
+Cc: Chris Mason <clm@fb.com>, David Sterba <dsterba@suse.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3017; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=DGbCaZBy1FpfvXwgzKpSCwa07WA8CY/Qb4IJHso0Te4=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAXVP8rQiO4oClcWoVpEQy4tTT6UufgJ8AjmW
+ meFZ085mAaJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAF1QAKCRA0LQZT0ays
+ 26ZTCACM3Mi9LEMEAWgAR6v8SxUVk3um+/46scAm+wvRfrMWEFwlnMkQBbCGIGZUNkKB1Pk7uvR
+ q9d3fZ689cKMySmmjPCYjQ/WgGDVLcywEn6In35Jwnklhlj4dYJLSL6WxXsza+vlAV93TQDvaTs
+ OFlLEsZ2j+XY+f2mrUOcVwOk+301k/goYUacbLoVSw0YZnroo7kAB2acRVGhOGAOOiJoiVAdHNU
+ Yf8QURa2qrPqHMwGd4SQRV57t+Grw+zEItF3L0eYw7mf41TaJcLeP7Vo+0nFp2D9QdrMND4nUec
+ WhX0remRDcBywCJPWh7SmqRiZyiXDaIfp9JkUkUr5yx6Wacb
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143724-A0CB5E1F-296CD59C/0/0
+X-purgate-ID: 149429::1773143723-94678F2F-813F0BAA/0/0
 X-purgate-type: clean
-X-purgate-size: 892
+X-purgate-size: 3019
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for further information)
 X-purgate: clean
@@ -93,29 +85,78 @@ X-purgate: clean
 Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
 check.
 
+IS_ERR_OR_NULL() already uses likely(!ptr) internally. checkpatch does
+not like nesting it:
+> WARNING: nested (un)?likely() calls, IS_ERR_OR_NULL already uses
+> unlikely() internally
+Remove the explicit use of likely().
+
 Change generated with coccinelle.
 
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org
+To: Chris Mason <clm@fb.com>
+To: David Sterba <dsterba@suse.com>
+Cc: linux-btrfs@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- fs/fuse/dir.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/btrfs/inode.c       | 2 +-
+ fs/btrfs/transaction.c | 2 +-
+ fs/btrfs/tree-log.c    | 2 +-
+ fs/btrfs/uuid-tree.c   | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/fs/fuse/dir.c b/fs/fuse/dir.c
-index 7ac6b232ef12323e3afb97b98301f623bce917a4..7b39c013027bd9c4ba6f080bfc9b3ec22bc2dd4a 100644
---- a/fs/fuse/dir.c
-+++ b/fs/fuse/dir.c
-@@ -1599,7 +1599,7 @@ int fuse_reverse_inval_entry(struct fuse_conn *fc, u64 parent_nodeid,
- 		goto put_parent;
- 	while (!entry) {
- 		struct dentry *child = try_lookup_noperm(name, dir);
--		if (!child || IS_ERR(child))
-+		if (IS_ERR_OR_NULL(child))
- 			goto put_parent;
- 		entry = start_removing_dentry(dir, child);
- 		dput(child);
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index a11fcc9e9f502c559148cf33679014fb83b0d3b0..7c26a0bf56bf7309e2ce8256854d760b2d64b16a 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -4683,7 +4683,7 @@ static noinline int may_destroy_subvol(struct btrfs_root *root)
+ 	dir_id = btrfs_super_root_dir(fs_info->super_copy);
+ 	di = btrfs_lookup_dir_item(NULL, fs_info->tree_root, path,
+ 				   dir_id, &name, 0);
+-	if (di && !IS_ERR(di)) {
++	if (!IS_ERR_OR_NULL(di)) {
+ 		btrfs_dir_item_key_to_cpu(path->nodes[0], di, &key);
+ 		if (key.objectid == btrfs_root_id(root)) {
+ 			ret = -EPERM;
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index 7ef8c9b7dfc17a5133b6d2dc134e288975ed98d1..40b83037725033d3178dc3fc2c1e347ad2c597f7 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -1737,7 +1737,7 @@ static noinline int create_pending_snapshot(struct btrfs_trans_handle *trans,
+ 	dir_item = btrfs_lookup_dir_item(NULL, parent_root, path,
+ 					 btrfs_ino(parent_inode),
+ 					 &fname.disk_name, 0);
+-	if (unlikely(dir_item != NULL && !IS_ERR(dir_item))) {
++	if (!IS_ERR_OR_NULL(dir_item)) {
+ 		pending->error = -EEXIST;
+ 		goto dir_item_existed;
+ 	} else if (IS_ERR(dir_item)) {
+diff --git a/fs/btrfs/tree-log.c b/fs/btrfs/tree-log.c
+index 780a06d592409b05fb42dc8079b019d23fe0cdfa..2e07ae393cf9d16f562047dd4cbfd7b4b9f2952e 100644
+--- a/fs/btrfs/tree-log.c
++++ b/fs/btrfs/tree-log.c
+@@ -5750,7 +5750,7 @@ static int btrfs_check_ref_name_override(struct extent_buffer *eb,
+ 		name_str.len = this_name_len;
+ 		di = btrfs_lookup_dir_item(NULL, inode->root, search_path,
+ 				parent, &name_str, 0);
+-		if (di && !IS_ERR(di)) {
++		if (!IS_ERR_OR_NULL(di)) {
+ 			struct btrfs_key di_key;
+ 
+ 			btrfs_dir_item_key_to_cpu(search_path->nodes[0],
+diff --git a/fs/btrfs/uuid-tree.c b/fs/btrfs/uuid-tree.c
+index f24c14b9bb2fd7420b06263a5a0c4b889a859bc6..c497b287f3418933e532903b326b969416ae22cb 100644
+--- a/fs/btrfs/uuid-tree.c
++++ b/fs/btrfs/uuid-tree.c
+@@ -478,7 +478,7 @@ int btrfs_uuid_scan_kthread(void *data)
+ 
+ out:
+ 	btrfs_free_path(path);
+-	if (trans && !IS_ERR(trans))
++	if (!IS_ERR_OR_NULL(trans))
+ 		btrfs_end_transaction(trans);
+ 	if (ret)
+ 		btrfs_warn(fs_info, "btrfs_uuid_scan_kthread failed %d", ret);
 
 -- 
 2.43.0
