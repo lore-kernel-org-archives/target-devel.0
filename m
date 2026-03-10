@@ -1,38 +1,39 @@
-Received: from mail.avm.de (mail.avm.de [212.42.244.119])
+Received: from mail.avm.de (mail.avm.de [212.42.244.94])
 	(using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E005447CC81;
-	Tue, 10 Mar 2026 11:55:45 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.119
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 19BB0480DDE;
+	Tue, 10 Mar 2026 11:55:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.94
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773143755; cv=none; b=GBVGOGO5dLjueeq1T7ahiJM4VR5pIJkhmwT9rFiU4kfEylzVEjAI7X20KixRmGoadFlvk2mE7S+4HPgBbNrdus3rJOPirkopb751FR2vm/qaZOphWjy2avXjOQxN7uQuLYhaZniDH6gXWDbkZjBbiV5ZVkMlZVDPgpQEru2g5eo=
+	t=1773143758; cv=none; b=AxZTMKvdcBomZpCXiVxBBz6AhqHgbvZhddgIkvmtQOU3oPG26UE7HZDepMgUD/SRKGsf3YT4sn4RKg/iGVJk+B/S08TYps3mSOb9GIpO/DqQKlId6LMOwlw5lt+RJ93hoqjiCE0UoPINpaaN1ycBfpLOy9AEi0w7/9E+3xyw41k=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773143755; c=relaxed/simple;
-	bh=gXi6ivSyh7ZdNYhxQJgA68gjpGeiYyVoxWZ9PHNV1mk=;
+	s=arc-20240116; t=1773143758; c=relaxed/simple;
+	bh=gOURDJcimLwc0Y7s7mu8KRblXgipzGTYZgiAn3dRwDI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Yc5BflULDnrRhmn1OwCzji+SNuVsrW3f6IpTysyqJAdJXY3Opk9H7BkexANIe+s7f1ap6Yl7sgR6/6wgCkfI2mFafargNxTPho7eSSjEZ6C+1oSVT5quhP/wI4kVKPpbL8U3OuKJXoxCbVZT79DW/oV5Y5TrbrrjyL8Xs7d74aQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b=nVgVwpQb; arc=none smtp.client-ip=212.42.244.119
+	 In-Reply-To:To:Cc; b=AivFYCRGbfKHPT6/1d77moyQvbnkL9ihN5Onfjda1bfV61FujGajBeH7JRGooR/wlB8dUjD6YMlx8KJ9wgj0jTiGsORyYBIkTFQ3sqfEa25Q8GPJIXkJ0iAYd0jzdgE807JmhY9SSjekETnCiX6tFhBr4Y14VqJkBJF1kmpXHEA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b=YfpIgnWu; arc=none smtp.client-ip=212.42.244.94
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=avm.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b="nVgVwpQb"
+	dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b="YfpIgnWu"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=avm.de; s=mail;
-	t=1773143728; bh=gXi6ivSyh7ZdNYhxQJgA68gjpGeiYyVoxWZ9PHNV1mk=;
+	t=1773143729; bh=gOURDJcimLwc0Y7s7mu8KRblXgipzGTYZgiAn3dRwDI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=nVgVwpQbQWVMIcsitG/nCb398yEVy7ZQQB9WySrZ33OpPnd8uZOvEz24brifCCUI4
-	 uTCn5X5/IzU2QfC4sx78qnwXqZhpyZtzNlWK6nrp5aYEaEStYeOKZWKGER0Hzx4EK5
-	 ReXfmrtV8ruqr+7pomn1vmNIP3a/IcvZitkmj99s=
+	b=YfpIgnWuYVCMZaJu3AZuojqL64XHwIoMSuO04eOtkJEv7iuMIguG31LRYeo6yJVEO
+	 IJqZhlfgknriaXhv9Z+Yj3FnaK0oRCllzB6kdopfMMp/hC3/95Lc/kVUEU+mVpzdgA
+	 ibDYiBR6PivgLN4Ktalmal26YIYRPaO2epa3Wkhg=
 Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
 	by mail.avm.de with ESMTP (eXpurgate 4.55.2)
 	(envelope-from <phahn-oss@avm.de>)
-	id 69b006b0-2367-7f0000032729-7f000001ca00-1
+	id 69b006b0-e21d-7f0000032729-7f000001bafa-1
 	for <multiple-recipients>; Tue, 10 Mar 2026 12:55:28 +0100
 Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [IPv6:2001:bf0:244:244::71])
 	by mail.avm.de (Postfix) with ESMTPS;
 	Tue, 10 Mar 2026 12:55:28 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:49:17 +0100
-Subject: [PATCH 51/61] leds: Prefer IS_ERR_OR_NULL over manual NULL check
+Date: Tue, 10 Mar 2026 12:49:21 +0100
+Subject: [PATCH 55/61] interconnect: Prefer IS_ERR_OR_NULL over manual NULL
+ check
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -41,7 +42,7 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-51-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-55-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -71,21 +72,21 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=923; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=gXi6ivSyh7ZdNYhxQJgA68gjpGeiYyVoxWZ9PHNV1mk=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAaDRzpibZr08PkdSw8N3Wy2DsiAYuwbT7jaR
- Q+T5qeGz2qJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGgwAKCRA0LQZT0ays
- 2y8ACACMKWU5TdDg1OYJ2RnR6HQxJ+2JBIhOyDk8x3FmHidd0wyjcAKA49FqYhtFEhdjGJpgNO3
- wlcNr4zJ0vDoKzMmVWNj4Kco49QymIlKxd4ko1v9jLom22gL6FIw+i0pd7JG7Dw9K0M9qv/g65X
- psKPmTQlkBRnjyq+gEp1UF+Z+aW8svU4fmV048TA2bEb7zgfrp0dmnA9hbj2JEYjWrt/pHjBWtC
- 27oF1sxBbFSjPkNzuaBpb0y9RWyLO/07lImA1AItNHZGlvNpydtzvqp/I3qxgt9sXKt1PHRt8iZ
- u4zVb/lltaBI2wPScPn/3+nmKc5y9QbdtT1oK6vzRsjkH2h6
+Cc: Georgi Djakov <djakov@kernel.org>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=974; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=gOURDJcimLwc0Y7s7mu8KRblXgipzGTYZgiAn3dRwDI=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAaR6ZpvsAoRDFUpNu6G6elsfY3kgc27+uFRK
+ ZLVDKnVLraJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGkQAKCRA0LQZT0ays
+ 28XJCACYmRByi8P7LIl1oc/g3aO1owAe5Q8Or8oVGhiLH2LhqHs6nfDqZLIqz1sL3qrQVyF7YGk
+ kX0mFSo3Tm/dtN68cM8AHWfCx75PDZnJ1klwJaD/a5osoRSf4X3Ik4ZQj/cB7O+Zq1qUVCpMYTg
+ XaFUKyzlehYbqEs1YGNkcYOQXSo6Ofkc0rCWX7WPlFeXlek3wVqFGPJYbk8vXFwaghiu8bk1jxs
+ 5OWlABLNOMeICixwYBtsJBbBssbgobIHjFZNKGQbzYy6+2+uPNUf9NBHl8iaEQQnS3RZflKIJzs
+ X0gv7zaxzUqJp37JtExDbIsVdOxpFm9EpGTYIR5B4gcmwoes
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143728-97CB7E1F-C67FA391/0/0
+X-purgate-ID: 149429::1773143728-92E7DF2F-6315C089/0/0
 X-purgate-type: clean
-X-purgate-size: 925
+X-purgate-size: 976
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for further information)
 X-purgate: clean
@@ -93,30 +94,33 @@ X-purgate: clean
 Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
 check.
 
-Change generated with coccinelle.
+Semantich change: Previously the code only printed the warning on error,
+but not when the pointer was NULL. Now the warning is printed in both
+cases!
 
-To: Lee Jones <lee@kernel.org>
-To: Pavel Machek <pavel@kernel.org>
-Cc: linux-leds@vger.kernel.org
+Change found with coccinelle.
+
+To: Georgi Djakov <djakov@kernel.org>
+Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- drivers/leds/trigger/ledtrig-tty.c | 2 +-
+ drivers/interconnect/core.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/leds/trigger/ledtrig-tty.c b/drivers/leds/trigger/ledtrig-tty.c
-index 8eb6286b33ac3cdcbb72ed9ad5ad7105e15d20b6..3725571144d910b225ca9605771fc0f0c8355efd 100644
---- a/drivers/leds/trigger/ledtrig-tty.c
-+++ b/drivers/leds/trigger/ledtrig-tty.c
-@@ -220,7 +220,7 @@ static void ledtrig_tty_work(struct work_struct *work)
- 			goto out;
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 8569b78a18517b33abeafac091978b25cbc1acc7..22e92b30f73853d5bd2e05b4f52cb5aa22556468 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -790,7 +790,7 @@ void icc_put(struct icc_path *path)
+ 	size_t i;
+ 	int ret;
  
- 		tty = tty_kopen_shared(devno);
--		if (IS_ERR(tty) || !tty)
-+		if (IS_ERR_OR_NULL(tty))
- 			/* What to do? retry or abort */
- 			goto out;
+-	if (!path || WARN_ON(IS_ERR(path)))
++	if (WARN_ON(IS_ERR_OR_NULL(path)))
+ 		return;
  
+ 	ret = icc_set_bw(path, 0, 0);
 
 -- 
 2.43.0
