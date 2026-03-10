@@ -1,38 +1,39 @@
-Received: from mail.avm.de (mail.avm.de [212.42.244.94])
+Received: from mail.avm.de (mail.avm.de [212.42.244.119])
 	(using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5973C472767;
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 649194219FA;
 	Tue, 10 Mar 2026 11:55:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.94
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.119
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773143748; cv=none; b=Ckw1C8eWYGHSllid7WMKDqU12xrfqbuWlt8AFyoDzs2eRhnNIW96liR0SkilweZzQ1/8YJPiJynOnLHy1hs3W+J0Aam0y7SBgmi8rDUvFAcS4KR+8NF4zTKHdLu7EuYA9/dqIpKdi49nxtcOxB2pyQm9wZbt5KB3wGScGezB+VE=
+	t=1773143749; cv=none; b=FjSMU2kVxnRLDK/QCD45huNbEz1Z0NQ6stFUFqfuOvF+eh6MM+S3RBaBNBkfzsKsIECa3JTelQBQ4hxualM+BPg/NXi0uGx5GcvJanrnAdW0/F/8CZasHxxFMob6DqQCuN6TSPXSJNhdERx7c5mQZbk4hpk4oAFAF7cTeequs1A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773143748; c=relaxed/simple;
-	bh=OG5VAiuGyzJgANNFmhgEdiJnvt9YJlG2KvCxr7UGm4k=;
+	s=arc-20240116; t=1773143749; c=relaxed/simple;
+	bh=Ch69HE8buqP46euP+YYFTxXSo2whzs/OaZa7KOXrnvQ=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KMT7DBY9NCduuODxbpOvrKEtqljsCasobsl8yns5aUEVd8QvnxGIfqK1L5Cu5IfA3Er7r+fXFANrYv7Eh5ryaI3k/77f3gDgmHDxbrfZ+BolBlhh0MOGLCJaF4s7HOcs9blrl58tYuSJwHZ4JamNTI21+RLYuPYOZFcK5tUoZGM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b=JAdZI+Fe; arc=none smtp.client-ip=212.42.244.94
+	 In-Reply-To:To:Cc; b=s5avrLQNmBufhJrxq4+REASzyH353YcyEHciKI89xoUofLiEejYi/9tXjKnIVK1ndJ5Byl/8azyTn2uwBl9GfUGCcHpGhi3H18/E43X//E7DlUiJ+CLlGSvyCyeHt2GwDSlFZGKMZ4U0uDxwyGHjszWqC/Vk2zEs46ptXQJc4Qs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b=cflriKS/; arc=none smtp.client-ip=212.42.244.119
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=avm.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b="JAdZI+Fe"
+	dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b="cflriKS/"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=avm.de; s=mail;
-	t=1773143727; bh=OG5VAiuGyzJgANNFmhgEdiJnvt9YJlG2KvCxr7UGm4k=;
+	t=1773143726; bh=Ch69HE8buqP46euP+YYFTxXSo2whzs/OaZa7KOXrnvQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=JAdZI+FehAdfAN09twwfZHH6jDfh071cQKzCXwtIuoVqEEpOJJcnao39LQt63y4t/
-	 7qNOwbcUlaXsU8odvsi+CNxHeM67JZXi3Ip3hqOsWbsrOWQmqT6Wf8Y7+vMqlEol/o
-	 yXX6+U61Z17F5K3SatxnKB4/2w/h4/gfhRTup+tE=
+	b=cflriKS/Uv58AGT33/uwNkwB7J2sdEXakW9Rj3yjFGXI+RI4a366cceElHliZyuuJ
+	 mPSZ4TFmYIg3AF1ANgH8AJ4fIbLOCMfBhLuXzJMYqTbevJEc4r+piLw+nWaz0hy5uE
+	 Y9GvHMtmRIkJRf4y+wtLqshG0kOCxTBOOJdztUGI=
 Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
 	by mail.avm.de with ESMTP (eXpurgate 4.55.2)
 	(envelope-from <phahn-oss@avm.de>)
-	id 69b006ae-e21d-7f0000032729-7f000001da4a-1
-	for <multiple-recipients>; Tue, 10 Mar 2026 12:55:27 +0100
+	id 69b006ad-2367-7f0000032729-7f000001c96a-1
+	for <multiple-recipients>; Tue, 10 Mar 2026 12:55:26 +0100
 Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [IPv6:2001:bf0:244:244::71])
 	by mail.avm.de (Postfix) with ESMTPS;
-	Tue, 10 Mar 2026 12:55:26 +0100 (CET)
+	Tue, 10 Mar 2026 12:55:25 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:49:06 +0100
-Subject: [PATCH 40/61] phy: Prefer IS_ERR_OR_NULL over manual NULL check
+Date: Tue, 10 Mar 2026 12:48:58 +0100
+Subject: [PATCH 32/61] net/wireless: Prefer IS_ERR_OR_NULL over manual NULL
+ check
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -41,7 +42,7 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-40-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-32-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -71,22 +72,21 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Vinod Koul <vkoul@kernel.org>, 
- Neil Armstrong <neil.armstrong@linaro.org>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=833; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=OG5VAiuGyzJgANNFmhgEdiJnvt9YJlG2KvCxr7UGm4k=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAZdX7BuYNUIT5gp+HdcH5WlcPs/igfKSrsAT
- PQS+sW6TAKJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGXQAKCRA0LQZT0ays
- 2/NeB/9cvi9goE8RWfPmZWHWl3KHJ0IK1niSHPDuRHNTDiNM+uFP9eXaUfJVBsSlG1Wrvh2+TJe
- E9N4PWX9zPPmgAp5c7pkgWQbvcINWsfQ1xzs1yuBHGsqvNtAKAsQzgwmgDGwuWvubUvPlUOVRcp
- yVNORqT1RMYwWcOYu1sgBDKncm/OAEpn290nhfRgs1yTJZoXMdM3Qo3tnRyHHZBM6KJSQfrTcAN
- m09EN+RMlpdZuT4NVV6TCBCJKyPJuHYu9on1qpX149qmJ5tp+DIgif8s3ztCwKsBs1+MXzsdDLr
- s9Zz5Ncp+UQA6p8+C4T8PIAGabbdKYRKG/eLYl2cB6wt3ozJ
+Cc: Johannes Berg <johannes@sipsolutions.net>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=917; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=Ch69HE8buqP46euP+YYFTxXSo2whzs/OaZa7KOXrnvQ=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAZCB6VtswQFIkNrtK394BinlB0uxLllvDTnj
+ z6f33li4q+JATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGQgAKCRA0LQZT0ays
+ 29wzCAChPFrcW+FfvZBVjABe7F29XZ5724a8XRQE85Iu6UGQCVTrGSBLyo8jXYsg5J3peaPVeKT
+ KKhoEQfBVKbt6EAaScrTEpLi3KNOnd86Q8Wna7PddPHX6e15k2MlGUGDjd2Bw64F5NdG8ERAjc6
+ DA0lCDlLGGjTu5XPxTGz5ABOwv4DjK6Yeb1iOXElewR1+d8c0JuR13TfzCtZK7b2pKqoZzkmtsk
+ 88UMWo9/5GiOCX9lUMyP/7qRCJPVDMHslX+kZfg6K27OVxqrHU+QQ1K66P5yscc52ULdw9obFw9
+ w1Ny2/RuJ7C5Uaac1egGmoDY7u2Te8bNEht0/tO/Xq6O2NMq
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143727-C3652F2F-457C2DBB/0/0
+X-purgate-ID: 149429::1773143726-8CC9DE1F-E349199D/0/0
 X-purgate-type: clean
-X-purgate-size: 835
+X-purgate-size: 919
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for further information)
 X-purgate: clean
@@ -96,28 +96,27 @@ check.
 
 Change generated with coccinelle.
 
-To: Vinod Koul <vkoul@kernel.org>
-To: Neil Armstrong <neil.armstrong@linaro.org>
-Cc: linux-phy@lists.infradead.org
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-wireless@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- drivers/phy/phy-core.c | 2 +-
+ net/wireless/reg.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
-index 21aaf2f76e53eb1c63f1ffd2217f767c2dab5c3a..6416e9097caab56f7ba663777eba2c06291dffc5 100644
---- a/drivers/phy/phy-core.c
-+++ b/drivers/phy/phy-core.c
-@@ -699,7 +699,7 @@ EXPORT_SYMBOL_GPL(of_phy_get);
-  */
- void of_phy_put(struct phy *phy)
- {
--	if (!phy || IS_ERR(phy))
-+	if (IS_ERR_OR_NULL(phy))
- 		return;
+diff --git a/net/wireless/reg.c b/net/wireless/reg.c
+index 1c5c38d18febd511285bc4aab93a60b4287dc054..222764a151ea25bec6179dbaffa87f34fdbf8da6 100644
+--- a/net/wireless/reg.c
++++ b/net/wireless/reg.c
+@@ -1014,7 +1014,7 @@ static void regdb_fw_cb(const struct firmware *fw, void *context)
+ 	}
  
- 	mutex_lock(&phy->mutex);
+ 	rtnl_lock();
+-	if (regdb && !IS_ERR(regdb)) {
++	if (!IS_ERR_OR_NULL(regdb)) {
+ 		/* negative case - a bug
+ 		 * positive case - can happen due to race in case of multiple cb's in
+ 		 * queue, due to usage of asynchronous callback
 
 -- 
 2.43.0
