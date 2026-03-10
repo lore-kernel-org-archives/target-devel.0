@@ -1,38 +1,38 @@
-Received: from mail.avm.de (mail.avm.de [212.42.244.119])
+Received: from mail.avm.de (mail.avm.de [212.42.244.120])
 	(using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7AB63EFD32;
-	Tue, 10 Mar 2026 11:55:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.119
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 055A641C317;
+	Tue, 10 Mar 2026 11:55:32 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.120
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773143737; cv=none; b=LLOkrJBC1dLp+4k8DjOMCDLBZkOisZfuuyJnhpwKqyZPxM2Z1UY5p81S8R8kbGR7xPBuqJc+Yc3l6DjWN6aLggygZN7TLzCKzadBWxaIBAiaQDud+J2Euf11gYuNxfPYzBHHAlIKyWNRDOTuuLE9d1FZbTlu8X+p3DZmK62oGZU=
+	t=1773143738; cv=none; b=NzG6kCcuey4ao4RDBupJOQEb5XlMMls++k4oNJbDR26NREMDEG/F1/+dIPwAoN13EITuGOhzxbQRc2UbvbAyOUsTAWaieVjy8KVUxM9LJ/YNBXLYWhgDvZlZKHa2DTn3TrTRKUUKhoeJ7WVuL7hGuHnb1JxGO0c5e0kigzpv0QY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773143737; c=relaxed/simple;
-	bh=vGrPLNOiClPR9kf2JYtGEgONwIn4sxqTHiWcc1kKKyY=;
+	s=arc-20240116; t=1773143738; c=relaxed/simple;
+	bh=0D7JqCvM2HduGB7jcCjsvL2MgPxSPSMnqWoOW6gFXPg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mLzJb696b3bGaCWLhdwqHD0Uvpn11Blzv1NNqSa6bR+/5geUJ45AfRuRpF4639UTdFtGKWn7cKaCLu/KrDgfzz3WWZmURab/lB93/lnF680ePYsLA6wsTqL7Dr9emZPW+dMGK4NWEBsDQSCsLTW3FsPZfKlPcgYOYX48Leqrmxg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b=d9UttxCO; arc=none smtp.client-ip=212.42.244.119
+	 In-Reply-To:To:Cc; b=dMbqnu9HLc47f5YnbcX0lKPuIs5B8NtCAzu3x9uBRzutSQ1l8bZdqtIXAb1vuca7iUen9ft+VGKN5dsgVi74rb4ceRt41zQqj49zfBSp9nqFvVADA/xCkphVp6UG6NsyVaZ8vPvKXAlUlR+UAOihyGj2Sb3+0hiu1pJQkRBTtlc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b=yh2VZSjn; arc=none smtp.client-ip=212.42.244.120
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=avm.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b="d9UttxCO"
+	dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b="yh2VZSjn"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=avm.de; s=mail;
-	t=1773143723; bh=vGrPLNOiClPR9kf2JYtGEgONwIn4sxqTHiWcc1kKKyY=;
+	t=1773143723; bh=0D7JqCvM2HduGB7jcCjsvL2MgPxSPSMnqWoOW6gFXPg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=d9UttxCOdXsR+jj4pJFeD+VfNxHoH3y49AQVQMLaYIv3M7U5KPtuuArNYIzV74Gvi
-	 GDPfsZHGbVDdDW69ysevkmiT0ZrHRzqjU83vWPFyBES1yul9PaRXC+UGdRqEtpKSUP
-	 V67I3GQ26p9A9FKQ3GfHRmydP7fK8KJzOl4eSPnw=
-Received: from [2001:bf0:244:244::71] (helo=mail.avm.de)
+	b=yh2VZSjn7w1QiukivpJgqup3mERPH6vOjX9oV/ML2sbsOit3LFir6toLuLiTJSnXI
+	 7SrZqp5/6kkB4zi/iDLm/bIKZHAzCcxY8tbtrL5Vgtrf2FilCpX7aVE6mWviw1mypu
+	 fSPrh8UVLl1GsULgfQ7zu6mS1H7YnfJQuDwKb7Q8=
+Received: from [212.42.244.71] (helo=mail.avm.de)
 	by mail.avm.de with ESMTP (eXpurgate 4.55.2)
 	(envelope-from <phahn-oss@avm.de>)
-	id 69b006ab-2367-7f0000032729-7f0000019cfc-1
+	id 69b006ab-b734-7f0000032729-7f000001bfb6-1
 	for <multiple-recipients>; Tue, 10 Mar 2026 12:55:23 +0100
-Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [IPv6:2001:bf0:244:244::71])
+Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
 	by mail.avm.de (Postfix) with ESMTPS;
 	Tue, 10 Mar 2026 12:55:23 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:48:31 +0100
-Subject: [PATCH 05/61] smb: Prefer IS_ERR_OR_NULL over manual NULl check
+Date: Tue, 10 Mar 2026 12:48:35 +0100
+Subject: [PATCH 09/61] ntfs3: Prefer IS_ERR_OR_NULL over manual NULL check
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -41,7 +41,7 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-5-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-9-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -71,24 +71,21 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Steve French <sfrench@samba.org>, Paulo Alcantara <pc@manguebit.org>, 
- Ronnie Sahlberg <ronniesahlberg@gmail.com>, 
- Shyam Prasad N <sprasad@microsoft.com>, Tom Talpey <tom@talpey.com>, 
- Bharath SM <bharathsm@microsoft.com>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2182; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=vGrPLNOiClPR9kf2JYtGEgONwIn4sxqTHiWcc1kKKyY=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAXmFi2noeXj0abdUjIB9kKoSnFcuerTTnqGw
- aIV0JkIMuiJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAF5gAKCRA0LQZT0ays
- 25ZYCACJTZVo2gUPO+X2etWPNlTUp7ClEwWSNg3dPZBa5w0Z7EuwahYUGGyy8BKX2Xr3Nw3eStQ
- sVKw7MXxWmXWt5UTxCuTdRP3F8qkFihhAcyZGnaWXtsHW80RrqCOvZyrn/d1kQqYEpMpKbZIZxv
- /EpbwmWT4XeRvGuaEWqQ2bbe/QDrikm2suvUw6m77AVK8ag0Unhi8yF7km5ZQPmNxRG0b7wRfDu
- f9v8qAqM0yTILYLsa5pGAGuQ+9RoWhRyw/Vp6w7DPGkGl5Ft2gyZ5dwPzpx69OognVNti4fm1g6
- tztjOPF3hTnYGvxjbl6RQZRancjyqct71KnXaO98GUCNnx9j
+Cc: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1617; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=0D7JqCvM2HduGB7jcCjsvL2MgPxSPSMnqWoOW6gFXPg=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAX0gr7ZqouZ6B9Y6l873KDZh87VRkMxmLSVt
+ AItcTzXYr2JATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAF9AAKCRA0LQZT0ays
+ 2/XgCACwqNRVP1ceb2sCHMTvH8vznLrrwbRdBid2VGiRwlIoIqclnUBeLwwGZ/n/hBxtkijY1s3
+ NziYVgznq0k9VYxacmvzAvuKhhv5805K9y/+itK+PFXmzL3ZRzqmfWP6ng28fVSUYAufwVEc7CR
+ 9llIbOBq8N4aCpqTBELhb7mwymU8hNLZpMBK934i79wnmNx9OySShuCrTBL+FEQ9g/aUtfHcqTV
+ 4JM/tu/NHEvIwEfZrC8rjS3HwU+8fz/vbF4We+/TjORw4iEGT1m6VfBdB71QF+Wi1viRKTPIkVW
+ Nxf+o86GuJolrkUsNGy4WHdCFW95aUilkAjXyF+7XIpdZkLT
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143723-82C89E1F-81689E31/0/0
+X-purgate-ID: 149429::1773143723-DC5DDA3D-31639C4C/0/0
 X-purgate-type: clean
-X-purgate-size: 2184
+X-purgate-size: 1619
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for further information)
 X-purgate: clean
@@ -98,61 +95,52 @@ check.
 
 Change generated with coccinelle.
 
-To: Steve French <sfrench@samba.org>
-To: Paulo Alcantara <pc@manguebit.org>
-To: Ronnie Sahlberg <ronniesahlberg@gmail.com>
-To: Shyam Prasad N <sprasad@microsoft.com>
-To: Tom Talpey <tom@talpey.com>
-To: Bharath SM <bharathsm@microsoft.com>
-Cc: linux-cifs@vger.kernel.org
-Cc: samba-technical@lists.samba.org
+To: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Cc: ntfs3@lists.linux.dev
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- fs/smb/client/cifsglob.h | 2 +-
- fs/smb/client/connect.c  | 2 +-
- fs/smb/client/readdir.c  | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ fs/ntfs3/fsntfs.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/fs/smb/client/cifsglob.h b/fs/smb/client/cifsglob.h
-index 6f9b6c72962b09260542b711d4c64e7dc42c7845..fb731b2609465ebe50742936b458aba210ecbd4a 100644
---- a/fs/smb/client/cifsglob.h
-+++ b/fs/smb/client/cifsglob.h
-@@ -1336,7 +1336,7 @@ void cifs_put_tlink(struct tcon_link *tlink);
- static inline struct tcon_link *
- cifs_get_tlink(struct tcon_link *tlink)
- {
--	if (tlink && !IS_ERR(tlink))
-+	if (!IS_ERR_OR_NULL(tlink))
- 		atomic_inc(&tlink->tl_count);
- 	return tlink;
- }
-diff --git a/fs/smb/client/connect.c b/fs/smb/client/connect.c
-index 3bad2c5c523dbd1d4b1ab253567984612be0f348..aa12d327894b270b59ea30be0e6d77b4188fc98f 100644
---- a/fs/smb/client/connect.c
-+++ b/fs/smb/client/connect.c
-@@ -2895,7 +2895,7 @@ cifs_get_tcon(struct cifs_ses *ses, struct smb3_fs_context *ctx)
- void
- cifs_put_tlink(struct tcon_link *tlink)
- {
--	if (!tlink || IS_ERR(tlink))
-+	if (IS_ERR_OR_NULL(tlink))
- 		return;
+diff --git a/fs/ntfs3/fsntfs.c b/fs/ntfs3/fsntfs.c
+index 0df2aa81d8845f21bfb571c408bd65b9e1fb8128..3ced4f95c2e95bac1fe5b334f976b8c8a15cf19d 100644
+--- a/fs/ntfs3/fsntfs.c
++++ b/fs/ntfs3/fsntfs.c
+@@ -237,7 +237,7 @@ int ntfs_extend_init(struct ntfs_sb_info *sbi)
  
- 	if (!atomic_dec_and_test(&tlink->tl_count) ||
-diff --git a/fs/smb/client/readdir.c b/fs/smb/client/readdir.c
-index be22bbc4a65a03ec64b87d8505d1496279f22efc..3e9260cca196ea8ab17aad82c4824ec5e468e2e7 100644
---- a/fs/smb/client/readdir.c
-+++ b/fs/smb/client/readdir.c
-@@ -165,7 +165,7 @@ cifs_prime_dcache(struct dentry *parent, struct qstr *name,
- 			inode = ERR_PTR(-ENOMEM);
- 		alias = d_splice_alias(inode, dentry);
- 		d_lookup_done(dentry);
--		if (alias && !IS_ERR(alias))
-+		if (!IS_ERR_OR_NULL(alias))
- 			dput(alias);
+ 	/* Try to find $ObjId */
+ 	inode2 = dir_search_u(inode, &NAME_OBJID, NULL);
+-	if (inode2 && !IS_ERR(inode2)) {
++	if (!IS_ERR_OR_NULL(inode2)) {
+ 		if (is_bad_inode(inode2)) {
+ 			iput(inode2);
+ 		} else {
+@@ -248,21 +248,21 @@ int ntfs_extend_init(struct ntfs_sb_info *sbi)
+ 
+ 	/* Try to find $Quota */
+ 	inode2 = dir_search_u(inode, &NAME_QUOTA, NULL);
+-	if (inode2 && !IS_ERR(inode2)) {
++	if (!IS_ERR_OR_NULL(inode2)) {
+ 		sbi->quota_no = inode2->i_ino;
+ 		iput(inode2);
  	}
- 	dput(dentry);
+ 
+ 	/* Try to find $Reparse */
+ 	inode2 = dir_search_u(inode, &NAME_REPARSE, NULL);
+-	if (inode2 && !IS_ERR(inode2)) {
++	if (!IS_ERR_OR_NULL(inode2)) {
+ 		sbi->reparse.ni = ntfs_i(inode2);
+ 		sbi->reparse_no = inode2->i_ino;
+ 	}
+ 
+ 	/* Try to find $UsnJrnl */
+ 	inode2 = dir_search_u(inode, &NAME_USNJRNL, NULL);
+-	if (inode2 && !IS_ERR(inode2)) {
++	if (!IS_ERR_OR_NULL(inode2)) {
+ 		sbi->usn_jrnl_no = inode2->i_ino;
+ 		iput(inode2);
+ 	}
 
 -- 
 2.43.0
