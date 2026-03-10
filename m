@@ -1,38 +1,39 @@
-Received: from mail.avm.de (mail.avm.de [212.42.244.94])
+Received: from mail.avm.de (mail.avm.de [212.42.244.120])
 	(using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB732478843;
-	Tue, 10 Mar 2026 11:55:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.94
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29A13472762;
+	Tue, 10 Mar 2026 11:55:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=212.42.244.120
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773143750; cv=none; b=NNe1j0cDlYIjn5IlqRXpX8NCOhJl52scS2WMU77lpQLXusqMKlwX3ytFC0V3rCh1sojA6DVpsRkJ7WPEkVuq9LpijFUsCknaS4cKtX9yPmjKDslb+Vp4BBHeT0reXkLf37oWwV8haaz8OpuuaD3mcEihDy822oiRGBbPlGHK1GQ=
+	t=1773143750; cv=none; b=sVFEShbQNvGMFnkWPpD27bPubJaxcZ1Ma5hDMJgEJ2ao8GRewFtgxbNNafCDcBanjLs78x6Q+H5lgoSMG3/mqZw49W7X+9nlPqqwyLUkiYg0j2rOgoZ++408phCu/3bqGLoU51zrGOn+Q+W/9hhGgExbaySkAiDjISvh1ZQ7NgU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1773143750; c=relaxed/simple;
-	bh=zh0NA9cMXwD2DkPFVL0EOnYz45KEbaJC9E9Miol506A=;
+	bh=/e9fhAri3fvWicTXaGdDwpg1S0XTbSGg5f30RLJZwGo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AL2ZCcE2sQp3yD+aIW9sDqyhDIiAZSsr8Uf8N293vLBDRrUP2Zbo7TKkKvhwtWonycY728CPObmUeZSnnbf1icMHgwVZOhYxWiY1MVmrrCf5UQIn0Y89PQaDTeTvx88XJEhWfJc+AWqQqA0bciFrI5VpmvgqDLgRvYptFnVQXQA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b=SxQcNNRu; arc=none smtp.client-ip=212.42.244.94
+	 In-Reply-To:To:Cc; b=I7ZoJD6VMjcHe/qaJXttllFdduXo0i3/EHI1CLPiGVrccP48ToRpTwwOfXUcFjPFJWs2fALgpGd0/1o58pG65p5ZNSQKUUGBcFVf1RnXF7LKmmW0MAOFJh+gPGcmw2Co6KhQVCssl0wl17VI1DO4OUj9K46erEun1XBudXsmXLA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de; spf=pass smtp.mailfrom=avm.de; dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b=Iw5SuiBx; arc=none smtp.client-ip=212.42.244.120
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=avm.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=avm.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b="SxQcNNRu"
+	dkim=pass (1024-bit key) header.d=avm.de header.i=@avm.de header.b="Iw5SuiBx"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=avm.de; s=mail;
-	t=1773143727; bh=zh0NA9cMXwD2DkPFVL0EOnYz45KEbaJC9E9Miol506A=;
+	t=1773143725; bh=/e9fhAri3fvWicTXaGdDwpg1S0XTbSGg5f30RLJZwGo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=SxQcNNRuEiFwL/5k7L3uNmiPeI5MF2imk5edf5+bENjDS759Fz4qD+/GE8T78XGoj
-	 y3Anx7ULmIKK+LqK0b0jH70rnI3ftcXHXYxeZ0UjeUBfUOOob6Uk/Ag51Y5ZWXmM5b
-	 3t6vwVKkMaMk0t3qb5EymyzCnKyZ6WtwRBwC159Q=
+	b=Iw5SuiBxopICixSXdLkOSlQ5GOkdpizRbWYUv/HR17R9xl7dtP6c89fP5PHv8n30r
+	 T6fTMbYeKwdLxLBOyZ63aJzIhTGXhtGZ6HTqmFayS2C9Lgp4tc+oyOQoe1INrnROOQ
+	 9WIPysOaG3/sA3lbsQKOpV5z3uw0O3UjXf2GC3sI=
 Received: from [212.42.244.71] (helo=mail.avm.de)
 	by mail.avm.de with ESMTP (eXpurgate 4.55.2)
 	(envelope-from <phahn-oss@avm.de>)
-	id 69b006af-e21d-7f0000032729-7f000001ba98-1
-	for <multiple-recipients>; Tue, 10 Mar 2026 12:55:27 +0100
+	id 69b006ad-b734-7f0000032729-7f000001c06e-1
+	for <multiple-recipients>; Tue, 10 Mar 2026 12:55:25 +0100
 Received: from mail-auth.avm.de (dovecot-mx-01.avm.de [212.42.244.71])
 	by mail.avm.de (Postfix) with ESMTPS;
-	Tue, 10 Mar 2026 12:55:27 +0100 (CET)
+	Tue, 10 Mar 2026 12:55:25 +0100 (CET)
 From: Philipp Hahn <phahn-oss@avm.de>
-Date: Tue, 10 Mar 2026 12:49:12 +0100
-Subject: [PATCH 46/61] vfio: Prefer IS_ERR_OR_NULL over manual NULL check
+Date: Tue, 10 Mar 2026 12:49:01 +0100
+Subject: [PATCH 35/61] arch/mips: Prefer IS_ERR_OR_NULL over manual NULL
+ check
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -41,7 +42,7 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-b4-is_err_or_null-v1-46-bd63b656022d@avm.de>
+Message-Id: <20260310-b4-is_err_or_null-v1-35-bd63b656022d@avm.de>
 References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
@@ -71,21 +72,22 @@ To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
  sched-ext@lists.linux.dev, target-devel@vger.kernel.org, 
  tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev, 
  Philipp Hahn <phahn-oss@avm.de>
-Cc: Alex Williamson <alex@shazbot.org>
-X-Developer-Signature: v=1; a=openpgp-sha256; l=940; i=phahn-oss@avm.de;
- h=from:subject:message-id; bh=zh0NA9cMXwD2DkPFVL0EOnYz45KEbaJC9E9Miol506A=;
- b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAZyWhsmplRS68Hjc75s841x9LkbYtnoYEUHf
- 5sKSdvRLCOJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGcgAKCRA0LQZT0ays
- 26J5B/950clmJMa20JiDvd2Y9XUU4IMRZvZhOhN1i+pY6SIYFFSSWrstAJqpIpGOZ3R9V9O+AHS
- +c7Qni9AFhXI7buBYvtSAJWLJA8EJ41+9M8UOXpQoB5DcXO1c0CGt0ajsPjByLrSehp36R5PzH2
- wWu5vJHC6K9Bj9PLCfIhxzyGkz/hL0gcZbuCGZMCsvjzhhK3aqUIEmC2PQzNoj/okoSky7H2ok5
- Weutgt7pTJ9Q0oTr+n0PVtebcJ9O9+q3o9Yrs2sONA2GIXHGzM3vgOrYqV1Xoa6t/eWQHNiKxUs
- zghoWpQpcWwkFeKxopN3kqosmr1/sM4hUF11IDDx0e4ZVVPT
+Cc: John Crispin <john@phrozen.org>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=861; i=phahn-oss@avm.de;
+ h=from:subject:message-id; bh=/e9fhAri3fvWicTXaGdDwpg1S0XTbSGg5f30RLJZwGo=;
+ b=owEBbQGS/pANAwAKATQtBlPRrKzbAcsmYgBpsAZM2fTyCYVfDSlmEmcm8t3ybPKD3MDuGKTUj
+ vCjhqZWFOmJATMEAAEKAB0WIQQ5bPBtrWDUcDQCppg0LQZT0ays2wUCabAGTAAKCRA0LQZT0ays
+ 2z2rCAC7oYhghVATpgjsAoGRn4N5/GCkNEQ5d/YNbMHtku5Ne/hNSs0W+K9kYWVkFPm5TlrH0DE
+ 8/RGH1u5MDT7P37KNp17NEpcRPc+zR1hHTpFzNLygQMhigzbVOt/7U+vGXQh1CXjciuY8j7FckI
+ dtMHKNN16hVWRN9J7DdvS7Q09vOysbfuZGn+o8hs1SmUg64a9Ig5/41sPHN38J7SQblPeyGhLri
+ 3JgxiG8Mz5G70Y5/Rddk73/lgtWO+z4F7ECaPWtfktQ/wSj5ZuFGkTm2dn045+qsqR71gKKNbgQ
+ /lgkcaOekPRGDC/jtk9N/uPlc4vBw/GKHnCp8LPegSQzk/iw
 X-Developer-Key: i=phahn-oss@avm.de; a=openpgp;
  fpr=58AF7C2E007CDBE62C59E078F50EFDCF8AD04B1A
-X-purgate-ID: 149429::1773143727-83E1BF2F-0692D0B1/0/0
+X-purgate-ID: 149429::1773143725-25DC2A3D-57771A30/0/0
 X-purgate-type: clean
-X-purgate-size: 942
+X-purgate-size: 863
 X-purgate-Ad: Categorized by eleven eXpurgate (R) https://www.eleven.de
 X-purgate: This mail is considered clean (visit https://www.eleven.de for further information)
 X-purgate: clean
@@ -95,27 +97,28 @@ check.
 
 Change generated with coccinelle.
 
-To: Alex Williamson <alex@shazbot.org>
-Cc: kvm@vger.kernel.org
+To: John Crispin <john@phrozen.org>
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: linux-mips@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 ---
- drivers/vfio/vfio_main.c | 2 +-
+ arch/mips/lantiq/clk.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/vfio/vfio_main.c b/drivers/vfio/vfio_main.c
-index 742477546b15d4dbaf9ebcfb2e67627db71521e0..d71922dfde5885967398deddec3e9e04b05adfec 100644
---- a/drivers/vfio/vfio_main.c
-+++ b/drivers/vfio/vfio_main.c
-@@ -923,7 +923,7 @@ vfio_ioctl_device_feature_mig_device_state(struct vfio_device *device,
+diff --git a/arch/mips/lantiq/clk.c b/arch/mips/lantiq/clk.c
+index 2d5a0bcb0cec156dc5f0daedbdd7c56ff8d62ca4..4ae271a887c39163370d070b49d9e5152a709bd7 100644
+--- a/arch/mips/lantiq/clk.c
++++ b/arch/mips/lantiq/clk.c
+@@ -60,7 +60,7 @@ EXPORT_SYMBOL_GPL(clk_get_ppe);
  
- 	/* Handle the VFIO_DEVICE_FEATURE_SET */
- 	filp = device->mig_ops->migration_set_state(device, mig.device_state);
--	if (IS_ERR(filp) || !filp)
-+	if (IS_ERR_OR_NULL(filp))
- 		goto out_copy;
+ static inline int clk_good(struct clk *clk)
+ {
+-	return clk && !IS_ERR(clk);
++	return !IS_ERR_OR_NULL(clk);
+ }
  
- 	return vfio_ioct_mig_return_fd(filp, arg, &mig);
+ unsigned long clk_get_rate(struct clk *clk)
 
 -- 
 2.43.0
