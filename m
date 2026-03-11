@@ -1,115 +1,197 @@
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-f47.google.com (mail-lf1-f47.google.com [209.85.167.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F42FEEBB;
-	Wed, 11 Mar 2026 02:06:25 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773194786; cv=none; b=vC72MkvJ10B3fxyCEmDCiezVbyDo9Prqj8vVUVTENsRwsbt0qupJvtOo6pkzm9mZPigAQixV4n7XzjtBgcGtMJCF0+cmTGrBHwBLbga6wKo6NGKRAyyO9sNpY69j9w/vArH2MkOdE8Bg+vZL5CY5YaXIukaLx0IS3nzbIcMHAMo=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773194786; c=relaxed/simple;
-	bh=f5NrB2+MF6IuhSvfYv97sWQzS7nsD4D29btDqD/A8Os=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=r5SOX0QwsrkPiuSghjc9+l4ncN3S9CgWVh2OezSMF/Msp71ZJ6nQMyTGgOcuUk8/WaxdP3gNYjiaTndWMHlIvdQmab0UXtEryMNDcADPMp7zUcKRVRyo6LcGPMvW+0HE2Cjw+vjjIOGtZFiUEkLNbMT7bG7VNEUB3tPHGKEY6+Q=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=a6ARQcHR; arc=none smtp.client-ip=205.220.177.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5789433E368
+	for <target-devel@vger.kernel.org>; Wed, 11 Mar 2026 02:07:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.167.47
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1773194859; cv=pass; b=o9JaDYbT0eFRlr8jNzo3efl5aEzkxK9D9HviT3nmCYC01LjNxkfpxkYofQjA49wLu71JznKmOxvqf3nZ41/vCs6gQA9qzpzNmKtSttTEP1mdhlI5U9CCWJigeRcebT3hu2Gcn7qORKJ1XC0BynRXjtYDKnc+HYyYNr7OEXlRDb0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1773194859; c=relaxed/simple;
+	bh=8UJnLa/DDQ+b65RDSHa97nR/Rm6zetnRjswOkVb13wc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=l2g2yzZ4Dybh6kuhvcBULVguDYhdrEOCm8tFVHG5HxZiMK4r1ieV3XC7DvFbBP/+LmMwsbfu65u9ArSpCtaVdbPZteok84/rVMReHCYXmpmbYEy9zrdrliUY8eD89Ecnaq3KiIRSp5NcaBqhT+HUD7Ww+h1VR8ou9i4C8J9QSO4=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org; spf=pass smtp.mailfrom=chromium.org; dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b=SqpOgAb4; arc=pass smtp.client-ip=209.85.167.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="a6ARQcHR"
-Received: from pps.filterd (m0333520.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62AIRx5F094083;
-	Wed, 11 Mar 2026 02:06:24 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=mBNGxd11BrB6aNmJsxEPjL+0ba1mfye31QrYaoh/2DA=; b=
-	a6ARQcHRG/vMB84EfpCAr/256VN9RCvWHvK7HGUlge0/kTUixiJV/qN8Sj9ChOTh
-	nfZhOxGDpI2l1nbFju5YEjWTts3k/NBuahbCFe3xGLm1D524ne5kCaqqYjgkCqpD
-	Y4e+sqPOjuDu7OsdUvb4j2FUVAIMwpuY8k+njg0I5asREYG8SwFjvlZiaPWp6S/B
-	MeOkpFSOmKAh1Iu9vkiNKQA5LINS4cHGi5zvumb3qxYWfyiV3qDGZnNF5rJ11rNE
-	eIzwESuxtnNnq4to2CBkkrMBFJ9J+fCLTe0wk689xhzRqSxjKZVPbLFNK4cr6dG4
-	eAnMeNzNV6zuV+fhFEMbVA==
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4csmdkm42x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 11 Mar 2026 02:06:24 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 62B1wQIa020419;
-	Wed, 11 Mar 2026 02:06:23 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4crafewwk1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 11 Mar 2026 02:06:23 +0000
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 62B26M5L002770;
-	Wed, 11 Mar 2026 02:06:23 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 4crafewwj6-3;
-	Wed, 11 Mar 2026 02:06:23 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        Mike Christie <michael.christie@oracle.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>
-Subject: Re: [PATCH 1/4] scsi: target: Add support for completing commands from backend context
-Date: Tue, 10 Mar 2026 22:06:14 -0400
-Message-ID: <177289787702.2131580.18065820173103333438.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260222232946.7637-2-michael.christie@oracle.com>
-References: <20260222232946.7637-2-michael.christie@oracle.com>
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="SqpOgAb4"
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-5a13d1c6f25so4703795e87.3
+        for <target-devel@vger.kernel.org>; Tue, 10 Mar 2026 19:07:34 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773194852; cv=none;
+        d=google.com; s=arc-20240605;
+        b=JWaxpavUUg5iAIgnVVmihSNKlAEmkdERdWf9gZSnGaCN/yfFR2PS6BBzW3LZ/vteGO
+         2GPJIITeLNT6VynaO5diZXWWlAjPHwosOF0ArQkcIGlPZqhxPJjV6ATQFgA7wpXir8Tx
+         u1W77r707n4e4EzX3om7D47UJbN44ZtLpkZ7CDQpednA9vBE1PY3KUCTV03ugXNVpfQG
+         Lii9FERvl1uZeHtKbPTekiuUrn0RabAZ9kPz70yKLvkyOZTrG8+W5JBLYn0hxM0UmTsg
+         mwjrbVCBDipQOOoCGYF96JLZp1n3LIuacPFt2Rp3xD4eTi5lODRXAzJAdcXP5bmbMi4e
+         24nQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=+zLBLQzKjcztDlxJqoLP6w+B6xnZmfHibV4jlBQCebA=;
+        fh=YclSZj0P226bwoSCYfQtFOwjGFoFNjZAMlgArBuxQDc=;
+        b=ixcaS+5Fs6PlHVnoMdn4lgop0OjMcYhcb9gxtJ8Torn0QEvSfs0CCvUD13jdTAY36w
+         F2wajqrFNY+4ITdANTQZZwY/5R2f71x0I7ZL8GPpz/+17jCryAQRo/uI2sBptglMKIGx
+         tDc2lfVFzwaPl9OmVxyMDI7cNRucn/Q0HAH/EVSy2NbZ3/t+n9T7Gtgrpv36EssHUDhI
+         L1WRk8k5SaBjyPSPIhLT9FkqbrWulwVQRy/fhp+BbXWoKJn9ibd/PxXEFBov+PorkMA2
+         QAGt7W1xOWbhMTPJx/vGt4ub8jljnrFhUPQH2JAAT/CnumIotrK8WUqZKTwcbAiKhrhb
+         RUkg==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1773194852; x=1773799652; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=+zLBLQzKjcztDlxJqoLP6w+B6xnZmfHibV4jlBQCebA=;
+        b=SqpOgAb4CQOCp6QT1IhDiJXNOENCCAthmmQiQ2Xm1LqdH6AuNnr9pWEOxoaM6J2EHp
+         TaZvrNsWvEAAdeAh3rGZCGLrxzU767HUy57VJt43+079ae3+2kuAr2+JBVbU8T9+l/BT
+         vjjO+GANIyds0bGFgUhdgNG0FnF3NJi/nWQH4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773194852; x=1773799652;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=+zLBLQzKjcztDlxJqoLP6w+B6xnZmfHibV4jlBQCebA=;
+        b=IttBkceE2ngw4xBU4OlsmiO4EaPnlPWunFCX0IwlTeSaQg09YWKDCHl3xiLAs+XyWk
+         lCaqZW4DTiTJAEuLvKDeqvP6dbe7+cwy93LcMSUoj2YinTl1brPjJZ3zc3encfOq0nBX
+         Fr9X4y2l2FYc28UnA7SaKvSImdY4s6DGk5Tz48qVKg8fVytpnpqFd7ZogMZ86S5D1T6U
+         sCbR6mvVp6M0xn2x3f1aXYYVFTJwa+j4YQaz578NzdRKJY+yBB/2QASprkwoZfAit36T
+         fl+RSPvDn8v5FBBj0adZG2+nJNdV/r2EuWQAVPkeQq1PYIatAc3bWBD95FNpEC2y+nmT
+         HOgw==
+X-Forwarded-Encrypted: i=1; AJvYcCUHneC1QeNGF4Cd+59ikG223R4RcIsKdvn32nnWr5YJZO4LChrlJ8MaAPs9AmpPWskU87MxxfYAJpLVAXY=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzhfMU7aPGytTkYHo70ZKXtUZCLJ8NVfI8u4mEdOYW8t8jCpC+5
+	mBU4Z/wrUo/lhsVqF6Y4kxUj1/YD4UR6nCsTB3ySHsmCRxwBaxtxUN5T+Qumv97ct4EK0F/op3d
+	CzAuBFnaMLF4iWFu35CMdRv/qqmGjITT9YeRm7SOW
+X-Gm-Gg: ATEYQzx0if8KA32QtWZomzVa6DLMxOhdj/ok7DaADloPyMcYAJMxkGrR3t44p/mo8bK
+	uZt/D9h4kX+0YyDSsv2wZc1Jp+8bn3yalEzsHR41+clwgN5Er02P4uYkglGl0sHgx5VZOn9/68U
+	qlcTVfCGtRMBPl7Ay97mtgHwJ9k8lD3yB4doRxry0CUgiJmNMxnXSvs7TMK4KbHmFuirSm7XAJQ
+	NJrOSTmxQriYZGUI2YCh+QMsGGtYAlnI9pCCotKUCeqqUlnBIa7kZzVVlXRTiEUZgw6GeUWwJh2
+	ZCcytud7Yw==
+X-Received: by 2002:ac2:4427:0:b0:5a1:3134:9bac with SMTP id
+ 2adb3069b0e04-5a156cbd1bbmr169453e87.28.1773194852284; Tue, 10 Mar 2026
+ 19:07:32 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-10_05,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 malwarescore=0 mlxscore=0
- mlxlogscore=956 adultscore=0 phishscore=0 suspectscore=0 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2602130000
- definitions=main-2603110016
-X-Authority-Analysis: v=2.4 cv=MuBfKmae c=1 sm=1 tr=0 ts=69b0ce20 b=1 cx=c_pps
- a=zPCbziy225d3KhSqZt3L1A==:117 a=zPCbziy225d3KhSqZt3L1A==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=jiCTI4zE5U7BLdzWsZGv:22 a=BqU2WV_vvsyTyxaotp0D:22 a=VwQbUJbxAAAA:8
- a=guXa3lI3ESm7tMO7ugcA:9 a=QEXdDO2ut3YA:10 cc=ntf awl=host:12272
-X-Proofpoint-ORIG-GUID: 6ryXP5Tv0wSRclzIpErBmiDqpHcbI-uy
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzExMDAxNiBTYWx0ZWRfX3ST9wNswga8O
- 2gz0bEfLddq5+ZfM7G9TeZ66Ype2/AkGVCbTe6rC+GljxipYXmO+nlvyVnIfpcf7ncNWkVDNMdR
- HpFIuFawVLEk1m7du/fix/S5ARVL60qdzwlKAERmoCekNHOw3uftSuzNrzNFP5R/VxsKdDDApI1
- MRjSQxpajUFuOjslu53Dji/eYtxqTr/+z/f5J4AweZWsO9Z0dXF7yUdPhMfTaWbx7YOXt0DLOxe
- AcSbZDC+E81D3ZzmtqpH7p+DwUb5OyukakQJmBymX7kBIrscVK3cyc3N7yGvQ4TesHItDyuNl/7
- 4AkaMQbyjjDTMvz12oju8650f1YbkFApPDohfQjaqdfQOy7UMj9IXEVLWWldi86DyotoTQog3We
- 2ZxfrGVpxA7kIy0sV0FWGxH/iK4RVRuNvrC8cQcKIcMbNTa7rXL8LeCj/53YKQLWFBV9rTqXyZ0
- 0IHfLULCbrwSusMOERQBHDks6rFACDsmGqpXnMFw=
-X-Proofpoint-GUID: 6ryXP5Tv0wSRclzIpErBmiDqpHcbI-uy
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de> <20260310-b4-is_err_or_null-v1-56-bd63b656022d@avm.de>
+In-Reply-To: <20260310-b4-is_err_or_null-v1-56-bd63b656022d@avm.de>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Wed, 11 Mar 2026 11:07:21 +0900
+X-Gm-Features: AaiRm5028PWt8n-JnveiRgn8oYMksdR_-_nk4JOkvxMfplWs-GDr7RRk-OxICyw
+Message-ID: <CAGXv+5FQAVaJjqhv+Xq-ysOc4SHQn2mCNTgCAp8XocmWBWGGoA@mail.gmail.com>
+Subject: Re: [PATCH 56/61] clk: Prefer IS_ERR_OR_NULL over manual NULL check
+To: Philipp Hahn <phahn-oss@avm.de>
+Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com, 
+	bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr, 
+	dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org, 
+	gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org, 
+	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev, kvm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, 
+	linux-bluetooth@vger.kernel.org, linux-btrfs@vger.kernel.org, 
+	linux-cifs@vger.kernel.org, linux-clk@vger.kernel.org, 
+	linux-erofs@lists.ozlabs.org, linux-ext4@vger.kernel.org, 
+	linux-fsdevel@vger.kernel.org, linux-gpio@vger.kernel.org, 
+	linux-hyperv@vger.kernel.org, linux-input@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, 
+	linux-media@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org, 
+	linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org, 
+	linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org, 
+	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org, 
+	linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org, 
+	linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
+	linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
+	linux-wireless@vger.kernel.org, netdev@vger.kernel.org, ntfs3@lists.linux.dev, 
+	samba-technical@lists.samba.org, sched-ext@lists.linux.dev, 
+	target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net, 
+	v9fs@lists.linux.dev, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Thomas Gleixner <tglx@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, 22 Feb 2026 17:27:01 -0600, Mike Christie wrote:
+On Tue, Mar 10, 2026 at 9:57=E2=80=AFPM Philipp Hahn <phahn-oss@avm.de> wro=
+te:
+>
+> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
+> check.
+>
+> Semantich change: Previously the code only printed the warning on error,
+> but not when the pointer was NULL. Now the warning is printed in both
+> cases!
+>
+> Change found with coccinelle.
+>
+> To: Michael Turquette <mturquette@baylibre.com>
+> To: Stephen Boyd <sboyd@kernel.org>
+> To: Daniel Lezcano <daniel.lezcano@kernel.org>
+> To: Thomas Gleixner <tglx@kernel.org>
+> Cc: linux-clk@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
+> ---
+>  drivers/clk/clk.c               | 4 ++--
+>  drivers/clocksource/timer-pxa.c | 2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 47093cda9df32223c1120c3710261296027c4cd3..35146e3869a7dd93741d10b72=
+23d4488a9216ed1 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -4558,7 +4558,7 @@ void clk_unregister(struct clk *clk)
+>         unsigned long flags;
+>         const struct clk_ops *ops;
+>
+> -       if (!clk || WARN_ON_ONCE(IS_ERR(clk)))
+> +       if (WARN_ON_ONCE(IS_ERR_OR_NULL(clk)))
+>                 return;
+>
+>         clk_debug_unregister(clk->core);
+> @@ -4744,7 +4744,7 @@ void __clk_put(struct clk *clk)
+>  {
+>         struct module *owner;
+>
+> -       if (!clk || WARN_ON_ONCE(IS_ERR(clk)))
+> +       if (WARN_ON_ONCE(IS_ERR_OR_NULL(clk)))
 
-> To complete a command several drivers just drop their reference and
-> add it to list to be processed by a driver specific thread. So there's
-> no need to go from backend context to the LIO thread then to the
-> driver's thread. When avoiding the LIO thread, IOPS can increase from
-> 20-30% for workloads like:
-> 
-> fio --filename=/dev/sdb  --direct=1 --rw=randrw --bs=8K \
-> --ioengine=libaio --iodepth=128  --numjobs=$jobs
-> 
-> [...]
+clk_get_optional() returns NULL if the clk isn't present.
 
-Applied to 7.1/scsi-queue, thanks!
+Drivers would just pass this to clk_put(). Your change here would cause
+this pattern to emit a very big warning.
 
-[1/4] scsi: target: Add support for completing commands from backend context
-      https://git.kernel.org/mkp/scsi/c/06933066d88a
-[2/4] scsi: target: Use driver completion preference by default
-      https://git.kernel.org/mkp/scsi/c/89663fb2e538
-[3/4] scsi: target: Allow userspace to set the completion type
-      https://git.kernel.org/mkp/scsi/c/e1502d990c8e
-[4/4] vhost-scsi: Report direction completion support
-      https://git.kernel.org/mkp/scsi/c/a4d72d2dd0cb
+I don't think this change should be landed.
 
--- 
-Martin K. Petersen
+
+ChenYu
+
+>                 return;
+>
+>         clk_prepare_lock();
+> diff --git a/drivers/clocksource/timer-pxa.c b/drivers/clocksource/timer-=
+pxa.c
+> index 7ad0e5adb2ffac4125c34710fc67f4b45f30331d..f65fb0b7fc318b766227e5e7a=
+4c0fb08ba11c8f9 100644
+> --- a/drivers/clocksource/timer-pxa.c
+> +++ b/drivers/clocksource/timer-pxa.c
+> @@ -218,7 +218,7 @@ void __init pxa_timer_nodt_init(int irq, void __iomem=
+ *base)
+>
+>         timer_base =3D base;
+>         clk =3D clk_get(NULL, "OSTIMER0");
+> -       if (clk && !IS_ERR(clk)) {
+> +       if (!IS_ERR_OR_NULL(clk)) {
+>                 clk_prepare_enable(clk);
+>                 pxa_timer_common_init(irq, clk_get_rate(clk));
+>         } else {
+>
+> --
+> 2.43.0
+>
+>
