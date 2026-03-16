@@ -1,34 +1,34 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F19C430148C;
-	Mon, 16 Mar 2026 14:54:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B03481DFFB;
+	Mon, 16 Mar 2026 19:17:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773672885; cv=none; b=DIbCa/Mj1F6wNzlFZCMONcQb7/EiWQPGCDa6YH+CmIpSyOBJ+7Njw8F9496DvrLnTjUtoRusyQ7JdcmkhI15S1ax6safc25kD5mEYei3NNWe4gLmp7Y2WM4VHGXZ5tlQ8NORapl7poX1N76CA8uJ9q5GQR9gVF9smihScgM8aWg=
+	t=1773688628; cv=none; b=kLQqYo4LYrk3RqB/VfQWTq9/lY+iS2ojPvYYCIWMvX7qT7/qqDkPet8UG7of30DWbu4ZhsZvensEGC8Rf7JVtp8uWoRZBW+hC3drjsWszpeXRvDTLcOcKhj0geOVC08ltkLo/PrekcekiYC+zk9I8KP4hHr3mdTymSzHQ1HxSdY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773672885; c=relaxed/simple;
-	bh=151f3cWiR6axiSpyETGy2809glU/p+Thfrb+WhG7his=;
+	s=arc-20240116; t=1773688628; c=relaxed/simple;
+	bh=QyEpZlZG4opNA8anvj6G5Slo7c/FEhsWdlvBbfWACi4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GRECAOu6SaE0Y2Jfvx/zSMhAr02PoPB72X/wzSvxGDSJzRRAld3y77vzVwLcLeSs4Hy4NXIzEJf5ECfxOb4ydOjiPwY+pfTL98NQF33xMZJT9fZS6c/3Yp7tp4no6KTRPv8HyklkR7iBsoP8KedFOd/jvSTcTste+sFVIPgWfDA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IiVlA9K5; arc=none smtp.client-ip=10.30.226.201
+	 Content-Type:Content-Disposition:In-Reply-To; b=Wqn11QDpNy8LRC2hk9YOTlr5NfUK0bGk18hkWtSNC1P7VyTS7r220agyK20+Ft+7OR8s7jEHKAJUvwrjbcsnywNfddrzLz0UHA11ihHBPI6LtAIt4RXRpthHTqJJ6vYhHm8jIkpRhvvQOodhISg32jDQ7aI0lXnfw45xwim0xLA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=p6V8nYcq; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IiVlA9K5"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6787C19421;
-	Mon, 16 Mar 2026 14:54:34 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="p6V8nYcq"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CC7BCC19421;
+	Mon, 16 Mar 2026 19:16:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773672884;
-	bh=151f3cWiR6axiSpyETGy2809glU/p+Thfrb+WhG7his=;
+	s=k20201202; t=1773688628;
+	bh=QyEpZlZG4opNA8anvj6G5Slo7c/FEhsWdlvBbfWACi4=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=IiVlA9K5MR2pm/vVWcjl3jHa1ZLppG/xkVDg4LYhSHBo7tILA3oKU7/VyDtSsg2Kg
-	 kQqyeUnfpOlDxu6AfhX2DKeTc56qG3sgVr8cRvArcJDPpB7MtB8+8m/W1CGm4DXnWU
-	 /IAV35ajExH6TG7ujNjLHJy8C1NUnuOmNHMTs/CZoSJyL1gIEFWKuYKmUapF57E+52
-	 QtJhwAwyYFC0d6NKgO01Zvw7BDFPVjqf+FrFODQ4Cqwr/bAXtOkwM5wsRJqmso1ekz
-	 dUhxuwzJMFbfz9arxSyuA8RSwOjRWaOSv5ZVSyJ0pPvwE3EtZ56ZowEAdLjTcvuW1x
-	 yQ/B9jgOXn+mA==
-Date: Mon, 16 Mar 2026 14:54:33 +0000
+	b=p6V8nYcqmeDZKuY4zGNJ/3JO3CnU0d9efgyFdkVY7WSUNYIDhCTI9Db2OUNnvZkuV
+	 DJKNEIr0LVqkw7Qm+7/LNMZVIy2H6lZSikEMJxAeb3rC/4Ok0+/5T9pPdWx0hxlyfF
+	 YC9hu93u2F0y8eWR++ss1I+ojYbIFXoX/ZuREscW0OSdbh8qpKKHZ34v9W5/hiyDoR
+	 j6phsp0FGdk9ZAHp8Dp/oyzPLmvM0Lji+BhGIxnplEpsoKuFzNUNe28cRSEOmi6Zgz
+	 5pNsd9DGY8/zp1LM+egYfiwZmkjPSb7Ys/IvaCJPlZM7sDDRwMQVyAWIqyg9+q9N6f
+	 35RjXxG9KVfKA==
+Date: Mon, 16 Mar 2026 19:16:56 +0000
 From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: Randy Dunlap <rdunlap@infradead.org>
+To: Suren Baghdasaryan <surenb@google.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, 
 	Jonathan Corbet <corbet@lwn.net>, Clemens Ladisch <clemens@ladisch.de>, 
 	Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -41,122 +41,231 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	David Howells <dhowells@redhat.com>, Marc Dionne <marc.dionne@auristor.com>, 
 	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
 	David Hildenbrand <david@kernel.org>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
-	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jann Horn <jannh@google.com>, 
-	Pedro Falcato <pfalcato@suse.de>, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-hyperv@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
-	linux-arm-kernel@lists.infradead.org, linux-mtd@lists.infradead.org, linux-staging@lists.linux.dev, 
-	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-afs@lists.infradead.org, 
-	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, Ryan Roberts <ryan.roberts@arm.com>
-Subject: Re: [PATCH 15/15] mm: add mmap_action_map_kernel_pages[_full]()
-Message-ID: <b9474609-4c7e-4cbe-8e6c-d55baa689430@lucifer.local>
+	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Michal Hocko <mhocko@suse.com>, 
+	Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, linux-kernel@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-hyperv@vger.kernel.org, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, 
+	linux-mtd@lists.infradead.org, linux-staging@lists.linux.dev, linux-scsi@vger.kernel.org, 
+	target-devel@vger.kernel.org, linux-afs@lists.infradead.org, linux-fsdevel@vger.kernel.org, 
+	linux-mm@kvack.org, Ryan Roberts <ryan.roberts@arm.com>
+Subject: Re: [PATCH 02/15] mm: add documentation for the mmap_prepare file
+ operation callback
+Message-ID: <6a0e73a5-519e-49ca-9f76-2f6cc5a1577c@lucifer.local>
 References: <cover.1773346620.git.ljs@kernel.org>
- <21d8899bb1f4db61203072fb3a56a6c98a61e23d.1773346620.git.ljs@kernel.org>
- <4fd15134-ae1e-4233-8d5a-9d1e0b9f94dc@infradead.org>
+ <c5bb61cf789df1ecb32facc29df9749987c7ddfc.1773346620.git.ljs@kernel.org>
+ <CAJuCfpGd702=Xop3X5Aop9rrScdiAOQEEooTu1gcJqR9pmO5GA@mail.gmail.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4fd15134-ae1e-4233-8d5a-9d1e0b9f94dc@infradead.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAJuCfpGd702=Xop3X5Aop9rrScdiAOQEEooTu1gcJqR9pmO5GA@mail.gmail.com>
 
-On Thu, Mar 12, 2026 at 04:15:26PM -0700, Randy Dunlap wrote:
->
-> On 3/12/26 1:27 PM, Lorenzo Stoakes (Oracle) wrote:
->
-> > Finally, we update the VMA tests accordingly to reflect the changes.
->
-> IMO we could omit the word "we" 5 times above.
-> (but no change is required)
->
-> > diff --git a/include/linux/mm.h b/include/linux/mm.h
-> > index 88f42faeb377..88ad5649c02d 100644
-> > --- a/include/linux/mm.h
-> > +++ b/include/linux/mm.h
->
-> > +/**
-> > + * range_is_subset - Is the specified inner range a subset of the outer range?
-> > + * @outer_start: The start of the outer range.
-> > + * @outer_end: The exclusive end of the outer range.
-> > + * @inner_start: The start of the inner range.
-> > + * @inner_end: The exclusive end of the inner range.
-> > + *
-> > + * Returns %true if [inner_start, inner_end) is a subset of [outer_start,
->
->     * Returns:
-> (for kernel-doc)
-
-Ack
-
->
-> > + * outer_end), otherwise %false.
-> > + */
-> > +static inline bool range_is_subset(unsigned long outer_start,
-> > +				   unsigned long outer_end,
-> > +				   unsigned long inner_start,
-> > +				   unsigned long inner_end)
-> > +{
-> > +	return outer_start <= inner_start && inner_end <= outer_end;
-> > +}
+On Sun, Mar 15, 2026 at 04:23:14PM -0700, Suren Baghdasaryan wrote:
+> On Thu, Mar 12, 2026 at 1:27 PM Lorenzo Stoakes (Oracle) <ljs@kernel.org> wrote:
+> >
+> > This documentation makes it easier for a driver/file system implementer to
+> > correctly use this callback.
+> >
+> > It covers the fundamentals, whilst intentionally leaving the less lovely
+> > possible actions one might take undocumented (for instance - the
+> > success_hook, error_hook fields in mmap_action).
+> >
+> > The document also covers the new VMA flags implementation which is the only
+> > one which will work correctly with mmap_prepare.
+> >
+> > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
+> > ---
+> >  Documentation/filesystems/mmap_prepare.rst | 131 +++++++++++++++++++++
+> >  1 file changed, 131 insertions(+)
+> >  create mode 100644 Documentation/filesystems/mmap_prepare.rst
+> >
+> > diff --git a/Documentation/filesystems/mmap_prepare.rst b/Documentation/filesystems/mmap_prepare.rst
+> > new file mode 100644
+> > index 000000000000..76908200f3a1
+> > --- /dev/null
+> > +++ b/Documentation/filesystems/mmap_prepare.rst
+> > @@ -0,0 +1,131 @@
+> > +.. SPDX-License-Identifier: GPL-2.0
 > > +
-> > +/**
-> > + * range_in_vma - is the specified [@start, @end) range a subset of the VMA?
-> > + * @vma: The VMA against which we want to check [@start, @end).
-> > + * @start: The start of the range we wish to check.
-> > + * @end: The exclusive end of the range we wish to check.
-> > + *
-> > + * Returns %true if [@start, @end) is a subset of [@vma->vm_start,
->
->     * Returns:
-
-Ack
-
->
-> > + * @vma->vm_end), %false otherwise.
-> > + */
-> >  static inline bool range_in_vma(const struct vm_area_struct *vma,
-> >  				unsigned long start, unsigned long end)
-> >  {
-> > -	return (vma && vma->vm_start <= start && end <= vma->vm_end);
-> > +	if (!vma)
-> > +		return false;
+> > +===========================
+> > +mmap_prepare callback HOWTO
+> > +===========================
 > > +
-> > +	return range_is_subset(vma->vm_start, vma->vm_end, start, end);
-> > +}
+> > +Introduction
+> > +############
 > > +
-> > +/**
-> > + * range_in_vma_desc - is the specified [@start, @end) range a subset of the VMA
-> > + * described by @desc, a VMA descriptor?
-> > + * @desc: The VMA descriptor against which we want to check [@start, @end).
-> > + * @start: The start of the range we wish to check.
-> > + * @end: The exclusive end of the range we wish to check.
-> > + *
-> > + * Returns %true if [@start, @end) is a subset of [@desc->start, @desc->end),
->
->     * Returns:
-
-Ack, I think in general I've seen (or believe I've seen :) other cases without
-the colon, so was kinda imitating, but I may also be imagining that ;)
-
->
-> > + * %false otherwise.
-> > + */
-> > +static inline bool range_in_vma_desc(const struct vm_area_desc *desc,
-> > +				     unsigned long start, unsigned long end)
-> > +{
-> > +	if (!desc)
-> > +		return false;
+> > +The `struct file->f_op->mmap()` callback has been deprecated as it is both a
+> > +stability and security risk, and doesn't always permit the merging of adjacent
+> > +mappings resulting in unnecessary memory fragmentation.
 > > +
-> > +	return range_is_subset(desc->start, desc->end, start, end);
-> >  }
+> > +It has been replaced with the `file->f_op->mmap_prepare()` callback which solves
+> > +these problems.
+> > +
+> > +## How To Use
+> > +
+> > +In your driver's `struct file_operations` struct, specify an `mmap_prepare`
+> > +callback rather than an `mmap` one, e.g. for ext4:
+> > +
+> > +
+> > +.. code-block:: C
+> > +
+> > +    const struct file_operations ext4_file_operations = {
+> > +        ...
+> > +        .mmap_prepare    = ext4_file_mmap_prepare,
+> > +    };
+> > +
+> > +This has a signature of `int (*mmap_prepare)(struct vm_area_desc *)`.
+> > +
+> > +Examining the `struct vm_area_desc` type:
+> > +
+> > +.. code-block:: C
+> > +
+> > +    struct vm_area_desc {
+> > +        /* Immutable state. */
+> > +        const struct mm_struct *const mm;
+> > +        struct file *const file; /* May vary from vm_file in stacked callers. */
+> > +        unsigned long start;
+> > +        unsigned long end;
+> > +
+> > +        /* Mutable fields. Populated with initial state. */
+> > +        pgoff_t pgoff;
+> > +        struct file *vm_file;
+> > +        vma_flags_t vma_flags;
+> > +        pgprot_t page_prot;
+> > +
+> > +        /* Write-only fields. */
+> > +        const struct vm_operations_struct *vm_ops;
+> > +        void *private_data;
+> > +
+> > +        /* Take further action? */
+> > +        struct mmap_action action;
 >
-> --
-> ~Randy
+> So, action still belongs to /* Write-only fields. */ section? This is
+> nitpicky, but it might be better to have this as:
 >
+>         /* Write-only fields. */
+>         const struct vm_operations_struct *vm_ops;
+>         void *private_data;
+>         struct mmap_action action; /* Take further action? */
 
-Will also fold these changes into the respin!
+Absolutely not. This field is not to be written to by the user.
 
-Cheers, Lorenzo
+We sadly have to allow hugetlb to do some hacks, but these are things we don't
+want to point out.
+
+Users should use mmap_action_xxx() functions.
+
+>
+> > +    };
+> > +
+> > +This is straightforward - you have all the fields you need to set up the
+> > +mapping, and you can update the mutable and writable fields, for instance:
+> > +
+> > +.. code-block:: Cw
+> > +
+> > +    static int ext4_file_mmap_prepare(struct vm_area_desc *desc)
+> > +    {
+> > +        int ret;
+> > +        struct file *file = desc->file;
+> > +        struct inode *inode = file->f_mapping->host;
+> > +
+> > +        ...
+> > +
+> > +        file_accessed(file);
+> > +        if (IS_DAX(file_inode(file))) {
+> > +            desc->vm_ops = &ext4_dax_vm_ops;
+> > +            vma_desc_set_flags(desc, VMA_HUGEPAGE_BIT);
+> > +        } else {
+> > +            desc->vm_ops = &ext4_file_vm_ops;
+> > +        }
+> > +        return 0;
+> > +    }
+> > +
+> > +Importantly, you no longer have to dance around with reference counts or locks
+> > +when updating these fields - __you can simply go ahead and change them__.
+> > +
+> > +Everything is taken care of by the mapping code.
+> > +
+> > +VMA Flags
+> > +=========
+> > +
+> > +Along with `mmap_prepare`, VMA flags have undergone an overhaul. Where before
+> > +you would invoke one of `vm_flags_init()`, `vm_flags_reset()`, `vm_flags_set()`,
+> > +`vm_flags_clear()`, and `vm_flags_mod()` to modify flags (and to have the
+> > +locking done correctly for you, this is no longer necessary.
+> > +
+> > +Also, the legacy approach of specifying VMA flags via `VM_READ`, `VM_WRITE`,
+> > +etc. - i.e. using a `VM_xxx` macro has changed too.
+> > +
+> > +When implementing `mmap_prepare()`, reference flags by their bit number, defined
+> > +as a `VMA_xxx_BIT` macro, e.g. `VMA_READ_BIT`, `VMA_WRITE_BIT` etc., and use one
+> > +of (where `desc` is a pointer to `struct vma_area_desc`):
+> > +
+> > +* `vma_desc_test_flags(desc, ...)` - Specify a comma-separated list of flags you
+> > +  wish to test for (whether _any_ are set), e.g. - `vma_desc_test_flags(desc,
+> > +  VMA_WRITE_BIT, VMA_MAYWRITE_BIT)` - returns `true` if either are set,
+> > +  otherwise `false`.
+> > +* `vma_desc_set_flags(desc, ...)` - Update the VMA descriptor flags to set
+> > +  additional flags specified by a comma-separated list,
+> > +  e.g. - `vma_desc_set_flags(desc, VMA_PFNMAP_BIT, VMA_IO_BIT)`.
+> > +* `vma_desc_clear_flags(desc, ...)` - Update the VMA descriptor flags to clear
+> > +  flags specified by a comma-separated list, e.g. - `vma_desc_clear_flags(desc,
+> > +  VMA_WRITE_BIT, VMA_MAYWRITE_BIT)`.
+> > +
+> > +Actions
+> > +=======
+> > +
+> > +You can now very easily have actions be performed upon a mapping once set up by
+> > +utilising simple helper functions invoked upon the `struct vm_area_desc`
+> > +pointer. These are:
+> > +
+> > +* `mmap_action_remap()` - Remaps a range consisting only of PFNs for a specific
+> > +  range starting a virtual address and PFN number of a set size.
+> > +
+> > +* `mmap_action_remap_full()` - Same as `mmap_action_remap()`, only remaps the
+> > +  entire mapping from `start_pfn` onward.
+> > +
+> > +* `mmap_action_ioremap()` - Same as `mmap_action_remap()`, only performs an I/O
+> > +  remap.
+> > +
+> > +* `mmap_action_ioremap_full()` - Same as `mmap_action_ioremap()`, only remaps
+> > +  the entire mapping from `start_pfn` onward.
+> > +
+> > +**NOTE:** The 'action' field should never normally be manipulated directly,
+> > +rather you ought to use one of these helpers.
+>
+> I'm guessing the start and size parameters passed to
+> mmap_action_remap() and such are restricted by vm_area_desc.start
+> vm_area_desc.end. If so, should we document those restrictions and
+> enforce them in the code?
+
+I mean it's the same restrictions as all of the functions already apply if you
+were to use them with a VMA descriptor.
+
+I think implicitly a remap will fail if you try it out of the VMA range at the
+point of applying the change.
+
+But it might be worth adding range_in_vma_desc() checks at prepare time, will
+see if I can do that for the respin.
+
+I think it's pretty obvious that you shouldn't be trying to remap totally
+unrelated memory, so I'm not sure that's at a level of granularity that's suited
+to this document though.
+
+>
+> > +    struct vm_area_desc {
+> > +        /* Immutable state. */
+> > +        const struct mm_struct *const mm;
+> > +        struct file *const file; /* May vary from vm_file in stacked callers. */
+> > +        unsigned long start;
+> > +        unsigned long end;
+>
+>
+> > --
+> > 2.53.0
+> >
