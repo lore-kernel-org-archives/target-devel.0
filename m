@@ -1,94 +1,96 @@
-Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com [209.85.208.51])
+Received: from mail-ed1-f52.google.com (mail-ed1-f52.google.com [209.85.208.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AABD43E3D84
-	for <target-devel@vger.kernel.org>; Thu, 19 Mar 2026 15:15:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3D6083E4C80
+	for <target-devel@vger.kernel.org>; Thu, 19 Mar 2026 15:19:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.52
 ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1773933315; cv=pass; b=scWVveHUra8PjflX1saJuDVH9VjtjGlMASsm0e+2Cvx3uPNtYHFjQUuVSxgzGFtO/yq9PEUbBTtOiWe4ZY+ZF818Gf63FsiSigmOfz0BJLX+k/FHWrsJmo4UERncrokb5wTH0UDMD2LeM58Xr6bGh+N/vLsrGz7Oci28pmU8WdA=
+	t=1773933561; cv=pass; b=XhRElh8Fs1vf4tgpYORFTyzaivfc5kfDyv5NE/H0I2N2Czbq06E7qy6C+8JhmUmB/F2yTcZo5cHQC5NNlS8yS1KXQ6sZTVxyF6svHjkVrIUxCYBxHcNYOBhjaeAaiSg8EEIY+I07apNA+4dAcCwQDZbEuEE+FZamN+zOttSRh3M=
 ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1773933315; c=relaxed/simple;
-	bh=+U+h5DHutsPWQLAl47H2kO1Rj4E77RwlLxKhQLCNe1o=;
+	s=arc-20240116; t=1773933561; c=relaxed/simple;
+	bh=457BRqSPz9m1QV8ngyY1vCfliC5HfzIQsOqy3zeBt18=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=tVacKAg5JmCJXsb5VYdijE9fhF4fNjaXylkGfDh7O3ReyO5S+Gq6QkED8/FBqYO6RgXo7VNR5lRa/PuhzesOZJKAxk5Gp1HGIRIYIsbr46DzDFxNTrp0zOrXQUA27wEBVhqTdmpSRy3luIDX34eEHbRrzcQ5xeFO/SRMNDrvQyY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=h2Q0UO3t; arc=pass smtp.client-ip=209.85.208.51
+	 To:Cc:Content-Type; b=ALBHfmccH8EYLp+Qv90NM8Fw1oZOtBTcuYmZj+YqDfpKHZBM2lSAlrL+Cq1ZLFb1BEserXN8Xzal0Oh8m53lryDMUJ8GAe664Nuu/axf4/fUmWEK2VXSQQZw5sd7cNmddA6hHGWiWfb5cyXSZhc+rBQVDpZJErfPqWR6l/+Ns4g=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com; spf=pass smtp.mailfrom=google.com; dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b=rESW6C/j; arc=pass smtp.client-ip=209.85.208.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=google.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="h2Q0UO3t"
-Received: by mail-ed1-f51.google.com with SMTP id 4fb4d7f45d1cf-6628cc1bd69so9886a12.1
-        for <target-devel@vger.kernel.org>; Thu, 19 Mar 2026 08:15:10 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773933309; cv=none;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="rESW6C/j"
+Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-661ce258878so12091a12.0
+        for <target-devel@vger.kernel.org>; Thu, 19 Mar 2026 08:19:16 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773933554; cv=none;
         d=google.com; s=arc-20240605;
-        b=d2rd/gS1HeGgdxki4ZU0JhcypO+BxAGe+bQJaRfeG55MBB4ZcU0RwBgy22JKnLWZd2
-         C0vk3xPa012AQ4te9TqgjAwace3KxOmtSh6xwzCrI+0DATsdIBcrxYMzgvm6up9Zzn2X
-         pCh2G7+11LBwdf+EvxBWv4aY+YQ3lSjoV8qa1x0/iNsb7dAQm3MhXbPRC0eSqxVBLHIG
-         b3CKdjl4rj/+Khc9Y2mikLzDYiB8vz9FIQVPGVdb7fB3tFkfEN7G5OK6V9broXufvs0g
-         AscAp1fboEbitpcEFt2YonwS9VF0Xx3ZtgV7iczahPurcjQSGiK7zqF7lH7G7iaht486
-         mftQ==
+        b=LhOQVp1v0md7xp1ZsLwKYczJtv8IiimPG7U5lGQAoExDKBrpXIZoFbQ2L2Uu0VPBq4
+         937U8XrWQpfsfA31PcxB2QhCQUmx+kW3B3ohyEo4yhdTJFgQCV/Hm7ThIK9Wb2XxmDo3
+         bhuhVK+AWKziqT78WxDAWP5xYZBtBGzFos5/9hIMCZCZgZjgx9GQ/5q+xOzisQZV8xw8
+         vojq0VVdog89i/0urTNJspa2LdUa0ugbv+IPs6tEaOosZIpEArxgbVpHkr4pnvBGKWDS
+         8jUMPdloXfmLuesJMUO4nL75WEjsrlQGf2Qs6VLmkZq475zDHP8TXNpXW5IGowfs3Gb3
+         6mUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=rDGWj2LZwlvIkcEpInl/kcvhbo0ZpIck8KTLQAEkgQo=;
-        fh=ILz4NrzigVysuRaWxMKYVIa1m9OdOAnURDVkrGHns6A=;
-        b=XLWtdp9Dg3lxMP0NPnIsFXDGFvMrcDCMBTt8attdJOH5W4MQXQ8EPkAQQUO+erI1ER
-         yEIWn+oqA9JvNEA0pVyb6yH27V8BQRkbMwFxNSnQgYR5cHfc5Zzg3Jg23tNov54Rnbod
-         I1sBOwLlyFYDuinxQ1z5WBhZxx/R1rD7PYv/aYpCayQoIb2O+7lFpabJGENjNma33yVE
-         oMWqV/ftg+GH3ifGD7P+LDP6oRr0RfVj+MnadspVVnmVo3t7G91Zx+mlgoJlXf1F0Epy
-         z+ioMVbnTxdzE9MHie4QLM8sUE2s/+E95tIJ+jFh3tVsOM2/V06scgPwH0Tbe2yE/GiN
-         5Dfg==;
+        bh=l+SkkA6JHNTO5608C+WgUR0GK5zpsD2f8nbksELlrew=;
+        fh=02KWf4ehg1DrcbMt31DehFgzXAtwYujmZYL2TYlNkLs=;
+        b=E2i0UZxuuHrdnmB7MD4/UoqBafOcALrOq/b6XskPEYOqAi4atF6kI+5GfNRvzccMKY
+         cPFaLU8P7a1ISg7BSWhgPwLt+Vc5+ViVMosD+AH/lusn2Ny9HapnJhnRPnk+M3pyqwtN
+         O7GpZbGJhL0pQixTGwCSJeOjMVyYFW+m6X0+Gd58FFUYJ1PmcbdUl+LjTke5pPZnlPQH
+         ycFnacXytFcAfZ+8WgZY94IfYMYJstfBioBLBd3d00n5qgrkHaluPuZ6VvQFMW2kT1aa
+         33czE5u6ngfc1gtxDjG67x0KU6VAb+yY5LvsOT4ydkx0FbG7lQhFyb07B8ULYkKIPK5q
+         infw==;
         darn=vger.kernel.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1773933309; x=1774538109; darn=vger.kernel.org;
+        d=google.com; s=20251104; t=1773933554; x=1774538354; darn=vger.kernel.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=rDGWj2LZwlvIkcEpInl/kcvhbo0ZpIck8KTLQAEkgQo=;
-        b=h2Q0UO3ty2jGn3w/phsAwquzFNF8cs+EFcCdQlRWCyluIdcFaZvUM1Oiz5wnl6V4OO
-         RJpUH0+N0IY+hVGcs9XhMbAPLlBgdy+NWNiD2iJitJ1W6eCnQ+V0CHfWfxLPB57njIJ8
-         WD0XxpwA0QSSv+kUx/u72nBDvZnSPwOIqrK4TUq50vdYFox21AN045OvKV0vvXdT5v7V
-         ix5bV58mYiGGOEcExxusMAm4BIxe8PxWoNhwp0gk/E7JRknNrNLFSiKW/1ej8K3beOyb
-         YUHuXCiOv8xRnVA/Jggmfvx7PZBiqQ7/7sTmw6gzHwHMyP/u9HdGaTOaN8W1mWJp2LKG
-         Fd7A==
+        bh=l+SkkA6JHNTO5608C+WgUR0GK5zpsD2f8nbksELlrew=;
+        b=rESW6C/jNJFpvL+aJ7M5geNS/4ke8FBW9rsf1CVnzwimTXrNJVWg02E4Shxil6uO1G
+         lc4a7WaGjTIWhTruq1H3hjF+T8lB+1RdmXRomKkJUWw3O+iO0U8LoeZ+YUFkc4D48FpV
+         5snO1parSBc/N8g1ipHp/1JZoAOCq6ISic7RLkrJA8c63VZXLqGqpjdQE29MOh9ZyOJg
+         qy+Ns9Cjg4FKMrrE95ZRo0eGaCv7ZbXocsg8pfU9hkUdPHhYtzDufVt2OE+YFfX5Pk+v
+         EMdlxlcYAdjDG2WfjZtx8100VoYGDn0plVZ2VAwk62MgryniBOO0pQR48+YE2MZemi30
+         3FnQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773933309; x=1774538109;
+        d=1e100.net; s=20251104; t=1773933554; x=1774538354;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=rDGWj2LZwlvIkcEpInl/kcvhbo0ZpIck8KTLQAEkgQo=;
-        b=m+9s1oo70N48vIsGRsgdZJEkERFumJ5HDgUB3BDyFqpLVoFWswvv2ADw4+WYytZySo
-         MlyEgdefrNJZ1icv2SZJzodDvXTH1+LndM0U3Ey+NNn2BGhRfT7U2DGUxsc9IUccn2FF
-         zXL0CpeTyBzyJ4tG4LHalmzqVd61RHYvQpHtfiuGI0NfSgFqJjk7fpT8221yb4nwiNCE
-         lIQB0nA7ak7n+TDEctk/KU4cH/Bap9QS3ELfi7m8MwnqIvut/2WVZV82ZLT9MtBro7sg
-         VksvCiD296ykvnKnbuJ/fV2COMRD0xIKKvydi6B4G1oi5pu/Kk7dB8XCvkuymbhS4Tji
-         6I3Q==
-X-Forwarded-Encrypted: i=1; AJvYcCU0I9b88soes8zkxqFN5j3Gxugk8FxGQ2SdILbVNTin67G3i/ZcupfnbaaDwI5Fu7toZhvZtohIE//4Rx8=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxP2pZ4ds8IzsniqoXu73cFD0hztmhUG57ilCVNOHIabuVb1zJs
-	VxLPDClTbysP+xGmaQCaCTUCg5iqLY2AkF9wbON3dsiWllRiNwyPeVA6mjAAew4avTAjd3XLdzo
-	HWAmrF6lAJ7HvHdMj8sWpettMyNzemxEHcCX6/Ti3
-X-Gm-Gg: ATEYQzxtQGOzarY4qcaqvKRKkAFGszML1Hiqx6TgV1wUEzk7LAkjNHE+wwvoBXQ1a27
-	2E6AzgIVOdCApXCwJya4LkOwN1vML654mwbccsltis0doMkRRV90vSLYoqUASUJQdd/hz/f5qvW
-	q5DQgtcHxeVhWFAikplkltBMrntXA7/VrSDDLYp1Wt/Gp4/vP44zmtqbLM408K4eJ0CFYTRuz+V
-	Zt/gEqzkRQ/omL02jq0T/FGHB4jNGVEcW+hCPIHYHXhbMBFDz3nfaVyBMRSDR2UzR3i9QqzHUJc
-	4Za9/xbUohZ6hpJg82Z0Mp8RAduDAu78vcbB
-X-Received: by 2002:a05:6402:a518:20b0:660:f90b:a19b with SMTP id
- 4fb4d7f45d1cf-66852d86339mr28785a12.8.1773933307787; Thu, 19 Mar 2026
- 08:15:07 -0700 (PDT)
+        bh=l+SkkA6JHNTO5608C+WgUR0GK5zpsD2f8nbksELlrew=;
+        b=HuhUwJS8os3PSWfgf1lxuyQZWkFut8T+CoQY0caVDhXS/ZHpBfEg6UE6wLTk2lC6UU
+         3MjgTZMv70o7j05UCNyCn12J+45GdRowcKNgtB/PFNqk6VadZB/sWCOLqioX63MmqGWN
+         Im7Qi3H8GheDrdsLhOHoQDaUlbkZZmtqM3xb2iT9cE7EfOXo8c1TLHygn6B5RKhL3H5J
+         By9zg/9qMoaHNUC+j4p5yvpCV4QpZvC/VcypGEqouKjwzoe4/71QXOhFeYRfaAn2DCAy
+         13++VFugcquBjN9e6a6wYD8pBx0eBD5wUMUSj/EP/Kx1cSFWlH0350US3h/wAYWyjfrT
+         HMRw==
+X-Forwarded-Encrypted: i=1; AJvYcCVCAzSfurnmWHrB2STD9LhWpcJQH1eLWkcJG8i6j4RlLFAVJIDs1oNgNd4jUllnRxq4ccVNET25xgIF4xc=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yxnsyizq39SvK6TLSmepyBiQXpPJBp18cuGjfVuOjtu6AvfjEoM
+	+R4KmBmb4N5ppT7sfA/rFHA3f7PHREsGR5npOEPSKDXYsOPqo4zTW+ps4Q2FjmsxJCsmFIHB6IP
+	T0LYu+V/VlY63hnpvldcFzfLZmJSi2NsnOE8fVAZA
+X-Gm-Gg: ATEYQzyKgZpnuplTlyTHRQk7y1LKY7hT/qlVVH0CUvjizihxiLeLgOqQy+w72mXZVA5
+	pj0sSk3F3UyjX0PP8rIU7Z1TFXs2U6xlWLEZyyLBbWlaROu/37rgoH6+Xpr+r2qdzXOb3pt/kn2
+	fustDSHgxYbT/MBg/xIzHaTn/8m/5bfbZ+o4aHFvv2dsO7K+3p/OnqsHZmqW5LEjTTYD8Q37add
+	McfAupeZwYpfHIRcCgtGJ6xdxaGXaVU1hW1v6ZZRyoXrTPLtjgCLLKi5P1b1izb14mg5/YeIHLJ
+	ZYpVQnqoeZZnrVMWcGcy68uQ3ce5OXs0NMZ7
+X-Received: by 2002:aa7:c305:0:b0:665:4aee:2091 with SMTP id
+ 4fb4d7f45d1cf-668597c91b5mr35260a12.1.1773933553516; Thu, 19 Mar 2026
+ 08:19:13 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <cover.1773695307.git.ljs@kernel.org> <8e28e4b63bae67bfa1a59ccbac9dc6db1442d75d.1773695307.git.ljs@kernel.org>
- <CAJuCfpF6eS18HLgNvQtkLGd=7N0_L1JPmF0GzM-Z0QimRWT7AQ@mail.gmail.com> <d877ee66-1ac9-4b1b-b860-6919dc58edfe@lucifer.local>
-In-Reply-To: <d877ee66-1ac9-4b1b-b860-6919dc58edfe@lucifer.local>
+References: <cover.1773695307.git.ljs@kernel.org> <48c6d25e374b57dba6df4fdddd4830d3fc1105be.1773695307.git.ljs@kernel.org>
+ <CAJuCfpFXuHg4KPY27pqMC-xV5y9ZY2W72_R8_rxO0DvrJ=_yvw@mail.gmail.com>
+ <CAJuCfpE5qZmi43EeZiRcy78pD6YvJb5n_xnoUJfwEjomowu0=A@mail.gmail.com> <8cdad898-b306-40fe-a367-efe7147f83b9@lucifer.local>
+In-Reply-To: <8cdad898-b306-40fe-a367-efe7147f83b9@lucifer.local>
 From: Suren Baghdasaryan <surenb@google.com>
-Date: Thu, 19 Mar 2026 08:14:54 -0700
-X-Gm-Features: AaiRm50TBB0_y5-6zEqCgnFax1lp80ds7Lm1WJGU5srttqxVqxdb1y_yg1RHpJs
-Message-ID: <CAJuCfpGsKgOEGA3rh+fMwv4BMMb0tZ5ZxVWeLCyOEvq7J12xOg@mail.gmail.com>
-Subject: Re: [PATCH v2 15/16] mm: add mmap_action_map_kernel_pages[_full]()
+Date: Thu, 19 Mar 2026 08:19:00 -0700
+X-Gm-Features: AaiRm538m687pN9OvrM8BA6vooI_JX1puVDbGEAq4CrmCygBr1Sq-70iE-ogZ1c
+Message-ID: <CAJuCfpHXqtxZr5s84jCcz513a2pgMeDoobsLBJH9pSON49cM+w@mail.gmail.com>
+Subject: Re: [PATCH v2 11/16] staging: vme_user: replace deprecated mmap hook
+ with mmap_prepare
 To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Jonathan Corbet <corbet@lwn.net>, 
 	Clemens Ladisch <clemens@ladisch.de>, Arnd Bergmann <arnd@arndb.de>, 
@@ -114,422 +116,309 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Jonathan Corbet <corbet@lwn.net>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Mar 19, 2026 at 8:05=E2=80=AFAM Lorenzo Stoakes (Oracle) <ljs@kerne=
+On Thu, Mar 19, 2026 at 7:55=E2=80=AFAM Lorenzo Stoakes (Oracle) <ljs@kerne=
 l.org> wrote:
 >
-> On Wed, Mar 18, 2026 at 09:00:13AM -0700, Suren Baghdasaryan wrote:
-> > On Mon, Mar 16, 2026 at 2:14=E2=80=AFPM Lorenzo Stoakes (Oracle) <ljs@k=
-ernel.org> wrote:
+> On Tue, Mar 17, 2026 at 02:32:16PM -0700, Suren Baghdasaryan wrote:
+> > On Tue, Mar 17, 2026 at 2:26=E2=80=AFPM Suren Baghdasaryan <surenb@goog=
+le.com> wrote:
 > > >
-> > > A user can invoke mmap_action_map_kernel_pages() to specify that the
-> > > mapping should map kernel pages starting from desc->start of a specif=
-ied
-> > > number of pages specified in an array.
-> > >
-> > > In order to implement this, adjust mmap_action_prepare() to be able t=
-o
-> > > return an error code, as it makes sense to assert that the specified
-> > > parameters are valid as quickly as possible as well as updating the V=
-MA
-> > > flags to include VMA_MIXEDMAP_BIT as necessary.
-> > >
-> > > This provides an mmap_prepare equivalent of vm_insert_pages().
-> > >
-> > > We additionally update the existing vm_insert_pages() code to use
-> > > range_in_vma() and add a new range_in_vma_desc() helper function for =
-the
-> > > mmap_prepare case, sharing the code between the two in range_is_subse=
-t().
-> > >
-> > > We add both mmap_action_map_kernel_pages() and
-> > > mmap_action_map_kernel_pages_full() to allow for both partial and ful=
-l VMA
-> > > mappings.
-> > >
-> > > We also add mmap_action_map_kernel_pages_discontig() to allow for
-> > > discontiguous mapping of kernel pages should the need arise.
-> > >
-> > > We update the documentation to reflect the new features.
-> > >
-> > > Finally, we update the VMA tests accordingly to reflect the changes.
-> > >
-> > > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
-> >
-> > With one nit,
-> > Reviewed-by: Suren Baghdasaryan <surenb@google.com>
->
-> Thanks!
->
-> >
-> > > ---
-> > >  Documentation/filesystems/mmap_prepare.rst |  8 ++
-> > >  include/linux/mm.h                         | 95 ++++++++++++++++++++=
-+-
-> > >  include/linux/mm_types.h                   |  7 ++
-> > >  mm/memory.c                                | 42 +++++++++-
-> > >  mm/util.c                                  |  6 ++
-> > >  tools/testing/vma/include/dup.h            |  7 ++
-> > >  6 files changed, 159 insertions(+), 6 deletions(-)
-> > >
-> > > diff --git a/Documentation/filesystems/mmap_prepare.rst b/Documentati=
-on/filesystems/mmap_prepare.rst
-> > > index be76ae475b9c..e810aa4134eb 100644
-> > > --- a/Documentation/filesystems/mmap_prepare.rst
-> > > +++ b/Documentation/filesystems/mmap_prepare.rst
-> > > @@ -156,5 +156,13 @@ pointer. These are:
-> > >  * mmap_action_simple_ioremap() - Sets up an I/O remap from a specifi=
-ed
-> > >    physical address and over a specified length.
-> > >
-> > > +* mmap_action_map_kernel_pages() - Maps a specified array of `struct=
- page`
-> > > +  pointers in the VMA from a specific offset.
-> > > +
-> > > +* mmap_action_map_kernel_pages_full() - Maps a specified array of `s=
-truct
-> > > +  page` pointers over the entire VMA. The caller must ensure there a=
-re
-> > > +  sufficient entries in the page array to cover the entire range of =
-the
-> > > +  described VMA.
-> > > +
-> > >  **NOTE:** The ``action`` field should never normally be manipulated =
-directly,
-> > >  rather you ought to use one of these helpers.
-> > > diff --git a/include/linux/mm.h b/include/linux/mm.h
-> > > index df8fa6e6402b..6f0a3edb24e1 100644
-> > > --- a/include/linux/mm.h
-> > > +++ b/include/linux/mm.h
-> > > @@ -2912,7 +2912,7 @@ static inline bool folio_maybe_mapped_shared(st=
-ruct folio *folio)
-> > >   * The caller must add any reference (e.g., from folio_try_get()) it=
- might be
-> > >   * holding itself to the result.
-> > >   *
-> > > - * Returns the expected folio refcount.
-> > > + * Returns: the expected folio refcount.
-> >
-> > nit: I see both "Returns:" and "Return:" being used in the codebase
-> > but this header file uses "Return:", so for consistency you should
-> > probably do the same. This also applies to later instances in this
-> > patch.
->
-> Well here I'm just adding the colon, while I'm here (maybe have been an
-> update in response to feedback actualy).
->
-> And this function that's not part of my change already uses 'Returns' and
-> I'm pretty sure that's the correct form.
->
-> So I think not a big deal to keep using that?
-
-Correct. Anything I mark as "nit:" is not critical and can be ignored.
-
->
-> >
-> > >   */
-> > >  static inline int folio_expected_ref_count(const struct folio *folio=
+> > > On Mon, Mar 16, 2026 at 2:14=E2=80=AFPM Lorenzo Stoakes (Oracle) <ljs=
+@kernel.org> wrote:
+> > > >
+> > > > The f_op->mmap interface is deprecated, so update driver to use its
+> > > > successor, mmap_prepare.
+> > > >
+> > > > The driver previously used vm_iomap_memory(), so this change replac=
+es it
+> > > > with its mmap_prepare equivalent, mmap_action_simple_ioremap().
+> > > >
+> > > > Functions that wrap mmap() are also converted to wrap mmap_prepare(=
 )
-> > >  {
-> > > @@ -4364,6 +4364,45 @@ static inline void mmap_action_simple_ioremap(=
-struct vm_area_desc *desc,
-> > >         action->type =3D MMAP_SIMPLE_IO_REMAP;
-> > >  }
+> > > > instead.
+> > > >
+> > > > Also update the documentation accordingly.
+> > > >
+> > > > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
+> > > > ---
+> > > >  Documentation/driver-api/vme.rst    |  2 +-
+> > > >  drivers/staging/vme_user/vme.c      | 20 +++++------
+> > > >  drivers/staging/vme_user/vme.h      |  2 +-
+> > > >  drivers/staging/vme_user/vme_user.c | 51 +++++++++++++++++--------=
+----
+> > > >  4 files changed, 42 insertions(+), 33 deletions(-)
+> > > >
+> > > > diff --git a/Documentation/driver-api/vme.rst b/Documentation/drive=
+r-api/vme.rst
+> > > > index c0b475369de0..7111999abc14 100644
+> > > > --- a/Documentation/driver-api/vme.rst
+> > > > +++ b/Documentation/driver-api/vme.rst
+> > > > @@ -107,7 +107,7 @@ The function :c:func:`vme_master_read` can be u=
+sed to read from and
+> > > >
+> > > >  In addition to simple reads and writes, :c:func:`vme_master_rmw` i=
+s provided to
+> > > >  do a read-modify-write transaction. Parts of a VME window can also=
+ be mapped
+> > > > -into user space memory using :c:func:`vme_master_mmap`.
+> > > > +into user space memory using :c:func:`vme_master_mmap_prepare`.
+> > > >
+> > > >
+> > > >  Slave windows
+> > > > diff --git a/drivers/staging/vme_user/vme.c b/drivers/staging/vme_u=
+ser/vme.c
+> > > > index f10a00c05f12..7220aba7b919 100644
+> > > > --- a/drivers/staging/vme_user/vme.c
+> > > > +++ b/drivers/staging/vme_user/vme.c
+> > > > @@ -735,9 +735,9 @@ unsigned int vme_master_rmw(struct vme_resource=
+ *resource, unsigned int mask,
+> > > >  EXPORT_SYMBOL(vme_master_rmw);
+> > > >
+> > > >  /**
+> > > > - * vme_master_mmap - Mmap region of VME master window.
+> > > > + * vme_master_mmap_prepare - Mmap region of VME master window.
+> > > >   * @resource: Pointer to VME master resource.
+> > > > - * @vma: Pointer to definition of user mapping.
+> > > > + * @desc: Pointer to descriptor of user mapping.
+> > > >   *
+> > > >   * Memory map a region of the VME master window into user space.
+> > > >   *
+> > > > @@ -745,12 +745,13 @@ EXPORT_SYMBOL(vme_master_rmw);
+> > > >   *         resource or -EFAULT if map exceeds window size. Other g=
+eneric mmap
+> > > >   *         errors may also be returned.
+> > > >   */
+> > > > -int vme_master_mmap(struct vme_resource *resource, struct vm_area_=
+struct *vma)
+> > > > +int vme_master_mmap_prepare(struct vme_resource *resource,
+> > > > +                           struct vm_area_desc *desc)
+> > > >  {
+> > > > +       const unsigned long vma_size =3D vma_desc_size(desc);
+> > > >         struct vme_bridge *bridge =3D find_bridge(resource);
+> > > >         struct vme_master_resource *image;
+> > > >         phys_addr_t phys_addr;
+> > > > -       unsigned long vma_size;
+> > > >
+> > > >         if (resource->type !=3D VME_MASTER) {
+> > > >                 dev_err(bridge->parent, "Not a master resource\n");
+> > > > @@ -758,19 +759,18 @@ int vme_master_mmap(struct vme_resource *reso=
+urce, struct vm_area_struct *vma)
+> > > >         }
+> > > >
+> > > >         image =3D list_entry(resource->entry, struct vme_master_res=
+ource, list);
+> > > > -       phys_addr =3D image->bus_resource.start + (vma->vm_pgoff <<=
+ PAGE_SHIFT);
+> > > > -       vma_size =3D vma->vm_end - vma->vm_start;
+> > > > +       phys_addr =3D image->bus_resource.start + (desc->pgoff << P=
+AGE_SHIFT);
+> > > >
+> > > >         if (phys_addr + vma_size > image->bus_resource.end + 1) {
+> > > >                 dev_err(bridge->parent, "Map size cannot exceed the=
+ window size\n");
+> > > >                 return -EFAULT;
+> > > >         }
+> > > >
+> > > > -       vma->vm_page_prot =3D pgprot_noncached(vma->vm_page_prot);
+> > > > -
+> > > > -       return vm_iomap_memory(vma, phys_addr, vma->vm_end - vma->v=
+m_start);
+> > > > +       desc->page_prot =3D pgprot_noncached(desc->page_prot);
+> > > > +       mmap_action_simple_ioremap(desc, phys_addr, vma_size);
+> > > > +       return 0;
+> > > >  }
+> > > > -EXPORT_SYMBOL(vme_master_mmap);
+> > > > +EXPORT_SYMBOL(vme_master_mmap_prepare);
+> > > >
+> > > >  /**
+> > > >   * vme_master_free - Free VME master window
+> > > > diff --git a/drivers/staging/vme_user/vme.h b/drivers/staging/vme_u=
+ser/vme.h
+> > > > index 797e9940fdd1..b6413605ea49 100644
+> > > > --- a/drivers/staging/vme_user/vme.h
+> > > > +++ b/drivers/staging/vme_user/vme.h
+> > > > @@ -151,7 +151,7 @@ ssize_t vme_master_read(struct vme_resource *re=
+source, void *buf, size_t count,
+> > > >  ssize_t vme_master_write(struct vme_resource *resource, void *buf,=
+ size_t count, loff_t offset);
+> > > >  unsigned int vme_master_rmw(struct vme_resource *resource, unsigne=
+d int mask, unsigned int compare,
+> > > >                             unsigned int swap, loff_t offset);
+> > > > -int vme_master_mmap(struct vme_resource *resource, struct vm_area_=
+struct *vma);
+> > > > +int vme_master_mmap_prepare(struct vme_resource *resource, struct =
+vm_area_desc *desc);
+> > > >  void vme_master_free(struct vme_resource *resource);
+> > > >
+> > > >  struct vme_resource *vme_dma_request(struct vme_dev *vdev, u32 rou=
+te);
+> > > > diff --git a/drivers/staging/vme_user/vme_user.c b/drivers/staging/=
+vme_user/vme_user.c
+> > > > index d95dd7d9190a..11e25c2f6b0a 100644
+> > > > --- a/drivers/staging/vme_user/vme_user.c
+> > > > +++ b/drivers/staging/vme_user/vme_user.c
+> > > > @@ -446,24 +446,14 @@ static void vme_user_vm_close(struct vm_area_=
+struct *vma)
+> > > >         kfree(vma_priv);
+> > > >  }
+> > > >
+> > > > -static const struct vm_operations_struct vme_user_vm_ops =3D {
+> > > > -       .open =3D vme_user_vm_open,
+> > > > -       .close =3D vme_user_vm_close,
+> > > > -};
+> > > > -
+> > > > -static int vme_user_master_mmap(unsigned int minor, struct vm_area=
+_struct *vma)
+> > > > +static int vme_user_vm_mapped(unsigned long start, unsigned long e=
+nd, pgoff_t pgoff,
+> > > > +                             const struct file *file, void **vm_pr=
+ivate_data)
+> > > >  {
+> > > > -       int err;
+> > > > +       const unsigned int minor =3D iminor(file_inode(file));
+> > > >         struct vme_user_vma_priv *vma_priv;
+> > > >
+> > > >         mutex_lock(&image[minor].mutex);
+> > > >
+> > > > -       err =3D vme_master_mmap(image[minor].resource, vma);
+> > > > -       if (err) {
+> > > > -               mutex_unlock(&image[minor].mutex);
+> > > > -               return err;
+> > > > -       }
+> > > > -
 > > >
-> > > +/**
-> > > + * mmap_action_map_kernel_pages - helper for mmap_prepare hook to sp=
-ecify that
-> > > + * @num kernel pages contained in the @pages array should be mapped =
-to userland
-> > > + * starting at virtual address @start.
-> > > + * @desc: The VMA descriptor for the VMA requiring kernel pags to be=
- mapped.
-> > > + * @start: The virtual address from which to map them.
-> > > + * @pages: An array of struct page pointers describing the memory to=
- map.
-> > > + * @nr_pages: The number of entries in the @pages aray.
-> > > + */
-> > > +static inline void mmap_action_map_kernel_pages(struct vm_area_desc =
-*desc,
-> > > +               unsigned long start, struct page **pages,
-> > > +               unsigned long nr_pages)
-> > > +{
-> > > +       struct mmap_action *action =3D &desc->action;
-> > > +
-> > > +       action->type =3D MMAP_MAP_KERNEL_PAGES;
-> > > +       action->map_kernel.start =3D start;
-> > > +       action->map_kernel.pages =3D pages;
-> > > +       action->map_kernel.nr_pages =3D nr_pages;
-> > > +       action->map_kernel.pgoff =3D desc->pgoff;
-> > > +}
-> > > +
-> > > +/**
-> > > + * mmap_action_map_kernel_pages_full - helper for mmap_prepare hook =
-to specify that
-> > > + * kernel pages contained in the @pages array should be mapped to us=
-erland
-> > > + * from @desc->start to @desc->end.
-> > > + * @desc: The VMA descriptor for the VMA requiring kernel pags to be=
- mapped.
-> > > + * @pages: An array of struct page pointers describing the memory to=
- map.
-> > > + *
-> > > + * The caller must ensure that @pages contains sufficient entries to=
- cover the
-> > > + * entire range described by @desc.
-> > > + */
-> > > +static inline void mmap_action_map_kernel_pages_full(struct vm_area_=
-desc *desc,
-> > > +               struct page **pages)
-> > > +{
-> > > +       mmap_action_map_kernel_pages(desc, desc->start, pages,
-> > > +                                    vma_desc_pages(desc));
-> > > +}
-> > > +
-> > >  int mmap_action_prepare(struct vm_area_desc *desc);
-> > >  int mmap_action_complete(struct vm_area_struct *vma,
-> > >                          struct mmap_action *action);
-> > > @@ -4380,10 +4419,59 @@ static inline struct vm_area_struct *find_exa=
-ct_vma(struct mm_struct *mm,
-> > >         return vma;
-> > >  }
+> > > Ok, this changes the set of the operations performed under image[mino=
+r].mutex.
+> > > Before we had:
 > > >
-> > > +/**
-> > > + * range_is_subset - Is the specified inner range a subset of the ou=
-ter range?
-> > > + * @outer_start: The start of the outer range.
-> > > + * @outer_end: The exclusive end of the outer range.
-> > > + * @inner_start: The start of the inner range.
-> > > + * @inner_end: The exclusive end of the inner range.
-> > > + *
-> > > + * Returns: %true if [inner_start, inner_end) is a subset of [outer_=
-start,
-> > > + * outer_end), otherwise %false.
-> > > + */
-> > > +static inline bool range_is_subset(unsigned long outer_start,
-> > > +                                  unsigned long outer_end,
-> > > +                                  unsigned long inner_start,
-> > > +                                  unsigned long inner_end)
-> > > +{
-> > > +       return outer_start <=3D inner_start && inner_end <=3D outer_e=
-nd;
-> > > +}
-> > > +
-> > > +/**
-> > > + * range_in_vma - is the specified [@start, @end) range a subset of =
-the VMA?
-> > > + * @vma: The VMA against which we want to check [@start, @end).
-> > > + * @start: The start of the range we wish to check.
-> > > + * @end: The exclusive end of the range we wish to check.
-> > > + *
-> > > + * Returns: %true if [@start, @end) is a subset of [@vma->vm_start,
-> > > + * @vma->vm_end), %false otherwise.
-> > > + */
-> > >  static inline bool range_in_vma(const struct vm_area_struct *vma,
-> > >                                 unsigned long start, unsigned long en=
-d)
-> > >  {
-> > > -       return (vma && vma->vm_start <=3D start && end <=3D vma->vm_e=
-nd);
-> > > +       if (!vma)
-> > > +               return false;
-> > > +
-> > > +       return range_is_subset(vma->vm_start, vma->vm_end, start, end=
+> > > mutex_lock(&image[minor].mutex);
+> > > vme_master_mmap();
+> > > <some final adjustments>
+> > > mutex_unlock(&image[minor].mutex);
+> > >
+> > > Now we have:
+> > >
+> > > mutex_lock(&image[minor].mutex);
+> > > vme_master_mmap_prepare()
+> > > mutex_unlock(&image[minor].mutex);
+> > > vm_iomap_memory();
+> > > mutex_lock(&image[minor].mutex);
+> > > vme_user_vm_mapped(); // <some final adjustments>
+> > > mutex_unlock(&image[minor].mutex);
+> > >
+> > > I think as long as image[minor] does not change while we are not
+> > > holding the mutex we should be safe, and looking at the code it seems
+> > > to be the case. But I'm not familiar with this driver and might be
+> > > wrong. Worth double-checking.
+>
+> The file is pinned for the duration, the mutex is associated with the fil=
+e,
+> so there's no sane world in which that could be problematic.
+>
+> Keeping in mind that we manipulate stuff on vme_user_vm_close() that
+> directly acceses image[minor] at an arbitary time.
+
+That was my understanding as well. Thanks for confirming.
+
+>
+> >
+> > A side note: if we had to hold the mutex across all those operations I
+> > think we would need to take the mutex in the vm_ops->mmap_prepare and
+> > add a vm_ops->map_failed hook or something along that line to drop the
+> > mutex in case mmap_action_complete() fails. Not sure if we will have
+> > such cases though...
+>
+> No, I don't want to do this if it can be at all avoided. You should in
+> nearly any sane circumstance be able to defer things until the mapped hoo=
+k
+> anyway.
+>
+> Also a merge can happen too after an .mmap_prepare, so we'd have to have
+> some 'success' hook and I'm just not going there it'll end up open to abu=
+se
+> again.
+>
+> (We do have success and error filtering hooks right now, sadly, but they'=
+re
+> really for hugetlb and I plan to find a way to get rid of them).
+>
+> The mmap_prepare is meant to essentially be as stateless as possible.
+
+Yes, I also hope we won't encounter cases requiring us to keep any
+state information between the mmap_prepare and mapped stages.
+
+>
+> Anyway I don't think it's relevant here.
+>
+> >
+> > >
+> > > >         vma_priv =3D kmalloc_obj(*vma_priv);
+> > > >         if (!vma_priv) {
+> > > >                 mutex_unlock(&image[minor].mutex);
+> > > > @@ -472,22 +462,41 @@ static int vme_user_master_mmap(unsigned int =
+minor, struct vm_area_struct *vma)
+> > > >
+> > > >         vma_priv->minor =3D minor;
+> > > >         refcount_set(&vma_priv->refcnt, 1);
+> > > > -       vma->vm_ops =3D &vme_user_vm_ops;
+> > > > -       vma->vm_private_data =3D vma_priv;
+> > > > -
+> > > > +       *vm_private_data =3D vma_priv;
+> > > >         image[minor].mmap_count++;
+> > > >
+> > > >         mutex_unlock(&image[minor].mutex);
+> > > > -
+> > > >         return 0;
+> > > >  }
+> > > >
+> > > > -static int vme_user_mmap(struct file *file, struct vm_area_struct =
+*vma)
+> > > > +static const struct vm_operations_struct vme_user_vm_ops =3D {
+> > > > +       .mapped =3D vme_user_vm_mapped,
+> > > > +       .open =3D vme_user_vm_open,
+> > > > +       .close =3D vme_user_vm_close,
+> > > > +};
+> > > > +
+> > > > +static int vme_user_master_mmap_prepare(unsigned int minor,
+> > > > +                                       struct vm_area_desc *desc)
+> > > > +{
+> > > > +       int err;
+> > > > +
+> > > > +       mutex_lock(&image[minor].mutex);
+> > > > +
+> > > > +       err =3D vme_master_mmap_prepare(image[minor].resource, desc=
 );
-> > > +}
-> > > +
-> > > +/**
-> > > + * range_in_vma_desc - is the specified [@start, @end) range a subse=
-t of the VMA
-> > > + * described by @desc, a VMA descriptor?
-> > > + * @desc: The VMA descriptor against which we want to check [@start,=
- @end).
-> > > + * @start: The start of the range we wish to check.
-> > > + * @end: The exclusive end of the range we wish to check.
-> > > + *
-> > > + * Returns: %true if [@start, @end) is a subset of [@desc->start, @d=
-esc->end),
-> > > + * %false otherwise.
-> > > + */
-> > > +static inline bool range_in_vma_desc(const struct vm_area_desc *desc=
-,
-> > > +                                    unsigned long start, unsigned lo=
-ng end)
-> > > +{
-> > > +       if (!desc)
-> > > +               return false;
-> > > +
-> > > +       return range_is_subset(desc->start, desc->end, start, end);
-> > >  }
-> > >
-> > >  #ifdef CONFIG_MMU
-> > > @@ -4427,6 +4515,9 @@ int remap_pfn_range(struct vm_area_struct *vma,=
- unsigned long addr,
-> > >  int vm_insert_page(struct vm_area_struct *, unsigned long addr, stru=
-ct page *);
-> > >  int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
-> > >                         struct page **pages, unsigned long *num);
-> > > +int map_kernel_pages_prepare(struct vm_area_desc *desc);
-> > > +int map_kernel_pages_complete(struct vm_area_struct *vma,
-> > > +                             struct mmap_action *action);
-> > >  int vm_map_pages(struct vm_area_struct *vma, struct page **pages,
-> > >                                 unsigned long num);
-> > >  int vm_map_pages_zero(struct vm_area_struct *vma, struct page **page=
-s,
-> > > diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-> > > index 7538d64f8848..c46224020a46 100644
-> > > --- a/include/linux/mm_types.h
-> > > +++ b/include/linux/mm_types.h
-> > > @@ -815,6 +815,7 @@ enum mmap_action_type {
-> > >         MMAP_REMAP_PFN,         /* Remap PFN range. */
-> > >         MMAP_IO_REMAP_PFN,      /* I/O remap PFN range. */
-> > >         MMAP_SIMPLE_IO_REMAP,   /* I/O remap with guardrails. */
-> > > +       MMAP_MAP_KERNEL_PAGES,  /* Map kernel page range from array. =
-*/
-> > >  };
-> > >
-> > >  /*
-> > > @@ -833,6 +834,12 @@ struct mmap_action {
-> > >                         phys_addr_t start_phys_addr;
-> > >                         unsigned long size;
-> > >                 } simple_ioremap;
-> > > +               struct {
-> > > +                       unsigned long start;
-> > > +                       struct page **pages;
-> > > +                       unsigned long nr_pages;
-> > > +                       pgoff_t pgoff;
-> > > +               } map_kernel;
-> > >         };
-> > >         enum mmap_action_type type;
-> > >
-> > > diff --git a/mm/memory.c b/mm/memory.c
-> > > index f3f4046aee97..849d5d9eeb83 100644
-> > > --- a/mm/memory.c
-> > > +++ b/mm/memory.c
-> > > @@ -2484,13 +2484,14 @@ static int insert_pages(struct vm_area_struct=
- *vma, unsigned long addr,
-> > >  int vm_insert_pages(struct vm_area_struct *vma, unsigned long addr,
-> > >                         struct page **pages, unsigned long *num)
-> > >  {
-> > > -       const unsigned long end_addr =3D addr + (*num * PAGE_SIZE) - =
-1;
-> > > +       const unsigned long nr_pages =3D *num;
-> > > +       const unsigned long end =3D addr + PAGE_SIZE * nr_pages;
-> > >
-> > > -       if (addr < vma->vm_start || end_addr >=3D vma->vm_end)
-> > > +       if (!range_in_vma(vma, addr, end))
-> > >                 return -EFAULT;
-> > >         if (!(vma->vm_flags & VM_MIXEDMAP)) {
-> > > -               BUG_ON(mmap_read_trylock(vma->vm_mm));
-> > > -               BUG_ON(vma->vm_flags & VM_PFNMAP);
-> > > +               VM_WARN_ON_ONCE(mmap_read_trylock(vma->vm_mm));
-> > > +               VM_WARN_ON_ONCE(vma->vm_flags & VM_PFNMAP);
-> > >                 vm_flags_set(vma, VM_MIXEDMAP);
-> > >         }
-> > >         /* Defer page refcount checking till we're about to map that =
-page. */
-> > > @@ -2498,6 +2499,39 @@ int vm_insert_pages(struct vm_area_struct *vma=
-, unsigned long addr,
-> > >  }
-> > >  EXPORT_SYMBOL(vm_insert_pages);
-> > >
-> > > +int map_kernel_pages_prepare(struct vm_area_desc *desc)
-> > > +{
-> > > +       const struct mmap_action *action =3D &desc->action;
-> > > +       const unsigned long addr =3D action->map_kernel.start;
-> > > +       unsigned long nr_pages, end;
-> > > +
-> > > +       if (!vma_desc_test(desc, VMA_MIXEDMAP_BIT)) {
-> > > +               VM_WARN_ON_ONCE(mmap_read_trylock(desc->mm));
-> > > +               VM_WARN_ON_ONCE(vma_desc_test(desc, VMA_PFNMAP_BIT));
-> > > +               vma_desc_set_flags(desc, VMA_MIXEDMAP_BIT);
-> > > +       }
-> > > +
-> > > +       nr_pages =3D action->map_kernel.nr_pages;
-> > > +       end =3D addr + PAGE_SIZE * nr_pages;
-> > > +       if (!range_in_vma_desc(desc, addr, end))
-> > > +               return -EFAULT;
-> > > +
-> > > +       return 0;
-> > > +}
-> > > +EXPORT_SYMBOL(map_kernel_pages_prepare);
-> > > +
-> > > +int map_kernel_pages_complete(struct vm_area_struct *vma,
-> > > +                             struct mmap_action *action)
-> > > +{
-> > > +       unsigned long nr_pages;
-> > > +
-> > > +       nr_pages =3D action->map_kernel.nr_pages;
-> > > +       return insert_pages(vma, action->map_kernel.start,
-> > > +                           action->map_kernel.pages,
-> > > +                           &nr_pages, vma->vm_page_prot);
-> > > +}
-> > > +EXPORT_SYMBOL(map_kernel_pages_complete);
-> > > +
-> > >  /**
-> > >   * vm_insert_page - insert single page into user vma
-> > >   * @vma: user vma to map to
-> > > diff --git a/mm/util.c b/mm/util.c
-> > > index a166c48fe894..dea590e7a26c 100644
-> > > --- a/mm/util.c
-> > > +++ b/mm/util.c
-> > > @@ -1441,6 +1441,8 @@ int mmap_action_prepare(struct vm_area_desc *de=
-sc)
-> > >                 return io_remap_pfn_range_prepare(desc);
-> > >         case MMAP_SIMPLE_IO_REMAP:
-> > >                 return simple_ioremap_prepare(desc);
-> > > +       case MMAP_MAP_KERNEL_PAGES:
-> > > +               return map_kernel_pages_prepare(desc);
-> > >         }
-> > >
-> > >         WARN_ON_ONCE(1);
-> > > @@ -1472,6 +1474,9 @@ int mmap_action_complete(struct vm_area_struct =
-*vma,
-> > >         case MMAP_IO_REMAP_PFN:
-> > >                 err =3D io_remap_pfn_range_complete(vma, action);
-> > >                 break;
-> > > +       case MMAP_MAP_KERNEL_PAGES:
-> > > +               err =3D map_kernel_pages_complete(vma, action);
-> > > +               break;
-> > >         case MMAP_SIMPLE_IO_REMAP:
-> > >                 /*
-> > >                  * The simple I/O remap should have been delegated to=
- an I/O
-> > > @@ -1494,6 +1499,7 @@ int mmap_action_prepare(struct vm_area_desc *de=
-sc)
-> > >         case MMAP_REMAP_PFN:
-> > >         case MMAP_IO_REMAP_PFN:
-> > >         case MMAP_SIMPLE_IO_REMAP:
-> > > +       case MMAP_MAP_KERNEL_PAGES:
-> > >                 WARN_ON_ONCE(1); /* nommu cannot handle these. */
-> > >                 break;
-> > >         }
-> > > diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/incl=
-ude/dup.h
-> > > index 6658df26698a..4407caf207ad 100644
-> > > --- a/tools/testing/vma/include/dup.h
-> > > +++ b/tools/testing/vma/include/dup.h
-> > > @@ -454,6 +454,7 @@ enum mmap_action_type {
-> > >         MMAP_REMAP_PFN,         /* Remap PFN range. */
-> > >         MMAP_IO_REMAP_PFN,      /* I/O remap PFN range. */
-> > >         MMAP_SIMPLE_IO_REMAP,   /* I/O remap with guardrails. */
-> > > +       MMAP_MAP_KERNEL_PAGES,  /* Map kernel page range from an arra=
-y. */
-> > >  };
-> > >
-> > >  /*
-> > > @@ -472,6 +473,12 @@ struct mmap_action {
-> > >                         phys_addr_t start;
-> > >                         unsigned long len;
-> > >                 } simple_ioremap;
-> > > +               struct {
-> > > +                       unsigned long start;
-> > > +                       struct page **pages;
-> > > +                       unsigned long num;
-> > > +                       pgoff_t pgoff;
-> > > +               } map_kernel;
-> > >         };
-> > >         enum mmap_action_type type;
-> > >
-> > > --
-> > > 2.53.0
-> > >
+> > > > +       if (!err)
+> > > > +               desc->vm_ops =3D &vme_user_vm_ops;
+> > > > +
+> > > > +       mutex_unlock(&image[minor].mutex);
+> > > > +       return err;
+> > > > +}
+> > > > +
+> > > > +static int vme_user_mmap_prepare(struct vm_area_desc *desc)
+> > > >  {
+> > > > -       unsigned int minor =3D iminor(file_inode(file));
+> > > > +       const struct file *file =3D desc->file;
+> > > > +       const unsigned int minor =3D iminor(file_inode(file));
+> > > >
+> > > >         if (type[minor] =3D=3D MASTER_MINOR)
+> > > > -               return vme_user_master_mmap(minor, vma);
+> > > > +               return vme_user_master_mmap_prepare(minor, desc);
+> > > >
+> > > >         return -ENODEV;
+> > > >  }
+> > > > @@ -498,7 +507,7 @@ static const struct file_operations vme_user_fo=
+ps =3D {
+> > > >         .llseek =3D vme_user_llseek,
+> > > >         .unlocked_ioctl =3D vme_user_unlocked_ioctl,
+> > > >         .compat_ioctl =3D compat_ptr_ioctl,
+> > > > -       .mmap =3D vme_user_mmap,
+> > > > +       .mmap_prepare =3D vme_user_mmap_prepare,
+> > > >  };
+> > > >
+> > > >  static int vme_user_match(struct vme_dev *vdev)
+> > > > --
+> > > > 2.53.0
+> > > >
+>
+> Cheers, Lorenzo
