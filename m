@@ -1,171 +1,116 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1260B38645C;
-	Mon, 23 Mar 2026 09:13:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0083B3BC675;
+	Mon, 23 Mar 2026 17:13:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774257189; cv=none; b=IAMoIWp50673lX7OldzuRG0xhq1aOEoavrH2k18cJQNaGBO2KEcEjoe30rvsm8zP2qVXcubCUDDH4gU3hfGLUwhdb7SFjQGoNFxFJryEKqulPUlwI08yNhdy2xZUSwwA4+z5LcJrtLRRJjhztv6leVIEMgpRxIDbrN9KcIPvIPw=
+	t=1774285999; cv=none; b=AWVp2dMq7rnJaM+yXxxWT1Viv4z/qoFHW7RXz/7vIa1gFkqOYgfABlfBjGx43Kvocv7pOqAUMV1J1jtfOMC3UNBUaibjuXq+ZSgUrRANi/wm/qDoiLkpasWEFX1jb8GaxEQKH/yF+glKXPwVvT7nfhTHV8BEYRnLGeyywRgDwJk=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774257189; c=relaxed/simple;
-	bh=wzMrqKx3Jtzn/TAs56FycVP5WjxG7mSofPlph6puuTE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=d/6cb/WTHpRio3DUgEoymf65kGKM/au8CA4Uq5/BbqZzTJf87+0opctAdhyFO8MSHkafnHCXcFT2J9npxeUdeo4eq5R4siGPzTbjZWQUA3u9Xbu5xu9aAouUujc7U9/nSwmImCxldAajJrEIaALUNQnxn8f835rOUXQC8WENpZk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=joSxwlsp; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1774285999; c=relaxed/simple;
+	bh=1JjfQIefbX2x/ba5+AeqfI25QXPGtXLx4C3d3g3JSiE=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=RahBXSsBLIqh8aOalWCHey5LUa7qbeJSOdr3jPOLbVCkCSg2UILHP+qQY4FwXdg+AVNJGkz/jdxgfdMgdtaBMYR0/BJcyfynwIV9kwxW4md9g7MkjsyX2A8kZW+xZvmQjFKPVPS5BzIRuVETlBHIO+xXYzXtbmFJ2DEsHrwPJRI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=rGQHNF63; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="joSxwlsp"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06702C4CEF7;
-	Mon, 23 Mar 2026 09:13:08 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="rGQHNF63"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B503C4CEF7;
+	Mon, 23 Mar 2026 17:13:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774257188;
-	bh=wzMrqKx3Jtzn/TAs56FycVP5WjxG7mSofPlph6puuTE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=joSxwlspVhKYcgE4zizMzEupkVxH7zBoRt16ItgpGqtktF8hLPrEEOTxfgh4aRR46
-	 H0U9alpLsA83SdovjY4NjT0S8IVfoGCFHfdV08wBojK7QatPitGsHroy+nurmzIUo5
-	 9LTrYrheRCty7XcM5Hdcd35jJVYk4YzX2FwqnAgbFVPaee1S/zk0OOYbb6dWKe54SV
-	 Qejn61X7CFhOqRsAbeUsXpGiEPrzUHGPx8hpLYNbDN7Ghgx9DVL33kddcsAYc4j5Sz
-	 AmCzqaip3eo7Xnd8PbIQkYXGzXvvJm8fegMwy8XoqhfyH8Ytxfa3hUrWvBicIE9Bu0
-	 C1NjdvWhW+Gjw==
-Date: Mon, 23 Mar 2026 09:13:06 +0000
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: Michael Kelley <mhklinux@outlook.com>
-Cc: Long Li <longli@microsoft.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Clemens Ladisch <clemens@ladisch.de>, Arnd Bergmann <arnd@arndb.de>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "K . Y . Srinivasan" <kys@microsoft.com>, 
-	Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>, 
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
-	Alexandre Torgue <alexandre.torgue@foss.st.com>, Miquel Raynal <miquel.raynal@bootlin.com>, 
-	Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
-	Bodo Stroesser <bostroesser@gmail.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, 
-	David Howells <dhowells@redhat.com>, Marc Dionne <marc.dionne@auristor.com>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
-	David Hildenbrand <david@kernel.org>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
-	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jann Horn <jannh@google.com>, 
-	Pedro Falcato <pfalcato@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
-	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, 
-	"linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>, 
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, 
-	"linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, 
-	"target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-afs@lists.infradead.org" <linux-afs@lists.infradead.org>, 
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, 
-	Ryan Roberts <ryan.roberts@arm.com>
-Subject: Re: [PATCH v4 18/21] drivers: hv: vmbus: replace deprecated mmap
- hook with mmap_prepare
-Message-ID: <409ff1b0-43ff-4b1d-ad07-7624e0817640@lucifer.local>
-References: <cover.1774045440.git.ljs@kernel.org>
- <05467cb62267d750e5c770147517d4df0246cda6.1774045440.git.ljs@kernel.org>
- <SN6PR02MB41573DF211DA2469D7FFE892D44BA@SN6PR02MB4157.namprd02.prod.outlook.com>
+	s=k20201202; t=1774285998;
+	bh=1JjfQIefbX2x/ba5+AeqfI25QXPGtXLx4C3d3g3JSiE=;
+	h=From:To:Cc:Subject:Date:From;
+	b=rGQHNF63n7kvAEvkpxqJk8Wc5RpYvxFj9IXtfv2K9I/4kezqokyX1gKnqfXYYjysz
+	 ijpA+07Cyh6NHX55z7MRHLBUEaOMxDEe6AERaKLzy4nlzuGzyJF/8S9418GBAf8LdB
+	 K3TUxenhzO98TNxs1Wg89bBmpD3LCkQHRXXF8aT+ZWWc8gb5ZFZUXwhqkEvUzPixPP
+	 0O+aXUkv0+qawWVJMQwfWa+GdFhrAsVEieYa7kt3qkkMTK2QFPHTlgU3s9mlB0FKI0
+	 P4Uuhrr+02+j5FSO5Pd7PmETjMPL6vRwk9EnVRMLVfgGAOAPZM5Z/qROFsptgZAPdk
+	 bOfftaj7+cdVw==
+From: Kees Cook <kees@kernel.org>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Kees Cook <kees@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: [PATCH] scsi: target: Replace strncpy() with strscpy() in VPD dump functions
+Date: Mon, 23 Mar 2026 10:13:15 -0700
+Message-Id: <20260323171311.work.101-kees@kernel.org>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <SN6PR02MB41573DF211DA2469D7FFE892D44BA@SN6PR02MB4157.namprd02.prod.outlook.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2203; i=kees@kernel.org; h=from:subject:message-id; bh=1JjfQIefbX2x/ba5+AeqfI25QXPGtXLx4C3d3g3JSiE=; b=owGbwMvMwCVmps19z/KJym7G02pJDJkHS1b/7d+ZHXA/YeWT3ZOlqj2lPS8XR+WeDxBJl/S7c XdTk6lURykLgxgXg6yYIkuQnXuci8fb9nD3uYowc1iZQIYwcHEKwETuX2L4K1zu3PB+tYfNd9lC uVm/rc5dcA/YYDbtXpJz9ZI7x3+Fr2X4XxXP2Cv6e+Xj9uTAvlNTTp/Zuy7z3qlDYZ1KzzLjH22 6ygwA
+X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
+Content-Transfer-Encoding: 8bit
 
-On Mon, Mar 23, 2026 at 04:16:20AM +0000, Michael Kelley wrote:
-> From: Lorenzo Stoakes (Oracle) <ljs@kernel.org> Sent: Friday, March 20, 2026 3:40 PM
-> >
-> > The f_op->mmap interface is deprecated, so update the vmbus driver to use
-> > its successor, mmap_prepare.
-> >
-> > This updates all callbacks which referenced the function pointer
-> > hv_mmap_ring_buffer to instead reference hv_mmap_prepare_ring_buffer,
-> > utilising the newly introduced compat_set_desc_from_vma() and
-> > __compat_vma_mmap() to be able to implement this change.
-> >
-> > The UIO HV generic driver is the only user of hv_create_ring_sysfs(),
-> > which is the only function which references
-> > vmbus_channel->mmap_prepare_ring_buffer which, in turn, is the only
-> > external interface to hv_mmap_prepare_ring_buffer.
-> >
-> > This patch therefore updates this caller to use mmap_prepare instead,
-> > which also previously used vm_iomap_memory(), so this change replaces it
-> > with its mmap_prepare equivalent, mmap_action_simple_ioremap().
-> >
-> > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
-> > ---
-> >  drivers/hv/hyperv_vmbus.h    |  4 ++--
-> >  drivers/hv/vmbus_drv.c       | 31 +++++++++++++++++++------------
-> >  drivers/uio/uio_hv_generic.c | 11 ++++++-----
-> >  include/linux/hyperv.h       |  4 ++--
-> >  4 files changed, 29 insertions(+), 21 deletions(-)
-> >
->
-> There are two mmap() code paths in the Hyper-V UIO code. One path is
-> to mmap() the file descriptor for /dev/uio<n>, and the other is to mmap()
-> the "ring" entry under /sys/devices/vmbus/devices/<uuid>. The former is
-> done by uio_mmap(), and the latter by hv_uio_ring_mmap_prepare().
->
-> I tested both these paths using a combination of two methods in a
-> x86/x64 VM on Hyper-V:
->
-> 1) Using the fcopy daemon, which maps the ring buffer for the primary
-> channel and sends/receives messages with the Hyper-V host. This
-> method tests only the 1st path because the fcopy daemon doesn't create
-> any subchannels that would use the "ring" entry.
->
-> 2) Using a custom-built test program. This program doesn't communicate
-> with the Hyper-V host, but allows mostly verifying both code paths for the
-> primary channel. As a sanity check, it verifies that the two mmaps are
-> mapping the same memory, as expected.
->
-> As such,
->
-> Reviewed-by: Michael Kelley <mhklinux@outlook.com>
-> Tested-by: Michael Kelley <mhklinux@outlook.com>
+Replace the deprecated[1] strncpy() with strscpy() in
+transport_dump_vpd_proto_id(), transport_dump_vpd_assoc(),
+transport_dump_vpd_ident_type(), and transport_dump_vpd_ident().
 
-Perfect, thanks so much for this!
+All four functions follow the same pattern: a local
+buf[VPD_TMP_BUF_SIZE] (254 bytes) is zeroed with memset(), populated
+via sprintf()/snprintf() (always NUL-terminated), then conditionally
+copied to p_buf with strncpy(). The p_buf destination is used as a
+C string by all callers in target_core_configfs.c: strlen(buf) and
+sprintf(page+len, "%s", buf) to build sysfs output.
 
-It is tricky for me to test these, beyond fairly exhaustive logical
-confirmation of equivalence, so this is _hugely_ helpful.
+NUL-padding is not required: callers in target_core_configfs.c
+pre-zero p_buf with memset() or initializer before calling these
+functions, and consume p_buf only as a NUL-terminated C string via
+strlen() and "%s", never exposing trailing bytes.
 
->
-> The most robust test would be to run DPDK networking against
-> UIO, as it would communicate with the Hyper-V host and use
-> multiple subchannels that resulting in mmap'ing the "ring"
-> entry under /sys.
->
-> @Long Li -- I'll leave it to your discretion as to whether you want
-> to test DPDK against these mmap() changes.
+No behavioral change: the source buf is always NUL-terminated and
+shorter than VPD_TMP_BUF_SIZE, so strscpy() produces identical output.
 
-Thanks in advance for taking a look on this also!
+Link: https://github.com/KSPP/linux/issues/90 [1]
+Signed-off-by: Kees Cook <kees@kernel.org>
+---
+ drivers/target/target_core_transport.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
->
-> I've noted one minor issue below.
->
-> [snip]
->
-> --- a/include/linux/hyperv.h
-> +++ b/include/linux/hyperv.h
-> @@ -1015,8 +1015,8 @@ struct vmbus_channel {
->  	/* The max size of a packet on this channel */
->  	u32 max_pkt_size;
->
-> -	/* function to mmap ring buffer memory to the channel's sysfs ring attribute */
-> -	int (*mmap_ring_buffer)(struct vmbus_channel *channel, struct vm_area_struct *vma);
-> +	/* function to mmap_prepare ring buffer memory to the channel's sysfs ring attribute */
->
-> Changing the comment from "mmap ring buffer" to "mmap_prepare ring buffer"
-> produces awkward wording since "mmap" is used here as a verb.  It might be better
-> to just leave the comment unchanged.
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index a7330c4fedde..a1b8f581185e 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1112,7 +1112,7 @@ void transport_dump_vpd_proto_id(
+ 	}
+ 
+ 	if (p_buf)
+-		strncpy(p_buf, buf, p_buf_len);
++		strscpy(p_buf, buf, p_buf_len);
+ 	else
+ 		pr_debug("%s", buf);
+ }
+@@ -1162,7 +1162,7 @@ int transport_dump_vpd_assoc(
+ 	}
+ 
+ 	if (p_buf)
+-		strncpy(p_buf, buf, p_buf_len);
++		strscpy(p_buf, buf, p_buf_len);
+ 	else
+ 		pr_debug("%s", buf);
+ 
+@@ -1222,7 +1222,7 @@ int transport_dump_vpd_ident_type(
+ 	if (p_buf) {
+ 		if (p_buf_len < strlen(buf)+1)
+ 			return -EINVAL;
+-		strncpy(p_buf, buf, p_buf_len);
++		strscpy(p_buf, buf, p_buf_len);
+ 	} else {
+ 		pr_debug("%s", buf);
+ 	}
+@@ -1276,7 +1276,7 @@ int transport_dump_vpd_ident(
+ 	}
+ 
+ 	if (p_buf)
+-		strncpy(p_buf, buf, p_buf_len);
++		strscpy(p_buf, buf, p_buf_len);
+ 	else
+ 		pr_debug("%s", buf);
+ 
+-- 
+2.34.1
 
-Sure am happy with that of course, I think Sashiko moaned about this but
-it's obviously fine either way.
-
-Andrew - do you mind restoring the comment to its original form above? Thanks!
-
->
-> Michael
->
->
-> +	int (*mmap_prepare_ring_buffer)(struct vmbus_channel *channel, struct vm_area_desc *desc);
->
->  	/* boolean to control visibility of sysfs for ring buffer */
->  	bool ring_sysfs_visible;
-
-Cheers, Lorenzo
