@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D0A93A3817;
-	Wed, 25 Mar 2026 10:35:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D932C26059D;
+	Wed, 25 Mar 2026 13:43:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774434904; cv=none; b=bhdS8vBz1BYbtBiJdTIH2sVYq8ONzzYPR2HbmkPifooeEifNtE/d4O2g5t4IGCW9YRH0z3KepsYvMmdpCFmYyGemfZLWwvzb1Sd8r5NY3t18PVsYlB2FhYGLL5DHg915iAS8/hIpsncKQDFPZ8fPkYmyA4EMWodHsZ99b1Qty/A=
+	t=1774446207; cv=none; b=hzyQUWEYGgqsUyOsWz+mXnGCeBOLqUkPWTxRR6E8FXKVpTfYWQ3OT62w6s0aX3MeZpsV0ZkdvzJ2hOBYiUgwo2hlAyCALyOGLlAFrR6OoY8yQ1xXzHtGFs0xrg6ydV75z66GZeLUugdtGj6MwQC1f1MNU0QhMzc0zjs5Tm4mRvE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774434904; c=relaxed/simple;
-	bh=+W7AYaAXVw1i2DYITazSh58FngLmUYCv1t3fq5pVTRU=;
+	s=arc-20240116; t=1774446207; c=relaxed/simple;
+	bh=qxevTlxq6Ql+gdnUMuEobyzjtUWmEQEM7p+9cyL1w4Y=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PYBWbnb8+Ba6pysZ+eIyrXT+0pqlHIhEbYXaK8xopzgn07rtcSLiEuWhfhGo8Tg4E194+WjmUutfhWlJZjVm8RLKz2f16COP3YfySn4/eK/1thyRZ+7yZ5tWBECWbkFUQx0nCfzbaazrSx0Ay4Gru5o+ofCd97+th5XikYLCUXM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XyqtwD0B; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=iyVlo3Ud0xUhltiKXyMFHGmRHDprH9mcG2wTLVSK4Smc0eKKLse+Nggo13gdZ3n905g7nbL1ZejenwCFMH7IDF5AiGaphiz1REvDnY+kL7tc+kDNGlWfpA7TTlRA3W3ksn3Sy7CQ6etqmWp53DIwyyQGqdcjdqsE1E3EJBoiHC8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ODtAzKp5; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XyqtwD0B"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DEB41C4CEF7;
-	Wed, 25 Mar 2026 10:34:55 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ODtAzKp5"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A6BBC4CEF7;
+	Wed, 25 Mar 2026 13:43:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774434904;
-	bh=+W7AYaAXVw1i2DYITazSh58FngLmUYCv1t3fq5pVTRU=;
+	s=k20201202; t=1774446207;
+	bh=qxevTlxq6Ql+gdnUMuEobyzjtUWmEQEM7p+9cyL1w4Y=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=XyqtwD0BVJpUUEeIxQNuop7kP0eDlwdduGR8d5uf2MwwJPd+cw307oTk9Phhs8x3l
-	 Hh6rIELrW6PhJt0RPyJGSFPMzadyDZwsObuPFoqXKHX/qCFcrK66BtKCtHaH7HSpF+
-	 0NGL1KxEeCeVDvLkU166GKoCMV5sPI0Hq9RLohb9yNUsRArIsKfhzMbamkj//nH3YJ
-	 4ug/r3J4vaM4CSS0e7WBb9VfoiGQ7drIOGpXk5kZ8oqKTpFew/rcW80Y1ZfDDm0HKl
-	 tIqVPpHAE7k98Loz1LnKsoU5+bfkVjx6lxzQNcGzna+siEzTrHVlZuoNwTrwpSF67C
-	 HbfXsN+/yyUDQ==
-Message-ID: <ec28f19e-072f-4f26-ad6b-feadf7a88dfc@kernel.org>
-Date: Wed, 25 Mar 2026 11:34:54 +0100
+	b=ODtAzKp5cU4HDdomvw7sjdSs8IHMAYOOSxEs2h/rRrufXoBx4l+v61cnqidyuTOjR
+	 iyslCByJgqr+gYe1bpcw+qjFkLYUy2aJBCrTv7KOx+rg/9hq5C1zQTvm6a8/0OKmDp
+	 xXjVE9RyRH1deEzegZ4TCsOnQVxdwZsSvAa9CCFcC5wjmHDMcU8HW+oBbiOik87SmN
+	 OLN8n4X7Jmzw1dtixKYNu9Iz2DUe+Au4CZmOQDmiYIkAkcjqZj1Bh791LYOoWgopPm
+	 B4loXaMgr7w3ShZ9dyeuoE2TY9qrf2WGjX+ihaHCV+KkYfXDhqdALgObvmO/DiuGm3
+	 oZal5k+Xpk1qA==
+Message-ID: <bd916c05-504f-4d81-8020-45c5a563a2d8@kernel.org>
+Date: Wed, 25 Mar 2026 14:43:17 +0100
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -35,8 +35,8 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 16/21] staging: vme_user: replace deprecated mmap hook
- with mmap_prepare
+Subject: Re: [PATCH v4 17/21] mm: allow handling of stacked mmap_prepare hooks
+ in more drivers
 Content-Language: en-US
 To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>
@@ -69,26 +69,80 @@ Cc: Jonathan Corbet <corbet@lwn.net>, Clemens Ladisch <clemens@ladisch.de>,
  linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
  Ryan Roberts <ryan.roberts@arm.com>
 References: <cover.1774045440.git.ljs@kernel.org>
- <08ecc1e1d319564fd49b9e9012f994edaff921db.1774045440.git.ljs@kernel.org>
+ <24aac3019dd34740e788d169fccbe3c62781e648.1774045440.git.ljs@kernel.org>
 From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-In-Reply-To: <08ecc1e1d319564fd49b9e9012f994edaff921db.1774045440.git.ljs@kernel.org>
+In-Reply-To: <24aac3019dd34740e788d169fccbe3c62781e648.1774045440.git.ljs@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 3/20/26 23:39, Lorenzo Stoakes (Oracle) wrote:
-> The f_op->mmap interface is deprecated, so update driver to use its
-> successor, mmap_prepare.
+> While the conversion of mmap hooks to mmap_prepare is underway, we will
+> encounter situations where mmap hooks need to invoke nested mmap_prepare
+> hooks.
 > 
-> The driver previously used vm_iomap_memory(), so this change replaces it
-> with its mmap_prepare equivalent, mmap_action_simple_ioremap().
+> The nesting of mmap hooks is termed 'stacking'.  In order to flexibly
+> facilitate the conversion of custom mmap hooks in drivers which stack, we
+> must split up the existing __compat_vma_mmap() function into two separate
+> functions:
 > 
-> Functions that wrap mmap() are also converted to wrap mmap_prepare()
-> instead.
+> * compat_set_desc_from_vma() - This allows the setting of a vm_area_desc
+>   object's fields to the relevant fields of a VMA.
 > 
-> Also update the documentation accordingly.
+> * __compat_vma_mmap() - Once an mmap_prepare hook has been executed upon a
+>   vm_area_desc object, this function performs any mmap actions specified by
+>   the mmap_prepare hook and then invokes its vm_ops->mapped() hook if any
+>   were specified.
 > 
-> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
+> In ordinary cases, where a file's f_op->mmap_prepare() hook simply needs
+> to be invoked in a stacked mmap() hook, compat_vma_mmap() can be used.
+> 
+> However some drivers define their own nested hooks, which are invoked in
+> turn by another hook.
+> 
+> A concrete example is vmbus_channel->mmap_ring_buffer(), which is invoked
+> in turn by bin_attribute->mmap():
+> 
+> vmbus_channel->mmap_ring_buffer() has a signature of:
+> 
+> int (*mmap_ring_buffer)(struct vmbus_channel *channel,
+> 			struct vm_area_struct *vma);
+> 
+> And bin_attribute->mmap() has a signature of:
+> 
+> 	int (*mmap)(struct file *, struct kobject *,
+> 		    const struct bin_attribute *attr,
+> 		    struct vm_area_struct *vma);
+> 
+> And so compat_vma_mmap() cannot be used here for incremental conversion of
+> hooks from mmap() to mmap_prepare().
+> 
+> There are many such instances like this, where conversion to mmap_prepare
+> would otherwise cascade to a huge change set due to nesting of this kind.
+> 
+> The changes in this patch mean we could now instead convert
+> vmbus_channel->mmap_ring_buffer() to
+> vmbus_channel->mmap_prepare_ring_buffer(), and implement something like:
+> 
+> 	struct vm_area_desc desc;
+> 	int err;
+> 
+> 	compat_set_desc_from_vma(&desc, file, vma);
+> 	err = channel->mmap_prepare_ring_buffer(channel, &desc);
+> 	if (err)
+> 		return err;
+> 
+> 	return __compat_vma_mmap(&desc, vma);
+> 
+> Allowing us to incrementally update this logic, and other logic like it.
+> 
+> Unfortunately, as part of this change, we need to be able to flexibly
+> assign to the VMA descriptor, so have to remove some of the const
+> declarations within the structure.
+> 
+> Also update the VMA tests to reflect the changes.
+> 
 > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 
 Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
+
 
