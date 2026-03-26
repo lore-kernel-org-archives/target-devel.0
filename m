@@ -1,33 +1,33 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 155DC3A63EB;
-	Wed, 25 Mar 2026 14:13:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6C60B749C;
+	Thu, 26 Mar 2026 10:44:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1774448000; cv=none; b=ov0TKir5/ohee+hllg5tLVHwEcq4iYUbaAXtFph1M7JjNE6FRtzC7aD9BbwmdPa8+/x+lcqxQEYKd1nP8nlgJCUKTI0wHDIIFepRSsyujvE9sTpeetRtQETTp8VPt4tHKWtrpJFCydUAmrGJZLfVkrFhpy2HZ7zxAL+l6qg1XVg=
+	t=1774521896; cv=none; b=Ta8SJcKU5m5kErwyHvWdOcQTfT/pvZmx4dnG6ynUJjBjK/rxE9zb/BJ2vg5TNOsML3QCvURPejh15K3mfTiKLzt3jJXTR4Mb2ePeTh0eULmebl0OxITcJlvR9y+6DrmkmXZZKvnkA4SjYBbbRANmaeZtR5zyksi0CkNWDW/S2NA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1774448000; c=relaxed/simple;
-	bh=O4KR79NA3w5wXHTjCgl3Y/eCUkwrrxsmxAb2QYX2GZc=;
+	s=arc-20240116; t=1774521896; c=relaxed/simple;
+	bh=RpHr2+xHkvht2/Kh3sSH7GYvx2wP6yqls3YE2NUO0rs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=opr6kouaeVF+z1GK4JEthZkM4BqFIEaUdFdyIc8uGXNloSOd/gcRQ/VnD+Ulvs8MWUUXgjZWfK5IVHrnHMYa7cXIp8ONh2goLvYK3jdNolmqtE/v34K4uv3uENpyGMTYrToseGI5vJGBKAaKG+1l3Lrws9PJtI4Rqsk86K4xnyw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=THeeRJa+; arc=none smtp.client-ip=10.30.226.201
+	 In-Reply-To:Content-Type; b=L+ySH7VldE7IM/sxtcv08E+x2t4YK6Z86pAKCYNk9vYXTqpmIpoTZlmcpHhmLwtWSOL94Hdtb9DVIl5cJh+oxBC6ScbEmCUAUyHTGBddjJW6nlbDNf4WaPqIa338ES8dJ78J2StmNQ+5Ar/sSgzN140J5HpLciYI8k26S9SBtAI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oZaElY+x; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="THeeRJa+"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2230C116C6;
-	Wed, 25 Mar 2026 14:13:11 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oZaElY+x"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE3B6C116C6;
+	Thu, 26 Mar 2026 10:44:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774447999;
-	bh=O4KR79NA3w5wXHTjCgl3Y/eCUkwrrxsmxAb2QYX2GZc=;
+	s=k20201202; t=1774521895;
+	bh=RpHr2+xHkvht2/Kh3sSH7GYvx2wP6yqls3YE2NUO0rs=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=THeeRJa+fvQrbUlWi1AzdB4xesJwfM/iMX3IW08X/F2tnmO2Sq9kSk/X2JbnvBwo+
-	 iPnryERXRmcoJKHw/RDO7vBm9UnM6P4u2a/TcWW6nfb0TUYORcveAXebJPr293zK4g
-	 +Ias1QKlEaBi/7zTZtA8JdEJ1rJD+alcOdsXxMvOub3PzN5vN6Q+XGM1CXkMhPMjr2
-	 Csb2YPWXjwzAvXrWoN0WUbuDkR+1/J4hY4VMkUm1BHPU75vVOYy14wxbfq7tTP5S66
-	 vlraXxz0FCKhIq2kJIQumHP3qwlqv9CrN5md/W0QopKDjxp/BTGH75Ssk1SU3JAold
-	 B+q4e2Bddgs5Q==
-Message-ID: <92042416-251e-43bf-b5a7-cfa9c826d020@kernel.org>
-Date: Wed, 25 Mar 2026 15:13:09 +0100
+	b=oZaElY+xwfixyAcqHZhLjm1kzqhHtlPlUH7GKOTLKXANwHDqMaG1z6XwK+kEQeLOE
+	 SYtBHHg37QOb54eq+UD8GrKX9hQ+eyixSzkh57jRU/1t5ChhlFDoLNFrhlvAUfv7T6
+	 sZWCKLLb7jN89LctiPPnWlgN5y78Qjx+/QHgsyWC0CQN+IMFUPMFgtvHlpiyUt+V5w
+	 LeoibiKN4Zw4L9hawiOfwt1apacVFOXRxXyuXI0ZqDVTae+0tk1tn7+8FIAI0IkO+2
+	 USwrP2P6UszCTljgKzyfk42RQc6SWYWgX+jwYahwV6HqPPop4F/WNeF9Jm9BcDKhq/
+	 SWL3RmCPKNuZQ==
+Message-ID: <0b479256-1266-4c9c-a565-6e2a68573ddd@kernel.org>
+Date: Thu, 26 Mar 2026 11:44:45 +0100
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -35,8 +35,7 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 19/21] uio: replace deprecated mmap hook with
- mmap_prepare in uio_info
+Subject: Re: [PATCH v4 20/21] mm: add mmap_action_map_kernel_pages[_full]()
 Content-Language: en-US
 To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>
@@ -69,55 +68,37 @@ Cc: Jonathan Corbet <corbet@lwn.net>, Clemens Ladisch <clemens@ladisch.de>,
  linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
  Ryan Roberts <ryan.roberts@arm.com>
 References: <cover.1774045440.git.ljs@kernel.org>
- <157583e4477705b496896c7acd4ac88a937b8fa6.1774045440.git.ljs@kernel.org>
+ <926ac961690d856e67ec847bee2370ab3c6b9046.1774045440.git.ljs@kernel.org>
 From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-In-Reply-To: <157583e4477705b496896c7acd4ac88a937b8fa6.1774045440.git.ljs@kernel.org>
+In-Reply-To: <926ac961690d856e67ec847bee2370ab3c6b9046.1774045440.git.ljs@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 3/20/26 23:39, Lorenzo Stoakes (Oracle) wrote:
-> The f_op->mmap interface is deprecated, so update uio_info to use its
-> successor, mmap_prepare.
+> A user can invoke mmap_action_map_kernel_pages() to specify that the
+> mapping should map kernel pages starting from desc->start of a specified
+> number of pages specified in an array.
 > 
-> Therefore, replace the uio_info->mmap hook with a new
-> uio_info->mmap_prepare hook, and update its one user, target_core_user,
-> to both specify this new mmap_prepare hook and also to use the new
-> vm_ops->mapped() hook to continue to maintain a correct udev->kref
-> refcount.
+> In order to implement this, adjust mmap_action_prepare() to be able to
+> return an error code, as it makes sense to assert that the specified
+> parameters are valid as quickly as possible as well as updating the VMA
+> flags to include VMA_MIXEDMAP_BIT as necessary.
 > 
-> Then update uio_mmap() to utilise the mmap_prepare compatibility layer to
-> invoke this callback from the uio mmap invocation.
+> This provides an mmap_prepare equivalent of vm_insert_pages().  We
+> additionally update the existing vm_insert_pages() code to use
+> range_in_vma() and add a new range_in_vma_desc() helper function for the
+> mmap_prepare case, sharing the code between the two in range_is_subset().
 > 
+> We add both mmap_action_map_kernel_pages() and
+> mmap_action_map_kernel_pages_full() to allow for both partial and full VMA
+> mappings.
+> 
+> We update the documentation to reflect the new features.
+> 
+> Finally, we update the VMA tests accordingly to reflect the changes.
+> 
+> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 
 Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
 
-> ---
->  drivers/target/target_core_user.c | 26 ++++++++++++++++++--------
->  drivers/uio/uio.c                 | 10 ++++++++--
->  include/linux/uio_driver.h        |  4 ++--
->  3 files changed, 28 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/target/target_core_user.c b/drivers/target/target_core_user.c
-> index af95531ddd35..edc2afd5f4ee 100644
-> --- a/drivers/target/target_core_user.c
-> +++ b/drivers/target/target_core_user.c
-> @@ -1860,6 +1860,17 @@ static struct page *tcmu_try_get_data_page(struct tcmu_dev *udev, uint32_t dpi)
->  	return NULL;
->  }
->  
-> +static int tcmu_vma_mapped(unsigned long start, unsigned long end, pgoff_t pgoff,
-> +			   const struct file *file, void **vm_private_data)
-> +{
-> +	struct tcmu_dev *udev = *vm_private_data;
-> +
-> +	pr_debug("vma_mapped\n");
-
-This looked like testing leftover at first, but it matches
-tcmu_vma_open()/close() (in case anyone else wonders).
-
-> +
-> +	kref_get(&udev->kref);
-> +	return 0;
-> +}
-> +
