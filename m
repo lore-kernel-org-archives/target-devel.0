@@ -1,125 +1,74 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from 011.lax.mailroute.net (011.lax.mailroute.net [199.89.1.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF615402450
-	for <target-devel@vger.kernel.org>; Wed,  1 Apr 2026 12:46:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B41B83D566D;
+	Wed,  1 Apr 2026 15:56:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.1.14
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775047596; cv=none; b=IIZRYfKJCAeM0pgPV2aX4ievrHTHYi5M9RN/6JE0NJReIQEo0UtlNEHpWSumYq8DxsmcxnzvF33bMVizaZ0s/8qzPI2Mnt1+jpsyuk18p08xqx37MuuJ8ikRa13bQ1fwG+z1HwujFMqpaeVQ2iUUs+m/wKq/Cp9WdkeIBKqmIuw=
+	t=1775058972; cv=none; b=sJ1qxMknbp5uud/wLEDeK+VCaMhC5tOkGupzFEf02M0UG8Lz58UnXwS2HisSfy3QtzLKJ120s4czbvEXFWh4HSP9rW/2jLZMi/Q/kOEmFXR9MNVHhDwmVqgIAodz5Ph7fGuOwMWO9f/af75OThoPs3PPTcWiDNlQYK4K5Ek3rmU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775047596; c=relaxed/simple;
-	bh=hfD8fH3///Shq/TJdRyVkVuDmSHrOXrT6aof5Ko/9hQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=ArJpE/b7c3zNgVONXi1Un0AsSLxkie0ry0uncBDzGnqgKCEkNl9tfnEvIFmJsQAnUOg+jw0RmbV7ZXO1PKlvbNGiQVelw5P7aVO6DC8FuxuQf39rTjAbZVyyd/mIADTVAZN/K82MkyoNcjmATumaJPuyNuIlhTnfehMHAtGCIwE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=GoPhI2F4; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1775058972; c=relaxed/simple;
+	bh=Nyoh+HfiRGymWn6IRSwvuq+bJzMVZ8NetVmR+Z7H8qA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=H5VCsvSepFqws8qnzfn0C+/LKs+WLJ6WSH5muuVAiRxLf9Nk/9ofFk9ZDf/GmqWOJ03cSkpUwGXrYO8vT7vbPMROPYGvWlmDJNXk6yal/34+4X/MbsPhgStq3dwnTCke/f0wqiwIVd+tpZRVo/chbJbPseo/4etrYDL9+jP6C7w=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=gBO50yV2; arc=none smtp.client-ip=199.89.1.14
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="GoPhI2F4"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1775047593;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type;
-	bh=hfD8fH3///Shq/TJdRyVkVuDmSHrOXrT6aof5Ko/9hQ=;
-	b=GoPhI2F4dgp/5On+LIchJSHZSVBm/Z3QMVbfj4Rg4aq8af8/IWjHEeTImAkbwnWniwkir4
-	HwVTlmjSau2nDow7J+xKI+m78bjeGHHeXVk5133j35Cro7bMSMvP1sGMQZZjKFy95R20LR
-	beqqTCqGE1ygbneYoYlqlMnwsmmwLpk=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-586-IG5HFOsPP_mIEbD_537igA-1; Wed,
- 01 Apr 2026 08:46:30 -0400
-X-MC-Unique: IG5HFOsPP_mIEbD_537igA-1
-X-Mimecast-MFC-AGG-ID: IG5HFOsPP_mIEbD_537igA_1775047589
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
+	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="gBO50yV2"
+Received: from localhost (localhost [127.0.0.1])
+	by 011.lax.mailroute.net (Postfix) with ESMTP id 4fm8jR32slz1XM6J9;
+	Wed,  1 Apr 2026 15:56:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:content-type:content-type:in-reply-to
+	:from:from:content-language:references:subject:subject
+	:user-agent:mime-version:date:date:message-id:received:received;
+	 s=mr01; t=1775058968; x=1777650969; bh=Nyoh+HfiRGymWn6IRSwvuq+b
+	JzMVZ8NetVmR+Z7H8qA=; b=gBO50yV2rO0JDEqI8zqtf+7XXdmOrceTWHR0RSZ5
+	Hc6aohUc+CNJkbnoJf/FT8lcZmkzAR0iTah5G82NcsVDp93D8AHOR8GS2+2Sb6Zk
+	TW93U+OrQGy8ZoRd3H4ca9RvrwxGxODumLbl8h1a92gb4p2Yn1EJ718XSe/Unejr
+	qfDosMommwuIFWkfKJ2D46ytb6RPlqulhmNdwnIqaJeUq0YhzXkAxvTB5raoEHGT
+	U7Xl0Snz+rkb+Qbc8O63JDwHNZM7EZRGbrmvPRlxeO4D8Q5jejQH8jweayPbXg/0
+	43w4FI1MVYhvQHV7z1oZTFRLCEdby2v1fqd8mWYI14dHIA==
+X-Virus-Scanned: by MailRoute
+Received: from 011.lax.mailroute.net ([127.0.0.1])
+ by localhost (011.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id 0SZuz2kLQDX2; Wed,  1 Apr 2026 15:56:08 +0000 (UTC)
+Received: from [100.119.48.131] (unknown [104.135.180.219])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 06619180060D;
-	Wed,  1 Apr 2026 12:46:29 +0000 (UTC)
-Received: from localhost (unknown [10.44.49.94])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 53CD51953947;
-	Wed,  1 Apr 2026 12:46:28 +0000 (UTC)
-Date: Wed, 1 Apr 2026 08:46:26 -0400
-From: Stefan Hajnoczi <stefanha@redhat.com>
-To: target-devel@vger.kernel.org,
-	"Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: LIO PERSISTENT RESERVE OUT PREEMPT spec compliance
-Message-ID: <20260401124626.GA266484@fedora>
+	(Authenticated sender: bvanassche@acm.org)
+	by 011.lax.mailroute.net (Postfix) with ESMTPSA id 4fm8jL5lwnz1XM5kW;
+	Wed,  1 Apr 2026 15:56:06 +0000 (UTC)
+Message-ID: <9c556370-5e85-4cb6-8f4d-c0361467b2f3@acm.org>
+Date: Wed, 1 Apr 2026 08:56:05 -0700
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="TwCPRSYxZP1tcyIW"
-Content-Disposition: inline
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+User-Agent: Mozilla Thunderbird
+Subject: Re: LIO PERSISTENT RESERVE OUT PREEMPT spec compliance
+To: Stefan Hajnoczi <stefanha@redhat.com>, target-devel@vger.kernel.org,
+ "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260401124626.GA266484@fedora>
+Content-Language: en-US
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <20260401124626.GA266484@fedora>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
+On 4/1/26 5:46 AM, Stefan Hajnoczi wrote:
+> Thoughts?
 
---TwCPRSYxZP1tcyIW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+There is a persistent reservation compliance test suite in libiscsi.
+SCST passes that test suite if I remember correctly. It would be great
+if LIO would pass the tests from that test suite too. See also
+https://github.com/sahlberg/libiscsi
 
-Hi,
-I've noticed differences in behavior between LIO and HPE 3PAR storage
-when handling PERSISTENT RESERVE OUT commands with the PREEMPT service
-action.
+Thanks,
 
-I'd like to confirm what the behavior should be and will send patches if
-necessary:
-
-1. Not ignoring the TYPE field when removing reservations
-
-LIO always checks the TYPE field for PREEMPT and fails requests that
-have an invalid TYPE field value (e.g. 0). PREEMPT can be used to remove
-registrations (rather than preempting reservations) and in that case
-SPC-6 5.14.11.2.5 Removing registrations says "b) ignore the contents of
-the SCOPE field and the TYPE field". My interpretation is that LIO
-should not check the TYPE field here and it is currently not
-spec-compliant.
-
-I compared against HPE 3PAR storage and found that it completes the
-command successfully.
-
-2. Removing the I_T nexus registration sending the PREEMPT
-
-When handling a PREEMPT that removes registrations (rather than
-preempting reservations), LIO removes all registrations with the given
-service action reservation key, including the I_T nexus sending the
-PREEMPT.
-
-I think this behavior is supported by SPC-6 5.14.11.2.5 Removing
-registrations which says "a) remove the registrations for all I_T
-nexuses specified by the SERVICE ACTION RESERVATION KEY field". In other
-places the spec explicitly says "except the I_T nexus that is being used
-for the PERSISTENT RESERVE OUT command", so I think LIO is correct to
-really remove all registrations for the given key.
-
-Note however that HPE 3PAR storage does not remove the registration for
-the I_T nexus sending the PREEMPT, so there is a behavioral difference
-between LIO and 3PAR.
-
-Thoughts?
-
-Stefan
-
---TwCPRSYxZP1tcyIW
-Content-Type: application/pgp-signature; name=signature.asc
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCgAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmnNE6IACgkQnKSrs4Gr
-c8ikiAf/WoaYZJjBF+115h2gMN46ygraKh3RQfIcrU2HPIZuTfFo3gaIwrcJGOgP
-b9orXoCnjaWL3aMmAkK8PjdHKcKhTuWs2ZxL24uzDIR/zRaWA3QCNc/CZBBQB8E6
-wlnDAalS5Om6RlxCSwqE7rcplaQMhIUvI7pqXpzzHcYBhYTXr/75egDfQhbFvxdX
-4AyJbtnRSbEZnSiZj56pCxhqSpPugDc6p8frkJ8H2OB6KeGivWjxcZzOYfHJFSxP
-S1DjsY5XW4EX2uuOzeTnqrKQGc7UfqnPytgbx4Waa8W4DX6HD6hHWqf80pnBujVK
-OaxXv4KxoYR2ws1rZni8VuIA6BhGcg==
-=coZs
------END PGP SIGNATURE-----
-
---TwCPRSYxZP1tcyIW--
-
+Bart.
