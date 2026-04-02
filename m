@@ -1,102 +1,179 @@
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C53C547B426
-	for <target-devel@vger.kernel.org>; Wed,  1 Apr 2026 17:09:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8F61370D5A
+	for <target-devel@vger.kernel.org>; Thu,  2 Apr 2026 18:04:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775063363; cv=none; b=oUB8QiW9mWUu5SywvY/vhEGAOAZGYGmOzXeumeXRQ5IAoACYa1YZVfjQFa/NUG8n0EHNmNPG/vB8+Vp+gLPRpafRxpE1CZwu8oOGT7r2N3zGEqoby4vHyZ4gGBBMd8MhtBcxOc/R5YnTxn/8ELt/2Xb45wZcq4Lzz0UYw07Sj3c=
+	t=1775153052; cv=none; b=LtJRMNMMd3yqrL44BquXJXQ9bd1VaaWiMgzxh2ZuMPG7ZrdgeQdnMEyBCxfkzWtyXQUVjB8GHfOXYUTlBXz92/xXVXOJ4i3tOIHhAv6uDfJVqbNonQa057w0mUZAEt+LeQYZWOFNw57Iuu2yhNuWsPn+vHPoS5plQ5maZRvOUWA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775063363; c=relaxed/simple;
-	bh=UrlrL3JrdlkwweCdRKeXD8MoN74BHicvKbtfVaI7CU8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WjYekBBpswoSabYLkiawGM7hrqqksONyb78bgOj49njIKq6RAl+K37kzlYUbavMf+HiMf3crMy18mlr4zoJ+YanATkWWYi2IhJUv3YFfVNacuHo5qmEgOjGiRGfolYw5xktLJ+QUzDS9E9eBGEysCj/jAr4YMaCaiy4g2CDpT9k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=Qih0aonq; arc=none smtp.client-ip=170.10.133.124
+	s=arc-20240116; t=1775153052; c=relaxed/simple;
+	bh=F4DsrgIwCXh1HXEg5g9pfI4vm/MPlqNk9kwFD7OT3bE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YxPzhz0eCsrRfbQvc8PdA4zjBnBKYUpvr9GlaSPe3/5VFEVqf7YrS8Owtu5R53MkCBEM/NZZLmNbTPTFiWOG8uNlZKMqGmWJMyd4FvWB1zbwh/SITtC1HRBf7tZCwt3XA4rNPz2eqNDzGb6FEgpE7Cb/t1NXt18QfLRmFP+99o4=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=QeqCk89o; arc=none smtp.client-ip=170.10.133.124
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Qih0aonq"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="QeqCk89o"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1775063361;
+	s=mimecast20190719; t=1775153049;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=UrlrL3JrdlkwweCdRKeXD8MoN74BHicvKbtfVaI7CU8=;
-	b=Qih0aonqko9enMhM9/CktAKjcjI0WsEwqD65TThhOBsis9qoKSUOhPg9VnB9UtumcUhDTq
-	lX7PNVkHYO/Oke1qQPhcSJ4xqpGWVUPeouZM7TANEVakdiyFiwRU8mkNBO1TFikl8Bd8q1
-	n37UCBeWfsd7rd53rW9i7+tUtUlDwdI=
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=h7yOigxXZpZsVMssh+mLEedTpd1BlUZc6Kc/zzGuCvY=;
+	b=QeqCk89o98P5Ymz3/4M5MkotDCbSN7QFhKmWhUSYzTlnmqXZYDHMjrCmMTFT5x1dqs2AtH
+	7d0GUVvHag5DgmGiZJ8rAce2Hd1hlUX33+eh/sWc3L66LwWTHnaitLy4k6DU0RO/1Rj0Yh
+	y3tUzxVQzDWmJLnu1YJOrx20Pk5wifY=
 Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-564-7vDLrfpHP1qNdvQbawMPrg-1; Wed,
- 01 Apr 2026 13:09:17 -0400
-X-MC-Unique: 7vDLrfpHP1qNdvQbawMPrg-1
-X-Mimecast-MFC-AGG-ID: 7vDLrfpHP1qNdvQbawMPrg_1775063356
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-610-bafMvKWtM46D7vCCfgvvrA-1; Thu,
+ 02 Apr 2026 14:04:08 -0400
+X-MC-Unique: bafMvKWtM46D7vCCfgvvrA-1
+X-Mimecast-MFC-AGG-ID: bafMvKWtM46D7vCCfgvvrA_1775153047
 Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 354BE19560B1;
-	Wed,  1 Apr 2026 17:09:16 +0000 (UTC)
-Received: from localhost (unknown [10.44.32.12])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 599CE30001A2;
-	Wed,  1 Apr 2026 17:09:14 +0000 (UTC)
-Date: Wed, 1 Apr 2026 13:09:12 -0400
+	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 37F28195609F;
+	Thu,  2 Apr 2026 18:04:07 +0000 (UTC)
+Received: from localhost (unknown [10.44.32.37])
+	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 20B1C30030D1;
+	Thu,  2 Apr 2026 18:04:05 +0000 (UTC)
 From: Stefan Hajnoczi <stefanha@redhat.com>
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: target-devel@vger.kernel.org,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: LIO PERSISTENT RESERVE OUT PREEMPT spec compliance
-Message-ID: <20260401170912.GA329795@fedora>
-References: <20260401124626.GA266484@fedora>
- <9c556370-5e85-4cb6-8f4d-c0361467b2f3@acm.org>
+To: target-devel@vger.kernel.org
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+	linux-scsi@vger.kernel.org,
+	Bart Van Assche <bvanassche@acm.org>,
+	linux-kernel@vger.kernel.org,
+	Stefan Hajnoczi <stefanha@redhat.com>,
+	Maurizio Lombardi <mlombard@redhat.com>,
+	Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: [PATCH] scsi: target: don't validate ignored fields in PROUT PREEMPT
+Date: Thu,  2 Apr 2026 14:03:42 -0400
+Message-ID: <20260402180342.126583-1-stefanha@redhat.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="zejTu4YnJbD2u5vy"
-Content-Disposition: inline
-In-Reply-To: <9c556370-5e85-4cb6-8f4d-c0361467b2f3@acm.org>
+Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
 
+The PERSISTENT RESERVE OUT command's PREEMPT service action provides two
+different functions: 1. preempting persistent reservations and 2.
+removing registrations. In the latter case the spec says:
 
---zejTu4YnJbD2u5vy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+  b) ignore the contents of the SCOPE field and the TYPE field;
 
-On Wed, Apr 01, 2026 at 08:56:05AM -0700, Bart Van Assche wrote:
-> On 4/1/26 5:46 AM, Stefan Hajnoczi wrote:
-> > Thoughts?
->=20
-> There is a persistent reservation compliance test suite in libiscsi.
-> SCST passes that test suite if I remember correctly. It would be great
-> if LIO would pass the tests from that test suite too. See also
-> https://github.com/sahlberg/libiscsi
+The code currently validates the SCOPE and TYPE fields even when PREEMPT
+is called to remove registrations.
 
-Hi Bart,
-Thanks for sharing the libiscsi test suite.
+This patch achieves spec compliance by validating the SCOPE and TYPE
+fields only when they will actually be used.
 
-Stefan
+To confirm my interpretation of the specification I tested against HPE
+3PAR storage and found the TYPE field is indeed ignored in this case.
 
---zejTu4YnJbD2u5vy
-Content-Type: application/pgp-signature; name=signature.asc
+Cc: Maurizio Lombardi <mlombard@redhat.com>
+Cc: Dmitry Bogdanov <d.bogdanov@yadro.com>
+Signed-off-by: Stefan Hajnoczi <stefanha@redhat.com>
+---
+ drivers/target/target_core_pr.c | 59 ++++++++++++++++++---------------
+ 1 file changed, 32 insertions(+), 27 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCgAdFiEEhpWov9P5fNqsNXdanKSrs4Grc8gFAmnNUTgACgkQnKSrs4Gr
-c8gonQgAxceD3FeX/z3kfqUOYoYBEqUF3P21CdFZSUbSUITCwWPeb5E1wsj8S+Db
-poFnup1JfMTUkQ+A1TmzhYmRx8IaNGxZ5EbAVjAfQ+qgIlv88mrEgTeMkIS4zXEZ
-anyp24UttTQZMen+vC8NjpP+IOlyaN126jThPtxHgZU62Xilk/GroxYlxhl4cWMA
-taahgqZGOomHYfr4FwAg/0oOiOMRuFKiDVn3khKXxH4bSbp9zsRtqaZLQcE/TKnK
-tXHKw6NXi5c07C3LAAWssnaRGfNN9quP5kYYrlfbkDpmRfnhx5Gwi2+cwfImCSpA
-2t+Y7/2TU0pz8FcmD7vpOo/kpieFzA==
-=w7w/
------END PGP SIGNATURE-----
-
---zejTu4YnJbD2u5vy--
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index f88e63aefcd84..11790f2c5d80f 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -2809,7 +2809,7 @@ static void core_scsi3_release_preempt_and_abort(
+ }
+ 
+ static sense_reason_t
+-core_scsi3_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
++core_scsi3_emulate_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
+ 		u64 sa_res_key, enum preempt_type preempt_type)
+ {
+ 	struct se_device *dev = cmd->se_dev;
+@@ -2838,11 +2838,6 @@ core_scsi3_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
+ 		core_scsi3_put_pr_reg(pr_reg_n);
+ 		return TCM_RESERVATION_CONFLICT;
+ 	}
+-	if (scope != PR_SCOPE_LU_SCOPE) {
+-		pr_err("SPC-3 PR: Illegal SCOPE: 0x%02x\n", scope);
+-		core_scsi3_put_pr_reg(pr_reg_n);
+-		return TCM_INVALID_PARAMETER_LIST;
+-	}
+ 
+ 	spin_lock(&dev->dev_reservation_lock);
+ 	pr_res_holder = dev->dev_pr_res_holder;
+@@ -2856,6 +2851,37 @@ core_scsi3_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
+ 		core_scsi3_put_pr_reg(pr_reg_n);
+ 		return TCM_INVALID_PARAMETER_LIST;
+ 	}
++
++	/* Validate TYPE and SCOPE fields if they will be used */
++	if (pr_res_holder &&
++	    (pr_res_holder->pr_res_key == sa_res_key ||
++	     (all_reg && !sa_res_key))) {
++		switch (type) {
++		case PR_TYPE_WRITE_EXCLUSIVE:
++		case PR_TYPE_EXCLUSIVE_ACCESS:
++		case PR_TYPE_WRITE_EXCLUSIVE_REGONLY:
++		case PR_TYPE_EXCLUSIVE_ACCESS_REGONLY:
++		case PR_TYPE_WRITE_EXCLUSIVE_ALLREG:
++		case PR_TYPE_EXCLUSIVE_ACCESS_ALLREG:
++			break;
++		default:
++			pr_err("SPC-3 PR: Unknown Service Action PREEMPT%s"
++				" Type: 0x%02x\n",
++				(preempt_type == PREEMPT_AND_ABORT) ?
++				"_AND_ABORT" : "", type);
++			spin_unlock(&dev->dev_reservation_lock);
++			core_scsi3_put_pr_reg(pr_reg_n);
++			return TCM_INVALID_CDB_FIELD;
++		}
++
++		if (scope != PR_SCOPE_LU_SCOPE) {
++			pr_err("SPC-3 PR: Illegal SCOPE: 0x%02x\n", scope);
++			spin_unlock(&dev->dev_reservation_lock);
++			core_scsi3_put_pr_reg(pr_reg_n);
++			return TCM_INVALID_PARAMETER_LIST;
++		}
++	}
++
+ 	/*
+ 	 * From spc4r17, section 5.7.11.4.4 Removing Registrations:
+ 	 *
+@@ -3118,27 +3144,6 @@ core_scsi3_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
+ 	return 0;
+ }
+ 
+-static sense_reason_t
+-core_scsi3_emulate_pro_preempt(struct se_cmd *cmd, int type, int scope,
+-		u64 res_key, u64 sa_res_key, enum preempt_type preempt_type)
+-{
+-	switch (type) {
+-	case PR_TYPE_WRITE_EXCLUSIVE:
+-	case PR_TYPE_EXCLUSIVE_ACCESS:
+-	case PR_TYPE_WRITE_EXCLUSIVE_REGONLY:
+-	case PR_TYPE_EXCLUSIVE_ACCESS_REGONLY:
+-	case PR_TYPE_WRITE_EXCLUSIVE_ALLREG:
+-	case PR_TYPE_EXCLUSIVE_ACCESS_ALLREG:
+-		return core_scsi3_pro_preempt(cmd, type, scope, res_key,
+-					      sa_res_key, preempt_type);
+-	default:
+-		pr_err("SPC-3 PR: Unknown Service Action PREEMPT%s"
+-			" Type: 0x%02x\n", (preempt_type == PREEMPT_AND_ABORT) ? "_AND_ABORT" : "", type);
+-		return TCM_INVALID_CDB_FIELD;
+-	}
+-}
+-
+-
+ static sense_reason_t
+ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
+ 		u64 sa_res_key, int aptpl, int unreg)
+-- 
+2.53.0
 
