@@ -1,179 +1,112 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8F61370D5A
-	for <target-devel@vger.kernel.org>; Thu,  2 Apr 2026 18:04:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49E982FD69A;
+	Fri,  3 Apr 2026 02:05:49 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775153052; cv=none; b=LtJRMNMMd3yqrL44BquXJXQ9bd1VaaWiMgzxh2ZuMPG7ZrdgeQdnMEyBCxfkzWtyXQUVjB8GHfOXYUTlBXz92/xXVXOJ4i3tOIHhAv6uDfJVqbNonQa057w0mUZAEt+LeQYZWOFNw57Iuu2yhNuWsPn+vHPoS5plQ5maZRvOUWA=
+	t=1775181950; cv=none; b=NzZnuQ+Rsdu3TUCuPnXObg8IdHwUYWm+KsXExemQ84LTOBqxalvpCqfv535AlrnXVmfkXpMn/+fOlUfJpoYYi9Sf9537PNJtC3X16P7Jdndtx8J5TlPeDUe3RATuDg+hLP7tA/hHF66m1Y1OjCfUhmk+opmoGiw90b/V9HIauFQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775153052; c=relaxed/simple;
-	bh=F4DsrgIwCXh1HXEg5g9pfI4vm/MPlqNk9kwFD7OT3bE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YxPzhz0eCsrRfbQvc8PdA4zjBnBKYUpvr9GlaSPe3/5VFEVqf7YrS8Owtu5R53MkCBEM/NZZLmNbTPTFiWOG8uNlZKMqGmWJMyd4FvWB1zbwh/SITtC1HRBf7tZCwt3XA4rNPz2eqNDzGb6FEgpE7Cb/t1NXt18QfLRmFP+99o4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=QeqCk89o; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1775181950; c=relaxed/simple;
+	bh=5V9QkxKPbuXvjEVL/pPgQZQDPdMzGhVMa4EoBzK/pg8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=eZtPzEVsD123UsdiAE/wtlpyMc0AHuvJbFk9k1gMv8LvptomHLvKnyd5Vj+xBE4TbHY7XYc2m5UQm7EQWrBKN5e0ZEMZHUQLXgasYbrBX6p07fER5OUXIQSFl9ARbBmtG3T5RHymPH7dvT5Q4zIcBYvRd25zZgYCoySpLAGS44g=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=jCqOGlTV; arc=none smtp.client-ip=205.220.177.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="QeqCk89o"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1775153049;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=h7yOigxXZpZsVMssh+mLEedTpd1BlUZc6Kc/zzGuCvY=;
-	b=QeqCk89o98P5Ymz3/4M5MkotDCbSN7QFhKmWhUSYzTlnmqXZYDHMjrCmMTFT5x1dqs2AtH
-	7d0GUVvHag5DgmGiZJ8rAce2Hd1hlUX33+eh/sWc3L66LwWTHnaitLy4k6DU0RO/1Rj0Yh
-	y3tUzxVQzDWmJLnu1YJOrx20Pk5wifY=
-Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-610-bafMvKWtM46D7vCCfgvvrA-1; Thu,
- 02 Apr 2026 14:04:08 -0400
-X-MC-Unique: bafMvKWtM46D7vCCfgvvrA-1
-X-Mimecast-MFC-AGG-ID: bafMvKWtM46D7vCCfgvvrA_1775153047
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 37F28195609F;
-	Thu,  2 Apr 2026 18:04:07 +0000 (UTC)
-Received: from localhost (unknown [10.44.32.37])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 20B1C30030D1;
-	Thu,  2 Apr 2026 18:04:05 +0000 (UTC)
-From: Stefan Hajnoczi <stefanha@redhat.com>
-To: target-devel@vger.kernel.org
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-	linux-scsi@vger.kernel.org,
-	Bart Van Assche <bvanassche@acm.org>,
-	linux-kernel@vger.kernel.org,
-	Stefan Hajnoczi <stefanha@redhat.com>,
-	Maurizio Lombardi <mlombard@redhat.com>,
-	Dmitry Bogdanov <d.bogdanov@yadro.com>
-Subject: [PATCH] scsi: target: don't validate ignored fields in PROUT PREEMPT
-Date: Thu,  2 Apr 2026 14:03:42 -0400
-Message-ID: <20260402180342.126583-1-stefanha@redhat.com>
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="jCqOGlTV"
+Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 632FBr3r2879390;
+	Fri, 3 Apr 2026 02:05:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=1NvQBbpSWlfXcgtrlLhfPayDq+mNWdEUvHf8YGAmFlU=; b=
+	jCqOGlTV1HduDMun13VVNj6iMaJzogNelNm7OeWmdV8USjHvBkP8tDnj5xq5LkJG
+	m+mcF+TmB5U4JIcYW3hAx8yymBEAxZ4OhiNkLu57bvkibvNV7vtg0M8DJxvjK+kE
+	dCkzjt/8kxWG1ZAVDj2GEdyBcUjUVNeY7bHaF4ijdqq1BGZRxMiK0up1d2VYrBjs
+	P0wEKbwVij/gJCG7eXA6gYcekBMHrc0ws8foCPvc3J9XJWT2U0TnKYrjaMrHg9c0
+	X5MT7OkuryCACwcNIrsdGOf9ZpWj6IVync7675DZrW034Fq/mbnP7SMB6h54L2Zn
+	JB8Pew7tYQue4GpeyVCeew==
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4d65s11gae-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 03 Apr 2026 02:05:45 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 6330qqGa029103;
+	Fri, 3 Apr 2026 02:05:45 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 4d65eddp5m-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 03 Apr 2026 02:05:45 +0000
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 63325cqh017364;
+	Fri, 3 Apr 2026 02:05:44 GMT
+Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTP id 4d65eddp33-6;
+	Fri, 03 Apr 2026 02:05:44 +0000
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+To: Kees Cook <kees@kernel.org>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH] scsi: target: Replace strncpy() with strscpy() in VPD dump functions
+Date: Thu,  2 Apr 2026 22:05:29 -0400
+Message-ID: <177517593431.3522679.14923158633747124728.b4-ty@oracle.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260323171311.work.101-kees@kernel.org>
+References: <20260323171311.work.101-kees@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-02_04,2026-04-02_05,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 mlxlogscore=999 phishscore=0 suspectscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2603050001
+ definitions=main-2604030017
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAzMDAxNyBTYWx0ZWRfX2/6qBNHAa1dO
+ XBWRskRD/IG1HEXBVINGpXUhizN1q3NVAEswZLFN/YLcjatrcRLybkw3l9/k5JoeMg8qpLEgSEb
+ zXgO1CUatA0n1212whyyTyJK4lZcIgxK9WI43IxRoTD/C73zk7YD//zLu82AgdXO9DRO6iOv5BL
+ NqM5dsdzWXR8lKCTs6afuh1KiwB+Js/iTdmTrXfi48Iq9lzJJ3pz75xMQ2hcqCxY6PYmRecXoIS
+ klokMB9A53sT//Bju7IOlaKIP+xs4narSd+1WBL+clOGqmD9ku/WGO0d9GHfdBgqwDt4ww+JQ4q
+ 44Oc0HgREw3lL4NFPBXfk7Ouy5IGTCxpWTaejnYKbdY+tqDEKewW2Uuv5nOWJ7aIgoDGA8cXaTJ
+ uvLLdCMslMgyHGwM4DQ0jeYeyfDKHawlxrOKrGDRNWYmsZ76AN4yxU4TzhOcrCjinRmMkLScONg
+ Cqc/RZO+gm38Qljut+w==
+X-Proofpoint-ORIG-GUID: EjeZY0bpFmKaAvai252AZPzNypnUxqIb
+X-Authority-Analysis: v=2.4 cv=BvOQAIX5 c=1 sm=1 tr=0 ts=69cf207a b=1 cx=c_pps
+ a=WeWmnZmh0fydH62SvGsd2A==:117 a=WeWmnZmh0fydH62SvGsd2A==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=jiCTI4zE5U7BLdzWsZGv:22 a=o5oIOnhZENCTenyL_yNV:22 a=VwQbUJbxAAAA:8
+ a=0OMCWzbaks6jYXudNfoA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: EjeZY0bpFmKaAvai252AZPzNypnUxqIb
 
-The PERSISTENT RESERVE OUT command's PREEMPT service action provides two
-different functions: 1. preempting persistent reservations and 2.
-removing registrations. In the latter case the spec says:
+On Mon, 23 Mar 2026 10:13:15 -0700, Kees Cook wrote:
 
-  b) ignore the contents of the SCOPE field and the TYPE field;
+> Replace the deprecated[1] strncpy() with strscpy() in
+> transport_dump_vpd_proto_id(), transport_dump_vpd_assoc(),
+> transport_dump_vpd_ident_type(), and transport_dump_vpd_ident().
+> 
+> All four functions follow the same pattern: a local
+> buf[VPD_TMP_BUF_SIZE] (254 bytes) is zeroed with memset(), populated
+> via sprintf()/snprintf() (always NUL-terminated), then conditionally
+> copied to p_buf with strncpy(). The p_buf destination is used as a
+> C string by all callers in target_core_configfs.c: strlen(buf) and
+> sprintf(page+len, "%s", buf) to build sysfs output.
+> 
+> [...]
 
-The code currently validates the SCOPE and TYPE fields even when PREEMPT
-is called to remove registrations.
+Applied to 7.1/scsi-queue, thanks!
 
-This patch achieves spec compliance by validating the SCOPE and TYPE
-fields only when they will actually be used.
+[1/1] scsi: target: Replace strncpy() with strscpy() in VPD dump functions
+      https://git.kernel.org/mkp/scsi/c/665fb6a64319
 
-To confirm my interpretation of the specification I tested against HPE
-3PAR storage and found the TYPE field is indeed ignored in this case.
-
-Cc: Maurizio Lombardi <mlombard@redhat.com>
-Cc: Dmitry Bogdanov <d.bogdanov@yadro.com>
-Signed-off-by: Stefan Hajnoczi <stefanha@redhat.com>
----
- drivers/target/target_core_pr.c | 59 ++++++++++++++++++---------------
- 1 file changed, 32 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index f88e63aefcd84..11790f2c5d80f 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -2809,7 +2809,7 @@ static void core_scsi3_release_preempt_and_abort(
- }
- 
- static sense_reason_t
--core_scsi3_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
-+core_scsi3_emulate_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
- 		u64 sa_res_key, enum preempt_type preempt_type)
- {
- 	struct se_device *dev = cmd->se_dev;
-@@ -2838,11 +2838,6 @@ core_scsi3_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
- 		core_scsi3_put_pr_reg(pr_reg_n);
- 		return TCM_RESERVATION_CONFLICT;
- 	}
--	if (scope != PR_SCOPE_LU_SCOPE) {
--		pr_err("SPC-3 PR: Illegal SCOPE: 0x%02x\n", scope);
--		core_scsi3_put_pr_reg(pr_reg_n);
--		return TCM_INVALID_PARAMETER_LIST;
--	}
- 
- 	spin_lock(&dev->dev_reservation_lock);
- 	pr_res_holder = dev->dev_pr_res_holder;
-@@ -2856,6 +2851,37 @@ core_scsi3_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
- 		core_scsi3_put_pr_reg(pr_reg_n);
- 		return TCM_INVALID_PARAMETER_LIST;
- 	}
-+
-+	/* Validate TYPE and SCOPE fields if they will be used */
-+	if (pr_res_holder &&
-+	    (pr_res_holder->pr_res_key == sa_res_key ||
-+	     (all_reg && !sa_res_key))) {
-+		switch (type) {
-+		case PR_TYPE_WRITE_EXCLUSIVE:
-+		case PR_TYPE_EXCLUSIVE_ACCESS:
-+		case PR_TYPE_WRITE_EXCLUSIVE_REGONLY:
-+		case PR_TYPE_EXCLUSIVE_ACCESS_REGONLY:
-+		case PR_TYPE_WRITE_EXCLUSIVE_ALLREG:
-+		case PR_TYPE_EXCLUSIVE_ACCESS_ALLREG:
-+			break;
-+		default:
-+			pr_err("SPC-3 PR: Unknown Service Action PREEMPT%s"
-+				" Type: 0x%02x\n",
-+				(preempt_type == PREEMPT_AND_ABORT) ?
-+				"_AND_ABORT" : "", type);
-+			spin_unlock(&dev->dev_reservation_lock);
-+			core_scsi3_put_pr_reg(pr_reg_n);
-+			return TCM_INVALID_CDB_FIELD;
-+		}
-+
-+		if (scope != PR_SCOPE_LU_SCOPE) {
-+			pr_err("SPC-3 PR: Illegal SCOPE: 0x%02x\n", scope);
-+			spin_unlock(&dev->dev_reservation_lock);
-+			core_scsi3_put_pr_reg(pr_reg_n);
-+			return TCM_INVALID_PARAMETER_LIST;
-+		}
-+	}
-+
- 	/*
- 	 * From spc4r17, section 5.7.11.4.4 Removing Registrations:
- 	 *
-@@ -3118,27 +3144,6 @@ core_scsi3_pro_preempt(struct se_cmd *cmd, int type, int scope, u64 res_key,
- 	return 0;
- }
- 
--static sense_reason_t
--core_scsi3_emulate_pro_preempt(struct se_cmd *cmd, int type, int scope,
--		u64 res_key, u64 sa_res_key, enum preempt_type preempt_type)
--{
--	switch (type) {
--	case PR_TYPE_WRITE_EXCLUSIVE:
--	case PR_TYPE_EXCLUSIVE_ACCESS:
--	case PR_TYPE_WRITE_EXCLUSIVE_REGONLY:
--	case PR_TYPE_EXCLUSIVE_ACCESS_REGONLY:
--	case PR_TYPE_WRITE_EXCLUSIVE_ALLREG:
--	case PR_TYPE_EXCLUSIVE_ACCESS_ALLREG:
--		return core_scsi3_pro_preempt(cmd, type, scope, res_key,
--					      sa_res_key, preempt_type);
--	default:
--		pr_err("SPC-3 PR: Unknown Service Action PREEMPT%s"
--			" Type: 0x%02x\n", (preempt_type == PREEMPT_AND_ABORT) ? "_AND_ABORT" : "", type);
--		return TCM_INVALID_CDB_FIELD;
--	}
--}
--
--
- static sense_reason_t
- core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
- 		u64 sa_res_key, int aptpl, int unreg)
 -- 
-2.53.0
-
+Martin K. Petersen
