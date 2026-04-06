@@ -1,97 +1,82 @@
-Received: from mail-ed1-f46.google.com (mail-ed1-f46.google.com [209.85.208.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0CD8E381AE1
-	for <target-devel@vger.kernel.org>; Sun,  5 Apr 2026 23:44:09 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.208.46
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775432651; cv=pass; b=ZG1W2+bnwg3Iv+FjqpVfA+25GcpHasbkMKPIxK7qmkt0ojweF/ioem286eC2bjxj8FrC86dYoc7AtK48Cc49/TtUjZmTT6ZCECyctSY/4+DS9yR7J+PM0YC83qLox4w76WgkmEcXOvuzOIKmzUDVYDSiX2SEzjjEnkmkVMzoAgg=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775432651; c=relaxed/simple;
-	bh=gm1y3HjSbfjetP2qj6SkQ/PvAerOiP935sq/jHQIUpg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=nBLAkqb/noA+Y6zI645v1MRC3GDlW5d1hIWATGivxgjV5KfdGpGTNXPJJOiVfxMdhE/A/L/iovLXlMqPjB8aSuupNQQTu7+1uB3ioiv5OPvB7nuJtu5HTqsHSZuksxfb+JtSw7QZueTiWgo+vAUpUA8fo1PsoHfwZV71uiEsLhE=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KRy7bNIt; arc=pass smtp.client-ip=209.85.208.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C2DC1A267;
+	Mon,  6 Apr 2026 06:31:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775457065; cv=none; b=l7h+Fe4LsJePebPvzZ7bq8AWtjCOQdFpdWDwqwSZ2iFwSNCSea1tdUM7GBVZ6MyCW2g1HwUeSubzd28+G0BPY8IXUmgsUqNSptOp77Cy1dTWNUA8Eb6n1+VpobdvCpoKFhJYqljv6yUDQMYesfc635u9uyVlADDnHXvZPfirEDY=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775457065; c=relaxed/simple;
+	bh=6AV9IVS4uMT5kQAVYIFatF/wTITR+iqSHo2xCC6UD64=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=M6yRQsqj2pXx1rWBx6NRpWC0cYo/RUpX6ZX5npE3GOmuO04vo5haZxrH2WHNnnrpXcmm7OfBzg0w224uTOFpUdklBYHixBOjTSOOeYrdhWI8MtC5BQVIwjvw3pm+0RGfy4HEwaRzCoydl1QNvC/B10hfM8TAHci3aAyqwKPPM8E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=IW4cIMXU; arc=none smtp.client-ip=198.137.202.133
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KRy7bNIt"
-Received: by mail-ed1-f46.google.com with SMTP id 4fb4d7f45d1cf-66e8cc714fbso2134125a12.0
-        for <target-devel@vger.kernel.org>; Sun, 05 Apr 2026 16:44:09 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1775432648; cv=none;
-        d=google.com; s=arc-20240605;
-        b=AlNuC1/sU3ZF2GauYGGnoDV0hojWTO430rsTt6jkgA2GSQl10vXINPwrZA5HjjZ2p3
-         tQBUI6PjssZQFpjxH9b/f0U4QeXZ8ViXF2lD2mn5oj/SC9QXj8kUjoaUqAAwNASrCgeI
-         ky8GDoGP3VVdaH62gG3GSnHLHy2rO7SvzanYwrBxQSfe3/HiDaSZL1PL/PgrN3rup4PX
-         UJtjHv1dqZRXPhDNL7aMKjum7xKS+16eIQo1a4PsXveZiCm6t/3x7X8tQ+rfTd8SR7n1
-         klVZpFiOeseNrATDbQ43RP+yFF1B2f6neQQr6zm5yd7pbR2Gyloztp/IyobqlY/ylfUc
-         +/kg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=gm1y3HjSbfjetP2qj6SkQ/PvAerOiP935sq/jHQIUpg=;
-        fh=qyTlRled3SVdXro/fLQKzLce9WnHyj0yenrcoufF9CI=;
-        b=US9skFw3hC+cyEqTgIxFKd4ysxmw/Q4HTm4sM/Rvd6Pa115NlcquWgaPwmh/F2SNrN
-         A8bBs50VksZ+so8LXx1ImWR0QzvZjE8e8EN09kfiZOm7RVoqd4iIpBwkzXCoEuiioc6h
-         pdw1tbSCypWJkglO/IPqVpd4THGeQ03Vx5d9K5lgc6wPNFndIwUQpRMMEnw7qONu3P56
-         Abm3CJUPG5PpB7nGeNxuofngmyB7Ag5RzWUu4VYyojUyW6/jQjjQxtL9fTNDbI0OI1kd
-         1G+cTVT6vvMhoxRW+rwDFXpbUEefRqu9iMB7YUlOPJGKT2KHkhjPyWWWFFEtEGJ5U014
-         o8dw==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775432648; x=1776037448; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=gm1y3HjSbfjetP2qj6SkQ/PvAerOiP935sq/jHQIUpg=;
-        b=KRy7bNItuCMjRdhQoDNXmvbrUzsJ/EQuIgectE/2nVrOvHXbxXJ7Qv8UgDHuYfkY1/
-         vHf7uRCN0nuZrK5x0OMSNHgPQTpoccJlPwNv9HFLWDmhlARIhVmqRciFrzzDYxifwjL5
-         udsGHiQPcPEKcVvraB0avyXDnTsGkpXPkjR+o+kHz/vQ4bGr1wHD4nFPVdU4+IIFachM
-         XjFYJoBIkM7dRlAz/LiL/aMthXyxznCmQ6myhdArXSmod+VOkJEP6gcfOXt/JfrPbXdO
-         v3WEPlCuKnDFA1J7jZnDHld6xjg2nUtv3ZNb4p2TuBJWNcymrz0vus1KC4orXYifThNO
-         ga3w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775432648; x=1776037448;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=gm1y3HjSbfjetP2qj6SkQ/PvAerOiP935sq/jHQIUpg=;
-        b=AI+4TTzsgx3kAlaZzW1MkQOhTmBudo1f5VWE/+QIFlLZfWG81ne/rJ+Jz0GWiWTl1v
-         PFuuYnI0ji1+6ESNWDpAy09ovHv65zUgvxZdvDPWhJpC5I9U67cw7gzEaRuZNDwUC6n4
-         HINPJh0qYkXHn8xwSiyEhDknxG+1RgUluJ81b3D7QSmdSk3E+jXeOKrKwy07ncsAIJbn
-         xszCcSa/Pd0NEIhl5z0SvYKaKIQpi8MHLzfktDBjHoxWGMrwVXRel0jnQ2nSzozh5jVD
-         NXa9Pae93tdqzbnS5QsPwfIKCbWjOmzO0KrlhkqEWADLNgnUz/AL/3mV6qZtKFqGe39K
-         TPgQ==
-X-Forwarded-Encrypted: i=1; AJvYcCV/JbvAlc5TAOPbr3O/x8kZb6Ro4orP7EjagWFcetmq6XxPpWzgFadBsODWVSDB2i9vwT9EtvPsYnCXzYA=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwHnmQfr2Z1txTZrIfHg4GqdRaqLrvX+BAxO2Uj8Z+0EnqSZn3j
-	kaQYTjsvCBzqIbvmK65L6zNTKWVDEhSShg4UD/byANAGe0xZhojj9Mq0MwoyGnjvad5uVlXVfUa
-	03NklJ5afpBvlBPPKhoL3NppLXRI/oQ==
-X-Gm-Gg: AeBDievHStLbY2f3Wc8grO4RGIGesl+0to+hkQUbZ5NJLuVA7WMYvCGElSFRAjZnGZM
-	ffg4ePmXHD+2oXLOtZak2U4P8Ck+YMnHk51GhbEZ5jCj5cFI6vOv9DCKS/CHM0EpZJW30HNSZAd
-	BT8VyzxjCiFNcNVZ+h3K/F0pXr36mMHuqtQIaL5uI9hGnD7EqxWE8LJaiXvZCU24i4CRXIImfkt
-	kJF3AbIzmn4PHF+bsbN8TKG189Fqcg00danXMNHmIGdUiEM5DT772waw1xMbSIrQsl/RbdXBGcV
-	mQdDe/NRJ4ksxDRlz/r0/eah5rVLnnDbgoWn1StXZCIxBhNsadOgTiRXEZPxbIGIjn/vDQ==
-X-Received: by 2002:a05:6402:430e:b0:66e:f4c0:c365 with SMTP id
- 4fb4d7f45d1cf-66ef4c0c656mr717744a12.10.1775432648191; Sun, 05 Apr 2026
- 16:44:08 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="IW4cIMXU"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
+	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=wZjNM90OxK1bKf31J1TMpT2H4yds1CcGszVY/6ZlN10=; b=IW4cIMXUztwaXd4rpB/G3UupWC
+	BN0EwAFK9ZCbTLfEDF6mI03/sUuBZRlt4atFD3Oad/zTCMvkbVDC8Q1cM9gERL7c8f11AqXjHoJej
+	udO6O0PWO75MemxQuqKSDFGKJzAG8Tshq+vQlArzufJXTgkvnqaKASaQEV9UFcNUeIVQUzydu1OvM
+	1soIdmZXLjMeQ0dkfLy0IKb+YeQx5fK+501X31aTInrmVj4OYDTJ5t9wWuOXja66DiDEm6+czfWym
+	F9PYuP7aXzyhT0kAVg8EPvxHSF4IpxxfVEOWU6fMHUqwetcWRtknNVhr5EGfSz4IGE6VGdRawWDoH
+	de9xOwcw==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1w9dUC-00000004qTN-0YZE;
+	Mon, 06 Apr 2026 06:31:00 +0000
+Date: Sun, 5 Apr 2026 23:31:00 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Caleb Sander Mateos <csander@purestorage.com>
+Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>,
+	Sagi Grimberg <sagi@grimberg.me>,
+	Chaitanya Kulkarni <kch@nvidia.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	linux-block@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org
+Subject: Re: [PATCH 1/6] blk-integrity: take sector_t in
+ bio_integrity_intervals()
+Message-ID: <adNTJEkpIj0wQ--X@infradead.org>
+References: <20260403194109.2255933-1-csander@purestorage.com>
+ <20260403194109.2255933-2-csander@purestorage.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260403194109.2255933-1-csander@purestorage.com> <20260403194109.2255933-6-csander@purestorage.com>
-In-Reply-To: <20260403194109.2255933-6-csander@purestorage.com>
-From: Anuj gupta <anuj1072538@gmail.com>
-Date: Mon, 6 Apr 2026 05:13:30 +0530
-X-Gm-Features: AQROBzAe_pR1JdvPMRMED5Vbpy-Io1YSGKtG2B-bIRotwUzCJw2tWzJbmfKAgHw
-Message-ID: <CACzX3As8NN6n3uCvOPhejzZCs4fTnXkohKvZw787+OyP=tpnNw@mail.gmail.com>
-Subject: Re: [PATCH 5/6] t10-pi: use bio_integrity_intervals() helper
-To: Caleb Sander Mateos <csander@purestorage.com>
-Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>, 
-	Chaitanya Kulkarni <kch@nvidia.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-block@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org, 
-	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260403194109.2255933-2-csander@purestorage.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-Reviewed-by: Anuj Gupta <anuj20.g@samsung.com>
+>  /**
+> - * bio_integrity_intervals - Return number of integrity intervals for a bio
+> + * bio_integrity_intervals - Convert sectors to integrity intervals
+>   * @bi:		blk_integrity profile for device
+> - * @sectors:	Size of the bio in 512-byte sectors
+> + * @sectors:	Number of 512-byte sectors
+>   *
+>   * Description: The block layer calculates everything in 512 byte
+>   * sectors but integrity metadata is done in terms of the data integrity
+>   * interval size of the storage device.  Convert the block layer sectors
+>   * to the appropriate number of integrity intervals.
+>   */
+> -static inline unsigned int bio_integrity_intervals(struct blk_integrity *bi,
+> -						   unsigned int sectors)
+> +static inline u64 bio_integrity_intervals(struct blk_integrity *bi,
+> +					  sector_t sectors)
+
+sector_t is a sector number, not a number of sectors.  So if you need a
+64-bit value here, it should just be a u64.
+
+>  {
+>  	return sectors >> (bi->interval_exp - 9);
+
+If you touch this, maybe also replace 9 with SECTOR_SHIFT?
+
