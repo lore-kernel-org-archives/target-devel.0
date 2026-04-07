@@ -1,158 +1,124 @@
-Received: from mta-01.yadro.com (mta-01.yadro.com [195.3.219.148])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-oa1-f51.google.com (mail-oa1-f51.google.com [209.85.160.51])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4C25B328243;
-	Tue,  7 Apr 2026 09:32:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.3.219.148
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775554360; cv=none; b=Dlgjp94GSpAJzm7xeRTxn5hOy2+VnStdZ1iTxZQ7jGBoOQ9YOhfIiIMtPIP/Fvx6bGQlPMiLV5+YnSqt/DQ4XgquCKP9zUaeIr/eanPXDj5zWBTJJdYRNvXnEkz6v3W51TZuW6tWyRkWmk8/Nj/DYeZmcbKjYm2809kUXmZZG8A=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775554360; c=relaxed/simple;
-	bh=8vgLIKwJHSQVK84Zdi4dvp/u2JmanG3cbH/E7ax1M+c=;
-	h=Date:From:To:CC:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cUtf5E9aY2AktydeZ+mrGedTt7PhMXVnhbwys9WwDB62Jhzhe8XFaXvuagQ5MZYcGpLTEb7+UP5E5zR5L9Ah+VmRnEkrjSJCGqeB83mnwKgep0pFWe/WKXsxVW5DH1RvUaPNIpEnCM3K+kBhO7HANVCwgYNqMX3e4lbP8Byq8ZQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com; spf=pass smtp.mailfrom=yadro.com; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=ohY++nDb; dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b=yF0gIe0p; arc=none smtp.client-ip=195.3.219.148
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=yadro.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=yadro.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8203333BBB1
+	for <target-devel@vger.kernel.org>; Tue,  7 Apr 2026 16:49:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.51
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1775580545; cv=pass; b=DaBjN9ybaYJRbBhqd7aZzaz6YNyjhoaFNQfa+gL7qCtzXgiF7Ou81vEt/1diIhhfmu5YfBukXRCmwY35q3vLaafsIEYsQ7uoePAj0juRJpoJyCyZPMK+mbfvjaTK86Nq7J/dQW67xwPp68C1aJJ5vIJplKs4NgZo/1tNa16ErIY=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1775580545; c=relaxed/simple;
+	bh=nvKu8su4QhAoCTShBYhb8X1jBL0vWh/vW/5aUOBwMVc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=BH3exDMmrCU0e4AnLpks+cfRE0XMezLtJpGUst/v2b/LDovqz1jsfLyZIsf4ZtCM0N6uDqdOlHj0kuLZocyCzoE/mqKj64e+FAEJ4DV6YmtY4b/aeh+jJYhCO+6LK0qEEpSQHcscmIcdJpYw1j8W54E28ZnKnRTlMx+BIERk/IE=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=purestorage.com; spf=fail smtp.mailfrom=purestorage.com; dkim=pass (2048-bit key) header.d=purestorage.com header.i=@purestorage.com header.b=eFq1jPuB; arc=pass smtp.client-ip=209.85.160.51
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=purestorage.com
+Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=purestorage.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="ohY++nDb";
-	dkim=pass (2048-bit key) header.d=yadro.com header.i=@yadro.com header.b="yF0gIe0p"
-Received: from mta-01.yadro.com (localhost [127.0.0.1])
-	by mta-01.yadro.com (Postfix) with ESMTP id 7390420010;
-	Tue,  7 Apr 2026 12:23:51 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mta-01.yadro.com 7390420010
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-02;
-	t=1775553831; bh=DFC5qLBjE0wQFL8BSRIUJ6gmqz4hfjXW0IrN4wNM5PU=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-	b=ohY++nDb8DsBwsa/tgKLaw8VYl+ID4395glW+lxk81RhOec1UO5MSjPiBULadWIp/
-	 iAtmkk52+O4/uj3scQ5S6eWImQHkk7tUThvWqofZOokNJ7+wMkCP3msTa2beOnXErx
-	 4nJWxgtWEJhStSs7gCnIJfFfsW3fxej3VtwlfQ6tkOvwzQD1sf7JPYuSG1dJ9WR148
-	 Cyl3h24byf3IEs1jDNBolTYhYxoZ4I7E/FPdlMsIuWuFoq4XmLi4K7tqLoZNwOWX2l
-	 gju/+0/St3dS6u1EeEXeMN+kItcXJSRU6ivqCwGo/ObI3Tt8zNPMF2KN7huMphe6FA
-	 x8/RjTdghtTcA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yadro.com; s=mta-03;
-	t=1775553831; bh=DFC5qLBjE0wQFL8BSRIUJ6gmqz4hfjXW0IrN4wNM5PU=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:From;
-	b=yF0gIe0pak3k6vP7p2DQ+ELda+32LLQShQLmqjEBFSUYsZkWfV/s2NpCrXBiC882O
-	 imsAOvI+2rB06IS60VpTeeDpWJqJZkOVdegA8i6KMpr6bL8ek1yoTNmbna+wBoorq2
-	 E97XO0Q2PqdZKkxlwp3BXw/LyXuPmgtdeH3UyYTQsGjjwlZyJTBHD0cBqsp9T8P6Ed
-	 tryagE1hOtynMGv2gs2oKe47svopZTk3ytbwZhLiKFQFe/g0mBom8QAfowWeKybFyP
-	 eRSVa9pziiCUsYeH2vVA/4MC2azE1/ZBqB++d81Vhk2f4Rtr7Badt2D3GXgPyQnIxE
-	 X1zfs5SnxnHSQ==
-Received: from RTM-EXCH-06.corp.yadro.com (unknown [10.34.9.206])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mta-01.yadro.com (Postfix) with ESMTPS;
-	Tue,  7 Apr 2026 12:23:49 +0300 (MSK)
-Received: from yadro.com (10.34.9.247) by RTM-EXCH-06.corp.yadro.com
- (10.34.9.206) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.35; Tue, 7 Apr
- 2026 12:23:56 +0300
-Date: Tue, 7 Apr 2026 12:23:57 +0300
-From: Dmitry Bogdanov <d.bogdanov@yadro.com>
-To: <carlos.bilbao@kernel.org>
-CC: <martin.petersen@oracle.com>, <kees@kernel.org>, <pabeni@redhat.com>,
-	<mlombard@redhat.com>, <kuniyu@google.com>, <michael.christie@oracle.com>,
-	<linux-scsi@vger.kernel.org>, <target-devel@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <bilbao@vt.edu>
-Subject: Re: [PATCH] scsi: target: iscsi: reject zero-length Extended CDB AHS
-Message-ID: <20260407092357.GA974@yadro.com>
-References: <20260404014429.115807-1-carlos.bilbao@kernel.org>
+	dkim=pass (2048-bit key) header.d=purestorage.com header.i=@purestorage.com header.b="eFq1jPuB"
+Received: by mail-oa1-f51.google.com with SMTP id 586e51a60fabf-415d7461fa5so553596fac.2
+        for <target-devel@vger.kernel.org>; Tue, 07 Apr 2026 09:49:04 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1775580543; cv=none;
+        d=google.com; s=arc-20240605;
+        b=O/Udgf6xouW0a9H6dT1IwpjI9FIsw2KBnVtIMkvLCjmWkHPIHSxBsDP32aenH/vUGQ
+         pDN0l8Ev/1M61El4s+DACRp2Tmt6J680cs/MgHE3k3Wa08s9qwc0CLdZemXsoVLWwoW3
+         zrJN2UlQiHDrf/HkdoQJLqkmlSFdgyeZS3lzL7Ykb6cNU6V8HHGgXF1l7Y+4jtCiDLTE
+         2ZwgiQTiklqDLGWIdvxEnVR/LvP91AiH2+lpuN7+Qu+q4Rrg0wEW122x4UQ2x6Hb1xeq
+         DbEkifqpH97hWpbd3wkifnosxDtXc1tEYawTdnBW4SEsfM0f8RSlceMMy4dDQzTNccyn
+         YhVQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=lazOyKwXnU60c9GoYfvLsxP7atxxk5CZ7DnVJNd+0g0=;
+        fh=cmUxaSlcuwOsA0mHqrUsXXSxmhH+8QsmaBc4xJpHyNk=;
+        b=E8T1RKZbhFDv6WtpIEu/2xa22u3OsdmEHuuMzC2I614HdSl/G4dFdFTQce+c4D4g5o
+         1cgCMisWyT0p52+bnkkHSstRk/4chKvBCYoaKDc0UNPDslRw5wKtb97EK7K9oLRIx8a9
+         wQdpV7bRTO5F6+A8+OA5QdE5CAsrRUzGw9UKYiNiKntoxeWXmJJnrp038kEBIwVb/OJC
+         Z5R54/tUBt8j0daGy+O+A1T50SsyR91tGVTi95Xjr0KakQYo3ah6L52qw2w5QZXUu7Bm
+         r/N8AyDmNk+Bf/P6IF62dIQZ6xfIRBZECYXZTF4m0RI8ayCWBoDmuV/ll2B+jf6/uBTd
+         HZZQ==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=purestorage.com; s=google2022; t=1775580543; x=1776185343; darn=vger.kernel.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lazOyKwXnU60c9GoYfvLsxP7atxxk5CZ7DnVJNd+0g0=;
+        b=eFq1jPuBo9/nXQu8b60SkzvJFVvLT/scrknaWk9UWNYCfgUBW8Ti7quPN9bDkfYgzN
+         uDYU2CfoHdsBOL6mFDdh6tOjRLDJVT4p4QnVuQtN4Rw2haHQ62Stc+nymwh80Iqa/kwD
+         sprpBmnP8iXMOpqYmkP80fJHHI0Ggke/VCUn4bHfmT2MMqGcu+j0lgDmkCMHMLG2DC10
+         pfntEZI9ssUP6X7W8vdJxWpACRpfEKDp9jDutQ5M0bqoJnaK/X89rYIe8hekZzGSwm6r
+         PiZcOILwEoNiHXFnDRT+L7WnUlPV6/w3YlaNcOTnfC31pEw2w81UXDH228q4lbhIPBSv
+         TQ1w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775580543; x=1776185343;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=lazOyKwXnU60c9GoYfvLsxP7atxxk5CZ7DnVJNd+0g0=;
+        b=Z+51vZLn6Sgm5soWvd3CjVDjRg7nmGxQLMwfQdRkZ8NFSvw1+eT5EsXRIoJJLlf9x2
+         3h71tBcP5pJ0LK0h9NfzgoCjLmjPzQjm8+1rs7yS7fI6oe4XaD7+gTNckABAulw6e4hb
+         gwx008W6hLg1K+bc6HrDscgWKj4z1+ZZDfxpkHXZ7Pv82UFjS1CjG8IaCTGOYCMFHoHB
+         7QG7VSUyAxj6V28lY/RrJBbWHKBa4n3tG3mP3WtLF/riglxWP/WbynCATUWWllmErL5+
+         WX70E+bnhPKoGUionuE4Dd6HaPv/lSPwzlMg/t/OsxdV9vHDZh753bHJBBOXY1IoawY3
+         kY0Q==
+X-Forwarded-Encrypted: i=1; AJvYcCU9p9nA2mG+nlmcPxduLE4Rbw69FDO8sRxzluL5xdBa8pEj72Vgz2gTVSkUTbltVjhwtVHw871whWkirGA=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxL7c10kJF9pcJnWqLuSBxHjESn/J/z8pZ5C7tXec+U9qaNx56I
+	rEbqNUuq0ZRSnM38AWRpQTtuGs499okJO1LM1DLd0sZwUJcwSgCpmhjS8uus5vO8t5lkr4/SQqd
+	8J6AeSdIqMX2tKH3VbpCufnxbv8m5U63WwaucZZL6Cw==
+X-Gm-Gg: AeBDiesxNdvj4zRVB5GdFhYfiy3qi35gG4MySnYvf+3eMCRmNGXbxfBWtvpw4FCJrEb
+	P/RP35ScAncLdlRkeAyy+FJsvMLX4pUSWda4qvq+koHCS8n2WeLpNns8dUFSxGH6m1OL4/d+vTw
+	EdWcWjdKR/LkWI4F+joWXsEvWfLJ91TEISxRoROKIwAY/et0V33XAGcFZQwHJHTTio6tdH7F4NV
+	VHQ8qeF+ikdqN2W/IQ0z+ZIa5jgSbfcH8cRFgG4cpuGY/uCMYKAbbefwY+BcmsFpS1WSkSFJbRI
+	mgQs+5nI
+X-Received: by 2002:a05:6820:858e:10b0:67c:3021:908a with SMTP id
+ 006d021491bc7-6821fa67067mr4123248eaf.3.1775580543405; Tue, 07 Apr 2026
+ 09:49:03 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20260404014429.115807-1-carlos.bilbao@kernel.org>
-X-ClientProxiedBy: RTM-EXCH-04.corp.yadro.com (10.34.9.204) To
- RTM-EXCH-06.corp.yadro.com (10.34.9.206)
-X-KSMG-AntiPhishing: NotDetected
-X-KSMG-AntiSpam-Interceptor-Info: not scanned
-X-KSMG-AntiSpam-Status: not scanned, disabled by settings
-X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.1.1.8310, bases: 2026/04/07 08:50:00 #28379041
-X-KSMG-AntiVirus-Status: NotDetected, skipped
-X-KSMG-KATA-Status: Not Scanned
-X-KSMG-LinksScanning: NotDetected
-X-KSMG-Message-Action: skipped
-X-KSMG-Rule-ID: 5
+References: <20260403194109.2255933-1-csander@purestorage.com>
+ <20260403194109.2255933-3-csander@purestorage.com> <adNUE67FpIGF_x7Q@infradead.org>
+In-Reply-To: <adNUE67FpIGF_x7Q@infradead.org>
+From: Caleb Sander Mateos <csander@purestorage.com>
+Date: Tue, 7 Apr 2026 09:48:52 -0700
+X-Gm-Features: AQROBzCt_NO9LdYduvYfMd8GPp7cOALx7rkbussdP1UbmbwnR15kmHFzXdPpfAE
+Message-ID: <CADUfDZqHyTDO6aYed+mtChU9m3iPgW=hghwfifuCV8Z_CzxoFQ@mail.gmail.com>
+Subject: Re: [PATCH 2/6] block: use integrity interval instead of sector as seed
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jens Axboe <axboe@kernel.dk>, Sagi Grimberg <sagi@grimberg.me>, 
+	Chaitanya Kulkarni <kch@nvidia.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-block@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org, 
+	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Apr 03, 2026 at 06:44:29PM -0700, carlos.bilbao@kernel.org wrote:
-> From: Carlos Bilbao <carlos.bilbao@kernel.org>
-> 
-> If ecdb_ahdr->ahslength is zero, two bugs follow:
-> 
->   kmalloc(be16_to_cpu(ecdb_ahdr->ahslength) + 15, ...)
-> 
-> allocates 15 bytes, but the immediately following memcpy writes
-> ISCSI_CDB_SIZE (16) bytes into it, a one-byte heap overflow. Also:
-> 
->   memcpy(cdb + ISCSI_CDB_SIZE, ecdb_ahdr->ecdb,
->            be16_to_cpu(ecdb_ahdr->ahslength) - 1);
-> 
-> (u16)0 - 1 promotes to (int)-1 which converts to SIZE_MAX as size_t,
-> causing a massive out-of-bounds write.
-> 
-> Reject ahslength == 0 with ISCSI_REASON_PROTOCOL_ERROR before the kmalloc.
-> 
-> Fixes: 8f1f7d297bce ("scsi: target: iscsi: Add support for extended CDB AHS")
-> Signed-off-by: Carlos Bilbao (Lambda) <carlos.bilbao@kernel.org>
-> ---
->  drivers/target/iscsi/iscsi_target.c | 15 +++++++++++----
->  1 file changed, 11 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-> index e80449f6ce15..8db24d35c762 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -1100,6 +1100,8 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
->         cdb = hdr->cdb;
-> 
->         if (hdr->hlength) {
-> +               u16 ahslength;
-> +
->                 ecdb_ahdr = (struct iscsi_ecdb_ahdr *) (hdr + 1);
->                 if (ecdb_ahdr->ahstype != ISCSI_AHSTYPE_CDB) {
->                         pr_err("Additional Header Segment type %d not supported!\n",
-> @@ -1108,14 +1110,19 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
->                                 ISCSI_REASON_CMD_NOT_SUPPORTED, buf);
->                 }
-> 
-> -               cdb = kmalloc(be16_to_cpu(ecdb_ahdr->ahslength) + 15,
-> -                             GFP_KERNEL);
-> +               ahslength = be16_to_cpu(ecdb_ahdr->ahslength);
-> +               if (!ahslength) {
-> +                       pr_err("Extended CDB AHS with zero length, protocol error.\n");
-> +                       return iscsit_add_reject_cmd(cmd,
-> +                               ISCSI_REASON_PROTOCOL_ERROR, buf);
-> +               }
-> +
+On Sun, Apr 5, 2026 at 11:35=E2=80=AFPM Christoph Hellwig <hch@infradead.or=
+g> wrote:
+>
+> On Fri, Apr 03, 2026 at 01:41:05PM -0600, Caleb Sander Mateos wrote:
+> >  void bio_integrity_setup_default(struct bio *bio)
+> >  {
+> >       struct blk_integrity *bi =3D blk_get_integrity(bio->bi_bdev->bd_d=
+isk);
+> >       struct bio_integrity_payload *bip =3D bio_integrity(bio);
+> >
+> > -     bip_set_seed(bip, bio->bi_iter.bi_sector);
+> > +     bip_set_seed(bip, bio_integrity_intervals(bi, bio->bi_iter.bi_sec=
+tor));
+>
+> Should we simply switch bip_set_seed to take a bio bvec_iter argument and
+> lift all this logic into it?  That feels a lot less fragile.
 
-For a complete solution please add a check that AHS fits in the buffer.
-ahslength must be less or equal than ((hdr->hlength * 4) - 3).
+Perhaps I'm misunderstanding the suggestion, but how would that work
+for initializing the seed from struct uio_meta in
+bio_integrity_map_iter()?
 
-> +               cdb = kmalloc(ahslength + 15, GFP_KERNEL);
+bip_set_seed(bio_integrity(bio), meta->seed);
 
-It took some time to recall what did 15 mean. May be make it clear for
-everyone too?
-
-u16 cdb_length = ahslength - 1 + ISCSI_CDB_SIZE;
-cdb = kmalloc(cdb_length, GFP_KERNEL);
-memcpy(cdb, hdr->cdb, ISCSI_CDB_SIZE);
-memcpy(cdb + ISCSI_CDB_SIZE, ecdb_ahdr->ecdb, cdb_length - ISCSI_CDB_SIZE);
-
->                 if (cdb == NULL)
->                         return iscsit_add_reject_cmd(cmd,
->                                 ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
->                 memcpy(cdb, hdr->cdb, ISCSI_CDB_SIZE);
-> -               memcpy(cdb + ISCSI_CDB_SIZE, ecdb_ahdr->ecdb,
-> -                      be16_to_cpu(ecdb_ahdr->ahslength) - 1);
-> +               memcpy(cdb + ISCSI_CDB_SIZE, ecdb_ahdr->ecdb, ahslength - 1);
->         }
-> 
->         data_direction = (hdr->flags & ISCSI_FLAG_CMD_WRITE) ? DMA_TO_DEVICE :
-> --
-> 2.43.0
-> 
+Thanks,
+Caleb
