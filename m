@@ -1,84 +1,125 @@
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
+Received: from mail.crpt.ru (mail.crpt.ru [91.236.205.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DC2B1A683C;
-	Wed,  8 Apr 2026 05:10:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.137.202.133
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D35673803D6;
+	Wed,  8 Apr 2026 10:14:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.236.205.1
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775625023; cv=none; b=qPD24YDSPm/11cuHodoiwnNzEkBrnZz2xx7y02HOpVBHSZZCqNjbVSYQdFxuuIzPlw590AR69IBAnBJ3qwkYRqpkl2Vnu4KfDKLfNxatY8ONIeNHPPHXHCeqCGLn+C+e2uF2ViCMUoEjHGeSS5gOg6cwoDKc6vg+hURcrSb2zDo=
+	t=1775643285; cv=none; b=gXbQEHjCgyhTe4V83JBzqbFdohLSeMYE0O0+x0X7HfYKcgR6y4aQU4ixUWRrbhGKCmcVhcmsqS5hgD42thlcPseT4YtuV3hArEtq0qfNkKLSOloF8C005FqBx3Ey44rKPR74KjRETe8CetyDjwTBY+YVUlxcwpR4ZS4SGOsobnE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775625023; c=relaxed/simple;
-	bh=KyU2yJR9V/uUR9MwJTA9doEM3RTgBTYUaHwHPzvWfpM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LlcqNOYY8wblrkM1HdY7QywoYDF+sKdYIT/qo90lHx4D9GUtVrbioi4HB3LM/J6Fc+K9c7MJruv4zNybvjwIi4kEj5GAOKjddWgY3q1iZjqFA1/fA7G9V/54MzLyYIgfrR3K2dg7iUgWWGcXav4FxVT0h8RelTfQiv6BxOiARP4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org; dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b=aKRH8jvX; arc=none smtp.client-ip=198.137.202.133
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=infradead.org
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=bombadil.srs.infradead.org
+	s=arc-20240116; t=1775643285; c=relaxed/simple;
+	bh=IoYyZ/SI4yknpZ6vZ7pjbrZPFU9T+KTqEsLZBCK1sDQ=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=Wj68q2Q6c0OHDWZ65bUzpqPjqCjtXNbrAGCJ4ybhDi9aflOOWJF3kfT6S7TAAgjt34equQAbPTql3LyWIpJ+KR7Y/eZOZMSavCk/noeKTuOcMPYp0p2Ajc2iOrdtd6jHS83BQLsE8+kCvdRiPpcJ0wV59k8gx+yQEVRbyzxlwWI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru; spf=pass smtp.mailfrom=crpt.ru; dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b=jhb9a01/; arc=none smtp.client-ip=91.236.205.1
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=crpt.ru
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="aKRH8jvX"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Transfer-Encoding
-	:Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-	Sender:Reply-To:Content-ID:Content-Description;
-	bh=FGVZvsJ7+aFUi9R2AonAN1Szz4uf3rqKeEpjoICbM3I=; b=aKRH8jvXvX1teD1XeQODhCogn1
-	IkV6DyseyZRbC8aIwAjUzBwg1X9sch2mrOXvKkdJX1o/rmwK6gqTgqIMn1mrwJzNBIVFyhBAKqXNc
-	8agURruUzK/tbbRO6Bdyfr9+7nvhcx4tY2EjH/MtJqxTwkRAjT9JqRyUd1EEJbfhaygRoLLOuFX2s
-	cwTrJM3i85pkYTJuvPhmHSZA81ot5LOLzIbe4QQa3qAPz+ZH7hKzxuFcvNcCgifQkFqpVNBLZESEu
-	F+tqxWBMBmJzgIBtYIdpHDbCUJ2ubk+Sj51npE0LeBiHPZm739OAdvYNbPOWwVEe1i0i6P1lAxzEm
-	mZdAfNIw==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wALBD-00000008GxA-3rp7;
-	Wed, 08 Apr 2026 05:10:19 +0000
-Date: Tue, 7 Apr 2026 22:10:19 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Caleb Sander Mateos <csander@purestorage.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jens Axboe <axboe@kernel.dk>,
-	Sagi Grimberg <sagi@grimberg.me>,
-	Chaitanya Kulkarni <kch@nvidia.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	linux-block@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org
-Subject: Re: [PATCH 2/6] block: use integrity interval instead of sector as
- seed
-Message-ID: <adXjO5y6tLLVz77C@infradead.org>
-References: <20260403194109.2255933-1-csander@purestorage.com>
- <20260403194109.2255933-3-csander@purestorage.com>
- <adNUE67FpIGF_x7Q@infradead.org>
- <CADUfDZqHyTDO6aYed+mtChU9m3iPgW=hghwfifuCV8Z_CzxoFQ@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b="jhb9a01/"
+From: =?koi8-r?B?98HUz9LP0MnOIOHOxNLFyg==?= <a.vatoropin@crpt.ru>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: =?koi8-r?B?98HUz9LP0MnOIOHOxNLFyg==?= <a.vatoropin@crpt.ru>, "Roman
+ Bolshakov" <r.bolshakov@yadro.com>, David Disseldorp <ddiss@suse.de>,
+	"linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+	"target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"lvc-project@linuxtesting.org" <lvc-project@linuxtesting.org>
+Subject: [PATCH] scsi: target: Add a check to prevent the use of a NULL
+ pointer
+Thread-Topic: [PATCH] scsi: target: Add a check to prevent the use of a NULL
+ pointer
+Thread-Index: AQHcx0B3zaxAFxbBMk6qmv5jGMLGsw==
+Date: Wed, 8 Apr 2026 10:14:20 +0000
+Message-ID: <20260408101400.8373-1-a.vatoropin@crpt.ru>
+Accept-Language: ru-RU, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-kse-serverinfo: EX1.crpt.local, 9
+x-kse-antivirus-interceptor-info: scan successful
+x-kse-antivirus-info: Clean, bases: 4/7/2026 9:01:00 PM
+x-kse-attachment-filter-triggered-rules: Clean
+x-kse-attachment-filter-triggered-filters: Clean
+x-kse-bulkmessagesfiltering-scan-result: protection disabled
+Content-Type: text/plain; charset="koi8-r"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CADUfDZqHyTDO6aYed+mtChU9m3iPgW=hghwfifuCV8Z_CzxoFQ@mail.gmail.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=crpt.ru; s=crpt.ru; c=relaxed/relaxed;
+ h=from:to:cc:subject:date:message-id:content-type:mime-version;
+ bh=IqgtREMNwY7ZBwZB4NCZwdKeHpqQmhXD9Z3z/VQGaGs=;
+ b=jhb9a01/s3gYcBtd6BYgSbsz0r8hovHRTesym7kupJXXTzXglqkMAUGTQWdGPvdMU9Dl40jmVCkB
+	6zS5W+/Stmf06tQ5jEXlkia/GfKd48/4qMbS9HqcoSLvmCRTPrWMGb8D0Z7syEdQgzm/XumTTEW9
+	T4+GngbM6UbVBCQlpVkF9aZaV7faBaCwt0u6iv3FykHuna57dDPl66jVyekCx7pS1lk8K7of6qVJ
+	gozDZqqpZm6tZRWfeI+GIE+/g0N039JFV0lY86kihOy3VhYW/ZJh6PTHd0co/dU9y8uSOL6L7Vnr
+	dh1y2PTR1lTqYpyVXTmWc725BVlfQhB7iajv9g==
 
-On Tue, Apr 07, 2026 at 09:48:52AM -0700, Caleb Sander Mateos wrote:
-> On Sun, Apr 5, 2026 at 11:35 PM Christoph Hellwig <hch@infradead.org> wrote:
-> >
-> > On Fri, Apr 03, 2026 at 01:41:05PM -0600, Caleb Sander Mateos wrote:
-> > >  void bio_integrity_setup_default(struct bio *bio)
-> > >  {
-> > >       struct blk_integrity *bi = blk_get_integrity(bio->bi_bdev->bd_disk);
-> > >       struct bio_integrity_payload *bip = bio_integrity(bio);
-> > >
-> > > -     bip_set_seed(bip, bio->bi_iter.bi_sector);
-> > > +     bip_set_seed(bip, bio_integrity_intervals(bi, bio->bi_iter.bi_sector));
-> >
-> > Should we simply switch bip_set_seed to take a bio bvec_iter argument and
-> > lift all this logic into it?  That feels a lot less fragile.
-> 
-> Perhaps I'm misunderstanding the suggestion, but how would that work
-> for initializing the seed from struct uio_meta in
-> bio_integrity_map_iter()?
-> 
-> bip_set_seed(bio_integrity(bio), meta->seed);
+From: Andrey Vatoropin <a.vatoropin@crpt.ru>
 
-Just open code the assignment there as the code must be build with
-blk-integrityu support?
+Some functions accept a string input parameter, which is then passed to
+strscpy(). If strscpy() returns zero the (len > 0) branch is not taken and
+`stripped` remains NULL. The subsequent check (len < 0 || len >
+INQUIRY_VENDOR_LEN) does not catch this case, allowing a NULL `stripped`
+pointer to be passed to target_check_inquiry_data().
 
+Therefore, the existing checks are insufficient to prevent the use of a
+NULL pointer when an empty string is passed.
+
+Add exclusion of zero-length strings to avoid dereferencing a NULL
+`stripped` pointer.
+
+Found by Linux Verification Center (linuxtesting.org) with SVACE.
+      =20
+Fixes: 54a6f3f6a43c ("scsi: target: add device vendor_id configfs attribute=
+")
+Signed-off-by: Andrey Vatoropin <a.vatoropin@crpt.ru>
+---
+ drivers/target/target_core_configfs.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_=
+core_configfs.c
+index a1c91d4515bc..3aaa2b931009 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -1455,6 +1455,10 @@ static ssize_t target_wwn_vendor_id_store(struct con=
+fig_item *item,
+ 			"\n");
+ 		return -EOVERFLOW;
+ 	}
++	if (len =3D=3D 0) {
++		pr_err("Emulated T10 Vendor Identification equals zero.\n");
++		return -EINVAL;
++	}
+=20
+ 	ret =3D target_check_inquiry_data(stripped);
+=20
+@@ -1511,6 +1515,10 @@ static ssize_t target_wwn_product_id_store(struct co=
+nfig_item *item,
+ 			"\n");
+ 		return -EOVERFLOW;
+ 	}
++	if (len =3D=3D 0) {
++		pr_err("Emulated T10 Vendor equals zero.\n");
++		return -EINVAL;
++	}
+=20
+ 	ret =3D target_check_inquiry_data(stripped);
+=20
+@@ -1567,6 +1575,10 @@ static ssize_t target_wwn_revision_store(struct conf=
+ig_item *item,
+ 			"\n");
+ 		return -EOVERFLOW;
+ 	}
++	if (len =3D=3D 0) {
++		pr_err("Emulated T10 Revision equals zero.\n");
++		return -EINVAL;
++	}
+=20
+ 	ret =3D target_check_inquiry_data(stripped);
+=20
+--=20
+2.43.0
