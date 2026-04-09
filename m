@@ -1,125 +1,176 @@
-Received: from mail.crpt.ru (mail.crpt.ru [91.236.205.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-dy1-f180.google.com (mail-dy1-f180.google.com [74.125.82.180])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D35673803D6;
-	Wed,  8 Apr 2026 10:14:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=91.236.205.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68C33367F5D
+	for <target-devel@vger.kernel.org>; Thu,  9 Apr 2026 02:23:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.180
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775643285; cv=none; b=gXbQEHjCgyhTe4V83JBzqbFdohLSeMYE0O0+x0X7HfYKcgR6y4aQU4ixUWRrbhGKCmcVhcmsqS5hgD42thlcPseT4YtuV3hArEtq0qfNkKLSOloF8C005FqBx3Ey44rKPR74KjRETe8CetyDjwTBY+YVUlxcwpR4ZS4SGOsobnE=
+	t=1775701433; cv=none; b=sZ8Ayjmtc+EU8ZNtrywyIR0TEBnH/o46BAzaBTL2Bh7kXZ210+0Mc9DwwSlFCZXsKlCE651yS6ZMZ0qRAaEx1u8S+KpZ9Y5V5c9aWF5PV84T4krH8s/QhwrJHPot3WU6qvG7nQfWjgWEECAjsT+9CLZs0OZSU7yvNk7DfyZG4NM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775643285; c=relaxed/simple;
-	bh=IoYyZ/SI4yknpZ6vZ7pjbrZPFU9T+KTqEsLZBCK1sDQ=;
-	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=Wj68q2Q6c0OHDWZ65bUzpqPjqCjtXNbrAGCJ4ybhDi9aflOOWJF3kfT6S7TAAgjt34equQAbPTql3LyWIpJ+KR7Y/eZOZMSavCk/noeKTuOcMPYp0p2Ajc2iOrdtd6jHS83BQLsE8+kCvdRiPpcJ0wV59k8gx+yQEVRbyzxlwWI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru; spf=pass smtp.mailfrom=crpt.ru; dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b=jhb9a01/; arc=none smtp.client-ip=91.236.205.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=crpt.ru
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=crpt.ru
+	s=arc-20240116; t=1775701433; c=relaxed/simple;
+	bh=nw4pVaEcfm/QcpCg7nPjcfcAKQBAqQ4BkxPpfDJokm0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hjv5lBQ8phYIFPY84VqFD2qC1RpAZjFNmdsEy4YDvtV3LAuzhyhbzkQOsatOZJDAtffAzzTiJo/pS9RaP3pw6MSUs6oz2uPMC4lVYLHRvwoDntouwmRis/fcdxbjGMQTQcPj+NAG3BOjvUsEkX7i+8SmzdABKzdkSv3gMDKVpSg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UDNXnHOv; arc=none smtp.client-ip=74.125.82.180
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=crpt.ru header.i=@crpt.ru header.b="jhb9a01/"
-From: =?koi8-r?B?98HUz9LP0MnOIOHOxNLFyg==?= <a.vatoropin@crpt.ru>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-CC: =?koi8-r?B?98HUz9LP0MnOIOHOxNLFyg==?= <a.vatoropin@crpt.ru>, "Roman
- Bolshakov" <r.bolshakov@yadro.com>, David Disseldorp <ddiss@suse.de>,
-	"linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-	"target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"lvc-project@linuxtesting.org" <lvc-project@linuxtesting.org>
-Subject: [PATCH] scsi: target: Add a check to prevent the use of a NULL
- pointer
-Thread-Topic: [PATCH] scsi: target: Add a check to prevent the use of a NULL
- pointer
-Thread-Index: AQHcx0B3zaxAFxbBMk6qmv5jGMLGsw==
-Date: Wed, 8 Apr 2026 10:14:20 +0000
-Message-ID: <20260408101400.8373-1-a.vatoropin@crpt.ru>
-Accept-Language: ru-RU, en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-kse-serverinfo: EX1.crpt.local, 9
-x-kse-antivirus-interceptor-info: scan successful
-x-kse-antivirus-info: Clean, bases: 4/7/2026 9:01:00 PM
-x-kse-attachment-filter-triggered-rules: Clean
-x-kse-attachment-filter-triggered-filters: Clean
-x-kse-bulkmessagesfiltering-scan-result: protection disabled
-Content-Type: text/plain; charset="koi8-r"
-Content-Transfer-Encoding: quoted-printable
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UDNXnHOv"
+Received: by mail-dy1-f180.google.com with SMTP id 5a478bee46e88-2d18dfa2713so185049eec.0
+        for <target-devel@vger.kernel.org>; Wed, 08 Apr 2026 19:23:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775701429; x=1776306229; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=2NjOcxpQYu8C0IWIdL6Safc6hHjGZNla//RS6XeIqKQ=;
+        b=UDNXnHOvvynagP5E+ZiA+5Yhfw1tXvwhLgsnPv7fKIjuAww1DVVbXqeRhVh2r9urTZ
+         R2XPGTlolJFs9TNAon+/vHkUYqcwTSM/GVhBHvw4Gci6nr9WDf2g0AUm44MHNSEV68Sw
+         uss6o3aMFG2psihQ8p3lAsrGma9kB0TP9NZsnU7T+Y1FccLtk2O0EBDxBvevVNtlUSCF
+         q3zgqPjjIuxsFHbSNNwPLysMzKZF4Iyi7G4QvYMHz9z1pd35tLh2mPOLuY8ZIsQPHCF3
+         m10kVyAKAyydaKEC+Na92rBEnGP5tuYm5owqARrVKm0f2k/TzM6ufV1ap9/GO1qFxr59
+         N+Tw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775701429; x=1776306229;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=2NjOcxpQYu8C0IWIdL6Safc6hHjGZNla//RS6XeIqKQ=;
+        b=DuASmbTMGWTvSWhxpAmCeiVbCDHYZe7ztlpCcXHoooSga3/0dIGEYeF+dfLaTXW3KG
+         84aw50bB+m/6pV0m9invQKKm6kFUQEl49FlglP2nEu20OiAv9ZmDfgJTsly3w+73kI8O
+         FUKtGfj6dkL+eGeA9ugiMax0Jul8L1S+2/Vx5SIVhQryIn25TRUk9HrJTp5YCZaxnhxy
+         /AMrWQYIcSGrIiXtZLvAWW2OjTQuwmtKSe3qhauMWjd37bWonPQQpsUofFT2CrixfZ8G
+         7b9g02k+YfBzjFs8RFmtwG30qv5HBjhK1hPoaR+iqjjzMTNqLTLZAcPKijMd2wuCBBa/
+         wG3w==
+X-Forwarded-Encrypted: i=1; AJvYcCXAWPoakOZzLdS7dI3rUcR6oU3ECT0N7TLy0H9et1NlpJYlpGIRR2P4GMUVtFo35QGO+WcdNaz2UIkZHlc=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyUbPLl72j2UGA1Jgu9rBZ+eXYhST/WsrZQJ5d1ekbc+YHd7K8x
+	GY5ySTxoctO//vcV+CRSAU9pPl3IVuJOZS0zETGe6N6i15ND1qm0hNJu
+X-Gm-Gg: AeBDievVA7zC27myw7Ksv44m1VKXFJ2hTkjZbqxx+2s+sJzypA8VknJppbIKU81tNOw
+	8XwqynJ/D1otubOGYcQIaE+eP5pJBpN+XJp211fZQpgGcOrsePK0VtVSEz713ZRSbzQunNS2ut8
+	hCWcnb1WeXSGgErwU7yPVIlQAfpm8NyMLPyCdWurlfItGOkRfIAICjSBRSUrZnKaXE+wPTwD0GH
+	geHAcH4No8/Auzu/1gDteqhOQ3hTgUHdQPciQ72HhkBu0+x+cXXWL9VhmlY46B7/GkNeUNAMnaz
+	NzJnAw6iaw9+Ff5IwmQtDIphpEP6ch+hxQTb4tDKVdb8RZctNkUtEgJdBd0Fxd7zfs9Z+ElLsI2
+	WPF5I3LJMgQ+cWkmDPLoisjCxxsrq80zyqSuKva5kxpJP2muhSQTw4eZoCGPx/ezbkXeXFV8rKa
+	eEDJU7SQ0jlELm2sKmTJJQCsq3We/B/WjvVFKmoeUU
+X-Received: by 2002:a05:7300:371f:b0:2c1:6cfd:73ee with SMTP id 5a478bee46e88-2cbfc4623e3mr12849990eec.24.1775701429277;
+        Wed, 08 Apr 2026 19:23:49 -0700 (PDT)
+Received: from [192.168.86.23] ([136.25.189.61])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2d2bc2c40b1sm6286634eec.3.2026.04.08.19.23.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 08 Apr 2026 19:23:48 -0700 (PDT)
+Message-ID: <2e0b621e-9d12-46e9-9595-7fb7e2885f88@gmail.com>
+Date: Wed, 8 Apr 2026 19:23:46 -0700
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=crpt.ru; s=crpt.ru; c=relaxed/relaxed;
- h=from:to:cc:subject:date:message-id:content-type:mime-version;
- bh=IqgtREMNwY7ZBwZB4NCZwdKeHpqQmhXD9Z3z/VQGaGs=;
- b=jhb9a01/s3gYcBtd6BYgSbsz0r8hovHRTesym7kupJXXTzXglqkMAUGTQWdGPvdMU9Dl40jmVCkB
-	6zS5W+/Stmf06tQ5jEXlkia/GfKd48/4qMbS9HqcoSLvmCRTPrWMGb8D0Z7syEdQgzm/XumTTEW9
-	T4+GngbM6UbVBCQlpVkF9aZaV7faBaCwt0u6iv3FykHuna57dDPl66jVyekCx7pS1lk8K7of6qVJ
-	gozDZqqpZm6tZRWfeI+GIE+/g0N039JFV0lY86kihOy3VhYW/ZJh6PTHd0co/dU9y8uSOL6L7Vnr
-	dh1y2PTR1lTqYpyVXTmWc725BVlfQhB7iajv9g==
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] scsi: target: iscsi: reject zero-length Extended CDB AHS
+To: Dmitry Bogdanov <d.bogdanov@yadro.com>, carlos.bilbao@kernel.org
+Cc: martin.petersen@oracle.com, kees@kernel.org, pabeni@redhat.com,
+ mlombard@redhat.com, kuniyu@google.com, michael.christie@oracle.com,
+ linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+ linux-kernel@vger.kernel.org, bilbao@vt.edu
+References: <20260404014429.115807-1-carlos.bilbao@kernel.org>
+ <20260407092357.GA974@yadro.com>
+Content-Language: en-US
+From: Carlos Bilbao <carlos.bilbao.osdev@gmail.com>
+In-Reply-To: <20260407092357.GA974@yadro.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-From: Andrey Vatoropin <a.vatoropin@crpt.ru>
+Hello,
 
-Some functions accept a string input parameter, which is then passed to
-strscpy(). If strscpy() returns zero the (len > 0) branch is not taken and
-`stripped` remains NULL. The subsequent check (len < 0 || len >
-INQUIRY_VENDOR_LEN) does not catch this case, allowing a NULL `stripped`
-pointer to be passed to target_check_inquiry_data().
+On 4/7/26 02:23, Dmitry Bogdanov wrote:
+> On Fri, Apr 03, 2026 at 06:44:29PM -0700, carlos.bilbao@kernel.org wrote:
+>> From: Carlos Bilbao <carlos.bilbao@kernel.org>
+>>
+>> If ecdb_ahdr->ahslength is zero, two bugs follow:
+>>
+>>    kmalloc(be16_to_cpu(ecdb_ahdr->ahslength) + 15, ...)
+>>
+>> allocates 15 bytes, but the immediately following memcpy writes
+>> ISCSI_CDB_SIZE (16) bytes into it, a one-byte heap overflow. Also:
+>>
+>>    memcpy(cdb + ISCSI_CDB_SIZE, ecdb_ahdr->ecdb,
+>>             be16_to_cpu(ecdb_ahdr->ahslength) - 1);
+>>
+>> (u16)0 - 1 promotes to (int)-1 which converts to SIZE_MAX as size_t,
+>> causing a massive out-of-bounds write.
+>>
+>> Reject ahslength == 0 with ISCSI_REASON_PROTOCOL_ERROR before the kmalloc.
+>>
+>> Fixes: 8f1f7d297bce ("scsi: target: iscsi: Add support for extended CDB AHS")
+>> Signed-off-by: Carlos Bilbao (Lambda) <carlos.bilbao@kernel.org>
+>> ---
+>>   drivers/target/iscsi/iscsi_target.c | 15 +++++++++++----
+>>   1 file changed, 11 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+>> index e80449f6ce15..8db24d35c762 100644
+>> --- a/drivers/target/iscsi/iscsi_target.c
+>> +++ b/drivers/target/iscsi/iscsi_target.c
+>> @@ -1100,6 +1100,8 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
+>>          cdb = hdr->cdb;
+>>
+>>          if (hdr->hlength) {
+>> +               u16 ahslength;
+>> +
+>>                  ecdb_ahdr = (struct iscsi_ecdb_ahdr *) (hdr + 1);
+>>                  if (ecdb_ahdr->ahstype != ISCSI_AHSTYPE_CDB) {
+>>                          pr_err("Additional Header Segment type %d not supported!\n",
+>> @@ -1108,14 +1110,19 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
+>>                                  ISCSI_REASON_CMD_NOT_SUPPORTED, buf);
+>>                  }
+>>
+>> -               cdb = kmalloc(be16_to_cpu(ecdb_ahdr->ahslength) + 15,
+>> -                             GFP_KERNEL);
+>> +               ahslength = be16_to_cpu(ecdb_ahdr->ahslength);
+>> +               if (!ahslength) {
+>> +                       pr_err("Extended CDB AHS with zero length, protocol error.\n");
+>> +                       return iscsit_add_reject_cmd(cmd,
+>> +                               ISCSI_REASON_PROTOCOL_ERROR, buf);
+>> +               }
+>> +
+> For a complete solution please add a check that AHS fits in the buffer.
+> ahslength must be less or equal than ((hdr->hlength * 4) - 3).
 
-Therefore, the existing checks are insufficient to prevent the use of a
-NULL pointer when an empty string is passed.
 
-Add exclusion of zero-length strings to avoid dereferencing a NULL
-`stripped` pointer.
+For sure, I'll send a v2 including that.
 
-Found by Linux Verification Center (linuxtesting.org) with SVACE.
-      =20
-Fixes: 54a6f3f6a43c ("scsi: target: add device vendor_id configfs attribute=
-")
-Signed-off-by: Andrey Vatoropin <a.vatoropin@crpt.ru>
----
- drivers/target/target_core_configfs.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_=
-core_configfs.c
-index a1c91d4515bc..3aaa2b931009 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -1455,6 +1455,10 @@ static ssize_t target_wwn_vendor_id_store(struct con=
-fig_item *item,
- 			"\n");
- 		return -EOVERFLOW;
- 	}
-+	if (len =3D=3D 0) {
-+		pr_err("Emulated T10 Vendor Identification equals zero.\n");
-+		return -EINVAL;
-+	}
-=20
- 	ret =3D target_check_inquiry_data(stripped);
-=20
-@@ -1511,6 +1515,10 @@ static ssize_t target_wwn_product_id_store(struct co=
-nfig_item *item,
- 			"\n");
- 		return -EOVERFLOW;
- 	}
-+	if (len =3D=3D 0) {
-+		pr_err("Emulated T10 Vendor equals zero.\n");
-+		return -EINVAL;
-+	}
-=20
- 	ret =3D target_check_inquiry_data(stripped);
-=20
-@@ -1567,6 +1575,10 @@ static ssize_t target_wwn_revision_store(struct conf=
-ig_item *item,
- 			"\n");
- 		return -EOVERFLOW;
- 	}
-+	if (len =3D=3D 0) {
-+		pr_err("Emulated T10 Revision equals zero.\n");
-+		return -EINVAL;
-+	}
-=20
- 	ret =3D target_check_inquiry_data(stripped);
-=20
---=20
-2.43.0
+>
+>> +               cdb = kmalloc(ahslength + 15, GFP_KERNEL);
+> It took some time to recall what did 15 mean. May be make it clear for
+> everyone too?
+>
+> u16 cdb_length = ahslength - 1 + ISCSI_CDB_SIZE;
+> cdb = kmalloc(cdb_length, GFP_KERNEL);
+> memcpy(cdb, hdr->cdb, ISCSI_CDB_SIZE);
+> memcpy(cdb + ISCSI_CDB_SIZE, ecdb_ahdr->ecdb, cdb_length - ISCSI_CDB_SIZE);
+>
+
+Agreed!
+
+
+>>                  if (cdb == NULL)
+>>                          return iscsit_add_reject_cmd(cmd,
+>>                                  ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
+>>                  memcpy(cdb, hdr->cdb, ISCSI_CDB_SIZE);
+>> -               memcpy(cdb + ISCSI_CDB_SIZE, ecdb_ahdr->ecdb,
+>> -                      be16_to_cpu(ecdb_ahdr->ahslength) - 1);
+>> +               memcpy(cdb + ISCSI_CDB_SIZE, ecdb_ahdr->ecdb, ahslength - 1);
+>>          }
+>>
+>>          data_direction = (hdr->flags & ISCSI_FLAG_CMD_WRITE) ? DMA_TO_DEVICE :
+>> --
+>> 2.43.0
+>>
+
+Thanks,
+
+Carlos
+
