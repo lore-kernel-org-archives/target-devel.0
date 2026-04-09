@@ -1,94 +1,248 @@
-Received: from lamorak.hansenpartnership.com (lamorak.hansenpartnership.com [198.37.111.173])
+Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [62.89.141.173])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0FCF2C11F3;
-	Thu,  9 Apr 2026 13:32:57 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=198.37.111.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7156D3E314E;
+	Thu,  9 Apr 2026 18:12:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=62.89.141.173
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775741579; cv=none; b=fxBbWjtFNdG765/Sh5ElC5K8F7b934B5NeWaAJi9MUjr1fIlPqafcUzuBOLZrdDnsNAXL+CT/BO0F9WrGiIYqFSA/E40Gd2MzpSG9/FP+8KmpePShdArx3mCGZOUDjVPNNusR2sENcWU2SWOiCcCKjxRFpV24b3UM/AlYBMRToQ=
+	t=1775758382; cv=none; b=jPBFkce5IdXM1oR73zp4d1LQl0Kwxcrj3NcvsS19vR4mmxL8wW/vH//PX2n7RpmzuRHzssvYEPhl5QPncuxqBy+krKZnaIm0reghk/4NWMmfYlJ8evh3v7iUEaEc0I+SF6w4e1Ha4sSEUxrh4xsoCtEMjb8aPXFlJblfS6a99es=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775741579; c=relaxed/simple;
-	bh=sP23dfBsiSFyjKD918GeJyz2Md78d2u5CcBU4czSBhw=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=l0xkurraAf2pmmermUeZox2U5UJRh9Zuc6gG6CSkvQjIpQ5ohHswtklsogJQWSyoV2a5EgWW1MQ7QGlxYKMP6/GV3FwKYJdQe9xTHmf5jWTMI1YDfNR/03MNY9uCG9DEyHrVm74kmhNPoYTBJSRMKlV45r7/sHWvYad02nh4PRc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com; spf=pass smtp.mailfrom=HansenPartnership.com; dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b=FlFdaWMk; arc=none smtp.client-ip=198.37.111.173
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=HansenPartnership.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=HansenPartnership.com
+	s=arc-20240116; t=1775758382; c=relaxed/simple;
+	bh=BoGW7oywgvm57yYmgFIJhKPYzBfyhEW/uN+KSu6heaU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Z1pkP+nYR0+2vauJLLzvKfLodZ7EBKfx8ohRzW6suEJnaHscQ4K//wJ7y+uvbvFBWGNcUG/+A0YIABFmqUyBZ8NS1VCLOEy6CEBGLnc7RZqBdLn9hWKo5XW/dWgWg1Fas/wZxp/gVYCP0n4sY3yf/wK+9LX+VXoeij5b9l9mkaI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; spf=none smtp.mailfrom=ftp.linux.org.uk; dkim=pass (2048-bit key) header.d=linux.org.uk header.i=@linux.org.uk header.b=JJcsCEca; arc=none smtp.client-ip=62.89.141.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
+Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="FlFdaWMk"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1775741576;
-	bh=sP23dfBsiSFyjKD918GeJyz2Md78d2u5CcBU4czSBhw=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
-	b=FlFdaWMk3BDE/yJ824Bzu0gITyLBj7uTVQkEaJxomyCbGsXbebABZyZNIkkU7nCGf
-	 JgODVLMO0tJZn/tD4Xapkl6zCB4+1AncyP65YXRHDZNpmMolHqKYVU2O7cxVI6IEsS
-	 6Bt1TCN0kQ7Si3MLXj3w4aMGoejpfR57YF+Q1vTw=
-Received: from lingrow.int.hansenpartnership.com (unknown [IPv6:2601:5c4:4300:d341::a774])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lamorak.hansenpartnership.com (Postfix) with ESMTPSA id 7A52A1C024B;
-	Thu, 09 Apr 2026 09:32:56 -0400 (EDT)
-Message-ID: <9898c4e86004e562b5696a4c721a0cd4051ef8c3.camel@HansenPartnership.com>
-Subject: Re: [PATCH] scsi: target: Add a check to prevent the use of a NULL
- pointer
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: =?UTF-8?Q?=D0=92=D0=B0=D1=82=D0=BE=D1=80=D0=BE=D0=BF=D0=B8=D0=BD_?=
-	=?UTF-8?Q?=D0=90=D0=BD=D0=B4=D1=80=D0=B5=D0=B9?=
-	 <a.vatoropin@crpt.ru>, "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Roman Bolshakov <r.bolshakov@yadro.com>, David Disseldorp
- <ddiss@suse.de>,  "linux-scsi@vger.kernel.org"
- <linux-scsi@vger.kernel.org>, "target-devel@vger.kernel.org"
- <target-devel@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "lvc-project@linuxtesting.org"
- <lvc-project@linuxtesting.org>
-Date: Thu, 09 Apr 2026 09:32:55 -0400
-In-Reply-To: <20260408101400.8373-1-a.vatoropin@crpt.ru>
-References: <20260408101400.8373-1-a.vatoropin@crpt.ru>
-Autocrypt: addr=James.Bottomley@HansenPartnership.com;
- prefer-encrypt=mutual;
- keydata=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
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.50.3 
+	dkim=pass (2048-bit key) header.d=linux.org.uk header.i=@linux.org.uk header.b="JJcsCEca"
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=BoGW7oywgvm57yYmgFIJhKPYzBfyhEW/uN+KSu6heaU=; b=JJcsCEcaKqyNrvJOUZ8XOnA1AS
+	yC//2gnLRa8FcBRiXofOYljopOoyt9r8CbkWaLEFmbUVfW5qK5utkUh3D77jxlkhKoZiYVbvdTEnm
+	X8jEr88bUddVEJ+24e8elVa7rPEDm9C+KeO3Yi+QSp+riwZi9Be8u3P2jnyNq7RhzU24dEi9YT5JB
+	9o5OjQL5vQk2h32ksN+l6XHB7LZbu7YtKRAMPXU1ZH+Yata0JOXemtl88QWI3UJ7mBXR7GCgddkg5
+	qrhpzNPrKwHYiMCapxKfC0E4ZwUatWZBULD1y88efyo7haqTewJrOOn317SRlKBwAg9TXV76h3bsC
+	A/eZOWQA==;
+Received: from viro by zeniv.linux.org.uk with local (Exim 4.99.1 #2 (Red Hat Linux))
+	id 1wAtvH-00000003xj6-26He;
+	Thu, 09 Apr 2026 18:16:11 +0000
+Date: Thu, 9 Apr 2026 19:16:11 +0100
+From: Al Viro <viro@zeniv.linux.org.uk>
+To: Philipp Hahn <phahn-oss@avm.de>
+Cc: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
+	bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr,
+	dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
+	gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org,
+	intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev,
+	kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+	linux-btrfs@vger.kernel.org, linux-cifs@vger.kernel.org,
+	linux-clk@vger.kernel.org, linux-erofs@lists.ozlabs.org,
+	linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	linux-gpio@vger.kernel.org, linux-hyperv@vger.kernel.org,
+	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+	linux-mips@vger.kernel.org, linux-mm@kvack.org,
+	linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org,
+	linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
+	linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org,
+	linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
+	linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+	linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+	ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
+	sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
+	tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev,
+	Julia Lawall <Julia.Lawall@inria.fr>,
+	Nicolas Palix <nicolas.palix@imag.fr>, Chris Mason <clm@fb.com>,
+	David Sterba <dsterba@suse.com>, Ilya Dryomov <idryomov@gmail.com>,
+	Alex Markuze <amarkuze@redhat.com>,
+	Viacheslav Dubeyko <slava@dubeyko.com>,
+	Theodore Ts'o <tytso@mit.edu>,
+	Andreas Dilger <adilger.kernel@dilger.ca>,
+	Steve French <sfrench@samba.org>,
+	Paulo Alcantara <pc@manguebit.org>,
+	Ronnie Sahlberg <ronniesahlberg@gmail.com>,
+	Shyam Prasad N <sprasad@microsoft.com>, Tom Talpey <tom@talpey.com>,
+	Bharath SM <bharathsm@microsoft.com>,
+	Eric Van Hensbergen <ericvh@kernel.org>,
+	Latchesar Ionkov <lucho@ionkov.net>,
+	Dominique Martinet <asmadeus@codewreck.org>,
+	Christian Schoenebeck <linux_oss@crudebyte.com>,
+	Gao Xiang <xiang@kernel.org>, Chao Yu <chao@kernel.org>,
+	Yue Hu <zbestahu@gmail.com>, Jeffle Xu <jefflexu@linux.alibaba.com>,
+	Sandeep Dhavale <dhavale@google.com>,
+	Hongbo Li <lihongbo22@huawei.com>,
+	Chunhai Guo <guochunhai@vivo.com>,
+	Miklos Szeredi <miklos@szeredi.hu>,
+	Konstantin Komarov <almaz.alexandrovich@paragon-software.com>,
+	Andreas Gruenbacher <agruenba@redhat.com>,
+	Kees Cook <kees@kernel.org>, Tony Luck <tony.luck@intel.com>,
+	"Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+	Jan Kara <jack@suse.com>, Phillip Lougher <phillip@squashfs.org.uk>,
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Tejun Heo <tj@kernel.org>, David Vernet <void@manifault.com>,
+	Andrea Righi <arighi@nvidia.com>,
+	Changwoo Min <changwoo@igalia.com>, Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	Sylwester Nawrocki <s.nawrocki@samsung.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>, Max Filippov <jcmvbkbc@gmail.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	John Johansen <john.johansen@canonical.com>,
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@kernel.org>,
+	Mikulas Patocka <mpatocka@redhat.com>,
+	Benjamin Marzinski <bmarzins@redhat.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	David Ahern <dsahern@kernel.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Simon Horman <horms@kernel.org>,
+	Marcel Holtmann <marcel@holtmann.org>,
+	Johan Hedberg <johan.hedberg@gmail.com>,
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+	Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Jesper Dangaard Brouer <hawk@kernel.org>,
+	John Fastabend <john.fastabend@gmail.com>,
+	Stanislav Fomichev <sdf@fomichev.me>,
+	Jamal Hadi Salim <jhs@mojatatu.com>, Jiri Pirko <jiri@resnulli.us>,
+	Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
+	Xin Long <lucien.xin@gmail.com>,
+	Trond Myklebust <trondmy@kernel.org>,
+	Anna Schumaker <anna@kernel.org>,
+	Chuck Lever <chuck.lever@oracle.com>,
+	Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>,
+	Olga Kornievskaia <okorniev@redhat.com>,
+	Dai Ngo <Dai.Ngo@oracle.com>, Jon Maloy <jmaloy@redhat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Russell King <linux@armlinux.org.uk>,
+	John Crispin <john@phrozen.org>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Andrzej Hajda <andrzej.hajda@intel.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Robert Foss <rfoss@kernel.org>,
+	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+	Jonas Karlman <jonas@kwiboo.se>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Zhenyu Wang <zhenyuw.linux@gmail.com>,
+	Zhi Wang <zhi.wang.linux@gmail.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+	Sandy Huang <hjc@rock-chips.com>,
+	Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
+	Andy Yan <andy.yan@rock-chips.com>,
+	Igor Russkikh <irusskikh@marvell.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	Pavan Chebbi <pavan.chebbi@broadcom.com>,
+	Michael Chan <mchan@broadcom.com>,
+	Potnuri Bharat Teja <bharat@chelsio.com>,
+	Tony Nguyen <anthony.l.nguyen@intel.com>,
+	Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+	Taras Chornyi <taras.chornyi@plvision.eu>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Iyappan Subramanian <iyappan@os.amperecomputing.com>,
+	Keyur Chudgar <keyur@os.amperecomputing.com>,
+	Quan Nguyen <quan@os.amperecomputing.com>,
+	Heiner Kallweit <hkallweit1@gmail.com>,
+	Marc Zyngier <maz@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Gregory Clement <gregory.clement@bootlin.com>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Vinod Koul <vkoul@kernel.org>, Linus Walleij <linusw@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Alex Williamson <alex@shazbot.org>,
+	Mark Greer <mgreer@animalcreek.com>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Kieran Bingham <kieran.bingham@ideasonboard.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>, Lee Jones <lee@kernel.org>,
+	Pavel Machek <pavel@kernel.org>, Dave Penkler <dpenkler@gmail.com>,
+	"K. Y. Srinivasan" <kys@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+	Long Li <longli@microsoft.com>, Justin Sanders <justin@coraid.com>,
+	Jens Axboe <axboe@kernel.dk>, Georgi Djakov <djakov@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 00/61] treewide: Use IS_ERR_OR_NULL over manual NULL
+ check - refactor
+Message-ID: <20260409181611.GP3836593@ZenIV>
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 
-On Wed, 2026-04-08 at 10:14 +0000, =D0=92=D0=B0=D1=82=D0=BE=D1=80=D0=BE=D0=
-=BF=D0=B8=D0=BD =D0=90=D0=BD=D0=B4=D1=80=D0=B5=D0=B9 wrote:
-> From: Andrey Vatoropin <a.vatoropin@crpt.ru>
+On Tue, Mar 10, 2026 at 12:48:26PM +0100, Philipp Hahn wrote:
+> While doing some static code analysis I stumbled over a common pattern,
+> where IS_ERR() is combined with a NULL check. For that there is
+> IS_ERR_OR_NULL().
 
-Just so you know what's going on, the company you work for (CRPT) is
-listed as majority owned by USM Holdings LLC:
+... and valid uses of IS_ERR_OR_NULL are rare as hen teeth.
+Most of those are "I'm not sure how this function returns an
+error, let's use that just in case".
 
-https://tadviser.com/index.php/Company:USM_Holdings
-
-Who are on quite a big sanctions list including the US SDN list:
-
-https://sanctionssearch.ofac.treas.gov/Details.aspx?id=3D41919
-
-Which means we have to follow the LF guidelines to the letter for your
-contributions:
-
-https://www.linuxfoundation.org/blog/navigating-global-regulations-and-open=
--source-us-ofac-sanctions
-
-That doesn't mean we can't accept it, just that we have to be careful
-about how we do.
-
-If the ownership analysis isn't correct, by the way, please reply and
-say so and I'll re-evaluate.
-
-Regards,
-
-James
-
+Please, do not introduce more of that crap.
