@@ -1,94 +1,83 @@
-Received: from outgoing.mit.edu (outgoing-auth-1.mit.edu [18.9.28.11])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1B2933DFC66
-	for <target-devel@vger.kernel.org>; Fri, 10 Apr 2026 15:19:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=18.9.28.11
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F113633F599;
+	Sat, 11 Apr 2026 12:06:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1775834348; cv=none; b=R7afplYLKaTO1t6mnAAC1kf7bcYDT6VG4nE95RbXbyqFw0T2EvngTc65FO6jD2pchmko8SP6v8hIJytA99B5rvXqQXX0N6SjxPmhE/8HkoTVIr/AwMGF6eYPRjmHNgKEbmPrt5Cxyz8Dbl84NtKpNOZYD4nirRDkASGLIo71isQ=
+	t=1775909167; cv=none; b=g6NlnsoYPfOe1Ib4VwO8ngoq/ky5bnTEzX9xbQQcM4r+GFANf8Emdz8gaOS97RYy4o1orjmans94nEGqg0CEZw++U+u1xikcr5zaavD2EXxQdTuDCF4wCWtTQ3pSbd7yk1TXUGn/+PaJW0oLAiD0S3qRHN+B+TxPp6PdithEpkA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1775834348; c=relaxed/simple;
-	bh=2PJcapuxUWWHQgHKuYh+AB0Bg9+uWPE8WWtuj/kl/pY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aJx9v3BGZZPrW3OkcabYJtRshIsfjaNVgUCiVJb6OW6ymbgJt3NlUAcJPeR/m3so5o/jtWzEcJ36iqDeXG1s+jQfhNhl3pOIdub83sAygQRIJ41kkfQlBbZEQCBbgbsTgSGTxm2BNE3gIF8SJkFI+bOyWvMXm4s8vEtNw9GYm+I=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mit.edu; spf=pass smtp.mailfrom=mit.edu; dkim=pass (2048-bit key) header.d=mit.edu header.i=@mit.edu header.b=VPk6fsRQ; arc=none smtp.client-ip=18.9.28.11
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mit.edu
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mit.edu
+	s=arc-20240116; t=1775909167; c=relaxed/simple;
+	bh=9937+ZYauyAiomgbXKuGMrwZHg05M67o5BvEglmDEyA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fQe/wXD1duU6mRXoaFNrBrYCl7uuzI2TbR27dZnYq/+WWFoQLLmf3hEDc+XReoHwHICmyfri78kLx1G5LAwGFxRjfquuG4/yb93B/wIDanTax6z/81l+WUFNMu8phs7KEo1gfmn01/kbx/vzxKIK92iBjg2uQ+QR/bfnV/pxOjw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b=w9jHONHk; arc=none smtp.client-ip=10.30.226.201
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=mit.edu header.i=@mit.edu header.b="VPk6fsRQ"
-Received: from trampoline.thunk.org (pool-173-48-116-90.bstnma.fios.verizon.net [173.48.116.90])
-	(authenticated bits=0)
-        (User authenticated as tytso@ATHENA.MIT.EDU)
-	by outgoing.mit.edu (8.14.7/8.12.4) with ESMTP id 63AFIoOX015852
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 Apr 2026 11:18:51 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mit.edu; s=outgoing;
-	t=1775834332; bh=eTlXD+fEi5OyNbu4TxRTwpDmEzFd2ThBwniicSqJG9M=;
-	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type;
-	b=VPk6fsRQSXd/5Nh8TyOtre/wyuiwILVUqAvKliAeAoP9NWxPWea1Q4bx2oJrpWurM
-	 p0KwKN2oR00yADJbGywtFxHrkSJG+7akpDxyNmS3k4sITB9+LAQ7TS8gLOxrGyZcxm
-	 iD4ByRUzuod5KLDmmiVM+UapW56A71UlQ86DKwTjUgLnxxFdmaZEmaxScOtN1jt83o
-	 KncTyarsQsfg740s5ZTPNDrP3EVWK9I1eaZQ8RpFbx0tpkzHLOeLlgiMDfG5/h1trz
-	 DW2Ox+J23d04yMQY9WVUywWKP2CKxWAo6qH71mwqDeJ5+jdH6erLL9AAKNO/NyVKi7
-	 5qupF6y+RLfJA==
-Received: by trampoline.thunk.org (Postfix, from userid 15806)
-	id 0D7462E00E1; Fri, 10 Apr 2026 11:18:48 -0400 (EDT)
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: amd-gfx@lists.freedesktop.org, apparmor@lists.ubuntu.com,
-        bpf@vger.kernel.org, ceph-devel@vger.kernel.org, cocci@inria.fr,
-        dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
-        gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org,
-        intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev,
-        kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-        linux-btrfs@vger.kernel.org, linux-cifs@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-erofs@lists.ozlabs.org,
-        linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-hyperv@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-mm@kvack.org,
-        linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org,
-        linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org,
-        linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
-        linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org,
-        linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
-        linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-        ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
-        sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
-        tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev,
-        Philipp Hahn <phahn-oss@avm.de>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger.kernel@dilger.ca>
-Subject: Re: [PATCH 04/61] ext4: Prefer IS_ERR_OR_NULL over manual NULL check
-Date: Fri, 10 Apr 2026 11:18:40 -0400
-Message-ID: <177583430870.2758959.6171961359325912353.b4-ty@b4>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260310-b4-is_err_or_null-v1-4-bd63b656022d@avm.de>
-References: <20260310-b4-is_err_or_null-v1-4-bd63b656022d@avm.de>
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.b="w9jHONHk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DE47C4CEF7;
+	Sat, 11 Apr 2026 12:06:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1775909166;
+	bh=9937+ZYauyAiomgbXKuGMrwZHg05M67o5BvEglmDEyA=;
+	h=From:To:Cc:Subject:Date:From;
+	b=w9jHONHke3XQHZGRbaBxX74riBzQ93V36pKnHD3oWorQSja55wF1VWVmGSGzfxTmP
+	 ePIP66GX0aaNlqVxLVN7nbltzRUw6rfNUWrIsuB8q1N4ZesWh69OXuTO7PX6wv2tJ9
+	 DcNX3rUC+kLvC6p1PtG8q7i9lMRIFNx5LU4rW4aA=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: [PATCH] scsi: target: configfs: bound snprintf return in tg_pt_gp_members_show
+Date: Sat, 11 Apr 2026 14:06:00 +0200
+Message-ID: <2026041159-garter-theft-3be0@gregkh>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1766; i=gregkh@linuxfoundation.org; h=from:subject:message-id; bh=9937+ZYauyAiomgbXKuGMrwZHg05M67o5BvEglmDEyA=; b=owGbwMvMwCRo6H6F97bub03G02pJDJm3LNWnBFReFD518a2sR8G3ouoKxz6rD4w+ckXJwerCb tMyLRZ1xLIwCDIxyIopsnzZxnN0f8UhRS9D29Mwc1iZQIYwcHEKwETkZRjmmf9e5yWUx/TtZOzc PnH5+Dlec9fIMixYf1Hiwsfev0qmLjOnMVw/Kp+g1/QEAA==
+X-Developer-Key: i=gregkh@linuxfoundation.org; a=openpgp; fpr=F4B60CC5BF78C2214A313DCB3147D40DDB2DFB29
 Content-Transfer-Encoding: 8bit
 
+target_tg_pt_gp_members_show() formats LUN paths with snprintf() into a
+256-byte stack buffer, then will memcpy cur_len bytes from that buffer.
+snprintf() returns the length the output would have had, which can
+exceed the buffer size when the fabric WWN is long because iSCSI IQN
+names can be up to 223 bytes.  The check at the memcpy site only guards
+the destination page write, not the source read, so memcpy() will read
+past the stack buffer and copy adjacent stack contents to the sysfs
+reader, which when CONFIG_FORTIFY_SOURCE is enabled, fortify_panic()
+will be triggered.
 
-On Tue, 10 Mar 2026 12:48:30 +0100, Philipp Hahn wrote:
-> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
-> check.
-> 
-> Change generated with coccinelle.
+Commit 27e06650a5ea ("scsi: target: target_core_configfs: Add length
+check to avoid buffer overflow") added the same bound to the
+target_lu_gp_members_show() but the tg_pt_gp variant was missed so
+resolve that here.
 
-Applied, thanks!
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Fixes: c66ac9db8d4a ("[SCSI] target: Add LIO target core v4.0.0-rc6")
+Assisted-by: gregkh_clanker_t1000
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/target/target_core_configfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[04/61] ext4: Prefer IS_ERR_OR_NULL over manual NULL check
-        commit: 1d749e110277ce4103f27bd60d6181e52c0cc1e3
-
-Best regards,
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index a1c91d4515bc..84124b222a99 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -3227,7 +3227,7 @@ static ssize_t target_tg_pt_gp_members_show(struct config_item *item,
+ 			config_item_name(&lun->lun_group.cg_item));
+ 		cur_len++; /* Extra byte for NULL terminator */
+ 
+-		if ((cur_len + len) > PAGE_SIZE) {
++		if (cur_len > TG_PT_GROUP_NAME_BUF || (cur_len + len) > PAGE_SIZE) {
+ 			pr_warn("Ran out of lu_gp_show_attr"
+ 				"_members buffer\n");
+ 			break;
 -- 
-Theodore Ts'o <tytso@mit.edu>
+2.53.0
+
