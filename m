@@ -1,97 +1,111 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2323A30C35F;
-	Mon, 13 Apr 2026 05:37:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28EEB315D39;
+	Tue, 14 Apr 2026 02:19:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.165.32
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776058675; cv=none; b=VrthSnC0aKYhCgVEZbRKozfnX3k9sHpZ3DmVaAsC5kBizcYj7EZWlfZUtw5YN/98GzaerVlMPUTputAHKxPkGTJm7de0Tf/7I+H/1Eeh6d2IwY4TP0p5ITdOjtMisoOo8qjR1szBAs44mvMEnGmsA2sERxMoJypt0UMD/o0vvNI=
+	t=1776133181; cv=none; b=uru/vVK5sTQIf+aF06geUbIwBDBFvxsnfgIkY7uORlTkCErLBwE28fWZEGpKJCUjNl4cfxYJMYJ79r/a1VTl7hkvccnpHSmpgWsle6glrraiLLP1TEoKc9s6TxaVEJAs+FHTI2/RqFX90/D1apyihlQtql4zYlZQ2lk5RJPJgQQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776058675; c=relaxed/simple;
-	bh=c9xdq9i+G0zulG6323Mzb3s5ZrM924e/Sx6+1KNbAKI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=g4GsPoe+PNPCFy1xXwwsK0VDQQl9ADsbrY8Jr0OGwBNn2oIxW4gVyGIqpxx02/cGnaHGOFrFww3m2tODOF6AEIhquGEac84vxJ3bZW9+YYNbItX1tRWlFbRzS6hfsT2Jq9gt2vBtf8qrW0SiHVthSUNHNegiQU6qnjaqNcd5/JA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=CYAidPKq; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1776133181; c=relaxed/simple;
+	bh=FeV+V0wfi2zNvZ/AzbNffq/bU2r3NWzrpKtrX8SO4bw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=VEs5zd5kgFlL84JfCFQH1DUZNHnmLO9XJzSu/t7Dk0lIiTrLpiE5RlfIkvvj8aMiqmREYW+sdAi3611DAJfNKAZRvKHQBpxf7izYtE6hyMkq789xbi1FqP0g02kMndHXhty01x+MDcbAoPhnQQIeSgFA8/3fXaSH5ep0KKSle/8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=i6NAcOTS; arc=none smtp.client-ip=205.220.165.32
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="CYAidPKq"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D756C116C6;
-	Mon, 13 Apr 2026 05:37:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776058674;
-	bh=c9xdq9i+G0zulG6323Mzb3s5ZrM924e/Sx6+1KNbAKI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CYAidPKqcLB7DggtGonSr6XqmwbLLK9P1gNbNHNBTA3mq0vH1b50IIBl5v1zbXXps
-	 GHHshy2hpn9wUga0epb1dJOO1e0BFndrNx4clnhZZOn7zUnMfzMx6U35BjPalsVv13
-	 qe/HFMZY82osynewGvSj46/ZbqIGUSh+xDIhvSd+QTqUHgM4YzoDv1x2RvlqnEOdRo
-	 7wWfyVwal3hQDzOC2w+RlZOAL/OCU5glHRpaDPGFhkr7WJsPEXrSyKatLqSv2fukC/
-	 Y5fVO5ybbUpow/LSffY8kBaDZD2Hl75evpdO2SqpzWa/lnBVl0wUwWPho8OkumYSk0
-	 wrCdvcELxpHgA==
-Date: Mon, 13 Apr 2026 06:37:41 +0100
-From: Lorenzo Stoakes <ljs@kernel.org>
-To: Shinichiro Kawasaki <shinichiro.kawasaki@wdc.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Clemens Ladisch <clemens@ladisch.de>, 
-	Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	"K . Y . Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, 
-	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
-	Alexandre Torgue <alexandre.torgue@foss.st.com>, Miquel Raynal <miquel.raynal@bootlin.com>, 
-	Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
-	Bodo Stroesser <bostroesser@gmail.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, 
-	David Howells <dhowells@redhat.com>, Marc Dionne <marc.dionne@auristor.com>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
-	David Hildenbrand <david@kernel.org>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
-	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jann Horn <jannh@google.com>, 
-	Pedro Falcato <pfalcato@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
-	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, 
-	"linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>, 
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, 
-	"linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, 
-	"target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-afs@lists.infradead.org" <linux-afs@lists.infradead.org>, 
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, 
-	Ryan Roberts <ryan.roberts@arm.com>
-Subject: Re: [PATCH v4 19/21] uio: replace deprecated mmap hook with
- mmap_prepare in uio_info
-Message-ID: <adyAzdYVm95MZny2@lucifer>
-References: <cover.1774045440.git.ljs@kernel.org>
- <157583e4477705b496896c7acd4ac88a937b8fa6.1774045440.git.ljs@kernel.org>
- <adx2ws5z0NMIe5Yj@shinmob>
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="i6NAcOTS"
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63DLEdee3851803;
+	Tue, 14 Apr 2026 02:19:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=FlpNRHAnC9O8VZaDSxdGXleT+6YAJPJFK+TGoggj6Ng=; b=
+	i6NAcOTS+pImv/xFXDXb4zOBGsmgyrKLQqPpHY9sRzdluVY/B8aBfx1cWCCtchY8
+	mEhCtbXsg/TAVgW/tg56Z15ieTQnVIe3/On7HAdrXj5TGb3W8AEfQLdjgae6lwQq
+	0KoZvTpNFVrNYAVSiE+F1BL8k/ONLi0Ylf9jsthjLGW9hr9MsHWMcog9V2sWySU9
+	XZUbXsv9bOTISfkKrIwcmZ78mjmSkjkZzhMrpjJj8kSdP8w2PdgXU2uqT1FmKIEW
+	E/fIXXPQTZyE5tKiKxv/gQoukaVKSOv4jRztwn5V8ypyVd4f9CKs0wW4DDu036w9
+	wz+/ihrP7nqflube/nN6Sw==
+Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4dh87m8ag5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 14 Apr 2026 02:19:35 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 63E2EJvq023486;
+	Tue, 14 Apr 2026 02:19:34 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 4dh7nj0nv3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 14 Apr 2026 02:19:34 +0000 (GMT)
+Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 63E2JTjl036955;
+	Tue, 14 Apr 2026 02:19:34 GMT
+Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTP id 4dh7nj0nr0-6;
+	Tue, 14 Apr 2026 02:19:33 +0000 (GMT)
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+To: target-devel@vger.kernel.org, Stefan Hajnoczi <stefanha@redhat.com>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+        linux-scsi@vger.kernel.org, Bart Van Assche <bvanassche@acm.org>,
+        linux-kernel@vger.kernel.org, Maurizio Lombardi <mlombard@redhat.com>,
+        Dmitry Bogdanov <d.bogdanov@yadro.com>
+Subject: Re: [PATCH] scsi: target: don't validate ignored fields in PROUT PREEMPT
+Date: Mon, 13 Apr 2026 22:19:20 -0400
+Message-ID: <177595422538.3963380.16931848962227627439.b4-ty@oracle.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260402180342.126583-1-stefanha@redhat.com>
+References: <20260402180342.126583-1-stefanha@redhat.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adx2ws5z0NMIe5Yj@shinmob>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-13_03,2026-04-13_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0
+ malwarescore=0 phishscore=0 mlxscore=0 mlxlogscore=726 spamscore=0
+ lowpriorityscore=0 adultscore=0 suspectscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2604070000 definitions=main-2604140019
+X-Authority-Analysis: v=2.4 cv=JKYLdcKb c=1 sm=1 tr=0 ts=69dda437 cx=c_pps
+ a=XiAAW1AwiKB2Y8Wsi+sD2Q==:117 a=XiAAW1AwiKB2Y8Wsi+sD2Q==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=jiCTI4zE5U7BLdzWsZGv:22 a=7Gl3-_t3PgB9XO-mQDs3:22 a=VwQbUJbxAAAA:8
+ a=pV3RoMUzVIGkC2iK5J8A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: QQGf8eCM9Z659G2XH1KwvaZlwTn1TyRs
+X-Proofpoint-GUID: QQGf8eCM9Z659G2XH1KwvaZlwTn1TyRs
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE0MDAyMCBTYWx0ZWRfXyPyrVwXDfGYk
+ VmRt01X5aD+SFWFqjO6uUD3QTno+2W6UTvOZIMiht+dDj8iyCxqsmsok6ZoUxPSVMLMFhEsQee9
+ e3WW4X9K1yulWA6tCKrrrkpA0BxwZi4PLLEgawelzpO3sWjczTmRik5pmVlEbZtqz/OGWFgJ2Cq
+ W9tOkaGwL4Rtd/zDsYv2MeGDTfReV6U9AoRWB9VQ1n0AuqbT0+CzGf9qOZ2uQdbXaTxraimyIRC
+ iaIbw7OlRkb6mEYO1TrXY+OmQ01g+Q9/RyPOOZ246sUTwjeOZaP9/M0OOZvUxv6A1IZP8XZWdFc
+ LflV3q8ME8WTQg1LC8N8t3pkfGqoKSlKIJ8UXKO07FwoLZhWr/d+WnqJ1aqoziYl+oJnqAz1FTj
+ 8nRx9LlbxSW2aIgfJEpJYbXhwGvb3dpsCS69Vw29W2uN+qWCC5orNpFqgfS74Vkw1ohBZZ3i+ih
+ pq556TgepRFXTZLJZoQ==
 
-On Mon, Apr 13, 2026 at 05:14:08AM +0000, Shinichiro Kawasaki wrote:
-> On Mar 20, 2026 / 22:39, Lorenzo Stoakes (Oracle) wrote:
-> > The f_op->mmap interface is deprecated, so update uio_info to use its
-> > successor, mmap_prepare.
-> >
-> > Therefore, replace the uio_info->mmap hook with a new
-> > uio_info->mmap_prepare hook, and update its one user, target_core_user,
-> > to both specify this new mmap_prepare hook and also to use the new
-> > vm_ops->mapped() hook to continue to maintain a correct udev->kref
-> > refcount.
-> >
-> > Then update uio_mmap() to utilise the mmap_prepare compatibility layer to
-> > invoke this callback from the uio mmap invocation.
-> >
-> > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
->
-> Hello Lorenzo, since two weeks ago, I observe a failure during my kernel test
-> set targeting Linux for-next branch. On failure, kernel reported a WARN at
-> __vma_check_mmap_hook [1]. I bisected and found that this patch is the trigger.
-> Here I share my observations of the failure. Actions or advices for fix will be
-> appreciated.
+On Thu, 02 Apr 2026 14:03:42 -0400, Stefan Hajnoczi wrote:
 
-Ugh yeah thanks, this actually needs to account for use of compatibility layer,
-so probably we shouldn't even assert this as that isn't easily detectable.
+> The PERSISTENT RESERVE OUT command's PREEMPT service action provides two
+> different functions: 1. preempting persistent reservations and 2.
+> removing registrations. In the latter case the spec says:
+> 
+>   b) ignore the contents of the SCOPE field and the TYPE field;
+> 
+> The code currently validates the SCOPE and TYPE fields even when PREEMPT
+> is called to remove registrations.
+> 
+> [...]
 
-I'll send a hotfix for this that can be bundled up with 7.1 patches.
+Applied to 7.1/scsi-queue, thanks!
 
-Cheers, Lorenzo
+[1/1] scsi: target: don't validate ignored fields in PROUT PREEMPT
+      https://git.kernel.org/mkp/scsi/c/070ec6f69141
+
+-- 
+Martin K. Petersen
