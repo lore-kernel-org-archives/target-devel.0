@@ -1,206 +1,155 @@
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0CF1364E96;
-	Thu, 16 Apr 2026 05:23:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=213.95.11.211
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5C69337C924;
+	Thu, 16 Apr 2026 12:25:18 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776317010; cv=none; b=jmZ6Zy8ADhW/GfKcwlErxUYQsnaWRCapac1mJn2B8k2vVem5IEBeOw3X8X4bdhNXRY5DY7ms+UqiV8tvu3XhCEm1WqaOyifq++eQ+HJexbJhy/L84FzlISSOk9LEQasnlUSAFvahDmiy83HITIS+j80n9dRS+PrQ5X2hqppuw6w=
+	t=1776342318; cv=none; b=BxN9ADopjT0HG67ERqv27hTKoTqduufKYyqNQQVEskErZusc7h4cHqQrNDfWE/SFLyKX16g5jXT54Xde2HaMrxPV4Q6gUQOSGC3FPPnSWxfIbdpoGLYoNnXoowfaZAPpalMqUekDmhLyuprL40HoH41iMxukcXlhldI0BRF2E7s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776317010; c=relaxed/simple;
-	bh=J9eNPp2+NId5+4/lXrYfhpWxIcVpkia+bExPRs37KE8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iEiQZe3cb4x1YWmQUeSzwGP84Wfu8KGfQdpnooifSJMam0aZz5lWcpMnk3VioKBCkAXI639jH4kscNC1q0YTCYRMN2yHdqWgrJU66pD6og4zkMoYe2X/1gSbzUvFB4jmoZDgPxQ5Y2naIrn0F+/i4bHDE4pqMmEGEBSriXYd4v8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lst.de; spf=pass smtp.mailfrom=lst.de; arc=none smtp.client-ip=213.95.11.211
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=lst.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=lst.de
-Received: by verein.lst.de (Postfix, from userid 2407)
-	id 1E5616732A; Thu, 16 Apr 2026 07:23:26 +0200 (CEST)
-Date: Thu, 16 Apr 2026 07:23:25 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Caleb Sander Mateos <csander@purestorage.com>
-Cc: Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>,
-	Sagi Grimberg <sagi@grimberg.me>,
-	Chaitanya Kulkarni <kch@nvidia.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Anuj Gupta <anuj20.g@samsung.com>, linux-block@vger.kernel.org,
-	linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH v2 6/6] blk-integrity: avoid sector_t in
- bip_{get,set}_seed()
-Message-ID: <20260416052325.GE14950@lst.de>
-References: <20260416002214.2048150-1-csander@purestorage.com> <20260416002214.2048150-7-csander@purestorage.com>
+	s=arc-20240116; t=1776342318; c=relaxed/simple;
+	bh=gECMS4EGrtN1lWkNcMdqV1cQaJPbxrgRQTXN3zouHSg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Qdy/3MK0MwfEslDJpUvmQ3NbrxoYe4MuYEDd5I/0hg/Nklg/98f/WeraW+0hZjOYR3ll5HB/lln9Vf/aNZ/P5qvUZTryMZaQMBekQrlZ6d0uvRI+GqT9D3Ogs1R7/zYBLCu6V41SnsfnNkoGkdpGsPaklv/lrlL6JXwJhjAW5P8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=GQGv29sX; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="GQGv29sX"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D4797C2BCB3;
+	Thu, 16 Apr 2026 12:25:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776342318;
+	bh=gECMS4EGrtN1lWkNcMdqV1cQaJPbxrgRQTXN3zouHSg=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=GQGv29sXj5S5z7UPKnXaUJAuD1qc92DQaWs8UXQ6wwBCK62RBOeMuB3RtNcxzLs+n
+	 PPcHL7L8pFqT/h2G0bvvPkUySB8nqp1hX+g8DsxNBEPpxoa8+yXm1bMdZVixBjqxgs
+	 n60V3osh+8lSW6pt2nDmsfqoDHDW6Auv9CDrXKgdtoPlM9Xla54AXl1OSAYSKpcXrA
+	 NmL+fSV7Qk/BTzx5WK8y+vV+U+fxOTS5SiuiemUg0UByoPARoWSlKdZYhXUYnMvTFf
+	 DgJsTYvf1ogHE4V/gC2FO90mA6aK9sVcz0Z1Cm9dDcGVpaCAj1nCKENYb7/YBcL1F4
+	 1oc9q29NjGBrg==
+Message-ID: <1fd72d1b-f5cd-447f-ae11-6f4d4426b8e8@kernel.org>
+Date: Thu, 16 Apr 2026 14:24:57 +0200
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260416002214.2048150-7-csander@purestorage.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 55/61] interconnect: Prefer IS_ERR_OR_NULL over manual
+ NULL check
+To: Philipp Hahn <phahn-oss@avm.de>, amd-gfx@lists.freedesktop.org,
+ apparmor@lists.ubuntu.com, bpf@vger.kernel.org, ceph-devel@vger.kernel.org,
+ cocci@inria.fr, dm-devel@lists.linux.dev, dri-devel@lists.freedesktop.org,
+ gfs2@lists.linux.dev, intel-gfx@lists.freedesktop.org,
+ intel-wired-lan@lists.osuosl.org, iommu@lists.linux.dev,
+ kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-block@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+ linux-btrfs@vger.kernel.org, linux-cifs@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-erofs@lists.ozlabs.org,
+ linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-gpio@vger.kernel.org, linux-hyperv@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-mm@kvack.org,
+ linux-modules@vger.kernel.org, linux-mtd@lists.infradead.org,
+ linux-nfs@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
+ linux-rockchip@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-sound@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com,
+ linux-trace-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+ ntfs3@lists.linux.dev, samba-technical@lists.samba.org,
+ sched-ext@lists.linux.dev, target-devel@vger.kernel.org,
+ tipc-discussion@lists.sourceforge.net, v9fs@lists.linux.dev
+Cc: Georgi Djakov <djakov@kernel.org>
+References: <20260310-b4-is_err_or_null-v1-0-bd63b656022d@avm.de>
+ <20260310-b4-is_err_or_null-v1-55-bd63b656022d@avm.de>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <20260310-b4-is_err_or_null-v1-55-bd63b656022d@avm.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 15, 2026 at 06:22:14PM -0600, Caleb Sander Mateos wrote:
-> bip_set_seed() and big_get_seed() take/return a sector_t value that's
-> actually an integrity interval number. This is confusing, so pass
-> struct blk_integrity and struct bio instead to bip_set_seed() and
-> convert the bio's device address to integrity intervals.
+On 10/03/2026 12:49, Philipp Hahn wrote:
+> Prefer using IS_ERR_OR_NULL() over using IS_ERR() and a manual NULL
+> check.
 > 
-> Open-code the access to bip->bip_iter.bi_sector in the one caller of
-> bip_set_seed() that doesn't use the bio device address for the seed.
-> Open-code bip_get_seed() in its one caller.
+> Semantich change: Previously the code only printed the warning on error,
+> but not when the pointer was NULL. Now the warning is printed in both
+> cases!
+
+NAK, read the code
+
 > 
-> Add a comment to struct bvec_iter's bi_sector field explaining its
-> alternate use for bip_iter.
+> Change found with coccinelle.
 > 
-> Signed-off-by: Caleb Sander Mateos <csander@purestorage.com>
-> Suggested-by: Christoph Hellwig <hch@infradead.org>
+> To: Georgi Djakov <djakov@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Philipp Hahn <phahn-oss@avm.de>
 > ---
->  block/bio-integrity.c               |  5 ++---
->  block/t10-pi.c                      |  2 +-
->  drivers/nvme/target/io-cmd-bdev.c   |  3 +--
->  drivers/target/target_core_iblock.c |  3 +--
->  include/linux/bio-integrity.h       | 11 -----------
->  include/linux/blk-integrity.h       | 14 ++++++++++++++
->  include/linux/bvec.h                |  1 +
->  7 files changed, 20 insertions(+), 19 deletions(-)
+>  drivers/interconnect/core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/block/bio-integrity.c b/block/bio-integrity.c
-> index 3ad6a6799f17..e9ae5db99f64 100644
-> --- a/block/bio-integrity.c
-> +++ b/block/bio-integrity.c
-> @@ -103,13 +103,12 @@ void bio_integrity_free_buf(struct bio_integrity_payload *bip)
+> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+> index 8569b78a18517b33abeafac091978b25cbc1acc7..22e92b30f73853d5bd2e05b4f52cb5aa22556468 100644
+> --- a/drivers/interconnect/core.c
+> +++ b/drivers/interconnect/core.c
+> @@ -790,7 +790,7 @@ void icc_put(struct icc_path *path)
+>  	size_t i;
+>  	int ret;
 >  
->  void bio_integrity_setup_default(struct bio *bio)
->  {
->  	struct blk_integrity *bi = blk_get_integrity(bio->bi_bdev->bd_disk);
->  	struct bio_integrity_payload *bip = bio_integrity(bio);
-> -	u64 seed = bio->bi_iter.bi_sector >> (bi->interval_exp - SECTOR_SHIFT);
->  
-> -	bip_set_seed(bip, seed);
-> +	bip_set_seed(bip, bi, bio);
->  
->  	if (bi->csum_type) {
->  		bip->bip_flags |= BIP_CHECK_GUARD;
->  		if (bi->csum_type == BLK_INTEGRITY_CSUM_IP)
->  			bip->bip_flags |= BIP_IP_CHECKSUM;
-> @@ -472,11 +471,11 @@ int bio_integrity_map_iter(struct bio *bio, struct uio_meta *meta)
->  
->  	it.count = integrity_bytes;
->  	ret = bio_integrity_map_user(bio, &it);
->  	if (!ret) {
->  		bio_uio_meta_to_bip(bio, meta);
-> -		bip_set_seed(bio_integrity(bio), meta->seed);
-> +		bio_integrity(bio)->bip_iter.bi_sector = meta->seed;
->  		iov_iter_advance(&meta->iter, integrity_bytes);
->  		meta->seed += bio_integrity_intervals(bi, bio_sectors(bio));
->  	}
->  	return ret;
->  }
-> diff --git a/block/t10-pi.c b/block/t10-pi.c
-> index 787950dec50a..71367fd082bd 100644
-> --- a/block/t10-pi.c
-> +++ b/block/t10-pi.c
-> @@ -510,11 +510,11 @@ static void blk_reftag_remap_prepare(struct blk_integrity *bi,
->  static void __blk_reftag_remap(struct bio *bio, struct blk_integrity *bi,
->  			       unsigned *intervals, u64 *ref, bool prep)
->  {
->  	struct bio_integrity_payload *bip = bio_integrity(bio);
->  	struct bvec_iter iter = bip->bip_iter;
-> -	u64 virt = bip_get_seed(bip);
-> +	u64 virt = bip->bip_iter.bi_sector;
->  	union pi_tuple *ptuple;
->  	union pi_tuple tuple;
->  
->  	if (prep && bip->bip_flags & BIP_MAPPED_INTEGRITY) {
->  		*ref += bio->bi_iter.bi_size >> bi->interval_exp;
-> diff --git a/drivers/nvme/target/io-cmd-bdev.c b/drivers/nvme/target/io-cmd-bdev.c
-> index f2d9e8901df4..2c4b312f2f55 100644
-> --- a/drivers/nvme/target/io-cmd-bdev.c
-> +++ b/drivers/nvme/target/io-cmd-bdev.c
-> @@ -218,12 +218,11 @@ static int nvmet_bdev_alloc_bip(struct nvmet_req *req, struct bio *bio,
->  		pr_err("Unable to allocate bio_integrity_payload\n");
->  		return PTR_ERR(bip);
->  	}
->  
->  	/* virtual start sector must be in integrity interval units */
-> -	bip_set_seed(bip, bio->bi_iter.bi_sector >>
-> -		     (bi->interval_exp - SECTOR_SHIFT));
-> +	bip_set_seed(bip, bi, bio);
->  
->  	resid = bio_integrity_bytes(bi, bio_sectors(bio));
->  	while (resid > 0 && sg_miter_next(miter)) {
->  		len = min_t(size_t, miter->length, resid);
->  		rc = bio_integrity_add_page(bio, miter->page, len,
-> diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
-> index 1087d1d17c36..4e0fa91a08fd 100644
-> --- a/drivers/target/target_core_iblock.c
-> +++ b/drivers/target/target_core_iblock.c
-> @@ -706,12 +706,11 @@ iblock_alloc_bip(struct se_cmd *cmd, struct bio *bio,
->  		pr_err("Unable to allocate bio_integrity_payload\n");
->  		return PTR_ERR(bip);
->  	}
->  
->  	/* virtual start sector must be in integrity interval units */
-> -	bip_set_seed(bip, bio->bi_iter.bi_sector >>
-> -				  (bi->interval_exp - SECTOR_SHIFT));
-> +	bip_set_seed(bip, bi, bio);
->  
->  	pr_debug("IBLOCK BIP Size: %u Sector: %llu\n", bip->bip_iter.bi_size,
->  		 (unsigned long long)bip->bip_iter.bi_sector);
->  
->  	resid = bio_integrity_bytes(bi, bio_sectors(bio));
-> diff --git a/include/linux/bio-integrity.h b/include/linux/bio-integrity.h
-> index af5178434ec6..edcd0855abba 100644
-> --- a/include/linux/bio-integrity.h
-> +++ b/include/linux/bio-integrity.h
-> @@ -56,21 +56,10 @@ static inline bool bio_integrity_flagged(struct bio *bio, enum bip_flags flag)
->  		return bip->bip_flags & flag;
->  
->  	return false;
->  }
->  
-> -static inline sector_t bip_get_seed(struct bio_integrity_payload *bip)
-> -{
-> -	return bip->bip_iter.bi_sector;
-> -}
-> -
-> -static inline void bip_set_seed(struct bio_integrity_payload *bip,
-> -				sector_t seed)
-> -{
-> -	bip->bip_iter.bi_sector = seed;
-> -}
-> -
->  void bio_integrity_init(struct bio *bio, struct bio_integrity_payload *bip,
->  		struct bio_vec *bvecs, unsigned int nr_vecs);
->  struct bio_integrity_payload *bio_integrity_alloc(struct bio *bio, gfp_t gfp,
->  		unsigned int nr);
->  int bio_integrity_add_page(struct bio *bio, struct page *page, unsigned int len,
-> diff --git a/include/linux/blk-integrity.h b/include/linux/blk-integrity.h
-> index 825d777c078b..3a2e55e809c5 100644
-> --- a/include/linux/blk-integrity.h
-> +++ b/include/linux/blk-integrity.h
-> @@ -85,10 +85,24 @@ static inline unsigned int bio_integrity_bytes(struct blk_integrity *bi,
->  					       unsigned int sectors)
->  {
->  	return bio_integrity_intervals(bi, sectors) * bi->metadata_size;
->  }
->  
-> +/**
-> + * bip_set_seed - Set bip reference tag seed from bio device address
-> + * @bip:	struct bio_integrity_payload whose ref tag seed to set
-> + * @bi:		struct blk_integrity profile for device
-> + * @bio:	struct bio whose device address to use for the ref tag seed
-> + */
-> +static inline void bip_set_seed(struct bio_integrity_payload *bip,
-> +				const struct blk_integrity *bi,
-> +				const struct bio *bio)
-> +{
-> +	bip->bip_iter.bi_sector =
-> +		bio_integrity_intervals(bi, bio->bi_iter.bi_sector);
+> -	if (!path || WARN_ON(IS_ERR(path)))
+> +	if (WARN_ON(IS_ERR_OR_NULL(path)))
 
-The bip is pointed to by the bio, so we don't need to pass it separately.
-Same for struct blk_integrity.
+IS_ERR_OR_NULL is simply discouraged, but beside of code preference, you
+just added bug here. This is clearly not equivalent and you emit warn on
+perfectly valid case!
 
+Best regards,
+Krzysztof
