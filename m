@@ -1,294 +1,162 @@
-Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
+Received: from mail-pf1-f226.google.com (mail-pf1-f226.google.com [209.85.210.226])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2357E14D719
-	for <target-devel@vger.kernel.org>; Fri, 17 Apr 2026 01:53:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.46
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1776390800; cv=pass; b=a3D0/hd3yZHRALWZk2bqJ/yCbx4FQ5Lz2Tu90FtzDtlAnnNWMi+QKXy3e6Bwx4FJqk+N7e50rybRtcyQZiMNyXQWg/HhRUI8oqumlwgWTJmtHv3jfjC/sXy502Us4brvRM7PkMjpIWlYQ0u5xhpnKeLj7tp1YK0s/5QB8ezn+cs=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1776390800; c=relaxed/simple;
-	bh=kOPxik6cGe9f5V9/eiojkqgQAZA5gmwpTfXIgNGzy6s=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=o4ofiVvp5G5gYyPt1pas8WSenGJ34mgBCmuNOIU9LGaV1jYk/70IGe2DF8pV9LF/hXn0WlyicE4qkR7BJE7UXfvPCehXidQpfDSNc7pKpJVlzev/tX7nCggKKLhkfitxF42BGUcIgzti/9KruewwnmcXBFJf0ocNadUbQXFkVY8=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=purestorage.com; spf=fail smtp.mailfrom=purestorage.com; dkim=pass (2048-bit key) header.d=purestorage.com header.i=@purestorage.com header.b=GwU6xmwC; arc=pass smtp.client-ip=209.85.160.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6BF5B2D7DF8
+	for <target-devel@vger.kernel.org>; Fri, 17 Apr 2026 01:57:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.226
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1776391069; cv=none; b=SxJPaDb09D7nBUjHKvb//JRRRONpLufZonVUf0EqNNy+G0Sg+mmFLMem/1sLsNUI+KMEWuEbUigjtw6+Cc/rZwFIya3T3oKKc8HKUQrIi0tjRRmM2rk+Dp7YY7u0Ss6PUnexboYj0Dv366TXtdxvPnD4wjhqRgHUcsqlyox2mcw=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1776391069; c=relaxed/simple;
+	bh=ohy1wVq/S70Vz7N/CvoXP+q1xaLNMz098vhZKOg7jwI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=tShgzooW4YG3+0DBKh3sh6fI4jNMsBXjJrTWzy4KVFd+p3T6J2BwfUlUeWufy0KXvoYLDCoQq0ehh8IKAOzG1Ys0kGWtPl63CP1UtLt6dMBLKn9IFQZ9Qxef3uGVZUvQWvBnn2/HrsNTG8iQm0DxCAHOp4uZSqz38UyyQ91se5o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=purestorage.com; spf=fail smtp.mailfrom=purestorage.com; dkim=pass (2048-bit key) header.d=purestorage.com header.i=@purestorage.com header.b=JiCEr8me; arc=none smtp.client-ip=209.85.210.226
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=purestorage.com
 Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=purestorage.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=purestorage.com header.i=@purestorage.com header.b="GwU6xmwC"
-Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-41540f23deaso12287fac.2
-        for <target-devel@vger.kernel.org>; Thu, 16 Apr 2026 18:53:17 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776390797; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Li+p85aE8RXg5b1b9frdwhmehQ0xbNNSeLs/41238JuQ0yMsDuyEh+aZIGTHvKWwau
-         5SDAy5QEEDUwbh2UhuWQcIHpHlRfuxKDYtWA2IYGHX6A6yUfWa1WublvgqkXDMEIdc3L
-         vGU83j3Kf01E1PpgsaZHNJUm5OwsuGfSoFTg2OD9Qm7un8hlH2IM3RNkj+bt4wjbEzYw
-         6ECaVOjFBd05gHGanzSTvqtusDC01bcIgFdLoTgiFyyRXYMcxuR/VGpoTD5fo8nY+5Yj
-         XZy/e5OVBrWcFMJe48CuIveaKQDpl3UDXWORxYfCYuvy5shG2rafZMc5WRXqQFjo5lOo
-         raWg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=+KsO1NaX9EqdvAZLJ/Ig7h5Lud7184o3UpmgRp/VzKQ=;
-        fh=NIx+zawwPkfpPNJJBLoGr4FpBOh/Le80KaWuV7BoSwk=;
-        b=O/mcaSAi0zh2fXA/s+UGfBHTqjuerfyPHod+swL8hjw9cfRJBiGqJU8wrnMkMUpfve
-         NJvUVGXM/K7yEXZfVctfzHBXEMZqacW95SOQzTz6jBVgmrt1ar86IJlRbvZOjLzH89T0
-         SJ6lK9F4cIsoGP8Q6tZTff0sDjtlDjRffEESwjVzX/KbS3GmaGBpJ70RbrO25PMGxdOi
-         zjHsVRli+b6KJxrdmvXv1YaxrCga46BF26TUojfXnUqQv/M57eePOLUA5ufKstqjnEzy
-         gVExklFR+aGeKHKd9xhSZxKZJkTpAJ+3252UQc2/L6fuSU75MSYTxlbNwXjzDozn9NgF
-         /Ijg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=purestorage.com header.i=@purestorage.com header.b="JiCEr8me"
+Received: by mail-pf1-f226.google.com with SMTP id d2e1a72fcca58-823be54d49cso22452b3a.3
+        for <target-devel@vger.kernel.org>; Thu, 16 Apr 2026 18:57:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=purestorage.com; s=google2022; t=1776390797; x=1776995597; darn=vger.kernel.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=purestorage.com; s=google2022; t=1776391060; x=1776995860; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=+KsO1NaX9EqdvAZLJ/Ig7h5Lud7184o3UpmgRp/VzKQ=;
-        b=GwU6xmwCvRkFrguBVDxYY/dZq2a9YCy4ai+T5H7owxALjG17//ep4JHehrP6YAzifb
-         2ogTtmAg4CuNGIpB0cc0vWNM1dsvlL2xdE0DpBJ7W325FC4H5dnYOE2CDXZj/eKAfSJC
-         iE+jlmKMOcQCvnPxJH1o8lYDI4e9ZAShcU01AseNT8CvEGvyl0cy+ZLvNglGxi+/Gth2
-         4GUyCKTDg67W66qR0RVwq0miehQxf8j4gIcpB+mO+gUCZB2dS7/vvR4xqhUlvezX4Ape
-         wlLnCo/vZVAc+v+ywf5N9istG+iM/FpxaQj33/FOXT+FAzDSY9DXcyEg6BRrK+ROoGEr
-         pjxw==
+        bh=i9pyvtNYah5iCr5GskErP9n/SMj5zNsqkI2O6P5JyAY=;
+        b=JiCEr8meVletjSYNPVhWU0BNb5lHci4nAGEo1unYXQZakhLH8zwfuRyZy1DhKj1Xpg
+         TD9ZoLvoSZ3sSgBWLTw3sDFJ2OCrudYfBwo7leWFDh4T6tTjDzE+GrWFCfVc5d6uEwVq
+         0F/VtbZF9PT/+KY+t84yCR8O+QdvR5umPX8GPMhOOMvYu6yYE+YL6cS9I1OutNfk53Qf
+         e1qz8QmFuWjxwubDjbaZHstzUZo6vcwdG5fF/XYx+YsUiXBHwSQ9NYyN3r7D6sBvV9X+
+         0O9smbqZx1mFRdQIYRMrq7eV/U7yketg9Mvlx8VQZrV+YVKZKTi0mcxt+Lqa8+xwN33V
+         dpAg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776390797; x=1776995597;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1776391060; x=1776995860;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=+KsO1NaX9EqdvAZLJ/Ig7h5Lud7184o3UpmgRp/VzKQ=;
-        b=QnvNZnwhz+/qGgtncr0b+KKXtnWS+3SxpYoIy3gFz7mJ2Jl+HkfzYd0Gxh2aSCmGom
-         zfVOyTqypxv+vPWqPsn+OxH+BJcu1aZGqyNX4CLwCzWQaMaJVyqR3zLbmboV53792QQM
-         KGrtgDZRGBysY+IVYuQFN100svgRrcGf1RdXKfCPdaproaPFi0ed3NJ9QwbWsMSLRuAC
-         O9J2ulHkcwBfbVtb1HTQ0iDdBJ4Og4toTAP8uF+TN+BQ5QWvdHgZa6lwQ1xcIt/cfj9E
-         vBiwb3hiMfwbw/vPxjtHIkzIdLOGLE80Y1zDS23OpX/j0sRER/TCpKVpeqdKlTuqZi06
-         2ISQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/rN6J5K8RgHvQnZqrhqFiTM1/aGfRaN1R5adD7AS0No7GR7Z3ahDQFPOfOx3PYLE/knYPrr+07WE2IQ/A=@vger.kernel.org
-X-Gm-Message-State: AOJu0YwKgv0zHQ7aSPa9EKhGdFKlr/Rbw4TluuFroJqpNErWC0C2QW9g
-	H29AJ9+04hQkTzV/Jx0wcnFCkbd56bJ3Qj7ij+sYXLpgiZV1x48U3eUqPNCHGoXWjOnLZ21K8FU
-	yKeyt/0qzuJ6hzszlg28NJ8yk3xePFSoXMmqwhHp0GQ==
-X-Gm-Gg: AeBDietuczPoe7z94asULawIwKk6xaJYhHJWOXoq75k6cxP4mOA2G7e/AwG108Be0RV
-	ziFFe909MiRzjbKa68N22KjGrwd38HeVCfCiKVHCwZSpzO60BUGl2ilSwnP+L7IfatgTTFE8Sbs
-	IJKsDiQbpVRHpW0BEjufA84kmXPPNnZjkXkwQcIoF8eh7j5ddqcDXdwQCUvkfu47hfvyx4TG3bN
-	2c6LJqONsKfnffIcWRmI8rRwS5kVBi/W3T9zWCsYjjJtsYoN8UQTU0aD5ITaTfivzFCXAjo4Zj7
-	FhExch+KmxhxGFmSXSk=
-X-Received: by 2002:a05:6871:ea06:b0:423:e2d:bcd5 with SMTP id
- 586e51a60fabf-42abee7a63fmr242473fac.0.1776390796946; Thu, 16 Apr 2026
- 18:53:16 -0700 (PDT)
+        bh=i9pyvtNYah5iCr5GskErP9n/SMj5zNsqkI2O6P5JyAY=;
+        b=CVdhOUQ7Tli3lE5bf3fz0kyuNMun52KH1SKPiJ+3o1uLxK2m2gVOCRQDkwlrokN1k8
+         lcyPqg83KqcuESoL1Kb935mxmIv4JJIU788vVtHh9uHvqLdZoOoB1Z9QeZ6FEk1TR4w8
+         rhdNg7ktGl+ofoqeia5lqd+zvgTAWnJAh++Wo1qwzihoTuHtUgnk4o4jJ1zSk6mjkQvh
+         VvldU7/JLA0mfYybXbjodkcvy3T8ocrDuJprwd/86kvYkc4bTyX0i2lEu2gmw0+YUaYa
+         e8NMHt70M7uzfS6N4zS0F5lwTX8lbc/qOkUODGKVdzQxSEYmvkitBHjZACgL40g4ipXq
+         nvag==
+X-Forwarded-Encrypted: i=1; AFNElJ8Y1P0wRtjVfL+9T0b2IwjHv7VsXz/Mnns5r7V7dYuck3AyDatl1xe0ZcvfCGpfldS5Z3Bbz/1PsCp2Tjg=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxJ4eOqzYoReAolnL0rgv+EZKWyA8T+Ii4jkqQebsBUbBbqPk09
+	8PHjdrnuedcBCTKcb/hULFaKXxOpXMwhQQL1agBRkuPHfnapzBVNTrxmceKPjLt0suJxYmjnRP4
+	LF5ZsllOfJnBBzL2SkWdTxBJSwsZz3nlGdiV2ckX6ksysz+F+qx+u
+X-Gm-Gg: AeBDieumA85FLF7wYJVgEaKty/v1BIdoATYaJR6y7tXA0hNAiDQ9kr3SByJfFlSA7zM
+	gNygzISWxYM6IrMTLlJbHzCi+9kBNhVoWgycjbYP1HpbKXvh0e/OVEvsFZViYsvJGDS+T9U7KOS
+	8eOScfZxvwfkt+7BVRQl/4sbChozVqeAB7PAqtm2S+7+DG5Hl/6kbCehQxSY1BJqlkta9QevXtt
+	Kb5A7dX3G4Eyb+Xwodh/ig/GAm/BQcyfPzSLAfhUJ355rPj65qmZ3xT5EuAlWcvRb2LjRgHdmGj
+	Xo6hXw5fq/Pr9qQfaeu/RxQvBoU5qt9pj6TaFITW0DKgNNw+z+UI0FaiODRe2c1795PYhlmzweF
+	2FQUNtk/GEMYCCyEEwmi9oId8mKRz2Y9+d+7g/zG46qZ899bqRA==
+X-Received: by 2002:a17:903:3b88:b0:2b2:ac6f:104b with SMTP id d9443c01a7336-2b5f9e79f5bmr4284705ad.1.1776391060519;
+        Thu, 16 Apr 2026 18:57:40 -0700 (PDT)
+Received: from c7-smtp-2023.dev.purestorage.com ([2620:125:9017:12:36:3:5:0])
+        by smtp-relay.gmail.com with ESMTPS id d9443c01a7336-2b5faaf81b5sm203705ad.40.2026.04.16.18.57.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 16 Apr 2026 18:57:40 -0700 (PDT)
+X-Relaying-Domain: purestorage.com
+Received: from dev-csander.dev.purestorage.com (dev-csander.dev.purestorage.com [10.112.29.101])
+	by c7-smtp-2023.dev.purestorage.com (Postfix) with ESMTP id D6079340796;
+	Thu, 16 Apr 2026 19:57:39 -0600 (MDT)
+Received: by dev-csander.dev.purestorage.com (Postfix, from userid 1557716354)
+	id D2633E406BE; Thu, 16 Apr 2026 19:57:39 -0600 (MDT)
+From: Caleb Sander Mateos <csander@purestorage.com>
+To: Jens Axboe <axboe@kernel.dk>,
+	Christoph Hellwig <hch@lst.de>,
+	Sagi Grimberg <sagi@grimberg.me>,
+	Chaitanya Kulkarni <kch@nvidia.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Anuj Gupta <anuj20.g@samsung.com>,
+	linux-block@vger.kernel.org,
+	linux-nvme@lists.infradead.org,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Caleb Sander Mateos <csander@purestorage.com>
+Subject: [PATCH v3 1/6] block: use integrity interval instead of sector as seed
+Date: Thu, 16 Apr 2026 19:57:27 -0600
+Message-ID: <20260417015732.2692434-2-csander@purestorage.com>
+X-Mailer: git-send-email 2.45.2
+In-Reply-To: <20260417015732.2692434-1-csander@purestorage.com>
+References: <20260417015732.2692434-1-csander@purestorage.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260416002214.2048150-1-csander@purestorage.com>
- <20260416002214.2048150-7-csander@purestorage.com> <20260416052325.GE14950@lst.de>
-In-Reply-To: <20260416052325.GE14950@lst.de>
-From: Caleb Sander Mateos <csander@purestorage.com>
-Date: Thu, 16 Apr 2026 18:53:05 -0700
-X-Gm-Features: AQROBzCPGHONvWMncmYhZ1NMXp33B6ERld-DgLK_KyRg3_SVXkVvrIxlwuDEnA0
-Message-ID: <CADUfDZpbOhO9BUW_mFZYh9-UZU26_o3rFGBffNTpepk0ogJhZw@mail.gmail.com>
-Subject: Re: [PATCH v2 6/6] blk-integrity: avoid sector_t in bip_{get,set}_seed()
-To: Christoph Hellwig <hch@lst.de>
-Cc: Jens Axboe <axboe@kernel.dk>, Sagi Grimberg <sagi@grimberg.me>, 
-	Chaitanya Kulkarni <kch@nvidia.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, 
-	Anuj Gupta <anuj20.g@samsung.com>, linux-block@vger.kernel.org, 
-	linux-nvme@lists.infradead.org, linux-scsi@vger.kernel.org, 
-	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	Christoph Hellwig <hch@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Wed, Apr 15, 2026 at 10:23=E2=80=AFPM Christoph Hellwig <hch@lst.de> wro=
-te:
->
-> On Wed, Apr 15, 2026 at 06:22:14PM -0600, Caleb Sander Mateos wrote:
-> > bip_set_seed() and big_get_seed() take/return a sector_t value that's
-> > actually an integrity interval number. This is confusing, so pass
-> > struct blk_integrity and struct bio instead to bip_set_seed() and
-> > convert the bio's device address to integrity intervals.
-> >
-> > Open-code the access to bip->bip_iter.bi_sector in the one caller of
-> > bip_set_seed() that doesn't use the bio device address for the seed.
-> > Open-code bip_get_seed() in its one caller.
-> >
-> > Add a comment to struct bvec_iter's bi_sector field explaining its
-> > alternate use for bip_iter.
-> >
-> > Signed-off-by: Caleb Sander Mateos <csander@purestorage.com>
-> > Suggested-by: Christoph Hellwig <hch@infradead.org>
-> > ---
-> >  block/bio-integrity.c               |  5 ++---
-> >  block/t10-pi.c                      |  2 +-
-> >  drivers/nvme/target/io-cmd-bdev.c   |  3 +--
-> >  drivers/target/target_core_iblock.c |  3 +--
-> >  include/linux/bio-integrity.h       | 11 -----------
-> >  include/linux/blk-integrity.h       | 14 ++++++++++++++
-> >  include/linux/bvec.h                |  1 +
-> >  7 files changed, 20 insertions(+), 19 deletions(-)
-> >
-> > diff --git a/block/bio-integrity.c b/block/bio-integrity.c
-> > index 3ad6a6799f17..e9ae5db99f64 100644
-> > --- a/block/bio-integrity.c
-> > +++ b/block/bio-integrity.c
-> > @@ -103,13 +103,12 @@ void bio_integrity_free_buf(struct bio_integrity_=
-payload *bip)
-> >
-> >  void bio_integrity_setup_default(struct bio *bio)
-> >  {
-> >       struct blk_integrity *bi =3D blk_get_integrity(bio->bi_bdev->bd_d=
-isk);
-> >       struct bio_integrity_payload *bip =3D bio_integrity(bio);
-> > -     u64 seed =3D bio->bi_iter.bi_sector >> (bi->interval_exp - SECTOR=
-_SHIFT);
-> >
-> > -     bip_set_seed(bip, seed);
-> > +     bip_set_seed(bip, bi, bio);
-> >
-> >       if (bi->csum_type) {
-> >               bip->bip_flags |=3D BIP_CHECK_GUARD;
-> >               if (bi->csum_type =3D=3D BLK_INTEGRITY_CSUM_IP)
-> >                       bip->bip_flags |=3D BIP_IP_CHECKSUM;
-> > @@ -472,11 +471,11 @@ int bio_integrity_map_iter(struct bio *bio, struc=
-t uio_meta *meta)
-> >
-> >       it.count =3D integrity_bytes;
-> >       ret =3D bio_integrity_map_user(bio, &it);
-> >       if (!ret) {
-> >               bio_uio_meta_to_bip(bio, meta);
-> > -             bip_set_seed(bio_integrity(bio), meta->seed);
-> > +             bio_integrity(bio)->bip_iter.bi_sector =3D meta->seed;
-> >               iov_iter_advance(&meta->iter, integrity_bytes);
-> >               meta->seed +=3D bio_integrity_intervals(bi, bio_sectors(b=
-io));
-> >       }
-> >       return ret;
-> >  }
-> > diff --git a/block/t10-pi.c b/block/t10-pi.c
-> > index 787950dec50a..71367fd082bd 100644
-> > --- a/block/t10-pi.c
-> > +++ b/block/t10-pi.c
-> > @@ -510,11 +510,11 @@ static void blk_reftag_remap_prepare(struct blk_i=
-ntegrity *bi,
-> >  static void __blk_reftag_remap(struct bio *bio, struct blk_integrity *=
-bi,
-> >                              unsigned *intervals, u64 *ref, bool prep)
-> >  {
-> >       struct bio_integrity_payload *bip =3D bio_integrity(bio);
-> >       struct bvec_iter iter =3D bip->bip_iter;
-> > -     u64 virt =3D bip_get_seed(bip);
-> > +     u64 virt =3D bip->bip_iter.bi_sector;
-> >       union pi_tuple *ptuple;
-> >       union pi_tuple tuple;
-> >
-> >       if (prep && bip->bip_flags & BIP_MAPPED_INTEGRITY) {
-> >               *ref +=3D bio->bi_iter.bi_size >> bi->interval_exp;
-> > diff --git a/drivers/nvme/target/io-cmd-bdev.c b/drivers/nvme/target/io=
--cmd-bdev.c
-> > index f2d9e8901df4..2c4b312f2f55 100644
-> > --- a/drivers/nvme/target/io-cmd-bdev.c
-> > +++ b/drivers/nvme/target/io-cmd-bdev.c
-> > @@ -218,12 +218,11 @@ static int nvmet_bdev_alloc_bip(struct nvmet_req =
-*req, struct bio *bio,
-> >               pr_err("Unable to allocate bio_integrity_payload\n");
-> >               return PTR_ERR(bip);
-> >       }
-> >
-> >       /* virtual start sector must be in integrity interval units */
-> > -     bip_set_seed(bip, bio->bi_iter.bi_sector >>
-> > -                  (bi->interval_exp - SECTOR_SHIFT));
-> > +     bip_set_seed(bip, bi, bio);
-> >
-> >       resid =3D bio_integrity_bytes(bi, bio_sectors(bio));
-> >       while (resid > 0 && sg_miter_next(miter)) {
-> >               len =3D min_t(size_t, miter->length, resid);
-> >               rc =3D bio_integrity_add_page(bio, miter->page, len,
-> > diff --git a/drivers/target/target_core_iblock.c b/drivers/target/targe=
-t_core_iblock.c
-> > index 1087d1d17c36..4e0fa91a08fd 100644
-> > --- a/drivers/target/target_core_iblock.c
-> > +++ b/drivers/target/target_core_iblock.c
-> > @@ -706,12 +706,11 @@ iblock_alloc_bip(struct se_cmd *cmd, struct bio *=
-bio,
-> >               pr_err("Unable to allocate bio_integrity_payload\n");
-> >               return PTR_ERR(bip);
-> >       }
-> >
-> >       /* virtual start sector must be in integrity interval units */
-> > -     bip_set_seed(bip, bio->bi_iter.bi_sector >>
-> > -                               (bi->interval_exp - SECTOR_SHIFT));
-> > +     bip_set_seed(bip, bi, bio);
-> >
-> >       pr_debug("IBLOCK BIP Size: %u Sector: %llu\n", bip->bip_iter.bi_s=
-ize,
-> >                (unsigned long long)bip->bip_iter.bi_sector);
-> >
-> >       resid =3D bio_integrity_bytes(bi, bio_sectors(bio));
-> > diff --git a/include/linux/bio-integrity.h b/include/linux/bio-integrit=
-y.h
-> > index af5178434ec6..edcd0855abba 100644
-> > --- a/include/linux/bio-integrity.h
-> > +++ b/include/linux/bio-integrity.h
-> > @@ -56,21 +56,10 @@ static inline bool bio_integrity_flagged(struct bio=
- *bio, enum bip_flags flag)
-> >               return bip->bip_flags & flag;
-> >
-> >       return false;
-> >  }
-> >
-> > -static inline sector_t bip_get_seed(struct bio_integrity_payload *bip)
-> > -{
-> > -     return bip->bip_iter.bi_sector;
-> > -}
-> > -
-> > -static inline void bip_set_seed(struct bio_integrity_payload *bip,
-> > -                             sector_t seed)
-> > -{
-> > -     bip->bip_iter.bi_sector =3D seed;
-> > -}
-> > -
-> >  void bio_integrity_init(struct bio *bio, struct bio_integrity_payload =
-*bip,
-> >               struct bio_vec *bvecs, unsigned int nr_vecs);
-> >  struct bio_integrity_payload *bio_integrity_alloc(struct bio *bio, gfp=
-_t gfp,
-> >               unsigned int nr);
-> >  int bio_integrity_add_page(struct bio *bio, struct page *page, unsigne=
-d int len,
-> > diff --git a/include/linux/blk-integrity.h b/include/linux/blk-integrit=
-y.h
-> > index 825d777c078b..3a2e55e809c5 100644
-> > --- a/include/linux/blk-integrity.h
-> > +++ b/include/linux/blk-integrity.h
-> > @@ -85,10 +85,24 @@ static inline unsigned int bio_integrity_bytes(stru=
-ct blk_integrity *bi,
-> >                                              unsigned int sectors)
-> >  {
-> >       return bio_integrity_intervals(bi, sectors) * bi->metadata_size;
-> >  }
-> >
-> > +/**
-> > + * bip_set_seed - Set bip reference tag seed from bio device address
-> > + * @bip:     struct bio_integrity_payload whose ref tag seed to set
-> > + * @bi:              struct blk_integrity profile for device
-> > + * @bio:     struct bio whose device address to use for the ref tag se=
-ed
-> > + */
-> > +static inline void bip_set_seed(struct bio_integrity_payload *bip,
-> > +                             const struct blk_integrity *bi,
-> > +                             const struct bio *bio)
-> > +{
-> > +     bip->bip_iter.bi_sector =3D
-> > +             bio_integrity_intervals(bi, bio->bi_iter.bi_sector);
->
-> The bip is pointed to by the bio, so we don't need to pass it separately.
-> Same for struct blk_integrity.
+bio_integrity_setup_default() and blk_integrity_iterate() set the
+integrity seed (initial reference tag) to the absolute address in the
+block device in units of 512-byte sectors. The seed is correctly
+incremented/decremented in units of integrity intervals in
+bio_integrity_map_iter(), bio_integrity_advance(), and
+blk_integrity_interval(). As a result, the ref tag written or read to a
+particular integrity interval on a block device with integrity interval
+size > 512 bytes varies with the starting offset of the read/write.
 
-I did consider that, but all callers already have bip and bi in
-variables that they also use elsewhere. Seemed like it might be
-slightly more efficient to just pass the precomputed values instead of
-looking them up again. Not a big deal either way. I'll go ahead and
-implement your suggestion.
+Convert the initial seed to units of integrity intervals so a consistent
+ref tag is used for each integrity interval.
 
-Thanks,
-Caleb
+Fixes: 3be91c4a3d09 ("block: Deprecate the use of the term sector in the context of block integrity")
+Fixes: 63573e359d05 ("bio-integrity: Restore original iterator on verify stage")
+Signed-off-by: Caleb Sander Mateos <csander@purestorage.com>
+Reviewed-by: Anuj Gupta <anuj20.g@samsung.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+---
+ block/bio-integrity.c | 3 ++-
+ block/t10-pi.c        | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/block/bio-integrity.c b/block/bio-integrity.c
+index e79eaf047794..3ad6a6799f17 100644
+--- a/block/bio-integrity.c
++++ b/block/bio-integrity.c
+@@ -103,12 +103,13 @@ void bio_integrity_free_buf(struct bio_integrity_payload *bip)
+ 
+ void bio_integrity_setup_default(struct bio *bio)
+ {
+ 	struct blk_integrity *bi = blk_get_integrity(bio->bi_bdev->bd_disk);
+ 	struct bio_integrity_payload *bip = bio_integrity(bio);
++	u64 seed = bio->bi_iter.bi_sector >> (bi->interval_exp - SECTOR_SHIFT);
+ 
+-	bip_set_seed(bip, bio->bi_iter.bi_sector);
++	bip_set_seed(bip, seed);
+ 
+ 	if (bi->csum_type) {
+ 		bip->bip_flags |= BIP_CHECK_GUARD;
+ 		if (bi->csum_type == BLK_INTEGRITY_CSUM_IP)
+ 			bip->bip_flags |= BIP_IP_CHECKSUM;
+diff --git a/block/t10-pi.c b/block/t10-pi.c
+index a19b4e102a83..e58d5eb6cefb 100644
+--- a/block/t10-pi.c
++++ b/block/t10-pi.c
+@@ -308,18 +308,19 @@ static blk_status_t blk_integrity_iterate(struct bio *bio,
+ 					  struct bvec_iter *data_iter,
+ 					  bool verify)
+ {
+ 	struct blk_integrity *bi = blk_get_integrity(bio->bi_bdev->bd_disk);
+ 	struct bio_integrity_payload *bip = bio_integrity(bio);
++	u64 seed = data_iter->bi_sector >> (bi->interval_exp - SECTOR_SHIFT);
+ 	struct blk_integrity_iter iter = {
+ 		.bio = bio,
+ 		.bip = bip,
+ 		.bi = bi,
+ 		.data_iter = *data_iter,
+ 		.prot_iter = bip->bip_iter,
+ 		.interval_remaining = 1 << bi->interval_exp,
+-		.seed = data_iter->bi_sector,
++		.seed = seed,
+ 		.csum = 0,
+ 	};
+ 	blk_status_t ret = BLK_STS_OK;
+ 
+ 	while (iter.data_iter.bi_size && ret == BLK_STS_OK) {
+-- 
+2.45.2
+
