@@ -1,90 +1,71 @@
-Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [144.76.133.104])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D36D3126BF;
-	Tue, 12 May 2026 04:24:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=144.76.133.104
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1D4FC38398D;
+	Tue, 12 May 2026 10:41:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1778559878; cv=none; b=os0aYmOPNGvEBNc9EaT724hqIIcZ8D03yGWi0+RsEZtyBwp9BqyLw2Ill54Euw+1yE6xrjo8QXWQimkY8gGn1MAfGBuZToPjcVxOEw/AIhiFDgG2GTpme8IQ73t5JXnokt0pWEcY+Qj0S8rNIKCknsoTu1EK5MPAun5ZWiBWfKM=
+	t=1778582491; cv=none; b=dOB3giR55MlI+yiH0QVmDX0XCa8m2Ie4nZmSY7+Y3rpz0JFJORyRkD8PPteUrPEG0Qn8CIG/X3D/ASvpma+AQse+exzRhgQMA7Vhtxd984tY/KXXRIBY67mhyaQcvX2bs6UQvPEhPJrUtZJEm1jsiSP4jjfPFXJ3WIit6XOdnH0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1778559878; c=relaxed/simple;
-	bh=R6mAT2DfOSNb1VO7H38Jv0UhmmA7pUmRvjQXQDkptmA=;
-	h=Message-Id:From:Date:Subject:To:Cc; b=r/FNUItoZUpcDLk8UcgWUO7tSL7vRO83yI0F77i0L0Ry3ivtX9moH+cYiuXQBzRHb/C2GAUwrAzId5MNxbwyKPIMATcU68LqeXb25eVX6pQhNXnd3DhCClVEoaVoheaLC889CZmGQew1RbzlJ5UK+2WuQZInBor3yMQIa4jLDcQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass smtp.mailfrom=wunner.de; arc=none smtp.client-ip=144.76.133.104
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=wunner.de
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout3.hostsharing.net (Postfix) with ESMTPS id 78627C8B;
-	Tue, 12 May 2026 06:24:26 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 47CF96029AF0; Tue, 12 May 2026 06:24:26 +0200 (CEST)
-Message-Id: <57f8a29ee7a75f81bd0a42f3fea54f0f1d3fe4e4.1778559000.git.lukas@wunner.de>
-From: Lukas Wunner <lukas@wunner.de>
-Date: Tue, 12 May 2026 06:24:10 +0200
-Subject: [PATCH] scsi: Drop pci_save_state() after pci_restore_state()
-To: Ram Vegesna <ram.vegesna@broadcom.com>, Justin Tee <justin.tee@broadcom.com>, Paul Ely <paul.ely@broadcom.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, Mike Christie <michael.christie@oracle.com>, James Smart <jsmart2021@gmail.com>
+	s=arc-20240116; t=1778582491; c=relaxed/simple;
+	bh=UoJ9DZYobAlGVmjJh7ijtxeOP8tMOKkc/vPcEbtldlg=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=jjI+r/UUfzgvih/mGtmg0W3aFWHJ/lePMWhEiTqYHy3wtTluXD5S1Dti9qLRWNvYFJANGXvOYhYlgq+zCYJ9PpneRDnEmXq/173+TndUpt3lorB8q2gw2YupshSHpSbhqPcp8Vty196G5YVdlTVW25qkTUSBqP2PStQH0flEKe0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=MHcox8Ad; arc=none smtp.client-ip=10.30.226.201
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="MHcox8Ad"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51406C2BCB0;
+	Tue, 12 May 2026 10:41:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1778582490;
+	bh=UoJ9DZYobAlGVmjJh7ijtxeOP8tMOKkc/vPcEbtldlg=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=MHcox8AdoN5YeADzHWLhXDR3dzNx3GvmPwolUGANg1xAWld6VQWdRSIbKscBZi654
+	 TLYzbOi5Dz6noOjMHV8Xman0sWd7kce9qVLwHyZKBsY6GzPPkrylGKvvJuuzM+Vmyg
+	 FPdEDk6wXaBHm6E+2tC68iisER0u3oeRD9mvKhFopdLtcbzN5ElH5NY0YsExkaeedL
+	 HqaAkfPyzCjuCipqhcXu/UoxJQWu3/SfNZ3W3Vl6++5WgFEwe3oo4JB5t7VjqeayE5
+	 Upb0+0mhdkR7UfgXOc8MsrO5PCl/xbip3cu6rXf5Aqnt6H7qrXx047jlJI+Om8MC8W
+	 RssGOB52/22KA==
+From: Leon Romanovsky <leon@kernel.org>
+To: bvanassche@acm.org, jgg@ziepe.ca, 
+ Sara Venkatesh <sarajvenkatesh@gmail.com>
+Cc: dledford@redhat.com, linux-rdma@vger.kernel.org, 
+ target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ carlos.bilbao@kernel.org
+In-Reply-To: <20260504080036.3482415-1-sarajvenkatesh@gmail.com>
+References: <20260504080036.3482415-1-sarajvenkatesh@gmail.com>
+Subject: Re: [PATCH] RDMA/srpt: fix integer overflow in immediate data
+ length check
+Message-Id: <177858248804.2277752.12077743618929897915.b4-ty@kernel.org>
+Date: Tue, 12 May 2026 06:41:28 -0400
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-18f8f
 
-Commit 383d89699c50 ("treewide: Drop pci_save_state() after
-pci_restore_state()") sought to purge all superfluous invocations of
-pci_save_state() from the tree.
 
-Unfortunately the commit missed one invocation in the Broadcom
-EFCT target driver and another one in the LPFC driver.  Drop them.
+On Mon, 04 May 2026 01:00:36 -0700, Sara Venkatesh wrote:
+> imm_buf->len is a user-controlled uint32_t received from the network.
+> Adding it to imm_data_offset without overflow checking allows a
+> malicious initiator to send len=0xFFFFFFFF, causing req_size to wrap
+> around to a small value, bypassing the bounds check, and subsequently
+> passing a ~4GB length to sg_init_one().
+> 
+> Use check_add_overflow() to detect wrapping before the comparison.
+> 
+> [...]
 
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
-I've combined removal from two drivers in a single patch because
-they're both Broadcom devices and this is a fairly trivial change.
-But if you prefer splitting the patch in two, please let me know.
+Applied, thanks!
 
- drivers/scsi/elx/efct/efct_driver.c | 7 -------
- drivers/scsi/lpfc/lpfc_init.c       | 5 -----
- 2 files changed, 12 deletions(-)
+[1/1] RDMA/srpt: fix integer overflow in immediate data length check
+      https://git.kernel.org/rdma/rdma/c/3f716b34c639f6
 
-diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
-index fe45009..6d4f00b 100644
---- a/drivers/scsi/elx/efct/efct_driver.c
-+++ b/drivers/scsi/elx/efct/efct_driver.c
-@@ -696,13 +696,6 @@
- 		return PCI_ERS_RESULT_DISCONNECT;
- 	}
- 
--	/*
--	 * As the new kernel behavior of pci_restore_state() API call clears
--	 * device saved_state flag, need to save the restored state again.
--	 */
--
--	pci_save_state(pdev);
--
- 	pci_set_master(pdev);
- 
- 	rc = efct_setup_msix(efct, efct->n_msix_vec);
-diff --git a/drivers/scsi/lpfc/lpfc_init.c b/drivers/scsi/lpfc/lpfc_init.c
-index 968a2523..dc58085 100644
---- a/drivers/scsi/lpfc/lpfc_init.c
-+++ b/drivers/scsi/lpfc/lpfc_init.c
-@@ -15245,11 +15245,6 @@ static int lpfc_cpu_online(unsigned int cpu, struct hlist_node *node)
- 	if (!hba_pci_err)
- 		dev_info(&pdev->dev,
- 			 "hba_pci_err was not set, recovering slot reset.\n");
--	/*
--	 * As the new kernel behavior of pci_restore_state() API call clears
--	 * device saved_state flag, need to save the restored state again.
--	 */
--	pci_save_state(pdev);
- 
- 	if (pdev->is_busmaster)
- 		pci_set_master(pdev);
+Best regards,
 -- 
-2.51.0
+Leon Romanovsky <leon@kernel.org>
 
