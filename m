@@ -1,107 +1,71 @@
-Received: from mail-m49198.qiye.163.com (mail-m49198.qiye.163.com [45.254.49.198])
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 856FD36C5A9;
-	Fri, 29 May 2026 04:06:36 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.198
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 706983AB5B2;
+	Fri, 29 May 2026 07:04:06 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=193.142.43.55
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780027606; cv=none; b=bMr5TsLlFrA5I3WxeX/ZrNLBnC+CFzx4m2VoErEy6rWEfsZXINR20pdQoaaeBhTkzpkyqYZ9MOwryK8+mjC5GLxZsfSmIaQGclu+yh1yuma+M2tq4QrR06G5M1Xo5gp1teBPquPkCl49pLCXyXRISc0oedkiHQ9NlIjnvRZYeww=
+	t=1780038247; cv=none; b=AUg1d0ltoEaLOobf0kMkj4afnhaATFJJr9ZEgQrA8/BHm7/dQ/nV3TqaqAcKY2LVzGYY+9TxeME9QOnQ1ofEyDoCr2C0eywE4PmmMb4TSa4/l7aHBa2fs0yBS+XURi+grcGFPKDrgkox5lZoOoRrr0cUqc9/7OvgoaqPWx+cItA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780027606; c=relaxed/simple;
-	bh=KzU6O0oaQxdN8fER/sAFGVLRyq1GlkUdYGWKBN7OWMU=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=jSUSKzjZ+KB3P3TtWbe8s/D84dJzBw9W/q1cB5jnvv7aKMhGKEBR24OMI0wSAZN9Gos/GyFeb93NGxwocUXdSibzH3yDf1IhfiXaH/RMzaHtFKW+LT52cj1ivr66MZBdQkpN3vN1zSCDPPOPOQNuff4QKeuqShYGchKAiJb8OMg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=kuDCqILb; arc=none smtp.client-ip=45.254.49.198
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=seu.edu.cn
+	s=arc-20240116; t=1780038247; c=relaxed/simple;
+	bh=v7sX+ULYT5bCj9o9c0kVdTQQZkubq/TBTjiGXqtMynM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=B50aYDZ93moEggTt7ahbb88Q2PQ6KQTO18v+00DCs6gQQA+33z5NpBEZ2dTFO9A5BzwkWyrracxJ8drQMXnz0CznEcUdn3ffGA+9DCt17oJ2zSCFrdbvf7wL7L5oOSzgyD4CifaBI7ebZx6P7Ig8W/aWclUm93UpznvsSJHUspQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; spf=pass smtp.mailfrom=linutronix.de; dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=ym2KkiJT; dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b=QHDxbAiV; arc=none smtp.client-ip=193.142.43.55
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linutronix.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="kuDCqILb"
-Received: from DESKTOP-SUEFNF9.taila7e912.ts.net (unknown [223.112.146.162])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 404634e9f;
-	Fri, 29 May 2026 12:01:17 +0800 (GMT+08:00)
-From: Dawei Feng <dawei.feng@seu.edu.cn>
-To: ram.vegesna@broadcom.com
-Cc: James.Bottomley@HansenPartnership.com,
-	martin.petersen@oracle.com,
-	bigeasy@linutronix.de,
-	kees@kernel.org,
-	tglx@kernel.org,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	jianhao.xu@seu.edu.cn,
-	Dawei Feng <dawei.feng@seu.edu.cn>,
-	stable@vger.kernel.org,
-	Zilin Guan <zilin@seu.edu.cn>
-Subject: [PATCH] scsi: elx: efct: fix resource leak in efct_xport_initialize()
-Date: Fri, 29 May 2026 12:01:15 +0800
-Message-Id: <20260529040115.2735213-1-dawei.feng@seu.edu.cn>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="ym2KkiJT";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="QHDxbAiV"
+Date: Fri, 29 May 2026 09:04:03 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1780038244;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=v7sX+ULYT5bCj9o9c0kVdTQQZkubq/TBTjiGXqtMynM=;
+	b=ym2KkiJT8yxfe0+7nEzMH2D7BFEsvlBxWuvKUzpj5vquXtXt5AZO6UrKunp3e/FkMDaK0l
+	+EYK8QvqoyfnFMwSJi5r8vFXQ4KOGMp/aSlOXdY5uHxHt3xNX7bPYqThVy09B9CqrpWtCt
+	7dgapZ78Q5fdAq7fPKqQAz38Ls4bYWUx1Wt97Dmj+WgvArDXoyT0LP5u5ciGWgQ79mfEGy
+	aMYg0Q08gDQyNnO/kgttXYWfZaPqgqvRzVggtzlQRzSWf6ZvHNI7+pJXWIKA70eDrmiZC4
+	ZaTcN+3Lqkt3EQvECAIwRygIzm45Lx9OVvWjRg14ABoWN/XResx3KZM9fD+BoQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1780038244;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=v7sX+ULYT5bCj9o9c0kVdTQQZkubq/TBTjiGXqtMynM=;
+	b=QHDxbAiV/UdeiPePRE9mQXXZuSv9ahUCAaQXZUJ/Z2D0YuxYo+GW+IEux4PPxDsgPqT9Ph
+	RwNBvz075PtTDTBQ==
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Dawei Feng <dawei.feng@seu.edu.cn>
+Cc: ram.vegesna@broadcom.com, James.Bottomley@hansenpartnership.com,
+	martin.petersen@oracle.com, kees@kernel.org, tglx@kernel.org,
+	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, jianhao.xu@seu.edu.cn,
+	stable@vger.kernel.org, Zilin Guan <zilin@seu.edu.cn>
+Subject: Re: [PATCH] scsi: elx: efct: fix resource leak in
+ efct_xport_initialize()
+Message-ID: <20260529070403.yEv7faft@linutronix.de>
+References: <20260529040115.2735213-1-dawei.feng@seu.edu.cn>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a9e71e4c08a03a2kunm6552753fa6be4
-X-HM-MType: 10
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCGh4fVkIeTBlIQk9LGB0dTlYeHw
-	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUhVSkpJVUpPTVVKTUlZV1kWGg8SFR0UWUFZT0tIVUpLSU
-	hOQ0NVSktLVUtZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=kuDCqILbIXwg54fvwxSOFWZlqbBSIn/TqfvmBOLrIU8PLKJ2mNlWpIqYbwaJA8Nxyk5V1rln56wH3JBTlTVCL5ALNS72hBvd1pn67KWgCVi20vNgj9POIVUiJjYCrUSrGCM9LtJDEbhwhGFFVKwLDySMZWXwJhGEdUrdB8eFvpQ=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
-	bh=VbiDC2PSm+G49sEOu82h+lcLRU5NKq+hJZBIagGj7yU=;
-	h=date:mime-version:subject:message-id:from;
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260529040115.2735213-1-dawei.feng@seu.edu.cn>
 
-efct_device_attach() frees efct->xport when efct_xport_initialize()
-fails, but efct_xport_initialize() returns directly when efct_hw_init()
-fails. That skips efct_hw_teardown() and leaves the hardware resources
-allocated by efct_xport_attach() behind before the transport object
-itself is freed.
+On 2026-05-29 12:01:15 [+0800], Dawei Feng wrote:
+> Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Zilin Guan <zilin@seu.edu.cn>
+> Signed-off-by: Dawei Feng <dawei.feng@seu.edu.cn>
 
-Route the efct_hw_init() error through the existing hw_init_out cleanup
-path so the hardware teardown runs before returning.
+Based on inspection, it looks like the right thing to do.
 
-The bug was first flagged by an experimental analysis tool we are
-developing for kernel memory-management bugs while analyzing
-v6.13-rc1. The tool is still under development and is not yet publicly
-available. Manual inspection confirms that the bug is still present in
-v7.1-rc5.
+Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-An x86_64 allyesconfig build showed no new warnings. As we do not have
-access to an Emulex LPE31004/LPE36000 adapter to test with in this
-environment, no runtime testing was able to beperformed.
-
-Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
-Cc: stable@vger.kernel.org
-Signed-off-by: Zilin Guan <zilin@seu.edu.cn>
-Signed-off-by: Dawei Feng <dawei.feng@seu.edu.cn>
----
- drivers/scsi/elx/efct/efct_xport.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/scsi/elx/efct/efct_xport.c b/drivers/scsi/elx/efct/efct_xport.c
-index 9dcaef6fc188..e7b7d2c3bbf3 100644
---- a/drivers/scsi/elx/efct/efct_xport.c
-+++ b/drivers/scsi/elx/efct/efct_xport.c
-@@ -229,7 +229,7 @@ efct_xport_initialize(struct efct_xport *xport)
- 	rc = efct_hw_init(&efct->hw);
- 	if (rc) {
- 		efc_log_err(efct, "efct_hw_init failure\n");
--		goto out;
-+		goto hw_init_out;
- 	}
- 
- 	rc = efct_scsi_tgt_new_device(efct);
-@@ -256,7 +256,6 @@ efct_xport_initialize(struct efct_xport *xport)
- 
- hw_init_out:
- 	efct_hw_teardown(&efct->hw);
--out:
- 	return rc;
- }
- 
--- 
-2.34.1
-
+Sebastian
