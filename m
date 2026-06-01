@@ -1,121 +1,190 @@
-Received: from mail-yw1-f181.google.com (mail-yw1-f181.google.com [209.85.128.181])
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F0C9332EBD
-	for <target-devel@vger.kernel.org>; Mon,  1 Jun 2026 04:33:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.128.181
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780288400; cv=pass; b=QTCROz/K8TMxN3r3mitYXdz0qqrsjaZGgheaBjqkBHWiBlUgFIugh98QX9Gke2LOV5raftcxBC8fbEJnjcQv6CpQ1+AlNaKZxIJkP0KStprnY6OfllX3QZSP9lQACRSkQ3xPFLiv3ZLlvQl9Y9GJ1yKwBOYZX6GG2zpVQ2Y10PU=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780288400; c=relaxed/simple;
-	bh=0UZXrL/sz8NLcwOLSzU9YZpogwyYLPIhStx4quryKwg=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=R7+ZwqhcP+BDN6pnbuoYyDkH2ZDKAyOqZoaFOIRDu2ix87h9X2j1ff8AfuUzfsD1BQCN3kLjH/8fWq1OTE8rqsPUPhFKFMkwERbgnOUEJ6IpEeKmtt960yKGBvBR5jjeLsR5iTm5sQWUY+DDTpGisomH8I6ov78592QaGIloPiY=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=r0icHDHp; arc=pass smtp.client-ip=209.85.128.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44032334374
+	for <target-devel@vger.kernel.org>; Mon,  1 Jun 2026 06:14:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780294484; cv=none; b=lwifszFeh1+pQDgvM9qa8AQBtXIsjt+sJWlvEKTtKeoUaLHMxpZQt5XntnQ+kMcIaP5eYNIswiyFJVx7KwdDZIYSiYmSLSj72nlXFrRF45ussFFdLF1hcf6H/al1aj48PsSkz1QKO8xAD+O7gK8uuGgbLbg70MwO2k6IThX0Z0g=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780294484; c=relaxed/simple;
+	bh=9MNzn12fHIiogHe+ExGRksoHKHMAM3exEmf5WZZ/azI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TyQDYwB+bjoDrpFyexjj7iRhJ8iOSPhU3Nol7krqwKbumuuhA96ZQ/cRTOkbl8gUJk6N8Zv82MBZqlnI+ExbwG4T/4AbrgPWweVsvekeZn6n3qhsli4JFFbPCvk+9mjPLlXivuKYKRzjkcukRdMbnTeLdT1KE9o7VVDQMPU29qg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=Xbwlm1tI; arc=none smtp.client-ip=209.85.221.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r0icHDHp"
-Received: by mail-yw1-f181.google.com with SMTP id 00721157ae682-7e38f2f3800so7491707b3.0
-        for <target-devel@vger.kernel.org>; Sun, 31 May 2026 21:33:18 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1780288398; cv=none;
-        d=google.com; s=arc-20240605;
-        b=GcoVNpPLOkxpU2qTuyne99InQVWCIWPgjbeiqkhEjB1vUOKfskDWr4ASQX6aozGwqT
-         Z5NzduE3U2VkTxTSQLkgUm6zn9EHChm/U8uF5ISvb/xV4Ma9o7l7Us/a/jmxXNCKek9h
-         oevxXfKGenuWKIXuwSB+hZeAJyfVTCwLtjEmQQot5foLMEoq8XWuODIK5m9cxXcC4iDc
-         giuwQWXMadlSqLBGWmTZwwanz8tXSNS8CnSUGS1T5pUk3IxuOtQZF+n1QySsWD43znOM
-         Pqg8ddLs0YDpdPzMPZNOSbEf+csq4p3m3SyrqvC3NA35rqZ/00cRw1MzqKTZWGhj/kkI
-         rLNg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=pEwHZMxiAJxYqtcMCz1PfVYBMTQhyTj/SBAyrw3RfYE=;
-        fh=InBi338tRnccEAswk1LVACTNEIvmrs4oKQYyiwL3G5c=;
-        b=IqFmIc0Eb9vm9PYx/h90wIGiS2RRRnZnamPZH5CCH8BgghzXT5YhN/w24+I2MOXg9k
-         t7Q7NydMIct+Q9GVlL+MUaAk4a5NWNCmRLq6gU5UtCaBGu7hp5sGRY1T2tT1fZiLVnhX
-         hfSIWAmfEyXnacsMypKSgyCnQ4RXTIaaujxauY5OUuopWxVTOUlIHodQPJ/BBJr5wtQr
-         k9i1apfHs50DUD6RpTMJnbpRm8tInhd+QS6CxUkEuu9hypk7gcF51dTtLzfylssf/OJY
-         wXb0fHMH1OfjLVMWGFDzjPOoow15lX7P+4cfsMduKa+VWYNJ5jcCRnmY/aUFoWXrqaAk
-         Q7vg==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="Xbwlm1tI"
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-45fd45e596cso526880f8f.1
+        for <target-devel@vger.kernel.org>; Sun, 31 May 2026 23:14:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780288398; x=1780893198; darn=vger.kernel.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=pEwHZMxiAJxYqtcMCz1PfVYBMTQhyTj/SBAyrw3RfYE=;
-        b=r0icHDHpIgeBCeTv4Dy8p9phzxWHbtWmvE9fdnXTWCqPWng06dBA6mgME2GaM6UD28
-         GWotpU1QLigy/9tFKMLJNSP7JepWHo+9zmOYm6jfvLg3E806C+2GvJnKa+G8AGzt5oOi
-         aykH709PBE5WTUY4Fz927IVU8qXnVzYv4JKFWWN2qhlPLhSSlUkupa86pBTnsSe0Lkxc
-         d9SXMxx+G8mtxpK+C9hFnY4iP2pTwcJzBmhTMIeSIGxWoyO1oUC9jAqrt6mZCApe3uty
-         cV7tauBYLcxssEtdc1iYC1eqMszgWiPpnHK/4fXCv4v0y8ywn2PQhhW2zYRagV4lOMjv
-         ANrQ==
+        d=suse.com; s=google; t=1780294481; x=1780899281; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=qnQ4Egkx2jvHi2uwwRkA+XvJq80HYWm7qvhBoPf3qpA=;
+        b=Xbwlm1tI4FEILndE3UUHcpqJMPp+Du8rtYxMlSPiGzacjeuta6kaNYOz5iN2GG1HaF
+         3Ab7uPt5pdAKS24xjoonBLZh6/uo8n/PNf1jBoGa4C2xfcNTfZRSmkLtrsIy4KpmDQuG
+         Tc2RpyVKiYMu9ZMfY1Zm4gkW1Wa5qlOWzrO4goxRa/1ucsWeRN/ya1LNnbSVTJdSVBLK
+         WJPoshQmK2zVJXRLwL7bwJXQUa34l8R+3KEj5Ody/eDBP/x4wf3RYQjTGDJ2NauS7TCV
+         hRXeesld4X8yfRlnG/WKiOFny9LlnSsa9VjjJu/P33KPcTmJw64Aood1lGCP1WOOxtg6
+         +LPQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780288398; x=1780893198;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=pEwHZMxiAJxYqtcMCz1PfVYBMTQhyTj/SBAyrw3RfYE=;
-        b=VmJzNS1wysE/x1VH1azogpOP5TNWSSJEv1+3qXPCL89tqoVGEcQ0luzBHmieYeSPHH
-         gbMZzBHyRiXuHK2YIyMvNYFN7kNw8e04KnPtLQeOrOB8fsgG075hnUSUcBWJrFOZ64HC
-         3sHx1ZWkVbAhxEFFrlzgERSzP+IH4OaocqJBsxhVqV/gDd4JylNjichv8XXqZ21uc4yD
-         tZT4YRH/BbqNHTm2e2gDswPuf/SC8YfBuPxJHHo7gBW84MplfMB36GV8BTAhUGSoOVcD
-         wJWEA/dWW6AQ9692cxlDN3VDb72BrlpylSe78nRZCvZSHDCCQtQ6Ibet+sZN886llshv
-         yIgw==
-X-Gm-Message-State: AOJu0Ywvg2fQbmpMOoxNG9bYB5Up2NS4qyD2QCi1HOcSprjqKFlDsPQO
-	spCGlH76zdVcdtm7zRFrQBMiDMUja3QVLikwvweg6qQtIpL1uqOWTDZeQciD7WlgM45+jfEKW+0
-	jEQySo2wn5lfWxtg9IvIPGzFgRxyemmfNMa4D
-X-Gm-Gg: Acq92OFzWxGyyLUOHe4L/8n/wyJcQciGD0eZTeznnc7x8vTKhOxu1iXfTfrY6tdYmvY
-	vlFQPRSDuQbh686fs+Ekeu6K7/Y1tBkgT+61TS9xkUjmsuahBVWp+MfcijwpOrdoyuZxu+Ac/Vz
-	WSx8wU5z1ixKlrhk5mAfCUqQ0xY7J9TFtGamY+SiiTBGTv7TCuHQ/R2PpFGGhXRLJcXM79QWmUz
-	vN3UlsR1U9fy/b1ENdZcrPmbgq/7m5hmNpkQEXj7HwfJYuy7ELBFi1gAjZOawBqCVvzBU8h68j0
-	Uoa7d/UdFLqnm6I3jwuph3LIbjDrDO4=
-X-Received: by 2002:a05:690c:6a87:b0:7bd:93b0:bd25 with SMTP id
- 00721157ae682-7e058b44d8cmr86221377b3.4.1780288398138; Sun, 31 May 2026
- 21:33:18 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1780294481; x=1780899281;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=qnQ4Egkx2jvHi2uwwRkA+XvJq80HYWm7qvhBoPf3qpA=;
+        b=q/ISrg4l4mBdh34NvMqNSEqtNv7fOZEytL3tno13OHDZAHJq+ZU9HRbBWG0uxz7FHA
+         TrLEft12nbHpxVizBbewmzGTiitGAqggsDV64oUio9gwUDe0FP4veeLsTbpgUN6fCT94
+         nun/4fD6ZTF6hfnZ/rwqOWvtFZhbzFR61LFzpvw9Rr0AatS9adJ6HZIVHQGqFWcawbsd
+         bDMAj5exApfoCoOfO/xI0XRaq1OYYPlOm/Lw8mkfyoztB+vL70lp5rSj/zqp0NlEMsrR
+         /NFOrKUjToBGVmP9SXxhMUIbYkEUiU2piZzSUdO7GJbOvfOn8x6K2OwM1h7KY3yrB5Jq
+         xDxA==
+X-Forwarded-Encrypted: i=1; AFNElJ8FuT2RV4HtlyZufhGSPSFamzS95XvJ1KTmHPtEXwGGZWc8uhePmOph3EiWAlZeMoaCEU0U87F1qY6Dtpg=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzGaxSm4ajGO11MaENmMHC1zdGMAMrkMzm+9PzknGmwRzSYqUjY
+	P4Hqpic29Qg1Dy6yyZ8npPuDVbg9iu8BLyqjnSadLQzTP1BT2WxJtdtdDPshwJ0h9rU=
+X-Gm-Gg: Acq92OGbGbrNISO8bNg2MGl0I92kH7C1z+SLC1pfgWoCL4EJayPJc9ni98cbYcmcu/4
+	pWn9e7sQriZMo39UozT4VkD5+AdQn8r/LA0tgnV/khXanspMdt3YqajgRskv6QhCQLWTQWr1FiI
+	m+4RxfRGVh1XzyMaKXgKFqCFf/kOcWHr+AdGGF6Q9O8shvvPJ788gZ1V9PnNU2zn65O0xzJNHUQ
+	/zcMd5d1iEY+w9dK7UKHL7J4MpTSlzxI50U7A2BREKNmDY42ZQfnH4nkDHN2KxsWS6iFua7mPkL
+	nSFsWg3igzkMSmhm6X4sOsLXlRgt7Tovw2/8s3i+Y06eSdO7WD+TUuuftkA825Kt6Xqkq8RuS4P
+	wfY0/KRJUHpJtJU2oEsnydzmIIf4/F2PkJXQ/ZjRPJJULDxb1t1ulxvapzzSRvEseiNxHelm0qP
+	6O+4YA1Wh8Bb41Pu/rznRr4gy84F1+H65ngisuCpS4PT+QPdjUqU7afy6eUofO+kRokDwI+5s=
+X-Received: by 2002:adf:f190:0:b0:44f:9b70:2996 with SMTP id ffacd0b85a97d-45ef6b4f4f5mr12541489f8f.21.1780294480614;
+        Sun, 31 May 2026 23:14:40 -0700 (PDT)
+Received: from ?IPV6:2001:a61:2a86:dc01:360a:1184:3ef3:86d5? ([2001:a61:2a86:dc01:360a:1184:3ef3:86d5])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45ef354cd7csm22555338f8f.18.2026.05.31.23.14.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 31 May 2026 23:14:40 -0700 (PDT)
+Message-ID: <c77edd76-39ec-4041-8185-366f76675c68@suse.com>
+Date: Mon, 1 Jun 2026 08:14:39 +0200
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-From: Ginger <ginger.jzllee@gmail.com>
-Date: Mon, 1 Jun 2026 12:33:07 +0800
-X-Gm-Features: AVHnY4LZa3ImsatjuLyk4EWFgwb6jmaA1ndPIHrbsJ0kPlKnRVoa6BnToDYfy9w
-Message-ID: <CAGp+u1a-=aJxSfa3k0mfLd0LrbyVgfDh=_BLQNc2dfamv3nAsg@mail.gmail.com>
-Subject: [bug report] Potential atomicity bug in drivers/target/sbp/sbp_target.c,
- between tgt_agent_fetch_work() and tgt_agent_rw_orb_pointer()
-To: bootc@bootc.net
-Cc: target-devel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] scsi: target: Remove tcm_loop target reset handling
+To: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com,
+ linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+Cc: josef@toxicpanda.com
+References: <20260530052349.5134-1-michael.christie@oracle.com>
+Content-Language: en-US
+From: Hannes Reinecke <hare@suse.com>
+In-Reply-To: <20260530052349.5134-1-michael.christie@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Dear Linux kernel maintainers,
+On 5/30/26 07:23, Mike Christie wrote:
+> tcm_loop_target_reset is supposed to handle all the LUNs on a target
+> but it's only doing a TMR_LUN_RESET so only that one LUN is handled.
+> This will cause us to return early while IOs to other LUNs are still
+> hung in lower layers. This just removes the target reset handler for
+> the driver because LIO doesn't support target resets and for the
+> common case where this is run from the scsi-ml error hamdler we have
+> already tried an abort and lun reset so waiting again is most likely
+> useless.
+> 
+> Fixes: 1333eee56cdf ("scsi: target: tcm_loop: Drain commands in target_reset handler")
+> Signed-off-by: Mike Christie <michael.christie@oracle.com>
+> ---
+>   drivers/target/loopback/tcm_loop.c | 64 ------------------------------
+>   1 file changed, 64 deletions(-)
+> 
+> diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
+> index 110297345751..d29830b951f7 100644
+> --- a/drivers/target/loopback/tcm_loop.c
+> +++ b/drivers/target/loopback/tcm_loop.c
+> @@ -270,69 +270,6 @@ static int tcm_loop_device_reset(struct scsi_cmnd *sc)
+>   	return (ret == TMR_FUNCTION_COMPLETE) ? SUCCESS : FAILED;
+>   }
+>   
+> -static bool tcm_loop_flush_work_iter(struct request *rq, void *data)
+> -{
+> -	struct scsi_cmnd *sc = blk_mq_rq_to_pdu(rq);
+> -	struct tcm_loop_cmd *tl_cmd = scsi_cmd_priv(sc);
+> -	struct se_cmd *se_cmd = &tl_cmd->tl_se_cmd;
+> -
+> -	flush_work(&se_cmd->work);
+> -	return true;
+> -}
+> -
+> -static int tcm_loop_target_reset(struct scsi_cmnd *sc)
+> -{
+> -	struct tcm_loop_hba *tl_hba;
+> -	struct tcm_loop_tpg *tl_tpg;
+> -	struct Scsi_Host *sh = sc->device->host;
+> -	int ret;
+> -
+> -	/*
+> -	 * Locate the tcm_loop_hba_t pointer
+> -	 */
+> -	tl_hba = *(struct tcm_loop_hba **)shost_priv(sh);
+> -	if (!tl_hba) {
+> -		pr_err("Unable to perform device reset without active I_T Nexus\n");
+> -		return FAILED;
+> -	}
+> -	/*
+> -	 * Locate the tl_tpg pointer from TargetID in sc->device->id
+> -	 */
+> -	tl_tpg = &tl_hba->tl_hba_tpgs[sc->device->id];
+> -	if (!tl_tpg)
+> -		return FAILED;
+> -
+> -	/*
+> -	 * Issue a LUN_RESET to drain all commands that the target core
+> -	 * knows about.  This handles commands not yet marked CMD_T_COMPLETE.
+> -	 */
+> -	ret = tcm_loop_issue_tmr(tl_tpg, sc->device->lun, 0, TMR_LUN_RESET);
+> -	if (ret != TMR_FUNCTION_COMPLETE)
+> -		return FAILED;
+> -
+> -	/*
+> -	 * Flush any deferred target core completion work that may still be
+> -	 * queued.  Commands that already had CMD_T_COMPLETE set before the TMR
+> -	 * are skipped by the TMR drain, but their async completion work
+> -	 * (transport_lun_remove_cmd → percpu_ref_put, release_cmd → scsi_done)
+> -	 * may still be pending in target_completion_wq.
+> -	 *
+> -	 * The SCSI EH will reuse in-flight scsi_cmnd structures for recovery
+> -	 * commands (e.g. TUR) immediately after this handler returns SUCCESS —
+> -	 * if deferred work is still pending, the memset in queuecommand would
+> -	 * zero the se_cmd while the work accesses it, leaking the LUN
+> -	 * percpu_ref and hanging configfs unlink forever.
+> -	 *
+> -	 * Use blk_mq_tagset_busy_iter() to find all started requests and
+> -	 * flush_work() on each — the same pattern used by mpi3mr, scsi_debug,
+> -	 * and other SCSI drivers to drain outstanding commands during reset.
+> -	 */
+> -	blk_mq_tagset_busy_iter(&sh->tag_set, tcm_loop_flush_work_iter, NULL);
+> -
+> -	tl_tpg->tl_transport_status = TCM_TRANSPORT_ONLINE;
+> -	return SUCCESS;
+> -}
+> -
+>   static const struct scsi_host_template tcm_loop_driver_template = {
+>   	.show_info		= tcm_loop_show_info,
+>   	.proc_name		= "tcm_loopback",
+> @@ -341,7 +278,6 @@ static const struct scsi_host_template tcm_loop_driver_template = {
+>   	.change_queue_depth	= scsi_change_queue_depth,
+>   	.eh_abort_handler = tcm_loop_abort_task,
+>   	.eh_device_reset_handler = tcm_loop_device_reset,
+> -	.eh_target_reset_handler = tcm_loop_target_reset,
+>   	.this_id		= -1,
+>   	.sg_tablesize		= 256,
+>   	.max_sectors		= 0xFFFF,
 
-My research-based static analyzer found a potential atomicity bug
-within the 'drivers/target/sbp' subsystem, more specifically, in
-'drivers/target/sbp/sbp_target.c'.
+Reviewed-by: Hannes Reinecke <hare@kernel.org>
 
-This potential issue is present as of git commit
-eb3f4b7426cfd2b79d65b7d37155480b32259a11 of the mainline kernel.
+Cheers,
 
-Potential concurrent triggering executions:
-T0:
-tgt_agent_fetch_work
-     --> spin_lock_bh(&agent->lock);
-     --> agent->doorbell = false;
-     --> agent->orb_pointer = next_orb;
-     --> spin_unlock_bh(&agent->lock)
-
-T1:
-tgt_agent_rw_orb_pointer
-    --> spin_unlock_bh(&agent->lock);
-    --> agent->orb_pointer = sbp2_pointer_to_addr(ptr);
-    --> agent->doorbell = false;
-
-The writes to 'agent->orb_pointer' and 'agent->doorbell' are outside
-of the critical section of 'agent->lock'.
-This does align with the lock's critical section in T0 as
-'agent->lock' seems to be responsible for 'agent->orb_pointer'.
-
-Please kindly check at your convenience. Thank you for your time and
-consideration.
-
-Best regards,
-Ginger
+Hannes
+-- 
+Dr. Hannes Reinecke                  Kernel Storage Architect
+hare@suse.com                               +49 911 74053 688
+SUSE Software Solutions GmbH, Frankenstr. 146, 90461 Nürnberg
+HRB 36809 (AG Nürnberg), GF: I. Totev, A. McDonald, W. Knoblich
