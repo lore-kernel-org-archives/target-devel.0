@@ -1,190 +1,692 @@
-Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44032334374
-	for <target-devel@vger.kernel.org>; Mon,  1 Jun 2026 06:14:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.48
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 64D503446AF;
+	Mon,  1 Jun 2026 09:15:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780294484; cv=none; b=lwifszFeh1+pQDgvM9qa8AQBtXIsjt+sJWlvEKTtKeoUaLHMxpZQt5XntnQ+kMcIaP5eYNIswiyFJVx7KwdDZIYSiYmSLSj72nlXFrRF45ussFFdLF1hcf6H/al1aj48PsSkz1QKO8xAD+O7gK8uuGgbLbg70MwO2k6IThX0Z0g=
+	t=1780305327; cv=none; b=ZBwkyMhGkSwZvsCAX7Gr1CaK4PFKN9WcUQ+B6d4rNTRJxUicGkzIMGsmM4453AR31IV6grBkqXQyovN0XoVqui43xKxkfNJIqlo725S65b6JNhCwuuGybbRc5gc8JUpNEa4MHWy6B09KMdZXvMwBa0OZI1zU6r56ZZk+XH98hoI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780294484; c=relaxed/simple;
-	bh=9MNzn12fHIiogHe+ExGRksoHKHMAM3exEmf5WZZ/azI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TyQDYwB+bjoDrpFyexjj7iRhJ8iOSPhU3Nol7krqwKbumuuhA96ZQ/cRTOkbl8gUJk6N8Zv82MBZqlnI+ExbwG4T/4AbrgPWweVsvekeZn6n3qhsli4JFFbPCvk+9mjPLlXivuKYKRzjkcukRdMbnTeLdT1KE9o7VVDQMPU29qg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=Xbwlm1tI; arc=none smtp.client-ip=209.85.221.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
+	s=arc-20240116; t=1780305327; c=relaxed/simple;
+	bh=4frzZIcelX2otSxjHsIKMCXgd0hEGqfXLAmFJUVBSPs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=mIqsDIQXEC1E11rlO1iMPw6dtlJKzjVGD7p0IZFTkAKuKIbNCa0BsWMcHVOjmA3tcQ+pideg3EeBK/EecZ0n/OBO5KW7jjVgyGKnrJMgWtaloQ50rSGzRLvZldtmN2HQnAQwryK1iOn0eCeUGSaulsZIYMMdpEcgo/koURkNMmY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=ayhWZQAk; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="Xbwlm1tI"
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-45fd45e596cso526880f8f.1
-        for <target-devel@vger.kernel.org>; Sun, 31 May 2026 23:14:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1780294481; x=1780899281; darn=vger.kernel.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=qnQ4Egkx2jvHi2uwwRkA+XvJq80HYWm7qvhBoPf3qpA=;
-        b=Xbwlm1tI4FEILndE3UUHcpqJMPp+Du8rtYxMlSPiGzacjeuta6kaNYOz5iN2GG1HaF
-         3Ab7uPt5pdAKS24xjoonBLZh6/uo8n/PNf1jBoGa4C2xfcNTfZRSmkLtrsIy4KpmDQuG
-         Tc2RpyVKiYMu9ZMfY1Zm4gkW1Wa5qlOWzrO4goxRa/1ucsWeRN/ya1LNnbSVTJdSVBLK
-         WJPoshQmK2zVJXRLwL7bwJXQUa34l8R+3KEj5Ody/eDBP/x4wf3RYQjTGDJ2NauS7TCV
-         hRXeesld4X8yfRlnG/WKiOFny9LlnSsa9VjjJu/P33KPcTmJw64Aood1lGCP1WOOxtg6
-         +LPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780294481; x=1780899281;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=qnQ4Egkx2jvHi2uwwRkA+XvJq80HYWm7qvhBoPf3qpA=;
-        b=q/ISrg4l4mBdh34NvMqNSEqtNv7fOZEytL3tno13OHDZAHJq+ZU9HRbBWG0uxz7FHA
-         TrLEft12nbHpxVizBbewmzGTiitGAqggsDV64oUio9gwUDe0FP4veeLsTbpgUN6fCT94
-         nun/4fD6ZTF6hfnZ/rwqOWvtFZhbzFR61LFzpvw9Rr0AatS9adJ6HZIVHQGqFWcawbsd
-         bDMAj5exApfoCoOfO/xI0XRaq1OYYPlOm/Lw8mkfyoztB+vL70lp5rSj/zqp0NlEMsrR
-         /NFOrKUjToBGVmP9SXxhMUIbYkEUiU2piZzSUdO7GJbOvfOn8x6K2OwM1h7KY3yrB5Jq
-         xDxA==
-X-Forwarded-Encrypted: i=1; AFNElJ8FuT2RV4HtlyZufhGSPSFamzS95XvJ1KTmHPtEXwGGZWc8uhePmOph3EiWAlZeMoaCEU0U87F1qY6Dtpg=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzGaxSm4ajGO11MaENmMHC1zdGMAMrkMzm+9PzknGmwRzSYqUjY
-	P4Hqpic29Qg1Dy6yyZ8npPuDVbg9iu8BLyqjnSadLQzTP1BT2WxJtdtdDPshwJ0h9rU=
-X-Gm-Gg: Acq92OGbGbrNISO8bNg2MGl0I92kH7C1z+SLC1pfgWoCL4EJayPJc9ni98cbYcmcu/4
-	pWn9e7sQriZMo39UozT4VkD5+AdQn8r/LA0tgnV/khXanspMdt3YqajgRskv6QhCQLWTQWr1FiI
-	m+4RxfRGVh1XzyMaKXgKFqCFf/kOcWHr+AdGGF6Q9O8shvvPJ788gZ1V9PnNU2zn65O0xzJNHUQ
-	/zcMd5d1iEY+w9dK7UKHL7J4MpTSlzxI50U7A2BREKNmDY42ZQfnH4nkDHN2KxsWS6iFua7mPkL
-	nSFsWg3igzkMSmhm6X4sOsLXlRgt7Tovw2/8s3i+Y06eSdO7WD+TUuuftkA825Kt6Xqkq8RuS4P
-	wfY0/KRJUHpJtJU2oEsnydzmIIf4/F2PkJXQ/ZjRPJJULDxb1t1ulxvapzzSRvEseiNxHelm0qP
-	6O+4YA1Wh8Bb41Pu/rznRr4gy84F1+H65ngisuCpS4PT+QPdjUqU7afy6eUofO+kRokDwI+5s=
-X-Received: by 2002:adf:f190:0:b0:44f:9b70:2996 with SMTP id ffacd0b85a97d-45ef6b4f4f5mr12541489f8f.21.1780294480614;
-        Sun, 31 May 2026 23:14:40 -0700 (PDT)
-Received: from ?IPV6:2001:a61:2a86:dc01:360a:1184:3ef3:86d5? ([2001:a61:2a86:dc01:360a:1184:3ef3:86d5])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-45ef354cd7csm22555338f8f.18.2026.05.31.23.14.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 31 May 2026 23:14:40 -0700 (PDT)
-Message-ID: <c77edd76-39ec-4041-8185-366f76675c68@suse.com>
-Date: Mon, 1 Jun 2026 08:14:39 +0200
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="ayhWZQAk"
+Received: by linux.microsoft.com (Postfix, from userid 1173)
+	id 16AFD20B7166; Mon,  1 Jun 2026 02:15:12 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 16AFD20B7166
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1780305312;
+	bh=3b9Q3PvDSLzSghzPzzP9pVclyLFUMon6F8MQuOc8hs0=;
+	h=From:To:Cc:Subject:Date:From;
+	b=ayhWZQAknP+GUBtR31B2IhhPb+GOB11p4z5IE5q9nxUNRobH0CGlJv3J9sSLCgtIg
+	 zUilc36p10Hnnj1I3+JPoJ8qrrJTHhhVSv5eC9rNjn11J8ar+i1WzYO/VkueWX2lLK
+	 7f+elAit9GDnOSIlMkBRA6OnRjESiK6cUdC+NwGI=
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+To: mkalderon@marvell.com,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>,
+	zyjzyj2000@gmail.com,
+	sagi@grimberg.me,
+	mgurtovoy@nvidia.com,
+	haris.iqbal@ionos.com,
+	jinpu.wang@ionos.com,
+	bvanassche@acm.org,
+	kbusch@kernel.org,
+	Jens Axboe <axboe@kernel.dk>,
+	Christoph Hellwig <hch@lst.de>,
+	kch@nvidia.com,
+	smfrench@gmail.com,
+	linkinjeon@kernel.org,
+	metze@samba.org,
+	tom@talpey.com,
+	trondmy@kernel.org,
+	anna@kernel.org,
+	chuck.lever@oracle.com,
+	jlayton@kernel.org,
+	neil@brown.name,
+	okorniev@redhat.com,
+	Dai.Ngo@oracle.com,
+	achender@kernel.org,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	horms@kernel.org,
+	kees@kernel.org,
+	andriy.shevchenko@linux.intel.com,
+	ebadger@purestorage.com,
+	linux-rdma@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-nvme@lists.infradead.org,
+	linux-cifs@vger.kernel.org,
+	samba-technical@lists.samba.org,
+	linux-nfs@vger.kernel.org,
+	netdev@vger.kernel.org,
+	rds-devel@oss.oracle.com
+Cc: Erni Sri Satya Vennela <ernis@linux.microsoft.com>,
+	Jason Gunthorpe <jgg@nvidia.com>
+Subject: [PATCH net-next v5] RDMA: Change capability fields in ib_device_attr from int to u32
+Date: Mon,  1 Jun 2026 02:14:44 -0700
+Message-ID: <20260601091505.1763912-1-ernis@linux.microsoft.com>
+X-Mailer: git-send-email 2.43.7
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] scsi: target: Remove tcm_loop target reset handling
-To: Mike Christie <michael.christie@oracle.com>, martin.petersen@oracle.com,
- linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-Cc: josef@toxicpanda.com
-References: <20260530052349.5134-1-michael.christie@oracle.com>
-Content-Language: en-US
-From: Hannes Reinecke <hare@suse.com>
-In-Reply-To: <20260530052349.5134-1-michael.christie@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-On 5/30/26 07:23, Mike Christie wrote:
-> tcm_loop_target_reset is supposed to handle all the LUNs on a target
-> but it's only doing a TMR_LUN_RESET so only that one LUN is handled.
-> This will cause us to return early while IOs to other LUNs are still
-> hung in lower layers. This just removes the target reset handler for
-> the driver because LIO doesn't support target resets and for the
-> common case where this is run from the scsi-ml error hamdler we have
-> already tried an abort and lun reset so waiting again is most likely
-> useless.
-> 
-> Fixes: 1333eee56cdf ("scsi: target: tcm_loop: Drain commands in target_reset handler")
-> Signed-off-by: Mike Christie <michael.christie@oracle.com>
-> ---
->   drivers/target/loopback/tcm_loop.c | 64 ------------------------------
->   1 file changed, 64 deletions(-)
-> 
-> diff --git a/drivers/target/loopback/tcm_loop.c b/drivers/target/loopback/tcm_loop.c
-> index 110297345751..d29830b951f7 100644
-> --- a/drivers/target/loopback/tcm_loop.c
-> +++ b/drivers/target/loopback/tcm_loop.c
-> @@ -270,69 +270,6 @@ static int tcm_loop_device_reset(struct scsi_cmnd *sc)
->   	return (ret == TMR_FUNCTION_COMPLETE) ? SUCCESS : FAILED;
->   }
->   
-> -static bool tcm_loop_flush_work_iter(struct request *rq, void *data)
-> -{
-> -	struct scsi_cmnd *sc = blk_mq_rq_to_pdu(rq);
-> -	struct tcm_loop_cmd *tl_cmd = scsi_cmd_priv(sc);
-> -	struct se_cmd *se_cmd = &tl_cmd->tl_se_cmd;
-> -
-> -	flush_work(&se_cmd->work);
-> -	return true;
-> -}
-> -
-> -static int tcm_loop_target_reset(struct scsi_cmnd *sc)
-> -{
-> -	struct tcm_loop_hba *tl_hba;
-> -	struct tcm_loop_tpg *tl_tpg;
-> -	struct Scsi_Host *sh = sc->device->host;
-> -	int ret;
-> -
-> -	/*
-> -	 * Locate the tcm_loop_hba_t pointer
-> -	 */
-> -	tl_hba = *(struct tcm_loop_hba **)shost_priv(sh);
-> -	if (!tl_hba) {
-> -		pr_err("Unable to perform device reset without active I_T Nexus\n");
-> -		return FAILED;
-> -	}
-> -	/*
-> -	 * Locate the tl_tpg pointer from TargetID in sc->device->id
-> -	 */
-> -	tl_tpg = &tl_hba->tl_hba_tpgs[sc->device->id];
-> -	if (!tl_tpg)
-> -		return FAILED;
-> -
-> -	/*
-> -	 * Issue a LUN_RESET to drain all commands that the target core
-> -	 * knows about.  This handles commands not yet marked CMD_T_COMPLETE.
-> -	 */
-> -	ret = tcm_loop_issue_tmr(tl_tpg, sc->device->lun, 0, TMR_LUN_RESET);
-> -	if (ret != TMR_FUNCTION_COMPLETE)
-> -		return FAILED;
-> -
-> -	/*
-> -	 * Flush any deferred target core completion work that may still be
-> -	 * queued.  Commands that already had CMD_T_COMPLETE set before the TMR
-> -	 * are skipped by the TMR drain, but their async completion work
-> -	 * (transport_lun_remove_cmd → percpu_ref_put, release_cmd → scsi_done)
-> -	 * may still be pending in target_completion_wq.
-> -	 *
-> -	 * The SCSI EH will reuse in-flight scsi_cmnd structures for recovery
-> -	 * commands (e.g. TUR) immediately after this handler returns SUCCESS —
-> -	 * if deferred work is still pending, the memset in queuecommand would
-> -	 * zero the se_cmd while the work accesses it, leaking the LUN
-> -	 * percpu_ref and hanging configfs unlink forever.
-> -	 *
-> -	 * Use blk_mq_tagset_busy_iter() to find all started requests and
-> -	 * flush_work() on each — the same pattern used by mpi3mr, scsi_debug,
-> -	 * and other SCSI drivers to drain outstanding commands during reset.
-> -	 */
-> -	blk_mq_tagset_busy_iter(&sh->tag_set, tcm_loop_flush_work_iter, NULL);
-> -
-> -	tl_tpg->tl_transport_status = TCM_TRANSPORT_ONLINE;
-> -	return SUCCESS;
-> -}
-> -
->   static const struct scsi_host_template tcm_loop_driver_template = {
->   	.show_info		= tcm_loop_show_info,
->   	.proc_name		= "tcm_loopback",
-> @@ -341,7 +278,6 @@ static const struct scsi_host_template tcm_loop_driver_template = {
->   	.change_queue_depth	= scsi_change_queue_depth,
->   	.eh_abort_handler = tcm_loop_abort_task,
->   	.eh_device_reset_handler = tcm_loop_device_reset,
-> -	.eh_target_reset_handler = tcm_loop_target_reset,
->   	.this_id		= -1,
->   	.sg_tablesize		= 256,
->   	.max_sectors		= 0xFFFF,
+The capability counter fields in struct ib_device_attr are declared
+as signed int, but these values are inherently non-negative. Drivers
+maintain their cached caps as u32 and assign them directly into these
+int fields; if a cap exceeds INT_MAX the implicit narrowing yields a
+negative value visible to the IB core.
 
-Reviewed-by: Hannes Reinecke <hare@kernel.org>
+Change the signed int capability fields to u32 to match the
+underlying nature of the data. Also update consumers across the IB
+core, ULPs, NVMe-oF target, RDS, and NFS/RDMA so the new u32 values
+are not forced back through signed int or u8 via min()/min_t() or
+narrowing local variables.
 
-Cheers,
+Suggested-by: Jason Gunthorpe <jgg@nvidia.com>
+Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+---
+Changes in v5:
+* Add U8_MAX clamps in iser_verbs, nvme/host, nvme/target, isert, rds/ib_cm,
+  smbdirect/connect and smbdirect/accept where u32 capability fields were
+  directly narrowed into u8 rdma_conn_param fields without clamping
+* Guard the inline_sge_count calculation in nvmet_rdma_find_get_device() to
+  prevent u32 underflow when both max_sge_rd and max_recv_sge are zero
+* Expand type migration to 9 additional fields (max_mw, max_raw_ethy_qp,
+  max_mcast_grp, max_mcast_qp_attach, max_total_mcast_qp_attach, max_ah,
+  max_srq, max_srq_wr, max_srq_sge)
+* Fix min_t(int,...) in svc_rdma_transport; min_t(u32,...) in ipoib, srpt,
+  nvme/target, rds/ib, rtrs-clt, rtrs-srv, xprtrdma/verbs
+* Fix frwr_ops.c u32 underflow guard (reorder check before subtraction)
+* Change sc_max_send_sges to unsigned int, inline_sge_count to u32
+* Fix %d -> %u in rxe_qp, rxe_srq, ipoib_cm, ib_isert, svc_rdma_transport
+* Update commit message.
+Changes in v4:
+* Drop clamping the values in mana_ib_query_device, instead update
+  the props values from int to u32.
+Changes in v3:
+* Drop clamping from mana_ib_gd_query_adapter_caps(). The internal u32
+  caps cache does not need to be clamped.
+* Move all clamping exclusively to mana_ib_query_device(), which is the
+  only place the cached u32 values are narrowed into the signed int
+  fields of struct ib_device_attr.
+* Reframe commit message: this is a u32-to-int type boundary fix, not a
+  CVM/untrusted-hardware hardening patch.
+Changes in v2:
+* Update patch title.
+---
+ drivers/infiniband/hw/qedr/verbs.c       |  4 +--
+ drivers/infiniband/sw/rxe/rxe_qp.c       | 16 ++++-----
+ drivers/infiniband/sw/rxe/rxe_srq.c      | 16 ++++-----
+ drivers/infiniband/ulp/ipoib/ipoib_cm.c  |  7 ++--
+ drivers/infiniband/ulp/iser/iser_verbs.c |  2 +-
+ drivers/infiniband/ulp/isert/ib_isert.c  |  8 ++---
+ drivers/infiniband/ulp/rtrs/rtrs-clt.c   | 12 +++----
+ drivers/infiniband/ulp/rtrs/rtrs-srv.c   |  6 ++--
+ drivers/infiniband/ulp/srp/ib_srp.c      |  2 +-
+ drivers/infiniband/ulp/srpt/ib_srpt.c    |  6 ++--
+ drivers/nvme/host/rdma.c                 |  3 +-
+ drivers/nvme/target/rdma.c               | 17 +++++-----
+ fs/smb/smbdirect/accept.c                |  4 +--
+ fs/smb/smbdirect/connect.c               |  4 +--
+ include/linux/sunrpc/svc_rdma.h          |  2 +-
+ include/rdma/ib_verbs.h                  | 42 ++++++++++++------------
+ net/rds/ib.c                             |  4 +--
+ net/rds/ib_cm.c                          |  6 ++--
+ net/sunrpc/xprtrdma/frwr_ops.c           |  7 ++--
+ net/sunrpc/xprtrdma/svc_rdma_transport.c |  4 +--
+ net/sunrpc/xprtrdma/verbs.c              |  2 +-
+ 21 files changed, 90 insertions(+), 84 deletions(-)
 
-Hannes
+diff --git a/drivers/infiniband/hw/qedr/verbs.c b/drivers/infiniband/hw/qedr/verbs.c
+index 679aa6f3a63b..64ea72529682 100644
+--- a/drivers/infiniband/hw/qedr/verbs.c
++++ b/drivers/infiniband/hw/qedr/verbs.c
+@@ -151,8 +151,8 @@ int qedr_query_device(struct ib_device *ibdev,
+ 	attr->max_qp_init_rd_atom =
+ 	    1 << (fls(qattr->max_qp_req_rd_atomic_resc) - 1);
+ 	attr->max_qp_rd_atom =
+-	    min(1 << (fls(qattr->max_qp_resp_rd_atomic_resc) - 1),
+-		attr->max_qp_init_rd_atom);
++	    min_t(u32, 1 << (fls(qattr->max_qp_resp_rd_atomic_resc) - 1),
++		  attr->max_qp_init_rd_atom);
+ 
+ 	attr->max_srq = qattr->max_srq;
+ 	attr->max_srq_sge = qattr->max_srq_sge;
+diff --git a/drivers/infiniband/sw/rxe/rxe_qp.c b/drivers/infiniband/sw/rxe/rxe_qp.c
+index f3dff1aea96a..b25bbf6606f8 100644
+--- a/drivers/infiniband/sw/rxe/rxe_qp.c
++++ b/drivers/infiniband/sw/rxe/rxe_qp.c
+@@ -67,27 +67,27 @@ static int rxe_qp_chk_cap(struct rxe_dev *rxe, struct ib_qp_cap *cap,
+ 			  int has_srq)
+ {
+ 	if (cap->max_send_wr > rxe->attr.max_qp_wr) {
+-		rxe_dbg_dev(rxe, "invalid send wr = %u > %d\n",
+-			 cap->max_send_wr, rxe->attr.max_qp_wr);
++		rxe_dbg_dev(rxe, "invalid send wr = %u > %u\n",
++			    cap->max_send_wr, rxe->attr.max_qp_wr);
+ 		goto err1;
+ 	}
+ 
+ 	if (cap->max_send_sge > rxe->attr.max_send_sge) {
+-		rxe_dbg_dev(rxe, "invalid send sge = %u > %d\n",
+-			 cap->max_send_sge, rxe->attr.max_send_sge);
++		rxe_dbg_dev(rxe, "invalid send sge = %u > %u\n",
++			    cap->max_send_sge, rxe->attr.max_send_sge);
+ 		goto err1;
+ 	}
+ 
+ 	if (!has_srq) {
+ 		if (cap->max_recv_wr > rxe->attr.max_qp_wr) {
+-			rxe_dbg_dev(rxe, "invalid recv wr = %u > %d\n",
+-				 cap->max_recv_wr, rxe->attr.max_qp_wr);
++			rxe_dbg_dev(rxe, "invalid recv wr = %u > %u\n",
++				    cap->max_recv_wr, rxe->attr.max_qp_wr);
+ 			goto err1;
+ 		}
+ 
+ 		if (cap->max_recv_sge > rxe->attr.max_recv_sge) {
+-			rxe_dbg_dev(rxe, "invalid recv sge = %u > %d\n",
+-				 cap->max_recv_sge, rxe->attr.max_recv_sge);
++			rxe_dbg_dev(rxe, "invalid recv sge = %u > %u\n",
++				    cap->max_recv_sge, rxe->attr.max_recv_sge);
+ 			goto err1;
+ 		}
+ 	}
+diff --git a/drivers/infiniband/sw/rxe/rxe_srq.c b/drivers/infiniband/sw/rxe/rxe_srq.c
+index c9a7cd38953d..74904a6fdf2b 100644
+--- a/drivers/infiniband/sw/rxe/rxe_srq.c
++++ b/drivers/infiniband/sw/rxe/rxe_srq.c
+@@ -13,8 +13,8 @@ int rxe_srq_chk_init(struct rxe_dev *rxe, struct ib_srq_init_attr *init)
+ 	struct ib_srq_attr *attr = &init->attr;
+ 
+ 	if (attr->max_wr > rxe->attr.max_srq_wr) {
+-		rxe_dbg_dev(rxe, "max_wr(%d) > max_srq_wr(%d)\n",
+-			attr->max_wr, rxe->attr.max_srq_wr);
++		rxe_dbg_dev(rxe, "max_wr(%u) > max_srq_wr(%u)\n",
++			    attr->max_wr, rxe->attr.max_srq_wr);
+ 		goto err1;
+ 	}
+ 
+@@ -27,8 +27,8 @@ int rxe_srq_chk_init(struct rxe_dev *rxe, struct ib_srq_init_attr *init)
+ 		attr->max_wr = RXE_MIN_SRQ_WR;
+ 
+ 	if (attr->max_sge > rxe->attr.max_srq_sge) {
+-		rxe_dbg_dev(rxe, "max_sge(%d) > max_srq_sge(%d)\n",
+-			attr->max_sge, rxe->attr.max_srq_sge);
++		rxe_dbg_dev(rxe, "max_sge(%u) > max_srq_sge(%u)\n",
++			    attr->max_sge, rxe->attr.max_srq_sge);
+ 		goto err1;
+ 	}
+ 
+@@ -107,8 +107,8 @@ int rxe_srq_chk_attr(struct rxe_dev *rxe, struct rxe_srq *srq,
+ 
+ 	if (mask & IB_SRQ_MAX_WR) {
+ 		if (attr->max_wr > rxe->attr.max_srq_wr) {
+-			rxe_dbg_srq(srq, "max_wr(%d) > max_srq_wr(%d)\n",
+-				attr->max_wr, rxe->attr.max_srq_wr);
++			rxe_dbg_srq(srq, "max_wr(%u) > max_srq_wr(%u)\n",
++				    attr->max_wr, rxe->attr.max_srq_wr);
+ 			goto err1;
+ 		}
+ 
+@@ -129,8 +129,8 @@ int rxe_srq_chk_attr(struct rxe_dev *rxe, struct rxe_srq *srq,
+ 
+ 	if (mask & IB_SRQ_LIMIT) {
+ 		if (attr->srq_limit > rxe->attr.max_srq_wr) {
+-			rxe_dbg_srq(srq, "srq_limit(%d) > max_srq_wr(%d)\n",
+-				attr->srq_limit, rxe->attr.max_srq_wr);
++			rxe_dbg_srq(srq, "srq_limit(%u) > max_srq_wr(%u)\n",
++				    attr->srq_limit, rxe->attr.max_srq_wr);
+ 			goto err1;
+ 		}
+ 
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib_cm.c b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
+index 57fec88a1629..58606501bcd7 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib_cm.c
++++ b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
+@@ -1582,7 +1582,8 @@ static void ipoib_cm_create_srq(struct net_device *dev, int max_sge)
+ int ipoib_cm_dev_init(struct net_device *dev)
+ {
+ 	struct ipoib_dev_priv *priv = ipoib_priv(dev);
+-	int max_srq_sge, i;
++	int i;
++	u32 max_srq_sge;
+ 	u8 addr;
+ 
+ 	INIT_LIST_HEAD(&priv->cm.passive_ids);
+@@ -1600,9 +1601,9 @@ int ipoib_cm_dev_init(struct net_device *dev)
+ 
+ 	skb_queue_head_init(&priv->cm.skb_queue);
+ 
+-	ipoib_dbg(priv, "max_srq_sge=%d\n", priv->ca->attrs.max_srq_sge);
++	ipoib_dbg(priv, "max_srq_sge=%u\n", priv->ca->attrs.max_srq_sge);
+ 
+-	max_srq_sge = min_t(int, IPOIB_CM_RX_SG, priv->ca->attrs.max_srq_sge);
++	max_srq_sge = min_t(u32, IPOIB_CM_RX_SG, priv->ca->attrs.max_srq_sge);
+ 	ipoib_cm_create_srq(dev, max_srq_sge);
+ 	if (ipoib_cm_has_srq(dev)) {
+ 		priv->cm.max_cm_mtu = max_srq_sge * PAGE_SIZE - 0x10;
+diff --git a/drivers/infiniband/ulp/iser/iser_verbs.c b/drivers/infiniband/ulp/iser/iser_verbs.c
+index f03b3bb3c0c4..a9a366fb3a34 100644
+--- a/drivers/infiniband/ulp/iser/iser_verbs.c
++++ b/drivers/infiniband/ulp/iser/iser_verbs.c
+@@ -589,7 +589,7 @@ static void iser_route_handler(struct rdma_cm_id *cma_id)
+ 		goto failure;
+ 
+ 	memset(&conn_param, 0, sizeof conn_param);
+-	conn_param.responder_resources = ib_dev->attrs.max_qp_rd_atom;
++	conn_param.responder_resources = min_t(u32, U8_MAX, ib_dev->attrs.max_qp_rd_atom);
+ 	conn_param.initiator_depth = 1;
+ 	conn_param.retry_count = 7;
+ 	conn_param.rnr_retry_count = 6;
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index 348005e71891..3bebf99f600c 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -214,9 +214,9 @@ isert_create_device_ib_res(struct isert_device *device)
+ 	struct ib_device *ib_dev = device->ib_device;
+ 	int ret;
+ 
+-	isert_dbg("devattr->max_send_sge: %d devattr->max_recv_sge %d\n",
++	isert_dbg("devattr->max_send_sge: %u devattr->max_recv_sge %u\n",
+ 		  ib_dev->attrs.max_send_sge, ib_dev->attrs.max_recv_sge);
+-	isert_dbg("devattr->max_sge_rd: %d\n", ib_dev->attrs.max_sge_rd);
++	isert_dbg("devattr->max_sge_rd: %u\n", ib_dev->attrs.max_sge_rd);
+ 
+ 	device->pd = ib_alloc_pd(ib_dev, 0);
+ 	if (IS_ERR(device->pd)) {
+@@ -381,8 +381,8 @@ isert_set_nego_params(struct isert_conn *isert_conn,
+ 	struct ib_device_attr *attr = &isert_conn->device->ib_device->attrs;
+ 
+ 	/* Set max inflight RDMA READ requests */
+-	isert_conn->initiator_depth = min_t(u8, param->initiator_depth,
+-				attr->max_qp_init_rd_atom);
++	isert_conn->initiator_depth = min_t(u32, param->initiator_depth,
++					    attr->max_qp_init_rd_atom);
+ 	isert_dbg("Using initiator_depth: %u\n", isert_conn->initiator_depth);
+ 
+ 	if (param->private_data) {
+diff --git a/drivers/infiniband/ulp/rtrs/rtrs-clt.c b/drivers/infiniband/ulp/rtrs/rtrs-clt.c
+index e351552733df..5245b4b7fb4e 100644
+--- a/drivers/infiniband/ulp/rtrs/rtrs-clt.c
++++ b/drivers/infiniband/ulp/rtrs/rtrs-clt.c
+@@ -1682,7 +1682,7 @@ static int create_con_cq_qp(struct rtrs_clt_con *con)
+ 		 * in case qp gets into error state.
+ 		 */
+ 		max_send_wr =
+-			min_t(int, wr_limit, SERVICE_CON_QUEUE_DEPTH * 2 + 2);
++			min_t(u32, wr_limit, SERVICE_CON_QUEUE_DEPTH * 2 + 2);
+ 		max_recv_wr = max_send_wr;
+ 	} else {
+ 		/*
+@@ -1698,11 +1698,11 @@ static int create_con_cq_qp(struct rtrs_clt_con *con)
+ 		wr_limit = clt_path->s.dev->ib_dev->attrs.max_qp_wr;
+ 		/* Shared between connections */
+ 		clt_path->s.dev_ref++;
+-		max_send_wr = min_t(int, wr_limit,
+-			      /* QD * (REQ + RSP + FR REGS or INVS) + drain */
+-			      clt_path->queue_depth * 4 + 1);
+-		max_recv_wr = min_t(int, wr_limit,
+-			      clt_path->queue_depth * 3 + 1);
++		max_send_wr = min_t(u32, wr_limit,
++				    /* QD * (REQ + RSP + FR REGS or INVS) + drain */
++				    clt_path->queue_depth * 4 + 1);
++		max_recv_wr = min_t(u32, wr_limit,
++				    clt_path->queue_depth * 3 + 1);
+ 		max_send_sge = 2;
+ 	}
+ 	atomic_set(&con->c.sq_wr_avail, max_send_wr);
+diff --git a/drivers/infiniband/ulp/rtrs/rtrs-srv.c b/drivers/infiniband/ulp/rtrs/rtrs-srv.c
+index 6482ad859bd1..852213365ecd 100644
+--- a/drivers/infiniband/ulp/rtrs/rtrs-srv.c
++++ b/drivers/infiniband/ulp/rtrs/rtrs-srv.c
+@@ -1731,7 +1731,7 @@ static int create_con(struct rtrs_srv_path *srv_path,
+ 		 * All receive and all send (each requiring invalidate)
+ 		 * + 2 for drain and heartbeat
+ 		 */
+-		max_send_wr = min_t(int, wr_limit,
++		max_send_wr = min_t(u32, wr_limit,
+ 				    SERVICE_CON_QUEUE_DEPTH * 2 + 2);
+ 		max_recv_wr = max_send_wr;
+ 		s->signal_interval = min_not_zero(srv->queue_depth,
+@@ -1740,11 +1740,11 @@ static int create_con(struct rtrs_srv_path *srv_path,
+ 		/* when always_invlaidate enalbed, we need linv+rinv+mr+imm */
+ 		if (always_invalidate)
+ 			max_send_wr =
+-				min_t(int, wr_limit,
++				min_t(u32, wr_limit,
+ 				      srv->queue_depth * (1 + 4) + 1);
+ 		else
+ 			max_send_wr =
+-				min_t(int, wr_limit,
++				min_t(u32, wr_limit,
+ 				      srv->queue_depth * (1 + 2) + 1);
+ 
+ 		max_recv_wr = srv->queue_depth + 1;
+diff --git a/drivers/infiniband/ulp/srp/ib_srp.c b/drivers/infiniband/ulp/srp/ib_srp.c
+index b58868e1cf11..dc30d069ab3d 100644
+--- a/drivers/infiniband/ulp/srp/ib_srp.c
++++ b/drivers/infiniband/ulp/srp/ib_srp.c
+@@ -557,7 +557,7 @@ static int srp_create_ch_ib(struct srp_rdma_ch *ch)
+ 	init_attr->cap.max_send_wr     = m * target->queue_size;
+ 	init_attr->cap.max_recv_wr     = target->queue_size + 1;
+ 	init_attr->cap.max_recv_sge    = 1;
+-	init_attr->cap.max_send_sge    = min(SRP_MAX_SGE, attr->max_send_sge);
++	init_attr->cap.max_send_sge    = min_t(u32, SRP_MAX_SGE, attr->max_send_sge);
+ 	init_attr->sq_sig_type         = IB_SIGNAL_REQ_WR;
+ 	init_attr->qp_type             = IB_QPT_RC;
+ 	init_attr->send_cq             = send_cq;
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 9aec5d80117f..2ffa4f54cd4e 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -1884,7 +1884,7 @@ static int srpt_create_ch_ib(struct srpt_rdma_ch *ch)
+ 	 * both both, as RDMA contexts will also post completions for the
+ 	 * RDMA READ case.
+ 	 */
+-	qp_init->cap.max_send_wr = min(sq_size / 2, attrs->max_qp_wr);
++	qp_init->cap.max_send_wr = min_t(u32, sq_size / 2, attrs->max_qp_wr);
+ 	qp_init->cap.max_rdma_ctxs = sq_size / 2;
+ 	qp_init->cap.max_send_sge = attrs->max_send_sge;
+ 	qp_init->cap.max_recv_sge = 1;
+@@ -2298,7 +2298,7 @@ static int srpt_cm_req_recv(struct srpt_device *const sdev,
+ 	 * depth to avoid that the initiator driver has to report QUEUE_FULL
+ 	 * to the SCSI mid-layer.
+ 	 */
+-	ch->rq_size = min(MAX_SRPT_RQ_SIZE, sdev->device->attrs.max_qp_wr);
++	ch->rq_size = min_t(u32, MAX_SRPT_RQ_SIZE, sdev->device->attrs.max_qp_wr);
+ 	spin_lock_init(&ch->spinlock);
+ 	ch->state = CH_CONNECTING;
+ 	INIT_LIST_HEAD(&ch->cmd_wait_list);
+@@ -3225,7 +3225,7 @@ static int srpt_add_one(struct ib_device *device)
+ 
+ 	sdev->lkey = sdev->pd->local_dma_lkey;
+ 
+-	sdev->srq_size = min(srpt_srq_size, sdev->device->attrs.max_srq_wr);
++	sdev->srq_size = min_t(u32, srpt_srq_size, sdev->device->attrs.max_srq_wr);
+ 
+ 	srpt_use_srq(sdev, sdev->port[0].port_attrib.use_srq);
+ 
+diff --git a/drivers/nvme/host/rdma.c b/drivers/nvme/host/rdma.c
+index f77c960f7632..f45d79816bc8 100644
+--- a/drivers/nvme/host/rdma.c
++++ b/drivers/nvme/host/rdma.c
+@@ -1845,7 +1845,8 @@ static int nvme_rdma_route_resolved(struct nvme_rdma_queue *queue)
+ 	param.qp_num = queue->qp->qp_num;
+ 	param.flow_control = 1;
+ 
+-	param.responder_resources = queue->device->dev->attrs.max_qp_rd_atom;
++	param.responder_resources = min_t(u32, U8_MAX,
++					  queue->device->dev->attrs.max_qp_rd_atom);
+ 	/* maximum retry count */
+ 	param.retry_count = 7;
+ 	param.rnr_retry_count = 7;
+diff --git a/drivers/nvme/target/rdma.c b/drivers/nvme/target/rdma.c
+index e6e2c3f9afdf..fd6923198ec1 100644
+--- a/drivers/nvme/target/rdma.c
++++ b/drivers/nvme/target/rdma.c
+@@ -1149,10 +1149,10 @@ static int nvmet_rdma_init_srqs(struct nvmet_rdma_device *ndev)
+ 		return 0;
+ 	}
+ 
+-	ndev->srq_size = min(ndev->device->attrs.max_srq_wr,
+-			     nvmet_rdma_srq_size);
+-	ndev->srq_count = min(ndev->device->num_comp_vectors,
+-			      ndev->device->attrs.max_srq);
++	ndev->srq_size = min_t(u32, ndev->device->attrs.max_srq_wr,
++			       nvmet_rdma_srq_size);
++	ndev->srq_count = min_t(u32, ndev->device->num_comp_vectors,
++				ndev->device->attrs.max_srq);
+ 
+ 	ndev->srqs = kzalloc_objs(*ndev->srqs, ndev->srq_count);
+ 	if (!ndev->srqs)
+@@ -1197,7 +1197,7 @@ nvmet_rdma_find_get_device(struct rdma_cm_id *cm_id)
+ 	struct nvmet_port *nport = port->nport;
+ 	struct nvmet_rdma_device *ndev;
+ 	int inline_page_count;
+-	int inline_sge_count;
++	u32 inline_sge_count;
+ 	int ret;
+ 
+ 	mutex_lock(&device_list_mutex);
+@@ -1213,7 +1213,8 @@ nvmet_rdma_find_get_device(struct rdma_cm_id *cm_id)
+ 
+ 	inline_page_count = num_pages(nport->inline_data_size);
+ 	inline_sge_count = max(cm_id->device->attrs.max_sge_rd,
+-				cm_id->device->attrs.max_recv_sge) - 1;
++				cm_id->device->attrs.max_recv_sge);
++	inline_sge_count = inline_sge_count ? inline_sge_count - 1 : 0;
+ 	if (inline_page_count > inline_sge_count) {
+ 		pr_warn("inline_data_size %d cannot be supported by device %s. Reducing to %lu.\n",
+ 			nport->inline_data_size, cm_id->device->name,
+@@ -1553,8 +1554,8 @@ static int nvmet_rdma_cm_accept(struct rdma_cm_id *cm_id,
+ 
+ 	param.rnr_retry_count = 7;
+ 	param.flow_control = 1;
+-	param.initiator_depth = min_t(u8, p->initiator_depth,
+-		queue->dev->device->attrs.max_qp_init_rd_atom);
++	param.initiator_depth = (u8)min_t(u32, p->initiator_depth,
++		min_t(u32, U8_MAX, queue->dev->device->attrs.max_qp_init_rd_atom));
+ 	param.private_data = &priv;
+ 	param.private_data_len = sizeof(priv);
+ 	priv.recfmt = cpu_to_le16(NVME_RDMA_CM_FMT_1_0);
+diff --git a/fs/smb/smbdirect/accept.c b/fs/smb/smbdirect/accept.c
+index 529740005838..890ce6985f4d 100644
+--- a/fs/smb/smbdirect/accept.c
++++ b/fs/smb/smbdirect/accept.c
+@@ -32,8 +32,8 @@ int smbdirect_accept_connect_request(struct smbdirect_socket *sc,
+ 	/*
+ 	 * First set what the we as server are able to support
+ 	 */
+-	sp->initiator_depth = min_t(u8, sp->initiator_depth,
+-				    sc->ib.dev->attrs.max_qp_rd_atom);
++	sp->initiator_depth = min_t(u32, sp->initiator_depth,
++				    min_t(u32, U8_MAX, sc->ib.dev->attrs.max_qp_rd_atom));
+ 
+ 	peer_initiator_depth = param->initiator_depth;
+ 	peer_responder_resources = param->responder_resources;
+diff --git a/fs/smb/smbdirect/connect.c b/fs/smb/smbdirect/connect.c
+index cd726b399afe..1a38772bb08c 100644
+--- a/fs/smb/smbdirect/connect.c
++++ b/fs/smb/smbdirect/connect.c
+@@ -182,8 +182,8 @@ static int smbdirect_connect_rdma_connect(struct smbdirect_socket *sc)
+ 	if (sc->ib.dev->attrs.kernel_cap_flags & IBK_SG_GAPS_REG)
+ 		sc->mr_io.type = IB_MR_TYPE_SG_GAPS;
+ 
+-	sp->responder_resources = min_t(u8, sp->responder_resources,
+-					sc->ib.dev->attrs.max_qp_rd_atom);
++	sp->responder_resources = min_t(u32, sp->responder_resources,
++					min_t(u32, U8_MAX, sc->ib.dev->attrs.max_qp_rd_atom));
+ 	smbdirect_log_rdma_mr(sc, SMBDIRECT_LOG_INFO,
+ 		"responder_resources=%d\n",
+ 		sp->responder_resources);
+diff --git a/include/linux/sunrpc/svc_rdma.h b/include/linux/sunrpc/svc_rdma.h
+index df6e08aaad57..05935e9f5530 100644
+--- a/include/linux/sunrpc/svc_rdma.h
++++ b/include/linux/sunrpc/svc_rdma.h
+@@ -79,7 +79,7 @@ struct svcxprt_rdma {
+ 	struct list_head     sc_accept_q;	/* Conn. waiting accept */
+ 	struct rpcrdma_notification sc_rn;	/* removal notification */
+ 	int		     sc_ord;		/* RDMA read limit */
+-	int                  sc_max_send_sges;
++	unsigned int         sc_max_send_sges;
+ 	bool		     sc_snd_w_inv;	/* OK to use Send With Invalidate */
+ 
+ 	atomic_t             sc_sq_avail;	/* SQEs ready to be consumed */
+diff --git a/include/rdma/ib_verbs.h b/include/rdma/ib_verbs.h
+index 9dd76f489a0b..987309b9a675 100644
+--- a/include/rdma/ib_verbs.h
++++ b/include/rdma/ib_verbs.h
+@@ -406,36 +406,36 @@ struct ib_device_attr {
+ 	u32			vendor_id;
+ 	u32			vendor_part_id;
+ 	u32			hw_ver;
+-	int			max_qp;
+-	int			max_qp_wr;
++	u32			max_qp;
++	u32			max_qp_wr;
+ 	u64			device_cap_flags;
+ 	u64			kernel_cap_flags;
+-	int			max_send_sge;
+-	int			max_recv_sge;
+-	int			max_sge_rd;
+-	int			max_cq;
+-	int			max_cqe;
+-	int			max_mr;
+-	int			max_pd;
+-	int			max_qp_rd_atom;
++	u32			max_send_sge;
++	u32			max_recv_sge;
++	u32			max_sge_rd;
++	u32			max_cq;
++	u32			max_cqe;
++	u32			max_mr;
++	u32			max_pd;
++	u32			max_qp_rd_atom;
+ 	int			max_ee_rd_atom;
+-	int			max_res_rd_atom;
+-	int			max_qp_init_rd_atom;
++	u32			max_res_rd_atom;
++	u32			max_qp_init_rd_atom;
+ 	int			max_ee_init_rd_atom;
+ 	enum ib_atomic_cap	atomic_cap;
+ 	enum ib_atomic_cap	masked_atomic_cap;
+ 	int			max_ee;
+ 	int			max_rdd;
+-	int			max_mw;
++	u32			max_mw;
+ 	int			max_raw_ipv6_qp;
+-	int			max_raw_ethy_qp;
+-	int			max_mcast_grp;
+-	int			max_mcast_qp_attach;
+-	int			max_total_mcast_qp_attach;
+-	int			max_ah;
+-	int			max_srq;
+-	int			max_srq_wr;
+-	int			max_srq_sge;
++	u32			max_raw_ethy_qp;
++	u32			max_mcast_grp;
++	u32			max_mcast_qp_attach;
++	u32			max_total_mcast_qp_attach;
++	u32			max_ah;
++	u32			max_srq;
++	u32			max_srq_wr;
++	u32			max_srq_sge;
+ 	unsigned int		max_fast_reg_page_list_len;
+ 	unsigned int		max_pi_fast_reg_page_list_len;
+ 	u16			max_pkeys;
+diff --git a/net/rds/ib.c b/net/rds/ib.c
+index 39f87272e071..d493bdd2d3e9 100644
+--- a/net/rds/ib.c
++++ b/net/rds/ib.c
+@@ -151,7 +151,7 @@ static int rds_ib_add_one(struct ib_device *device)
+ 	INIT_LIST_HEAD(&rds_ibdev->conn_list);
+ 
+ 	rds_ibdev->max_wrs = device->attrs.max_qp_wr;
+-	rds_ibdev->max_sge = min(device->attrs.max_send_sge, RDS_IB_MAX_SGE);
++	rds_ibdev->max_sge = min_t(u32, device->attrs.max_send_sge, RDS_IB_MAX_SGE);
+ 
+ 	rds_ibdev->odp_capable =
+ 		!!(device->attrs.kernel_cap_flags &
+@@ -204,7 +204,7 @@ static int rds_ib_add_one(struct ib_device *device)
+ 		goto put_dev;
+ 	}
+ 
+-	rdsdebug("RDS/IB: max_mr = %d, max_wrs = %d, max_sge = %d, max_1m_mrs = %d, max_8k_mrs = %d\n",
++	rdsdebug("RDS/IB: max_mr = %u, max_wrs = %d, max_sge = %d, max_1m_mrs = %d, max_8k_mrs = %d\n",
+ 		 device->attrs.max_mr, rds_ibdev->max_wrs, rds_ibdev->max_sge,
+ 		 rds_ibdev->max_1m_mrs, rds_ibdev->max_8k_mrs);
+ 
+diff --git a/net/rds/ib_cm.c b/net/rds/ib_cm.c
+index 0c64c504f79d..50292dc9884f 100644
+--- a/net/rds/ib_cm.c
++++ b/net/rds/ib_cm.c
+@@ -174,9 +174,11 @@ static void rds_ib_cm_fill_conn_param(struct rds_connection *conn,
+ 	memset(conn_param, 0, sizeof(struct rdma_conn_param));
+ 
+ 	conn_param->responder_resources =
+-		min_t(u32, rds_ibdev->max_responder_resources, max_responder_resources);
++		(u8)min3(rds_ibdev->max_responder_resources,
++			 max_responder_resources, (unsigned int)U8_MAX);
+ 	conn_param->initiator_depth =
+-		min_t(u32, rds_ibdev->max_initiator_depth, max_initiator_depth);
++		(u8)min3(rds_ibdev->max_initiator_depth,
++			 max_initiator_depth, (unsigned int)U8_MAX);
+ 	conn_param->retry_count = min_t(unsigned int, rds_ib_retry_count, 7);
+ 	conn_param->rnr_retry_count = 7;
+ 
+diff --git a/net/sunrpc/xprtrdma/frwr_ops.c b/net/sunrpc/xprtrdma/frwr_ops.c
+index 7f79a0a2601e..19f7088a7b54 100644
+--- a/net/sunrpc/xprtrdma/frwr_ops.c
++++ b/net/sunrpc/xprtrdma/frwr_ops.c
+@@ -172,7 +172,8 @@ int frwr_mr_init(struct rpcrdma_xprt *r_xprt, struct rpcrdma_mr *mr)
+ int frwr_query_device(struct rpcrdma_ep *ep, const struct ib_device *device)
+ {
+ 	const struct ib_device_attr *attrs = &device->attrs;
+-	int max_qp_wr, depth, delta;
++	u32 max_qp_wr;
++	int depth, delta;
+ 	unsigned int max_sge;
+ 
+ 	if (!(attrs->device_cap_flags & IB_DEVICE_MEM_MGT_EXTENSIONS) ||
+@@ -229,10 +230,10 @@ int frwr_query_device(struct rpcrdma_ep *ep, const struct ib_device *device)
+ 	}
+ 
+ 	max_qp_wr = attrs->max_qp_wr;
++	if (max_qp_wr < RPCRDMA_BACKWARD_WRS + 1 + RPCRDMA_MIN_SLOT_TABLE)
++		return -ENOMEM;
+ 	max_qp_wr -= RPCRDMA_BACKWARD_WRS;
+ 	max_qp_wr -= 1;
+-	if (max_qp_wr < RPCRDMA_MIN_SLOT_TABLE)
+-		return -ENOMEM;
+ 	if (ep->re_max_requests > max_qp_wr)
+ 		ep->re_max_requests = max_qp_wr;
+ 	ep->re_attr.cap.max_send_wr = ep->re_max_requests * depth;
+diff --git a/net/sunrpc/xprtrdma/svc_rdma_transport.c b/net/sunrpc/xprtrdma/svc_rdma_transport.c
+index f18bc60d9f4f..a2ff2752a591 100644
+--- a/net/sunrpc/xprtrdma/svc_rdma_transport.c
++++ b/net/sunrpc/xprtrdma/svc_rdma_transport.c
+@@ -544,7 +544,7 @@ static struct svc_xprt *svc_rdma_accept(struct svc_xprt *xprt)
+ 	set_bit(RDMAXPRT_CONN_PENDING, &newxprt->sc_flags);
+ 	memset(&conn_param, 0, sizeof conn_param);
+ 	conn_param.responder_resources = 0;
+-	conn_param.initiator_depth = min_t(int, newxprt->sc_ord,
++	conn_param.initiator_depth = min_t(u32, newxprt->sc_ord,
+ 					   dev->attrs.max_qp_init_rd_atom);
+ 	if (!conn_param.initiator_depth) {
+ 		ret = -EINVAL;
+@@ -570,7 +570,7 @@ static struct svc_xprt *svc_rdma_accept(struct svc_xprt *xprt)
+ 		dprintk("    local address   : %pIS:%u\n", sap, rpc_get_port(sap));
+ 		sap = (struct sockaddr *)&newxprt->sc_cm_id->route.addr.dst_addr;
+ 		dprintk("    remote address  : %pIS:%u\n", sap, rpc_get_port(sap));
+-		dprintk("    max_sge         : %d\n", newxprt->sc_max_send_sges);
++		dprintk("    max_sge         : %u\n", newxprt->sc_max_send_sges);
+ 		dprintk("    sq_depth        : %d\n", newxprt->sc_sq_depth);
+ 		dprintk("    rdma_rw_ctxs    : %d\n", ctxts);
+ 		dprintk("    max_requests    : %d\n", newxprt->sc_max_requests);
+diff --git a/net/sunrpc/xprtrdma/verbs.c b/net/sunrpc/xprtrdma/verbs.c
+index aecf9c0a153f..236ec233c579 100644
+--- a/net/sunrpc/xprtrdma/verbs.c
++++ b/net/sunrpc/xprtrdma/verbs.c
+@@ -453,7 +453,7 @@ static int rpcrdma_ep_create(struct rpcrdma_xprt *r_xprt)
+ 	/* Client offers RDMA Read but does not initiate */
+ 	ep->re_remote_cma.initiator_depth = 0;
+ 	ep->re_remote_cma.responder_resources =
+-		min_t(int, U8_MAX, device->attrs.max_qp_rd_atom);
++		min_t(u32, U8_MAX, device->attrs.max_qp_rd_atom);
+ 
+ 	/* Limit transport retries so client can detect server
+ 	 * GID changes quickly. RPC layer handles re-establishing
 -- 
-Dr. Hannes Reinecke                  Kernel Storage Architect
-hare@suse.com                               +49 911 74053 688
-SUSE Software Solutions GmbH, Frankenstr. 146, 90461 Nürnberg
-HRB 36809 (AG Nürnberg), GF: I. Totev, A. McDonald, W. Knoblich
+2.34.1
+
