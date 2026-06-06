@@ -1,134 +1,168 @@
-Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazon11012001.outbound.protection.outlook.com [52.101.43.1])
+Received: from mail-106120.protonmail.ch (mail-106120.protonmail.ch [79.135.106.120])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 065393B42D4;
-	Fri,  5 Jun 2026 16:18:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=fail smtp.client-ip=52.101.43.1
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1780676341; cv=fail; b=JbgKznasJ3EOJb+znGspUp1gI/qcTM1QhNgR0N5Dwvk/0HCiGY2nl81H/QgUb8H0/V4Q5X5DVClTCCiu9i0RTtZKYCaVVL5gqZe5G/rxK4ZlAVP+pmh9xgz0gpCmGS/8+UbdNTQheDCTy6AEGxXMDDtV3/tZ7eOP6i9y6Jpw8HM=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1780676341; c=relaxed/simple;
-	bh=dEC5tESL2vf66C3z5lRoreTw9B42/ROOQUaduP0Zvg8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=AdpAuE6ylrdzYi0r/6lxBj3thoe61d0A7XxEaHhcy6c4pwISyDJwfWr9GdSQ6+yWsvleuLvut0CDFSZ8rA9h8bF4IZTDS5rwYdCU6jRIq+RW4WF11nQmZ0UheC7b6reilOTOhsprIwTa8EGi6Wv9ehV5HGA4Ppv6/vCbEc9EwDw=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; spf=fail smtp.mailfrom=nvidia.com; dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b=lGexmyfL; arc=fail smtp.client-ip=52.101.43.1
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: smtp.subspace.kernel.org; spf=fail smtp.mailfrom=nvidia.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D44C1FBEB0
+	for <target-devel@vger.kernel.org>; Sat,  6 Jun 2026 01:54:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.120
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1780710862; cv=none; b=J2f2QVtn7grN/h/PfXWSaWqttTfnqUiVdcJH9WM8Dxaq6wQ+rua9vUdw6avAIJKLPxHKRExeFITykrYx899iLP9rA1bzx/4J1gVIqtWB1dKOqFmiRkXekGk529lz9M5Dtci6+Ix4lZJZdz0LTbli+yAVXpupyJtOU2SFc5+xfa0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1780710862; c=relaxed/simple;
+	bh=4xCBLXpZkQ5ZWF7wgaJ0bFA7lqdW6pE50xsoulFbMl4=;
+	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=sn4VkrOiMB6QtCGVXVnZOOYfZtBme0U0zRubqouf9h0XaR+7dCOXnA2PFOW22eAp2wLKh8autAlH2Roc4Jdc06Ht3JZAUdvc8sc2NNEwLakScgxVisdlOu3dO2WNhlhnpUgm+h2h2ZyW7uoFdgFMhlwuHoqgNnVGa73QV2SU+YM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=SBJNoV1g; arc=none smtp.client-ip=79.135.106.120
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=Nvidia.com header.i=@Nvidia.com header.b="lGexmyfL"
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=KtdpHWiKaMO/4587wbICiARCw4/8ihl1i2+uwGJKw3eAp/uGo+5jMOLfnaXpo7AmAsXsJQnC81P/ayhv7E5lDRntzxaeyF1QOb55Sw8USN0ZNK73wd8vQihQe2NvYKiaZnb9RSnEbnjeLhvVQXujUAs1YkDKJkeUVD+TgF2XYcv2kckBS0PSY17XLcfUP4vfeDyjx6LeUeGnRKcgJaqGXUr5ygSY0WJnXznr/2IPzM1Q1dG+WoeCbkcBHxDCwX9l++lsST3WlRof2WZGqUVXECNr403+J4lQkkI+bfR77GRPXU2fpeAodhihYkO6awhaF1A/A35ocdUBh3SuhrlCsQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=3619t1pSZqCtVB6MYH0tSQsF+pMHB4M/DtaLpAiqMWw=;
- b=WzYzsLwuVCR3xtaYfU8/BrcV38xQlqSTr15ZZZuLNXDmQ7KFxFEZzQCdwnd1SSHnEeU6DJoJAp5QPe0RYh98bo7cL4aRNIT6vO2vTmvsALcznV9BYUYNDMVdcuWSfRZ3jjz0nJCjp/LxVdPtlTeKRnhNUEUFGjXV8ocqatGDgQcCKyz5IMgAGDS6h8J7uINl8uYGCO4I5aOyvMTHOFz66YEJXBQE1t5O3vysKE6M3M7QHmOdXzzNfrh/Wsee4uAEM82+E85Qggbhrf7zjcwvn4G750+uBulo24+/rMi8dkeoFwDyDWImaj9P1QfuhzgVNomG26KDFm5jdnD7B4AqmQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=3619t1pSZqCtVB6MYH0tSQsF+pMHB4M/DtaLpAiqMWw=;
- b=lGexmyfLuxljvzGlLkiefm50XQFAokNHeS5y/MdKKar+uhvwzZFGevBTUfcPelzRyNVQWuk4BO7eAh6pQ7JeRxcpPGj+FAMvkEgvYaFAr2DQUDRtN4ngofvscq2fXPy7QAYQZzT+APk7SqmXl4kYo9tm//3N2cKSLJIn1BgsMx30zhukqfkVnECRBFOHzFFMoVptA0n2NseZuNkHSWyk2Yx9BJNow0y70+DJDz7lGrGSNoA8Txf+NOU9o3JC7CkGqOMaX3WsOj97ELQC8g34XLDzHvVwNt+nrW5JaHhwaZAueMhAEpoXQiw3xI6HVAjrGkXgfWnBO3cQapNrnPrxAg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from LV8PR12MB9620.namprd12.prod.outlook.com (2603:10b6:408:2a1::19)
- by SN7PR12MB7345.namprd12.prod.outlook.com (2603:10b6:806:298::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.92.7; Fri, 5 Jun 2026
- 16:18:30 +0000
-Received: from LV8PR12MB9620.namprd12.prod.outlook.com
- ([fe80::299d:f5e0:3550:1528]) by LV8PR12MB9620.namprd12.prod.outlook.com
- ([fe80::299d:f5e0:3550:1528%4]) with mapi id 15.21.0092.007; Fri, 5 Jun 2026
- 16:18:30 +0000
-Date: Fri, 5 Jun 2026 13:18:28 -0300
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Michael Bommarito <michael.bommarito@gmail.com>
-Cc: Sagi Grimberg <sagi@grimberg.me>, Leon Romanovsky <leon@kernel.org>,
-	linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] IB/isert: reject login PDUs shorter than ISER_HEADERS_LEN
-Message-ID: <20260605161828.GA2734548@nvidia.com>
-References: <20260602194642.2273217-1-michael.bommarito@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260602194642.2273217-1-michael.bommarito@gmail.com>
-X-ClientProxiedBy: YT4P288CA0072.CANP288.PROD.OUTLOOK.COM
- (2603:10b6:b01:d2::25) To LV8PR12MB9620.namprd12.prod.outlook.com
- (2603:10b6:408:2a1::19)
+	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="SBJNoV1g"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
+	s=protonmail; t=1780710848; x=1780970048;
+	bh=MDDqlyl1man/oMNqafLv44XpGatzizLBqYeIOfvJ4D8=;
+	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
+	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
+	b=SBJNoV1gMqqpLWWezaOF3WdpT+ZC9zx3hszc9duGrSAUoMzVmhpccyyee0YMSoNIl
+	 hyxhUKMvDrRDGQRuYcHBQV1y3A0zqtUWYZwG+MjV78fnF3IgiuKUHE/bujwSApkMVv
+	 6SYnIkQZqrjinCPctbHiEflXgE3ZY45yPqEvr9WzHFR/mqek50zT+kHzez+oR7H298
+	 L91Ekw4zmIjN3d8yssePM9RXA8flnYcfdHZ2PS9wKUu072zvZ7P6ANpm428GpqL/Oo
+	 SodomwA05SoVA+Mrj/Q2ieaSIbqTvp9eXEnVr76bJvGSn/oY+lHC/I1/wL5PzuGzII
+	 I/SGcV7/YYb0g==
+Date: Sat, 06 Jun 2026 01:54:02 +0000
+To: "Martin K . Petersen" <martin.petersen@oracle.com>
+From: Bryam Vargas <hexlabsecurity@proton.me>
+Cc: Mike Christie <michael.christie@oracle.com>, Maurizio Lombardi <mlombard@redhat.com>, John Garry <john.g.garry@oracle.com>, David Disseldorp <ddiss@suse.de>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: target: copy iSCSI ISID before unmapping the PR OUT buffer
+Message-ID: <20260606015359.181724-1-hexlabsecurity@proton.me>
+Feedback-ID: 199661219:user:proton
+X-Pm-Message-ID: 4f9147923b14bc3da58aadef374b0d7517c97506
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV8PR12MB9620:EE_|SN7PR12MB7345:EE_
-X-MS-Office365-Filtering-Correlation-Id: 498e7357-369f-4118-c7b3-08dec31e149c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|376014|1800799024|18002099003|22082099003|56012099006|11063799006;
-X-Microsoft-Antispam-Message-Info:
-	12c87aoIrEFyaxnI7sc5qPgbw2TsQp4DlZDcieNB9QmzEEWZSlamsEywu49gY0x16U6pofsHVW9yRA42crBRJK7jzsCOlvmO2SOhW3Z3SUYXjzo57ZA1rQzOtZ82Ey9a4pAU+1G6fbe5X/7j81LlagftNRvysi6D8vNwv7ZDBKI41XHvpJblu5COhxwVIU/7LntInYw50cCnQi0pvZY326+pB4KcGYE6ObUG8I2Vfr5/bzW3ytY2t8haD/NLIcC4+z9ybUM6tiHLOPG60VerjYlAS9ER4mPhC/hB60DrV1eGDMKIOeI+giorUGqJZ4XZSUbj0OgYlUX46TPu/fuz+YeCvQKJ0HcRXzgPO/xlaqQP7NqsKDMz0xjjbIO22v7nK8RKVkWiZ2CaoGNn0Ybr8oM2PSMoDjB/LzU/M15oZV21DVGQ2bZEObWPvekraK4+arpjj/K8Cu5Zp5gm7cpzZYhJLcRIUjZXKThkI6RWulkPArkqIXzhJb1h0RaEgZuvcpiSDh/GRtr+lSWlLM91+8OAQstln9qO2rM7oRVz3BC/DiFTm/93IfPkqMtAKwzncAXoB9v8yf7GXtYHhbWhBhyqLas6pdunBKv+XxTIS0elJQ3Pegcd5Q9akv0FM+kd+OZPWtI6MiUuZ+FiQddhunE3C6S4N7d7EXzuih17azgfS5LvojP7VwdYh9wBILK5
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV8PR12MB9620.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(1800799024)(18002099003)(22082099003)(56012099006)(11063799006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Ahq1ls0o5PLNSqBRJwFBfZzijGGBZMca8/3om2Za15JcqPXSXb1Sf1qxq/tM?=
- =?us-ascii?Q?cKjh1FUvgqMt/TQ2X5blFU5yosd9v6b+EXRZda5oLCv2Oug0qn0YcMAaWzRo?=
- =?us-ascii?Q?v8jIctzD79FaT4G3PjHCLNlZRa2TOTexfY6PnZgUBAsAKotRAYjMSUvsgKE9?=
- =?us-ascii?Q?XZUFl1ATZvR4QobNNZcjeN59UrJcY4vgy9+iUOXygtR4nynEcIe4yzjX008F?=
- =?us-ascii?Q?OhY6FC4O3bBhfC2eZyb3SpBpJTpBTrc0HkgDbNIBEzLTIFym482X/C/QVqSZ?=
- =?us-ascii?Q?ozONyYwHTBWvyPN3elWj1R1V9bx23wGgHbpHh+OMCQu6tKkCcmoEYpOhvTog?=
- =?us-ascii?Q?KLw8PNTVSXvQSrpCk77+I3uhb5Kfj2rEu9ujkP+jRpg2FnVnKdGmjlcB1m9l?=
- =?us-ascii?Q?6c+zmvI8EIwq2AaHNvFkRPkRkvAbiVcJ2JUQZCEMbje3wcTbbtdAcN8kXQHW?=
- =?us-ascii?Q?LSMUGC8Lh4ixlrqobuu/OEwqqezNSej/S8HsUw+zbAIYqyiK1YqEZHpjDM5j?=
- =?us-ascii?Q?gjBs07pE6MAe9dP9Hgg3Q/lqMrdrfc2tGVmf23QVfzwfqEMVQskRWhLjVCf9?=
- =?us-ascii?Q?lct/aKP9YOsEkrZggWGqM7dz99PzTXrBfwLIELFJfbhBUhgwly3wXJ6ZbLfc?=
- =?us-ascii?Q?cn4VRRh6z5K8S4lF+lx5Y3KwTMgOM0xHqlGvgGyx6WqBUTRKV5OLybf/3A7f?=
- =?us-ascii?Q?N6Xw553K2LIc/21XoulAr1WWb12lcaQmGbl6hYDzoBe5Jyx21ooTHB9sscq9?=
- =?us-ascii?Q?yg9N2NdNEiSSjLUpX5vnL7BM3FF2LjM8MtvTj6AzI+k4SiJqw+IkXUOjYSmP?=
- =?us-ascii?Q?LxBTQvoH3mGEwqbJ9knDDaXWlc+8nYHFzvIW6flbFARxNPWIDqa7R95g8U4s?=
- =?us-ascii?Q?YmGgQi5bo+Yz7U+27FR5sUxitbmH0bin3wCCWw96lb56jx7rpbwR5cDQutP5?=
- =?us-ascii?Q?za1k1AUEzAWZnkPL8xIIo3t/fYm0Xw1O8d0RPsv4TmXW2GHZFGsE3PLYafzh?=
- =?us-ascii?Q?KKaDmDc+QEw9UKySDci/2OI5LOLV+ngvDlfZMDpItkL0uLDVP8su6/wDNSM7?=
- =?us-ascii?Q?AJ840mXSaZ+7Jgb7rpv0+bjeCjwsG53CHkGC10iq1HTu4qv5PMFzMW3sm0DO?=
- =?us-ascii?Q?Xu657W6w1eGgt5c3diqYwRKcHy4iIs89bai44Rauu1fTa4nBJSvDcz0o+ut/?=
- =?us-ascii?Q?0YWAj0HmwCioSipzR8nb/7MIQ2lIZmxAmb5CnK0xy08wc0D/fx4TpCYyCVPk?=
- =?us-ascii?Q?do3/DWnNuUPH/xDJMCboEsNtjpGdNQDuY7SMFK/Xw+OU5coO8vcfrKu+VTw6?=
- =?us-ascii?Q?/umQPxxIijeGwhgSFc221/BpkOX8BqhWuCpSDdFiHLuqTBK1jvDyF1+YaNk5?=
- =?us-ascii?Q?9vU/a1XOsuUeeAjUZf8PeWeFsFBIaAcvujiLxfSVd2nEWb4oXl2yS9yeWmyv?=
- =?us-ascii?Q?rHxSO6/u9HhLpSWKfiIIS8lulQarjZAbdDAIwdmWb4mBoq3sgmlmjmqjMYEE?=
- =?us-ascii?Q?cVflbBh4CBapfGUAmvTOeZxr3zpz5eM9ZtzmUwv2qWYExjVFXJfjaW3HyhAK?=
- =?us-ascii?Q?5aH+bJlDwlcNE99IHpQuOCpMSwCnpIn+2qnvEPnSLmfw2UolGS6htk4lJ1Kk?=
- =?us-ascii?Q?tEe+PSk11u8c4VPBYENXSWCNuLEQQUJSpB4ATh9NXqhy1qc5IDOhb+vPFXoJ?=
- =?us-ascii?Q?CDvCb4FnJyM9SkswC0eSeWhyTtXVgRIldoE9gFa5czBsIQkj?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 498e7357-369f-4118-c7b3-08dec31e149c
-X-MS-Exchange-CrossTenant-AuthSource: LV8PR12MB9620.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Jun 2026 16:18:30.1101
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: H12MMkp3lRMIF4EI6fqZX9eWpuSGrrEBX6KPsQMbGCwHuiYX4a1niEBBjTFYkb6V
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7345
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 02, 2026 at 03:46:42PM -0400, Michael Bommarito wrote:
-> @@ -1383,6 +1383,12 @@ isert_login_recv_done(struct ib_cq *cq, struct ib_wc *wc)
->  	ib_dma_sync_single_for_cpu(ib_dev, isert_conn->login_desc->dma_addr,
->  			ISER_RX_SIZE, DMA_FROM_DEVICE);
->  
-> +	if (unlikely(wc->byte_len < ISER_HEADERS_LEN)) {
-> +		isert_err("login request length %u is too short\n",
-> +			  wc->byte_len);
-> +		return;
+core_scsi3_emulate_pro_register_and_move() maps the PERSISTENT RESERVE OUT
+parameter list with transport_kmap_data_sg() and parses the destination
+TransportID with target_parse_pr_out_transport_id(). For an iSCSI
+TransportID (FORMAT CODE 01b) iscsi_parse_pr_out_transport_id() returns
+iport_ptr as a raw pointer into that mapped buffer (the ISID following the
+",i,0x" separator).
 
-I changed this to isert_dbg() since we don't want pre-auth log DOS
-either.. Applied to for-rc
+The function then unmaps the buffer with transport_kunmap_data_sg() before
+dereferencing iport_ptr in strcmp(), __core_scsi3_locate_pr_reg() and
+core_scsi3_alloc_registration() (the last reads 8 bytes via
+get_unaligned_be64() and copies the string with snprintf()). When the
+parameter list spans more than one page (PARAMETER LIST LENGTH > 4096),
+transport_kmap_data_sg() uses vmap() and transport_kunmap_data_sg() does
+vunmap(), so the kernel virtual address backing iport_ptr is torn down on
+all architectures and every subsequent dereference is a use-after-free of
+the unmapped region.
 
-Thanks,
-Jason
+initiator_str does not have this problem because the parser strscpy()s it
+into a caller-owned buffer; iport_ptr is the only output left as a borrowed
+alias. core_scsi3_decode_spec_i_port() consumes the same alias safely
+because it unmaps only after all uses.
+
+Copy the ISID into a caller-owned stack buffer while the mapping is still
+live and repoint iport_ptr at it, mirroring the existing initiator_str
+handling. strscpy_pad() NUL-terminates and zero-fills the tail so the fixed
+8-byte get_unaligned_be64() read stays in-bounds and deterministic even for
+an ISID shorter than 8 bytes. The NULL (device-format / non-iSCSI) case is
+preserved by copying only when iport_ptr is non-NULL.
+
+Fixes: 4949314c7283 ("target: Allow control CDBs with data > 1 page")
+Cc: stable@vger.kernel.org
+Signed-off-by: Bryam Vargas <hexlabsecurity@proton.me>
+---
+Everything below the --- is dropped by git am.
+
+Class / impact: CWE-416 use-after-free (use-after-vunmap) in the LIO SCSI
+target. Triggerable by an authenticated iSCSI initiator that is a current
+Persistent Reservation registrant on the LUN: it sends PERSISTENT RESERVE
+OUT / REGISTER AND MOVE with an iSCSI (FORMAT CODE 01b) TransportID and a
+PARAMETER LIST LENGTH > 4096 so the parameter list spans >1 page and is
+mapped with vmap(). After transport_kunmap_data_sg() vunmap()s that region,
+the retained iport_ptr is dereferenced -> kernel read of an unmapped
+vmalloc address (oops / DoS; memory-safety corruption confirmed by KASAN).
+Primarily a remotely-reachable authenticated denial of service.
+
+Affected: all maintained trees -- the bug predates the git history reachabl=
+e
+here; it became a destructive dangling dereference with 4949314c7283 (v3.3,
+2012), which introduced the multi-page vmap() path. Verified present at
+mainline v7.1-rc6 and stable v6.12.92.
+
+Reproducer (authenticated iSCSI initiator, current PR reservation holder):
+  1. PERSISTENT RESERVE OUT / REGISTER a key from the iSCSI nexus.
+  2. PERSISTENT RESERVE OUT / REGISTER AND MOVE, FORMAT CODE 01b TransportI=
+D
+     (IQN + ",i,0x" + 12-char ISID), RELATIVE TARGET PORT IDENTIFIER of an
+     existing target port, with PARAMETER LIST LENGTH =3D 8192 (two pages -=
+>
+     vmap()/vunmap()), the inner ADDITIONAL LENGTH set so tid_len + 24 =3D=
+=3D
+     data_length, the remainder zero padding.
+
+A/B verification (CONFIG_KASAN_VMALLOC=3Dy, kasan.fault=3Dreport, x86-64,
+6.12.90; reproduced with both a 64-bit and a 32-bit initiator):
+  - Without this patch (8192-byte, two-page request):
+      BUG: KASAN: vmalloc-out-of-bounds in strcmp+0xa7/0xb0
+        strcmp
+        core_scsi3_emulate_pro_register_and_move [target_core]
+        ? remove_vm_area
+        target_scsi3_emulate_pr_out [target_core]
+        __target_execute_cmd / iscsit_execute_cmd / iscsi_target_rx_thread
+      The buggy address belongs to a vmalloc virtual mapping
+      BUG: unable to handle page fault for address ... (PTE 0)
+  - Control (56/128-byte, single-page request): no report (kunmap is a
+    no-op on 64-bit !HIGHMEM, so the alias stays valid) -- confirming the
+    multi-page vmap()/vunmap() path is what makes iport_ptr dangle.
+  - With this patch (same 8192-byte request): no report, command completes.
+
+ drivers/target/target_core_pr.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_p=
+r.c
+index 11790f2c5d80..b102f5f67793 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -3160,6 +3160,7 @@ core_scsi3_emulate_pro_register_and_move(struct se_cm=
+d *cmd, u64 res_key,
+ =09unsigned char *buf;
+ =09unsigned char initiator_str[TRANSPORT_IQN_LEN];
+ =09char *iport_ptr =3D NULL, i_buf[PR_REG_ISID_ID_LEN] =3D { };
++=09char isid_buf[PR_REG_ISID_LEN] =3D { };
+ =09u32 tid_len, tmp_tid_len;
+ =09int new_reg =3D 0, type, scope, matching_iname;
+ =09sense_reason_t ret;
+@@ -3293,6 +3294,22 @@ core_scsi3_emulate_pro_register_and_move(struct se_c=
+md *cmd, u64 res_key,
+ =09=09goto out;
+ =09}
+
++=09/*
++=09 * For an iSCSI TransportID, iport_ptr aliases directly into the data
++=09 * buffer mapped above.  When that buffer spans more than one page it i=
+s
++=09 * a vmap() region that transport_kunmap_data_sg() is about to vunmap()=
+,
++=09 * tearing down the kernel mapping and leaving iport_ptr dangling for
++=09 * every consumer below.  Copy the ISID into caller-owned storage now,
++=09 * while the mapping is still live.  strscpy_pad() NUL-terminates and
++=09 * zero-fills the tail so the later 8-byte get_unaligned_be64() read in
++=09 * __core_scsi3_do_alloc_registration() stays in-bounds and determinist=
+ic
++=09 * even for an ISID shorter than 8 bytes.
++=09 */
++=09if (iport_ptr) {
++=09=09strscpy_pad(isid_buf, iport_ptr, sizeof(isid_buf));
++=09=09iport_ptr =3D isid_buf;
++=09}
++
+ =09transport_kunmap_data_sg(cmd);
+ =09buf =3D NULL;
+
+
