@@ -1,167 +1,121 @@
-Received: from mail-wm1-f46.google.com (mail-wm1-f46.google.com [209.85.128.46])
+Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B71FD34DCD7
-	for <target-devel@vger.kernel.org>; Tue,  9 Jun 2026 15:34:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEA39331EDB
+	for <target-devel@vger.kernel.org>; Tue,  9 Jun 2026 20:22:16 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.46
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781019283; cv=none; b=iCmd85dN9DfgtfHdy+72BLqMHEa/5pN5DDIhpgIhauXbxPudAewTgCzGEfAmdcs/0AKzO31rxdHiG/wNjF0dckNq5M3dKBeJqgEgPEzBy0sy4MzkLvWvn2/0RWTQlbztDtkjLXVbKFlxM/CqXDe+heniX+fKJm/Y3Xw3ZR+kAi4=
+	t=1781036538; cv=none; b=gs7Q2m7xMha1w5+b4kUM+w8nBV9yi3+kv4naQ3l5FcIxyV4vp+6iCnuF19s8JRoP8aQ1K10OzTb8quAxJ4oRrVzXiB/UuCnrJjIIzcTic+ntEajtxIEqnFQvFNytCUM0/A5IWFecl93/Fkg/R8r8j9WBXaeeCYV4zmjizhJM0sY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781019283; c=relaxed/simple;
-	bh=5O0JkPvGvNCC2/+/mjU+ydTddQHPWxobpi9WKv/6i2Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VY76PWNBGDzt7tZxiyTXFxNvHOX5w/6a+jUsgbR2GbiWMx4obxeTnQNUdGFSCHfWA+U+GG5eqitDwOLTS6/udoPMlxUdIU8jEEY/FLvRl8SV91MmRBZYP2DhmlQdj05o2YotYri4SpjdGn762Yyu10I/WYgwtZhgiDuZtKmjBt0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com; spf=pass smtp.mailfrom=baylibre.com; dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b=gEjGJNSg; arc=none smtp.client-ip=209.85.128.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baylibre.com
+	s=arc-20240116; t=1781036538; c=relaxed/simple;
+	bh=G7wiigdU6vV1lII5kNx4T7QY98PZzFdThZZfSKMMfXc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CFv0PJBSnRR7IHY01U6Y8sY6tqjxztuByjZbt5HYg4wYO1+zhGVJOwDnTju3Di3pTk2DhkprBTX6zyhdbYnHr4PUMkSoAjRF3RHFZGGduBJiRWF3wje6pMChoYYbMImNcGIdrPfIcYwk3egTm4dXthGTrO8vAWLSOvTDkQZcwnY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Nk3KPlxG; arc=none smtp.client-ip=209.85.160.46
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.b="gEjGJNSg"
-Received: by mail-wm1-f46.google.com with SMTP id 5b1f17b1804b1-490aebf33e9so32328935e9.3
-        for <target-devel@vger.kernel.org>; Tue, 09 Jun 2026 08:34:41 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Nk3KPlxG"
+Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-440ebc72386so3111882fac.3
+        for <target-devel@vger.kernel.org>; Tue, 09 Jun 2026 13:22:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1781019280; x=1781624080; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=792RkLO86k+ZJOzIRVIVj9y7He3LCXZcsZ9MVtttc9Q=;
-        b=gEjGJNSgeWLe99D4Y9Vg6R0GNWSDA90rUwURgu/jOLbZUy+zenR1BeoViOmA2RXitS
-         EDSEp4tN9kfpVi95RGzjHCogZsS0RgJyBVZdYbMtVjU7DCaWIQdg7qjl40BEcUI7U4tB
-         WEtmy3rO97t5X3HLr/Krqkyai9WdV7qE9IB0zhKXctILfiArG8hEZIn75IoLeD0IvdDC
-         w6o+Zcm8P4qHLqmfcj0WRf1Dv2QZB2T+8gRdmEFGck6ZEKEvVF8oUtjlhytRNi/yg0vd
-         FJ0FP1DAu/L2yc25+8ja0XKUhLUVT+Rff0t3r6lD4KynUgl7eRPqFUHPmgpQE0inwWyd
-         Qfsg==
+        d=gmail.com; s=20251104; t=1781036536; x=1781641336; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=MyKzYwyN8XFtjIuYSRUDu+cXND7kKn1hDM3fJApHDs0=;
+        b=Nk3KPlxGd44xFqU7OEXUEk5fPdOBw7KZDmaVRXQ4ofAfumI7qKLkvVxvtc7kU7Qc0e
+         auAjkPve321iTUELE74kjaossDaW3hCMlGh8j0f7SPcrKrnMjVrXrpJ2QM8seiy1PUtr
+         HyJ/qVnZivMr7AgjI16WkBBM75qNkoCFRgUMUJCkC7RRSplE2LPu4w1q12RQFDjRc9cm
+         LlPor9a9rDqcHiWXR57rEAmRNaeepm5GvRnpoJqVLimzQVlnyBtMkHWfkOuHIuqA+LBA
+         2/My4fl9zd5GGB4xWsKmwUWC8UJoDc2HDUrrVODrgeSRSjqtW7n4J4E5Wkjf4lkTpike
+         jomw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781019280; x=1781624080;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=792RkLO86k+ZJOzIRVIVj9y7He3LCXZcsZ9MVtttc9Q=;
-        b=sGazqtuJ8RwG1w7Zg5U3l8iYOGIdLH+IXaKVS9jRzZaUt3u0SVNBqtWE49NiWGdeqd
-         RAcglQmqBnKOFeEEJwxViH2714fUSKoS6Y4/gMmvUw/jCbyTNghFwLOfXMUfQV6L7Qb/
-         /F04qxmNLA7VboCyma8sjIXxvEPREg/7jCbHBTA+RYVTvb+rKDmcwlfpT6CJByRLgQjv
-         NgCIcPBoBoelGl+3J8RtauHnn6qdsUQUmURSaxHq94vUsexqK6cu7IWl3e+xFe18+yqv
-         4Tztz5MJcTAEjJBb9I1vvJ7I4qsTYrWHx7qqiE5EPUWwqZgYM7gWbnXi4LnSBOv9n/Wp
-         BzlA==
-X-Forwarded-Encrypted: i=1; AFNElJ9dzV5IyLwyyRwSgMFSlY8vn070f+KsusH6jtFJkKbBhcsG8TQ3GVd9ptoEJs6CA+wNjTEKdibeIZhOwZ4=@vger.kernel.org
-X-Gm-Message-State: AOJu0Yy3DIJLFz/aciONbWGKSx7pUs3b4WdtQk1JWL6uxFmrBCVcOA5H
-	UvvfmJMqrN7XePRxdNFBSytZmResc9zz5Mk6PunNf3OA4H8zRCdsnsEZdprSuNw21Ac=
-X-Gm-Gg: Acq92OFtjkZ5Gn1GZWb1+lW8WmXE5f4NkEsy9p3RxL1KFE8iohSQK7eGcxUE9/W1Uq0
-	4bpOFDBqIHhLhscl+copfZDPVuGTdcBYPoJqjbYmsj2Ufe9M4rGMxH5puskhBvPm8S8JcizcN2N
-	r8N2OGzmbEPxduC/jZrpTsocfdP7y5jYys+Se56zXlq+/gd+KtPMQg/Cj3EJP5Ej36m1ky/m3ZL
-	3YKW+QxClhNN6mvokXaUVaOy4mj1lnltGLgYE+xZs0wqyQ/OLBeoC0BNpHBOJ4BfXtepXOaONLw
-	AtI//ndwksEKNZxagQzZC0ZAxZ8LaGNRuzyBw7mM3kNLvnOiBb+ZQYbgV7vr+rn7/V0lJUJplxe
-	uJ86nQ0jVm8Z38+WZu68yiixJGTi7/iG+NoO/MSiYrrSNEcCtqBceSchV6X8iT122aWvjv7cWwf
-	yy4oMTXYQnfaALGIqE3s3IcOoLcExSZhwNUV9N7lOYd6vcEgXAMIPkcC4vmGPHE805VV4uJ5tNF
-	GH/sxDuNJFuWt6+Ha74vKAYRw==
-X-Received: by 2002:a05:600c:81c9:b0:490:bd66:db49 with SMTP id 5b1f17b1804b1-490c25a1e20mr289084495e9.12.1781019280238;
-        Tue, 09 Jun 2026 08:34:40 -0700 (PDT)
-Received: from localhost (p200300f65f47db045b0dbdd314d8a71f.dip0.t-ipconnect.de. [2003:f6:5f47:db04:5b0d:bdd3:14d8:a71f])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-490bc3c183asm494834455e9.6.2026.06.09.08.34.39
+        d=1e100.net; s=20251104; t=1781036536; x=1781641336;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=MyKzYwyN8XFtjIuYSRUDu+cXND7kKn1hDM3fJApHDs0=;
+        b=PyAuTmIFkwvT1zIjsypjPjOHlisDP6I0eFAQzNM4a1DZZp2EiGDLYNBp4UByA9wYbo
+         PbBYFL5HXbiGeuXKpd1wGA2hR1FXQ3lHD2ZZB2g7/VNrpS6tYsX+7AdGwkZ9/vwJPIhS
+         N5sJDo6QLG01mu8n2RmZqPBOxvlT16Wjdqtmu9OM1InXybNtbF8waUfJO3BkB1W1pvzO
+         GD0vRin2rV7V1HU3O4A30LLT4k0gueLW2MSKlu46uJhBYIb46FfdGS0lbnASJtz2JdLH
+         sTqkOeQUVQCl7dbVlYTWMue0BaguAPyaNP3jq73hH92BbhtCtRH8YMqicuCvBKzMLoER
+         J49Q==
+X-Forwarded-Encrypted: i=1; AFNElJ+hO4nFJx+eFEs9TcLB1KmBjWiWpPmufY9k8hJaSxBfNmJjqZ8+yrdeNSem4NUlxu/kT78R4fEr61ixj6M=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyXxQcUlhzzHWNm051L8c3LeDzmp766MtUVnHUFwAF7dkSBGm72
+	A6zOqOCEcjv9EDTdDCfJbU1gP3cNbQUAkq+G2jh0H1BYBd3s5esWP0VL
+X-Gm-Gg: Acq92OFfQDq2pH8BoB1pjhiRzB1p8u1yXTvqbguz7sFis+NEbp/gLs4w5ZuD7s3L/8D
+	jIXHJw4wNfPnvwWMjpGdU9XxJQqi3z5s2I4nlv8RxH/N48z7uDqGxwgDu6gqVL4a3i4uz9WfUOv
+	FBKrhm2t70tm6qwRlDU97CaA56hwZ5lew2hiqh3HDvgb7vKAxWlrQJ1WRLIZoiW21kMqbKbCO3A
+	cq5HMw8oc0RzgFtbqP1yG6yUNFDNykvcVtdAtcLr3n3+e9fZAyDsmm6HcSsnIX0awHnHy+4XFgY
+	B01yFwcdpxsvsyJzV1aIBhboq1flLcHh9hAGjU9MGVSUrddERJgvFyx7NIFMsUrJkBh0GAJEl8c
+	JFLhmdEtJ8bvEAXDR9ErYjgBofmiA/EnicPsTCy6iXSq0nUMfFH4mLyTlH5lbThBiKb77IqdL89
+	YfRpRxqlrq2XVJzO/2Jj2gnu188a+DoO2K/dL1vl0gKfumj8ykzfyju4iXMBj3TKca
+X-Received: by 2002:a05:6808:1185:b0:484:afc2:eee3 with SMTP id 5614622812f47-4868dbf2a5fmr12532868b6e.5.1781036535807;
+        Tue, 09 Jun 2026 13:22:15 -0700 (PDT)
+Received: from localhost.localdomain ([143.166.81.254])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-4865b5a5a64sm16888419b6e.4.2026.06.09.13.22.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Jun 2026 08:34:39 -0700 (PDT)
-Date: Tue, 9 Jun 2026 17:34:38 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
-To: "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Adam Radford <aradford@gmail.com>, 
-	Adaptec OEM Raid Solutions <aacraid@microsemi.com>, Matthew Wilcox <willy@infradead.org>, 
-	Hannes Reinecke <hare@suse.com>, Finn Thain <fthain@linux-m68k.org>, 
-	Michael Schmitz <schmitzmic@gmail.com>, Ram Vegesna <ram.vegesna@broadcom.com>, 
-	Yihang Li <liyihang9@h-partners.com>, Don Brace <don.brace@microchip.com>, 
-	HighPoint Linux Team <linux@highpoint-tech.com>, Brian King <brking@us.ibm.com>, 
-	Kashyap Desai <kashyap.desai@broadcom.com>, Sumit Saxena <sumit.saxena@broadcom.com>, 
-	Shivasharan S <shivasharan.srikanteshwara@broadcom.com>, Chandrakanth patil <chandrakanth.patil@broadcom.com>, 
-	Jack Wang <jinpu.wang@cloud.ionos.com>, Junrui Luo <moonafterrain@outlook.com>, 
-	Kees Cook <kees@kernel.org>, Dave Jiang <dave.jiang@intel.com>, 
-	Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, 
-	Lukas Wunner <lukas@wunner.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
-	Thomas Gleixner <tglx@kernel.org>, Duoming Zhou <duoming@zju.edu.cn>, linux-scsi@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, target-devel@vger.kernel.org, storagedev@microchip.com, 
-	megaraidlinux.pdl@broadcom.com, Markus Schneider-Pargmann <msp@baylibre.com>
-Subject: Re: [PATCH] scsi: Consistently define pci_device_ids using named
- initializers
-Message-ID: <aigySpryV0ptiBqr@monoceros>
-References: <20260429101820.3059523-2-u.kleine-koenig@baylibre.com>
+        Tue, 09 Jun 2026 13:22:15 -0700 (PDT)
+From: Stuart Hayes <stuart.w.hayes@gmail.com>
+To: "Martin K . Petersen" <martin.petersen@oracle.com>,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Stuart.Hayes@dell.com,
+	Stuart Hayes <stuart.w.hayes@gmail.com>
+Subject: [PATCH v2] scsi: target: Allow FUA if no write cache enabled
+Date: Tue,  9 Jun 2026 15:21:56 -0500
+Message-ID: <20260609202156.90700-1-stuart.w.hayes@gmail.com>
+X-Mailer: git-send-email 2.47.3
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="4zu2ga2qgi7ol5sf"
-Content-Disposition: inline
-In-Reply-To: <20260429101820.3059523-2-u.kleine-koenig@baylibre.com>
+Content-Transfer-Encoding: 8bit
 
+Modify target code to ignore FUA bit in commands to targets with no write
+cache enabled.
 
---4zu2ga2qgi7ol5sf
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] scsi: Consistently define pci_device_ids using named
- initializers
-MIME-Version: 1.0
+Without this patch, accesses with FUA set will be rejected, even though
+they always go directly to the media when there's no write cache.
 
-[Dropping Bradley Grove and Michael Reed from Cc: as their addresses
-bounced]
+This is needed because EDK2 FAT filesystem code sets the FUA bit when
+writing, regardless of whether the device advertises support of DPOFUA. If
+a UEFI pre-boot write fails, the filesystem can become inaccessible until a
+reboot.  This can cause linux installs to iSCSI to be unbootable, because
+some systems have firmware that will try to write a file in a
+vendor-specific directory under /boot/EFI (such as /boot/EFI/Dell) before
+attempting to boot to a UEFI boot entry pointing to a file in the FAT
+filesystem.
 
-On Wed, Apr 29, 2026 at 12:18:20PM +0200, Uwe Kleine-K=F6nig (The Capable H=
-ub) wrote:
-> ... and PCI device helpers.
->=20
-> The various struct pci_device_id arrays were initialized mostly by one
-> of the PCI_DEVICE macros and then list expressions. The latter isn't
-> easily readable if you're not into PCI. Using named initializers is more
-> explicit and thus easier to parse.
->=20
-> Also use PCI_DEVICE* helper macros to assign .vendor, .device,
-> .subvendor and .subdevice where appropriate and skip explicit
-> assignments of 0 (which the compiler takes care of).
->=20
-> The secret plan is to make struct pci_device_id::driver_data an
-> anonymous union (similar to
-> https://lore.kernel.org/all/cover.1776579304.git.u.kleine-koenig@baylibre=
-=2Ecom/)
-> and that requires named initializers. But it's also a nice cleanup on
-> its own.
->=20
-> This change doesn't introduce changes to the compiled pci_device_id
-> arrays. Tested on x86 and arm64.
->=20
-> Signed-off-by: Uwe Kleine-K=F6nig (The Capable Hub) <u.kleine-koenig@bayl=
-ibre.com>
-> ---
-> Hello,
->=20
-> the mentioned follow-up quest allows to do
->=20
-> 	-	{ PCI_VDEVICE(TTI, 0x3220), .driver_data =3D (kernel_ulong_t)&hptiop_i=
-tl_ops },
-> 	+	{ PCI_VDEVICE(TTI, 0x3220), .driver_data_ptr =3D &hptiop_itl_ops },
->=20
-> which gets rid of a bunch of casts and so brings a little bit more type
-> safety. This patch is a preparation for that.
->=20
-> I assume a single patch for all of drivers/scsi is fine. If not I can
-> split per driver.
+Signed-off-by: Stuart Hayes <stuart.w.hayes@gmail.com>
+---
+v1->v2:
+	- change to only ignore FUA bit set when no write cache is
+	  enabled, instead of advertising DPOFUA support
+---
+ drivers/target/target_core_sbc.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Is this patch still on someone's radar?
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 21f5cb86d70c..ffd2b6c9bd23 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -754,6 +754,12 @@ sbc_check_dpofua(struct se_device *dev, struct se_cmd *cmd, unsigned char *cdb)
+ 	}
+ 	if (cdb[1] & 0x8) {
+ 		if (!target_check_fua(dev)) {
++			/*
++			 * Silently ignore FUA if there's no write cache.
++			 */
++			if (!target_check_wce(dev))
++				return 0;
++
+ 			pr_err("Got CDB: 0x%02x with FUA bit set, but device"
+ 			       " does not advertise support for FUA write\n",
+ 			       cdb[0]);
+-- 
+2.47.3
 
-Best regards
-Uwe
-
---4zu2ga2qgi7ol5sf
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmooMooACgkQj4D7WH0S
-/k7rYAf7BB8NfldywKX4tj4A6aBVySOEe2C7pUP1TdlEr3w19ARcaTKXslkG4Ehf
-3bsCMPQMhEjQaFnmd8qLPqLJt7H4tBDoXphJO2ydmt4pKJ6GYA+aIZsUPyLhlcYN
-Jj44sLl6uuougfkZ95xMlkV8BqwoumkQkJXzshYIWXOUTGs474POTHB51QdoEfCX
-2I7X6sEy9N7YYtshmD4o40fj3dRxxemVfdbpwWAnAD2p7UK8K/IG1l+IbG3Znp/L
-1UFRAw/ukBk7IxkxA/RUDCc7jMor+/X6AkLLF+r3TLvnblpL8CEO2yaXmqNhEiBT
-vWE5iW6MuwrRCxfKUVsBadNfYqvblQ==
-=uDdw
------END PGP SIGNATURE-----
-
---4zu2ga2qgi7ol5sf--
