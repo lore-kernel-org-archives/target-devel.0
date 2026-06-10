@@ -1,121 +1,100 @@
-Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail-10631.protonmail.ch (mail-10631.protonmail.ch [79.135.106.31])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEA39331EDB
-	for <target-devel@vger.kernel.org>; Tue,  9 Jun 2026 20:22:16 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.46
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 899023368B6
+	for <target-devel@vger.kernel.org>; Wed, 10 Jun 2026 04:22:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.31
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781036538; cv=none; b=gs7Q2m7xMha1w5+b4kUM+w8nBV9yi3+kv4naQ3l5FcIxyV4vp+6iCnuF19s8JRoP8aQ1K10OzTb8quAxJ4oRrVzXiB/UuCnrJjIIzcTic+ntEajtxIEqnFQvFNytCUM0/A5IWFecl93/Fkg/R8r8j9WBXaeeCYV4zmjizhJM0sY=
+	t=1781065383; cv=none; b=dAorN+QVCcrJAC1mB8WwsWlEkvROu9R1d9XVYKW+mHWWdcJdjPsLUV9DS1BmdOMViLu+gyhma7oQVz1Y5da2DnN4QiTKi32tWvHOsuZ1PyZhhjscki8CNLmuwK9VKq7Vr40y3d9WLWWkhMQrGgEJiisT5XKaBAyQvWBth6VzFEE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781036538; c=relaxed/simple;
-	bh=G7wiigdU6vV1lII5kNx4T7QY98PZzFdThZZfSKMMfXc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CFv0PJBSnRR7IHY01U6Y8sY6tqjxztuByjZbt5HYg4wYO1+zhGVJOwDnTju3Di3pTk2DhkprBTX6zyhdbYnHr4PUMkSoAjRF3RHFZGGduBJiRWF3wje6pMChoYYbMImNcGIdrPfIcYwk3egTm4dXthGTrO8vAWLSOvTDkQZcwnY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Nk3KPlxG; arc=none smtp.client-ip=209.85.160.46
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1781065383; c=relaxed/simple;
+	bh=u9MJanHIU9ofqI3L3XfW6LcD0DmqTSeeLWy/56VnENs=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=eavb38B/0MynIicykfH572BQ9NollPT+6gDaoah/1Uw4WbQ8dx86EoClzFv6QJoWprXeS/tx8i7p1LpeFKRjFKpbQ1yj9UIjlwc5ajLPhkn9GIEd8i6f6jtmFcZalR39Nar9N8FFwKaozjEOjanSPc2m3XCXC2c4YvaAnL02kyU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=cqAgIo8y; arc=none smtp.client-ip=79.135.106.31
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Nk3KPlxG"
-Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-440ebc72386so3111882fac.3
-        for <target-devel@vger.kernel.org>; Tue, 09 Jun 2026 13:22:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781036536; x=1781641336; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=MyKzYwyN8XFtjIuYSRUDu+cXND7kKn1hDM3fJApHDs0=;
-        b=Nk3KPlxGd44xFqU7OEXUEk5fPdOBw7KZDmaVRXQ4ofAfumI7qKLkvVxvtc7kU7Qc0e
-         auAjkPve321iTUELE74kjaossDaW3hCMlGh8j0f7SPcrKrnMjVrXrpJ2QM8seiy1PUtr
-         HyJ/qVnZivMr7AgjI16WkBBM75qNkoCFRgUMUJCkC7RRSplE2LPu4w1q12RQFDjRc9cm
-         LlPor9a9rDqcHiWXR57rEAmRNaeepm5GvRnpoJqVLimzQVlnyBtMkHWfkOuHIuqA+LBA
-         2/My4fl9zd5GGB4xWsKmwUWC8UJoDc2HDUrrVODrgeSRSjqtW7n4J4E5Wkjf4lkTpike
-         jomw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781036536; x=1781641336;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=MyKzYwyN8XFtjIuYSRUDu+cXND7kKn1hDM3fJApHDs0=;
-        b=PyAuTmIFkwvT1zIjsypjPjOHlisDP6I0eFAQzNM4a1DZZp2EiGDLYNBp4UByA9wYbo
-         PbBYFL5HXbiGeuXKpd1wGA2hR1FXQ3lHD2ZZB2g7/VNrpS6tYsX+7AdGwkZ9/vwJPIhS
-         N5sJDo6QLG01mu8n2RmZqPBOxvlT16Wjdqtmu9OM1InXybNtbF8waUfJO3BkB1W1pvzO
-         GD0vRin2rV7V1HU3O4A30LLT4k0gueLW2MSKlu46uJhBYIb46FfdGS0lbnASJtz2JdLH
-         sTqkOeQUVQCl7dbVlYTWMue0BaguAPyaNP3jq73hH92BbhtCtRH8YMqicuCvBKzMLoER
-         J49Q==
-X-Forwarded-Encrypted: i=1; AFNElJ+hO4nFJx+eFEs9TcLB1KmBjWiWpPmufY9k8hJaSxBfNmJjqZ8+yrdeNSem4NUlxu/kT78R4fEr61ixj6M=@vger.kernel.org
-X-Gm-Message-State: AOJu0YyXxQcUlhzzHWNm051L8c3LeDzmp766MtUVnHUFwAF7dkSBGm72
-	A6zOqOCEcjv9EDTdDCfJbU1gP3cNbQUAkq+G2jh0H1BYBd3s5esWP0VL
-X-Gm-Gg: Acq92OFfQDq2pH8BoB1pjhiRzB1p8u1yXTvqbguz7sFis+NEbp/gLs4w5ZuD7s3L/8D
-	jIXHJw4wNfPnvwWMjpGdU9XxJQqi3z5s2I4nlv8RxH/N48z7uDqGxwgDu6gqVL4a3i4uz9WfUOv
-	FBKrhm2t70tm6qwRlDU97CaA56hwZ5lew2hiqh3HDvgb7vKAxWlrQJ1WRLIZoiW21kMqbKbCO3A
-	cq5HMw8oc0RzgFtbqP1yG6yUNFDNykvcVtdAtcLr3n3+e9fZAyDsmm6HcSsnIX0awHnHy+4XFgY
-	B01yFwcdpxsvsyJzV1aIBhboq1flLcHh9hAGjU9MGVSUrddERJgvFyx7NIFMsUrJkBh0GAJEl8c
-	JFLhmdEtJ8bvEAXDR9ErYjgBofmiA/EnicPsTCy6iXSq0nUMfFH4mLyTlH5lbThBiKb77IqdL89
-	YfRpRxqlrq2XVJzO/2Jj2gnu188a+DoO2K/dL1vl0gKfumj8ykzfyju4iXMBj3TKca
-X-Received: by 2002:a05:6808:1185:b0:484:afc2:eee3 with SMTP id 5614622812f47-4868dbf2a5fmr12532868b6e.5.1781036535807;
-        Tue, 09 Jun 2026 13:22:15 -0700 (PDT)
-Received: from localhost.localdomain ([143.166.81.254])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-4865b5a5a64sm16888419b6e.4.2026.06.09.13.22.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Jun 2026 13:22:15 -0700 (PDT)
-From: Stuart Hayes <stuart.w.hayes@gmail.com>
-To: "Martin K . Petersen" <martin.petersen@oracle.com>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Stuart.Hayes@dell.com,
-	Stuart Hayes <stuart.w.hayes@gmail.com>
-Subject: [PATCH v2] scsi: target: Allow FUA if no write cache enabled
-Date: Tue,  9 Jun 2026 15:21:56 -0500
-Message-ID: <20260609202156.90700-1-stuart.w.hayes@gmail.com>
-X-Mailer: git-send-email 2.47.3
+	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="cqAgIo8y"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
+	s=protonmail; t=1781065369; x=1781324569;
+	bh=DCy3zJISCb+c4W/OQbSo1vWg3TAOf6MV0cZ5ytssApE=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+	 Message-ID:BIMI-Selector;
+	b=cqAgIo8ykukB+T4cZJMF183Wf2hpS0WpPsQKifjbg4MIDkTi53/QMIdiVkUNr7p+P
+	 FoHJ5m76+/SG9qcENsQ6CG4U2LvVTJGibYalDiFd0zFmEzu9UpWQomeebiv64mrQBO
+	 rlJQxMDVAPZKIPqj32REWwqI0wCUbi0VnWoboeYRJtAam/mvOCB/AgzGrt1peEPJkv
+	 QMYLLJRSZfbfU2SKQgmbHZvOuKPA/ykiGNkoFLSZxfmlf/ZIY8anp19tnfO/dmQWzk
+	 /QF8CRDuTzG/k2FXmKCVMRIsc6RWz5r6cs507xGnb2/Y56eL+bD80cCKzDuBB8Mugx
+	 J5NGQ0QjSh/+w==
+Date: Wed, 10 Jun 2026 04:22:41 +0000
+To: "Martin K . Petersen" <martin.petersen@oracle.com>
+From: Bryam Vargas <hexlabsecurity@proton.me>
+Cc: Mike Christie <michael.christie@oracle.com>, Maurizio Lombardi <mlombard@redhat.com>, John Garry <john.g.garry@oracle.com>, James Bottomley <James.Bottomley@HansenPartnership.com>, David Disseldorp <ddiss@suse.de>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] scsi: target: copy iSCSI ISID before unmapping the PR OUT buffer
+Message-ID: <20260610042236.35453-1-hexlabsecurity@proton.me>
+In-Reply-To: <6282620112fd9db8224dbf04046dbf24267d0433.camel@HansenPartnership.com>
+References: <20260609005858.17504-1-hexlabsecurity@proton.me> <fdb07a39-cf7d-48aa-9e75-1a79dc7ad620@oracle.com> <239dd72a5ee388486f60eff7e6b025d130e08266.camel@HansenPartnership.com> <6b6ebec8-0e92-41bd-8001-0608ee6e804b@oracle.com> <6282620112fd9db8224dbf04046dbf24267d0433.camel@HansenPartnership.com>
+Feedback-ID: 199661219:user:proton
+X-Pm-Message-ID: 85afb1269b19ee5e9f96a70ad9b713c9a2935134
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Modify target code to ignore FUA bit in commands to targets with no write
-cache enabled.
+On 2026-06-09, James Bottomley wrote:
+> I was just looking at the multiple error legs in the patched code and
+> thinking it's an ideal candidate for a __free() attribute.  If there's
+> a way of rearranging the code to keep it longer that you think is more
+> readable, by all means do that instead.
 
-Without this patch, accesses with FUA set will be rejected, even though
-they always go directly to the media when there's no write cache.
+I'll keep the mapping in place, which turns out to be the simplest of the
+three options: it needs no ownership transfer at all, so neither kfree()
+nor __free() comes into it.
 
-This is needed because EDK2 FAT filesystem code sets the FUA bit when
-writing, regardless of whether the device advertises support of DPOFUA. If
-a UEFI pre-boot write fails, the filesystem can become inaccessible until a
-reboot.  This can cause linux installs to iSCSI to be unbootable, because
-some systems have firmware that will try to write a file in a
-vendor-specific directory under /boot/EFI (such as /boot/EFI/Dell) before
-attempting to boot to a UEFI boot entry pointing to a file in the FAT
-filesystem.
+The only reason v2 had an iport_ptr to free was that v2 made the parser
+allocate.  If the PR-OUT parameter list instead stays mapped, iport_ptr
+can remain what it has always been -- a borrowed alias into that buffer --
+and v3 is just:
 
-Signed-off-by: Stuart Hayes <stuart.w.hayes@gmail.com>
----
-v1->v2:
-	- change to only ignore FUA bit set when no write cache is
-	  enabled, instead of advertising DPOFUA support
----
- drivers/target/target_core_sbc.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+  - drop the early transport_kunmap_data_sg() / buf =3D NULL after the pars=
+e;
+  - unmap once on the success path, right before "return 0";
+  - the existing "if (buf) transport_kunmap_data_sg(cmd)" at out: now
+    covers every error leg, because buf is no longer cleared early.
 
-diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index 21f5cb86d70c..ffd2b6c9bd23 100644
---- a/drivers/target/target_core_sbc.c
-+++ b/drivers/target/target_core_sbc.c
-@@ -754,6 +754,12 @@ sbc_check_dpofua(struct se_device *dev, struct se_cmd *cmd, unsigned char *cdb)
- 	}
- 	if (cdb[1] & 0x8) {
- 		if (!target_check_fua(dev)) {
-+			/*
-+			 * Silently ignore FUA if there's no write cache.
-+			 */
-+			if (!target_check_wce(dev))
-+				return 0;
-+
- 			pr_err("Got CDB: 0x%02x with FUA bit set, but device"
- 			       " does not advertise support for FUA write\n",
- 			       cdb[0]);
--- 
-2.47.3
+That is -2/+1 lines (plus a comment) in
+core_scsi3_emulate_pro_register_and_move() only.
+target_core_fabric_lib.c is untouched, and core_scsi3_decode_spec_i_port()
+needs no change -- it already uses iport_ptr before its own unmap, so the
+loop/free question there does not arise.
+
+On 2026-06-09, John Garry wrote:
+> I do notice that there would be regions which we keep spinlocks held
+> when this mapping is in place, but I am not sure if that makes a
+> difference
+
+It does not.  Holding an already-established kmap/vmap mapping across a
+spinlock is fine; what is not allowed is calling kmap()/kunmap() (or
+vmap()/vunmap(), which may sleep) while atomic.  In this version both the
+map and the unmap happen outside any lock -- the map before
+dev_reservation_lock is taken, the unmap after it is dropped (and at out:
+after all locks are released).  The only thing done under
+dev_reservation_lock is __core_scsi3_locate_pr_reg() reading the ISID
+through the mapping, which is an ordinary load.
+
+I re-ran the KASAN A/B for this form on the same CONFIG_KASAN_VMALLOC rig
+(6.12.90, 64-bit and 32-bit initiator): unpatched, an 8192-byte (two-page)
+REGISTER AND MOVE reports vmalloc-out-of-bounds in strcmp() and the rx
+kthread dies; with the patch the same request completes with no report.
+
+v3 follows as a separate posting.
+
+Thanks,
+Bryam
 
