@@ -1,146 +1,234 @@
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F9093B52E6;
-	Wed, 10 Jun 2026 08:45:11 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=144.76.82.148
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2ED43FCB2D
+	for <target-devel@vger.kernel.org>; Wed, 10 Jun 2026 11:00:37 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781081116; cv=none; b=uL0CZ3fq/ji4PCwdhhj3wJD4yGipyPHLrS2VpcDk8srFu/ipd92NeEF1iRO9RnttvPYBkbL5TCvWNrhLMZJRyKTQFC2lPyY223VhlqIg/TczHmAMfwa8FYdBIW36OSBpKmvGcaAnGCoCznLTYOWBHHCTm8oFGzc52jQ7Rt68ysA=
+	t=1781089240; cv=none; b=VSWZABPilxZ61Z6l7cT0XdO9jedmpTVmuTpkRO8dOtJKWyP7a9jF/fLR4lkMm7DrIr9aFsJPppfZafIkLp4UOTuAHUmLq5i8TOBQvioxhm1CaT+Sb35ob07Wxu/BZ+JUjLalm/1tLdOE3P76ynWXYiiWr+2tPGXFAck0ciBKQUg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781081116; c=relaxed/simple;
-	bh=3GpvE9sy1NPo5Th2Pm6Ut/szLr6JqPXIlzEAK2Ztm2I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nCZyuHKamkSfZrj+gOlEXLfyYLQ5Bwyzu1XjAtydTkUh35lO0jblVN041KTsDNgSNIG/BoXE4iNwnim6WfW0MXI8qsFoalAViBveClpopY3dBiIdLxTxQOCCD/LcXb8YJxO6qol13t28HiLE3sOfTbz87c/ypQ7giVx/UqeSo+k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=samba.org; spf=pass smtp.mailfrom=samba.org; dkim=pass (3072-bit key) header.d=samba.org header.i=@samba.org header.b=OfNsxpF9; arc=none smtp.client-ip=144.76.82.148
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=samba.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=samba.org
+	s=arc-20240116; t=1781089240; c=relaxed/simple;
+	bh=GGC1No7WYPzYm9lP88oSEOKjdzY9BKHDXPWylHpXoM0=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Zy0C7ybM16l0tcr48mmVUBvS1PYsriPsyXvgIo2krEFs9HXgofBEaFYAFOjqLCJjmYbrmKOaWbJWMHGDI2jUn8BRJWvIoX8q15Pnx6rmRkqLiPrMHsc4EP9P3kP0onZvi2wvJ/tRA2kEecSdEOQL7iKsf8YNFGTuyGGS1sfEFcA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=JWtGUWXp; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=yjxufWAR; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=aE82fglj; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=NNs6cpmY; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (3072-bit key) header.d=samba.org header.i=@samba.org header.b="OfNsxpF9"
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=samba.org;
-	s=42; h=From:Cc:To:Date:Message-ID;
-	bh=rjPJQkM0fLk8gYwjAGYei/TCZcpAauv07XZFNpzHPC8=; b=OfNsxpF9+NS6EnvAw3LrRN4MYk
-	TscG52hSzQTtzwQ0GDX+3Jkad+GQvqJyax19KbAUFAZG6JhiOzxO+AeutzctfO+aOSz8F7GEltP+e
-	NveACjQ1S3caoQ8J5/V0zuP2woD9H5Z0FhVHAvKZ5ovujpMkx5HnUIIleyEYjTh/OgkRPLdBQDtCu
-	d1auYNOAdWzI2t+yvnZk6XGQ6t7NuK47aQ8U9WbZkS/aGcUIIb+VyK+lcBc3tPzM7PlF1iyM+n/oq
-	Dq4b+T+/RUVCUhKzEP7tBYv+mKTLG7XEdeDibZyShJ6GxdSALI0baX983m7Rg9j9qCkuQFQYRxbEM
-	0+aaG9w27NQR1srXf1kuc51VNv8QAfgHa02TWKdf7oNRMldGcr1I5Jk/MrYm+Z4/U+fU+KzcZfdkD
-	Zun6uplYCq5m9zMS9gd2JZd2Us0ay3WIXnPBvQWD40Jmn+C9FDZsAW6nPV4UwNaCvZHOXpL3Ea/yA
-	VbIsbcej6XidTcEsuN6h3Fbh;
-Received: from [127.0.0.2] (localhost [127.0.0.1])
-	by hr2.samba.org with esmtpsa (TLS1.3:ECDHE_SECP256R1__ECDSA_SECP256R1_SHA256__CHACHA20_POLY1305:256)
-	(Exim)
-	id 1wXEYV-0000000FFf5-2R6t;
-	Wed, 10 Jun 2026 08:44:59 +0000
-Message-ID: <c62b32d0-1469-4204-9af9-5ef3b47e3996@samba.org>
-Date: Wed, 10 Jun 2026 10:44:57 +0200
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="JWtGUWXp";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="yjxufWAR";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="aE82fglj";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="NNs6cpmY"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 88AE77581C;
+	Wed, 10 Jun 2026 11:00:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1781089235; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2I4ZEP18hlGuRjluq9/BBT7zqhaGgYRnQahT0UeNjz4=;
+	b=JWtGUWXpK9dluLL9S/Q6klcCEIhtNPb1bh536JReWZN/EjhQqQR7s39PtBg6FVii+mYIF1
+	IYU7q9S1l7dflNfKmHqgMuTscVAjn0WyXBkn4pDjFxrHI2PSK8iOzxnh474HjLWfI9k4uO
+	t2D4X1+oSVfIffgrDIeOodJrBBs04pQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1781089235;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2I4ZEP18hlGuRjluq9/BBT7zqhaGgYRnQahT0UeNjz4=;
+	b=yjxufWARco5MtuDzsOqN+mhMfQCeTe+jCpWkPhMK2D3VrmMwxwgD67M+RsfJV977+qp/zm
+	u7S5QHnKvYbRlYCQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1781089234; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2I4ZEP18hlGuRjluq9/BBT7zqhaGgYRnQahT0UeNjz4=;
+	b=aE82fgljuNyCyuyA77EAz3YOpp4tYlVwvJgudAuEBAbTWwL0n8G0YUBEZ2Jq+mGucqUNEx
+	b3TZKmpjAEVT5h3PgNZigF0eeO16goWFdZQXUSYlgJes3RLINcB7FQzfXSXbEERSG0/wT5
+	vmvzAG0r3IkaEUZ4GFsj3HsVerue06s=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1781089234;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2I4ZEP18hlGuRjluq9/BBT7zqhaGgYRnQahT0UeNjz4=;
+	b=NNs6cpmYM/P7z2M0+atwDpWL/2rbqRApv9fTH4VcD8llM/E/DD81TEBjpUzRHOSTFBcS8m
+	N7L1hD49c6dOLzDQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3970D779A7;
+	Wed, 10 Jun 2026 11:00:30 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id l5WoN85DKWqYFAAAD6G6ig
+	(envelope-from <ddiss@suse.de>); Wed, 10 Jun 2026 11:00:30 +0000
+Date: Wed, 10 Jun 2026 21:00:25 +1000
+From: David Disseldorp <ddiss@suse.de>
+To: Bryam Vargas <hexlabsecurity@proton.me>
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, Mike Christie
+ <michael.christie@oracle.com>, Maurizio Lombardi <mlombard@redhat.com>,
+ John Garry <john.g.garry@oracle.com>, James Bottomley
+ <James.Bottomley@HansenPartnership.com>, linux-scsi@vger.kernel.org,
+ target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] scsi: target: fix iSCSI ISID use-after-free in
+ REGISTER AND MOVE
+Message-ID: <20260610210025.35dc7040.ddiss@suse.de>
+In-Reply-To: <20260610042245.35473-1-hexlabsecurity@proton.me>
+References: <20260610042245.35473-1-hexlabsecurity@proton.me>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH rdma-next v7] RDMA: Change capability fields in
- ib_device_attr from int to u32
-To: Erni Sri Satya Vennela <ernis@linux.microsoft.com>,
- mkalderon@marvell.com, Jason Gunthorpe <jgg@ziepe.ca>,
- Leon Romanovsky <leon@kernel.org>, zyjzyj2000@gmail.com, sagi@grimberg.me,
- mgurtovoy@nvidia.com, haris.iqbal@ionos.com, jinpu.wang@ionos.com,
- bvanassche@acm.org, kbusch@kernel.org, Jens Axboe <axboe@kernel.dk>,
- Christoph Hellwig <hch@lst.de>, kch@nvidia.com, smfrench@gmail.com,
- linkinjeon@kernel.org, tom@talpey.com, trondmy@kernel.org, anna@kernel.org,
- chuck.lever@oracle.com, jlayton@kernel.org, neil@brown.name,
- okorniev@redhat.com, Dai.Ngo@oracle.com, achender@kernel.org,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, horms@kernel.org, kees@kernel.org,
- andriy.shevchenko@linux.intel.com, ebadger@purestorage.com,
- linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
- target-devel@vger.kernel.org, linux-nvme@lists.infradead.org,
- linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
- linux-nfs@vger.kernel.org, netdev@vger.kernel.org, rds-devel@oss.oracle.com
-Cc: Jason Gunthorpe <jgg@nvidia.com>
-References: <20260606070735.2163063-1-ernis@linux.microsoft.com>
-Content-Language: en-US
-From: Stefan Metzmacher <metze@samba.org>
-In-Reply-To: <20260606070735.2163063-1-ernis@linux.microsoft.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Spam-Flag: NO
+X-Spam-Score: -3.30
+X-Spamd-Result: default: False [-3.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.de:email,suse.de:mid,proton.me:email]
+X-Spam-Level: 
 
-Am 06.06.26 um 09:07 schrieb Erni Sri Satya Vennela:
-> diff --git a/fs/smb/smbdirect/accept.c b/fs/smb/smbdirect/accept.c
-> index 529740005838..44b681a20725 100644
-> --- a/fs/smb/smbdirect/accept.c
-> +++ b/fs/smb/smbdirect/accept.c
-> @@ -32,8 +32,9 @@ int smbdirect_accept_connect_request(struct smbdirect_socket *sc,
->   	/*
->   	 * First set what the we as server are able to support
->   	 */
-> - sp->initiator_depth = min_t(u8, sp->initiator_depth,
-> - sc->ib.dev->attrs.max_qp_rd_atom);
-> + sp->initiator_depth = min3(sp->initiator_depth,
-> + sc->ib.dev->attrs.max_qp_rd_atom,
-> + U8_MAX);
->   
->   	peer_initiator_depth = param->initiator_depth;
->   	peer_responder_resources = param->responder_resources;
-> diff --git a/fs/smb/smbdirect/connect.c b/fs/smb/smbdirect/connect.c
-> index cd726b399afe..34a3e72c38fb 100644
-> --- a/fs/smb/smbdirect/connect.c
-> +++ b/fs/smb/smbdirect/connect.c
-> @@ -182,8 +182,9 @@ static int smbdirect_connect_rdma_connect(struct smbdirect_socket *sc)
->   	if (sc->ib.dev->attrs.kernel_cap_flags & IBK_SG_GAPS_REG)
->   		sc->mr_io.type = IB_MR_TYPE_SG_GAPS;
->   
-> - sp->responder_resources = min_t(u8, sp->responder_resources,
-> - sc->ib.dev->attrs.max_qp_rd_atom);
-> + sp->responder_resources = min3(sp->responder_resources,
-> + sc->ib.dev->attrs.max_qp_rd_atom,
-> + U8_MAX);
->   	smbdirect_log_rdma_mr(sc, SMBDIRECT_LOG_INFO,
->   		"responder_resources=%d\n",
->   		sp->responder_resources);
-> diff --git a/fs/smb/smbdirect/connection.c b/fs/smb/smbdirect/connection.c
-> index 8adf58097534..690acb84e1b5 100644
-> --- a/fs/smb/smbdirect/connection.c
-> +++ b/fs/smb/smbdirect/connection.c
-> @@ -287,7 +287,7 @@ int smbdirect_connection_create_qp(struct smbdirect_socket *sc)
->   	    qp_cap.max_send_wr > sc->ib.dev->attrs.max_qp_wr) {
->   		pr_err("Possible CQE overrun: max_send_wr %d\n",
->   		       qp_cap.max_send_wr);
-> - pr_err("device %.*s reporting max_cqe %d max_qp_wr %d\n",
-> + pr_err("device %.*s reporting max_cqe %u max_qp_wr %u\n",
->   		       IB_DEVICE_NAME_MAX,
->   		       sc->ib.dev->name,
->   		       sc->ib.dev->attrs.max_cqe,
-> @@ -302,7 +302,7 @@ int smbdirect_connection_create_qp(struct smbdirect_socket *sc)
->   	     max_send_wr >= sc->ib.dev->attrs.max_qp_wr)) {
->   		pr_err("Possible CQE overrun: rdma_send_wr %d + max_send_wr %d = %d\n",
->   		       rdma_send_wr, qp_cap.max_send_wr, max_send_wr);
-> - pr_err("device %.*s reporting max_cqe %d max_qp_wr %d\n",
-> + pr_err("device %.*s reporting max_cqe %u max_qp_wr %u\n",
->   		       IB_DEVICE_NAME_MAX,
->   		       sc->ib.dev->name,
->   		       sc->ib.dev->attrs.max_cqe,
-> @@ -316,7 +316,7 @@ int smbdirect_connection_create_qp(struct smbdirect_socket *sc)
->   	    qp_cap.max_recv_wr > sc->ib.dev->attrs.max_qp_wr) {
->   		pr_err("Possible CQE overrun: max_recv_wr %d\n",
->   		       qp_cap.max_recv_wr);
-> - pr_err("device %.*s reporting max_cqe %d max_qp_wr %d\n",
-> + pr_err("device %.*s reporting max_cqe %u max_qp_wr %u\n",
->   		       IB_DEVICE_NAME_MAX,
->   		       sc->ib.dev->name,
->   		       sc->ib.dev->attrs.max_cqe,
-> @@ -328,7 +328,7 @@ int smbdirect_connection_create_qp(struct smbdirect_socket *sc)
->   
->   	if (qp_cap.max_send_sge > sc->ib.dev->attrs.max_send_sge ||
->   	    qp_cap.max_recv_sge > sc->ib.dev->attrs.max_recv_sge) {
-> - pr_err("device %.*s max_send_sge/max_recv_sge = %d/%d too small\n",
-> + pr_err("device %.*s max_send_sge/max_recv_sge = %u/%u too small\n",
->   		       IB_DEVICE_NAME_MAX,
->   		       sc->ib.dev->name,
->   		       sc->ib.dev->attrs.max_send_sge,
+On Wed, 10 Jun 2026 04:22:48 +0000, Bryam Vargas wrote:
 
-Acked-by: Stefan Metzmacher <metze@samba.org> for the smbdirect changes.
+> core_scsi3_emulate_pro_register_and_move() maps the PERSISTENT RESERVE OUT
+> parameter list with transport_kmap_data_sg() and parses the destination
+> TransportID with target_parse_pr_out_transport_id(). For an iSCSI
+> TransportID (FORMAT CODE 01b), iscsi_parse_pr_out_transport_id() returns
+> the ISID in iport_ptr as a raw pointer into that mapped buffer.
+> 
+> The function then unmaps the buffer with transport_kunmap_data_sg() before
+> dereferencing iport_ptr in strcmp(), __core_scsi3_locate_pr_reg() and
+> core_scsi3_alloc_registration(). When the parameter list spans more than
+> one page (PARAMETER LIST LENGTH > 4096), transport_kmap_data_sg() uses
+> vmap() and transport_kunmap_data_sg() does vunmap(), so the kernel virtual
+> address backing iport_ptr is torn down and every subsequent dereference is
+> a use-after-free read of the unmapped region.
+> 
+> Keep the parameter list mapped until iport_ptr is no longer needed: drop
+> the early transport_kunmap_data_sg() and unmap once on the success path,
+> right before returning. The error paths already unmap through the existing
+> "if (buf) transport_kunmap_data_sg(cmd)" at the out: label, which now runs
+> on every post-map error exit because buf is no longer cleared early. Only
+> reads of the mapping happen while spinlocks are held; the map and unmap
+> calls remain outside any lock. The sibling caller
+> core_scsi3_decode_spec_i_port() already uses the buffer before unmapping it
+> and is left unchanged.
+> 
+> Fixes: 4949314c7283 ("target: Allow control CDBs with data > 1 page")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Bryam Vargas <hexlabsecurity@proton.me>
+> ---
+> v3 (review of v2 by John Garry and James Bottomley):
+>   - Drop the parser-ownership approach. Rather than copy the ISID into an
+>     allocation that both callers must kfree() (v2), keep the PR-OUT
+>     parameter list mapped across the iport_ptr dereferences and move the
+>     single unmap to the success path. No allocation, no kfree, and
+>     target_core_fabric_lib.c / core_scsi3_decode_spec_i_port() are
+>     unchanged. This is the form John Garry asked for ("keep the mapping in
+>     place for longer, until the out: label") and removes the multiple
+>     kfree() paths v2 added.
+>   - Re: holding the mapping while spinlocks are held (raised on v2): only
+>     reads of the mapping occur under dev_reservation_lock; the kmap/kunmap
+>     calls are all outside any lock, so there is no sleep-in-atomic concern.
+> 
+> v2: https://lore.kernel.org/linux-scsi/20260609005858.17504-1-hexlabsecurity@proton.me/
+> v1: https://lore.kernel.org/linux-scsi/20260606015359.181724-1-hexlabsecurity@proton.me/
+> 
+> Class / impact: CWE-416 use-after-free (use-after-vunmap) in the LIO SCSI
+> target, reachable by an authenticated iSCSI initiator that is a current
+> Persistent Reservation registrant on the LUN. It sends PERSISTENT RESERVE
+> OUT / REGISTER AND MOVE with an iSCSI (FORMAT CODE 01b) TransportID and a
+> PARAMETER LIST LENGTH > 4096 so the parameter list spans >1 page and is
+> mapped with vmap(). After transport_kunmap_data_sg() vunmap()s that region,
+> the retained iport_ptr is dereferenced -> kernel read of an unmapped
+> vmalloc address (oops / DoS). Primarily a remotely reachable authenticated
+> denial of service. Present in all maintained trees since 4949314c7283
+> (v3.3, 2012), which introduced the multi-page vmap() path. Verified at
+> mainline v7.1-rc6 and stable v6.12.92.
+> 
+> Reproducer (authenticated iSCSI initiator, current PR reservation holder):
+>   1. PERSISTENT RESERVE OUT / REGISTER a key from the iSCSI nexus.
+>   2. PERSISTENT RESERVE OUT / REGISTER AND MOVE, FORMAT CODE 01b TransportID
+>      (IQN + ",i,0x" + 12-char ISID), RELATIVE TARGET PORT IDENTIFIER of an
+>      existing target port, with PARAMETER LIST LENGTH = 8192 (two pages ->
+>      vmap()/vunmap()), the inner ADDITIONAL LENGTH set so tid_len + 24 ==
+>      data_length, the remainder zero padding.
+> 
+> A/B verification (CONFIG_KASAN_VMALLOC=y, kasan.fault=report, x86-64,
+> 6.12.90; same kernel for every arm; 64-bit and 32-bit initiator):
+>   - Without this patch (8192-byte, two-page request):
+>       BUG: KASAN: vmalloc-out-of-bounds in strcmp+0xa7/0xb0
+>         strcmp
+>         core_scsi3_emulate_pro_register_and_move [target_core]
+>         ? remove_vm_area
+>         target_scsi3_emulate_pr_out [target_core]
+>         __target_execute_cmd / iscsit_execute_cmd / iscsi_target_rx_thread
+>       followed by "unable to handle page fault" (PTE 0); the command never
+>       completes (the iSCSI rx kthread dies).
+>   - Control (128-byte, single-page request): no report (kunmap is a no-op
+>     on 64-bit !HIGHMEM, no vunmap).
+>   - With this patch (same 8192-byte request, 64-bit and 32-bit initiator):
+>     no report, the command completes.
+> 
+>  drivers/target/target_core_pr.c | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+> index 11790f2c5d80..7c5bb7d67947 100644
+> --- a/drivers/target/target_core_pr.c
+> +++ b/drivers/target/target_core_pr.c
+> @@ -3293,9 +3293,6 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
+>  		goto out;
+>  	}
+>  
+> -	transport_kunmap_data_sg(cmd);
+> -	buf = NULL;
+> -
+>  	pr_debug("SPC-3 PR [%s] Extracted initiator %s identifier: %s"
+>  		" %s\n", dest_tf_ops->fabric_name, (iport_ptr != NULL) ?
+>  		"port" : "device", initiator_str, (iport_ptr != NULL) ?
+> @@ -3532,6 +3529,11 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
+>  	core_scsi3_update_and_write_aptpl(cmd->se_dev, aptpl);
+>  
+>  	core_scsi3_put_pr_reg(dest_pr_reg);
+> +	/*
+> +	 * iport_ptr aliases the PR-OUT parameter list mapped above, so the
+> +	 * buffer is unmapped only here on success (and at out: on error).
+> +	 */
+> +	transport_kunmap_data_sg(cmd);
+>  	return 0;
+>  out:
+>  	if (buf)
 
-Thanks!
-metze
+Looks good.
+Reviewed-by: David Disseldorp <ddiss@suse.de>
