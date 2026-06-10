@@ -1,166 +1,270 @@
-Received: from mail-106120.protonmail.ch (mail-106120.protonmail.ch [79.135.106.120])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6180135E1A6;
-	Wed, 10 Jun 2026 04:22:59 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=79.135.106.120
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6679C2857FA
+	for <target-devel@vger.kernel.org>; Wed, 10 Jun 2026 06:00:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781065385; cv=none; b=A2CMn901NDGV3ZwkfrFmwb5QTGogBFtKfQiqn/WPPxRVl6wsWSKxpkYdVaeRHkG69wICNU23SVqP/HoCfbZx3xShiOQFP2YyEiejS66u+2065wFwKShgSsiySe3wMGgZbZ7ufpDW0g/eqDLJdx83cXaxtDswrIXksbs+QeeYcOY=
+	t=1781071204; cv=none; b=J+WOHQtmIXnjfps74jaDxy+b7aIK+g+/9ZsS4bMpeoRg6bF7sOzREMPXLI25rLXKC9yYYmQcW6TGvzPLzCvXSt5FcM5vMn7VjzaGTxz+E+rgG6f5r5gRwhHlpiFyGG3r1vRt5WvXMHjTnS/BwIE670stfmkuzjnMMvfiuSjWOPo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781065385; c=relaxed/simple;
-	bh=/UVTYB/ZBvreZU53WKmxraFYB/R5KvBFQBbJcRNY7e4=;
-	h=Date:To:From:Cc:Subject:Message-ID:MIME-Version:Content-Type; b=MMJ5rmKRFOc15+rXVrovhjHAkVbSAzpMD2+x4VbI16dFENKIKSUJezS8nmFpOFPk5vzqUZfaxbYwxQnddCIqHCyo6y0ZYe6hGuwLtXbuXJuYU2QBCFFNpHxAoxNG8M3jiI5YWHSpxs8wajL3HSpc48VIJANvpIRqKVjkY1f2PXU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me; spf=pass smtp.mailfrom=proton.me; dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b=UfYsp6YR; arc=none smtp.client-ip=79.135.106.120
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=proton.me
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=proton.me
+	s=arc-20240116; t=1781071204; c=relaxed/simple;
+	bh=AvZ62CJBNYf9slGn5Sv7jZnOy8sCQBSyuSuQs3KW624=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Qcxo1vAQgh8LguD4+xI0lmVorylI/LvSOjQ2qtdWVAaJ9Vi1h0uLI5czavHdz8fjb1TajZ1UFHNOoItIpdnQhS6fLNBC1s+7s75vR1xfeRcRvwbZJpt70WPTx0ZrvQZ21slz7NPX0zDiXCgmK897uP9ZH8zgn9M32WEZPORV26o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=EjMwLqYu; arc=none smtp.client-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=proton.me header.i=@proton.me header.b="UfYsp6YR"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=proton.me;
-	s=zd6eno473bd2bjsrzqfw7kbxfa.protonmail; t=1781065372; x=1781324572;
-	bh=3VXcyUfZ//Z5hx8XQ5hETEE2NN3V0W/RaRJoZjuapAA=;
-	h=Date:To:From:Cc:Subject:Message-ID:Feedback-ID:From:To:Cc:Date:
-	 Subject:Reply-To:Feedback-ID:Message-ID:BIMI-Selector;
-	b=UfYsp6YRkFpG0tNi3PqaOS6hlgzQy9QTlwS/x0wxYeXnA3v9gdtCIlw5t7yTvpqJf
-	 Ir6Ry5lZt8rEBgXBRYsR5iduLZHxe6gLo/cwM9SNrdBoAFUk5KbwGGyGADIBvCjPpn
-	 6ZeH2P+RMaPA/I5RezS9MzQqLsnszTMh2/J6eqjSoMvNQewQG15J1pv5d8y3ItiTXn
-	 5onEXhCDbIRoKqemBHR15ODGRM6HA1UHL/5soRoZDfcQvOI4AVAiLq+3QygpRSPyLs
-	 Mo3LzOMUbdklsJbqSwaeHv3MKGGuhVfACYStvEer4ZgqYtJkUrbZNgblawS+7iXYBK
-	 pm1HlV1sqocaw==
-Date: Wed, 10 Jun 2026 04:22:48 +0000
-To: "Martin K . Petersen" <martin.petersen@oracle.com>
-From: Bryam Vargas <hexlabsecurity@proton.me>
-Cc: Mike Christie <michael.christie@oracle.com>, Maurizio Lombardi <mlombard@redhat.com>, John Garry <john.g.garry@oracle.com>, James Bottomley <James.Bottomley@HansenPartnership.com>, David Disseldorp <ddiss@suse.de>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3] scsi: target: fix iSCSI ISID use-after-free in REGISTER AND MOVE
-Message-ID: <20260610042245.35473-1-hexlabsecurity@proton.me>
-Feedback-ID: 199661219:user:proton
-X-Pm-Message-ID: effe56cfd120fb8796ae5aa8ca17f126e398f9da
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="EjMwLqYu"
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-490b211ee6aso48962615e9.3
+        for <target-devel@vger.kernel.org>; Tue, 09 Jun 2026 23:00:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1781071201; x=1781676001; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=0eeq4qUemue69ATVH9Hc0G+s1EX6SM4VcPKiJpjYoUk=;
+        b=EjMwLqYujTxy+YSxoLHsRyOYOX4r/EAZp2/ifXHXTJoJpf9tpEOLpOI6D7kbGzidhm
+         qLO79IlI7HlqlCK2gjE/c/4YJ1nTaFIu84/098dMgwpBwJeE6ErYxbhVjJIN+z8Sdkq6
+         tG02njeUzYHi+UzF2x88M8Cj2tCrV/CvpscLRDBurC7eykEDaT6soboaQvvNGgsbgH1w
+         cbhQPAhnngBmAjWFoXiD/UAP3F2fTRPvDToqhbNLmRvaotOirJ2RIJwGNcKaGni4Vzom
+         AdDC11mPMOHY5fCA3RWHyUtXOlaKEZdxwYYX0zhLUJRpYxe9G5r2KsqOMbSpkoEVSioS
+         8M4Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1781071201; x=1781676001;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=0eeq4qUemue69ATVH9Hc0G+s1EX6SM4VcPKiJpjYoUk=;
+        b=lmPcrKMj6S+nfopvCdRlwV+C3Q1TOQIPH6yN7/r2cOhLaLnIP2iX4BNybQJbUP/D8r
+         2+MC5hIpQR4naNsFoopm4DFglyd1czg7Abk7/CS/cyGXojJFTlPnsJU9RuIFktcs7HkS
+         QINsRBRk9Zb9Ap8yw6THlssX+9NLyw/v3PL1k5x0CCWwCG1jYDtcOIKNsF5yNff/P/cM
+         HcSxJlThV27FY/ZJH+WzObHxBccTqk2M8zZymjDU12T2eM532HBOMwkMVf+c4scHJFfu
+         ikFzl0RP6YFVk6eRPK3xpnb6MEAAGnoKipQ97Zp4BA4L0SfqQEMw4/piEcrKu3WTFMTX
+         wiZg==
+X-Forwarded-Encrypted: i=1; AFNElJ8JG/KbSPfcUZPpgoTkovQFgdjK4BTvGDI5CU4aNvsrVYnSrpY6QnqV61oTW8zvNsoRa4dZuhhNr/YsiZk=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxGvVkFCN6OYsvE6Wb5VTA5zBrYZhtELrP26AsMeDhAZ1ukOl8v
+	L6Kr/MQalow8BlCJwWwFGw/MeleEXLw0/f8fozmg6aLpyGrT5QKVOLuhtg3rtISULGA=
+X-Gm-Gg: Acq92OFz4OMUMu3IYBXgtQACoecKTUDU+SRELcT0vs3n4qCK5HZeQFtu2NhNmMDn+VT
+	sFtL+jlWYIVwOCL3vOmbvYI+Bx0Os4pZZRNdCz4dMjQ/zWLdKI6vYfcgsNJLUpA/3yLUBFIx8Yt
+	zQSLaPs0ozMaBP3X01zrkZOS64dGObTd4sTkx1POi0FH17pGQqpUJbcWJ6nEBLmbk7eqxkFfg7/
+	TETILVSoaPLFe7kDW5Kn2EpOU0GLL79W7PWCFbcD6KNcECYJFUFYdLV/HvpLRVBNJKRX1uAqTge
+	8zReePJojunc4Fe4ZpXw6SNrF2DJ8UdhZw1Tu52jIcb6AVRxLZmcrIixlGBRj64ZxsjsQLZ04Iy
+	TBDB4ljwEzf9OQARK6RQxs+Qb0VwhSs9Cy96bkkRowGCSHfASHwJfR5E07JLImrzSL2tuLwpC5f
+	p3dwwqTsPHT+j2HD5VuSsJ/lWfz3m5xPzzfhE2DkypHmTOHsBWTGKLHGtmMvXPxtMGkw7EJJY=
+X-Received: by 2002:a05:600c:8285:b0:490:abef:dae6 with SMTP id 5b1f17b1804b1-490c25b09bcmr392960895e9.19.1781071200857;
+        Tue, 09 Jun 2026 23:00:00 -0700 (PDT)
+Received: from ?IPV6:2001:a62:1439:d001:a0af:1164:c6fd:8c51? ([2001:a62:1439:d001:a0af:1164:c6fd:8c51])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f35eae5sm69552212f8f.33.2026.06.09.22.59.58
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 09 Jun 2026 23:00:00 -0700 (PDT)
+Message-ID: <e2a61373-0c27-41c3-b0ca-836a4727a3b5@suse.com>
+Date: Wed, 10 Jun 2026 07:59:57 +0200
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/4] scsi: host: allocate struct Scsi_Host on the NUMA
+ node of the host adapter
+To: Sumit Saxena <sumit.saxena@broadcom.com>,
+ "Martin K . Petersen" <martin.petersen@oracle.com>,
+ Jens Axboe <axboe@kernel.dk>
+Cc: "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+ linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
+ Adam Radford <aradford@gmail.com>, Khalid Aziz <khalid@gonehiking.org>,
+ Adaptec OEM Raid Solutions <aacraid@microsemi.com>,
+ Matthew Wilcox <willy@infradead.org>, "Juergen E . Fischer"
+ <fischer@norbit.de>, Russell King <linux@armlinux.org.uk>,
+ linux-arm-kernel@lists.infradead.org, Finn Thain <fthain@linux-m68k.org>,
+ Michael Schmitz <schmitzmic@gmail.com>,
+ Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
+ Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
+ Oliver Neukum <oliver@neukum.org>, Ali Akcaagac <aliakc@web.de>,
+ Jamie Lenehan <lenehan@twibble.org>, Ram Vegesna <ram.vegesna@broadcom.com>,
+ target-devel@vger.kernel.org, Bradley Grove <linuxdrivers@attotech.com>,
+ Satish Kharat <satishkh@cisco.com>, Sesidhar Baddela <sebaddel@cisco.com>,
+ Karan Tilak Kumar <kartilak@cisco.com>, Yihang Li
+ <liyihang9@h-partners.com>, Don Brace <don.brace@microchip.com>,
+ storagedev@microchip.com, HighPoint Linux Team <linux@highpoint-tech.com>,
+ Tyrel Datwyler <tyreld@linux.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Brian King <brking@us.ibm.com>, Lee Duncan <lduncan@suse.com>,
+ Chris Leech <cleech@redhat.com>, Mike Christie
+ <michael.christie@oracle.com>, open-iscsi@googlegroups.com,
+ Justin Tee <justin.tee@broadcom.com>, Paul Ely <paul.ely@broadcom.com>,
+ Kashyap Desai <kashyap.desai@broadcom.com>,
+ Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
+ Chandrakanth Patil <chandrakanth.patil@broadcom.com>,
+ megaraidlinux.pdl@broadcom.com,
+ Sathya Prakash Veerichetty <sathya.prakash@broadcom.com>,
+ Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
+ mpi3mr-linuxdrv.pdl@broadcom.com,
+ Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
+ Ranjan Kumar <ranjan.kumar@broadcom.com>, MPT-FusionLinux.pdl@broadcom.com,
+ Daniel Palmer <daniel@thingy.jp>, GOTO Masanori <gotom@debian.or.jp>,
+ YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
+ Jack Wang <jinpu.wang@cloud.ionos.com>, Geoff Levand <geoff@infradead.org>,
+ Michael Reed <mdr@sgi.com>, Nilesh Javali <njavali@marvell.com>,
+ GR-QLogic-Storage-Upstream@marvell.com, Narsimhulu Musini
+ <nmusini@cisco.com>, "K . Y . Srinivasan" <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
+ linux-hyperv@vger.kernel.org, "Michael S . Tsirkin" <mst@redhat.com>,
+ Jason Wang <jasowang@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ Stefan Hajnoczi <stefanha@redhat.com>, Eugenio Perez <eperezma@redhat.com>,
+ virtualization@lists.linux.dev, Vishal Bhakta <vishal.bhakta@broadcom.com>,
+ bcm-kernel-feedback-list@broadcom.com, Juergen Gross <jgross@suse.com>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ xen-devel@lists.xenproject.org, John Garry <john.g.garry@oracle.com>
+References: <20260609121806.2121755-1-sumit.saxena@broadcom.com>
+ <20260609121806.2121755-3-sumit.saxena@broadcom.com>
+Content-Language: en-US
+From: Hannes Reinecke <hare@suse.com>
+In-Reply-To: <20260609121806.2121755-3-sumit.saxena@broadcom.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-core_scsi3_emulate_pro_register_and_move() maps the PERSISTENT RESERVE OUT
-parameter list with transport_kmap_data_sg() and parses the destination
-TransportID with target_parse_pr_out_transport_id(). For an iSCSI
-TransportID (FORMAT CODE 01b), iscsi_parse_pr_out_transport_id() returns
-the ISID in iport_ptr as a raw pointer into that mapped buffer.
+On 6/9/26 14:18, Sumit Saxena wrote:
+> scsi_host_alloc() used kzalloc(), which always picks an arbitrary node.
+> Extend the function to accept a 'struct device *dev' parameter and use
+> kzalloc_node() with dev_to_node(dev) so the Scsi_Host struct lands on
+> the same NUMA node as the HBA, mirroring the treatment already applied
+> to struct scsi_device, struct scsi_target, and shost_data.
+> 
+> When dev is NULL (legacy ISA/platform drivers without a dma_dev) the
+> allocation falls back to NUMA_NO_NODE, preserving existing behaviour.
+> 
+> Update all in-tree callers:
+>    - PCI-based HBA drivers pass &pdev->dev (or the equivalent struct
+>      member such as &phba->pcidev->dev, &h->pdev->dev, &ha->pdev->dev)
+>      so their host struct is placed on the adapter's node.
+>    - Non-PCI drivers (ISA, Amiga, ARM PCMCIA, virtio, Hyper-V, PS3, …)
+>      pass NULL.
+>    - libfc's libfc_host_alloc() inline helper passes NULL; FC drivers
+>      that want NUMA awareness can open-code the call with their pdev.
+> 
+> Suggested-by: John Garry <john.g.garry@oracle.com>
+> Signed-off-by: Sumit Saxena <sumit.saxena@broadcom.com>
+> ---
+>   drivers/scsi/3w-9xxx.c                    | 2 +-
+>   drivers/scsi/3w-sas.c                     | 2 +-
+>   drivers/scsi/3w-xxxx.c                    | 2 +-
+>   drivers/scsi/53c700.c                     | 2 +-
+>   drivers/scsi/BusLogic.c                   | 2 +-
+>   drivers/scsi/a100u2w.c                    | 2 +-
+>   drivers/scsi/a2091.c                      | 2 +-
+>   drivers/scsi/a3000.c                      | 2 +-
+>   drivers/scsi/aacraid/linit.c              | 2 +-
+>   drivers/scsi/advansys.c                   | 6 +++---
+>   drivers/scsi/aha152x.c                    | 2 +-
+>   drivers/scsi/aha1542.c                    | 2 +-
+>   drivers/scsi/aha1740.c                    | 2 +-
+>   drivers/scsi/aic7xxx/aic79xx_osm.c        | 2 +-
+>   drivers/scsi/aic7xxx/aic7xxx_osm.c        | 2 +-
+>   drivers/scsi/aic94xx/aic94xx_init.c       | 2 +-
+>   drivers/scsi/am53c974.c                   | 2 +-
+>   drivers/scsi/arcmsr/arcmsr_hba.c          | 3 ++-
+>   drivers/scsi/arm/acornscsi.c              | 2 +-
+>   drivers/scsi/arm/arxescsi.c               | 2 +-
+>   drivers/scsi/arm/cumana_1.c               | 2 +-
+>   drivers/scsi/arm/cumana_2.c               | 2 +-
+>   drivers/scsi/arm/eesox.c                  | 2 +-
+>   drivers/scsi/arm/oak.c                    | 2 +-
+>   drivers/scsi/arm/powertec.c               | 2 +-
+>   drivers/scsi/atari_scsi.c                 | 2 +-
+>   drivers/scsi/atp870u.c                    | 2 +-
+>   drivers/scsi/bfa/bfad_im.c                | 2 +-
+>   drivers/scsi/csiostor/csio_init.c         | 4 ++--
+>   drivers/scsi/dc395x.c                     | 2 +-
+>   drivers/scsi/dmx3191d.c                   | 2 +-
+>   drivers/scsi/elx/efct/efct_xport.c        | 4 ++--
+>   drivers/scsi/esas2r/esas2r_main.c         | 2 +-
+>   drivers/scsi/fdomain.c                    | 2 +-
+>   drivers/scsi/fnic/fnic_main.c             | 2 +-
+>   drivers/scsi/g_NCR5380.c                  | 2 +-
+>   drivers/scsi/gvp11.c                      | 2 +-
+>   drivers/scsi/hisi_sas/hisi_sas_main.c     | 2 +-
+>   drivers/scsi/hisi_sas/hisi_sas_v3_hw.c    | 2 +-
+>   drivers/scsi/hosts.c                      | 6 ++++--
+>   drivers/scsi/hpsa.c                       | 2 +-
+>   drivers/scsi/hptiop.c                     | 2 +-
+>   drivers/scsi/ibmvscsi/ibmvfc.c            | 2 +-
+>   drivers/scsi/ibmvscsi/ibmvscsi.c          | 2 +-
+>   drivers/scsi/imm.c                        | 2 +-
+>   drivers/scsi/initio.c                     | 2 +-
+>   drivers/scsi/ipr.c                        | 2 +-
+>   drivers/scsi/ips.c                        | 2 +-
+>   drivers/scsi/isci/init.c                  | 2 +-
+>   drivers/scsi/jazz_esp.c                   | 2 +-
+>   drivers/scsi/libiscsi.c                   | 2 +-
+>   drivers/scsi/lpfc/lpfc_init.c             | 2 +-
+>   drivers/scsi/mac53c94.c                   | 2 +-
+>   drivers/scsi/mac_esp.c                    | 2 +-
+>   drivers/scsi/mac_scsi.c                   | 2 +-
+>   drivers/scsi/megaraid.c                   | 2 +-
+>   drivers/scsi/megaraid/megaraid_mbox.c     | 2 +-
+>   drivers/scsi/megaraid/megaraid_sas_base.c | 2 +-
+>   drivers/scsi/mesh.c                       | 2 +-
+>   drivers/scsi/mpi3mr/mpi3mr_os.c           | 2 +-
+>   drivers/scsi/mpt3sas/mpt3sas_scsih.c      | 4 ++--
+>   drivers/scsi/mvme147.c                    | 2 +-
+>   drivers/scsi/mvsas/mv_init.c              | 2 +-
+>   drivers/scsi/mvumi.c                      | 2 +-
+>   drivers/scsi/myrb.c                       | 2 +-
+>   drivers/scsi/myrs.c                       | 2 +-
+>   drivers/scsi/ncr53c8xx.c                  | 2 +-
+>   drivers/scsi/nsp32.c                      | 2 +-
+>   drivers/scsi/pcmcia/nsp_cs.c              | 2 +-
+>   drivers/scsi/pcmcia/qlogic_stub.c         | 2 +-
+>   drivers/scsi/pcmcia/sym53c500_cs.c        | 2 +-
+>   drivers/scsi/pm8001/pm8001_init.c         | 2 +-
+>   drivers/scsi/pmcraid.c                    | 2 +-
+>   drivers/scsi/ppa.c                        | 2 +-
+>   drivers/scsi/ps3rom.c                     | 2 +-
+>   drivers/scsi/qla1280.c                    | 2 +-
+>   drivers/scsi/qla2xxx/qla_mid.c            | 2 +-
+>   drivers/scsi/qla2xxx/qla_os.c             | 2 +-
+>   drivers/scsi/qlogicfas.c                  | 2 +-
+>   drivers/scsi/qlogicpti.c                  | 2 +-
+>   drivers/scsi/scsi_debug.c                 | 2 +-
+>   drivers/scsi/sgiwd93.c                    | 2 +-
+>   drivers/scsi/smartpqi/smartpqi_init.c     | 2 +-
+>   drivers/scsi/snic/snic_main.c             | 2 +-
+>   drivers/scsi/stex.c                       | 2 +-
+>   drivers/scsi/storvsc_drv.c                | 2 +-
+>   drivers/scsi/sun3_scsi.c                  | 2 +-
+>   drivers/scsi/sun3x_esp.c                  | 2 +-
+>   drivers/scsi/sun_esp.c                    | 2 +-
+>   drivers/scsi/sym53c8xx_2/sym_glue.c       | 2 +-
+>   drivers/scsi/virtio_scsi.c                | 2 +-
+>   drivers/scsi/vmw_pvscsi.c                 | 2 +-
+>   drivers/scsi/wd719x.c                     | 2 +-
+>   drivers/scsi/xen-scsifront.c              | 2 +-
+>   drivers/scsi/zorro_esp.c                  | 2 +-
+>   include/scsi/libfc.h                      | 2 +-
+>   include/scsi/scsi_host.h                  | 3 ++-
+>   97 files changed, 107 insertions(+), 103 deletions(-)
+> 
+Quite a lot of churn for such a (relatively) simple change.
 
-The function then unmaps the buffer with transport_kunmap_data_sg() before
-dereferencing iport_ptr in strcmp(), __core_scsi3_locate_pr_reg() and
-core_scsi3_alloc_registration(). When the parameter list spans more than
-one page (PARAMETER LIST LENGTH > 4096), transport_kmap_data_sg() uses
-vmap() and transport_kunmap_data_sg() does vunmap(), so the kernel virtual
-address backing iport_ptr is torn down and every subsequent dereference is
-a use-after-free read of the unmapped region.
+I think it might be better to introduce a new function
+(scsi_host_alloc_node() ?) with the additional parameter,
+and make scsi_host_alloc() a wrapper around that.
 
-Keep the parameter list mapped until iport_ptr is no longer needed: drop
-the early transport_kunmap_data_sg() and unmap once on the success path,
-right before returning. The error paths already unmap through the existing
-"if (buf) transport_kunmap_data_sg(cmd)" at the out: label, which now runs
-on every post-map error exit because buf is no longer cleared early. Only
-reads of the mapping happen while spinlocks are held; the map and unmap
-calls remain outside any lock. The sibling caller
-core_scsi3_decode_spec_i_port() already uses the buffer before unmapping it
-and is left unchanged.
+That will reduce the size of this patch immensely.
 
-Fixes: 4949314c7283 ("target: Allow control CDBs with data > 1 page")
-Cc: stable@vger.kernel.org
-Signed-off-by: Bryam Vargas <hexlabsecurity@proton.me>
----
-v3 (review of v2 by John Garry and James Bottomley):
-  - Drop the parser-ownership approach. Rather than copy the ISID into an
-    allocation that both callers must kfree() (v2), keep the PR-OUT
-    parameter list mapped across the iport_ptr dereferences and move the
-    single unmap to the success path. No allocation, no kfree, and
-    target_core_fabric_lib.c / core_scsi3_decode_spec_i_port() are
-    unchanged. This is the form John Garry asked for ("keep the mapping in
-    place for longer, until the out: label") and removes the multiple
-    kfree() paths v2 added.
-  - Re: holding the mapping while spinlocks are held (raised on v2): only
-    reads of the mapping occur under dev_reservation_lock; the kmap/kunmap
-    calls are all outside any lock, so there is no sleep-in-atomic concern.
+Cheers,
 
-v2: https://lore.kernel.org/linux-scsi/20260609005858.17504-1-hexlabsecurit=
-y@proton.me/
-v1: https://lore.kernel.org/linux-scsi/20260606015359.181724-1-hexlabsecuri=
-ty@proton.me/
-
-Class / impact: CWE-416 use-after-free (use-after-vunmap) in the LIO SCSI
-target, reachable by an authenticated iSCSI initiator that is a current
-Persistent Reservation registrant on the LUN. It sends PERSISTENT RESERVE
-OUT / REGISTER AND MOVE with an iSCSI (FORMAT CODE 01b) TransportID and a
-PARAMETER LIST LENGTH > 4096 so the parameter list spans >1 page and is
-mapped with vmap(). After transport_kunmap_data_sg() vunmap()s that region,
-the retained iport_ptr is dereferenced -> kernel read of an unmapped
-vmalloc address (oops / DoS). Primarily a remotely reachable authenticated
-denial of service. Present in all maintained trees since 4949314c7283
-(v3.3, 2012), which introduced the multi-page vmap() path. Verified at
-mainline v7.1-rc6 and stable v6.12.92.
-
-Reproducer (authenticated iSCSI initiator, current PR reservation holder):
-  1. PERSISTENT RESERVE OUT / REGISTER a key from the iSCSI nexus.
-  2. PERSISTENT RESERVE OUT / REGISTER AND MOVE, FORMAT CODE 01b TransportI=
-D
-     (IQN + ",i,0x" + 12-char ISID), RELATIVE TARGET PORT IDENTIFIER of an
-     existing target port, with PARAMETER LIST LENGTH =3D 8192 (two pages -=
->
-     vmap()/vunmap()), the inner ADDITIONAL LENGTH set so tid_len + 24 =3D=
-=3D
-     data_length, the remainder zero padding.
-
-A/B verification (CONFIG_KASAN_VMALLOC=3Dy, kasan.fault=3Dreport, x86-64,
-6.12.90; same kernel for every arm; 64-bit and 32-bit initiator):
-  - Without this patch (8192-byte, two-page request):
-      BUG: KASAN: vmalloc-out-of-bounds in strcmp+0xa7/0xb0
-        strcmp
-        core_scsi3_emulate_pro_register_and_move [target_core]
-        ? remove_vm_area
-        target_scsi3_emulate_pr_out [target_core]
-        __target_execute_cmd / iscsit_execute_cmd / iscsi_target_rx_thread
-      followed by "unable to handle page fault" (PTE 0); the command never
-      completes (the iSCSI rx kthread dies).
-  - Control (128-byte, single-page request): no report (kunmap is a no-op
-    on 64-bit !HIGHMEM, no vunmap).
-  - With this patch (same 8192-byte request, 64-bit and 32-bit initiator):
-    no report, the command completes.
-
- drivers/target/target_core_pr.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_p=
-r.c
-index 11790f2c5d80..7c5bb7d67947 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -3293,9 +3293,6 @@ core_scsi3_emulate_pro_register_and_move(struct se_cm=
-d *cmd, u64 res_key,
- =09=09goto out;
- =09}
-=20
--=09transport_kunmap_data_sg(cmd);
--=09buf =3D NULL;
--
- =09pr_debug("SPC-3 PR [%s] Extracted initiator %s identifier: %s"
- =09=09" %s\n", dest_tf_ops->fabric_name, (iport_ptr !=3D NULL) ?
- =09=09"port" : "device", initiator_str, (iport_ptr !=3D NULL) ?
-@@ -3532,6 +3529,11 @@ core_scsi3_emulate_pro_register_and_move(struct se_c=
-md *cmd, u64 res_key,
- =09core_scsi3_update_and_write_aptpl(cmd->se_dev, aptpl);
-=20
- =09core_scsi3_put_pr_reg(dest_pr_reg);
-+=09/*
-+=09 * iport_ptr aliases the PR-OUT parameter list mapped above, so the
-+=09 * buffer is unmapped only here on success (and at out: on error).
-+=09 */
-+=09transport_kunmap_data_sg(cmd);
- =09return 0;
- out:
- =09if (buf)
---=20
-2.43.0
-
-
+Hannes
+-- 
+Dr. Hannes Reinecke                  Kernel Storage Architect
+hare@suse.com                               +49 911 74053 688
+SUSE Software Solutions GmbH, Frankenstr. 146, 90461 Nürnberg
+HRB 36809 (AG Nürnberg), GF: I. Totev, A. McDonald, W. Knoblich
