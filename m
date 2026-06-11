@@ -1,141 +1,99 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3E9A29D26E;
-	Wed, 10 Jun 2026 16:36:04 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 66F04279DAF;
+	Thu, 11 Jun 2026 05:31:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.25
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781109365; cv=none; b=tUslUKp1eqF9qdgLJnqFRIKAKyMTnjAM3yyPWX9eOwEAvBQrGi7AwwI1sa9V0JEWcdX3DvIX6fx9ibUuvOJgrUVcDAnTqg93LVDC0SQonKKzkK23fNZExqnmAx0j16XTIJ+JIVgqWlSjnrjsk6yFD42CwQY9sZlmxF7BIaKraCQ=
+	t=1781155872; cv=none; b=PUXPp7hSJ7/mrFEq4V5N/uJDc7PwK9scpkr3IpjuveHENV4TkKhHVKEfPFXVXRvyg94z03bYu9WGcwYmE3Ui9KYr7A+4YvtX7f+1dtE6UhxO3uXrmBwftBIFL3+Cy/AX8z7w4475/dbmb4D0FsS7BbIdN4ysBgbg/k6KgklhxXw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781109365; c=relaxed/simple;
-	bh=Ub3aJDzQfV3ndDy3RlbrtoMFR4cZS0ws3oiDXOTKo58=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=l1YSoOPv65VP/yjqZGuI7ndP5S6BuJ+kmbmiTbPS8kcT4BWIfU60ToER5wywp/7rNa8+N4uN15iLmvR5Yv8di4JEGiTAjOX6zRRZRlbJwA68KcNn6BhANePT25C2Phsn1ZzhA0MG+kVQJjheW93jEywWawbyBpiyL81W8u7leP8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=dYINVrSZ; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="dYINVrSZ"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E40111F00893;
-	Wed, 10 Jun 2026 16:36:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1781109364;
-	bh=nh8wY943fEj9O68DsnnpwY2/V+toQvePmwkX7p5hMSw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=dYINVrSZftHL1+14yqMRRxzqdHQ5Aru2hX4Xj5usxEkwHzPmZX+0xwOsW6Dztp5wP
-	 buvP2PuA+QV5xPj78OletWBvmwhb43jqvV5GFsrZnuZuAMghgSwQoh0S8sgN+S9BTm
-	 ixgW2hKOY1IFxC79EBrsQJFmBJhTgHzktayoDV1vYQ6PUatVZ8z/Tcr6XFUKU/a9/Z
-	 pheURjB4DZFygToELeoT3p6Kl+8pJ6zz/rbZLD4ZtWjHEo3RFM2sDUxPLErYC7D1UE
-	 E752J6xO3yZ8ppjwDDHNoD60M4V39r80G3RPynl7+S0nx3QFq8NW+mgS9cg+pAi3HA
-	 Rq8MlrT88sswQ==
-Date: Wed, 10 Jun 2026 10:35:59 -0600
-From: Keith Busch <kbusch@kernel.org>
-To: Sumit Saxena <sumit.saxena@broadcom.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	Jens Axboe <axboe@kernel.dk>,
-	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
-	linux-scsi@vger.kernel.org, linux-block@vger.kernel.org,
-	Adam Radford <aradford@gmail.com>,
-	Khalid Aziz <khalid@gonehiking.org>,
-	Adaptec OEM Raid Solutions <aacraid@microsemi.com>,
-	Matthew Wilcox <willy@infradead.org>,
-	Hannes Reinecke <hare@suse.com>,
-	"Juergen E . Fischer" <fischer@norbit.de>,
-	Russell King <linux@armlinux.org.uk>,
-	linux-arm-kernel@lists.infradead.org,
-	Finn Thain <fthain@linux-m68k.org>,
-	Michael Schmitz <schmitzmic@gmail.com>,
-	Anil Gurumurthy <anil.gurumurthy@qlogic.com>,
-	Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>,
-	Oliver Neukum <oliver@neukum.org>, Ali Akcaagac <aliakc@web.de>,
-	Jamie Lenehan <lenehan@twibble.org>,
-	Ram Vegesna <ram.vegesna@broadcom.com>,
+	s=arc-20240116; t=1781155872; c=relaxed/simple;
+	bh=IRM+dtaQotklCxJJoISuAXvpw9PcSf9XUvbWScma7Mk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lEqmYYTEtS9HmOcSqDF8k2BE7pkAvrgjXgMkr6CbaEBK7x5CLEzpdLuslwYyLYa9yXmpZZLDAGUgsE+JkrLO1Np1IcGIrhHpNGZdFGkiEcj7vjYLEBvllm4jy3SJ7xt+JUMgz8QLUpY2oxEbbECL7evyh5+UI3iKe6s1oqYK67s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.25
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from localhost.localdomain (unknown [117.182.75.76])
+	by APP-05 (Coremail) with SMTP id zQCowACnMwf_Rypq8qYNEw--.21366S2;
+	Thu, 11 Jun 2026 13:30:41 +0800 (CST)
+From: WenTao Liang <vulab@iscas.ac.cn>
+To: Ram Vegesna <ram.vegesna@broadcom.com>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: Vitaliy Shevtsov <v.shevtsov@mt-integration.ru>,
+	WenTao Liang <vulab@iscas.ac.cn>,
+	Daniel Wagner <dwagner@suse.de>,
+	Kees Cook <kees@kernel.org>,
+	James Smart <jsmart2021@gmail.com>,
+	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
-	Bradley Grove <linuxdrivers@attotech.com>,
-	Satish Kharat <satishkh@cisco.com>,
-	Sesidhar Baddela <sebaddel@cisco.com>,
-	Karan Tilak Kumar <kartilak@cisco.com>,
-	Yihang Li <liyihang9@h-partners.com>,
-	Don Brace <don.brace@microchip.com>, storagedev@microchip.com,
-	HighPoint Linux Team <linux@highpoint-tech.com>,
-	Tyrel Datwyler <tyreld@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, Brian King <brking@us.ibm.com>,
-	Lee Duncan <lduncan@suse.com>, Chris Leech <cleech@redhat.com>,
-	Mike Christie <michael.christie@oracle.com>,
-	open-iscsi@googlegroups.com, Justin Tee <justin.tee@broadcom.com>,
-	Paul Ely <paul.ely@broadcom.com>,
-	Kashyap Desai <kashyap.desai@broadcom.com>,
-	Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
-	Chandrakanth Patil <chandrakanth.patil@broadcom.com>,
-	megaraidlinux.pdl@broadcom.com,
-	Sathya Prakash Veerichetty <sathya.prakash@broadcom.com>,
-	Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
-	mpi3mr-linuxdrv.pdl@broadcom.com,
-	Suganath Prabu Subramani <suganath-prabu.subramani@broadcom.com>,
-	Ranjan Kumar <ranjan.kumar@broadcom.com>,
-	MPT-FusionLinux.pdl@broadcom.com, Daniel Palmer <daniel@thingy.jp>,
-	GOTO Masanori <gotom@debian.or.jp>,
-	YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
-	Jack Wang <jinpu.wang@cloud.ionos.com>,
-	Geoff Levand <geoff@infradead.org>, Michael Reed <mdr@sgi.com>,
-	Nilesh Javali <njavali@marvell.com>,
-	GR-QLogic-Storage-Upstream@marvell.com,
-	Narsimhulu Musini <nmusini@cisco.com>,
-	"K . Y . Srinivasan" <kys@microsoft.com>,
-	Haiyang Zhang <haiyangz@microsoft.com>,
-	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
-	Long Li <longli@microsoft.com>, linux-hyperv@vger.kernel.org,
-	"Michael S . Tsirkin" <mst@redhat.com>,
-	Jason Wang <jasowang@redhat.com>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Stefan Hajnoczi <stefanha@redhat.com>,
-	Eugenio Perez <eperezma@redhat.com>, virtualization@lists.linux.dev,
-	Vishal Bhakta <vishal.bhakta@broadcom.com>,
-	bcm-kernel-feedback-list@broadcom.com,
-	Juergen Gross <jgross@suse.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-	xen-devel@lists.xenproject.org,
-	Bart Van Assche <bvanassche@acm.org>
-Subject: Re: [PATCH v3 3/4] block: drop shared-tag fairness throttling
-Message-ID: <aimSb9I0Vl-68hy9@kbusch-mbp>
-References: <20260609121806.2121755-1-sumit.saxena@broadcom.com>
- <20260609121806.2121755-4-sumit.saxena@broadcom.com>
- <aikAs4X-2NWTuwCc@infradead.org>
- <CAL2rwxr1uGshb1o=jvP2OnBffNz2cKXj8tHuAUCN5HFuy2vB_g@mail.gmail.com>
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH] scsi: elx: efct: fix refcount leak in efct_hw_io_abort()
+Date: Thu, 11 Jun 2026 13:30:37 +0800
+Message-ID: <20260611053037.63756-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAL2rwxr1uGshb1o=jvP2OnBffNz2cKXj8tHuAUCN5HFuy2vB_g@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:zQCowACnMwf_Rypq8qYNEw--.21366S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7ZF17ZrW3Xw45Zr1ftrWDurg_yoW8Wr45pa
+	n7u34DuryDXa1xKr48Cr4YyFy8Zws2qr98Gr1rW3y3u3yfJw1rta17Wasa9F1rA3WkKasI
+	gFsrGryIqF4DArJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9Y14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVWxJr
+	0_GcWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+	2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
+	Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x
+	0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2
+	zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF
+	4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWU
+	CwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCT
+	nIWIevJa73UjIFyTuYvjfUonmRUUUUU
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiCQ8PA2oqQiIRXgAAsl
 
-On Wed, Jun 10, 2026 at 09:16:11PM +0530, Sumit Saxena wrote:
-> The motivation for this change stems from performance issue we
-> encountered due to false sharing of the 'nr_active_requests_shared_tags'
-> counter
-> on certain CPU architectures. I initially submitted a patch to move that
-> counter to
-> its own cache line to avoid conflicts with 'nr_requests' and other hot
-> fields
-> (see:
-> https://patchwork.kernel.org/project/linux-scsi/patch/20260402074637.92417-3-sumit.saxena@broadcom.com/
-> ).
-> 
-> During the review, Bart shared his work, which eliminates the
-> counter entirely by removing the fairness throttling. My testing confirmed
-> that
-> this approach resolved the performance issues and improved IOPS.
-> This patch is part of a larger set, and I have reported the cumulative
-> performance
-> improvements in the cover letter.
+When efct_hw_reqtag_alloc() fails in efct_hw_io_abort(), the error
+path returns -ENOSPC without releasing the reference obtained via
+kref_get_unless_zero() earlier in the function. All other error
+paths correctly drop the reference. This causes a permanent
+reference leak on the io_to_abort object.
 
-So the problem is just the atomic operation accounting overhead? I
-previously thought the device just really needed to consume all the tags
-to hit performance.
+Additionally, the abort_in_progress flag is left set to true on
+this path, which means future abort attempts for the same I/O will
+immediately return -EINPROGRESS even though the abort was never
+submitted, effectively blocking recovery.
+
+Fix this by adding the missing kref_put() call and reset
+abort_in_progress to false, matching the cleanup done in the
+efct_hw_wq_write() failure path below.
+
+Cc: stable@vger.kernel.org
+Fixes: 63de51327a64 ("scsi: elx: efct: Hardware I/O and SGL initialization")
+Signed-off-by: WenTao Liang <vulab@iscas.ac.cn>
+---
+ drivers/scsi/elx/efct/efct_hw.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/scsi/elx/efct/efct_hw.c b/drivers/scsi/elx/efct/efct_hw.c
+index 1838032f6486..b79c6a7ea791 100644
+--- a/drivers/scsi/elx/efct/efct_hw.c
++++ b/drivers/scsi/elx/efct/efct_hw.c
+@@ -1997,6 +1997,8 @@ efct_hw_io_abort(struct efct_hw *hw, struct efct_hw_io *io_to_abort,
+ 	wqcb = efct_hw_reqtag_alloc(hw, efct_hw_wq_process_abort, io_to_abort);
+ 	if (!wqcb) {
+ 		efc_log_err(hw->os, "can't allocate request tag\n");
++		io_to_abort->abort_in_progress = false;
++		kref_put(&io_to_abort->ref, io_to_abort->release);
+ 		return -ENOSPC;
+ 	}
+ 
+-- 
+2.50.1 (Apple Git-155)
+
