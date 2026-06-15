@@ -1,369 +1,148 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-1.web.codeaurora.org [10.30.226.201])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A341356775;
-	Thu, 11 Jun 2026 18:42:26 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=10.30.226.201
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C09B73C4561
+	for <target-devel@vger.kernel.org>; Mon, 15 Jun 2026 09:35:28 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781203346; cv=none; b=JXWugm6m6gs5ciQyLfj2gPu75xgbpn3Xf9972NyDqjAc3+xpGguY6ENfz6+X7LmrHVThwEfb8CslyTAclM+2dBgUv6gcLHbx3n81IKfvYcagg7UlrBA0Q6X+VHIwFpBGOAYncc3tI0xyBg7l9RjcrUTJgvtc5VPstolP8uzj9Bk=
+	t=1781516130; cv=none; b=EXMbWNXhjtQFcnEE0EtlmJNDxKdK+LiipAnxICpupEx899wFBqXHm93C/Rq+W2elApuLoC9iFpnyQBwzKAymhYdgl+fI/JOnMP/DFO+YZUiMncb6wdUS8E+RTKiqoOqQ+fYwX5I5mQ4Gdq2JNy0nPVPP8F3c+CzHvaSpnw7iKuU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781203346; c=relaxed/simple;
-	bh=lxBBr1/vMErFMAMcr9BwqKhyWYHWkNIi/kDDbGuuUww=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=BhOIpLccyfxFwjnb9wzT6LzQJ+WVxmyaByb6NL/kyOyj0tLv3yK4bChtDbEWj6A4OzckYrHd2nDxPRFh1lvml0kzjjyOo8l2gCcvD6PpYek49yrf1lqlBaH/QwJnAuI0Lhqd0Myvu7QX7tEsXqJTtVte9vV5o6CzG2sIKQt76Vo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RmdUqlho; arc=none smtp.client-ip=10.30.226.201
+	s=arc-20240116; t=1781516130; c=relaxed/simple;
+	bh=TObyHCrog0J37zOBX+KTGoi74gpbHRQn8XN9jcDMGEc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QN6SWIatgo9oBe3AK2knnDbBwIZYpTgg/BE3h2wPct9Tit61KTJJlDS2ISq0MERY8rvApugoXV7pFuRSZ2FEtjZgH1sRRTf7J5ZcjO4bcy/FQA5AJeF/J1Ei/mKByA9iGSjobGnZeLgvYdGta1jaoVSg83eF7VTejLDECzfy2cM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=LjEH6Qhh; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=Pt1yfHlk; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=A0wm2e9c; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=VQtO9FdC; arc=none smtp.client-ip=195.135.223.130
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RmdUqlho"
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 60BA5C2BCB0;
-	Thu, 11 Jun 2026 18:42:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1781203346;
-	bh=lxBBr1/vMErFMAMcr9BwqKhyWYHWkNIi/kDDbGuuUww=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=RmdUqlhoffejnYQmnQCd0hovTYcdeSYN0h4SbGMcpNMe1IIy5ExdKlyijUddTqjy7
-	 gQNU2ozs0dmQcDfW7gD1tnC3DqXfS6sPaKL3fmA3PVR7bJHQM6Feid/V/mpb788msu
-	 fzrzqgAqr1mautgohc1e0ww88WoysulXkwZMx2CGLxwc8oPt2EMHJJUd94Ax2YZym3
-	 z6IPzh2ybogf716n1CzxNNBkRvpNxQsEcgJF82I6NTnLfzHCjDuxk9yI68WVwZym1Q
-	 d6aKVX5PAmXPwr8Q58xqcVDXFSXbF7FLN2J+qfEFg5brssrmj0Lov7WBPWu7q5hbHg
-	 ReJaLC82sATzg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 359E2CD98CC;
-	Thu, 11 Jun 2026 18:42:26 +0000 (UTC)
-From: Bryam Vargas via B4 Relay <devnull+hexlabsecurity.proton.me@kernel.org>
-Date: Thu, 11 Jun 2026 13:42:26 -0500
-Subject: [PATCH v6] scsi: target: bound PR-OUT TransportID parsing to the
- received buffer
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="LjEH6Qhh";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="Pt1yfHlk";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="A0wm2e9c";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="VQtO9FdC"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id C40D46AC95;
+	Mon, 15 Jun 2026 09:35:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1781516127; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=afhcBrMHwtuNpl6EOyz1Ve+TLR1X1Oc6pxCJDnx1z1w=;
+	b=LjEH6QhheCbXn2yYPxvbrQS4POOD1+xCC+LO3SkvS9XwqOGQegNJetZOCT4begs2XLaB9J
+	2h9aIEuCZvmyn/UuI2zWP4GX84GOGHRbAgh/rUEvfj0/D+nvYNAxwWZMIz8ctCyBduGet7
+	0S/z0OyZJNnyU/3lUIEQQnfWF0NGB/I=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1781516127;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=afhcBrMHwtuNpl6EOyz1Ve+TLR1X1Oc6pxCJDnx1z1w=;
+	b=Pt1yfHlktWylvTPkHQFn+SL7QASL8d9bAifpFbwv1SSVHNKU59GDIYbOX9vsWqe1JyoSyT
+	F65YD0EcejhkunAg==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=A0wm2e9c;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=VQtO9FdC
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1781516126; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=afhcBrMHwtuNpl6EOyz1Ve+TLR1X1Oc6pxCJDnx1z1w=;
+	b=A0wm2e9cm42qj6Nt6QFoHr1xCPbseD1yIj4YlRvk43PHySHrjrH5ewdfM1Olyx8hU8iSQ3
+	GRuql8ut/sAK6Zwm/zYmWkILVhPVh21xP/+WBQFnp6M/SXNt8/h4o/m8LRASOp8gjWX3DZ
+	YOWy+CzvrK4xB/kUSypZ0RXNMdThJLY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1781516126;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=afhcBrMHwtuNpl6EOyz1Ve+TLR1X1Oc6pxCJDnx1z1w=;
+	b=VQtO9FdC4JV39U9SaPNzDuOosxdZ2fjfbcabW45ia/MaienRPG4n1qi1Ubkn42EwpAr0Ne
+	0sFDJefdiMtxwlDg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id AB1E0779A7;
+	Mon, 15 Jun 2026 09:35:26 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id xk9TKF7HL2qVRgAAD6G6ig
+	(envelope-from <dwagner@suse.de>); Mon, 15 Jun 2026 09:35:26 +0000
+Date: Mon, 15 Jun 2026 11:35:25 +0200
+From: Daniel Wagner <dwagner@suse.de>
+To: WenTao Liang <vulab@iscas.ac.cn>
+Cc: Ram Vegesna <ram.vegesna@broadcom.com>, 
+	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, 
+	Vitaliy Shevtsov <v.shevtsov@mt-integration.ru>, Kees Cook <kees@kernel.org>, James Smart <jsmart2021@gmail.com>, 
+	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org
+Subject: Re: [PATCH] scsi: elx: efct: fix refcount leak in efct_hw_io_abort()
+Message-ID: <b601d4e2-8b10-417d-8d4d-1c09e556e94a@flourine.local>
+References: <20260611053037.63756-1-vulab@iscas.ac.cn>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260611-b4-disp-9f20739e-v6-1-f6630e2aae44@proton.me>
-X-B4-Tracking: v=1; b=H4sIAJEBK2oC/x3MMQqAMAxA0atIZgNtlEq9ijhommoWlRZEKN7d4
- viG/wtkSSoZxqZAkluznkeFaxvgfTk2QQ3VQIaccdbi2mPQfKGPZIbOC7Ijtp5XChyhZleSqM+
- /nOb3/QA2k3J7YgAAAA==
-To: James Bottomley <jejb@linux.ibm.com>, 
- Mike Christie <michael.christie@oracle.com>, 
- "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, 
- linux-kernel@vger.kernel.org, David Disseldorp <ddiss@suse.de>, 
- John Garry <john.g.garry@oracle.com>, 
- Maurizio Lombardi <mlombard@redhat.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1781203345; l=12609;
- i=hexlabsecurity@proton.me; s=proton; h=from:subject:message-id;
- bh=nsxrKCb3UtxX4JkOSI2wFRvBHFdqWp9SU0RZVzx58FM=;
- b=XWoWJP2W5Rix1tadiX4wORZcGp4i8hXdxbKopOJTjBXeu1Qrir9cK9vyqnqVrzEd3zL5qbo6V
- Ow5lA0TNECtBqTugaLLBYdisLFEl8UVOWOe7uz6KyJ9ogKtBgFsbDdd
-X-Developer-Key: i=hexlabsecurity@proton.me; a=ed25519;
- pk=dmppBMZNLLoPzxHi9l8tZDzEZUunPbgsYqIZYXeUrL0=
-X-Endpoint-Received: by B4 Relay for hexlabsecurity@proton.me/proton with
- auth_id=814
-X-Original-From: Bryam Vargas <hexlabsecurity@proton.me>
-Reply-To: hexlabsecurity@proton.me
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260611053037.63756-1-vulab@iscas.ac.cn>
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: C40D46AC95
+X-Spam-Flag: NO
+X-Spam-Score: -4.51
+X-Spam-Level: 
+X-Spamd-Result: default: False [-4.51 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RCPT_COUNT_SEVEN(0.00)[11];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[broadcom.com,hansenpartnership.com,oracle.com,mt-integration.ru,kernel.org,gmail.com,vger.kernel.org];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,iscas.ac.cn:email,suse.de:email,suse.de:dkim,flourine.local:mid];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 
-From: Bryam Vargas <hexlabsecurity@proton.me>
+On Thu, Jun 11, 2026 at 01:30:37PM +0800, WenTao Liang wrote:
+> When efct_hw_reqtag_alloc() fails in efct_hw_io_abort(), the error
+> path returns -ENOSPC without releasing the reference obtained via
+> kref_get_unless_zero() earlier in the function. All other error
+> paths correctly drop the reference. This causes a permanent
+> reference leak on the io_to_abort object.
+> 
+> Additionally, the abort_in_progress flag is left set to true on
+> this path, which means future abort attempts for the same I/O will
+> immediately return -EINPROGRESS even though the abort was never
+> submitted, effectively blocking recovery.
+> 
+> Fix this by adding the missing kref_put() call and reset
+> abort_in_progress to false, matching the cleanup done in the
+> efct_hw_wq_write() failure path below.
+> 
+> Cc: stable@vger.kernel.org
+> Fixes: 63de51327a64 ("scsi: elx: efct: Hardware I/O and SGL initialization")
+> Signed-off-by: WenTao Liang <vulab@iscas.ac.cn>
 
-core_scsi3_decode_spec_i_port() and core_scsi3_emulate_register_and_move()
-hand the raw PERSISTENT RESERVE OUT parameter buffer to
-target_parse_pr_out_transport_id() without telling it how many bytes are
-valid.  For an iSCSI TransportID (FORMAT CODE 01b),
-iscsi_parse_pr_out_transport_id() locates the ",i,0x" ISID separator with
-an unbounded strstr() (and on the error path prints the name with a
-further unbounded "%s").  An initiator can submit a TransportID whose
-iSCSI name contains neither a ",i,0x" substring nor a NUL terminator,
-filling the parameter list to its end, so the scan runs off the end of the
-buffer.
+Looks good to me.
 
-When the parameter list spans more than one page the buffer is a
-multi-page vmap (transport_kmap_data_sg()), so the over-read walks into
-the trailing vmalloc guard page and oopses (KASAN: vmalloc-out-of-bounds
-in strstr).  It is reachable by any fabric that delivers a PR OUT to a
-device exported through an iSCSI TPG, including a guest via vhost-scsi.
-
-Pass the number of received bytes down to the parser and validate the
-iSCSI TransportID's own self-described length (ADDITIONAL LENGTH + 4)
-once, up front: reject it if it is below the spc4r17 minimum or larger
-than the received buffer, then bound the separator search, the ISID walk
-and the name copy by that length.  This is the length check the callers
-already perform after the parse (core_scsi3_decode_spec_i_port() compares
-tid_len against tpdl, core_scsi3_emulate_register_and_move() validates it
-against data_length), moved ahead of the scan.  Also drop the unbounded
-"%s" of the unterminated name.
-
-Add per-format explicit name-length checks before copying into i_str,
-rather than silently truncating with min_t: for FORMAT CODE 00b reject
-if the descriptor body (tid_len - 4 bytes) cannot fit in
-i_str[TRANSPORT_IQN_LEN]; for FORMAT CODE 01b reject if the name portion
-(from &buf[4] up to the separator) cannot fit.  Both checks make the
-bounds intent explicit at each format branch.
-
-While here, also reject a FORMAT CODE 01b TransportID whose ",i,0x"
-separator sits at the very end of the descriptor: that leaves an empty
-ISID and points the returned port nexus pointer at buf + tid_len, one past
-the descriptor, which the registration code (__core_scsi3_locate_pr_reg(),
-__core_scsi3_alloc_registration()) then dereferences as the ISID string --
-the same over-read of the parameter buffer for a malformed descriptor.
-
-Fixes: c66ac9db8d4a ("[SCSI] target: Add LIO target core v4.0.0-rc6")
-Cc: stable@vger.kernel.org
-Signed-off-by: Bryam Vargas <hexlabsecurity@proton.me>
-Reviewed-by: John Garry <john.g.garry@oracle.com>
-Reviewed-by: David Disseldorp <ddiss@suse.de>
----
-This fix was developed and reviewed under embargo on security@kernel.org
-with the SCSI target maintainers and reviewers (John Garry, David
-Disseldorp); the 7-day embargo has elapsed, so it is reposted here on the
-public lists for pickup.  No functional change since that review -- the
-Reviewed-by tags are carried in the patch.
-
-Impact / reproducer (CONFIG_KASAN_VMALLOC, A/B-proven):
-
-A PERSISTENT RESERVE OUT with SPEC_I_PT=1 and a multi-page (>= 2 page)
-parameter list carrying a single FORMAT CODE 01b iSCSI TransportID whose
-iSCSI name is all 'A's -- no ",i,0x" substring and no NUL terminator --
-makes the unbounded strstr() walk off the multi-page vmap into the
-trailing vmalloc guard page:
-
-  BUG: KASAN: vmalloc-out-of-bounds in strstr
-   target_parse_pr_out_transport_id [target_core_mod]
-   core_scsi3_decode_spec_i_port [target_core_mod]
-   core_scsi3_emulate_pro_register [target_core_mod]
-   target_scsi3_emulate_pr_out [target_core_mod]
-   __target_execute_cmd [target_core_mod]
-   iscsit_get_rx_pdu [iscsi_target_mod]
-
-It is reachable by any fabric that delivers a PR OUT to a device exported
-through an iSCSI TPG (iSCSI native, tcm_loop, and guest->host via
-vhost-scsi were all reproduced).  With the patch the same input is
-rejected cleanly (CHECK CONDITION, INVALID FIELD IN PARAMETER LIST) and a
-well-formed TransportID still parses; no KASAN on any arm.
-
-Changelog:
-
-v6: first public posting (v1..v5 were embargoed on security@kernel.org);
-    dropped the redundant Reported-by (it equalled the Signed-off-by);
-    collected Reviewed-by from John Garry and David Disseldorp; reflowed
-    one log message onto a single line to clear a checkpatch warning.  No
-    functional change.
-v5: cite spc4r17 7.5.4.6; move the FORMAT CODE 01b name-length check to the
-    separator so a legal 212..223-byte name is no longer rejected.
-v4: split the shared min_t() name copy into explicit per-format
-    name-length rejects (00b on tid_len - 4, 01b on the name portion).
-v3: keep the name copy bounded by TRANSPORT_IQN_LEN (not an up-front
-    tid_len cap, which would reject legal long iSCSI names); reject an
-    empty ISID (",i,0x" ending the descriptor).
-v2: validate the self-described TransportID length up front and bound the
-    separator search, the ISID walk and the name copy by it; drop the
-    unbounded "%s" print of the unterminated name.
----
- drivers/target/target_core_fabric_lib.c | 89 +++++++++++++++++++++++++--------
- drivers/target/target_core_internal.h   |  3 +-
- drivers/target/target_core_pr.c         |  4 +-
- 3 files changed, 73 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/target/target_core_fabric_lib.c b/drivers/target/target_core_fabric_lib.c
-index 87c5d26a5089..2853b95b2c59 100644
---- a/drivers/target/target_core_fabric_lib.c
-+++ b/drivers/target/target_core_fabric_lib.c
-@@ -290,13 +290,24 @@ static void sbp_parse_pr_out_transport_id(char *buf, char *i_str)
- static bool iscsi_parse_pr_out_transport_id(
- 	struct se_portal_group *se_tpg,
- 	char *buf,
-+	u32 buf_len,
- 	u32 *out_tid_len,
- 	char **port_nexus_ptr,
- 	char *i_str)
- {
- 	char *p;
-+	u32 tid_len;
- 	int i;
--	u8 format_code = (buf[0] & 0xc0);
-+	u8 format_code;
-+
-+	/*
-+	 * The 4-byte iSCSI TransportID header (FORMAT CODE + 2-byte ADDITIONAL
-+	 * LENGTH) must be present before any of it can be parsed.
-+	 */
-+	if (buf_len < 4)
-+		return false;
-+
-+	format_code = buf[0] & 0xc0;
- 	/*
- 	 * Check for FORMAT CODE 00b or 01b from spc4r17, section 7.5.4.6:
- 	 *
-@@ -316,15 +327,17 @@ static bool iscsi_parse_pr_out_transport_id(
- 		return false;
- 	}
- 	/*
--	 * If the caller wants the TransportID Length, we set that value for the
--	 * entire iSCSI Tarnsport ID now.
-+	 * Reconstruct the self-described TransportID length from the ADDITIONAL
-+	 * LENGTH field plus the 4-byte header.  Reject it if it is below the
-+	 * spc4r17 section 7.5.4.6 minimum (ADDITIONAL LENGTH shall be at least
-+	 * 20) or if it runs past the bytes actually received, so that every
-+	 * access below stays inside the TransportID.
- 	 */
--	if (out_tid_len) {
--		/* The shift works thanks to integer promotion rules */
--		*out_tid_len = get_unaligned_be16(&buf[2]);
--		/* Add four bytes for iSCSI Transport ID header */
--		*out_tid_len += 4;
--	}
-+	tid_len = get_unaligned_be16(&buf[2]) + 4;
-+	if (tid_len < 24 || tid_len > buf_len)
-+		return false;
-+	if (out_tid_len)
-+		*out_tid_len = tid_len;
- 
- 	/*
- 	 * Check for ',i,0x' separator between iSCSI Name and iSCSI Initiator
-@@ -332,16 +345,32 @@ static bool iscsi_parse_pr_out_transport_id(
- 	 * format.
- 	 */
- 	if (format_code == 0x40) {
--		p = strstr(&buf[4], ",i,0x");
-+		p = strnstr(&buf[4], ",i,0x", tid_len - 4);
- 		if (!p) {
--			pr_err("Unable to locate \",i,0x\" separator"
--				" for Initiator port identifier: %s\n",
--				&buf[4]);
-+			pr_err("Unable to locate \",i,0x\" separator in iSCSI TransportID\n");
-+			return false;
-+		}
-+		/*
-+		 * The iSCSI name runs from &buf[4] up to the separator; reject it
-+		 * if it cannot fit in i_str[TRANSPORT_IQN_LEN].
-+		 */
-+		if (p - &buf[4] >= TRANSPORT_IQN_LEN) {
-+			pr_err("iSCSI Initiator port name too long in TransportID\n");
- 			return false;
- 		}
- 		*p = '\0'; /* Terminate iSCSI Name */
- 		p += 5; /* Skip over ",i,0x" separator */
- 
-+		/*
-+		 * The ISID must follow the separator.  A ",i,0x" sitting at the
-+		 * very end of the TransportID leaves no ISID and would point the
-+		 * port nexus at buf + tid_len, i.e. past the descriptor, which
-+		 * the registration code then reads as the ISID string.
-+		 */
-+		if (p >= buf + tid_len) {
-+			pr_err("Missing ISID in iSCSI Initiator port TransportID\n");
-+			return false;
-+		}
- 		*port_nexus_ptr = p;
- 		/*
- 		 * Go ahead and do the lower case conversion of the received
-@@ -349,7 +378,7 @@ static bool iscsi_parse_pr_out_transport_id(
- 		 * for comparison against the running iSCSI session's ISID from
- 		 * iscsi_target.c:lio_sess_get_initiator_sid()
- 		 */
--		for (i = 0; i < 12; i++) {
-+		for (i = 0; i < 12 && p < buf + tid_len; i++) {
- 			/*
- 			 * The first ISCSI INITIATOR SESSION ID field byte
- 			 * containing an ASCII null character terminates the
-@@ -367,10 +396,22 @@ static bool iscsi_parse_pr_out_transport_id(
- 			*p = tolower(*p);
- 			p++;
- 		}
--	} else
-+		strscpy(i_str, &buf[4], TRANSPORT_IQN_LEN);
-+	} else {
- 		*port_nexus_ptr = NULL;
--
--	strscpy(i_str, &buf[4], TRANSPORT_IQN_LEN);
-+		/*
-+		 * FORMAT CODE 00b: the name occupies buf[4..tid_len-1].  The
-+		 * declared length tid_len - 4 must fit in i_str[TRANSPORT_IQN_LEN].
-+		 * (For 01b the same tid_len bound would be over-restrictive: the
-+		 * descriptor also carries the separator and ISID, so a legal
-+		 * <=223-byte name gives tid_len up to 244.)
-+		 */
-+		if (tid_len - 4 >= TRANSPORT_IQN_LEN) {
-+			pr_err("iSCSI Initiator port name too long in TransportID\n");
-+			return false;
-+		}
-+		strscpy(i_str, &buf[4], tid_len - 4);
-+	}
- 	return true;
- }
- 
-@@ -420,8 +461,16 @@ int target_get_pr_transport_id(struct se_node_acl *nacl,
- }
- 
- bool target_parse_pr_out_transport_id(struct se_portal_group *tpg,
--		char *buf, u32 *out_tid_len, char **port_nexus_ptr, char *i_str)
-+		char *buf, u32 buf_len, u32 *out_tid_len,
-+		char **port_nexus_ptr, char *i_str)
- {
-+	/*
-+	 * The fixed-length SAS/SRP/FCP/SBP TransportIDs are 24 bytes; the iSCSI
-+	 * format is variable and bounds itself against buf_len below.
-+	 */
-+	if (tpg->proto_id != SCSI_PROTOCOL_ISCSI && buf_len < 24)
-+		return false;
-+
- 	switch (tpg->proto_id) {
- 	case SCSI_PROTOCOL_SAS:
- 		/*
-@@ -440,8 +489,8 @@ bool target_parse_pr_out_transport_id(struct se_portal_group *tpg,
- 		sbp_parse_pr_out_transport_id(buf, i_str);
- 		break;
- 	case SCSI_PROTOCOL_ISCSI:
--		return iscsi_parse_pr_out_transport_id(tpg, buf, out_tid_len,
--					port_nexus_ptr, i_str);
-+		return iscsi_parse_pr_out_transport_id(tpg, buf, buf_len,
-+					out_tid_len, port_nexus_ptr, i_str);
- 	default:
- 		pr_err("Unknown proto_id: 0x%02x\n", tpg->proto_id);
- 		return false;
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index 763e6d26e187..f0886ea29034 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -104,7 +104,8 @@ int	target_get_pr_transport_id(struct se_node_acl *nacl,
- 		struct t10_pr_registration *pr_reg, int *format_code,
- 		unsigned char *buf);
- bool target_parse_pr_out_transport_id(struct se_portal_group *tpg,
--		char *buf, u32 *out_tid_len, char **port_nexus_ptr, char *i_str);
-+		char *buf, u32 buf_len, u32 *out_tid_len,
-+		char **port_nexus_ptr, char *i_str);
- 
- /* target_core_hba.c */
- struct se_hba *core_alloc_hba(const char *, u32, u32);
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 11790f2c5d80..0b19997c2edd 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -1573,7 +1573,7 @@ core_scsi3_decode_spec_i_port(
- 
- 			iport_ptr = NULL;
- 			tid_found = target_parse_pr_out_transport_id(tmp_tpg,
--					ptr, &tid_len, &iport_ptr, i_str);
-+					ptr, tpdl, &tid_len, &iport_ptr, i_str);
- 			if (!tid_found)
- 				continue;
- 			/*
-@@ -3285,7 +3285,7 @@ core_scsi3_emulate_pro_register_and_move(struct se_cmd *cmd, u64 res_key,
- 		goto out;
- 	}
- 	tid_found = target_parse_pr_out_transport_id(dest_se_tpg,
--			&buf[24], &tmp_tid_len, &iport_ptr, initiator_str);
-+			&buf[24], tid_len, &tmp_tid_len, &iport_ptr, initiator_str);
- 	if (!tid_found) {
- 		pr_err("SPC-3 PR REGISTER_AND_MOVE: Unable to locate"
- 			" initiator_str from Transport ID\n");
-
----
-base-commit: 8e65320d91cdc3b241d4b94855c88459b91abf66
-change-id: 20260611-b4-disp-9f20739e-c62c19cb2dcf
-
-Best regards,
--- 
-Bryam Vargas <hexlabsecurity@proton.me>
-
-
+Reviewed-by: Daniel Wagner <dwagner@suse.de>
