@@ -1,113 +1,240 @@
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B6AA3BFE44;
-	Tue, 16 Jun 2026 02:26:18 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 4DD9E349B0D;
+	Fri, 19 Jun 2026 19:32:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1781576780; cv=none; b=E/cRvKEP0djl37bQEdWrl9FyWULFz/TYujocByTk23+eJ7ZO1YWggASQ0GRJczyyuQi8LLPQVzqRssEZAHSIF5Z0++iqCrsgtu8FM4mC7nKGs1Z15aUaj6g+Y3AoM2ouBgI8xLRHaDzvRawsCA22ozAu3hq9vzeBYrz9XIa1Ob8=
+	t=1781897557; cv=none; b=L640veypqBp/N1f2M7vWjMlU4mqMW0PYffvpNBBxhNYB9Qcz58XkstFWRs9csS5+vfNqmNrOk8cE2VOoCbZDOSqq5HAJcQHaNcI6a5SaegAx02wnACsG7eJq6vyd416qOriJPhFRqy65qNpE4Fh9jyCeCGCF/EhdfLCVUvJOBzY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1781576780; c=relaxed/simple;
-	bh=EPQDYqAi+QMRuyyuNXTiKynL5b2hEqzrhRkRhjqjzF0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=MAHChB1LA3tCJz53fp2FD+j5vhYwY89CXNtE73sI7paFV7AdZBQkOLXW+/vBMBYpSToPn3cC17i24sVOH6PZx3QdwR9HJRrkE2mvPwji+PO+UjMjmxEtzRaSL31mYupiypHS/Dvlv6LTqd1okoZgRwf8JHWMvqDJTQwE8QD1AF4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=Ze8Mo7zD; arc=none smtp.client-ip=205.220.177.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	s=arc-20240116; t=1781897557; c=relaxed/simple;
+	bh=gHc8zi5miNpM28ukI1VhOAt03eXkjT0Uh8qx72KdouQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=i2HHIcoqXGTzR4nef8D7PBzVyVkaf6mmMgvzi9XZaZ8sk0/FTD1WeGO6+ythhKRsgkfg/vxGXN6S0abES9xIgvMJGsqTy9gHSF0euqZ4C4hcogytSnHMSuYHaS9x7tSzeY4sgP/ThafCI+ZLbdYdhWLcqEsceKqT2EzqLJVSQxs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=axv1ytRK; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="Ze8Mo7zD"
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 65FKiaAu1304546;
-	Tue, 16 Jun 2026 02:26:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=ncL/8xhn/8YQRJcXFueLCD7uPN2/36VUocLuBsvGSgg=; b=
-	Ze8Mo7zDTDXDI2GnVTEbHj+kyu0Z1XIuYw62EwMfdrwoNyR+Lhrb6JkcH8/FhY2p
-	StpGwCFbmXJ8NjI+IGIHwFXYqtjX+eiTbqdr0u2LU32yZ/8denmP3F3A+gvjyOjI
-	ArnKsMrqMLLgmoogZlkALSszw4E12eUalXQgieGofW2i84JGMj3kD3txnMXt49zK
-	NC/UgvGPupakZ87HecAY5FrUkEu91FbWeHViAP8RMmNCCFELGYhYxHSDRMNLAiuf
-	anfpGo/g4qcO/Y+ObVx/JPkY7PVJw2Eq6DcSaiiCxHdvVr4tNZ2e4LSZYyKpSpeI
-	5KhsVHd/L5FuT4q6UUubsg==
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4es1hxkjsu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 16 Jun 2026 02:26:16 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 65G2NZbY016491;
-	Tue, 16 Jun 2026 02:26:16 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4erwnpnykr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 16 Jun 2026 02:26:16 +0000 (GMT)
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 65G2QE2F023822;
-	Tue, 16 Jun 2026 02:26:15 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 4erwnpnyjt-3;
-	Tue, 16 Jun 2026 02:26:15 +0000 (GMT)
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        Mike Christie <michael.christie@oracle.com>
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>, josef@toxicpanda.com
-Subject: Re: [PATCH] scsi: target: Remove tcm_loop target reset handling
-Date: Mon, 15 Jun 2026 22:26:07 -0400
-Message-ID: <178157184626.1899010.6380556511974602739.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260530052349.5134-1-michael.christie@oracle.com>
-References: <20260530052349.5134-1-michael.christie@oracle.com>
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="axv1ytRK"
+Received: by linux.microsoft.com (Postfix, from userid 1173)
+	id 3C65C20B7168; Fri, 19 Jun 2026 12:32:34 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 3C65C20B7168
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1781897554;
+	bh=m2uMxxexDXuJiyEDGdvQW8jMxy4JG/jFpxhsKw2zxso=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=axv1ytRKW9J9dLaykB85E5RKw778VJTsAnGBgDm54K5ccP6TuM1idVXo84/+eHuA0
+	 rEC8iInJgqFqMKMf6s7++kxm8T936/8OoShGjH6mw/Xl4Bb8B3sMcaXsLnzJw+eHpX
+	 ZxXYnk/scEgxxjar87N3D8G9YDGhrBnCnlT+j+lw=
+Date: Fri, 19 Jun 2026 12:32:34 -0700
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: mkalderon@marvell.com, Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>, zyjzyj2000@gmail.com,
+	sagi@grimberg.me, mgurtovoy@nvidia.com, haris.iqbal@ionos.com,
+	jinpu.wang@ionos.com, bvanassche@acm.org, kbusch@kernel.org,
+	Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>,
+	kch@nvidia.com, smfrench@gmail.com, linkinjeon@kernel.org,
+	metze@samba.org, tom@talpey.com, trondmy@kernel.org,
+	anna@kernel.org, chuck.lever@oracle.com, jlayton@kernel.org,
+	neil@brown.name, okorniev@redhat.com, Dai.Ngo@oracle.com,
+	achender@kernel.org, davem@davemloft.net, edumazet@google.com,
+	kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
+	kees@kernel.org, ebadger@purestorage.com,
+	linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
+	target-devel@vger.kernel.org, linux-nvme@lists.infradead.org,
+	linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
+	linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
+	rds-devel@oss.oracle.com, Jason Gunthorpe <jgg@nvidia.com>
+Subject: Re: [PATCH rdma-next v7] RDMA: Change capability fields in
+ ib_device_attr from int to u32
+Message-ID: <ajWZUjSoUCTe0Pb7@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
+References: <20260606070735.2163063-1-ernis@linux.microsoft.com>
+ <aigwONAwxQx6rLef@ashevche-desk.local>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-06-16_01,2026-06-15_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0
- lowpriorityscore=0 phishscore=0 mlxscore=0 suspectscore=0 spamscore=0
- mlxlogscore=669 malwarescore=0 adultscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.19.0-2606040000 definitions=main-2606160021
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNjE2MDAyMSBTYWx0ZWRfXwktNIC9ceLCV
- RSyykyDF8tKX3mufCv9h233kQQ7XDRHbghcUtXcAXXwn8mVkddHM5tbmAmjm/puP40hUUpkTf1Y
- zCN28V/eRAoUP4AaXlmG8QB7CaejfGflXRawy6Pwuofw/e40bIK7
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNjE2MDAyMSBTYWx0ZWRfX6P2HQfiEqz74
- /IivoichyALk4tmsxWD58lYSMMo2rtp67TU0QbzWGdsj5BVQG10XmfL8XrKH0GtvnuLSo47xmzM
- AOMbmRuYWsWZ3YI+yDDKm0p620ZN/ta6JFp/dEgD8wjNtye2BgynGW0xGu4D0fZUM1XdkUD1JTD
- nHt71D6/lY6i45gqnMtKHw3nYZWeVgKMf6x8NMbpjndSqHlSWDanJzGMLkri5BSzAAKTPGIu3Zh
- eLEVlH6Xw0xhSS94Ocb80ncOYjxnSV0WVCMAAvt2txWofDXI5ekKrRLESz+zcST3VF2zdLOgMDc
- YG/Sl+I7yL1rXNibYYX4ngtjHQOTlzRMF6cf4y9gXaV4H8QplpWgLA5QaDn5QyHpdGHbD7ZoRwD
- dmbA2ZFuDwjOOXw6Zq0NZSstYE7YUisfmp6gqq+CuPyewyBV2pz8L3oTXTqw0iRegAkT1Uh0Dbt
- xnZycXWBpYTxa9hA4HeNCPj+UjMxo9HIJDgjNNfI=
-X-Authority-Analysis: v=2.4 cv=I6pVgtgg c=1 sm=1 tr=0 ts=6a30b448 b=1 cx=c_pps
- a=e1sVV491RgrpLwSTMOnk8w==:117 a=e1sVV491RgrpLwSTMOnk8w==:17
- a=IkcTkHD0fZMA:10 a=FelO9ux0wxsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=jiCTI4zE5U7BLdzWsZGv:22 a=x4eqshVgHu-cdnggieHk:22 a=VwQbUJbxAAAA:8
- a=xHR4Gg2pkDzugfHY-2IA:9 a=QEXdDO2ut3YA:10 a=5yU3S35YU4bGjq-dph-N:22
- a=Bho9c0fBagfJEIQBS7DQ:22 cc=ntf awl=host:13723
-X-Proofpoint-GUID: Z5qlQJ2Hw4S4tyKoJVXqYcQZ2JpokkVT
-X-Proofpoint-ORIG-GUID: Z5qlQJ2Hw4S4tyKoJVXqYcQZ2JpokkVT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aigwONAwxQx6rLef@ashevche-desk.local>
 
-On Sat, 30 May 2026 00:23:47 -0500, Mike Christie wrote:
+Hi Andy,
 
-> tcm_loop_target_reset is supposed to handle all the LUNs on a target
-> but it's only doing a TMR_LUN_RESET so only that one LUN is handled.
-> This will cause us to return early while IOs to other LUNs are still
-> hung in lower layers. This just removes the target reset handler for
-> the driver because LIO doesn't support target resets and for the
-> common case where this is run from the scsi-ml error hamdler we have
-> already tried an abort and lun reset so waiting again is most likely
-> useless.
+Sorry for delayed response.
+
+> >  	attr->max_qp_init_rd_atom =
+> >  	    1 << (fls(qattr->max_qp_req_rd_atomic_resc) - 1);
 > 
-> [...]
+> FWIW, this one and below looks like reinvention of rounddown_pow_of_two().
 
-Applied to 7.2/scsi-queue, thanks!
+Acked.
+> 
+> >  	attr->max_qp_rd_atom =
+> > -	    min(1 << (fls(qattr->max_qp_resp_rd_atomic_resc) - 1),
+> > +	    min(1U << (fls(qattr->max_qp_resp_rd_atomic_resc) - 1),
+> >  		attr->max_qp_init_rd_atom);
+> 
+> ...
+> 
+> >  int ipoib_cm_dev_init(struct net_device *dev)
+> >  {
+> >  	struct ipoib_dev_priv *priv = ipoib_priv(dev);
+> > -	int max_srq_sge, i;
+> > +	int i;
+> > +	u32 max_srq_sge;
+> >  	u8 addr;
+> 
+> It seems the order is reversed xmas tree, why not preserving it?
+> 
+Right. I'll fix it in the next version.
+> ...
+> 
+> > --- a/drivers/infiniband/ulp/rtrs/rtrs-clt.c
+> > +++ b/drivers/infiniband/ulp/rtrs/rtrs-clt.c
+> 
+> >  		max_send_wr =
+> > -			min_t(int, wr_limit, SERVICE_CON_QUEUE_DEPTH * 2 + 2);
+> > +			min(wr_limit, SERVICE_CON_QUEUE_DEPTH * 2 + 2);
+> 
+> Now perfectly a single line
+> 
+> 		max_send_wr = min(wr_limit, SERVICE_CON_QUEUE_DEPTH * 2 + 2);
+> 
+> >  		max_recv_wr = max_send_wr;
+> 
+> ...
+> 
+> > -		max_send_wr = min_t(int, wr_limit,
+> > -			      /* QD * (REQ + RSP + FR REGS or INVS) + drain */
+> > -			      clt_path->queue_depth * 4 + 1);
+> > -		max_recv_wr = min_t(int, wr_limit,
+> > -			      clt_path->queue_depth * 3 + 1);
+> > +		max_send_wr = min_t(u32, wr_limit,
+> > +				    /* QD * (REQ + RSP + FR REGS or INVS) + drain */
+> > +				    clt_path->queue_depth * 4 + 1);
+> > +		max_recv_wr = min_t(u32, wr_limit,
+> > +				    clt_path->queue_depth * 3 + 1);
+> 
+> Can we rather update the type of one of them and use min() instead?
+> 
+I'll remove all the min_t usages in the next version.
+> ...
+> 
+> > --- a/drivers/infiniband/ulp/rtrs/rtrs-srv.c
+> > +++ b/drivers/infiniband/ulp/rtrs/rtrs-srv.c
+> 
+> Ditto.
+> 
+> ...
+> 
+> > -static int srpt_srq_size = DEFAULT_SRPT_SRQ_SIZE;
+> > -module_param(srpt_srq_size, int, 0444);
+> > +static unsigned int srpt_srq_size = DEFAULT_SRPT_SRQ_SIZE;
+> > +module_param(srpt_srq_size, uint, 0444);
+> 
+> Theoretically this might break ABI (if somebody uses negative values for
+> anything. I don't think it's the case, but just be informed.
+> 
+Okay. Thankyou for the information. 
 
-[1/1] scsi: target: Remove tcm_loop target reset handling
-      https://git.kernel.org/mkp/scsi/c/7c08d430835a
+> >  MODULE_PARM_DESC(srpt_srq_size,
+> >  		 "Shared receive queue (SRQ) size.");
+> 
+> ...
+> 
+> > --- a/drivers/nvme/target/rdma.c
+> > +++ b/drivers/nvme/target/rdma.c
+> 
+> > -	ndev->srq_size = min(ndev->device->attrs.max_srq_wr,
+> > -			     nvmet_rdma_srq_size);
+> > -	ndev->srq_count = min(ndev->device->num_comp_vectors,
+> > -			      ndev->device->attrs.max_srq);
+> > +	ndev->srq_size = min_t(u32, ndev->device->attrs.max_srq_wr,
+> > +			       nvmet_rdma_srq_size);
+> > +	ndev->srq_count = min_t(u32, ndev->device->num_comp_vectors,
+> > +				ndev->device->attrs.max_srq);
+> 
+> Same question, can we change type type of variables instead?
+>
+Yes. I'll be doing it in the next version.
+ 
+> >  	mutex_lock(&device_list_mutex);
+> 
+> ...
+> 
+> >  	inline_page_count = num_pages(nport->inline_data_size);
+> >  	inline_sge_count = max(cm_id->device->attrs.max_sge_rd,
+> > -				cm_id->device->attrs.max_recv_sge) - 1;
+> > +				cm_id->device->attrs.max_recv_sge);
+> > +	inline_sge_count = inline_sge_count ? inline_sge_count - 1 : 0;
+> 
+> Simple conditional might be better
+> 
+> 	if (inline_sge_count)
+> 		inline_sge_count--;
+> 	OR
+> 		inline_sge_count -= 1;
+Okay. I'll update all such instances.
 
--- 
-Martin K. Petersen
+> 
+> ...
+> 
+> > +++ b/include/rdma/ib_verbs.h
+> 
+> > -	int			max_qp;
+> > -	int			max_qp_wr;
+> > +	u32			max_qp;
+> > +	u32			max_qp_wr;
+> 
+> Nice, but please check that none of these (and beyond) were not used in signed
+> multiplication or (which is more disasterous) division. Otherwise it might be
+> subtle issues that will be hard to debug.
+Yes I have checked that for all the variables I updated.
+
+> 
+> ...
+> 
+> >  	conn_param->responder_resources =
+> > -		min_t(u32, rds_ibdev->max_responder_resources, max_responder_resources);
+> > +		min3(rds_ibdev->max_responder_resources,
+> > +		     max_responder_resources, U8_MAX);
+> >  	conn_param->initiator_depth =
+> > -		min_t(u32, rds_ibdev->max_initiator_depth, max_initiator_depth);
+> > +		min3(rds_ibdev->max_initiator_depth,
+> > +		     max_initiator_depth, U8_MAX);
+> 
+> I believe we can go a few characters over and leave them to be single lines.
+> 
+Okay.
+
+> >  	conn_param->retry_count = min_t(unsigned int, rds_ib_retry_count, 7);
+> 
+> What about this one?
+Sorry. I missed this one, I'll update it.
+
+> 
+> >  	conn_param->rnr_retry_count = 7;
+> 
+> ...
+> 
+> >  int frwr_query_device(struct rpcrdma_ep *ep, const struct ib_device *device)
+> >  {
+> >  	const struct ib_device_attr *attrs = &device->attrs;
+> > -	int max_qp_wr, depth, delta;
+> > +	u32 max_qp_wr;
+> > +	int depth, delta;
+> >  	unsigned int max_sge;
+> 
+> Reversed xmas tree order.
+Okay
+
+Thankyou for all your suggestions.
+The next version will be incorporated with all these changes.
+
+- Vennela
+> 
+> -- 
+> With Best Regards,
+> Andy Shevchenko
+> 
