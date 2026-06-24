@@ -1,165 +1,116 @@
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from mail-m155101.qiye.163.com (mail-m155101.qiye.163.com [101.71.155.101])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82AA035E1A1
-	for <target-devel@vger.kernel.org>; Tue, 23 Jun 2026 18:14:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=170.10.133.124
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EBB03C13FE;
+	Wed, 24 Jun 2026 14:58:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=101.71.155.101
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782238488; cv=none; b=lpm5zDWJ4R1Qq1tCl+rsJ2oUEBg/t2Mq2pEgTuDY8TOBFWBDC8aFmTw++y/SqWtH0QHgBXUkxkv5Rb2hhQPbSJgdZRaMgja5P1AxI51lcfyZf5Q6GaeEtqqu8myDVtMnA0MmBylEAr96dCTA6ZiDL2evxjtXL696mBExSi/MSlM=
+	t=1782313130; cv=none; b=dHd8bJuJkugzz1liZnnUVxsbiWHyLU8ksTiLZCmvSxIeqMhOCA2lj91Lx9LHB2IxEmFlPDfsx5oF4z9NPY+gjNzQMg7CjqIsTVKa6hbhSsVSWipiLhRtvFHQBdoiK4Ld5E8XFJzOAe5DFVztyxS1sJajIEH2JBrIs/ExavyUzUo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782238488; c=relaxed/simple;
-	bh=2FJFv6ja9SLli1Ny3Bg+wtadHE94755G24WGdTn94Gs=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=gXMjcHVcicUZPm6X9b224PCl/CIRiIAkVbxXMVvRy3v5m/TDG37dsaPpBLypI/RRKq91+qrtK4h0o74+lYb5vhiSDytPaV3aqSX+MwsqB/pZb6IoMgVk2dL1iy3gEcvO1+bH7h7Fr0S1AASA7fQPr/F03nJpda0EQVoODa2xUSM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; spf=pass smtp.mailfrom=redhat.com; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b=hhkT2zo2; dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b=e3Fus4WI; arc=none smtp.client-ip=170.10.133.124
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=redhat.com
+	s=arc-20240116; t=1782313130; c=relaxed/simple;
+	bh=8Tc6huJUSCtySfVnNDBygzECJCIFnhSKm6Ch+74QnVQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=fJixxy+Cas4YrL7ROJQFi3sMzVmntFubh4zKzn20yPTmNxWJjLYyhW6EwIzxuvrJ42vk6dRAhdWbOSq5n3VlaowVfuzACJztppHyEEewQ2vReCNSLqBEHarfouchxMe6HhLjxZd0yWgKmSGL61AfOQbtMWGVGzqPHRkKN8tNTjo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=ZqS0GRUL; arc=none smtp.client-ip=101.71.155.101
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=seu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="hhkT2zo2";
-	dkim=pass (2048-bit key) header.d=redhat.com header.i=@redhat.com header.b="e3Fus4WI"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1782238486;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type;
-	bh=el3YlPAL8xW8IojOXrxLcxZDBt50oG+HTJTkVO4TVQI=;
-	b=hhkT2zo2uZnrb++i9C+6gEv9NqCmbTlmYkISWPyrC/OFHSV0M8VoYI9QTFTk3jDq4k9qPT
-	xamkaNs2oKH3/tNWaylndyvvLLnKXIwY6RV6VxVpEAUvZaUAywaHSnYGBSzxMZAXN5QSiA
-	WaalegD0AE2uSX+IQbze+G8MZA6cnas=
-Received: from mail-yw1-f197.google.com (mail-yw1-f197.google.com
- [209.85.128.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-634-MACsgS2COA-IVQoHlJNrKA-1; Tue, 23 Jun 2026 14:14:45 -0400
-X-MC-Unique: MACsgS2COA-IVQoHlJNrKA-1
-X-Mimecast-MFC-AGG-ID: MACsgS2COA-IVQoHlJNrKA_1782238484
-Received: by mail-yw1-f197.google.com with SMTP id 00721157ae682-7ff58c89959so7374407b3.0
-        for <target-devel@vger.kernel.org>; Tue, 23 Jun 2026 11:14:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=redhat.com; s=google; t=1782238484; x=1782843284; darn=vger.kernel.org;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=el3YlPAL8xW8IojOXrxLcxZDBt50oG+HTJTkVO4TVQI=;
-        b=e3Fus4WImZQuLdX6UzVQwp6V4Innn3WOxNBe4uLSCOkoG7xLD7vSQlO4fm4EIzGgdz
-         VDkMIBOUVxgcO/5Rm6P6oHby1OVZelIXl/8x7l35Yu8hWPpdKywYHre4ozwOXlQvqE4t
-         piD5NMEjtTwK2zsZvGIr4D/cmp1zYb5fKij+ApwhK04WTfvpdrlqhZmuoWrlUJThgezX
-         DBSsfjpoh2T7zwjOIm6ZY4GHuy1PasJSedzFB6Qjk+EffLNNO0USpfwYWHUp4krzk0nK
-         Rk2w+NvNh+qSlCM3pyqjclTbz44Kj9dp1Psw8nB8kfbfeC5Qu3s5uR7rYoBZk31h73u6
-         /5QA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782238484; x=1782843284;
-        h=content-disposition:mime-version:message-id:subject:to:from:date
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=el3YlPAL8xW8IojOXrxLcxZDBt50oG+HTJTkVO4TVQI=;
-        b=UGZvXhtPdnL4jJDZM2LUQvDD4eNR/AUnJjcsNJPCE2moKLmqxxQ2SLteSRTKTHN0EI
-         HiwzjvpWBGD/2e2bHXD/OvEwXbOWj4K7tnUjckfyA1MwHx0yD43bKSibtSublpFpmfsX
-         GQZggrIewnrHybmLAMhTOtfaH4vxaIE0NtJ/DCu7qUi1/3ibeyYzx6lemH53VnmOZcDG
-         jpzyqm94GQYdC/TY0hTvpIt3qY3nExCsWClj7GwG+jOelwOG8F6NXjTu7kZbi1Omw78y
-         bdiLgQsfQgtRU85sIvc0xCySl4ljgXjMQZC1V4QJFFgytSJ4obeaUio7kzJRIh65QL2R
-         cXzQ==
-X-Gm-Message-State: AOJu0YxCGY+bOOmb3MdIAXBQW2DzLYH/deZIEs62LYe3F+mfW1Jd1wmy
-	cZVwvpEF2UEFcdU/SocbyprVRRnyqA34/hGnD8vgL+XtwXdHnM1EaecCxgZ8lTaw0ebpmjIWyhM
-	hYcHuUG6m76ASAWoLBJCXTbNS2E95R4twnqqF0NGx47KVNreQqIzryh6+9MTrr1ZK1cIBH7bfnH
-	WY4SVIsTpFLS812OW7s0d192y1RRPFeaPkeG6vZgHy5BcMRdgzig==
-X-Gm-Gg: AfdE7cn5bQpQeNQRK6ycVZK56wNr5TkLcVnoXN9ERAE5HA/KWnmFaPOlReFuf3k1mpT
-	Zu6fbFyrB+TlOsVKSoMKvE3WMB7srQbHHnG3L1uKvgkmTr2mbWLiSEaQw5kpheEIbd3jC5T2jfQ
-	tFz311A4IVEnWMP6paVtz9jDEyxUBWG40ZLwTM24xJw2Fbalk9wDc//uqnqvmSY/FUzWVfBetri
-	aLR9pot/rICcu78hgNlDAJZ4KRmuaPy6ZbXvP1YgCMpD/W8dQPGE51KORa9xFDVkTsyp2S6asiQ
-	A1wtczK4rM3j/XxHHbE5YQGuEs6dS+zBTaEcNYDM9Z4S3lhMb6XSvUTpMVrNbjixMg==
-X-Received: by 2002:a05:690c:4d41:b0:7f5:b3bf:88e with SMTP id 00721157ae682-806be6eb1b7mr43320207b3.0.1782238484279;
-        Tue, 23 Jun 2026 11:14:44 -0700 (PDT)
-X-Received: by 2002:a05:690c:4d41:b0:7f5:b3bf:88e with SMTP id 00721157ae682-806be6eb1b7mr43319747b3.0.1782238483619;
-        Tue, 23 Jun 2026 11:14:43 -0700 (PDT)
-Received: from localhost ([2600:1701:430:16b0::47])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-80259d20d84sm48252077b3.0.2026.06.23.11.14.43
-        for <target-devel@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Jun 2026 11:14:43 -0700 (PDT)
-Date: Tue, 23 Jun 2026 13:14:42 -0500
-From: David Teigland <teigland@redhat.com>
-To: target-devel@vger.kernel.org
-Subject: [BUG] LIO iSCSI target deadlock on PR PREEMPT AND ABORT with
- concurrent I/O
-Message-ID: <ajrNEj-B63SDtZ9W@redhat.com>
+	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="ZqS0GRUL"
+Received: from PC-202605011814.localdomain (unknown [58.241.16.34])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 439d317cd;
+	Wed, 24 Jun 2026 22:53:33 +0800 (GMT+08:00)
+From: Runyu Xiao <runyu.xiao@seu.edu.cn>
+To: martin.petersen@oracle.com
+Cc: linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	runyu.xiao@seu.edu.cn,
+	jianhao.xu@seu.edu.cn
+Subject: [PATCH] scsi: target: tcm_fc: annotate session hash traversals
+Date: Wed, 24 Jun 2026 22:53:20 +0800
+Message-Id: <20260624145320.3429431-1-runyu.xiao@seu.edu.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0a9efa1f427a03a1kunmacfe67d13b40d
+X-HM-MType: 10
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCTR0YVklCHh8ZSkgaHU8dGVYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlOQ1VJT0pVSk1VSE9ZV1kWGg8SFR0UWUFZT0tIVUpLSEpPSE
+	xVSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=ZqS0GRULzPIjrlr9kSO7TLkUWNCxrAlOLawPs2c5x4CyGHSCXNysh0ygVOTzZU/qE/PFFvRQQ+XBC7dHtdbmQGj+BSM+OAH7A53bEtWlBoCX4EypP+GDnbbaXJtXsE4jKln2+oId1RyQPkArALqU7B/uJZiNFDyf8w7zpo5Fi6g=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
+	bh=462cfg789ed4htZjavkN1M7ugdYF5RDMVCcSrltJa1g=;
+	h=date:mime-version:subject:message-id:from;
 
-Hi, I've been hitting the deadlocked threads copied below while running
-some new lvm tests that are doing preempt-abort between VMs sharing an
-iscsi target exported by a third VM.  The problem occurs when sg_persist
-register triggers udev probing/reads, followed quickly by sg_persist
-preempt-abort (preempt without abort doesn't deadlock.)  The combination
-of probing reads, and preempt-abort often hits the deadlock.  (I'm leaving
-out the more extensive AI analysis and patch which I can't personally
-vouch for, but can provide if it's useful.)
+The TCM FC session hash is updated with RCU hlist primitives. Several
+writer-side helpers traverse the hash with hlist_for_each_entry_rcu()
+while the file-level comments state that the caller holds ft_lport_lock:
 
-An effective work-around for now is calling udevadm settle after register.
+ft_sess_create()
+ft_sess_delete()
+ft_sess_delete_all()
 
-Seen on Fedora kernel 6.19.10-300.fc44.x86_64 and a recent 7.1.0-rc.
+Other tcm_fc paths already use lockdep_is_held(&ft_lport_lock) when
+dereferencing RCU-protected local-port state. Pass the same lockdep
+condition to these session hash iterators so CONFIG_PROVE_RCU_LIST can
+distinguish the ft_lport_lock-protected writer paths from ordinary RCU
+readers.
 
-Thanks,
-Dave
+This was found by our static analysis tool and then manually reviewed
+against the current tree. In the reviewed CONFIG_PROVE_RCU_LIST triage
+runs, the session hash walkers produced the expected "RCU-list traversed
+in non-reader section!!" warning with stacks matching ft_sess_create()/
+ft_prli_locked(), ft_sess_delete()/ft_prlo(), and ft_sess_delete_all()/
+ft_lport_del(). The change is limited to documenting the existing
+protection contract.
 
+This is a lockdep annotation cleanup and does not change the session
+hash lifetime model.
 
-  task:iscsi_trx       state:D stack:0     pid:1899  tgid:1899  ppid:2      task_flags:0x208140 flags:0x00080006
-  Call Trace:
-   <TASK>
-   __schedule+0x2b2/0x5d0
-   schedule+0x27/0x80
-   schedule_timeout+0xdc/0x120
-   wait_for_completion+0x9e/0x170
-   target_put_cmd_and_wait+0x6e/0xc0 [target_core_mod]
-   core_tmr_drain_state_list+0x2eb/0x3f0 [target_core_mod]
-   core_tmr_lun_reset+0xa0/0x280 [target_core_mod]
-   core_scsi3_pro_preempt+0x7a8/0x8e0 [target_core_mod]
-   target_scsi3_emulate_pr_out+0x298/0x3c0 [target_core_mod]
-   __target_execute_cmd+0x36/0xd0 [target_core_mod]
-   iscsit_execute_cmd+0x279/0x2b0 [iscsi_target_mod]
-   iscsit_sequence_cmd+0xf3/0x170 [iscsi_target_mod]
-   iscsit_get_immediate_data+0x71/0x190 [iscsi_target_mod]
-   iscsit_get_rx_pdu+0xe1/0x300 [iscsi_target_mod]
-   iscsi_target_rx_thread+0x8e/0x120 [iscsi_target_mod]
-   kthread+0xfa/0x240
-   ret_from_fork+0x130/0x1a0
-   ret_from_fork_asm+0x1a/0x30
-   </TASK>
+Signed-off-by: Runyu Xiao <runyu.xiao@seu.edu.cn>
+---
+ drivers/target/tcm_fc/tfc_sess.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-  task:iscsi_ttx       state:D stack:0     pid:1898  tgid:1898  ppid:2      task_flags:0x208040 flags:0x00080002
-  Call Trace:
-   <TASK>
-   __schedule+0x2b2/0x5d0
-   schedule+0x27/0x80
-   schedule_timeout+0xdc/0x120
-   wait_for_completion+0x9e/0x170
-   kthread_stop+0x6e/0x190
-   iscsit_close_connection+0x49c/0x7a0 [iscsi_target_mod]
-   iscsit_take_action_for_connection_exit+0x80/0x140 [iscsi_target_mod]
-   iscsi_target_tx_thread+0x162/0x240 [iscsi_target_mod]
-   kthread+0xfa/0x240
-   ret_from_fork+0x130/0x1a0
-   ret_from_fork_asm+0x1a/0x30
-   </TASK>
-
-  task:iscsi_np        state:D stack:0     pid:1885  tgid:1885  ppid:2      task_flags:0x208040 flags:0x00080002
-  Call Trace:
-   <TASK>
-   __schedule+0x2b2/0x5d0
-   schedule+0x27/0x80
-   schedule_timeout+0xdc/0x120
-   wait_for_completion+0x9e/0x170
-   iscsi_check_for_session_reinstatement+0x1f5/0x2d0 [iscsi_target_mod]
-   iscsi_target_handle_csg_one+0x114/0x130 [iscsi_target_mod]
-   iscsi_target_do_login+0x2d/0xd0 [iscsi_target_mod]
-   iscsi_target_start_negotiation+0x67/0x170 [iscsi_target_mod]
-   __iscsi_target_login_thread+0x37f/0x7d0 [iscsi_target_mod]
-   iscsi_target_login_thread+0x24/0x60 [iscsi_target_mod]
-   kthread+0xfa/0x240
-   ret_from_fork+0x130/0x1a0
-   ret_from_fork_asm+0x1a/0x30
-   </TASK>
+diff --git a/drivers/target/tcm_fc/tfc_sess.c b/drivers/target/tcm_fc/tfc_sess.c
+index 797be06ab71b..84a6f29a1b5f 100644
+--- a/drivers/target/tcm_fc/tfc_sess.c
++++ b/drivers/target/tcm_fc/tfc_sess.c
+@@ -215,7 +215,8 @@ static struct ft_sess *ft_sess_create(struct ft_tport *tport, u32 port_id,
+ 	ft_format_wwn(&initiatorname[0], TRANSPORT_IQN_LEN, rdata->ids.port_name);
+ 
+ 	head = &tport->hash[ft_sess_hash(port_id)];
+-	hlist_for_each_entry_rcu(sess, head, hash)
++	hlist_for_each_entry_rcu(sess, head, hash,
++				 lockdep_is_held(&ft_lport_lock))
+ 		if (sess->port_id == port_id)
+ 			return sess;
+ 
+@@ -264,7 +265,8 @@ static struct ft_sess *ft_sess_delete(struct ft_tport *tport, u32 port_id)
+ 	struct ft_sess *sess;
+ 
+ 	head = &tport->hash[ft_sess_hash(port_id)];
+-	hlist_for_each_entry_rcu(sess, head, hash) {
++	hlist_for_each_entry_rcu(sess, head, hash,
++				 lockdep_is_held(&ft_lport_lock)) {
+ 		if (sess->port_id == port_id) {
+ 			ft_sess_unhash(sess);
+ 			return sess;
+@@ -291,7 +293,8 @@ static void ft_sess_delete_all(struct ft_tport *tport)
+ 
+ 	for (head = tport->hash;
+ 	     head < &tport->hash[FT_SESS_HASH_SIZE]; head++) {
+-		hlist_for_each_entry_rcu(sess, head, hash) {
++		hlist_for_each_entry_rcu(sess, head, hash,
++					 lockdep_is_held(&ft_lport_lock)) {
+ 			ft_sess_unhash(sess);
+ 			ft_close_sess(sess);	/* release from table */
+ 		}
+-- 
+2.34.1
 
