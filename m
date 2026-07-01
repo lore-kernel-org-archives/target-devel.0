@@ -1,97 +1,106 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44E0940801E;
-	Tue, 30 Jun 2026 10:54:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4988E2BE7B6
+	for <target-devel@vger.kernel.org>; Wed,  1 Jul 2026 06:23:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.177
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782816875; cv=none; b=jWv5ss777e6OwFI58tpvRbB3s0310+Qxvosw3b15LeDLWToW5Gz8S+jlq5kjguzc/Bx540KsKNrVLhdkTbd/yfVbkutR/K0VTilKNJN1N3U7qn/seoO/lH2O0TjyDP77tWyKzur81YW+LfamRhMFhUxShlhbi1D5y3nB8WzvFD0=
+	t=1782887005; cv=none; b=HdqqhkeUGUl3xXmCkN58EoJ0JUux2HgWlLsfn6DflZfO4MG1Qa4ux88Bt14z2TkSEXZKXXFshrFdG4JIDP0FOSUiqHyJ2xokPAIx8SMnUyniAoGysMQqXewLYYHR/jGlb7/T85me2gMCetTYizO1WdZpdQ09n/csaOvbxP2IHj4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782816875; c=relaxed/simple;
-	bh=RiadHkM/ciJz4LJtIKzl0wSOiOE8945XvTKOQOOKBS8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=DWmh/nDBw4jnNAiwakgDI5C7gy/AMUdm5W0UskYfRUHsiy40ed8sfUrx++r4e0qswn+EFqrjCB6CoLFt6nAixkeBccEtdHjEbcobkqAAMyP4boVmu6eJONltu/JzuMqbX6ngwJ8B24SRnJAggAX+yr4N+PIFxnFwmwM9d5ViFZM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=kIXozC/6; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1782887005; c=relaxed/simple;
+	bh=iDb19+v9W24MFwVBLKYMAccXrZLiNoIhHW9iZ7BQu8Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dS9ajIR8Ouhjdvjk+DDuTF6Ia1WGDyQJB2GZs/ziw70gwioq03fcjrr63fih04SUIx+zISwkyNGvcslTFHv7tI3j33vVEZRqW7H6ZJpXXEOCiOARl8DRvWItGtTo/pK40wSpuR2L1oJ/A/6XZ78/4bZPen5B4lq7LCJB9iGMK2E=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in; spf=pass smtp.mailfrom=cse.iitm.ac.in; dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b=VnAXweOo; arc=none smtp.client-ip=209.85.210.177
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cse.iitm.ac.in
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="kIXozC/6"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A02C11F000E9;
-	Tue, 30 Jun 2026 10:54:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782816873;
-	bh=o4zrAKFV36+my9sEQud+nD9Mpl7nfKTgVOKBUepgezI=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=kIXozC/6GRZNoThE7wVrh+Th54Zlbfibcc5IpHidsZAcdx7VFXo3pEpijZTNqJJL8
-	 HAhXH+MpFe2aWX2fs3Mge3pm2kiSI6dFCqrZoMw+XtUUfI37m1TXWiOEnt5IRtmY/A
-	 Bd/VEHNDnpWqP9c6Xv/NbkbxXROjlqdEY3kv402EamAMjLngoZkbypvmzYrid801B0
-	 EII5nPXACbGjLE5yEoQY9s8e5HVZNNUU94tEnD+M6yBoZ7qdf/nH5rMadn4DbQhCF4
-	 M63R5M04lGhRaCDs/mYyHSAmzzOOqyxif1n63zUmKYFZiXJ9/eQ5Xf+I7pmCLPw3jW
-	 quPIeT1kCcHTw==
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Tue, 30 Jun 2026 13:54:21 +0300
-Subject: [PATCH 4/4] scsi: sym53c8xx_2: replace __get_free_pages() with
- kmalloc()
+	dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b="VnAXweOo"
+Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-8479f1a86ecso169662b3a.1
+        for <target-devel@vger.kernel.org>; Tue, 30 Jun 2026 23:23:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=cse-iitm-ac-in.20251104.gappssmtp.com; s=20251104; t=1782887001; x=1783491801; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=wh8rPIUKvSG7DWfJknXu0HCqG3Ju9McYV9PNpDjOZvk=;
+        b=VnAXweOojvyKVSw5BJfxQV/rM8AerMEQSZwqmZkdHxTRi8VuDj1Ss1hNNofhPyW0Nb
+         NZVZQSUwn6tSZ8D4XFg4W8piMMKxdn0+ElYqSBJHGZwGpdMhQYyNT/5Ird9C+Sw/IM1q
+         64KLTgF5yr9xvL/v+2Xpn1Apw6ZdfyqwDVc+NXFkRreZ18Tjkr5kPnU30NAjwgZ3OiEv
+         rJrJvRJCmf5wOhWW5Rkx+o0ZNKK55f9tMm+6XolbHjKL+86CFp0LYS/UIf0ncvA+hyWI
+         Ct8S+mQr+1zLh/v9d3Ayey39yju+jOKMysb2o8QYyTNINKNq3BXKFD1Ysq3AISnPhhCw
+         0JOA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1782887001; x=1783491801;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=wh8rPIUKvSG7DWfJknXu0HCqG3Ju9McYV9PNpDjOZvk=;
+        b=MIJ+bVNQfRncT2btGtGQYNODWbzWOQHsTEWXjh28LLepyqAWNLWlAqFcEcUP+dVh1H
+         tmnvR6Rb3+oFy+GrISa5XxU9S8SL0S3sKNXB+fgXOVpvpIaMxtgLnBrDTQKKoxPMII58
+         qd9zd9ps5dqblRl0g5C9kk0CTDzdSR2iYdfEN9uPIfoLDvItDTQ4f/fKIC6G6Y6nbkuW
+         uTRJ9tnTVef45/X6ABseY8MVPA460epAlyJbMwd355BevjieI8NsBNlgDMKQLAhqju0l
+         PPH7Hs1Fq48ujRi0NbudCFE20z0CBsRP/WBrDxS/7Ls+0MKdRXdwXa2yDdH5AkjAxZhX
+         ftUA==
+X-Forwarded-Encrypted: i=1; AHgh+RpE+LU04zYrIK820WszTaoA29O9pUwDAdYQtgg0ROw63iFapty/s4IMxGuJz/0NTEqEg7D9U52PgtRP2Zk=@vger.kernel.org
+X-Gm-Message-State: AOJu0Ywft6UtBTfvm/Aa1J877k8cBHyFHboDzj+iOuj/Oba7eN522oj2
+	QrTyOZ5jXVymB/pYm8VRHGYEuZZtHdhCwPK0D0imncruH7B2KcjAG2u9mAUVfCeNIGI=
+X-Gm-Gg: AfdE7cnPOcPu+gfcIjGZhKMroPLjaHBbiWGTi4uADMO90cTnp4tBS15NptoS10RwHyB
+	1W4hZZ6G4gQmx1DyRIgzcYDG4VzmT+Vx8jaIuaFrzztFUGPpZDCqYcbAx0NHv3/dkcUDK9aAZgU
+	tM60Nd1i+dCt5Lj+mxVkhE+smF6P9B6x9nxeVNh94Flvy/NtHxgeGAibajeMdJjMG5++ik4ACHG
+	k+3N6AYPAPyVDn1qOxRCRZJ44WnwE+/YtmBzTZ5ITQau8RUGsUgwAdFG1Kcj8xR9c4v2DIjjypp
+	9NK3/TWqXNwc0OjZ9XiN0sR0zNV37GwAb3bhEP7J+SbdOUXGXS0KHMDiWeZByrDnM2/1YiXxm0x
+	64+88Cuvqp0CF+q9BV/GsJCMxW4rzLlY/Yc2hs+HZDW1ly6kC4vvNFNWiSlDBq1WDgGgacVbTGb
+	W75lBWkM6Nz3ptJ4ndSIiE8pMN9sqW5u3ftu39o2ayW8/GvAFcoIQr9gh6V86F6OVDy8p/OHJOp
+	2ED5L+oy9+zOkhSETleTUIBl9m0CaVJ9rh74mEYHRs=
+X-Received: by 2002:a05:6a00:a87:b0:847:9aa8:d3ce with SMTP id d2e1a72fcca58-847c06ddd6emr253010b3a.2.1782887001364;
+        Tue, 30 Jun 2026 23:23:21 -0700 (PDT)
+Received: from Metius.iitm.ac.in ([103.158.43.43])
+        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-847a02d41c0sm3270627b3a.33.2026.06.30.23.23.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 30 Jun 2026 23:23:21 -0700 (PDT)
+From: Abdun Nihaal <nihaal@cse.iitm.ac.in>
+To: ram.vegesna@broadcom.com
+Cc: Abdun Nihaal <nihaal@cse.iitm.ac.in>,
+	James.Bottomley@HansenPartnership.com,
+	martin.petersen@oracle.com,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: elx: efct: Fix potential memory leak in efct_hw_parse_filter()
+Date: Wed,  1 Jul 2026 11:53:08 +0530
+Message-ID: <20260701062313.372532-1-nihaal@cse.iitm.ac.in>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260630-b4-scsi-v1-4-494fb37ebe7b@kernel.org>
-References: <20260630-b4-scsi-v1-0-494fb37ebe7b@kernel.org>
-In-Reply-To: <20260630-b4-scsi-v1-0-494fb37ebe7b@kernel.org>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Brian King <brking@us.ibm.com>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- Matthew Wilcox <willy@infradead.org>, Mike Rapoport <rppt@kernel.org>, 
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
- linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-X-Mailer: b4 0.15.2
+Content-Transfer-Encoding: 8bit
 
-sym53c8xx_2 driver has an internal memory allocator for small
-allocations of the driver structures. The backing memory for that
-allocator is allocated with __get_free_pages().
+When an empty string is provided as the value, the error check after
+kstrdup() call, can fail even when a small buffer is allocated for the
+null terminated empty string. Fix that by freeing it before returning.
 
-This memory can be allocated with kmalloc() as there's nothing special
-about it to go directly to the page allocator.
-
-kmalloc() provides a better API that does not require ugly casts and
-kfree() does not need to know the size of the freed object.
-
-Performance difference between kmalloc() and __get_free_pages() is not
-measurable as both allocators take an object/page from a per-CPU list for
-fast path allocations.
-
-For the slow path the performance is anyway determined by the amount of
-reclaim involved rather than by what allocator is used.
-
-Replace use of __get_free_pages() with kmalloc() and free_pages() with
-kfree().
-
-Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
+Signed-off-by: Abdun Nihaal <nihaal@cse.iitm.ac.in>
 ---
- drivers/scsi/sym53c8xx_2/sym_hipd.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Compile tested only. Issue found using static analysis.
 
-diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.h b/drivers/scsi/sym53c8xx_2/sym_hipd.h
-index 9231a2899064..aa365e8ba66f 100644
---- a/drivers/scsi/sym53c8xx_2/sym_hipd.h
-+++ b/drivers/scsi/sym53c8xx_2/sym_hipd.h
-@@ -1110,9 +1110,9 @@ sym_build_sge(struct sym_hcb *np, struct sym_tblmove *data, u64 badd, int len)
-  */
- 
- #define sym_get_mem_cluster()	\
--	(void *) __get_free_pages(GFP_ATOMIC, SYM_MEM_PAGE_ORDER)
-+	kmalloc(PAGE_SIZE << SYM_MEM_PAGE_ORDER, GFP_ATOMIC)
- #define sym_free_mem_cluster(p)	\
--	free_pages((unsigned long)p, SYM_MEM_PAGE_ORDER)
-+	kfree(p)
- 
- /*
-  *  Link between free memory chunks of a given size.
+ drivers/scsi/elx/efct/efct_hw.c | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/scsi/elx/efct/efct_hw.c b/drivers/scsi/elx/efct/efct_hw.c
+index 1838032f6486..b0fdeabb9d05 100644
+--- a/drivers/scsi/elx/efct/efct_hw.c
++++ b/drivers/scsi/elx/efct/efct_hw.c
+@@ -1129,6 +1129,7 @@ efct_hw_parse_filter(struct efct_hw *hw, void *value)
+ 
+ 	p = kstrdup(value, GFP_KERNEL);
+ 	if (!p || !*p) {
++		kfree(p);
+ 		efc_log_err(hw->os, "p is NULL\n");
+ 		return -ENOMEM;
+ 	}
 -- 
-2.53.0
+2.43.0
 
