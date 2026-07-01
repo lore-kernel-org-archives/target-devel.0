@@ -1,106 +1,138 @@
-Received: from mail-pf1-f177.google.com (mail-pf1-f177.google.com [209.85.210.177])
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4988E2BE7B6
-	for <target-devel@vger.kernel.org>; Wed,  1 Jul 2026 06:23:21 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.177
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0ED993B2FF7
+	for <target-devel@vger.kernel.org>; Wed,  1 Jul 2026 06:58:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.54
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1782887005; cv=none; b=HdqqhkeUGUl3xXmCkN58EoJ0JUux2HgWlLsfn6DflZfO4MG1Qa4ux88Bt14z2TkSEXZKXXFshrFdG4JIDP0FOSUiqHyJ2xokPAIx8SMnUyniAoGysMQqXewLYYHR/jGlb7/T85me2gMCetTYizO1WdZpdQ09n/csaOvbxP2IHj4=
+	t=1782889097; cv=none; b=p48RbLY+o4/NXqKn1ZEDKl/MvQmxbsATC5/lVMz13hhOvMJBS5TpE3kIKv+2+8KC/YJxfrbmHM51xWMnv3UlfmM6UwCsmwfqfhM75khqTu8HJjFyIHwwERWFFrC9V6m8rrZaE6EAmTZpu87lmLIpi8L8Qb5WZAD9nftClTPKR/0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1782887005; c=relaxed/simple;
-	bh=iDb19+v9W24MFwVBLKYMAccXrZLiNoIhHW9iZ7BQu8Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dS9ajIR8Ouhjdvjk+DDuTF6Ia1WGDyQJB2GZs/ziw70gwioq03fcjrr63fih04SUIx+zISwkyNGvcslTFHv7tI3j33vVEZRqW7H6ZJpXXEOCiOARl8DRvWItGtTo/pK40wSpuR2L1oJ/A/6XZ78/4bZPen5B4lq7LCJB9iGMK2E=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in; spf=pass smtp.mailfrom=cse.iitm.ac.in; dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b=VnAXweOo; arc=none smtp.client-ip=209.85.210.177
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cse.iitm.ac.in
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cse.iitm.ac.in
+	s=arc-20240116; t=1782889097; c=relaxed/simple;
+	bh=r5m6bx+1S+UH9/Jug1ZvzJIVBVwid5Doa+5SlCgkwB4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HOnEUs/Y/RY5NFKLUhWE1Elplay+z6/kb6AqjvRBJDTkMIhtr+VClPbDKgytmUlgxpbH8ScsKr6dq87w0dn2RxyzaP+33eKTxMYD9z+EGAQ7+J2HzlzJRBCiSKxBx4513g/UaYltSJGi+EwqLswH77WXsEhsS5QJ2QO+ucNSask=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=Ar2o9mBx; arc=none smtp.client-ip=209.85.221.54
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=cse-iitm-ac-in.20251104.gappssmtp.com header.i=@cse-iitm-ac-in.20251104.gappssmtp.com header.b="VnAXweOo"
-Received: by mail-pf1-f177.google.com with SMTP id d2e1a72fcca58-8479f1a86ecso169662b3a.1
-        for <target-devel@vger.kernel.org>; Tue, 30 Jun 2026 23:23:21 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="Ar2o9mBx"
+Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-474303f3c72so155534f8f.0
+        for <target-devel@vger.kernel.org>; Tue, 30 Jun 2026 23:58:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cse-iitm-ac-in.20251104.gappssmtp.com; s=20251104; t=1782887001; x=1783491801; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=wh8rPIUKvSG7DWfJknXu0HCqG3Ju9McYV9PNpDjOZvk=;
-        b=VnAXweOojvyKVSw5BJfxQV/rM8AerMEQSZwqmZkdHxTRi8VuDj1Ss1hNNofhPyW0Nb
-         NZVZQSUwn6tSZ8D4XFg4W8piMMKxdn0+ElYqSBJHGZwGpdMhQYyNT/5Ird9C+Sw/IM1q
-         64KLTgF5yr9xvL/v+2Xpn1Apw6ZdfyqwDVc+NXFkRreZ18Tjkr5kPnU30NAjwgZ3OiEv
-         rJrJvRJCmf5wOhWW5Rkx+o0ZNKK55f9tMm+6XolbHjKL+86CFp0LYS/UIf0ncvA+hyWI
-         Ct8S+mQr+1zLh/v9d3Ayey39yju+jOKMysb2o8QYyTNINKNq3BXKFD1Ysq3AISnPhhCw
-         0JOA==
+        d=suse.com; s=google; t=1782889094; x=1783493894; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=uM40CkIKzZOswsbi2LSbdjru0/A7oQAC4WYJATBuHvw=;
+        b=Ar2o9mBxYp5gMqTnRq7etf2LP0scht+0GyyXIDK7mkABInc3j8qfZcXl81sH0hJNNB
+         NNdDXEc280yQgDVTgKmHoC5tazl09unF/EF1arqknKOoW29eQY3F3J+IV0FoS1mhr0nV
+         zQU7N99HBJvpp/0xioOVhSfmgFU02a1aZ0IMRt8WBMrfuiNIc+hh42Gc6Jyan0hKvqmZ
+         Q/v0McgCgVDLh/YO+dRgL4mmF8+1wTIDt1Btvtut73YOvnAkxbn9b4M52NqiAjFiWDRp
+         PpCt5ipsaIw7bya0p6/HfmJ0t9pF9tQFHrrDT2qIX+kENs9D26IBEkk9IO1ex1CfJzv6
+         nh8w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782887001; x=1783491801;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wh8rPIUKvSG7DWfJknXu0HCqG3Ju9McYV9PNpDjOZvk=;
-        b=MIJ+bVNQfRncT2btGtGQYNODWbzWOQHsTEWXjh28LLepyqAWNLWlAqFcEcUP+dVh1H
-         tmnvR6Rb3+oFy+GrISa5XxU9S8SL0S3sKNXB+fgXOVpvpIaMxtgLnBrDTQKKoxPMII58
-         qd9zd9ps5dqblRl0g5C9kk0CTDzdSR2iYdfEN9uPIfoLDvItDTQ4f/fKIC6G6Y6nbkuW
-         uTRJ9tnTVef45/X6ABseY8MVPA460epAlyJbMwd355BevjieI8NsBNlgDMKQLAhqju0l
-         PPH7Hs1Fq48ujRi0NbudCFE20z0CBsRP/WBrDxS/7Ls+0MKdRXdwXa2yDdH5AkjAxZhX
-         ftUA==
-X-Forwarded-Encrypted: i=1; AHgh+RpE+LU04zYrIK820WszTaoA29O9pUwDAdYQtgg0ROw63iFapty/s4IMxGuJz/0NTEqEg7D9U52PgtRP2Zk=@vger.kernel.org
-X-Gm-Message-State: AOJu0Ywft6UtBTfvm/Aa1J877k8cBHyFHboDzj+iOuj/Oba7eN522oj2
-	QrTyOZ5jXVymB/pYm8VRHGYEuZZtHdhCwPK0D0imncruH7B2KcjAG2u9mAUVfCeNIGI=
-X-Gm-Gg: AfdE7cnPOcPu+gfcIjGZhKMroPLjaHBbiWGTi4uADMO90cTnp4tBS15NptoS10RwHyB
-	1W4hZZ6G4gQmx1DyRIgzcYDG4VzmT+Vx8jaIuaFrzztFUGPpZDCqYcbAx0NHv3/dkcUDK9aAZgU
-	tM60Nd1i+dCt5Lj+mxVkhE+smF6P9B6x9nxeVNh94Flvy/NtHxgeGAibajeMdJjMG5++ik4ACHG
-	k+3N6AYPAPyVDn1qOxRCRZJ44WnwE+/YtmBzTZ5ITQau8RUGsUgwAdFG1Kcj8xR9c4v2DIjjypp
-	9NK3/TWqXNwc0OjZ9XiN0sR0zNV37GwAb3bhEP7J+SbdOUXGXS0KHMDiWeZByrDnM2/1YiXxm0x
-	64+88Cuvqp0CF+q9BV/GsJCMxW4rzLlY/Yc2hs+HZDW1ly6kC4vvNFNWiSlDBq1WDgGgacVbTGb
-	W75lBWkM6Nz3ptJ4ndSIiE8pMN9sqW5u3ftu39o2ayW8/GvAFcoIQr9gh6V86F6OVDy8p/OHJOp
-	2ED5L+oy9+zOkhSETleTUIBl9m0CaVJ9rh74mEYHRs=
-X-Received: by 2002:a05:6a00:a87:b0:847:9aa8:d3ce with SMTP id d2e1a72fcca58-847c06ddd6emr253010b3a.2.1782887001364;
-        Tue, 30 Jun 2026 23:23:21 -0700 (PDT)
-Received: from Metius.iitm.ac.in ([103.158.43.43])
-        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-847a02d41c0sm3270627b3a.33.2026.06.30.23.23.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 Jun 2026 23:23:21 -0700 (PDT)
-From: Abdun Nihaal <nihaal@cse.iitm.ac.in>
-To: ram.vegesna@broadcom.com
-Cc: Abdun Nihaal <nihaal@cse.iitm.ac.in>,
-	James.Bottomley@HansenPartnership.com,
-	martin.petersen@oracle.com,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] scsi: elx: efct: Fix potential memory leak in efct_hw_parse_filter()
-Date: Wed,  1 Jul 2026 11:53:08 +0530
-Message-ID: <20260701062313.372532-1-nihaal@cse.iitm.ac.in>
-X-Mailer: git-send-email 2.43.0
+        d=1e100.net; s=20251104; t=1782889094; x=1783493894;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=uM40CkIKzZOswsbi2LSbdjru0/A7oQAC4WYJATBuHvw=;
+        b=bj05lL5chjeTZn7BLOfBbEXzFEjYjTd4ZF+niLBspwxmP4wLI4uwAJ4JAFtPH6WeuL
+         g6wOfL0KCWCEn+bVfiHibsEKbkzI2aJjt0JQKMBmnn2XVqS4dK91+2U6yFTbBTgGOnpy
+         7qUieaYBJPy9UuPl+WVeKVR+TvHQRfAPR8dyiXC/eZ+a4/Sn00fZWIm61AhQbaVnVsxF
+         NgOGbwVkePCVukxBWINITld23Fmu4lM5Q3egdkiUGukFtXGZ57R0eioM8THo6DxmAzBZ
+         GfyydVxKnW+PNoUnHHLOQ5O5a5gTo8b37slpAYqs3eqyDSnRYrixX3fHnK3zN+K58Zgb
+         6Jhw==
+X-Forwarded-Encrypted: i=1; AHgh+RpMEX/TsXxyNCB8nnbwy5QVtSa6Hmb0XzUB5MLJZn2+lmdLu+DDCWgCxEzuLPWYytVT4lQ8GSQXTsY14Kw=@vger.kernel.org
+X-Gm-Message-State: AOJu0YzZBr8X+1KjF0i+0XfyRN77DkueRDuXupL3S2v/38tDpJHS0ZRc
+	EkJtKyTPxwYfXKHl5nCPiJwPSeU+yHe5O1XsW4HRMX41Vzw6ZByCmWoJKIfb/c6EcmY=
+X-Gm-Gg: AfdE7cn3n5gESy2X0x4G5f8vlDYlHKx2o6T64IEmmYoMjfPCxBiBTdT+fUrWgbWdR8n
+	9UO/ZMMSdXaed4+X1+TVY5+TNT9YyRjWpqKDe4nniM0qIQZbIG+kaV3o/7nL2teDHtHNqlZcJn1
+	lql2eCUsDEGod3UjOad92D9yf/oF4ALDiPJ4/O61qo+t+IVduuHiWmt0Rm3QaVytODAFxuREEXa
+	48vpBTCTn7hdJoVGv2jCarmfVQoWIX1MqUd5pZXZclOdXxraadhc8F20kSaF0ryL4+8kOkGjvN9
+	WFoZUqU+0n7LcQH0Zr1YsJH9XK8VEd2hgOYcKceVjV7c320fIZm90Z+sZXtIFAnw7ciWfDY/x01
+	G17lZ+YzzenNrFJld+zii/xVLHJ9mPrKdjEKFx3iVpkk9Yx18gtzolp3RyQD1TN20CZpQonyWil
+	sGYqqoRZU7StkTm4wI96dSXNsbLjvHd8HGGmzBchA6SOFhSCAR2Utl6nbF/A==
+X-Received: by 2002:a05:6000:230f:b0:46e:98a7:232b with SMTP id ffacd0b85a97d-477573bbc16mr566600f8f.10.1782889094328;
+        Tue, 30 Jun 2026 23:58:14 -0700 (PDT)
+Received: from ?IPV6:2001:a62:1403:d01:fcc2:cfc6:9af3:a0c1? ([2001:a62:1403:d01:fcc2:cfc6:9af3:a0c1])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4756636cf1asm15708450f8f.18.2026.06.30.23.58.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 30 Jun 2026 23:58:13 -0700 (PDT)
+Message-ID: <1f9329e4-dbe2-4d46-8387-b3c7fc8faab0@suse.com>
+Date: Wed, 1 Jul 2026 08:58:13 +0200
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/4] scsi: target: file: use kmalloc() to allocate
+ temporary protection buffer
+To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Brian King <brking@us.ibm.com>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Matthew Wilcox <willy@infradead.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+References: <20260630-b4-scsi-v1-0-494fb37ebe7b@kernel.org>
+ <20260630-b4-scsi-v1-1-494fb37ebe7b@kernel.org>
+Content-Language: en-US
+From: Hannes Reinecke <hare@suse.com>
+In-Reply-To: <20260630-b4-scsi-v1-1-494fb37ebe7b@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-When an empty string is provided as the value, the error check after
-kstrdup() call, can fail even when a small buffer is allocated for the
-null terminated empty string. Fix that by freeing it before returning.
+On 6/30/26 12:54 PM, Mike Rapoport (Microsoft) wrote:
+> fd_do_prot_unmap() uses __get_free_page() to allocate a temporary buffer
+> that is used to invalidate protection info for the unmapped region by
+> filling with 0xff pattern.
+> 
+> This buffer can be allocated with kmalloc() as there's nothing special
+> about it to go directly to the page allocator.
+> 
+> kmalloc() provides a better API that does not require ugly casts and
+> kfree() does not need to know the size of the freed object.
+> 
+> Replace use of __get_free_page() with kmalloc().
+> 
+> Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> ---
+>   drivers/target/target_core_file.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
+> index 62ced9f5102f..ab9824a4852f 100644
+> --- a/drivers/target/target_core_file.c
+> +++ b/drivers/target/target_core_file.c
+> @@ -516,7 +516,7 @@ fd_do_prot_unmap(struct se_cmd *cmd, sector_t lba, sector_t nolb)
+>   	void *buf;
+>   	int rc;
+>   
+> -	buf = (void *)__get_free_page(GFP_KERNEL);
+> +	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+>   	if (!buf) {
+>   		pr_err("Unable to allocate FILEIO prot buf\n");
+>   		return -ENOMEM;
+> @@ -524,7 +524,7 @@ fd_do_prot_unmap(struct se_cmd *cmd, sector_t lba, sector_t nolb)
+>   
+>   	rc = fd_do_prot_fill(cmd->se_dev, lba, nolb, buf, PAGE_SIZE);
+>   
+> -	free_page((unsigned long)buf);
+> +	kfree(buf);
+>   
+>   	return rc;
+>   }
+> 
+Reviewed-by: Hannes Reinecke <hare@kernel.org>
 
-Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
-Signed-off-by: Abdun Nihaal <nihaal@cse.iitm.ac.in>
----
-Compile tested only. Issue found using static analysis.
+Cheers,
 
- drivers/scsi/elx/efct/efct_hw.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/scsi/elx/efct/efct_hw.c b/drivers/scsi/elx/efct/efct_hw.c
-index 1838032f6486..b0fdeabb9d05 100644
---- a/drivers/scsi/elx/efct/efct_hw.c
-+++ b/drivers/scsi/elx/efct/efct_hw.c
-@@ -1129,6 +1129,7 @@ efct_hw_parse_filter(struct efct_hw *hw, void *value)
- 
- 	p = kstrdup(value, GFP_KERNEL);
- 	if (!p || !*p) {
-+		kfree(p);
- 		efc_log_err(hw->os, "p is NULL\n");
- 		return -ENOMEM;
- 	}
+Hannes
 -- 
-2.43.0
-
+Dr. Hannes Reinecke                  Kernel Storage Architect
+hare@suse.com                               +49 911 74053 688
+SUSE Software Solutions GmbH, Frankenstr. 146, 90461 Nürnberg
+HRB 36809 (AG Nürnberg), GF: I. Totev, A. McDonald, W. Knoblich
