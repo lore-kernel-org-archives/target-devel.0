@@ -1,141 +1,188 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4927936D9E9;
-	Fri,  3 Jul 2026 07:49:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73DC52877F7
+	for <target-devel@vger.kernel.org>; Fri,  3 Jul 2026 08:35:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.128.49
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783064958; cv=none; b=TdNRjB3DsH8B50x7ijacJ6Ay57XYQvT1EYlm1tnO+JDBVV1M7o1mgMpuc/TYH4VRygX2sUVr6+RnP1tBI7GRQQaDlOKpNTPj3iCfJcpnBQYT4sgaoYs7/FD6eHA9yt1E+7aFJ0OwCd1OetaUv/WoDRpXMMbWmV8q/GrjOMcZo64=
+	t=1783067759; cv=none; b=iahAFyqBLGzBi3ahKnrSv/tehyQ3i0owcfnuV3wDQ2kmSgNtwLVEBTNiekz/8KhWTf+oNfY87JvY7POHFMsfLevEKadavpXwwyFIMvzgRtyIlBX691bGmV3IxcIRR/ecrm7ULQKJhTEXd3pExaF/tEyPOeOuis3GTeNo7mOwtPY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783064958; c=relaxed/simple;
-	bh=kVPXDPzXW/Ltl+aT6WHG2pxjCTzzdNh7Q2gCVmhy5gc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DBF/PX8mdjaEPbgJU/PYd45WZl4JzscVD0b/lBTKai//2KsKjqctD3efmCqIyuYK4G6DiKvtMMbB/eWYIyymwoVdALtSL9gHULfcIzRZ8pAmoPBaZO9RNm1ncayIuPuHQwERxomU2LTkfac6v93ML5bt9EztEDCOQEH6gyt8wxk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KGndhYQa; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783067759; c=relaxed/simple;
+	bh=eQxnoDMMeS8zqLXEAn5onMUP1uws6doz7zxSRSRHohU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=aQUhcVGUBNAhtZimFNYFTpNblxaz+De5W3UMKrjDkpJqFc01j2cZw8Hi7qgMjMQANJWeatLNi8rNANsFMB/Rxnh6weECChDbN+8YlHHJpGrPNwAQ5a1RFx0eQWcaZ4nWwJREMIecnMoUgxIBahv7PsGCj+Im+5UEYAjZ8ZVAZ0Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; spf=pass smtp.mailfrom=suse.com; dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b=Tb4Op9JW; arc=none smtp.client-ip=209.85.128.49
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KGndhYQa"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E4B51F000E9;
-	Fri,  3 Jul 2026 07:49:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783064956;
-	bh=CIkFMzoXDcnD9nBYqCI1NBbFTtaOgztPoTY9RG1HHBE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=KGndhYQaN4X8CaaQEmB0znlSGwQ/HhvM9w2Fh8Y3LCqMZLD34jkaonGoVr8naz/8R
-	 8odk1aZvEVWkWOdMsKSj8HQE6EsO+iC9Ocw4h2DuiQSpU596U9wAJIeK3SBQTqGHY0
-	 A+oQ2LOV+CRewhiM6DXQOxpws8ac4znk5faLJAy/WTGvC5Vt8tsBVYpPleIlf2aB4w
-	 TQBLEVQr5O48u1+B+12LUe1qWExBY45ujKtKsPWIkYCDOTX5NeWCg2AXZ4LC6JUNhR
-	 1sn5tUPOClaeL94RZuGO9B31uOuAAtYbhXFvQtvfAGjoF/4U+INVCRYLR+hi8fdAer
-	 Tth7J2zspZEFQ==
-Date: Fri, 3 Jul 2026 10:49:09 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Brian King <brking@linux.vnet.ibm.com>
-Cc: Hannes Reinecke <hare@suse.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Brian King <brking@us.ibm.com>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Matthew Wilcox <willy@infradead.org>, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org, wenxiong@linux.ibm.com
-Subject: Re: [PATCH 3/4] scsi: ipr: use kmalloc() to allocate IPR dump buffer
- memory
-Message-ID: <akdpddKBt7gV6po5@kernel.org>
-References: <20260630-b4-scsi-v1-0-494fb37ebe7b@kernel.org>
- <20260630-b4-scsi-v1-3-494fb37ebe7b@kernel.org>
- <7c8f0e70-f49c-4614-af95-002fb2be11ba@suse.com>
- <akTjQVQQNdeO9M28@kernel.org>
- <d92f22b9-9a4d-42f2-ba67-0371f85fedd3@linux.vnet.ibm.com>
- <akYLdBME5kgyi8Rw@kernel.org>
+	dkim=pass (2048-bit key) header.d=suse.com header.i=@suse.com header.b="Tb4Op9JW"
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4921eed3fa2so1872175e9.0
+        for <target-devel@vger.kernel.org>; Fri, 03 Jul 2026 01:35:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1783067757; x=1783672557; darn=vger.kernel.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=7WAbGtIrI1EcfzFik+M+qn8x7M7ZtMBRYdePiOvKmF8=;
+        b=Tb4Op9JW37Lmr2DG4vEYzeEJG3hjor3+Yon/W712PqmIVFYj9N5pOVpBXYMsKO31ZZ
+         TBhAzp2TMKKJMDQ1lR1VhchL6+rmevTkG68vaJY6fpeagCiEsx33iz+Z7ZTcEAJTdxNT
+         zE9J5yU1q/rIL47vOxpGLrBz+aYbMWzHt1pKRsl2OoI/DNbUyajo/Y/CHGjNOFKplZRF
+         2FrJqQoeVRRqSI6lyw/jV+LkW4C5AawbIAFewP9GsU8N34FJqEQK+lXxoHbW7AVttYrK
+         e95S+f4IygosXRL5MbXeDymMSVlpWCroP/3+U6gergXPhpI4xkv7X+B+8g2ZuZDLwsBP
+         d9YA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783067757; x=1783672557;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=7WAbGtIrI1EcfzFik+M+qn8x7M7ZtMBRYdePiOvKmF8=;
+        b=WMrZ0xIDoU8eJUZ1XGTd1SVm2BinQc8Tres5fomK3qtemsei4qW7D2TTMCGaSCUXi2
+         Jms9/yK37Hkr8hF4lIk9YLMx6iA67Buy/0wLtfM4RZtQBRnqmNKMJjyCgrrnNQap1wre
+         HBLXkJZatirK6efF3P2vQAxY02vJneFDVjRtuVlnlNB9lPkb3zWkIwBBNsPY6i2yWeVN
+         kOqIQd4hypSsolc7s4yAFrvSKbPldz/jkTrC8KkgWghN9cryGfkEF0bHdcXEGGZErFkR
+         RyzPzjugmYf0WpFBIbg3R6ZSfqvZ0klshjVA+z9vWwfrDY2gELvQNxWo4WUp0jpO5Ams
+         tzUQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+hK511nf4SYHN1WkysPRaijEv2ebTUUCJUh0gPLblXvpBGZNIREifpC6RSBBF/5T/neqKFyQ61afr4vfE=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw/zRTQdvMNWTC9uWSQSHHorc8jtV/FTk1MvACyG+LYPdSw5Ac8
+	OjQKW3QGle+2CTercp5ixNlXFboJ0UVy6iOS6zro6yvgaOmj1hoLM3mzOnKEGRbDweFep/Ornq8
+	kNTlO9Zg=
+X-Gm-Gg: AfdE7cldyH+BxSr4jxfyleXriQtvPk3DhBY3BWxYglIrUQ9oWixPgLWz+WdGzr0efFZ
+	NbJtLI2SfvCleGMpyJ/m2TxXL5Gf8/GIyldTM+BUHnPdLJxqScIe4ba+RIzaaJn8mHHHhUwFVuq
+	BmfgZwsVP7GyOE8yb3X0miAYoCiFF0fM3v7y3tiAEw9ah73hbBg1W/+z7Xsmo9ZRtF0X/oZO9sb
+	6uQzvBX8zWKdpdwP9xZTJ+NWcf/rmztDGLXKnIQTSGjau6EbqoZtwXitxNjTaUbOpO5Y1ZcXP06
+	8Ul8z1kXFBTWoN3D1a4gZY4LOSI9NuT91T17qJzGEhdkIDO2iDUzsz7YFpeUvP3ijiw7UZyQBJQ
+	ktX3b6uey+Gv2liXO4SQR7WZ18ci+uovVaMyWEgEZSd2b1KjE2l+rprzuPZ7ii8hXsFui/uQhlK
+	l2QoIge0sfCU1bCk6ZwPkE1sGusxApdxFKjd5NU9gBpkkQ35i3ObDjB2uZ5w==
+X-Received: by 2002:a05:600c:8590:b0:492:4363:e7eb with SMTP id 5b1f17b1804b1-493c2ba4f75mr109823175e9.32.1783067756702;
+        Fri, 03 Jul 2026 01:35:56 -0700 (PDT)
+Received: from [192.168.178.47] (aftr-62-216-205-241.dynamic.mnet-online.de. [62.216.205.241])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493ccd9d620sm33431275e9.1.2026.07.03.01.35.55
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 03 Jul 2026 01:35:56 -0700 (PDT)
+Message-ID: <5b03b1d4-c094-437c-8934-64b94bd37138@suse.com>
+Date: Fri, 3 Jul 2026 10:35:55 +0200
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <akYLdBME5kgyi8Rw@kernel.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/4] scsi: ipr: use kmalloc() to allocate IPR dump buffer
+ memory
+To: Mike Rapoport <rppt@kernel.org>, Brian King <brking@linux.vnet.ibm.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Brian King <brking@us.ibm.com>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Matthew Wilcox <willy@infradead.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+ target-devel@vger.kernel.org, wenxiong@linux.ibm.com
+References: <20260630-b4-scsi-v1-0-494fb37ebe7b@kernel.org>
+ <20260630-b4-scsi-v1-3-494fb37ebe7b@kernel.org>
+ <7c8f0e70-f49c-4614-af95-002fb2be11ba@suse.com> <akTjQVQQNdeO9M28@kernel.org>
+ <d92f22b9-9a4d-42f2-ba67-0371f85fedd3@linux.vnet.ibm.com>
+ <akYLdBME5kgyi8Rw@kernel.org> <akdpddKBt7gV6po5@kernel.org>
+Content-Language: en-US
+From: Hannes Reinecke <hare@suse.com>
+In-Reply-To: <akdpddKBt7gV6po5@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, Jul 02, 2026 at 09:55:56AM +0300, Mike Rapoport wrote:
-> On Wed, Jul 01, 2026 at 04:03:48PM -0500, Brian King wrote:
-> > On 7/1/26 4:52 AM, Mike Rapoport wrote:
-> > > On Wed, Jul 01, 2026 at 09:03:06AM +0200, Hannes Reinecke wrote:
-> > >> On 6/30/26 12:54 PM, Mike Rapoport (Microsoft) wrote:
-> > >>> IPR dump machinery allocates memory to save adapter's crash dump using
-> > >>> __get_free_page().
-> > >>>
-> > >>> This memory can be allocated with kmalloc() as there's nothing special
-> > >>> about it to go directly to the page allocator.
-> > >>>
-> > >>> kmalloc() provides a better API that does not require ugly casts and
-> > >>> kfree() does not need to know the size of the freed object.
-> > >>>
-> > >>> Replace use of __get_free_page() with kmalloc().
-> > >>>
-> > >>> Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
-> > >>> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> > >>> ---
-> > >>>   drivers/scsi/ipr.c | 4 ++--
-> > >>>   1 file changed, 2 insertions(+), 2 deletions(-)
-> > >>>
-> > >>> diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
-> > >>> index d207e5e81afe..5a212bfdeec2 100644
-> > >>> --- a/drivers/scsi/ipr.c
-> > >>> +++ b/drivers/scsi/ipr.c
-> > >>> @@ -2893,7 +2893,7 @@ static int ipr_sdt_copy(struct ipr_ioa_cfg *ioa_cfg,
-> > >>>   	       (ioa_dump->hdr.len + bytes_copied) < max_dump_size) {
-> > >>>   		if (ioa_dump->page_offset >= PAGE_SIZE ||
-> > >>>   		    ioa_dump->page_offset == 0) {
-> > >>> -			page = (__be32 *)__get_free_page(GFP_ATOMIC);
-> > >>> +			page = kmalloc(PAGE_SIZE, GFP_ATOMIC);
-> > >>>   			if (!page) {
-> > >>>   				ipr_trace;
-> > >>> @@ -3226,7 +3226,7 @@ static void ipr_release_dump(struct kref *kref)
-> > >>>   	spin_unlock_irqrestore(ioa_cfg->host->host_lock, lock_flags);
-> > >>>   	for (i = 0; i < dump->ioa_dump.next_page_index; i++)
-> > >>> -		free_page((unsigned long) dump->ioa_dump.ioa_data[i]);
-> > >>> +		kfree(dump->ioa_dump.ioa_data[i]);
-> > >>>   	vfree(dump->ioa_dump.ioa_data);
-> > >>>   	kfree(dump);
-> > >>>
-> > >>
-> > >> I _think_ we can replace this with kvmalloc, and allocate the entire
-> > >> dump buffer in one go. Once switched to kmalloc() it's kinda pointless
-> > >> to allocate separate page-sized buffers here.
-> > > 
-> > > kmalloc() performance is on par with __get_free_page(), but kvmalloc()
-> > > would be slower if it falls back to vmalloc(). 
-> > > 
-> > > I'm not familiar with the driver to say if this could be an issue here.
-> > 
-> > This code only runs when the adapter has hit a fatal error, so should be
-> > extremely rare. The memory is getting allocated while the storage adapter
-> > is in a failed state, so anything running on the system at the time could
-> > be stalled until recovery is completed. This memory is allocated and should
-> > be freed soon after the adapter recovers. In order for this code to
-> > run, the iprdump daemon must be running, which will then read out the dump
-> > after the adapter is recovered, and write it to disk, after which time, the
-> > ipr driver will free the kernel memory.
+On 7/3/26 9:49 AM, Mike Rapoport wrote:
+> On Thu, Jul 02, 2026 at 09:55:56AM +0300, Mike Rapoport wrote:
+>> On Wed, Jul 01, 2026 at 04:03:48PM -0500, Brian King wrote:
+>>> On 7/1/26 4:52 AM, Mike Rapoport wrote:
+>>>> On Wed, Jul 01, 2026 at 09:03:06AM +0200, Hannes Reinecke wrote:
+>>>>> On 6/30/26 12:54 PM, Mike Rapoport (Microsoft) wrote:
+>>>>>> IPR dump machinery allocates memory to save adapter's crash dump using
+>>>>>> __get_free_page().
+>>>>>>
+>>>>>> This memory can be allocated with kmalloc() as there's nothing special
+>>>>>> about it to go directly to the page allocator.
+>>>>>>
+>>>>>> kmalloc() provides a better API that does not require ugly casts and
+>>>>>> kfree() does not need to know the size of the freed object.
+>>>>>>
+>>>>>> Replace use of __get_free_page() with kmalloc().
+>>>>>>
+>>>>>> Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
+>>>>>> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+>>>>>> ---
+>>>>>>    drivers/scsi/ipr.c | 4 ++--
+>>>>>>    1 file changed, 2 insertions(+), 2 deletions(-)
+>>>>>>
+>>>>>> diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
+>>>>>> index d207e5e81afe..5a212bfdeec2 100644
+>>>>>> --- a/drivers/scsi/ipr.c
+>>>>>> +++ b/drivers/scsi/ipr.c
+>>>>>> @@ -2893,7 +2893,7 @@ static int ipr_sdt_copy(struct ipr_ioa_cfg *ioa_cfg,
+>>>>>>    	       (ioa_dump->hdr.len + bytes_copied) < max_dump_size) {
+>>>>>>    		if (ioa_dump->page_offset >= PAGE_SIZE ||
+>>>>>>    		    ioa_dump->page_offset == 0) {
+>>>>>> -			page = (__be32 *)__get_free_page(GFP_ATOMIC);
+>>>>>> +			page = kmalloc(PAGE_SIZE, GFP_ATOMIC);
+>>>>>>    			if (!page) {
+>>>>>>    				ipr_trace;
+>>>>>> @@ -3226,7 +3226,7 @@ static void ipr_release_dump(struct kref *kref)
+>>>>>>    	spin_unlock_irqrestore(ioa_cfg->host->host_lock, lock_flags);
+>>>>>>    	for (i = 0; i < dump->ioa_dump.next_page_index; i++)
+>>>>>> -		free_page((unsigned long) dump->ioa_dump.ioa_data[i]);
+>>>>>> +		kfree(dump->ioa_dump.ioa_data[i]);
+>>>>>>    	vfree(dump->ioa_dump.ioa_data);
+>>>>>>    	kfree(dump);
+>>>>>>
+>>>>>
+>>>>> I _think_ we can replace this with kvmalloc, and allocate the entire
+>>>>> dump buffer in one go. Once switched to kmalloc() it's kinda pointless
+>>>>> to allocate separate page-sized buffers here.
+>>>>
+>>>> kmalloc() performance is on par with __get_free_page(), but kvmalloc()
+>>>> would be slower if it falls back to vmalloc().
+>>>>
+>>>> I'm not familiar with the driver to say if this could be an issue here.
+>>>
+>>> This code only runs when the adapter has hit a fatal error, so should be
+>>> extremely rare. The memory is getting allocated while the storage adapter
+>>> is in a failed state, so anything running on the system at the time could
+>>> be stalled until recovery is completed. This memory is allocated and should
+>>> be freed soon after the adapter recovers. In order for this code to
+>>> run, the iprdump daemon must be running, which will then read out the dump
+>>> after the adapter is recovered, and write it to disk, after which time, the
+>>> ipr driver will free the kernel memory.
+>>
+>> Thanks for the explanation!
+>>
+>> So the allocation is not on the hot path and it seems to me that
+>> performance differences between kmalloc() and slower vmalloc() won't move a
+>> needle relatively to the entire dump procedure.
 > 
-> Thanks for the explanation!
+> I looked more closely at the code. Currently the dump continues as long as
+> it can allocate memory and even if memory for the entire buffer is not
+> available there still will be some data in the dump.
 > 
-> So the allocation is not on the hot path and it seems to me that
-> performance differences between kmalloc() and slower vmalloc() won't move a
-> needle relatively to the entire dump procedure.
+> With a single allocation that may be as large as 80M
+> (IPR_FMT3_MAX_IOA_DUMP_SIZE), an allocation failure would mean no data
+> would be dumped at all.
+> 
+> I think the current model is better than using a single kvmalloc()
+> allocation for the entire buffer.
+> 
+> I'm going to send v2 that keeps kmalloc() and only changes GFP_ATOMIC to
+> GFP_NOIO if there are no objections.
+> 
 
-I looked more closely at the code. Currently the dump continues as long as
-it can allocate memory and even if memory for the entire buffer is not
-available there still will be some data in the dump.
+Fair point.
 
-With a single allocation that may be as large as 80M
-(IPR_FMT3_MAX_IOA_DUMP_SIZE), an allocation failure would mean no data
-would be dumped at all.
+You can add:
 
-I think the current model is better than using a single kvmalloc()
-allocation for the entire buffer.
+Reviewed-by: Hannes Reinecke <hare@kernel.org>
 
-I'm going to send v2 that keeps kmalloc() and only changes GFP_ATOMIC to
-GFP_NOIO if there are no objections.
+Cheers,
 
+Hannes
 -- 
-Sincerely yours,
-Mike.
+Dr. Hannes Reinecke                  Kernel Storage Architect
+hare@suse.com                               +49 911 74053 688
+SUSE Software Solutions GmbH, Frankenstr. 146, 90461 Nürnberg
+HRB 36809 (AG Nürnberg), GF: I. Totev, A. McDonald, W. Knoblich
