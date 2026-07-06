@@ -1,99 +1,210 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 195E2390228;
-	Sat,  4 Jul 2026 06:13:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EE5C348866;
+	Mon,  6 Jul 2026 08:49:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783145634; cv=none; b=O6NUXsHe7Vim+0jr5CrVT7MecYe3xZiBD3aF6NUEw0XDQdFD0SZv/lLrvlSF6ArcQVrG543cWHMnG68xeKB3Ivox/ByPz0dDnQUA4vAqAaA4cka7cA06lDxdSo96ny2XE3ITbDwp7sU2GIArGuzMsRNlGqn+RiIehEznj94WQzA=
+	t=1783327810; cv=none; b=PmPhE/I0H5XFU+WUY/4i1VzEnYMlSmG/LkNh5KPPWpqoKM7CLcoTCny+wQYECzsErKF5cjurP6WS21bqpbh5HQG8euMQvUUsvsNnbtt2evm7w4SE157SLqvptQm4uARF8bQ61vxqRC+5W4gcVRW2r9Z+RP1A2aViaBmI9+MUok4=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783145634; c=relaxed/simple;
-	bh=+J9KLrK1JoXnuSNb+6A/uwLlgsi2Q/AEjfdroSsRXeI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=OhBaUNCmInD+V6ptqotV4Pd+62C2tnFpeBvTvdajddpbISUiTtsTjrSt1EMBJS2XJLCXQteQb8AD7SnRVKGpUOp8cQWNs6WmdrznC29maX40HBdKJouCfCZWYJjYj2OrkE3JB9Ur9t4HubVtBsETUqidWoee7JCJuD+Ps5/xPCQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=jmk2gMFL; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1783327810; c=relaxed/simple;
+	bh=0x7pTVBQM/oo8cB6MYqUQ77YVRX8Kqn9XyTS7jKO4kI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NLuR3d3sq0017UEfGqb5GZxyTeETEIS7YGNmz1meaeCoE+XhreVYnDtvMrFGNX+4+7KEbbzNOvP3VA85jURtDSV3WBXe5ZzlFq9dRypBMlJQu7GD+iv38UL36mG5SBOQe5SVqhPtv4LKDdxl0F6XxB9qhzquTS4MEfnyFSfGqqw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HQADDgAf; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="jmk2gMFL"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C40E1F000E9;
-	Sat,  4 Jul 2026 06:13:50 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HQADDgAf"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 978CA1F000E9;
+	Mon,  6 Jul 2026 08:49:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783145633;
-	bh=ChsJbQD+rYLxKREcHCGErBZhvfE4abQxVMv0tWl2ri4=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=jmk2gMFLrK3eU2lLP0K0XOJ1Pm0Uzkc7RJEuAmXhOwd75+F/e2QiRDrlyllwdNK7+
-	 b7wQ+uYlfHvWU0PmUHehslmgcJxmnK3217gkV1Xl9Y+JTBcBPOQN687QayTgxlZBXJ
-	 /5ewIJhudgeSA0G5uY3yPFK2holTLgZaFvSjEANSl+0Ox1T4WJHp3oMK6Dn9kDP3/I
-	 nVVVNdy5wti/f00rRlEtOaGzXqfUSayxeZUlhmTy5eu1IiZ8sD+71yo54zPfQHeKwC
-	 +Dwl/S7zgOdKLTh4ttH8FEgQu47KXFvAsqX8h0GvVXTZpNddSk1yMzGN2sLJMnAFPY
-	 YKGxAnmygkPlA==
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Sat, 04 Jul 2026 09:13:37 +0300
-Subject: [PATCH v2 4/4] scsi: sym53c8xx_2: replace __get_free_pages() with
- kmalloc()
+	s=k20260515; t=1783327795;
+	bh=9jiSSkCBnbVD7ihxmuDYCTOJSaEPHEl7wjng44WMYRs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=HQADDgAfKOb+QRTcxlAPYJxUo81CV+X2k0sH4dqu4MXUhUvI8d0gKIn3fSYrA1PX/
+	 tkL8EscUhizGPIAmstyC+IcGi0Bpq2pmvmlHX04vH8BLW7siC04DcmJ3HXxv8hq27U
+	 Cm3VdQdVL+4wwVwhFK7HQmPqA48e10qpeEhHd7fFACoRgnafr1d4FUho7fCK2UTrgb
+	 YogOm5FOfD941STn0/3UYZu0szCwziMiufd32dSLEBhvVT9dg6Be1JIoRbfI00bgNA
+	 1oij26/UKxOAPFBnCcX21MUoXrF/X4CgR3ssY2W31wgMyjX/YgrYc2fFtMVYhbR2Xe
+	 VpXfNmIUilBiw==
+Date: Mon, 6 Jul 2026 11:49:50 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>, mkalderon@marvell.com,
+	zyjzyj2000@gmail.com, sagi@grimberg.me, mgurtovoy@nvidia.com,
+	haris.iqbal@ionos.com, jinpu.wang@ionos.com, bvanassche@acm.org,
+	kbusch@kernel.org, Jens Axboe <axboe@kernel.dk>,
+	Christoph Hellwig <hch@lst.de>, kch@nvidia.com, smfrench@gmail.com,
+	linkinjeon@kernel.org, metze@samba.org, tom@talpey.com,
+	cel@kernel.org, jlayton@kernel.org, neil@brown.name,
+	okorniev@redhat.com, Dai.Ngo@oracle.com, trondmy@kernel.org,
+	anna@kernel.org, achender@kernel.org, davem@davemloft.net,
+	edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+	horms@kernel.org, kees@kernel.org,
+	andriy.shevchenko@linux.intel.com, clm@meta.com,
+	ebadger@purestorage.com, linux-rdma@vger.kernel.org,
+	linux-kernel@vger.kernel.org, target-devel@vger.kernel.org,
+	linux-nvme@lists.infradead.org, linux-cifs@vger.kernel.org,
+	samba-technical@lists.samba.org, linux-nfs@vger.kernel.org,
+	netdev@vger.kernel.org, rds-devel@oss.oracle.com,
+	Jason Gunthorpe <jgg@nvidia.com>
+Subject: Re: [PATCH rdma-next v9] RDMA: Change capability fields in
+ ib_device_attr from int to u32
+Message-ID: <20260706084950.GK15188@unreal>
+References: <20260703060329.896125-1-ernis@linux.microsoft.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260704-b4-scsi-v2-4-7d2d21a810de@kernel.org>
-References: <20260704-b4-scsi-v2-0-7d2d21a810de@kernel.org>
-In-Reply-To: <20260704-b4-scsi-v2-0-7d2d21a810de@kernel.org>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Brian King <brking@us.ibm.com>, Hannes Reinecke <hare@suse.com>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- Matthew Wilcox <willy@infradead.org>, Mike Rapoport <rppt@kernel.org>, 
- Wen Xiong <wenxiong@linux.ibm.com>, linux-kernel@vger.kernel.org, 
- linux-mm@kvack.org, linux-scsi@vger.kernel.org, 
- target-devel@vger.kernel.org, Hannes Reinecke <hare@kernel.org>
-X-Mailer: b4 0.16-dev
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260703060329.896125-1-ernis@linux.microsoft.com>
 
-sym53c8xx_2 driver has an internal memory allocator for small
-allocations of the driver structures. The backing memory for that
-allocator is allocated with __get_free_pages().
+On Thu, Jul 02, 2026 at 11:02:57PM -0700, Erni Sri Satya Vennela wrote:
+> The capability counter fields in struct ib_device_attr are declared
+> as signed int, but these values are inherently non-negative. Drivers
+> maintain their cached caps as u32 and assign them directly into these
+> int fields; if a cap exceeds INT_MAX the implicit narrowing yields a
+> negative value visible to the IB core.
+> 
+> Change the signed int capability fields to u32 to match the
+> underlying nature of the data. Also update consumers across the IB
+> core, ULPs, NVMe-oF target, RDS, and NFS/RDMA so the new u32 values
+> are not forced back through signed int or u8 via min()/min_t() or
+> narrowing local variables.
+> 
+> Suggested-by: Jason Gunthorpe <jgg@nvidia.com>
+> Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+> Acked-by: Stefan Metzmacher <metze@samba.org> # smbdirect
+> ---
+> Changes in v9:
+> * Switch the srq_size module parameter accessors to param_get_uint and
+>   kstrtouint()/param_set_uint() so they match the now-unsigned
+>   nvmet_rdma_srq_size variable.
+> Changes in v8:
+> * Convert the remaining non-negative counter fields max_ee_rd_atom,
+>   max_ee_init_rd_atom, max_ee, max_rdd, max_raw_ipv6_qp and max_srq_wr
+>   to u32; keep max_srq as int (its consumer compares it against
+>   ib_device.num_comp_vectors, still int).
+> * Drop all remaining min_t() where plain min() now works.
+> * Make the srq_size module parameters unsigned int so the srq_size min()
+>   stays a plain min().
+> * Replace the ternary-inside-min() with the simpler "if (x) x--;".
+> * Reorder the send_queue_depth min() to min(value, CONST) to match the
+>   sibling site.
+> * Restore reverse xmas-tree declaration order.
+> * Collapse the min()/min3() assignments that now fit onto a single line
+>   within 100 columns.
+> * Print the now-u32 fields with %u instead of %d.
+> Changes in v7:
+> * Drop min_t() in all sites where a plain min() (or min3()) works
+>   cleanly
+> * Guard nvme/host/rdma.c num_inline_segments computation against a
+>   device reporting max_send_sge == 0, so the u32 subtract
+>   cannot wrap to UINT_MAX.
+> * Use %u when printing the newly-u32 capability fields
+>   in diagnostic messages.
+> Changes in v6:
+> * Fix subject prefix: net-next -> rdma-next.
+> Changes in v5:
+> * Add U8_MAX clamps in iser_verbs, nvme/host, nvme/target, isert,
+> * rds/ib_cm, smbdirect/connect and smbdirect/accept where u32 capability
+>   fields were directly narrowed into u8 rdma_conn_param fields without
+>   clamping.
+> * Guard the inline_sge_count calculation in nvmet_rdma_find_get_device()
+>   to prevent u32 underflow when both max_sge_rd and max_recv_sge are
+> zero.
+> * Expand type migration to 9 additional fields (max_mw, max_raw_ethy_qp,
+>   max_mcast_grp, max_mcast_qp_attach, max_total_mcast_qp_attach, max_ah,
+>   max_srq, max_srq_wr, max_srq_sge)
+> * Fix min_t(int,...) in svc_rdma_transport; min_t(u32,...) in ipoib,
+>   srpt, nvme/target, rds/ib, rtrs-clt, rtrs-srv, xprtrdma/verbsdd.
+> * Fix frwr_ops.c u32 underflow guard (reorder check before subtraction)
+> * Change sc_max_send_sges to unsigned int, inline_sge_count to u32
+> * Fix %d -> %u in rxe_qp, rxe_srq, ipoib_cm, ib_isert,
+> * svc_rdma_transport
+> * Update commit message.
+> Changes in v4:
+> * Drop clamping the values in mana_ib_query_device, instead update
+>   the props values from int to u32.
+> Changes in v3:
+> * Drop clamping from mana_ib_gd_query_adapter_caps(). The internal u32
+>   caps cache does not need to be clamped.
+> * Move all clamping exclusively to mana_ib_query_device(), which is the
+>   only place the cached u32 values are narrowed into the signed int
+>   fields of struct ib_device_attr.
+> * Reframe commit message: this is a u32-to-int type boundary fix, not a
+>   CVM/untrusted-hardware hardening patch.
+> Changes in v2:
+> * Update patch title.
+> ---
+>  drivers/infiniband/core/cq.c               |  3 +-
+>  drivers/infiniband/hw/qedr/verbs.c         |  2 +-
+>  drivers/infiniband/sw/rxe/rxe_qp.c         | 22 +++++-----
+>  drivers/infiniband/sw/rxe/rxe_srq.c        | 16 +++----
+>  drivers/infiniband/ulp/ipoib/ipoib_cm.c    | 10 ++---
+>  drivers/infiniband/ulp/ipoib/ipoib_verbs.c |  3 +-
+>  drivers/infiniband/ulp/iser/iser_verbs.c   |  5 +--
+>  drivers/infiniband/ulp/isert/ib_isert.c    |  7 ++-
+>  drivers/infiniband/ulp/rtrs/rtrs-clt.c     | 11 ++---
+>  drivers/infiniband/ulp/rtrs/rtrs-srv.c     | 11 ++---
+>  drivers/infiniband/ulp/srp/ib_srp.c        |  2 +-
+>  drivers/infiniband/ulp/srpt/ib_srpt.c      | 21 +++++----
+>  drivers/nvme/host/rdma.c                   |  8 ++--
+>  drivers/nvme/target/rdma.c                 | 22 ++++++----
+>  fs/smb/smbdirect/accept.c                  |  5 ++-
+>  fs/smb/smbdirect/connect.c                 |  5 ++-
+>  fs/smb/smbdirect/connection.c              |  8 ++--
+>  include/linux/sunrpc/svc_rdma.h            |  4 +-
+>  include/rdma/ib_verbs.h                    | 50 +++++++++++-----------
+>  net/rds/ib.c                               | 10 ++---
+>  net/rds/ib_cm.c                            | 10 ++---
+>  net/sunrpc/xprtrdma/frwr_ops.c             |  7 +--
+>  net/sunrpc/xprtrdma/svc_rdma_transport.c   |  5 +--
+>  net/sunrpc/xprtrdma/verbs.c                |  2 +-
+>  24 files changed, 122 insertions(+), 127 deletions(-)
 
-This memory can be allocated with kmalloc() as there's nothing special
-about it to go directly to the page allocator.
+The following code is still missing. Also, what about mxa_srq?
+Why wasn't it converted as well?
 
-kmalloc() provides a better API that does not require ugly casts and
-kfree() does not need to know the size of the freed object.
+diff --git a/drivers/infiniband/core/nldev.c b/drivers/infiniband/core/nldev.c
+index f599c24b34e8..aae4f3f6bcba 100644
+--- a/drivers/infiniband/core/nldev.c
++++ b/drivers/infiniband/core/nldev.c
+@@ -454,7 +454,8 @@ static int fill_res_info(struct sk_buff *msg, struct ib_device *device,
+        };
 
-Performance difference between kmalloc() and __get_free_pages() is not
-measurable as both allocators take an object/page from a per-CPU list for
-fast path allocations.
+        struct nlattr *table_attr;
+-       int ret, i, curr, max;
++       u64 curr, max;
++       int ret, i;
 
-For the slow path the performance is anyway determined by the amount of
-reclaim involved rather than by what allocator is used.
-
-Replace use of __get_free_pages() with kmalloc() and free_pages() with
-kfree().
-
-Link: https://lore.kernel.org/all/635405e4-9423-4a25-a6e7-e03c8ea0bcbe@redhat.com
-Reviewed-by: Hannes Reinecke <hare@kernel.org>
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- drivers/scsi/sym53c8xx_2/sym_hipd.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.h b/drivers/scsi/sym53c8xx_2/sym_hipd.h
-index 9231a2899064..aa365e8ba66f 100644
---- a/drivers/scsi/sym53c8xx_2/sym_hipd.h
-+++ b/drivers/scsi/sym53c8xx_2/sym_hipd.h
-@@ -1110,9 +1110,9 @@ sym_build_sge(struct sym_hcb *np, struct sym_tblmove *data, u64 badd, int len)
+        if (fill_nldev_handle(msg, device))
+                return -EMSGSIZE;
+diff --git a/drivers/infiniband/core/restrack.c b/drivers/infiniband/core/restrack.c
+index cfee2071586c..1b2f9df49e28 100644
+--- a/drivers/infiniband/core/restrack.c
++++ b/drivers/infiniband/core/restrack.c
+@@ -61,7 +61,7 @@ void rdma_restrack_clean(struct ib_device *dev)
+  * @type: actual type of object to operate
+  * @show_details: count driver specific objects
   */
- 
- #define sym_get_mem_cluster()	\
--	(void *) __get_free_pages(GFP_ATOMIC, SYM_MEM_PAGE_ORDER)
-+	kmalloc(PAGE_SIZE << SYM_MEM_PAGE_ORDER, GFP_ATOMIC)
- #define sym_free_mem_cluster(p)	\
--	free_pages((unsigned long)p, SYM_MEM_PAGE_ORDER)
-+	kfree(p)
- 
- /*
-  *  Link between free memory chunks of a given size.
+-int rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
++u32 rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
+                        bool show_details)
+ {
+        struct rdma_restrack_root *rt = &dev->res[type];
+diff --git a/include/rdma/restrack.h b/include/rdma/restrack.h
+index 451f99e3717d..c081384740ce 100644
+--- a/include/rdma/restrack.h
++++ b/include/rdma/restrack.h
+@@ -123,7 +123,7 @@ struct rdma_restrack_entry {
+        u32 id;
+ };
 
--- 
-2.53.0
-
+-int rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
++u32 rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
+                        bool show_details);
+ /**
+  * rdma_is_kernel_res() - check the owner of resource
