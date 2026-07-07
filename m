@@ -1,34 +1,32 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EE5C348866;
-	Mon,  6 Jul 2026 08:49:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 1446D3DEADC;
+	Tue,  7 Jul 2026 10:20:42 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=13.77.154.182
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1783327810; cv=none; b=PmPhE/I0H5XFU+WUY/4i1VzEnYMlSmG/LkNh5KPPWpqoKM7CLcoTCny+wQYECzsErKF5cjurP6WS21bqpbh5HQG8euMQvUUsvsNnbtt2evm7w4SE157SLqvptQm4uARF8bQ61vxqRC+5W4gcVRW2r9Z+RP1A2aViaBmI9+MUok4=
+	t=1783419645; cv=none; b=c2YQNhGvcULuc1n3cB3k2sklseRsibeugZb4+NiNrFG/LjovohBiQo8pjGyT0FAoiBx3m2MJ5i/l2rzoT7hZPyb+JDYpsT+mnCZPgpL0exkYZUPgDri/xPbzuab9U0os88prbiSkfmjNTtIU3c0ZIBjQiIb3736aObv2DO4ieUc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1783327810; c=relaxed/simple;
-	bh=0x7pTVBQM/oo8cB6MYqUQ77YVRX8Kqn9XyTS7jKO4kI=;
+	s=arc-20240116; t=1783419645; c=relaxed/simple;
+	bh=PGSzmnmHGWQxJ7r1STAWYypX1PjNgCY/0z7SvAfUqgc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NLuR3d3sq0017UEfGqb5GZxyTeETEIS7YGNmz1meaeCoE+XhreVYnDtvMrFGNX+4+7KEbbzNOvP3VA85jURtDSV3WBXe5ZzlFq9dRypBMlJQu7GD+iv38UL36mG5SBOQe5SVqhPtv4LKDdxl0F6XxB9qhzquTS4MEfnyFSfGqqw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=HQADDgAf; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=eJuKyYjGkDyZsOS7FSDm/1JhEHGMlqlIFCct7DHyt/CQe5iXDc+9C1px6y3D9UcraGaqdqYchEGxi+8uzFzmX8x0S15eBRFcMPmmy2hmb6Iyr9BBb8D8SYxvkcYsD31yczrS6AkrEln9T31TKjJSaQMygc5/oNjFSM3npyYzw8s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; spf=pass smtp.mailfrom=linux.microsoft.com; dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b=YjtfsGHZ; arc=none smtp.client-ip=13.77.154.182
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.microsoft.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="HQADDgAf"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 978CA1F000E9;
-	Mon,  6 Jul 2026 08:49:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783327795;
-	bh=9jiSSkCBnbVD7ihxmuDYCTOJSaEPHEl7wjng44WMYRs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=HQADDgAfKOb+QRTcxlAPYJxUo81CV+X2k0sH4dqu4MXUhUvI8d0gKIn3fSYrA1PX/
-	 tkL8EscUhizGPIAmstyC+IcGi0Bpq2pmvmlHX04vH8BLW7siC04DcmJ3HXxv8hq27U
-	 Cm3VdQdVL+4wwVwhFK7HQmPqA48e10qpeEhHd7fFACoRgnafr1d4FUho7fCK2UTrgb
-	 YogOm5FOfD941STn0/3UYZu0szCwziMiufd32dSLEBhvVT9dg6Be1JIoRbfI00bgNA
-	 1oij26/UKxOAPFBnCcX21MUoXrF/X4CgR3ssY2W31wgMyjX/YgrYc2fFtMVYhbR2Xe
-	 VpXfNmIUilBiw==
-Date: Mon, 6 Jul 2026 11:49:50 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+	dkim=pass (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="YjtfsGHZ"
+Received: by linux.microsoft.com (Postfix, from userid 1173)
+	id EF08620B716B; Tue,  7 Jul 2026 03:20:36 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com EF08620B716B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+	s=default; t=1783419636;
+	bh=441oD1++hubgGUElzvL75rwNbLNzT7P+xGK0zmQs+Fg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=YjtfsGHZJBrWJ+Vy4Ipz+WqFrtJd6xZWrR8UEtusUUwjXIr8jP+wo4On9qsOyJ+pA
+	 JnztyI1H/EvD+jIspehtVLEjQwRJEGFtTbArD4gVwsHH9VlNuQr6y4XZuKoSYZUyRU
+	 wdBJG2gkJwBJDu6T8/gqWpO/X6dc27dL+jU6UXmE=
+Date: Tue, 7 Jul 2026 03:20:36 -0700
+From: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
+To: Leon Romanovsky <leon@kernel.org>
 Cc: Jason Gunthorpe <jgg@ziepe.ca>, mkalderon@marvell.com,
 	zyjzyj2000@gmail.com, sagi@grimberg.me, mgurtovoy@nvidia.com,
 	haris.iqbal@ionos.com, jinpu.wang@ionos.com, bvanassche@acm.org,
@@ -49,8 +47,9 @@ Cc: Jason Gunthorpe <jgg@ziepe.ca>, mkalderon@marvell.com,
 	Jason Gunthorpe <jgg@nvidia.com>
 Subject: Re: [PATCH rdma-next v9] RDMA: Change capability fields in
  ib_device_attr from int to u32
-Message-ID: <20260706084950.GK15188@unreal>
+Message-ID: <akzS9EdxScQsx9n8@linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net>
 References: <20260703060329.896125-1-ernis@linux.microsoft.com>
+ <20260706084950.GK15188@unreal>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -59,152 +58,97 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260703060329.896125-1-ernis@linux.microsoft.com>
+In-Reply-To: <20260706084950.GK15188@unreal>
 
-On Thu, Jul 02, 2026 at 11:02:57PM -0700, Erni Sri Satya Vennela wrote:
-> The capability counter fields in struct ib_device_attr are declared
-> as signed int, but these values are inherently non-negative. Drivers
-> maintain their cached caps as u32 and assign them directly into these
-> int fields; if a cap exceeds INT_MAX the implicit narrowing yields a
-> negative value visible to the IB core.
+On Mon, Jul 06, 2026 at 11:49:50AM +0300, Leon Romanovsky wrote:
+> > ---
+> >  drivers/infiniband/core/cq.c               |  3 +-
+> >  drivers/infiniband/hw/qedr/verbs.c         |  2 +-
+> >  drivers/infiniband/sw/rxe/rxe_qp.c         | 22 +++++-----
+> >  drivers/infiniband/sw/rxe/rxe_srq.c        | 16 +++----
+> >  drivers/infiniband/ulp/ipoib/ipoib_cm.c    | 10 ++---
+> >  drivers/infiniband/ulp/ipoib/ipoib_verbs.c |  3 +-
+> >  drivers/infiniband/ulp/iser/iser_verbs.c   |  5 +--
+> >  drivers/infiniband/ulp/isert/ib_isert.c    |  7 ++-
+> >  drivers/infiniband/ulp/rtrs/rtrs-clt.c     | 11 ++---
+> >  drivers/infiniband/ulp/rtrs/rtrs-srv.c     | 11 ++---
+> >  drivers/infiniband/ulp/srp/ib_srp.c        |  2 +-
+> >  drivers/infiniband/ulp/srpt/ib_srpt.c      | 21 +++++----
+> >  drivers/nvme/host/rdma.c                   |  8 ++--
+> >  drivers/nvme/target/rdma.c                 | 22 ++++++----
+> >  fs/smb/smbdirect/accept.c                  |  5 ++-
+> >  fs/smb/smbdirect/connect.c                 |  5 ++-
+> >  fs/smb/smbdirect/connection.c              |  8 ++--
+> >  include/linux/sunrpc/svc_rdma.h            |  4 +-
+> >  include/rdma/ib_verbs.h                    | 50 +++++++++++-----------
+> >  net/rds/ib.c                               | 10 ++---
+> >  net/rds/ib_cm.c                            | 10 ++---
+> >  net/sunrpc/xprtrdma/frwr_ops.c             |  7 +--
+> >  net/sunrpc/xprtrdma/svc_rdma_transport.c   |  5 +--
+> >  net/sunrpc/xprtrdma/verbs.c                |  2 +-
+> >  24 files changed, 122 insertions(+), 127 deletions(-)
 > 
-> Change the signed int capability fields to u32 to match the
-> underlying nature of the data. Also update consumers across the IB
-> core, ULPs, NVMe-oF target, RDS, and NFS/RDMA so the new u32 values
-> are not forced back through signed int or u8 via min()/min_t() or
-> narrowing local variables.
+> The following code is still missing. 
+
+I'll make this change in the next version.
+
+>Also, what about mxa_srq?
+> Why wasn't it converted as well?
+
+I originally left max_srq as int because its only consumer pairs it with
+num_comp_vectors (a signed int) in nvmet_rdma, so keeping it int let
+that site stay a plain min() instead of a min_t().
+
+num_comp_vectors is the completion-vector count, legitimately int and
+never anywhere near INT_MAX, so I'd prefer to leave it signed rather
+than convert it everywhere. Does that work for you, or would you rather
+num_comp_vectors be converted too?
+
+If it needs converting, I'll do it as a separate patch, since it lives
+in a different struct (ib_device) and touches many call sites.
+Otherwise, using min_t() for just this one call is fine too.
+
+Thanks,
+Vennela
+
 > 
-> Suggested-by: Jason Gunthorpe <jgg@nvidia.com>
-> Signed-off-by: Erni Sri Satya Vennela <ernis@linux.microsoft.com>
-> Acked-by: Stefan Metzmacher <metze@samba.org> # smbdirect
-> ---
-> Changes in v9:
-> * Switch the srq_size module parameter accessors to param_get_uint and
->   kstrtouint()/param_set_uint() so they match the now-unsigned
->   nvmet_rdma_srq_size variable.
-> Changes in v8:
-> * Convert the remaining non-negative counter fields max_ee_rd_atom,
->   max_ee_init_rd_atom, max_ee, max_rdd, max_raw_ipv6_qp and max_srq_wr
->   to u32; keep max_srq as int (its consumer compares it against
->   ib_device.num_comp_vectors, still int).
-> * Drop all remaining min_t() where plain min() now works.
-> * Make the srq_size module parameters unsigned int so the srq_size min()
->   stays a plain min().
-> * Replace the ternary-inside-min() with the simpler "if (x) x--;".
-> * Reorder the send_queue_depth min() to min(value, CONST) to match the
->   sibling site.
-> * Restore reverse xmas-tree declaration order.
-> * Collapse the min()/min3() assignments that now fit onto a single line
->   within 100 columns.
-> * Print the now-u32 fields with %u instead of %d.
-> Changes in v7:
-> * Drop min_t() in all sites where a plain min() (or min3()) works
->   cleanly
-> * Guard nvme/host/rdma.c num_inline_segments computation against a
->   device reporting max_send_sge == 0, so the u32 subtract
->   cannot wrap to UINT_MAX.
-> * Use %u when printing the newly-u32 capability fields
->   in diagnostic messages.
-> Changes in v6:
-> * Fix subject prefix: net-next -> rdma-next.
-> Changes in v5:
-> * Add U8_MAX clamps in iser_verbs, nvme/host, nvme/target, isert,
-> * rds/ib_cm, smbdirect/connect and smbdirect/accept where u32 capability
->   fields were directly narrowed into u8 rdma_conn_param fields without
->   clamping.
-> * Guard the inline_sge_count calculation in nvmet_rdma_find_get_device()
->   to prevent u32 underflow when both max_sge_rd and max_recv_sge are
-> zero.
-> * Expand type migration to 9 additional fields (max_mw, max_raw_ethy_qp,
->   max_mcast_grp, max_mcast_qp_attach, max_total_mcast_qp_attach, max_ah,
->   max_srq, max_srq_wr, max_srq_sge)
-> * Fix min_t(int,...) in svc_rdma_transport; min_t(u32,...) in ipoib,
->   srpt, nvme/target, rds/ib, rtrs-clt, rtrs-srv, xprtrdma/verbsdd.
-> * Fix frwr_ops.c u32 underflow guard (reorder check before subtraction)
-> * Change sc_max_send_sges to unsigned int, inline_sge_count to u32
-> * Fix %d -> %u in rxe_qp, rxe_srq, ipoib_cm, ib_isert,
-> * svc_rdma_transport
-> * Update commit message.
-> Changes in v4:
-> * Drop clamping the values in mana_ib_query_device, instead update
->   the props values from int to u32.
-> Changes in v3:
-> * Drop clamping from mana_ib_gd_query_adapter_caps(). The internal u32
->   caps cache does not need to be clamped.
-> * Move all clamping exclusively to mana_ib_query_device(), which is the
->   only place the cached u32 values are narrowed into the signed int
->   fields of struct ib_device_attr.
-> * Reframe commit message: this is a u32-to-int type boundary fix, not a
->   CVM/untrusted-hardware hardening patch.
-> Changes in v2:
-> * Update patch title.
-> ---
->  drivers/infiniband/core/cq.c               |  3 +-
->  drivers/infiniband/hw/qedr/verbs.c         |  2 +-
->  drivers/infiniband/sw/rxe/rxe_qp.c         | 22 +++++-----
->  drivers/infiniband/sw/rxe/rxe_srq.c        | 16 +++----
->  drivers/infiniband/ulp/ipoib/ipoib_cm.c    | 10 ++---
->  drivers/infiniband/ulp/ipoib/ipoib_verbs.c |  3 +-
->  drivers/infiniband/ulp/iser/iser_verbs.c   |  5 +--
->  drivers/infiniband/ulp/isert/ib_isert.c    |  7 ++-
->  drivers/infiniband/ulp/rtrs/rtrs-clt.c     | 11 ++---
->  drivers/infiniband/ulp/rtrs/rtrs-srv.c     | 11 ++---
->  drivers/infiniband/ulp/srp/ib_srp.c        |  2 +-
->  drivers/infiniband/ulp/srpt/ib_srpt.c      | 21 +++++----
->  drivers/nvme/host/rdma.c                   |  8 ++--
->  drivers/nvme/target/rdma.c                 | 22 ++++++----
->  fs/smb/smbdirect/accept.c                  |  5 ++-
->  fs/smb/smbdirect/connect.c                 |  5 ++-
->  fs/smb/smbdirect/connection.c              |  8 ++--
->  include/linux/sunrpc/svc_rdma.h            |  4 +-
->  include/rdma/ib_verbs.h                    | 50 +++++++++++-----------
->  net/rds/ib.c                               | 10 ++---
->  net/rds/ib_cm.c                            | 10 ++---
->  net/sunrpc/xprtrdma/frwr_ops.c             |  7 +--
->  net/sunrpc/xprtrdma/svc_rdma_transport.c   |  5 +--
->  net/sunrpc/xprtrdma/verbs.c                |  2 +-
->  24 files changed, 122 insertions(+), 127 deletions(-)
-
-The following code is still missing. Also, what about mxa_srq?
-Why wasn't it converted as well?
-
-diff --git a/drivers/infiniband/core/nldev.c b/drivers/infiniband/core/nldev.c
-index f599c24b34e8..aae4f3f6bcba 100644
---- a/drivers/infiniband/core/nldev.c
-+++ b/drivers/infiniband/core/nldev.c
-@@ -454,7 +454,8 @@ static int fill_res_info(struct sk_buff *msg, struct ib_device *device,
-        };
-
-        struct nlattr *table_attr;
--       int ret, i, curr, max;
-+       u64 curr, max;
-+       int ret, i;
-
-        if (fill_nldev_handle(msg, device))
-                return -EMSGSIZE;
-diff --git a/drivers/infiniband/core/restrack.c b/drivers/infiniband/core/restrack.c
-index cfee2071586c..1b2f9df49e28 100644
---- a/drivers/infiniband/core/restrack.c
-+++ b/drivers/infiniband/core/restrack.c
-@@ -61,7 +61,7 @@ void rdma_restrack_clean(struct ib_device *dev)
-  * @type: actual type of object to operate
-  * @show_details: count driver specific objects
-  */
--int rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
-+u32 rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
-                        bool show_details)
- {
-        struct rdma_restrack_root *rt = &dev->res[type];
-diff --git a/include/rdma/restrack.h b/include/rdma/restrack.h
-index 451f99e3717d..c081384740ce 100644
---- a/include/rdma/restrack.h
-+++ b/include/rdma/restrack.h
-@@ -123,7 +123,7 @@ struct rdma_restrack_entry {
-        u32 id;
- };
-
--int rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
-+u32 rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
-                        bool show_details);
- /**
-  * rdma_is_kernel_res() - check the owner of resource
+> diff --git a/drivers/infiniband/core/nldev.c b/drivers/infiniband/core/nldev.c
+> index f599c24b34e8..aae4f3f6bcba 100644
+> --- a/drivers/infiniband/core/nldev.c
+> +++ b/drivers/infiniband/core/nldev.c
+> @@ -454,7 +454,8 @@ static int fill_res_info(struct sk_buff *msg, struct ib_device *device,
+>         };
+> 
+>         struct nlattr *table_attr;
+> -       int ret, i, curr, max;
+> +       u64 curr, max;
+> +       int ret, i;
+> 
+>         if (fill_nldev_handle(msg, device))
+>                 return -EMSGSIZE;
+> diff --git a/drivers/infiniband/core/restrack.c b/drivers/infiniband/core/restrack.c
+> index cfee2071586c..1b2f9df49e28 100644
+> --- a/drivers/infiniband/core/restrack.c
+> +++ b/drivers/infiniband/core/restrack.c
+> @@ -61,7 +61,7 @@ void rdma_restrack_clean(struct ib_device *dev)
+>   * @type: actual type of object to operate
+>   * @show_details: count driver specific objects
+>   */
+> -int rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
+> +u32 rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
+>                         bool show_details)
+>  {
+>         struct rdma_restrack_root *rt = &dev->res[type];
+> diff --git a/include/rdma/restrack.h b/include/rdma/restrack.h
+> index 451f99e3717d..c081384740ce 100644
+> --- a/include/rdma/restrack.h
+> +++ b/include/rdma/restrack.h
+> @@ -123,7 +123,7 @@ struct rdma_restrack_entry {
+>         u32 id;
+>  };
+> 
+> -int rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
+> +u32 rdma_restrack_count(struct ib_device *dev, enum rdma_restrack_type type,
+>                         bool show_details);
+>  /**
+>   * rdma_is_kernel_res() - check the owner of resource
