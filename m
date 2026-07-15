@@ -1,85 +1,92 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C67FB19F137;
-	Wed, 15 Jul 2026 02:30:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.5
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2228C3E7BA4;
+	Wed, 15 Jul 2026 09:06:02 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784082645; cv=none; b=nLehHbdvE2xVyLiKbfMVk+uIaKQWGeh96dOYDkME5ic3jBy8qNGnoetqBpA1pEHcZCmqbzXXOj5upuPQGH4lCQRa3EHGI3hpm0WgZaVKn4Z1V/ggsYeOotZa/rRugcxNzpY0+gYrwtxgE7MhOAmlfCCAZ3toa3d/UkZBObsq+aM=
+	t=1784106365; cv=none; b=u2KBteluQEOs8d5ZJPgWIe8QGeBqlk875R4/PvpnXO87VMT96gP0ZuYt0XLyFIyeGuzO3kq2iMO60suZFqsvx+2jZpEfbBgSzSAsp129qqJlJm+e7nR06yLqdwwaCscQ9zVuaH1RbOJykBxch3x/8rpSS/lbgAu+mIfIUYz/T8Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784082645; c=relaxed/simple;
-	bh=j2mrNv1C/JWkbTczEQfx78x9V0OtWFlFCo+ubJB8Vlo=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=IFU8c1Zu6qtIEd/UJGFgAJjIi+y5JfC0Xd8ROHDxu9Z6TU+OihMHfHWX7cDgJLZWwPIVWOKTgLL+q48eXh1Me2YbPNImrXx5cibn1vqdnlwbITKb+4pjLhZ96RbojupZ6u2JfjtPbCkP+QmfiqtfkPC3xKAVDTN4QjCx19wwcZ8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=AqEx7fEl; arc=none smtp.client-ip=220.197.31.5
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1784106365; c=relaxed/simple;
+	bh=3BI5Z4OqUuRtYp7BClG+SHiYvpqE3H+/n/Rx4Jg1ivQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=uUGRb3Ts7p4witJqCmrZ4XeaZTUbFXwhnZBUvD0HMIjbCeSGZysdz0AmXF9036QQkc0hL36zHmpqnRUOg7N3RNMp50UFtzCUr+NJsnNefVB3GVPf7ZQWnB9EJIlo5KXobWhKYEoybpgh8UzxVYSsPt/tRhd0JmrnWNI2CdUPaT8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NA6iqLfi; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="AqEx7fEl"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=77
-	H6uJKkG6iYW7g9AkN53A/6FyfqZ+quA14rVSz7XU4=; b=AqEx7fElOy/stYAWFQ
-	U61n4GAWIshy7BotppTBsXBHual53Xx+JeAGxStJkNJeVBNc/JXvO99u49J+5Nlw
-	v7zi4TACHXgfgdobRHeCGIwDT0NzNajRGVHYWFchY4B0wYgRfORhNb5wvQVyi4IH
-	K9RnK17m5R9La80aaiNe/hE3s=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-0 (Coremail) with SMTP id _____wC3IJO58FZq5FUMIw--.64680S2;
-	Wed, 15 Jul 2026 10:30:18 +0800 (CST)
-From: kensanya@163.com
-To: bvanassche@acm.org,
-	jgg@ziepe.ca,
-	leon@kernel.org
-Cc: linux-rdma@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NA6iqLfi"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C62031F000E9;
+	Wed, 15 Jul 2026 09:06:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784106362;
+	bh=Y88tzC1/LJ6aLdthsFjO8w+Vf1/wl511Iaf+O9aceZ4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=NA6iqLfiTDjHV10czvzfbX+T/3yibb2uvqjCZh4lOIrlyViE77SGOlCfLAn4b6mxy
+	 7XHfZcBucN6pAWXdVAkV8pa+aWpo0vkNIuV+kpZ+XKgELT1PWy5mhQWjI9GWlSiS0J
+	 bB5KZfOtuEVuckco1Mu4wmPUxhTQMm4sojvzMbQwlrJbuXqG4mnCoKiIKSOCoWkb1m
+	 rmeDEdcI5JI993RtjdFhs2NyKrW532YbDrBVWTYqL5YjjfAFIeyIVbS33Hxhrdiyt9
+	 PY5P6QFqvcjy9sS7yekx0j2B4atzmHuX3v8kacZaY9SYTK3yyjWUkUVj+yXunJnvrD
+	 L/1W0wvS8BuKQ==
+Date: Wed, 15 Jul 2026 12:05:57 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: kensanya@163.com
+Cc: bvanassche@acm.org, jgg@ziepe.ca, linux-rdma@vger.kernel.org,
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
 	TanZheng <tanzheng@kylinos.cn>
-Subject: [PATCH] RDMA/srpt: Fix srpt_alloc_rw_ctxs() unwind counters
-Date: Wed, 15 Jul 2026 10:30:16 +0800
-Message-Id: <20260715023016.56767-1-kensanya@163.com>
-X-Mailer: git-send-email 2.25.1
+Subject: Re: [PATCH] RDMA/srpt: Fix srpt_alloc_rw_ctxs() unwind counters
+Message-ID: <20260715090557.GE21348@unreal>
+References: <20260715023016.56767-1-kensanya@163.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wC3IJO58FZq5FUMIw--.64680S2
-X-Coremail-Antispam: 1Uf129KBjvdXoW7Jw4kXw17ur4DtFWUCw4kZwb_yoWkKrX_C3
-	srKF97Z34kCa18uw1qkFnxuFyFkFy7Cr4Iqa9Iq3s3C3s0v3Z8A3s7Wr1rZw45J3yUKF98
-	G343K3yxGr1rKjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU1LvK5UUUUU==
-X-CM-SenderInfo: 5nhq2txq1dqiywtou0bp/xtbC6RqadmpW8LoHDQAA3j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260715023016.56767-1-kensanya@163.com>
 
-From: TanZheng <tanzheng@kylinos.cn>
+On Wed, Jul 15, 2026 at 10:30:16AM +0800, kensanya@163.com wrote:
+> From: TanZheng <tanzheng@kylinos.cn>
+> 
+> When srpt_alloc_rw_ctxs() fails partway through a multi-buffer indirect
+> descriptor, the unwind path destroys RDMA contexts but leaves stale
+> n_rw_ctx and n_rdma values (and a dangling rw_ctxs pointer). Later
+> sq_wr_avail accounting in srpt_queue_response() or srpt_write_pending()
+> can then subtract the wrong number of send queue credits.
+> 
+> Reset the counters and rw_ctxs pointer before returning an error.
+> 
+> Fixes: b99f8e4d7bcd ("IB/srpt: convert to the generic RDMA READ/WRITE API")
+> Signed-off-by: TanZheng <tanzheng@kylinos.cn>
+> ---
+>  drivers/infiniband/ulp/srpt/ib_srpt.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+> index f66cfd70c263..4644429fae14 100644
+> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
+> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+> @@ -1016,6 +1016,9 @@ static int srpt_alloc_rw_ctxs(struct srpt_send_ioctx *ioctx,
+>  	}
+>  	if (ioctx->rw_ctxs != &ioctx->s_rw_ctx)
+>  		kfree(ioctx->rw_ctxs);
+> +	ioctx->rw_ctxs = &ioctx->s_rw_ctx;
 
-When srpt_alloc_rw_ctxs() fails partway through a multi-buffer indirect
-descriptor, the unwind path destroys RDMA contexts but leaves stale
-n_rw_ctx and n_rdma values (and a dangling rw_ctxs pointer). Later
-sq_wr_avail accounting in srpt_queue_response() or srpt_write_pending()
-can then subtract the wrong number of send queue credits.
+This line seems questionable to me.
+You probably need to write:
+if (ioctx->rw_ctxs != &ioctx->s_rw_ctx) {
+  kfree(ioctx->rw_ctxs);
+  ioctx->rw_ctxs = NULL;
+}
 
-Reset the counters and rw_ctxs pointer before returning an error.
+> +	ioctx->n_rw_ctx = 0;
+> +	ioctx->n_rdma = 0;
 
-Fixes: b99f8e4d7bcd ("IB/srpt: convert to the generic RDMA READ/WRITE API")
-Signed-off-by: TanZheng <tanzheng@kylinos.cn>
----
- drivers/infiniband/ulp/srpt/ib_srpt.c | 3 +++
- 1 file changed, 3 insertions(+)
+These lines seem correct to me.
 
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index f66cfd70c263..4644429fae14 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -1016,6 +1016,9 @@ static int srpt_alloc_rw_ctxs(struct srpt_send_ioctx *ioctx,
- 	}
- 	if (ioctx->rw_ctxs != &ioctx->s_rw_ctx)
- 		kfree(ioctx->rw_ctxs);
-+	ioctx->rw_ctxs = &ioctx->s_rw_ctx;
-+	ioctx->n_rw_ctx = 0;
-+	ioctx->n_rdma = 0;
- 	return ret;
- }
- 
--- 
-2.25.1
-
+>  	return ret;
+>  }
+>  
+> -- 
+> 2.25.1
+> 
