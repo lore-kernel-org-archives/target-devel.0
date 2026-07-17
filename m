@@ -1,48 +1,48 @@
-Received: from 011.lax.mailroute.net (011.lax.mailroute.net [199.89.1.14])
+Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 555CA37418C
-	for <target-devel@vger.kernel.org>; Fri, 17 Jul 2026 16:38:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.1.14
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC4DF374192;
+	Fri, 17 Jul 2026 17:59:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.1.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784306298; cv=none; b=kYdKLlRrCHT1WAhCUMQBmGK13cynpPlO1RrwupT3l9RQbyjjbd1Z/yIHsytq8VP53mmMe8733fc5f25BC17gtLSbyZBIBkWGUKEUhnqzq+iUnfz7fgzHLQYxvRgeHwasmITYjFtTkaXdA3PMYc8BNxHxipqzT5/5w2YbgQZWSVM=
+	t=1784311188; cv=none; b=bzk06AGoT8jPk4aG67C/Tt8arGN7qWOkRQk4pVtZ/NElmNwqTxX2RVQKIHcbS6s7a3JK6/RaCPGm6xZSjUuzWo8yhMIORzpqeGjwhmai0kEzLPSiUiinQADqTSzRRmr56TAJZDymfnuHu+kmvuYE2wMvBviV9iIRT6OycxQQH+E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784306298; c=relaxed/simple;
-	bh=eEtSsHHkVS6EEgLnyWOrs6P9pU8mRTI7vhR4tH1XMRo=;
+	s=arc-20240116; t=1784311188; c=relaxed/simple;
+	bh=XAvQ9ZYz+dZ+4urxFQKBgI5vRPMIn06ibceXBGvbyhI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=igOSYER77wS9rMNTJmHoh02Ylhq+SgdeoN65QFSN/4FnBTAXlYTlkdrtZQD0yj/R90JLwIRqy10ESDXSJtD2uqsgoZX0vXiO6f8ZPFzQgIJ9BVH0GiBewG+1W7XjPgsi5vdIglsviu5rdBfJZ86gZSxbt1n2xlZBQc443bSy70w=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=hNVpVeL/; arc=none smtp.client-ip=199.89.1.14
+	 In-Reply-To:Content-Type; b=PNjKAARIY12aEE7WNDkProhvnQmy7pZQp/DoiqGDK8SuF+byqDkCuaSzd+K2QgdCOS+Iw8O1DSVh0UpIRlo+lGpp9C4inzj4e0r80yM9BD/Z2wkEDtKkFJE+S34+2T6cmrX64iq4SUy6pEAOV8r9EnSN63ETHz79vfaXPl85fms=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=SHVwOixn; arc=none smtp.client-ip=199.89.1.16
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="hNVpVeL/"
+	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="SHVwOixn"
 Received: from localhost (localhost [127.0.0.1])
-	by 011.lax.mailroute.net (Postfix) with ESMTP id 4h1wZc5fsVz1XMmDQ;
-	Fri, 17 Jul 2026 16:38:16 +0000 (UTC)
+	by 013.lax.mailroute.net (Postfix) with ESMTP id 4h1yNX13qCzlh2yx;
+	Fri, 17 Jul 2026 17:59:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
 	content-transfer-encoding:content-type:content-type:in-reply-to
 	:from:from:content-language:references:subject:subject
 	:user-agent:mime-version:date:date:message-id:received:received;
-	 s=mr01; t=1784306293; x=1786898294; bh=undtjE1TEqLAg8m1bXRqNVty
-	vuGabFNwsuhCZioLsaA=; b=hNVpVeL/Epxv+hADlFticQgOMuuV1MHOUYCHd6TU
-	QdFN22sJcyrrZMCgBdC7NB20z9y6ul4kYYWh3yAHv0i5K+VFLTG9tSVyqhH6tuon
-	LL1Vh+FAlxMivBfV2dANKZsdqb8nyGyvKAnBz6bxSzu6T+Xh8MEL0dBVp7OMC0oQ
-	9r80/7mBMkKzUBSO8oQE2PHly4sRsB5rTScWmAT7On+N4yCs1USgK9JUWeEUhRQc
-	Ua0Ac07u5ujpvxuaaJlVt1B4ox87JBRhmQV1oJ30YC+zmf3BubufzLpouIIM/zK7
-	2otAP8NaPoY/TIUZHVHyA95aWaY9MkPiI8cOZvba8gtz2g==
+	 s=mr01; t=1784311177; x=1786903178; bh=MNVE+tHrogf4IgrRA90UVCEw
+	un1g5X8wCM6Q2Scep7A=; b=SHVwOixnly8OZ4hnGQmNieTB2BoRTiU18ib8sJUa
+	Tgd/AyY/fSr3clTUZId4b5xRunG7pIas9uvJvv+s4n9O2qFOT/78gO1QRvPNUSpM
+	D5J6g8RepbY9Y9+6TW4J+G1pJwgMumNgAa9mR34g61HI1Cy6UZlTW5ZPeulqlqAb
+	PcPaOA9tBajiMw+AJ7+XQZWvWRtqJSfX4Cf47ETZPH7H8GJMiYuqQW7VcnAshFqJ
+	vt3oX5CMEx8We9QlWFItdLFvWlsvehLXPYsnpmOt5lS6optZvx+jkntX8xe8+cbn
+	WIinwfbTZW07r7DObp2VV3vMVe5OcxINXVTqHONzLxBbzA==
 X-Virus-Scanned: by MailRoute
-Received: from 011.lax.mailroute.net ([127.0.0.1])
- by localhost (011.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
- id wQGsWVcS1TNi; Fri, 17 Jul 2026 16:38:13 +0000 (UTC)
+Received: from 013.lax.mailroute.net ([127.0.0.1])
+ by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id pPRsK0Ep_4YA; Fri, 17 Jul 2026 17:59:37 +0000 (UTC)
 Received: from [100.119.48.131] (unknown [104.135.180.219])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
 	(Authenticated sender: bvanassche@acm.org)
-	by 011.lax.mailroute.net (Postfix) with ESMTPSA id 4h1wZW3lhVz1XMKfh;
-	Fri, 17 Jul 2026 16:38:11 +0000 (UTC)
-Message-ID: <98f75887-2a0d-41aa-9dcc-0b891e84e912@acm.org>
-Date: Fri, 17 Jul 2026 09:38:10 -0700
+	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4h1yNS0FB5zlh2r8;
+	Fri, 17 Jul 2026 17:59:35 +0000 (UTC)
+Message-ID: <9f5875f8-2ab0-4272-a8a3-d6cf711978b5@acm.org>
+Date: Fri, 17 Jul 2026 10:59:35 -0700
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -50,37 +50,30 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/1] target: iscsi: Fix hang for aborted WRITE_PENDING
- commands
-To: Maurizio Lombardi <mlombard@redhat.com>, martin.petersen@oracle.com
-Cc: mlombard@arkamax.eu, michael.christie@oracle.com,
- target-devel@vger.kernel.org, loberman@redhat.com
-References: <20260717143828.76291-1-mlombard@redhat.com>
- <20260717143828.76291-2-mlombard@redhat.com>
+Subject: Re: [QUESTION] RDMA/srpt: is target_send_busy() safe before
+ target_init_cmd()?
+To: kensanya@163.com, linux-rdma@vger.kernel.org, target-devel@vger.kernel.org
+Cc: jgg@ziepe.ca, leon@kernel.org
+References: <20260717025402.64054-1-kensanya@163.com>
 Content-Language: en-US
 From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20260717143828.76291-2-mlombard@redhat.com>
+In-Reply-To: <20260717025402.64054-1-kensanya@163.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On 7/17/26 7:38 AM, Maurizio Lombardi wrote:
-> When a LUN_RESET aborts a WRITE command that is in the
-> TRANSPORT_WRITE_PENDING state, the target core sets CMD_T_ABORTED and waits
-> for the frontend to finish processing.
-> 
-> If the initiator subsequently sends the remaining dataout PDUs,
-> __iscsit_check_dataout_hdr() catches the payload, stops the dataout timer
-> if the sequence is final and finally dumps the data.
-> However, the iSCSI target doesn't trigger the completion process for these
-> aborted commands. Because of this, the abort path hangs indefinitely in
-> target_put_cmd_and_wait(), leading to a deadlocked target worker thread.
-> 
-> Fix this by explicitly calling target_complete_cmd() when the final dataout
-> PDU is received for an aborted WRITE command. target_complete_cmd() detects
-> the CMD_T_ABORTED flag and cleanly routes the command into target_abort_work,
-> allowing the abort completion to successfully unblock.
+On 7/16/26 7:54 PM, kensanya@163.com wrote:
+> 1. Is calling target_send_busy() before target_init_cmd() intentional /
+>     known-safe?
 
-Shouldn't a Fixes: tag be added to this patch?
+I think that's a bug.
+
+> 2. If not, should ib_srpt.c send a fabric-local SRP_RSP BUSY (or otherwise
+>     free the send ioctx) when se_tfo is unset, and keep target_send_busy()
+>     only for the post-init failure path?
+
+How about swapping the order of the target_init_cmd() and
+srp_get_desc_tbl() calls and initializing .data_length and 
+.data_direction after the srp_get_desc_tbl() call?
 
 Thanks,
 
