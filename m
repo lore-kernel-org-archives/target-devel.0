@@ -1,73 +1,118 @@
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.2])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F3B923BCEE;
-	Mon, 20 Jul 2026 03:05:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6A4139B95D;
+	Mon, 20 Jul 2026 12:43:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784516746; cv=none; b=eqUJDx9CJAmWvWM+ewbsEwYvAo0T1Vvdn/tRS+E1O8pyto1RNyO5I0LRz2etLX45I2TCibGjJPpnGDjOqbnok042KJQjLc/ewdU4icI202MjX5WMSSJiFEu0N9Wlx5V0rDs3bFO9rhi/Dwmw5FAbaX995+WNkQrK9MdinyaN7Jw=
+	t=1784551436; cv=none; b=Sj6LFUdxQCeDlXizspf5hSpdfl8U1R/eTj0JfMD8opSJIk5Io9alQh/Ria/OGSGL9NzSgL6eUWbswsi6pnTX5wXOhKsKnW/yOlslx0Gq63/LGKJyYOeOWmcUsGI4G+9cAKeTcn48MVuiTQWShp5A3Uqv2PzS1VgXBn/0V8IKG3s=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784516746; c=relaxed/simple;
-	bh=3SN9Am7vZqA1B9+d1tdRf8vEHqcOGpymATh/94O+ghA=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
-	 MIME-Version:Message-ID; b=CnXhylyTllbHYt/yw+7yjaVhv4rwLMSrFr47QlBhKSZefKvByMhjjWSRdhW7Aye6uwnakDfd19XmgseZkocfHjIiMGJgFdFcU9dVHLJlkf0tuWMT780dLrgGVCUhHF3XvMeI/F0EZTjay/bLOkixUGyNrSTYrO9QNC7qD55/W2g=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=RmbnRRZr; arc=none smtp.client-ip=220.197.31.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1784551436; c=relaxed/simple;
+	bh=BcSKg2GpGhjyTVVozQAWAb7EZUn36sjJBz6KpaseLTk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=K9q0Ral+JHsjQ51zL51Xkt0XvHeBWZLyh39sYVvgiwZ2gPG83mgSB1GOCEkp37FOGPs6uGXO1aiQSoToYthduKVs2F0PwSOMBG1CaOMMghscds+hg76fILr0zQgytxp2Pm+bitOYayNIb4d3K8uPyBgSeMNpNBSqP+r3inT4Bbs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=oUcfoo4I; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="RmbnRRZr"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Date:From:To:Subject:Content-Type:MIME-Version:
-	Message-ID; bh=3SN9Am7vZqA1B9+d1tdRf8vEHqcOGpymATh/94O+ghA=; b=R
-	mbnRRZrjafS33q/zfl26ZMvXO3zFzxcBdLy7xiRVo736alPftwkl3STb2XILf4fR
-	7y4oiswzpRv9W7Ce1pE316YYCKYNBY2yP1CBcfvWsJwfg34khCVSG49e24C2kp83
-	mf4MLbLLXIqXMmC3djLOWSBjfYX7CH9ZbqHDC+NT4s=
-Received: from kensanya$163.com ( [116.128.244.171] ) by
- ajax-webmail-wmsvr-40-140 (Coremail) ; Mon, 20 Jul 2026 11:05:23 +0800
- (CST)
-Date: Mon, 20 Jul 2026 11:05:23 +0800 (CST)
-From: kensanya  <kensanya@163.com>
-To: "Bart Van Assche" <bvanassche@acm.org>
-Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, jgg@ziepe.ca,
-	leon@kernel.org
-Subject: Re:Re:Re: [QUESTION] RDMA/srpt: is target_send_busy() safe before
- target_init_cmd()?
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2023.4-cmXT build
- 20260511(2e539873) Copyright (c) 2002-2026 www.mailtech.cn 163com
-In-Reply-To: <63578cf8.1b55.19f7d4a126c.Coremail.kensanya@163.com>
-References: <20260717025402.64054-1-kensanya@163.com>
- <9f5875f8-2ab0-4272-a8a3-d6cf711978b5@acm.org>
- <63578cf8.1b55.19f7d4a126c.Coremail.kensanya@163.com>
-X-NTES-SC: AL_Qu2TBvmauU8p5SOeY+kcnkcTg+k8WMW1ufsg2Ydec94FlB3O6wcvU15/MUTw7uuzMz6wkSaMUilI0/9CQrl38bbr9mC3S6cunuxA4Sk5fw==
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=GBK
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="oUcfoo4I"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4EA91F000E9;
+	Mon, 20 Jul 2026 12:43:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784551435;
+	bh=1c6LTL5Is7h8D95ocgbXWlW7FM4nVTO6iup7BWbySR4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=oUcfoo4Icd3uA53Ct4ZXYsqZQsaE057RK+n9XKwQWhRB+hfI6GFRjMc8L+U+z5tUq
+	 3KKP8uiWQhoA/yS7kogZzjr6+izJG3giyyIF0WkRSVdDowTa5ejo/0RPaXxjJNjceh
+	 xdwFW12MQrQXiyeC/dozu/ErLqsu9hfqjEAvR2wlH3WySiOmRq9hXRmgro8DnX8Jf0
+	 ygSdzdmIWdSqtYkSDcidG5waZghMUxQqxriWyl/v5sIg00jAM/BJhFx4YZFwRZh7hr
+	 cTFOouuznp3AFoSSkxVukQhRtyvYKzLld+neAWQtXredy3IwWyHjAe3dVIG2qtDG95
+	 G+ye2STy/aR5Q==
+Date: Mon, 20 Jul 2026 15:43:49 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Brian King <brking@us.ibm.com>, Hannes Reinecke <hare@suse.com>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Matthew Wilcox <willy@infradead.org>,
+	Wen Xiong <wenxiong@linux.ibm.com>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org, Hannes Reinecke <hare@kernel.org>,
+	John Garry <john.g.garry@oracle.com>
+Subject: Re: [PATCH v2 0/4] scsi: replace __get_free_pages() with kmalloc()
+Message-ID: <al4YBTQ-aUS9_DJJ@kernel.org>
+References: <20260704-b4-scsi-v2-0-7d2d21a810de@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <738d1559.2ada.19f7d7c42ae.Coremail.kensanya@163.com>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:jCgvCgD3n49zkF1qtAAhAA--.2344W
-X-CM-SenderInfo: 5nhq2txq1dqiywtou0bp/xtbC6hMyDmpdkHM6iQAA3i
-X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260704-b4-scsi-v2-0-7d2d21a810de@kernel.org>
 
-CgpBdCAyMDI2LTA3LTIwIDEwOjEwOjM0LCAia2Vuc2FueWEiIDxrZW5zYW55YUAxNjMuY29tPiB3
-cm90ZToKPgo+QXQgMjAyNi0wNy0xOCAwMTo1OTozNSwgIkJhcnQgVmFuIEFzc2NoZSIgPGJ2YW5h
-c3NjaGVAYWNtLm9yZz4gd3JvdGU6Cj4+T24gNy8xNi8yNiA3OjU0IFBNLCBrZW5zYW55YUAxNjMu
-Y29tIHdyb3RlOgo+Pj4gMS4gSXMgY2FsbGluZyB0YXJnZXRfc2VuZF9idXN5KCkgYmVmb3JlIHRh
-cmdldF9pbml0X2NtZCgpIGludGVudGlvbmFsIC8KPj4+ICAgICBrbm93bi1zYWZlPwo+Pgo+Pkkg
-dGhpbmsgdGhhdCdzIGEgYnVnLgo+Pgo+Pj4gMi4gSWYgbm90LCBzaG91bGQgaWJfc3JwdC5jIHNl
-bmQgYSBmYWJyaWMtbG9jYWwgU1JQX1JTUCBCVVNZIChvciBvdGhlcndpc2UKPj4+ICAgICBmcmVl
-IHRoZSBzZW5kIGlvY3R4KSB3aGVuIHNlX3RmbyBpcyB1bnNldCwgYW5kIGtlZXAgdGFyZ2V0X3Nl
-bmRfYnVzeSgpCj4+PiAgICAgb25seSBmb3IgdGhlIHBvc3QtaW5pdCBmYWlsdXJlIHBhdGg/Cj4+
-Cj4+SG93IGFib3V0IHN3YXBwaW5nIHRoZSBvcmRlciBvZiB0aGUgdGFyZ2V0X2luaXRfY21kKCkg
-YW5kCj4+c3JwX2dldF9kZXNjX3RibCgpIGNhbGxzIGFuZCBpbml0aWFsaXppbmcgLmRhdGFfbGVu
-Z3RoIGFuZCAKPj4uZGF0YV9kaXJlY3Rpb24gYWZ0ZXIgdGhlIHNycF9nZXRfZGVzY190YmwoKSBj
-YWxsPwo+Pgo+PlRoYW5rcywKPj4KPj5CYXJ0Lgo+Cj5IaaOsCj5CYXJ0Cj4KPlRoaXMgcGxhbiBp
-bnZvbHZlcyBmZXdlciBjaGFuZ2VzLiBQZXJoYXBzIEkgY291bGQgc3VibWl0IGEgZml4IHBhdGNo
-Lgo+Cj5UaGFua3MKPlRhblpoZW5nCj4KSGkgCkJhcnQKCkhvdyBhYm91dCB0aGlzPyAKaHR0cHM6
-Ly9sb3JlLmtlcm5lbC5vcmcvYWxsLzIwMjYwNzIwMDI1OTQxLjY5ODA5LTEta2Vuc2FueWFAMTYz
-LmNvbS8KClRoYW5rcwpUYW5aaGVuZw==
+Gentle ping.
+
+On Sat, Jul 04, 2026 at 09:13:33AM +0300, Mike Rapoport (Microsoft) wrote:
+> This is a (small) part of larger work of replacing page allocator calls
+> with kmalloc.
+> 
+> My initial intention a few month ago was to remove ugly casts [1], but then
+> willy pointed out that Linus objected to something like this [2] and it
+> looks like more than a decade old technical debt.
+> 
+> Largely, anything that doesn't need struct page (or a memdesc in the
+> future) should just use kmalloc() or kvmalloc() to allocate memory.
+> kmalloc() guarantees alignment, physical contiguity and working
+> virt_to_phys() and beside nicer API that returns void * on alloc and
+> doesn't require to know the allocation size on free, kmalloc() provides
+> better debugging capabilities than page allocator.
+> 
+> Another thing is that touching these allocation sites gives the reviewers
+> opportunity to see if a PAGE_SIZE buffer is actually needed or maybe
+> another size is appropriate.
+> 
+> For larger allocations that don't need physically contiguous memory
+> kvmalloc() can be a better option that __get_free_pages() because under
+> memory pressure it's is easier to allocate several order-0 pages than a
+> physically contiguous chunk with the same number of pages.
+> 
+> And last, but not least, removing needless calls to page allocator should
+> help with memdesc (aka project folio) conversion. There will be way less
+> places to audit to see if the user was actually using struct page.
+> 
+> Also in git:
+> https://git.kernel.org/pub/scm/linux/kernel/git/rppt/linux.git gfp-to-kmalloc/scsi
+> 
+> [1] https://lore.kernel.org/all/20251018093002.3660549-1-rppt@kernel.org/
+> [2] https://lore.kernel.org/all/CA+55aFwp4iy4rtX2gE2WjBGFL=NxMVnoFeHqYa2j1dYOMMGqxg@mail.gmail.com/ 
+> 
+> ---
+> v2 changes:
+> * replace GFP_ATOMIC with GFP_NOIO in ipr driver
+> 
+> v1: https://patch.msgid.link/20260630-b4-scsi-v1-0-494fb37ebe7b@kernel.org
+> 
+> ---
+> Mike Rapoport (Microsoft) (4):
+>       scsi: target: file: use kmalloc() to allocate temporary protection buffer
+>       scsi: proc: use kmalloc() in proc writers
+>       scsi: ipr: use kmalloc() to allocate IPR dump buffer memory
+>       scsi: sym53c8xx_2: replace __get_free_pages() with kmalloc()
+> 
+>  drivers/scsi/ipr.c                  | 4 ++--
+>  drivers/scsi/scsi_devinfo.c         | 5 +++--
+>  drivers/scsi/scsi_proc.c            | 9 +++++----
+>  drivers/scsi/sym53c8xx_2/sym_hipd.h | 4 ++--
+>  drivers/target/target_core_file.c   | 4 ++--
+>  5 files changed, 14 insertions(+), 12 deletions(-)
+> ---
+> base-commit: dc59e4fea9d83f03bad6bddf3fa2e52491777482
+> change-id: 20260611-b4-scsi-d0b0eb4895f4
+> 
+> --
+> Sincerely yours,
+> Mike.
+> 
+
+-- 
+Sincerely yours,
+Mike.
