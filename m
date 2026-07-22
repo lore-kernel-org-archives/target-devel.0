@@ -1,109 +1,77 @@
-Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 971D4472F62;
-	Tue, 21 Jul 2026 20:13:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.1.16
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F38E437B40E;
+	Wed, 22 Jul 2026 01:53:13 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.5
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784664836; cv=none; b=upETclJl+miQ2U5azGlhkjj22r/tChqtgiIIGH4n6Z+86HMWgBOxrg7HkmXQNh5X2DZZAq0nHF6BSRvWp6Ed0VygcmUsHcYn3efVCUAiepKwRKlE34eAJDMFrrZFeMbXu4P6Bc10DJFBlryMcmmcKXusMjuAVNb4brAipQK/W98=
+	t=1784685199; cv=none; b=d0ONCflgHODYdFD6Q3qiV0CxWxZ73w9iW1EzNi6xewCWeZsxF2wDbXNH4bGDlUDMG+nGw8I1ERtI38w2S3tyhMAvV0wJhBi21vIEUGEYBpX/BKRQjgyFl4oCPRcwxLeOddKmJG2GYmUchR6zeBdgrP00M0Ja8MqBFYs2/n1lQ7M=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784664836; c=relaxed/simple;
-	bh=2L+3BCG06iLdaK/CKLWLIdAY2y1wfXTErETicujdPcE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WJ6ipFpst9V2WCFdbRaZAZutAuXNA7TxRUIQH6cXAD03o4TNV/acdABID+iFsnD2me8IAue7Ufgkr2kaBjmnEqlvnMVvF/5ismEFLWKeYGJW3ZICFrAicAJyAk6Z7THhBLf739eqMbsUTU52su3XcL60ZxwlS80x8hVkcRCx6CY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=e3FXLeEZ; arc=none smtp.client-ip=199.89.1.16
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
+	s=arc-20240116; t=1784685199; c=relaxed/simple;
+	bh=c3+qiVfVOhCDSZ4Df8vmy8w2UpeWdkx9CF/vkAcRjQs=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
+	 MIME-Version:Message-ID; b=BGnoBLl5uixx3lk5QtlOzb2mG6e4lkM+p1wbMU60jJgnbEP3T58YcSINL5op/RdXSKVYKRwuMSNXxQR0evAi1rpg0FuiwpvXJrPiidLQ2xuUyIsPQGJkwp9Tp4HEdFvdCrp0d9uwif5v+Byt0DxTujpxpY+MnmgsFYtj5HmnSMc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=ZRo/i/1X; arc=none smtp.client-ip=117.135.210.5
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="e3FXLeEZ"
-Received: from localhost (localhost [127.0.0.1])
-	by 013.lax.mailroute.net (Postfix) with ESMTP id 4h4T9Y6CPdzlfvqP;
-	Tue, 21 Jul 2026 20:13:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
-	content-transfer-encoding:content-type:content-type:in-reply-to
-	:from:from:content-language:references:subject:subject
-	:user-agent:mime-version:date:date:message-id:received:received;
-	 s=mr01; t=1784664830; x=1787256831; bh=rYMr1tKPbxY1Cr3dBgHWqvye
-	NRic/bw7ZBLUXgtqIVU=; b=e3FXLeEZ9UW5A1tAy+h3u1uoRa6ZIydmodlCF8xR
-	wMyBupGJyXh4G0p9AJWZUG07xbNChvOPZUKy8uZe+/a0FqgIIZqHjaiK1XYSOjB2
-	dsGx2Uq48tuokiBK5is0Ng+4zMMCRrq/TLHUrvCPovUHvPyQKCvUHwRK4aVgWrtK
-	7TydzHMIzVSR+qgcsOZ/e1vQtFt9CyQw+zkbpVtaC0x5/goDzafJ8SGWssdBW4F0
-	3mmagxUHncgxlT7PmTvpqZ9RJU6NoLlNVSB8b45tWvMQX4G0G16+UHJ+oqSGWS1F
-	f2kuylErLT1ZR4cVo1IwJXJtlXUWI0i/i7XqtqUVqzSGRQ==
-X-Virus-Scanned: by MailRoute
-Received: from 013.lax.mailroute.net ([127.0.0.1])
- by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
- id kqskXLTN55ZW; Tue, 21 Jul 2026 20:13:50 +0000 (UTC)
-Received: from [100.119.48.131] (unknown [104.135.180.219])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: bvanassche@acm.org)
-	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4h4T9T1ZlFzlfvqD;
-	Tue, 21 Jul 2026 20:13:48 +0000 (UTC)
-Message-ID: <54cd4e16-f3c2-4e80-b8ab-98de3d2bd6c8@acm.org>
-Date: Tue, 21 Jul 2026 13:13:48 -0700
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="ZRo/i/1X"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=Date:From:To:Subject:Content-Type:MIME-Version:
+	Message-ID; bh=c3+qiVfVOhCDSZ4Df8vmy8w2UpeWdkx9CF/vkAcRjQs=; b=Z
+	Ro/i/1X7BaX6eFoQPjmOgU/8KktiZvKvPgcs9NXOFnMJ28FPWd5qc9cb7TPwBqtl
+	hIby7rqUsRPRvMpsfTRYvoBMKWefY+MYKAa5sxfmAiydugJcKLKRfAQsXGxgXwIJ
+	g1cz9/D0G+OdWj4m7Hp8x6NPkKatSMEeXazh22LQbc=
+Received: from kensanya$163.com ( [116.128.244.169] ) by
+ ajax-webmail-wmsvr-40-110 (Coremail) ; Wed, 22 Jul 2026 09:52:42 +0800
+ (CST)
+Date: Wed, 22 Jul 2026 09:52:42 +0800 (CST)
+From: kensanya  <kensanya@163.com>
+To: "Bart Van Assche" <bvanassche@acm.org>
+Cc: jgg@ziepe.ca, leon@kernel.org, linux-rdma@vger.kernel.org,
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	TanZheng <tanzheng@kylinos.cn>
+Subject: Re:Re: [PATCH] RDMA/srpt: fix NULL deref when sending BUSY before
+ target_init_cmd()
+X-Priority: 3
+X-Mailer: Coremail Webmail Server Version 2023.4-cmXT build
+ 20260511(2e539873) Copyright (c) 2002-2026 www.mailtech.cn 163com
+In-Reply-To: <e5c8e258-8c57-40c8-88a9-04173392e9ae@acm.org>
+References: <20260720025941.69809-1-kensanya@163.com>
+ <e5c8e258-8c57-40c8-88a9-04173392e9ae@acm.org>
+X-NTES-SC: AL_Qu2TBvqTukkt5CORYekcnkcTg+k8WMW1ufsg2Ydec+YEgS3E+woGfW5/I0TN3tu3GwaMniSFaAJ1189Gfox/meL4qeCteWDEXQfoAmwjwA==
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=GBK
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH rdma-next] RDMA/srpt: Pass the mapped task attribute to
- target_init_cmd()
-To: Leon Romanovsky <leon@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
- Nicholas Bellinger <nab@linux-iscsi.org>
-Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260721-b4-scsi-ordering-violation-due-to-hardc-v1-1-07205aab71bb@nvidia.com>
-Content-Language: en-US
-From: Bart Van Assche <bvanassche@acm.org>
-In-Reply-To: <20260721-b4-scsi-ordering-violation-due-to-hardc-v1-1-07205aab71bb@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <41ddb3a1.16d1.19f87866fa1.Coremail.kensanya@163.com>
+X-Coremail-Locale: zh_CN
+X-CM-TRANSID:bigvCgD390lrImBqbuYiAA--.494W
+X-CM-SenderInfo: 5nhq2txq1dqiywtou0bp/xtbC6QtVMWpgImuJaQAA3l
+X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
 
-On 7/21/26 2:10 AM, Leon Romanovsky wrote:
-> From: Leon Romanovsky <leonro@nvidia.com>
-> 
-> srpt_handle_cmd() maps the initiator-supplied srp_cmd->task_attr into
-> cmd->sam_task_attr, but then hands a hardcoded TCM_SIMPLE_TAG to
-> target_init_cmd().
-> 
-> Pass the already mapped cmd->sam_task_attr instead, so target core sees the
-> attribute the initiator requested.
-> 
-> Fixes: 9474b043132f ("ib_srpt: Convert I/O path to target_submit_cmd + drop legacy ioctx->kref")
-> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
-> ---
-> Bart,
-> 
-> I found this during code review, but I'm not sure what the
-> original intention was.
-> 
-> The Fixes line references the addition of MSG_SIMPLE_TAG as a
-> hardcoded value. MSG_SIMPLE_TAG was later renamed to TCM_SIMPLE_TAG.
-> 
-> Thanks
-> ---
->   drivers/infiniband/ulp/srpt/ib_srpt.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> index a22ee4fc1e4c..7197d95f2216 100644
-> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-> @@ -1602,7 +1602,7 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
->   
->   	rc = target_init_cmd(cmd, ch->sess, &send_ioctx->sense_data[0],
->   			     scsilun_to_int(&srp_cmd->lun), data_len,
-> -			     TCM_SIMPLE_TAG, dir, TARGET_SCF_ACK_KREF);
-> +			     cmd->sam_task_attr, dir, TARGET_SCF_ACK_KREF);
->   	if (rc != 0) {
->   		pr_debug("target_submit_cmd() returned %d for tag %#llx\n", rc,
->   			 srp_cmd->tag);
-
-Although the Linux kernel SRP initiator always uses the SIMPLE tag, the
-above change looks good to me. Hence:
-
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+CgpBdCAyMDI2LTA3LTIxIDAwOjMxOjU4LCAiQmFydCBWYW4gQXNzY2hlIiA8YnZhbmFzc2NoZUBh
+Y20ub3JnPiB3cm90ZToKPk9uIDcvMTkvMjYgNzo1OSBQTSwga2Vuc2FueWFAMTYzLmNvbSB3cm90
+ZToKPj4gKwlyYyA9IHRhcmdldF9pbml0X2NtZChjbWQsIGNoLT5zZXNzLCAmc2VuZF9pb2N0eC0+
+c2Vuc2VfZGF0YVswXSwKPj4gKwkJCSAgICAgc2NzaWx1bl90b19pbnQoJnNycF9jbWQtPmx1biks
+IDAgLyogZGF0YV9sZW4gKi8sCj4+ICsJCQkgICAgIFRDTV9TSU1QTEVfVEFHLCBETUFfTk9ORSwg
+VEFSR0VUX1NDRl9BQ0tfS1JFRik7Cj4+ICsJaWYgKHJjICE9IDApIHsKPj4gKwkJcHJfZGVidWco
+InRhcmdldF9pbml0X2NtZCgpIHJldHVybmVkICVkIGZvciB0YWcgJSNsbHhcbiIsIHJjLAo+PiAr
+CQkJIHNycF9jbWQtPnRhZyk7Cj4+ICsJCWdvdG8gYnVzeTsKPj4gKwl9Cj4KPlRoaXMgd2lsbCBj
+YXVzZSB0YXJnZXRfc2VuZF9idXN5KCkgdG8gYmUgY2FsbGVkIG9uIGFuIHVuaW5pdGlhbGl6ZWQg
+Cj5jb21tYW5kIGFuZCB0aGF0IGlzbid0IGFsbG93ZWQsIGlzbid0IGl0Pwo+Cj5UaGFua3MsCj4K
+PkJhcnQuCgpZb3UgYXJlIHJpZ2h0IHRoYXQgdGFyZ2V0X3NlbmRfYnVzeSgpIG11c3Qgbm90IGJl
+IHVzZWQgd2hlbgp0YXJnZXRfaW5pdF9jbWQoKSBmYWlsczogdGhlIGNvbW1hbmQgaXMgbm90IGZ1
+bGx5IHNldCB1cCBmb3IgdGhlCnRhcmdldC1jb3JlIGNvbXBsZXRpb24gcGF0aCAoZS5nLiBjbWRf
+Y250IHdhcyBub3QgdGFrZW4gb24KLUVTSFVURE9XTikuIFRoYXQgZ290by1idXN5LW9uLWluaXQt
+ZmFpbHVyZSBwYXRoIGFscmVhZHkgZXhpc3RlZApiZWZvcmUgdGhlIHJlb3JkZXIuCgpIb3cgYWJv
+dXQgdGhlIGZvbGxvd2luZyBwbGFuPwogIC0gSWYgdGFyZ2V0X2luaXRfY21kKCkgZmFpbHM6CiAg
+ICAgIHJlbGVhc2UgdGhlIHNlbmQgaW9jdHggbG9jYWxseSB2aWEgdGFyZ2V0X2ZyZWVfdGFnKGNo
+LT5zZXNzLCBjbWQpCiAgICAgIGFuZCBkbyBub3QgY2FsbCB0YXJnZXRfc2VuZF9idXN5KCkKICAt
+IElmIHRhcmdldF9pbml0X2NtZCgpIHN1Y2NlZWRzIGJ1dCBhIGxhdGVyIHN0ZXAgZmFpbHMKICAg
+IChlLmcuIHNycHRfZ2V0X2Rlc2NfdGJsKCkpOgogICAgICBrZWVwIHVzaW5nIHRhcmdldF9zZW5k
+X2J1c3koY21kKQoKVGhhbmtzo6wKVGFuWmhlbmc=
