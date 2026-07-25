@@ -1,74 +1,73 @@
-Received: from mail-pl1-f173.google.com (mail-pl1-f173.google.com [209.85.214.173])
+Received: from mail-pj1-f47.google.com (mail-pj1-f47.google.com [209.85.216.47])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9135917A305
-	for <target-devel@vger.kernel.org>; Sat, 25 Jul 2026 08:49:53 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 251CB339705
+	for <target-devel@vger.kernel.org>; Sat, 25 Jul 2026 16:58:43 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.47
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1784969396; cv=none; b=otze3tXdB7n9BMh8tSw9O1faIV0ajHZUGcjZKvQ2DO/Wz9a6VPvPQabfGIHvabCNow/7LLMTKUK6/5pAi0ee/aWxV/AxTZ41VYCBJ0WgxYLUYx0TyaAmqU/2fMCRyHThILJm43Y3G0O9ERDltG4hRBGjkZrjiUddCJZ7racdCuk=
+	t=1784998727; cv=none; b=B1A8ULSzkaA215NfbWDA8AS2dN3xsUfnoqOQ9+lEqyKScdAny97Gt1MfesFWiCWeBs88m3lMYqQOCwk8F5Jxs2uk8RGRyJHckE4k+EJQYDwg/o/Ncy6DkC8xKgYgImlv15pPrnZfSjr7Q/JJgvhzEKozRkoGkI0poObwa6o2rE0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1784969396; c=relaxed/simple;
-	bh=5wbCDtZrp3iGrV7cvqBSX5L1cMn6ozL59j7qNmbBlFo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pBy7UAjAF+u/lC5ciNpspHWFzmRPOBKTh4uc2WiZTyBg7TCnF+5z+gufam19ahsE/ca97A/xxQ8DgZ2TOItaGet8B/17p0yfRfI1y/FD7GmiXdelWARDrrwuhWBvEdYCVwCoHvfhZuUziFMcEHiXsjKBlF430G9ROfNFdDcEUBQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=ucIkn7pr; arc=none smtp.client-ip=209.85.214.173
+	s=arc-20240116; t=1784998727; c=relaxed/simple;
+	bh=LWPaSRdTaK/zLOcQpiD2kptFzcCjeBzXpfz1b58ofxg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=r53XwHABkGRP5KSWJVMV+IVoNW6P2U1jfOfIFtMzxnjdljT0rieRP7Nt5MB2MKAsilxKksnv0iD8xmswrAYsNjA7F3Hx8F7bNhvDqAiUY0XilQSszt5z9AgMVc5fcnWc7nnlCYEtawvvK4qrYHjqd74II8rMkrDby/cRCWsiLmw=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=CKj8sXzn; arc=none smtp.client-ip=209.85.216.47
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="ucIkn7pr"
-Received: by mail-pl1-f173.google.com with SMTP id d9443c01a7336-2cf452def93so18642955ad.1
-        for <target-devel@vger.kernel.org>; Sat, 25 Jul 2026 01:49:53 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="CKj8sXzn"
+Received: by mail-pj1-f47.google.com with SMTP id 98e67ed59e1d1-38dfe7eb825so1124739a91.0
+        for <target-devel@vger.kernel.org>; Sat, 25 Jul 2026 09:58:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1784969392; x=1785574192; darn=vger.kernel.org;
+        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1784998723; x=1785603523; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=hVrFE1uT0BINsDxyA59hgmjG595lAs1SmBDuzg2mqOY=;
-        b=ucIkn7prAAphz5VvOCHw4BKchC8tQzIwlfgt6tl5Ze6rb/f/5QSfx0VcNM9osj8816
-         HwtK67Lh/C5rh7WI+E7cVs3DosbI8gRBIgTS/Hg0NVj4MiAos9SO0IDCb64vZjxShxg0
-         aQnHQu1bXZd3mQ8JsU1hcgAuQSKjkfO3Zon9UDfcnnoRf+hDomh1TvtzyiPtIjhaIJXA
-         Yzq/vqCXLDonFudxkBJDhC41JQzfu4VzRctLvY0r3oKfHRJBPTb+CDRB4MNSs6v/6WYP
-         a0F0TnUkB9Xq/Ogv2F2iUFjyl+5xS+aV+2CFQKW047v1VvwGNcWwqiV3xls1m+k6mmiO
-         Qcrw==
+        bh=0t/YY47ENH5SCQReYb/C+fGrbKDzqPxbSclegiFo9uY=;
+        b=CKj8sXznyw8csB0bbGHMa32FEnwmZmrUsgIXovVOsyxxDsjEA+vE0nCXQJrX7+qg+X
+         a2xYk99PJ7XVdvFLcMRw34qIkvgq3hCbYD0vWCrUP7fFQWIAnG2EPUMHWwnPY3zTBIYu
+         r10/iMxxEQ1gLjB3Uw+dzbFkP4wGHLdei8Mjz/iWGvylywFg2z8DBXyXpIsi4iSsHiTn
+         VERZKQyPjEWcx93WAVEsjw9Mkmz/zEdeo7kgdwEdpVBJzddaBANlHcQsNTBwgTucMp32
+         05PieZM8oLimYO5VRLYVeklzcMUGNdS519JES89yhhA0NHTfuF5zWkcSUQVUoB8rgOjU
+         8OAg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784969392; x=1785574192;
+        d=1e100.net; s=20251104; t=1784998723; x=1785603523;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=hVrFE1uT0BINsDxyA59hgmjG595lAs1SmBDuzg2mqOY=;
-        b=S23n4TMT7qZtxO0pOPps+AM7UBiKL+CKVJaEyAwFRLandE9o6wWG/MrQqlUq0LK66d
-         Urp0ChpENRZHctNoc9oLN77rvZ/GxPCf6pCtL/ppWIjU8FiNnu+pT3AcKWCk86LaBu4x
-         SaF4ImsRcNqDXibaI4FQjvl7dCXjHq6d1JrhM6d8Per0lYFluAJqzeXyXI/+sQRQva1P
-         TZ2j4/wkL4VmvSx4p0Tu0YKEinOUt7WEwQ0zEQ6ihf/iaDoPhX8l3rgpnssszGT59iR4
-         Up+hvDVUk4kdV4ALZ/e4KVFYysqugXW2ivgkmTgE1cK1ylRe/ZP66GlLq8PmUA9zk2w/
-         jPZg==
-X-Forwarded-Encrypted: i=1; AHgh+RrXu9/imLIp90xfEDJMpk62vEu3wglEngkrgqUxRYdx/i6VXQKSy4ylWHUtnkW1YaiiuFAOOdFIq8J3yaU=@vger.kernel.org
-X-Gm-Message-State: AOJu0YzjOGm8Jg/s367sQ3QhiI+my4B8SKJpxrZz6KfKL2XtdLFh66JK
-	8x1mJlrNZdqeV+YyGUcSzgYvaheXlAkuKQH41LHfk01NmkFKsuqkkHBZaHwEbWQC9BU=
-X-Gm-Gg: AR+sD10uS1Bc3d5upIVjjs17r+8PSEvGht/X2PRhkcq9XD+Tz3cF015VMNZQUSFi2kr
-	oEjSPMO7RmLvzLUcOdf/SuHyWqaNdXh5mPpaXjB/qFn7VelusrvndFArxXTyPNABbXD8Qho9qY5
-	v+NHAVMxf1wcDw2WCJLDkMgAYnriduf5jYCJnJ+uWD39ovQ5VCajZ+wM0cgADrG8OmnJDOjUWVV
-	Hcuk4myJ1ympjoXX5eoORXvK/ry/fcFJxd1wfpdkUOO2W8XbKScqV/AcPdDd66jBO+FOeniJLs0
-	gLEy2YL1CAW3bodL9/gszCgKsK4f1FHaBB8Us7+kFfHC3r/w83sO334IUzyl0rvwSZO9q1hIRX1
-	CYTrin3aYOIC7jfMGNdryH8l1TBozDMGYCi3p5rK00mI7I5WQEzmMzdyYrJh/e/+G8rG09Awlzi
-	6jZ8O1nux33dqsVaX4RhU0Z6pL
-X-Received: by 2002:a17:902:e549:b0:2c9:d8c5:d55d with SMTP id d9443c01a7336-2cfdf41daa3mr13200785ad.16.1784969392582;
-        Sat, 25 Jul 2026 01:49:52 -0700 (PDT)
-Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:27f4:9b8e:6315:1280])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cfde5e2b8esm7168165ad.31.2026.07.25.01.49.49
+        bh=0t/YY47ENH5SCQReYb/C+fGrbKDzqPxbSclegiFo9uY=;
+        b=OFz0C679pyT8N9FuLkeEMX/l3txHP5Fbm9ZEyx2CKByahV4fNpWCix9LFXZ0l4yk6V
+         aoTn2Cu4W34xzf/GipacHsqVPGdRWGZWsSLeAFoQ2aJI6itsx/1TF88jOuOkYSDE6yjP
+         raV3ZNWuPRtN0sz/bA4LbD1AcX734ZiEOR21O9zeU0/lRbYia4pLlfjeY0mfDfoUR1L9
+         j/fErBuVYDA2CxCX5WqNlukIs6I+rWFvBf6BHzPG6IZA51liSleVJjqonquBN+cWkmDG
+         f4n4eNoqSUY64G4/ifRfz+m8Wr3rcsoxXsaI17cnvmRi3DCD5zqDw33y5F99gokY4R7y
+         4Wvw==
+X-Forwarded-Encrypted: i=1; AHgh+RqmwFtoqUjMAAwfKWyFx+1HIGrNg4lQgCTjg0vPPC9eXjlvW/TZa0TQcqIFxZ/R8XD3eh/+XO+9bLa11Hk=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yzl6JGkyloIEMMnCci4eO8CL2fOsNtJTYsuA8T2Q0biByGW8aWZ
+	FkFQxV0odaawa0NjdGc+E9wEYX2X/2yboYvVlEm6vsZa2bZAQ5EHWTijhYusEK6xuw8=
+X-Gm-Gg: AR+sD11VktfZxN8F547RfNquTHpFOEOgZbWJCTiSCYtXBlDJF1ABSDO15kJIwf3orPW
+	BD3jJzzL8nRA4w9hytBVBtZS+uBjpQnxg/tBipw4S4vSum+94SbVO6cznBRdaIOaBl8Q4IJMG1A
+	ZurL5U502RukGVdRFGWYNSiMl8fpIRHeM3Zsa3O4YXS1nlL0kUqGyswL2jAM/DCqCYtMGCUrDUD
+	xCUOPwjz9OuaiOZ2xQyLVt0A8lKufSDUPvjDHyPDGh0QcjMfhIjep5hVvHf3XZDtY+uovqC+3Ea
+	M4eoJDvhPM6iJzYt73IdCOQGL+MdiO+rJvH2uA9p4/AxCdrvH9XTqv/zGpO8vTtnBqd1TohRk0r
+	tzfz/ITpSzF+Rypg1eD01t+F/2PhnHfpbtaBi8T7t3YBPxuwFvI7UK2KpPPCZGdsjhzY4/KIvVq
+	biEK0r/WAfY5mJmSqCmxeiHgJuiO/oP4YUNOI=
+X-Received: by 2002:a17:90b:4b8e:b0:38e:2a4:cffc with SMTP id 98e67ed59e1d1-38f2961561dmr3186543a91.25.1784998722983;
+        Sat, 25 Jul 2026 09:58:42 -0700 (PDT)
+Received: from localhost.localdomain ([2406:5900:1044:110c:27f4:9b8e:6315:1280])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38f058118f2sm1814967a91.1.2026.07.25.09.58.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 25 Jul 2026 01:49:52 -0700 (PDT)
+        Sat, 25 Jul 2026 09:58:42 -0700 (PDT)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 To: martin.petersen@oracle.com,
-	michael.christie@oracle.com,
-	himanshu.madhani@oracle.com
+	michael.christie@oracle.com
 Cc: ddiss@suse.de,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Yehyeong Lee <yhlee@isslab.korea.ac.kr>,
 	stable@vger.kernel.org
-Subject: [PATCH] scsi: target: Fix NULL se_tpg dereference in target_complete()
-Date: Sat, 25 Jul 2026 17:49:39 +0900
-Message-ID: <20260725084939.694403-1-yhlee@isslab.korea.ac.kr>
+Subject: [PATCH v2] scsi: target: Fix NULL se_tpg dereference in target_complete()
+Date: Sun, 26 Jul 2026 01:58:18 +0900
+Message-ID: <20260725165818.769963-1-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
@@ -108,8 +107,12 @@ deregistration has not been pinned down; the guard defends the dereference
 regardless of how the command reaches this point.
 
 Load se_tpg first and fall back to a NULL wwn when it is absent.  The
-existing "if (!wwn)" path already queues the completion on cmd->cpuid,
-so no new branch is needed; this extends that guard by one pointer.
+read is lockless - transport_deregister_session() clears the field under
+se_tpg->session_lock, which target_complete() does not hold - so use
+READ_ONCE() to keep the compiler from re-fetching se_sess->se_tpg after
+the NULL test.  The existing "if (!wwn)" path already queues the
+completion on cmd->cpuid, so no new branch is needed; this extends that
+guard by one pointer.
 
 target_submit() reads the same chain (se_sess->se_tpg->se_tpg_tfo) and is
 exposed to the identical NULL.  That path has not been reproduced here and
@@ -122,22 +125,44 @@ Fixes: 39ae3edda325 ("scsi: target: core: Make completion affinity configurable"
 Cc: stable@vger.kernel.org
 Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 ---
+
+v2:
+- Use READ_ONCE() for the lockless read of se_sess->se_tpg.  The field is
+  cleared concurrently by transport_deregister_session(), so nothing
+  prevents the compiler from re-fetching it after the NULL test.  The
+  store side is a plain aligned pointer write under se_tpg->session_lock
+  and is left unannotated; happy to add WRITE_ONCE() there as well if
+  preferred.
+- Retested from scratch; every number below is from the v2 build.
+
 Tested on 7.2.0-rc4 with soft-RoCE (rdma_rxe) + KASAN under iSCSI/iSER
-connection churn.  Without this patch the target crashes in 2 of 3 runs;
-with it, 10 consecutive runs are clean and complete the full workload
-(160 of 160 cycles, matching the unpatched baseline).
+connection churn.  Unpatched, 5 of 10 runs oops with the same RIP
+(target_complete_cmd_with_sense.part.0+0x17d).  With this patch, 20
+consecutive runs show no oops.
 
 To confirm that the guard - and not an incidental timing change - is what
 prevents the crash, a build carrying an additional print inside the new
-NULL branch was run 10 more times: a NULL se_tpg was observed 13 times
-across 7 of those runs and was handled every time, with no oops and no
-change in I/O counts.
+NULL branch was run 10 more times: a NULL se_tpg was observed 9 times
+across 7 of those runs and was handled every time, with no oops.
+
+Some runs end early with an initiator-side login timeout from the
+soft-RoCE rig instead of completing the full 160-cycle workload: 4 of the
+20 patched runs, and 2 of the 5 unpatched runs that did not oops (the
+other 5 unpatched runs time out after the oops).  The rig behaves the
+same way with and without the patch.
+
+The BUG_ON(!se_tpg) in target_init_cmd() and target_submit_tmr() can be
+reached by the same teardown race on fabrics that use those helpers.
+iscsit does not - it calls __target_init_cmd() directly and has its own
+TMF path - so those paths could not be reproduced or tested here, and
+converting a deliberate assertion into graceful failure looked like a
+decision for the maintainers rather than something to fold into this fix.
 
  drivers/target/target_core_transport.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index fad03a15c969..ee5781d89433 100644
+index fad03a15c969..0b292e386691 100644
 --- a/drivers/target/target_core_transport.c
 +++ b/drivers/target/target_core_transport.c
 @@ -904,7 +904,8 @@ static bool target_cmd_interrupted(struct se_cmd *cmd)
@@ -145,13 +170,11 @@ index fad03a15c969..ee5781d89433 100644
  static void target_complete(struct se_cmd *cmd, int success)
  {
 -	struct se_wwn *wwn = cmd->se_sess->se_tpg->se_tpg_wwn;
-+	struct se_portal_group *se_tpg = cmd->se_sess->se_tpg;
++	struct se_portal_group *se_tpg = READ_ONCE(cmd->se_sess->se_tpg);
 +	struct se_wwn *wwn = se_tpg ? se_tpg->se_tpg_wwn : NULL;
  	struct se_dev_attrib *da;
  	u8 compl_type;
  	int cpu;
-
-base-commit: 248951ddc14de84de3910f9b13f51491a8cd91df
 -- 
 2.43.0
 
