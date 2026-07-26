@@ -1,262 +1,140 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23A4B13777E;
-	Sun, 26 Jul 2026 06:46:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F47D248880;
+	Sun, 26 Jul 2026 07:55:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785048396; cv=none; b=G/E7fOJO/I8PeMnmC5r58366t4MW9/54G+sRjuJXiX07VO0nlUD9ENx1jM1nH6yC8uliF6LcTP5zCfW4tjqOcsOaiYuHjaGIGJ/Y/notgfeJ52w0AI62QeeAMij9vMTQw+aDtkCn4clK3XhVok2taoM1tlL6L/JEiYPKh5ugzvk=
+	t=1785052519; cv=none; b=YNQCmcssAMAEU7RB39zzmHR2yT2THdLYMY/dkDR27m53deXYCKvxQ4KsOlExed1R8r0hUqhg7scJ25UedGwGHggp0R1ePYW67VDK1tNhqD6Jp3hS81BuQgUzgVk5BVGBwIe83LKng8lJteabi3w1lMsWNs1k5Hr7UIx9Enu9kCE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785048396; c=relaxed/simple;
-	bh=puxLkZoXTTJ0sgLsrsrbDATm5AU4tM0BBQlqQ0eJJro=;
+	s=arc-20240116; t=1785052519; c=relaxed/simple;
+	bh=OiMO73u0D3944SIy9J9lszv48ZZZNV/OSLk9y08+QfY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=etzLTO4gf4tFppxB+xk7aSP3cIfsn6vROJ6duRARnHTcuBPhdKA6omyoSxRHBn+u85fVjCd4Rj79WW2Y4vKZ/guCWTeBiTXb6K4/4BleReqUMCR0Z3NDwJgM055TUmHf2zwOnTwAELrGCDUDi8tWZtqM9AZZWFhEy0tkINv+Uso=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XCy2ONw2; arc=none smtp.client-ip=100.103.45.18
+	 Content-Type:Content-Disposition:In-Reply-To; b=lQF64Zghp2qwhxY1sBvRplJ4gXjJgxMVgxEmRBPrRTybnGJt+qq+sVswpe/WikZf28fezpHyZkWkMSPe16A5qslSxefrA+uQ/0DgYosPg3zeX+2h90AVdJrLuBApyhJ5h2sm3ZHRrXaJv2g47OKx4/kYyatGsOk3yG6LtTi4ILo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=UOTmlmpy; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XCy2ONw2"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C15D51F000E9;
-	Sun, 26 Jul 2026 06:46:33 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="UOTmlmpy"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B27721F000E9;
+	Sun, 26 Jul 2026 07:55:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785048394;
-	bh=uCfLJyTtGwJLCN1z+c86/wI7/uMHdIFVIdP2iElexGE=;
+	s=k20260515; t=1785052518;
+	bh=XbT4FegLK82Go8FSNtRzFE1Gp4ouo3+bOMQCMDpJg1I=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=XCy2ONw2j1/C+dfMjYZOMFgo3vTS+bT1uEEHXXeEEwuJvFsDyFV8qBlrrGuEBf/+C
-	 cjKvX0DYBjA3ruUK2p3EJOMAaYCVoMXkl6RgH9UTn1FAeT5Sk5kemipXBujth1iFYA
-	 IOW17JpkIkdpGBWVEXoBd5dBzE1exleWqlyHi44z79CpuS47KEQd8mjxcCOpB97Q7q
-	 HSMWHG4Bc95thDjueCwcRM3P7bF4yq4VepDclnAk+c1MJq2UDXP/6f2q6NLNE5KAuK
-	 mrSqjuqD1ZBFhtqnSYYzbS0ysoOiH8OZlBXBAHkHKMKNhAcTgPD5M9gJVU+pbGhJ72
-	 3qARJMcFATONQ==
-Date: Sun, 26 Jul 2026 09:46:28 +0300
+	b=UOTmlmpy27cOHLtAv7sdYYwPRq5pDAb7krqx7S8TnX3gYiP+6/CC59FoJyJKCku9S
+	 pgP8oONKpeenaYuHz9UHtkAG6CzJnG1y5JMPnzXghcoOq4kWqZuEhEykRjqdOuKnG4
+	 6gUBb9Gsw2R6CaXE3VL3IXsFwbIsOIvlK7JVTqHOJRTgqCWUuen78irmHMzI+s4puo
+	 E4YXi1QlISsSqAtq6bpW7Lg5wx1iomtUDXz/VOD5eCEZzBJPq0C+kdozSPCFuytQ+y
+	 x3NgoXjbK5gi48+TCEpyafsukFh/+dIC6iTRBO8nE8tP/ZbIIasfrFSrQX+Y/s0kbQ
+	 bT8/ghqxWTO1w==
+Date: Sun, 26 Jul 2026 10:55:11 +0300
 From: Leon Romanovsky <leon@kernel.org>
-To: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-Cc: sagi@grimberg.me, jgg@ziepe.ca, nab@linux-iscsi.org,
-	linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH] IB/isert: reject PDUs declaring more data than was
- received
-Message-ID: <20260726064628.GA12003@unreal>
-References: <20260725011846.538191-1-yhlee@isslab.korea.ac.kr>
+To: kensanya <kensanya@163.com>
+Cc: bvanassche@acm.org, jgg@ziepe.ca, linux-rdma@vger.kernel.org,
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	TanZheng <tanzheng@kylinos.cn>
+Subject: Re: Re: [PATCH v2] RDMA/srpt: fix NULL deref when sending BUSY
+ before target_init_cmd()
+Message-ID: <20260726075511.GC12003@unreal>
+References: <20260723024456.52851-1-kensanya@163.com>
+ <20260723095120.GF110966@unreal>
+ <56479481.2552.19f920118cd.Coremail.kensanya@163.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260725011846.538191-1-yhlee@isslab.korea.ac.kr>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <56479481.2552.19f920118cd.Coremail.kensanya@163.com>
 
-On Sat, Jul 25, 2026 at 10:18:46AM +0900, Yehyeong Lee wrote:
-> isert_recv_done() hands each received PDU to the opcode handlers without
-> ever looking at wc->byte_len, the number of bytes the HCA actually placed
-> in the receive descriptor. The handlers then copy that many bytes - the
-> data-segment length the initiator declared in the BHS
-> (ntoh24(hdr->dlength), via the derived unsol_data_len / imm_data_len) -
-> out of the fixed-size descriptor:
+On Fri, Jul 24, 2026 at 10:42:53AM +0800, kensanya wrote:
+> At 2026-07-23 17:51:20, "Leon Romanovsky" <leon@kernel.org> wrote:
+> >On Thu, Jul 23, 2026 at 10:44:56AM +0800, kensanya@163.com wrote:
+> >> From: TanZheng <tanzheng@kylinos.cn>
+> >> 
+> >> If srpt_get_desc_tbl() fails, srpt_handle_cmd() jumps to
+> >> target_send_busy() before target_init_cmd() has set cmd->se_tfo.
+> >> target_send_busy() then dereferences a NULL se_tfo.
+> >> 
+> >> Call target_init_cmd() first with placeholder data_length and
+> >> data_direction, parse the descriptor table next, then fill in the
+> >> real data_length. That way target_send_busy() is safe if parsing
+> >> fails.
+> >> 
+> >> target_send_busy() is only valid after a successful target_init_cmd().
+> >> If target_init_cmd() itself fails, free the send ioctx tag locally
+> >> with target_free_tag() instead of calling target_send_busy().
+> >> 
+> >> Fixes: 8b8807b9e982 ("scsi: RDMA/srpt: Fix handling of command / TMF submission failure")
+> >> Link: https://lore.kernel.org/all/20260717025402.64054-1-kensanya@163.com/
+> >> Suggested-by: Bart Van Assche <bvanassche@acm.org>
+> >> Signed-off-by: TanZheng <tanzheng@kylinos.cn>
+> >> ---
+> >> v2:
+> >> - On target_init_cmd() failure, use target_free_tag() instead of
+> >>   target_send_busy()
+> >> 
+> >>  drivers/infiniband/ulp/srpt/ib_srpt.c | 36 +++++++++++++++++++--------
+> >>  1 file changed, 26 insertions(+), 10 deletions(-)
+> >> 
+> >> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+> >> index f66cfd70c263..71af1fb0d380 100644
+> >> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
+> >> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+> >> @@ -1558,8 +1558,8 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
+> >>  	struct srp_cmd *srp_cmd;
+> >>  	struct scatterlist *sg = NULL;
+> >>  	unsigned sg_cnt = 0;
+> >> -	u64 data_len;
+> >> -	enum dma_data_direction dir;
+> >> +	u64 data_len = 0;
+> >> +	enum dma_data_direction dir = DMA_NONE;
+> >>  	int rc;
+> >>  
+> >>  	BUG_ON(!send_ioctx);
+> >> @@ -1584,6 +1584,25 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
+> >>  		break;
+> >>  	}
+> >>  
+> >> +	/*
+> >> +	 * Call target_init_cmd() before srpt_get_desc_tbl() so that
+> >> +	 * cmd->se_tfo is set if descriptor parsing fails and
+> >> +	 * target_send_busy() is used. data_length is filled in after a
+> >> +	 * successful srpt_get_desc_tbl().
+> >> +	 *
+> >> +	 * target_send_busy() is only valid after a successful
+> >> +	 * target_init_cmd(). On init failure free the tag locally.
+> >> +	 */
+> >> +	rc = target_init_cmd(cmd, ch->sess, &send_ioctx->sense_data[0],
+> >> +			     scsilun_to_int(&srp_cmd->lun), 0 /* data_len */,
+> >> +			     TCM_SIMPLE_TAG, DMA_NONE, TARGET_SCF_ACK_KREF);
+> >
+> >1. TCM_SIMPLE_TAG -> you need to rebase to latest rdma-next.
 > 
->   isert_handle_iscsi_dataout():
->         sg_copy_from_buffer(sg_start, sg_nents, isert_get_data(rx_desc),
->                             unsol_data_len);
->   isert_handle_scsi_cmd():
->         sg_copy_from_buffer(cmd->se_cmd.t_data_sg, sg_nents,
->                             isert_get_data(rx_desc), imm_data_len);
+>       I will modify and resend the patch.
 > 
-> Because the declared length is never checked against wc->byte_len, an
-> initiator can declare a data segment larger than the bytes it actually
-> sent (and larger than the descriptor) and cause an out-of-bounds read of
-> the receive buffer.
+> >2. You are hardcoding dir, while it can be overwritten in srpt_get_desc_tbl().
 > 
-> Nothing upstream of isert closes this door:
+>       In the srpt_handle_cmd() function:
+>       &send_ioctx->cmd;
+>       srpt_get_desc_tbl(..., send_ioctx, ...) 
+>            ioctx->cmd.data_direction = *dir;
 > 
->   - __iscsit_check_dataout_hdr() bounds the inbound payload against
->     conn_ops->MaxXmitDataSegmentLength (MXDSL) - a transmit parameter,
->     used here for the inbound check.
->   - iscsi_set_connection_parameters() sets
->     ops->MaxXmitDataSegmentLength = ops->TargetRecvDataSegmentLength;
->     and TARGETRECVDATASEGMENTLENGTH is absent from the min()-clamp list in
->     iscsi_check_acceptor_state(), so the value the initiator declares is
->     adopted verbatim (type range 512..16777215). The initiator effectively
->     raises its own ceiling.
->   - isert never clamps the negotiated value to its own fixed receive
->     descriptor (ISER_RX_SIZE, 9216 bytes), so the target core's bound and
->     the descriptor size are unrelated.
+>      Therefore, after successfully calling srpt_get_desc_tbl(), even if target_init_cmd() is
+>      passed DMA_NONE, cmd->data_direction should already have stored the actual direction.
 > 
-> The imm_data_len == data_len path is more than an over-read: it aliases
-> the receive descriptor via sg_set_buf() and passes it to the backend as
-> the data source for the SCSI WRITE, so an over-declared length causes heap
-> contents past the descriptor to be written through the backend to the
-> backing store. The backend is the victim of the oversized scatterlist
-> isert hands it, not the cause; no read-back of the written bytes was
-> demonstrated.
-> 
-> Trigger: after login completes (full feature phase), an initiator that has
-> declared a large TargetRecvDataSegmentLength and a FirstBurstLength that
-> permits unsolicited/immediate data sends a PDU whose declared data-segment
-> length exceeds what was received. With KASAN:
-> 
->   BUG: KASAN: slab-out-of-bounds in sg_copy_buffer+0x150/0x1c0
->   Read of size 4096 at addr ffff888109720800 by task kworker/1:0H/25
->   Workqueue: ib-comp-wq ib_cq_poll_work
->   Call Trace:
->    sg_copy_buffer+0x150/0x1c0
->    isert_recv_done+0xba6/0x2390
->    __ib_process_cq+0xe1/0x390
->    ib_cq_poll_work+0x46/0x150
-> 
-> isert_recv_done+0xba6 resolves to isert_handle_iscsi_dataout()
-> (ib_isert.c:1160), inlined through isert_rx_opcode().
-> 
-> Validate wc->byte_len against the framing in isert_recv_done() before the
-> PDU reaches any handler, and reinstate the connection if it is short.
-> Because the test compares without subtracting the header length, it also
-> rejects PDUs shorter than the iSER and iSCSI headers, which would otherwise
-> be parsed out of stale descriptor contents. The sibling login handler,
-> isert_login_recv_done(), already rejects PDUs shorter than ISER_HEADERS_LEN
-> (commit 29e7b925ae6d ("IB/isert: Reject login PDUs shorter than
-> ISER_HEADERS_LEN")); the data handlers had no length check at all.
-> 
-> isert reads the data segment from a fixed offset: isert_get_data()
-> returns the iSER header plus ISER_HEADERS_LEN and makes no adjustment for
-> an AHS.  The bytes the handlers touch are therefore exactly
-> [ISER_HEADERS_LEN, ISER_HEADERS_LEN + dlength), and comparing that sum
-> against wc->byte_len bounds precisely the region that is read.  An AHS
-> term would only make the test stricter without bounding anything further,
-> and cannot cause a false reject: a PDU carrying an AHS is longer, not
-> shorter.
-> 
-> This is a memory-safety fix that verifies the bytes that were actually
-> received; it does not touch RFC 7145 length negotiation and is not the
-> MaxXmitDataSegmentLength negotiation redesign raised in the 2017 "[Query]
-> iSER-Target: QP errors observed on increasing MaxXmitDataSegmentLength"
-> discussion. That redesign is explicitly out of scope here.
-> 
-> The patched kernel rejects the malformed DataOut PDU and both
-> immediate-data variants with "PDU declares ... bytes were received" and
-> continues to pass normal traffic with no regression.
-> 
-> Reproduced with soft-RoCE (rdma_rxe) and a raw rdma_cm/ibv initiator; no
-> kernel-side test hooks were needed.
-> 
-> Fixes: b8d26b3be8b3 ("iser-target: Add iSCSI Extensions for RDMA (iSER) target driver")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-> ---
->  drivers/infiniband/ulp/isert/ib_isert.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
-> 
-> diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-> index 1015a51f750a..66435a0a5c7a 100644
-> --- a/drivers/infiniband/ulp/isert/ib_isert.c
-> +++ b/drivers/infiniband/ulp/isert/ib_isert.c
-> @@ -1333,6 +1333,21 @@ isert_recv_done(struct ib_cq *cq, struct ib_wc *wc)
->  	ib_dma_sync_single_for_cpu(ib_dev, rx_desc->dma_addr,
->  			ISER_RX_SIZE, DMA_FROM_DEVICE);
->  
-> +	/*
-> +	 * The data segment length declared in the BHS is attacker controlled
-> +	 * and is used further down to read that many bytes out of the fixed
-> +	 * size receive descriptor, so it has to be checked against the number
-> +	 * of bytes that were actually received. Comparing without subtracting
-> +	 * also rejects PDUs shorter than the iSER and iSCSI headers, which
-> +	 * would otherwise be parsed out of stale descriptor contents.
-> +	 */
-> +	if (unlikely(wc->byte_len < ISER_HEADERS_LEN + ntoh24(hdr->dlength))) {
-> +		isert_err("PDU declares %u data bytes but only %u bytes were received\n",
-> +			  ntoh24(hdr->dlength), wc->byte_len);
-> +		iscsit_cause_connection_reinstatement(isert_conn->conn, 0);
-> +		return;
-> +	}
+>      Do you mean  that after calling srpt_get_desc_tbl(), displaying the overwritten content
+>      would be better？I want to make sure I address the intent of your comment correctly.
 
-1. You should review patches generated by AI.
-2. There is a need to add similar check to isert_get_login_rx() too.
-
-Something like this:
-
-Thanks
-commit ffe5e4081fa535412fdd5a685369441076a4d1e1 (HEAD -> b4/the-iser-login-handler-fails-to-vali, origin/the-iser-login-handler-fails-to-vali-v1)
-Author: Leon Romanovsky <leonro@nvidia.com>
-Date:   Sat Jul 25 05:40:22 2026 +0300
-
-    IB/isert: Reject login PDUs declaring more data than received
-
-    isert never compares the iSCSI header's 24-bit data length against the
-    bytes actually received for a login PDU. A remote initiator can declare far
-    more data than it sends, and before target lookup or authentication:
-
-        isert_rx_login_req()
-        iscsi_target_locate_portal()
-        kmemdup_nul()
-
-    reads ntoh24(dlength) bytes out of the fixed 8192-byte login buffer,
-    overrunning it.
-
-    Validate the declared length against the received login_req_len in both the
-    initial (isert_get_login_rx()) and subsequent (isert_login_recv_done())
-    login paths before any copy. Allow dlength <= login_req_len, since the
-    received count may include up to three iSCSI padding bytes.
-
-    Fixes: b8d26b3be8b3 ("iser-target: Add iSCSI Extensions for RDMA (iSER) target driver")
-    Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
-
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index 4691845bf815..02ce4cbe69a1 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -970,6 +970,19 @@ isert_put_login_tx(struct iscsit_conn *conn, struct iscsi_login *login,
-        return 0;
- }
-
-+static int
-+isert_check_login_req(struct isert_conn *isert_conn)
-+{
-+       struct iscsi_hdr *hdr =
-+               (struct iscsi_hdr *)isert_get_iscsi_hdr(isert_conn->login_desc);
-+       u32 dlength = ntoh24(hdr->dlength);
-+
-+       if (dlength > isert_conn->login_req_len)
-+               return -EPROTO;
-+
-+       return 0;
-+}
-+
- static void
- isert_rx_login_req(struct isert_conn *isert_conn)
- {
-@@ -1393,8 +1406,11 @@ isert_login_recv_done(struct ib_cq *cq, struct ib_wc *wc)
-        if (isert_conn->conn) {
-                struct iscsi_login *login = isert_conn->conn->conn_login;
-
--               if (login && !login->first_request)
-+               if (login && !login->first_request) {
-+                       if (isert_check_login_req(isert_conn))
-+                               return;
-                        isert_rx_login_req(isert_conn);
-+               }
-        }
-
-        mutex_lock(&isert_conn->mutex);
-@@ -2359,6 +2375,10 @@ isert_get_login_rx(struct iscsit_conn *conn, struct iscsi_login *login)
-        if (!login->first_request)
-                return 0;
-
-+       ret = isert_check_login_req(isert_conn);
-+       if (ret)
-+               return ret;
-+
-        isert_rx_login_req(isert_conn);
-
-        isert_info("before login_comp conn: %p\n", conn);
+You need to do this correctly: target_init_cmd() must receive the
+correct directory, as calculated by srpt_get_desc_tbl().
 
 Thanks
 
-
-> +
->  	isert_dbg("DMA: 0x%llx, iSCSI opcode: 0x%02x, ITT: 0x%08x, flags: 0x%02x dlen: %d\n",
->  		 rx_desc->dma_addr, hdr->opcode, hdr->itt, hdr->flags,
->  		 (int)(wc->byte_len - ISER_HEADERS_LEN));
+> >
+> >Thanks
 > 
-> base-commit: 248951ddc14de84de3910f9b13f51491a8cd91df
-> -- 
-> 2.43.0
-> 
-> 
+> Thanks,
+> TanZheng
