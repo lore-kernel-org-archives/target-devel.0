@@ -1,61 +1,63 @@
-Received: from mail-pl1-f175.google.com (mail-pl1-f175.google.com [209.85.214.175])
+Received: from mail-pl1-f171.google.com (mail-pl1-f171.google.com [209.85.214.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 343A43D0930
-	for <target-devel@vger.kernel.org>; Sun, 26 Jul 2026 16:39:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.175
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D7FDE3D3CEC
+	for <target-devel@vger.kernel.org>; Sun, 26 Jul 2026 16:39:44 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785083985; cv=none; b=MOPKUaE0jBL2R/Jr0zcEnSOdzn+A6hoLwvgsRaB1gehIPE5O4JVgIR07BJYpQPRx+xyJH2PAj/kjEDzoSrl6yM6fTEsoluFg99gGVsGOTYtYDTwu3UT796BTwf04ckE4mLeK2fy2GWBJkXZgr/LE7dxrlMUxDj1HgfrllSJqfc8=
+	t=1785083987; cv=none; b=g6j2u/GZOMRFRXzOboNSKPfTyCgJWKqRHicgg905Gb48UANIGByfRPrhX2lEgg+k0qVzU78mWFJQQPS8Gpl4/EdBAsbK+NZulUM2pibo4Moltg8lVhqiY3sh1fH9PhOHIk8kQ5cB3SathSkLtQ24nj5Inqj5E+O353yMfGUrfvA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785083985; c=relaxed/simple;
-	bh=AVcPYjc6QLCVatsp0wfA+iasmoc9YvU94lxkhLMDfr8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=er554XRzjKQzyl13sAush39r7noPTO2SCp7o7Zia5RKfHAf8IFXpMIzUkvp2UdKuzmOF1CETC03XUqXBHCKopKwtgKr00CHbxiz8hbrHrz2/5NtbRZEGrNM2b02qfmKSMHaLGKfcE9AmOpODBMr6f1fnF5Wt3lYl5socx1pV+ic=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=UHFtY3ek; arc=none smtp.client-ip=209.85.214.175
+	s=arc-20240116; t=1785083987; c=relaxed/simple;
+	bh=2Ro/9S4BQ5TNB6srO/HHxekj2YW5ya5HGRiHsGeRo74=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=AohT2fx3v8iWhZ8zMxDXHaH95HXAsJg7e3gFW0yzVTb5yunGQhYPyN8flzSqQkSjegn+YVHeuILcc/F8ypi5Nj19f0kIBVC6INiCtI8MwGyvJdRYKwxVjO97N9ZqvukXJPRmX7wC+aETfXDBcir9/iqkD9VH09M/oPeAyL4cIjI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=RZHoUaA4; arc=none smtp.client-ip=209.85.214.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="UHFtY3ek"
-Received: by mail-pl1-f175.google.com with SMTP id d9443c01a7336-2ce87c7e3bbso22203825ad.1
-        for <target-devel@vger.kernel.org>; Sun, 26 Jul 2026 09:39:41 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="RZHoUaA4"
+Received: by mail-pl1-f171.google.com with SMTP id d9443c01a7336-2ce87c7e3bbso22204015ad.1
+        for <target-devel@vger.kernel.org>; Sun, 26 Jul 2026 09:39:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1785083981; x=1785688781; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=4soSgIPSPRGKWmUtXrCCmHkfACDKe4WQ0SOyo9kxG3s=;
-        b=UHFtY3ek5RWFIUbIP0gbf9cbpvT7Hj5lg2YWMAxe+gt5rXkRNSW0fXUuLVQ2XT/GKT
-         5/7Iwc5wfMbMyohIDZX1UXj+Dhf9taPhBh9ih6nxBnEj+KPxLzcshlqOx2r+lY16Vr0R
-         NF5+CRKeNmEuDeybt4x/ECS99OnuQMnk74jXXDGJWVSC+8zENMa9y5CwP2X/bQtccIh5
-         y1q9mHk6A9jnABR60P35kajKKkaMURhZGPcCgitfSBmh8q95mBnvZkV6pgsEW6+cYUdg
-         SKOxC9c149dhhUvHOnd4bnxtnh4QuGwiEABXhnGsh58A12Pn/3dMHi7j7n9XTuqUt6Bq
-         RU8g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785083981; x=1785688781;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1785083984; x=1785688784; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=4soSgIPSPRGKWmUtXrCCmHkfACDKe4WQ0SOyo9kxG3s=;
-        b=QQg+qHmAm7oAETLDWM7xgBkbN6Y2g5z2QVgqOsQvbzDU+Er6+JyIY4YovDbNOPZgtX
-         /K3l1G6Kbc+N7qtTxUS7I7f/DzGBOhNvD23JFG3EAoL02l3FlT/m3H+SXSSeqa82KQvY
-         OapFsWRQ7yDp3Z6LuC+BIpZ9Kkczk9+ewrcdGN4PZbH8hsjNsAQvVyp/Io/ISk9woQLd
-         JUWFvih7Q7T2ejEFr10F/ctVcJRGKhOae9u60QQWrW6uMhZpS/dSLpHUrB6PzOWwF3/e
-         N993Jev8qMc3RSWNv4rANx1YB9XV2Y9TbNssNwXu/9lfnIHp6T5OfcoBoWdppEGI5ipA
-         GU8g==
-X-Forwarded-Encrypted: i=1; AHgh+Rr/tkVhObzPHDPV7qJSohUqHPqv5gR05tRyCxGMuQy8T5iUczq6vU2pw/PMrEwj48cG46qYQuTrPVGVuLE=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxrRIKHcD5Ogd5xRp+aeGNnaM1ia8Z8+dE7eTh8ZggNnHzGO45R
-	z8/89mM1+SvYhQ3p3LPkoXbjDwbMVRJFdlJZPQq9a81reXrtYiW5x3DHYLDSInyGs80=
-X-Gm-Gg: AR+sD12OoN4KRrYTaJ1YVhNTdcA0eblbF/XUAxuh+n/zz7yYF6cNMETz6GHechJFwKu
-	K+mqLLqXmFLl5dCJEPCy+qSmAdoj9E+CrxOCG4aSFzbjybISPPI0KGK+FsqpdE/UJxNhOw3cd5i
-	sEU6k1Ub1wsa3Yfe9UoYoH+n8+5vlRZBMFZQiyNtp/SMCNpEjqvPYAYLmLzxqoS02d98immF5uA
-	e7AHew03juy7ZvV2RUV5Djd8919tXYzulswTCopelJLoPaWijy9YXVp9sOfz0eSz4qoTNJ8nT9p
-	Y8un8I+jh74zuS8zoZlQmweOxQPt0W4IMGFvVeOSFn731/ayuX9XMgCGoK6EYAmFr7j1baE6nk6
-	SrF8G+8Ax6KMok6DEKA4A8P29HQ7RtFQZiD6gWWKDv3e2oco06ttGrG31Y0uAuxfylzooc4OMpA
-	8WF4anXBjEke7vmYqU3Pf5J8jt
-X-Received: by 2002:a17:903:388d:b0:2cf:b23a:3e6e with SMTP id d9443c01a7336-2cfde880cacmr53129965ad.40.1785083981263;
-        Sun, 26 Jul 2026 09:39:41 -0700 (PDT)
+        bh=Gq3vDCA8qyUTutalHgGj6aRcp1kNTbzzKTiRzZxdQZw=;
+        b=RZHoUaA48HwArzJ53Pnh4xTHTAZ+DylaHnf9Cf0GZDDD69oy79HjC7BxxfMU/suVq4
+         l5jhlyOIN+edi33y2+gDMlkdoNUTsS3k7/FtybbnPEE8cBoQFZT4jujcYIrrS5PGX1FY
+         duNosodtuRS4yIcZkciA4RuG2ILgLyqYIhjhzt8EntiTtOpGALqxNchlbMZDmzrz66hy
+         9xg3jkJV9jJYvIz7CshhXE9QTn9ZACASf8TPjMIiHsDiu/PPtAJmM4X5YI6WhMP0m8om
+         ACJSOptlSGeIO+2vpkhFVEPPfdPICGUlf9oCjQgoUOSbAxbe4j0e6JAD7/lk0gLZ0h7l
+         6+qQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785083984; x=1785688784;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Gq3vDCA8qyUTutalHgGj6aRcp1kNTbzzKTiRzZxdQZw=;
+        b=pk1bAGA74L9Sl6Gt89XUBvBhPHfwprwuDzKqZ/SEZLhoZUsJ5DRjmACX7OS1ojkfWM
+         5lcmCTZcrrzGOnmc2VYUkvJjH0vJb1NpHRRxIeoG1qfTPPwnEMyww16ssEf33hnR9vnG
+         sOPlv1kTdxXHP4VerZgNFXT4hvB0wP7iRtYRniZRSoi1+Qpfgf0O0VdJOSVoAV/14GEr
+         lSm0c/u+iXeIMto6w6BWLUo6AgbergiclTQ5HSTs7PnzVUBpfxuASNVtTY+5XPBAEZjb
+         r3nd3aLlphb+uhUQ0Nc+y804KmQ/BC04gwcnNG+bnVXWy1l4/Q0OlmwuncZv8ZzcxL76
+         AtuQ==
+X-Forwarded-Encrypted: i=1; AHgh+RoeBCStx7Niz6TUpJF2jbY303lZWktR23AAEIcVIZ1fVQV6JEegekzKT2a7UCSVb62igytCbO6ghx5n188=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwL4yYDs/DNq/1iSdymw8s3CEWGlMmFxwtCNU7QxN04xqrrxncy
+	bOHFl7EZ5o5GMBisF+pBdq5MrOePYE/ZNgGF25xdEuhNgsToHf0WSaatsm6Ro3mQ7UA=
+X-Gm-Gg: AR+sD13AVoW6p5Xwp1nKhwr5tgPPCu7J9FiOwnGdfUgVBHwKN37XpsX9RiukTWniCnN
+	x1DZeRNSjvLFUV7n3vtb31eaKD+axQN0CLtkikaOe21H6O1953+VLg5Qb8srKnI34ixKPUTcj3y
+	mS5nhoUGiMp/kPLD2HOc9D1W9u+n94nf2ogMU6asMdaFs2HoEr76NH+nU00vRF3y5Q9CHu9mja0
+	h53yh8PSrBA/kHtfiJHvVDdfJaz7oQPa0S39Y/gtRUiF1bVZqXKwLW3k7WYb7MOYQK7OHHqIEtW
+	Hh6Adu5A0pUBHcp7jgjjtybQt1WuQw2ZzFN4QIPdPTmwh1zsfvtooodPzolhtWP3Cqvp2JGMdCD
+	aSLp/EUrX9CW+qJsRbINZTOOq2VlR5l3EvRig7rOvFaixaHunNhkvMR4RMH4YW3V1YW9d/gCQVX
+	dxuoxCkUJBP9f1ds9K6Uozs/zq
+X-Received: by 2002:a17:902:e541:b0:2cf:1536:3d41 with SMTP id d9443c01a7336-2cfde84b893mr53739685ad.28.1785083984191;
+        Sun, 26 Jul 2026 09:39:44 -0700 (PDT)
 Received: from localhost.localdomain ([2406:5900:1044:110c:be9c:ea6b:29a7:6c78])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cfde80306esm21514315ad.75.2026.07.26.09.39.38
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cfde80306esm21514315ad.75.2026.07.26.09.39.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Jul 2026 09:39:40 -0700 (PDT)
+        Sun, 26 Jul 2026 09:39:43 -0700 (PDT)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 To: sagi@grimberg.me,
 	jgg@ziepe.ca,
@@ -63,11 +65,14 @@ To: sagi@grimberg.me,
 Cc: linux-rdma@vger.kernel.org,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	yhlee@isslab.korea.ac.kr
-Subject: [PATCH v2 0/2] IB/isert: bound declared PDU lengths by what was received
-Date: Mon, 27 Jul 2026 01:39:29 +0900
-Message-ID: <20260726163931.971063-1-yhlee@isslab.korea.ac.kr>
+	yhlee@isslab.korea.ac.kr,
+	stable@vger.kernel.org
+Subject: [PATCH v2 1/2] IB/isert: reject PDUs declaring more data than was received
+Date: Mon, 27 Jul 2026 01:39:30 +0900
+Message-ID: <20260726163931.971063-2-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260726163931.971063-1-yhlee@isslab.korea.ac.kr>
+References: <20260726163931.971063-1-yhlee@isslab.korea.ac.kr>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -76,28 +81,130 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-v1 added a wc->byte_len check to isert_recv_done() only.  Leon Romanovsky
-pointed out that the login path needs the same treatment, and he was
-right: the declared DataSegmentLength of a login PDU is never compared
-against what arrived either, and the login code reads it back out of a
-fixed 8192-byte buffer before authentication - from two different
-callers, depending on which login PDU it is.  I reproduced both under
-KASAN before writing 2/2; the splats are in its changelog.
+isert_recv_done() hands each received PDU to the opcode handlers without
+ever looking at wc->byte_len, the number of bytes the HCA actually placed
+in the receive descriptor. The handlers then copy that many bytes - the
+data-segment length the initiator declared in the BHS
+(ntoh24(hdr->dlength), via the derived unsol_data_len / imm_data_len) -
+out of the fixed-size descriptor:
 
-1/2 is v1 unchanged apart from one sentence in the changelog, which said
-the login handler already had a length check.  It has one, but not this
-one - 29e7b925ae6d bounds login_req_len from below, and nothing bounded
-the declared length from above.
+  isert_handle_iscsi_dataout():
+        sg_copy_from_buffer(sg_start, sg_nents, isert_get_data(rx_desc),
+                            unsol_data_len);
+  isert_handle_scsi_cmd():
+        sg_copy_from_buffer(cmd->se_cmd.t_data_sg, sg_nents,
+                            isert_get_data(rx_desc), imm_data_len);
 
-v1: https://lore.kernel.org/linux-rdma/20260725011846.538191-1-yhlee@isslab.korea.ac.kr/
+Because the declared length is never checked against wc->byte_len, an
+initiator can declare a data segment larger than the bytes it actually
+sent (and larger than the descriptor) and cause an out-of-bounds read of
+the receive buffer.
 
-Yehyeong Lee (2):
-  IB/isert: reject PDUs declaring more data than was received
-  IB/isert: reject login PDUs declaring more data than was received
+Nothing upstream of isert closes this door:
 
- drivers/infiniband/ulp/isert/ib_isert.c | 40 ++++++++++++++++++++++++-
- 1 file changed, 39 insertions(+), 1 deletion(-)
+  - __iscsit_check_dataout_hdr() bounds the inbound payload against
+    conn_ops->MaxXmitDataSegmentLength (MXDSL) - a transmit parameter,
+    used here for the inbound check.
+  - iscsi_set_connection_parameters() sets
+    ops->MaxXmitDataSegmentLength = ops->TargetRecvDataSegmentLength;
+    and TARGETRECVDATASEGMENTLENGTH is absent from the min()-clamp list in
+    iscsi_check_acceptor_state(), so the value the initiator declares is
+    adopted verbatim (type range 512..16777215). The initiator effectively
+    raises its own ceiling.
+  - isert never clamps the negotiated value to its own fixed receive
+    descriptor (ISER_RX_SIZE, 9216 bytes), so the target core's bound and
+    the descriptor size are unrelated.
 
+The imm_data_len == data_len path is more than an over-read: it aliases
+the receive descriptor via sg_set_buf() and passes it to the backend as
+the data source for the SCSI WRITE, so an over-declared length causes heap
+contents past the descriptor to be written through the backend to the
+backing store. The backend is the victim of the oversized scatterlist
+isert hands it, not the cause; no read-back of the written bytes was
+demonstrated.
+
+Trigger: after login completes (full feature phase), an initiator that has
+declared a large TargetRecvDataSegmentLength and a FirstBurstLength that
+permits unsolicited/immediate data sends a PDU whose declared data-segment
+length exceeds what was received. With KASAN:
+
+  BUG: KASAN: slab-out-of-bounds in sg_copy_buffer+0x150/0x1c0
+  Read of size 4096 at addr ffff888109720800 by task kworker/1:0H/25
+  Workqueue: ib-comp-wq ib_cq_poll_work
+  Call Trace:
+   sg_copy_buffer+0x150/0x1c0
+   isert_recv_done+0xba6/0x2390
+   __ib_process_cq+0xe1/0x390
+   ib_cq_poll_work+0x46/0x150
+
+isert_recv_done+0xba6 resolves to isert_handle_iscsi_dataout()
+(ib_isert.c:1160), inlined through isert_rx_opcode().
+
+Validate wc->byte_len against the framing in isert_recv_done() before the
+PDU reaches any handler, and reinstate the connection if it is short.
+Because the test compares without subtracting the header length, it also
+rejects PDUs shorter than the iSER and iSCSI headers, which would otherwise
+be parsed out of stale descriptor contents. The login handler rejects PDUs
+shorter than ISER_HEADERS_LEN (commit 29e7b925ae6d ("IB/isert: Reject login
+PDUs shorter than ISER_HEADERS_LEN")) but does not bound the declared
+length either; that is fixed in the next patch. The data handlers had no
+length check at all.
+
+isert reads the data segment from a fixed offset: isert_get_data()
+returns the iSER header plus ISER_HEADERS_LEN and makes no adjustment for
+an AHS.  The bytes the handlers touch are therefore exactly
+[ISER_HEADERS_LEN, ISER_HEADERS_LEN + dlength), and comparing that sum
+against wc->byte_len bounds precisely the region that is read.  An AHS
+term would only make the test stricter without bounding anything further,
+and cannot cause a false reject: a PDU carrying an AHS is longer, not
+shorter.
+
+This is a memory-safety fix that verifies the bytes that were actually
+received; it does not touch RFC 7145 length negotiation and is not the
+MaxXmitDataSegmentLength negotiation redesign raised in the 2017 "[Query]
+iSER-Target: QP errors observed on increasing MaxXmitDataSegmentLength"
+discussion. That redesign is explicitly out of scope here.
+
+The patched kernel rejects the malformed DataOut PDU and both
+immediate-data variants with "PDU declares ... bytes were received" and
+continues to pass normal traffic with no regression.
+
+Reproduced with soft-RoCE (rdma_rxe) and a raw rdma_cm/ibv initiator; no
+kernel-side test hooks were needed.
+
+Fixes: b8d26b3be8b3 ("iser-target: Add iSCSI Extensions for RDMA (iSER) target driver")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+---
+ drivers/infiniband/ulp/isert/ib_isert.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index 1015a51f750a..66435a0a5c7a 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -1333,6 +1333,21 @@ isert_recv_done(struct ib_cq *cq, struct ib_wc *wc)
+ 	ib_dma_sync_single_for_cpu(ib_dev, rx_desc->dma_addr,
+ 			ISER_RX_SIZE, DMA_FROM_DEVICE);
+ 
++	/*
++	 * The data segment length declared in the BHS is attacker controlled
++	 * and is used further down to read that many bytes out of the fixed
++	 * size receive descriptor, so it has to be checked against the number
++	 * of bytes that were actually received. Comparing without subtracting
++	 * also rejects PDUs shorter than the iSER and iSCSI headers, which
++	 * would otherwise be parsed out of stale descriptor contents.
++	 */
++	if (unlikely(wc->byte_len < ISER_HEADERS_LEN + ntoh24(hdr->dlength))) {
++		isert_err("PDU declares %u data bytes but only %u bytes were received\n",
++			  ntoh24(hdr->dlength), wc->byte_len);
++		iscsit_cause_connection_reinstatement(isert_conn->conn, 0);
++		return;
++	}
++
+ 	isert_dbg("DMA: 0x%llx, iSCSI opcode: 0x%02x, ITT: 0x%08x, flags: 0x%02x dlen: %d\n",
+ 		 rx_desc->dma_addr, hdr->opcode, hdr->itt, hdr->flags,
+ 		 (int)(wc->byte_len - ISER_HEADERS_LEN));
 -- 
 2.43.0
 
