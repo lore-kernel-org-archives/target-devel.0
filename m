@@ -1,218 +1,110 @@
-Received: from mail-pl1-f179.google.com (mail-pl1-f179.google.com [209.85.214.179])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4DA953D5657
-	for <target-devel@vger.kernel.org>; Sun, 26 Jul 2026 16:39:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.179
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C85054908BF;
+	Mon, 27 Jul 2026 05:16:03 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785083990; cv=none; b=Ft6aJ7DDOVtqXm1F5gPZIYz/uaxs8aXEfGPmrAUX5K6aUQga8paBE/Ohujo3O7LaUjmFLdcRVDchqRkbm86NgauM4IDT9R4zur+ENfIQmw4wMnn4mOFDrM1jWQCqF/c5h8K8YQ7vBVy4MpWcfxJK85g/5O2ZkYu7sKsX2mQuxag=
+	t=1785129364; cv=none; b=T9oQBtMRvnskb0XXza5JBGQwhmDzEwQkOaM13cuFE2hcjgqzy2HDyGgEkcNfh0NiLsumz3rG0Su5IUI9Fb/UrZ/KzubVaVUywADQ4fXtYnSB4nNQQ8DY+x9Vx+AMUUZ+qv5PKK8WZ7kS0rDBabVzG4B11Gfo/s/77Z+nk3R1cDs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785083990; c=relaxed/simple;
-	bh=/o8+MrMMQvKW6YIZmjb761BoFGL4U3Ayo85FrEdwgpQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nyRCATtpSMvODqqnUT9dB3EmdzpEgLNMWMDU7YzDIjImrNvp4d+DifYw40HnyxhfGdCNQjGdlVnYJyNgxGyRKTfhdsrNUy5WNzZSjZ5CGZDCjvTHh/M0lsA9eitQxARQh4UEU7YIThTXrrK9Dy9hn0LHqRIaGJKb9qc931xNwes=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=kkjs8EzL; arc=none smtp.client-ip=209.85.214.179
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	s=arc-20240116; t=1785129364; c=relaxed/simple;
+	bh=xfxiBWkOVfUe75rxDGsQQ2KVkO6TeuT+5fZoWVSj4fY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GX5LLQw7enoukGY8sr/qP7hYPHKsAu93r/Kl7ZxIfivPexayItr5tEh/Dbbu/UsMs+aExN5LvF/PmWzuocurs4wd2HS5xaKGJc4OXH18zIBsY1r+lE4qxiF9SV8wJ0kXABXK78mE3zMUAvHMx10KEqKXPbX5YsRwxlR76I6O++Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EKnC+RQH; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="kkjs8EzL"
-Received: by mail-pl1-f179.google.com with SMTP id d9443c01a7336-2cad8076b01so22395105ad.2
-        for <target-devel@vger.kernel.org>; Sun, 26 Jul 2026 09:39:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1785083988; x=1785688788; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=LvWcAyC/LEkvD+saSCcPsZJV67914bEAZIKwiD6urdg=;
-        b=kkjs8EzL2rUmUTwKqSS6+W4PMu9VJTADPu+D5HqB1QTo3+vj7Eq9xi7MYeI6re/uYu
-         mGeUgO6lF68aVYfbtPvSWdB/LoovVDdQFqCEKRYEx8/ONNUGMehLQi6MSgjWdvdCzpg1
-         tD0gmrx3TG1YhFqQls6LCOBSzlVPUHyGuqxG1DTDMrjb+r84Y2Khe3XQ9RcFIZoFPOe5
-         O4cPrrqsxiGQX/+EQob1qbLzQdSBg/EY4HySb0jeasJGaHOGDpGBrltIELY6XzpwmGzr
-         oi5mvfKEAeyATN4sz9opIyIsoveo9R+FpJer+acIb2K8wAVG9dyUpruq3Aj7P8A86usG
-         2qUQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785083988; x=1785688788;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=LvWcAyC/LEkvD+saSCcPsZJV67914bEAZIKwiD6urdg=;
-        b=cW7Y1hy2fJXV/zTXeNPCV1CzETWOMipcuAvVlnJfh/7y14w1GDIf1L/JSO42CK+QM1
-         VEw9Y869tfqBW5CsUb7aC20l8Gze+QCV4NFFfvE1rRMM/ZZcfa1ku9U0Y8U+ta/1Ku+j
-         ojKdKm6aNS1apDHK0B14jBJYhrvpEXlX7CBvXrwVd5fyVC08Z3BRsPMeewULsGS8NbCC
-         xMBeRPVpzNyXCiwOqMoOMeir26Oq8NFp/WEvJw6nPIRbudY2T7AbRtg4uaihrb9KW0DX
-         RIXoLj9XcN/3+ViCAddf8OW8IEPyLVafm9gEDMi1Z8PfGWlD35uvo/Q3ao4WiLQv3XkH
-         Chfg==
-X-Forwarded-Encrypted: i=1; AHgh+Ro7NT0Yx3roRFeJWmzMrQ19ykNj8Qj2nJO6Mtp95rlIiyagtg0/Xs+VO44SilHarxT4EcUzNb2aG+BWTK0=@vger.kernel.org
-X-Gm-Message-State: AOJu0Yyd6owxMRvzisga4TJPYzC4VvkXBuZwmArmj7EAdX1oxtxMKJkL
-	N5zPk4ccQVNgaMH3YYeGuxPR1OmouBdNAjPoU0pjw9f7DVD8LmB543/cvp5THz5hC3Y=
-X-Gm-Gg: AR+sD127N4ZlzD/kAn0AJ2UoNrE1avY9KTjZ80Wu2dWutMisI4m2PvNiTDsuMnVzzVS
-	nLZS4BpPdwrvVGYj+KEkmaoB3sF9ZKgeftecFI2Ts7sPuNKNAQExD8iu4+y6z6fRFK+okxJrA2O
-	4VRurWYiHWaV1gW5CKSW7lA5dN/Y6qo37aKWkYgOJoF12ZMtNmvcjJ0rih14scsZjQ6JMKveSEn
-	a1LG6ZVoddwTVGtHaApvxpr9kKlxPzusVWR7pUcHmIjSk52R9TsntfKZ2uH/ol5IW+yZV9VQEYo
-	vBjBvlMc15il9g+gi7PLegKPQoJvnWLT8qzjebbliHQllpAsm9ZgQdvFm9TtS9e6Yd4fMWTcUym
-	5B5j+lWzwvieDW8zHgoRzD4qQCrxNBKz6VFrstbsucrqjyOUXLh/fKb+9o/dQH2t/uOMojsKw6p
-	U3xwAVVDXxGmbpL4C1GEgSIcFNlKea9HcgKqQ=
-X-Received: by 2002:a17:903:13ce:b0:2c9:e835:ac67 with SMTP id d9443c01a7336-2cfde7c2957mr54494845ad.19.1785083988616;
-        Sun, 26 Jul 2026 09:39:48 -0700 (PDT)
-Received: from localhost.localdomain ([2406:5900:1044:110c:be9c:ea6b:29a7:6c78])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cfde80306esm21514315ad.75.2026.07.26.09.39.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Jul 2026 09:39:47 -0700 (PDT)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: sagi@grimberg.me,
-	jgg@ziepe.ca,
-	leon@kernel.org
-Cc: linux-rdma@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	yhlee@isslab.korea.ac.kr,
-	Leon Romanovsky <leonro@nvidia.com>,
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EKnC+RQH"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEDEC1F000E9;
+	Mon, 27 Jul 2026 05:16:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785129363;
+	bh=QAZiReavJjCsaWbDoCyDa3aXiYKYzoCjl3otzpHyucA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=EKnC+RQH6gpoSA5ZUiLuraxM50CRRwXdw32W6SZ31QjWKkgVQHA+d1UGuEOWN0mDR
+	 5lkgFEvPNC9/U8C0ACZgEjI31cBJM+/b3i79akLYftmAIvXixIUx+2naZTRX1fYGw4
+	 HnJZYLdjMBU+kWTV6I+KR6XShg7M3PcfWURS/n+MO1zGcciC6Q/GeY7wTdMEwbidVl
+	 e+D+sLQ/IzI4FVGS4vf+gIjRMdkumy43/cMCjvb0xcP7xvx0jkHa+MiFQMiEVPxEpI
+	 HBdKUc3rWyPIV0Ot5dTcS+cvFwg3R6IRcR+fbMk5is8ZA4Mq7PZTeeTDagSGTB0MZw
+	 CArNXTjWbPxEg==
+Date: Mon, 27 Jul 2026 08:15:57 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+Cc: sagi@grimberg.me, jgg@ziepe.ca, linux-rdma@vger.kernel.org,
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH v2 2/2] IB/isert: reject login PDUs declaring more data than was received
-Date: Mon, 27 Jul 2026 01:39:31 +0900
-Message-ID: <20260726163931.971063-3-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260726163931.971063-1-yhlee@isslab.korea.ac.kr>
-References: <20260726163931.971063-1-yhlee@isslab.korea.ac.kr>
+Subject: Re: [PATCH] IB/isert: reject PDUs declaring more data than was
+ received
+Message-ID: <20260727051557.GH12003@unreal>
+References: <20260726064628.GA12003@unreal>
+ <20260726153130.934622-1-yhlee@isslab.korea.ac.kr>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260726153130.934622-1-yhlee@isslab.korea.ac.kr>
 
-isert_login_recv_done() records how many bytes the HCA actually placed in
-the login buffer, but nothing compares that against the length the login
-PDU's BHS declares.  isert_rx_login_req() copies min(login_req_len,
-MAX_KEY_VALUE_PAIRS) bytes into login->req_buf, and the login code then
-reads the declared length back out of that buffer - for the first PDU in
-iscsi_target_locate_portal(),
+On Mon, Jul 27, 2026 at 12:31:30AM +0900, Yehyeong Lee wrote:
+> On Sun, Jul 26, 2026 at 09:46:28AM +0300, Leon Romanovsky wrote:
+> > 1. You should review patches generated by AI.
+> > 2. There is a need to add similar check to isert_get_login_rx() too.
+> 
+> You are right on both counts.  My changelog said the login handler
+> "already rejects PDUs shorter than ISER_HEADERS_LEN"; I confirmed that a
+> length check existed there and did not confirm that it was the same
+> check.  It is not - 29e7b925ae6d bounds login_req_len from below, and
+> nothing bounds the length the BHS declares.
+> 
+> I reproduced it before replying.  An initiator that sends a 105-byte
+> first login PDU while declaring 8193 in the BHS DataSegmentLength, on
+> 7.2.0-rc4 with KASAN over soft-RoCE:
+> 
+>   BUG: KASAN: slab-out-of-bounds in kmemdup_nul+0x43/0x80
+>   Read of size 8193 at addr ffff8881056a8000 by task iscsi_np/167
+>    __asan_memcpy+0x23/0x60
+>    kmemdup_nul+0x43/0x80
+>    iscsi_target_locate_portal+0x48d/0x1180
+>    iscsi_target_login_thread+0x19a9/0x3350
+>   Allocated by task 167:
+>    __kmalloc_cache_noprof+0x158/0x370
+>    iscsi_target_login_thread+0x971/0x3350
+>   The buggy address belongs to the object at ffff8881056a8000
+>    which belongs to the cache kmalloc-8k of size 8192
+>   allocated 8192-byte region
+> 
+> faddr2line puts the allocation at iscsi_login_init_conn(),
+> iscsi_target_login.c:50 - login->req_buf = kzalloc(MAX_KEY_VALUE_PAIRS) -
+> and the read at iscsi_target_nego.c:1136, the kmemdup_nul() in
+> iscsi_target_locate_portal().  The read size tracks the declared value
+> exactly; 16384 gives "Read of size 16384", and a control run with a
+> correct DataSegmentLength produces no report.  It is reached before
+> authentication and the length is attacker-chosen.
+> 
+> On why isert is the one exposed: iscsi_target_check_login_request()
+> already rejects payload_length > MAX_KEY_VALUE_PAIRS, but it is only
+> called from iscsit_get_login_rx() and from cxgbit.  isert does not call
+> it.  iscsit over TCP is safe by construction in any case - it reads
+> exactly payload_length + padding from the socket, so the declared length
+> governs how much arrives rather than how much is copied out of an
+> already-filled buffer.
+> 
+> Your check is sufficient and not merely necessary: the posted login SGE
+> is ISER_RX_PAYLOAD_SIZE, so login_req_len cannot exceed
+> MAX_KEY_VALUE_PAIRS and size = min(login_req_len, MAX_KEY_VALUE_PAIRS)
+> is login_req_len; once dlength <= login_req_len the copy out stays
+> inside what was copied in.
 
-	payload_length = ntoh24(login_req->dlength);
-	tmpbuf = kmemdup_nul(login->req_buf, payload_length, GFP_KERNEL);
+I have little desire to argue with chatbot, but the second check MUST to
+be added.
 
-and for the ones after it in iscsi_decode_text_input(), reached from
-iscsi_target_do_login().
+Thanks
 
-login->req_buf is a fixed MAX_KEY_VALUE_PAIRS (8192) byte allocation, so
-an initiator that declares more than it sends reads off the end of it,
-before authentication and with the length under its control:
-
-  BUG: KASAN: slab-out-of-bounds in kmemdup_nul+0x43/0x80
-  Read of size 8193 at addr ffff8881056a8000 by task iscsi_np/167
-   __asan_memcpy+0x23/0x60
-   kmemdup_nul+0x43/0x80
-   iscsi_target_locate_portal+0x48d/0x1180
-   iscsi_target_login_thread+0x19a9/0x3350
-  Allocated by task 167:
-   __kmalloc_cache_noprof+0x158/0x370
-   iscsi_target_login_thread+0x971/0x3350
-  which belongs to the cache kmalloc-8k of size 8192
-  allocated 8192-byte region
-
-Falsifying the second login PDU instead reaches the other reader, on the
-same buffer:
-
-  BUG: KASAN: slab-out-of-bounds in kmemdup_nul+0x43/0x80
-  Read of size 8193 at addr ffff888104d10000 by task kworker/1:1/50
-  Workqueue: isert_login_wq iscsi_target_do_login_rx
-   __asan_memcpy+0x23/0x60
-   kmemdup_nul+0x43/0x80
-   iscsi_decode_text_input+0xc6/0x11c0
-   iscsi_target_do_login+0x261/0x1470
-   iscsi_target_do_login_rx+0x51d/0x7d0
-
-iscsit over TCP is not exposed: iscsit_get_login_rx() validates the
-declared length with iscsi_target_check_login_request() and then reads
-exactly that many bytes off the socket, so the declared length governs
-how much arrives rather than how much is copied out of an already-filled
-buffer.  isert does not call iscsi_target_check_login_request() at all.
-
-Reject a login PDU whose declared DataSegmentLength exceeds what was
-received, in both paths that reach isert_rx_login_req():
-isert_get_login_rx() for the first login PDU and isert_login_recv_done()
-for the ones after it.  dlength <= login_req_len is allowed because the
-received count can include up to three bytes of iSCSI padding.
-
-Once the check is in place the copy out can no longer exceed the copy in:
-the posted login SGE is ISER_RX_PAYLOAD_SIZE, so login_req_len cannot
-exceed MAX_KEY_VALUE_PAIRS and the min() in isert_rx_login_req() is
-login_req_len.
-
-Like the existing short-PDU check added by 29e7b925ae6d, the reject in
-isert_login_recv_done() returns without completing login_req_comp, so a
-malformed subsequent PDU leaves the login to be torn down by the login
-timer rather than failing immediately.  The first-PDU path returns an
-error and fails straight away.
-
-Reproduced on 7.2.0-rc4 with soft-RoCE (rdma_rxe) under KASAN, using an
-initiator that sends the real key=value payload while declaring 8193 in
-the BHS, on the first login PDU and on the second in separate runs.  The
-reported read size tracks the declared value exactly; 16384 and 61440
-behave the same.  Unpatched 3 of 3 runs report on each of the two paths,
-patched 0 of 3 on both, run alternately in a single session, and a normal
-login still completes on the patched build.
-
-Fixes: b8d26b3be8b3 ("iser-target: Add iSCSI Extensions for RDMA (iSER) target driver")
-Suggested-by: Leon Romanovsky <leonro@nvidia.com>
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
- drivers/infiniband/ulp/isert/ib_isert.c | 25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index 66435a0a5c7a..064e3353f4a2 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -971,6 +971,21 @@ isert_put_login_tx(struct iscsit_conn *conn, struct iscsi_login *login,
- 	return 0;
- }
- 
-+static int
-+isert_check_login_req(struct isert_conn *isert_conn)
-+{
-+	struct iscsi_hdr *hdr = isert_get_iscsi_hdr(isert_conn->login_desc);
-+	u32 dlength = ntoh24(hdr->dlength);
-+
-+	if (unlikely(dlength > (u32)isert_conn->login_req_len)) {
-+		isert_dbg("login PDU declares %u data bytes but only %d were received\n",
-+			  dlength, isert_conn->login_req_len);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- static void
- isert_rx_login_req(struct isert_conn *isert_conn)
- {
-@@ -1409,8 +1424,12 @@ isert_login_recv_done(struct ib_cq *cq, struct ib_wc *wc)
- 	if (isert_conn->conn) {
- 		struct iscsi_login *login = isert_conn->conn->conn_login;
- 
--		if (login && !login->first_request)
-+		if (login && !login->first_request) {
-+			if (isert_check_login_req(isert_conn))
-+				return;
-+
- 			isert_rx_login_req(isert_conn);
-+		}
- 	}
- 
- 	mutex_lock(&isert_conn->mutex);
-@@ -2375,6 +2394,10 @@ isert_get_login_rx(struct iscsit_conn *conn, struct iscsi_login *login)
- 	if (!login->first_request)
- 		return 0;
- 
-+	ret = isert_check_login_req(isert_conn);
-+	if (ret)
-+		return ret;
-+
- 	isert_rx_login_req(isert_conn);
- 
- 	isert_info("before login_comp conn: %p\n", conn);
--- 
-2.43.0
-
+> 
+> I will send a v2 two-patch series - the isert_recv_done() check as 1/2
+> and this one as 2/2 with Suggested-by: Leon Romanovsky
+> <leonro@nvidia.com> - once the before/after on the login case is run.
+> 
+> Best regards,
