@@ -1,110 +1,138 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C85054908BF;
-	Mon, 27 Jul 2026 05:16:03 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 169E73CFF6F;
+	Mon, 27 Jul 2026 06:39:34 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785129364; cv=none; b=T9oQBtMRvnskb0XXza5JBGQwhmDzEwQkOaM13cuFE2hcjgqzy2HDyGgEkcNfh0NiLsumz3rG0Su5IUI9Fb/UrZ/KzubVaVUywADQ4fXtYnSB4nNQQ8DY+x9Vx+AMUUZ+qv5PKK8WZ7kS0rDBabVzG4B11Gfo/s/77Z+nk3R1cDs=
+	t=1785134379; cv=none; b=r4dKOvS1qsXbvgDgAsF7J2v2Czi49Rp1JUbUKGFPU2Sqa5kpQe9bJwDO9eKpMmEHb/wH9wiMOencFn50BR/p86z5jD/a0ir6TApCtbOd0NkuCOXeDVoWRKnV09gK5pYw9FMlVIL7R2EctmCNDb9JAabdl8U2lMdFa9BpM08DBXI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785129364; c=relaxed/simple;
-	bh=xfxiBWkOVfUe75rxDGsQQ2KVkO6TeuT+5fZoWVSj4fY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GX5LLQw7enoukGY8sr/qP7hYPHKsAu93r/Kl7ZxIfivPexayItr5tEh/Dbbu/UsMs+aExN5LvF/PmWzuocurs4wd2HS5xaKGJc4OXH18zIBsY1r+lE4qxiF9SV8wJ0kXABXK78mE3zMUAvHMx10KEqKXPbX5YsRwxlR76I6O++Y=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=EKnC+RQH; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785134379; c=relaxed/simple;
+	bh=RdEPU4JGS9NqeWOI8p+gcWhwWJO4yfGhSszNj4JiC24=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
+	 MIME-Version:Message-ID; b=b9/wHvBzw/ABvnkP02Cr5uteS16lvzCNJhUgyMEpyyFrtC3LUFaWjq4yozdZp3P+Ybzn/gAMEB3dbtnJJbtBQOu2KFhz6t5uhZVXPKeF9w2t9of5/Z3iXTN1dlESoBzJ+BWuWiuAbdfofLSKXD2i2ClljFzZ00FzFTKaVxfVSrY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=oMTE9Ppk; arc=none smtp.client-ip=117.135.210.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="EKnC+RQH"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEDEC1F000E9;
-	Mon, 27 Jul 2026 05:16:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785129363;
-	bh=QAZiReavJjCsaWbDoCyDa3aXiYKYzoCjl3otzpHyucA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=EKnC+RQH6gpoSA5ZUiLuraxM50CRRwXdw32W6SZ31QjWKkgVQHA+d1UGuEOWN0mDR
-	 5lkgFEvPNC9/U8C0ACZgEjI31cBJM+/b3i79akLYftmAIvXixIUx+2naZTRX1fYGw4
-	 HnJZYLdjMBU+kWTV6I+KR6XShg7M3PcfWURS/n+MO1zGcciC6Q/GeY7wTdMEwbidVl
-	 e+D+sLQ/IzI4FVGS4vf+gIjRMdkumy43/cMCjvb0xcP7xvx0jkHa+MiFQMiEVPxEpI
-	 HBdKUc3rWyPIV0Ot5dTcS+cvFwg3R6IRcR+fbMk5is8ZA4Mq7PZTeeTDagSGTB0MZw
-	 CArNXTjWbPxEg==
-Date: Mon, 27 Jul 2026 08:15:57 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-Cc: sagi@grimberg.me, jgg@ziepe.ca, linux-rdma@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="oMTE9Ppk"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=Date:From:To:Subject:Content-Type:MIME-Version:
+	Message-ID; bh=RdEPU4JGS9NqeWOI8p+gcWhwWJO4yfGhSszNj4JiC24=; b=o
+	MTE9PpkkPNNgAGM/CebTdLpYv0tHePfFml7JRBmA4/9XPm8wjXxL0+pMOPgNtYKC
+	9GF7g5OkeNhqtF8r7rN/kyonw01AN8ImtSwwr0kCj1DbVxw1oHSl6dY7wKRPA/Bd
+	AGLfrjAeXf2cTijFzewxa7jGmdJX0iXgBhvMd1osEc=
+Received: from kensanya$163.com ( [116.128.244.169] ) by
+ ajax-webmail-wmsvr-40-147 (Coremail) ; Mon, 27 Jul 2026 14:39:08 +0800
+ (CST)
+Date: Mon, 27 Jul 2026 14:39:08 +0800 (CST)
+From: kensanya  <kensanya@163.com>
+To: "Leon Romanovsky" <leon@kernel.org>
+Cc: bvanassche@acm.org, jgg@ziepe.ca, linux-rdma@vger.kernel.org,
 	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH] IB/isert: reject PDUs declaring more data than was
- received
-Message-ID: <20260727051557.GH12003@unreal>
-References: <20260726064628.GA12003@unreal>
- <20260726153130.934622-1-yhlee@isslab.korea.ac.kr>
+	TanZheng <tanzheng@kylinos.cn>
+Subject: Re:Re: Re: [PATCH v2] RDMA/srpt: fix NULL deref when sending BUSY
+ before target_init_cmd()
+X-Priority: 3
+X-Mailer: Coremail Webmail Server Version 2023.4-cmXT build
+ 20260511(2e539873) Copyright (c) 2002-2026 www.mailtech.cn 163com
+In-Reply-To: <20260726075511.GC12003@unreal>
+References: <20260723024456.52851-1-kensanya@163.com>
+ <20260723095120.GF110966@unreal>
+ <56479481.2552.19f920118cd.Coremail.kensanya@163.com>
+ <20260726075511.GC12003@unreal>
+X-NTES-SC: AL_Qu2TB/2Yu0sv7iSYYOkcnkcTg+k8WMW1ufsg2Ydec+8GsxzP0SIEeXJFGmDv1OSpOiWpuzOTXD9p6f1eU4p3u3F8Wq0Nc+qw+ujUflk11g==
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=GBK
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260726153130.934622-1-yhlee@isslab.korea.ac.kr>
+Message-ID: <71e36b0d.4e93.19fa24c787d.Coremail.kensanya@163.com>
+X-Coremail-Locale: zh_CN
+X-CM-TRANSID:kygvCgDX3+cN_WZqINIlAA--.2881W
+X-CM-SenderInfo: 5nhq2txq1dqiywtou0bp/xtbCwQ22kmpm-Q3OKgAA3w
+X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
 
-On Mon, Jul 27, 2026 at 12:31:30AM +0900, Yehyeong Lee wrote:
-> On Sun, Jul 26, 2026 at 09:46:28AM +0300, Leon Romanovsky wrote:
-> > 1. You should review patches generated by AI.
-> > 2. There is a need to add similar check to isert_get_login_rx() too.
-> 
-> You are right on both counts.  My changelog said the login handler
-> "already rejects PDUs shorter than ISER_HEADERS_LEN"; I confirmed that a
-> length check existed there and did not confirm that it was the same
-> check.  It is not - 29e7b925ae6d bounds login_req_len from below, and
-> nothing bounds the length the BHS declares.
-> 
-> I reproduced it before replying.  An initiator that sends a 105-byte
-> first login PDU while declaring 8193 in the BHS DataSegmentLength, on
-> 7.2.0-rc4 with KASAN over soft-RoCE:
-> 
->   BUG: KASAN: slab-out-of-bounds in kmemdup_nul+0x43/0x80
->   Read of size 8193 at addr ffff8881056a8000 by task iscsi_np/167
->    __asan_memcpy+0x23/0x60
->    kmemdup_nul+0x43/0x80
->    iscsi_target_locate_portal+0x48d/0x1180
->    iscsi_target_login_thread+0x19a9/0x3350
->   Allocated by task 167:
->    __kmalloc_cache_noprof+0x158/0x370
->    iscsi_target_login_thread+0x971/0x3350
->   The buggy address belongs to the object at ffff8881056a8000
->    which belongs to the cache kmalloc-8k of size 8192
->   allocated 8192-byte region
-> 
-> faddr2line puts the allocation at iscsi_login_init_conn(),
-> iscsi_target_login.c:50 - login->req_buf = kzalloc(MAX_KEY_VALUE_PAIRS) -
-> and the read at iscsi_target_nego.c:1136, the kmemdup_nul() in
-> iscsi_target_locate_portal().  The read size tracks the declared value
-> exactly; 16384 gives "Read of size 16384", and a control run with a
-> correct DataSegmentLength produces no report.  It is reached before
-> authentication and the length is attacker-chosen.
-> 
-> On why isert is the one exposed: iscsi_target_check_login_request()
-> already rejects payload_length > MAX_KEY_VALUE_PAIRS, but it is only
-> called from iscsit_get_login_rx() and from cxgbit.  isert does not call
-> it.  iscsit over TCP is safe by construction in any case - it reads
-> exactly payload_length + padding from the socket, so the declared length
-> governs how much arrives rather than how much is copied out of an
-> already-filled buffer.
-> 
-> Your check is sufficient and not merely necessary: the posted login SGE
-> is ISER_RX_PAYLOAD_SIZE, so login_req_len cannot exceed
-> MAX_KEY_VALUE_PAIRS and size = min(login_req_len, MAX_KEY_VALUE_PAIRS)
-> is login_req_len; once dlength <= login_req_len the copy out stays
-> inside what was copied in.
-
-I have little desire to argue with chatbot, but the second check MUST to
-be added.
-
-Thanks
-
-> 
-> I will send a v2 two-patch series - the isert_recv_done() check as 1/2
-> and this one as 2/2 with Suggested-by: Leon Romanovsky
-> <leonro@nvidia.com> - once the before/after on the login case is run.
-> 
-> Best regards,
+CgpBdCAyMDI2LTA3LTI2IDE1OjU1OjExLCAiTGVvbiBSb21hbm92c2t5IiA8bGVvbkBrZXJuZWwu
+b3JnPiB3cm90ZToKPk9uIEZyaSwgSnVsIDI0LCAyMDI2IGF0IDEwOjQyOjUzQU0gKzA4MDAsIGtl
+bnNhbnlhIHdyb3RlOgo+PiBBdCAyMDI2LTA3LTIzIDE3OjUxOjIwLCAiTGVvbiBSb21hbm92c2t5
+IiA8bGVvbkBrZXJuZWwub3JnPiB3cm90ZToKPj4gPk9uIFRodSwgSnVsIDIzLCAyMDI2IGF0IDEw
+OjQ0OjU2QU0gKzA4MDAsIGtlbnNhbnlhQDE2My5jb20gd3JvdGU6Cj4+ID4+IEZyb206IFRhblpo
+ZW5nIDx0YW56aGVuZ0BreWxpbm9zLmNuPgo+PiA+PiAKPj4gPj4gSWYgc3JwdF9nZXRfZGVzY190
+YmwoKSBmYWlscywgc3JwdF9oYW5kbGVfY21kKCkganVtcHMgdG8KPj4gPj4gdGFyZ2V0X3NlbmRf
+YnVzeSgpIGJlZm9yZSB0YXJnZXRfaW5pdF9jbWQoKSBoYXMgc2V0IGNtZC0+c2VfdGZvLgo+PiA+
+PiB0YXJnZXRfc2VuZF9idXN5KCkgdGhlbiBkZXJlZmVyZW5jZXMgYSBOVUxMIHNlX3Rmby4KPj4g
+Pj4gCj4+ID4+IENhbGwgdGFyZ2V0X2luaXRfY21kKCkgZmlyc3Qgd2l0aCBwbGFjZWhvbGRlciBk
+YXRhX2xlbmd0aCBhbmQKPj4gPj4gZGF0YV9kaXJlY3Rpb24sIHBhcnNlIHRoZSBkZXNjcmlwdG9y
+IHRhYmxlIG5leHQsIHRoZW4gZmlsbCBpbiB0aGUKPj4gPj4gcmVhbCBkYXRhX2xlbmd0aC4gVGhh
+dCB3YXkgdGFyZ2V0X3NlbmRfYnVzeSgpIGlzIHNhZmUgaWYgcGFyc2luZwo+PiA+PiBmYWlscy4K
+Pj4gPj4gCj4+ID4+IHRhcmdldF9zZW5kX2J1c3koKSBpcyBvbmx5IHZhbGlkIGFmdGVyIGEgc3Vj
+Y2Vzc2Z1bCB0YXJnZXRfaW5pdF9jbWQoKS4KPj4gPj4gSWYgdGFyZ2V0X2luaXRfY21kKCkgaXRz
+ZWxmIGZhaWxzLCBmcmVlIHRoZSBzZW5kIGlvY3R4IHRhZyBsb2NhbGx5Cj4+ID4+IHdpdGggdGFy
+Z2V0X2ZyZWVfdGFnKCkgaW5zdGVhZCBvZiBjYWxsaW5nIHRhcmdldF9zZW5kX2J1c3koKS4KPj4g
+Pj4gCj4+ID4+IEZpeGVzOiA4Yjg4MDdiOWU5ODIgKCJzY3NpOiBSRE1BL3NycHQ6IEZpeCBoYW5k
+bGluZyBvZiBjb21tYW5kIC8gVE1GIHN1Ym1pc3Npb24gZmFpbHVyZSIpCj4+ID4+IExpbms6IGh0
+dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC8yMDI2MDcxNzAyNTQwMi42NDA1NC0xLWtlbnNhbnlh
+QDE2My5jb20vCj4+ID4+IFN1Z2dlc3RlZC1ieTogQmFydCBWYW4gQXNzY2hlIDxidmFuYXNzY2hl
+QGFjbS5vcmc+Cj4+ID4+IFNpZ25lZC1vZmYtYnk6IFRhblpoZW5nIDx0YW56aGVuZ0BreWxpbm9z
+LmNuPgo+PiA+PiAtLS0KPj4gPj4gdjI6Cj4+ID4+IC0gT24gdGFyZ2V0X2luaXRfY21kKCkgZmFp
+bHVyZSwgdXNlIHRhcmdldF9mcmVlX3RhZygpIGluc3RlYWQgb2YKPj4gPj4gICB0YXJnZXRfc2Vu
+ZF9idXN5KCkKPj4gPj4gCj4+ID4+ICBkcml2ZXJzL2luZmluaWJhbmQvdWxwL3NycHQvaWJfc3Jw
+dC5jIHwgMzYgKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tCj4+ID4+ICAxIGZpbGUgY2hhbmdl
+ZCwgMjYgaW5zZXJ0aW9ucygrKSwgMTAgZGVsZXRpb25zKC0pCj4+ID4+IAo+PiA+PiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9pbmZpbmliYW5kL3VscC9zcnB0L2liX3NycHQuYyBiL2RyaXZlcnMvaW5m
+aW5pYmFuZC91bHAvc3JwdC9pYl9zcnB0LmMKPj4gPj4gaW5kZXggZjY2Y2ZkNzBjMjYzLi43MWFm
+MWZiMGQzODAgMTAwNjQ0Cj4+ID4+IC0tLSBhL2RyaXZlcnMvaW5maW5pYmFuZC91bHAvc3JwdC9p
+Yl9zcnB0LmMKPj4gPj4gKysrIGIvZHJpdmVycy9pbmZpbmliYW5kL3VscC9zcnB0L2liX3NycHQu
+Ywo+PiA+PiBAQCAtMTU1OCw4ICsxNTU4LDggQEAgc3RhdGljIHZvaWQgc3JwdF9oYW5kbGVfY21k
+KHN0cnVjdCBzcnB0X3JkbWFfY2ggKmNoLAo+PiA+PiAgCXN0cnVjdCBzcnBfY21kICpzcnBfY21k
+Owo+PiA+PiAgCXN0cnVjdCBzY2F0dGVybGlzdCAqc2cgPSBOVUxMOwo+PiA+PiAgCXVuc2lnbmVk
+IHNnX2NudCA9IDA7Cj4+ID4+IC0JdTY0IGRhdGFfbGVuOwo+PiA+PiAtCWVudW0gZG1hX2RhdGFf
+ZGlyZWN0aW9uIGRpcjsKPj4gPj4gKwl1NjQgZGF0YV9sZW4gPSAwOwo+PiA+PiArCWVudW0gZG1h
+X2RhdGFfZGlyZWN0aW9uIGRpciA9IERNQV9OT05FOwo+PiA+PiAgCWludCByYzsKPj4gPj4gIAo+
+PiA+PiAgCUJVR19PTighc2VuZF9pb2N0eCk7Cj4+ID4+IEBAIC0xNTg0LDYgKzE1ODQsMjUgQEAg
+c3RhdGljIHZvaWQgc3JwdF9oYW5kbGVfY21kKHN0cnVjdCBzcnB0X3JkbWFfY2ggKmNoLAo+PiA+
+PiAgCQlicmVhazsKPj4gPj4gIAl9Cj4+ID4+ICAKPj4gPj4gKwkvKgo+PiA+PiArCSAqIENhbGwg
+dGFyZ2V0X2luaXRfY21kKCkgYmVmb3JlIHNycHRfZ2V0X2Rlc2NfdGJsKCkgc28gdGhhdAo+PiA+
+PiArCSAqIGNtZC0+c2VfdGZvIGlzIHNldCBpZiBkZXNjcmlwdG9yIHBhcnNpbmcgZmFpbHMgYW5k
+Cj4+ID4+ICsJICogdGFyZ2V0X3NlbmRfYnVzeSgpIGlzIHVzZWQuIGRhdGFfbGVuZ3RoIGlzIGZp
+bGxlZCBpbiBhZnRlciBhCj4+ID4+ICsJICogc3VjY2Vzc2Z1bCBzcnB0X2dldF9kZXNjX3RibCgp
+Lgo+PiA+PiArCSAqCj4+ID4+ICsJICogdGFyZ2V0X3NlbmRfYnVzeSgpIGlzIG9ubHkgdmFsaWQg
+YWZ0ZXIgYSBzdWNjZXNzZnVsCj4+ID4+ICsJICogdGFyZ2V0X2luaXRfY21kKCkuIE9uIGluaXQg
+ZmFpbHVyZSBmcmVlIHRoZSB0YWcgbG9jYWxseS4KPj4gPj4gKwkgKi8KPj4gPj4gKwlyYyA9IHRh
+cmdldF9pbml0X2NtZChjbWQsIGNoLT5zZXNzLCAmc2VuZF9pb2N0eC0+c2Vuc2VfZGF0YVswXSwK
+Pj4gPj4gKwkJCSAgICAgc2NzaWx1bl90b19pbnQoJnNycF9jbWQtPmx1biksIDAgLyogZGF0YV9s
+ZW4gKi8sCj4+ID4+ICsJCQkgICAgIFRDTV9TSU1QTEVfVEFHLCBETUFfTk9ORSwgVEFSR0VUX1ND
+Rl9BQ0tfS1JFRik7Cj4+ID4KPj4gPjEuIFRDTV9TSU1QTEVfVEFHIC0+IHlvdSBuZWVkIHRvIHJl
+YmFzZSB0byBsYXRlc3QgcmRtYS1uZXh0Lgo+PiAKPj4gICAgICAgSSB3aWxsIG1vZGlmeSBhbmQg
+cmVzZW5kIHRoZSBwYXRjaC4KPj4gCj4+ID4yLiBZb3UgYXJlIGhhcmRjb2RpbmcgZGlyLCB3aGls
+ZSBpdCBjYW4gYmUgb3ZlcndyaXR0ZW4gaW4gc3JwdF9nZXRfZGVzY190YmwoKS4KPj4gCj4+ICAg
+ICAgIEluIHRoZSBzcnB0X2hhbmRsZV9jbWQoKSBmdW5jdGlvbjoKPj4gICAgICAgJnNlbmRfaW9j
+dHgtPmNtZDsKPj4gICAgICAgc3JwdF9nZXRfZGVzY190YmwoLi4uLCBzZW5kX2lvY3R4LCAuLi4p
+IAo+PiAgICAgICAgICAgIGlvY3R4LT5jbWQuZGF0YV9kaXJlY3Rpb24gPSAqZGlyOwo+PiAKPj4g
+ICAgICBUaGVyZWZvcmUsIGFmdGVyIHN1Y2Nlc3NmdWxseSBjYWxsaW5nIHNycHRfZ2V0X2Rlc2Nf
+dGJsKCksIGV2ZW4gaWYgdGFyZ2V0X2luaXRfY21kKCkgaXMKPj4gICAgICBwYXNzZWQgRE1BX05P
+TkUsIGNtZC0+ZGF0YV9kaXJlY3Rpb24gc2hvdWxkIGFscmVhZHkgaGF2ZSBzdG9yZWQgdGhlIGFj
+dHVhbCBkaXJlY3Rpb24uCj4+IAo+PiAgICAgIERvIHlvdSBtZWFuICB0aGF0IGFmdGVyIGNhbGxp
+bmcgc3JwdF9nZXRfZGVzY190YmwoKSwgZGlzcGxheWluZyB0aGUgb3ZlcndyaXR0ZW4gY29udGVu
+dAo+PiAgICAgIHdvdWxkIGJlIGJldHRlcqO/SSB3YW50IHRvIG1ha2Ugc3VyZSBJIGFkZHJlc3Mg
+dGhlIGludGVudCBvZiB5b3VyIGNvbW1lbnQgY29ycmVjdGx5Lgo+Cj5Zb3UgbmVlZCB0byBkbyB0
+aGlzIGNvcnJlY3RseTogdGFyZ2V0X2luaXRfY21kKCkgbXVzdCByZWNlaXZlIHRoZQo+Y29ycmVj
+dCBkaXJlY3RvcnksIGFzIGNhbGN1bGF0ZWQgYnkgc3JwdF9nZXRfZGVzY190YmwoKS4KPgo+VGhh
+bmtzCj4KPj4gPgo+PiA+VGhhbmtzCj4+IAo+PiBUaGFua3MsCj4+IFRhblpoZW5nCgpUaGVyZSBp
+cyBhIGNvbnRyYWRpY3Rpb24gYmV0d2VlbiB0aGUgdHdvIHN1Z2dlc3Rpb25zOgotIEJhcnQgc3Vn
+Z2VzdHMgY2FsbGluZyB0YXJnZXRfaW5pdF9jbWQoKSBiZWZvcmUgY2FsbGluZwogICBzcnB0X2dl
+dF9kZXNjX3RibCgpICh1c2luZyBhIHBsYWNlaG9sZGVyKSB0byBlbnN1cmUgdGhhdAogICB0YXJn
+ZXRfc2VuZF9idXN5KCkgY2FuIGJlIHNhZmVseSBleGVjdXRlZCBpZiB0aGUKICAgZGVzY3JpcHRv
+ciBwYXJzaW5nIGZhaWxzLgotIExlb24gcG9pbnRzIG91dCB0aGF0IHRhcmdldF9pbml0X2NtZCgp
+IG11c3QgcmVjZWl2ZSB0aGUKICBhY3R1YWwgZGF0YSBkaXJlY3Rpb24gY2FsY3VsYXRlZCBieSBz
+cnB0X2dldF9kZXNjX3RibCgpLAogIHJhdGhlciB0aGFuIGEgcGxhY2Vob2xkZXIgbGlrZSBETUFf
+Tk9ORSB0aGF0IHdpbGwKICBiZSBvdmVyd3JpdHRlbiBsYXRlci4KCklmIHdlIGNvbnRpbnVlIHRv
+IG1vZGlmeSB0aGUgY3VycmVudCBwYXRjaCwgdGhlIG9ubHkgd2F5IEkKY2FuIHRoaW5rIG9mIGlz
+IHRvIGV4dHJhY3QgdGhlIGRpcmVjdGlvbiBwYXJzaW5nIGxvZ2ljIGZyb20Kc3JwdF9nZXRfZGVz
+Y190YmwgYW5kIHBsYWNlIGl0IGJlZm9yZSB0YXJnZXRfaW5pdF9jbWQsIHNvCnRoYXQgdGFyZ2V0
+X2luaXRfY21kIGNhbiByZWNlaXZlIHRoZSBjb3JyZWN0IGRpcmVjdGlvbi4KSG93IGFib3V0IHRo
+aXM/CgpUaGFua3MsClRhblpoZW5nCg==
