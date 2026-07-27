@@ -1,138 +1,171 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 169E73CFF6F;
-	Mon, 27 Jul 2026 06:39:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 348B43E9C12;
+	Mon, 27 Jul 2026 09:00:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785134379; cv=none; b=r4dKOvS1qsXbvgDgAsF7J2v2Czi49Rp1JUbUKGFPU2Sqa5kpQe9bJwDO9eKpMmEHb/wH9wiMOencFn50BR/p86z5jD/a0ir6TApCtbOd0NkuCOXeDVoWRKnV09gK5pYw9FMlVIL7R2EctmCNDb9JAabdl8U2lMdFa9BpM08DBXI=
+	t=1785142854; cv=none; b=FI0qFifplwiBMFYBXmcCwhMeTE9VQSWxBGjlee3CZvf+vA5jLtFUl8wSDzWgI/M8mj0l6iBn2xXfd4w0IYyTLIvxWhsupvs6zs6X1m7OAT7oBXLf1kBc66VaDaji9F3K28hv/trKC1ArCu895sNvDyGqpzPwCg9deh96ON/ByLc=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785134379; c=relaxed/simple;
-	bh=RdEPU4JGS9NqeWOI8p+gcWhwWJO4yfGhSszNj4JiC24=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
-	 MIME-Version:Message-ID; b=b9/wHvBzw/ABvnkP02Cr5uteS16lvzCNJhUgyMEpyyFrtC3LUFaWjq4yozdZp3P+Ybzn/gAMEB3dbtnJJbtBQOu2KFhz6t5uhZVXPKeF9w2t9of5/Z3iXTN1dlESoBzJ+BWuWiuAbdfofLSKXD2i2ClljFzZ00FzFTKaVxfVSrY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=oMTE9Ppk; arc=none smtp.client-ip=117.135.210.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1785142854; c=relaxed/simple;
+	bh=PkhNp4hjdH0qCU7nWM+Fa9xwxJLq57E4/Pj0pZoC9hg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ggb3CypUFksibw5T3h3CluUuC25+vxioBF9QJVP0EwCXYNNu6kt7RIWkvW16u4kz4rchfLNY0xFKSPWHoa6lbKBHHF43f5LVaV5Mtgu9eNsdKaHFidDhmrwWukhAd4oXzUA0x0CDfjZNBbKczRrtJvvybSIqgxOH6zGUa305YN8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=XyUtI0kk; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="oMTE9Ppk"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Date:From:To:Subject:Content-Type:MIME-Version:
-	Message-ID; bh=RdEPU4JGS9NqeWOI8p+gcWhwWJO4yfGhSszNj4JiC24=; b=o
-	MTE9PpkkPNNgAGM/CebTdLpYv0tHePfFml7JRBmA4/9XPm8wjXxL0+pMOPgNtYKC
-	9GF7g5OkeNhqtF8r7rN/kyonw01AN8ImtSwwr0kCj1DbVxw1oHSl6dY7wKRPA/Bd
-	AGLfrjAeXf2cTijFzewxa7jGmdJX0iXgBhvMd1osEc=
-Received: from kensanya$163.com ( [116.128.244.169] ) by
- ajax-webmail-wmsvr-40-147 (Coremail) ; Mon, 27 Jul 2026 14:39:08 +0800
- (CST)
-Date: Mon, 27 Jul 2026 14:39:08 +0800 (CST)
-From: kensanya  <kensanya@163.com>
-To: "Leon Romanovsky" <leon@kernel.org>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="XyUtI0kk"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D2A71F000E9;
+	Mon, 27 Jul 2026 09:00:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785142853;
+	bh=d5jg1GKEPzzBsH5GdBcbypzjyRH1c+W9USnpu2k+jsA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=XyUtI0kkF0ZoAMKc8QTIrhYn1k9Odzo+havNwt+CETDGhuExDG+YO03NwKsZyrTF/
+	 XJMv97BuSi0fg0rEMIiOYyWpCnVbwMAx192pRaBKAe/Nm3nKonAQ2CfoAN/VLriyii
+	 kvJ5aKfyCZFF0yNvqSVEtdW7NvMRK7Ry/UiOb9GTtRDa+Aiiq2FuZ8bossMMbOPKlB
+	 5rUOfl4SWQrBwYybC8Ts4O4qKjt+h4PkGV7xD96q84L8OJc4yF/YJIjh5g3kcjpVoL
+	 UHtmh6GxHkwxiFfASWhL5BGGO8bSl/oyCcVIj8Dr6Qdrl8he9e9QsG7Afunfa78tUJ
+	 5bjWXjidEhwsQ==
+Date: Mon, 27 Jul 2026 12:00:46 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: kensanya <kensanya@163.com>
 Cc: bvanassche@acm.org, jgg@ziepe.ca, linux-rdma@vger.kernel.org,
 	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
 	TanZheng <tanzheng@kylinos.cn>
-Subject: Re:Re: Re: [PATCH v2] RDMA/srpt: fix NULL deref when sending BUSY
+Subject: Re: Re: Re: [PATCH v2] RDMA/srpt: fix NULL deref when sending BUSY
  before target_init_cmd()
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2023.4-cmXT build
- 20260511(2e539873) Copyright (c) 2002-2026 www.mailtech.cn 163com
-In-Reply-To: <20260726075511.GC12003@unreal>
+Message-ID: <20260727090046.GJ12003@unreal>
 References: <20260723024456.52851-1-kensanya@163.com>
  <20260723095120.GF110966@unreal>
  <56479481.2552.19f920118cd.Coremail.kensanya@163.com>
  <20260726075511.GC12003@unreal>
-X-NTES-SC: AL_Qu2TB/2Yu0sv7iSYYOkcnkcTg+k8WMW1ufsg2Ydec+8GsxzP0SIEeXJFGmDv1OSpOiWpuzOTXD9p6f1eU4p3u3F8Wq0Nc+qw+ujUflk11g==
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=GBK
+ <71e36b0d.4e93.19fa24c787d.Coremail.kensanya@163.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Message-ID: <71e36b0d.4e93.19fa24c787d.Coremail.kensanya@163.com>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:kygvCgDX3+cN_WZqINIlAA--.2881W
-X-CM-SenderInfo: 5nhq2txq1dqiywtou0bp/xtbCwQ22kmpm-Q3OKgAA3w
-X-Coremail-Antispam: 1U5529EdanIXcx71UUUUU7vcSsGvfC2KfnxnUU==
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <71e36b0d.4e93.19fa24c787d.Coremail.kensanya@163.com>
 
-CgpBdCAyMDI2LTA3LTI2IDE1OjU1OjExLCAiTGVvbiBSb21hbm92c2t5IiA8bGVvbkBrZXJuZWwu
-b3JnPiB3cm90ZToKPk9uIEZyaSwgSnVsIDI0LCAyMDI2IGF0IDEwOjQyOjUzQU0gKzA4MDAsIGtl
-bnNhbnlhIHdyb3RlOgo+PiBBdCAyMDI2LTA3LTIzIDE3OjUxOjIwLCAiTGVvbiBSb21hbm92c2t5
-IiA8bGVvbkBrZXJuZWwub3JnPiB3cm90ZToKPj4gPk9uIFRodSwgSnVsIDIzLCAyMDI2IGF0IDEw
-OjQ0OjU2QU0gKzA4MDAsIGtlbnNhbnlhQDE2My5jb20gd3JvdGU6Cj4+ID4+IEZyb206IFRhblpo
-ZW5nIDx0YW56aGVuZ0BreWxpbm9zLmNuPgo+PiA+PiAKPj4gPj4gSWYgc3JwdF9nZXRfZGVzY190
-YmwoKSBmYWlscywgc3JwdF9oYW5kbGVfY21kKCkganVtcHMgdG8KPj4gPj4gdGFyZ2V0X3NlbmRf
-YnVzeSgpIGJlZm9yZSB0YXJnZXRfaW5pdF9jbWQoKSBoYXMgc2V0IGNtZC0+c2VfdGZvLgo+PiA+
-PiB0YXJnZXRfc2VuZF9idXN5KCkgdGhlbiBkZXJlZmVyZW5jZXMgYSBOVUxMIHNlX3Rmby4KPj4g
-Pj4gCj4+ID4+IENhbGwgdGFyZ2V0X2luaXRfY21kKCkgZmlyc3Qgd2l0aCBwbGFjZWhvbGRlciBk
-YXRhX2xlbmd0aCBhbmQKPj4gPj4gZGF0YV9kaXJlY3Rpb24sIHBhcnNlIHRoZSBkZXNjcmlwdG9y
-IHRhYmxlIG5leHQsIHRoZW4gZmlsbCBpbiB0aGUKPj4gPj4gcmVhbCBkYXRhX2xlbmd0aC4gVGhh
-dCB3YXkgdGFyZ2V0X3NlbmRfYnVzeSgpIGlzIHNhZmUgaWYgcGFyc2luZwo+PiA+PiBmYWlscy4K
-Pj4gPj4gCj4+ID4+IHRhcmdldF9zZW5kX2J1c3koKSBpcyBvbmx5IHZhbGlkIGFmdGVyIGEgc3Vj
-Y2Vzc2Z1bCB0YXJnZXRfaW5pdF9jbWQoKS4KPj4gPj4gSWYgdGFyZ2V0X2luaXRfY21kKCkgaXRz
-ZWxmIGZhaWxzLCBmcmVlIHRoZSBzZW5kIGlvY3R4IHRhZyBsb2NhbGx5Cj4+ID4+IHdpdGggdGFy
-Z2V0X2ZyZWVfdGFnKCkgaW5zdGVhZCBvZiBjYWxsaW5nIHRhcmdldF9zZW5kX2J1c3koKS4KPj4g
-Pj4gCj4+ID4+IEZpeGVzOiA4Yjg4MDdiOWU5ODIgKCJzY3NpOiBSRE1BL3NycHQ6IEZpeCBoYW5k
-bGluZyBvZiBjb21tYW5kIC8gVE1GIHN1Ym1pc3Npb24gZmFpbHVyZSIpCj4+ID4+IExpbms6IGh0
-dHBzOi8vbG9yZS5rZXJuZWwub3JnL2FsbC8yMDI2MDcxNzAyNTQwMi42NDA1NC0xLWtlbnNhbnlh
-QDE2My5jb20vCj4+ID4+IFN1Z2dlc3RlZC1ieTogQmFydCBWYW4gQXNzY2hlIDxidmFuYXNzY2hl
-QGFjbS5vcmc+Cj4+ID4+IFNpZ25lZC1vZmYtYnk6IFRhblpoZW5nIDx0YW56aGVuZ0BreWxpbm9z
-LmNuPgo+PiA+PiAtLS0KPj4gPj4gdjI6Cj4+ID4+IC0gT24gdGFyZ2V0X2luaXRfY21kKCkgZmFp
-bHVyZSwgdXNlIHRhcmdldF9mcmVlX3RhZygpIGluc3RlYWQgb2YKPj4gPj4gICB0YXJnZXRfc2Vu
-ZF9idXN5KCkKPj4gPj4gCj4+ID4+ICBkcml2ZXJzL2luZmluaWJhbmQvdWxwL3NycHQvaWJfc3Jw
-dC5jIHwgMzYgKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tCj4+ID4+ICAxIGZpbGUgY2hhbmdl
-ZCwgMjYgaW5zZXJ0aW9ucygrKSwgMTAgZGVsZXRpb25zKC0pCj4+ID4+IAo+PiA+PiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9pbmZpbmliYW5kL3VscC9zcnB0L2liX3NycHQuYyBiL2RyaXZlcnMvaW5m
-aW5pYmFuZC91bHAvc3JwdC9pYl9zcnB0LmMKPj4gPj4gaW5kZXggZjY2Y2ZkNzBjMjYzLi43MWFm
-MWZiMGQzODAgMTAwNjQ0Cj4+ID4+IC0tLSBhL2RyaXZlcnMvaW5maW5pYmFuZC91bHAvc3JwdC9p
-Yl9zcnB0LmMKPj4gPj4gKysrIGIvZHJpdmVycy9pbmZpbmliYW5kL3VscC9zcnB0L2liX3NycHQu
-Ywo+PiA+PiBAQCAtMTU1OCw4ICsxNTU4LDggQEAgc3RhdGljIHZvaWQgc3JwdF9oYW5kbGVfY21k
-KHN0cnVjdCBzcnB0X3JkbWFfY2ggKmNoLAo+PiA+PiAgCXN0cnVjdCBzcnBfY21kICpzcnBfY21k
-Owo+PiA+PiAgCXN0cnVjdCBzY2F0dGVybGlzdCAqc2cgPSBOVUxMOwo+PiA+PiAgCXVuc2lnbmVk
-IHNnX2NudCA9IDA7Cj4+ID4+IC0JdTY0IGRhdGFfbGVuOwo+PiA+PiAtCWVudW0gZG1hX2RhdGFf
-ZGlyZWN0aW9uIGRpcjsKPj4gPj4gKwl1NjQgZGF0YV9sZW4gPSAwOwo+PiA+PiArCWVudW0gZG1h
-X2RhdGFfZGlyZWN0aW9uIGRpciA9IERNQV9OT05FOwo+PiA+PiAgCWludCByYzsKPj4gPj4gIAo+
-PiA+PiAgCUJVR19PTighc2VuZF9pb2N0eCk7Cj4+ID4+IEBAIC0xNTg0LDYgKzE1ODQsMjUgQEAg
-c3RhdGljIHZvaWQgc3JwdF9oYW5kbGVfY21kKHN0cnVjdCBzcnB0X3JkbWFfY2ggKmNoLAo+PiA+
-PiAgCQlicmVhazsKPj4gPj4gIAl9Cj4+ID4+ICAKPj4gPj4gKwkvKgo+PiA+PiArCSAqIENhbGwg
-dGFyZ2V0X2luaXRfY21kKCkgYmVmb3JlIHNycHRfZ2V0X2Rlc2NfdGJsKCkgc28gdGhhdAo+PiA+
-PiArCSAqIGNtZC0+c2VfdGZvIGlzIHNldCBpZiBkZXNjcmlwdG9yIHBhcnNpbmcgZmFpbHMgYW5k
-Cj4+ID4+ICsJICogdGFyZ2V0X3NlbmRfYnVzeSgpIGlzIHVzZWQuIGRhdGFfbGVuZ3RoIGlzIGZp
-bGxlZCBpbiBhZnRlciBhCj4+ID4+ICsJICogc3VjY2Vzc2Z1bCBzcnB0X2dldF9kZXNjX3RibCgp
-Lgo+PiA+PiArCSAqCj4+ID4+ICsJICogdGFyZ2V0X3NlbmRfYnVzeSgpIGlzIG9ubHkgdmFsaWQg
-YWZ0ZXIgYSBzdWNjZXNzZnVsCj4+ID4+ICsJICogdGFyZ2V0X2luaXRfY21kKCkuIE9uIGluaXQg
-ZmFpbHVyZSBmcmVlIHRoZSB0YWcgbG9jYWxseS4KPj4gPj4gKwkgKi8KPj4gPj4gKwlyYyA9IHRh
-cmdldF9pbml0X2NtZChjbWQsIGNoLT5zZXNzLCAmc2VuZF9pb2N0eC0+c2Vuc2VfZGF0YVswXSwK
-Pj4gPj4gKwkJCSAgICAgc2NzaWx1bl90b19pbnQoJnNycF9jbWQtPmx1biksIDAgLyogZGF0YV9s
-ZW4gKi8sCj4+ID4+ICsJCQkgICAgIFRDTV9TSU1QTEVfVEFHLCBETUFfTk9ORSwgVEFSR0VUX1ND
-Rl9BQ0tfS1JFRik7Cj4+ID4KPj4gPjEuIFRDTV9TSU1QTEVfVEFHIC0+IHlvdSBuZWVkIHRvIHJl
-YmFzZSB0byBsYXRlc3QgcmRtYS1uZXh0Lgo+PiAKPj4gICAgICAgSSB3aWxsIG1vZGlmeSBhbmQg
-cmVzZW5kIHRoZSBwYXRjaC4KPj4gCj4+ID4yLiBZb3UgYXJlIGhhcmRjb2RpbmcgZGlyLCB3aGls
-ZSBpdCBjYW4gYmUgb3ZlcndyaXR0ZW4gaW4gc3JwdF9nZXRfZGVzY190YmwoKS4KPj4gCj4+ICAg
-ICAgIEluIHRoZSBzcnB0X2hhbmRsZV9jbWQoKSBmdW5jdGlvbjoKPj4gICAgICAgJnNlbmRfaW9j
-dHgtPmNtZDsKPj4gICAgICAgc3JwdF9nZXRfZGVzY190YmwoLi4uLCBzZW5kX2lvY3R4LCAuLi4p
-IAo+PiAgICAgICAgICAgIGlvY3R4LT5jbWQuZGF0YV9kaXJlY3Rpb24gPSAqZGlyOwo+PiAKPj4g
-ICAgICBUaGVyZWZvcmUsIGFmdGVyIHN1Y2Nlc3NmdWxseSBjYWxsaW5nIHNycHRfZ2V0X2Rlc2Nf
-dGJsKCksIGV2ZW4gaWYgdGFyZ2V0X2luaXRfY21kKCkgaXMKPj4gICAgICBwYXNzZWQgRE1BX05P
-TkUsIGNtZC0+ZGF0YV9kaXJlY3Rpb24gc2hvdWxkIGFscmVhZHkgaGF2ZSBzdG9yZWQgdGhlIGFj
-dHVhbCBkaXJlY3Rpb24uCj4+IAo+PiAgICAgIERvIHlvdSBtZWFuICB0aGF0IGFmdGVyIGNhbGxp
-bmcgc3JwdF9nZXRfZGVzY190YmwoKSwgZGlzcGxheWluZyB0aGUgb3ZlcndyaXR0ZW4gY29udGVu
-dAo+PiAgICAgIHdvdWxkIGJlIGJldHRlcqO/SSB3YW50IHRvIG1ha2Ugc3VyZSBJIGFkZHJlc3Mg
-dGhlIGludGVudCBvZiB5b3VyIGNvbW1lbnQgY29ycmVjdGx5Lgo+Cj5Zb3UgbmVlZCB0byBkbyB0
-aGlzIGNvcnJlY3RseTogdGFyZ2V0X2luaXRfY21kKCkgbXVzdCByZWNlaXZlIHRoZQo+Y29ycmVj
-dCBkaXJlY3RvcnksIGFzIGNhbGN1bGF0ZWQgYnkgc3JwdF9nZXRfZGVzY190YmwoKS4KPgo+VGhh
-bmtzCj4KPj4gPgo+PiA+VGhhbmtzCj4+IAo+PiBUaGFua3MsCj4+IFRhblpoZW5nCgpUaGVyZSBp
-cyBhIGNvbnRyYWRpY3Rpb24gYmV0d2VlbiB0aGUgdHdvIHN1Z2dlc3Rpb25zOgotIEJhcnQgc3Vn
-Z2VzdHMgY2FsbGluZyB0YXJnZXRfaW5pdF9jbWQoKSBiZWZvcmUgY2FsbGluZwogICBzcnB0X2dl
-dF9kZXNjX3RibCgpICh1c2luZyBhIHBsYWNlaG9sZGVyKSB0byBlbnN1cmUgdGhhdAogICB0YXJn
-ZXRfc2VuZF9idXN5KCkgY2FuIGJlIHNhZmVseSBleGVjdXRlZCBpZiB0aGUKICAgZGVzY3JpcHRv
-ciBwYXJzaW5nIGZhaWxzLgotIExlb24gcG9pbnRzIG91dCB0aGF0IHRhcmdldF9pbml0X2NtZCgp
-IG11c3QgcmVjZWl2ZSB0aGUKICBhY3R1YWwgZGF0YSBkaXJlY3Rpb24gY2FsY3VsYXRlZCBieSBz
-cnB0X2dldF9kZXNjX3RibCgpLAogIHJhdGhlciB0aGFuIGEgcGxhY2Vob2xkZXIgbGlrZSBETUFf
-Tk9ORSB0aGF0IHdpbGwKICBiZSBvdmVyd3JpdHRlbiBsYXRlci4KCklmIHdlIGNvbnRpbnVlIHRv
-IG1vZGlmeSB0aGUgY3VycmVudCBwYXRjaCwgdGhlIG9ubHkgd2F5IEkKY2FuIHRoaW5rIG9mIGlz
-IHRvIGV4dHJhY3QgdGhlIGRpcmVjdGlvbiBwYXJzaW5nIGxvZ2ljIGZyb20Kc3JwdF9nZXRfZGVz
-Y190YmwgYW5kIHBsYWNlIGl0IGJlZm9yZSB0YXJnZXRfaW5pdF9jbWQsIHNvCnRoYXQgdGFyZ2V0
-X2luaXRfY21kIGNhbiByZWNlaXZlIHRoZSBjb3JyZWN0IGRpcmVjdGlvbi4KSG93IGFib3V0IHRo
-aXM/CgpUaGFua3MsClRhblpoZW5nCg==
+On Mon, Jul 27, 2026 at 02:39:08PM +0800, kensanya wrote:
+> 
+> 
+> At 2026-07-26 15:55:11, "Leon Romanovsky" <leon@kernel.org> wrote:
+> >On Fri, Jul 24, 2026 at 10:42:53AM +0800, kensanya wrote:
+> >> At 2026-07-23 17:51:20, "Leon Romanovsky" <leon@kernel.org> wrote:
+> >> >On Thu, Jul 23, 2026 at 10:44:56AM +0800, kensanya@163.com wrote:
+> >> >> From: TanZheng <tanzheng@kylinos.cn>
+> >> >> 
+> >> >> If srpt_get_desc_tbl() fails, srpt_handle_cmd() jumps to
+> >> >> target_send_busy() before target_init_cmd() has set cmd->se_tfo.
+> >> >> target_send_busy() then dereferences a NULL se_tfo.
+> >> >> 
+> >> >> Call target_init_cmd() first with placeholder data_length and
+> >> >> data_direction, parse the descriptor table next, then fill in the
+> >> >> real data_length. That way target_send_busy() is safe if parsing
+> >> >> fails.
+> >> >> 
+> >> >> target_send_busy() is only valid after a successful target_init_cmd().
+> >> >> If target_init_cmd() itself fails, free the send ioctx tag locally
+> >> >> with target_free_tag() instead of calling target_send_busy().
+> >> >> 
+> >> >> Fixes: 8b8807b9e982 ("scsi: RDMA/srpt: Fix handling of command / TMF submission failure")
+> >> >> Link: https://lore.kernel.org/all/20260717025402.64054-1-kensanya@163.com/
+> >> >> Suggested-by: Bart Van Assche <bvanassche@acm.org>
+> >> >> Signed-off-by: TanZheng <tanzheng@kylinos.cn>
+> >> >> ---
+> >> >> v2:
+> >> >> - On target_init_cmd() failure, use target_free_tag() instead of
+> >> >>   target_send_busy()
+> >> >> 
+> >> >>  drivers/infiniband/ulp/srpt/ib_srpt.c | 36 +++++++++++++++++++--------
+> >> >>  1 file changed, 26 insertions(+), 10 deletions(-)
+> >> >> 
+> >> >> diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+> >> >> index f66cfd70c263..71af1fb0d380 100644
+> >> >> --- a/drivers/infiniband/ulp/srpt/ib_srpt.c
+> >> >> +++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+> >> >> @@ -1558,8 +1558,8 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
+> >> >>  	struct srp_cmd *srp_cmd;
+> >> >>  	struct scatterlist *sg = NULL;
+> >> >>  	unsigned sg_cnt = 0;
+> >> >> -	u64 data_len;
+> >> >> -	enum dma_data_direction dir;
+> >> >> +	u64 data_len = 0;
+> >> >> +	enum dma_data_direction dir = DMA_NONE;
+> >> >>  	int rc;
+> >> >>  
+> >> >>  	BUG_ON(!send_ioctx);
+> >> >> @@ -1584,6 +1584,25 @@ static void srpt_handle_cmd(struct srpt_rdma_ch *ch,
+> >> >>  		break;
+> >> >>  	}
+> >> >>  
+> >> >> +	/*
+> >> >> +	 * Call target_init_cmd() before srpt_get_desc_tbl() so that
+> >> >> +	 * cmd->se_tfo is set if descriptor parsing fails and
+> >> >> +	 * target_send_busy() is used. data_length is filled in after a
+> >> >> +	 * successful srpt_get_desc_tbl().
+> >> >> +	 *
+> >> >> +	 * target_send_busy() is only valid after a successful
+> >> >> +	 * target_init_cmd(). On init failure free the tag locally.
+> >> >> +	 */
+> >> >> +	rc = target_init_cmd(cmd, ch->sess, &send_ioctx->sense_data[0],
+> >> >> +			     scsilun_to_int(&srp_cmd->lun), 0 /* data_len */,
+> >> >> +			     TCM_SIMPLE_TAG, DMA_NONE, TARGET_SCF_ACK_KREF);
+> >> >
+> >> >1. TCM_SIMPLE_TAG -> you need to rebase to latest rdma-next.
+> >> 
+> >>       I will modify and resend the patch.
+> >> 
+> >> >2. You are hardcoding dir, while it can be overwritten in srpt_get_desc_tbl().
+> >> 
+> >>       In the srpt_handle_cmd() function:
+> >>       &send_ioctx->cmd;
+> >>       srpt_get_desc_tbl(..., send_ioctx, ...) 
+> >>            ioctx->cmd.data_direction = *dir;
+> >> 
+> >>      Therefore, after successfully calling srpt_get_desc_tbl(), even if target_init_cmd() is
+> >>      passed DMA_NONE, cmd->data_direction should already have stored the actual direction.
+> >> 
+> >>      Do you mean  that after calling srpt_get_desc_tbl(), displaying the overwritten content
+> >>      would be better？I want to make sure I address the intent of your comment correctly.
+> >
+> >You need to do this correctly: target_init_cmd() must receive the
+> >correct directory, as calculated by srpt_get_desc_tbl().
+> >
+> >Thanks
+> >
+> >> >
+> >> >Thanks
+> >> 
+> >> Thanks,
+> >> TanZheng
+> 
+> There is a contradiction between the two suggestions:
+> - Bart suggests calling target_init_cmd() before calling
+>    srpt_get_desc_tbl() (using a placeholder) to ensure that
+>    target_send_busy() can be safely executed if the
+>    descriptor parsing fails.
+> - Leon points out that target_init_cmd() must receive the
+>   actual data direction calculated by srpt_get_desc_tbl(),
+>   rather than a placeholder like DMA_NONE that will
+>   be overwritten later.
+> 
+> If we continue to modify the current patch, the only way I
+> can think of is to extract the direction parsing logic from
+> srpt_get_desc_tbl and place it before target_init_cmd, so
+> that target_init_cmd can receive the correct direction.
+> How about this?
+
+Say it to your AI tool that it is not contradiction, but wrongly
+implemented Bart's suggestion.
+
+Thanks
+
+> 
+> Thanks,
+> TanZheng
