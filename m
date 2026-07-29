@@ -1,114 +1,132 @@
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92181389E13;
-	Wed, 29 Jul 2026 02:57:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=205.220.177.32
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CB1E488773;
+	Wed, 29 Jul 2026 13:01:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785293868; cv=none; b=PiJoj7dCYwN+DFmsSSTpnBUBBxI290nYtVOJDFc8o4h60u8HJAZuOout12J17JsKu6084rGqaSBpVkTBjJ43daCXmHrZa43BIoyCTi852f3/hHbILcw2YnuJl6ee0xL2vcHHqt+Uu5luU24UfBnCE/oy7LK4qMRBzHstZSLzHZ4=
+	t=1785330112; cv=none; b=d4JGD+hTtT1uTs14GjdOuHF2ha6GbDQIrcsr2HGaDBquhVOTv7y9TjxJ7YHVQgLmxsn/jgQzA+KANwR0YNoNF3nWWYacDShbiy6K3lWw5lL7NFN47DeIvjVhPpD+AlkvvbQC4ynWrELD3iwbppl/tM1QUuv2dI/iQuvGtrRn990=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785293868; c=relaxed/simple;
-	bh=LEPxcvO6Ahod9ma5ms0CoqoPZoJ85X9ztqyPcogRQjg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=GYv6sxfHS52cVP8gvTTP3Vgx3KpvQOXG+nsG6ohNiuH8+8A6YROgYRWvPg3cvCLAWnWK16cE99lk9U6xMMyieTZiIk4WO3M0JqEdTM47PhfzbZtlJ7WJj0VO1Ir9in4/ddzABJzcocyIoCDbJ0h78vci5FqYjeTA4ldHPz+JXdE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; spf=pass smtp.mailfrom=oracle.com; dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b=LJgPLdxK; arc=none smtp.client-ip=205.220.177.32
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oracle.com
+	s=arc-20240116; t=1785330112; c=relaxed/simple;
+	bh=OmWFXyTutZpGmJhegJaW5l/v27yzjx9jhmLD2UqO39A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=o9ZzyDuKVn51MzHDVnHP78EV1BfKYh5y51Y70vZ1PvYEHyD66QgbX9OLrfAORtm5WF60vom/r4ozgDKi5sfjW5qFj+uY8XIApiQX0ggrHmixI5UxCgEwjAkUMd2tjSu1eQUgPb8Wt6hHGFkXwGt31ERwnfHIP3/JjfMD/qrQcTs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=lzsB5hgn; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="LJgPLdxK"
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66SItX6Q1074582;
-	Wed, 29 Jul 2026 02:56:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=PDyCty7zxNAK4tDIQs9F8rFJT4C/BQM3rjj346dw6KQ=; b=
-	LJgPLdxKeViIPDwGojNmKyPuiYb1+Wf3w2vhgCB2bvLPugGr7GLaAhM8LrbGIBHd
-	pcb5AvmcBSKxRoH4goIk+ClJEYp9ZLGPznaMqJDKZWwHx2y3SW5egx1LGauNr7W2
-	Mhxiulv3PuS6eFp9wuovJREy4HipXaEmaySdtlGjWB5DXDzOo65pJLaRy6KUu1jC
-	c5b/YitbenzVOwCt4ubsqpd0I6KeaM3v6TxNBF8HR/4hDB8OOrWMDjzLx3wVROX8
-	wRtzKprFebz3VkINhbJz4nrdjgYR/2z+GWymGk1aItdx0jUI3gyVKHH8MbCaOdDV
-	ePjoBdzAb58WUJSFDIiw4g==
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4fmqyq548m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 29 Jul 2026 02:56:24 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 66T2oY53034636;
-	Wed, 29 Jul 2026 02:56:24 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4fnh6ddkqr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 29 Jul 2026 02:56:24 +0000 (GMT)
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.1.12) with ESMTP id 66T2uMA1006812;
-	Wed, 29 Jul 2026 02:56:23 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 4fnh6ddkq0-4;
-	Wed, 29 Jul 2026 02:56:23 +0000 (GMT)
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: kensanya@163.com
-Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
-        Hannes Reinecke <hare@suse.de>,
-        Mike Christie <michael.christie@oracle.com>,
-        linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-        TanZheng <tanzheng@kylinos.cn>
-Subject: Re: [PATCH] scsi: target: iblock: Fix wrong PR ops NULL check for PREEMPT/RELEASE
-Date: Tue, 28 Jul 2026 22:56:11 -0400
-Message-ID: <178529373851.132455.17343492235216423628.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260724075850.280699-1-kensanya@163.com>
-References: <20260724075850.280699-1-kensanya@163.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="lzsB5hgn"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 004D61F00A3A;
+	Wed, 29 Jul 2026 13:01:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785330105;
+	bh=d2iDQ/XFzSylptxqaGEPXyly087MYqpda+JKaK7wyQ0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=lzsB5hgnmQMb7LvAz3l89TqTPTSJsCT7f/PpIv3ktX4Tvz156GYjtajDlIlhPMpEe
+	 I7naZSygp8kYCtJsVrmtQgpbEbMxRshAxVhqc+Eix+sq2j6pdsX1X6pjRcKAtpNEMG
+	 siHev2FOq+VkeHSWb3m6/z/2xHJ5NlVjTSCDc+2Fvs/OZx2ecHJEGHuqPHlH3SPn9t
+	 2G/6FMiUL4GJYeRaWENPDjppgY2ATqrrT6SVscV3twlSrzYd3DQOxumHEx4CNKOmY2
+	 9B0ZzjaQaUqROWGHsjdVIqkHr4+5l1pXkGra8M5EoQ0oMZMdOBuEd3mmy0P/LCv8fL
+	 BOwf+9r8cXEoQ==
+Date: Wed, 29 Jul 2026 16:01:41 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+Cc: sagi@grimberg.me, jgg@ziepe.ca, nab@linux-iscsi.org,
+	michael.christie@oracle.com, martin.petersen@oracle.com,
+	linux-rdma@vger.kernel.org, target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: [PATCH] IB/isert: post full-feature receive buffers after
+ session registration
+Message-ID: <20260729130141.GN12003@unreal>
+References: <20260726144213.933544-1-yhlee@isslab.korea.ac.kr>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-29_01,2026-07-28_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0
- adultscore=0 spamscore=0 suspectscore=0 mlxlogscore=550 malwarescore=0
- phishscore=0 lowpriorityscore=0 bulkscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.19.0-2606160000 definitions=main-2607290021
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI5MDAyMSBTYWx0ZWRfX5RgUcUKBsmaR
- wQQ6nKCuP//zxOffeLfk74YqnOEMXzWoULDdo+hkRAL8ybnsicbJeTcs/WH/7zuwFdcYXpSwa0Z
- F4qrEU0S2ObWIzmqJLLs6viZzBEN1mfdJTZ3BnHkYX0QDWs8ru96UfErPl68M4dHOu84twIWqc3
- 6GrTfEYD7VAiAuOKlpiZVg3gmLFiwkli9Mqqv3ulhn1J2+Ym11N0zQeHa6Yu3k51/BscnvfvTaP
- KiRSaGu1uyHGw9GrHyCiH4Jqck7rGqQYbrtLdBhTLl095dTLmr5/761WQocrJBcDvKnCTORxYi3
- 0NFiN+v93PeKWT6oWNN7UcauIIEr3/M8F2fipivh07aDGgPeN7/fkRlhvPHr8y96v1/R7DWKAns
- hO/iz9MZ0zg4mBSRKUzKwPTpd4LZSZpKezhFbFtzx5OGQzf26TVJoOPJEs1501+gd7SGRoYfxAW
- SgYR0sPo+C8W0LHyeS3126NMOq45fVp6d2kxAE1E=
-X-Proofpoint-GUID: HuJnV0z_FuMKpTJETC66buWvg4O4eAL_
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI5MDAyMSBTYWx0ZWRfXxW7hm3MTSMq8
- EaYUh9eafnGFwPBvXHcoo+3qibjKNGPH7aHOqm1iBCPE95ThGPkP9n97eOyynOGo61rpTaf8Qok
- I8lLWY2ICCGQyZ1nLQcg3vSlG+hJPrZ+kszvD8EcY9F4ghMkHA0z
-X-Authority-Analysis: v=2.4 cv=X/1i7mTe c=1 sm=1 tr=0 ts=6a696bd9 b=1 cx=c_pps
- a=e1sVV491RgrpLwSTMOnk8w==:117 a=e1sVV491RgrpLwSTMOnk8w==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=jiCTI4zE5U7BLdzWsZGv:22 a=x4eqshVgHu-cdnggieHk:22 a=VwQbUJbxAAAA:8
- a=Byx-y9mGAAAA:8 a=gzltEgot3mvQ9GfFOcAA:9 a=QEXdDO2ut3YA:10
- a=5yU3S35YU4bGjq-dph-N:22 a=Bho9c0fBagfJEIQBS7DQ:22 cc=ntf awl=host:13517
-X-Proofpoint-ORIG-GUID: HuJnV0z_FuMKpTJETC66buWvg4O4eAL_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260726144213.933544-1-yhlee@isslab.korea.ac.kr>
 
-On Fri, 24 Jul 2026 15:58:50 +0800, kensanya@163.com wrote:
-
-> In the iblock_execute_pr_out function, PRO_PREEMPT, PRO_PREEMPT_AND_ABORT
-> and PRO_RELEASE all perform callback capability checks through
-> ops->pr_clear. The error check allows unimplemented hooks to pass through
-> the gate, resulting  dereferencing a NULL function pointer.
+On Sun, Jul 26, 2026 at 11:42:13PM +0900, Yehyeong Lee wrote:
+> isert_put_login_tx() posts the full-feature receive buffers and then
+> sends the final Login Response on the same call:
 > 
-> Check whether the hooks that need to be called are supported.
+> 	isert_alloc_rx_descriptors()
+> 	isert_post_recvm(isert_conn, ISERT_QP_MAX_RECV_DTOS)
+> 	isert_conn->state = ISER_CONN_FULL_FEATURE
+> 	isert_login_post_send()
 > 
-> [...]
+> iscsi_post_login_handler() only runs after that, and it is what calls
+> __transport_register_session(), which sets se_sess->se_tpg.  An
+> initiator that sends a SCSI command as soon as it sees the Login
+> Response can therefore have that command received, executed and
+> completed before the session is registered, and target_complete()
+> dereferences a NULL se_sess->se_tpg:
+> 
+>   Oops: general protection fault, probably for non-canonical address ...
+>   KASAN: null-ptr-deref in range [0x0000000000000080-0x0000000000000087]
+>   Workqueue: ib-comp-wq ib_cq_poll_work
+>   RIP: 0010:target_complete_cmd_with_sense.part.0+0x17d/0xc90
+>   Call Trace:
+>    fd_execute_rw
+>    __target_execute_cmd
+>    iscsit_execute_cmd
+>    iscsit_sequence_cmd
+>    isert_recv_done
+>    __ib_process_cq
+>    ib_cq_poll_work
+> 
+> The command reaches the backend because transport_lookup_cmd_lun() does
+> not need se_tpg on the mapped-LUN path; it uses se_sess->se_node_acl,
+> which iscsit sets much earlier in iscsi_target_locate_portal().
+> 
+> iscsit's own RX thread does not have this problem: it is started at the
+> same point but waits on conn->rx_login_comp, which is completed at the
+> end of iscsi_post_login_handler(), after __transport_register_session().
+> isert takes its PDUs from the completion queue instead, and
+> isert_recv_done() has no connection-state check.
+> 
+> Post the receive buffers from isert_get_rx_pdu() instead.  That callback
+> is invoked by iscsi_target_rx_thread() only after the same rx_login_comp
+> wait, so the buffers become available to the HCA only once the session
+> is registered.  isert_recv_done() runs on ib-comp-wq and cannot wait
+> there itself.  The allocation stays in isert_put_login_tx() so that a
+> memory allocation failure still cannot happen after the final Login
+> Response has been sent.
+> 
+> rx_descs can legitimately be NULL in isert_get_rx_pdu(): the login
+> timeout timer sets login->login_failed from timer context, so
+> isert_put_login_tx() can skip the allocation branch while
+> iscsi_target_do_login() still returns 1 and the connection reaches
+> TARG_CONN_STATE_LOGGED_IN.  Return early in that case, which matches the
+> existing behaviour of not posting at all on that path.
+> 
+> Reproduced with soft-RoCE (rdma_rxe) under KASAN using an initiator that
+> issues a WRITE immediately after login, 400 login cycles per run.
+> Unpatched: 9 of 10 runs oopsed.  Patched: 0 of 10.  A build carrying a
+> diagnostic that reports the NULL without faulting recorded 16 hits
+> across 9 of 15 runs unpatched and 0 across 15 runs patched; the two sets
+> were run alternately in a single session.
+> 
+> Not covered by that testing: discovery sessions over iSER, MC/S
+> (non-zero TSIH) logins, ERL=2 connection recovery, and real HCAs, where
+> RNR behaviour differs from soft-RoCE.
+> 
+> Fixes: b8d26b3be8b3 ("iser-target: Add iSCSI Extensions for RDMA (iSER) target driver")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+> ---
+> This replaces "scsi: target: Fix NULL se_tpg dereference in
+> target_complete()" (target-devel, Message-ID
+> 20260725165818.769963-1-yhlee@isslab.korea.ac.kr), which guarded the
+> symptom in target core.  That patch is being withdrawn.
+> 
+>  drivers/infiniband/ulp/isert/ib_isert.c | 36 +++++++++++++++++++++----
+>  1 file changed, 31 insertions(+), 5 deletions(-)
 
-Applied to 7.2/scsi-fixes, thanks!
+1. Please keep commit messages concise and easy to read.
+2. Include the full kernel Oops in the commit message.
+3. Keep code comments to a minimum.
+4. Please address Sashiko's concerns about this patch.
 
-[1/1] scsi: target: iblock: Fix wrong PR ops NULL check for PREEMPT/RELEASE
-      https://git.kernel.org/mkp/scsi/c/9c33222bd387
-
--- 
-Martin K. Petersen
+Thanks
