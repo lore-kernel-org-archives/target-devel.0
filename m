@@ -1,80 +1,39 @@
-Received: from mail-pl1-f176.google.com (mail-pl1-f176.google.com [209.85.214.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.2])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2A1F3B440E
-	for <target-devel@vger.kernel.org>; Thu, 30 Jul 2026 06:31:41 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.176
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 323743B6BF7;
+	Thu, 30 Jul 2026 08:25:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=220.197.31.2
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785393104; cv=none; b=TTl8Ht25sHAgoY2CxO8LPolnjQjrjxx4zPKV/fqXwYxs0yqgaLLUOCmg6dlirFeD2/yl7BjlYzl3yBSTiX++IhfAnNbBa9YUsUcNRl0AP2XKEpnmpC34Z//cnl24NxxfW3KjtIhcWlF5BmRNzLIK2brT5Hfw62LLFYBeorV2JxQ=
+	t=1785399942; cv=none; b=JsvEXPtlhzU9iDXC93I3igbyeymjuWRw4aatKrF3+KSCaOFsxprKRlJH4+hpGzNtS/sDLpGC8IzzrIN9ALXOeolJr7D1RcQ9bMbjcPX02n6KLtBritUwnrJGTohGo00G/TAPhTkQ9d97gnc1RkFnvK80gGDzPuZyS2bYsU4MUpg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785393104; c=relaxed/simple;
-	bh=EXpxwWwztD3fEM22BSVlO08z9mBvEKPFOIBfEilM0/Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WOarELhuh3bVjm1iUQuQybiNk6DcI9wFdow+uWmNok/8u6Ei1XuiHmU3HJL/2ZcoZuBg++e5mu78/C9KVNch1G30LmUxQe8gj9lHBSxvoTZ2Jx6Isy0hCTqvIawpFgW/M+k6xlLQBld2Y0gzGv95gUyQs1bd+TBZZiIwseUZ1B8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=jQYH7vxr; arc=none smtp.client-ip=209.85.214.176
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	s=arc-20240116; t=1785399942; c=relaxed/simple;
+	bh=FE71ITZwYkcaT+9iaqVL+Bbcra0EkDJuhwAQyzdxypg=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=UMBBDBsH71MeLWIw+FRk2j3Tv/YHnaL3He5kopibspERKaQTw+qTiBnFeHh9975qIri4Bj7DaNYaktm/bBQz6ipINFHV/AN0BLr4Np5NhK1KuA534kunt8QWEy9AYr8G//X5/VOLoteCnLPy+rcllpz8GeOqS2rJEzbZhwVCrQ0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=U2Nf/qKG; arc=none smtp.client-ip=220.197.31.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="jQYH7vxr"
-Received: by mail-pl1-f176.google.com with SMTP id d9443c01a7336-2cf50c6f235so19717745ad.0
-        for <target-devel@vger.kernel.org>; Wed, 29 Jul 2026 23:31:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1785393101; x=1785997901; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=0KVjCJTGOtgB/H7vksCOVOeu2PNewMcg63vsKNlch1M=;
-        b=jQYH7vxrcOpVZdXbbTFqgGglpj+qnwXiEI87t8ZirmGockojn0s7zz3QNt4Fk7dkvT
-         c2riQvtMbyRM5g9Dy+3NKgFjj6Z91ltcXbzw1EHLKzmaZ146p05DbpPoOKKN7gZFkqx8
-         KdasIbG5QQplmBDhSdMXLrby9CXZZ4BJAQqTJaIqk2NJmO79LS/DBy9HQW1sOGDb4/lo
-         J4EbQh+G56/YCBOlV5DKtARIQRKvtj5nmB1tJMqgpmG9kudWaDHJeKlnt0ak0or4kMq9
-         OigOw+owh3qk0fK2U5WumTSArdAxJB+NNMs/0sVRH8WwT4nheW7Y3eEDguOtUPt6SFpa
-         oGXw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785393101; x=1785997901;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=0KVjCJTGOtgB/H7vksCOVOeu2PNewMcg63vsKNlch1M=;
-        b=Mf7OWExDq8NgmJ5XLBxp526VWs5p9sRqsRwIrNB12AKdpqnBR0vt8UVtkzVvuYOWP3
-         Ow5ynFuNdIFDXDC4BrDCkYt92P2DSim6sMpPJQlI9elXdFLJHb/1hnSCx6cnYfjXWv+Y
-         EVmUXQGu5TU5PVRt/q3qjeKo3Tyt7qK/u+y0vEfwYhzu99XOg/IfGG10Btz8107ZuSO6
-         +717eeWhL3zZfptCDK8PLdSjVgbFfziHh7I1njO8pwcwYzaAQ9zS9+X3Xp3AANn8tBlj
-         aRj9bz45QA5L3c2Cn28SVRkDUdq4vrAxmex2RTocISnHEd/MIQCg9N7SYuhzW4xRrmVS
-         ni9Q==
-X-Forwarded-Encrypted: i=1; AHgh+Rr6rJ8mvPeCShQTEuXYGOkf2pEZqfpYM7gqFohxMYYeCMNCKc0gQUyzg47my4qVkdmSWo/tOWBnDTHHans=@vger.kernel.org
-X-Gm-Message-State: AOJu0YyLaB0VFGnj55AwyaC//7yHJXGwsIE8rLxTvwTxJwvYbI/PBcjo
-	aeaCs5z8Cmt6aaRk59fwoQWrv8kmnL3XASexPeOkLF5IG8rbE1jbTYjVytqHJSQOAUY=
-X-Gm-Gg: AR+sD12le4Wiyp4yiicnmbJmLmT2cFA954yPhMJavrQyRxMGNS69ZvUBgZQ36/jtChF
-	IxRY8Zl6RIVmjtENU8WjJVmbaSkyoGrBAEITzbDLZqw/LiixxwNQXPmj0ha7Eh2+ZcJaV4ATEKS
-	jbZI7c5s7AXD+desEuUrIe4/uQFC5nOluA9vpup00XM3sVe6w8i/6v6ziuSaRsNhFuOQZL+6SrN
-	8YIeD+21mw/JFzcFzj5qpM7OzmZAP5+Y7d4AMN1IGSrWVGP5e/61L8fER+kRUzoM9Cx5jiZ2OxB
-	beow+Zt3XEZm2AKQX4yDWrtSPy13Hvf4Jq8d0UQtreQPpBqXRLWoQXbJ8qYa1vs/eblB+Q8ACQ0
-	Ivz59GLuDp+2PvU2SRBgkaL6siSloE7ZHsVJjB2H3chgb9S5KYr1A5xDgZN0tCqzD6ZIrC3kTw6
-	LRdtwPfYxI09aAEQlYJ5ScCfeZZN/xTj1KHU2LbRF57raNc75365LGU+0dBeGaVDvn8nFf
-X-Received: by 2002:a17:902:dacd:b0:2c8:4c29:afeb with SMTP id d9443c01a7336-2d035b89e3fmr13891105ad.8.1785393101219;
-        Wed, 29 Jul 2026 23:31:41 -0700 (PDT)
-Received: from yhlee-960QFG.. ([125.131.91.97])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d022c50f43sm21144755ad.83.2026.07.29.23.31.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jul 2026 23:31:40 -0700 (PDT)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: sagi@grimberg.me,
-	jgg@ziepe.ca,
-	leon@kernel.org
-Cc: michael.christie@oracle.com,
-	martin.petersen@oracle.com,
-	linux-rdma@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="U2Nf/qKG"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=jT
+	2sfFZkTOJ7LIV04JP2J2S+oQxl4QILYuaiiHThMZA=; b=U2Nf/qKGCuOx923pcD
+	g6pFMyZuFBP/wOVFzzsHJs/VuGWlLorVW6E3mibDXDShsMHRp3kAA7imi17b+r/p
+	1qRqP4Tpfrl4P8YLmZ7OEMvj+J/ezZgCJt2vYkksWCku+jUwiZS24aZ0n2+ZpeA4
+	eQls0dAIBb684GwcUWuM1UyX4=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g0-4 (Coremail) with SMTP id _____wA33thjCmtq6UMzMw--.44879S2;
+	Thu, 30 Jul 2026 16:25:09 +0800 (CST)
+From: kensanya@163.com
+To: "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-Subject: [PATCH v2 2/2] IB/isert: reject full-feature PDUs that arrive before registration
-Date: Thu, 30 Jul 2026 15:31:24 +0900
-Message-ID: <20260730063124.1554460-2-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260730063124.1554460-1-yhlee@isslab.korea.ac.kr>
-References: <20260730063124.1554460-1-yhlee@isslab.korea.ac.kr>
+	TanZheng <tanzheng@kylinos.cn>,
+	sashiko-bot <sashiko-bot@kernel.org>
+Subject: [PATCH] scsi: target: Fix NULL deref when clearing alua_lu_gp twice
+Date: Thu, 30 Jul 2026 16:24:58 +0800
+Message-Id: <20260730082458.663015-1-kensanya@163.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -82,81 +41,79 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wA33thjCmtq6UMzMw--.44879S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxArW3uryDWw48Zr4kGr4UArb_yoW5uF1kpr
+	42yr1kCF4vqFWUta1UWay2grnrtws7CF1UJF97Gw1rua15J34Yyr98u3y2qr1DJFs8Xry7
+	Gr4qv3WkKrnFvaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jOPEfUUUUU=
+X-CM-SenderInfo: 5nhq2txq1dqiywtou0bp/xtbCwgYR7GprCmZCdQAA3j
 
-The full-feature receive buffers are posted from isert_put_login_tx(),
-which runs before __transport_register_session().  An initiator that does
-not wait for the final Login Response can therefore still have a SCSI
-command executed against an se_session whose se_tpg is NULL, with the same
-oops as the previous patch.
+From: TanZheng <tanzheng@kylinos.cn>
 
-Move the ISER_CONN_FULL_FEATURE transition into isert_get_rx_pdu(), where
-it happens after the session has been registered, and reinstate the
-connection on any PDU that arrives before it, the same call this function
-already makes when a work completion fails.  A full-feature PDU before the
-login has completed is a protocol violation.  The state is read without
-isert_conn->mutex because isert_recv_done() runs on ib-comp-wq.
+Writing "NULL" to the alua_lu_gp configuration file attribute will
+clear the LU group association of the device. This early return
+path is only executed when lu_gp has been set. If the device has
+been unassociated (for example, after the second write of "NULL"),
+the storage operation will jump to  __core_alua_attach_lu_gp_mem(),
+at which point lu_gp_new is NULL and a kernel crash occurs when
+obtaining spin_lock(&lu_gp->lu_gp_lock).
 
-Measured over rxe with an initiator that fires SCSI commands into that
-window without waiting for the Login Response, 400 login cycles per run:
-the oops appeared in 6 of 10 runs with only the previous patch applied and
-in 0 of 10 runs with this one on top.  The check fired 24 times across
-those 10 runs, always in ISER_CONN_BOUND.  Well-formed traffic is
-unaffected: the regression set passes 10/10 and a 400-cycle churn passes
-400/400 with the check never firing.
+Crash information is as follows:
+[  850.069209][ T2984] BUG: kernel NULL pointer dereference, address: 0000000000000010
+[  850.070015][ T2984] #PF: supervisor write access in kernel mode
+[  850.070654][ T2984] #PF: error_code(0x0002) - not-present page
+[  850.071284][ T2984] PGD 14d4c2067 P4D 0
+[  850.071715][ T2984] Oops: Oops: 0002 [#1] SMP KASAN NOPTI
+...
+[  850.077945][ T2984] RSP: 0018:ff1100010a0877f8 EFLAGS: 00010297
+[  850.078578][ T2984] RAX: 0000000000000000 RBX: 0000000000000010 RCX: ffffffff86b17884
+[  850.079402][ T2984] RDX: 0000000000000001 RSI: 0000000000000004 RDI: ff1100010a087818
+[  850.080237][ T2984] RBP: 1fe2200021410eff R08: 0000000000000001 R09: ffe21c0021410f03
+[  850.081065][ T2984] R10: 0000000000000003 R11: 6e696c6261736944 R12: ff11000113c16788
+[  850.081897][ T2984] R13: ff11000113c16780 R14: 0000000000000010 R15: 0000000000000000
+[  850.082721][ T2984] FS:  00007fc9a84d6740(0000) GS:ff11000388fe1000(0000) knlGS:0000000000000000
+[  850.083649][ T2984] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  850.084342][ T2984] CR2: 0000000000000010 CR3: 0000000154a24004 CR4: 0000000000773ef0
+[  850.085172][ T2984] PKRU: 55555554
+[  850.085546][ T2984] Call Trace:
+[  850.085897][ T2984]  <TASK>
+[  850.086208][ T2984]  ? __pfx__raw_spin_lock+0x10/0x10
+[  850.086755][ T2984]  ? configfs_write_iter+0x362/0x550
+[  850.087309][ T2984]  ? _raw_spin_lock+0x84/0xe0
+[  850.087807][ T2984]  ? __pfx__raw_spin_lock+0x10/0x10
+[  850.088345][ T2984]  __core_alua_attach_lu_gp_mem+0x29/0x1f0 [target_core_mod]
+[  850.089162][ T2984]  target_dev_alua_lu_gp_store+0x1a8/0x520 [target_core_mod]
+[  850.089975][ T2984]  ? __pfx_target_dev_alua_lu_gp_store+0x10/0x10 [target_core_mod]
+...
 
-Fixes: b8d26b3be8b3 ("iser-target: Add iSCSI Extensions for RDMA (iSER) target driver")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+When both the current group and the requested group are NULL,
+an early return occurs.
+
+Fixes: c66ac9db8d4a ("[SCSI] target: Add LIO target core v4.0.0-rc6")
+Reported-by: sashiko-bot <sashiko-bot@kernel.org>
+Link: https://sashiko.dev/#/patchset/20260730031917.72750-1-kensanya@163.com?part=1
+Signed-off-by: TanZheng <tanzheng@kylinos.cn>
 ---
-New in v2.  Depends on 1/2 and must not be backported without it.
+ drivers/target/target_core_configfs.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
- drivers/infiniband/ulp/isert/ib_isert.c | 19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index 93f2fec942dd..2a322df5202c 100644
---- a/drivers/infiniband/ulp/isert/ib_isert.c
-+++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -952,11 +952,6 @@ isert_put_login_tx(struct iscsit_conn *conn, struct iscsi_login *login,
- 			if (ret)
- 				return ret;
- 
--			/* Now we are in FULL_FEATURE phase */
--			mutex_lock(&isert_conn->mutex);
--			isert_conn->state = ISER_CONN_FULL_FEATURE;
--			mutex_unlock(&isert_conn->mutex);
--
- 			/* Sent from isert_get_rx_pdu() after registration. */
- 			isert_conn->login_rsp_pending = true;
- 			return 0;
-@@ -1331,6 +1326,14 @@ isert_recv_done(struct ib_cq *cq, struct ib_wc *wc)
- 		return;
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 0e50987e6dbe..292730f98db4 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -2572,6 +2572,12 @@ static ssize_t target_dev_alua_lu_gp_store(struct config_item *item,
+ 		__core_alua_drop_lu_gp_mem(lu_gp_mem, lu_gp);
+ 		move = 1;
  	}
- 
-+	/* A full-feature PDU before registration is a protocol violation. */
-+	if (unlikely(READ_ONCE(isert_conn->state) != ISER_CONN_FULL_FEATURE)) {
-+		isert_err("PDU received in state %d, resetting connection\n",
-+			  isert_conn->state);
-+		iscsit_cause_connection_reinstatement(isert_conn->conn, 0);
-+		return;
++
++	if (!lu_gp_new) {
++		spin_unlock(&lu_gp_mem->lu_gp_mem_lock);
++		return count;
 +	}
 +
- 	rx_desc->in_use = true;
- 
- 	ib_dma_sync_single_for_cpu(ib_dev, rx_desc->dma_addr,
-@@ -2594,6 +2597,12 @@ static void isert_get_rx_pdu(struct iscsit_conn *conn)
- 	/* The session is registered by now; see isert_put_login_tx(). */
- 	if (isert_conn->login_rsp_pending) {
- 		isert_conn->login_rsp_pending = false;
-+
-+		/* Now we are in FULL_FEATURE phase */
-+		mutex_lock(&isert_conn->mutex);
-+		isert_conn->state = ISER_CONN_FULL_FEATURE;
-+		mutex_unlock(&isert_conn->mutex);
-+
- 		if (isert_login_post_send(isert_conn,
- 					  &isert_conn->login_tx_desc))
- 			return;
+ 	/*
+ 	 * Associate lu_gp_mem with lu_gp_new.
+ 	 */
 -- 
-2.43.0
+2.25.1
 
