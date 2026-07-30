@@ -1,78 +1,38 @@
-Received: from mail-pf1-f181.google.com (mail-pf1-f181.google.com [209.85.210.181])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F1BC1347FCD
-	for <target-devel@vger.kernel.org>; Thu, 30 Jul 2026 01:55:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.181
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60299368D40;
+	Thu, 30 Jul 2026 03:19:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785376511; cv=none; b=rs4L/h+a/U7gIG27cMfdfLo1AxnQ7RgK90l6RpB47NeGSosTXnBMv5HlZuNKTOdRXgBtqURnX2I40HztMF5s086ySsAYZVYNbh/3GsMMUh0bnqt1E1XOzDOe53ps7pIZBdYPXHi7oY6lCgs08RjKKfYTdbzi8y/VGLasYNxdhSE=
+	t=1785381584; cv=none; b=EGvM0emoLSi2D0ruHtrsUhT+V1/8lfk7mxaakK//77h4izaDotj9Ub3BSzbvI3cVFSvvSO21MqhhZSMfxz3GDjWN816YI4DNJtPZpo/sLSmZPaWqvdYwjmjy8qYVocz+uYnfpztzYr0DiIXtcOI1bEzVKkysvxcwRzZiUs1Eiqo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785376511; c=relaxed/simple;
-	bh=VeEYuGzNBqw7pB4OOem0F2DxkRj0GjZ8W0SA5droXS8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Cu2XOySbIesOd1joJ9CeNjsnb/WOFvh4E6TvTM+RAtuB8VJLjm1vXKUVk4DeGkXFkPpyomgJJp2oj7kumQdOWrAmpoUDsrlE2zBks+QG9St6+oL+YTFCzBrAy42z79bbhytgfyTKH5sC5qwyB/C+BSlt6cP2fevEY/CJ6xQHmXI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=Wnge53Eh; arc=none smtp.client-ip=209.85.210.181
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	s=arc-20240116; t=1785381584; c=relaxed/simple;
+	bh=jo7aQSRnqbsxdk1MwZiP0YQB1Ld+o85C/X534OcFph0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=b1ssNUbxzkRebfLbt1LIju7DFFkW0UWqxZZpAAVjNkIN6x2+BuDQpvWNBJcZ/LpcUU8M7bnaEij1T3QGwp4c2ntpgUiVOsxRF6sGTyZIQMYYBv1RzhqoUhoYTYxS/RcQATGTNmDcTzM2Una4n9Ya0CuDAfmQUS/1ZOCWRFRlPuI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=PN9ZOdbk; arc=none smtp.client-ip=117.135.210.2
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="Wnge53Eh"
-Received: by mail-pf1-f181.google.com with SMTP id d2e1a72fcca58-84847482584so182173b3a.0
-        for <target-devel@vger.kernel.org>; Wed, 29 Jul 2026 18:55:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1785376508; x=1785981308; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=VeEYuGzNBqw7pB4OOem0F2DxkRj0GjZ8W0SA5droXS8=;
-        b=Wnge53EhdbKqkILElz5fl2kkSXMYaL6n8F9Om3qBRgGN8c+andpxw4US4VYdccXxl9
-         MB9BAltkmbqtvI3iS7W82hYj20nutb/g0azAWvtrRrKvuZlWe8hpHThJkhBYkFAPDdWi
-         0D9ZjKqPranNIrN/gICiEVpBmLtXAxHRszh6YnSvmHrtkECY21fTMyjM7ETvYMX0KEFP
-         IPdqv/xGDaDNv82G6lZqXK9m6rc30iY1R0Nu+4IHsHiH9tjO6D4R90xpvbs/ZRE6YI4x
-         AXwc6ovn7qC9q0OoQydaqNSeJCRxF34CJJVNoZ80Gr27JSAe3I1F9Zcf5tj/CNSB+2/u
-         yTPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785376508; x=1785981308;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=VeEYuGzNBqw7pB4OOem0F2DxkRj0GjZ8W0SA5droXS8=;
-        b=qQFBq65fLARjd11HnsMXD6/88j8UZr8Yz4qZsTLODgHBr5PhBgnyWiaxryuKa91sXA
-         ad27jrUwO8bX1N0BaOx9D3B+0FNMvDiujTl5Lx/MCgjd8aC3vOEC7foSq9BqxBAVL8Cw
-         TV3PQkMwef6D7SWtGNsBVMjzbD1uovPniXw/FUaQONZZzP8Cv/r1oYpvmO+IU2FGOp3Y
-         AaInjDq+rrxDJp0YJIpZV6seZrCRfE6LIfleiXHY0Bu83Ve1fs5piUtTFx2OzeLny4as
-         cB2qaltsz2rlPWK32311Y9x421r35Ykwsm6ABpvbiIsNghPNpgcVLz7ju/BzAUsVzNGr
-         pnww==
-X-Forwarded-Encrypted: i=1; AHgh+RqXHe0qxZZ0EhIHKoDgb8wigTj68g/rVmONPznODH8vMU/9FPZhY9buhDmmYMQzZ+nr91Qr0GoLKsdVRrY=@vger.kernel.org
-X-Gm-Message-State: AOJu0YyswJ7B3Up1ewKgILlAZg9oOz9flt59Gj1N5A6V/tJxRJzc3K95
-	+K8XCva3sprqR/5E/OOTlOLmTlflKSk/7uvjXaf15KDBW8fVJheqK7BqsFmBKeDzNjM=
-X-Gm-Gg: AR+sD10INBGWPYMHi0oPbsexMyDLOcPo9DGkftmDgQqfzfPf6yNIWUoBHxwAQHZgGU3
-	tuUnqsfQQiMqIqTDTWCZukMcpGPTkhaCR98KDIkvwSN/S3xOa4w+6ylwNyhM3XrshHEVnkmgteS
-	9rA5iXIwEcxiIdfnJEslArNTacMPksdT24zhKEXXXasaScJkbE36DjykakOdZkiRoQ1ECZsbTUB
-	VywnXkjItLJPAC3fyjuYTC0mw1F7VNutOqowJdBmBowwwuRSIG8fTMjpZO3QTDje/MzFj8Wydfk
-	DTO6i5jzF8dFYT28tDClVyia52e60qXJdzRTAfxaca4jY8ME0j8IG/Kpbv7b1iNyCqI4DX0XZiq
-	3NBofTXdMxKf5wwrdLiNZiT+HgVAYItyoRMI1wgLH2mErN6zw8MldcF4QSFyO5hYIepp21/Ntth
-	5jLq+403ltcvzx2vzcaOjikXXFtCx7M9zy1KYLaKge4QwLdAJWY7P+UVh9qRqkMwd1wt0+
-X-Received: by 2002:a05:6a00:aa06:b0:84b:e69f:1b3f with SMTP id d2e1a72fcca58-84ebdc67bf9mr352039b3a.8.1785376508034;
-        Wed, 29 Jul 2026 18:55:08 -0700 (PDT)
-Received: from yhlee-960QFG.. ([125.131.91.97])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84ea0055325sm2192327b3a.15.2026.07.29.18.55.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jul 2026 18:55:07 -0700 (PDT)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: leon@kernel.org
-Cc: sagi@grimberg.me,
-	jgg@ziepe.ca,
-	michael.christie@oracle.com,
-	martin.petersen@oracle.com,
-	linux-rdma@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="PN9ZOdbk"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=D+
+	gklbUHWhnbM5bmsK8S+h7yVFICuoizJ53thTmyNLI=; b=PN9ZOdbkHf6MFGUFta
+	m+NyFAEOegOPWd8blMMHjrr8Ts1xYQLBsnjbFAJtv44PGCG8gZD56SauG6ohJ/lH
+	0/ZDgIeBTgkFz1jqk3pi8nfX5k+/LU2lGj6bRSKEMH2/P56/GWM0ELprtBlB1ApS
+	4EL76L7EybCfaqQEyTophvp30=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g1-3 (Coremail) with SMTP id _____wCXJy25wmpqQd4JLA--.184S2;
+	Thu, 30 Jul 2026 11:19:25 +0800 (CST)
+From: kensanya@163.com
+To: "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] IB/isert: post full-feature receive buffers after session registration
-Date: Thu, 30 Jul 2026 10:54:55 +0900
-Message-ID: <20260730015455.1505508-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260729130141.GN12003@unreal>
-References: <20260729130141.GN12003@unreal>
+	TanZheng <tanzheng@kylinos.cn>
+Subject: [PATCH] scsi: target: Fix stack out-of-bounds in ALUA lu_gp and tg_pt_gp store
+Date: Thu, 30 Jul 2026 11:19:17 +0800
+Message-Id: <20260730031917.72750-1-kensanya@163.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -80,29 +40,85 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wCXJy25wmpqQd4JLA--.184S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxGr4xurWUXw1xJFy3XFWDArb_yoW5Cry3pF
+	Wjg34rJFWkWFZ0qay8J3W2gFyDZws8tFy5Ca4xta4ruw4YyrWUtanrA3y2gFn8JFs5Gry2
+	9a95Aw18tFZ7XaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UDEfrUUUUU=
+X-CM-SenderInfo: 5nhq2txq1dqiywtou0bp/xtbC6R0V8Gpqwr1f6QAA3Y
 
-Thanks for the review.
+From: TanZheng <tanzheng@kylinos.cn>
 
-On Wed, Jul 29, 2026 at 04:01:41PM +0300, Leon Romanovsky wrote:
-> 1. Please keep commit messages concise and easy to read.
-> 2. Include the full kernel Oops in the commit message.
-> 3. Keep code comments to a minimum.
+Both alua_lu_gp and alua_tg_pt_gp allow a write of exactly
+LU/TG_PT_GROUP_NAME_BUF bytes into a same-sized stack buffer,
+then pass it to strstrip() without a trailing NUL. A full-sized
+write causes strlen() to read past the end of the array (visible
+under KASAN as stack-out-of-bounds).
 
-I will fix all three in v2.
+Enlarge the local buffers by one byte so a full-sized write
+remains NUL-terminated.
 
-> 4. Please address Sashiko's concerns about this patch.
+Signed-off-by: TanZheng <tanzheng@kylinos.cn>
+---
+Reproduction (before the fix)
 
-Posting the receive buffers from the RX thread does leave the receive
-queue empty between the final Login Response going out and
-isert_get_rx_pdu() running. On IB and RoCE that is absorbed by the
-rnr_retry_count = 7 that isert_rdma_accept() puts in the REP, but iWARP
-has no RNR flow control and cma_accept_iw() ignores the field, so the
-patch as posted is wrong there.
+modules + configfs
+modprobe configfs target_core_mod target_core_rd iscsi_target_mod
+mount -t configfs none /sys/kernel/config 2>/dev/null || true
+CORE=/sys/kernel/config/target/core
+ISCSI=/sys/kernel/config/target/iscsi
 
-v2 will post the buffers in isert_put_login_tx() as before and delay the
-final Login Response instead. An initiator cannot enter Full Feature
-before it sees that response, so the queue is never empty and no command
-can arrive before __transport_register_session().
+# --- case A: alua_lu_gp (core device) ---
+mkdir -p $CORE/rd_mcp_0/ram1
+echo "rd_pages=16" > $CORE/rd_mcp_0/ram1/control
+echo 1 > $CORE/rd_mcp_0/ram1/enable
+python3 -c 'open("'"$CORE"'/rd_mcp_0/ram1/alua_lu_gp","wb").write(b"\xff"*256)'
 
-Best regards,
-Yehyeong
+# --- case B: alua_tg_pt_gp (fabric LUN) ---
+IQN=iqn.2024-01.local:kasan-alua
+mkdir -p $ISCSI/$IQN/tpgt_1/lun/lun_0
+ln -sf $CORE/rd_mcp_0/ram1 $ISCSI/$IQN/tpgt_1/lun/lun_0/ram1
+echo 1 > $ISCSI/$IQN/tpgt_1/enable
+python3 -c 'open("'"$ISCSI"'/'"$IQN"'/tpgt_1/lun/lun_0/alua_tg_pt_gp","wb").write(b"\xff"*256)'
+
+ drivers/target/target_core_alua.c     | 3 +--
+ drivers/target/target_core_configfs.c | 2 +-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index 10250aca5a81..60259417013b 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -1904,7 +1904,7 @@ ssize_t core_alua_store_tg_pt_gp_info(
+ 	 */
+ 	struct se_device *dev = rcu_dereference_raw(lun->lun_se_dev);
+ 	struct t10_alua_tg_pt_gp *tg_pt_gp = NULL, *tg_pt_gp_new = NULL;
+-	unsigned char buf[TG_PT_GROUP_NAME_BUF];
++	unsigned char buf[TG_PT_GROUP_NAME_BUF + 1] = { };
+ 	int move = 0;
+ 
+ 	if (dev->transport_flags & TRANSPORT_FLAG_PASSTHROUGH_ALUA ||
+@@ -1915,7 +1915,6 @@ ssize_t core_alua_store_tg_pt_gp_info(
+ 		pr_err("ALUA Target Port Group alias too large!\n");
+ 		return -EINVAL;
+ 	}
+-	memset(buf, 0, TG_PT_GROUP_NAME_BUF);
+ 	memcpy(buf, page, count);
+ 	/*
+ 	 * Any ALUA target port group alias besides "NULL" means we will be
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index 2b19a956007b..0e50987e6dbe 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -2518,7 +2518,7 @@ static ssize_t target_dev_alua_lu_gp_store(struct config_item *item,
+ 	struct se_hba *hba = dev->se_hba;
+ 	struct t10_alua_lu_gp *lu_gp = NULL, *lu_gp_new = NULL;
+ 	struct t10_alua_lu_gp_member *lu_gp_mem;
+-	unsigned char buf[LU_GROUP_NAME_BUF] = { };
++	unsigned char buf[LU_GROUP_NAME_BUF + 1] = { };
+ 	int move = 0;
+ 
+ 	lu_gp_mem = dev->dev_alua_lu_gp_mem;
+-- 
+2.25.1
+
