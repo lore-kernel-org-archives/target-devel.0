@@ -1,63 +1,61 @@
-Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
+Received: from mail-pl1-f178.google.com (mail-pl1-f178.google.com [209.85.214.178])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E791B3FE36C
-	for <target-devel@vger.kernel.org>; Thu, 30 Jul 2026 11:44:35 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0C0A43B6ED
+	for <target-devel@vger.kernel.org>; Thu, 30 Jul 2026 13:51:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.214.178
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785411877; cv=none; b=jnX4q515sm67WxrzpH1kgocpM+2BNStQaahT1m2Ih1N/o2Xq9ahx9D8y3Nv5Qre4qHBn7q2mP7WMWRqxh1UmiJQv4dX5rFtDk3dlO36NlJVuNF3O1c7dr4sqMZ5PnZA5Hex7/vecszNR3lulW0uLE5A68JAOIhxCxLVhk5t8zBI=
+	t=1785419488; cv=none; b=cZXMBttlvhHYC4FnQsqBXaIlpLoFQpXJv/Nn4RfFpuwx2IzWiUD5q64vdhXm1YJG3/u+mKn2PSVTXS1vOBEInUbzaUTUD1d3D7oDdg8T3btKg3pQYXGLTaKMUZblVvV3rB530eIptj97jUwJU39AnU0KxY70ET4dM5E71KO/bXQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785411877; c=relaxed/simple;
-	bh=k2DFnSUAYjUcmbd+6TchyY8n8uA7dVzhzQtvixzuO68=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=f1gVlCjOdi9ePX42jsN0eFbLqidwP9X6bT16ahChuwfZnC15PvX5zJBBvZzW4w0Ji0oA0x2Qvs/D5aVCL8ZqgAoRutNgkByMNeFpYJ+9ZPBz/QHJvVqgEE3X0Q+QTu7Ryekg4IGakUaUSQc2aFVTR4pAVg1RTqrYbBZjlSr9PKo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=XXl20C3Y; arc=none smtp.client-ip=209.85.210.173
+	s=arc-20240116; t=1785419488; c=relaxed/simple;
+	bh=CTFS/T964a5yaqIE/V4xHk92weLYYbNuQXv+yNK+RQc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oNP23kFBnyOvdDnSHQ/A/LkEjwQG6Ugdb0A23Ao3IznGBlpyzu52qH1M3peMGYe90SpXAnjzbmmymi06850vIE0iMf2dnAN2U6N8V9Q6qJweKVtBBWs1BysEHqklCoOTUEY2iChOf288eNAhudOQG7c0FxbMa6D44pnXZmqxp9s=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=LL8Dbiyz; arc=none smtp.client-ip=209.85.214.178
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="XXl20C3Y"
-Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-848595b338cso2494777b3a.0
-        for <target-devel@vger.kernel.org>; Thu, 30 Jul 2026 04:44:35 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="LL8Dbiyz"
+Received: by mail-pl1-f178.google.com with SMTP id d9443c01a7336-2d02b4c3601so18095235ad.3
+        for <target-devel@vger.kernel.org>; Thu, 30 Jul 2026 06:51:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1785411875; x=1786016675; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=ZI/MFyfx0WYz9jr3ngUFK+Bz6mDWD6yJMRG/ycoLydg=;
-        b=XXl20C3YzK/Ks/8u94jLe6pO4Doh1pNlHfD9Z+cNqlZb6IbBOQwek3PqW0RkXZGeLV
-         KcAVzqVgT88f2mxSbx41EPzUTPOuEwCX+B4xZOmDH5wXk8dxtALqut0yJ96GUfg79D50
-         KqqooKPj9vijnbSoF0+HEEKYobAWrVBEWSP7kiqUIXnxpGayd2yqkcXguZ9TDJ07yePO
-         LGCQ8n1qLnVhfjCe73WvmOYM9HbG7PkLqI2KSmxV9GOQ6EcGhTwEwPBXE9llEqhNMUYo
-         J1jw87bZ92EwESTVBncIJp4McJtecD9PN16VLqiX21CEfcUnxTCVQWmv1QrVLdGxKJOo
-         EMGQ==
+        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1785419484; x=1786024284; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=HunIRyPIi2bgD1KL+i/5a5v9pP+PvMSSEc+1/eqqAGE=;
+        b=LL8Dbiyz3AZC8RIBCNKiNBC+JgiVI1EIQLyX53T2pqTVHWCepNK36es0wB4+4HvfUK
+         sCAW8Ex8aLFkBGgr0KAsNutOF08ZCn7dFj10/dcYOZdcwR9Mh7l4B9XqSadsj4o9BitC
+         yu128tZ0MkMUXIlrs6alOV3GfqX3umecFxhNI4+yXY/Yha09hJGThdw1JhtzBkONOQBk
+         zhcYCLUp+vFXpUOKzdMirUmbgc6gn3Vs8nRrj5dIJhgBFZcWWZyl2g2o0556RLnqOoc3
+         87h5Cr9mB0smUQVG83pZFvbb9OXbVsuuUsczb6ZeMoGLAHHc6r1/KMIe7xvENMJ4utif
+         1V5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785411875; x=1786016675;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=ZI/MFyfx0WYz9jr3ngUFK+Bz6mDWD6yJMRG/ycoLydg=;
-        b=clfkoZ7XIt+ZpZOLkX6L2HQa5X9ZNvxFOAisXV4u1htUis+CBAR9DK/18Ouzf+WS0q
-         vuSzdsrKw984Cnlk9wG+++ias7i8lPtkf64M/Pw5ZbbO/SaVRF5UVZ6CeFrufKJuDvKf
-         Pc/NPArOSowffnHZjXP2SCgsiZ4lXMbQFqDI/eTURbCb+BHHG8ZqEWLUIolWNlB+dbEC
-         btBJ/u38IA9yGIthRaoIgbXgiWQoCpDWJUo58qbEKb9QOFd8misrAvQDs1ARq2Z1D8Uv
-         qm89/Ddif4k4+Wgb7Gp78aVFMxKvKs9YzVGojuMuOYoQkgd1OYkCzFJXh0x3TDp+/CJD
-         mlIQ==
-X-Forwarded-Encrypted: i=1; AHgh+RqbBzoy8z3dOpWR52OT4CHkC/HVafgsizBcW7Latg+WFLPpaBSnRHPy6A/wcor6OkC+MRmPVSFsv6QWeXc=@vger.kernel.org
-X-Gm-Message-State: AOJu0YyAHLX2qGfLnnD2MqfxEbEYZaHb8GJCBFSjG6QedzEdIFrKCw2K
-	/P2sNjIQFo3PY7xIz/4j7I1tJlzeJmSYYsHGyT7A5S6MmsomcOoLvuNqJ/LVAYl2bZI=
-X-Gm-Gg: AR+sD13GuOgGRUw2JUD+c59TZfwHwgFNNQ+LzLa/LlVMYSTBDDtN6IBDUwaLi0bJ1VE
-	lXUL32VOyXi/xi9G9vPxY0sANF3pByUfQhK/IB0eFQq3wPXCd11EtmeXRcsSxP61icKSBe2cmfu
-	5IoLQI/ZkxZLdBSXlYo6X5MhYWGTtWOvC1/az3iMwADfZgCdq3uhQs96ewt9KhHGJpluPy/nAHr
-	wJKSbOmeWHmlWw5V9nxL3h9gDXjn3Lr0vx3BkC6VCZHhxZESax5V7qzwW1/dL3NMT0NEj4x/JV9
-	mRdCXeq+QXh9rHht346G8XtcnIn5aqdYweUHc5pby6zWve1ZTdMIFDar/k/IVVf9rAOrgKDtg3g
-	X5zPc8kns7QdzFGUkdGzb0UNRTYWIeSuPI8tdHBfYQUagoTQtOPXEJ68UuGrxLaJNGhlmCk9QJN
-	PWwS8WCUAmAZPh7wilO+5nDKqQOcZNKVXSVR21NaE2IiQ02DfcvR+eii0YQ+Bsvg13XEBh
-X-Received: by 2002:a05:6a00:240a:b0:848:3d18:2700 with SMTP id d2e1a72fcca58-84ebc46f7a8mr2193712b3a.71.1785411875276;
-        Thu, 30 Jul 2026 04:44:35 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1785419484; x=1786024284;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=HunIRyPIi2bgD1KL+i/5a5v9pP+PvMSSEc+1/eqqAGE=;
+        b=kWC7cmI2IiuR5ULxAAyxSRyCEdnyR1XVH1YTS/TJqKn7VQZrOomC+iwbEaMP2gYiNx
+         /s77npxi2ZAX6Vrc3bVI9sg+luA4/PGOPYJO7ZXOm7k1vNfckphNGgw5d2e2ssUhosyU
+         n0Vhy/nMufX+PeWJod6PG390g2WEyPXX//yrt6VGLsxkRLO7JlqJBdZqzvld5So3iVwl
+         UkQD//2gKH/RJWzatfZY1K1NhBTi66p5OReToC0nPsM7nCTzMWED9Jyf77LZoMticBTe
+         XjvaN7kByxoLkoyqPLES08/E04pDawUdxW3sEbbvZ8nC5m3mbi8BrXMh4hG7A/VgOnJU
+         eH1Q==
+X-Forwarded-Encrypted: i=1; AHgh+RpEOxI4HF9CULKsx63f5GsZFsOZVm9tV1NpSAEiaIUbQ5qICPphoYpy6vzyPk9d1Qlm9i0yucP0lmsQKCs=@vger.kernel.org
+X-Gm-Message-State: AOJu0YyNpZ06N3evvXNgL7M1aZUu0xbC3ekE61FMgsuH0tGxKk8rIupj
+	rLYrIaYYfK2TvueJrBlF1KHHrkPwtEadT0X5a5EXyyoVO9OHI0/3Kg5FjJByPElWELE=
+X-Gm-Gg: AR+sD12TB6fAvgSk/qTO9r4sv9kECE/GPSt+OG2xaT+uP1odFV7So4WLGXwvHyqEWdS
+	SRM6NMZ+nj6SgFqR/Rr423H5Lcgm7h2K7w9X8dN8lSzaiwrEZeEtUSUaT76L+Ny9eCP9eCzuOaN
+	GLFiqBYart2xPYrDIGAFOvVSyA5XWtKE0BkL9+41fhX9m5jmx+VTvYviDUe73X9XZCUvN2qofEt
+	L4Ijsr7/XaTGVmO0yKRLMlEaRSv/VajGtd/tWSOS1nHObmg/2e7UKakyk18ESUcbtGgXiDeJxjW
+	8ZCiL9MJE5zt1VJ6AnR+IeaNlUAdycZHx91PwAUZJVPy29D0moG6noStMbBq9agzzMP8FlCQqMl
+	ABJbd5ztcidfpR8X0Cfy0wNlaIcdCbqRoT+hgfOKkq/zhF5zch+nY/SbcmL6VxA1imsd6E+oKT1
+	XGNLhCDxkDDEmVB5KwSuQ89MLcpWcTkvxp/w7kRVnSFoM7wf/YI/1nBCBRhTjitEkVLxhU
+X-Received: by 2002:a17:903:b4b:b0:2c9:fbde:ab66 with SMTP id d9443c01a7336-2d035d009a9mr24192915ad.37.1785419483658;
+        Thu, 30 Jul 2026 06:51:23 -0700 (PDT)
 Received: from yhlee-960QFG.. ([125.131.91.97])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84ea02fa4c9sm2999201b3a.32.2026.07.30.04.44.33
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2d022c3721esm27804345ad.77.2026.07.30.06.51.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Jul 2026 04:44:34 -0700 (PDT)
+        Thu, 30 Jul 2026 06:51:23 -0700 (PDT)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 To: sagi@grimberg.me,
 	jgg@ziepe.ca,
@@ -66,13 +64,13 @@ Cc: michael.christie@oracle.com,
 	martin.petersen@oracle.com,
 	linux-rdma@vger.kernel.org,
 	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] IB/isert: delay the final Login Response until the session is registered
-Date: Thu, 30 Jul 2026 20:44:21 +0900
-Message-ID: <20260730114421.1605304-1-yhlee@isslab.korea.ac.kr>
+	linux-kernel@vger.kernel.org,
+	Yehyeong Lee <yhlee@isslab.korea.ac.kr>,
+	stable@vger.kernel.org
+Subject: [PATCH v3 1/2] IB/isert: delay the final Login Response until the session is registered
+Date: Thu, 30 Jul 2026 22:51:09 +0900
+Message-ID: <20260730135110.1647384-1-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260730063124.1554460-1-yhlee@isslab.korea.ac.kr>
-References: <20260730063124.1554460-1-yhlee@isslab.korea.ac.kr>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -81,21 +79,162 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Sashiko flagged two things on this v2, so please do not apply it as it
-stands.
+isert_put_login_tx() puts the final Login Response on the wire before
+__transport_register_session(), which iscsi_post_login_handler() reaches
+only after iscsi_target_do_login() returns.  An initiator that issues a
+SCSI command as soon as it sees that response can have it executed against
+an se_session whose se_tpg is still NULL, and the ib-comp-wq worker oopses
+on the NULL dereference.
 
-1/2 leaks the login_tx_desc DMA mapping when the connection is torn down
-before isert_get_rx_pdu() posts the delayed response.  Nothing unmaps it:
-isert_login_send_done() never runs, and isert_connect_release() does not
-touch login_tx_desc.dma_addr.
+  [    6.469002] Oops: general protection fault, probably for non-canonical address 0xdffffc000000000f: 0000 [#1] SMP KASAN NOPTI
+  [    6.469652] KASAN: null-ptr-deref in range [0x0000000000000078-0x000000000000007f]
+  [    6.470053] CPU: 0 UID: 0 PID: 178 Comm: kworker/0:1H Not tainted 7.2.0-rc5-V2CTL-gf5098b6bae76 #10 PREEMPT(lazy)
+  [    6.470560] Hardware name: QEMU Ubuntu 24.04 PC v2 (i440FX + PIIX, arch_caps fix, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+  [    6.471120] Workqueue: ib-comp-wq ib_cq_poll_work
+  [    6.471372] RIP: 0010:target_submit+0xbe/0x390
+  [    6.471599] Code: fa 48 c1 ea 03 80 3c 02 00 0f 85 89 02 00 00 48 b8 00 00 00 00 00 fc ff df 4d 8b 64 24 18 49 8d 7c 24 78 48 89 fa 48 c1 ea 03 <80> 3c 02 00 0f 85 5a 02 00 00 48 8d 7b 78 4d 8b 6c 24 78 48 b8 00
+  [    6.472497] RSP: 0018:ffff8881058cfa78 EFLAGS: 00010206
+  [    6.472761] RAX: dffffc0000000000 RBX: ffff88810c78c6f0 RCX: ffffffff964bb363
+  [    6.473112] RDX: 000000000000000f RSI: 00000000fffffe00 RDI: 0000000000000078
+  [    6.473439] RBP: 1ffff11020b19f52 R08: 0000000000000001 R09: ffffed1020b19f52
+  [    6.473790] R10: 0000000000000003 R11: ffff88810596c000 R12: 0000000000000000
+  [    6.474153] R13: ffff88810c61b000 R14: ffff88810c6a3400 R15: ffff88810c61b044
+  [    6.474479] FS:  0000000000000000(0000) GS:ffff8881822b2000(0000) knlGS:0000000000000000
+  [    6.474884] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+  [    6.475156] CR2: 00007f1f1b83c000 CR3: 000000006fe72001 CR4: 0000000000770ef0
+  [    6.475483] PKRU: 55555554
+  [    6.475628] Call Trace:
+  [    6.475763]  <TASK>
+  [    6.475886]  ? __pfx__raw_spin_lock_bh+0x10/0x10
+  [    6.476146]  ? __pfx_target_submit+0x10/0x10
+  [    6.476348]  ? mutex_lock+0x81/0xe0
+  [    6.476517]  ? __pfx_mutex_lock+0x10/0x10
+  [    6.476722]  ? iscsit_execute_cmd+0x650/0x850
+  [    6.476958]  iscsit_sequence_cmd+0x186/0x3d0
+  [    6.477164]  iscsit_process_scsi_cmd+0x87/0x300
+  [    6.477362]  isert_recv_done+0x1002/0x2390
+  [    6.477546]  ? __pfx_isert_recv_done+0x10/0x10
+  [    6.477761]  ? rxe_poll_cq+0x253/0x3d0
+  [    6.477945]  ? finish_task_switch.isra.0+0x1dc/0xa70
+  [    6.478192]  __ib_process_cq+0xe1/0x390
+  [    6.478360]  ib_cq_poll_work+0x46/0x150
+  [    6.478531]  process_one_work+0x633/0x1030
+  [    6.478730]  ? assign_work+0x11d/0x370
+  [    6.478918]  worker_thread+0x45b/0xd10
+  [    6.479099]  ? __pfx_worker_thread+0x10/0x10
+  [    6.479295]  ? __pfx_worker_thread+0x10/0x10
+  [    6.479480]  kthread+0x2c6/0x3b0
+  [    6.479632]  ? recalc_sigpending+0x15c/0x1e0
+  [    6.479848]  ? __pfx_kthread+0x10/0x10
+  [    6.480029]  ret_from_fork+0x36e/0x5a0
+  [    6.480214]  ? __pfx_ret_from_fork+0x10/0x10
+  [    6.480399]  ? __switch_to+0x572/0xdd0
+  [    6.480566]  ? __pfx_kthread+0x10/0x10
+  [    6.480748]  ret_from_fork_asm+0x1a/0x30
+  [    6.480952]  </TASK>
+  [    6.481062] Modules linked in:
+  [    6.481235] ---[ end trace 0000000000000000 ]---
 
-2/2 reads isert_conn->state with READ_ONCE() in isert_recv_done().  A
-control dependency does not order the loads that follow, so the se_tpg
-dereference in isert_rx_opcode() can be hoisted ahead of the check; it
-needs smp_load_acquire().
+Delay the final Login Response instead.  isert_get_rx_pdu() runs from
+iscsi_target_rx_thread() after conn->rx_login_comp, completed by
+iscsi_post_login_handler() after __transport_register_session(); iscsi-TCP
+and cxgbit already take PDUs from that thread, isert alone does not.  The
+buffers are still posted first, so the initiator's first command does not
+meet an empty receive queue and nothing depends on RNR flow control, and
+the header and payload live in isert_conn, not in the struct iscsi_login
+that iscsi_target_nego_release() frees first.
 
-I will send v3 with both, and with the error path logging the value it
-actually tested.
+Over rxe, 400 login cycles per run, the oops appeared in 10 of 20
+unpatched runs and in none of 20 runs with this patch.  An
+initiator that never waits is handled by the next patch.
 
-Best regards,
-Yehyeong
+Not tested: iWARP, discovery sessions over iSER, and real HCAs.
+
+Fixes: b8d26b3be8b3 ("iser-target: Add iSCSI Extensions for RDMA (iSER) target driver")
+Cc: stable@vger.kernel.org
+Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+---
+v3: unmap login_tx_desc in isert_connect_release() (1/2); make the
+    FULL_FEATURE store a release and the state check an acquire load, and
+    log the value actually tested (2/2).  Both from Sashiko's review of v2.
+    v2: https://lore.kernel.org/all/20260730063124.1554460-1-yhlee@isslab.korea.ac.kr/
+
+ drivers/infiniband/ulp/isert/ib_isert.c | 20 ++++++++++++++++++--
+ drivers/infiniband/ulp/isert/ib_isert.h |  1 +
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index 1015a51f750a..e117cd2e62c9 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -59,6 +59,8 @@ static void isert_recv_done(struct ib_cq *cq, struct ib_wc *wc);
+ static void isert_send_done(struct ib_cq *cq, struct ib_wc *wc);
+ static void isert_login_recv_done(struct ib_cq *cq, struct ib_wc *wc);
+ static void isert_login_send_done(struct ib_cq *cq, struct ib_wc *wc);
++static void isert_unmap_tx_desc(struct iser_tx_desc *tx_desc,
++				struct ib_device *ib_dev);
+ 
+ static int isert_sg_tablesize_set(const char *val, const struct kernel_param *kp)
+ {
+@@ -496,6 +498,8 @@ isert_connect_release(struct isert_conn *isert_conn)
+ 	if (isert_conn->qp)
+ 		isert_destroy_qp(isert_conn);
+ 
++	isert_unmap_tx_desc(&isert_conn->login_tx_desc, device->ib_device);
++
+ 	if (isert_conn->login_desc)
+ 		isert_free_login_buf(isert_conn);
+ 
+@@ -956,14 +960,17 @@ isert_put_login_tx(struct iscsit_conn *conn, struct iscsi_login *login,
+ 			mutex_lock(&isert_conn->mutex);
+ 			isert_conn->state = ISER_CONN_FULL_FEATURE;
+ 			mutex_unlock(&isert_conn->mutex);
+-			goto post_send;
++
++			/* Sent from isert_get_rx_pdu() after registration. */
++			isert_conn->login_rsp_pending = true;
++			return 0;
+ 		}
+ 
+ 		ret = isert_login_post_recv(isert_conn);
+ 		if (ret)
+ 			return ret;
+ 	}
+-post_send:
++
+ 	ret = isert_login_post_send(isert_conn, tx_desc);
+ 	if (ret)
+ 		return ret;
+@@ -2585,8 +2592,17 @@ static void isert_free_conn(struct iscsit_conn *conn)
+ 
+ static void isert_get_rx_pdu(struct iscsit_conn *conn)
+ {
++	struct isert_conn *isert_conn = conn->context;
+ 	struct completion comp;
+ 
++	/* The session is registered by now; see isert_put_login_tx(). */
++	if (isert_conn->login_rsp_pending) {
++		isert_conn->login_rsp_pending = false;
++		if (isert_login_post_send(isert_conn,
++					  &isert_conn->login_tx_desc))
++			return;
++	}
++
+ 	init_completion(&comp);
+ 
+ 	wait_for_completion_interruptible(&comp);
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.h b/drivers/infiniband/ulp/isert/ib_isert.h
+index 0b2dfd6e7e27..0bac5aa66c80 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.h
++++ b/drivers/infiniband/ulp/isert/ib_isert.h
+@@ -178,6 +178,7 @@ struct isert_conn {
+ 	struct completion	login_comp;
+ 	struct completion	login_req_comp;
+ 	struct iser_tx_desc	login_tx_desc;
++	bool			login_rsp_pending;
+ 	struct rdma_cm_id	*cm_id;
+ 	struct ib_qp		*qp;
+ 	struct ib_cq		*cq;
+-- 
+2.43.0
+
