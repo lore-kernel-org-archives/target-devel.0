@@ -1,86 +1,111 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC8AA38889B;
-	Wed,  5 Aug 2026 15:03:51 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0D4671D9663;
+	Thu,  6 Aug 2026 05:48:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1785942234; cv=none; b=qskjHo2t/pW6t/B9qR9O2wQtPqad73H08teCVAnJN1QqChZPWFbbRFzHGTuAdO+3m6OsAno6i8E5XeG+gS/Kg3fBBlU1qp71HtmmEMNH7RAfCgCTVm32P++j388THKPd8xie0jL4+67S5HpxOwZ5ZwAUr0xvZ1ZZnMrQz/hbuhk=
+	t=1785995335; cv=none; b=IBY+HzBOP3qb/4SSUf2Urm9/9x/4A9173w8LpgLcucF8Np2a5MTTTkuzyMGvigELBhk7dcVFDi6DHsJszG8TvkTiZDW+VQUTYZznpBkLAHFeD+Ecg2N9ZlMlmNgW3ZIJ6+x8VEDZ6miUsvv/MhCS+74yJsaepRCRizRqkj7nU+w=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1785942234; c=relaxed/simple;
-	bh=fH9I3qb5tcXDQbvOEAPTHw1/cxgbgGPGUsl9Ul/kJ1w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=U3o/700Ud8RXwZg45MNvbHoCJFljZdSgR9XxQXLL0SZ/CX1ZlV4/ykubunT5RDNEpLrdzVLZpZXzx1JbHNe5kfTczle+r2k59pFNKXjLBZspb0hWqb5mDqpZPVdSZiOkymSPSf64gJE/xLr3X7Z5zGXIMreAw4s5NA0ud5M/KQ8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=B15o3Orv; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1785995335; c=relaxed/simple;
+	bh=eR4P+V9jnFW3OGh2xSOpQLhxNr4KUzaSDuzW7l2ksBY=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=OBZpBMbHOCdkBFhLBfRHCsL+x91TvnC3Bg9vEmjThuzw64UL3mkk57nsqsU0Cv4TzZ6nRAEd/4TT67Qk2H5IRPEWfD/ShNSekJeQOiRwPzjFITKnYPRc//OH/Fv9BNRcljLQM4xhvXOtqFwF/vWQppfQ+LTtDqFHOla3fRCAnak=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=YszmQctY; arc=none smtp.client-ip=117.135.210.3
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="B15o3Orv"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53AF41F000E9;
-	Wed,  5 Aug 2026 15:03:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785942230;
-	bh=+39LRpNND11Y+pUIyCG3EWc9TB7URvX/vkuLIGRNNxk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=B15o3Orv2YKUM53fYl6CcAdk+q4o2siYB8HgDd61vbeddQhXIffCRfDHC/Cf2HZZt
-	 15cjQ5sVz/8fN7wNX3tAMRb/WNGqlLhc1V5iLPGcJCbukOj7se45ZRkJEOlwgftXKu
-	 d1gOfSNCuFYkDe9L9YACCEHU+jEsGHYLzcqTVHM7StBs1ZTDZPYhwxCtfr38QXhRPH
-	 nEUYbFYP9jzD23opoh8s09IOvwc9qtFBt/uopeI1TG5tYKrMDThjpgP+j8rI/P2GI2
-	 olCnFxjX4It07vdOqrT3k/cMUBMg8p+TL4LCXt54TU7ERIqvwHWgQGBG+dtQ8j2Y8C
-	 Zm1NhbbT9nrdA==
-Date: Wed, 5 Aug 2026 18:03:44 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-Cc: sagi@grimberg.me, jgg@ziepe.ca, michael.christie@oracle.com,
-	martin.petersen@oracle.com, linux-rdma@vger.kernel.org,
-	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: Re: [PATCH v3 2/2] IB/isert: reject full-feature PDUs that arrive
- before registration
-Message-ID: <20260805150344.GD23431@unreal>
-References: <20260730135110.1647384-1-yhlee@isslab.korea.ac.kr>
- <20260730135110.1647384-2-yhlee@isslab.korea.ac.kr>
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="YszmQctY"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=CP
+	aaxY7dcgaMnSa3hBTvaMHgHF/iEN3FHumqoLd+74g=; b=YszmQctYcNFUv/tzvC
+	XFrGSVJQcqvPDpJCzKs1hZsz03cAChK6BcWy93Sz3q3FpgAeWw1JT3gPx5ia32P9
+	9BTdo5U0nC4rAwwiHblFXjm1Y7DSXI3fNANMdK7ieIjEWmmwOmvlempOwXnEenlI
+	Sk3C6lH/6jtYA9N4E6Vh/2Wk0=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g0-4 (Coremail) with SMTP id _____wA3rhgoIHRqVXB8OA--.9908S2;
+	Thu, 06 Aug 2026 13:48:24 +0800 (CST)
+From: ghuicao@163.com
+To: "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	Dmitry Bogdanov <d.bogdanov@yadro.com>,
+	Mike Christie <michael.christie@oracle.com>,
+	Kees Cook <kees@kernel.org>,
+	Cao Guanghui <caoguanghui@kylinos.cn>
+Subject: [PATCH] scsi: target: iscsi: Reject Extended CDB AHS when CDB size exceeds AHS length
+Date: Thu,  6 Aug 2026 13:48:20 +0800
+Message-Id: <20260806054820.75950-1-ghuicao@163.com>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260730135110.1647384-2-yhlee@isslab.korea.ac.kr>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wA3rhgoIHRqVXB8OA--.9908S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWxGFy8JrykWw4kuF1rXr1DKFg_yoW5Xw1xpF
+	4qgw10yrZYg3yxCwnxAa1YqryYqan5GFyjka43K34DuwnxJFyIgFyYga4agay5Jan2gFy3
+	Kan0vFyrGr4UGw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07U_3k_UUUUU=
+X-CM-SenderInfo: 5jkxxuldr6il2tof0z/xtbC4AnJXGp0ICksyQAA3O
 
-On Thu, Jul 30, 2026 at 10:51:10PM +0900, Yehyeong Lee wrote:
-> The full-feature receive buffers are posted from isert_put_login_tx(),
-> which runs before __transport_register_session().  An initiator that does
-> not wait for the final Login Response can therefore still have a SCSI
-> command executed against an se_session whose se_tpg is NULL, with the same
-> oops as the previous patch.
-> 
-> Move the ISER_CONN_FULL_FEATURE transition into isert_get_rx_pdu(), where
-> it happens after the session has been registered, and reinstate the
-> connection on any PDU that arrives before it, the same call this function
-> already makes when a work completion fails.  The state is read without
-> isert_conn->mutex because isert_recv_done() runs on ib-comp-wq; the acquire
-> load pairs with the release store so that the session registration
-> preceding it is visible.
-> 
-> Measured over rxe with an initiator that fires SCSI commands into that
-> window without waiting for the Login Response, 400 login cycles per run:
-> the oops appeared in 7 of 10 runs with only the previous patch applied and
-> in 0 of 10 runs with this one on top.  The check fired 22 times across
-> those 10 runs, 16 in ISER_CONN_BOUND and 6 in ISER_CONN_TERMINATING, where
-> the reinstatement is a no-op because teardown has already latched.
-> Well-formed traffic is unaffected: 20 runs of a spec-conforming initiator,
-> 400 login cycles each, pass with the check never firing.
-> 
-> Fixes: b8d26b3be8b3 ("iser-target: Add iSCSI Extensions for RDMA (iSER) target driver")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-> ---
-> v3: unmap login_tx_desc in isert_connect_release() (1/2); make the
->     FULL_FEATURE store a release and the state check an acquire load, and
->     log the value actually tested (2/2).  Both from Sashiko's review of v2.
->     v2: https://lore.kernel.org/all/20260730063124.1554460-1-yhlee@isslab.korea.ac.kr/
+From: Cao Guanghui <caoguanghui@kylinos.cn>
 
-Sashiko is still not satisfied with this patch.
+In iscsit_setup_scsi_cmd(), the Extended CDB AHS path allocates the CDB
+buffer using only the iSCSI AHS-declared length. The buffer is then
+handed to target_cmd_init_cdb(), which re-derives the CDB length from
+the SCSI opcode via scsi_command_size(). For a VARIABLE_LENGTH_CMD
+(0x7f) the size is cdb[7] + 8, where both cdb[0] and cdb[7] come
+verbatim from the initiator-controlled hdr->cdb. The AHS-declared length
+and the opcode-declared length are never cross-checked.
 
-Thanks
+An initiator can thus advertise a minimal AHS (ahslength = 1, which
+passes the !ahslength and ahslength > hlength*4 - 3 checks added by
+commit 2f3835771dff ("scsi: target: iscsi: reject invalid size Extended
+CDB AHS") while setting cdb[0]=0x7f and cdb[7]=252. This yields a
+16-byte kmalloc but scsi_command_size() returns 260, so
+target_cmd_init_cdb() reads 260 bytes from a 16-byte heap object, a heap
+out-of-bounds read. The leaked bytes are later parsed as the CDB and can
+be indirectly observed by the initiator through sense data and
+responses.
+
+commit 2f3835771dff ("scsi: target: iscsi: reject invalid size Extended
+CDB AHS") fixed the zero-length ahslength overflows and the AHS-buffer
+overread, but did not cover the orthogonal "allocation size vs.
+opcode-declared size" path. Reject the command when the opcode-declared
+CDB size exceeds the AHS-provided length, before the kmalloc.
+
+Fixes: 8f1f7d297bce ("scsi: target: iscsi: Add support for extended CDB AHS")
+Signed-off-by: Cao Guanghui <caoguanghui@kylinos.cn>
+---
+ drivers/target/iscsi/iscsi_target.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
+index 62ada3a52210..e3e9254df960 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -1124,6 +1124,19 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
+ 
+ 		cdb_length = ahslength - 1 + ISCSI_CDB_SIZE;
+ 
++		/*
++		 * The CDB buffer is later re-parsed by scsi_command_size() based
++		 * on its opcode, which may claim a length larger than the AHS
++		 * provided. Reject such a mismatch before allocating to avoid
++		 * an out-of-bounds read of the CDB buffer in target_cmd_init_cdb().
++		 */
++		if (scsi_command_size(hdr->cdb) > cdb_length) {
++			pr_err("Extended CDB AHS: SCSI command size %u exceeds AHS-provided CDB length %u, protocol error.\n",
++			       scsi_command_size(hdr->cdb), cdb_length);
++			return iscsit_add_reject_cmd(cmd,
++				ISCSI_REASON_PROTOCOL_ERROR, buf);
++		}
++
+ 		cdb = kmalloc(cdb_length, GFP_KERNEL);
+ 		if (cdb == NULL)
+ 			return iscsit_add_reject_cmd(cmd,
+-- 
+2.34.1
+
