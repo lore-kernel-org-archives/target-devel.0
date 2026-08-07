@@ -1,54 +1,75 @@
-Received: from sender-of-o57.zoho.eu (sender-of-o57.zoho.eu [136.143.169.57])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qv1-f48.google.com (mail-qv1-f48.google.com [209.85.219.48])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 802D740759D;
-	Thu,  6 Aug 2026 21:07:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=136.143.169.57
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786050432; cv=pass; b=eqCkd7SGHUZJrEtkE6W75RCV/i6dQRN1fr7w3LQKgTQWCGrxVQ9RF5E/9ECZAUXHlJMEC9s07MbxDXbQzYZQQ86BB8galbniHA59p5CjXopv3OgHXDodkB8PMW7X8g0QLdcSbKlNmGubeUWf5zO25leNCwoagBQXu2DRaOs0rRA=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786050432; c=relaxed/simple;
-	bh=iMtKZ68a+ubbhwo0q4OKtISspanP36uJpzOhDWZ0tnE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JGMboPqcGo4Z3ouVC05oVqtl2mF/pR8p5d8oK43w6pz4axqGu+Q3TP0h1XatWfqEzpqlw6oCs9V7sdVrAsfn0V5uzaNVj09Z2rVFJHyNS4qE9+JepMqw/0txKQxqIhgjTstN/1QcClTpv0fgD3QpLsXvFT1VY7+QmYoqfIPWj9U=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com; spf=pass smtp.mailfrom=iusegentoo.com; dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b=jZegdbSQ; arc=pass smtp.client-ip=136.143.169.57
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=iusegentoo.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iusegentoo.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BCCA446BE9
+	for <target-devel@vger.kernel.org>; Fri,  7 Aug 2026 06:07:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.48
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1786082871; cv=none; b=S6W9tCn/1H+9xtMxW6IxM9dFqJi0hu3PzNOGgOlxTQ4grWLeGouH37X84fAbjHy7CVKdfEH/yiPv+EX+r8re3NyQZ2/oakdLVDhXz+c8qvoqICEPY9umWZWWV8oovjbzU5bpiTFw0QPxZMWi7BinFxiGyj67Ec56JzYKQ1i+PrE=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1786082871; c=relaxed/simple;
+	bh=8nK3zk0LJnwP8Kr6V61I0Wwu+5q7KeBflm9aUfHvG3g=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jvYCN6gNik6a83RFMBYwbBuJ4ORc7YAwtIfr2aYlEjn/e+ied7yfwOhcL46bH8ELQVTr+bsq6xwgws7hmlzXqp9+LWgsubl1nJX+RggUHKnBkEzXpZDVTOA1MIHu0TvXQJFeXry5qR0oZ0OZBjdQb1oDNoGXI58GKGM6tO1PFO0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=k/x95HHT; arc=none smtp.client-ip=209.85.219.48
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=iusegentoo.com header.i=ali@iusegentoo.com header.b="jZegdbSQ"
-ARC-Seal: i=1; a=rsa-sha256; t=1786050423; cv=none; 
-	d=zohomail.eu; s=zohoarc; 
-	b=kr6rl66nBfI/k2e3JZOaIRmfEkDLJbCLBcy/0FG+eqYtcsOG17AeSeP3fyGSSNyYSFSWIduJqqRLB9lxt6N8rD059W2DbPN7K7ayqJ+kq4cTfiou44QpGHDhG//SX7Hfl/I1LV0fPwaCPUmVSOsgZFeeOR4VZNh9ZtY9qec+NKI=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.eu; s=zohoarc; 
-	t=1786050423; h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=vE0KwVzJzVTLYOOEFhJrNRLlcegrQcNMrNQJEwIiqwY=; 
-	b=AhWBdKl7usOu+2hApDcuKqlGQ68f9UUzRj8C86ErilYyhk2q+4+/7yp+UFAJsD7w8YyWXAIqxwSgsM0mnWsG8u4J8B2UCvd+UX+5g5BTdEkNAfzJx+5g2ihLc1RU1AHYXVXbv5CTg7r2jB0Tg6pIe4PZTZ+LhXNinWQFocF57+w=
-ARC-Authentication-Results: i=1; mx.zohomail.eu;
-	dkim=pass  header.i=iusegentoo.com;
-	spf=pass  smtp.mailfrom=ali@iusegentoo.com;
-	dmarc=pass header.from=<ali@iusegentoo.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1786050423;
-	s=zmail; d=iusegentoo.com; i=ali@iusegentoo.com;
-	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:MIME-Version:Content-Transfer-Encoding:Message-Id:Reply-To;
-	bh=vE0KwVzJzVTLYOOEFhJrNRLlcegrQcNMrNQJEwIiqwY=;
-	b=jZegdbSQgQ2RbASWjy7ldfx+z79Jbow7KXRiid5IZnGhhJEtmw+V6bJZPAEn8O3o
-	ICB+afpD+EDkyH7vKR5DJbqwLjYq0lMTzGl/6L4m9vYZgVo73Y9pJHs4CyQFYL8EowX
-	r1U+/ztMmSuEQywOn+A6ScfzITPbArhN0eGzzieQ=
-Received: by mx.zoho.eu with SMTPS id 1786050421801147.4987671240699;
-	Thu, 6 Aug 2026 23:07:01 +0200 (CEST)
-From: Ali Ahmet Memis <ali@iusegentoo.com>
-To: Ram Vegesna <ram.vegesna@broadcom.com>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-scsi@vger.kernel.org,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="k/x95HHT"
+Received: by mail-qv1-f48.google.com with SMTP id 6a1803df08f44-8ef7b7651ecso12095596d6.1
+        for <target-devel@vger.kernel.org>; Thu, 06 Aug 2026 23:07:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786082868; x=1786687668; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=HQf34kglk1Yh8CWS1BUF21oEZ3LoRTy5y/WvEz9+4IA=;
+        b=k/x95HHThjboC8AVoHcl28lLtjXggobDvkBbhqJ1QMp4h9jPg/F1ajjjWrSkztfZOW
+         wd68q55nVYQywtFejKuhfc1rnZxPqWd+XdTJqb2wRGv2n9gdN3YMXKXeJwal1TGLvpfV
+         D6rqT8QVJ6JvFAO4iNR4BzuVezhe6rqEzajAEr1Ml6oQ1HrOgOXFV4AHlZdYcu3NAXg5
+         6z2Aku2fSeCafhLvTXiDHE2olj/pPSlZpPcAq2TxfbMNPB2hzQHzfeEG2ni/4UuCeCpp
+         IwbX75gV9NiktKX+4rQbi6dS+1qv7WKFLv+B8IYLiaeqf6apZ2D7Ce0D0rVu7yxUR4Jz
+         sV1Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786082868; x=1786687668;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=HQf34kglk1Yh8CWS1BUF21oEZ3LoRTy5y/WvEz9+4IA=;
+        b=nCrruoGio3VjjItIrnyK2GIzOFw719sKpCYLlPc6XonDZJG+c3N39vkbfEC+SGZDzO
+         pLmaBUt4BkeqJuVyDrRI7N0rWPC/OAwExyhsSVNR/E4IfjlzdWnjJeCzPb66KqKMi93U
+         /wgjPrh2AhCSXOR6NpSscSE9iCJX286cPGoHtTZwPrCV3pRffDpuKgERmg/MduFjBmkj
+         GaMsvymfqp4ERUj73kFZhgB70x8B+YaMycaZ2zw7bZxQCStyqafb7K86Cl+j46NcJ8+7
+         nDcnGtwLBrgwHXIXPcQYUNme8G1liYO1J4/8BIA2ARG7ShSlB/w2jcW258rpKepj6ruP
+         nKiA==
+X-Forwarded-Encrypted: i=1; AHgh+RqhClWNRq2ytnXYYxYQ9Df9S65vVKcYGJE72625rND4DrtkyZnCJp4o3Tam+LcXa/nBTaWtLQHBUzrgXJ4=@vger.kernel.org
+X-Gm-Message-State: AOJu0YxUO3ru0Oo+W+DrtG6dc4UgGmeKDfCYscWQ8qByD2nYTUeu6IkO
+	rfO313JsEaUUCQ2ptf0l/JpcX4dC2d7Lui0H5DmHJdLnvcqHWwc7Tonn
+X-Gm-Gg: AR+sD116qYDqBjPwi4Ddy+a4084wr6FTuPVTgxCN2DEV/VnRb/ZCoDZHtppZBYDbgMx
+	DexHwp2j1kSEnodZzEa7hx2em+VEeC4zf/mdWeWk7SrflPo9m1I/gGrMdEN6DcFaEtxN48k2j2q
+	hxXaO+Xz5FcNOG0xV9ABURrcaBPwkNHq4SvtjmWL+bML4oBjtYjrMxK6VLu0KXVywz9KD47OSDU
+	GvdgSPiEXwE9hYZFKzR82BBUNyHg5lyzYMxmB760GLVPmvBe8dA9I5nqiuxQQYJOw0vi3SKDD3F
+	6s+Y/fVZuxnjIGcuX4EALfoUMXelxxX9lGDXPnoTcVYxN4XOeIuPc+XWU5Ipi/jD0nRqBFLohr8
+	dYLCB+OOETwFdaAi79MAti7J5CnEq9K95N9z1w/68zWfU+DdsD8I0FfpS8WXH1pAlHWybWDvnN9
+	liY896cm1YmsWEYBwh/ILgz4gFrfsQ7/c5oDZvSAgko8+2jTeg6cVPifRyIY168Dc3RKWi6yElT
+	Zl9Gu5COuFdC8szbQ==
+X-Received: by 2002:a05:622a:4d86:b0:51c:b91a:33f9 with SMTP id d75a77b69052e-52cfb00255dmr137405711cf.13.1786082868001;
+        Thu, 06 Aug 2026 23:07:48 -0700 (PDT)
+Received: from i4-l-hqh5357-03.ad.psu.edu ([130.203.139.71])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-908a92ff8d1sm1985816d6.25.2026.08.06.23.07.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 06 Aug 2026 23:07:47 -0700 (PDT)
+From: Shuangpeng Bai <shuangpeng.kernel@gmail.com>
+To: "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 2/2] scsi: elx: efct: destroy the mailbox pools when setup fails
-Date: Thu,  6 Aug 2026 21:06:27 +0000
-Message-ID: <20260806210631.357456-3-ali@iusegentoo.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260806210631.357456-1-ali@iusegentoo.com>
-References: <20260806210631.357456-1-ali@iusegentoo.com>
+	linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Shuangpeng Bai <shuangpeng.kernel@gmail.com>,
+	stable@vger.kernel.org
+Subject: [PATCH] usb: gadget: f_tcm: keep port count until LUN teardown completes
+Date: Fri,  7 Aug 2026 02:07:33 -0400
+Message-ID: <20260807060733.3186624-1-shuangpeng.kernel@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -56,104 +77,82 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-ZohoMailClient: External
 
-efct_hw_setup() creates two mempools and then calls sli_setup(). Its error
-paths return without destroying what it already created:
+tcm_usbg_drop_nexus() permits session removal once tpg_port_count
+reaches zero. However, usbg_port_unlink() currently decrements that
+count from the fabric_pre_unlink() callback, before core_dev_del_lun()
+waits for active se_lun references to drain.
 
-	hw->cmd_ctx_pool = mempool_create_kmalloc_pool(...);
-	if (!hw->cmd_ctx_pool)
-		return -EIO;
+If removal of the last LUN races a nexus removal, the latter can observe
+a zero port count and call target_remove_session(). This frees
+sess_cmd_map while an in-flight struct usbg_cmd, including its work item,
+can still be accessed.
 
-	hw->mbox_rqst_pool = mempool_create_kmalloc_pool(...);
-	if (!hw->mbox_rqst_pool)
-		return -EIO;
-	...
-	if (sli_setup(&hw->sli, hw->os, pdev, ((struct efct *)os)->reg))
-		return -EIO;
+Overlapping the last-LUN unlink with nexus removal reproduces this
+lifetime violation as a DEBUG_OBJECTS "free active" warning for
+usbg_cmd_work, followed by a target-core BUG/Oops.
 
-mempool_destroy() for these two runs only in efct_hw_teardown(), which is
-not reached here. efct_hw_setup() is called from
-efct_device_interrupts_required() and from efct_xport_attach(). On the
-probe path it is the first of those that runs, and when it fails
-efct_pci_probe() unwinds through efct_device_free(), freeing the struct
-efct that held the only pointers to the pools.
+The generic target-core unlink path has no callback after
+core_dev_del_lun() completes. Add an optional fabric_post_unlink()
+callback and use it for the f_tcm port count. The count now remains
+nonzero until core_dev_del_lun() has finished draining active LUN
+references, preventing nexus removal from freeing the session during
+command completion.
 
-Destroy them on the way out, and clear hw_setup_called, which the function
-sets before the first allocation, so that a later call does not take the
-early return and hand the caller a half configured hw.
-
-Reproduced by binding the driver to a PCI device that is not an SLI-4
-adapter, so sli_setup() fails, and repeating the probe 61 times. Before,
-with CONFIG_DEBUG_KMEMLEAK:
-
-  unreferenced object 0xffff888008449680 (size 96):
-    comm "init", pid 1
-    backtrace:
-      __kmalloc_cache_node_noprof+0x3b9/0x430
-      mempool_create_node_noprof+0x78/0xe0
-      efct_hw_setup+0x1db/0xb50
-      efct_pci_probe+0x3cb/0x6dd
-      local_pci_probe+0xd4/0x170
-
-1566 objects in total, every one of them from efct_hw_setup(). After the
-change the same run reports none, and the probe still fails the same way.
-
-Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
-Signed-off-by: Ali Ahmet Memis <ali@iusegentoo.com>
+Fixes: c52661d60f63 ("usb-gadget: Initial merge of target module for UASP + BOT")
+Cc: stable@vger.kernel.org
+Signed-off-by: Shuangpeng Bai <shuangpeng.kernel@gmail.com>
 ---
- drivers/scsi/elx/efct/efct_hw.c | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ drivers/target/target_core_fabric_configfs.c | 8 ++++++++
+ drivers/usb/gadget/function/f_tcm.c          | 2 +-
+ include/target/target_core_fabric.h          | 2 ++
+ 3 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/elx/efct/efct_hw.c b/drivers/scsi/elx/efct/efct_hw.c
-index cc600220168a..20f4821078aa 100644
---- a/drivers/scsi/elx/efct/efct_hw.c
-+++ b/drivers/scsi/elx/efct/efct_hw.c
-@@ -256,7 +256,7 @@ efct_hw_setup(struct efct_hw *hw, void *os, struct pci_dev *pdev)
- 					sizeof(struct efct_command_ctx));
- 	if (!hw->cmd_ctx_pool) {
- 		efc_log_err(hw->os, "failed to allocate mailbox buffer pool\n");
--		return -EIO;
-+		goto not_setup;
+diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
+index 166dbf4c4061..ab8f81650710 100644
+--- a/drivers/target/target_core_fabric_configfs.c
++++ b/drivers/target/target_core_fabric_configfs.c
+@@ -690,6 +690,14 @@ static void target_fabric_port_unlink(
  	}
  
- 	/* Create mailbox request ctx pool for library callback */
-@@ -264,7 +264,7 @@ efct_hw_setup(struct efct_hw *hw, void *os, struct pci_dev *pdev)
- 					sizeof(struct efct_mbox_rqst_ctx));
- 	if (!hw->mbox_rqst_pool) {
- 		efc_log_err(hw->os, "failed to allocate mbox request pool\n");
--		return -EIO;
-+		goto free_cmd_ctx_pool;
- 	}
- 
- 	spin_lock_init(&hw->io_lock);
-@@ -277,7 +277,7 @@ efct_hw_setup(struct efct_hw *hw, void *os, struct pci_dev *pdev)
- 	hw->config.speed = SLI4_LINK_SPEED_AUTO_16_8_4;
- 	if (sli_setup(&hw->sli, hw->os, pdev, ((struct efct *)os)->reg)) {
- 		efc_log_err(hw->os, "SLI setup failed\n");
--		return -EIO;
-+		goto free_mbox_rqst_pool;
- 	}
- 
- 	efct_hw_link_event_init(hw);
-@@ -313,6 +313,17 @@ efct_hw_setup(struct efct_hw *hw, void *os, struct pci_dev *pdev)
- 	(void)efct_hw_read_max_dump_size(hw);
- 
- 	return 0;
+ 	core_dev_del_lun(se_tpg, lun);
 +
-+free_mbox_rqst_pool:
-+	mempool_destroy(hw->mbox_rqst_pool);
-+	hw->mbox_rqst_pool = NULL;
-+free_cmd_ctx_pool:
-+	mempool_destroy(hw->cmd_ctx_pool);
-+	hw->cmd_ctx_pool = NULL;
-+not_setup:
-+	hw->hw_setup_called = false;
-+
-+	return -EIO;
++	if (tf->tf_ops->fabric_post_unlink) {
++		/*
++		 * Allow fabrics to release state that must remain valid until
++		 * core_dev_del_lun() has drained all active LUN references.
++		 */
++		tf->tf_ops->fabric_post_unlink(se_tpg, lun);
++	}
  }
  
- static void
+ static void target_fabric_port_release(struct config_item *item)
+diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
+index b3fa5a17fd2d..98414e7611c0 100644
+--- a/drivers/usb/gadget/function/f_tcm.c
++++ b/drivers/usb/gadget/function/f_tcm.c
+@@ -2024,7 +2024,7 @@ static const struct target_core_fabric_ops usbg_ops = {
+ 	.fabric_enable_tpg		= usbg_enable_tpg,
+ 	.fabric_drop_tpg		= usbg_drop_tpg,
+ 	.fabric_post_link		= usbg_port_link,
+-	.fabric_pre_unlink		= usbg_port_unlink,
++	.fabric_post_unlink		= usbg_port_unlink,
+ 	.fabric_init_nodeacl		= usbg_init_nodeacl,
+ 
+ 	.tfc_wwn_attrs			= usbg_wwn_attrs,
+diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
+index e9039e73d058..390ace5bb252 100644
+--- a/include/target/target_core_fabric.h
++++ b/include/target/target_core_fabric.h
+@@ -95,6 +95,8 @@ struct target_core_fabric_ops {
+ 				struct se_lun *);
+ 	void (*fabric_pre_unlink)(struct se_portal_group *,
+ 				struct se_lun *);
++	void (*fabric_post_unlink)(struct se_portal_group *se_tpg,
++				   struct se_lun *lun);
+ 	struct se_tpg_np *(*fabric_make_np)(struct se_portal_group *,
+ 				struct config_group *, const char *);
+ 	void (*fabric_drop_np)(struct se_tpg_np *);
 -- 
-2.55.0
+2.43.0
 
