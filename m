@@ -1,75 +1,37 @@
-Received: from mail-qv1-f48.google.com (mail-qv1-f48.google.com [209.85.219.48])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BCCA446BE9
-	for <target-devel@vger.kernel.org>; Fri,  7 Aug 2026 06:07:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.48
+Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [52.237.72.81])
+	by smtp.subspace.kernel.org (Postfix) with ESMTP id 87A833AE6E5;
+	Mon, 10 Aug 2026 12:35:48 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.237.72.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786082871; cv=none; b=S6W9tCn/1H+9xtMxW6IxM9dFqJi0hu3PzNOGgOlxTQ4grWLeGouH37X84fAbjHy7CVKdfEH/yiPv+EX+r8re3NyQZ2/oakdLVDhXz+c8qvoqICEPY9umWZWWV8oovjbzU5bpiTFw0QPxZMWi7BinFxiGyj67Ec56JzYKQ1i+PrE=
+	t=1786365354; cv=none; b=E9cJXA9BVuYDDLEFJiFCM4o71g+lPH0OVMUOCMwQwu7feTN1llEsNUvArUFeSyAfGj/H870b9pYU563YycvIPVFCRI8kzctsBf1IEjnljfPPcCyrkuz701yB+B7ZnNVQk3cDErvpxOS61TQvTtISdgDFudC1TehPASHFFHiMQ6A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786082871; c=relaxed/simple;
-	bh=8nK3zk0LJnwP8Kr6V61I0Wwu+5q7KeBflm9aUfHvG3g=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jvYCN6gNik6a83RFMBYwbBuJ4ORc7YAwtIfr2aYlEjn/e+ied7yfwOhcL46bH8ELQVTr+bsq6xwgws7hmlzXqp9+LWgsubl1nJX+RggUHKnBkEzXpZDVTOA1MIHu0TvXQJFeXry5qR0oZ0OZBjdQb1oDNoGXI58GKGM6tO1PFO0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=k/x95HHT; arc=none smtp.client-ip=209.85.219.48
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="k/x95HHT"
-Received: by mail-qv1-f48.google.com with SMTP id 6a1803df08f44-8ef7b7651ecso12095596d6.1
-        for <target-devel@vger.kernel.org>; Thu, 06 Aug 2026 23:07:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786082868; x=1786687668; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=HQf34kglk1Yh8CWS1BUF21oEZ3LoRTy5y/WvEz9+4IA=;
-        b=k/x95HHThjboC8AVoHcl28lLtjXggobDvkBbhqJ1QMp4h9jPg/F1ajjjWrSkztfZOW
-         wd68q55nVYQywtFejKuhfc1rnZxPqWd+XdTJqb2wRGv2n9gdN3YMXKXeJwal1TGLvpfV
-         D6rqT8QVJ6JvFAO4iNR4BzuVezhe6rqEzajAEr1Ml6oQ1HrOgOXFV4AHlZdYcu3NAXg5
-         6z2Aku2fSeCafhLvTXiDHE2olj/pPSlZpPcAq2TxfbMNPB2hzQHzfeEG2ni/4UuCeCpp
-         IwbX75gV9NiktKX+4rQbi6dS+1qv7WKFLv+B8IYLiaeqf6apZ2D7Ce0D0rVu7yxUR4Jz
-         sV1Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786082868; x=1786687668;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=HQf34kglk1Yh8CWS1BUF21oEZ3LoRTy5y/WvEz9+4IA=;
-        b=nCrruoGio3VjjItIrnyK2GIzOFw719sKpCYLlPc6XonDZJG+c3N39vkbfEC+SGZDzO
-         pLmaBUt4BkeqJuVyDrRI7N0rWPC/OAwExyhsSVNR/E4IfjlzdWnjJeCzPb66KqKMi93U
-         /wgjPrh2AhCSXOR6NpSscSE9iCJX286cPGoHtTZwPrCV3pRffDpuKgERmg/MduFjBmkj
-         GaMsvymfqp4ERUj73kFZhgB70x8B+YaMycaZ2zw7bZxQCStyqafb7K86Cl+j46NcJ8+7
-         nDcnGtwLBrgwHXIXPcQYUNme8G1liYO1J4/8BIA2ARG7ShSlB/w2jcW258rpKepj6ruP
-         nKiA==
-X-Forwarded-Encrypted: i=1; AHgh+RqhClWNRq2ytnXYYxYQ9Df9S65vVKcYGJE72625rND4DrtkyZnCJp4o3Tam+LcXa/nBTaWtLQHBUzrgXJ4=@vger.kernel.org
-X-Gm-Message-State: AOJu0YxUO3ru0Oo+W+DrtG6dc4UgGmeKDfCYscWQ8qByD2nYTUeu6IkO
-	rfO313JsEaUUCQ2ptf0l/JpcX4dC2d7Lui0H5DmHJdLnvcqHWwc7Tonn
-X-Gm-Gg: AR+sD116qYDqBjPwi4Ddy+a4084wr6FTuPVTgxCN2DEV/VnRb/ZCoDZHtppZBYDbgMx
-	DexHwp2j1kSEnodZzEa7hx2em+VEeC4zf/mdWeWk7SrflPo9m1I/gGrMdEN6DcFaEtxN48k2j2q
-	hxXaO+Xz5FcNOG0xV9ABURrcaBPwkNHq4SvtjmWL+bML4oBjtYjrMxK6VLu0KXVywz9KD47OSDU
-	GvdgSPiEXwE9hYZFKzR82BBUNyHg5lyzYMxmB760GLVPmvBe8dA9I5nqiuxQQYJOw0vi3SKDD3F
-	6s+Y/fVZuxnjIGcuX4EALfoUMXelxxX9lGDXPnoTcVYxN4XOeIuPc+XWU5Ipi/jD0nRqBFLohr8
-	dYLCB+OOETwFdaAi79MAti7J5CnEq9K95N9z1w/68zWfU+DdsD8I0FfpS8WXH1pAlHWybWDvnN9
-	liY896cm1YmsWEYBwh/ILgz4gFrfsQ7/c5oDZvSAgko8+2jTeg6cVPifRyIY168Dc3RKWi6yElT
-	Zl9Gu5COuFdC8szbQ==
-X-Received: by 2002:a05:622a:4d86:b0:51c:b91a:33f9 with SMTP id d75a77b69052e-52cfb00255dmr137405711cf.13.1786082868001;
-        Thu, 06 Aug 2026 23:07:48 -0700 (PDT)
-Received: from i4-l-hqh5357-03.ad.psu.edu ([130.203.139.71])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-908a92ff8d1sm1985816d6.25.2026.08.06.23.07.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 06 Aug 2026 23:07:47 -0700 (PDT)
-From: Shuangpeng Bai <shuangpeng.kernel@gmail.com>
-To: "Martin K . Petersen" <martin.petersen@oracle.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	linux-scsi@vger.kernel.org,
+	s=arc-20240116; t=1786365354; c=relaxed/simple;
+	bh=4EGy8XxImze5kg5V93EPfWIg5qCGq+tSC5lMLbZ+JDs=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=l2rLd2QSxcL/BCd94Q7id4UTgOEa9JuWjnXOKviUdWzh0WQ9f+8/T15Rz6nOC68Hw19SykIXwerSLD36bpLziHu/BXv1j8O4V1ZzxGgmpoVxWHA319JA4rSBf3zU+/b3n8Xyr6j39KJAc87Bbh0ufZjDZarumQv79na34uADcCc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=52.237.72.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
+Received: from zju.edu.cn (unknown [10.98.66.117])
+	by mtasvr (Coremail) with SMTP id _____wB3hjSbxXlqbwCAAA--.36399S3;
+	Mon, 10 Aug 2026 20:35:40 +0800 (CST)
+Received: from localhost.localdomain (unknown [10.98.66.117])
+	by mail-app3 (Coremail) with SMTP id zS_KCgD3D3KbxXlqDWIwBA--.28189S2;
+	Mon, 10 Aug 2026 20:35:39 +0800 (CST)
+From: Fan Wu <fanwu01@zju.edu.cn>
+To: linux-scsi@vger.kernel.org
+Cc: Ram Vegesna <ram.vegesna@broadcom.com>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Don Brace <don.brace@microchip.com>,
+	Haoxiang Li <haoxiang_li2024@163.com>,
 	target-devel@vger.kernel.org,
-	linux-usb@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Shuangpeng Bai <shuangpeng.kernel@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] usb: gadget: f_tcm: keep port count until LUN teardown completes
-Date: Fri,  7 Aug 2026 02:07:33 -0400
-Message-ID: <20260807060733.3186624-1-shuangpeng.kernel@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	stable@vger.kernel.org,
+	Fan Wu <fanwu01@zju.edu.cn>
+Subject: [PATCH] scsi: elx: efct: Use timer_shutdown_sync() for the stats timer
+Date: Mon, 10 Aug 2026 12:34:43 +0000
+Message-Id: <20260810123443.122397-1-fanwu01@zju.edu.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -77,82 +39,82 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:zS_KCgD3D3KbxXlqDWIwBA--.28189S2
+X-CM-SenderInfo: qrstjiaswqq6lmxovvfxof0/
+X-CM-DELIVERINFO: =?B?cvA2bQXKKxbFmtjJiESix3B1w3vZ3A9ovKVTomAyoQazvoRs/NHSP8GI2EvgeEEW7R
+	sfnZPoDCNGYdHSfuFmYJL54WO4v8p1q5Ynd8nc+Mqb2Chrg9WE6Tau6FeIlHX0sa0QwWe7
+	wOvWht09dxf3+9JmBgWp9E6mavGmQbzmcFsnzP86
+X-Coremail-Antispam: 1Uk129KBj93XoW7uF4kKF1fCw17tF43JF4fWFX_yoW8Kw18pF
+	4kW39ruryUWF4jkr17Jr4UZFy5ZanaqFWDGF48W3y3uayfXryrCF15tFWDCFW3JrWvq3sI
+	gw1DJrn3XFs5AFXCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
+	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
+	0xBIdaVrnRJUUU9Gb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2
+	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
+	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
+	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AK
+	xVW0oVCq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc804V
+	CY07AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AK
+	xVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48Icx
+	kI7VAKI48JM4x0Y48IcxkI7VAKI48G6xCjnVAKz4kxMxAIw28IcxkI7VAKI48JMxC20s02
+	6xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_Jr
+	I_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v2
+	6r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj4
+	0_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8
+	JrUvcSsGvfC2KfnxnUUI43ZEXa7IU85l1PUUUUU==
 
-tcm_usbg_drop_nexus() permits session removal once tpg_port_count
-reaches zero. However, usbg_port_unlink() currently decrements that
-count from the fabric_pre_unlink() callback, before core_dev_del_lun()
-waits for active se_lun references to drain.
+The statistics timer re-arms itself on every expiry through
+efct_xport_config_stats_timer().  timer_delete() only detaches a pending
+timer: it does not wait for a callback that is already running and does
+not stop that callback from re-arming the timer.  In efct_xport_detach()
+the timer is stopped before efct_xport_free() frees the xport,
+so a callback that re-armed it can fire after the free and dereference the
+freed object.  efct_fw_reset() stops the same timer before a hardware
+reset, where a callback left running can race the reset and re-arm the
+timer.
 
-If removal of the last LUN races a nexus removal, the latter can observe
-a zero port count and call target_remove_session(). This frees
-sess_cmd_map while an in-flight struct usbg_cmd, including its work item,
-can still be accessed.
+timer_shutdown_sync() waits for a running callback to finish and
+guarantees that the timer cannot be rearmed once it returns, so use it at
+both points.  The now-pointless timer_pending() checks are dropped.
 
-Overlapping the last-LUN unlink with nexus removal reproduces this
-lifetime violation as a DEBUG_OBJECTS "free active" warning for
-usbg_cmd_work, followed by a target-core BUG/Oops.
+This issue was found by an in-house static analysis tool.
 
-The generic target-core unlink path has no callback after
-core_dev_del_lun() completes. Add an optional fabric_post_unlink()
-callback and use it for the f_tcm port count. The count now remains
-nonzero until core_dev_del_lun() has finished draining active LUN
-references, preventing nexus removal from freeing the session during
-command completion.
-
-Fixes: c52661d60f63 ("usb-gadget: Initial merge of target module for UASP + BOT")
-Cc: stable@vger.kernel.org
-Signed-off-by: Shuangpeng Bai <shuangpeng.kernel@gmail.com>
+Fixes: ab332fcbcd81 ("scsi: elx: efct: Transport and hardware teardown routines")
+Cc: stable@vger.kernel.org # v6.2+
+Assisted-by: Codex:gpt-5.6
+Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
 ---
- drivers/target/target_core_fabric_configfs.c | 8 ++++++++
- drivers/usb/gadget/function/f_tcm.c          | 2 +-
- include/target/target_core_fabric.h          | 2 ++
- 3 files changed, 11 insertions(+), 1 deletion(-)
+ drivers/scsi/elx/efct/efct_driver.c | 3 +--
+ drivers/scsi/elx/efct/efct_xport.c  | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_fabric_configfs.c b/drivers/target/target_core_fabric_configfs.c
-index 166dbf4c4061..ab8f81650710 100644
---- a/drivers/target/target_core_fabric_configfs.c
-+++ b/drivers/target/target_core_fabric_configfs.c
-@@ -690,6 +690,14 @@ static void target_fabric_port_unlink(
- 	}
+diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
+index 07c2f4534..3556c6d8a 100644
+--- a/drivers/scsi/elx/efct/efct_driver.c
++++ b/drivers/scsi/elx/efct/efct_driver.c
+@@ -309,8 +309,7 @@ efct_fw_reset(struct efct *efct)
+ 	 * Function 0 will update and load the new firmware
+ 	 * during attach.
+ 	 */
+-	if (timer_pending(&efct->xport->stats_timer))
+-		timer_delete(&efct->xport->stats_timer);
++	timer_shutdown_sync(&efct->xport->stats_timer);
  
- 	core_dev_del_lun(se_tpg, lun);
-+
-+	if (tf->tf_ops->fabric_post_unlink) {
-+		/*
-+		 * Allow fabrics to release state that must remain valid until
-+		 * core_dev_del_lun() has drained all active LUN references.
-+		 */
-+		tf->tf_ops->fabric_post_unlink(se_tpg, lun);
-+	}
- }
+ 	if (efct_hw_reset(&efct->hw, EFCT_HW_RESET_FIRMWARE)) {
+ 		efc_log_info(efct, "failed to reset firmware\n");
+diff --git a/drivers/scsi/elx/efct/efct_xport.c b/drivers/scsi/elx/efct/efct_xport.c
+index 9dcaef6fc..84fa5589e 100644
+--- a/drivers/scsi/elx/efct/efct_xport.c
++++ b/drivers/scsi/elx/efct/efct_xport.c
+@@ -507,8 +507,7 @@ efct_xport_detach(struct efct_xport *xport)
+ 	efct_scsi_del_device(efct);
  
- static void target_fabric_port_release(struct config_item *item)
-diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
-index b3fa5a17fd2d..98414e7611c0 100644
---- a/drivers/usb/gadget/function/f_tcm.c
-+++ b/drivers/usb/gadget/function/f_tcm.c
-@@ -2024,7 +2024,7 @@ static const struct target_core_fabric_ops usbg_ops = {
- 	.fabric_enable_tpg		= usbg_enable_tpg,
- 	.fabric_drop_tpg		= usbg_drop_tpg,
- 	.fabric_post_link		= usbg_port_link,
--	.fabric_pre_unlink		= usbg_port_unlink,
-+	.fabric_post_unlink		= usbg_port_unlink,
- 	.fabric_init_nodeacl		= usbg_init_nodeacl,
+ 	/*Shutdown FC Statistics timer*/
+-	if (timer_pending(&xport->stats_timer))
+-		timer_delete(&xport->stats_timer);
++	timer_shutdown_sync(&xport->stats_timer);
  
- 	.tfc_wwn_attrs			= usbg_wwn_attrs,
-diff --git a/include/target/target_core_fabric.h b/include/target/target_core_fabric.h
-index e9039e73d058..390ace5bb252 100644
---- a/include/target/target_core_fabric.h
-+++ b/include/target/target_core_fabric.h
-@@ -95,6 +95,8 @@ struct target_core_fabric_ops {
- 				struct se_lun *);
- 	void (*fabric_pre_unlink)(struct se_portal_group *,
- 				struct se_lun *);
-+	void (*fabric_post_unlink)(struct se_portal_group *se_tpg,
-+				   struct se_lun *lun);
- 	struct se_tpg_np *(*fabric_make_np)(struct se_portal_group *,
- 				struct config_group *, const char *);
- 	void (*fabric_drop_np)(struct se_tpg_np *);
+ 	efct_hw_teardown(&efct->hw);
+ 
 -- 
-2.43.0
+2.34.1
 
