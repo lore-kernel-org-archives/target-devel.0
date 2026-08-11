@@ -1,37 +1,74 @@
-Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net [52.237.72.81])
-	by smtp.subspace.kernel.org (Postfix) with ESMTP id 87A833AE6E5;
-	Mon, 10 Aug 2026 12:35:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=52.237.72.81
+Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62F84242D9B
+	for <target-devel@vger.kernel.org>; Tue, 11 Aug 2026 12:49:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1786365354; cv=none; b=E9cJXA9BVuYDDLEFJiFCM4o71g+lPH0OVMUOCMwQwu7feTN1llEsNUvArUFeSyAfGj/H870b9pYU563YycvIPVFCRI8kzctsBf1IEjnljfPPcCyrkuz701yB+B7ZnNVQk3cDErvpxOS61TQvTtISdgDFudC1TehPASHFFHiMQ6A=
+	t=1786452546; cv=none; b=u5GzPqxLzDAfpBlIFmU+7sC/SvKKOIzac3BmpDuCQmXJKc1OuT3DoH9VlKGJhToySAUtPxp4ylUmyfTjq6SValor82XahIJx2hzxlC+J//KEbUf3G8oZFx3wDJZ6roAIZeaap8EpIEvrRzpiLNWMATZc+WNQ3KprXe0j1+1OYEQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1786365354; c=relaxed/simple;
-	bh=4EGy8XxImze5kg5V93EPfWIg5qCGq+tSC5lMLbZ+JDs=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=l2rLd2QSxcL/BCd94Q7id4UTgOEa9JuWjnXOKviUdWzh0WQ9f+8/T15Rz6nOC68Hw19SykIXwerSLD36bpLziHu/BXv1j8O4V1ZzxGgmpoVxWHA319JA4rSBf3zU+/b3n8Xyr6j39KJAc87Bbh0ufZjDZarumQv79na34uADcCc=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn; spf=pass smtp.mailfrom=zju.edu.cn; arc=none smtp.client-ip=52.237.72.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=zju.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=zju.edu.cn
-Received: from zju.edu.cn (unknown [10.98.66.117])
-	by mtasvr (Coremail) with SMTP id _____wB3hjSbxXlqbwCAAA--.36399S3;
-	Mon, 10 Aug 2026 20:35:40 +0800 (CST)
-Received: from localhost.localdomain (unknown [10.98.66.117])
-	by mail-app3 (Coremail) with SMTP id zS_KCgD3D3KbxXlqDWIwBA--.28189S2;
-	Mon, 10 Aug 2026 20:35:39 +0800 (CST)
-From: Fan Wu <fanwu01@zju.edu.cn>
-To: linux-scsi@vger.kernel.org
-Cc: Ram Vegesna <ram.vegesna@broadcom.com>,
-	"Martin K . Petersen" <martin.petersen@oracle.com>,
-	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
-	Don Brace <don.brace@microchip.com>,
-	Haoxiang Li <haoxiang_li2024@163.com>,
+	s=arc-20240116; t=1786452546; c=relaxed/simple;
+	bh=/SemkPU4Bff8YXOGYAJT+Ed/9wgjOBUmHVCHVQzN2W8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gJDxyfg1GAfBr4nt6dsLkxpfhpmksWGenacP/tCu8E26Q55P8aZHGd3myTtkzyZe4orcQUf2YAmhsB3jubhsiFasRNHbajDDAbASlMW+mv1e49uSoAKIqEnKJUZ+hMoLLcGW9CvUKtNtc8N78OZMPwfr1F36/ZIKiCXZ+umY7ro=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pEPd2KUW; arc=none smtp.client-ip=209.85.216.50
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pEPd2KUW"
+Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-38d489b6b71so906955a91.0
+        for <target-devel@vger.kernel.org>; Tue, 11 Aug 2026 05:49:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786452545; x=1787057345; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=T0kV3tTim4vynviOZcIlYMP2pHOTcpC0ofsMpZhrjB8=;
+        b=pEPd2KUWZp22QxP05Y1lClVRGbFBjsbfEVRGrFZMFrI7pMu65iH5kvMKyHKYQ3e5Nz
+         +5BDG70x9PYPz/TX4f7S0RABqTZU3beufjzqR+HtxujRywFwp3zBeYBAAppVbCze9JbO
+         o9weV8Qwdruj6mkT0yNRZFbAPQnmOiF+IzwA9iJIkwdbYQ3Bz30cwW4l0yJmW09r29/i
+         VCvbKkfioWXTotHIvDlavvefvtLwDQhe/zEuETQ5LfRisJIJz5qE2Loi3nc0fMGTZma2
+         nWKIkHy+cXlQhStf49jrBXyZNudad69cchETUfNY3pV0vKJUnnjMcN5MeYs3xigifXzh
+         H52Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786452545; x=1787057345;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=T0kV3tTim4vynviOZcIlYMP2pHOTcpC0ofsMpZhrjB8=;
+        b=EJfATCwk9cBuABYtVF59GG0XeFgeVEm2dvg4ydafyCHE0Tl61T9a1cQzbl/Hh6/xHg
+         ZnlCl4/Hb5FsiLLAS4CTbxsLxT0SF0sHbx+G62TV38XkEjTxyNcHa3Z+9N/waXbYhVQd
+         yol/cxiLrtIAr1XcBBb2sX/2/u1botwkYXXJzXX1gmQRNxmCad5WevlI79ZiXzYnzQCc
+         bBPeZIWQa+91WhbA3+lDxGrjJDkHUb/L0hrbVFLOEiQTQU9N/Fco1JMWxCOMA3qqxvCT
+         ogYt/krvM55LCt33Ib4V3G61Kt+vIlTWCn6bHPr9wzVs6a4RZ0o3cWyCYNcq/h7HMj+H
+         Dj/Q==
+X-Forwarded-Encrypted: i=1; AHgh+RoGW9zaj8RAYBgJ6XajJwQkAw91OnRP/xayJkAo+vumwIFOjpbm/tfRPh8oR7lgDYoluZdfAHqIKMUomJY=@vger.kernel.org
+X-Gm-Message-State: AOJu0YwZHJGGZMLCwVVK1xTLQ/J/kJXHKMLUjGCd+crfTsLTrKpDe9C4
+	CiX0pJefXwr4k/o02TsXLWQ/tf1SOVAQ70m7T1jpEvpA8VNw1bZi3vse
+X-Gm-Gg: AR+sD12dGFcvX6iUH7dndNfEOV79MPLhUQm9PD672UlS5vgi1T3cbs943liVP7r1DB9
+	F5ShGVngeM6vUpDdmyq+u8kmSkZNwMgmP8IWPtK0LNr8KjUuXqGJS+92BQaDCScatoPwyV4kjSK
+	u39xxv3Z466FcvvBNw0ACEttSDWb5T5nTE96tGcInN99Jujn/yVtM2iKtvsCKXfNXeZ2E/etb52
+	TgajEZ3JHruLAa1dklCqTuE8hNjcqYxWKsGzY1IP04VCXQhsJTzI6su4h8ImKLas9pdMQHulIBf
+	rjrMRfosLpuTWO/2WlJgh5IA4DE6Fp7GjEV73FtYYmyYBIJdbmuhwVD+UvTT0+lj/DbK4Wgu9FY
+	G6ozotlDlzxlHrTDXSPjnurU7pEU+KhEg5YWNctgroTlJWmVyluXUTMkkrCjPRuthyMH1hGxZeT
+	Wxq73WZnlkl/Q5imoryieEehI+JNG2A1PsYLA1DLIMq9Nt7LvCu4rWhmKCvKolx6Z0okce+c5WB
+	RFTYjva/txNr8Fw4+XbVoDTKNk=
+X-Received: by 2002:a17:90b:33c4:b0:392:c80b:8ef7 with SMTP id 98e67ed59e1d1-392ec6d3407mr2980329a91.18.1786452544594;
+        Tue, 11 Aug 2026 05:49:04 -0700 (PDT)
+Received: from fedora (103-127-218-229.dynamic-ip.pni.tw. [103.127.218.229])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-392d534bfe7sm3887009a91.9.2026.08.11.05.48.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 11 Aug 2026 05:49:03 -0700 (PDT)
+From: Linfeng Sun <linfeng.sun.dev@gmail.com>
+To: "Martin K . Petersen" <martin.petersen@oracle.com>,
+	Alok Tiwari <alok.a.tiwari@oracle.com>,
+	Mike Christie <michael.christie@oracle.com>
+Cc: linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	Fan Wu <fanwu01@zju.edu.cn>
-Subject: [PATCH] scsi: elx: efct: Use timer_shutdown_sync() for the stats timer
-Date: Mon, 10 Aug 2026 12:34:43 +0000
-Message-Id: <20260810123443.122397-1-fanwu01@zju.edu.cn>
-X-Mailer: git-send-email 2.34.1
+	Linfeng Sun <linfeng.sun.dev@gmail.com>
+Subject: [PATCH] scsi: target: iscsi: Fix race in discovery auth updates
+Date: Tue, 11 Aug 2026 20:48:43 +0800
+Message-ID: <20260811124843.6817-1-linfeng.sun.dev@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -39,82 +76,173 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zS_KCgD3D3KbxXlqDWIwBA--.28189S2
-X-CM-SenderInfo: qrstjiaswqq6lmxovvfxof0/
-X-CM-DELIVERINFO: =?B?cvA2bQXKKxbFmtjJiESix3B1w3vZ3A9ovKVTomAyoQazvoRs/NHSP8GI2EvgeEEW7R
-	sfnZPoDCNGYdHSfuFmYJL54WO4v8p1q5Ynd8nc+Mqb2Chrg9WE6Tau6FeIlHX0sa0QwWe7
-	wOvWht09dxf3+9JmBgWp9E6mavGmQbzmcFsnzP86
-X-Coremail-Antispam: 1Uk129KBj93XoW7uF4kKF1fCw17tF43JF4fWFX_yoW8Kw18pF
-	4kW39ruryUWF4jkr17Jr4UZFy5ZanaqFWDGF48W3y3uayfXryrCF15tFWDCFW3JrWvq3sI
-	gw1DJrn3XFs5AFXCm3ZEXasCq-sJn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7ZEXa
-	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
-	0xBIdaVrnRJUUU9Gb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2
-	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
-	e4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI
-	0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AK
-	xVW0oVCq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc804V
-	CY07AIYIkI8VC2zVCFFI0UMc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AK
-	xVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48Icx
-	kI7VAKI48JM4x0Y48IcxkI7VAKI48G6xCjnVAKz4kxMxAIw28IcxkI7VAKI48JMxC20s02
-	6xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_Jr
-	I_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v2
-	6r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj4
-	0_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8
-	JrUvcSsGvfC2KfnxnUUI43ZEXa7IU85l1PUUUUU==
 
-The statistics timer re-arms itself on every expiry through
-efct_xport_config_stats_timer().  timer_delete() only detaches a pending
-timer: it does not wait for a callback that is already running and does
-not stop that callback from re-arming the timer.  In efct_xport_detach()
-the timer is stopped before efct_xport_free() frees the xport,
-so a callback that re-armed it can fire after the free and dereference the
-freed object.  efct_fw_reset() stops the same timer before a hardware
-reset, where a callback left running can race the reset and re-arm the
-timer.
+Separate configfs opens can concurrently update the discovery AuthMethod
+parameter. Both callers may free the same value in
+iscsi_update_param_value(), causing a double-free.
 
-timer_shutdown_sync() waits for a running callback to finish and
-guarantees that the timer cannot be rearmed once it returns, so use it at
-both points.  The now-pointless timer_pending() checks are dropped.
+Protect the lookup and replacement with the discovery TPG access lock, as
+used by the other TPG configfs parameter updates.
 
-This issue was found by an in-house static analysis tool.
+I dont consider this a high-severity security bug, but for safety as a
+precaution, I can provide the reproducer PoC privately to the maintainers
+if needed.
 
-Fixes: ab332fcbcd81 ("scsi: elx: efct: Transport and hardware teardown routines")
-Cc: stable@vger.kernel.org # v6.2+
-Assisted-by: Codex:gpt-5.6
-Signed-off-by: Fan Wu <fanwu01@zju.edu.cn>
+[   53.935693] ==================================================================
+[   53.936125] BUG: KASAN: double-free in iscsi_update_param_value+0x41/0x140 [iscsi_target_mod]
+[   53.936725] Free of addr ffff888012e355b0 by task a.out/319
+[   53.937027]
+[   53.937120] CPU: 6 UID: 0 PID: 319 Comm: a.out Not tainted 7.2.0-rc7+ #3 PREEMPT(full)
+[   53.937130] Hardware name: QEMU Ubuntu 24.04 PC v2 (i440FX + PIIX, arch_caps fix, 1996), BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+[   53.937136] Call Trace:
+[   53.937139]  <TASK>
+[   53.937142]  dump_stack_lvl+0xd0/0x110
+[   53.937151]  print_report+0xd1/0x630
+[   53.937161]  ? __pfx__raw_spin_lock_irqsave+0x10/0x10
+[   53.937173]  ? kasan_complete_mode_report_info+0x6a/0x210
+[   53.937182]  ? iscsi_update_param_value+0x41/0x140 [iscsi_target_mod]
+[   53.937327]  kasan_report_invalid_free+0xa0/0xd0
+[   53.937337]  ? iscsi_update_param_value+0x41/0x140 [iscsi_target_mod]
+[   53.937484]  ? iscsi_update_param_value+0x41/0x140 [iscsi_target_mod]
+[   53.937632]  check_slab_allocation+0xee/0x120
+[   53.937641]  __kasan_slab_pre_free+0x24/0x50
+[   53.937650]  kfree+0x170/0x480
+[   53.937657]  ? __pfx_kstrtouint+0x10/0x10
+[   53.937665]  ? iscsi_update_param_value+0x41/0x140 [iscsi_target_mod]
+[   53.937813]  iscsi_update_param_value+0x41/0x140 [iscsi_target_mod]
+[   53.937959]  iscsi_disc_enforce_discovery_auth_store+0x18f/0x450 [iscsi_target_mod]
+[   53.938111]  ? __pfx_iscsi_disc_enforce_discovery_auth_store+0x10/0x10 [iscsi_target_mod]
+[   53.938263]  ? __kmalloc_cache_noprof+0x1be/0x460
+[   53.938272]  ? configfs_write_iter+0x3fe/0x560
+[   53.938284]  ? __pfx_iscsi_disc_enforce_discovery_auth_store+0x10/0x10 [iscsi_target_mod]
+[   53.938435]  configfs_write_iter+0x312/0x560
+[   53.938447]  ? __sanitizer_cov_trace_const_cmp4+0x16/0x30
+[   53.938458]  vfs_write+0x71c/0xe60
+[   53.938464]  ? __pfx_configfs_write_iter+0x10/0x10
+[   53.938477]  ? __pfx_vfs_write+0x10/0x10
+[   53.938484]  ? __pfx_mutex_lock+0x10/0x10
+[   53.938493]  ? fdget_pos+0x213/0x5d0
+[   53.938505]  ksys_write+0x154/0x290
+[   53.938512]  ? __pfx_ksys_write+0x10/0x10
+[   53.938519]  ? fpregs_assert_state_consistent+0xe1/0x160
+[   53.938532]  ? do_syscall_64+0x13f/0x640
+[   53.938539]  ? __sanitizer_cov_trace_cmp4+0x16/0x30
+[   53.938549]  __x64_sys_write+0x77/0xc0
+[   53.938555]  ? prandom_u32_state+0x13/0x180
+[   53.938567]  x64_sys_call+0x259/0x26e0
+[   53.938579]  do_syscall_64+0xf3/0x640
+[   53.938585]  ? do_syscall_64+0xa8/0x640
+[   53.938592]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+[   53.938601] RIP: 0033:0x7e9dc22449ee
+[   53.938607] Code: 08 0f 85 f5 4b ff ff 49 89 fb 48 89 f0 48 89 d7 48 89 ce 4c 89 c2 4d 89 ca 4c 8b 44 24 08 4c 8b 4c 24 10 4c 89 5c 24 08 0f 05 <c3> 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 80 00 00 00 00 48 83 ec 08
+[   53.938615] RSP: 002b:00007e9dc19a4e08 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+[   53.938623] RAX: ffffffffffffffda RBX: 00007e9dc19a56c0 RCX: 00007e9dc22449ee
+[   53.938628] RDX: 0000000000000002 RSI: 00005a09e22de04e RDI: 0000000000000004
+[   53.938633] RBP: 00007e9dc19a4e90 R08: 0000000000000000 R09: 0000000000000000
+[   53.938638] R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000021
+[   53.938642] R13: 0000000000000000 R14: 00007ffcf2f464d0 R15: 00007e9dc11a5000
+[   53.938649]  </TASK>
+[   53.938652]
+[   53.953000] Allocated by task 308:
+[   53.953189]  kasan_save_stack+0x39/0x70
+[   53.953404]  kasan_save_track+0x14/0x40
+[   53.953617]  kasan_save_alloc_info+0x37/0x60
+[   53.953858]  __kasan_kmalloc+0xc3/0xd0
+[   53.954073]  __kmalloc_node_track_caller_noprof+0x24b/0x630
+[   53.954385]  kstrdup+0x62/0x110
+[   53.954567]  iscsi_update_param_value+0x4e/0x140 [iscsi_target_mod]
+[   53.955055]  iscsit_load_discovery_tpg+0x3fc/0x6e0 [iscsi_target_mod]
+[   53.955545]  0xffffffffa0479430
+[   53.955724]  do_one_initcall+0xd7/0x660
+[   53.955943]  do_init_module+0x306/0x940
+[   53.956165]  load_module+0x66c2/0x90f0
+[   53.956378]  init_module_from_file+0x192/0x1c0
+[   53.956626]  idempotent_init_module+0x274/0x8c0
+[   53.956883]  __x64_sys_finit_module+0xd3/0x170
+[   53.957134]  x64_sys_call+0x106d/0x26e0
+[   53.957354]  do_syscall_64+0xf3/0x640
+[   53.957562]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+[   53.957851]
+[   53.957946] Freed by task 318:
+[   53.958122]  kasan_save_stack+0x39/0x70
+[   53.958342]  kasan_save_track+0x14/0x40
+[   53.958562]  kasan_save_free_info+0x3b/0x60
+[   53.958802]  __kasan_slab_free+0x6f/0xa0
+[   53.959034]  kfree+0x23c/0x480
+[   53.959210]  iscsi_update_param_value+0x41/0x140 [iscsi_target_mod]
+[   53.959678]  iscsi_disc_enforce_discovery_auth_store+0x18f/0x450 [iscsi_target_mod]
+[   53.960236]  configfs_write_iter+0x312/0x560
+[   53.960478]  vfs_write+0x71c/0xe60
+[   53.960669]  ksys_write+0x154/0x290
+[   53.960865]  __x64_sys_write+0x77/0xc0
+[   53.961075]  x64_sys_call+0x259/0x26e0
+[   53.961287]  do_syscall_64+0xf3/0x640
+[   53.961490]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+Fixes: e48354ce078c ("iscsi-target: Add iSCSI fabric support for target v4.1")
+Signed-off-by: Linfeng Sun <linfeng.sun.dev@gmail.com>
 ---
- drivers/scsi/elx/efct/efct_driver.c | 3 +--
- drivers/scsi/elx/efct/efct_xport.c  | 3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/target/iscsi/iscsi_target_configfs.c | 26 ++++++++++++++------
+ 1 file changed, 19 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
-index 07c2f4534..3556c6d8a 100644
---- a/drivers/scsi/elx/efct/efct_driver.c
-+++ b/drivers/scsi/elx/efct/efct_driver.c
-@@ -309,8 +309,7 @@ efct_fw_reset(struct efct *efct)
- 	 * Function 0 will update and load the new firmware
- 	 * during attach.
- 	 */
--	if (timer_pending(&efct->xport->stats_timer))
--		timer_delete(&efct->xport->stats_timer);
-+	timer_shutdown_sync(&efct->xport->stats_timer);
+diff --git a/drivers/target/iscsi/iscsi_target_configfs.c b/drivers/target/iscsi/iscsi_target_configfs.c
+index 704ec94383c3..e1aa0af52c65 100644
+--- a/drivers/target/iscsi/iscsi_target_configfs.c
++++ b/drivers/target/iscsi/iscsi_target_configfs.c
+@@ -1306,17 +1306,24 @@ static ssize_t iscsi_disc_enforce_discovery_auth_store(struct config_item *item,
+ 		return -EINVAL;
+ 	}
  
- 	if (efct_hw_reset(&efct->hw, EFCT_HW_RESET_FIRMWARE)) {
- 		efc_log_info(efct, "failed to reset firmware\n");
-diff --git a/drivers/scsi/elx/efct/efct_xport.c b/drivers/scsi/elx/efct/efct_xport.c
-index 9dcaef6fc..84fa5589e 100644
---- a/drivers/scsi/elx/efct/efct_xport.c
-+++ b/drivers/scsi/elx/efct/efct_xport.c
-@@ -507,8 +507,7 @@ efct_xport_detach(struct efct_xport *xport)
- 	efct_scsi_del_device(efct);
++	if (iscsit_get_tpg(discovery_tpg) < 0)
++		return -EINVAL;
++
+ 	param = iscsi_find_param_from_key(AUTHMETHOD,
+ 				discovery_tpg->param_list);
+-	if (!param)
+-		return -EINVAL;
++	if (!param) {
++		err = -EINVAL;
++		goto out;
++	}
  
- 	/*Shutdown FC Statistics timer*/
--	if (timer_pending(&xport->stats_timer))
--		timer_delete(&xport->stats_timer);
-+	timer_shutdown_sync(&xport->stats_timer);
+ 	if (op) {
+ 		/*
+ 		 * Reset the AuthMethod key to CHAP.
+ 		 */
+-		if (iscsi_update_param_value(param, CHAP) < 0)
+-			return -EINVAL;
++		if (iscsi_update_param_value(param, CHAP) < 0) {
++			err = -EINVAL;
++			goto out;
++		}
  
- 	efct_hw_teardown(&efct->hw);
+ 		discovery_tpg->tpg_attrib.authentication = 1;
+ 		iscsit_global->discovery_acl.node_auth.enforce_discovery_auth = 1;
+@@ -1327,8 +1334,10 @@ static ssize_t iscsi_disc_enforce_discovery_auth_store(struct config_item *item,
+ 		/*
+ 		 * Reset the AuthMethod key to CHAP,None
+ 		 */
+-		if (iscsi_update_param_value(param, "CHAP,None") < 0)
+-			return -EINVAL;
++		if (iscsi_update_param_value(param, "CHAP,None") < 0) {
++			err = -EINVAL;
++			goto out;
++		}
  
+ 		discovery_tpg->tpg_attrib.authentication = 0;
+ 		iscsit_global->discovery_acl.node_auth.enforce_discovery_auth = 0;
+@@ -1337,7 +1346,10 @@ static ssize_t iscsi_disc_enforce_discovery_auth_store(struct config_item *item,
+ 			" Discovery TPG\n");
+ 	}
+ 
+-	return count;
++	err = count;
++out:
++	iscsit_put_tpg(discovery_tpg);
++	return err;
+ }
+ 
+ CONFIGFS_ATTR(iscsi_disc_, enforce_discovery_auth);
 -- 
-2.34.1
+2.55.0
 
