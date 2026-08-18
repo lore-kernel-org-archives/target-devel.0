@@ -1,24 +1,24 @@
-Received: from mail-m49197.qiye.163.com (mail-m49197.qiye.163.com [45.254.49.197])
+Received: from mail-m155101.qiye.163.com (mail-m155101.qiye.163.com [101.71.155.101])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4245427F89;
-	Tue, 18 Aug 2026 09:13:43 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE4B33C4551;
+	Tue, 18 Aug 2026 10:16:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=101.71.155.101
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787044428; cv=none; b=DxyjnLjB7HVp4xy26yNu5mUMZvUe5u9qoQgUdOx+9LG991UThbuwXmoWPzVIW1L38lW/iU1P+GTMdqC1nsilXXjL6yg2kYHFi6nnwyvTeSEjOEXyLLylBfE2YwcMCgB0GHDB5nmKymJkEq4ZyvKRl9quVWsRA5hNlObvJCjMyvI=
+	t=1787048206; cv=none; b=oMFAIL08C53oDb8xD+Oc2lBf7lRtTaS7qzwyNH/bV0TW9tnmmOOz2R5YAT1wHECtaRTUvO7Nxbs0UbPDwxydDJGS4Z7NI+fXSW73MXQkmq2T42xtt572+0JIjSN7ydu5dSiPgQ2wRaiyxfQdYwBtdCk1XhwxpBEtt9T7SGJE6ZQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787044428; c=relaxed/simple;
-	bh=dNhGmxnCH8HR1mt5KSMqYSLcoLTdd7vKtWnuLvIG4+w=;
+	s=arc-20240116; t=1787048206; c=relaxed/simple;
+	bh=L3b81slb/Ts1+wLK1+uRpbGWlJLkpABY/WhJOUquCVc=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=KQ2PE2f04BbtzIzpB3sgeRJYLoWiu0syjXqDw2Z3zqqs8UwwhZG70zESuCvz9gn7DxSjr7YnuhcvsTWmhuwfDL+xlahauOeiG3cOxQAocyX+ePokXO6Ctf9BeMirq28KFnMqGuPxTR5OQv9UT35k2l96LqBb97z1g3SGnsfz1xE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=ZTXXEuwL; arc=none smtp.client-ip=45.254.49.197
+	 MIME-Version; b=AcbobZuU0DAQD36L8+2HrbpI3eOD3NOS+JNm4a5jUIwplnUVpe6PRKXyY1iHu+9Nb7HQL29WNeb7ZUS0uMXn3JbKR1rvOHMAFLFcHt6GmSwOVNIhR/jmrQXuAk8A4w477ErJEj+Bx7GXqJUfMnHZ4iL/fdtAgs4/u2zRv+NGp6Q=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=kQOvR5bG; arc=none smtp.client-ip=101.71.155.101
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=seu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="ZTXXEuwL"
-Received: from PC-202605011814.localdomain (unknown [223.112.146.162])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 4a64fc06a;
-	Tue, 18 Aug 2026 17:13:32 +0800 (GMT+08:00)
+	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="kQOvR5bG"
+Received: from PC-202605011814.localdomain (unknown [222.191.246.242])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 4a686089a;
+	Tue, 18 Aug 2026 18:16:36 +0800 (GMT+08:00)
 From: Runyu Xiao <runyu.xiao@seu.edu.cn>
 To: "Martin K . Petersen" <martin.petersen@oracle.com>
 Cc: James Bottomley <James.Bottomley@suse.de>,
@@ -29,12 +29,12 @@ Cc: James Bottomley <James.Bottomley@suse.de>,
 	stable@vger.kernel.org,
 	Runyu Xiao <runyu.xiao@seu.edu.cn>,
 	Jianhao Xu <jianhao.xu@seu.edu.cn>
-Subject: [PATCH v3] scsi: target: file: avoid recursive configfs open in fd_init_prot()
-Date: Tue, 18 Aug 2026 17:13:26 +0800
-Message-Id: <20260818091326.1582200-1-runyu.xiao@seu.edu.cn>
+Subject: [PATCH v4] scsi: target: file: avoid recursive configfs open in fd_init_prot()
+Date: Tue, 18 Aug 2026 18:16:29 +0800
+Message-Id: <20260818101629.1605914-1-runyu.xiao@seu.edu.cn>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260818073539.1555605-1-runyu.xiao@seu.edu.cn>
-References: <20260818073539.1555605-1-runyu.xiao@seu.edu.cn>
+In-Reply-To: <20260818091326.1582200-1-runyu.xiao@seu.edu.cn>
+References: <20260818091326.1582200-1-runyu.xiao@seu.edu.cn>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -42,15 +42,15 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa01425bd4b03a1kunmf920a4c31092c1
+X-HM-Tid: 0aa0145f7b4103a1kunmd0ac088210b3c8
 X-HM-MType: 10
 X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCHR1OVk5PTh4fGR9NQh4ZT1YeHw
-	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUhVSkpJVUpPTVVKTUlZV1kWGg8SFR0UWUFZT0tIVUpLSE
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlDGhlPVktDSEoZSk1KH0gYHlYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUlVSkJKVUlPTVVJT0lZV1kWGg8SFR0UWUFZT0tIVUpLSE
 	pPSExVSktLVUpCS0tZBg++
 DKIM-Signature: a=rsa-sha256;
-	b=ZTXXEuwLYhYhMwac3C6TRo6Ef0hLNNpJ9lMTMmc3taq0s2gYDIPEbW6moLNjLM7+guyDdYKBdr3LuTNm0IfllN5lvVWcBNpGi2fbT1qn5GABeCkK5oY+1UeB990VQjEHzX57WIlMh+rS1ywmhx/4TsmHIKQZEPl8Ggo4aJBxeYI=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
-	bh=M1UIIr3l7xC4eeVjoIAlMM//4MLCmh0DuaERhj38woI=;
+	b=kQOvR5bG/R8xvVijFjSNj10y9wzCiOkGfCmKsT5I/5V76Y0V7vEr8EjXZkAwQgesQv5j0DGkKyoBKc5cEBStpEdsx7nS6Ote+pVh/TAKdqRlpuvavOvgUcC6aa4euJd3wBCcGSFir/FGfQkwgtjfYi4ZR3xcCrfXxZMlmrHFgW0=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
+	bh=O7ActeCoeUSN14a3UrmojewYNhTN9/Gu9QpC33NfHss=;
 	h=date:mime-version:subject:message-id:from;
 
 pi_prot_type_store() runs under the configfs item's frag_sem.  For
@@ -74,28 +74,33 @@ case explicitly instead of reconstructing a pathname from fd_dev_name,
 which would reintroduce the same configfs recursion hazard this fix is
 trying to remove.
 
-This keeps the PI sidecar tied to the opened backing file while closing
-the rename, hash initialization, non-regular sidecar, and sb_writers
-ordering issues in the earlier v2 draft.
+When reopening an existing sidecar, restore the same open-time access
+checks that a pathname-based open would have enforced before calling
+dentry_open().  This preserves inode_permission() / MAY_OPEN gating for
+existing sidecars and continues to reject immutable, append-only, and
+otherwise unauthorized files.
 
-Link: https://lore.kernel.org/r/20260818073539.1555605-1-runyu.xiao@seu.edu.cn
+This keeps the PI sidecar tied to the opened backing file while closing
+the rename, hash initialization, non-regular sidecar, sb_writers
+ordering, and existing-sidecar permission-check issues in the earlier
+drafts.
+
+Link: https://lore.kernel.org/r/20260818091326.1582200-1-runyu.xiao@seu.edu.cn
 Fixes: 0f5e2ec46dd6 ("target/file: Add DIF protection init/format support")
 Cc: stable@vger.kernel.org
 Signed-off-by: Runyu Xiao <runyu.xiao@seu.edu.cn>
-
-v3:
-- take freeze protection before locking the parent directory
-- snapshot the backing dentry name under the parent lock
-- use lookup_one() with mnt_idmap() for hashed sibling lookup
-- only reopen an existing PI sidecar if it is a regular file
-- reject mounted-file-root backends instead of rebuilding a pathname
 ---
- drivers/target/target_core_file.c | 153 ++++++++++++++++++++++++++++--
+v4:
+- restore may_open()-equivalent permission checks before dentry_open()
+- reject unauthorized existing PI sidecars via inode_permission()
+- keep append-only and O_NOATIME open-time checks for existing sidecars
+
+ drivers/target/target_core_file.c | 184 ++++++++++++++++++++++++++++--
  drivers/target/target_core_file.h |   1 -
- 2 files changed, 145 insertions(+), 9 deletions(-)
+ 2 files changed, 176 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
-index 2d78ef74633c..a499545e6272 100644
+index 2d78ef74633c..3b4f270a913a 100644
 --- a/drivers/target/target_core_file.c
 +++ b/drivers/target/target_core_file.c
 @@ -19,6 +19,10 @@
@@ -109,7 +114,7 @@ index 2d78ef74633c..a499545e6272 100644
  #include <linux/uio.h>
  #include <linux/scatterlist.h>
  #include <scsi/scsi_proto.h>
-@@ -86,6 +90,131 @@ static struct se_device *fd_alloc_device(struct se_hba *hba, const char *name)
+@@ -86,6 +90,162 @@ static struct se_device *fd_alloc_device(struct se_hba *hba, const char *name)
  	return &fd_dev->dev;
  }
  
@@ -117,6 +122,33 @@ index 2d78ef74633c..a499545e6272 100644
 +{
 +	return !strcmp(d_real(file_dentry(file), D_REAL_DATA)->d_sb->s_type->name,
 +		       "configfs");
++}
++
++static int fd_may_open_existing_file(const struct path *path, int flags)
++{
++	struct inode *inode = d_inode(path->dentry);
++	struct mnt_idmap *idmap = mnt_idmap(path->mnt);
++	int acc_mode = ACC_MODE(flags);
++	int ret;
++
++	if (flags & O_APPEND)
++		acc_mode |= MAY_APPEND;
++
++	ret = inode_permission(idmap, inode, MAY_OPEN | acc_mode);
++	if (ret)
++		return ret;
++
++	if (IS_APPEND(inode)) {
++		if ((flags & O_ACCMODE) != O_RDONLY && !(flags & O_APPEND))
++			return -EPERM;
++		if (flags & O_TRUNC)
++			return -EPERM;
++	}
++
++	if (flags & O_NOATIME && !inode_owner_or_capable(idmap, inode))
++		return -EPERM;
++
++	return 0;
 +}
 +
 +static int fd_open_prot_file(struct file *file, int flags, umode_t mode,
@@ -192,6 +224,10 @@ index 2d78ef74633c..a499545e6272 100644
 +			goto out_dput;
 +		}
 +
++		ret = fd_may_open_existing_file(&prot_path, flags & ~O_CREAT);
++		if (ret)
++			goto out_dput;
++
 +		inode_unlock(d_inode(parent_path.dentry));
 +		mnt_drop_write_file(file);
 +		release_dentry_name_snapshot(&backing_name);
@@ -241,7 +277,7 @@ index 2d78ef74633c..a499545e6272 100644
  static bool fd_configure_unmap(struct se_device *dev)
  {
  	struct file *file = FD_DEV(dev)->fd_file;
-@@ -827,7 +956,6 @@ static int fd_init_prot(struct se_device *dev)
+@@ -827,7 +987,6 @@ static int fd_init_prot(struct se_device *dev)
  	struct file *prot_file, *file = fd_dev->fd_file;
  	struct inode *inode;
  	int ret, flags = O_RDWR | O_CREAT | O_LARGEFILE | O_DSYNC;
@@ -249,7 +285,7 @@ index 2d78ef74633c..a499545e6272 100644
  
  	if (!file) {
  		pr_err("Unable to locate fd_dev->fd_file\n");
-@@ -844,13 +972,22 @@ static int fd_init_prot(struct se_device *dev)
+@@ -844,13 +1003,22 @@ static int fd_init_prot(struct se_device *dev)
  	if (fd_dev->fbd_flags & FDBD_HAS_BUFFERED_IO_WCE)
  		flags &= ~O_DSYNC;
  
