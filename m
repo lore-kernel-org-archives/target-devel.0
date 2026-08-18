@@ -1,37 +1,40 @@
-Received: from mail-m49198.qiye.163.com (mail-m49198.qiye.163.com [45.254.49.198])
+Received: from mail-m49197.qiye.163.com (mail-m49197.qiye.163.com [45.254.49.197])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F3FF419049B;
-	Tue, 18 Aug 2026 04:58:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.198
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B260E3D3CEE;
+	Tue, 18 Aug 2026 05:14:53 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.197
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787029101; cv=none; b=vEwek9f7nVRja0FeGWC0bhIKnE1yxzUatX4EU0eJMvAK+UD9HB8F2seG0L+rOYtHeGFbzqlzPJRMMDVGu7ru6ZaCnKHRVOV+P0Ir2RTYdNveNEGloa/JYyoWoSxJWMFK9yW80DFjCljYhxt9ssuOjXd+HH/AJWDTPHB1qXVJls8=
+	t=1787030098; cv=none; b=NeaXoX+WmdAUBrW81JJhLK7HKd7h5TQD1ojDIYRVfcMNYD+8eL3BCHFK11Ir9OCp9r4icHgBcMCOOkzN4ledB8ragM0Xok2OutCyLjfbpjOzKy0cINs5aTGKUUbEixUBsB2wcRXoZJ63puiAPKfxM1DzmGm+wkKX77ks2ymWMtU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787029101; c=relaxed/simple;
-	bh=7OVz7dOOrKHJmoXUfbZIey0um5f+c2mye9lnrDg8uYo=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=a+sFoIwEY804MKR53MGoiOQaePJWWS3afF14eDfKJFoGc7ahX56GtOUuSo8Dre+Yb0Lt9W9FkNFZCFz3gxr0YsiwfsuSpZCJLsNLoacosyfhmKnM4RsV57BYpZkUWpL+uI/EJgwLFpFkFIPY7ymhmotMoolQUEX4SY94ZXC+IzI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=WUpPntwQ; arc=none smtp.client-ip=45.254.49.198
+	s=arc-20240116; t=1787030098; c=relaxed/simple;
+	bh=xcCrXBRJwwJIVxDb8wMsZi0W8TTSs3hoL4lt0ROqKV0=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=oXQXFRXcV919wn/t5AKoOVxJDcAyBAP5k+yT5sxhPv1f+P9hy8sVx4Gy39H2aPWhcR+MGFEYHLQaebP6hdqUQcpR84ajD+CADSKH63vVcI+6vXF8Fyj7PDW3AQ5BBu8gd/3lbAywIq3ByM7D9REeYJ791R6Q/ybOAq6327rg/xQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=YHK7qeTg; arc=none smtp.client-ip=45.254.49.197
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=seu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="WUpPntwQ"
-Received: from PC-202605011814.localdomain (unknown [222.191.246.242])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 4a5b56963;
-	Tue, 18 Aug 2026 12:58:13 +0800 (GMT+08:00)
+	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="YHK7qeTg"
+Received: from PC-202605011814.localdomain (unknown [58.241.16.34])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 4a5c35185;
+	Tue, 18 Aug 2026 13:14:49 +0800 (GMT+08:00)
 From: Runyu Xiao <runyu.xiao@seu.edu.cn>
 To: "Martin K . Petersen" <martin.petersen@oracle.com>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-	Nicholas Bellinger <nab@linux-iscsi.org>,
+Cc: Nicholas Bellinger <nab@linux-iscsi.org>,
+	Lee Duncan <lduncan@suse.com>,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org,
 	Runyu Xiao <runyu.xiao@seu.edu.cn>,
 	Jianhao Xu <jianhao.xu@seu.edu.cn>
-Subject: [PATCH] scsi: target: file: reject configfs-backed paths in configfs stores
-Date: Tue, 18 Aug 2026 12:58:07 +0800
-Message-Id: <20260818045807.1519433-1-runyu.xiao@seu.edu.cn>
+Subject: [PATCH v2] scsi: target: pin db_root for metadata writes
+Date: Tue, 18 Aug 2026 13:14:42 +0800
+Message-Id: <20260818051442.1523210-1-runyu.xiao@seu.edu.cn>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260818042720.1511778-1-runyu.xiao@seu.edu.cn>
+References: <20260818042720.1511778-1-runyu.xiao@seu.edu.cn>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -39,121 +42,313 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa0133bfce303a1kunm5b4c6f7a1004f6
+X-HM-Tid: 0aa0134b2d2d03a1kunmd19dcf4f100ddd
 X-HM-MType: 10
 X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkaHkMZVkpPH0IYH0gZHkJOQ1YeHw
-	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUlVSkJKVUlPTVVJT0lZV1kWGg8SFR0UWUFZT0tIVUpLSE
-	pPSExVSktLVUpCS0tZBg++
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCHksYVhpIQxpLGENPGBkdS1YeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlOQ1VJT0pVSk1VSE9ZV1kWGg8SFR0UWUFZT0tIVUpLSEpPSE
+	xVSktLVUpCS0tZBg++
 DKIM-Signature: a=rsa-sha256;
-	b=WUpPntwQkB7EIgXC2Cj+ktHJVXq8sHqFC7bTQ2KP/BPlUPHzV0Z9jjMxD0LqXUOlkJhxXAvoOYCv5M1vB+QL4eSCBJZ4Mv9WnMaissrYD5jSd5fRGkiJypcPI5EryZoJw/1el/y24ugDLPEaGu9Can3NN+TycVMaBz4adH+p2t4=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
-	bh=+qLDLYB5zBcm54HIVhHmOzhqWqYYLYqCzHz/Wk6MAEI=;
+	b=YHK7qeTgrxapvlvXZqIEQa4abNhb9XVZrTVqPmlA3OLtxf+clBzPiyeLqWydncjWocUR+CCLUKaZ8cgffucmV2mP1cQs9EZEGSvIUQzUx8JC+PtIhtHrlPeWODFikW+yGV5DU5aChgfvJEPwd3mxsGeqScQC4tIQl0vST4mmBlY=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
+	bh=DBZXc7HLX9/pYjM/ke+KsiHNFOie7BrTQqBdvFxmdp0=;
 	h=date:mime-version:subject:message-id:from;
 
-FILEIO paths can be opened from configfs store callbacks while configfs
-holds the item's frag_sem.
+db_root is configured from configfs as a pathname string. ALUA and
+APTPL later build metadata filenames under that string and open them
+with filp_open().
 
-target_dev_enable_store() reaches fd_configure_device() and
-pi_prot_type_store() reaches fd_init_prot(). Both helpers call
-filp_open() on user-controlled FILEIO paths. If either path resolves
-inside configfs, the lookup can re-enter __configfs_open_file() and try
-to take the same frag_sem again.
+Validating db_root once in target_core_item_dbroot_store() is not
+enough. A later symlink retarget can bypass a one-time check, and doing
+path resolution under target_devices_lock keeps the VFS lock-order
+concern in the configfs store path.
 
-Reject configfs-backed FILEIO paths before calling filp_open(). Resolve
-existing paths with kern_path(), and when O_CREAT may create the last
-component, fall back to checking the parent directory with
-kern_path_parent(). Keep reporting ordinary path lookup failures instead
-of silently bypassing the existing FILEIO error paths.
+Resolve db_root to a directory path once, keep a pinned struct path
+reference, and open metadata files relative to that fixed root with
+file_open_root(). Also reject configfs-backed roots before publishing
+them and move the path walk out from under target_devices_lock.
 
-Fixes: c66ac9db8d4a ("[SCSI] target: Add LIO target core v4.0.0-rc6")
-Fixes: 0f5e2ec46dd6 ("target/file: Add DIF protection init/format support")
+This closes the ALUA recursive configfs re-entry path without leaving a
+string-based TOCTOU gap, and keeps the same fixed-root semantics for
+APTPL metadata writes.
+
+Fixes: a96e9783e058 ("target: make target db location configurable")
 Cc: stable@vger.kernel.org
 Signed-off-by: Runyu Xiao <runyu.xiao@seu.edu.cn>
 ---
- drivers/target/target_core_file.c | 50 +++++++++++++++++++++++++++++++++++
- 1 file changed, 50 insertions(+)
+v2:
+- replace one-time store-path validation with a pinned db_root path
+- move db_root path resolution out from under target_devices_lock
+- open ALUA and APTPL metadata files relative to the pinned root
+- close the string-based TOCTOU gap raised in review
 
-diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
-index 2d78ef7..4351300 100644
---- a/drivers/target/target_core_file.c
-+++ b/drivers/target/target_core_file.c
-@@ -19,6 +19,7 @@
- #include <linux/module.h>
- #include <linux/vmalloc.h>
- #include <linux/falloc.h>
-+#include <linux/namei.h>
- #include <linux/uio.h>
- #include <linux/scatterlist.h>
- #include <scsi/scsi_proto.h>
-@@ -86,6 +87,33 @@ static struct se_device *fd_alloc_device(struct se_hba *hba, const char *name)
- 	return &fd_dev->dev;
- }
+ drivers/target/target_core_alua.c     | 40 ++++++++-----
+ drivers/target/target_core_configfs.c | 83 ++++++++++++++++++---------
+ drivers/target/target_core_internal.h |  3 +
+ drivers/target/target_core_pr.c       | 19 ++++--
+ 4 files changed, 96 insertions(+), 49 deletions(-)
+
+diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index 10250aca5a81..cfe4c30e534a 100644
+--- a/drivers/target/target_core_alua.c
++++ b/drivers/target/target_core_alua.c
+@@ -856,17 +856,27 @@ static int core_alua_write_tpg_metadata(
+ 	unsigned char *md_buf,
+ 	u32 md_buf_len)
+ {
+-	struct file *file = filp_open(path, O_RDWR | O_CREAT | O_TRUNC, 0600);
++	struct file *file;
+ 	loff_t pos = 0;
+ 	int ret;
  
-+static int fd_validate_fileio_path(const char *path)
++	if (!db_root_path.dentry) {
++		pr_err("db_root is not initialized for ALUA metadata path: %s/%s\n",
++		       db_root, path);
++		return -ENODEV;
++	}
++
++	file = file_open_root(&db_root_path, path, O_RDWR | O_CREAT | O_TRUNC,
++			      0600);
+ 	if (IS_ERR(file)) {
+-		pr_err("filp_open(%s) for ALUA metadata failed\n", path);
++		pr_err("file_open_root(%s/%s) for ALUA metadata failed\n",
++		       db_root, path);
+ 		return -ENODEV;
+ 	}
+ 	ret = kernel_write(file, md_buf, md_buf_len, &pos);
+ 	if (ret < 0)
+-		pr_err("Error writing ALUA metadata file: %s\n", path);
++		pr_err("Error writing ALUA metadata file: %s/%s\n", db_root,
++		       path);
+ 	fput(file);
+ 	return (ret < 0) ? -EIO : 0;
+ }
+@@ -896,9 +906,9 @@ static int core_alua_update_tpg_primary_metadata(
+ 			tg_pt_gp->tg_pt_gp_alua_access_status);
+ 
+ 	rc = -ENOMEM;
+-	path = kasprintf(GFP_KERNEL, "%s/alua/tpgs_%s/%s", db_root,
+-			&wwn->unit_serial[0],
+-			config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
++	path = kasprintf(GFP_KERNEL, "alua/tpgs_%s/%s",
++			 &wwn->unit_serial[0],
++			 config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
+ 	if (path) {
+ 		rc = core_alua_write_tpg_metadata(path, md_buf, len);
+ 		kfree(path);
+@@ -1187,16 +1197,16 @@ static int core_alua_update_tpg_secondary_metadata(struct se_lun *lun)
+ 			lun->lun_tg_pt_secondary_stat);
+ 
+ 	if (se_tpg->se_tpg_tfo->tpg_get_tag != NULL) {
+-		path = kasprintf(GFP_KERNEL, "%s/alua/%s/%s+%hu/lun_%llu",
+-				db_root, se_tpg->se_tpg_tfo->fabric_name,
+-				se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
+-				se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg),
+-				lun->unpacked_lun);
++		path = kasprintf(GFP_KERNEL, "alua/%s/%s+%hu/lun_%llu",
++				 se_tpg->se_tpg_tfo->fabric_name,
++				 se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
++				 se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg),
++				 lun->unpacked_lun);
+ 	} else {
+-		path = kasprintf(GFP_KERNEL, "%s/alua/%s/%s/lun_%llu",
+-				db_root, se_tpg->se_tpg_tfo->fabric_name,
+-				se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
+-				lun->unpacked_lun);
++		path = kasprintf(GFP_KERNEL, "alua/%s/%s/lun_%llu",
++				 se_tpg->se_tpg_tfo->fabric_name,
++				 se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
++				 lun->unpacked_lun);
+ 	}
+ 	if (!path) {
+ 		rc = -ENOMEM;
+diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
+index a2bd2e81d2c6..7788db0c64eb 100644
+--- a/drivers/target/target_core_configfs.c
++++ b/drivers/target/target_core_configfs.c
+@@ -96,8 +96,31 @@ static ssize_t target_core_item_version_show(struct config_item *item,
+ CONFIGFS_ATTR_RO(target_core_item_, version);
+ 
+ char db_root[DB_ROOT_LEN] = DB_ROOT_DEFAULT;
++struct path db_root_path;
+ static char db_root_stage[DB_ROOT_LEN];
+ 
++static int target_validate_db_root(const char *path_str, struct path *path)
 +{
-+	struct path lookup_path = {};
-+	struct dentry *dentry;
 +	int ret;
 +
-+	ret = kern_path(path, LOOKUP_FOLLOW, &lookup_path);
-+	if (!ret) {
-+		ret = !strcmp(lookup_path.dentry->d_sb->s_type->name, "configfs") ?
-+			-EINVAL : 0;
-+		path_put(&lookup_path);
++	ret = kern_path(path_str, LOOKUP_FOLLOW | LOOKUP_DIRECTORY, path);
++	if (ret) {
++		pr_err("db_root: cannot open: %s\n", path_str);
++		if (ret == -ENOTDIR)
++			pr_err("db_root: not a directory: %s\n", path_str);
 +		return ret;
 +	}
-+	if (ret != -ENOENT)
-+		return ret;
 +
-+	dentry = kern_path_parent(path, &lookup_path);
-+	if (IS_ERR(dentry))
-+		return PTR_ERR(dentry);
++	if (!strcmp(path->dentry->d_sb->s_type->name, "configfs")) {
++		pr_err("db_root: configfs is not a valid target database root: %s\n",
++		       path_str);
++		path_put(path);
++		return -EINVAL;
++	}
 +
-+	ret = !strcmp(lookup_path.dentry->d_sb->s_type->name, "configfs") ?
-+		-EINVAL : 0;
-+	dput(dentry);
-+	path_put(&lookup_path);
-+	return ret;
++	return 0;
 +}
 +
- static bool fd_configure_unmap(struct se_device *dev)
+ static ssize_t target_core_item_dbroot_show(struct config_item *item,
+ 					    char *page)
  {
- 	struct file *file = FD_DEV(dev)->fd_file;
-@@ -137,6 +165,17 @@ static int fd_configure_device(struct se_device *dev)
- 		flags &= ~O_DSYNC;
+@@ -110,43 +133,49 @@ static ssize_t target_core_item_dbroot_store(struct config_item *item,
+ 	ssize_t read_bytes;
+ 	ssize_t r = -EINVAL;
+ 	struct path path = {};
+-
+-	mutex_lock(&target_devices_lock);
+-	if (target_devices) {
+-		pr_err("db_root: cannot be changed because it's in use\n");
+-		goto unlock;
+-	}
++	struct path old_path = {};
++	bool have_old_path = false;
+ 
+ 	if (count > (DB_ROOT_LEN - 1)) {
+ 		pr_err("db_root: count %d exceeds DB_ROOT_LEN-1: %u\n",
+ 		       (int)count, DB_ROOT_LEN - 1);
+-		goto unlock;
++		return r;
  	}
  
-+	ret = fd_validate_fileio_path(fd_dev->fd_dev_name);
-+	if (ret) {
-+		if (ret == -EINVAL)
-+			pr_err("configfs-backed path is not valid for FILEIO backend: %s\n",
-+			       fd_dev->fd_dev_name);
-+		else
-+			pr_err("FILEIO backend path lookup failed for %s: %d\n",
-+			       fd_dev->fd_dev_name, ret);
-+		goto fail;
-+	}
-+
- 	file = filp_open(fd_dev->fd_dev_name, flags, 0600);
- 	if (IS_ERR(file)) {
- 		pr_err("filp_open(%s) failed\n", fd_dev->fd_dev_name);
-@@ -847,6 +886,17 @@ static int fd_init_prot(struct se_device *dev)
- 	snprintf(buf, FD_MAX_DEV_PROT_NAME, "%s.protection",
- 		 fd_dev->fd_dev_name);
+ 	read_bytes = scnprintf(db_root_stage, DB_ROOT_LEN, "%s", page);
+ 	if (!read_bytes)
+-		goto unlock;
++		return r;
  
-+	ret = fd_validate_fileio_path(buf);
+ 	if (db_root_stage[read_bytes - 1] == '\n')
+ 		db_root_stage[read_bytes - 1] = '\0';
+ 
+ 	/* validate new db root before accepting it */
+-	r = kern_path(db_root_stage, LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
+-	if (r) {
+-		pr_err("db_root: cannot open: %s\n", db_root_stage);
+-		if (r == -ENOTDIR)
+-			pr_err("db_root: not a directory: %s\n", db_root_stage);
+-		goto unlock;
++	r = target_validate_db_root(db_root_stage, &path);
++	if (r)
++		return r;
++
++	mutex_lock(&target_devices_lock);
++	if (target_devices) {
++		pr_err("db_root: cannot be changed because it's in use\n");
++		goto unlock_put;
+ 	}
+-	path_put(&path);
+ 
++	have_old_path = db_root_path.dentry;
++	if (have_old_path)
++		old_path = db_root_path;
++	db_root_path = path;
++	path = (struct path){};
+ 	strscpy(db_root, db_root_stage);
+ 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
+ 
+ 	r = read_bytes;
+ 
+-unlock:
++unlock_put:
+ 	mutex_unlock(&target_devices_lock);
++	if (path.dentry)
++		path_put(&path);
++	if (have_old_path)
++		path_put(&old_path);
+ 	return r;
+ }
+ 
+@@ -3643,21 +3672,19 @@ void target_setup_backend_cits(struct target_backend *tb)
+ 
+ static void target_init_dbroot(void)
+ {
+-	struct file *fp;
++	struct path path = {};
++	int ret;
+ 
+-	snprintf(db_root_stage, DB_ROOT_LEN, DB_ROOT_PREFERRED);
+-	fp = filp_open(db_root_stage, O_RDONLY, 0);
+-	if (IS_ERR(fp)) {
+-		pr_err("db_root: cannot open: %s\n", db_root_stage);
+-		return;
+-	}
+-	if (!S_ISDIR(file_inode(fp)->i_mode)) {
+-		filp_close(fp, NULL);
+-		pr_err("db_root: not a valid directory: %s\n", db_root_stage);
+-		return;
++	strscpy(db_root_stage, DB_ROOT_LEN, DB_ROOT_PREFERRED);
++	ret = target_validate_db_root(db_root_stage, &path);
 +	if (ret) {
-+		if (ret == -EINVAL)
-+			pr_err("configfs-backed path is not valid for FILEIO protection: %s\n",
-+			       buf);
-+		else
-+			pr_err("FILEIO protection path lookup failed for %s: %d\n",
-+			       buf, ret);
-+		return ret;
++		strscpy(db_root_stage, DB_ROOT_LEN, DB_ROOT_DEFAULT);
++		ret = target_validate_db_root(db_root_stage, &path);
++		if (ret)
++			return;
+ 	}
+-	filp_close(fp, NULL);
+ 
++	db_root_path = path;
+ 	strscpy(db_root, db_root_stage);
+ 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
+ }
+diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
+index 20aab1f50565..4cbc6218d4de 100644
+--- a/drivers/target/target_core_internal.h
++++ b/drivers/target/target_core_internal.h
+@@ -169,6 +169,9 @@ extern struct se_portal_group xcopy_pt_tpg;
+ #define	DB_ROOT_DEFAULT		"/var/target"
+ #define	DB_ROOT_PREFERRED	"/etc/target"
+ 
++struct path;
++
+ extern char db_root[];
++extern struct path db_root_path;
+ 
+ #endif /* TARGET_CORE_INTERNAL_H */
+diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
+index 83e172c92238..35ec38c6f528 100644
+--- a/drivers/target/target_core_pr.c
++++ b/drivers/target/target_core_pr.c
+@@ -1965,15 +1965,21 @@ static int __core_scsi3_write_aptpl_to_file(
+ 	int ret;
+ 	loff_t pos = 0;
+ 
+-	path = kasprintf(GFP_KERNEL, "%s/pr/aptpl_%s", db_root,
+-			&wwn->unit_serial[0]);
++	path = kasprintf(GFP_KERNEL, "pr/aptpl_%s", &wwn->unit_serial[0]);
+ 	if (!path)
+ 		return -ENOMEM;
+ 
+-	file = filp_open(path, flags, 0600);
++	if (!db_root_path.dentry) {
++		pr_err("db_root is not initialized for APTPL metadata path: %s/%s\n",
++		       db_root, path);
++		kfree(path);
++		return -ENODEV;
 +	}
 +
- 	prot_file = filp_open(buf, flags, 0600);
- 	if (IS_ERR(prot_file)) {
- 		pr_err("filp_open(%s) failed\n", buf);
++	file = file_open_root(&db_root_path, path, flags, 0600);
+ 	if (IS_ERR(file)) {
+-		pr_err("filp_open(%s) for APTPL metadata"
+-			" failed\n", path);
++		pr_err("file_open_root(%s/%s) for APTPL metadata failed\n",
++		       db_root, path);
+ 		kfree(path);
+ 		return PTR_ERR(file);
+ 	}
+@@ -1983,7 +1989,8 @@ static int __core_scsi3_write_aptpl_to_file(
+ 	ret = kernel_write(file, buf, pr_aptpl_buf_len, &pos);
+ 
+ 	if (ret < 0)
+-		pr_debug("Error writing APTPL metadata file: %s\n", path);
++		pr_debug("Error writing APTPL metadata file: %s/%s\n", db_root,
++			 path);
+ 	fput(file);
+ 	kfree(path);
+ 
 -- 
 2.34.1
