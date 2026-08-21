@@ -1,61 +1,62 @@
-Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
+Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9FAB35F180
-	for <target-devel@vger.kernel.org>; Fri, 21 Aug 2026 02:57:47 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.48
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DDF4429816
+	for <target-devel@vger.kernel.org>; Fri, 21 Aug 2026 08:06:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787281070; cv=none; b=j2yuZOpNd64uPmOnhgf1cNlY+DTU1GwUfiBkvHs5yG4tslYtQlpEwvRDOXeNoHG7OomS/XwL0wlW8+02IoYybgeEXBr91Jdkn9oNe3BpGMPBQeq2DuEeujivJDA3PumYDfCjzjCNhgPVdUqBmFa3Fo/ro+47bCcRpjeIb2/gfSU=
+	t=1787299594; cv=none; b=IUSVYTQzomENqrTIViLdwDQZnFZvjvVxqGUuIdUYefnL0zcZIy8G9kRG4FqLdbPr/+ESrM3aJuD9TGj4ojNYvXBVtwmpIQSBO6cJd0s18KH/pZhI0l4qTVoWepFgEV2Hac97EAeo69a2U0ePsKS8EWb1LiffZeLy8JkcDbl0lao=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787281070; c=relaxed/simple;
-	bh=gAtnSTjeqCtxbumXeOH7maB8s/5xSq0wlmY5q+tZSTQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NA1ckeFSzbEKFVGWnS46vMHJcmweqWnpDbsERhsIPRKVGTkOo+hmXFvriwQoqQ2eJV6mUrr3QM/guhlNZ9UYFaXxtIYB216DMvaOw8//e+uzqe/seEX+2DQuQFcZcITgetKlI0VCr3wsMt+R33HEVreAxRqJcO4oD4aGqYGkWQI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=BE9U9amx; arc=none smtp.client-ip=209.85.216.48
+	s=arc-20240116; t=1787299594; c=relaxed/simple;
+	bh=t1ekyKkdMeqTYW2HHGg+/6fO3kAXEeHxG78H5kydXPQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RJpACs5siCYWWg+Ltc4ogLydY9nnQ5cxOZkCFd/X2zlWhQGcl6lbZqs5HYvLpre3B0dzVaNowiIQpjODsLm+pEVIgutbwVL8CguSUyE1SJrnaXhzFwB8Y8nwW6FAvGgCuRCyOpaFHewT4drzYepmUzRUq5cLZQTmuOOBizEDTV0=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=igxJK3sV; arc=none smtp.client-ip=209.85.210.172
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="BE9U9amx"
-Received: by mail-pj1-f48.google.com with SMTP id 98e67ed59e1d1-38fdeaed181so633736a91.1
-        for <target-devel@vger.kernel.org>; Thu, 20 Aug 2026 19:57:47 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="igxJK3sV"
+Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-84fa3b14ee1so514593b3a.0
+        for <target-devel@vger.kernel.org>; Fri, 21 Aug 2026 01:06:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1787281067; x=1787885867; darn=vger.kernel.org;
+        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1787299591; x=1787904391; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=6mHQa0ypxSoviqvT2UnTgyqTypHgMk+xKBTSRPmyyNg=;
-        b=BE9U9amxVkTUBCIumhIw3621Zxo8Wyswp9AgNrvGrOuCbIRLiTu0Sxv3fSGoxcA/jD
-         zG+W9CfVibb4M1uLhFhXKTeFnmCSF4VPwfGbhy3NGDaUfvS8sy5X2ysiSNnoQHADmhGC
-         kGZJ7ipbKFPUlg97QlbVH+0BaZexSnxhINgD7e06GBRWPYiP8onS2izcuu/GDVPc2iSX
-         lFoM9aNuyHd3esDaQe6iwtJNQgxqtC079pkPqgLwjUHm2GuPZMuXHBXmDQLtravj/Hoc
-         NDcsqetngVY9Ki33F6mbp+fzf9ahECc+VpH2MM0dbLZWqL5NOPTFEavZIa05mN38bvEV
-         LWOA==
+        bh=jz5sBAEFdT/Ok15cO4OYFgI2x1CXaW2UGMA8q+5LqqM=;
+        b=igxJK3sVujBoFwZCbMlkKfF6EgefMuSRHJRDRmtijNaQpB8E09tM9OiiuOh6gsfoCs
+         vhuCEQkUYZDp0ITBr089OiiqBrMZI8KVuBqO2mnxHdf/bpR2R0FKEhr5yG2ml0wsaBXP
+         SsJoQChWBN6SuhKFH8R4bbYNdQ8KcqK/PD2rroQLViiYfuhmK3q7kWiQoAg3sMiDUBY/
+         hOkemnGGKqxyLn22O9A2HwHCvciYebdHCBQLEO3a2zgOA8I+aD6oZsh5KMbCKVLjPBM6
+         BDu2nMtv5DxAVOTbZ1t3qSQsI7OwWlAxlkhUhjhuc5uAetVH05DPcIok+D2o/V1JE1/y
+         TJMw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787281067; x=1787885867;
+        d=1e100.net; s=20251104; t=1787299591; x=1787904391;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=6mHQa0ypxSoviqvT2UnTgyqTypHgMk+xKBTSRPmyyNg=;
-        b=JYFWN7QHlYlRAyIhRqDFHc1GcZcB/vGrTQbwhqHogTGZr2pEWBZ+a/TubKzved7pZZ
-         xRufQYkHvQNPNE0yjwICC5CtGCdW/K+LItzxZHMzVfnCiQnbUEATAjar6fFC1nVDbNpN
-         nKEXDWu/tF+xmYUCb6FFtPv8G1keuB83Yx2+f38f2p2g/AWdDq6BCcVW/Nj4Zufu3OX3
-         cz0yXo1py+ShGWgYCJX0KtLj9LxQe5MqUaasRfz9807BeW3kfyMVBZThL747VVLA29Sm
-         JZHeLi7AoERyBb1kbMmb0iTFpYfbTWplvr5WDt0ih7RTVxD+D/8nYWAzJ9jyLpeBIOQh
-         Q3yw==
-X-Forwarded-Encrypted: i=1; AHgh+RpjDcTRHIA7rlCIpVP7am5GEdyMlRckCgX8mrYh2evD+gsn39MdXJ73K3e4qyvHwgqd9kPl/fQfltmy4J0=@vger.kernel.org
-X-Gm-Message-State: AFuF++k/n4j0ZDantlJUKwB979I4k5Ecb752+1qwGjQJdEOwO8jxIFh9
-	ZHZwtUdeR4yY4+6FnvJhlzIEEYuYaQkv23/mhxw3qg4MstA/Xoe9PiF8Fwm72mJywtc=
-X-Gm-Gg: AR+sD11qtDMQM11jk901rRg5mcQCWXjsSTwY/YYbhTgnyeaY/SnBDu7h2m3kXMu+0Vc
-	I5FxbOTKCPeC2e489T7kmAvlTbG7vUvr8Xi+tGAyPISE6yvTT1XbBnz/hVT836dqXCQn3wLpGAY
-	HZ3n6Ri1mKB2X8ARnkHvQElLRwoHOXtQok855vpidX4YTOSy9IgxoTXAaVfMb2T7OcDADhOjVmp
-	pjRQHpEU8KBXDJe+1idEVW2Rvu1AGMgtjDn+wn3OfVGdUdCO0VdcviNCi/Vg1eBgQRar+HIyD+G
-	TE25VQl9svovOh6UoX03ONDHT4twDu3SAr0cleH15CGzz+6zBI2A9F5a2g/0ViB59DVXPo46rlf
-	spxjkBkjkORpxo7NZNRm8C+pdZ59+6fbqJr4KnvfHFMAHx85Ti3Miov0b0WBbbWTeJvpRsRqltS
-	s+weSkwH3thrMLaxC6RFJCtBbsq0pOO0xpXmNY0KEv6XzGW73dZpDakbuRVLUF/RVJhusD
-X-Received: by 2002:a17:90b:6cc:b0:392:ca3b:370a with SMTP id 98e67ed59e1d1-395c33d786amr6148277a91.2.1787281067091;
-        Thu, 20 Aug 2026 19:57:47 -0700 (PDT)
+        bh=jz5sBAEFdT/Ok15cO4OYFgI2x1CXaW2UGMA8q+5LqqM=;
+        b=rxpH3srtdSw7nXBIk1nixRfZ4GxCRc8iKFjbLztxp8NfTfX21nro8g49dU+5ylhmXT
+         Ermmkmu3dSRqhKpnbudsaueZk+nKKGykvQODYasrhSkVrnwX2hLBkLZoGDrab3uGWCa8
+         C5ExvmaVPJMZ0KfcFdocoYVFGOjNpN6nGQ8jLE2yxynV2jKUp8EoyDBzhLewBVk0zqi9
+         opWHZ0LQEl5HqefZXv66IKoVMlmUE/r10M8iHAzKp8ZKCABQKKfnT50AiX9XmLxKTmJs
+         cc5a3n2Fouyo7GMR5w/7uGgAP/euAC7Y46Sz5SHduurEECNZPaa/4GRR0nooMV+570fF
+         ty6Q==
+X-Forwarded-Encrypted: i=1; AHgh+RqpI+8QEa8NixQ2BCr5jnz/xFXeU51iydrM1ot0met/N8EUy0cKOUEW5PLm490GvuHADKFF13AQR5tUZEc=@vger.kernel.org
+X-Gm-Message-State: AOJu0Yw4pUzz2hShWFVFeR8M808UDjWGjzlWeAFsc1ExMmxV4IdEic1B
+	lmmpihMIe0zCxFO9K747dXhn8oLBMB/XwkiB+zQ/R8cpwstBSk6TeNDePRr/R1X8AKA=
+X-Gm-Gg: AR+sD1353M1f9zTrW+u3ZI8W1uLW+ONIRz7q33g+4kGnW7/Ys2X2RuGrUhu2FI3mzT1
+	Bt4ycU1y/CXYbIxnrUv+fegF6Ss+fkToUz8kyPBmaQd+8QyIMtCUrgGzaZ5b0+A2STQ5bVaoIVW
+	OljEDqktXOvVrAyNKCezG1vGCCBK5qxICy+Ilcu9Gv+0edpfna0gSC4w27Sabrce7Qgq6akiraP
+	TSeAZZc/uoKJyucve9Pa45bEicrs6Nwme9gQO3R7QSkVzmmNUX9+prZjqxVhqx0lHqzccQQxlMY
+	KnvedbVHZVARAtiNxz00MY9eO89V9iLL7LD9q+lsMLxEoSgsF6q346GCVRAUtxEpVRIOvQFmlkN
+	piF6ZdcyThYfktky+3sEBkX407dQAGUJNs/1S9uDt7RTWMdSU8+c1+OFeORZgQ7EyCYPxRmRtTu
+	r3+LLn/Ftuf9UACyasTYc9Dmir29Ju9Zl4vnOFMN97e2srEUMzHYPORtTQcpfoqDLl1KNYV3GMZ
+	48jfSlZ
+X-Received: by 2002:a05:6a21:138f:b0:3c1:fbf:1e2e with SMTP id adf61e73a8af0-3cd3008bf4bmr1727665637.10.1787299591101;
+        Fri, 21 Aug 2026 01:06:31 -0700 (PDT)
 Received: from yhlee-960QFG.. ([125.131.91.97])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-395c4697358sm1159077a91.8.2026.08.20.19.57.44
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc16c6dd2f4sm1161923a12.17.2026.08.21.01.06.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Aug 2026 19:57:46 -0700 (PDT)
+        Fri, 21 Aug 2026 01:06:30 -0700 (PDT)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 To: Sagi Grimberg <sagi@grimberg.me>,
 	Jason Gunthorpe <jgg@ziepe.ca>,
@@ -65,9 +66,9 @@ Cc: linux-rdma@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Yehyeong Lee <yhlee@isslab.korea.ac.kr>,
 	stable@vger.kernel.org
-Subject: [PATCH] IB/isert: wait for deferred control PDU completions before releasing the connection
-Date: Fri, 21 Aug 2026 11:57:34 +0900
-Message-ID: <20260821025734.1449084-1-yhlee@isslab.korea.ac.kr>
+Subject: [PATCH v2] IB/isert: wait for deferred control PDU completions before releasing the connection
+Date: Fri, 21 Aug 2026 17:06:20 +0900
+Message-ID: <20260821080620.1694119-1-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
@@ -167,20 +168,37 @@ Fixes: b8d26b3be8b3 ("iser-target: Add iSCSI Extensions for RDMA (iSER) target d
 Cc: stable@vger.kernel.org
 Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 ---
- drivers/infiniband/ulp/isert/ib_isert.c | 18 ++++++++++++++++++
- drivers/infiniband/ulp/isert/ib_isert.h |  3 +++
- 2 files changed, 21 insertions(+)
+v2: the counter in v1 was paired with a wait queue embedded in isert_conn.
+The waiter reads the count outside that queue's lock, so it could observe
+zero and skip the wait entirely.  The release work then freed isert_conn
+while the last work item was still between its atomic_dec_and_test() and
+its wake_up(), which locked the freed queue.  Use wait_var_event() and
+wake_up_var() instead: those hash the address into a global wait queue
+table, so the waker never dereferences isert_conn.  The count itself is
+unchanged.
+
+The v1 race was pointed out by the Sashiko review bot.
+ drivers/infiniband/ulp/isert/ib_isert.c | 22 ++++++++++++++++++++++
+ drivers/infiniband/ulp/isert/ib_isert.h |  2 ++
+ 2 files changed, 24 insertions(+)
 
 diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
-index 1015a51f750af..84abee9bfa785 100644
+index 1015a51f750af..bc3e69f55054f 100644
 --- a/drivers/infiniband/ulp/isert/ib_isert.c
 +++ b/drivers/infiniband/ulp/isert/ib_isert.c
-@@ -308,6 +308,8 @@ isert_init_conn(struct isert_conn *isert_conn)
+@@ -21,6 +21,7 @@
+ #include <target/target_core_fabric.h>
+ #include <target/iscsi/iscsi_transport.h>
+ #include <linux/semaphore.h>
++#include <linux/wait_bit.h>
+ 
+ #include "ib_isert.h"
+ 
+@@ -308,6 +309,7 @@ isert_init_conn(struct isert_conn *isert_conn)
  	init_completion(&isert_conn->login_req_comp);
  	init_waitqueue_head(&isert_conn->rem_wait);
  	kref_init(&isert_conn->kref);
 +	atomic_set(&isert_conn->ctrl_comp_cnt, 0);
-+	init_waitqueue_head(&isert_conn->ctrl_comp_wait);
  	mutex_init(&isert_conn->mutex);
  	INIT_WORK(&isert_conn->release_work, isert_release_work);
  }
@@ -193,18 +211,22 @@ index 1015a51f750af..84abee9bfa785 100644
  
  	isert_dbg("Cmd %p i_state %d\n", isert_cmd, cmd->i_state);
  
-@@ -1689,6 +1693,10 @@ isert_do_control_comp(struct work_struct *work)
+@@ -1689,6 +1693,14 @@ isert_do_control_comp(struct work_struct *work)
  		dump_stack();
  		break;
  	}
 +
-+	/* The count is what keeps isert_conn alive, so drop it last. */
++	/*
++	 * The count is what keeps isert_conn alive, so drop it last.  The wait
++	 * queue lives in the global hash table, not in isert_conn, so this is
++	 * safe even if the waiter has already freed the connection.
++	 */
 +	if (counted && atomic_dec_and_test(&isert_conn->ctrl_comp_cnt))
-+		wake_up(&isert_conn->ctrl_comp_wait);
++		wake_up_var(&isert_conn->ctrl_comp_cnt);
  }
  
  static void
-@@ -1732,6 +1740,12 @@ isert_send_done(struct ib_cq *cq, struct ib_wc *wc)
+@@ -1732,6 +1744,12 @@ isert_send_done(struct ib_cq *cq, struct ib_wc *wc)
  	case ISTATE_SEND_TEXTRSP:
  		isert_unmap_tx_desc(tx_desc, ib_dev);
  
@@ -217,19 +239,19 @@ index 1015a51f750af..84abee9bfa785 100644
  		INIT_WORK(&isert_cmd->comp_work, isert_do_control_comp);
  		queue_work(isert_comp_wq, &isert_cmd->comp_work);
  		return;
-@@ -2572,6 +2586,10 @@ static void isert_wait_conn(struct iscsit_conn *conn)
+@@ -2572,6 +2590,10 @@ static void isert_wait_conn(struct iscsit_conn *conn)
  	isert_wait4cmds(conn);
  	isert_wait4logout(isert_conn);
  
 +	/* Paired with the count taken in isert_send_done(). */
-+	wait_event(isert_conn->ctrl_comp_wait,
-+		   !atomic_read(&isert_conn->ctrl_comp_cnt));
++	wait_var_event(&isert_conn->ctrl_comp_cnt,
++		       !atomic_read(&isert_conn->ctrl_comp_cnt));
 +
  	queue_work(isert_release_wq, &isert_conn->release_work);
  }
  
 diff --git a/drivers/infiniband/ulp/isert/ib_isert.h b/drivers/infiniband/ulp/isert/ib_isert.h
-index 0b2dfd6e7e270..17e512090b484 100644
+index 0b2dfd6e7e270..221d2a3376c1f 100644
 --- a/drivers/infiniband/ulp/isert/ib_isert.h
 +++ b/drivers/infiniband/ulp/isert/ib_isert.h
 @@ -153,6 +153,7 @@ struct isert_cmd {
@@ -240,12 +262,11 @@ index 0b2dfd6e7e270..17e512090b484 100644
  };
  
  static inline struct isert_cmd *tx_desc_to_cmd(struct iser_tx_desc *desc)
-@@ -186,6 +187,8 @@ struct isert_conn {
+@@ -186,6 +187,7 @@ struct isert_conn {
  	struct mutex		mutex;
  	struct kref		kref;
  	struct work_struct	release_work;
 +	atomic_t		ctrl_comp_cnt;
-+	wait_queue_head_t	ctrl_comp_wait;
  	bool                    logout_posted;
  	bool                    snd_w_inv;
  	wait_queue_head_t	rem_wait;
