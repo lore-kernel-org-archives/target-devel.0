@@ -1,29 +1,30 @@
 Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F447184524;
-	Wed, 26 Aug 2026 10:05:47 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C68223EAA0;
+	Thu, 27 Aug 2026 01:33:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787738753; cv=none; b=coM1yFodB20P68hrYulynjWKsyjx+8tLWA6P9jWV3eWyOqm8/QhtJ+FyvSKX/TZ/n16k1ggzgY7EGOaeVe1LiFFLE1N2a92/8OvmwqsV19Lo4PZw0ZtEkOEXWjaj7UaDl+rk1agC47J9/swUYDwYCKCYCdi6WX9mRerlfQzl3os=
+	t=1787794387; cv=none; b=rUxO83h4Aj2xhCli777R1dA3oOhchFDfhLPuEGJ2fi6EMUN06Zc66rILvj1PJoRcg9rKMbqg3Wgva//Ao3JUlAAFWrBCIxclp4+TKbM1dG1RayDKmWH+f/uRHG+G/F9h3c/5combs3NDHhOXUaCGVHp/D3d7nTQzCWredrpzLpE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787738753; c=relaxed/simple;
-	bh=glXVtIQdJhH2pcno9ro3WEksTGlJcK305M6o2dxO/CU=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Mqx0KaqqPOFt+ljOJlwy34VfSi2OaulS8ij+c7jYKiX4WjgqIcgcOTcIA5Dav/fDo0+bl94thoiGovMOeit+PJ1OuHNwHbf9m6tfJgThlvpb4ZTnamRS8jPjPLYjUT4k3zRKTMs+4qfiXuWF2rSUl6zbCz7n0EUbHdqPejlbdAU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=oRB9S1fG; arc=none smtp.client-ip=117.135.210.3
+	s=arc-20240116; t=1787794387; c=relaxed/simple;
+	bh=MB/LVh6IvL9fgyrBiG1se/VXlzz6S89Sb+Ts7WSlJF0=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=ETy9nNQ3X5pZhYuXM+9ZMQxjKwwO1OcO/8o3anz+W5P7gouxrGHweF4V98Dl3hkrB5ot/UsETjvnds/QoU18cFN9eipYNth1MzB85PKC9dKKWWAjD5JLCNdRou1ubIi0P7DZti7XLwvQ2g8Guinh9rtqwwDqxPA0NGMuELKiuXg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=UMh2bbQE; arc=none smtp.client-ip=117.135.210.3
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="oRB9S1fG"
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="UMh2bbQE"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=9L
-	VqB061la4DYfd6hh7Xv4e5X+jspRnDO2GKLNTEToY=; b=oRB9S1fGVRWJcyYZua
-	QpW9QqCylTxS4BMKnrlat6bz1a5l2vRC6sgmkeB5Wqzfmmo5ZFpwIVRtui47mF5M
-	lYA+/Z+fP9JRLOcuaPbpWs4oBJ5ydaWWz765l8h03gLJQNoCk2d1kVLxkIhcjUj4
-	ym/GaVkEoNcw6V2ACBj7MOVrc=
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Qd
+	f/9O/ikCIzL+++ZJBYi7IldqURvSfUUvVHb4OMlTs=; b=UMh2bbQE9+3lah+ktl
+	DoN+RksjBfwYMeAIQ1TffpcAqxfakDKDbF3AoCjW8XPh6UG0+DK1nMPf3PAPwxuu
+	WciLMicYpZOuWm6q8gBaBet2pmZMN8NtqcecuVtwfDMdy0o3YLcOg3FTEAHFtsQg
+	CdcHDD8s2a/OcDomy+Hm3Il4I=
 Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-4 (Coremail) with SMTP id _____wCnHhlouo5qDh9vSA--.16080S2;
-	Wed, 26 Aug 2026 18:05:30 +0800 (CST)
+	by gzga-smtp-mtada-g0-4 (Coremail) with SMTP id _____wBn3yLCk49qjjrxSA--.11671S2;
+	Thu, 27 Aug 2026 09:32:52 +0800 (CST)
 From: ghuicao@163.com
 To: "Martin K . Petersen" <martin.petersen@oracle.com>
 Cc: linux-scsi@vger.kernel.org,
@@ -31,10 +32,12 @@ Cc: linux-scsi@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org,
 	Cao Guanghui <caoguanghui@kylinos.cn>
-Subject: [PATCH v2] scsi: target: iscsi: Reject CDB size exceeding available buffer in iscsit_setup_scsi_cmd
-Date: Wed, 26 Aug 2026 18:05:26 +0800
-Message-Id: <20260826100526.106011-1-ghuicao@163.com>
+Subject: [PATCH v3] scsi: target: iscsi: Reject CDB size exceeding available buffer
+Date: Thu, 27 Aug 2026 09:32:45 +0800
+Message-Id: <20260827013245.21289-1-ghuicao@163.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20260826100526.106011-1-ghuicao@163.com>
+References: <20260826100526.106011-1-ghuicao@163.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -42,12 +45,12 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wCnHhlouo5qDh9vSA--.16080S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxCF43Aw43Wr45Aw17Xry8AFb_yoWrWFy7pF
-	42gw1IyrWrZ3yIkwsxAFWYvry5Zrsaka4qka43K3yUCrnxGFW0gFy2ga43WayUJ3Z2gryU
-	Krs0va48GF4Utw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jY5lbUUUUU=
-X-CM-SenderInfo: 5jkxxuldr6il2tof0z/xtbC3woHmWqOumrD5gAA3a
+X-CM-TRANSID:_____wBn3yLCk49qjjrxSA--.11671S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW3Ww18GryfXFWrtw18JF17Awb_yoW7CFWkpF
+	12gw1FyrWrZayIkwnxAayYvry5u39akayDKa43G34UCrn8JFy0ga42ga4agayUt3Z2grWU
+	tr1qva4rGF4Iqr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jOPEfUUUUU=
+X-CM-SenderInfo: 5jkxxuldr6il2tof0z/xtbC+wSUJ2qPk8T-0QAA3Q
 
 From: Cao Guanghui <caoguanghui@kylinos.cn>
 
@@ -68,32 +71,48 @@ past the end of the CDB buffer, a heap out-of-bounds read. The leaked
 bytes are later parsed as the CDB and can be indirectly observed by the
 initiator through sense data and responses.
 
-Reject the command when the opcode-declared CDB size exceeds the
-available CDB space, before the CDB is passed on:
+Additionally, when an Extended CDB AHS is present with a large
+ahslength (up to 1017, bounded only by hlength), the code copies
+cdb_length - ISCSI_CDB_SIZE bytes from ecdb_ahdr->ecdb, a fixed 244-byte
+array declared in struct iscsi_ecdb_ahdr. When cdb_length exceeds
+SCSI_MAX_VARLEN_CDB_SIZE (260) this reads past the array, and with
+CONFIG_FORTIFY_SOURCE=y the runtime check in fortify_memcpy_chk()
+detects the overflow and panics the kernel, causing a system-wide
+Denial of Service.
+
+Reject the command before either memcpy can occur:
 
 - Without an Extended CDB AHS the CDB is limited to ISCSI_CDB_SIZE (16)
   bytes in the basic header, so reject when scsi_command_size() >
   ISCSI_CDB_SIZE.
-- With an Extended CDB AHS the buffer is allocated from the AHS-declared
-  length, so reject when scsi_command_size() > cdb_length.
+- With an Extended CDB AHS reject when cdb_length exceeds
+  SCSI_MAX_VARLEN_CDB_SIZE (260), which also bounds the read from the
+  fixed-size ecdb array, and reject when scsi_command_size() >
+  cdb_length.
 
 commit 2f3835771dff ("scsi: target: iscsi: reject invalid size Extended
 CDB AHS") fixed the zero-length ahslength overflows and the AHS-buffer
 overread, but did not cover the orthogonal "available CDB space vs.
-opcode-declared size" path.
+opcode-declared size" path or the ecdb array overread.
 
 Fixes: 8f1f7d297bce ("scsi: target: iscsi: Add support for extended CDB AHS")
+Cc: stable@vger.kernel.org
 Signed-off-by: Cao Guanghui <caoguanghui@kylinos.cn>
 ---
+v3:
+  - Add cdb_length > SCSI_MAX_VARLEN_CDB_SIZE check in AHS path to
+    prevent FORTIFY_SOURCE panic from ecdb array overread (Sashiko)
+  - Shorten subject line to fit 75-char convention
+  - Add Cc: stable@vger.kernel.org
+
 v2:
   - Add bounds check for standard path without AHS (hdr->hlength == 0)
   - Use if/else to make the two paths explicit
-  
-drivers/target/iscsi/iscsi_target.c | 31 +++++++++++++++++++++++++++++
-1 file changed, 31 insertions(+)
+
+ drivers/target/iscsi/iscsi_target.c | 46 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 45 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 62ada3a52210..56f8fd461192 100644
 --- a/drivers/target/iscsi/iscsi_target.c
 +++ b/drivers/target/iscsi/iscsi_target.c
 @@ -1100,7 +1100,22 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
@@ -120,10 +139,25 @@ index 62ada3a52210..56f8fd461192 100644
  		ecdb_ahdr = (struct iscsi_ecdb_ahdr *) (hdr + 1);
  		if (ecdb_ahdr->ahstype != ISCSI_AHSTYPE_CDB) {
  			pr_err("Additional Header Segment type %d not supported!\n",
-@@ -1124,6 +1139,20 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
+@@ -1124,7 +1139,36 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
  
  		cdb_length = ahslength - 1 + ISCSI_CDB_SIZE;
  
++		/*
++		 * The Extended CDB AHS ecdb field is a fixed-size array of
++		 * SCSI_MAX_VARLEN_CDB_SIZE - ISCSI_CDB_SIZE (244) bytes. An
++		 * attacker-controlled ahslength can make cdb_length exceed
++		 * this, causing the memcpy below to read past the ecdb array
++		 * and triggering a FORTIFY_SOURCE runtime panic. Reject CDB
++		 * lengths exceeding the SCSI maximum before allocating.
++		 */
++		if (cdb_length > SCSI_MAX_VARLEN_CDB_SIZE) {
++			pr_err("Extended CDB length %u exceeds maximum %u, protocol error.\n",
++			       cdb_length, SCSI_MAX_VARLEN_CDB_SIZE);
++			return iscsit_add_reject_cmd(cmd,
++				ISCSI_REASON_PROTOCOL_ERROR, buf);
++		}
++
 +		/*
 +		 * The CDB buffer is later re-parsed by scsi_command_size()
 +		 * based on its opcode, which may claim a length larger than
@@ -141,6 +175,7 @@ index 62ada3a52210..56f8fd461192 100644
  		cdb = kmalloc(cdb_length, GFP_KERNEL);
  		if (cdb == NULL)
  			return iscsit_add_reject_cmd(cmd,
+ 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
 -- 
 2.34.1
 
