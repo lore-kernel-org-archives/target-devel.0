@@ -1,29 +1,30 @@
 Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B6C1332B100;
-	Thu, 27 Aug 2026 02:05:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6E51322DB7;
+	Thu, 27 Aug 2026 06:42:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.3
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787796358; cv=none; b=P5XJAJ5eghqtAicEY3mm3On3aTYy1awq3bLL0hZEOtBmNqimUaZgnruTxE7Rp06hgBX11Al364NGvBolTqJF4MizJF7ca1kGfZd1got/dqQ1cNWAhGhDiRPMYx+bD/g2MxmH10TVPzikC4yNJ13W7OGBm+n79YLtKNLc287nY3I=
+	t=1787812979; cv=none; b=KwtDII8WujDWiU8sTNz2mAcs/l+spRf6gIc5+IiP3V51GZ5iw9Ts/tyIKIVBNMs+wu/mvbUGafY91HS50uEviSd79knrHcojEWzUSHGrnEuRYhlKrxzlGWZE52QmPisHgWgNwktZgNw0q07b0OorNx0bccgd7yQFjImHeVx6iFA=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787796358; c=relaxed/simple;
+	s=arc-20240116; t=1787812979; c=relaxed/simple;
 	bh=pw1sL4GCKzOrVaTCSIyFIIP6qDP3kJo7hS6eJKxXYP0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=YPfAX94R1axgTpMBYSZOkXsEW17v5bNBHTTqA4CnKQC8Ua40qxl2uQxg4nyCtk7o+7uu7rB+Ui5xk8OHAbDcXAIYK+8YgrIl/MT1zee8CNwjSjp8hIXGniUJXKWYB361YhPzuuhdU70oDpNks8R7Xttj5AOZhTNle8SPtea+gtk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=CMdP1DJA; arc=none smtp.client-ip=117.135.210.3
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=AOzJjEb29E5BArlOic8pR9imL4gftzuUwyaftv6FrFvnu5Vg4DFppVvBAplLfFDG2KgtLfLOLddbytRvdz7WVA1PvsY096EkM0Pcxwl3fubp7+55aLWf4ME5KkD/uuP/xbGIPdCLY+14pKdgohyRizqj8Tk835nC3FIjWOsQmbM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=jCwVpxmw; arc=none smtp.client-ip=117.135.210.3
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="CMdP1DJA"
+	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="jCwVpxmw"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
 	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=nr
-	cvEP3Xhkd19RV4CkWuoVyi53edPcp87hFyJB/+lYw=; b=CMdP1DJAFwPy8JzRU0
-	X7TPU1yNvXphzYMhQ6Y5I+7veNJk/jArNfQjVDmqIyADlDYFW7SArGqbb4C3Y63L
-	+KQ7smXiI1amx0W5IT9p6/QIQzYx1VBVclR8mgabcNvqfDPwc7AbwoAtXMwfdfcJ
-	n474uzCQ/2lSiCBnvndIc1gzQ=
+	cvEP3Xhkd19RV4CkWuoVyi53edPcp87hFyJB/+lYw=; b=jCwVpxmwOv2d8zH0Ez
+	B00RYhAtKeo14GoFrOGKgIgg7N0D+rZLZSoQDU4V2FXasvRW0x71XiADEVHQEoWr
+	xLs10uPOCZ+VKHr/7x17oCMmAsWKVtbG2NT0mKh4hxX976q7uaE7EhuYYE9SsofL
+	IblR5TAzN8/os3n7qQRqifT9Y=
 Received: from localhost.localdomain (unknown [])
-	by gzsmtp5 (Coremail) with SMTP id QCgvCgDXXx91m49q9OxpOQ--.43841S2;
-	Thu, 27 Aug 2026 10:05:42 +0800 (CST)
+	by gzga-smtp-mtada-g1-1 (Coremail) with SMTP id _____wD3n1Ji3I9qCBuTRQ--.33879S3;
+	Thu, 27 Aug 2026 14:42:44 +0800 (CST)
 From: ghuicao@163.com
 To: "Martin K . Petersen" <martin.petersen@oracle.com>
 Cc: linux-scsi@vger.kernel.org,
@@ -31,10 +32,13 @@ Cc: linux-scsi@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org,
 	Cao Guanghui <caoguanghui@kylinos.cn>
-Subject: [PATCH] scsi: target: iscsi: Fix HeaderDigest to cover AHS data
-Date: Thu, 27 Aug 2026 10:05:36 +0800
-Message-Id: <20260827020536.29835-1-ghuicao@163.com>
+Subject: [PATCH v4 2/2] scsi: target: iscsi: Fix HeaderDigest to cover AHS data
+Date: Thu, 27 Aug 2026 14:42:41 +0800
+Message-Id: <20260827064241.88352-2-ghuicao@163.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20260827064241.88352-1-ghuicao@163.com>
+References: <20260827013245.21289-1-ghuicao@163.com>
+ <20260827064241.88352-1-ghuicao@163.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -42,12 +46,12 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:QCgvCgDXXx91m49q9OxpOQ--.43841S2
+X-CM-TRANSID:_____wD3n1Ji3I9qCBuTRQ--.33879S3
 X-Coremail-Antispam: 1Uf129KBjvJXoW7ZFWUAFWDZF1fCF4kKrWrAFb_yoW8ury3pw
 	s8Ww1jvr45u3y5ur47AF4Yqw1YqayrGFWjvFWfG34093Z8JFWq9a4Iga4agFy8trWvgF1a
 	vr4qg345tF40qw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07UpCJQUUUUU=
-X-CM-SenderInfo: 5jkxxuldr6il2tof0z/xtbC4BaCFWqPm3bpagAA3q
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jUXocUUUUU=
+X-CM-SenderInfo: 5jkxxuldr6il2tof0z/xtbC4ATOYWqP3GTxpQAA3C
 
 From: Cao Guanghui <caoguanghui@kylinos.cn>
 
