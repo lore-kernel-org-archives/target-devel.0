@@ -1,181 +1,76 @@
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
+Received: from arkamax.eu (128-116-240-228.dyn.eolo.it [128.116.240.228])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 33AFC3451D6;
-	Thu, 27 Aug 2026 06:42:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=117.135.210.2
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55939284690
+	for <target-devel@vger.kernel.org>; Thu, 27 Aug 2026 07:37:39 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=128.116.240.228
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787812980; cv=none; b=iW9CydZOLMCd+AeVxru9dlN4QDMEwdz7MrlV5JSg08jGtz/GC9czGRwCUmbT0wCzZnrlh8Cn2tDM1yRDsTyvtTnB6fDKj2VPziiDpMSktGx6xyrxhaBgRq0sQ+T9AABs7PVx6QiyNX/cUNSEKq5n6r3w2CfBftYwKoknjBGUfZs=
+	t=1787816263; cv=none; b=prAD46am59SlKtl4m9OmhO9L4OU03kMI7oTFvb7y8AmjdxE0MBQ1J6U8/1h8LXfdenOSa86y2x6SP+Qx9XxwMyygQYaNXTF2xW/gvAbg045fGKDx6lgqmNprMs4rKLgC7aNFjFvB+rohwYBNTqaLpIFalJenrdRp/ox1oRhAK6Q=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787812980; c=relaxed/simple;
-	bh=MB/LVh6IvL9fgyrBiG1se/VXlzz6S89Sb+Ts7WSlJF0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=R9+B4O4HHhdVpmjxWW5Y6qKbT/7m4hBVSLjfzeWOEaKt9iuphJjP36e775fjkrib8b/eVlNSDiDyyQjzLeelcGGuKsMxE7wnXYJZZ3tnNeFoVlf+yMTy4maNp208hRhZWAu4AC2EVJe6xg/0ST7mSAQOilL+Li98+tU0bK7gcA8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com; spf=pass smtp.mailfrom=163.com; dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b=ZxcVLj+p; arc=none smtp.client-ip=117.135.210.2
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
+	s=arc-20240116; t=1787816263; c=relaxed/simple;
+	bh=LQILYjJQw4J+Jvk3IEaCcgHaiJ2xwXeH6sOTQ3GrCRo=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=qHnHGFkhLXWhArgXHQAHyelpP8yTA0LheIUN3ejaBM+/8bYTiERlAcGA4oCChwijkNe4UTY6pTNGnypFufNOMR+HkcfK7bAg8aEXBEuaFooeT8M/QmL7erTAjtYhE77/YyBwKPzqn/cnftUuT+27aUNbnVLDbxKE+ipkmAXWr9o=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=arkamax.eu; spf=pass smtp.mailfrom=arkamax.eu; dkim=pass (2048-bit key) header.d=arkamax.eu header.i=@arkamax.eu header.b=M0UQ1iol; arc=none smtp.client-ip=128.116.240.228
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=arkamax.eu
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=arkamax.eu
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=163.com header.i=@163.com header.b="ZxcVLj+p"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Qd
-	f/9O/ikCIzL+++ZJBYi7IldqURvSfUUvVHb4OMlTs=; b=ZxcVLj+p8T5fZ17Av0
-	DrSUE4DEsZhlwgqDoCjtApZcBuXZsVmjDm0bPt90JoMZiLb4TN5mjivWmqBqTjrS
-	DB0vB9ndrNp2BsTLKhHs5F3S94vaSA8rN7TdAiBTqhGSUqwR1lGWe8giKeFFEc4R
-	KrVWc8pyaZd9w1IZ8cdujmDA0=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g1-1 (Coremail) with SMTP id _____wD3n1Ji3I9qCBuTRQ--.33879S2;
-	Thu, 27 Aug 2026 14:42:42 +0800 (CST)
-From: ghuicao@163.com
-To: "Martin K . Petersen" <martin.petersen@oracle.com>
-Cc: linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	Cao Guanghui <caoguanghui@kylinos.cn>
-Subject: [PATCH v4 1/2] scsi: target: iscsi: Reject CDB size exceeding available buffer
-Date: Thu, 27 Aug 2026 14:42:40 +0800
-Message-Id: <20260827064241.88352-1-ghuicao@163.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20260827013245.21289-1-ghuicao@163.com>
-References: <20260827013245.21289-1-ghuicao@163.com>
+	dkim=pass (2048-bit key) header.d=arkamax.eu header.i=@arkamax.eu header.b="M0UQ1iol"
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; s=mail1; bh=LQILYjJQw4J+Jv
+	k3IEaCcgHaiJ2xwXeH6sOTQ3GrCRo=; h=in-reply-to:references:to:from:
+	subject:cc:date; d=arkamax.eu; b=M0UQ1iolGL5OYqon8Ng+wXaD4tz8kG7qdu9a0
+	NAfNbZ6VR7hcygblrCXGmLZ1618k5YdG6q77ORVW28cZG1p5q6/v2nZYvxIeCe9qCA6bXF
+	46WiicV7/uXfCNIGIH9VIMuhXS/5HeEa63546iBFWYAeS8uZa7ke3JLVQoTrL+ZeGBthdl
+	Q3aAaXMIOgIipUVR8Xe5t2lEyetNkdI6wYIAqAYZCdSoBmRRIXLirC7mKSwAYSInwP1R3s
+	AUPH4UyMii3KeBXp8mlKamwvHcXSw9Fp296R+owltXOEzxaKhlg16rZi5P//2nr/RPBd5r
+	oWTLGvEf77S+ofF9YLMyjiXzQ==
+Received: from localhost (<unknown> [193.207.148.212])
+	by arkamax.eu (OpenSMTPD) with ESMTPSA id 29fc37df (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Thu, 27 Aug 2026 09:30:57 +0200 (CEST)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wD3n1Ji3I9qCBuTRQ--.33879S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW3Ww18GryfXFWrtw18JF17Awb_yoW7CFWkpF
-	12gw1FyrWrZayIkwnxAayYvry5u39akayDKa43G34UCrn8JFy0ga42ga4agayUt3Z2grWU
-	tr1qva4rGF4Iqr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jYPfdUUUUU=
-X-CM-SenderInfo: 5jkxxuldr6il2tof0z/xtbC-APNYGqP3GOAMgAA36
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 27 Aug 2026 09:30:55 +0200
+Message-Id: <DKZJTTSJ1AM1.1WHUHFDN2HF0K@arkamax.eu>
+Cc: <mlombard@arkamax.eu>, <michael.christie@oracle.com>,
+ <target-devel@vger.kernel.org>, <loberman@redhat.com>
+Subject: Re: [PATCH 0/1] Write commands abort hang
+From: "Maurizio Lombardi" <mlombard@arkamax.eu>
+To: "Maurizio Lombardi" <mlombard@redhat.com>, <martin.petersen@oracle.com>
+X-Mailer: aerc 0.22.0
+References: <20260717143828.76291-1-mlombard@redhat.com>
+In-Reply-To: <20260717143828.76291-1-mlombard@redhat.com>
 
-From: Cao Guanghui <caoguanghui@kylinos.cn>
+On Fri Jul 17, 2026 at 4:38 PM CEST, Maurizio Lombardi wrote:
+> One of our customers reported that sometimes the LIO driver hangs when
+> performing a LUN reset while I/O is underway.
+>
+> I was able to reproduce the hang by using the following libiscsi patch:
+>
+> https://arkamax.eu/misc/dataout_abort_libiscsi.patch
+>
+> INFO: task kworker/5:0:514619 blocked for more than 46 seconds.
+> __wait_for_common+0x94/0x1b0
+> target_put_cmd_and_wait+0x6d/0xb0 [target_core_mod]
+> core_tmr_drain_state_list+0x2a3/0x330 [target_core_mod]
+> core_tmr_lun_reset+0x93/0x1a0 [target_core_mod]
+> target_tmr_work+0xce/0x100 [target_core_mod]
+> process_one_work+0x188/0x3b0
+> worker_thread+0x2ef/0x410
+>
+> Maurizio Lombardi (1):
+>   scsi: target: iscsi: Fix hang for aborted WRITE_PENDING commands
+>
+>  drivers/target/iscsi/iscsi_target.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
-In iscsit_setup_scsi_cmd(), the CDB is later re-parsed by
-scsi_command_size() based on its SCSI opcode. For a VARIABLE_LENGTH_CMD
-(0x7f) the returned size is cdb[7] + 8, where both cdb[0] and cdb[7]
-come verbatim from the initiator-controlled PDU. The amount of CDB data
-actually available is never cross-checked against this opcode-declared
-length before the CDB is handed to target_cmd_init_cdb(), which does:
+Gentle ping on this one.
+It fixes a hang that is impacting production workloads.
 
-  memcpy(cmd->t_task_cdb, cdb, scsi_command_size(cdb));
-
-An initiator can set cdb[0]=0x7f and cdb[7]=252 so that
-scsi_command_size() returns 260, while the available CDB space is only
-16 bytes (the basic header, when no Extended CDB AHS is present) or the
-AHS-provided length. target_cmd_init_cdb() then reads up to 244 bytes
-past the end of the CDB buffer, a heap out-of-bounds read. The leaked
-bytes are later parsed as the CDB and can be indirectly observed by the
-initiator through sense data and responses.
-
-Additionally, when an Extended CDB AHS is present with a large
-ahslength (up to 1017, bounded only by hlength), the code copies
-cdb_length - ISCSI_CDB_SIZE bytes from ecdb_ahdr->ecdb, a fixed 244-byte
-array declared in struct iscsi_ecdb_ahdr. When cdb_length exceeds
-SCSI_MAX_VARLEN_CDB_SIZE (260) this reads past the array, and with
-CONFIG_FORTIFY_SOURCE=y the runtime check in fortify_memcpy_chk()
-detects the overflow and panics the kernel, causing a system-wide
-Denial of Service.
-
-Reject the command before either memcpy can occur:
-
-- Without an Extended CDB AHS the CDB is limited to ISCSI_CDB_SIZE (16)
-  bytes in the basic header, so reject when scsi_command_size() >
-  ISCSI_CDB_SIZE.
-- With an Extended CDB AHS reject when cdb_length exceeds
-  SCSI_MAX_VARLEN_CDB_SIZE (260), which also bounds the read from the
-  fixed-size ecdb array, and reject when scsi_command_size() >
-  cdb_length.
-
-commit 2f3835771dff ("scsi: target: iscsi: reject invalid size Extended
-CDB AHS") fixed the zero-length ahslength overflows and the AHS-buffer
-overread, but did not cover the orthogonal "available CDB space vs.
-opcode-declared size" path or the ecdb array overread.
-
-Fixes: 8f1f7d297bce ("scsi: target: iscsi: Add support for extended CDB AHS")
-Cc: stable@vger.kernel.org
-Signed-off-by: Cao Guanghui <caoguanghui@kylinos.cn>
----
-v3:
-  - Add cdb_length > SCSI_MAX_VARLEN_CDB_SIZE check in AHS path to
-    prevent FORTIFY_SOURCE panic from ecdb array overread (Sashiko)
-  - Shorten subject line to fit 75-char convention
-  - Add Cc: stable@vger.kernel.org
-
-v2:
-  - Add bounds check for standard path without AHS (hdr->hlength == 0)
-  - Use if/else to make the two paths explicit
-
- drivers/target/iscsi/iscsi_target.c | 46 ++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 45 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1100,7 +1100,22 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
- 
- 	cdb = hdr->cdb;
- 
--	if (hdr->hlength) {
-+	if (!hdr->hlength) {
-+		/*
-+		 * Without an Extended CDB AHS the CDB is limited to the 16
-+		 * bytes in the basic header. The CDB is later re-parsed by
-+		 * scsi_command_size() based on its opcode, which may claim a
-+		 * larger length (e.g. VARIABLE_LENGTH_CMD with cdb[7]=252).
-+		 * Reject such a mismatch before handing the CDB to
-+		 * target_cmd_init_cdb() to avoid an out-of-bounds read.
-+		 */
-+		if (scsi_command_size(hdr->cdb) > ISCSI_CDB_SIZE) {
-+			pr_err("SCSI command size %u exceeds CDB size %u, protocol error.\n",
-+			       scsi_command_size(hdr->cdb), ISCSI_CDB_SIZE);
-+			return iscsit_add_reject_cmd(cmd,
-+				ISCSI_REASON_PROTOCOL_ERROR, buf);
-+		}
-+	} else {
- 		ecdb_ahdr = (struct iscsi_ecdb_ahdr *) (hdr + 1);
- 		if (ecdb_ahdr->ahstype != ISCSI_AHSTYPE_CDB) {
- 			pr_err("Additional Header Segment type %d not supported!\n",
-@@ -1124,7 +1139,36 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
- 
- 		cdb_length = ahslength - 1 + ISCSI_CDB_SIZE;
- 
-+		/*
-+		 * The Extended CDB AHS ecdb field is a fixed-size array of
-+		 * SCSI_MAX_VARLEN_CDB_SIZE - ISCSI_CDB_SIZE (244) bytes. An
-+		 * attacker-controlled ahslength can make cdb_length exceed
-+		 * this, causing the memcpy below to read past the ecdb array
-+		 * and triggering a FORTIFY_SOURCE runtime panic. Reject CDB
-+		 * lengths exceeding the SCSI maximum before allocating.
-+		 */
-+		if (cdb_length > SCSI_MAX_VARLEN_CDB_SIZE) {
-+			pr_err("Extended CDB length %u exceeds maximum %u, protocol error.\n",
-+			       cdb_length, SCSI_MAX_VARLEN_CDB_SIZE);
-+			return iscsit_add_reject_cmd(cmd,
-+				ISCSI_REASON_PROTOCOL_ERROR, buf);
-+		}
-+
-+		/*
-+		 * The CDB buffer is later re-parsed by scsi_command_size()
-+		 * based on its opcode, which may claim a length larger than
-+		 * the AHS provided. Reject such a mismatch before allocating
-+		 * to avoid an out-of-bounds read of the CDB buffer in
-+		 * target_cmd_init_cdb().
-+		 */
-+		if (scsi_command_size(hdr->cdb) > cdb_length) {
-+			pr_err("Extended CDB AHS: SCSI command size %u exceeds AHS-provided CDB length %u, protocol error.\n",
-+			       scsi_command_size(hdr->cdb), cdb_length);
-+			return iscsit_add_reject_cmd(cmd,
-+				ISCSI_REASON_PROTOCOL_ERROR, buf);
-+		}
-+
- 		cdb = kmalloc(cdb_length, GFP_KERNEL);
- 		if (cdb == NULL)
- 			return iscsit_add_reject_cmd(cmd,
- 				ISCSI_REASON_BOOKMARK_NO_RESOURCES, buf);
--- 
-2.34.1
-
+Thanks,
+Maurizio
