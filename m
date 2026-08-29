@@ -1,59 +1,122 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3E7942DA756
-	for <target-devel@vger.kernel.org>; Sat, 29 Aug 2026 02:19:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EB5F374A1B;
+	Sat, 29 Aug 2026 10:35:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787969983; cv=none; b=JkugehKmIT95ESQBO/VlMC+tE73tE5NO4DIx/O6vDOELPeuSEsp9p1RDoe1C6FZg0GYqkyVIL6gtZHzT8T5BbpAXntH8f6CMIzIt7LyEcuf+QFA6iiml6ydL0XC9WuUrvOAT4how15DqSVnEFHiv05Wi2ENIvGsnjWUTbeEmiMk=
+	t=1787999720; cv=none; b=PHwizCRbtxqnfxrs1O2xS54E1RsX5WvO1LpaLAq4UPY/PY2ImWzHEb4UTY/X8knRgAvTM3KydWALtnWHXWssZBF8rtXAWNmwJXU6Imf8qFGXGkAbWOMdgajJy8PbmAxyGR7T83RITID5C8z9g2l8aPrNsXI8wKN+1JH0oVEwa7A=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787969983; c=relaxed/simple;
-	bh=1uq0OktBpwRoIS6gBCofNu9eRMadK8Dnh2w2Ro2HZTo=;
-	h=To:Cc:Subject:From:In-Reply-To:Message-ID:References:Date:
-	 MIME-Version:Content-Type; b=NQfylCWNicOAIN1eLH/O/Do8zD+oEy2pY2EAQpTbgrGfvs6omUEmdrkuGqfxdmF/VJyeX1WdODwXa4uV3rLdwC9VRuLjqqPghgax5/QTy27ltDezSkzVJ1rb5Hfgv9/QDo0gWwfQO5qzCh+QyQ3bMg/ky+/clcPqKBumjqucVxw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=inj4+1Yr; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1787999720; c=relaxed/simple;
+	bh=TMjEM4qL8n/RjmKlbHGpaQh+OEsEcOVV0nLrPlTqzYE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=p9jPfLir8i/3dH69+GpApKaIwf71GPmL0zxEpfphxg0iOu+tcaj4uhr7dJP4+YotuZdYtRs8B+Nh7iBl/IJTfScCAUY9G6uAzQeNL16FGhnpr+YG6380mCbBNM/vyWnjBaQRcucxNhyyvHu/2tEVJavFPauGfCloKK32NHaXhBU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=O4hQnDvs; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="inj4+1Yr"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6F281F000E9;
-	Sat, 29 Aug 2026 02:19:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="O4hQnDvs"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1854E1F000E9;
+	Sat, 29 Aug 2026 10:35:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787969982;
-	bh=9HXVxGUyH9+Xbg3iQ06ZYUAF5GYSUAgR+2FhHnV2fi4=;
-	h=To:Cc:Subject:From:In-Reply-To:References:Date;
-	b=inj4+1YrywsUb0yCj9y/U9+oYZULtTMQIgYpwY/TSNtxfWRrApKJT+H8jrafAVxUf
-	 sJhA9+oUQWXq3p2Tbvlghu/bgbKdP2HrgspIFJnhCj780+IAgwqT/scA4xpxtlj1NA
-	 0fc+9ANdgp/E1e1Kqw6SXtXl4VLDCFDPfFEi1VzH0ktV7FXJ0k+pFGSkyu3sZk2RmJ
-	 20gVtdvB75YgR1Oh4QkOkqesqo0YQ6w4Qc3XNrEIq3Igx5y5L3MnXnJ3M1wqrNEWYR
-	 svI/IFhfnE9iLo8xhVHoig410DnR9zN22DwR2ENo8TpCjO2N17yUGx8vZp4pTeGUaY
-	 xvVuJSUyfuqTg==
-To: Maurizio Lombardi <mlombard@redhat.com>
-Cc: mlombard@arkamax.eu,  michael.christie@oracle.com,
-  target-devel@vger.kernel.org,  loberman@redhat.com
-Subject: Re: [PATCH 1/1] target: iscsi: Fix hang for aborted WRITE_PENDING
- commands
-From: "Martin K. Petersen (Oracle)" <mkp@kernel.org>
-In-Reply-To: <20260717143828.76291-2-mlombard@redhat.com> (Maurizio Lombardi's
-	message of "Fri, 17 Jul 2026 16:38:28 +0200")
-Message-ID: <yq1ld9pis7r.fsf@mail.kernel.org>
-References: <20260717143828.76291-1-mlombard@redhat.com>
-	<20260717143828.76291-2-mlombard@redhat.com>
-Date: Fri, 28 Aug 2026 22:19:40 -0400
+	s=k20260515; t=1787999716;
+	bh=2cSRCs8wDnCpBsS5x9/4R2NQI4neq/3EffewAPnRfKA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=O4hQnDvsR3xz25zX0vx3nLmgtgXidRy0h4sWYehV2mXaWQF9J/8/dCttJ+E6EWeiL
+	 AU5vXmX8gEuh+eiBybVN36gcL9arMMcSOSmanqnA1H0jUHcst2QpkRCuZYvOQ1utna
+	 CmwIa3FMYIznrNaOU5idsntYbhRRO3HxdH82sL2QSmZq4KSQ//9h/0e1+1QzkyWNZ0
+	 0rU3vqxq8xzjrVdcdZh5qOVfsw3iXccSIzOadiD6bqnoMbprP3lZK1UtNz4gXJHS5C
+	 0O9KudEm0w62SpmKO8x56+dxacucnGq4B3gGwuAtRjfi6EA2/TmEU4oUb4c3BtwI86
+	 LMFxBKkcdwmyA==
+Date: Sat, 29 Aug 2026 13:35:09 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Brian King <brking@us.ibm.com>, Hannes Reinecke <hare@suse.com>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Matthew Wilcox <willy@infradead.org>,
+	Wen Xiong <wenxiong@linux.ibm.com>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org, Hannes Reinecke <hare@kernel.org>,
+	John Garry <john.g.garry@oracle.com>
+Subject: Re: [PATCH v2 0/4] scsi: replace __get_free_pages() with kmalloc()
+Message-ID: <apK13danJIU2PD8f@kernel.org>
+References: <20260704-b4-scsi-v2-0-7d2d21a810de@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260704-b4-scsi-v2-0-7d2d21a810de@kernel.org>
 
+Hi Martin,
 
-Maurizio,
+This seems to fall between the cracks.
 
-> When a LUN_RESET aborts a WRITE command that is in the
-> TRANSPORT_WRITE_PENDING state, the target core sets CMD_T_ABORTED and
-> waits for the frontend to finish processing.
+Do you want me to resend?
 
-Applied to 7.3/scsi-staging, thanks!
+On Sat, Jul 04, 2026 at 09:13:33AM +0300, Mike Rapoport (Microsoft) wrote:
+> This is a (small) part of larger work of replacing page allocator calls
+> with kmalloc.
+> 
+> My initial intention a few month ago was to remove ugly casts [1], but then
+> willy pointed out that Linus objected to something like this [2] and it
+> looks like more than a decade old technical debt.
+> 
+> Largely, anything that doesn't need struct page (or a memdesc in the
+> future) should just use kmalloc() or kvmalloc() to allocate memory.
+> kmalloc() guarantees alignment, physical contiguity and working
+> virt_to_phys() and beside nicer API that returns void * on alloc and
+> doesn't require to know the allocation size on free, kmalloc() provides
+> better debugging capabilities than page allocator.
+> 
+> Another thing is that touching these allocation sites gives the reviewers
+> opportunity to see if a PAGE_SIZE buffer is actually needed or maybe
+> another size is appropriate.
+> 
+> For larger allocations that don't need physically contiguous memory
+> kvmalloc() can be a better option that __get_free_pages() because under
+> memory pressure it's is easier to allocate several order-0 pages than a
+> physically contiguous chunk with the same number of pages.
+> 
+> And last, but not least, removing needless calls to page allocator should
+> help with memdesc (aka project folio) conversion. There will be way less
+> places to audit to see if the user was actually using struct page.
+> 
+> Also in git:
+> https://git.kernel.org/pub/scm/linux/kernel/git/rppt/linux.git gfp-to-kmalloc/scsi
+> 
+> [1] https://lore.kernel.org/all/20251018093002.3660549-1-rppt@kernel.org/
+> [2] https://lore.kernel.org/all/CA+55aFwp4iy4rtX2gE2WjBGFL=NxMVnoFeHqYa2j1dYOMMGqxg@mail.gmail.com/ 
+> 
+> ---
+> v2 changes:
+> * replace GFP_ATOMIC with GFP_NOIO in ipr driver
+> 
+> v1: https://patch.msgid.link/20260630-b4-scsi-v1-0-494fb37ebe7b@kernel.org
+> 
+> ---
+> Mike Rapoport (Microsoft) (4):
+>       scsi: target: file: use kmalloc() to allocate temporary protection buffer
+>       scsi: proc: use kmalloc() in proc writers
+>       scsi: ipr: use kmalloc() to allocate IPR dump buffer memory
+>       scsi: sym53c8xx_2: replace __get_free_pages() with kmalloc()
+> 
+>  drivers/scsi/ipr.c                  | 4 ++--
+>  drivers/scsi/scsi_devinfo.c         | 5 +++--
+>  drivers/scsi/scsi_proc.c            | 9 +++++----
+>  drivers/scsi/sym53c8xx_2/sym_hipd.h | 4 ++--
+>  drivers/target/target_core_file.c   | 4 ++--
+>  5 files changed, 14 insertions(+), 12 deletions(-)
+> ---
+> base-commit: dc59e4fea9d83f03bad6bddf3fa2e52491777482
+> change-id: 20260611-b4-scsi-d0b0eb4895f4
+> 
+> --
+> Sincerely yours,
+> Mike.
+> 
 
 -- 
-Martin K. Petersen
+Sincerely yours,
+Mike.
