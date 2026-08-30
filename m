@@ -1,122 +1,87 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3EB5F374A1B;
-	Sat, 29 Aug 2026 10:35:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B67D39E6FC;
+	Sun, 30 Aug 2026 13:21:00 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1787999720; cv=none; b=PHwizCRbtxqnfxrs1O2xS54E1RsX5WvO1LpaLAq4UPY/PY2ImWzHEb4UTY/X8knRgAvTM3KydWALtnWHXWssZBF8rtXAWNmwJXU6Imf8qFGXGkAbWOMdgajJy8PbmAxyGR7T83RITID5C8z9g2l8aPrNsXI8wKN+1JH0oVEwa7A=
+	t=1788096062; cv=none; b=V4DJrqcOy9wsXjU8WuYur7+JKvJ0Be9FQuwtH0958lk61VUnXoqOB5815VlOrj7a6jkHQ1eZYozvETxIB/WF4r5WlTS3pdKYgcYk9vfNz8//Hxw2kslUA4do41LvJ/l1CXyGUu+tlUOaYWhzAf2HsKDOJRdyXOTPduQD7Q8eaRY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1787999720; c=relaxed/simple;
-	bh=TMjEM4qL8n/RjmKlbHGpaQh+OEsEcOVV0nLrPlTqzYE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=p9jPfLir8i/3dH69+GpApKaIwf71GPmL0zxEpfphxg0iOu+tcaj4uhr7dJP4+YotuZdYtRs8B+Nh7iBl/IJTfScCAUY9G6uAzQeNL16FGhnpr+YG6380mCbBNM/vyWnjBaQRcucxNhyyvHu/2tEVJavFPauGfCloKK32NHaXhBU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=O4hQnDvs; arc=none smtp.client-ip=100.103.45.18
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="O4hQnDvs"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1854E1F000E9;
-	Sat, 29 Aug 2026 10:35:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787999716;
-	bh=2cSRCs8wDnCpBsS5x9/4R2NQI4neq/3EffewAPnRfKA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=O4hQnDvsR3xz25zX0vx3nLmgtgXidRy0h4sWYehV2mXaWQF9J/8/dCttJ+E6EWeiL
-	 AU5vXmX8gEuh+eiBybVN36gcL9arMMcSOSmanqnA1H0jUHcst2QpkRCuZYvOQ1utna
-	 CmwIa3FMYIznrNaOU5idsntYbhRRO3HxdH82sL2QSmZq4KSQ//9h/0e1+1QzkyWNZ0
-	 0rU3vqxq8xzjrVdcdZh5qOVfsw3iXccSIzOadiD6bqnoMbprP3lZK1UtNz4gXJHS5C
-	 0O9KudEm0w62SpmKO8x56+dxacucnGq4B3gGwuAtRjfi6EA2/TmEU4oUb4c3BtwI86
-	 LMFxBKkcdwmyA==
-Date: Sat, 29 Aug 2026 13:35:09 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Brian King <brking@us.ibm.com>, Hannes Reinecke <hare@suse.com>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Matthew Wilcox <willy@infradead.org>,
-	Wen Xiong <wenxiong@linux.ibm.com>, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org, Hannes Reinecke <hare@kernel.org>,
-	John Garry <john.g.garry@oracle.com>
-Subject: Re: [PATCH v2 0/4] scsi: replace __get_free_pages() with kmalloc()
-Message-ID: <apK13danJIU2PD8f@kernel.org>
-References: <20260704-b4-scsi-v2-0-7d2d21a810de@kernel.org>
+	s=arc-20240116; t=1788096062; c=relaxed/simple;
+	bh=NLZIx41IyxRLq6OlBuAiEg5DnlaTksmsCHN16fSIXm0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eZn4uBiXwTXxjZ7DOPQ0RApxwliJmSWtuSc15Xnr9nvF2ilXImXkd4aoVHdqac59LPudoEl679zOurKBkmakrs7SowYIKRTJf23JiXAzlgx1PKrZrT/QHpzIsz3O6SdSBWzAnoM9QEBygyq3X4sL+1x5rMD1+LWBJJWfM7zl9A8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from localhost.localdomain (unknown [111.196.241.250])
+	by APP-03 (Coremail) with SMTP id rQCowABHTTs1LpRq2P+aBg--.16458S2;
+	Sun, 30 Aug 2026 21:20:54 +0800 (CST)
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+To: Ram Vegesna <ram.vegesna@broadcom.com>
+Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	"James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K . Petersen" <mkp@kernel.org>,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: efct: validate firmware header size
+Date: Sun, 30 Aug 2026 21:20:51 +0800
+Message-ID: <20260830132051.4441-1-pengpeng@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260704-b4-scsi-v2-0-7d2d21a810de@kernel.org>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowABHTTs1LpRq2P+aBg--.16458S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7Xr45Xr43Zw4ktr4DKw4UJwb_yoWDZFgE9F
+	4Fvrs3Kr1UKrWkJr4xCFy7ZrZIkw4DZw1fZrnagFWrur4av3yqvr4DArWfCry7Gw4DtF95
+	Cw1UZF48Aw12kjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbx8FF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Cr0_
+	Gr1UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVWxJr
+	0_GcWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+	2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
+	JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
+	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIY
+	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14
+	v26F4j6r4UJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_
+	Cr1lIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUSLv
+	NUUUUU=
+X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 
-Hi Martin,
+The optional firmware update path casts the firmware blob to
+efct_hw_grp_hdr and reads its revision before checking that the blob covers
+the complete header.
 
-This seems to fall between the cracks.
+Reject undersized firmware images before accessing header fields.
 
-Do you want me to resend?
+Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+---
+ drivers/scsi/elx/efct/efct_driver.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-On Sat, Jul 04, 2026 at 09:13:33AM +0300, Mike Rapoport (Microsoft) wrote:
-> This is a (small) part of larger work of replacing page allocator calls
-> with kmalloc.
-> 
-> My initial intention a few month ago was to remove ugly casts [1], but then
-> willy pointed out that Linus objected to something like this [2] and it
-> looks like more than a decade old technical debt.
-> 
-> Largely, anything that doesn't need struct page (or a memdesc in the
-> future) should just use kmalloc() or kvmalloc() to allocate memory.
-> kmalloc() guarantees alignment, physical contiguity and working
-> virt_to_phys() and beside nicer API that returns void * on alloc and
-> doesn't require to know the allocation size on free, kmalloc() provides
-> better debugging capabilities than page allocator.
-> 
-> Another thing is that touching these allocation sites gives the reviewers
-> opportunity to see if a PAGE_SIZE buffer is actually needed or maybe
-> another size is appropriate.
-> 
-> For larger allocations that don't need physically contiguous memory
-> kvmalloc() can be a better option that __get_free_pages() because under
-> memory pressure it's is easier to allocate several order-0 pages than a
-> physically contiguous chunk with the same number of pages.
-> 
-> And last, but not least, removing needless calls to page allocator should
-> help with memdesc (aka project folio) conversion. There will be way less
-> places to audit to see if the user was actually using struct page.
-> 
-> Also in git:
-> https://git.kernel.org/pub/scm/linux/kernel/git/rppt/linux.git gfp-to-kmalloc/scsi
-> 
-> [1] https://lore.kernel.org/all/20251018093002.3660549-1-rppt@kernel.org/
-> [2] https://lore.kernel.org/all/CA+55aFwp4iy4rtX2gE2WjBGFL=NxMVnoFeHqYa2j1dYOMMGqxg@mail.gmail.com/ 
-> 
-> ---
-> v2 changes:
-> * replace GFP_ATOMIC with GFP_NOIO in ipr driver
-> 
-> v1: https://patch.msgid.link/20260630-b4-scsi-v1-0-494fb37ebe7b@kernel.org
-> 
-> ---
-> Mike Rapoport (Microsoft) (4):
->       scsi: target: file: use kmalloc() to allocate temporary protection buffer
->       scsi: proc: use kmalloc() in proc writers
->       scsi: ipr: use kmalloc() to allocate IPR dump buffer memory
->       scsi: sym53c8xx_2: replace __get_free_pages() with kmalloc()
-> 
->  drivers/scsi/ipr.c                  | 4 ++--
->  drivers/scsi/scsi_devinfo.c         | 5 +++--
->  drivers/scsi/scsi_proc.c            | 9 +++++----
->  drivers/scsi/sym53c8xx_2/sym_hipd.h | 4 ++--
->  drivers/target/target_core_file.c   | 4 ++--
->  5 files changed, 14 insertions(+), 12 deletions(-)
-> ---
-> base-commit: dc59e4fea9d83f03bad6bddf3fa2e52491777482
-> change-id: 20260611-b4-scsi-d0b0eb4895f4
-> 
-> --
-> Sincerely yours,
-> Mike.
-> 
+diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
+index 07c2f453459e1..b0d8ca58daebe 100644
+--- a/drivers/scsi/elx/efct/efct_driver.c
++++ b/drivers/scsi/elx/efct/efct_driver.c
+@@ -338,6 +338,10 @@ efct_request_firmware_update(struct efct *efct)
+ 		efc_log_debug(efct, "Firmware file(%s) not found.\n", file_name);
+ 		return rc;
+ 	}
++	if (fw->size < sizeof(*fw_image)) {
++		rc = -EINVAL;
++		goto exit;
++	}
+ 
+ 	fw_image = (struct efct_hw_grp_hdr *)fw->data;
 
+base-commit: 08dbfad3f5040f5bdb6c529da20d6d4e81fefd72
 -- 
-Sincerely yours,
-Mike.
+2.50.1
+
