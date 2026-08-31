@@ -1,137 +1,202 @@
-Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from mail-qt1-f173.google.com (mail-qt1-f173.google.com [209.85.160.173])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8EE61264612;
-	Sun, 30 Aug 2026 13:24:08 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788096250; cv=none; b=lN31amSkcK3DZyJi3CMrs+TE+2ezjFvqqE6UYNRZRbWrRVdtwgRJK6Ae5zrNbMyqwgxM9nUCK56DXjm8DiBSsq6p6lHlijurnoNSFYbl+FVf0YJp/pwmkKywiziLtysfKQeBoD5+cz5IiGRB762FscWUHGjNVfUUyr9sXj30jDs=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788096250; c=relaxed/simple;
-	bh=qlRyVLiWOfSGXWeRkK4L68tZCwILGwMCRHJ4h5FUx+Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JkVgdoBBzXuaPdMFWqSKu59NLbMRqYxfIiC5PX0gnuQFV0UYw3jWHpnP5XGzF390vZzisETegvOePO0+y2FG2CBtJ7DZNkKpYDUOao+dPlRBmQla4TabrE1p2jq4nT0VuIh5AF83Yn63gh8KzBid1djjyd74Eg7TSptKXggBHac=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
-Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
-Received: from localhost.localdomain (unknown [111.196.241.250])
-	by APP-03 (Coremail) with SMTP id rQCowADn8T_2LpRqCAybBg--.16943S2;
-	Sun, 30 Aug 2026 21:24:06 +0800 (CST)
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-To: "Martin K . Petersen" <mkp@kernel.org>
-Cc: Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] iscsi: cxgbit: bound LRO fragment aggregation
-Date: Sun, 30 Aug 2026 21:24:04 +0800
-Message-ID: <20260830132404.5053-1-pengpeng@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4D8893E1231
+	for <target-devel@vger.kernel.org>; Mon, 31 Aug 2026 09:26:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=209.85.160.173
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1788168397; cv=pass; b=qBqDS4CvWEwpBwa3hH3FznrV+Ra2dDbCjU0UCZVOiZJzGymcFcfAMz30JEQeQDGj5iZvki00xpDK1B3VFqrYIEVqsVgEqbHqTNkTbEa654vGWhQ2nnnZj6q1OhLz9PNpcI4uu6KXAuTkQZTrlDmHApdMFYxK2mxYLxf0q4bZETc=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1788168397; c=relaxed/simple;
+	bh=GBTgWejtGdJAKdiFr7UJ4AwaGexhIKwa4b9R0XxIbeg=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=eeQF0UY2jnOGe+v5s3du5oij3uFzY/WXzMsSNlezc/gLFNtYQHqgPW0US7D6ZDQVUEO4TVu/lvQV0zNYbzwK9YiXMqH1/TES3JwD7vWznU6z10X7xBZMPHXtJh6N7AAw+w27B1M+99APZOQT2vo/qH88zuHUzKn5i+zHJu+Izrs=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PeHql9S5; arc=pass smtp.client-ip=209.85.160.173
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PeHql9S5"
+Received: by mail-qt1-f173.google.com with SMTP id d75a77b69052e-52e2d1bdbc0so22168431cf.0
+        for <target-devel@vger.kernel.org>; Mon, 31 Aug 2026 02:26:36 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788168395; cv=none;
+        d=google.com; s=arc-20260327;
+        b=OvgzENnip9LX1IwyMZgew561c9/I7xH6NWOP8Fy6oqHcaD5+lxV8N+lt5/5MgsmC+U
+         520p0dvM51N51BYBaH0SA1g91fsP2L7GEcjOU9PEvy0glgjlOhQYIPa1RmHevgeshpc+
+         fECRH9NPa5ieW1G0GHrXVcWxOJ8m9fXL47gPPHQ28ggvl8jJFQMBNPPjRSGeaFZ4F4XC
+         qQYZSiwQIlCJR14qh5Zi7n51DQEsCCYam/lbiOIXqQj3mZQgrPyzIdbN+vVPInwNf/6h
+         rc/eny/aZmnLKXq7T/gZD/vQyOKg8FlTA5Z9yqrZN4RzdavLUM/+oZCsdc6ekzV63ejF
+         F0yA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
+        bh=Oc557eT+uz9yntWQBXBtcxG6zb+6RfKcRPnFhGyakfY=;
+        fh=3i9Mt5aGI12d4+r23vnPE/ppw7xVw3CnpKbscC7nu3E=;
+        b=m8vTzwYfnokaiIQoC2yzIX2PpZJqLBwS7fx6gJLektBPfGCBrJAAig8UuLEg+0R2Sc
+         JqP/wAok4IrSc4i0/ti/wzkr6UGbO0uqPeoLSxRjFnxKA7u1Ipb6mnOFg32MtOz6oJLt
+         63rOsQslF3QCkxL1jiGDKCZWV/kZhvlhuXLRk68Wm79V1I2XnmvSTLUN2iUDQIrvW9F9
+         c93yJA2ZctpOW85YeM+9h79v6/0ilmEU1VXEmUmCN3BChB+ng+lFfIu6742iGFEcHVPr
+         W3tNhLWOZcaS9x1wFLIE4g+XxbfA1Et91qVE+mKis6zCj33L1Rgo8JxVCydcldC+WEFB
+         4N2w==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788168395; x=1788773195; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Oc557eT+uz9yntWQBXBtcxG6zb+6RfKcRPnFhGyakfY=;
+        b=PeHql9S5/0kZwqz0rUaDXl00/w+wPsflJNITbSpescVsDLVU+tCfW+BVz+BCfOM/9T
+         K9ZnzCgRwecSwHxcq+bXdaSFzBDTJ3RVMOtDopQXg+QVhqCNIaX/S4Nok+sOjDczPT/9
+         mlOei57B5PeK4kNCgw28NXK57/B8zgDc8C4G7R40GABAXnYC3u66tEeuFgHYVfheyqKg
+         lvLDoYISZSMAlwWXYD9Dt98ncKoyHqJa7l8167tV7/c0GvNe3B51IohkMirkd3wItdn5
+         MJ1l5JfJ83jU3rZ1Ru4NyKUs9fkls1xHFvJXVih06+owmYis+zJw60ryisUkcwWIRAmC
+         yLWg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788168395; x=1788773195;
+        h=content-type:cc:to:subject:message-id:date:from:mime-version
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=Oc557eT+uz9yntWQBXBtcxG6zb+6RfKcRPnFhGyakfY=;
+        b=Gm6tgmRB1O4yzJGSNVF15b3+b3ht09UhgsxYzs3IUsiHIyqZ+QF8guEtb5HnRbSSPg
+         FbY2n/kEEFubIyJs9FxZz/iREvBHbknfwpF/EHeIttSQ8Wia25RbOWzk8zC5VD9QgK/o
+         fH8ylqZqqSNwbRhHR5BOFQWQDt5BkfyVqwUy7FhFcMaLo0Qp+704C105mBiaxf2e7uQX
+         B6vYZb4S/MJh6v1wnn9Y4Ul/u7LBoCDb1ZN0djHlUf+htwJbn1Y9Sqef0nSPYzw5moTz
+         kd1I7OGhIakKnR1ZmsXwQOMFHfzzVn/ZTmPsSYrInkAn7cxAi0vT8AZpgXBBPotI+99E
+         Rpmw==
+X-Forwarded-Encrypted: i=1; AHgh+RqIDjgV+5t2ASMgTcaCXIVxSqKAW+eUD6Lqy3bZxyfhFksICTWjT2Mkn46lyMn7CEnQ8/QiPCrHg6JaxEk=@vger.kernel.org
+X-Gm-Message-State: AFuF++m+Xb0h2RUjO31eiG2dGAyQzzolRyccXwfc/rLMzCqC42/GC4qT
+	twmnCKmpi+USlAf34UHQXFDN4UnwA6McABQwham5/CxMATWZAIY2s3sU4+5eaQR3RTBmblnMVS3
+	gjV+l8Qfg+Rf1SXXW3zExruGua1e5SYk=
+X-Gm-Gg: AR+sD12CX9/sd42mq8Gv0biUxHlMl6FErKxg6T3T8z33r8HaWkb6zWbpTnUsdP8eHbk
+	+Ee/O9OU4Mbc9Cxruah6uzBCiqgKxRAktLck3HM4QaZ0K+c6owNehDuj+f23BPnzQ0C8vGOptc5
+	C/6g5Ib4by9vcx5XEsyc8xQvXr2aGmUcbd7sHd5j0ImLXLHEdbIEhLCr5mwAtHZBgnX/HvZ6TN5
+	fKPFZXAnFpbkYT+H1ixsryEOP3fqt6k7vNakAHjSsviUk4f8wDd9L+SOJHYMcmPy1FiCg+ecHdh
+	7za0ViMgSJeKi5MBCrhbvTlFnyVhLo+hVvqIXnJAfsISdpATDXKrFOeCYjZMSue7lzOtg781WkS
+	W+Z9XVEtzM3sMWFfyqlcv0pe1f8EUR+a3+Qh5mtw=
+X-Received: by 2002:ac8:5751:0:b0:528:583:a6ca with SMTP id
+ d75a77b69052e-52fb947ce64mr298965361cf.14.1788168390317; Mon, 31 Aug 2026
+ 02:26:30 -0700 (PDT)
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:rQCowADn8T_2LpRqCAybBg--.16943S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxGrWUKryftFW3tFW7Wr18AFb_yoW5Wr4UpF
-	4vka4UGr4qqrZ3Xw48ArsrCr4Sv3yFyrZrurySkw4Iyr1a9rWDWF1SkF1aya15G395C3yU
-	JF42vrWUGw4qqw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUkE14x267AKxVWUJVW8JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r1I6r4UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
-	6r4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Cr
-	1j6rxdM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
-	6xIIjxv20xvE14v26r126r1DMcIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr
-	0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxkF7I0En4kS14v2
-	6r126r1DMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrV
-	AFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUAVWUtwCI
-	c40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1I6r4UMIIF0xvE2Ix0cI8IcVCY1x0267
-	AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_
-	Cr1lIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUxcT
-	PUUUUU=
-X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
+From: ZW Tang <tangzw515@gmail.com>
+Date: Mon, 31 Aug 2026 17:26:19 +0800
+X-Gm-Features: AcwNN1VmE5hg-mg3rivFLUTIR9ieFN67679RSw-ZKkt1qwYIsnJOkNZQM4cS9tE
+Message-ID: <CAA2SOT4Hok5xOtbviX4HkeqVK_u79NZjw3+0WKZMmUQb35jORw@mail.gmail.com>
+Subject: [BUG] usb: gadget: f_tcm: possible circular locking dependency in usbg_make_tpg
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, 
+	target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-cxgbit_lro_skb_merge() appends header and data fragments to a persistent
-partial-PDU skb without checking its own nr_frags. Source skb fragment
-limits do not bound the accumulated destination across LRO fragments.
+Hi,
 
-Reject an overfull merge and reset the partial aggregation state on
-failure.
+I am reporting a possible circular locking dependency triggered by a
+syzkaller reproducer on Linux 7.2.0-rc3. Similar issues appear to have
+been reported upstream before, but I can still reproduce this warning on
+Linux 7.2.0-rc3 with HEAD commit
+1137d8b5df06137fb49513cc923b3b24d94cb809.
 
-Fixes: 9730ffcb8957 ("cxgbit: add files for cxgbit.ko")
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
----
- drivers/target/iscsi/cxgbit/cxgbit_target.c | 26 ++++++++++++++++++++++----
- 1 file changed, 22 insertions(+), 4 deletions(-)
+The reproducer mounts configfs, creates a USB gadget TCM function, creates
+a target usb_gadget fabric TPG, and then links the TCM function into a USB
+gadget configuration.
 
-diff --git a/drivers/target/iscsi/cxgbit/cxgbit_target.c b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-index 3698f2eb097e3..b5c66c4ebe07c 100644
---- a/drivers/target/iscsi/cxgbit/cxgbit_target.c
-+++ b/drivers/target/iscsi/cxgbit/cxgbit_target.c
-@@ -1420,7 +1420,7 @@ static void cxgbit_lro_hskb_reset(struct cxgbit_sock *csk)
- 	skb->len = 0;
- }
- 
--static void
-+static int
- cxgbit_lro_skb_merge(struct cxgbit_sock *csk, struct sk_buff *skb, u8 pdu_idx)
- {
- 	struct sk_buff *hskb = csk->lro_hskb;
-@@ -1429,6 +1429,15 @@ cxgbit_lro_skb_merge(struct cxgbit_sock *csk, struct sk_buff *skb, u8 pdu_idx)
- 	struct skb_shared_info *hssi = skb_shinfo(hskb);
- 	struct skb_shared_info *ssi = skb_shinfo(skb);
- 	unsigned int len = 0;
-+	u8 nr_frags = 0;
-+
-+	if (pdu_cb->flags & PDUCBF_RX_HDR)
-+		nr_frags++;
-+	if (pdu_cb->flags & PDUCBF_RX_DATA)
-+		nr_frags += pdu_cb->nr_dfrags;
-+	if (hssi->nr_frags > MAX_SKB_FRAGS ||
-+	    nr_frags > MAX_SKB_FRAGS - hssi->nr_frags)
-+		return -EMSGSIZE;
- 
- 	if (pdu_cb->flags & PDUCBF_RX_HDR) {
- 		u8 hfrag_idx = hssi->nr_frags;
-@@ -1489,6 +1498,8 @@ cxgbit_lro_skb_merge(struct cxgbit_sock *csk, struct sk_buff *skb, u8 pdu_idx)
- 		hpdu_cb->ddigest = pdu_cb->ddigest;
- 		hpdu_cb->pdulen = pdu_cb->pdulen;
- 	}
-+
-+	return 0;
- }
- 
- static int cxgbit_process_lro_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
-@@ -1499,7 +1510,11 @@ static int cxgbit_process_lro_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
- 	int ret = 0;
- 
- 	if (!pdu_cb->complete) {
--		cxgbit_lro_skb_merge(csk, skb, 0);
-+		ret = cxgbit_lro_skb_merge(csk, skb, 0);
-+		if (ret < 0) {
-+			cxgbit_lro_hskb_reset(csk);
-+			goto out;
-+		}
- 
- 		if (pdu_cb->flags & PDUCBF_RX_STATUS) {
- 			struct sk_buff *hskb = csk->lro_hskb;
-@@ -1524,8 +1539,11 @@ static int cxgbit_process_lro_skb(struct cxgbit_sock *csk, struct sk_buff *skb)
- 			goto out;
- 	}
- 
--	if ((!lro_cb->complete) && lro_cb->pdu_idx)
--		cxgbit_lro_skb_merge(csk, skb, lro_cb->pdu_idx);
-+	if (!lro_cb->complete && lro_cb->pdu_idx) {
-+		ret = cxgbit_lro_skb_merge(csk, skb, lro_cb->pdu_idx);
-+		if (ret < 0)
-+			cxgbit_lro_hskb_reset(csk);
-+	}
- 
- out:
- 	return ret;
+Lockdep reports a cycle involving the configfs inode mutex,
+tpg_instances_lock, and the f_tcm opts->dep_lock. The current path is
+creating a TPG through configfs_mkdir(). It reaches usbg_make_tpg(), holds
+tpg_instances_lock and opts->dep_lock, and then calls
+configfs_depend_item_unlocked(), which tries to acquire a configfs inode
+mutex.
 
-base-commit: 08dbfad3f5040f5bdb6c529da20d6d4e81fefd72
--- 
-2.50.1
+The existing reverse dependency is created by the USB gadget symlink path:
+configfs_symlink() calls config_usb_cfg_link(), which calls
+usb_get_function() and then tcm_alloc(), where tpg_instances_lock is
+acquired.
 
+This creates the following lock order cycle:
+
+configfs inode mutex -> tpg_instances_lock -> opts->dep_lock
+opts->dep_lock -> configfs inode mutex
+
+This looks like a lock-ordering issue in the USB gadget TCM function /
+target configfs integration. The kernel should avoid taking these locks in
+opposite orders, because this can lead to an actual deadlock.
+
+Reproducer:
+
+syz reproducer: https://pastebin.com/raw/xHmrR2GY
+console output: https://pastebin.com/raw/G4WtE3Xs
+kernel config: https://pastebin.com/raw/GhP15ssA
+
+Kernel:
+
+HEAD commit: 1137d8b5df06137fb49513cc923b3b24d94cb809
+git tree: torvalds/linux
+kernel version: 7.2.0-rc3 #1 PREEMPT(full) (QEMU Ubuntu 24.10)
+
+Relevant log:
+
+syz.0.17/12335 is trying to acquire lock:
+ffff88801e4a6280 (&sb->s_type->i_mutex_key#26){+.+.}-{4:4},
+at: configfs_depend_item_unlocked+0xe8/0x460
+
+but task is already holding lock:
+ffff888058c6c918 (&opts->dep_lock){+.+.}-{4:4},
+at: usbg_make_tpg+0x153/0x5e0
+
+which lock already depends on the new lock.
+
+the existing dependency chain (in reverse order) is:
+
+-> #3 (&opts->dep_lock){+.+.}-{4:4}:
+__mutex_lock+0x16e/0x2760
+usbg_make_tpg+0x153/0x5e0
+target_fabric_make_tpg+0xab/0xad0
+configfs_mkdir+0x5ae/0xc50
+vfs_mkdir+0x35f/0x7b0
+filename_mkdirat+0x407/0x580
+__x64_sys_mkdirat+0x8a/0xc0
+
+-> #2 (tpg_instances_lock){+.+.}-{4:4}:
+__mutex_lock+0x16e/0x2760
+tcm_alloc+0x20/0x310
+usb_get_function+0x61/0xd0
+config_usb_cfg_link+0x1f6/0x3f0
+configfs_symlink+0x53c/0x1180
+vfs_symlink+0x180/0x4e0
+filename_symlinkat+0x324/0x430
+__x64_sys_symlinkat+0x9c/0xe0
+
+-> #1 (&gi->lock){+.+.}-{4:4}:
+__mutex_lock+0x16e/0x2760
+config_usb_cfg_link+0x57/0x3f0
+configfs_symlink+0x53c/0x1180
+vfs_symlink+0x180/0x4e0
+filename_symlinkat+0x324/0x430
+__x64_sys_symlinkat+0x9c/0xe0
+
+-> #0 (&sb->s_type->i_mutex_key#26){+.+.}-{4:4}:
+down_write+0x91/0x200
+configfs_depend_item_unlocked+0xe8/0x460
+usbg_make_tpg+0x214/0x5e0
+target_fabric_make_tpg+0xab/0xad0
+configfs_mkdir+0x5ae/0xc50
+vfs_mkdir+0x35f/0x7b0
+filename_mkdirat+0x407/0x580
+__x64_sys_mkdirat+0x8a/0xc0
+
+Chain exists of:
+&sb->s_type->i_mutex_key#26 --> tpg_instances_lock --> &opts->dep_lock
+
+Possible unsafe locking scenario:
+
+  CPU0                    CPU1
+  ----                    ----
+
+lock(&opts->dep_lock);
+lock(tpg_instances_lock);
+lock(&opts->dep_lock);
+lock(&sb->s_type->i_mutex_key#26);
+
+*** DEADLOCK ***
