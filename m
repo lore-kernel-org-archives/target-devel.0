@@ -1,63 +1,72 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C582630D407;
-	Wed,  2 Sep 2026 02:42:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4EC3947DF87;
+	Wed,  2 Sep 2026 13:11:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1788316965; cv=none; b=neqA24ON1/7yORk0UKBxxY4mzg7V4ac4z3Gy4/tXg/TaKpp1rCNdvgq6SBEpg6CRuPz/86k/dZR6DtjPFr35raKJCyfW2XjUtnUsc/x4Zfdf7NGyJNUnkzhthDzecoFbg6MnDWwzZn3UiBjuRB7eLzq0bQbHmSsKmF/C2O/g2f8=
+	t=1788354696; cv=none; b=gHwn1sHwcllIHWA2MX7cjjesEgkY2OPuiVyKJBnGuQWJ8ejaJ4q+KR7GihhUjnz2k14tVkW0wBcPhLfxCz+2q0yscMxDopHqlLnGcrCFsOKwFpVA/ik5R2AG3FBh7c8nmtA6M2bly39+MxR61OXnFIoiUk7A91vbU0/e6WdyST0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1788316965; c=relaxed/simple;
-	bh=mwUvtCF20hPyTH3YZgKntSV18xdWLQ1UEDeogvXwaOU=;
-	h=To:Cc:Subject:From:In-Reply-To:Message-ID:References:Date:
-	 MIME-Version:Content-Type; b=Or16TPjYyp0oadEHUDxOh8FOpFzzPhBRzfk+z9xaIkeoFJzp4EOxQ4e+dfCp9mfCic6C6Os92MlFYFUnAJO54GXhfqFf7ylLht3n+PIcq997G3nvjCE620ajVZvYB3rKDxgsx2xk3YRURCa8XLx+whHVRa0aUD2MshpW8jO+5/4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=NAjcIJTO; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1788354696; c=relaxed/simple;
+	bh=+HRiBjvZpuCi/Mxo5Jpv5ZzVc1XLs6PuqrytkvJgWJc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=EcFtChY+TSErSe4AV3zqw7Arwdp90RNGgaCiSInULUuT0GmSfM3kK5oJXfXOsqw4TQN+thABNYaJKw+53cxlKHFd80B+H2sz0bHZNOpkNubXGo/a+f8okXQe2aZmaiN2KZviHdtZb83CstjnaOvQbIIxDhwOUdFfX+m09py4/6I=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ifPTq0E3; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="NAjcIJTO"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 719FA1F00A3D;
-	Wed,  2 Sep 2026 02:42:41 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ifPTq0E3"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 553801F000E9;
+	Wed,  2 Sep 2026 13:11:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788316961;
-	bh=MDrYntgOMTi6ocL58pgFzcqpX1F+wE38GAJwY5mRR+U=;
-	h=To:Cc:Subject:From:In-Reply-To:References:Date;
-	b=NAjcIJTOBEMoOM+34V1M1t7rYDhsQzsY96Oxt+/8fXjZU1EhQvItzc1Awvskb+uqa
-	 IfH+TtD4vkldHbquzgnKIdU/H46+2e7MDI5BGBZ6sMSMoeE65ZASX8WMy7r1/0KTcC
-	 ZyUEmns5GwM1hUatKb/dMCiTNqErX5QiV4pY/FG3oQNE//88IsBUMBePyYhIFHjnPI
-	 pMPLShAe8/I1+U3pilyXXVDbwOiF+b2bidtyWbVg8CnMuxs+xJQHOfyt2YL4z/CbiC
-	 1lnvMdRXSd7wCe6IKv33wukxGW2P9k4Aun1S3TU+pFdXG46uz/ODPuU6jyQcR7rIRq
-	 ryTr11LLdMbeg==
-To: Mike Rapoport <rppt@kernel.org>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,  Brian King
- <brking@us.ibm.com>,  Hannes Reinecke <hare@suse.com>,  "James E.J.
- Bottomley" <James.Bottomley@hansenpartnership.com>,  Matthew Wilcox
- <willy@infradead.org>,  Wen Xiong <wenxiong@linux.ibm.com>,
-  linux-kernel@vger.kernel.org,  linux-mm@kvack.org,
-  linux-scsi@vger.kernel.org,  target-devel@vger.kernel.org,  Hannes
- Reinecke <hare@kernel.org>,  John Garry <john.g.garry@oracle.com>
-Subject: Re: [PATCH v2 0/4] scsi: replace __get_free_pages() with kmalloc()
-From: "Martin K. Petersen (Oracle)" <mkp@kernel.org>
-In-Reply-To: <apK13danJIU2PD8f@kernel.org> (Mike Rapoport's message of "Sat,
-	29 Aug 2026 13:35:09 +0300")
-Message-ID: <yq1se3sfk71.fsf@mail.kernel.org>
-References: <20260704-b4-scsi-v2-0-7d2d21a810de@kernel.org>
-	<apK13danJIU2PD8f@kernel.org>
-Date: Tue, 01 Sep 2026 22:42:39 -0400
+	s=k20260515; t=1788354694;
+	bh=wmY+hW/5qshuzIbhA0MyDRJDfvOutOPyG9kQ68w+9x0=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=ifPTq0E31Y2uXG/T7fUgaanA4QVfP89ACQdgITpcTqLMgPf+0xbKRReP92jNDCyfX
+	 VTkOfdN7TfSKz8MYpbjgggve2MDFsr/CqD9JrQj0mTh2pWME45o5nG7rWs67c7+0Oq
+	 K+gKcFwh7Azkwff29JM9F62Mpnjm5zCqM6r40JrmQtu4x9iXxrk8bwKR0pjQT7aXrp
+	 uNt/FncKdMKbTwKUNZzSFRdh0h934AqVB+pOEHCHAJ76/u3StpSmaUhCV/ms295C/z
+	 4MJY63FvJizTXJEfH/iYkdCO1LKwKxauK9tVJn3C6jdnub66+g1NNyIET9gYNRgyLj
+	 mA8/ILGEzK4Zw==
+From: Leon Romanovsky <leon@kernel.org>
+To: Sagi Grimberg <sagi@grimberg.me>, Jason Gunthorpe <jgg@ziepe.ca>, 
+ Yehyeong Lee <yhlee@isslab.korea.ac.kr>
+Cc: linux-rdma@vger.kernel.org, target-devel@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+In-Reply-To: <20260821080620.1694119-1-yhlee@isslab.korea.ac.kr>
+References: <20260821080620.1694119-1-yhlee@isslab.korea.ac.kr>
+Subject: Re: [PATCH v2] IB/isert: wait for deferred control PDU completions
+ before releasing the connection
+Message-Id: <178835469209.2452909.403462519488525121.b4-ty@kernel.org>
+Date: Wed, 02 Sep 2026 09:11:32 -0400
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-18f8f
 
 
-Mike,
+On Fri, 21 Aug 2026 17:06:20 +0900, Yehyeong Lee wrote:
+> isert_send_done() hands ISTATE_SEND_TASKMGTRSP, ISTATE_SEND_REJECT and
+> ISTATE_SEND_TEXTRSP completions off to isert_comp_wq and returns.  The work
+> item then runs isert_completion_put() -> isert_put_cmd(), which reads
+> isert_conn->conn and takes conn->cmd_lock.
+> 
+> Nothing orders that work item against teardown.  isert_wait_conn() queues
+> isert_release_work, which frees isert_conn, and iscsit_close_connection()
+> frees the iscsit_conn right after it returns, so the queued work can run
+> against freed memory.
+> 
+> [...]
 
-> This seems to fall between the cracks.
->
-> Do you want me to resend?
+Applied, thanks!
 
-It still applies. Now queued up, thanks!
+[1/1] IB/isert: wait for deferred control PDU completions before releasing the connection
+      https://git.kernel.org/rdma/rdma/c/a8fe3dfce8c0d8
 
+Best regards,
 -- 
-Martin K. Petersen
+Leon Romanovsky <leon@kernel.org>
+
