@@ -1,102 +1,66 @@
-Received: from mail-wm2-f11.google.com (mail-wm2-f11.google.com [74.125.225.139])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A523547669E
-	for <target-devel@vger.kernel.org>; Mon, 14 Sep 2026 13:05:56 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.139
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC87B312834;
+	Mon, 14 Sep 2026 13:14:20 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=199.89.1.16
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789391158; cv=none; b=Zfx4HYWyRHNNR3+iT28VrNL441elhBqhVHZSt2yg+L6XZ7qoiKMuFqF8rcCDtN++GwPI1nK+6NumqXbFMramOLRg09Tg7Uth3+R3IF4YJiqbd116DqQ6WKRasNnMkBpLO0MJ3wN10MV3I8dBBdqOOQ4lyu7Y1IPxRi49LEN+Ef8=
+	t=1789391662; cv=none; b=S2dGnkoA5e6zk1esdL6oN3DBkkIXAFYvm6DCJwLAn5svz+Yt+k+/qz3/UGSjcoo97c/EGnPXGU/q2w0HT3WdAdT/lMZLICP/d60/ABKaA3iV9cRSJjf8hgKXoxo0Ar3OCfRt8Mayvhg1Rt1+3uzG+TSDi52/ayHQHYMlt+9uG54=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789391158; c=relaxed/simple;
-	bh=+ot06/esph++ISFoL95/F/SezXZW3wAoizYDA/ZXE4s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oDjWlvD4hj8HV3xQw//1esO4jVPyayDs+rQ6lXZUgk3mk1AfMitcCMjJvc6Ijij59WSSqh4HoqgI/nAuYe7Dc0gtuidxTQ6HrjjmuGrutXw6QsB9Op3NOUOuCpK2GxsoM3Ordvk5pbw2ydDOb/ADDgZ0yapKmdFVO+NIvfAAGxQ=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=IQSD2/J5; arc=none smtp.client-ip=74.125.225.139
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1789391662; c=relaxed/simple;
+	bh=mYcs92J9DTBm74Goued3d0RcL5er4m/vEw0yI9+k0FA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EqSSkE1rBlHylfOdhfcarxTv2Z/AiWBJkBUrptlPdZ7ILXJAS1nvMieIs3EY+0lRsFr8mauzGf8NbcnVWpiSQXThcHLwYuQJX+KzTuM8/RFhbez0ZxpSnIlDqEx1iYftI93DO2hd5DHsS/Yz9xC64Iyucq+sab/gx+0W2WEYTDo=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org; spf=pass smtp.mailfrom=acm.org; dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b=iEhci++C; arc=none smtp.client-ip=199.89.1.16
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=acm.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=acm.org
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IQSD2/J5"
-Received: by mail-wm2-f11.google.com with SMTP id 5b1f17b1804b1-49814d35686so1547485e9.0
-        for <target-devel@vger.kernel.org>; Mon, 14 Sep 2026 06:05:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789391155; x=1789995955; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=s4bb1Qf4ZN2oQ0J+b8ooyhKAW2X1wwD7W1Q4Zbnoqvc=;
-        b=IQSD2/J5iRNkrn/HtQNzL0kpqSvWQsblJ31UhQ+T03H/YIlTIkbMZTlkhQWX4V3ph5
-         R5qGmIUP7RRi1i4wCp1nx40viTQOcsBzwos+TH0EJ+HVgbFy5wKzFs/8eM87Xjk1tqg2
-         sSvnpoJAcISVx8/yx6kiJf+9kUJcOdsH6+1d96Ce63Vbcvtj9QpDPJVraSPjyr//oAcx
-         5PAkuaAfCqRwIGS5UGtR8uOCSusQtyRvjm3Opp48M3A1cXZteSmeVK/xryPge5Pg0rAM
-         AVJ1E03Gv7h7vTUVizvU1t6JfJm2GaLB/QpJEDxtix9J3bmC7QbzQh1SRDZluLWNBzOj
-         teew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789391155; x=1789995955;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=s4bb1Qf4ZN2oQ0J+b8ooyhKAW2X1wwD7W1Q4Zbnoqvc=;
-        b=mklInYBv2k82L+uI3RJQnBAdlkY5bLEC7somqtVhi+wVKPOr6LgMekEbAP1QSlZ5Z1
-         gaq4VRCzhAP4rEDHoRO/1hoFVR8CKhzxJKjMwBai4VQ0lRKc2Q6ErAmXy193GZPlObCU
-         0iHhociJHpCJkwVLEuXgLWhrTo4HYkfTzr14iGPWkuZGr8ZK+WFX5xw2vf1u9UaCW1G7
-         I5LFY3JJ2EkXFqu0AmbU7QZoq1SOArRzwAblTMV6IqbdW8ocDDkLMRu3W9oGuoTcaVrn
-         VBmhkrarMTxiuL5cSLPAmqipiPvR5IUQNGbi+UB7JlsVv9swINMm2KZ+sUHak/dpRa+q
-         pyvg==
-X-Forwarded-Encrypted: i=1; AKwUvBwaS3cwyisEP3fGFoLDlUIx3LmnYwbNqB8TqZY13F5Ia05nXt/X4kJzuBSKUxkXRdTY2gY8HE51XR6yQhs=@vger.kernel.org
-X-Gm-Message-State: AFuF++mHrVItUPBo751yoniHXyr2E2l5rzxXf9lgcG1QEHo92qEaYh7C
-	hzctof0Qkfw7yxwPPyhESTr3iZhsryIsPdEr38J3A1x+en7ES1J1k/xe
-X-Gm-Gg: AYBFou1w/ytN5qWSlw5l7fz+fbYAvRsUzKBjejEIF/poaQ2m3v5h5VTPc2j03XeI+ip
-	SMQjM60s/AHeA41wnnrFTEQF/g5DCF83rX93qG/W1zYmyVwPqneD1NUK73OcnDunQCTJ0zpTUN/
-	6Dfe7C+qYW9aJE/zP/9bZCtddYi/8Nj4PYtCffQZ+0b8lYR7gSzvVb8gTw/1Atk169vRJuGlthY
-	VeC3unbWJKX5yy2XDuBwr0SJ+DqrEW2ij6T1yedsFVj69KK3q6bHa35x64KnrdgdbOiV/k0d8o0
-	JG8uSjvjpaXIB/U2L/X4BUdxtxSbybBD+js6hwWVQvSuwmpyvIjg5kI9QOF5+Z2nhidgWpxO4z2
-	nmY/10lOztg4EhFBW4qE+BbcmGiZyR5lPXxIhPKL8hbnt8uqygp9cu90TZTUH/ZXA5BUsqLUbpC
-	kr/6RTBOtR7PTcGdTnqmt+qx7l9F4MIakCitN+zl8quyrr5UE7N+8hRGKaAeXqdsI+gzNHupY5K
-	HYjrQEMUm2+Vkc=
-X-Received: by 2002:a05:600c:8b2f:b0:49e:65f2:db64 with SMTP id 5b1f17b1804b1-49e7a657446mr26349045e9.5.1789391154592;
-        Mon, 14 Sep 2026 06:05:54 -0700 (PDT)
-Received: from serhat-ubuntu.home ([212.253.192.148])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49e62225628sm234119165e9.3.2026.09.14.06.05.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Sep 2026 06:05:53 -0700 (PDT)
-From: Serhat Kumral <serhatkumral1@gmail.com>
-To: bvanassche@acm.org
-Cc: jgg@ziepe.ca,
-	leon@kernel.org,
-	linux-rdma@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Serhat Kumral <serhatkumral1@gmail.com>
-Subject: [PATCH] RDMA/srpt: Fix srp_sq_size documentation
-Date: Mon, 14 Sep 2026 16:05:36 +0300
-Message-ID: <20260914130536.19769-1-serhatkumral1@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	dkim=pass (2048-bit key) header.d=acm.org header.i=@acm.org header.b="iEhci++C"
+Received: from localhost (localhost [127.0.0.1])
+	by 013.lax.mailroute.net (Postfix) with ESMTP id 4hk5Fx6jTdzlfvpT;
+	Mon, 14 Sep 2026 13:14:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:content-type:content-type:in-reply-to
+	:from:from:content-language:references:subject:subject
+	:user-agent:mime-version:date:date:message-id:received:received;
+	 s=mr01; t=1789391651; x=1791983652; bh=mYcs92J9DTBm74Goued3d0Rc
+	L5er4m/vEw0yI9+k0FA=; b=iEhci++CB0Fb3Ada6alhpkKsIf7cpciHeLAJyLCx
+	NAq/uUhjDiXO8RARZ2PfKiYbFF7vZJ+vbA+WlRVZVJzu1ZAFrDZpFiuseWlpz/pf
+	joqnXebvnbeUGBN9j64mjZB8+BwCsXEh9I+LMBSL0pBaGhupHOsO7ZR59GTxGfrx
+	c1aMDJeRLtxxvI7nowvebJBB2dboZ7W+ErumlFfkwoM1eUsslJd2F0p2L7xSlBex
+	hWjWRr2PKnv9eBseGPOjM+zS1gq2i0W5CaG8+xIoPXFvahuYv5j/ixiREOuP/30e
+	DpGRaP22k2b6PnxGZyAruV4hXRHBhOpChB8wtxeHG8oCcw==
+X-Virus-Scanned: by MailRoute
+Received: from 013.lax.mailroute.net ([127.0.0.1])
+ by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id cLMuXz9-htTq; Mon, 14 Sep 2026 13:14:11 +0000 (UTC)
+Received: from [192.168.0.215] (c-24-6-239-25.hsd1.ca.comcast.net [24.6.239.25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: bvanassche@acm.org)
+	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4hk5Fs2F3zzlfvpG;
+	Mon, 14 Sep 2026 13:14:08 +0000 (UTC)
+Message-ID: <fd5c74c9-815a-4be8-a310-446a84e0b31f@acm.org>
+Date: Mon, 14 Sep 2026 06:14:07 -0700
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] RDMA/srpt: Fix srp_sq_size documentation
+To: Serhat Kumral <serhatkumral1@gmail.com>
+Cc: jgg@ziepe.ca, leon@kernel.org, linux-rdma@vger.kernel.org,
+ target-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20260914130536.19769-1-serhatkumral1@gmail.com>
+Content-Language: en-US
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <20260914130536.19769-1-serhatkumral1@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Replace "Shared receive queue (SRQ)" with "Send queue".
-
-Signed-off-by: Serhat Kumral <serhatkumral1@gmail.com>
----
- drivers/infiniband/ulp/srpt/ib_srpt.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.h b/drivers/infiniband/ulp/srpt/ib_srpt.h
-index 4c46b301eea1..506c11b84359 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.h
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.h
-@@ -350,7 +350,7 @@ struct srpt_nexus {
-  * struct srpt_port_attrib - attributes for SRPT port
-  * @srp_max_rdma_size: Maximum size of SRP RDMA transfers for new connections.
-  * @srp_max_rsp_size: Maximum size of SRP response messages in bytes.
-- * @srp_sq_size: Shared receive queue (SRQ) size.
-+ * @srp_sq_size: Send queue size.
-  * @use_srq: Whether or not to use SRQ.
-  */
- struct srpt_port_attrib {
--- 
-2.53.0
-
+On 9/14/26 6:05 AM, Serhat Kumral wrote:
+> Replace "Shared receive queue (SRQ)" with "Send queue".
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
