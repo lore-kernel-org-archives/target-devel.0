@@ -1,143 +1,148 @@
-Received: from mail-qt1-f171.google.com (mail-qt1-f171.google.com [209.85.160.171])
+Received: from mail-wr2-f12.google.com (mail-wr2-f12.google.com [74.125.225.76])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A8B5139659A
-	for <target-devel@vger.kernel.org>; Tue, 15 Sep 2026 11:45:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.171
-ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789472752; cv=none; b=YWFn4L/4ULxmu5c6FmYsTHgR3PT9ZZ9wOOF7srak5LYGCS7jGSffOSeUnePevmZg/8UIpZ/89uHBpG9sMyO7/nKxR/ghPQG0KA64245bp7OBU9Y04S+4RrK2yfiYZ2r75Yb64et71MUVFbNk5kyPmrLIz6V7/BNTHZOvtzOAHQg=
-ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789472752; c=relaxed/simple;
-	bh=/mUMqmTsmX2aUuRVI19DjRvT24Hk2w9WlfzFFKHoBjA=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=PsY7wgLtQLfPxYYXNxptDWfz+x6D9B/aVFDbZf0wucslPEG7vc9DG3CJMriAUp1bC1EWlt6O198Xnojn57xKZvDi8qwCJyqvVXPb84j65MjkX1c77JVLlzUG3sVvcE+zSfBisnkmeDmAnmXfDU7W9WHQ5g5kviQ7rg7VA+nwuR8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ggcircuit.com; spf=pass smtp.mailfrom=ggcircuit.com; dkim=pass (1024-bit key) header.d=ggcircuit.com header.i=@ggcircuit.com header.b=Sq/mGBBc; arc=none smtp.client-ip=209.85.160.171
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=ggcircuit.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ggcircuit.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7753C49CF22
+	for <target-devel@vger.kernel.org>; Tue, 15 Sep 2026 12:56:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.225.76
+ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789476967; cv=pass; b=KzB3v2BpNKCsWzxYQaMjwL5Y3TcrPL5TgwmdGGHisWncJ81TBtsWjusx0jPXr6syfD/tlcBUbYwaN/BcskEg4DJssBgpeohuP5coQF+TWe19vJYR9dntxVEWK20XbsnOucfzG5idmN6gUXdrFvnbLkhLFNocbnnpKl0a3y/yZM0=
+ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789476967; c=relaxed/simple;
+	bh=JfTyVkhgxfL/z3btfG+skDMTPgV8u01NEtVFVAGhNFY=;
+	h=From:MIME-Version:Date:Message-ID:Subject:To:Cc:Content-Type; b=cBY8bNPSeo0sQ/UfaBp4BR3Ze6oWVbF4X94IwOMoyfc36tiPwku9JPSywUAMuV579ws5nWoNVZttdh0jxlxchc8f/N+9wxNzcsGrvAdsogNgqsOHyViFavIflRVFnckG5039L/wTVtUXyZS3prwhtQ/mCdVUxQM29UUNaOQwzXk=
+ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KV/W6BZl; arc=pass smtp.client-ip=74.125.225.76
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ggcircuit.com header.i=@ggcircuit.com header.b="Sq/mGBBc"
-Received: by mail-qt1-f171.google.com with SMTP id d75a77b69052e-52fa9c055b5so9334291cf.1
-        for <target-devel@vger.kernel.org>; Tue, 15 Sep 2026 04:45:50 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KV/W6BZl"
+Received: by mail-wr2-f12.google.com with SMTP id ffacd0b85a97d-482f633cd80so1402775f8f.2
+        for <target-devel@vger.kernel.org>; Tue, 15 Sep 2026 05:56:05 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1789476964; cv=none;
+        d=google.com; s=arc-20260327;
+        b=khbao5x9AIwTS04EAFv/VeyWvnmRUFo5ZRWMjJJmrOyaViravtrC+1iQpA88bIiB0j
+         lrKMmTSth2RYOynoECzq8pK9kl8JyL0oDklYIOxHC+VAFH7EXQ5S2ST2M21dzzsJHKdh
+         OZAo7I+quBnEn/91nQixloAKqtTOPAZiihiTWbWqSJ2yMxD9QGDDpJBYzfH3igZUfXmc
+         TcwhOAkUkzZJGb7gQQJUBZAvnzIxlV7bGhTczhs2kTQAJxFhnkUhQ7c7nPIWRJynZ3cf
+         NyfAoIdMHtonkgK3aVLXsgXa+0+4g/64fMiCwTXaHZHAEINwp2Yxfwokr34bvTmezru8
+         6/lg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:mime-version:from:dkim-signature;
+        bh=eg+7r5P/Xe1Sjdkvr4/ciPHt1vbGE5FEKbuToDdqlYc=;
+        fh=MEQRVdDdcWKiu7rR3nsaJMZxqn4HY+3AqUqssHsrC60=;
+        b=EMzGio2otL2/yrLXJDzqSEcjvguozSsQleF/LZCkpcOeX2ItDCybuYbT4i7uNOHtkq
+         Q2g2qDLY7uHpo1VhlZDjW4cV7wLIQ95nvxjYTzyG563F8DEveAdd9Mqcuj9zhjgR7Dm5
+         oFhorTSPPKj4ahe9lFqucJ+Dto2ad9wTwGykLhWj02Dc/N1DculpSr8ztbaUPZpoKBap
+         fbLk7lMOarrATvHVn9aHXy3vRp7py0qD1LPYOYvWHb9vtmrbC3wuIlOookW09TXBx/l5
+         TVk1JYj6P3AmE4ap1nZbQL6F3fSbfLPLTuKAmGybriDIdmj/l4PLQu00uaYKjyamyUzt
+         2jLA==;
+        darn=vger.kernel.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ggcircuit.com; s=google; t=1789472749; x=1790077549; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=jkcb0RYR3iR2UL0lCLmkrfDemoqK24I77UVvd5NUglk=;
-        b=Sq/mGBBckeYwBffsA4XXEg8hk69O7J6j1sU0eXalcXpQdWLbuTw7H/iR4510Ze84YR
-         53Wnn0CgEUOretblCHT7gNOAAGi6NWfoeaDWft8jzZXh5FZ19i5vQZ4F+7U+nufk4Vef
-         Uu0drl7zO5xCEFNM+oTNGWdY5/o3e+Lxpyau8=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789472749; x=1790077549;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+        d=gmail.com; s=20251104; t=1789476964; x=1790081764; darn=vger.kernel.org;
+        h=content-type:cc:to:subject:message-id:date:mime-version:from:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=jkcb0RYR3iR2UL0lCLmkrfDemoqK24I77UVvd5NUglk=;
-        b=kZtGKb2trjc53RVODfWdLe0TByGmVvYFRxa62u1anEiv3V8kTjYa1vpnJANWmbMdRq
-         ZX8fhtHlrMYzqMW66hYmnamxgm7xLdLhlMdZpkzeyhoKoJXf7A57DGZn5knNBoN1Fk9j
-         qv3fbv8jpd2OMOz2IZmeUQDAKVin1sW0E9jykSlW4Rvbg4UDTrex/kelNUCdM3WP1xGs
-         aL8ONsOhNA7D98UDjWAXjEa5LPGuHEtijDQZy23zbucezKCf7drW5SmYHUijfqL6DjF5
-         OT5fxZFu8M64W5M+ikU4/crvKkbnQBlWgVmMbq9bl3wPUPNauP4to+7Kyg3ehTL6JLJL
-         mvRg==
-X-Forwarded-Encrypted: i=1; AKwUvBxO/HvXWH6QPWKZkkPcdcPHLX2Pkxz7LPVRvvQtvzuZLXGT6LWq9FhaezBCCnGV7ZaGgPVLDFAH4zlzlwc=@vger.kernel.org
-X-Gm-Message-State: AFuF++nqo/U+Bamhy4RObC8NQzVck8gH3UExlNi4Li/z4eNXSU3TGWwa
-	Ef7DigkXp/3z8gVIoghlQyWOcwzIU17i7x+ICHre1rKSABxctTbj97urtnE0yJ+C/sk=
-X-Gm-Gg: AYBFou1HWSvgJ8VqBRaUEx3OJNq0JGDblkvVbo6WIvpi0OccH4kthTPWATD3W0WiA8l
-	mmRfrNX4VSaGV009nEqH9Hz3YL3wFDZbo0CyAOY12JMgrMh1yFiTwQKINJp+AvrOSt/MjCR6xRg
-	Yh1BhwleIkWlIFfCF246mEOTsBjpDXcqdrdBzu+J2yXHKRH5xFbEJOsQeZt1ecoWG1ayYXLmrmI
-	yB6KtWDNsbW1oxFZzLu54IRLJN14vaP3lm4IPcA1LauWErT27Su9KMLsLa6g2jDzNIo1PtXL9vp
-	y1fNhKl8TtSK5B6kwurmsdYJnJLwMYe7GWNfW2fGq5qyHpRUveqo9VNxHyElNpEMm2oJ2X0URXO
-	vr2KnkKi529TogjBuB/terCgRkltQIK7cMGQlP3XHs/J6+R0zW9PHHOXIxg4/AJwWeqX/2/oQAA
-	tLVrM4TSAkEfMCb7duwKwXau78bi6RAApUf5SX9ZlhIVLvS7M1t/wbrZ6T6KoB/+h3cNzSmBUXS
-	4nyN01tL4XmMpXSPpO00HydU359dVTL30gTEBZhUtuHDBGVpjq9NQSQI3fReFFdQkqdMzMt5CRh
-	aQdZx6M=
-X-Received: by 2002:a05:622a:1484:b0:530:fbd3:2038 with SMTP id d75a77b69052e-53119ee5d91mr46309071cf.26.1789472749450;
-        Tue, 15 Sep 2026 04:45:49 -0700 (PDT)
-Received: from 5eef7f0e50ac.ec2.internal (ec2-52-87-229-18.compute-1.amazonaws.com. [52.87.229.18])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-9120f4b3dcesm118926926d6.31.2026.09.15.04.45.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2026 04:45:48 -0700 (PDT)
-From: Dmitriy Polomoshnov <dmitriy.polomoshnov@ggcircuit.com>
-To: stable@vger.kernel.org
-Cc: mlombard@redhat.com,
-	martin.petersen@oracle.com,
-	loberman@redhat.com,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	jonatan.rueda@ggcircuit.com,
-	jacob.pitcher@ggcircuit.com
-Subject: Re: [PATCH 6.1.y] scsi: target: iscsi: Fix hang for aborted WRITE_PENDING commands
-Date: Tue, 15 Sep 2026 11:45:21 +0000
-Message-Id: <20260915114521.8-1-dmitriy.polomoshnov@ggcircuit.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20260915091456.8-1-dmitriy.polomoshnov@ggcircuit.com>
-References: <20260915091456.8-1-dmitriy.polomoshnov@ggcircuit.com>
+        bh=eg+7r5P/Xe1Sjdkvr4/ciPHt1vbGE5FEKbuToDdqlYc=;
+        b=KV/W6BZlaWfxPIWRy8/w5MnwWbiLLrEAMOUo/U2Ozk0tMT1TGQV4bOPCaeEiFdBmU9
+         XJzY2GW6VJCg7COFGXnavGInXEfigZdQNR5n8bgMTKPRqjyx5bTPl0S4EEvHQhzNnApM
+         ygNomLtcNaljuxBSd0afEHfJtHIzTpl7R2q+2K+GPmigxpfjn7NCg4JbjqS4lmg/RZMf
+         Km/ta++MuByFeTEYoBeTWxnEJ84DhZBWEmZazXIA/8aK1aZy7r+1y1vu9rzMD/fZSY+y
+         qyPTEWEz+LbhnqvW2LT+2PZRr5xC+7Hg7n3hpwQHe9Ml5Hjo1ElHfqda9qlXEHvKQe6h
+         S3RA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789476964; x=1790081764;
+        h=content-type:cc:to:subject:message-id:date:mime-version:from
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=eg+7r5P/Xe1Sjdkvr4/ciPHt1vbGE5FEKbuToDdqlYc=;
+        b=vAw03unezg1Wh2tubwc/0LMRsWdg7TT/Uq1MyS+4UnUMTRaQCCbIyuEEcy4z8PvOqE
+         DOKGg52I3LNGVpYAGrdONavpmTvZmb5AbV8eTYV//X2kozYupCde3qqJppoq+ysyDmJ8
+         yRwf6GOjC2Ov8Z6sT4RaVnxEz3v9eBXSCTuWxwnqR9oUCJka3XE+7v/o0X9IuLgaSt2R
+         /U0rAqAcAk+wv9vMZvxAZ4QX+NSeaF/IwzeeSdQSQg2vGr/e5WzH8GmT/urKxDH1PgQY
+         y2mzQmttZYSPStODUd/exu0AY4DRPU1TLkdEFepY1SNwzhr9ndGa0cwDLkYDPkPELoEE
+         D3wA==
+X-Forwarded-Encrypted: i=1; AKwUvBxmlkm1sP6pKxsRS2kHZVXVQpdad4dFJyjgpVyu1URizbY2sj2zWL3/6VJBfNpgF+97U7ngE8dgoQ8Tl98=@vger.kernel.org
+X-Gm-Message-State: AFuF++lEu6RAvfig7tenycNLkXrQAfh1apHwndGKJ+hyDuu5C1k02xlR
+	mcQjSYw9+ezNJYnbDP2e6gzVIHeAuwDXrwVOhsBKgzb0HaxOMB99hgabEBBbZCzwEmV8Kt5k8ag
+	+zSBmZWZdlDh/3I/kIH7h18C5QkJkej4=
+X-Gm-Gg: AYBFou0id1bEylRQDdFoFeJ+LN3UzKvywbsr0pa7NPVNqwMlc4lM+wPw1qs27y2O0fR
+	2bjfiwBEG23pzWCGzCUpgy62CL1wgBfsRRM5nejvA6Dq00GBJXQTdZ67hHtberRV/n537tR3Lxg
+	N+COYNjDdT76XE4fZNiKwjKe8Hhm2AEoKfLJlknEfrKYpGBkJi5DjhwMT1UXoxnhBlmXHAZpkd9
+	A2SBBp6WLHyMGnpGJgGX7JMiGWaviCKByPvlGhUIAZa3nJRI9eHnIZ/6CBfTlvv2FcOis0p3YNP
+	CxUJ02TZBfAdU2fu6+indB0keyFO5bj7VdWtfPeLZ0/4U1hehwAHoQ==
+X-Received: by 2002:a05:6000:41c3:b0:482:eadd:174a with SMTP id
+ ffacd0b85a97d-48702b069c8mr8066975f8f.17.1789476963553; Tue, 15 Sep 2026
+ 05:56:03 -0700 (PDT)
+Received: from 830778650420 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 15 Sep 2026 05:56:01 -0700
+Received: from 830778650420 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 15 Sep 2026 05:56:01 -0700
+From: Ruslan Vagner <rusya92266@gmail.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Date: Tue, 15 Sep 2026 05:56:01 -0700
+X-Gm-Features: AcwNN1XPkprRgPh4CCydpSfrhYjielBopryX2EyTiUwM2QPK4PU6u57OE0y3iWo
+Message-ID: <CAF9RqJ6Yk1K5Fj8BHSCXQeTL3uMp8pyPrfmP_tnKkiT=09EUFA@mail.gmail.com>
+Subject: [PATCH] scsi: qla2xxx, iscsi_target: fix comment typos
+To: linux-scsi@vger.kernel.org
+Cc: mkp@kernel.org, target-devel@vger.kernel.org, 
+	Ruslan Vagner <rusya92266@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Follow-up to the 6.1.y patch I sent earlier today.
+Fix the spelling in comments. No functional change.
 
-That mail said 6.12.94 did not hold the hang in 13 runs and that I had not
-identified why. I have now, and it changes what is worth asking for.
+Signed-off-by: Ruslan Vagner <rusya92266@gmail.com>
+---
+ drivers/scsi/qla2xxx/qla_target.c   | 2 +-
+ drivers/scsi/qla2xxx/tcm_qla2xxx.c  | 2 +-
+ drivers/target/iscsi/iscsi_target.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-6.12 recovers because of a second, independent completion added by
+diff --git a/drivers/scsi/qla2xxx/qla_target.c
+b/drivers/scsi/qla2xxx/qla_target.c
+index 53a505df8da0..e25c05b5655d 100644
+--- a/drivers/scsi/qla2xxx/qla_target.c
++++ b/drivers/scsi/qla2xxx/qla_target.c
+@@ -1953,7 +1953,7 @@ static void qlt_24xx_retry_term_exchange(struct
+scsi_qla_host *vha,
+ }
 
-  ea87981a0ee8 ("scsi: target: iscsi: Handle abort for WRITE_PENDING cmds")
-
-which landed in v6.4. It calls target_complete_cmd() from
-iscsit_release_commands_from_conn(), on the connection teardown path, rather
-than from the dataout path that d5869dae5080 fixes.
-
-Presence in drivers/target/iscsi/iscsi_target.c, by count of
-target_complete_cmd call sites:
-
-  linux-5.10.y   0
-  linux-6.1.y    0
-  linux-6.6.y    1   (ea87981a0ee8)
-  linux-6.12.y   1   (ea87981a0ee8)
-
-So 5.10.y and 6.1.y have no path at all by which an aborted WRITE_PENDING
-command can be completed from the iSCSI frontend. That is why they deadlock
-permanently.
-
-6.12 does not recover unconditionally either. It recovers only when the
-connection tears down. Holding the connection open makes the hang persistent
-on stock 6.12.94-1:
-
-  initiator answers NOP-In    blocked for the full 299 s hold, hung_task at
-                              242 s, cleared 1.2 to 3.2 s after socket close
-  initiator silent to NOP-In  torn down at 46 s, which is NA_NOPIN_TIMEOUT 15
-                              plus NA_NOPIN_RESPONSE_TIMEOUT 30
-
-One variable between those two runs. The report on 6.12.94:
-
-  INFO: task kworker/0:2:328 blocked for more than 120 seconds.
-        Not tainted 6.12.94+deb13-amd64 #1 Debian 6.12.94-1
-  Workqueue: events target_tmr_work [target_core_mod]
-   wait_for_completion+0x8a/0x160
-   target_put_cmd_and_wait+0x75/0xc0 [target_core_mod]
-   core_tmr_lun_reset+0x57e/0x7b0 [target_core_mod]
-   target_tmr_work+0xc3/0xf0 [target_core_mod]
-
-An initiator that keeps its session up while stalled therefore holds a target
-worker blocked indefinitely on current 6.12.y. In our case that is a Windows
-initiator on a diskless boot server; iSCSI boot firmware that ignores NOP-In
-pings hits the 46 s path instead.
-
-So d5869dae5080 is still wanted on 6.6.y and 6.12.y. It completes the command
-when the final DataOut arrives, with no dependency on the connection dying.
-
-And ea87981a0ee8 is worth considering for 6.1.y and 5.10.y alongside it. It
-carries no Fixes: tag and no Cc: stable either, which is why neither fix
-reached those trees. A tree with both matches mainline; a tree with only
-d5869dae5080 still lacks the teardown cleanup.
-
-Reproducer is the sequence from the earlier mail: Login, WRITE_10 with
-InitialR2T=Yes, ImmediateData=No, MaxOutstandingR2T=1, receive R2T, TMF
-LOGICAL UNIT RESET, DataOut with F=1, then either close the connection or hold
-it open and answer NOP-In.
+ /* drop cmds for the given lun
+- * XXX only looks for cmds on the port through which lun reset was recieved
++ * XXX only looks for cmds on the port through which lun reset was received
+  * XXX does not go through the list of other port (which may have cmds
+  *     for the same lun)
+  */
+diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+index 3be23ed067e6..fb26cd1b6383 100644
+--- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
++++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
+@@ -1439,7 +1439,7 @@ static int tcm_qla2xxx_check_initiator_node_acl(
+ 		return -EINVAL;
+ 	}
+ 	/*
+-	 * Format the FCP Initiator port_name into colon seperated values to
++	 * Format the FCP Initiator port_name into colon separated values to
+ 	 * match the format by tcm_qla2xxx explict ConfigFS NodeACLs.
+ 	 */
+ 	memset(&port_name, 0, 36);
+diff --git a/drivers/target/iscsi/iscsi_target.c
+b/drivers/target/iscsi/iscsi_target.c
+index 124ff269b8e7..bbdce7d80d6e 100644
+--- a/drivers/target/iscsi/iscsi_target.c
++++ b/drivers/target/iscsi/iscsi_target.c
+@@ -4547,7 +4547,7 @@ static void iscsit_logout_post_handler_closesession(
+ 	/*
+ 	 * Traditional iscsi/tcp will invoke this logic from TX thread
+ 	 * context during session logout, so clear tx_thread_active and
+-	 * sleep if iscsit_close_connection() has not already occured.
++	 * sleep if iscsit_close_connection() has not already occurred.
+ 	 *
+ 	 * Since iser-target invokes this logic from it's own workqueue,
+ 	 * always sleep waiting for RX/TX thread shutdown to complete
+-- 
+2.54.0.windows.1
