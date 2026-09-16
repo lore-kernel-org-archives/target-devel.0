@@ -1,148 +1,70 @@
-Received: from mail-wr2-f12.google.com (mail-wr2-f12.google.com [74.125.225.76])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7753C49CF22
-	for <target-devel@vger.kernel.org>; Tue, 15 Sep 2026 12:56:05 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.225.76
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789476967; cv=pass; b=KzB3v2BpNKCsWzxYQaMjwL5Y3TcrPL5TgwmdGGHisWncJ81TBtsWjusx0jPXr6syfD/tlcBUbYwaN/BcskEg4DJssBgpeohuP5coQF+TWe19vJYR9dntxVEWK20XbsnOucfzG5idmN6gUXdrFvnbLkhLFNocbnnpKl0a3y/yZM0=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789476967; c=relaxed/simple;
-	bh=JfTyVkhgxfL/z3btfG+skDMTPgV8u01NEtVFVAGhNFY=;
-	h=From:MIME-Version:Date:Message-ID:Subject:To:Cc:Content-Type; b=cBY8bNPSeo0sQ/UfaBp4BR3Ze6oWVbF4X94IwOMoyfc36tiPwku9JPSywUAMuV579ws5nWoNVZttdh0jxlxchc8f/N+9wxNzcsGrvAdsogNgqsOHyViFavIflRVFnckG5039L/wTVtUXyZS3prwhtQ/mCdVUxQM29UUNaOQwzXk=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=KV/W6BZl; arc=pass smtp.client-ip=74.125.225.76
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1D512ED154;
+	Wed, 16 Sep 2026 01:52:31 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1789523563; cv=none; b=a3xjYPml1/7gq+SIAdKvD/eHqjlkjWueWao0Y8lGitAs7SPHQkDckx9RHyLTe2CJ2QCnqW1LSGk+N19YE4OHVaezp0C7GwXkONH+XdQ/EcUn2ZWno8MfsjQfKiDiiD22V3+0grCJaV2zX3PQzUWDFiaT6UedJ60kl+tyl/FH9I0=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1789523563; c=relaxed/simple;
+	bh=bVaHqG5lfW5gRf1Q4yy2wzQYNJDGHKKPJrCwDKYaBIE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ZQmSTN3+rU/x8waeF6x5KuJW2kGWJqgvy9BYGJhRVGkthPch+MQtpkqoVa4pq+NlgjEGQvtt4L2Fd3OjCXMUyJyurXaj/zMcrPW8alXtO5JTmVO6lygvub28DPVa3Bqirid4sOXbmdU6L0iY9N0jlZpLl4uLE6OVU5LMAFPdEMM=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KYfwRlMz; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KV/W6BZl"
-Received: by mail-wr2-f12.google.com with SMTP id ffacd0b85a97d-482f633cd80so1402775f8f.2
-        for <target-devel@vger.kernel.org>; Tue, 15 Sep 2026 05:56:05 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1789476964; cv=none;
-        d=google.com; s=arc-20260327;
-        b=khbao5x9AIwTS04EAFv/VeyWvnmRUFo5ZRWMjJJmrOyaViravtrC+1iQpA88bIiB0j
-         lrKMmTSth2RYOynoECzq8pK9kl8JyL0oDklYIOxHC+VAFH7EXQ5S2ST2M21dzzsJHKdh
-         OZAo7I+quBnEn/91nQixloAKqtTOPAZiihiTWbWqSJ2yMxD9QGDDpJBYzfH3igZUfXmc
-         TcwhOAkUkzZJGb7gQQJUBZAvnzIxlV7bGhTczhs2kTQAJxFhnkUhQ7c7nPIWRJynZ3cf
-         NyfAoIdMHtonkgK3aVLXsgXa+0+4g/64fMiCwTXaHZHAEINwp2Yxfwokr34bvTmezru8
-         6/lg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:mime-version:from:dkim-signature;
-        bh=eg+7r5P/Xe1Sjdkvr4/ciPHt1vbGE5FEKbuToDdqlYc=;
-        fh=MEQRVdDdcWKiu7rR3nsaJMZxqn4HY+3AqUqssHsrC60=;
-        b=EMzGio2otL2/yrLXJDzqSEcjvguozSsQleF/LZCkpcOeX2ItDCybuYbT4i7uNOHtkq
-         Q2g2qDLY7uHpo1VhlZDjW4cV7wLIQ95nvxjYTzyG563F8DEveAdd9Mqcuj9zhjgR7Dm5
-         oFhorTSPPKj4ahe9lFqucJ+Dto2ad9wTwGykLhWj02Dc/N1DculpSr8ztbaUPZpoKBap
-         fbLk7lMOarrATvHVn9aHXy3vRp7py0qD1LPYOYvWHb9vtmrbC3wuIlOookW09TXBx/l5
-         TVk1JYj6P3AmE4ap1nZbQL6F3fSbfLPLTuKAmGybriDIdmj/l4PLQu00uaYKjyamyUzt
-         2jLA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789476964; x=1790081764; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:mime-version:from:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=eg+7r5P/Xe1Sjdkvr4/ciPHt1vbGE5FEKbuToDdqlYc=;
-        b=KV/W6BZlaWfxPIWRy8/w5MnwWbiLLrEAMOUo/U2Ozk0tMT1TGQV4bOPCaeEiFdBmU9
-         XJzY2GW6VJCg7COFGXnavGInXEfigZdQNR5n8bgMTKPRqjyx5bTPl0S4EEvHQhzNnApM
-         ygNomLtcNaljuxBSd0afEHfJtHIzTpl7R2q+2K+GPmigxpfjn7NCg4JbjqS4lmg/RZMf
-         Km/ta++MuByFeTEYoBeTWxnEJ84DhZBWEmZazXIA/8aK1aZy7r+1y1vu9rzMD/fZSY+y
-         qyPTEWEz+LbhnqvW2LT+2PZRr5xC+7Hg7n3hpwQHe9Ml5Hjo1ElHfqda9qlXEHvKQe6h
-         S3RA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789476964; x=1790081764;
-        h=content-type:cc:to:subject:message-id:date:mime-version:from
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=eg+7r5P/Xe1Sjdkvr4/ciPHt1vbGE5FEKbuToDdqlYc=;
-        b=vAw03unezg1Wh2tubwc/0LMRsWdg7TT/Uq1MyS+4UnUMTRaQCCbIyuEEcy4z8PvOqE
-         DOKGg52I3LNGVpYAGrdONavpmTvZmb5AbV8eTYV//X2kozYupCde3qqJppoq+ysyDmJ8
-         yRwf6GOjC2Ov8Z6sT4RaVnxEz3v9eBXSCTuWxwnqR9oUCJka3XE+7v/o0X9IuLgaSt2R
-         /U0rAqAcAk+wv9vMZvxAZ4QX+NSeaF/IwzeeSdQSQg2vGr/e5WzH8GmT/urKxDH1PgQY
-         y2mzQmttZYSPStODUd/exu0AY4DRPU1TLkdEFepY1SNwzhr9ndGa0cwDLkYDPkPELoEE
-         D3wA==
-X-Forwarded-Encrypted: i=1; AKwUvBxmlkm1sP6pKxsRS2kHZVXVQpdad4dFJyjgpVyu1URizbY2sj2zWL3/6VJBfNpgF+97U7ngE8dgoQ8Tl98=@vger.kernel.org
-X-Gm-Message-State: AFuF++lEu6RAvfig7tenycNLkXrQAfh1apHwndGKJ+hyDuu5C1k02xlR
-	mcQjSYw9+ezNJYnbDP2e6gzVIHeAuwDXrwVOhsBKgzb0HaxOMB99hgabEBBbZCzwEmV8Kt5k8ag
-	+zSBmZWZdlDh/3I/kIH7h18C5QkJkej4=
-X-Gm-Gg: AYBFou0id1bEylRQDdFoFeJ+LN3UzKvywbsr0pa7NPVNqwMlc4lM+wPw1qs27y2O0fR
-	2bjfiwBEG23pzWCGzCUpgy62CL1wgBfsRRM5nejvA6Dq00GBJXQTdZ67hHtberRV/n537tR3Lxg
-	N+COYNjDdT76XE4fZNiKwjKe8Hhm2AEoKfLJlknEfrKYpGBkJi5DjhwMT1UXoxnhBlmXHAZpkd9
-	A2SBBp6WLHyMGnpGJgGX7JMiGWaviCKByPvlGhUIAZa3nJRI9eHnIZ/6CBfTlvv2FcOis0p3YNP
-	CxUJ02TZBfAdU2fu6+indB0keyFO5bj7VdWtfPeLZ0/4U1hehwAHoQ==
-X-Received: by 2002:a05:6000:41c3:b0:482:eadd:174a with SMTP id
- ffacd0b85a97d-48702b069c8mr8066975f8f.17.1789476963553; Tue, 15 Sep 2026
- 05:56:03 -0700 (PDT)
-Received: from 830778650420 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 15 Sep 2026 05:56:01 -0700
-Received: from 830778650420 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 15 Sep 2026 05:56:01 -0700
-From: Ruslan Vagner <rusya92266@gmail.com>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KYfwRlMz"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60FFF1F0089A;
+	Wed, 16 Sep 2026 01:52:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1789523545;
+	bh=3+14Ha0wjNy8ghL4gXJPO7+O/WPEKrs1JUa9a23YT+Y=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=KYfwRlMzZBonbOKJFi+lRvVJYYSSynJyaq0BIm8HarUHeSfCYllCjcaqiKJxvdd0y
+	 4LdxQj7Y2JiooWMV68syUYj8uSQliTyJKbUiex3e/heK+iLGr6mnUo+dmYVOaOd7TF
+	 M215rKjMbSc6IpMQhZ8ueG7H51YuJjsfdmnAMEjQYWZjWZWRBAjgqGvY6mq3n1BPY0
+	 vcMkdV4893SJpGX0mse6M3DytT11t8/Q8zzkOcqVk1ZAC4teJbokP010KFUtdyf+zQ
+	 UVzKuhBrEd6B5og4SfbSweNCI+yVbj0CCZiTRD9RHvNPabzmk5KZuyfaoj3M+pTlio
+	 6O4/BM8I/hLVA==
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>,
+	mlombard@redhat.com,
+	martin.petersen@oracle.com,
+	loberman@redhat.com,
+	linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	jonatan.rueda@ggcircuit.com,
+	jacob.pitcher@ggcircuit.com,
+	Dmitriy Polomoshnov <dmitriy.polomoshnov@ggcircuit.com>
+Subject: Re: [PATCH 6.1.y] scsi: target: iscsi: Fix hang for aborted WRITE_PENDING commands
+Date: Tue, 15 Sep 2026 21:52:08 -0400
+Message-ID: <daily-reply-20260915-0003-re-iscsi-write-pending-hang@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260915091456.8-1-dmitriy.polomoshnov@ggcircuit.com>
+References: <20260915091456.8-1-dmitriy.polomoshnov@ggcircuit.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Date: Tue, 15 Sep 2026 05:56:01 -0700
-X-Gm-Features: AcwNN1XPkprRgPh4CCydpSfrhYjielBopryX2EyTiUwM2QPK4PU6u57OE0y3iWo
-Message-ID: <CAF9RqJ6Yk1K5Fj8BHSCXQeTL3uMp8pyPrfmP_tnKkiT=09EUFA@mail.gmail.com>
-Subject: [PATCH] scsi: qla2xxx, iscsi_target: fix comment typos
-To: linux-scsi@vger.kernel.org
-Cc: mkp@kernel.org, target-devel@vger.kernel.org, 
-	Ruslan Vagner <rusya92266@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Fix the spelling in comments. No functional change.
+> [ dpolomoshnov: 6.1 does not reach the target_complete_cmd() declaration
+>   through the headers iscsi_target.c already includes, so a straight
+>   cherry-pick fails to build with "implicit declaration of function
+>   'target_complete_cmd'". Added the target_core_backend.h include.
+>   No other change from upstream. ]
 
-Signed-off-by: Ruslan Vagner <rusya92266@gmail.com>
----
- drivers/scsi/qla2xxx/qla_target.c   | 2 +-
- drivers/scsi/qla2xxx/tcm_qla2xxx.c  | 2 +-
- drivers/target/iscsi/iscsi_target.c | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+I went the other way on the older trees and took ea87981a0ee8 ("scsi:
+target: iscsi: Handle abort for WRITE_PENDING cmds") on 6.1, 5.15 and
+5.10 first, which brings that include with it. d5869dae5080 ("scsi:
+target: iscsi: Fix hang for aborted WRITE_PENDING commands") then goes in
+unmodified on every tree, which is what I prefer when the option exists.
 
-diff --git a/drivers/scsi/qla2xxx/qla_target.c
-b/drivers/scsi/qla2xxx/qla_target.c
-index 53a505df8da0..e25c05b5655d 100644
---- a/drivers/scsi/qla2xxx/qla_target.c
-+++ b/drivers/scsi/qla2xxx/qla_target.c
-@@ -1953,7 +1953,7 @@ static void qlt_24xx_retry_term_exchange(struct
-scsi_qla_host *vha,
- }
+Queued for 7.2, 6.18, 6.12, 6.6, 6.1, 5.15 and 5.10, thanks.
 
- /* drop cmds for the given lun
-- * XXX only looks for cmds on the port through which lun reset was recieved
-+ * XXX only looks for cmds on the port through which lun reset was received
-  * XXX does not go through the list of other port (which may have cmds
-  *     for the same lun)
-  */
-diff --git a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
-b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
-index 3be23ed067e6..fb26cd1b6383 100644
---- a/drivers/scsi/qla2xxx/tcm_qla2xxx.c
-+++ b/drivers/scsi/qla2xxx/tcm_qla2xxx.c
-@@ -1439,7 +1439,7 @@ static int tcm_qla2xxx_check_initiator_node_acl(
- 		return -EINVAL;
- 	}
- 	/*
--	 * Format the FCP Initiator port_name into colon seperated values to
-+	 * Format the FCP Initiator port_name into colon separated values to
- 	 * match the format by tcm_qla2xxx explict ConfigFS NodeACLs.
- 	 */
- 	memset(&port_name, 0, 36);
-diff --git a/drivers/target/iscsi/iscsi_target.c
-b/drivers/target/iscsi/iscsi_target.c
-index 124ff269b8e7..bbdce7d80d6e 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -4547,7 +4547,7 @@ static void iscsit_logout_post_handler_closesession(
- 	/*
- 	 * Traditional iscsi/tcp will invoke this logic from TX thread
- 	 * context during session logout, so clear tx_thread_active and
--	 * sleep if iscsit_close_connection() has not already occured.
-+	 * sleep if iscsit_close_connection() has not already occurred.
- 	 *
- 	 * Since iser-target invokes this logic from it's own workqueue,
- 	 * always sleep waiting for RX/TX thread shutdown to complete
 -- 
-2.54.0.windows.1
+Thanks,
+Sasha
