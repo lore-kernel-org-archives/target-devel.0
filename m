@@ -1,48 +1,80 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj2-f13.google.com (mail-pj2-f13.google.com [74.125.227.141])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B1D512ED154;
-	Wed, 16 Sep 2026 01:52:31 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A725A51B17C
+	for <target-devel@vger.kernel.org>; Fri, 18 Sep 2026 18:13:36 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.141
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789523563; cv=none; b=a3xjYPml1/7gq+SIAdKvD/eHqjlkjWueWao0Y8lGitAs7SPHQkDckx9RHyLTe2CJ2QCnqW1LSGk+N19YE4OHVaezp0C7GwXkONH+XdQ/EcUn2ZWno8MfsjQfKiDiiD22V3+0grCJaV2zX3PQzUWDFiaT6UedJ60kl+tyl/FH9I0=
+	t=1789755218; cv=none; b=q+0Gq3heOzet5txHFbdGKHZAMEJ6ZK0uCKRHXrdPthwsLceugb0WVOuEt4hxIGVPUHZs8Z8Uw9kj9tVOFSsNp/bjzCD3cGC7RTzIJQyaOCxfWZZTE6I7dmac54nkhhsCf0jo3iVs1Q7OeDewj4WALdl5UO2IDr8adK3I9Hlh55o=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789523563; c=relaxed/simple;
-	bh=bVaHqG5lfW5gRf1Q4yy2wzQYNJDGHKKPJrCwDKYaBIE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZQmSTN3+rU/x8waeF6x5KuJW2kGWJqgvy9BYGJhRVGkthPch+MQtpkqoVa4pq+NlgjEGQvtt4L2Fd3OjCXMUyJyurXaj/zMcrPW8alXtO5JTmVO6lygvub28DPVa3Bqirid4sOXbmdU6L0iY9N0jlZpLl4uLE6OVU5LMAFPdEMM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=KYfwRlMz; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1789755218; c=relaxed/simple;
+	bh=jxB51OTaF8ZQDmHlLnMOrVw7Z/Ws4WNrUhbIMMa/FPY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BwwZ0CUlT1rSknCibYfoSzGUMyuPtOMALiUOXIvz5WSl918h3N+aDenFA1iCE5RCduAVZUUXLtuY2BT5nMAjg2DdLKlDn7tB75F+oYrEyuk2JGiNGovw3wSM84ZpDxz4MkKLszfF7VJopcwYpPSfAuKd6Q7BcL042ZU/UWBy2WU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=M44kfKPW; arc=none smtp.client-ip=74.125.227.141
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="KYfwRlMz"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60FFF1F0089A;
-	Wed, 16 Sep 2026 01:52:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789523545;
-	bh=3+14Ha0wjNy8ghL4gXJPO7+O/WPEKrs1JUa9a23YT+Y=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=KYfwRlMzZBonbOKJFi+lRvVJYYSSynJyaq0BIm8HarUHeSfCYllCjcaqiKJxvdd0y
-	 4LdxQj7Y2JiooWMV68syUYj8uSQliTyJKbUiex3e/heK+iLGr6mnUo+dmYVOaOd7TF
-	 M215rKjMbSc6IpMQhZ8ueG7H51YuJjsfdmnAMEjQYWZjWZWRBAjgqGvY6mq3n1BPY0
-	 vcMkdV4893SJpGX0mse6M3DytT11t8/Q8zzkOcqVk1ZAC4teJbokP010KFUtdyf+zQ
-	 UVzKuhBrEd6B5og4SfbSweNCI+yVbj0CCZiTRD9RHvNPabzmk5KZuyfaoj3M+pTlio
-	 6O4/BM8I/hLVA==
-From: Sasha Levin <sashal@kernel.org>
-To: stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>,
-	mlombard@redhat.com,
-	martin.petersen@oracle.com,
-	loberman@redhat.com,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="M44kfKPW"
+Received: by mail-pj2-f13.google.com with SMTP id d9443c01a7336-2db1ca06a25so7774585ad.2
+        for <target-devel@vger.kernel.org>; Fri, 18 Sep 2026 11:13:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1789755216; x=1790360016; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=shS485b8tZfkhk79R4MyxZiHCFajwa7fKOgCDdDkLAw=;
+        b=M44kfKPWKda/HQ54Lt3AI06EuzRL5MzqGj+Ht2X1/cHXTPkh30UTbI6D7FpYB1tsiO
+         244NTerQ1oOA2MYCE8fqDDQ0LPQOCjIxo6a+qEmAsD9HqJSvuY/K1AGPxhOJnFkb9PJk
+         mCmWAe6tARA8Js0hFMIelim+afhECSapODYiiZitQF7XqbebCqvF0uBtpCscJ4rLm/EB
+         J14zTg6cAJqkmhixjA78k7BHWMiguDofXXh7Xzsmhw5I6jLhjmu3CLf8F78b5J6aOXfl
+         feb6JEsF3ZWS7skzm4tpoZTpXqbjr0h/Q5HkeqM2DoqbInHjdPzOI2PjCIsbvTm/sUAT
+         94dw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789755216; x=1790360016;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=shS485b8tZfkhk79R4MyxZiHCFajwa7fKOgCDdDkLAw=;
+        b=Iy6BbOTJLH3tquZrGgN1tMRTsirKkqPLjYx1DL+RMOazsIpqhlu4Rfie64U625cCGf
+         ouZFUYaDdHzZ+VD6nInGqDsvRkVbcP0C4uj1optq28pM3KjHAeGErFJLRrIUBNq7O0Cy
+         3r34nF2xT0Wgz5f8jcbqkl2xPxjgQQChwqJP3A2kXdP1Healq8c6UlVzN9hnJR90xBSe
+         NaDmfbQPc1SVaMJMROZcoL4u49GVfWfC7dATnlwpuQEi7PoeTGQ0dq8SNMLlAX7j1oF4
+         5S7n/CzgXB9iIJIG7b9llOgA/Ev2n/nj9xRQptXAfCgB0ztofhsSxfbCFJ+1uEb8yqLD
+         PP4Q==
+X-Forwarded-Encrypted: i=1; AKwUvByMpcFBHdWx2o2sfxHloS5igwKS1rcw223HakY25WWj9d6xowwbXVrcHIKXuy/j7MyljqT0XE38itg9zbQ=@vger.kernel.org
+X-Gm-Message-State: AFuF++leC5FxRxODSPScv9DIxktGQCymgSZR4HF+wKvyM3qmcijM+tzX
+	E7UjtPD/48RLJ+iA219QYAnuJKLPbqpgAmVI380mYsDCLefCJJzQy0ZD
+X-Gm-Gg: AYBFou2e9GCbr6j3gtg7J5Ak8OgqbYQ64UL1H/zzgWUR1pwuXnanCMl62CY69cyReMc
+	pGeZmHc6AaTTwN11wItnfu9cWEvJ07+UZaA9FlgPm76Fje282AWTj1NRRAyB5vEgDW8MlUwosEy
+	QCAHJUe9zHXzIV6vFByiN5eTRIT8WTX16oJi/I+XhmpteEoqFv2MWJf0sKxKH7aUhO3433RKrpr
+	f44nd+L2y5nazBZyXivKte8aTuYbNE7GaBJSdP83DaN4HOwrKc9IQjAPLdPIID1GarTIl8xbkPF
+	8hK6BfgWbd7V4J6oh7InJB2fjYxDfayscb8MPNUr7MEwDfi0P1FPQ1MTz2PGebAJLm3zH0iLSdG
+	YvY3et0SleYqeFIYyLPfsfRy4LesozDAUy1bdbjbS+Qe50RkSd70XetvFLZBXQ0gNUK4Vy7Qyet
+	+VLPpFc558aDDtrkyMz2RVYkKdA2Z8gU9GtR5EUKrUR4sD5rLL63BjwLJ/KeS2DdUm
+X-Received: by 2002:a17:902:e751:b0:2c8:2808:3ec9 with SMTP id d9443c01a7336-2ddb1ae69b7mr68800035ad.12.1789755215937;
+        Fri, 18 Sep 2026 11:13:35 -0700 (PDT)
+Received: from lgs.. ([2001:250:5800:1002::de93])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ddc1788bcasm662465ad.21.2026.09.18.11.13.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 18 Sep 2026 11:13:35 -0700 (PDT)
+From: Guangshuo Li <lgs201920130244@gmail.com>
+To: Ram Vegesna <ram.vegesna@broadcom.com>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Guangshuo Li <lgs201920130244@gmail.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Kees Cook <kees@kernel.org>,
+	Daniel Wagner <dwagner@suse.de>,
+	Hannes Reinecke <hare@suse.de>,
+	James Smart <jsmart2021@gmail.com>,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
-	jonatan.rueda@ggcircuit.com,
-	jacob.pitcher@ggcircuit.com,
-	Dmitriy Polomoshnov <dmitriy.polomoshnov@ggcircuit.com>
-Subject: Re: [PATCH 6.1.y] scsi: target: iscsi: Fix hang for aborted WRITE_PENDING commands
-Date: Tue, 15 Sep 2026 21:52:08 -0400
-Message-ID: <daily-reply-20260915-0003-re-iscsi-write-pending-hang@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260915091456.8-1-dmitriy.polomoshnov@ggcircuit.com>
-References: <20260915091456.8-1-dmitriy.polomoshnov@ggcircuit.com>
+	linux-kernel@vger.kernel.org
+Cc: stable@vger.kernel.org
+Subject: [PATCH] scsi: efct: clear MWI on remove
+Date: Sat, 19 Sep 2026 02:13:26 +0800
+Message-ID: <20260918181326.3633765-1-lgs201920130244@gmail.com>
+X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -51,20 +83,38 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-> [ dpolomoshnov: 6.1 does not reach the target_complete_cmd() declaration
->   through the headers iscsi_target.c already includes, so a straight
->   cherry-pick fails to build with "implicit declaration of function
->   'target_complete_cmd'". Added the target_core_backend.h include.
->   No other change from upstream. ]
+efct_pci_probe() enables PCI Memory-Write-Invalidate with pci_set_mwi().
+The probe failure path clears this state with pci_clear_mwi(), but the
+normal remove path does not perform the corresponding cleanup.
 
-I went the other way on the older trees and took ea87981a0ee8 ("scsi:
-target: iscsi: Handle abort for WRITE_PENDING cmds") on 6.1, 5.15 and
-5.10 first, which brings that include with it. d5869dae5080 ("scsi:
-target: iscsi: Fix hang for aborted WRITE_PENDING commands") then goes in
-unmodified on every tree, which is what I prefer when the option exists.
+pci_disable_device() only disables PCI bus mastering and does not clear
+the PCI_COMMAND_INVALIDATE bit. As a result, the MWI configuration can
+remain enabled after the driver is removed.
 
-Queued for 7.2, 6.18, 6.12, 6.6, 6.1, 5.15 and 5.10, thanks.
+Call pci_clear_mwi() in efct_pci_remove(), matching the probe error
+path.
 
+This issue was found by manual code inspection.
+
+Fixes: 4df84e8466242 ("scsi: elx: efct: Driver initialization routines")
+Cc: stable@vger.kernel.org
+Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+---
+ drivers/scsi/elx/efct/efct_driver.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/scsi/elx/efct/efct_driver.c b/drivers/scsi/elx/efct/efct_driver.c
+index 07c2f453459e..720bad7b3517 100644
+--- a/drivers/scsi/elx/efct/efct_driver.c
++++ b/drivers/scsi/elx/efct/efct_driver.c
+@@ -613,6 +613,7 @@ efct_pci_remove(struct pci_dev *pdev)
+ 
+ 	pci_release_regions(pdev);
+ 
++	pci_clear_mwi(pdev);
+ 	pci_disable_device(pdev);
+ }
+ 
 -- 
-Thanks,
-Sasha
+2.43.0
+
