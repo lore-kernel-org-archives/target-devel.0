@@ -1,133 +1,141 @@
-Received: from mail-pj2-f12.google.com (mail-pj2-f12.google.com [74.125.227.140])
+Received: from mail-oo1-f77.google.com (mail-oo1-f77.google.com [209.85.161.77])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8342A327BEC
-	for <target-devel@vger.kernel.org>; Sat, 19 Sep 2026 17:49:29 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.140
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29F172741B6
+	for <target-devel@vger.kernel.org>; Mon, 21 Sep 2026 02:19:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.77
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789840170; cv=none; b=f5oJRZMsD/24wQyenDDKBr9trFrmP/OaYm8+pbXUG0Z3xY9dg5IwhL04Yj4Tz9jfJB7qpRLza1TE4P2zAiVrn4ZwGn68DtIb7s7fFrWiEHIWkbwcYbK9BMrAxF5tDOcnqmDq3cl3jziwBN4bZut17JUn/gVmsD3zXJ8jaXqcFAQ=
+	t=1789957182; cv=none; b=HMorK+kUory7RIYXj65YnC4DK0rJ1LJR/pjPlOLbJHSSDnVmhfuAdjlKaya9Pc0Pav9bvAzfpDLhnVCf4huHxHI84P8Zx0cXO2EWtJpAxqmf2xp+dDefAwEYxujLmyPur6tIbKNn4bX5Qf7DBBeUNBgD6q6+qabW60TftfJ/R44=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789840170; c=relaxed/simple;
-	bh=g6tsjX6Qa/+gUKGSA+7Kv+QYuIKzwo+FzO1cUxU6D7I=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NvFpaXZb8jobKHVfcWO3rIH4Cvn4RtJZ/hLYMCJL/+WrX/jNEpx4opTVB8+xae3YaNd7ATre9/2sablZe3VdDZubmLs97l/Cps6XjI2uwLXlNQH6oU8/hDU1LtqQyNC/8bWhjYqnDmPzloLvwrhd39pmmEKoL7SBkLbctPDhTAI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=BVP5UP2a; arc=none smtp.client-ip=74.125.227.140
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BVP5UP2a"
-Received: by mail-pj2-f12.google.com with SMTP id 98e67ed59e1d1-398c066106cso1426498a91.1
-        for <target-devel@vger.kernel.org>; Sat, 19 Sep 2026 10:49:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789840169; x=1790444969; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=GMcAlqV/8gbRvywKZc2/TEvRO6KQIityZ14E3909GDg=;
-        b=BVP5UP2aW+2uHY3qAE4/6Zk6A93dSwyAhMeED0JxnSybyosnaeXzuYlEEr1dZiBVhN
-         d0K1nol3825CTjwTo46tEIAVP3NHaDapyiIP8JviZ0vq5zFf6KZ2wT0mq8fFbPVvSjEC
-         FXfQ+9fKZbkBw3ylxmrYLScG2IzUMMgjfXrWyQmKkfu6mND/QuUiV8b6zPs9wUb/7ypO
-         bK87KU4ctFDjcuf94jYlrMean+x4fon2KIO+rtBhHl5X9bX5vuhBFnoUwyohGVnA+5mP
-         NfCc1VJj0sBzPBnNsiSE6B7ZTlJcp8Zo4RaisAsmIjeOWY3N87xAU7tufhHo5UFiXXaX
-         xpmg==
+	s=arc-20240116; t=1789957182; c=relaxed/simple;
+	bh=BAsIUQ1nVkUgpzwJBCmVe0ojZCDOZnN7HyCcAiuT6So=;
+	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=BW6zjYi9lQKuJWvkNX1CsM24Mh+T9pyyE4ihVMH3Xs57kmSViNRmXaO0FIY9uu1oJibl4Kygo2iPWCbZ2NqzE1HeuqzcHMPlkSG7Q6FI/zD2JF3k5J9YAz6kb/RHLO2Ki6RFst1GpKTdh5Or2DhLIsIUfxf1vmJLs/+6xGkFn7k=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.161.77
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oo1-f77.google.com with SMTP id 006d021491bc7-6c2d5235ac3so4422347eaf.0
+        for <target-devel@vger.kernel.org>; Sun, 20 Sep 2026 19:19:40 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789840169; x=1790444969;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=GMcAlqV/8gbRvywKZc2/TEvRO6KQIityZ14E3909GDg=;
-        b=uo7qptYxXiejABhGB7PrwLJJizxNKi6hrSzMl62IUceC512vIL7MDGXvjr+nrFpYgj
-         GCIua/Ujwag88QBTPPq4KxkBmiKw9gKMRXsTGqSWtXsKwCXiNIR6vVYzjxg6gKPZa0fY
-         MrhioqJ6Ubctl4otBTvmMTrZBBrKWGuKOIQjipgZUiEDDv5/fsaeq2d1vzDmlglMlAn6
-         SlJKOpZDuqvzT8ZsJeBDWdKMS9xraU6YIEjetUrSFOq4SWrJmr+ZxEJ15+PYiZAy3Hp3
-         0JCXUNRMbjWWV9mvN9Iiq47+oJw78JqH1Hn3iBrCjZKAmyrfT3zVBS9bqnlWQtOrLq4T
-         b+aw==
-X-Forwarded-Encrypted: i=1; AKwUvBwVcrwiNn0G4sGiu1rGUI9ziGwJ25b2ma4bMHOtJoAWGeCWyS9nN3CI+Dq+t0yeVMLPQ56BB9NMK2+NrDs=@vger.kernel.org
-X-Gm-Message-State: AFuF++mXDUe8zmLiRJ180juxiHHWgqzKy5Q0+SKeMSDdTJzEF/k+rkuI
-	vpOTjgS9hXSLPDyQJcQIFRqhZYsQclJHuurx7SGE9p6B7nB1EAs3+xKH
-X-Gm-Gg: AYBFou0Vbpqj4QHBI6DPKI+xVi4afjioLwGHN9+yF+UBy0MOFGoK9cN/AUDcLuuBQgF
-	luLgP3H14NJFtBUdlfPEB61zfI4Ez99MZZjY3OG1yLy0HHKgkS36FbwsLuMXfwH/jN6zL9KY0sX
-	JeNEYtXT27HV6T1P0P8LQw19L+gFcvqSl2jfR4Efrws5zb4wTYzt7n/tuHAvjcVu5BF902BbQmI
-	pqvWrGgAxaQ+yvEjHCuju+aHqO8XcLX+5a2bn8ZkR0tev8Yq95PQ1skqvIRpXeEre9x1nT3YNmC
-	ThBI2dqMBv236keC+An+BA37fUYu5yPiiO1dPpT2+qh3Jce2CwI1rXu4Cl5UKn5UHJ4L60Zj5eS
-	9JQ+EH6iFMmDQ6wRx9e65ESXdo8CZb83VvrwB79tBUOcvG13+izw7vm8eLvQ9fOmizQhhtnuCfr
-	4Ve0ehyp1AN26jptUydA5AbCot3C2S0wjqruxcN2ugQDfbpkZJ4iBsmabBFTXnT9gO8bbF
-X-Received: by 2002:a17:90b:4c46:b0:366:3517:1aa2 with SMTP id 98e67ed59e1d1-39e54922644mr15032744a91.0.1789840168712;
-        Sat, 19 Sep 2026 10:49:28 -0700 (PDT)
-Received: from lgs.. ([101.76.249.46])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39e6d83e253sm2082331a91.1.2026.09.19.10.49.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 19 Sep 2026 10:49:28 -0700 (PDT)
-From: Guangshuo Li <lgs201920130244@gmail.com>
-To: Ram Vegesna <ram.vegesna@broadcom.com>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Kees Cook <kees@kernel.org>,
-	Guangshuo Li <lgs201920130244@gmail.com>,
-	Daniel Wagner <dwagner@suse.de>,
-	James Smart <jsmart2021@gmail.com>,
-	Hannes Reinecke <hare@suse.de>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: stable@vger.kernel.org
-Subject: [PATCH] scsi: elx: efct: fix Scsi_Host memory leaks on add failure
-Date: Sun, 20 Sep 2026 01:48:35 +0800
-Message-ID: <20260919174835.3729156-1-lgs201920130244@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        d=1e100.net; s=20260707; t=1789957180; x=1790561980;
+        h=content-type:to:from:subject:message-id:date:mime-version
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=rPYuXaERi/jrwZ0INi/v5/jDFp/Y0zqC2P4+v3xDKMA=;
+        b=u6n0HWozSHTt9mErHhkYMSHzcJyFouh+nc6+urEX+ic6amLYzWAE8zlACDi7Ytgx5Q
+         ab8zITW2PiNVz65u03yazoixhGT7OppPSZkvMOXCZp4w0nVFh6SYWlESMzEZ660N54lp
+         ANVopqZo9zPgvGzlP5P2b5H3IXxdpTyFmPZZKsVLVP4Na3rosMy7A3g455TNQBrbY7r5
+         9z4YpoKyOsKHXP3r9T06E5GwOUZVSjjal29Au++0vskU05oqD6dghcsURQVWhSC+CEUZ
+         LHZ9O6hYnkZIpX3Mp4Pms6YoZpCKyRXZD/G7f91ofYz10A7dkR3bRe02iJAIEfspvuam
+         KVJw==
+X-Forwarded-Encrypted: i=1; AKwUvBx4kBvZUdrNlSQ1LXvxQTp8teFI3RlO0qHxZe2UE4/KxlcyPJ/yIxRw7oixhQK0vTDkvZXZMCn/ljFyG9I=@vger.kernel.org
+X-Gm-Message-State: AFuF++ltolcSWA3yY1XJoXTZBvxE0IS/sThk+4+fBLY7nNOxGZKPjMW0
+	CP6fBNVdPUwH9Hnt1YK/qFb3jEReA56g6QpxVJ9/dHHOrh6B/ohC9u7CtH8MaeRhpK0HKiJcrIb
+	7w3llpWtu6bwtV4NUgZA9O10Amrqsb5Sqn0Zc+NfPsmkUb9QFH44EoCEHJO8=
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Received: by 2002:a05:6820:4cc9:b0:6ba:34ea:ab69 with SMTP id
+ 006d021491bc7-6c8ffa2ca25mr10838622eaf.40.1789957180033; Sun, 20 Sep 2026
+ 19:19:40 -0700 (PDT)
+Date: Sun, 20 Sep 2026 19:19:40 -0700
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6ab0943c.514bccd6.255447.000a.GAE@google.com>
+Subject: [syzbot] [target?] WARNING in rd_configure_device
+From: syzbot <syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, mkp@kernel.org, 
+	syzkaller-bugs@googlegroups.com, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-efct_scsi_new_device() and efct_scsi_new_vport() allocate a Scsi_Host
-with scsi_host_alloc() before registering it with
-scsi_add_host_with_dma().
+Hello,
 
-If scsi_add_host_with_dma() fails, both functions return without
-dropping the initial host reference returned by scsi_host_alloc().
-Although scsi_add_host_with_dma() unwinds the resources acquired while
-adding the host, it does not release that initial reference. As a result,
-scsi_host_dev_release() is never reached and the Scsi_Host allocation is
-leaked.
+syzbot found the following issue on:
 
-Call scsi_host_put() on both failure paths so the initial reference is
-dropped and scsi_host_dev_release() can free the host. Also clear
-efct->shost on the physical host failure path since it is assigned before
-the host is registered.
+HEAD commit:    9d80aa4617b3 Add linux-next specific files for 20260903
+git tree:       linux-next
+console output: https://syzkaller.appspot.com/x/log.txt?x=13c1dbf9580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=b370c26fb58c72f0
+dashboard link: https://syzkaller.appspot.com/bug?extid=fa495e1497c48a6ed885
+compiler:       Debian clang version 22.1.8 (++20260613092233+e80beda6e255-1~exp1~20260613092250.77), Debian LLD 22.1.8
 
-The issue was identified by a static analysis tool I developed and
-confirmed by manual review.
+Unfortunately, I don't have any reproducer for this issue yet.
 
-Fixes: 4df84e846624 ("scsi: elx: efct: Driver initialization routines")
-Cc: stable@vger.kernel.org
-Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+Downloadable assets:
+disk image: https://storage.googleapis.com/syzbot-assets/84a12994f553/disk-9d80aa46.raw.xz
+vmlinux: https://storage.googleapis.com/syzbot-assets/2329deeb3b2b/vmlinux-9d80aa46.xz
+kernel image: https://storage.googleapis.com/syzbot-assets/689910d8c695/bzImage-9d80aa46.xz
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com
+
+------------[ cut here ]------------
+1
+WARNING: mm/slub.c:5347 at ___kmalloc_large_node+0x10c/0x170 mm/slub.c:5347, CPU#1: syz.3.40/5899
+Modules linked in:
+CPU: 1 UID: 0 PID: 5899 Comm: syz.3.40 Tainted: G             L      syzkaller #0 PREEMPT(full) 
+Tainted: [L]=SOFTLOCKUP
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 07/24/2026
+RIP: 0010:___kmalloc_large_node+0x10c/0x170 mm/slub.c:5347
+Code: 41 c7 46 30 00 00 00 f8 eb 03 45 31 ff 4c 89 ff 48 89 de 89 ea 5b 41 5c 41 5e 41 5f 5d e9 8c a0 0b 00 c6 05 8e e4 58 0e 01 90 <0f> 0b 90 31 c0 5b 41 5c 41 5e 41 5f 5d c3 cc cc cc cc cc 89 ef 89
+RSP: 0018:ffffc90004b7fa88 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: 0000000008000000 RCX: ffff8880237eddc0
+RDX: 00000000ffffffff RSI: 0000000000000dc0 RDI: 0000000008000000
+RBP: 0000000000000dc0 R08: ffffc90004b7fb47 R09: 1ffff9200096ff68
+R10: dffffc0000000000 R11: ffffffff869fe6a0 R12: dffffc0000000000
+R13: ffffffff869fe7a9 R14: 0000000008000000 R15: 1ffff1100eff52c3
+FS:  00007f0d2de8e6c0(0000) GS:ffff88812495b000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 000000110c470003 CR3: 0000000036170000 CR4: 00000000003526f0
+Call Trace:
+ <TASK>
+ __kmalloc_large_node_noprof+0x18/0x90 mm/slub.c:5390
+ __do_kmalloc_node mm/slub.c:5407 [inline]
+ __kmalloc_noprof+0x3f6/0x710 mm/slub.c:5444
+ _kmalloc_noprof include/linux/slab.h:995 [inline]
+ _kzalloc_noprof include/linux/slab.h:1312 [inline]
+ rd_build_device_space drivers/target/target_core_rd.c:194 [inline]
+ rd_configure_device+0x109/0x730 drivers/target/target_core_rd.c:294
+ target_configure_device+0x13c/0xa70 drivers/target/target_core_device.c:988
+ target_dev_enable_store+0x3e/0x80 drivers/target/target_core_configfs.c:2484
+ flush_write_buffer fs/configfs/file.c:207 [inline]
+ configfs_write_iter+0x337/0x430 fs/configfs/file.c:229
+ new_sync_write fs/read_write.c:595 [inline]
+ vfs_write+0x612/0xba0 fs/read_write.c:687
+ ksys_write+0x150/0x270 fs/read_write.c:739
+ do_syscall_x64 arch/x86/entry/syscall_64.c:61 [inline]
+ do_syscall_64+0x166/0x520 arch/x86/entry/syscall_64.c:84
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f0d2cf9e159
+Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007f0d2de8e028 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007f0d2d225fa0 RCX: 00007f0d2cf9e159
+RDX: 0000000000000002 RSI: 0000200000000280 RDI: 0000000000000004
+RBP: 00007f0d2d03506b R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+R13: 00007f0d2d226038 R14: 00007f0d2d225fa0 R15: 00007ffe861d7d28
+ </TASK>
+
+
 ---
- drivers/scsi/elx/efct/efct_xport.c | 3 +++
- 1 file changed, 3 insertions(+)
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/scsi/elx/efct/efct_xport.c b/drivers/scsi/elx/efct/efct_xport.c
-index 9dcaef6fc188..c00ad9176aee 100644
---- a/drivers/scsi/elx/efct/efct_xport.c
-+++ b/drivers/scsi/elx/efct/efct_xport.c
-@@ -416,6 +416,8 @@ efct_scsi_new_device(struct efct *efct)
- 				       &efct->pci->dev);
- 	if (error) {
- 		efc_log_debug(efct, "failed scsi_add_host_with_dma\n");
-+		efct->shost = NULL;
-+		scsi_host_put(shost);
- 		return -EIO;
- 	}
- 
-@@ -930,6 +932,7 @@ efct_scsi_new_vport(struct efct *efct, struct device *dev)
- 	error = scsi_add_host_with_dma(shost, dev, &efct->pci->dev);
- 	if (error) {
- 		efc_log_debug(efct, "failed scsi_add_host_with_dma\n");
-+		scsi_host_put(shost);
- 		return NULL;
- 	}
- 
--- 
-2.43.0
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
 
+If the report is already addressed, let syzbot know by replying with:
+#syz fix: exact-commit-title
+
+If you want to overwrite report's subsystems, reply with:
+#syz set subsystems: new-subsystem
+(See the list of subsystem names on the web dashboard)
+
+If the report is a duplicate of another one, reply with:
+#syz dup: exact-subject-of-another-report
+
+If you want to undo deduplication, reply with:
+#syz undup
