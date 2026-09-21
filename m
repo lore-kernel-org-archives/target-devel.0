@@ -1,141 +1,86 @@
-Received: from mail-oo1-f77.google.com (mail-oo1-f77.google.com [209.85.161.77])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29F172741B6
-	for <target-devel@vger.kernel.org>; Mon, 21 Sep 2026 02:19:40 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.161.77
+Received: from outbound.baidu.com (mx16.baidu.com [111.202.115.101])
+	by smtp.subspace.kernel.org (Postfix) with SMTP id AE56C21E097;
+	Mon, 21 Sep 2026 03:11:50 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=111.202.115.101
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1789957182; cv=none; b=HMorK+kUory7RIYXj65YnC4DK0rJ1LJR/pjPlOLbJHSSDnVmhfuAdjlKaya9Pc0Pav9bvAzfpDLhnVCf4huHxHI84P8Zx0cXO2EWtJpAxqmf2xp+dDefAwEYxujLmyPur6tIbKNn4bX5Qf7DBBeUNBgD6q6+qabW60TftfJ/R44=
+	t=1789960315; cv=none; b=qBYdhsn61mhpbB77MRYCMZqZHT+BnWLRvixQSmIOu53NVIoZ2XHyeu4kVxp8kcGUzjC9T0b2GHyOxTFFUQVNYmkj4X1A2MFN0k5wm1CHhu/A2C/ZAGlG39XUadj4usRCuMFMwa8EstWhkyxMXp+VNxHPlozKeiWvElY2NzbGmWU=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1789957182; c=relaxed/simple;
-	bh=BAsIUQ1nVkUgpzwJBCmVe0ojZCDOZnN7HyCcAiuT6So=;
-	h=MIME-Version:Date:Message-ID:Subject:From:To:Content-Type; b=BW6zjYi9lQKuJWvkNX1CsM24Mh+T9pyyE4ihVMH3Xs57kmSViNRmXaO0FIY9uu1oJibl4Kygo2iPWCbZ2NqzE1HeuqzcHMPlkSG7Q6FI/zD2JF3k5J9YAz6kb/RHLO2Ki6RFst1GpKTdh5Or2DhLIsIUfxf1vmJLs/+6xGkFn7k=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.161.77
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
-Received: by mail-oo1-f77.google.com with SMTP id 006d021491bc7-6c2d5235ac3so4422347eaf.0
-        for <target-devel@vger.kernel.org>; Sun, 20 Sep 2026 19:19:40 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789957180; x=1790561980;
-        h=content-type:to:from:subject:message-id:date:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rPYuXaERi/jrwZ0INi/v5/jDFp/Y0zqC2P4+v3xDKMA=;
-        b=u6n0HWozSHTt9mErHhkYMSHzcJyFouh+nc6+urEX+ic6amLYzWAE8zlACDi7Ytgx5Q
-         ab8zITW2PiNVz65u03yazoixhGT7OppPSZkvMOXCZp4w0nVFh6SYWlESMzEZ660N54lp
-         ANVopqZo9zPgvGzlP5P2b5H3IXxdpTyFmPZZKsVLVP4Na3rosMy7A3g455TNQBrbY7r5
-         9z4YpoKyOsKHXP3r9T06E5GwOUZVSjjal29Au++0vskU05oqD6dghcsURQVWhSC+CEUZ
-         LHZ9O6hYnkZIpX3Mp4Pms6YoZpCKyRXZD/G7f91ofYz10A7dkR3bRe02iJAIEfspvuam
-         KVJw==
-X-Forwarded-Encrypted: i=1; AKwUvBx4kBvZUdrNlSQ1LXvxQTp8teFI3RlO0qHxZe2UE4/KxlcyPJ/yIxRw7oixhQK0vTDkvZXZMCn/ljFyG9I=@vger.kernel.org
-X-Gm-Message-State: AFuF++ltolcSWA3yY1XJoXTZBvxE0IS/sThk+4+fBLY7nNOxGZKPjMW0
-	CP6fBNVdPUwH9Hnt1YK/qFb3jEReA56g6QpxVJ9/dHHOrh6B/ohC9u7CtH8MaeRhpK0HKiJcrIb
-	7w3llpWtu6bwtV4NUgZA9O10Amrqsb5Sqn0Zc+NfPsmkUb9QFH44EoCEHJO8=
+	s=arc-20240116; t=1789960315; c=relaxed/simple;
+	bh=BpjGcKYePEc2G1NS/E9oGYHsvHIXvtsyxyObptjXvP8=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=SjbT6YuWxfl9NnsQuAL7MhSXcG2eyY3f/uA9Wu9g/Gr/DIh/HmrHhjDPaod3SET8wyFUNclYfZPwtTPCXUreSUL6nzE152qTtwlFB35bZl+1/tulaQzXtUSQ/Q8l1EtZFDFXFOPboErQLf9yVzt6rp2SfDjV2XWQ/mxzGYIyvz8=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass smtp.mailfrom=baidu.com; dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b=iHNA0sOC; arc=none smtp.client-ip=111.202.115.101
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=baidu.com
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=baidu.com header.i=@baidu.com header.b="iHNA0sOC"
+X-MD-Sfrom: lirongqing@baidu.com
+X-MD-SrcIP: 172.31.50.47
+From: lirongqing <lirongqing@baidu.com>
+To: Sagi Grimberg <sagi@grimberg.me>, Jason Gunthorpe <jgg@ziepe.ca>, Leon
+ Romanovsky <leon@kernel.org>, Jenny Derzhavetz <jennyf@mellanox.com>,
+	Nicholas Bellinger <nab@linux-iscsi.org>, <linux-rdma@vger.kernel.org>,
+	<target-devel@vger.kernel.org>
+CC: Li RongQing <lirongqing@baidu.com>
+Subject: [PATCH] IB/isert: Don't share drop_cmd_list across concurrent connection teardowns
+Date: Mon, 21 Sep 2026 11:11:00 +0800
+Message-ID: <20260921031100.2199-1-lirongqing@baidu.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-X-Received: by 2002:a05:6820:4cc9:b0:6ba:34ea:ab69 with SMTP id
- 006d021491bc7-6c8ffa2ca25mr10838622eaf.40.1789957180033; Sun, 20 Sep 2026
- 19:19:40 -0700 (PDT)
-Date: Sun, 20 Sep 2026 19:19:40 -0700
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <6ab0943c.514bccd6.255447.000a.GAE@google.com>
-Subject: [syzbot] [target?] WARNING in rd_configure_device
-From: syzbot <syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com>
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, mkp@kernel.org, 
-	syzkaller-bugs@googlegroups.com, target-devel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+X-ClientProxiedBy: bjkjy-exc11.internal.baidu.com (172.31.51.11) To
+ bjkjy-exc3.internal.baidu.com (172.31.50.47)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=baidu.com;
+	s=selector1; t=1789960302;
+	bh=XVSeyTy8qM3u0TDP3lCVovPzJO6kIvIdo6PV9n1k+lA=;
+	h=From:To:CC:Subject:Date:Message-ID:Content-Type;
+	b=iHNA0sOCnDCw9BHobo1KrG9Jt9xQULLVOAf0GIWoeXR0L4WI7WD7d8YqMqYwDCQtn
+	 uqPyKrC17fgtwMfhdetYsRpJn+OfudHURg/aLCiRogciFVD9PpxbR8CfqtT75q7p/m
+	 idyYsk+HlWU7zW17QwRXWbsg5HyZtHhfAYRLDENm2mHO/PF5d4BZnnKBeZ2Ug/AFsB
+	 ap1ceC7oiHWFgy596nPlcWdmfrLkZak7i7igvWvQUXyvcvWS7KW/9cvGVbFETUcrLp
+	 26yAqih7nPir+8npW0xWEjmfEzub9uPehgq5/71bO7t4yMNvy+b5JGFn/tKfhx8hqu
+	 HIkL19XjHpyBA==
 
-Hello,
+From: Li RongQing <lirongqing@baidu.com>
 
-syzbot found the following issue on:
+isert_put_unsol_pending_cmds() declares drop_cmd_list as a static
+LIST_HEAD, so the list is shared across all invocations of the function.
+It is called from isert_wait_conn(), the per-connection .iscsit_wait_conn
+transport callback, which runs independently for each connection during
+teardown.
 
-HEAD commit:    9d80aa4617b3 Add linux-next specific files for 20260903
-git tree:       linux-next
-console output: https://syzkaller.appspot.com/x/log.txt?x=13c1dbf9580000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=b370c26fb58c72f0
-dashboard link: https://syzkaller.appspot.com/bug?extid=fa495e1497c48a6ed885
-compiler:       Debian clang version 22.1.8 (++20260613092233+e80beda6e255-1~exp1~20260613092250.77), Debian LLD 22.1.8
+conn->cmd_lock only protects each connection's own conn_cmd_list, not the
+shared drop_cmd_list.  If two connections tear down at the same time, both
+threads list_move_tail() commands into the same drop_cmd_list without any
+mutual exclusion, and then both iterate and list_del/put it concurrently.
+This corrupts the linked list and can double-free iscsit_cmd structures.
 
-Unfortunately, I don't have any reproducer for this issue yet.
+Make drop_cmd_list a stack-local list, matching the pattern already used
+in isert_free_np().
 
-Downloadable assets:
-disk image: https://storage.googleapis.com/syzbot-assets/84a12994f553/disk-9d80aa46.raw.xz
-vmlinux: https://storage.googleapis.com/syzbot-assets/2329deeb3b2b/vmlinux-9d80aa46.xz
-kernel image: https://storage.googleapis.com/syzbot-assets/689910d8c695/bzImage-9d80aa46.xz
-
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com
-
-------------[ cut here ]------------
-1
-WARNING: mm/slub.c:5347 at ___kmalloc_large_node+0x10c/0x170 mm/slub.c:5347, CPU#1: syz.3.40/5899
-Modules linked in:
-CPU: 1 UID: 0 PID: 5899 Comm: syz.3.40 Tainted: G             L      syzkaller #0 PREEMPT(full) 
-Tainted: [L]=SOFTLOCKUP
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 07/24/2026
-RIP: 0010:___kmalloc_large_node+0x10c/0x170 mm/slub.c:5347
-Code: 41 c7 46 30 00 00 00 f8 eb 03 45 31 ff 4c 89 ff 48 89 de 89 ea 5b 41 5c 41 5e 41 5f 5d e9 8c a0 0b 00 c6 05 8e e4 58 0e 01 90 <0f> 0b 90 31 c0 5b 41 5c 41 5e 41 5f 5d c3 cc cc cc cc cc 89 ef 89
-RSP: 0018:ffffc90004b7fa88 EFLAGS: 00010246
-RAX: 0000000000000000 RBX: 0000000008000000 RCX: ffff8880237eddc0
-RDX: 00000000ffffffff RSI: 0000000000000dc0 RDI: 0000000008000000
-RBP: 0000000000000dc0 R08: ffffc90004b7fb47 R09: 1ffff9200096ff68
-R10: dffffc0000000000 R11: ffffffff869fe6a0 R12: dffffc0000000000
-R13: ffffffff869fe7a9 R14: 0000000008000000 R15: 1ffff1100eff52c3
-FS:  00007f0d2de8e6c0(0000) GS:ffff88812495b000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 000000110c470003 CR3: 0000000036170000 CR4: 00000000003526f0
-Call Trace:
- <TASK>
- __kmalloc_large_node_noprof+0x18/0x90 mm/slub.c:5390
- __do_kmalloc_node mm/slub.c:5407 [inline]
- __kmalloc_noprof+0x3f6/0x710 mm/slub.c:5444
- _kmalloc_noprof include/linux/slab.h:995 [inline]
- _kzalloc_noprof include/linux/slab.h:1312 [inline]
- rd_build_device_space drivers/target/target_core_rd.c:194 [inline]
- rd_configure_device+0x109/0x730 drivers/target/target_core_rd.c:294
- target_configure_device+0x13c/0xa70 drivers/target/target_core_device.c:988
- target_dev_enable_store+0x3e/0x80 drivers/target/target_core_configfs.c:2484
- flush_write_buffer fs/configfs/file.c:207 [inline]
- configfs_write_iter+0x337/0x430 fs/configfs/file.c:229
- new_sync_write fs/read_write.c:595 [inline]
- vfs_write+0x612/0xba0 fs/read_write.c:687
- ksys_write+0x150/0x270 fs/read_write.c:739
- do_syscall_x64 arch/x86/entry/syscall_64.c:61 [inline]
- do_syscall_64+0x166/0x520 arch/x86/entry/syscall_64.c:84
- entry_SYSCALL_64_after_hwframe+0x77/0x7f
-RIP: 0033:0x7f0d2cf9e159
-Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 e8 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007f0d2de8e028 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 00007f0d2d225fa0 RCX: 00007f0d2cf9e159
-RDX: 0000000000000002 RSI: 0000200000000280 RDI: 0000000000000004
-RBP: 00007f0d2d03506b R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
-R13: 00007f0d2d226038 R14: 00007f0d2d225fa0 R15: 00007ffe861d7d28
- </TASK>
-
-
+Fixes: 3e03c4b01da3 ("iser-target: Put the reference on commands waiting for unsol data")
+Signed-off-by: Li RongQing <lirongqing@baidu.com>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/infiniband/ulp/isert/ib_isert.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+diff --git a/drivers/infiniband/ulp/isert/ib_isert.c b/drivers/infiniband/ulp/isert/ib_isert.c
+index e69db43..efa8d7b 100644
+--- a/drivers/infiniband/ulp/isert/ib_isert.c
++++ b/drivers/infiniband/ulp/isert/ib_isert.c
+@@ -2583,7 +2583,7 @@ static void
+ isert_put_unsol_pending_cmds(struct iscsit_conn *conn)
+ {
+ 	struct iscsit_cmd *cmd, *tmp;
+-	static LIST_HEAD(drop_cmd_list);
++	LIST_HEAD(drop_cmd_list);
+ 
+ 	spin_lock_bh(&conn->cmd_lock);
+ 	list_for_each_entry_safe(cmd, tmp, &conn->conn_cmd_list, i_conn_node) {
+-- 
+2.9.4
 
-If the report is already addressed, let syzbot know by replying with:
-#syz fix: exact-commit-title
-
-If you want to overwrite report's subsystems, reply with:
-#syz set subsystems: new-subsystem
-(See the list of subsystem names on the web dashboard)
-
-If the report is a duplicate of another one, reply with:
-#syz dup: exact-subject-of-another-report
-
-If you want to undo deduplication, reply with:
-#syz undup
