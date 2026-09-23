@@ -1,62 +1,64 @@
-Received: from mail-oo2-f39.google.com (mail-oo2-f39.google.com [74.125.231.167])
+Received: from mail-oa2-f12.google.com (mail-oa2-f12.google.com [74.125.231.76])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 522A35304D4
-	for <target-devel@vger.kernel.org>; Wed, 23 Sep 2026 13:13:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.231.167
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DE4B53163B
+	for <target-devel@vger.kernel.org>; Wed, 23 Sep 2026 13:13:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.231.76
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790169205; cv=none; b=FyYUYO7ln6mpcakHG1bjKdXeJ4rF94Hf2j9g7CoH+4qCNLzQP1uliYTcFG0lXWPhcdelk2pC9TKOnZgkW5Glpd2j2wiEppLCb+zgWmDcjtaP6v3XmUc+QPtLftJStDVwywX0byhU7up8kGTidS9I8qcwmF+J+L7Jv7mgV8vZCcc=
+	t=1790169207; cv=none; b=hDwqAo08ugX2Dau5EknLm6Rc7sHnDpfJ2qwBkR6iK4yDWaIIvLGloQWboqNJc1uAfr36XvNlxsZpMX8GGnHbkkrruYaxQdhnAeWugQ5DouRLJmhBXyLTd/VhUPgzwMhDzvSmDTXUmfPTNyKpWUVgiUUgNzLQ40B6HRstO/Hbm7E=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790169205; c=relaxed/simple;
-	bh=GK5ecAyK3OXsUN1hxKCW7v5WXRm6BtLteeK8HP+W+Mc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ssQ9ypCBG+X6G8WAcjYQ3076DBdOxV85dxhWRvxX3Tvp5rDnaXHIfvDoHrWX6YJoiWo8CqsRb7R0JW4BGQE4JWEpU6LrPMbD0GKw3hNYRtsHq1mHz19s9tRr0XRWDLWrT2/Ba1fa0rb5wuoY1YXirZ7nqleu4/c77NGFvxG/y18=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=gHtueHBR; arc=none smtp.client-ip=74.125.231.167
+	s=arc-20240116; t=1790169207; c=relaxed/simple;
+	bh=wJPbewVAsF07/WKXUvjLddxh2zDS4t1o5x9ugWJR6EU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=U2YO0a5qjiwhNd3zWFyexATw7xHreDtO/rJwudG19ui/2sj0cuu7D+p6Ew46P5JS0+6nM0FVBuRnA0Cw/F3DUi/wRWC0DebDwhtEC8MMUT300VhXcWt1/Gwe2KiuCSrCfSdafeBAJoMcC9mySWqTscbsKr4JcqWF/+vw1+NZBdU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=orjoyvcP; arc=none smtp.client-ip=74.125.231.76
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gHtueHBR"
-Received: by mail-oo2-f39.google.com with SMTP id 006d021491bc7-6b1ae6a9aeaso525340eaf.3
-        for <target-devel@vger.kernel.org>; Wed, 23 Sep 2026 06:13:23 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="orjoyvcP"
+Received: by mail-oa2-f12.google.com with SMTP id 586e51a60fabf-46accbdfc39so824930fac.3
+        for <target-devel@vger.kernel.org>; Wed, 23 Sep 2026 06:13:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790169202; x=1790774002; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Nv6lEl/XuVHA69+WOwYewTTKvCN1uRHRSoP0EqmEiFU=;
-        b=gHtueHBRlj/l+DD27c66zli3FQaMk6DAcAq+B4tzE4JT1ewaz2RasJOlMELzB3zNdA
-         xe0EkABKvckfyAkle4Mb7EqFGn+Sb6XPoInc69+LhRU6LwyWTYuxJzR6r6E61s9ogBhs
-         8PwShuXXD7mSlGfGlwfaMnCCwSow/9xRUil9FevH1UEgkj9tapKKJx2o/nOu/ooadLOA
-         L02o6T6sliPhU+khVevLMG+k94zMxqTBgjV5GDvFPG3v+zJmh9IjYtjAsrJ5IzxQ+Aj3
-         q58RU7eZHz32GjvQQTECfytl8EBs8Z0yOW/ArRbgYvHCTORNhRQLlfDFMrsTcujrdxpp
-         BAtA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790169202; x=1790774002;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1790169205; x=1790774005; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Nv6lEl/XuVHA69+WOwYewTTKvCN1uRHRSoP0EqmEiFU=;
-        b=aJ8CgVOd8jR9Q3zWdkx/AwOoU01eFZWXVgYPg5WPZ+Vz9mQutdt4EGgAbClYb45KH6
-         Ia9xC9i28kUBOSpSJG2DldELXiDvr1DzNMN2qJfV3mZB6Z09WNCTHB0xhPz1GIfyYizA
-         P61czX3/7TWMsT6C6E7EeK4ay3749r5T2IvkFyoiDdE5+bP5zvo1h4hxldh1Sjxwl3TR
-         ltE7GR/vSMJNYfNTXUtOnFduuxipA22sIKRs30KoRfeiJxwao4qQC08XUNLc47RwUATw
-         ZrAWSlVfBKbHXtflCoyaKYF+jx/N3swBB6TlDzeMh4fWfXvagT1GM/jNq7JYgck51hKV
-         mySg==
-X-Forwarded-Encrypted: i=1; AKwUvByUTtlNmvGPsjhDV+SV458D35mpjD1eSSTM6zk+vgeDRxCVqAAKniIOSLE3rx8+4OiQq6bcaKVj0UWc1Hg=@vger.kernel.org
-X-Gm-Message-State: AFuF++mEATUvmvN/7PmuWcRDJ2L1PJUBEcCeZVUA3iMdtYsXRcIyrqQE
-	uS6/2Y4aAyOGcWEJRSCIosKupwWr7ijkpwsl6ZDRt1Ks9sjggXR2cjWA
-X-Gm-Gg: AYBFou3UP6NcNb0la2WCUYKseLLx6ILc63SxM9lWm0PmWsQ/pfUhiU7WJyYKoQT3qNG
-	62QZ92qEHHdkcycamG4ZHAcl/rtPi+JLjhDGj06CA9r7n3y8bXJ/nhx+ojOXDP6AvZXlr6sMYJ+
-	0vBSqGbcctavSXiSJFM7UF1Q9UlfLE4WexX6qm3QS8Vh/WUFXSMYJTsfQnSiuj2V0XNbdI6dwYl
-	LHkiq8W5Rj/Qm7sRt/zYz5AwNr6P/AUzbrdAzHzq9XJvISP+hQCLE0lGCa1ZrNTLTg3TqYxY+6z
-	vbJTwZfOT9HK4Iqk2ICVdmMpuHLV3TjbuTJ59mYMNS4Blu+L5U8RxR+JSFCwaGiQDp/Qk3dxuxg
-	Eyc+blHmVb6Onupz6DB8Cm153/F5m1Pn3etyJL8bWOssVD9i5V8Bae/byBF0olFWAGp5MCI7c4I
-	rffOhGLjBhLVU8tpmAXWspPI/Hz2XvG75rX3MDPRpasFAnzt+ga96G0rnD+d28b/IF76BjxJSlE
-	F+LfdazjyonWknV2DRTiEb/vvgeb5o5hZFhvXHT
-X-Received: by 2002:a05:6820:16a3:b0:6c0:1ab7:8883 with SMTP id 006d021491bc7-6d2cf84ab7dmr2261569eaf.13.1790169202135;
-        Wed, 23 Sep 2026 06:13:22 -0700 (PDT)
+        bh=GWcsyWerzXtmqpdXsdvwUzYUFNtc0z30AKuwtSX4TlE=;
+        b=orjoyvcPw50EmeaJOqhxKIZRhoxLAo0uWIso4JrS2ty7Fu2oIiC2cuNQ/IKlbXs7FK
+         2lpXLkPr7Zxtq37lmWZK3N+wK1/skKq0e3PfRzjhj3K476kaBYLA5EVrWqoOTcNcmqS4
+         LCntTxW5YLc6VMFlJsvmlmtAR/Myf+UpG8V0JtdVxdMqV6SE9/JLVs5DsqBJlJ+JJJM4
+         +hGxyh4VPZ3yVH2UzHwyMRuhfsIn9yIrfbawgcDG+ZjJePnuM51SG/oH0d343SUcTNi2
+         lrj2jEwh1YXwMIv17s3Te6U6kMhuwiy+e1tE6yD7MOC1128R1WcfsGzSgOc/28osm8fT
+         REQA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790169205; x=1790774005;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=GWcsyWerzXtmqpdXsdvwUzYUFNtc0z30AKuwtSX4TlE=;
+        b=ovCrChgD19eC66iEY136UH0GIoYkdzbihLKE8EdBYdIbyUrA7khQaC4r+6AtQhcPqJ
+         kcE/qCI4Jx5FzyNDr+tIT15sUiEPj2Z329kjKGVcWtIAOMACk5/i1c6Gdyq5uRHG+yMU
+         ZFqOBSVgzELWV/1vb1UyqZdwnq3ZOsLk435dncxMlPueL1NJzTtcORd6q32tAhPDHmiN
+         xaR81fyaCBqT6wtw4k6ayexeuVP7xXUoQYHvZoMNgWX4bGJB/67BmKmTpHzpBz/mQTpf
+         HS6nx+VNCoSFYlJeQQujd+YO7Bh9H/ORMV/chuZ7f6c5+43ES4S2TvcB9TlN/qdX8Vg9
+         JsQw==
+X-Forwarded-Encrypted: i=1; AKwUvBxxAz16+c8o6H60uWaL5noSNdTJx6PBWe6rfeTcKB2NHWXTGqaROV6AUL5WGIA0nzYNy4ii2Qx07cty9qg=@vger.kernel.org
+X-Gm-Message-State: AFuF++k0wtN08+1dPvKrnMpKN9SifFK1swvsoK+/usyvEzdzTtnRXhsM
+	7tPP0YOu7R2ZuU2DhOt5v4mRywke6RRx/BMG5j+cV9fGYPAvvwtscshO
+X-Gm-Gg: AYBFou08jxeOpa/a56vfD0purKQ3027+SZro/ARm4fQLn7WdM0bRXHajEoqQ+3YHP51
+	8tGN+Utq1RBthlcTrRrFqa6Nz7OfpX22CiitfjcbYQ9nlSfrB8FAIf2P/UUR6IWYFrnBRzp7oRt
+	B61OGRQJpenYZu6nJmgYw0N11UUZtceeo/Jhta+3LF13oEcs18R/MMlWtc3xKnyoFdR0O+OkAPa
+	/bwxhHcUjWNSNU4FpLum1jFMEg4JYvgfyzhgPt4TYAjsVyxCPgZAAM7hcPGhq3O6hrjCCeiXoab
+	XUghclugcjRFDGCyh/Gnx10hVnIPT8hGtd4jpGa48aRCgIC7DvoTwdfHzZWrQWsemQXv0hTd1DY
+	oTcuWG5tuJ1yH5TtVA50WgDFWV9LWDDy/GyhjlW08h2RcUqJ0ls8vTDDh8Ag6S4N3U3agPyiA54
+	znm83RK3iUrwBTpwnuzXxrqgdvq39Tf8zM1ZygKfsM+FOkyLTtePDeReAZfHYHhc2uwAxUw1RrH
+	RzBgWfWs8tGwaYarEdB4EcZa7/rjvfF90rGiRd3
+X-Received: by 2002:a05:6871:5814:b0:48f:e0e5:a1fa with SMTP id 586e51a60fabf-4908c3d6c7emr2513096fac.46.1790169204734;
+        Wed, 23 Sep 2026 06:13:24 -0700 (PDT)
 Received: from archlinux.lan ([136.34.156.120])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4908e54f277sm1599838fac.7.2026.09.23.06.13.20
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4908e54f277sm1599838fac.7.2026.09.23.06.13.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Sep 2026 06:13:21 -0700 (PDT)
+        Wed, 23 Sep 2026 06:13:23 -0700 (PDT)
 From: Danish Khateeb <danishkhateeb03@gmail.com>
 To: "Martin K. Petersen" <mkp@kernel.org>
 Cc: linux-scsi@vger.kernel.org,
@@ -64,10 +66,12 @@ Cc: linux-scsi@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Akinobu Mita <akinobu.mita@gmail.com>,
 	Danish Khateeb <danishkhateeb03@gmail.com>
-Subject: [PATCH 0/2] scsi: target: core: Fix and convert kmap_atomic() in SBC emulation
-Date: Wed, 23 Sep 2026 08:13:17 -0500
-Message-ID: <20260923131319.310123-1-danishkhateeb03@gmail.com>
+Subject: [PATCH 1/2] scsi: target: core: Fix kunmap_atomic() address in sbc_dif_copy_prot()
+Date: Wed, 23 Sep 2026 08:13:18 -0500
+Message-ID: <20260923131319.310123-2-danishkhateeb03@gmail.com>
 X-Mailer: git-send-email 2.55.0
+In-Reply-To: <20260923131319.310123-1-danishkhateeb03@gmail.com>
+References: <20260923131319.310123-1-danishkhateeb03@gmail.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -76,46 +80,66 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Patch 1 fixes the address sbc_dif_copy_prot() passes to kunmap_atomic(),
-which has been off by one page since v4.2. It keeps kmap_atomic() so it
-can be backported on its own, which is why checkpatch warns about the
-deprecated call there. Patch 2 then converts the kmap_atomic() calls in
-target_core_sbc.c to kmap_local_page().
+sbc_dif_copy_prot() copies protection information between the command's
+protection SGL and the backend's SGL "sg". It maps each page of "sg" with
+kmap_atomic() and unmaps it with kunmap_atomic(addr - sg->offset - offset).
+The unmap runs after offset has been advanced by len, so it is passed an
+address len bytes below the start of the mapped page, inside the page
+below the mapping.
 
-The rd backend's protection pages are lowmem, so the bug only shows on
-32-bit x86 with CONFIG_DEBUG_HIGHMEM, which gives lowmem pages a real
-kmap slot too. I have not Cc'd stable for that reason.
+The only caller, rd_do_prot_rw(), passes the rd backend's protection
+pages, which come from alloc_pages(GFP_KERNEL). kmap_atomic() of a lowmem
+page returns its linear address, and kunmap_atomic() of a linear address
+has nothing to unmap, so the wrong address has gone unnoticed. It matters
+on 32-bit x86 with CONFIG_DEBUG_HIGHMEM, which selects
+CONFIG_DEBUG_KMAP_LOCAL_FORCE_MAP so that lowmem pages get a real
+temporary mapping too. kunmap_local_indexed() then warns
 
-Testing, in QEMU/KVM, with PREEMPT_LAZY and DEBUG_PREEMPT:
+  WARNING: mm/highmem.c:623 at kunmap_local_indexed+0x148/0x190
+  Workqueue: target_submission target_queued_submit_work
+  Call Trace:
+   sbc_dif_copy_prot+0xef/0x310
+   rd_do_prot_rw+0x115/0x140
+   rd_execute_rw+0x354/0x3b0
+   sbc_execute_rw+0x2b/0x40
+   __target_execute_cmd+0x22/0xb0
 
-- i386 with HIGHMEM and DEBUG_HIGHMEM. On fe2ec83746e5 (v7.3-rc4+),
-  kunmap_local_indexed() warns from sbc_dif_copy_prot(), the log has 103
-  "DIFv1 checksum failed" errors, and 9 of the 23 checks fail with
-  EILSEQ or EIO on the rd PI disk. With patch 1, and with both patches,
-  all 23 pass with no warnings.
-- x86-64 with KASAN. All 23 checks pass before and after the series,
-  with no reports.
+and clears the right PTE, but x86 flushes the TLB entry of the wrong
+address. The stale entry keeps the slot pointing at the old page, so the
+next page mapped there is not the one accessed. With an rd device with
+pi_prot_type=1 exported through tcm_loop, reads and writes then fail
+with "DIFv1 checksum failed" errors.
 
-A static init sets up three rd_mcp devices through configfs and exports
-them through tcm_loop: one with pi_prot_type=1, one without PI behind a
-TPG with fabric_prot_type=1, and a plain one. It then runs O_DIRECT and
-buffered writes and read-backs on the two PI disks, SG_IO WRITE(10) and
-READ(10) without PI so the target inserts and strips it, and COMPARE AND
-WRITE with a match and with a miscompare at byte 403. Kprobes show that
-sbc_dif_generate(), sbc_dif_verify(), sbc_dif_copy_prot() and
-compare_and_write_callback(), which inlines compare_and_write_do_cmp(),
-all ran. W=1 and sparse are clean for target_core_sbc.c. I can post the
-init program if it is useful.
+Unmap the page before advancing offset, so kunmap_atomic() gets the
+address kmap_atomic() returned.
 
-Danish Khateeb (2):
-  scsi: target: core: Fix kunmap_atomic() address in sbc_dif_copy_prot()
-  scsi: target: core: Use kmap_local_page() in SBC emulation
+Fixes: 57636388af32 ("target: Fix inconsistent address passed to kunmap_atomic() in sbc_dif_copy_prot()")
+Assisted-by: LLM
+Signed-off-by: Danish Khateeb <danishkhateeb03@gmail.com>
+---
+ drivers/target/target_core_sbc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- drivers/target/target_core_sbc.c | 58 ++++++++++++++++----------------
- 1 file changed, 29 insertions(+), 29 deletions(-)
-
-
-base-commit: fe2ec83746e501645709761605c2464a44fd2929
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 21f5cb86d70c..55a8c2f0a286 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -1347,13 +1347,13 @@ void sbc_dif_copy_prot(struct se_cmd *cmd, unsigned int sectors, bool read,
+ 			else
+ 				memcpy(addr, paddr + copied, len);
+ 
++			kunmap_atomic(addr - sg->offset - offset);
++
+ 			left -= len;
+ 			offset += len;
+ 			copied += len;
+ 			psg_len -= len;
+ 
+-			kunmap_atomic(addr - sg->offset - offset);
+-
+ 			if (offset >= sg->length) {
+ 				sg = sg_next(sg);
+ 				offset = 0;
 -- 
 2.55.0
 
