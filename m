@@ -1,180 +1,145 @@
-Received: from mail-yx2-f43.google.com (mail-yx2-f43.google.com [74.125.224.171])
+Received: from mail-pj2-f43.google.com (mail-pj2-f43.google.com [74.125.227.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 604CF13B5B3
-	for <target-devel@vger.kernel.org>; Tue, 22 Sep 2026 02:50:48 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=pass smtp.client-ip=74.125.224.171
-ARC-Seal:i=2; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790045450; cv=pass; b=U9h8FeLIB2Xt1UDzZbXMsxPHarS1XwFRi7g3xrtq9i+cdGq12QAe3KcsU3Gr+jpf1Q9rKOwW33jH6A4WDJkHsUudszrtZhS74UMoMHbDuztEvEG2+wy5TsRGxoe4G4F3/ibo1EeKRrAZZx9kqc79+O1F/gOtrkv6sWa3gB7Jkj8=
-ARC-Message-Signature:i=2; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790045450; c=relaxed/simple;
-	bh=9seE7DdQbFb9HiabltP2bn/Px47uFUhhhOnC7opdhaE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kmwZKCk3+AH5PjMAW31KXwB18DcZgIA8wO3qa0IgaEU/9/kXz2+fMaheMAz9oMxdIfnBMT/qC4VURtEB25TekGsJz7OoEgaEGuI2J5W5ds+5zZ8UcRfakaDpaISg6Y2gvG1gzFlimijcgU3iZjWAmFLLWARAKXEG3iT7raEzT0s=
-ARC-Authentication-Results:i=2; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hQwaIh6g; arc=pass smtp.client-ip=74.125.224.171
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 997B447254B
+	for <target-devel@vger.kernel.org>; Wed, 23 Sep 2026 08:38:24 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.227.171
+ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
+	t=1790152708; cv=none; b=Ihk4FG1V+gTqBMqQCYbyvufUYGAgr5UrrVd0Qxja5fN3HBStYh8nO+0t+yZqUGkAnMayoODfNYN5fPydgsJ9zTgCvx/WG8+6tAhF75XI6LGLmodkGfU8x8SkffnjqZiMWAqhoqJz/sgOSrKa3fJpAJpcDB553Vt/H8ToE6L9zEc=
+ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
+	s=arc-20240116; t=1790152708; c=relaxed/simple;
+	bh=5MDcLEaso1xaP4AeiREVxfmH9AbDxkQzOHe+BIo5YwQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=mva1ya75RwwzVHqOWh4sftfcSKhPceh9ds4alQbbefrwmFJdetkhzBTxJnEhhRXKrXguY4jELS+f1tkoRG6sV/PTE7eOLIOhE3ld+b6l3xb8XorVBZpUYFPMrQhQm9jxE6BQcLP83jVem78Ey3X2wJZYAjHJBC/6/y1/Bs7TAQs=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jLoN/6zf; arc=none smtp.client-ip=74.125.227.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hQwaIh6g"
-Received: by mail-yx2-f43.google.com with SMTP id 956f58d0204a3-66e4aae314aso2841031d50.3
-        for <target-devel@vger.kernel.org>; Mon, 21 Sep 2026 19:50:48 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1790045447; cv=none;
-        d=google.com; s=arc-20260327;
-        b=hyfLNL2c1tR2o6oZDnSfauczqlYAO6MeoqNj9K4kxlNl9NkybqzZwLGBL2Y2B/ZX7g
-         4nJ+59vAu1DZckILC6YeDGeqEwXj4v8x7zENADcZlw3DSEsKwf4jv4u1Ph2fuYRaa477
-         +cqQiGWAZE1NMShflSWqmjIb4FZWB6x0TExlhn+sfsvnjiI4CYnHptO2mU8IvhLoX3BY
-         li8lNZdbhhyL98oAdINrCojUiIFK5/LOJaM+MMcDu/UYb4SCuG6kCXn2U4bM6hhY/PGA
-         YrX+K3G2Y9S6Pf46zGPfcYs152+PkmQehi9O6qQRLcHdpKlk2bQWvqUK33E4Gvz+MAFT
-         A85w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=PuG/mOTULDlFBdQPJWs+1DVH0LGf45HnPczNNq/pztc=;
-        fh=Wm/VVKR2oiJ4EsIED0aHWX9OBn584YXtigmYa6C5i5w=;
-        b=Z1VN/ywj02NQqVOD6UsvMnTzZ5zZUVXYr1O71T3t9gX4SS0ZR1mFTzFoEcwxLrmQyQ
-         gKjV3apcG09nveKVEeeZ8b6iRhFtf/bKJk+Kq1vSCY35zmr5iKk0LiMwX+3eJ5AZzPMK
-         8ohIvEziY5qLLU2YPjfESs4ap5vO4IcHkiTWHyqFQK7I3GwaSQKN9CTUmesNLyORPRR2
-         sPNOMUnKY6rNQPp61DD4pzFU+n5GHGCYYCF8/RUb1xKDXonBQ/7Zz0waPk0kxv9wPeIe
-         UM40i9+nTrkkDnLzYGlYbOq8PqTBXtRhDc+gXj7JbkKnS3OE7Y+p0QWAOp4Q6UaDPVs/
-         5RtA==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jLoN/6zf"
+Received: by mail-pj2-f43.google.com with SMTP id 98e67ed59e1d1-396ccdaea75so275423a91.1
+        for <target-devel@vger.kernel.org>; Wed, 23 Sep 2026 01:38:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790045447; x=1790650247; darn=vger.kernel.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=PuG/mOTULDlFBdQPJWs+1DVH0LGf45HnPczNNq/pztc=;
-        b=hQwaIh6gJZv0U3Pc0WcTl3biDBwWXnovJwhS420V1vgGJRxdzkeZ1EuDk04OQkh3O3
-         EW55N0B9NP5fiB2rZ37fQoRGRKVPE5ppPLIVgwy38P5VKM9c9X51S5SmvfFq1ep7HZic
-         B/3BIWVepPEhGsEvOUWuyW/C5Cp79VW8kuVuAu0b/KfixQgr8fiIxB6/wzEA9TYZMYP5
-         J/jZiChLpM26ek5Fv3CsH4E7ZYUSbH1v2pEu69nKhSSpu9+B3BDDLt9qm8Z2IwkAsmY8
-         rHIs0f471PPnmPxwwaUhNJdsZkZU9ZAMpXIS/sXmn/cBndjlcEEec1NigufxTDyIJPWe
-         CwSA==
+        d=gmail.com; s=20251104; t=1790152702; x=1790757502; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Ru5GUJQ/jJZenl6rNxGccFjH8Yan3srwh4Oocvd7nRs=;
+        b=jLoN/6zfm9CbOxH8qxymNFwqCUMt1S25+4Gk+IVP/eN+OwAhQvHqSSDbVjj0ORBAVv
+         Ykz8r67tDXSPTI47NPHW1mrUMVvdD6SUNoVKwg76BShDRkTzKMVT1IcPAueu1bo6UmLw
+         20gsZaYOzBUQwXYykHt29e9lodbsVkHxe+N4kiE0IM/RAd+A+35nhqZB+JhfXBP4RihP
+         EbNN+knskx1vnEVw35aOxSvQBnI0V/yiZA2Uob0t73sM6V767hBrufofEq05MDr2ph3+
+         0X4hp6YgulP134edRRWMCSHb3BnqRBt0YvrbNIVDFzmxN5RxrnTT4gPL7WQHhCO6YwFk
+         zSZg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790045447; x=1790650247;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=PuG/mOTULDlFBdQPJWs+1DVH0LGf45HnPczNNq/pztc=;
-        b=cxYyUPCFFIDegej8viDlbQ+CjcWpWGzgGxvmbl4TbLIwxiCpgXrjrd/dj6ap0ESNUb
-         AkHvmpV/GkTkvi+kVIwHwzJdTsfCiXMaEuQ0VqqcyLSvphy8WNbsHW024Yc2ZzuYk9ar
-         iDW12sEHTzjB8128Bb14wLXfnx4oxFApcw+fmxqaVpWh1ROYyntee1RbHP20QCjjDiN9
-         /g40EW1Sbk+udi6hXAiRLXrceKrqyfyDg13w/BhqQvEHkCCGr4diAW91n58tSkjhr006
-         ctOwzo1YbBoD09QIv1x+P48F2/NXbFT3BrdqX7YmOCsQrdYCU6jyj/eQ0Zu+GjSiMd9J
-         kexA==
-X-Gm-Message-State: AFuF++mCMWl6Tb7cQFqzpA0NDTCwtWictU/ndKb/nTuY16DAYyVwH2vp
-	XXPqI9OROxOegdhpq/f2q29wPm8kaeSYfY4T4CxswJY+aJgSTVM6JVmIT8CrvfAYQd/li4YTk3F
-	H2YWQLQh/QtYA/bVppnBCRAzrgx6wZoaXLZdM1CAmyDsX
-X-Gm-Gg: AYBFou2Ru3bYJwsejtA7Dz95yaD15/TvufWSa/S57GgSPeifx3l9vtDYtvcQdTIXhZc
-	Eh1hHO+d7hF6dUpWttXTeZ57Yx8h7UbFRi0VxUQvphya91p6PZ2ThRXTm5kGN3jbvjnibTdAVQ6
-	skPzsJ9ym5AvijvF8SDyc5nNILb1QcScqbvrCEfqPm0r82BMiy3GY1/WdEflp75yq0jPs7IZAPm
-	hTMXqSFvcgayIcMT5ILdP6jfKhZj648b3NsSjKqaVdPWsNWRbt77ITe5m9kNXs26SUsGUjZDapx
-	Vie33axJWleVFBr4Lr82ePK4jx2sSp5FGxYi9DQEaFLCMiRgUrvdRcfGOg==
-X-Received: by 2002:a05:690e:4385:b0:671:c5e:6d5 with SMTP id
- 956f58d0204a3-6717fcb6779mr2611942d50.4.1790045447318; Mon, 21 Sep 2026
- 19:50:47 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1790152702; x=1790757502;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Ru5GUJQ/jJZenl6rNxGccFjH8Yan3srwh4Oocvd7nRs=;
+        b=j5TvMmAu4JGy4lWJ8ZPRZFcA/pMoj/CJlf1n3972R9JKGxXY3nDFI/7kHFJDVMuQk3
+         CVecy2uOE2n1nPkmxK1JJy/NLoN0QKuqerAsS4jlbKs3PYkPWVBkaHVLVhZoosdZug+h
+         dIIwqmBZKsY9tWhPz/PyLN3kTIMn/Tt6lc78s8pwPIpHGwKsRovg2gfG5D6sNupwriAI
+         9sPEEQ6k2NOQ3j9ftwfuxiO0Jrm9OKGV6o5F+QK8/ZQm7JorDBpZBNgZklqLsZxMczIu
+         BlJi9slIKPBllL/YatGTZWXjqDNgK7bMIaRQhadImBDW9xhQBi0bspDbUv2V18NX3q1G
+         sP2Q==
+X-Forwarded-Encrypted: i=1; AKwUvBzlAR9BFBbzVdU0TSK8CM8znRHkwfvip/j0FxIeFo6xXp49sa3oH1tApiwTOKqTHbt4Ao5G9tTFo+UFrqk=@vger.kernel.org
+X-Gm-Message-State: AFuF++mAS9gfA3vlk9Q5HsQ3yzy40PIWQmoVUjZNPPr0jnf2KrsGkz2W
+	ZCJ5npQ2MQbgO7VCo/ESMW+JBAOOI0LKEAgY6v4sqW8QGNPUG0UQY00a
+X-Gm-Gg: AYBFou0Kd0mXDvb/ETHadFp16wEtnPDwWKI6rh8jr1PvLgVkFC/+E4Xl2mxPKS3d7te
+	CFYi6iMxesuhFTmpsDthw3nmC3FmOP8Uo3HgWIA0eqwrWS0dwEMhA9F7ziVgrxkroz3CYOIuPn+
+	X0ay2Dv7Wnm06LvDyRBZe/qVSFN7/JmVgC+X0L0AyvJZOyG94nbF7srAtFWWOiObByPSat9EVgY
+	EXxalYK7hqlf96Ax6w1nAC59IQWIjjlWKEu716b78qOkr9N7MwAT5ytTThVpmAr6ctyY0lBa1Yz
+	8cZ2Q3B7mbL52qGhkE26gjCNztyXCbH8FsiAgRBBIrGpeQuvDH2tnURxA/T66phRDOxRctdsKap
+	SI+w41D5L5UsMK2mNYE93ejTzHMN3+Btxq4pMB9HlYy9m97/xeZIKf6tYFH6qgixkgTJO+XqZ/M
+	VWh5EECL5WaCF7TA85qbiqr8aHVM0gBXbOmuQ/9CRlmqDt1/UGtQ7r+XCsqxvZMOUImdkdQ7/kK
+	MqpPANGpHtoGQcKZeS3ZUez3O4dn+LApLOG9dZXDeVwfsT+UdE3p/KipX3sI2XQT6FWchfCy83v
+	lA==
+X-Received: by 2002:a17:90b:50c3:b0:39e:6a7f:618b with SMTP id 98e67ed59e1d1-3a07e595addmr1182846a91.28.1790152701752;
+        Wed, 23 Sep 2026 01:38:21 -0700 (PDT)
+Received: from localhost.localdomain (ec2-13-212-242-176.ap-southeast-1.compute.amazonaws.com. [13.212.242.176])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a07dbc5451sm4314920a91.7.2026.09.23.01.38.19
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Wed, 23 Sep 2026 01:38:21 -0700 (PDT)
+From: Ginger Li <ginger.jzllee@gmail.com>
+To: bootc@bootc.net,
+	mkp@kernel.org
+Cc: linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org,
+	linux1394-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: target: sbp: Protect agent->orb_pointer and agent->doorbell with the lock
+Date: Wed, 23 Sep 2026 16:38:13 +0800
+Message-ID: <20260923083813.64892-1-ginger.jzllee@gmail.com>
+X-Mailer: git-send-email 2.46.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-References: <20260918181326.3633765-1-lgs201920130244@gmail.com> <arFJiC1JGB0KpoLn@quoll>
-In-Reply-To: <arFJiC1JGB0KpoLn@quoll>
-From: Guangshuo Li <lgs201920130244@gmail.com>
-Date: Tue, 22 Sep 2026 10:50:33 +0800
-X-Gm-Features: AcwNN1W51HQHgqXq96H1vY74mor976BD85GOPWHnSJHN_BwJ54ajJuhACadQQO0
-Message-ID: <CANUHTR9JgmyoCp3hcTbBn-NnUzjKFW_LaRHcrsY9qZbGvxAcNg@mail.gmail.com>
-Subject: Re: [PATCH] scsi: efct: clear MWI on remove
-To: krzk@kernel.org
-Cc: target-devel@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	Ram Vegesna <ram.vegesna@broadcom.com>, Kees Cook <kees@kernel.org>, 
-	"Martin K. Petersen" <martin.petersen@oracle.com>, Daniel Wagner <dwagner@suse.de>, 
-	James Smart <jsmart2021@gmail.com>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
-	Thomas Gleixner <tglx@kernel.org>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Hannes Reinecke <hare@suse.de>, 
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi Krzysztof,
+tgt_agent_rw_orb_pointer() and tgt_agent_rw_doorbell() update
+agent->orb_pointer and agent->doorbell after they have dropped agent->lock,
+while the work item tgt_agent_fetch_work() reads both fields to decide which
+ORB to process.
 
-Thank you for your feedback.
+The work item already accesses the fields under the lock when it updates them
+and tgt_agent_check_active() takes the lock as well, so the unlocked stores
+and this unlocked read race with each other.  The work item can then use an
+ORB pointer that has been replaced by a newer request, or miss the doorbell
+that belongs to the current one.
 
-On Mon, 21 Sept 2026 at 23:13, <krzk@kernel.org> wrote:
->
->
-> On Sat, 19 Sep 2026 02:13:26 +0800, Guangshuo Li wrote:
-> > efct_pci_probe() enables PCI Memory-Write-Invalidate with pci_set_mwi().
-> > The probe failure path clears this state with pci_clear_mwi(), but the
-> > normal remove path does not perform the corresponding cleanup.
-> >
-> > pci_disable_device() only disables PCI bus mastering and does not clear
-> > the PCI_COMMAND_INVALIDATE bit. As a result, the MWI configuration can
-> > remain enabled after the driver is removed.
-> >
-> > Call pci_clear_mwi() in efct_pci_remove(), matching the probe error
-> > path.
-> >
-> > This issue was found by manual code inspection.
-> >
-> > Fixes: 4df84e8466242 ("scsi: elx: efct: Driver initialization routines")
-> > Cc: stable@vger.kernel.org
-> > Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
-> > ---
-> >  drivers/scsi/elx/efct/efct_driver.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> >
->
->
-> You sent multiple independent patches, to multiple independent
-> subsystems. The amount of these patches clearly suggest this was
-> AI generated and most likely not tested.
->
-> More importantly, you sent all this work without properly organizing
-> relevant patches into patchsets. This makes reviewing difficult
-> and might cause multiple reviewers to address the same issue.
-> Replying to the entire set is impossible and requires handling each
-> patch independently, instead of applying or discarding the set.
-> Maintainers also won't see the bigger picture of your work. Quite
-> worrying.
->
-> This is on the verge of hostile patch: bomb us with so many
-> contributions, we won't be able to handle them in efficient manner,
-> like responding ONCE to ask you to slow down.  Considering all this
-> is untested and LLM generated, I have even more doubts whether this
-> should be considered for review.
->
-> Please read kernel documentation BEFORE posting more work. It will
-> explain you how to identify subsystems, how to organize your work per
-> subsystem, how to document usage of LLM and how what you should not
-> do if this was posted in a good faith.
->
-> Best regards,
-> Krzysztof
->
->
->
+Update and read the two fields while holding agent->lock.
 
-I would like to clarify that these patches were manually reviewed and
-audited by us; they were not simply generated and submitted by an LLM.
-However, I understand why the recent submission pattern may have given
-that impression. We sent too many patches in a short period of time,
-and we also failed to respond to some discussions in a timely manner,
-which made the situation look worse.
+Fixes: a511ce339780 ("sbp-target: Initial merge of firewire/ieee-1394 target mode support")
+Signed-off-by: Ginger Li <ginger.jzllee@gmail.com>
+---
+ drivers/target/sbp/sbp_target.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-Many of the recent patches, especially the v2 revisions, are
-corrections and improvements based on previous review feedback rather
-than completely new untested changes. That said, we recognize that the
-way we submitted them increased the burden on maintainers and
-reviewers.
+diff --git a/drivers/target/sbp/sbp_target.c b/drivers/target/sbp/sbp_target.c
+--- a/drivers/target/sbp/sbp_target.c
++++ b/drivers/target/sbp/sbp_target.c
+@@ -721,10 +721,9 @@ static int tgt_agent_rw_orb_pointer(struct fw_card *ca
+ 			return RCODE_CONFLICT_ERROR;
+ 		}
+ 		agent->state = AGENT_STATE_ACTIVE;
+-		spin_unlock_bh(&agent->lock);
+-
+ 		agent->orb_pointer = sbp2_pointer_to_addr(ptr);
+ 		agent->doorbell = false;
++		spin_unlock_bh(&agent->lock);
+ 
+ 		pr_debug("tgt_agent ORB_POINTER write: 0x%llx\n",
+ 				agent->orb_pointer);
+@@ -757,10 +756,9 @@ static int tgt_agent_rw_doorbell(struct fw_card *card,
+ 			return RCODE_CONFLICT_ERROR;
+ 		}
+ 		agent->state = AGENT_STATE_ACTIVE;
++		agent->doorbell = true;
+ 		spin_unlock_bh(&agent->lock);
+ 
+-		agent->doorbell = true;
+-
+ 		pr_debug("tgt_agent DOORBELL\n");
+ 
+ 		queue_work(system_dfl_wq, &agent->work);
+@@ -933,9 +931,14 @@ static void tgt_agent_fetch_work(struct work_struct *w
+ 	struct sbp_session *sess = agent->login->sess;
+ 	struct sbp_target_request *req;
+ 	int ret;
+-	bool doorbell = agent->doorbell;
+-	u64 next_orb = agent->orb_pointer;
++	bool doorbell;
++	u64 next_orb;
+ 
++	spin_lock_bh(&agent->lock);
++	doorbell = agent->doorbell;
++	next_orb = agent->orb_pointer;
++	spin_unlock_bh(&agent->lock);
++
+ 	while (next_orb && tgt_agent_check_active(agent)) {
+ 		req = sbp_mgt_get_req(sess, sess->card, next_orb);
+ 		if (IS_ERR(req)) {
+-- 
+2.43.0
 
-We apologize for the pressure this caused to the community. We will be
-more careful about organizing patches by subsystem, preparing proper
-patchsets, and following the kernel contribution guidelines before
-sending future work.
-
-Thank you again for pointing this out.
-
-Best regards,
-Guangshuo
