@@ -1,72 +1,75 @@
-Received: from mail-pz2-f43.google.com (mail-pz2-f43.google.com [74.125.228.43])
+Received: from mail-wr2-f7.google.com (mail-wr2-f7.google.com [74.125.225.71])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A1E4385D79
-	for <target-devel@vger.kernel.org>; Thu, 24 Sep 2026 03:35:46 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.43
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF4484F4733
+	for <target-devel@vger.kernel.org>; Fri, 25 Sep 2026 21:36:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.71
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790220947; cv=none; b=DRmsBGkSMlehYcwwkPd7uVslp7WyeXE5ukz3vjL3WwmDHFUmpGzCHMib6oPHP/FMj6roLhYJHH8QWt+YSXeHV8brhvXTAk8zrtutfKEvHVBvEqbElbLoCdUWGbScpcLBQv/qM9mpl+M1Eu+zknti5jjBCrBOHKVKRWYL8oJDUK0=
+	t=1790372220; cv=none; b=fWfpfLcAq8uemqBmQnDGCusZB2soVoJ3u/HjFqFAjofuBpFfwQUK9OEtNkqGiWrjlZaE55sXmgN+RhAEnSlPqXC12cUFd93ofnKEIvBV1/LcKyfuKXs+z5T3jGAge9HMIBAJka2d/RqzmHc27gdDcEkHJ1EeueRGWfSCkW6uMMw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790220947; c=relaxed/simple;
-	bh=0rO3I71WsF0uae2GRkwp2XOH2p2Jl4LMIdriMvNKDi0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=a+pjVq8VhDB9Pl6Ocz6OuUgEtIJVAYIaz9TBdfwUgJ7m+I7X0ekekcSUog7sXbv5UW/2PWTy7TSKBNM9iykpVAyDsSBzfWEOIjcL+cDUPk+y+PA5G5tll0VwblUZfeq+donIwkCH2+MAfCXRuVgZQy3C75w3nRNxvdX1AV/3xVw=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Oct5bDkx; arc=none smtp.client-ip=74.125.228.43
+	s=arc-20240116; t=1790372220; c=relaxed/simple;
+	bh=14Acq4QSZJ2hz6pe2oxe3D/5LXQaAWPm75oRsFXV9a8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=u/9gpd5K2FN4KTq2UWUXXNGK9mlJLNoeFH8jp6q34XsURuEQQ1meusgMtgAwC4htDqu6AWQbVs9fxbC7TF24hJtfnIWsqinMMnQP4LlTwImIJiOiTHqfsRSOE4Ykd8THNpEf0q0jl9+TL3zRqa126wqFo1QzpAWCs5zS+LdV4qA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UJXB3m8B; arc=none smtp.client-ip=74.125.225.71
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Oct5bDkx"
-Received: by mail-pz2-f43.google.com with SMTP id d2e1a72fcca58-8633a38df87so773858b3a.2
-        for <target-devel@vger.kernel.org>; Wed, 23 Sep 2026 20:35:46 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UJXB3m8B"
+Received: by mail-wr2-f7.google.com with SMTP id ffacd0b85a97d-487166a578eso100973f8f.1
+        for <target-devel@vger.kernel.org>; Fri, 25 Sep 2026 14:36:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790220945; x=1790825745; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1790372217; x=1790977017; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=owK5jalgwfNIvAdwQi0rH6NjZ/WlFoACS1nWo5z1Tro=;
-        b=Oct5bDkxD3wjF1l8gXzJ8tG+UkXk+B0xrSOHyq2crD8WVc4q4Rxpl1ZTI4fT72Q9qv
-         2TDspzOiN6aPjjRyT1LPiOLzwNea86BdlBR07mnagVBwYFKZGm6U7C8IiJ7Sn9sMjlrA
-         G3JkEGPfT87P9vSk0ayHa9ZU2BDIv2C2p0nJMa8DZAB/LbH4p9v6FN9mkhH6692xv3ow
-         BSESCy153pGO0xzBgerwGufsKK4AWRNleB6izH3nDZm9DyQQosWc4F/mcB8cxSD0BNSb
-         Pt9fenKM7W712OjZjngJAaUDA8eGtvhgwz6S+26YBKNH4suBWL8GsEzU3Sm7J5fQLTel
-         rFug==
+        bh=uH5VHzqYeyzrxon03BvBTLMWbRiul1yKTMOPE8eGDHQ=;
+        b=UJXB3m8BWUABzBMwtJF0nYnO9hZD/W9JBhG1kTxE+2+FQ/xBiPacVf4PWwxXoc5iA5
+         G2TAHJjxcsRfrajXhlcMAKsbNwBVxos2syNiprkFoWhG6FVc2TdTZe5dXnVcTYqzEE6V
+         a+ym6q5m9EqUePi6x86Qa3Gi6RM/ag3Rw75KZ05o/FQbbEV8qfbX9KbUQuqJS0UzPOsO
+         +4bWh8r9zyuXwNfL8SUj7iylOErGp7T24ud4JjPgB4KPnXK+003AJ3JjCYj7lu8OieW7
+         /5JyYad7MJfg1j5PvSr/Lf7kc45WoVbY/zgO7troNMkC3J8KGW6ogWe7GlilFwB0ARJp
+         eCFg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790220945; x=1790825745;
+        d=1e100.net; s=20260707; t=1790372217; x=1790977017;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=owK5jalgwfNIvAdwQi0rH6NjZ/WlFoACS1nWo5z1Tro=;
-        b=1ODHmgLOIdbeM03EGXks1HHTfoTKdoH61ZsUiaiceGo9SJPvcMQHNqgyAJP7gCeb9y
-         sfqAJXcxBFP0vU1P80hcdBUsldXBpcsTUaIqFLQ/m7mF5ujovkXHT9ykeEHZuXN7bzeL
-         L0UNslmyvpNuQWzx0hQlqGZlSJsVTa7yq5RURrDLYJLAGm4oGk6hYMM2MckkruM0NJHX
-         YqqCTo3x4WeDzYgHpzgvUEu9Ceg4BbfqoPG86aqBfkDvPjuRUAcSg5ISOonq6BbDa1No
-         YLWIw0hvvYYwV3HHrRkXBSjBIrv7vf6rXLJ1irtkN/1M4oeqdL8wS1loprnUuvwKoJA7
-         onmQ==
-X-Forwarded-Encrypted: i=1; AKwUvBxfT1TomKCN3DGkAipz6OuVkAgjskdqVln6P5v+0Li45NKOHTlpuSAQ+icba8mzxuTnzTbZELqTsORGlac=@vger.kernel.org
-X-Gm-Message-State: AFuF++njIJJwmlq5rFFhKoA4v3kaEc32VaTsMxTjr6SsxuzKNHhWEIVi
-	gGHT/RUytPrQWjtemn3n0hI39a211qMiEdwNDHUlkRD6HdjkqwmFtmsnGh7wZGPsyh0=
-X-Gm-Gg: AYBFou3inz21vMX7VmsvKa31jZubq5L1oPZDv0FldNP6MoGbP4/pgfomO46nPXIwbat
-	zCX0RoX7dZl7U8J6In2YZLUgH7jICvAKrnQ+qhh9GvQwV2kExwZZchR5tHG45Jt9kE8EQkB/QaS
-	K4HglgQVTu921lpVSEYv9ahNeDvhS2iJ7+LtcazxwFkQauj9IfXdew6X/tiYMv4U25zICFDuOwT
-	lJfNbm8HvIDzkUk2jUe+tqK2N41bHXEDg3EmA5VYXj2Gkzd8RzEv7IWw73tL2k0Jw4x4q/oeMH2
-	oNFbweVR3ZVO81pbfKOJ1j0hyipgADuL2HAj6vmhHA+eixb+UFC7T1kOHsvFS/ORBYAX17dCzdN
-	pNgJnNXP3btRCjBF7MB7aOrs/geo6P549tdo22r9Pbn+yQiXxisa/Q2OTGBshnQbhnk3cuuW53g
-	di6S3eaeMl7RAbd4/ncmVX/CNjOr6RceZLqtq2CxlPPI6jDc8ZNuft43qBMeyi26Daxe0DSdoVI
-	CCDWF1yF5K3mbUXM5aVkaoH6Duw6/Q9YvCixVK/Izx/mtO5/hrmkiCRLdOvBcN1ZRqC2fbjpvUL
-	NntXVrB1WGSBU4j7fG3hkJR8BAw8fALb3WDLqBqlI6FER8+7xIlie0BUTtsINYI80ym6WQ==
-X-Received: by 2002:a05:6a21:138f:b0:3dd:85aa:4528 with SMTP id adf61e73a8af0-3de0e8d09e4mr1070065637.35.1790220945420;
-        Wed, 23 Sep 2026 20:35:45 -0700 (PDT)
-Received: from spider.bream-herring.ts.net ([103.6.151.236])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc75f3d5ce8sm1822330a12.17.2026.09.23.20.35.43
+        bh=uH5VHzqYeyzrxon03BvBTLMWbRiul1yKTMOPE8eGDHQ=;
+        b=1fAqK+mcftRSTPTEBHTPM4vvCOz91m7Q4Gu+dmyfRuTrcu2JE2u8kobdmO2gUvPpwt
+         UCCsqYtYtyrqtDtaxjV1r5BKZ/jRwpwTxW34fJwpcc6aiEk+iIqynGPQ7yYk3cckrSpa
+         u9VS+XhWgGuYH4bKQwB59LtDXBZPRS205jjJafTPLP0IGzlCa/szOMSJdNOqukRv5+8r
+         s2YcAu4m9C6UcsutgcIv2XSVjyrlPeqYx/srKKtyvla9hi4RZAePx+B7924W5GXAm2uw
+         ZgVwBcjUyGSXXDONxoSfpGTioXQ3K/W4dWwvhV/KCFIekSG9SwnVKs+m8FdkRj/H4CTX
+         NPJA==
+X-Forwarded-Encrypted: i=1; AKwUvBx0XLaYV43vRGSfVRifnhxQh1PYxCqoZomJnd+hICXAOj2zC+I3VF/l9TTsT5dRggc+fKJVo1PylL1nBqo=@vger.kernel.org
+X-Gm-Message-State: AFuF++nJjANYHOXUGruEvVlGq7KANO8+bhy74biR7ZnMys39pqrXpa08
+	7lnVHLwar+8K7OwWsdBxGY/1GUlySJCcnEsmZBZR3IBun2JOcFEt9zQ/
+X-Gm-Gg: AYBFou10u7zW8KGyZy2NSUioUrme3oBUMgL85ZMZ5MmtzYGsMXOJHPhZ259c+MHlZb4
+	r8f9Q6u7EkGfD2R7lKaL8lyXR40eu1lhsqs5YdA4Prum40UVRYZ+jFfB1A/iGEYh9XixfPosxpO
+	TzBHSoPWZXKdwlntKx4Un2KGAoSJhQRbQ25Y6N6HmfiRq7XBPLeE0LHOduFZYt8FRtvdsPZvdO2
+	SHMg2GaHT1O9/Dws9BElgrt495WaGC/taT9u7lNdEz2Hv+fKckjMulPwtvYKDAUJwyaVIYPPt/W
+	tWd6A2VnSxtw4sMIInllYape8Jfby9M7hxjH3hSHW+/2A9CCY8eQrP5TUgXVwggxGPVhNBxsI1T
+	6ktbw1h+57d3ec6GHajlBJJHvs9YoZTUuCpIpFhBLwsaVr0CISwT9FMWcRkPeklqxrbh9FDQlgP
+	/IKFa1bpvplQQYZlug1j+YTy4EkD5Tq8nKrCU2pBoB/E1k4z1p42tDC0toOIEHj6rY2HCuPqjYh
+	El5Ri33d/MZ4n0=
+X-Received: by 2002:a05:600c:8b28:b0:49f:fbad:29ae with SMTP id 5b1f17b1804b1-49ffbad2d56mr188775e9.17.1790372216761;
+        Fri, 25 Sep 2026 14:36:56 -0700 (PDT)
+Received: from serhat-ubuntu.home ([212.253.192.148])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fee915f3dsm84624035e9.1.2026.09.25.14.36.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Sep 2026 20:35:44 -0700 (PDT)
-From: Matthias Goergens <matthias.goergens@gmail.com>
-To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	"Martin K. Petersen" <mkp@kernel.org>
-Cc: linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org
-Subject: [PATCH] MAINTAINERS: name the jejb/scsi and mkp/scsi for-next branches
-Date: Thu, 24 Sep 2026 11:35:41 +0800
-Message-ID: <20260924033541.3624532-1-matthias.goergens@gmail.com>
-X-Mailer: git-send-email 2.55.0
+        Fri, 25 Sep 2026 14:36:56 -0700 (PDT)
+From: Serhat Kumral <serhatkumral1@gmail.com>
+To: Bart Van Assche <bvanassche@acm.org>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	Leon Romanovsky <leon@kernel.org>
+Cc: linux-rdma@vger.kernel.org,
+	Sagi Grimberg <sagi@grimberg.me>,
+	target-devel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Serhat Kumral <serhatkumral1@gmail.com>
+Subject: [PATCH v4] RDMA/srpt: Reject an srp_sq_size that does not fit in a CQ
+Date: Sat, 26 Sep 2026 00:36:29 +0300
+Message-ID: <20260925213629.8039-1-serhatkumral1@gmail.com>
+X-Mailer: git-send-email 2.53.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -75,50 +78,58 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The T: entries for SCSI SUBSYSTEM and SCSI TARGET SUBSYSTEM name
-jejb/scsi and mkp/scsi without a branch.  Their HEADs are commits
-mainline already contains: jejb/scsi's (master, eea5b5510fc5) from
-2012-06-05 and mkp/scsi's (master, ca4ba96e02e9) from 2015-11-13.
-linux-next pulls for-next from each repository (Next/Trees,
-next-20260923), and on 2026-09-24 that branch carried work not yet in
-mainline.  Name the branch so the entries identify where development
-happens.
+srpt_create_ch_ib() asks ib_cq_pool_get() for rq_size + srp_sq_size
+CQ entries, but srp_sq_size is only checked against MAX_SRPT_SRQ_SIZE
+(65535), never against the device's max_cqe. On a device with a
+smaller limit, such as rxe (32767), ib_cq_pool_get() keeps allocating
+CQs that can never satisfy the request until memory runs out:
 
-Documentation/process/submitting-patches.rst sends contributors to the
-T: entry to find the tree to prepare patches against, so a branch-less
-entry whose HEAD is already in mainline points them at the wrong tree.
+      Out of memory and no killable processes...
+      Kernel panic - not syncing: System is deadlocked on memory
+      Workqueue: ib_cm cm_work_handler
+      Call Trace:
+       __vmalloc_node_range_noprof
+       vmalloc_user_noprof
+       rxe_queue_init
+       rxe_cq_from_init
+       rxe_create_cq
+       __ib_alloc_cq
+       ib_cq_pool_get
+       srpt_cm_req_recv.cold
 
-Signed-off-by: Matthias Goergens <matthias.goergens@gmail.com>
+Reject such values when srp_sq_size is written.
+
+Fixes: c804af2c1d31 ("IB/srpt: use new shared CQ mechanism")
+Signed-off-by: Serhat Kumral <serhatkumral1@gmail.com>
 ---
- MAINTAINERS | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/infiniband/ulp/srpt/ib_srpt.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index cc3cae2e378b..18617f58a281 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -24569,8 +24569,8 @@ M:	"Martin K. Petersen" <mkp@kernel.org>
- L:	linux-scsi@vger.kernel.org
- S:	Maintained
- Q:	https://patchwork.kernel.org/project/linux-scsi/list/
--T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi.git
--T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi.git for-next
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
- F:	Documentation/devicetree/bindings/scsi/
- F:	drivers/scsi/
- F:	drivers/ufs/
-@@ -24600,7 +24600,7 @@ L:	linux-scsi@vger.kernel.org
- L:	target-devel@vger.kernel.org
- S:	Supported
- Q:	https://patchwork.kernel.org/project/target-devel/list/
--T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git for-next
- F:	Documentation/target/
- F:	drivers/target/
- F:	include/target/
-
-base-commit: 40288c9206c17eb66a603262e06a58d300d0f279
+diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
+index 7197d95f2216..1761345b33f1 100644
+--- a/drivers/infiniband/ulp/srpt/ib_srpt.c
++++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
+@@ -3603,6 +3603,8 @@ static ssize_t srpt_tpg_attrib_srp_sq_size_store(struct config_item *item,
+ {
+ 	struct se_portal_group *se_tpg = attrib_to_tpg(item);
+ 	struct srpt_port *sport = srpt_tpg_to_sport(se_tpg);
++	const struct ib_device_attr *attrs = &sport->sdev->device->attrs;
++	u32 rq_size = min(attrs->max_qp_wr, MAX_SRPT_RQ_SIZE);
+ 	unsigned long val;
+ 	int ret;
+ 
+@@ -3621,6 +3623,11 @@ static ssize_t srpt_tpg_attrib_srp_sq_size_store(struct config_item *item,
+ 			MIN_SRPT_SRQ_SIZE);
+ 		return -EINVAL;
+ 	}
++	if (val + rq_size > attrs->max_cqe) {
++		pr_err("val: %lu exceeds max_cqe: %u minus rq_size: %u\n",
++		       val, attrs->max_cqe, rq_size);
++		return -EINVAL;
++	}
+ 	sport->port_attrib.srp_sq_size = val;
+ 
+ 	return count;
 -- 
-2.55.0
+2.53.0
 
