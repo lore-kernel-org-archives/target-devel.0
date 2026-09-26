@@ -1,75 +1,46 @@
-Received: from mail-wr2-f7.google.com (mail-wr2-f7.google.com [74.125.225.71])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail-m49197.qiye.163.com (mail-m49197.qiye.163.com [45.254.49.197])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF4484F4733
-	for <target-devel@vger.kernel.org>; Fri, 25 Sep 2026 21:36:58 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.225.71
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F03D33A6F0F;
+	Sat, 26 Sep 2026 09:22:04 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.197
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790372220; cv=none; b=fWfpfLcAq8uemqBmQnDGCusZB2soVoJ3u/HjFqFAjofuBpFfwQUK9OEtNkqGiWrjlZaE55sXmgN+RhAEnSlPqXC12cUFd93ofnKEIvBV1/LcKyfuKXs+z5T3jGAge9HMIBAJka2d/RqzmHc27gdDcEkHJ1EeueRGWfSCkW6uMMw=
+	t=1790414533; cv=none; b=OM314eyj6L7jNRHIFDp4BQVZDGP7OTUg/f02fmhY/V30Ce9jrzWEl2SQ9DZ845O88DP/mJXnd8kt7U9uUFi38lMaky3Bofv/46UXXNkkAQ6HdfZphWI7dNNI8TLnL7MvllvcJCye1Y1rN84edBMjBpMzz9UoZP94zUzmMzscKb0=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790372220; c=relaxed/simple;
-	bh=14Acq4QSZJ2hz6pe2oxe3D/5LXQaAWPm75oRsFXV9a8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=u/9gpd5K2FN4KTq2UWUXXNGK9mlJLNoeFH8jp6q34XsURuEQQ1meusgMtgAwC4htDqu6AWQbVs9fxbC7TF24hJtfnIWsqinMMnQP4LlTwImIJiOiTHqfsRSOE4Ykd8THNpEf0q0jl9+TL3zRqa126wqFo1QzpAWCs5zS+LdV4qA=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=UJXB3m8B; arc=none smtp.client-ip=74.125.225.71
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1790414533; c=relaxed/simple;
+	bh=DOThejXWVqAfk3OaqwNpRk1a5A1+irOq8Jh0nrn3g5g=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ceW1EXOq2bWcl2h5uKfUSwsM+Q8HzMt9rjAhcxB1fqjXFjj+BNPskz/DP5gETGff6oLlS1BrVx1QF+CJ7FfP6xdFJkghOofWLdJjhVDV+7n7sMQww25pW1EcUVbiP83nytxHQIfoww6aJtHfNDEet3rtkR5LR3fbnWz7YaLDmik=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=Fz/VZxVz; arc=none smtp.client-ip=45.254.49.197
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=seu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UJXB3m8B"
-Received: by mail-wr2-f7.google.com with SMTP id ffacd0b85a97d-487166a578eso100973f8f.1
-        for <target-devel@vger.kernel.org>; Fri, 25 Sep 2026 14:36:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790372217; x=1790977017; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=uH5VHzqYeyzrxon03BvBTLMWbRiul1yKTMOPE8eGDHQ=;
-        b=UJXB3m8BWUABzBMwtJF0nYnO9hZD/W9JBhG1kTxE+2+FQ/xBiPacVf4PWwxXoc5iA5
-         G2TAHJjxcsRfrajXhlcMAKsbNwBVxos2syNiprkFoWhG6FVc2TdTZe5dXnVcTYqzEE6V
-         a+ym6q5m9EqUePi6x86Qa3Gi6RM/ag3Rw75KZ05o/FQbbEV8qfbX9KbUQuqJS0UzPOsO
-         +4bWh8r9zyuXwNfL8SUj7iylOErGp7T24ud4JjPgB4KPnXK+003AJ3JjCYj7lu8OieW7
-         /5JyYad7MJfg1j5PvSr/Lf7kc45WoVbY/zgO7troNMkC3J8KGW6ogWe7GlilFwB0ARJp
-         eCFg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790372217; x=1790977017;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=uH5VHzqYeyzrxon03BvBTLMWbRiul1yKTMOPE8eGDHQ=;
-        b=1fAqK+mcftRSTPTEBHTPM4vvCOz91m7Q4Gu+dmyfRuTrcu2JE2u8kobdmO2gUvPpwt
-         UCCsqYtYtyrqtDtaxjV1r5BKZ/jRwpwTxW34fJwpcc6aiEk+iIqynGPQ7yYk3cckrSpa
-         u9VS+XhWgGuYH4bKQwB59LtDXBZPRS205jjJafTPLP0IGzlCa/szOMSJdNOqukRv5+8r
-         s2YcAu4m9C6UcsutgcIv2XSVjyrlPeqYx/srKKtyvla9hi4RZAePx+B7924W5GXAm2uw
-         ZgVwBcjUyGSXXDONxoSfpGTioXQ3K/W4dWwvhV/KCFIekSG9SwnVKs+m8FdkRj/H4CTX
-         NPJA==
-X-Forwarded-Encrypted: i=1; AKwUvBx0XLaYV43vRGSfVRifnhxQh1PYxCqoZomJnd+hICXAOj2zC+I3VF/l9TTsT5dRggc+fKJVo1PylL1nBqo=@vger.kernel.org
-X-Gm-Message-State: AFuF++nJjANYHOXUGruEvVlGq7KANO8+bhy74biR7ZnMys39pqrXpa08
-	7lnVHLwar+8K7OwWsdBxGY/1GUlySJCcnEsmZBZR3IBun2JOcFEt9zQ/
-X-Gm-Gg: AYBFou10u7zW8KGyZy2NSUioUrme3oBUMgL85ZMZ5MmtzYGsMXOJHPhZ259c+MHlZb4
-	r8f9Q6u7EkGfD2R7lKaL8lyXR40eu1lhsqs5YdA4Prum40UVRYZ+jFfB1A/iGEYh9XixfPosxpO
-	TzBHSoPWZXKdwlntKx4Un2KGAoSJhQRbQ25Y6N6HmfiRq7XBPLeE0LHOduFZYt8FRtvdsPZvdO2
-	SHMg2GaHT1O9/Dws9BElgrt495WaGC/taT9u7lNdEz2Hv+fKckjMulPwtvYKDAUJwyaVIYPPt/W
-	tWd6A2VnSxtw4sMIInllYape8Jfby9M7hxjH3hSHW+/2A9CCY8eQrP5TUgXVwggxGPVhNBxsI1T
-	6ktbw1h+57d3ec6GHajlBJJHvs9YoZTUuCpIpFhBLwsaVr0CISwT9FMWcRkPeklqxrbh9FDQlgP
-	/IKFa1bpvplQQYZlug1j+YTy4EkD5Tq8nKrCU2pBoB/E1k4z1p42tDC0toOIEHj6rY2HCuPqjYh
-	El5Ri33d/MZ4n0=
-X-Received: by 2002:a05:600c:8b28:b0:49f:fbad:29ae with SMTP id 5b1f17b1804b1-49ffbad2d56mr188775e9.17.1790372216761;
-        Fri, 25 Sep 2026 14:36:56 -0700 (PDT)
-Received: from serhat-ubuntu.home ([212.253.192.148])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49fee915f3dsm84624035e9.1.2026.09.25.14.36.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Sep 2026 14:36:56 -0700 (PDT)
-From: Serhat Kumral <serhatkumral1@gmail.com>
-To: Bart Van Assche <bvanassche@acm.org>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Leon Romanovsky <leon@kernel.org>
-Cc: linux-rdma@vger.kernel.org,
+	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="Fz/VZxVz"
+Received: from PC-202605011814.localdomain (unknown [222.191.246.242])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 4f2ff7121;
+	Sat, 26 Sep 2026 17:21:53 +0800 (GMT+08:00)
+From: Runyu Xiao <runyu.xiao@seu.edu.cn>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Breno Leitao <leitao@debian.org>,
+	Andreas Hindborg <a.hindborg@kernel.org>,
 	Sagi Grimberg <sagi@grimberg.me>,
+	Chaitanya Kulkarni <kch@nvidia.com>,
+	Keith Busch <kbusch@kernel.org>,
+	Logan Gunthorpe <logang@deltatee.com>,
+	"Martin K. Petersen" <mkp@kernel.org>,
+	Lee Duncan <lduncan@suse.com>,
+	Hannes Reinecke <hare@suse.com>,
+	Nicholas Bellinger <nab@linux-iscsi.org>,
+	linux-nvme@lists.infradead.org,
+	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Serhat Kumral <serhatkumral1@gmail.com>
-Subject: [PATCH v4] RDMA/srpt: Reject an srp_sq_size that does not fit in a CQ
-Date: Sat, 26 Sep 2026 00:36:29 +0300
-Message-ID: <20260925213629.8039-1-serhatkumral1@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	stable@vger.kernel.org,
+	Runyu Xiao <runyu.xiao@seu.edu.cn>,
+	Jianhao Xu <jianhao.xu@seu.edu.cn>
+Subject: [PATCH v6 0/4] nvmet: avoid recursive configfs open
+Date: Sat, 26 Sep 2026 17:21:44 +0800
+Message-Id: <20260926092148.128937-1-runyu.xiao@seu.edu.cn>
+X-Mailer: git-send-email 2.34.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -77,59 +48,50 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-HM-Tid: 0aa0dd05665c03a1kunmac953e9e17aa20
+X-HM-MType: 10
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkZHRlOVkoYSR1NH05JSx9MSVYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUlVSkJKVUlPTVVJT0lZV1kWGg8SFR0UWUFZT0tIVUpLSE
+	pPSExVSktLVUpCS0tZBg++
+DKIM-Signature: a=rsa-sha256;
+	b=Fz/VZxVz/PWuYCuYwrwz2XrVbk7oBRQJFvoIkAQjyzm3u5XfLgCSd7SWmD6EcMU6sDrYmxsVwY6svKD/85IA5eFN2to5zJWJRHY23+9yFz6mSt98fzMiXlaZRganuymXlYzX0PMzQOhXguFQcStAP7QhXSzTKa9XAP1CbdNBdFY=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
+	bh=a2KrQAmn3m5S4sDMBQfBCI0DjfyHtfNQlht7r6HJ/4Y=;
+	h=date:mime-version:subject:message-id:from;
 
-srpt_create_ch_ib() asks ib_cq_pool_get() for rq_size + srp_sq_size
-CQ entries, but srp_sq_size is only checked against MAX_SRPT_SRQ_SIZE
-(65535), never against the device's max_cqe. On a device with a
-smaller limit, such as rxe (32767), ib_cq_pool_get() keeps allocating
-CQs that can never satisfy the request until memory runs out:
+Several configfs store callbacks open user-configured paths while holding
+the item's frag_sem.  If a configured path resolves into configfs, the open
+can re-enter __configfs_open_file() and try to acquire the same
+non-recursive semaphore again.
 
-      Out of memory and no killable processes...
-      Kernel panic - not syncing: System is deadlocked on memory
-      Workqueue: ib_cm cm_work_handler
-      Call Trace:
-       __vmalloc_node_range_noprof
-       vmalloc_user_noprof
-       rxe_queue_init
-       rxe_cq_from_init
-       rxe_create_cq
-       __ib_alloc_cq
-       ib_cq_pool_get
-       srpt_cm_req_recv.cold
+Add helpers in configfs for opening non-configfs paths, then use them in the
+nvmet file-backed namespace and passthru paths.  The series also pins the
+target-core db_root path and uses the root-relative helper for ALUA and APTPL
+metadata, so the helper has its target-core consumer in the same series.
 
-Reject such values when srp_sq_size is written.
+Changes since v5:
+- Add the target-core db_root patch as 4/4 and use configfs_open_root() for
+  validation and metadata opens.
+- Replace the verbose helper kerneldoc with concise interface descriptions.
+- Keep the Reviewed-by tags on the unchanged nvmet patches.
 
-Fixes: c804af2c1d31 ("IB/srpt: use new shared CQ mechanism")
-Signed-off-by: Serhat Kumral <serhatkumral1@gmail.com>
----
- drivers/infiniband/ulp/srpt/ib_srpt.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+Runyu Xiao (4):
+  fs: configfs: add helpers for opening non-configfs paths
+  nvmet: avoid recursive configfs open for file-backed namespaces
+  nvmet: avoid recursive configfs open for passthru
+  scsi: target: pin db_root for metadata writes
 
-diff --git a/drivers/infiniband/ulp/srpt/ib_srpt.c b/drivers/infiniband/ulp/srpt/ib_srpt.c
-index 7197d95f2216..1761345b33f1 100644
---- a/drivers/infiniband/ulp/srpt/ib_srpt.c
-+++ b/drivers/infiniband/ulp/srpt/ib_srpt.c
-@@ -3603,6 +3603,8 @@ static ssize_t srpt_tpg_attrib_srp_sq_size_store(struct config_item *item,
- {
- 	struct se_portal_group *se_tpg = attrib_to_tpg(item);
- 	struct srpt_port *sport = srpt_tpg_to_sport(se_tpg);
-+	const struct ib_device_attr *attrs = &sport->sdev->device->attrs;
-+	u32 rq_size = min(attrs->max_qp_wr, MAX_SRPT_RQ_SIZE);
- 	unsigned long val;
- 	int ret;
- 
-@@ -3621,6 +3623,11 @@ static ssize_t srpt_tpg_attrib_srp_sq_size_store(struct config_item *item,
- 			MIN_SRPT_SRQ_SIZE);
- 		return -EINVAL;
- 	}
-+	if (val + rq_size > attrs->max_cqe) {
-+		pr_err("val: %lu exceeds max_cqe: %u minus rq_size: %u\n",
-+		       val, attrs->max_cqe, rq_size);
-+		return -EINVAL;
-+	}
- 	sport->port_attrib.srp_sq_size = val;
- 
- 	return count;
+ drivers/nvme/target/io-cmd-file.c     |   3 +-
+ drivers/nvme/target/passthru.c        |   3 +-
+ drivers/target/target_core_alua.c     |  42 +++++-----
+ drivers/target/target_core_configfs.c | 116 ++++++++++++++++++++------
+ drivers/target/target_core_internal.h |   3 +
+ drivers/target/target_core_pr.c       |  21 +++--
+ fs/configfs/mount.c                   |  53 ++++++++++++
+ include/linux/configfs.h              |   5 ++
+ 8 files changed, 189 insertions(+), 57 deletions(-)
+
+
+base-commit: df2908090cda368b01ff43709f51890076c56157
 -- 
-2.53.0
-
+2.34.1
