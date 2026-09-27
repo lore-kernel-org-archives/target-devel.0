@@ -1,49 +1,75 @@
-Received: from mail-m49197.qiye.163.com (mail-m49197.qiye.163.com [45.254.49.197])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pz2-f12.google.com (mail-pz2-f12.google.com [74.125.228.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B9AF3C1D61;
-	Sun, 27 Sep 2026 08:20:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=45.254.49.197
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 260443CB907
+	for <target-devel@vger.kernel.org>; Sun, 27 Sep 2026 09:13:40 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.228.12
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790497236; cv=none; b=Qk3Tt78lU0iVKciNEXMXr280eji6kKogUjzfG2K4PnNV8yhOkyIz2aCkO6xvMVaFyID0uk9MNbALB7cL3jCPSL1C7YinyLpV/JhUlCNGUHiOI56dOzJeDdn5QgEEjHtk9w4CkYobbfavw5WnQN/QqXxNMmoD6l9p1dYiD4Dyszk=
+	t=1790500422; cv=none; b=tjoNiG8tU40Yiwq4RMiuHebvSh7az6G5O15OvU4ZFnIkvgnunF8bV76XGEZkKPv7r3PyaYjFSoOWzOQtCbtImI5L7tp3CZetk9bT+ABRtZr9j7IhUszcUEPx4KuIa70zklnouH3wmdeOkr2qb4YcFPHSQB+mMTLVx9zI+GBbDHs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790497236; c=relaxed/simple;
-	bh=PJzqsvxIq3NGKNk203hKX+rbCG2NvovDhRMpAD6sP9E=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Q0RJ4Jl3Qp+QyNTRdOn284lnADxhDX9yqxv3nesa1sTEnaBdi7FJJg4TKhL1Z0CrHyRSenjXhVWeqVuF3Stp9Hi9bGFNdr7TSE8APS5k7h1qRq3CHwH6ER/xkbBDqfcFGD9EB6TGJTDnEZrP6S0NcB/Tw9B80ml6DG0OZSUeYDg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; spf=pass smtp.mailfrom=seu.edu.cn; dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b=c1QQWV0Y; arc=none smtp.client-ip=45.254.49.197
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=seu.edu.cn
+	s=arc-20240116; t=1790500422; c=relaxed/simple;
+	bh=mYK3aTJFBHM6xRB867W9xv3//FgmlLtPjoZruC0BXSo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VPdtSr9sRmPamPvGwvsAhxHBS+Bxr8kmhtKk8/G81za0v50pZd+2XrFDArSsv/xlG23dCkXkJvpQPWFal9DPxekXVh4t1Wa1tw1AOzlhs1j7lk30hbzokhSWDwEg1Rap3/6B6tMP2BlRiuhgWrrD20GxtICL4OMq7vUJTcX7qIk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=pNl2Hieg; arc=none smtp.client-ip=74.125.228.12
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.b="c1QQWV0Y"
-Received: from PC-202605011814.localdomain (unknown [222.191.246.242])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 4f3a443fe;
-	Sun, 27 Sep 2026 16:20:28 +0800 (GMT+08:00)
-From: Runyu Xiao <runyu.xiao@seu.edu.cn>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Breno Leitao <leitao@debian.org>,
-	Andreas Hindborg <a.hindborg@kernel.org>,
-	Sagi Grimberg <sagi@grimberg.me>,
-	Chaitanya Kulkarni <kch@nvidia.com>,
-	Keith Busch <kbusch@kernel.org>,
-	Logan Gunthorpe <logang@deltatee.com>,
-	"Martin K . Petersen" <mkp@kernel.org>,
-	Lee Duncan <lduncan@suse.com>,
-	Hannes Reinecke <hare@suse.com>,
-	Nicholas Bellinger <nab@linux-iscsi.org>,
-	linux-nvme@lists.infradead.org,
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pNl2Hieg"
+Received: by mail-pz2-f12.google.com with SMTP id 41be03b00d2f7-cc4bdf8abaaso1361288a12.2
+        for <target-devel@vger.kernel.org>; Sun, 27 Sep 2026 02:13:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790500420; x=1791105220; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=NTbM9diThuu6Z5mJhXi7/OrqdMjxxh1T13jqFXBOHu4=;
+        b=pNl2Hiegx3x8xpwOJmuMVARNI4aRu10sR1BkTobfzt6zTBOinGACmXmIU8sZXZGAA9
+         H2gIlN0lkRxKFq+gnluHADM0valR/2mpczF1OEOK3TPjwbA/AvhMJI5UPm4E3R+c21gu
+         xChRAXd8Fwr8PSjod2o12wEG+OjBB0te2L3pc4wd4PRybRVam1xt7ycvnXnUBjDRcSJ0
+         2NMm4/KEF+gRUnOkZMopiSEMD9fdVWKlTGahb20W3Ic4wLrLfyPm3hLyRWVUtZ2b7uak
+         Ezq6JdUuhtFyJUQgvh50jRhITsESnHdUgiYou55YAgHZWn29m1h6ujUGMz1izYtBO6UG
+         Zi1w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790500420; x=1791105220;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=NTbM9diThuu6Z5mJhXi7/OrqdMjxxh1T13jqFXBOHu4=;
+        b=IM5gQf7TvLQiwPZANQ2RrXgRH8foPJBH4VNwpEp1IMjZrz5GIEtREmbzCb/fbvropA
+         zXmh8IlOsg95WGQ8COVDJqNAA/Uo7Hjfa1/oUbX8z4MeHh2XgXo1AgOt515rFYAbjGsH
+         az2uHImPlQ3agppCqd3cBiJYEyPEbK/FBoqJxKAsloXu+mAwwvqH6aMUDP/toaNjGOfp
+         gdO+GhKjSPpT8RybAAu0bobr8rwYXhOWBktCcArz8pg8PchEuT9qvfjiTiP4kid18EnS
+         k5N3p+wK9zce6Og94pw8atbjfaC0ReFXegCcRMnSMD/dt5kgTOnUwJKIvhucnHIEvNZf
+         lUXw==
+X-Forwarded-Encrypted: i=1; AKwUvBwvAkRK7QDl7lptxa8SsxzfOfQ8HM3Gl2DOKu/ZC9NAKMlO9lwBqIDGfbV8brXjDHZLEtmSyHXHbEkUN64=@vger.kernel.org
+X-Gm-Message-State: AFq9FYLsc3KXlstkzqyjQlGPEzxosII7pxpCGazBiHJtDALGDz0/vWM3
+	ZpTmQXn1V0HS8rSjGcZQRgs2QJZvGuE0YwlwXSD3c5qKTQLfOHb26x7M
+X-Gm-Gg: AYBFou0gjKOLO904X4a8J8RFZqpZ81eJxb81tZ9bb65HfhFORhFL9xj5QTmMBBXBoOm
+	iNorTW9XBTbs09nlRsPV67gKLGrRKZfCFd9S+Pab6odUohgKDhlYgNZKY5+bBZf/dvun8ED+hpp
+	F/yFf2vLskhNZUQIXgeDrvBnuQtvLOnAK9t3k6UfoGJx7E94KtWibXSMUqtFIx/6teyiApliE+R
+	1A6ntVlH/B83uP4MapFlQ+/7QkC8ALeH+O3I0NWfVvHC0X3CpapMKwt1wW4S7aG1xY8cex+qYEf
+	JM1ocunC9UCrAm+Q9O31u9ftooQJ8O5vTBsrXQvXHA35TLsFPeXocodV+AVHlPQ2bYUdWpRwOGH
+	dPw/5wtmf7pDu0OnIe8J4QboshMxYUJyAxE83hvssqJgVSQ5ZM/WzNa2uqUGmizc4ai+PpmPyXf
+	EqzoSMPgV99JW4Gsd8w1GVsokuiG38DR4CDv3lN/gQeFlkx1BRYcpBfkN2ZLTXNGvDmqcI1x2m0
+	VWLg/8j9993xSEV4j60Qx1xy1iAJ5fEPsjh8g2TyKPo1HDtq7+9ZdYcYjr+YSkTNiFl2MFQWtnW
+	B56KWy9ZdLiWQIyX/vMvK9QzJyT185M6P8yRprWwcJPTVFfC
+X-Received: by 2002:a17:90b:2604:b0:3a0:d9ee:a2e9 with SMTP id 98e67ed59e1d1-3a0d9eeb955mr3228998a91.45.1790500420124;
+        Sun, 27 Sep 2026 02:13:40 -0700 (PDT)
+Received: from EAIT-H54D9Q2FJQ.eait.uq.edu.au ([130.102.10.103])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2df91475206sm26986425ad.82.2026.09.27.02.13.36
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sun, 27 Sep 2026 02:13:39 -0700 (PDT)
+From: Yu Zhang <yuz08559@gmail.com>
+To: mkp@kernel.org
+Cc: michael.christie@oracle.com,
+	d.bogdanov@yadro.com,
 	linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	Runyu Xiao <runyu.xiao@seu.edu.cn>,
-	Jianhao Xu <jianhao.xu@seu.edu.cn>
-Subject: [PATCH v7 4/4] scsi: target: pin db_root for metadata writes
-Date: Sun, 27 Sep 2026 16:20:11 +0800
-Message-Id: <20260927082011.638723-5-runyu.xiao@seu.edu.cn>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260927082011.638723-1-runyu.xiao@seu.edu.cn>
-References: <20260927082011.638723-1-runyu.xiao@seu.edu.cn>
+	Yu Zhang <yuz08559@gmail.com>
+Subject: [PATCH] scsi: target: Disable interrupts while holding delayed_cmd_lock
+Date: Sun, 27 Sep 2026 19:13:29 +1000
+Message-ID: <20260927091329.13482-1-yuz08559@gmail.com>
+X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -51,418 +77,100 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa0e1f3871c03a1kunm12f6b69c1ac34c
-X-HM-MType: 10
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCT0JIVkNPH0pIS0tCGEJLSFYeHw
-	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUlVSkJKVUlPTVVJT0lZV1kWGg8SFR0UWUFZT0tIVUpLSE
-	pPSExVSktLVUpCS0tZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=c1QQWV0YJyNZyPcOzwVo1x6jXiWdb+JFv+cyQzYhQiWT2mM4BRDQfG3nyM+65E0OsLj/ezOv5cx7y59pOD3CAcUBpwaXlpNxCysH1K7ZMyX+bDQdCvs93iSAzaJH5GRWkkyHi5m3B1ZtI0Vh/1SOdSitNazuhFOOm0qGRGkUQHg=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
-	bh=JEB7g1R4O8vv9+70KUQg9jDc93lN6kuadHZo3AOtcrA=;
-	h=date:mime-version:subject:message-id:from;
 
-ALUA and persistent reservation metadata files are derived from the
-configurable db_root string and opened with filp_open().  If db_root
-points at configfs, a metadata update from a configfs store callback can
-re-enter configfs while the callback still holds frag_sem.
+target_do_delayed_work() takes dev->delayed_cmd_lock with a plain
+spin_lock(). It runs from system_percpu_wq, so interrupts stay enabled
+while the lock is held. Every other acquisition of that lock uses
+spin_lock_irqsave(): target_handle_task_attr() and
+transport_complete_ordered_sync() in target_core_transport.c, and
+target_non_ordered_release() in target_core_device.c.
 
-A one-time pathname check can also be bypassed by retargeting a symlink.
-Resolve db_root once and retain the resulting path while target devices
-use it.  Use configfs_open_root() both to reject configfs roots and to
-open metadata files relative to the pinned root.
+That was safe while every caller of transport_complete_task_attr() ran
+in process context: target_complete_ok_work() from
+target_completion_wq, transport_complete_qf() from dev->qf_work_queue,
+and transport_generic_request_failure() from the submit and execute
+paths.
 
-Protect db_root and db_root_path with a dedicated mutex while metadata
-paths are opened or the configured root is replaced.  Return an error if
-target devices appear before a validated root can be published.
+Since commit 06933066d88a ("scsi: target: Add support for completing
+commands from backend context") that is no longer true. With
+complete_type=1 on a fabric that sets direct_compl_supp,
+target_complete() runs target_complete_ok_work() inline in the
+backend's completion context, which target_complete_cmd_with_sense()
+documents as "May be called from interrupt context". For iblock that
+is the bio end_io.
 
-Resolve a new root outside target_devices_lock and recheck the device count
-before publishing it, so the path walk does not occur under that lock.
+target_complete_ok_work() starts with transport_complete_task_attr(),
+which takes delayed_cmd_lock in two ways:
 
-Fixes: fdddf932269a ("target: use new "dbroot" target attribute")
-Link: https://lore.kernel.org/r/20260818051442.1523210-1-runyu.xiao@seu.edu.cn
-Cc: stable@vger.kernel.org
-Assisted-by: LLM Codex
-Signed-off-by: Runyu Xiao <runyu.xiao@seu.edu.cn>
+ - Every ORDERED command is put on dev->delayed_cmd_list by
+   target_handle_task_attr() and dispatched from there by
+   target_do_delayed_work(), which marks it SCF_TASK_ORDERED_SYNC.
+   Its completion therefore goes through
+   transport_complete_ordered_sync().
+
+ - A SIMPLE command that completes while an ORDERED command is pending
+   drops the last reference to the killed dev->non_ordered, and
+   percpu_ref_put() then runs target_non_ordered_release() in the
+   completing context.
+
+Both take the lock and, if commands are waiting, call
+schedule_work(&dev->delayed_cmd_work), which queues on
+system_percpu_wq, i.e. on the CPU that took the completion. Further
+completions for the same queue are typically delivered there too, so
+one arriving while the work holds the lock spins on it forever.
+
+Reaching this needs complete_type=1, which is not the default
+(vhost-scsi, the only fabric with direct_compl_supp, defaults to
+TARGET_QUEUE_COMPL), a backend whose I/O completes from interrupt
+context, and ORDERED commands from the initiator. Linux virtio_scsi
+guests send only VIRTIO_SCSI_S_SIMPLE and never take the ordered path;
+any guest that uses the ORDERED task attribute, which vhost-scsi
+accepts, does.
+
+target_do_delayed_work() is a work item and always runs in process
+context, so spin_lock_irq() is sufficient.
+
+Found by inspection; no runtime report. A single ORDERED command goes
+through both acquisitions, so with CONFIG_PROVE_LOCKING the first one
+completed through direct completion should produce an inconsistent
+lock state report on delayed_cmd_lock (hardirq or softirq, depending on
+where the backend completes).
+
+Fixes: 06933066d88a ("scsi: target: Add support for completing commands from backend context")
+Signed-off-by: Yu Zhang <yuz08559@gmail.com>
 ---
- drivers/target/target_core_alua.c     |  42 ++++----
- drivers/target/target_core_configfs.c | 142 +++++++++++++++++++++-----
- drivers/target/target_core_internal.h |   5 +
- drivers/target/target_core_pr.c       |  19 ++--
- 4 files changed, 153 insertions(+), 55 deletions(-)
+ drivers/target/target_core_transport.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
-index 140154d93c430..c39e57c1ebf9e 100644
---- a/drivers/target/target_core_alua.c
-+++ b/drivers/target/target_core_alua.c
-@@ -18,7 +18,6 @@
- #include <linux/fcntl.h>
- #include <linux/file.h>
- #include <linux/fs.h>
--#include <linux/fs_struct.h>
- #include <linux/kthread.h>
- #include <scsi/scsi_proto.h>
- #include <linux/unaligned.h>
-@@ -862,15 +861,18 @@ static int core_alua_write_tpg_metadata(
- 	loff_t pos = 0;
- 	int ret;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index dcfe945..67c0465 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -2359,7 +2359,7 @@ void target_do_delayed_work(struct work_struct *work)
+ 	struct se_device *dev = container_of(work, struct se_device,
+ 					     delayed_cmd_work);
  
--	if (tsk_is_kthread(current)) {
--		scoped_with_init_fs()
--			file = filp_open(path, O_RDWR | O_CREAT | O_TRUNC, 0600);
--	} else {
--		file = filp_open(path, O_RDWR | O_CREAT | O_TRUNC, 0600);
-+	mutex_lock(&db_root_lock);
-+	if (!db_root_path.dentry) {
-+		mutex_unlock(&db_root_lock);
-+		pr_err("db_root is not initialized for ALUA metadata path: %s\n",
-+		       path);
-+		return -ENODEV;
+-	spin_lock(&dev->delayed_cmd_lock);
++	spin_lock_irq(&dev->delayed_cmd_lock);
+ 	while (!dev->ordered_sync_in_progress) {
+ 		struct se_cmd *cmd;
+ 
+@@ -2380,12 +2380,12 @@ void target_do_delayed_work(struct work_struct *work)
+ 		dev->ordered_sync_in_progress = true;
+ 
+ 		list_del(&cmd->se_delayed_node);
+-		spin_unlock(&dev->delayed_cmd_lock);
++		spin_unlock_irq(&dev->delayed_cmd_lock);
+ 
+ 		__target_execute_cmd(cmd, true);
+-		spin_lock(&dev->delayed_cmd_lock);
++		spin_lock_irq(&dev->delayed_cmd_lock);
  	}
--
-+	file = configfs_open_root(&db_root_path, path,
-+				  O_RDWR | O_CREAT | O_TRUNC, 0600);
-+	mutex_unlock(&db_root_lock);
- 	if (IS_ERR(file)) {
--		pr_err("filp_open(%s) for ALUA metadata failed\n", path);
-+		pr_err("configfs_open_root(%s) for ALUA metadata failed\n", path);
- 		return -ENODEV;
- 	}
- 	ret = kernel_write(file, md_buf, md_buf_len, &pos);
-@@ -905,9 +907,9 @@ static int core_alua_update_tpg_primary_metadata(
- 			tg_pt_gp->tg_pt_gp_alua_access_status);
- 
- 	rc = -ENOMEM;
--	path = kasprintf(GFP_KERNEL, "%s/alua/tpgs_%s/%s", db_root,
--			&wwn->unit_serial[0],
--			config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
-+	path = kasprintf(GFP_KERNEL, "alua/tpgs_%s/%s",
-+			 &wwn->unit_serial[0],
-+			 config_item_name(&tg_pt_gp->tg_pt_gp_group.cg_item));
- 	if (path) {
- 		rc = core_alua_write_tpg_metadata(path, md_buf, len);
- 		kfree(path);
-@@ -1196,16 +1198,16 @@ static int core_alua_update_tpg_secondary_metadata(struct se_lun *lun)
- 			lun->lun_tg_pt_secondary_stat);
- 
- 	if (se_tpg->se_tpg_tfo->tpg_get_tag != NULL) {
--		path = kasprintf(GFP_KERNEL, "%s/alua/%s/%s+%hu/lun_%llu",
--				db_root, se_tpg->se_tpg_tfo->fabric_name,
--				se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
--				se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg),
--				lun->unpacked_lun);
-+		path = kasprintf(GFP_KERNEL, "alua/%s/%s+%hu/lun_%llu",
-+				 se_tpg->se_tpg_tfo->fabric_name,
-+				 se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
-+				 se_tpg->se_tpg_tfo->tpg_get_tag(se_tpg),
-+				 lun->unpacked_lun);
- 	} else {
--		path = kasprintf(GFP_KERNEL, "%s/alua/%s/%s/lun_%llu",
--				db_root, se_tpg->se_tpg_tfo->fabric_name,
--				se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
--				lun->unpacked_lun);
-+		path = kasprintf(GFP_KERNEL, "alua/%s/%s/lun_%llu",
-+				 se_tpg->se_tpg_tfo->fabric_name,
-+				 se_tpg->se_tpg_tfo->tpg_get_wwn(se_tpg),
-+				 lun->unpacked_lun);
- 	}
- 	if (!path) {
- 		rc = -ENOMEM;
-diff --git a/drivers/target/target_core_configfs.c b/drivers/target/target_core_configfs.c
-index 2b19a956007b7..31cd1ed42b135 100644
---- a/drivers/target/target_core_configfs.c
-+++ b/drivers/target/target_core_configfs.c
-@@ -96,57 +96,126 @@ static ssize_t target_core_item_version_show(struct config_item *item,
- CONFIGFS_ATTR_RO(target_core_item_, version);
- 
- char db_root[DB_ROOT_LEN] = DB_ROOT_DEFAULT;
--static char db_root_stage[DB_ROOT_LEN];
-+struct path db_root_path;
-+/* Protect db_root and db_root_path. */
-+DEFINE_MUTEX(db_root_lock);
-+
-+static int target_validate_db_root(const char *path_str, struct path *path)
-+{
-+	struct file *file;
-+	int ret;
-+
-+	ret = kern_path(path_str, LOOKUP_FOLLOW | LOOKUP_DIRECTORY, path);
-+	if (ret) {
-+		pr_err("db_root: cannot open: %s\n", path_str);
-+		if (ret == -ENOTDIR)
-+			pr_err("db_root: not a directory: %s\n", path_str);
-+		return ret;
-+	}
-+
-+	file = configfs_open_root(path, "", O_RDONLY, 0);
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		path_put(path);
-+		*path = (struct path){};
-+		if (ret != -EINVAL)
-+			return ret;
-+
-+		pr_err("db_root: configfs is not a valid target database root: %s\n",
-+		       path_str);
-+		return -EINVAL;
-+	}
-+
-+	path_put(path);
-+	*path = file->f_path;
-+	path_get(path);
-+	fput(file);
-+
-+	return 0;
-+}
- 
- static ssize_t target_core_item_dbroot_show(struct config_item *item,
- 					    char *page)
- {
--	return sprintf(page, "%s\n", db_root);
-+	ssize_t ret;
-+
-+	mutex_lock(&db_root_lock);
-+	ret = sprintf(page, "%s\n", db_root);
-+	mutex_unlock(&db_root_lock);
-+
-+	return ret;
+-	spin_unlock(&dev->delayed_cmd_lock);
++	spin_unlock_irq(&dev->delayed_cmd_lock);
  }
  
- static ssize_t target_core_item_dbroot_store(struct config_item *item,
- 					const char *page, size_t count)
- {
-+	char *db_root_stage;
- 	ssize_t read_bytes;
- 	ssize_t r = -EINVAL;
- 	struct path path = {};
-+	struct path old_path = {};
-+	bool have_old_path = false;
- 
- 	mutex_lock(&target_devices_lock);
- 	if (target_devices) {
- 		pr_err("db_root: cannot be changed because it's in use\n");
--		goto unlock;
-+		mutex_unlock(&target_devices_lock);
-+		return r;
- 	}
-+	mutex_unlock(&target_devices_lock);
- 
- 	if (count > (DB_ROOT_LEN - 1)) {
- 		pr_err("db_root: count %d exceeds DB_ROOT_LEN-1: %u\n",
- 		       (int)count, DB_ROOT_LEN - 1);
--		goto unlock;
-+		return r;
- 	}
- 
-+	db_root_stage = kmalloc(DB_ROOT_LEN, GFP_KERNEL);
-+	if (!db_root_stage)
-+		return -ENOMEM;
-+
- 	read_bytes = scnprintf(db_root_stage, DB_ROOT_LEN, "%s", page);
- 	if (!read_bytes)
--		goto unlock;
-+		goto free_stage;
- 
- 	if (db_root_stage[read_bytes - 1] == '\n')
- 		db_root_stage[read_bytes - 1] = '\0';
- 
- 	/* validate new db root before accepting it */
--	r = kern_path(db_root_stage, LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
--	if (r) {
--		pr_err("db_root: cannot open: %s\n", db_root_stage);
--		if (r == -ENOTDIR)
--			pr_err("db_root: not a directory: %s\n", db_root_stage);
--		goto unlock;
-+	r = target_validate_db_root(db_root_stage, &path);
-+	if (r)
-+		goto free_stage;
-+
-+	mutex_lock(&target_devices_lock);
-+	if (target_devices) {
-+		pr_err("db_root: cannot be changed because it's in use\n");
-+		r = -EINVAL;
-+		goto unlock_put;
- 	}
--	path_put(&path);
- 
-+	mutex_lock(&db_root_lock);
-+	have_old_path = db_root_path.dentry;
-+	if (have_old_path)
-+		old_path = db_root_path;
-+	db_root_path = path;
-+	path = (struct path){};
- 	strscpy(db_root, db_root_stage);
- 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
-+	mutex_unlock(&db_root_lock);
- 
- 	r = read_bytes;
- 
--unlock:
-+unlock_put:
- 	mutex_unlock(&target_devices_lock);
-+	if (path.dentry)
-+		path_put(&path);
-+	if (have_old_path)
-+		path_put(&old_path);
-+	kfree(db_root_stage);
-+	return r;
-+
-+free_stage:
-+	kfree(db_root_stage);
- 	return r;
- }
- 
-@@ -3722,23 +3791,37 @@ void target_setup_backend_cits(struct target_backend *tb)
- 
- static void target_init_dbroot(void)
- {
--	struct file *fp;
-+	const char *db_root_stage;
-+	struct path path = {};
-+	int ret;
- 
--	snprintf(db_root_stage, DB_ROOT_LEN, DB_ROOT_PREFERRED);
--	fp = filp_open(db_root_stage, O_RDONLY, 0);
--	if (IS_ERR(fp)) {
--		pr_err("db_root: cannot open: %s\n", db_root_stage);
--		return;
--	}
--	if (!S_ISDIR(file_inode(fp)->i_mode)) {
--		filp_close(fp, NULL);
--		pr_err("db_root: not a valid directory: %s\n", db_root_stage);
--		return;
-+	db_root_stage = DB_ROOT_PREFERRED;
-+	ret = target_validate_db_root(db_root_stage, &path);
-+	if (ret) {
-+		db_root_stage = DB_ROOT_DEFAULT;
-+		ret = target_validate_db_root(db_root_stage, &path);
-+		if (ret)
-+			return;
- 	}
--	filp_close(fp, NULL);
- 
-+	mutex_lock(&db_root_lock);
-+	db_root_path = path;
- 	strscpy(db_root, db_root_stage);
- 	pr_debug("Target_Core_ConfigFS: db_root set to %s\n", db_root);
-+	mutex_unlock(&db_root_lock);
-+}
-+
-+static void target_release_db_root(void)
-+{
-+	struct path path;
-+
-+	mutex_lock(&db_root_lock);
-+	path = db_root_path;
-+	db_root_path = (struct path){};
-+	mutex_unlock(&db_root_lock);
-+
-+	if (path.dentry)
-+		path_put(&path);
- }
- 
- static int __init target_core_init_configfs(void)
-@@ -3797,6 +3880,10 @@ static int __init target_core_init_configfs(void)
- 	/*
- 	 * Register the target_core_mod subsystem with configfs.
- 	 */
-+	/* Resolve db_root before making the configfs attributes visible. */
-+	scoped_with_kernel_creds()
-+		target_init_dbroot();
-+
- 	ret = configfs_register_subsystem(subsys);
- 	if (ret < 0) {
- 		pr_err("Error %d while registering subsystem %s\n",
-@@ -3821,9 +3908,6 @@ static int __init target_core_init_configfs(void)
- 	if (ret < 0)
- 		goto out;
- 
--	scoped_with_kernel_creds()
--		target_init_dbroot();
--
- 	return 0;
- 
- out:
-@@ -3832,6 +3916,7 @@ static int __init target_core_init_configfs(void)
- 	core_dev_release_virtual_lun0();
- 	rd_module_exit();
- out_global:
-+	target_release_db_root();
- 	if (default_lu_gp) {
- 		core_alua_free_lu_gp(default_lu_gp);
- 		default_lu_gp = NULL;
-@@ -3861,6 +3946,7 @@ static void __exit target_core_exit_configfs(void)
- 	core_dev_release_virtual_lun0();
- 	rd_module_exit();
- 	target_xcopy_release_pt();
-+	target_release_db_root();
- 	release_se_kmem_caches();
- }
- 
-diff --git a/drivers/target/target_core_internal.h b/drivers/target/target_core_internal.h
-index f0886ea290345..502788ba732dd 100644
---- a/drivers/target/target_core_internal.h
-+++ b/drivers/target/target_core_internal.h
-@@ -4,6 +4,7 @@
- 
- #include <linux/configfs.h>
- #include <linux/list.h>
-+#include <linux/mutex.h>
- #include <linux/types.h>
- #include <target/target_core_base.h>
- 
-@@ -171,6 +172,10 @@ extern struct se_portal_group xcopy_pt_tpg;
- #define	DB_ROOT_DEFAULT		"/var/target"
- #define	DB_ROOT_PREFERRED	"/etc/target"
- 
-+struct path;
-+
- extern char db_root[];
-+extern struct path db_root_path;
-+extern struct mutex db_root_lock;
- 
- #endif /* TARGET_CORE_INTERNAL_H */
-diff --git a/drivers/target/target_core_pr.c b/drivers/target/target_core_pr.c
-index 25b1bcacc0c8f..36d20732382f1 100644
---- a/drivers/target/target_core_pr.c
-+++ b/drivers/target/target_core_pr.c
-@@ -18,7 +18,6 @@
- #include <linux/file.h>
- #include <linux/fcntl.h>
- #include <linux/fs.h>
--#include <linux/fs_struct.h>
- #include <scsi/scsi_proto.h>
- #include <linux/unaligned.h>
- 
-@@ -1965,16 +1964,22 @@ static int __core_scsi3_write_aptpl_to_file(
- 	int ret;
- 	loff_t pos = 0;
- 
--	path = kasprintf(GFP_KERNEL, "%s/pr/aptpl_%s", db_root,
--			&wwn->unit_serial[0]);
-+	path = kasprintf(GFP_KERNEL, "pr/aptpl_%s", &wwn->unit_serial[0]);
- 	if (!path)
- 		return -ENOMEM;
- 
--	scoped_with_init_fs()
--		file = filp_open(path, flags, 0600);
-+	mutex_lock(&db_root_lock);
-+	if (!db_root_path.dentry) {
-+		mutex_unlock(&db_root_lock);
-+		pr_err("db_root is not initialized for APTPL metadata path: %s\n",
-+		       path);
-+		kfree(path);
-+		return -ENODEV;
-+	}
-+	file = configfs_open_root(&db_root_path, path, flags, 0600);
-+	mutex_unlock(&db_root_lock);
- 	if (IS_ERR(file)) {
--		pr_err("filp_open(%s) for APTPL metadata"
--			" failed\n", path);
-+		pr_err("configfs_open_root(%s) for APTPL metadata failed\n", path);
- 		kfree(path);
- 		return PTR_ERR(file);
- 	}
+ static void transport_complete_ordered_sync(struct se_cmd *cmd)
 -- 
-2.34.1
+2.43.0
 
