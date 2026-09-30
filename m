@@ -1,79 +1,78 @@
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 234433B42DE;
-	Mon, 28 Sep 2026 19:31:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 304A94E5322;
+	Wed, 30 Sep 2026 13:54:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1790623902; cv=none; b=jnCs7Y5dUBHIFywnlOWlEqml0teDfKmOzsbea7T5nc1O8tgZXyHwZYNzMAUCQTso5cHqSpUb10vzsbdAt0acwrXCty4K7hPV9DNLGyNFWJs/Ka5L+hJXB4joCGJstSK35mtMYE6sKtEYWVtagxCMjXWDS3gtZRFz1Qk7eDeMZzg=
+	t=1790776473; cv=none; b=YpSZRxdEbpJk29THllGziPTMp7WEXgjhtWy/CXy+Z5+vkfuNxtq78FDVJ9zEMcH3QSOYvmpY0IGcZHhjtxLLoVn21xXA2qrK4lJjM5ovIxix/jwQWUF32N0ro8oHmTnlmMOrHMNKIvOmRVITB8t+alpl7P+H4LAwnDhkZDh4IwE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1790623902; c=relaxed/simple;
-	bh=FuYHtQTbqw26mjq8W1siyuDuD3/KdBw0EwXgkJHrNyU=;
+	s=arc-20240116; t=1790776473; c=relaxed/simple;
+	bh=jNmuJCUQ6AV+uZkYgO4Rl+6zLRg4alhoFL9PUHqBETY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=rCqa8HCp1VbCvMhaOWTo7MhL6+tj0zGy+2qwOHyGvI/gUsRgv3/k6pek9dZWx8wiURzofrGyeJJe7mgsPQGLxN+hO1Sz+7nrTGBEXEqGPREEQQk/ELjiFd2uEQ/RHo/5gA8FvjjpjfgJDA3XAGDEeXkInJlv2jkkp/w0VQJNbZo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=Zda0Ed1i; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=ZbOwEnvb; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=mpRrJJrg; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=E5usMorP; arc=none smtp.client-ip=195.135.223.130
+	 MIME-Version; b=pc9ZsAInDUPExBaKOiq+MMHhHrywrWS1hsteuBheybyDtIsg1MvOoiCSycT/YnpSJI0dg7MjZh1PnzcmZ+6G+mNrEQPyPxMdcidpSY7whoDmy1KZVU7a26y3aFrL1qZnZFhRdyYfPbUZAyuqLJv/uAdt7A5DtwXPoGzsKSwre4Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=RMlAQQh6; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=P936QFcu; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=gM3IYV04; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=LLHlj2rw; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="Zda0Ed1i";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="ZbOwEnvb";
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="mpRrJJrg";
-	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="E5usMorP"
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="RMlAQQh6";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="P936QFcu";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="gM3IYV04";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="LLHlj2rw"
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 087FE21BBF;
-	Mon, 28 Sep 2026 19:31:29 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 9041B21D6E;
+	Wed, 30 Sep 2026 13:53:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1790623893; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1790776441; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4iT4hq2wtcM3fNuf88VBw8/khKp+sIm83YEs3yR8ZVc=;
-	b=Zda0Ed1iGuaYmCHWvmkAonSaBPKN7s/Tz9/IISymOiRIU4oEWoMZ9UHZksfjB3X5e4qJXU
-	Yzus2YG3F8wPxf2eS1neaDfH2juEX5SPVvcd7e96lpYDWtm36K22GYPVFvrdI+RaEVcOE4
-	FtMEcYYOPM2wLT9oaSSP+wnmmZaisfw=
+	bh=/1IBlTX6vlcUFCjGWOjia0E+4yysJS/6lorCAPFPo2k=;
+	b=RMlAQQh6Ro2RDStq9a9Pi4hvvzfw/pA5YUeUecyAZ4aFYcJJWbS916DqfmwuxBem6zAStE
+	C2duED++f9sTtXDi5RcfVhz/dydQoUk6hTRuFnNUwIvvOEaqgeuxfOLiG1IcvI5IN19Ddp
+	eTpsISxoKWRqRrmuU4YCQHYleh6Z0RM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1790623893;
+	s=susede2_ed25519; t=1790776441;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4iT4hq2wtcM3fNuf88VBw8/khKp+sIm83YEs3yR8ZVc=;
-	b=ZbOwEnvbCIMIBWUn48Mny5VYJ6ABeYwKPbATdlGO/l/lQGy+gforxz1TWmx0j932qmojKm
-	JDsTenFlAshxUnDg==
+	bh=/1IBlTX6vlcUFCjGWOjia0E+4yysJS/6lorCAPFPo2k=;
+	b=P936QFcu0z8RG2dASK2K1h3d7//Tq0wpKPHKld1bjAzQAZLP7v0LTYDuzqVmweo99MLUAL
+	rPDE3NILpnxJ+GAw==
 Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=mpRrJJrg;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=E5usMorP
+	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1790623889; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1790776437; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4iT4hq2wtcM3fNuf88VBw8/khKp+sIm83YEs3yR8ZVc=;
-	b=mpRrJJrgnDKCdtGAt9PyCI/Jp+2Iof+z4Z1UyjtgKZ0y6m7JjNZ4CeyP8SlVVUih3ak7ab
-	CBxd39erir6oJ586fTijiCIVWoBBAdYyCLtl11MgOIkjtgF+kV7vaOPZNIAxOBNMemp9Sz
-	So22JSRs+jExzR1aCFbPN1/qLdG4be4=
+	bh=/1IBlTX6vlcUFCjGWOjia0E+4yysJS/6lorCAPFPo2k=;
+	b=gM3IYV04c03WM7/KGb0tyF1pfVk1tn84pCcc2mA/mqFYqKxd777ODk16gGzzw4f2Hbg3Ll
+	4/pf7CEMbxB/HG8j2FsDpHv10PuPOLkaXzClmKHOuJHAlskz7TZtJnsAO1dXqjCfXyjby5
+	igQhfVatYTIbZbzb6s2oLOpRRBkeAAU=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1790623889;
+	s=susede2_ed25519; t=1790776437;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4iT4hq2wtcM3fNuf88VBw8/khKp+sIm83YEs3yR8ZVc=;
-	b=E5usMorPi01tGO/45ejx7pB9xnIjr0LLWFOTbD+PSxb/YPBm6nzj/8VLG/OEgUKxUS1GaD
-	iC6wbRtv2dNrPWBQ==
+	bh=/1IBlTX6vlcUFCjGWOjia0E+4yysJS/6lorCAPFPo2k=;
+	b=LLHlj2rwNW2vWZZWdFhrfd0aqpDv2Ka96milIukaY7nmcybc90aDipBEKI9am2til22yHn
+	C2ZKOgyP4QsQjNBA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 36FE6133F1;
-	Mon, 28 Sep 2026 19:31:23 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A512313ABC;
+	Wed, 30 Sep 2026 13:53:51 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 4RBiFn3AumpWOAAAD6G6ig:T2
-	(envelope-from <fmancera@suse.de>); Mon, 28 Sep 2026 19:31:23 +0000
+	id fJXpHGIUvWqUTwAAD6G6ig:T2
+	(envelope-from <fmancera@suse.de>); Wed, 30 Sep 2026 13:53:51 +0000
 From: Fernando Fernandez Mancera <fmancera@suse.de>
 To: netdev@vger.kernel.org
 Cc: horms@kernel.org,
@@ -139,6 +138,12 @@ Cc: horms@kernel.org,
 	Jamal Hadi Salim <jhs@mojatatu.com>,
 	Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
 	Xin Long <lucien.xin@gmail.com>,
+	"D. Wythe" <alibuda@linux.alibaba.com>,
+	Dust Li <dust.li@linux.alibaba.com>,
+	Sidraya Jayagond <sidraya@linux.ibm.com>,
+	Mahanta Jambigi <mjambigi@linux.ibm.com>,
+	Tony Lu <tonylu@linux.alibaba.com>,
+	Wen Gu <guwen@linux.alibaba.com>,
 	Jon Maloy <jmaloy@redhat.com>,
 	Tung Quang Nguyen <tung.quang.nguyen@est.tech>,
 	Steffen Klassert <steffen.klassert@secunet.com>,
@@ -154,6 +159,7 @@ Cc: horms@kernel.org,
 	Ethan Nelson-Moore <enelsonmoore@gmail.com>,
 	Eric Biggers <ebiggers@kernel.org>,
 	Ard Biesheuvel <ardb@kernel.org>,
+	Neal Cardwell <ncardwell@google.com>,
 	Kuniyuki Iwashima <kuniyu@google.com>,
 	Alyssa Ross <hi@alyssa.is>,
 	linux-rdma@vger.kernel.org,
@@ -179,14 +185,15 @@ Cc: horms@kernel.org,
 	lvs-devel@vger.kernel.org,
 	rds-devel@oss.oracle.com,
 	linux-sctp@vger.kernel.org,
+	linux-s390@vger.kernel.org,
 	tipc-discussion@lists.sourceforge.net,
 	linux-security-module@vger.kernel.org
-Subject: [PATCH 01/16 net-next v2] ipv4: introduce CONFIG_IPV4 to decouple the IPv4 stack
-Date: Mon, 28 Sep 2026 21:29:57 +0200
-Message-ID: <20260928193046.6698-2-fmancera@suse.de>
+Subject: [PATCH 01/16 net-next v3] ipv4: introduce CONFIG_IPV4 to decouple the IPv4 stack
+Date: Wed, 30 Sep 2026 15:52:44 +0200
+Message-ID: <20260930135334.4739-2-fmancera@suse.de>
 X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260928193046.6698-1-fmancera@suse.de>
-References: <20260928193046.6698-1-fmancera@suse.de>
+In-Reply-To: <20260930135334.4739-1-fmancera@suse.de>
+References: <20260930135334.4739-1-fmancera@suse.de>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -194,38 +201,35 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Score: -1.51
-X-Rspamd-Queue-Id: 087FE21BBF
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spam-Level: 
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-1.51 / 50.00];
+X-Spamd-Result: default: False [-3.30 / 50.00];
+	REPLY(-4.00)[];
 	BAYES_HAM(-3.00)[100.00%];
+	FORGED_RECIPIENTS(2.00)[m:horms@kernel.org,m:kuba@kernel.org,m:pabeni@redhat.com,m:edumazet@kernel.org,m:davem@davemloft.net,m:fmancera@suse.de,m:cel@kernel.org,m:leon@kernel.org,m:zyjzyj2000@gmail.com,m:andrew+netdev@lunn.ch,m:edumazet@google.com,m:anthony.l.nguyen@intel.com,m:przemyslaw.kitszel@intel.com,m:enachman@marvell.com,m:saeedm@nvidia.com,m:tariqt@nvidia.com,m:mbloch@nvidia.com,m:idosch@nvidia.com,m:petrm@nvidia.com,m:jiri@resnulli.us,m:ecree.xilinx@gmail.com,m:maxime.chevallier@bootlin.com,m:mcoquelin.stm32@gmail.com,m:alexandre.torgue@foss.st.com,m:arend.vanspriel@broadcom.com,m:miriam.rachel.korenblit@intel.com,m:kbusch@kernel.org,m:axboe@kernel.dk,m:hch@lst.de,m:sagi@grimberg.me,m:kch@nvidia.com,m:varun@chelsio.com,m:James.Bottomley@HansenPartnership.com,m:mkp@kernel.org,m:brauner@kernel.org,m:jack@suse.cz,m:dhowells@redhat.com,m:marc.dionne@auristor.com,m:trondmy@kernel.org,m:anna@kernel.org,m:jlayton@kernel.org,m:neil@brown.name,m:okorniev@redhat.com,m:Dai.Ngo@oracle
+ .com,m:tom@talpey.com,m:marek.lindner@mailbox.org,m:sw@simonwunderlich.de,m:antonio@mandelbit.com,m:sven@narfation.org,m:razor@blackwall.org,m:pablo@netfilter.org,m:fw@strlen.de,m:phil@nwl.cc,m:matttbe@kernel.org,m:martineau@kernel.org,m:geliang@kernel.org,m:ja@ssi.bg,m:achender@kernel.org,m:jhs@mojatatu.com,m:marcelo.leitner@gmail.com,m:lucien.xin@gmail.com,m:alibuda@linux.alibaba.com,m:dust.li@linux.alibaba.com,m:sidraya@linux.ibm.com,m:mjambigi@linux.ibm.com,m:tonylu@linux.alibaba.com,m:guwen@linux.alibaba.com,m:jmaloy@redhat.com,m:tung.quang.nguyen@est.tech,m:steffen.klassert@secunet.com,m:herbert@gondor.apana.org.au,m:casey@schaufler-ca.com,m:paul@paul-moore.com,m:jmorris@namei.org,m:serge@hallyn.com,m:krzk@kernel.org,m:qingfang.deng@linux.dev,m:julianbraha@gmail.com,m:gregkh@linuxfoundation.org,m:enelsonmoore@gmail.com,m:ebiggers@kernel.org,m:ardb@kernel.org,m:ncardwell@google.com,m:kuniyu@google.com,m:hi@alyssa.is,m:intel-wired-lan@lists.osuosl.org,m:linux-net-drivers@amd.com
+ ,m:linux-stm32@st-md-mailman.stormreply.com,m:linux-arm-kernel@lists.infradead.org,m:brcm80211@lists.linux.dev,m:brcm80211-dev-list.pdl@broadcom.com,m:linux-nvme@lists.infradead.org,s:linux-nfs@vger.kernel.org,s:linux-s390@vger.kernel.org,s:linux-sctp@vger.kernel.org,s:linux-security-module@vger.kernel.org,s:lvs-devel@vger.kernel.org,s:netfilter-devel@vger.kernel.org,s:target-devel@vger.kernel.org];
 	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
 	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
 	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-0.994];
 	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	ARC_NA(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:mid];
 	RCVD_VIA_SMTP_AUTH(0.00)[];
 	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,redhat.com,davemloft.net,suse.de,ziepe.ca,gmail.com,lunn.ch,google.com,intel.com,marvell.com,nvidia.com,resnulli.us,bootlin.com,foss.st.com,broadcom.com,kernel.dk,lst.de,grimberg.me,chelsio.com,HansenPartnership.com,zeniv.linux.org.uk,suse.cz,auristor.com,brown.name,oracle.com,talpey.com,mailbox.org,simonwunderlich.de,mandelbit.com,narfation.org,blackwall.org,netfilter.org,strlen.de,nwl.cc,ssi.bg,mojatatu.com,est.tech,secunet.com,gondor.apana.org.au,schaufler-ca.com,paul-moore.com,namei.org,hallyn.com,linux.dev,linuxfoundation.org,alyssa.is,vger.kernel.org,lists.osuosl.org,amd.com,st-md-mailman.stormreply.com,lists.infradead.org,lists.linux.dev,lists.open-mesh.org,oss.oracle.com,lists.sourceforge.net];
-	TO_DN_SOME(0.00)[];
+	ARC_NA(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	RCPT_COUNT_GT_50(0.00)[106];
+	FREEMAIL_CC(0.00)[kernel.org,redhat.com,davemloft.net,suse.de,ziepe.ca,gmail.com,lunn.ch,google.com,intel.com,marvell.com,nvidia.com,resnulli.us,bootlin.com,foss.st.com,broadcom.com,kernel.dk,lst.de,grimberg.me,chelsio.com,HansenPartnership.com,zeniv.linux.org.uk,suse.cz,auristor.com,brown.name,oracle.com,talpey.com,mailbox.org,simonwunderlich.de,mandelbit.com,narfation.org,blackwall.org,netfilter.org,strlen.de,nwl.cc,ssi.bg,mojatatu.com,linux.alibaba.com,linux.ibm.com,est.tech,secunet.com,gondor.apana.org.au,schaufler-ca.com,paul-moore.com,namei.org,hallyn.com,linux.dev,linuxfoundation.org,alyssa.is,vger.kernel.org,lists.osuosl.org,amd.com,st-md-mailman.stormreply.com,lists.infradead.org,lists.linux.dev,lists.open-mesh.org,oss.oracle.com,lists.sourceforge.net];
+	RCPT_COUNT_GT_50(0.00)[114];
 	TAGGED_RCPT(0.00)[netdev];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:email,suse.de:mid];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	DKIM_TRACE(0.00)[suse.de:+]
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCVD_TLS_ALL(0.00)[]
 X-Spam-Flag: NO
+X-Spam-Score: -3.30
+X-Spam-Level: 
 
 Historically, the IPv4 protocol has been linked to the core INET
 subsystem. Because shared infrastructure like the TCP/UDP engine,
@@ -245,6 +249,10 @@ makes sense.
 
 Acked-by: Chuck Lever <cel@kernel.org>
 Signed-off-by: Fernando Fernandez Mancera <fmancera@suse.de>
+---
+Sashiko: Marking the Kconfig symbols to depend on IPV4 is intentional,
+plenty of features won't work without IPv4 for now. Follow-up patches
+are required to support IPv4=n for those symbols.
 ---
  drivers/infiniband/Kconfig                    |  2 +-
  drivers/infiniband/sw/rxe/Kconfig             |  2 +-
@@ -290,11 +298,12 @@ Signed-off-by: Fernando Fernandez Mancera <fmancera@suse.de>
  net/rxrpc/Kconfig                             |  2 +-
  net/sched/Kconfig                             |  2 +-
  net/sctp/Kconfig                              |  2 +-
+ net/smc/Kconfig                               |  2 +-
  net/sunrpc/Kconfig                            |  2 +-
  net/tipc/Kconfig                              |  1 +
  net/xfrm/Kconfig                              | 10 ++++++--
  security/smack/Kconfig                        |  1 +
- 48 files changed, 117 insertions(+), 64 deletions(-)
+ 49 files changed, 118 insertions(+), 65 deletions(-)
 
 diff --git a/drivers/infiniband/Kconfig b/drivers/infiniband/Kconfig
 index 086195758a8a..e9302002b6ea 100644
@@ -1282,6 +1291,19 @@ index fc989a3791b3..eb3e2bf1ec3a 100644
  	select CRYPTO_LIB_SHA1
  	select CRYPTO_LIB_SHA256
  	select CRYPTO_LIB_UTILS
+diff --git a/net/smc/Kconfig b/net/smc/Kconfig
+index 277ef504bc26..faac6586b848 100644
+--- a/net/smc/Kconfig
++++ b/net/smc/Kconfig
+@@ -1,7 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ config SMC
+ 	tristate "SMC socket protocol family"
+-	depends on INET && INFINIBAND && DIBS
++	depends on INET && IPV4 && INFINIBAND && DIBS
+ 	help
+ 	  SMC-R provides a "sockets over RDMA" solution making use of
+ 	  RDMA over Converged Ethernet (RoCE) technology to upgrade
 diff --git a/net/sunrpc/Kconfig b/net/sunrpc/Kconfig
 index e7808e5714dc..58e6f6db3100 100644
 --- a/net/sunrpc/Kconfig
