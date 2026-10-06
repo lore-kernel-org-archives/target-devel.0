@@ -1,63 +1,63 @@
-Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
+Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 852C5288C2D
-	for <target-devel@vger.kernel.org>; Tue,  6 Oct 2026 09:34:50 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E7AC3DC85B
+	for <target-devel@vger.kernel.org>; Tue,  6 Oct 2026 09:34:55 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791279298; cv=none; b=bjYg1/3odRgG5IIvQaEKh7RFsa0wXYTtctUCeFGAD7ikuci1OqE1jkHwFTVatWgaEs1yC8jhJ/YL4G+XPvhFBJLDFcliBnyzpSfoWb4ojndyRGOKkdyBA7gGOieLBya8rkaNl74skG8tglCsh5DJfbf8EDBEcsiAsi0buxcPrgo=
+	t=1791279299; cv=none; b=mWmmEV/IEkPF/fCnWHxIZEBvUw7+rR7kYyyHRy0IejfEBEZoZ+lVMvYlSZtOhE8EhprvZvSpNx7PhH3N3ipW0ZysDj0kW1KhRYiSRklCWmthdRDyva2DSYsrrfx6khlgB2GfDu6BExGXjZwm10T5u28JRUeYdzvb+2OUiIcseYQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791279298; c=relaxed/simple;
-	bh=Cl7VqJEIWRMpNSC0QtvNARN8JpERw/rX/idDF/Zmv5U=;
+	s=arc-20240116; t=1791279299; c=relaxed/simple;
+	bh=WsLJKfD4eIsxgUWDfay5EKa72kdZ0tjnBWJyqqBv1+k=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=pWrHQCn5ADNFi4cEk6TD9wS/vUQ3ligx7wog3T35o2Gh1l+FvAd5tdUGadbX7XRxi/qWPhNxWf+UPQ5I7YY59wVz+hZmCtOvnLBgJ0Qgm45hwnMa1axj8UUguf0DQQ89a1mZqJ52M4ujSU/BaQM+7R84mOk7WIRiF0wj1ibv+hM=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=PsDuSiK8; arc=none smtp.client-ip=209.85.216.44
+	 MIME-Version; b=US14PHihEo1rW3f0wvlwIZmLXsnxVDljCd5yYnsGIMuG/3s2EENLXFSBSeZxd1l/G83qZ/RumEuyn43ryhYvZgwwjYq50oJSY4EK5B/qbXgf+HauYVQDSC+7DTdkNt3OuK1itcx7Zy9Cu90uN/2pQWptZz0s/LgFPNj5ZD7KGAk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fjYC2duS; arc=none smtp.client-ip=209.85.216.45
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PsDuSiK8"
-Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-3a4a7eb86a4so504248a91.3
-        for <target-devel@vger.kernel.org>; Tue, 06 Oct 2026 02:34:50 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fjYC2duS"
+Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-38d489b6b71so217173a91.0
+        for <target-devel@vger.kernel.org>; Tue, 06 Oct 2026 02:34:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791279289; x=1791884089; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1791279294; x=1791884094; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Y1Ln/9VxN6ySADYGeFTkesQbRiqqtYrWtn23BhcT6ng=;
-        b=PsDuSiK8LpLWFAl0h7xi4Sw9gwUoiV+y6g5DmMdu5irVKK2GdqJgk1PYIDetrcOy0M
-         HYlxN9j292d2rFWx+kgbiv5p1HcfAEeIrKrK6rGQD/bef1Ip8qUst1al2A9fBxy1XoEn
-         NufYUzsu5JIUCimJ3iNF1FygCZPYSBVlBA2lxH3BNrV7GnfNhaubi78yqJRxbaFbix62
-         kWI2yKhpZaiICX9dRXoHCY4Hfm7NnfeUAE/wg9ImkjYkAMUC4Ezg6IOmhAGLISumC9Wp
-         h8GoENvTJwuJwmXf6PznvMG8QdzoUB7gBfk8/n9p3V3REzsjNAOnqq9lk6w04xQqzFWO
-         RxgQ==
+        bh=1uz8HoiiEKQyA9qDT7OXJyTdmhx4sEKhN2lImiOzD/E=;
+        b=fjYC2duSkBPmoSUheHcKoESsWy1QBtkE/rMGy5MOYYCN4WapRELVFzH8a8Ecnw4/lE
+         haJUGx8FOCrJLEqly8GnYPgsGmCHiDTRE5YIST3PmjAnU/o6hnG+JSLf7PuECaU0AD6J
+         +D+JwKa9akCqwCVGOh3Jp7NLOkOYVSrwypAhwyhD0181KPnVGha6S+1eXssq4faBG7AK
+         lxPWuiPDFbcjf188Ig7LNWW8FHfpeF1OnuXUDHiGUV7QYfvZMEQA1ZC2S/X78mp109nj
+         WYkCdwUm5TpHL3UtvK3+182W30TwgBFBhxmr1NAR4Y5RBrahKWS/5UoCiXq9Gs0c7oZ9
+         9R7Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791279289; x=1791884089;
+        d=1e100.net; s=20260707; t=1791279294; x=1791884094;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Y1Ln/9VxN6ySADYGeFTkesQbRiqqtYrWtn23BhcT6ng=;
-        b=0xnzYxfrStvfyIbgypb2REtQw/1JeaO69oPZM9kl0VHKFLw3DQlnuW6bvaERo8CUzT
-         v+WA6lhlM7LroYF+S0XdWdkN8ZT8MMDYq/Ec/6nWTpSz10kYM9CXtgZzzhTXL5Jgnlff
-         rKTuuzeJnhUeDm8csjgO5hsTMvKwUwGtTV7GMuESkk05LiAZkuHQR5a2WOPdb7U+9gqa
-         RJwG+3CtdITu54xsjMEg6PKAcIEs7Ms9/e4ea6uadu/hrP9PVLPH67GNMOMNP4TK9k34
-         bo5SWWVANFGr05bi+T6tz4tpSz3PeGTMcq8WESxuHmyZPabc4Sjoo1K3DlaZqYk+fG1V
-         cFJQ==
-X-Forwarded-Encrypted: i=1; AKwUvBw8IQII6V+L1b1i+nQDm7zB+HXS1foC9gm30OFYwH8NgVJISeS+H4ibX5K9MLoYkZOm/QYL9HQOxU0l6lk=@vger.kernel.org
-X-Gm-Message-State: AFq9FYLomp6PSGFFSVSuak3G5ZwnQKmNdguVY/lq4UKAxUPg5KbFDCFR
-	jbLQaC/Wi+04N7j+XprCq3m0ByquAtdrSkSwQpFjecGHd0T7txeNfcBM4+6YfdCj
-X-Gm-Gg: AYBFou0eyGd3sduMCOiLf38xtv0OxdNpHe8e/uoIhwdocAAD2PgWQcPLwNDneyu7WWa
-	DFMUy2EuQbVjkczCrcgtOq+ApodiSwhFGi1ONP5nx6Nnv0Z73iVelI/v/IRei5UUaAAvC66t76Y
-	ie38hUWjJMMh81VbH+uVHASteIvmbJ8rEeLtMy9wUI5klJX33tBtuMv8bkRZgc31ZeA0rcn1Zsk
-	WRH2TPwIlz7JFVLUG7girxWEizp36eenQOZyCMUbkmn0udxlSEECUpOkRoJaUfMaYkGvbKRTgpr
-	WfsInhv0voKmD+ikves0hGrkcGFoLN2mQzfKOblzGEgxI1qenlwLviH0OZ33c7PJEtqviKLvjBa
-	6+00o7SzvdQtmUXnxuVNMpujm8hr2bxGf7C9zRJOGlDBErAgn5Z7wPgliQ3nAJtN1kUL1/U1WOw
-	0crY1nni5+XwMufJ7ari/+Q2PqF3+EcgLKeJ275IPQUJSP+kl1fEzChzjmvT+oulTDv8H0Tvo=
-X-Received: by 2002:a17:90a:f94e:b0:3a4:c18c:b8a5 with SMTP id 98e67ed59e1d1-3a8737d4695mr500390a91.58.1791279288855;
-        Tue, 06 Oct 2026 02:34:48 -0700 (PDT)
+        bh=1uz8HoiiEKQyA9qDT7OXJyTdmhx4sEKhN2lImiOzD/E=;
+        b=LPm0vih0B+FLGl0+7YaXos9pL39IIhxyKQB+K2Rpr35IBGr0epHZ8FcSW7zAxWeDoo
+         fqYrePvj8z2OjBq4swU7PPQ9tXFaiCFPan2OWviHBa91/MTHRv2DFVL0i212JIC30zbH
+         xBrSTcU4uQCj4RWD6aTUCnplAqVLFypP8E3D9rRSsUPfbQh3f4/r/qgXV/YCL+/9j1L0
+         pe4YBbllG+4i995/kAbPSqAgcJSjcWQ5ymQp8r8MlqwPnFHKVZrsC+sq+3Xg2I//Xesy
+         M/7jUMpNXTeh7iOphaJnCbPwgKOnSQsg62jJ1BYUlyctL9Bs5AhDl/d9FWKUf1mSGlBP
+         foEA==
+X-Forwarded-Encrypted: i=1; AKwUvByWOKvdY+dEE4Ss2r5dHSpGAaOvVr+Qb+oNrWDN72wVQd6s9DWrBP+d9PsyMvJCzyIFaDGN+WN4GngCZk8=@vger.kernel.org
+X-Gm-Message-State: AFq9FYIIEDl4YmNcnpOVhS6mLFiJKUTKf75EXChZt3xMNEJOrfd+E/Eu
+	7jAvyixJNoNbvh1URxVFNpBPTbwM9KxClQWWTOJmW4ma0jtX2Q3bKx2bn+rNkidp
+X-Gm-Gg: AYBFou3sYIpgYvxZMy3CKxrHSyHtL+vTT13CvfVLCURbLN+PJtH+G2Trm2oWeTzVTva
+	5k9L+UiffZU7zHbwaTmYQIkmkGC3M4HSziJz+cyLq0p74Q6ti7Hx9SboaGUnLghcmxRW8JRBveI
+	JaoZ8udFgFarlZkBSwQ9UYjktSr0A6sEnSAsAzXI4uOrl8/VbmzCaHJyiLMwVTyQ5UjZLfzJ2Ax
+	TSf7ZlJmFrendbyK2zDP0xl7oRV9miopRUHIJ0Nrr2gl3WyZf8I7WK1kifOLt432UnQOMMcC1O1
+	f5/ZpsnLoo0vCN5D/L3LWes1xT/cMYjt0sIqmBulNsuR6QQiqks9S4KhzNAasahRytZxhqbZh6t
+	Y/fxgSeEoiEW6Ru60ZrPnophbwYBGi3OfO6RMXdeJ6E4hpv+tlosd/Ptpy7+WYpPPqHxc8SUYEK
+	Dre9AFpblJDR95HmhPDNLdM8xZNOVQm6r0fpV2wGcsnHOaoXivdlknT+5rbQfj8/kZC4p2Vg==
+X-Received: by 2002:a17:90b:384d:b0:3a4:c11d:b794 with SMTP id 98e67ed59e1d1-3a8730eacd9mr324677a91.14.1791279293582;
+        Tue, 06 Oct 2026 02:34:53 -0700 (PDT)
 Received: from gmail.com ([188.253.12.30])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a8543ab76bsm3905277a91.13.2026.10.06.02.34.45
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a8543ab76bsm3905277a91.13.2026.10.06.02.34.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Oct 2026 02:34:48 -0700 (PDT)
+        Tue, 06 Oct 2026 02:34:52 -0700 (PDT)
 From: Jia Jia <physicalmtea@gmail.com>
 To: "Martin K . Petersen" <mkp@kernel.org>
 Cc: Jan Engelhardt <jengelh@inai.de>,
@@ -69,9 +69,9 @@ Cc: Jan Engelhardt <jengelh@inai.de>,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Jia Jia <physicalmtea@gmail.com>
-Subject: [PATCH 7/8] scsi: target: keep pscsi mode bytes inside the data sgs
-Date: Tue,  6 Oct 2026 17:33:37 +0800
-Message-Id: <20261006093338.27342-8-physicalmtea@gmail.com>
+Subject: [PATCH 8/8] scsi: target: skip an escaped DIF block inside the data sg
+Date: Tue,  6 Oct 2026 17:33:38 +0800
+Message-Id: <20261006093338.27342-9-physicalmtea@gmail.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20261006093338.27342-1-physicalmtea@gmail.com>
 References: <20261006093338.27342-1-physicalmtea@gmail.com>
@@ -83,164 +83,107 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-pscsi_complete_cmd() writes the write-protect bit at a fixed header
-offset.  MODE SENSE uses byte 2 and MODE SENSE (10) uses byte 3.  The
-allocation length is allowed to be shorter than that header.  One byte
-at page offset 4095 makes the store the next physical page.
+sbc_dif_verify() treats an application tag of 0xffff as one skipped
+logical block and adds block_size to the data cursor.  The next tuple
+folds that cursor across a single sg entry.  When the block spans more
+entries, dsg_off remains past dsg->length and the following CRC reads a
+full block from that offset.
 
-On a tape device the same function then reads the MODE SELECT block
-descriptor through sg_virt() of the first sg.  MODE SELECT needs byte
-11 and MODE SELECT (10) needs byte 15.  A short first sg is not checked.
+A 512 byte block split 256 + 100 + the remainder, with the 100 byte
+entry ending on a page and the first tuple escaped, reads the next
+block from the next physical page.
 
-Read and write those bytes across the whole data sg list.  A header
-that spans entries is still applied.  A buffer that ends first is left
-unchanged.
+Walk every data sg the skipped block covers.  Those data pages are
+mapped with kmap_local_page(), including the page the cursor moves to.
 
-Fixes: c66ac9db8d4a ("[SCSI] target: Add LIO target core v4.0.0-rc6")
+KASAN reports:
+
+  BUG: KASAN: use-after-free in crc_t10dif_update+0x91/0xf0
+  Read of size 1
+
+  crc_t10dif_update
+  sbc_dif_verify
+  target_execute_cmd
+  vhost_scsi_write_pending
+  transport_generic_new_cmd
+  __target_submit
+  target_queued_submit_work
+  process_one_work
+  worker_thread
+  kthread
+  ret_from_fork
+  ret_from_fork_asm
+
+Fixes: 18213afbd8ce ("target: handle odd SG mapping for data transfer memory")
 Signed-off-by: Jia Jia <physicalmtea@gmail.com>
 ---
- drivers/target/target_core_pscsi.c | 98 +++++++++++++++++++++---------
- 1 file changed, 70 insertions(+), 28 deletions(-)
+ drivers/target/target_core_sbc.c | 46 +++++++++++++++++++++++++++++++-
+ 1 file changed, 45 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/target/target_core_pscsi.c b/drivers/target/target_core_pscsi.c
-index fd1b82fc7290..0e37a44f1e30 100644
---- a/drivers/target/target_core_pscsi.c
-+++ b/drivers/target/target_core_pscsi.c
-@@ -21,6 +21,7 @@
- #include <linux/ratelimit.h>
- #include <linux/module.h>
- #include <linux/unaligned.h>
-+#include <linux/highmem.h>
- 
- #include <scsi/scsi_device.h>
- #include <scsi/scsi_host.h>
-@@ -585,6 +586,51 @@ static void pscsi_destroy_device(struct se_device *dev)
- 	}
+diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
+index 76dbc986e887..7c4f66c2607a 100644
+--- a/drivers/target/target_core_sbc.c
++++ b/drivers/target/target_core_sbc.c
+@@ -1521,6 +1521,46 @@ void sbc_dif_copy_prot(struct se_cmd *cmd, unsigned int sectors, bool read,
  }
+ EXPORT_SYMBOL(sbc_dif_copy_prot);
  
 +/*
-+ * Copy @len bytes at data-buffer offset @off.  @to_sg writes @buf into
-+ * the sg.  Stop when the command buffer or an sg runs out.
++ * Drop @len bytes of the data sg.  An escaped PI tuple still covers one
++ * logical block, which may cross more than one sg entry.
 + */
 +static bool
-+pscsi_copy_buf(struct se_cmd *cmd, unsigned int off, void *buf,
-+	       unsigned int len, bool to_sg)
++sbc_dif_consume(struct scatterlist **dsgp, void **daddrp, int *offp,
++		unsigned int len)
 +{
-+	struct scatterlist *sg;
-+	unsigned int i, skip = off;
-+	u8 *p = buf;
++	struct scatterlist *dsg = *dsgp;
++	void *daddr = *daddrp;
++	int off = *offp;
 +
-+	if (!len)
-+		return true;
-+	if (!cmd->t_data_nents || !cmd->t_data_sg || off >= cmd->data_length ||
-+	    len > cmd->data_length - off)
-+		return false;
-+
-+	for_each_sg(cmd->t_data_sg, sg, cmd->t_data_nents, i) {
++	while (len) {
 +		unsigned int take;
-+		void *addr;
 +
-+		if (!len)
-+			return true;
-+		if (skip >= sg->length) {
-+			skip -= sg->length;
-+			continue;
++		if (off >= dsg->length) {
++			kunmap_local(daddr - dsg->offset);
++			dsg = sg_next(dsg);
++			if (!dsg)
++				return false;
++
++			daddr = kmap_local_page(sg_page(dsg)) + dsg->offset;
++			off = 0;
++			if (!dsg->length) {
++				kunmap_local(daddr - dsg->offset);
++				return false;
++			}
 +		}
 +
-+		take = min_t(unsigned int, len, sg->length - skip);
-+		addr = kmap_local_page(sg_page(sg));
-+		addr += sg->offset + skip;
-+		if (to_sg)
-+			memcpy(addr, p, take);
-+		else
-+			memcpy(p, addr, take);
-+		kunmap_local(addr);
-+		p += take;
++		take = min_t(unsigned int, len, dsg->length - off);
++		off += take;
 +		len -= take;
-+		skip = 0;
 +	}
 +
-+	return !len;
++	*dsgp = dsg;
++	*daddrp = daddr;
++	*offp = off;
++	return true;
 +}
 +
- static void pscsi_complete_cmd(struct se_cmd *cmd, u8 scsi_status,
- 			       unsigned char *req_sense, int valid_data)
- {
-@@ -610,21 +656,13 @@ static void pscsi_complete_cmd(struct se_cmd *cmd, u8 scsi_status,
- 		bool read_only = target_lun_is_rdonly(cmd);
+ sense_reason_t
+ sbc_dif_verify(struct se_cmd *cmd, sector_t start, unsigned int sectors,
+ 	       unsigned int ei_lba, struct scatterlist *psg, int psg_off)
+@@ -1559,7 +1599,11 @@ sbc_dif_verify(struct se_cmd *cmd, sector_t start, unsigned int sectors,
+ 			 sdt.app_tag, be32_to_cpu(sdt.ref_tag));
  
- 		if (read_only) {
--			unsigned char *buf;
--
--			buf = transport_kmap_data_sg(cmd);
--			if (!buf) {
--				; /* XXX: TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE */
--			} else {
--				if (cdb[0] == MODE_SENSE_10) {
--					if (!(buf[3] & 0x80))
--						buf[3] |= 0x80;
--				} else {
--					if (!(buf[2] & 0x80))
--						buf[2] |= 0x80;
--				}
-+			unsigned char wp;
-+			unsigned int wp_off = (cdb[0] == MODE_SENSE_10) ? 3 : 2;
- 
--				transport_kunmap_data_sg(cmd);
-+			if (pscsi_copy_buf(cmd, wp_off, &wp, 1, false) &&
-+			    !(wp & 0x80)) {
-+				wp |= 0x80;
-+				pscsi_copy_buf(cmd, wp_off, &wp, 1, true);
- 			}
- 		}
- 	}
-@@ -643,28 +681,32 @@ static void pscsi_complete_cmd(struct se_cmd *cmd, u8 scsi_status,
- 	 */
- 	if (((cdb[0] == MODE_SELECT) || (cdb[0] == MODE_SELECT_10)) &&
- 	     scsi_status == SAM_STAT_GOOD) {
--		unsigned char *buf;
-+		unsigned char bdl_buf[2];
-+		unsigned char bl[3];
- 		u16 bdl;
- 		u32 blocksize;
- 
--		buf = sg_virt(&cmd->t_data_sg[0]);
--		if (!buf) {
--			pr_err("Unable to get buf for scatterlist\n");
--			goto after_mode_select;
-+		if (cdb[0] == MODE_SELECT) {
-+			if (!pscsi_copy_buf(cmd, 3, bdl_buf, 1, false))
-+				goto after_mode_select;
-+			bdl = bdl_buf[0];
-+		} else {
-+			if (!pscsi_copy_buf(cmd, 6, bdl_buf, 2, false))
-+				goto after_mode_select;
-+			bdl = get_unaligned_be16(bdl_buf);
+ 		if (sdt.app_tag == T10_PI_APP_ESCAPE) {
+-			dsg_off += block_size;
++			if (!sbc_dif_consume(&dsg, &daddr, &dsg_off,
++					     block_size)) {
++				kunmap_local(paddr - psg->offset);
++				return 0;
++			}
+ 			goto next;
  		}
  
--		if (cdb[0] == MODE_SELECT)
--			bdl = buf[3];
--		else
--			bdl = get_unaligned_be16(&buf[6]);
--
- 		if (!bdl)
- 			goto after_mode_select;
- 
--		if (cdb[0] == MODE_SELECT)
--			blocksize = get_unaligned_be24(&buf[9]);
--		else
--			blocksize = get_unaligned_be24(&buf[13]);
-+		if (cdb[0] == MODE_SELECT) {
-+			if (!pscsi_copy_buf(cmd, 9, bl, 3, false))
-+				goto after_mode_select;
-+		} else {
-+			if (!pscsi_copy_buf(cmd, 13, bl, 3, false))
-+				goto after_mode_select;
-+		}
-+		blocksize = get_unaligned_be24(bl);
- 
- 		sd->sector_size = blocksize;
- 	}
 -- 
 2.34.1
 
