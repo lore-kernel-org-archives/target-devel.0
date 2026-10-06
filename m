@@ -1,189 +1,118 @@
-Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
+Received: from mail-oi1-f198.google.com (mail-oi1-f198.google.com [209.85.167.198])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2E7AC3DC85B
-	for <target-devel@vger.kernel.org>; Tue,  6 Oct 2026 09:34:55 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36DBB38D01B
+	for <target-devel@vger.kernel.org>; Tue,  6 Oct 2026 22:11:22 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.167.198
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791279299; cv=none; b=mWmmEV/IEkPF/fCnWHxIZEBvUw7+rR7kYyyHRy0IejfEBEZoZ+lVMvYlSZtOhE8EhprvZvSpNx7PhH3N3ipW0ZysDj0kW1KhRYiSRklCWmthdRDyva2DSYsrrfx6khlgB2GfDu6BExGXjZwm10T5u28JRUeYdzvb+2OUiIcseYQ=
+	t=1791324683; cv=none; b=eATRx+XA+pzcvVSGTgPVQleDzEpDKAW/J8r3gEglYR225hRw+kRxuTgwvtrTMxFWBlwq3sCPBke+cdZNWbb4Z7dH1Mee4auhqTCbaX9P6+6fyKUWRTpuVA8yh+NA+IFTNYr4EKTOf6ynDKDinIftbyN6mLxmYvrpWqMfqc2kGjw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791279299; c=relaxed/simple;
-	bh=WsLJKfD4eIsxgUWDfay5EKa72kdZ0tjnBWJyqqBv1+k=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=US14PHihEo1rW3f0wvlwIZmLXsnxVDljCd5yYnsGIMuG/3s2EENLXFSBSeZxd1l/G83qZ/RumEuyn43ryhYvZgwwjYq50oJSY4EK5B/qbXgf+HauYVQDSC+7DTdkNt3OuK1itcx7Zy9Cu90uN/2pQWptZz0s/LgFPNj5ZD7KGAk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=fjYC2duS; arc=none smtp.client-ip=209.85.216.45
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fjYC2duS"
-Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-38d489b6b71so217173a91.0
-        for <target-devel@vger.kernel.org>; Tue, 06 Oct 2026 02:34:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791279294; x=1791884094; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=1uz8HoiiEKQyA9qDT7OXJyTdmhx4sEKhN2lImiOzD/E=;
-        b=fjYC2duSkBPmoSUheHcKoESsWy1QBtkE/rMGy5MOYYCN4WapRELVFzH8a8Ecnw4/lE
-         haJUGx8FOCrJLEqly8GnYPgsGmCHiDTRE5YIST3PmjAnU/o6hnG+JSLf7PuECaU0AD6J
-         +D+JwKa9akCqwCVGOh3Jp7NLOkOYVSrwypAhwyhD0181KPnVGha6S+1eXssq4faBG7AK
-         lxPWuiPDFbcjf188Ig7LNWW8FHfpeF1OnuXUDHiGUV7QYfvZMEQA1ZC2S/X78mp109nj
-         WYkCdwUm5TpHL3UtvK3+182W30TwgBFBhxmr1NAR4Y5RBrahKWS/5UoCiXq9Gs0c7oZ9
-         9R7Q==
+	s=arc-20240116; t=1791324683; c=relaxed/simple;
+	bh=12DSvA6Ez73SHL+5o+msk9/BwkZqgDWpNy84eAjxQPs=;
+	h=MIME-Version:Date:In-Reply-To:Message-ID:Subject:From:To:
+	 Content-Type; b=D4yP04PLlNhWPcTx2gSF0LTF+XugnSsy7zgHxObVrJBmduc30Tt5b8m5xysT+nPJmZAQnpK3aCf8H48b/iaXouGQ0yiGihdeQ+gFrwb8w2wfmMJ5tpaDRWayy6p/Tx90cw9tPkAOahk7o5UvJEmm+Fb4JjdNsPetL7qEIxqIqgY=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com; arc=none smtp.client-ip=209.85.167.198
+Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=syzkaller.appspotmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=M3KW2WVRGUFZ5GODRSRYTGD7.apphosting.bounces.google.com
+Received: by mail-oi1-f198.google.com with SMTP id 5614622812f47-4f9b643ae53so2056271b6e.3
+        for <target-devel@vger.kernel.org>; Tue, 06 Oct 2026 15:11:21 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791279294; x=1791884094;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=1uz8HoiiEKQyA9qDT7OXJyTdmhx4sEKhN2lImiOzD/E=;
-        b=LPm0vih0B+FLGl0+7YaXos9pL39IIhxyKQB+K2Rpr35IBGr0epHZ8FcSW7zAxWeDoo
-         fqYrePvj8z2OjBq4swU7PPQ9tXFaiCFPan2OWviHBa91/MTHRv2DFVL0i212JIC30zbH
-         xBrSTcU4uQCj4RWD6aTUCnplAqVLFypP8E3D9rRSsUPfbQh3f4/r/qgXV/YCL+/9j1L0
-         pe4YBbllG+4i995/kAbPSqAgcJSjcWQ5ymQp8r8MlqwPnFHKVZrsC+sq+3Xg2I//Xesy
-         M/7jUMpNXTeh7iOphaJnCbPwgKOnSQsg62jJ1BYUlyctL9Bs5AhDl/d9FWKUf1mSGlBP
-         foEA==
-X-Forwarded-Encrypted: i=1; AKwUvByWOKvdY+dEE4Ss2r5dHSpGAaOvVr+Qb+oNrWDN72wVQd6s9DWrBP+d9PsyMvJCzyIFaDGN+WN4GngCZk8=@vger.kernel.org
-X-Gm-Message-State: AFq9FYIIEDl4YmNcnpOVhS6mLFiJKUTKf75EXChZt3xMNEJOrfd+E/Eu
-	7jAvyixJNoNbvh1URxVFNpBPTbwM9KxClQWWTOJmW4ma0jtX2Q3bKx2bn+rNkidp
-X-Gm-Gg: AYBFou3sYIpgYvxZMy3CKxrHSyHtL+vTT13CvfVLCURbLN+PJtH+G2Trm2oWeTzVTva
-	5k9L+UiffZU7zHbwaTmYQIkmkGC3M4HSziJz+cyLq0p74Q6ti7Hx9SboaGUnLghcmxRW8JRBveI
-	JaoZ8udFgFarlZkBSwQ9UYjktSr0A6sEnSAsAzXI4uOrl8/VbmzCaHJyiLMwVTyQ5UjZLfzJ2Ax
-	TSf7ZlJmFrendbyK2zDP0xl7oRV9miopRUHIJ0Nrr2gl3WyZf8I7WK1kifOLt432UnQOMMcC1O1
-	f5/ZpsnLoo0vCN5D/L3LWes1xT/cMYjt0sIqmBulNsuR6QQiqks9S4KhzNAasahRytZxhqbZh6t
-	Y/fxgSeEoiEW6Ru60ZrPnophbwYBGi3OfO6RMXdeJ6E4hpv+tlosd/Ptpy7+WYpPPqHxc8SUYEK
-	Dre9AFpblJDR95HmhPDNLdM8xZNOVQm6r0fpV2wGcsnHOaoXivdlknT+5rbQfj8/kZC4p2Vg==
-X-Received: by 2002:a17:90b:384d:b0:3a4:c11d:b794 with SMTP id 98e67ed59e1d1-3a8730eacd9mr324677a91.14.1791279293582;
-        Tue, 06 Oct 2026 02:34:53 -0700 (PDT)
-Received: from gmail.com ([188.253.12.30])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a8543ab76bsm3905277a91.13.2026.10.06.02.34.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Oct 2026 02:34:52 -0700 (PDT)
-From: Jia Jia <physicalmtea@gmail.com>
-To: "Martin K . Petersen" <mkp@kernel.org>
-Cc: Jan Engelhardt <jengelh@inai.de>,
-	Hannes Reinecke <hare@suse.de>,
-	Paolo Bonzini <pbonzini@redhat.com>,
-	Akinobu Mita <akinobu.mita@gmail.com>,
-	James Bottomley <James.Bottomley@suse.de>,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jia Jia <physicalmtea@gmail.com>
-Subject: [PATCH 8/8] scsi: target: skip an escaped DIF block inside the data sg
-Date: Tue,  6 Oct 2026 17:33:38 +0800
-Message-Id: <20261006093338.27342-9-physicalmtea@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20261006093338.27342-1-physicalmtea@gmail.com>
-References: <20261006093338.27342-1-physicalmtea@gmail.com>
+        d=1e100.net; s=20260707; t=1791324681; x=1791929481;
+        h=content-type:to:from:subject:message-id:in-reply-to:date
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=fjGNOAp+OvnHzpHgyNhacn17hvNikZq61kddzziGLXg=;
+        b=v/hpf69ubjeqvDm7HOmivLoVavDqezJ3JGLC59eV7xoLtsB4t2hSjvg8QBik9AHEIX
+         N7vpKbas9RZ9DkyR/sRKJyFCG++pfr2Wn48z22Uy6hT/YFlt/zO+16YqT6Dzz8zQuuzw
+         f44VLsN0t+JIwQYEoJ1NHTj3irK4kRkqc1lpXd3k2d9bWUq4Ls5dTM0FQ3ObN0giIQlf
+         QCUhKLKBNNopxVgzYCfYTi7YEz99100JCYw1o/VfwSRPVaQrTgSpXgDM5bOtYWBVFNRO
+         CHwtYhGrvv4bqAHC4PdWzhUV00OJFf0R9+6+bmp0g6G4X3MoVkqhVF608kLm9unz3DMY
+         pVXQ==
+X-Forwarded-Encrypted: i=1; AKwUvBzbeC55WM7xfAF0JO8m8Cxp+iRJOBn0d+HQ8oV2zMugBz0lTnmvmpYAPgEmHE6nYqpNaZnB4O0mZF1eUE4=@vger.kernel.org
+X-Gm-Message-State: AFuF++kXpkB3pymug0RTfzVPAJcgN9mFSSxOaaqqsu/Yqqh3RehtEQmG
+	6AkIivnTNyRKCa9QbPQFJvSjKcwr6WUCEabYsAnwi78p7aTxQ86gISeyRAnDPIFug6XmJbKGU3H
+	TYWk1ryzkVgVMK+zF8M3ZbpAoo547XddQ8O9pDj5l3Vlsy2pNf7BVU3BDJ/M=
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Received: by 2002:a05:6808:c40c:b0:4b9:a88b:888e with SMTP id
+ 5614622812f47-4fc45d579d0mr790989b6e.36.1791324681143; Tue, 06 Oct 2026
+ 15:11:21 -0700 (PDT)
+Date: Tue, 06 Oct 2026 15:11:21 -0700
+In-Reply-To: <6ab0943c.514bccd6.255447.000a.GAE@google.com>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <6ac57209.353c8d8e.177895.000a.GAE@google.com>
+Subject: Re: [syzbot] [target?] WARNING in rd_configure_device
+From: syzbot <syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, mkp@kernel.org, 
+	syzkaller-bugs@googlegroups.com, target-devel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-sbc_dif_verify() treats an application tag of 0xffff as one skipped
-logical block and adds block_size to the data cursor.  The next tuple
-folds that cursor across a single sg entry.  When the block spans more
-entries, dsg_off remains past dsg->length and the following CRC reads a
-full block from that offset.
+syzbot has found a reproducer for the following issue on:
 
-A 512 byte block split 256 + 100 + the remainder, with the 100 byte
-entry ending on a page and the first tuple escaped, reads the next
-block from the next physical page.
+HEAD commit:    eea3fef32a9c Add linux-next specific files for 20261006
+git tree:       git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+console output: https://syzkaller.appspot.com/x/log.txt?x=1717fff5580000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=36aaffb2bd6a0a93
+dashboard link: https://syzkaller.appspot.com/bug?extid=fa495e1497c48a6ed885
+compiler:       Debian clang version 22.1.8 (++20260613092233+e80beda6e255-1~exp1~20260613092250.77), Debian LLD 22.1.8
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1097fff5580000
 
-Walk every data sg the skipped block covers.  Those data pages are
-mapped with kmap_local_page(), including the page the cursor moves to.
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com
 
-KASAN reports:
+------------[ cut here ]------------
+1
+WARNING: mm/slub.c:5459 at ___kmalloc_large_node+0x10c/0x170 mm/slub.c:5459, CPU#0: syz-executor320/5981
+Modules linked in:
+CPU: 0 UID: 0 PID: 5981 Comm: syz-executor320 Not tainted syzkaller #0 PREEMPT(full) 
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 09/16/2026
+RIP: 0010:___kmalloc_large_node+0x10c/0x170 mm/slub.c:5459
+Code: 41 c7 46 30 00 00 00 f8 eb 03 45 31 ff 4c 89 ff 48 89 de 89 ea 5b 41 5c 41 5e 41 5f 5d e9 5c ca 0b 00 c6 05 b8 ae 76 0e 01 90 <0f> 0b 90 31 c0 5b 41 5c 41 5e 41 5f 5d c3 cc cc cc cc cc 89 ef 89
+RSP: 0018:ffffc90003287a88 EFLAGS: 00010246
+RAX: 0000000000000000 RBX: 0000000004000000 RCX: 0000000000000000
+RDX: 00000000ffffffff RSI: 0000000000000dc0 RDI: 0000000004000000
+RBP: 0000000000000dc0 R08: ffffc90003287b47 R09: 1ffff92000650f68
+R10: dffffc0000000000 R11: ffffffff86a6d4d0 R12: dffffc0000000000
+R13: ffffffff86a6d5d9 R14: 0000000004000000 R15: 1ffff11006d1a2c3
+FS:  000055558e991400(0000) GS:ffff888124633000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00005560dd7ca000 CR3: 000000002755e000 CR4: 00000000003526f0
+Call Trace:
+ <TASK>
+ __kmalloc_large_node_noprof+0x18/0x90 mm/slub.c:5502
+ __do_kmalloc_node mm/slub.c:5519 [inline]
+ __kmalloc_noprof+0x3f6/0x710 mm/slub.c:5556
+ _kmalloc_noprof include/linux/slab.h:995 [inline]
+ _kzalloc_noprof include/linux/slab.h:1312 [inline]
+ rd_build_device_space drivers/target/target_core_rd.c:194 [inline]
+ rd_configure_device+0x109/0x730 drivers/target/target_core_rd.c:294
+ target_configure_device+0x13c/0xa70 drivers/target/target_core_device.c:988
+ target_dev_enable_store+0x3e/0x80 drivers/target/target_core_configfs.c:2484
+ flush_write_buffer fs/configfs/file.c:207 [inline]
+ configfs_write_iter+0x337/0x430 fs/configfs/file.c:229
+ new_sync_write fs/read_write.c:595 [inline]
+ vfs_write+0x612/0xba0 fs/read_write.c:687
+ ksys_write+0x150/0x270 fs/read_write.c:739
+ do_syscall_x64 arch/x86/entry/syscall_64.c:61 [inline]
+ do_syscall_64+0x166/0x520 arch/x86/entry/syscall_64.c:84
+ entry_SYSCALL_64_after_hwframe+0x77/0x7f
+RIP: 0033:0x7f3f2d0cd537
+Code: 48 89 fa 4c 89 df e8 98 1d 00 00 8b 93 08 03 00 00 59 5e 48 83 f8 fc 74 1a 5b c3 0f 1f 84 00 00 00 00 00 48 8b 44 24 10 0f 05 <5b> c3 0f 1f 80 00 00 00 00 83 e2 39 83 fa 08 75 de e8 23 ff ff ff
+RSP: 002b:00007ffe88432110 EFLAGS: 00000202 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 000055558e991400 RCX: 00007f3f2d0cd537
+RDX: 0000000000000002 RSI: 00007f3f2d1060c3 RDI: 0000000000000003
+RBP: 00007f3f2d108320 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000202 R12: 00007f3f2d1060c3
+R13: 0000000000000002 R14: 00007f3f2d130cc0 R15: 0000000000000002
+ </TASK>
 
-  BUG: KASAN: use-after-free in crc_t10dif_update+0x91/0xf0
-  Read of size 1
 
-  crc_t10dif_update
-  sbc_dif_verify
-  target_execute_cmd
-  vhost_scsi_write_pending
-  transport_generic_new_cmd
-  __target_submit
-  target_queued_submit_work
-  process_one_work
-  worker_thread
-  kthread
-  ret_from_fork
-  ret_from_fork_asm
-
-Fixes: 18213afbd8ce ("target: handle odd SG mapping for data transfer memory")
-Signed-off-by: Jia Jia <physicalmtea@gmail.com>
 ---
- drivers/target/target_core_sbc.c | 46 +++++++++++++++++++++++++++++++-
- 1 file changed, 45 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/target/target_core_sbc.c b/drivers/target/target_core_sbc.c
-index 76dbc986e887..7c4f66c2607a 100644
---- a/drivers/target/target_core_sbc.c
-+++ b/drivers/target/target_core_sbc.c
-@@ -1521,6 +1521,46 @@ void sbc_dif_copy_prot(struct se_cmd *cmd, unsigned int sectors, bool read,
- }
- EXPORT_SYMBOL(sbc_dif_copy_prot);
- 
-+/*
-+ * Drop @len bytes of the data sg.  An escaped PI tuple still covers one
-+ * logical block, which may cross more than one sg entry.
-+ */
-+static bool
-+sbc_dif_consume(struct scatterlist **dsgp, void **daddrp, int *offp,
-+		unsigned int len)
-+{
-+	struct scatterlist *dsg = *dsgp;
-+	void *daddr = *daddrp;
-+	int off = *offp;
-+
-+	while (len) {
-+		unsigned int take;
-+
-+		if (off >= dsg->length) {
-+			kunmap_local(daddr - dsg->offset);
-+			dsg = sg_next(dsg);
-+			if (!dsg)
-+				return false;
-+
-+			daddr = kmap_local_page(sg_page(dsg)) + dsg->offset;
-+			off = 0;
-+			if (!dsg->length) {
-+				kunmap_local(daddr - dsg->offset);
-+				return false;
-+			}
-+		}
-+
-+		take = min_t(unsigned int, len, dsg->length - off);
-+		off += take;
-+		len -= take;
-+	}
-+
-+	*dsgp = dsg;
-+	*daddrp = daddr;
-+	*offp = off;
-+	return true;
-+}
-+
- sense_reason_t
- sbc_dif_verify(struct se_cmd *cmd, sector_t start, unsigned int sectors,
- 	       unsigned int ei_lba, struct scatterlist *psg, int psg_off)
-@@ -1559,7 +1599,11 @@ sbc_dif_verify(struct se_cmd *cmd, sector_t start, unsigned int sectors,
- 			 sdt.app_tag, be32_to_cpu(sdt.ref_tag));
- 
- 		if (sdt.app_tag == T10_PI_APP_ESCAPE) {
--			dsg_off += block_size;
-+			if (!sbc_dif_consume(&dsg, &daddr, &dsg_off,
-+					     block_size)) {
-+				kunmap_local(paddr - psg->offset);
-+				return 0;
-+			}
- 			goto next;
- 		}
- 
--- 
-2.34.1
-
+If you want syzbot to run the reproducer, reply with:
+#syz test: git://repo/address.git branch-or-commit-hash
+If you attach or paste a git patch, syzbot will apply it before testing.
