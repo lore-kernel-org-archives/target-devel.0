@@ -1,63 +1,63 @@
-Received: from mail-pj1-f51.google.com (mail-pj1-f51.google.com [209.85.216.51])
+Received: from mail-pj1-f42.google.com (mail-pj1-f42.google.com [209.85.216.42])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 419D93D9DCE
-	for <target-devel@vger.kernel.org>; Tue,  6 Oct 2026 09:34:32 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2EFC73D9DCC
+	for <target-devel@vger.kernel.org>; Tue,  6 Oct 2026 09:34:35 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.42
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791279278; cv=none; b=gcmGOp39F3B1HilNjaJqyrooqNlTiEn+DBLwHlC/yRA91fB8PDLr503Y2AUVO6n7Zd/2y9iDeFFfi0tqBDTWoRrYD9FgDoO/Rp5/dT/hg3iBUqG5CPqXKoxwDKuEzpaUVdNkzhyC96McnDGmEpOwPYpkFzKWAldbDQWlW1efAEU=
+	t=1791279283; cv=none; b=KUQtghwq46746oisLhZDyY17xTC6rd/NazJ9NmCIDjUwEX5KCtgoEIHwsENY2WfRo3Daz1DuVPr2R/e7vpqWN5BWtc1rYHpU+dw3mnftyssbWqwuj49io6IGTwmCvVQSwCIGcnfKO1483gnLr+BfWPeC0hynTLe3DQyk0kwhZJY=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791279278; c=relaxed/simple;
-	bh=okY7cIImX8qIYsFc9Y9Q3Pwsl1ijY3N0uQi/iyGQ8K4=;
+	s=arc-20240116; t=1791279283; c=relaxed/simple;
+	bh=47mvSsNpNg+ZUpTtA1w32TuEcUfLQ7Pkxvdyz5/ll2c=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=hwjiiBta1BpiFUYbgOy1LoxU8r6snW77/ED9hmKiD7DJz8Zwu/JWEhJI4Wi7QoyE51+ir4vWshaV7rTq7S3trNB8xRGOm/cQaxcFGP/dfSVOnAXXj78g7p+fPoxMWEcrtH+huEYr6w7DNCyES9EOOPfJDHqHEnnYV3p6iS89ijY=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=cMY9vATI; arc=none smtp.client-ip=209.85.216.51
+	 MIME-Version; b=iP8rll+kE/gZ3cZoHWfA0zVw8J1UMD/nT5J56vRAOuSZJDIxmRXJ6AszfyH1d0FimC7T7VwAmHDqm0nJJObbE8s5DpmohXPINEu5o0rzxb0s4dkrCtM8FnDDloW/4436SoEts7Ty8Ub2tqyEfTl6M+7ZbShXqArVE6MVInknRFg=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=nNjbQM3B; arc=none smtp.client-ip=209.85.216.42
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cMY9vATI"
-Received: by mail-pj1-f51.google.com with SMTP id 98e67ed59e1d1-3a4b9732d5aso679537a91.3
-        for <target-devel@vger.kernel.org>; Tue, 06 Oct 2026 02:34:31 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nNjbQM3B"
+Received: by mail-pj1-f42.google.com with SMTP id 98e67ed59e1d1-3a0aaa0fd13so949236a91.2
+        for <target-devel@vger.kernel.org>; Tue, 06 Oct 2026 02:34:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791279268; x=1791884068; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1791279272; x=1791884072; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Y4occJ8bcfYl1ztAcem1o8SmF8sKoGNbjtjkE+6WTes=;
-        b=cMY9vATIbKCsCvSpcEGZFdVW+CtDVE8Qqij3hcHiT2iY+FxItunXPr9yKFPGMI7yGG
-         8jMbtlfoFk1nVdnZ7NLzwdotw8cFG7IdCPrQcNSvHJpDU4zWCklhw6oGvzwr9OOBD2QL
-         O0RH/89LXxiV3ZNXXSpQGIR6gToihQbyi1JRxHOOPlOUXylG/gBJjtG99jbIbGIYUliz
-         hJdWU6LxsQObQ7FQvbSK9nZyPlacXn6NPNxMG+wbVgL8sTt1mhQsa2USFMRSPHFP9tk/
-         gelTAwI06Sr7jNYWKZn1kpaR97P7YoGa4/lW3se+bNOs7YcRNH5aAaK04wIaPKl2S1d2
-         BTQg==
+        bh=qY0yv79M9ElE8fm/ELF5xq7iGxut3qQ2nfq4dYz2/7I=;
+        b=nNjbQM3Bi3UXY1uqcUNZFy6k4XyHXltvZZzwPBDIP/D6Zp2GnwPZTELphKDLyYij1v
+         GfxqZtOO0W9meXWURWr4QBtk+XkmloaMwm7gGI2saDeQUOjDZkW4z8nieb42ldxn+fBp
+         ViaFASdCZTqEYFDpBb7PmlquyN9xVDOstAg28WGv/DbXmliS0E67ZB2/B+1/xf3S/Ox7
+         jfMQpAT1k7Xzm+1iqp0AIjqhW0b9+IAR1pWp7xylU3yw1YC2Jm5W8/7+E2Esrxsgf54k
+         ySdUcS0XgKV2jxlIAUds8Da/Y5BuVobCvIBjZEWBGxWvnnd79yWDeMM3JQvqa9e/1ra5
+         ZS7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791279268; x=1791884068;
+        d=1e100.net; s=20260707; t=1791279272; x=1791884072;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Y4occJ8bcfYl1ztAcem1o8SmF8sKoGNbjtjkE+6WTes=;
-        b=r9s7M4bDAj7G8XSQS8SnjilRjnmMF5TIUOQZIHiWvWgS+I43CTWeXbU23+CiZD8fOI
-         zB8hHP31uJU2b9fSUM64XqBkMi0m/uH7usbblPf/TtrjTRKv78aupgHdz2ZQf+YxMvuG
-         +z2F572aW/b/TVMkzAsVh5nXY8NBq0MURRi5T4LQn8HjEql2V6tv6Z/jmfjAP4DqGEPE
-         uxBiSnfus8qkQND2yRaEX34sGmbuw/uz+7+NC9j8hd/gN+g0EFzfZfz4diw4BFFiSVFl
-         aBN1iFhjZtvtASKM54vzn7Lram4jUoGKNzuyDjhBx5SMvB8ZgYPSs3McFwBCJsJBPNrz
-         KChQ==
-X-Forwarded-Encrypted: i=1; AKwUvByU7fSXDG+1qhTQ4iePr8khs6Fcp07DP59LqkhKV/BTzCsUfGj1/c0oR5wSJ0uTEjLg1Flj9BTs7yKaNNw=@vger.kernel.org
-X-Gm-Message-State: AFq9FYLSYwSRSSGWSaJYR0mSguvBGwunHjw3oAgBEmBhpVIzn5BYql8D
-	WiR2i/uEQ7RsdtFyENzuLm2C+ckygNMF12Ct2Km1CoyDf4kfeLob4f3w
-X-Gm-Gg: AYBFou0fXUBgfwmclf/0ip/7/bOyjoCRQKuvlmeJdkMEiH5/hxtVokRT5Ywbu9XrpIb
-	PWsU64hE9+OTf6N3FfZKdYyjiGP1HIs90qhGMLu3NNFjw0RavkaQvlUKpbxvuCh28h8tgHs+TQj
-	0bGQXrseb66oAKWegCVLDnrYyqlYObJXG6cFll4zbqcEQWyT347cLAuxCL4cNAEWCZP4CFg9LS/
-	NOmO7TDZP0kjGf3Giwr0F/JLBLwzDTHPC+lYBgRqJqVEUzhLcbFK1Qwwal1inOIFIde7a+dT4RT
-	dgPUBl/U3q9Suw64xKgSYLlBLlVShM5B9R8bqGsmoFL7MlB3OAcrkRdTVhB/OAuIbD7d7oJJhDy
-	xNdSBLWfADmHBA/T8RIXjdRPzFQKVfVq3BqJW75OIsHyafZfdsky2gEcAkRkOiDrI5iFoyBcWFV
-	J8t4LcK5JBmqoY9wgeZ9RgZTzp8UBqGXS1bbSZiRTUm++eAXC7C8yesGcP1YHO3lyYf4WoHA==
-X-Received: by 2002:a17:90b:380d:b0:39d:84af:a0b3 with SMTP id 98e67ed59e1d1-3a87353c171mr667697a91.18.1791279267975;
-        Tue, 06 Oct 2026 02:34:27 -0700 (PDT)
+        bh=qY0yv79M9ElE8fm/ELF5xq7iGxut3qQ2nfq4dYz2/7I=;
+        b=WbqdmvTl0DW6yHZjrqQjOMafF6mgR6VeIcizgHDSY60HutaZJxKNknLeZcoJUaBFli
+         +Ih1aVLgr9OFLGpL+EeRpMpij5H7Cug0effB99ywhjm9S8/kegnqZxftByH+y6P7pJiC
+         My9uxGbjIY0twXdWoGRS3fekDg/w2BnbnN5L1am9dVjFc6hckFIUCmqKfplMm4fDLGlT
+         HxYbXlf43reRg9FPVTrxJnuVg31VPZIJeFMk4XZGhdmVco9JugRnBmn4c3HLuiP8ihQ3
+         OW4H+yx6+GkThBc12qBRuaEnKEc1GHauMFIvA7tc7T4+1DEOQgKmwWO43o1E1SjwpxSa
+         fIEw==
+X-Forwarded-Encrypted: i=1; AKwUvBxnKWGK20sHruH9EiX1nEOyvALcWCxOA5/XJ9Y0eux6SA4MrhlAgsd4lGkc3nxl4y3eIffcs7Ja5cAWsSU=@vger.kernel.org
+X-Gm-Message-State: AFq9FYIQY+MLwP+sRPDydFspXiujdhcIMPUUTnXtiKHylCdRYMCSQUN6
+	+U+W/aSenF0BbLxZQeJiKBiTz9Ij5Jbs+J+eZdUtA0nC3m/gdOn5y/Ll
+X-Gm-Gg: AYBFou0wavqNNGPoatgNbjzipHwwD6nNfO79C2CjPSF/g/+tCEKi6TJ3Tt06lefnGMx
+	vXhMs98IFsWkod7qjannAIZlFV08lHKaF2gLypHdm8x0GMJmkJXzbiheFL13n21/8/9zkT7pkXl
+	rYWFtyxzwcOVLT3pZATfwoLHPajn28zkIs26Aabm9EgnLxwyv1YvHOW2Jz5RSx1fqZJ0yjOHG/p
+	zKBmv1G0MgzYGO5ago0k834xJjQWYfkeHathepmk3P4d3l5vJ8mixYY5NZdqIOqDkSIb2d4eY5H
+	TUPd8yWWnZFgSwJPfiEUoG92/mAgpo4CJ/ofRsRHh/ZYyi7sfUPj7Iq+jjX1ij+g8TlAUCeSodd
+	zrfCWYf3rzLteDwmCoaHXe8M4ace3CoViWn6iIHcIuzSkBLPKwwhxik9GUTYpw/O5MuY68bvlAX
+	on/RJVTCXfzqDaNNVU65Z32jGrYvDZXC8AP4IjQZuCDdjHz6mxPejmb68byjL+JyRkDYBVvQ==
+X-Received: by 2002:a17:90b:4a0d:b0:39e:6ec6:f4d0 with SMTP id 98e67ed59e1d1-3a87267ea3cmr712031a91.8.1791279272186;
+        Tue, 06 Oct 2026 02:34:32 -0700 (PDT)
 Received: from gmail.com ([188.253.12.30])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a8543ab76bsm3905277a91.13.2026.10.06.02.34.24
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a8543ab76bsm3905277a91.13.2026.10.06.02.34.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Oct 2026 02:34:27 -0700 (PDT)
+        Tue, 06 Oct 2026 02:34:31 -0700 (PDT)
 From: Jia Jia <physicalmtea@gmail.com>
 To: "Martin K . Petersen" <mkp@kernel.org>
 Cc: Jan Engelhardt <jengelh@inai.de>,
@@ -69,9 +69,9 @@ Cc: Jan Engelhardt <jengelh@inai.de>,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Jia Jia <physicalmtea@gmail.com>
-Subject: [PATCH 2/8] scsi: target: keep REPORT REFERRALS stores inside the buffer
-Date: Tue,  6 Oct 2026 17:33:32 +0800
-Message-Id: <20261006093338.27342-3-physicalmtea@gmail.com>
+Subject: [PATCH 3/8] scsi: target: reject a short SET TARGET PORT GROUPS list
+Date: Tue,  6 Oct 2026 17:33:33 +0800
+Message-Id: <20261006093338.27342-4-physicalmtea@gmail.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20261006093338.27342-1-physicalmtea@gmail.com>
 References: <20261006093338.27342-1-physicalmtea@gmail.com>
@@ -83,31 +83,28 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-target_emulate_report_referrals() stores an 8-byte LBA when
-data_length > off. That test only shows that one byte is left. An
-allocation length of 9 therefore writes buf[8] through buf[15].
+target_emulate_set_target_port_groups() accepts any parameter list of
+4 bytes or more. The walk then reads a 4-byte descriptor whenever any
+byte remains. A 5-byte list reads ptr[0] and get_unaligned_be16(ptr + 2),
+which is buf[6] and buf[7].
 
-vhost-scsi keeps one sg inside a page. Nine bytes placed at page
-offset 4087 end on the page boundary, so the extra seven bytes are the
-next physical page. That page is not part of the data-in sgl.
+Explicit ALUA is enabled on a new target port group. Access state 0 is
+Active/Optimized, so that read is reached. vhost-scsi keeps one sg
+inside a page. Five bytes at page offset 4091 end on the page boundary,
+and the port-group id is the next physical page.
 
-The check from commit 38edd7245771 ("target_core_alua: check for buffer
-overflow") still walks every map entry, so the returned data length stays
-the full descriptor size. Keep the walk.
-Encode each LBA locally, then copy only the bytes that fit in the
-remaining allocation. This also preserves the valid prefix when the
-allocation ends in the middle of an LBA field.
-
-The one-byte descriptor fields already test data_length > off.
+A legal list is a 4-byte header plus 4-byte descriptors. Reject a
+length that is not a multiple of 4 before any port-group state changes.
 
 KASAN reports:
 
-  BUG: KASAN: use-after-free in target_emulate_report_referrals+0x100/0x380 [target_core_mod]
-  Write of size 8
+  BUG: KASAN: use-after-free in target_emulate_set_target_port_groups+0x1dc/0x540 [target_core_mod]
+  Read of size 2
 
-  target_emulate_report_referrals
+  target_emulate_set_target_port_groups
   __target_execute_cmd
   target_execute_cmd
+  vhost_scsi_write_pending
   transport_generic_new_cmd
   __target_submit
   target_queued_submit_work
@@ -115,56 +112,28 @@ KASAN reports:
   worker_thread
   kthread
   ret_from_fork
+  ret_from_fork_asm
 
-Fixes: 38edd7245771 ("target_core_alua: check for buffer overflow")
+Fixes: 0d7f1299ca55 ("target: report too-small parameter lists everywhere")
 Signed-off-by: Jia Jia <physicalmtea@gmail.com>
 ---
- drivers/target/target_core_alua.c | 23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
+ drivers/target/target_core_alua.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/target/target_core_alua.c b/drivers/target/target_core_alua.c
+index 140154d93c43..e2439f2e468a 100644
 --- a/drivers/target/target_core_alua.c
 +++ b/drivers/target/target_core_alua.c
-@@ -44,9 +44,22 @@ static u32 alua_lu_gps_count;
- static u16 alua_lu_gps_counter;
- static u32 alua_lu_gps_count;
+@@ -283,9 +283,9 @@ target_emulate_set_target_port_groups(struct se_cmd *cmd)
+ 	int alua_access_state, primary = 0, valid_states;
+ 	u16 tg_pt_id, rtpi;
  
- static DEFINE_SPINLOCK(lu_gps_lock);
- static LIST_HEAD(lu_gps_list);
+-	if (cmd->data_length < 4) {
++	if (cmd->data_length < 4 || (cmd->data_length & 3)) {
+-		pr_warn("SET TARGET PORT GROUPS parameter list length %u too"
+-			" small\n", cmd->data_length);
++		pr_warn("SET TARGET PORT GROUPS list length %u too small or not a multiple of 4\n",
++			cmd->data_length);
+ 		return TCM_INVALID_PARAMETER_LIST;
+ 	}
  
- struct t10_alua_lu_gp *default_lu_gp;
- 
-+static void
-+target_emulate_report_referrals_copy_lba(unsigned char *buf, u32 off,
-+					 u32 data_length, u64 lba)
-+{
-+	unsigned char lba_buf[sizeof(lba)];
-+
-+	if (off >= data_length)
-+		return;
-+	put_unaligned_be64(lba, lba_buf);
-+	memcpy(&buf[off], lba_buf,
-+	       min_t(u32, sizeof(lba_buf), data_length - off));
-+}
-+
- /*
-@@ -85,13 +98,15 @@ target_emulate_report_referrals(struct se_cmd *cmd)
- 	list_for_each_entry(map, &dev->t10_alua.lba_map_list,
- 			    lba_map_list) {
- 		int desc_num = off + 3;
- 		int pg_num;
- 
- 		off += 4;
--		if (cmd->data_length > off)
--			put_unaligned_be64(map->lba_map_first_lba, &buf[off]);
-+		target_emulate_report_referrals_copy_lba(buf, off,
-+							 cmd->data_length,
-+							 map->lba_map_first_lba);
- 		off += 8;
--		if (cmd->data_length > off)
--			put_unaligned_be64(map->lba_map_last_lba, &buf[off]);
-+		target_emulate_report_referrals_copy_lba(buf, off,
-+							 cmd->data_length,
-+							 map->lba_map_last_lba);
- 		off += 8;
- 		rd_len += 20;
