@@ -1,51 +1,34 @@
-Received: from cvsmtppost17.nm.naver.com (cvsmtppost17.nm.naver.com [114.111.35.33])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95ACD4BF92F
-	for <target-devel@vger.kernel.org>; Thu,  8 Oct 2026 18:38:12 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=114.111.35.33
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0737B34389F;
+	Thu,  8 Oct 2026 18:54:08 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=159.226.251.81
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791484702; cv=none; b=iqKPIzjmKUMpBh6F9fD2Ep+lGcYjVA6fAxGK6OqdaYKysBFZqLac2YBrhdPD59Uv9HqC6zSzzYqq3yjj9H7ypjP90/VZN8NDMwG0fGJ2ZSERwyzjOxpdnNKyEzZc+vz+D2UwumaZHqeMugwMWG0sVIxpdg7sCBV2+nluaIMXbak=
+	t=1791485651; cv=none; b=JpU77VE3Jrf4tbnjtCBU2vtO6WKsrnT6ZbZGwuHDd7RLa0MN/SChE/n/eIPmhWqQnX4NY9CQkSvDIcl3LSvgzuxW0xuDcWRtOuKO63teuJuEwO2eojO5aKtztQx9g64jfki9D7oW46eTgRnO1s/q+QV2Xa44oUixLerefmzUzRo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791484702; c=relaxed/simple;
-	bh=LCz+FnJ0aSqGVuP2eLKj82yEwf1gq2ITe2ISeVjVxXs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Xesmb7D7NZABqcwYvz43h1ZRV8pFpxlAZtrFuDnoZ/NgFJUrnZylnBF1aFze9iBNPco3FmQHgRhyO+R4CxGcePm+5fQjBx5PxhLl4i9difx6aACiATRkk4OlN5f4Tsq+vUpFKpDSFEskZW1I1OVdhj+k+diiG6V4dm6cXbx9H0A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=naver.com; spf=pass smtp.mailfrom=naver.com; dkim=pass (2048-bit key) header.d=naver.com header.i=@naver.com header.b=kBQjvMqw; arc=none smtp.client-ip=114.111.35.33
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=naver.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=naver.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=naver.com header.i=@naver.com header.b="kBQjvMqw"
-Received: from cvsendbo016.nm ([10.112.24.39])
-  by cvsmtppost17.nm.naver.com with ESMTP id aBHGO0hRSNmFsRpj4gcOaw
-  for <target-devel@vger.kernel.org>;
-  Thu, 08 Oct 2026 18:38:10 -0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=naver.com; s=s20171208;
-	t=1791484690; bh=LCz+FnJ0aSqGVuP2eLKj82yEwf1gq2ITe2ISeVjVxXs=;
-	h=From:To:Subject:Date:Message-ID:From:Subject:Feedback-ID:
-	 X-Works-Security;
-	b=kBQjvMqwnHx9qIjD2RyHc2T9KQtq34HXFvE0EA34/LXQxS/+mZD8xm8NjvrXKNL5I
-	 sFHTGradHXBgE0MI9EStAiUZ8uea8W7L0wMOC4bIrRLEEG+KwwUi1joC/N9ZKyPi80
-	 9YYBJWtjREap6TSM1uUuKdIllhkVGDS5PGEo6bEgeTSe+sySWM4RCjT9zSwAgQ+Ik0
-	 0aYEKerrLDkyTTVLZe5vQyZa9o8aTDOHv9Ol5knBGxpSPWTEXV7klgUGAenTvJdpoq
-	 E5mwR4QF8LUsLaQ1c6Q5NDBaTQBFCBtrv2H1/F/ZC/2xn2rHVRjvmto0hPq/3hflgW
-	 NMU0Wwx3tfe/A==
-X-Session-ID: NrWKyFuFS3mM1Uc0OkcW1g
-X-Works-Send-Opt: OPFwpzGdjHmdKHFOMr39Ko3YKBmqjAudFqM9KqMqFxIYkEljxBmwjAg=
-X-Works-Smtp-Source: sdb9FAulFqJZ+HmlaAUZ+6E=
-Received: from localhost.localdomain ([115.136.205.4])
-  by mvnsmtp03.nm.naver.com with ESMTP id NrWKyFuFS3mM1Uc0OkcW1g
-  for <multiple recipients>
-  (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384);
-  Thu, 08 Oct 2026 18:38:09 -0000
-From: tjdqudcks0424@naver.com
-To: "Martin K . Petersen" <mkp@kernel.org>
+	s=arc-20240116; t=1791485651; c=relaxed/simple;
+	bh=Ar/J7vNAb+UtY2A05UoDgSqofu20LVDqtjDLyzqD0DA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ALjr7DNukehDkjFD7gh2dxlnEQSyGFo2HbHo9jjFmfD85r0nqhxD8szKEJ1Hdw7eFJ7hfGgWDbJRLof/1D7m6XQNOd/5r2KWM8igVzK88g0dALgJYgBgJVp8FODF9xgnsUCppMYHethxYtJppHM34r854+kAOOtZXryaTfPjGNA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass smtp.mailfrom=iscas.ac.cn; arc=none smtp.client-ip=159.226.251.81
+Authentication-Results: smtp.subspace.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=iscas.ac.cn
+Received: from fc87d0ffb700.home.arpa (unknown [36.110.52.2])
+	by APP-03 (Coremail) with SMTP id rQCowAC3uznI5sdqEusQCg--.13998S2;
+	Fri, 09 Oct 2026 02:54:01 +0800 (CST)
+From: Haotian Zhang <vulab@iscas.ac.cn>
+To: Ram Vegesna <ram.vegesna@broadcom.com>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"Martin K. Petersen" <mkp@kernel.org>,
+	James Smart <jsmart2021@gmail.com>,
+	Daniel Wagner <dwagner@suse.de>
 Cc: linux-scsi@vger.kernel.org,
 	target-devel@vger.kernel.org,
-	Sung Byeongchan <tjdqudcks0424@naver.com>
-Subject: [PATCH] scsi: target: iscsi: reject ImmediateData on non-WRITE commands
-Date: Fri,  9 Oct 2026 03:38:03 +0900
-Message-ID: <20261008183804.10356-1-tjdqudcks0424@naver.com>
-X-Mailer: git-send-email 2.43.0
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] scsi: elx: libefc: fix resources leak in efcport_init() error path
+Date: Fri,  9 Oct 2026 02:54:03 +0800
+Message-Id: <20261008185403.2791781-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -53,79 +36,55 @@ List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowAC3uznI5sdqEusQCg--.13998S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7uFyxAry8Ww43tFWrJr1rCrg_yoW8JF4xpF
+	48Kw1jkrW3Xw4SkF4kt3Z0ka1FqayftrW5tF4293y3uF95C34SgF15try3CFWrAFWkG3Zr
+	tF4DtFyDZFs8ZaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUklb7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26r4j6ryUM7CY07I2
+	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
+	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xII
+	jxv20xvEc7CjxVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwV
+	C2z280aVCY1x0267AKxVW8Jr0_Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVAC
+	Y4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r106r15McIj6I8E87Iv67AKxVW8JV
+	WxJwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lc7CjxVAaw2AFwI0_JF0_
+	Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxV
+	WUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI
+	7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r
+	4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVW8JVWxJwCI
+	42IY6I8E87Iv6xkF7I0E14v26r4UJVWxJrUvcSsGvfC2KfnxnUUI43ZEXa7IU59o2UUUUU
+	U==
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiDAQOA2rHpfWQvwAAsX
 
-From: Sung Byeongchan <tjdqudcks0424@naver.com>
+efcport_init() creates efc->node_pool and efc->node_dma_pool before
+allocating efc->els_io_pool. When the latter allocation fails it returns
+-ENOMEM without releasing the node dma pool or the node pool, leaking
+both. The caller efct_efclib_config() only logs the error and
+efct_device_attach() failure path never calls efcport_destroy(), so the
+resources are never freed.
 
-ImmediateData is write data and is not valid on a non-WRITE SCSI Command.
-The target nevertheless accepts it on READ commands.  An authenticated
-remote initiator can make one se_cmd execute twice or make DataDigest
-calculation walk beyond the command's SG list, crashing the target kernel.
+Destroy node_dma_pool and node_pool before returning from the
+els_io_pool allocation failure path.
 
-Reject non-WRITE commands carrying ImmediateData.  A setup rejection is
-queued before the data segment has been consumed, so also fail the
-connection when that rejected command advertises a payload.  This selects
-the bounded ERL=0 close policy and prevents payload, padding, digest, or
-follow-up bytes from being interpreted as a new BHS.
-
-The two parent crashes reproduced twice each in a local production LIO TCP
-fixture.  A reject-only repair desynchronized the stream in three fresh
-boots.  The final patch closed all ten rejected variants in three fresh
-boots without unknown-opcode parsing, while normal READ without
-ImmediateData and normal WRITE with ImmediateData passed in every boot.
-The touched source is unchanged at
-0c2669a9f4a1d607e7591ae50ccf3c432a0aff08, where the patch applies and
-builds cleanly.
-
-The demonstrated impact is authenticated remote target-kernel denial of
-service.  No controlled write, information disclosure, RCE, or LPE was
-demonstrated.  The source reproducer and complete logs are available on
-request and are not included in this public report.
-
-OpenAI Codex assisted source inspection, test design, patch drafting, and
-evidence organization.
-
-Fixes: e48354ce078c ("iscsi-target: Add iSCSI fabric support for target v4.1")
-Assisted-by: LLM
-Signed-off-by: Sung Byeongchan <tjdqudcks0424@naver.com>
+Fixes: d7b71fd2195e ("scsi: elx: libefc: Emulex FC discovery library APIs and definitions")
+Assisted-by: DeepSeek-V4.1-Flash
+Signed-off-by: Haotian Zhang <vulab@iscas.ac.cn>
 ---
- drivers/target/iscsi/iscsi_target.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ drivers/scsi/elx/libefc/efclib.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/iscsi_target.c
-index 124ff269b8e75..a80bed0999ba3 100644
---- a/drivers/target/iscsi/iscsi_target.c
-+++ b/drivers/target/iscsi/iscsi_target.c
-@@ -1098,6 +1098,12 @@ int iscsit_setup_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
- 					     ISCSI_REASON_BOOKMARK_INVALID, buf);
+diff --git a/drivers/scsi/elx/libefc/efclib.c b/drivers/scsi/elx/libefc/efclib.c
+index dd3e3d0a4761..ceec0e2a0266 100644
+--- a/drivers/scsi/elx/libefc/efclib.c
++++ b/drivers/scsi/elx/libefc/efclib.c
+@@ -50,6 +50,8 @@ int efcport_init(struct efc *efc)
+ 						sizeof(struct efc_els_io_req));
+ 	if (!efc->els_io_pool) {
+ 		efc_log_err(efc, "Can't allocate els io pool\n");
++		dma_pool_destroy(efc->node_dma_pool);
++		mempool_destroy(efc->node_pool);
+ 		return -ENOMEM;
  	}
  
-+	if (payload_length && !(hdr->flags & ISCSI_FLAG_CMD_WRITE)) {
-+		pr_err("Immediate data for non-WRITE command\n");
-+		return iscsit_add_reject_cmd(cmd,
-+					     ISCSI_REASON_PROTOCOL_ERROR, buf);
-+	}
-+
- 	cdb = hdr->cdb;
- 
- 	if (hdr->hlength) {
-@@ -1384,8 +1390,16 @@ iscsit_handle_scsi_cmd(struct iscsit_conn *conn, struct iscsit_cmd *cmd,
- 	bool dump_payload = false;
- 
- 	rc = iscsit_setup_scsi_cmd(conn, cmd, buf);
--	if (rc < 0)
-+	if (rc < 0) {
-+		/*
-+		 * setup may queue a Reject before the data segment has been
-+		 * consumed.  Do not let the receive loop treat those bytes as a
-+		 * new BHS.  Closing is the bounded ERL=0 recovery policy.
-+		 */
-+		if (ntoh24(hdr->dlength))
-+			return -1;
- 		return 0;
-+	}
- 	/*
- 	 * Allocation iovecs needed for struct socket operations for
- 	 * traditional iSCSI block I/O.
 -- 
-2.43.0
+2.25.1
 
