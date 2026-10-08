@@ -1,65 +1,63 @@
-Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com [209.85.221.182])
+Received: from mail-qv1-f50.google.com (mail-qv1-f50.google.com [209.85.219.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 74FBA44AB8A
-	for <target-devel@vger.kernel.org>; Thu,  8 Oct 2026 22:37:23 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.221.182
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97F7335C692
+	for <target-devel@vger.kernel.org>; Thu,  8 Oct 2026 23:54:15 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.219.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791499044; cv=none; b=oxaTlgx1stz1JqqpF0gyvhkReboi7e7AiDBrSVvvaO9k/hPVqwH97oGafxB2NhbmZXH+/CmDwW1wXfwb58LyOWEk1/apQh6yGtx2beSylU1Zz4+glQRQadk6noEICTkujrgFzLK6F1OKGpEJGY6JjfanNj3iDaaLTEwo7gTv2xQ=
+	t=1791503656; cv=none; b=Gy2nYMAp0prqUrTL4aATWW5rqRMDK2xo7hxLeS8z55uHKKNIJFD01DZxGIea+mtxTlfv200ln81LDUM4JOS3amfRcXIQuRP8Be2rTzZFdBsaEDdondtom2Nd/SOjo6lRQqfDesKooKuB/v+5lLqiT074kXeQCcxD2CP1JX/KpSI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791499044; c=relaxed/simple;
-	bh=lJ6AYpHjGOkimMExUHB9UOtA234mEYMud8tyoTmPLRc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NlXEWWDR3Ilk1T/rkudv0csW+rrYwpgRIov1wIim+CEOFWY9GsexVWPACpumppRSemOP2HqsQ09Zsn7XiyzEvcNdpN+mSPx44XpFv4ez5BjPBltqxDzMaKion+NRuM+E9S6gbkiN8RwiH3j1Rk7f9YmWQdsrLjMYakyooQ1YCZs=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=Nmt0FaTo; arc=none smtp.client-ip=209.85.221.182
+	s=arc-20240116; t=1791503656; c=relaxed/simple;
+	bh=tAdh45B6ZHFVqj4WgSvf0WZhKctd2Lk2TZ1YVcBta8I=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=S+En+Ram7Fyi7iYfD3baG7oin2oZadAs2MQoHO+dk85Or4VgS3kEtPcJTWygHeNqQG9T25vVEbxP26eLbag3JCsbHVzP0NFwq4+BjB6s1AB8UtsNceqpOBGICn3rWEUeZ16CLvuH8/5amxYxRhT50KKRS+jmbc3SBLI6zpJdu20=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=sA4laCNU; arc=none smtp.client-ip=209.85.219.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Nmt0FaTo"
-Received: by mail-vk1-f182.google.com with SMTP id 71dfb90a1353d-5e8e8228183so25622e0c.0
-        for <target-devel@vger.kernel.org>; Thu, 08 Oct 2026 15:37:23 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sA4laCNU"
+Received: by mail-qv1-f50.google.com with SMTP id 6a1803df08f44-91054f9d26eso2706146d6.0
+        for <target-devel@vger.kernel.org>; Thu, 08 Oct 2026 16:54:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791499042; x=1792103842; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=nOpeyuGCRMACRp8m9ibObWPSIPWBOuQMlxgdPx+TYS8=;
-        b=Nmt0FaToi/KWZq4wJ6LAgSt5oog2cBkOZ7xFgMILhDfY6pyURVMrYFF3iN55TFlYXR
-         yNRtC60uD93YmFuVl+BadJpHyUDO7luvaqtpBcadB6QXaFGjf8yVGtSYZKFKwJX9yMWy
-         SEtY6CHcHlbQVHH0ByjXH7XWU9OJNSxJxFrtFmEd3wKeDnXGqRcHtSkynK30qaheHRU0
-         fmxtV75GEEN6wZJ12c8DJrN/6DAjXujMc6knKaBEkzjzZyTAOMkO832f2b7TJpVp5Qhm
-         oSU42jc9YsfIVCjTmsKPdKGjJ1bPyqjJaLGmF5LhZIhKimQd4VjKfWY+h6xFoU0RZaQR
-         3tvg==
+        d=gmail.com; s=20251104; t=1791503654; x=1792108454; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=LiKuR1cop6zWSqjy7NaZ294spzxiEHuaWQoI/VIIui8=;
+        b=sA4laCNUhcWfPeT9fR7XPwk1EL0t4oGRftvZpWbGyzi9CUGqxGCUqGOTnnJMuYx83S
+         PLXdYK+croYAi45ECIGloTuncUiJE0quNkkAZuAAHhPmwtvltrFi0bc6GfYc2I7c0w4P
+         stmhupR6N1FWYTs1u9lKVIIRGu7d8UglDhct0l9IPeCizAgruVw59841ouAnNmsPOkfE
+         Pm8FgneRNtlNavTuWPzMe5XUS6M5Bl2XJlHj3YjasEjKcLS2kuOnOp+eqPK8RI5q3iu2
+         3IG25RWgpMMb5uDQxTDF1reRgCANyEJVmchcl4n2wfn+klRTwSw/R/C9Z0TOHWaRq5w4
+         QJpw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791499042; x=1792103842;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=nOpeyuGCRMACRp8m9ibObWPSIPWBOuQMlxgdPx+TYS8=;
-        b=NyhREUYeKKE+3+rqxLN2JW9Uwa0deZ+Uutl9Lsz9054z/t6oL7NHwCQ3t83mTiw56G
-         0NjiEjzyGyDTKafzQQlJj3RvpUayhkLKH7i4ezFNHwdrZFxoXA+U3RPHFoAR6RbtFRAk
-         ynNVtFHZ/KKb1bNb7Jcras/VpBQACbFIF2O3IPJn1FjLFwK5q/bb4Q8hLOE9mAVLRfGs
-         b1p7WO2k+CqoF5rlrXDPddCvChWfpUuBnvRSlSsrBRPgmbtV00GfqKOpUFsNuiLAFs3g
-         ebbzTr7dw1bvmEzL3WqorqYLBRGDhjcLP5XZ5vPu97pVilmQLEulaoI3ap6+UDXyxpS2
-         MLiA==
-X-Forwarded-Encrypted: i=1; AKwUvBxGuojTwwzKpM+ci6j+66JHqm8Amq13qZwIvpYtDVWvTlNWe0raeiRI005PUY79msnN4I2SV1lOzvtoMBk=@vger.kernel.org
-X-Gm-Message-State: AFq9FYIXvCuQMmX0eIGJV9xLGyYBE1cSOPszJZJgVqNsT/0QFnEal9hP
-	h5NMICXzbAhAmWmTKmKplOiadf/cquEs3CSTCzIi3wPX/r0q2ISzlBeo
-X-Gm-Gg: AYBFou2hh7zgBnS8HdEK3KB2prbp46Al/GbbW2I3Jkogd2pRQHNuvcJK7EtR9PmibX3
-	zJnhP6Oh9QMabjgajl9ocjmtnbdc0Tq+Tu+XNS5jzcQAZBo+m7/fs3nwLJhbOLK83D0wUsGLxgD
-	L64g7y1RsUebHoMWDkE9DCOL3ROLt5xMmJoCaFbZ5mlAHU3FcnGl0Q3+K9KjnDvkdo09iKfLYxq
-	mMlA4EQEKbrx3dvPijCzHUKmhmbBhX6J00qjPin1aXVT78lyc0VCNMIks2NioKep9SzmLW3BQQV
-	ueFNPYpg/yqxgMSe4s5bnq4+YOXySMYgxqv5dd6GRnxjuVhAWB1it1bXvAE9/DJCWRxmaP1ifk1
-	nUKk/nitzgzPqdEH3ZxhlR9R/TwhEDlte5n4YJzRYVn7v2v/o2JztfQcFAtYGdQrdRq4glhn9gJ
-	BmSGe2c0pyWyHDSt9UaT6OuF5LikDHG9iROAkn4qHEDdPpxHxOruGHgStpnvdgvt922ai3H95gb
-	gafpHkLtVMKziHTINDKn+EmlAv+NjKcc8Xzht+5gcxv/ZT2YdN9t+vJjkK4NqdcZL4XWH4rjCmE
-	zv6nt1kqaRFSwUpZJEc=
-X-Received: by 2002:a05:6122:14a:b0:5cf:ad27:3a67 with SMTP id 71dfb90a1353d-5e91f58265emr4623e0c.5.1791499042370;
-        Thu, 08 Oct 2026 15:37:22 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1791503654; x=1792108454;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=LiKuR1cop6zWSqjy7NaZ294spzxiEHuaWQoI/VIIui8=;
+        b=W+eno6Xbv5Wr3kU3kHjPMxR9yDWM1iQdoBckVrFjYEWi8BrJ6zPzxSzXAt+xB3vURg
+         tG9UHLNJEL4pgY27CZi4lzqjQMXI4G8nZUb9QIL9Z3zD9oZ+lm1vLAcTmSYyD7c2gVbx
+         iYktCpu8o8mHWR6pmvFlHaM6GuRR9LxapvfTaLS1qM99rvSN9AFR0krfk19deHyJ/ste
+         XcVoIY3NzIcz9vgRUD2EIkixcbHe6USPyZ30KLOd7aE1a2ZhyAyXXhlX+ZNEXYXCjo8I
+         fb8NWN4cP/ojo0lam7+TvJqHMOzKUWPBeY7SpPkHLvt5YpGkc7SRTJvpmyBf6Ztyk9xH
+         zWjw==
+X-Forwarded-Encrypted: i=1; AKwUvBw6z6CdmrIlx8QFC0+wn4kB5d9rv6cKJ4oWyBWG3wyZQcFH3CV40MDgyNekIk03GziNwZC5PkyObLpNQKg=@vger.kernel.org
+X-Gm-Message-State: AFq9FYKW/5OxnKbpwUxKB5Z1OEP37qE8qF3C/9pqVWevq73Qu+8hzSQ6
+	ORr5UdYqBiojXoJfWRD4toNLCm/RFFAGu4J2DDt4QN3+pNz7arfNxtI6
+X-Gm-Gg: AYBFou0dcA7SOYPRw8/gA0+jHGm4zIwgPrhZwcZ7vGY4Mj7MJXWLNIpGFwHCOP+ChUh
+	8lMVwzKN7wgmhkWcCGPRi2P86vk2TeY001byWqV1aVa2D74zkWI9GVFtXjJ3533W54bHpagVWSs
+	t40+U+1v/ysv+syfphiI3hauhfvU5LnkpMXGA+pJd1TDIYnJ/r9bv9i+zoA6b5yxh0NAlQnMRXP
+	jlfnEcWgrE4IactnGNRsn8qIGfLdqsWbLqWOkUUebmArv2LUQp96+GG8OaoFFvAvTJWo4HASy5D
+	SwMaM0gxZhlbattXNWVDnqiO27/E77vdbBuKZfv6NIQygszZeOyM/78MTcVc6hmpAkA3bdVs8PC
+	Q6lsWP2I5X6KmjgCwv/8i1L6OalVLqaiILKvVdhJLoO0jWgK3aH/yTVqiQG5X6HtQBRiWUGFhYi
+	z6bs9nffpA8i76VQdFrgc00M76epEujTbHb3zvZ1htOSrbZiEqgzmQ0tu8Z33gBM5klc9Jk5Kku
+	MnTHLwjtsAZQOWXKwZCupIzXKnPuaMb94n8Z5tZaXHhzSDlYM1/z7zmpusz0LSUZFzAy2LyfY4N
+	pJwOXz6LutucTeKJuIRM2z/MmekfVg==
+X-Received: by 2002:a05:6214:4017:b0:914:3ef6:ec0a with SMTP id 6a1803df08f44-91b55500ce2mr6371526d6.3.1791503654285;
+        Thu, 08 Oct 2026 16:54:14 -0700 (PDT)
 Received: from localhost.localdomain ([132.170.205.109])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-5e91cab8c40sm393284e0c.3.2026.10.08.15.37.20
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-91b550e6609sm3451586d6.43.2026.10.08.16.54.13
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Thu, 08 Oct 2026 15:37:21 -0700 (PDT)
+        Thu, 08 Oct 2026 16:54:13 -0700 (PDT)
 From: Sanan Hasanov <sanan.hasanou@gmail.com>
 To: "Martin K. Petersen" <mkp@kernel.org>
 Cc: Sanan Hasanov <sanan.hasanov@ucf.edu>,
@@ -67,12 +65,10 @@ Cc: Sanan Hasanov <sanan.hasanov@ucf.edu>,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com
-Subject: [PATCH v2 2/2] scsi: target: rd: Don't invoke the OOM killer for ramdisk pages
-Date: Thu,  8 Oct 2026 18:37:10 -0400
-Message-ID: <20261008223712.49827-3-sanan.hasanou@gmail.com>
+Subject: [PATCH v3 0/3] scsi: target: rd: Fix oversized ramdisk allocations
+Date: Thu,  8 Oct 2026 19:54:06 -0400
+Message-ID: <20261008235411.56641-1-sanan.hasanou@gmail.com>
 X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20261008223712.49827-1-sanan.hasanou@gmail.com>
-References: <20261008223712.49827-1-sanan.hasanou@gmail.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -83,37 +79,56 @@ Content-Transfer-Encoding: 8bit
 
 From: Sanan Hasanov <sanan.hasanov@ucf.edu>
 
-rd_allocate_sgl_table() allocates the ramdisk's backing memory one page
-at a time with GFP_KERNEL. When the requested ramdisk is larger than the
-memory that can be freed, these allocations do not fail but invoke the
-OOM killer instead. The pages are not charged to any task, so the OOM
-killer keeps killing unrelated processes, and may panic the system once
-nothing is left to kill, while the configfs write continues allocating.
+A ramdisk page count set through configfs (rd_pages=) has no upper bound.
+syzbot found that a large value makes rd_build_device_space() attempt a
+single sg table array allocation above the page allocator's maximum
+order, which triggers a WARNING. Patch 1 rejects page counts that
+exceed system RAM and allocates the array with kvzalloc so that valid
+large ramdisks also work.
 
-Use __GFP_RETRY_MAYFAIL so that the allocation fails once reclaim can
-make no more progress. rd_allocate_sgl_table() already handles failure
-by returning -ENOMEM, and the caller then releases the pages allocated
-so far. Add __GFP_NOWARN since the driver logs its own error.
+A page count close to system RAM still passes that check, and the
+backing pages are allocated with GFP_KERNEL, which invokes the OOM
+killer instead of failing. On a 1 GiB VM, rd_pages=250000 panics the
+system with "System is deadlocked on memory". Patch 3 allocates the
+backing pages with __GFP_RETRY_MAYFAIL so that enabling such a device
+fails with -ENOMEM instead.
 
-Signed-off-by: Sanan Hasanov <sanan.hasanov@ucf.edu>
----
- drivers/target/target_core_rd.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+That makes the failure path in rd_build_prot_space() reachable, and it
+leaks the partially allocated protection space when pi_prot_type is
+written again. Patch 2 fixes that first, so that patch 3 does not
+introduce a leak.
 
-diff --git a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
-index 97c63b122..46698300e 100644
---- a/drivers/target/target_core_rd.c
-+++ b/drivers/target/target_core_rd.c
-@@ -150,7 +150,8 @@ static int rd_allocate_sgl_table(struct rd_dev *rd_dev, struct rd_dev_sg_table *
- 						- 1;
- 
- 		for (j = 0; j < sg_per_table; j++) {
--			pg = alloc_pages(GFP_KERNEL, 0);
-+			pg = alloc_pages(GFP_KERNEL | __GFP_RETRY_MAYFAIL |
-+					 __GFP_NOWARN, 0);
- 			if (!pg) {
- 				pr_err("Unable to allocate scatterlist"
- 					" pages for struct rd_dev_sg_table\n");
+Tested on an arm64 QEMU VM with 1 GiB RAM, with the syzbot reproducer,
+normal and NULLIO ramdisks, DIF protection space, device removal, and
+rd_pages=250000. The leak was checked with kmemleak by making
+pi_prot_type=1 fail under memory pressure and then writing it again:
+two unreferenced objects from rd_init_prot() are reported without
+patch 2, none with it.
+
+Changes in v3:
+- New patch 2 to release the protection space when its allocation
+  fails (Sashiko AI review).
+
+Changes in v2:
+- Allocate the sg table arrays with kvzalloc_objs() so that ramdisks
+  larger than 512 GiB do not hit the same WARNING (Sashiko AI review).
+- New patch to avoid the OOM killer when the backing pages cannot be
+  allocated (Sashiko AI review).
+
+v2: https://lore.kernel.org/all/20261008223712.49827-1-sanan.hasanou@gmail.com/
+v1: https://lore.kernel.org/all/20261008215709.46014-1-sanan.hasanou@gmail.com/
+
+
+Sanan Hasanov (3):
+  scsi: target: rd: Fix oversized sg table array allocation
+  scsi: target: rd: Release protection space on allocation failure
+  scsi: target: rd: Don't invoke the OOM killer for ramdisk pages
+
+ drivers/target/target_core_rd.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
+
+
+base-commit: 6c377d19d4a5116d9bec5203aa3c6c11523e7898
 -- 
 2.48.1
 
