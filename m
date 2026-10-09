@@ -1,65 +1,65 @@
-Received: from mail-ua1-f51.google.com (mail-ua1-f51.google.com [209.85.222.51])
+Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com [209.85.217.50])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4FB1242D89
-	for <target-devel@vger.kernel.org>; Fri,  9 Oct 2026 00:35:49 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.51
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9864A2C08CF
+	for <target-devel@vger.kernel.org>; Fri,  9 Oct 2026 00:35:46 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.217.50
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791506151; cv=none; b=ZKPIWJ7vOjnvEozgEQT7ORGZWnJAXg7+Mo+4WYOmXNSD+F/qD3X4vdOl8m8xz54S3y+s/OUO9gsr5kqk6l6BMJDf0xU333HLovB440asR44kHyhCbdZwZvq/nNzTaEFdJx+Z9ibLhLIdK4MYe77y5Ap5KjdGP9PQIXVUn9Q8rcU=
+	t=1791506151; cv=none; b=M/mk65vUlyqrNXgiV0aUOLFgXIap3/gfx028e+2gmT45TyhiPzCcv/tOHkxiNy9/ivcBlfc0WtYP8XFwwqhtES3jOVq3RF/u8giqSfnKwaT1NNaNBRg811kcTSbWfWR9soVcOdA3MBhthmpzvJfFyJGsREnqJySmMONEzTeemRo=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
 	s=arc-20240116; t=1791506151; c=relaxed/simple;
-	bh=3pzmoegqDuSliAkTdeqycBq5aa62YqQO38QkmiiEiTA=;
+	bh=7vusdRQEb6vDC8yGOo24l6z2uwSQJ6x9dmLh9qkibmI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lDsNG5URzwaimSWhcAw0ggDfvss9VA+jXnRWxAeCZzIaLNqnJTpFBv9uyKv7d4F12N2Mx/TdXDC7cMptKciPY6WCdQyImxnnB8HY0fqfZzB92OUhNhU8y8oFscq91d5k+qLfbcO5NSpt07RAtceG1CZf5PgbQKPO9byjr6PGeAg=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=HgvBlffs; arc=none smtp.client-ip=209.85.222.51
+	 MIME-Version; b=YlNIvFqJxTblEiDE6c2Kv+TyTKyfcjCa7Db8ST+g90yLCqJVXE1wcLzI27MyilNoUXAA0+SSkoPiAnPQvMDl/aQ9FiAnZl4GtHXDinZvM02+FZX1ejaD9LG8YVYmows3tqBQhg+2GcjV2RMbT+PTTvWcwedSa/8hitwsqKRufMc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=V5e+kmIc; arc=none smtp.client-ip=209.85.217.50
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HgvBlffs"
-Received: by mail-ua1-f51.google.com with SMTP id a1e0cc1a2514c-988d8aea5dcso31795241.1
-        for <target-devel@vger.kernel.org>; Thu, 08 Oct 2026 17:35:49 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="V5e+kmIc"
+Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-7c0466d653fso87610137.3
+        for <target-devel@vger.kernel.org>; Thu, 08 Oct 2026 17:35:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791506147; x=1792110947; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1791506145; x=1792110945; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=uDiCydjZ9y2SRlO9gdJts9J1fvejuYVS4OsVz5QeIVg=;
-        b=HgvBlffsiavrVkl2PlcLpjXVZcuTdi02bX6PwF6uEG8mqC4+8FN2b0J1XisV+EyjNn
-         8XGsf6z46VAfvFFTg35NvhhmwWLQIf8uiGPcZ5k73JcwMk2A84+ermOEDkyy+GwPfbSU
-         pzddC/q71vaWOP3KEOd5uy8ZqDptiKSpTYcY+iayopZiakFgP6CDTr+JgLQXIVckx9w/
-         9+f90XB5lz/Ol8FlbUddz/v7OlqgRrxQDBzijxT3WMv2irYce+Rn6pT04R/OWEdFuviK
-         wV13SLQEzvtEFkKsy7YFLOwb5Ls3EUtabhiu8EJ4vKi2msKmXZuQm5Mn8JZyjqYF0H+c
-         QWjQ==
+        bh=nKFs0zmwAT1C3qeL9nzhFgqO9VFk35yv2YzEHZzzsa8=;
+        b=V5e+kmIcz8tvSmZ2YUSDGwLaTyW7OUPUuHXXutMqP876lImSvDOW31EOw1M/DMwvBR
+         IwKGLKflzACW/2H2B3Z57s7t++SsxQbFUMy553BEwnlPwcf4j5hOGXlfw03tM2Z6WcT+
+         +m8p+ZkjGjjIg+/2M/ekJ7uwv2WEgzZUCHUG85vtuG4Mv+/HYBAQMZKL/dxPoFD+Myvv
+         1u3btbavH2jAlAOfF2vA+3gwyq5ChEnA+pwEiCQIrtSvqvCN6mbXQTTZ6MDLPSO0HMHv
+         SdlmIG2WDHAGNmouizQE5g2bYHwdy9kZAQcWv1ZMHGK6Hll3GZ5mCsv/Ni2rKd5KNPzI
+         rlOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791506147; x=1792110947;
+        d=1e100.net; s=20260707; t=1791506145; x=1792110945;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=uDiCydjZ9y2SRlO9gdJts9J1fvejuYVS4OsVz5QeIVg=;
-        b=ya2u+jcrDmlv9b0cNPRi32958oNkfL1WrDWW8Kw2RdmL41xc/lmtvrDocWchVVfMR4
-         bFkR6MPInzTNME1hZIiM42HvYlyz1gZMQsbaLFtaOTytbzK2lDPmkreW9kMti+30Um9U
-         wzGD4omakVNmTJ9iYw7L5Cm+YN74I019T03XlgAYUkIu/VaGcPOdJeMnGWTnffr5xKWU
-         Qp19rZANtjnQ/mlGN6+1QX9iZjQN8fmOtbzoPpRdFnkYeg1KdpORFQnbnSgkVG6do1n6
-         mRSr6iqA7ap0C3mk1AvPeVE1IT91W85DF2/XEew2OD9cpBD2kyl4idDBhiuWECx6iH0y
-         4mrA==
-X-Forwarded-Encrypted: i=1; AKwUvBxxd9XEfBrDSNM1dEQsnb2UxJ+GOUkhhcsp4d/qBuLn/nok0ckd4zTA72XqLxHH7Nd8prZjcgoNufByqgE=@vger.kernel.org
-X-Gm-Message-State: AFq9FYLLPxDmzwN7hf7uTSWWGDx5M9UNp3V+4pfQtNpgj1dQ9UoiQ6Kx
-	5xZElxElfLntk0y5i5KaxPo3h8FcrUtMA8e4ltAuVhFqDXbu5rGSj3+3
-X-Gm-Gg: AYBFou32Hf8pwKBsL2fvb9sQO1PODZ3izlSqTY8Y6BkL/wDSG2gkwW0YvOSW6a1RkTn
-	8EvNY5zrZqqdHYtEDAAJftRfI5D+2xxvdyLtRdrrFqYaNKZ1Pugee1a5s3k5IypnV+DPw7Epcq+
-	TaKlPII3sQxGwJpMkGUmOwipL7frja01urUlD4RmUKTZmtISfTaVDxgZQ869mKspIgTPij9wlJE
-	H8jiFKb9RIWpeUA7CETAZelRdnbh/bZoD/BovYQ6QM2z2lix+r5VcjxPoSi0YVBAuVlXeeYIzKy
-	2zm80z6XT0xKX8aOBbEZnFfvmyTLmoUtcBBQWC0ed0ix2NrzRfz4QMgQbQhD1sQutX7is7ydcLR
-	jbQZcd19Gp2Yf2L0aIyoRn7TS4kPDoAOlLcqdnireeSuJnu6lDLTmu6785pJNkJrRq1DbDnK8nC
-	SCpfbq6AzuThKxq2E50shhxhPNt1FEQedvguXLgRa7gD+AKwQvaYzeyboBjD2FV1x5QjozO/GDr
-	6HNwR64FiOyViRsUmz/oNTdmu9ISaAqgydc6Kki0mkwCIwrHRLejXSHkW+gMxyJTowH2YEN3ZmJ
-	X8MyyfLViVez9Bbr/+0=
-X-Received: by 2002:a05:6102:a4f:b0:7c3:83a9:edb2 with SMTP id ada2fe7eead31-7cb367883bdmr130748137.1.1791506146842;
-        Thu, 08 Oct 2026 17:35:46 -0700 (PDT)
+        bh=nKFs0zmwAT1C3qeL9nzhFgqO9VFk35yv2YzEHZzzsa8=;
+        b=Xh2GpY/HGaSgBedSCCc5Sj7Eox5h/3trR3ssVAZ7vG/lXiv7rQIqeOcqGpqF9jeamX
+         rV/aWVtGh5n1ORLLsB680OkbUuv6QcNeGwwEN16qFyaaiNlyakAA3+G4D34hX6OvqJfi
+         xG+cuJ2SwWL7Jic6CbCbTWfmhSuaJkdYmc8ApFHvOLDoURPopnYS9MQzrZKzRDwIacSe
+         eiU3FxB0ydlLtKi0c5jlHSNusxV1JQ2GMEtey0a0EHvjK3IX8icOstPNRZyuuyLD/ztb
+         kwGsTqBhS4Hp+OVvqrV0NfdtwA2HbecAFHuGiQsfkSvbOJCjVF4GPZQPxVYt2/bbU082
+         hJHw==
+X-Forwarded-Encrypted: i=1; AKwUvBw9DDYGxmiteNaq8u8rAvMljLwW+lI/kKfwm0g+xiukTdNURBv2wTpGHcXjN8JMTWfGiu2B5Poo7jTxmvY=@vger.kernel.org
+X-Gm-Message-State: AFq9FYLD3A67/kUinvV0yUyWvLBdmwiBeq4LgCK95o7EZluh/R3+5s45
+	U09GSgbItc5SX2x3MptiOayqE0fkC59tjQ2oZLGOK77xjc3P2ZOy+Ae+
+X-Gm-Gg: AYBFou1pevyw+h154oFCZadjlQwBEw8he3tj3d1UJlzSbRkEDTUv2qCHCXS+yV0d5jp
+	27LG5uw8MkycOhovCrOXA5LwF2XCuzCatIdUTqr4Lvjahd0+ctBaG0SfIbWEgLhbo/irPOB/SKo
+	0Pk1jW2LFhaBBhAbsSkcSVOvuh2Z+Qjq4Vwwl1XADazm5mOUPwLQJtwKLxLbpVG16C6m2kMaXQc
+	Zu21GTkfU5T46VynmaRgke5z++s4eF/rUxcn/sWB623ufG9XgaoxqaRX3dQUab2A36Yoe/Y/+Pk
+	DaFlgBVOgbpZJOQpYNI/NLo0YjzjkKrL6B7tSjsckF92Ry2yeLkFJsEOqIdIy3plPwkyHyPd+7E
+	bQOTFvnGUJ2IzO+/1005J8bH4/fmXyAXTVwp8KEVnXAleAbelIwR8OCxeRQLAHDIVIb0WqMO3EP
+	/i5cq6MDtxewVtjEG9TKFSxH29vsJAWVAyAXrR7hxVeIVnQAZZ6FXIBWdRVJ124gzN4M/5cdNZN
+	dpCQZMVLMDFk1bEAGgxtw6QnJbmS6/gxj1jEL26bQNsfG0mb3cqGifi1cvT2KUxtjR1rbzd8wfc
+	WOJZtIbAXJPbOiMb0gY=
+X-Received: by 2002:a05:6102:149c:b0:7ae:544d:b36c with SMTP id ada2fe7eead31-7cb3728af21mr112122137.3.1791506145560;
+        Thu, 08 Oct 2026 17:35:45 -0700 (PDT)
 Received: from localhost.localdomain ([132.170.205.109])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-7cb3539092esm488922137.3.2026.10.08.17.35.46
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-7cb3539092esm488922137.3.2026.10.08.17.35.44
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Thu, 08 Oct 2026 17:35:46 -0700 (PDT)
+        Thu, 08 Oct 2026 17:35:45 -0700 (PDT)
 From: Sanan Hasanov <sanan.hasanou@gmail.com>
 To: "Martin K. Petersen" <mkp@kernel.org>
 Cc: Sanan Hasanov <sanan.hasanov@ucf.edu>,
@@ -67,9 +67,9 @@ Cc: Sanan Hasanov <sanan.hasanov@ucf.edu>,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com
-Subject: [PATCH v4 4/4] scsi: target: rd: Avoid 32-bit overflow in protection space size
-Date: Thu,  8 Oct 2026 20:35:34 -0400
-Message-ID: <20261009003537.62265-5-sanan.hasanou@gmail.com>
+Subject: [PATCH v4 3/4] scsi: target: rd: Don't invoke the OOM killer for ramdisk pages
+Date: Thu,  8 Oct 2026 20:35:33 -0400
+Message-ID: <20261009003537.62265-4-sanan.hasanou@gmail.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20261009003537.62265-1-sanan.hasanou@gmail.com>
 References: <20261009003537.62265-1-sanan.hasanou@gmail.com>
@@ -83,39 +83,37 @@ Content-Transfer-Encoding: 8bit
 
 From: Sanan Hasanov <sanan.hasanov@ucf.edu>
 
-rd_build_prot_space() computes the number of protection pages as
-rd_page_count * prot_length / block_size. rd_page_count is a u32 and
-prot_length an int, so the multiplication is done in 32 bits and wraps
-once rd_page_count reaches 2^29 with 8-byte protection information,
-that is for a 2 TiB ramdisk. The protection sg tables are then
-allocated much smaller than the device needs. A command whose
-protection data starts inside the allocated range but extends past its
-end makes sbc_dif_copy_prot() walk off the last scatterlist and
-dereference the NULL returned by sg_next().
+rd_allocate_sgl_table() allocates the ramdisk's backing memory one page
+at a time with GFP_KERNEL. When the requested ramdisk is larger than the
+memory that can be freed, these allocations do not fail but invoke the
+OOM killer instead. The pages are not charged to any task, so the OOM
+killer keeps killing unrelated processes, and may panic the system once
+nothing is left to kill, while the configfs write continues allocating.
 
-Do the multiplication in 64 bits. The quotient still fits in a u32
-because prot_length is smaller than block_size.
+Use __GFP_RETRY_MAYFAIL so that the allocation fails once reclaim can
+make no more progress. rd_allocate_sgl_table() already handles failure
+by returning -ENOMEM, and the caller then releases the pages allocated
+so far. Add __GFP_NOWARN since the driver logs its own error.
 
-Fixes: d7e8eb5d9216 ("target/rd: Add support for protection SGL setup + release")
 Signed-off-by: Sanan Hasanov <sanan.hasanov@ucf.edu>
 ---
  drivers/target/target_core_rd.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
-index 2613342be..d7752fd34 100644
+index b52d703d2..2613342be 100644
 --- a/drivers/target/target_core_rd.c
 +++ b/drivers/target/target_core_rd.c
-@@ -253,7 +253,8 @@ static int rd_build_prot_space(struct rd_dev *rd_dev, int prot_length, int block
- 	 * 		   (prot_length/block_size) + pad
- 	 * PGSZ canceled each other.
- 	 */
--	total_sg_needed = (rd_dev->rd_page_count * prot_length / block_size) + 1;
-+	total_sg_needed = div_u64((u64)rd_dev->rd_page_count * prot_length,
-+				  block_size) + 1;
+@@ -150,7 +150,8 @@ static int rd_allocate_sgl_table(struct rd_dev *rd_dev, struct rd_dev_sg_table *
+ 						- 1;
  
- 	sg_tables = (total_sg_needed / max_sg_per_table) + 1;
- 	sg_table = kvzalloc_objs(*sg_table, sg_tables);
+ 		for (j = 0; j < sg_per_table; j++) {
+-			pg = alloc_pages(GFP_KERNEL, 0);
++			pg = alloc_pages(GFP_KERNEL | __GFP_RETRY_MAYFAIL |
++					 __GFP_NOWARN, 0);
+ 			if (!pg) {
+ 				pr_err("Unable to allocate scatterlist"
+ 					" pages for struct rd_dev_sg_table\n");
 -- 
 2.48.1
 
