@@ -1,65 +1,63 @@
-Received: from mail-qt1-f174.google.com (mail-qt1-f174.google.com [209.85.160.174])
+Received: from mail-ua1-f45.google.com (mail-ua1-f45.google.com [209.85.222.45])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8940335C692
-	for <target-devel@vger.kernel.org>; Thu,  8 Oct 2026 23:54:22 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.160.174
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B7FF023E334
+	for <target-devel@vger.kernel.org>; Fri,  9 Oct 2026 00:35:41 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.222.45
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791503663; cv=none; b=sgYRZy3FBKyajsZ9jI6lZwE+8XRD1fTpy8WWTHl7cqYMu2ZzjS2LCxDkOj9ysWCKUej4iYktbbCY/ln6uZSMhHIOOuwE/m92FKMdbCQpYToFG8HJ7h/N7Y0nF4K9gulblYi2f2CNQFbf0n+V46pacPYG2wIYQ5zlfb99yxfweA0=
+	t=1791506143; cv=none; b=Wr7TJ9nMpMPe5XHZBp2S6Up71B23pKKNrvXH7VEnoWoUf3zstwqrYmiscNN0kcdwh9HJmstM26cbOpBnZYPqZVwROHO0E6y6fuUv0gYiARgvEcAuvnAvQXKoGHb8PYlMjQqkuHX8BIopxHGNhRGD1jA51/kcabNvgiQSFcsXtBE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791503663; c=relaxed/simple;
-	bh=u3mdpHm63NMciZUxyZb2tyyjBHYBnsglAuR31W/GzJk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=l6Rgo0DfujSgV94XZwGLhQPixcNEsqU9BpjU/rhu0S/Ug8gDmyg8HcdBWcxmgjtZmKaBDUBbXJ1jn4qTAwMzivYe019N3hGQId2YPP0ahEtgnzWcMqZhszVOkvH5Q+DxXkaFvOebiomrjF7Ztf4W+G/SCoQOjCLm45VmR6htSs0=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=VngPppVk; arc=none smtp.client-ip=209.85.160.174
+	s=arc-20240116; t=1791506143; c=relaxed/simple;
+	bh=2UfdJs69sO/fEFk4xEcV6sqiZJ4cwTu93x1gV3HZJK4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kZaly4t1bshecd9L2Sb/fLieG3uQ7m4ud+13/kLs22zxqAcqnsDmSnrOflJePUH1TvdONq5Y9ucfGp+eu2beZ9q8abBcOn6ZMH5k0ifJMyyth5oLyFDaQdHRaGYCc76RcU4YL4KaM0c2NOOvNNMmK1Cr24adzkJl+tBjxcDXEyI=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=e/lRtbNc; arc=none smtp.client-ip=209.85.222.45
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VngPppVk"
-Received: by mail-qt1-f174.google.com with SMTP id d75a77b69052e-5337ed8329cso3684591cf.2
-        for <target-devel@vger.kernel.org>; Thu, 08 Oct 2026 16:54:22 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e/lRtbNc"
+Received: by mail-ua1-f45.google.com with SMTP id a1e0cc1a2514c-98a92bfbaf4so21523241.0
+        for <target-devel@vger.kernel.org>; Thu, 08 Oct 2026 17:35:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791503661; x=1792108461; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Wogysuar2t6CIwSyb2S0JLKktNfZleR32/9OzbUkzlE=;
-        b=VngPppVkXb2mu5RKY4vYhCsw6dDqNb728+i98WsmGyE5Zeemvaa4dRJZObWBjWru6O
-         jhrInJu9iMOGjcyeXdGOukwXMnBONeaJf8JYIgFIblfg3JeiCtLZG6tUPrfqfJVaht1W
-         BsDf8t+NBCpfFphT5rDmDkTdSwkGsuHRi5u3AN5EIsbdjrdMZCRTWdsbTCPgnXnNw3l/
-         nrS88FBYiBchVWrZsNid1tEim+qudTANn0QyUbYMuRX1nVYiCC0vY6tLNfgqHQGkij1U
-         OiDUBl+aqTQiS+uU5JcmzDeD8kIXRg/yMT1dnFV+DX2i14PN2rqIQ1moQSJjjgzq8sDD
-         +UIQ==
+        d=gmail.com; s=20251104; t=1791506140; x=1792110940; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=x11PvIESSkGOPE/y8CqSvSINYIoP3r5FMwi0SVUBQUc=;
+        b=e/lRtbNc2hQeqtz+U1EUVBRwiRWgCoEBQKruPJR5Ov8L2Dzy0hlvlsh6Q+2tDD1qMb
+         /EVnWuXBhJGRpEmpUGO23cuYIVmh0XUD4sO3XAB3XpthQ72y8erz+8SjxnZ2mm9hmMkR
+         TC15wn2oz95R+liYzLerl1EKiNi+yBkEEvB0kqAIVzZ22aWx4PJR0/hsbXY99FOqQrS3
+         Ru6f2FFzmvWpYZ5qorqhek/0Mp3EtJMmrH5zdq0x1Q5cgReNy4ZvWDIso/Hz2YJvanW1
+         J7at/JN9OvVFI+RFud/XmqI+l7xzqszlA31zxLEoAh4J7TZ7NvGwc+BdbZM4zmIoIKRp
+         JgAQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791503661; x=1792108461;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Wogysuar2t6CIwSyb2S0JLKktNfZleR32/9OzbUkzlE=;
-        b=HF7H7ZF5ZH+MMSeMsWWGfoyb7OsQb0mqsb/3Q3pxU5EGV1U7KFwPqQ0m+FygoKWyLf
-         vKk6BNgUEQmgAttnXG0DKk+TctMeyw15jxEYSe29KpvivodOvE7KZ+3IHEtmGZG8RVqN
-         HZPvdVPqyC1xgyKLsC8kcHvbsm+uQn1pM3RO8gP30gRpoKCUd1pCY+1v1ThDyKcoItAI
-         xwnfrROQO9WI0B7lmoR2Kg0hKDrjKJTrrLJyQlsgxynLqI6yVNKq5BarnVYDVhbE9Vav
-         ezOqXwNno6FvSRzuMwcsskglUnRNkc6NFI7ofghldTUBMT8ZoBUmqxg4GIIzBbKgtd3N
-         eq7g==
-X-Forwarded-Encrypted: i=1; AKwUvBxhabT9nzg5HIDyO0rXXaoK9s9u5e98EbBZzu441nhaLHcJP1TWYQ3QMXKdkBGVU5yweoEbY+ir7SYnHf0=@vger.kernel.org
-X-Gm-Message-State: AFq9FYJzZFomvn2EG0zvBUIyuPsLy5Hy07HZ19d4MGA6eH9jmpmKO0/h
-	HP7sTG2S5m1w/DXehjJgSKghGG8+AkQ0BLTZnGjcaevzprNrn2/FTo5F
-X-Gm-Gg: AYBFou01/D2ZczDvt3obBXXs1n3HGaLySBEot1i50t3zs9rTUeN/JJKQuFAnIHGJbzu
-	zER6Rb5aKnSvYSpiHBU8oILaj3axv3OUcx4Jcge6neV4hYtVi3MOwuQqHXh1Dqz2lN0cP3iEoaA
-	8ywl40U6Ffa8Z0pW8EpScZijk3VaquQ3kaqDscd9r5vKvzLw93S9jTEhn9A389AmFjoWKdTfOB5
-	Rg2NsB5EsGOhhJzfgwSZasbHsSHh2tgUF26MDnujNmLNDPHjxbr0QENLYx9DEX84y9SZzTb+7TH
-	eDpkC05IzsbX7HqyNZ4bACzvdZggyYtfgJidRKDgQ9t+liLqpjD+706dYa5wFz1KVDIQS36FU5c
-	WZQsVW4eOTxPNraRrEX3VMKQWcRSDE8zKXOOtUK0pmLwqiYhmUqTJ9u0bNxPhMt+1nYUg5BJ/9M
-	6HeiIhZnu2Xqn2OkCgXhc1hfqn59qctyfd/36MsM9rgl5Yd7UL2Up2Tn90ysLFuOZbOXztTAEdM
-	66VAbqa2ztuSRKaYmjUnFTpzxfPrS3vE8dlT1VYmdAvSwUVamo10mVCf6ET8YdkICZJvRq26ffq
-	F+O/CiL1VBNhOIe/4Tw=
-X-Received: by 2002:a05:6214:4118:b0:919:847e:ccb8 with SMTP id 6a1803df08f44-91b55345787mr7524496d6.1.1791503661318;
-        Thu, 08 Oct 2026 16:54:21 -0700 (PDT)
+        d=1e100.net; s=20260707; t=1791506140; x=1792110940;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=x11PvIESSkGOPE/y8CqSvSINYIoP3r5FMwi0SVUBQUc=;
+        b=WDxsMHySLPP7mJVD6vzUxBpD8mEWUCR3/+tAhTtC2WUQ8Ivy9CTjyAwnQl0i4TY5dZ
+         Yttp7rxJVWiSck2XXnJQiMVNx0FIS1LbKyG0YRZxDzdtzEhqEfQJ49w7R14dROdCiug1
+         JkfQitMC21VTtZ1hnjZ/7zs89gWfZUZdLribAV8YCWZ/ft7UWCU9oSDlBRmqM4VDGsoP
+         jAQ1Sz3Ssf/MO6jduP9c++0jx0H9LBm13Andsi30tGQxToEX8YbMMCfb7q2F5//P+ReH
+         yDjHrm37s+Ibqk/ZL/IYl+SjufgOEnbrXgVOH1RSANCPzvDZrgPQPZylz3NXU7wpz/0c
+         +r8Q==
+X-Forwarded-Encrypted: i=1; AKwUvBy9rd+7rg/q4eYdL12n/hyiTyLE7SpG0Kct/K4LtPTS9MhzEzGfZR6ZCw1G3WSgORaCuU3Uz+32R4WJqOM=@vger.kernel.org
+X-Gm-Message-State: AFq9FYLl7DEP1lW+YI4PjLHDqhUlf9Ae+Tn1GYucqfwv7pEQVVwX9Abo
+	PP8+Z499dwxAxXQsjMqURrWH/VTSI2R5wzWcGY75HRMXzPNzNSm4EzJ0
+X-Gm-Gg: AYBFou3CuANAk13US2pmjIaCDwEtfh69bOZ9f3yfU9Ig6/IdDBrVEYcjdWfNTZQedr0
+	N4qKP7oplGi0RFUEliZIoxQrMWLgyCkG2YOmHAhWeeRrCN8HxO0CsrmzHZPdsMjDUZLeDxINLCj
+	6IIFlEqg2IimCDkuswHyJH377HuAhjfuhfkUwN/N+J7mR+Cj/8J6nmFZu5JYLCa154kLm8yKHtP
+	S0aijtvtFjfy4OZESDvU8jY277c8/kEjhkdjTiy/tBDGVcGATk8IClXMMoMZScBnLIcRdBmoULW
+	BL4yXGIuLWWGOQvDHdADS9f37DgbBynZMPiRGN4pNVSq04N+9kjvRZb9ItSZ9AP2CyiCdortWPw
+	qkEHfLhav4CjHaiD9w8BKKukyDa9OAbELTHjFEBuORu8EYv7McGVOiGOQxspoPXREXUd81gjsDd
+	24+QdJnu7ZU5IwJq9Ro8Whqgucmn9YpSXguz3hbnt414X5GNYMuyvjT9NORGRDs//VdXwI853Yu
+	Y8VOiRm/zoF7e4H/hHW7tkw4SAFZHpuGs91G6KvrY2wk4CuLY9snGyOnCqiPx5q9lgjvWgzpNia
+	Ftkc2G1fcvrC36H8Yu8yAeeVpFdNtQ==
+X-Received: by 2002:a05:6102:a4d:b0:7c3:83a9:edc9 with SMTP id ada2fe7eead31-7cb36485419mr123513137.1.1791506140555;
+        Thu, 08 Oct 2026 17:35:40 -0700 (PDT)
 Received: from localhost.localdomain ([132.170.205.109])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-91b550e6609sm3451586d6.43.2026.10.08.16.54.20
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-7cb3539092esm488922137.3.2026.10.08.17.35.39
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Thu, 08 Oct 2026 16:54:20 -0700 (PDT)
+        Thu, 08 Oct 2026 17:35:40 -0700 (PDT)
 From: Sanan Hasanov <sanan.hasanou@gmail.com>
 To: "Martin K. Petersen" <mkp@kernel.org>
 Cc: Sanan Hasanov <sanan.hasanov@ucf.edu>,
@@ -67,12 +65,10 @@ Cc: Sanan Hasanov <sanan.hasanov@ucf.edu>,
 	target-devel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	syzbot+fa495e1497c48a6ed885@syzkaller.appspotmail.com
-Subject: [PATCH v3 3/3] scsi: target: rd: Don't invoke the OOM killer for ramdisk pages
-Date: Thu,  8 Oct 2026 19:54:09 -0400
-Message-ID: <20261008235411.56641-4-sanan.hasanou@gmail.com>
+Subject: [PATCH v4 0/4] scsi: target: rd: Fix oversized ramdisk allocations
+Date: Thu,  8 Oct 2026 20:35:30 -0400
+Message-ID: <20261009003537.62265-1-sanan.hasanou@gmail.com>
 X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20261008235411.56641-1-sanan.hasanou@gmail.com>
-References: <20261008235411.56641-1-sanan.hasanou@gmail.com>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -83,37 +79,74 @@ Content-Transfer-Encoding: 8bit
 
 From: Sanan Hasanov <sanan.hasanov@ucf.edu>
 
-rd_allocate_sgl_table() allocates the ramdisk's backing memory one page
-at a time with GFP_KERNEL. When the requested ramdisk is larger than the
-memory that can be freed, these allocations do not fail but invoke the
-OOM killer instead. The pages are not charged to any task, so the OOM
-killer keeps killing unrelated processes, and may panic the system once
-nothing is left to kill, while the configfs write continues allocating.
+A ramdisk page count set through configfs (rd_pages=) has no upper bound.
+syzbot found that a large value makes rd_build_device_space() attempt a
+single sg table array allocation above the page allocator's maximum
+order, which triggers a WARNING. Patch 1 rejects page counts that
+exceed system RAM and allocates the array with kvzalloc so that valid
+large ramdisks also work.
 
-Use __GFP_RETRY_MAYFAIL so that the allocation fails once reclaim can
-make no more progress. rd_allocate_sgl_table() already handles failure
-by returning -ENOMEM, and the caller then releases the pages allocated
-so far. Add __GFP_NOWARN since the driver logs its own error.
+A page count close to system RAM still passes that check, and the
+backing pages are allocated with GFP_KERNEL, which invokes the OOM
+killer instead of failing. On a 1 GiB VM, rd_pages=250000 panics the
+system with "System is deadlocked on memory". Patch 3 allocates the
+backing pages with __GFP_RETRY_MAYFAIL so that enabling such a device
+fails with -ENOMEM instead.
 
-Signed-off-by: Sanan Hasanov <sanan.hasanov@ucf.edu>
----
- drivers/target/target_core_rd.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+That makes the failure path in rd_build_prot_space() reachable, and it
+leaks the partially allocated protection space when pi_prot_type is
+written again. Patch 2 fixes that first, so that patch 3 does not
+introduce a leak.
 
-diff --git a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
-index b73bdd733..7c53d8a72 100644
---- a/drivers/target/target_core_rd.c
-+++ b/drivers/target/target_core_rd.c
-@@ -150,7 +150,8 @@ static int rd_allocate_sgl_table(struct rd_dev *rd_dev, struct rd_dev_sg_table *
- 						- 1;
- 
- 		for (j = 0; j < sg_per_table; j++) {
--			pg = alloc_pages(GFP_KERNEL, 0);
-+			pg = alloc_pages(GFP_KERNEL | __GFP_RETRY_MAYFAIL |
-+					 __GFP_NOWARN, 0);
- 			if (!pg) {
- 				pr_err("Unable to allocate scatterlist"
- 					" pages for struct rd_dev_sg_table\n");
+Patch 4 fixes an older bug in the same function: the protection space
+size is computed in 32 bits and wraps for ramdisks of 2 TiB and larger,
+which leaves the protection sg tables too small.
+
+Tested on an arm64 QEMU VM with 1 GiB RAM, with the syzbot reproducer,
+normal and NULLIO ramdisks, DIF protection space, device removal, and
+rd_pages=250000. The leak was checked with kmemleak by making
+pi_prot_type=1 fail under memory pressure and then writing it again:
+two unreferenced objects from rd_init_prot() are reported without
+patch 2, none with it. I could not test the 2 TiB case of patch 4.
+
+pi_prot_type_store() does not serialize concurrent writes, so two
+writers can still race in rd_build_prot_space() and
+rd_release_prot_space(). That was already the case before this series
+and is not addressed here.
+
+Changes in v4:
+- Patch 2: build the protection space in local variables and store it
+  in rd_dev only on success, so that the error path cannot free an
+  array installed by a concurrent pi_prot_type write (Sashiko AI
+  review).
+- New patch 4 to compute the protection space size in 64 bits
+  (Sashiko AI review).
+
+Changes in v3:
+- New patch 2 to release the protection space when its allocation
+  fails (Sashiko AI review).
+
+Changes in v2:
+- Allocate the sg table arrays with kvzalloc_objs() so that ramdisks
+  larger than 512 GiB do not hit the same WARNING (Sashiko AI review).
+- New patch to avoid the OOM killer when the backing pages cannot be
+  allocated (Sashiko AI review).
+
+v3: https://lore.kernel.org/all/20261008235411.56641-1-sanan.hasanou@gmail.com/
+v2: https://lore.kernel.org/all/20261008223712.49827-1-sanan.hasanou@gmail.com/
+v1: https://lore.kernel.org/all/20261008215709.46014-1-sanan.hasanou@gmail.com/
+
+Sanan Hasanov (4):
+  scsi: target: rd: Fix oversized sg table array allocation
+  scsi: target: rd: Release protection space on allocation failure
+  scsi: target: rd: Don't invoke the OOM killer for ramdisk pages
+  scsi: target: rd: Avoid 32-bit overflow in protection space size
+
+ drivers/target/target_core_rd.c | 29 ++++++++++++++++++++---------
+ 1 file changed, 20 insertions(+), 9 deletions(-)
+
+
+base-commit: 6c377d19d4a5116d9bec5203aa3c6c11523e7898
 -- 
 2.48.1
 
