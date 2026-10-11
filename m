@@ -1,108 +1,169 @@
-Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 667FF427FBF;
-	Fri,  9 Oct 2026 06:10:42 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A568743B3C0;
+	Sun, 11 Oct 2026 12:36:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.131
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791526244; cv=none; b=C3B0Ol2rwqeNhjg7QdJiav/QClH88FODaJcMxLrkVRLbSNBByx4x8VbQjSQYQKmHi0I/yl8U9iuZvY97EwLgtobnHoa5iE2IaJfBC/BUlYaXk/83J5AQaMSlYytu2Ywiahl8wEypmvGkH3d2VLFHTwel6UQYTOs2sIdlmbTnXK0=
+	t=1791722188; cv=none; b=Wpi/9zB2Ec3iDmQQRG1fuuRlPvYwunAbYoTWweet23jNT7BeWUyh2yH81v1L/HbRllqbhvFajxjHmP0rxWGdEmu2rgTQKiPy8jXr3RbfybsHMo1kfl47ojZeshQ4sv7L5tF+eYVTIS5bqdC9/fOCGX5XodiCqMtF6f4g0+vH7pQ=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791526244; c=relaxed/simple;
-	bh=qWVCUMv+05dbMHEs9hy+pYj8kfk37TJfd0nuNcp0x8w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VtR3xUOkdFZ8j5BOXdOVRhnEz9WJaAAp2g2DVUTz4m17syLZg098De6vU6yLu6Y+NgivX2jsiEpKmX9xjmw3jYatZd2ed/LOnCkWgM1XE/+vXv7mZgML1WcmCtviFbpQYoAGFtXF/LDlALOkUP0VH4cc8FDcZOfAlTgnIPDNpS8=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=IG8AWHmx; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791722188; c=relaxed/simple;
+	bh=R10yOSvD0fqRg4qqb0k38A3uupIsJ0VGiUVxAS7FerY=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=BRmRLxFfWNyYUouBBUySTH8W8W9rN6Ehar5P6GNzJKru2r9xusl9eQNVXuX93BpjIG+cKXFmi4TP+JpmSZonnoAFty0MgJvTpUI8G8i6jCtt92vHiW2xQix+hQqlTpn4Ku8lYB/hqN3IIMLdG6zu9m39PeB06t9ITo/kKJ2vMbc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass smtp.mailfrom=suse.de; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=vuPnk4ND; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=1CIaHC/k; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=vuPnk4ND; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=1CIaHC/k; arc=none smtp.client-ip=195.135.223.131
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=suse.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="IG8AWHmx"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A91F1F00893;
-	Fri,  9 Oct 2026 06:10:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791526242;
-	bh=QwHFVPuXBquPEGMyUZnxzJnxgW+4GMWcshWyvzeLTeA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=IG8AWHmxgcgfeQJDzx8TznUhmmfIR9iQsxELHM1DJ9iLm+tG0Qx5Ft2AeeShvR7rG
-	 +MhwNOWOC6otnzznLRXqQa8de9w92/vGkLmpPIh4gTZgCUa6+aa46rZeOfm4GeW8yt
-	 5YXSJ8hYmmCGKYX7tzG5pbeDX1x9niwjsJ81aKtkQnxoVn1EyE7AwoUxGgPqmvzdR5
-	 jAugDxKHTq8/476p43ZNzwL5Qqquu29UMneLEzxgaLrA+lW03HDWQYIFrwRQn0cSb3
-	 wZH+6OiYtyxMlbtJJO3grVRzqOcwL94XqIqXNhxuQZLwZTzxdgVR6lyAIwrBzpY3tq
-	 XeAV88PEwIBSg==
-Date: Fri, 9 Oct 2026 08:10:39 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Haotian Zhang <vulab@iscas.ac.cn>
-Cc: James Smart <jsmart2021@gmail.com>, 
-	"Martin K. Petersen" <mkp@kernel.org>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, 
-	Daniel Wagner <dwagner@suse.de>, Ram Vegesna <ram.vegesna@broadcom.com>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: elx: libefc: fix resources leak in efcport_init()
- error path
-Message-ID: <20261009-muscular-dazzling-bullfinch-fdb28c@quoll>
-References: <20261008185403.2791781-1-vulab@iscas.ac.cn>
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="vuPnk4ND";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="1CIaHC/k";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="vuPnk4ND";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="1CIaHC/k"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 440A51F394;
+	Sun, 11 Oct 2026 12:36:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1791722181; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=olaofrwGl8T9NhHp9VCEFIBcwErQS3PK86N+qFcRHGw=;
+	b=vuPnk4NDtXzs+WsmrEIxGhbUR6kYNunS0UM0sgvDYIS8JUw7oahxpMttwuwdM7pQNhvLNY
+	UMRrR1yYjuXtAEAadsoS1ipYzGk7tuebFRkUUKc588xVcRd9RRzJJVNWNwkCNNnONQEMfy
+	e8e+yLzfQDtOMb3ifhcV6bI/6KeCte4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1791722181;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=olaofrwGl8T9NhHp9VCEFIBcwErQS3PK86N+qFcRHGw=;
+	b=1CIaHC/kkRdbNaKNluyGMJyssl3unh9cC1n6juD0fP5KMPtLPzRUW7sLOupDgR3hpyXpiB
+	Eax54VxwF3FB+uDQ==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=vuPnk4ND;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b="1CIaHC/k"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1791722181; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=olaofrwGl8T9NhHp9VCEFIBcwErQS3PK86N+qFcRHGw=;
+	b=vuPnk4NDtXzs+WsmrEIxGhbUR6kYNunS0UM0sgvDYIS8JUw7oahxpMttwuwdM7pQNhvLNY
+	UMRrR1yYjuXtAEAadsoS1ipYzGk7tuebFRkUUKc588xVcRd9RRzJJVNWNwkCNNnONQEMfy
+	e8e+yLzfQDtOMb3ifhcV6bI/6KeCte4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1791722181;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=olaofrwGl8T9NhHp9VCEFIBcwErQS3PK86N+qFcRHGw=;
+	b=1CIaHC/kkRdbNaKNluyGMJyssl3unh9cC1n6juD0fP5KMPtLPzRUW7sLOupDgR3hpyXpiB
+	Eax54VxwF3FB+uDQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 4D93013408;
+	Sun, 11 Oct 2026 12:36:17 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id eFhFKcCCy2qAcgAAD6G6ig
+	(envelope-from <ddiss@suse.de>); Sun, 11 Oct 2026 12:36:16 +0000
+Date: Sun, 11 Oct 2026 23:36:00 +1100
+From: David Disseldorp <ddiss@suse.de>
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, "Martin K .
+ Petersen" <mkp@kernel.org>, linux-crypto@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Lee Duncan <lduncan@suse.com>, Alexandru
+ Hossu <hossu.alexandru@gmail.com>
+Subject: Re: [PATCH] scsi: target: iscsi: Use crypto library API
+Message-ID: <20261011233600.5bb5d6c9.ddiss@suse.de>
+In-Reply-To: <20261001044857.169487-1-ebiggers@kernel.org>
+References: <20261001044857.169487-1-ebiggers@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261008185403.2791781-1-vulab@iscas.ac.cn>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: 440A51F394
+X-Rspamd-Action: no action
+X-Spam-Level: 
+X-Spamd-Result: default: False [-2.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,kernel.org,suse.com,gmail.com];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DWL_DNSWL_BLOCKED(0.00)[suse.de:dkim];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[8];
+	TAGGED_RCPT(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:email,suse.de:dkim]
+X-Spam-Flag: NO
+X-Spam-Score: -2.01
 
+This looks like a worthwhile clean-up and doesn't trigger any libiscsi
+chap test regressions.
+Reviewed-by: David Disseldorp <ddiss@suse.de>
 
-On Fri, 09 Oct 2026 02:54:03 +0800, Haotian Zhang wrote:
-> efcport_init() creates efc->node_pool and efc->node_dma_pool before
-> allocating efc->els_io_pool. When the latter allocation fails it returns
-> -ENOMEM without releasing the node dma pool or the node pool, leaking
-> both. The caller efct_efclib_config() only logs the error and
-> efct_device_attach() failure path never calls efcport_destroy(), so the
-> resources are never freed.
+I do have one minor concern: 
+
+On Wed, 30 Sep 2026 21:48:57 -0700, Eric Biggers wrote:
+
+> Make iscsi_target_auth.c call into the crypto library directly instead
+> of going through crypto_shash.  This is simpler and much more efficient,
+> as it avoids overhead of the crypto_shash layer.  The hash computation
+> itself also no longer has error codes that need to be checked.
 > 
-> Destroy node_dma_pool and node_pool before returning from the
-> els_io_pool allocation failure path.
+> For simplicity, still do a memory allocation per operation to buffer the
+> data (which is typically less than 50 bytes here) so that the one-shot
+> digest functions can be used.  It's still much more efficient than doing
+> the super slow crypto_alloc_shash().
 > 
-> Fixes: d7b71fd2195e ("scsi: elx: libefc: Emulex FC discovery library APIs and definitions")
-> Assisted-by: DeepSeek-V4.1-Flash
-> Signed-off-by: Haotian Zhang <vulab@iscas.ac.cn>
+> Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 > ---
->  drivers/scsi/elx/libefc/efclib.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
+>  drivers/target/iscsi/Kconfig             |   7 +-
+>  drivers/target/iscsi/iscsi_target_auth.c | 192 +++++++++--------------
+>  drivers/target/iscsi/iscsi_target_auth.h |   8 +-
+>  3 files changed, 78 insertions(+), 129 deletions(-)
+...
+> @@ -113,17 +143,17 @@ static int chap_check_algorithm(const char *a_str)
+>  		if (kstrtol(token, 10, &digest_type))
+>  			continue;
+>  
+> -		digest_name = chap_get_digest_name(digest_type);
+> -		if (!digest_name)
+> +		if (fips_enabled && digest_type == CHAP_DIGEST_MD5)
+>  			continue;
 
-
-
-Multiple things here:
-1. Your team ignored completely previous feedback.
-
-2. You use multiple identities with this email, thus I actually doubt we speak
-   with actual person.
-
-3. Finally, same feedback:
-You sent multiple independent patches, to multiple independent
-subsystems. The amount of these patches clearly suggest this was
-AI generated and most likely not tested.
-
-More importantly, you sent all this work without properly organizing
-relevant patches into patchsets. This makes reviewing difficult
-and might cause multiple reviewers to address the same issue.
-Replying to the entire set is impossible and requires handling each
-patch independently, instead of applying or discarding the set.
-Maintainers also won't see the bigger picture of your work. Quite
-worrying.
-
-This is on the verge of hostile patch: bomb us with so many
-contributions, we won't be able to handle them in efficient manner,
-like responding ONCE to ask you to slow down.  Considering all this
-is untested and LLM generated, I have even more doubts whether this
-should be considered for review.
-
-Please read kernel documentation BEFORE posting more work. It will
-explain you how to identify subsystems, how to organize your work per
-subsystem (so a patchset grouping multiple patches with a short cover
-letter), how to document usage of LLM and how what you should not do
-if this was posted in a good faith.
-
-Best regards,
-Krzysztof
-
-
-
+Could e.g. SHA1 also require fips filtering here in future? If so, would
+it make sense to track the fips compat status (preferably at build time)
+in chap_digest_algs?
 
