@@ -1,155 +1,145 @@
-Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com [209.85.210.172])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73E833C07A
-	for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 00:17:07 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.172
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EFB8A38B7D4;
+	Mon, 12 Oct 2026 01:46:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=195.135.223.130
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791764230; cv=none; b=sF9gPHZimD43Uzrqe4n+tI8G448FZF4cdqqTcFQivOxjBU9HluPCzoWqabWrn4xwwv0WxisLCBGMx2xyTmIqh7Hbr5r4MOW5R257swZEsjAirOHwZM7dEQ5MigUypl7azxvs4L8OPd5UtnjiLeKp32HY3y+s6Qw7gJSPPq62h1E=
+	t=1791769619; cv=none; b=apCfxpN/C/j+wVBrsJS7UHAPtNMr+aUAtiO/euS0S7KlK7wZCW+cZ5HsJfUI5910pg4dw8MfIZyBv4RrSAqLMRcJoITx0VpKh+6AKDaTcxASKDfiwWcU1NvQ0qsqLhiX3b8zQ117g0x1CMA0Q0Gfn1iXy2NYliZ6cYdso1aQEhw=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791764230; c=relaxed/simple;
-	bh=WR9ZRx0OG8WB8FU8j6N84odGtF7ArWFkBQwxc0m1e9U=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Oubg3hovIgoIxYKx7TGZHmGRFZjY4V72SP7GomnlLU4r0w7uaUXlQZjX4/9e9l/q5Vk47kcRYgEWNp2c/SeCUpUdXI21mxiJQ0PUhbpdJZISqDDxBR6l3iIKaHBgWfhB2IhOlEXL7ov3eUeHzZBFUUeRI7TDktvka+kwUA4mSOU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=YolhH/3e; arc=none smtp.client-ip=209.85.210.172
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	s=arc-20240116; t=1791769619; c=relaxed/simple;
+	bh=HkWvjSBUmkpg1WnpgKmCYMiraDBRvp9vc4M6E4vr0rs=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=TwdfOC44f2b2ZgH/pH9o+qLoPkRGnmy1/NXjwQTJUpNo297i4kfDmeLMFIizSXvb/rPrLarFd1Z0ZP70gVU4HAeyTtkUak95xboeDxWsWTP5M0UVic7yhKNUg9L3/SQs6px6BjzBa8kCpe4eVsZYSJ0Xqj7meiwSHOxOacpakBc=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=kf3NW9+D; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=yXwCmq+W; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b=zCwosnfl; dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b=9lykVzk7; arc=none smtp.client-ip=195.135.223.130
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="YolhH/3e"
-Received: by mail-pf1-f172.google.com with SMTP id d2e1a72fcca58-88b7d853b11so750976b3a.1
-        for <target-devel@vger.kernel.org>; Sun, 11 Oct 2026 17:17:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1791764226; x=1792369026; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=FPB775D8RC545nicueL5zti4cavLO/8DRXwfdsdk1Fk=;
-        b=YolhH/3e9/G07Qni4iWC3PYrb4S416WW7z2+GSCpnMvx7USgO+w4qE3Zuh/vSV9SCk
-         u5GiX9r97I83jntxX3r5EMDhI/uRpmYv+pCsOe53gznqaRQrw4ogprycbLt9s8O/3NqE
-         u5TRXEvC3TWGHjX8DQilYDqWPuIhmnbicEaLUEaAHLH6F1il736YUs5hclRm2mPOEZd0
-         5d5h40Jm4VCr9LiMFBp4j8sVtxr7boXlEGUxCXqMo8YOqHL1BABa/607tnKy1fwkmhTp
-         A/YxR2iBWKkb9c0ywn/mY5JT/OooE5UyBY9YLZxdQEvJCIZ2THudQ1PgrcIEHjUIcWra
-         QUww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791764226; x=1792369026;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=FPB775D8RC545nicueL5zti4cavLO/8DRXwfdsdk1Fk=;
-        b=j8ce4Z/0V8wAMIktXEgG7TY5Ai6TgK4IHQrNjvfPWvlH8LgGJQFSLtMZgVROZUpGFq
-         HeS9URrGzSs5wvQit7GzPwgyighw4/NM2P3nMWfD8vLwvTLIUycZ4eY8psljk5qNVyMr
-         VqI5s/dIHTBJYOGL2kosB11K6dohE9OJQCvVJjM8AGl8jilZ7uYepg+SxPA7v0yF0sBJ
-         3oIG4KbXZ6EBySL01sKRUpVy3cI1F5oM3jxwjbj9ZkfUSuFh3olXsYx8Tm1ufXKXn0Qb
-         ObU1JQ/uDqiBAfaldQGEbf/bfhayCcNYsgoorU4cIUHn0Ks7biMlJ1Z1iK05kMoGWI2E
-         uNBw==
-X-Forwarded-Encrypted: i=1; AKwUvBztOf7YxI9iCdMszaFRI/jBVAwdvR6W+5IOu1f2HPXLOR4ngR5e6AuTAD5DIPc89kxa4uVlP3ERivQV5F4=@vger.kernel.org
-X-Gm-Message-State: AFq9FYL6K8Ok+YrdTA2mYHAWSZi2nZ/0MO57r7ue4CumTQZL3wKQVdbs
-	NCXWrQX314ArGB/blJ42ozz5aEj6yoWpAQyHsNB/s7AkTGf4+VryHzlecZIynSrFE6E=
-X-Gm-Gg: AYBFou0iunyvQlMwbRi1O842rDxbA5V50+EwD9GkgUa5MRgXRUhtawlW5teVQxjaeb4
-	DIRZZXkH2I7mfcjgJJU+IY6lXngWVDwmP64a3huBChDW7Xngs6fNMjlVGf3ux8sfa4csLmHXO7X
-	AY2ipsompP3+yKceEft7zeUqybYHPD97IJ2Xp30x9i8jZ0UMxpplfSkKeooT6F7hzEeygUJ+A28
-	liW23HiPAAOe1B+vkOAI2+KV2JW2T42Y7tAayfiPz4iUb9dCvgxzMBpeeiCKN04USL1zaEOV5/5
-	kp/D+bbsIu2wZif9xXMSfDoC2qLv76s3pUnEF09LHbaNCnBQ60UGRGpQZMbv/4FeSkneNledv5J
-	VItcfuDIjMO+vOVfdZjZdbWfUFB90lYoNGcSvcfqtqOJ9DpzjJyheUPKff1CGXYMypDhu5bNTjM
-	/Oyq8c2mSVs8xkNyr9E16MyiQdVO5D7F1f8jGIPkhkx0VAgLXy7ZKa3AEAzlZGEH4+GY075Umk0
-	lI/5g==
-X-Received: by 2002:a05:6a00:178f:b0:886:18b2:361c with SMTP id d2e1a72fcca58-897c3ef946cmr6502691b3a.7.1791764226441;
-        Sun, 11 Oct 2026 17:17:06 -0700 (PDT)
-Received: from yhlee-960QFG.. ([125.131.91.97])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-896c49901fesm3378268b3a.57.2026.10.11.17.17.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 11 Oct 2026 17:17:05 -0700 (PDT)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: mkp@kernel.org,
-	linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org
-Cc: michael.christie@oracle.com,
-	Roland Dreier <roland@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	Yehyeong Lee <yhlee@isslab.korea.ac.kr>,
-	stable@vger.kernel.org
-Subject: [PATCH] scsi: target: iscsi: reinstate sessions only after authentication
-Date: Mon, 12 Oct 2026 09:16:49 +0900
-Message-ID: <20261012001649.2135743-1-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="kf3NW9+D";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="yXwCmq+W";
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.b="zCwosnfl";
+	dkim=permerror (0-bit key) header.d=suse.de header.i=@suse.de header.b="9lykVzk7"
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id BFDC521CA9;
+	Mon, 12 Oct 2026 01:46:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1791769615; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=kc9yCYeEKHP3L6f+TK7ubvJD270BUetSVj9NKQRjQeM=;
+	b=kf3NW9+DuPjZXb9OdkjYwqdT/LWXBjC7+Zq/R0vRj36tTkMehJQXoi0mOQ0/hpNo0GOm4y
+	vca8AffU0DPcOnfg9lkCziyyVgQfplZA9j1E0V7qqRA7IQIhQuyD2P2jExsQIilzGCBQNL
+	tnvjUGL9f+otfFVvs3vwyqonu+0Npl4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1791769615;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=kc9yCYeEKHP3L6f+TK7ubvJD270BUetSVj9NKQRjQeM=;
+	b=yXwCmq+WWZFAfBd/dtJAEkzCzDGGG+XjQIhrmJZcdBi9B9goLBYzLHhdP6el1VLWKoDbg7
+	JSDQprfeMN++KKBw==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=zCwosnfl;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=9lykVzk7
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1791769614; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=kc9yCYeEKHP3L6f+TK7ubvJD270BUetSVj9NKQRjQeM=;
+	b=zCwosnflmdGeyvupd4rUfSLo3IiOlezhHAmoldfhysiD6JloAat3lFXZ+gM/gKZH+5SoEk
+	+hKQST0tt32cWzFka3F6U5aryloFjrG9z2rYcNV/VMw3CXkn8hy5/0LTPSGj4a8tbAacdT
+	MuPyuIjmGBV71pY/EusXSJs3ReIPdoY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1791769614;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=kc9yCYeEKHP3L6f+TK7ubvJD270BUetSVj9NKQRjQeM=;
+	b=9lykVzk7GmY0h9XbFjV0lZkAcufmloycU565K01NrO8Sfg0rs5pZgNRwIFnB0MrLRBV8CI
+	QL7dW/4Ikoek89AQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 9916C13314;
+	Mon, 12 Oct 2026 01:46:51 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id ZHfuAgs8zGrdCAAAD6G6ig
+	(envelope-from <ddiss@suse.de>); Mon, 12 Oct 2026 01:46:51 +0000
+Date: Mon, 12 Oct 2026 12:46:26 +1100
+From: David Disseldorp <ddiss@suse.de>
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, "Martin K .
+ Petersen" <mkp@kernel.org>, linux-crypto@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Lee Duncan <lduncan@suse.com>, Alexandru
+ Hossu <hossu.alexandru@gmail.com>
+Subject: Re: [PATCH] scsi: target: iscsi: Use crypto library API
+Message-ID: <20261012124626.6416100b.ddiss@suse.de>
+In-Reply-To: <20261011191235.GA22483@quark>
+References: <20261001044857.169487-1-ebiggers@kernel.org>
+	<20261011233600.5bb5d6c9.ddiss@suse.de>
+	<20261011191235.GA22483@quark>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: BFDC521CA9
+X-Rspamd-Action: no action
+X-Spam-Level: 
+X-Spamd-Result: default: False [-2.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,kernel.org,suse.com,gmail.com];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[8];
+	TAGGED_RCPT(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim]
+X-Spam-Flag: NO
+X-Spam-Score: -2.01
 
-When an initiator starts login directly in the operational stage
-(CSG=1), iscsi_target_handle_csg_one() calls
-iscsi_target_check_for_existing_instances(), which performs session and
-connection reinstatement, before the iscsi_conn_authenticated() gate
-that follows it in the same function. The reinstatement matches purely
-on values taken from the login PDU: a zero-TSIH login closes the
-matching session with iscsit_stop_session(), and a non-zero-TSIH login
-reinstates the named connection.
+On Sun, 11 Oct 2026 21:12:35 +0200, Eric Biggers wrote:
 
-So on a target that enforces authentication, a party able to present a
-target initiator's InitiatorName and ISID, both of which travel in clear
-in the login PDU, can force that initiator's existing session down
-without passing authentication: the teardown has already happened by the
-time the gate rejects the login. The impact is on availability; the
-failed login gains no access.
+> On Sun, Oct 11, 2026 at 11:36:00PM +1100, David Disseldorp wrote:
+> > Could e.g. SHA1 also require fips filtering here in future?  
+> 
+> It might.
+> 
+> > If so, would it make sense to track the fips compat status (preferably
+> > at build time) in chap_digest_algs?  
+> 
+> Let's wait until there's actually more than one before generalizing it.
 
-The CSG=0 path does not have this ordering. It reaches the same
-reinstatement only from the authret == 1 case of
-iscsi_target_do_authentication(), that is, after CHAP has succeeded, and
-the source states that intent. __iscsi_target_login_thread() notes
-before iscsi_login_zero_tsih_s1() that it waits "until after
-authentication to check for session reinstatement", and before
-iscsi_login_non_zero_tsih_s1() that it waits "until after authentication
-to check for connection reinstatement"; the helper called from the
-CSG=0 path is named iscsi_login_post_auth_non_zero_tsih().
-
-Move the reinstatement check after the iscsi_conn_authenticated() gate
-so CSG=1 follows the same order as CSG=0. Where authentication is not
-required the gate is transparent and behaviour is unchanged, and
-login->checked_for_existing keeps the relocated call from repeating work
-already done on the CSG=0 path.
-
-This was confirmed at runtime: on an affected kernel, an unauthenticated
-login that selects CSG=1 and carries another initiator's InitiatorName
-and ISID tears down that initiator's authenticated session; with this
-change the login is rejected and the existing session is left intact.
-
-Fixes: e48354ce078c ("iscsi-target: Add iSCSI fabric support for target v4.1")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
- drivers/target/iscsi/iscsi_target_nego.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/target/iscsi/iscsi_target_nego.c b/drivers/target/iscsi/iscsi_target_nego.c
-index b03ed154ca34e..bddbe29da807d 100644
---- a/drivers/target/iscsi/iscsi_target_nego.c
-+++ b/drivers/target/iscsi/iscsi_target_nego.c
-@@ -982,9 +982,6 @@ static int iscsi_target_handle_csg_one(struct iscsit_conn *conn, struct iscsi_lo
- 		if (iscsi_target_check_first_request(conn, login) < 0)
- 			return -1;
- 
--	if (iscsi_target_check_for_existing_instances(conn, login) < 0)
--		return -1;
--
- 	ret = iscsi_encode_text_output(
- 			PHASE_OPERATIONAL|PHASE_DECLARATIVE,
- 			SENDER_TARGET,
-@@ -1008,6 +1005,13 @@ static int iscsi_target_handle_csg_one(struct iscsit_conn *conn, struct iscsi_lo
- 		return -1;
- 	}
- 
-+	/*
-+	 * Reinstatement tears down a previous login, so run it only after
-+	 * authentication, as the CSG=0 path does.
-+	 */
-+	if (iscsi_target_check_for_existing_instances(conn, login) < 0)
-+		return -1;
-+
- 	if (!iscsi_check_negotiated_keys(conn->param_list))
- 		if ((login_req->flags & ISCSI_FLAG_LOGIN_NEXT_STAGE3) &&
- 		    (login_req->flags & ISCSI_FLAG_LOGIN_TRANSIT))
--- 
-2.43.0
-
+Fair enough. If you're okay with having the extra caller to update /
+audit following any fips compliance changes then I think it makes sense
+to merge this as-is.
