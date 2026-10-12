@@ -1,74 +1,78 @@
-Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
+Received: from mail-pf1-f171.google.com (mail-pf1-f171.google.com [209.85.210.171])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC59B495046
-	for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 15:35:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.44
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E88764B0E42
+	for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 15:44:17 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.210.171
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791819334; cv=none; b=G/7ccE4up4i+wy2BDcI2IxQNyn7rLNHINW78ODFE/hFHBI+IeGHfsTi8HN5dJQZ0i/UxV8TxkFc8QjNQdwOhYS9QUdv7+2uf/k9VfhUiBpSLbULLNxbbJYNPhGZONvhtb1qGr5ghX6cJz7vKJq29Q9DPWeE69KNyw+XsJhNMqKI=
+	t=1791819859; cv=none; b=DgoPO9M0QJxRjtKFcLNr+0HJngG3F66EfucVHosA6tuuXNvuhLC6SBWMnb44+x3x0+Dk7xLecfGwGijvArHKZQXAo8UXW1ldB8UcKlCXRa9O0sPPBt5dzfdKGKL4niHMPmt50P6WS3XplHDeXsu9jY+tMD5DQP66BX0MxDY7CTE=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791819334; c=relaxed/simple;
-	bh=gnxM0yOOK/JwI1s4juAVEfjVQ1r1eqV660lsNqxSPEw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tAnlGmLT85w3O3SoJcr4AER2fB9q5DCCl89z1QkRQKqcAd9qbqz0tzKzZiyZDazKhtXBJ1AVz6eBEJoAYMmK5P3BEhsSC2ZEI0RQWUXaIELDERtDjrbiuOKING4vv3rn/WqgVLWqf0bHDYZCOvHY6RQJ2B+fa+uM+k4l+tiiOjU=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=LB9He1gC; arc=none smtp.client-ip=209.85.216.44
+	s=arc-20240116; t=1791819859; c=relaxed/simple;
+	bh=Q6ojckRBjYD3QiFvyFjmdXI4hG8QuqSOEgoyfAWTMMg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=pYfDu/clSD6uiNso/SUHaXSPBbRRJpoq70MKwHW8cf9JJ5ms010kK1w5VfGC+SRi7CQJJQwnV1LDfEfAHZMUgZuoUHIJwlIVBtCYcJsx4iOz00dbzHbM0/9+MQAfVo9LkmM0+SrdHN7BLN5J+7m/SsnP7N5pynaC2NGY0elOp6U=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=x/s24oNx; arc=none smtp.client-ip=209.85.210.171
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="LB9He1gC"
-Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-3ab60ff4273so1553651a91.0
-        for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 08:35:30 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="x/s24oNx"
+Received: by mail-pf1-f171.google.com with SMTP id d2e1a72fcca58-8875d220446so905430b3a.3
+        for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 08:44:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1791819330; x=1792424130; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Yok6zVFuauItk86XZja8sSODs2GHBMfYs1w0NhMN22c=;
-        b=LB9He1gC1IUekYjF8vFwvdVXa4LoDMBGvgLH50+Z7YkBFwdAxmfHZGHtUmGDN6b1fK
-         e7820GwtU8/DQ0oWrqmoakeFPpUQJxYklpPIfjPD+CliCMjbMHWrfCeuwU4hfbGaPTx0
-         BKR1AXoPQchdmy+ahS8CocpFDI4uW8b9qxaJJoyw34q3ymg1sz5EF196yQHp0l5CaYVJ
-         DBe4ftjkSOd2/z5GGJ4MlHGvAhYdXuQV7WyT1foFd0aYhuknp2Ho98wNnRTJJagn83O9
-         W+JVkigatv8uzw7yGSUxQZ9nWuNC6eOd+jA57aEywJUeQI2q+1W+UvnWiJaUd4QdVc5+
-         Nrcg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791819330; x=1792424130;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1791819857; x=1792424657; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Yok6zVFuauItk86XZja8sSODs2GHBMfYs1w0NhMN22c=;
-        b=m7NXhDGpnfunCJ+vYCJe0sFfpzZCznBlrAhssjUr0J07EaRIfHOZuQbTpM6VXZY/cW
-         HKvuiR3EN4qFo8unqtWc2WdbnREA9nKSRorLyCa3cRuW9wFuLy9GHPPGtfkWMKSyv5vb
-         rgZgyG/emaopzN0Ilx8xGnNEX9FkK2B0XFYifRbGHhpNRbkHMVeiSgctISWTzVutdI2T
-         q1cXFRX/Gv1pT3+5qtfOEYJItlK7505OIjDOc7DZsCgyglKH3pLlna07U3ZQQaFBM2LJ
-         qn/puhSNwNcWpg79eSpXeGRmSgQ4YFmaOSw6iIiWDEdX/hydMDxhLvMqU/kprYbk1p7E
-         ZfRw==
-X-Forwarded-Encrypted: i=1; AKwUvBzRK8uuff6mf+kUgb9A85PzdtybQQHAhbFpcT26vAupQPhZE9pvbl0XyinW4pWn7lQk7OGBhcI+Okh0noU=@vger.kernel.org
-X-Gm-Message-State: AFq9FYKsEnIthywaabvS5hr+sRr7IBkurznrdNOyShQV/k2cOgGsFUxy
-	djJ9x73/Dt5ZxEfEz40wELv/Nlr087rT3uUV7LXJADvJTVJLrh/x7Dgx2KDYqyXBVTE=
-X-Gm-Gg: AYBFou12epycOioLhR+5OiTD+QQI8DNleSdWsq49M6d5aeGO1X/Eiob7YkFmWrAHtjt
-	ZpubnG/uEHdO6h5FSUPgsBoE4C8orkRDdcOtRLCpGHnWqrqdP5m4n7bJVASaO7+gqQ+8nHHY9hI
-	sdMFbWmkrAsgd+lufNXPRxNjLOw4BVGlk5zgxg8+glwsUIGNMzGSl91EOPiKUlJ1Z4sYV4OG6Ca
-	37E+pugUYFBE9kt70ZeWXO752G4AYtOqSeafn0XBr2WACvVud+K3Pm43X88qP//ah8BG4EpFcHG
-	Zpj+EKt/nkv2V92vUmFri97jnCI8TT0h8k0KDi216ZluE8XJ4xg7pbnjEiy+oN7zJ3i2l+8WXE7
-	gNeBl7CVAlge24GNM4sgTFRWdFfdehijBHONZ40T1fUcDfw1hpG1Y9Obs8EnXLnKytwe50hsdk9
-	Xn2/PRW+yslC4HnCHB9nj3Mht55AYwh7eM6LSbsykHIX53gj76xfsz45+eIf26FcAt3vH5oeyGQ
-	pnpsWklDLVn3ye+gV0KGVY=
-X-Received: by 2002:a17:90b:2889:b0:3ac:eeb:e0ed with SMTP id 98e67ed59e1d1-3ac0eebecf5mr1790611a91.36.1791819329799;
-        Mon, 12 Oct 2026 08:35:29 -0700 (PDT)
+        bh=JhzmDkyNi5tXfQXog831HLqTAGZf7SGBLNEnHb+ghbA=;
+        b=x/s24oNxvroLDDLAfp60YmQuPRLo1FIUJqN9c1HmGA5rKvWVm2VBbtuReZykyaxpzl
+         gHjE3uJYVmtrjreKLo2B0f3VXz+UBJddpig53TRZG06+eFhnGIF9Q9zn7DGLb5n8+bvX
+         jzhfa3XYnSRTNp1dw+Qd7vDhCG3xxgYUxlzASKZuIrtmm7DZMsB4LaWkvqpqEYGZSgOS
+         ghrNoZdSJ6SpNmGnjyYxg/WIe3URGDtmItBhBlJbfn0WMQvMlga5lNkgF7NPxswTK0T+
+         ZBBMJyDcGtleueDM4L8NncXH73dHu7RDDpkchWgVsRYrCifafj9D6pCRww+rXFXBSXc0
+         bvZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791819857; x=1792424657;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=JhzmDkyNi5tXfQXog831HLqTAGZf7SGBLNEnHb+ghbA=;
+        b=U3dQRcN4vrt9JqIWVNlEvt3TYXgkgyp7SJ6K0anAS2msPnn4mcegl57CnFzrSQ7LoS
+         Z7IYkiUWL7i2vYvVvdPbHOlMEizCKy4sqg2g/QoPmCL8Lzt8j1OzuVrz8fXaYxCNIojK
+         VRkTB8pOqnuOHS3y9TIGaXKruIR5t+jvHVzEUn+PPD+n3VB64AnILvy+JhNaMIcqkLrK
+         /cJZiPJwBfPfYuxdc8rssPbhaZnKRkkxoKDFDtNlRdN3t5WWmUHsS90b1fcArmxgbhMC
+         8TxbFZUejJCG/BmXfQUntJugm8+JsPQ61IXggjcR0gzD0hLyOXRyYps3uIK69GFpI6PC
+         vC+Q==
+X-Forwarded-Encrypted: i=1; AKwUvByDyTSsNAaJ8naIM8jdHQFedhMXw+YEYWVgbwLuE64XziCaXm1PnGd9orazzUhXzTITMdSbeUic2v8UWiw=@vger.kernel.org
+X-Gm-Message-State: AFq9FYL54qbB869DL48kjBPpUyptqztYHmuzhHpRK+PJKqWiOroQL4Qu
+	NpgPGwdl2EIWlPj+k0uPyCk0NG7/NLQSPylEltXS1z74/RbUfDuiz7eLWu95BYixnqA=
+X-Gm-Gg: AYBFou3ZIWpgMJ/nhhjXLGaOmBM90zn3hWjKZZ/QrGE36R1gGTP+J8/MwrpM5QhyJwT
+	NmSL4FflfZj/Sq2FiZeMzFpEOfZns4jU6+Wdd4wSU96r1IUbpXibKeZh0ckY0wc8v1Jr5ALJeWE
+	wEoiQhMzOGYVmiTP5mUCIX6s3es6B33LGIm/+iNaVyXv8IKby/MlGljMozccpJAarl0Yd2Zj+Fp
+	OqYlV0JIvgJiFDHhlJWNs2GY8LxygMYoA+hKAdtdsvZgpk3qtZEln8nBdqxBqrplrjwU2sSRO1Z
+	dUFSZFp3HGvT4RhMPdvxO6shXmwHm7c/8StbyKqQBJhFmIJiHGix5FxerCCJZtXQ3FrCSMGl/qK
+	wTYxYwf8tPwiiP1WOqhIhj4XyoTVg9NX/P1oSG0e8FKGZZAzfHSeF8BTsHfZstb3uBG/S5ukuO4
+	/m9stLuGD/Jmxs7jI8VRbqJqLf1cVbLWrHQkyHfHbO9qWgs56z8fft45x6RloXTHhhprudr6w5B
+	rcwgmpodYu5Pgk0/sdwaA==
+X-Received: by 2002:a05:6300:68c8:20b0:3e1:7199:2309 with SMTP id adf61e73a8af0-3e171995951mr4822949637.64.1791819856742;
+        Mon, 12 Oct 2026 08:44:16 -0700 (PDT)
 Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:7bd2:1202:246d:44ce])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab38b9639bsm16371590a91.4.2026.10.12.08.35.26
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cd5dc37c2c1sm3342938a12.6.2026.10.12.08.44.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Oct 2026 08:35:29 -0700 (PDT)
+        Mon, 12 Oct 2026 08:44:16 -0700 (PDT)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: mkp@kernel.org,
-	target-devel@vger.kernel.org,
-	linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
+To: linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org
+Cc: mkp@kernel.org,
+	sashiko-reviews@lists.linux.dev,
 	Hannes Reinecke <hare@suse.de>,
-	Bart Van Assche <bvanassche@acm.org>
-Subject: [PATCH v2] scsi: target: tcm_fc: reject overlapping write-data frames
-Date: Tue, 13 Oct 2026 00:35:02 +0900
-Message-ID: <20261012153502.2435483-1-yhlee@isslab.korea.ac.kr>
+	Bart Van Assche <bvanassche@acm.org>,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: target: tcm_fc: reject overlapping write-data frames
+Date: Tue, 13 Oct 2026 00:44:03 +0900
+Message-ID: <20261012154403.2436121-1-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <sashiko-outbox-168243@kernel.org>
+References: <506886f3051941899c26b3dd4d2a32a3c0cf9846.1791812937.git.yhlee@isslab.korea.ac.kr> <sashiko-outbox-168243@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -77,161 +81,16 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-ft_recv_write_data() executes a WRITE once the received byte count reaches
-se_cmd->data_length.  Frames are placed by their FCP relative offset but
-nothing tracks which offsets were filled, so an initiator that sends two
-frames at the same offset reaches data_length with part of the buffer never
-written: two 4096-byte frames at offset 0 of an 8192-byte write get the
-count to 8192 and leave the second half untouched.
+Thanks.  You are right - v1 extended a tracked range but didn't re-check
+whether it had become adjacent to another, so a reordered write could fill
+the small array with ranges that were really contiguous and then reject a
+later frame as a repeat.  v2 coalesces adjacent ranges after each frame, so
+that no longer happens; I reproduced the spurious drop with a reordered
+16-frame write and confirmed v2 accepts it.  A write split into more
+simultaneous gaps than the array holds is still dropped, but that is a
+misbehaving initiator and the exchange just aborts.
 
-The buffer is not zeroed (transport_generic_new_cmd() clears zero_flag for
-a data CDB), so that gap keeps the previous page contents, which the
-backend then writes to the device for the initiator to read back.  There is
-no oops; poisoning the buffer and sending such a pair leaves 4096 bytes of
-it committed unchanged, and the patched driver refuses the overlapping
-frame.
+v2: https://lore.kernel.org/linux-scsi/20261012153502.2435483-1-yhlee@isslab.korea.ac.kr/
 
-Track the range received and drop a frame that falls inside it.  With no
-overlapping frame accepted, the byte count reaches data_length only when
-the whole buffer has been written, so it stays a valid completion test;
-in-order and out-of-order complete writes are unaffected.
-
-Fixes: 3699d92a4d7b ("[SCSI] tcm_fc: Adding FC_FC4 provider (tcm_fc) for FCoE target (TCM - target core) support")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
-v2: coalesce adjacent tracked ranges, so a reordered write whose segments
-    have become contiguous no longer exhausts the array and is wrongly
-    refused (Sashiko).
-
- drivers/target/tcm_fc/tcm_fc.h |  8 ++++
- drivers/target/tcm_fc/tfc_io.c | 74 ++++++++++++++++++++++++++++++++++
- 2 files changed, 82 insertions(+)
-
-diff --git a/drivers/target/tcm_fc/tcm_fc.h b/drivers/target/tcm_fc/tcm_fc.h
-index 00e5573c62966..b75b1373a49c9 100644
---- a/drivers/target/tcm_fc/tcm_fc.h
-+++ b/drivers/target/tcm_fc/tcm_fc.h
-@@ -103,12 +103,20 @@ struct ft_lport_wwn {
- /*
-  * Commands
-  */
-+#define FT_WRITE_SEGS	4	/* out-of-order write ranges tracked per cmd */
-+
- struct ft_cmd {
- 	struct ft_sess *sess;		/* session held for cmd */
- 	struct fc_seq *seq;		/* sequence in exchange mgr */
- 	struct se_cmd se_cmd;		/* Local TCM I/O descriptor */
- 	struct fc_frame *req_frame;
- 	u32 write_data_len;		/* data received on writes */
-+	u32 write_contig_end;		/* end of the contiguous data received */
-+	u8 write_nseg;			/* out-of-order ranges held below */
-+	struct ft_write_seg {
-+		u32 off;
-+		u32 end;
-+	} write_seg[FT_WRITE_SEGS];
- 	struct work_struct work;
- 	/* Local sense buffer */
- 	unsigned char ft_sense_buffer[TRANSPORT_SENSE_BUFFER];
-diff --git a/drivers/target/tcm_fc/tfc_io.c b/drivers/target/tcm_fc/tfc_io.c
-index 45329284f52f5..27eb9da0bc01f 100644
---- a/drivers/target/tcm_fc/tfc_io.c
-+++ b/drivers/target/tcm_fc/tfc_io.c
-@@ -189,6 +189,73 @@ static void ft_execute_work(struct work_struct *work)
- 	target_execute_cmd(&cmd->se_cmd);
- }
- 
-+/* Fold a range that now adjoins the contiguous front, or another range. */
-+static void ft_merge_write_ranges(struct ft_cmd *cmd)
-+{
-+	unsigned int i, j;
-+	bool merged;
-+
-+	do {
-+		merged = false;
-+		for (i = 0; i < cmd->write_nseg; i++) {
-+			if (cmd->write_seg[i].off == cmd->write_contig_end) {
-+				cmd->write_contig_end = cmd->write_seg[i].end;
-+			} else {
-+				for (j = 0; j < cmd->write_nseg; j++)
-+					if (j != i && cmd->write_seg[j].end ==
-+					    cmd->write_seg[i].off)
-+						break;
-+				if (j == cmd->write_nseg)
-+					continue;
-+				cmd->write_seg[j].end = cmd->write_seg[i].end;
-+			}
-+			for (j = i; j + 1 < cmd->write_nseg; j++)
-+				cmd->write_seg[j] = cmd->write_seg[j + 1];
-+			cmd->write_nseg--;
-+			merged = true;
-+			break;
-+		}
-+	} while (merged);
-+}
-+
-+/* Record a frame's range; refuse one that repeats data already received. */
-+static bool ft_add_write_range(struct ft_cmd *cmd, u32 off, u32 len)
-+{
-+	u32 end = off + len;
-+	unsigned int i;
-+
-+	if (off < cmd->write_contig_end)
-+		return false;
-+	for (i = 0; i < cmd->write_nseg; i++)
-+		if (off < cmd->write_seg[i].end && cmd->write_seg[i].off < end)
-+			return false;
-+
-+	if (off == cmd->write_contig_end) {
-+		cmd->write_contig_end = end;
-+	} else {
-+		for (i = 0; i < cmd->write_nseg; i++) {
-+			if (cmd->write_seg[i].end == off) {
-+				cmd->write_seg[i].end = end;
-+				break;
-+			}
-+			if (cmd->write_seg[i].off == end) {
-+				cmd->write_seg[i].off = off;
-+				break;
-+			}
-+		}
-+		if (i == cmd->write_nseg) {
-+			if (cmd->write_nseg >= FT_WRITE_SEGS)
-+				return false;
-+			cmd->write_seg[i].off = off;
-+			cmd->write_seg[i].end = end;
-+			cmd->write_nseg++;
-+		}
-+	}
-+
-+	ft_merge_write_ranges(cmd);
-+	return true;
-+}
-+
- /*
-  * Receive write data frame.
-  */
-@@ -267,6 +334,11 @@ void ft_recv_write_data(struct ft_cmd *cmd, struct fc_frame *fp)
- 		goto drop;
- 	if (frame_len + rel_off > se_cmd->data_length)
- 		frame_len = se_cmd->data_length - rel_off;
-+	if (!ft_add_write_range(cmd, rel_off, frame_len)) {
-+		pr_err_ratelimited("%s: xid 0x%x: offset %u len %zu repeats data\n",
-+				   __func__, ep->xid, rel_off, frame_len);
-+		goto drop;
-+	}
- 
- 	/*
- 	 * Setup to use first mem list entry, unless no data.
-@@ -345,6 +417,8 @@ void ft_invl_hw_context(struct ft_cmd *cmd)
- 				 */
- 				cmd->write_data_len = lport->tt.ddp_done(lport,
- 								      ep->xid);
-+				cmd->write_contig_end = cmd->write_data_len;
-+				cmd->write_nseg = 0;
- 
- 				/*
- 				 * Resetting same variable to indicate HW's
--- 
-2.43.0
-
+Thanks,
+Yehyeong
