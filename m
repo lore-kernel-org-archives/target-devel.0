@@ -1,74 +1,78 @@
-Received: from mail-pj1-f45.google.com (mail-pj1-f45.google.com [209.85.216.45])
+Received: from mail-dy1-f170.google.com (mail-dy1-f170.google.com [74.125.82.170])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 56F304AE8C3
-	for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 15:44:33 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.45
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B94563CB54E
+	for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 23:00:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=74.125.82.170
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791819875; cv=none; b=EkceB3Ced9qIClrjUe9WMws4MKyZhFt/7Ykp8Z4SuejAxbaN9JPqURKLhw2N7kfHSwNqGYOKlXPt/hc/TTL+1MhcDDlSbJljgvlshA4z6s5Rtb2AyxEFuFnFpa3BlA+M1a0WNDIAPSfczvrjiVE42eVyU+/Q/SBcvo3wrDX31uQ=
+	t=1791846026; cv=none; b=X3IoykOvM6sQVUsP1zamd09mYDiiZEHmHBMovZjEs3+bzvM45a8QmF/bp7OHlIAgI+fkIek1UOGPrOV/sTUZVY/CfV9wDT4jo36QayG3ApHjE/0yENgIg8yLoukwDsNbrEo84XN/R0IylthL3tUnrWTmSaHDsju8PuZhqOBw8Ck=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791819875; c=relaxed/simple;
-	bh=vMCqB0hD0d33CKDMPrXXNYCt+AWzsNFqf9zV1oFDLmU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=pif7RLPqESi4LVWZGGIsGX8iRv8fErag5F8QFob25T0JSN3wbA8ujYJeJ0FQn4MTinWhQTOF5T0fAtiVnSYLKakDy3hLWbkr8NL1E0aLx2Vxk2guleiFmzh8cP7Gd9aM/jIWkld5KRZoqMer5yjP79MgLNMlldzl5uvd9vGI3Gk=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=W8aoxX8g; arc=none smtp.client-ip=209.85.216.45
+	s=arc-20240116; t=1791846026; c=relaxed/simple;
+	bh=CJntl5vLVbYMLsA3KBqUJDcMecoNCBVdlHh6cm6Lojw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=lFAFkV+uCsUSS4yKlIhoMgPbLijfakVFoKDtw7iu9uLx09wuQVFwEkE6FSEv8SI9IzvYUPOcRsYN2W+X/8XVuCb5NnW0iRTGeehRmYl9lVNYYJbiZqHlQTVe8J3guGmjAigMrgh6avXh8GYc5Cc9X0oWXGYhn/kP3VpSkbLN3SQ=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=F4F6MMxR; arc=none smtp.client-ip=74.125.82.170
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="W8aoxX8g"
-Received: by mail-pj1-f45.google.com with SMTP id 98e67ed59e1d1-3a8adb68d8bso1334396a91.1
-        for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 08:44:33 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="F4F6MMxR"
+Received: by mail-dy1-f170.google.com with SMTP id 5a478bee46e88-33bf40b0c8bso1012963eec.0
+        for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 16:00:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1791819873; x=1792424673; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=wKZ8udCmDcJ4nEacljHli9T2DKZNy0YCKclfYROWFCw=;
-        b=W8aoxX8g9fRHdJ4a/WMixaF7GLZkEVMsM6veY5wo7vQl/3Psw6Hdi4mDMkrdOfpDh7
-         NBkHEvmVLRw052jr58vpvVynbhMmIinuSvY6jlgrLGwRnTBXC+lABIFKW7bj7Lc02ydI
-         o1IU/d/RPx/6OwJRwgoScp3tflxeQfCKDwbLeZQTz3bQZCThKh6WWaoskBiGBOxizmIc
-         zNX1cGp/ZCWLNxP4GsAqtvYvktaOpiHAQYbxEl1wbK+upDf8Jp26SFxi6CuhSDb3QBLS
-         irbaTprMrY0h2hcJZjFNucpEETI3BunME5rbfusJk4YJMJ6M1TCVmzz7HNmQbO5VSqBb
-         Fhbg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791819873; x=1792424673;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1791846022; x=1792450822; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=wKZ8udCmDcJ4nEacljHli9T2DKZNy0YCKclfYROWFCw=;
-        b=u7zUgcelw/lqGZWlIMXmt0O9JsU3/8KygSr8pKXabb4OaGZfEZm+bCiEHODqCRW2IA
-         vG+wF0uuWL2sdtOQNje2abjxULqvhKBkCl+Vrm8bxS8U5ebOvDKNBdSzEDXOKigKhQXW
-         lDFYu6h+NnV1GsCe/oMjCjVLEMWfHg/1xhaWDoIrOdnwgrvCBClj9Tq/gARygrFrWq6w
-         fu9BgRNOXTZqXk9dIuIuRkQEGbNt13T15IYRd0LdMRDJAqf5wQxsEvf392xbKyToJQSr
-         Pu2yRR/sf8LbaQUc7k01ODqtEt7R7mDXhRvWH8EyOQu08CZS+I+SMZhjLX2JcEXN7g14
-         8w8Q==
-X-Forwarded-Encrypted: i=1; AKwUvBzplpYs6t9XaP/3l1yUxZPp1PEmraAHitetg/S/CCshw7Z19XApMb4lvS4hPCxLEEOl+t9MgUMQ+ha4NSI=@vger.kernel.org
-X-Gm-Message-State: AFq9FYKCG3e3/AYyTVxF3+CH58yyrijzXfkyXQBcy4EN8kBWPrOUubaL
-	ngvazOBZrgBXTji4bhh2/DQsygBM/0RpDBvimG4Iaq9hAP7YLLGyfpvpNx9XlRhxOXA=
-X-Gm-Gg: AYBFou0CMHgK7/Gs3NmlzTEuZiGTnk35viTFh9JVs8JhKpptcrLrNZ7rjrbs2njitiJ
-	MjVcuwhvoSRMPwgXo41Y2XComklUeIcriSWLZA87LWtADP0hCFg93HL3PS6v8Fw6CZIz8phZqNu
-	YZAL6O6UQp6qbiRo8pbmaAiSONLHfEbddOV9/LO0l0mgIvwacsqZP6IlwL+SyHBEI5q/kKBzeV7
-	rkI2tW6pihOf8alB6S2GxD8pPxbBDLHM0UkriK5o4sWQ4BW0QIon29+yU989XvCL71skRtdddmP
-	lR5j483dmjidXLq1UsfHqI3rRcqJzAHmj5P94y0ohkvhGjW1J7ne9BwagC9SQMMk/5lZ0+fItCD
-	c1SXFIh6xEDa5dbvSlEqFN1dFtWTQNYGMfE+fgaGCv3Am3J12zmVOQ4Vo1Ol4+AboBoJcCfuFIp
-	+vU/fxOljPOfx9nT00wVdzmkMf12KsrgoXNYdotWLKzwDLEVNdyGQXFmMgBOpTXY9TJiwQVOeAq
-	NlZoMzyXzD5DnHFCoWqh6DDMWI2Feqg
-X-Received: by 2002:a17:90b:3b82:b0:3ab:4f1:4f76 with SMTP id 98e67ed59e1d1-3ab3a94f426mr8967011a91.24.1791819872684;
-        Mon, 12 Oct 2026 08:44:32 -0700 (PDT)
+        bh=M8BFdvYSISp8AAXKvEuQiO1EpCQWSnukAZdzABGNTMg=;
+        b=F4F6MMxRB63hR7L7UuWdBg59TxAVOOlV7uUWPnyOySMYgB+iVydutSDuhWSht/qCSw
+         pxqjN9EwF+AFcK5LkgJttmNIIuhS+Y2BJ1Otjrqs9jCAAUhjR2XM2B0Dp8h1EOjMf0R5
+         l3BNzv0bDofaLK5ID14CprdcRRt9NhzJ4pcgb1pj4uksbAWNfTTp44Bjx3m1A1RV31OF
+         IL5UdLf9tfINu/8yeE4/8XqpOi/NAp3w2dsDJC/cZzWGEhbdfxqZm5ZLyBrGc3sZB6Wj
+         gnUzC4FA12bGb8baGrFH9KibhPDw6fQqd6q3Jok/opLYAEScFr8hzPfwIg5U+XREPtOB
+         5jag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791846022; x=1792450822;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=M8BFdvYSISp8AAXKvEuQiO1EpCQWSnukAZdzABGNTMg=;
+        b=sC1lcnZnbPQrNSEDNxFu9exYE8qvZpWd8J/KmRQFQ3M1v4UtqmcjwVJ06SES9EhqKh
+         T01BoY08fFTCnaXTkQMXw0szo6+jMmaSN5IzDWoJUK1nW7w9M2evxsrFpdkxwEn2Sxdv
+         ZyzQ2tGwhqaYd41VL9/Cbvdt+BigbnckgZlcExHXl+cYzVB7lHwf9mRL8ZKvqrZT5HXy
+         RAydmb73tZj4ct6SdUNJWGLsWymmHH9BunGD0OqOtP69vQFNjcVshM0hwTgErY3EECP2
+         TgTbN14Rg+yz7/vBA15ensOJS3HTNpmMWYTn9kGh+048Rq0A6o35t+oF/G8lpUJD9I1X
+         f/ng==
+X-Forwarded-Encrypted: i=1; AKwUvBw3QwwBj8WgZJO2v0Qvqj0NcrGc4Bf5gEcncOfFHjHCZW7GV8y+IqqP6LM1em+3ex3bE9QIbfvj/J4hMIo=@vger.kernel.org
+X-Gm-Message-State: AFq9FYLO9axLSVsJ4tTgOU7wjPfwQN3+GxUpKLZo5kzhPdgwZ6P5EEf8
+	/FNwj0tGmN2Uv0haUvHLzHpodVG4cM9+D7Hq79xFon1VHsNd0zR6UGbkLd3qogPLyK8=
+X-Gm-Gg: AYBFou0DcNlwiELuQYGbYVDcsTo5f6Wyrx7lUup4rA7uGLVxZmYQ4Eb18V+OUB5Jcvk
+	PtOQPznJA1XSB+IpntQ5U1oPVoYfBJT8/CidZ/yr4W8vWDNYvD3mtdqrSPKEuJ8VXbANtqbc0Lk
+	kY+rlkwflTn/YlwddCyNf81KYtd9Na8wRhDqw8M2h85ALQGJ8RzAKChiJkmt6T1+PFTZ0aGMQ/c
+	ki7girIhF+bNGGHhhiL1vL0tXbz91wPkdwZU7n+oONyGtvVth8L9h5EtTn6e79Y2I1Z6Ayw+lDe
+	tmQutybF4006kBQsW284pfQ0SB6+9eny7+SMilRerSpTuB1YZKHaY484xdncNbPbfKzLJ6SJMsg
+	XlTauTbei/VtgZpbpCS7IQP2ByrC3ktIFL8ESlVh6VPywnsOXKeqHFPSxy6a1Ys6DhhsH+SDJeG
+	IiHjfKq9NOLyjQfKKzG8RkOgnPs7UlyHczkkjXyzCUH/M7WoBd9PcZ2n+18xRmrkGlJu3G0Hk3p
+	8nB6MwsvNyc4jgF1eLJ1g==
+X-Received: by 2002:a05:7301:7d16:b0:350:2a5c:56c with SMTP id 5a478bee46e88-3537e08eee0mr15713738eec.20.1791846022251;
+        Mon, 12 Oct 2026 16:00:22 -0700 (PDT)
 Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:7bd2:1202:246d:44ce])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab38dd5864sm16692102a91.8.2026.10.12.08.44.29
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-358de54fe47sm24149748eec.31.2026.10.12.16.00.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Oct 2026 08:44:32 -0700 (PDT)
+        Mon, 12 Oct 2026 16:00:20 -0700 (PDT)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: gregkh@linuxfoundation.org,
-	linux-usb@vger.kernel.org
-Cc: Thinh Nguyen <Thinh.Nguyen@synopsys.com>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH] usb: gadget: f_tcm: reject a short write data-out transfer
-Date: Tue, 13 Oct 2026 00:44:22 +0900
-Message-ID: <20261012154422.2436134-1-yhlee@isslab.korea.ac.kr>
+To: linux-scsi@vger.kernel.org,
+	target-devel@vger.kernel.org
+Cc: mkp@kernel.org,
+	sashiko-reviews@lists.linux.dev,
+	Hannes Reinecke <hare@suse.de>,
+	Bart Van Assche <bvanassche@acm.org>,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] scsi: target: tcm_fc: reject overlapping write-data frames
+Date: Tue, 13 Oct 2026 08:00:07 +0900
+Message-ID: <20261012230007.2457828-1-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <sashiko-outbox-168364@kernel.org>
+References: <20261012153502.2435483-1-yhlee@isslab.korea.ac.kr> <sashiko-outbox-168364@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -77,46 +81,31 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-usbg_data_write_cmpl() commits the WRITE buffer to the backend as soon as
-the OUT request completes successfully, looking only at req->status and
-never at req->actual.  A host that declares an 8192-byte WRITE but ends the
-data-out after 4096 bytes still reaches target_execute_cmd() with the full
-length.
+Thanks for the careful read.
 
-The buffer is not zeroed (transport_generic_new_cmd() leaves zero_flag
-clear for a data CDB), so the bytes that never arrived keep the previous
-page contents, which the backend writes to the device for the host to read
-back. The target core refuses a WRITE whose declared length is wrong, but
-it does not see a data phase that simply falls short.
+On the lock: a command's write-data frames are not delivered concurrently.
+A target write-data frame is a sequence request (EX_CTX/SEQ_CTX clear), so
+fcoe_rcv() steers it by rx_id onto one per-CPU queue and fcoe_receive_work()
+drains that queue serially; one exchange is one rx_id, hence one CPU and one
+work item.  ft_recv_write_data() for a command is therefore single-threaded,
+which is why the existing cmd->write_data_len accumulation and the
+== se_cmd->data_length test have run unlocked since the driver was added in
+3699d92a4d7b.  write_seg[] is updated in the same place under the same
+guarantee and adds no new shared state.
 
-Fail the command when the data-out is short, using the transfer-failed path
-that is already there, the way f_mass_storage treats a short bulk-out.  A
-conforming host always sends the full length, so only a truncated transfer
-is rejected.  There is no oops; poisoning the buffer and ending an
-8192-byte write at 4096 bytes leaves 4096 stale bytes committed before the
-change, and after it the command is aborted with nothing committed.
+On the FT_WRITE_SEGS limit: a lost frame makes the byte count never reach
+data_length, so that command already fails without this patch.  The only
+case newly affected is pure reordering that keeps more than FT_WRITE_SEGS
+disjoint ranges open at once and then completes; the libfc initiator keeps a
+single contiguous watermark (fsp->xfer_contig_end), so four tracked ranges is
+already more than the in-tree initiator.
 
-Fixes: c52661d60f63 ("usb-gadget: Initial merge of target module for UASP + BOT")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
- drivers/usb/gadget/function/f_tcm.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+On the dropped frame: it takes the same path as the four existing drops in
+this function (no REL_OFF, DDP without SEQ_INIT, runt frame, offset past the
+buffer) - the frame is freed and the initiator recovers the command by
+ABTS/timeout, as for a lost frame; tcm_fc arms no receiver-side timer.  I
+would keep that consistent rather than make this one drop abort on its own,
+but can add an explicit abort if you prefer.
 
-diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
-index 9e6d4f39900a2..54e45d3c79563 100644
---- a/drivers/usb/gadget/function/f_tcm.c
-+++ b/drivers/usb/gadget/function/f_tcm.c
-@@ -1090,7 +1090,8 @@ static void usbg_data_write_cmpl(struct usb_ep *ep, struct usb_request *req)
- 		return;
- 	}
- 
--	if (req->status) {
-+	/* a short data-out left the buffer unwritten; don't commit stale data */
-+	if (req->status || req->actual != req->length) {
- 		pr_err("%s() state %d transfer failed\n", __func__, cmd->state);
- 		goto cleanup;
- 	}
--- 
-2.43.0
-
+Thanks,
+Yehyeong
