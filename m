@@ -1,62 +1,62 @@
-Received: from mail-pg1-f173.google.com (mail-pg1-f173.google.com [209.85.215.173])
+Received: from mail-pj1-f44.google.com (mail-pj1-f44.google.com [209.85.216.44])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C650848A8A4
-	for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 13:52:17 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.173
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC59B495046
+	for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 15:35:30 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.44
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791813141; cv=none; b=Pk19kn6P8JAQ+2aYT1zNKcR2LpQnJwO75SVdtlhQHk6kWnvtVT8/t5AArDdJgrpkRTdcoJBK3wcr+hzMZLA5/dHNNpOz/0lRrIsZn+tsf08eqf9YRZr0Y/yoHTblp5MVcgv4aOfcElDpo1/SvCy5dQhCVMeJhOzwgRYUEWK3K2E=
+	t=1791819334; cv=none; b=G/7ccE4up4i+wy2BDcI2IxQNyn7rLNHINW78ODFE/hFHBI+IeGHfsTi8HN5dJQZ0i/UxV8TxkFc8QjNQdwOhYS9QUdv7+2uf/k9VfhUiBpSLbULLNxbbJYNPhGZONvhtb1qGr5ghX6cJz7vKJq29Q9DPWeE69KNyw+XsJhNMqKI=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791813141; c=relaxed/simple;
-	bh=TmrDgwIsBwwzPv80GnSL6PFlsZHILn4PMmXvaiqLLF0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kddc+2WZJ7c53m7c2StqwwcfY+z8Ct9suudJV4v4pyCxykiQyj6W96MTqrrBU69s4qmAiZ1PnF6csi7danfVC9m0PnZW8CzVdYDvWIEJzZU0iM8SHU1LyOujyTxyZoh+96y69Q38b3ZSoEc06tLx2T2w5WTAD2vjNN8wmumHcD4=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=a58vcaqc; arc=none smtp.client-ip=209.85.215.173
+	s=arc-20240116; t=1791819334; c=relaxed/simple;
+	bh=gnxM0yOOK/JwI1s4juAVEfjVQ1r1eqV660lsNqxSPEw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=tAnlGmLT85w3O3SoJcr4AER2fB9q5DCCl89z1QkRQKqcAd9qbqz0tzKzZiyZDazKhtXBJ1AVz6eBEJoAYMmK5P3BEhsSC2ZEI0RQWUXaIELDERtDjrbiuOKING4vv3rn/WqgVLWqf0bHDYZCOvHY6RQJ2B+fa+uM+k4l+tiiOjU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=LB9He1gC; arc=none smtp.client-ip=209.85.216.44
 Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="a58vcaqc"
-Received: by mail-pg1-f173.google.com with SMTP id 41be03b00d2f7-ccce967aa8dso892350a12.1
-        for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 06:52:17 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="LB9He1gC"
+Received: by mail-pj1-f44.google.com with SMTP id 98e67ed59e1d1-3ab60ff4273so1553651a91.0
+        for <target-devel@vger.kernel.org>; Mon, 12 Oct 2026 08:35:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1791813137; x=1792417937; darn=vger.kernel.org;
+        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1791819330; x=1792424130; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=VUNiGziCUNl+CT1ZqXgl34E50ZrFvZEoRDfOve+S9JE=;
-        b=a58vcaqcqb31nvvheENTQc3TJZJ3c8qP6d9NiFVlddOPyg5hTQjOM0ID1aNoW/YFg/
-         1mLesTY29GGjN9B3iwgZqthZdxADBJJtL5aQGtFudXTIdG1DT0w/NmCybyMxiZWgw0zZ
-         oNHteQdf0o3PQG8W9OLgcRbvDgWpYiM+tCUyt1mxrMryxU9MHdgi9b8lyxoO+bzwXv2K
-         2o7sg+s5h2wDQpbloc+RDqafUg9f5oafvJRDIMm7F22GHVU4DsLdr/S5H1AIJ+EXEmQE
-         pmD3lkDhFLAed0O+YRA0LOru1czE6dxKdMIBO0XajXdhZOehjtmzYpQu7+q6quYiTuKA
-         wCGQ==
+        bh=Yok6zVFuauItk86XZja8sSODs2GHBMfYs1w0NhMN22c=;
+        b=LB9He1gC1IUekYjF8vFwvdVXa4LoDMBGvgLH50+Z7YkBFwdAxmfHZGHtUmGDN6b1fK
+         e7820GwtU8/DQ0oWrqmoakeFPpUQJxYklpPIfjPD+CliCMjbMHWrfCeuwU4hfbGaPTx0
+         BKR1AXoPQchdmy+ahS8CocpFDI4uW8b9qxaJJoyw34q3ymg1sz5EF196yQHp0l5CaYVJ
+         DBe4ftjkSOd2/z5GGJ4MlHGvAhYdXuQV7WyT1foFd0aYhuknp2Ho98wNnRTJJagn83O9
+         W+JVkigatv8uzw7yGSUxQZ9nWuNC6eOd+jA57aEywJUeQI2q+1W+UvnWiJaUd4QdVc5+
+         Nrcg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791813137; x=1792417937;
+        d=1e100.net; s=20260707; t=1791819330; x=1792424130;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=VUNiGziCUNl+CT1ZqXgl34E50ZrFvZEoRDfOve+S9JE=;
-        b=xjLn5qPf9MnzYawgORe8RQXjvwW+zZvscOdF9IGmHTqaGxjtgyWLR87K/Z7ZTeJ9LR
-         7KKTirxa8TjMOIi1JGdiKI0tD0MNK33bVHy0Y8EUu60C+mUqcC8tTWoeaPMLPIwpB9oK
-         +XcRxbt4F2WPOVy5sssCMk533gPvGkySIqF+Zqc5h7qR9I7ymYISwHHkm9A+FGmQWUSB
-         SUw4GFXkKCLEz0DMjrjS1QmczNz2MbN8lr+mRVzd73vjeGh2S5t2Cz/gzYoUvVZiUrhQ
-         v+UNBmlpoJrsPVsG61CJfNLKkHlSUUT1J8RYVAiyJRQaOdWWk46WbzDL3zRDxR4XSFec
-         yM0w==
-X-Forwarded-Encrypted: i=1; AKwUvBw9eaPP15JZslqQqqTsc5xGQCmpYKcZHt0v7qlnBU3S027oJyR6vA2xA5y20iG2nqi+N7i0ZM5GnSnciQs=@vger.kernel.org
-X-Gm-Message-State: AFq9FYKTyk5v1LYnD4mWjusbBbiW7fYRE6RKD+rQ1t2kZSbT33RGU8D/
-	+AymzVEcBCMzr9V6XAWqdrsiTOPFsc7VMJiP1mvhbbOhGbb+njWSsb0gaagBjKnZSKk=
-X-Gm-Gg: AYBFou16GySFpJtZvsxMOUtDAknIGPd4LT0iBfq+PEOQOp6Ct01Lxrx/bRma3HzSkTQ
-	qAeHM6Huoy7d+tb9oeHV/c8JEn3cfkryfNZ22bkb4LmFXzxj39DGe2hLPHW4+ocCFr/hYBTg45o
-	6PIDRPOj1R3wFvYmgIMOshSUNdjWe87a92SJdpHfomCbORqUFKadVNe5BHqIprJ0BaZI86UrkVs
-	97Sb+U2bSGRRa4CZ7IlXPgOpHideAypFfM4qEWhxb5ZxqE0iU6AjagB4D5RF+g/LgfYDpthPYWn
-	bryEHI0eePaYp9kfl63lEfqhMQOHvIw3IOYB1tbxoV5jxMAB+rzWY4kNgqGjVOZ9sA2N5tGBoiG
-	qG4P+7mYpNwzar04hi4BmNPkYRNl7VadifIMR0Gd8y8IxUj0C40BFCGZ2NR21jpVwXBMcsAidYO
-	vJT2EmmAyOH9oDS5t8+IkHs/vB4DlTzt9SmWR1URWfae+VZm1nT2YhF8CiliaT0MBbzZOE/eXNs
-	ASYf1tnBd1/QDdfInMaXg==
-X-Received: by 2002:a05:6a20:5493:b0:3dd:a00a:c5be with SMTP id adf61e73a8af0-3e16c03cd8emr10688105637.49.1791813136750;
-        Mon, 12 Oct 2026 06:52:16 -0700 (PDT)
+        bh=Yok6zVFuauItk86XZja8sSODs2GHBMfYs1w0NhMN22c=;
+        b=m7NXhDGpnfunCJ+vYCJe0sFfpzZCznBlrAhssjUr0J07EaRIfHOZuQbTpM6VXZY/cW
+         HKvuiR3EN4qFo8unqtWc2WdbnREA9nKSRorLyCa3cRuW9wFuLy9GHPPGtfkWMKSyv5vb
+         rgZgyG/emaopzN0Ilx8xGnNEX9FkK2B0XFYifRbGHhpNRbkHMVeiSgctISWTzVutdI2T
+         q1cXFRX/Gv1pT3+5qtfOEYJItlK7505OIjDOc7DZsCgyglKH3pLlna07U3ZQQaFBM2LJ
+         qn/puhSNwNcWpg79eSpXeGRmSgQ4YFmaOSw6iIiWDEdX/hydMDxhLvMqU/kprYbk1p7E
+         ZfRw==
+X-Forwarded-Encrypted: i=1; AKwUvBzRK8uuff6mf+kUgb9A85PzdtybQQHAhbFpcT26vAupQPhZE9pvbl0XyinW4pWn7lQk7OGBhcI+Okh0noU=@vger.kernel.org
+X-Gm-Message-State: AFq9FYKsEnIthywaabvS5hr+sRr7IBkurznrdNOyShQV/k2cOgGsFUxy
+	djJ9x73/Dt5ZxEfEz40wELv/Nlr087rT3uUV7LXJADvJTVJLrh/x7Dgx2KDYqyXBVTE=
+X-Gm-Gg: AYBFou12epycOioLhR+5OiTD+QQI8DNleSdWsq49M6d5aeGO1X/Eiob7YkFmWrAHtjt
+	ZpubnG/uEHdO6h5FSUPgsBoE4C8orkRDdcOtRLCpGHnWqrqdP5m4n7bJVASaO7+gqQ+8nHHY9hI
+	sdMFbWmkrAsgd+lufNXPRxNjLOw4BVGlk5zgxg8+glwsUIGNMzGSl91EOPiKUlJ1Z4sYV4OG6Ca
+	37E+pugUYFBE9kt70ZeWXO752G4AYtOqSeafn0XBr2WACvVud+K3Pm43X88qP//ah8BG4EpFcHG
+	Zpj+EKt/nkv2V92vUmFri97jnCI8TT0h8k0KDi216ZluE8XJ4xg7pbnjEiy+oN7zJ3i2l+8WXE7
+	gNeBl7CVAlge24GNM4sgTFRWdFfdehijBHONZ40T1fUcDfw1hpG1Y9Obs8EnXLnKytwe50hsdk9
+	Xn2/PRW+yslC4HnCHB9nj3Mht55AYwh7eM6LSbsykHIX53gj76xfsz45+eIf26FcAt3vH5oeyGQ
+	pnpsWklDLVn3ye+gV0KGVY=
+X-Received: by 2002:a17:90b:2889:b0:3ac:eeb:e0ed with SMTP id 98e67ed59e1d1-3ac0eebecf5mr1790611a91.36.1791819329799;
+        Mon, 12 Oct 2026 08:35:29 -0700 (PDT)
 Received: from yhlee-960QFG.Davolink ([2406:5900:1044:110c:7bd2:1202:246d:44ce])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cd3d9e08c89sm4298333a12.8.2026.10.12.06.52.13
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab38b9639bsm16371590a91.4.2026.10.12.08.35.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 12 Oct 2026 06:52:16 -0700 (PDT)
+        Mon, 12 Oct 2026 08:35:29 -0700 (PDT)
 From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 To: mkp@kernel.org,
 	target-devel@vger.kernel.org,
@@ -65,9 +65,9 @@ Cc: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org,
 	Hannes Reinecke <hare@suse.de>,
 	Bart Van Assche <bvanassche@acm.org>
-Subject: [PATCH] scsi: target: tcm_fc: reject overlapping write-data frames
-Date: Mon, 12 Oct 2026 22:51:59 +0900
-Message-ID: <506886f3051941899c26b3dd4d2a32a3c0cf9846.1791812937.git.yhlee@isslab.korea.ac.kr>
+Subject: [PATCH v2] scsi: target: tcm_fc: reject overlapping write-data frames
+Date: Tue, 13 Oct 2026 00:35:02 +0900
+Message-ID: <20261012153502.2435483-1-yhlee@isslab.korea.ac.kr>
 X-Mailer: git-send-email 2.43.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
@@ -100,9 +100,13 @@ Fixes: 3699d92a4d7b ("[SCSI] tcm_fc: Adding FC_FC4 provider (tcm_fc) for FCoE ta
 Cc: stable@vger.kernel.org
 Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 ---
- drivers/target/tcm_fc/tcm_fc.h |  8 +++++
- drivers/target/tcm_fc/tfc_io.c | 57 ++++++++++++++++++++++++++++++++++
- 2 files changed, 65 insertions(+)
+v2: coalesce adjacent tracked ranges, so a reordered write whose segments
+    have become contiguous no longer exhausts the array and is wrongly
+    refused (Sashiko).
+
+ drivers/target/tcm_fc/tcm_fc.h |  8 ++++
+ drivers/target/tcm_fc/tfc_io.c | 74 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 82 insertions(+)
 
 diff --git a/drivers/target/tcm_fc/tcm_fc.h b/drivers/target/tcm_fc/tcm_fc.h
 index 00e5573c62966..b75b1373a49c9 100644
@@ -130,19 +134,47 @@ index 00e5573c62966..b75b1373a49c9 100644
  	/* Local sense buffer */
  	unsigned char ft_sense_buffer[TRANSPORT_SENSE_BUFFER];
 diff --git a/drivers/target/tcm_fc/tfc_io.c b/drivers/target/tcm_fc/tfc_io.c
-index 45329284f52f5..53d7c7268865d 100644
+index 45329284f52f5..27eb9da0bc01f 100644
 --- a/drivers/target/tcm_fc/tfc_io.c
 +++ b/drivers/target/tcm_fc/tfc_io.c
-@@ -189,6 +189,56 @@ static void ft_execute_work(struct work_struct *work)
+@@ -189,6 +189,73 @@ static void ft_execute_work(struct work_struct *work)
  	target_execute_cmd(&cmd->se_cmd);
  }
  
++/* Fold a range that now adjoins the contiguous front, or another range. */
++static void ft_merge_write_ranges(struct ft_cmd *cmd)
++{
++	unsigned int i, j;
++	bool merged;
++
++	do {
++		merged = false;
++		for (i = 0; i < cmd->write_nseg; i++) {
++			if (cmd->write_seg[i].off == cmd->write_contig_end) {
++				cmd->write_contig_end = cmd->write_seg[i].end;
++			} else {
++				for (j = 0; j < cmd->write_nseg; j++)
++					if (j != i && cmd->write_seg[j].end ==
++					    cmd->write_seg[i].off)
++						break;
++				if (j == cmd->write_nseg)
++					continue;
++				cmd->write_seg[j].end = cmd->write_seg[i].end;
++			}
++			for (j = i; j + 1 < cmd->write_nseg; j++)
++				cmd->write_seg[j] = cmd->write_seg[j + 1];
++			cmd->write_nseg--;
++			merged = true;
++			break;
++		}
++	} while (merged);
++}
++
 +/* Record a frame's range; refuse one that repeats data already received. */
 +static bool ft_add_write_range(struct ft_cmd *cmd, u32 off, u32 len)
 +{
 +	u32 end = off + len;
-+	unsigned int i, j;
-+	bool absorbed;
++	unsigned int i;
 +
 +	if (off < cmd->write_contig_end)
 +		return false;
@@ -150,47 +182,36 @@ index 45329284f52f5..53d7c7268865d 100644
 +		if (off < cmd->write_seg[i].end && cmd->write_seg[i].off < end)
 +			return false;
 +
-+	if (off != cmd->write_contig_end) {
++	if (off == cmd->write_contig_end) {
++		cmd->write_contig_end = end;
++	} else {
 +		for (i = 0; i < cmd->write_nseg; i++) {
 +			if (cmd->write_seg[i].end == off) {
 +				cmd->write_seg[i].end = end;
-+				return true;
++				break;
 +			}
 +			if (cmd->write_seg[i].off == end) {
 +				cmd->write_seg[i].off = off;
-+				return true;
++				break;
 +			}
 +		}
-+		if (cmd->write_nseg >= FT_WRITE_SEGS)
-+			return false;
-+		cmd->write_seg[cmd->write_nseg].off = off;
-+		cmd->write_seg[cmd->write_nseg].end = end;
-+		cmd->write_nseg++;
-+		return true;
++		if (i == cmd->write_nseg) {
++			if (cmd->write_nseg >= FT_WRITE_SEGS)
++				return false;
++			cmd->write_seg[i].off = off;
++			cmd->write_seg[i].end = end;
++			cmd->write_nseg++;
++		}
 +	}
 +
-+	cmd->write_contig_end = end;
-+	do {
-+		absorbed = false;
-+		for (i = 0; i < cmd->write_nseg; i++) {
-+			if (cmd->write_seg[i].off != cmd->write_contig_end)
-+				continue;
-+			cmd->write_contig_end = cmd->write_seg[i].end;
-+			for (j = i; j + 1 < cmd->write_nseg; j++)
-+				cmd->write_seg[j] = cmd->write_seg[j + 1];
-+			cmd->write_nseg--;
-+			absorbed = true;
-+			break;
-+		}
-+	} while (absorbed);
-+
++	ft_merge_write_ranges(cmd);
 +	return true;
 +}
 +
  /*
   * Receive write data frame.
   */
-@@ -267,6 +317,11 @@ void ft_recv_write_data(struct ft_cmd *cmd, struct fc_frame *fp)
+@@ -267,6 +334,11 @@ void ft_recv_write_data(struct ft_cmd *cmd, struct fc_frame *fp)
  		goto drop;
  	if (frame_len + rel_off > se_cmd->data_length)
  		frame_len = se_cmd->data_length - rel_off;
@@ -202,7 +223,7 @@ index 45329284f52f5..53d7c7268865d 100644
  
  	/*
  	 * Setup to use first mem list entry, unless no data.
-@@ -345,6 +400,8 @@ void ft_invl_hw_context(struct ft_cmd *cmd)
+@@ -345,6 +417,8 @@ void ft_invl_hw_context(struct ft_cmd *cmd)
  				 */
  				cmd->write_data_len = lport->tt.ddp_done(lport,
  								      ep->xid);
