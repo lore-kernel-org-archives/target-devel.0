@@ -1,125 +1,122 @@
-Received: from mail-pj1-f50.google.com (mail-pj1-f50.google.com [209.85.216.50])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FF92334C3B
-	for <target-devel@vger.kernel.org>; Tue, 13 Oct 2026 07:33:54 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.50
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 45891397338;
+	Tue, 13 Oct 2026 07:46:58 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791876835; cv=none; b=sAvAWSLOOmiRoEBLfU3SVZDSsZNIscSL9Mdtk0VqeHCepklnTjDEmqXFU52il9ib6Rcjb64xiIU8z2+eLaCHshytwXppHcZxxGzOSYdBpSoYoRwFq6S/5kNbJju/cuZY2qhYvWD6CA5a5YlO+rG+M+jZv+qsxOzCR23UWqrEYms=
+	t=1791877620; cv=none; b=c+5377HyByjnf6yJn1UCcFULWwb8OxTdNpGovu2JXWe5CITlpzxP5/AFOIBppiwQpnFgaGkmoGyEYUX2VQAhvhhyjdMGrRRK2c3tqCCXo7LDW8mRtSUSQAP38kv0hYKB/RIdklI3seHs0lTQ2uX9yk7wFQOv3A6LfmS6TaDhOng=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791876835; c=relaxed/simple;
-	bh=zJpDVFp7OaMF23RUvdd5tO1VAXTrpQbzxS/lyg/1VrY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ip9Qa/5vwNApVLuDtainmS+Ycu3i7q/gYh4NHUFyD9EmJQbhu+vnrXM/YA4cc83y7OoZjMP5TPD0NoI/f9I2ttZDeSnIfof5r/daq7h/fFnc74IXGoCgIDdbAUonFYTNsFq2Zx2Aq2UNzilaMqhKcKijkya85/9adrl64bbOFXE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr; spf=none smtp.mailfrom=isslab.korea.ac.kr; dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b=a3Ej321N; arc=none smtp.client-ip=209.85.216.50
-Authentication-Results: smtp.subspace.kernel.org; dmarc=fail (p=none dis=none) header.from=isslab.korea.ac.kr
-Authentication-Results: smtp.subspace.kernel.org; spf=none smtp.mailfrom=isslab.korea.ac.kr
+	s=arc-20240116; t=1791877620; c=relaxed/simple;
+	bh=e5veVajL/nY5oYAK/bV9FvUF9rn0cqowC0u/oo2D31U=;
+	h=Message-ID:From:Subject:To:Cc:In-Reply-To:References:Content-Type:
+	 Date; b=QsKJeUmCvd4Pxxo21wFL3SOn1FE13ht1x8OFgALkIZTdcqczqHULNjuterw1kC2go4bpldWXshzvT5lin5GaJtJ+w9xR4FhdSBAKdldeG4dShHp4ppV3FBqieEP9EZH8T+os9XvdwwxrHZLvCTs3bo115zaGWaUl98g+4gKP304=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=ZY2uty0s; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=isslab-korea-ac-kr.20251104.gappssmtp.com header.i=@isslab-korea-ac-kr.20251104.gappssmtp.com header.b="a3Ej321N"
-Received: by mail-pj1-f50.google.com with SMTP id 98e67ed59e1d1-3ac397836fbso435017a91.1
-        for <target-devel@vger.kernel.org>; Tue, 13 Oct 2026 00:33:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=isslab-korea-ac-kr.20251104.gappssmtp.com; s=20251104; t=1791876830; x=1792481630; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=xQTqZ8qzN+s4bkiJNCgS9fx46evxSh0ez7cKQ2yLbe8=;
-        b=a3Ej321NWZegkkNMRNbF8C/A+DfXSt00ETUtcV21ms2NPa/vDQTzh//lIE9xgdmqZo
-         H9BtdQ68VwWRk+FME02/5LANSH57D4XmYj46hDnZjj72AJCbQSmSgpm+E1fAVpJ5Zrdi
-         jr7Je06B+aDb+ME6tSOrBO5/ZyeDog2QyBlZ47fAsxOi2uYHHensWNdLt2GyeP2v26Hz
-         qz8ylA04v1MaWNsrLNy0Uz4dwqugrAC18A99h8ZKkbQ1CvLPS9gugwFUUOawJx/Jv1pJ
-         jqcIN34P2tfyv9Mhvk/qtmzvkWP57/8rMUHnibZrGWJcyiUiCMcLz1Va4drGOTFcqUgT
-         u8mg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791876830; x=1792481630;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=xQTqZ8qzN+s4bkiJNCgS9fx46evxSh0ez7cKQ2yLbe8=;
-        b=aYKUMlJ3hlNWN66tugo724+6CcC+L61ORMKMNfWwiDJKW/7I7n6xqnCMMMCTOy9WhB
-         aIJYusH+zhOi3f1MZfHzayPWn65Us9rm4AtjuoSkhaKLChuK1bZX4D4BpSjgiNhJezC2
-         fwxTOejAfhYPdzH7aySGRo+3G4eqnAzSLgD7I1FH2KfRnHtOBuuRfbRh4Rb/T/3A4EmI
-         z1sKmx8fV3qX+epIWInQbX8N/CUpevBxYEkzCSrkICX/Q+elu+TuqCfXfzQFSlKuthSW
-         3OontaZrdSZiv/y+JajDzjKvgenkHlx0xhcYqOtIkSfIdm80SyLgoyfy+r4LEjBw9ZtS
-         JoXA==
-X-Forwarded-Encrypted: i=1; AKwUvBzgwOzWdjouw+exoMRFRkFREpPhntG63eySirISmsaKLPvJDDCxqSgk2+QRQeHwXuxs1027ZOtgR5ek/Mo=@vger.kernel.org
-X-Gm-Message-State: AFq9FYL18n01u17umwLFzRZ/tLBa+qsm76yxEYAGoSkVgtJM3GxglH7q
-	zZ1ePMUw/1iUGBp1yPTbZxvud8ang/Mx5r/ggEAYfgpXtDhOu/3RT0sFLRZy2EqdvI/8XOCZD/K
-	U/UtzTBG4nQ==
-X-Gm-Gg: AYBFou35dDeYVzn9ki6ssMGLnEVN3bIN6EG/ATSrQa5M6azpIMoEw8qjZEyKoqvDneW
-	Qqo7hPWC1E4BaNLoUCJSuvHaTuZTSe/wvky3rrSUW9yC7J72d5ThwXgoVHVaKGrxVdKk7xpkga8
-	T2TmK3BYs2HAwjd7uhD639C/pQ85nvbXu2Jc7rbsKOa38FV0oIc3uZKAGzRcPRobHvv5g8u78XU
-	ti6MTiEBu2gEX7aS7zaw6I/c2E4UX7VN7fG6b97uOuoPh7Qj1KKbgCHy03w255haR139NVr0TTl
-	J7t9H7LXUfbGXz8QLaW7t3106ZKyBvW18Wjj807qY8CTOUFHYJfpznZPTI1CHfZc82Fe+eA1WkZ
-	NvURufq0IVYv4hap6LijGKR7/9/bCvgqY1LTV6dp2JxWIqzI6gMPryg2VPcVIWDuAfT8m3V1ASX
-	DAhknn4sJ1/iRMvqMeu1Xq6Q7Sn+HIQoNYvfH0HjZETtIVF347Op6tdmymz42r1mB0WMFN/gw6q
-	UYejQ==
-X-Received: by 2002:a17:90a:d44d:b0:3ab:1b19:78ed with SMTP id 98e67ed59e1d1-3ab3a60d92emr9613917a91.21.1791876829645;
-        Tue, 13 Oct 2026 00:33:49 -0700 (PDT)
-Received: from yhlee-960QFG.. ([125.131.91.97])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ab36ed0daesm19973923a91.5.2026.10.13.00.33.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Oct 2026 00:33:49 -0700 (PDT)
-From: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
-To: gregkh@linuxfoundation.org,
-	linux-usb@vger.kernel.org
-Cc: Thinh Nguyen <Thinh.Nguyen@synopsys.com>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v7 3/3] usb: gadget: f_tcm: clear the scatter list when reusing the BOT status request
-Date: Tue, 13 Oct 2026 16:33:28 +0900
-Message-ID: <20261013073328.2936318-4-yhlee@isslab.korea.ac.kr>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261013073328.2936318-1-yhlee@isslab.korea.ac.kr>
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZY2uty0s"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9CB441F000FF;
+	Tue, 13 Oct 2026 07:46:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791877618;
+	bh=RDN/5pUUIoTyltvO5ppIBqMLax6S88Enq7jx0j//shQ=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=ZY2uty0sYc0ca59ZHhQ3XMyl1EUoRkWlRIScI+pEs2VJWigEcfpV3COk4qO5yoetM
+	 Bc0LZi4vaYQtGhsI2g1YM1oxN3aWi/dbAWJDrb3rgh6m23wXxjx+av38+yA1/jZVIy
+	 KRLaZ3kLhTk+z2UPYDDN43FYnLUVq8jXuXnvK1ZuxJr9eup/E06Ob30+qhyKf8aUw/
+	 AQWpFmvCn0/1sKCHJxQmriVYEUYteFpAAzsrkGQu50AxWMebZPXh/bOCqSxOdICThR
+	 NfbAbIKeZ3I2eodyItmFSduoJgbkSPSfruNT1QWs+k4x9SZN9QbK4nFHRWiHBl+Xro
+	 6TTYCgf3b8IGA==
+Message-ID: <sashiko-outbox-169209@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH v7 1/3] usb: gadget: f_tcm: queue the BOT status
+ requests with GFP_ATOMIC
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>, linux-usb@vger.kernel.org
+Cc: target-devel@vger.kernel.org
+In-Reply-To: <20261013073328.2936318-2-yhlee@isslab.korea.ac.kr>
 References: <20261013073328.2936318-1-yhlee@isslab.korea.ac.kr>
+ <20261013073328.2936318-2-yhlee@isslab.korea.ac.kr>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Tue, 13 Oct 2026 07:46:58 +0000
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-bot_send_bad_status() reuses fu->bot_req_in/bot_req_out to send the CSW or
-drain the data phase, but a preceding sg command left req->sg and
-req->num_sgs pointing at that command's t_data_sg - set in
-bot_send_read_response() for a read, or usbg_prepare_w_request() for a
-write. That command is freed before the status request runs, so an
-sg-capable UDC walks a freed scatter list in dma_map_sg(): it reads freed
-heap out to the host on an IN endpoint, or writes host data into a freed
-page on an OUT endpoint.
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
+s) to consider:
+- [High] usb: unhandled usb_ep_queue() failure leaks TCM command
+--
 
-Clear req->num_sgs and req->sg so the UDC uses the linear req->buf instead.
+commit 16a4c4e4e7a428273bc0342e9886b47a85b4aef2
+Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 
-With KASAN, a read command followed by a rejected command that reuses
-bot_req_in reports a slab-use-after-free in the UDC's scatterlist walk,
-with the previous command's sgl_free() on the freeing stack; clearing the
-scatter list removes it, while a normal sg read still queues its own
-scatterlist.
+usb: gadget: f_tcm: queue the BOT status requests with GFP_ATOMIC
 
-Fixes: c52661d60f63 ("usb-gadget: Initial merge of target module for UASP + BOT")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
----
- drivers/usb/gadget/function/f_tcm.c | 3 +++
- 1 file changed, 3 insertions(+)
+This commit fixes sleeping in atomic context by changing the queue flags
+in bot_send_bad_status() and bot_send_status() from GFP_KERNEL to
+GFP_ATOMIC.
 
-diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/function/f_tcm.c
-index a37a3ec8e7a4d..e727e8e1cfa0c 100644
---- a/drivers/usb/gadget/function/f_tcm.c
-+++ b/drivers/usb/gadget/function/f_tcm.c
-@@ -140,6 +140,9 @@ static void bot_send_bad_status(struct usbg_cmd *cmd)
- 		req->complete = bot_err_compl;
- 		req->context = cmd;
- 		req->buf = fu->cmd[0].buf;
-+		/* the status request is reused; drop the previous command's sg list */
-+		req->num_sgs = 0;
-+		req->sg = NULL;
- 		usb_ep_queue(ep, req, GFP_ATOMIC);
- 	} else {
- 		bot_enqueue_sense_code(fu, cmd);
--- 
-2.43.0
+> diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/fun=
+ction/f_tcm.c
+> index 9e6d4f39900a2..12e2b20e33b92 100644
+> --- a/drivers/usb/gadget/function/f_tcm.c
+> +++ b/drivers/usb/gadget/function/f_tcm.c
+> @@ -139,7 +139,7 @@ static void bot_send_bad_status(struct usbg_cmd *cmd)
+>  		req->complete =3D bot_err_compl;
+>  		req->context =3D cmd;
+>  		req->buf =3D fu->cmd[0].buf;
+> -		usb_ep_queue(ep, req, GFP_KERNEL);
+> +		usb_ep_queue(ep, req, GFP_ATOMIC);
 
+[Severity: High]
+Does this code leak the TCM command and hang the USB BOT session if
+usb_ep_queue() fails?
+
+By changing the allocation flag to GFP_ATOMIC, usb_ep_queue() is more
+likely to fail under memory pressure.
+
+Because the return value isn't checked here, if it fails, the endpoint
+completion callback (bot_err_compl) will never execute. The callback is
+responsible for queuing the next CBW (Command Block Wrapper) to receive
+subsequent commands, so the BOT instance will stall.
+
+The command is also not freed by transport_generic_free_cmd(), leading
+to eventual session tag exhaustion. A host-initiated USB Bulk Reset
+(US_BULK_RESET_REQUEST) resumes listening for new CBWs but does not
+explicitly abort the leaked TCM command.
+
+>  	} else {
+>  		bot_enqueue_sense_code(fu, cmd);
+>  	}
+[ ... ]
+> @@ -167,7 +167,7 @@ static int bot_send_status(struct usbg_cmd *cmd, bool=
+ moved_data)
+>  		csw->Status =3D US_BULK_STAT_OK;
+>  		fu->bot_status.req->context =3D cmd;
+> =20
+> -		ret =3D usb_ep_queue(fu->ep_in, fu->bot_status.req, GFP_KERNEL);
+> +		ret =3D usb_ep_queue(fu->ep_in, fu->bot_status.req, GFP_ATOMIC);
+>  		if (ret)
+>  			pr_err("%s(%d) ERR: %d\n", __func__, __LINE__, ret);
+
+[Severity: High]
+Does this code leak the TCM command and hang the USB BOT session if
+usb_ep_queue() fails?
+
+Similarly, if the GFP_ATOMIC allocation fails under memory pressure, the
+error is only logged and we unconditionally return 0.
+
+The endpoint completion callback will never execute, which stalls the
+BOT session because the next CBW won't be queued. The command is
+permanently leaked.
+
+>  	} else {
+>  		cmd->csw_code =3D US_BULK_STAT_FAIL;
+>  		bot_send_bad_status(cmd);
+
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261013073328.2936=
+318-1-yhlee@isslab.korea.ac.kr?part=3D1
