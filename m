@@ -1,44 +1,44 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C66C64B0CA8;
-	Tue, 13 Oct 2026 06:36:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51ACD3EB105;
+	Tue, 13 Oct 2026 06:48:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791873416; cv=none; b=oi/iWEqb48Ke0aUztHmD+UqsY5pA8BYjfMkwdUBPOr/lP5jk2y68scpGwbyljeM28x3EpI8VwhCD2Ynr6QVOuB54mAldOSrJIX9psghSo4f876Xx3giW+7MfS6Em8QmGYGwSZpMLeLMSnPcoa1nf2xn3OlDUYpY6vL0MdeEGa4E=
+	t=1791874123; cv=none; b=ZszHze3/F+mDn1+vMbvH1PwKIaQ6CQhprD4C0kTXZPPOgkxTxIwcAIw+Fq6aSEXrF5grp1xCiQD9jC1JVpLASbTM433QXu7Z50OJ2ODi0R6YiwBq50JJQ9i7Q/EIG7JRILbmsIaLD+IRY0pyuLQPxBN4lajLSbHEllLAKHCAAzs=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791873416; c=relaxed/simple;
-	bh=Ly9EdeXXamLh3MkicmeXlKp/vmlrtDdAup32UCF9W1M=;
+	s=arc-20240116; t=1791874123; c=relaxed/simple;
+	bh=xWfbayAEwMfa8Dnxl5Ql8I3qEdkobRYLjAZb8LxQ2jE=;
 	h=Message-ID:From:Subject:To:Cc:In-Reply-To:References:Content-Type:
-	 Date; b=k9LTWydOS6LENmJEAHk+eEG/bV+kAbGCQttSPNh9YlryLDGkKSFbLqFDSmgl68oOzaSyXgLa0HjreisK5uHribuP33tox1AFrcGUGegWHts/khTLc5GWGF/ZjsWEXqKehVWI816yapidYOjK5SsNi3t/xLIGj8mbw5picEHgPIo=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=RYD7GdRj; arc=none smtp.client-ip=100.103.45.18
+	 Date; b=HqLHRJzq1/wD/cFx7qMFdAV7uZV9aOLtGTVXldnOUDDP+TTJEODl89FyJtm40t3+p0AlQ0lDFwpv/y9y0hcz+9fKby3Rj1dmFnl0u+oTezFFrtYOYlex4bWUBsP/Fj2KLW2u9gDHlcjGU/qCgM0MTNRENiqMmRwVeN9+mTRiu5Y=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=P7Nz6wkW; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="RYD7GdRj"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2DB171F000FF;
-	Tue, 13 Oct 2026 06:36:54 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="P7Nz6wkW"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A79F21F000FF;
+	Tue, 13 Oct 2026 06:48:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791873414;
-	bh=fgOBiUXLecxWWJLIYUvuCgItMZPC9eaaEzSaUhhR1TE=;
+	s=k20260515; t=1791874121;
+	bh=iveYHy/PosXY/ULvzzCvTTiNNvARbGrlyk8M8t9CvEk=;
 	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=RYD7GdRjFbMam04KFFeDAOoOZGSfD3Bf3O9COnZvtjB6vMICP4vWSy2L0ieW6YFeW
-	 hztLHuEUOxq1veJOuBYlYWelqboLz23pX7OzlIlQy621HWoYziGRvs+Nu+9jO8RZCK
-	 qaSMfIeSnUvOvrTJQ8n+t7Iixru4f8PpYydrBTiBZjNCutbgq8MLRxgGGaVV0Dn8hu
-	 aV1MDQlAh0vtPiImARsREPz0reYMUHq+yaYdhQwLRHkmqedSYsI0VfkH2zUmxdyIIj
-	 AW7dlXVVGkoHSSuJFkHgawdQa4LcD3HWcrmOQSEINpERatFD/wdH7YQTirgkdTHDuV
-	 WipX43WDUPb5A==
-Message-ID: <sashiko-outbox-169111@kernel.org>
+	b=P7Nz6wkWAVWqf5FMi7sPDWAPn4hzT5mKht06CfiVVmgfjRFkWRoo7bN2XyOV8Camt
+	 6ftR2P2cB4eusaBMaxQhMFTvPBHPy3lXUKvfBdYCZemuBYNsmEVUvTEz2omzfGPfsD
+	 iCkzSqa7u3GX2IrpO4gg74ncer+naKy47Br5XgMV48BUsqsM+s3vEt+wsUMEagupLs
+	 lTxZJ71yVxYiSepr9aiXDDuEhtLnxncpLcGvHFxnPgIDzP1B4lST7nJEwyymf8KBeH
+	 JkoJzdLZPGFnNksSqGOMPcy+D1aqgl6hblGBrBUhZ8kMiPOe+/p6kKq8ttv8y6G8YA
+	 iKyp5gpbJGA7A==
+Message-ID: <sashiko-outbox-169135@kernel.org>
 From: sashiko-bot@kernel.org
-Subject: Re: [PATCH v6 1/2] usb: gadget: f_tcm: queue the BOT status
- requests with GFP_ATOMIC
+Subject: Re: [PATCH v6 2/2] usb: gadget: f_tcm: reject a short write
+ data-out transfer
 Reply-To: sashiko-reviews@lists.linux.dev
 To: "Yehyeong Lee" <yhlee@isslab.korea.ac.kr>, linux-usb@vger.kernel.org
 Cc: target-devel@vger.kernel.org
-In-Reply-To: <20261013062129.2568405-2-yhlee@isslab.korea.ac.kr>
+In-Reply-To: <20261013062129.2568405-3-yhlee@isslab.korea.ac.kr>
 References: <20261013062129.2568405-1-yhlee@isslab.korea.ac.kr>
- <20261013062129.2568405-2-yhlee@isslab.korea.ac.kr>
+ <20261013062129.2568405-3-yhlee@isslab.korea.ac.kr>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Date: Tue, 13 Oct 2026 06:36:53 +0000
+Date: Tue, 13 Oct 2026 06:48:41 +0000
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
@@ -47,70 +47,81 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 
 Thank you for your contribution! Sashiko AI review found 1 potential issue(=
 s) to consider:
-- [High] usb: f_tcm: command leak and session hang on usb_ep_queue failure
+- [High] usb: gadget: f_tcm: info leak of uninit heap via dummy IN data
 --
 
-commit 02e0e86fc156823b4bb7eaf20b01ef508e2fded8
+commit b6ddf000f25244005d71ddb597b63ddd0507d15b
 Author: Yehyeong Lee <yhlee@isslab.korea.ac.kr>
 
-usb: gadget: f_tcm: queue the BOT status requests with GFP_ATOMIC
+usb: gadget: f_tcm: reject a short write data-out transfer
 
-This commit changes the allocation flags used when queuing BOT status reque=
-sts
-in the f_tcm USB gadget function. Since the completion callbacks are execut=
-ed
-with interrupts disabled, GFP_KERNEL is replaced with GFP_ATOMIC to prevent
-sleeping in an atomic context.
+usbg_data_write_cmpl() copies se_cmd->data_length bytes out of the bounce
+buffer into the command's scatter-gather list without checking how much the
+host actually sent. A bot host can declare a larger out transfer than it
+delivers and end the data stage with a short packet.
+
+Fail the command when req->actual does not match req->length instead of
+committing the stale tail.
 
 > diff --git a/drivers/usb/gadget/function/f_tcm.c b/drivers/usb/gadget/fun=
 ction/f_tcm.c
-> index 9e6d4f39900a2..12e2b20e33b92 100644
+> index 12e2b20e33b92..a37a3ec8e7a4d 100644
 > --- a/drivers/usb/gadget/function/f_tcm.c
 > +++ b/drivers/usb/gadget/function/f_tcm.c
-> @@ -139,7 +139,7 @@ static void bot_send_bad_status(struct usbg_cmd *cmd)
->  		req->complete =3D bot_err_compl;
->  		req->context =3D cmd;
->  		req->buf =3D fu->cmd[0].buf;
-> -		usb_ep_queue(ep, req, GFP_KERNEL);
-> +		usb_ep_queue(ep, req, GFP_ATOMIC);
-
-[Severity: High]
-In bot_send_bad_status(), if usb_ep_queue() fails, do the target core comma=
-nd
-(usbg_cmd) and dynamically allocated buffers (such as cmd->data_buf) leak h=
-ere?
-The return value is completely ignored, which means the completion callback
-is never invoked to free them.
-
-Since the target core expects all commands to complete before session teard=
-own,
-could this cause target_wait_for_sess_cmds() to loop forever waiting for
-completion, resulting in a permanent kernel hang? A faulty or untrusted USB=
- host
-can trigger this by resetting the bus or disconnecting at the exact moment
-usb_ep_queue() attempts to queue the status request.
-
->  	} else {
->  		bot_enqueue_sense_code(fu, cmd);
->  	}
-> @@ -167,7 +167,7 @@ static int bot_send_status(struct usbg_cmd *cmd, bool=
- moved_data)
->  		csw->Status =3D US_BULK_STAT_OK;
->  		fu->bot_status.req->context =3D cmd;
+> @@ -120,7 +120,8 @@ static void bot_send_bad_status(struct usbg_cmd *cmd)
 > =20
-> -		ret =3D usb_ep_queue(fu->ep_in, fu->bot_status.req, GFP_KERNEL);
-> +		ret =3D usb_ep_queue(fu->ep_in, fu->bot_status.req, GFP_ATOMIC);
->  		if (ret)
->  			pr_err("%s(%d) ERR: %d\n", __func__, __LINE__, ret);
+>  	csw->Residue =3D cpu_to_le32(cmd->data_len);
+> =20
+> -	if (cmd->data_len) {
+> +	/* nothing to drain once the OUT data phase has completed */
+> +	if (cmd->data_len && !(cmd->flags & USBG_CMD_OUT_DATA_DONE)) {
+>  		if (cmd->is_read) {
+>  			ep =3D fu->ep_in;
+>  			req =3D fu->bot_req_in;
 
 [Severity: High]
-Similarly in bot_send_status(), the return value of usb_ep_queue() is check=
-ed
-but only logged. If the queue fails, does this lead to the same command leak
-and session hang because the status completion handler is never called to f=
-ree
-the command?
+Does this code transmit uninitialized kernel heap memory to an untrusted
+usb host?
+
+Looking at bot_prepare_reqs(), fu->cmd[0].buf is allocated with kmalloc()
+without being zeroed:
+
+drivers/usb/gadget/function/f_tcm.c:bot_prepare_reqs() {
+    ...
+	fu->cmd[0].buf =3D kmalloc(fu->ep_out->maxpacket, GFP_KERNEL);
+	if (!fu->cmd[0].buf)
+		goto err_buf;
+    ...
+}
+
+The usb host writes a 31-byte bot cbw into it, leaving the remaining space
+(up to 993 bytes for superspeed endpoints) uninitialized.
+
+When a data-in command (host read) is rejected prior to its data phase,
+this uninitialized fu->cmd[0].buf is explicitly queued further down inside
+this same bot_send_bad_status() block to satisfy the host's requested lengt=
+h:
+
+		req->buf =3D fu->cmd[0].buf;
+		usb_ep_queue(ep, req, GFP_ATOMIC);
+
+The completion handler then continuously re-queues this same buffer until
+the host's requested data length (which can be up to 4GB) is fully satisfie=
+d:
+
+drivers/usb/gadget/function/f_tcm.c:bot_err_compl() {
+    ...
+	if (cmd->data_len) {
+        ...
+		usb_ep_queue(ep, req, GFP_ATOMIC);
+		return;
+	}
+    ...
+}
+
+Can an attached usb host trigger this by sending an invalid data-in command,
+creating a large information leak?
 
 --=20
 Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261013062129.2568=
-405-1-yhlee@isslab.korea.ac.kr?part=3D1
+405-1-yhlee@isslab.korea.ac.kr?part=3D2
