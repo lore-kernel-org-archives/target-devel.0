@@ -1,228 +1,133 @@
-Received: from mail-pg1-f170.google.com (mail-pg1-f170.google.com [209.85.215.170])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5AAD4FDE57
-	for <target-devel@vger.kernel.org>; Tue, 13 Oct 2026 12:05:39 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.215.170
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8D7A227D786;
+	Tue, 13 Oct 2026 12:30:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791893141; cv=none; b=OdsOyrQNIg3fv39OuB/Q0rcz2/Cm5sfkRCr8qyolu80XbTxVHOugX1CfWGzOuSK/6J5Edd9MPyhUuUisDy0kYcaapnkQWeWCjTFs9zTp5YjcIN/KFf5WSuxMeESeG5A9epp5Bk4yGDFu+RoNBdnm+iKissj/+EOGlJGpPN2daeI=
+	t=1791894612; cv=none; b=CiEwQl6HlQcOvH+TXbw65l+1w9ZarYAhTiD+KHi/SqotzRLPH8EQqOCJSdvjA6diRO3fsGi+ANF7IdYDpayC76Wd+gAleFj3VeLwu0mKOR9AqGSlv7rV/sUcnFlLJ34XR9ZL2p9QUcE0Pc8mJU+9xijeph0iaS1Xc12BR3BygNg=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791893141; c=relaxed/simple;
-	bh=WBpETlJAu4LzRE6306m7fvpnXID4MXuxdtI/fwrynjs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=IyuDVExaqleqRgpxC2Ij5J6lHEPsMqKmcXca+diXVSGSqTknK30jEdmmaaGl62sbEhxgmxqzFX8NVQhUXFAa6NofRNd7DRM7DvYLYd8t7Mi/iVlH8Q3Y2Hxczzgfhtw20fE4rT1tXvUl10dw6g5tunePh1p/F8w282iYlLLte24=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=jxL1HhXI; arc=none smtp.client-ip=209.85.215.170
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	s=arc-20240116; t=1791894612; c=relaxed/simple;
+	bh=3VHdSX9CFC5pbuHL1NK4NY19DJOav+fJ7o1JTCmjrxc=;
+	h=Message-ID:From:Subject:To:Cc:In-Reply-To:References:Content-Type:
+	 Date; b=CasM4dFEgTSUcg9c+Re1T6BgLv63YpKcISdhsyct7vvODnJS8/HXv5KnYdh3jNLrzeECj3D0BUWYu/8xvxLWtGU+J1XjfBu+pmnG7JiGVs93hWKvLPmq52aLQEnJVh15M7mHEriKrvQVMw2wUlv4JGjMp+07MRO3w2dJj6BvhHA=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=obykmp7N; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jxL1HhXI"
-Received: by mail-pg1-f170.google.com with SMTP id 41be03b00d2f7-cd5c9e52398so1097417a12.1
-        for <target-devel@vger.kernel.org>; Tue, 13 Oct 2026 05:05:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1791893139; x=1792497939; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=yQe/2g1WG+euTajMh6TueRGLUyRtyPnNyRQAOr8Frkw=;
-        b=jxL1HhXIIz49ZqjqEALbx99yR+XfcwXIOnyflOrCwsW+tvezyXCsI9xEIzj9BrTjDG
-         Ahk2H7AUZ+aR78thse64xFnHFy9kFseKY6wi/MSWS7FFg8Dy15jeIfcV4hozRYFwX7go
-         lV4n8yEDIWzw1bccb8wp4LD8UZO3bYG5kOEmToRH0qxtp+vtdLjRSC7yXVceH2mtWy9W
-         lFiWI8BakbGqp5+Yzzx/l74aCE5TaisQe9CKmRVHx6ZRTVR90SiotUzhTzKU5nmPqnwC
-         qNcYnij+HwL6Q4dR5vCNxPFUbMbmh6rKdQXG2VCQ3vk1zoKVz5G5FRmunrpmV2779sb5
-         LDBA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1791893139; x=1792497939;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=yQe/2g1WG+euTajMh6TueRGLUyRtyPnNyRQAOr8Frkw=;
-        b=Uevodx/UKkvEyqkX4ORFazyphPp1e9C5MdRPVY/hK8asNOOWhlTYlT/D1m5d5nPUlb
-         uaRvnONZqxp8KBhrHv+Clf2eHxQrI59AqeErOFwCvZALO3DSIzopQ7Cwc3+iHKohQESu
-         018TyqH/vYHqmhokcMotT101d0H+X3iDRYvjajZNSQQrVYkjzxgFD89WhwaD2PfmC+lT
-         KTK5UqnmTLIE0iNdZFSFmkRSFdzvNXCiBmIkfuOz1Oi19lkHmVx1l80/I0I9lryoB46y
-         4RfEpo1ynqHV/ZxnFPE/bmGMhZihJuy6lU4ERtd3Ih9YTWp+AnbLxATaDkyNXH5ySSsU
-         ECbQ==
-X-Forwarded-Encrypted: i=1; AKwUvBytGgVFVa0KvNqJPQ7LVfafI3EoWs/lNGiU3N8HKFmtjQ5doQb7oBdrLrUT/E+fODDBpQD+oULfegqxhtM=@vger.kernel.org
-X-Gm-Message-State: AFq9FYKXxPxBXXOghGtkDldoecBgEbLqvWpe10ENxx5xAK7Y2ff9kw1F
-	F1fab5inX6pV6Ble4vmxQX4m1ADjXd/geGgA4c/ewku04kZIhJGLUDXL
-X-Gm-Gg: AYBFou24IWeI9BD4mJIUZ778LElJEiVUumqEBllZCmUeqgNztJN/nME/V/0rGy5kmkk
-	Nn43G52Zr2yn/Bv8+h+PwxANJNE/4sWp/85QCLuQcqP3E/zWrdffQjj70UGld7MTxBfUJxszt16
-	03WeJjuj8h933BuH5tsGrF6abO3VG0naumUTX/ES7RPbAmEEOD/L+EVWOm3gDZXIzdpILI9PR7f
-	934sZzRaL2fqEdKP3rCNSLHE+iESzBrXiW5TxN5ilnm5kKIPiZ44IjxZe6vdte0X4m+/nVXWomJ
-	VCA4RJ2nVxmpKNckJEnLA2RujO4JvYXiXKwBpg794TbXbYqc+CICIhOIO9Idtfz8IYq27gRkuqs
-	dbUgtrabnxjBWi5NNZG+pV7Mi4axOUwQxMadEV2pd3GKO4WAoD8R3l/c3fKH63oCx/dauQctHuK
-	xEOB0EFrHnKS8TsjOrYAjUB+Q6UswtqLys8fqTxyHtdh0hxb3CTiuHsHRrfve461pRQ2CnyOtvV
-	o9EUIPvLunRuac+4yi08J4w5kHBBoQT4DtKN5nPcwP5rQwaWUShHVhNLF9HKh83+ZVQ7Ibx1/t2
-	MVblqCmYx2JfyYcwKFx338Y4YWLHntnk7fkqi6Gly+dCKRF4
-X-Received: by 2002:a17:902:e842:b0:2df:8733:f229 with SMTP id d9443c01a7336-2e84eef2b9emr101557105ad.24.1791893138781;
-        Tue, 13 Oct 2026 05:05:38 -0700 (PDT)
-Received: from EAIT-H54D9Q2FJQ.eait.uq.edu.au ([130.102.10.172])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2e841a04012sm55312855ad.1.2026.10.13.05.05.34
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Tue, 13 Oct 2026 05:05:37 -0700 (PDT)
-From: Yu Zhang <yuz08559@gmail.com>
-To: "Martin K . Petersen" <martin.petersen@oracle.com>
-Cc: linux-scsi@vger.kernel.org,
-	target-devel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Mike Christie <michael.christie@oracle.com>,
-	Dmitry Bogdanov <d.bogdanov@yadro.com>,
-	Yu Zhang <yuz08559@gmail.com>
-Subject: [PATCH] scsi: target: fix demo-mode dynamic ACL dev-entry UAF vs LUN teardown
-Date: Tue, 13 Oct 2026 22:05:28 +1000
-Message-ID: <20261013120528.37749-1-yuz08559@gmail.com>
-X-Mailer: git-send-email 2.55.0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="obykmp7N"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 368A01F000FF;
+	Tue, 13 Oct 2026 12:30:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791894611;
+	bh=Kl5WJUbsR/YqzZwK0EGbYgzX++AkWzSQo7aydTnoxoc=;
+	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
+	b=obykmp7NzZoasItnVQ3iD8DKgeJ1WY5iF8YitWaRLk7QhAGhH4Edwo3T7Hv1Oz+Aj
+	 c1dCPqquLjTrS7jsjliCQbKKeIOVKdzywp4PhOjpw4QCPv/vFvr7sbMmBKN7kRhgbp
+	 vZSu6tvjvhsQJXwcMswPs6vhQ3q+4THkuimEbjsuMNKiKbo5p6Ss7KfiM00Hrx3d/6
+	 BpSyXWQHk/Yk5Y70nOY4F4zJqAvRfj5XHpwKlcRigXmHortZdP3mQAxdRFVD/oX6an
+	 uXWYugZIbq0om+Yw8vf9wCAflKJDU+dfne48yytUspVj407GwJ3bZ0knIXBFxxAi4p
+	 M2TXJB9K/advw==
+Message-ID: <sashiko-outbox-169711@kernel.org>
+From: sashiko-bot@kernel.org
+Subject: Re: [PATCH] scsi: target: fix demo-mode dynamic ACL dev-entry UAF
+ vs LUN teardown
+Reply-To: sashiko-reviews@lists.linux.dev
+To: "Yu Zhang" <yuz08559@gmail.com>
+Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
+In-Reply-To: <20261013120528.37749-1-yuz08559@gmail.com>
+References: <20261013120528.37749-1-yuz08559@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Date: Tue, 13 Oct 2026 12:30:10 +0000
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-A demo-mode (generate_node_acls=1) login that allocates a dynamic
-NodeACL populates that ACL's per-LUN dev entries in
-core_tpg_add_node_to_devs() *before* the ACL is linked onto
-tpg->acl_node_list by target_add_node_acl():
+Thank you for your contribution! Sashiko AI review found 1 potential issue(=
+s) to consider:
+- [High] scsi: target: TOCTOU race in core_enable_device_list_for_node caus=
+es UAF
+--
 
-	core_tpg_check_initiator_node_acl():
-		...
-		core_tpg_add_node_to_devs(acl, tpg, NULL); /* builds deves */
-		target_add_node_acl(acl);                  /* only now listed */
+commit fe6f881325b9fa3f70c9e7a80a2d042d342f070d
+Author: Yu Zhang <yuz08559@gmail.com>
+scsi: target: fix demo-mode dynamic ACL dev-entry UAF vs LUN teardown
 
-The LUN teardown sweep, core_clear_lun_from_tpg(), enumerates only
-tpg->acl_node_list:
+This commit addresses a use-after-free triggered by a race between a demo-m=
+ode
+login creating dynamic node acls and a concurrent lun teardown. It attempts=
+ to
+fix the issue by publishing the node acl before populating its dev entries,=
+ and
+refusing to attach new dev entries to a shutting down se_lun.
 
-	list_for_each_entry(nacl, &tpg->acl_node_list, acl_list) {
-		mutex_lock(&nacl->lun_entry_mutex);
-		hlist_for_each_entry_rcu(deve, &nacl->lun_entry_hlist, link) {
-			if (lun != deve->se_lun)
-				continue;
-			core_disable_device_list_for_node(lun, deve, nacl, tpg);
-		}
-		...
-	}
+> diff --git a/drivers/target/target_core_device.c b/drivers/target/target_=
+core_device.c
+> index 9db2201aa553f..5eef87aa3b674 100644
+> --- a/drivers/target/target_core_device.c
+> +++ b/drivers/target/target_core_device.c
+> @@ -349,6 +349,19 @@ int core_enable_device_list_for_node(
+>  	new->attach_count++;
+> =20
+>  	mutex_lock(&nacl->lun_entry_mutex);
+> +	/*
+> +	 * Do not attach a new dev entry to an se_lun that is being torn down.
+> +	 * lun_shutdown is set by core_tpg_remove_lun() before its
+> +	 * core_clear_lun_from_tpg() sweep; checking it here under the same
+> +	 * nacl->lun_entry_mutex the sweep takes guarantees that once the sweep
+> +	 * has passed this ACL no dev entry can be left dangling on the
+> +	 * se_lun->lun_deve_list that is about to be freed.
+> +	 */
+> +	if (lun->lun_shutdown) {
+> +		mutex_unlock(&nacl->lun_entry_mutex);
+> +		ret =3D -ENODEV;
+> +		goto free_stats;
+> +	}
 
-so a dev entry whose ACL is still in the window above is invisible to
-the sweep and is never disabled.  It is left on the
-se_lun->lun_deve_list after core_tpg_remove_lun() frees the se_lun.
-When the same unpacked_lun is later re-added and the se_lun is
-reallocated at the same address, the stale dev entry is rediscovered by
-target_nacl_find_deve() (which matches on mapped_lun) and
-core_enable_device_list_for_node() takes the replace branch:
+[Severity: High]
+Can a time-of-check to time-of-use race condition regression occur here?
 
-	spin_lock(&lun->lun_deve_lock);
-	list_del(&orig->lun_link);	/* corrupts lun_deve_list */
+Because the target_core_tpg.c portion of this patch publishes the dynamic
+node acl before creating its dev entries, a concurrent lun teardown sweep c=
+an
+now observe the dev entry while it is being added in
+core_enable_device_list_for_node().
 
-corrupting the freed/reused list.  With list hardening this fires as:
+If the teardown sweep sets lun->lun_shutdown =3D true right after we check =
+it
+here, the sweep can run and wait on nacl->lun_entry_mutex.
 
-  Oops: invalid opcode: 0000 [#1] SMP KASAN NOPTI
-  RIP: __list_del_entry_valid_or_report+0x105/0x140
-  Call Trace:
-   core_enable_device_list_for_node+0x5ce/0x880
-   core_tpg_add_node_to_devs+0x169/0x190
-   core_dev_add_lun+0x146/0x190
-   target_fabric_port_link+0xe9/0x1b0
-   configfs_symlink+0x381/0xae0
-   __x64_sys_symlink+0x55/0x80
-  list_del corruption. prev->next should be ffff888005d7ba80,
-    but was ffff88800249a580. (prev=ffff888006e23820)
+When core_enable_device_list_for_node() later drops that mutex:
 
-The demo-mode login path that drives the ACL/dev-entry creation is
-reachable by an unauthenticated initiator (the work runs during
-first-stage login negotiation, before authentication); the colliding
-LUN add/remove is a local configfs operation.
+drivers/target/target_core_device.c:core_enable_device_list_for_node() {
+    ...
+    hlist_add_head_rcu(&new->link, &nacl->lun_entry_hlist);
+    mutex_unlock(&nacl->lun_entry_mutex);
 
-Commit 49cb77e297dc ("target: Avoid mappedlun symlink creation during
-lun shutdown") introduced se_lun->lun_shutdown and guarded the
-*explicit* ACL MappedLUN path (target_fabric_mappedlun_link()), but the
-demo-mode automatic path, core_tpg_add_node_to_devs() ->
-core_enable_device_list_for_node(), was never given the equivalent
-guard, and the publish-after-populate ordering in
-core_tpg_check_initiator_node_acl() was left unchanged.
+    spin_lock(&lun->lun_deve_lock);
+    list_add_tail(&new->lun_link, &lun->lun_deve_list);
+    spin_unlock(&lun->lun_deve_lock);
+    ...
+}
 
-Fix both halves, which are each necessary:
+The teardown sweep takes the mutex and calls
+core_disable_device_list_for_node(), which performs:
 
- 1) Publish the dynamic NodeACL onto acl_node_list *before* creating
-    its dev entries, so the teardown sweep can observe them.  On its
-    own this still races: the sweep may pass the ACL before the dev
-    entry is added.
+    list_del(&orig->lun_link);
 
- 2) Refuse to attach a dev entry to an se_lun that is shutting down,
-    checked under nacl->lun_entry_mutex -- the same lock the sweep
-    takes.  Because core_tpg_remove_lun() sets lun_shutdown before the
-    sweep, once the sweep has passed a given ACL any later enable for
-    that LUN observes lun_shutdown and skips it, so no dev entry can be
-    left dangling on the lun_deve_list of an se_lun about to be freed.
+Because new->lun_link is merely INIT_LIST_HEAD'ed at this point, list_del()
+silently succeeds and sets list poisoning rather than preventing the
+concurrent thread from linking it.
 
-core_tpg_add_node_to_devs() already ignores the return value of
-core_enable_device_list_for_node(), so a shutting-down LUN is simply
-skipped.
+Then, the original thread resumes, takes lun->lun_deve_lock, and calls
+list_add_tail(&new->lun_link, &lun->lun_deve_list), overwriting the poison
+and successfully linking the doomed entry.
 
-Note: moving target_add_node_acl() earlier makes a concurrent lookup
-for the same InitiatorName observe the ACL slightly before its demo
-MappedLUNs are populated; this transient was already possible between
-the two original calls and is harmless, but flagging it for review.
-The precise lock chosen to publish/observe lun_shutdown is open to
-maintainer preference.
+When the rcu grace period expires, the entry is freed, leaving a dangling
+pointer in lun->lun_deve_list. Iterating lun->lun_deve_list subsequently can
+trigger a use-after-free.
 
-Fixes: 49cb77e297dc ("target: Avoid mappedlun symlink creation during lun shutdown")
-Signed-off-by: Yu Zhang <yuz08559@gmail.com>
-Tested-by: Yu Zhang <yuz08559@gmail.com>
----
- drivers/target/target_core_device.c | 13 +++++++++++++
- drivers/target/target_core_tpg.c    | 10 +++++++++-
- 2 files changed, 22 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index 1111111..2222222 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -349,6 +349,19 @@
- 	new->attach_count++;
- 
- 	mutex_lock(&nacl->lun_entry_mutex);
-+	/*
-+	 * Do not attach a new dev entry to an se_lun that is being torn down.
-+	 * lun_shutdown is set by core_tpg_remove_lun() before its
-+	 * core_clear_lun_from_tpg() sweep; checking it here under the same
-+	 * nacl->lun_entry_mutex the sweep takes guarantees that once the sweep
-+	 * has passed this ACL no dev entry can be left dangling on the
-+	 * se_lun->lun_deve_list that is about to be freed.
-+	 */
-+	if (lun->lun_shutdown) {
-+		mutex_unlock(&nacl->lun_entry_mutex);
-+		ret = -ENODEV;
-+		goto free_stats;
-+	}
- 	orig = target_nacl_find_deve(nacl, mapped_lun);
- 	if (orig && orig->se_lun) {
- 		struct se_lun *orig_lun = orig->se_lun;
-diff --git a/drivers/target/target_core_tpg.c b/drivers/target/target_core_tpg.c
-index 3333333..4444444 100644
---- a/drivers/target/target_core_tpg.c
-+++ b/drivers/target/target_core_tpg.c
-@@ -267,6 +267,15 @@
- 	acl->dynamic_node_acl = 1;
- 
- 	/*
-+	 * Publish the dynamic NodeACL on tpg->acl_node_list before creating
-+	 * its demo-mode MappedLUN dev entries below, so that a concurrent LUN
-+	 * teardown sweep (core_clear_lun_from_tpg(), which walks acl_node_list)
-+	 * can observe and disable those dev entries.  Otherwise a dev entry can
-+	 * be left on an se_lun->lun_deve_list that is about to be freed.
-+	 */
-+	target_add_node_acl(acl);
-+
-+	/*
- 	 * Here we only create demo-mode MappedLUNs from the active
- 	 * TPG LUNs if the fabric is not explicitly asking for
- 	 * tpg_check_demo_mode_login_only() == 1.
-@@ -275,7 +284,6 @@
- 	    (tpg->se_tpg_tfo->tpg_check_demo_mode_login_only(tpg) != 1))
- 		core_tpg_add_node_to_devs(acl, tpg, NULL);
- 
--	target_add_node_acl(acl);
- 	return acl;
- }
- EXPORT_SYMBOL(core_tpg_check_initiator_node_acl);
--- 
-2.43.0
+--=20
+Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261013120528.3774=
+9-1-yuz08559@gmail.com?part=3D1
