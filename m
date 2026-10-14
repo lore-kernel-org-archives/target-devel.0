@@ -1,130 +1,66 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7510A54EEC0;
-	Wed, 14 Oct 2026 15:10:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9009E560ADC;
+	Wed, 14 Oct 2026 16:49:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791990612; cv=none; b=a/kmfXKCCnLRas7inIU588aV+KTXrDeBCWTJ01I+yo1RZ5B3ypm2gqyWvVb3b2j6i+oekzjmg8Iy7dnUDNBtCxy0HCOoS3oysKgmpGIHmwHVSjxGWKwIEfrB68HYQblHEcBTzdh54t7W0/luWm1mUxNbLkzffZdy9o98YzRs+Gw=
+	t=1791996554; cv=none; b=qlFsRp7836DHk0oBu85PobQ59M+945XP4Nis1A+1T+3KMpPBI7uBModzT2I9YnShabJaZweWD/DdIBqUvgRIxB8Pltr26lIVsBy6QDaGuiDZ/dnpTQQ9wfUWbNSld9mi/e+7e6FHD+I+NrZz58KHafe7/B1YfWyEnpt3YdXOUno=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791990612; c=relaxed/simple;
-	bh=rsTqUseG+QlAOrhpSdtsNOVQN5RJ//s66ipruCU8e4U=;
-	h=Message-ID:From:Subject:To:Cc:In-Reply-To:References:Content-Type:
-	 Date; b=CqLVqgDpyZVVZkaKS0apdEJbULdA0b47pw8bRGteKq9dYkwHojiYw8IFmdY/WP/awdPKhKPvz3/Fxo3jBAljsQ9/rLv/Mcbe4Imo2QBcK6fowdV5mOJLCvrWKt2/veroSzI4PHB0e8e7Ab4h9pcfOj3ya8BBIiyCLu6BCDLhfNI=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=Cb0GtEvm; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1791996554; c=relaxed/simple;
+	bh=C53tTLJWTyHWnWBkyZ9ktjD1WatOsvqzEK3xKknkDek=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nVTvYzwyAF9QRh6sVnMyCJmaGtPB46gyreRg64rVv8yvWy9fMSa7n0OuF2TE7P5Ohi1o9kYETLkuGTtlXBjCkj+wv2ar1yrB65w1IKMn1v5mvVNDW/1f/jQfACFQmH6dY/GsKOEOySk5yj2qLD01w94TMyWLd72+angwpMejJ+A=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iw2Y3JwT; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="Cb0GtEvm"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F00E81F000C4;
-	Wed, 14 Oct 2026 15:10:09 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iw2Y3JwT"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 477621F000C6;
+	Wed, 14 Oct 2026 16:49:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791990610;
-	bh=MkCHp8W4uApw/EkRbf3AI528FDCwxTvCpzkvndf5nN0=;
-	h=From:Subject:Reply-To:To:Cc:In-Reply-To:References:Date;
-	b=Cb0GtEvmT5W9WdrfcY53qaCisz6eOtp0/5idO+Vs6Tn2KTv42yatfBdum5ktOVNeu
-	 3F2fw18+bOHIXSCuAc6Rqcf7I+NhG0sbyoPeR4b/fG8RpSgqbTunGGv6RZKKxVN5Eg
-	 3r8tkMwqEyJLu1jtDhPjyr1X3urRoyMWibGgklhsccjaDSygnzaiqtP/ejrwf38oUN
-	 NoD3rpjG+jQl1LbrVFlCAJ1I7IAGA99pRVf3ai5Ej+MXFJ2MVHTt28+Q/ffGm8tJQh
-	 zcMBgD1sG/L6ID7uSNrDbnNvzAl9a+Y0uiOZFuPwbjeMpRXWo8VRXjo9Myh/lItkO+
-	 kqXjZ1XKIzkgg==
-Message-ID: <sashiko-outbox-171458@kernel.org>
-From: sashiko-bot@kernel.org
-Subject: Re: [PATCH 1/2] scsi: target: iscsi: Complete an aborted WRITE
- stuck before the first R2T
-Reply-To: sashiko-reviews@lists.linux.dev
-To: "Laurence Oberman" <loberman@redhat.com>
-Cc: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org
-In-Reply-To: <20261014143932.39453-2-loberman@redhat.com>
-References: <20261014143932.39453-1-loberman@redhat.com>
- <20261014143932.39453-2-loberman@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Date: Wed, 14 Oct 2026 15:10:09 +0000
+	s=k20260515; t=1791996553;
+	bh=r07MWRD3rjMgkoq39ACj6B3bHrOEJAWnVqYX+7pA4LM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=iw2Y3JwT1IxnGF3RddpEpcN1m0nOo0n+4qtv+4oG8PU4pZwLQ4Ms4vevuFNNdhceW
+	 FBX+qXqKu+n14UQHCjHs8iVLfVoLu1Rmq9+ERdrZIwEHC3ua5ZE4Heeq+TNnUutu58
+	 WGu5sWN5mtiPkY7yAkhnpeRUIacICekpyZSm0valeNXz136OHYxXKqffmjPA+rPTOT
+	 Vt/kuReUlERpvjoHLk0P8kJHjZoevvjysaYo0yp4T8zMPrAordw1c01QuxbqhI5Lps
+	 IFqEUisWlr9xCCiqfpA4q3YdX1GYx07Hit1Dn9UevfWkFuw72ZrMELc9CwkiZ+2mY5
+	 e1QD1meRScRqw==
+Date: Wed, 14 Oct 2026 18:48:55 +0200
+From: Eric Biggers <ebiggers@kernel.org>
+To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+	"Martin K . Petersen" <mkp@kernel.org>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+	David Disseldorp <ddiss@suse.de>, Lee Duncan <lduncan@suse.com>,
+	Alexandru Hossu <hossu.alexandru@gmail.com>
+Subject: Re: [PATCH] scsi: target: iscsi: Use crypto library API
+Message-ID: <20261014164855.GB327771@quark>
+References: <20261001044857.169487-1-ebiggers@kernel.org>
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261001044857.169487-1-ebiggers@kernel.org>
 
-Thank you for your contribution! Sashiko AI review found 1 potential issue(=
-s) to consider:
-- [High] iscsi: double completion and workqueue corruption for aborted WRIT=
-Es on DataOut path
---
+On Wed, Sep 30, 2026 at 09:48:57PM -0700, Eric Biggers wrote:
+> Make iscsi_target_auth.c call into the crypto library directly instead
+> of going through crypto_shash.  This is simpler and much more efficient,
+> as it avoids overhead of the crypto_shash layer.  The hash computation
+> itself also no longer has error codes that need to be checked.
+> 
+> For simplicity, still do a memory allocation per operation to buffer the
+> data (which is typically less than 50 bytes here) so that the one-shot
+> digest functions can be used.  It's still much more efficient than doing
+> the super slow crypto_alloc_shash().
+> 
+> Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 
-commit 7b04f6989363db2c2b75d8c212ee852153982c8d
-Author: Laurence Oberman <loberman@redhat.com>
-   =20
-scsi: target: iscsi: Complete an aborted WRITE stuck before the first R2T
+Martin, could you take this via the scsi tree?
 
-This patch resolves an issue where an aborted WRITE command that arrives wi=
-th
-immediate data exceeding FirstBurstLength gets stuck in TRANSPORT_WRITE_PEN=
-DING.
-It accomplishes this by completing the command in iscsit_execute_cmd() and
-introducing a new iscsit_claim_completion_locked() helper to avoid a double
-completion race with iscsit_release_commands_from_conn().
+Thanks,
 
-> diff --git a/drivers/target/iscsi/iscsi_target.c b/drivers/target/iscsi/i=
-scsi_target.c
-> index 124ff269b8e75..aab9237a67768 100644
-> --- a/drivers/target/iscsi/iscsi_target.c
-> +++ b/drivers/target/iscsi/iscsi_target.c
-> @@ -4198,10 +4198,18 @@ static void iscsit_release_commands_from_conn(str=
-uct iscsit_conn *conn)
->  		if (cmd->se_cmd.t_state =3D=3D TRANSPORT_WRITE_PENDING) {
->  			/*
->  			 * We never submitted the cmd to LIO core, so we have
-> -			 * to tell LIO to perform the completion process.
-> +			 * to tell LIO to perform the completion process --
-> +			 * unless iscsit_execute_cmd() already did.  t_state
-> +			 * stays TRANSPORT_WRITE_PENDING across that
-> +			 * completion, so the claim is the only thing that can
-> +			 * tell us.
->  			 */
-> +			bool claimed =3D iscsit_claim_completion_locked(cmd);
-> +
->  			spin_unlock_irq(&se_cmd->t_state_lock);
-> -			target_complete_cmd(&cmd->se_cmd, SAM_STAT_TASK_ABORTED);
-> +			if (claimed)
-> +				target_complete_cmd(&cmd->se_cmd,
-> +						    SAM_STAT_TASK_ABORTED);
-
-[Severity: High]
-Does this code miss the DataOut paths?
-
-Because target_complete_cmd() is called directly in __iscsit_check_dataout_=
-hdr()
-and target_execute_cmd() is called in iscsit_check_dataout_payload() for ab=
-orted
-commands without setting the completion_claimed flag.
-
-If a command is aborted on the DataOut path:
-
-drivers/target/iscsi/iscsi_target.c:__iscsit_check_dataout_hdr() {
-    ...
-		if (se_cmd->transport_state & CMD_T_ABORTED) {
-			if (hdr->flags & ISCSI_FLAG_CMD_FINAL &&
-			    --cmd->outstanding_r2ts < 1) {
-				iscsit_stop_dataout_timer(cmd);
-				target_complete_cmd(se_cmd, SAM_STAT_TASK_ABORTED);
-			}
-    ...
-}
-
-Because completion_claimed is never set, target_complete_cmd() delegates
-to target_cmd_interrupted() which queues target_abort_work but leaves
-the command in TRANSPORT_WRITE_PENDING.
-
-If the connection drops before target_abort_work removes the command
-from the connection list, iscsit_release_commands_from_conn() will find it,
-iscsit_claim_completion_locked() will return true, and it will call
-target_complete_cmd() a second time.
-
-Can this double call to target_complete_cmd() cause target_cmd_interrupted()
-to re-initialize and re-queue cmd->work while it is already pending on the
-workqueue, leading to workqueue linked-list corruption and a use-after-free
-when target_handle_abort() runs twice?
-
---=20
-Sashiko AI review =C2=B7 https://sashiko.dev/#/patchset/20261014143932.3945=
-3-1-loberman@redhat.com?part=3D1
+- Eric
