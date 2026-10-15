@@ -1,66 +1,60 @@
 Received: from smtp.kernel.org (aws-us-west-2-korg-mail-alma10-1.taild15c8.ts.net [100.103.45.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9009E560ADC;
-	Wed, 14 Oct 2026 16:49:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2EF6B1FF5E3;
+	Thu, 15 Oct 2026 02:04:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=100.103.45.18
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1791996554; cv=none; b=qlFsRp7836DHk0oBu85PobQ59M+945XP4Nis1A+1T+3KMpPBI7uBModzT2I9YnShabJaZweWD/DdIBqUvgRIxB8Pltr26lIVsBy6QDaGuiDZ/dnpTQQ9wfUWbNSld9mi/e+7e6FHD+I+NrZz58KHafe7/B1YfWyEnpt3YdXOUno=
+	t=1792029890; cv=none; b=lX75rhePNC6sRBYW8RokyBaIYi4lRc60QxeGIGCY/e1QOGBf5i+mR27PruO16LGjsaZ3Uf3fEbLP0GS5NOAPsVpQlnTQb8rq3sVBsSFwMyXXadm+C1lwqm/7yPRsBvT4OaSc2E8i+8iJdHYRqtBe6WO6Wi6TU8hBuVSXWEV714c=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1791996554; c=relaxed/simple;
-	bh=C53tTLJWTyHWnWBkyZ9ktjD1WatOsvqzEK3xKknkDek=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=nVTvYzwyAF9QRh6sVnMyCJmaGtPB46gyreRg64rVv8yvWy9fMSa7n0OuF2TE7P5Ohi1o9kYETLkuGTtlXBjCkj+wv2ar1yrB65w1IKMn1v5mvVNDW/1f/jQfACFQmH6dY/GsKOEOySk5yj2qLD01w94TMyWLd72+angwpMejJ+A=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=iw2Y3JwT; arc=none smtp.client-ip=100.103.45.18
+	s=arc-20240116; t=1792029890; c=relaxed/simple;
+	bh=3EN2n6tsRfuLqtnC2GF+hhqDN8T293BZ5Fa+7NgYhCM=;
+	h=To:Cc:Subject:From:In-Reply-To:Message-ID:References:Date:
+	 MIME-Version:Content-Type; b=ePabu5APAq0vEIGG7i36NV6MPHuDu4RLIPS/kkbm8oLZVSd+KoSlUO3LANs9bIIiq4lJb9YQAL30UY3YmusU8eUknyhTL2x/h+N1vel3vMl9IizKh50WIgxalVXPMA/gFVA8VcbIaLJVrvXL8YruHz2VFqCPAiatRgDWnV8FXNU=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b=euw69Xlh; arc=none smtp.client-ip=100.103.45.18
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="iw2Y3JwT"
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 477621F000C6;
-	Wed, 14 Oct 2026 16:49:04 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.b="euw69Xlh"
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7AB1E1F000C4;
+	Thu, 15 Oct 2026 02:04:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791996553;
-	bh=r07MWRD3rjMgkoq39ACj6B3bHrOEJAWnVqYX+7pA4LM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=iw2Y3JwT1IxnGF3RddpEpcN1m0nOo0n+4qtv+4oG8PU4pZwLQ4Ms4vevuFNNdhceW
-	 FBX+qXqKu+n14UQHCjHs8iVLfVoLu1Rmq9+ERdrZIwEHC3ua5ZE4Heeq+TNnUutu58
-	 WGu5sWN5mtiPkY7yAkhnpeRUIacICekpyZSm0valeNXz136OHYxXKqffmjPA+rPTOT
-	 Vt/kuReUlERpvjoHLk0P8kJHjZoevvjysaYo0yp4T8zMPrAordw1c01QuxbqhI5Lps
-	 IFqEUisWlr9xCCiqfpA4q3YdX1GYx07Hit1Dn9UevfWkFuw72ZrMELc9CwkiZ+2mY5
-	 e1QD1meRScRqw==
-Date: Wed, 14 Oct 2026 18:48:55 +0200
-From: Eric Biggers <ebiggers@kernel.org>
-To: linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-	"Martin K . Petersen" <mkp@kernel.org>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-	David Disseldorp <ddiss@suse.de>, Lee Duncan <lduncan@suse.com>,
-	Alexandru Hossu <hossu.alexandru@gmail.com>
+	s=k20260515; t=1792029888;
+	bh=RHVtziQSmgYAsUkHUqLWwiNHBBLscznwCyo0DD3VuI4=;
+	h=To:Cc:Subject:From:In-Reply-To:References:Date;
+	b=euw69XlhYResONp7UkDOuhNCCkHRo4y0qVEJAS0dp2TegBo9tn96ZPneHF2YTKiMX
+	 spjMOW+8yRWRcvfI8SuDYebAPGhbtRvFZxHQwPN47nCC4tz+X5nKKrlTxdL8/2T6Yb
+	 y6OPVed0PZ8BauRSnt0EMJqaJzjO3rj1ON37K6dJcM8Sy/dC43SczkJ3+3muww8AjC
+	 dILQ1T29yGyhktRvHpsBySKTpXf2thEg8gIdGIE7OaY77iam4kQ1X0yBlsvMJgINW/
+	 /NgjWd0ptktgw4Hj5K9wqVykbKvK1wvz70/PFFygoJbrFUzQtYRUKyPSE8jBlFbQJe
+	 BuZIhxvvwYGYg==
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: linux-scsi@vger.kernel.org,  target-devel@vger.kernel.org,  "Martin K .
+ Petersen" <mkp@kernel.org>,  linux-crypto@vger.kernel.org,
+  linux-kernel@vger.kernel.org,  David Disseldorp <ddiss@suse.de>,  Lee
+ Duncan <lduncan@suse.com>,  Alexandru Hossu <hossu.alexandru@gmail.com>
 Subject: Re: [PATCH] scsi: target: iscsi: Use crypto library API
-Message-ID: <20261014164855.GB327771@quark>
+From: "Martin K. Petersen" <mkp@kernel.org>
+In-Reply-To: <20261001044857.169487-1-ebiggers@kernel.org>
+Message-ID: <yq1tsmnen2z.fsf@mail.kernel.org>
 References: <20261001044857.169487-1-ebiggers@kernel.org>
+Date: Wed, 14 Oct 2026 22:04:47 -0400
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
 List-Id: <target-devel.vger.kernel.org>
 List-Subscribe: <mailto:target-devel+subscribe@vger.kernel.org>
 List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261001044857.169487-1-ebiggers@kernel.org>
+Content-Type: text/plain
 
-On Wed, Sep 30, 2026 at 09:48:57PM -0700, Eric Biggers wrote:
+
+Eric,
+
 > Make iscsi_target_auth.c call into the crypto library directly instead
-> of going through crypto_shash.  This is simpler and much more efficient,
-> as it avoids overhead of the crypto_shash layer.  The hash computation
-> itself also no longer has error codes that need to be checked.
-> 
-> For simplicity, still do a memory allocation per operation to buffer the
-> data (which is typically less than 50 bytes here) so that the one-shot
-> digest functions can be used.  It's still much more efficient than doing
-> the super slow crypto_alloc_shash().
-> 
-> Signed-off-by: Eric Biggers <ebiggers@kernel.org>
+> of going through crypto_shash. This is simpler and much more
+> efficient, as it avoids overhead of the crypto_shash layer. The hash
+> computation itself also no longer has error codes that need to be
+> checked.
 
-Martin, could you take this via the scsi tree?
+Applied to 7.4/scsi-staging, thanks!
 
-Thanks,
-
-- Eric
+-- 
+Martin K. Petersen
