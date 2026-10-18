@@ -1,63 +1,63 @@
-Received: from mail-pj1-f47.google.com (mail-pj1-f47.google.com [209.85.216.47])
+Received: from mail-pj1-f52.google.com (mail-pj1-f52.google.com [209.85.216.52])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8790222580
-	for <target-devel@vger.kernel.org>; Sat, 17 Oct 2026 13:30:52 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.47
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17A3948E0C7
+	for <target-devel@vger.kernel.org>; Sun, 18 Oct 2026 12:14:05 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.client-ip=209.85.216.52
 ARC-Seal:i=1; a=rsa-sha256; d=subspace.kernel.org; s=arc-20240116;
-	t=1792243856; cv=none; b=skWl58c8NJF+OUJWcW4ozg2oF0WZC89TbQwEF/YzkMf/DpRFYl1fZ/q/SvH/RGgnHhfI26tjntF3e/eaRAc1wZT1kaebKLqqElCoRYvrzPBgCbUNs0z93dXVb++BNUnHSEVWhOlpNq2lSo+CnZ3dXfUrivklNedBovCLZ5Q35k8=
+	t=1792325647; cv=none; b=ODXQQgDfv9Ky1K58bdHgxy15d0HkZ4rsby5WYNbLBZ5NjgFo/Q+dJXE4ApSm6ILxJtd3n4mFn9dau4m+MTg1jJza5AWxQhIZV76sBYVPi3KGud181zbGDFU4spGeALB/mCnQ9tNsiIeTauS4lmPpXm+KpLd7DCmh6jbYXh2dgUM=
 ARC-Message-Signature:i=1; a=rsa-sha256; d=subspace.kernel.org;
-	s=arc-20240116; t=1792243856; c=relaxed/simple;
-	bh=FQMJxj30Jbh8Y1kO8a4BCGr9W3VcLELopHi5oh2lXiU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Mw0s/bXqyvtox2zJqYgI8DONpl3xRdUAkzBD0AB9qTrIoFmXVzwbt8GzwaDJyoBORPd5ZhPUSYRW+KK7rKNz4mxdJ2nVgfg/NvNjdcSQMbZWXGJqxlKIbeGHmdRmzfQ+XNx/Rvicz0CtbjRiKG8na3NEf0ZMjdcyl9hnQnNnDlE=
-ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=ZZ/9JNdv; arc=none smtp.client-ip=209.85.216.47
+	s=arc-20240116; t=1792325647; c=relaxed/simple;
+	bh=0ZUoTOrw2sVIIJsHysZ9LrpXCPGOLNSWoimGoqE2U2E=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jxIOIiyMZuu/3sP9p17pXJGfs6nBv49lt/qkxc5ZIzyyBGjOmvxOv+oytq95+zH6pLx2EtrCxk0X/GzMv9iQCTJKpu6tjeziFvTNwe436hjNQdWQHwUg9XVZ90ly+SUaQNy3pxq2RbpuDlKLrXSLNGSJt51M719Wwa2sIX4qKhk=
+ARC-Authentication-Results:i=1; smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com; spf=pass smtp.mailfrom=gmail.com; dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b=hpinP1vp; arc=none smtp.client-ip=209.85.216.52
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZZ/9JNdv"
-Received: by mail-pj1-f47.google.com with SMTP id 98e67ed59e1d1-3ace9e6e1a5so607720a91.0
-        for <target-devel@vger.kernel.org>; Sat, 17 Oct 2026 06:30:52 -0700 (PDT)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hpinP1vp"
+Received: by mail-pj1-f52.google.com with SMTP id 98e67ed59e1d1-3ab9268d90eso735086a91.3
+        for <target-devel@vger.kernel.org>; Sun, 18 Oct 2026 05:14:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792243852; x=1792848652; darn=vger.kernel.org;
+        d=gmail.com; s=20251104; t=1792325645; x=1792930445; darn=vger.kernel.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=7HdD63cIO1sGwME46dAp51tBAKzD7lOoAch50AxvXAQ=;
-        b=ZZ/9JNdvROD2022jkf0P/0i9VRnIky1kthf4IBkA7L7MOLg3jOdWIpubmscKhXabhv
-         6dmctlfM6BTjwyuXhjWRAyvWfDK2Aj4ThCt+aHkQLPUCMCL+xADpP1szhySA2O7zuDzz
-         6Jh4PgmskpQpdb10B0ixrYw/+XxxaJkIAqgws+c2Mv0sBgqdXbPeuEWocFuWutOt2Rh2
-         o5Wig1ImLL49XUDwsappFMy98fBewODCuroFcKNyg6UT+Q0uwhRyfunIU9qKBJmbjton
-         SSCayQnzFzkTJEaHhiPZTMjF+UADEyRUEhM675S1gwveQtMUhs8txG/nH+Bzh4Pds4a1
-         Iw2Q==
+        bh=rTNuU8y07OWc3gpsCtxs9hMoDORTFAVO+j50HlgZwnM=;
+        b=hpinP1vpFyJpDdPHICXGzIQIRyImrKMVDhw1wgqsbp/SHHH8D77WA05IczWynz+ZQU
+         cE4hrlX3BUbq7wjQ2t4DM6bRSyXh/0EXGO5qZlEud8ZvnbFJGqykMI+TPhQQv0kS7MfQ
+         xFQoKTXBNyOirmkztWZlwE/YDM+shn63+be1LPBgy/2eS3R3X2gnx2amqEzRF2LNeQkE
+         HZseIBZNuNsA747O7X3E7lW71cbVvbIh/lGQg3N38dnYaB8kNGwKHCz7Ajg0WrVWuWx2
+         q2YRb2LbIMcOHjEUexc9g5nVeahpZZ7W33eKZE8hXJROfPktp6fSIBjvD7hMOqBXHKSr
+         Cxew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792243852; x=1792848652;
+        d=1e100.net; s=20260707; t=1792325645; x=1792930445;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=7HdD63cIO1sGwME46dAp51tBAKzD7lOoAch50AxvXAQ=;
-        b=Jjn74S1TPjyrcgNNTXJmfxfNltKkHTPySSI02WNfoZRx25Bk/B0oPbWsTQOFMk7K89
-         CpH4PwdHD4oZ7UdE63OSD8msJZRu6yDdBXewR/1Baad/kqRi7No6pRCzZVE24JH6C6bk
-         spAoaEx7TkLpYaEpZvpl3FddcCY82QBE1y2YZahwTRW7qOh8TuHEvXFezAamxWMR4JYm
-         RWnICNu3ov6t7f1jZTnTMiqCYni3ejfPAVPXgl9UceVwkfYM4dnaNX5kQL09IbORxvUQ
-         yBKn903ujApyJWIetCW3GxK+hdeDnNcv4yMWLyrLdIuViikgkMcLlew61n4HhsPnD8m+
-         wR4Q==
-X-Forwarded-Encrypted: i=1; AKwUvBz9LkaZshn+KbDpoxMUQGddQf3HqyTC8cDn+JQRrDqYvZr9pjnqXyjOuHLImqpXxiNIlFLESwnbikwGVQ4=@vger.kernel.org
-X-Gm-Message-State: AFq9FYIcubn9MMJgklpx6qRJv3yavroebSzDchx2ATwQjVPbljzRbiKR
-	xxPx5HyM/RU1EQHx3jfIfR8lN4ZQnXO8IQ9qclps2rmH4M/UoX2Uy4Aw
-X-Gm-Gg: AYBFou2YKt/rtGjVypU1iLEfeNvVFbuogtxc7C2zvc2+/2LRoBSoETZeQZOrOCo0FZL
-	5uz6CsOc4YozWfv5ZMcOO7XUGAqNJSOO8y3Vx5mm9fgxA34lLedZmJc+USNDLI1QUl8PHsmMOqT
-	C4BDwouQHd5Wz6KGmcqusJYPKBOGn37fX1+94RNVB7ChCIxD+z+QilAWpsIuYpuc0FOsDuwkls9
-	j+kBN+NoWtf4WbjRz4CXzlM6R8V6e63Ff5TrAVbbR3lBou4558dBCIAoDknT8wSOMaXewo64Gvf
-	ho6doXfftsQherhBAKlmzwcCRfElphg2PNPazF3n1V4WiwesqNt/NyvHSsOBGlir/AFf0Uuk2eV
-	8A2y1BWG+uGA2+qS3H4t4ZQueoVorVJ6dI5sow6oOgGstTJE9v5vyACMhrMZAHp4URAfpjM3fsI
-	ASu91wRt+JXhBMX9s8LXEMr7fwcrUypU60Q6TGRW7e+zzMRRme38+6q7brRUj1LjSfxLM+Evqsd
-	a1YGptzVOO4tHjjrp/S1ZoPxQsMf/W1qbd+zgpZdDyltrhv6E5rsL3IJO6tIG6KJeWNmWrVrwZP
-	BUQWZhpk2bc2DJdqle4SHPv+66aUdMGVceJvLmW/8cJtpLuE
-X-Received: by 2002:a17:90b:3e85:b0:3ac:36c7:c144 with SMTP id 98e67ed59e1d1-3acef2b4edamr1516587a91.28.1792243852151;
-        Sat, 17 Oct 2026 06:30:52 -0700 (PDT)
+        bh=rTNuU8y07OWc3gpsCtxs9hMoDORTFAVO+j50HlgZwnM=;
+        b=HVmm6T60mGYuBBJwJgX9TZE9bIeDGtMYoQPa7n7a0u9+AhAMcoR7NTsjW4purM4KoR
+         7gpViKie7AqCGJSQly2DW5O/Z/Man/zyKMgdHL5dbn6YjcoHdqbGWaQyzExwamWXc6qO
+         cLf746yOss1Wa+DyoMgLl2NKN+BqvgYimqVTiin0mUyZLYYgYIpwdTFH3EInrP6Frt7T
+         25d2WC2r5sseKYef0p7sM/+9kARl3Ma7bdNj4hKAnLGzAriCji7xgr2lSyM1/7A6PQ2i
+         nfink2pkPk1wTkSzG5nI8/BPneVcxVxGz7KARUDPVWiuG4GWoUYvb1e04TWU6Eyj+s6Z
+         2lsw==
+X-Forwarded-Encrypted: i=1; AKwUvBxBIkFuGh5or3mJbYrS7RTYg1cfbg1ueZziSOeREGEOXOonMcB5JNiyVBa13DC2tBO5F+T73NUEyqAEQAE=@vger.kernel.org
+X-Gm-Message-State: AFq9FYItDcmuKipnsRmik1QCK5LFb0zKSfVRwYWuoiRxNcQFJCNTL08k
+	m6TU1mbFvaYh2Na/KioPXRH3aV/EAHULOq6ul1pdfGzyMT0ml3/NK/F6
+X-Gm-Gg: AYBFou2ZRGwOw4/qxHkHPCfDqDOhVyyW8zjp9bu/jpalkkoPPj8EiLKE93AfOXvJJNt
+	VWg5LbfCVeetEqRw80Qa15DiiEdP+FuQ2TF70SZM8re4+1fOwH485qCHLtmD872V5YfZJyE/ryj
+	eqHYsH556ppp/Oj/r5PZ8zlFSyZlq5DuoqJw6RkSAiQXI/OhvzSGJOy/wOKs1YwCB9P/+whwIYE
+	TBFMQaEFrd1v2SExPX+pevyJ3Ag+wIyo5ctdFLwu02ietlcYQTa86vhALhBj0Ii+zZTriKgG7r1
+	P/48clTzI5G3+U8lovSN4ZEF2ryx+Wy47yOCmgruIAcQhh8SxBj+FcJkM1J/cdGXmBtJWJd6YNj
+	5uwEndFzeklOv9qEXVomMOqDY/mzK8+TyUdTxpvqfI7qZkkkloCbaShA3GSv4jq36EJlFYLrkjd
+	b5ewQ8r1GNbXUyQLhxLE5bwwjjCkkqiSh/UUHdrmGf1Y0sTmNDJwXTS8xU4N/W6YaCrZdnlyI7U
+	9I7vIYFibVS/eR12u/FVcTprV+MCc0DPYiuVGQvkgbq8n2qx7RvIZ7utQsHo12aA6dv4c1oMaH4
+	GGP5ODEZJfyLCvavPKZI+4YmpAbp11ENnZBktU+jspLmEkQL
+X-Received: by 2002:a17:90b:2c90:b0:3ac:a521:953 with SMTP id 98e67ed59e1d1-3acef0ff0cdmr4044977a91.46.1792325645279;
+        Sun, 18 Oct 2026 05:14:05 -0700 (PDT)
 Received: from EAIT-H54D9Q2FJQ.eait.uq.edu.au ([130.102.10.249])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3ac9474b52fsm14952942a91.9.2026.10.17.06.30.48
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3acc48e8646sm11116604a91.10.2026.10.18.05.14.02
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sat, 17 Oct 2026 06:30:51 -0700 (PDT)
+        Sun, 18 Oct 2026 05:14:04 -0700 (PDT)
 From: Yu Zhang <yuz08559@gmail.com>
 To: Mike Christie <michael.christie@oracle.com>
 Cc: Dmitry Bogdanov <d.bogdanov@yadro.com>,
@@ -65,11 +65,10 @@ Cc: Dmitry Bogdanov <d.bogdanov@yadro.com>,
 	target-devel@vger.kernel.org,
 	linux-scsi@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Yu Zhang <yuz08559@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] scsi: target: release SAM task attribute on the abort path
-Date: Sat, 17 Oct 2026 23:30:42 +1000
-Message-ID: <20261017133042.54305-1-yuz08559@gmail.com>
+	Yu Zhang <yuz08559@gmail.com>
+Subject: [BUG] scsi: target: PR OUT CLEAR registration-list teardown races concurrent PR OUT -> UAF / double list_del
+Date: Sun, 18 Oct 2026 22:13:57 +1000
+Message-ID: <20261018121357.63980-1-yuz08559@gmail.com>
 X-Mailer: git-send-email 2.55.0
 Precedence: bulk
 X-Mailing-List: target-devel@vger.kernel.org
@@ -79,62 +78,71 @@ List-Unsubscribe: <mailto:target-devel+unsubscribe@vger.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-A command that has started execution and is then aborted is completed
-through target_handle_abort() (target_cmd_interrupted() ->
-target_abort_work()), which bypasses target_complete_ok_work().
+core_scsi3_emulate_pro_clear() tears down the global registration_list holding
+only pr_tmpl->registration_lock, and __core_scsi3_free_registration() drops that
+lock across its pr_res_holders busy-wait:
 
-target_handle_abort() never calls transport_complete_task_attr(), the
-only function that releases the SAM task-attribute accounting a command
-takes in target_handle_task_attr() at execute time: for a SIMPLE command
-the dev->non_ordered reference, and for an ORDERED command the
-dev->ordered_sync_in_progress state (cleared, and non_ordered
-resurrected, by transport_complete_ordered_sync()).
+	spin_lock(&pr_tmpl->registration_lock);
+	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
+			&pr_tmpl->registration_list, pr_reg_list) {
+		...
+		__core_scsi3_free_registration(dev, pr_reg, NULL, calling_it_nexus);
+		...
+	}
+	spin_unlock(&pr_tmpl->registration_lock);
 
-The normal completion path (target_complete_ok_work()) and the failure
-path (transport_generic_request_failure()) both call
-transport_complete_task_attr() before handling the command; the abort
-path does not, so aborting an in-flight command leaks the accounting:
+__core_scsi3_free_registration():
 
- - Aborting an in-flight SIMPLE command leaks a dev->non_ordered
-   reference. A later ORDERED command then waits forever for non_ordered
-   to drain and every subsequent command piles up on
-   dev->delayed_cmd_list, wedging all I/O to the device.
+	if (!list_empty(&pr_reg->pr_reg_list))
+		list_del(&pr_reg->pr_reg_list);
+	...
+	spin_unlock(&pr_tmpl->registration_lock);
+	while (atomic_read(&pr_reg->pr_res_holders) != 0)
+		cpu_relax();
+	...
+	spin_lock(&pr_tmpl->registration_lock);
+	...
+	kmem_cache_free(t10_pr_reg_cache, pr_reg);
 
- - Aborting an in-flight ORDERED command leaves
-   dev->ordered_sync_in_progress set forever, so target_do_delayed_work()
-   never makes progress and all subsequent commands to the device hang.
+Unlike PR OUT PREEMPT (core_scsi3_pro_preempt), which holds
+dev->dev_reservation_lock across its entire registration_list free loop, CLEAR
+drops dev_reservation_lock before the loop. The same registration_lock-only
+teardown appears in core_scsi3_free_pr_reg_from_nacl() and the PR OUT REGISTER
+unregister path. PR OUT has no device-level serialization, so two I_T nexuses
+can run teardown loops concurrently.
 
-Call transport_complete_task_attr() from target_handle_abort() as the
-completion and failure paths do. It is a no-op for commands that never
-set SCF_TASK_ATTR_SET (e.g. task management requests) and is idempotent
-via that flag, so it is also safe on the failure path that already
-called it before dispatching to target_abort_work().
+list_for_each_entry_safe() caches the next entry. While one CLEAR is parked in
+__core_scsi3_free_registration()'s registration_lock drop, a second concurrent
+CLEAR acquires registration_lock and list_del()s + kmem_cache_free()s exactly
+that cached next entry. The first CLEAR then advances onto the freed entry ->
+use-after-free read of ->pr_reg_list.next, list_del() on a poisoned node, and a
+double kmem_cache_free().
 
-Reproduced over an iSCSI session to a demo-mode LIO target backed by a
-dm-delay device: an ORDERED WRITE held in flight at the backend is
-aborted with ABORT_TASK, after which a follow-up command never completes
-(device wedged); with this patch the follow-up command completes
-normally.
+Reproduced on a KASAN kernel with two tcm_loop I_T nexuses mapped to one iblock
+LUN, each looping { PR OUT REGISTER own-key ; PR OUT CLEAR own-key } via SG_IO:
 
-Fixes: ed1227e08099 ("scsi: target: Fix ordered tag handling")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yu Zhang <yuz08559@gmail.com>
----
- drivers/target/target_core_transport.c | 2 ++
- 1 file changed, 2 insertions(+)
+	list_del corruption, ffff...->next is LIST_POISON1 (dead000000000100)
+	kernel BUG at lib/list_debug.c:56!
+	RIP: __list_del_entry_valid_or_report+0xc2/0x140
+	Call Trace:
+	 __core_scsi3_free_registration+0x12d/0x430
+	 target_scsi3_emulate_pr_out+0xac0/0x13f0
+	 __target_execute_cmd+0x56/0x140
+	 target_execute_cmd+0x1a0/0x5b0
+	 tcm_loop_write_pending+0x15/0x20
+	 transport_generic_new_cmd+0x40b/0x700
+	 __target_submit+0xae/0x1e0
+	 target_queued_submit_work+0x64/0x190
 
-diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
-index 1111111..2222222 100644
---- a/drivers/target/target_core_transport.c
-+++ b/drivers/target/target_core_transport.c
-@@ -870,6 +870,8 @@ static void target_handle_abort(struct se_cmd *cmd)
+Note for a fix: simply taking dev_reservation_lock across the CLEAR teardown
+loop (mirroring PREEMPT) is not sufficient -- it deadlocks. A PR OUT command
+takes a pr_res_holders reference on its own registration via
+core_scsi3_locate_pr_reg() *before* acquiring dev_reservation_lock, so one CLEAR
+busy-waiting in __core_scsi3_free_registration() for another nexus's
+registration to reach pr_res_holders == 0 waits forever on a nexus whose own PR
+OUT is blocked on dev_reservation_lock (observed as an RCU stall). A correct fix
+likely needs the registration lifetime reworked (drop the locate reference
+before teardown, or defer the free to the last put) rather than only widening
+the lock.
 
- 	WARN_ON_ONCE(kref_read(&cmd->cmd_kref) == 0);
-
-+	transport_complete_task_attr(cmd);
-+
- 	transport_lun_remove_cmd(cmd);
-
- 	transport_cmd_check_stop_to_fabric(cmd);
---
-2.43.0
+Reported-by: Yu Zhang <yuz08559@gmail.com>
